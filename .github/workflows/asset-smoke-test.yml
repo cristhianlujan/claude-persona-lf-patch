@@ -1,0 +1,26 @@
+name: LF Asset Smoke Test
+
+on:
+  push:
+    paths:
+      - 'assets/**'
+      - 'docs/**/*.md'
+      - 'references/**/*.md'
+      - 'tests/test_markdown_asset_links.py'
+      - '.github/workflows/asset-smoke-test.yml'
+  workflow_dispatch:
+
+jobs:
+  asset-smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run markdown asset link smoke test
+        run: python3 -m unittest tests/test_markdown_asset_links.py
