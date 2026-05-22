@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "C8 Worker Output Schema",
+  "type": "object",
+  "required": [
+    "worker",
+    "activation_reason",
+    "contract_received",
+    "inputs_used",
+    "actions_taken",
+    "deliverable_created",
+    "definition_of_done_check",
+    "score",
+    "handoff_to_next",
+    "log_evidence",
+    "self_verdict"
+  ],
+  "properties": {
+    "worker": {"type": "string"},
+    "activation_reason": {"type": "string"},
+    "contract_received": {"type": "string"},
+    "inputs_used": {"type": "array", "items": {"type": "string"}},
+    "assumptions": {"type": "array"},
+    "actions_taken": {"type": "array", "items": {"type": "string"}},
+    "deliverable_created": {"type": "object"},
+    "definition_of_done_check": {"type": "object"},
+    "score": {
+      "type": "object",
+      "required": ["contract_compliance", "specificity", "actionability", "risk_detection", "handoff_quality", "total"],
+      "properties": {
+        "contract_compliance": {"type": "integer", "minimum": 0, "maximum": 5},
+        "specificity": {"type": "integer", "minimum": 0, "maximum": 5},
+        "actionability": {"type": "integer", "minimum": 0, "maximum": 5},
+        "risk_detection": {"type": "integer", "minimum": 0, "maximum": 5},
+        "handoff_quality": {"type": "integer", "minimum": 0, "maximum": 5},
+        "total": {"type": "integer", "minimum": 0, "maximum": 25}
+      }
+    },
+    "handoff_to_next": {"type": "object"},
+    "log_evidence": {"type": "object"},
+    "self_verdict": {
+      "type": "string",
+      "enum": ["PASS", "PASS_WITH_RESTRICTIONS", "NEEDS_INPUT", "NEEDS_ADJUSTMENT", "BLOCKED"]
+    }
+  }
+}
