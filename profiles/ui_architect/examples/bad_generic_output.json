@@ -1,0 +1,18 @@
+{
+  "worker": "UI_ARCHITECT",
+  "deliverable_created": "Create a clean, modern, premium and trustworthy screen with cards and a route.",
+  "self_verdict": "PASS",
+  "why_this_fails": [
+    "No layout specification",
+    "No component map",
+    "No visual weights",
+    "No state definitions",
+    "No token usage by component",
+    "No anti-pattern controls",
+    "No handoff evidence",
+    "No score",
+    "Generic advice instead of executable output"
+  ],
+  "expected_mini_judge_verdict": "FAIL",
+  "failure_code": "ONLY_GENERIC_ADVICE"
+}
