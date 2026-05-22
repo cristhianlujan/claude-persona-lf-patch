@@ -1,0 +1,29 @@
+{
+  "sandbox": "SBX_GITHUB_UI_ARCHITECT_RUTA_CLARIDAD_001",
+  "mode": "CANDIDATE_READ_ONLY",
+  "created_by": "CHATGPT_ROUTER_FIRST_LF",
+  "source_of_authority": "ACT-0045 sections 24.16, 24.17, 24.18",
+  "repo": "cristhianlujan/claude-persona-lf-patch",
+  "profile": "UI_ARCHITECT",
+  "case": "RUTA_CLARIDAD_MARKETPLACE_LF",
+  "files_created": [
+    "profiles/ui_architect/SKILL.md",
+    "profiles/ui_architect/examples/good_ruta_claridad.json",
+    "profiles/ui_architect/examples/bad_generic_output.json",
+    "schemas/c8_worker_output.schema.json",
+    "sandbox_runs/ruta_claridad_001/request.md",
+    "sandbox_runs/ruta_claridad_001/worker_output.json",
+    "sandbox_runs/ruta_claridad_001/judge_report.json",
+    "sandbox_runs/ruta_claridad_001/run_metadata.json"
+  ],
+  "limits": {
+    "replace_supabase": false,
+    "modify_act0045": false,
+    "runtime_enabled": false,
+    "general_production_enabled": false,
+    "automatic_impact_enabled": false,
+    "official_profiles_created": false,
+    "official_cards_created": false
+  },
+  "verdict": "SANDBOX_CREATED_READY_FOR_REVIEW"
+}
