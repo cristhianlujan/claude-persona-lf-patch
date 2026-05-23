@@ -1,0 +1,10 @@
+{
+  "status": "PROFILE_PACK_CREATED",
+  "profile_pack_id": "PROFILE_REVISED_CANDIDATE",
+  "source_authority": "ACT-0045",
+  "deliverable_created": true,
+  "files_created": ["README.md"],
+  "evidence_map": {"router_applied": true},
+  "blocking_codes": [],
+  "next_gate": "QUALITY_PACK_REVIEW"
+}
