@@ -1,0 +1,13 @@
+{
+  "status": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+  "profile_pack_id": "PROFILE_REPAIR_REQUIRED",
+  "source_authority": "ACT-0045",
+  "deliverable_created": false,
+  "files_created": [],
+  "evidence_map": {
+    "router_applied": true,
+    "repair_required": true
+  },
+  "blocking_codes": ["BASIC_PROFILE_OUTPUT_NOT_ACCEPTABLE"],
+  "next_gate": "SELF_REPAIR_THEN_QUALITY_PACK"
+}

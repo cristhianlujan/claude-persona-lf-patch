@@ -1,0 +1,7 @@
+{
+  "request_type": "create_profile_pack_candidate",
+  "profile_purpose": "",
+  "scope": "candidate pack only",
+  "source_authority": "",
+  "expected_status": "RETURN_TO_ORCHESTRATOR"
+}

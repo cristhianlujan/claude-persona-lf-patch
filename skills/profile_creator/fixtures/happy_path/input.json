@@ -1,0 +1,9 @@
+{
+  "request_type": "create_profile_pack_candidate",
+  "profile_purpose": "UI Interface Architect profile for LF governed UI reviews",
+  "scope": "candidate pack only",
+  "source_authority": "ACT-0001 + ACT-0045 + public.v_lf_fuente_operativa",
+  "runtime_enabled": false,
+  "automatic_impact": "BLOCKED",
+  "required_next_gate": "QUALITY_PACK_REVIEW"
+}

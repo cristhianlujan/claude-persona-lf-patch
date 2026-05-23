@@ -1,0 +1,15 @@
+{
+  "handoff_id": "profile_creator_to_quality_pack",
+  "from": "skills/profile_creator",
+  "to": "quality_pack_review",
+  "required_evidence": [
+    "router_applied",
+    "source_verified",
+    "asset_verified",
+    "pack_structure_complete",
+    "validator_passed",
+    "runtime_disabled",
+    "automatic_impact_blocked"
+  ],
+  "next_gate": "QUALITY_PACK_REVIEW"
+}

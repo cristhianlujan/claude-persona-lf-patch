@@ -1,0 +1,28 @@
+{
+  "status": "PROFILE_PACK_CREATED",
+  "profile_pack_id": "PROFILE_UI_INTERFACE_ARCHITECT_LF_CANDIDATE",
+  "source_authority": "ACT-0001 + ACT-0045 + public.v_lf_fuente_operativa",
+  "deliverable_created": true,
+  "files_created": [
+    "README.md",
+    "PROFILE.md",
+    "contracts/main_contract.md",
+    "schemas/output.schema.json",
+    "judges/score_rubric.md",
+    "checklists/preflight_checklist.md",
+    "examples/good_output.json",
+    "fixtures/happy_path/input.json",
+    "validators/validate_pack.py",
+    "evals/eval_matrix.json",
+    "handoffs/to_quality_pack.handoff.json",
+    "adapters/github_pack_adapter.md"
+  ],
+  "evidence_map": {
+    "router_applied": true,
+    "asset_verified": "ACT-0045",
+    "runtime_enabled": false,
+    "automatic_impact": "BLOCKED"
+  },
+  "blocking_codes": [],
+  "next_gate": "QUALITY_PACK_REVIEW"
+}
