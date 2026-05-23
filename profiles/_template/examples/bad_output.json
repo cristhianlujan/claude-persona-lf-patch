@@ -1,0 +1,7 @@
+{
+  "bad_example_id": "BASIC_PROSE_ONLY_OUTPUT",
+  "status": "INVALID_OUTPUT",
+  "output": "Here is a basic skill prompt you can use...",
+  "expected_verdict": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+  "blocking_codes": ["BASIC_SKILL_OUTPUT_NOT_ACCEPTABLE"]
+}
