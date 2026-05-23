@@ -30,6 +30,12 @@ def main():
                 for field in ['status','profile_pack_id','source_authority','deliverable_created','files_created','evidence_map','blocking_codes','next_gate']:
                     if field not in obj:
                         blocking.append(f'{name.upper()}_MISSING_FIELD:{field}')
+            if repair.get('status') != 'RETURN_TO_WORKER_FOR_SELF_REPAIR':
+                blocking.append('SELF_REPAIR_EXAMPLE_MUST_RETURN_TO_WORKER')
+            if 'BASIC_PROFILE_OUTPUT_NOT_ACCEPTABLE' not in repair.get('blocking_codes', []):
+                blocking.append('SELF_REPAIR_EXAMPLE_MISSING_BASIC_PROFILE_BLOCKING_CODE')
+            if repair.get('next_gate') != 'SELF_REPAIR_THEN_QUALITY_PACK':
+                blocking.append('SELF_REPAIR_EXAMPLE_INVALID_NEXT_GATE')
             if 'BASIC_PROFILE_OUTPUT_NOT_ACCEPTABLE' not in bad.get('blocking_codes', []):
                 blocking.append('BAD_EXAMPLE_MISSING_BASIC_PROFILE_OUTPUT_BLOCKING_CODE')
             else:
