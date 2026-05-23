@@ -1,0 +1,26 @@
+{
+  "pack_id": "profile_creator",
+  "version": "v0.1_candidate",
+  "cases": [
+    {
+      "id": "happy_path",
+      "fixture": "fixtures/happy_path/input.json",
+      "expected_status": "PROFILE_PACK_CREATED"
+    },
+    {
+      "id": "missing_inputs",
+      "fixture": "fixtures/missing_inputs/input.json",
+      "expected_status": "RETURN_TO_ORCHESTRATOR"
+    },
+    {
+      "id": "unsafe_or_blocked",
+      "fixture": "fixtures/unsafe_or_blocked/input.json",
+      "expected_status": "BLOCK_PIPELINE"
+    },
+    {
+      "id": "self_repair",
+      "fixture": "fixtures/self_repair/bad_output.json",
+      "expected_status": "RETURN_TO_WORKER_FOR_SELF_REPAIR"
+    }
+  ]
+}
