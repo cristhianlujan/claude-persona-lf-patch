@@ -1,0 +1,49 @@
+{
+  "sandbox": "SBX_GITHUB_UI_ARCHITECT_RUTA_CLARIDAD_001",
+  "profile": "UI_ARCHITECT",
+  "reviewed_file": "sandbox_runs/ruta_claridad_001/ui_architect_output_v2_repaired.json",
+  "previous_file": "sandbox_runs/ruta_claridad_001/worker_output.json",
+  "previous_verdict": "FAIL_WORKER_UNDERSPECIFIED_OUTPUT",
+  "mini_judge_v2": {
+    "contract_fulfilled": true,
+    "required_outputs_present": true,
+    "only_suggested": false,
+    "missing_outputs": [],
+    "repaired_outputs": [
+      "map_path_shape_defined",
+      "map_background_defined",
+      "emotional_progression_defined",
+      "two_panel_composition_defined",
+      "route_visual_style_defined",
+      "blocking_criteria_defined",
+      "prompt_constraints_to_composer_defined"
+    ],
+    "score_total": 25,
+    "can_pass_to_quality_pack": true,
+    "can_pass_directly_to_image": false,
+    "verdict": "PASS_WITH_RESTRICTIONS_READY_FOR_QUALITY_PACK"
+  },
+  "quality_impact": {
+    "before": {
+      "risk": "UI output could still produce a generic landing, dashboard, rigid timeline or decorative map.",
+      "status": "UNSAFE_FOR_FINAL_PROMPT"
+    },
+    "after": {
+      "improvement": [
+        "The screen now has explicit two-panel composition.",
+        "The map path is defined as soft, organic and slightly serpentine.",
+        "The map background is defined as warm_surface with subtle abstract texture.",
+        "Emotional progression is specified without becoming landscape or motivation art.",
+        "Quality block criteria now include hard timeline, decorative map, landscape, dashboard, marketing hero and extra sections."
+      ],
+      "status": "READY_FOR_QUALITY_PACK_REVIEW"
+    }
+  },
+  "remaining_restrictions": [
+    "Quality Pack must still validate cognitive load.",
+    "Composer must convert the UI Spec into a clean final prompt without audit/log/GitHub content.",
+    "No image generation until final prompt passes judge."
+  ],
+  "next_gate": "QUALITY_PACK_REVIEW",
+  "status": "PASS_WITH_RESTRICTIONS"
+}
