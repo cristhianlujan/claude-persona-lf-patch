@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UI Architect Production UI Spec",
+  "type": "object",
+  "required": ["worker", "output_type", "deliverable_created", "score", "handoff_to_next", "self_verdict"],
+  "properties": {
+    "worker": {"type": "string"},
+    "output_type": {"type": "string"},
+    "deliverable_created": {
+      "type": "object",
+      "required": ["screen_definition", "component_tree", "layout_grid", "visual_hierarchy", "state_map", "token_map", "spacing_typography", "density_rules", "risk_controls", "prompt_constraints"],
+      "properties": {
+        "screen_definition": {"type": "object"},
+        "component_tree": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["zone_id", "component_id", "component_type", "role", "content", "visual_priority", "color_tokens", "typography", "spacing", "state", "allowed_variants", "blocked_variants"]
+          }
+        },
+        "layout_grid": {"type": "object"},
+        "visual_hierarchy": {"type": "array"},
+        "state_map": {"type": "object"},
+        "token_map": {"type": "object"},
+        "spacing_typography": {"type": "object"},
+        "density_rules": {"type": "array"},
+        "risk_controls": {"type": "array"},
+        "prompt_constraints": {"type": "array"}
+      }
+    },
+    "score": {"type": "object"},
+    "handoff_to_next": {"type": "object"},
+    "self_verdict": {"type": "string"}
+  }
+}
