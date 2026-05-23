@@ -1,0 +1,11 @@
+{
+  "status": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+  "pack_type": "skill",
+  "deliverable_created": {
+    "summary": "Original output was prose-only and must be replaced by a complete pack.",
+    "required_repair": "Generate all minimum files and rerun validator."
+  },
+  "evidence_map": ["BASIC_PROSE_ONLY_OUTPUT detected"],
+  "blocking_codes": ["BASIC_SKILL_OUTPUT_NOT_ACCEPTABLE"],
+  "next_gate": "SELF_REPAIR_THEN_QUALITY_PACK"
+}
