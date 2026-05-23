@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UI Architect Missing Input State",
+  "type": "object",
+  "required": ["self_verdict", "blocked", "missing_inputs", "safe_assumptions_available", "pipeline_action"],
+  "properties": {
+    "self_verdict": {"type": "string", "enum": ["PASS_WITH_ASSUMPTIONS", "NEEDS_INPUT", "BLOCKED"]},
+    "blocked": {"type": "boolean"},
+    "missing_inputs": {"type": "array", "items": {"type": "string"}},
+    "safe_assumptions_available": {"type": "boolean"},
+    "assumptions": {"type": "array"},
+    "question_to_orchestrator": {"type": ["string", "null"]},
+    "pipeline_action": {"type": "string", "enum": ["CONTINUE_WITH_ASSUMPTIONS", "RETURN_TO_ORCHESTRATOR", "BLOCK_PIPELINE"]}
+  }
+}
