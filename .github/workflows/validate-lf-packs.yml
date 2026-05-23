@@ -1,0 +1,36 @@
+name: Validate LF Packs
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+      - "lf/**"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-lf-packs:
+    name: Run LF pack validators
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate profile template pack
+        run: python profiles/_template/validators/validate_pack.py profiles/_template
+
+      - name: Validate skill template pack
+        run: python skills/_template/validators/validate_pack.py skills/_template
+
+      - name: Validate skill creator pack
+        run: python skills/skill_creator/validators/validate_pack.py skills/skill_creator
