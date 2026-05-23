@@ -1,0 +1,21 @@
+{
+  "example_id": "BAD_CASE_SPECIFIC_LEAKAGE",
+  "status": "GENERIC_FAIL_EXAMPLE",
+  "worker": "UI_ARCHITECT",
+  "deliverable_created": {
+    "screen_id": "ruta_claridad_001",
+    "business_case_name": "Ruta de Claridad",
+    "persona_name": "Juan Digital",
+    "progress": "0/4",
+    "case_specific_copy": "Mapa de claridad para MarketPlace Libertad Financiera"
+  },
+  "why_this_fails": [
+    "Uses a business case as reusable profile structure",
+    "Introduces unvalidated persona/name into generic example",
+    "Hardcodes case-specific progress and copy",
+    "Cannot be reused across product screens without contamination",
+    "Violates generic profile pack architecture"
+  ],
+  "expected_quality_gate_verdict": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+  "failure_code": "CASE_SPECIFIC_LEAKAGE"
+}
