@@ -1,0 +1,6 @@
+{
+  "case_id": "SKILL_CREATOR_MISSING_INPUTS_001",
+  "request": "Create a skill",
+  "missing": ["skill objective", "source authority", "acceptance criteria"],
+  "expected": "RETURN_TO_ORCHESTRATOR"
+}

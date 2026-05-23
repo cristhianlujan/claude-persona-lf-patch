@@ -1,0 +1,6 @@
+{
+  "case_id": "SKILL_CREATOR_SELF_REPAIR_001",
+  "output": "Here is a reusable prompt for creating skills...",
+  "expected": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+  "blocking_codes": ["BASIC_SKILL_OUTPUT_NOT_ACCEPTABLE"]
+}

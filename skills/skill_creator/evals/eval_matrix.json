@@ -1,0 +1,10 @@
+{
+  "eval_id": "SKILL_CREATOR_EVAL_MATRIX_001",
+  "minimum_pass_rate": "4/4",
+  "cases": [
+    {"case_id": "SKILL_CREATOR_HAPPY_PATH_001", "expected": "SKILL_PACK_CREATED"},
+    {"case_id": "SKILL_CREATOR_MISSING_INPUTS_001", "expected": "RETURN_TO_ORCHESTRATOR"},
+    {"case_id": "SKILL_CREATOR_BLOCKED_001", "expected": "BLOCK_PIPELINE"},
+    {"case_id": "SKILL_CREATOR_SELF_REPAIR_001", "expected": "RETURN_TO_WORKER_FOR_SELF_REPAIR"}
+  ]
+}
