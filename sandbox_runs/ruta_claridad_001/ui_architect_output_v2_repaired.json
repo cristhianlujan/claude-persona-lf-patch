@@ -1,0 +1,187 @@
+{
+  "worker": "UI_ARCHITECT",
+  "case": "RUTA_CLARIDAD_FINANCIERA_MARKETPLACE_LF",
+  "output_type": "PRODUCTION_UI_SPEC_REPAIRED_WITH_MAP_VISUAL_SPEC",
+  "self_repair_mode": true,
+  "previous_output_verdict": "FAIL_WORKER_UNDERSPECIFIED_OUTPUT",
+  "self_verdict": "PASS_WITH_RESTRICTIONS",
+  "restriction_reason": "Lista para Quality Pack. No debe pasar directo a imagen hasta convertir esta UI Spec en prompt final limpio.",
+  "layout_spec": {
+    "screen_type": "Pantalla web desktop de producto fintech",
+    "canvas": {
+      "recommended_width": "1440px",
+      "max_content_width": "1240px",
+      "page_padding": "48px",
+      "background": "warm_surface",
+      "structure": "dos paneles principales + franja inferior liviana opcional"
+    },
+    "main_composition": {
+      "left_panel": {
+        "name": "Orientación inicial",
+        "width": "34%",
+        "role": "contener emocionalmente y explicar el punto de partida",
+        "content": [
+          "Ruta de Claridad Financiera",
+          "Tu ruta para empezar con claridad financiera",
+          "Entiende tu deuda, ordena tu información y da el primer paso con calma y sin presión.",
+          "Card pequeña: Acompañamiento claro"
+        ],
+        "visual_behavior": "calmo, estable, con baja densidad visual"
+      },
+      "right_panel": {
+        "name": "Mapa de claridad",
+        "width": "66%",
+        "role": "mostrar la ruta funcional y el paso activo",
+        "content": [
+          "Mapa de claridad",
+          "Paso 1 de 5",
+          "camino visual suave con 5 nodos",
+          "card activa Diagnóstico inicial",
+          "CTA único Comenzar diagnóstico"
+        ],
+        "visual_behavior": "panel dominante, más visual, pero sin parecer dashboard ni infografía"
+      },
+      "bottom_strip": {
+        "name": "Confianza y acompañamiento",
+        "role": "refuerzo secundario",
+        "max_blocks": 3,
+        "condition": "usar solo si no satura la composición"
+      }
+    }
+  },
+  "map_visual_spec": {
+    "map_role": "componente funcional de producto que guía al usuario paso a paso",
+    "path_shape": {
+      "type": "línea suave, orgánica y ligeramente serpenteante",
+      "behavior": "debe conectar 5 nodos sin parecer carretera, camino literal o paisaje",
+      "direction": "lectura izquierda a derecha o diagonal suave dentro del panel",
+      "hard_blocks": [
+        "no línea recta rígida tipo timeline corporativo",
+        "no carretera",
+        "no sendero realista",
+        "no mapa topográfico literal",
+        "no montaña",
+        "no sol",
+        "no paisaje emocional"
+      ]
+    },
+    "emotional_progression": {
+      "start": "orden inicial y contención",
+      "middle": "exploración controlada de opciones",
+      "end": "claridad ganada sobria",
+      "visual_translation": "el recorrido debe sentirse cada vez más claro, pero sin efectos exagerados"
+    },
+    "map_background": {
+      "base": "warm_surface elevado",
+      "texture": "textura muy sutil o contornos abstractos suaves",
+      "allowed": [
+        "líneas suaves de orientación",
+        "formas abstractas de baja opacidad",
+        "superficie cálida con profundidad ligera"
+      ],
+      "forbidden": [
+        "paisaje",
+        "topografía realista",
+        "montañas",
+        "cielo",
+        "sol",
+        "carretera",
+        "mapa geográfico",
+        "ilustración decorativa dominante"
+      ]
+    },
+    "nodes": [
+      {
+        "step": 1,
+        "name": "Diagnóstico inicial",
+        "state": "active",
+        "visual": "nodo más grande, green_action, mayor contraste, conectado a card activa"
+      },
+      {
+        "step": 2,
+        "name": "Mapa de deuda",
+        "state": "secondary",
+        "visual": "nodo pequeño, slate_text, bajo contraste"
+      },
+      {
+        "step": 3,
+        "name": "Opciones posibles",
+        "state": "secondary",
+        "visual": "nodo pequeño, slate_text, bajo contraste"
+      },
+      {
+        "step": 4,
+        "name": "Plan de avance",
+        "state": "secondary",
+        "visual": "nodo pequeño, slate_text, bajo contraste"
+      },
+      {
+        "step": 5,
+        "name": "Claridad ganada",
+        "state": "secondary_reward",
+        "visual": "nodo pequeño con acento mínimo gold_reward"
+      }
+    ],
+    "active_card_relation": {
+      "rule": "la card Diagnóstico inicial debe estar visualmente conectada al nodo 1",
+      "priority": "la card activa domina sobre los demás pasos",
+      "cta": "Comenzar diagnóstico"
+    }
+  },
+  "quality_blocks": [
+    {
+      "code": "BLOCK_IF_TIMELINE_HARD",
+      "condition": "si la ruta parece una línea recta rígida tipo timeline"
+    },
+    {
+      "code": "BLOCK_IF_MAP_DECORATIVE",
+      "condition": "si el mapa se vuelve ilustración decorativa y no componente funcional"
+    },
+    {
+      "code": "BLOCK_IF_LANDSCAPE",
+      "condition": "si aparecen montañas, sol, carretera, cielo o paisaje"
+    },
+    {
+      "code": "BLOCK_IF_DASHBOARD",
+      "condition": "si aparecen KPIs, gráficos, montos o paneles financieros"
+    },
+    {
+      "code": "BLOCK_IF_MARKETING_HERO",
+      "condition": "si parece landing comercial o publicidad"
+    },
+    {
+      "code": "BLOCK_IF_EXTRA_SECTIONS",
+      "condition": "si agrega más zonas, footer, testimonios, catálogo o múltiples CTAs"
+    }
+  ],
+  "prompt_constraints_to_composer": [
+    "Describir la pantalla como web desktop de producto fintech.",
+    "Forzar composición de dos paneles: izquierda orientación, derecha mapa de claridad.",
+    "Definir el mapa como componente funcional, no ilustración decorativa.",
+    "Pedir camino suave, orgánico y ligeramente serpenteante.",
+    "Bloquear carretera, paisaje, montaña, sol, timeline rígido y dashboard.",
+    "Mantener paso 1 activo: Diagnóstico inicial.",
+    "Conectar visualmente nodo 1 con card activa.",
+    "Usar fondo warm_surface con textura abstracta muy sutil.",
+    "Mantener un solo CTA: Comenzar diagnóstico.",
+    "No agregar secciones fuera del pedido."
+  ],
+  "quality_readiness": {
+    "map_path_shape_defined": true,
+    "map_background_defined": true,
+    "emotional_progression_defined": true,
+    "two_panel_composition_defined": true,
+    "route_visual_style_defined": true,
+    "blocking_criteria_defined": true,
+    "ready_for_quality_pack": true
+  },
+  "score": {
+    "contract_compliance": 5,
+    "specificity": 5,
+    "actionability": 5,
+    "risk_detection": 5,
+    "handoff_quality": 5,
+    "total": 25
+  },
+  "next_gate": "QUALITY_PACK_REVIEW"
+}
