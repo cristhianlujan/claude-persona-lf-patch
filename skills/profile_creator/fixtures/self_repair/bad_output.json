@@ -1,0 +1,6 @@
+{
+  "status": "PROFILE_DRAFT_ONLY",
+  "profile_pack_id": "PROFILE_DRAFT",
+  "files_created": ["PROFILE.md"],
+  "blocking_codes": ["BASIC_PROFILE_OUTPUT_NOT_ACCEPTABLE"]
+}
