@@ -1,0 +1,9 @@
+{
+  "case_id": "LEARNING_ENGINE_SELF_REPAIR_001",
+  "status": "LEARNING_CARD_CANDIDATE_CREATED",
+  "learning_candidate_id": "NARROW_RULE_001",
+  "classification": "one_off_rule",
+  "proposed_rule": "Create a separate rule for this exact chat phrasing only.",
+  "expected_status": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+  "blocking_codes": ["MOTHER_RULE_CONSOLIDATION_REQUIRED"]
+}
