@@ -1,0 +1,32 @@
+{
+  "pack_id": "learning_engine",
+  "version": "v0.1_candidate",
+  "minimum_pass_rate": "5/5",
+  "cases": [
+    {
+      "id": "happy_path",
+      "fixture": "fixtures/happy_path/input.json",
+      "expected_status": "LEARNING_CARD_CANDIDATE_CREATED"
+    },
+    {
+      "id": "missing_inputs",
+      "fixture": "fixtures/missing_inputs/input.json",
+      "expected_status": "RETURN_TO_ORCHESTRATOR"
+    },
+    {
+      "id": "unsafe_or_blocked",
+      "fixture": "fixtures/unsafe_or_blocked/input.json",
+      "expected_status": "BLOCK_PIPELINE"
+    },
+    {
+      "id": "self_repair",
+      "fixture": "fixtures/self_repair/bad_output.json",
+      "expected_status": "RETURN_TO_WORKER_FOR_SELF_REPAIR"
+    },
+    {
+      "id": "profile_card_handoff",
+      "fixture": "fixtures/profile_card_handoff/input.json",
+      "expected_status": "HANDOFF_TO_ACT_0045"
+    }
+  ]
+}
