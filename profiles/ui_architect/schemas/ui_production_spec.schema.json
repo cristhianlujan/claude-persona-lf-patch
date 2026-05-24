@@ -25,7 +25,13 @@
         "spacing_typography": {"type": "object"},
         "density_rules": {"type": "array"},
         "risk_controls": {"type": "array"},
-        "prompt_constraints": {"type": "array"}
+        "prompt_constraints": {"type": "array"},
+        "visual_reference_spec": {"type": "object"},
+        "visual_prompt_variants": {"type": "array"},
+        "negative_prompt_constraints": {"type": "array"},
+        "render_acceptance_criteria": {"type": "array"},
+        "post_render_qa": {"type": "object"},
+        "input_output_visual_learning_case": {"type": "object"}
       }
     },
     "score": {"type": "object"},
