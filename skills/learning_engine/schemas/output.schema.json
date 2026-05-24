@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LF Learning Engine Output",
+  "type": "object",
+  "required": [
+    "status",
+    "learning_candidate_id",
+    "classification",
+    "source_authority",
+    "evidence_map",
+    "proposed_next_action",
+    "handoff_target",
+    "blocking_codes",
+    "next_gate"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "LEARNING_CARD_CANDIDATE_CREATED",
+        "HANDOFF_TO_ACT_0045",
+        "RETURN_TO_ORCHESTRATOR",
+        "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+        "BLOCK_PIPELINE"
+      ]
+    },
+    "learning_candidate_id": { "type": "string" },
+    "classification": { "type": "string" },
+    "source_authority": { "type": "string" },
+    "evidence_map": { "type": "array", "items": { "type": "string" } },
+    "proposed_next_action": { "type": "string" },
+    "handoff_target": { "type": "string" },
+    "blocking_codes": { "type": "array", "items": { "type": "string" } },
+    "next_gate": { "type": "string" }
+  }
+}

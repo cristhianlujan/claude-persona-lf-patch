@@ -1,0 +1,9 @@
+{
+  "case_id": "LEARNING_ENGINE_HAPPY_PATH_001",
+  "request_type": "classify_learning_signal",
+  "learning_signal": "Repeated chats try to use skills directly without Router-first verification.",
+  "source_context": "governance cross-chat operation",
+  "evidence": ["multiple chats", "ACT-0001 applies", "ACT-0046 candidate applies"],
+  "source_authority": "ACT-0001 + ACT-0046 + public.v_lf_fuente_operativa",
+  "expected_status": "LEARNING_CARD_CANDIDATE_CREATED"
+}

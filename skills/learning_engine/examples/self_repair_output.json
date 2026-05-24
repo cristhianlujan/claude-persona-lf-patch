@@ -1,0 +1,16 @@
+{
+  "status": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+  "learning_candidate_id": "LEARN_REPAIR_REQUIRED",
+  "classification": "rule_sprawl_risk",
+  "source_authority": "ACT-0046",
+  "evidence_map": [
+    "Narrow rule proposed without reusable mother-rule test"
+  ],
+  "proposed_next_action": "Reframe as reusable mother-rule candidate or route to backlog",
+  "handoff_target": "learning_engine_worker",
+  "blocking_codes": [
+    "DUPLICATE_RULE_RISK",
+    "MOTHER_RULE_CONSOLIDATION_REQUIRED"
+  ],
+  "next_gate": "SELF_REPAIR_THEN_QUALITY_PACK"
+}
