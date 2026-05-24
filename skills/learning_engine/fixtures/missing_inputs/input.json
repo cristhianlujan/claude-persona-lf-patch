@@ -1,0 +1,9 @@
+{
+  "case_id": "LEARNING_ENGINE_MISSING_INPUTS_001",
+  "request_type": "classify_learning_signal",
+  "learning_signal": "",
+  "source_context": "",
+  "evidence": [],
+  "source_authority": "",
+  "expected_status": "RETURN_TO_ORCHESTRATOR"
+}
