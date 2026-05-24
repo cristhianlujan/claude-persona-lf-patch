@@ -19,11 +19,11 @@ No score can be assigned without evidence. If evidence is missing, that criterio
 - 1: generic statement about clarity/premium.
 - 0: no hierarchy evidence.
 
-### 3. LF system fidelity — 5 points
-- 5: LF tokens, debt-context safety, no dark patterns and accompaniment tone are explicit.
-- 3: some LF tokens are named but not mapped.
+### 3. System fidelity — 5 points
+- 5: active design-system tokens, safety constraints, blocked patterns and component mapping are explicit.
+- 3: some tokens are named but not mapped.
 - 1: generic brand alignment.
-- 0: no LF fidelity evidence.
+- 0: no system fidelity evidence.
 
 ### 4. State mapping — 5 points
 - 5: active/secondary/disabled/hover/informational states are explicit where relevant.
@@ -32,12 +32,30 @@ No score can be assigned without evidence. If evidence is missing, that criterio
 - 0: no state evidence.
 
 ### 5. Handoff quality — 5 points
-- 5: composer can generate prompt or next artifact without inventing structure.
+- 5: composer, prompt worker or next artifact can proceed without inventing structure.
 - 3: useful but still requires interpretation.
 - 1: mostly recommendations.
 - 0: not actionable.
 
+## Render-readiness modifier
+When the next downstream step is visual prompt generation, image generation, UI mockup rendering or creative variation, the judge must also check render-readiness.
+
+Render-readiness does not add extra points beyond 25. It modifies Handoff quality:
+- Handoff quality can score 5 only if `visual_reference_spec`, `negative_prompt_constraints` and `render_acceptance_criteria` are sufficient for the next visual worker to proceed without inventing composition.
+- Handoff quality is capped at 3 if the UI spec is structurally useful but lacks render acceptance criteria.
+- Handoff quality is capped at 1 if it only gives adjectives such as modern, premium, clean, beautiful or intuitive.
+- Handoff quality is 0 if the render worker would need to invent layout, focal point, hierarchy or constraints.
+
 ## Passing gates
 - 20/25 minimum to continue to composer.
 - Any 0 in Layout precision or Handoff quality blocks the flow.
-- Any dark pattern or LF safety failure blocks the flow regardless of total score.
+- Any project safety failure injected by an adapter or contract blocks the flow regardless of total score.
+
+## Evidence requirements
+Scores must cite evidence from the output itself:
+- component IDs for layout and hierarchy;
+- token map or system constraints for system fidelity;
+- explicit state names for state mapping;
+- prompt constraints, visual reference spec or acceptance criteria for handoff quality.
+
+If evidence is not present in the output, assign 0 for that criterion even if the worker claims compliance.
