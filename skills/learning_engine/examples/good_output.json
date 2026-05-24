@@ -1,0 +1,15 @@
+{
+  "status": "LEARNING_CARD_CANDIDATE_CREATED",
+  "learning_candidate_id": "LEARN_CANDIDATE_ROUTER_FIRST_001",
+  "classification": "transversal_process_improvement",
+  "source_authority": "ACT-0001 + ACT-0046 + public.v_lf_fuente_operativa",
+  "evidence_map": [
+    "Repeated cross-chat drift detected",
+    "Router-first guardrail applies",
+    "No official impact requested"
+  ],
+  "proposed_next_action": "Create candidate learning card for Quality Pack Review",
+  "handoff_target": "learning_backlog",
+  "blocking_codes": [],
+  "next_gate": "QUALITY_PACK_REVIEW"
+}
