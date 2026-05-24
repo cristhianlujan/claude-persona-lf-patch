@@ -25,7 +25,19 @@
         "spacing_typography": {"type": "object"},
         "density_rules": {"type": "array"},
         "risk_controls": {"type": "array"},
-        "prompt_constraints": {"type": "array"}
+        "prompt_constraints": {"type": "array"},
+        "visual_output_requirements": {
+          "type": "object",
+          "properties": {
+            "layout_preservation": {"type": "array"},
+            "hierarchy_preservation": {"type": "array"},
+            "legibility_preservation": {"type": "array"},
+            "state_preservation": {"type": "array"},
+            "composition_constraints": {"type": "array"},
+            "artifact_constraints": {"type": "array"},
+            "acceptance_criteria": {"type": "array"}
+          }
+        }
       }
     },
     "score": {"type": "object"},
