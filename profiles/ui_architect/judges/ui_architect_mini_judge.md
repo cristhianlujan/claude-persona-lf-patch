@@ -13,6 +13,7 @@ Validate that UI Architect produced an executable UI spec, not advice.
 5. Missing-input policy was followed when needed.
 6. LF visual governance was respected.
 7. Handoff can be used by composer without inventing.
+8. If image prompt or UI mockup rendering is requested, `prompt_constraints` and optional `visual_output_requirements` protect layout, hierarchy, legibility, states and visual drift.
 
 ## Automatic FAIL conditions
 - `only_suggested = true`
@@ -21,6 +22,9 @@ Validate that UI Architect produced an executable UI spec, not advice.
 - state fields claimed true but not listed
 - token usage named but not mapped to components
 - no prompt constraints
+- image/render requested but prompt constraints do not protect layout, hierarchy, legibility or state fidelity
+- image/render requested but the next worker would need to invent composition, focal point, spacing or acceptance criteria
+- prompt constraints rely only on vague adjectives such as clean, modern, premium, beautiful, intuitive or professional
 - dark pattern or aggressive debt/collection cue
 - asks end user directly inside automated run instead of returning pipeline action
 

@@ -32,10 +32,19 @@ No score can be assigned without evidence. If evidence is missing, that criterio
 - 0: no state evidence.
 
 ### 5. Handoff quality — 5 points
-- 5: composer can generate prompt or next artifact without inventing structure.
-- 3: useful but still requires interpretation.
-- 1: mostly recommendations.
+- 5: composer, prompt generator or visual renderer can produce the next artifact without inventing layout, hierarchy, composition, states or acceptance criteria.
+- 3: useful structure exists, but prompt/render constraints still require interpretation.
+- 1: mostly recommendations, adjectives or style direction without executable constraints.
 - 0: not actionable.
+
+If the next artifact is an image prompt or rendered UI mockup, a score of 5 requires evidence that `prompt_constraints` or optional `visual_output_requirements` protect:
+- layout fidelity;
+- visual hierarchy;
+- text legibility;
+- state visibility;
+- composition and focal point;
+- forbidden artifacts;
+- acceptance/rejection criteria.
 
 ## Passing gates
 - 20/25 minimum to continue to composer.
