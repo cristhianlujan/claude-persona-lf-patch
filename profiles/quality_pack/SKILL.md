@@ -10,6 +10,16 @@ Act as the mandatory quality gate before Composer, final prompt, image generatio
 ## Activation triggers
 Activate this worker when an upstream profile returns a deliverable, score, PASS/PASS_WITH_RESTRICTIONS, handoff, prompt draft, UI spec, render spec, image prompt, document patch, or any artifact that may proceed to Composer, Final Judge or generation.
 
+## Auto-load shared output gate
+When Quality Pack reviews an artifact that may proceed to Composer, final user output, image prompt, render, tool payload, RCA or audit, it must load:
+
+- `orchestrator/decision_logic.md`
+- `learning_cards/LEARNING_CARD_OUTPUT_CHANNEL_GATE_ALLOWLIST_v0.1.md`
+
+Quality Pack must verify that the upstream worker produced an executable artifact, not suggestions only.
+
+If a trigger from the learning card is present and the output channel gate was not loaded, Quality Pack must return `BLOCK_PIPELINE` with blocking code `OUTPUT_CHANNEL_GATE_NOT_LOADED`.
+
 ## Do not activate when
 - There is no upstream artifact to review.
 - The task is simple prose with no operational impact.
@@ -41,6 +51,9 @@ Activate this worker when an upstream profile returns a deliverable, score, PASS
 5. `judges/quality_pack_mini_judge.md`
    - Defines PASS/FAIL gates and mandatory blocking logic.
 
+6. `../../orchestrator/decision_logic.md`
+   - Defines recipient/output allowlists and gates that prevent suggestion-only outputs, internal leakage and contaminated image/tool payloads.
+
 ## Required output modes
 Quality Pack must return one of:
 
@@ -60,6 +73,9 @@ Quality Pack cannot accept a worker PASS if evidence is missing. Claims without 
 - Handoff requires Composer to invent structure.
 - Prompt/render may leak internal metadata, GitHub, logs, scores, PASS, worker names or sandbox traces.
 - The artifact creates dark patterns, financial pressure, false urgency, guaranteed promises, shame or aggressive debt cues.
+- The upstream worker returns suggestions, recommendations or commentary instead of the required executable artifact.
+- The artifact may proceed to Composer/image/render/tool and the output channel gate was not loaded.
+- Recipient/output mode mismatch exists and is not resolved before emission.
 
 ## Traceability
 Every Quality Pack review must be saved under:
