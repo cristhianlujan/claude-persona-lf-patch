@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Gamification System Spec",
+  "type": "object",
+  "required": ["worker", "output_type", "deliverable_created", "score", "handoff_to_next", "self_verdict", "traceability"],
+  "properties": {
+    "worker": {"const": "gamification_system_architect"},
+    "output_type": {"const": "GAMIFICATION_SYSTEM_SPEC"},
+    "deliverable_created": {
+      "type": "object",
+      "required": ["system_definition", "target_behavior", "user_state", "mission_map", "loop_design", "behavior_trigger", "progress_model", "reward_policy", "risk_controls", "ethical_controls", "metrics", "handoff_to_next", "blocked_mechanics"],
+      "properties": {
+        "system_definition": {"type": "object"},
+        "target_behavior": {"type": "object"},
+        "user_state": {"type": "object"},
+        "mission_map": {"type": "array"},
+        "loop_design": {"type": "object"},
+        "behavior_trigger": {"type": "object"},
+        "progress_model": {"type": "object"},
+        "reward_policy": {"type": "object"},
+        "risk_controls": {"type": "array"},
+        "ethical_controls": {"type": "array"},
+        "metrics": {"type": "array"},
+        "handoff_to_next": {"type": "object"},
+        "blocked_mechanics": {"type": "array"}
+      }
+    },
+    "score": {"type": "object"},
+    "handoff_to_next": {"type": "object"},
+    "self_verdict": {"enum": ["PASS", "BLOCKED_ETHICAL_RISK", "NEEDS_INPUT"]},
+    "traceability": {"type": "object"}
+  },
+  "additionalProperties": false
+}
