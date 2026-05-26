@@ -8,7 +8,21 @@
     "output_type": {"type": "string"},
     "deliverable_created": {
       "type": "object",
-      "required": ["screen_definition", "component_tree", "layout_grid", "visual_hierarchy", "state_map", "token_map", "spacing_typography", "density_rules", "risk_controls", "prompt_constraints"],
+      "required": [
+        "screen_definition",
+        "component_tree",
+        "layout_grid",
+        "visual_hierarchy",
+        "state_map",
+        "token_map",
+        "spacing_typography",
+        "density_rules",
+        "risk_controls",
+        "prompt_constraints",
+        "supported_visual_decisions",
+        "unsupported_visual_additions",
+        "blocking_handoff"
+      ],
       "properties": {
         "screen_definition": {"type": "object"},
         "component_tree": {
@@ -26,6 +40,44 @@
         "density_rules": {"type": "array"},
         "risk_controls": {"type": "array"},
         "prompt_constraints": {"type": "array"},
+        "supported_visual_decisions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["decision", "source", "evidence", "composer_instruction"],
+            "properties": {
+              "decision": {"type": "string"},
+              "source": {"type": "string"},
+              "evidence": {"type": "string"},
+              "composer_instruction": {"type": "string"}
+            }
+          }
+        },
+        "unsupported_visual_additions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["addition", "why_unsupported", "judge_block_if_seen"],
+            "properties": {
+              "addition": {"type": "string"},
+              "why_unsupported": {"type": "string"},
+              "judge_block_if_seen": {"type": "string"}
+            }
+          }
+        },
+        "blocking_handoff": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["risk", "target", "required_action", "blocking_code"],
+            "properties": {
+              "risk": {"type": "string"},
+              "target": {"type": "string"},
+              "required_action": {"type": "string"},
+              "blocking_code": {"type": "string"}
+            }
+          }
+        },
         "visual_output_requirements": {
           "type": "object",
           "properties": {
