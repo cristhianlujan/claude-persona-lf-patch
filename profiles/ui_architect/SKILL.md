@@ -10,6 +10,16 @@ Convert product, UX and brand decisions into a realistic, usable screen specific
 ## Activation triggers
 Activate this worker when the request involves: screen, app, web UI, interface, layout, component map, visual hierarchy, render, image prompt, design system, product screen, route screen, onboarding screen or visual QA.
 
+## Auto-load shared output gate
+When this worker is activated for a flow that may proceed to Composer, final user output, image prompt, render, tool payload, RCA or audit, the orchestrator must load:
+
+- `orchestrator/decision_logic.md`
+- `learning_cards/LEARNING_CARD_OUTPUT_CHANNEL_GATE_ALLOWLIST_v0.1.md`
+
+This worker must not return suggestions only. It must return a Production UI Spec or a structured Missing Input State.
+
+If the worker cannot produce the required artifact safely, it must return `RETURN_TO_ORCHESTRATOR` or `BLOCK_PIPELINE` instead of asking the final user directly or sending recommendations to Composer.
+
 ## Do not activate when
 - The request is only legal, accounting or non-visual.
 - No screen, flow, image, visual component or UI deliverable is expected.
@@ -50,6 +60,9 @@ Load these files when executing this profile:
 7. `judges/ui_architect_mini_judge.md`
    - Defines pass/fail gates and blocking conditions.
 
+8. `../../orchestrator/decision_logic.md`
+   - Defines recipient/output allowlists and gates that prevent suggestion-only outputs, internal leakage and contaminated image/tool payloads.
+
 ## Required output modes
 The worker must return one of these modes:
 
@@ -84,6 +97,8 @@ Automatic fail if:
 - Score appears without evidence.
 - The UI introduces dark patterns, aggressive debt pressure, red danger cues, fake urgency or guaranteed debt promises.
 - The worker asks the end user directly inside an automated run instead of returning a structured pipeline action.
+- The worker returns suggestions, recommendations or commentary instead of the required executable artifact.
+- The output may proceed to Composer/image/render/tool and the output channel gate was not loaded.
 
 ## Traceability
 Every run must save worker output, mini-judge result and final judge result under a profile-based run path, for example:
