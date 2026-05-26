@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Gamification Mission Loop",
+  "type": "object",
+  "required": ["mission_id", "mission_name", "user_goal", "target_behavior", "difficulty_level", "required_action", "completion_signal", "feedback_message", "reward_type", "reward_limit", "ethical_risk", "blocked_variants", "traceability"],
+  "properties": {
+    "mission_id": {"type": "string"},
+    "mission_name": {"type": "string"},
+    "user_goal": {"type": "string"},
+    "target_behavior": {"type": "string"},
+    "difficulty_level": {"enum": ["LOW", "MEDIUM", "HIGH"]},
+    "required_action": {"type": "string"},
+    "completion_signal": {"type": "string"},
+    "feedback_message": {"type": "string"},
+    "reward_type": {"type": "string"},
+    "reward_limit": {"type": "string"},
+    "ethical_risk": {"type": "string"},
+    "blocked_variants": {"type": "array", "items": {"type": "string"}},
+    "traceability": {"type": "object"}
+  },
+  "additionalProperties": false
+}
