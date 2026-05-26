@@ -1,0 +1,18 @@
+{
+  "example_id": "LF_PATTERN_CONTROL_EXAMPLES",
+  "status": "MINIMUM_CONTROL_EXAMPLES",
+  "examples": [
+    {"case_id": "CONTROL_LANGUAGE_SAFETY", "control": "supportive neutral copy", "expected_verdict": "REPAIR_OR_BLOCK"},
+    {"case_id": "CONTROL_SCARCITY_SAFETY", "control": "remove artificial scarcity", "expected_verdict": "BLOCK"},
+    {"case_id": "CONTROL_PRIVATE_PROGRESS", "control": "use private progress only", "expected_verdict": "BLOCK"},
+    {"case_id": "CONTROL_RECOVERY_PATH", "control": "add recovery path", "expected_verdict": "REPAIR"}
+  ],
+  "traceability": {
+    "internal_lf": "LF clarity and wellbeing controls",
+    "own_repo": "Quality Pack gates",
+    "external_comparable": "game-like systems",
+    "critical_risk": "pattern control",
+    "adapted_into": "examples/anti_dark_pattern_examples.json",
+    "reason_for_location": "control examples make blocking criteria concrete"
+  }
+}
