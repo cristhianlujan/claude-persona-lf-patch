@@ -1,18 +1,55 @@
 {
-  "example_id": "LF_PATTERN_CONTROL_EXAMPLES",
-  "status": "MINIMUM_CONTROL_EXAMPLES",
+  "example_id": "ANTI_DARK_PATTERN_EXAMPLES",
+  "status": "GENERIC_REUSABLE_EXAMPLES",
+  "purpose": "Concrete examples for LF gamification safety controls. These examples train repair or block decisions without adding a new layer.",
   "examples": [
-    {"case_id": "CONTROL_LANGUAGE_SAFETY", "control": "supportive neutral copy", "expected_verdict": "REPAIR_OR_BLOCK"},
-    {"case_id": "CONTROL_SCARCITY_SAFETY", "control": "remove artificial scarcity", "expected_verdict": "BLOCK"},
-    {"case_id": "CONTROL_PRIVATE_PROGRESS", "control": "use private progress only", "expected_verdict": "BLOCK"},
-    {"case_id": "CONTROL_RECOVERY_PATH", "control": "add recovery path", "expected_verdict": "REPAIR"}
+    {
+      "case_id": "ANTI_UNSAFE_LANGUAGE",
+      "risk_pattern": "copy frames the user negatively or reduces emotional safety",
+      "blocked_variant": "message rewards only users who act under emotional pressure",
+      "safe_repair": "replace with supportive neutral copy and clear optional next step",
+      "expected_verdict": "REPAIR_OR_BLOCK",
+      "destination_gate": "Copy or Quality Pack"
+    },
+    {
+      "case_id": "ANTI_FALSE_SCARCITY",
+      "risk_pattern": "mission uses artificial scarcity or unsupported deadline",
+      "blocked_variant": "reward expires for reasons not grounded in the product reality",
+      "safe_repair": "remove artificial scarcity and explain the real condition if one exists",
+      "expected_verdict": "BLOCK_PIPELINE",
+      "destination_gate": "Orchestrator"
+    },
+    {
+      "case_id": "ANTI_PUBLIC_FINANCIAL_RANKING",
+      "risk_pattern": "progress compares users by sensitive financial status",
+      "blocked_variant": "leaderboard or badge exposes status-based comparison",
+      "safe_repair": "replace with private progress, personal milestones and educational completion signals",
+      "expected_verdict": "BLOCK_PIPELINE",
+      "destination_gate": "Quality Pack"
+    },
+    {
+      "case_id": "ANTI_PUNITIVE_STREAK_LOSS",
+      "risk_pattern": "streak loss removes dignity or creates avoidable stress",
+      "blocked_variant": "missed day causes loss framing without recovery",
+      "safe_repair": "add recovery path, grace state and supportive restart copy",
+      "expected_verdict": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+      "destination_gate": "Gamification System Architect"
+    },
+    {
+      "case_id": "ANTI_UNCLEAR_REWARD_VALUE",
+      "risk_pattern": "reward can be confused with financial value or guaranteed benefit",
+      "blocked_variant": "points look like money, savings or eligibility without explanation",
+      "safe_repair": "mark reward as symbolic or educational and state what it does not mean",
+      "expected_verdict": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+      "destination_gate": "Legal/Data or Quality Pack"
+    }
   ],
   "traceability": {
-    "internal_lf": "LF clarity and wellbeing controls",
-    "own_repo": "Quality Pack gates",
-    "external_comparable": "game-like systems",
-    "critical_risk": "pattern control",
+    "internal_lf": "LF clarity, wellbeing, no-pressure and traceability controls",
+    "own_repo": "Quality Pack gates and UI Architect example pattern",
+    "external_comparable": "game-like scoring and mission systems",
+    "critical_risk": "dark-pattern and financial-context safety controls",
     "adapted_into": "examples/anti_dark_pattern_examples.json",
-    "reason_for_location": "control examples make blocking criteria concrete"
+    "reason_for_location": "anti-pattern examples make blocking and repair criteria concrete"
   }
 }
