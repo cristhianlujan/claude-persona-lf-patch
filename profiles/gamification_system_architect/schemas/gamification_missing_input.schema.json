@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Gamification Missing Input State",
+  "type": "object",
+  "required": ["worker", "output_type", "pipeline_action", "missing_fields", "why_needed", "safe_assumptions", "blocked_assumptions", "recommended_next_gate", "self_verdict", "traceability"],
+  "properties": {
+    "worker": {"const": "gamification_system_architect"},
+    "output_type": {"const": "MISSING_INPUT_STATE"},
+    "pipeline_action": {"enum": ["CONTINUE_WITH_LOW_RISK_ASSUMPTIONS", "RETURN_TO_ORCHESTRATOR", "BLOCK_PIPELINE"]},
+    "missing_fields": {"type": "array", "items": {"type": "string"}},
+    "why_needed": {"type": "array", "items": {"type": "string"}},
+    "safe_assumptions": {"type": "array", "items": {"type": "string"}},
+    "blocked_assumptions": {"type": "array", "items": {"type": "string"}},
+    "recommended_next_gate": {"type": "string"},
+    "self_verdict": {"enum": ["NEEDS_INPUT", "BLOCKED"]},
+    "traceability": {"type": "object"}
+  },
+  "additionalProperties": false
+}
