@@ -1,0 +1,39 @@
+version: v0.1
+operation: CREACION_PERFIL_LF
+steps:
+  - order: 12
+    id: canonical_design
+    evidence: design_complete
+  - order: 13
+    id: completeness
+    evidence: output_completeness
+  - order: 14
+    id: compatibility
+    evidence: compatibility_checked
+  - order: 15
+    id: rubric
+    evidence: rubric_result
+  - order: 16
+    id: sandbox
+    evidence: sandbox_result
+  - order: 17
+    id: manifest
+    evidence: manifest_present
+  - order: 18
+    id: rule_trace
+    evidence: trace_present
+  - order: 19
+    id: github_write
+    evidence: file_commit_sha
+  - order: 20
+    id: github_readback
+    evidence: file_readback_sha
+  - order: 21
+    id: evidence_log
+    evidence: lf_eventos_if_available
+  - order: 22
+    id: contract_judge
+    evidence: judge_pass
+  - order: 23
+    id: close
+    evidence: no_blocking_observations
