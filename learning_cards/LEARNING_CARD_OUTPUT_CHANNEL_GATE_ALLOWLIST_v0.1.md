@@ -1,7 +1,7 @@
 # LEARNING_CARD_OUTPUT_CHANNEL_GATE_ALLOWLIST_v0.1
 
 Status: CANDIDATE_READ_ONLY / SANDBOX  
-Applies to: multi-worker flows, Composer, Quality Pack, Output Gate, image prompts, tool payloads, final user outputs and RCA/audit flows.
+Applies to: multi-worker flows, Composer, Quality Pack, Output Gate, image prompts, tool payloads, final user outputs, visual choices and RCA/audit flows.
 
 ## Problem observed
 
@@ -13,6 +13,8 @@ Observed failure patterns:
 - The image generator receives QA, audit notes or worker traces.
 - Composer receives suggestions instead of executable artifacts.
 - Final user receives internal traceability that was not requested.
+- The user asks for a decision and receives a concept or advice instead of an executable specification.
+- The user asks to explore visual direction and receives a long internal report instead of selectable options.
 - The system attempts to solve the issue by creating folders/contracts per output type, which creates unmanageable complexity.
 
 ## Learning
@@ -21,19 +23,25 @@ The correct solution is not to create one folder, contract or profile for every 
 
 The correct solution is:
 
-**central middleware-style decision logic + strict recipient allowlists**
+**central middleware-style decision logic + strict recipient allowlists + intent clarification before workers**
 
 Use `orchestrator/decision_logic.md` as the central Output Channel Gate.
 
 ## Core principle
 
-The level of detail depends on the recipient:
+The level of detail depends on the recipient and the interaction mode:
 
 - Internal agent: structured traceability is allowed.
 - Final user: only useful visible output is allowed.
 - Tool/API: only executable payload is allowed.
 - Image generator: only clean image prompt is allowed.
 - RCA/Audit: timeline, evidence, verdicts and failure points are allowed.
+- Visual exploration: show compact selectable options, not internal analysis.
+- Concrete decision: emit one executable decision, not alternatives.
+
+The user does not need to know internal terms such as artifact, output_mode, DECISION_SPEC or allowlist.
+
+The Orchestrator must translate user language into the correct internal mode.
 
 ## Auto-activation trigger
 
@@ -47,6 +55,8 @@ This learning card must be automatically consulted by Router/Orchestrator before
 - the task requests or produces RCA, audit, timeline, evidence or traceability;
 - the task has a mismatch risk between internal output and final visible output;
 - the user requests one final output but the workflow generates multiple internal artifacts;
+- the user asks for a visual exploration, visual alternatives, options or direction;
+- the user asks for one decision, one definition or one concrete output;
 - a worker returns suggestions, recommendations or commentary instead of an executable artifact.
 
 ```text
@@ -63,6 +73,9 @@ Before creating new rules, folders, contracts, profiles or schemas for an output
 
 Classify the failure under one of:
 
+- ambiguous intent before workers;
+- visual exploration requested;
+- decision requested but alternatives emitted;
 - recipient mode mismatch;
 - output mode mismatch;
 - worker output incomplete;
@@ -76,7 +89,116 @@ Classify the failure under one of:
 
 Only propose a new rule if the failure cannot fit any existing category.
 
-## Base pseudocode
+## Gate 0 base pseudocode
+
+```text
+IF user_request is ambiguous
+AND different interpretations would produce materially different outputs
+AND the user did not provide enough fields to decide safely
+THEN ASK_ONE_QUESTION
+
+IF user_request asks to explore, compare, review options, find direction, choose visual direction, or evaluate alternatives
+THEN PRESENT_VISUAL_OPTIONS
+
+IF user_request asks for one decision, one definition, one final prompt, one output, or says no options/no suggestions
+AND context is sufficient
+THEN DECIDE_AND_EXECUTE
+
+IF user_request already specifies required fields, output format, exact scope or mandatory output sections
+THEN DECIDE_AND_EXECUTE
+```
+
+## User-facing visual choice pattern
+
+Use this when the mode is `PRESENT_VISUAL_OPTIONS`.
+
+```text
+Selecciona una opción:
+
+( ) A · <option_name>
+    <one-line description>
+    Recomendado para: <best_use>
+    Riesgo: <main_risk>
+
+( ) B · <option_name>
+    <one-line description>
+    Recomendado para: <best_use>
+    Riesgo: <main_risk>
+
+( ) C · <option_name>
+    <one-line description>
+    Recomendado para: <best_use>
+    Riesgo: <main_risk>
+
+( ) Otro:
+    [Escribe tu idea o referencia]
+
+Prioridad principal:
+[ ] Más premium
+[ ] Más cálido
+[ ] Más financiero
+[ ] Más gamificado
+[ ] Más limpio
+[ ] Otro: [escribir]
+
+Acción:
+[Confirmar opción]
+[Prefiero que tú decidas]
+```
+
+## Visual choice rules
+
+```text
+IF mode == PRESENT_VISUAL_OPTIONS
+THEN present 3 options maximum by default.
+
+IF the user asks for more breadth
+THEN present 4 options maximum.
+
+Each option must include:
+- option_name
+- visual_base
+- structure
+- visual_weight
+- best_use
+- main_risk
+
+After presenting options, ask the user to choose one, write Otro, or select “Prefiero que tú decidas”.
+
+Do not implement multiple directions.
+Once the user chooses, implement only the selected direction.
+
+IF the user selects “Otro”
+THEN translate the user's natural language into the required internal artifact without asking for technical terms.
+
+IF the user selects “Prefiero que tú decidas”
+THEN choose the strongest option and emit a concrete executable decision.
+```
+
+## Decision execution rule
+
+When the user asks for a concrete decision and context is sufficient, do not present alternatives.
+
+For UI decisions, return concrete selected values:
+
+- selected visual type
+- base color or surface
+- size or coverage
+- density
+- depth
+- visual weight
+- position behavior
+- relationship to main element
+- implementation format
+- hard exclusions
+- final prompt if requested
+
+```text
+IF output contains only concept name, rationale or recommendation
+THEN RETURN_TO_WORKER_FOR_SELF_REPAIR
+```
+
+## Base output-channel pseudocode
 
 ```text
 IF worker_output == suggestion_only
@@ -121,6 +243,9 @@ Allowed:
 - readable_content
 - next_action
 - caveats_visible_to_user
+- selection_options
+- selected_decision
+- short_prompt
 
 Hide:
 
@@ -210,7 +335,9 @@ PASS if:
 - final user does not receive internal fields;
 - tool receives clean executable payload;
 - image generator receives only clean prompt;
-- audit receives enough traceability.
+- audit receives enough traceability;
+- visual exploration is shown as compact selectable options;
+- concrete decision requests produce one executable decision.
 
 ## FAIL criteria
 
@@ -221,6 +348,8 @@ FAIL if:
 - final prompt includes QA/RCA;
 - image generator receives audit content;
 - tool payload includes explanation;
+- visual exploration is shown as long internal report;
+- concrete decision request receives multiple options or a vague concept;
 - a new folder is proposed per output destination;
 - a case-specific rule is added when the central gate already covers the case.
 
