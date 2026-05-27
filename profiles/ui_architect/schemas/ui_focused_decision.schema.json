@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UI Architect Focused Decision Spec",
+  "type": "object",
+  "required": [
+    "decision_subject",
+    "selected_visual_type",
+    "base_color_or_surface",
+    "size_or_coverage",
+    "density_limits",
+    "depth_style",
+    "visual_weight",
+    "relationship_to_main_element",
+    "implementation_format",
+    "hard_exclusions",
+    "status"
+  ],
+  "properties": {
+    "decision_subject": {
+      "type": "string",
+      "minLength": 3,
+      "description": "The exact UI attribute being decided."
+    },
+    "selected_visual_type": {
+      "type": "string",
+      "minLength": 3,
+      "description": "Exact selected UI pattern or treatment. Must not be only an adjective or concept name."
+    },
+    "base_color_or_surface": {
+      "type": "string",
+      "minLength": 3,
+      "description": "Exact token, hex approximation, CSS value or named surface. Must not be only an abstract mood."
+    },
+    "size_or_coverage": {
+      "type": "string",
+      "minLength": 3,
+      "description": "Where and how much of the component/screen the decision covers."
+    },
+    "density_limits": {
+      "type": "string",
+      "minLength": 3,
+      "description": "Concrete quantity or density limits, e.g. number of layers, lines, dots, cards or elements."
+    },
+    "depth_style": {
+      "type": "string",
+      "minLength": 3,
+      "description": "Concrete depth/shadow/elevation rule."
+    },
+    "visual_weight": {
+      "type": "string",
+      "minLength": 3,
+      "description": "Concrete visual prominence, percentage, opacity, hierarchy or relative weight."
+    },
+    "position_behavior": {
+      "type": "string",
+      "minLength": 3,
+      "description": "Placement and distribution behavior when relevant."
+    },
+    "relationship_to_main_element": {
+      "type": "string",
+      "minLength": 3,
+      "description": "How this decision behaves relative to the main UI element or action."
+    },
+    "implementation_format": {
+      "type": "string",
+      "minLength": 3,
+      "description": "Implementation target such as SVG/CSS, component token, vector asset, layout rule or prompt instruction."
+    },
+    "hard_exclusions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 2
+      },
+      "description": "Explicit prohibited variants or artifacts."
+    },
+    "short_generator_prompt": {
+      "type": "string",
+      "minLength": 3,
+      "description": "Clean short prompt for image/render generation when applicable."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "CANDIDATE_READ_ONLY",
+        "SANDBOX_READY",
+        "PASS_WITH_ASSUMPTIONS",
+        "RETURN_TO_ORCHESTRATOR",
+        "BLOCK_PIPELINE"
+      ]
+    }
+  },
+  "additionalProperties": false
+}
