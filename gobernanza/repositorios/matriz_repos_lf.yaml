@@ -1,0 +1,22 @@
+version: v0.1
+status: CANDIDATO_READ_ONLY
+project: 00_GOBERNANZA_PORTAFOLIO_OPERATIVO_LF
+rule: CTRL_NO_ASSUME_WHEN_READ_ACCESS_EXISTS
+repositories:
+  - id: perfiles_lf
+    repo: cristhianlujan/claude-persona-lf-patch
+    use: perfiles_lf
+    allowed_paths:
+      - /perfiles/
+      - /perfiles/_plantilla/
+      - /gobernanza/contratos/
+      - /gobernanza/procedimientos/
+      - /gobernanza/repositorios/
+      - /gobernanza/judges/
+    status: AUTHORIZED
+  - id: marketplace_ssot
+    repo: cristhianlujan/marketplace-ssot
+    use: marketplace_ssot
+    allowed_paths: []
+    status: FROZEN_FOR_PERFILES_LF
+    note: no crear perfiles LF aqui sin decision explicita
