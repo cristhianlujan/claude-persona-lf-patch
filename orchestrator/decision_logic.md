@@ -11,7 +11,10 @@ Output behavior is controlled by this central logic. Do not create separate fold
 
 ## Core Principle
 
-The system enforces a 2-stage gate pattern:
+The system enforces a 3-stage gate pattern:
+
+0. Intent Clarification Gate — before workers:
+   Translate the user's natural language into the correct internal mode. Ask one plain-language question only when ambiguity would create materially different outputs.
 
 1. Validating Gate — before Composer:
    Reject incomplete, suggestive or non-executable worker outputs before they enter Composer.
@@ -22,6 +25,8 @@ The system enforces a 2-stage gate pattern:
 Use allowlists, not blacklists.
 
 Only fields explicitly allowed for the recipient may pass.
+
+The user does not need to know internal terms such as artifact, output_mode, DECISION_SPEC or allowlist. The Orchestrator must translate user language into the correct internal mode.
 
 ## Recipient modes
 
@@ -46,6 +51,135 @@ Allowed output modes:
 - PATCH
 - SQL
 - DOCUMENT_DRAFT
+- VISUAL_OPTIONS
+- UI_DECISION_SPEC
+
+## Gate 0 — Intent Clarification and Visual Choice Gate
+
+Run before activating workers.
+
+The Orchestrator must decide whether to ask, present options or execute.
+
+```text
+IF user_request is ambiguous
+AND different interpretations would produce materially different outputs
+AND the user did not provide enough fields to decide safely
+THEN ASK_ONE_QUESTION
+
+IF user_request asks to explore, compare, review options, find direction, choose visual direction, or evaluate alternatives
+THEN PRESENT_VISUAL_OPTIONS
+
+IF user_request asks for one decision, one definition, one final prompt, one output, or says no options/no suggestions
+AND context is sufficient
+THEN DECIDE_AND_EXECUTE
+
+IF user_request already specifies required fields, output format, exact scope or mandatory output sections
+THEN DECIDE_AND_EXECUTE
+```
+
+### ASK_ONE_QUESTION
+
+Ask one short question in plain language. Do not use internal system terms.
+
+```text
+Good:
+“¿Quieres una especificación exacta lista para diseño/render, o una dirección visual general?”
+
+Bad:
+“¿Quieres DECISION_SPEC o FINAL_ANSWER?”
+```
+
+### PRESENT_VISUAL_OPTIONS
+
+When visual exploration is needed, present a compact selector, not a long report.
+
+User-facing pattern:
+
+```text
+Selecciona una opción:
+
+( ) A · <option_name>
+    <one-line description>
+    Recomendado para: <best_use>
+    Riesgo: <main_risk>
+
+( ) B · <option_name>
+    <one-line description>
+    Recomendado para: <best_use>
+    Riesgo: <main_risk>
+
+( ) C · <option_name>
+    <one-line description>
+    Recomendado para: <best_use>
+    Riesgo: <main_risk>
+
+( ) Otro:
+    [Escribe tu idea o referencia]
+
+Prioridad principal:
+[ ] Más premium
+[ ] Más cálido
+[ ] Más financiero
+[ ] Más gamificado
+[ ] Más limpio
+[ ] Otro: [escribir]
+
+Acción:
+[Confirmar opción]
+[Prefiero que tú decidas]
+```
+
+Rules:
+
+```text
+IF mode == PRESENT_VISUAL_OPTIONS
+THEN present 3 options maximum by default.
+
+IF the user asks for more breadth
+THEN present 4 options maximum.
+
+Each option must include:
+- option_name
+- visual_base
+- structure
+- visual_weight
+- best_use
+- main_risk
+
+After presenting options, ask the user to choose one, write Otro, or select “Prefiero que tú decidas”.
+
+Do not implement multiple directions.
+Once the user chooses, implement only the selected direction.
+
+IF the user selects “Otro”
+THEN translate the user's natural language into the required internal artifact without asking for technical terms.
+
+IF the user selects “Prefiero que tú decidas”
+THEN choose the strongest option and emit a concrete executable decision.
+```
+
+### DECIDE_AND_EXECUTE
+
+When the user asks for a decision and context is sufficient, do not present alternatives.
+
+For UI decisions, return concrete selected values:
+
+- selected visual type
+- base color or surface
+- size or coverage
+- density
+- depth
+- visual weight
+- position behavior
+- relationship to main element
+- implementation format
+- hard exclusions
+- final prompt if requested
+
+```text
+IF output contains only concept name, rationale or recommendation
+THEN RETURN_TO_WORKER_FOR_SELF_REPAIR
+```
 
 ## Gate 1 — Worker Output Gate
 
@@ -91,6 +225,8 @@ Allowed output modes:
 - FINAL_ANSWER
 - FINAL_PROMPT
 - DOCUMENT_DRAFT
+- VISUAL_OPTIONS
+- UI_DECISION_SPEC
 
 Allowlist fields:
 
@@ -99,12 +235,16 @@ Allowlist fields:
 - readable_content
 - next_action
 - caveats_visible_to_user
+- selection_options
+- selected_decision
+- short_prompt
 
 Action:
 
 - Format as human-readable Markdown or text.
 - Strip worker traces, scores, raw evidence maps, log evidence, schemas, internal routing notes and RCA-only data.
 - Do not expose internal agent material unless the user explicitly requested an audit/RCA.
+- For visual choices, display compact selector-style options, not internal worker notes.
 
 ### RECIPIENT: IMAGE_GENERATOR
 
@@ -203,7 +343,7 @@ Action:
 
 ```text
 IF recipient == FINAL_USER
-AND output_mode NOT IN [FINAL_ANSWER, FINAL_PROMPT, DOCUMENT_DRAFT]
+AND output_mode NOT IN [FINAL_ANSWER, FINAL_PROMPT, DOCUMENT_DRAFT, VISUAL_OPTIONS, UI_DECISION_SPEC]
 THEN RETURN_TO_COMPOSER_FOR_CLEANUP
 
 IF recipient == IMAGE_GENERATOR
@@ -258,6 +398,8 @@ Fail if:
 - image generator receives audit, RCA, worker notes, scores, QA or post-render checklist;
 - tool payload contains explanation instead of executable payload;
 - output relies on blacklist cleanup instead of recipient allowlist;
+- visual exploration is shown as a long internal report instead of compact selectable options;
+- a user asked for one decision and the system emits multiple alternatives;
 - a case-specific rule is added when an existing gate already covers the failure.
 
 ## Maintenance rule
@@ -274,6 +416,9 @@ Do not add case-specific rules to this file.
 
 If a new failure appears, classify it under one of these existing gates:
 
+- ambiguous intent before workers
+- visual exploration requested
+- decision requested but alternatives emitted
 - recipient mode mismatch
 - output mode mismatch
 - worker output incomplete
