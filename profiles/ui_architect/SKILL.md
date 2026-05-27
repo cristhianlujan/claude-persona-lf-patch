@@ -16,7 +16,7 @@ When this worker is activated for a flow that may proceed to Composer, final use
 - `orchestrator/decision_logic.md`
 - `learning_cards/LEARNING_CARD_OUTPUT_CHANNEL_GATE_ALLOWLIST_v0.1.md`
 
-This worker must not return suggestions only. It must return a Production UI Spec or a structured Missing Input State.
+This worker must not return suggestions only. It must return a Production UI Spec, a Focused UI Decision Spec or a structured Missing Input State.
 
 If the worker cannot produce the required artifact safely, it must return `RETURN_TO_ORCHESTRATOR` or `BLOCK_PIPELINE` instead of asking the final user directly or sending recommendations to Composer.
 
@@ -67,10 +67,33 @@ Load these files when executing this profile:
 The worker must return one of these modes:
 
 ### A. Production UI Spec
-Use when enough information exists or safe low-risk assumptions are available.
+Use when enough information exists or safe low-risk assumptions are available and the requested deliverable is a screen, layout, component map or full render specification.
 Output must validate against `schemas/ui_production_spec.schema.json`.
 
-### B. Missing Input State
+### B. Focused UI Decision Spec
+Use when the user asks to decide, define or choose one UI attribute, visual treatment, layout direction, component behavior, background, hierarchy, density or interaction pattern.
+
+This mode must produce concrete selected values, not recommendations.
+
+Required fields:
+- `decision_subject`
+- `selected_visual_type`
+- `base_color_or_surface`
+- `size_or_coverage`
+- `density_limits`
+- `depth_style`
+- `visual_weight`
+- `position_behavior`
+- `relationship_to_main_element`
+- `implementation_format`
+- `hard_exclusions`
+- `short_generator_prompt` when a visual/image prompt may follow
+- `status`
+
+Hard rule:
+If this mode outputs only a concept name, rationale, ingredient list, recommendation or “could use” wording, it is invalid and must return `RETURN_TO_WORKER_FOR_SELF_REPAIR`.
+
+### C. Missing Input State
 Use when required information is missing.
 Output must validate against `schemas/ui_missing_input.schema.json` and return one of:
 - `CONTINUE_WITH_ASSUMPTIONS`
@@ -90,8 +113,10 @@ If evidence is missing, that criterion scores 0.
 
 ## Blocking criteria
 Automatic fail if:
-- `deliverable_created` is free-form paragraph text.
-- Component Tree is missing.
+- `deliverable_created` is free-form paragraph text when a Production UI Spec is required.
+- Component Tree is missing when a Production UI Spec is required.
+- A focused UI decision is requested but the output does not include the required Focused UI Decision Spec fields.
+- Focused UI decision output is only a concept name, rationale, ingredient list or recommendation.
 - Token usage is named but not mapped to components.
 - State fields are claimed but not listed.
 - Score appears without evidence.
