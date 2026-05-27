@@ -1,0 +1,31 @@
+version: v0.1
+status: CANDIDATO_READ_ONLY
+operation: CREACION_PERFIL_LF
+required_before_write:
+  - read_router
+  - read_operational_source
+  - read_repo_matrix
+  - read_contract
+  - validate_repo
+  - validate_path
+  - validate_file_name
+allowed:
+  repository: cristhianlujan/claude-persona-lf-patch
+  path_prefix: /perfiles/
+  document_status: CANDIDATO
+  operational_status: READ_ONLY
+  runtime: NO_HABILITADO
+  automatic_impact: BLOQUEADO
+blocked:
+  - write_without_contract
+  - write_without_readback
+  - write_to_marketplace_ssot_for_profiles
+  - enable_runtime
+  - mark_vigente
+  - mark_aprobado
+required_after_write:
+  - github_readback
+  - commit_sha
+  - blob_sha
+  - contract_judge
+  - evidence_log_if_available
