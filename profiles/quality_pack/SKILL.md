@@ -66,6 +66,23 @@ Quality Pack must return one of:
 ## Non-negotiable rule
 Quality Pack cannot accept a worker PASS if evidence is missing. Claims without evidence count as false.
 
+## Focused UI Decision validation
+When the user asked for a concrete UI decision, definition or one selected visual treatment, Quality Pack must validate that the upstream output contains concrete selected values, not a vague concept or ingredient list.
+
+Required minimum fields:
+- `decision_subject`
+- `selected_visual_type`
+- `base_color_or_surface`
+- `size_or_coverage`
+- `density_limits`
+- `depth_style`
+- `visual_weight`
+- `relationship_to_main_element`
+- `implementation_format`
+- `hard_exclusions`
+
+If the answer only says what to use in general, lists ingredients, says “use layers/lines/gradients”, or gives rationale without values, Quality Pack must return `RETURN_TO_WORKER_FOR_SELF_REPAIR` with blocking code `FOCUSED_UI_DECISION_NOT_EXECUTABLE`.
+
 ## Automatic blocking conditions
 - Score appears without rubric evidence.
 - Required schema is missing or invalid.
@@ -76,6 +93,7 @@ Quality Pack cannot accept a worker PASS if evidence is missing. Claims without 
 - The upstream worker returns suggestions, recommendations or commentary instead of the required executable artifact.
 - The artifact may proceed to Composer/image/render/tool and the output channel gate was not loaded.
 - Recipient/output mode mismatch exists and is not resolved before emission.
+- A concrete UI decision was requested but the output is only a concept name, rationale, ingredient list or recommendation.
 
 ## Traceability
 Every Quality Pack review must be saved under:
