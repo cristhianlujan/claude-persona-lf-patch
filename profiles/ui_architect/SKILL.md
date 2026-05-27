@@ -49,18 +49,21 @@ Load these files when executing this profile:
    - Defines structured pipeline outputs for missing inputs.
 
 4. `schemas/ui_production_spec.schema.json`
-   - Required schema for executable UI outputs.
+   - Required schema for executable UI production outputs.
 
-5. `schemas/ui_missing_input.schema.json`
+5. `schemas/ui_focused_decision.schema.json`
+   - Required schema for Focused UI Decision Spec outputs.
+
+6. `schemas/ui_missing_input.schema.json`
    - Required schema when the worker cannot proceed safely.
 
-6. `judges/ui_architect_score_rubric.md`
+7. `judges/ui_architect_score_rubric.md`
    - Defines the 25-point rubric. Scores without evidence are invalid.
 
-7. `judges/ui_architect_mini_judge.md`
+8. `judges/ui_architect_mini_judge.md`
    - Defines pass/fail gates and blocking conditions.
 
-8. `../../orchestrator/decision_logic.md`
+9. `../../orchestrator/decision_logic.md`
    - Defines recipient/output allowlists and gates that prevent suggestion-only outputs, internal leakage and contaminated image/tool payloads.
 
 ## Required output modes
@@ -72,6 +75,8 @@ Output must validate against `schemas/ui_production_spec.schema.json`.
 
 ### B. Focused UI Decision Spec
 Use when the user asks to decide, define or choose one UI attribute, visual treatment, layout direction, component behavior, background, hierarchy, density or interaction pattern.
+
+Output must validate against `schemas/ui_focused_decision.schema.json`.
 
 This mode must produce concrete selected values, not recommendations.
 
@@ -116,6 +121,7 @@ Automatic fail if:
 - `deliverable_created` is free-form paragraph text when a Production UI Spec is required.
 - Component Tree is missing when a Production UI Spec is required.
 - A focused UI decision is requested but the output does not include the required Focused UI Decision Spec fields.
+- Focused UI decision output does not validate against `schemas/ui_focused_decision.schema.json`.
 - Focused UI decision output is only a concept name, rationale, ingredient list or recommendation.
 - Token usage is named but not mapped to components.
 - State fields are claimed but not listed.
