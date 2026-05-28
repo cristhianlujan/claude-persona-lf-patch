@@ -24,7 +24,19 @@
         "evidence_used": {"type": "array"},
         "open_assumptions": {"type": "array"},
         "success_metric_or_proxy": {"type": "object"},
-        "handoff_to_next": {"type": "object"}
+        "handoff_to_next": {"type": "object"},
+        "decision_quality_requirements": {
+          "type": "object",
+          "properties": {
+            "decision_specificity": {"type": "array"},
+            "scope_boundaries": {"type": "array"},
+            "acceptance_testability": {"type": "array"},
+            "handoff_readiness": {"type": "array"},
+            "risk_and_exclusion_clarity": {"type": "array"},
+            "no_vague_language": {"type": "array"}
+          },
+          "additionalProperties": false
+        }
       }
     },
     "score": {"type": "object"},
