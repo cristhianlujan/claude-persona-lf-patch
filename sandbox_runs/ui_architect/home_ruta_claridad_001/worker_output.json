@@ -1,0 +1,131 @@
+{
+  "worker": "ui_architect",
+  "case_id": "home_ruta_claridad_001",
+  "status": "SANDBOX_READ_ONLY_NO_VALIDATED",
+  "output_type": "UI_SECTION_SPEC",
+  "deliverable_created": {
+    "section_name": "Tu Ruta de Claridad",
+    "product_role": "Orientation bridge from Home to /simulador",
+    "viewport": "desktop_web_16_9_light_mode",
+    "visual_intent": "Premium, warm, calm, adult fintech guidance; clear enough to orient the user without looking like a dashboard, checkout, flat timeline or data form.",
+    "layout_structure": {
+      "container": "Wide centered section with warm neutral background, generous whitespace and a bounded content area.",
+      "header_zone": "Left-aligned or centered title/subtitle block explaining that the path helps the user understand the next steps before checking an offer.",
+      "main_visual_zone": "Progressive path/map composition with 3 to 4 milestone cards connected by a soft curved path, not a flat horizontal timeline.",
+      "cta_zone": "Single primary CTA placed after the path narrative, visually dominant but not aggressive.",
+      "trust_note_zone": "Small low-emphasis note stating that any offer or alternative is referential and subject to validation."
+    },
+    "visual_hierarchy": [
+      "Title first: Tu Ruta de Claridad.",
+      "Subtitle second: explains orientation without selling certainty.",
+      "Path/map third: shows progression through clarity steps.",
+      "CTA fourth: Ver si tengo una oferta.",
+      "Trust/legal note fifth: referential and subject to validation."
+    ],
+    "components": [
+      {
+        "name": "Section heading",
+        "purpose": "Anchor the section and avoid ambiguity.",
+        "requirements": ["Clear title", "short subtitle", "no urgency wording"]
+      },
+      {
+        "name": "Progressive path/map",
+        "purpose": "Represent guidance as a journey, not a process checklist.",
+        "requirements": ["3 to 4 milestones", "soft curved connector", "calm iconography", "no step numbers that feel like checkout"]
+      },
+      {
+        "name": "Milestone cards",
+        "purpose": "Explain the path without asking data.",
+        "requirements": ["compact labels", "short supportive text", "no input fields", "no financial amounts"]
+      },
+      {
+        "name": "Primary CTA",
+        "purpose": "Move user toward /simulador.",
+        "requirements": ["single primary CTA", "label: Ver si tengo una oferta", "green protagonist", "no secondary competing CTA"]
+      },
+      {
+        "name": "Referential note",
+        "purpose": "Preserve product/legal boundary.",
+        "requirements": ["low visual weight", "close to CTA", "states subject to validation", "no dense legal block"]
+      }
+    ],
+    "recommended_milestones": [
+      {
+        "label": "Ordena tu punto de partida",
+        "intent": "User understands this starts with clarity, not commitment."
+      },
+      {
+        "label": "Revisa alternativas referenciales",
+        "intent": "User understands alternatives are exploratory, not guaranteed."
+      },
+      {
+        "label": "Avanza al simulador",
+        "intent": "User understands the next action is /simulador."
+      },
+      {
+        "label": "Decide con más claridad",
+        "intent": "User understands the outcome is better orientation, not promised approval."
+      }
+    ],
+    "style_requirements": {
+      "background": "warm neutral, not clinical white",
+      "title_color": "navy or deep financial blue",
+      "cta_color": "trustworthy green, not neon",
+      "accent_color": "minimal warm gold only for progress or goal detail",
+      "cards": "soft radius, light shadow, premium but simple",
+      "density": "breathable, no crowded dashboard",
+      "tone": "human, calm, guided, financially responsible"
+    },
+    "negative_constraints": [
+      "Do not show a simulator form inside the section.",
+      "Do not request DNI, income, phone, debt amount or sensitive data.",
+      "Do not show a guaranteed offer, approval, savings or amount.",
+      "Do not create dashboard cards, analytics charts or account widgets.",
+      "Do not use a flat timeline, checkout steps or childish gamification.",
+      "Do not add urgency, countdowns, fear, pressure or success promises.",
+      "Do not mark as Golden Screen, production or validated."
+    ],
+    "states": {
+      "default": "All milestones visible; CTA enabled; referential note present.",
+      "hover": "CTA and milestone cards may lift subtly; no new information or hidden promise appears.",
+      "focus": "CTA must have accessible focus state.",
+      "reduced_motion": "Path connector remains static; no animation required."
+    },
+    "render_prompt_handoff": {
+      "allowed": true,
+      "instruction": "Use this UI spec as the source for a desktop 16:9 light-mode mockup prompt. The prompt must show only this section or a focused Home slice where this section is protagonist.",
+      "must_preserve": ["one primary CTA", "progressive path/map", "referential note", "warm premium fintech tone", "no sensitive data", "no guaranteed offer"],
+      "must_not_include": ["full Home", "mobile", "dark mode", "dashboard", "simulator form", "flat timeline", "checkout", "production/Golden labels"]
+    },
+    "acceptance_criteria": [
+      "The section is immediately recognizable as an orientation path toward /simulador.",
+      "The CTA Ver si tengo una oferta is the only dominant action.",
+      "No data fields, amounts, guarantees, dashboard metrics or simulator widgets appear.",
+      "The path feels premium and adult, not playful or infantilized.",
+      "The visual hierarchy remains clear at desktop 16:9.",
+      "A referential/subject-to-validation note is visible but not visually dominant."
+    ],
+    "handoff_to_next": {
+      "primary": "copy",
+      "secondary": ["quality_pack", "image_prompt_or_html_render"],
+      "copy_needs": ["short milestone labels", "subtitle", "referential note", "CTA microcopy if needed"],
+      "quality_pack_needs": ["check no scope drift", "check no visual overload", "check no unsafe claim", "check CTA hierarchy"]
+    },
+    "traceability": {
+      "input_product_run": "sandbox_runs/product_director_lf/home_ruta_claridad_001/worker_output.json",
+      "sources": ["ACT-0048", "ACT-0049", "ACT-0050"],
+      "runtime": "NO_HABILITADO",
+      "validated": "NO_MARCADO",
+      "production": "NO_TOCADA"
+    }
+  },
+  "score": {
+    "product_alignment": 5,
+    "visual_structure_clarity": 5,
+    "constraint_preservation": 5,
+    "handoff_readiness": 5,
+    "cognitive_load_control": 5,
+    "total": 25
+  },
+  "self_verdict": "PASS_TO_QUALITY_PACK"
+}
