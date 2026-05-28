@@ -1,0 +1,34 @@
+{
+  "fixture_id": "BLOCKED_UNCONTROLLED_SCOPE",
+  "status": "GENERIC_REUSABLE_FIXTURE",
+  "purpose": "Validate that Product Director LF blocks a request that tries to turn a focused product decision into an uncontrolled multi-surface expansion.",
+  "input": {
+    "product_objective": "Define one orientation block for a product flow.",
+    "target_user_state": "User is early in the journey and needs one clear next step.",
+    "problem_to_solve": "The request keeps expanding into dashboard, profile center, marketing page, notifications and analytics.",
+    "decision_required": "Decide if all requested surfaces should be included now.",
+    "constraints": ["MVP must remain small", "single primary action", "no unrelated surfaces"],
+    "forbidden_scope": ["dashboard", "analytics center", "notification system", "full account area", "marketing campaign"],
+    "expected_closure": "Block uncontrolled expansion or define a smaller MVP"
+  },
+  "expected_output_summary": {
+    "output_type": "BLOCKED_PRODUCT_RISK",
+    "verdict": "BLOCK_PIPELINE",
+    "must_include": [
+      "scope_expansion_risk",
+      "blocked_items",
+      "safe_smaller_scope",
+      "next_gate"
+    ],
+    "must_not_include": [
+      "approval of all requested surfaces",
+      "hidden future scope as MVP",
+      "PASS_TO_QUALITY_PACK"
+    ]
+  },
+  "judge_expectations": {
+    "minimum_score": null,
+    "blocking_conditions": ["uncontrolled scope expansion"],
+    "expected_verdict": "BLOCK_PIPELINE"
+  }
+}
