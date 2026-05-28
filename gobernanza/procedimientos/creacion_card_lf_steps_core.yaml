@@ -1,4 +1,4 @@
-version: v0.1
+version: v0.2
 operation: CREACION_CARD_LF
 steps:
   - order: 1
@@ -14,23 +14,26 @@ steps:
     id: contract_read
     evidence: contrato_card_lf_yaml_read
   - order: 5
+    id: repo_inventory_full
+    evidence: repo_tree_pattern_recent_commits_comparable_assets_canonical_path_gap_report
+  - order: 6
     id: destination_validate
     evidence: repo_path_file_validated
-  - order: 6
+  - order: 7
     id: creator_asset
     evidence: card_creator_checked
-  - order: 7
+  - order: 8
     id: intake
     evidence: intake_minimo
-  - order: 8
+  - order: 9
     id: duplicate_check
     evidence: duplicate_checked
-  - order: 9
+  - order: 10
     id: classification
     evidence: card_lf_classified
-  - order: 10
+  - order: 11
     id: generic_vs_specific
     evidence: naming_validated
-  - order: 11
+  - order: 12
     id: research_pack
     evidence: internal_public_trusted_sources
