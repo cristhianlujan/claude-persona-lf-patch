@@ -1,0 +1,22 @@
+{
+  "fixture_id": "BLOCKED_RUNTIME_SCOPE",
+  "status": "GENERIC_REUSABLE_FIXTURE",
+  "purpose": "Validate that Frontend Prototype Architect blocks requests that require production app behavior, backend, API, deployment or runtime enablement.",
+  "input": {
+    "product_direction_spec": "present",
+    "ui_section_spec": "present",
+    "requested_output": "Create an HTML prototype and connect it to real data, login, analytics and deployment.",
+    "forbidden_scope": ["backend", "api", "auth", "analytics", "deployment", "runtime", "production"]
+  },
+  "expected_output_summary": {
+    "output_type": "BLOCKED_FRONTEND_SCOPE",
+    "verdict": "BLOCK_FRONTEND_SCOPE",
+    "must_include": ["blocked_items", "reason", "safe_static_alternative", "next_gate"],
+    "must_not_include": ["production app", "api integration", "deployment instructions", "runtime enabled"]
+  },
+  "judge_expectations": {
+    "minimum_score": null,
+    "blocking_conditions": ["backend/API/auth/deployment/runtime requested"],
+    "expected_verdict": "BLOCK_FRONTEND_SCOPE"
+  }
+}
