@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Frontend Prototype Missing Input State",
+  "type": "object",
+  "required": ["worker", "output_type", "missing_fields", "why_required", "risk_if_assumed", "safe_next_gate"],
+  "properties": {
+    "worker": {"const": "frontend_prototype_architect_lf"},
+    "output_type": {"const": "FRONTEND_MISSING_INPUT_STATE"},
+    "missing_fields": {"type": "array"},
+    "why_required": {"type": "array"},
+    "risk_if_assumed": {"type": "array"},
+    "safe_next_gate": {"type": "object"}
+  },
+  "additionalProperties": false
+}
