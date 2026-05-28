@@ -1,0 +1,109 @@
+{
+  "worker": "product_director_lf",
+  "case_id": "home_ruta_claridad_001",
+  "status": "SANDBOX_READ_ONLY_NO_VALIDATED",
+  "output_type": "PRODUCT_DIRECTION_SPEC",
+  "deliverable_created": {
+    "product_decision": {
+      "selected_decision": "Use the Home section `Tu Ruta de Claridad` as an orientation bridge toward `/simulador`, not as a full simulator, dashboard, offer page or data-capture flow.",
+      "rationale": "The user needs clarity and trust before advancing to the simulator; Home should prepare the decision path without collecting sensitive data or promising a result.",
+      "rejected_options": [
+        "Turn the section into a full financial dashboard",
+        "Ask for sensitive data inside Home",
+        "Promise a guaranteed offer before validation",
+        "Convert the block into a broad educational module"
+      ]
+    },
+    "included_scope": [
+      "Explain the Ruta de Claridad as a short guided path",
+      "Preserve one primary CTA: Ver si tengo una oferta",
+      "Route primary CTA to /simulador",
+      "State that alternatives or offers are referential and subject to validation",
+      "Prepare handoff for UX/UI, Copy, Legal/Data and QA"
+    ],
+    "excluded_scope": [
+      "Sensitive data capture inside Home",
+      "Guaranteed offer or guaranteed financial result",
+      "Full payment simulator embedded in Home",
+      "Dashboard, account center or analytics view",
+      "Final legal approval wording",
+      "Final visual layout or render specification"
+    ],
+    "priority": {
+      "level": "HIGH_MVP",
+      "reason": "This block controls the transition from Home awareness to simulator action and reduces ambiguity before the user continues."
+    },
+    "acceptance_criteria": [
+      "The section has exactly one primary action leading to /simulador.",
+      "The section does not ask for DNI, income, debt amount, phone or other sensitive data.",
+      "Any mention of offer, alternative or payment option is explicitly referential and subject to validation.",
+      "UX/UI can design the section without inventing product intent or adding extra flows.",
+      "Copy can write microcopy without promising approval, savings or guaranteed benefit.",
+      "QA can reject the block if it becomes dashboard, checkout, long form, offer page or pressure-based conversion."
+    ],
+    "dependencies": [
+      "UX/UI must transform the product decision into a section-level layout.",
+      "Copy must preserve non-pressure language and referential claims.",
+      "Legal/Data must verify sensitive-data and offer-claim boundaries.",
+      "QA must check CTA route, scope boundaries and prohibited claims."
+    ],
+    "risks": [
+      "The section may drift into a simulator if too many details are added.",
+      "The CTA may imply a guaranteed offer if copy is not controlled.",
+      "Visual design may turn the path into a generic timeline or dashboard if UX intent is not protected."
+    ],
+    "profiles_to_activate": ["ui_architect", "copy", "legal_data", "qa", "quality_pack"],
+    "blockers": [],
+    "next_step": {
+      "target": "ui_architect",
+      "instruction": "Create a section-level UI spec for Tu Ruta de Claridad using this Product Direction Spec; do not invent simulator logic, legal claims or data capture."
+    },
+    "final_verdict": "PASS_TO_QUALITY_PACK",
+    "evidence_used": ["ACT-0048", "ACT-0049", "ACT-0050"],
+    "open_assumptions": [
+      "The phrase Ver si tengo una oferta remains the primary CTA unless governance changes it later.",
+      "The simulator route remains /simulador unless routing changes are approved separately."
+    ],
+    "success_metric_or_proxy": {
+      "primary_proxy": "User reaches /simulador from Home through a clear, non-pressure orientation section.",
+      "quality_proxy": "No sensitive-data request, no guaranteed claim, no dashboard drift, one primary CTA."
+    },
+    "handoff_to_next": {
+      "to": ["ui_architect", "copy", "legal_data", "qa", "quality_pack"],
+      "must_preserve": ["one primary CTA", "/simulador route", "referential claim boundary", "no sensitive data in Home", "orientation bridge role"],
+      "must_not_add": ["guaranteed offer", "full simulator", "dashboard", "multi-step form", "pressure language"]
+    },
+    "traceability": {
+      "sources": ["ACT-0048", "ACT-0049", "ACT-0050"],
+      "run_path": "sandbox_runs/product_director_lf/home_ruta_claridad_001/",
+      "runtime": "NO_HABILITADO",
+      "validated": "NO_MARCADO"
+    },
+    "decision_quality_requirements": {
+      "decision_specificity": ["Orientation bridge to /simulador", "not simulator/dashboard/offer page/data capture"],
+      "scope_boundaries": ["included Home orientation", "excluded sensitive data and guaranteed offer", "future simulator logic remains outside Home"],
+      "acceptance_testability": ["one CTA", "route /simulador", "no sensitive data", "referential claims only"],
+      "handoff_readiness": ["UX/UI receives role and boundaries", "Copy receives claim boundaries", "QA receives rejection criteria"],
+      "risk_and_exclusion_clarity": ["dashboard drift", "offer promise drift", "data capture drift"],
+      "no_vague_language": ["clarity means observable route preparation with one CTA and explicit exclusions"]
+    }
+  },
+  "score": {
+    "product_decision_clarity": 5,
+    "scope_control_and_mvp_separation": 5,
+    "acceptance_criteria_quality": 5,
+    "cross_profile_handoff_quality": 5,
+    "evidence_risk_governance_traceability": 5,
+    "total": 25
+  },
+  "handoff_to_next": {
+    "primary": "ui_architect",
+    "secondary": ["copy", "legal_data", "qa", "quality_pack"]
+  },
+  "self_verdict": "PASS",
+  "traceability": {
+    "case_id": "home_ruta_claridad_001",
+    "generic_examples_not_modified": true,
+    "specific_case_location": "sandbox_runs/product_director_lf/home_ruta_claridad_001/"
+  }
+}
