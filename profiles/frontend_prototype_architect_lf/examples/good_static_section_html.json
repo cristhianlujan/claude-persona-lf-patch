@@ -1,0 +1,23 @@
+{
+  "fixture_id": "GOOD_STATIC_SECTION_HTML",
+  "status": "GENERIC_REUSABLE_FIXTURE",
+  "purpose": "Validate that Frontend Prototype Architect can produce a static HTML/CSS sandbox plan from approved product and UI specs without backend or runtime scope.",
+  "input": {
+    "product_direction_spec": "present",
+    "ui_section_spec": "present",
+    "target_viewport": "desktop_web_16_9_light_mode",
+    "sandbox_destination": "sandbox_runs/frontend_prototype_architect_lf/example_case/html_preview/index.html",
+    "forbidden_scope": ["backend", "api", "database", "auth", "runtime", "production", "validated", "real user data"]
+  },
+  "expected_output_summary": {
+    "output_type": "HTML_SANDBOX_SPEC",
+    "verdict": "PASS_TO_SANDBOX_HTML",
+    "must_include": ["files_to_create", "html_structure", "css_structure", "accessibility_baseline", "local_run_instructions", "forbidden_runtime_scope"],
+    "must_not_include": ["api call", "database", "auth", "deployment", "runtime", "production claim"]
+  },
+  "judge_expectations": {
+    "minimum_score": 22,
+    "blocking_conditions": [],
+    "expected_verdict": "PASS_TO_SANDBOX_HTML"
+  }
+}
