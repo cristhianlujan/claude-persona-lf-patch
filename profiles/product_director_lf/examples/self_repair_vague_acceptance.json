@@ -1,0 +1,35 @@
+{
+  "fixture_id": "SELF_REPAIR_VAGUE_ACCEPTANCE",
+  "status": "GENERIC_REUSABLE_FIXTURE",
+  "purpose": "Validate that Product Director LF returns a self-repair verdict when acceptance criteria are vague, not testable or only written as intentions.",
+  "input": {
+    "product_objective": "Define a product block that improves user clarity.",
+    "target_user_state": "User is deciding whether to continue to the next flow.",
+    "problem_to_solve": "The current brief says the experience should be clear, useful and premium but does not define observable criteria.",
+    "decision_required": "Turn the brief into a usable Product Direction Spec.",
+    "constraints": ["criteria must be testable", "handoff must be usable by UX/UI and Copy"],
+    "forbidden_scope": ["visual styling", "copy finalization", "technical implementation"],
+    "draft_acceptance_criteria": ["the experience feels clear", "the user trusts the product", "the screen looks good"],
+    "expected_closure": "Return self-repair because criteria are vague"
+  },
+  "expected_output_summary": {
+    "output_type": "PRODUCT_DIRECTION_SPEC_REPAIR_REQUIRED",
+    "verdict": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+    "must_include": [
+      "vague_criteria_detected",
+      "why_not_testable",
+      "repaired_acceptance_criteria_candidate",
+      "next_self_repair_action"
+    ],
+    "must_not_include": [
+      "PASS_TO_QUALITY_PACK",
+      "score without evidence",
+      "generic recommendation only"
+    ]
+  },
+  "judge_expectations": {
+    "minimum_score": null,
+    "blocking_conditions": ["acceptance criteria vague or not testable"],
+    "expected_verdict": "RETURN_TO_WORKER_FOR_SELF_REPAIR"
+  }
+}
