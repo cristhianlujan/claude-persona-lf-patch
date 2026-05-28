@@ -1,0 +1,6 @@
+version: v0.1
+judge: JUDGE_CONTRATO_SKILL_LF
+operation: CREACION_SKILL_LF
+pass_if: [repo_matrix_read, contract_read, destination_validated, runtime_no_habilitado, automatic_impact_bloqueado, github_write_done, github_readback_done, no_blocking_observations]
+fail_if: [write_without_contract, wrong_repository, wrong_path, runtime_enabled, automatic_impact_enabled, no_readback, blocking_observations]
+result_values: [PASS, FAIL, BLOCKED]
