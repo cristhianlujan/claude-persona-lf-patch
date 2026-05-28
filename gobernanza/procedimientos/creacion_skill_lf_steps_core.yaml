@@ -1,0 +1,36 @@
+version: v0.1
+operation: CREACION_SKILL_LF
+steps:
+  - order: 1
+    id: router
+    evidence: router_read
+  - order: 2
+    id: operational_source
+    evidence: source_read
+  - order: 3
+    id: repo_matrix_read
+    evidence: matriz_repos_lf_yaml_read
+  - order: 4
+    id: contract_read
+    evidence: contrato_skill_lf_yaml_read
+  - order: 5
+    id: destination_validate
+    evidence: repo_path_file_validated
+  - order: 6
+    id: creator_asset
+    evidence: skill_creator_checked
+  - order: 7
+    id: intake
+    evidence: intake_minimo
+  - order: 8
+    id: duplicate_check
+    evidence: duplicate_checked
+  - order: 9
+    id: classification
+    evidence: skill_lf_classified
+  - order: 10
+    id: generic_vs_specific
+    evidence: naming_validated
+  - order: 11
+    id: research_pack
+    evidence: internal_public_trusted_sources
