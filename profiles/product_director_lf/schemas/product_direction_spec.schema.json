@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Product Direction Spec",
+  "type": "object",
+  "required": ["worker", "output_type", "deliverable_created", "score", "handoff_to_next", "self_verdict", "traceability"],
+  "properties": {
+    "worker": {"const": "product_director_lf"},
+    "output_type": {"const": "PRODUCT_DIRECTION_SPEC"},
+    "deliverable_created": {
+      "type": "object",
+      "required": ["product_decision", "included_scope", "excluded_scope", "priority", "acceptance_criteria", "dependencies", "risks", "profiles_to_activate", "blockers", "next_step", "final_verdict", "evidence_used", "open_assumptions", "success_metric_or_proxy", "handoff_to_next"],
+      "properties": {
+        "product_decision": {"type": "object"},
+        "included_scope": {"type": "array"},
+        "excluded_scope": {"type": "array"},
+        "priority": {"type": "object"},
+        "acceptance_criteria": {"type": "array"},
+        "dependencies": {"type": "array"},
+        "risks": {"type": "array"},
+        "profiles_to_activate": {"type": "array"},
+        "blockers": {"type": "array"},
+        "next_step": {"type": "object"},
+        "final_verdict": {"type": "string"},
+        "evidence_used": {"type": "array"},
+        "open_assumptions": {"type": "array"},
+        "success_metric_or_proxy": {"type": "object"},
+        "handoff_to_next": {"type": "object"}
+      }
+    },
+    "score": {"type": "object"},
+    "handoff_to_next": {"type": "object"},
+    "self_verdict": {"enum": ["PASS", "BLOCKED_PRODUCT_RISK", "NEEDS_INPUT"]},
+    "traceability": {"type": "object"}
+  },
+  "additionalProperties": false
+}
