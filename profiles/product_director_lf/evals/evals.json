@@ -2,26 +2,59 @@
   "eval_pack_id": "PRODUCT_DIRECTOR_LF_EVALS_001",
   "profile": "product_director_lf",
   "status": "CANDIDATE_READ_ONLY_CONTROLLED_GITHUB_IMPACT",
+  "patch": "PATCH_PRODUCT_DIRECTOR_EXAMPLES_AND_FIXTURES_v0.1",
   "closure_conditions": [
     "good product decision cases must pass",
     "missing input cases must not invent decisions",
     "unsafe scope or overpromise cases must block",
     "handoff must be usable without inventing product intent",
-    "traceability must exist"
+    "traceability must exist",
+    "each eval must reference a concrete reusable fixture"
   ],
   "evals": [
-    {"eval_id": "EVAL_001_GOOD_SCOPE_DECISION", "input_type": "good", "expected": "PASS_TO_QUALITY_PACK"},
-    {"eval_id": "EVAL_002_MISSING_TARGET_USER", "input_type": "missing_input", "expected": "PRODUCT_MISSING_INPUT_STATE"},
-    {"eval_id": "EVAL_003_BLOCK_UNCONTROLLED_SCOPE", "input_type": "block", "expected": "BLOCK_PIPELINE"},
-    {"eval_id": "EVAL_004_REPAIR_VAGUE_ACCEPTANCE", "input_type": "repair", "expected": "RETURN_TO_WORKER_FOR_SELF_REPAIR"},
-    {"eval_id": "EVAL_005_GOOD_MVP_VS_FUTURE", "input_type": "good", "expected": "PASS_TO_QUALITY_PACK"},
-    {"eval_id": "EVAL_006_BLOCK_UNSAFE_FINANCIAL_PROMISE", "input_type": "block", "expected": "BLOCK_PIPELINE"}
+    {
+      "eval_id": "EVAL_001_GOOD_SCOPE_DECISION",
+      "input_type": "good",
+      "fixture": "examples/good_scope_decision.json",
+      "expected": "PASS_TO_QUALITY_PACK"
+    },
+    {
+      "eval_id": "EVAL_002_MISSING_TARGET_USER",
+      "input_type": "missing_input",
+      "fixture": "examples/missing_target_user.json",
+      "expected": "PRODUCT_MISSING_INPUT_STATE"
+    },
+    {
+      "eval_id": "EVAL_003_BLOCK_UNCONTROLLED_SCOPE",
+      "input_type": "block",
+      "fixture": "examples/blocked_uncontrolled_scope.json",
+      "expected": "BLOCK_PIPELINE"
+    },
+    {
+      "eval_id": "EVAL_004_REPAIR_VAGUE_ACCEPTANCE",
+      "input_type": "repair",
+      "fixture": "examples/self_repair_vague_acceptance.json",
+      "expected": "RETURN_TO_WORKER_FOR_SELF_REPAIR"
+    },
+    {
+      "eval_id": "EVAL_005_GOOD_MVP_VS_FUTURE",
+      "input_type": "good",
+      "fixture": "examples/good_mvp_vs_future.json",
+      "expected": "PASS_TO_QUALITY_PACK"
+    },
+    {
+      "eval_id": "EVAL_006_BLOCK_UNSAFE_FINANCIAL_PROMISE",
+      "input_type": "block",
+      "fixture": "examples/blocked_unsafe_financial_promise.json",
+      "expected": "BLOCK_PIPELINE"
+    }
   ],
   "traceability": {
-    "internal_lf": "ACT-0001, ACT-0045, corrected CREACION_PERFIL_LF repo_inventory_full flow",
-    "own_repo": "profiles/ui_architect, profiles/quality_pack, profiles/gamification_system_architect",
+    "internal_lf": "ACT-0001, ACT-0045, corrected CREACION_PERFIL_LF repo_inventory_full flow, operational_evidence_pack_check",
+    "own_repo": "profiles/ui_architect, profiles/quality_pack, profiles/gamification_system_architect, skills/profile_creator, skills/learning_engine",
     "legacy_source": "perfiles/director_de_producto/PERFIL_PRODUCT_DIRECTOR_LF_v0.4_CANDIDATO_100.md",
     "adapted_into": "profiles/product_director_lf/evals/evals.json",
-    "reason_for_location": "evals prove pass/block/missing-input behavior before operational use"
+    "reason_for_location": "evals prove pass/block/missing-input/self-repair behavior before operational use",
+    "generic_vs_specific_rule": "generic fixtures live in examples; project-specific cases live in sandbox_runs/product_director_lf/<case_id>/"
   }
 }
