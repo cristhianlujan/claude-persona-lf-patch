@@ -1,0 +1,22 @@
+{
+  "fixture_id": "SELF_REPAIR_ACCESSIBILITY_GAP",
+  "status": "GENERIC_REUSABLE_FIXTURE",
+  "purpose": "Validate that Frontend Prototype Architect returns self-repair when a prototype plan lacks semantic structure, focus handling or reduced-motion baseline.",
+  "input": {
+    "product_direction_spec": "present",
+    "ui_section_spec": "present",
+    "draft_output": "Create a div-based visual prototype with cards and button styling but no landmarks, heading order, focus state or reduced-motion notes.",
+    "forbidden_scope": ["skip accessibility", "purely decorative structure"]
+  },
+  "expected_output_summary": {
+    "output_type": "HTML_SANDBOX_SPEC_REPAIR_REQUIRED",
+    "verdict": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+    "must_include": ["accessibility_gap_detected", "semantic_structure_fix", "focus_state_fix", "reduced_motion_fix", "next_self_repair_action"],
+    "must_not_include": ["PASS_TO_SANDBOX_HTML", "score without evidence"]
+  },
+  "judge_expectations": {
+    "minimum_score": null,
+    "blocking_conditions": ["accessibility baseline absent"],
+    "expected_verdict": "RETURN_TO_WORKER_FOR_SELF_REPAIR"
+  }
+}
