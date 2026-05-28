@@ -1,4 +1,4 @@
-version: v0.1
+version: v0.2
 operation: CREACION_CARD_LF
 steps:
   - order: 12
@@ -37,3 +37,6 @@ steps:
   - order: 23
     id: close
     evidence: no_blocking_observations
+  - order: 24
+    id: report_output
+    evidence: act0046_report_or_execution_summary
