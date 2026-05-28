@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Frontend Prototype HTML Sandbox Output",
+  "type": "object",
+  "required": ["worker", "output_type", "deliverable_created", "score", "self_verdict", "traceability"],
+  "properties": {
+    "worker": {"const": "frontend_prototype_architect_lf"},
+    "output_type": {"const": "HTML_SANDBOX_SPEC"},
+    "deliverable_created": {
+      "type": "object",
+      "required": ["prototype_decision", "source_inputs", "files_to_create", "html_structure", "css_structure", "accessibility_baseline", "interaction_states", "forbidden_runtime_scope", "validation_checklist", "local_run_instructions", "handoff_to_next", "traceability"],
+      "properties": {
+        "prototype_decision": {"type": "object"},
+        "source_inputs": {"type": "array"},
+        "files_to_create": {"type": "array"},
+        "html_structure": {"type": "object"},
+        "css_structure": {"type": "object"},
+        "accessibility_baseline": {"type": "array"},
+        "interaction_states": {"type": "array"},
+        "forbidden_runtime_scope": {"type": "array"},
+        "validation_checklist": {"type": "array"},
+        "local_run_instructions": {"type": "array"},
+        "handoff_to_next": {"type": "object"},
+        "traceability": {"type": "object"}
+      }
+    },
+    "score": {"type": "object"},
+    "self_verdict": {"enum": ["PASS", "NEEDS_INPUT", "BLOCKED_FRONTEND_SCOPE"]},
+    "traceability": {"type": "object"}
+  },
+  "additionalProperties": false
+}
