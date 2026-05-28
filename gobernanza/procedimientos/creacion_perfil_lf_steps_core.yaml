@@ -1,4 +1,4 @@
-version: v0.1
+version: v0.2
 operation: CREACION_PERFIL_LF
 steps:
   - order: 1
@@ -15,7 +15,7 @@ steps:
     evidence: contrato_perfil_lf_yaml_read
   - order: 5
     id: repo_inventory_full
-    evidence: repo_root_profiles_packages_pattern_canonical_path_decision
+    evidence: repo_inventory_operational_report
   - order: 6
     id: destination_validate
     evidence: repo_path_file_validated
