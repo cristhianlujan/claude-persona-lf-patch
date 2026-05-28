@@ -13,6 +13,7 @@ Validate that Product Director LF produced an executable product decision, safe 
 7. Handoff can be used without inventing product intent.
 8. Score includes rubric evidence.
 9. Traceability exists.
+10. When the decision affects scope, sequencing, prioritization or handoff, `decision_quality_requirements` must protect specificity, scope boundaries, testability, handoff readiness and exclusion clarity.
 
 ## Automatic FAIL conditions
 - Output is only narrative advice.
@@ -23,6 +24,9 @@ Validate that Product Director LF produced an executable product decision, safe 
 - The decision creates uncontrolled scope expansion, overpromise, hidden pressure or unsafe financial meaning.
 - The worker performs specialist work reserved for another profile.
 - Score appears without evidence.
+- The decision uses vague terms without turning them into observable conditions.
+- The output says MVP but hides future scope inside current scope.
+- The next worker would need to decide product intent, accepted scope, rejected scope or acceptance criteria.
 
 ## Verdicts
 - `PASS_TO_QUALITY_PACK`
@@ -32,6 +36,6 @@ Validate that Product Director LF produced an executable product decision, safe 
 
 ## Research basis
 - Internal LF: ACT-0001, ACT-0045 and corrected CREACION_PERFIL_LF flow.
-- Own repo: UI Architect, Quality Pack and Gamification Architect package patterns.
+- Own repo: UI Architect, Quality Pack, Gamification Architect, Profile Creator and Learning Engine package patterns.
 - Product governance: product direction must define decision, scope, acceptance and handoff.
 - Risk control: human approval remains required for final impact.
