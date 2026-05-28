@@ -1,0 +1,36 @@
+{
+  "fixture_id": "GOOD_MVP_VS_FUTURE",
+  "status": "GENERIC_REUSABLE_FIXTURE",
+  "purpose": "Validate that Product Director LF separates current MVP scope from future scope while preserving a clear next gate and acceptance criteria.",
+  "input": {
+    "product_objective": "Define whether a product block should launch in MVP or wait for a later phase.",
+    "target_user_state": "User needs one clear orientation step before continuing.",
+    "problem_to_solve": "The team wants a complete experience eventually, but current execution capacity is limited.",
+    "decision_required": "Decide current MVP scope and future scope.",
+    "constraints": ["MVP must be shippable", "single primary user action", "no dependency on future analytics"],
+    "forbidden_scope": ["multi-variant personalization", "full reporting", "automated lifecycle messaging"],
+    "expected_closure": "Product Direction Spec with MVP and future scope separated"
+  },
+  "expected_output_summary": {
+    "output_type": "PRODUCT_DIRECTION_SPEC",
+    "verdict": "PASS_TO_QUALITY_PACK",
+    "must_include": [
+      "MVP_scope",
+      "future_scope",
+      "rejected_options",
+      "priority_rationale",
+      "acceptance_criteria",
+      "handoff_to_next"
+    ],
+    "must_not_include": [
+      "future scope disguised as MVP",
+      "unbounded roadmap",
+      "technical architecture invention"
+    ]
+  },
+  "judge_expectations": {
+    "minimum_score": 22,
+    "blocking_conditions": [],
+    "expected_verdict": "PASS_TO_QUALITY_PACK"
+  }
+}
