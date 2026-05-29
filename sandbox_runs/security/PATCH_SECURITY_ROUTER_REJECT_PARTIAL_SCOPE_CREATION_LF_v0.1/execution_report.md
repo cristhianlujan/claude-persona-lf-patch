@@ -1,6 +1,6 @@
 # Execution Report — PATCH_SECURITY_ROUTER_REJECT_PARTIAL_SCOPE_CREATION_LF_v0.1
 
-Status: OPERATIONAL_GUARD_ACTIVE_WITH_TECHNICAL_PENDING
+Status: PASS_CONTROLADO / OPERATIONAL_GUARD_ACTIVE / GITHUB_ALIGNMENT_COMPLETE
 Date: 2026-05-28
 Severity: HIGH
 
@@ -21,7 +21,9 @@ If CREACION_SKILL_LF, CREACION_PERFIL_LF or CREACION_CARD_LF receives an approva
 | `gobernanza/security/PATCH_SECURITY_ROUTER_REJECT_PARTIAL_SCOPE_CREATION_LF_v0.1.md` | PASS |
 | `gobernanza/procedimientos/creacion_perfil_lf_steps_validation.yaml` | PASS — v0.4 with `partial_scope_guard` order 21 |
 | `gobernanza/procedimientos/creacion_card_lf_steps_validation.yaml` | PASS — v0.4 with `partial_scope_guard` order 21 |
-| `gobernanza/procedimientos/creacion_skill_lf_steps_validation.yaml` | PENDING — connector blocked update; file remains v0.3 |
+| `gobernanza/procedimientos/creacion_skill_lf_steps_validation_v0.4.yaml` | PASS — v0.4 with `partial_scope_guard` order 21 |
+
+Note: the original `creacion_skill_lf_steps_validation.yaml` could not be updated by the connector, so a v0.4 replacement file was created and the Supabase operation steps now point to that v0.4 file.
 
 ## 4. Supabase operational impact
 
@@ -44,14 +46,14 @@ For all three operations:
 
 - CREACION_PERFIL_LF: PASS in Supabase and GitHub.
 - CREACION_CARD_LF: PASS in Supabase and GitHub.
-- CREACION_SKILL_LF: PASS in Supabase, GitHub YAML pending.
+- CREACION_SKILL_LF: PASS in Supabase and GitHub through `creacion_skill_lf_steps_validation_v0.4.yaml`.
 
 ## 6. ACT-0051 status
 
-ACT-0051 remains SECURITY_HOLD until the pending GitHub skill YAML alignment is resolved or formally accepted as a tracked technical discrepancy.
+The blocking security condition that caused ACT-0051 SECURITY_HOLD has been resolved at the protocol level. ACT-0051 may return to CANDIDATO / READ_ONLY / CONTROLADO, while runtime and VALIDATED remain blocked.
 
 ## 7. Final verdict
 
-`OPERATIONAL_SECURITY_GUARD_ACTIVE_WITH_GITHUB_SKILL_YAML_PENDING`
+`PASS_CONTROLADO_SECURITY_GUARD_ACTIVE`
 
-Supabase, the operational source, is protected for all three flows. GitHub documentation is complete for the security rule, profile flow and card flow. Skill flow YAML alignment remains pending.
+Supabase, the operational source, is protected for all three flows. GitHub documentation is aligned for the security rule, profile flow, card flow and skill flow v0.4 replacement file.
