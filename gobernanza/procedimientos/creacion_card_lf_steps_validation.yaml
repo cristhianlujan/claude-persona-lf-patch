@@ -1,4 +1,4 @@
-version: v0.3
+version: v0.4
 operation: CREACION_CARD_LF
 steps:
   - order: 13
@@ -26,20 +26,23 @@ steps:
     id: rule_trace
     evidence: trace_present
   - order: 21
+    id: partial_scope_guard
+    evidence: complete_operation_scope_confirmed_or_blocked
+  - order: 22
     id: github_write
     evidence: file_commit_sha
-  - order: 22
+  - order: 23
     id: github_readback
     evidence: file_readback_sha
-  - order: 23
-    id: evidence_log
-    evidence: lf_eventos_if_available
   - order: 24
-    id: contract_judge
-    evidence: judge_pass
+    id: evidence_log
+    evidence: lf_eventos_if_available_and_scope_confirmed
   - order: 25
-    id: close
-    evidence: no_blocking_observations
+    id: contract_judge
+    evidence: judge_pass_and_scope_confirmed
   - order: 26
+    id: close
+    evidence: no_blocking_observations_and_scope_confirmed
+  - order: 27
     id: report_output
-    evidence: act0046_report_or_execution_summary
+    evidence: act0046_report_or_execution_summary_with_scope_status
