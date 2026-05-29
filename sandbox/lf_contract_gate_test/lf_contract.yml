@@ -1,6 +1,6 @@
 lf_contract:
   contract_version: "v0.1"
-  contract_id: "LF-GH-SANDBOX-20260529-001"
+  contract_id: "LF-GH-GATE-INSTALL-SANDBOX-20260529-001"
 
   router:
     activo_router: "ACT-0001"
@@ -18,27 +18,29 @@ lf_contract:
     impacto_automatico: "BLOQUEADO"
 
   operacion:
-    operation_code: "GITHUB_CONTRACT_GATE_SANDBOX"
-    tipo_operacion: "PR_SANDBOX"
+    operation_code: "GITHUB_CONTRACT_GATE_INSTALL_SANDBOX"
+    tipo_operacion: "GATE_INSTALL_SANDBOX"
     entorno: "SANDBOX"
     impacto_productivo: false
 
   scope:
     repository: "cristhianlujan/claude-persona-lf-patch"
     allowed_paths:
+      - ".github/workflows/lf-contract-check.yml"
+      - "scripts/lf_contract_check.py"
       - "sandbox/lf_contract_gate_test/**"
     blocked_paths:
-      - ".github/**"
       - "profiles/**"
       - "skills/**"
       - "official/**"
       - "production/**"
+      - ".github/workflows/*"
 
   aprobacion:
     aprobacion_humana_requerida: true
-    approval_id: "PENDIENTE"
+    approval_id: "USER_APPROVED_CHAT_20260529_CONTINUAR"
     approved_by: "Cristhian"
-    approved_at: "PENDIENTE"
+    approved_at: "2026-05-29"
 
   verificacion:
     required_checks:
@@ -48,6 +50,6 @@ lf_contract:
     post_impact_verification_required: true
 
   cierre:
-    estado_salida_permitido: "SANDBOX_TESTED"
+    estado_salida_permitido: "GATE_INSTALL_SANDBOX_TESTED"
     no_validated: true
     no_production: true
