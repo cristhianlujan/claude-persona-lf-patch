@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MarketPlace LF Decision Output",
+  "type": "object",
+  "required": [
+    "status",
+    "decision_id",
+    "decision_question",
+    "chosen_option",
+    "rejected_options",
+    "scorecard",
+    "blockers",
+    "source_evidence",
+    "assumptions",
+    "risk_level",
+    "sandbox_test_required",
+    "next_gate",
+    "forbidden_impacts_preserved"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "MARKETPLACE_DECISION_RECOMMENDATION",
+        "MARKETPLACE_DECISION_BLOCKED",
+        "MARKETPLACE_DECISION_NEEDS_SOURCE",
+        "RETURN_TO_ORCHESTRATOR"
+      ]
+    },
+    "decision_id": { "type": "string" },
+    "decision_question": { "type": "string" },
+    "chosen_option": { "type": ["string", "null"] },
+    "rejected_options": { "type": "array", "items": { "type": "string" } },
+    "scorecard": {
+      "type": "object",
+      "required": [
+        "ux_bc_clarity",
+        "behavioral_finance",
+        "ui_visual_hierarchy",
+        "ethical_gamification",
+        "compliance_visual_legal",
+        "business_conversion",
+        "operation_handoff",
+        "accessibility_cognitive_load",
+        "brand_consistency",
+        "performance_constraints",
+        "total"
+      ],
+      "properties": {
+        "ux_bc_clarity": { "type": "number", "minimum": 0, "maximum": 5 },
+        "behavioral_finance": { "type": "number", "minimum": 0, "maximum": 5 },
+        "ui_visual_hierarchy": { "type": "number", "minimum": 0, "maximum": 5 },
+        "ethical_gamification": { "type": "number", "minimum": 0, "maximum": 5 },
+        "compliance_visual_legal": { "type": "number", "minimum": 0, "maximum": 5 },
+        "business_conversion": { "type": "number", "minimum": 0, "maximum": 5 },
+        "operation_handoff": { "type": "number", "minimum": 0, "maximum": 5 },
+        "accessibility_cognitive_load": { "type": "number", "minimum": 0, "maximum": 5 },
+        "brand_consistency": { "type": "number", "minimum": 0, "maximum": 5 },
+        "performance_constraints": { "type": "number", "minimum": 0, "maximum": 5 },
+        "total": { "type": "number", "minimum": 0, "maximum": 50 }
+      },
+      "additionalProperties": false
+    },
+    "blockers": { "type": "array", "items": { "type": "string" } },
+    "source_evidence": { "type": "array", "items": { "type": "string" } },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "risk_level": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "BLOCKED"] },
+    "sandbox_test_required": { "type": "boolean" },
+    "next_gate": { "type": "string" },
+    "forbidden_impacts_preserved": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}
