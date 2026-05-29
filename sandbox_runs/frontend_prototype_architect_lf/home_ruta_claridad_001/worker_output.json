@@ -1,0 +1,106 @@
+{
+  "worker": "frontend_prototype_architect_lf",
+  "case_id": "home_ruta_claridad_001",
+  "status": "SANDBOX_READ_ONLY_NO_RUNTIME_NO_VALIDATED",
+  "output_type": "HTML_SANDBOX_SPEC",
+  "deliverable_created": {
+    "prototype_decision": {
+      "selected_output": "Create a standalone static index.html sandbox preview plan for the Tu Ruta de Claridad section.",
+      "reason": "The section has approved product and UI specs, and the next safe step is a local static browser prototype, not a production app."
+    },
+    "source_inputs": [
+      "sandbox_runs/product_director_lf/home_ruta_claridad_001/worker_output.json",
+      "sandbox_runs/ui_architect/home_ruta_claridad_001/worker_output.json",
+      "sandbox_runs/visibility/home_ruta_claridad_001/render_prompt_v0.1.md"
+    ],
+    "files_to_create": [
+      {
+        "path": "sandbox_runs/frontend_prototype_architect_lf/home_ruta_claridad_001/html_preview/index.html",
+        "type": "standalone_static_html",
+        "run_method": "open directly in a browser"
+      }
+    ],
+    "html_structure": {
+      "document": "HTML5 document with language attribute and viewport meta.",
+      "main_landmark": "main element containing a single section for Tu Ruta de Claridad.",
+      "section": "section with aria-labelledby pointing to the visible title.",
+      "heading": "h2 or h1 depending on page context; sandbox may use h1 for isolated section.",
+      "path_map": "ordered visual group of 4 milestone cards connected by decorative curved path.",
+      "cta": "single anchor/button styled as primary CTA with href or data-route intent /simulador.",
+      "trust_note": "small paragraph near CTA stating referential/subject-to-validation boundary."
+    },
+    "css_structure": {
+      "layout": "centered 16:9-friendly section, max-width container, responsive fallback below desktop.",
+      "tokens": "local CSS custom properties for warm background, navy text, green CTA and minimal gold accent.",
+      "cards": "soft radius, subtle shadow, breathable spacing.",
+      "path": "decorative SVG or CSS curve; not a flat timeline or checkout stepper.",
+      "states": "hover/focus-visible for cards and CTA; reduced-motion media query."
+    },
+    "accessibility_baseline": [
+      "Use semantic main/section/header/list structure where possible.",
+      "CTA must be keyboard-focusable with visible focus state.",
+      "Decorative connector path must be aria-hidden.",
+      "Milestone content must be readable without relying only on color.",
+      "Respect prefers-reduced-motion; no required animation.",
+      "Avoid fake form controls or disabled-looking interactive elements."
+    ],
+    "interaction_states": [
+      "Default: all milestones visible and CTA available.",
+      "Hover: subtle elevation only; no new claims appear.",
+      "Focus: visible outline/ring on CTA and meaningful interactive elements.",
+      "Reduced motion: no path animation."
+    ],
+    "forbidden_runtime_scope": [
+      "No backend.",
+      "No API calls.",
+      "No database.",
+      "No auth/login.",
+      "No analytics/tracking.",
+      "No payment or real data integration.",
+      "No production deployment.",
+      "No VALIDATED or Golden Screen label."
+    ],
+    "validation_checklist": [
+      "Exactly one dominant CTA: Ver si tengo una oferta.",
+      "CTA route intent remains /simulador.",
+      "No sensitive data fields are present.",
+      "No guarantee, amount, approval or savings promise appears.",
+      "Visual structure remains path/map, not dashboard/timeline/checkout.",
+      "Can be opened locally as index.html with no install step.",
+      "Accessibility baseline is visible in markup/CSS."
+    ],
+    "local_run_instructions": [
+      "Save the file as index.html in the approved sandbox path.",
+      "Open index.html directly in Chrome, Edge or another browser.",
+      "No npm install, build command, server, backend or environment variables are required."
+    ],
+    "handoff_to_next": {
+      "next_worker": "quality_pack_or_frontend_html_creation",
+      "ready_for_html_file_creation": true,
+      "requires_new_approval_for_actual_index_html": true,
+      "notes": "This is a sandbox spec only. Actual HTML file creation is a separate controlled action."
+    },
+    "traceability": {
+      "profile_asset": "ACT-0051",
+      "profile_path": "profiles/frontend_prototype_architect_lf/",
+      "run_path": "sandbox_runs/frontend_prototype_architect_lf/home_ruta_claridad_001/",
+      "runtime": "NO_HABILITADO",
+      "validated": "NO_MARCADO",
+      "production": "NO_TOCADA"
+    }
+  },
+  "score": {
+    "source_fidelity": 5,
+    "static_implementation_quality": 5,
+    "accessibility_and_semantic_structure": 5,
+    "boundary_control": 5,
+    "handoff_readback_readiness": 5,
+    "total": 25
+  },
+  "self_verdict": "PASS",
+  "traceability": {
+    "case_id": "home_ruta_claridad_001",
+    "operation": "CREACION_PERFIL_LF_RERUN_SANDBOX_VALIDATION",
+    "security_hold_context": "ACT-0051 remains on hold until full rerun closure and security gate decision."
+  }
+}
