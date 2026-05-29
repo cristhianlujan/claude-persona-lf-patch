@@ -1,0 +1,53 @@
+lf_contract:
+  contract_version: "v0.1"
+  contract_id: "LF-GH-SANDBOX-20260529-001"
+
+  router:
+    activo_router: "ACT-0001"
+    router_check: "PASS"
+
+  fuente_operativa:
+    sistema: "Supabase"
+    vista: "public.v_lf_fuente_operativa"
+    fuente_check: "PASS"
+
+  activo_rector:
+    codigo_activo: "ACT-0045"
+    estado_documental: "VIGENTE"
+    estado_operativo: "READ_ONLY"
+    impacto_automatico: "BLOQUEADO"
+
+  operacion:
+    operation_code: "GITHUB_CONTRACT_GATE_SANDBOX"
+    tipo_operacion: "PR_SANDBOX"
+    entorno: "SANDBOX"
+    impacto_productivo: false
+
+  scope:
+    repository: "cristhianlujan/claude-persona-lf-patch"
+    allowed_paths:
+      - "sandbox/lf_contract_gate_test/**"
+    blocked_paths:
+      - ".github/**"
+      - "profiles/**"
+      - "skills/**"
+      - "official/**"
+      - "production/**"
+
+  aprobacion:
+    aprobacion_humana_requerida: true
+    approval_id: "PENDIENTE"
+    approved_by: "Cristhian"
+    approved_at: "PENDIENTE"
+
+  verificacion:
+    required_checks:
+      - "lf-contract-check"
+      - "no-critical-paths-check"
+      - "scope-check"
+    post_impact_verification_required: true
+
+  cierre:
+    estado_salida_permitido: "SANDBOX_TESTED"
+    no_validated: true
+    no_production: true
