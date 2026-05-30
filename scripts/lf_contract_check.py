@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.2
+LF Contract Check v0.3
 
 Sandbox validator for TEST_GITHUB_CONTRACT_GATE_LF_SANDBOX_001.
 Supports the controlled gate-install sandbox operation.
@@ -8,14 +8,21 @@ Supports the controlled gate-install sandbox operation.
 Fix v0.2:
 - Avoid self-referential false positives by excluding this validator file
   from forbidden-term content scanning. Scope/path checks still apply.
+
+Gate v0.3:
+- If a PR touches governed LF routes, require a valid
+  LF_OPERATION_CONTRACT_RECEIPT emitted by contract_judge or operation_judge.
 """
 
+import fnmatch
+import json
 import os
 import subprocess
 import sys
 from pathlib import Path
 
 CONTRACT_PATH = Path("sandbox/lf_contract_gate_test/lf_contract.yml")
+RECEIPT_DIR = Path("sandbox/lf_contract_gate_test/receipts")
 VALIDATOR_SELF_PATH = "scripts/lf_contract_check.py"
 
 ALLOWED_EXACT = {
@@ -25,14 +32,40 @@ ALLOWED_EXACT = {
 ALLOWED_PREFIXES = [
     "sandbox/lf_contract_gate_test/",
 ]
-BLOCKED_PREFIXES = [
+GOVERNED_PREFIXES = [
     "profiles/",
     "skills/",
+    "cards/",
+    "gobernanza/procedimientos/",
+    "gobernanza/contratos/",
+    "gobernanza/judges/",
+]
+ALWAYS_BLOCKED_PREFIXES = [
     "official/",
     "production/",
+    "runtime/",
+    "supabase/",
 ]
 FORBIDDEN_GITHUB_PREFIX = ".github/"
 ALLOWED_GITHUB_EXACT = ".github/workflows/lf-contract-check.yml"
+
+VALID_RECEIPT_ISSUERS = {"contract_judge", "operation_judge"}
+VALID_RECEIPT_RESULTS = {"PASS", "PASS_SANDBOX"}
+REQUIRED_RECEIPT_FIELDS = [
+    "receipt_type",
+    "receipt_version",
+    "issued_by",
+    "operation_code",
+    "execution_id",
+    "result",
+    "all_required_steps_pass",
+    "contract_sha",
+    "judge_sha",
+    "source_sha_list",
+    "target_paths",
+    "blocking_codes",
+    "issued_at",
+]
 
 FORBIDDEN_TERMS = [
     "VALIDATED",
@@ -90,20 +123,94 @@ def is_allowed_path(path: str) -> bool:
     return any(path.startswith(prefix) for prefix in ALLOWED_PREFIXES)
 
 
-def validate_changed_files(changed_files: list[str]) -> None:
+def is_governed_path(path: str) -> bool:
+    return any(path.startswith(prefix) for prefix in GOVERNED_PREFIXES)
+
+
+def validate_changed_files(changed_files: list[str]) -> list[str]:
     if not changed_files:
         fail("FAIL_NO_CHANGED_FILES", "No se detectaron archivos modificados")
 
+    governed_files: list[str] = []
     for path in changed_files:
-        for blocked in BLOCKED_PREFIXES:
+        for blocked in ALWAYS_BLOCKED_PREFIXES:
             if path.startswith(blocked):
-                fail("FAIL_BLOCKED_PATH_TOUCHED", f"Ruta bloqueada tocada: {path}")
+                fail("FAIL_BLOCKED_SCOPE_RISK", f"Ruta productiva/bloqueada tocada: {path}")
 
         if path.startswith(FORBIDDEN_GITHUB_PREFIX) and path != ALLOWED_GITHUB_EXACT:
             fail("FAIL_UNAUTHORIZED_GITHUB_PATH", f"Ruta .github no autorizada: {path}")
 
+        if is_governed_path(path):
+            governed_files.append(path)
+            continue
+
         if not is_allowed_path(path):
             fail("FAIL_SCOPE_INVALID", f"Archivo fuera de scope sandbox gate-install: {path}")
+
+    return governed_files
+
+
+def load_receipts_from_changed_files(changed_files: list[str]) -> list[tuple[str, dict]]:
+    receipts: list[tuple[str, dict]] = []
+    for path in changed_files:
+        if not path.startswith(str(RECEIPT_DIR) + "/") or not path.endswith(".json"):
+            continue
+        receipt_path = Path(path)
+        if not receipt_path.exists():
+            continue
+        try:
+            receipts.append((path, json.loads(receipt_path.read_text(encoding="utf-8"))))
+        except json.JSONDecodeError as exc:
+            fail("FAIL_RECEIPT_INVALID_JSON", f"Receipt JSON inválido en {path}: {exc}")
+    return receipts
+
+
+def receipt_covers_file(receipt: dict, changed_file: str) -> bool:
+    target_paths = receipt.get("target_paths", [])
+    if not isinstance(target_paths, list):
+        fail("FAIL_RECEIPT_INVALID", "target_paths debe ser lista")
+    return any(fnmatch.fnmatch(changed_file, pattern) for pattern in target_paths)
+
+
+def validate_receipt_shape(path: str, receipt: dict) -> None:
+    for field in REQUIRED_RECEIPT_FIELDS:
+        if field not in receipt:
+            fail("FAIL_RECEIPT_INVALID", f"Falta campo obligatorio {field} en {path}")
+
+    if receipt.get("receipt_type") != "LF_OPERATION_CONTRACT_RECEIPT":
+        fail("FAIL_RECEIPT_INVALID", f"receipt_type inválido en {path}")
+    if receipt.get("issued_by") not in VALID_RECEIPT_ISSUERS:
+        fail("FAIL_RECEIPT_INVALID_ISSUER", f"issued_by inválido en {path}")
+    if receipt.get("result") not in VALID_RECEIPT_RESULTS:
+        fail("FAIL_RECEIPT_RESULT_NOT_PASS", f"result inválido en {path}")
+    if receipt.get("all_required_steps_pass") is not True:
+        fail("FAIL_RECEIPT_INCOMPLETE_STEPS", f"all_required_steps_pass debe ser true en {path}")
+    if receipt.get("blocking_codes") not in ([], None):
+        fail("FAIL_RECEIPT_BLOCKING_CODES", f"blocking_codes debe estar vacío en {path}")
+    if not receipt.get("contract_sha") or not receipt.get("judge_sha"):
+        fail("FAIL_RECEIPT_WEAK_EVIDENCE", f"contract_sha/judge_sha requeridos en {path}")
+    source_sha_list = receipt.get("source_sha_list")
+    if not isinstance(source_sha_list, list) or not source_sha_list:
+        fail("FAIL_RECEIPT_WEAK_EVIDENCE", f"source_sha_list requerido en {path}")
+    if not receipt.get("operation_code") or not receipt.get("execution_id"):
+        fail("FAIL_RECEIPT_INVALID", f"operation_code/execution_id requeridos en {path}")
+
+
+def validate_governed_receipt(changed_files: list[str], governed_files: list[str]) -> None:
+    if not governed_files:
+        print("No governed LF paths touched; receipt not required.")
+        return
+
+    receipts = load_receipts_from_changed_files(changed_files)
+    if not receipts:
+        fail("FAIL_RECEIPT_MISSING", "Ruta gobernada tocada sin LF_OPERATION_CONTRACT_RECEIPT")
+
+    for receipt_path, receipt in receipts:
+        validate_receipt_shape(receipt_path, receipt)
+
+    for governed_file in governed_files:
+        if not any(receipt_covers_file(receipt, governed_file) for _, receipt in receipts):
+            fail("FAIL_RECEIPT_TARGET_MISMATCH", f"Ningún receipt cubre ruta gobernada: {governed_file}")
 
 
 def validate_forbidden_terms(changed_files: list[str]) -> None:
@@ -126,7 +233,8 @@ def main() -> None:
     print("Changed files:")
     for path in changed_files:
         print(f"- {path}")
-    validate_changed_files(changed_files)
+    governed_files = validate_changed_files(changed_files)
+    validate_governed_receipt(changed_files, governed_files)
     validate_forbidden_terms(changed_files)
     pass_check("Contrato LF gate-install sandbox válido y scope respetado")
 
