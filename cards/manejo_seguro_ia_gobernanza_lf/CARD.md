@@ -1,6 +1,6 @@
 # CARD_MANEJO_SEGURO_IA_GOBERNANZA_LF_v0.1_CANDIDATO
 
-Estado: CANDIDATO / SECURITY_HOLD_OPERATIVO / EN_REPARACION_CONTROLADA
+Estado: VIGENTE_READ_ONLY_CONTROLADO / PRODUCCION_CONTROLADA_READ_ONLY / APROBADO_READ_ONLY_CONTROLADO
 Proyecto: 00_GOBERNANZA_PORTAFOLIO_OPERATIVO_LF
 Tipo: CARD_HABILIDAD_LF
 Ambito: TRANSVERSAL_GOV
@@ -9,12 +9,13 @@ Runtime: NO_HABILITADO
 Impacto automatico: BLOQUEADO
 Fuente operativa: ACT-0001 -> Supabase public.v_lf_fuente_operativa -> ACT-0045 -> lf_operation_*
 Execution repair id: EXEC-CARDS-SEGURIDAD-GOBERNANZA-LF-20260530-001
+Production promotion scope: READ_ONLY_CONTROLADO
 
 ## 0. Hard status
 
-Esta card esta bajo Security Hold por cierre previo sin ejecucion formal completa y research pack pendiente. Esta version repara la debilidad estructural de la card, pero NO la aprueba, NO levanta el hold, NO habilita runtime y NO permite impacto automatico.
+Esta card fue reparada, validada con judge formal y promovida a PRODUCCION_CONTROLADA_READ_ONLY para uso operativo de gobernanza read-only. No habilita runtime, no permite impacto automatico y no autoriza escrituras sin Router, Supabase, protocolo aplicable, evidencia y verificacion.
 
-La card solo puede avanzar a revision reparada si: GitHub readback PASS, research pack PASS, mini-judge PASS_WITH_RESTRICTIONS o PASS, y Supabase mantiene runtime NO_HABILITADO e impacto automatico BLOQUEADO.
+Cualquier intento de pasar esta card a runtime, impacto automatico, produccion ejecutiva con escritura o cambio de estado fuera de read-only requiere una nueva ejecucion formal, judge PASS y aprobacion explicita.
 
 ## 1. Proposito operativo
 
@@ -201,6 +202,22 @@ PASS si la card:
 - no crea microcards adicionales;
 - emite `AI Safe Operation Card Output` estructurado.
 
-## 14. Criterio de avance
+## 14. Criterio de uso vigente
 
-Esta card queda CANDIDATO / SECURITY_HOLD_OPERATIVO / EN_REPARACION_CONTROLADA hasta readback y validacion. Puede avanzar como maximo a CANDIDATO_REPARADO_EN_REVISION. No puede pasar a APROBADO, VIGENTE, VALIDATED, runtime o impacto automatico sin sandbox, judge formal y aprobacion explicita.
+Esta card queda VIGENTE_READ_ONLY_CONTROLADO / PRODUCCION_CONTROLADA_READ_ONLY / APROBADO_READ_ONLY_CONTROLADO.
+
+Puede usarse para:
+
+1. controlar rol del asistente;
+2. bloquear uso de herramientas fuera de fase;
+3. bloquear aprobaciones ambiguas;
+4. exigir evidence/readback/judge antes de cierre;
+5. emitir AI Safe Operation Card Output.
+
+No puede usarse para:
+
+1. habilitar runtime;
+2. ejecutar impacto automatico;
+3. aprobar escrituras por si sola;
+4. saltar Router, Supabase o protocolo aplicable;
+5. marcar VALIDATED o produccion ejecutiva con escritura sin nuevo ciclo formal.
