@@ -1,0 +1,50 @@
+operation_code: DS_BUILD_PROTOCOL_LF
+version: v0.2
+status: CANDIDATO_READ_ONLY
+source_model: GIT_FIRST_YAML
+source_repo: cristhianlujan/claude-persona-lf-patch
+
+purpose: Regularizar steps de validacion DS con fuente autora versionada.
+
+controls:
+  no_runtime: true
+  no_production: true
+  automatic_impact: BLOQUEADO
+  require_source_sha: true
+  shallow_evidence_blocked: true
+
+steps:
+  - step_order: 11
+    step_id: output_mode_contract_checked
+    required: true
+    evidence_required: output_mode_complete
+
+  - step_order: 12
+    step_id: protocol_supervisor
+    required: true
+    evidence_required: supervisor_pass
+
+  - step_order: 13
+    step_id: repair_loop_status
+    required: true
+    evidence_required: repair_loop_evaluated
+
+  - step_order: 14
+    step_id: schema_fixture_validation
+    required: true
+    evidence_required: schema_fixtures_pass_with_source_proof
+
+  - step_order: 15
+    step_id: operation_judge
+    required: true
+    evidence_required: judge_pass_with_judge_sha
+
+  - step_order: 16
+    step_id: close
+    required: true
+    evidence_required: no_blocking_observations_and_chain_complete
+
+  - step_order: 17
+    step_id: executive_dashboard_summary
+    required: true
+    evidence_required: dashboard_cliente_lector_summary_present
