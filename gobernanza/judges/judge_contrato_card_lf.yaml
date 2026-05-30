@@ -1,6 +1,44 @@
-version: v0.1
+version: v0.2
 judge: JUDGE_CONTRATO_CARD_LF
 operation: CREACION_CARD_LF
-pass_if: [repo_matrix_read, contract_read, destination_validated, runtime_no_habilitado, automatic_impact_bloqueado, github_write_done, github_readback_done, no_blocking_observations]
-fail_if: [write_without_contract, wrong_repository, wrong_path, runtime_enabled, automatic_impact_enabled, no_readback, blocking_observations]
-result_values: [PASS, FAIL, BLOCKED]
+regularization: REGULARIZACION_STEP_GATE_L2L3_001
+pass_if:
+  - repo_matrix_read
+  - contract_read
+  - destination_validated
+  - runtime_no_habilitado
+  - automatic_impact_bloqueado
+  - all_required_steps_pass
+  - research_pack_pass
+  - research_pack_evidence_strong
+  - research_to_rules_matrix_present
+  - decision_matrix_present
+  - source_sha_present
+  - contract_sha_present
+  - judge_sha_present
+  - github_write_done
+  - github_readback_done
+  - no_blocking_observations
+fail_if:
+  - write_without_contract
+  - wrong_repository
+  - wrong_path
+  - runtime_enabled
+  - automatic_impact_enabled
+  - no_readback
+  - missing_execution_id
+  - missing_required_step
+  - missing_research_pack
+  - weak_research_pack_evidence
+  - missing_research_to_rules_matrix
+  - missing_decision_matrix
+  - assistant_freeform_decision
+  - missing_source_sha
+  - missing_contract_sha
+  - missing_judge_sha
+  - blocking_observations
+result_values:
+  - PASS
+  - FAIL
+  - BLOCKED
+  - RETURN_TO_WORKER
