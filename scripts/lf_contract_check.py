@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.1
+LF Contract Check v0.2
 
 Sandbox validator for TEST_GITHUB_CONTRACT_GATE_LF_SANDBOX_001.
 Supports the controlled gate-install sandbox operation.
+
+Fix v0.2:
+- Avoid self-referential false positives by excluding this validator file
+  from forbidden-term content scanning. Scope/path checks still apply.
 """
 
 import os
@@ -12,10 +16,11 @@ import sys
 from pathlib import Path
 
 CONTRACT_PATH = Path("sandbox/lf_contract_gate_test/lf_contract.yml")
+VALIDATOR_SELF_PATH = "scripts/lf_contract_check.py"
 
 ALLOWED_EXACT = {
     ".github/workflows/lf-contract-check.yml",
-    "scripts/lf_contract_check.py",
+    VALIDATOR_SELF_PATH,
 }
 ALLOWED_PREFIXES = [
     "sandbox/lf_contract_gate_test/",
@@ -103,6 +108,10 @@ def validate_changed_files(changed_files: list[str]) -> None:
 
 def validate_forbidden_terms(changed_files: list[str]) -> None:
     for path in changed_files:
+        if path == VALIDATOR_SELF_PATH:
+            print(f"Skipping forbidden-term scan for validator control file: {path}")
+            continue
+
         file_path = Path(path)
         if file_path.exists() and file_path.is_file():
             content = file_path.read_text(encoding="utf-8", errors="ignore")
