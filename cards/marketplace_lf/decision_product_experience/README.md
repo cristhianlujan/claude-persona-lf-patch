@@ -44,6 +44,7 @@ Help evaluate MarketPlace LF product, UX/UI, trust, behavioral, ethical gamifica
 
 ## Files
 
+- `README.md`
 - `CARD.md`
 - `context_pack.md`
 - `contracts/main_contract.md`
@@ -56,6 +57,7 @@ Help evaluate MarketPlace LF product, UX/UI, trust, behavioral, ethical gamifica
 - `examples/map_surface_case.md`
 - `fixtures/juan_digital_decision_request.json`
 - `fixtures/map_surface_decision_request.json`
+- `fixtures/missing_source_decision_request.json`
 - `evals/evals.json`
 - `handoffs/to_quality_pack.handoff.json`
 - `adapters/github_pack_adapter.md`
