@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Security Governance Decision Pack",
+  "type": "object",
+  "required": [
+    "profile",
+    "mode",
+    "route_applied",
+    "assets_checked",
+    "operation_protocol",
+    "scope_binding",
+    "authorization_binding",
+    "risk_register",
+    "required_evidence",
+    "step_enforcement",
+    "tool_permissions",
+    "readback_plan",
+    "judge_plan",
+    "decision",
+    "blocking_codes",
+    "next_gate",
+    "trace_path",
+    "self_verdict"
+  ],
+  "properties": {
+    "profile": {"type": "string", "const": "PERFIL_SEGURIDAD_GOBERNANZA_LF_v0.1_CANDIDATO"},
+    "mode": {"type": "string", "enum": ["READ_ONLY_REVIEW", "SECURITY_HOLD_REPAIR", "CONTROLLED_IMPACT_GATE", "CLOSURE_GATE", "BLOCKING_GATE"]},
+    "route_applied": {
+      "type": "object",
+      "required": ["router", "operational_source", "active_asset", "adapter_or_protocol", "verification", "closure"]
+    },
+    "assets_checked": {"type": "array", "items": {"type": "object"}},
+    "operation_protocol": {
+      "type": "object",
+      "required": ["operation_code", "execution_id_required", "required_steps_required", "judge_required"]
+    },
+    "scope_binding": {
+      "type": "object",
+      "required": ["requested", "allowed", "prohibited", "out_of_scope", "state_changes_allowed", "state_changes_blocked"]
+    },
+    "authorization_binding": {
+      "type": "object",
+      "required": ["authorization_status", "authorized_systems", "authorized_paths", "authorized_operations", "ambiguous_items"]
+    },
+    "risk_register": {"type": "array", "items": {"type": "object"}},
+    "required_evidence": {"type": "array", "items": {"type": "object"}},
+    "step_enforcement": {"type": "array", "items": {"type": "object"}},
+    "tool_permissions": {
+      "type": "object",
+      "required": ["allowed_tools", "blocked_tools", "write_permissions", "runtime_permissions"]
+    },
+    "readback_plan": {"type": "object"},
+    "judge_plan": {"type": "object"},
+    "decision": {"type": "string"},
+    "blocking_codes": {"type": "array", "items": {"type": "string"}},
+    "next_gate": {"type": "string"},
+    "trace_path": {
+      "type": "object",
+      "required": ["execution_id", "evidence_paths", "log_required"]
+    },
+    "self_verdict": {"type": "string", "enum": ["PASS", "PASS_WITH_RESTRICTIONS", "NEEDS_INPUT", "NEEDS_ADJUSTMENT", "BLOCKED"]}
+  },
+  "additionalProperties": false
+}
