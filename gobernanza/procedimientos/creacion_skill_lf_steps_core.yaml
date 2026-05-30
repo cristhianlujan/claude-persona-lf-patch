@@ -1,5 +1,8 @@
-version: v0.2
+version: v0.3
 operation: CREACION_SKILL_LF
+status: CANDIDATO_READ_ONLY
+source_model: GIT_FIRST_YAML
+regularization: REGULARIZACION_STEP_GATE_L2L3_001
 steps:
   - order: 1
     id: router
@@ -37,3 +40,9 @@ steps:
   - order: 12
     id: research_pack
     evidence: internal_public_trusted_sources
+  - order: 13
+    id: research_to_rules_matrix
+    evidence: research_to_rules_matrix_present
+  - order: 14
+    id: decision_matrix
+    evidence: decision_matrix_present
