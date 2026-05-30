@@ -1,0 +1,19 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "CREACION_PERFIL_LF",
+  "execution_id": "EXEC-SANDBOX-POSITIVE-RECEIPT-20260530-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "sandbox-contract-sha-positive-test",
+  "judge_sha": "sandbox-judge-sha-positive-test",
+  "source_sha_list": [
+    "sandbox-source-sha-positive-test"
+  ],
+  "target_paths": [
+    "profiles/__sandbox_contract_gate_positive_receipt__/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-05-30T08:40:00Z"
+}
