@@ -1,45 +1,48 @@
-version: v0.3
+version: v0.4
 operation: CREACION_SKILL_LF
+status: CANDIDATO_READ_ONLY
+source_model: GIT_FIRST_YAML
+regularization: REGULARIZACION_STEP_GATE_L2L3_001
 steps:
-  - order: 13
+  - order: 15
     id: canonical_design
     evidence: design_complete
-  - order: 14
+  - order: 16
     id: operational_evidence_pack_check
     evidence: examples_fixtures_evals_judges_self_repair_or_explicit_na
-  - order: 15
+  - order: 17
     id: completeness
     evidence: output_completeness
-  - order: 16
+  - order: 18
     id: compatibility
     evidence: profile_card_adapter_compatibility
-  - order: 17
+  - order: 19
     id: rubric
     evidence: rubric_result
-  - order: 18
+  - order: 20
     id: sandbox
     evidence: sandbox_result
-  - order: 19
+  - order: 21
     id: manifest
     evidence: manifest_present
-  - order: 20
+  - order: 22
     id: rule_trace
     evidence: trace_present
-  - order: 21
+  - order: 23
     id: github_write
     evidence: file_commit_sha
-  - order: 22
+  - order: 24
     id: github_readback
     evidence: file_readback_sha
-  - order: 23
+  - order: 25
     id: evidence_log
     evidence: lf_eventos_if_available
-  - order: 24
+  - order: 26
     id: contract_judge
     evidence: judge_pass
-  - order: 25
+  - order: 27
     id: close
     evidence: no_blocking_observations
-  - order: 26
+  - order: 28
     id: report_output
     evidence: act0046_report_or_execution_summary
