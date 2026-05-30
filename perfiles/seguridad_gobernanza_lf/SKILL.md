@@ -1,6 +1,6 @@
 # PERFIL_SEGURIDAD_GOBERNANZA_LF_v0.1_CANDIDATO
 
-Estado: CANDIDATO / SECURITY_HOLD_OPERATIVO / EN_REPARACION_CONTROLADA
+Estado: VIGENTE_READ_ONLY_CONTROLADO / PRODUCCION_CONTROLADA_READ_ONLY / APROBADO_READ_ONLY_CONTROLADO
 Proyecto: 00_GOBERNANZA_PORTAFOLIO_OPERATIVO_LF
 Tipo: PERFIL_LF
 Ambito: TRANSVERSAL_GOV
@@ -8,18 +8,19 @@ Runtime: NO_HABILITADO
 Impacto automatico: BLOQUEADO
 Fuente operativa: ACT-0001 -> Supabase public.v_lf_fuente_operativa -> ACT-0045 -> lf_operation_*
 Execution repair id: EXEC-PERFIL-SEGURIDAD-GOBERNANZA-LF-20260530-001
+Production promotion scope: READ_ONLY_CONTROLADO
 
 ## 0. Hard status
 
-Este perfil esta bajo Security Hold por cierre previo sin ejecucion formal completa. Esta version repara la debilidad operativa del perfil, pero NO lo aprueba, NO levanta el hold, NO habilita runtime y NO permite impacto automatico.
+Este perfil fue reparado, validado y promovido a PRODUCCION_CONTROLADA_READ_ONLY para uso operativo de gobernanza read-only. No habilita runtime, no permite impacto automatico y no autoriza escrituras sin Router, Supabase, protocolo aplicable, evidencia y verificacion.
 
-Para salir de hold requiere una reejecucion completa de CREACION_PERFIL_LF con todos los pasos requeridos en lf_operation_execution_steps, judge PASS y log operativo con execution_id.
+Cualquier intento de pasar este perfil a runtime, impacto automatico, produccion ejecutiva con escritura o cambio de estado fuera de read-only requiere una nueva ejecucion formal, judge PASS y aprobacion explicita.
 
 ## 1. Proposito operativo
 
 Perfil madre para prevenir bypass de gobernanza cuando una tarea LF involucra IA, herramientas, perfiles, cards, skills, documentos, GitHub, Supabase, Drive, HTML, aprobaciones ambiguas, cierre operativo, contexto rojo, doble verdad o riesgo de impacto.
 
-No reemplaza al Router. No aprueba. No ejecuta por si solo. No convierte una conversacion en impacto. Su funcion es producir un Security Governance Decision Pack ejecutable y bloquear si falta contrato, evidencia, alcance, autorizacion, judge o trazabilidad.
+No reemplaza al Router. No aprueba escrituras por si solo. No convierte una conversacion en impacto. Su funcion es producir un Security Governance Decision Pack ejecutable y bloquear si falta contrato, evidencia, alcance, autorizacion, judge o trazabilidad.
 
 ## 2. Principios rectores
 
@@ -207,12 +208,12 @@ Bloquear automaticamente si:
 
 ## 13. Cards consumidas
 
-Cards candidatas relacionadas:
+Cards relacionadas, aprobadas para uso read-only controlado con este perfil:
 
 1. CARD_MANEJO_SEGURO_IA_GOBERNANZA_LF_v0.1_CANDIDATO
 2. CARD_ZERO_TRUST_GOVERNANCE_SCOPE_CONTROL_LF_v0.1_CANDIDATO
 
-Estas cards siguen bloqueadas hasta reejecucion formal propia. No crear cards adicionales sin nuevo ciclo Router -> ACT-0045 -> protocolo -> sandbox.
+Estas cards no habilitan runtime, impacto automatico ni escritura. Su uso es operativo read-only controlado dentro del flujo Router -> Supabase -> activo vigente -> protocolo -> verificacion -> cierre.
 
 ## 14. Research pack base usado para esta reparacion
 
@@ -242,38 +243,41 @@ Patrones extraidos:
 
 ## 15. Test sandbox minimo
 
-Caso: reparar un perfil y dos cards candidatas de seguridad de gobernanza sin runtime.
+Caso: uso operativo read-only del perfil y dos cards candidatas de seguridad de gobernanza sin runtime.
 
 PASS si:
 
 - inicia por Router;
 - consulta Supabase;
-- usa ACT-0045;
-- abre execution_id formal;
+- usa ACT-0045 si aplica;
+- abre execution_id formal cuando hay impacto;
 - registra pasos requeridos ejecutados;
-- ejecuta research_pack real;
+- ejecuta research_pack real si crea/repara activos;
 - no crea perfil Zero Trust separado;
 - no crea cards extras;
 - no ejecuta HTML;
 - no habilita runtime;
-- no marca VIGENTE/APROBADO/VALIDATED;
+- no habilita impacto automatico;
+- no marca VALIDATED ni produccion ejecutiva con escritura;
 - realiza readback si escribe;
-- bloquea correctamente si herramienta falla;
-- conserva SECURITY_HOLD hasta judge completo.
+- bloquea correctamente si herramienta falla.
 
-## 16. Criterio de avance
+## 16. Criterio de uso vigente
 
-Este perfil queda CANDIDATO / SECURITY_HOLD_OPERATIVO / EN_REPARACION_CONTROLADA.
+Este perfil queda VIGENTE_READ_ONLY_CONTROLADO / PRODUCCION_CONTROLADA_READ_ONLY / APROBADO_READ_ONLY_CONTROLADO.
 
-Puede avanzar solo si:
+Puede usarse para:
 
-1. `CREACION_PERFIL_LF` tiene execution_id formal completo.
-2. Todos los pasos required=true estan PASS o NOT_APPLICABLE_JUSTIFIED permitido.
-3. Research pack esta completo y con evidencia fuerte.
-4. GitHub readback confirma archivos y contenido.
-5. Mini-judge del perfil da PASS o PASS_WITH_RESTRICTIONS sin hard-fails.
-6. Judge operativo da PASS.
-7. Log operativo referencia execution_id.
-8. El usuario aprueba explicitamente levantar el hold.
+1. revisar operaciones de gobernanza LF;
+2. bloquear bypass de Router, fuente operativa, alcance o herramienta;
+3. consumir las dos cards de seguridad aprobadas read-only;
+4. emitir Security Governance Decision Pack;
+5. recomendar siguiente gate seguro.
 
-Mientras falte cualquiera de estos puntos, el perfil no es produccion general, no es runtime y no puede usarse como aprobado read-only.
+No puede usarse para:
+
+1. habilitar runtime;
+2. ejecutar impacto automatico;
+3. aprobar escrituras por si solo;
+4. saltar Router, Supabase o protocolo aplicable;
+5. marcar VALIDATED o produccion ejecutiva con escritura sin nuevo ciclo formal.
