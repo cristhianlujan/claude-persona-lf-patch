@@ -1,0 +1,19 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "CREACION_PERFIL_LF",
+  "execution_id": "EXEC-SANDBOX-TARGET-MISMATCH-20260530-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "sandbox-contract-sha-target-mismatch-test",
+  "judge_sha": "sandbox-judge-sha-target-mismatch-test",
+  "source_sha_list": [
+    "sandbox-source-sha-target-mismatch-test"
+  ],
+  "target_paths": [
+    "profiles/__sandbox_contract_gate_other_target__/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-05-30T09:48:00Z"
+}
