@@ -22,3 +22,7 @@ jobs:
       - name: Validate LF contract
         run: |
           python3 scripts/lf_contract_check.py
+
+      - name: Run LF validation engine self-test
+        run: |
+          python3 sandbox/lf_contract_gate_test/lf_validation_engine_v0_10_2_selftest.py
