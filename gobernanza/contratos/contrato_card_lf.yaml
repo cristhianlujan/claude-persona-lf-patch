@@ -1,6 +1,7 @@
-version: v0.1
+version: v0.2
 status: CANDIDATO_READ_ONLY
 operation: CREACION_CARD_LF
+regularization: REGULARIZACION_STEP_GATE_L2L3_001
 required_before_write:
   - read_router
   - read_operational_source
@@ -9,6 +10,10 @@ required_before_write:
   - validate_repo
   - validate_path
   - validate_file_name
+  - research_pack_pass
+  - research_pack_evidence_strong
+  - research_to_rules_matrix_present
+  - decision_matrix_present
 allowed:
   repository: cristhianlujan/claude-persona-lf-patch
   path_prefix: /cards/
@@ -20,6 +25,11 @@ blocked:
   - write_without_contract
   - write_without_readback
   - write_to_marketplace_ssot_for_cards
+  - missing_research_pack
+  - weak_research_pack_evidence
+  - missing_research_to_rules_matrix
+  - missing_decision_matrix
+  - assistant_freeform_decision
   - enable_runtime
   - mark_vigente
   - mark_aprobado
@@ -27,5 +37,9 @@ required_after_write:
   - github_readback
   - commit_sha
   - blob_sha
+  - all_required_steps_pass
+  - source_sha_present
+  - contract_sha_present
+  - judge_sha_present
   - contract_judge
   - evidence_log_if_available
