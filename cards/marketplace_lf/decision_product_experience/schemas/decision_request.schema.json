@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MarketPlace LF Decision Request",
+  "type": "object",
+  "required": [
+    "request_type",
+    "decision_question",
+    "affected_surface",
+    "scope",
+    "source_authority",
+    "blocked_impacts"
+  ],
+  "properties": {
+    "request_type": {
+      "type": "string",
+      "enum": ["marketplace_product_experience_decision"]
+    },
+    "decision_question": { "type": "string", "minLength": 5 },
+    "affected_surface": {
+      "type": "string",
+      "enum": [
+        "hero",
+        "ruta_claridad",
+        "juan_digital",
+        "map_surface",
+        "cta",
+        "simulator",
+        "onboarding",
+        "trust_block",
+        "human_asset",
+        "html_sandbox",
+        "copy_sensitive",
+        "other_marketplace_surface"
+      ]
+    },
+    "scope": {
+      "type": "string",
+      "enum": ["sandbox_read_only", "candidate_read_only", "quality_review_only"]
+    },
+    "options": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "source_authority": { "type": "array", "items": { "type": "string" } },
+    "blocked_impacts": { "type": "array", "items": { "type": "string" } },
+    "notes": { "type": "string" }
+  },
+  "additionalProperties": false
+}

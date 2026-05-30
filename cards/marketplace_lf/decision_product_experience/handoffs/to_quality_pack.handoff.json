@@ -1,0 +1,23 @@
+{
+  "handoff_id": "marketplace_lf_decision_product_experience_to_quality_pack",
+  "from": "cards/marketplace_lf/decision_product_experience",
+  "to": "quality_pack_review",
+  "status": "CANDIDATE_READ_ONLY",
+  "required_evidence": [
+    "router_applied",
+    "supabase_source_checked",
+    "act_0045_used_as_creator_skill",
+    "pack_structure_complete",
+    "schemas_present",
+    "judges_present",
+    "fixtures_present",
+    "evals_present",
+    "runtime_disabled",
+    "automatic_impact_blocked",
+    "no_drive_write",
+    "no_supabase_write",
+    "no_validated",
+    "no_production"
+  ],
+  "next_gate": "QUALITY_PACK_REVIEW_THEN_SANDBOX_TEST"
+}
