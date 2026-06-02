@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GovernanceSecurityProfileOutput",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["mode", "source_of_truth", "active_asset", "operation_boundary", "decision", "readback_required", "runtime_enabled", "automatic_impact", "validated", "vigente", "approved"],
+  "properties": {
+    "mode": {"enum": ["ALLOW_READ_ONLY", "ROUTE_TO_ACT0045", "ROUTE_TO_OFFICIAL_SKILL", "WAIT_FOR_SKILL_OUTPUT", "VERIFY_READBACK_ONLY", "INCIDENT_CONTAINMENT_REQUIRED", "ASK_USER_ONLY_IF_REQUIRED_BY_PROTOCOL", "BLOCKED_BY_GOVERNANCE"]},
+    "source_of_truth": {"type": "string"},
+    "active_asset": {"type": "string"},
+    "operation_boundary": {"type": "string"},
+    "decision": {"type": "string"},
+    "evidence": {"type": "array", "items": {"type": "string"}},
+    "readback_required": {"type": "boolean"},
+    "runtime_enabled": {"const": false},
+    "automatic_impact": {"const": "BLOCKED"},
+    "validated": {"const": false},
+    "vigente": {"const": false},
+    "approved": {"const": false}
+  }
+}
