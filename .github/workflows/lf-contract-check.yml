@@ -26,3 +26,7 @@ jobs:
       - name: Run LF validation engine self-test
         run: |
           python3 sandbox/lf_contract_gate_test/lf_validation_engine_v0_10_2_selftest.py
+
+      - name: Run NO BYPASS judge profile-card-skill self-test
+        run: |
+          python3 sandbox/no_bypass_judge_profile_card_skill/no_bypass_judge_selftest.py
