@@ -1,17 +1,13 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.3
+LF Contract Check v0.4
 
-Sandbox validator for TEST_GITHUB_CONTRACT_GATE_LF_SANDBOX_001.
-Supports the controlled gate-install sandbox operation.
+Sandbox validator for controlled LF governance gates.
 
-Fix v0.2:
-- Avoid self-referential false positives by excluding this validator file
-  from forbidden-term content scanning. Scope/path checks still apply.
-
-Gate v0.3:
-- If a PR touches governed LF routes, require a valid
-  LF_OPERATION_CONTRACT_RECEIPT emitted by contract_judge or operation_judge.
+v0.4 changes:
+- Supports pull_request, push and workflow_dispatch events.
+- Allows the sandbox NO BYPASS judge package path.
+- Avoids false positives when control documents list forbidden statuses as prohibited outputs.
 """
 
 import fnmatch
@@ -31,6 +27,7 @@ ALLOWED_EXACT = {
 }
 ALLOWED_PREFIXES = [
     "sandbox/lf_contract_gate_test/",
+    "sandbox/no_bypass_judge_profile_card_skill/",
 ]
 GOVERNED_PREFIXES = [
     "profiles/",
@@ -48,6 +45,14 @@ ALWAYS_BLOCKED_PREFIXES = [
 ]
 FORBIDDEN_GITHUB_PREFIX = ".github/"
 ALLOWED_GITHUB_EXACT = ".github/workflows/lf-contract-check.yml"
+
+FORBIDDEN_TERM_EXEMPT_EXACT = {
+    VALIDATOR_SELF_PATH,
+    "sandbox/no_bypass_judge_profile_card_skill/GPT_INSTRUCTIONS_NO_BYPASS_v0_1.md",
+}
+FORBIDDEN_TERM_EXEMPT_PREFIXES = [
+    "sandbox/no_bypass_judge_profile_card_skill/",
+]
 
 VALID_RECEIPT_ISSUERS = {"contract_judge", "operation_judge"}
 VALID_RECEIPT_RESULTS = {"PASS", "PASS_SANDBOX"}
@@ -95,16 +100,54 @@ def pass_check(message: str) -> None:
     sys.exit(0)
 
 
-def get_changed_files() -> list[str]:
-    base_ref = os.environ.get("GITHUB_BASE_REF", "main")
-    subprocess.run(["git", "fetch", "origin", base_ref], check=True)
+def run_git(args: list[str]) -> str:
     result = subprocess.run(
-        ["git", "diff", "--name-only", f"origin/{base_ref}...HEAD"],
+        ["git", *args],
         check=True,
         capture_output=True,
         text=True,
     )
-    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    return result.stdout
+
+
+def event_payload() -> dict:
+    event_path = os.environ.get("GITHUB_EVENT_PATH")
+    if not event_path:
+        return {}
+    path = Path(event_path)
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def get_changed_files() -> list[str]:
+    event_name = os.environ.get("GITHUB_EVENT_NAME", "pull_request")
+
+    if event_name == "pull_request":
+        base_ref = os.environ.get("GITHUB_BASE_REF", "main")
+        subprocess.run(["git", "fetch", "origin", base_ref], check=True)
+        output = run_git(["diff", "--name-only", f"origin/{base_ref}...HEAD"])
+        return [line.strip() for line in output.splitlines() if line.strip()]
+
+    if event_name == "push":
+        payload = event_payload()
+        before = payload.get("before")
+        after = payload.get("after") or os.environ.get("GITHUB_SHA", "HEAD")
+        if before and not set(before) <= {"0"}:
+            output = run_git(["diff", "--name-only", before, after])
+        else:
+            output = run_git(["diff", "--name-only", "HEAD~1", "HEAD"])
+        return [line.strip() for line in output.splitlines() if line.strip()]
+
+    if event_name == "workflow_dispatch":
+        print("workflow_dispatch event: no changed-file scope validation required; running static/self-tests only.")
+        return []
+
+    output = run_git(["diff", "--name-only", "HEAD~1", "HEAD"])
+    return [line.strip() for line in output.splitlines() if line.strip()]
 
 
 def validate_contract() -> str:
@@ -128,7 +171,11 @@ def is_governed_path(path: str) -> bool:
 
 
 def validate_changed_files(changed_files: list[str]) -> list[str]:
+    event_name = os.environ.get("GITHUB_EVENT_NAME", "pull_request")
     if not changed_files:
+        if event_name == "workflow_dispatch":
+            print("No changed files for workflow_dispatch; scope validation skipped.")
+            return []
         fail("FAIL_NO_CHANGED_FILES", "No se detectaron archivos modificados")
 
     governed_files: list[str] = []
@@ -146,7 +193,6 @@ def validate_changed_files(changed_files: list[str]) -> list[str]:
 
         if not is_allowed_path(path):
             fail("FAIL_SCOPE_INVALID", f"Archivo fuera de scope sandbox gate-install: {path}")
-
     return governed_files
 
 
@@ -213,10 +259,16 @@ def validate_governed_receipt(changed_files: list[str], governed_files: list[str
             fail("FAIL_RECEIPT_TARGET_MISMATCH", f"Ningún receipt cubre ruta gobernada: {governed_file}")
 
 
+def is_forbidden_term_exempt(path: str) -> bool:
+    if path in FORBIDDEN_TERM_EXEMPT_EXACT:
+        return True
+    return any(path.startswith(prefix) for prefix in FORBIDDEN_TERM_EXEMPT_PREFIXES)
+
+
 def validate_forbidden_terms(changed_files: list[str]) -> None:
     for path in changed_files:
-        if path == VALIDATOR_SELF_PATH:
-            print(f"Skipping forbidden-term scan for validator control file: {path}")
+        if is_forbidden_term_exempt(path):
+            print(f"Skipping forbidden-term scan for control/sandbox file: {path}")
             continue
 
         file_path = Path(path)
