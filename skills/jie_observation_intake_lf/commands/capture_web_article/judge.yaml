@@ -1,0 +1,119 @@
+# adapter_judge_v0_2.yaml
+# ADAPTER_JIE_WEB_ARTICLE_CAPTURE_LF_CANDIDATO_V0_2
+# Estado: CANDIDATO / READ_ONLY · Lote 20B
+# Step 16 del protocolo CREACION_ADAPTER_LF
+
+adapter_judge:
+  nombre: JUDGE_ADAPTER_JIE_WEB_V0_2
+  version: v0.2
+  tipo: DEPTH_AND_CORRECTNESS
+  aplica_a: ADAPTER_JIE_WEB_ARTICLE_CAPTURE_LF_CANDIDATO_V0_2
+  ejecutar_despues_de: eval_suite_v0_2.yaml (todos los casos)
+
+  criterios:
+
+    - id: J01
+      nombre: NO_INVENCION_CAMPOS
+      descripcion: >
+        Ningún campo extraído contiene valores no presentes en el texto visible de la página.
+        Aplica especialmente a autor_declarado, fecha_publicacion_declarada,
+        claims_json.verificado_fuente_primaria y claims sin fuente_en_pagina.
+      fail_if:
+        - "autor_declarado tiene valor distinto de NOT_FOUND cuando no hay autoría visible"
+        - "fecha_publicacion_declarada es 'hoy', 'reciente' u otro valor ambiguo no literal"
+        - "claims_json[].verificado_fuente_primaria = true (nunca puede ser true en el adapter)"
+        - "claims_json[].fuente_en_pagina = null cuando claims_json tiene valores"
+      threshold: 0 infracciones toleradas
+      override: ninguno — fallo J01 siempre resulta en FAIL del judge
+      evidencia_requerida: campos de EVAL_001 y EVAL_007 con valores literales verificables
+
+    - id: J02
+      nombre: GATE_COVERAGE_COMPLETA
+      descripcion: Los 16 gates (GATE_00 a GATE_15) están implementados y documentados en gate_matrix.md
+      fail_if:
+        - "alguno de GATE_00 a GATE_15 no está definido en gate_matrix.md"
+        - "algún gate no tiene: acción, mini-judge, PASS, BLOCK, evidencia requerida"
+      threshold: 16/16 gates presentes y completos
+      override: ninguno
+      evidencia_requerida: gate_matrix.md con las 16 secciones
+
+    - id: J03
+      nombre: ANTIDUPLICATE_HASH_CHECK
+      descripcion: GATE_07 verifica url_hash contra lf_capture_records antes de cualquier INSERT
+      fail_if:
+        - "EVAL_004 (hash Reevalúa e5ef8029…) no resulta en BLOCKED_DUPLICATE_POLICY"
+        - "EVAL_005 (hash RTC 84a5bc12…, content_hash diferente) no resulta en REGISTERED_VERSION"
+        - "alguna URL duplicada genera nueva fila en lf_capture_records"
+      threshold: 0 duplicados no detectados
+      override: ninguno
+      evidencia_requerida: resultados de EVAL_004 y EVAL_005 con estados esperados
+
+    - id: J04
+      nombre: FLOW_TERMINATED_INVARIANT
+      descripcion: Todos los caminos de ejecución retornan flow_terminated=true
+      fail_if:
+        - "cualquier path de ejecución retorna sin flow_terminated=true"
+        - "DRY_RUN o READ_ONLY_RESULT retornan sin flow_terminated=true"
+        - "cualquier BLOCKED_* retorna sin flow_terminated=true"
+      threshold: 0 caminos sin flow_terminated=true
+      override: ninguno
+      evidencia_requerida: todos los 12 evals con flow_terminated=true en output
+
+    - id: J05
+      nombre: OPERATION_CODE_REGISTERED
+      descripcion: GATE_00 verifica operation_code en lf_operation_registry antes de cualquier acción
+      fail_if:
+        - "EVAL_011 (operation_code inválido) no resulta en BLOCKED_OPERATION_CODE_INVALID"
+        - "GATE_00 se omite en algún path"
+        - "operation_code se usa sin verificar en registry"
+      threshold: 0 omisiones de GATE_00
+      override: ninguno
+      evidencia_requerida: resultado de EVAL_011 con BLOCKED_OPERATION_CODE_INVALID
+
+    - id: J06
+      nombre: LOG_KEY_CONTROLLED
+      descripcion: Todo log en lf_log_operativo usa log_key registrado en lf_log_config
+      fail_if:
+        - "se escribe en lf_log_operativo con log_key no definido en schemas/log_config_keys.sql"
+        - "GATE_10 no se ejecuta antes de GATE_14"
+      threshold: 0 log_keys no controlados
+      override: ninguno
+      evidencia_requerida: log_key en cada evento de lf_log_operativo ∈ {WEB_EXTRACTION_*}
+
+    - id: J07
+      nombre: READBACK_REQUIRED
+      descripcion: extraction_successful=true solo después de readback confirmado en GATE_13
+      fail_if:
+        - "extraction_successful=true sin SELECT de confirmación en lf_capture_records"
+        - "db_write_confirmed=true sin resultado de GATE_13"
+        - "EVAL_008 (DB write failed) retorna extraction_successful=true"
+      threshold: 0 afirmaciones sin readback
+      override: ninguno
+      evidencia_requerida: resultados de EVAL_001 y EVAL_008 con db_write_confirmed correcto
+
+    - id: J08
+      nombre: DEPTH_EJEMPLOS
+      descripcion: Los ejemplos (bueno y malo) tienen profundidad operativa real
+      fail_if:
+        - "ejemplo bueno no tiene todos los gates ejecutados visibles"
+        - "ejemplo malo no tiene gate_fallido + campo_esperado + corrección por cada error"
+        - "menos de 3 errores con diagnóstico completo en ejemplo malo"
+      threshold: "≥1 ejemplo bueno completo + ≥1 ejemplo malo con ≥3 errores diagnosticados"
+      override: PASS_WITH_RESTRICTIONS si ejemplos tienen 1-2 errores documentados (no 3+)
+      evidencia_requerida: examples/example_good_reevalua.yaml y examples/example_bad_kambista.yaml
+
+  veredictos_posibles:
+    PASS:
+      condicion: todos J01-J08 cumplen sus thresholds
+      accion: promover a paso de homologación (EN_REVISION)
+
+    PASS_WITH_RESTRICTIONS:
+      condicion: solo J08 parcialmente cumplido, J01-J07 todos PASS
+      accion: documentar restricciones, continuar homologación con nota
+
+    FAIL:
+      condicion: cualquier J01-J07 incumplido
+      accion: NO promover — volver a CANDIDATO, abrir backlog item con criterio fallido
+
+  estado_actual: PENDIENTE_EJECUCION
+  prerequisito: Correr eval_suite_v0_2.yaml completa antes de ejecutar este judge

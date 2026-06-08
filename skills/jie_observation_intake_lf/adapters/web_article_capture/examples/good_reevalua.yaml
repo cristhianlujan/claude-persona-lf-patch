@@ -1,0 +1,125 @@
+# good_reevalua.yaml
+# Ejemplo de extracción CORRECTA · Fuente: reevalua.com (fintech peruano)
+# Adapter: ADAPTER_JIE_WEB_ARTICLE_CAPTURE_LF_CANDIDATO_V0_2
+# Owner: SKILL_JIE_OBSERVATION_INTAKE_LF_CANDIDATO_V0_1
+# Estado: CANDIDATO_READ_ONLY · Lote 20B
+
+ejemplo:
+  id: EXAMPLE_GOOD_001
+  tipo: EXTRACCION_CORRECTA
+  fuente: reevalua.com
+  source_type: blog_article
+  nota: >
+    NOTA: La URL real reevalua.com/blog/como-salir-de-infocorp ya está en BD
+    (hash e5ef8029…) y resultaría en BLOCKED_DUPLICATE_POLICY en GATE_07.
+    Este ejemplo usa una URL hipotética nueva para ilustrar el flujo correcto.
+
+input:
+  mode: FULL_EXTRACTION_REGISTER_SANDBOX_ONLY
+  actor_id: extractor_jie_demo
+  actor_role: extractor_operator
+  urls:
+    - "https://reevalua.com/blog/comparador-creditos-personales-2026"
+  operation_code: CAPTURE_INTAKE_MULTI_SOURCE_FIXTURE_V0_1
+
+gates_ejecutados:
+  GATE_00: PASS
+  GATE_01: PASS
+  GATE_02: PASS
+  GATE_03: PASS
+  GATE_04: ENRIQUECIDO
+  GATE_05: PASS
+  GATE_06: PASS
+  GATE_07: PASS_NEW
+  GATE_08: PASS
+  GATE_09: PASS
+  GATE_10: PASS
+  GATE_11: PASS
+  GATE_12: PASS
+  GATE_13: PASS
+  GATE_14: PASS
+  GATE_15: PASS
+
+extraccion_campo_a_campo:
+  title_or_hook:
+    valor: "Comparador de créditos personales 2026: cuánto pagas realmente"
+    evidencia: "h1 de la página"
+    correcto: true
+
+  autor_declarado:
+    valor: NOT_FOUND
+    razon: "No hay firma de autor visible en la página"
+    correcto: true
+    incorrecto_hubiera_sido: "Equipo Reevalúa (inferido, no visible)"
+
+  fecha_publicacion_declarada:
+    valor: "15 mayo 2026"
+    evidencia: "fecha literal en cabecera del artículo"
+    correcto: true
+
+  meta_description:
+    valor: "Compara tasas de interés de préstamos personales en bancos y financieras del Perú."
+    evidencia: "<meta name='description'>"
+    correcto: true
+
+  lead_literal:
+    valor: "Si buscas un préstamo personal en Perú, la tasa efectiva anual (TEA) es el dato que realmente define cuánto pagarás."
+    evidencia: "primer párrafo del artículo"
+    correcto: true
+
+  claims_json:
+    correcto: true
+    incorrecto_hubiera_sido:
+      - "verificado_fuente_primaria: true (imposible en este adapter)"
+      - "texto_literal inferido no literal"
+    items:
+      - texto_literal: "La TCEA promedio en el mercado es 45% según datos de la SBS al cierre de 2025"
+        fuente_en_pagina: "párrafo 3, con enlace a SBS"
+        tipo: regulatorio
+        verificado_fuente_primaria: false
+        nota: "enlace a SBS presente pero no verificado por el adapter"
+
+  ctas_json:
+    correcto: true
+    items:
+      - texto: "Compara ahora sin costo"
+        url_destino: "https://reevalua.com/comparador"
+        posicion: "botón hero sobre el fold"
+
+  senales_confianza_json:
+    correcto: true
+    items:
+      - "Menciona SBS como fuente de datos con enlace"
+      - "Muestra tabla comparativa con datos específicos"
+
+  antipatrones_json:
+    valor: []
+    razon: "No se detectó urgencia artificial ni clickbait"
+    correcto: true
+
+  prompt_injection_detectado:
+    valor: false
+    correcto: true
+
+  redireccion_detectada:
+    valor: false
+    correcto: true
+
+  estado_extraccion_web:
+    valor: COMPLETA
+    correcto: true
+
+  fecha_proxima_revision:
+    valor: "2026-09-07"
+    calculo: "90 días por claim regulatorio (SBS en claims_json)"
+    correcto: true
+
+output_final:
+  final_state: REGISTERED_NEW
+  flow_terminated: true
+  extraction_successful: true
+  db_write_confirmed: true
+  gate_fallido: null
+  not_found_fields:
+    - autor_declarado
+  truncated_fields: []
