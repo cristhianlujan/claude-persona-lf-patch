@@ -1,0 +1,99 @@
+# input_contract_v2.yaml
+# ADAPTER_JIE_WEB_ARTICLE_CAPTURE_LF_CANDIDATO_V0_2
+# Estado: CANDIDATO / READ_ONLY · Lote 20B
+
+input_contract:
+  version: v2
+  adapter: ADAPTER_JIE_WEB_ARTICLE_CAPTURE_LF_CANDIDATO_V0_2
+  gate_de_validacion: GATE_02_MODE_CONTRACT
+
+  campos_requeridos:
+    - nombre: mode
+      tipo: enum
+      valores: [FULL_EXTRACTION_REGISTER_SANDBOX_ONLY, DRY_RUN, READ_ONLY_RESULT,
+                ADDENDUM_ONLY, ADMIN_OVERRIDE]
+      descripcion: Modo de ejecución del adapter
+
+    - nombre: actor_id
+      tipo: string
+      restriccion: no vacío
+      descripcion: Identificador del actor que invoca el adapter
+
+    - nombre: actor_role
+      tipo: enum
+      valores: [viewer, extractor_operator, register_operator,
+                kb_curator, admin_sandbox]
+      descripcion: Rol del actor — controla permisos en GATE_01
+
+    - nombre: urls
+      tipo: array[string]
+      minimo: 1
+      maximo: 10  # sandbox
+      descripcion: Lista de URLs a procesar
+
+  campos_opcionales:
+    - nombre: operation_code
+      tipo: string
+      default: CAPTURE_INTAKE_MULTI_SOURCE_FIXTURE_V0_1
+      descripcion: Debe existir en lf_operation_registry — verificado en GATE_00
+
+    - nombre: allow_new_version
+      tipo: boolean
+      default: true
+      descripcion: Si true, registra nueva versión cuando url_hash ya existe pero content_hash cambió
+
+    - nombre: allow_addendum
+      tipo: boolean
+      default: true
+      descripcion: Permite ADDENDUM sobre registros existentes
+
+    - nombre: max_urls_per_run
+      tipo: integer
+      default: 10
+      maximo_sandbox: 10
+      descripcion: Límite de URLs por corrida
+
+    - nombre: strict_full_register
+      tipo: boolean
+      default: true
+      descripcion: Si true, exige todos los campos de evidencia en GATE_09
+
+    - nombre: admin_override_reason
+      tipo: string
+      requerido_si: mode == ADMIN_OVERRIDE
+      descripcion: Motivo del override. Obligatorio para admin_sandbox en ADMIN_OVERRIDE
+
+    - nombre: target_record_id
+      tipo: uuid
+      requerido_si: mode == ADDENDUM_ONLY (opcional si se provee URL)
+      descripcion: UUID del registro existente al que añadir addendum
+
+  validaciones_criticas:
+    - "operation_code debe existir en lf_operation_registry (GATE_00)"
+    - "actor_role debe tener permiso para mode (GATE_01, ver roles_permissions_matrix.md)"
+    - "URLs deben comenzar con https:// o http://"
+    - "URLs no pueden contener credenciales (user:pass@)"
+    - "URLs no pueden usar protocolos locales (file://, localhost, 127.x)"
+    - "max_urls_per_run <= 10 en sandbox"
+    - "Si mode=ADMIN_OVERRIDE: actor_role debe ser admin_sandbox y admin_override_reason presente"
+    - "Si mode=ADDENDUM_ONLY: debe haber target_record_id o URL de registro existente"
+
+  ejemplo_minimo_valido:
+    mode: FULL_EXTRACTION_REGISTER_SANDBOX_ONLY
+    actor_id: extractor_jie_01
+    actor_role: extractor_operator
+    urls:
+      - https://reevalua.com/blog/nuevo-articulo-2026
+
+  ejemplo_con_todos_los_campos:
+    mode: FULL_EXTRACTION_REGISTER_SANDBOX_ONLY
+    actor_id: register_jie_intake
+    actor_role: register_operator
+    urls:
+      - https://reevalua.com/blog/comparador-creditos-2026
+      - https://kambista.com/blog/tipo-de-cambio-hoy
+    operation_code: CAPTURE_INTAKE_MULTI_SOURCE_FIXTURE_V0_1
+    allow_new_version: true
+    allow_addendum: true
+    max_urls_per_run: 10
+    strict_full_register: true
