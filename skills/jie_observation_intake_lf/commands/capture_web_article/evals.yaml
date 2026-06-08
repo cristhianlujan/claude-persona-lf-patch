@@ -139,7 +139,7 @@ eval_suite:
         urls: ["https://kambista.com/blog/articulo-largo-truncado-test"]
       condicion_prueba: "raw_text termina abruptamente en mitad de oración"
       expected_gate_final: GATE_15
-      expected_state: REGISTERED_NEW
+      expected_state: EXTRACCION_PARCIAL
       expected_db:
         lf_capture_records: >
           truncado_en != null,
