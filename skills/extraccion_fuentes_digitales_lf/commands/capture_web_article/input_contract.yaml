@@ -1,2 +1,25 @@
 input_contract: capture_web_article
 owner_skill: SKILL_EXTRACCION_FUENTES_DIGITALES_LF
+asset_code: ACT-0052
+adapter: ADAPTER_WEB_ARTICLE_CAPTURE_LF
+required:
+  - mode
+  - actor_id
+  - actor_role
+  - urls
+allowed_modes:
+  - DRY_RUN
+  - READ_ONLY_RESULT
+  - FULL_EXTRACTION_REGISTER_SANDBOX_ONLY
+  - ADDENDUM_ONLY
+blocked_modes:
+  - ADMIN_OVERRIDE
+url_rules:
+  - must_start_with_http_or_https
+  - no_empty_url
+  - no_infer_missing_fields
+actor_roles:
+  - viewer
+  - extractor_operator
+  - register_operator
+  - admin_sandbox

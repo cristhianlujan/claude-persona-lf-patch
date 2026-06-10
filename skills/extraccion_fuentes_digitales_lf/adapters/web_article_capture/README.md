@@ -12,6 +12,19 @@ Estado: CANDIDATO_READ_ONLY
 - schemas/db_field_mapping.yaml
 - schemas/extraction_fields.schema.yaml
 - fixtures/antiduplicate_hashes.yaml
+- db/ddl_extension.sql
+- db/log_config.sql
+- examples/good_reevalua.yaml
+- examples/bad_kambista.yaml
+
+## Interacción
+
+- command_contract.yaml llama a este adapter.
+- roles_matrix.md controla permisos.
+- schemas definen campos y mapeo.
+- fixtures soportan anti-duplicado.
+- examples soportan pruebas documentales.
+- db contiene referencias controladas no ejecutables automáticamente.
 
 ## Límites
 

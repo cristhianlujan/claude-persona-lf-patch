@@ -43,5 +43,8 @@ command:
   contratos:
     entrada: input_contract.yaml
     salida: output_contract.yaml
+    gates: gates.md
     judge: judge.yaml
     evals: evals.yaml
+    readback_query: ../../queries/get_web_capture_readback/query_contract.yaml
+    adapter: ../../adapters/web_article_capture/ADAPTER.md
