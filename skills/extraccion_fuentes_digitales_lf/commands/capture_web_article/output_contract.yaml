@@ -1,0 +1,4 @@
+output:
+  owner_skill: SKILL_EXTRACCION_FUENTES_DIGITALES_LF
+  command: capture_web_article
+  fields: [final_state, flow_terminated, extraction_successful, db_write_confirmed, record_id, run_id]

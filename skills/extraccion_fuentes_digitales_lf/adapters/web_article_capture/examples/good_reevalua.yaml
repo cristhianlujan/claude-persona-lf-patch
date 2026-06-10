@@ -1,0 +1,5 @@
+example_id: good_reevalua
+owner_skill: SKILL_EXTRACCION_FUENTES_DIGITALES_LF
+adapter: ADAPTER_WEB_ARTICLE_CAPTURE_LF
+expected: extraction_successful
+status: TEST

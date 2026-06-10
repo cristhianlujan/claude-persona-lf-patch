@@ -1,0 +1,12 @@
+owner_skill: SKILL_EXTRACCION_FUENTES_DIGITALES_LF
+adapter: ADAPTER_WEB_ARTICLE_CAPTURE_LF
+fields:
+  title_or_hook: literal_text
+  raw_text: visible_text
+  autor_declarado: literal_or_NOT_FOUND
+  fecha_publicacion_declarada: literal_or_NOT_FOUND
+  claims_json: array_literal_claims
+  ctas_json: array_literal_ctas
+  prompt_injection_detectado: boolean
+  estado_extraccion_web: enum
+rule: no_inferir_no_homologar

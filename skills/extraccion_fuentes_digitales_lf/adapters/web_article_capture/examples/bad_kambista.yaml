@@ -1,0 +1,4 @@
+example_id: bad_kambista
+owner_skill: SKILL_EXTRACCION_FUENTES_DIGITALES_LF
+adapter: ADAPTER_WEB_ARTICLE_CAPTURE_LF
+expected: blocked_or_partial
