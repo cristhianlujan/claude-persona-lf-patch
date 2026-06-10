@@ -1,11 +1,15 @@
 # ADAPTER_JIE_WEB_ARTICLE_CAPTURE_LF_CANDIDATO_V0_2
 
 > Estado: CANDIDATO_READ_ONLY · Versión: v0.2 · Lote 20B
-> Owner: SKILL_JIE_OBSERVATION_INTAKE_LF_CANDIDATO_V0_1
+> asset_code: ACT-0052
+> canonical_name: SKILL_EXTRACCION_FUENTES_DIGITALES_LF
+> legacy_skill_id: SKILL_JIE_OBSERVATION_INTAKE_LF_CANDIDATO_V0_1
+> Owner (Supabase): SKILL_EXTRACCION_FUENTES_DIGITALES_LF
+> Owner (GitHub interno): SKILL_JIE_OBSERVATION_INTAKE_LF_CANDIDATO_V0_1
 > Path: skills/jie_observation_intake_lf/adapters/web_article_capture/
 > operation_code: CAPTURE_INTAKE_MULTI_SOURCE_FIXTURE_V0_1
 > created_by (BD): ADAPTER_JIE_WEB_V0_2_CANDIDATO
-> Evidencia Supabase: lf_eventos id=242, 243, 244
+> Evidencia Supabase: lf_eventos id=242, 243, 244, 247
 
 ⚠️ CANDIDATO. Solo sandbox. No producción. No VALIDATED. No main.
 
