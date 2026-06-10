@@ -1,0 +1,47 @@
+# command_contract.yaml
+# Command: capture_web_article
+# Owner: SKILL_EXTRACCION_FUENTES_DIGITALES_LF
+# Estado: CANDIDATO_READ_ONLY · Lote 20B
+
+command:
+  id: capture_web_article
+  asset_code: ACT-0052
+  owner_skill: SKILL_EXTRACCION_FUENTES_DIGITALES_LF
+  child_adapter: ADAPTER_WEB_ARTICLE_CAPTURE_LF
+  operation_code: CAPTURE_INTAKE_MULTI_SOURCE_FIXTURE_V0_1
+  estado: CANDIDATO_READ_ONLY
+
+  descripcion: >
+    Command que orquesta la captura de artículos web de fuentes fintech peruanas.
+    Ejecuta gates y persiste en lf_capture_records si el modo lo permite.
+
+  modos:
+    FULL_EXTRACTION_REGISTER_SANDBOX_ONLY:
+      escritura: true
+      sandbox_only: true
+      requiere: readback posterior
+    DRY_RUN:
+      escritura: false
+      sandbox_only: true
+    READ_ONLY_RESULT:
+      escritura: false
+    ADDENDUM_ONLY:
+      escritura: true
+      sandbox_only: true
+    ADMIN_OVERRIDE:
+      estado: FUTURE_BLOCKED_NO_HOMOLOGATION
+      disponible: false
+
+  escritura:
+    tablas: [lf_capture_runs, lf_capture_records, lf_log_operativo]
+    created_by_valor_fijo: ADAPTER_WEB_ARTICLE_CAPTURE_LF
+    readback_obligatorio: true
+
+  lectura:
+    tablas: [lf_log_config, lf_operation_registry, sbx_competitive_sources, lf_capture_records]
+
+  contratos:
+    entrada: input_contract.yaml
+    salida: output_contract.yaml
+    judge: judge.yaml
+    evals: evals.yaml
