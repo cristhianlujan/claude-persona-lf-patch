@@ -1,1 +1,13 @@
--- log_config
+-- log_config.sql
+-- Owner: SKILL_EXTRACCION_FUENTES_DIGITALES_LF
+-- Adapter: ADAPTER_WEB_ARTICLE_CAPTURE_LF
+-- Estado: CANDIDATO_READ_ONLY
+
+-- Log keys documentales requeridas:
+-- WEB_EXTRACTION_STARTED
+-- WEB_EXTRACTION_COMPLETE
+-- WEB_EXTRACTION_BLOCKED
+-- WEB_EXTRACTION_READBACK_CONFIRMED
+-- WEB_EXTRACTION_DUPLICATE_DETECTED
+
+-- No ejecutar automáticamente desde este archivo.
