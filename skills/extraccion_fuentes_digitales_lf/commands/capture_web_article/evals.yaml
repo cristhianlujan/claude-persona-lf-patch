@@ -1,0 +1,5 @@
+evals:
+  owner_skill: SKILL_EXTRACCION_FUENTES_DIGITALES_LF
+  command: capture_web_article
+  estado: CANDIDATO_READ_ONLY
+  cases: [dry_run_url, duplicate_url, readback_result, blocked_homologation]
