@@ -1,0 +1,215 @@
+# ==============================================================================
+# contrato_adapter_lf.yaml
+# Versión: v0.1-CANDIDATO
+# Fuente canónica: lf_operation_step_contracts + lf_operation_steps
+#                  (Supabase mhwmirqcgxxukpctffuv)
+# Derivado: 2026-06-10 — Lote 20C Ítem 1
+# Patrón base: contrato_skill_lf.yaml v0.2 (estructura paralela)
+# Estado: CANDIDATO — NO usar en producción sin gate explícito
+# Referencia profunda Supabase:
+#   lf_operation_step_contracts WHERE operation_code = 'CREACION_ADAPTER_LF'
+# ==============================================================================
+
+operation_code: CREACION_ADAPTER_LF
+version: "v0.1-CANDIDATO"
+status: CANDIDATO
+description: >
+  Contratos declarativos de gobernanza para la operación CREACION_ADAPTER_LF.
+  Define puertas de control críticas para prevenir alucinaciones del LLM en la
+  creación de adapters. Los contratos profundos con mini_judge_code residen en
+  Supabase (lf_operation_step_contracts). Este archivo es la capa declarativa
+  de referencia para GitHub y CI.
+
+supabase_ref:
+  project_id: mhwmirqcgxxukpctffuv
+  table: lf_operation_step_contracts
+  filter: "operation_code = 'CREACION_ADAPTER_LF'"
+  steps_table: lf_operation_steps
+  steps_filter: "operation_code = 'CREACION_ADAPTER_LF'"
+
+reglas_madre:
+  - No ejecutar paso siguiente sin evidencia del paso actual registrada
+  - No inventar fuentes, activos, adapters ni decisiones
+  - No crear adapter sin verificar duplicidad previa
+  - Estado máximo inicial: CANDIDATO/SANDBOX/READ_ONLY
+  - Toda escritura GitHub requiere write_plan autorizado + pre-write gate
+
+# ------------------------------------------------------------------------------
+# CONTRATOS CRÍTICOS — cobertura actual (Lote 20B/20C)
+# Steps con contrato completo + mini_judge_code en Supabase
+# ------------------------------------------------------------------------------
+
+steps:
+
+  - step_id: router
+    step_order: 1
+    required: true
+    evidence_required: router_read
+    contract_code: CONTRACT_CREACION_ADAPTER_LF_ROUTER_V1
+    mini_judge_code: MINI_JUDGE_CREACION_ADAPTER_LF_ROUTER_V1
+    status: ACTIVE
+    purpose: >
+      Determinar que la solicitud pertenece al flujo operativo correcto
+      y no entrar directo a adapters sin Router.
+    input_required:
+      step_input: solicitud_operativa
+    output_payload:
+      router_read: true
+      step_result: "PASS|BLOCKED"
+      blocking_codes: []
+    pass_condition:
+      must_have_evidence: router_read
+      must_not_be_generic: true
+      must_match_step_purpose: true
+      required_if_step_required: true
+    block_condition:
+      scope_bypass: true
+      generic_payload: true
+      missing_evidence: router_read
+      invented_source_or_destination: true
+    blocking_code: BLOCKED_ROUTER_NOT_READ
+    required_evidence_keys:
+      - router_read
+      - step_result
+      - blocking_codes
+    next_if_pass: NEXT_BY_EXECUTION_ORDER
+    next_if_blocked: RETURN_TO_WORKER_FOR_SELF_REPAIR_OR_BACKEND_CONFIG
+    notes: "Contrato crítico — puerta de entrada adapter."
+
+  - step_id: operational_source
+    step_order: 2
+    required: true
+    evidence_required: source_read
+    contract_code: CONTRACT_CREACION_ADAPTER_LF_OPERATIONAL_SOURCE_V1
+    mini_judge_code: MINI_JUDGE_CREACION_ADAPTER_LF_OPERATIONAL_SOURCE_V1
+    status: ACTIVE
+    purpose: >
+      Leer fuente operativa vigente en Supabase y confirmar que la operación
+      puede continuar con activo vigente.
+    input_required:
+      step_input: supabase_query
+    output_payload:
+      source_read: true
+      step_result: "PASS|BLOCKED"
+      blocking_codes: []
+    pass_condition:
+      must_have_evidence: source_read
+      must_not_be_generic: true
+      must_match_step_purpose: true
+      required_if_step_required: true
+    block_condition:
+      scope_bypass: true
+      generic_payload: true
+      missing_evidence: source_read
+      invented_source_or_destination: true
+    blocking_code: BLOCKED_OPERATIONAL_SOURCE_NOT_READ
+    required_evidence_keys:
+      - source_read
+      - step_result
+      - blocking_codes
+    next_if_pass: NEXT_BY_EXECUTION_ORDER
+    next_if_blocked: RETURN_TO_WORKER_FOR_SELF_REPAIR_OR_BACKEND_CONFIG
+    notes: "Contrato crítico — fuente operativa adapter."
+
+  - step_id: duplicate_check
+    step_order: 5
+    required: true
+    evidence_required: duplicate_checked
+    contract_code: CONTRACT_CREACION_ADAPTER_LF_DUPLICATE_CHECK_V1
+    mini_judge_code: MINI_JUDGE_CREACION_ADAPTER_LF_DUPLICATE_CHECK_V1
+    status: ACTIVE
+    purpose: >
+      Buscar duplicidad o adapter aplicable antes de crear un nuevo candidato.
+    input_required:
+      step_input: nombre_adapter_propuesta
+    output_payload:
+      duplicate_checked: true
+      step_result: "PASS|BLOCKED"
+      blocking_codes: []
+    pass_condition:
+      must_have_evidence: duplicate_checked
+      must_not_be_generic: true
+      must_match_step_purpose: true
+      required_if_step_required: true
+    block_condition:
+      scope_bypass: true
+      generic_payload: true
+      missing_evidence: duplicate_checked
+      invented_source_or_destination: true
+    blocking_code: BLOCKED_DUPLICATE_CHECK_NOT_DONE
+    required_evidence_keys:
+      - duplicate_checked
+      - step_result
+      - blocking_codes
+    next_if_pass: NEXT_BY_EXECUTION_ORDER
+    next_if_blocked: RETURN_TO_WORKER_FOR_SELF_REPAIR_OR_BACKEND_CONFIG
+    notes: "Contrato crítico — evita duplicidad de adapters."
+
+# ------------------------------------------------------------------------------
+# BRECHA DOCUMENTADA — steps sin contrato en esta versión
+# Fuente: lf_operation_steps WHERE operation_code = 'CREACION_ADAPTER_LF'
+# Total operación: 16 steps — todos required=true, todos active=true
+# ------------------------------------------------------------------------------
+
+coverage_gaps:
+  total_steps_operation: 16
+  steps_with_contract: 3
+  coverage_pct: "18.75%"
+  steps_covered:
+    - step_order: 1
+      step_id: router
+      evidence_required: router_read
+    - step_order: 2
+      step_id: operational_source
+      evidence_required: source_read
+    - step_order: 5
+      step_id: duplicate_check
+      evidence_required: duplicate_checked
+  steps_pending_contract:
+    - step_order: 3
+      step_id: contract_read
+      evidence_required: contract_read
+    - step_order: 4
+      step_id: creator_asset
+      evidence_required: creator_asset_checked
+    - step_order: 6
+      step_id: classification
+      evidence_required: adapter_lf_classified
+    - step_order: 7
+      step_id: pre_write_execution_binding_gate
+      evidence_required: execution_bound_to_target_before_change
+    - step_order: 8
+      step_id: step_depth_validation
+      evidence_required: step_has_depth_evidence_payload
+    - step_order: 9
+      step_id: pack_internal_depth_validation
+      evidence_required: pack_items_have_depth_matrix
+    - step_order: 10
+      step_id: examples_depth_validation
+      evidence_required: examples_are_robust_and_testable
+    - step_order: 11
+      step_id: evals_depth_validation
+      evidence_required: evals_are_executable_with_expected_result
+    - step_order: 12
+      step_id: judge_depth_validation
+      evidence_required: judges_have_fail_if_thresholds_and_overrides
+    - step_order: 13
+      step_id: schema_depth_validation
+      evidence_required: schemas_require_non_generic_evidence
+    - step_order: 14
+      step_id: output_modes_validation
+      evidence_required: closed_output_modes_and_templates_present
+    - step_order: 15
+      step_id: blocking_overrides_validation
+      evidence_required: blocking_overrides_prevent_weak_depth_close
+    - step_order: 16
+      step_id: adapter_examples_depth_judge
+      evidence_required: adapter_examples_depth_judge_pass
+
+# ------------------------------------------------------------------------------
+# NOTA DE GOBIERNO
+# Este archivo NO es la fuente de verdad de ejecución.
+# Fuente de verdad: Supabase > lf_operation_step_contracts
+# Este archivo es la capa declarativa/documental para GitHub + CI.
+# Cambios en Supabase deben reflejarse aquí en el lote correspondiente.
+# ------------------------------------------------------------------------------
