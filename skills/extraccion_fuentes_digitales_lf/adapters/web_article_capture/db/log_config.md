@@ -1,0 +1,5 @@
+# log_config
+
+Owner: SKILL_EXTRACCION_FUENTES_DIGITALES_LF
+Adapter: ADAPTER_WEB_ARTICLE_CAPTURE_LF
+Reference only.
