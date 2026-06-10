@@ -5,6 +5,9 @@
 
 command:
   id:            capture_web_article
+  asset_code:    ACT-0052
+  canonical_name: SKILL_EXTRACCION_FUENTES_DIGITALES_LF
+  legacy_skill_id: SKILL_JIE_OBSERVATION_INTAKE_LF_CANDIDATO_V0_1
   owner_skill:   SKILL_JIE_OBSERVATION_INTAKE_LF_CANDIDATO_V0_1
   child_adapter: ADAPTER_JIE_WEB_ARTICLE_CAPTURE_LF_CANDIDATO_V0_2
   operation_code: CAPTURE_INTAKE_MULTI_SOURCE_FIXTURE_V0_1
