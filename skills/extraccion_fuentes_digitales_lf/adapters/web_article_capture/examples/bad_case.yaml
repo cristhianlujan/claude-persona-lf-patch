@@ -1,0 +1,5 @@
+example_id: bad_case
+owner_skill: SKILL_EXTRACCION_FUENTES_DIGITALES_LF
+adapter: ADAPTER_WEB_ARTICLE_CAPTURE_LF
+expected: blocked_or_partial
+status: TEST
