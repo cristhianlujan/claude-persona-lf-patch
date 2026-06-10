@@ -10,6 +10,11 @@
 ## Identidad
 
 ```yaml
+# ── GOBERNANZA ─────────────────────────────────────────
+asset_code:      ACT-0052                                    # código estable Supabase — nunca cambia
+canonical_name:  SKILL_EXTRACCION_FUENTES_DIGITALES_LF      # nombre canónico en Supabase desde Fase 1
+legacy_skill_id: SKILL_JIE_OBSERVATION_INTAKE_LF_CANDIDATO_V0_1  # ID técnico GitHub — Fase 2 pendiente
+# ───────────────────────────────────────────────────────
 skill_id:    SKILL_JIE_OBSERVATION_INTAKE_LF_CANDIDATO_V0_1
 owner_skill: SKILL_JIE_OBSERVATION_INTAKE_LF_CANDIDATO_V0_1
 child_adapter: ADAPTER_JIE_WEB_ARTICLE_CAPTURE_LF_CANDIDATO_V0_2
