@@ -1,3 +1,0 @@
-owner_skill: SKILL_EXTRACCION_FUENTES_DIGITALES_LF
-command: capture_web_article
-required: mode, actor_id, actor_role, urls
