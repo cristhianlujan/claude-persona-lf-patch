@@ -21,6 +21,10 @@ required_before_write:
   - classification
   - adapter_design_complete
   - operational_evidence_pack_check
+  - research_pack_pass
+  - research_pack_evidence_strong
+  - research_to_rules_matrix_present
+  - decision_matrix_present
 allowed:
   repository: cristhianlujan/claude-persona-lf-patch
   path_prefix: /skills/
@@ -38,6 +42,7 @@ blocked:
   - enable_runtime
   - mark_vigente
   - mark_aprobado
+  - write_to_marketplace_ssot_for_adapters
 required_after_write:
   - github_readback
   - commit_sha
