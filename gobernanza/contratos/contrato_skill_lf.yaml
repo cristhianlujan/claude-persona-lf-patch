@@ -43,3 +43,13 @@ required_after_write:
   - judge_sha_present
   - contract_judge
   - evidence_log_if_available
+deep_contracts:
+  source: SUPABASE
+  table: lf_operation_step_contracts
+  operation_filter: CREACION_SKILL_LF
+  note: >
+    Los contratos profundos por paso (pass_condition, block_condition,
+    mini_judge_code, required_evidence_keys) residen en Supabase.
+    Este archivo YAML gobierna el contrato de alto nivel (repo, ruta,
+    estado, bloqueos). Para auditar pasos individuales consultar
+    lf_operation_step_contracts filtrando por operation_code = CREACION_SKILL_LF.
