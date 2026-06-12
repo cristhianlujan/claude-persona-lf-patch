@@ -21,5 +21,5 @@
   "blocking_codes": [],
   "issued_at": "2026-06-12T04:23:29Z",
   "lote": "20C",
-  "notas": "Receipt sandbox para Lote 20C. Cubre 3 rutas gobernadas: contrato_adapter, judge_adapter, contrato_skill (deep_contracts). No habilita runtime. No declara VALIDATED. No merge sin aprobacion explicita."
+  "notas": "Receipt sandbox Lote 20C. Cubre 3 rutas gobernadas. Sin runtime. Sin merge sin aprobacion explicita. Estado: PASS_SANDBOX."
 }
