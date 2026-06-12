@@ -1,7 +1,14 @@
 version: v0.2
 status: CANDIDATO_READ_ONLY
-operation: CREACION_SKILL_LF
+operation: CREACION_ADAPTER_LF
 regularization: REGULARIZACION_STEP_GATE_L2L3_001
+supabase_ref:
+  project_id: mhwmirqcgxxukpctffuv
+  table: lf_operation_step_contracts
+  filter: "operation_code = 'CREACION_ADAPTER_LF'"
+  note: >
+    Contratos profundos con pass_condition, block_condition y mini_judge_code
+    residen en Supabase. Este archivo es la capa declarativa para GitHub y CI.
 required_before_write:
   - read_router
   - read_operational_source
@@ -10,6 +17,10 @@ required_before_write:
   - validate_repo
   - validate_path
   - validate_file_name
+  - duplicate_check
+  - classification
+  - adapter_design_complete
+  - operational_evidence_pack_check
   - research_pack_pass
   - research_pack_evidence_strong
   - research_to_rules_matrix_present
@@ -24,15 +35,14 @@ allowed:
 blocked:
   - write_without_contract
   - write_without_readback
-  - write_to_marketplace_ssot_for_skills
-  - missing_research_pack
-  - weak_research_pack_evidence
-  - missing_research_to_rules_matrix
-  - missing_decision_matrix
+  - write_without_owner_skill_declared
+  - missing_duplicate_check
+  - adapter_without_parent_skill
   - assistant_freeform_decision
   - enable_runtime
   - mark_vigente
   - mark_aprobado
+  - write_to_marketplace_ssot_for_adapters
 required_after_write:
   - github_readback
   - commit_sha
@@ -43,13 +53,15 @@ required_after_write:
   - judge_sha_present
   - contract_judge
   - evidence_log_if_available
-deep_contracts:
-  source: SUPABASE
-  table: lf_operation_step_contracts
-  operation_filter: CREACION_SKILL_LF
-  note: >
-    Los contratos profundos por paso (pass_condition, block_condition,
-    mini_judge_code, required_evidence_keys) residen en Supabase.
-    Este archivo YAML gobierna el contrato de alto nivel (repo, ruta,
-    estado, bloqueos). Para auditar pasos individuales consultar
-    lf_operation_step_contracts filtrando por operation_code = CREACION_SKILL_LF.
+coverage_note:
+  total_steps_operation: 16
+  steps_with_supabase_contract: 3
+  steps_covered:
+    - step_order: 1
+      step_id: router
+    - step_order: 2
+      step_id: operational_source
+    - step_order: 5
+      step_id: duplicate_check
+  coverage_pct: "18.75%"
+  pending_coverage_lote: LOTE_20D_O_SIGUIENTE
