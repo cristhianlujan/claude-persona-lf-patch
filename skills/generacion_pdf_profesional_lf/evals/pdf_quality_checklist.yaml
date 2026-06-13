@@ -1,96 +1,32 @@
-version: v0.1
+version: v0.2
 status: CANDIDATO
 skill: SKILL_GENERACION_PDF_PROFESIONAL_LF
 operation_code: CREACION_SKILL_LF
-purpose: Evaluar si un PDF LF puede cerrarse como profesional, visual y verificable sin habilitar produccion.
 
-required_gates:
-  router:
-    - router_first_applied
-    - operational_source_checked
-    - applicable_asset_checked
-    - destination_validated
-  input:
-    - objective_defined
-    - audience_defined
-    - pdf_type_defined
-    - source_evidence_declared
-    - visual_level_defined
-    - restrictions_declared
-  pipeline:
-    - pipeline_selected
-    - editable_source_selected_or_na_justified
-    - render_method_declared
-    - qa_method_declared
-  structure:
-    - cover_present_when_applicable
-    - index_or_clear_structure
-    - sections_have_hierarchy
-    - footer_version_status_page_when_applicable
-  visual_quality:
-    - cover_has_hierarchy
-    - layout_has_grid
-    - margins_consistent
-    - typography_has_levels
-    - colors_are_defined
-    - components_present
-    - tables_are_legible
-    - callouts_or_cards_used_when_useful
-    - no_long_plain_text_blocks
-  verification:
-    - pdf_rendered
-    - pages_count_readback
-    - visual_inspection_done
-    - no_cut_text
-    - no_overlap
-    - margins_ok
-    - contrast_ok
-    - tables_not_broken
-    - source_editable_delivered_or_na_justified
-  governance:
-    - runtime_not_enabled
-    - automatic_impact_blocked
-    - no_validated_claim
-    - no_vigente_claim
-    - no_aprobado_claim
-    - evidence_readback_present
+required:
+  - router_first_applied
+  - pipeline_decision_declared
+  - editable_source_declared
+  - page_map_declared
+  - layout_reference_used
+  - pdf_rendered
+  - key_pages_exported_as_images
+  - bug_hunt_done
+  - issues_listed
+  - readback_done
+  - runtime_not_enabled
 
-score:
-  pass_minimum: 90
-  conditional_pass_minimum: 80
-  below_80: BLOCKED
-  scoring_rules:
-    router: 15
-    input: 15
-    pipeline: 15
-    structure: 15
-    visual_quality: 20
-    verification: 15
-    governance: 5
-
-fail_if:
+quality_blocks:
   - pdf_basic_or_plain
-  - missing_editable_source_without_justification
-  - no_visual_qa
+  - wrong_pipeline_for_pdf_type
+  - no_visual_page_images
+  - no_bug_hunt
   - text_cut_or_overlapped
   - tables_unreadable
-  - unauthorized_source
-  - runtime_enabled
-  - automatic_impact_enabled
-  - marked_validated_or_vigente
-  - closed_without_readback
-
-output_required:
-  - verdict
-  - score
-  - issues_found
-  - fixes_required_or_applied
-  - evidence_readback
-  - pending_items
-  - final_state
+  - source_editable_missing
 
 verdicts:
-  - PASS_CANDIDATO_READ_ONLY
-  - PASS_WITH_OBSERVATIONS_CANDIDATO_READ_ONLY
+  - PASS_CANDIDATO_READ_ONLY_REPAIRED
   - RETURN_TO_WORKER
+  - FAIL_VISUAL_QUALITY
   - BLOCKED
