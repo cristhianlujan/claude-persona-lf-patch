@@ -1,67 +1,82 @@
 # Research Pack — SKILL_GENERACION_PDF_PROFESIONAL_LF
 
-## Fuentes externas revisadas
+## Estado
 
-1. Anthropic — Introducing Agent Skills
-   - URL: https://claude.com/blog/skills
-   - Uso: confirmar que Skills son carpetas con instrucciones, scripts y recursos cargados bajo demanda.
+- fecha: 2026-06-13
+- operation_code: CREACION_SKILL_LF
+- estado: CANDIDATO_READ_ONLY
+- runtime_estado: NO_HABILITADO
+- impacto_automatico: BLOQUEADO
 
-2. Claude Code Docs — Extend Claude with skills
-   - URL: https://code.claude.com/docs/en/skills
-   - Uso: estructura SKILL.md, frontmatter, supporting files, invocacion, ciclo de contexto y permisos.
+## Capacidad objetivo
 
-3. Agent Skills standard
-   - URL: https://agentskills.io/home
-   - Uso: formato portable: carpeta + SKILL.md + scripts/references/assets opcionales.
+Crear una skill LF para PDFs profesionales con pipeline editable, criterio visual, QA obligatorio y readback verificable.
 
-4. anthropics/skills — repositorio publico
-   - URL: https://github.com/anthropics/skills
-   - Uso: referencia de patrones y existencia de document skills: pdf, docx, pptx, xlsx.
+## Fuentes internas verificadas
 
-5. anthropics/skills — skills/pdf/SKILL.md
-   - repo: anthropics/skills
-   - path: skills/pdf/SKILL.md
-   - blob_sha: d3e046a5ae107a6cb23cfb16c219837094ab35d3
-   - Uso: referencia tecnica para operaciones PDF. No copiado.
-
-6. anthropics/skills — skills/pdf/reference.md
-   - repo: anthropics/skills
-   - path: skills/pdf/reference.md
-   - blob_sha: 41400bf4fc67f15fb062d43695ec92f078226023
-   - Uso: referencia de librerias y renderizado. No copiado.
-
-7. anthropics/skills — skills/docx/SKILL.md
-   - repo: anthropics/skills
-   - path: skills/docx/SKILL.md
-   - blob_sha: 2951e559989765293b6fbf83942378a3c2d0cba6
-   - Uso: referencia para fuente editable y validacion documental. No copiado.
-
-8. anthropics/skills — skills/pptx/SKILL.md
-   - repo: anthropics/skills
-   - path: skills/pptx/SKILL.md
-   - blob_sha: df5000e17ef60ecf400e65bfcd3c58ff88b604c3
-   - Uso: referencia de QA visual y ciclo fix-and-verify. No copiado.
-
-9. Agent Skills: Data-Driven Analysis
-   - URL: https://arxiv.org/abs/2602.08004
-   - Uso: riesgo de redundancia, concentracion y seguridad en ecosistemas de skills.
-
-10. Under the Hood of SKILL.md
-   - URL: https://arxiv.org/abs/2605.11418
-   - Uso: riesgo supply-chain semantico en SKILL.md; justificar governance y no confiar en terceros sin sandbox.
-
-## Fuentes internas LF verificadas
-
-| Fuente | Evidencia |
+| Fuente | Uso |
 |---|---|
-| ACT-0001 | Router vigente, activo, rector |
-| v_lf_fuente_operativa_busqueda | No existe skill PDF LF especifica encontrada |
-| ACT-0043 | Skill Creator LF vigente READ_ONLY |
-| ACT-0045 | Skill creadora perfiles/cards vigente READ_ONLY |
-| ACT-0047 | Design System multicanal candidato READ_ONLY |
-| contrato_skill_lf.yaml | Repo/path/status/runtime/impact rules |
-| judge_contrato_skill_lf.yaml | Pass/fail gates |
+| ACT-0001 | Router rector y entrada obligatoria |
+| Supabase / v_lf_fuente_operativa_busqueda | Fuente operativa y duplicidad |
+| ACT-0043 | Creador de skills, no impacto automatico |
+| ACT-0045 | Research pack, scoring y no duplicidad |
+| ACT-0047 | Design System, tokens, componentes y QA visual |
+| contrato_skill_lf.yaml | Repo, ruta, estados permitidos y bloqueos |
+| judge_contrato_skill_lf.yaml | Pass/fail contractual |
+| matriz_repos_lf.yaml | Repo y path autorizados |
 
-## Regla de uso
+## Fuentes externas revisadas como referencia
 
-Este research pack habilita solo creacion candidata. No habilita runtime, produccion, VALIDATED ni VIGENTE.
+| Fuente | Uso permitido | Restriccion |
+|---|---|---|
+| Anthropic Skills / Claude Skills | Patron de carpeta con SKILL.md y recursos | No copiar contenido propietario |
+| anthropics/skills repository | Ver estructura de skills documentales | No adoptar runtime externo |
+| skills/pdf | Referencia tecnica para operaciones PDF | Gobernanza LF manda |
+| skills/docx | Fuente editable y validacion documental | Solo patron, no copia |
+| skills/pptx | QA visual render-inspect-fix-verify | Adaptado a PDF LF |
+| Agent Skills standard | Portabilidad del paquete | No reemplaza Router LF |
+| Research sobre Agent Skills | Riesgos de duplicidad, procedencia y seguridad | Requiere sandbox y judge LF |
+
+## Scoring resumido
+
+| Fuente | Score | Decision |
+|---|---:|---|
+| ACT-0001 | 5.0 | Rector |
+| ACT-0043 | 5.0 | Creador aplicable |
+| ACT-0045 | 4.7 | Research gate |
+| ACT-0047 | 4.8 | Sistema visual |
+| contrato_skill_lf.yaml | 5.0 | Gate obligatorio |
+| judge_contrato_skill_lf.yaml | 5.0 | Judge obligatorio |
+| skills/pdf | 3.8 | Referencia tecnica |
+| skills/docx | 3.8 | Referencia editable |
+| skills/pptx | 4.2 | Patron QA visual |
+| Agent Skills standard / research | 4.1 | Referencia y riesgos |
+
+## Research to rules matrix
+
+| Hallazgo | Regla LF derivada | Destino |
+|---|---|---|
+| Toda operacion entra por Router | PDF LF no inicia directo por render | SKILL.md |
+| Skill candidata requiere activadores y bloqueos | Definir cuando usar/no usar | SKILL.md |
+| Research debe ser trazable | Mantener scoring y riesgos | research_pack.md |
+| PDF profesional no es solo conversion | Exigir sistema visual minimo | evals/judge |
+| DOCX/PPTX/HTML pueden ser fuentes editables | Seleccionar pipeline por tipo de PDF | SKILL.md |
+| QA visual debe revisar render real | Render -> inspeccion -> correccion -> re-render | judge |
+| Skills externas tienen riesgos | No usar runtime externo sin sandbox LF | manifest |
+
+## Riesgos y mitigacion
+
+| Riesgo | Mitigacion |
+|---|---|
+| PDF plano | Componentes visuales y QA obligatorio |
+| Falta fuente editable | Editable requerido o NA justificado |
+| Duplicidad con ACT-0047 | ACT-0047 visual; esta skill pipeline PDF |
+| Uso externo sin gobierno | Solo referencia, no runtime |
+| Cierre sin evidencia | Readback y evidence log obligatorios |
+| Promocion indebida | Estado maximo CANDIDATO_READ_ONLY |
+
+## Conclusion
+
+Procede regularizar la skill candidata porque resuelve una capacidad recurrente y de alto riesgo: PDFs LF profesionales con pipeline, fuente editable, QA visual y cierre verificable.
+
+Resultado: PASS_CANDIDATO_READ_ONLY.
