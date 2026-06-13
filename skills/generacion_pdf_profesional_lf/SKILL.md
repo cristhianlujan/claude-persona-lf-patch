@@ -1,12 +1,12 @@
 ---
 name: generacion-pdf-profesional-lf
-description: Skill LF candidata para PDFs profesionales con pipeline, layout, QA visual bug-hunt, templates y script de render/auditoria.
+description: Skill LF candidata para PDFs profesionales con pipeline, layout, QA visual bug-hunt, templates, script de render/auditoria y adapter de mockups por marca/proyecto.
 status: CANDIDATO
 estado_operativo: READ_ONLY
 runtime_estado: NO_HABILITADO
 automatic_impact: BLOQUEADO
 operation_code: CREACION_SKILL_LF
-version: v0.2-repaired
+version: v0.3-adapter-gated
 last_updated: 2026-06-13
 ---
 
@@ -17,6 +17,23 @@ last_updated: 2026-06-13
 No cerrar un PDF por existir. Cerrar solo si hay pipeline correcto, fuente editable, layout/template, PDF renderizado, paginas exportadas a imagen, QA bug-hunt, fixes cuando aplique y readback.
 
 Si falta cualquiera: RETURN_TO_WORKER.
+
+## Gate de pantallas y mockups
+
+Si el PDF contiene pantallas, onboarding, dashboard, journey UX, app flow o mockups, debe activar:
+
+`adapters/project_brand_mockup_render_lf/ADAPTER.md`
+
+Antes de diseñar debe resolver:
+
+- project_code;
+- design_system_code;
+- tokens de marca;
+- screen_visual_specs;
+- mockup template;
+- QA visual de mockup.
+
+Si hay tokens del proyecto, esta prohibido inventar paleta. Si una pantalla clave se presenta solo como tabla, devolver RETURN_TO_WORKER.
 
 ## Archivos obligatorios
 
@@ -31,11 +48,13 @@ Si falta cualquiera: RETURN_TO_WORKER.
 - examples/input_brief.md
 - examples/output_expected.md
 - judges/judge_pdf_profesional_lf.yaml
+- adapters/project_brand_mockup_render_lf/ADAPTER.md cuando hay pantallas
 
 ## Pipeline
 
 - ejecutivo: PPTX 16:9 o HTML/CSS premium.
 - flujo/onboarding: PPTX 16:9 o HTML/CSS premium paginado.
+- pantallas/mockups: activar adapter de marca y mockup.
 - brandbook: HTML/CSS premium o PPTX visual.
 - informe largo: DOCX o Markdown.
 - PDF pobre: extraer, reconstruir fuente editable, redisenar y renderizar.
@@ -50,6 +69,9 @@ ReportLab plano no es default para PDF ejecutivo.
 - sin imagenes de paginas: BLOCKED_VISUAL_RENDER_MISSING
 - sin bug-hunt: BLOCKED_VISUAL_QA_NOT_DONE
 - PDF basico: FAIL_VISUAL_QUALITY
+- pantallas sin adapter: BLOCKED_MOCKUP_ADAPTER_NOT_APPLIED
+- colores inventados: FAIL_BRAND_MISMATCH
+- pantalla clave solo como tabla: FAIL_GENERIC_MOCKUP
 - sin readback: BLOCKED_READBACK_MISSING
 
 ## Cierre permitido
