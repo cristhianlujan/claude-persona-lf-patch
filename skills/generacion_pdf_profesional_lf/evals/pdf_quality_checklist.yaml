@@ -1,26 +1,41 @@
 version: v0.1
 status: CANDIDATO
 skill: SKILL_GENERACION_PDF_PROFESIONAL_LF
-purpose: Evaluar si un PDF LF puede cerrarse como profesional y verificable.
+operation_code: CREACION_SKILL_LF
+purpose: Evaluar si un PDF LF puede cerrarse como profesional, visual y verificable sin habilitar produccion.
 
 required_gates:
+  router:
+    - router_first_applied
+    - operational_source_checked
+    - applicable_asset_checked
+    - destination_validated
   input:
-    - brief_contains_objective
+    - objective_defined
     - audience_defined
     - pdf_type_defined
     - source_evidence_declared
     - visual_level_defined
+    - restrictions_declared
   pipeline:
+    - pipeline_selected
     - editable_source_selected_or_na_justified
     - render_method_declared
     - qa_method_declared
+  structure:
+    - cover_present_when_applicable
+    - index_or_clear_structure
+    - sections_have_hierarchy
+    - footer_version_status_page_when_applicable
   visual_quality:
     - cover_has_hierarchy
     - layout_has_grid
+    - margins_consistent
     - typography_has_levels
     - colors_are_defined
     - components_present
     - tables_are_legible
+    - callouts_or_cards_used_when_useful
     - no_long_plain_text_blocks
   verification:
     - pdf_rendered
@@ -30,13 +45,28 @@ required_gates:
     - no_overlap
     - margins_ok
     - contrast_ok
+    - tables_not_broken
     - source_editable_delivered_or_na_justified
   governance:
-    - router_first_applied
-    - source_operativa_checked
     - runtime_not_enabled
     - automatic_impact_blocked
     - no_validated_claim
+    - no_vigente_claim
+    - no_aprobado_claim
+    - evidence_readback_present
+
+score:
+  pass_minimum: 90
+  conditional_pass_minimum: 80
+  below_80: BLOCKED
+  scoring_rules:
+    router: 15
+    input: 15
+    pipeline: 15
+    structure: 15
+    visual_quality: 20
+    verification: 15
+    governance: 5
 
 fail_if:
   - pdf_basic_or_plain
@@ -46,16 +76,21 @@ fail_if:
   - tables_unreadable
   - unauthorized_source
   - runtime_enabled
+  - automatic_impact_enabled
   - marked_validated_or_vigente
-
-score:
-  pass_minimum: 90
-  conditional_pass_minimum: 80
-  below_80: BLOCKED
+  - closed_without_readback
 
 output_required:
   - verdict
+  - score
   - issues_found
-  - fixes_applied
+  - fixes_required_or_applied
   - evidence_readback
   - pending_items
+  - final_state
+
+verdicts:
+  - PASS_CANDIDATO_READ_ONLY
+  - PASS_WITH_OBSERVATIONS_CANDIDATO_READ_ONLY
+  - RETURN_TO_WORKER
+  - BLOCKED
