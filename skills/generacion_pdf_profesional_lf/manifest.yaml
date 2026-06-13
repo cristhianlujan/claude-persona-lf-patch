@@ -1,0 +1,61 @@
+version: v0.1
+status: CANDIDATO
+project: 00_GOBERNANZA_PORTAFOLIO_OPERATIVO_LF
+asset_code: SKILL_GENERACION_PDF_PROFESIONAL_LF_v0.1_CANDIDATO
+asset_type: SKILL
+operation_code: CREACION_SKILL_LF
+repository: cristhianlujan/claude-persona-lf-patch
+base_path: /skills/generacion_pdf_profesional_lf
+runtime_estado: NO_HABILITADO
+impacto_automatico: BLOQUEADO
+estado_operativo: READ_ONLY
+owner: Cristhian Lujan
+created_at: 2026-06-13
+source_model: ROUTER_FIRST_SUPABASE_GIT_FIRST
+
+files:
+  required:
+    - SKILL.md
+    - DOC_OFICIAL.md
+    - research_pack.md
+    - manifest.yaml
+    - evals/pdf_quality_checklist.yaml
+    - judges/judge_pdf_profesional_lf.yaml
+    - examples/input_brief.md
+    - examples/output_expected.md
+  optional: []
+
+related_assets:
+  - ACT-0001
+  - ACT-0043
+  - ACT-0045
+  - ACT-0047
+
+external_references:
+  - anthropic_agent_skills_blog
+  - claude_code_skills_docs
+  - agentskills_standard
+  - anthropics_skills_pdf
+  - anthropics_skills_docx
+  - anthropics_skills_pptx
+
+blocked:
+  - runtime_enabled
+  - automatic_impact_enabled
+  - mark_validated
+  - mark_vigente
+  - use_without_visual_qa
+  - use_external_skill_without_review
+
+acceptance_gates:
+  - router_read
+  - operational_source_read
+  - repo_matrix_read
+  - contract_read
+  - duplicate_check_done
+  - research_pack_pass
+  - research_to_rules_matrix_present
+  - decision_matrix_present
+  - github_write_done
+  - github_readback_done
+  - judge_pass_or_candidate_readonly
