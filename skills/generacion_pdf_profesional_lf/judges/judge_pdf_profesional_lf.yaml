@@ -1,0 +1,47 @@
+version: v0.1
+judge: JUDGE_PDF_PROFESIONAL_LF
+skill: SKILL_GENERACION_PDF_PROFESIONAL_LF
+status: CANDIDATO_READ_ONLY
+operation_code: CREACION_SKILL_LF
+
+pass_if:
+  - router_first_applied
+  - operational_source_checked
+  - candidate_status_only
+  - runtime_no_habilitado
+  - automatic_impact_bloqueado
+  - research_pack_present
+  - decision_matrix_present
+  - research_to_rules_matrix_present
+  - editable_source_policy_defined
+  - qa_visual_required
+  - readback_required
+  - no_external_copy
+  - no_validated_claim
+
+fail_if:
+  - runtime_enabled
+  - automatic_impact_enabled
+  - marked_vigente
+  - marked_validated
+  - missing_research_pack
+  - missing_qa_visual
+  - missing_editable_source_policy
+  - copies_external_proprietary_content
+  - closes_without_readback
+  - allows_pdf_basic_output
+  - bypasses_router
+
+result_values:
+  - PASS_CANDIDATO_READ_ONLY
+  - FAIL
+  - BLOCKED
+  - RETURN_TO_WORKER
+
+required_evidence:
+  - github_commit_sha
+  - github_readback_sha
+  - supabase_event_or_blocker_note
+  - source_sha_present
+  - contract_sha_present
+  - judge_sha_present
