@@ -1,17 +1,31 @@
 version: v0.1
 status: CANDIDATO
+estado_documental: CANDIDATO
+estado_operativo: READ_ONLY
+runtime_estado: NO_HABILITADO
+impacto_automatico: BLOQUEADO
 project: 00_GOBERNANZA_PORTAFOLIO_OPERATIVO_LF
 asset_code: SKILL_GENERACION_PDF_PROFESIONAL_LF_v0.1_CANDIDATO
 asset_type: SKILL
 operation_code: CREACION_SKILL_LF
 repository: cristhianlujan/claude-persona-lf-patch
+branch: main
 base_path: /skills/generacion_pdf_profesional_lf
-runtime_estado: NO_HABILITADO
-impacto_automatico: BLOQUEADO
-estado_operativo: READ_ONLY
 owner: Cristhian Lujan
-created_at: 2026-06-13
-source_model: ROUTER_FIRST_SUPABASE_GIT_FIRST
+last_updated: 2026-06-13
+
+source_control:
+  router_asset: ACT-0001
+  operational_source: Supabase public.v_lf_fuente_operativa_busqueda
+  creator_asset: ACT-0043
+  profile_card_asset: ACT-0045
+  design_system_asset: ACT-0047
+  contract_path: gobernanza/contratos/contrato_skill_lf.yaml
+  contract_sha: eba7f4b74b38795e43d92a53f1cd3d251ec0931f
+  contract_judge_path: gobernanza/judges/judge_contrato_skill_lf.yaml
+  contract_judge_sha: 825a4368d3ddfec20bb2cab392563d8a392d1845
+  repo_matrix_path: gobernanza/repositorios/matriz_repos_lf.yaml
+  repo_matrix_sha: e53a578ebe91c23781f8727f6f4c015c5df752c1
 
 files:
   required:
@@ -25,6 +39,20 @@ files:
     - examples/output_expected.md
   optional: []
 
+pipelines:
+  document_long_form:
+    editable_source: Markdown_or_DOCX
+    render: PDF
+  executive_proposal:
+    editable_source: PPTX_16_9
+    render: PDF
+  visual_report_or_brandbook:
+    editable_source: HTML_CSS_or_ReportLab
+    render: PDF
+  existing_basic_pdf:
+    editable_source: extract_rebuild_redesign
+    render: PDF
+
 related_assets:
   - ACT-0001
   - ACT-0043
@@ -32,30 +60,44 @@ related_assets:
   - ACT-0047
 
 external_references:
-  - anthropic_agent_skills_blog
-  - claude_code_skills_docs
-  - agentskills_standard
+  - anthropic_skills_claude_skills
+  - anthropics_skills_repository
   - anthropics_skills_pdf
   - anthropics_skills_docx
   - anthropics_skills_pptx
-
-blocked:
-  - runtime_enabled
-  - automatic_impact_enabled
-  - mark_validated
-  - mark_vigente
-  - use_without_visual_qa
-  - use_external_skill_without_review
+  - agent_skills_standard
+  - agent_skills_security_research
 
 acceptance_gates:
   - router_read
   - operational_source_read
   - repo_matrix_read
   - contract_read
+  - destination_validated
   - duplicate_check_done
-  - research_pack_pass
+  - research_pack_present
   - research_to_rules_matrix_present
   - decision_matrix_present
+  - canonical_design_present
+  - eval_present
+  - judge_present
+  - manifest_present
   - github_write_done
   - github_readback_done
-  - judge_pass_or_candidate_readonly
+  - evidence_log_done
+  - contract_judge_done
+
+blocked:
+  - runtime_enabled
+  - automatic_impact_enabled
+  - mark_validated
+  - mark_vigente
+  - mark_aprobado
+  - use_without_visual_qa
+  - use_external_skill_without_review
+  - write_outside_skills_path
+  - modify_marketplace_ssot
+  - close_without_readback
+  - close_without_evidence_log
+
+final_allowed_state: CANDIDATO_READ_ONLY_NO_HABILITADO_BLOQUEADO_PARA_PRODUCCION
