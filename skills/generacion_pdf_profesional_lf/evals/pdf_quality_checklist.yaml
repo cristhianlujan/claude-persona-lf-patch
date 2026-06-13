@@ -1,0 +1,61 @@
+version: v0.1
+status: CANDIDATO
+skill: SKILL_GENERACION_PDF_PROFESIONAL_LF
+purpose: Evaluar si un PDF LF puede cerrarse como profesional y verificable.
+
+required_gates:
+  input:
+    - brief_contains_objective
+    - audience_defined
+    - pdf_type_defined
+    - source_evidence_declared
+    - visual_level_defined
+  pipeline:
+    - editable_source_selected_or_na_justified
+    - render_method_declared
+    - qa_method_declared
+  visual_quality:
+    - cover_has_hierarchy
+    - layout_has_grid
+    - typography_has_levels
+    - colors_are_defined
+    - components_present
+    - tables_are_legible
+    - no_long_plain_text_blocks
+  verification:
+    - pdf_rendered
+    - pages_count_readback
+    - visual_inspection_done
+    - no_cut_text
+    - no_overlap
+    - margins_ok
+    - contrast_ok
+    - source_editable_delivered_or_na_justified
+  governance:
+    - router_first_applied
+    - source_operativa_checked
+    - runtime_not_enabled
+    - automatic_impact_blocked
+    - no_validated_claim
+
+fail_if:
+  - pdf_basic_or_plain
+  - missing_editable_source_without_justification
+  - no_visual_qa
+  - text_cut_or_overlapped
+  - tables_unreadable
+  - unauthorized_source
+  - runtime_enabled
+  - marked_validated_or_vigente
+
+score:
+  pass_minimum: 90
+  conditional_pass_minimum: 80
+  below_80: BLOCKED
+
+output_required:
+  - verdict
+  - issues_found
+  - fixes_applied
+  - evidence_readback
+  - pending_items
