@@ -1,114 +1,59 @@
 ---
 name: generacion-pdf-profesional-lf
-description: Skill LF candidata para generar PDFs profesionales con pipeline ejecutable, referencias de layout, QA visual bug-hunt y gates bloqueantes. Usar para PDF ejecutivo, reporte, brandbook, flujo, propuesta, auditoria o reconstruccion de PDF basico. No usar para runtime productivo ni cierre validado.
+description: Skill LF candidata para PDFs profesionales con pipeline, layout, QA visual bug-hunt, templates y script de render/auditoria.
 status: CANDIDATO
-estado_documental: CANDIDATO
 estado_operativo: READ_ONLY
 runtime_estado: NO_HABILITADO
 automatic_impact: BLOQUEADO
-owner_project: 00_GOBERNANZA_PORTAFOLIO_OPERATIVO_LF
 operation_code: CREACION_SKILL_LF
-version: v0.2-return-to-worker-repaired
+version: v0.2-repaired
 last_updated: 2026-06-13
 ---
 
 # SKILL_GENERACION_PDF_PROFESIONAL_LF
 
-## Estado y bloqueo
-
-Esta skill queda en `CANDIDATO_READ_ONLY / NO_HABILITADO / BLOQUEADO_PARA_PRODUCCION`.
-
-No marcar `VALIDATED`, `VIGENTE`, `APROBADO`, `PRODUCCION`, `RUNTIME_READY` ni `PASS_PRODUCTIVO`.
-
 ## Regla madre
 
-Un PDF profesional no se cierra por existir. Se cierra solo si:
+No cerrar un PDF por existir. Cerrar solo si hay pipeline correcto, fuente editable, layout/template, PDF renderizado, paginas exportadas a imagen, QA bug-hunt, fixes cuando aplique y readback.
 
-1. el pipeline correcto fue elegido con evidencia;
-2. se uso layout/template aplicable;
-3. se genero fuente editable;
-4. se renderizo PDF;
-5. se convirtieron paginas clave a imagen;
-6. el QA visual busco fallas, no confirmacion;
-7. hubo fix-and-verify cuando aparecieron issues;
-8. el readback enumera paginas revisadas, issues y fixes.
+Si falta cualquiera: RETURN_TO_WORKER.
 
-Si falta cualquiera: `RETURN_TO_WORKER`.
+## Archivos obligatorios
 
-## Ruta LF obligatoria
+- references/pdf_pipeline_decision.md
+- references/executive_pdf_layouts.md
+- references/visual_qa_bug_hunt.md
+- templates/report_exec_16x9.md
+- templates/flow_review_report.md
+- scripts/render_and_audit_pdf.py
+- evals/pdf_quality_checklist.yaml
+- quality/pdf_professional_gate.yaml
+- examples/input_brief.md
+- examples/output_expected.md
+- judges/judge_pdf_profesional_lf.yaml
 
-```text
-Router -> ACT-0001 -> Supabase / v_lf_fuente_operativa -> activo vigente aplicable -> contrato CREACION_SKILL_LF -> duplicidad -> research pack -> matriz research_to_rules -> matriz decision -> diseño canonico -> pack profundo -> eval -> judge -> render/QA -> readback -> evidencia -> cierre candidato
-```
+## Pipeline
 
-## Archivos que deben leerse antes de ejecutar
+- ejecutivo: PPTX 16:9 o HTML/CSS premium.
+- flujo/onboarding: PPTX 16:9 o HTML/CSS premium paginado.
+- brandbook: HTML/CSS premium o PPTX visual.
+- informe largo: DOCX o Markdown.
+- PDF pobre: extraer, reconstruir fuente editable, redisenar y renderizar.
 
-| Archivo | Uso obligatorio |
-|---|---|
-| `references/pdf_pipeline_decision.md` | decidir DOCX, PPTX, HTML/CSS, ReportLab o reconstruccion |
-| `references/executive_pdf_layouts.md` | seleccionar layout, densidad y componentes por pagina |
-| `references/visual_qa_bug_hunt.md` | ejecutar QA visual bloqueante |
-| `examples/input_brief.md` | plantilla de intake y page-map minimo |
-| `examples/output_expected.md` | contrato de salida esperada y readback |
-| `evals/pdf_quality_checklist.yaml` | scoring operativo de calidad |
-| `judges/judge_pdf_profesional_lf.yaml` | veredicto bloqueante |
-
-Si alguno falta o no se lee: `BLOCKED_PACK_DEPTH_NOT_CLEAN`.
-
-## Decisor de pipeline
-
-Regla dura:
-
-```text
-Si el PDF es ejecutivo, visual, flujo, directorio, propuesta o brandbook: usar PPTX 16:9 -> PDF o HTML/CSS premium paginado.
-No usar ReportLab plano salvo tablas/documento formal o justificacion escrita.
-```
-
-| Caso | Pipeline obligatorio | Bloquear si |
-|---|---|---|
-| informe formal largo | DOCX/Markdown -> PDF | no hay TOC, estilos, tablas legibles |
-| ejecutivo/directorio | PPTX 16:9 -> PDF | usa pagina plana tipo informe |
-| flujo/onboarding | PPTX 16:9 o HTML/CSS premium -> PDF | flujo queda comprimido en una pagina |
-| brandbook | HTML/CSS premium o PPTX visual -> PDF | no hay paleta, tokens, componentes |
-| PDF basico existente | extraer -> reconstruir fuente editable -> rediseñar -> PDF | se maquilla encima del PDF pobre |
-
-## Procedimiento ejecutable
-
-1. Clasificar entregable y audiencia.
-2. Leer `pdf_pipeline_decision.md` y declarar pipeline elegido.
-3. Leer layout aplicable.
-4. Definir mapa de paginas antes de renderizar.
-5. Aplicar maximo de densidad: una idea principal por pagina; maximo 6 cards o 8 filas por pagina.
-6. Crear fuente editable.
-7. Renderizar PDF.
-8. Convertir paginas clave a imagen.
-9. Aplicar `visual_qa_bug_hunt.md`: buscar fallas.
-10. Si no se detectan fallas en primer render, revisar otra vez; cero fallas en primer intento es sospechoso.
-11. Corregir y re-renderizar cuando exista cualquier observacion.
-12. Cerrar solo con readback trazable.
+ReportLab plano no es default para PDF ejecutivo.
 
 ## Gates bloqueantes
 
-| Gate | Bloqueo |
-|---|---|
-| pipeline no justificado | `BLOCKED_PIPELINE_DECISION_MISSING` |
-| layout/template no usado | `BLOCKED_TEMPLATE_NOT_USED` |
-| sin fuente editable | `BLOCKED_EDITABLE_SOURCE_MISSING` |
-| sin render a imagen | `BLOCKED_VISUAL_RENDER_MISSING` |
-| sin bug-hunt QA | `BLOCKED_VISUAL_QA_NOT_DONE` |
-| PDF se ve basico | `FAIL_VISUAL_QUALITY` |
-| primer QA sin issues y sin segunda revision | `BLOCKED_QA_CONFIRMATION_BIAS` |
-| sin fix-and-verify cuando aplica | `BLOCKED_FIX_VERIFY_MISSING` |
-| sin readback | `BLOCKED_READBACK_MISSING` |
+- pipeline no justificado: BLOCKED_PIPELINE_DECISION_MISSING
+- sin template/layout: BLOCKED_TEMPLATE_NOT_USED
+- sin fuente editable: BLOCKED_EDITABLE_SOURCE_MISSING
+- sin imagenes de paginas: BLOCKED_VISUAL_RENDER_MISSING
+- sin bug-hunt: BLOCKED_VISUAL_QA_NOT_DONE
+- PDF basico: FAIL_VISUAL_QUALITY
+- sin readback: BLOCKED_READBACK_MISSING
 
 ## Cierre permitido
 
-Veredictos permitidos:
+PASS_CANDIDATO_READ_ONLY_REPAIRED, PASS_WITH_OBSERVATIONS_CANDIDATO_READ_ONLY, RETURN_TO_WORKER, FAIL_VISUAL_QUALITY o BLOCKED.
 
-- `PASS_CANDIDATO_READ_ONLY_REPAIRED`
-- `PASS_WITH_OBSERVATIONS_CANDIDATO_READ_ONLY`
-- `RETURN_TO_WORKER`
-- `FAIL_VISUAL_QUALITY`
-- `BLOCKED`
-
-Todo cierre debe incluir: pipeline, fuente editable, paginas renderizadas, paginas revisadas, issues encontrados, fixes aplicados, pendientes y estado no productivo.
+Runtime sigue NO_HABILITADO e impacto automatico BLOQUEADO.
