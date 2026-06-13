@@ -3,37 +3,65 @@ judge: JUDGE_PDF_PROFESIONAL_LF
 skill: SKILL_GENERACION_PDF_PROFESIONAL_LF
 status: CANDIDATO_READ_ONLY
 operation_code: CREACION_SKILL_LF
+runtime_estado: NO_HABILITADO
+impacto_automatico: BLOQUEADO
 
 pass_if:
   - router_first_applied
   - operational_source_checked
+  - destination_validated
+  - duplicate_check_done
   - candidate_status_only
   - runtime_no_habilitado
   - automatic_impact_bloqueado
   - research_pack_present
-  - decision_matrix_present
   - research_to_rules_matrix_present
+  - decision_matrix_present
+  - canonical_design_present
+  - manifest_present
+  - eval_present
   - editable_source_policy_defined
+  - pipeline_decision_defined
   - qa_visual_required
   - readback_required
   - no_external_copy
   - no_validated_claim
+  - github_readback_done
+  - evidence_log_done
 
 fail_if:
   - runtime_enabled
   - automatic_impact_enabled
   - marked_vigente
   - marked_validated
+  - marked_aprobado
   - missing_research_pack
+  - missing_research_to_rules_matrix
+  - missing_decision_matrix
+  - missing_manifest
+  - missing_eval
   - missing_qa_visual
   - missing_editable_source_policy
   - copies_external_proprietary_content
   - closes_without_readback
+  - closes_without_evidence_log
   - allows_pdf_basic_output
   - bypasses_router
+  - writes_outside_authorized_path
+  - modifies_marketplace_ssot
+
+pdf_quality_fail_if:
+  - pdf_basic_or_plain
+  - text_cut_or_overlapped
+  - tables_unreadable
+  - low_contrast_unfixed
+  - margins_broken
+  - no_visual_inspection
+  - no_rerender_after_fix_when_issues_found
 
 result_values:
   - PASS_CANDIDATO_READ_ONLY
+  - PASS_WITH_OBSERVATIONS_CANDIDATO_READ_ONLY
   - FAIL
   - BLOCKED
   - RETURN_TO_WORKER
@@ -45,3 +73,10 @@ required_evidence:
   - source_sha_present
   - contract_sha_present
   - judge_sha_present
+  - repo_matrix_sha_present
+  - file_count_matches_manifest
+
+close_allowed_only_as:
+  - CANDIDATO_READ_ONLY
+  - NO_HABILITADO
+  - BLOQUEADO_PARA_PRODUCCION
