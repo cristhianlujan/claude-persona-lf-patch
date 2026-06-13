@@ -9,7 +9,7 @@ operation_code: CREACION_SKILL_LF
 repository: cristhianlujan/claude-persona-lf-patch
 base_path: /skills/generacion_pdf_profesional_lf
 last_updated: 2026-06-13
-required_files_count: 15
+required_files_count: 20
 required_files:
   - SKILL.md
   - DOC_OFICIAL.md
@@ -18,6 +18,8 @@ required_files:
   - references/pdf_pipeline_decision.md
   - references/executive_pdf_layouts.md
   - references/visual_qa_bug_hunt.md
+  - references/page_contracts.md
+  - references/pdf_design_tokens.md
   - templates/report_exec_16x9.md
   - templates/flow_review_report.md
   - scripts/render_and_audit_pdf.py
@@ -26,4 +28,7 @@ required_files:
   - judges/judge_pdf_profesional_lf.yaml
   - examples/input_brief.md
   - examples/output_expected.md
+  - examples/good_report_spec.md
+  - examples/bad_report_antipatterns.md
+  - samples/brief_v2.md
 allowed_final_state: PASS_CANDIDATO_READ_ONLY_REPAIRED
