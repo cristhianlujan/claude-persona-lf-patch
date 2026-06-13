@@ -1,104 +1,158 @@
 # DOC_OFICIAL — SKILL_GENERACION_PDF_PROFESIONAL_LF v0.1 CANDIDATO
 
-## Estado documental
+## 1. Estado documental
 
-- proyecto: 00_GOBERNANZA_PORTAFOLIO_OPERATIVO_LF
-- activo: SKILL_GENERACION_PDF_PROFESIONAL_LF_v0.1_CANDIDATO
-- tipo: SKILL
-- estado_documental: CANDIDATO
-- estado_operativo: READ_ONLY
-- runtime_estado: NO_HABILITADO
-- impacto_automatico: BLOQUEADO
-- operation_code: CREACION_SKILL_LF
-- fecha: 2026-06-13
+| Campo | Valor |
+|---|---|
+| Proyecto | 00_GOBERNANZA_PORTAFOLIO_OPERATIVO_LF |
+| Activo | SKILL_GENERACION_PDF_PROFESIONAL_LF_v0.1_CANDIDATO |
+| Tipo | SKILL |
+| Estado documental | CANDIDATO |
+| Estado operativo | READ_ONLY |
+| Runtime | NO_HABILITADO |
+| Impacto automatico | BLOQUEADO |
+| Operation code | CREACION_SKILL_LF |
+| Fecha | 2026-06-13 |
 
-## Problema operativo
+## 2. Problema operativo
 
-Los PDF LF estaban saliendo basicos: baja jerarquia visual, poco control de layout, falta de fuente editable, poca evidencia de QA y cierre visual no verificable.
+Los PDFs LF estaban saliendo basicos: poca jerarquia visual, bajo control de layout, ausencia de fuente editable, falta de QA visual y cierres sin readback suficiente.
 
-## Objetivo
+## 3. Objetivo
 
-Crear una skill candidata para producir PDFs profesionales, ejecutivos, visuales y verificables, con protocolo LF completo y sin habilitacion productiva automatica.
+Crear una skill candidata para generar, reconstruir y auditar PDFs LF profesionales, ejecutivos, visuales y verificables, sin habilitar produccion ni runtime automatico.
 
-## Alcance
+## 4. Alcance
 
 Incluye:
+
 - generacion de PDFs nuevos;
-- reconstruccion visual desde texto, markdown, DOCX, PPTX o HTML;
 - seleccion de pipeline editable;
+- reconstruccion desde PDF basico existente;
+- conversion desde Markdown, DOCX, PPTX, HTML/CSS o ReportLab;
 - QA visual obligatorio;
 - readback de evidencia;
-- plantillas base para reportes, brandbooks, auditorias y briefs ejecutivos.
+- plantillas base para reportes, brandbooks, auditorias, propuestas y briefs ejecutivos.
 
 No incluye:
+
 - runtime automatico;
 - aprobacion productiva;
 - reemplazo de ACT-0043, ACT-0045 o ACT-0047;
 - copia de implementaciones propietarias externas;
-- generacion sin fuente verificable.
+- uso de skills externas como runtime;
+- generacion de contenido factual sin fuente verificable.
 
-## Activos madre relacionados
+## 5. Activos madre relacionados
 
-| Activo | Rol |
-|---|---|
-| ACT-0001 | Router operativo rector |
-| ACT-0043 | Skill Creator LF vigente, produccion controlada read-only |
-| ACT-0045 | Skill creadora de perfiles/cards vigente, produccion controlada read-only |
-| ACT-0047 | Skill transversal de Design System multicanal, candidato read-only |
-| CREACION_SKILL_LF | Protocolo operativo de creacion de skills |
+| Activo | Rol | Estado operativo usado |
+|---|---|---|
+| ACT-0001 | Router operativo rector | VIGENTE / ACTIVO / RECTOR |
+| ACT-0043 | Skill Creator LF | VIGENTE / READ_ONLY |
+| ACT-0045 | Skill creadora perfiles/cards LF | VIGENTE / READ_ONLY |
+| ACT-0047 | Design System multicanal LF | CANDIDATO / READ_ONLY |
+| contrato_skill_lf.yaml | Contrato alto nivel CREACION_SKILL_LF | CANDIDATO_READ_ONLY |
+| judge_contrato_skill_lf.yaml | Judge contractual CREACION_SKILL_LF | CANDIDATO_READ_ONLY |
+| matriz_repos_lf.yaml | Repo y rutas autorizadas | AUTHORIZED |
 
-## Principios de diseño
-
-1. El PDF final no es el unico entregable; debe existir fuente editable cuando el caso lo requiera.
-2. El render debe pasar auditoria visual, no solo compilacion tecnica.
-3. Los PDFs ejecutivos deben usar componentes visuales: cards, tablas, flujos, callouts, semaforos y resumen operativo.
-4. La skill debe ser compatible con Claude/Agent Skills, pero gobernada por LF.
-5. No se admite cierre sin readback y evidencia.
-
-## Pipeline oficial candidato
+## 6. Ruta obligatoria ejecutada
 
 ```text
-Brief -> clasificacion de PDF -> seleccion de fuente editable -> diseno visual -> render -> QA visual -> correccion -> readback -> cierre candidato
+Router -> ACT-0001 -> Supabase / v_lf_fuente_operativa -> activo vigente aplicable -> contrato CREACION_SKILL_LF -> duplicidad -> research pack -> research_to_rules_matrix -> decision_matrix -> diseno canonico -> paquete skill -> evals -> judge -> manifest -> GitHub write -> readback -> evidence log -> cierre candidato
 ```
 
-## Matriz de decision
+## 7. Validacion de duplicidad
 
-| Decision | Criterio | Resultado |
+| Fuente | Resultado | Decision |
 |---|---|---|
-| Crear skill nueva | No existe skill PDF LF especifica | Crear candidata |
-| Reutilizar Claude PDF | Util como referencia tecnica, no como gobierno LF | Referenciar, no copiar |
-| Usar Design System LF | Necesario para elevar calidad visual | Integrar como activo relacionado |
-| Habilitar runtime | Sin sandbox ni QA real aun | Bloqueado |
-| Marcar VIGENTE/VALIDATED | Falta prueba con PDFs reales LF | Bloqueado |
+| Supabase / v_lf_fuente_operativa_busqueda | No se encontro skill PDF profesional LF exacta | Procede candidato |
+| GitHub repo autorizado | Ya existia carpeta `skills/generacion_pdf_profesional_lf/` | No duplicar; regularizar paquete existente |
+| ACT-0047 Design System | Cubre sistema visual multicanal, no pipeline PDF completo | Relacionar, no reemplazar |
+| Skills externas PDF/DOCX/PPTX | Referencias tecnicas externas | Usar patrones, no copiar ni adoptar runtime |
 
-## Research to rules matrix
+## 8. Research to rules matrix
 
-| Fuente | Hallazgo | Regla LF derivada |
+| Fuente | Hallazgo operativo | Regla LF derivada | Destino |
+|---|---|---|---|
+| ACT-0001 | Toda tarea operativa entra por Router y fuente operativa | PDF LF no inicia directo por render | SKILL.md / manifest |
+| ACT-0043 | Skill candidata requiere activadores, limites, sandbox, baseline y no duplicidad | Definir activadores/no activadores y bloqueo | SKILL.md |
+| ACT-0045 | Research pack debe puntuar fuentes y evitar copia | Research pack con scoring y riesgos | research_pack.md |
+| ACT-0047 | Diseño visual debe respetar tokens, componentes, accesibilidad y QA | PDF profesional requiere sistema visual minimo | evals / judge |
+| Anthropic Agent Skills | Skills son carpetas con SKILL.md y recursos | Paquete multiarchivo versionado | manifest.yaml |
+| anthropics/skills/pdf | PDF tiene operaciones tecnicas de lectura, extraccion y render | Separar operacion tecnica de calidad visual LF | SKILL.md |
+| anthropics/skills/docx | DOCX funciona como fuente editable verificable | Exigir fuente editable cuando aplique | evals |
+| anthropics/skills/pptx | QA visual exige render, inspeccion, correccion y verificacion | Adoptar QA visual obligatorio para PDFs | judge |
+| Research de riesgos | Skills externas tienen riesgo de redundancia, permisos, procedencia y supply chain | No confiar en skill externa sin governance, sandbox y judge | restrictions |
+
+## 9. Matriz de decision
+
+| Caso | Decision | Pipeline |
 |---|---|---|
-| Anthropic Skills | Skills son carpetas con SKILL.md, scripts y recursos | Paquete multiarchivo con SKILL.md obligatorio |
-| Agent Skills standard | Formato ligero, portable y versionable | Mantener carpeta portable y versionada |
-| Anthropic PDF skill | PDF puede cubrir crear, editar, extraer, combinar y renderizar | Separar capacidad tecnica de calidad visual |
-| Anthropic PPTX skill | QA visual y ciclo fix-and-verify son obligatorios para slides | Adoptar QA visual obligatorio para PDFs |
-| Anthropic DOCX skill | DOCX requiere validacion y fuente editable | Exigir fuente editable y validacion cuando aplique |
-| Estudios externos de agent skills | Riesgo de duplicidad y seguridad en skills de terceros | No usar skills externas sin governance, sandbox y judge |
+| Documento largo / informe formal | Crear fuente editable estructurada | Markdown o DOCX -> PDF |
+| Propuesta ejecutiva / directorio | Priorizar narrativa visual | PPTX 16:9 -> PDF |
+| Reporte visual / brandbook | Priorizar control de layout | HTML/CSS o ReportLab -> PDF |
+| Tablas extensas | Evitar tablas rotas | DOCX o HTML -> PDF |
+| PDF existente basico | No maquillar superficialmente | Extraer -> reconstruir editable -> redisenar -> PDF |
+| Sin fuente verificable | Bloquear contenido factual | Solicitar/consultar fuente autorizada |
+| Sin QA visual | Bloquear cierre | Render -> inspeccion -> fix -> re-render |
+| Pedido de runtime/productivo | Bloquear | Mantener CANDIDATO_READ_ONLY |
 
-## Criterios de aceptacion
+## 10. Diseno canonico
 
-- Paquete creado en `/skills/generacion_pdf_profesional_lf/`.
+La skill queda como paquete portable en:
+
+```text
+skills/generacion_pdf_profesional_lf/
+```
+
+Archivos obligatorios:
+
+- `SKILL.md`
+- `DOC_OFICIAL.md`
+- `research_pack.md`
+- `manifest.yaml`
+- `evals/pdf_quality_checklist.yaml`
+- `judges/judge_pdf_profesional_lf.yaml`
+- `examples/input_brief.md`
+- `examples/output_expected.md`
+
+## 11. Criterios de aceptacion
+
 - Estado maximo: CANDIDATO.
+- Operacion: READ_ONLY.
 - Runtime: NO_HABILITADO.
 - Impacto automatico: BLOQUEADO.
-- Incluye SKILL.md, DOC_OFICIAL.md, manifest, research pack, eval y judge.
-- Readback GitHub ejecutado.
-- Registro Supabase si el conector lo permite.
+- Research pack presente.
+- Research to rules matrix presente.
+- Decision matrix presente.
+- Eval presente.
+- Judge presente.
+- Manifest presente.
+- GitHub readback ejecutado.
+- Supabase evidence log registrado.
 
-## Bloqueos
+## 12. Bloqueos
 
-- No puede declararse oficial productiva.
-- No puede reemplazar skills existentes.
-- No puede operar sin QA visual.
-- No puede generar PDFs finales sin fuente editable cuando sea necesaria.
+Bloquear si:
 
-## Cierre candidato
+- se intenta marcar VALIDATED, VIGENTE o APROBADO;
+- se habilita runtime;
+- se habilita impacto automatico;
+- falta readback;
+- falta evidence log;
+- falta judge/eval/manifest;
+- falta research_to_rules_matrix;
+- falta decision_matrix;
+- se intenta modificar marketplace-ssot;
+- se copia contenido propietario externo;
+- se cierra un PDF sin QA visual.
 
-Este documento deja creada la definicion oficial candidata de la skill. Queda pendiente sandbox con PDF real LF y aprobacion explicita para cualquier promocion documental u operativa.
+## 13. Cierre candidato
+
+Este documento deja regularizada la definicion candidata de la skill. Queda pendiente sandbox con PDFs reales LF y aprobacion explicita para cualquier promocion documental u operativa.
+
+Estado final permitido:
+
+```text
+CANDIDATO_READ_ONLY / NO_HABILITADO / BLOQUEADO PARA PRODUCCION
+```
