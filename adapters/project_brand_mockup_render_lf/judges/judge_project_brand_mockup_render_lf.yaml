@@ -1,0 +1,33 @@
+version: v0.1
+judge: JUDGE_PROJECT_BRAND_MOCKUP_RENDER_LF
+adapter: ADAPTER_PROJECT_BRAND_MOCKUP_RENDER_LF
+status: CANDIDATO_READ_ONLY
+
+pass_if:
+  - project_brand_resolved
+  - tokens_from_source_used
+  - screen_visual_specs_applied
+  - mockup_frame_present
+  - no_generic_palette
+  - no_blocked_visual_pattern
+  - qa_visual_readback_present
+
+return_to_worker_if:
+  - missing_mockup_examples
+  - missing_screen_specs
+  - missing_readback
+  - key_screen_only_as_table
+
+fail_if:
+  - brand_mismatch
+  - invented_colors
+  - generic_mockup
+  - production_claim
+
+allowed_results:
+  - PASS_CANDIDATO_READ_ONLY
+  - PASS_WITH_OBSERVATIONS
+  - RETURN_TO_WORKER
+  - FAIL_BRAND_MISMATCH
+  - FAIL_GENERIC_MOCKUP
+  - BLOCKED_SOURCE_MISSING
