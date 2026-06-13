@@ -1,0 +1,31 @@
+version: v0.1
+adapter: ADAPTER_PROJECT_BRAND_MOCKUP_RENDER_LF
+status: CANDIDATO
+
+required:
+  - project_code_declared
+  - design_system_code_resolved
+  - route_theme_tokens_read
+  - screen_visual_specs_read_when_screen_based
+  - project_tokens_used
+  - mockup_frame_present
+  - screen_state_present
+  - qa_visual_done
+  - readback_tokens_and_sources
+
+fail_if:
+  - colors_invented
+  - generic_lf_palette_used_when_project_tokens_exist
+  - mockup_without_frame
+  - screen_specs_ignored
+  - blocked_visual_pattern_rendered
+  - key_screen_as_table_only
+  - no_visual_qa
+
+verdicts:
+  - PASS_CANDIDATO_READ_ONLY
+  - PASS_WITH_OBSERVATIONS
+  - RETURN_TO_WORKER
+  - FAIL_BRAND_MISMATCH
+  - FAIL_GENERIC_MOCKUP
+  - BLOCKED_SOURCE_MISSING
