@@ -1,0 +1,22 @@
+version: v0.1
+status: CANDIDATO
+estado_operativo: READ_ONLY
+runtime_estado: NO_HABILITADO
+impacto_automatico: BLOQUEADO
+adapter_code: ADAPTER_PROJECT_BRAND_MOCKUP_RENDER_LF_v0.1_CANDIDATO
+base_path: adapters/project_brand_mockup_render_lf
+required_files:
+  - ADAPTER.md
+  - manifest.yaml
+  - references/token_resolution_contract.md
+  - references/screen_mockup_contract.md
+  - references/project_brand_guardrails.md
+  - references/qa_mockup_visual_bug_hunt.md
+  - templates/mobile_onboarding_mockup.html
+  - templates/flow_mockup_board.html
+  - examples/overall_good_mockup_spec.md
+  - examples/overall_bad_mockup_antipatterns.md
+  - evals/mockup_brand_quality_checklist.yaml
+  - judges/judge_project_brand_mockup_render_lf.yaml
+activation_gate: PDF_OR_DECK_WITH_SCREENS
+allowed_final_state: CANDIDATO_READ_ONLY_NO_HABILITADO
