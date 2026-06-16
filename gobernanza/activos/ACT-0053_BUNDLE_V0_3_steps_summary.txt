@@ -12,7 +12,7 @@ campo_canonico: record_status (no capture_status)
 step_id: S1-B | mvp: true | umbral: 80% PROXY_REVISABLE | next_if_pass: S1-C
 
 === FILE: steps/s1_c_verify_sandbox_mode.yaml ===
-step_id: S1-C | mvp: true | bloquea: PRODUCTION_REGISTER | next_if_pass: S2-A
+step_id: S1-C | mvp: true | bloquea: REGISTRO_OPERATIVO | next_if_pass: S2-A
 
 === FILE: steps/s2_a_inspect_record.yaml ===
 step_id: S2-A | mvp: true | taxonomia_id=CRITICO | next_if_pass: S3-A
@@ -27,7 +27,7 @@ step_id: S4-A | cascada Q1: RECHAZADO->OBSERVADO->HOMOLOGADO_DRY_RUN | next_if_p
 step_id: S5-A | execution_mode: DRY_RUN | next_if_pass: S6-A
 
 === FILE: steps/s6_a_consumer_gate.yaml ===
-step_id: S6-A | gate: anti-PRODUCTION_REGISTER | next_if_pass: S7-A
+step_id: S6-A | gate: anti-REGISTRO_OPERATIVO | next_if_pass: S7-A
 
 === FILE: steps/s7_a_audit.yaml ===
 step_id: S7-A | mvp: true | READ_ONLY: solo propone evento | next_if_pass: NULL
