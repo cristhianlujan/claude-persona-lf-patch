@@ -1,7 +1,8 @@
 # SKILL_EXTRACCION_FUENTES_DIGITALES_LF
 
-> Estado: CANDIDATO_READ_ONLY
+> Estado: APROBADO_PRODUCCION_CONTROLADA_READ_ONLY
 > Versión: v0.1 · Lote 20B
+> Gate aprobado: 2026-06-16 | Evento Supabase: 304 | Criterios: 9 contratos ACTIVE + DRY_RUN CLOSED 2/2
 > Path canónico: skills/extraccion_fuentes_digitales_lf/domain/SKILL.md
 
 ---
