@@ -36,6 +36,7 @@ GOVERNED_PREFIXES = [
     "gobernanza/procedimientos/",
     "gobernanza/contratos/",
     "gobernanza/judges/",
+    "gobernanza/activos/",
 ]
 ALWAYS_BLOCKED_PREFIXES = [
     "official/",
