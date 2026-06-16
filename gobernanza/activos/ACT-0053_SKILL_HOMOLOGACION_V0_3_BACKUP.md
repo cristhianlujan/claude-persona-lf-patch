@@ -4,11 +4,12 @@
 - codigo_activo: ACT-0053
 - nombre_canonico: SKILL_HOMOLOGACION_FUENTES_DIGITALES_LF
 - version: V0_3
-- estado_documental: CANDIDATO
-- estado_operativo: READ_ONLY
-- runtime_estado: CANDIDATE_READ_ONLY
+- estado_documental: APROBADO
+- estado_operativo: APROBADO
+- runtime_estado: APROBADO_PRODUCCION_CONTROLADA_READ_ONLY
 - operation_code: HOMOLOGACION_FUENTES_DIGITALES_LF
 - owner: Cristhian
+- gate_aprobado: 2026-06-16 | evento_supabase: 305 | criterios: 9 contratos ACTIVE + DRY_RUN 2/2 + umbral_pct=100%
 - evento_cierre_fase2: lf_eventos id=256
 - sha256_v0_3: b7c765f6ca127d3a17c0f8ee7b54365604348beef592cf8fe1daa7370a1e720b
 
