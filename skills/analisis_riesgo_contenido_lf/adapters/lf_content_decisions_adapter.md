@@ -11,7 +11,7 @@
 |---|---|---|---|
 | run_id | run_id | UUID | Generado por la skill |
 | operation_code | operation_code | TEXT | Siempre ANALISIS_RIESGO_CONTENIDO_LF |
-| execution_mode | execution_mode | TEXT | DRY_RUN / SANDBOX / PRODUCTION_CONTROLLED |
+| execution_mode | execution_mode | TEXT | DRY_RUN / SANDBOX / PROD_CONTROLLED |
 | topic | topic | TEXT | Nullable |
 | risk_family | risk_family | TEXT | Nullable |
 | claim_type | claim_type | TEXT | Nullable |
