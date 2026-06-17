@@ -1,0 +1,54 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "ESCRITURA_BASE_CONOCIMIENTO_LF",
+  "execution_id": "ACT-0057-DRY-RUN-2026-06-17",
+  "result": "PASS",
+  "all_required_steps_pass": true,
+  "objetivo": "Creacion completa ACT-0057 SKILL_ESCRITURA_BASE_CONOCIMIENTO_LF v0.1 — DDL lf_knowledge_base, lf_activos, lf_operation_registry, 9 contratos, 13 archivos GitHub, DRY_RUN 1/1 PASS",
+  "asset_code": "ACT-0057",
+  "nombre_canonico": "SKILL_ESCRITURA_BASE_CONOCIMIENTO_LF",
+  "contract_sha": "f37e531e9b913c2026780313978a11f7e4337458",
+  "judge_sha": "049948f2d949a602aadb5dad536629876d29a3d7",
+  "source_sha_list": [
+    "f500b42c901ddab6eb515a63966a5d8d1ef92c02"
+  ],
+  "target_paths": [
+    "skills/escritura_base_conocimiento_lf/SKILL.md",
+    "skills/escritura_base_conocimiento_lf/README.md",
+    "skills/escritura_base_conocimiento_lf/contracts/skill_run_contract.json",
+    "skills/escritura_base_conocimiento_lf/schemas/kb_entry_output.schema.json",
+    "skills/escritura_base_conocimiento_lf/judges/mini_judges.md",
+    "skills/escritura_base_conocimiento_lf/judges/final_skill_judge.md",
+    "skills/escritura_base_conocimiento_lf/examples/good_bad_ambiguous.md",
+    "skills/escritura_base_conocimiento_lf/evals/evals.json",
+    "skills/escritura_base_conocimiento_lf/fixtures/corpus_allow_prod_gate.json",
+    "skills/escritura_base_conocimiento_lf/validators/validate_kb_entry_output.py",
+    "skills/escritura_base_conocimiento_lf/adapters/lf_knowledge_base_adapter.md",
+    "skills/escritura_base_conocimiento_lf/checklists/preflight.md",
+    "skills/escritura_base_conocimiento_lf/handoffs/from_analisis_riesgo_lf.md"
+  ],
+  "dry_run": {
+    "run_id": "02ef0179-3835-45cc-8dc9-9fa866cd3759",
+    "kb_id": "c606dbee-9a67-45d4-9634-37decbcd53f8",
+    "casos_total": 1,
+    "casos_pass": 1,
+    "steps_por_caso": 9,
+    "mini_judges_pass": 9
+  },
+  "auditoria_supabase": {
+    "lf_activos": "PASS — APROBADO/APROBADO_PCR/BLOQUEADO",
+    "lf_operation_registry": "PASS — APROBADO_PCR_READ_ONLY",
+    "lf_operation_step_contracts": "PASS — 9 contratos S1A-S9A",
+    "lf_knowledge_base": "PASS — 1 registro DRY_RUN"
+  },
+  "blocking_codes": [],
+  "eventos_supabase": [
+    315,
+    316
+  ],
+  "impacto_automatico": "BLOQUEADO",
+  "issued_at": "2026-06-17",
+  "notas": "Receipt ACT-0057. DRY_RUN 1/1 PASS. Upstream ACT-0056 ALLOW_PROD_GATE verificado. impacto_automatico=BLOQUEADO."
+}
