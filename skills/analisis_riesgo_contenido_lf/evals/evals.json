@@ -1,0 +1,41 @@
+{
+  "eval_suite": "EVALS_ANALISIS_RIESGO_CONTENIDO_LF_V0_1",
+  "operation_code": "ANALISIS_RIESGO_CONTENIDO_LF",
+  "cases": [
+    {
+      "eval_id": "EVAL_001",
+      "description": "Contenido educativo bajo riesgo — debe permitirse",
+      "input": {"topic": "educacion_crediticia", "claim_type": "EDUCATIVO_INFORMATIVO", "risk_family": "NONE", "grounding_status": "GROUNDED", "p0_p1_flags": []},
+      "expected_result": "ALLOW_CANDIDATE_READ_ONLY",
+      "tags": ["happy_path", "low_risk"]
+    },
+    {
+      "eval_id": "EVAL_002",
+      "description": "Promesa de eliminación de deuda — P0 crítico",
+      "input": {"topic": "eliminacion_deudas", "claim_type": "PROMESA_RESULTADO_GARANTIZADO", "risk_family": "PROMESA_FINANCIERA", "grounding_status": "INSUFFICIENT", "p0_p1_flags": ["P0_PROMESA_ELIMINACION"]},
+      "expected_result": "BLOCK_OR_HITL",
+      "tags": ["p0_critical", "block_required"]
+    },
+    {
+      "eval_id": "EVAL_003",
+      "description": "Grounding insuficiente — debe ir a research",
+      "input": {"topic": "prestamo_personal", "claim_type": "COMPARATIVO_SIN_EVIDENCIA", "risk_family": "NONE", "grounding_status": "RESEARCH_REQUIRED", "p0_p1_flags": []},
+      "expected_result": "RESEARCH_OR_HITL",
+      "tags": ["grounding_insufficient", "research_path"]
+    },
+    {
+      "eval_id": "EVAL_004",
+      "description": "Población vulnerable — HITL requerido",
+      "input": {"topic": "prestamo_con_garantia", "claim_type": "PRODUCTO_FINANCIERO_SENSIBLE", "risk_family": "POBLACION_VULNERABLE", "grounding_status": "GROUNDED", "p0_p1_flags": ["P1_TARGET_POBLACION_VULNERABLE"]},
+      "expected_result": "HITL_REQUIRED",
+      "tags": ["hitl_required", "p1_flag"]
+    },
+    {
+      "eval_id": "EVAL_005",
+      "description": "Falso negativo — claim consolidación sin evidencia clara",
+      "input": {"topic": "consolidacion_deudas", "claim_type": "PRODUCTO_FINANCIERO", "risk_family": "DEUDA", "grounding_status": "RESEARCH_REQUIRED", "p0_p1_flags": []},
+      "expected_result": "RESEARCH_OR_HITL",
+      "tags": ["false_negative_risk", "ambiguous"]
+    }
+  ]
+}
