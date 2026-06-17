@@ -1,0 +1,28 @@
+{
+  "fixture_id": "CORPUS_EVENTOS_198_201_LF",
+  "source_events": [198, 201],
+  "total_casos_reales": 12,
+  "total_casos_ampliados": 36,
+  "casos_reales": [
+    {"id": 1, "tema": "infocorp_educacion", "competidor": "Reevalua", "decision": "ALLOW_CANDIDATE_READ_ONLY", "motivo": "fuente educativa/blog sin recomendacion operativa"},
+    {"id": 2, "tema": "prestamo_personal", "competidor": "Reevalua", "decision": "RESEARCH_OR_HITL", "motivo": "landing financiera requiere revisar claim/CTA visible"},
+    {"id": 3, "tema": "ayuda_faq", "competidor": "RTC", "decision": "ALLOW_CANDIDATE_READ_ONLY", "motivo": "fuente FAQ/ayuda sin claim sensible registrado"},
+    {"id": 4, "tema": "consolidacion_deudas", "competidor": "RTC", "decision": "RESEARCH_OR_HITL", "motivo": "producto financiero sensible requiere evidencia de claim/condiciones"},
+    {"id": 5, "tema": "consolidacion_deudas", "competidor": "Reevalua", "decision": "RESEARCH_OR_HITL", "motivo": "landing financiera requiere captura de claim/CTA visible"},
+    {"id": 6, "tema": "asesoria_financiera", "competidor": "Reevalua", "decision": "ALLOW_CANDIDATE_READ_ONLY", "motivo": "propuesta de servicio sin claim alto registrado"},
+    {"id": 7, "tema": "producto_financiero", "competidor": "Reevalua", "decision": "RESEARCH_OR_HITL", "motivo": "producto financiero requiere evidencia adicional antes de derivar insight"},
+    {"id": 8, "tema": "prestamo_con_garantia", "competidor": "RTC", "decision": "HITL_REQUIRED", "motivo": "prestamos estando en Infocorp es claim/target sensible"},
+    {"id": 9, "tema": "reinsercion_financiera", "competidor": "Finanty", "decision": "ALLOW_CANDIDATE_READ_ONLY", "motivo": "enfoque humano/documental sin promesa de eliminacion registrada"},
+    {"id": 10, "tema": "eliminacion_deudas", "competidor": "PeruDeudas", "decision": "BLOCK_OR_HITL", "motivo": "claim eliminar deudas de forma legal: alto riesgo"},
+    {"id": 11, "tema": "educacion_crediticia", "competidor": "Reevalua", "decision": "ALLOW_CANDIDATE_READ_ONLY", "motivo": "diferenciador educativo contra falsas promesas"},
+    {"id": 12, "tema": "intervencion_legal", "competidor": "Grupo Infocorp Resuelve", "decision": "BLOCK_OR_HITL", "motivo": "riesgo de promesa de eliminacion asociado a intervencion legal"}
+  ],
+  "resultado_evento_198": {
+    "casos_pass": 12, "casos_fail": 0, "coverage_pct": 100,
+    "claims_alto_riesgo_detectados": 2, "claims_alto_riesgo_bloqueados_o_hitl": 2
+  },
+  "resultado_evento_201": {
+    "casos_pass": 36, "casos_fail": 0, "casos_reales": 12, "casos_derivados": 24,
+    "claims_alto_riesgo_detectados": 10, "grounding_insuficiente_bloqueado_o_research": 6
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "contract_id": "SKILL_RUN_CONTRACT_ANALISIS_RIESGO_CONTENIDO_LF_V0_1",
+  "operation_code": "ANALISIS_RIESGO_CONTENIDO_LF",
+  "asset_code": "ACT-0056",
+  "version": "v0.1",
+  "run_mode": "FULL_REQUIRED",
+  "required_steps": [
+    "router",
+    "case_read",
+    "visible_evidence_check",
+    "claim_classification",
+    "grounding_check",
+    "risk_judge",
+    "hitl_judge",
+    "decision_matrix",
+    "evidence_close"
+  ],
+  "required_steps_count": 9,
+  "allowed_decisions": [
+    "ALLOW_CANDIDATE_READ_ONLY",
+    "ALLOW_PROD_GATE",
+    "RESEARCH_OR_HITL",
+    "HITL_REQUIRED",
+    "BLOCK_OR_HITL"
+  ],
+  "allowed_final_results": [
+    "PASS_FULL_SKILL_RUN",
+    "NEEDS_REPAIR",
+    "BLOCKED",
+    "NEEDS_HITL",
+    "FAIL_SKILL_RUN"
+  ],
+  "ledger_required": {
+    "executed_steps": true,
+    "missing_steps": true,
+    "blocked_steps": true,
+    "evidence_keys_present": true
+  },
+  "restrictions": {
+    "no_produccion": true,
+    "no_runtime_abierto": true,
+    "no_escritura_automatica": true,
+    "impacto_automatico": "BLOQUEADO",
+    "external_writes_allowed": 0,
+    "validated_writes_allowed": 0,
+    "no_VAL_WRITE": true
+  },
+  "output_table": "lf_content_decisions"
+}
