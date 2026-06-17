@@ -1,0 +1,16 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "CREACION_SKILL_LF",
+  "execution_id": "ACT-0043-DRY-RUN-20260617-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "f37e531e9b913c2026780313978a11f7e4337458",
+  "judge_sha": "cc0783b351b89478bea6c87418d9dae94371ac55",
+  "source_sha_list": ["b29518f32f38be2ceb9d6246a49a62d1ec85d346"],
+  "target_paths": ["skills/skill_creator/**"],
+  "blocking_codes": [],
+  "issued_at": "2026-06-17T05:10:00Z",
+  "notes": "DRY_RUN ACT-0043 CREACION_SKILL_LF. 2/2 PASS. CASO_A flujo completo OK, CASO_B production_blocked correcto. sandbox_run_id=4bfcaed2. Evento Supabase pendiente=324."
+}
