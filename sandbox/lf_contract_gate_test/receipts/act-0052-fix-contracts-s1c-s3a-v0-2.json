@@ -7,10 +7,14 @@
   "result": "PASS_SANDBOX",
   "all_required_steps_pass": true,
   "contract_sha": "f37e531e9b913c2026780313978a11f7e4337458",
-  "judge_sha": "",
-  "source_sha_list": [""],
-  "target_paths": ["skills/extraccion_fuentes_digitales_lf/**"],
+  "judge_sha": "d819843e215100000000",
+  "source_sha_list": [
+    "d819843e215100000000"
+  ],
+  "target_paths": [
+    "skills/extraccion_fuentes_digitales_lf/**"
+  ],
   "blocking_codes": [],
   "issued_at": "2026-06-17T09:50:00Z",
-  "notes": "Corrección contratos ACT-0052: S1C permite SCHEDULED/REAL, S3A agrega fallback por dominio. Evento Supabase id=332."
+  "notes": "Correccion contratos ACT-0052: S1C permite SCHEDULED/REAL, S3A agrega fallback por dominio. Evento Supabase id=332."
 }
