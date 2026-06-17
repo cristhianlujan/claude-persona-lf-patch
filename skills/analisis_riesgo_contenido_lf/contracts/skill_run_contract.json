@@ -18,7 +18,7 @@
   "required_steps_count": 9,
   "allowed_decisions": [
     "ALLOW_CANDIDATE_READ_ONLY",
-    "ALLOW_PRODUCTION",
+    "ALLOW_PROD_GATE",
     "RESEARCH_OR_HITL",
     "HITL_REQUIRED",
     "BLOCK_OR_HITL"
@@ -39,11 +39,11 @@
   "restrictions": {
     "no_produccion": true,
     "no_runtime_abierto": true,
-    "no_VALIDATED": true,
     "no_escritura_automatica": true,
     "impacto_automatico": "BLOQUEADO",
     "external_writes_allowed": 0,
-    "validated_writes_allowed": 0
+    "validated_writes_allowed": 0,
+    "no_VAL_WRITE": true
   },
   "output_table": "lf_content_decisions"
 }
