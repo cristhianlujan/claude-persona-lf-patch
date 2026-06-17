@@ -1,0 +1,16 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "LOTE21C_GAPS_EJECUCION_SUPERVISADA",
+  "execution_id": "LOTE21C-SUPERVISADO-20260617-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b90c4c5cc623a3219ec3b4f7d7ec390f64ed9849",
+  "judge_sha": "b90c4c5cc623a3219ec3b4f7d7ec390f64ed9849",
+  "source_sha_list": ["78d8ec89c02fc7c89fab6b1d7ec613646d8a0169"],
+  "target_paths": ["skills/SCHEMA_CANONICO_PIPELINE_LF.md"],
+  "blocking_codes": [],
+  "issued_at": "2026-06-17T11:45:00Z",
+  "notes": "Lote 21C ejecucion supervisada completada. 2 gaps nuevos detectados y corregidos: GAP#1 stage_current=CAPTURA (no INIT), GAP#2 manejo duplicate_found=TRUE. pipeline_run_id=11509b73 COMPLETED. kb_id=b48a0073. Evento lf_eventos id=338."
+}
