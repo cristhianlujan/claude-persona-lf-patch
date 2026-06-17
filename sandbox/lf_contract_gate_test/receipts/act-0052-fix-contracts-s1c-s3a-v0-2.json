@@ -1,0 +1,20 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "EXTRACCION_FUENTES_DIGITALES_LF",
+  "execution_id": "ACT-0052-FIX-CONTRACTS-20260617-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "f37e531e9b913c2026780313978a11f7e4337458",
+  "judge_sha": "d819843e215100000000",
+  "source_sha_list": [
+    "d819843e215100000000"
+  ],
+  "target_paths": [
+    "skills/extraccion_fuentes_digitales_lf/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-06-17T09:50:00Z",
+  "notes": "Correccion contratos ACT-0052: S1C permite SCHEDULED/REAL, S3A agrega fallback por dominio. Evento Supabase id=332."
+}
