@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Tuple
 
 ALLOWED_DECISIONS = {
     "ALLOW_CANDIDATE_READ_ONLY",
-    "ALLOW_PRODUCTION",
+    "ALLOW_PROD_GATE",
     "RESEARCH_OR_HITL",
     "HITL_REQUIRED",
     "BLOCK_OR_HITL",
@@ -51,7 +51,7 @@ def validate_decision_output(output: Dict[str, Any]) -> Tuple[bool, List[str]]:
         errors.append("P0_P1_WITHOUT_HITL: P0/P1 flags present but hitl_required=False and decision not HITL/BLOCK")
 
     # Check evidence_pack not empty when decision is ALLOW
-    if decision in {"ALLOW_CANDIDATE_READ_ONLY", "ALLOW_PRODUCTION"}:
+    if decision in {"ALLOW_CANDIDATE_READ_ONLY", "ALLOW_PROD_GATE"}:
         if not output.get("evidence_pack"):
             errors.append("EVIDENCE_PACK_EMPTY_ON_ALLOW: evidence required for ALLOW decisions")
 
