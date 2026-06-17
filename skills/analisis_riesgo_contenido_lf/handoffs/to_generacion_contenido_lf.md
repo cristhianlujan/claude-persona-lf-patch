@@ -6,7 +6,7 @@
 
 ## Condiciones para handoff
 
-- decision = ALLOW_CANDIDATE_READ_ONLY o ALLOW_PRODUCTION
+- decision = ALLOW_CANDIDATE_READ_ONLY o ALLOW_PROD_GATE
 - consumer_gate_passed = true
 - evidence_pack completo
 - hitl_required = false
