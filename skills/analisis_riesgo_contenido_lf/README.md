@@ -55,5 +55,5 @@ skills/analisis_riesgo_contenido_lf/
 ## Restricciones vigentes
 
 - `impacto_automatico: BLOQUEADO`
-- No producción, no runtime abierto, no VALIDATED sin gate formal
+- No producción, no runtime abierto, no VAL_WRITE sin gate formal
 - Requiere DRY_RUN con >= 2 decisiones antes de gate APROBADO
