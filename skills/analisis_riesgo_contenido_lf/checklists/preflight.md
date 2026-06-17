@@ -7,7 +7,7 @@ Completar antes de cada run de la skill.
 - [ ] Router verificado contra v_lf_fuente_operativa
 - [ ] ACT-0056 estado = CANDIDATO o superior
 - [ ] operation_code = ANALISIS_RIESGO_CONTENIDO_LF confirmado
-- [ ] execution_mode declarado (DRY_RUN / SANDBOX / PRODUCTION_CONTROLLED)
+- [ ] execution_mode declarado (DRY_RUN / SANDBOX / PROD_CONTROLLED)
 
 ## Input del caso
 
@@ -20,7 +20,7 @@ Completar antes de cada run de la skill.
 
 - [ ] impacto_automatico = BLOQUEADO confirmado
 - [ ] No hay intento de escritura automática
-- [ ] No hay intento de declarar VALIDATED / APROBADO sin evidencia
+- [ ] No hay intento de declarar VAL_WRITE / APROBADO sin evidencia
 - [ ] No hay intento de merge/GitHub sin CI verde y GO explícito
 
 ## Steps obligatorios
