@@ -29,7 +29,7 @@ ACT-0055 Extracción docs reg ─┘
 
 - reevalua.com
 - finanty.com
-- perudeudas.com
+- perudeudas.info
 - youtube.com (canales finanzas PE)
 - reddit.com/r/PERU
 
