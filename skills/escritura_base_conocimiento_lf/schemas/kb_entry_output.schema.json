@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "KBEntryOutput_ESCRITURA_BASE_CONOCIMIENTO_LF",
+  "type": "object",
+  "required": ["kb_id","run_id","operation_code","execution_mode","decision_upstream","kb_category","summary","evidence_pack"],
+  "properties": {
+    "kb_id": {"type": "string", "format": "uuid"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "decision_id": {"type": ["string","null"], "format": "uuid"},
+    "operation_code": {"type": "string", "const": "ESCRITURA_BASE_CONOCIMIENTO_LF"},
+    "execution_mode": {"type": "string", "enum": ["DRY_RUN","SANDBOX","PROD_CONTROLLED"]},
+    "decision_upstream": {"type": "string", "enum": ["ALLOW_PROD_GATE"]},
+    "kb_category": {"type": "string"},
+    "kb_subcategory": {"type": ["string","null"]},
+    "topic": {"type": ["string","null"]},
+    "source_url": {"type": ["string","null"]},
+    "summary": {"type": "string"},
+    "key_insights": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "tags": {"type": "array", "items": {"type": "string"}},
+    "quality_score": {"type": ["number","null"], "minimum": 0, "maximum": 10},
+    "consumer_ready": {"type": "boolean"},
+    "evidence_pack": {"type": "object"}
+  }
+}
