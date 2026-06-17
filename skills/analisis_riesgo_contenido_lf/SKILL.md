@@ -47,7 +47,7 @@ Motor de análisis y clasificación de riesgo de contenido capturado de fuentes 
 | Decisión | Descripción |
 |---|---|
 | ALLOW_CANDIDATE_READ_ONLY | Contenido válido modo sandbox |
-| ALLOW_PRODUCTION | Contenido válido apto producción |
+| ALLOW_PROD_GATE | Contenido válido apto producción |
 | RESEARCH_OR_HITL | Grounding insuficiente — requiere investigación |
 | HITL_REQUIRED | Riesgo alto — requiere revisión humana |
 | BLOCK_OR_HITL | P0/P1 crítico — bloquear o escalar |
@@ -67,9 +67,9 @@ Motor de análisis y clasificación de riesgo de contenido capturado de fuentes 
 ## Restricciones
 
 ```
-NO_PRODUCCION: true
+NO_PROD: true
 NO_RUNTIME_ABIERTO: true
-NO_VALIDATED: true
+NO_VAL_WRITE: true
 NO_ESCRITURA_AUTOMATICA: true
 IMPACTO_AUTOMATICO: BLOQUEADO
 ```
