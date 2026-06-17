@@ -1,0 +1,17 @@
+[
+  {
+    "case_id": "ACT0058_HAPPY_001",
+    "description": "Pipeline completo exitoso — keyword match, captura OK, homolog APROBADO, risk LOW, KB escrito",
+    "input": {
+      "source_url": "https://reevalua.com/blog/como-salir-de-infocorp",
+      "keyword_matched": "salir de Infocorp",
+      "capture_run_id": "11111111-0001-4001-8001-000000000001",
+      "homolog_status": "APROBADO",
+      "risk_level": "LOW",
+      "consumer_gate_passed": true,
+      "hitl_required": false
+    },
+    "expected": "COMPLETED",
+    "expected_stage": "KB_WRITE → COMPLETED"
+  }
+]
