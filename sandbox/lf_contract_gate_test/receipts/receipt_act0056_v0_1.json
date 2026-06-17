@@ -43,7 +43,7 @@
   },
   "auditoria_supabase": {
     "lf_activos": "PASS — APROBADO/APROBADO_PCR/BLOQUEADO",
-    "lf_operation_registry": "PASS — APROBADO_PRODUCCION_CONTROLADA_READ_ONLY",
+    "lf_operation_registry": "PASS — APROBADO_PCR_READ_ONLY",
     "lf_operation_step_contracts": "PASS — 9 contratos S1A-S9A",
     "lf_content_decisions": "PASS — 2 decisiones DRY_RUN"
   },
