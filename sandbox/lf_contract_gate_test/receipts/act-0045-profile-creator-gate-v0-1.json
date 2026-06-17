@@ -1,0 +1,16 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "CREACION_PERFIL_LF",
+  "execution_id": "ACT-0045-DRY-RUN-20260617-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "f37e531e9b913c2026780313978a11f7e4337458",
+  "judge_sha": "1f2576dc82f2e100925d605d2f50af947061a69c",
+  "source_sha_list": ["a3a86c0f04a1be5776ca288dd4628913b2d024d3"],
+  "target_paths": ["skills/profile_creator/**"],
+  "blocking_codes": [],
+  "issued_at": "2026-06-17T05:15:00Z",
+  "notes": "DRY_RUN ACT-0045 CREACION_PERFIL_LF. 2/2 PASS. 39 contratos ACTIVE. sandbox_run_id=68b1457d. Evento Supabase=325."
+}
