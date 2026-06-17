@@ -59,3 +59,26 @@
 ## Modos de ejecución permitidos (pipeline real)
 - `TEST`, `DRY_RUN`, `READ_ONLY`, `SCHEDULED`, `REAL`
 - ❌ `PROD_REGISTER_BLOQUEADO` — siempre bloqueado
+
+---
+
+## ⚠️ GAPS DETECTADOS EN EJECUCIÓN SUPERVISADA 2026-06-17 (Lote 21C)
+
+### GAP #1 — lf_pipeline_runs.stage_current CHECK constraint
+- `INIT` **NO EXISTE** como valor de stage_current
+- Valores válidos (CHECK constraint): `CAPTURA`, `HOMOLOGACION`, `ANALISIS`, `KB_WRITE`, `COMPLETED`, `FAILED`, `HITL`
+- ✅ Corrección: El pipeline_run debe crearse con `stage_current='CAPTURA'` y `stage_status='PENDING'`
+
+### GAP #2 — Manejo de URL duplicada en S2-A (ACT-0052)
+- El contrato S2-A no especificaba qué hacer cuando `duplicate_found=TRUE`
+- ✅ Corrección: Si duplicado → CANCEL capture_run + marcar pipeline_run stage_status=FAILED + marcar url_queue PROCESADO + evento DUPLICATE_SKIP
+- Flujo agente: verificar duplicado ANTES de crear capture_run
+
+### GAP #3 — lf_knowledge_base: texto largo en key_insights causa timeout
+- Arrays JSON muy largos en key_insights pueden causar errores intermitentes
+- ✅ Corrección: Limitar cada insight a máximo 80 caracteres, máximo 5 elementos
+
+### Secuencia correcta de stage_current en pipeline
+```
+CAPTURA (PENDING) → CAPTURA (RUNNING) → HOMOLOGACION (RUNNING) → ANALISIS (RUNNING) → KB_WRITE (RUNNING) → COMPLETED (COMPLETED)
+```
