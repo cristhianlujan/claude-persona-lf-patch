@@ -58,4 +58,4 @@
 
 ## Modos de ejecución permitidos (pipeline real)
 - `TEST`, `DRY_RUN`, `READ_ONLY`, `SCHEDULED`, `REAL`
-- ❌ `PRODUCTION_REGISTER` — siempre bloqueado
+- ❌ `PROD_REGISTER_BLOQUEADO` — siempre bloqueado
