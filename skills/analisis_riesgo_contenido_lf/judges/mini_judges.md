@@ -44,7 +44,7 @@
 
 ## MINI_JUDGE_JIEANA_S8A_DECISION_V1
 **Step:** decision_matrix  
-**PASS si:** decision en [ALLOW_CANDIDATE_READ_ONLY, ALLOW_PRODUCTION, RESEARCH_OR_HITL, HITL_REQUIRED, BLOCK_OR_HITL] AND decision_reason presente  
+**PASS si:** decision en [ALLOW_CANDIDATE_READ_ONLY, ALLOW_PROD_GATE, RESEARCH_OR_HITL, HITL_REQUIRED, BLOCK_OR_HITL] AND decision_reason presente  
 **BLOCK si:** decisión fuera de schema OR decisión productiva no autorizada OR alto riesgo sin HITL  
 **Código bloqueo:** BLOCKED_DECISION_MATRIX_NOT_CLEAN
 
