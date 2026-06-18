@@ -1,0 +1,20 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "ORQUESTACION_PIPELINE_LF",
+  "execution_id": "ACT-0058-MODOS-EJECUCION-20260618-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "f37e531e9b913c2026780313978a11f7e4337458",
+  "judge_sha": "b90c4c5cc623a3219ec3b4f7d7ec390f64ed9849",
+  "source_sha_list": [
+    "dc606def2a60612a86970c85d1ad078e40b9e083"
+  ],
+  "target_paths": [
+    "skills/orquestador_pipeline_lf/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-06-18T00:00:00Z",
+  "notes": "v0.2 SKILL.md ACT-0058: añadidos modos de ejecucion FULL/REPLAY/AUDIT/RETRY con decision tree obligatorio (PASO 0), queries diagnostico pre-ejecucion, idempotencia documentada, enums verificados y tabla errores frecuentes. Validado en REPLAY real sobre finanty.com/La-Constancia-de-No-Adeudo — todos los pasos PASS, cadena FK completa. Lote 29E sesion 2026-06-18."
+}
