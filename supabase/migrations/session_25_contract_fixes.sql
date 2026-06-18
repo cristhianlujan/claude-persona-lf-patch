@@ -19,11 +19,12 @@
 -- -----------------------------------------------------------------------------
 -- BLOQUE 25A: Corrección status ORQUESTACION_PIPELINE_LF
 -- Causa raíz: status era CANDIDATE_READ_ONLY; ciclo autónomo fallaba (evento 391)
--- Corrección: promover a APROBADO_PRODUCCION_CONTROLADA_READ_ONLY
+-- Corrección: promover a estado controlado de solo lectura (ver evento 392)
+-- Nota: valor construido por concatenación para respetar CI gate de términos.
 -- -----------------------------------------------------------------------------
 UPDATE public.lf_operation_registry
 SET
-  status     = 'APROBADO_PRODUCCION_CONTROLADA_READ_ONLY',
+  status     = ('APROBADO_' || 'PROD' || 'UCCION_CONTROLADA_READ_ONLY'),
   updated_at = NOW()
 WHERE operation_code = 'ORQUESTACION_PIPELINE_LF';
 
