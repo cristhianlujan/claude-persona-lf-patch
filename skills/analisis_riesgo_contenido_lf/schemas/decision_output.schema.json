@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "DecisionOutput_ANALISIS_RIESGO_CONTENIDO_LF",
+  "description": "v0.2 — agrega ALERT_CAPTURE, kb_polarity_suggested y kb_dimension_suggested",
   "type": "object",
   "required": [
     "decision_id",
@@ -9,136 +10,57 @@
     "execution_mode",
     "decision",
     "decision_reason",
-    "evidence_pack"
+    "evidence_pack",
+    "kb_polarity_suggested",
+    "kb_dimension_suggested"
   ],
   "properties": {
-    "decision_id": {
-      "type": "string",
-      "format": "uuid"
-    },
-    "run_id": {
-      "type": "string",
-      "format": "uuid"
-    },
-    "operation_code": {
-      "type": "string",
-      "const": "ANALISIS_RIESGO_CONTENIDO_LF"
-    },
-    "execution_mode": {
-      "type": "string",
-      "enum": [
-        "DRY_RUN",
-        "SANDBOX",
-        "PROD_CONTROLLED"
-      ]
-    },
-    "topic": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "risk_family": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "claim_type": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "funnel_stage": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "grounding_status": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "source_url": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "visible_text": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
+    "decision_id": {"type": "string", "format": "uuid"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "operation_code": {"type": "string", "const": "ANALISIS_RIESGO_CONTENIDO_LF"},
+    "execution_mode": {"type": "string", "enum": ["DRY_RUN","SANDBOX","PROD_CONTROLLED"]},
+    "topic": {"type": ["string","null"]},
+    "risk_family": {"type": ["string","null"]},
+    "claim_type": {"type": ["string","null"]},
+    "funnel_stage": {"type": ["string","null"]},
+    "grounding_status": {"type": ["string","null"]},
+    "source_url": {"type": ["string","null"]},
+    "visible_text": {"type": ["string","null"]},
     "risk_level": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "enum": [
-        "LOW",
-        "MEDIUM",
-        "HIGH",
-        "CRITICAL",
-        null
-      ]
+      "type": ["string","null"],
+      "enum": ["LOW","MEDIUM","HIGH","CRITICAL",null]
     },
-    "risk_reasons": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "p0_p1_flags": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "pii_detected": {
-      "type": "boolean"
-    },
-    "hitl_required": {
-      "type": "boolean"
-    },
-    "hitl_reason": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "severity": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
+    "risk_reasons": {"type": "array", "items": {"type": "string"}},
+    "p0_p1_flags": {"type": "array", "items": {"type": "string"}},
+    "pii_detected": {"type": "boolean"},
+    "hitl_required": {"type": "boolean"},
+    "hitl_reason": {"type": ["string","null"]},
+    "severity": {"type": ["string","null"]},
     "decision": {
       "type": "string",
       "enum": [
         "ALLOW_CANDIDATE_READ_ONLY",
         "ALLOW_PROD_GATE",
+        "ALERT_CAPTURE",
         "RESEARCH_OR_HITL",
         "HITL_REQUIRED",
         "BLOCK_OR_HITL"
       ]
     },
-    "decision_reason": {
-      "type": "string"
+    "decision_reason": {"type": "string"},
+    "kb_polarity_suggested": {
+      "type": "string",
+      "enum": ["POSITIVO","NEGATIVO","NEUTRAL"]
     },
-    "evidence_pack": {
-      "type": "object"
+    "kb_dimension_suggested": {
+      "type": "string",
+      "enum": ["EDUCATIVO","ALERTA","REGULATORIO","SEÑAL_MERCADO"]
     },
-    "consumer_gate_passed": {
-      "type": "boolean"
-    },
-    "created_by": {
-      "type": "string"
-    }
+    "alert_actor": {"type": ["string","null"], "description": "Nombre empresa/persona fraudulenta si aplica"},
+    "alert_evidence_url": {"type": ["string","null"], "description": "URL fuente oficial que respalda la alerta"},
+    "evidence_pack": {"type": "object"},
+    "consumer_gate_passed": {"type": "boolean"},
+    "created_by": {"type": "string"}
   },
   "additionalProperties": false
 }

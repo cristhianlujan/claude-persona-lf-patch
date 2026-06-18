@@ -1,17 +1,29 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "KBEntryOutput_ESCRITURA_BASE_CONOCIMIENTO_LF",
+  "description": "v0.2 — agrega kb_enriched obligatorio, kb_polarity, kb_dimension, soporte ALERT_CAPTURE",
   "type": "object",
-  "required": ["kb_id","run_id","operation_code","execution_mode","decision_upstream","kb_category","summary","evidence_pack"],
+  "required": ["kb_id","run_id","operation_code","execution_mode","decision_upstream","kb_category","kb_polarity","kb_dimension","summary","kb_enriched","evidence_pack"],
   "properties": {
     "kb_id": {"type": "string", "format": "uuid"},
     "run_id": {"type": "string", "format": "uuid"},
     "decision_id": {"type": ["string","null"], "format": "uuid"},
     "operation_code": {"type": "string", "const": "ESCRITURA_BASE_CONOCIMIENTO_LF"},
     "execution_mode": {"type": "string", "enum": ["DRY_RUN","SANDBOX","PROD_CONTROLLED"]},
-    "decision_upstream": {"type": "string", "enum": ["ALLOW_PROD_GATE"]},
+    "decision_upstream": {
+      "type": "string",
+      "enum": ["ALLOW_PROD_GATE","ALERT_CAPTURE"]
+    },
     "kb_category": {"type": "string"},
     "kb_subcategory": {"type": ["string","null"]},
+    "kb_polarity": {
+      "type": "string",
+      "enum": ["POSITIVO","NEGATIVO","NEUTRAL"]
+    },
+    "kb_dimension": {
+      "type": "string",
+      "enum": ["EDUCATIVO","ALERTA","REGULATORIO","SEÑAL_MERCADO"]
+    },
     "topic": {"type": ["string","null"]},
     "source_url": {"type": ["string","null"]},
     "summary": {"type": "string"},
@@ -19,6 +31,61 @@
     "tags": {"type": "array", "items": {"type": "string"}},
     "quality_score": {"type": ["number","null"], "minimum": 0, "maximum": 10},
     "consumer_ready": {"type": "boolean"},
+    "kb_enriched": {
+      "type": "object",
+      "required": ["identidad","confianza","conversion","uso_semantico","propuesta_comercial","riesgo_cumplimiento"],
+      "properties": {
+        "identidad": {
+          "type": "object",
+          "required": ["tipo_contenido","autor_o_fuente"],
+          "properties": {
+            "tipo_contenido": {"type": "string"},
+            "autor_o_fuente": {"type": "string"},
+            "fecha_publicacion": {"type": ["string","null"]},
+            "idioma": {"type": "string", "default": "es"}
+          }
+        },
+        "confianza": {
+          "type": "object",
+          "properties": {
+            "aliados": {"type": "array", "items": {"type": "string"}},
+            "pruebas": {"type": "array", "items": {"type": "string"}},
+            "certificaciones": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "conversion": {
+          "type": "object",
+          "properties": {
+            "objeciones_resueltas": {"type": "array", "items": {"type": "string"}},
+            "llamadas_accion_validas": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "uso_semantico": {
+          "type": "object",
+          "properties": {
+            "preguntas_respondidas": {"type": "array", "items": {"type": "string"}},
+            "keywords_primarios": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "propuesta_comercial": {
+          "type": "object",
+          "properties": {
+            "diferenciador_lf": {"type": "string"},
+            "angulo_uso": {"type": "string"}
+          }
+        },
+        "riesgo_cumplimiento": {
+          "type": "object",
+          "properties": {
+            "flags": {"type": "array", "items": {"type": "string"}},
+            "advertencias": {"type": "array", "items": {"type": "string"}}
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "alert_actor": {"type": ["string","null"]},
+    "alert_evidence_url": {"type": ["string","null"]},
     "evidence_pack": {"type": "object"}
   }
 }
