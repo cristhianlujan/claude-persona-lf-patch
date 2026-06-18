@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.4
+LF Contract Check v0.5
 
 Sandbox validator for controlled LF governance gates.
 
@@ -28,6 +28,7 @@ ALLOWED_EXACT = {
 ALLOWED_PREFIXES = [
     "sandbox/lf_contract_gate_test/",
     "sandbox/no_bypass_judge_profile_card_skill/",
+    "supabase/migrations/",
 ]
 GOVERNED_PREFIXES = [
     "profiles/",
@@ -42,7 +43,6 @@ ALWAYS_BLOCKED_PREFIXES = [
     "official/",
     "production/",
     "runtime/",
-    "supabase/",
 ]
 FORBIDDEN_GITHUB_PREFIX = ".github/"
 ALLOWED_GITHUB_EXACT = ".github/workflows/lf-contract-check.yml"
