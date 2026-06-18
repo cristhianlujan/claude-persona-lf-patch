@@ -1,12 +1,14 @@
 ---
 name: escritura-base-conocimiento-lf
 description: Persiste contenido validado por ACT-0056 en la base de conocimiento LF.
-  Usar cuando una decision ALLOW_PROD_GATE ha sido emitida por SKILL_ANALISIS_RIESGO_CONTENIDO_LF
-  y el contenido debe escribirse en lf_knowledge_base para uso downstream. Activar
-  despues de analisis de riesgo (ACT-0056) y antes de generacion de contenido o social listening.
+  Usar cuando una decision ALLOW_PROD_GATE o ALERT_CAPTURE ha sido emitida por
+  SKILL_ANALISIS_RIESGO_CONTENIDO_LF y el contenido debe escribirse en lf_knowledge_base.
+  Desde v0.2 genera kb_enriched completo (identidad, confianza, conversion, uso_semantico,
+  propuesta_comercial, riesgo_cumplimiento) y escribe kb_polarity y kb_dimension.
+  Activar despues de analisis de riesgo (ACT-0056) y antes de generacion de contenido.
 asset_code: ACT-0057
 operation_code: ESCRITURA_BASE_CONOCIMIENTO_LF
-version: v0.1
+version: v0.2
 estado: CANDIDATO_READ_ONLY
 runtime_estado: CANDIDATE_READ_ONLY
 impacto_automatico: BLOQUEADO
@@ -15,7 +17,7 @@ aliases:
   - escritura_kb
   - knowledge_base_writer
 upstream_skill: ACT-0056
-upstream_filter: ALLOW_PROD_GATE
+upstream_filter: ALLOW_PROD_GATE | ALERT_CAPTURE
 tabla_resultados: lf_knowledge_base
 ---
 
@@ -24,6 +26,7 @@ tabla_resultados: lf_knowledge_base
 ## Identidad
 
 Persiste contenido validado en la base de conocimiento LF. Cierra el pipeline de ingesta.
+Desde v0.2 genera enriquecimiento semantico completo (kb_enriched) y soporta KB multidimensional.
 
 **Codigo:** ACT-0057
 **Operation code:** ESCRITURA_BASE_CONOCIMIENTO_LF
@@ -35,34 +38,87 @@ Persiste contenido validado en la base de conocimiento LF. Cierra el pipeline de
 ```
 ACT-0052/0054/0055 (Extraccion)
   -> ACT-0053 (Homologacion)
-    -> ACT-0056 (Analisis Riesgo) -- ALLOW_PROD_GATE
+    -> ACT-0056 (Analisis Riesgo) -- ALLOW_PROD_GATE | ALERT_CAPTURE
       -> ACT-0057 (Escritura KB) <- AQUI
-        -> Generacion contenido / Social Listening
+        -> Generacion contenido / Social Listening / Alertas usuario
 ```
 
 ## Cuando usar
 
-- Cuando ACT-0056 emite decision ALLOW_PROD_GATE
-- Para persistir conocimiento validado en lf_knowledge_base
+- Cuando ACT-0056 emite decision ALLOW_PROD_GATE (contenido positivo/neutral)
+- Cuando ACT-0056 emite decision ALERT_CAPTURE (contenido negativo verificado)
+- Para persistir conocimiento validado en lf_knowledge_base con kb_enriched completo
 - Como paso previo a generacion de contenido o social listening
 
 ## Cuando NO usar
 
-- Sin decision ALLOW_PROD_GATE verificada de ACT-0056
+- Sin decision ALLOW_PROD_GATE o ALERT_CAPTURE verificada de ACT-0056
 - Sin gate formal en modo DRY_RUN/SANDBOX
 - Como puerta de entrada directa (siempre via Router)
+- ALERT_CAPTURE sin alert_evidence_url verificada
 
-## Steps internos (9 obligatorios)
+## Steps internos (11 obligatorios desde v0.2)
 
 1. S1-A Router
-2. S2-A Upstream Decision Read -- solo ALLOW_PROD_GATE
+2. S2-A Upstream Decision Read — acepta ALLOW_PROD_GATE o ALERT_CAPTURE
 3. S3-A Content Validation
-4. S4-A KB Classification
-5. S5-A Summary Generation
-6. S6-A Dedup Check
-7. S7-A KB Write
-8. S8-A Readback Verification
-9. S9-A Evidence Close
+4. S4-A KB Classification — determina kb_category, kb_polarity, kb_dimension
+5. S5-A Summary Generation — genera summary y key_insights
+6. S5-B Semantic Enrichment (NUEVO) — genera kb_enriched completo:
+   - identidad: que es el contenido, autor, fecha, fuente
+   - confianza: aliados, pruebas, certificaciones
+   - conversion: objeciones resueltas, llamadas a accion validas
+   - uso_semantico: preguntas respondidas, keywords primarios
+   - propuesta_comercial: diferenciador LF, angulo de uso
+   - riesgo_cumplimiento: flags regulatorios, advertencias necesarias
+7. S6-A Dedup Check
+8. S7-A KB Write — escribe con kb_enriched, kb_polarity, kb_dimension
+9. S8-A Readback Verification
+10. S8-B Alert Verification — si kb_polarity=NEGATIVO: verificar que alert_actor y alert_evidence esten completos
+11. S9-A Evidence Close
+
+## Reglas de clasificacion KB multidimensional
+
+| decision upstream | kb_polarity | kb_dimension |
+|---|---|---|
+| ALLOW_PROD_GATE + content_type EDUCATIVO | POSITIVO | EDUCATIVO |
+| ALLOW_PROD_GATE + fuente SBS/BCRP/INDECOPI | NEUTRAL | REGULATORIO |
+| ALLOW_PROD_GATE + fuente social/foro | POSITIVO o NEGATIVO | SEÑAL_MERCADO |
+| ALERT_CAPTURE | NEGATIVO | ALERTA |
+
+## Estructura kb_enriched obligatoria (S5-B)
+
+```json
+{
+  "identidad": {
+    "tipo_contenido": "string",
+    "autor_o_fuente": "string",
+    "fecha_publicacion": "string o null",
+    "idioma": "es"
+  },
+  "confianza": {
+    "aliados": ["string"],
+    "pruebas": ["string"],
+    "certificaciones": ["string"]
+  },
+  "conversion": {
+    "objeciones_resueltas": ["string"],
+    "llamadas_accion_validas": ["string"]
+  },
+  "uso_semantico": {
+    "preguntas_respondidas": ["string"],
+    "keywords_primarios": ["string"]
+  },
+  "propuesta_comercial": {
+    "diferenciador_lf": "string",
+    "angulo_uso": "string"
+  },
+  "riesgo_cumplimiento": {
+    "flags": ["string"],
+    "advertencias": ["string"]
+  }
+}
+```
 
 ## Restricciones
 
@@ -72,4 +128,7 @@ NO_RUNTIME_ABIERTO: true
 NO_VAL_WRITE: true
 NO_ESCRITURA_AUTOMATICA: true
 IMPACTO_AUTOMATICO: BLOQUEADO
+KB_ENRICHED_OBLIGATORIO: true
+KB_ENRICHED_VACIO_BLOQUEA_WRITE: true
+ALERT_CAPTURE_REQUIERE_ALERT_ACTOR: true
 ```
