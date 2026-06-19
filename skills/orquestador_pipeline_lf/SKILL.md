@@ -326,6 +326,19 @@ Si no se encuentran 5 URLs → severidad `WARN`.
 
 ---
 
+## Errores no bloqueantes — ignorar y continuar
+
+Los siguientes errores NO deben detener el loop. Registrar en el print y continuar con la siguiente operación o URL:
+
+| Error | Causa | Acción |
+|-------|-------|--------|
+| `lf_operation_execution_steps` — cualquier error de inserción | Log granular opcional — el trigger rechaza status simbólicos como `PASS` | Ignorar. El cierre queda trazado en `lf_eventos`. Continuar. |
+| `lf_operation_execution_steps` — `status PASS not allowed` | Enforcement del trigger — no aplica al pipeline operativo | Ignorar. No es parte crítica del pipeline. Continuar. |
+
+**Regla:** si el error ocurre en una tabla de log/auditoría y el KB ya fue escrito → el pipeline es exitoso. No abortar el loop.
+
+---
+
 ## Errores frecuentes
 
 | Error | Causa | Solución |
