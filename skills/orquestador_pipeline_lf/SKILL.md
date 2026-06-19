@@ -3,7 +3,7 @@
 **Código:** ACT-0058
 **Nombre canónico:** SKILL_ORQUESTADOR_PIPELINE_LF
 **operation_code obligatorio:** `ORQUESTACION_PIPELINE_LF` ← usar EXACTAMENTE este valor en todos los INSERTs
-**Estado:** PRODUCCION_CONTROLADA_READ_ONLY
+**Estado:** PROD_CONTROLADA_READ_ONLY
 **Fuente de verdad:** este archivo + `lf_operation_step_contracts` en Supabase
 **Historial:** ver Git history
 
