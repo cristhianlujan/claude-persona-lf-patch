@@ -2,6 +2,7 @@
 
 **Código:** ACT-0058
 **Nombre canónico:** SKILL_ORQUESTADOR_PIPELINE_LF
+**operation_code obligatorio:** `ORQUESTACION_PIPELINE_LF` ← usar EXACTAMENTE este valor en todos los INSERTs
 **Estado:** PRODUCCION_CONTROLADA_READ_ONLY
 **Fuente de verdad:** este archivo + `lf_operation_step_contracts` en Supabase
 **Historial:** ver Git history
@@ -57,6 +58,8 @@ VALUES
   (gen_random_uuid()::text, 'ORQUESTACION_PIPELINE_LF', 'PIPELINE', 'BATCH', 'IN_PROGRESS', '{}'::jsonb)
 RETURNING execution_id, started_at;
 ```
+
+⚠️ `operation_code` debe ser exactamente `ORQUESTACION_PIPELINE_LF` — el trigger verifica contra `lf_operation_registry`. Usar cualquier otro valor causa `PIPELINE_REAL_BLOQUEADO`.
 
 Guardar `execution_id`. Sin este registro confirmado → DETENER. No continuar.
 
@@ -348,6 +351,6 @@ Los siguientes errores NO deben detener el loop. Registrar en el print y continu
 | `duplicate key lf_content_decisions_capture_record_uk` | Decision ya existe | SELECT primero, reutilizar `decision_id` |
 | `duplicate key lf_knowledge_base_decision_id_uk` | KB ya existe | SELECT primero, reutilizar `kb_id` |
 | `column source_url does not exist in lf_capture_records` | Nombre incorrecto | Usar `url` |
-| `null value in column execution_id` | FK faltante | INSERT en `lf_operation_execution` primero |
+| `PIPELINE_REAL_BLOQUEADO` — operation_code no encontrado en registry | GPT usó nombre canónico en vez del operation_code | Usar siempre `ORQUESTACION_PIPELINE_LF` (no `SKILL_ORQUESTADOR_PIPELINE_LF`) |
 | `INIT is invalid for stage_current` | Enum incorrecto | Usar `CAPTURA` como stage inicial |
 | `severidad WARNING invalid` | Enum incorrecto | Usar `WARN` |
