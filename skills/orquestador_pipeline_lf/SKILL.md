@@ -380,3 +380,130 @@ VALUES (
 | Límite de contexto del agente | Registrar BATCH_PARCIAL con URLs restantes en payload. Terminar. |
 | retry_count >= 3 en una URL | Marcar esa URL como FALLIDO. Continuar con la siguiente. |
 
+
+---
+
+## Regla de trazabilidad por step — OBLIGATORIA
+
+Cada step del pipeline debe ejecutarse como una operación Supabase SEPARADA y secuencial.
+Está PROHIBIDO preparar múltiples INSERTs y ejecutarlos en batch o en una sola transacción.
+
+### Por qué es obligatorio
+
+Si todos los registros tienen el mismo `created_at` hasta el microsegundo, significa que el agente ejecutó en batch y NO siguió el pipeline real. El judge puede detectar esto automáticamente.
+
+### Protocolo por step
+
+Antes de cada step, ejecutar:
+```sql
+SELECT now() AS timestamp_step;
+```
+Guardar ese valor. El timestamp del INSERT siguiente debe ser >= a ese valor.
+
+Al finalizar el batch, el payload del evento BATCH_COMPLETADO DEBE incluir:
+```json
+{
+  "timestamps_por_url": {
+    "https://ejemplo.com": {
+      "T1_pipeline_run_created": "2026-06-19T22:01:05.123Z",
+      "T2_capture_run_created": "2026-06-19T22:01:07.456Z",
+      "T3_capture_record_created": "2026-06-19T22:01:09.789Z",
+      "T4_homolog_created": "2026-06-19T22:01:12.012Z",
+      "T5_decision_created": "2026-06-19T22:01:14.345Z",
+      "T6_kb_created": "2026-06-19T22:01:16.678Z",
+      "T7_completed_at": "2026-06-19T22:01:18.901Z"
+    }
+  }
+}
+```
+
+Si T1 = T2 = T3 ... = T7 para cualquier URL → BATCH_INVALIDO. No registrar como completado.
+
+### Orden de operaciones por URL (NO modificar)
+
+```
+1.  SELECT now()                          → T1
+2.  INSERT lf_pipeline_runs               → confirmar con SELECT pipeline_run_id
+3.  SELECT now()                          → T2
+4.  [captura web real de la URL]
+5.  INSERT lf_capture_runs                → confirmar con SELECT run_id
+6.  SELECT now()                          → T3
+7.  INSERT lf_capture_records             → confirmar con SELECT record_id
+8.  UPDATE lf_pipeline_runs stage=HOMOLOGACION
+9.  SELECT now()                          → T4
+10. INSERT lf_homologated_records         → confirmar con SELECT homolog_id
+11. UPDATE lf_pipeline_runs stage=ANALISIS
+12. SELECT now()                          → T5
+13. INSERT lf_content_decisions           → confirmar con SELECT decision_id
+14. UPDATE lf_pipeline_runs stage=KB_WRITE
+15. SELECT now()                          → T6
+16. INSERT lf_knowledge_base              → confirmar con SELECT kb_id
+17. UPDATE lf_pipeline_runs stage=COMPLETED
+18. SELECT now()                          → T7
+19. UPDATE lf_url_queue estado=PROCESADO
+20. INSERT lf_eventos (evento individual por URL)
+```
+
+Cada confirmación con SELECT es obligatoria antes de continuar al paso siguiente.
+
+---
+
+## PASO B4 — Redescubrimiento de URLs (después de BATCH_COMPLETADO)
+
+Este paso es OBLIGATORIO al finalizar cada batch. Sin él, la queue queda vacía y el pipeline no tiene nada que procesar en la siguiente ejecución.
+
+### Objetivo
+
+Buscar nuevas URLs candidatas en las fuentes objetivo y cargarlas en lf_url_queue para la próxima ejecución.
+
+### Fuentes a explorar
+
+| Fuente | Método | Keywords |
+|---|---|---|
+| reevalua.com/blog | Listar artículos del blog | salir infocorp, score crediticio, deuda |
+| finanty.com/blog | Listar artículos del blog | infocorp, constancia, negociar |
+| perudeudas.info | Listar categorías y posts | infocorp, deuda castigada |
+| sbs.gob.pe | Buscar páginas de usuario | reporte deudas, centrales riesgo |
+| gestión.pe / elcomercio.pe | Buscar noticias recientes | infocorp, ley 32327, deuda peru |
+
+### Deduplicación obligatoria
+
+Antes de insertar, verificar que la URL no exista ya:
+```sql
+SELECT COUNT(*) FROM lf_url_queue WHERE url = '<URL_CANDIDATA>';
+SELECT COUNT(*) FROM lf_knowledge_base WHERE source_url = '<URL_CANDIDATA>';
+```
+Solo insertar si ambos retornan 0.
+
+### INSERT de nuevas candidatas
+
+```sql
+INSERT INTO lf_url_queue (url, fuente, keyword_target, estado, url_tipo, created_by)
+VALUES ('<url>', '<dominio>', '<keyword>', 'PENDIENTE', '<EDUCATIVO|REGULATORIO|COMPETENCIA|INDICE>', 'ACT-0058_AUTOMATION');
+```
+
+### Evento de cierre con recarga
+
+```sql
+INSERT INTO lf_eventos
+  (evento_tipo, entidad_tipo, entidad_codigo, descripcion, severidad, payload, origen)
+VALUES (
+  'QUEUE_RECARGADA',
+  'PIPELINE_RUN',
+  'ACT-0058',
+  'Redescubrimiento completado: N URLs nuevas añadidas a lf_url_queue',
+  'INFO',
+  '{"urls_nuevas_encontradas": N, "urls_ya_existentes_descartadas": M, "fuentes_exploradas": ["reevalua.com","finanty.com","perudeudas.info"]}'::jsonb,
+  'ACT-0058_AUTOMATION'
+);
+```
+
+### Criterio mínimo
+
+El agente debe añadir al menos 5 URLs nuevas por ejecución. Si no encuentra 5, registrar evento con severidad WARN y continuar.
+
+---
+
+## Versión
+
+v0.4 — Trazabilidad por step + PASO B4 redescubrimiento — sesión 2026-06-18
