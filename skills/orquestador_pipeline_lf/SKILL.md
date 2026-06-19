@@ -3,7 +3,7 @@
 **Código:** ACT-0058
 **Nombre canónico:** SKILL_ORQUESTADOR_PIPELINE_LF
 **operation_code obligatorio:** `ORQUESTACION_PIPELINE_LF` ← usar EXACTAMENTE este valor en todos los INSERTs
-**Estado:** PRODUCCION_CONTROLADA_READ_ONLY
+**Estado:** PROD_CONTROLADA_READ_ONLY
 **Fuente de verdad:** este archivo + `lf_operation_step_contracts` en Supabase
 **Historial:** ver Git history
 
@@ -86,46 +86,50 @@ Si `total_pendiente = 0` → ir directo a CIERRE DE BATCH.
 
 ---
 
-## FOR loop — una URL a la vez
+## RESULTADO ESPERADO DE ESTA EJECUCIÓN
+
+Al finalizar, `lf_url_queue` NO debe tener ningún registro con `estado='PENDIENTE'`.
+Todas deben quedar en `PROCESADO` o `FALLIDO`.
+
+Verificar al terminar:
+```sql
+SELECT COUNT(*) FROM lf_url_queue WHERE estado = 'PENDIENTE';
+-- Resultado esperado: 0
+```
+
+## TODO — construir al inicio del loop
 
 ```
-i = 0
-
-REPETIR INDEFINIDAMENTE:
-
-  i = i + 1
-
-  url_actual ← SELECT queue_id, url, url_tipo, fuente
+1. Obtener lista completa de URLs pendientes:
+   urls_todo ← SELECT queue_id, url, url_tipo, fuente
                FROM lf_url_queue
                WHERE estado = 'PENDIENTE'
-               ORDER BY url_tipo, created_at
-               LIMIT 1
+               ORDER BY created_at ASC
+   total = COUNT(urls_todo)
 
-  SI url_actual está vacío → SALIR DEL LOOP → ir a CIERRE DE BATCH
+2. Imprimir TODO list:
+   print("📋 TODO LIST — {total} URLs a procesar:")
+   PARA CADA url en urls_todo:
+     print("[ ] {url}")
 
-  print("─────────────────────────────────────────")
-  print("[{i}/{total_pendiente}] 📌 {url_actual.url}")
+3. Procesar CADA url de la lista secuencialmente:
+   PARA CADA url en urls_todo:
+     → Ejecutar PIPELINE POR URL completo
+     → Marcar [✓] al completar
+     print("[✓] {i}/{total} completadas — {url}")
 
-  → Ejecutar PIPELINE POR URL (ver sección siguiente)
-
-  → Al terminar:
-      Si éxito: print("[{i}] ✅ COMPLETADA | score: {quality_score}")
-      Si falla: print("[{i}] ❌ FALLIDA | motivo: {error_detail}")
-
-  → VOLVER AL INICIO DEL LOOP (SELECT LIMIT 1 de nuevo)
-
-FIN: nunca salir del loop por contador — solo salir cuando PENDIENTE = 0
+4. No terminar hasta que TODO esté 100% completo.
 ```
 
 **Condiciones de parada:**
 
 | Condición | Acción |
 |-----------|--------|
-| `lf_url_queue WHERE estado='PENDIENTE'` retorna vacío | Salir → CIERRE |
+| Todo list procesado al 100% | Salir → CIERRE |
 | Error Supabase irrecuperable (conexión caída) | Registrar BATCH_PARCIAL → DETENER |
 | Límite de contexto del agente | Registrar BATCH_PARCIAL → DETENER |
-| retry_count ≥ 3 en una URL | Marcar FALLIDO → **CONTINUAR loop** |
-| Error en tabla de log/auditoría | Ignorar → **CONTINUAR loop** |
+| retry_count ≥ 3 en una URL | Marcar FALLIDO → **CONTINUAR con siguiente URL** |
+| Error en tabla de log/auditoría | Ignorar → **CONTINUAR con siguiente URL** |
 
 ---
 
@@ -426,3 +430,4 @@ Si no se encuentran 5 URLs → registrar evento con severidad `WARN`.
 | `stage_current INIT invalid` | Enum incorrecto | Usar `CAPTURA` como stage inicial |
 | `severidad WARNING invalid` | Enum incorrecto | Usar `WARN` |
 | `homolog_status PENDING — step no avanza` | Default de DB — GPT no lo sobreescribió | Insertar `homolog_status='APROBADO'` explícitamente |
+
