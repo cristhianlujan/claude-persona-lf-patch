@@ -1,0 +1,20 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "ORQUESTACION_PIPELINE_LF",
+  "execution_id": "ACT-0058-LOOP-BATCH-20260618-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "f37e531e9b913c2026780313978a11f7e4337458",
+  "judge_sha": "b90c4c5cc623a3219ec3b4f7d7ec390f64ed9849",
+  "source_sha_list": [
+    "f0326b3c67cac33e6c525f41a6e8f49eff05be12"
+  ],
+  "target_paths": [
+    "skills/orquestador_pipeline_lf/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-06-18T22:30:00Z",
+  "notes": "v0.3 SKILL.md ACT-0058: añadido modo batch PASO B0-B3. Loop obligatorio sobre lf_url_queue PENDIENTE. Manejo de errores por URL sin abortar batch. Evento BATCH_COMPLETADO/BATCH_PARCIAL al finalizar. Motivado por ejecucion de GPT que proceso solo 1 URL correctamente pero sin iterar. Lote 29F sesion 2026-06-18."
+}
