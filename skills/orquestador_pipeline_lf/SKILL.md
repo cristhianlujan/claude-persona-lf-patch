@@ -174,11 +174,34 @@ OP-2.  INSERT lf_pipeline_runs:
 
 OP-3.  SELECT now() → T2 | print("  ⏱ T2: {T2}")
 
-OP-4.  Captura web real (GET, timeout 8s)
-       · HTTP 200/301/302 → continuar con raw_text, title extraídos
-       · 403/timeout/error → UPDATE lf_url_queue SET estado='FALLIDO'
-                             print("  ❌ Acceso bloqueado")
-                             → siguiente iteración del FOR
+OP-4.  Captura web real — seleccionar motor según agente ejecutor
+
+       ## REGLAS DE MOTOR DE BÚSQUEDA POR AGENTE
+
+       SI el agente es GPT (ChatGPT / OpenAI):
+         → Usar: web.run → open(url)
+         → Este es el ÚNICO método confirmado funcional para fetch externo en GPT.
+         → NO usar: container.exec, urllib, python fetch, container.download
+         → Ejemplo: web.run open "https://reevalua.com/blog"
+         → Extraer: título, texto principal, descripción meta
+
+       SI el agente es Claude (Anthropic):
+         → Usar: web_fetch(url) o web_search(query)
+         → Ejemplo: web_fetch "https://reevalua.com/blog"
+         → Extraer: título, texto principal, descripción meta
+
+       SI el agente es desconocido:
+         → Intentar web.run → open primero
+         → Si falla, intentar web_fetch
+         → Si ambos fallan → registrar WEB_FETCH_UNAVAILABLE y continuar con siguiente URL
+
+       ## RESULTADO ESPERADO de OP-4
+       · Éxito → raw_text extraído, title extraído → continuar a OP-5
+       · 403/timeout/error de red → UPDATE lf_url_queue SET estado='FALLIDO'
+                                    print("  ❌ Acceso bloqueado: {motivo}")
+                                    → continuar con siguiente URL (no detener pipeline)
+       · Herramienta no disponible → registrar WEB_FETCH_UNAVAILABLE en lf_eventos
+                                     → continuar con siguiente URL (no detener pipeline)
 
 OP-5.  INSERT lf_capture_runs:
          operation_code = 'ORQUESTACION_PIPELINE_LF'
