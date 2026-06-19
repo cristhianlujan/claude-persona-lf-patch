@@ -308,3 +308,75 @@ Leído y asimilado en sesión 2026-06-17.
 
 id=319 — CONSTRUCCION_ACTIVO / ACT-0058 / Fases 1-4 completadas
 v0.2 — Modos de ejecución añadidos — sesión 2026-06-18
+---
+
+## Modo batch — loop sobre lf_url_queue
+
+El agente DEBE procesar todas las URLs PENDIENTE en lf_url_queue en una sola sesión, no solo una.
+El loop es obligatorio. Procesar una URL y detenerse es incorrecto.
+
+### PASO B0 — Obtener lista completa de URLs pendientes
+
+Al inicio de cada sesión, antes de procesar cualquier URL, ejecutar:
+
+```sql
+SELECT queue_id, url, url_tipo, fuente, intento_count
+FROM lf_url_queue
+WHERE estado = 'PENDIENTE'
+ORDER BY url_tipo, created_at
+LIMIT 50;
+```
+
+→ Si la lista está vacía: registrar evento BATCH_COMPLETADO y terminar.
+→ Si hay URLs: iterar sobre cada una ejecutando el pipeline completo (PASO 0 → AUDIT TRAIL).
+
+### PASO B1 — Loop de ejecución
+
+
+
+No detenerse entre URLs salvo:
+- Error irrecuperable de conexión a Supabase
+- retry_count >= 3 en la URL actual (marcar FALLIDO y continuar con la siguiente)
+- Límite de contexto del agente alcanzado (registrar evento BATCH_PARCIAL con URLs restantes)
+
+### PASO B2 — Manejo de errores por URL
+
+Si una URL falla, NO abortar el batch completo:
+
+```sql
+UPDATE lf_url_queue
+SET estado = 'FALLIDO',
+    intento_count = intento_count + 1,
+    error_detail = '<descripcion del error>'
+WHERE queue_id = '<queue_id>';
+```
+
+Luego continuar con la siguiente URL de la lista.
+
+### PASO B3 — Evento resumen al finalizar el batch
+
+Al terminar todas las URLs (o al alcanzar límite de contexto):
+
+```sql
+INSERT INTO lf_eventos
+  (evento_tipo, entidad_tipo, entidad_codigo, descripcion, severidad, payload, origen)
+VALUES (
+  'BATCH_COMPLETADO',   -- o BATCH_PARCIAL si no se procesaron todas
+  'PIPELINE_RUN',
+  'ACT-0058',
+  'Batch completado: N URLs procesadas, M fallidas, K pendientes',
+  'INFO',
+  '{urls_procesadas: N, urls_fallidas: M, urls_pendientes_restantes: K, kb_creados: J}'::jsonb,
+  '<nombre_agente>'
+);
+```
+
+### Criterio de parada
+
+| Condición | Acción |
+|---|---|
+| lf_url_queue sin PENDIENTE | Registrar BATCH_COMPLETADO. Terminar. |
+| Error Supabase irrecuperable | Registrar BATCH_PARCIAL. Terminar. |
+| Límite de contexto del agente | Registrar BATCH_PARCIAL con URLs restantes en payload. Terminar. |
+| retry_count >= 3 en una URL | Marcar esa URL como FALLIDO. Continuar con la siguiente. |
+
