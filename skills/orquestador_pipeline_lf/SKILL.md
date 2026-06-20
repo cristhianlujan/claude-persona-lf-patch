@@ -284,9 +284,29 @@ OP-15. UPDATE lf_pipeline_runs SET stage_current='KB_WRITE', stage_status='PENDI
 
 OP-16. SELECT now() → T6 | print("  ⏱ T6: {T6}")
 
+OP-16B. CHECKPOINT S5-B — KB QUALITY GATE (OBLIGATORIO ANTES DEL INSERT)
+        Construir y mostrar en pantalla antes de insertar:
+
+        visible_text  → extracto literal de la fuente (no resumen interno)
+        summary       → interpretacion interna LF — DEBE SER DIFERENTE a visible_text
+        key_insights  → JSON array, MINIMO 3 strings accionables
+                        PROHIBIDO: ["keyword1 / keyword2 / keyword3"]
+                        CORRECTO:  ["Insight accionable 1", "Insight 2", "Insight 3"]
+        kb_enriched   → JSON object completo con estas claves obligatorias:
+                        identidad, confianza, conversion, uso_semantico,
+                        propuesta_comercial, riesgo_cumplimiento
+                        PROHIBIDO: {}
+                        Si un dato no esta en la fuente: "no_encontrado_en_fuente"
+
+        Si CUALQUIER campo falla el control:
+        → NO insertar en lf_knowledge_base
+        → UPDATE lf_pipeline_runs SET stage_current='FAILED'
+        → INSERT lf_eventos tipo='KB_QUALITY_GATE_FAILED'
+        → continuar con siguiente URL
+
 OP-17. -- Verificar idempotencia primero
        SELECT kb_id FROM lf_knowledge_base WHERE decision_id='{decision_id}';
-       -- Si no existe, insertar:
+       -- Si no existe, insertar (solo si OP-16B paso todos los controles):
        INSERT lf_knowledge_base:
          decision_id      = {decision_id}
          run_id           = {run_id}
@@ -299,9 +319,12 @@ OP-17. -- Verificar idempotencia primero
          kb_category      = 'REHABILITACION_CREDITICIA' | 'EDUCACION_FINANCIERA' | 'COMPETENCIA' | 'REGULACION' | 'OTRO'
          kb_subcategory   = 'SALIR_INFOCORP' | 'NEGOCIAR_DEUDA' | 'CONSTANCIA_PAGO' | 'HISTORIAL_CREDITICIO' | 'CENTRAL_RIESGO' | 'OTRO'
          content_type     = 'LANDING' | 'ARTICULO_EDUCATIVO' | 'FAQ' | 'BLOG_INDEX' | 'PRODUCTO' | 'OTRO'
-         consumer_ready   = TRUE
+         visible_text     = '{visible_text}'   ← literal de la fuente
+         summary          = '{summary}'        ← interpretacion LF, distinto a visible_text
+         key_insights     = '[...]'::jsonb     ← array minimo 3 strings accionables
+         kb_enriched      = '{...}'::jsonb     ← OBLIGATORIO completo, PROHIBIDO {}
+         consumer_ready   = FALSE              ← trigger lo actualiza si califica
          quality_score    = 0.0 a 1.0
-         kb_enriched      = '{}'::jsonb   ← OBLIGATORIO, no puede ser NULL
          created_by       = 'ORQUESTACION_PIPELINE_LF'
        → SELECT RETURNING kb_id → confirmar
        print("  ✅ kb: {kb_id} | score: {quality_score}")
@@ -453,4 +476,5 @@ Si no se encuentran 5 URLs → registrar evento con severidad `WARN`.
 | `stage_current INIT invalid` | Enum incorrecto | Usar `CAPTURA` como stage inicial |
 | `severidad WARNING invalid` | Enum incorrecto | Usar `WARN` |
 | `homolog_status PENDING — step no avanza` | Default de DB — GPT no lo sobreescribió | Insertar `homolog_status='APROBADO'` explícitamente |
+
 
