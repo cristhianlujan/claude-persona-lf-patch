@@ -50,6 +50,10 @@ assertions:
   pass_condition: blocked_items_without_reason = 0
   critical: true
   evidence_required: true
+pass_if:
+- all_applicable_assertions_pass = true
+- compliance_bit = 1
+- evidence_refs_non_empty = true
 fail_if:
 - source_hash_mismatch = true
 - invented_rule_marked_confirmed = true
