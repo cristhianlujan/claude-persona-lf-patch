@@ -61,6 +61,10 @@ assertions:
   pass_condition: pii_exposure_without_masking = 0
   critical: true
   evidence_required: true
+pass_if:
+- all_applicable_assertions_pass = true
+- compliance_bit = 1
+- evidence_refs_non_empty = true
 fail_if:
 - cross_tenant_access_allowed = true
 - mutation_without_server_authorization = true
