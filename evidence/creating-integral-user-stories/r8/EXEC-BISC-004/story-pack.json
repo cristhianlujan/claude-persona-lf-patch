@@ -1,0 +1,1485 @@
+{
+  "analytics": [
+    {
+      "audit_event": false,
+      "correlation_id_required": true,
+      "event_code": "AN-SIMULATION-STARTED",
+      "pii_free": true,
+      "properties": [
+        "screen_code",
+        "channel"
+      ],
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001"
+    },
+    {
+      "audit_event": false,
+      "correlation_id_required": true,
+      "event_code": "AN-SIMULATION-VALIDATION",
+      "pii_free": true,
+      "properties": [
+        "validation_error_count",
+        "screen_code"
+      ],
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001"
+    },
+    {
+      "audit_event": false,
+      "correlation_id_required": true,
+      "event_code": "AN-SIMULATION-RESULT",
+      "pii_free": true,
+      "properties": [
+        "result_type",
+        "latency_bucket",
+        "screen_code"
+      ],
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001"
+    }
+  ],
+  "audit": {
+    "correlation_strategy": "SIMULACION_ID plus TRACE_CODE without PII",
+    "events": [
+      {
+        "audit_event_code": "EVT-SIMULATION-REQUESTED",
+        "fields": [
+          "SIMULACION_ID",
+          "TRACE_CODE",
+          "RESULTADO_TIPO"
+        ],
+        "pii_strategy": "OMITTED_OR_HASHED",
+        "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+        "when": "Solicitud aceptada por el servidor."
+      },
+      {
+        "audit_event_code": "EVT-SIMULATION-RESULTED",
+        "fields": [
+          "SIMULACION_ID",
+          "TRACE_CODE",
+          "RESULTADO_TIPO"
+        ],
+        "pii_strategy": "OMITTED_OR_HASHED",
+        "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+        "when": "Resultado emitido."
+      }
+    ],
+    "immutable": true
+  },
+  "core": {
+    "acceptance_criteria": [
+      {
+        "criterion_code": "AC-01",
+        "given": "La persona completó datos válidos y existe una oferta elegible.",
+        "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+        "then": "El sistema muestra resultado con oferta, monto aplicable y código de trazabilidad.",
+        "when": "Solicita la simulación."
+      },
+      {
+        "criterion_code": "AC-02",
+        "given": "La persona completó datos válidos y no existe oferta elegible.",
+        "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+        "then": "El sistema muestra resultado sin oferta y una orientación no engañosa.",
+        "when": "Solicita la simulación."
+      },
+      {
+        "criterion_code": "AC-03",
+        "given": "Falta al menos un dato obligatorio o su formato es inválido.",
+        "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+        "then": "El sistema bloquea el envío, identifica el campo y no consulta elegibilidad.",
+        "when": "La persona solicita la simulación."
+      },
+      {
+        "criterion_code": "AC-04",
+        "given": "El servicio de evaluación presenta una falla transitoria.",
+        "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+        "then": "El sistema muestra un error recuperable y conserva un código de correlación sin PII.",
+        "when": "La persona solicita la simulación."
+      },
+      {
+        "criterion_code": "AC-05",
+        "given": "La pantalla contiene datos personales y financieros.",
+        "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+        "then": "Ningún valor sensible aparece en analytics o logs no autorizados.",
+        "when": "Se procesa o registra telemetría."
+      },
+      {
+        "criterion_code": "AC-06",
+        "given": "Una simulación fue aceptada.",
+        "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+        "then": "Existe un identificador opaco que enlaza fuente, solicitud, resultado, prueba y juez.",
+        "when": "La respuesta es emitida."
+      },
+      {
+        "criterion_code": "AC-07",
+        "given": "La misma solicitud idempotente es reenviada.",
+        "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+        "then": "El sistema reutiliza el resultado o evita una simulación duplicada.",
+        "when": "El servicio recibe el mismo identificador de idempotencia."
+      },
+      {
+        "criterion_code": "AC-08",
+        "given": "Un actor intenta acceder fuera de su tenant o sin permiso.",
+        "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+        "then": "El servidor deniega la operación sin exponer datos.",
+        "when": "Solicita leer o ejecutar la simulación."
+      },
+      {
+        "criterion_code": "AC-09",
+        "given": "La persona navega con teclado o lector de pantalla.",
+        "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+        "then": "El orden, nombres accesibles, foco y anuncios permiten completar el flujo.",
+        "when": "Interactúa con campos, errores y resultados."
+      },
+      {
+        "criterion_code": "AC-10",
+        "given": "La simulación cambia de estado.",
+        "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+        "then": "La transición sigue el ciclo autorizado y deja evidencia técnica sin mezclarla con analytics.",
+        "when": "Ocurre validación, evaluación o respuesta."
+      }
+    ],
+    "actor": "Persona con una deuda registrada que busca conocer una alternativa de negociación.",
+    "alternative_flows": [
+      "Con información incompleta, el sistema bloquea la evaluación y señala campos corregibles.",
+      "Ante una falla transitoria, el sistema aplica la política de reintento y muestra un error recuperable.",
+      "Ante acceso no autorizado o cross-tenant, el servidor deniega sin revelar existencia de datos."
+    ],
+    "benefit": "Conocer si existe una oferta disponible sin exponer datos personales ni perder continuidad ante fallas recuperables.",
+    "main_flow": [
+      "El sistema presenta los ocho campos definidos por la fuente.",
+      "La persona completa los campos obligatorios y puede agregar un comentario.",
+      "El sistema valida formato, obligatoriedad, rangos y catálogo.",
+      "El servidor verifica permiso, tenant e idempotencia.",
+      "El servicio evalúa elegibilidad sin registrar PII en telemetría.",
+      "El sistema muestra resultado con oferta o sin oferta.",
+      "La respuesta incluye un identificador opaco de simulación y un código de trazabilidad."
+    ],
+    "need": "Registrar información mínima de la deuda y obtener una respuesta clara, segura y trazable.",
+    "out_of_scope": [
+      "Formalización contractual de una negociación.",
+      "Pago, desembolso o conciliación financiera.",
+      "Emisión de carta de no adeudo.",
+      "Modificación del catálogo de entidades."
+    ],
+    "postconditions": [
+      "La respuesta queda asociada a una simulación opaca y auditable.",
+      "La telemetría conserva resultado técnico y latencia sin PII.",
+      "No se crea una segunda simulación para una solicitud idempotente repetida."
+    ],
+    "preconditions": [
+      "La pantalla y sus catálogos están disponibles.",
+      "El actor pertenece al tenant autorizado.",
+      "La política de privacidad y el consentimiento aplicable fueron presentados."
+    ],
+    "trigger": "La persona selecciona la acción para simular la negociación de su deuda."
+  },
+  "dependencies_risks": {
+    "context_budget": {
+      "active_context_tokens": 9000,
+      "atomicity_review_required": false,
+      "atomicity_review_result": "NOT_REQUIRED",
+      "canonical_story_tokens": 11943,
+      "context_band": "WARNING",
+      "direct_load_allowed": true,
+      "implementation_view_tokens": 3200,
+      "measured_at": "2026-07-28T20:23:31Z",
+      "measurement_method": "ESTIMATE",
+      "model_reference": "GPT-5.6 Thinking",
+      "source_ref": "event:795#LF_CONTEXT_BUDGET_POLICY",
+      "specialized_views_required": false
+    },
+    "dependencies": [
+      {
+        "critical": true,
+        "dependency_code": "DEP-ELIGIBILITY-SERVICE",
+        "fallback": "RECOVERABLE_ERROR",
+        "type": "SERVICE"
+      },
+      {
+        "critical": true,
+        "dependency_code": "DEP-ENTITY-CATALOG",
+        "fallback": "VALIDATION_BLOCKED",
+        "type": "CATALOG"
+      },
+      {
+        "critical": true,
+        "dependency_code": "DEP-IDENTITY-SESSION",
+        "fallback": "DENY",
+        "type": "AUTHORIZATION"
+      }
+    ],
+    "pending_decisions": [],
+    "risks": [
+      {
+        "impact": "HIGH",
+        "mitigation": "Telemetry allowlist and masking contracts.",
+        "risk_code": "RSK-PII-LEAK"
+      },
+      {
+        "impact": "MEDIUM",
+        "mitigation": "Idempotency key and duplicate-request test.",
+        "risk_code": "RSK-DUPLICATE-SIMULATION"
+      },
+      {
+        "impact": "HIGH",
+        "mitigation": "Result-state validation and source-backed copy.",
+        "risk_code": "RSK-MISLEADING-OFFER"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "blocking": true,
+      "correlation_id_required": true,
+      "error_code": "ERR-SIMULATION-TECHNICAL",
+      "retry_policy": {
+        "backoff": "EXPONENTIAL_WITH_JITTER",
+        "max_attempts": 2
+      },
+      "retryable": true,
+      "severity": "CRITICAL",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "technical_detail_visibility": "INTERNAL_ONLY",
+      "trace_code": "TRACE-SIMULATION",
+      "user_message_code": "MSG-TECHNICAL-RECOVERABLE"
+    },
+    {
+      "blocking": true,
+      "correlation_id_required": true,
+      "error_code": "ERR-VALIDATION-BLOCKED",
+      "retry_policy": null,
+      "retryable": false,
+      "severity": "WARN",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "technical_detail_visibility": "INTERNAL_ONLY",
+      "trace_code": "TRACE-VALIDATION",
+      "user_message_code": "MSG-INCOMPLETE-INFORMATION"
+    }
+  ],
+  "fields": [
+    {
+      "analytics_allowed": false,
+      "audit_required": true,
+      "change_reason_required": false,
+      "component_token": "CMP-FIELD-DNI",
+      "context_code": "CTX-DEBT-NEGOTIATION",
+      "data_type": "STRING",
+      "editable": true,
+      "editable_by": [
+        "DEBTOR"
+      ],
+      "entity_code": "DEBT-SIMULATION",
+      "error_codes": [
+        "ERR-SIMULATION-TECHNICAL"
+      ],
+      "export_allowed": false,
+      "field_code": "DNI",
+      "format_token": "FMT-DNI",
+      "hash_required": true,
+      "logs_allowed": false,
+      "masking_rule": "SHOW_LAST_4",
+      "message_codes": [],
+      "new_value_strategy": "HASH",
+      "observation_codes": [],
+      "pii_classification": "PII_DIRECT",
+      "previous_value_strategy": "HASH",
+      "required": true,
+      "retention_class": "RISK_AND_COMPLIANCE_MINIMUM",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "source_type": "INPUT",
+      "validation_codes": [
+        "VAL-DNI-FORMAT"
+      ],
+      "viewable_by": [
+        "DEBTOR",
+        "AUTHORIZED_SERVICE"
+      ],
+      "visibility_mode": "MASKED"
+    },
+    {
+      "analytics_allowed": false,
+      "audit_required": true,
+      "change_reason_required": false,
+      "component_token": "CMP-FIELD-NOMBRES",
+      "context_code": "CTX-DEBT-NEGOTIATION",
+      "data_type": "STRING",
+      "editable": true,
+      "editable_by": [
+        "DEBTOR"
+      ],
+      "entity_code": "DEBT-SIMULATION",
+      "error_codes": [
+        "ERR-SIMULATION-TECHNICAL"
+      ],
+      "export_allowed": false,
+      "field_code": "NOMBRES",
+      "format_token": "FMT-NOMBRES",
+      "hash_required": true,
+      "logs_allowed": false,
+      "masking_rule": "INITIALS_ONLY",
+      "message_codes": [],
+      "new_value_strategy": "HASH",
+      "observation_codes": [],
+      "pii_classification": "PII_DIRECT",
+      "previous_value_strategy": "HASH",
+      "required": true,
+      "retention_class": "RISK_AND_COMPLIANCE_MINIMUM",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "source_type": "INPUT",
+      "validation_codes": [
+        "VAL-NOMBRES-REQUIRED"
+      ],
+      "viewable_by": [
+        "DEBTOR",
+        "AUTHORIZED_SERVICE"
+      ],
+      "visibility_mode": "MASKED"
+    },
+    {
+      "analytics_allowed": false,
+      "audit_required": true,
+      "change_reason_required": false,
+      "component_token": "CMP-FIELD-CELULAR",
+      "context_code": "CTX-DEBT-NEGOTIATION",
+      "data_type": "STRING",
+      "editable": true,
+      "editable_by": [
+        "DEBTOR"
+      ],
+      "entity_code": "DEBT-SIMULATION",
+      "error_codes": [
+        "ERR-SIMULATION-TECHNICAL"
+      ],
+      "export_allowed": false,
+      "field_code": "CELULAR",
+      "format_token": "FMT-CELULAR",
+      "hash_required": true,
+      "logs_allowed": false,
+      "masking_rule": "SHOW_LAST_3",
+      "message_codes": [],
+      "new_value_strategy": "HASH",
+      "observation_codes": [],
+      "pii_classification": "PII_DIRECT",
+      "previous_value_strategy": "HASH",
+      "required": true,
+      "retention_class": "RISK_AND_COMPLIANCE_MINIMUM",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "source_type": "INPUT",
+      "validation_codes": [
+        "VAL-CELULAR-FORMAT"
+      ],
+      "viewable_by": [
+        "DEBTOR",
+        "AUTHORIZED_SERVICE"
+      ],
+      "visibility_mode": "MASKED"
+    },
+    {
+      "analytics_allowed": false,
+      "audit_required": true,
+      "change_reason_required": false,
+      "component_token": "CMP-FIELD-CORREO",
+      "context_code": "CTX-DEBT-NEGOTIATION",
+      "data_type": "STRING",
+      "editable": true,
+      "editable_by": [
+        "DEBTOR"
+      ],
+      "entity_code": "DEBT-SIMULATION",
+      "error_codes": [
+        "ERR-SIMULATION-TECHNICAL"
+      ],
+      "export_allowed": false,
+      "field_code": "CORREO",
+      "format_token": "FMT-CORREO",
+      "hash_required": true,
+      "logs_allowed": false,
+      "masking_rule": "MASK_EMAIL",
+      "message_codes": [],
+      "new_value_strategy": "HASH",
+      "observation_codes": [],
+      "pii_classification": "PII_DIRECT",
+      "previous_value_strategy": "HASH",
+      "required": true,
+      "retention_class": "RISK_AND_COMPLIANCE_MINIMUM",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "source_type": "INPUT",
+      "validation_codes": [
+        "VAL-CORREO-FORMAT"
+      ],
+      "viewable_by": [
+        "DEBTOR",
+        "AUTHORIZED_SERVICE"
+      ],
+      "visibility_mode": "MASKED"
+    },
+    {
+      "analytics_allowed": false,
+      "audit_required": true,
+      "change_reason_required": false,
+      "component_token": "CMP-FIELD-MONTO_DEUDA",
+      "context_code": "CTX-DEBT-NEGOTIATION",
+      "data_type": "DECIMAL",
+      "editable": true,
+      "editable_by": [
+        "DEBTOR"
+      ],
+      "entity_code": "DEBT-SIMULATION",
+      "error_codes": [
+        "ERR-SIMULATION-TECHNICAL"
+      ],
+      "export_allowed": false,
+      "field_code": "MONTO_DEUDA",
+      "format_token": "FMT-MONTO_DEUDA",
+      "hash_required": true,
+      "logs_allowed": false,
+      "masking_rule": "ROUND_AND_MASK",
+      "message_codes": [],
+      "new_value_strategy": "HASH",
+      "observation_codes": [],
+      "pii_classification": "PII_FINANCIAL",
+      "previous_value_strategy": "HASH",
+      "required": true,
+      "retention_class": "RISK_AND_COMPLIANCE_MINIMUM",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "source_type": "INPUT",
+      "validation_codes": [
+        "VAL-MONTO-DEUDA-RANGE"
+      ],
+      "viewable_by": [
+        "DEBTOR",
+        "AUTHORIZED_SERVICE"
+      ],
+      "visibility_mode": "MASKED"
+    },
+    {
+      "analytics_allowed": false,
+      "audit_required": true,
+      "change_reason_required": false,
+      "component_token": "CMP-FIELD-ANTIGUEDAD_DEUDA",
+      "context_code": "CTX-DEBT-NEGOTIATION",
+      "data_type": "INTEGER",
+      "editable": true,
+      "editable_by": [
+        "DEBTOR"
+      ],
+      "entity_code": "DEBT-SIMULATION",
+      "error_codes": [
+        "ERR-SIMULATION-TECHNICAL"
+      ],
+      "export_allowed": false,
+      "field_code": "ANTIGUEDAD_DEUDA",
+      "format_token": "FMT-ANTIGUEDAD_DEUDA",
+      "hash_required": false,
+      "logs_allowed": false,
+      "masking_rule": null,
+      "message_codes": [],
+      "new_value_strategy": "HASH",
+      "observation_codes": [],
+      "pii_classification": "NONE",
+      "previous_value_strategy": "HASH",
+      "required": true,
+      "retention_class": "RISK_AND_COMPLIANCE_MINIMUM",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "source_type": "INPUT",
+      "validation_codes": [
+        "VAL-ANTIGUEDAD-RANGE"
+      ],
+      "viewable_by": [
+        "DEBTOR",
+        "AUTHORIZED_SERVICE"
+      ],
+      "visibility_mode": "FULL"
+    },
+    {
+      "analytics_allowed": false,
+      "audit_required": true,
+      "change_reason_required": false,
+      "component_token": "CMP-FIELD-BANCO_ENTIDAD_ORIGINAL",
+      "context_code": "CTX-DEBT-NEGOTIATION",
+      "data_type": "STRING",
+      "editable": true,
+      "editable_by": [
+        "DEBTOR"
+      ],
+      "entity_code": "DEBT-SIMULATION",
+      "error_codes": [
+        "ERR-SIMULATION-TECHNICAL"
+      ],
+      "export_allowed": false,
+      "field_code": "BANCO_ENTIDAD_ORIGINAL",
+      "format_token": "FMT-BANCO_ENTIDAD_ORIGINAL",
+      "hash_required": true,
+      "logs_allowed": false,
+      "masking_rule": "CATALOG_CODE_ONLY",
+      "message_codes": [],
+      "new_value_strategy": "HASH",
+      "observation_codes": [],
+      "pii_classification": "PII_INDIRECT",
+      "previous_value_strategy": "HASH",
+      "required": true,
+      "retention_class": "RISK_AND_COMPLIANCE_MINIMUM",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "source_type": "INPUT",
+      "validation_codes": [
+        "VAL-ENTIDAD-ALLOWED"
+      ],
+      "viewable_by": [
+        "DEBTOR",
+        "AUTHORIZED_SERVICE"
+      ],
+      "visibility_mode": "MASKED"
+    },
+    {
+      "analytics_allowed": false,
+      "audit_required": true,
+      "change_reason_required": false,
+      "component_token": "CMP-FIELD-COMENTARIO",
+      "context_code": "CTX-DEBT-NEGOTIATION",
+      "data_type": "STRING",
+      "editable": true,
+      "editable_by": [
+        "DEBTOR"
+      ],
+      "entity_code": "DEBT-SIMULATION",
+      "error_codes": [
+        "ERR-SIMULATION-TECHNICAL"
+      ],
+      "export_allowed": false,
+      "field_code": "COMENTARIO",
+      "format_token": "FMT-COMENTARIO",
+      "hash_required": true,
+      "logs_allowed": false,
+      "masking_rule": "REDACT_FREE_TEXT",
+      "message_codes": [],
+      "new_value_strategy": "HASH",
+      "observation_codes": [],
+      "pii_classification": "PII_SENSITIVE",
+      "previous_value_strategy": "HASH",
+      "required": false,
+      "retention_class": "RISK_AND_COMPLIANCE_MINIMUM",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "source_type": "INPUT",
+      "validation_codes": [
+        "VAL-COMENTARIO-LENGTH"
+      ],
+      "viewable_by": [
+        "DEBTOR",
+        "AUTHORIZED_SERVICE"
+      ],
+      "visibility_mode": "MASKED"
+    },
+    {
+      "analytics_allowed": true,
+      "audit_required": false,
+      "change_reason_required": false,
+      "component_token": "CMP-FIELD-SIMULACION_ID",
+      "context_code": "CTX-DEBT-NEGOTIATION",
+      "data_type": "STRING",
+      "editable": false,
+      "editable_by": [],
+      "entity_code": "DEBT-SIMULATION",
+      "error_codes": [
+        "ERR-SIMULATION-TECHNICAL"
+      ],
+      "export_allowed": false,
+      "field_code": "SIMULACION_ID",
+      "format_token": "FMT-SIMULACION_ID",
+      "hash_required": false,
+      "logs_allowed": true,
+      "masking_rule": null,
+      "message_codes": [],
+      "new_value_strategy": null,
+      "observation_codes": [],
+      "pii_classification": "NONE",
+      "previous_value_strategy": null,
+      "required": true,
+      "retention_class": "RISK_AND_COMPLIANCE_MINIMUM",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "source_type": "SYSTEM",
+      "validation_codes": [
+        "VAL-SIMULACION-ID"
+      ],
+      "viewable_by": [
+        "DEBTOR",
+        "AUTHORIZED_SERVICE"
+      ],
+      "visibility_mode": "HIDDEN"
+    },
+    {
+      "analytics_allowed": true,
+      "audit_required": false,
+      "change_reason_required": false,
+      "component_token": "CMP-FIELD-RESULTADO_TIPO",
+      "context_code": "CTX-DEBT-NEGOTIATION",
+      "data_type": "ENUM",
+      "editable": false,
+      "editable_by": [],
+      "entity_code": "DEBT-SIMULATION",
+      "error_codes": [
+        "ERR-SIMULATION-TECHNICAL"
+      ],
+      "export_allowed": false,
+      "field_code": "RESULTADO_TIPO",
+      "format_token": "FMT-RESULTADO_TIPO",
+      "hash_required": false,
+      "logs_allowed": true,
+      "masking_rule": null,
+      "message_codes": [],
+      "new_value_strategy": null,
+      "observation_codes": [],
+      "pii_classification": "NONE",
+      "previous_value_strategy": null,
+      "required": true,
+      "retention_class": "RISK_AND_COMPLIANCE_MINIMUM",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "source_type": "OUTPUT",
+      "validation_codes": [
+        "VAL-RESULTADO-TIPO"
+      ],
+      "viewable_by": [
+        "DEBTOR",
+        "AUTHORIZED_SERVICE"
+      ],
+      "visibility_mode": "FULL"
+    },
+    {
+      "analytics_allowed": false,
+      "audit_required": false,
+      "change_reason_required": false,
+      "component_token": "CMP-FIELD-MONTO_OFERTA",
+      "context_code": "CTX-DEBT-NEGOTIATION",
+      "data_type": "DECIMAL",
+      "editable": false,
+      "editable_by": [],
+      "entity_code": "DEBT-SIMULATION",
+      "error_codes": [
+        "ERR-SIMULATION-TECHNICAL"
+      ],
+      "export_allowed": false,
+      "field_code": "MONTO_OFERTA",
+      "format_token": "FMT-MONTO_OFERTA",
+      "hash_required": true,
+      "logs_allowed": false,
+      "masking_rule": "ROUND_AND_MASK",
+      "message_codes": [],
+      "new_value_strategy": null,
+      "observation_codes": [],
+      "pii_classification": "PII_FINANCIAL",
+      "previous_value_strategy": null,
+      "required": false,
+      "retention_class": "RISK_AND_COMPLIANCE_MINIMUM",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "source_type": "OUTPUT",
+      "validation_codes": [
+        "VAL-MONTO-OFERTA"
+      ],
+      "viewable_by": [
+        "DEBTOR",
+        "AUTHORIZED_SERVICE"
+      ],
+      "visibility_mode": "MASKED"
+    },
+    {
+      "analytics_allowed": false,
+      "audit_required": false,
+      "change_reason_required": false,
+      "component_token": "CMP-FIELD-TRACE_CODE",
+      "context_code": "CTX-DEBT-NEGOTIATION",
+      "data_type": "STRING",
+      "editable": false,
+      "editable_by": [],
+      "entity_code": "DEBT-SIMULATION",
+      "error_codes": [
+        "ERR-SIMULATION-TECHNICAL"
+      ],
+      "export_allowed": false,
+      "field_code": "TRACE_CODE",
+      "format_token": "FMT-TRACE_CODE",
+      "hash_required": false,
+      "logs_allowed": true,
+      "masking_rule": null,
+      "message_codes": [],
+      "new_value_strategy": null,
+      "observation_codes": [],
+      "pii_classification": "NONE",
+      "previous_value_strategy": null,
+      "required": true,
+      "retention_class": "RISK_AND_COMPLIANCE_MINIMUM",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "source_type": "SYSTEM",
+      "validation_codes": [
+        "VAL-TRACE-CODE"
+      ],
+      "viewable_by": [
+        "DEBTOR",
+        "AUTHORIZED_SERVICE"
+      ],
+      "visibility_mode": "HIDDEN"
+    }
+  ],
+  "identity": {
+    "epic_code": "EP-DEBT-NEGOTIATION",
+    "functional_unit_code": "FU-DEBT-SIMULATION",
+    "module_code": "MOD-DEBT-NEGOTIATION",
+    "priority": "P1",
+    "screen_code": "SCR-DEBT-NEGOTIATION-SIMULATOR",
+    "source_decision_id": "EVENT-807",
+    "source_snapshot_sha": "8215b1551fe8a1d168d1b413b3a56b55c2faab70d41bd00df524fb97e0ea71c2",
+    "source_version": "v1.0",
+    "status": "CANDIDATO_READ_ONLY",
+    "story_code": "ST-DEBT-SIM-001",
+    "title": "Simular una negociación de deuda con resultado trazable y seguro"
+  },
+  "interaction": {
+    "confirmation_policy": "No mostrar confirmación final antes de contar con resultado persistible.",
+    "focus_policy": "Mover el foco al primer error o al encabezado del resultado.",
+    "layout": "Formulario de una sola pantalla con agrupación lógica de identidad, contacto y deuda.",
+    "loading_state": "STATE-SIMULATING",
+    "primary_action_token": "ACTION-PRIMARY-SIMULATE",
+    "secondary_action_token": "ACTION-SECONDARY-CLEAR"
+  },
+  "judges_evidence": [
+    {
+      "evidence_path": "evidence/r8/EXEC-BISC-004/judges/j01.json",
+      "judge_code": "J01",
+      "status": "READY_FOR_JUDGE"
+    },
+    {
+      "evidence_path": "evidence/r8/EXEC-BISC-004/judges/j02.json",
+      "judge_code": "J02",
+      "status": "READY_FOR_JUDGE"
+    },
+    {
+      "evidence_path": "evidence/r8/EXEC-BISC-004/judges/j03.json",
+      "judge_code": "J03",
+      "status": "READY_FOR_JUDGE"
+    },
+    {
+      "evidence_path": "evidence/r8/EXEC-BISC-004/judges/j04.json",
+      "judge_code": "J04",
+      "status": "READY_FOR_JUDGE"
+    },
+    {
+      "evidence_path": "evidence/r8/EXEC-BISC-004/judges/j05.json",
+      "judge_code": "J05",
+      "status": "READY_FOR_JUDGE"
+    },
+    {
+      "evidence_path": "evidence/r8/EXEC-BISC-004/judges/j06.json",
+      "judge_code": "J06",
+      "status": "READY_FOR_JUDGE"
+    },
+    {
+      "evidence_path": "evidence/r8/EXEC-BISC-004/judges/j07.json",
+      "judge_code": "J07",
+      "status": "READY_FOR_JUDGE"
+    },
+    {
+      "evidence_path": "evidence/r8/EXEC-BISC-004/judges/j08.json",
+      "judge_code": "J08",
+      "status": "READY_FOR_JUDGE"
+    },
+    {
+      "evidence_path": "evidence/r8/EXEC-BISC-004/judges/j09.json",
+      "judge_code": "J09",
+      "status": "READY_FOR_JUDGE"
+    },
+    {
+      "evidence_path": "evidence/r8/EXEC-BISC-004/judges/j10.json",
+      "judge_code": "J10",
+      "status": "READY_FOR_JUDGE"
+    },
+    {
+      "evidence_path": "evidence/r8/EXEC-BISC-004/judges/j11.json",
+      "judge_code": "J11",
+      "status": "READY_FOR_JUDGE"
+    },
+    {
+      "evidence_path": "evidence/r8/EXEC-BISC-004/judges/j12.json",
+      "judge_code": "J12",
+      "status": "READY_FOR_JUDGE"
+    },
+    {
+      "evidence_path": "evidence/r8/EXEC-BISC-004/judges/j13.json",
+      "judge_code": "J13",
+      "status": "READY_FOR_JUDGE"
+    }
+  ],
+  "observability": {
+    "alerts": [
+      {
+        "alert_code": "ALT-SIMULATION-CRITICAL-ERROR",
+        "condition": "Critical error rate exceeds configured threshold.",
+        "response": "Inspect trace codes and dependency health without reading PII."
+      }
+    ],
+    "correlation_field": "TRACE_CODE",
+    "logs": [
+      {
+        "fields": [
+          "TRACE_CODE",
+          "RESULTADO_TIPO"
+        ],
+        "log_code": "LOG-SIMULATION-OUTCOME",
+        "pii_free": true
+      },
+      {
+        "fields": [
+          "TRACE_CODE",
+          "error_code",
+          "retry_count"
+        ],
+        "log_code": "LOG-SIMULATION-ERROR",
+        "pii_free": true
+      }
+    ],
+    "metrics": [
+      {
+        "metric_code": "MET-SIMULATION-SUCCESS-RATE",
+        "type": "RATIO"
+      },
+      {
+        "metric_code": "MET-SIMULATION-LATENCY",
+        "type": "HISTOGRAM"
+      },
+      {
+        "metric_code": "MET-SIMULATION-RECOVERABLE-ERROR",
+        "type": "COUNTER"
+      }
+    ]
+  },
+  "observations": [
+    {
+      "condition": "Existe al menos un campo obligatorio ausente o inválido.",
+      "message_code": "MSG-INCOMPLETE-INFORMATION",
+      "observation_code": "OBS-INCOMPLETE-INFORMATION",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "user_action": "Corregir los campos señalados y volver a solicitar la simulación."
+    },
+    {
+      "condition": "La evaluación termina sin oferta disponible.",
+      "message_code": "MSG-NO-OFFER",
+      "observation_code": "OBS-NO-OFFER",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "user_action": "Revisar recomendaciones disponibles sin exponer reglas internas."
+    }
+  ],
+  "responsive_accessibility": {
+    "accessible_names": true,
+    "contrast_policy": "Use registered semantic tokens.",
+    "error_summary": true,
+    "keyboard_navigation": true,
+    "live_regions": [
+      "validation_summary",
+      "simulation_result",
+      "recoverable_error"
+    ],
+    "responsive_policy": "Una columna en viewport reducido y agrupación estable en viewport amplio.",
+    "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+    "touch_target_policy": "Use registered interaction-size tokens.",
+    "visible_focus": true
+  },
+  "screen_fields": [
+    "DNI",
+    "NOMBRES",
+    "CELULAR",
+    "CORREO",
+    "MONTO_DEUDA",
+    "ANTIGUEDAD_DEUDA",
+    "BANCO_ENTIDAD_ORIGINAL",
+    "COMENTARIO",
+    "SIMULACION_ID",
+    "RESULTADO_TIPO",
+    "MONTO_OFERTA",
+    "TRACE_CODE"
+  ],
+  "security_privacy": {
+    "cross_tenant_policy": "DENY",
+    "data_minimization": "Recolectar únicamente campos del snapshot y evitar PII en telemetría.",
+    "idempotency_key": "simulation_request_id",
+    "idempotency_required": true,
+    "mfa_decision_reason": "La simulación no ejecuta pagos ni cambios patrimoniales; el acceso autenticado y la autorización server-side son obligatorios.",
+    "mfa_required": false,
+    "required_permissions": [
+      "DEBT_SIMULATION_EXECUTE",
+      "DEBT_SIMULATION_VIEW_OWN"
+    ],
+    "retention_policy": "Retención mínima definida por cumplimiento y trazabilidad.",
+    "server_side_enforcement": true,
+    "signed_url_policy": "NOT_APPLICABLE_NO_DOWNLOAD",
+    "signed_url_ttl_seconds": 300,
+    "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+    "storage_policy": "PRIVATE",
+    "tenant_key": "tenant_id"
+  },
+  "states": {
+    "initial_state": "READY",
+    "terminal_states": [
+      "WITH_OFFER",
+      "WITHOUT_OFFER",
+      "VALIDATION_BLOCKED",
+      "RECOVERABLE_ERROR"
+    ],
+    "transitions": [
+      {
+        "event": "REQUEST_SIMULATION",
+        "from": "READY",
+        "rule_ref": "STATE-SIMULATION-LIFECYCLE",
+        "to": "VALIDATING"
+      },
+      {
+        "event": "VALID",
+        "from": "VALIDATING",
+        "rule_ref": "STATE-SIMULATION-LIFECYCLE",
+        "to": "EVALUATING"
+      },
+      {
+        "event": "INVALID",
+        "from": "VALIDATING",
+        "rule_ref": "STATE-SIMULATION-LIFECYCLE",
+        "to": "VALIDATION_BLOCKED"
+      },
+      {
+        "event": "OFFER_FOUND",
+        "from": "EVALUATING",
+        "rule_ref": "STATE-SIMULATION-LIFECYCLE",
+        "to": "WITH_OFFER"
+      },
+      {
+        "event": "NO_OFFER",
+        "from": "EVALUATING",
+        "rule_ref": "STATE-SIMULATION-LIFECYCLE",
+        "to": "WITHOUT_OFFER"
+      },
+      {
+        "event": "TRANSIENT_FAILURE",
+        "from": "EVALUATING",
+        "rule_ref": "STATE-SIMULATION-LIFECYCLE",
+        "to": "RECOVERABLE_ERROR"
+      }
+    ]
+  },
+  "tests": [
+    {
+      "actor_profile": "DEBTOR",
+      "automatable": true,
+      "criterion_ref": "AC-01",
+      "critical": true,
+      "evidence_path": "evidence/r8/EXEC-BISC-004/tests/tc-01.json",
+      "expected_result": "Resultado con oferta.",
+      "family": "FUNCTIONAL",
+      "negative": false,
+      "preconditions": [
+        "Fixture R8 válido y fuente snapshot disponible."
+      ],
+      "rule_ref": "VAL-RESULTADO-TIPO",
+      "steps": [
+        "Preparar caso AC-01.",
+        "Ejecutar el flujo del simulador.",
+        "Capturar resultado y evidencia."
+      ],
+      "tenant_scope": "TENANT-LF-TEST",
+      "test_code": "TC-01"
+    },
+    {
+      "actor_profile": "DEBTOR",
+      "automatable": true,
+      "criterion_ref": "AC-02",
+      "critical": true,
+      "evidence_path": "evidence/r8/EXEC-BISC-004/tests/tc-02.json",
+      "expected_result": "Resultado sin oferta.",
+      "family": "FUNCTIONAL",
+      "negative": false,
+      "preconditions": [
+        "Fixture R8 válido y fuente snapshot disponible."
+      ],
+      "rule_ref": "VAL-RESULTADO-TIPO",
+      "steps": [
+        "Preparar caso AC-02.",
+        "Ejecutar el flujo del simulador.",
+        "Capturar resultado y evidencia."
+      ],
+      "tenant_scope": "TENANT-LF-TEST",
+      "test_code": "TC-02"
+    },
+    {
+      "actor_profile": "DEBTOR",
+      "automatable": true,
+      "criterion_ref": "AC-03",
+      "critical": true,
+      "evidence_path": "evidence/r8/EXEC-BISC-004/tests/tc-03.json",
+      "expected_result": "Bloqueo con errores de campo.",
+      "family": "VALIDATION",
+      "negative": true,
+      "preconditions": [
+        "Fixture R8 válido y fuente snapshot disponible."
+      ],
+      "rule_ref": "VAL-DNI-FORMAT",
+      "steps": [
+        "Preparar caso AC-03.",
+        "Ejecutar el flujo del simulador.",
+        "Capturar resultado y evidencia."
+      ],
+      "tenant_scope": "TENANT-LF-TEST",
+      "test_code": "TC-03"
+    },
+    {
+      "actor_profile": "DEBTOR",
+      "automatable": true,
+      "criterion_ref": "AC-04",
+      "critical": true,
+      "evidence_path": "evidence/r8/EXEC-BISC-004/tests/tc-04.json",
+      "expected_result": "Error recuperable con correlación.",
+      "family": "ERROR",
+      "negative": true,
+      "preconditions": [
+        "Fixture R8 válido y fuente snapshot disponible."
+      ],
+      "rule_ref": "ERR-SIMULATION-TECHNICAL",
+      "steps": [
+        "Preparar caso AC-04.",
+        "Ejecutar el flujo del simulador.",
+        "Capturar resultado y evidencia."
+      ],
+      "tenant_scope": "TENANT-LF-TEST",
+      "test_code": "TC-04"
+    },
+    {
+      "actor_profile": "DEBTOR",
+      "automatable": true,
+      "criterion_ref": "AC-05",
+      "critical": true,
+      "evidence_path": "evidence/r8/EXEC-BISC-004/tests/tc-05.json",
+      "expected_result": "Telemetría sin PII.",
+      "family": "SECURITY",
+      "negative": true,
+      "preconditions": [
+        "Fixture R8 válido y fuente snapshot disponible."
+      ],
+      "rule_ref": "VAL-TRACE-CODE",
+      "steps": [
+        "Preparar caso AC-05.",
+        "Ejecutar el flujo del simulador.",
+        "Capturar resultado y evidencia."
+      ],
+      "tenant_scope": "TENANT-LF-TEST",
+      "test_code": "TC-05"
+    },
+    {
+      "actor_profile": "DEBTOR",
+      "automatable": true,
+      "criterion_ref": "AC-06",
+      "critical": true,
+      "evidence_path": "evidence/r8/EXEC-BISC-004/tests/tc-06.json",
+      "expected_result": "Trazabilidad completa.",
+      "family": "AUDIT",
+      "negative": false,
+      "preconditions": [
+        "Fixture R8 válido y fuente snapshot disponible."
+      ],
+      "rule_ref": "VAL-SIMULACION-ID",
+      "steps": [
+        "Preparar caso AC-06.",
+        "Ejecutar el flujo del simulador.",
+        "Capturar resultado y evidencia."
+      ],
+      "tenant_scope": "TENANT-LF-TEST",
+      "test_code": "TC-06"
+    },
+    {
+      "actor_profile": "DEBTOR",
+      "automatable": true,
+      "criterion_ref": "AC-07",
+      "critical": true,
+      "evidence_path": "evidence/r8/EXEC-BISC-004/tests/tc-07.json",
+      "expected_result": "Sin duplicación.",
+      "family": "IDEMPOTENCY",
+      "negative": true,
+      "preconditions": [
+        "Fixture R8 válido y fuente snapshot disponible."
+      ],
+      "rule_ref": "SEC-IDEMPOTENCY-REQUIRED",
+      "steps": [
+        "Preparar caso AC-07.",
+        "Ejecutar el flujo del simulador.",
+        "Capturar resultado y evidencia."
+      ],
+      "tenant_scope": "TENANT-LF-TEST",
+      "test_code": "TC-07"
+    },
+    {
+      "actor_profile": "UNAUTHORIZED_ACTOR",
+      "automatable": true,
+      "criterion_ref": "AC-08",
+      "critical": true,
+      "evidence_path": "evidence/r8/EXEC-BISC-004/tests/tc-08.json",
+      "expected_result": "Acceso denegado.",
+      "family": "PERMISSION",
+      "negative": true,
+      "preconditions": [
+        "Fixture R8 válido y fuente snapshot disponible."
+      ],
+      "rule_ref": "SEC-CROSS-TENANT-DENY",
+      "steps": [
+        "Preparar caso AC-08.",
+        "Ejecutar el flujo del simulador.",
+        "Capturar resultado y evidencia."
+      ],
+      "tenant_scope": "TENANT-LF-TEST",
+      "test_code": "TC-08"
+    },
+    {
+      "actor_profile": "DEBTOR",
+      "automatable": true,
+      "criterion_ref": "AC-09",
+      "critical": true,
+      "evidence_path": "evidence/r8/EXEC-BISC-004/tests/tc-09.json",
+      "expected_result": "Flujo accesible.",
+      "family": "ACCESSIBILITY",
+      "negative": false,
+      "preconditions": [
+        "Fixture R8 válido y fuente snapshot disponible."
+      ],
+      "rule_ref": "VAL-COMENTARIO-LENGTH",
+      "steps": [
+        "Preparar caso AC-09.",
+        "Ejecutar el flujo del simulador.",
+        "Capturar resultado y evidencia."
+      ],
+      "tenant_scope": "TENANT-LF-TEST",
+      "test_code": "TC-09"
+    },
+    {
+      "actor_profile": "DEBTOR",
+      "automatable": true,
+      "criterion_ref": "AC-10",
+      "critical": true,
+      "evidence_path": "evidence/r8/EXEC-BISC-004/tests/tc-10.json",
+      "expected_result": "Transición válida.",
+      "family": "STATE",
+      "negative": false,
+      "preconditions": [
+        "Fixture R8 válido y fuente snapshot disponible."
+      ],
+      "rule_ref": "STATE-SIMULATION-LIFECYCLE",
+      "steps": [
+        "Preparar caso AC-10.",
+        "Ejecutar el flujo del simulador.",
+        "Capturar resultado y evidencia."
+      ],
+      "tenant_scope": "TENANT-LF-TEST",
+      "test_code": "TC-10"
+    },
+    {
+      "actor_profile": "DEBTOR",
+      "automatable": true,
+      "criterion_ref": "AC-03",
+      "critical": true,
+      "evidence_path": "evidence/r8/EXEC-BISC-004/tests/tc-11.json",
+      "expected_result": "La regla VAL-NOMBRES-REQUIRED rechaza el dato y produce evidencia.",
+      "family": "VALIDATION",
+      "negative": true,
+      "preconditions": [
+        "Fixture R8 aislado con el campo objetivo preparado."
+      ],
+      "rule_ref": "VAL-NOMBRES-REQUIRED",
+      "steps": [
+        "Alterar el dato asociado a VAL-NOMBRES-REQUIRED.",
+        "Ejecutar validación.",
+        "Capturar rechazo."
+      ],
+      "tenant_scope": "TENANT-LF-TEST",
+      "test_code": "TC-11"
+    },
+    {
+      "actor_profile": "DEBTOR",
+      "automatable": true,
+      "criterion_ref": "AC-03",
+      "critical": true,
+      "evidence_path": "evidence/r8/EXEC-BISC-004/tests/tc-12.json",
+      "expected_result": "La regla VAL-CELULAR-FORMAT rechaza el dato y produce evidencia.",
+      "family": "VALIDATION",
+      "negative": true,
+      "preconditions": [
+        "Fixture R8 aislado con el campo objetivo preparado."
+      ],
+      "rule_ref": "VAL-CELULAR-FORMAT",
+      "steps": [
+        "Alterar el dato asociado a VAL-CELULAR-FORMAT.",
+        "Ejecutar validación.",
+        "Capturar rechazo."
+      ],
+      "tenant_scope": "TENANT-LF-TEST",
+      "test_code": "TC-12"
+    },
+    {
+      "actor_profile": "DEBTOR",
+      "automatable": true,
+      "criterion_ref": "AC-03",
+      "critical": true,
+      "evidence_path": "evidence/r8/EXEC-BISC-004/tests/tc-13.json",
+      "expected_result": "La regla VAL-CORREO-FORMAT rechaza el dato y produce evidencia.",
+      "family": "VALIDATION",
+      "negative": true,
+      "preconditions": [
+        "Fixture R8 aislado con el campo objetivo preparado."
+      ],
+      "rule_ref": "VAL-CORREO-FORMAT",
+      "steps": [
+        "Alterar el dato asociado a VAL-CORREO-FORMAT.",
+        "Ejecutar validación.",
+        "Capturar rechazo."
+      ],
+      "tenant_scope": "TENANT-LF-TEST",
+      "test_code": "TC-13"
+    },
+    {
+      "actor_profile": "DEBTOR",
+      "automatable": true,
+      "criterion_ref": "AC-03",
+      "critical": true,
+      "evidence_path": "evidence/r8/EXEC-BISC-004/tests/tc-14.json",
+      "expected_result": "La regla VAL-MONTO-DEUDA-RANGE rechaza el dato y produce evidencia.",
+      "family": "VALIDATION",
+      "negative": true,
+      "preconditions": [
+        "Fixture R8 aislado con el campo objetivo preparado."
+      ],
+      "rule_ref": "VAL-MONTO-DEUDA-RANGE",
+      "steps": [
+        "Alterar el dato asociado a VAL-MONTO-DEUDA-RANGE.",
+        "Ejecutar validación.",
+        "Capturar rechazo."
+      ],
+      "tenant_scope": "TENANT-LF-TEST",
+      "test_code": "TC-14"
+    },
+    {
+      "actor_profile": "DEBTOR",
+      "automatable": true,
+      "criterion_ref": "AC-03",
+      "critical": true,
+      "evidence_path": "evidence/r8/EXEC-BISC-004/tests/tc-15.json",
+      "expected_result": "La regla VAL-ANTIGUEDAD-RANGE rechaza el dato y produce evidencia.",
+      "family": "VALIDATION",
+      "negative": true,
+      "preconditions": [
+        "Fixture R8 aislado con el campo objetivo preparado."
+      ],
+      "rule_ref": "VAL-ANTIGUEDAD-RANGE",
+      "steps": [
+        "Alterar el dato asociado a VAL-ANTIGUEDAD-RANGE.",
+        "Ejecutar validación.",
+        "Capturar rechazo."
+      ],
+      "tenant_scope": "TENANT-LF-TEST",
+      "test_code": "TC-15"
+    },
+    {
+      "actor_profile": "DEBTOR",
+      "automatable": true,
+      "criterion_ref": "AC-03",
+      "critical": true,
+      "evidence_path": "evidence/r8/EXEC-BISC-004/tests/tc-16.json",
+      "expected_result": "La regla VAL-ENTIDAD-ALLOWED rechaza el dato y produce evidencia.",
+      "family": "VALIDATION",
+      "negative": true,
+      "preconditions": [
+        "Fixture R8 aislado con el campo objetivo preparado."
+      ],
+      "rule_ref": "VAL-ENTIDAD-ALLOWED",
+      "steps": [
+        "Alterar el dato asociado a VAL-ENTIDAD-ALLOWED.",
+        "Ejecutar validación.",
+        "Capturar rechazo."
+      ],
+      "tenant_scope": "TENANT-LF-TEST",
+      "test_code": "TC-16"
+    },
+    {
+      "actor_profile": "DEBTOR",
+      "automatable": true,
+      "criterion_ref": "AC-03",
+      "critical": true,
+      "evidence_path": "evidence/r8/EXEC-BISC-004/tests/tc-17.json",
+      "expected_result": "La regla VAL-MONTO-OFERTA rechaza el dato y produce evidencia.",
+      "family": "VALIDATION",
+      "negative": true,
+      "preconditions": [
+        "Fixture R8 aislado con el campo objetivo preparado."
+      ],
+      "rule_ref": "VAL-MONTO-OFERTA",
+      "steps": [
+        "Alterar el dato asociado a VAL-MONTO-OFERTA.",
+        "Ejecutar validación.",
+        "Capturar rechazo."
+      ],
+      "tenant_scope": "TENANT-LF-TEST",
+      "test_code": "TC-17"
+    },
+    {
+      "actor_profile": "CROSS_TENANT_ACTOR",
+      "automatable": true,
+      "criterion_ref": "AC-08",
+      "critical": true,
+      "evidence_path": "evidence/r8/EXEC-BISC-004/tests/tc-18.json",
+      "expected_result": "El servidor deniega la operación sin revelar datos ni existencia del recurso.",
+      "family": "TENANT",
+      "negative": true,
+      "preconditions": [
+        "Actor autenticado en tenant distinto al recurso solicitado."
+      ],
+      "rule_ref": "SEC-CROSS-TENANT-DENY",
+      "steps": [
+        "Preparar solicitud cross-tenant.",
+        "Ejecutar la simulación.",
+        "Capturar denegación y ausencia de datos."
+      ],
+      "tenant_scope": "TENANT-OTHER",
+      "test_code": "TC-18"
+    }
+  ],
+  "tokens_messages": {
+    "messages": [
+      {
+        "message_code": "MSG-INCOMPLETE-INFORMATION",
+        "severity": "WARN",
+        "text_ref": "copy.debt_simulation.incomplete"
+      },
+      {
+        "message_code": "MSG-NO-OFFER",
+        "severity": "INFO",
+        "text_ref": "copy.debt_simulation.no_offer"
+      },
+      {
+        "message_code": "MSG-TECHNICAL-RECOVERABLE",
+        "severity": "ERROR",
+        "text_ref": "copy.debt_simulation.recoverable_error"
+      },
+      {
+        "message_code": "MSG-WITH-OFFER",
+        "severity": "SUCCESS",
+        "text_ref": "copy.debt_simulation.with_offer"
+      }
+    ],
+    "tokens": [
+      {
+        "registered": true,
+        "status": "REGISTERED",
+        "token_code": "CMP-FORM-DEBT-SIMULATION"
+      },
+      {
+        "registered": true,
+        "status": "REGISTERED",
+        "token_code": "CMP-RESULT-OFFER"
+      },
+      {
+        "registered": true,
+        "status": "REGISTERED",
+        "token_code": "CMP-RESULT-NO-OFFER"
+      },
+      {
+        "registered": true,
+        "status": "REGISTERED",
+        "token_code": "CMP-INLINE-ERROR"
+      },
+      {
+        "registered": true,
+        "status": "REGISTERED",
+        "token_code": "ACTION-PRIMARY-SIMULATE"
+      }
+    ]
+  },
+  "validations": [
+    {
+      "critical": true,
+      "field_ref": "DNI",
+      "rule": "Formato documental válido y longitud esperada.",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "validation_code": "VAL-DNI-FORMAT"
+    },
+    {
+      "critical": true,
+      "field_ref": "NOMBRES",
+      "rule": "Debe existir al menos un nombre no vacío.",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "validation_code": "VAL-NOMBRES-REQUIRED"
+    },
+    {
+      "critical": true,
+      "field_ref": "CELULAR",
+      "rule": "Celular con formato nacional permitido.",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "validation_code": "VAL-CELULAR-FORMAT"
+    },
+    {
+      "critical": true,
+      "field_ref": "CORREO",
+      "rule": "Correo con estructura válida.",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "validation_code": "VAL-CORREO-FORMAT"
+    },
+    {
+      "critical": true,
+      "field_ref": "MONTO_DEUDA",
+      "rule": "Monto positivo dentro del rango operativo configurado.",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "validation_code": "VAL-MONTO-DEUDA-RANGE"
+    },
+    {
+      "critical": true,
+      "field_ref": "ANTIGUEDAD_DEUDA",
+      "rule": "Antigüedad expresada en meses dentro del rango permitido.",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "validation_code": "VAL-ANTIGUEDAD-RANGE"
+    },
+    {
+      "critical": true,
+      "field_ref": "BANCO_ENTIDAD_ORIGINAL",
+      "rule": "Entidad presente en catálogo habilitado.",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "validation_code": "VAL-ENTIDAD-ALLOWED"
+    },
+    {
+      "critical": false,
+      "field_ref": "COMENTARIO",
+      "rule": "Comentario opcional dentro del límite configurado y saneado.",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "validation_code": "VAL-COMENTARIO-LENGTH"
+    },
+    {
+      "critical": true,
+      "field_ref": "SIMULACION_ID",
+      "rule": "Identificador opaco, único y no derivado de PII.",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "validation_code": "VAL-SIMULACION-ID"
+    },
+    {
+      "critical": true,
+      "field_ref": "RESULTADO_TIPO",
+      "rule": "Resultado pertenece al conjunto autorizado.",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "validation_code": "VAL-RESULTADO-TIPO"
+    },
+    {
+      "critical": true,
+      "field_ref": "MONTO_OFERTA",
+      "rule": "Monto de oferta solo existe cuando el resultado contiene oferta.",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "validation_code": "VAL-MONTO-OFERTA"
+    },
+    {
+      "critical": true,
+      "field_ref": "TRACE_CODE",
+      "rule": "Código de trazabilidad opaco presente en toda respuesta.",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "validation_code": "VAL-TRACE-CODE"
+    },
+    {
+      "critical": true,
+      "field_ref": "RESULTADO_TIPO",
+      "rule": "Transiciones solo siguen el ciclo definido.",
+      "source_ref": "event:807#SRC-R8-DEBT-NEGOTIATION-SIMULATOR-001",
+      "validation_code": "STATE-SIMULATION-LIFECYCLE"
+    }
+  ]
+}
