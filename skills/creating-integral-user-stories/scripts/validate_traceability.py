@@ -22,6 +22,10 @@ def run() -> int:
     ]
     validations = [item for item in pack.get("validations", []) if isinstance(item, dict)]
     tests = [item for item in pack.get("tests", []) if isinstance(item, dict)]
+    audit_raw = pack.get("audit")
+    audit = audit_raw if isinstance(audit_raw, dict) else {}
+    audit_events = [item for item in audit.get("events", []) if isinstance(item, dict)]
+    audit_reason = audit.get("reason")
     criterion_ids = {item.get("criterion_code") for item in criteria if item.get("criterion_code")}
     rule_ids = {item.get("validation_code") for item in validations if item.get("validation_code")}
     rule_ids.update(
@@ -34,8 +38,8 @@ def run() -> int:
     )
     rule_ids.update(
         item.get("audit_event_code")
-        for item in pack.get("audit", {}).get("events", [])
-        if isinstance(item, dict) and item.get("audit_event_code")
+        for item in audit_events
+        if item.get("audit_event_code")
     )
     rule_ids.update(
         item.get("event_code") for item in pack.get("analytics", [])
@@ -48,6 +52,19 @@ def run() -> int:
         if sec.get("idempotency_required") is True:
             rule_ids.add("SEC-IDEMPOTENCY-REQUIRED")
 
+    audit_contract_missing = []
+    if not isinstance(audit_raw, dict) or (not audit_events and not audit_reason):
+        audit_contract_missing = ["audit"]
+    audit_events_without_source = sorted(
+        item.get("audit_event_code", "<missing>")
+        for item in audit_events
+        if not item.get("source_ref")
+    )
+    audit_events_without_code = [
+        f"audit.events[{index}]"
+        for index, item in enumerate(audit_events)
+        if not item.get("audit_event_code")
+    ]
     criteria_without_source = sorted(
         item.get("criterion_code") for item in criteria if not item.get("source_ref")
     )
@@ -73,6 +90,9 @@ def run() -> int:
     )
 
     checks = {
+        "audit_contract_missing": audit_contract_missing,
+        "audit_events_without_code": audit_events_without_code,
+        "audit_events_without_source_reference": audit_events_without_source,
         "criteria_without_source_reference": criteria_without_source,
         "rules_without_source_reference": rules_without_source,
         "criteria_without_test_reference": sorted(criterion_ids - covered_criteria),
@@ -86,11 +106,16 @@ def run() -> int:
     }
     failed = [f"{key}={len(values)}" for key, values in checks.items() if values]
     repairs = [
-        failure(key, "tests" if "test" in key else "validations",
-                f"Repair references: {values}")
+        failure(
+            key,
+            "audit" if key.startswith("audit_") else ("tests" if "test" in key else "validations"),
+            f"Repair references: {values}",
+        )
         for key, values in checks.items() if values
     ]
     evidence = {
+        "audit_event_count": len(audit_events),
+        "audit_reason_present": bool(audit_reason),
         "criterion_count": len(criterion_ids),
         "rule_count": len(rule_ids),
         "test_count": len(tests),
