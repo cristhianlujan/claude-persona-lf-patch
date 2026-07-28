@@ -1,5 +1,5 @@
 judge_code: J03_STORY_CORE
-version: v0.4
+version: v0.5
 status: CANDIDATO_READ_ONLY
 scope: Verifica núcleo A-B, trazabilidad, schema y presupuesto de contexto del Story Pack.
 independence: worker_must_not_execute_own_judge
@@ -41,6 +41,8 @@ required_evidence:
   - active_context_tokens
   - schema_error_count
   - failed_assertions
+  - positive_eval_result
+  - negative_eval_result
 repair_matrix:
   - assertion_id: context_budget_rule_violations
     instruction: Corregir medición, carga directa, vistas especializadas y revisión de atomicidad sin bajar límites.
@@ -53,3 +55,8 @@ output:
   schema_ref: schemas/judge-result.schema.json
   required_fields: [judge_code, result, compliance_bit, failed_assertions, blocking_assertions, evidence_refs, evidence, repair_instructions, retry_count, judged_at]
 prohibitions: [worker_self_approval, threshold_reduction_to_obtain_pass, pass_without_evidence, context_budget_omission]
+
+executable_evals:
+  positive: E21_STORY_CORE_POSITIVE
+  negative: E22_STORY_CORE_NEGATIVE
+  negative_must_be_rejected: true
