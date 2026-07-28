@@ -1,1 +1,120 @@
-{"scope": "Verifica auditoria de mutaciones y trazabilidad continua entre fuente, reglas, criterios y pruebas.", "output": {"schema_ref": "schemas/judge-result.schema.json", "evidence_refs": [], "compliance_bit": "0|1", "failed_assertions": [], "repair_instructions": []}, "fail_if": ["mutation_without_audit = true", "traceability_break = true", "rule_without_source_reference = true"], "pass_if": ["mutations_without_audit_event = 0", "sensitive_downloads_without_audit = 0", "editable_fields_without_change_strategy = 0", "rules_without_source_reference = 0", "criteria_without_test_reference = 0", "tests_without_story_reference = 0", "traceability_breaks = 0"], "version": "v0.1", "block_if": ["traceability_matrix_missing = true"], "judge_code": "J07_AUDIT_TRACEABILITY", "retry_limit": 2, "independence": "worker_must_not_execute_own_judge", "result_values": ["PASS_WITH_EVIDENCE", "RETURN_TO_WORKER", "BLOCKED", "FAIL"], "validator_ref": "scripts/validate_traceability.py", "required_inputs": ["story_pack", "audit_events", "traceability_matrix"], "required_evidence": ["mutation_count", "audit_event_count", "traceability_link_count", "failed_assertions"]}
+judge_code: J07_AUDIT_TRACEABILITY
+version: v0.3
+status: CANDIDATO_READ_ONLY
+scope: Verifica auditoría de mutaciones y cadena fuente-regla-criterio-prueba-evidencia sin referencias huérfanas.
+independence: worker_must_not_execute_own_judge
+retry_limit: 2
+required_inputs:
+- story_pack
+- audit_events
+- traceability_matrix
+preflight:
+- all_required_inputs_are_present
+- input_versions_are_compatible
+- source_and_evidence_refs_are_resolvable
+- judge_is_not_executed_by_the_worker_under_review
+assertions:
+- assertion_id: mutations_without_audit_event
+  target: audit
+  pass_condition: mutations_without_audit_event = 0
+  critical: true
+  evidence_required: true
+- assertion_id: sensitive_downloads_without_audit
+  target: audit
+  pass_condition: sensitive_downloads_without_audit = 0
+  critical: true
+  evidence_required: true
+- assertion_id: editable_fields_without_change_strategy
+  target: fields
+  pass_condition: editable_fields_without_change_strategy = 0
+  critical: true
+  evidence_required: true
+- assertion_id: rules_without_source_reference
+  target: validations
+  pass_condition: rules_without_source_reference = 0
+  critical: true
+  evidence_required: true
+- assertion_id: criteria_without_test_reference
+  target: tests
+  pass_condition: criteria_without_test_reference = 0
+  critical: true
+  evidence_required: true
+- assertion_id: tests_without_story_reference
+  target: tests
+  pass_condition: tests_without_story_reference = 0
+  critical: true
+  evidence_required: true
+- assertion_id: traceability_breaks
+  target: traceability_matrix
+  pass_condition: traceability_breaks = 0
+  critical: true
+  evidence_required: true
+- assertion_id: unresolved_evidence_refs
+  target: judges_evidence
+  pass_condition: unresolved_evidence_refs = 0
+  critical: true
+  evidence_required: true
+fail_if:
+- mutation_without_audit = true
+- traceability_break = true
+- rule_without_source_reference = true
+block_if:
+- traceability_matrix_missing = true
+- source_reference_unresolvable = true
+result_values:
+- PASS_WITH_EVIDENCE
+- RETURN_TO_WORKER
+- BLOCKED
+- FAIL
+result_rules:
+  PASS_WITH_EVIDENCE: all applicable assertions pass; compliance_bit=1; evidence_refs non-empty
+  RETURN_TO_WORKER: one or more repairable assertions fail; compliance_bit=0; repairs are actionable
+  BLOCKED: a blocking condition is true or retry_limit is exhausted; compliance_bit=0
+  FAIL: evidence proves an unrecoverable contract violation within this execution; compliance_bit=0
+required_evidence:
+- mutation_count
+- audit_event_count
+- traceability_link_count
+- unresolved_reference_count
+- failed_assertions
+- blocking_assertions
+- repair_instructions
+repair_matrix:
+- assertion_id: criteria_without_test_reference
+  instruction: Derivar prueba trazable; no modificar el criterio.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: traceability_breaks
+  instruction: Reparar el eslabón específico y recalcular la matriz completa.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+validator_ref: scripts/validate_traceability.py
+output:
+  schema_ref: schemas/judge-result.schema.json
+  required_fields:
+  - judge_code
+  - result
+  - compliance_bit
+  - failed_assertions
+  - blocking_assertions
+  - evidence_refs
+  - evidence
+  - repair_instructions
+  - retry_count
+  - judged_at
+prohibitions:
+- worker_self_approval
+- assertion_deletion_to_obtain_pass
+- threshold_reduction_to_obtain_pass
+- unresolved_evidence_reference
+- pass_without_evidence
+design_sources:
+- huggingface/transformers
+- freeCodeCamp/freeCodeCamp
+- Significant-Gravitas/AutoGPT

@@ -1,39 +1,79 @@
-"""Permission, tenant and idempotency coverage. J06 support."""
-import sys
+"""Validate permission, tenant, storage, MFA and idempotency decisions for J06."""
+from __future__ import annotations
 
-from lf_common import argv_path, emit, load
+from lf_common import (
+    add_common_input, emit, failure, load_json, main_guard, parser,
+    require_object, result_object,
+)
 
-MUTATION_VERBS = ("CREATE", "UPDATE", "DELETE", "APPROVE", "REJECT", "SUBMIT")
+JUDGE = "J06_SECURITY_PRIVACY"
+MUTATION_TERMS = ("CREATE", "UPDATE", "DELETE", "APPROVE", "REJECT", "SUBMIT", "SAVE", "EDIT")
 
 
-def main():
-    pack = load(argv_path(1))
-    sec = pack.get("security_privacy", {})
-    failed = []
+def run() -> int:
+    cli = parser(__doc__)
+    add_common_input(cli, "Story Pack JSON file")
+    cli.add_argument("--retry-count", type=int, default=0)
+    args = cli.parse_args()
+    pack = require_object(load_json(args.input), "story_pack")
+    sec = pack.get("security_privacy")
+    if not isinstance(sec, dict):
+        sec = {}
+
+    text = " ".join([
+        str(pack.get("core", {}).get("trigger", "")),
+        " ".join(pack.get("core", {}).get("main_flow", []) if isinstance(pack.get("core", {}).get("main_flow"), list) else []),
+    ]).upper()
+    is_mutation = any(term in text for term in MUTATION_TERMS)
+    sensitive_download = any(
+        term in text for term in ("DOWNLOAD", "DESCARG", "EXPORT")
+    ) and any(
+        isinstance(field, dict)
+        and field.get("pii_classification") in {"PII_DIRECT", "PII_SENSITIVE", "PII_FINANCIAL"}
+        for field in pack.get("fields", [])
+    )
+
+    failures = {}
     if not sec.get("required_permissions"):
-        failed.append("stories_without_required_permission=1")
+        failures["stories_without_required_permission"] = "Declare at least one source-backed permission."
     if not sec.get("tenant_key"):
-        failed.append("tenant_key_missing=1")
-    if sec.get("cross_tenant_policy") not in ("DENY", "EXPLICIT_ALLOW_WITH_AUDIT"):
-        failed.append("cross_tenant_access_allowed=1")
-    action = str(pack.get("core", {}).get("trigger", "")).upper()
-    is_mutation = any(v in action for v in MUTATION_VERBS)
-    if is_mutation and not sec.get("server_side_enforcement"):
-        failed.append("mutations_without_server_side_authorization=1")
+        failures["tenant_key_missing"] = "Define the server-side tenant key."
+    if sec.get("cross_tenant_policy") not in {"DENY", "EXPLICIT_ALLOW_WITH_AUDIT"}:
+        failures["cross_tenant_access_allowed"] = "Use DENY or EXPLICIT_ALLOW_WITH_AUDIT."
+    if sec.get("server_side_enforcement") is not True:
+        failures["missing_server_side_enforcement"] = "Enforcement must be explicit and server-side."
     if is_mutation and sec.get("idempotency_required") is None:
-        failed.append("mutation_without_idempotency_decision=1")
-    if sec.get("signed_url_policy") and not sec.get("signed_url_ttl_seconds"):
-        failed.append("signed_url_without_ttl=1")
-    if sec.get("critical_action") and sec.get("mfa_required") is None:
-        failed.append("critical_action_without_mfa_decision=1")
+        failures["mutation_without_idempotency_decision"] = "Record an explicit idempotency decision."
+    if is_mutation and not sec.get("required_permissions"):
+        failures["mutations_without_server_side_authorization"] = "Bind mutation to a permission."
+    if sec.get("mfa_required") is None:
+        failures["critical_action_without_mfa_decision"] = "Record explicit MFA/step-up decision."
+    if sensitive_download and sec.get("storage_policy") != "PRIVATE":
+        failures["sensitive_download_without_private_storage"] = "Use private storage."
+    if sensitive_download and (
+        not sec.get("signed_url_policy") or not sec.get("signed_url_ttl_seconds")
+    ):
+        failures["signed_url_without_ttl"] = "Define signed URL policy and positive TTL."
+
+    failed = [f"{key}=1" for key in sorted(failures)]
+    repairs = [failure(key, "security_privacy", instruction) for key, instruction in failures.items()]
     evidence = {
         "is_mutation": is_mutation,
+        "sensitive_download": sensitive_download,
         "required_permissions": sec.get("required_permissions", []),
+        "tenant_key": sec.get("tenant_key"),
         "cross_tenant_policy": sec.get("cross_tenant_policy"),
-        "rls_required": sec.get("rls_required"),
+        "server_side_enforcement": sec.get("server_side_enforcement"),
+        "mfa_required": sec.get("mfa_required"),
+        "idempotency_required": sec.get("idempotency_required"),
+        "storage_policy": sec.get("storage_policy"),
+        "input_path": str(args.input),
     }
-    return emit("J06_SECURITY_PRIVACY", failed, evidence)
+    return emit(result_object(
+        JUDGE, failed, evidence, args.evidence_ref or [f"file:{args.input}"],
+        repairs, retry_count=args.retry_count,
+    ))
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main_guard(JUDGE, run))

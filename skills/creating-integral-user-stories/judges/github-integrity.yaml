@@ -1,1 +1,134 @@
-{"scope": "Verifica escritura y readback en la rama autorizada; no aplica mientras el transporte GitHub este diferido.", "output": {"schema_ref": "schemas/judge-result.schema.json", "evidence_refs": [], "compliance_bit": "0|1", "failed_assertions": [], "repair_instructions": []}, "fail_if": ["direct_main_write_detected = true", "partial_write_detected = true", "sha_mismatches > 0"], "pass_if": ["expected_files = written_files", "written_files = readback_files", "unexpected_written_files = 0", "missing_written_files = 0", "sha_mismatches = 0", "content_hash_mismatches = 0", "partial_write_detected = false", "direct_main_write_detected = false"], "version": "v0.1", "block_if": ["github_transport_required_and_unavailable = true", "target_branch_conflict = true"], "judge_code": "J12_GITHUB_INTEGRITY", "retry_limit": 2, "independence": "worker_must_not_execute_own_judge", "applicability": {"if": "github_transport_status = ACTIVE", "else": "NOT_APPLICABLE when DEFERRED"}, "result_values": ["PASS_WITH_EVIDENCE", "RETURN_TO_WORKER", "BLOCKED", "FAIL"], "required_inputs": ["github_contract", "write_plan", "written_files", "readback_files", "hash_comparison"], "required_evidence": ["repository", "branch", "commit_sha", "written_file_count", "readback_file_count", "sha_comparison", "failed_assertions"]}
+judge_code: J12_GITHUB_INTEGRITY
+version: v0.3
+status: CANDIDATO_READ_ONLY
+scope: Verifica escritura completa y readback byte a byte en la rama autorizada, sin cambios directos en main ni
+  archivos inesperados.
+independence: worker_must_not_execute_own_judge
+retry_limit: 2
+required_inputs:
+- github_contract
+- write_plan
+- canonical_hash_map
+- written_files
+- readback_files
+- hash_comparison
+preflight:
+- all_required_inputs_are_present
+- input_versions_are_compatible
+- source_and_evidence_refs_are_resolvable
+- judge_is_not_executed_by_the_worker_under_review
+assertions:
+- assertion_id: expected_written
+  target: write_plan
+  pass_condition: expected_files = written_files
+  critical: true
+  evidence_required: true
+- assertion_id: written_readback
+  target: readback
+  pass_condition: written_files = readback_files
+  critical: true
+  evidence_required: true
+- assertion_id: unexpected_written_files
+  target: readback
+  pass_condition: unexpected_written_files = 0
+  critical: true
+  evidence_required: true
+- assertion_id: missing_written_files
+  target: readback
+  pass_condition: missing_written_files = 0
+  critical: true
+  evidence_required: true
+- assertion_id: sha_mismatches
+  target: hash_comparison
+  pass_condition: sha_mismatches = 0
+  critical: true
+  evidence_required: true
+- assertion_id: content_hash_mismatches
+  target: hash_comparison
+  pass_condition: content_hash_mismatches = 0
+  critical: true
+  evidence_required: true
+- assertion_id: partial_write_detected
+  target: write_plan
+  pass_condition: partial_write_detected = false
+  critical: true
+  evidence_required: true
+- assertion_id: direct_main_write_detected
+  target: github_contract
+  pass_condition: direct_main_write_detected = false
+  critical: true
+  evidence_required: true
+- assertion_id: draft_pr_preserved
+  target: pull_request
+  pass_condition: draft_pr = true
+  critical: true
+  evidence_required: true
+fail_if:
+- direct_main_write_detected = true
+- partial_write_detected = true
+- sha_mismatches > 0
+block_if:
+- github_transport_required_and_unavailable = true
+- target_branch_conflict = true
+- readback_unavailable = true
+result_values:
+- PASS_WITH_EVIDENCE
+- RETURN_TO_WORKER
+- BLOCKED
+- FAIL
+result_rules:
+  PASS_WITH_EVIDENCE: all applicable assertions pass; compliance_bit=1; evidence_refs non-empty
+  RETURN_TO_WORKER: one or more repairable assertions fail; compliance_bit=0; repairs are actionable
+  BLOCKED: a blocking condition is true or retry_limit is exhausted; compliance_bit=0
+  FAIL: evidence proves an unrecoverable contract violation within this execution; compliance_bit=0
+required_evidence:
+- repository
+- branch
+- commit_sha
+- written_file_count
+- readback_file_count
+- sha_comparison
+- pr_number
+- draft_state
+- failed_assertions
+- blocking_assertions
+- repair_instructions
+repair_matrix:
+- assertion_id: sha_mismatches
+  instruction: Reescribir solo rutas con mismatch desde fuente canónica y repetir readback completo.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: direct_main_write_detected
+  instruction: Detener ejecución; requiere investigación y nueva autorización.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+validator_ref: null
+output:
+  schema_ref: schemas/judge-result.schema.json
+  required_fields:
+  - judge_code
+  - result
+  - compliance_bit
+  - failed_assertions
+  - blocking_assertions
+  - evidence_refs
+  - evidence
+  - repair_instructions
+  - retry_count
+  - judged_at
+prohibitions:
+- worker_self_approval
+- assertion_deletion_to_obtain_pass
+- threshold_reduction_to_obtain_pass
+- unresolved_evidence_reference
+- pass_without_evidence
+design_sources:
+- huggingface/transformers
+- freeCodeCamp/freeCodeCamp
+- Significant-Gravitas/AutoGPT

@@ -1,1 +1,116 @@
-{"scope": "Verifica uso de tokens registrados y mensajes reutilizables con severidad.", "output": {"schema_ref": "schemas/judge-result.schema.json", "evidence_refs": [], "compliance_bit": "0|1", "failed_assertions": [], "repair_instructions": []}, "fail_if": ["hardcoded_visual_value = true", "message_without_severity = true", "unregistered_token_used = true"], "pass_if": ["hardcoded_color_count = 0", "hardcoded_spacing_count = 0", "unregistered_component_tokens = 0", "duplicate_message_text_without_token = 0", "candidate_tokens_without_candidate_status = 0", "messages_without_severity = 0"], "version": "v0.1", "block_if": ["token_registry_required_but_unavailable = true"], "judge_code": "J08_TOKENS_MESSAGES", "retry_limit": 2, "independence": "worker_must_not_execute_own_judge", "result_values": ["PASS_WITH_EVIDENCE", "RETURN_TO_WORKER", "BLOCKED", "FAIL"], "validator_ref": "scripts/validate_tokens.py", "required_inputs": ["story_pack", "token_registry", "message_catalog"], "required_evidence": ["token_usage_count", "hardcoded_value_count", "message_count", "failed_assertions"]}
+judge_code: J08_TOKENS_MESSAGES
+version: v0.3
+status: CANDIDATO_READ_ONLY
+scope: Verifica que valores visuales y mensajes usen registros reutilizables, estados de candidato y severidad explícita.
+independence: worker_must_not_execute_own_judge
+retry_limit: 2
+required_inputs:
+- story_pack
+- token_registry
+- message_catalog
+preflight:
+- all_required_inputs_are_present
+- input_versions_are_compatible
+- source_and_evidence_refs_are_resolvable
+- judge_is_not_executed_by_the_worker_under_review
+assertions:
+- assertion_id: hardcoded_color_count
+  target: tokens_messages
+  pass_condition: hardcoded_color_count = 0
+  critical: true
+  evidence_required: true
+- assertion_id: hardcoded_spacing_count
+  target: tokens_messages
+  pass_condition: hardcoded_spacing_count = 0
+  critical: true
+  evidence_required: true
+- assertion_id: unregistered_component_tokens
+  target: tokens_messages
+  pass_condition: unregistered_component_tokens = 0
+  critical: true
+  evidence_required: true
+- assertion_id: duplicate_message_text_without_token
+  target: tokens_messages
+  pass_condition: duplicate_message_text_without_token = 0
+  critical: true
+  evidence_required: true
+- assertion_id: candidate_tokens_without_status
+  target: tokens_messages
+  pass_condition: candidate_tokens_without_candidate_status = 0
+  critical: true
+  evidence_required: true
+- assertion_id: messages_without_severity
+  target: tokens_messages
+  pass_condition: messages_without_severity = 0
+  critical: true
+  evidence_required: true
+- assertion_id: color_only_state
+  target: responsive_accessibility
+  pass_condition: color_only_state_indicators = 0
+  critical: true
+  evidence_required: true
+fail_if:
+- hardcoded_visual_value = true
+- message_without_severity = true
+- unregistered_token_used = true
+block_if:
+- token_registry_required_but_unavailable = true
+- message_policy_conflict = true
+result_values:
+- PASS_WITH_EVIDENCE
+- RETURN_TO_WORKER
+- BLOCKED
+- FAIL
+result_rules:
+  PASS_WITH_EVIDENCE: all applicable assertions pass; compliance_bit=1; evidence_refs non-empty
+  RETURN_TO_WORKER: one or more repairable assertions fail; compliance_bit=0; repairs are actionable
+  BLOCKED: a blocking condition is true or retry_limit is exhausted; compliance_bit=0
+  FAIL: evidence proves an unrecoverable contract violation within this execution; compliance_bit=0
+required_evidence:
+- token_usage_count
+- candidate_token_count
+- hardcoded_value_count
+- message_count
+- duplicate_message_count
+- failed_assertions
+- blocking_assertions
+- repair_instructions
+repair_matrix:
+- assertion_id: hardcoded_color_count
+  instruction: Sustituir literal por token registrado o candidato con source_ref.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: messages_without_severity
+  instruction: Asignar severidad según catálogo; no inferir cuando la política sea ambigua.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+validator_ref: scripts/validate_tokens.py
+output:
+  schema_ref: schemas/judge-result.schema.json
+  required_fields:
+  - judge_code
+  - result
+  - compliance_bit
+  - failed_assertions
+  - blocking_assertions
+  - evidence_refs
+  - evidence
+  - repair_instructions
+  - retry_count
+  - judged_at
+prohibitions:
+- worker_self_approval
+- assertion_deletion_to_obtain_pass
+- threshold_reduction_to_obtain_pass
+- unresolved_evidence_reference
+- pass_without_evidence
+design_sources:
+- huggingface/transformers
+- freeCodeCamp/freeCodeCamp
+- Significant-Gravitas/AutoGPT

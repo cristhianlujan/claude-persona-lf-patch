@@ -1,46 +1,95 @@
-"""Every screen field must own a field contract. J04 support."""
-import sys
+"""Validate 1:1 field coverage, privacy and audit invariants for J04."""
+from __future__ import annotations
 
-from lf_common import argv_path, emit, load
+from lf_common import (
+    add_common_input, duplicate_values, emit, failure, load_json, main_guard,
+    parser, require_object, result_object,
+)
 
-REQUIRED = ("visibility_mode", "editable", "required", "data_type", "pii_classification")
+JUDGE = "J04_FIELD_CONTRACTS"
+PII = {"PII_INDIRECT", "PII_DIRECT", "PII_SENSITIVE", "PII_FINANCIAL"}
 
 
-def main():
-    pack = load(argv_path(1))
-    screen_fields = {f for f in pack.get("screen_fields", [])}
+def run() -> int:
+    cli = parser(__doc__)
+    add_common_input(cli, "Story Pack JSON file")
+    cli.add_argument("--retry-count", type=int, default=0)
+    args = cli.parse_args()
+    pack = require_object(load_json(args.input), "story_pack")
+
+    screen_fields = pack.get("screen_fields", [])
     contracts = pack.get("fields", [])
-    contract_codes = {c.get("field_code") for c in contracts}
-    uncontracted = sorted(screen_fields - contract_codes)
-    no_visibility, no_edit, pii_no_class, editable_no_audit = [], [], [], []
-    for c in contracts:
-        if not c.get("visibility_mode"):
-            no_visibility.append(c.get("field_code"))
-        if c.get("editable") is None:
-            no_edit.append(c.get("field_code"))
-        if c.get("pii_classification") in (None, "", "UNKNOWN"):
-            pii_no_class.append(c.get("field_code"))
-        if c.get("editable") and not c.get("audit_required"):
-            editable_no_audit.append(c.get("field_code"))
-    failed = []
-    if uncontracted:
-        failed.append("fields_without_contract=%d" % len(uncontracted))
-    if no_visibility:
-        failed.append("fields_without_visibility_rule=%d" % len(no_visibility))
-    if no_edit:
-        failed.append("fields_without_editability_rule=%d" % len(no_edit))
-    if pii_no_class:
-        failed.append("pii_fields_without_classification=%d" % len(pii_no_class))
-    if editable_no_audit:
-        failed.append("editable_fields_without_audit_strategy=%d" % len(editable_no_audit))
-    evidence = {
-        "screen_fields": len(screen_fields),
-        "field_contracts": len(contracts),
-        "required_keys": list(REQUIRED),
-        "uncontracted_fields": uncontracted,
+    if not isinstance(screen_fields, list) or not isinstance(contracts, list):
+        raise ValueError("screen_fields_and_fields_must_be_arrays")
+
+    codes = [item.get("field_code") for item in contracts if isinstance(item, dict)]
+    duplicates = duplicate_values(code for code in codes if code)
+    declared = set(value for value in screen_fields if isinstance(value, str))
+    contracted = set(code for code in codes if code)
+    missing = sorted(declared - contracted)
+    unexpected = sorted(contracted - declared)
+
+    missing_visibility = []
+    missing_editability = []
+    pii_no_classification = []
+    pii_analytics = []
+    pii_logs = []
+    editable_no_audit = []
+    fields_without_validation = []
+
+    for index, contract in enumerate(contracts):
+        code = contract.get("field_code") if isinstance(contract, dict) else f"index:{index}"
+        if not isinstance(contract, dict):
+            missing_visibility.append(code)
+            continue
+        if not contract.get("visibility_mode"):
+            missing_visibility.append(code)
+        if "editable" not in contract:
+            missing_editability.append(code)
+        classification = contract.get("pii_classification")
+        if not classification:
+            pii_no_classification.append(code)
+        if classification in PII and contract.get("analytics_allowed") is not False:
+            pii_analytics.append(code)
+        if classification in PII and contract.get("logs_allowed") and not contract.get("masking_rule"):
+            pii_logs.append(code)
+        if contract.get("editable") and (
+            contract.get("audit_required") is not True
+            or not contract.get("previous_value_strategy")
+            or not contract.get("new_value_strategy")
+        ):
+            editable_no_audit.append(code)
+        if not contract.get("validation_codes"):
+            fields_without_validation.append(code)
+
+    checks = {
+        "fields_without_contract": missing,
+        "unexpected_field_contracts": unexpected,
+        "duplicate_field_codes": duplicates,
+        "fields_without_visibility_rule": missing_visibility,
+        "fields_without_editability_rule": missing_editability,
+        "pii_fields_without_classification": pii_no_classification,
+        "pii_fields_with_analytics_allowed": pii_analytics,
+        "pii_fields_with_logs_allowed_without_rule": pii_logs,
+        "editable_fields_without_audit_strategy": editable_no_audit,
+        "fields_without_validation_mapping": fields_without_validation,
     }
-    return emit("J04_FIELD_CONTRACTS", failed, evidence)
+    failed = [f"{key}={len(values)}" for key, values in checks.items() if values]
+    repairs = [
+        failure(key, "fields", f"Repair field codes: {values}")
+        for key, values in checks.items() if values
+    ]
+    evidence = {
+        "screen_fields_count": len(declared),
+        "field_contracts_count": len(contracts),
+        "checks": checks,
+        "input_path": str(args.input),
+    }
+    return emit(result_object(
+        JUDGE, failed, evidence, args.evidence_ref or [f"file:{args.input}"],
+        repairs, retry_count=args.retry_count,
+    ))
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main_guard(JUDGE, run))

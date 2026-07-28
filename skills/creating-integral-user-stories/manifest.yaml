@@ -1,17 +1,16 @@
 skill_code: creating-integral-user-stories
-version: v0.1
+version: v0.3
 status: CANDIDATO_READ_ONLY
 operation_code: BUILD_INTEGRAL_STORY_CREATOR_LF
-execution_id: EXEC-BISC-001
+execution_id: EXEC-BISC-003
+canonical_store: private.lf_skill_artifacts
 source_document: HANDOFF_CLAUDE_WEB_CREACION_STORY_CREATOR_LF
 source_version: v0.1
 source_authority:
-  - ACT-0001
-  - ACT-0043
-  - ACT-0045
-  - public.v_lf_fuente_operativa
-canonical_store: private.lf_skill_artifacts
-
+- ACT-0001
+- ACT-0043
+- ACT-0045
+- public.v_lf_fuente_operativa
 github_contract:
   repository: cristhianlujan/claude-persona-lf-patch
   base_branch: main
@@ -20,95 +19,263 @@ github_contract:
   direct_main_write: BLOCKED
   merge_allowed: false
   draft_pr_required: true
-  transport_status: DEFERRED
-
+  draft_pr_number: 56
+  transport_status: ACTIVE
+package_contract:
+  expected_file_count: 62
+  encoding: UTF-8
+  line_endings: LF
+  final_newline: true
+  hash_algorithm: SHA-256
+  readback_required: true
+  unexpected_files_allowed: 0
+quality_policy:
+  audit_scope: ALL_CURRENT_ARTIFACTS
+  artifact_count: 62
+  rubric_dimensions:
+  - purpose_and_scope
+  - input_contract
+  - deterministic_procedure
+  - output_contract
+  - negative_cases
+  - repairability
+  - evidence_and_traceability
+  - validation_or_tests
+  score_scale:
+    minimum: 0
+    maximum: 100
+    passing_score: 80
+  change_policy: Modify only when the audit identifies a material gap; preserve stronger prior content.
+  measurement_fields:
+  - bytes_before
+  - bytes_after
+  - byte_change_percent
+  - score_before
+  - score_after
+  - improvement_points
+  - status
+  - top_3_sources
 files:
   root:
-    - SKILL.md
-    - manifest.yaml
-  references:
-    - references/screen-decomposition-protocol.md
-    - references/story-pack-contract.md
-    - references/field-contract.md
-    - references/observations-errors-contract.md
-    - references/security-privacy-contract.md
-    - references/audit-traceability-contract.md
-    - references/tokens-messages-contract.md
-    - references/analytics-observability-contract.md
-    - references/accessibility-responsive-contract.md
-    - references/test-derivation-contract.md
-    - references/supabase-source-map.md
-  schemas:
-    - schemas/task-packet.schema.json
-    - schemas/screen-decomposition.schema.json
-    - schemas/story-pack.schema.json
-    - schemas/judge-result.schema.json
-    - schemas/execution-ledger.schema.json
-    - schemas/coverage-report.schema.json
-  templates:
-    - templates/story-pack.template.json
-    - templates/story-pack.template.md
-    - templates/judge-contract.template.yaml
-    - templates/execution-report.template.md
-  scripts:
-    - scripts/lf_common.py
-    - scripts/validate_package.py
-    - scripts/validate_story_pack.py
-    - scripts/validate_traceability.py
-    - scripts/validate_field_coverage.py
-    - scripts/validate_security_coverage.py
-    - scripts/detect_pii_telemetry.py
-    - scripts/validate_tokens.py
-    - scripts/calculate_binary_completion.py
+  - SKILL.md
+  - manifest.yaml
   agents:
-    - agents/screen-decomposer.md
-    - agents/story-core-author.md
-    - agents/field-contract-author.md
-    - agents/cross-cutting-enricher.md
-    - agents/test-deriver.md
+  - agents/cross-cutting-enricher.md
+  - agents/field-contract-author.md
+  - agents/screen-decomposer.md
+  - agents/story-core-author.md
+  - agents/test-deriver.md
+  profiles: &id001
+  - perfiles/PERFIL_CROSS_CUTTING_ENRICHER_LF.md
+  - perfiles/PERFIL_FIELD_CONTRACT_AUDITOR_LF.md
+  - perfiles/PERFIL_SCREEN_DECOMPOSER_LF.md
+  - perfiles/PERFIL_STORY_CORE_AUTHOR_LF.md
+  - perfiles/PERFIL_STORY_TEST_DERIVER_LF.md
+  references:
+  - references/accessibility-responsive-contract.md
+  - references/analytics-observability-contract.md
+  - references/audit-traceability-contract.md
+  - references/field-contract.md
+  - references/observations-errors-contract.md
+  - references/screen-decomposition-protocol.md
+  - references/security-privacy-contract.md
+  - references/story-pack-contract.md
+  - references/supabase-source-map.md
+  - references/test-derivation-contract.md
+  - references/tokens-messages-contract.md
+  schemas:
+  - schemas/coverage-report.schema.json
+  - schemas/execution-ledger.schema.json
+  - schemas/judge-result.schema.json
+  - schemas/screen-decomposition.schema.json
+  - schemas/story-pack.schema.json
+  - schemas/task-packet.schema.json
+  templates:
+  - templates/execution-report.template.md
+  - templates/judge-contract.template.yaml
+  - templates/story-pack.template.json
+  - templates/story-pack.template.md
+  scripts:
+  - scripts/calculate_binary_completion.py
+  - scripts/detect_pii_telemetry.py
+  - scripts/lf_common.py
+  - scripts/validate_field_coverage.py
+  - scripts/validate_package.py
+  - scripts/validate_security_coverage.py
+  - scripts/validate_story_pack.py
+  - scripts/validate_tokens.py
+  - scripts/validate_traceability.py
   judges:
-    - judges/source-integrity.yaml
-    - judges/screen-decomposition.yaml
-    - judges/story-core.yaml
-    - judges/field-contracts.yaml
-    - judges/observations-errors.yaml
-    - judges/security-privacy.yaml
-    - judges/audit-traceability.yaml
-    - judges/tokens-messages.yaml
-    - judges/analytics-observability.yaml
-    - judges/test-coverage.yaml
-    - judges/skill-package.yaml
-    - judges/github-integrity.yaml
-    - judges/integration-close.yaml
+  - judges/analytics-observability.yaml
+  - judges/audit-traceability.yaml
+  - judges/field-contracts.yaml
+  - judges/github-integrity.yaml
+  - judges/integration-close.yaml
+  - judges/observations-errors.yaml
+  - judges/screen-decomposition.yaml
+  - judges/security-privacy.yaml
+  - judges/skill-package.yaml
+  - judges/source-integrity.yaml
+  - judges/story-core.yaml
+  - judges/test-coverage.yaml
+  - judges/tokens-messages.yaml
   evals:
-    - evals/evals.json
-    - evals/trigger-evals.json
-    - evals/assertions.json
-    - evals/fixtures/screen_simple_query.json
-    - evals/fixtures/screen_wizard_six_steps.json
-    - evals/fixtures/screen_sensitive_fields.json
-    - evals/fixtures/screen_insufficient_definition.json
-
+  - evals/assertions.json
+  - evals/evals.json
+  - evals/trigger-evals.json
+  fixtures:
+  - evals/fixtures/screen_insufficient_definition.json
+  - evals/fixtures/screen_sensitive_fields.json
+  - evals/fixtures/screen_simple_query.json
+  - evals/fixtures/screen_wizard_six_steps.json
 external_profiles:
   destination_code: DEST_CREACION_PERFIL_LF_DEFAULT
   base_folder: perfiles
   naming_rule: SLUG_UPPER_UNDERSCORE
   filename_suffix: .md
-  copied_into_skill: false
-  files:
-    - perfiles/PERFIL_SCREEN_DECOMPOSER_LF.md
-    - perfiles/PERFIL_STORY_CORE_AUTHOR_LF.md
-    - perfiles/PERFIL_FIELD_CONTRACT_AUDITOR_LF.md
-    - perfiles/PERFIL_CROSS_CUTTING_ENRICHER_LF.md
-    - perfiles/PERFIL_STORY_TEST_DERIVER_LF.md
-  deviation_from_source:
-    declared_in_source: perfiles/perfil_*.yaml
-    resolved_from_registry: perfiles/PERFIL_*.md
-    reason: naming_rule SLUG_UPPER_UNDERSCORE y filename_suffix .md vigentes
-
+  copied_into_skill: true
+  files: *id001
+workflow:
+  steps:
+  - order: 1
+    step_id: SOURCE_INTEGRITY
+    judge: J01_SOURCE_INTEGRITY
+  - order: 2
+    step_id: SCREEN_DECOMPOSITION
+    judge: J02_SCREEN_DECOMPOSITION
+  - order: 3
+    step_id: STORY_CORE
+    judge: J03_STORY_CORE
+  - order: 4
+    step_id: FIELD_CONTRACTS
+    judge: J04_FIELD_CONTRACTS
+  - order: 5
+    step_id: OBSERVATIONS_ERRORS
+    judge: J05_OBSERVATIONS_ERRORS
+  - order: 6
+    step_id: SECURITY_PRIVACY
+    judge: J06_SECURITY_PRIVACY
+  - order: 7
+    step_id: AUDIT_TRACEABILITY
+    judge: J07_AUDIT_TRACEABILITY
+  - order: 8
+    step_id: TOKENS_MESSAGES
+    judge: J08_TOKENS_MESSAGES
+  - order: 9
+    step_id: ANALYTICS_OBSERVABILITY
+    judge: J09_ANALYTICS_OBSERVABILITY
+  - order: 10
+    step_id: TEST_COVERAGE
+    judge: J10_TEST_COVERAGE
+  - order: 11
+    step_id: SKILL_PACKAGE
+    judge: J11_SKILL_PACKAGE
+  - order: 12
+    step_id: GITHUB_INTEGRITY
+    judge: J12_GITHUB_INTEGRITY
+  - order: 13
+    step_id: INTEGRATION_CLOSE
+    judge: J13_INTEGRATION_CLOSE
+  retry_limit: 2
+  worker_self_approval: false
+benchmark_sources:
+  AUTOGPT:
+    repository: Significant-Gravitas/AutoGPT
+    stars_observed_approx: 185000
+    example_path: classic/original_autogpt/CLAUDE.md
+    patterns:
+    - arquitectura explícita
+    - ciclo operativo
+    - estado, pruebas y gotchas
+  VSCODE:
+    repository: microsoft/vscode
+    stars_observed_approx: 186000
+    example_path: extensions/copilot/assets/prompts/skills/chronicle/SKILL.md
+    patterns:
+    - prerrequisitos
+    - workflows paso a paso
+    - formatos de salida y stop conditions
+  FREECODECAMP:
+    repository: freeCodeCamp/freeCodeCamp
+    stars_observed_approx: 446000
+    example_path: curriculum/schema/challenge-schema.js
+    patterns:
+    - validación condicional
+    - campos obligatorios
+    - mensajes de error verificables
+  TRANSFORMERS:
+    repository: huggingface/transformers
+    stars_observed_approx: 162000
+    example_path: docs/source/en/testing.md
+    patterns:
+    - arquitectura de pruebas reutilizable
+    - casos rápidos y lentos
+    - regresión y cobertura negativa
+  REACT:
+    repository: facebook/react
+    stars_observed_approx: 245000
+    example_path: fixtures/ y scripts/ del repositorio
+    patterns:
+    - fixtures aisladas
+    - regresión
+    - separación entre implementación y pruebas
+source_mapping_by_artifact_type:
+  AGENT:
+  - Significant-Gravitas/AutoGPT
+  - microsoft/vscode
+  - freeCodeCamp/freeCodeCamp
+  PROFILE:
+  - Significant-Gravitas/AutoGPT
+  - microsoft/vscode
+  - freeCodeCamp/freeCodeCamp
+  SKILL_MD:
+  - microsoft/vscode
+  - Significant-Gravitas/AutoGPT
+  - freeCodeCamp/freeCodeCamp
+  REFERENCE:
+  - microsoft/vscode
+  - freeCodeCamp/freeCodeCamp
+  - Significant-Gravitas/AutoGPT
+  MANIFEST:
+  - microsoft/vscode
+  - freeCodeCamp/freeCodeCamp
+  - Significant-Gravitas/AutoGPT
+  TEMPLATE:
+  - microsoft/vscode
+  - freeCodeCamp/freeCodeCamp
+  - huggingface/transformers
+  SCHEMA:
+  - freeCodeCamp/freeCodeCamp
+  - microsoft/vscode
+  - Significant-Gravitas/AutoGPT
+  JUDGE:
+  - huggingface/transformers
+  - freeCodeCamp/freeCodeCamp
+  - Significant-Gravitas/AutoGPT
+  SCRIPT:
+  - huggingface/transformers
+  - freeCodeCamp/freeCodeCamp
+  - Significant-Gravitas/AutoGPT
+  SHARED_MODULE:
+  - huggingface/transformers
+  - freeCodeCamp/freeCodeCamp
+  - Significant-Gravitas/AutoGPT
+  EVAL:
+  - huggingface/transformers
+  - microsoft/vscode
+  - freeCodeCamp/freeCodeCamp
+  FIXTURE:
+  - huggingface/transformers
+  - facebook/react
+  - freeCodeCamp/freeCodeCamp
 limits:
   no_validated: true
   no_produccion: true
   no_runtime: true
   no_merge: true
-  forbidden_status: [VALIDATED, APPROVED, PRODUCTION_READY, PRODUCTION_AUTHORIZED, VIGENTE]
+  forbidden_status:
+  - VALIDATED
+  - APPROVED
+  - PRODUCTION_READY
+  - PRODUCTION_AUTHORIZED
+  - VIGENTE

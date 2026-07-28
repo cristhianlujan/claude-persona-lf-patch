@@ -1,96 +1,143 @@
-"""Validate skill package inventory against canonical manifest.yaml. Implements J11 assertions."""
-import os
+"""Validate package inventory, syntax, schemas, references and placeholders for J11."""
+from __future__ import annotations
+
+import ast
+import json
 import re
-import sys
+from pathlib import Path
 
-from lf_common import argv_path, emit
+from lf_common import (
+    ValidationInputError, add_common_input, emit, failure, load_json, load_yaml,
+    main_guard, parser, result_object,
+)
 
-PLACEHOLDERS = ("TODO", "TBD", "FIXME", "LOREM_IPSUM", "PENDIENTE_RELLENAR")
-FILE_SUFFIXES = (".md", ".yaml", ".json", ".py")
-SELF_PATH = "scripts/validate_package.py"
-
-
-def manifest_paths(path):
-    expected = []
-    with open(path, "r", encoding="utf-8") as handle:
-        for raw in handle:
-            stripped = raw.strip()
-            if not stripped.startswith("- "):
-                continue
-            value = stripped[2:].strip().strip("\"'")
-            if value in ("SKILL.md", "manifest.yaml"):
-                expected.append(value)
-            elif "/" in value and value.endswith(FILE_SUFFIXES):
-                expected.append(value)
-    return sorted(set(expected))
+JUDGE = "J11_SKILL_PACKAGE"
+TEXT_SUFFIXES = {".md", ".yaml", ".yml", ".json", ".py"}
+PLACEHOLDER_RE = re.compile(r"\b(?:TODO|TBD|FIXME|LOREM_IPSUM|PENDIENTE_RELLENAR)\b")
+PATH_RE = re.compile(
+    r"(?:SKILL\.md|manifest\.yaml|(?:agents|perfiles|references|schemas|templates|scripts|judges|evals)/[A-Za-z0-9_./-]+\.(?:md|yaml|json|py))"
+)
 
 
-def scan_body(relative_path, body):
-    if relative_path != SELF_PATH:
-        return body
-    return "\n".join(
-        line for line in body.splitlines()
-        if not line.lstrip().startswith("PLACEHOLDERS =")
-    )
+def manifest_paths(manifest: dict) -> list[str]:
+    paths = []
+    files = manifest.get("files", {})
+    if not isinstance(files, dict):
+        raise ValidationInputError("manifest.files_must_be_object")
+    for values in files.values():
+        if isinstance(values, list):
+            paths.extend(str(item) for item in values)
+    profiles = manifest.get("external_profiles", {}).get("files", [])
+    if isinstance(profiles, list):
+        paths.extend(str(item) for item in profiles)
+    return sorted(set(paths))
 
 
-def main():
-    root = argv_path(1)
-    manifest_path = os.path.join(root, "manifest.yaml")
-    if not os.path.isfile(manifest_path):
-        return emit(
-            "J11_SKILL_PACKAGE",
-            ["invalid_manifest_references=1"],
-            {"manifest_path": "manifest.yaml", "manifest_found": False},
-        )
+def run() -> int:
+    cli = parser(__doc__)
+    add_common_input(cli, "Package root directory")
+    cli.add_argument("--retry-count", type=int, default=0)
+    args = cli.parse_args()
+    root = args.input
+    if not root.is_dir():
+        raise ValidationInputError(f"package_root_not_found:{root}")
+    manifest_file = root / "manifest.yaml"
+    manifest = load_yaml(manifest_file)
+    if not isinstance(manifest, dict):
+        raise ValidationInputError("manifest_must_be_object")
 
-    expected = manifest_paths(manifest_path)
-    actual = []
-    for base, dirs, files in os.walk(root):
-        dirs[:] = [name for name in dirs if name != "__pycache__"]
-        for name in files:
-            if name.endswith(".pyc"):
-                continue
-            rel = os.path.relpath(os.path.join(base, name), root)
-            actual.append(rel.replace(os.sep, "/"))
-    actual = sorted(actual)
-
-    missing = [path for path in expected if path not in actual]
-    unexpected = [path for path in actual if path not in expected]
+    expected = set(manifest_paths(manifest))
+    expected.update({"SKILL.md", "manifest.yaml"})
+    actual = {
+        path.relative_to(root).as_posix()
+        for path in root.rglob("*")
+        if path.is_file() and "__pycache__" not in path.parts and path.suffix != ".pyc"
+    }
+    missing = sorted(expected - actual)
+    unexpected = sorted(actual - expected)
+    empty = []
     placeholder_hits = []
-    empty = 0
-    pattern = re.compile(r"\b(?:%s)\b" % "|".join(map(re.escape, PLACEHOLDERS)))
+    json_errors = []
+    yaml_errors = []
+    python_errors = []
+    broken_refs = []
 
-    for rel in actual:
-        with open(os.path.join(root, rel), "r", encoding="utf-8") as handle:
-            body = handle.read()
+    for rel in sorted(actual):
+        path = root / rel
+        try:
+            body = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            empty.append(f"{rel}:not_utf8")
+            continue
         if not body.strip():
-            empty += 1
-        for match in pattern.finditer(scan_body(rel, body)):
-            placeholder_hits.append({"path": rel, "token": match.group(0)})
+            empty.append(rel)
+        if rel != "scripts/validate_package.py":
+            for match in PLACEHOLDER_RE.finditer(body):
+                placeholder_hits.append({"path": rel, "token": match.group(0)})
+        if path.suffix == ".json":
+            try:
+                json.loads(body)
+            except json.JSONDecodeError as exc:
+                json_errors.append(f"{rel}:{exc.lineno}:{exc.colno}")
+        elif path.suffix in {".yaml", ".yml"}:
+            try:
+                load_yaml(path)
+            except ValidationInputError as exc:
+                yaml_errors.append(f"{rel}:{exc}")
+        elif path.suffix == ".py":
+            try:
+                ast.parse(body, filename=rel)
+            except SyntaxError as exc:
+                python_errors.append(f"{rel}:{exc.lineno}:{exc.offset}")
+        if path.suffix in TEXT_SUFFIXES:
+            for ref in PATH_RE.findall(body):
+                if ref == rel:
+                    continue
+                if ref not in actual and not ref.startswith("evidence/"):
+                    if f"evidence/{ref}" in body:
+                        continue
+                    broken_refs.append({"from": rel, "to": ref})
 
-    failed = []
-    if missing:
-        failed.append("missing_required_files=%d" % len(missing))
-    if unexpected:
-        failed.append("unexpected_files=%d" % len(unexpected))
-    if placeholder_hits:
-        failed.append("placeholder_count=%d" % len(placeholder_hits))
-    if empty:
-        failed.append("empty_required_sections=%d" % empty)
+    schema_validation_errors = []
+    try:
+        import jsonschema
+        for rel in sorted(path for path in actual if path.startswith("schemas/") and path.endswith(".json")):
+            try:
+                jsonschema.Draft7Validator.check_schema(load_json(root / rel))
+            except Exception as exc:
+                schema_validation_errors.append(f"{rel}:{exc}")
+    except ImportError:
+        schema_validation_errors.append("jsonschema_not_available")
 
+    checks = {
+        "missing_required_files": missing,
+        "unexpected_files": unexpected,
+        "empty_required_sections": empty,
+        "placeholder_hits": placeholder_hits,
+        "json_parse_errors": json_errors,
+        "yaml_parse_errors": yaml_errors,
+        "script_compilation_errors": python_errors,
+        "broken_internal_references": sorted(
+            {json.dumps(item, sort_keys=True) for item in broken_refs}
+        ),
+        "schema_validation_errors": schema_validation_errors,
+    }
+    failed = [f"{key}={len(values)}" for key, values in checks.items() if values]
+    repairs = [
+        failure(key, "$package", f"Repair findings: {values[:20]}")
+        for key, values in checks.items() if values
+    ]
     evidence = {
-        "manifest_path": "manifest.yaml",
         "expected_files": len(expected),
         "actual_files": len(actual),
-        "missing": missing,
-        "unexpected": unexpected,
-        "placeholder_count": len(placeholder_hits),
-        "placeholder_hits": placeholder_hits,
-        "empty_required_sections": empty,
+        "checks": checks,
+        "input_path": str(root),
     }
-    return emit("J11_SKILL_PACKAGE", failed, evidence)
+    return emit(result_object(
+        JUDGE, failed, evidence, args.evidence_ref or [f"directory:{root}"],
+        repairs, retry_count=args.retry_count,
+    ))
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main_guard(JUDGE, run))

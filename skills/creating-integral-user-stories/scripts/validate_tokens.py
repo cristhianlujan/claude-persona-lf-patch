@@ -1,49 +1,75 @@
-"""Detect hardcoded visual values instead of registered tokens. J08 support."""
+"""Detect hardcoded values, invalid token status and incomplete messages for J08."""
+from __future__ import annotations
+
+import json
 import re
-import sys
 
-from lf_common import argv_path, emit, load
+from lf_common import (
+    add_common_input, duplicate_values, emit, failure, load_json, main_guard,
+    parser, require_object, result_object,
+)
 
+JUDGE = "J08_TOKENS_MESSAGES"
 HEX = re.compile(r"#[0-9a-fA-F]{3,8}\b")
-RGB = re.compile(r"rgba?\s*\(")
-SPACING = re.compile(r"\b\d+(px|rem|em)\b")
+RGB = re.compile(r"\brgba?\s*\(")
+SPACING = re.compile(r"\b\d+(?:\.\d+)?(?:px|rem|em)\b")
 
 
-def main():
-    pack = load(argv_path(1))
-    blob = str(pack.get("tokens_messages", {})) + str(pack.get("interaction", {}))
-    colors = HEX.findall(blob) + RGB.findall(blob)
-    spacing = SPACING.findall(blob)
-    tokens = pack.get("tokens_messages", {}).get("tokens", [])
-    unregistered = [t.get("token_code") for t in tokens if not t.get("registered")
-                    and t.get("status") != "CANDIDATO"]
-    messages = pack.get("tokens_messages", {}).get("messages", [])
-    no_severity = [m.get("message_code") for m in messages if not m.get("severity")]
-    seen, duplicates = {}, []
-    for m in messages:
-        text = m.get("text")
-        if text and text in seen:
-            duplicates.append(text)
-        seen[text] = True
-    failed = []
-    if colors:
-        failed.append("hardcoded_color_count=%d" % len(colors))
-    if spacing:
-        failed.append("hardcoded_spacing_count=%d" % len(spacing))
-    if unregistered:
-        failed.append("unregistered_component_tokens=%d" % len(unregistered))
-    if no_severity:
-        failed.append("messages_without_severity=%d" % len(no_severity))
-    if duplicates:
-        failed.append("duplicate_message_text_without_token=%d" % len(duplicates))
+def run() -> int:
+    cli = parser(__doc__)
+    add_common_input(cli, "Story Pack JSON file")
+    cli.add_argument("--retry-count", type=int, default=0)
+    args = cli.parse_args()
+    pack = require_object(load_json(args.input), "story_pack")
+    section = pack.get("tokens_messages")
+    section = section if isinstance(section, dict) else {}
+    tokens = [item for item in section.get("tokens", []) if isinstance(item, dict)]
+    messages = [item for item in section.get("messages", []) if isinstance(item, dict)]
+    interaction_blob = json.dumps(pack.get("interaction", {}), ensure_ascii=False)
+    section_blob = json.dumps(section, ensure_ascii=False)
+    blob = interaction_blob + section_blob
+
+    colors = sorted(set(HEX.findall(blob) + RGB.findall(blob)))
+    spacing = sorted(set(SPACING.findall(blob)))
+    invalid_tokens = [
+        item.get("token_code") for item in tokens
+        if (item.get("registered") is False and item.get("status") != "CANDIDATO")
+        or (item.get("registered") is True and item.get("status") != "REGISTERED")
+    ]
+    no_severity = [item.get("message_code") for item in messages if not item.get("severity")]
+    no_text_ref = [item.get("message_code") for item in messages if not item.get("text_ref")]
+    duplicate_codes = duplicate_values(
+        item.get("message_code") for item in messages if item.get("message_code")
+    )
+    duplicate_text_refs = duplicate_values(
+        item.get("text_ref") for item in messages if item.get("text_ref")
+    )
+
+    checks = {
+        "hardcoded_color_count": colors,
+        "hardcoded_spacing_count": spacing,
+        "unregistered_component_tokens": invalid_tokens,
+        "messages_without_severity": no_severity,
+        "messages_without_text_ref": no_text_ref,
+        "duplicate_message_codes": duplicate_codes,
+    }
+    failed = [f"{key}={len(values)}" for key, values in checks.items() if values]
+    repairs = [
+        failure(key, "tokens_messages", f"Repair findings: {values}")
+        for key, values in checks.items() if values
+    ]
     evidence = {
         "tokens_declared": len(tokens),
         "messages_declared": len(messages),
-        "hardcoded_colors": colors,
-        "hardcoded_spacing": spacing,
+        "duplicate_text_refs": duplicate_text_refs,
+        "checks": checks,
+        "input_path": str(args.input),
     }
-    return emit("J08_TOKENS_MESSAGES", failed, evidence)
+    return emit(result_object(
+        JUDGE, failed, evidence, args.evidence_ref or [f"file:{args.input}"],
+        repairs, retry_count=args.retry_count,
+    ))
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main_guard(JUDGE, run))
