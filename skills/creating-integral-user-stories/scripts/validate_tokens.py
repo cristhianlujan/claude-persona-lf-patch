@@ -21,8 +21,8 @@ def run() -> int:
     cli.add_argument("--retry-count", type=int, default=0)
     args = cli.parse_args()
     pack = require_object(load_json(args.input), "story_pack")
-    section = pack.get("tokens_messages")
-    section = section if isinstance(section, dict) else {}
+    section_raw = pack.get("tokens_messages")
+    section = section_raw if isinstance(section_raw, dict) else {}
     tokens = [item for item in section.get("tokens", []) if isinstance(item, dict)]
     messages = [item for item in section.get("messages", []) if isinstance(item, dict)]
     interaction_blob = json.dumps(pack.get("interaction", {}), ensure_ascii=False)
@@ -36,8 +36,14 @@ def run() -> int:
         if (item.get("registered") is False and item.get("status") != "CANDIDATO")
         or (item.get("registered") is True and item.get("status") != "REGISTERED")
     ]
-    no_severity = [item.get("message_code") for item in messages if not item.get("severity")]
-    no_text_ref = [item.get("message_code") for item in messages if not item.get("text_ref")]
+    tokens_without_code = [
+        f"tokens[{index}]" for index, item in enumerate(tokens) if not item.get("token_code")
+    ]
+    messages_without_code = [
+        f"messages[{index}]" for index, item in enumerate(messages) if not item.get("message_code")
+    ]
+    no_severity = [item.get("message_code", "<missing>") for item in messages if not item.get("severity")]
+    no_text_ref = [item.get("message_code", "<missing>") for item in messages if not item.get("text_ref")]
     duplicate_codes = duplicate_values(
         item.get("message_code") for item in messages if item.get("message_code")
     )
@@ -46,6 +52,11 @@ def run() -> int:
     )
 
     checks = {
+        "tokens_messages_section_missing": [] if isinstance(section_raw, dict) else ["tokens_messages"],
+        "tokens_missing": [] if tokens else ["tokens"],
+        "messages_missing": [] if messages else ["messages"],
+        "tokens_without_code": tokens_without_code,
+        "messages_without_code": messages_without_code,
         "hardcoded_color_count": colors,
         "hardcoded_spacing_count": spacing,
         "unregistered_component_tokens": invalid_tokens,
