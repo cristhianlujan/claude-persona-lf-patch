@@ -13,6 +13,15 @@ source_authority:
 - public.v_lf_fuente_operativa
 - public.lf_eventos.id=797
 - public.lf_eventos.id=798
+validator_dependencies:
+- package: jsonschema
+  required_by:
+  - scripts/validate_story_pack.py
+  availability_policy: BLOCK_IF_MISSING
+- package: PyYAML
+  required_by:
+  - scripts/validate_package.py
+  availability_policy: BLOCK_IF_MISSING
 github_contract:
   repository: cristhianlujan/claude-persona-lf-patch
   base_branch: main
