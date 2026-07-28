@@ -1,118 +1,62 @@
 judge_code: J05_OBSERVATIONS_ERRORS
-version: v0.3
+version: v0.4
 status: CANDIDATO_READ_ONLY
-scope: Verifica observaciones accionables y errores con códigos únicos, mensajes, correlación, política de reintento
-  y protección de detalle técnico.
+scope: Verifica observaciones accionables y errores con código, mensaje, correlación, reintento y detalle técnico protegido.
 independence: worker_must_not_execute_own_judge
 retry_limit: 2
 required_inputs:
-- story_pack
-- observations
-- errors
-- message_catalog
+  - story_pack
+  - observations
+  - errors
+  - message_catalog
+  - references/observations-errors-contract.md
 preflight:
-- all_required_inputs_are_present
-- input_versions_are_compatible
-- source_and_evidence_refs_are_resolvable
-- judge_is_not_executed_by_the_worker_under_review
-assertions:
-- assertion_id: blocking_conditions_without_error_code
-  target: errors
-  pass_condition: blocking_conditions_without_error_code = 0
-  critical: true
-  evidence_required: true
-- assertion_id: observations_without_user_action
-  target: observations
-  pass_condition: observations_without_user_action = 0
-  critical: true
-  evidence_required: true
-- assertion_id: retryable_errors_without_retry_policy
-  target: errors
-  pass_condition: retryable_errors_without_retry_policy = 0
-  critical: true
-  evidence_required: true
-- assertion_id: errors_without_correlation_strategy
-  target: errors
-  pass_condition: errors_without_correlation_strategy = 0
-  critical: true
-  evidence_required: true
-- assertion_id: technical_errors_exposed_to_user
-  target: errors
-  pass_condition: technical_errors_exposed_to_user = 0
-  critical: true
-  evidence_required: true
-- assertion_id: duplicate_error_codes
-  target: errors
-  pass_condition: duplicate_error_codes = 0
-  critical: true
-  evidence_required: true
-- assertion_id: errors_without_message_code
-  target: errors
-  pass_condition: errors_without_message_code = 0
-  critical: true
-  evidence_required: true
+  - all_required_inputs_are_present
+  - input_versions_are_compatible
+  - source_and_evidence_refs_are_resolvable
+  - judge_is_not_executed_by_worker
+pass_if:
+  - blocking_conditions_without_error_code = 0
+  - observations_without_user_action = 0
+  - retryable_errors_without_retry_policy = 0
+  - errors_without_correlation_strategy = 0
+  - technical_errors_exposed_to_user = 0
+  - duplicate_error_codes = 0
+  - errors_without_message_code = 0
 fail_if:
-- blocking_error_without_code = true
-- technical_error_exposed_to_user = true
-- duplicate_error_code = true
+  - blocking_error_without_code = true
+  - technical_error_exposed_to_user = true
+  - duplicate_error_code = true
 block_if:
-- error_catalog_required_but_unavailable = true
-- severity_policy_conflict = true
-result_values:
-- PASS_WITH_EVIDENCE
-- RETURN_TO_WORKER
-- BLOCKED
-- FAIL
-result_rules:
-  PASS_WITH_EVIDENCE: all applicable assertions pass; compliance_bit=1; evidence_refs non-empty
-  RETURN_TO_WORKER: one or more repairable assertions fail; compliance_bit=0; repairs are actionable
-  BLOCKED: a blocking condition is true or retry_limit is exhausted; compliance_bit=0
-  FAIL: evidence proves an unrecoverable contract violation within this execution; compliance_bit=0
+  - error_catalog_required_but_unavailable = true
+  - severity_policy_conflict = true
+  - retry_limit_exhausted = true
+result_values: [PASS_WITH_EVIDENCE, RETURN_TO_WORKER, BLOCKED, FAIL]
 required_evidence:
-- blocking_condition_count
-- observation_count
-- error_code_count
-- retry_policy_count
-- correlation_strategy_count
-- failed_assertions
-- blocking_assertions
-- repair_instructions
+  - observation_count
+  - error_count
+  - error_code_count
+  - retry_policy_count
+  - correlation_strategy_count
+  - checks
+  - failed_assertions
+  - repair_instructions
 repair_matrix:
-- assertion_id: retryable_errors_without_retry_policy
-  instruction: Agregar max_attempts y backoff desde política o bloquear si no está definida.
-  prohibited_shortcuts:
-  - delete_assertion
-  - lower_threshold
-  - invent_source
-  - self_approve
-- assertion_id: technical_errors_exposed_to_user
-  instruction: Mover detalle a observabilidad y usar message_code para interfaz.
-  prohibited_shortcuts:
-  - delete_assertion
-  - lower_threshold
-  - invent_source
-  - self_approve
-validator_ref: scripts/validate_story_pack.py
+  - assertion_id: retryable_errors_without_retry_policy
+    instruction: Agregar max_attempts y backoff desde política o bloquear.
+    prohibited_shortcuts: [delete_assertion, lower_threshold, invent_source, self_approve]
+  - assertion_id: technical_errors_exposed_to_user
+    instruction: Mover detalle a observabilidad y usar user_message_code.
+    prohibited_shortcuts: [delete_assertion, lower_threshold, invent_source, self_approve]
+  - assertion_id: errors_without_correlation_strategy
+    instruction: Agregar correlation_id_required o trace_code respaldado.
+    prohibited_shortcuts: [delete_assertion, lower_threshold, invent_source, self_approve]
+validator_ref: scripts/validate_field_coverage.py
 output:
   schema_ref: schemas/judge-result.schema.json
-  required_fields:
-  - judge_code
-  - result
-  - compliance_bit
-  - failed_assertions
-  - blocking_assertions
-  - evidence_refs
-  - evidence
-  - repair_instructions
-  - retry_count
-  - judged_at
-prohibitions:
-- worker_self_approval
-- assertion_deletion_to_obtain_pass
-- threshold_reduction_to_obtain_pass
-- unresolved_evidence_reference
-- pass_without_evidence
-design_sources:
-- huggingface/transformers
-- freeCodeCamp/freeCodeCamp
-- Significant-Gravitas/AutoGPT
+  required_fields: [judge_code, result, compliance_bit, failed_assertions, blocking_assertions, evidence_refs, evidence, repair_instructions, retry_count, judged_at]
+executable_evals:
+  positive: E23_FIELD_CONTRACTS_POSITIVE
+  negative: E24_FIELD_CONTRACTS_NEGATIVE
+  negative_must_be_rejected: true
+prohibitions: [worker_self_approval, threshold_reduction_to_obtain_pass, assertion_deletion_to_obtain_pass, pass_without_evidence]

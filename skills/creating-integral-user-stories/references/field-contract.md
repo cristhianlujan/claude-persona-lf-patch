@@ -1,113 +1,104 @@
 # Contrato integral por campo
 
-Versión operativa: `v0.3`. Juez asociado: `J04_FIELD_CONTRACTS`.
+Versión operativa: `v0.4`. Juez: `J04_FIELD_CONTRACTS`.
+Validador: `scripts/validate_field_coverage.py`.
+Evals ejecutables: `E23_FIELD_CONTRACTS_POSITIVE` y `E24_FIELD_CONTRACTS_NEGATIVE`.
 
-## 1. Propósito
+## Objetivo
 
-Asignar a cada campo un contrato explícito de origen, tipo, visibilidad, edición, validación, privacidad, auditoría, telemetría y retención.
+Garantizar cobertura 1:1 entre `screen_fields` y `fields`, con reglas explícitas de visibilidad, edición, validación, privacidad, auditoría y telemetría.
 
-## 2. Contrato de entrada
+## Entradas obligatorias
 
-| Entrada | Contenido obligatorio |
-|---|---|
-| `screen_fields` | Inventario completo de campos visible y no visible asociado a la historia. |
-| `field_inventory` | Metadatos fuente por campo y contexto. |
-| `permission_matrix` | Perfiles autorizados para ver o editar. |
-| `privacy_rules` | Clasificación y restricciones de tratamiento. |
-| `token_registry` | Tokens de componente y formato disponibles. |
+- `screen_fields`: inventario completo asociado a la historia.
+- `field_inventory`: metadatos fuente por campo.
+- `permission_matrix`: perfiles autorizados para ver o editar.
+- `privacy_rules`: clasificación y restricciones.
+- `token_registry`: componentes y formatos disponibles.
+- `source_snapshot`: versión y SHA-256 resolubles.
 
-## 3. Preflight
+## Preflight
 
-Antes de aplicar este contrato:
+1. Confirmar que todas las entradas existen y corresponden a la misma fuente.
+2. Resolver referencias y permisos aplicables.
+3. Detener con `BLOCKED` ante inventario ausente, conflicto de fuente o matriz obligatoria faltante.
+4. Prohibido inferir campos, permisos o clasificaciones no documentadas.
 
-1. Confirmar que las entradas obligatorias existen y pertenecen a la misma versión de fuente.
-2. Resolver todas las referencias declaradas.
-3. Confirmar que el alcance de lectura y escritura está autorizado.
-4. Registrar contradicciones o datos ausentes antes de producir contenido.
-5. Detenerse con `BLOCKED` cuando una condición bloqueante sea verdadera.
+## Procedimiento determinista
 
-## 4. Procedimiento obligatorio
+1. Conciliar `screen_fields` contra contratos.
+2. Detectar faltantes, inesperados y códigos duplicados.
+3. Validar `visibility_mode` y `editable`.
+4. Clasificar PII y restringir analytics, logs y exportación.
+5. Para campos editables exigir auditoría y estrategias previo/nuevo.
+6. Exigir al menos un `validation_code` por campo.
+7. Emitir conteos, detalle de fallas, reparaciones y `evidence_refs`.
+8. Ejecutar E23 y E24; E24 debe ser rechazado.
 
-1. Conciliar screen_fields contra field_inventory y detectar faltantes o duplicados.
-2. Copiar field_code, context_code, entity_code y source_type desde fuente.
-3. Asignar data_type, required y reglas de validación.
-4. Definir editable, editable_by, viewable_by y visibility_mode.
-5. Clasificar privacidad y definir masking_rule cuando corresponda.
-6. Definir analytics_allowed, logs_allowed y export_allowed mediante política explícita.
-7. Definir audit_required y estrategias de valor previo/nuevo para campos editables.
-8. Asignar retención, códigos de validación, observación, error y mensaje.
-9. Asignar component_token y format_token registrados o candidatos.
-10. Emitir evidencia de cobertura 1:1 y entregar a J04.
+## Contrato de salida
 
-## 5. Reglas e invariantes
-
-- fields_in_story debe ser igual a field_contracts_count.
-- Campo editable exige audit_required=true y estrategias de cambio.
-- PII_DIRECT, PII_SENSITIVE y PII_FINANCIAL no pueden viajar a analytics.
-- logs_allowed=true para PII requiere masking_rule explícita.
-- visibility_mode MASKED exige masking_rule.
-- Un campo no confirmado se bloquea o se marca PENDING_DECISION; no se completa por intuición.
-- Los códigos asociados deben existir o declararse como candidatos, nunca hardcodearse.
-
-## 6. Contrato de salida
-
-Salida principal: `schemas/story-pack.schema.json#/definitions/field_contract`.
-
-La salida debe incluir referencias de fuente, conteos, assertions evaluadas, decisiones pendientes y rutas de evidencia. Una salida estructuralmente válida pero sin evidencia no es satisfactoria.
-
-## 7. Assertions de paso
+El validador emite el contrato común de juez:
 
 ```text
-fields_in_story = field_contracts_count
+judge_code, result, compliance_bit, failed_assertions,
+blocking_assertions, evidence_refs, evidence,
+repair_instructions, retry_count, judged_at
+```
+
+Condiciones de paso:
+
+```text
+fields_without_contract = 0
+unexpected_field_contracts = 0
+duplicate_field_codes = 0
 fields_without_visibility_rule = 0
 fields_without_editability_rule = 0
-editable_fields_without_audit_strategy = 0
 pii_fields_without_classification = 0
 pii_fields_with_analytics_allowed = 0
 pii_fields_with_logs_allowed_without_rule = 0
+editable_fields_without_audit_strategy = 0
 fields_without_validation_mapping = 0
 ```
 
-## 8. Condiciones de bloqueo
-
-```text
-field_inventory_missing = true
-permission_matrix_missing_and_required = true
-field_source_conflict = true
-```
-
-## 9. Ejemplo mínimo completo
+## Ejemplo positivo
 
 ```json
 {
-  "field_code": "document_number",
-  "data_type": "string",
+  "field_code": "phone",
+  "data_type": "STRING",
   "required": true,
-  "editable": false,
-  "viewable_by": ["CUSTOMER_READ"],
+  "editable": true,
   "visibility_mode": "MASKED",
   "pii_classification": "PII_DIRECT",
-  "masking_rule": "SHOW_LAST_4",
+  "masking_rule": "SHOW_LAST_3",
   "analytics_allowed": false,
   "logs_allowed": false,
   "export_allowed": false,
-  "audit_required": false,
-  "validation_codes": ["VAL-DOCUMENT-FORMAT"]
+  "audit_required": true,
+  "previous_value_strategy": "MASKED",
+  "new_value_strategy": "MASKED",
+  "validation_codes": ["VAL-PHONE-FORMAT"],
+  "source_ref": "SRC-SENSITIVE#phone"
 }
 ```
 
-## 10. Reparación
+Resultado esperado: `PASS_WITH_EVIDENCE`.
 
-Cuando una assertion falle, reparar exclusivamente el objeto asociado; no reducir el umbral, borrar la assertion ni modificar la fuente. Tras `retry_limit = 2`, devolver `BLOCKED` con la evidencia acumulada.
+## Ejemplo negativo
 
-## 11. Handoff
+```json
+{
+  "field_code": "phone",
+  "editable": true,
+  "pii_classification": "PII_DIRECT",
+  "analytics_allowed": true,
+  "audit_required": false,
+  "validation_codes": []
+}
+```
 
-Entregar al juez: versión de fuente, SHA-256, objetos procesados, conteos, assertions, fallas, decisiones pendientes, reparaciones aplicadas y evidence_refs resolubles.
+Resultado esperado: `RETURN_TO_WORKER`.
 
-## 12. Fuentes de diseño no normativas
+## Reparación y stop conditions
 
-- **microsoft/vscode** (~186,000 estrellas): `extensions/copilot/assets/prompts/skills/chronicle/SKILL.md`; patrones: prerrequisitos, workflows paso a paso, formatos de salida y stop conditions.
-- **freeCodeCamp/freeCodeCamp** (~446,000 estrellas): `curriculum/schema/challenge-schema.js`; patrones: validación condicional, campos obligatorios, mensajes de error verificables.
-- **Significant-Gravitas/AutoGPT** (~185,000 estrellas): `classic/original_autogpt/CLAUDE.md`; patrones: arquitectura explícita, ciclo operativo, estado, pruebas y gotchas.
-
-Estas fuentes aportan patrones de ejecutabilidad, validación y pruebas. Los contratos LF y la fuente operativa prevalecen ante cualquier diferencia.
+Reparar solo los objetos indicados. Está prohibido borrar assertions, reducir umbrales, inventar fuente o autoaprobar. Tras `retry_limit = 2`, devolver `BLOCKED` con evidencia acumulada.
