@@ -49,6 +49,10 @@ assertions:
   pass_condition: color_only_state_indicators = 0
   critical: true
   evidence_required: true
+pass_if:
+- all_applicable_assertions_pass = true
+- compliance_bit = 1
+- evidence_refs_non_empty = true
 fail_if:
 - hardcoded_visual_value = true
 - message_without_severity = true
