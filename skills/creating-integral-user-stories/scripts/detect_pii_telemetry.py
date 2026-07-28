@@ -32,12 +32,16 @@ def run() -> int:
         and not item.get("masking_rule")
     )
 
-    analytics = [item for item in pack.get("analytics", []) if isinstance(item, dict)]
+    analytics_raw = pack.get("analytics")
+    analytics = [item for item in analytics_raw if isinstance(item, dict)] if isinstance(analytics_raw, list) else []
     event_property_leaks = []
     no_correlation = []
     audit_mixed = []
-    for event in analytics:
+    events_without_code = []
+    for index, event in enumerate(analytics):
         code = event.get("event_code", "<missing>")
+        if not event.get("event_code"):
+            events_without_code.append(f"analytics[{index}]")
         properties = set(event.get("properties", [])) if isinstance(event.get("properties"), list) else set()
         overlap = sorted(properties & sensitive_codes)
         if overlap or event.get("pii_free") is not True:
@@ -47,8 +51,8 @@ def run() -> int:
         if event.get("audit_event") or str(code).startswith("AUDIT-"):
             audit_mixed.append(code)
 
-    observability = pack.get("observability", {})
-    observability = observability if isinstance(observability, dict) else {}
+    observability_raw = pack.get("observability")
+    observability = observability_raw if isinstance(observability_raw, dict) else {}
     critical_errors = [
         item for item in pack.get("errors", [])
         if isinstance(item, dict) and item.get("severity") == "CRITICAL"
@@ -59,6 +63,10 @@ def run() -> int:
     ]
 
     checks = {
+        "analytics_section_missing": [] if isinstance(analytics_raw, list) else ["analytics"],
+        "analytics_events_missing": [] if analytics else ["analytics"],
+        "analytics_events_without_code": events_without_code,
+        "observability_contract_missing": [] if isinstance(observability_raw, dict) else ["observability"],
         "analytics_events_with_pii": field_policy_leaks + event_property_leaks,
         "logs_with_pii_without_contract": log_policy_leaks,
         "operations_without_correlation_id": no_correlation,
