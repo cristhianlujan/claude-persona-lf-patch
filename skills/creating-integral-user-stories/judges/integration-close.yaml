@@ -1,0 +1,140 @@
+judge_code: J13_INTEGRATION_CLOSE
+version: v0.3
+status: CANDIDATO_READ_ONLY
+scope: Cierra únicamente cuando todos los pasos y jueces aplicables están completos con evidencia y las restricciones
+  operativas siguen vigentes.
+independence: worker_must_not_execute_own_judge
+retry_limit: 2
+required_inputs:
+- execution_ledger
+- applicability_matrix
+- judge_results
+- inventory_report
+- eval_results
+- github_readback
+preflight:
+- all_required_inputs_are_present
+- input_versions_are_compatible
+- source_and_evidence_refs_are_resolvable
+- judge_is_not_executed_by_the_worker_under_review
+assertions:
+- assertion_id: required_steps_passed
+  target: execution_ledger
+  pass_condition: required_steps = passed_steps
+  critical: true
+  evidence_required: true
+- assertion_id: critical_steps_failed
+  target: execution_ledger
+  pass_condition: critical_steps_failed = 0
+  critical: true
+  evidence_required: true
+- assertion_id: applicable_judges_passed
+  target: judge_results
+  pass_condition: applicable_judges = judges_passed_with_evidence
+  critical: true
+  evidence_required: true
+- assertion_id: judges_failed
+  target: judge_results
+  pass_condition: judges_failed = 0
+  critical: true
+  evidence_required: true
+- assertion_id: judges_pending
+  target: judge_results
+  pass_condition: judges_pending = 0
+  critical: true
+  evidence_required: true
+- assertion_id: blocking_findings
+  target: execution_ledger
+  pass_condition: blocking_findings = 0
+  critical: true
+  evidence_required: true
+- assertion_id: completion_percent
+  target: execution_ledger
+  pass_condition: completion_percent = 100
+  critical: true
+  evidence_required: true
+- assertion_id: production_authorized
+  target: execution_ledger
+  pass_condition: production_authorized = false
+  critical: true
+  evidence_required: true
+- assertion_id: merge_authorized
+  target: execution_ledger
+  pass_condition: merge_authorized = false
+  critical: true
+  evidence_required: true
+- assertion_id: runtime_enabled
+  target: execution_ledger
+  pass_condition: runtime_enabled = false
+  critical: true
+  evidence_required: true
+fail_if:
+- critical_steps_failed > 0
+- judges_failed > 0
+- judges_pending > 0
+- blocking_findings > 0
+- completion_percent < 100
+block_if:
+- required_evidence_missing = true
+- applicability_matrix_missing = true
+- github_readback_incomplete = true
+result_values:
+- PASS_WITH_EVIDENCE
+- RETURN_TO_WORKER
+- BLOCKED
+- FAIL
+result_rules:
+  PASS_WITH_EVIDENCE: all applicable assertions pass; compliance_bit=1; evidence_refs non-empty
+  RETURN_TO_WORKER: one or more repairable assertions fail; compliance_bit=0; repairs are actionable
+  BLOCKED: a blocking condition is true or retry_limit is exhausted; compliance_bit=0
+  FAIL: evidence proves an unrecoverable contract violation within this execution; compliance_bit=0
+required_evidence:
+- required_steps
+- passed_steps
+- applicable_judges
+- judges_passed_with_evidence
+- completion_percent
+- blocking_findings
+- final_hash_map
+- failed_assertions
+- blocking_assertions
+- repair_instructions
+repair_matrix:
+- assertion_id: completion_percent
+  instruction: No estimar porcentaje; corregir steps con bit 0 y recalcular desde ledger.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: required_steps_passed
+  instruction: Completar o bloquear el step faltante; no marcarlo N/A sin regla de aplicabilidad.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+validator_ref: scripts/calculate_binary_completion.py
+output:
+  schema_ref: schemas/judge-result.schema.json
+  required_fields:
+  - judge_code
+  - result
+  - compliance_bit
+  - failed_assertions
+  - blocking_assertions
+  - evidence_refs
+  - evidence
+  - repair_instructions
+  - retry_count
+  - judged_at
+prohibitions:
+- worker_self_approval
+- assertion_deletion_to_obtain_pass
+- threshold_reduction_to_obtain_pass
+- unresolved_evidence_reference
+- pass_without_evidence
+design_sources:
+- huggingface/transformers
+- freeCodeCamp/freeCodeCamp
+- Significant-Gravitas/AutoGPT

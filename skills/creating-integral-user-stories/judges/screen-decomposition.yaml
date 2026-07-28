@@ -1,0 +1,138 @@
+judge_code: J02_SCREEN_DECOMPOSITION
+version: v0.3
+status: CANDIDATO_READ_ONLY
+scope: Verifica cobertura completa y no duplicada de contextos, campos, permisos, transiciones y unidades funcionales.
+independence: worker_must_not_execute_own_judge
+retry_limit: 2
+required_inputs:
+- source_snapshot
+- screen_decomposition
+- coverage_matrix
+preflight:
+- all_required_inputs_are_present
+- input_versions_are_compatible
+- source_and_evidence_refs_are_resolvable
+- judge_is_not_executed_by_the_worker_under_review
+assertions:
+- assertion_id: source_snapshot_sha_present
+  target: screen_decomposition
+  pass_condition: source_snapshot_sha_present = true
+  critical: true
+  evidence_required: true
+- assertion_id: source_screen_code_matches_target
+  target: screen_decomposition
+  pass_condition: source_screen_code_matches_target = true
+  critical: true
+  evidence_required: true
+- assertion_id: context_coverage
+  target: coverage_matrix
+  pass_condition: context_source_count = context_mapped_or_justified_count
+  critical: true
+  evidence_required: true
+- assertion_id: permission_coverage
+  target: coverage_matrix
+  pass_condition: permission_source_count = permission_mapped_or_justified_count
+  critical: true
+  evidence_required: true
+- assertion_id: transition_coverage
+  target: coverage_matrix
+  pass_condition: transition_source_count = transition_mapped_or_justified_count
+  critical: true
+  evidence_required: true
+- assertion_id: unmapped_count
+  target: coverage_matrix
+  pass_condition: unmapped_count = 0
+  critical: true
+  evidence_required: true
+- assertion_id: unjustified_count
+  target: coverage_matrix
+  pass_condition: unjustified_count = 0
+  critical: true
+  evidence_required: true
+- assertion_id: conflicting_count
+  target: coverage_matrix
+  pass_condition: conflicting_count = 0
+  critical: true
+  evidence_required: true
+- assertion_id: duplicate_functional_units
+  target: functional_units
+  pass_condition: duplicate_functional_units_count = 0
+  critical: true
+  evidence_required: true
+- assertion_id: functional_units_complete
+  target: functional_units
+  pass_condition: functional_units_without_actor_or_goal_or_output = 0
+  critical: true
+  evidence_required: true
+- assertion_id: confirmed_rules_have_source
+  target: functional_units
+  pass_condition: confirmed_rules_without_source_count = 0
+  critical: true
+  evidence_required: true
+fail_if:
+- invented_rule_marked_confirmed = true
+- duplicated_functional_unit = true
+- functional_unit_without_business_result = true
+block_if:
+- source_screen_not_found = true
+- screen_version_conflict = true
+- required_decision_prevents_decomposition = true
+result_values:
+- PASS_WITH_EVIDENCE
+- RETURN_TO_WORKER
+- BLOCKED
+- FAIL
+result_rules:
+  PASS_WITH_EVIDENCE: all applicable assertions pass; compliance_bit=1; evidence_refs non-empty
+  RETURN_TO_WORKER: one or more repairable assertions fail; compliance_bit=0; repairs are actionable
+  BLOCKED: a blocking condition is true or retry_limit is exhausted; compliance_bit=0
+  FAIL: evidence proves an unrecoverable contract violation within this execution; compliance_bit=0
+required_evidence:
+- source_snapshot_sha
+- coverage_matrix_sha
+- context_coverage_count
+- permission_coverage_count
+- transition_coverage_count
+- functional_units_count
+- failed_assertions
+- blocking_assertions
+- repair_instructions
+repair_matrix:
+- assertion_id: unmapped_count
+  instruction: Mapear cada elemento fuente a una unidad o justificar su exclusión.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: duplicate_functional_units
+  instruction: Consolidar duplicados conservando trazabilidad y volver a calcular cobertura.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+validator_ref: null
+output:
+  schema_ref: schemas/judge-result.schema.json
+  required_fields:
+  - judge_code
+  - result
+  - compliance_bit
+  - failed_assertions
+  - blocking_assertions
+  - evidence_refs
+  - evidence
+  - repair_instructions
+  - retry_count
+  - judged_at
+prohibitions:
+- worker_self_approval
+- assertion_deletion_to_obtain_pass
+- threshold_reduction_to_obtain_pass
+- unresolved_evidence_reference
+- pass_without_evidence
+design_sources:
+- huggingface/transformers
+- freeCodeCamp/freeCodeCamp
+- Significant-Gravitas/AutoGPT

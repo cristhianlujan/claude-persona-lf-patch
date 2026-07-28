@@ -1,0 +1,118 @@
+judge_code: J09_ANALYTICS_OBSERVABILITY
+version: v0.3
+status: CANDIDATO_READ_ONLY
+scope: Verifica separación de analytics, observabilidad y auditoría, ausencia de PII y cobertura de correlación,
+  métricas y alertas.
+independence: worker_must_not_execute_own_judge
+retry_limit: 2
+required_inputs:
+- story_pack
+- analytics_contract
+- observability_contract
+- field_contracts
+preflight:
+- all_required_inputs_are_present
+- input_versions_are_compatible
+- source_and_evidence_refs_are_resolvable
+- judge_is_not_executed_by_the_worker_under_review
+assertions:
+- assertion_id: analytics_events_with_pii
+  target: analytics
+  pass_condition: analytics_events_with_pii = 0
+  critical: true
+  evidence_required: true
+- assertion_id: logs_with_pii_without_contract
+  target: observability
+  pass_condition: logs_with_pii_without_contract = 0
+  critical: true
+  evidence_required: true
+- assertion_id: operations_without_correlation_id
+  target: analytics_observability
+  pass_condition: operations_without_correlation_id = 0
+  critical: true
+  evidence_required: true
+- assertion_id: errors_without_metric_category
+  target: observability
+  pass_condition: errors_without_metric_category = 0
+  critical: true
+  evidence_required: true
+- assertion_id: critical_failures_without_alert_decision
+  target: observability
+  pass_condition: critical_failures_without_alert_decision = 0
+  critical: true
+  evidence_required: true
+- assertion_id: audit_events_mixed_with_analytics
+  target: analytics
+  pass_condition: audit_events_mixed_with_analytics = 0
+  critical: true
+  evidence_required: true
+- assertion_id: high_cardinality_sensitive_dimensions
+  target: analytics
+  pass_condition: high_cardinality_sensitive_dimensions = 0
+  critical: true
+  evidence_required: true
+fail_if:
+- analytics_event_contains_pii = true
+- audit_event_used_as_analytics = true
+- critical_failure_without_alert_decision = true
+block_if:
+- observability_requirements_unavailable = true
+- analytics_taxonomy_conflict = true
+result_values:
+- PASS_WITH_EVIDENCE
+- RETURN_TO_WORKER
+- BLOCKED
+- FAIL
+result_rules:
+  PASS_WITH_EVIDENCE: all applicable assertions pass; compliance_bit=1; evidence_refs non-empty
+  RETURN_TO_WORKER: one or more repairable assertions fail; compliance_bit=0; repairs are actionable
+  BLOCKED: a blocking condition is true or retry_limit is exhausted; compliance_bit=0
+  FAIL: evidence proves an unrecoverable contract violation within this execution; compliance_bit=0
+required_evidence:
+- analytics_event_count
+- pii_violation_count
+- correlation_strategy_count
+- metric_count
+- alert_decision_count
+- failed_assertions
+- blocking_assertions
+- repair_instructions
+repair_matrix:
+- assertion_id: analytics_events_with_pii
+  instruction: Eliminar propiedades sensibles, no enmascararlas dentro de analytics.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: critical_failures_without_alert_decision
+  instruction: Definir alerta o razón explícita de no alerta desde política.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+validator_ref: scripts/detect_pii_telemetry.py
+output:
+  schema_ref: schemas/judge-result.schema.json
+  required_fields:
+  - judge_code
+  - result
+  - compliance_bit
+  - failed_assertions
+  - blocking_assertions
+  - evidence_refs
+  - evidence
+  - repair_instructions
+  - retry_count
+  - judged_at
+prohibitions:
+- worker_self_approval
+- assertion_deletion_to_obtain_pass
+- threshold_reduction_to_obtain_pass
+- unresolved_evidence_reference
+- pass_without_evidence
+design_sources:
+- huggingface/transformers
+- freeCodeCamp/freeCodeCamp
+- Significant-Gravitas/AutoGPT

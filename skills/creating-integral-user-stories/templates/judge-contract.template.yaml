@@ -1,0 +1,67 @@
+judge_code: JNN_DOMAIN
+version: v0.3
+status: CANDIDATO_READ_ONLY
+scope: Describe en una frase exactamente qué objeto y riesgo verifica el juez.
+independence: worker_must_not_execute_own_judge
+retry_limit: 2
+required_inputs:
+- object_under_review
+- source_snapshot
+- evidence_bundle
+preflight:
+- all_required_inputs_are_present
+- input_versions_are_compatible
+- evidence_refs_are_resolvable
+- judge_is_independent
+assertions:
+- assertion_id: domain_metric_zero
+  target: object_under_review
+  pass_condition: domain_metric_zero = 0
+  critical: true
+  evidence_required: true
+fail_if:
+- proven_contract_violation = true
+block_if:
+- required_source_unavailable = true
+result_values:
+- PASS_WITH_EVIDENCE
+- RETURN_TO_WORKER
+- BLOCKED
+- FAIL
+result_rules:
+  PASS_WITH_EVIDENCE: All applicable assertions pass and evidence is resolvable.
+  RETURN_TO_WORKER: At least one repairable assertion fails.
+  BLOCKED: A blocking condition is true or retry limit is exhausted.
+  FAIL: Evidence proves a non-repairable violation for this execution.
+required_evidence:
+- input_hash
+- metric_counts
+- failed_assertions
+- blocking_assertions
+- repair_instructions
+repair_matrix:
+- assertion_id: domain_metric_zero
+  instruction: Repair only the object that produced the metric and rerun the complete judge.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+validator_ref: scripts/validate_package.py
+output:
+  schema_ref: schemas/judge-result.schema.json
+  required_fields:
+  - judge_code
+  - result
+  - compliance_bit
+  - failed_assertions
+  - blocking_assertions
+  - evidence_refs
+  - evidence
+  - repair_instructions
+  - retry_count
+  - judged_at
+design_sources:
+- microsoft/vscode
+- freeCodeCamp/freeCodeCamp
+- huggingface/transformers

@@ -1,0 +1,117 @@
+judge_code: J01_SOURCE_INTEGRITY
+version: v0.3
+status: CANDIDATO_READ_ONLY
+scope: Verifica que la fuente utilizada exista, sea íntegra, versionada, resoluble y correctamente clasificada antes
+  de cualquier derivación.
+independence: worker_must_not_execute_own_judge
+retry_limit: 2
+required_inputs:
+- source_snapshot
+- source_references
+- classification_ledger
+preflight:
+- all_required_inputs_are_present
+- input_versions_are_compatible
+- source_and_evidence_refs_are_resolvable
+- judge_is_not_executed_by_the_worker_under_review
+assertions:
+- assertion_id: source_snapshot_sha_present
+  target: source_snapshot
+  pass_condition: source_snapshot.sha256 matches ^[0-9a-f]{64}$
+  critical: true
+  evidence_required: true
+- assertion_id: source_version_matches_target
+  target: source_snapshot
+  pass_condition: source_snapshot.source_version = target_source_version
+  critical: true
+  evidence_required: true
+- assertion_id: source_references_resolvable
+  target: source_references
+  pass_condition: resolved_source_references = declared_source_references
+  critical: true
+  evidence_required: true
+- assertion_id: source_hash_mismatches
+  target: source_snapshot
+  pass_condition: source_hash_mismatches = 0
+  critical: true
+  evidence_required: true
+- assertion_id: confirmed_rules_without_literal_source
+  target: classification_ledger
+  pass_condition: confirmed_rules_without_literal_source = 0
+  critical: true
+  evidence_required: true
+- assertion_id: inferred_rules_without_label
+  target: classification_ledger
+  pass_condition: inferred_rules_without_label = 0
+  critical: true
+  evidence_required: true
+- assertion_id: blocked_items_without_reason
+  target: classification_ledger
+  pass_condition: blocked_items_without_reason = 0
+  critical: true
+  evidence_required: true
+fail_if:
+- source_hash_mismatch = true
+- invented_rule_marked_confirmed = true
+block_if:
+- operational_source_unavailable = true
+- source_version_conflict = true
+- source_snapshot_unreadable = true
+result_values:
+- PASS_WITH_EVIDENCE
+- RETURN_TO_WORKER
+- BLOCKED
+- FAIL
+result_rules:
+  PASS_WITH_EVIDENCE: all applicable assertions pass; compliance_bit=1; evidence_refs non-empty
+  RETURN_TO_WORKER: one or more repairable assertions fail; compliance_bit=0; repairs are actionable
+  BLOCKED: a blocking condition is true or retry_limit is exhausted; compliance_bit=0
+  FAIL: evidence proves an unrecoverable contract violation within this execution; compliance_bit=0
+required_evidence:
+- source_snapshot_sha
+- source_version
+- source_reference_resolution_count
+- classification_counts
+- hash_comparison
+- failed_assertions
+- blocking_assertions
+- repair_instructions
+repair_matrix:
+- assertion_id: source_references_resolvable
+  instruction: Corregir referencias o retirar afirmaciones sin fuente.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: confirmed_rules_without_literal_source
+  instruction: Reclasificar como INFERRED/PROPOSED o aportar referencia literal.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+validator_ref: null
+output:
+  schema_ref: schemas/judge-result.schema.json
+  required_fields:
+  - judge_code
+  - result
+  - compliance_bit
+  - failed_assertions
+  - blocking_assertions
+  - evidence_refs
+  - evidence
+  - repair_instructions
+  - retry_count
+  - judged_at
+prohibitions:
+- worker_self_approval
+- assertion_deletion_to_obtain_pass
+- threshold_reduction_to_obtain_pass
+- unresolved_evidence_reference
+- pass_without_evidence
+design_sources:
+- huggingface/transformers
+- freeCodeCamp/freeCodeCamp
+- Significant-Gravitas/AutoGPT

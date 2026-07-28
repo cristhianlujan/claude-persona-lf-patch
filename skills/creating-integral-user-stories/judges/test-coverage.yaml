@@ -1,0 +1,129 @@
+judge_code: J10_TEST_COVERAGE
+version: v0.3
+status: CANDIDATO_READ_ONLY
+scope: Verifica cobertura positiva y negativa de criterios, reglas, permisos, tenant, estados, idempotencia, errores
+  y transversales.
+independence: worker_must_not_execute_own_judge
+retry_limit: 2
+required_inputs:
+- story_pack
+- test_cases
+- traceability_matrix
+preflight:
+- all_required_inputs_are_present
+- input_versions_are_compatible
+- source_and_evidence_refs_are_resolvable
+- judge_is_not_executed_by_the_worker_under_review
+assertions:
+- assertion_id: acceptance_criteria_without_test
+  target: tests
+  pass_condition: acceptance_criteria_without_test = 0
+  critical: true
+  evidence_required: true
+- assertion_id: critical_rule_without_test
+  target: tests
+  pass_condition: critical_rule_without_test = 0
+  critical: true
+  evidence_required: true
+- assertion_id: permission_without_negative_test
+  target: tests
+  pass_condition: permission_without_negative_test = 0
+  critical: true
+  evidence_required: true
+- assertion_id: tenant_rule_without_cross_tenant_test
+  target: tests
+  pass_condition: tenant_rule_without_cross_tenant_test = 0
+  critical: true
+  evidence_required: true
+- assertion_id: state_transition_without_state_test
+  target: tests
+  pass_condition: state_transition_without_state_test = 0
+  critical: true
+  evidence_required: true
+- assertion_id: idempotent_action_without_duplicate_test
+  target: tests
+  pass_condition: idempotent_action_without_duplicate_test = 0
+  critical: true
+  evidence_required: true
+- assertion_id: critical_error_without_test
+  target: tests
+  pass_condition: critical_error_without_test = 0
+  critical: true
+  evidence_required: true
+- assertion_id: tests_without_expected_result
+  target: tests
+  pass_condition: tests_without_expected_result = 0
+  critical: true
+  evidence_required: true
+- assertion_id: orphan_tests
+  target: tests
+  pass_condition: tests_without_story_or_rule_reference = 0
+  critical: true
+  evidence_required: true
+fail_if:
+- critical_assertion_without_test = true
+- permission_without_negative_test = true
+- test_without_expected_result = true
+block_if:
+- story_pack_missing = true
+- test_derivation_source_missing = true
+- critical_expected_behavior_undefined = true
+result_values:
+- PASS_WITH_EVIDENCE
+- RETURN_TO_WORKER
+- BLOCKED
+- FAIL
+result_rules:
+  PASS_WITH_EVIDENCE: all applicable assertions pass; compliance_bit=1; evidence_refs non-empty
+  RETURN_TO_WORKER: one or more repairable assertions fail; compliance_bit=0; repairs are actionable
+  BLOCKED: a blocking condition is true or retry_limit is exhausted; compliance_bit=0
+  FAIL: evidence proves an unrecoverable contract violation within this execution; compliance_bit=0
+required_evidence:
+- acceptance_criteria_count
+- critical_rule_count
+- test_case_count
+- negative_test_count
+- families_covered
+- coverage_gaps
+- failed_assertions
+- blocking_assertions
+- repair_instructions
+repair_matrix:
+- assertion_id: permission_without_negative_test
+  instruction: Agregar caso con actor no autorizado y resultado DENY sin exposición de datos.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: orphan_tests
+  instruction: Asignar criterion_ref/rule_ref existente o retirar prueba no sustentada.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+validator_ref: scripts/validate_traceability.py
+output:
+  schema_ref: schemas/judge-result.schema.json
+  required_fields:
+  - judge_code
+  - result
+  - compliance_bit
+  - failed_assertions
+  - blocking_assertions
+  - evidence_refs
+  - evidence
+  - repair_instructions
+  - retry_count
+  - judged_at
+prohibitions:
+- worker_self_approval
+- assertion_deletion_to_obtain_pass
+- threshold_reduction_to_obtain_pass
+- unresolved_evidence_reference
+- pass_without_evidence
+design_sources:
+- huggingface/transformers
+- freeCodeCamp/freeCodeCamp
+- Significant-Gravitas/AutoGPT
