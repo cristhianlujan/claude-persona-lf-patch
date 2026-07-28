@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lf/creating-integral-user-stories/coverage-report.schema.json",
+  "title": "Coverage Report",
+  "type": "object",
+  "required": ["screen_code","source_snapshot_sha","decomposition_coverage","story_coverage","test_coverage"],
+  "properties": {
+    "screen_code": {"type": "string"},
+    "source_snapshot_sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "decomposition_coverage": {
+      "type": "object",
+      "required": ["context_source_count","context_mapped_count","permission_source_count","permission_mapped_or_justified_count","transition_source_count","transition_mapped_or_justified_count","unmapped_count"],
+      "properties": {
+        "context_source_count": {"type": "integer"},
+        "context_mapped_count": {"type": "integer"},
+        "permission_source_count": {"type": "integer"},
+        "permission_mapped_or_justified_count": {"type": "integer"},
+        "transition_source_count": {"type": "integer"},
+        "transition_mapped_or_justified_count": {"type": "integer"},
+        "unmapped_count": {"type": "integer", "maximum": 0}
+      }
+    },
+    "story_coverage": {
+      "type": "object",
+      "required": ["functional_units_count","stories_created","cross_cutting_count","pending_decision_count"],
+      "properties": {
+        "functional_units_count": {"type": "integer"},
+        "stories_created": {"type": "integer"},
+        "cross_cutting_count": {"type": "integer"},
+        "out_of_scope_count": {"type": "integer"},
+        "duplicate_count": {"type": "integer"},
+        "pending_decision_count": {"type": "integer"}
+      }
+    },
+    "test_coverage": {
+      "type": "object",
+      "required": ["acceptance_criteria_count","tests_count","families_covered","negative_tests_count"],
+      "properties": {
+        "acceptance_criteria_count": {"type": "integer"},
+        "tests_count": {"type": "integer"},
+        "families_covered": {"type": "array", "items": {"type": "string"}},
+        "negative_tests_count": {"type": "integer"},
+        "acceptance_criteria_without_test": {"type": "integer", "maximum": 0}
+      }
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lf/creating-integral-user-stories/execution-ledger.schema.json",
+  "title": "Binary Execution Ledger",
+  "type": "object",
+  "required": ["execution_id","operation_code","target_artifact","steps","completion_percent"],
+  "properties": {
+    "execution_id": {"type": "string"},
+    "operation_code": {"type": "string"},
+    "target_artifact": {"type": "string"},
+    "completion_percent": {"type": "number", "minimum": 0, "maximum": 100},
+    "steps": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["step_id","step_order","execution_order","required","critical","applicable","status","compliance_bit","evidence_refs","judge_code"],
+        "properties": {
+          "step_id": {"type": "string"},
+          "step_order": {"type": "integer"},
+          "execution_order": {"type": "integer"},
+          "required": {"type": "boolean"},
+          "critical": {"type": "boolean"},
+          "applicable": {"type": "boolean"},
+          "status": {"enum": ["PASS_WITH_EVIDENCE","NOT_STARTED","IN_PROGRESS","FAIL","BLOCKED","RETURN_TO_WORKER","MISSING","PASS_WITH_RESTRICTIONS","N/A_APPROVED"]},
+          "compliance_bit": {"type": "integer", "enum": [0,1]},
+          "input_refs": {"type": "array", "items": {"type": "string"}},
+          "output_refs": {"type": "array", "items": {"type": "string"}},
+          "evidence_refs": {"type": "array", "items": {"type": "string"}},
+          "judge_code": {"type": "string"},
+          "judge_result": {"type": "string"},
+          "failed_assertions": {"type": "array", "items": {"type": "string"}},
+          "retry_count": {"type": "integer", "maximum": 2},
+          "started_at": {"type": "string"},
+          "completed_at": {"type": "string"}
+        }
+      }
+    },
+    "close_conditions": {
+      "type": "object",
+      "properties": {
+        "critical_steps_with_bit_zero": {"type": "integer", "maximum": 0},
+        "steps_without_evidence": {"type": "integer", "maximum": 0},
+        "judges_pending": {"type": "integer", "maximum": 0},
+        "failed_assertions_open": {"type": "integer", "maximum": 0},
+        "blocking_findings_open": {"type": "integer", "maximum": 0},
+        "expected_files_not_written": {"type": "integer"},
+        "written_files_not_read_back": {"type": "integer"},
+        "sha_mismatches": {"type": "integer", "maximum": 0}
+      }
+    }
+  }
+}

@@ -1,0 +1,1 @@
+{"steps": 6, "version": "v1", "screen_code": "SCR_ONBOARDING_WIZARD", "transitions": ["next", "back", "save_draft", "submit"], "steps_detail": [{"goal": "identity", "step": 1}, {"goal": "contact", "step": 2}, {"goal": "employment", "step": 3}, {"goal": "offer", "step": 4}, {"goal": "consent", "step": 5}, {"goal": "confirmation", "step": 6}]}

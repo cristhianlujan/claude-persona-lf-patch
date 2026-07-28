@@ -1,0 +1,1 @@
+{"fields": [{"pii": true, "code": "document_number"}, {"pii": true, "code": "customer_name"}], "actions": ["search", "clear"], "version": "v1", "contexts": ["search", "results", "empty_state"], "permissions": ["CUSTOMER_READ"], "screen_code": "SCR_CUSTOMER_QUERY"}

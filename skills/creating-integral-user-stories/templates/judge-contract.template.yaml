@@ -1,0 +1,28 @@
+judge_code: <JNN_NOMBRE>
+version: v0.1
+scope: <QUE VERIFICA ESTE JUEZ EN UNA FRASE>
+required_inputs:
+  - <OBJETO_1>
+pass_if:
+  - <metrica> = <valor>
+fail_if:
+  - <condicion_binaria> = true
+block_if:
+  - <fuente_indisponible> = true
+required_evidence:
+  - <clave_de_evidencia>
+  - failed_assertions
+result_values: [PASS_WITH_EVIDENCE, RETURN_TO_WORKER, BLOCKED, FAIL]
+validator_ref: <scripts/xxx.py o vacio>
+output:
+  compliance_bit: 0|1
+  failed_assertions: []
+  evidence_refs: []
+  repair_instructions: []
+
+# Reglas de autoria del juez:
+# 1. Prohibidas condiciones sin metrica del tipo design_complete = true.
+# 2. Toda condicion debe ser contable o binaria y verificable sobre un objeto.
+# 3. El worker no ejecuta el juez que aprueba su propio trabajo.
+# 4. retry_limit = 2. Superado el limite, el step queda BLOCKED.
+# 5. Prohibido eliminar assertions o reducir umbrales para lograr PASS.

@@ -1,0 +1,114 @@
+skill_code: creating-integral-user-stories
+version: v0.1
+status: CANDIDATO_READ_ONLY
+operation_code: BUILD_INTEGRAL_STORY_CREATOR_LF
+execution_id: EXEC-BISC-001
+source_document: HANDOFF_CLAUDE_WEB_CREACION_STORY_CREATOR_LF
+source_version: v0.1
+source_authority:
+  - ACT-0001
+  - ACT-0043
+  - ACT-0045
+  - public.v_lf_fuente_operativa
+canonical_store: private.lf_skill_artifacts
+
+github_contract:
+  repository: cristhianlujan/claude-persona-lf-patch
+  base_branch: main
+  target_branch: feat/integral-story-creator-v0-1
+  write_mode: FEATURE_BRANCH_ONLY
+  direct_main_write: BLOCKED
+  merge_allowed: false
+  draft_pr_required: true
+  transport_status: DEFERRED
+
+files:
+  root:
+    - SKILL.md
+    - manifest.yaml
+  references:
+    - references/screen-decomposition-protocol.md
+    - references/story-pack-contract.md
+    - references/field-contract.md
+    - references/observations-errors-contract.md
+    - references/security-privacy-contract.md
+    - references/audit-traceability-contract.md
+    - references/tokens-messages-contract.md
+    - references/analytics-observability-contract.md
+    - references/accessibility-responsive-contract.md
+    - references/test-derivation-contract.md
+    - references/supabase-source-map.md
+  schemas:
+    - schemas/task-packet.schema.json
+    - schemas/screen-decomposition.schema.json
+    - schemas/story-pack.schema.json
+    - schemas/judge-result.schema.json
+    - schemas/execution-ledger.schema.json
+    - schemas/coverage-report.schema.json
+  templates:
+    - templates/story-pack.template.json
+    - templates/story-pack.template.md
+    - templates/judge-contract.template.yaml
+    - templates/execution-report.template.md
+  scripts:
+    - scripts/lf_common.py
+    - scripts/validate_package.py
+    - scripts/validate_story_pack.py
+    - scripts/validate_traceability.py
+    - scripts/validate_field_coverage.py
+    - scripts/validate_security_coverage.py
+    - scripts/detect_pii_telemetry.py
+    - scripts/validate_tokens.py
+    - scripts/calculate_binary_completion.py
+  agents:
+    - agents/screen-decomposer.md
+    - agents/story-core-author.md
+    - agents/field-contract-author.md
+    - agents/cross-cutting-enricher.md
+    - agents/test-deriver.md
+  judges:
+    - judges/source-integrity.yaml
+    - judges/screen-decomposition.yaml
+    - judges/story-core.yaml
+    - judges/field-contracts.yaml
+    - judges/observations-errors.yaml
+    - judges/security-privacy.yaml
+    - judges/audit-traceability.yaml
+    - judges/tokens-messages.yaml
+    - judges/analytics-observability.yaml
+    - judges/test-coverage.yaml
+    - judges/skill-package.yaml
+    - judges/github-integrity.yaml
+    - judges/integration-close.yaml
+  evals:
+    - evals/evals.json
+    - evals/trigger-evals.json
+    - evals/assertions.json
+    - evals/fixtures/screen_simple_query.json
+    - evals/fixtures/screen_wizard_six_steps.json
+    - evals/fixtures/screen_sensitive_fields.json
+    - evals/fixtures/screen_insufficient_definition.json
+
+external_profiles:
+  destination_code: DEST_CREACION_PERFIL_LF_DEFAULT
+  base_folder: perfiles
+  naming_rule: SLUG_UPPER_UNDERSCORE
+  filename_suffix: .md
+  copied_into_skill: false
+  files:
+    - perfiles/PERFIL_SCREEN_DECOMPOSER_LF.md
+    - perfiles/PERFIL_STORY_CORE_AUTHOR_LF.md
+    - perfiles/PERFIL_FIELD_CONTRACT_AUDITOR_LF.md
+    - perfiles/PERFIL_CROSS_CUTTING_ENRICHER_LF.md
+    - perfiles/PERFIL_STORY_TEST_DERIVER_LF.md
+  deviation_from_source:
+    declared_in_source: perfiles/perfil_*.yaml
+    resolved_from_registry: perfiles/PERFIL_*.md
+    reason: naming_rule SLUG_UPPER_UNDERSCORE y filename_suffix .md vigentes
+
+limits:
+  no_validated: true
+  no_produccion: true
+  no_runtime: true
+  no_merge: true
+  forbidden_status: [VALIDATED, APPROVED, PRODUCTION_READY, PRODUCTION_AUTHORIZED, VIGENTE]

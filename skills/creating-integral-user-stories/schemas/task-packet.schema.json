@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lf/creating-integral-user-stories/task-packet.schema.json",
+  "title": "Task Packet",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["task_id","operation_code","execution_id","step_id","worker_profile","objective","input_refs","allowed_tools","allowed_read_scope","allowed_write_scope","forbidden_actions","required_output","acceptance_assertions","failure_assertions","blocking_assertions","retry_limit","judge_code","next_step"],
+  "properties": {
+    "task_id": {"type": "string", "minLength": 3},
+    "operation_code": {"const": "BUILD_INTEGRAL_STORY_CREATOR_LF"},
+    "execution_id": {"type": "string"},
+    "step_id": {"type": "string"},
+    "worker_profile": {"type": "string", "pattern": "^PERFIL_[A-Z_]+_LF$"},
+    "objective": {"type": "string", "minLength": 20},
+    "input_refs": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "allowed_tools": {"type": "array", "items": {"type": "string"}},
+    "allowed_read_scope": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "allowed_write_scope": {"type": "array", "items": {"type": "string"}},
+    "forbidden_actions": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "required_output": {
+      "type": "object",
+      "required": ["schema_ref","expected_files","required_objects","required_fields","required_evidence"],
+      "properties": {
+        "schema_ref": {"type": "string"},
+        "expected_files": {"type": "array", "items": {"type": "string"}},
+        "required_objects": {"type": "array", "items": {"type": "string"}},
+        "required_fields": {"type": "array", "items": {"type": "string"}},
+        "required_evidence": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      }
+    },
+    "acceptance_assertions": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "failure_assertions": {"type": "array", "items": {"type": "string"}},
+    "blocking_assertions": {"type": "array", "items": {"type": "string"}},
+    "retry_limit": {"type": "integer", "const": 2},
+    "judge_code": {"type": "string", "pattern": "^J[0-9]{2}_[A-Z_]+$"},
+    "next_step": {"type": "string"}
+  }
+}

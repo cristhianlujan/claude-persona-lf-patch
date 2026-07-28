@@ -1,0 +1,54 @@
+{
+  "identity": {
+    "story_code": "<STORY_CODE>",
+    "title": "<TITULO OBSERVABLE DEL RESULTADO DE NEGOCIO>",
+    "epic_code": "<EPIC_CODE>",
+    "module_code": "<MODULE_CODE>",
+    "screen_code": "<SCREEN_CODE>",
+    "functional_unit_code": "<FU_CODE>",
+    "source_decision_id": "<DECISION_ID>",
+    "source_version": "<SOURCE_VERSION>",
+    "status": "CANDIDATO_READ_ONLY",
+    "priority": "P2"
+  },
+  "core": {
+    "actor": "<ACTOR>",
+    "need": "<NECESIDAD>",
+    "benefit": "<BENEFICIO>",
+    "preconditions": ["<PRECONDICION>"],
+    "trigger": "<DISPARADOR>",
+    "main_flow": ["<PASO 1>"],
+    "alternative_flows": [],
+    "postconditions": ["<POSTCONDICION>"],
+    "acceptance_criteria": [
+      {"criterion_code": "<AC-01>", "given": "<CONTEXTO>", "when": "<ACCION>", "then": "<RESULTADO>", "source_ref": "<REF>"}
+    ],
+    "out_of_scope": ["<FUERA DE ALCANCE>"]
+  },
+  "screen_fields": [],
+  "interaction": {"entry_points": [], "primary_action": "<ACCION>", "secondary_actions": []},
+  "fields": [],
+  "validations": [],
+  "observations": [],
+  "errors": [],
+  "security_privacy": {
+    "authentication_required": true,
+    "allowed_profiles": [],
+    "required_permissions": [],
+    "tenant_key": "company_id",
+    "cross_tenant_policy": "DENY",
+    "server_side_enforcement": true,
+    "rls_required": true,
+    "mfa_required": null,
+    "idempotency_required": null
+  },
+  "states": {"initial_state": "<ESTADO>", "allowed_transitions": [], "forbidden_transitions": [], "concurrency_policy": "<POLITICA>"},
+  "audit": {"audit_event_code": "<EVENT>", "field_level": []},
+  "tokens_messages": {"tokens": [], "messages": []},
+  "analytics": [],
+  "observability": {"metrics": [], "alerts": []},
+  "responsive_accessibility": {"breakpoints_supported": [], "keyboard_operable": true, "non_color_state_indicator": true},
+  "tests": [],
+  "dependencies_risks": {"dependencies": [], "risks": [], "pending_decisions": []},
+  "judges_evidence": []
+}
