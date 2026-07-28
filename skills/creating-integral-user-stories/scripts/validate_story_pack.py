@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import tempfile
 from copy import deepcopy
 from pathlib import Path
 
@@ -142,6 +141,33 @@ def sample_pack() -> dict:
     }
 
 
+def eval_case(registry_path: Path, case_id: str, schema_path: Path) -> int:
+    registry = require_object(load_json(registry_path), "eval_registry")
+    cases = registry.get("cases") if isinstance(registry.get("cases"), list) else []
+    case = next((item for item in cases if isinstance(item, dict) and item.get("id") == case_id), None)
+    if case is None:
+        raise ValidationInputError(f"eval_case_not_found:{case_id}")
+    candidate = require_object(case.get("candidate_story_pack"), "candidate_story_pack")
+    failed, repairs, evidence = validate_pack(candidate, schema_path)
+    validation_result = "PASS_WITH_EVIDENCE" if not failed else "RETURN_TO_WORKER"
+    expected = case.get("expected_validation_result")
+    matched = validation_result == expected
+    eval_failed = [] if matched else [f"validator_result_mismatch:{validation_result}!={expected}"]
+    eval_evidence = {
+        "case_id": case_id, "fixture_ref": case.get("fixture_ref"),
+        "validator_ref": case.get("validator_ref"), "schema_ref": case.get("schema_ref"),
+        "expected_validation_result": expected, "actual_validation_result": validation_result,
+        "matched": matched, "candidate_failed_assertions": failed,
+        "candidate_evidence": evidence, "negative_must_be_rejected": bool(case.get("must_be_rejected")),
+    }
+    eval_repairs = [] if matched else [failure("validator_result_mismatch", f"evals.cases.{case_id}", "Align candidate, expected result or validator without weakening assertions.")]
+    return emit(result_object(
+        JUDGE, eval_failed, eval_evidence,
+        [f"file:{registry_path}", str(case.get("fixture_ref") or "fixture:inline")],
+        eval_repairs, retry_count=0,
+    ))
+
+
 def self_test(schema_path: Path) -> int:
     positive = sample_pack()
     negative = deepcopy(positive)
@@ -161,9 +187,15 @@ def run() -> int:
     cli.add_argument("--evidence-ref",action="append",default=[])
     cli.add_argument("--retry-count",type=int,default=0)
     cli.add_argument("--self-test",action="store_true")
+    cli.add_argument("--eval-registry",type=Path)
+    cli.add_argument("--case-id")
     args=cli.parse_args()
     if args.self_test:
         return self_test(args.schema)
+    if args.eval_registry is not None:
+        if not args.case_id:
+            raise ValidationInputError("case_id_required_for_eval_registry")
+        return eval_case(args.eval_registry,args.case_id,args.schema)
     if args.input is None:
         raise ValidationInputError("story_pack_input_required")
     pack=require_object(load_json(args.input),"story_pack")
