@@ -54,6 +54,10 @@ assertions:
   pass_condition: unresolved_evidence_refs = 0
   critical: true
   evidence_required: true
+pass_if:
+- all_applicable_assertions_pass = true
+- compliance_bit = 1
+- evidence_refs_non_empty = true
 fail_if:
 - mutation_without_audit = true
 - traceability_break = true
