@@ -1,8 +1,8 @@
 skill_code: creating-integral-user-stories
-version: v0.3
+version: v0.4
 status: CANDIDATO_READ_ONLY
 operation_code: BUILD_INTEGRAL_STORY_CREATOR_LF
-execution_id: EXEC-BISC-003
+execution_id: EXEC-BISC-004
 canonical_store: private.lf_skill_artifacts
 source_document: HANDOFF_CLAUDE_WEB_CREACION_STORY_CREATOR_LF
 source_version: v0.1
@@ -11,6 +11,8 @@ source_authority:
 - ACT-0043
 - ACT-0045
 - public.v_lf_fuente_operativa
+- public.lf_eventos.id=797
+- public.lf_eventos.id=798
 github_contract:
   repository: cristhianlujan/claude-persona-lf-patch
   base_branch: main
@@ -32,29 +34,35 @@ package_contract:
 quality_policy:
   audit_scope: ALL_CURRENT_ARTIFACTS
   artifact_count: 62
-  rubric_dimensions:
-  - purpose_and_scope
+  quality_gate_version: v1.1
+  validator: scripts/validate_package.py
+  rubric_scale:
+    minimum: 0
+    maximum: 20
+    dimension_count: 10
+    points_per_dimension: 2
+  tier_thresholds:
+    NUCLEO: 18
+    SOPORTE: 14
+  required_controls:
+  - syntax_parse
+  - byte_band
+  - internal_references
+  - forbidden_status_assignment
+  - purpose_scope
   - input_contract
   - deterministic_procedure
   - output_contract
-  - negative_cases
-  - repairability
-  - evidence_and_traceability
-  - validation_or_tests
-  score_scale:
-    minimum: 0
-    maximum: 100
-    passing_score: 80
-  change_policy: Modify only when the audit identifies a material gap; preserve stronger prior content.
-  measurement_fields:
-  - bytes_before
-  - bytes_after
-  - byte_change_percent
-  - score_before
-  - score_after
-  - improvement_points
-  - status
-  - top_3_sources
+  - positive_behavior
+  - negative_behavior
+  - contract_schema_consistency
+  measurement_method: utf8_bytes+regex_lexeme_v1
+  threshold_weakening_forbidden: true
+  global_close_requires:
+  - all_artifacts_meet_threshold
+  - all_13_judges_executed
+  - negative_cases_rejected
+  - golden_run_passed
 files:
   root:
   - SKILL.md
@@ -178,104 +186,33 @@ workflow:
     judge: J13_INTEGRATION_CLOSE
   retry_limit: 2
   worker_self_approval: false
-benchmark_sources:
-  AUTOGPT:
-    repository: Significant-Gravitas/AutoGPT
-    stars_observed_approx: 185000
-    example_path: classic/original_autogpt/CLAUDE.md
-    patterns:
-    - arquitectura explícita
-    - ciclo operativo
-    - estado, pruebas y gotchas
-  VSCODE:
-    repository: microsoft/vscode
-    stars_observed_approx: 186000
-    example_path: extensions/copilot/assets/prompts/skills/chronicle/SKILL.md
-    patterns:
-    - prerrequisitos
-    - workflows paso a paso
-    - formatos de salida y stop conditions
-  FREECODECAMP:
-    repository: freeCodeCamp/freeCodeCamp
-    stars_observed_approx: 446000
-    example_path: curriculum/schema/challenge-schema.js
-    patterns:
-    - validación condicional
-    - campos obligatorios
-    - mensajes de error verificables
-  TRANSFORMERS:
-    repository: huggingface/transformers
-    stars_observed_approx: 162000
-    example_path: docs/source/en/testing.md
-    patterns:
-    - arquitectura de pruebas reutilizable
-    - casos rápidos y lentos
-    - regresión y cobertura negativa
-  REACT:
-    repository: facebook/react
-    stars_observed_approx: 245000
-    example_path: fixtures/ y scripts/ del repositorio
-    patterns:
-    - fixtures aisladas
-    - regresión
-    - separación entre implementación y pruebas
-source_mapping_by_artifact_type:
-  AGENT:
-  - Significant-Gravitas/AutoGPT
-  - microsoft/vscode
-  - freeCodeCamp/freeCodeCamp
-  PROFILE:
-  - Significant-Gravitas/AutoGPT
-  - microsoft/vscode
-  - freeCodeCamp/freeCodeCamp
-  SKILL_MD:
-  - microsoft/vscode
-  - Significant-Gravitas/AutoGPT
-  - freeCodeCamp/freeCodeCamp
-  REFERENCE:
-  - microsoft/vscode
-  - freeCodeCamp/freeCodeCamp
-  - Significant-Gravitas/AutoGPT
-  MANIFEST:
-  - microsoft/vscode
-  - freeCodeCamp/freeCodeCamp
-  - Significant-Gravitas/AutoGPT
-  TEMPLATE:
-  - microsoft/vscode
-  - freeCodeCamp/freeCodeCamp
-  - huggingface/transformers
-  SCHEMA:
-  - freeCodeCamp/freeCodeCamp
-  - microsoft/vscode
-  - Significant-Gravitas/AutoGPT
-  JUDGE:
-  - huggingface/transformers
-  - freeCodeCamp/freeCodeCamp
-  - Significant-Gravitas/AutoGPT
-  SCRIPT:
-  - huggingface/transformers
-  - freeCodeCamp/freeCodeCamp
-  - Significant-Gravitas/AutoGPT
-  SHARED_MODULE:
-  - huggingface/transformers
-  - freeCodeCamp/freeCodeCamp
-  - Significant-Gravitas/AutoGPT
-  EVAL:
-  - huggingface/transformers
-  - microsoft/vscode
-  - freeCodeCamp/freeCodeCamp
-  FIXTURE:
-  - huggingface/transformers
-  - facebook/react
-  - freeCodeCamp/freeCodeCamp
+chain_policy:
+  unit: VERTICAL_CHAIN
+  required_sequence:
+  - contract
+  - schema
+  - validator
+  - judge
+  - positive_eval
+  - negative_eval
+  - fixture
+  close_only_when_negative_is_rejected: true
 limits:
   no_validated: true
   no_produccion: true
   no_runtime: true
   no_merge: true
+  no_direct_main_write: true
+  no_force_push: true
+  no_inventory_route_change: true
   forbidden_status:
   - VALIDATED
   - APPROVED
   - PRODUCTION_READY
   - PRODUCTION_AUTHORIZED
   - VIGENTE
+current_state:
+  s1_event_id: 798
+  gate_commit: 718837b0543a3029247e918197472866327c7613
+  global_close: BLOCKED
+  golden_run: NOT_EXECUTED
