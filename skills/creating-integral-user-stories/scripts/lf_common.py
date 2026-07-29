@@ -1,9 +1,4 @@
-"""Shared, read-only helpers for LF skill validators.
-
-The module performs no network calls and writes no application data. Validators
-emit one JSON object to stdout and use deterministic exit codes:
-0 PASS_WITH_EVIDENCE, 1 RETURN_TO_WORKER/FAIL, 2 BLOCKED/input error.
-"""
+"""Shared deterministic helpers for LF read-only validators."""
 from __future__ import annotations
 
 import argparse
@@ -18,16 +13,11 @@ from typing import Any, Iterable, Mapping, Sequence
 
 SCHEMA_VERSION = "v0.5"
 RESULT_VALUES = ("PASS_WITH_EVIDENCE", "RETURN_TO_WORKER", "BLOCKED", "FAIL")
-EXIT_BY_RESULT = {
-    "PASS_WITH_EVIDENCE": 0,
-    "RETURN_TO_WORKER": 1,
-    "FAIL": 1,
-    "BLOCKED": 2,
-}
+EXIT_BY_RESULT = {"PASS_WITH_EVIDENCE": 0, "RETURN_TO_WORKER": 1, "FAIL": 1, "BLOCKED": 2}
 
 
 class ValidationInputError(ValueError):
-    """Raised when evidence or a result envelope is structurally unusable."""
+    """Evidence or result envelope is unusable."""
 
 
 def utc_now() -> str:
@@ -74,12 +64,7 @@ def sha256_file(path: str | Path) -> str:
 
 def add_common_input(parser: argparse.ArgumentParser, help_text: str) -> None:
     parser.add_argument("input", type=Path, help=help_text)
-    parser.add_argument(
-        "--evidence-ref",
-        action="append",
-        default=[],
-        help="Resolvable evidence reference. May be repeated.",
-    )
+    parser.add_argument("--evidence-ref", action="append", default=[])
 
 
 def parser(description: str) -> argparse.ArgumentParser:
@@ -111,6 +96,10 @@ def _valid_sha256(value: Any) -> bool:
     )
 
 
+def _assertion_id(value: Any) -> str:
+    return str(value).split("=", 1)[0].strip()
+
+
 def _parse_utc(value: Any, field: str) -> datetime:
     if not isinstance(value, str) or not value:
         raise ValidationInputError(f"{field}_missing")
@@ -121,7 +110,6 @@ def _parse_utc(value: Any, field: str) -> datetime:
 
 
 def _check_failed(value: Any) -> bool:
-    """Interpret deterministic check payloads without domain-specific guessing."""
     if isinstance(value, bool):
         return not value
     if value is None:
@@ -129,32 +117,30 @@ def _check_failed(value: Any) -> bool:
     if isinstance(value, (int, float)):
         return value != 0
     if isinstance(value, (list, tuple, set, dict)):
-        return len(value) != 0
+        return bool(value)
     if isinstance(value, str):
-        normalized = value.strip().upper()
-        return normalized not in {"", "0", "PASS", "OK", "TRUE"}
+        return value.strip().upper() not in {"", "0", "PASS", "OK", "TRUE"}
     return True
 
 
 def _canonical_sha256_without_output_hash(out: Mapping[str, Any]) -> str:
     payload = dict(out)
     payload.pop("output_sha256", None)
-    return hashlib.sha256(
-        json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    ).hexdigest()
+    canonical = json.dumps(
+        payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return hashlib.sha256(canonical).hexdigest()
 
 
 def validate_result_invariants(out: Mapping[str, Any]) -> None:
-    """Enforce cross-property invariants that JSON Schema Draft-07 cannot express."""
+    """Enforce cross-property rules unavailable in JSON Schema Draft-07."""
     if out.get("schema_version") != SCHEMA_VERSION:
         raise ValidationInputError("schema_version_mismatch")
-
     result = out.get("result")
     if result not in RESULT_VALUES:
         raise ValidationInputError("result_invalid")
 
-    total = out.get("assertions_total")
-    passed = out.get("assertions_passed")
+    total, passed = out.get("assertions_total"), out.get("assertions_passed")
     if not isinstance(total, int) or isinstance(total, bool) or total < 1:
         raise ValidationInputError("assertions_total_invalid")
     if not isinstance(passed, int) or isinstance(passed, bool) or passed < 0:
@@ -162,57 +148,49 @@ def validate_result_invariants(out: Mapping[str, Any]) -> None:
     if passed > total:
         raise ValidationInputError("assertions_passed_exceeds_total")
 
-    failed = list(out.get("failed_assertions") or [])
-    blocked = list(out.get("blocking_assertions") or [])
-    unresolved = set(failed) | set(blocked)
+    failed = {_assertion_id(x) for x in out.get("failed_assertions") or []}
+    blocked = {_assertion_id(x) for x in out.get("blocking_assertions") or []}
+    unresolved = failed | blocked
     if passed + len(unresolved) != total:
         raise ValidationInputError("assertion_counts_inconsistent")
 
     repairs = list(out.get("repairs") or [])
-    repair_instructions = list(out.get("repair_instructions") or [])
-    if repairs != repair_instructions:
+    if repairs != list(out.get("repair_instructions") or []):
         raise ValidationInputError("repairs_not_equivalent")
 
-    started = _parse_utc(out.get("started_at"), "started_at")
-    completed = _parse_utc(out.get("completed_at"), "completed_at")
-    if completed < started:
+    if _parse_utc(out.get("completed_at"), "completed_at") < _parse_utc(
+        out.get("started_at"), "started_at"
+    ):
         raise ValidationInputError("timestamp_order_invalid")
 
     checks = out.get("evidence", {}).get("checks")
     if isinstance(checks, Mapping):
-        failing_checks = {str(key) for key, value in checks.items() if _check_failed(value)}
-        if not failing_checks.issubset(unresolved):
+        failing = {_assertion_id(k) for k, value in checks.items() if _check_failed(value)}
+        if not failing.issubset(unresolved):
             raise ValidationInputError("failed_checks_not_reported")
 
+    expected_flags = {
+        "PASS_WITH_EVIDENCE": (0, 1),
+        "RETURN_TO_WORKER": (1, 0),
+        "BLOCKED": (2, 0),
+        "FAIL": (1, 0),
+    }
+    if (out.get("exit_code"), out.get("compliance_bit")) != expected_flags[result]:
+        raise ValidationInputError("result_flags_invalid")
+
     if result == "PASS_WITH_EVIDENCE":
-        if passed != total:
+        if passed != total or unresolved or repairs:
             raise ValidationInputError("pass_without_all_assertions")
-        if failed or blocked:
-            raise ValidationInputError("pass_with_findings")
-        if out.get("exit_code") != 0 or out.get("compliance_bit") != 1:
-            raise ValidationInputError("pass_result_flags_invalid")
         if not _valid_sha256(out.get("input_sha256")):
             raise ValidationInputError("pass_input_sha256_invalid")
-        if repairs:
-            raise ValidationInputError("pass_with_repairs")
-    elif result == "RETURN_TO_WORKER":
-        if not failed or not repairs:
-            raise ValidationInputError("return_without_failures_or_repairs")
-        if out.get("exit_code") != 1 or out.get("compliance_bit") != 0:
-            raise ValidationInputError("return_result_flags_invalid")
-    elif result == "BLOCKED":
-        if not blocked:
-            raise ValidationInputError("blocked_without_assertion")
-        if out.get("exit_code") != 2 or out.get("compliance_bit") != 0:
-            raise ValidationInputError("blocked_result_flags_invalid")
-    elif result == "FAIL":
-        if not failed:
-            raise ValidationInputError("fail_without_assertion")
-        if out.get("exit_code") != 1 or out.get("compliance_bit") != 0:
-            raise ValidationInputError("fail_result_flags_invalid")
+    elif result == "RETURN_TO_WORKER" and (not failed or not repairs):
+        raise ValidationInputError("return_without_failures_or_repairs")
+    elif result == "BLOCKED" and not blocked:
+        raise ValidationInputError("blocked_without_assertion")
+    elif result == "FAIL" and not failed:
+        raise ValidationInputError("fail_without_assertion")
 
-    expected_hash = _canonical_sha256_without_output_hash(out)
-    if out.get("output_sha256") != expected_hash:
+    if out.get("output_sha256") != _canonical_sha256_without_output_hash(out):
         raise ValidationInputError("output_sha256_mismatch")
 
 
@@ -231,73 +209,58 @@ def result_object(
     started_at: str | None = None,
     command: str | None = None,
 ) -> dict[str, Any]:
-    started = started_at or utc_now()
-    failed = sorted(set(str(item) for item in failed_assertions if item))
-    blocked = sorted(set(str(item) for item in (blocking_assertions or []) if item))
     if not 0 <= retry_count <= 2:
         raise ValidationInputError("retry_count_out_of_range")
 
+    failed = {_assertion_id(x) for x in failed_assertions if x}
+    blocked = {_assertion_id(x) for x in (blocking_assertions or []) if x}
     version = (judge_version or os.getenv("LF_JUDGE_VERSION") or "").strip()
     executor = (executor_identity or os.getenv("LF_EXECUTOR_IDENTITY") or "").strip()
     if not version:
-        blocked.append("judge_version_missing")
+        blocked.add("judge_version_missing")
     if not executor:
-        blocked.append("executor_identity_missing")
+        blocked.add("executor_identity_missing")
 
     checks = evidence.get("checks") if isinstance(evidence, Mapping) else None
     if isinstance(checks, Mapping):
-        failed.extend(str(key) for key, value in checks.items() if _check_failed(value))
-    failed = sorted(set(failed))
-    blocked = sorted(set(blocked))
+        failed.update(_assertion_id(k) for k, value in checks.items() if _check_failed(value))
 
-    if forced_result is not None:
-        if forced_result not in RESULT_VALUES:
-            raise ValidationInputError(f"invalid_result:{forced_result}")
-        outcome = forced_result
-    elif blocked:
-        outcome = "BLOCKED"
-    elif failed:
-        outcome = "RETURN_TO_WORKER"
-    else:
-        outcome = "PASS_WITH_EVIDENCE"
-
+    if forced_result is not None and forced_result not in RESULT_VALUES:
+        raise ValidationInputError(f"invalid_result:{forced_result}")
+    outcome = forced_result or (
+        "BLOCKED" if blocked else "RETURN_TO_WORKER" if failed else "PASS_WITH_EVIDENCE"
+    )
     if outcome == "PASS_WITH_EVIDENCE" and (failed or blocked):
-        blocked.append("forced_pass_with_findings")
-        blocked = sorted(set(blocked))
+        blocked.add("forced_pass_with_findings")
         outcome = "BLOCKED"
 
-    refs = list(dict.fromkeys(evidence_refs or []))
-    if not refs:
-        refs = ["evidence:inline"]
+    refs = list(dict.fromkeys(evidence_refs or [])) or ["evidence:inline"]
     repairs = [dict(item) for item in (repair_instructions or [])]
     if outcome == "RETURN_TO_WORKER" and not repairs:
-        repairs = [
-            failure(item.split("=", 1)[0], "$", f"Repair assertion: {item}")
-            for item in failed
-        ]
+        repairs = [failure(item, "$", f"Repair assertion: {item}") for item in sorted(failed)]
 
-    assertions_total = len(checks) if isinstance(checks, Mapping) else len(set(failed) | set(blocked))
-    assertions_total = max(assertions_total, len(set(failed) | set(blocked)), 1)
-    assertions_passed = max(assertions_total - len(set(failed) | set(blocked)), 0)
+    assertion_ids = failed | blocked
+    total = len(checks) if isinstance(checks, Mapping) else len(assertion_ids)
+    total = max(total, len(assertion_ids), 1)
 
     input_sha256 = evidence.get("input_sha256") if isinstance(evidence, Mapping) else None
     if input_sha256 is not None and not _valid_sha256(input_sha256):
-        blocked.append("input_sha256_invalid")
+        blocked.add("input_sha256_invalid")
         input_sha256 = None
-    if input_sha256 is None:
-        input_path = evidence.get("input_path") if isinstance(evidence, Mapping) else None
-        if input_path:
-            target = Path(str(input_path))
-            if target.is_file():
-                input_sha256 = sha256_file(target)
+    if input_sha256 is None and isinstance(evidence, Mapping) and evidence.get("input_path"):
+        target = Path(str(evidence["input_path"]))
+        if target.is_file():
+            input_sha256 = sha256_file(target)
     if outcome == "PASS_WITH_EVIDENCE" and not input_sha256:
-        blocked.append("input_sha256_unavailable")
-
-    blocked = sorted(set(blocked))
+        blocked.add("input_sha256_unavailable")
     if blocked:
         outcome = "BLOCKED"
-        assertions_total = max(assertions_total, len(set(failed) | set(blocked)), 1)
-        assertions_passed = max(assertions_total - len(set(failed) | set(blocked)), 0)
+
+    assertion_ids = failed | blocked
+    total = max(total, len(assertion_ids), 1)
+    passed = max(total - len(assertion_ids), 0)
+    if outcome == "PASS_WITH_EVIDENCE":
+        passed = total
 
     evidence_payload = {
         "evidence_refs": refs,
@@ -305,25 +268,26 @@ def result_object(
         "repairs": repairs,
     }
     evidence_sha256 = hashlib.sha256(
-        json.dumps(evidence_payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        json.dumps(
+            evidence_payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        ).encode("utf-8")
     ).hexdigest()
 
-    completed = utc_now()
     output = {
         "schema_version": SCHEMA_VERSION,
         "judge_code": judge_code,
         "judge_version": version or "MISSING",
         "executor_identity": executor or "MISSING",
         "command": command or " ".join(shlex.quote(arg) for arg in sys.argv),
-        "started_at": started,
-        "completed_at": completed,
-        "exit_code": EXIT_BY_RESULT.get(outcome, 2),
+        "started_at": started_at or utc_now(),
+        "completed_at": utc_now(),
+        "exit_code": EXIT_BY_RESULT[outcome],
         "result": outcome,
         "compliance_bit": 1 if outcome == "PASS_WITH_EVIDENCE" else 0,
-        "assertions_total": assertions_total,
-        "assertions_passed": assertions_passed,
-        "failed_assertions": failed,
-        "blocking_assertions": blocked,
+        "assertions_total": total,
+        "assertions_passed": passed,
+        "failed_assertions": sorted(failed),
+        "blocking_assertions": sorted(blocked),
         "repairs": repairs,
         "repair_instructions": repairs,
         "evidence_refs": refs,
@@ -339,9 +303,8 @@ def result_object(
 
 def emit(out: Mapping[str, Any]) -> int:
     validate_result_invariants(out)
-    result = str(out.get("result", "BLOCKED"))
     print(json.dumps(out, ensure_ascii=False, sort_keys=True))
-    return EXIT_BY_RESULT.get(result, 2)
+    return EXIT_BY_RESULT[str(out["result"])]
 
 
 def emit_blocked(judge_code: str, reason: str, evidence_ref: str = "evidence:inline") -> int:
@@ -367,13 +330,9 @@ def require_object(value: Any, name: str = "input") -> dict[str, Any]:
 
 
 def duplicate_values(values: Iterable[Any]) -> list[Any]:
-    seen: set[Any] = set()
-    duplicates: set[Any] = set()
+    seen, duplicates = set(), set()
     for value in values:
-        if value in seen:
-            duplicates.add(value)
-        else:
-            seen.add(value)
+        duplicates.add(value) if value in seen else seen.add(value)
     return sorted(duplicates, key=str)
 
 
