@@ -1,120 +1,274 @@
 judge_code: J08_TOKENS_MESSAGES
-version: v0.3
+version: v0.4
 status: CANDIDATO_READ_ONLY
-scope: Verifica que valores visuales y mensajes usen registros reutilizables, estados de candidato y severidad explícita.
-independence: worker_must_not_execute_own_judge
+scope: Verifica presencia y consistencia de tokens y mensajes, ausencia de valores visuales hardcoded, códigos duplicados
+  y metadatos incompletos.
+independence:
+  author_must_not_execute_final_judge: true
+  executor_identity_required: true
+  accepted_executor_types:
+  - DETERMINISTIC_RUNNER
+  - INDEPENDENT_AGENT
+  - CI_RUNNER
+  self_approval_forbidden: true
 retry_limit: 2
 required_inputs:
 - story_pack
-- token_registry
-- message_catalog
 preflight:
-- all_required_inputs_are_present
-- input_versions_are_compatible
-- source_and_evidence_refs_are_resolvable
-- judge_is_not_executed_by_the_worker_under_review
+- check_id: input_present
+  condition: story_pack is a readable UTF-8 JSON object
+  on_fail: BLOCKED
+- check_id: judge_version_present
+  condition: --judge-version is non-empty
+  on_fail: BLOCKED
+- check_id: executor_identity_present
+  condition: --executor-identity is non-empty
+  on_fail: BLOCKED
+- check_id: evidence_ref_resolvable
+  condition: at least one evidence_ref is resolvable
+  on_fail: BLOCKED
+- check_id: independent_executor
+  condition: executor_identity differs from artifact author identity
+  on_fail: BLOCKED
+validator:
+  entrypoint: scripts/validate_tokens.py
+  git_blob_sha1: 7762ff859fd76441519671e5e96bc2e08357ad4a
+  command_template: python scripts/validate_tokens.py <story_pack.json> --judge-version <git_blob_sha1> --executor-identity
+    <actor> --evidence-ref <resolvable_ref>
+  exit_codes:
+    PASS_WITH_EVIDENCE: 0
+    RETURN_TO_WORKER: 1
+    FAIL: 1
+    BLOCKED: 2
+schema:
+  ref: schemas/judge-result.schema.json
+  version: v0.4
+  git_blob_sha1: 80d525342ed3099dffbe2cf946b54f0b1c1e4417
+  additional_properties: false
+deterministic_procedure:
+- order: 1
+  action: Resolve and hash the input JSON; stop with BLOCKED on unreadable or invalid input.
+  evidence: input_sha256
+- order: 2
+  action: Resolve judge version, executor identity and evidence references; stop with structured BLOCKED when absent.
+  evidence: blocking_assertions
+- order: 3
+  action: Execute every declared check exactly once; empty critical sections are findings, never vacuous PASS.
+  evidence: evidence.checks
+- order: 4
+  action: Map findings to result and deterministic exit code without lowering assertions or thresholds.
+  evidence: result+exit_code
+- order: 5
+  action: Emit strict evidence envelope and calculate evidence/output SHA-256.
+  evidence: evidence_sha256+output_sha256
+- order: 6
+  action: Validate emitted JSON against judge-result.schema.json and persist/read back evidence.
+  evidence: schema_validation+readback
 assertions:
-- assertion_id: hardcoded_color_count
+- assertion_id: tokens_messages_section_missing
   target: tokens_messages
+  pass_condition: tokens_messages_section_missing = 0
+  critical: true
+  evidence_required: true
+- assertion_id: tokens_missing
+  target: tokens_messages.tokens
+  pass_condition: tokens_missing = 0
+  critical: true
+  evidence_required: true
+- assertion_id: messages_missing
+  target: tokens_messages.messages
+  pass_condition: messages_missing = 0
+  critical: true
+  evidence_required: true
+- assertion_id: tokens_without_code
+  target: tokens_messages.tokens
+  pass_condition: tokens_without_code = 0
+  critical: true
+  evidence_required: true
+- assertion_id: messages_without_code
+  target: tokens_messages.messages
+  pass_condition: messages_without_code = 0
+  critical: true
+  evidence_required: true
+- assertion_id: hardcoded_color_count
+  target: interaction+tokens_messages
   pass_condition: hardcoded_color_count = 0
   critical: true
   evidence_required: true
 - assertion_id: hardcoded_spacing_count
-  target: tokens_messages
+  target: interaction+tokens_messages
   pass_condition: hardcoded_spacing_count = 0
   critical: true
   evidence_required: true
 - assertion_id: unregistered_component_tokens
-  target: tokens_messages
+  target: tokens_messages.tokens
   pass_condition: unregistered_component_tokens = 0
   critical: true
   evidence_required: true
-- assertion_id: duplicate_message_text_without_token
-  target: tokens_messages
-  pass_condition: duplicate_message_text_without_token = 0
-  critical: true
-  evidence_required: true
-- assertion_id: candidate_tokens_without_status
-  target: tokens_messages
-  pass_condition: candidate_tokens_without_candidate_status = 0
-  critical: true
-  evidence_required: true
 - assertion_id: messages_without_severity
-  target: tokens_messages
+  target: tokens_messages.messages
   pass_condition: messages_without_severity = 0
   critical: true
   evidence_required: true
-- assertion_id: color_only_state
-  target: responsive_accessibility
-  pass_condition: color_only_state_indicators = 0
+- assertion_id: messages_without_text_ref
+  target: tokens_messages.messages
+  pass_condition: messages_without_text_ref = 0
+  critical: true
+  evidence_required: true
+- assertion_id: duplicate_message_codes
+  target: tokens_messages.messages
+  pass_condition: duplicate_message_codes = 0
   critical: true
   evidence_required: true
 pass_if:
-- all_applicable_assertions_pass = true
+- all declared checks are empty
+- blocking_assertions is empty
 - compliance_bit = 1
-- evidence_refs_non_empty = true
-fail_if:
-- hardcoded_visual_value = true
-- message_without_severity = true
-- unregistered_token_used = true
+- exit_code = 0
+- evidence_refs is non-empty and resolvable
+- input_sha256, evidence_sha256 and output_sha256 are valid 64-hex values
+- output validates against schemas/judge-result.schema.json v0.4
+return_to_worker_if:
+- one or more repairable assertions fail
+- repairs are actionable
+- exit_code = 1
 block_if:
-- token_registry_required_but_unavailable = true
-- message_policy_conflict = true
+- input or required metadata is missing
+- executor is not independent
+- evidence reference is unresolvable
+- schema validation cannot execute
+fail_if:
+- evidence proves an unrecoverable contract violation
+- output hash or evidence hash is forged or inconsistent
 result_values:
 - PASS_WITH_EVIDENCE
 - RETURN_TO_WORKER
 - BLOCKED
 - FAIL
-result_rules:
-  PASS_WITH_EVIDENCE: all applicable assertions pass; compliance_bit=1; evidence_refs non-empty
-  RETURN_TO_WORKER: one or more repairable assertions fail; compliance_bit=0; repairs are actionable
-  BLOCKED: a blocking condition is true or retry_limit is exhausted; compliance_bit=0
-  FAIL: evidence proves an unrecoverable contract violation within this execution; compliance_bit=0
 required_evidence:
-- token_usage_count
-- candidate_token_count
-- hardcoded_value_count
-- message_count
-- duplicate_message_count
+- tokens_declared
+- messages_declared
+- duplicate_text_refs
+- checks
+- input_path
+- judge_code
+- judge_version
+- executor_identity
+- command
+- started_at
+- completed_at
+- exit_code
+- result
+- compliance_bit
+- assertions_total
+- assertions_passed
 - failed_assertions
 - blocking_assertions
+- repairs
 - repair_instructions
+- evidence_refs
+- evidence
+- evidence_sha256
+- input_sha256
+- output_sha256
+- retry_count
+output:
+  schema_ref: schemas/judge-result.schema.json
+  schema_version: v0.4
+  required_fields:
+  - judge_code
+  - judge_version
+  - executor_identity
+  - command
+  - started_at
+  - completed_at
+  - exit_code
+  - result
+  - compliance_bit
+  - assertions_total
+  - assertions_passed
+  - failed_assertions
+  - blocking_assertions
+  - repairs
+  - repair_instructions
+  - evidence_refs
+  - evidence
+  - evidence_sha256
+  - input_sha256
+  - output_sha256
+  - retry_count
+  invariants:
+  - assertions_passed <= assertions_total
+  - PASS_WITH_EVIDENCE requires exit_code=0, compliance_bit=1 and no failed/blocking assertions
+  - RETURN_TO_WORKER requires exit_code=1, failed_assertions and repairs
+  - BLOCKED requires exit_code=2 and blocking_assertions
+  - repairs and repair_instructions contain equivalent actionable items
+  - output_sha256 is calculated over the canonical output before adding output_sha256
+positive_behavior:
+  case_id: J08-P01
+  input_summary: Tokens con token_code/registered/status válidos y mensajes con message_code, severity y text_ref;
+    sin literales visuales.
+  expected_result: PASS_WITH_EVIDENCE
+  expected_exit_code: 0
+negative_behavior:
+- case_id: J08-N01
+  input_patch:
+    tokens_messages: {}
+  expected_result: RETURN_TO_WORKER
+  expected_exit_code: 1
+  must_fail:
+  - tokens_missing
+  - messages_missing
+- case_id: J08-N02
+  input_summary: Color/spacing hardcoded, token sin código o estado inválido y mensaje sin severidad/text_ref.
+  expected_result: RETURN_TO_WORKER
+  expected_exit_code: 1
+  must_fail:
+  - hardcoded_color_count
+  - hardcoded_spacing_count
+  - unregistered_component_tokens
+  - messages_without_severity
+  - messages_without_text_ref
+- case_id: J08-N03
+  omit_cli:
+  - --judge-version
+  - --executor-identity
+  expected_result: BLOCKED
+  expected_exit_code: 2
+  must_block:
+  - judge_version_missing
+  - executor_identity_missing
 repair_matrix:
+- assertion_id: tokens_missing
+  instruction: Declarar al menos un token válido; no aceptar sección vacía.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
 - assertion_id: hardcoded_color_count
-  instruction: Sustituir literal por token registrado o candidato con source_ref.
+  instruction: Sustituir literal por token registrado o candidato con trazabilidad.
   prohibited_shortcuts:
   - delete_assertion
   - lower_threshold
   - invent_source
   - self_approve
 - assertion_id: messages_without_severity
-  instruction: Asignar severidad según catálogo; no inferir cuando la política sea ambigua.
+  instruction: Asignar severidad explícita desde catálogo; no inferir silenciosamente.
   prohibited_shortcuts:
   - delete_assertion
   - lower_threshold
   - invent_source
   - self_approve
-validator_ref: scripts/validate_tokens.py
-output:
-  schema_ref: schemas/judge-result.schema.json
-  required_fields:
-  - judge_code
-  - result
-  - compliance_bit
-  - failed_assertions
-  - blocking_assertions
-  - evidence_refs
-  - evidence
-  - repair_instructions
-  - retry_count
-  - judged_at
 prohibitions:
 - worker_self_approval
+- vacuous_pass_on_empty_section
 - assertion_deletion_to_obtain_pass
 - threshold_reduction_to_obtain_pass
 - unresolved_evidence_reference
-- pass_without_evidence
+- pass_without_strict_evidence_envelope
 design_sources:
-- huggingface/transformers
-- freeCodeCamp/freeCodeCamp
-- Significant-Gravitas/AutoGPT
+- anthropics/claude-code
+- anthropics/skills
+- github/docs:actions-exit-codes
+- HANDOFF_REMEDIACION_TOTAL_STORY_CREATOR_LF_v0.1.md
