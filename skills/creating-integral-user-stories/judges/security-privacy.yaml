@@ -1,9 +1,10 @@
 judge_code: J06_SECURITY_PRIVACY
-version: v0.3
+version: v0.5
 status: CANDIDATO_READ_ONLY
-scope: Verifica autenticación, autorización server-side, aislamiento por empresa, privacidad, MFA, idempotencia
-  y almacenamiento sensible.
-independence: worker_must_not_execute_own_judge
+scope: Verifica autenticación, autorización server-side, aislamiento por empresa, privacidad, MFA, idempotencia y almacenamiento sensible.
+independence:
+  worker_must_not_execute_own_judge: true
+  executor_identity_required: true
 retry_limit: 2
 required_inputs:
 - story_pack
@@ -14,84 +15,78 @@ preflight:
 - all_required_inputs_are_present
 - input_versions_are_compatible
 - source_and_evidence_refs_are_resolvable
-- judge_is_not_executed_by_the_worker_under_review
+- judge_is_not_executed_by_worker
+- judge_version_and_executor_identity_are_present
 assertions:
-- assertion_id: stories_without_required_permission
-  target: security_privacy
-  pass_condition: stories_without_required_permission = 0
-  critical: true
-  evidence_required: true
-- assertion_id: mutations_without_server_authorization
-  target: security_privacy
-  pass_condition: mutations_without_server_side_authorization = 0
-  critical: true
-  evidence_required: true
-- assertion_id: cross_tenant_access
-  target: security_privacy
-  pass_condition: cross_tenant_access_allowed = 0
-  critical: true
-  evidence_required: true
-- assertion_id: tenant_key_missing
-  target: security_privacy
-  pass_condition: tenant_key_missing = 0
-  critical: true
-  evidence_required: true
-- assertion_id: sensitive_download_storage
-  target: security_privacy
-  pass_condition: sensitive_download_without_private_storage = 0
-  critical: true
-  evidence_required: true
-- assertion_id: signed_url_ttl
-  target: security_privacy
-  pass_condition: signed_url_without_ttl = 0
-  critical: true
-  evidence_required: true
-- assertion_id: critical_action_mfa
-  target: security_privacy
-  pass_condition: critical_action_without_mfa_decision = 0
-  critical: true
-  evidence_required: true
-- assertion_id: mutation_idempotency
-  target: security_privacy
-  pass_condition: mutation_without_idempotency_decision = 0
-  critical: true
-  evidence_required: true
-- assertion_id: pii_exposure
-  target: fields
-  pass_condition: pii_exposure_without_masking = 0
-  critical: true
-  evidence_required: true
+- stories_without_required_permission
+- mutations_without_server_authorization
+- cross_tenant_access
+- tenant_key_missing
+- sensitive_download_storage
+- signed_url_ttl
+- critical_action_mfa
+- mutation_idempotency
+- pii_exposure
 pass_if:
-- all_applicable_assertions_pass = true
-- compliance_bit = 1
-- evidence_refs_non_empty = true
-fail_if:
-- cross_tenant_access_allowed = true
-- mutation_without_server_authorization = true
-- sensitive_download_public = true
+- all 9 assertion result collections are empty
+- assertions_passed = assertions_total
+- output validates against judge-result v0.5
 block_if:
 - permission_source_unavailable = true
 - tenant_model_undefined_and_blocking = true
 - privacy_classification_conflict = true
+- metadata_or_evidence_unavailable = true
+- retry_limit_exhausted = true
 result_values:
 - PASS_WITH_EVIDENCE
 - RETURN_TO_WORKER
 - BLOCKED
 - FAIL
-result_rules:
-  PASS_WITH_EVIDENCE: all applicable assertions pass; compliance_bit=1; evidence_refs non-empty
-  RETURN_TO_WORKER: one or more repairable assertions fail; compliance_bit=0; repairs are actionable
-  BLOCKED: a blocking condition is true or retry_limit is exhausted; compliance_bit=0
-  FAIL: evidence proves an unrecoverable contract violation within this execution; compliance_bit=0
 required_evidence:
 - permission_count
 - mutation_count
 - tenant_rule_count
 - sensitive_download_count
 - pii_field_count
+- checks
 - failed_assertions
-- blocking_assertions
 - repair_instructions
+validator:
+  entrypoint: scripts/validate_security_coverage.py
+  command_template: python scripts/validate_security_coverage.py <story_pack.json> --judge-version <git_blob_sha1> --executor-identity <actor> --evidence-ref <resolvable_ref>
+  negative_must_be_rejected: true
+output:
+  schema_ref: schemas/judge-result.schema.json
+  schema_version: v0.5
+  required_fields:
+  - schema_version
+  - judge_code
+  - judge_version
+  - executor_identity
+  - command
+  - started_at
+  - completed_at
+  - exit_code
+  - result
+  - compliance_bit
+  - assertions_total
+  - assertions_passed
+  - failed_assertions
+  - blocking_assertions
+  - repairs
+  - repair_instructions
+  - evidence_refs
+  - evidence
+  - evidence_sha256
+  - input_sha256
+  - output_sha256
+  - retry_count
+  runtime_invariants:
+  - assertions_passed <= assertions_total
+  - PASS requires assertions_passed = assertions_total
+  - repairs = repair_instructions
+  - completed_at >= started_at
+  - output_sha256 is valid
 repair_matrix:
 - assertion_id: cross_tenant_access
   instruction: Fijar DENY o EXPLICIT_ALLOW_WITH_AUDIT y derivar prueba negativa.
@@ -107,27 +102,17 @@ repair_matrix:
   - lower_threshold
   - invent_source
   - self_approve
-validator_ref: scripts/validate_security_coverage.py
-output:
-  schema_ref: schemas/judge-result.schema.json
-  required_fields:
-  - judge_code
-  - result
-  - compliance_bit
-  - failed_assertions
-  - blocking_assertions
-  - evidence_refs
-  - evidence
-  - repair_instructions
-  - retry_count
-  - judged_at
+- assertion_id: pii_exposure
+  instruction: Agregar masking respaldado o fijar HIDDEN; no reducir clasificación PII.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
 prohibitions:
 - worker_self_approval
 - assertion_deletion_to_obtain_pass
 - threshold_reduction_to_obtain_pass
 - unresolved_evidence_reference
 - pass_without_evidence
-design_sources:
-- huggingface/transformers
-- freeCodeCamp/freeCodeCamp
-- Significant-Gravitas/AutoGPT
+- judged_at_legacy_field
