@@ -5,7 +5,7 @@ description: >
   specification, handoff, or partial story set must be decomposed into complete,
   traceable and implementation-ready Story Packs with security, privacy,
   analytics, observability, auditability, accessibility and tests.
-version: v0.3
+version: v0.4
 status: CANDIDATO_READ_ONLY
 operation_code: BUILD_INTEGRAL_STORY_CREATOR_LF
 runtime: disabled
@@ -203,7 +203,7 @@ La ejecución produce:
 source_snapshot
 screen_decomposition
 coverage_report
-story_pack[] 
+story_pack[]
 judge_result[]
 execution_ledger
 execution_report
@@ -223,7 +223,90 @@ se calcula desde el ledger; no se informa un porcentaje estimado.
 - Cada lectura o mutación multiempresa tiene prueba cross-tenant negativa.
 - Cada resultado de juez declara assertions y reparaciones.
 
-## 12. Stop conditions
+## 12. Protocolo obligatorio de auditoría y continuidad
+
+Este protocolo prevalece en toda sesión nueva, reanudación o cambio de agente.
+No depende de la memoria conversacional.
+
+### 12.1 Readback de arranque
+
+Antes de escribir:
+
+1. leer el último evento de ejecución en Supabase;
+2. leer las versiones `is_current=true` de los artefactos objetivo;
+3. comprobar `validation_status`, SHA-256 y Git blob;
+4. verificar si una transacción interrumpida ya se aplicó;
+5. continuar únicamente desde el último estado confirmado.
+
+Nunca duplicar un evento, una versión ni un PASS por asumir que una operación
+anterior se completó.
+
+### 12.2 Cadena mínima para aprobar
+
+Ningún artefacto obtiene `PASS_WITH_EVIDENCE` ni nota `>= 9.5` por revisión
+editorial aislada. Debe validarse la cadena completa aplicable:
+
+```text
+worker
+→ contrato de juez
+→ validador ejecutable
+→ scripts/lf_common.py
+→ schemas/judge-result.schema.json
+→ GitHub readback
+→ Supabase readback
+```
+
+El gate exige:
+
+- assertion IDs del worker y juez alineados 1:1;
+- `missing_judge_assertions = 0`;
+- `orphan_assertions = 0`;
+- caso positivo ejecutado;
+- caso negativo rechazado;
+- PASS, RETURN_TO_WORKER, BLOCKED y FAIL estructuralmente válidos cuando apliquen;
+- falso PASS rechazado;
+- invariantes runtime verificadas;
+- hashes y contenido coincidentes después de escritura.
+
+### 12.3 Estados separados
+
+Toda auditoría registra por separado:
+
+```text
+editorial_score
+contract_alignment
+runtime_test_status
+integration_status
+canonical_status
+```
+
+Una nota editorial alta no cambia `canonical_status`. Si cualquier componente
+de la cadena está pendiente, el resultado máximo es `NOT_VALIDATED` o
+`RETURN_TO_WORKER`, según exista o no una corrección exigible.
+
+### 12.4 Ledger visible de artefactos
+
+Cada checkpoint y handoff debe enumerar todos los artefactos tocados con una de
+estas acciones:
+
+```text
+EVALUATED
+CORRECTED
+REVALIDATED
+DOWNGRADED
+PENDING
+```
+
+Para cada artefacto se registra ruta, versión, Git blob, SHA-256, estado y motivo.
+No se permite informar solo el porcentaje.
+
+### 12.5 Benchmarks externos
+
+Repositorios públicos y estrellas son referencias editoriales no normativas.
+No se guardan conteos temporales de estrellas dentro de contratos, schemas,
+agentes o jueces, y nunca constituyen evidencia de PASS.
+
+## 13. Stop conditions
 
 La ejecución se detiene y reporta el punto exacto cuando:
 
@@ -235,7 +318,7 @@ La ejecución se detiene y reporta el punto exacto cuando:
 - un juez crítico no pasa después de dos reintentos;
 - el readback no coincide con el contenido canónico.
 
-## 13. Ejemplo de activación
+## 14. Ejemplo de activación
 
 **Pedido:** “Tengo una pantalla de aprobación con operador y supervisor.
 Necesito historias completas, seguridad y pruebas.”
@@ -254,7 +337,7 @@ ACTIVATE
 → jueces y evidencia
 ```
 
-## 14. Ejemplo de bloqueo
+## 15. Ejemplo de bloqueo
 
 **Pedido:** “La pantalla se llama Gestión. Completa todo como consideres.”
 
@@ -270,7 +353,7 @@ ACTIVATE
 }
 ```
 
-## 15. Límites duros
+## 16. Límites duros
 
 ```text
 NO_VALIDATED: true
@@ -281,11 +364,8 @@ NO_MERGE: true
 NO_MARCAR_VIGENTE: true
 ```
 
-## 16. Fuentes de diseño no normativas
+## 17. Fuentes de diseño no normativas
 
-- **microsoft/vscode** (~186,000 estrellas): `extensions/copilot/assets/prompts/skills/chronicle/SKILL.md`; patrones: prerrequisitos, workflows paso a paso, formatos de salida y stop conditions.
-- **Significant-Gravitas/AutoGPT** (~185,000 estrellas): `classic/original_autogpt/CLAUDE.md`; patrones: arquitectura explícita, ciclo operativo, estado, pruebas y gotchas.
-- **freeCodeCamp/freeCodeCamp** (~446,000 estrellas): `curriculum/schema/challenge-schema.js`; patrones: validación condicional, campos obligatorios, mensajes de error verificables.
-
-Los patrones externos mejoran ejecutabilidad, validación y claridad. Los
-contratos LF y la fuente operativa prevalecen ante cualquier conflicto.
+Patrones consultados: `microsoft/vscode`, `Significant-Gravitas/AutoGPT` y
+`freeCodeCamp/freeCodeCamp`. Se usan únicamente para mejorar ejecutabilidad,
+validación y claridad. Los contratos LF y la fuente operativa prevalecen.
