@@ -3,16 +3,19 @@ from __future__ import annotations
 
 from lf_common import (
     add_common_input, duplicate_values, emit, failure, load_json, main_guard,
-    parser, require_object, result_object,
+    parser, require_object, result_object, utc_now,
 )
 
 JUDGE = "J07_AUDIT_TRACEABILITY"
 
 
 def run() -> int:
+    started_at = utc_now()
     cli = parser(__doc__)
     add_common_input(cli, "Story Pack JSON file")
     cli.add_argument("--retry-count", type=int, default=0)
+    cli.add_argument("--judge-version", required=True)
+    cli.add_argument("--executor-identity", required=True)
     args = cli.parse_args()
     pack = require_object(load_json(args.input), "story_pack")
 
@@ -128,6 +131,9 @@ def run() -> int:
     return emit(result_object(
         JUDGE, failed, evidence, args.evidence_ref or [f"file:{args.input}"],
         repairs, retry_count=args.retry_count,
+        judge_version=args.judge_version,
+        executor_identity=args.executor_identity,
+        started_at=started_at,
     ))
 
 
