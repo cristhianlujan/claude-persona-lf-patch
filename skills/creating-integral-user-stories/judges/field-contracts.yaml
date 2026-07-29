@@ -1,64 +1,120 @@
 judge_code: J04_FIELD_CONTRACTS
-version: v0.4
+version: v0.5
 status: CANDIDATO_READ_ONLY
 scope: Verifica cobertura 1:1, visibilidad, edición, validación, privacidad, auditoría y telemetría por campo.
-independence: worker_must_not_execute_own_judge
+independence:
+  worker_must_not_execute_own_judge: true
+  executor_identity_required: true
 retry_limit: 2
 required_inputs:
-  - story_pack
-  - field_inventory
-  - permission_matrix
-  - references/field-contract.md
+- story_pack
+- field_inventory
+- permission_matrix
+- references/field-contract.md
 preflight:
-  - all_required_inputs_are_present
-  - input_versions_are_compatible
-  - source_and_evidence_refs_are_resolvable
-  - judge_is_not_executed_by_worker
+- all_required_inputs_are_present
+- input_versions_are_compatible
+- source_and_evidence_refs_are_resolvable
+- judge_is_not_executed_by_worker
+- judge_version_and_executor_identity_are_present
+assertions:
+- fields_without_contract
+- unexpected_field_contracts
+- duplicate_field_codes
+- fields_without_visibility_rule
+- fields_without_editability_rule
+- pii_fields_without_classification
+- pii_fields_with_analytics_allowed
+- pii_fields_with_logs_allowed_without_rule
+- editable_fields_without_audit_strategy
+- fields_without_validation_mapping
 pass_if:
-  - fields_without_contract = 0
-  - unexpected_field_contracts = 0
-  - duplicate_field_codes = 0
-  - fields_without_visibility_rule = 0
-  - fields_without_editability_rule = 0
-  - pii_fields_without_classification = 0
-  - pii_fields_with_analytics_allowed = 0
-  - pii_fields_with_logs_allowed_without_rule = 0
-  - editable_fields_without_audit_strategy = 0
-  - fields_without_validation_mapping = 0
-fail_if:
-  - field_without_contract = true
-  - pii_field_allows_analytics = true
-  - editable_field_without_audit = true
+- all 10 assertion result collections are empty
+- assertions_passed = assertions_total
+- output validates against judge-result v0.5
 block_if:
-  - field_inventory_missing = true
-  - permission_matrix_missing_and_required = true
-  - field_source_conflict = true
-  - retry_limit_exhausted = true
-result_values: [PASS_WITH_EVIDENCE, RETURN_TO_WORKER, BLOCKED, FAIL]
+- field_inventory_missing = true
+- permission_matrix_missing_and_required = true
+- field_source_conflict = true
+- metadata_or_evidence_unavailable = true
+- retry_limit_exhausted = true
+result_values:
+- PASS_WITH_EVIDENCE
+- RETURN_TO_WORKER
+- BLOCKED
+- FAIL
 required_evidence:
-  - screen_fields_count
-  - field_contracts_count
-  - pii_field_count
-  - editable_field_count
-  - checks
-  - failed_assertions
-  - repair_instructions
-repair_matrix:
-  - assertion_id: fields_without_contract
-    instruction: Crear únicamente contratos respaldados por el inventario.
-    prohibited_shortcuts: [delete_assertion, lower_threshold, invent_source, self_approve]
-  - assertion_id: pii_fields_with_analytics_allowed
-    instruction: Fijar analytics_allowed=false y revisar propiedades derivadas.
-    prohibited_shortcuts: [delete_assertion, lower_threshold, invent_source, self_approve]
-  - assertion_id: editable_fields_without_audit_strategy
-    instruction: Agregar auditoría y estrategias previo/nuevo desde política.
-    prohibited_shortcuts: [delete_assertion, lower_threshold, invent_source, self_approve]
-validator_ref: scripts/validate_field_coverage.py
+- screen_fields_count
+- field_contracts_count
+- pii_field_count
+- editable_field_count
+- checks
+- failed_assertions
+- repair_instructions
+validator:
+  entrypoint: scripts/validate_field_coverage.py
+  command_template: LF_JUDGE_VERSION=<git_blob_sha1> LF_EXECUTOR_IDENTITY=<actor> python scripts/validate_field_coverage.py
+    <story_pack.json> --judge J04_FIELD_CONTRACTS --evidence-ref <resolvable_ref>
+  positive_case: E23_FIELD_CONTRACTS_POSITIVE
+  negative_case: E24_FIELD_CONTRACTS_NEGATIVE
+  negative_must_be_rejected: true
 output:
   schema_ref: schemas/judge-result.schema.json
-  required_fields: [judge_code, result, compliance_bit, failed_assertions, blocking_assertions, evidence_refs, evidence, repair_instructions, retry_count, judged_at]
-executable_evals:
-  positive: E23_FIELD_CONTRACTS_POSITIVE
-  negative: E24_FIELD_CONTRACTS_NEGATIVE
-  negative_must_be_rejected: true
-prohibitions: [worker_self_approval, threshold_reduction_to_obtain_pass, assertion_deletion_to_obtain_pass, pass_without_evidence]
+  schema_version: v0.5
+  required_fields:
+  - schema_version
+  - judge_code
+  - judge_version
+  - executor_identity
+  - command
+  - started_at
+  - completed_at
+  - exit_code
+  - result
+  - compliance_bit
+  - assertions_total
+  - assertions_passed
+  - failed_assertions
+  - blocking_assertions
+  - repairs
+  - repair_instructions
+  - evidence_refs
+  - evidence
+  - evidence_sha256
+  - input_sha256
+  - output_sha256
+  - retry_count
+  runtime_invariants:
+  - assertions_passed <= assertions_total
+  - PASS requires assertions_passed = assertions_total
+  - repairs = repair_instructions
+  - completed_at >= started_at
+  - output_sha256 is valid
+repair_matrix:
+- assertion_id: fields_without_contract
+  instruction: Crear únicamente contratos respaldados por el inventario.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: pii_fields_with_analytics_allowed
+  instruction: Fijar analytics_allowed=false y revisar propiedades derivadas.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: editable_fields_without_audit_strategy
+  instruction: Agregar auditoría y estrategias previo/nuevo desde política.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+prohibitions:
+- worker_self_approval
+- threshold_reduction_to_obtain_pass
+- assertion_deletion_to_obtain_pass
+- pass_without_evidence
+- judged_at_legacy_field
