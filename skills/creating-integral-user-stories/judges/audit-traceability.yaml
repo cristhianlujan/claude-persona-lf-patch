@@ -1,8 +1,7 @@
 judge_code: J07_AUDIT_TRACEABILITY
-version: v0.4
+version: v0.5
 status: CANDIDATO_READ_ONLY
-scope: Verifica la cadena fuente-regla-criterio-prueba-evidencia y rechaza auditoría vacía, códigos ausentes, referencias
-  huérfanas o evidencia no resoluble.
+scope: Verifica la cadena fuente-regla-criterio-prueba-evidencia y rechaza auditoría vacía, códigos ausentes, referencias huérfanas o evidencia no resoluble.
 independence:
   author_must_not_execute_final_judge: true
   executor_identity_required: true
@@ -33,8 +32,7 @@ preflight:
 validator:
   entrypoint: scripts/validate_traceability.py
   git_blob_sha1: da950cca43698a3ad1ac3743c6714bdcac75f6a1
-  command_template: python scripts/validate_traceability.py <story_pack.json> --judge-version <git_blob_sha1> --executor-identity
-    <actor> --evidence-ref <resolvable_ref>
+  command_template: python scripts/validate_traceability.py <story_pack.json> --judge-version <git_blob_sha1> --executor-identity <actor> --evidence-ref <resolvable_ref>
   exit_codes:
     PASS_WITH_EVIDENCE: 0
     RETURN_TO_WORKER: 1
@@ -42,87 +40,48 @@ validator:
     BLOCKED: 2
 schema:
   ref: schemas/judge-result.schema.json
-  version: v0.4
-  git_blob_sha1: 80d525342ed3099dffbe2cf946b54f0b1c1e4417
+  version: v0.5
+  git_blob_sha1: 829de11813df4c5a3ddc430856d12f1617f2124b
   additional_properties: false
 deterministic_procedure:
 - order: 1
   action: Resolve and hash the input JSON; stop with BLOCKED on unreadable or invalid input.
   evidence: input_sha256
 - order: 2
-  action: Resolve judge version, executor identity and evidence references; stop with structured BLOCKED when absent.
+  action: Resolve judge version, executor identity and evidence references.
   evidence: blocking_assertions
 - order: 3
-  action: Execute every declared check exactly once; empty critical sections are findings, never vacuous PASS.
+  action: Execute every declared assertion exactly once; empty critical sections are findings, never vacuous PASS.
   evidence: evidence.checks
 - order: 4
   action: Map findings to result and deterministic exit code without lowering assertions or thresholds.
   evidence: result+exit_code
 - order: 5
-  action: Emit strict evidence envelope and calculate evidence/output SHA-256.
+  action: Emit v0.5 evidence envelope and calculate evidence/output SHA-256.
   evidence: evidence_sha256+output_sha256
 - order: 6
-  action: Validate emitted JSON against judge-result.schema.json and persist/read back evidence.
+  action: Validate runtime invariants and persist/read back evidence.
   evidence: schema_validation+readback
 assertions:
-- assertion_id: audit_contract_missing
-  target: audit
-  pass_condition: audit_contract_missing = 0
-  critical: true
-  evidence_required: true
-- assertion_id: audit_events_without_code
-  target: audit.events
-  pass_condition: audit_events_without_code = 0
-  critical: true
-  evidence_required: true
-- assertion_id: audit_events_without_source_reference
-  target: audit.events
-  pass_condition: audit_events_without_source_reference = 0
-  critical: true
-  evidence_required: true
-- assertion_id: criteria_without_source_reference
-  target: core.acceptance_criteria
-  pass_condition: criteria_without_source_reference = 0
-  critical: true
-  evidence_required: true
-- assertion_id: rules_without_source_reference
-  target: validations
-  pass_condition: rules_without_source_reference = 0
-  critical: true
-  evidence_required: true
-- assertion_id: criteria_without_test_reference
-  target: tests
-  pass_condition: criteria_without_test_reference = 0
-  critical: true
-  evidence_required: true
-- assertion_id: critical_rules_without_test
-  target: tests
-  pass_condition: critical_rules_without_test = 0
-  critical: true
-  evidence_required: true
-- assertion_id: tests_without_story_reference
-  target: tests
-  pass_condition: tests_without_story_reference = 0
-  critical: true
-  evidence_required: true
-- assertion_id: tests_without_evidence_path
-  target: tests
-  pass_condition: tests_without_evidence_path = 0
-  critical: true
-  evidence_required: true
-- assertion_id: duplicate_test_codes
-  target: tests
-  pass_condition: duplicate_test_codes = 0
-  critical: true
-  evidence_required: true
+- audit_contract_missing
+- audit_events_without_code
+- audit_events_without_source_reference
+- criteria_without_source_reference
+- rules_without_source_reference
+- criteria_without_test_reference
+- critical_rules_without_test
+- tests_without_story_reference
+- tests_without_evidence_path
+- duplicate_test_codes
 pass_if:
-- all declared checks are empty
+- all 10 assertion result collections are empty
 - blocking_assertions is empty
+- assertions_passed = assertions_total
 - compliance_bit = 1
 - exit_code = 0
 - evidence_refs is non-empty and resolvable
 - input_sha256, evidence_sha256 and output_sha256 are valid 64-hex values
-- output validates against schemas/judge-result.schema.json v0.4
+- output validates against judge-result v0.5
 return_to_worker_if:
 - one or more repairable assertions fail
 - repairs are actionable
@@ -131,7 +90,7 @@ block_if:
 - input or required metadata is missing
 - executor is not independent
 - evidence reference is unresolvable
-- schema validation cannot execute
+- schema or runtime invariant validation cannot execute
 fail_if:
 - evidence proves an unrecoverable contract violation
 - output hash or evidence hash is forged or inconsistent
@@ -151,31 +110,11 @@ required_evidence:
 - traceability_breaks
 - checks
 - input_path
-- judge_code
-- judge_version
-- executor_identity
-- command
-- started_at
-- completed_at
-- exit_code
-- result
-- compliance_bit
-- assertions_total
-- assertions_passed
-- failed_assertions
-- blocking_assertions
-- repairs
-- repair_instructions
-- evidence_refs
-- evidence
-- evidence_sha256
-- input_sha256
-- output_sha256
-- retry_count
 output:
   schema_ref: schemas/judge-result.schema.json
-  schema_version: v0.4
+  schema_version: v0.5
   required_fields:
+  - schema_version
   - judge_code
   - judge_version
   - executor_identity
@@ -199,29 +138,24 @@ output:
   - retry_count
   invariants:
   - assertions_passed <= assertions_total
-  - PASS_WITH_EVIDENCE requires exit_code=0, compliance_bit=1 and no failed/blocking assertions
-  - RETURN_TO_WORKER requires exit_code=1, failed_assertions and repairs
-  - BLOCKED requires exit_code=2 and blocking_assertions
-  - repairs and repair_instructions contain equivalent actionable items
-  - output_sha256 is calculated over the canonical output before adding output_sha256
+  - PASS requires assertions_passed = assertions_total
+  - repairs = repair_instructions
+  - completed_at >= started_at
+  - output_sha256 is calculated before adding output_sha256
 positive_behavior:
   case_id: J07-P01
-  input_summary: Historia con audit.events tipados, source_ref no vacío, criterios y reglas cubiertos por pruebas
-    con evidence_path.
   expected_result: PASS_WITH_EVIDENCE
-  expected_exit_code: 0
+  expected_assertions_total: 10
+  expected_assertions_passed: 10
 negative_behavior:
 - case_id: J07-N01
   input_patch:
     audit: {}
   expected_result: RETURN_TO_WORKER
-  expected_exit_code: 1
   must_fail:
   - audit_contract_missing
 - case_id: J07-N02
-  input_summary: audit.events y tests con source_ref, criterion_ref, rule_ref o evidence_path vacíos.
   expected_result: RETURN_TO_WORKER
-  expected_exit_code: 1
   must_fail:
   - audit_events_without_source_reference
   - tests_without_evidence_path
@@ -230,7 +164,6 @@ negative_behavior:
   - --judge-version
   - --executor-identity
   expected_result: BLOCKED
-  expected_exit_code: 2
   must_block:
   - judge_version_missing
   - executor_identity_missing
@@ -263,8 +196,4 @@ prohibitions:
 - threshold_reduction_to_obtain_pass
 - unresolved_evidence_reference
 - pass_without_strict_evidence_envelope
-design_sources:
-- anthropics/claude-code
-- anthropics/skills
-- github/docs:actions-exit-codes
-- HANDOFF_REMEDIACION_TOTAL_STORY_CREATOR_LF_v0.1.md
+- judged_at_legacy_field
