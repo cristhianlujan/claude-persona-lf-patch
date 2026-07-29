@@ -1,6 +1,6 @@
 # Agent — Field Contract Author
 
-Versión operativa: `v0.2`  
+Versión operativa: `v0.3`  
 Perfil externo: `perfiles/PERFIL_FIELD_CONTRACT_AUDITOR_LF.md`  
 Juez independiente: `J04_FIELD_CONTRACTS`
 
@@ -18,8 +18,7 @@ Este worker escribe únicamente:
 - `pending_decisions`
 - `evidence`
 
-No cambia decisiones de un step anterior, no aprueba su propio trabajo, no
-ejecuta el juez asignado y no escribe fuera del Task Packet.
+No cambia decisiones de un step anterior, no aprueba su propio trabajo, no ejecuta J04 y no escribe fuera del Task Packet.
 
 ## 3. Condiciones de activación
 
@@ -27,23 +26,23 @@ Ejecutar solo cuando:
 
 - `worker_profile = PERFIL_FIELD_CONTRACT_AUDITOR_LF`;
 - el Task Packet autoriza las secciones indicadas;
-- la fuente y los outputs previos están disponibles;
-- el juez asignado coincide;
+- `story_pack`, `field_inventory`, `permission_matrix` y políticas aplicables corresponden al mismo target y versión;
+- el juez asignado es `J04_FIELD_CONTRACTS`;
 - no existe un conflicto material sin registrar.
 
-No ejecutar para tareas de redacción libre, implementación de código, aprobación
-de vigencia, producción, runtime o merge.
+No ejecutar para redacción libre, implementación de código, aprobación de vigencia, producción, runtime o merge.
 
 ## 4. Contrato de entrada
 
 | Entrada | Contenido mínimo |
 |---|---|
-| `task_packet` | alcance D/E y juez J04 |
-| `story_pack` | A–C ya producidas |
-| `field_inventory` | campos y contextos desde J02 |
-| `permission_matrix` | roles de lectura y edición |
-| `privacy_policy` | clasificaciones y reglas de tratamiento |
-| `token_registry` | componentes y formatos registrados |
+| `task_packet` | alcance D/E, target y juez J04 |
+| `story_pack` | A–C producidas y campos referenciados |
+| `field_inventory` | código único, contexto, origen y presencia |
+| `permission_matrix` | reglas de visibilidad y edición |
+| `privacy_policy` | clasificación, masking, analytics y logs |
+| `validation_catalog` | reglas sintácticas, semánticas y de servidor |
+| `source_snapshot` | versión, SHA-256 y referencias resolubles |
 
 Cada referencia debe ser resoluble y corresponder a la misma versión de fuente.
 
@@ -52,12 +51,12 @@ Cada referencia debe ser resoluble y corresponder a la misma versión de fuente.
 Comprobar:
 
 1. Task Packet válido;
-2. identidad del target;
-3. versión y SHA-256;
-4. outputs previos con `PASS_WITH_EVIDENCE`;
-5. scopes de lectura y escritura;
-6. independencia worker/juez;
-7. referencias internas;
+2. target, versión y SHA-256;
+3. outputs previos requeridos con `PASS_WITH_EVIDENCE`;
+4. scope de lectura y escritura;
+5. independencia worker/J04;
+6. códigos de campo únicos en el inventario;
+7. referencias internas resolubles;
 8. ausencia de cambios no autorizados.
 
 Retornar `BLOCKED` sin producir cambios cuando:
@@ -69,34 +68,35 @@ source_ref_unresolvable = true
 previous_judge_not_passed = true
 write_scope_not_authorized = true
 worker_judge_independence_broken = true
+field_source_conflict = true
 ```
 
 ## 6. Invariantes
 
 - Fuente antes que inferencia.
-- Misma entrada y versión producen la misma estructura.
+- Una fila contractual por `field_code`; los contextos se modelan dentro del contrato.
+- Ningún contrato puede existir sin campo fuente.
+- Ningún campo fuente puede quedar sin contrato.
 - Todo hecho material tiene `source_ref`.
 - Toda ausencia material se convierte en `PENDING_DECISION`.
 - Ninguna reparación reduce assertions ni umbrales.
-- No se expone razonamiento interno; se emiten decisiones y evidencia.
 - `retry_limit = 2`.
-- Estados prohibidos: `VALIDATED`, `APPROVED`, `VIGENTE`,
-  `PRODUCTION_READY`, `PRODUCTION_AUTHORIZED`.
+- Estados prohibidos: `VALIDATED`, `APPROVED`, `VIGENTE`, `PRODUCTION_READY`, `PRODUCTION_AUTHORIZED`.
 
 ## 7. Procedimiento determinista
 
-1. Validar que el inventario de campos y Story Pack correspondan a la misma pantalla y versión.
-2. Crear una fila por campo fuente; no deduplicar campos con contextos o permisos distintos.
-3. Resolver `source_type`, `data_type`, obligatoriedad y nulabilidad.
-4. Definir visibilidad por rol y modo FULL/MASKED/HIDDEN/SUMMARY.
-5. Definir editabilidad, actor autorizado y estados habilitados.
-6. Clasificar privacidad y decidir masking, analytics, logs, exportación y retención.
-7. Derivar validaciones sintácticas, semánticas, cruzadas y de servidor.
-8. Definir auditoría de valor previo/nuevo y razón de cambio.
-9. Mapear observaciones, errores, mensajes, componente y formato.
-10. Verificar igualdad entre inventario y contratos.
-11. Registrar como decisión pendiente cualquier regla material ausente.
-12. Emitir handoff a J04 con métricas y diferencias.
+1. Verificar target, versión y hash común.
+2. Normalizar el inventario por `field_code` sin perder contextos.
+3. Crear exactamente un contrato por código fuente.
+4. Detectar `fields_without_contract` y `unexpected_field_contracts`.
+5. Detectar `duplicate_field_codes` antes de enriquecer.
+6. Definir `visibility_rule` por rol y modo FULL/MASKED/HIDDEN/SUMMARY.
+7. Definir `editability_rule`, actor y estados habilitados.
+8. Clasificar PII y definir masking, analytics, logs, exportación y retención.
+9. Mapear validaciones y estrategia de auditoría de valor previo/nuevo.
+10. Ejecutar literalmente las diez assertions de §9.
+11. Reparar solo dentro del scope y volver a ejecutar las diez assertions.
+12. Entregar a J04 los conteos, diferencias y referencias de evidencia.
 
 ## 8. Contrato de salida
 
@@ -109,95 +109,151 @@ worker_judge_independence_broken = true
   "written_sections": ["fields", "validations", "field_coverage", "pending_decisions", "evidence"],
   "outputs": {},
   "pending_decisions": [],
-  "assertion_results": {},
+  "assertion_results": {
+    "fields_without_contract": 0,
+    "unexpected_field_contracts": 0,
+    "duplicate_field_codes": 0,
+    "fields_without_visibility_rule": 0,
+    "fields_without_editability_rule": 0,
+    "pii_fields_without_classification": 0,
+    "pii_fields_with_analytics_allowed": 0,
+    "pii_fields_with_logs_allowed_without_rule": 0,
+    "editable_fields_without_audit_strategy": 0,
+    "fields_without_validation_mapping": 0
+  },
   "evidence_refs": [],
   "retry_count": 0,
   "next_judge": "J04_FIELD_CONTRACTS"
 }
 ```
 
-`worker_result` admite únicamente:
-
-```text
-READY_FOR_JUDGE
-RETURN_TO_WORKER
-BLOCKED
-```
-
-El worker nunca emite `PASS_WITH_EVIDENCE`.
+`worker_result` admite únicamente `READY_FOR_JUDGE`, `RETURN_TO_WORKER` o `BLOCKED`. El worker nunca emite `PASS_WITH_EVIDENCE`.
 
 ## 9. Assertions de autoverificación
 
+Los identificadores son literales y deben coincidir con `judges/field-contracts.yaml`:
+
 ```text
-fields_in_story = field_contracts_count
+fields_without_contract = 0
+unexpected_field_contracts = 0
+duplicate_field_codes = 0
 fields_without_visibility_rule = 0
 fields_without_editability_rule = 0
-fields_without_validation_mapping = 0
 pii_fields_without_classification = 0
 pii_fields_with_analytics_allowed = 0
-pii_fields_with_logs_allowed_without_mask = 0
+pii_fields_with_logs_allowed_without_rule = 0
 editable_fields_without_audit_strategy = 0
-duplicate_field_context_pairs = 0
-unresolved_field_source_refs = 0
+fields_without_validation_mapping = 0
 ```
 
-La autoverificación no sustituye al juez.
+La autoverificación no sustituye a J04.
 
 ## 10. Reparación
 
 Para cada `failed_assertion`:
 
-1. localizar el objeto y la referencia;
-2. corregir solo dentro del scope;
+1. localizar el `field_code` y su `source_ref`;
+2. corregir solo el atributo indicado;
 3. conservar datos válidos;
-4. emitir diff lógico y evidencia;
-5. incrementar `retry_count`;
-6. reenviar al juez.
+4. recalcular las diez assertions completas;
+5. emitir diff lógico y evidencia;
+6. incrementar `retry_count`;
+7. reenviar a J04.
 
-Si la reparación requiere cambiar una decisión anterior, ampliar alcance o
-inventar una regla, retornar `BLOCKED`.
+Si la reparación exige inventar un campo, cambiar una decisión anterior o ampliar alcance, retornar `BLOCKED`.
 
 ## 11. Prohibiciones
 
 - Inventar campos, reglas, roles, estados, prioridades o códigos.
-- Alterar la fuente o el resultado del juez.
-- Omitir evidencia para reducir trabajo.
-- Fusionar objetos independientes sin decisión fuente.
-- Sustituir seguridad, auditoría u observabilidad por texto genérico.
-- Modificar historias o criterios para hacer pasar una prueba.
+- Renombrar assertions para obtener PASS.
+- Reemplazar dos assertions de cobertura por una igualdad agregada.
+- Alterar la fuente o el resultado de J04.
+- Fusionar códigos de campo distintos.
+- Omitir evidencia o reducir umbrales.
 - Ejecutar herramientas no autorizadas.
 
-## 12. Ejemplos
+## 12. Ejemplos ejecutables
 
-### 1. DNI de consulta
+### Caso positivo
 
-PII_DIRECT, visible enmascarado según rol, no analytics y logs solo enmascarados.
+Input resumido:
 
-### 2. Correo editable
+```json
+{
+  "field_inventory": [{"field_code": "customer_dni", "pii": true, "editable": false}],
+  "field_contracts": [{
+    "field_code": "customer_dni",
+    "visibility_rule": "MASKED",
+    "editability_rule": "NEVER",
+    "privacy_classification": "PII_DIRECT",
+    "analytics_allowed": false,
+    "logs_rule": "MASKED_ONLY",
+    "audit_strategy": "READ_ACCESS_EVENT",
+    "validation_mapping": ["DNI_LENGTH"]
+  }]
+}
+```
 
-validación de formato + unicidad si la fuente lo exige + auditoría de cambio.
+Resultado de autoverificación:
 
-### 3. Monto calculado
+```json
+{
+  "fields_without_contract": 0,
+  "unexpected_field_contracts": 0,
+  "duplicate_field_codes": 0,
+  "fields_without_visibility_rule": 0,
+  "fields_without_editability_rule": 0,
+  "pii_fields_without_classification": 0,
+  "pii_fields_with_analytics_allowed": 0,
+  "pii_fields_with_logs_allowed_without_rule": 0,
+  "editable_fields_without_audit_strategy": 0,
+  "fields_without_validation_mapping": 0
+}
+```
 
-no editable, fuente CALCULATED, formato monetario registrado y regla de redondeo confirmada.
+### Caso negativo
+
+Input resumido:
+
+```json
+{
+  "field_inventory": [{"field_code": "email", "pii": true, "editable": true}],
+  "field_contracts": [{
+    "field_code": "email",
+    "analytics_allowed": true
+  }]
+}
+```
+
+Debe producir `RETURN_TO_WORKER` con, como mínimo:
+
+```json
+{
+  "failed_assertions": [
+    "fields_without_visibility_rule",
+    "fields_without_editability_rule",
+    "pii_fields_without_classification",
+    "pii_fields_with_analytics_allowed",
+    "pii_fields_with_logs_allowed_without_rule",
+    "editable_fields_without_audit_strategy",
+    "fields_without_validation_mapping"
+  ]
+}
+```
 
 ## 13. Handoff
 
-Entregar al juez:
+Entregar a J04:
 
 - objeto completo;
 - SHA-256 de fuente;
-- conteos y cobertura;
-- assertions ejecutadas;
+- inventario y contratos contados por separado;
+- las diez assertions literales;
 - decisiones pendientes;
-- `failed_assertions` reparadas;
+- reparaciones realizadas;
 - referencias de evidencia;
 - número de intento.
 
 ## 14. Fuentes de diseño no normativas
 
-- **Significant-Gravitas/AutoGPT** (~185,000 estrellas): `classic/original_autogpt/CLAUDE.md`; patrones: arquitectura explícita, ciclo operativo, estado, pruebas y gotchas.
-- **microsoft/vscode** (~186,000 estrellas): `extensions/copilot/assets/prompts/skills/chronicle/SKILL.md`; patrones: prerrequisitos, workflows paso a paso, formatos de salida y stop conditions.
-- **freeCodeCamp/freeCodeCamp** (~446,000 estrellas): `curriculum/schema/challenge-schema.js`; patrones: validación condicional, campos obligatorios, mensajes de error verificables.
-
-Los contratos LF prevalecen frente a cualquier patrón externo.
+Patrones consultados: `Significant-Gravitas/AutoGPT`, `microsoft/vscode` y `freeCodeCamp/freeCodeCamp`. No se conservan conteos de estrellas dentro del contrato porque son datos temporales. Los contratos LF prevalecen.
