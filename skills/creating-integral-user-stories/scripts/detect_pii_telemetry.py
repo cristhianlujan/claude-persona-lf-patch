@@ -15,8 +15,8 @@ def run() -> int:
     cli = parser(__doc__)
     add_common_input(cli, "Story Pack JSON file")
     cli.add_argument("--retry-count", type=int, default=0)
-    cli.add_argument("--judge-version", required=True)
-    cli.add_argument("--executor-identity", required=True)
+    cli.add_argument("--judge-version")
+    cli.add_argument("--executor-identity")
     args = cli.parse_args()
     pack = require_object(load_json(args.input), "story_pack")
     fields = [item for item in pack.get("fields", []) if isinstance(item, dict)]
