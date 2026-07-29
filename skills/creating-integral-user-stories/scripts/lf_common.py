@@ -102,6 +102,14 @@ def failure(
     }
 
 
+def _valid_sha256(value: Any) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(char in "0123456789abcdef" for char in value)
+    )
+
+
 def result_object(
     judge_code: str,
     failed_assertions: Iterable[str],
@@ -154,19 +162,25 @@ def result_object(
 
     checks = evidence.get("checks") if isinstance(evidence, Mapping) else None
     assertions_total = len(checks) if isinstance(checks, Mapping) else len(failed) + len(blocked)
-    assertions_total = max(assertions_total, len(failed) + len(blocked))
+    assertions_total = max(assertions_total, len(failed) + len(blocked), 1)
     assertions_passed = max(assertions_total - len(failed) - len(blocked), 0)
 
-    input_sha256 = None
-    input_path = evidence.get("input_path") if isinstance(evidence, Mapping) else None
-    if input_path:
-        target = Path(str(input_path))
-        if target.is_file():
-            input_sha256 = sha256_file(target)
+    input_sha256 = evidence.get("input_sha256") if isinstance(evidence, Mapping) else None
+    if input_sha256 is not None and not _valid_sha256(input_sha256):
+        blocked.append("input_sha256_invalid")
+        input_sha256 = None
+    if input_sha256 is None:
+        input_path = evidence.get("input_path") if isinstance(evidence, Mapping) else None
+        if input_path:
+            target = Path(str(input_path))
+            if target.is_file():
+                input_sha256 = sha256_file(target)
     if outcome == "PASS_WITH_EVIDENCE" and not input_sha256:
-        blocked = sorted(set(blocked + ["input_sha256_unavailable"]))
+        blocked.append("input_sha256_unavailable")
+    blocked = sorted(set(blocked))
+    if blocked:
         outcome = "BLOCKED"
-        assertions_total = max(assertions_total, len(failed) + len(blocked))
+        assertions_total = max(assertions_total, len(failed) + len(blocked), 1)
         assertions_passed = max(assertions_total - len(failed) - len(blocked), 0)
 
     evidence_payload = {
