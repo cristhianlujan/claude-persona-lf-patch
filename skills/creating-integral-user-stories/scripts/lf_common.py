@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
+SCHEMA_VERSION = "v0.5"
 RESULT_VALUES = ("PASS_WITH_EVIDENCE", "RETURN_TO_WORKER", "BLOCKED", "FAIL")
 EXIT_BY_RESULT = {
     "PASS_WITH_EVIDENCE": 0,
@@ -26,7 +27,7 @@ EXIT_BY_RESULT = {
 
 
 class ValidationInputError(ValueError):
-    """Raised when evidence cannot be read or is structurally unusable."""
+    """Raised when evidence or a result envelope is structurally unusable."""
 
 
 def utc_now() -> str:
@@ -110,6 +111,111 @@ def _valid_sha256(value: Any) -> bool:
     )
 
 
+def _parse_utc(value: Any, field: str) -> datetime:
+    if not isinstance(value, str) or not value:
+        raise ValidationInputError(f"{field}_missing")
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValidationInputError(f"{field}_invalid") from exc
+
+
+def _check_failed(value: Any) -> bool:
+    """Interpret deterministic check payloads without domain-specific guessing."""
+    if isinstance(value, bool):
+        return not value
+    if value is None:
+        return True
+    if isinstance(value, (int, float)):
+        return value != 0
+    if isinstance(value, (list, tuple, set, dict)):
+        return len(value) != 0
+    if isinstance(value, str):
+        normalized = value.strip().upper()
+        return normalized not in {"", "0", "PASS", "OK", "TRUE"}
+    return True
+
+
+def _canonical_sha256_without_output_hash(out: Mapping[str, Any]) -> str:
+    payload = dict(out)
+    payload.pop("output_sha256", None)
+    return hashlib.sha256(
+        json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+
+def validate_result_invariants(out: Mapping[str, Any]) -> None:
+    """Enforce cross-property invariants that JSON Schema Draft-07 cannot express."""
+    if out.get("schema_version") != SCHEMA_VERSION:
+        raise ValidationInputError("schema_version_mismatch")
+
+    result = out.get("result")
+    if result not in RESULT_VALUES:
+        raise ValidationInputError("result_invalid")
+
+    total = out.get("assertions_total")
+    passed = out.get("assertions_passed")
+    if not isinstance(total, int) or isinstance(total, bool) or total < 1:
+        raise ValidationInputError("assertions_total_invalid")
+    if not isinstance(passed, int) or isinstance(passed, bool) or passed < 0:
+        raise ValidationInputError("assertions_passed_invalid")
+    if passed > total:
+        raise ValidationInputError("assertions_passed_exceeds_total")
+
+    failed = list(out.get("failed_assertions") or [])
+    blocked = list(out.get("blocking_assertions") or [])
+    unresolved = set(failed) | set(blocked)
+    if passed + len(unresolved) != total:
+        raise ValidationInputError("assertion_counts_inconsistent")
+
+    repairs = list(out.get("repairs") or [])
+    repair_instructions = list(out.get("repair_instructions") or [])
+    if repairs != repair_instructions:
+        raise ValidationInputError("repairs_not_equivalent")
+
+    started = _parse_utc(out.get("started_at"), "started_at")
+    completed = _parse_utc(out.get("completed_at"), "completed_at")
+    if completed < started:
+        raise ValidationInputError("timestamp_order_invalid")
+
+    checks = out.get("evidence", {}).get("checks")
+    if isinstance(checks, Mapping):
+        failing_checks = {str(key) for key, value in checks.items() if _check_failed(value)}
+        if not failing_checks.issubset(unresolved):
+            raise ValidationInputError("failed_checks_not_reported")
+
+    if result == "PASS_WITH_EVIDENCE":
+        if passed != total:
+            raise ValidationInputError("pass_without_all_assertions")
+        if failed or blocked:
+            raise ValidationInputError("pass_with_findings")
+        if out.get("exit_code") != 0 or out.get("compliance_bit") != 1:
+            raise ValidationInputError("pass_result_flags_invalid")
+        if not _valid_sha256(out.get("input_sha256")):
+            raise ValidationInputError("pass_input_sha256_invalid")
+        if repairs:
+            raise ValidationInputError("pass_with_repairs")
+    elif result == "RETURN_TO_WORKER":
+        if not failed or not repairs:
+            raise ValidationInputError("return_without_failures_or_repairs")
+        if out.get("exit_code") != 1 or out.get("compliance_bit") != 0:
+            raise ValidationInputError("return_result_flags_invalid")
+    elif result == "BLOCKED":
+        if not blocked:
+            raise ValidationInputError("blocked_without_assertion")
+        if out.get("exit_code") != 2 or out.get("compliance_bit") != 0:
+            raise ValidationInputError("blocked_result_flags_invalid")
+    elif result == "FAIL":
+        if not failed:
+            raise ValidationInputError("fail_without_assertion")
+        if out.get("exit_code") != 1 or out.get("compliance_bit") != 0:
+            raise ValidationInputError("fail_result_flags_invalid")
+
+    expected_hash = _canonical_sha256_without_output_hash(out)
+    if out.get("output_sha256") != expected_hash:
+        raise ValidationInputError("output_sha256_mismatch")
+
+
 def result_object(
     judge_code: str,
     failed_assertions: Iterable[str],
@@ -137,6 +243,11 @@ def result_object(
         blocked.append("judge_version_missing")
     if not executor:
         blocked.append("executor_identity_missing")
+
+    checks = evidence.get("checks") if isinstance(evidence, Mapping) else None
+    if isinstance(checks, Mapping):
+        failed.extend(str(key) for key, value in checks.items() if _check_failed(value))
+    failed = sorted(set(failed))
     blocked = sorted(set(blocked))
 
     if forced_result is not None:
@@ -150,6 +261,11 @@ def result_object(
     else:
         outcome = "PASS_WITH_EVIDENCE"
 
+    if outcome == "PASS_WITH_EVIDENCE" and (failed or blocked):
+        blocked.append("forced_pass_with_findings")
+        blocked = sorted(set(blocked))
+        outcome = "BLOCKED"
+
     refs = list(dict.fromkeys(evidence_refs or []))
     if not refs:
         refs = ["evidence:inline"]
@@ -160,10 +276,9 @@ def result_object(
             for item in failed
         ]
 
-    checks = evidence.get("checks") if isinstance(evidence, Mapping) else None
-    assertions_total = len(checks) if isinstance(checks, Mapping) else len(failed) + len(blocked)
-    assertions_total = max(assertions_total, len(failed) + len(blocked), 1)
-    assertions_passed = max(assertions_total - len(failed) - len(blocked), 0)
+    assertions_total = len(checks) if isinstance(checks, Mapping) else len(set(failed) | set(blocked))
+    assertions_total = max(assertions_total, len(set(failed) | set(blocked)), 1)
+    assertions_passed = max(assertions_total - len(set(failed) | set(blocked)), 0)
 
     input_sha256 = evidence.get("input_sha256") if isinstance(evidence, Mapping) else None
     if input_sha256 is not None and not _valid_sha256(input_sha256):
@@ -177,11 +292,12 @@ def result_object(
                 input_sha256 = sha256_file(target)
     if outcome == "PASS_WITH_EVIDENCE" and not input_sha256:
         blocked.append("input_sha256_unavailable")
+
     blocked = sorted(set(blocked))
     if blocked:
         outcome = "BLOCKED"
-        assertions_total = max(assertions_total, len(failed) + len(blocked), 1)
-        assertions_passed = max(assertions_total - len(failed) - len(blocked), 0)
+        assertions_total = max(assertions_total, len(set(failed) | set(blocked)), 1)
+        assertions_passed = max(assertions_total - len(set(failed) | set(blocked)), 0)
 
     evidence_payload = {
         "evidence_refs": refs,
@@ -194,6 +310,7 @@ def result_object(
 
     completed = utc_now()
     output = {
+        "schema_version": SCHEMA_VERSION,
         "judge_code": judge_code,
         "judge_version": version or "MISSING",
         "executor_identity": executor or "MISSING",
@@ -215,13 +332,13 @@ def result_object(
         "input_sha256": input_sha256,
         "retry_count": retry_count,
     }
-    output["output_sha256"] = hashlib.sha256(
-        json.dumps(output, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    ).hexdigest()
+    output["output_sha256"] = _canonical_sha256_without_output_hash(output)
+    validate_result_invariants(output)
     return output
 
 
 def emit(out: Mapping[str, Any]) -> int:
+    validate_result_invariants(out)
     result = str(out.get("result", "BLOCKED"))
     print(json.dumps(out, ensure_ascii=False, sort_keys=True))
     return EXIT_BY_RESULT.get(result, 2)
@@ -236,6 +353,9 @@ def emit_blocked(judge_code: str, reason: str, evidence_ref: str = "evidence:inl
             [evidence_ref],
             blocking_assertions=[reason],
             forced_result="BLOCKED",
+            judge_version=os.getenv("LF_JUDGE_VERSION") or SCHEMA_VERSION,
+            executor_identity=os.getenv("LF_EXECUTOR_IDENTITY") or "LF_COMMON_BLOCK_HANDLER",
+            command="lf_common.emit_blocked",
         )
     )
 
