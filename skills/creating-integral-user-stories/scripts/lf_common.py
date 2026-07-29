@@ -9,6 +9,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
+import shlex
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -109,11 +111,26 @@ def result_object(
     blocking_assertions: Iterable[str] | None = None,
     retry_count: int = 0,
     forced_result: str | None = None,
+    *,
+    judge_version: str | None = None,
+    executor_identity: str | None = None,
+    started_at: str | None = None,
+    command: str | None = None,
 ) -> dict[str, Any]:
+    started = started_at or utc_now()
     failed = sorted(set(str(item) for item in failed_assertions if item))
     blocked = sorted(set(str(item) for item in (blocking_assertions or []) if item))
     if not 0 <= retry_count <= 2:
         raise ValidationInputError("retry_count_out_of_range")
+
+    version = (judge_version or os.getenv("LF_JUDGE_VERSION") or "").strip()
+    executor = (executor_identity or os.getenv("LF_EXECUTOR_IDENTITY") or "").strip()
+    if not version:
+        blocked.append("judge_version_missing")
+    if not executor:
+        blocked.append("executor_identity_missing")
+    blocked = sorted(set(blocked))
+
     if forced_result is not None:
         if forced_result not in RESULT_VALUES:
             raise ValidationInputError(f"invalid_result:{forced_result}")
@@ -124,6 +141,7 @@ def result_object(
         outcome = "RETURN_TO_WORKER"
     else:
         outcome = "PASS_WITH_EVIDENCE"
+
     refs = list(dict.fromkeys(evidence_refs or []))
     if not refs:
         refs = ["evidence:inline"]
@@ -133,18 +151,60 @@ def result_object(
             failure(item.split("=", 1)[0], "$", f"Repair assertion: {item}")
             for item in failed
         ]
-    return {
-        "judge_code": judge_code,
-        "result": outcome,
-        "compliance_bit": 1 if outcome == "PASS_WITH_EVIDENCE" else 0,
-        "failed_assertions": failed,
-        "blocking_assertions": blocked,
+
+    checks = evidence.get("checks") if isinstance(evidence, Mapping) else None
+    assertions_total = len(checks) if isinstance(checks, Mapping) else len(failed) + len(blocked)
+    assertions_total = max(assertions_total, len(failed) + len(blocked))
+    assertions_passed = max(assertions_total - len(failed) - len(blocked), 0)
+
+    input_sha256 = None
+    input_path = evidence.get("input_path") if isinstance(evidence, Mapping) else None
+    if input_path:
+        target = Path(str(input_path))
+        if target.is_file():
+            input_sha256 = sha256_file(target)
+    if outcome == "PASS_WITH_EVIDENCE" and not input_sha256:
+        blocked = sorted(set(blocked + ["input_sha256_unavailable"]))
+        outcome = "BLOCKED"
+        assertions_total = max(assertions_total, len(failed) + len(blocked))
+        assertions_passed = max(assertions_total - len(failed) - len(blocked), 0)
+
+    evidence_payload = {
         "evidence_refs": refs,
         "evidence": dict(evidence),
-        "repair_instructions": repairs,
-        "retry_count": retry_count,
-        "judged_at": utc_now(),
+        "repairs": repairs,
     }
+    evidence_sha256 = hashlib.sha256(
+        json.dumps(evidence_payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+    completed = utc_now()
+    output = {
+        "judge_code": judge_code,
+        "judge_version": version or "MISSING",
+        "executor_identity": executor or "MISSING",
+        "command": command or " ".join(shlex.quote(arg) for arg in sys.argv),
+        "started_at": started,
+        "completed_at": completed,
+        "exit_code": EXIT_BY_RESULT.get(outcome, 2),
+        "result": outcome,
+        "compliance_bit": 1 if outcome == "PASS_WITH_EVIDENCE" else 0,
+        "assertions_total": assertions_total,
+        "assertions_passed": assertions_passed,
+        "failed_assertions": failed,
+        "blocking_assertions": blocked,
+        "repairs": repairs,
+        "repair_instructions": repairs,
+        "evidence_refs": refs,
+        "evidence": dict(evidence),
+        "evidence_sha256": evidence_sha256,
+        "input_sha256": input_sha256,
+        "retry_count": retry_count,
+    }
+    output["output_sha256"] = hashlib.sha256(
+        json.dumps(output, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return output
 
 
 def emit(out: Mapping[str, Any]) -> int:
