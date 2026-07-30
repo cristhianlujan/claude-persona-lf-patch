@@ -19,7 +19,14 @@ aplicable debe existir. Una regla no respaldada por fuente se registra como
 | `task_packet` | Declara alcance, worker, juez, assertions y evidencia. |
 | `registries` | Permisos, campos, tokens, mensajes y catálogos disponibles. |
 
-## 3. Procedimiento determinista
+## 3. Preflight
+
+1. Confirmar `source_snapshot`, `task_packet`, unidad funcional aprobada y evidencia J02.
+2. Verificar que target, versión y SHA-256 sean compatibles.
+3. Confirmar que el worker no ejecutará J03 ni J11 sobre su propio output.
+4. Detener con `BLOCKED` si falta fuente, evidencia J02, metadata de juez o runtime semántico.
+
+## 4. Procedimiento determinista
 
 1. Crear A Identidad y B Núcleo funcional desde la misma fuente.
 2. Completar C Interacción y D Campos sin inventar componentes.
@@ -30,7 +37,7 @@ aplicable debe existir. Una regla no respaldada por fuente se registra como
 7. Registrar Q Jueces y evidencia; ningún worker se autoaprueba.
 8. Validar contra el schema y ejecutar casos positivo y negativo.
 
-## 4. Contrato de salida A–Q
+## 5. Contrato de salida A–Q
 
 ```text
 A identity                 J audit
@@ -134,27 +141,27 @@ de estado o riesgo separable.
 Registra juez, resultado, `compliance_bit`, assertions fallidas, reparaciones y
 `evidence_refs` resolubles. Sin Q no existe cierre satisfactorio.
 
-## 5. Condiciones de paso
+## 6. Condiciones de paso
 
 ```text
-required_sections_present = 17
-stories_without_source_trace = 0
+missing_sections = 0
+core_keys_missing = 0
 criteria_without_given_when_then = 0
 duplicate_criterion_codes = 0
+stories_without_source_trace = 0
 context_budget_missing = 0
 context_budget_rule_violations = 0
 schema_validation_errors = 0
-judges_without_evidence = 0
 ```
 
-## 6. Stop conditions y reparación
+## 7. Stop conditions y reparación
 
 Detener con `RETURN_TO_WORKER` ante fuente ausente, contradicción, sección
 faltante, criterio sin GWT, schema inválido o presupuesto incoherente. Reparar
 solo el objeto asociado; está prohibido borrar assertions, reducir umbrales o
 inventar fuente. Tras `retry_limit = 2`, devolver `BLOCKED` con evidencia.
 
-## 7. Ejemplo positivo
+## 8. Ejemplo positivo
 
 ```json
 {
@@ -182,7 +189,7 @@ inventar fuente. Tras `retry_limit = 2`, devolver `BLOCKED` con evidencia.
 
 Resultado esperado: `PASS_WITH_EVIDENCE` si el resto de A–Q también cumple.
 
-## 8. Ejemplo negativo
+## 9. Ejemplo negativo
 
 ```json
 {
