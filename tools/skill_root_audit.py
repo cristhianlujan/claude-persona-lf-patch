@@ -54,7 +54,7 @@ def findings(text: str) -> list[str]:
         found.append("temporal_star_counts")
     if "NOTA_FINAL = MIN" not in secs.get(10, ""):
         found.append("score_formula")
-    if not all(token in secs.get(11, "") for token in ("caso positivo", "caso negativo", "BLOCKED", "FAIL", "falsos PASS")):
+    if not all(token in secs.get(11, "") for token in ("caso positivo", "caso negativo", "BLOCKED", "FAIL", "Un `100%` declarado")):
         found.append("test_matrix")
     persistence = secs.get(12, "")
     if not all(token in persistence for token in ("fix/deep-audit-a01-a62", "PR 57", "nueva versión Supabase", "SHA GitHub–Supabase")):
@@ -69,6 +69,8 @@ def findings(text: str) -> list[str]:
     closure = secs.get(15, "")
     if not all(token in closure for token in ("62/62 PASS_WITH_EVIDENCE", "GitHub = Supabase", "DEEP_REAUDIT_IN_PROGRESS", "R8_AUDIT_COMPLETE_WITH_DUAL_BENCHMARK_EVIDENCE")):
         found.append("closure")
+    if "aunque existan pendientes" in closure or "aunque haya pendientes" in closure:
+        found.append("false_close_allowed")
     controls = secs.get(16, "")
     if not all(token in controls for token in ("### Positivo", "### Negativo", "### Bloqueado", "fuente sin hash", "rama incorrecta", "ausencia de prueba negativa", "100%")):
         found.append("controls")
@@ -87,7 +89,11 @@ def mutate(text: str, case_name: str) -> str:
         end = text.find("### Bloqueado", start)
         return text[:start] + text[end:] if start >= 0 and end > start else text
     if case_name == "false_close":
-        return text.replace("Mientras una condición esté pendiente, el estado es\n`DEEP_REAUDIT_IN_PROGRESS`.", "El estado es `R8_AUDIT_COMPLETE_WITH_DUAL_BENCHMARK_EVIDENCE` aunque existan pendientes.", 1)
+        return text.replace(
+            "Mientras una condición esté pendiente, el estado es\n`DEEP_REAUDIT_IN_PROGRESS`.",
+            "El estado es `R8_AUDIT_COMPLETE_WITH_DUAL_BENCHMARK_EVIDENCE` aunque existan pendientes.",
+            1,
+        )
     raise ValueError(case_name)
 
 
