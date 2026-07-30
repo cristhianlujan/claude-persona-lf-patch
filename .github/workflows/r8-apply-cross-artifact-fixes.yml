@@ -1,0 +1,45 @@
+name: R8 Apply Cross-Artifact Fixes
+
+on:
+  push:
+    branches:
+      - fix/deep-audit-a01-a62
+    paths:
+      - 'tools/apply_cross_artifact_fixes.py'
+      - 'skills/creating-integral-user-stories/evals/evals.json'
+      - 'skills/creating-integral-user-stories/evals/assertions.json'
+      - 'skills/creating-integral-user-stories/evals/fixtures/screen_simple_query.json'
+      - 'skills/creating-integral-user-stories/evals/trigger-evals.json'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/deep-audit-a01-a62
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Apply deterministic corrections
+        run: python tools/apply_cross_artifact_fixes.py
+
+      - name: Commit only when files changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo 'No cross-artifact changes required.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add skills/creating-integral-user-stories/evals/fixtures/screen_simple_query.json skills/creating-integral-user-stories/evals/trigger-evals.json
+          git commit -m 'fix A10 A12 cross-artifact alignment'
+          git push origin HEAD:fix/deep-audit-a01-a62
