@@ -1,121 +1,96 @@
 judge_code: J01_SOURCE_INTEGRITY
-version: v0.3
+judge_version: v0.4
 status: CANDIDATO_READ_ONLY
-scope: Verifica que la fuente utilizada exista, sea íntegra, versionada, resoluble y correctamente clasificada antes
-  de cualquier derivación.
+scope: Verifica que la fuente exista, sea íntegra, versionada, resoluble y correctamente clasificada antes de cualquier derivación.
 independence: worker_must_not_execute_own_judge
 retry_limit: 2
 required_inputs:
-- source_snapshot
-- source_references
-- classification_ledger
+  - source_snapshot
+  - source_references
+  - classification_ledger
+  - target_source_version
 preflight:
-- all_required_inputs_are_present
-- input_versions_are_compatible
-- source_and_evidence_refs_are_resolvable
-- judge_is_not_executed_by_the_worker_under_review
+  - all_required_inputs_are_present
+  - input_versions_are_compatible
+  - source_and_evidence_refs_are_resolvable
+  - judge_is_not_executed_by_the_worker_under_review
+  - input_sha256_is_present
+validators:
+  semantic_validator_ref: scripts/validate_source_integrity.py
+  runtime_status: AVAILABLE
+runtime_command: python scripts/validate_source_integrity.py <input.json> --evidence-ref <ref>
+self_test_command: python scripts/validate_source_integrity.py --self-test
+deterministic_procedure:
+  - load_source_without_mutation
+  - recompute_source_sha256
+  - resolve_each_declared_reference
+  - compare_source_version_to_target
+  - verify_classification_ledger
+  - record_actual_expected_for_each_assertion
+  - emit_schema_valid_judge_result
 assertions:
-- assertion_id: source_snapshot_sha_present
-  target: source_snapshot
-  pass_condition: source_snapshot.sha256 matches ^[0-9a-f]{64}$
-  critical: true
-  evidence_required: true
-- assertion_id: source_version_matches_target
-  target: source_snapshot
-  pass_condition: source_snapshot.source_version = target_source_version
-  critical: true
-  evidence_required: true
-- assertion_id: source_references_resolvable
-  target: source_references
-  pass_condition: resolved_source_references = declared_source_references
-  critical: true
-  evidence_required: true
-- assertion_id: source_hash_mismatches
-  target: source_snapshot
-  pass_condition: source_hash_mismatches = 0
-  critical: true
-  evidence_required: true
-- assertion_id: confirmed_rules_without_literal_source
-  target: classification_ledger
-  pass_condition: confirmed_rules_without_literal_source = 0
-  critical: true
-  evidence_required: true
-- assertion_id: inferred_rules_without_label
-  target: classification_ledger
-  pass_condition: inferred_rules_without_label = 0
-  critical: true
-  evidence_required: true
-- assertion_id: blocked_items_without_reason
-  target: classification_ledger
-  pass_condition: blocked_items_without_reason = 0
-  critical: true
-  evidence_required: true
+  - {assertion_id: source_snapshot_sha_present, actual_ref: evidence.checks.source_snapshot_sha_present, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: source_version_matches_target, actual_ref: evidence.checks.source_version_matches_target, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: source_references_resolvable, actual_ref: evidence.checks.source_references_resolvable, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: source_hash_mismatches, actual_ref: evidence.checks.source_hash_mismatches, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: confirmed_rules_without_literal_source, actual_ref: evidence.checks.confirmed_rules_without_literal_source, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: inferred_rules_without_label, actual_ref: evidence.checks.inferred_rules_without_label, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: blocked_items_without_reason, actual_ref: evidence.checks.blocked_items_without_reason, expected: 0, critical: true, evidence_required: true}
 pass_if:
-- all_applicable_assertions_pass = true
-- compliance_bit = 1
-- evidence_refs_non_empty = true
+  - semantic_validator_exit_code = 0
+  - all_applicable_assertions_pass = true
+  - assertions_passed = assertions_total
+  - compliance_bit = 1
+  - evidence_refs_non_empty = true
 fail_if:
-- source_hash_mismatch = true
-- invented_rule_marked_confirmed = true
+  - source_hash_mismatch = true
+  - invented_rule_marked_confirmed = true
 block_if:
-- operational_source_unavailable = true
-- source_version_conflict = true
-- source_snapshot_unreadable = true
-result_values:
-- PASS_WITH_EVIDENCE
-- RETURN_TO_WORKER
-- BLOCKED
-- FAIL
-result_rules:
-  PASS_WITH_EVIDENCE: all applicable assertions pass; compliance_bit=1; evidence_refs non-empty
-  RETURN_TO_WORKER: one or more repairable assertions fail; compliance_bit=0; repairs are actionable
-  BLOCKED: a blocking condition is true or retry_limit is exhausted; compliance_bit=0
-  FAIL: evidence proves an unrecoverable contract violation within this execution; compliance_bit=0
+  - operational_source_unavailable = true
+  - source_version_conflict = true
+  - source_snapshot_unreadable = true
+  - semantic_validator_unavailable = true
+  - worker_judge_independence_broken = true
+result_values: [PASS_WITH_EVIDENCE, RETURN_TO_WORKER, BLOCKED, FAIL]
 required_evidence:
-- source_snapshot_sha
-- source_version
-- source_reference_resolution_count
-- classification_counts
-- hash_comparison
-- failed_assertions
-- blocking_assertions
-- repair_instructions
-repair_matrix:
-- assertion_id: source_references_resolvable
-  instruction: Corregir referencias o retirar afirmaciones sin fuente.
-  prohibited_shortcuts:
-  - delete_assertion
-  - lower_threshold
-  - invent_source
-  - self_approve
-- assertion_id: confirmed_rules_without_literal_source
-  instruction: Reclasificar como INFERRED/PROPOSED o aportar referencia literal.
-  prohibited_shortcuts:
-  - delete_assertion
-  - lower_threshold
-  - invent_source
-  - self_approve
-validator_ref: null
-output:
-  schema_ref: schemas/judge-result.schema.json
-  required_fields:
-  - judge_code
-  - result
-  - compliance_bit
+  - source_snapshot_sha
+  - computed_sha
+  - source_version
+  - source_reference_resolution_count
+  - classification_counts
   - failed_assertions
   - blocking_assertions
-  - evidence_refs
-  - evidence
   - repair_instructions
-  - retry_count
-  - judged_at
-prohibitions:
-- worker_self_approval
-- assertion_deletion_to_obtain_pass
-- threshold_reduction_to_obtain_pass
-- unresolved_evidence_reference
-- pass_without_evidence
-design_sources:
-- huggingface/transformers
-- freeCodeCamp/freeCodeCamp
-- Significant-Gravitas/AutoGPT
+  - executor_identity
+  - judge_version
+  - command
+  - started_at
+  - completed_at
+  - assertions_total
+  - assertions_passed
+  - input_sha256
+  - output_sha256
+  - evidence_sha256
+positive_behavior:
+  command: python scripts/validate_source_integrity.py --self-test
+  expected: positive_pass=true and exit_code=0
+negative_cases:
+  - {case: source_hash_mismatch, expected_result: RETURN_TO_WORKER, assertion: source_hash_mismatches}
+  - {case: unresolved_reference, expected_result: RETURN_TO_WORKER, assertion: source_references_resolvable}
+  - {case: missing_source, expected_result: BLOCKED, assertion: operational_source_unavailable}
+repair_matrix:
+  - assertion_id: source_references_resolvable
+    instruction: Corregir referencias o retirar afirmaciones sin fuente.
+    prohibited_shortcuts: [delete_assertion, lower_threshold, invent_source, self_approve]
+  - assertion_id: confirmed_rules_without_literal_source
+    instruction: Reclasificar como INFERRED/PROPOSED o aportar referencia literal.
+    prohibited_shortcuts: [delete_assertion, lower_threshold, invent_source, self_approve]
+output:
+  schema_ref: schemas/judge-result.schema.json
+  required_fields: [judge_code, judge_version, executor_identity, command, started_at, completed_at, exit_code, result, compliance_bit, assertions_total, assertions_passed, failed_assertions, blocking_assertions, repairs, repair_instructions, evidence_refs, evidence, evidence_sha256, input_sha256, output_sha256, retry_count]
+prohibitions: [worker_self_approval, assertion_deletion_to_obtain_pass, threshold_reduction_to_obtain_pass, unresolved_evidence_reference, pass_without_evidence]
+benchmark_dual:
+  verified_at: 2026-07-29
+  claude: {repository: anthropics/skills, reference: skills/skill-creator/SKILL.md, blob: 65b3a402dbd09b8e83f9d637c6b553875189085c, practice: evidence-first evals and programmatic grading}
+  github: {repository: freeCodeCamp/freeCodeCamp, stars_verified: 453125, reference: curriculum/schema/challenge-schema.js, blob: 7db60817942625110525fd313bf80f1df067f006, practice: deterministic validation and explicit rejection}
+  complement: recompute source hash instead of trusting declared metadata
