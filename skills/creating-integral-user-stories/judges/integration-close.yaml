@@ -11,6 +11,7 @@ preflight:
   - source_and_evidence_refs_are_resolvable
   - judge_is_not_executed_by_the_worker_under_review
   - input_sha256_is_present
+  - judge_version_and_executor_identity_are_present
 validators:
   semantic_validator_ref: scripts/calculate_binary_completion.py
   runtime_status: AVAILABLE
@@ -38,7 +39,7 @@ assertions:
   - {assertion_id: commit_sha_invalid, actual_ref: evidence.checks.commit_sha_invalid, expected: 0, critical: true, evidence_required: true}
 pass_if: [semantic_validator_exit_code = 0, all_applicable_assertions_pass = true, assertions_passed = assertions_total, compliance_bit = 1, evidence_refs_non_empty = true]
 fail_if: [production_authorized = true, merge_authorized = true, runtime_enabled = true]
-block_if: [execution_steps_missing = true, required_evidence_missing = true, github_readback_incomplete = true, semantic_validator_unavailable = true]
+block_if: [execution_steps_missing = true, required_evidence_missing = true, github_readback_incomplete = true, semantic_validator_unavailable = true, executor_identity_missing = true, judge_version_missing = true]
 result_values: [PASS_WITH_EVIDENCE, RETURN_TO_WORKER, BLOCKED, FAIL]
 required_evidence: [steps_evaluable, steps_passed_with_evidence, calculated_completion_percent, declared_completion_percent, close_conditions, final_result, repository, branch, commit_sha, executor_identity, judge_version, command, started_at, completed_at, assertions_total, assertions_passed, failed_assertions, blocking_assertions, repair_instructions, evidence_sha256, input_sha256, output_sha256]
 positive_behavior:
@@ -48,6 +49,8 @@ negative_cases:
   - {case: step_without_evidence_but_declared_100, expected_result: RETURN_TO_WORKER, assertion: required_steps_not_passed}
   - {case: close_condition_nonzero, expected_result: RETURN_TO_WORKER, assertion: steps_without_evidence}
   - {case: execution_steps_missing, expected_result: BLOCKED, assertion: execution_steps_missing}
+  - {case: production_or_merge_authorized, expected_result: FAIL, assertion: production_authorized}
+  - {case: missing_metadata, expected_result: BLOCKED, assertion: executor_identity_missing}
 repair_matrix:
   - assertion_id: completion_percent_not_100
     instruction: No estimar porcentaje; corregir steps con bit 0 y recalcular desde ledger.
@@ -57,10 +60,11 @@ repair_matrix:
     prohibited_shortcuts: [delete_assertion, lower_threshold, invent_source, self_approve]
 output:
   schema_ref: schemas/judge-result.schema.json
+  schema_version: v0.5
   required_fields: [schema_version, judge_code, judge_version, executor_identity, command, started_at, completed_at, exit_code, result, compliance_bit, assertions_total, assertions_passed, failed_assertions, blocking_assertions, repairs, repair_instructions, evidence_refs, evidence, evidence_sha256, input_sha256, output_sha256, retry_count]
 prohibitions: [worker_self_approval, assertion_deletion_to_obtain_pass, threshold_reduction_to_obtain_pass, unresolved_evidence_reference, pass_without_evidence, pass_without_semantic_runtime, estimated_completion_percent]
 benchmark_dual:
-  verified_at: 2026-07-29
-  claude: {repository: anthropics/skills, reference: skills/skill-creator/SKILL.md, blob: 65b3a402dbd09b8e83f9d637c6b553875189085c, practice: benchmark-driven objective closure}
-  github: {repository: Significant-Gravitas/AutoGPT, stars_verified: 185741, reference: classic/original_autogpt/CLAUDE.md, blob: 9c6d04300f83621b00e804298b7b8ea9ce3953c7, practice: explicit state persistence, cycle limits and workspace safety}
+  verified_at: 2026-07-30
+  claude: {repository: anthropics/skills, reference: skills/skill-creator/SKILL.md, practice: benchmark-driven objective closure}
+  github: {repository: Significant-Gravitas/AutoGPT, reference: classic/original_autogpt/CLAUDE.md, practice: explicit state persistence, cycle limits and workspace safety}
   complement: recompute percentage and every zero-close condition instead of trusting reported completion
