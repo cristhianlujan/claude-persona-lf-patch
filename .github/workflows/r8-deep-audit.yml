@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   sequential-audit:
@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Checkout audit branch
         uses: actions/checkout@v4
+        with:
+          ref: fix/deep-audit-a01-a62
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -31,6 +33,23 @@ jobs:
 
       - name: Install deterministic audit dependencies
         run: python -m pip install --disable-pip-version-check 'PyYAML==6.0.2' 'jsonschema==4.23.0'
+
+      - name: Apply deterministic cross-artifact corrections
+        run: python tools/apply_cross_artifact_fixes.py
+
+      - name: Persist corrections only on audit branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo 'No deterministic corrections required.'
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add skills/creating-integral-user-stories
+            git commit -m 'fix deterministic cross-artifact audit findings'
+            git push origin HEAD:fix/deep-audit-a01-a62
+          fi
 
       - name: Audit A01 through A62 sequentially
         env:
@@ -49,6 +68,8 @@ jobs:
             runtime_rc=0
             if [ "$num" -ge 13 ] && [ "$num" -le 22 ]; then
               python tools/judge_audit.py --artifact "${code}" --mode static --report-dir audit-results || static_rc=$?
+            elif [ -f "tools/static_v2/${code}.py" ]; then
+              python "tools/static_v2/${code}.py" --report-dir audit-results || static_rc=$?
             elif [ -f "tools/static/${code}.py" ]; then
               python "tools/static/${code}.py" --report-dir audit-results || static_rc=$?
             else
@@ -56,6 +77,8 @@ jobs:
             fi
             if [ "$num" -ge 13 ] && [ "$num" -le 22 ]; then
               python tools/judge_audit.py --artifact "${code}" --mode runtime --report-dir audit-results | tee "audit-results/${code}-runtime-console.json" || runtime_rc=${PIPESTATUS[0]}
+            elif [ -f "tools/runtime_v2/${code}.py" ]; then
+              python "tools/runtime_v2/${code}.py" | tee "audit-results/${code}-runtime.json" || runtime_rc=${PIPESTATUS[0]}
             elif [ -f "tools/runtime/${code}.py" ]; then
               python "tools/runtime/${code}.py" | tee "audit-results/${code}-runtime.json" || runtime_rc=${PIPESTATUS[0]}
             elif [ "$num" -le 4 ]; then
