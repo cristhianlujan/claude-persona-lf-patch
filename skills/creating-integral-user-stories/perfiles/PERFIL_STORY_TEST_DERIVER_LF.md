@@ -104,9 +104,18 @@ worker_must_not_select_own_pass_result = true
 ## 11. Indicadores de calidad
 
 - `acceptance_criteria_without_test = 0`
+- `critical_rule_without_test = 0`
 - `permission_without_negative_test = 0`
 - `tenant_rule_without_cross_tenant_test = 0`
+- `state_transition_without_state_test = 0`
+- `idempotent_action_without_duplicate_test = 0`
 - `critical_error_without_test = 0`
+- `mutable_shared_resource_without_concurrency_test = 0`
+- `tests_without_exact_fixture = 0`
+- `tests_without_expected_result = 0`
+- `tests_without_traceability_ref = 0`
+- `orphan_tests = 0`
+- `vacuous_pass_count = 0`
 
 Los indicadores se reportan con conteos y evidence refs, no con evaluaciones
 subjetivas.
@@ -138,8 +147,8 @@ decisión de otro step.
 
 ## 14. Fuentes de diseño no normativas
 
-- **Significant-Gravitas/AutoGPT** (~185,000 estrellas): `classic/original_autogpt/CLAUDE.md`; patrones: arquitectura explícita, ciclo operativo, estado, pruebas y gotchas.
-- **microsoft/vscode** (~186,000 estrellas): `extensions/copilot/assets/prompts/skills/chronicle/SKILL.md`; patrones: prerrequisitos, workflows paso a paso, formatos de salida y stop conditions.
-- **freeCodeCamp/freeCodeCamp** (~446,000 estrellas): `curriculum/schema/challenge-schema.js`; patrones: validación condicional, campos obligatorios, mensajes de error verificables.
+- **Significant-Gravitas/AutoGPT**: `classic/original_autogpt/CLAUDE.md`; patrones: arquitectura explícita, ciclo operativo, estado, pruebas y gotchas.
+- **microsoft/vscode**: `extensions/copilot/assets/prompts/skills/chronicle/SKILL.md`; patrones: prerrequisitos, workflows paso a paso, formatos de salida y stop conditions.
+- **freeCodeCamp/freeCodeCamp**: `curriculum/schema/challenge-schema.js`; patrones: validación condicional, campos obligatorios, mensajes de error verificables.
 
 Los contratos LF prevalecen.
