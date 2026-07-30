@@ -1,10 +1,8 @@
 # Plantilla integral de Story Pack
 
-Versión operativa: `v0.3`.
+Versión operativa: `v0.4`.
 
-Esta plantilla documenta las mismas secciones y restricciones que
-`schemas/story-pack.schema.json`. Para un ejemplo JSON válido y completo, usar
-`templates/story-pack.template.json`.
+Esta plantilla documenta las mismas secciones y restricciones que `schemas/story-pack.schema.json`. Para un ejemplo JSON válido y completo, usar `templates/story-pack.template.json`.
 
 ## A. Identidad y trazabilidad
 
@@ -33,65 +31,47 @@ Postcondiciones:
 Fuera de alcance:
 ```
 
-Cada criterio usa esta estructura:
-
-```yaml
-criterion_code: AC-DOMAIN-001
-given: estado inicial verificable
-when: acción o evento único
-then: resultado observable
-source_ref: SRC-001#rule
-```
+Cada criterio usa `criterion_code`, `given`, `when`, `then` y `source_ref`.
 
 ## C. Contrato de interacción
 
-Definir entradas, acción primaria, acciones secundarias, carga, estado vacío y
-confirmación. Prohibido inventar componentes o valores visuales.
+Definir entradas, acción primaria, acciones secundarias, carga, estado vacío y confirmación. Prohibido inventar componentes o valores visuales.
 
 ## D. Contrato de campos
 
-Una fila por cada `screen_field`. Incluir origen, tipo, required, edición,
-perfiles, visibilidad, PII, masking, analytics, logs, exportación, auditoría,
-retención, validaciones, mensajes y tokens.
+Una fila por cada `screen_field`. Incluir origen, tipo, required, edición, perfiles, visibilidad, PII, masking, analytics, logs, exportación, auditoría, retención, validaciones, mensajes y tokens.
 
 ## E. Validaciones
 
-Cada regla tiene código, campo, condición, error, criticidad y source_ref.
+Cada regla tiene código, campo, condición, error, criticidad y `source_ref`.
 
 ## F. Observaciones
 
-Cada observación tiene código, severidad, bloqueo, continuación, acción,
-message_code, auditoría y source_ref.
+Cada observación tiene código, severidad, bloqueo, continuación, acción, `message_code`, auditoría y `source_ref`.
 
 ## G. Errores
 
-Cada error tiene código único, severidad, retry, mensaje, correlación,
-auditoría, alerta y detalle técnico INTERNAL_ONLY.
+Cada error tiene código único, severidad, retry, mensaje, correlación, auditoría, alerta y detalle técnico `INTERNAL_ONLY`.
 
 ## H. Seguridad y privacidad
 
-Declarar autenticación, perfiles, permisos, tenant_key, política cross-tenant,
-enforcement server-side, RLS, MFA, rate limit, idempotencia y almacenamiento.
+Declarar autenticación, perfiles, permisos, `tenant_key`, política cross-tenant, enforcement server-side, RLS, MFA, rate limit, idempotencia y almacenamiento.
 
 ## I. Estados e integridad
 
-Declarar estado inicial, transiciones permitidas y prohibidas, concurrencia y
-efectos persistentes.
+Declarar estado inicial, transiciones permitidas y prohibidas, concurrencia y efectos persistentes.
 
 ## J. Auditoría
 
-Definir eventos por mutación o descarga sensible, estrategias de valores,
-permiso usado, correlación e idempotencia.
+Definir eventos por mutación o descarga sensible, estrategias de valores, permiso usado, correlación e idempotencia.
 
 ## K. Tokens y mensajes
 
-Referenciar tokens registrados o candidatos. Todo mensaje tiene código,
-severidad, audiencia, text_ref, acción y tono.
+Referenciar tokens registrados o candidatos. Todo mensaje tiene código, severidad, audiencia, `text_ref`, acción y tono.
 
 ## L. Analytics
 
-Solo eventos útiles, libres de PII, con trigger, propiedades seguras,
-correlation_id, sampling y retención.
+Solo eventos útiles, libres de PII, con trigger, propiedades seguras, correlation_id, sampling y retención.
 
 ## M. Observabilidad
 
@@ -99,24 +79,50 @@ Métricas, logs enmascarados, alertas y umbrales. No mezclar con auditoría.
 
 ## N. Responsive y accesibilidad
 
-Breakpoints, reflow, orden de contenido, foco, teclado, labels, anuncio de
-errores, reduced motion e indicadores no basados solo en color.
+Breakpoints, reflow, orden de contenido, foco, teclado, labels, anuncio de errores, reduced motion e indicadores no basados solo en color.
 
 ## O. Casos de prueba
 
-Cada prueba referencia criterio o regla, define precondiciones, pasos, resultado
-esperado, tipo negativo, tenant, actor y evidence_path.
+Cada prueba referencia criterio o regla, define precondiciones, pasos, resultado esperado, negativo, tenant, actor y `evidence_path`. Los fixtures exactos se mantienen como evidencia externa consumida por J10.
 
-## P. Dependencias, riesgos y decisiones
+## P. Dependencias, riesgos, decisiones y presupuesto de contexto
 
-Registrar dependencias con estado, riesgos con nivel y mitigación, y decisiones
-pendientes con los campos bloqueados.
+Registrar dependencias, riesgos y decisiones pendientes. `context_budget` es obligatorio e incluye:
+
+```text
+measurement_method
+canonical_story_tokens
+implementation_view_tokens
+active_context_tokens
+context_band
+direct_load_allowed
+specialized_views_required
+atomicity_review_required
+atomicity_review_result
+measured_at
+model_reference
+source_ref
+```
+
+Reglas:
+
+- `canonical_story_tokens > 12000` obliga `direct_load_allowed=false`, revisión de atomicidad y vistas especializadas.
+- `active_context_tokens > 15000` bloquea carga directa.
+- No estimar como medición exacta; registrar el método real.
 
 ## Q. Jueces y evidencia
 
-| Juez | Resultado | Bit | Fallas | Evidencia |
-|---|---|---:|---|---|
-| J03_STORY_CORE | PASS_WITH_EVIDENCE | 1 | vacío | ruta resoluble |
+Cada resultado usa el envelope de `schemas/judge-result.schema.json` v0.5: ejecutor, comando, timestamps, conteos de assertions, fallas, bloqueos, reparaciones, evidencia y hashes.
+
+## Casos de control
+
+### Positivo
+
+El JSON completo valida contra el schema, contiene `context_budget`, pruebas trazables y evidencia de jueces resoluble.
+
+### Negativo
+
+Un Story Pack sin `context_budget`, con carga directa por encima del límite o una prueba sin referencia debe ser rechazado.
 
 ## Reglas de uso
 
@@ -127,8 +133,12 @@ pendientes con los campos bloqueados.
 5. No declarar PASS desde un worker.
 6. Después de dos reparaciones fallidas, retornar BLOCKED.
 
-## Fuentes de diseño no normativas
+## Benchmark dual verificado
 
-- **microsoft/vscode** (~186,000 estrellas): `extensions/copilot/assets/prompts/skills/chronicle/SKILL.md`; patrones: prerrequisitos, workflows paso a paso, formatos de salida y stop conditions.
-- **freeCodeCamp/freeCodeCamp** (~446,000 estrellas): `curriculum/schema/challenge-schema.js`; patrones: validación condicional, campos obligatorios, mensajes de error verificables.
-- **huggingface/transformers** (~162,000 estrellas): `docs/source/en/testing.md`; patrones: arquitectura de pruebas reutilizable, casos rápidos y lentos, regresión y cobertura negativa.
+Fecha: `2026-07-29`.
+
+- **Claude Skills — anthropics/skills:** `skills/skill-creator/SKILL.md`, blob `65b3a402dbd09b8e83f9d637c6b553875189085c`; progressive disclosure, outputs exactos, evals y reparación.
+- **freeCodeCamp/freeCodeCamp — 453125 estrellas:** `curriculum/schema/challenge-schema.js`, blob `7db60817942625110525fd313bf80f1df067f006`; validación condicional y constraints explícitos.
+- **Significant-Gravitas/AutoGPT — 185741 estrellas:** `classic/original_autogpt/CLAUDE.md`, blob `9c6d04300f83621b00e804298b7b8ea9ce3953c7`; límites de ciclo, estado y carga de contexto.
+
+**Hallazgo diferencial incorporado:** el presupuesto de contexto se convierte en parte obligatoria del entregable y del criterio de atomicidad.
