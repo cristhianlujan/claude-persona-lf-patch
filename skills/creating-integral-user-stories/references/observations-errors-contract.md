@@ -1,6 +1,6 @@
 # Contrato de observaciones y errores
 
-Versión operativa: `v0.4`. Juez: `J05_OBSERVATIONS_ERRORS`.
+Versión operativa: `v0.5`. Juez: `J05_OBSERVATIONS_ERRORS`.
 Validador: `scripts/validate_field_coverage.py`.
 Evals ejecutables: `E23_FIELD_CONTRACTS_POSITIVE` y `E24_FIELD_CONTRACTS_NEGATIVE`.
 
@@ -39,9 +39,11 @@ Separar observaciones accionables de errores técnicos y asegurar código, mensa
 ## Contrato de salida
 
 ```text
-judge_code, result, compliance_bit, failed_assertions,
-blocking_assertions, evidence_refs, evidence,
-repair_instructions, retry_count, judged_at
+schema_version, judge_code, judge_version, executor_identity, command,
+started_at, completed_at, exit_code, result, compliance_bit, assertions_total,
+assertions_passed, failed_assertions, blocking_assertions, repairs,
+repair_instructions, evidence_refs, evidence, evidence_sha256, input_sha256,
+output_sha256, retry_count
 ```
 
 Condiciones de paso:
@@ -86,4 +88,4 @@ Resultado esperado: `RETURN_TO_WORKER`.
 
 ## Reparación y stop conditions
 
-Agregar únicamente la información respaldada por política o fuente. No borrar assertions, reducir umbrales, inventar códigos ni autoaprobar. Tras dos reintentos fallidos, devolver `BLOCKED`.
+Agregar únicamente la información respaldada por política o fuente. No borrar assertions, reducir umbrales, inventar códigos ni autoaprobar. Tras `retry_limit = 2` reintentos fallidos, devolver `BLOCKED`.
