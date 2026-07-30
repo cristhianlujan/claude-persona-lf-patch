@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import hashlib
 import json
 import re
 import tempfile
@@ -486,6 +487,22 @@ def package_audit(root: Path) -> dict[str, Any]:
     }
 
 
+def package_input_sha256(root: Path) -> str:
+    """Hash a package directory deterministically from paths and file contents."""
+    digest = hashlib.sha256()
+    files = sorted(
+        path for path in root.rglob("*")
+        if path.is_file() and "__pycache__" not in path.parts and path.suffix != ".pyc"
+    )
+    for path in files:
+        relative = path.relative_to(root).as_posix().encode("utf-8")
+        digest.update(relative)
+        digest.update(b"\0")
+        digest.update(hashlib.sha256(path.read_bytes()).digest())
+        digest.update(b"\n")
+    return digest.hexdigest()
+
+
 def emit_package_result(root: Path, evidence_refs: list[str], retry_count: int) -> int:
     audit = package_audit(root)
     low_scores = [item.as_dict() for item in audit["audits"] if not item.passed]
@@ -515,6 +532,7 @@ def emit_package_result(root: Path, evidence_refs: list[str], retry_count: int) 
         "contract_schema_consistency": audit["consistency"],
         "checks": checks,
         "input_path": str(root),
+        "input_sha256": package_input_sha256(root),
     }
     return emit(result_object(
         JUDGE,

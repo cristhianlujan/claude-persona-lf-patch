@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -38,7 +39,7 @@ CONFIG = {
     "A16": {"path": "judges/observations-errors.yaml", "judge": "J05_OBSERVATIONS_ERRORS", "assertions": 7, "validator": "scripts/validate_field_coverage.py", "example_source": "agents/cross-cutting-enricher.md", "example_judge": 5, "case_ids": ("E23_FIELD_CONTRACTS_POSITIVE", "E24_FIELD_CONTRACTS_NEGATIVE")},
     "A17": {"path": "judges/screen-decomposition.yaml", "judge": "J02_SCREEN_DECOMPOSITION", "assertions": 12, "validator": "scripts/validate_screen_decomposition.py", "example_source": "agents/screen-decomposer.md", "example_judge": 2},
     "A18": {"path": "judges/security-privacy.yaml", "judge": "J06_SECURITY_PRIVACY", "assertions": 9, "validator": "scripts/validate_security_coverage.py", "example_source": "agents/cross-cutting-enricher.md", "example_judge": 6},
-    "A19": {"path": "judges/skill-package.yaml", "judge": "J11_SKILL_PACKAGE", "assertions": 10, "validator": "scripts/validate_package.py", "special": "package"},
+    "A19": {"path": "judges/skill-package.yaml", "judge": "J11_SKILL_PACKAGE", "assertions": 5, "validator": "scripts/validate_package.py", "special": "package"},
     "A20": {"path": "judges/story-core.yaml", "judge": "J03_STORY_CORE", "assertions": 8, "validator": "scripts/validate_story_pack.py", "special": "story"},
     "A21": {"path": "judges/test-coverage.yaml", "judge": "J10_TEST_COVERAGE", "assertions": 13, "validator": "scripts/validate_test_coverage.py", "example_source": "agents/test-deriver.md", "example_judge": 10},
     "A22": {"path": "judges/tokens-messages.yaml", "judge": "J08_TOKENS_MESSAGES", "assertions": 11, "validator": "scripts/validate_tokens.py", "example_source": "agents/cross-cutting-enricher.md", "example_judge": 8},
@@ -48,7 +49,17 @@ HEADING = re.compile(r"^(#{2,4})\s+(.+?)\s*$", re.M)
 
 
 def repo_stars(repo: str) -> int:
-    request = urllib.request.Request(f"https://api.github.com/repos/{repo}", headers={"Accept": "application/vnd.github+json", "User-Agent": "r8-judge-audit"})
+    snapshot_path = ROOT / "tools" / "benchmark-snapshot.json"
+    if snapshot_path.is_file():
+        snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
+        for row in snapshot.get("repositories", []):
+            if row.get("repository") == repo:
+                return int(row["stars_lower_bound"])
+        raise ValueError(f"benchmark_missing_from_snapshot:{repo}")
+    request = urllib.request.Request(
+        f"https://api.github.com/repos/{repo}",
+        headers={"Accept": "application/vnd.github+json", "User-Agent": "r8-judge-audit"},
+    )
     token = os.getenv("GITHUB_TOKEN")
     if token:
         request.add_header("Authorization", f"Bearer {token}")
@@ -304,6 +315,45 @@ def run_case_id(cfg: dict[str, Any], case_id: str, expected_candidate: str) -> d
         return {"title": case_id, "passed": False, "command": command, "process_exit_code": proc.returncode, "stdout": proc.stdout[-4000:], "stderr": proc.stderr[-2000:], "error": f"{type(exc).__name__}:{exc}"}
 
 
+def run_package_case(
+    cfg: dict[str, Any],
+    title: str,
+    *,
+    broken: bool,
+    expected_result: str,
+    with_metadata: bool = True,
+) -> dict[str, Any]:
+    validator_file = SKILL / cfg["validator"]
+    module_name = f"r8_validate_package_{title.lower()}"
+    spec = importlib.util.spec_from_file_location(module_name, validator_file)
+    if spec is None or spec.loader is None:
+        return {"title": title, "passed": False, "error": "validator_module_unloadable"}
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    with tempfile.TemporaryDirectory(prefix=f"r8_{title.lower()}_") as tmp:
+        root = Path(tmp)
+        module.write_self_test_package(root, broken)
+        command = [sys.executable, cfg["validator"], str(root), "--evidence-ref", f"directory:{root}"]
+        proc = subprocess.run(command, cwd=SKILL, env=runtime_env(with_metadata), text=True, capture_output=True, timeout=240)
+        try:
+            result = parse_emitted(proc.stdout)
+            errors = validate_envelope(result, cfg["judge"], expected_result)
+            hashes_ok = all(isinstance(result.get(key), str) and len(result[key]) == 64 for key in ("input_sha256", "evidence_sha256", "output_sha256"))
+            passed = result.get("result") == expected_result and not errors and hashes_ok
+            return {
+                "title": title, "passed": passed, "command": command, "process_exit_code": proc.returncode,
+                "expected_result": expected_result, "actual_result": result.get("result"),
+                "failed_assertions": result.get("failed_assertions"), "blocking_assertions": result.get("blocking_assertions"),
+                "assertions_total": result.get("assertions_total"), "assertions_passed": result.get("assertions_passed"),
+                "input_sha256": result.get("input_sha256"), "evidence_sha256": result.get("evidence_sha256"),
+                "output_sha256": result.get("output_sha256"), "envelope_errors": errors,
+                "evidence_checks": result.get("evidence", {}).get("checks"),
+            }
+        except Exception as exc:
+            return {"title": title, "passed": False, "command": command, "process_exit_code": proc.returncode, "stdout": proc.stdout[-5000:], "stderr": proc.stderr[-2500:], "error": f"{type(exc).__name__}:{exc}"}
+
+
 def run_self_test(cfg: dict[str, Any]) -> dict[str, Any]:
     command = [sys.executable, cfg["validator"], "--self-test"]
     proc = subprocess.run(command, cwd=SKILL, env=runtime_env(True), text=True, capture_output=True, timeout=240)
@@ -328,7 +378,12 @@ def runtime_audit(code: str, report_dir: Path) -> int:
             run_self_test(cfg),
         ]
     elif special == "package":
-        executions.append(run_self_test(cfg))
+        executions += [
+            run_package_case(cfg, "PACKAGE_POSITIVE", broken=False, expected_result="PASS_WITH_EVIDENCE"),
+            run_package_case(cfg, "PACKAGE_NEGATIVE", broken=True, expected_result="RETURN_TO_WORKER"),
+            run_package_case(cfg, "MISSING_METADATA", broken=False, expected_result="BLOCKED", with_metadata=False),
+            run_self_test(cfg),
+        ]
     elif cfg.get("case_ids"):
         positive, negative = cfg["case_ids"]
         executions += [
@@ -365,7 +420,7 @@ def runtime_audit(code: str, report_dir: Path) -> int:
                 positive_checks |= set(checks)
     checks = {
         "all_executions_pass": bool(executions) and all(item.get("passed") is True for item in executions),
-        "positive_and_negative_present": any(item.get("title") in {"POSITIVE", "E21_STORY_CORE_POSITIVE", "E23_FIELD_CONTRACTS_POSITIVE"} for item in executions) and any(item.get("title") in {"NEGATIVE", "E22_STORY_CORE_NEGATIVE", "E24_FIELD_CONTRACTS_NEGATIVE"} for item in executions),
+        "positive_and_negative_present": any(item.get("title") in {"POSITIVE", "PACKAGE_POSITIVE", "E21_STORY_CORE_POSITIVE", "E23_FIELD_CONTRACTS_POSITIVE"} for item in executions) and any(item.get("title") in {"NEGATIVE", "PACKAGE_NEGATIVE", "E22_STORY_CORE_NEGATIVE", "E24_FIELD_CONTRACTS_NEGATIVE"} for item in executions),
         "metadata_block_test_present": special in {"story", "package"} or any(item.get("title") == "MISSING_METADATA" for item in executions),
         "yaml_assertions_nonempty": len(yaml_ids) == cfg["assertions"],
         "runtime_outputs_hashed_when_enveloped": all(
