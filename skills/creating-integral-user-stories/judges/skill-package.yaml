@@ -1,57 +1,169 @@
 judge_code: J11_SKILL_PACKAGE
-version: v0.4
+judge_version: v0.5
 status: CANDIDATO_READ_ONLY
-scope: Verifica inventario exacto, calidad por tier, referencias, consistencia contrato-schema, scripts y evaluaciones.
+scope: Verifica integridad estructural, inventario canónico, calidad mínima y consistencia contrato-schema del paquete completo sin autorizar merge, producción ni runtime.
 independence: worker_must_not_execute_own_judge
 retry_limit: 2
 required_inputs:
+  - package_root
   - manifest
-  - package_inventory
-  - artifact_quality_results
-  - contract_schema_consistency
-  - script_compilation_results
-  - eval_results
+  - expected_inventory
+  - canonical_hash_map
+  - evidence_bundle
 preflight:
   - all_required_inputs_are_present
-  - manifest_expected_file_count_is_62
-  - judge_is_not_executed_by_worker
+  - manifest_and_inventory_are_resolvable
+  - package_root_is_read_only_for_judge
+  - judge_is_not_executed_by_the_worker_under_review
+  - input_sha256_is_present
+validators:
+  semantic_validator_ref: scripts/validate_package.py
+  runtime_status: AVAILABLE
+runtime_command: python scripts/validate_package.py <package-root> --evidence-ref <ref>
+self_test_command: python scripts/validate_package.py --self-test
+assertions:
+  - assertion_id: missing_required_files
+    actual_ref: evidence.checks.missing_required_files
+    expected: []
+    critical: true
+    evidence_required: true
+  - assertion_id: unexpected_files
+    actual_ref: evidence.checks.unexpected_files
+    expected: []
+    critical: true
+    evidence_required: true
+  - assertion_id: placeholder_hits
+    actual_ref: evidence.checks.placeholder_hits
+    expected: []
+    critical: true
+    evidence_required: true
+  - assertion_id: artifacts_below_threshold
+    actual_ref: evidence.checks.artifacts_below_threshold
+    expected: []
+    critical: true
+    evidence_required: true
+  - assertion_id: contract_schema_consistency
+    actual_ref: evidence.checks.contract_schema_consistency
+    expected: []
+    critical: true
+    evidence_required: true
 pass_if:
-  - expected_files = actual_files
-  - missing_required_files = 0
-  - unexpected_files = 0
-  - artifacts_below_threshold = 0
-  - broken_internal_references = 0
-  - placeholder_count = 0
-  - contract_schema_consistency_errors = 0
-  - script_compilation_errors = 0
-  - required_negative_evals_accepted = 0
+  - semantic_validator_exit_code = 0
+  - all_five_checks_are_empty = true
+  - assertions_passed = assertions_total
+  - compliance_bit = 1
+  - evidence_refs_non_empty = true
+  - input_output_evidence_hashes_present = true
 fail_if:
-  - schema_validation_error = true
-  - threshold_weakening_detected = true
-  - negative_fixture_not_rejected = true
+  - manifest_or_inventory_proven_corrupt = true
 block_if:
-  - manifest_missing = true
-  - package_inventory_unavailable = true
-  - retry_limit_exhausted = true
-result_values: [PASS_WITH_EVIDENCE, RETURN_TO_WORKER, BLOCKED, FAIL]
+  - package_root_unavailable = true
+  - validator_unavailable = true
+  - executor_identity_missing = true
+  - judge_version_missing = true
+  - input_sha256_missing = true
+result_values:
+  - PASS_WITH_EVIDENCE
+  - RETURN_TO_WORKER
+  - BLOCKED
+  - FAIL
+result_rules:
+  PASS_WITH_EVIDENCE: Los cinco controles agregados pasan y la evidencia v0.5 es resoluble.
+  RETURN_TO_WORKER: Existe al menos un hallazgo reparable en inventario, placeholders, calidad o consistencia.
+  BLOCKED: Falta paquete, runtime, metadata o hash de entrada.
+  FAIL: La evidencia demuestra corrupción no reparable dentro de esta ejecución.
 required_evidence:
   - expected_files
   - actual_files
-  - tier_thresholds
+  - passed_artifacts
+  - failed_artifacts
   - score_distribution
   - artifact_audits
   - contract_schema_consistency
-  - positive_eval_results
-  - negative_eval_results
+  - executor_identity
+  - judge_version
+  - command
+  - started_at
+  - completed_at
+  - assertions_total
+  - assertions_passed
+  - failed_assertions
+  - blocking_assertions
+  - repairs
+  - repair_instructions
+  - evidence_refs
+  - input_sha256
+  - evidence_sha256
+  - output_sha256
+positive_behavior:
+  command: python scripts/validate_package.py --self-test
+  expected: positive.all_artifacts_meet_threshold=true and positive.consistency_pass=true
+negative_cases:
+  - case: contract_field_missing_from_schema
+    command: python scripts/validate_package.py --self-test
+    expected_result: REJECTED
+    assertion: contract_schema_consistency
+  - case: missing_executor_metadata
+    expected_result: BLOCKED
+    assertion: executor_identity_missing
 repair_matrix:
+  - assertion_id: missing_required_files
+    instruction: Restaurar únicamente rutas canónicas declaradas y repetir la auditoría completa.
+    prohibited_shortcuts: [remove_manifest_entry, lower_inventory_count, invent_file, self_approve]
+  - assertion_id: unexpected_files
+    instruction: Declarar explícitamente el auxiliar autorizado fuera del inventario canónico o retirarlo del paquete.
+    prohibited_shortcuts: [ignore_unexpected_file, expand_canonical_count_without_authority, self_approve]
+  - assertion_id: placeholder_hits
+    instruction: Sustituir placeholders ejecutables por datos de ejemplo seguros o marcarlos como plantilla autorizada.
+    prohibited_shortcuts: [disable_placeholder_check, lower_threshold, self_approve]
   - assertion_id: artifacts_below_threshold
-    instruction: Reparar cada artefacto bajo su umbral; no cambiar el tier ni reducir la rúbrica.
-    prohibited_shortcuts: [delete_assertion, lower_threshold, change_tier_without_scope_decision, self_approve]
-  - assertion_id: contract_schema_consistency_errors
-    instruction: Alinear campos declarados en contrato y schema y repetir el fixture negativo.
-    prohibited_shortcuts: [ignore_field, weaken_schema, delete_contract_requirement, self_approve]
-validator_ref: scripts/validate_package.py
+    instruction: Reparar únicamente los artefactos listados y reejecutar el gate completo.
+    prohibited_shortcuts: [lower_threshold, delete_dimension, self_approve]
+  - assertion_id: contract_schema_consistency
+    instruction: Alinear contrato y schema sin eliminar el requisito funcional.
+    prohibited_shortcuts: [delete_contract_field, weaken_schema_without_source, self_approve]
 output:
   schema_ref: schemas/judge-result.schema.json
-  required_fields: [judge_code, result, compliance_bit, failed_assertions, blocking_assertions, evidence_refs, evidence, repair_instructions, retry_count, judged_at]
-prohibitions: [worker_self_approval, assertion_deletion_to_obtain_pass, threshold_reduction_to_obtain_pass, pass_without_evidence]
+  required_fields:
+    - schema_version
+    - judge_code
+    - judge_version
+    - executor_identity
+    - command
+    - started_at
+    - completed_at
+    - exit_code
+    - result
+    - compliance_bit
+    - assertions_total
+    - assertions_passed
+    - failed_assertions
+    - blocking_assertions
+    - repairs
+    - repair_instructions
+    - evidence_refs
+    - evidence
+    - evidence_sha256
+    - input_sha256
+    - output_sha256
+    - retry_count
+prohibitions:
+  - worker_self_approval
+  - assertion_deletion_to_obtain_pass
+  - threshold_reduction_to_obtain_pass
+  - unresolved_evidence_reference
+  - pass_without_evidence
+  - pass_without_semantic_runtime
+  - direct_main_write
+  - merge_or_production_authorization
+benchmark_dual:
+  claude:
+    repository: anthropics/skills
+    practice: objective evals, progressive disclosure and iterative repair
+  github:
+    repositories:
+      - microsoft/vscode
+      - freeCodeCamp/freeCodeCamp
+      - Significant-Gravitas/AutoGPT
+    practice: deterministic validation, negative cases, explicit state and workspace safety
+  note: Star counts are verified by the audit runner and are not stored as canonical PASS evidence.
