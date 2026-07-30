@@ -1,9 +1,9 @@
 name: R8 Base Snapshot
 
 on:
-  push:
+  pull_request:
     branches:
-      - fix/deep-audit-a01-a62
+      - feat/integral-story-creator-r8-forward
     paths:
       - '.github/workflows/r8-base-snapshot.yml'
   workflow_dispatch:
