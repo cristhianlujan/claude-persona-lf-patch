@@ -96,4 +96,5 @@ benchmark_dual:
   verified_at: 2026-07-30
   claude: {repository: anthropics/skills, reference: skills/skill-creator/SKILL.md, practice: objective evals and iterative repair}
   github: {repository: freeCodeCamp/freeCodeCamp, reference: curriculum/schema/challenge-schema.js, practice: deterministic constraints and explicit rejection}
+  github_secondary: {repository: Significant-Gravitas/AutoGPT, reference: classic/original_autogpt/CLAUDE.md, practice: state persistence, cycle limits and workspace safety}
   complement: template requires runtime, metadata and cryptographic evidence before PASS
