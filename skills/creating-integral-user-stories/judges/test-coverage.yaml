@@ -121,7 +121,8 @@ repair_matrix:
     prohibited_shortcuts: [invent_reference, delete_assertion, lower_threshold, self_approve]
 output:
   schema_ref: schemas/judge-result.schema.json
-  required_fields: [judge_code, judge_version, executor_identity, command, started_at, completed_at, exit_code, result, compliance_bit, assertions_total, assertions_passed, failed_assertions, blocking_assertions, repairs, repair_instructions, evidence_refs, evidence, evidence_sha256, input_sha256, output_sha256, retry_count]
+  schema_version: v0.5
+  required_fields: [schema_version, judge_code, judge_version, executor_identity, command, started_at, completed_at, exit_code, result, compliance_bit, assertions_total, assertions_passed, failed_assertions, blocking_assertions, repairs, repair_instructions, evidence_refs, evidence, evidence_sha256, input_sha256, output_sha256, retry_count]
 prohibitions:
   - worker_self_approval
   - assertion_deletion_to_obtain_pass
