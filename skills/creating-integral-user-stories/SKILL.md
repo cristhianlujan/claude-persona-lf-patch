@@ -5,7 +5,7 @@ description: >
   specification, handoff, or partial story set must be decomposed into complete,
   traceable and implementation-ready Story Packs with security, privacy,
   analytics, observability, auditability, accessibility and tests.
-version: v0.4
+version: v0.5
 status: CANDIDATO_READ_ONLY
 operation_code: BUILD_INTEGRAL_STORY_CREATOR_LF
 runtime: disabled
@@ -15,103 +15,73 @@ runtime: disabled
 
 ## 1. Misión
 
-Convertir una fuente funcional verificable en historias de usuario atómicas,
-completas y trazables. Cada historia se entrega como un **Story Pack A–Q** y
-pasa por jueces independientes. La skill no aprueba su propio trabajo, no
-habilita runtime, no autoriza producción y no hace merge.
+Convertir una fuente funcional verificable en historias de usuario atómicas, completas y trazables. Cada historia se entrega como un **Story Pack A–Q**, pasa por jueces independientes y conserva evidencia resoluble desde la fuente hasta GitHub y Supabase.
 
 ```text
-fuente verificable
-→ snapshot + SHA-256
-→ inventarios de pantalla
-→ unidades funcionales
-→ decisión por unidad
-→ Story Packs A–Q
-→ pruebas
-→ jueces independientes
-→ evidencia y ledger binario
+fuente + versión + SHA-256
+→ integridad J01
+→ descomposición J02
+→ Story Pack A–Q J03–J09
+→ pruebas J10
+→ paquete J11
+→ integridad GitHub J12
+→ cierre binario J13
+→ evidencia GitHub–Supabase
 ```
 
-## 2. Definición de completo
+Esta skill no habilita runtime operativo, no autoriza producción, no hace merge, no publica release y no aprueba su propio trabajo.
 
-Una historia no está completa por tener solamente actor, necesidad y beneficio.
-Debe incluir, cuando aplique:
-
-1. identidad y trazabilidad;
-2. núcleo funcional;
-3. interacción;
-4. contrato por campo;
-5. validaciones;
-6. observaciones;
-7. errores;
-8. seguridad y privacidad;
-9. estados e integridad;
-10. auditoría;
-11. tokens y mensajes;
-12. analytics;
-13. observabilidad;
-14. responsive y accesibilidad;
-15. pruebas;
-16. dependencias, riesgos y decisiones pendientes;
-17. jueces y evidencia.
-
-La ausencia silenciosa de una sección aplicable es una falla. Una definición que
-la fuente no permite confirmar se registra como `PENDING_DECISION`; nunca se
-completa con una inferencia presentada como hecho.
-
-## 3. Activación
+## 2. Activación
 
 Activar cuando exista al menos uno de estos objetos:
 
 - pantalla registrada;
 - módulo o flujo funcional;
 - prototipo con comportamiento identificable;
-- especificación funcional;
-- handoff de producto;
-- historias parciales que deben completarse;
-- backlog que conserva referencia a una fuente operativa;
-- solicitud explícita de criterios, campos, seguridad, observabilidad o pruebas
-  para una pantalla o flujo.
+- especificación funcional o handoff;
+- backlog o historias parciales con fuente resoluble;
+- solicitud explícita de campos, criterios, seguridad, observabilidad o pruebas.
 
 ### No activar
 
 No activar para:
 
 - traducción, resumen o redacción libre;
-- priorización sin fuente funcional;
-- ideación sin pantalla, flujo ni requerimiento verificable;
-- aprobación o declaración de vigencia;
+- ideación sin fuente funcional verificable;
+- priorización sin evidencia;
 - implementación de código sin Story Pack;
-- solicitudes para saltar jueces, evidencia o restricciones.
+- declaración de vigencia, producción o aprobación;
+- solicitudes para saltar jueces, pruebas o hashes.
 
-Si el pedido parece relacionado pero no existe fuente suficiente, activar en
-modo `NEEDS_SOURCE_CONTEXT` y detener la generación del paquete.
+Si el pedido es aplicable pero falta fuente, retornar `NEEDS_SOURCE_CONTEXT` y detener la derivación.
 
-## 4. Entradas mínimas
+## 3. Entradas mínimas
 
-| Entrada | Obligatoria | Regla |
-|---|---:|---|
-| `target` | Sí | `screen_code`, módulo o conjunto de historias parciales |
-| `source_snapshot` | Sí | versión, contenido o referencia resoluble y SHA-256 |
-| `task_packet` | Sí para ejecución delegada | valida contra `schemas/task-packet.schema.json` |
-| inventarios | Según step | contextos, permisos, campos, transiciones y relaciones |
-| decisiones pendientes | Sí, aunque esté vacío | no cerrar sin evidencia |
-| contrato GitHub | Solo transporte | repo, rama, base, restricciones y readback |
+| Entrada | Regla |
+|---|---|
+| `target` | Pantalla, módulo o conjunto de historias objetivo. |
+| `source_snapshot` | Contenido, versión, referencia resoluble y SHA-256. |
+| `task_packet` | Obligatorio para ejecución delegada; valida contra `schemas/task-packet.schema.json`. |
+| inventarios | Contextos, campos, permisos, estados, transiciones y relaciones aplicables. |
+| `pending_decisions` | Obligatorio aunque sea vacío. |
+| contrato GitHub | Repo, rama, restricciones y readback. |
 
-## 5. Preflight bloqueante
+Todas las entradas deben pertenecer al mismo target, versión y snapshot.
 
-Antes de cualquier derivación:
+## 4. Preflight bloqueante
 
-1. confirmar que el target existe en la fuente;
-2. confirmar versión y SHA-256;
-3. resolver referencias internas;
-4. confirmar alcance de lectura y escritura;
-5. confirmar worker y juez asignados;
-6. verificar que el worker no ejecutará su propio juez;
-7. identificar conflictos y decisiones pendientes;
-8. fijar el inventario esperado de salidas.
+Antes de escribir:
 
-Detener con `BLOCKED` cuando:
+1. confirmar target, versión y SHA-256;
+2. resolver referencias internas;
+3. confirmar alcance de lectura y escritura;
+4. confirmar worker y juez independientes;
+5. fijar inventario esperado de outputs;
+6. verificar dependencias y validadores;
+7. detectar concurrencia y cambios posteriores;
+8. registrar contradicciones y decisiones pendientes.
+
+Retornar `BLOCKED` cuando ocurra cualquiera:
 
 ```text
 operational_source_unavailable = true
@@ -121,83 +91,170 @@ target_not_found = true
 source_version_conflict = true
 write_scope_not_authorized = true
 judge_independence_broken = true
+required_validator_unavailable = true
+concurrent_write_unreconciled = true
 ```
 
-## 6. Decisiones de descomposición
+## 5. Flujo obligatorio J01–J13
 
-Cada unidad funcional recibe exactamente una decisión:
-
-```text
-CREATE_STORY
-MERGE_WITH
-CROSS_CUTTING
-OUT_OF_SCOPE
-PENDING_DECISION
-DUPLICATE
-RELATED_SCREEN
-```
-
-Una decisión incluye justificación, clasificación y `source_ref`. No se crean
-historias por cada pestaña, botón o paso visual. Se separa por actor, permiso,
-resultado observable, estado, riesgo o recurso persistido.
-
-## 7. Flujo obligatorio y jueces
-
-| Orden | Step | Worker principal | Juez | Resultado exigido |
+| Orden | Step | Worker principal | Juez | Validador determinista |
 |---:|---|---|---|---|
-| 1 | Integridad de fuente | Screen Decomposer | J01 | `PASS_WITH_EVIDENCE` |
-| 2 | Descomposición | Screen Decomposer | J02 | `PASS_WITH_EVIDENCE` |
-| 3 | Núcleo A–B | Story Core Author | J03 | `PASS_WITH_EVIDENCE` |
-| 4 | Campos | Field Contract Author | J04 | `PASS_WITH_EVIDENCE` |
-| 5 | Observaciones y errores | Cross Cutting Enricher | J05 | `PASS_WITH_EVIDENCE` |
-| 6 | Seguridad y privacidad | Cross Cutting Enricher | J06 | `PASS_WITH_EVIDENCE` |
-| 7 | Auditoría y trazabilidad | Cross Cutting Enricher | J07 | `PASS_WITH_EVIDENCE` |
-| 8 | Tokens y mensajes | Cross Cutting Enricher | J08 | `PASS_WITH_EVIDENCE` |
-| 9 | Analytics y observabilidad | Cross Cutting Enricher | J09 | `PASS_WITH_EVIDENCE` |
-| 10 | Pruebas | Test Deriver | J10 | `PASS_WITH_EVIDENCE` |
-| 11 | Paquete | Orquestador independiente | J11 | `PASS_WITH_EVIDENCE` |
-| 12 | GitHub | Orquestador independiente | J12 | `PASS_WITH_EVIDENCE` o N/A autorizado |
-| 13 | Cierre | Orquestador independiente | J13 | `PASS_WITH_EVIDENCE` |
+| 1 | Integridad de fuente | Screen Decomposer | J01 | `scripts/validate_source_integrity.py` |
+| 2 | Descomposición | Screen Decomposer | J02 | `scripts/validate_screen_decomposition.py` |
+| 3 | Núcleo A–B | Story Core Author | J03 | `scripts/validate_story_pack.py` |
+| 4 | Campos | Field Contract Author | J04 | `scripts/validate_field_coverage.py` |
+| 5 | Observaciones y errores | Cross Cutting Enricher | J05 | validadores de paquete |
+| 6 | Seguridad y privacidad | Cross Cutting Enricher | J06 | `scripts/validate_security_coverage.py` |
+| 7 | Auditoría y trazabilidad | Cross Cutting Enricher | J07 | `scripts/validate_traceability.py` |
+| 8 | Tokens y mensajes | Cross Cutting Enricher | J08 | `scripts/validate_tokens.py` |
+| 9 | Analytics y observabilidad | Cross Cutting Enricher | J09 | `scripts/detect_pii_telemetry.py` |
+| 10 | Pruebas | Test Deriver | J10 | `scripts/validate_test_coverage.py` |
+| 11 | Paquete | Orquestador independiente | J11 | `scripts/validate_package.py` |
+| 12 | GitHub | Orquestador independiente | J12 | `scripts/validate_github_integrity.py` |
+| 13 | Cierre | Orquestador independiente | J13 | `scripts/calculate_binary_completion.py` |
 
-## 8. Contrato de workers
+Cada step exige `PASS_WITH_EVIDENCE`. `retry_limit = 2`. Después de dos reparaciones fallidas, retornar `BLOCKED` con evidencia acumulada.
 
-Los workers reciben un Task Packet y solo pueden:
+## 6. Contrato de workers
+
+Los workers solo pueden:
 
 - leer referencias declaradas;
-- escribir las secciones autorizadas;
-- emitir evidencia;
-- reparar assertions fallidas dentro del alcance;
+- escribir secciones autorizadas;
+- emitir evidencia y decisiones pendientes;
+- reparar assertions fallidas dentro del scope;
 - retornar `READY_FOR_JUDGE`, `RETURN_TO_WORKER` o `BLOCKED`.
 
-No pueden:
+No pueden autoaprobar, modificar decisiones previas, inventar hechos, reducir umbrales ni ejecutar su propio juez.
 
-- cambiar la decisión del step anterior;
-- crear hechos sin fuente;
-- ejecutar el juez que aprueba su resultado;
-- reducir umbrales para lograr PASS;
-- marcar `VALIDATED`, `APPROVED`, `VIGENTE` o `PRODUCTION_READY`.
+## 7. Story Pack A–Q
 
-`retry_limit = 2`. Después de dos reparaciones fallidas, el step queda
-`BLOCKED` con evidencia.
+La salida canónica contiene:
 
-## 9. Progressive disclosure
+```text
+A identidad y trazabilidad
+B núcleo funcional
+C interacción
+D contrato de campos
+E validaciones
+F observaciones
+G errores
+H seguridad y privacidad
+I estados e integridad
+J auditoría
+K tokens y mensajes
+L analytics
+M observabilidad
+N responsive y accesibilidad
+O pruebas
+P dependencias, riesgos, decisiones y context_budget
+Q jueces y evidencia
+```
+
+La ausencia silenciosa de una sección aplicable es falla. Lo no confirmado se registra como `PENDING_DECISION`, nunca como hecho.
+
+## 8. Progressive disclosure y contexto
 
 Cargar solo lo necesario para el step actual:
 
-- `references/`: reglas operativas y contratos;
+- `references/`: contratos normativos;
 - `schemas/`: forma machine-checkable;
-- `agents/`: procedimiento del worker;
-- `perfiles/`: identidad, permisos y límites del worker;
-- `judges/`: criterio independiente de aceptación;
+- `agents/`: procedimiento;
+- `perfiles/`: identidad, permisos y límites;
+- `judges/`: aceptación independiente;
 - `scripts/`: validación determinista;
-- `evals/`: regresión;
+- `evals/`: positivos y negativos;
 - `templates/`: forma de salida.
 
-El archivo raíz orquesta; no reemplaza los contratos especializados.
+`context_budget` es obligatorio. Un Story Pack sobre el límite no puede cargarse directamente; requiere vistas especializadas y revisión de atomicidad.
 
-## 10. Salidas
+## 9. Benchmark dual obligatorio
 
-La ejecución produce:
+Cada artefacto se compara individualmente contra:
+
+### A. Claude Skills
+
+Referencia base:
+
+```text
+repository: anthropics/skills
+path: skills/skill-creator/SKILL.md
+blob: 65b3a402dbd09b8e83f9d637c6b553875189085c
+```
+
+Evaluar propósito, activación, entradas, preflight, procedimiento, límites, salidas, positivos, negativos, stop conditions, reparación, independencia, evidencia y continuidad.
+
+### B. GitHub 150k+
+
+Usar al menos una referencia comparable con estrellas verificadas. Referencias R8:
+
+```text
+Significant-Gravitas/AutoGPT — 185741 estrellas
+classic/original_autogpt/CLAUDE.md
+
+freeCodeCamp/freeCodeCamp — 453125 estrellas
+curriculum/schema/challenge-schema.js
+```
+
+Extraer una práctica complementaria, no una similitud superficial. Si no existe hallazgo diferencial, registrar `NO_APPLICABLE_WOW_FOUND` con búsqueda y limitaciones.
+
+## 10. Notas y semáforos
+
+Cada artefacto recibe:
+
+```text
+NOTA_FINAL = MIN(NOTA_CLAUDE, NOTA_GITHUB, NOTA_TECNICA)
+```
+
+- verde: cada nota y final `> 9.5`;
+- amarillo: final entre 8.5 y 9.5;
+- rojo: final menor a 8.5 o bloqueo técnico;
+- sin nota: falta uno de los tres componentes.
+
+No usar promedios. Una nota editorial alta no compensa runtime, negativo, hashes o evidencia faltante.
+
+## 11. Pruebas y rechazo de falsos PASS
+
+Para cada cadena aplicable ejecutar:
+
+```text
+caso positivo
+→ resultado esperado
+caso negativo
+→ rechazo correcto
+BLOCKED/FAIL
+→ cuando apliquen
+```
+
+PASS está prohibido si falta runtime aplicable, evidencia, hash, prueba negativa, referencia resoluble o independencia.
+
+J12 compara tres conjuntos independientes:
+
+```text
+mapa canónico
+→ archivos escritos
+→ readback GitHub
+```
+
+J13 recalcula el porcentaje desde el ledger y exige todas las condiciones de cierre en cero. Un `100%` declarado no se acepta sin evidencia.
+
+## 12. Persistencia y continuidad
+
+Orden obligatorio:
+
+1. readback Supabase y GitHub;
+2. escribir solo en `feat/integral-story-creator-r8-forward`;
+3. readback del archivo;
+4. registrar commit, Git blob y SHA-256;
+5. crear nueva versión Supabase sin borrar historial;
+6. cambiar `is_current` objeto por objeto;
+7. verificar SHA GitHub–Supabase;
+8. registrar evento;
+9. actualizar `AUDIT_CHECKLIST_R8.md`.
+
+Ante concurrencia: no sobrescribir silenciosamente; crear versión nueva, reconciliar y registrar diferencia.
+
+## 13. Salidas
 
 ```text
 source_snapshot
@@ -207,165 +264,76 @@ story_pack[]
 judge_result[]
 execution_ledger
 execution_report
-github_readback_evidence (si aplica)
+github_readback_evidence
+supabase_readback_evidence
 ```
 
-Todos los objetos deben incluir referencias de evidencia resolubles. El cierre
-se calcula desde el ledger; no se informa un porcentaje estimado.
+Todos los objetos incluyen evidencia resoluble. Los resultados de jueces validan contra `schemas/judge-result.schema.json` v0.5.
 
-## 11. Reglas de evidencia
-
-- Hash de contenido: SHA-256 sobre UTF-8, LF, sin BOM y newline final.
-- Cada regla de negocio tiene `source_ref`.
-- Cada criterio tiene prueba o justificación de no aplicabilidad.
-- Cada mutación tiene contrato de auditoría.
-- Cada evento de analytics es libre de PII.
-- Cada lectura o mutación multiempresa tiene prueba cross-tenant negativa.
-- Cada resultado de juez declara assertions y reparaciones.
-
-## 12. Protocolo obligatorio de auditoría y continuidad
-
-Este protocolo prevalece en toda sesión nueva, reanudación o cambio de agente.
-No depende de la memoria conversacional.
-
-### 12.1 Readback de arranque
-
-Antes de escribir:
-
-1. leer el último evento de ejecución en Supabase;
-2. leer las versiones `is_current=true` de los artefactos objetivo;
-3. comprobar `validation_status`, SHA-256 y Git blob;
-4. verificar si una transacción interrumpida ya se aplicó;
-5. continuar únicamente desde el último estado confirmado.
-
-Nunca duplicar un evento, una versión ni un PASS por asumir que una operación
-anterior se completó.
-
-### 12.2 Cadena mínima para aprobar
-
-Ningún artefacto obtiene `PASS_WITH_EVIDENCE` ni nota `>= 9.5` por revisión
-editorial aislada. Debe validarse la cadena completa aplicable:
+## 14. Restricciones operativas
 
 ```text
-worker
-→ contrato de juez
-→ validador ejecutable
-→ scripts/lf_common.py
-→ schemas/judge-result.schema.json
-→ GitHub readback
-→ Supabase readback
+repository: cristhianlujan/claude-persona-lf-patch
+branch: feat/integral-story-creator-r8-forward
+main_write: false
+merge: false
+pr_ready: false
+pr_close: false
+release: false
+tag: false
+production: false
+runtime_enabled: false
 ```
 
-El gate exige:
+Estados prohibidos: `VALIDATED`, `APPROVED`, `VIGENTE`, `PRODUCTION_READY` y `PRODUCTION_AUTHORIZED`.
 
-- assertion IDs del worker y juez alineados 1:1;
-- `missing_judge_assertions = 0`;
-- `orphan_assertions = 0`;
-- caso positivo ejecutado;
-- caso negativo rechazado;
-- PASS, RETURN_TO_WORKER, BLOCKED y FAIL estructuralmente válidos cuando apliquen;
-- falso PASS rechazado;
-- invariantes runtime verificadas;
-- hashes y contenido coincidentes después de escritura.
+## 15. Condiciones de cierre R8
 
-### 12.3 Estados separados
-
-Toda auditoría registra por separado:
+Cerrar únicamente cuando:
 
 ```text
-editorial_score
-contract_alignment
-runtime_test_status
-integration_status
-canonical_status
+62/62 PASS_WITH_EVIDENCE
+62/62 benchmark Claude ejecutado
+62/62 benchmark GitHub 150k+ ejecutado
+62/62 notas Claude, GitHub, técnica y final > 9.5
+0 runtime bloqueados
+0 pruebas positivas pendientes
+0 pruebas negativas pendientes
+0 assertions huérfanas
+0 SHA mismatch
+0 current duplicados
+0 bloqueos abiertos
+J01–J13 verificados
+GitHub = Supabase
+checklist actualizado
 ```
 
-Una nota editorial alta no cambia `canonical_status`. Si cualquier componente
-de la cadena está pendiente, el resultado máximo es `NOT_VALIDATED` o
-`RETURN_TO_WORKER`, según exista o no una corrección exigible.
-
-### 12.4 Ledger visible de artefactos
-
-Cada checkpoint y handoff debe enumerar todos los artefactos tocados con una de
-estas acciones:
+Único cierre permitido:
 
 ```text
-EVALUATED
-CORRECTED
-REVALIDATED
-DOWNGRADED
-PENDING
+R8_AUDIT_COMPLETE_WITH_DUAL_BENCHMARK_EVIDENCE
 ```
 
-Para cada artefacto se registra ruta, versión, Git blob, SHA-256, estado y motivo.
-No se permite informar solo el porcentaje.
+Este cierre no significa producción, merge, release ni runtime habilitado.
 
-### 12.5 Benchmarks externos
+## 16. Casos de control
 
-Repositorios públicos y estrellas son referencias editoriales no normativas.
-No se guardan conteos temporales de estrellas dentro de contratos, schemas,
-agentes o jueces, y nunca constituyen evidencia de PASS.
+### Positivo
 
-## 13. Stop conditions
+Una fuente íntegra produce inventario, Story Packs A–Q, pruebas exactas, J01–J13 PASS, hashes iguales y ledger binario 100%.
 
-La ejecución se detiene y reporta el punto exacto cuando:
+### Negativo
 
-- falta una fuente obligatoria;
-- existe contradicción material;
-- se requiere DDL, producción, runtime o merge sin autorización;
-- el target branch cambió;
-- una reparación excede el alcance;
-- un juez crítico no pasa después de dos reintentos;
-- el readback no coincide con el contenido canónico.
+Rechazar cuando exista fuente sin hash, regla inventada, cobertura pendiente, fixture genérico, evidencia vacía, SHA distinto, rama incorrecta o cierre declarado al 100% con un step sin evidencia.
 
-## 14. Ejemplo de activación
+### Bloqueado
 
-**Pedido:** “Tengo una pantalla de aprobación con operador y supervisor.
-Necesito historias completas, seguridad y pruebas.”
-
-**Respuesta operativa esperada:**
-
-```text
-ACTIVATE
-→ solicitar/leer fuente
-→ snapshot
-→ J01
-→ descomposición por resultados y permisos
-→ Story Packs
-→ controles de aprobación/rechazo/observación
-→ pruebas positivas, negativas y cross-tenant
-→ jueces y evidencia
-```
-
-## 15. Ejemplo de bloqueo
-
-**Pedido:** “La pantalla se llama Gestión. Completa todo como consideres.”
-
-```json
-{
-  "activation": "NEEDS_SOURCE_CONTEXT",
-  "result": "BLOCKED",
-  "blocking_assertions": [
-    "operational_source_unavailable = true",
-    "business_results_undefined = true"
-  ],
-  "must_not_invent": true
-}
-```
-
-## 16. Límites duros
-
-```text
-NO_VALIDATED: true
-NO_PRODUCCION: true
-NO_RUNTIME_REAL: true
-NO_DIRECT_MAIN_WRITE: true
-NO_MERGE: true
-NO_MARCAR_VIGENTE: true
-```
+Bloquear ante fuente ausente, validador no disponible, conflicto de versión, escritura concurrente no reconciliada o dependencia material sin resolver.
 
 ## 17. Fuentes de diseño no normativas
 
-Patrones consultados: `microsoft/vscode`, `Significant-Gravitas/AutoGPT` y
-`freeCodeCamp/freeCodeCamp`. Se usan únicamente para mejorar ejecutabilidad,
-validación y claridad. Los contratos LF y la fuente operativa prevalecen.
+- **Anthropic Skills:** evals realistas, grading programático, progressive disclosure y reparación iterativa.
+- **AutoGPT:** estado explícito, límites de ejecución, persistencia y gotchas operativos.
+- **freeCodeCamp:** constraints condicionales, unicidad y rechazo determinista.
+
+Los contratos LF y la fuente operativa prevalecen ante cualquier diferencia.
