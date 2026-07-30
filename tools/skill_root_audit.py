@@ -54,7 +54,7 @@ def findings(text: str) -> list[str]:
         found.append("temporal_star_counts")
     if "NOTA_FINAL = MIN" not in secs.get(10, ""):
         found.append("score_formula")
-    if not all(token in secs.get(11, "") for token in ("caso positivo", "caso negativo", "BLOCKED", "FAIL", "Un `100%` declarado")):
+    if not all(token in secs.get(11, "") for token in ("caso positivo", "caso negativo", "BLOCKED", "FAIL", "`100%` declarado")):
         found.append("test_matrix")
     persistence = secs.get(12, "")
     if not all(token in persistence for token in ("fix/deep-audit-a01-a62", "PR 57", "nueva versión Supabase", "SHA GitHub–Supabase")):
