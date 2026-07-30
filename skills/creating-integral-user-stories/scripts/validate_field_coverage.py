@@ -8,8 +8,10 @@ POS="E23_FIELD_CONTRACTS_POSITIVE"; NEG="E24_FIELD_CONTRACTS_NEGATIVE"; FIXTURE=
 PII={"PII_INDIRECT","PII_DIRECT","PII_SENSITIVE","PII_FINANCIAL"}
 
 def field_checks(pack):
+    if "screen_fields" not in pack or "fields" not in pack: raise ValidationInputError("field_inventory_missing")
     sf=pack.get("screen_fields",[]); fs=pack.get("fields",[])
     if not isinstance(sf,list) or not isinstance(fs,list): raise ValidationInputError("screen_fields_and_fields_must_be_arrays")
+    if not sf or not fs: raise ValidationInputError("field_inventory_empty")
     codes=[x.get("field_code") for x in fs if isinstance(x,dict)]; declared={x for x in sf if isinstance(x,str)}; contracted={x for x in codes if x}
     c={"fields_without_contract":sorted(declared-contracted),"unexpected_field_contracts":sorted(contracted-declared),"duplicate_field_codes":duplicate_values(x for x in codes if x),"fields_without_visibility_rule":[],"fields_without_editability_rule":[],"pii_fields_without_classification":[],"pii_fields_with_analytics_allowed":[],"pii_fields_with_logs_allowed_without_rule":[],"editable_fields_without_audit_strategy":[],"fields_without_validation_mapping":[]}
     for i,x in enumerate(fs):
@@ -26,8 +28,11 @@ def field_checks(pack):
     return c,{"screen_fields_count":len(declared),"field_contracts_count":len(fs),"pii_field_count":sum(isinstance(x,dict) and x.get("pii_classification") in PII for x in fs),"editable_field_count":sum(isinstance(x,dict) and x.get("editable") is True for x in fs)}
 
 def oe_checks(pack):
+    if "observations" not in pack or "errors" not in pack: raise ValidationInputError("observations_errors_inventory_missing")
     obs=pack.get("observations",[]); errs=pack.get("errors",[])
     if not isinstance(obs,list) or not isinstance(errs,list): raise ValidationInputError("observations_and_errors_must_be_arrays")
+    if not obs: raise ValidationInputError("observations_inventory_empty")
+    if not errs: raise ValidationInputError("errors_inventory_empty")
     codes=[x.get("error_code") for x in errs if isinstance(x,dict) and x.get("error_code")]
     c={"blocking_conditions_without_error_code":[],"observations_without_user_action":[],"retryable_errors_without_retry_policy":[],"errors_without_correlation_strategy":[],"technical_errors_exposed_to_user":[],"duplicate_error_codes":duplicate_values(codes),"errors_without_message_code":[]}
     for i,x in enumerate(obs):
