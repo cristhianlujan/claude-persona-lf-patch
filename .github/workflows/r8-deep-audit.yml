@@ -43,17 +43,22 @@ jobs:
           : > audit-results/checkpoints.tsv
           for n in $(seq -w 1 62); do
             code="A${n}"
+            num=$((10#$n))
             echo "::group::CHECKPOINT ${code}"
             static_rc=0
             runtime_rc=0
-            if [ -f "tools/static/${code}.py" ]; then
+            if [ "$num" -ge 13 ] && [ "$num" -le 22 ]; then
+              python tools/judge_audit.py --artifact "${code}" --mode static --report-dir audit-results || static_rc=$?
+            elif [ -f "tools/static/${code}.py" ]; then
               python "tools/static/${code}.py" --report-dir audit-results || static_rc=$?
             else
               python tools/r8_deep_audit.py --artifact "${code}" --report-dir audit-results || static_rc=$?
             fi
-            if [ -f "tools/runtime/${code}.py" ]; then
+            if [ "$num" -ge 13 ] && [ "$num" -le 22 ]; then
+              python tools/judge_audit.py --artifact "${code}" --mode runtime --report-dir audit-results | tee "audit-results/${code}-runtime-console.json" || runtime_rc=${PIPESTATUS[0]}
+            elif [ -f "tools/runtime/${code}.py" ]; then
               python "tools/runtime/${code}.py" | tee "audit-results/${code}-runtime.json" || runtime_rc=${PIPESTATUS[0]}
-            elif [ "$n" -le 4 ]; then
+            elif [ "$num" -le 4 ]; then
               python tools/r8_runtime_checks.py --artifact "${code}" --report-dir audit-results || runtime_rc=$?
             else
               python tools/r8_runtime_matrix.py --artifact "${code}" --report-dir audit-results || runtime_rc=$?
