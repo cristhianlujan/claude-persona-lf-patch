@@ -29,12 +29,12 @@ validator_dependencies:
 github_contract:
   repository: cristhianlujan/claude-persona-lf-patch
   base_branch: feat/integral-story-creator-r8-forward
-  target_branch: fix/deep-audit-a01-a62
+  target_branch: fix/r8-mass-validator-hardening
   write_mode: FEATURE_BRANCH_ONLY
   direct_main_write: BLOCKED
   merge_allowed: false
   draft_pr_required: true
-  draft_pr_number: 57
+  draft_pr_number: 61
   transport_status: ACTIVE
   readback_required: true
 package_contract:
@@ -242,5 +242,8 @@ current_state:
   production_authorized: false
   merge_authorized: false
   runtime_enabled: false
-  last_confirmed_artifact: A22
-  confirmed_artifact_count: 22
+  last_individually_audited_artifact: A02
+  individually_audited_artifact_count: 2
+  canonical_validation_status:
+    NOT_VALIDATED: 62
+    PASS_WITH_EVIDENCE: 0
