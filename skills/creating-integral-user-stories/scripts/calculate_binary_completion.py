@@ -4,14 +4,12 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import tempfile
 from pathlib import Path
 from typing import Any
 
 from lf_common import ValidationInputError, emit, failure, load_json, main_guard, result_object
 
 JUDGE = "J13_INTEGRATION_CLOSE"
-VERSION = "v0.5"
 ZERO_CLOSE_FIELDS = (
     "critical_steps_with_bit_zero", "steps_without_evidence", "judges_pending",
     "failed_assertions_open", "blocking_findings_open", "expected_files_not_written",
@@ -72,6 +70,8 @@ def validate_ledger(ledger: dict[str, Any]) -> tuple[dict[str, int], dict[str, A
 
 def run(path: Path, refs: list[str], retry: int) -> int:
     ledger = _obj(load_json(path), "execution_ledger")
+    judge_version = os.getenv("LF_JUDGE_VERSION")
+    executor_identity = os.getenv("LF_EXECUTOR_IDENTITY")
     try:
         checks, evidence = validate_ledger(ledger)
     except ValidationInputError as exc:
@@ -79,16 +79,18 @@ def run(path: Path, refs: list[str], retry: int) -> int:
         return emit(result_object(
             JUDGE, [], evidence, refs or [f"file:{path}"],
             blocking_assertions=["execution_steps_missing"], retry_count=retry,
-            forced_result="BLOCKED", judge_version=VERSION,
-            executor_identity=os.getenv("LF_EXECUTOR_IDENTITY") or "R8_CLOSE_VALIDATOR",
+            forced_result="BLOCKED", judge_version=judge_version,
+            executor_identity=executor_identity,
         ))
     evidence["input_path"] = str(path)
     failed = [key for key, value in checks.items() if value]
     repairs = [failure(key, "$", f"Repair ledger until {key}=0") for key in failed]
+    forced = "FAIL" if any(checks[key] for key in ("production_authorized", "merge_authorized", "runtime_enabled")) else None
     return emit(result_object(
         JUDGE, failed, evidence, refs or [f"file:{path}"], repairs,
-        retry_count=retry, judge_version=VERSION,
-        executor_identity=os.getenv("LF_EXECUTOR_IDENTITY") or "R8_CLOSE_VALIDATOR",
+        retry_count=retry, forced_result=forced,
+        judge_version=judge_version,
+        executor_identity=executor_identity,
     ))
 
 
