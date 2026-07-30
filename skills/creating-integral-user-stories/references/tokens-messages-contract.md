@@ -1,10 +1,11 @@
 # Contrato de tokens y mensajes
 
-Versión operativa: `v0.3`. Juez asociado: `J08_TOKENS_MESSAGES`.
+Versión operativa: `v0.5`. Juez asociado: `J08_TOKENS_MESSAGES`.
+Validador: `scripts/validate_tokens.py`.
 
 ## 1. Propósito
 
-Evitar valores visuales y textos repetidos hardcodeados mediante referencias registradas, estados de candidato y mensajes semánticos.
+Evitar valores visuales y textos hardcodeados mediante tokens registrados o candidatos explícitos y mensajes semánticos verificables.
 
 ## 2. Contrato de entrada
 
@@ -12,56 +13,51 @@ Evitar valores visuales y textos repetidos hardcodeados mediante referencias reg
 |---|---|
 | `interaction_contract` | Componentes y estados de interacción. |
 | `token_registry` | Tokens visuales, formato y componentes. |
-| `message_catalog` | Códigos, severidad, audiencia y acciones. |
+| `message_catalog` | Códigos, severidad y referencias de texto. |
 | `source_copy` | Texto de negocio confirmado cuando exista. |
 
 ## 3. Preflight
 
-Antes de aplicar este contrato:
-
-1. Confirmar que las entradas obligatorias existen y pertenecen a la misma versión de fuente.
-2. Resolver todas las referencias declaradas.
-3. Confirmar que el alcance de lectura y escritura está autorizado.
-4. Registrar contradicciones o datos ausentes antes de producir contenido.
-5. Detenerse con `BLOCKED` cuando una condición bloqueante sea verdadera.
+1. Confirmar entradas, versión y referencias resolubles.
+2. Confirmar independencia entre worker y J08.
+3. Confirmar metadata y SHA-256.
+4. Detener con `BLOCKED` ante registro ausente, conflicto de política o metadata faltante.
 
 ## 4. Procedimiento obligatorio
 
-1. Inventariar colores, espacios, tamaños, tipografías, iconos, formatos y componentes requeridos.
-2. Resolver cada valor contra token_registry.
-3. Declarar tokens inexistentes como CANDIDATO con fallback y source_ref.
-4. Inventariar mensajes funcionales, observaciones y errores.
-5. Asignar message_code, severidad, audiencia, text_ref y action_token.
-6. Detectar textos duplicados y sustituirlos por referencia.
-7. Comprobar que el estado no dependa solo del color.
-8. Comprobar que mensajes financieros no prometan resultados ni usen urgencia artificial.
-9. Derivar pruebas visuales y de mensaje.
-10. Entregar conteos y referencias a J08.
+1. Inventariar colores, espacios, tipografías, iconos y componentes.
+2. Resolver cada valor contra `token_registry`.
+3. Marcar token no registrado como `CANDIDATO`; nunca como vigente.
+4. Inventariar mensajes y exigir `message_code`, `severity` y `text_ref`.
+5. Detectar códigos duplicados, colores HEX/RGB y espaciados px/rem/em.
+6. Ejecutar caso positivo, negativo y metadata ausente con el validador real.
 
 ## 5. Reglas e invariantes
 
-- Prohibidos HEX, RGB, px, rem, tipografías o iconos literales dentro del Story Pack.
-- Un token nuevo se marca CANDIDATO; esta skill no puede declararlo vigente.
-- Todo mensaje tiene severidad y audiencia.
-- Mensajes técnicos no exponen detalles internos.
-- Textos iguales deben compartir message_code cuando su semántica sea igual.
-- El formato de datos sensibles debe respetar masking_rule.
+- Prohibidos HEX, RGB, px, rem y em literales en interacción o tokens.
+- `registered=true` exige `status=REGISTERED`.
+- `registered=false` exige `status=CANDIDATO`.
+- Todo mensaje tiene código, severidad y `text_ref`.
+- Códigos de mensaje duplicados impiden PASS.
 
 ## 6. Contrato de salida
 
-Salida principal: `schemas/story-pack.schema.json#/properties/tokens_messages`.
-
-La salida debe incluir referencias de fuente, conteos, assertions evaluadas, decisiones pendientes y rutas de evidencia. Una salida estructuralmente válida pero sin evidencia no es satisfactoria.
+Salida principal: `schemas/story-pack.schema.json#/properties/tokens_messages` y envelope v0.5.
 
 ## 7. Assertions de paso
 
 ```text
+tokens_messages_section_missing = 0
+tokens_missing = 0
+messages_missing = 0
+tokens_without_code = 0
+messages_without_code = 0
 hardcoded_color_count = 0
 hardcoded_spacing_count = 0
 unregistered_component_tokens = 0
-duplicate_message_text_without_token = 0
-candidate_tokens_without_candidate_status = 0
 messages_without_severity = 0
+messages_without_text_ref = 0
+duplicate_message_codes = 0
 ```
 
 ## 8. Condiciones de bloqueo
@@ -69,32 +65,47 @@ messages_without_severity = 0
 ```text
 token_registry_required_but_unavailable = true
 message_policy_conflict = true
+metadata_or_evidence_unavailable = true
+retry_limit_exhausted = true
 ```
 
-## 9. Ejemplo mínimo completo
+## 9. Caso positivo ejecutable
 
 ```json
 {
-  "token_code": "color.action.primary",
-  "token_type": "COLOR",
-  "registered": true,
-  "status": "REGISTERED",
-  "source_ref": "TOKEN-REGISTRY#color.action.primary"
+  "tokens_messages": {
+    "tokens": [{"token_code": "COLOR-PRIMARY", "registered": true, "status": "REGISTERED"}],
+    "messages": [{"message_code": "MSG-001", "severity": "INFO", "text_ref": "TXT-001"}]
+  },
+  "interaction": {}
 }
 ```
 
-## 10. Reparación
+Resultado esperado: `PASS_WITH_EVIDENCE`.
 
-Cuando una assertion falle, reparar exclusivamente el objeto asociado; no reducir el umbral, borrar la assertion ni modificar la fuente. Tras `retry_limit = 2`, devolver `BLOCKED` con la evidencia acumulada.
+## 10. Caso negativo ejecutable
 
-## 11. Handoff
+```json
+{
+  "tokens_messages": {
+    "tokens": [{"token_code": "BTN-1", "registered": true, "status": "CANDIDATO"}],
+    "messages": [{"message_code": "MSG-001"}, {"message_code": "MSG-001"}]
+  },
+  "interaction": {"style_note": "color: #ffffff; margin: 8px"}
+}
+```
 
-Entregar al juez: versión de fuente, SHA-256, objetos procesados, conteos, assertions, fallas, decisiones pendientes, reparaciones aplicadas y evidence_refs resolubles.
+Resultado esperado: `RETURN_TO_WORKER` por hardcodes, token inválido, mensajes incompletos y duplicidad.
+
+## 11. Reparación y handoff
+
+Reparar exclusivamente el objeto asociado; no reducir umbral, borrar assertion, inventar token ni autoaprobar. Tras `retry_limit = 2`, devolver `BLOCKED`. Entregar comando, ejecutor, conteos, hashes y `evidence_refs`.
 
 ## 12. Fuentes de diseño no normativas
 
-- **microsoft/vscode** (~186,000 estrellas): `extensions/copilot/assets/prompts/skills/chronicle/SKILL.md`; patrones: prerrequisitos, workflows paso a paso, formatos de salida y stop conditions.
-- **freeCodeCamp/freeCodeCamp** (~446,000 estrellas): `curriculum/schema/challenge-schema.js`; patrones: validación condicional, campos obligatorios, mensajes de error verificables.
-- **Significant-Gravitas/AutoGPT** (~185,000 estrellas): `classic/original_autogpt/CLAUDE.md`; patrones: arquitectura explícita, ciclo operativo, estado, pruebas y gotchas.
+- **anthropics/skills:** evals objetivas y reparación iterativa.
+- **microsoft/vscode:** workflows y stop conditions.
+- **freeCodeCamp/freeCodeCamp:** constraints y unicidad.
+- **Significant-Gravitas/AutoGPT:** estado reproducible y límites.
 
-Estas fuentes aportan patrones de ejecutabilidad, validación y pruebas. Los contratos LF y la fuente operativa prevalecen ante cualquier diferencia.
+Los contratos LF prevalecen.
