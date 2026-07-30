@@ -16,6 +16,7 @@ Derivar cobertura trazable y determinista de criterios, reglas, permisos, estado
 | `error_catalog` | Errores, estados observables y políticas de reintento. |
 | `traceability_matrix` | Referencias resolubles fuente → regla → criterio. |
 | `test_environment` | Actores, tenants, estado inicial, datos controlados y restricciones de ejecución. |
+| `fixtures` | Mapa externo `test_code → fixture exacto`; no altera el schema canónico del Story Pack. |
 
 ## 3. Preflight
 
@@ -42,7 +43,7 @@ Antes de aplicar este contrato:
 8. Crear prueba por error crítico y política de reintento.
 9. Crear pruebas de auditoría, analytics sin PII y correlación.
 10. Crear pruebas responsive y de accesibilidad aplicables.
-11. Asignar a cada prueba un fixture exacto: actor, tenant, estado inicial, entradas, pasos, resultado esperado y `evidence_path`.
+11. Asignar a cada prueba un fixture exacto externo: actor, tenant, estado inicial, entradas, pasos, resultado esperado y `evidence_path`.
 12. Asignar `criterion_ref` o `rule_ref` resoluble.
 13. Detectar pruebas huérfanas, reglas sin prueba, referencias rotas y resultados no observables.
 14. Ejecutar el validador semántico y registrar actual/expected por assertion.
@@ -65,7 +66,7 @@ Antes de aplicar este contrato:
 
 Salida principal: `schemas/story-pack.schema.json#/properties/tests` y `schemas/coverage-report.schema.json`.
 
-Cada prueba debe incluir como mínimo:
+Prueba dentro del Story Pack:
 
 ```json
 {
@@ -74,12 +75,27 @@ Cada prueba debe incluir como mínimo:
   "criterion_ref": null,
   "rule_ref": "SEC-CROSS-TENANT-DENY",
   "preconditions": ["actor belongs to COMPANY-A", "record belongs to COMPANY-B"],
-  "exact_inputs": {"record_id": "REC-B-001"},
-  "initial_state": {"authenticated_tenant": "COMPANY-A"},
-  "steps": ["request REC-B-001 through the authorized application path"],
+  "steps": ["request the record through the authorized application path"],
   "expected_result": "access is denied and no record attributes are returned",
   "negative": true,
+  "critical": true,
+  "automatable": true,
+  "actor_profile": "UNAUTHORIZED_USER",
   "tenant_scope": "CROSS_TENANT",
+  "evidence_path": "evidence/tests/TEST-TENANT-001.json"
+}
+```
+
+Fixture exacto externo, consumido por `scripts/validate_test_coverage.py`:
+
+```json
+{
+  "actor": "UNAUTHORIZED_USER",
+  "tenant": "COMPANY-A",
+  "initial_state": {"record_tenant": "COMPANY-B"},
+  "exact_inputs": {"record_id": "REC-B-001"},
+  "steps": ["request REC-B-001 through the authorized application path"],
+  "expected_result": "access is denied and no record attributes are returned",
   "evidence_path": "evidence/tests/TEST-TENANT-001.json"
 }
 ```
@@ -145,6 +161,6 @@ Fecha de verificación: `2026-07-29`.
 - **freeCodeCamp/freeCodeCamp — 453125 estrellas:** `curriculum/schema/challenge-schema.js`, blob `7db60817942625110525fd313bf80f1df067f006`; complemento: validaciones condicionales, unicidad, referencias relativas y mensajes de error deterministas.
 - **Significant-Gravitas/AutoGPT — 185741 estrellas:** `classic/original_autogpt/CLAUDE.md`, blob `9c6d04300f83621b00e804298b7b8ea9ce3953c7`; complemento: fixtures aislados, persistencia de estado y límites de ejecución.
 
-**Hallazgo diferencial incorporado:** fixture exacto + detección de PASS vacuo + gate de runtime semántico forman una única cadena verificable.
+**Hallazgo diferencial incorporado:** fixture exacto externo + detección de PASS vacuo + gate de runtime semántico forman una única cadena verificable sin romper el schema del Story Pack.
 
 Los contratos LF y la fuente operativa prevalecen ante cualquier diferencia.
