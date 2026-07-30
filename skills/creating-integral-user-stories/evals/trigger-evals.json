@@ -1,1 +1,217 @@
-{"schema_version":"v0.4","skill_code":"creating-integral-user-stories","case_count":8,"activation_values":["ACTIVATE","DO_NOT_ACTIVATE","NEEDS_SOURCE_CONTEXT"],"model_matrix":[{"model_family":"HAIKU","required_case_ids":["E16","E17","E18","E19","T05","T06","T07","T08"],"runtime_status":"BLOCKED_MODEL_RUNTIME_UNAVAILABLE"},{"model_family":"SONNET","required_case_ids":["E16","E17","E18","E19","T05","T06","T07","T08"],"runtime_status":"BLOCKED_MODEL_RUNTIME_UNAVAILABLE"},{"model_family":"OPUS","required_case_ids":["E16","E17","E18","E19","T05","T06","T07","T08"],"runtime_status":"BLOCKED_MODEL_RUNTIME_UNAVAILABLE"}],"evidence_contract":{"required_fields":["executor_identity","judge_version","command","started_at","completed_at","exit_code","assertions_total","assertions_passed","failed_assertions","blocking_assertions","input_sha256","output_sha256","evidence_sha256"],"pass_requires":{"assertions_total_min":1,"assertions_passed_equals_total":true,"failed_assertions_max":0,"blocking_assertions_max":0,"input_output_hashes_present":true},"vacuous_pass_allowed":false},"cases":[{"id":"E16","kind":"trigger","fixture":{"exact_inputs":{"prompt":"Tengo una pantalla y necesito historias completas, criterios, seguridad y pruebas."},"initial_state":{"source_context_available":true,"canonical_artifacts_mutable":false},"actor":"OWNER_REQUESTER","tenant":"N/A"},"execution":{"entrypoint_ref":"SKILL.md#activacion-y-no-activacion","steps":["classify_request","evaluate_source_sufficiency","emit_activation_decision"]},"expected":{"result":"PASS_WITH_EVIDENCE","output":{"activation":"ACTIVATE"},"state_changes":[],"no_state_changes":["canonical_artifacts"],"audit_events":[],"analytics_events":[],"logs":[],"http_status":"N/A"},"assertions":[{"code":"A01_ACTIVATES_ON_SCREEN_WORK","operator":"equals","actual_ref":"result.activation","expected":"ACTIVATE"},{"code":"A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL","operator":"set_equals","actual_ref":"result.state_changes","expected":[]}],"critical_assertions":["A01_ACTIVATES_ON_SCREEN_WORK","A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL"],"evidence_path":"evidence/evals/E16.json","scoring":{"required_assertions_pass":true,"unexpected_critical_failures_allowed":0,"evidence_required":true,"vacuous_pass_allowed":false}},{"id":"E17","kind":"no_activation","fixture":{"exact_inputs":{"prompt":"Traduce este párrafo al inglés y corrige su gramática."},"initial_state":{"source_context_available":true,"canonical_artifacts_mutable":false},"actor":"OWNER_REQUESTER","tenant":"N/A"},"execution":{"entrypoint_ref":"SKILL.md#activacion-y-no-activacion","steps":["classify_request","evaluate_source_sufficiency","emit_activation_decision"]},"expected":{"result":"PASS_WITH_EVIDENCE","output":{"activation":"DO_NOT_ACTIVATE"},"state_changes":[],"no_state_changes":["canonical_artifacts"],"audit_events":[],"analytics_events":[],"logs":[],"http_status":"N/A"},"assertions":[{"code":"A02_NO_ACTIVATION_UNRELATED","operator":"equals","actual_ref":"result.activation","expected":"DO_NOT_ACTIVATE"},{"code":"A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL","operator":"set_equals","actual_ref":"result.state_changes","expected":[]}],"critical_assertions":["A02_NO_ACTIVATION_UNRELATED","A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL"],"evidence_path":"evidence/evals/E17.json","scoring":{"required_assertions_pass":true,"unexpected_critical_failures_allowed":0,"evidence_required":true,"vacuous_pass_allowed":false}},{"id":"E18","kind":"ambiguous","fixture":{"exact_inputs":{"prompt":"Ayúdame con unas historias."},"initial_state":{"source_context_available":false,"canonical_artifacts_mutable":false},"actor":"OWNER_REQUESTER","tenant":"N/A"},"execution":{"entrypoint_ref":"SKILL.md#activacion-y-no-activacion","steps":["classify_request","evaluate_source_sufficiency","emit_activation_decision"]},"expected":{"result":"BLOCKED","output":{"activation":"NEEDS_SOURCE_CONTEXT","must_not_generate_full_pack":true},"state_changes":[],"no_state_changes":["canonical_artifacts"],"audit_events":[],"analytics_events":[],"logs":[],"http_status":"N/A"},"assertions":[{"code":"A14_BLOCKS_INSUFFICIENT_SOURCE","operator":"equals","actual_ref":"result.activation","expected":"NEEDS_SOURCE_CONTEXT"},{"code":"A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL","operator":"set_equals","actual_ref":"result.state_changes","expected":[]}],"critical_assertions":["A14_BLOCKS_INSUFFICIENT_SOURCE","A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL"],"evidence_path":"evidence/evals/E18.json","scoring":{"required_assertions_pass":true,"unexpected_critical_failures_allowed":0,"evidence_required":true,"vacuous_pass_allowed":false}},{"id":"E19","kind":"trigger","fixture":{"exact_inputs":{"prompt":"tngo una pantaya d aprobacion, as las historias completas con pruevas"},"initial_state":{"source_context_available":true,"canonical_artifacts_mutable":false},"actor":"OWNER_REQUESTER","tenant":"N/A"},"execution":{"entrypoint_ref":"SKILL.md#activacion-y-no-activacion","steps":["classify_request","evaluate_source_sufficiency","emit_activation_decision"]},"expected":{"result":"PASS_WITH_EVIDENCE","output":{"activation":"ACTIVATE"},"state_changes":[],"no_state_changes":["canonical_artifacts"],"audit_events":[],"analytics_events":[],"logs":[],"http_status":"N/A"},"assertions":[{"code":"A01_ACTIVATES_ON_SCREEN_WORK","operator":"equals","actual_ref":"result.activation","expected":"ACTIVATE"},{"code":"A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL","operator":"set_equals","actual_ref":"result.state_changes","expected":[]}],"critical_assertions":["A01_ACTIVATES_ON_SCREEN_WORK","A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL"],"evidence_path":"evidence/evals/E19.json","scoring":{"required_assertions_pass":true,"unexpected_critical_failures_allowed":0,"evidence_required":true,"vacuous_pass_allowed":false}},{"id":"T05","kind":"trigger","fixture":{"exact_inputs":{"prompt":"Tengo un prototipo de onboarding y necesito dividirlo en historias implementables."},"initial_state":{"source_context_available":true,"canonical_artifacts_mutable":false},"actor":"OWNER_REQUESTER","tenant":"N/A"},"execution":{"entrypoint_ref":"SKILL.md#activacion-y-no-activacion","steps":["classify_request","evaluate_source_sufficiency","emit_activation_decision"]},"expected":{"result":"PASS_WITH_EVIDENCE","output":{"activation":"ACTIVATE"},"state_changes":[],"no_state_changes":["canonical_artifacts"],"audit_events":[],"analytics_events":[],"logs":[],"http_status":"N/A"},"assertions":[{"code":"A01_ACTIVATES_ON_SCREEN_WORK","operator":"equals","actual_ref":"result.activation","expected":"ACTIVATE"},{"code":"A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL","operator":"set_equals","actual_ref":"result.state_changes","expected":[]}],"critical_assertions":["A01_ACTIVATES_ON_SCREEN_WORK","A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL"],"evidence_path":"evidence/evals/T05.json","scoring":{"required_assertions_pass":true,"unexpected_critical_failures_allowed":0,"evidence_required":true,"vacuous_pass_allowed":false}},{"id":"T06","kind":"no_activation","fixture":{"exact_inputs":{"prompt":"Prioriza esta lista de bugs sin relación con una pantalla o especificación funcional."},"initial_state":{"source_context_available":true,"canonical_artifacts_mutable":false},"actor":"OWNER_REQUESTER","tenant":"N/A"},"execution":{"entrypoint_ref":"SKILL.md#activacion-y-no-activacion","steps":["classify_request","evaluate_source_sufficiency","emit_activation_decision"]},"expected":{"result":"PASS_WITH_EVIDENCE","output":{"activation":"DO_NOT_ACTIVATE"},"state_changes":[],"no_state_changes":["canonical_artifacts"],"audit_events":[],"analytics_events":[],"logs":[],"http_status":"N/A"},"assertions":[{"code":"A02_NO_ACTIVATION_UNRELATED","operator":"equals","actual_ref":"result.activation","expected":"DO_NOT_ACTIVATE"},{"code":"A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL","operator":"set_equals","actual_ref":"result.state_changes","expected":[]}],"critical_assertions":["A02_NO_ACTIVATION_UNRELATED","A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL"],"evidence_path":"evidence/evals/T06.json","scoring":{"required_assertions_pass":true,"unexpected_critical_failures_allowed":0,"evidence_required":true,"vacuous_pass_allowed":false}},{"id":"T07","kind":"trigger","fixture":{"exact_inputs":{"prompt":"Completa estas historias parciales con campos, seguridad, observabilidad y pruebas."},"initial_state":{"source_context_available":true,"canonical_artifacts_mutable":false},"actor":"OWNER_REQUESTER","tenant":"N/A"},"execution":{"entrypoint_ref":"SKILL.md#activacion-y-no-activacion","steps":["classify_request","evaluate_source_sufficiency","emit_activation_decision"]},"expected":{"result":"PASS_WITH_EVIDENCE","output":{"activation":"ACTIVATE","mode":"ENRICH_EXISTING"},"state_changes":[],"no_state_changes":["canonical_artifacts"],"audit_events":[],"analytics_events":[],"logs":[],"http_status":"N/A"},"assertions":[{"code":"A01_ACTIVATES_ON_SCREEN_WORK","operator":"equals","actual_ref":"result.activation","expected":"ACTIVATE"},{"code":"A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL","operator":"set_equals","actual_ref":"result.state_changes","expected":[]}],"critical_assertions":["A01_ACTIVATES_ON_SCREEN_WORK","A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL"],"evidence_path":"evidence/evals/T07.json","scoring":{"required_assertions_pass":true,"unexpected_critical_failures_allowed":0,"evidence_required":true,"vacuous_pass_allowed":false}},{"id":"T08","kind":"ambiguous","fixture":{"exact_inputs":{"prompt":"Hazlo completo."},"initial_state":{"source_context_available":false,"canonical_artifacts_mutable":false},"actor":"OWNER_REQUESTER","tenant":"N/A"},"execution":{"entrypoint_ref":"SKILL.md#activacion-y-no-activacion","steps":["classify_request","evaluate_source_sufficiency","emit_activation_decision"]},"expected":{"result":"BLOCKED","output":{"activation":"NEEDS_SOURCE_CONTEXT"},"state_changes":[],"no_state_changes":["canonical_artifacts"],"audit_events":[],"analytics_events":[],"logs":[],"http_status":"N/A"},"assertions":[{"code":"A14_BLOCKS_INSUFFICIENT_SOURCE","operator":"equals","actual_ref":"result.activation","expected":"NEEDS_SOURCE_CONTEXT"},{"code":"A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL","operator":"set_equals","actual_ref":"result.state_changes","expected":[]}],"critical_assertions":["A14_BLOCKS_INSUFFICIENT_SOURCE","A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL"],"evidence_path":"evidence/evals/T08.json","scoring":{"required_assertions_pass":true,"unexpected_critical_failures_allowed":0,"evidence_required":true,"vacuous_pass_allowed":false}}],"design_sources":["anthropics/skills","github/docs"]}
+{
+  "schema_version": "v0.5",
+  "skill_code": "creating-integral-user-stories",
+  "case_count": 8,
+  "activation_values": ["ACTIVATE", "DO_NOT_ACTIVATE", "NEEDS_SOURCE_CONTEXT"],
+  "deterministic_runtime": {
+    "status": "AVAILABLE",
+    "validator_ref": "tools/runtime/A12.py",
+    "source_of_truth_for_canonical_audit": true,
+    "required_case_ids": ["E16", "E17", "E18", "E19", "T05", "T06", "T07", "T08"]
+  },
+  "model_matrix": [
+    {
+      "model_family": "HAIKU",
+      "required_case_ids": ["E16", "E17", "E18", "E19", "T05", "T06", "T07", "T08"],
+      "runtime_status": "NOT_EXECUTED_EXTERNAL_MODEL_RUNTIME_UNAVAILABLE",
+      "affects_canonical_pass": false
+    },
+    {
+      "model_family": "SONNET",
+      "required_case_ids": ["E16", "E17", "E18", "E19", "T05", "T06", "T07", "T08"],
+      "runtime_status": "NOT_EXECUTED_EXTERNAL_MODEL_RUNTIME_UNAVAILABLE",
+      "affects_canonical_pass": false
+    },
+    {
+      "model_family": "OPUS",
+      "required_case_ids": ["E16", "E17", "E18", "E19", "T05", "T06", "T07", "T08"],
+      "runtime_status": "NOT_EXECUTED_EXTERNAL_MODEL_RUNTIME_UNAVAILABLE",
+      "affects_canonical_pass": false
+    }
+  ],
+  "evidence_contract": {
+    "required_fields": [
+      "executor_identity",
+      "judge_version",
+      "command",
+      "started_at",
+      "completed_at",
+      "exit_code",
+      "assertions_total",
+      "assertions_passed",
+      "failed_assertions",
+      "blocking_assertions",
+      "input_sha256",
+      "output_sha256",
+      "evidence_sha256"
+    ],
+    "pass_requires": {
+      "assertions_total_min": 1,
+      "assertions_passed_equals_total": true,
+      "failed_assertions_max": 0,
+      "blocking_assertions_max": 0,
+      "input_output_hashes_present": true
+    },
+    "vacuous_pass_allowed": false
+  },
+  "cases": [
+    {
+      "id": "E16",
+      "kind": "trigger",
+      "fixture": {
+        "exact_inputs": {"prompt": "Tengo una pantalla y necesito historias completas, criterios, seguridad y pruebas."},
+        "initial_state": {"source_context_available": true, "canonical_artifacts_mutable": false},
+        "actor": "OWNER_REQUESTER",
+        "tenant": "N/A"
+      },
+      "execution": {"entrypoint_ref": "SKILL.md#activacion", "steps": ["classify_request", "evaluate_source_sufficiency", "emit_activation_decision"]},
+      "expected": {"result": "PASS_WITH_EVIDENCE", "output": {"activation": "ACTIVATE"}, "state_changes": [], "no_state_changes": ["canonical_artifacts"], "audit_events": [], "analytics_events": [], "logs": [], "http_status": "N/A"},
+      "assertions": [
+        {"code": "A01_ACTIVATES_ON_SCREEN_WORK", "operator": "equals", "actual_ref": "result.activation", "expected": "ACTIVATE"},
+        {"code": "A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL", "operator": "set_equals", "actual_ref": "result.state_changes", "expected": []}
+      ],
+      "critical_assertions": ["A01_ACTIVATES_ON_SCREEN_WORK", "A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL"],
+      "evidence_path": "evidence/evals/E16.json",
+      "scoring": {"required_assertions_pass": true, "unexpected_critical_failures_allowed": 0, "evidence_required": true, "vacuous_pass_allowed": false}
+    },
+    {
+      "id": "E17",
+      "kind": "no_activation",
+      "fixture": {
+        "exact_inputs": {"prompt": "Traduce este párrafo al inglés y corrige su gramática."},
+        "initial_state": {"source_context_available": true, "canonical_artifacts_mutable": false},
+        "actor": "OWNER_REQUESTER",
+        "tenant": "N/A"
+      },
+      "execution": {"entrypoint_ref": "SKILL.md#activacion", "steps": ["classify_request", "evaluate_source_sufficiency", "emit_activation_decision"]},
+      "expected": {"result": "PASS_WITH_EVIDENCE", "output": {"activation": "DO_NOT_ACTIVATE"}, "state_changes": [], "no_state_changes": ["canonical_artifacts"], "audit_events": [], "analytics_events": [], "logs": [], "http_status": "N/A"},
+      "assertions": [
+        {"code": "A02_NO_ACTIVATION_UNRELATED", "operator": "equals", "actual_ref": "result.activation", "expected": "DO_NOT_ACTIVATE"},
+        {"code": "A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL", "operator": "set_equals", "actual_ref": "result.state_changes", "expected": []}
+      ],
+      "critical_assertions": ["A02_NO_ACTIVATION_UNRELATED", "A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL"],
+      "evidence_path": "evidence/evals/E17.json",
+      "scoring": {"required_assertions_pass": true, "unexpected_critical_failures_allowed": 0, "evidence_required": true, "vacuous_pass_allowed": false}
+    },
+    {
+      "id": "E18",
+      "kind": "ambiguous",
+      "fixture": {
+        "exact_inputs": {"prompt": "Ayúdame con unas historias."},
+        "initial_state": {"source_context_available": false, "canonical_artifacts_mutable": false},
+        "actor": "OWNER_REQUESTER",
+        "tenant": "N/A"
+      },
+      "execution": {"entrypoint_ref": "SKILL.md#activacion", "steps": ["classify_request", "evaluate_source_sufficiency", "emit_activation_decision"]},
+      "expected": {"result": "BLOCKED", "output": {"activation": "NEEDS_SOURCE_CONTEXT", "must_not_generate_full_pack": true}, "state_changes": [], "no_state_changes": ["canonical_artifacts"], "audit_events": [], "analytics_events": [], "logs": [], "http_status": "N/A"},
+      "assertions": [
+        {"code": "A14_BLOCKS_INSUFFICIENT_SOURCE", "operator": "equals", "actual_ref": "result.activation", "expected": "NEEDS_SOURCE_CONTEXT"},
+        {"code": "A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL", "operator": "set_equals", "actual_ref": "result.state_changes", "expected": []}
+      ],
+      "critical_assertions": ["A14_BLOCKS_INSUFFICIENT_SOURCE", "A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL"],
+      "evidence_path": "evidence/evals/E18.json",
+      "scoring": {"required_assertions_pass": true, "unexpected_critical_failures_allowed": 0, "evidence_required": true, "vacuous_pass_allowed": false}
+    },
+    {
+      "id": "E19",
+      "kind": "trigger",
+      "fixture": {
+        "exact_inputs": {"prompt": "tngo una pantaya d aprobacion, as las historias completas con pruevas"},
+        "initial_state": {"source_context_available": true, "canonical_artifacts_mutable": false},
+        "actor": "OWNER_REQUESTER",
+        "tenant": "N/A"
+      },
+      "execution": {"entrypoint_ref": "SKILL.md#activacion", "steps": ["classify_request", "evaluate_source_sufficiency", "emit_activation_decision"]},
+      "expected": {"result": "PASS_WITH_EVIDENCE", "output": {"activation": "ACTIVATE"}, "state_changes": [], "no_state_changes": ["canonical_artifacts"], "audit_events": [], "analytics_events": [], "logs": [], "http_status": "N/A"},
+      "assertions": [
+        {"code": "A01_ACTIVATES_ON_SCREEN_WORK", "operator": "equals", "actual_ref": "result.activation", "expected": "ACTIVATE"},
+        {"code": "A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL", "operator": "set_equals", "actual_ref": "result.state_changes", "expected": []}
+      ],
+      "critical_assertions": ["A01_ACTIVATES_ON_SCREEN_WORK", "A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL"],
+      "evidence_path": "evidence/evals/E19.json",
+      "scoring": {"required_assertions_pass": true, "unexpected_critical_failures_allowed": 0, "evidence_required": true, "vacuous_pass_allowed": false}
+    },
+    {
+      "id": "T05",
+      "kind": "trigger",
+      "fixture": {
+        "exact_inputs": {"prompt": "Tengo un prototipo de onboarding y necesito dividirlo en historias implementables."},
+        "initial_state": {"source_context_available": true, "canonical_artifacts_mutable": false},
+        "actor": "OWNER_REQUESTER",
+        "tenant": "N/A"
+      },
+      "execution": {"entrypoint_ref": "SKILL.md#activacion", "steps": ["classify_request", "evaluate_source_sufficiency", "emit_activation_decision"]},
+      "expected": {"result": "PASS_WITH_EVIDENCE", "output": {"activation": "ACTIVATE"}, "state_changes": [], "no_state_changes": ["canonical_artifacts"], "audit_events": [], "analytics_events": [], "logs": [], "http_status": "N/A"},
+      "assertions": [
+        {"code": "A01_ACTIVATES_ON_SCREEN_WORK", "operator": "equals", "actual_ref": "result.activation", "expected": "ACTIVATE"},
+        {"code": "A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL", "operator": "set_equals", "actual_ref": "result.state_changes", "expected": []}
+      ],
+      "critical_assertions": ["A01_ACTIVATES_ON_SCREEN_WORK", "A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL"],
+      "evidence_path": "evidence/evals/T05.json",
+      "scoring": {"required_assertions_pass": true, "unexpected_critical_failures_allowed": 0, "evidence_required": true, "vacuous_pass_allowed": false}
+    },
+    {
+      "id": "T06",
+      "kind": "no_activation",
+      "fixture": {
+        "exact_inputs": {"prompt": "Prioriza esta lista de bugs sin relación con una pantalla o especificación funcional."},
+        "initial_state": {"source_context_available": true, "canonical_artifacts_mutable": false},
+        "actor": "OWNER_REQUESTER",
+        "tenant": "N/A"
+      },
+      "execution": {"entrypoint_ref": "SKILL.md#activacion", "steps": ["classify_request", "evaluate_source_sufficiency", "emit_activation_decision"]},
+      "expected": {"result": "PASS_WITH_EVIDENCE", "output": {"activation": "DO_NOT_ACTIVATE"}, "state_changes": [], "no_state_changes": ["canonical_artifacts"], "audit_events": [], "analytics_events": [], "logs": [], "http_status": "N/A"},
+      "assertions": [
+        {"code": "A02_NO_ACTIVATION_UNRELATED", "operator": "equals", "actual_ref": "result.activation", "expected": "DO_NOT_ACTIVATE"},
+        {"code": "A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL", "operator": "set_equals", "actual_ref": "result.state_changes", "expected": []}
+      ],
+      "critical_assertions": ["A02_NO_ACTIVATION_UNRELATED", "A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL"],
+      "evidence_path": "evidence/evals/T06.json",
+      "scoring": {"required_assertions_pass": true, "unexpected_critical_failures_allowed": 0, "evidence_required": true, "vacuous_pass_allowed": false}
+    },
+    {
+      "id": "T07",
+      "kind": "trigger",
+      "fixture": {
+        "exact_inputs": {"prompt": "Completa estas historias parciales con campos, seguridad, observabilidad y pruebas."},
+        "initial_state": {"source_context_available": true, "canonical_artifacts_mutable": false},
+        "actor": "OWNER_REQUESTER",
+        "tenant": "N/A"
+      },
+      "execution": {"entrypoint_ref": "SKILL.md#activacion", "steps": ["classify_request", "evaluate_source_sufficiency", "emit_activation_decision"]},
+      "expected": {"result": "PASS_WITH_EVIDENCE", "output": {"activation": "ACTIVATE", "mode": "ENRICH_EXISTING"}, "state_changes": [], "no_state_changes": ["canonical_artifacts"], "audit_events": [], "analytics_events": [], "logs": [], "http_status": "N/A"},
+      "assertions": [
+        {"code": "A01_ACTIVATES_ON_SCREEN_WORK", "operator": "equals", "actual_ref": "result.activation", "expected": "ACTIVATE"},
+        {"code": "A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL", "operator": "set_equals", "actual_ref": "result.state_changes", "expected": []}
+      ],
+      "critical_assertions": ["A01_ACTIVATES_ON_SCREEN_WORK", "A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL"],
+      "evidence_path": "evidence/evals/T07.json",
+      "scoring": {"required_assertions_pass": true, "unexpected_critical_failures_allowed": 0, "evidence_required": true, "vacuous_pass_allowed": false}
+    },
+    {
+      "id": "T08",
+      "kind": "ambiguous",
+      "fixture": {
+        "exact_inputs": {"prompt": "Hazlo completo."},
+        "initial_state": {"source_context_available": false, "canonical_artifacts_mutable": false},
+        "actor": "OWNER_REQUESTER",
+        "tenant": "N/A"
+      },
+      "execution": {"entrypoint_ref": "SKILL.md#activacion", "steps": ["classify_request", "evaluate_source_sufficiency", "emit_activation_decision"]},
+      "expected": {"result": "BLOCKED", "output": {"activation": "NEEDS_SOURCE_CONTEXT"}, "state_changes": [], "no_state_changes": ["canonical_artifacts"], "audit_events": [], "analytics_events": [], "logs": [], "http_status": "N/A"},
+      "assertions": [
+        {"code": "A14_BLOCKS_INSUFFICIENT_SOURCE", "operator": "equals", "actual_ref": "result.activation", "expected": "NEEDS_SOURCE_CONTEXT"},
+        {"code": "A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL", "operator": "set_equals", "actual_ref": "result.state_changes", "expected": []}
+      ],
+      "critical_assertions": ["A14_BLOCKS_INSUFFICIENT_SOURCE", "A15_NO_CANONICAL_MUTATION_DURING_TRIGGER_EVAL"],
+      "evidence_path": "evidence/evals/T08.json",
+      "scoring": {"required_assertions_pass": true, "unexpected_critical_failures_allowed": 0, "evidence_required": true, "vacuous_pass_allowed": false}
+    }
+  ],
+  "design_sources": [
+    "anthropics/skills",
+    "microsoft/vscode",
+    "freeCodeCamp/freeCodeCamp",
+    "Significant-Gravitas/AutoGPT"
+  ]
+}
