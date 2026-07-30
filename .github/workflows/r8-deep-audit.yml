@@ -85,6 +85,8 @@ jobs:
           PY
 
       - name: Audit A01 through A62 sequentially
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
           set -uo pipefail
