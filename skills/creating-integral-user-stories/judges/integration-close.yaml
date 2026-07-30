@@ -1,144 +1,66 @@
 judge_code: J13_INTEGRATION_CLOSE
-version: v0.3
+judge_version: v0.5
 status: CANDIDATO_READ_ONLY
-scope: Cierra únicamente cuando todos los pasos y jueces aplicables están completos con evidencia y las restricciones
-  operativas siguen vigentes.
+scope: Cierra únicamente cuando todos los pasos, jueces, archivos y condiciones aplicables están completos con evidencia y las restricciones operativas siguen vigentes.
 independence: worker_must_not_execute_own_judge
 retry_limit: 2
-required_inputs:
-- execution_ledger
-- applicability_matrix
-- judge_results
-- inventory_report
-- eval_results
-- github_readback
+required_inputs: [execution_ledger, applicability_matrix, judge_results, inventory_report, eval_results, github_readback]
 preflight:
-- all_required_inputs_are_present
-- input_versions_are_compatible
-- source_and_evidence_refs_are_resolvable
-- judge_is_not_executed_by_the_worker_under_review
+  - all_required_inputs_are_present
+  - input_versions_are_compatible
+  - source_and_evidence_refs_are_resolvable
+  - judge_is_not_executed_by_the_worker_under_review
+  - input_sha256_is_present
+validators:
+  semantic_validator_ref: scripts/calculate_binary_completion.py
+  runtime_status: AVAILABLE
+runtime_command: python scripts/calculate_binary_completion.py <execution-ledger.json> --evidence-ref <ref>
+self_test_command: python scripts/calculate_binary_completion.py --self-test
 assertions:
-- assertion_id: required_steps_passed
-  target: execution_ledger
-  pass_condition: required_steps = passed_steps
-  critical: true
-  evidence_required: true
-- assertion_id: critical_steps_failed
-  target: execution_ledger
-  pass_condition: critical_steps_failed = 0
-  critical: true
-  evidence_required: true
-- assertion_id: applicable_judges_passed
-  target: judge_results
-  pass_condition: applicable_judges = judges_passed_with_evidence
-  critical: true
-  evidence_required: true
-- assertion_id: judges_failed
-  target: judge_results
-  pass_condition: judges_failed = 0
-  critical: true
-  evidence_required: true
-- assertion_id: judges_pending
-  target: judge_results
-  pass_condition: judges_pending = 0
-  critical: true
-  evidence_required: true
-- assertion_id: blocking_findings
-  target: execution_ledger
-  pass_condition: blocking_findings = 0
-  critical: true
-  evidence_required: true
-- assertion_id: completion_percent
-  target: execution_ledger
-  pass_condition: completion_percent = 100
-  critical: true
-  evidence_required: true
-- assertion_id: production_authorized
-  target: execution_ledger
-  pass_condition: production_authorized = false
-  critical: true
-  evidence_required: true
-- assertion_id: merge_authorized
-  target: execution_ledger
-  pass_condition: merge_authorized = false
-  critical: true
-  evidence_required: true
-- assertion_id: runtime_enabled
-  target: execution_ledger
-  pass_condition: runtime_enabled = false
-  critical: true
-  evidence_required: true
-pass_if:
-- all_applicable_assertions_pass = true
-- compliance_bit = 1
-- evidence_refs_non_empty = true
-fail_if:
-- critical_steps_failed > 0
-- judges_failed > 0
-- judges_pending > 0
-- blocking_findings > 0
-- completion_percent < 100
-block_if:
-- required_evidence_missing = true
-- applicability_matrix_missing = true
-- github_readback_incomplete = true
-result_values:
-- PASS_WITH_EVIDENCE
-- RETURN_TO_WORKER
-- BLOCKED
-- FAIL
-result_rules:
-  PASS_WITH_EVIDENCE: all applicable assertions pass; compliance_bit=1; evidence_refs non-empty
-  RETURN_TO_WORKER: one or more repairable assertions fail; compliance_bit=0; repairs are actionable
-  BLOCKED: a blocking condition is true or retry_limit is exhausted; compliance_bit=0
-  FAIL: evidence proves an unrecoverable contract violation within this execution; compliance_bit=0
-required_evidence:
-- required_steps
-- passed_steps
-- applicable_judges
-- judges_passed_with_evidence
-- completion_percent
-- blocking_findings
-- final_hash_map
-- failed_assertions
-- blocking_assertions
-- repair_instructions
+  - {assertion_id: required_steps_not_passed, actual_ref: evidence.checks.required_steps_not_passed, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: completion_percent_not_100, actual_ref: evidence.checks.completion_percent_not_100, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: declared_completion_mismatch, actual_ref: evidence.checks.declared_completion_mismatch, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: final_result_not_pass, actual_ref: evidence.checks.final_result_not_pass, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: critical_steps_with_bit_zero, actual_ref: evidence.checks.critical_steps_with_bit_zero, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: steps_without_evidence, actual_ref: evidence.checks.steps_without_evidence, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: judges_pending, actual_ref: evidence.checks.judges_pending, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: failed_assertions_open, actual_ref: evidence.checks.failed_assertions_open, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: blocking_findings_open, actual_ref: evidence.checks.blocking_findings_open, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: expected_files_not_written, actual_ref: evidence.checks.expected_files_not_written, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: written_files_not_read_back, actual_ref: evidence.checks.written_files_not_read_back, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: sha_mismatches, actual_ref: evidence.checks.sha_mismatches, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: production_authorized, actual_ref: evidence.checks.production_authorized, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: merge_authorized, actual_ref: evidence.checks.merge_authorized, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: runtime_enabled, actual_ref: evidence.checks.runtime_enabled, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: draft_pr_not_preserved, actual_ref: evidence.checks.draft_pr_not_preserved, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: repository_missing, actual_ref: evidence.checks.repository_missing, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: branch_missing, actual_ref: evidence.checks.branch_missing, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: commit_sha_invalid, actual_ref: evidence.checks.commit_sha_invalid, expected: 0, critical: true, evidence_required: true}
+pass_if: [semantic_validator_exit_code = 0, all_applicable_assertions_pass = true, assertions_passed = assertions_total, compliance_bit = 1, evidence_refs_non_empty = true]
+fail_if: [production_authorized = true, merge_authorized = true, runtime_enabled = true]
+block_if: [execution_steps_missing = true, required_evidence_missing = true, github_readback_incomplete = true, semantic_validator_unavailable = true]
+result_values: [PASS_WITH_EVIDENCE, RETURN_TO_WORKER, BLOCKED, FAIL]
+required_evidence: [steps_evaluable, steps_passed_with_evidence, calculated_completion_percent, declared_completion_percent, close_conditions, final_result, repository, branch, commit_sha, executor_identity, judge_version, command, started_at, completed_at, assertions_total, assertions_passed, failed_assertions, blocking_assertions, repair_instructions, evidence_sha256, input_sha256, output_sha256]
+positive_behavior:
+  command: python scripts/calculate_binary_completion.py --self-test
+  expected: positive_pass=true
+negative_cases:
+  - {case: step_without_evidence_but_declared_100, expected_result: RETURN_TO_WORKER, assertion: required_steps_not_passed}
+  - {case: close_condition_nonzero, expected_result: RETURN_TO_WORKER, assertion: steps_without_evidence}
+  - {case: execution_steps_missing, expected_result: BLOCKED, assertion: execution_steps_missing}
 repair_matrix:
-- assertion_id: completion_percent
-  instruction: No estimar porcentaje; corregir steps con bit 0 y recalcular desde ledger.
-  prohibited_shortcuts:
-  - delete_assertion
-  - lower_threshold
-  - invent_source
-  - self_approve
-- assertion_id: required_steps_passed
-  instruction: Completar o bloquear el step faltante; no marcarlo N/A sin regla de aplicabilidad.
-  prohibited_shortcuts:
-  - delete_assertion
-  - lower_threshold
-  - invent_source
-  - self_approve
-validator_ref: scripts/calculate_binary_completion.py
+  - assertion_id: completion_percent_not_100
+    instruction: No estimar porcentaje; corregir steps con bit 0 y recalcular desde ledger.
+    prohibited_shortcuts: [delete_assertion, lower_threshold, invent_source, self_approve]
+  - assertion_id: required_steps_not_passed
+    instruction: Completar o bloquear el step faltante; no marcarlo N/A sin regla de aplicabilidad.
+    prohibited_shortcuts: [delete_assertion, lower_threshold, invent_source, self_approve]
 output:
   schema_ref: schemas/judge-result.schema.json
-  required_fields:
-  - judge_code
-  - result
-  - compliance_bit
-  - failed_assertions
-  - blocking_assertions
-  - evidence_refs
-  - evidence
-  - repair_instructions
-  - retry_count
-  - judged_at
-prohibitions:
-- worker_self_approval
-- assertion_deletion_to_obtain_pass
-- threshold_reduction_to_obtain_pass
-- unresolved_evidence_reference
-- pass_without_evidence
-design_sources:
-- huggingface/transformers
-- freeCodeCamp/freeCodeCamp
-- Significant-Gravitas/AutoGPT
+  required_fields: [schema_version, judge_code, judge_version, executor_identity, command, started_at, completed_at, exit_code, result, compliance_bit, assertions_total, assertions_passed, failed_assertions, blocking_assertions, repairs, repair_instructions, evidence_refs, evidence, evidence_sha256, input_sha256, output_sha256, retry_count]
+prohibitions: [worker_self_approval, assertion_deletion_to_obtain_pass, threshold_reduction_to_obtain_pass, unresolved_evidence_reference, pass_without_evidence, pass_without_semantic_runtime, estimated_completion_percent]
+benchmark_dual:
+  verified_at: 2026-07-29
+  claude: {repository: anthropics/skills, reference: skills/skill-creator/SKILL.md, blob: 65b3a402dbd09b8e83f9d637c6b553875189085c, practice: benchmark-driven objective closure}
+  github: {repository: Significant-Gravitas/AutoGPT, stars_verified: 185741, reference: classic/original_autogpt/CLAUDE.md, blob: 9c6d04300f83621b00e804298b7b8ea9ce3953c7, practice: explicit state persistence, cycle limits and workspace safety}
+  complement: recompute percentage and every zero-close condition instead of trusting reported completion
