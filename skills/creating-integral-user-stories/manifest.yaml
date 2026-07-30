@@ -1,227 +1,225 @@
 skill_code: creating-integral-user-stories
-version: v0.4
+version: v0.5
 status: CANDIDATO_READ_ONLY
 operation_code: BUILD_INTEGRAL_STORY_CREATOR_LF
 execution_id: EXEC-BISC-004
 canonical_store: private.lf_skill_artifacts
 source_document: HANDOFF_CLAUDE_WEB_CREACION_STORY_CREATOR_LF
 source_version: v0.1
+
 source_authority:
-- ACT-0001
-- ACT-0043
-- ACT-0045
-- public.v_lf_fuente_operativa
-- public.lf_eventos.id=797
-- public.lf_eventos.id=798
+  - ACT-0001
+  - ACT-0043
+  - ACT-0045
+  - public.v_lf_fuente_operativa
+  - public.lf_eventos
+
 validator_dependencies:
-- package: jsonschema
-  required_by:
-  - scripts/validate_story_pack.py
-  availability_policy: BLOCK_IF_MISSING
-- package: PyYAML
-  required_by:
-  - scripts/validate_package.py
-  availability_policy: BLOCK_IF_MISSING
+  - package: jsonschema
+    availability_policy: BLOCK_IF_MISSING
+    required_by:
+      - scripts/validate_story_pack.py
+  - package: PyYAML
+    availability_policy: BLOCK_IF_MISSING
+    required_by:
+      - scripts/validate_package.py
+      - scripts/validate_test_coverage.py
+      - scripts/validate_source_integrity.py
+      - scripts/validate_screen_decomposition.py
+      - scripts/validate_github_integrity.py
+
 github_contract:
   repository: cristhianlujan/claude-persona-lf-patch
   base_branch: main
-  target_branch: feat/integral-story-creator-v0-1
+  target_branch: feat/integral-story-creator-r8-forward
   write_mode: FEATURE_BRANCH_ONLY
   direct_main_write: BLOCKED
   merge_allowed: false
   draft_pr_required: true
   draft_pr_number: 56
   transport_status: ACTIVE
+  readback_required: true
+
 package_contract:
-  expected_file_count: 62
+  canonical_file_count: 62
   encoding: UTF-8
   line_endings: LF
   final_newline: true
   hash_algorithm: SHA-256
-  readback_required: true
-  unexpected_files_allowed: 0
+  unexpected_canonical_files_allowed: 0
+  auxiliary_files_are_non_canonical: true
+
 quality_policy:
   audit_scope: ALL_CURRENT_ARTIFACTS
-  artifact_count: 62
-  quality_gate_version: v1.1
-  validator: scripts/validate_package.py
-  rubric_scale:
-    minimum: 0
-    maximum: 20
-    dimension_count: 10
-    points_per_dimension: 2
-  tier_thresholds:
-    NUCLEO: 18
-    SOPORTE: 14
+  canonical_total: 62
+  benchmark_gate: DUAL_REQUIRED
+  score_formula: MIN(CLAUDE,GITHUB,TECHNICAL)
+  minimum_score_exclusive: 9.5
+  claude_reference:
+    repository: anthropics/skills
+    path: skills/skill-creator/SKILL.md
+    blob: 65b3a402dbd09b8e83f9d637c6b553875189085c
+  github_references:
+    - repository: Significant-Gravitas/AutoGPT
+      minimum_stars: 150000
+      stars_verified: 185741
+      path: classic/original_autogpt/CLAUDE.md
+    - repository: freeCodeCamp/freeCodeCamp
+      minimum_stars: 150000
+      stars_verified: 453125
+      path: curriculum/schema/challenge-schema.js
   required_controls:
-  - syntax_parse
-  - byte_band
-  - internal_references
-  - forbidden_status_assignment
-  - purpose_scope
-  - input_contract
-  - deterministic_procedure
-  - output_contract
-  - positive_behavior
-  - negative_behavior
-  - contract_schema_consistency
-  measurement_method: utf8_bytes+regex_lexeme_v1
+    - syntax_parse
+    - byte_band
+    - internal_references
+    - forbidden_status_assignment
+    - purpose_scope
+    - input_contract
+    - deterministic_procedure
+    - output_contract
+    - positive_behavior
+    - negative_behavior
+    - contract_schema_consistency
+    - github_supabase_parity
   threshold_weakening_forbidden: true
   global_close_requires:
-  - all_artifacts_meet_threshold
-  - all_13_judges_executed
-  - negative_cases_rejected
-  - golden_run_passed
+    - all_62_artifacts_dual_green
+    - all_13_judges_executed
+    - positive_cases_passed
+    - negative_cases_rejected
+    - zero_runtime_blockers
+    - zero_sha_mismatch
+    - zero_current_duplicates
+    - github_equals_supabase
+    - checklist_updated
+
 files:
   root:
-  - SKILL.md
-  - manifest.yaml
+    - SKILL.md
+    - manifest.yaml
   agents:
-  - agents/cross-cutting-enricher.md
-  - agents/field-contract-author.md
-  - agents/screen-decomposer.md
-  - agents/story-core-author.md
-  - agents/test-deriver.md
-  profiles: &id001
-  - perfiles/PERFIL_CROSS_CUTTING_ENRICHER_LF.md
-  - perfiles/PERFIL_FIELD_CONTRACT_AUDITOR_LF.md
-  - perfiles/PERFIL_SCREEN_DECOMPOSER_LF.md
-  - perfiles/PERFIL_STORY_CORE_AUTHOR_LF.md
-  - perfiles/PERFIL_STORY_TEST_DERIVER_LF.md
+    - agents/cross-cutting-enricher.md
+    - agents/field-contract-author.md
+    - agents/screen-decomposer.md
+    - agents/story-core-author.md
+    - agents/test-deriver.md
+  profiles:
+    - perfiles/PERFIL_CROSS_CUTTING_ENRICHER_LF.md
+    - perfiles/PERFIL_FIELD_CONTRACT_AUDITOR_LF.md
+    - perfiles/PERFIL_SCREEN_DECOMPOSER_LF.md
+    - perfiles/PERFIL_STORY_CORE_AUTHOR_LF.md
+    - perfiles/PERFIL_STORY_TEST_DERIVER_LF.md
   references:
-  - references/accessibility-responsive-contract.md
-  - references/analytics-observability-contract.md
-  - references/audit-traceability-contract.md
-  - references/field-contract.md
-  - references/observations-errors-contract.md
-  - references/screen-decomposition-protocol.md
-  - references/security-privacy-contract.md
-  - references/story-pack-contract.md
-  - references/supabase-source-map.md
-  - references/test-derivation-contract.md
-  - references/tokens-messages-contract.md
+    - references/accessibility-responsive-contract.md
+    - references/analytics-observability-contract.md
+    - references/audit-traceability-contract.md
+    - references/field-contract.md
+    - references/observations-errors-contract.md
+    - references/screen-decomposition-protocol.md
+    - references/security-privacy-contract.md
+    - references/story-pack-contract.md
+    - references/supabase-source-map.md
+    - references/test-derivation-contract.md
+    - references/tokens-messages-contract.md
   schemas:
-  - schemas/coverage-report.schema.json
-  - schemas/execution-ledger.schema.json
-  - schemas/judge-result.schema.json
-  - schemas/screen-decomposition.schema.json
-  - schemas/story-pack.schema.json
-  - schemas/task-packet.schema.json
+    - schemas/coverage-report.schema.json
+    - schemas/execution-ledger.schema.json
+    - schemas/judge-result.schema.json
+    - schemas/screen-decomposition.schema.json
+    - schemas/story-pack.schema.json
+    - schemas/task-packet.schema.json
   templates:
-  - templates/execution-report.template.md
-  - templates/judge-contract.template.yaml
-  - templates/story-pack.template.json
-  - templates/story-pack.template.md
+    - templates/execution-report.template.md
+    - templates/judge-contract.template.yaml
+    - templates/story-pack.template.json
+    - templates/story-pack.template.md
   scripts:
-  - scripts/calculate_binary_completion.py
-  - scripts/detect_pii_telemetry.py
-  - scripts/lf_common.py
-  - scripts/validate_field_coverage.py
-  - scripts/validate_package.py
-  - scripts/validate_security_coverage.py
-  - scripts/validate_story_pack.py
-  - scripts/validate_tokens.py
-  - scripts/validate_traceability.py
+    - scripts/calculate_binary_completion.py
+    - scripts/detect_pii_telemetry.py
+    - scripts/lf_common.py
+    - scripts/validate_field_coverage.py
+    - scripts/validate_package.py
+    - scripts/validate_security_coverage.py
+    - scripts/validate_story_pack.py
+    - scripts/validate_tokens.py
+    - scripts/validate_traceability.py
   judges:
-  - judges/analytics-observability.yaml
-  - judges/audit-traceability.yaml
-  - judges/field-contracts.yaml
-  - judges/github-integrity.yaml
-  - judges/integration-close.yaml
-  - judges/observations-errors.yaml
-  - judges/screen-decomposition.yaml
-  - judges/security-privacy.yaml
-  - judges/skill-package.yaml
-  - judges/source-integrity.yaml
-  - judges/story-core.yaml
-  - judges/test-coverage.yaml
-  - judges/tokens-messages.yaml
+    - judges/analytics-observability.yaml
+    - judges/audit-traceability.yaml
+    - judges/field-contracts.yaml
+    - judges/github-integrity.yaml
+    - judges/integration-close.yaml
+    - judges/observations-errors.yaml
+    - judges/screen-decomposition.yaml
+    - judges/security-privacy.yaml
+    - judges/skill-package.yaml
+    - judges/source-integrity.yaml
+    - judges/story-core.yaml
+    - judges/test-coverage.yaml
+    - judges/tokens-messages.yaml
   evals:
-  - evals/assertions.json
-  - evals/evals.json
-  - evals/trigger-evals.json
+    - evals/assertions.json
+    - evals/evals.json
+    - evals/trigger-evals.json
   fixtures:
-  - evals/fixtures/screen_insufficient_definition.json
-  - evals/fixtures/screen_sensitive_fields.json
-  - evals/fixtures/screen_simple_query.json
-  - evals/fixtures/screen_wizard_six_steps.json
-external_profiles:
-  destination_code: DEST_CREACION_PERFIL_LF_DEFAULT
-  base_folder: perfiles
-  naming_rule: SLUG_UPPER_UNDERSCORE
-  filename_suffix: .md
-  copied_into_skill: true
-  files: *id001
+    - evals/fixtures/screen_insufficient_definition.json
+    - evals/fixtures/screen_sensitive_fields.json
+    - evals/fixtures/screen_simple_query.json
+    - evals/fixtures/screen_wizard_six_steps.json
+
+auxiliary_files:
+  - scripts/validate_test_coverage.py
+  - scripts/validate_source_integrity.py
+  - scripts/validate_screen_decomposition.py
+  - scripts/validate_github_integrity.py
+  - AUDIT_CHECKLIST_R8.md
+  - AUDIT_CHECKLIST_R8_62_ARTEFACTOS.xlsx
+
 workflow:
-  steps:
-  - order: 1
-    step_id: SOURCE_INTEGRITY
-    judge: J01_SOURCE_INTEGRITY
-  - order: 2
-    step_id: SCREEN_DECOMPOSITION
-    judge: J02_SCREEN_DECOMPOSITION
-  - order: 3
-    step_id: STORY_CORE
-    judge: J03_STORY_CORE
-  - order: 4
-    step_id: FIELD_CONTRACTS
-    judge: J04_FIELD_CONTRACTS
-  - order: 5
-    step_id: OBSERVATIONS_ERRORS
-    judge: J05_OBSERVATIONS_ERRORS
-  - order: 6
-    step_id: SECURITY_PRIVACY
-    judge: J06_SECURITY_PRIVACY
-  - order: 7
-    step_id: AUDIT_TRACEABILITY
-    judge: J07_AUDIT_TRACEABILITY
-  - order: 8
-    step_id: TOKENS_MESSAGES
-    judge: J08_TOKENS_MESSAGES
-  - order: 9
-    step_id: ANALYTICS_OBSERVABILITY
-    judge: J09_ANALYTICS_OBSERVABILITY
-  - order: 10
-    step_id: TEST_COVERAGE
-    judge: J10_TEST_COVERAGE
-  - order: 11
-    step_id: SKILL_PACKAGE
-    judge: J11_SKILL_PACKAGE
-  - order: 12
-    step_id: GITHUB_INTEGRITY
-    judge: J12_GITHUB_INTEGRITY
-  - order: 13
-    step_id: INTEGRATION_CLOSE
-    judge: J13_INTEGRATION_CLOSE
   retry_limit: 2
   worker_self_approval: false
+  steps:
+    - {order: 1, step_id: SOURCE_INTEGRITY, judge: J01_SOURCE_INTEGRITY}
+    - {order: 2, step_id: SCREEN_DECOMPOSITION, judge: J02_SCREEN_DECOMPOSITION}
+    - {order: 3, step_id: STORY_CORE, judge: J03_STORY_CORE}
+    - {order: 4, step_id: FIELD_CONTRACTS, judge: J04_FIELD_CONTRACTS}
+    - {order: 5, step_id: OBSERVATIONS_ERRORS, judge: J05_OBSERVATIONS_ERRORS}
+    - {order: 6, step_id: SECURITY_PRIVACY, judge: J06_SECURITY_PRIVACY}
+    - {order: 7, step_id: AUDIT_TRACEABILITY, judge: J07_AUDIT_TRACEABILITY}
+    - {order: 8, step_id: TOKENS_MESSAGES, judge: J08_TOKENS_MESSAGES}
+    - {order: 9, step_id: ANALYTICS_OBSERVABILITY, judge: J09_ANALYTICS_OBSERVABILITY}
+    - {order: 10, step_id: TEST_COVERAGE, judge: J10_TEST_COVERAGE}
+    - {order: 11, step_id: SKILL_PACKAGE, judge: J11_SKILL_PACKAGE}
+    - {order: 12, step_id: GITHUB_INTEGRITY, judge: J12_GITHUB_INTEGRITY}
+    - {order: 13, step_id: INTEGRATION_CLOSE, judge: J13_INTEGRATION_CLOSE}
+
 chain_policy:
-  unit: VERTICAL_CHAIN
   required_sequence:
-  - contract
-  - schema
-  - validator
-  - judge
-  - positive_eval
-  - negative_eval
-  - fixture
+    - contract
+    - schema
+    - validator
+    - judge
+    - positive_eval
+    - negative_eval
+    - evidence
+    - github_readback
+    - supabase_readback
   close_only_when_negative_is_rejected: true
+
 limits:
   no_validated: true
-  no_produccion: true
-  no_runtime: true
+  no_production: true
+  no_runtime_enable: true
   no_merge: true
   no_direct_main_write: true
   no_force_push: true
-  no_inventory_route_change: true
-  forbidden_status:
-  - VALIDATED
-  - APPROVED
-  - PRODUCTION_READY
-  - PRODUCTION_AUTHORIZED
-  - VIGENTE
+  no_release: true
+  no_tag: true
+  forbidden_status: [VALIDATED, APPROVED, PRODUCTION_READY, PRODUCTION_AUTHORIZED, VIGENTE]
+
 current_state:
-  s1_event_id: 798
-  gate_commit: 718837b0543a3029247e918197472866327c7613
-  global_close: BLOCKED
-  golden_run: NOT_EXECUTED
+  audit_execution: EXEC-BISC-004
+  global_close: PENDING_FINAL_READBACK
+  production_authorized: false
+  merge_authorized: false
+  runtime_enabled: false
