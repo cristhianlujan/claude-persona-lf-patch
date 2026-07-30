@@ -1,6 +1,7 @@
 # Contrato de seguridad y privacidad
 
-Versión operativa: `v0.3`. Juez asociado: `J06_SECURITY_PRIVACY`.
+Versión operativa: `v0.5`. Juez asociado: `J06_SECURITY_PRIVACY`.
+Validador: `scripts/validate_security_coverage.py`.
 
 ## 1. Propósito
 
@@ -18,55 +19,46 @@ Convertir riesgos de acceso, aislamiento, mutación y tratamiento de datos en de
 
 ## 3. Preflight
 
-Antes de aplicar este contrato:
-
-1. Confirmar que las entradas obligatorias existen y pertenecen a la misma versión de fuente.
-2. Resolver todas las referencias declaradas.
-3. Confirmar que el alcance de lectura y escritura está autorizado.
-4. Registrar contradicciones o datos ausentes antes de producir contenido.
-5. Detenerse con `BLOCKED` cuando una condición bloqueante sea verdadera.
+1. Confirmar entradas, versión y referencias resolubles.
+2. Confirmar independencia entre worker y J06.
+3. Confirmar `judge_version`, `executor_identity` y SHA-256 de entrada.
+4. Detener con `BLOCKED` ante fuente de permisos ausente, conflicto tenant/privacidad o metadata faltante.
 
 ## 4. Procedimiento obligatorio
 
-1. Identificar si la historia requiere autenticación.
-2. Enumerar perfiles y permisos exactos.
-3. Definir enforcement server-side para cada lectura o mutación.
-4. Definir tenant_key y política cross-tenant.
-5. Decidir necesidad de RLS según almacenamiento y acceso.
-6. Decidir MFA o step-up para acciones críticas.
-7. Definir rate limiting e idempotencia.
-8. Definir almacenamiento privado y TTL de URLs firmadas.
-9. Vincular campos sensibles con masking, logs y exportación.
-10. Derivar pruebas negativas de permiso, tenant e idempotencia.
+1. Identificar lecturas, mutaciones, descargas y campos PII.
+2. Enumerar permisos y enforcement server-side.
+3. Definir `tenant_key` y política cross-tenant.
+4. Definir almacenamiento privado y TTL cuando exista descarga sensible.
+5. Definir MFA para acción crítica e idempotencia para mutación.
+6. Aplicar masking a PII visible.
+7. Ejecutar caso positivo, negativo y metadata ausente contra el validador real.
 
 ## 5. Reglas e invariantes
 
 - Autorización solo cliente es falla.
-- cross_tenant_policy admite DENY o EXPLICIT_ALLOW_WITH_AUDIT.
-- Toda historia multiempresa con lectura o escritura exige prueba cross-tenant negativa.
-- Mutación exige decisión de idempotencia, incluso cuando la decisión sea NO_APPLIES con razón.
-- Descarga sensible exige almacenamiento privado y URL firmada con TTL.
-- Acción crítica exige decisión explícita de MFA.
-- Ausencia de definición material genera PENDING_DECISION, no un valor por defecto.
-- PII no se expone en analytics ni logs sin política.
+- `cross_tenant_policy` admite `DENY` o `EXPLICIT_ALLOW_WITH_AUDIT`.
+- Toda mutación exige decisión booleana de idempotencia.
+- Toda acción crítica exige decisión booleana de MFA.
+- PII visible usa masking o queda `HIDDEN`.
+- No se reducen assertions ni clasificación PII para obtener PASS.
 
 ## 6. Contrato de salida
 
-Salida principal: `schemas/story-pack.schema.json#/properties/security_privacy`.
-
-La salida debe incluir referencias de fuente, conteos, assertions evaluadas, decisiones pendientes y rutas de evidencia. Una salida estructuralmente válida pero sin evidencia no es satisfactoria.
+Salida principal: `schemas/story-pack.schema.json#/properties/security_privacy` y envelope `schemas/judge-result.schema.json` v0.5.
 
 ## 7. Assertions de paso
 
 ```text
 stories_without_required_permission = 0
-mutations_without_server_side_authorization = 0
-cross_tenant_access_allowed = 0
+mutations_without_server_authorization = 0
+cross_tenant_access = 0
 tenant_key_missing = 0
-sensitive_download_without_private_storage = 0
-signed_url_without_ttl = 0
-critical_action_without_mfa_decision = 0
-mutation_without_idempotency_decision = 0
+sensitive_download_storage = 0
+signed_url_ttl = 0
+critical_action_mfa = 0
+mutation_idempotency = 0
+pii_exposure = 0
 ```
 
 ## 8. Condiciones de bloqueo
@@ -75,36 +67,50 @@ mutation_without_idempotency_decision = 0
 permission_source_unavailable = true
 tenant_model_undefined_and_blocking = true
 privacy_classification_conflict = true
+metadata_or_evidence_unavailable = true
+retry_limit_exhausted = true
 ```
 
-## 9. Ejemplo mínimo completo
+## 9. Caso positivo ejecutable
 
 ```json
 {
-  "authentication_required": true,
-  "allowed_profiles": ["OPERATOR"],
-  "required_permissions": ["CUSTOMER_READ"],
-  "tenant_key": "company_id",
-  "cross_tenant_policy": "DENY",
-  "server_side_enforcement": true,
-  "rls_required": true,
-  "mfa_required": false,
-  "idempotency_required": false
+  "core": {"trigger": "UPDATE_PROFILE", "main_flow": ["User submits update"]},
+  "fields": [{"field_code": "dni", "pii_classification": "PII_DIRECT", "visibility_mode": "MASKED", "masking_rule": "SHOW_LAST_4"}],
+  "security_privacy": {
+    "required_permissions": ["profile:update"],
+    "server_side_enforcement": true,
+    "cross_tenant_policy": "DENY",
+    "tenant_key": "tenant_id",
+    "mfa_required": false,
+    "idempotency_required": true
+  }
 }
 ```
 
-## 10. Reparación
+Resultado esperado: `PASS_WITH_EVIDENCE`.
 
-Cuando una assertion falle, reparar exclusivamente el objeto asociado; no reducir el umbral, borrar la assertion ni modificar la fuente. Tras `retry_limit = 2`, devolver `BLOCKED` con la evidencia acumulada.
+## 10. Caso negativo ejecutable
 
-## 11. Handoff
+```json
+{
+  "core": {"trigger": "DELETE_ACCOUNT", "main_flow": ["confirm and delete"]},
+  "fields": [{"field_code": "dni", "pii_classification": "PII_DIRECT", "visibility_mode": "FULL"}],
+  "security_privacy": {}
+}
+```
 
-Entregar al juez: versión de fuente, SHA-256, objetos procesados, conteos, assertions, fallas, decisiones pendientes, reparaciones aplicadas y evidence_refs resolubles.
+Resultado esperado: `RETURN_TO_WORKER` con hallazgos de permisos, autorización, tenant, MFA, idempotencia y PII.
+
+## 11. Reparación y handoff
+
+Reparar exclusivamente los objetos indicados; no borrar assertions, reducir umbrales, inventar permisos ni autoaprobar. Tras `retry_limit = 2`, devolver `BLOCKED`. Entregar comando, ejecutor, conteos, fallas, hashes y `evidence_refs` resolubles.
 
 ## 12. Fuentes de diseño no normativas
 
-- **microsoft/vscode** (~186,000 estrellas): `extensions/copilot/assets/prompts/skills/chronicle/SKILL.md`; patrones: prerrequisitos, workflows paso a paso, formatos de salida y stop conditions.
-- **freeCodeCamp/freeCodeCamp** (~446,000 estrellas): `curriculum/schema/challenge-schema.js`; patrones: validación condicional, campos obligatorios, mensajes de error verificables.
-- **Significant-Gravitas/AutoGPT** (~185,000 estrellas): `classic/original_autogpt/CLAUDE.md`; patrones: arquitectura explícita, ciclo operativo, estado, pruebas y gotchas.
+- **anthropics/skills:** `skills/skill-creator/SKILL.md`; casos realistas, grading programático y reparación iterativa.
+- **microsoft/vscode:** skills con prerrequisitos, workflows, salidas y stop conditions.
+- **freeCodeCamp/freeCodeCamp:** constraints condicionales y rechazo determinista.
+- **Significant-Gravitas/AutoGPT:** estado reproducible y límites operativos.
 
-Estas fuentes aportan patrones de ejecutabilidad, validación y pruebas. Los contratos LF y la fuente operativa prevalecen ante cualquier diferencia.
+Los contratos LF prevalecen.
