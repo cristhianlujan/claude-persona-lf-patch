@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.5
+LF Contract Check v0.6
 
 Sandbox validator for controlled LF governance gates.
+
+v0.6 changes:
+- Detects forbidden statuses only when they are assigned as actual output/state values.
+- Does not flag NOT_VALIDATED or control documents that enumerate forbidden outputs.
 
 v0.4 changes:
 - Supports pull_request, push and workflow_dispatch events.
@@ -13,6 +17,7 @@ v0.4 changes:
 import fnmatch
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -73,13 +78,17 @@ REQUIRED_RECEIPT_FIELDS = [
     "issued_at",
 ]
 
-FORBIDDEN_TERMS = [
-    "VALIDATED",
-    "PRODUCTION",
-    "PRODUCCION",
-    "APROBADO_FINAL",
-    "OPERATIVO_GENERAL",
-]
+FORBIDDEN_STATUS_ASSIGNMENT = re.compile(
+    r"(?:"
+    r"^\s*(?:[-*]\s*)?(?:status|estado|state|result|resultado)\s*[:=]\s*`?"
+    r"(?:VALIDATED|PRODUCTION|PRODUCTION_READY|PRODUCTION_AUTHORIZED|PRODUCCION|APROBADO_FINAL|OPERATIVO_GENERAL)\b"
+    r"|"
+    r'\"(?:status|estado|state|result|resultado)\"\s*:\s*\"'
+    r"(?:VALIDATED|PRODUCTION|PRODUCTION_READY|PRODUCTION_AUTHORIZED|PRODUCCION|APROBADO_FINAL|OPERATIVO_GENERAL)\""
+    r")",
+    re.IGNORECASE | re.MULTILINE,
+)
+
 REQUIRED_TERMS = [
     'contract_version: "v0.1"',
     'contract_id: "LF-GH-GATE-INSTALL-SANDBOX-20260529-001"',
@@ -275,9 +284,10 @@ def validate_forbidden_terms(changed_files: list[str]) -> None:
         file_path = Path(path)
         if file_path.exists() and file_path.is_file():
             content = file_path.read_text(encoding="utf-8", errors="ignore")
-            for forbidden in FORBIDDEN_TERMS:
-                if forbidden in content:
-                    fail("FAIL_FORBIDDEN_STATUS", f"Término prohibido encontrado: {forbidden} en {path}")
+            match = FORBIDDEN_STATUS_ASSIGNMENT.search(content)
+            if match:
+                excerpt = " ".join(match.group(0).split())
+                fail("FAIL_FORBIDDEN_STATUS", f"Asignación de estado prohibido encontrada en {path}: {excerpt}")
 
 
 def main() -> None:
