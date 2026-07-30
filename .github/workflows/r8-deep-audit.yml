@@ -37,25 +37,39 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          set -euo pipefail
+          set -uo pipefail
           mkdir -p audit-results
+          failures=0
+          : > audit-results/checkpoints.tsv
           for n in $(seq -w 1 62); do
             code="A${n}"
             echo "::group::CHECKPOINT ${code}"
+            static_rc=0
+            runtime_rc=0
             if [ -f "tools/static/${code}.py" ]; then
-              python "tools/static/${code}.py" --report-dir audit-results
+              python "tools/static/${code}.py" --report-dir audit-results || static_rc=$?
             else
-              python tools/r8_deep_audit.py --artifact "${code}" --report-dir audit-results
+              python tools/r8_deep_audit.py --artifact "${code}" --report-dir audit-results || static_rc=$?
             fi
             if [ -f "tools/runtime/${code}.py" ]; then
-              python "tools/runtime/${code}.py" | tee "audit-results/${code}-runtime.json"
+              python "tools/runtime/${code}.py" | tee "audit-results/${code}-runtime.json" || runtime_rc=${PIPESTATUS[0]}
             elif [ "$n" -le 4 ]; then
-              python tools/r8_runtime_checks.py --artifact "${code}" --report-dir audit-results
+              python tools/r8_runtime_checks.py --artifact "${code}" --report-dir audit-results || runtime_rc=$?
             else
-              python tools/r8_runtime_matrix.py --artifact "${code}" --report-dir audit-results
+              python tools/r8_runtime_matrix.py --artifact "${code}" --report-dir audit-results || runtime_rc=$?
             fi
+            if [ "$static_rc" -ne 0 ] || [ "$runtime_rc" -ne 0 ]; then
+              failures=$((failures + 1))
+              status="FAIL"
+            else
+              status="PASS"
+            fi
+            printf '%s\t%s\t%s\t%s\n' "$code" "$status" "$static_rc" "$runtime_rc" >> audit-results/checkpoints.tsv
+            echo "${code}: ${status} (static=${static_rc}, runtime=${runtime_rc})"
             echo "::endgroup::"
           done
+          echo "artifact_failures=${failures}" | tee audit-results/summary.txt
+          test "$failures" -eq 0
 
       - name: Upload per-artifact evidence
         if: always()
