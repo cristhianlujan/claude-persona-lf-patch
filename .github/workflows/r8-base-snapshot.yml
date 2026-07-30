@@ -1,0 +1,32 @@
+name: R8 Base Snapshot
+
+on:
+  push:
+    branches:
+      - fix/deep-audit-a01-a62
+    paths:
+      - '.github/workflows/r8-base-snapshot.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout base commit
+        uses: actions/checkout@v4
+        with:
+          ref: 6f0f04376bd897d95427d1001c416be7e58ef5fc
+          path: base
+
+      - name: Package canonical base tree
+        run: tar -czf r8-base-canonical-tree.tar.gz -C base skills/creating-integral-user-stories
+
+      - name: Upload base tree
+        uses: actions/upload-artifact@v4
+        with:
+          name: r8-base-canonical-tree
+          path: r8-base-canonical-tree.tar.gz
+          retention-days: 7
