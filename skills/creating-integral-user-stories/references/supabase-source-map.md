@@ -101,7 +101,7 @@ Este bloque es evidencia de arranque; debe volver a ejecutarse antes de cada esc
 
 ## 10. Reparación
 
-Corregir únicamente el objeto, ruta o hash discrepante. No reducir umbrales, borrar evidencia, reutilizar un PASS histórico ni alterar el inventario para cerrar. Tras dos intentos fallidos, devolver `BLOCKED`.
+Corregir únicamente el objeto, ruta o hash discrepante. No reducir umbrales, borrar evidencia, reutilizar un PASS histórico ni alterar el inventario para cerrar. Tras `retry_limit = 2`, devolver `BLOCKED`.
 
 ## 11. Handoff
 
