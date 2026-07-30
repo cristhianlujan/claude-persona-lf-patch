@@ -1,10 +1,10 @@
 # Contrato de responsive y accesibilidad
 
-Versión operativa: `v0.3`. Juez asociado: `J10_TEST_COVERAGE con evidencia de familias RESPONSIVE y ACCESSIBILITY`.
+Versión operativa: `v0.5`. Juez asociado: `J10_TEST_COVERAGE` con familias `RESPONSIVE` y `ACCESSIBILITY`.
 
 ## 1. Propósito
 
-Convertir requisitos de adaptación y acceso inclusivo en comportamientos observables, no en declaraciones genéricas.
+Convertir requisitos de adaptación y acceso inclusivo en comportamientos observables y pruebas exactas, no en declaraciones genéricas.
 
 ## 2. Contrato de entrada
 
@@ -18,13 +18,10 @@ Convertir requisitos de adaptación y acceso inclusivo en comportamientos observ
 
 ## 3. Preflight
 
-Antes de aplicar este contrato:
-
-1. Confirmar que las entradas obligatorias existen y pertenecen a la misma versión de fuente.
-2. Resolver todas las referencias declaradas.
-3. Confirmar que el alcance de lectura y escritura está autorizado.
-4. Registrar contradicciones o datos ausentes antes de producir contenido.
-5. Detenerse con `BLOCKED` cuando una condición bloqueante sea verdadera.
+1. Confirmar entradas, versión y referencias.
+2. Confirmar breakpoints y baseline de accesibilidad.
+3. Confirmar que los casos derivados poseen fixtures exactos y evidencia.
+4. Detener con `BLOCKED` ante breakpoints ausentes, conflicto de baseline o fuente irresoluble.
 
 ## 4. Procedimiento obligatorio
 
@@ -32,28 +29,25 @@ Antes de aplicar este contrato:
 2. Definir reflow, truncamiento y transformación de tablas.
 3. Verificar acceso permanente a la acción primaria.
 4. Definir estructura semántica y orden de foco.
-5. Vincular labels, ayudas y errores a los controles.
+5. Vincular labels, ayudas y errores a controles.
 6. Definir anuncio programático de cambios y errores.
 7. Comprobar operación completa por teclado.
 8. Definir indicador de estado no dependiente del color.
 9. Respetar reducción de movimiento.
-10. Derivar pruebas por breakpoint y modalidad de interacción.
+10. Derivar pruebas exactas `RESPONSIVE` y `ACCESSIBILITY` para J10.
 
 ## 5. Reglas e invariantes
 
-- La acción primaria nunca queda inaccesible en el breakpoint menor.
-- El estado no se comunica únicamente por color.
+- La acción primaria permanece accesible en `SMALL`.
 - Todo control interactivo es operable por teclado.
-- Todo campo tiene label asociado; placeholder no sustituye label.
+- Todo campo tiene label asociado.
 - Errores y cambios dinámicos se anuncian programáticamente.
-- Animación no es requisito para completar la tarea.
-- Responsive y accesibilidad acompañan la historia; no se fragmentan artificialmente.
+- El estado no depende solo del color.
+- La tarea no depende de animación y respeta reducción de movimiento.
 
 ## 6. Contrato de salida
 
-Salida principal: `schemas/story-pack.schema.json#/properties/responsive_accessibility`.
-
-La salida debe incluir referencias de fuente, conteos, assertions evaluadas, decisiones pendientes y rutas de evidencia. Una salida estructuralmente válida pero sin evidencia no es satisfactoria.
+Salida principal: `schemas/story-pack.schema.json#/properties/responsive_accessibility` y pruebas J10 con fixture exacto.
 
 ## 7. Assertions de paso
 
@@ -71,33 +65,50 @@ reduced_motion_violations = 0
 ```text
 supported_breakpoints_missing = true
 accessibility_baseline_conflict = true
+exact_fixture_missing = true
 ```
 
-## 9. Ejemplo mínimo completo
+## 9. Caso positivo ejecutable
 
 ```json
 {
   "breakpoints_supported": ["SMALL", "MEDIUM", "LARGE"],
-  "layout_priority": ["primary_result", "primary_action", "filters"],
-  "table_to_card_strategy": "CARD_PER_RECORD",
+  "primary_action_accessible_small": true,
   "keyboard_operable": true,
+  "fields_have_labels": true,
   "error_announcement": "ARIA_LIVE_ASSERTIVE",
-  "non_color_state_indicator": true
+  "non_color_state_indicator": true,
+  "reduced_motion_supported": true
 }
 ```
 
-## 10. Reparación
+Resultado esperado: todas las assertions en cero.
 
-Cuando una assertion falle, reparar exclusivamente el objeto asociado; no reducir el umbral, borrar la assertion ni modificar la fuente. Tras `retry_limit = 2`, devolver `BLOCKED` con la evidencia acumulada.
+## 10. Caso negativo ejecutable
 
-## 11. Handoff
+```json
+{
+  "breakpoints_supported": ["LARGE"],
+  "primary_action_accessible_small": false,
+  "keyboard_operable": false,
+  "fields_have_labels": false,
+  "error_announcement": null,
+  "non_color_state_indicator": false,
+  "reduced_motion_supported": false
+}
+```
 
-Entregar al juez: versión de fuente, SHA-256, objetos procesados, conteos, assertions, fallas, decisiones pendientes, reparaciones aplicadas y evidence_refs resolubles.
+Resultado esperado: `RETURN_TO_WORKER` con seis hallazgos.
+
+## 11. Reparación y handoff
+
+Reparar únicamente la propiedad o prueba fallida; no borrar assertions, reducir umbrales ni autoaprobar. Tras `retry_limit = 2`, devolver `BLOCKED`. Entregar fixtures, expected results, hashes y `evidence_refs`.
 
 ## 12. Fuentes de diseño no normativas
 
-- **microsoft/vscode** (~186,000 estrellas): `extensions/copilot/assets/prompts/skills/chronicle/SKILL.md`; patrones: prerrequisitos, workflows paso a paso, formatos de salida y stop conditions.
-- **freeCodeCamp/freeCodeCamp** (~446,000 estrellas): `curriculum/schema/challenge-schema.js`; patrones: validación condicional, campos obligatorios, mensajes de error verificables.
-- **Significant-Gravitas/AutoGPT** (~185,000 estrellas): `classic/original_autogpt/CLAUDE.md`; patrones: arquitectura explícita, ciclo operativo, estado, pruebas y gotchas.
+- **anthropics/skills:** ejemplos realistas y evals objetivas.
+- **microsoft/vscode:** workflows y stop conditions.
+- **freeCodeCamp/freeCodeCamp:** constraints y rechazo determinista.
+- **Significant-Gravitas/AutoGPT:** ejecución reproducible y límites.
 
-Estas fuentes aportan patrones de ejecutabilidad, validación y pruebas. Los contratos LF y la fuente operativa prevalecen ante cualquier diferencia.
+Los contratos LF prevalecen.
