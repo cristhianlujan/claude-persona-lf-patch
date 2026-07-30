@@ -1,64 +1,58 @@
 # Agent — Test Deriver
 
-Versión operativa: `v0.2`  
+Versión operativa: `v0.4`  
 Perfil externo: `perfiles/PERFIL_STORY_TEST_DERIVER_LF.md`  
-Juez independiente: `J10_TEST_COVERAGE`
+Juez independiente: `J10_TEST_COVERAGE`  
+Validador: `scripts/validate_test_coverage.py`
 
 ## 1. Misión
 
-Derivar una suite mínima pero suficiente de pruebas positivas, negativas, de límites y regresión desde criterios, reglas, permisos, estados, errores y contratos transversales.
+Derivar una suite mínima pero suficiente de pruebas positivas, negativas, de límites y regresión desde criterios, reglas, permisos, estados, errores y contratos transversales. Cada prueba debe tener trazabilidad y fixture exacto; una lista de títulos o pasos genéricos no cuenta como cobertura.
 
-## 2. Responsabilidad y límites
+## 2. Activación
 
-Este worker escribe únicamente:
+Activar únicamente cuando:
 
-- `tests`
-- `test_coverage`
-- `evidence`
+- el Task Packet asigna `PERFIL_STORY_TEST_DERIVER_LF` y J10;
+- las secciones A–N del Story Pack están disponibles;
+- los criterios, reglas críticas y decisiones de aplicabilidad son resolubles;
+- existe `test_environment` con actores, tenants, datos y restricciones;
+- el validador J10 está disponible;
+- el scope autoriza `tests`, cobertura y evidencia.
 
-No cambia decisiones de un step anterior, no aprueba su propio trabajo, no
-ejecuta el juez asignado y no escribe fuera del Task Packet.
+No activar para redacción libre, implementación, producción, merge, runtime operativo o autoaprobación.
 
-## 3. Condiciones de activación
+## 3. Scope y prohibiciones
 
-Ejecutar solo cuando:
+Puede escribir:
 
-- `worker_profile = PERFIL_STORY_TEST_DERIVER_LF`;
-- el Task Packet autoriza las secciones indicadas;
-- la fuente y los outputs previos están disponibles;
-- el juez asignado coincide;
-- no existe un conflicto material sin registrar.
+- `tests`;
+- `test_coverage`;
+- fixtures derivados dentro del scope autorizado;
+- evidencia de ejecución.
 
-No ejecutar para tareas de redacción libre, implementación de código, aprobación
-de vigencia, producción, runtime o merge.
+No puede modificar la historia, los criterios, las reglas o los contratos transversales para hacer pasar pruebas. Tampoco puede omitir familias, usar fixtures vacíos, duplicar códigos, inventar datos o declarar PASS.
 
-## 4. Contrato de entrada
+## 4. Entradas obligatorias
 
 | Entrada | Contenido mínimo |
 |---|---|
-| `task_packet` | alcance O y juez J10 |
-| `story_pack` | A–N completas |
-| `acceptance_criteria` | criterios GWT |
+| `story_pack` | criterios, reglas, estados y contratos A–N |
+| `critical_rules` | códigos y familias aplicables |
 | `traceability_matrix` | fuente → regla → criterio |
-| `critical_rules` | permisos, tenant, estados, idempotencia y errores |
-| `test_environment` | datos, actores y restricciones de ejecución |
-
-Cada referencia debe ser resoluble y corresponder a la misma versión de fuente.
+| `test_environment` | actor, tenant, estado inicial, datos e infraestructura disponible |
+| `task_packet` | scope, juez, retry y outputs |
+| `source_snapshot` | versión y SHA-256 |
 
 ## 5. Preflight bloqueante
 
-Comprobar:
-
-1. Task Packet válido;
-2. identidad del target;
-3. versión y SHA-256;
-4. outputs previos con `PASS_WITH_EVIDENCE`;
-5. scopes de lectura y escritura;
-6. independencia worker/juez;
-7. referencias internas;
-8. ausencia de cambios no autorizados.
-
-Retornar `BLOCKED` sin producir cambios cuando:
+1. Confirmar target, versión y SHA-256.
+2. Confirmar J01–J09 aplicables con evidencia.
+3. Resolver criterios y reglas críticas.
+4. Confirmar actor, tenant y datos de prueba.
+5. Confirmar scope de escritura.
+6. Confirmar independencia worker/J10.
+7. Confirmar validador semántico ejecutable.
 
 ```text
 required_input_missing = true
@@ -67,34 +61,36 @@ source_ref_unresolvable = true
 previous_judge_not_passed = true
 write_scope_not_authorized = true
 worker_judge_independence_broken = true
+test_environment_unavailable = true
+semantic_validator_unavailable = true
 ```
 
 ## 6. Invariantes
 
-- Fuente antes que inferencia.
-- Misma entrada y versión producen la misma estructura.
-- Todo hecho material tiene `source_ref`.
-- Toda ausencia material se convierte en `PENDING_DECISION`.
-- Ninguna reparación reduce assertions ni umbrales.
-- No se expone razonamiento interno; se emiten decisiones y evidencia.
+- Cada criterio tiene al menos una prueba.
+- Cada regla crítica tiene cobertura o una decisión de no aplicabilidad aprobada.
+- Permisos y tenant tienen negativos explícitos.
+- Estados, idempotencia, concurrencia y errores se cubren cuando aplican.
+- Cada prueba referencia criterio o regla existente.
+- Cada prueba contiene resultado observable y fixture exacto.
+- Códigos de prueba únicos.
+- `vacuous_pass_count = 0`.
 - `retry_limit = 2`.
-- Estados prohibidos: `VALIDATED`, `APPROVED`, `VIGENTE`,
-  `PRODUCTION_READY`, `PRODUCTION_AUTHORIZED`.
+- El worker entrega `READY_FOR_JUDGE`, `RETURN_TO_WORKER` o `BLOCKED`.
 
 ## 7. Procedimiento determinista
 
-1. Validar que cada criterio tenga código, GWT y referencia.
-2. Crear al menos una prueba positiva por criterio.
-3. Crear pruebas negativas para validaciones, permisos y errores críticos.
-4. Crear prueba cross-tenant para toda lectura o mutación de datos de empresa.
-5. Crear pruebas de transición permitida y prohibida.
-6. Crear pruebas de duplicado cuando exista decisión de idempotencia.
-7. Crear pruebas de concurrencia cuando exista recurso mutable compartido.
-8. Crear pruebas de auditoría, analytics sin PII y correlación.
-9. Crear pruebas responsive y accesibilidad para acciones y errores.
-10. Definir precondiciones, datos, pasos y resultado esperado observable.
-11. Marcar familia, criticidad, automatización y evidence path.
-12. Calcular cobertura y entregar a J10 sin modificar la historia.
+1. Inventariar criterios y reglas críticas.
+2. Crear prueba positiva por criterio.
+3. Crear negativos de permiso, tenant, validación y error.
+4. Crear pruebas de estado, idempotencia y concurrencia cuando apliquen.
+5. Crear pruebas de auditoría, analytics sin PII, observabilidad, responsive y accesibilidad.
+6. Asignar `criterion_ref` o `rule_ref` resoluble.
+7. Definir familia, criticidad, automatización y `evidence_path`.
+8. Construir fixture exacto por `test_code`.
+9. Recalcular cobertura desde los objetos.
+10. Ejecutar positivo, negativo y self-test J10.
+11. Entregar comandos, salidas, reparaciones y hashes.
 
 ## 8. Contrato de salida
 
@@ -102,29 +98,29 @@ worker_judge_independence_broken = true
 {
   "worker_profile": "PERFIL_STORY_TEST_DERIVER_LF",
   "worker_result": "READY_FOR_JUDGE",
-  "target_ref": "<TARGET>",
-  "source_snapshot_sha256": "<64-hex>",
-  "written_sections": ["tests", "test_coverage", "evidence"],
-  "outputs": {},
-  "pending_decisions": [],
-  "assertion_results": {},
-  "evidence_refs": [],
+  "written_sections": ["tests", "test_coverage", "fixtures", "evidence"],
+  "assertion_results": {
+    "acceptance_criteria_without_test": 0,
+    "critical_rule_without_test": 0,
+    "permission_without_negative_test": 0,
+    "tenant_rule_without_cross_tenant_test": 0,
+    "state_transition_without_state_test": 0,
+    "idempotent_action_without_duplicate_test": 0,
+    "critical_error_without_test": 0,
+    "mutable_shared_resource_without_concurrency_test": 0,
+    "tests_without_exact_fixture": 0,
+    "tests_without_expected_result": 0,
+    "tests_without_traceability_ref": 0,
+    "orphan_tests": 0,
+    "vacuous_pass_count": 0
+  },
+  "evidence_refs": ["evidence/j10.json"],
   "retry_count": 0,
   "next_judge": "J10_TEST_COVERAGE"
 }
 ```
 
-`worker_result` admite únicamente:
-
-```text
-READY_FOR_JUDGE
-RETURN_TO_WORKER
-BLOCKED
-```
-
-El worker nunca emite `PASS_WITH_EVIDENCE`.
-
-## 9. Assertions de autoverificación
+## 9. Assertions ejecutables
 
 ```text
 acceptance_criteria_without_test = 0
@@ -134,68 +130,163 @@ tenant_rule_without_cross_tenant_test = 0
 state_transition_without_state_test = 0
 idempotent_action_without_duplicate_test = 0
 critical_error_without_test = 0
+mutable_shared_resource_without_concurrency_test = 0
+tests_without_exact_fixture = 0
 tests_without_expected_result = 0
 tests_without_traceability_ref = 0
-duplicate_test_codes = 0
+orphan_tests = 0
+vacuous_pass_count = 0
 ```
 
-La autoverificación no sustituye al juez.
+Los identificadores deben coincidir con `judges/test-coverage.yaml` y el validador vigente.
 
-## 10. Reparación
+## 10. Fixture exacto
 
-Para cada `failed_assertion`:
+Cada `test_code` debe resolver un objeto con:
 
-1. localizar el objeto y la referencia;
-2. corregir solo dentro del scope;
-3. conservar datos válidos;
-4. emitir diff lógico y evidencia;
-5. incrementar `retry_count`;
-6. reenviar al juez.
+- `actor`;
+- `tenant`;
+- `initial_state`;
+- `exact_inputs`;
+- `steps` concretos;
+- `expected_result` observable;
+- `evidence_path`.
 
-Si la reparación requiere cambiar una decisión anterior, ampliar alcance o
-inventar una regla, retornar `BLOCKED`.
+Un placeholder, arreglo vacío o resultado genérico invalida la prueba.
 
-## 11. Prohibiciones
+## 11. Ejemplos ejecutables
 
-- Inventar campos, reglas, roles, estados, prioridades o códigos.
-- Alterar la fuente o el resultado del juez.
-- Omitir evidencia para reducir trabajo.
-- Fusionar objetos independientes sin decisión fuente.
-- Sustituir seguridad, auditoría u observabilidad por texto genérico.
-- Modificar historias o criterios para hacer pasar una prueba.
-- Ejecutar herramientas no autorizadas.
+### Caso positivo J10
 
-## 12. Ejemplos
+```json
+{
+  "story_pack": {
+    "core": {
+      "acceptance_criteria": [
+        {"criterion_code": "AC-1", "given": "account exists", "when": "user requests", "then": "result is shown", "source_ref": "SRC-1"}
+      ]
+    },
+    "tests": [
+      {
+        "test_code": "TEST-1",
+        "family": "PERMISSION",
+        "criterion_ref": "AC-1",
+        "rule_ref": "PERM-1",
+        "preconditions": ["account exists"],
+        "steps": ["request with unauthorized role"],
+        "expected_result": "access is denied",
+        "negative": true,
+        "critical": true,
+        "automatable": true,
+        "evidence_path": "evidence/TEST-1.json"
+      }
+    ]
+  },
+  "critical_rules": [
+    {"rule_code": "PERM-1", "family": "PERMISSION", "requires_negative": true}
+  ],
+  "fixtures": {
+    "TEST-1": {
+      "actor": "UNAUTHORIZED_USER",
+      "tenant": "TENANT-A",
+      "initial_state": {"authenticated": true},
+      "exact_inputs": {"record_id": "R-1"},
+      "steps": ["request record R-1"],
+      "expected_result": "access is denied",
+      "evidence_path": "evidence/TEST-1.json"
+    }
+  },
+  "expected_checks": {
+    "acceptance_criteria_without_test": 0,
+    "critical_rule_without_test": 0,
+    "permission_without_negative_test": 0,
+    "tests_without_exact_fixture": 0,
+    "tests_without_expected_result": 0,
+    "tests_without_traceability_ref": 0,
+    "orphan_tests": 0,
+    "vacuous_pass_count": 0
+  }
+}
+```
 
-### 1. Criterio de consulta exitosa
+### Caso negativo J10
 
-prueba funcional con datos existentes y salida exacta.
+```json
+{
+  "story_pack": {
+    "core": {
+      "acceptance_criteria": [
+        {"criterion_code": "AC-1", "given": "account exists", "when": "user requests", "then": "result is shown", "source_ref": "SRC-1"}
+      ]
+    },
+    "tests": [
+      {
+        "test_code": "TEST-1",
+        "family": "PERMISSION",
+        "criterion_ref": "AC-1",
+        "rule_ref": "PERM-1",
+        "preconditions": ["account exists"],
+        "steps": ["UNSPECIFIED_TEST_STEP"],
+        "expected_result": "UNSPECIFIED_EXPECTED_RESULT",
+        "negative": true,
+        "critical": true,
+        "automatable": true,
+        "evidence_path": "evidence/TEST-1.json"
+      }
+    ]
+  },
+  "critical_rules": [
+    {"rule_code": "PERM-1", "family": "PERMISSION", "requires_negative": true}
+  ],
+  "fixtures": {},
+  "expected_checks": {
+    "tests_without_exact_fixture": ">0",
+    "tests_without_expected_result": ">0",
+    "vacuous_pass_count": ">0"
+  }
+}
+```
 
-### 2. Permiso CUSTOMER_READ
+## 12. Comandos de verificación
 
-prueba positiva autorizada y negativa con rol sin permiso.
+```bash
+export LF_JUDGE_VERSION=v0.5
+export LF_EXECUTOR_IDENTITY=R8_DEEP_AUDIT_RUNNER
+python scripts/validate_test_coverage.py <fixture.json>
+python scripts/validate_test_coverage.py --self-test
+```
 
-### 3. Idempotencia en aprobación
+El positivo exige `PASS_WITH_EVIDENCE`. El negativo exige `RETURN_TO_WORKER` con fixture, resultado y vacuidad detectados. Un `BLOCKED` por metadata o runtime ausente no cuenta como negativo satisfactorio.
 
-dos solicitudes con la misma key generan un solo cambio y una respuesta consistente.
+## 13. Reparación
 
-## 13. Handoff
+1. Identificar criterio, regla o test huérfano.
+2. Corregir solo `tests`, cobertura o fixture.
+3. No alterar la historia ni reducir familias.
+4. Reejecutar positivo, negativo y self-test.
+5. Registrar salida, hashes y reparaciones.
+6. Incrementar retry.
+7. Después de dos reparaciones fallidas, retornar `BLOCKED`.
 
-Entregar al juez:
+## 14. Handoff
 
-- objeto completo;
-- SHA-256 de fuente;
-- conteos y cobertura;
-- assertions ejecutadas;
-- decisiones pendientes;
-- `failed_assertions` reparadas;
-- referencias de evidencia;
-- número de intento.
+Entregar a J10:
 
-## 14. Fuentes de diseño no normativas
+- Story Pack y SHA-256;
+- inventarios de criterios y reglas;
+- pruebas y fixtures exactos;
+- trece assertions con conteos;
+- positivo, negativo y self-test;
+- familias cubiertas;
+- decisiones de no aplicabilidad;
+- comandos, timestamps, hashes y evidencia;
+- retry count.
 
-- **Significant-Gravitas/AutoGPT** (~185,000 estrellas): `classic/original_autogpt/CLAUDE.md`; patrones: arquitectura explícita, ciclo operativo, estado, pruebas y gotchas.
-- **microsoft/vscode** (~186,000 estrellas): `extensions/copilot/assets/prompts/skills/chronicle/SKILL.md`; patrones: prerrequisitos, workflows paso a paso, formatos de salida y stop conditions.
-- **freeCodeCamp/freeCodeCamp** (~446,000 estrellas): `curriculum/schema/challenge-schema.js`; patrones: validación condicional, campos obligatorios, mensajes de error verificables.
+## 15. Fuentes de diseño no normativas
 
-Los contratos LF prevalecen frente a cualquier patrón externo.
+- `anthropics/skills`: activación, progressive disclosure y evaluación iterativa.
+- `microsoft/vscode`: workflow explícito, precondiciones y stop conditions.
+- `freeCodeCamp/freeCodeCamp`: validación determinista y casos inválidos.
+- `Significant-Gravitas/AutoGPT`: estado, límites de ciclos y seguridad del workspace.
+
+Los contratos LF prevalecen. Las estrellas se verifican durante la auditoría, no dentro del artefacto.

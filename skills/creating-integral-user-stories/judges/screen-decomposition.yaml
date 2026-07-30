@@ -1,19 +1,22 @@
 judge_code: J02_SCREEN_DECOMPOSITION
-judge_version: v0.5
+judge_version: v0.6
 status: CANDIDATO_READ_ONLY
 scope: Verifica cobertura completa, no duplicada y trazable de contextos, campos, permisos, transiciones y unidades funcionales.
 independence: worker_must_not_execute_own_judge
 retry_limit: 2
 required_inputs:
-  - target_screen_code
-  - screen_decomposition
-  - coverage_matrix
+- target_screen_code
+- screen_decomposition
 preflight:
-  - all_required_inputs_are_present
-  - input_versions_are_compatible
-  - source_and_evidence_refs_are_resolvable
-  - judge_is_not_executed_by_the_worker_under_review
-  - input_sha256_is_present
+- all_required_inputs_are_present
+- input_versions_are_compatible
+- source_and_evidence_refs_are_resolvable
+- judge_is_not_executed_by_the_worker_under_review
+- input_sha256_is_present
+- all_inventories_are_explicit_arrays
+- source_version_and_main_responsibility_are_non_empty
+- functional_units_and_coverage_items_are_non_empty
+- preflight_is_enforced_by_semantic_validator
 validators:
   static_contract_ref: scripts/validate_package.py#audit_artifact
   semantic_validator_ref: scripts/validate_screen_decomposition.py
@@ -22,86 +25,239 @@ runtime_status: AVAILABLE
 runtime_command: python scripts/validate_screen_decomposition.py <input.json> --evidence-ref <ref>
 self_test_command: python scripts/validate_screen_decomposition.py --self-test
 deterministic_procedure:
-  - validate_preflight_and_hashes
-  - load_required_inputs_without_mutation
-  - execute_semantic_validator
-  - recompute_inventory_coverage_and_duplicates
-  - record_actual_expected_for_each_assertion
-  - reject_empty_or_missing_evidence
-  - emit_schema_valid_judge_result
+- validate_preflight_and_hashes
+- load_required_inputs_without_mutation
+- execute_semantic_validator
+- recompute_inventory_coverage_and_duplicates
+- record_actual_expected_for_each_assertion
+- reject_empty_or_missing_evidence
+- emit_schema_valid_judge_result
 assertions:
-  - {assertion_id: source_snapshot_sha_present, actual_ref: evidence.checks.source_snapshot_sha_present, expected: 0, critical: true, evidence_required: true}
-  - {assertion_id: source_screen_code_matches_target, actual_ref: evidence.checks.source_screen_code_matches_target, expected: 0, critical: true, evidence_required: true}
-  - {assertion_id: context_coverage, actual_ref: evidence.checks.context_coverage, expected: 0, critical: true, evidence_required: true}
-  - {assertion_id: permission_coverage, actual_ref: evidence.checks.permission_coverage, expected: 0, critical: true, evidence_required: true}
-  - {assertion_id: transition_coverage, actual_ref: evidence.checks.transition_coverage, expected: 0, critical: true, evidence_required: true}
-  - {assertion_id: unmapped_count, actual_ref: evidence.checks.unmapped_count, expected: 0, critical: true, evidence_required: true}
-  - {assertion_id: unjustified_count, actual_ref: evidence.checks.unjustified_count, expected: 0, critical: true, evidence_required: true}
-  - {assertion_id: conflicting_count, actual_ref: evidence.checks.conflicting_count, expected: 0, critical: true, evidence_required: true}
-  - {assertion_id: duplicate_functional_units, actual_ref: evidence.checks.duplicate_functional_units, expected: 0, critical: true, evidence_required: true}
-  - {assertion_id: functional_units_complete, actual_ref: evidence.checks.functional_units_complete, expected: 0, critical: true, evidence_required: true}
-  - {assertion_id: confirmed_rules_have_source, actual_ref: evidence.checks.confirmed_rules_have_source, expected: 0, critical: true, evidence_required: true}
-  - {assertion_id: coverage_summary_mismatch, actual_ref: evidence.checks.coverage_summary_mismatch, expected: 0, critical: true, evidence_required: true}
+- assertion_id: source_snapshot_sha_present
+  actual_ref: evidence.checks.source_snapshot_sha_present
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: source_screen_code_matches_target
+  actual_ref: evidence.checks.source_screen_code_matches_target
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: context_coverage
+  actual_ref: evidence.checks.context_coverage
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: permission_coverage
+  actual_ref: evidence.checks.permission_coverage
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: transition_coverage
+  actual_ref: evidence.checks.transition_coverage
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: unmapped_count
+  actual_ref: evidence.checks.unmapped_count
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: unjustified_count
+  actual_ref: evidence.checks.unjustified_count
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: conflicting_count
+  actual_ref: evidence.checks.conflicting_count
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: duplicate_functional_units
+  actual_ref: evidence.checks.duplicate_functional_units
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: functional_units_complete
+  actual_ref: evidence.checks.functional_units_complete
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: functional_units_without_code
+  actual_ref: evidence.checks.functional_units_without_code
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: coverage_mapped_to_unknown_functional_unit
+  actual_ref: evidence.checks.coverage_mapped_to_unknown_functional_unit
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: confirmed_rules_have_source
+  actual_ref: evidence.checks.confirmed_rules_have_source
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: coverage_summary_mismatch
+  actual_ref: evidence.checks.coverage_summary_mismatch
+  expected: 0
+  critical: true
+  evidence_required: true
 pass_if:
-  - semantic_validator_exit_code = 0
-  - all_applicable_assertions_pass = true
-  - assertions_passed = assertions_total
-  - compliance_bit = 1
-  - evidence_refs_non_empty = true
+- semantic_validator_exit_code = 0
+- all_applicable_assertions_pass = true
+- assertions_passed = assertions_total
+- compliance_bit = 1
+- evidence_refs_non_empty = true
 fail_if:
-  - invented_rule_marked_confirmed = true
-  - duplicated_functional_unit = true
-  - functional_unit_without_business_result = true
+- invented_rule_marked_confirmed = true
+- duplicated_functional_unit = true
+- functional_unit_without_business_result = true
 block_if:
-  - source_screen_not_found = true
-  - screen_version_conflict = true
-  - required_decision_prevents_decomposition = true
-  - semantic_validator_unavailable = true
-  - executor_identity_missing = true
-  - input_sha256_missing = true
-result_values: [PASS_WITH_EVIDENCE, RETURN_TO_WORKER, BLOCKED, FAIL]
+- source_screen_not_found = true
+- screen_version_conflict = true
+- required_decision_prevents_decomposition = true
+- semantic_validator_unavailable = true
+- executor_identity_missing = true
+- input_sha256_missing = true
+- required_input_missing = true
+- inventory_missing_or_invalid = true
+- functional_units_empty = true
+- coverage_items_empty = true
+- source_version_or_main_responsibility_empty = true
+result_values:
+- PASS_WITH_EVIDENCE
+- RETURN_TO_WORKER
+- BLOCKED
+- FAIL
 required_evidence:
-  - source_snapshot_sha
-  - context_count
-  - permission_count
-  - transition_count
-  - functional_units_count
-  - coverage_items_count
-  - failed_assertions
-  - blocking_assertions
-  - repair_instructions
-  - executor_identity
-  - judge_version
-  - command
-  - started_at
-  - completed_at
-  - assertions_total
-  - assertions_passed
-  - input_sha256
-  - output_sha256
-  - evidence_sha256
+- source_snapshot_sha
+- context_count
+- permission_count
+- transition_count
+- functional_units_count
+- coverage_items_count
+- failed_assertions
+- blocking_assertions
+- repair_instructions
+- executor_identity
+- judge_version
+- command
+- started_at
+- completed_at
+- assertions_total
+- assertions_passed
+- input_sha256
+- output_sha256
+- evidence_sha256
+- field_count
+- source_version
+- main_responsibility
 positive_behavior:
   command: python scripts/validate_screen_decomposition.py --self-test
   expected: positive_pass=true and exit_code=0
 negative_cases:
-  - {case: pending_coverage_item, expected_result: RETURN_TO_WORKER, assertion: unmapped_count}
-  - {case: duplicated_functional_unit, expected_result: RETURN_TO_WORKER, assertion: duplicate_functional_units}
-  - {case: missing_runtime, expected_result: BLOCKED, assertion: semantic_validator_unavailable}
+- case: pending_coverage_item
+  expected_result: RETURN_TO_WORKER
+  assertion: unmapped_count
+- case: duplicated_functional_unit
+  expected_result: RETURN_TO_WORKER
+  assertion: duplicate_functional_units
+- case: missing_runtime
+  expected_result: BLOCKED
+  assertion: semantic_validator_unavailable
+- case: mapped_to_unknown_functional_unit
+  expected_result: RETURN_TO_WORKER
+  assertion: coverage_mapped_to_unknown_functional_unit
+- case: empty_functional_units
+  expected_result: BLOCKED
+  assertion: functional_units_empty
+- case: empty_coverage_items
+  expected_result: BLOCKED
+  assertion: coverage_items_empty
 repair_matrix:
-  - assertion_id: unmapped_count
-    target_path: screen_decomposition.coverage_items
-    instruction: Mapear cada elemento fuente a una unidad o justificar su exclusión.
-    prohibited_shortcuts: [delete_assertion, lower_threshold, invent_source, self_approve]
-  - assertion_id: duplicate_functional_units
-    target_path: screen_decomposition.functional_units
-    instruction: Consolidar duplicados conservando trazabilidad y recalcular cobertura.
-    prohibited_shortcuts: [delete_assertion, lower_threshold, invent_source, self_approve]
+- assertion_id: unmapped_count
+  target_path: screen_decomposition.coverage_items
+  instruction: Mapear cada elemento fuente a una unidad o justificar su exclusión.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: duplicate_functional_units
+  target_path: screen_decomposition.functional_units
+  instruction: Consolidar duplicados conservando trazabilidad y recalcular cobertura.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: coverage_mapped_to_unknown_functional_unit
+  target_path: screen_decomposition.coverage_items
+  instruction: Corregir mapped_to para que cada referencia apunte a una unidad funcional declarada.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: functional_units_without_code
+  target_path: screen_decomposition.functional_units
+  instruction: Asignar código fuente único y no vacío a cada unidad funcional.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
 output:
   schema_ref: schemas/judge-result.schema.json
-  required_fields: [judge_code, judge_version, executor_identity, command, started_at, completed_at, exit_code, result, compliance_bit, assertions_total, assertions_passed, failed_assertions, blocking_assertions, repairs, repair_instructions, evidence_refs, evidence, evidence_sha256, input_sha256, output_sha256, retry_count]
-prohibitions: [worker_self_approval, assertion_deletion_to_obtain_pass, threshold_reduction_to_obtain_pass, unresolved_evidence_reference, pass_without_evidence, pass_without_semantic_runtime]
+  schema_version: v0.5
+  required_fields:
+  - schema_version
+  - judge_code
+  - judge_version
+  - executor_identity
+  - command
+  - started_at
+  - completed_at
+  - exit_code
+  - result
+  - compliance_bit
+  - assertions_total
+  - assertions_passed
+  - failed_assertions
+  - blocking_assertions
+  - repairs
+  - repair_instructions
+  - evidence_refs
+  - evidence
+  - evidence_sha256
+  - input_sha256
+  - output_sha256
+  - retry_count
+prohibitions:
+- worker_self_approval
+- assertion_deletion_to_obtain_pass
+- threshold_reduction_to_obtain_pass
+- unresolved_evidence_reference
+- pass_without_evidence
+- pass_without_semantic_runtime
+- pass_by_empty_input
+- mapping_to_unknown_functional_unit
 benchmark_dual:
   verified_at: 2026-07-29
-  claude: {repository: anthropics/skills, reference: skills/skill-creator/SKILL.md, blob: 65b3a402dbd09b8e83f9d637c6b553875189085c, practice: deterministic workflow and objective evals}
-  github: {repository: freeCodeCamp/freeCodeCamp, stars_verified: 453125, reference: curriculum/schema/challenge-schema.js, blob: 7db60817942625110525fd313bf80f1df067f006, practice: conditional constraints and uniqueness}
+  claude:
+    repository: anthropics/skills
+    reference: skills/skill-creator/SKILL.md
+    blob: 65b3a402dbd09b8e83f9d637c6b553875189085c
+    practice: deterministic workflow and objective evals
+  github:
+    repository: freeCodeCamp/freeCodeCamp
+    stars_verified: 453125
+    reference: curriculum/schema/challenge-schema.js
+    blob: 7db60817942625110525fd313bf80f1df067f006
+    practice: conditional constraints and uniqueness
   complement: recompute coverage and duplicate counts rather than trusting summary fields
+preflight_enforcement:
+  enforced_by_validator: true
+  entrypoint: scripts/validate_screen_decomposition.py
+  rule: Emitir BLOCKED con exit_code 2 antes de assertions cuando falten target/decomposition, inventarios, unidades funcionales, cobertura o metadatos fuente.

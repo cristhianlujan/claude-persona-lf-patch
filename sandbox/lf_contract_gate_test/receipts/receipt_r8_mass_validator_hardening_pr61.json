@@ -1,0 +1,55 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-BISC-005-DEEP-AUDIT-MASS-HARDENING",
+  "result": "PASS",
+  "all_required_steps_pass": true,
+  "contract_sha": "823c042a4b87430a553cdabf2c13350e29681869db5e634c81b9e7a57aa8a812",
+  "judge_sha": "9e8ccfcb989172689b88d695773f439b6f0f04d2",
+  "source_sha_list": [
+    "6f0f04376bd897d95427d1001c416be7e58ef5fc",
+    "58f0334115ea70defd49f609bf1ee30a656aea18",
+    "b0b8d97eafa3e3831e3a11edde4eed4abc44ffb0",
+    "7e3fe17eff2ee0ee35b2c6e4a9c1bf8a93008dd2",
+    "a32732a6d9efa7860a1fbda18bcb1291c4fa4edc",
+    "92db9c665b59985b61fd9fefdc43c11a17e2aa80"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/agents/cross-cutting-enricher.md",
+    "skills/creating-integral-user-stories/agents/field-contract-author.md",
+    "skills/creating-integral-user-stories/agents/test-deriver.md",
+    "skills/creating-integral-user-stories/judges/field-contracts.yaml",
+    "skills/creating-integral-user-stories/judges/github-integrity.yaml",
+    "skills/creating-integral-user-stories/judges/observations-errors.yaml",
+    "skills/creating-integral-user-stories/judges/screen-decomposition.yaml",
+    "skills/creating-integral-user-stories/judges/source-integrity.yaml",
+    "skills/creating-integral-user-stories/manifest.yaml",
+    "skills/creating-integral-user-stories/scripts/validate_field_coverage.py",
+    "skills/creating-integral-user-stories/scripts/validate_github_integrity.py",
+    "skills/creating-integral-user-stories/scripts/validate_package.py",
+    "skills/creating-integral-user-stories/scripts/validate_screen_decomposition.py",
+    "skills/creating-integral-user-stories/scripts/validate_source_integrity.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-07-30T21:20:00Z",
+  "evidence": {
+    "pull_request": 61,
+    "base_branch": "feat/integral-story-creator-r8-forward",
+    "head_branch": "fix/r8-mass-validator-hardening",
+    "canonical_state": {
+      "NOT_VALIDATED": 62,
+      "PASS_WITH_EVIDENCE": 0
+    },
+    "tests": {
+      "J01": "positive pass; negative rejected; invalid preflight blocked",
+      "J02": "positive pass; negative and unknown mapping rejected; invalid preflight blocked",
+      "J04": "positive 10/10; negative 4/10; empty input blocked",
+      "J05": "positive 7/7; negative rejected; empty input blocked",
+      "J11": "self-test pass and full package gate pass",
+      "J12": "positive pass; negative and canonical gap rejected; invalid preflight blocked",
+      "LF_GATE": "forbidden-status false-positive fixed with assignment-only detection"
+    }
+  }
+}
