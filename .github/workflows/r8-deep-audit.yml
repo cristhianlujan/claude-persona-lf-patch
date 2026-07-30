@@ -101,6 +101,8 @@ jobs:
             runtime_rc=0
             if [ "$num" -ge 13 ] && [ "$num" -le 22 ]; then
               python tools/judge_audit.py --artifact "${code}" --mode static --report-dir audit-results || static_rc=$?
+            elif [ "$num" -ge 31 ] && [ "$num" -le 38 ]; then
+              python tools/script_audit.py --artifact "${code}" --mode static --report-dir audit-results || static_rc=$?
             elif [ -f "tools/static_v2/${code}.py" ]; then
               python "tools/static_v2/${code}.py" --report-dir audit-results || static_rc=$?
             elif [ -f "tools/static/${code}.py" ]; then
@@ -110,6 +112,8 @@ jobs:
             fi
             if [ "$num" -ge 13 ] && [ "$num" -le 22 ]; then
               python tools/judge_audit.py --artifact "${code}" --mode runtime --report-dir audit-results | tee "audit-results/${code}-runtime-console.json" || runtime_rc=${PIPESTATUS[0]}
+            elif [ "$num" -ge 31 ] && [ "$num" -le 38 ]; then
+              python tools/script_audit.py --artifact "${code}" --mode runtime --report-dir audit-results | tee "audit-results/${code}-runtime.json" || runtime_rc=${PIPESTATUS[0]}
             elif [ -f "tools/runtime_v2/${code}.py" ]; then
               python "tools/runtime_v2/${code}.py" | tee "audit-results/${code}-runtime.json" || runtime_rc=${PIPESTATUS[0]}
             elif [ -f "tools/runtime/${code}.py" ]; then
