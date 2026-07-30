@@ -1,1 +1,99 @@
-{"fixture_version":"v0.4","fixture_id":"FIX-SIMPLE-QUERY","purpose":"Consulta read-only con PII, estado vacío, timeout y aislamiento multiempresa.","source_snapshot":{"screen_code":"SCR-CUSTOMER-QUERY","module_code":"MOD-CUSTOMER","version":"v1.0","sha256":"1111111111111111111111111111111111111111111111111111111111111111","main_responsibility":"Permitir a un operador consultar un cliente de su empresa por documento."},"actors":[{"profile":"OPERATOR","permissions":["CUSTOMER_READ"],"tenant_key":"company_id"}],"contexts":[{"code":"search","description":"Formulario de búsqueda","source_ref":"SRC-SIMPLE#contexts.search"},{"code":"result","description":"Resultado permitido","source_ref":"SRC-SIMPLE#contexts.result"},{"code":"empty","description":"Estado sin resultados","source_ref":"SRC-SIMPLE#contexts.empty"},{"code":"error","description":"Indisponibilidad temporal","source_ref":"SRC-SIMPLE#contexts.error"}],"fields":[{"code":"document_number","data_type":"STRING","required":true,"pii_classification":"PII_DIRECT","analytics_allowed":false,"logs_allowed":false,"source_ref":"SRC-SIMPLE#fields.document"},{"code":"customer_name","data_type":"STRING","required":false,"pii_classification":"PII_DIRECT","analytics_allowed":false,"logs_allowed":false,"source_ref":"SRC-SIMPLE#fields.customer-name"}],"actions":[{"code":"SEARCH","mutation":false,"permission":"CUSTOMER_READ","source_ref":"SRC-SIMPLE#actions.search"},{"code":"CLEAR","mutation":false,"permission":null,"source_ref":"SRC-SIMPLE#actions.clear"}],"transitions":[{"from":"READY","action":"SEARCH","to":"RESULT_OR_EMPTY","allowed":true,"source_ref":"SRC-SIMPLE#transitions.search"}],"errors":[{"code":"QUERY_TIMEOUT","severity":"HIGH","retryable":true,"max_attempts":2,"source_ref":"SRC-SIMPLE#errors.timeout"}],"story_pack_eval":{"case_id":"E21_STORY_CORE_POSITIVE","validator_ref":"scripts/validate_story_pack.py","schema_ref":"schemas/story-pack.schema.json","expected_validation_result":"PASS_WITH_EVIDENCE"},"expected":{"activation":"ACTIVATE","functional_units":1,"stories":1,"required_test_families":["FUNCTIONAL","VALIDATION","PERMISSION","TENANT","ERROR","ACCESSIBILITY"],"must_not_include_pii_in_analytics":true,"unmapped_count":0,"final_result":"PASS_WITH_EVIDENCE"},"design_sources":["huggingface/transformers","facebook/react","freeCodeCamp/freeCodeCamp"]}
+{
+  "fixture_version": "v0.5",
+  "fixture_id": "FIX-SIMPLE-QUERY",
+  "purpose": "Fuente sintética positiva para demostrar activación y construcción del núcleo J03 de una consulta read-only con PII, estado vacío, timeout y aislamiento multiempresa.",
+  "source_snapshot": {
+    "screen_code": "SCR-CUSTOMER-QUERY",
+    "module_code": "MOD-CUSTOMER",
+    "version": "v1.0",
+    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "hash_kind": "SYNTHETIC_FIXTURE",
+    "main_responsibility": "Permitir a un operador consultar un cliente de su empresa por documento."
+  },
+  "actors": [
+    {
+      "profile": "OPERATOR",
+      "permissions": ["CUSTOMER_READ"],
+      "tenant_key": "company_id"
+    }
+  ],
+  "contexts": [
+    {"code": "search", "description": "Formulario de búsqueda", "source_ref": "SRC-SIMPLE#contexts.search"},
+    {"code": "result", "description": "Resultado permitido", "source_ref": "SRC-SIMPLE#contexts.result"},
+    {"code": "empty", "description": "Estado sin resultados", "source_ref": "SRC-SIMPLE#contexts.empty"},
+    {"code": "error", "description": "Indisponibilidad temporal", "source_ref": "SRC-SIMPLE#contexts.error"}
+  ],
+  "fields": [
+    {
+      "code": "document_number",
+      "data_type": "STRING",
+      "required": true,
+      "source_type": "INPUT",
+      "pii_classification": "PII_DIRECT",
+      "visibility_mode": "MASKED",
+      "masking_rule": "SHOW_LAST_4",
+      "analytics_allowed": false,
+      "logs_allowed": false,
+      "source_ref": "SRC-SIMPLE#fields.document"
+    },
+    {
+      "code": "customer_name",
+      "data_type": "STRING",
+      "required": false,
+      "source_type": "OUTPUT",
+      "pii_classification": "PII_DIRECT",
+      "visibility_mode": "MASKED",
+      "masking_rule": "MASK_NAME",
+      "analytics_allowed": false,
+      "logs_allowed": false,
+      "source_ref": "SRC-SIMPLE#fields.customer-name"
+    }
+  ],
+  "actions": [
+    {"code": "SEARCH", "mutation": false, "permission": "CUSTOMER_READ", "source_ref": "SRC-SIMPLE#actions.search"},
+    {"code": "CLEAR", "mutation": false, "permission": null, "source_ref": "SRC-SIMPLE#actions.clear"}
+  ],
+  "transitions": [
+    {"from": "READY", "action": "SEARCH", "to": "RESULT_OR_EMPTY", "allowed": true, "source_ref": "SRC-SIMPLE#transitions.search"}
+  ],
+  "errors": [
+    {
+      "code": "QUERY_TIMEOUT",
+      "severity": "HIGH",
+      "retryable": true,
+      "max_attempts": 2,
+      "correlation_id_required": true,
+      "source_ref": "SRC-SIMPLE#errors.timeout"
+    }
+  ],
+  "story_core_eval": {
+    "case_id": "E21_STORY_CORE_POSITIVE",
+    "validator_ref": "scripts/validate_story_pack.py",
+    "schema_ref": "schemas/story-pack.schema.json",
+    "expected_candidate_result": "PASS_WITH_EVIDENCE",
+    "expected_eval_wrapper_result": "PASS_WITH_EVIDENCE",
+    "required_identity_alignment": [
+      "screen_code",
+      "module_code",
+      "source_version",
+      "source_snapshot_sha"
+    ]
+  },
+  "expected": {
+    "activation": "ACTIVATE",
+    "functional_units": 1,
+    "stories": 1,
+    "story_core_result": "PASS_WITH_EVIDENCE",
+    "integration_result": "NOT_VALIDATED",
+    "minimum_executable_test_families": ["FUNCTIONAL", "TENANT"],
+    "test_families_pending_before_integration": ["VALIDATION", "PERMISSION", "ERROR", "ACCESSIBILITY"],
+    "must_not_include_pii_in_analytics": true,
+    "unmapped_count": 0
+  },
+  "design_sources": [
+    "anthropics/skills",
+    "microsoft/vscode",
+    "freeCodeCamp/freeCodeCamp",
+    "Significant-Gravitas/AutoGPT"
+  ]
+}
