@@ -17,11 +17,11 @@ def ledger():return {'execution_id':'EXEC-1','operation_code':'BUILD_INTEGRAL_ST
 def judge_results():
  sys.path.insert(0,str(SKILL/'scripts'));import lf_common as common
  with tempfile.TemporaryDirectory() as directory:
-  path=Path(directory)/'input.json';path.write_text('{}\n');os.environ.update(LF_JUDGE_VERSION='v0.5',LF_EXECUTOR_IDENTITY='R8_SCHEMA_AUDITOR');base={'input_path':str(path),'checks':{'a':[],'b':[]}}
+  path=Path(directory)/'input.json';path.write_text('{}\n');os.environ.update(LF_JUDGE_VERSION='v0.5',LF_EXECUTOR_IDENTITY='R8_SCHEMA_AUDITOR');base={'input_path':str(path),'checks':{'assertion_a':[],'assertion_b':[]}}
   good=common.result_object('J99_SCHEMA_TEST',[],base,['file:test'],command='python schema_test.py')
-  rtw=common.result_object('J99_SCHEMA_TEST',['a'],{'input_path':str(path),'checks':{'a':['x'],'b':[]}},['file:test'],[common.failure('a','$','repair assertion a')],command='python schema_test.py')
+  rtw=common.result_object('J99_SCHEMA_TEST',['assertion_a'],{'input_path':str(path),'checks':{'assertion_a':['x'],'assertion_b':[]}},['file:test'],[common.failure('assertion_a','$','repair assertion a')],command='python schema_test.py')
   blocked=common.result_object('J99_SCHEMA_TEST',[],base,['file:test'],command='python schema_test.py',judge_version=None,executor_identity=None)
-  fail=common.result_object('J99_SCHEMA_TEST',['a'],{'input_path':str(path),'checks':{'a':['x']}},['file:test'],[common.failure('a','$','repair assertion a')],forced_result='FAIL',command='python schema_test.py')
+  fail=common.result_object('J99_SCHEMA_TEST',['assertion_a'],{'input_path':str(path),'checks':{'assertion_a':['x']}},['file:test'],[common.failure('assertion_a','$','repair assertion a')],forced_result='FAIL',command='python schema_test.py')
   return good,rtw,blocked,fail
 def cases(code,v):
  rows=[]
