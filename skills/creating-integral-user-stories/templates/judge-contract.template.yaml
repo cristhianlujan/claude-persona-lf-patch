@@ -1,67 +1,95 @@
 judge_code: JNN_DOMAIN
-version: v0.3
+judge_version: v0.5
 status: CANDIDATO_READ_ONLY
-scope: Describe en una frase exactamente qué objeto y riesgo verifica el juez.
+scope: Describe en una frase exactamente qué objeto, contrato y riesgo verifica el juez.
 independence: worker_must_not_execute_own_judge
 retry_limit: 2
 required_inputs:
-- object_under_review
-- source_snapshot
-- evidence_bundle
+  - object_under_review
+  - source_snapshot
+  - evidence_bundle
 preflight:
-- all_required_inputs_are_present
-- input_versions_are_compatible
-- evidence_refs_are_resolvable
-- judge_is_independent
+  - all_required_inputs_are_present
+  - input_versions_are_compatible
+  - source_and_evidence_refs_are_resolvable
+  - judge_is_not_executed_by_the_worker_under_review
+  - input_sha256_is_present
+validators:
+  static_contract_ref: scripts/validate_package.py#audit_artifact
+  semantic_validator_ref: scripts/<domain_validator>.py
+runtime_status: REQUIRED
+runtime_command: python scripts/<domain_validator>.py <input.json> --evidence-ref <ref>
+deterministic_procedure:
+  - validate_preflight_and_hashes
+  - load_inputs_without_mutation
+  - execute_semantic_validator
+  - record_actual_expected_for_each_assertion
+  - reject_empty_or_missing_evidence
+  - emit_schema_valid_judge_result
 assertions:
-- assertion_id: domain_metric_zero
-  target: object_under_review
-  pass_condition: domain_metric_zero = 0
-  critical: true
-  evidence_required: true
+  - assertion_id: domain_metric_zero
+    target: object_under_review
+    operator: equals
+    actual_ref: evidence.checks.domain_metric_zero
+    expected: 0
+    critical: true
+    evidence_required: true
+pass_if:
+  - semantic_validator_exit_code = 0
+  - all_applicable_assertions_pass = true
+  - assertions_passed = assertions_total
+  - compliance_bit = 1
+  - evidence_refs_non_empty = true
+  - input_output_evidence_hashes_present = true
 fail_if:
-- proven_contract_violation = true
+  - proven_contract_violation = true
 block_if:
-- required_source_unavailable = true
-result_values:
-- PASS_WITH_EVIDENCE
-- RETURN_TO_WORKER
-- BLOCKED
-- FAIL
+  - required_source_unavailable = true
+  - semantic_validator_unavailable = true
+  - executor_identity_missing = true
+  - input_sha256_missing = true
+result_values: [PASS_WITH_EVIDENCE, RETURN_TO_WORKER, BLOCKED, FAIL]
 result_rules:
-  PASS_WITH_EVIDENCE: All applicable assertions pass and evidence is resolvable.
-  RETURN_TO_WORKER: At least one repairable assertion fails.
-  BLOCKED: A blocking condition is true or retry limit is exhausted.
-  FAIL: Evidence proves a non-repairable violation for this execution.
+  PASS_WITH_EVIDENCE: Todas las assertions aplicables pasan con runtime y evidencia resoluble.
+  RETURN_TO_WORKER: Una o más assertions reparables fallan y existen instrucciones accionables.
+  BLOCKED: Existe condición bloqueante, falta runtime o se agotó retry_limit.
+  FAIL: La evidencia demuestra una violación no reparable dentro de la ejecución.
 required_evidence:
-- input_hash
-- metric_counts
-- failed_assertions
-- blocking_assertions
-- repair_instructions
-repair_matrix:
-- assertion_id: domain_metric_zero
-  instruction: Repair only the object that produced the metric and rerun the complete judge.
-  prohibited_shortcuts:
-  - delete_assertion
-  - lower_threshold
-  - invent_source
-  - self_approve
-validator_ref: scripts/validate_package.py
-output:
-  schema_ref: schemas/judge-result.schema.json
-  required_fields:
-  - judge_code
-  - result
-  - compliance_bit
+  - executor_identity
+  - judge_version
+  - command
+  - started_at
+  - completed_at
+  - assertions_total
+  - assertions_passed
   - failed_assertions
   - blocking_assertions
-  - evidence_refs
-  - evidence
   - repair_instructions
-  - retry_count
-  - judged_at
-design_sources:
-- microsoft/vscode
-- freeCodeCamp/freeCodeCamp
-- huggingface/transformers
+  - evidence_refs
+  - evidence_sha256
+  - input_sha256
+  - output_sha256
+positive_behavior:
+  fixture: evals/fixtures/<positive>.json
+  expected_result: PASS_WITH_EVIDENCE
+negative_cases:
+  - fixture: evals/fixtures/<negative>.json
+    expected_result: RETURN_TO_WORKER
+    assertion: domain_metric_zero
+  - case: missing_runtime
+    expected_result: BLOCKED
+    assertion: semantic_validator_unavailable
+repair_matrix:
+  - assertion_id: domain_metric_zero
+    target_path: object_under_review
+    instruction: Reparar solo el objeto que produjo la métrica y reejecutar el juez completo.
+    prohibited_shortcuts: [delete_assertion, lower_threshold, invent_source, self_approve]
+output:
+  schema_ref: schemas/judge-result.schema.json
+  required_fields: [schema_version, judge_code, judge_version, executor_identity, command, started_at, completed_at, exit_code, result, compliance_bit, assertions_total, assertions_passed, failed_assertions, blocking_assertions, repairs, repair_instructions, evidence_refs, evidence, evidence_sha256, input_sha256, output_sha256, retry_count]
+prohibitions: [worker_self_approval, assertion_deletion_to_obtain_pass, threshold_reduction_to_obtain_pass, unresolved_evidence_reference, pass_without_evidence, pass_without_semantic_runtime]
+benchmark_dual:
+  verified_at: 2026-07-29
+  claude: {repository: anthropics/skills, reference: skills/skill-creator/SKILL.md, blob: 65b3a402dbd09b8e83f9d637c6b553875189085c, practice: objective evals and iterative repair}
+  github: {repository: freeCodeCamp/freeCodeCamp, stars_verified: 453125, reference: curriculum/schema/challenge-schema.js, blob: 7db60817942625110525fd313bf80f1df067f006, practice: deterministic constraints and explicit rejection}
+  complement: template requires runtime, metadata and cryptographic evidence before PASS
