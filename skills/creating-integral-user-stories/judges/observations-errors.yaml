@@ -1,5 +1,5 @@
 judge_code: J05_OBSERVATIONS_ERRORS
-version: v0.5
+version: v0.6
 status: CANDIDATO_READ_ONLY
 scope: Verifica observaciones accionables y errores con código, mensaje, correlación, reintento y detalle técnico protegido.
 independence:
@@ -18,6 +18,16 @@ preflight:
 - source_and_evidence_refs_are_resolvable
 - judge_is_not_executed_by_worker
 - judge_version_and_executor_identity_are_present
+- observations_and_errors_present_and_non_empty
+preflight_enforcement:
+  enforced_by_validator: true
+  entrypoint: scripts/validate_field_coverage.py
+  rule: El validador debe emitir BLOCKED con exit_code 2 antes de evaluar assertions
+    cuando el inventario de observaciones o errores no es evaluable.
+  design_note: Una pantalla sin observaciones o sin errores declarados no es auditable
+    por vacuidad. Si el caso legítimo existe, el worker debe declararlo de forma
+    explícita en fuente y el owner debe autorizar el criterio; no se resuelve
+    dejando pasar la colección vacía.
 assertions:
 - blocking_conditions_without_error_code
 - observations_without_user_action
@@ -27,10 +37,14 @@ assertions:
 - duplicate_error_codes
 - errors_without_message_code
 pass_if:
+- preflight_passed = true
 - all 7 assertion result collections are empty
 - assertions_passed = assertions_total
 - output validates against judge-result v0.5
 block_if:
+- observations_errors_inventory_missing = true
+- observations_inventory_empty = true
+- errors_inventory_empty = true
 - error_catalog_required_but_unavailable = true
 - severity_policy_conflict = true
 - metadata_or_evidence_unavailable = true
@@ -56,6 +70,19 @@ validator:
   positive_case: E23_FIELD_CONTRACTS_POSITIVE
   negative_case: E24_FIELD_CONTRACTS_NEGATIVE
   negative_must_be_rejected: true
+  blocked_cases:
+  - assertion_id: observations_errors_inventory_missing
+    input: story_pack sin las claves observations o errors
+    expected_result: BLOCKED
+    expected_exit_code: 2
+  - assertion_id: observations_inventory_empty
+    input: story_pack con observations declarado vacío
+    expected_result: BLOCKED
+    expected_exit_code: 2
+  - assertion_id: errors_inventory_empty
+    input: story_pack con errors declarado vacío
+    expected_result: BLOCKED
+    expected_exit_code: 2
 output:
   schema_ref: schemas/judge-result.schema.json
   schema_version: v0.5
@@ -85,6 +112,7 @@ output:
   runtime_invariants:
   - assertions_passed <= assertions_total
   - PASS requires assertions_passed = assertions_total
+  - PASS requires preflight_passed = true
   - repairs = repair_instructions
   - completed_at >= started_at
   - output_sha256 is valid
@@ -110,9 +138,34 @@ repair_matrix:
   - lower_threshold
   - invent_source
   - self_approve
+- assertion_id: observations_errors_inventory_missing
+  instruction: Entregar el story_pack con observations y errors resueltos desde fuente.
+    No inventar observaciones ni errores para desbloquear.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: observations_inventory_empty
+  instruction: Resolver las observaciones en fuente. Una colección vacía no puede
+    pasar por vacuidad.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: errors_inventory_empty
+  instruction: Resolver los errores en fuente. Una colección vacía no puede pasar
+    por vacuidad.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
 prohibitions:
 - worker_self_approval
 - threshold_reduction_to_obtain_pass
 - assertion_deletion_to_obtain_pass
 - pass_without_evidence
+- pass_by_empty_input
 - judged_at_legacy_field
