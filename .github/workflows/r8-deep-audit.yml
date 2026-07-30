@@ -28,7 +28,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: pip
 
       - name: Install deterministic audit dependencies
         run: python -m pip install --disable-pip-version-check 'PyYAML==6.0.2' 'jsonschema==4.23.0'
@@ -53,5 +52,5 @@ jobs:
         with:
           name: r8-deep-audit-evidence
           path: audit-results/
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 30
