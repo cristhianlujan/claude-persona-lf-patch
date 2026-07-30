@@ -1,69 +1,63 @@
 # Contrato de auditoría y trazabilidad
 
-Versión operativa: `v0.3`. Juez asociado: `J07_AUDIT_TRACEABILITY`.
+Versión operativa: `v0.5`. Juez asociado: `J07_AUDIT_TRACEABILITY`.
+Validador: `scripts/validate_traceability.py`.
 
 ## 1. Propósito
 
-Mantener una cadena verificable desde la fuente hasta cada regla, criterio, prueba, mutación y evidencia.
+Mantener una cadena verificable desde la fuente hasta cada regla, criterio, prueba, evento de auditoría y evidencia.
 
 ## 2. Contrato de entrada
 
 | Entrada | Contenido obligatorio |
 |---|---|
 | `source_snapshot` | Fuente y hash de origen. |
-| `story_pack` | Reglas, criterios, campos, pruebas y acciones. |
+| `story_pack` | Reglas, criterios, pruebas y acciones. |
 | `audit_policy` | Eventos y tratamiento de valores sensibles. |
 | `traceability_matrix` | Relaciones fuente-regla-criterio-prueba-evidencia. |
 
 ## 3. Preflight
 
-Antes de aplicar este contrato:
-
-1. Confirmar que las entradas obligatorias existen y pertenecen a la misma versión de fuente.
-2. Resolver todas las referencias declaradas.
-3. Confirmar que el alcance de lectura y escritura está autorizado.
-4. Registrar contradicciones o datos ausentes antes de producir contenido.
-5. Detenerse con `BLOCKED` cuando una condición bloqueante sea verdadera.
+1. Confirmar entradas, versión, referencias y SHA-256.
+2. Confirmar independencia entre worker y J07.
+3. Confirmar `judge_version` y `executor_identity`.
+4. Detener con `BLOCKED` ante matriz/fuente ausente, conflicto o metadata faltante.
 
 ## 4. Procedimiento obligatorio
 
-1. Enumerar mutaciones, descargas sensibles y cambios de estado.
-2. Definir un audit_event_code por acción auditable.
-3. Asignar actor, perfil, empresa, recurso, permiso y policy_version.
-4. Definir estrategias de previous_state y new_state.
-5. Incluir correlation_id e idempotency_key cuando correspondan.
-6. Construir enlaces desde source_ref a regla.
-7. Enlazar regla con criterion_code.
-8. Enlazar criterio o regla con test_code.
-9. Enlazar prueba con evidence_path.
-10. Detectar roturas, huérfanos y referencias no resolubles.
+1. Enumerar criterios, validaciones, pruebas y eventos de auditoría.
+2. Exigir código y `source_ref` por evento de auditoría.
+3. Exigir `source_ref` por criterio y validación.
+4. Enlazar cada criterio y regla crítica con al menos una prueba.
+5. Exigir `criterion_ref` o `rule_ref` resoluble por prueba.
+6. Exigir `evidence_path` y códigos de prueba únicos.
+7. Ejecutar positivo, negativo y metadata ausente contra el validador real.
 
 ## 5. Reglas e invariantes
 
-- Toda mutación y descarga sensible genera auditoría.
-- Evento sin actor, empresa, recurso o resultado es inválido.
 - Auditoría no se sustituye por analytics o logs.
-- Valores sensibles usan MASKED, HASH u OMITTED salvo contrato explícito.
-- Cada criterio tiene al menos una prueba o una razón de no aplicabilidad aprobada.
-- Cada test_code apunta a criterion_ref o rule_ref existente.
-- Las referencias deben ser resolubles y versionadas.
+- Una ausencia contractual requiere `audit.reason` explícita o queda pendiente.
+- Cada referencia es resoluble y versionada.
+- Pruebas huérfanas, sin evidencia o duplicadas impiden PASS.
+- No se fabrican referencias ni se eliminan assertions para cerrar.
 
 ## 6. Contrato de salida
 
-Salida principal: `schemas/story-pack.schema.json#/properties/audit y matriz de trazabilidad`.
-
-La salida debe incluir referencias de fuente, conteos, assertions evaluadas, decisiones pendientes y rutas de evidencia. Una salida estructuralmente válida pero sin evidencia no es satisfactoria.
+Salida principal: `schemas/story-pack.schema.json#/properties/audit`, matriz de trazabilidad y envelope `schemas/judge-result.schema.json` v0.5.
 
 ## 7. Assertions de paso
 
 ```text
-mutations_without_audit_event = 0
-sensitive_downloads_without_audit = 0
-editable_fields_without_change_strategy = 0
+audit_contract_missing = 0
+audit_events_without_code = 0
+audit_events_without_source_reference = 0
+criteria_without_source_reference = 0
 rules_without_source_reference = 0
 criteria_without_test_reference = 0
+critical_rules_without_test = 0
 tests_without_story_reference = 0
-traceability_breaks = 0
+tests_without_evidence_path = 0
+duplicate_test_codes = 0
 ```
 
 ## 8. Condiciones de bloqueo
@@ -71,30 +65,48 @@ traceability_breaks = 0
 ```text
 traceability_matrix_missing = true
 source_reference_unresolvable = true
+metadata_or_evidence_unavailable = true
+retry_limit_exhausted = true
 ```
 
-## 9. Ejemplo mínimo completo
+## 9. Caso positivo ejecutable
 
-```text
-SRC-001#rule-7
- -> VAL-EMAIL-UNIQUE
- -> AC-003
- -> TEST-VALIDATION-003
- -> evidence/tests/TEST-VALIDATION-003.json
+```json
+{
+  "core": {"acceptance_criteria": [{"criterion_code": "AC-01", "source_ref": "SRC-1"}]},
+  "validations": [{"validation_code": "VAL-01", "source_ref": "SRC-2", "critical": true}],
+  "tests": [
+    {"test_code": "T-01", "criterion_ref": "AC-01", "evidence_path": "evidence/t01.json"},
+    {"test_code": "T-02", "rule_ref": "VAL-01", "evidence_path": "evidence/t02.json"}
+  ],
+  "audit": {"events": [{"audit_event_code": "AUD-01", "source_ref": "SRC-3"}]}
+}
 ```
 
-## 10. Reparación
+Resultado esperado: `PASS_WITH_EVIDENCE`.
 
-Cuando una assertion falle, reparar exclusivamente el objeto asociado; no reducir el umbral, borrar la assertion ni modificar la fuente. Tras `retry_limit = 2`, devolver `BLOCKED` con la evidencia acumulada.
+## 10. Caso negativo ejecutable
 
-## 11. Handoff
+```json
+{
+  "core": {"acceptance_criteria": [{"criterion_code": "AC-01"}]},
+  "validations": [{"validation_code": "VAL-01", "critical": true}],
+  "tests": [{"test_code": "T-01"}, {"test_code": "T-01"}],
+  "audit": {}
+}
+```
 
-Entregar al juez: versión de fuente, SHA-256, objetos procesados, conteos, assertions, fallas, decisiones pendientes, reparaciones aplicadas y evidence_refs resolubles.
+Resultado esperado: `RETURN_TO_WORKER` con roturas de fuente, cobertura, evidencia y duplicidad.
+
+## 11. Reparación y handoff
+
+Reparar exclusivamente el objeto asociado; no reducir umbral, borrar assertion, fabricar referencias ni autoaprobar. Tras `retry_limit = 2`, devolver `BLOCKED`. Entregar comando, ejecutor, conteos, fallas, hashes y `evidence_refs`.
 
 ## 12. Fuentes de diseño no normativas
 
-- **microsoft/vscode** (~186,000 estrellas): `extensions/copilot/assets/prompts/skills/chronicle/SKILL.md`; patrones: prerrequisitos, workflows paso a paso, formatos de salida y stop conditions.
-- **freeCodeCamp/freeCodeCamp** (~446,000 estrellas): `curriculum/schema/challenge-schema.js`; patrones: validación condicional, campos obligatorios, mensajes de error verificables.
-- **Significant-Gravitas/AutoGPT** (~185,000 estrellas): `classic/original_autogpt/CLAUDE.md`; patrones: arquitectura explícita, ciclo operativo, estado, pruebas y gotchas.
+- **anthropics/skills:** evals objetivas y reparación iterativa.
+- **microsoft/vscode:** workflows, formatos y stop conditions.
+- **freeCodeCamp/freeCodeCamp:** referencias, unicidad y rechazo determinista.
+- **Significant-Gravitas/AutoGPT:** persistencia y límites operativos.
 
-Estas fuentes aportan patrones de ejecutabilidad, validación y pruebas. Los contratos LF y la fuente operativa prevalecen ante cualquier diferencia.
+Los contratos LF prevalecen.
