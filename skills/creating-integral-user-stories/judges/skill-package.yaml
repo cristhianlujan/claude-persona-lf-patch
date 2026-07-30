@@ -1,0 +1,57 @@
+judge_code: J11_SKILL_PACKAGE
+version: v0.4
+status: CANDIDATO_READ_ONLY
+scope: Verifica inventario exacto, calidad por tier, referencias, consistencia contrato-schema, scripts y evaluaciones.
+independence: worker_must_not_execute_own_judge
+retry_limit: 2
+required_inputs:
+  - manifest
+  - package_inventory
+  - artifact_quality_results
+  - contract_schema_consistency
+  - script_compilation_results
+  - eval_results
+preflight:
+  - all_required_inputs_are_present
+  - manifest_expected_file_count_is_62
+  - judge_is_not_executed_by_worker
+pass_if:
+  - expected_files = actual_files
+  - missing_required_files = 0
+  - unexpected_files = 0
+  - artifacts_below_threshold = 0
+  - broken_internal_references = 0
+  - placeholder_count = 0
+  - contract_schema_consistency_errors = 0
+  - script_compilation_errors = 0
+  - required_negative_evals_accepted = 0
+fail_if:
+  - schema_validation_error = true
+  - threshold_weakening_detected = true
+  - negative_fixture_not_rejected = true
+block_if:
+  - manifest_missing = true
+  - package_inventory_unavailable = true
+  - retry_limit_exhausted = true
+result_values: [PASS_WITH_EVIDENCE, RETURN_TO_WORKER, BLOCKED, FAIL]
+required_evidence:
+  - expected_files
+  - actual_files
+  - tier_thresholds
+  - score_distribution
+  - artifact_audits
+  - contract_schema_consistency
+  - positive_eval_results
+  - negative_eval_results
+repair_matrix:
+  - assertion_id: artifacts_below_threshold
+    instruction: Reparar cada artefacto bajo su umbral; no cambiar el tier ni reducir la rúbrica.
+    prohibited_shortcuts: [delete_assertion, lower_threshold, change_tier_without_scope_decision, self_approve]
+  - assertion_id: contract_schema_consistency_errors
+    instruction: Alinear campos declarados en contrato y schema y repetir el fixture negativo.
+    prohibited_shortcuts: [ignore_field, weaken_schema, delete_contract_requirement, self_approve]
+validator_ref: scripts/validate_package.py
+output:
+  schema_ref: schemas/judge-result.schema.json
+  required_fields: [judge_code, result, compliance_bit, failed_assertions, blocking_assertions, evidence_refs, evidence, repair_instructions, retry_count, judged_at]
+prohibitions: [worker_self_approval, assertion_deletion_to_obtain_pass, threshold_reduction_to_obtain_pass, pass_without_evidence]

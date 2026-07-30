@@ -1,0 +1,199 @@
+judge_code: J07_AUDIT_TRACEABILITY
+version: v0.5
+status: CANDIDATO_READ_ONLY
+scope: Verifica la cadena fuente-regla-criterio-prueba-evidencia y rechaza auditoría vacía, códigos ausentes, referencias huérfanas o evidencia no resoluble.
+independence:
+  author_must_not_execute_final_judge: true
+  executor_identity_required: true
+  accepted_executor_types:
+  - DETERMINISTIC_RUNNER
+  - INDEPENDENT_AGENT
+  - CI_RUNNER
+  self_approval_forbidden: true
+retry_limit: 2
+required_inputs:
+- story_pack
+preflight:
+- check_id: input_present
+  condition: story_pack is a readable UTF-8 JSON object
+  on_fail: BLOCKED
+- check_id: judge_version_present
+  condition: --judge-version is non-empty
+  on_fail: BLOCKED
+- check_id: executor_identity_present
+  condition: --executor-identity is non-empty
+  on_fail: BLOCKED
+- check_id: evidence_ref_resolvable
+  condition: at least one evidence_ref is resolvable
+  on_fail: BLOCKED
+- check_id: independent_executor
+  condition: executor_identity differs from artifact author identity
+  on_fail: BLOCKED
+validator:
+  entrypoint: scripts/validate_traceability.py
+  git_blob_sha1: da950cca43698a3ad1ac3743c6714bdcac75f6a1
+  command_template: python scripts/validate_traceability.py <story_pack.json> --judge-version <git_blob_sha1> --executor-identity <actor> --evidence-ref <resolvable_ref>
+  exit_codes:
+    PASS_WITH_EVIDENCE: 0
+    RETURN_TO_WORKER: 1
+    FAIL: 1
+    BLOCKED: 2
+schema:
+  ref: schemas/judge-result.schema.json
+  version: v0.5
+  git_blob_sha1: 829de11813df4c5a3ddc430856d12f1617f2124b
+  additional_properties: false
+deterministic_procedure:
+- order: 1
+  action: Resolve and hash the input JSON; stop with BLOCKED on unreadable or invalid input.
+  evidence: input_sha256
+- order: 2
+  action: Resolve judge version, executor identity and evidence references.
+  evidence: blocking_assertions
+- order: 3
+  action: Execute every declared assertion exactly once; empty critical sections are findings, never vacuous PASS.
+  evidence: evidence.checks
+- order: 4
+  action: Map findings to result and deterministic exit code without lowering assertions or thresholds.
+  evidence: result+exit_code
+- order: 5
+  action: Emit v0.5 evidence envelope and calculate evidence/output SHA-256.
+  evidence: evidence_sha256+output_sha256
+- order: 6
+  action: Validate runtime invariants and persist/read back evidence.
+  evidence: schema_validation+readback
+assertions:
+- audit_contract_missing
+- audit_events_without_code
+- audit_events_without_source_reference
+- criteria_without_source_reference
+- rules_without_source_reference
+- criteria_without_test_reference
+- critical_rules_without_test
+- tests_without_story_reference
+- tests_without_evidence_path
+- duplicate_test_codes
+pass_if:
+- all 10 assertion result collections are empty
+- blocking_assertions is empty
+- assertions_passed = assertions_total
+- compliance_bit = 1
+- exit_code = 0
+- evidence_refs is non-empty and resolvable
+- input_sha256, evidence_sha256 and output_sha256 are valid 64-hex values
+- output validates against judge-result v0.5
+return_to_worker_if:
+- one or more repairable assertions fail
+- repairs are actionable
+- exit_code = 1
+block_if:
+- input or required metadata is missing
+- executor is not independent
+- evidence reference is unresolvable
+- schema or runtime invariant validation cannot execute
+fail_if:
+- evidence proves an unrecoverable contract violation
+- output hash or evidence hash is forged or inconsistent
+result_values:
+- PASS_WITH_EVIDENCE
+- RETURN_TO_WORKER
+- BLOCKED
+- FAIL
+required_evidence:
+- audit_event_count
+- audit_reason_present
+- criterion_count
+- rule_count
+- test_count
+- covered_criteria_count
+- covered_rules_count
+- traceability_breaks
+- checks
+- input_path
+output:
+  schema_ref: schemas/judge-result.schema.json
+  schema_version: v0.5
+  required_fields:
+  - schema_version
+  - judge_code
+  - judge_version
+  - executor_identity
+  - command
+  - started_at
+  - completed_at
+  - exit_code
+  - result
+  - compliance_bit
+  - assertions_total
+  - assertions_passed
+  - failed_assertions
+  - blocking_assertions
+  - repairs
+  - repair_instructions
+  - evidence_refs
+  - evidence
+  - evidence_sha256
+  - input_sha256
+  - output_sha256
+  - retry_count
+  invariants:
+  - assertions_passed <= assertions_total
+  - PASS requires assertions_passed = assertions_total
+  - repairs = repair_instructions
+  - completed_at >= started_at
+  - output_sha256 is calculated before adding output_sha256
+positive_behavior:
+  case_id: J07-P01
+  expected_result: PASS_WITH_EVIDENCE
+  expected_assertions_total: 10
+  expected_assertions_passed: 10
+negative_behavior:
+- case_id: J07-N01
+  input_patch:
+    audit: {}
+  expected_result: RETURN_TO_WORKER
+  must_fail:
+  - audit_contract_missing
+- case_id: J07-N02
+  expected_result: RETURN_TO_WORKER
+  must_fail:
+  - audit_events_without_source_reference
+  - tests_without_evidence_path
+- case_id: J07-N03
+  omit_cli:
+  - --judge-version
+  - --executor-identity
+  expected_result: BLOCKED
+  must_block:
+  - judge_version_missing
+  - executor_identity_missing
+repair_matrix:
+- assertion_id: audit_contract_missing
+  instruction: Definir audit.reason o al menos un audit.events tipado; no aceptar objeto vacío.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: criteria_without_test_reference
+  instruction: Derivar prueba trazable; no modificar ni eliminar el criterio.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: tests_without_evidence_path
+  instruction: Definir una ruta de evidencia resoluble para cada prueba.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+prohibitions:
+- worker_self_approval
+- vacuous_pass_on_empty_section
+- assertion_deletion_to_obtain_pass
+- threshold_reduction_to_obtain_pass
+- unresolved_evidence_reference
+- pass_without_strict_evidence_envelope
+- judged_at_legacy_field

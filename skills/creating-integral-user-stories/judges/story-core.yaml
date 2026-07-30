@@ -1,0 +1,62 @@
+judge_code: J03_STORY_CORE
+version: v0.5
+status: CANDIDATO_READ_ONLY
+scope: Verifica núcleo A-B, trazabilidad, schema y presupuesto de contexto del Story Pack.
+independence: worker_must_not_execute_own_judge
+retry_limit: 2
+required_inputs:
+  - approved_functional_units
+  - story_pack
+  - source_snapshot
+  - schemas/story-pack.schema.json
+preflight:
+  - all_required_inputs_are_present
+  - input_versions_are_compatible
+  - source_and_evidence_refs_are_resolvable
+  - judge_is_not_executed_by_worker
+pass_if:
+  - missing_sections = 0
+  - core_keys_missing = 0
+  - criteria_without_given_when_then = 0
+  - duplicate_criterion_codes = 0
+  - stories_without_source_trace = 0
+  - context_budget_missing = 0
+  - context_budget_rule_violations = 0
+  - schema_validation_errors = 0
+fail_if:
+  - criterion_without_source_ref = true
+  - oversized_story_direct_load_allowed = true
+  - active_context_over_limit_direct_load_allowed = true
+block_if:
+  - source_snapshot_unavailable = true
+  - approved_functional_units_missing = true
+  - retry_limit_exhausted = true
+result_values: [PASS_WITH_EVIDENCE, RETURN_TO_WORKER, BLOCKED, FAIL]
+required_evidence:
+  - sections_present
+  - acceptance_criteria_count
+  - source_trace_count
+  - context_budget_measurement_method
+  - canonical_story_tokens
+  - active_context_tokens
+  - schema_error_count
+  - failed_assertions
+  - positive_eval_result
+  - negative_eval_result
+repair_matrix:
+  - assertion_id: context_budget_rule_violations
+    instruction: Corregir medición, carga directa, vistas especializadas y revisión de atomicidad sin bajar límites.
+    prohibited_shortcuts: [delete_assertion, lower_threshold, invent_source, self_approve]
+  - assertion_id: schema_validation_errors
+    instruction: Corregir instancia o contrato; nunca desactivar el schema.
+    prohibited_shortcuts: [delete_assertion, lower_threshold, weaken_schema, self_approve]
+validator_ref: scripts/validate_story_pack.py
+output:
+  schema_ref: schemas/judge-result.schema.json
+  required_fields: [judge_code, result, compliance_bit, failed_assertions, blocking_assertions, evidence_refs, evidence, repair_instructions, retry_count, judged_at]
+prohibitions: [worker_self_approval, threshold_reduction_to_obtain_pass, pass_without_evidence, context_budget_omission]
+
+executable_evals:
+  positive: E21_STORY_CORE_POSITIVE
+  negative: E22_STORY_CORE_NEGATIVE
+  negative_must_be_rejected: true
