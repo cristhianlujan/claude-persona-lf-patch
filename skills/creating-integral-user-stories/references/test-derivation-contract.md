@@ -1,6 +1,6 @@
 # Contrato de derivación de pruebas
 
-Versión operativa: `v0.4`. Juez asociado: `J10_TEST_COVERAGE`.
+Versión operativa: `v0.5`. Juez asociado: `J10_TEST_COVERAGE`.
 
 ## 1. Propósito
 
@@ -155,11 +155,11 @@ Entregar al juez: versión de fuente, SHA-256 de entrada y salida, objetos proce
 
 ## 12. Benchmark dual verificado
 
-Fecha de verificación: `2026-07-29`.
+Fecha de verificación: `2026-07-30`.
 
-- **Claude Skills — anthropics/skills:** `skills/skill-creator/SKILL.md`, blob `65b3a402dbd09b8e83f9d637c6b553875189085c`; patrones aplicados: casos realistas, assertions objetivas, grading programático, benchmark y reparación iterativa.
-- **freeCodeCamp/freeCodeCamp — 453125 estrellas:** `curriculum/schema/challenge-schema.js`, blob `7db60817942625110525fd313bf80f1df067f006`; complemento: validaciones condicionales, unicidad, referencias relativas y mensajes de error deterministas.
-- **Significant-Gravitas/AutoGPT — 185741 estrellas:** `classic/original_autogpt/CLAUDE.md`, blob `9c6d04300f83621b00e804298b7b8ea9ce3953c7`; complemento: fixtures aislados, persistencia de estado y límites de ejecución.
+- **Claude Skills — anthropics/skills:** `skills/skill-creator/SKILL.md`; patrones aplicados: casos realistas, assertions objetivas, grading programático, benchmark y reparación iterativa.
+- **freeCodeCamp/freeCodeCamp:** `curriculum/schema/challenge-schema.js`; complemento: validaciones condicionales, unicidad, referencias relativas y mensajes de error deterministas.
+- **Significant-Gravitas/AutoGPT:** `classic/original_autogpt/CLAUDE.md`; complemento: fixtures aislados, persistencia de estado y límites de ejecución.
 
 **Hallazgo diferencial incorporado:** fixture exacto externo + detección de PASS vacuo + gate de runtime semántico forman una única cadena verificable sin romper el schema del Story Pack.
 
