@@ -42,7 +42,11 @@ jobs:
           for n in $(seq -w 1 62); do
             code="A${n}"
             echo "::group::CHECKPOINT ${code}"
-            python tools/r8_deep_audit.py --artifact "${code}" --report-dir audit-results
+            if [ -f "tools/static/${code}.py" ]; then
+              python "tools/static/${code}.py" --report-dir audit-results
+            else
+              python tools/r8_deep_audit.py --artifact "${code}" --report-dir audit-results
+            fi
             if [ -f "tools/runtime/${code}.py" ]; then
               python "tools/runtime/${code}.py" | tee "audit-results/${code}-runtime.json"
             elif [ "$n" -le 4 ]; then
