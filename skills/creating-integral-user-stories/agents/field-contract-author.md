@@ -158,42 +158,42 @@ Prohibido inventar campos, roles o reglas; renombrar assertions; fusionar códig
 
 ## 11. Ejemplos ejecutables
 
-### Caso positivo J04
+Los ejemplos usan el contrato real de `scripts/validate_field_coverage.py`.
+Comando de verificación:
+
+```bash
+LF_JUDGE_VERSION=<git_blob_sha1> LF_EXECUTOR_IDENTITY=<actor> \
+  python scripts/validate_field_coverage.py <caso>.json --judge J04_FIELD_CONTRACTS
+```
+
+### Caso positivo
 
 ```json
 {
   "screen_fields": ["customer_dni"],
-  "fields": [{
-    "field_code": "customer_dni",
-    "data_type": "STRING",
-    "required": true,
-    "editable": false,
-    "visibility_mode": "MASKED",
-    "pii_classification": "PII_DIRECT",
-    "masking_rule": "SHOW_LAST_4",
-    "analytics_allowed": false,
-    "logs_allowed": false,
-    "export_allowed": false,
-    "audit_required": false,
-    "validation_codes": ["VAL-DNI-LENGTH"],
-    "source_ref": "SRC-CUSTOMER#customer_dni"
-  }],
-  "expected_checks": {
-    "fields_without_contract": 0,
-    "unexpected_field_contracts": 0,
-    "duplicate_field_codes": 0,
-    "fields_without_visibility_rule": 0,
-    "fields_without_editability_rule": 0,
-    "pii_fields_without_classification": 0,
-    "pii_fields_with_analytics_allowed": 0,
-    "pii_fields_with_logs_allowed_without_rule": 0,
-    "editable_fields_without_audit_strategy": 0,
-    "fields_without_validation_mapping": 0
-  }
+  "fields": [
+    {
+      "field_code": "customer_dni",
+      "data_type": "STRING",
+      "required": true,
+      "editable": false,
+      "visibility_mode": "MASKED",
+      "pii_classification": "PII_DIRECT",
+      "analytics_allowed": false,
+      "logs_allowed": false,
+      "export_allowed": false,
+      "masking_rule": "SHOW_LAST_4",
+      "validation_codes": ["VAL-DNI-LENGTH"],
+      "source_ref": "SRC-PROFILE#dni"
+    }
+  ]
 }
 ```
 
-### Caso negativo J04
+Resultado esperado: `PASS_WITH_EVIDENCE`, `assertions_passed = assertions_total = 10`,
+`screen_fields_count = 1`, `field_contracts_count = 1`, `pii_field_count = 1`.
+
+### Caso negativo
 
 ```json
 {
@@ -204,45 +204,37 @@ Prohibido inventar campos, roles o reglas; renombrar assertions; fusionar códig
       "data_type": "STRING",
       "required": true,
       "editable": true,
-      "visibility_mode": "FULL",
       "pii_classification": "PII_DIRECT",
       "analytics_allowed": true,
       "logs_allowed": true,
-      "audit_required": false,
-      "validation_codes": [],
-      "source_ref": "SRC-CUSTOMER#email"
-    },
-    {
-      "field_code": "phone",
-      "data_type": "STRING",
-      "required": true,
-      "analytics_allowed": false,
-      "logs_allowed": false,
-      "validation_codes": [],
-      "source_ref": "SRC-CUSTOMER#phone"
+      "source_ref": "SRC-PROFILE#email"
     }
-  ],
-  "expected_checks": {
-    "fields_without_visibility_rule": ">0",
-    "fields_without_editability_rule": ">0",
-    "pii_fields_without_classification": ">0",
-    "pii_fields_with_analytics_allowed": ">0",
-    "pii_fields_with_logs_allowed_without_rule": ">0",
-    "editable_fields_without_audit_strategy": ">0",
-    "fields_without_validation_mapping": ">0"
-  }
+  ]
 }
 ```
 
-## 12. Comando de verificación
+Debe producir `RETURN_TO_WORKER` con `assertions_passed = 4` de 10 y exactamente
+estas seis assertions fallidas:
 
-```bash
-export LF_JUDGE_VERSION=v0.5
-export LF_EXECUTOR_IDENTITY=R8_DEEP_AUDIT_RUNNER
-python scripts/validate_field_coverage.py <fixture.json> --judge J04_FIELD_CONTRACTS
+```text
+editable_fields_without_audit_strategy
+fields_without_contract
+fields_without_validation_mapping
+fields_without_visibility_rule
+pii_fields_with_analytics_allowed
+pii_fields_with_logs_allowed_without_rule
 ```
 
-El positivo exige `PASS_WITH_EVIDENCE`. El negativo exige `RETURN_TO_WORKER`, assertions fallidas y reparaciones. Un `BLOCKED` por metadata o runtime ausente no cuenta como negativo válido.
+`fields_without_editability_rule` no aparece en este caso: exige la ausencia de la
+clave `editable`, incompatible con `editable_fields_without_audit_strategy`, que
+exige `editable = true`.
+
+## 12. Criterio de aceptación de los ejemplos
+
+- El positivo debe producir `PASS_WITH_EVIDENCE` con 10/10 assertions y conteos 1/1/1; un pase vacuo no es válido.
+- El negativo debe producir `RETURN_TO_WORKER` con exactamente las seis assertions listadas y 4/10 aprobadas.
+- El self-test del validador debe conservar `compliance_bit = 1`, con E23 aprobado y E24 rechazado.
+- Un `BLOCKED` por metadata o runtime ausente no sustituye el caso negativo.
 
 ## 13. Handoff
 
