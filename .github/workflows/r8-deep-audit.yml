@@ -130,6 +130,16 @@ jobs:
           echo "artifact_failures=${failures}" | tee audit-results/summary.txt
           test "$failures" -eq 0
 
+      - name: Package audited source tree
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar -czf audit-results/audited-source-tree.tar.gz \
+            skills/creating-integral-user-stories \
+            tools \
+            .github/workflows/r8-deep-audit.yml
+
       - name: Upload per-artifact evidence
         if: always()
         uses: actions/upload-artifact@v4
