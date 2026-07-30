@@ -6,22 +6,40 @@
     "screen_code": "SCR-CUSTOMER-QUERY",
     "module_code": "MOD-CUSTOMER",
     "version": "v1.0",
-    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "hash_kind": "SYNTHETIC_FIXTURE",
+    "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "hash_kind": "SYNTHETIC_FIXTURE_ALIGNED_TO_E21",
     "main_responsibility": "Permitir a un operador consultar un cliente de su empresa por documento."
   },
   "actors": [
     {
       "profile": "OPERATOR",
-      "permissions": ["CUSTOMER_READ"],
+      "permissions": [
+        "CUSTOMER_READ"
+      ],
       "tenant_key": "company_id"
     }
   ],
   "contexts": [
-    {"code": "search", "description": "Formulario de búsqueda", "source_ref": "SRC-SIMPLE#contexts.search"},
-    {"code": "result", "description": "Resultado permitido", "source_ref": "SRC-SIMPLE#contexts.result"},
-    {"code": "empty", "description": "Estado sin resultados", "source_ref": "SRC-SIMPLE#contexts.empty"},
-    {"code": "error", "description": "Indisponibilidad temporal", "source_ref": "SRC-SIMPLE#contexts.error"}
+    {
+      "code": "search",
+      "description": "Formulario de búsqueda",
+      "source_ref": "SRC-SIMPLE#contexts.search"
+    },
+    {
+      "code": "result",
+      "description": "Resultado permitido",
+      "source_ref": "SRC-SIMPLE#contexts.result"
+    },
+    {
+      "code": "empty",
+      "description": "Estado sin resultados",
+      "source_ref": "SRC-SIMPLE#contexts.empty"
+    },
+    {
+      "code": "error",
+      "description": "Indisponibilidad temporal",
+      "source_ref": "SRC-SIMPLE#contexts.error"
+    }
   ],
   "fields": [
     {
@@ -50,11 +68,27 @@
     }
   ],
   "actions": [
-    {"code": "SEARCH", "mutation": false, "permission": "CUSTOMER_READ", "source_ref": "SRC-SIMPLE#actions.search"},
-    {"code": "CLEAR", "mutation": false, "permission": null, "source_ref": "SRC-SIMPLE#actions.clear"}
+    {
+      "code": "SEARCH",
+      "mutation": false,
+      "permission": "CUSTOMER_READ",
+      "source_ref": "SRC-SIMPLE#actions.search"
+    },
+    {
+      "code": "CLEAR",
+      "mutation": false,
+      "permission": null,
+      "source_ref": "SRC-SIMPLE#actions.clear"
+    }
   ],
   "transitions": [
-    {"from": "READY", "action": "SEARCH", "to": "RESULT_OR_EMPTY", "allowed": true, "source_ref": "SRC-SIMPLE#transitions.search"}
+    {
+      "from": "READY",
+      "action": "SEARCH",
+      "to": "RESULT_OR_EMPTY",
+      "allowed": true,
+      "source_ref": "SRC-SIMPLE#transitions.search"
+    }
   ],
   "errors": [
     {
@@ -85,8 +119,16 @@
     "stories": 1,
     "story_core_result": "PASS_WITH_EVIDENCE",
     "integration_result": "NOT_VALIDATED",
-    "minimum_executable_test_families": ["FUNCTIONAL", "TENANT"],
-    "test_families_pending_before_integration": ["VALIDATION", "PERMISSION", "ERROR", "ACCESSIBILITY"],
+    "minimum_executable_test_families": [
+      "FUNCTIONAL"
+    ],
+    "test_families_pending_before_integration": [
+      "ACCESSIBILITY",
+      "ERROR",
+      "PERMISSION",
+      "TENANT",
+      "VALIDATION"
+    ],
     "must_not_include_pii_in_analytics": true,
     "unmapped_count": 0
   },

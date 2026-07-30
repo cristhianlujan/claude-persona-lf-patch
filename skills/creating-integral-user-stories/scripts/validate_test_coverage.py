@@ -170,8 +170,8 @@ def run(input_path: Path, evidence_refs: list[str], retry_count: int) -> int:
         evidence_refs or [f"file:{input_path}"],
         repairs,
         retry_count=retry_count,
-        judge_version=JUDGE_VERSION,
-        executor_identity=os.getenv("LF_EXECUTOR_IDENTITY") or "R8_SEMANTIC_VALIDATOR",
+        judge_version=os.getenv("LF_JUDGE_VERSION"),
+        executor_identity=os.getenv("LF_EXECUTOR_IDENTITY"),
     )
     return emit(out)
 

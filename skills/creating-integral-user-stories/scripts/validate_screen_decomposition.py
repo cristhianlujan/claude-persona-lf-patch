@@ -106,8 +106,8 @@ def run(path: Path, refs: list[str], retry: int) -> int:
         refs or [f"file:{path}"],
         repairs,
         retry_count=retry,
-        judge_version=VERSION,
-        executor_identity=os.getenv("LF_EXECUTOR_IDENTITY") or "R8_SCREEN_VALIDATOR",
+        judge_version=os.getenv("LF_JUDGE_VERSION"),
+        executor_identity=os.getenv("LF_EXECUTOR_IDENTITY"),
     ))
 
 

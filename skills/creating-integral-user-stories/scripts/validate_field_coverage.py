@@ -309,8 +309,8 @@ def eval_case(case_id: str, judge: str) -> int:
             [f"file:{fixture_path}", f"eval:{case_id}"],
             repairs,
             retry_count=0,
-            judge_version=VERSION,
-            executor_identity=os.getenv("LF_EXECUTOR_IDENTITY") or "R8_J04_J05_EVAL_RUNNER",
+            judge_version=os.getenv("LF_JUDGE_VERSION"),
+            executor_identity=os.getenv("LF_EXECUTOR_IDENTITY"),
         )
     )
 
@@ -382,8 +382,8 @@ def run() -> int:
             args.evidence_ref or [f"file:{args.input}"],
             repairs,
             retry_count=args.retry_count,
-            judge_version=VERSION,
-            executor_identity=os.getenv("LF_EXECUTOR_IDENTITY") or "R8_J04_J05_VALIDATOR",
+            judge_version=os.getenv("LF_JUDGE_VERSION"),
+            executor_identity=os.getenv("LF_EXECUTOR_IDENTITY"),
         )
     )
 

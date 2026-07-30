@@ -174,8 +174,8 @@ def eval_case(registry_path: Path, case_id: str, schema_path: Path) -> int:
         [f"file:{registry_path}", str(case.get("fixture_ref") or "fixture:inline")],
         repairs,
         retry_count=0,
-        judge_version=VERSION,
-        executor_identity=os.getenv("LF_EXECUTOR_IDENTITY") or "R8_J03_EVAL_RUNNER",
+        judge_version=os.getenv("LF_JUDGE_VERSION"),
+        executor_identity=os.getenv("LF_EXECUTOR_IDENTITY"),
         started_at=started_at,
     ))
 
@@ -220,8 +220,8 @@ def run() -> int:
         args.evidence_ref or [f"file:{args.input}"],
         repairs,
         retry_count=args.retry_count,
-        judge_version=VERSION,
-        executor_identity=os.getenv("LF_EXECUTOR_IDENTITY") or "R8_J03_VALIDATOR",
+        judge_version=os.getenv("LF_JUDGE_VERSION"),
+        executor_identity=os.getenv("LF_EXECUTOR_IDENTITY"),
         started_at=started_at,
     ))
 
