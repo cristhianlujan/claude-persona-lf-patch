@@ -40,6 +40,12 @@ jobs:
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add skills/creating-integral-user-stories/evals/fixtures/screen_simple_query.json skills/creating-integral-user-stories/evals/trigger-evals.json
-          git commit -m 'fix A10 A12 cross-artifact alignment'
+          git add \
+            skills/creating-integral-user-stories/evals/fixtures/screen_simple_query.json \
+            skills/creating-integral-user-stories/evals/trigger-evals.json \
+            skills/creating-integral-user-stories/scripts/validate_field_coverage.py \
+            skills/creating-integral-user-stories/scripts/validate_screen_decomposition.py \
+            skills/creating-integral-user-stories/scripts/validate_story_pack.py \
+            skills/creating-integral-user-stories/scripts/validate_test_coverage.py
+          git commit -m 'fix cross-artifact alignment and validator metadata'
           git push origin HEAD:fix/deep-audit-a01-a62
