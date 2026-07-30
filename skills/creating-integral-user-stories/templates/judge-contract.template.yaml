@@ -14,6 +14,7 @@ preflight:
   - source_and_evidence_refs_are_resolvable
   - judge_is_not_executed_by_the_worker_under_review
   - input_sha256_is_present
+  - judge_version_and_executor_identity_are_present
 validators:
   static_contract_ref: scripts/validate_package.py#audit_artifact
   semantic_validator_ref: scripts/<domain_validator>.py
@@ -43,10 +44,12 @@ pass_if:
   - input_output_evidence_hashes_present = true
 fail_if:
   - proven_contract_violation = true
+  - worker_self_approval = true
 block_if:
   - required_source_unavailable = true
   - semantic_validator_unavailable = true
   - executor_identity_missing = true
+  - judge_version_missing = true
   - input_sha256_missing = true
 result_values: [PASS_WITH_EVIDENCE, RETURN_TO_WORKER, BLOCKED, FAIL]
 result_rules:
@@ -86,10 +89,11 @@ repair_matrix:
     prohibited_shortcuts: [delete_assertion, lower_threshold, invent_source, self_approve]
 output:
   schema_ref: schemas/judge-result.schema.json
+  schema_version: v0.5
   required_fields: [schema_version, judge_code, judge_version, executor_identity, command, started_at, completed_at, exit_code, result, compliance_bit, assertions_total, assertions_passed, failed_assertions, blocking_assertions, repairs, repair_instructions, evidence_refs, evidence, evidence_sha256, input_sha256, output_sha256, retry_count]
 prohibitions: [worker_self_approval, assertion_deletion_to_obtain_pass, threshold_reduction_to_obtain_pass, unresolved_evidence_reference, pass_without_evidence, pass_without_semantic_runtime]
 benchmark_dual:
-  verified_at: 2026-07-29
-  claude: {repository: anthropics/skills, reference: skills/skill-creator/SKILL.md, blob: 65b3a402dbd09b8e83f9d637c6b553875189085c, practice: objective evals and iterative repair}
-  github: {repository: freeCodeCamp/freeCodeCamp, stars_verified: 453125, reference: curriculum/schema/challenge-schema.js, blob: 7db60817942625110525fd313bf80f1df067f006, practice: deterministic constraints and explicit rejection}
+  verified_at: 2026-07-30
+  claude: {repository: anthropics/skills, reference: skills/skill-creator/SKILL.md, practice: objective evals and iterative repair}
+  github: {repository: freeCodeCamp/freeCodeCamp, reference: curriculum/schema/challenge-schema.js, practice: deterministic constraints and explicit rejection}
   complement: template requires runtime, metadata and cryptographic evidence before PASS
