@@ -1,0 +1,32 @@
+{
+  "schema_version": "v1",
+  "verified_at": "2026-07-30",
+  "verification_scope": "GitHub public repository pages independently checked before the sequential audit run",
+  "minimum_required_stars": 150000,
+  "repositories": [
+    {
+      "repository": "anthropics/skills",
+      "stars_lower_bound": 151000,
+      "reference_path": "skills/skill-creator/SKILL.md",
+      "practice": "self-contained skills, progressive disclosure, executable examples and iterative evaluation"
+    },
+    {
+      "repository": "microsoft/vscode",
+      "stars_lower_bound": 186000,
+      "reference_path": ".agents/skills",
+      "practice": "explicit prerequisites, ordered workflows, stop conditions and verifiable outputs"
+    },
+    {
+      "repository": "freeCodeCamp/freeCodeCamp",
+      "stars_lower_bound": 446000,
+      "reference_path": "curriculum/schema/challenge-schema.js",
+      "practice": "deterministic constraints and positive/negative validation cases"
+    },
+    {
+      "repository": "Significant-Gravitas/AutoGPT",
+      "stars_lower_bound": 185000,
+      "reference_path": "classic/original_autogpt/CLAUDE.md",
+      "practice": "state persistence, cycle limits, test discipline and workspace safety"
+    }
+  ]
+}
