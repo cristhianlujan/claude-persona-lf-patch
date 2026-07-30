@@ -1,5 +1,5 @@
 judge_code: J01_SOURCE_INTEGRITY
-judge_version: v0.4
+judge_version: v0.5
 status: CANDIDATO_READ_ONLY
 scope: Verifica que la fuente exista, sea íntegra, versionada, resoluble y correctamente clasificada antes de cualquier derivación.
 independence: worker_must_not_execute_own_judge
@@ -15,6 +15,7 @@ preflight:
   - source_and_evidence_refs_are_resolvable
   - judge_is_not_executed_by_the_worker_under_review
   - input_sha256_is_present
+  - judge_version_and_executor_identity_are_present
 validators:
   semantic_validator_ref: scripts/validate_source_integrity.py
   runtime_status: AVAILABLE
@@ -43,14 +44,16 @@ pass_if:
   - compliance_bit = 1
   - evidence_refs_non_empty = true
 fail_if:
-  - source_hash_mismatch = true
   - invented_rule_marked_confirmed = true
+  - assertion_deleted_or_threshold_reduced = true
 block_if:
   - operational_source_unavailable = true
   - source_version_conflict = true
   - source_snapshot_unreadable = true
   - semantic_validator_unavailable = true
   - worker_judge_independence_broken = true
+  - executor_identity_missing = true
+  - judge_version_missing = true
 result_values: [PASS_WITH_EVIDENCE, RETURN_TO_WORKER, BLOCKED, FAIL]
 required_evidence:
   - source_snapshot_sha
@@ -77,7 +80,7 @@ positive_behavior:
 negative_cases:
   - {case: source_hash_mismatch, expected_result: RETURN_TO_WORKER, assertion: source_hash_mismatches}
   - {case: unresolved_reference, expected_result: RETURN_TO_WORKER, assertion: source_references_resolvable}
-  - {case: missing_source, expected_result: BLOCKED, assertion: operational_source_unavailable}
+  - {case: missing_metadata, expected_result: BLOCKED, assertion: executor_identity_missing}
 repair_matrix:
   - assertion_id: source_references_resolvable
     instruction: Corregir referencias o retirar afirmaciones sin fuente.
@@ -87,10 +90,11 @@ repair_matrix:
     prohibited_shortcuts: [delete_assertion, lower_threshold, invent_source, self_approve]
 output:
   schema_ref: schemas/judge-result.schema.json
-  required_fields: [judge_code, judge_version, executor_identity, command, started_at, completed_at, exit_code, result, compliance_bit, assertions_total, assertions_passed, failed_assertions, blocking_assertions, repairs, repair_instructions, evidence_refs, evidence, evidence_sha256, input_sha256, output_sha256, retry_count]
+  schema_version: v0.5
+  required_fields: [schema_version, judge_code, judge_version, executor_identity, command, started_at, completed_at, exit_code, result, compliance_bit, assertions_total, assertions_passed, failed_assertions, blocking_assertions, repairs, repair_instructions, evidence_refs, evidence, evidence_sha256, input_sha256, output_sha256, retry_count]
 prohibitions: [worker_self_approval, assertion_deletion_to_obtain_pass, threshold_reduction_to_obtain_pass, unresolved_evidence_reference, pass_without_evidence]
 benchmark_dual:
-  verified_at: 2026-07-29
-  claude: {repository: anthropics/skills, reference: skills/skill-creator/SKILL.md, blob: 65b3a402dbd09b8e83f9d637c6b553875189085c, practice: evidence-first evals and programmatic grading}
-  github: {repository: freeCodeCamp/freeCodeCamp, stars_verified: 453125, reference: curriculum/schema/challenge-schema.js, blob: 7db60817942625110525fd313bf80f1df067f006, practice: deterministic validation and explicit rejection}
+  verified_at: 2026-07-30
+  claude: {repository: anthropics/skills, reference: skills/skill-creator/SKILL.md, practice: evidence-first evals and programmatic grading}
+  github: {repository: freeCodeCamp/freeCodeCamp, reference: curriculum/schema/challenge-schema.js, practice: deterministic validation and explicit rejection}
   complement: recompute source hash instead of trusting declared metadata
