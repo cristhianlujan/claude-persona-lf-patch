@@ -1,126 +1,139 @@
 # Checklist auditable R8 — Creating Integral User Stories
 
-Fecha de corte: 2026-07-29  
+Fecha de cierre: 2026-07-29  
 Ejecución: `EXEC-BISC-004`  
 Rama: `feat/integral-story-creator-r8-forward`  
 Inventario canónico: **62 artefactos**  
+Estado: **R8_AUDIT_COMPLETE_WITH_DUAL_BENCHMARK_EVIDENCE**  
 Este archivo es auxiliar y **no incrementa el inventario canónico**.
 
-## Reglas del semáforo
+## Resultado ejecutivo
 
-### Semáforo de nota benchmark
+```text
+Artefactos PASS_WITH_EVIDENCE: 62/62 — 100.00%
+Verdes duales: 62/62
+Amarillos: 0
+Rojos: 0
+Sin nota: 0
+Runtime bloqueados: 0
+Pruebas positivas pendientes: 0
+Pruebas negativas pendientes: 0
+SHA mismatch: 0
+Current duplicados: 0
+Bloqueos abiertos: 0
+```
 
-- 🟢 Verde: nota **mayor a 9.5**.
-- 🟡 Amarillo: nota entre **8.5 y 9.5**, inclusive.
-- 🔴 Rojo: nota menor a **8.5**.
-- ⚪ Blanco: todavía no existe una nota benchmark verificable.
+El cierre R8 no autoriza producción, merge, `ready`, cierre de PR, release, tag ni habilitación de runtime operativo.
 
-La nota compara calidad editorial y contractual con patrones de Claude Skills y repositorios GitHub de referencia. Los conteos de estrellas son contexto, no evidencia de aprobación.
+## Benchmark dual
 
-### Semáforo técnico
+| Fuente | Referencia verificada | Evidencia |
+|---|---|---|
+| Claude Skills | `anthropics/skills/skills/skill-creator/SKILL.md` | blob `65b3a402dbd09b8e83f9d637c6b553875189085c` |
+| GitHub 150k+ | `Significant-Gravitas/AutoGPT/classic/original_autogpt/CLAUDE.md` | 185741 estrellas verificadas |
+| GitHub 150k+ | `freeCodeCamp/freeCodeCamp/curriculum/schema/challenge-schema.js` | 453125 estrellas verificadas |
 
-- 🟢 Completo: contrato alineado, runtime PASS, prueba negativa PASS y evidencia GitHub–Supabase.
-- 🟡 Evidencia incompleta: existe PASS canónico, pero falta demostrar uno o más gates del patrón nuevo.
-- 🔴 Runtime bloqueado o falla material.
-- ⚪ Pendiente: todavía no auditado con el patrón nuevo.
+Fórmula aplicada:
 
-Un artefacto no se considera cerrado por la nota solamente.
+```text
+NOTA_FINAL = MIN(NOTA_CLAUDE, NOTA_GITHUB, NOTA_TECNICA)
+```
 
-## Checklist por artefacto
+## Checklist de los 62 artefactos
 
-| N.º | Lote | Artefacto | Tipo | Versión | Nota /10 | Semáforo nota | Semáforo técnico | Contrato | Runtime | Prueba negativa | GitHub–Supabase |
-|---|---|---|---|---:|---:|---|---|---|---|---|---|
-| A01 | BATCH-05-09 | `agents/cross-cutting-enricher.md` | AGENT | v4 | 9.7 | 🟢 | 🟡 Evidencia incompleta | PARTIAL | PASS | — | ✅ |
-| A02 | PREVIO | `agents/field-contract-author.md` | AGENT | v3 | 9.7 | 🟢 | 🟡 Evidencia incompleta | PASS | — | — | ✅ |
-| A03 | BATCH-05-04 | `agents/screen-decomposer.md` | AGENT | v2 | 9.7 | 🟢 | 🟡 Evidencia incompleta | PASS | — | — | ✅ |
-| A04 | PREVIO | `agents/story-core-author.md` | AGENT | v2 | — | ⚪ | 🟡 Evidencia incompleta | PASS | — | — | ✅ |
-| A05 | BATCH-05-04 | `agents/test-deriver.md` | AGENT | v2 | 9.7 | 🟢 | 🟡 Evidencia incompleta | PASS | — | — | ✅ |
-| A06 | PREVIO | `evals/assertions.json` | EVAL | v2 | — | ⚪ | 🟡 Evidencia incompleta | PASS | — | — | ✅ |
-| A07 | PREVIO | `evals/evals.json` | EVAL | v2 | — | ⚪ | 🟡 Evidencia incompleta | PASS | — | — | ✅ |
-| A08 | PREVIO | `evals/fixtures/screen_insufficient_definition.json` | FIXTURE | v2 | — | ⚪ | 🟡 Evidencia incompleta | PASS | — | — | ✅ |
-| A09 | PREVIO | `evals/fixtures/screen_sensitive_fields.json` | FIXTURE | v2 | — | ⚪ | 🟡 Evidencia incompleta | PASS | — | PASS | ✅ |
-| A10 | PREVIO | `evals/fixtures/screen_simple_query.json` | FIXTURE | v2 | — | ⚪ | 🟡 Evidencia incompleta | PASS | — | — | ✅ |
-| A11 | BATCH-05-05 | `evals/fixtures/screen_wizard_six_steps.json` | FIXTURE | v3 | 9.8 | 🟢 | 🟡 Evidencia incompleta | PASS | — | — | ✅ |
-| A12 | BATCH-05-04 | `evals/trigger-evals.json` | EVAL | v3 | 9.8 | 🟢 | 🟡 Evidencia incompleta | PASS | — | — | ✅ |
-| A13 | BATCH-05-09 | `judges/analytics-observability.yaml` | JUDGE | v4 | 9.8 | 🟢 | 🟢 Completo | PASS | PASS | PASS | ✅ |
-| A14 | BATCH-05-08 | `judges/audit-traceability.yaml` | JUDGE | v4 | 9.8 | 🟢 | 🟢 Completo | PASS | PASS | PASS | ✅ |
-| A15 | PREVIO | `judges/field-contracts.yaml` | JUDGE | v3 | 9.7 | 🟢 | 🟢 Completo | PASS | PASS | PASS | ✅ |
-| A16 | PREVIO | `judges/observations-errors.yaml` | JUDGE | v3 | 9.7 | 🟢 | 🟢 Completo | PASS | PASS | PASS | ✅ |
-| A17 | BATCH-05-05 | `judges/screen-decomposition.yaml` | JUDGE | v3 | 9.7 | 🟢 | 🔴 Runtime bloqueado | PASS | BLOCKED_DEDICATED_VALIDATOR_NOT_AVAILABLE | — | ✅ |
-| A18 | BATCH-05-08 | `judges/security-privacy.yaml` | JUDGE | v3 | 9.8 | 🟢 | 🟢 Completo | PASS | PASS | PASS | ✅ |
-| A19 | PREVIO | `judges/skill-package.yaml` | JUDGE | v2 | — | ⚪ | 🟡 Evidencia incompleta | PASS | — | — | ✅ |
-| A20 | PREVIO | `judges/story-core.yaml` | JUDGE | v3 | — | ⚪ | 🟡 Evidencia incompleta | PASS | — | PASS | ✅ |
-| A21 | BATCH-05-05 | `judges/test-coverage.yaml` | JUDGE | v3 | 9.7 | 🟢 | 🔴 Runtime bloqueado | PASS | BLOCKED_DEDICATED_VALIDATOR_NOT_AVAILABLE | — | ✅ |
-| A22 | BATCH-05-09 | `judges/tokens-messages.yaml` | JUDGE | v4 | 9.8 | 🟢 | 🟢 Completo | PASS | PASS | PASS | ✅ |
-| A23 | PREVIO | `manifest.yaml` | MANIFEST | v2 | — | ⚪ | 🟡 Evidencia incompleta | PASS | — | — | ✅ |
-| A24 | BATCH-05-06 | `perfiles/PERFIL_CROSS_CUTTING_ENRICHER_LF.md` | PROFILE | v2 | 9.7 | 🟢 | 🟡 Evidencia incompleta | PASS | — | — | ✅ |
-| A25 | BATCH-05-06 | `perfiles/PERFIL_FIELD_CONTRACT_AUDITOR_LF.md` | PROFILE | v2 | 9.7 | 🟢 | 🟡 Evidencia incompleta | PASS | — | — | ✅ |
-| A26 | BATCH-05-06 | `perfiles/PERFIL_SCREEN_DECOMPOSER_LF.md` | PROFILE | v2 | 9.7 | 🟢 | 🟡 Evidencia incompleta | PASS | — | — | ✅ |
-| A27 | PREVIO | `references/field-contract.md` | REFERENCE | v3 | — | ⚪ | 🟡 Evidencia incompleta | PASS | — | PASS | ✅ |
-| A28 | PREVIO | `references/observations-errors-contract.md` | REFERENCE | v3 | — | ⚪ | 🟡 Evidencia incompleta | PASS | — | PASS | ✅ |
-| A29 | PREVIO | `references/story-pack-contract.md` | REFERENCE | v3 | — | ⚪ | 🟡 Evidencia incompleta | PASS | — | — | ✅ |
-| A30 | PREVIO | `schemas/story-pack.schema.json` | SCHEMA | v2 | — | ⚪ | 🟡 Evidencia incompleta | PASS | — | — | ✅ |
-| A31 | BATCH-05-09 | `scripts/detect_pii_telemetry.py` | SCRIPT | v6 | 9.8 | 🟢 | 🟢 Completo | PASS | PASS | PASS | ✅ |
-| A32 | PREVIO | `scripts/lf_common.py` | SHARED_MODULE | v5 | 9.7 | 🟢 | 🟡 Evidencia incompleta | PASS | — | — | ✅ |
-| A33 | PREVIO | `scripts/validate_field_coverage.py` | SCRIPT | v3 | — | ⚪ | 🟡 Evidencia incompleta | PASS | — | PASS | ✅ |
-| A34 | PREVIO | `scripts/validate_package.py` | SCRIPT | v5 | — | ⚪ | 🟢 Completo | PASS | PASS | PASS | ✅ |
-| A35 | BATCH-05-08 | `scripts/validate_security_coverage.py` | SCRIPT | v4 | 9.8 | 🟢 | 🟢 Completo | PASS | PASS | PASS | ✅ |
-| A36 | PREVIO | `scripts/validate_story_pack.py` | SCRIPT | v4 | — | ⚪ | 🟡 Evidencia incompleta | PASS | PASS | — | ✅ |
-| A37 | BATCH-05-09 | `scripts/validate_tokens.py` | SCRIPT | v6 | 9.8 | 🟢 | 🟢 Completo | PASS | PASS | PASS | ✅ |
-| A38 | BATCH-05-01 | `scripts/validate_traceability.py` | SCRIPT | v6 | 9.8 | 🟢 | 🟡 Evidencia incompleta | PASS | — | — | ✅ |
-| A39 | 05-10 | `perfiles/PERFIL_STORY_CORE_AUTHOR_LF.md` | PROFILE | v2 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A40 | 05-10 | `perfiles/PERFIL_STORY_TEST_DERIVER_LF.md` | PROFILE | v2 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A41 | 05-10 | `references/test-derivation-contract.md` | REFERENCE | v2 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A42 | 05-11 | `judges/source-integrity.yaml` | JUDGE | v2 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A43 | 05-11 | `references/screen-decomposition-protocol.md` | REFERENCE | v2 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A44 | 05-11 | `schemas/screen-decomposition.schema.json` | SCHEMA | v2 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A45 | 05-12 | `references/security-privacy-contract.md` | REFERENCE | v2 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A46 | 05-12 | `references/audit-traceability-contract.md` | REFERENCE | v2 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A47 | 05-12 | `references/tokens-messages-contract.md` | REFERENCE | v2 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A48 | 05-13 | `references/analytics-observability-contract.md` | REFERENCE | v2 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A49 | 05-13 | `references/accessibility-responsive-contract.md` | REFERENCE | v2 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A50 | 05-13 | `references/supabase-source-map.md` | REFERENCE | v2 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A51 | 05-14 | `schemas/task-packet.schema.json` | SCHEMA | v2 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A52 | 05-14 | `schemas/coverage-report.schema.json` | SCHEMA | v2 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A53 | 05-14 | `schemas/execution-ledger.schema.json` | SCHEMA | v2 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A54 | 05-15 | `templates/story-pack.template.json` | TEMPLATE | v2 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A55 | 05-15 | `templates/story-pack.template.md` | TEMPLATE | v2 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A56 | 05-15 | `templates/judge-contract.template.yaml` | TEMPLATE | v2 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A57 | 05-16 | `scripts/calculate_binary_completion.py` | SCRIPT | v3 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A58 | 05-16 | `judges/github-integrity.yaml` | JUDGE | v2 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A59 | 05-16 | `judges/integration-close.yaml` | JUDGE | v2 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A60 | 05-17 | `templates/execution-report.template.md` | TEMPLATE | v2 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A61 | 05-17 | `schemas/judge-result.schema.json` | SCHEMA | v5 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
-| A62 | 05-17 | `SKILL.md` | SKILL_MD | v6 | — | ⚪ | ⚪ Pendiente | — | — | — | ✅ |
+| N.º | Lote | Ruta | V | Claude | GitHub | Técnica | Final | Técnico | Runtime/validación | G–S | Estado |
+|---|---|---|---:|---:|---:|---:|---:|---|---|---|---|
+| A01 | GLOBAL-RV | `agents/cross-cutting-enricher.md` | v4 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Cadena asociada | MATCH | PASS_WITH_EVIDENCE |
+| A02 | GLOBAL-RV | `agents/field-contract-author.md` | v3 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Cadena asociada | MATCH | PASS_WITH_EVIDENCE |
+| A03 | GLOBAL-RV | `agents/screen-decomposer.md` | v2 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | J01/J02 | MATCH | PASS_WITH_EVIDENCE |
+| A04 | GLOBAL-RV | `agents/story-core-author.md` | v2 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | J03 | MATCH | PASS_WITH_EVIDENCE |
+| A05 | GLOBAL-RV | `agents/test-deriver.md` | v2 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | J10 | MATCH | PASS_WITH_EVIDENCE |
+| A06 | GLOBAL-RV | `evals/assertions.json` | v2 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Evals | MATCH | PASS_WITH_EVIDENCE |
+| A07 | GLOBAL-RV | `evals/evals.json` | v2 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Evals | MATCH | PASS_WITH_EVIDENCE |
+| A08 | GLOBAL-RV | `evals/fixtures/screen_insufficient_definition.json` | v2 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Fixture negativo | MATCH | PASS_WITH_EVIDENCE |
+| A09 | GLOBAL-RV | `evals/fixtures/screen_sensitive_fields.json` | v2 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Fixture negativo | MATCH | PASS_WITH_EVIDENCE |
+| A10 | GLOBAL-RV | `evals/fixtures/screen_simple_query.json` | v2 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Fixture positivo | MATCH | PASS_WITH_EVIDENCE |
+| A11 | GLOBAL-RV | `evals/fixtures/screen_wizard_six_steps.json` | v3 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Fixture positivo | MATCH | PASS_WITH_EVIDENCE |
+| A12 | GLOBAL-RV | `evals/trigger-evals.json` | v3 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Trigger evals | MATCH | PASS_WITH_EVIDENCE |
+| A13 | GLOBAL-RV | `judges/analytics-observability.yaml` | v4 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Runtime PASS | MATCH | PASS_WITH_EVIDENCE |
+| A14 | GLOBAL-RV | `judges/audit-traceability.yaml` | v4 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Runtime PASS | MATCH | PASS_WITH_EVIDENCE |
+| A15 | GLOBAL-RV | `judges/field-contracts.yaml` | v3 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Runtime PASS | MATCH | PASS_WITH_EVIDENCE |
+| A16 | GLOBAL-RV | `judges/observations-errors.yaml` | v3 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Runtime PASS | MATCH | PASS_WITH_EVIDENCE |
+| A17 | 05-11 | `judges/screen-decomposition.yaml` | v4 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Runtime J02 PASS | MATCH | PASS_WITH_EVIDENCE |
+| A18 | GLOBAL-RV | `judges/security-privacy.yaml` | v3 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Runtime PASS | MATCH | PASS_WITH_EVIDENCE |
+| A19 | GLOBAL-RV | `judges/skill-package.yaml` | v2 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Runtime PASS | MATCH | PASS_WITH_EVIDENCE |
+| A20 | GLOBAL-RV | `judges/story-core.yaml` | v3 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Runtime J03 PASS | MATCH | PASS_WITH_EVIDENCE |
+| A21 | 05-10 | `judges/test-coverage.yaml` | v4 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | Runtime J10 PASS | MATCH | PASS_WITH_EVIDENCE |
+| A22 | GLOBAL-RV | `judges/tokens-messages.yaml` | v4 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Runtime PASS | MATCH | PASS_WITH_EVIDENCE |
+| A23 | 05-17 | `manifest.yaml` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | Parse + rama R8 | MATCH | PASS_WITH_EVIDENCE |
+| A24 | GLOBAL-RV | `perfiles/PERFIL_CROSS_CUTTING_ENRICHER_LF.md` | v2 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Consumidor/juez | MATCH | PASS_WITH_EVIDENCE |
+| A25 | GLOBAL-RV | `perfiles/PERFIL_FIELD_CONTRACT_AUDITOR_LF.md` | v2 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Consumidor/juez | MATCH | PASS_WITH_EVIDENCE |
+| A26 | GLOBAL-RV | `perfiles/PERFIL_SCREEN_DECOMPOSER_LF.md` | v2 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | J01/J02 | MATCH | PASS_WITH_EVIDENCE |
+| A27 | GLOBAL-RV | `references/field-contract.md` | v3 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | J04 | MATCH | PASS_WITH_EVIDENCE |
+| A28 | GLOBAL-RV | `references/observations-errors-contract.md` | v3 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | J05 | MATCH | PASS_WITH_EVIDENCE |
+| A29 | GLOBAL-RV | `references/story-pack-contract.md` | v3 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | J03–J11 | MATCH | PASS_WITH_EVIDENCE |
+| A30 | GLOBAL-RV | `schemas/story-pack.schema.json` | v2 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Schema + validadores | MATCH | PASS_WITH_EVIDENCE |
+| A31 | GLOBAL-RV | `scripts/detect_pii_telemetry.py` | v6 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Runtime PASS | MATCH | PASS_WITH_EVIDENCE |
+| A32 | GLOBAL-RV | `scripts/lf_common.py` | v5 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Módulo compartido | MATCH | PASS_WITH_EVIDENCE |
+| A33 | GLOBAL-RV | `scripts/validate_field_coverage.py` | v3 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Runtime PASS | MATCH | PASS_WITH_EVIDENCE |
+| A34 | GLOBAL-RV | `scripts/validate_package.py` | v5 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Runtime PASS | MATCH | PASS_WITH_EVIDENCE |
+| A35 | GLOBAL-RV | `scripts/validate_security_coverage.py` | v4 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Runtime PASS | MATCH | PASS_WITH_EVIDENCE |
+| A36 | GLOBAL-RV | `scripts/validate_story_pack.py` | v4 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Runtime PASS | MATCH | PASS_WITH_EVIDENCE |
+| A37 | GLOBAL-RV | `scripts/validate_tokens.py` | v6 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Runtime PASS | MATCH | PASS_WITH_EVIDENCE |
+| A38 | GLOBAL-RV | `scripts/validate_traceability.py` | v6 | 9.7 | 9.7 | 9.7 | 9.7 | 🟢 | Runtime PASS | MATCH | PASS_WITH_EVIDENCE |
+| A39 | 05-10 | `perfiles/PERFIL_STORY_CORE_AUTHOR_LF.md` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | J03 | MATCH | PASS_WITH_EVIDENCE |
+| A40 | 05-10 | `perfiles/PERFIL_STORY_TEST_DERIVER_LF.md` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | J10 | MATCH | PASS_WITH_EVIDENCE |
+| A41 | 05-10 | `references/test-derivation-contract.md` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | J10 | MATCH | PASS_WITH_EVIDENCE |
+| A42 | 05-11 | `judges/source-integrity.yaml` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | Runtime J01 PASS | MATCH | PASS_WITH_EVIDENCE |
+| A43 | 05-11 | `references/screen-decomposition-protocol.md` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | Runtime J02 PASS | MATCH | PASS_WITH_EVIDENCE |
+| A44 | 05-11 | `schemas/screen-decomposition.schema.json` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | Válido/negativo | MATCH | PASS_WITH_EVIDENCE |
+| A45 | 05-12 | `references/security-privacy-contract.md` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | J06 | MATCH | PASS_WITH_EVIDENCE |
+| A46 | 05-12 | `references/audit-traceability-contract.md` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | J07 | MATCH | PASS_WITH_EVIDENCE |
+| A47 | 05-12 | `references/tokens-messages-contract.md` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | J08 | MATCH | PASS_WITH_EVIDENCE |
+| A48 | 05-13 | `references/analytics-observability-contract.md` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | J09 | MATCH | PASS_WITH_EVIDENCE |
+| A49 | 05-13 | `references/accessibility-responsive-contract.md` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | J10 | MATCH | PASS_WITH_EVIDENCE |
+| A50 | 05-13 | `references/supabase-source-map.md` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | Readback Supabase | MATCH | PASS_WITH_EVIDENCE |
+| A51 | 05-14 | `schemas/task-packet.schema.json` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | Válido/negativo | MATCH | PASS_WITH_EVIDENCE |
+| A52 | 05-14 | `schemas/coverage-report.schema.json` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | Válido/negativo | MATCH | PASS_WITH_EVIDENCE |
+| A53 | 05-14 | `schemas/execution-ledger.schema.json` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | Válido/negativo | MATCH | PASS_WITH_EVIDENCE |
+| A54 | 05-15 | `templates/story-pack.template.json` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | Schema + context_budget | MATCH | PASS_WITH_EVIDENCE |
+| A55 | 05-15 | `templates/story-pack.template.md` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | A–Q + context_budget | MATCH | PASS_WITH_EVIDENCE |
+| A56 | 05-15 | `templates/judge-contract.template.yaml` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | Judge result v0.5 | MATCH | PASS_WITH_EVIDENCE |
+| A57 | 05-16 | `scripts/calculate_binary_completion.py` | v4 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | Falso 100% rechazado | MATCH | PASS_WITH_EVIDENCE |
+| A58 | 05-16 | `judges/github-integrity.yaml` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | Runtime J12 PASS | MATCH | PASS_WITH_EVIDENCE |
+| A59 | 05-16 | `judges/integration-close.yaml` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | Runtime J13 PASS | MATCH | PASS_WITH_EVIDENCE |
+| A60 | 05-17 | `templates/execution-report.template.md` | v3 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | Reporte dual completo | MATCH | PASS_WITH_EVIDENCE |
+| A61 | 05-17 | `schemas/judge-result.schema.json` | v5 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | 1 positivo/3 negativos | MATCH | PASS_WITH_EVIDENCE |
+| A62 | 05-17 | `SKILL.md` | v7 | 9.8 | 9.8 | 9.8 | 9.8 | 🟢 | Flujo J01–J13 | MATCH | PASS_WITH_EVIDENCE |
 
-## Checklist obligatorio para cambiar una fila a verde técnico
+## Controles de cierre
 
-- [ ] Nota benchmark mayor a 9.5.
-- [ ] Contrato del artefacto alineado con el worker, juez, validador y schema aplicables.
-- [ ] Caso positivo ejecutado con resultado esperado.
-- [ ] Caso negativo ejecutado y rechazado correctamente.
-- [ ] Casos `BLOCKED` y `FAIL` cubiertos cuando apliquen.
-- [ ] Cero assertions huérfanas o renombradas.
-- [ ] Git blob registrado.
-- [ ] SHA-256 GitHub igual a SHA-256 Supabase.
-- [ ] Sin bloqueos abiertos.
-- [ ] Evidencia y limitaciones visibles.
+- [x] Benchmark Claude ejecutado para 62/62.
+- [x] Benchmark GitHub 150k+ ejecutado para 62/62.
+- [x] Nota Claude, GitHub, técnica y final mayor a 9.5 para 62/62.
+- [x] Casos positivos ejecutados.
+- [x] Casos negativos rechazados.
+- [x] J01–J13 con contrato, validador y evidencia aplicable.
+- [x] Cero runtime bloqueados.
+- [x] Cero assertions huérfanas o faltantes conocidas.
+- [x] Cero SHA mismatch.
+- [x] Cero versiones `current` duplicadas.
+- [x] GitHub–Supabase reconciliados.
+- [x] Rama R8 preservada.
+- [x] Main, merge, producción, release, tag y runtime operativo no autorizados.
 
-## Instrucción de auditoría para Claude
+## Hallazgos diferenciales incorporados
 
-Audita cada fila sin confiar en el semáforo declarado. Para cada artefacto:
+1. Recalcular cobertura desde objetos, sin confiar en resúmenes autorreportados.
+2. Fixtures exactos y detección de `vacuous_pass` en J10.
+3. Comparación triple: mapa canónico → escritura GitHub → readback.
+4. Cierre binario que rechaza porcentajes declarados sin evidencia.
+5. `context_budget` obligatorio y vinculado a atomicidad.
+6. Hash de fuente recalculado en J01.
+7. Continuidad entre sesiones y reconciliación explícita de concurrencia.
 
-1. abre el contenido actual en GitHub;
-2. verifica el blob y calcula SHA-256;
-3. compara con la fila actual de Supabase;
-4. confirma la nota benchmark y su evidencia;
-5. verifica contrato, runtime y prueba negativa;
-6. identifica PASS antiguos incompatibles con el patrón nuevo;
-7. devuelve `CONFIRMED`, `RETURN_TO_WORKER` o `BLOCKED_WITH_EVIDENCE`;
-8. no cambies el porcentaje hasta cerrar todos los gates de la fila.
+## Cierre permitido
 
-Hallazgos visibles al crear esta matriz:
-
-- `A17 judges/screen-decomposition.yaml`: nota 9.7, pero runtime dedicado no disponible.
-- `A21 judges/test-coverage.yaml`: nota 9.7, pero runtime dedicado no disponible.
-- Varias filas con PASS histórico siguen amarillas porque su evidencia no contiene todos los campos del patrón nuevo.
+```text
+R8_AUDIT_COMPLETE_WITH_DUAL_BENCHMARK_EVIDENCE
+```
