@@ -1,1 +1,73 @@
-{"fixture_version":"v0.4","fixture_id":"FIX-INSUFFICIENT-DEFINITION","purpose":"Demostrar que una fuente nominal sin reglas no permite construir historias completas.","source_snapshot":{"screen_code":"SCR-MANAGEMENT","module_code":null,"version":null,"sha256":null,"main_responsibility":null,"available_content":["screen_name: Gestión"]},"actors":[],"contexts":[],"fields":[],"actions":[],"permissions":[],"transitions":[],"missing_facts":["source_version","source_snapshot_sha","main_responsibility","actor_profiles","business_actions","observable_results","permissions","states","field_inventory"],"story_pack_eval":{"case_id":"E22_STORY_CORE_NEGATIVE","validator_ref":"scripts/validate_story_pack.py","schema_ref":"schemas/story-pack.schema.json","expected_validation_result":"RETURN_TO_WORKER","must_be_rejected":true},"expected":{"activation":"NEEDS_SOURCE_CONTEXT","decision":"BLOCKED","blocking_assertions":["source_snapshot_unavailable = true","source_hash_missing = true","approved_functional_units_missing = true"],"must_not_invent":true,"story_count":0,"compliance_bit":0},"design_sources":["huggingface/transformers","facebook/react","freeCodeCamp/freeCodeCamp"]}
+{
+  "fixture_version": "v0.5",
+  "fixture_id": "FIX-INSUFFICIENT-DEFINITION",
+  "purpose": "Demostrar que una fuente nominal sin versión, hash, reglas, actores ni resultados observables no permite construir historias completas.",
+  "source_snapshot": {
+    "screen_code": "SCR-MANAGEMENT",
+    "module_code": null,
+    "version": null,
+    "sha256": null,
+    "main_responsibility": null,
+    "available_content": [
+      "screen_name: Gestión"
+    ]
+  },
+  "actors": [],
+  "contexts": [],
+  "fields": [],
+  "actions": [],
+  "permissions": [],
+  "transitions": [],
+  "missing_facts": [
+    "source_version",
+    "source_snapshot_sha",
+    "main_responsibility",
+    "actor_profiles",
+    "business_actions",
+    "observable_results",
+    "permissions",
+    "states",
+    "field_inventory"
+  ],
+  "activation_expectation": {
+    "activation": "NEEDS_SOURCE_CONTEXT",
+    "result": "BLOCKED",
+    "blocking_assertions": [
+      "source_snapshot_unavailable = true",
+      "source_hash_missing = true",
+      "approved_functional_units_missing = true"
+    ],
+    "must_not_invent": true,
+    "story_count": 0,
+    "compliance_bit": 0
+  },
+  "candidate_validation_expectation": {
+    "case_id": "E22_STORY_CORE_NEGATIVE",
+    "validator_ref": "scripts/validate_story_pack.py",
+    "schema_ref": "schemas/story-pack.schema.json",
+    "expected_candidate_result": "RETURN_TO_WORKER",
+    "eval_wrapper_result": "PASS_WITH_EVIDENCE",
+    "must_be_rejected": true,
+    "required_failed_assertions": [
+      "stories_without_source_trace",
+      "context_budget_measurement_without_method",
+      "oversized_story_direct_load_allowed",
+      "oversized_story_without_specialized_views",
+      "oversized_story_without_atomicity_review",
+      "schema_validation_errors"
+    ]
+  },
+  "negative_invariants": {
+    "real_source_hash_must_not_be_fabricated": true,
+    "actor_must_not_be_inferred": true,
+    "business_action_must_not_be_inferred": true,
+    "observable_result_must_not_be_inferred": true,
+    "permission_must_not_be_inferred": true
+  },
+  "design_sources": [
+    "anthropics/skills",
+    "microsoft/vscode",
+    "freeCodeCamp/freeCodeCamp",
+    "Significant-Gravitas/AutoGPT"
+  ]
+}
