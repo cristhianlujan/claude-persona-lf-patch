@@ -46,6 +46,8 @@ jobs:
             skills/creating-integral-user-stories/scripts/validate_field_coverage.py \
             skills/creating-integral-user-stories/scripts/validate_screen_decomposition.py \
             skills/creating-integral-user-stories/scripts/validate_story_pack.py \
-            skills/creating-integral-user-stories/scripts/validate_test_coverage.py
+            skills/creating-integral-user-stories/scripts/validate_test_coverage.py \
+            skills/creating-integral-user-stories/scripts/validate_package.py \
+            tools/judge_audit.py
           git commit -m 'fix cross-artifact alignment and validator metadata'
           git push origin HEAD:fix/deep-audit-a01-a62
