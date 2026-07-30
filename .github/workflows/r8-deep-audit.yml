@@ -6,9 +6,7 @@ on:
       - feat/integral-story-creator-r8-forward
     paths:
       - 'skills/creating-integral-user-stories/**'
-      - 'tools/r8_deep_audit.py'
-      - 'tools/r8_runtime_checks.py'
-      - 'tools/r8_runtime_matrix.py'
+      - 'tools/**'
       - '.github/workflows/r8-deep-audit.yml'
   workflow_dispatch:
 
@@ -45,7 +43,9 @@ jobs:
             code="A${n}"
             echo "::group::CHECKPOINT ${code}"
             python tools/r8_deep_audit.py --artifact "${code}" --report-dir audit-results
-            if [ "$n" -le 4 ]; then
+            if [ -f "tools/runtime/${code}.py" ]; then
+              python "tools/runtime/${code}.py" | tee "audit-results/${code}-runtime.json"
+            elif [ "$n" -le 4 ]; then
               python tools/r8_runtime_checks.py --artifact "${code}" --report-dir audit-results
             else
               python tools/r8_runtime_matrix.py --artifact "${code}" --report-dir audit-results
