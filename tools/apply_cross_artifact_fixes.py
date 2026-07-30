@@ -13,6 +13,17 @@ def write_json(path: Path, value: object) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def replace_all(path: Path, replacements: dict[str, str]) -> bool:
+    before = path.read_text(encoding="utf-8")
+    after = before
+    for old, new in replacements.items():
+        after = after.replace(old, new)
+    if before != after:
+        path.write_text(after, encoding="utf-8")
+        return True
+    return False
+
+
 def fix_a10() -> bool:
     fixture_path = SKILL / "evals" / "fixtures" / "screen_simple_query.json"
     registry_path = SKILL / "evals" / "evals.json"
@@ -59,12 +70,41 @@ def fix_a12() -> bool:
     return False
 
 
+def fix_metadata_fallbacks() -> list[str]:
+    targets = {
+        "scripts/validate_field_coverage.py": {
+            'judge_version=VERSION,': 'judge_version=os.getenv("LF_JUDGE_VERSION"),',
+            'executor_identity=os.getenv("LF_EXECUTOR_IDENTITY") or "R8_J04_J05_EVAL_RUNNER",': 'executor_identity=os.getenv("LF_EXECUTOR_IDENTITY"),',
+            'executor_identity=os.getenv("LF_EXECUTOR_IDENTITY") or "R8_J04_J05_VALIDATOR",': 'executor_identity=os.getenv("LF_EXECUTOR_IDENTITY"),',
+        },
+        "scripts/validate_screen_decomposition.py": {
+            'judge_version=VERSION,': 'judge_version=os.getenv("LF_JUDGE_VERSION"),',
+            'executor_identity=os.getenv("LF_EXECUTOR_IDENTITY") or "R8_SCREEN_VALIDATOR",': 'executor_identity=os.getenv("LF_EXECUTOR_IDENTITY"),',
+        },
+        "scripts/validate_story_pack.py": {
+            'judge_version=VERSION,': 'judge_version=os.getenv("LF_JUDGE_VERSION"),',
+            'executor_identity=os.getenv("LF_EXECUTOR_IDENTITY") or "R8_J03_EVAL_RUNNER",': 'executor_identity=os.getenv("LF_EXECUTOR_IDENTITY"),',
+            'executor_identity=os.getenv("LF_EXECUTOR_IDENTITY") or "R8_J03_VALIDATOR",': 'executor_identity=os.getenv("LF_EXECUTOR_IDENTITY"),',
+        },
+        "scripts/validate_test_coverage.py": {
+            'judge_version=JUDGE_VERSION,': 'judge_version=os.getenv("LF_JUDGE_VERSION"),',
+            'executor_identity=os.getenv("LF_EXECUTOR_IDENTITY") or "R8_SEMANTIC_VALIDATOR",': 'executor_identity=os.getenv("LF_EXECUTOR_IDENTITY"),',
+        },
+    }
+    changed: list[str] = []
+    for relative, replacements in targets.items():
+        if replace_all(SKILL / relative, replacements):
+            changed.append(relative)
+    return changed
+
+
 def main() -> int:
-    changed = []
+    changed: list[str] = []
     if fix_a10():
         changed.append("A10")
     if fix_a12():
         changed.append("A12")
+    changed.extend(fix_metadata_fallbacks())
     print(json.dumps({"changed": changed}, sort_keys=True))
     return 0
 
