@@ -1,6 +1,6 @@
 # Contrato integral por campo
 
-Versión operativa: `v0.4`. Juez: `J04_FIELD_CONTRACTS`.
+Versión operativa: `v0.5`. Juez: `J04_FIELD_CONTRACTS`.
 Validador: `scripts/validate_field_coverage.py`.
 Evals ejecutables: `E23_FIELD_CONTRACTS_POSITIVE` y `E24_FIELD_CONTRACTS_NEGATIVE`.
 
@@ -37,12 +37,14 @@ Garantizar cobertura 1:1 entre `screen_fields` y `fields`, con reglas explícita
 
 ## Contrato de salida
 
-El validador emite el contrato común de juez:
+El validador emite el contrato común de juez v0.5:
 
 ```text
-judge_code, result, compliance_bit, failed_assertions,
-blocking_assertions, evidence_refs, evidence,
-repair_instructions, retry_count, judged_at
+schema_version, judge_code, judge_version, executor_identity, command,
+started_at, completed_at, exit_code, result, compliance_bit, assertions_total,
+assertions_passed, failed_assertions, blocking_assertions, repairs,
+repair_instructions, evidence_refs, evidence, evidence_sha256, input_sha256,
+output_sha256, retry_count
 ```
 
 Condiciones de paso:
