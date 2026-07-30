@@ -7,6 +7,7 @@ on:
     paths:
       - 'skills/creating-integral-user-stories/**'
       - 'tools/r8_deep_audit.py'
+      - 'tools/r8_runtime_checks.py'
       - '.github/workflows/r8-deep-audit.yml'
   workflow_dispatch:
 
@@ -43,6 +44,7 @@ jobs:
             code="A${n}"
             echo "::group::CHECKPOINT ${code}"
             python tools/r8_deep_audit.py --artifact "${code}" --report-dir audit-results
+            python tools/r8_runtime_checks.py --artifact "${code}" --report-dir audit-results
             echo "::endgroup::"
           done
 
