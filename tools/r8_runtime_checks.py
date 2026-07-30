@@ -117,9 +117,16 @@ def run_case(title: str, payload: dict[str, Any], command: list[str]) -> dict[st
         input_path.unlink(missing_ok=True)
 
 
+def audit_pair(code: str, relative_path: str, judge: int, command: list[str]) -> dict[str, Any]:
+    found = examples(SKILL_ROOT / relative_path)
+    expected = [f"Caso positivo J{judge:02d}", f"Caso negativo J{judge:02d}"]
+    missing = [title for title in expected if title not in found]
+    outcomes = [run_case(title, found[title], command) for title in expected if title in found]
+    return {"artifact": code, "missing_examples": missing, "outcomes": outcomes, "passed": not missing and all(item["passed"] for item in outcomes)}
+
+
 def audit_a01() -> dict[str, Any]:
-    path = SKILL_ROOT / "agents/cross-cutting-enricher.md"
-    found = examples(path)
+    found = examples(SKILL_ROOT / "agents/cross-cutting-enricher.md")
     commands = {
         5: [sys.executable, "scripts/validate_field_coverage.py", "{input}", "--judge", "J05_OBSERVATIONS_ERRORS"],
         6: [sys.executable, "scripts/validate_security_coverage.py", "{input}", "--judge-version", "v0.5", "--executor-identity", "R8_DEEP_AUDIT_RUNNER"],
@@ -138,13 +145,21 @@ def audit_a01() -> dict[str, Any]:
 
 
 def audit_a02() -> dict[str, Any]:
-    path = SKILL_ROOT / "agents/field-contract-author.md"
-    found = examples(path)
-    expected = ["Caso positivo J04", "Caso negativo J04"]
-    missing = [title for title in expected if title not in found]
-    command = [sys.executable, "scripts/validate_field_coverage.py", "{input}", "--judge", "J04_FIELD_CONTRACTS"]
-    outcomes = [run_case(title, found[title], command) for title in expected if title in found]
-    return {"artifact": "A02", "missing_examples": missing, "outcomes": outcomes, "passed": not missing and all(item["passed"] for item in outcomes)}
+    return audit_pair(
+        "A02",
+        "agents/field-contract-author.md",
+        4,
+        [sys.executable, "scripts/validate_field_coverage.py", "{input}", "--judge", "J04_FIELD_CONTRACTS"],
+    )
+
+
+def audit_a03() -> dict[str, Any]:
+    return audit_pair(
+        "A03",
+        "agents/screen-decomposer.md",
+        2,
+        [sys.executable, "scripts/validate_screen_decomposition.py", "{input}"],
+    )
 
 
 def main() -> int:
@@ -152,7 +167,7 @@ def main() -> int:
     cli.add_argument("--artifact", required=True)
     cli.add_argument("--report-dir", type=Path, required=True)
     args = cli.parse_args()
-    auditors = {"A01": audit_a01, "A02": audit_a02}
+    auditors = {"A01": audit_a01, "A02": audit_a02, "A03": audit_a03}
     if args.artifact not in auditors:
         payload = {"artifact": args.artifact, "passed": False, "blocking_reason": "artifact_specific_runtime_gate_not_implemented"}
         args.report_dir.mkdir(parents=True, exist_ok=True)
