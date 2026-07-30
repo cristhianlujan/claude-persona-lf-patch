@@ -105,7 +105,8 @@ worker_must_not_select_own_pass_result = true
 
 ## 11. Indicadores de calidad
 
-- `fields_in_story = field_contracts_count`
+- `fields_without_contract = 0`
+- `unexpected_field_contracts = 0`
 - `pii_fields_with_analytics_allowed = 0`
 - `editable_fields_without_audit_strategy = 0`
 - `fields_without_validation_mapping = 0`
@@ -140,8 +141,8 @@ decisión de otro step.
 
 ## 14. Fuentes de diseño no normativas
 
-- **Significant-Gravitas/AutoGPT** (~185,000 estrellas): `classic/original_autogpt/CLAUDE.md`; patrones: arquitectura explícita, ciclo operativo, estado, pruebas y gotchas.
-- **microsoft/vscode** (~186,000 estrellas): `extensions/copilot/assets/prompts/skills/chronicle/SKILL.md`; patrones: prerrequisitos, workflows paso a paso, formatos de salida y stop conditions.
-- **freeCodeCamp/freeCodeCamp** (~446,000 estrellas): `curriculum/schema/challenge-schema.js`; patrones: validación condicional, campos obligatorios, mensajes de error verificables.
+- **Significant-Gravitas/AutoGPT**: `classic/original_autogpt/CLAUDE.md`; patrones: arquitectura explícita, ciclo operativo, estado, pruebas y gotchas.
+- **microsoft/vscode**: `extensions/copilot/assets/prompts/skills/chronicle/SKILL.md`; patrones: prerrequisitos, workflows paso a paso, formatos de salida y stop conditions.
+- **freeCodeCamp/freeCodeCamp**: `curriculum/schema/challenge-schema.js`; patrones: validación condicional, campos obligatorios, mensajes de error verificables.
 
 Los contratos LF prevalecen.
