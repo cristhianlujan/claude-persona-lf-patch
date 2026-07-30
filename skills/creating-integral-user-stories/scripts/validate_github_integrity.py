@@ -10,7 +10,6 @@ from typing import Any
 from lf_common import ValidationInputError, emit, failure, load_json, main_guard, result_object
 
 JUDGE = "J12_GITHUB_INTEGRITY"
-VERSION = "v0.5"
 
 
 def _obj(value: Any, name: str) -> dict[str, Any]:
@@ -84,12 +83,12 @@ def run(path: Path, refs: list[str], retry: int) -> int:
     evidence["input_path"] = str(path)
     failed = [key for key, value in checks.items() if value]
     repairs = [failure(key, "$", f"Repair GitHub integrity until {key}=0") for key in failed]
-    forced = "FAIL" if checks["direct_main_write_detected"] else None
+    forced = "FAIL" if checks["direct_main_write_detected"] or checks["partial_write_detected"] else None
     return emit(result_object(
         JUDGE, failed, evidence, refs or [f"file:{path}"], repairs,
         retry_count=retry, forced_result=forced,
-        judge_version=VERSION,
-        executor_identity=os.getenv("LF_EXECUTOR_IDENTITY") or "R8_GITHUB_VALIDATOR",
+        judge_version=os.getenv("LF_JUDGE_VERSION"),
+        executor_identity=os.getenv("LF_EXECUTOR_IDENTITY"),
     ))
 
 
@@ -98,7 +97,7 @@ def positive() -> dict[str, Any]:
     return {
         "github_contract": {
             "repository": "owner/repo", "authorized_branch": "feat/r8", "target_branch": "feat/r8",
-            "commit_sha": "b" * 40, "pr_number": 56, "draft_pr": True,
+            "commit_sha": "b" * 40, "pr_number": 57, "draft_pr": True,
             "direct_main_write_detected": False, "partial_write_detected": False,
         },
         "write_plan": {"expected_files": ["a.md"]},
