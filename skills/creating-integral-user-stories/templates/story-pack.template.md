@@ -135,10 +135,10 @@ Un Story Pack sin `context_budget`, con carga directa por encima del límite o u
 
 ## Benchmark dual verificado
 
-Fecha: `2026-07-29`.
+Fecha: `2026-07-30`.
 
 - **Claude Skills — anthropics/skills:** `skills/skill-creator/SKILL.md`, blob `65b3a402dbd09b8e83f9d637c6b553875189085c`; progressive disclosure, outputs exactos, evals y reparación.
-- **freeCodeCamp/freeCodeCamp — 453125 estrellas:** `curriculum/schema/challenge-schema.js`, blob `7db60817942625110525fd313bf80f1df067f006`; validación condicional y constraints explícitos.
-- **Significant-Gravitas/AutoGPT — 185741 estrellas:** `classic/original_autogpt/CLAUDE.md`, blob `9c6d04300f83621b00e804298b7b8ea9ce3953c7`; límites de ciclo, estado y carga de contexto.
+- **freeCodeCamp/freeCodeCamp:** `curriculum/schema/challenge-schema.js`, blob `7db60817942625110525fd313bf80f1df067f006`; validación condicional y constraints explícitos.
+- **Significant-Gravitas/AutoGPT:** `classic/original_autogpt/CLAUDE.md`, blob `9c6d04300f83621b00e804298b7b8ea9ce3953c7`; límites de ciclo, estado y carga de contexto.
 
 **Hallazgo diferencial incorporado:** el presupuesto de contexto se convierte en parte obligatoria del entregable y del criterio de atomicidad.
