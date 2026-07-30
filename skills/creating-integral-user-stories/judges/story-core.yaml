@@ -1,62 +1,206 @@
 judge_code: J03_STORY_CORE
-version: v0.5
+judge_version: v0.5
 status: CANDIDATO_READ_ONLY
-scope: Verifica núcleo A-B, trazabilidad, schema y presupuesto de contexto del Story Pack.
+scope: Verifica identidad, núcleo funcional, criterios GWT, trazabilidad, presupuesto de contexto y schema integral del Story Pack sin autoaprobar el worker.
 independence: worker_must_not_execute_own_judge
 retry_limit: 2
 required_inputs:
-  - approved_functional_units
   - story_pack
   - source_snapshot
-  - schemas/story-pack.schema.json
+  - approved_functional_unit
+  - j02_evidence
+  - context_budget
+  - evidence_bundle
 preflight:
   - all_required_inputs_are_present
-  - input_versions_are_compatible
   - source_and_evidence_refs_are_resolvable
-  - judge_is_not_executed_by_worker
+  - j02_passed_with_evidence
+  - judge_is_not_executed_by_story_core_author
+  - input_sha256_is_present
+validators:
+  semantic_validator_ref: scripts/validate_story_pack.py
+  schema_ref: schemas/story-pack.schema.json
+  eval_registry_ref: evals/evals.json
+  runtime_status: AVAILABLE
+runtime_command: python scripts/validate_story_pack.py <story-pack.json> --evidence-ref <ref>
+self_test_command: python scripts/validate_story_pack.py --self-test
+assertions:
+  - assertion_id: missing_sections
+    actual_ref: evidence.missing_sections
+    expected: []
+    critical: true
+    evidence_required: true
+  - assertion_id: core_keys_missing
+    actual_ref: evidence.missing_core_keys
+    expected: []
+    critical: true
+    evidence_required: true
+  - assertion_id: criteria_without_given_when_then
+    actual_ref: evidence.invalid_criterion_indexes
+    expected: []
+    critical: true
+    evidence_required: true
+  - assertion_id: duplicate_criterion_codes
+    actual_ref: evidence.duplicate_criterion_codes
+    expected: []
+    critical: true
+    evidence_required: true
+  - assertion_id: stories_without_source_trace
+    actual_ref: evidence.source_trace_failures
+    expected: 0
+    critical: true
+    evidence_required: true
+  - assertion_id: context_budget_missing
+    actual_ref: evidence.context_budget.present
+    expected: true
+    critical: true
+    evidence_required: true
+  - assertion_id: context_budget_rule_violations
+    actual_ref: evidence.context_budget_failure_count
+    expected: 0
+    critical: true
+    evidence_required: true
+  - assertion_id: schema_validation_errors
+    actual_ref: evidence.schema_error_count
+    expected: 0
+    critical: true
+    evidence_required: true
 pass_if:
-  - missing_sections = 0
-  - core_keys_missing = 0
-  - criteria_without_given_when_then = 0
-  - duplicate_criterion_codes = 0
-  - stories_without_source_trace = 0
-  - context_budget_missing = 0
-  - context_budget_rule_violations = 0
-  - schema_validation_errors = 0
+  - semantic_validator_exit_code = 0
+  - all_eight_assertions_pass = true
+  - assertions_passed = assertions_total
+  - compliance_bit = 1
+  - evidence_refs_non_empty = true
+  - input_output_evidence_hashes_present = true
 fail_if:
-  - criterion_without_source_ref = true
-  - oversized_story_direct_load_allowed = true
-  - active_context_over_limit_direct_load_allowed = true
+  - proven_source_fabrication = true
 block_if:
+  - story_pack_unavailable = true
   - source_snapshot_unavailable = true
-  - approved_functional_units_missing = true
-  - retry_limit_exhausted = true
-result_values: [PASS_WITH_EVIDENCE, RETURN_TO_WORKER, BLOCKED, FAIL]
+  - j02_evidence_unavailable = true
+  - semantic_validator_unavailable = true
+  - executor_identity_missing = true
+  - judge_version_missing = true
+  - input_sha256_missing = true
+result_values:
+  - PASS_WITH_EVIDENCE
+  - RETURN_TO_WORKER
+  - BLOCKED
+  - FAIL
+result_rules:
+  PASS_WITH_EVIDENCE: El Story Pack pasa las ocho assertions, schema e invariantes runtime con evidencia resoluble.
+  RETURN_TO_WORKER: Una o más assertions reparables fallan y se emiten instrucciones accionables.
+  BLOCKED: Falta una fuente, runtime, metadata o hash requerido.
+  FAIL: La evidencia demuestra fabricación o alteración no reparable dentro de la ejecución.
 required_evidence:
   - sections_present
+  - sections_expected
+  - missing_sections
+  - missing_core_keys
   - acceptance_criteria_count
-  - source_trace_count
-  - context_budget_measurement_method
-  - canonical_story_tokens
-  - active_context_tokens
+  - invalid_criterion_indexes
+  - duplicate_criterion_codes
+  - context_budget
+  - context_budget_failure_count
   - schema_error_count
+  - schema_errors
+  - executor_identity
+  - judge_version
+  - command
+  - started_at
+  - completed_at
+  - assertions_total
+  - assertions_passed
   - failed_assertions
-  - positive_eval_result
-  - negative_eval_result
+  - blocking_assertions
+  - repairs
+  - repair_instructions
+  - evidence_refs
+  - input_sha256
+  - evidence_sha256
+  - output_sha256
+positive_behavior:
+  case_id: E21_STORY_CORE_POSITIVE
+  command: python scripts/validate_story_pack.py --case-id E21_STORY_CORE_POSITIVE
+  expected_candidate_result: PASS_WITH_EVIDENCE
+  expected_wrapper_result: PASS_WITH_EVIDENCE
+negative_cases:
+  - case_id: E22_STORY_CORE_NEGATIVE
+    command: python scripts/validate_story_pack.py --case-id E22_STORY_CORE_NEGATIVE
+    expected_candidate_result: RETURN_TO_WORKER
+    expected_wrapper_result: PASS_WITH_EVIDENCE
+    must_be_rejected: true
+  - case: missing_executor_metadata
+    expected_result: BLOCKED
+    assertion: executor_identity_missing
 repair_matrix:
+  - assertion_id: missing_sections
+    instruction: Completar solo las secciones obligatorias desde la fuente autorizada.
+    prohibited_shortcuts: [delete_required_section, weaken_schema, invent_source, self_approve]
+  - assertion_id: core_keys_missing
+    instruction: Completar los campos A-B faltantes sin alterar la unidad J02.
+    prohibited_shortcuts: [merge_story_without_j02, invent_actor, self_approve]
+  - assertion_id: criteria_without_given_when_then
+    instruction: Reparar cada criterio con given, when, then y source_ref observables.
+    prohibited_shortcuts: [delete_criterion, remove_source_ref_requirement, self_approve]
+  - assertion_id: duplicate_criterion_codes
+    instruction: Asignar códigos únicos sin perder criterios válidos.
+    prohibited_shortcuts: [delete_criterion, merge_unrelated_criteria, self_approve]
+  - assertion_id: stories_without_source_trace
+    instruction: Restaurar source_decision_id y source_snapshot_sha resolubles.
+    prohibited_shortcuts: [fabricate_hash, invent_decision, self_approve]
+  - assertion_id: context_budget_missing
+    instruction: Medir y registrar el presupuesto completo de contexto.
+    prohibited_shortcuts: [estimate_without_method, omit_budget, self_approve]
   - assertion_id: context_budget_rule_violations
-    instruction: Corregir medición, carga directa, vistas especializadas y revisión de atomicidad sin bajar límites.
-    prohibited_shortcuts: [delete_assertion, lower_threshold, invent_source, self_approve]
+    instruction: Aplicar bloqueo de carga, vistas especializadas y revisión de atomicidad según umbrales.
+    prohibited_shortcuts: [raise_threshold, ignore_active_context, self_approve]
   - assertion_id: schema_validation_errors
-    instruction: Corregir instancia o contrato; nunca desactivar el schema.
-    prohibited_shortcuts: [delete_assertion, lower_threshold, weaken_schema, self_approve]
-validator_ref: scripts/validate_story_pack.py
+    instruction: Resolver cada error sin debilitar el schema ni borrar información válida.
+    prohibited_shortcuts: [weaken_schema, delete_required_data, self_approve]
 output:
   schema_ref: schemas/judge-result.schema.json
-  required_fields: [judge_code, result, compliance_bit, failed_assertions, blocking_assertions, evidence_refs, evidence, repair_instructions, retry_count, judged_at]
-prohibitions: [worker_self_approval, threshold_reduction_to_obtain_pass, pass_without_evidence, context_budget_omission]
-
-executable_evals:
-  positive: E21_STORY_CORE_POSITIVE
-  negative: E22_STORY_CORE_NEGATIVE
-  negative_must_be_rejected: true
+  required_fields:
+    - schema_version
+    - judge_code
+    - judge_version
+    - executor_identity
+    - command
+    - started_at
+    - completed_at
+    - exit_code
+    - result
+    - compliance_bit
+    - assertions_total
+    - assertions_passed
+    - failed_assertions
+    - blocking_assertions
+    - repairs
+    - repair_instructions
+    - evidence_refs
+    - evidence
+    - evidence_sha256
+    - input_sha256
+    - output_sha256
+    - retry_count
+prohibitions:
+  - worker_self_approval
+  - assertion_deletion_to_obtain_pass
+  - threshold_reduction_to_obtain_pass
+  - unresolved_evidence_reference
+  - pass_without_evidence
+  - pass_without_semantic_runtime
+  - source_fabrication
+  - direct_main_write
+  - merge_or_production_authorization
+benchmark_dual:
+  claude:
+    repository: anthropics/skills
+    practice: clear activation, progressive disclosure and objective eval iteration
+  github:
+    repositories:
+      - microsoft/vscode
+      - freeCodeCamp/freeCodeCamp
+      - Significant-Gravitas/AutoGPT
+    practice: strict schemas, valid-invalid cases, explicit state and workspace safety
+  note: Star counts are verified by the audit runner and are not stored as canonical PASS evidence.
