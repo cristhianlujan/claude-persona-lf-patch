@@ -37,6 +37,17 @@ block_if:
 - privacy_classification_conflict = true
 - metadata_or_evidence_unavailable = true
 - retry_limit_exhausted = true
+fail_if:
+- worker_self_approval = true
+- assertion_deleted_or_threshold_reduced = true
+- output_claims_pass_without_runtime_evidence = true
+positive_behavior:
+  source: agents/cross-cutting-enricher.md#Caso positivo J06
+  expected_candidate_result: PASS_WITH_EVIDENCE
+negative_cases:
+- source: agents/cross-cutting-enricher.md#Caso negativo J06
+  expected_candidate_result: RETURN_TO_WORKER
+  negative_must_be_rejected: true
 result_values:
 - PASS_WITH_EVIDENCE
 - RETURN_TO_WORKER
