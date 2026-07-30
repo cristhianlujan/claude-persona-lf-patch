@@ -1,6 +1,7 @@
 # Protocolo normativo de descomposición de pantallas
 
-Versión operativa: `v0.4`. Juez asociado: `J02_SCREEN_DECOMPOSITION`.
+Versión operativa: `v0.5`. Juez asociado: `J02_SCREEN_DECOMPOSITION`.
+Validador: `scripts/validate_screen_decomposition.py`.
 
 ## 1. Propósito
 
@@ -58,7 +59,7 @@ Convertir una pantalla y su fuente operativa en inventarios completos, unidades 
 
 ## 6. Contrato de salida
 
-Salida principal: `schemas/screen-decomposition.schema.json`.
+Salida principal: `schemas/screen-decomposition.schema.json` y envelope `schemas/judge-result.schema.json` v0.5.
 
 La salida incluye referencias, conteos, assertions actual/expected, decisiones pendientes, hashes y rutas de evidencia. Una salida válida por forma pero sin evidencia no es satisfactoria.
 
@@ -109,11 +110,11 @@ Entregar versión, hashes, inventarios, unidades, cobertura recalculada, asserti
 
 ## 12. Benchmark dual verificado
 
-Fecha: `2026-07-29`.
+Fecha: `2026-07-30`.
 
-- **Claude Skills — anthropics/skills:** `skills/skill-creator/SKILL.md`, blob `65b3a402dbd09b8e83f9d637c6b553875189085c`; procedimiento determinista, progressive disclosure, evals y reparación iterativa.
-- **freeCodeCamp/freeCodeCamp — 453125 estrellas:** `curriculum/schema/challenge-schema.js`, blob `7db60817942625110525fd313bf80f1df067f006`; constraints condicionales, unicidad y rechazo determinista.
-- **Significant-Gravitas/AutoGPT — 185741 estrellas:** `classic/original_autogpt/CLAUDE.md`, blob `9c6d04300f83621b00e804298b7b8ea9ce3953c7`; estado reproducible, orden de componentes y límites operativos.
+- **Claude Skills — anthropics/skills:** `skills/skill-creator/SKILL.md`; procedimiento determinista, progressive disclosure, evals y reparación iterativa.
+- **freeCodeCamp/freeCodeCamp:** `curriculum/schema/challenge-schema.js`; constraints condicionales, unicidad y rechazo determinista.
+- **Significant-Gravitas/AutoGPT:** `classic/original_autogpt/CLAUDE.md`; estado reproducible, orden de componentes y límites operativos.
 
 **Hallazgo diferencial incorporado:** la cobertura se recalcula desde objetos y se compara con el resumen, evitando PASS por conteos autorreportados.
 
