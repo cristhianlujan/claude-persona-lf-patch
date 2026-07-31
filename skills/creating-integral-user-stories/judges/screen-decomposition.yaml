@@ -1,14 +1,27 @@
 judge_code: J02_SCREEN_DECOMPOSITION
-judge_version: v0.6
+judge_version: v0.7
 status: CANDIDATO_READ_ONLY
-scope: Verifica cobertura completa, no duplicada y trazable de contextos, campos, permisos, transiciones y unidades funcionales.
+scope: Verifica por contenido la cobertura completa, uno-a-uno, no duplicada y trazable de contextos, campos, permisos, transiciones y unidades funcionales.
 independence: worker_must_not_execute_own_judge
 retry_limit: 2
+
 required_inputs:
 - target_screen_code
 - screen_decomposition
+
+input_contract:
+  envelope_type: object
+  required_fields:
+  - target_screen_code
+  - screen_decomposition
+  screen_decomposition_schema_ref: schemas/screen-decomposition.schema.json
+  schema_validation_required: true
+  additional_envelope_properties_allowed: false
+
 preflight:
 - all_required_inputs_are_present
+- executor_identity_is_present
+- judge_version_is_present
 - input_versions_are_compatible
 - source_and_evidence_refs_are_resolvable
 - judge_is_not_executed_by_the_worker_under_review
@@ -16,23 +29,55 @@ preflight:
 - all_inventories_are_explicit_arrays
 - source_version_and_main_responsibility_are_non_empty
 - functional_units_and_coverage_items_are_non_empty
-- preflight_is_enforced_by_semantic_validator
+- input_schema_is_available
+- semantic_validator_is_available
+- semantic_validator_is_registered_in_canonical_inventory
+- semantic_validator_sha_matches_main_and_recorded_evidence
+- preflight_is_enforced_before_semantic_assertions
+
 validators:
   static_contract_ref: scripts/validate_package.py#audit_artifact
+  input_schema_ref: schemas/screen-decomposition.schema.json
+  output_schema_ref: schemas/judge-result.schema.json
   semantic_validator_ref: scripts/validate_screen_decomposition.py
   semantic_validator_name: screen_decomposition_semantic_validator
-runtime_status: AVAILABLE
-runtime_command: python scripts/validate_screen_decomposition.py <input.json> --evidence-ref <ref>
-self_test_command: python scripts/validate_screen_decomposition.py --self-test
+  semantic_validator_registration_required: true
+  semantic_validator_sha_reconciliation_required: true
+
+runtime_status: BLOCKED_PENDING_VALIDATOR_CORRECTION
+runtime_blockers:
+- semantic_validator_not_registered_in_supabase_or_A01_A62_map
+- semantic_validator_sha_evidence_does_not_match_main
+- semantic_validator_accepts_schema_invalid_payloads
+- semantic_validator_accepts_semantic_duplicates_with_distinct_codes
+- semantic_validator_accepts_unrelated_coverage_by_cardinality
+- semantic_validator_ignores_blocking_pending_decisions
+- semantic_validator_does_not_enforce_field_coverage
+
+runtime_command: LF_EXECUTOR_IDENTITY=<independent_executor> LF_JUDGE_VERSION=v0.7 python scripts/validate_screen_decomposition.py <input.json> --evidence-ref <ref>
+self_test_command: LF_EXECUTOR_IDENTITY=LF_SELF_TEST LF_JUDGE_VERSION=v0.7 python scripts/validate_screen_decomposition.py --self-test
+
 deterministic_procedure:
-- validate_preflight_and_hashes
+- validate_executor_identity_judge_version_and_preflight
+- validate_screen_decomposition_against_input_schema
+- reject_schema_invalid_input_before_semantic_assertions
 - load_required_inputs_without_mutation
 - execute_semantic_validator
-- recompute_inventory_coverage_and_duplicates
+- recompute_inventory_coverage_by_code_or_source_ref
+- recompute_field_coverage
+- recompute_semantic_and_code_duplicates
+- validate_conditional_rules_including_merge_target
+- validate_blocking_pending_decisions
 - record_actual_expected_for_each_assertion
 - reject_empty_or_missing_evidence
 - emit_schema_valid_judge_result
+
 assertions:
+- assertion_id: input_schema_valid
+  actual_ref: evidence.checks.input_schema_valid
+  expected: 0
+  critical: true
+  evidence_required: true
 - assertion_id: source_snapshot_sha_present
   actual_ref: evidence.checks.source_snapshot_sha_present
   expected: 0
@@ -45,6 +90,11 @@ assertions:
   evidence_required: true
 - assertion_id: context_coverage
   actual_ref: evidence.checks.context_coverage
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: field_coverage
+  actual_ref: evidence.checks.field_coverage
   expected: 0
   critical: true
   evidence_required: true
@@ -103,45 +153,89 @@ assertions:
   expected: 0
   critical: true
   evidence_required: true
+- assertion_id: blocking_pending_decisions
+  actual_ref: evidence.checks.blocking_pending_decisions
+  expected: 0
+  critical: true
+  evidence_required: true
+
+assertion_semantics:
+  input_schema_valid: El objeto screen_decomposition cumple A44 completo, incluidas reglas condicionales y additionalProperties.
+  context_coverage: Cada contexto está cubierto por su código o source_ref; no basta igualar cardinalidades.
+  field_coverage: Cada campo está cubierto por un coverage_item FIELD con código o source_ref resoluble.
+  permission_coverage: Cada permiso está cubierto por su permission_code o source_ref.
+  transition_coverage: Cada transición está cubierta por source_ref porque A44 no define transition_code.
+  duplicate_functional_units: Detecta códigos repetidos y equivalencia semántica de actor, goal y observable_output.
+  functional_units_complete: Requiere todos los campos obligatorios de A44 y merge_target cuando decision es MERGE_WITH.
+  blocking_pending_decisions: Cuenta decisiones con blocking=true y status=OPEN.
+
 pass_if:
+- runtime_status = AVAILABLE
 - semantic_validator_exit_code = 0
+- input_schema_valid = 0
 - all_applicable_assertions_pass = true
 - assertions_passed = assertions_total
 - compliance_bit = 1
 - evidence_refs_non_empty = true
+- executor_identity_not_missing = true
+- judge_version_matches_contract = true
+- semantic_validator_sha_reconciled = true
+
 fail_if:
 - invented_rule_marked_confirmed = true
 - duplicated_functional_unit = true
 - functional_unit_without_business_result = true
+- schema_invalid_input_received_pass = true
+- unrelated_inventory_item_counted_as_covered = true
+- blocking_pending_decision_ignored = true
+
 block_if:
 - source_screen_not_found = true
 - screen_version_conflict = true
 - required_decision_prevents_decomposition = true
+- input_schema_unavailable = true
 - semantic_validator_unavailable = true
+- semantic_validator_unregistered = true
+- semantic_validator_sha_unreconciled = true
 - executor_identity_missing = true
+- judge_version_missing = true
 - input_sha256_missing = true
 - required_input_missing = true
 - inventory_missing_or_invalid = true
 - functional_units_empty = true
 - coverage_items_empty = true
 - source_version_or_main_responsibility_empty = true
+
 result_values:
 - PASS_WITH_EVIDENCE
 - RETURN_TO_WORKER
 - BLOCKED
 - FAIL
+
 required_evidence:
+- input_schema_ref
+- input_schema_valid
+- schema_validation_errors
 - source_snapshot_sha
+- source_version
+- main_responsibility
 - context_count
+- field_count
 - permission_count
 - transition_count
 - functional_units_count
 - coverage_items_count
+- recomputed_coverage_summary
+- declared_coverage_summary
+- semantic_duplicate_keys
 - failed_assertions
 - blocking_assertions
 - repair_instructions
 - executor_identity
 - judge_version
+- semantic_validator_path
+- semantic_validator_sha256
+- semantic_validator_git_blob_sha1
 - command
 - started_at
 - completed_at
@@ -150,22 +244,45 @@ required_evidence:
 - input_sha256
 - output_sha256
 - evidence_sha256
-- field_count
-- source_version
-- main_responsibility
+
 positive_behavior:
-  command: python scripts/validate_screen_decomposition.py --self-test
-  expected: positive_pass=true and exit_code=0
+  command: LF_EXECUTOR_IDENTITY=LF_SELF_TEST LF_JUDGE_VERSION=v0.7 python scripts/validate_screen_decomposition.py --self-test
+  expected: positive_pass=true and input_schema_valid=0 and assertions_passed=17 and exit_code=0
+
 negative_cases:
+- case: schema_invalid_merge_without_target
+  expected_result: RETURN_TO_WORKER
+  assertion: input_schema_valid
+- case: empty_trigger
+  expected_result: RETURN_TO_WORKER
+  assertion: input_schema_valid
 - case: pending_coverage_item
   expected_result: RETURN_TO_WORKER
   assertion: unmapped_count
-- case: duplicated_functional_unit
+- case: duplicated_functional_unit_same_code
   expected_result: RETURN_TO_WORKER
   assertion: duplicate_functional_units
+- case: duplicated_functional_unit_distinct_code_same_semantics
+  expected_result: RETURN_TO_WORKER
+  assertion: duplicate_functional_units
+- case: unrelated_context_coverage_same_cardinality
+  expected_result: RETURN_TO_WORKER
+  assertion: context_coverage
+- case: missing_field_coverage
+  expected_result: RETURN_TO_WORKER
+  assertion: field_coverage
+- case: blocking_pending_decision
+  expected_result: BLOCKED
+  assertion: required_decision_prevents_decomposition
 - case: missing_runtime
   expected_result: BLOCKED
   assertion: semantic_validator_unavailable
+- case: unregistered_runtime
+  expected_result: BLOCKED
+  assertion: semantic_validator_unregistered
+- case: runtime_sha_mismatch
+  expected_result: BLOCKED
+  assertion: semantic_validator_sha_unreconciled
 - case: mapped_to_unknown_functional_unit
   expected_result: RETURN_TO_WORKER
   assertion: coverage_mapped_to_unknown_functional_unit
@@ -175,7 +292,36 @@ negative_cases:
 - case: empty_coverage_items
   expected_result: BLOCKED
   assertion: coverage_items_empty
+- case: missing_executor_identity
+  expected_result: BLOCKED
+  assertion: executor_identity_missing
+- case: missing_judge_version
+  expected_result: BLOCKED
+  assertion: judge_version_missing
+
 repair_matrix:
+- assertion_id: input_schema_valid
+  target_path: screen_decomposition
+  instruction: Reparar el objeto para cumplir A44 sin debilitar el schema.
+  prohibited_shortcuts:
+  - bypass_schema
+  - lower_threshold
+  - remove_conditional_rule
+  - self_approve
+- assertion_id: context_coverage
+  target_path: screen_decomposition.coverage_items
+  instruction: Cubrir cada contexto por código o source_ref verificable.
+  prohibited_shortcuts:
+  - count_by_cardinality_only
+  - invent_source
+  - self_approve
+- assertion_id: field_coverage
+  target_path: screen_decomposition.coverage_items
+  instruction: Agregar cobertura FIELD para cada entrada de field_inventory.
+  prohibited_shortcuts:
+  - ignore_field_inventory
+  - invent_source
+  - self_approve
 - assertion_id: unmapped_count
   target_path: screen_decomposition.coverage_items
   instruction: Mapear cada elemento fuente a una unidad o justificar su exclusión.
@@ -186,10 +332,10 @@ repair_matrix:
   - self_approve
 - assertion_id: duplicate_functional_units
   target_path: screen_decomposition.functional_units
-  instruction: Consolidar duplicados conservando trazabilidad y recalcular cobertura.
+  instruction: Consolidar duplicados por código o semántica, conservando trazabilidad y recalculando cobertura.
   prohibited_shortcuts:
+  - compare_code_only
   - delete_assertion
-  - lower_threshold
   - invent_source
   - self_approve
 - assertion_id: coverage_mapped_to_unknown_functional_unit
@@ -200,14 +346,14 @@ repair_matrix:
   - lower_threshold
   - invent_source
   - self_approve
-- assertion_id: functional_units_without_code
-  target_path: screen_decomposition.functional_units
-  instruction: Asignar código fuente único y no vacío a cada unidad funcional.
+- assertion_id: blocking_pending_decisions
+  target_path: screen_decomposition.pending_decisions
+  instruction: Resolver la decisión en la fuente o devolver BLOCKED; nunca cambiar blocking para obtener PASS.
   prohibited_shortcuts:
-  - delete_assertion
-  - lower_threshold
-  - invent_source
+  - mark_non_blocking_without_source
+  - delete_decision
   - self_approve
+
 output:
   schema_ref: schemas/judge-result.schema.json
   schema_version: v0.5
@@ -234,15 +380,21 @@ output:
   - input_sha256
   - output_sha256
   - retry_count
+
 prohibitions:
 - worker_self_approval
 - assertion_deletion_to_obtain_pass
 - threshold_reduction_to_obtain_pass
 - unresolved_evidence_reference
 - pass_without_evidence
+- pass_without_input_schema_validation
 - pass_without_semantic_runtime
 - pass_by_empty_input
+- coverage_by_cardinality_only
 - mapping_to_unknown_functional_unit
+- ignore_blocking_pending_decision
+- pass_with_unregistered_or_unreconciled_runtime
+
 benchmark_dual:
   verified_at: 2026-07-29
   claude:
@@ -256,8 +408,10 @@ benchmark_dual:
     reference: curriculum/schema/challenge-schema.js
     blob: 7db60817942625110525fd313bf80f1df067f006
     practice: conditional constraints and uniqueness
-  complement: recompute coverage and duplicate counts rather than trusting summary fields
+  complement: Recalcular cobertura y duplicados desde objetos y validar el schema real antes de confiar en summaries.
+
 preflight_enforcement:
-  enforced_by_validator: true
-  entrypoint: scripts/validate_screen_decomposition.py
-  rule: Emitir BLOCKED con exit_code 2 antes de assertions cuando falten target/decomposition, inventarios, unidades funcionales, cobertura o metadatos fuente.
+  enforced_by_validator: false
+  current_state: BLOCKED_PENDING_VALIDATOR_CORRECTION
+  required_entrypoint: scripts/validate_screen_decomposition.py
+  required_rule: Emitir BLOCKED con exit_code 2 antes de assertions cuando falten identidad, versión del juez, runtime registrado, SHA reconciliable, inputs, inventarios, unidades, cobertura o decisiones externas; emitir RETURN_TO_WORKER ante incumplimiento de A44.
