@@ -1,0 +1,41 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-BISC-031-A05-DEPENDENCY-REVALIDATION",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "eb46d21bdd43965b5fecc3748ec8acb889f7db3fe311794c5be191f5a34f3b45",
+  "judge_sha": "eb46d21bdd43965b5fecc3748ec8acb889f7db3fe311794c5be191f5a34f3b45",
+  "source_sha_list": [
+    "34a4232fcb19a1d74b081610416e44c41bc2e4e7f84acccac07617fa498045f7",
+    "5b8e6a8bfb7200f595de4326442eb40e9b08178bf676c869d0983e39394ad6ef",
+    "eb46d21bdd43965b5fecc3748ec8acb889f7db3fe311794c5be191f5a34f3b45"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/judges/test-coverage.yaml"
+  ],
+  "blocking_codes": [
+    "RUNTIME_J10_NOT_YET_ALIGNED",
+    "RUNTIME_J10_NOT_YET_REGISTERED"
+  ],
+  "issued_at": "2026-07-31T15:12:00Z",
+  "evidence": {
+    "artifact_code": "A21",
+    "dependency_of": "A05",
+    "canonical_artifacts_modified": 1,
+    "bytes": 11143,
+    "sha256": "eb46d21bdd43965b5fecc3748ec8acb889f7db3fe311794c5be191f5a34f3b45",
+    "git_blob": "3c1613bc0c886f7eeba50304fe7bb552dffc358a",
+    "assertions_declared": "17/17",
+    "negative_cases_declared": "15/15",
+    "exact_input_properties": 5,
+    "explicit_executor_identity": true,
+    "explicit_worker_identity": true,
+    "runtime_registration_required": true,
+    "runtime_sha_reconciliation_required": true,
+    "a06_started": false,
+    "dependency_nested_sequence": true
+  }
+}
