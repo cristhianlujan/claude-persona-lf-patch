@@ -44,6 +44,7 @@ runtime_command: >-
   LF_WORKER_IDENTITY=<worker_identity>
   LF_JUDGE_VERSION=v0.6
   LF_VALIDATOR_REGISTERED_SHA256=<registered_sha256>
+  LF_VALIDATOR_REGISTRATION=supabase://private.lf_skill_artifacts/ART_SCRIPT_VALIDATE_TEST_COVERAGE
   python scripts/validate_test_coverage.py <input.json> --evidence-ref <ref>
 self_test_command: python scripts/validate_test_coverage.py --self-test
 deterministic_procedure:
@@ -123,6 +124,7 @@ required_evidence:
   - judge_version
   - runtime_sha256
   - registered_runtime_sha256
+  - runtime_registration
   - command
   - started_at
   - completed_at
