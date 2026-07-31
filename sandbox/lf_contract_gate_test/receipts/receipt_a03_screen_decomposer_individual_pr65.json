@@ -1,0 +1,32 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-BISC-008-A03-INDIVIDUAL",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "4943d2e4d0119c6a2b9421ee321398c0c102d47e",
+  "judge_sha": "0fe4023819beabcfba1c48bf3000049534af5d1c",
+  "source_sha_list": [
+    "cc338e0ca17cfd7da15c0dc123c796b19bdc0fc3",
+    "ce848bbd6b66c3a7ef4fa11f586ce2d7f49852be",
+    "f00e8ca4356c8b081567064b1efb41eea66b61b4",
+    "eb99c8993dedb1e0fe8116f4d2da0c65dbd7b73e"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/agents/screen-decomposer.md"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-07-31T03:18:00Z",
+  "evidence": {
+    "artifact_code": "A03",
+    "pull_request": 65,
+    "canonical_artifacts_modified": 1,
+    "governance_files_modified": 1,
+    "supabase_write_before_merge": false,
+    "a04_started": false,
+    "artifact_closure_result": "BLOCKED_PENDING_DEPENDENCY_CORRECTION",
+    "scope_note": "This receipt authorizes only the governed A03 documentation correction. It does not approve A03, A17, the runtime, production, or merge outside PR 65."
+  }
+}
