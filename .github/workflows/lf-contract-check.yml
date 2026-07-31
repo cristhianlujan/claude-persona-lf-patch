@@ -54,11 +54,13 @@ jobs:
             --output .audit-output/creating-integral-user-stories \
             --commit-sha "$GITHUB_SHA"
 
-      - name: Upload per-artifact audit evidence
+      - name: Upload per-artifact audit evidence and canonical source snapshot
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: r8-continuous-audit-${{ github.run_id }}
-          path: .audit-output/creating-integral-user-stories
+          path: |
+            .audit-output/creating-integral-user-stories
+            skills/creating-integral-user-stories
           if-no-files-found: error
           retention-days: 7
