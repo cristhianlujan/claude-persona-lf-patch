@@ -49,7 +49,7 @@ jobs:
 
       - name: Audit creating-integral-user-stories A01-A62
         run: |
-          python3 sandbox/r8_continuous_audit/audit_all.py \
+          python3 sandbox/lf_contract_gate_test/r8_continuous_audit.py \
             skills/creating-integral-user-stories \
             --output .audit-output/creating-integral-user-stories \
             --commit-sha "$GITHUB_SHA"
