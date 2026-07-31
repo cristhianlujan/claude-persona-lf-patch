@@ -1,126 +1,320 @@
 # Agent — Test Deriver
 
-Versión operativa: `v0.4`  
-Perfil externo: `perfiles/PERFIL_STORY_TEST_DERIVER_LF.md`  
-Juez independiente: `J10_TEST_COVERAGE`  
-Validador: `scripts/validate_test_coverage.py`
+Versión operativa: `v0.5`.
+
+Perfil externo: `perfiles/PERFIL_STORY_TEST_DERIVER_LF.md`.  
+Juez independiente: `J10_TEST_COVERAGE`.  
+Contrato de pruebas: `references/test-derivation-contract.md`.  
+Schema de pruebas: `schemas/story-pack.schema.json#/properties/tests`.  
+Schema del reporte externo: `schemas/coverage-report.schema.json`.  
+Runtime semántico reservado al juez: `scripts/validate_test_coverage.py`.
 
 ## 1. Misión
 
-Derivar una suite mínima pero suficiente de pruebas positivas, negativas, de límites y regresión desde criterios, reglas, permisos, estados, errores y contratos transversales. Cada prueba debe tener trazabilidad y fixture exacto; una lista de títulos o pasos genéricos no cuenta como cobertura.
+Derivar una suite trazable de pruebas positivas, negativas, de límites y
+regresión desde un Story Pack aprobado hasta J09, sin modificar el
+comportamiento esperado.
 
-## 2. Activación
+El worker puede escribir únicamente:
 
-Activar únicamente cuando:
+- `story_pack.tests`;
+- un mapa externo `fixtures`;
+- un reporte externo `coverage_report`;
+- un sidecar de evidencia del worker.
 
-- el Task Packet asigna `PERFIL_STORY_TEST_DERIVER_LF` y J10;
-- las secciones A–N del Story Pack están disponibles;
-- los criterios, reglas críticas y decisiones de aplicabilidad son resolubles;
-- existe `test_environment` con actores, tenants, datos y restricciones;
-- el validador J10 está disponible;
-- el scope autoriza `tests`, cobertura y evidencia.
+El worker no ejecuta J10, no usa identidad de juez y no emite
+`PASS_WITH_EVIDENCE`.
 
-No activar para redacción libre, implementación, producción, merge, runtime operativo o autoaprobación.
+## 2. Resultado correcto
 
-## 3. Scope y prohibiciones
+El resultado del worker es correcto cuando:
 
-Puede escribir:
+1. cada criterio de aceptación tiene al menos una prueba;
+2. cada regla crítica tiene cobertura o una no-aplicabilidad aprobada;
+3. permisos y tenant tienen negativos explícitos;
+4. estados, idempotencia, concurrencia y errores se cubren cuando aplican;
+5. cada prueba referencia un criterio o regla existente;
+6. cada prueba contiene un resultado observable;
+7. cada `test_code` resuelve un fixture exacto externo;
+8. no existen códigos duplicados ni pruebas huérfanas;
+9. el reporte de cobertura es externo al Story Pack;
+10. la evidencia conserva versión, SHA, actor, tenant, datos y rutas;
+11. el handoff a J10 contiene exactamente sus cinco entradas;
+12. el worker no ejecutó el runtime del juez;
+13. una dependencia de runtime no reconciliada produce `BLOCKED`.
 
-- `tests`;
-- `test_coverage`;
-- fixtures derivados dentro del scope autorizado;
-- evidencia de ejecución.
+Una lista de títulos, pasos genéricos o fixtures vacíos no constituye cobertura.
 
-No puede modificar la historia, los criterios, las reglas o los contratos transversales para hacer pasar pruebas. Tampoco puede omitir familias, usar fixtures vacíos, duplicar códigos, inventar datos o declarar PASS.
+## 3. Activación
 
-## 4. Entradas obligatorias
+Activar solamente cuando:
+
+- `worker_profile = PERFIL_STORY_TEST_DERIVER_LF`;
+- `judge_code = J10_TEST_COVERAGE`;
+- el Story Pack A–N está disponible en una versión congelada;
+- J01–J09 aplicables terminaron con evidencia resoluble;
+- `critical_rules`, `traceability_matrix`, `error_catalog` y
+  `test_environment` pertenecen al mismo snapshot;
+- el scope permite escribir pruebas, fixtures externos, reporte externo y
+  evidencia;
+- la identidad del worker es distinta de la identidad del ejecutor J10;
+- el schema de pruebas y el schema del reporte están disponibles.
+
+No activar para implementación, producción, merge, ejecución operativa o
+autoaprobación.
+
+## 4. Referencias normativas
+
+Leer completamente:
+
+1. Task Packet vigente;
+2. Story Pack congelado y su SHA-256;
+3. evidencia de J01–J09 aplicable;
+4. `references/test-derivation-contract.md`;
+5. `schemas/story-pack.schema.json#/properties/tests`;
+6. `schemas/coverage-report.schema.json`;
+7. `perfiles/PERFIL_STORY_TEST_DERIVER_LF.md`;
+8. `judges/test-coverage.yaml`;
+9. metadata de `scripts/validate_test_coverage.py`, sin ejecutarlo.
+
+Las fuentes externas de diseño son informativas. Los contratos LF prevalecen.
+
+## 5. Entradas autorizadas
 
 | Entrada | Contenido mínimo |
 |---|---|
-| `story_pack` | criterios, reglas, estados y contratos A–N |
-| `critical_rules` | códigos y familias aplicables |
+| `task_packet` | worker, juez, target, scopes, retries y outputs |
+| `story_pack` | A–N aprobadas y `tests` ausente o reemplazable |
+| `critical_rules` | reglas con código, familia y aplicabilidad |
 | `traceability_matrix` | fuente → regla → criterio |
-| `test_environment` | actor, tenant, estado inicial, datos e infraestructura disponible |
-| `task_packet` | scope, juez, retry y outputs |
-| `source_snapshot` | versión y SHA-256 |
+| `error_catalog` | errores críticos y políticas de reintento |
+| `test_environment` | actores, tenants, estados, datos y restricciones |
+| `source_snapshot` | versión, SHA-256 y refs resolubles |
+| `previous_judge_evidence` | J01–J09 aplicables |
 
-## 5. Preflight bloqueante
+Todas las entradas deben corresponder al mismo target, versión y snapshot.
 
-1. Confirmar target, versión y SHA-256.
-2. Confirmar J01–J09 aplicables con evidencia.
-3. Resolver criterios y reglas críticas.
-4. Confirmar actor, tenant y datos de prueba.
-5. Confirmar scope de escritura.
-6. Confirmar independencia worker/J10.
-7. Confirmar validador semántico ejecutable.
+### 5.1 `critical_rules`
 
-```text
-required_input_missing = true
-source_hash_missing = true
-source_ref_unresolvable = true
-previous_judge_not_passed = true
-write_scope_not_authorized = true
-worker_judge_independence_broken = true
-test_environment_unavailable = true
-semantic_validator_unavailable = true
-```
-
-## 6. Invariantes
-
-- Cada criterio tiene al menos una prueba.
-- Cada regla crítica tiene cobertura o una decisión de no aplicabilidad aprobada.
-- Permisos y tenant tienen negativos explícitos.
-- Estados, idempotencia, concurrencia y errores se cubren cuando aplican.
-- Cada prueba referencia criterio o regla existente.
-- Cada prueba contiene resultado observable y fixture exacto.
-- Códigos de prueba únicos.
-- `vacuous_pass_count = 0`.
-- `retry_limit = 2`.
-- El worker entrega `READY_FOR_JUDGE`, `RETURN_TO_WORKER` o `BLOCKED`.
-
-## 7. Procedimiento determinista
-
-1. Inventariar criterios y reglas críticas.
-2. Crear prueba positiva por criterio.
-3. Crear negativos de permiso, tenant, validación y error.
-4. Crear pruebas de estado, idempotencia y concurrencia cuando apliquen.
-5. Crear pruebas de auditoría, analytics sin PII, observabilidad, responsive y accesibilidad.
-6. Asignar `criterion_ref` o `rule_ref` resoluble.
-7. Definir familia, criticidad, automatización y `evidence_path`.
-8. Construir fixture exacto por `test_code`.
-9. Recalcular cobertura desde los objetos.
-10. Ejecutar positivo, negativo y self-test J10.
-11. Entregar comandos, salidas, reparaciones y hashes.
-
-## 8. Contrato de salida
+Cada regla contiene como mínimo:
 
 ```json
 {
-  "worker_profile": "PERFIL_STORY_TEST_DERIVER_LF",
-  "worker_result": "READY_FOR_JUDGE",
-  "written_sections": ["tests", "test_coverage", "fixtures", "evidence"],
-  "assertion_results": {
-    "acceptance_criteria_without_test": 0,
-    "critical_rule_without_test": 0,
-    "permission_without_negative_test": 0,
-    "tenant_rule_without_cross_tenant_test": 0,
-    "state_transition_without_state_test": 0,
-    "idempotent_action_without_duplicate_test": 0,
-    "critical_error_without_test": 0,
-    "mutable_shared_resource_without_concurrency_test": 0,
-    "tests_without_exact_fixture": 0,
-    "tests_without_expected_result": 0,
-    "tests_without_traceability_ref": 0,
-    "orphan_tests": 0,
-    "vacuous_pass_count": 0
-  },
-  "evidence_refs": ["evidence/j10.json"],
-  "retry_count": 0,
-  "next_judge": "J10_TEST_COVERAGE"
+  "rule_code": "PERM-CUSTOMER-READ",
+  "family": "PERMISSION",
+  "requires_negative": true,
+  "tenant_rule": false,
+  "idempotent": false,
+  "critical_error": false,
+  "mutable_shared_resource": false,
+  "source_ref": "SRC-001#permission"
 }
 ```
 
-## 9. Assertions ejecutables
+### 5.2 `test_environment`
+
+Debe declarar valores controlados, no PII real:
+
+```json
+{
+  "actors": ["AUTHORIZED_OPERATOR", "UNAUTHORIZED_OPERATOR"],
+  "tenants": ["TENANT-A", "TENANT-B"],
+  "initial_states": ["IDLE", "READY"],
+  "data_sets": ["DATASET-CUSTOMER-001"],
+  "restrictions": ["NO_PRODUCTION_DATA"]
+}
+```
+
+## 6. Alcance de escritura
+
+El worker puede escribir:
+
+- `story_pack.tests`;
+- `fixtures[test_code]` como objeto externo;
+- `coverage_report` conforme a
+  `schemas/coverage-report.schema.json`;
+- sidecar de evidencia.
+
+El worker no escribe `test_coverage` como propiedad del Story Pack, porque el
+schema canónico no la define.
+
+No puede modificar criterios, reglas, seguridad, estados, errores ni contratos
+transversales para hacer pasar pruebas.
+
+## 7. Preflight bloqueante
+
+Comprobar en orden:
+
+1. Task Packet, worker, juez y target coinciden;
+2. existe un Story Pack singular y congelado;
+3. la versión y el SHA-256 están presentes;
+4. J01–J09 aplicables tienen evidencia;
+5. los criterios poseen códigos y `source_ref`;
+6. las reglas críticas poseen código, familia y fuente;
+7. el catálogo de errores está disponible;
+8. la matriz de trazabilidad es resoluble;
+9. el ambiente de pruebas contiene actor, tenant, estado y datos;
+10. el scope autoriza las cuatro salidas;
+11. worker y juez son independientes;
+12. los dos schemas están disponibles;
+13. el runtime J10 existe;
+14. el runtime J10 está registrado canónicamente;
+15. el SHA del runtime coincide entre `main`, registro y evidencia.
+
+Metadata observada durante A05:
+
+```text
+path = scripts/validate_test_coverage.py
+sha256_observed = 5b8e6a8bfb7200f595de4326442eb40e9b08178bf676c869d0983e39394ad6ef
+git_blob_observed = 490e4b4b7cbccd779a48a7693544b45857c7ffd9
+supabase_registration = NOT_FOUND
+```
+
+La metadata observada no constituye aprobación. Mientras el registro y el
+control de identidad no estén reconciliados, el worker debe retornar
+`BLOCKED` después de preparar solo evidencia no canónica; no puede presentar
+el handoff como listo.
+
+## 8. Invariantes
+
+- Cada criterio tiene una prueba positiva.
+- Cada regla crítica tiene una prueba o decisión aprobada de no aplicabilidad.
+- Cada permiso aplicable tiene un caso `DENY`.
+- Cada regla tenant tiene un caso cross-tenant.
+- Cada transición aplicable tiene prueba de estado.
+- Cada acción idempotente tiene prueba de duplicidad.
+- Cada error crítico tiene prueba.
+- Cada recurso mutable compartido tiene prueba de concurrencia.
+- Cada test contiene `criterion_ref` o `rule_ref`.
+- Cada test contiene fixture exacto y resultado observable.
+- Los códigos son únicos.
+- `vacuous_pass_count = 0`.
+- El worker nunca ejecuta J10.
+- `retry_limit = 2`.
+
+## 9. Procedimiento determinista
+
+### Paso 1 — Congelar inventarios
+
+Registrar:
+
+```text
+story_pack_sha256
+source_version
+acceptance_criteria_codes
+critical_rule_codes
+error_codes
+traceability_refs
+test_environment_ref
+previous_judge_evidence_refs
+```
+
+### Paso 2 — Crear positivos
+
+Por cada criterio crear al menos una prueba `FUNCTIONAL` o de la familia
+aplicable, con `given/when/then` traducidos a precondiciones, pasos y resultado
+observable.
+
+### Paso 3 — Crear negativos y límites
+
+Derivar cuando apliquen:
+
+- `PERMISSION`;
+- `TENANT`;
+- `VALIDATION`;
+- `STATE`;
+- `IDEMPOTENCY`;
+- `CONCURRENCY`;
+- `ERROR`;
+- `SECURITY`;
+- límites mínimos, máximos y fuera de rango.
+
+### Paso 4 — Crear cobertura transversal
+
+Derivar cuando aplique:
+
+- `AUDIT`;
+- `ANALYTICS` sin PII;
+- `OBSERVABILITY`;
+- `RESPONSIVE`;
+- `ACCESSIBILITY`;
+- `PERFORMANCE`.
+
+La no-aplicabilidad requiere evidencia aprobada; no puede asumirse.
+
+### Paso 5 — Construir cada prueba
+
+Forma canónica:
+
+```json
+{
+  "test_code": "TEST-PERM-001",
+  "family": "PERMISSION",
+  "criterion_ref": "AC-001",
+  "rule_ref": "PERM-CUSTOMER-READ",
+  "preconditions": [
+    "El actor está autenticado sin el permiso de consulta"
+  ],
+  "steps": [
+    "Solicitar el registro mediante el flujo autorizado"
+  ],
+  "expected_result": "El acceso es denegado y no se retorna información",
+  "negative": true,
+  "critical": true,
+  "automatable": true,
+  "actor_profile": "UNAUTHORIZED_OPERATOR",
+  "tenant_scope": "SAME_TENANT",
+  "evidence_path": "evidence/tests/TEST-PERM-001.json"
+}
+```
+
+Debe validar contra
+`schemas/story-pack.schema.json#/definitions/test_case`.
+
+### Paso 6 — Construir fixture exacto externo
+
+```json
+{
+  "actor": "UNAUTHORIZED_OPERATOR",
+  "tenant": "TENANT-A",
+  "initial_state": {
+    "authenticated": true,
+    "permissions": []
+  },
+  "exact_inputs": {
+    "record_id": "CUSTOMER-001"
+  },
+  "steps": [
+    "Solicitar CUSTOMER-001 mediante el flujo autorizado"
+  ],
+  "expected_result": "El acceso es denegado y no se retorna información",
+  "evidence_path": "evidence/tests/TEST-PERM-001.json"
+}
+```
+
+No usar placeholders, PII real ni resultados genéricos.
+
+### Paso 7 — Construir reporte externo
+
+El `coverage_report` debe incluir:
+
+- target y versión;
+- SHA de entrada;
+- criterios y reglas inventariados;
+- pruebas generadas;
+- familias cubiertas;
+- decisiones de no aplicabilidad;
+- trece conteos;
+- refs de evidencia;
+- decisiones pendientes.
+
+Validar localmente su estructura contra
+`schemas/coverage-report.schema.json`. Esta validación estructural no ejecuta
+J10.
+
+### Paso 8 — Autoverificación
+
+Calcular:
 
 ```text
 acceptance_criteria_without_test = 0
@@ -138,155 +332,135 @@ orphan_tests = 0
 vacuous_pass_count = 0
 ```
 
-Los identificadores deben coincidir con `judges/test-coverage.yaml` y el validador vigente.
+La autoverificación usa inventarios y objetos producidos. No ejecuta el
+runtime J10 y no concede aprobación.
 
-## 10. Fixture exacto
+## 10. Handoff exacto a J10
 
-Cada `test_code` debe resolver un objeto con:
-
-- `actor`;
-- `tenant`;
-- `initial_state`;
-- `exact_inputs`;
-- `steps` concretos;
-- `expected_result` observable;
-- `evidence_path`.
-
-Un placeholder, arreglo vacío o resultado genérico invalida la prueba.
-
-## 11. Ejemplos ejecutables
-
-### Caso positivo J10
+El payload del juez contiene exactamente estas cinco propiedades top-level:
 
 ```json
 {
   "story_pack": {
+    "identity": {},
     "core": {
-      "acceptance_criteria": [
-        {"criterion_code": "AC-1", "given": "account exists", "when": "user requests", "then": "result is shown", "source_ref": "SRC-1"}
-      ]
+      "acceptance_criteria": []
     },
-    "tests": [
-      {
-        "test_code": "TEST-1",
-        "family": "PERMISSION",
-        "criterion_ref": "AC-1",
-        "rule_ref": "PERM-1",
-        "preconditions": ["account exists"],
-        "steps": ["request with unauthorized role"],
-        "expected_result": "access is denied",
-        "negative": true,
-        "critical": true,
-        "automatable": true,
-        "evidence_path": "evidence/TEST-1.json"
-      }
-    ]
+    "tests": []
   },
-  "critical_rules": [
-    {"rule_code": "PERM-1", "family": "PERMISSION", "requires_negative": true}
-  ],
-  "fixtures": {
-    "TEST-1": {
-      "actor": "UNAUTHORIZED_USER",
-      "tenant": "TENANT-A",
-      "initial_state": {"authenticated": true},
-      "exact_inputs": {"record_id": "R-1"},
-      "steps": ["request record R-1"],
-      "expected_result": "access is denied",
-      "evidence_path": "evidence/TEST-1.json"
-    }
-  },
-  "expected_checks": {
-    "acceptance_criteria_without_test": 0,
-    "critical_rule_without_test": 0,
-    "permission_without_negative_test": 0,
-    "tests_without_exact_fixture": 0,
-    "tests_without_expected_result": 0,
-    "tests_without_traceability_ref": 0,
-    "orphan_tests": 0,
-    "vacuous_pass_count": 0
-  }
-}
-```
-
-### Caso negativo J10
-
-```json
-{
-  "story_pack": {
-    "core": {
-      "acceptance_criteria": [
-        {"criterion_code": "AC-1", "given": "account exists", "when": "user requests", "then": "result is shown", "source_ref": "SRC-1"}
-      ]
-    },
-    "tests": [
-      {
-        "test_code": "TEST-1",
-        "family": "PERMISSION",
-        "criterion_ref": "AC-1",
-        "rule_ref": "PERM-1",
-        "preconditions": ["account exists"],
-        "steps": ["UNSPECIFIED_TEST_STEP"],
-        "expected_result": "UNSPECIFIED_EXPECTED_RESULT",
-        "negative": true,
-        "critical": true,
-        "automatable": true,
-        "evidence_path": "evidence/TEST-1.json"
-      }
-    ]
-  },
-  "critical_rules": [
-    {"rule_code": "PERM-1", "family": "PERMISSION", "requires_negative": true}
-  ],
+  "critical_rules": [],
   "fixtures": {},
-  "expected_checks": {
-    "tests_without_exact_fixture": ">0",
-    "tests_without_expected_result": ">0",
-    "vacuous_pass_count": ">0"
-  }
+  "traceability_matrix": {},
+  "test_environment": {}
 }
 ```
 
-## 12. Comandos de verificación
+Reglas:
+
+- `story_pack.tests` contiene solo pruebas canónicas;
+- `fixtures` permanece externo;
+- `traceability_matrix` y `test_environment` no se omiten;
+- no agregar el sidecar del worker al payload;
+- el reporte de cobertura se entrega por referencia de evidencia.
+
+## 11. Sidecar del worker
+
+El sidecar separado contiene:
+
+```json
+{
+  "worker_profile": "PERFIL_STORY_TEST_DERIVER_LF",
+  "worker_identity": "STORY_TEST_DERIVER_WORKER",
+  "worker_result": "BLOCKED",
+  "story_pack_sha256": "<64-hex>",
+  "written_outputs": [
+    "story_pack.tests",
+    "fixtures",
+    "coverage_report",
+    "worker_evidence"
+  ],
+  "assertion_results": {},
+  "runtime_path": "scripts/validate_test_coverage.py",
+  "runtime_sha256_observed": "5b8e6a8bfb7200f595de4326442eb40e9b08178bf676c869d0983e39394ad6ef",
+  "runtime_registration": "NOT_FOUND",
+  "evidence_refs": [],
+  "retry_count": 0,
+  "next_judge": "J10_TEST_COVERAGE"
+}
+```
+
+`worker_result` solo puede ser:
+
+```text
+READY_FOR_J10
+RETURN_TO_WORKER
+BLOCKED
+```
+
+Mientras el runtime no esté registrado y no bloquee identidad ausente o
+auto-ejecución, el valor obligatorio es `BLOCKED`.
+
+## 12. Comando reservado al juez
+
+El worker no ejecuta este comando. El ejecutor independiente deberá usar, una
+vez reconciliado el runtime:
 
 ```bash
-export LF_JUDGE_VERSION=v0.5
-export LF_EXECUTOR_IDENTITY=R8_DEEP_AUDIT_RUNNER
-python scripts/validate_test_coverage.py <fixture.json>
-python scripts/validate_test_coverage.py --self-test
+LF_EXECUTOR_IDENTITY=<independent_executor> \
+LF_JUDGE_VERSION=v0.5 \
+python scripts/validate_test_coverage.py j10-input.json \
+  --evidence-ref <ref>
 ```
 
-El positivo exige `PASS_WITH_EVIDENCE`. El negativo exige `RETURN_TO_WORKER` con fixture, resultado y vacuidad detectados. Un `BLOCKED` por metadata o runtime ausente no cuenta como negativo satisfactorio.
+La existencia de un comando no autoriza al worker a ejecutarlo.
 
 ## 13. Reparación
 
-1. Identificar criterio, regla o test huérfano.
-2. Corregir solo `tests`, cobertura o fixture.
-3. No alterar la historia ni reducir familias.
-4. Reejecutar positivo, negativo y self-test.
-5. Registrar salida, hashes y reparaciones.
+1. Reparar solo pruebas, fixtures, reporte o sidecar.
+2. No cambiar historia, criterio ni regla.
+3. No reducir familias ni assertions.
+4. No inventar fuentes.
+5. No ejecutar J10 como worker.
 6. Incrementar retry.
-7. Después de dos reparaciones fallidas, retornar `BLOCKED`.
+7. Tras dos fallas, retornar `BLOCKED`.
 
-## 14. Handoff
+## 14. Prohibiciones
 
-Entregar a J10:
+- modificar A–N para obtener cobertura;
+- escribir `test_coverage` dentro del Story Pack;
+- omitir fixtures externos;
+- omitir `traceability_matrix` o `test_environment` del handoff;
+- usar pasos o expected results genéricos;
+- usar PII real;
+- eliminar una assertion;
+- ejecutar J10;
+- usar identidad de juez;
+- autoaprobar;
+- declarar producción, release o merge autónomo;
+- corregir A21 o el runtime fuera de su turno numérico.
 
-- Story Pack y SHA-256;
-- inventarios de criterios y reglas;
-- pruebas y fixtures exactos;
-- trece assertions con conteos;
-- positivo, negativo y self-test;
-- familias cubiertas;
-- decisiones de no aplicabilidad;
-- comandos, timestamps, hashes y evidencia;
-- retry count.
+## 15. Evidencia mínima
 
-## 15. Fuentes de diseño no normativas
+Conservar:
 
-- `anthropics/skills`: activación, progressive disclosure y evaluación iterativa.
-- `microsoft/vscode`: workflow explícito, precondiciones y stop conditions.
-- `freeCodeCamp/freeCodeCamp`: validación determinista y casos inválidos.
-- `Significant-Gravitas/AutoGPT`: estado, límites de ciclos y seguridad del workspace.
+```text
+worker_identity
+story_pack_sha256
+source_version
+criteria_inventory
+critical_rule_inventory
+error_inventory
+families_applicable
+test_codes
+fixture_hashes
+coverage_report_sha256
+thirteen_self_check_results
+runtime_path
+runtime_sha256_observed
+runtime_registration_state
+pending_decisions
+retry_count
+handoff_sha256
+```
 
-Los contratos LF prevalecen. Las estrellas se verifican durante la auditoría, no dentro del artefacto.
+La evidencia debe ser resoluble. Una conclusión narrativa no la sustituye.
