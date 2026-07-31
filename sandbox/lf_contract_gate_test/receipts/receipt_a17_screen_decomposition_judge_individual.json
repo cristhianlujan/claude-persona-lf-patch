@@ -1,0 +1,32 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-BISC-009-A17-INDIVIDUAL",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "0587db92543761f1dc277ca3d7862dd540e7038c",
+  "judge_sha": "eb99c8993dedb1e0fe8116f4d2da0c65dbd7b73e",
+  "source_sha_list": [
+    "b8c0a8c0b5f5ced2141f59a05e8e8fbe681d57e2",
+    "7efea4d7dd17ccce999445427c5803dfed78fb14",
+    "0fe4023819beabcfba1c48bf3000049534af5d1c",
+    "eb99c8993dedb1e0fe8116f4d2da0c65dbd7b73e",
+    "f00e8ca4356c8b081567064b1efb41eea66b61b4"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/judges/screen-decomposition.yaml"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-07-31T03:25:00Z",
+  "evidence": {
+    "artifact_code": "A17",
+    "canonical_artifacts_modified": 1,
+    "governance_files_modified": 1,
+    "supabase_write_before_merge": false,
+    "a04_started": false,
+    "artifact_closure_result": "BLOCKED_PENDING_VALIDATOR_CORRECTION",
+    "scope_note": "This receipt authorizes only the A17 judge-contract correction. It does not approve A17, the semantic validator, A03, production, runtime enablement, or any other artifact."
+  }
+}
