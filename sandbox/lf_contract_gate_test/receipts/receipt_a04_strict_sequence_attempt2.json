@@ -1,0 +1,36 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-BISC-021-A04-STRICT-SEQUENCE-ATTEMPT-2",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "0d2a34238154e493a45f93ede8d129765e8470f51fc1c6185e03b15295a51cee",
+  "judge_sha": "41f9a94beeb749fdf00d2822b379a6bd8acdeecfedaf865a01d3c37f80089997",
+  "source_sha_list": [
+    "78536901300fb180dada99f825833925386cc9169937e57d30225b7d226c4f2a",
+    "d6e37f5f02b2d3d6272789c5ff186fce13ac1916294f8b7ec98b267842f6d0c6",
+    "41f9a94beeb749fdf00d2822b379a6bd8acdeecfedaf865a01d3c37f80089997",
+    "f6870fd4c0e3ece604231071299d709a0834fd369ea5c59bba2a2de4d2738e83",
+    "6e4422167eab1f1ab12492c70a8afb71c69bce5f3264c8c57c0c0058c8298d20"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/agents/story-core-author.md"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-07-31T08:08:00Z",
+  "evidence": {
+    "artifact_code": "A04",
+    "sequence_position": 4,
+    "canonical_artifacts_modified": 1,
+    "bytes": 16623,
+    "sha256": "0d2a34238154e493a45f93ede8d129765e8470f51fc1c6185e03b15295a51cee",
+    "git_blob": "d18e5119552ba3a43e1d04b1bd336a8beeace55b",
+    "positive_assertions": "20/20",
+    "negative_cases": "16/16",
+    "package_gate": "66/66",
+    "a05_started": false,
+    "strict_numeric_sequence": true
+  }
+}
