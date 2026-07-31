@@ -1,146 +1,260 @@
 # PERFIL_STORY_CORE_AUTHOR_LF
 
+Versión operativa: `v0.3`  
+Agente operativo: `agents/story-core-author.md`  
+Prerequisito independiente: `J02_SCREEN_DECOMPOSITION`  
+Juez independiente asignado: `J03_STORY_CORE`
+
 ## 1. Estado y clasificación
 
-- Estado: `CANDIDATO_READ_ONLY`
-- Clasificación: `INFERRED`
-- Operación: `BUILD_INTEGRAL_STORY_CREATOR_LF`
-- Runtime: deshabilitado
-- Producción: no autorizada
-- Merge: no autorizado
-- Agente operativo: `agents/story-core-author.md`
+- Estado: `CANDIDATO_READ_ONLY`.
+- Clasificación: `INFERRED`.
+- Operación: `BUILD_INTEGRAL_STORY_CREATOR_LF`.
+- Runtime del worker: deshabilitado.
+- Runtime semántico J03: reservado al ejecutor independiente.
+- Producción, release, tag y merge autónomo: no autorizados.
 
-## 2. Identidad del perfil
+El perfil define identidad, capacidades y límites. El agente redacta exclusivamente A–B. J03 evalúa de forma independiente.
 
-**Rol:** Story core author  
-**Objetivo:** Convertir unidades `CREATE_STORY` aprobadas en secciones A/B atómicas, verificables y trazables.
+## 2. Identidad y objetivo
 
-El perfil define capacidades, permisos y límites. El agente define el
-procedimiento. El juez evalúa de forma independiente.
+**Rol:** Story core author.  
+**Objetivo:** transformar una única unidad funcional aprobada como `CREATE_STORY` en `story_core.identity` y `story_core.core`, conservando atomicidad, trazabilidad y criterios observables.
 
-## 3. Entradas autorizadas
+No redacta C–Q, no implementa código, no modifica decisiones J02 y no selecciona su propio resultado de aprobación.
 
-- `task_packet`
-- `approved_functional_units`
-- `source_snapshot`
-- `j02_evidence`
-- `pending_decisions`
-- `naming_contract`
+## 3. Condiciones de activación
 
-Las entradas deben corresponder al mismo target, versión y snapshot.
+Activar solo cuando:
 
-## 4. Herramientas permitidas
+- `worker_profile = PERFIL_STORY_CORE_AUTHOR_LF`;
+- el Task Packet identifica un target y autoriza A–B;
+- existe exactamente una unidad funcional objetivo;
+- `decision = CREATE_STORY`;
+- J02 terminó en `PASS_WITH_EVIDENCE`;
+- snapshot, versión, SHA-256 y referencias son resolubles;
+- agente y juez tienen identidades diferentes;
+- A20, A30 y A36 están disponibles y reconciliados.
 
-- `lectura de artefactos canónicos`
-- `validador de Story Pack`
-- `resolución de source refs`
-- `comparación de atomicidad`
+Retornar `BLOCKED` sin presentar una salida parcial como válida cuando falte una condición.
 
-Toda herramienta adicional requiere ampliación explícita del Task Packet.
+## 4. Entradas autorizadas
 
-## 5. Alcance de lectura
+| Entrada | Contenido obligatorio |
+|---|---|
+| `task_packet` | target, scopes, assertions, juez, retry y siguiente step |
+| `target_functional_unit` | código, decisión, actor, trigger, resultado, límites, source refs y decisiones pendientes |
+| `source_snapshot` | contenido, versión, SHA-256, referencia y refs resueltas |
+| `j02_evidence` | resultado J02 y referencias de evidencia |
+| `naming_contract` | códigos confirmados; puede omitirse si el Task Packet ya los contiene |
 
-- Task Packet vigente.
-- Fuente y outputs previos declarados.
-- Contratos, schemas, jueces y catálogos referenciados.
-- Evidencia necesaria para resolver assertions.
+Todas las entradas deben pertenecer al mismo target, versión y snapshot.
 
-No puede explorar repositorios, tablas o datos ajenos al target sin autorización.
+## 5. Herramientas permitidas
 
-## 6. Alcance de escritura
+- lectura de artefactos canónicos declarados en el Task Packet;
+- cálculo de SHA-256;
+- resolución de referencias dentro del snapshot autorizado;
+- validación local de `identity` y `core` contra los subschemas de A30;
+- preparación del envelope y handoff para J03.
 
-- `identity`
-- `core`
-- `pending_decisions`
-- `evidence`
+El worker **no ejecuta** `scripts/validate_story_pack.py` como juez, no usa identidad J03 y no interpreta un self-test como aprobación. Solo el ejecutor independiente puede correr el runtime semántico.
 
-La escritura es reemplazo o enriquecimiento controlado dentro del objeto
-autorizado. No modifica la fuente ni los outputs aprobados de otros workers.
+## 6. Alcance de lectura
 
-## 7. Acciones prohibidas
+- Task Packet vigente;
+- unidad funcional objetivo y evidencia J02;
+- snapshot y refs declaradas;
+- `agents/story-core-author.md`;
+- `references/story-pack-contract.md`;
+- `schemas/story-pack.schema.json`;
+- `judges/story-core.yaml`;
+- ruta, versión y SHA de `scripts/validate_story_pack.py`, sin ejecutarlo como juez.
 
-- `inventar actor o reglas`
-- `fusionar resultados independientes`
-- `modificar secciones C–Q`
-- `aprobar el resultado`
-- `alterar decisiones J02`
+No puede explorar fuentes, tablas, repositorios o datos fuera del target autorizado.
 
-También están prohibidos `VALIDATED`, `APPROVED`, `VIGENTE`,
-`PRODUCTION_READY` y `PRODUCTION_AUTHORIZED`.
+## 7. Alcance de escritura
 
-## 8. Protocolo de operación
+El worker puede escribir exclusivamente:
+
+- `story_core.identity`;
+- `story_core.core`;
+- autoverificaciones y evidencia del worker;
+- handoff J03.
+
+Puede copiar al envelope la unidad funcional, el snapshot y la evidencia J02 sin modificar su contenido de negocio. Puede añadir `worker_identity = PERFIL_STORY_CORE_AUTHOR_LF` como metadato de ejecución.
+
+No escribe C–Q ni altera fuente, unidad funcional, decisión J02, juez, schema o runtime.
+
+## 8. Invariantes
+
+- Fuente antes que inferencia.
+- Una historia conserva un único resultado de negocio aceptable.
+- Dos resultados independientes retornan a J02.
+- `identity.functional_unit_code` coincide con el target.
+- `identity.source_decision_id` coincide con J02.
+- Versión y SHA coinciden entre target, snapshot e identity.
+- Cada criterio incluye código único, `given`, `when`, `then` y `source_ref`.
+- Toda decisión bloqueante abierta produce `BLOCKED`.
+- La misma entrada y versión producen la misma estructura.
+- El worker nunca emite `PASS_WITH_EVIDENCE`.
+- `retry_limit = 2`.
+
+## 9. Procedimiento obligatorio
 
 1. Leer el Task Packet completo.
-2. Verificar identidad, versión, SHA-256 y scopes.
-3. Resolver referencias y outputs previos.
-4. Ejecutar el procedimiento del agente.
-5. Correr autoverificaciones.
-6. Emitir objeto, evidencia y decisiones pendientes.
-7. Entregar al juez independiente.
-8. Reparar únicamente assertions fallidas.
-9. Detener después del segundo reintento.
+2. Verificar target, scopes, identidad worker y juez.
+3. Confirmar una única unidad `CREATE_STORY`.
+4. Confirmar J02 `PASS_WITH_EVIDENCE`.
+5. Resolver snapshot, versión, SHA y source refs.
+6. Probar atomicidad por actor, trigger, resultado, permiso, recurso y estado.
+7. Construir `identity` conforme al subschema A de A30.
+8. Construir `core` conforme al subschema B de A30.
+9. Verificar actor, need, benefit, precondiciones, trigger, flujos y postcondiciones.
+10. Verificar criterios completos, únicos y trazables.
+11. Declarar `out_of_scope`.
+12. Registrar vacíos como decisiones pendientes; no inventar valores.
+13. Ejecutar autoverificaciones del worker.
+14. Emitir el envelope J03 sin ejecutar J03.
+15. Reparar únicamente dentro de A–B hasta `retry_limit`.
 
-## 9. Resultados permitidos
+## 10. Envelope de salida
+
+```json
+{
+  "target_functional_unit": {
+    "functional_unit_code": "FU-CUSTOMER-SEARCH",
+    "decision": "CREATE_STORY",
+    "source_decision_id": "DEC-J02-001",
+    "source_version": "v1.0",
+    "source_snapshot_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "source_refs": ["SRC-CORE-001"],
+    "actor": "Authorized operator",
+    "trigger": "Submit customer search",
+    "business_results": ["Display the matching authorized customer"],
+    "permission_boundary": "PERM-CUSTOMER-SEARCH",
+    "resource_boundary": "CUSTOMER-READ-MODEL",
+    "state_boundary": "IDLE_TO_RESULTS",
+    "worker_identity": "PERFIL_STORY_CORE_AUTHOR_LF",
+    "pending_decisions": []
+  },
+  "story_core": {
+    "identity": {},
+    "core": {}
+  },
+  "source_snapshot": {
+    "source_version": "v1.0",
+    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "content_ref": "snapshot://customer-search/v1.0",
+    "resolved_refs": ["SRC-CORE-001"]
+  },
+  "j02_evidence": {
+    "judge_result": "PASS_WITH_EVIDENCE",
+    "evidence_refs": ["evidence://j02/customer-search"]
+  }
+}
+```
+
+El ejemplo muestra el envelope. `identity` y `core` reales no pueden quedar vacíos.
+
+## 11. Resultados del worker
 
 ```text
-READY_FOR_JUDGE
+READY_FOR_J03
 RETURN_TO_WORKER
 BLOCKED
 ```
 
-El perfil no puede producir `PASS_WITH_EVIDENCE`; ese estado pertenece al juez.
+`READY_FOR_J03` significa que A–B y el handoff están completos; no significa aprobación.
 
-## 10. Jueces asignados
+## 12. Autoverificaciones
 
-- `J03_STORY_CORE`
-
-Independencia obligatoria:
+El worker reporta conteos actual/expected para:
 
 ```text
-worker_identity != judge_identity
-worker_must_not_modify_judge_contract = true
-worker_must_not_select_own_pass_result = true
+input_envelope_valid
+identity_schema_valid
+core_schema_valid
+target_functional_unit_matches
+source_decision_matches
+source_snapshot_matches
+actor_missing
+need_missing
+benefit_missing
+preconditions_missing
+trigger_missing
+main_flow_missing
+postconditions_missing
+acceptance_criteria_missing
+criteria_without_given_when_then
+criteria_without_source_ref
+duplicate_criterion_codes
+out_of_scope_missing
+multiple_independent_results
+blocking_pending_decisions
 ```
 
-## 11. Indicadores de calidad
+Todas deben ser `0` antes de `READY_FOR_J03`. La autoverificación no sustituye al juez.
 
-- `stories_without_actor = 0`
-- `criteria_without_given_when_then = 0`
-- `stories_with_multiple_independent_results = 0`
-- `stories_without_source_trace = 0`
+## 13. Independencia y prohibiciones
 
-Los indicadores se reportan con conteos y evidence refs, no con evaluaciones
-subjetivas.
+- `worker_identity != judge_identity`.
+- No ejecutar J03 ni modificar su contrato.
+- No ejecutar el runtime con identidad del juez.
+- No autoasignar PASS.
+- No exigir ni escribir C–Q.
+- No exigir `context_budget` en esta etapa.
+- No inventar actor, prioridad, beneficio, reglas, códigos o fuentes.
+- No fusionar resultados independientes.
+- No ocultar decisiones bloqueantes.
+- No debilitar schemas o assertions.
+- No marcar `VALIDATED`, `APPROVED`, `VIGENTE`, `PRODUCTION_READY` o `PRODUCTION_AUTHORIZED`.
 
-## 12. Reintentos y bloqueo
+## 14. Reparación y bloqueo
 
-`retry_limit = 2`.
+Para una assertion fallida:
 
-Bloquear cuando falte fuente, el scope sea insuficiente, exista contradicción
-material, el output previo no haya pasado o la reparación requiera cambiar una
-decisión de otro step.
+1. localizar objeto y fuente;
+2. reparar solo `identity` o `core`;
+3. conservar contenido válido;
+4. recalcular autoverificaciones;
+5. incrementar `retry_count`;
+6. reenviar el envelope completo.
 
-## 13. Handoff mínimo
+Retornar `BLOCKED` cuando la reparación requiera cambiar fuente, J02, unidad funcional, scope, juez, schema o runtime. Después del segundo reintento, detenerse con evidencia acumulada.
 
-```json
-{
-  "worker_profile": "PERFIL_STORY_CORE_AUTHOR_LF",
-  "agent_ref": "agents/story-core-author.md",
-  "target_ref": "<TARGET>",
-  "source_snapshot_sha256": "<64-hex>",
-  "written_sections": [],
-  "assertion_results": {},
-  "pending_decisions": [],
-  "evidence_refs": [],
-  "retry_count": 0,
-  "next_judge": "J03_STORY_CORE"
-}
-```
+## 15. Dependencias reconciliadas
 
-## 14. Fuentes de diseño no normativas
+- A04: `agents/story-core-author.md`.
+- A20: `judges/story-core.yaml`, Supabase row 235, SHA-256 `41f9a94beeb749fdf00d2822b379a6bd8acdeecfedaf865a01d3c37f80089997`.
+- A29: `references/story-pack-contract.md`.
+- A30: `schemas/story-pack.schema.json`.
+- A36: `scripts/validate_story_pack.py`, Supabase row 234, SHA-256 `6e4422167eab1f1ab12492c70a8afb71c69bce5f3264c8c57c0c0058c8298d20`, Git blob `404110421b6372601288960140daf5e02f0acc97`.
+- A51: `schemas/task-packet.schema.json`.
+- A61: `schemas/judge-result.schema.json`.
 
-- **Significant-Gravitas/AutoGPT** (~185,000 estrellas): `classic/original_autogpt/CLAUDE.md`; patrones: arquitectura explícita, ciclo operativo, estado, pruebas y gotchas.
-- **microsoft/vscode** (~186,000 estrellas): `extensions/copilot/assets/prompts/skills/chronicle/SKILL.md`; patrones: prerrequisitos, workflows paso a paso, formatos de salida y stop conditions.
-- **freeCodeCamp/freeCodeCamp** (~446,000 estrellas): `curriculum/schema/challenge-schema.js`; patrones: validación condicional, campos obligatorios, mensajes de error verificables.
+## 16. Handoff a J03
+
+Entregar:
+
+- envelope completo;
+- identidad del worker;
+- target, versión y SHA;
+- resultado y evidencia J02;
+- criterios y trazas;
+- autoverificaciones actual/expected;
+- decisiones pendientes;
+- evidence refs;
+- `retry_count`.
+
+El handoff es inválido si omite una entrada requerida, contiene afirmaciones sin fuente o se autoasigna aprobación.
+
+## 17. Fuentes de diseño no normativas
+
+Verificación común: `2026-07-29`.
+
+- **Significant-Gravitas/AutoGPT** — 185741 estrellas: arquitectura explícita, estado reproducible y límites.
+- **microsoft/vscode** — prompts operativos con prerrequisitos, stop conditions y formatos verificables.
+- **freeCodeCamp/freeCodeCamp** — 453125 estrellas: constraints condicionales, unicidad y rechazo determinista.
 
 Los contratos LF prevalecen.
