@@ -1,1 +1,37 @@
-{"artifact":"A07","execution_id":"EXEC-BISC-024-A07-STRICT-SEQUENCE","status":"PREPARED","canonical_path":"skills/creating-integral-user-stories/evals/evals.json","bytes":14736,"sha256":"0de75a0e2a70037ae1fd0b7d6fa4103321ff284d848551b9daae0fb2cbbd89d9","git_blob_sha1":"923283b523b8448b41f94ffe4c5aa8741ae1581e","assertion_refs_resolved":"113/113","case_ids_unique":"22/22","negative_registry_tests":"4/4","package_gate":"66/66"}
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-BISC-024-A07-STRICT-SEQUENCE",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "0de75a0e2a70037ae1fd0b7d6fa4103321ff284d848551b9daae0fb2cbbd89d9",
+  "judge_sha": "0de75a0e2a70037ae1fd0b7d6fa4103321ff284d848551b9daae0fb2cbbd89d9",
+  "source_sha_list": [
+    "d2e874ca4ce536cf659b283eb12de6298381d292e72931f62fc7e671b66ea81d",
+    "100a0daf0750db9d9e4dacd39b48cbc32b76a9f08fdd5cf1748959067fe0c27c",
+    "0de75a0e2a70037ae1fd0b7d6fa4103321ff284d848551b9daae0fb2cbbd89d9"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/evals/evals.json"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-07-31T12:55:00Z",
+  "evidence": {
+    "artifact_code": "A07",
+    "sequence_position": 7,
+    "canonical_artifacts_modified": 1,
+    "bytes": 14736,
+    "sha256": "0de75a0e2a70037ae1fd0b7d6fa4103321ff284d848551b9daae0fb2cbbd89d9",
+    "git_blob": "923283b523b8448b41f94ffe4c5aa8741ae1581e",
+    "assertion_refs_resolved": "113/113",
+    "case_ids_unique": "22/22",
+    "fixture_refs_resolved": "6/6",
+    "positive_registry_test": "PASS",
+    "negative_registry_tests": "4/4 rejected",
+    "package_gate": "66/66",
+    "a08_started": false,
+    "strict_numeric_sequence": true
+  }
+}
