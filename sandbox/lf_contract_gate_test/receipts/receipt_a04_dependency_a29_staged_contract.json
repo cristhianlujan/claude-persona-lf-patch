@@ -1,0 +1,37 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-BISC-030-A04-DEPENDENCY-REVALIDATION",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "771ef6be625b30cbd9ac8fadc3e02e1010d547364c31f92f4e2f43ddb89fa24f",
+  "judge_sha": "41f9a94beeb749fdf00d2822b379a6bd8acdeecfedaf865a01d3c37f80089997",
+  "source_sha_list": [
+    "955ef60186dd83298e3294083060f0be9f199cf505988b04bfa957168df5aa9e",
+    "d6e37f5f02b2d3d6272789c5ff186fce13ac1916294f8b7ec98b267842f6d0c6",
+    "f6870fd4c0e3ece604231071299d709a0834fd369ea5c59bba2a2de4d2738e83",
+    "771ef6be625b30cbd9ac8fadc3e02e1010d547364c31f92f4e2f43ddb89fa24f"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/references/story-pack-contract.md"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-07-31T14:50:00Z",
+  "evidence": {
+    "artifact_code": "A29",
+    "dependency_of": "A04",
+    "canonical_artifacts_modified": 1,
+    "bytes": 9424,
+    "sha256": "771ef6be625b30cbd9ac8fadc3e02e1010d547364c31f92f4e2f43ddb89fa24f",
+    "git_blob": "47f91e12213ef0890fd50cf438ba1065c8a6a0c2",
+    "j03_scope": "A_B_ONLY",
+    "j11_scope": "A_Q_COMPLETE",
+    "j03_assertions": "20/20 declared",
+    "j03_negative_cases": "16/16 declared",
+    "context_budget_required_at_j03": false,
+    "a05_started": false,
+    "dependency_nested_sequence": true
+  }
+}
