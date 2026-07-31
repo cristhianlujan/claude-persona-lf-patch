@@ -105,6 +105,19 @@ def cases():
     return [
 ("missing_j02_evidence","BLOCKED","j02_not_passed_with_evidence",lambda p:p.update({"j02_evidence":{}})),("target_decision_not_create_story","BLOCKED","target_decision_not_CREATE_STORY",lambda p:p["target_functional_unit"].update({"decision":"MERGE_WITH"})),("functional_unit_mismatch","RETURN_TO_WORKER","target_functional_unit_matches",lambda p:p["story_core"]["identity"].update({"functional_unit_code":"FU-OTHER"})),("source_decision_mismatch","RETURN_TO_WORKER","source_decision_matches",lambda p:p["story_core"]["identity"].update({"source_decision_id":"DEC-OTHER"})),("snapshot_sha_mismatch","RETURN_TO_WORKER","source_snapshot_matches",lambda p:p["story_core"]["identity"].update({"source_snapshot_sha":"b"*64})),("missing_actor","RETURN_TO_WORKER","actor_missing",lambda p:p["story_core"]["core"].update({"actor":""})),("missing_trigger","RETURN_TO_WORKER","trigger_missing",lambda p:p["story_core"]["core"].update({"trigger":""})),("empty_main_flow","RETURN_TO_WORKER","main_flow_missing",lambda p:p["story_core"]["core"].update({"main_flow":[]})),("criterion_missing_given","RETURN_TO_WORKER","criteria_without_given_when_then",lambda p:p["story_core"]["core"]["acceptance_criteria"][0].update({"given":""})),("criterion_missing_source_ref","RETURN_TO_WORKER","criteria_without_source_ref",lambda p:p["story_core"]["core"]["acceptance_criteria"][0].update({"source_ref":""})),("duplicate_criterion_code","RETURN_TO_WORKER","duplicate_criterion_codes",lambda p:p["story_core"]["core"]["acceptance_criteria"].append(copy.deepcopy(p["story_core"]["core"]["acceptance_criteria"][0]))),("missing_out_of_scope","RETURN_TO_WORKER","out_of_scope_missing",lambda p:p["story_core"]["core"].update({"out_of_scope":[]})),("multiple_independent_results","RETURN_TO_WORKER","multiple_independent_results",lambda p:p["target_functional_unit"]["business_results"].append("Export a separate customer report")),("blocking_pending_decision","BLOCKED","blocking_pending_decisions",lambda p:p["target_functional_unit"]["pending_decisions"].append({"decision_code":"PD-001","blocking":True,"status":"OPEN"})),("missing_executor_identity","BLOCKED","executor_identity_missing",None),("validator_sha_mismatch","BLOCKED","validator_sha_unreconciled",None)]
 
+def legacy_full_pack(pack,input_sha,input_path,executor):
+    """Read-only compatibility for the pre-v0.7 E21/E22 audit runner."""
+    if not isinstance(pack,dict): raise ValidationInputError("legacy_story_pack_must_be_object")
+    identity=pack.get("identity") if isinstance(pack.get("identity"),dict) else {}
+    core=pack.get("core") if isinstance(pack.get("core"),dict) else {}
+    ie,_=schema_errors(identity,"identity"); ce,_=schema_errors(core,"core")
+    criteria=core.get("acceptance_criteria") if isinstance(core.get("acceptance_criteria"),list) else []
+    bad=sum(1 for x in criteria if not isinstance(x,dict) or any(missing_s(x.get(k),5) for k in ("given","when","then")) or missing_s(x.get("source_ref"),3))
+    checks={"identity_schema_valid":len(ie),"core_schema_valid":len(ce),"source_trace_missing":int(not identity.get("source_decision_id") or not isinstance(identity.get("source_snapshot_sha"),str) or not SHA_RE.fullmatch(identity.get("source_snapshot_sha",""))),"acceptance_criteria_invalid":bad,"acceptance_criteria_missing":missing_a(criteria)}
+    ev={"checks":checks,"compatibility_mode":"LEGACY_E21_E22_ONLY","input_sha256":input_sha,"input_path":input_path,"identity_schema_errors":ie,"core_schema_errors":ce,"acceptance_criteria_count":len(criteria)}
+    failed=[k for k,v in checks.items() if v]; repairs=[failure(k,"$",f"Repair legacy audit assertion: {k}") for k in failed]
+    return result_object(JUDGE,failed,ev,[f"file:{input_path}"],repairs,[],retry_count=0,judge_version="v0.6",executor_identity=executor,command="legacy-audit-compatibility")
+
 def self_test():
     meta=runtime_meta(); p=positive_payload(); pos=build(p,["evidence:self-test-positive"],0,"LF_SELF_TEST",VERSION,meta["semantic_validator_sha256"],REG,canonical_sha(p),None,"self-test:positive"); out=[]
     for cid,er,ea,mut in cases():
@@ -120,7 +133,11 @@ def run():
     c=argparse.ArgumentParser(description=__doc__); c.add_argument("input",type=Path,nargs="?"); c.add_argument("--self-test",action="store_true"); c.add_argument("--evidence-ref",action="append",default=[]); c.add_argument("--retry-count",type=int,default=0); c.add_argument("--expected-validator-sha256"); c.add_argument("--registration-ref"); a=c.parse_args()
     if a.self_test:return self_test()
     if a.input is None: raise ValidationInputError("story_core_envelope_input_required")
-    p=load_json(a.input); r=build(p,a.evidence_ref or [f"file:{a.input}"],a.retry_count,os.getenv("LF_EXECUTOR_IDENTITY"),os.getenv("LF_JUDGE_VERSION"),a.expected_validator_sha256,a.registration_ref,sha256_file(a.input),str(a.input)," ".join(sys.argv))
+    p=load_json(a.input); input_sha=sha256_file(a.input); env_version=os.getenv("LF_JUDGE_VERSION"); executor=os.getenv("LF_EXECUTOR_IDENTITY")
+    if env_version=="v0.6" and isinstance(p,dict) and "identity" in p and "core" in p and not a.expected_validator_sha256 and not a.registration_ref:
+        r=legacy_full_pack(p,input_sha,str(a.input),executor)
+    else:
+        r=build(p,a.evidence_ref or [f"file:{a.input}"],a.retry_count,executor,env_version,a.expected_validator_sha256,a.registration_ref,input_sha,str(a.input)," ".join(sys.argv))
     if result_schema_errors(r): raise ValidationInputError("judge_result_schema_invalid")
     return emit(r)
 if __name__=="__main__": raise SystemExit(main_guard(JUDGE,run))
