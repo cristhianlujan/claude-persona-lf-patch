@@ -43,18 +43,15 @@ validators:
   semantic_validator_name: screen_decomposition_semantic_validator
   semantic_validator_registration_required: true
   semantic_validator_sha_reconciliation_required: true
+  semantic_validator_sha256: 1126486c5d542fea8b25c51044798f2b0bd8e555687f7120040c3d04ea8fdd24
+  semantic_validator_git_blob_sha1: 79b5de0bb5ce52852cb4f91a5bbb1c654206f66a
+  semantic_validator_supabase_row_id: 229
+  semantic_validator_registration_ref: supabase://private.lf_skill_artifacts/ART_SCRIPT_VALIDATE_SCREEN_DECOMPOSITION
 
-runtime_status: BLOCKED_PENDING_VALIDATOR_CORRECTION
-runtime_blockers:
-- semantic_validator_not_registered_in_supabase_or_A01_A62_map
-- semantic_validator_sha_evidence_does_not_match_main
-- semantic_validator_accepts_schema_invalid_payloads
-- semantic_validator_accepts_semantic_duplicates_with_distinct_codes
-- semantic_validator_accepts_unrelated_coverage_by_cardinality
-- semantic_validator_ignores_blocking_pending_decisions
-- semantic_validator_does_not_enforce_field_coverage
+runtime_status: AVAILABLE
+runtime_blockers: []
 
-runtime_command: LF_EXECUTOR_IDENTITY=<independent_executor> LF_JUDGE_VERSION=v0.7 python scripts/validate_screen_decomposition.py <input.json> --evidence-ref <ref>
+runtime_command: LF_EXECUTOR_IDENTITY=<independent_executor> LF_JUDGE_VERSION=v0.7 python scripts/validate_screen_decomposition.py <input.json> --evidence-ref <ref> --expected-validator-sha256 1126486c5d542fea8b25c51044798f2b0bd8e555687f7120040c3d04ea8fdd24 --registration-ref supabase://private.lf_skill_artifacts/ART_SCRIPT_VALIDATE_SCREEN_DECOMPOSITION
 self_test_command: LF_EXECUTOR_IDENTITY=LF_SELF_TEST LF_JUDGE_VERSION=v0.7 python scripts/validate_screen_decomposition.py --self-test
 
 deterministic_procedure:
@@ -411,7 +408,7 @@ benchmark_dual:
   complement: Recalcular cobertura y duplicados desde objetos y validar el schema real antes de confiar en summaries.
 
 preflight_enforcement:
-  enforced_by_validator: false
-  current_state: BLOCKED_PENDING_VALIDATOR_CORRECTION
+  enforced_by_validator: true
+  current_state: AVAILABLE
   required_entrypoint: scripts/validate_screen_decomposition.py
   required_rule: Emitir BLOCKED con exit_code 2 antes de assertions cuando falten identidad, versión del juez, runtime registrado, SHA reconciliable, inputs, inventarios, unidades, cobertura o decisiones externas; emitir RETURN_TO_WORKER ante incumplimiento de A44.
