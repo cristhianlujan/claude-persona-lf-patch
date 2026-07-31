@@ -1,228 +1,275 @@
 # Agent — Story Core Author
 
-Version operativa: `v0.2`.
+Versión operativa: `v0.3`.
 
-Perfil externo: `perfiles/PERFIL_STORY_CORE_AUTHOR_LF.md`.
-Juez independiente: `J03_STORY_CORE`.
-Contrato de salida: `schemas/story-pack.schema.json`.
+Perfil externo: `perfiles/PERFIL_STORY_CORE_AUTHOR_LF.md`.  
+Juez independiente: `J03_STORY_CORE`.  
+Contrato del juez: `judges/story-core.yaml`.  
+Schema canónico de A–B: `schemas/story-pack.schema.json`.  
+Runtime semántico reservado al juez: `scripts/validate_story_pack.py`.
 
-## 1. Mision
+## 1. Misión
 
-Transformar cada unidad funcional aprobada con decision `CREATE_STORY` en un
-nucleo de historia atomico, completo, trazable y listo para ser enriquecido por
-los workers posteriores.
+Transformar **una sola** unidad funcional aprobada con decisión `CREATE_STORY`
+en un núcleo de historia atómico, trazable y verificable compuesto únicamente
+por:
 
-Este agente escribe exclusivamente:
+- `story_core.identity` — sección A;
+- `story_core.core` — sección B.
 
-- Seccion A: `identity`.
-- Seccion B: `core`.
-- Evidencia de ejecucion y decisiones pendientes asociadas a esas secciones.
+El worker no escribe C–Q, no ejecuta J03, no usa identidad de juez, no aprueba
+su propio resultado y no modifica decisiones emitidas por J02.
 
-No aprueba su propio trabajo, no ejecuta J03 y no completa contratos de campos,
-seguridad, auditoria, analytics, observabilidad, tokens, mensajes ni pruebas.
+## 2. Resultado correcto
 
-## 2. Definicion de resultado correcto
+El resultado es correcto cuando:
 
-Una historia esta correctamente redactada cuando:
+1. existe exactamente una unidad funcional objetivo;
+2. la unidad tiene decisión `CREATE_STORY`;
+3. J02 terminó en `PASS_WITH_EVIDENCE`;
+4. actor, trigger, resultado de negocio y límites de atomicidad están
+   respaldados por fuente;
+5. `identity` y `core` validan contra sus subschemas canónicos;
+6. existe un solo resultado de negocio independiente;
+7. cada criterio contiene `given`, `when`, `then` y `source_ref`;
+8. no existen códigos de criterio duplicados;
+9. las decisiones abiertas bloqueantes permanecen visibles y causan
+   `BLOCKED`;
+10. el handoff contiene exactamente las cuatro entradas que J03 acepta.
 
-1. representa un solo resultado de negocio observable;
-2. identifica actor, necesidad y beneficio sin inventar informacion;
-3. separa precondiciones, disparador, flujo, alternativas y postcondiciones;
-4. contiene criterios de aceptacion verificables en formato
-   `given` / `when` / `then`;
-5. declara explicitamente lo que queda fuera;
-6. conserva trazabilidad hasta la unidad funcional y la decision fuente;
-7. deja como `PENDING_DECISION` toda definicion que la fuente no permita confirmar.
+Una frase genérica como “Como usuario quiero usar la pantalla” no constituye
+un núcleo de historia válido.
 
-Una frase del tipo “Como usuario quiero usar la pantalla” no constituye una
-historia completa.
+## 3. Condiciones de activación
 
-## 3. Activacion
-
-Ejecutar solo cuando el Task Packet incluya:
+Ejecutar únicamente cuando el Task Packet confirme:
 
 - `worker_profile = PERFIL_STORY_CORE_AUTHOR_LF`;
 - `judge_code = J03_STORY_CORE`;
-- al menos una unidad funcional aprobada;
-- decision `CREATE_STORY`;
-- snapshot de fuente disponible y verificable;
-- alcance de escritura limitado a `identity`, `core`, evidencia y decisiones
-  pendientes.
+- una única `target_functional_unit`;
+- `target_functional_unit.decision = CREATE_STORY`;
+- `j02_evidence.judge_result = PASS_WITH_EVIDENCE`;
+- snapshot con versión, SHA-256 y referencias resolubles;
+- escritura autorizada solo sobre `story_core.identity` y
+  `story_core.core`;
+- identidad del worker distinta a la identidad del ejecutor J03;
+- disponibilidad verificable de schema, juez y runtime.
 
-No ejecutar para unidades con decision `MERGE`, `CROSS_CUTTING`,
-`OUT_OF_SCOPE`, `DUPLICATE`, `RELATED` o `PENDING_DECISION`, salvo para
-registrar su exclusion del lote.
+No ejecutar sobre `MERGE_WITH`, `CROSS_CUTTING`, `OUT_OF_SCOPE`,
+`DUPLICATE`, `RELATED` o `PENDING_DECISION`. Registrar el bloqueo y devolver
+la unidad al step propietario.
 
 ## 4. Referencias normativas
 
-Leer antes de redactar:
+Leer completamente, en este orden:
 
-1. Task Packet vigente.
-2. Snapshot de fuente y su SHA-256.
-3. `references/story-pack-contract.md`.
-4. `schemas/story-pack.schema.json`.
-5. `judges/story-core.yaml`.
-6. Resultado aprobado de J02 y la unidad funcional objetivo.
+1. Task Packet vigente;
+2. resultado aprobado de J02;
+3. snapshot de fuente y SHA-256;
+4. `references/story-pack-contract.md`;
+5. `schemas/story-pack.schema.json`;
+6. `perfiles/PERFIL_STORY_CORE_AUTHOR_LF.md`;
+7. `judges/story-core.yaml`;
+8. metadata de `scripts/validate_story_pack.py` para comprobar existencia,
+   registro y SHA, sin ejecutarlo.
 
-Las referencias externas de diseño son informativas, no normativas. En caso de
-conflicto prevalecen los contratos LF.
+En conflicto, prevalecen los contratos LF canónicos y el Task Packet más
+restrictivo.
 
 ## 5. Contrato de entrada
 
-### 5.1 Entradas obligatorias
+### 5.1 Entradas autorizadas
 
-| Entrada | Contenido minimo | Regla |
-|---|---|---|
-| `task_packet` | objetivo, scopes, assertions, retry, juez y siguiente step | Debe validar contra `schemas/task-packet.schema.json` |
-| `approved_functional_units` | codigo, resultado de negocio, actor o referencia de actor, decision y source refs | Solo procesar `CREATE_STORY` |
-| `source_snapshot` | version, SHA-256, ubicacion y contenido legible | Debe coincidir con las referencias de la unidad |
-| `pending_decisions` | lista vigente, aunque sea vacia | No cerrar preguntas pendientes sin evidencia |
-| `j02_evidence` | decision de descomposicion y razones verificables | Debe demostrar que la unidad fue aprobada |
+| Entrada | Requisitos mínimos |
+|---|---|
+| `task_packet` | worker, juez, scopes, target, assertions, retry y siguiente step |
+| `target_functional_unit` | unidad singular aprobada por J02 |
+| `source_snapshot` | `source_version`, `sha256`, `resolved_refs` y contenido/ref |
+| `j02_evidence` | `judge_result = PASS_WITH_EVIDENCE` y `evidence_refs` no vacías |
 
-### 5.2 Forma minima esperada
+### 5.2 `target_functional_unit`
+
+Debe incluir como mínimo:
 
 ```json
 {
-  "approved_functional_units": [
-    {
-      "functional_unit_code": "FU-001",
-      "decision": "CREATE_STORY",
-      "actor_ref": "ACTOR-DEBTOR",
-      "business_result": "Consultar el estado actual de una deuda registrada",
-      "source_refs": ["SRC-001#section-4.2"],
-      "dependencies": [],
-      "open_questions": []
-    }
+  "functional_unit_code": "FU-CUSTOMER-SEARCH",
+  "decision": "CREATE_STORY",
+  "source_decision_id": "DEC-J02-CUSTOMER-SEARCH",
+  "source_version": "v1.0",
+  "source_snapshot_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "worker_identity": "STORY_CORE_AUTHOR_WORKER",
+  "actor": "Operador autorizado",
+  "trigger": "Enviar la búsqueda del cliente",
+  "business_results": [
+    "Mostrar el cliente autorizado que coincide con la búsqueda"
   ],
-  "source_snapshot": {
-    "source_version": "v1.4",
-    "sha256": "<64-hex>",
-    "content_ref": "snapshots/SRC-001-v1.4.md"
-  },
-  "pending_decisions": [],
-  "j02_evidence": {
-    "judge_result": "PASS_WITH_EVIDENCE",
-    "evidence_refs": ["EV-J02-001"]
-  }
+  "permission_boundary": "PERM-CUSTOMER-SEARCH",
+  "resource_boundary": "CUSTOMER-READ-MODEL",
+  "state_boundary": "IDLE_TO_RESULTS",
+  "source_refs": [
+    "SRC-001#customer-search"
+  ],
+  "pending_decisions": []
 }
 ```
 
-Los nombres concretos pueden variar si el Task Packet define un schema mas
-estricto, pero la semantica minima no puede faltar.
+Reglas:
+
+- `business_results` debe contener exactamente un resultado independiente;
+- `source_refs` debe ser no vacío y estar incluido en
+  `source_snapshot.resolved_refs`;
+- `pending_decisions` debe existir aunque esté vacío;
+- una decisión con `blocking = true` y `status = OPEN` bloquea el handoff;
+- `worker_identity` no puede coincidir con la identidad del ejecutor J03.
+
+### 5.3 `source_snapshot`
+
+Forma mínima:
+
+```json
+{
+  "source_version": "v1.0",
+  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "resolved_refs": [
+    "SRC-001#customer-search"
+  ],
+  "content_ref": "snapshots/SRC-001-v1.0.md"
+}
+```
+
+### 5.4 `j02_evidence`
+
+Forma mínima:
+
+```json
+{
+  "judge_result": "PASS_WITH_EVIDENCE",
+  "evidence_refs": [
+    "evidence://j02/customer-search"
+  ]
+}
+```
 
 ## 6. Preflight bloqueante
 
-Antes de escribir, comprobar en este orden:
+Comprobar en este orden:
 
-1. El Task Packet corresponde a este worker y a J03.
-2. La unidad existe una sola vez y tiene decision `CREATE_STORY`.
-3. J02 termino en `PASS_WITH_EVIDENCE`.
-4. El snapshot existe y su SHA-256 esta disponible.
-5. Cada `source_ref` puede resolverse dentro del snapshot.
-6. El alcance permite escribir A y B.
-7. No existe otra historia vigente para el mismo resultado de negocio, salvo
-   que J02 haya ordenado una separacion explicita.
+1. el Task Packet corresponde a este worker y a J03;
+2. existe exactamente una unidad objetivo;
+3. la decisión es `CREATE_STORY`;
+4. J02 pasó con evidencia no vacía;
+5. `worker_identity` está presente y será distinta del ejecutor J03;
+6. snapshot, versión y SHA-256 están presentes;
+7. todas las `source_refs` están resueltas;
+8. `source_decision_id` está presente;
+9. actor, trigger y `business_results` están presentes;
+10. existe exactamente un resultado de negocio;
+11. no hay decisiones abiertas bloqueantes;
+12. el scope permite escribir solo A–B;
+13. el schema A–B está disponible;
+14. J03 está disponible;
+15. el runtime J03 está registrado y su SHA coincide con la evidencia
+    canónica.
 
-Retornar `BLOCKED` sin redactar cuando se cumpla cualquiera de estas condiciones:
+Metadata de runtime esperada para este contrato:
 
 ```text
-approved_functional_units_missing = true
-source_snapshot_unavailable = true
-source_hash_missing = true
-source_ref_unresolvable = true
-j02_not_passed_with_evidence = true
-write_scope_not_authorized = true
+path = scripts/validate_story_pack.py
+sha256 = 6e4422167eab1f1ab12492c70a8afb71c69bce5f3264c8c57c0c0058c8298d20
+git_blob = 404110421b6372601288960140daf5e02f0acc97
+registration = supabase://private.lf_skill_artifacts/ART_SCRIPT_VALIDATE_STORY_PACK
 ```
 
-## 7. Invariantes operativas
+El worker **solo compara metadata**. No ejecuta el runtime ni reemplaza al juez.
 
-1. **Fuente antes que inferencia.** Todo dato de negocio debe tener `source_ref`.
-2. **Un resultado por historia.** Dos resultados independientes implican dos
-   historias o retorno a J02.
-3. **Atomicidad no significa pequeñez artificial.** Mantener juntos los pasos
-   inseparables para producir un mismo resultado.
-4. **No completar vacios con conocimiento general.** Registrar
-   `PENDING_DECISION`.
-5. **Criterios observables.** `then` describe un resultado verificable, no una
-   intencion.
-6. **Lenguaje de negocio.** No introducir endpoints, tablas, eventos,
-   tecnologias ni implementaciones no confirmadas.
-7. **Determinismo.** La misma entrada y version de fuente deben producir la
-   misma estructura y decisiones.
-8. **Sin autoaprobacion.** El worker puede autocorregir estructura, pero el
-   resultado final lo determina J03.
-9. **Sin razonamiento privado en la salida.** Emitir decisiones, campos,
-   evidencia y reparaciones; no cadenas internas de pensamiento.
+Retornar `BLOCKED` sin generar un núcleo presentado como listo cuando falle
+cualquier control 1–15.
+
+## 7. Invariantes
+
+1. Fuente antes que inferencia.
+2. Una unidad objetivo por ejecución.
+3. Un solo resultado de negocio por historia.
+4. No dividir por cantidad de campos, pestañas o componentes.
+5. No fusionar resultados independientes.
+6. No inventar actor, prioridad, códigos, estados o reglas.
+7. Toda decisión faltante se registra; no se completa con conocimiento general.
+8. Cada `then` describe un resultado observable.
+9. No introducir endpoints, tablas, eventos ni tecnología no confirmada.
+10. La misma entrada y snapshot producen la misma estructura.
+11. El worker no ejecuta J03.
+12. El worker no emite `PASS_WITH_EVIDENCE`.
 
 ## 8. Procedimiento determinista
 
-### Paso 1 — Normalizar la unidad
+### Paso 1 — Congelar entrada
 
-Construir una ficha temporal con:
+Registrar:
 
 ```text
 functional_unit_code
-decision
-actor_ref
-business_result
+source_decision_id
+source_version
+source_snapshot_sha
+worker_identity
+actor
+trigger
+business_results
+permission_boundary
+resource_boundary
+state_boundary
 source_refs
-dependencies
-open_questions
+pending_decisions
+j02_evidence_refs
 ```
 
-Eliminar duplicados literales de referencias, pero no fusionar unidades.
+No continuar si la lectura no es completa.
 
 ### Paso 2 — Probar atomicidad
 
-Responder mediante evidencia, no por intuicion:
+Comprobar con evidencia:
 
-1. ¿Existe un unico actor principal?
-2. ¿Existe un unico disparador?
-3. ¿Existe un unico resultado de negocio verificable?
-4. ¿Los pasos comparten las mismas precondiciones?
-5. ¿Una parte puede entregarse y aceptarse sin la otra?
+- un actor principal;
+- un trigger;
+- un resultado observable;
+- una frontera de permisos;
+- una frontera de recurso;
+- una transición de estado.
 
-Decision:
-
-```text
-Si 1–4 = SI y 5 = NO  -> mantener una historia.
-Si hay dos resultados aceptables por separado -> RETURN_TO_WORKER para J02.
-Si falta informacion para decidir -> PENDING_DECISION y BLOCKED.
-```
-
-No dividir por cantidad de campos, pestañas, componentes visuales o llamadas
-tecnicas. Dividir por resultados de negocio independientes.
+Si existen dos resultados entregables por separado, retornar
+`RETURN_TO_WORKER` para que J02 reevalúe la descomposición. No ocultar ni
+fusionar el segundo resultado.
 
 ### Paso 3 — Construir `identity`
 
-Completar exactamente estos campos:
+Completar exactamente:
 
-| Campo | Regla de redaccion |
+| Campo | Regla |
 |---|---|
-| `story_code` | Usar el codigo asignado por el Task Packet o la convencion confirmada. No inventar una convencion |
-| `title` | Verbo + objeto + contexto; minimo 8 caracteres; debe distinguir la historia |
-| `epic_code` | Incluir solo si existe en la fuente o packet |
-| `module_code` | Copiar el modulo confirmado |
-| `screen_code` | Copiar la pantalla confirmada |
-| `functional_unit_code` | Copiar sin transformar |
-| `source_decision_id` | Identificador de la decision J02 que creo la historia |
-| `source_version` | Version exacta del snapshot |
+| `story_code` | código confirmado por Task Packet o convención vigente |
+| `title` | verbo + objeto + contexto |
+| `epic_code` | solo cuando está confirmado |
+| `module_code` | copiar del target |
+| `screen_code` | copiar del target |
+| `functional_unit_code` | igual a la unidad objetivo |
+| `source_decision_id` | igual a la decisión J02 |
+| `source_version` | igual al snapshot |
+| `source_snapshot_sha` | igual al SHA-256 del snapshot |
 | `status` | `CANDIDATO_READ_ONLY`, `PENDING_DECISION` o `BLOCKED` |
-| `priority` | `P0`, `P1`, `P2` o `P3`; usar solo la prioridad confirmada |
+| `priority` | `P0`, `P1`, `P2` o `P3`, solo si está confirmada |
 
-Si falta un codigo obligatorio o prioridad confirmada, registrar la pregunta y
-usar `PENDING_DECISION`; no generar valores plausibles.
+No omitir `source_snapshot_sha`.
 
-### Paso 4 — Construir la declaracion funcional
+### Paso 4 — Construir declaración funcional
 
 Completar:
 
-- `actor`: rol concreto que inicia o recibe el resultado.
-- `need`: capacidad o resultado que el actor necesita, expresado con verbo
-  operativo.
-- `benefit`: valor de negocio o resultado para el actor; no repetir `need`.
+- `actor`;
+- `need`;
+- `benefit`.
 
-Prueba de calidad:
+Prueba:
 
 ```text
 Como <actor>,
@@ -230,242 +277,212 @@ necesito <need>,
 para <benefit>.
 ```
 
-La frase debe conservar sentido fuera del contexto visual de la pantalla.
+Rechazar lenguaje genérico o circular.
 
-Rechazar formulaciones genericas:
+### Paso 5 — Precondiciones y trigger
 
-```text
-actor = "usuario"                 cuando la fuente distingue roles
-need = "usar la pantalla"
-benefit = "tener una mejor experiencia"
-```
+- `preconditions` debe ser un arreglo no vacío de estados verificables;
+- `trigger` debe ser una cadena no vacía y corresponder al target;
+- no colocar acciones del flujo dentro de precondiciones;
+- no inventar disparadores.
 
-### Paso 5 — Definir condiciones y disparador
-
-- `preconditions`: estados que ya deben ser verdaderos antes de iniciar.
-- `trigger`: evento unico que inicia el comportamiento.
-- No colocar acciones del flujo dentro de precondiciones.
-- No usar “cuando el usuario quiera” como disparador.
-
-Cada precondicion debe poder comprobarse como verdadera o falsa.
-
-### Paso 6 — Redactar el flujo principal
+### Paso 6 — Flujo principal
 
 `main_flow` debe:
 
 1. comenzar en el trigger;
 2. ordenar acciones y respuestas de negocio;
-3. terminar en la postcondicion principal;
-4. evitar detalles tecnicos no confirmados;
-5. usar identificadores estables `MF-01`, `MF-02`, etc.;
-6. contener solo pasos necesarios para el resultado de esta historia.
+3. terminar en una postcondición observable;
+4. conservar un único resultado;
+5. excluir detalles técnicos no confirmados.
 
-Formato recomendado:
+Usar identificadores estables `MF-01`, `MF-02`, etc.
 
-```text
-MF-01 — El actor inicia <accion>.
-MF-02 — El sistema presenta o solicita <resultado/interaccion confirmada>.
-MF-03 — El actor confirma <dato o decision>.
-MF-04 — El sistema registra o muestra <resultado observable>.
-```
+### Paso 7 — Flujos alternativos
 
-### Paso 7 — Redactar flujos alternativos
-
-Cada elemento de `alternative_flows` debe contener:
+Cada alternativa contiene:
 
 ```text
-codigo + condicion + punto de desvio + comportamiento + resultado
+código + condición + punto de desvío + comportamiento + resultado
 ```
 
-Ejemplo:
+Usar arreglo vacío cuando no exista alternativa confirmada. No inventar una
+alternativa para llenar el contrato.
 
-```text
-AF-01 — Si no existen registros en MF-02, el sistema informa que no hay
-resultados y mantiene disponible la accion de retorno.
-```
+### Paso 8 — Postcondiciones
 
-No duplicar errores tecnicos que corresponden a las secciones F o G. Incluir
-aqui solo alternativas funcionales de negocio confirmadas.
+Declarar estados observables después del flujo:
 
-Si no existe una alternativa confirmada, usar un arreglo vacio. No inventarla.
+- información presentada;
+- estado persistido o no modificado;
+- siguiente acción disponible;
+- resultado de una alternativa confirmada.
 
-### Paso 8 — Definir postcondiciones
+### Paso 9 — Criterios de aceptación
 
-Declarar estados observables al terminar:
-
-- estado persistido o consultado;
-- informacion presentada al actor;
-- disponibilidad de la siguiente accion;
-- ausencia de cambios cuando el flujo es solo consulta.
-
-Cada postcondicion debe corresponder al `then` de al menos un criterio.
-
-### Paso 9 — Derivar criterios de aceptacion
-
-Crear criterios suficientes para cubrir:
-
-1. flujo principal;
-2. cada precondicion que cambie el resultado;
-3. cada flujo alternativo confirmado;
-4. cada postcondicion;
-5. limites funcionales relevantes de la unidad.
-
-Formato obligatorio:
+Cada criterio contiene exactamente:
 
 ```json
 {
   "criterion_code": "AC-001",
   "given": "estado inicial verificable",
-  "when": "accion o evento unico",
-  "then": "resultado observable y medible",
-  "source_ref": "SRC-001#section-4.2"
+  "when": "una acción o evento",
+  "then": "resultado observable",
+  "source_ref": "SRC-001#customer-search"
 }
 ```
 
 Reglas:
 
+- al menos un criterio;
+- códigos únicos;
+- `given`, `when` y `then` no vacíos;
+- `source_ref` no vacío y resoluble;
 - un criterio prueba un comportamiento;
-- `given` no contiene la accion;
-- `when` no contiene multiples acciones independientes;
-- `then` no usa “deberia”, “correctamente”, “adecuadamente” ni “funcionar” sin
-  definir el resultado;
-- no usar texto libre fuera de `given` / `when` / `then`;
-- `criterion_code` debe ser unico dentro de la historia;
-- todo criterio debe tener trazabilidad directa o heredada de la unidad;
-- no fijar una cantidad artificial: crear los criterios necesarios para cubrir
-  el comportamiento, con minimo uno por historia.
+- ningún `then` usa “correctamente” o “funciona” sin resultado medible.
 
-### Paso 10 — Declarar `out_of_scope`
+### Paso 10 — `out_of_scope`
 
-Incluir limites derivados de:
+Declarar al menos un límite explícito derivado de:
 
-- fronteras de la unidad funcional;
-- resultados asignados a otras historias;
-- capacidades expresamente excluidas por la fuente;
-- contratos transversales que corresponden a workers posteriores.
+- frontera de la unidad;
+- resultados asignados a otras unidades;
+- secciones C–Q;
+- capacidades excluidas por la fuente.
 
-No usar `out_of_scope` para ocultar una definicion faltante. Las definiciones
-faltantes van a `pending_decisions`.
+No usar `out_of_scope` para ocultar una decisión faltante.
 
-### Paso 11 — Registrar decisiones pendientes
+### Paso 11 — Decisiones pendientes
 
-Por cada vacio material emitir:
+Las decisiones se mantienen en
+`target_functional_unit.pending_decisions`.
 
-```json
-{
-  "decision_code": "PD-001",
-  "functional_unit_code": "FU-001",
-  "missing_fact": "Rol autorizado para ejecutar la accion",
-  "why_required": "Sin el rol no puede confirmarse actor ni permisos",
-  "source_checked": ["SRC-001#section-4.2"],
-  "blocking_fields": ["core.actor"],
-  "status": "OPEN"
-}
-```
+Cuando una decisión abierta bloquea actor, trigger, resultado, atomicidad,
+source trace o criterio principal, retornar `BLOCKED`.
 
-Si el vacio afecta actor, resultado, trigger, atomicidad o criterio principal,
-la historia queda `BLOCKED`. Si afecta un dato no esencial, queda
-`PENDING_DECISION` y se entrega solo lo confirmado.
+### Paso 12 — Autoverificación
 
-### Paso 12 — Autoverificacion estructural
-
-Antes del handoff comprobar:
+Calcular los 20 indicadores de J03:
 
 ```text
-stories_without_actor = 0
-stories_without_business_goal = 0
-stories_without_benefit = 0
-stories_without_preconditions = 0
-stories_without_main_flow = 0
-stories_without_acceptance_criteria = 0
+input_envelope_valid = 0
+identity_schema_valid = 0
+core_schema_valid = 0
+target_functional_unit_matches = 0
+source_decision_matches = 0
+source_snapshot_matches = 0
+actor_missing = 0
+need_missing = 0
+benefit_missing = 0
+preconditions_missing = 0
+trigger_missing = 0
+main_flow_missing = 0
+postconditions_missing = 0
+acceptance_criteria_missing = 0
 criteria_without_given_when_then = 0
-stories_with_multiple_independent_results = 0
-stories_without_out_of_scope = 0
-stories_without_source_trace = 0
+criteria_without_source_ref = 0
 duplicate_criterion_codes = 0
-unresolved_source_refs = 0
+out_of_scope_missing = 0
+multiple_independent_results = 0
+blocking_pending_decisions = 0
 ```
 
-La autoverificacion no sustituye a J03.
+Esta autoverificación es estructural. No ejecuta J03 y no concede aprobación.
 
-## 9. Contrato de salida
+## 9. Contrato de salida y handoff
 
-Entregar un objeto por historia con A y B completas y un sobre de evidencia:
+El objeto enviado a J03 contiene **exactamente cuatro propiedades top-level**:
 
 ```json
 {
-  "worker_result": "READY_FOR_J03",
-  "story_cores": [
-    {
-      "identity": {
-        "story_code": "US-DEBT-001",
-        "title": "Consultar estado de deuda registrada",
-        "epic_code": "EP-DEBT",
-        "module_code": "MOD-DEBT",
-        "screen_code": "SCR-DEBT-DETAIL",
-        "functional_unit_code": "FU-001",
-        "source_decision_id": "DEC-J02-001",
-        "source_version": "v1.4",
-        "status": "CANDIDATO_READ_ONLY",
-        "priority": "P1"
-      },
-      "core": {
-        "actor": "Deudor autenticado",
-        "need": "consultar el estado actual de una deuda registrada",
-        "benefit": "conocer el monto y la situacion vigente antes de elegir una alternativa",
-        "preconditions": [
-          "La deuda esta asociada al actor y disponible para consulta"
-        ],
-        "trigger": "El actor selecciona una deuda desde su listado",
-        "main_flow": [
-          "MF-01 — El actor selecciona la deuda.",
-          "MF-02 — El sistema identifica el registro asociado.",
-          "MF-03 — El sistema muestra el estado y monto vigentes."
-        ],
-        "alternative_flows": [
-          "AF-01 — Si el registro ya no esta disponible en MF-02, el sistema informa la indisponibilidad sin mostrar datos desactualizados."
-        ],
-        "postconditions": [
-          "El actor visualiza el estado vigente de la deuda.",
-          "La consulta no modifica el registro."
-        ],
-        "acceptance_criteria": [
-          {
-            "criterion_code": "AC-001",
-            "given": "una deuda vigente asociada al actor",
-            "when": "el actor selecciona la deuda",
-            "then": "el sistema muestra su estado y monto vigentes sin modificar el registro",
-            "source_ref": "SRC-001#section-4.2"
-          },
-          {
-            "criterion_code": "AC-002",
-            "given": "una referencia a una deuda que ya no esta disponible",
-            "when": "el actor intenta consultarla",
-            "then": "el sistema informa la indisponibilidad y no muestra datos desactualizados",
-            "source_ref": "SRC-001#section-4.3"
-          }
-        ],
-        "out_of_scope": [
-          "Negociar o pagar la deuda.",
-          "Definir contratos tecnicos, seguridad, analytics u observabilidad."
-        ]
-      }
+  "target_functional_unit": {
+    "functional_unit_code": "FU-CUSTOMER-SEARCH",
+    "decision": "CREATE_STORY",
+    "source_decision_id": "DEC-J02-CUSTOMER-SEARCH",
+    "source_version": "v1.0",
+    "source_snapshot_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "worker_identity": "STORY_CORE_AUTHOR_WORKER",
+    "actor": "Operador autorizado",
+    "trigger": "Enviar la búsqueda del cliente",
+    "business_results": [
+      "Mostrar el cliente autorizado que coincide con la búsqueda"
+    ],
+    "permission_boundary": "PERM-CUSTOMER-SEARCH",
+    "resource_boundary": "CUSTOMER-READ-MODEL",
+    "state_boundary": "IDLE_TO_RESULTS",
+    "source_refs": [
+      "SRC-001#customer-search"
+    ],
+    "pending_decisions": []
+  },
+  "story_core": {
+    "identity": {
+      "story_code": "US-CUSTOMER-SEARCH-001",
+      "title": "Consultar cliente autorizado",
+      "module_code": "CUSTOMER",
+      "screen_code": "SCR-CUSTOMER-SEARCH",
+      "functional_unit_code": "FU-CUSTOMER-SEARCH",
+      "source_decision_id": "DEC-J02-CUSTOMER-SEARCH",
+      "source_version": "v1.0",
+      "source_snapshot_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "status": "CANDIDATO_READ_ONLY",
+      "priority": "P1"
+    },
+    "core": {
+      "actor": "Operador autorizado",
+      "need": "buscar un cliente mediante un dato permitido",
+      "benefit": "identificar el registro autorizado antes de continuar",
+      "preconditions": [
+        "El operador posee el permiso de consulta"
+      ],
+      "trigger": "El operador envía la búsqueda",
+      "main_flow": [
+        "MF-01 — El operador ingresa un dato permitido.",
+        "MF-02 — El sistema busca dentro del alcance autorizado.",
+        "MF-03 — El sistema muestra el registro coincidente."
+      ],
+      "alternative_flows": [],
+      "postconditions": [
+        "El operador visualiza únicamente el registro autorizado."
+      ],
+      "acceptance_criteria": [
+        {
+          "criterion_code": "AC-001",
+          "given": "un operador autorizado y un cliente existente",
+          "when": "el operador envía la búsqueda permitida",
+          "then": "el sistema muestra el cliente coincidente dentro de su alcance",
+          "source_ref": "SRC-001#customer-search"
+        }
+      ],
+      "out_of_scope": [
+        "Modificar datos del cliente.",
+        "Definir contratos C–Q."
+      ]
     }
-  ],
-  "pending_decisions": [],
-  "evidence": {
-    "source_snapshot_sha256": "<64-hex>",
-    "functional_units_processed": ["FU-001"],
-    "story_count": 1,
-    "acceptance_criteria_count": 2,
-    "source_trace_count": 2,
-    "assertion_results": {},
-    "evidence_refs": []
+  },
+  "source_snapshot": {
+    "source_version": "v1.0",
+    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "resolved_refs": [
+      "SRC-001#customer-search"
+    ],
+    "content_ref": "snapshots/SRC-001-v1.0.md"
+  },
+  "j02_evidence": {
+    "judge_result": "PASS_WITH_EVIDENCE",
+    "evidence_refs": [
+      "evidence://j02/customer-search"
+    ]
   }
 }
 ```
 
-`worker_result` solo admite:
+No agregar `worker_result`, `story_cores`, `pending_decisions` ni `evidence`
+como propiedades top-level. J03 rechaza propiedades adicionales.
+
+## 10. Resultados del worker
+
+El worker solo puede declarar en su sidecar de ejecución:
 
 ```text
 READY_FOR_J03
@@ -473,132 +490,88 @@ RETURN_TO_WORKER
 BLOCKED
 ```
 
-Nunca emitir `PASS_WITH_EVIDENCE`; ese resultado pertenece al juez.
+El sidecar no forma parte del envelope J03.
 
-## 10. Matriz de fallas y reparacion
+- `READY_FOR_J03`: 20 autoverificaciones en cero y preflight completo.
+- `RETURN_TO_WORKER`: defecto reparable dentro de A–B o necesidad de retornar a
+  J02.
+- `BLOCKED`: falta material, decisión bloqueante, runtime no reconciliado,
+  identidad inválida o retry agotado.
 
-| Assertion fallida | Diagnostico | Reparacion permitida |
-|---|---|---|
-| `stories_without_actor > 0` | actor ausente o generico | releer fuente y fijar rol; si no existe, `PENDING_DECISION` |
-| `stories_without_business_goal > 0` | `need` no expresa resultado | reescribir con verbo y objeto de negocio |
-| `stories_without_benefit > 0` | beneficio ausente o repetido | vincular valor confirmado; si falta, registrar decision |
-| `stories_without_preconditions > 0` | inicio indefinido | extraer estados previos confirmados |
-| `stories_without_main_flow > 0` | no hay camino principal | ordenar trigger, acciones y resultado |
-| `stories_without_acceptance_criteria > 0` | historia no verificable | derivar criterios desde flujo y postcondiciones |
-| `criteria_without_given_when_then > 0` | criterio en texto libre | convertir a estructura obligatoria |
-| `stories_with_multiple_independent_results > 0` | unidad no atomica | retornar a J02 para separacion; no dividir unilateralmente |
-| `stories_without_out_of_scope > 0` | frontera ausente | declarar exclusiones confirmadas y contratos posteriores |
-| `stories_without_source_trace > 0` | afirmacion sin evidencia | agregar referencia resoluble o eliminar la afirmacion |
-| `duplicate_criterion_codes > 0` | codigos repetidos | renumerar de forma determinista |
-| `unresolved_source_refs > 0` | referencia inexistente | corregir referencia; si no existe evidencia, bloquear |
-
-## 11. Reintentos y escalamiento
-
-`retry_limit = 2`.
-
-Ciclo:
-
-```text
-Intento inicial
--> J03
--> si RETURN_TO_WORKER: reparar solo failed_assertions
--> J03
--> si RETURN_TO_WORKER: segunda y ultima reparacion
--> J03
--> si persiste una falla: BLOCKED con evidencia
-```
-
-No ampliar alcance durante una reparacion. No cambiar la decision de J02 ni
-inventar datos para conseguir un resultado satisfactorio.
-
-## 12. Ejemplos de decision
-
-### 12.1 Mantener una historia
-
-Unidad: “Consultar el estado y monto de una deuda”.
-
-- Un actor.
-- Un disparador.
-- Un resultado observable: consulta de situacion vigente.
-- Estado y monto son atributos inseparables del mismo resultado.
-
-Decision: una historia.
-
-### 12.2 Retornar a J02 para dividir
-
-Unidad: “Consultar una deuda y descargar un certificado”.
-
-- Consultar produce informacion visible.
-- Descargar produce un documento persistente.
-- Cada resultado puede aceptarse y entregarse por separado.
-
-Decision: `RETURN_TO_WORKER` con
-`multiple_independent_results_in_story = true`. Propuesta de unidades:
-`CONSULT_DEBT_STATUS` y `DOWNLOAD_DEBT_CERTIFICATE`. El worker no crea ni
-aprueba esas unidades.
-
-### 12.3 Bloquear por falta de fuente
-
-Unidad: “Aprobar la solicitud” sin rol autorizado, estados previos ni regla de
-aprobacion.
-
-Decision:
-
-```json
-{
-  "worker_result": "BLOCKED",
-  "failed_assertions": [],
-  "blocking_assertions": [
-    "actor_missing_in_source = true",
-    "approval_rule_missing_in_source = true"
-  ],
-  "pending_decisions": [
-    {
-      "missing_fact": "Rol autorizado y condiciones de aprobacion",
-      "blocking_fields": ["core.actor", "core.preconditions", "core.acceptance_criteria"]
-    }
-  ]
-}
-```
-
-## 13. Prohibiciones
-
-- No crear contratos tecnicos no sustentados por la fuente.
-- No escribir criterios de aceptacion en texto libre.
-- No fusionar resultados de negocio independientes.
-- No dividir unidades sin retorno formal a J02.
-- No inventar actor, prioridad, beneficio, estados, reglas o codigos.
-- No convertir preguntas abiertas en hechos confirmados.
-- No modificar secciones C–Q.
-- No ejecutar J03 ni alterar su resultado.
-- No marcar `VALIDATED`, `APPROVED`, `VIGENTE` o `PRODUCTION_READY`.
-- No ejecutar herramientas fuera del Task Packet.
-- No exponer razonamiento interno.
-
-## 14. Handoff a J03
+## 11. Handoff al juez independiente
 
 Entregar:
 
-1. Story cores A/B.
-2. Snapshot SHA-256 utilizado.
-3. Lista de unidades procesadas y excluidas.
-4. Conteos de historias, criterios y trazas.
-5. Resultado de cada assertion de autoverificacion.
-6. Decisiones pendientes y campos bloqueados.
-7. Referencias de evidencia resolubles.
-8. Numero de intento: `0`, `1` o `2`.
+1. el envelope exacto de cuatro propiedades;
+2. la ruta del schema;
+3. el código J03;
+4. la identidad esperada del ejecutor independiente;
+5. el SHA y registro del runtime;
+6. evidencia de que el worker no ejecutó J03;
+7. retry count.
 
-El handoff es invalido si contiene afirmaciones sin referencia, si omite
-assertions o si el worker se asigna `PASS_WITH_EVIDENCE`.
+Comando reservado al juez independiente:
 
-## 15. Referencias de diseño no normativas
+```bash
+LF_EXECUTOR_IDENTITY=<independent_executor> \
+LF_JUDGE_VERSION=v0.7 \
+python scripts/validate_story_pack.py story-core-envelope.json \
+  --evidence-ref <ref> \
+  --expected-validator-sha256 6e4422167eab1f1ab12492c70a8afb71c69bce5f3264c8c57c0c0058c8298d20 \
+  --registration-ref supabase://private.lf_skill_artifacts/ART_SCRIPT_VALIDATE_STORY_PACK
+```
 
-Patrones incorporados:
+El worker no ejecuta este comando.
 
-- AutoGPT: separacion explicita de perfil, directivas, recursos, ciclo de
-  ejecucion, estado, pruebas y puntos de fallo.
-- Dify: contrato estricto de herramientas, formato de accion y salida
-  determinista.
+## 12. Reparación y reintentos
 
-Estas referencias mejoran la ejecutabilidad del agente, pero no sustituyen los
-contratos LF.
+`retry_limit = 2`.
+
+- reparar solo assertions fallidas;
+- no eliminar assertions;
+- no reducir umbrales;
+- no debilitar schemas;
+- no inventar fuente;
+- no cambiar decisiones J02;
+- no ejecutar como juez;
+- detener después del segundo reintento.
+
+## 13. Prohibiciones
+
+- escribir C–Q;
+- emitir un Story Pack completo;
+- usar `story_cores[]` en el handoff J03;
+- agregar top-level keys no autorizadas;
+- omitir `identity.source_snapshot_sha`;
+- fusionar resultados independientes;
+- aceptar criterios sin fuente;
+- ocultar decisiones bloqueantes;
+- modificar A20, A30, A36 o A39 para hacer pasar A04;
+- autoaprobar;
+- declarar producción, release o merge autónomo.
+
+## 14. Evidencia mínima del proceso
+
+El sidecar de ejecución debe conservar:
+
+```text
+worker_identity
+target_functional_unit_code
+source_decision_id
+source_version
+source_snapshot_sha
+source_refs_checked
+j02_evidence_refs
+identity_schema_check
+core_schema_check
+twenty_self_check_results
+pending_decisions
+runtime_path
+runtime_sha256
+runtime_registration
+handoff_sha256
+retry_count
+```
+
+La evidencia debe ser resoluble y no puede sustituirse con una conclusión
+narrativa.
