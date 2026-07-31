@@ -1,0 +1,35 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-BISC-022-A05-STRICT-SEQUENCE",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "99fdad0f811edaf819ec3a11a1f3e99ccc4619cb826cafcddb9c200358897e6d",
+  "judge_sha": "34a4232fcb19a1d74b081610416e44c41bc2e4e7f84acccac07617fa498045f7",
+  "source_sha_list": [
+    "ac6e550abe56526cf7d57b31e64e1646bad3ce9192145a946a80aae72543babc",
+    "eae2d51d25b3c1ded2ff5ba32a20c0044ae51422e1d5fe6d26d9aefadd538ee8",
+    "34a4232fcb19a1d74b081610416e44c41bc2e4e7f84acccac07617fa498045f7",
+    "f2c6d3f26cc85b70147b0e7864deaab79be7e9f1f744582e02fb817a54fe64f1",
+    "5b8e6a8bfb7200f595de4326442eb40e9b08178bf676c869d0983e39394ad6ef"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/agents/test-deriver.md"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-07-31T09:00:00Z",
+  "evidence": {
+    "artifact_code": "A05",
+    "sequence_position": 5,
+    "canonical_artifacts_modified": 1,
+    "bytes": 12921,
+    "sha256": "99fdad0f811edaf819ec3a11a1f3e99ccc4619cb826cafcddb9c200358897e6d",
+    "git_blob": "94b7be784c5f39969c8276e97867e321bb4bd61e",
+    "package_gate": "66/66",
+    "artifact_closure_result": "BLOCKED_PENDING_NUMERIC_TURN_OF_PROFILE_AND_RUNTIME",
+    "a06_started": false,
+    "strict_numeric_sequence": true
+  }
+}
