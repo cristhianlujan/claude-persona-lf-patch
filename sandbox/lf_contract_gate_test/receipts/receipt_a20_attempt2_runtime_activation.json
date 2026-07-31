@@ -1,0 +1,36 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-BISC-018-A20-INDIVIDUAL-ATTEMPT-2",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "41f9a94beeb749fdf00d2822b379a6bd8acdeecfedaf865a01d3c37f80089997",
+  "judge_sha": "41f9a94beeb749fdf00d2822b379a6bd8acdeecfedaf865a01d3c37f80089997",
+  "source_sha_list": [
+    "c9b325bdc1012db33bc5ebbbe3512f8fb8fd0e12606999d9c78f08cdf6ff6ca0",
+    "6e4422167eab1f1ab12492c70a8afb71c69bce5f3264c8c57c0c0058c8298d20",
+    "f6870fd4c0e3ece604231071299d709a0834fd369ea5c59bba2a2de4d2738e83",
+    "e572b69f3ddf7ee4b16312eb2cf17a9bdc502e17625e5d6101235736dcbc2890"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/judges/story-core.yaml"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-07-31T07:34:00Z",
+  "evidence": {
+    "artifact_code": "A20",
+    "attempt": 2,
+    "canonical_artifacts_modified": 1,
+    "bytes": 13680,
+    "sha256": "41f9a94beeb749fdf00d2822b379a6bd8acdeecfedaf865a01d3c37f80089997",
+    "git_blob": "f428ef328f250a907807ae1ee2fc838b0098e95b",
+    "runtime_row": 234,
+    "runtime_sha256": "6e4422167eab1f1ab12492c70a8afb71c69bce5f3264c8c57c0c0058c8298d20",
+    "positive_assertions": "20/20",
+    "negative_cases": "16/16",
+    "package_gate": "66/66",
+    "a05_started": false
+  }
+}
