@@ -16,10 +16,7 @@
   "target_paths": [
     "skills/creating-integral-user-stories/judges/test-coverage.yaml"
   ],
-  "blocking_codes": [
-    "RUNTIME_J10_NOT_YET_ALIGNED",
-    "RUNTIME_J10_NOT_YET_REGISTERED"
-  ],
+  "blocking_codes": [],
   "issued_at": "2026-07-31T15:12:00Z",
   "evidence": {
     "artifact_code": "A21",
@@ -35,6 +32,7 @@
     "explicit_worker_identity": true,
     "runtime_registration_uri_required": true,
     "runtime_sha_reconciliation_required": true,
+    "operational_dependency_state": "BLOCKED_PENDING_RUNTIME_J10_ALIGNMENT",
     "a06_started": false,
     "dependency_nested_sequence": true
   }
