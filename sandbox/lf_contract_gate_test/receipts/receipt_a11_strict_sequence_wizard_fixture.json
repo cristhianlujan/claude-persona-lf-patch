@@ -1,0 +1,36 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-BISC-028-A11-STRICT-SEQUENCE",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "19a47591c5bcad02c0a2041ce0e3b42e0e7c3a9fcfa97fe290567479103ef39d",
+  "judge_sha": "19a47591c5bcad02c0a2041ce0e3b42e0e7c3a9fcfa97fe290567479103ef39d",
+  "source_sha_list": [
+    "a33061ffe5dff0713239cd5f2c9afe80838ee5047e874c85ce51fe568b314b1b",
+    "0a168c2f5b45f7edb9118a4bfb750f8570a12c049b5836789a4095bd212a1e0b",
+    "19a47591c5bcad02c0a2041ce0e3b42e0e7c3a9fcfa97fe290567479103ef39d"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/evals/fixtures/screen_wizard_six_steps.json"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-07-31T13:42:00Z",
+  "evidence": {
+    "artifact_code": "A11",
+    "sequence_position": 11,
+    "canonical_artifacts_modified": 1,
+    "bytes": 4376,
+    "sha256": "19a47591c5bcad02c0a2041ce0e3b42e0e7c3a9fcfa97fe290567479103ef39d",
+    "git_blob": "f4651895d2beb84c430a88b339128911a460edc7",
+    "snapshot_sha_reconciled": true,
+    "coverage_items_aligned": true,
+    "expected_output_complete": true,
+    "negative_cases": "3/3",
+    "package_gate": "66/66",
+    "a12_started": false,
+    "strict_numeric_sequence": true
+  }
+}
