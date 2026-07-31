@@ -1,0 +1,34 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-BISC-013-A26-INDIVIDUAL",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b43c8ba9fa83474bdbfca59eac1bf54ca47a72dd",
+  "judge_sha": "9249b1bc489cc2b0980bce34ad89587e105aa289",
+  "source_sha_list": [
+    "48e7728d4e18cdba65da9a47cb886fc92d7fd2de",
+    "b09be673b626641d490f7d58c5b8fa0d97b3743a",
+    "4943d2e4d0119c6a2b9421ee321398c0c102d47e",
+    "79b5de0bb5ce52852cb4f91a5bbb1c654206f66a"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/perfiles/PERFIL_SCREEN_DECOMPOSER_LF.md"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-07-31T04:20:00Z",
+  "evidence": {
+    "artifact_code": "A26",
+    "blocked_artifact": "A03",
+    "canonical_artifacts_modified": 1,
+    "governance_files_modified": 1,
+    "content_bytes": 8136,
+    "content_sha256": "596265e766ed8d375339f3c7a2a7549df165021f7ebca7c4e9be4ca346d1e3e8",
+    "content_git_blob_sha1": "b43c8ba9fa83474bdbfca59eac1bf54ca47a72dd",
+    "supabase_write_before_merge": false,
+    "a04_started": false,
+    "scope_note": "This receipt authorizes only A26. It does not approve A03 or start A04."
+  }
+}
