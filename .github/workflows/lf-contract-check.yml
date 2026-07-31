@@ -24,6 +24,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deterministic audit dependencies
+        run: |
+          python3 -m pip install --disable-pip-version-check \
+            PyYAML==6.0.2 \
+            jsonschema==4.23.0
+
       - name: Validate LF contract
         run: |
           python3 scripts/lf_contract_check.py
@@ -35,3 +46,19 @@ jobs:
       - name: Run NO BYPASS judge profile-card-skill self-test
         run: |
           python3 sandbox/no_bypass_judge_profile_card_skill/no_bypass_judge_selftest.py
+
+      - name: Audit creating-integral-user-stories A01-A62
+        run: |
+          python3 sandbox/lf_contract_gate_test/r8_continuous_audit.py \
+            skills/creating-integral-user-stories \
+            --output .audit-output/creating-integral-user-stories \
+            --commit-sha "$GITHUB_SHA"
+
+      - name: Upload per-artifact audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r8-continuous-audit-${{ github.run_id }}
+          path: .audit-output/creating-integral-user-stories
+          if-no-files-found: error
+          retention-days: 7
