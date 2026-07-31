@@ -1,0 +1,37 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-BISC-010-J02-RUNTIME-INDIVIDUAL",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "0587db92543761f1dc277ca3d7862dd540e7038c",
+  "judge_sha": "79b5de0bb5ce52852cb4f91a5bbb1c654206f66a",
+  "source_sha_list": [
+    "f90fb3c32e7efd2dd01130a844316fd2d86beb8e",
+    "7bf85c39809b464870305dfc35162a154234072d",
+    "eb99c8993dedb1e0fe8116f4d2da0c65dbd7b73e",
+    "f00e8ca4356c8b081567064b1efb41eea66b61b4"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/scripts/validate_screen_decomposition.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-07-31T03:58:00Z",
+  "evidence": {
+    "dependency_code": "RUNTIME-J02",
+    "numbered_artifact": false,
+    "canonical_a01_a62_count_unchanged": true,
+    "positive_assertions": "17/17",
+    "negative_cases": "16/16",
+    "judge_result_schema": "PASS",
+    "package_gate": "PASS_WITH_EVIDENCE 5/5",
+    "runtime_bytes": 21540,
+    "runtime_sha256": "1126486c5d542fea8b25c51044798f2b0bd8e555687f7120040c3d04ea8fdd24",
+    "runtime_git_blob_sha1": "79b5de0bb5ce52852cb4f91a5bbb1c654206f66a",
+    "supabase_write_before_merge": false,
+    "a04_started": false,
+    "scope_note": "This receipt authorizes only the J02 semantic runtime correction. It does not approve A17, A03, A04, production, or runtime enablement."
+  }
+}
