@@ -13,22 +13,28 @@
     "c9b325bdc1012db33bc5ebbbe3512f8fb8fd0e12606999d9c78f08cdf6ff6ca0",
     "f6870fd4c0e3ece604231071299d709a0834fd369ea5c59bba2a2de4d2738e83",
     "635928d91dee9c7b1e2f156ac7286b8847e8861897b8b3fc992a32cf17c234c6",
-    "e572b69f3ddf7ee4b16312eb2cf17a9bdc502e17625e5d6101235736dcbc2890"
+    "e572b69f3ddf7ee4b16312eb2cf17a9bdc502e17625e5d6101235736dcbc2890",
+    "6e4422167eab1f1ab12492c70a8afb71c69bce5f3264c8c57c0c0058c8298d20"
   ],
   "target_paths": [
     "skills/creating-integral-user-stories/scripts/validate_story_pack.py"
   ],
   "blocking_codes": [],
-  "issued_at": "2026-07-31T07:02:00Z",
+  "issued_at": "2026-07-31T07:14:00Z",
   "evidence": {
     "artifact_code": "A36",
     "canonical_artifacts_modified": 1,
-    "bytes": 18369,
-    "sha256": "9cfe90b8cf6ac78256b0c2c9c86b57d3323bbbc73c630322dcd4866094b2975d",
-    "git_blob": "b8c1f58c32206e7342e00a06fd8fee43950eca9d",
+    "bytes": 20245,
+    "sha256": "6e4422167eab1f1ab12492c70a8afb71c69bce5f3264c8c57c0c0058c8298d20",
+    "git_blob": "404110421b6372601288960140daf5e02f0acc97",
     "positive_assertions": "20/20",
     "negative_cases": "16/16",
+    "legacy_e21_positive": "PASS_WITH_EVIDENCE_exit_0",
+    "legacy_e22_negative": "RETURN_TO_WORKER_exit_1",
+    "legacy_mode_scope": "LF_JUDGE_VERSION_v0.6_without_sha_or_registration_only",
     "package_gate": "5/5",
+    "remote_workflow_run": 30611972272,
+    "remote_artifact": 8785808277,
     "a05_started": false
   }
 }
