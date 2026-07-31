@@ -1,7 +1,7 @@
 judge_code: J10_TEST_COVERAGE
-judge_version: v0.5
+judge_version: v0.6
 status: CANDIDATO_READ_ONLY
-scope: Verifica cobertura positiva, negativa, límites, regresión, fixtures exactos, trazabilidad, tenant, estados, idempotencia, concurrencia y errores.
+scope: Verifica envelope, independencia, trazabilidad, ambiente, cobertura positiva/negativa, límites, regresión, fixtures exactos, tenant, estados, idempotencia, concurrencia y errores.
 independence: worker_must_not_execute_own_judge
 retry_limit: 2
 required_inputs:
@@ -10,28 +10,57 @@ required_inputs:
   - fixtures
   - traceability_matrix
   - test_environment
+input_contract:
+  additional_properties: false
+  story_pack:
+    required: [core, tests]
+  critical_rules:
+    type: array
+  fixtures:
+    type: object
+  traceability_matrix:
+    required: [criteria, rules]
+  test_environment:
+    required: [actors, tenants, initial_states, data_sets, restrictions]
 preflight:
-  - all_required_inputs_are_present
+  - all_five_required_inputs_are_present
   - input_versions_are_compatible
   - source_and_evidence_refs_are_resolvable
+  - executor_identity_is_explicit
+  - worker_identity_is_explicit
+  - judge_version_matches_v0_6
   - judge_is_not_executed_by_the_worker_under_review
   - input_sha256_is_present
+  - semantic_validator_exists
+  - semantic_validator_is_registered
+  - semantic_validator_sha_matches_file_and_registration
 validators:
   static_contract_ref: scripts/validate_package.py#audit_artifact
   semantic_validator_ref: scripts/validate_test_coverage.py
   semantic_validator_name: test_coverage_semantic_validator
-runtime_status: AVAILABLE
-runtime_command: python scripts/validate_test_coverage.py <input.json> --evidence-ref <ref>
+runtime_status: AVAILABLE_AFTER_REGISTRATION
+runtime_command: >-
+  LF_EXECUTOR_IDENTITY=<independent_executor>
+  LF_WORKER_IDENTITY=<worker_identity>
+  LF_JUDGE_VERSION=v0.6
+  LF_VALIDATOR_REGISTERED_SHA256=<registered_sha256>
+  python scripts/validate_test_coverage.py <input.json> --evidence-ref <ref>
 self_test_command: python scripts/validate_test_coverage.py --self-test
 deterministic_procedure:
-  - validate_preflight_and_hashes
-  - load_required_inputs_without_mutation
-  - execute_semantic_validator
+  - validate_runtime_preflight_and_hashes
+  - validate_exact_five_property_envelope
+  - validate_traceability_matrix_and_test_environment
+  - validate_worker_judge_independence
+  - execute_semantic_coverage_checks
   - record_actual_expected_for_each_assertion
   - reject_empty_or_missing_evidence
   - calculate_binary_compliance_bit
   - emit_schema_valid_judge_result
 assertions:
+  - {assertion_id: input_envelope_valid, actual_ref: evidence.checks.input_envelope_valid, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: traceability_matrix_valid, actual_ref: evidence.checks.traceability_matrix_valid, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: test_environment_valid, actual_ref: evidence.checks.test_environment_valid, expected: 0, critical: true, evidence_required: true}
+  - {assertion_id: worker_judge_independence, actual_ref: evidence.checks.worker_judge_independence, expected: 0, critical: true, evidence_required: true}
   - {assertion_id: acceptance_criteria_without_test, actual_ref: evidence.checks.acceptance_criteria_without_test, expected: 0, critical: true, evidence_required: true}
   - {assertion_id: critical_rule_without_test, actual_ref: evidence.checks.critical_rule_without_test, expected: 0, critical: true, evidence_required: true}
   - {assertion_id: permission_without_negative_test, actual_ref: evidence.checks.permission_without_negative_test, expected: 0, critical: true, evidence_required: true}
@@ -47,8 +76,9 @@ assertions:
   - {assertion_id: vacuous_pass_count, actual_ref: evidence.checks.vacuous_pass_count, expected: 0, critical: true, evidence_required: true}
 pass_if:
   - semantic_validator_exit_code = 0
-  - all_applicable_assertions_pass = true
-  - assertions_passed = assertions_total
+  - all_17_assertions_pass = true
+  - assertions_passed = 17
+  - assertions_total = 17
   - compliance_bit = 1
   - evidence_refs_non_empty = true
   - input_output_evidence_hashes_present = true
@@ -62,13 +92,19 @@ block_if:
   - test_derivation_source_missing = true
   - critical_expected_behavior_undefined = true
   - semantic_validator_unavailable = true
+  - semantic_validator_unregistered = true
+  - semantic_validator_sha_unreconciled = true
   - executor_identity_missing = true
+  - worker_identity_missing = true
+  - judge_version_missing = true
+  - worker_judge_independence_broken = true
   - input_sha256_missing = true
+  - required_input_missing = true
 result_values: [PASS_WITH_EVIDENCE, RETURN_TO_WORKER, BLOCKED, FAIL]
 result_rules:
-  PASS_WITH_EVIDENCE: Solo con runtime semántico ejecutado, todas las assertions aprobadas, evidencia no vacía y hashes íntegros.
-  RETURN_TO_WORKER: Una o más assertions reparables fallan; compliance_bit=0 y reparaciones accionables.
-  BLOCKED: Falta fuente, dependencia, runtime, hash o independencia; compliance_bit=0.
+  PASS_WITH_EVIDENCE: Solo con runtime registrado y ejecutado, 17/17 assertions, evidencia no vacía, identidad independiente y hashes íntegros.
+  RETURN_TO_WORKER: Una o más assertions semánticas reparables fallan; compliance_bit=0 y reparaciones accionables.
+  BLOCKED: Falta fuente, input, runtime, registro, SHA, identidad, versión o independencia; compliance_bit=0.
   FAIL: La evidencia prueba una violación no reparable dentro de la ejecución; compliance_bit=0.
 required_evidence:
   - acceptance_criteria_count
@@ -77,11 +113,16 @@ required_evidence:
   - negative_test_count
   - exact_fixture_count
   - families_covered
+  - traceability_matrix_summary
+  - test_environment_summary
   - failed_assertions
   - blocking_assertions
   - repair_instructions
+  - worker_identity
   - executor_identity
   - judge_version
+  - runtime_sha256
+  - registered_runtime_sha256
   - command
   - started_at
   - completed_at
@@ -92,43 +133,57 @@ required_evidence:
   - evidence_sha256
 positive_behavior:
   command: python scripts/validate_test_coverage.py --self-test
-  expected: positive_pass=true and exit_code=0
+  expected: positive_pass=true and assertions=17/17
 negative_cases:
-  - case: missing_exact_fixture
-    expected_result: RETURN_TO_WORKER
-    assertion: tests_without_exact_fixture
-  - case: empty_expected_result
-    expected_result: RETURN_TO_WORKER
-    assertion: tests_without_expected_result
-  - case: missing_runtime
-    expected_result: BLOCKED
-    assertion: semantic_validator_unavailable
-  - case: worker_self_executes
-    expected_result: BLOCKED
-    assertion: judge_is_not_executed_by_the_worker_under_review
+  - {case: missing_traceability_matrix, expected_result: RETURN_TO_WORKER, assertion: input_envelope_valid}
+  - {case: missing_test_environment, expected_result: RETURN_TO_WORKER, assertion: input_envelope_valid}
+  - {case: invalid_traceability_matrix, expected_result: RETURN_TO_WORKER, assertion: traceability_matrix_valid}
+  - {case: invalid_test_environment, expected_result: RETURN_TO_WORKER, assertion: test_environment_valid}
+  - {case: missing_exact_fixture, expected_result: RETURN_TO_WORKER, assertion: tests_without_exact_fixture}
+  - {case: empty_expected_result, expected_result: RETURN_TO_WORKER, assertion: tests_without_expected_result}
+  - {case: orphan_test, expected_result: RETURN_TO_WORKER, assertion: orphan_tests}
+  - {case: vacuous_test, expected_result: RETURN_TO_WORKER, assertion: vacuous_pass_count}
+  - {case: missing_runtime, expected_result: BLOCKED, assertion: semantic_validator_unavailable}
+  - {case: unregistered_runtime, expected_result: BLOCKED, assertion: semantic_validator_unregistered}
+  - {case: runtime_sha_mismatch, expected_result: BLOCKED, assertion: semantic_validator_sha_unreconciled}
+  - {case: missing_executor_identity, expected_result: BLOCKED, assertion: executor_identity_missing}
+  - {case: missing_worker_identity, expected_result: BLOCKED, assertion: worker_identity_missing}
+  - {case: worker_self_executes, expected_result: BLOCKED, assertion: worker_judge_independence_broken}
+  - {case: missing_judge_version, expected_result: BLOCKED, assertion: judge_version_missing}
 repair_matrix:
-  - assertion_id: permission_without_negative_test
-    target_path: tests
-    instruction: Agregar caso con actor no autorizado y resultado DENY sin exposición de datos.
+  - assertion_id: input_envelope_valid
+    target_path: input
+    instruction: Proporcionar exactamente las cinco entradas requeridas.
     prohibited_shortcuts: [delete_assertion, lower_threshold, invent_source, self_approve]
+  - assertion_id: traceability_matrix_valid
+    target_path: traceability_matrix
+    instruction: Mapear cada criterio y regla a referencias resolubles.
+    prohibited_shortcuts: [placeholder_matrix, invent_reference, lower_threshold, self_approve]
+  - assertion_id: test_environment_valid
+    target_path: test_environment
+    instruction: Declarar actores, tenants, estados, datasets y restricciones controladas.
+    prohibited_shortcuts: [production_data, placeholder_environment, lower_threshold, self_approve]
   - assertion_id: tests_without_exact_fixture
     target_path: fixtures
     instruction: Definir actor, tenant, exact_inputs, initial_state, pasos, expected_result y evidence_path.
     prohibited_shortcuts: [generic_steps, placeholder_fixture, lower_threshold, self_approve]
   - assertion_id: orphan_tests
     target_path: tests
-    instruction: Asignar criterion_ref o rule_ref resoluble; retirar solo si la prueba carece de sustento.
+    instruction: Asignar criterion_ref o rule_ref resoluble.
     prohibited_shortcuts: [invent_reference, delete_assertion, lower_threshold, self_approve]
 output:
   schema_ref: schemas/judge-result.schema.json
   required_fields: [judge_code, judge_version, executor_identity, command, started_at, completed_at, exit_code, result, compliance_bit, assertions_total, assertions_passed, failed_assertions, blocking_assertions, repairs, repair_instructions, evidence_refs, evidence, evidence_sha256, input_sha256, output_sha256, retry_count]
 prohibitions:
   - worker_self_approval
+  - worker_self_execution
+  - implicit_executor_identity
   - assertion_deletion_to_obtain_pass
   - threshold_reduction_to_obtain_pass
   - unresolved_evidence_reference
   - pass_without_evidence
   - pass_without_semantic_runtime
+  - pass_without_runtime_registration
 benchmark_dual:
   verified_at: 2026-07-29
   claude:
@@ -142,4 +197,4 @@ benchmark_dual:
     reference: curriculum/schema/challenge-schema.js
     blob: 7db60817942625110525fd313bf80f1df067f006
     practice: conditional constraints, uniqueness and deterministic rejection
-  complement: exact fixtures and vacuous-pass detection are mandatory runtime gates
+  complement: exact fixtures, explicit environment, independent identity and vacuous-pass detection are mandatory runtime gates
