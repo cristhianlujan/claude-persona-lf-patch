@@ -53,17 +53,24 @@ validators:
   semantic_validator_name: story_core_semantic_validator
   semantic_validator_registration_required: true
   semantic_validator_sha_reconciliation_required: true
+  semantic_validator_sha256: 6e4422167eab1f1ab12492c70a8afb71c69bce5f3264c8c57c0c0058c8298d20
+  semantic_validator_git_blob_sha1: 404110421b6372601288960140daf5e02f0acc97
+  semantic_validator_supabase_row_id: 234
+  semantic_validator_registration_ref: supabase://private.lf_skill_artifacts/ART_SCRIPT_VALIDATE_STORY_PACK
 
-runtime_status: BLOCKED_PENDING_VALIDATOR_CORRECTION
-runtime_blockers:
-- current_validator_requires_full_A_Q_story_pack
-- current_validator_requires_context_budget_outside_A04_write_scope
-- current_validator_does_not_validate_target_functional_unit_or_j02_evidence
-- current_validator_does_not_detect_multiple_independent_business_results
-- current_validator_self_test_is_not_a_schema_valid_judge_result
-- current_validator_command_requires_undeclared_environment_identity_and_version
+runtime_status: AVAILABLE
+runtime_blockers: []
 
-runtime_command: LF_EXECUTOR_IDENTITY=<independent_executor> LF_JUDGE_VERSION=v0.7 python scripts/validate_story_pack.py <story-core-envelope.json> --evidence-ref <ref>
+runtime_registration:
+  semantic_validator_sha256: 6e4422167eab1f1ab12492c70a8afb71c69bce5f3264c8c57c0c0058c8298d20
+  semantic_validator_git_blob_sha1: 404110421b6372601288960140daf5e02f0acc97
+  semantic_validator_supabase_row_id: 234
+  semantic_validator_registration_ref: supabase://private.lf_skill_artifacts/ART_SCRIPT_VALIDATE_STORY_PACK
+  strict_positive_assertions: 20/20
+  strict_negative_cases: 16/16
+  legacy_compatibility_scope: LF_JUDGE_VERSION_v0.6_without_sha_or_registration_only
+
+runtime_command: LF_EXECUTOR_IDENTITY=<independent_executor> LF_JUDGE_VERSION=v0.7 python scripts/validate_story_pack.py <story-core-envelope.json> --evidence-ref <ref> --expected-validator-sha256 6e4422167eab1f1ab12492c70a8afb71c69bce5f3264c8c57c0c0058c8298d20 --registration-ref supabase://private.lf_skill_artifacts/ART_SCRIPT_VALIDATE_STORY_PACK
 self_test_command: LF_EXECUTOR_IDENTITY=LF_SELF_TEST LF_JUDGE_VERSION=v0.7 python scripts/validate_story_pack.py --self-test
 
 deterministic_procedure:
@@ -385,7 +392,7 @@ benchmark_dual:
   complement: Validate only the stage-owned A-B subschemas and prove atomicity against J02 evidence.
 
 preflight_enforcement:
-  enforced_by_validator: false
-  current_state: BLOCKED_PENDING_VALIDATOR_CORRECTION
-  required_entrypoint: scripts/validate_story_pack.py
-  required_rule: Emit BLOCKED before assertions when identity, version, source, J02 evidence, target unit, validator registration or SHA are missing; validate only A-B at J03.
+  enforced_by_validator: true
+  current_state: AVAILABLE
+  entrypoint: scripts/validate_story_pack.py
+  rule: Emitir BLOCKED antes de assertions cuando falten identidad, versión, fuente, evidencia J02, unidad objetivo, registro o SHA; validar exclusivamente A-B en J03.
