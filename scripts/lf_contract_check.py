@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.6
+LF Contract Check v0.7
 
 Sandbox validator for controlled LF governance gates.
+
+v0.7 changes:
+- Allows only the exact GitHub reconciliation v3 workflow path in addition to the existing contract check workflow.
+- Keeps every other .github path default-denied.
 
 v0.6 changes:
 - Detects forbidden statuses only when they are assigned as actual output/state values.
@@ -26,8 +30,12 @@ CONTRACT_PATH = Path("sandbox/lf_contract_gate_test/lf_contract.yml")
 RECEIPT_DIR = Path("sandbox/lf_contract_gate_test/receipts")
 VALIDATOR_SELF_PATH = "scripts/lf_contract_check.py"
 
-ALLOWED_EXACT = {
+ALLOWED_GITHUB_EXACT = {
     ".github/workflows/lf-contract-check.yml",
+    ".github/workflows/lf-github-reconcile-v3.yml",
+}
+ALLOWED_EXACT = {
+    *ALLOWED_GITHUB_EXACT,
     VALIDATOR_SELF_PATH,
 }
 ALLOWED_PREFIXES = [
@@ -50,7 +58,6 @@ ALWAYS_BLOCKED_PREFIXES = [
     "runtime/",
 ]
 FORBIDDEN_GITHUB_PREFIX = ".github/"
-ALLOWED_GITHUB_EXACT = ".github/workflows/lf-contract-check.yml"
 
 FORBIDDEN_TERM_EXEMPT_EXACT = {
     VALIDATOR_SELF_PATH,
@@ -194,7 +201,7 @@ def validate_changed_files(changed_files: list[str]) -> list[str]:
             if path.startswith(blocked):
                 fail("FAIL_BLOCKED_SCOPE_RISK", f"Ruta productiva/bloqueada tocada: {path}")
 
-        if path.startswith(FORBIDDEN_GITHUB_PREFIX) and path != ALLOWED_GITHUB_EXACT:
+        if path.startswith(FORBIDDEN_GITHUB_PREFIX) and path not in ALLOWED_GITHUB_EXACT:
             fail("FAIL_UNAUTHORIZED_GITHUB_PATH", f"Ruta .github no autorizada: {path}")
 
         if is_governed_path(path):
