@@ -62,33 +62,122 @@ jobs:
             let branchProtectionStatus = 'NOT_AUDITABLE_EXTERNAL';
             let branchProtectionDetails = {};
             try {
-              const response = await github.rest.repos.getBranchProtection({
-                owner,
-                repo,
-                branch: 'main',
-              });
-              const protection = response.data;
-              const requiredChecks = new Set([
-                ...(protection.required_status_checks?.contexts ?? []),
-                ...((protection.required_status_checks?.checks ?? []).map((check) => check.context)),
-              ]);
+              const rulesResponse = await github.request(
+                'GET /repos/{owner}/{repo}/rules/branches/{branch}',
+                {
+                  owner,
+                  repo,
+                  branch: 'main',
+                  headers: { accept: 'application/vnd.github+json' },
+                },
+              );
+              const rules = Array.isArray(rulesResponse.data) ? rulesResponse.data : [];
+              const requiredChecks = new Set();
+              const requiredWorkflowPaths = new Set();
+              let strictStatusChecks = false;
+              let approvingReviews = false;
+
+              for (const rule of rules) {
+                const parameters = rule.parameters ?? {};
+                if (rule.type === 'required_status_checks') {
+                  strictStatusChecks ||= parameters.strict_required_status_checks_policy === true;
+                  for (const check of parameters.required_status_checks ?? []) {
+                    if (check?.context) requiredChecks.add(check.context);
+                  }
+                }
+                if (rule.type === 'workflows') {
+                  for (const workflow of parameters.workflows ?? []) {
+                    if (workflow?.path) requiredWorkflowPaths.add(workflow.path);
+                  }
+                }
+                if (rule.type === 'pull_request') {
+                  approvingReviews ||= Number(parameters.required_approving_review_count ?? 0) >= 1;
+                }
+              }
+
+              const rulesetIds = [...new Set(
+                rules
+                  .map((rule) => Number(rule.ruleset_id ?? 0))
+                  .filter((rulesetId) => rulesetId > 0),
+              )];
+              let bypassActorsAuditable = rulesetIds.length > 0;
+              const bypassActors = [];
+              const rulesetReadback = [];
+              for (const rulesetId of rulesetIds) {
+                try {
+                  const rulesetResponse = await github.request(
+                    'GET /repos/{owner}/{repo}/rulesets/{ruleset_id}',
+                    {
+                      owner,
+                      repo,
+                      ruleset_id: rulesetId,
+                      includes_parents: true,
+                      headers: { accept: 'application/vnd.github+json' },
+                    },
+                  );
+                  const ruleset = rulesetResponse.data;
+                  if (!Array.isArray(ruleset.bypass_actors)) {
+                    bypassActorsAuditable = false;
+                  } else {
+                    bypassActors.push(...ruleset.bypass_actors);
+                  }
+                  rulesetReadback.push({
+                    id: Number(ruleset.id),
+                    name: ruleset.name,
+                    enforcement: ruleset.enforcement,
+                    source_type: ruleset.source_type,
+                    bypass_actor_count: Array.isArray(ruleset.bypass_actors)
+                      ? ruleset.bypass_actors.length
+                      : null,
+                  });
+                } catch (error) {
+                  bypassActorsAuditable = false;
+                  rulesetReadback.push({
+                    id: rulesetId,
+                    error_status: error?.status ?? 0,
+                    error_message: String(error?.message ?? error).slice(0, 300),
+                  });
+                }
+              }
+
+              const lfContractCheckRequired =
+                requiredChecks.has('lf-contract-check') ||
+                [...requiredWorkflowPaths].some(
+                  (path) => path === '.github/workflows/lf-contract-check.yml',
+                );
               const criteria = {
-                lf_contract_check_required: requiredChecks.has('lf-contract-check'),
-                strict_status_checks: protection.required_status_checks?.strict === true,
-                admin_enforcement: protection.enforce_admins?.enabled === true,
-                approving_reviews: (protection.required_pull_request_reviews?.required_approving_review_count ?? 0) >= 1,
-                force_pushes_blocked: protection.allow_force_pushes?.enabled !== true,
-                deletions_blocked: protection.allow_deletions?.enabled !== true,
+                active_rules_present: rules.length > 0,
+                lf_contract_check_required: lfContractCheckRequired,
+                strict_status_checks: strictStatusChecks,
+                approving_reviews: approvingReviews,
+                non_fast_forward: rules.some((rule) => rule.type === 'non_fast_forward'),
+                deletions_blocked: rules.some((rule) => rule.type === 'deletion'),
+                bypass_actors_auditable: bypassActorsAuditable,
+                bypass_actors_empty: bypassActorsAuditable && bypassActors.length === 0,
               };
-              branchProtectionStatus = Object.values(criteria).every(Boolean) ? 'VERIFIED' : 'FAILED';
+
+              if (rules.length === 0) {
+                branchProtectionStatus = 'NOT_CONFIGURED';
+              } else if (!bypassActorsAuditable) {
+                branchProtectionStatus = 'NOT_AUDITABLE_EXTERNAL';
+              } else {
+                branchProtectionStatus = Object.values(criteria).every(Boolean)
+                  ? 'VERIFIED'
+                  : 'FAILED';
+              }
               branchProtectionDetails = {
+                source: 'GET /repos/{owner}/{repo}/rules/branches/{branch}',
                 criteria,
                 required_checks: [...requiredChecks].sort(),
+                required_workflow_paths: [...requiredWorkflowPaths].sort(),
+                active_rule_types: [...new Set(rules.map((rule) => rule.type))].sort(),
+                ruleset_readback: rulesetReadback,
               };
             } catch (error) {
               const status = error?.status ?? 0;
               branchProtectionStatus = status === 404 ? 'NOT_CONFIGURED' : 'NOT_AUDITABLE_EXTERNAL';
               branchProtectionDetails = {
+                source: 'GET /repos/{owner}/{repo}/rules/branches/{branch}',
                 http_status: status,
                 message: String(error?.message ?? error).slice(0, 500),
               };
@@ -191,7 +280,13 @@ jobs:
           for item in inventory:
               artifact_id = int(item['artifact_id'])
               relative_path = item['relative_path']
-              evidence = manifest_files.get(relative_path)
+              skill_code = item['skill_code']
+              repository_path = (
+                  relative_path
+                  if relative_path.startswith('skills/')
+                  else f'skills/{skill_code}/{relative_path}'
+              )
+              evidence = manifest_files.get(repository_path)
               expected_sha = item['current_content_sha256']
               audit_covered = bool(
                   evidence
@@ -203,9 +298,10 @@ jobs:
                   {
                       'artifact_id': artifact_id,
                       'relative_path': relative_path,
+                      'repository_path': repository_path,
                       'sha256': evidence.get('sha256') if evidence else None,
                       'git_blob': evidence.get('git_blob') if evidence else None,
-                      'file_touched_by_merge': relative_path in touched,
+                      'file_touched_by_merge': repository_path in touched,
                       'audit_covered': audit_covered,
                   }
               )
