@@ -1,107 +1,228 @@
-# HANDOFF — Auditoría adversarial independiente V8
+# HANDOFF — Auditoría adversarial independiente · PR #93 · Lote A V7
 
 Fecha: 2026-08-01
 Repositorio: `cristhianlujan/claude-persona-lf-patch`
 PR objetivo: `#93`
 Rama: `lf/architecture-v7-hardening`
-Supabase: `mhwmirqcgxxukpctffuv`
+Supabase producción: `mhwmirqcgxxukpctffuv`
+
+## Estado que no debe confundirse
+
+- El Lote A V7 está versionado en GitHub.
+- Ningún objeto, migración, clave o Edge V7 está desplegado en producción.
+- Producción continúa con Edge V6 y cierre `NOT_READY`.
+- No existe una rama Supabase preview porque el owner no autorizó acciones con costo.
+- Los checks de GitHub están verdes, pero no prueban que las migraciones puedan aplicarse ni que los controles funcionen en runtime.
 
 ## Mandato
 
-Realizar una auditoría adversarial independiente. No aceptar ningún estado almacenado, comentario del PR, baseline, evento, vista o métrica como verdadero sin reconstruirlo desde las superficies reales.
+Realizar una auditoría adversarial independiente del código actual del PR. No aceptar la descripción del PR, vistas, eventos, baseline, comentarios o estados almacenados como evidencia.
 
-El objetivo no es aprobar el PR. El objetivo es intentar demostrar que todavía existe una ruta para fabricar evidencia, promover artefactos, ocultar drift o declarar cierre sin controles externos reales.
+El objetivo es intentar demostrar que todavía existe una ruta para:
 
-## Alcance mínimo obligatorio
+- fabricar reconciliaciones o gates autoritativos;
+- obtener PASS/promoción con evidencia histórica;
+- reutilizar nonces;
+- acceder a la clave HMAC con un rol API;
+- ocultar reconciliaciones compensatorias;
+- declarar cierre mediante métricas heredadas de V5/V6;
+- conservar privilegios temporales o memberships después de las migraciones;
+- alterar evidencia append-only;
+- falsear branch protection, despliegue Edge o baseline.
 
-1. Revisar literalmente todos los archivos modificados del PR #93.
-2. Comparar el código versionado de `lf-github-reconcile-v3` con la versión desplegada en Supabase.
-3. Verificar privilegios efectivos de todas las funciones de escritura, sincronización, promoción, monitor y baseline.
-4. Verificar que `anon` y `authenticated` no pueden ejecutar promoción, sincronización, inventario ni writers V6.
-5. Verificar que `service_role` no puede promover sin:
-   - reconciliación autoritativa más reciente;
-   - branch protection nativa `VERIFIED`;
-   - misma ejecución entre reconciliación, gate y promoción;
-   - nonce V6 consumido una sola vez;
-   - prueba no expirada;
-   - source workflow post-merge exitoso;
-   - commit, SHA-256 y Git blob coincidentes.
-6. Intentar replay del mismo nonce y confirmar rechazo.
-7. Intentar nonce expirado, nonce futuro, firma incorrecta y llamada sin JWT service_role.
-8. Intentar usar evidencia histórica `HMAC_TOKEN_V5` para obtener PASS efectivo.
-9. Verificar que `VERIFIED_COMPENSATING_CONTROLS` nunca produce PASS ni promoción.
-10. Verificar que `NOT_CONFIGURED` genera FAIL explícito para branch protection.
-11. Verificar que la vista canónica actual es `public.v_lf_architecture_closure_v8`.
-12. Recalcular las métricas V8 sin consumir la propia vista como fuente de verdad.
-13. Verificar triggers críticos y confirmar que el trigger de marcación nonce está `ENABLE ALWAYS`.
-14. Revisar RLS, owners, ACL, roles BYPASSRLS y separación de funciones.
-15. Revisar `net`: confirmar grants reales sobre sus 12 funciones, login de roles y exposición efectiva por API. No confundir privilegio SQL con exposición PostgREST; probar ambas superficies.
-16. Revisar el esquema de baseline y confirmar que no se regenere antes del merge y reconciliación post-merge.
-17. Verificar que el PR no tenga aprobación independiente ni ruleset nativo configurado; ambos deben permanecer como blockers externos.
-18. Verificar que el alert receiver continúa dentro del mismo proyecto Supabase y clasificar la independencia real del control.
-19. Revisar autoaprobación de contratos y la separación entre requester y approver.
-20. Repetir la matriz CA-N01 a CA-N21 y añadir hallazgos nuevos desde CA-N22.
+## Fuente principal
 
-## Readback esperado antes de controles externos
+Auditar literalmente el `head_sha` vigente del PR #93. No usar hashes antiguos citados en conversaciones anteriores.
 
-Estas cifras describen el estado fail-closed esperado, pero deben ser verificadas independientemente:
+Revisar especialmente:
 
-| Métrica | Valor esperado |
+1. `supabase/migrations/20260801175950_prepare_v7_object_owners.sql`
+2. `supabase/migrations/20260801180000_writer_hmac_nonce_v7.sql`
+3. `supabase/migrations/20260801180100_quarantine_compensating_evidence_v7.sql`
+4. `supabase/migrations/20260801180150_trusted_v7_readback_grants.sql`
+5. `supabase/migrations/20260801180200_governance_role_and_rls_v7.sql`
+6. `supabase/migrations/20260801180300_static_audit_corrections_v7.sql`
+7. `supabase/migrations/20260801180305_prepare_idempotency_owner_context.sql`
+8. `supabase/migrations/20260801180310_v7_idempotency_guards.sql`
+9. `supabase/migrations/20260801180315_v7_row_integrity_guards.sql`
+10. `supabase/migrations/20260801180320_cleanup_idempotency_owner_context.sql`
+11. `supabase/migrations/edge_functions/lf-github-reconcile-v3-v7/index.ts`
+12. `sandbox/lf_contract_gate_test/PR93_WRITER_V7_ADVERSARIAL_TESTS.sql`
+13. `sandbox/lf_contract_gate_test/PR93_V7_READBACK.sql`
+14. `sandbox/lf_contract_gate_test/RUNBOOK_PR93_LOTE_A_V7.md`
+15. `.github/workflows/lf-github-reconcile-v3.yml`
+
+## Diseño declarado que debe intentarse refutar
+
+### Identidad
+
+- La Edge acepta únicamente OIDC de GitHub Actions.
+- Debe verificar repositorio, repository ID, audiencia, workflow, ref `main`, evento y run identity.
+- `service_role` es necesario para llamar los RPC, pero no debe ser suficiente para fabricar evidencia.
+
+### HMAC
+
+- La Edge usa `LF_RECONCILIATION_WRITER_HMAC_V7`.
+- PostgreSQL verifica contra una única fila activa de `private.lf_writer_hmac_keys_v7`.
+- Esa tabla debe ser propiedad de `postgres`, tener RLS/FORCE RLS y cero privilegios para `anon`, `authenticated`, `service_role`, `lf_governance_owner_v3` y `lf_writer_verifier_v7`.
+- No se utiliza Vault porque actualmente `service_role` puede leer y modificar secretos de Vault.
+- La clave nunca debe aparecer en eventos, payloads, logs, vistas, baseline, respuestas RPC o GitHub.
+
+### Nonce
+
+- Formato UUID v4 + expiración Unix.
+- Ventana máxima de seis minutos.
+- Consumo único mediante PK de `nonce_sha256`.
+- Un control positivo debe aceptar una firma válida antes de interpretar los controles negativos.
+- Replay, expirado, futuro, firma incorrecta, claims ausentes y claims `anon` deben ser rechazados.
+
+### Evidencia
+
+- Writers V5/V6 no deben ser ejecutables por roles API después del cutover.
+- PASS exige protección nativa `VERIFIED` y `actual_branch_protection_status=VERIFIED`.
+- Gate PASS exige reconciliación V7 correspondiente.
+- Reconciliaciones compensatorias y PASS pre-V7 deben estar en cuarentena append-only.
+- Promoción solo acepta V7 no cuarentenado, misma ejecución, commit, workflow y gates.
+
+### Idempotencia
+
+- Una fuente `artifact_id + workflow_run_id + merge_commit_sha` solo puede producir una reconciliación V7.
+- Un reintento con el mismo preimage debe devolver la fila existente.
+- Un preimage diferente para la misma fuente debe generar conflicto.
+- Los gate tests aplican el mismo criterio sobre su clave natural existente.
+
+### Cierre
+
+- `v_lf_architecture_closure_v8` debe reconstruir métricas desde evidencia primaria V7.
+- No debe depender de `token_control_ready`, writer V5/V6 ni PASS almacenado.
+- Debe bloquear por:
+  - evidencia V7 incompleta;
+  - clave ausente o accesible por API;
+  - membresías residuales;
+  - Edge V7 sin readback de control plane;
+  - ruleset ausente;
+  - grants API en `net`;
+  - drift/baseline;
+  - notificaciones o hallazgos internos abiertos.
+
+## Auditoría estática obligatoria
+
+Sin modificar producción:
+
+1. Validar orden e idempotencia de todas las migraciones V7.
+2. Identificar operaciones que requieren ownership, `SET ROLE`, `CREATE`, grantor específico o BYPASSRLS.
+3. Confirmar que todo privilegio temporal se revoca incluso ante reejecución.
+4. Revisar `SECURITY DEFINER` y `search_path=''`.
+5. Revisar RLS/FORCE RLS y policies de todas las tablas nuevas y V4 auditadas.
+6. Revisar triggers `ENABLE ALWAYS` y su interacción con triggers append-only existentes.
+7. Confirmar que los writers no realizan UPDATE sobre tablas append-only.
+8. Comparar preimages Edge/SQL/validadores campo por campo y orden por orden.
+9. Revisar SQL three-valued logic, casts, NULL, timestamps, regex y errores atrapados.
+10. Revisar deduplicación, locks, unique indexes y comportamiento ante concurrencia.
+11. Verificar que la cuarentena capture las 192 reconciliaciones compensatorias conocidas y cualquier PASS pre-V7.
+12. Revisar si una fila histórica posterior puede bloquear o suplantar promoción V7.
+13. Verificar que V8 no herede semántica V5/V6.
+14. Revisar si la evidencia de despliegue Edge puede ser fabricada desde PostgreSQL.
+15. Confirmar que el workflow solo reconcilia un commit fusionado y validado por `lf-contract-check`.
+
+## Pruebas runtime requeridas cuando exista entorno aislado
+
+No ejecutar estas pruebas en producción.
+
+Usar:
+
+- `PR93_WRITER_V7_ADVERSARIAL_TESTS.sql`
+- `PR93_V7_READBACK.sql`
+
+Agregar pruebas nuevas para:
+
+1. Aplicación completa de migraciones desde un clon limpio del esquema actual.
+2. Reaplicación/idempotencia donde corresponda.
+3. Control positivo HMAC.
+4. Replay exacto.
+5. Nonce expirado y futuro.
+6. Firma incorrecta.
+7. Sin claims, claims `anon`, `authenticated` y claims manipulados.
+8. Acceso directo a tabla de clave y nonces desde roles API.
+9. Writer V5/V6 desde `service_role`.
+10. Retry de reconciliación idéntica.
+11. Payload conflictivo para el mismo workflow.
+12. Gate conflictivo con evidencia histórica.
+13. Inserción directa de fila V7 incompleta intentando evadir los writers.
+14. PASS con `VERIFIED_COMPENSATING_CONTROLS`.
+15. Promoción con reconciliación/gate de distintas ejecuciones.
+16. Promoción con evidencia más reciente conflictiva.
+17. Mutación de tablas append-only.
+18. Eliminación o desactivación de triggers.
+19. Cierre sin Edge V7/readback/ruleset/clave/baseline.
+20. Extracción de la clave por vistas, funciones, errores o logs.
+
+## Estado esperado de producción durante esta auditoría
+
+Verificar independientemente:
+
+| Métrica | Esperado |
 |---|---:|
+| V7 writer key table | inexistente |
+| V7 reconciliation writer | inexistente |
+| V7 gate writer | inexistente |
 | artifact_count | 64 |
 | pass_v3_count | 0 |
 | judge_count | 13 |
 | judges_pass_v3 | 0 |
-| github_pass_count V6 | 0 |
-| passed_gate_tests V6 | 0 |
-| failed_gate_tests V6 | 64 |
+| github_pass_count | 0 |
+| passed_gate_tests | 0 |
+| failed_gate_tests | 64 |
 | branch_protection_gaps | 64 |
-| schema_drift_gaps | 7 o más si la auditoría detecta objetos no baselined |
+| schema_drift_gaps | 7 |
 | closure_ready | false |
 | computed_closure_status | `NOT_READY` |
-| Edge reconciler | versión 6 `ACTIVE` |
-| writer mode | `SERVICE_ROLE_NONCE_V6` |
+| Edge activa | V6 |
 
-Una diferencia favorable no implica PASS: debe explicarse y probarse.
+Una diferencia favorable no implica PASS; debe reconstruirse y explicarse.
 
 ## Bloqueos externos conocidos
 
-1. GitHub `main` no tiene ruleset nativo válido.
-2. PR #93 no tiene aprobación de una identidad distinta del autor.
-3. Las funciones de `net` conservan grants administrados por `supabase_admin`; el rol de migración no puede revocarlos.
-4. No debe generarse baseline nuevo antes del merge y reconciliación post-merge.
-5. No debe fusionarse el PR durante esta auditoría.
+1. No existe prueba SQL en un entorno aislado.
+2. GitHub `main` no tiene ruleset nativo válido.
+3. PR #93 no tiene aprobación independiente.
+4. `supabase_admin` conserva una membresía residual de `postgres` sobre `lf_governance_owner_v3`.
+5. Las funciones `net` conservan ejecución para roles API mediante grants administrados.
+6. No debe generarse baseline nuevo antes del merge y reconciliación post-merge.
+7. No debe desplegarse ni fusionarse durante esta auditoría.
 
-## Criterios de severidad
+## Criterios de resultado
 
-- CRITICAL: permite fabricar PASS/promoción, escribir evidencia autoritativa sin identidad válida, reutilizar credenciales o ocultar cierre falso.
-- HIGH: permite alterar controles, omitir branch protection, saltar revisión independiente, usar superficies administrativas amplias o crear evidencia no reproducible.
-- MEDIUM: semántica débil, cobertura incompleta, monitoreo no independiente o baseline parcial.
-- LOW: nomenclatura, documentación o deuda no explotable.
+- `AUDIT_PASS`: no se encontró defecto bloqueante en el código y las pruebas runtime aisladas también pasaron. No equivale a autorización de merge si quedan controles externos.
+- `AUDIT_FAIL`: existe una ruta explotable, una migración inoperante, una dependencia circular, un cierre falseable o una prueba requerida falló.
+- `NOT_AUDITABLE`: falta una superficie imprescindible para emitir conclusión.
 
 ## Formato obligatorio de salida
 
 1. Veredicto: `AUDIT_PASS`, `AUDIT_FAIL` o `NOT_AUDITABLE`.
-2. Resumen ejecutivo de máximo 15 líneas.
-3. Matriz completa CA-N01 a CA-N21:
+2. Resumen ejecutivo, máximo 15 líneas.
+3. Matriz CA-N01 a CA-N28:
    - `RESOLVED_WITH_EVIDENCE`
    - `PARTIALLY_RESOLVED`
    - `STILL_OPEN`
-4. Hallazgos nuevos CA-N22+ con severidad, evidencia reproducible, impacto y corrección mínima.
-5. Tabla de pruebas adversariales ejecutadas y resultado.
-6. Readback independiente de métricas V8.
-7. Lista exacta de blockers antes de merge.
-8. Recomendación final: `NO_MERGE`, `MERGE_AFTER_FIXES` o `MERGE_ALLOWED`.
+   - `NOT_AUDITABLE`
+4. Hallazgos nuevos CA-N29+ con severidad, evidencia, reproducción, impacto y corrección mínima.
+5. Tabla de revisión estática por archivo.
+6. Tabla de pruebas runtime ejecutadas/no ejecutadas.
+7. Readback independiente de producción.
+8. Blockers exactos antes del merge.
+9. Recomendación: `NO_MERGE`, `MERGE_AFTER_FIXES` o `MERGE_ALLOWED`.
 
 ## Prohibiciones
 
-- No usar la descripción del PR como evidencia.
-- No aceptar `PASS_V6`, `PASS_V8` ni cualquier estado almacenado sin reconstrucción.
-- No traducir controles compensatorios a branch protection nativa.
-- No considerar una revisión del autor como independiente.
-- No fusionar, regenerar baseline ni modificar producción durante la auditoría.
-- No revelar tokens, claves, JWT completos o secretos encontrados.
+- No aceptar la descripción del PR como evidencia.
+- No aceptar checks verdes como prueba runtime.
+- No aceptar una revisión del autor como independiente.
+- No usar Vault como almacén independiente mientras `service_role` pueda leerlo.
+- No considerar controles compensatorios equivalentes a branch protection.
+- No fusionar, desplegar, regenerar baseline ni modificar producción.
+- No revelar claves, tokens, JWT completos o valores sensibles.
 
-## Resultado esperado de esta etapa
+## Resultado correcto de esta etapa
 
-La auditoría debe confirmar si la remediación técnica es segura y enumerar los bloqueos administrativos pendientes. En el estado previo a ruleset/reviewer, un resultado `AUDIT_PASS` global sería sospechoso; el cierre debe permanecer `NOT_READY` hasta completar controles externos y reconciliación post-merge.
+Sin entorno aislado y sin controles administrativos, un `MERGE_ALLOWED` global sería improcedente. La auditoría puede validar estáticamente el diseño y enumerar defectos, pero debe mantener `NO_MERGE` o `MERGE_AFTER_FIXES` hasta completar pruebas runtime, ruleset, revisión independiente, remediación administrativa y reconciliación post-merge.
