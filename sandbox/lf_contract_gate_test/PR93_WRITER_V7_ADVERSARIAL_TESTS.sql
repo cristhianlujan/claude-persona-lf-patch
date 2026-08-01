@@ -21,10 +21,6 @@ select vault.create_secret(
   'Transaction-scoped PR93 adversarial test secret; rolled back at end'
 );
 
--- Temporary membership exists only inside this rolled-back test transaction.
-grant lf_writer_verifier_v7 to postgres;
-set local role lf_writer_verifier_v7;
-
 -- 1. Positive control: a correct HMAC, fresh nonce and service_role claims must work.
 do $positive$
 declare
@@ -166,5 +162,4 @@ begin
 end
 $effects$;
 
-reset role;
 rollback;
