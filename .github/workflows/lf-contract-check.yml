@@ -64,6 +64,60 @@ jobs:
             --output .audit-output/creating-integral-user-stories \
             --commit-sha "$GITHUB_SHA"
 
+      - name: Build authoritative reconciliation manifest
+        env:
+          LF_WORKFLOW_EVENT: ${{ github.event_name }}
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import pathlib
+          import subprocess
+          from datetime import datetime, timezone
+
+          root = pathlib.Path.cwd()
+          output = root / ".audit-output" / "creating-integral-user-stories" / "reconciliation-manifest-v3.json"
+          output.parent.mkdir(parents=True, exist_ok=True)
+
+          tracked = subprocess.check_output(["git", "ls-files", "-z"]).split(b"\0")
+          files = {}
+          for raw_path in tracked:
+              if not raw_path:
+                  continue
+              relative_path = raw_path.decode("utf-8")
+              path = root / relative_path
+              if not path.is_file():
+                  continue
+              content = path.read_bytes()
+              git_blob = subprocess.check_output(["git", "hash-object", relative_path], text=True).strip()
+              files[relative_path] = {
+                  "sha256": hashlib.sha256(content).hexdigest(),
+                  "git_blob": git_blob,
+              }
+
+          manifest = {
+              "schema_version": "lf-reconciliation-manifest/v3",
+              "repository": os.environ["GITHUB_REPOSITORY"],
+              "workflow_name": "lf-contract-check",
+              "workflow_event": os.environ["LF_WORKFLOW_EVENT"],
+              "workflow_run_id": int(os.environ["GITHUB_RUN_ID"]),
+              "workflow_run_attempt": int(os.environ["GITHUB_RUN_ATTEMPT"]),
+              "commit_sha": os.environ["GITHUB_SHA"],
+              "generated_at": datetime.now(timezone.utc).isoformat(),
+              "validation_suite": [
+                  "scripts/lf_contract_check.py",
+                  "sandbox/lf_contract_gate_test/lf_validation_engine_v0_10_2_selftest.py",
+                  "sandbox/no_bypass_judge_profile_card_skill/no_bypass_judge_selftest.py",
+                  "sandbox/lf_contract_gate_test/pass_evidence_gate.py --self-test --scan",
+                  "sandbox/lf_contract_gate_test/r8_continuous_audit.py",
+              ],
+              "files": dict(sorted(files.items())),
+          }
+          output.write_text(json.dumps(manifest, sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8")
+          print(f"manifest={output} files={len(files)}")
+          PY
+
       - name: Upload per-artifact audit evidence and canonical source snapshot
         if: always()
         uses: actions/upload-artifact@v4
@@ -73,4 +127,5 @@ jobs:
             .audit-output/creating-integral-user-stories
             skills/creating-integral-user-stories
           if-no-files-found: error
+          include-hidden-files: true
           retention-days: 7
