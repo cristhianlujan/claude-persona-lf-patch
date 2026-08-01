@@ -1,16 +1,12 @@
 -- CA-N05 / CA-N06 / CA-N28 remediation.
--- The Supabase-managed postgres role remains the trusted database root. This migration
--- removes the grant made by postgres itself, turns every V4 governance table into an
--- RLS-protected internal relation, and makes any remaining supabase_admin membership
--- an explicit closure blocker.
+-- The Supabase-managed postgres role remains the trusted database root. Every V4
+-- governance table becomes an RLS-protected internal relation. Temporary role
+-- memberships used for ownership changes are removed at the end of this batch.
 
 begin;
 
--- Revoke the membership that was granted by postgres. A second membership granted by
--- supabase_admin can only be removed by that grantor/control plane and is checked below.
-revoke lf_governance_owner_v3 from postgres granted by postgres;
-
 alter role lf_governance_owner_v3 nologin noinherit nobypassrls;
+alter role lf_writer_verifier_v7 nologin noinherit nobypassrls;
 
 -- Defense in depth for all V4 governance relations identified by the independent audit.
 alter table private.lf_architecture_alerts_v4 enable row level security;
@@ -61,12 +57,12 @@ as $function$
     join pg_roles member_role on member_role.oid=m.member
     join pg_roles granted_role on granted_role.oid=m.roleid
     where member_role.rolname='postgres'
-      and granted_role.rolname='lf_governance_owner_v3'
+      and granted_role.rolname in ('lf_governance_owner_v3','lf_writer_verifier_v7')
   )
   and not exists (
     select 1
     from pg_roles r
-    where r.rolname='lf_governance_owner_v3'
+    where r.rolname in ('lf_governance_owner_v3','lf_writer_verifier_v7')
       and (r.rolcanlogin or r.rolinherit or r.rolbypassrls)
   );
 $function$;
@@ -75,6 +71,14 @@ alter function private.fn_governance_role_separation_v7_valid()
   owner to lf_governance_owner_v3;
 revoke all on function private.fn_governance_role_separation_v7_valid()
   from public,anon,authenticated,service_role;
+
+-- Read-only validators are required by the trusted monitor/closure path. Granting
+-- EXECUTE to postgres does not grant any writer or table privilege.
+set local role lf_governance_owner_v3;
+grant execute on function private.fn_reconciliation_nonce_v7_valid(bigint) to postgres;
+grant execute on function private.fn_gate_nonce_v7_valid(bigint) to postgres;
+grant execute on function private.fn_governance_role_separation_v7_valid() to postgres;
+reset role;
 
 -- Preserve the V8 public shape while adding the real role-separation requirement to
 -- the canonical view. Until supabase_admin removes its membership, closure stays false.
@@ -123,7 +127,7 @@ select
   coalesce(residual_observations,'{}'::jsonb)||jsonb_build_object(
     'governance_role_separation',jsonb_build_object(
       'state',case when role_separation_ready then 'VERIFIED' else 'BLOCKED_BY_SUPABASE_ADMIN_MEMBERSHIP' end,
-      'required_action','Remove every postgres membership/admin option on lf_governance_owner_v3 using the original supabase_admin grantor.'
+      'required_action','Remove every postgres membership/admin option on lf_governance_owner_v3 and lf_writer_verifier_v7 using the original grantor.'
     )
   ) as residual_observations,
   (closure_ready and role_separation_ready) as closure_ready,
@@ -133,5 +137,10 @@ select
   end as computed_closure_status
 from source
 cross join separation;
+
+-- Remove both temporary memberships granted by postgres. Any membership granted by
+-- supabase_admin remains visible to the closure predicate and must be removed externally.
+revoke lf_writer_verifier_v7 from postgres granted by postgres;
+revoke lf_governance_owner_v3 from postgres granted by postgres;
 
 commit;
