@@ -1,39 +1,59 @@
 # PR #93 · LOTE 1 · estado de integración
 
-## Resultado de la auditoría estática
+## Resultado de las auditorías estáticas
 
-La auditoría del commit `2c97bb5387f4696fc6c9ea912c1a1ca7f31a5fcc` detectó que las piezas SQL alternativas `20260801_0001` a `20260801_0004` redefinían relaciones ya creadas por la cadena V7 activa. La combinación de estructuras incompatibles con `create table if not exists` podía dejar una migración parcialmente aplicada o una ruta de escritura muerta.
+La auditoría del commit `2c97bb5387f4696fc6c9ea912c1a1ca7f31a5fcc` detectó cuatro SQL alternativos que redefinían relaciones de la cadena V7 activa. Esas piezas fueron retiradas y no deben restaurarse.
 
-Esas cuatro piezas fueron retiradas del directorio ejecutable. No deben restaurarse ni ejecutarse.
+La auditoría del commit `33cdeaa78b6bb7059d45ae9ea0ecbf5520972fd7` confirmó la integración de rotación, pero detectó cinco brechas adicionales:
+
+- CA-N30: canonicalización Edge/PostgreSQL con posiciones `NULL` no equivalentes;
+- CA-N31: lectura del keystore dependiente de `BYPASSRLS` de `postgres`;
+- CA-N32: política de nonces sin obligación estructural de `key_id`;
+- CA-N33/CA-N34: retiro pendiente sin causa explícita y asimetría temporal;
+- CA-N35: ausencia de bloqueo de `TRUNCATE`.
 
 ## Integración activa
 
-La capacidad útil del paquete —rotación con aceptación doble temporal— se integró mediante una única migración hacia adelante:
+La rotación continúa en:
 
 `supabase/migrations/20260801180400_writer_key_rotation_v7.sql`
 
-La migración:
+El hardening posterior está en:
 
-- extiende `private.lf_writer_hmac_keys_v7` sin crear una segunda relación;
-- mantiene `postgres` como owner del almacén de claves;
-- añade `key_id` público y lifecycle `PREPARED → ACTIVE → RETIRING → RETIRED`;
-- conserva el contrato HMAC actual `preimage:nonce`;
-- no cambia Edge ni las firmas de los RPC públicos;
-- acepta una clave `RETIRING` solo durante una ventana de diez minutos;
-- registra en cada nonce qué generación validó la firma;
-- mantiene `key_id` nullable para filas anteriores a la migración;
-- expone funciones administrativas únicamente a `postgres`;
-- mantiene `service_role` sin lectura de la clave ni ejecución de verificadores privados.
+`supabase/migrations/20260801180500_writer_canonicalization_rls_v7.sql`
+
+`180500`:
+
+- mantiene una sola cadena activa;
+- sustituye `concat_ws` en los writers mediante helpers de posiciones fijas;
+- reproduce las representaciones primitivas usadas por Edge;
+- exige booleanos en los dos campos que Edge convierte con `String(...)`;
+- crea una política explícita del keystore para `postgres`;
+- mantiene RLS/FORCE RLS y cero acceso API;
+- exige `key_id` para todo nonce nuevo;
+- conserva compatibilidad con nonces históricos;
+- completa la restricción temporal de `RETIRED`;
+- bloquea `TRUNCATE` en keystore y nonces;
+- expone un estado de rotación no secreto.
+
+El contrato HMAC permanece:
+
+```text
+HMAC-SHA256(preimage || ':' || nonce)
+```
+
+Edge no transporta ni necesita conocer `key_id`.
 
 ## Archivos de prueba y readback
 
 - `sandbox/lf_contract_gate_test/PR93_WRITER_V7_ADVERSARIAL_TESTS.sql`
 - `sandbox/lf_contract_gate_test/PR93_V7_READBACK.sql`
+- `sandbox/lf_contract_gate_test/PR93_V7_HARDENING_READBACK.sql`
 - `sandbox/lf_contract_gate_test/lote1/PR93_LOTE1_ADVERSARIAL_TESTS.sql`
 - `sandbox/lf_contract_gate_test/lote1/PR93_LOTE1_READBACK.sql`
 
-Las baterías apuntan a la ruta activa `private.fn_consume_writer_proof_v7` y a los writers públicos. La prueba 13 cambia efectivamente a `service_role`, comprueba denegación del keystore y del verificador privado, llama al writer público con una firma fabricada y verifica que no se persista evidencia.
+La batería canónica incluye controles positivos privado y público, replay, expiración, canonicalización posicional, cambio efectivo a `service_role`, protección de `RESET ROLE`, cero efectos sobre nonces/reconciliaciones/eventos y rotación con aceptación doble.
 
 ## Límite
 
-Todo permanece versionado y sin ejecución runtime. La presencia de esta migración y de las pruebas no autoriza despliegue, merge, instalación de claves ni regeneración de baseline.
+Todo permanece versionado y sin ejecución runtime. Estos archivos no autorizan despliegue, merge, instalación de claves ni regeneración de baseline.
