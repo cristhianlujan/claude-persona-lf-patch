@@ -1,123 +1,71 @@
 # PR #93 · LOTE 1 · guards y evidencia
 
-## Procedencia
-
-Implementación documental derivada de `HANDOFF_GPT_LF_PR93_LOTE1_CONSOLIDADO.md`. Los hechos del entorno activo se preservan como readback de solo lectura; no se reinterpretan como prueba de funcionamiento de V7.
-
 ## Alcance
 
 - CA-N22: identidad partida entre función y tabla de nonces.
 - CA-N23: digest sin clave y token controlado por el llamante.
 - CA-N29: Vault legible por `service_role` en el proyecto observado.
 
-El paquete se limita a SQL versionado y documentación. No registra ejecución runtime.
+La corrección está versionada, no ejecutada.
+
+## Cadena activa
+
+La rotación se integra en `supabase/migrations/20260801180400_writer_key_rotation_v7.sql`. No existen relaciones alternativas con los mismos nombres.
 
 ## Guards estructurales
 
-1. `lf_writer_verifier_v7` es `NOLOGIN`, `NOINHERIT` y `NOBYPASSRLS`.
-2. Keystore, tabla de nonces, verifier y funciones de rotación comparten el mismo owner dedicado.
-3. Keystore y nonces tienen RLS y FORCE RLS.
-4. Los roles API y `lf_governance_owner_v3` no reciben privilegios de tabla sobre el keystore ni nonces.
-5. `service_role` no puede ejecutar directamente el verifier ni funciones administrativas.
-6. La función de verificación no contiene `exception when others`.
-7. El HMAC usa `extensions.hmac(..., 'sha256')` y una clave seleccionada por `key_id`.
-8. El mensaje canónico es:
-
-```text
-<preimage> + LF + <writer_token> + LF + <key_id>
-```
-
-`LF` representa un byte de salto de línea (`0x0a`). Edge debe reproducirlo byte a byte.
-
-9. Los scopes operativos válidos son únicamente `reconciliation-v7:` y `gate-v7:`.
-10. El desafío de rotación usa `rotation-check-v7:` y no entra en la función operativa.
-11. La PK `nonce_sha256` impone consumo único.
-12. Los triggers `ENABLE ALWAYS` impiden borrar claves y alterar o borrar nonces.
-13. La clave y su identificador son inmutables; solo se permiten transiciones de lifecycle hacia adelante.
-14. Existe como máximo una clave `ACTIVE` y una `PREPARED`.
-15. Una clave `RETIRING` no puede pasar a `RETIRED` mientras existan nonces sin expirar.
+1. `private.lf_writer_hmac_keys_v7` permanece propiedad de `postgres`, con RLS/FORCE RLS y sin privilegios API.
+2. `private.lf_reconciliation_writer_nonces_v7` permanece propiedad de `lf_writer_verifier_v7`, que posee la función consumidora y puede insertar estructuralmente.
+3. `service_role` no ejecuta `fn_consume_writer_proof_v7`, `fn_writer_hmac_v7_match_key`, `fn_writer_hmac_v7_valid` ni las funciones administrativas.
+4. El HMAC conserva el mensaje `preimage:nonce`, igual que Edge V7.
+5. `key_id` identifica la generación que validó la firma, pero no forma parte del mensaje firmado ni cambia las firmas RPC.
+6. Existe como máximo una clave `ACTIVE`, una `PREPARED` y una `RETIRING`.
+7. Una clave `RETIRING` solo valida durante `retiring_until`.
+8. La PK `nonce_sha256` impone consumo único.
+9. `key_id` es nullable en nonces para conservar compatibilidad con filas anteriores.
+10. El trigger `ENABLE ALWAYS` impide borrar claves, modificar material o retroceder el lifecycle.
+11. El verifier no contiene `exception when others`; una clave activa ausente genera error de infraestructura.
+12. Vault no participa en la verificación.
 
 ## Pruebas 7–13
 
-Estas definiciones preservan el criterio del informe adversarial y agregan un control positivo obligatorio.
+| Prueba | Superficie | Resultado requerido |
+|---:|---|---|
+| Control positivo | `fn_consume_writer_proof_v7` con HMAC correcto | acepta y consume un nonce |
+| 7 | replay exacto | rechaza y no crea otra fila |
+| 8 | nonce expirado | rechaza |
+| 9 | nonce futuro fuera de seis minutos | rechaza |
+| 10 | HMAC incorrecto | rechaza |
+| 11 | claims ausentes | rechaza |
+| 12 | claims `anon` | rechaza |
+| 13 | writer público bajo `SET LOCAL ROLE service_role` con firma fabricada | rechaza sin nonce ni reconciliación nueva |
 
-| Prueba | Entrada | Resultado requerido | Evidencia concluyente |
-|---:|---|---|---|
-| Control positivo | claims `service_role`, HMAC correcto, nonce fresco, `key_id` activo | `true` | exactamente un nonce nuevo |
-| 7 | repetir exactamente token, firma, preimage y `key_id` del control positivo | `false` | el contador de nonces no aumenta |
-| 8 | token expirado | `false` | no se inserta nonce |
-| 9 | token con expiración superior al TTL permitido | `false` | no se inserta nonce |
-| 10 | firma hexadecimal incorrecta | `false` | no se inserta nonce |
-| 11 | `request.jwt.claims` ausente o vacío | `false` | no se inserta nonce |
-| 12 | claims con rol `anon` | `false` | no se inserta nonce |
-| 13 | claims `service_role` y firma fabricada sin acceso a la clave | `false` | sin lectura de keystore, sin ejecución del verifier interno y sin nonce nuevo |
+La prueba 13 también exige que `service_role` no pueda leer el keystore ni ejecutar el verifier privado. El mensaje de error debe demostrar que alcanzó el control HMAC del writer público, no una denegación superficial de EXECUTE.
 
-Una prueba negativa no es concluyente si el control positivo falla antes de insertar el nonce.
+## Rotación
 
-## Prueba 13: comprobaciones mínimas
-
-La ejecución aislada debe demostrar conjuntamente:
-
-```text
-service_role cannot SELECT key store
-AND service_role cannot INSERT or UPDATE key store
-AND service_role cannot EXECUTE the private verifier
-AND service_role cannot EXECUTE install, challenge, promote or retire
-AND a fabricated signature is rejected
-AND nonce count is unchanged
-```
-
-## Detección de divergencia Edge ↔ PostgreSQL
-
-Control actual del paquete: desafío manual por `key_id` durante cada instalación o rotación.
-
-Backlog recomendado:
-
-- contador de fallos por `key_id` sin registrar firmas;
-- alerta cuando el control positivo falla tras un cambio de secreto o despliegue;
-- desafío programado con identidad administrativa separada;
-- registro de SHA-256 de respuestas, commit y versión Edge;
-- cierre automático del writer ante divergencia.
-
-El desafío demuestra coincidencia solo en el instante observado. No demuestra que ambas superficies permanezcan sincronizadas después.
+- La nueva clave se instala como `PREPARED`.
+- El desafío administrativo compara PostgreSQL con un cálculo local seguro.
+- La promoción mueve la clave anterior a `RETIRING` por diez minutos y la nueva a `ACTIVE`.
+- Edge cambia únicamente su secreto; el preimage no cambia.
+- Un control positivo posterior detecta divergencia.
+- La clave anterior se retira solo después de vencer la ventana y de no existir nonces sin expirar.
 
 ## Evidencia de origen
 
 ```yaml
-source_commit: fdf738e6dad136703d1b86828b1b5abdd320b9a9
 source_pr: 93
 source_branch: lf/architecture-v7-hardening
-source_handoff: HANDOFF_GPT_LF_PR93_LOTE1_CONSOLIDADO.md
+static_audit_source: AUDITORIA_ESTATICA_PR93_2c97bb5.md
 runtime_execution_recorded: false
 live_database_writes: 0
 merge_performed: false
 baseline_regenerated: false
 ```
 
-## Plantilla de evento futuro
-
-La plantilla siguiente es documental. No constituye una instrucción de escritura.
-
-```json
-{
-  "event_type": "LF_WRITER_HMAC_V7_ROTATION_EVIDENCE",
-  "execution_id": "<execution-id>",
-  "commit_sha": "<sha40>",
-  "old_key_id": "<public-id>",
-  "new_key_id": "<public-id>",
-  "challenge_sha256": "<sha256>",
-  "edge_response_sha256": "<sha256>",
-  "database_response_sha256": "<sha256>",
-  "responses_match": false,
-  "positive_control_nonce_count": 0,
-  "tests_7_13_executed": false
-}
-```
-
 ## Límites
 
-- SQL no ejecutado.
-- Coincidencia del preimage Edge/PostgreSQL pendiente de auditoría byte a byte.
+- No existe evidencia runtime.
 - El administrador PostgreSQL permanece dentro de la frontera de confianza.
-- La exposición gestionada de Vault requiere una acción administrativa externa y no se corrige aquí.
-- No se deriva ninguna conclusión operativa de métricas o estados persistidos.
+- La exposición gestionada de Vault requiere una acción administrativa externa.
+- Ninguna métrica o estado persistido se acepta como prueba por sí mismo.
