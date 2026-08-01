@@ -1,28 +1,42 @@
 -- PR #93 — conclusive V7 writer tests for a Supabase preview branch.
--- Never run this against production. All test state is rolled back.
--- A positive control is mandatory before interpreting negative controls.
+-- Never run this against production. The transaction is always rolled back.
+-- A positive control is mandatory before interpreting any negative result.
 
 begin;
 
--- The preview branch must not contain a production writer secret.
 do $setup$
 begin
   if exists (
-    select 1 from vault.secrets where name='lf_reconciliation_writer_hmac_v7'
+    select 1
+    from private.lf_writer_hmac_keys_v7
+    where key_name='lf_reconciliation_writer_hmac_v7'
   ) then
-    raise exception 'Refusing to run: preview test found a pre-existing writer secret';
+    raise exception 'Refusing to run: preview already contains a writer key';
   end if;
 end
 $setup$;
 
-select vault.create_secret(
-  'PR93_TEST_ONLY_HMAC_KEY_NOT_FOR_PRODUCTION_7b15d6e2',
+insert into private.lf_writer_hmac_keys_v7(
+  key_name,key_material,active,installed_by_execution_id
+) values (
   'lf_reconciliation_writer_hmac_v7',
-  'Transaction-scoped PR93 adversarial test secret; rolled back at end'
+  'PR93_TEST_ONLY_HMAC_KEY_NOT_FOR_PRODUCTION_7b15d6e2',
+  true,
+  'PR93-STATIC-PREVIEW-TEST'
 );
 
--- 1. Positive control: a correct HMAC, fresh nonce and service_role claims must work.
-do $positive$
+do $separation$
+begin
+  if not private.fn_writer_key_separation_v7_valid() then
+    raise exception 'KEY_SEPARATION_FAILED: an API role can access the writer key or verifier';
+  end if;
+  if not private.fn_writer_key_ready_v7() then
+    raise exception 'KEY_READINESS_FAILED: exactly one isolated active key was expected';
+  end if;
+end
+$separation$;
+
+do $positive_and_replay$
 declare
   v_preimage text:='reconciliation-v7:PR93-POSITIVE-CONTROL';
   v_nonce text:=gen_random_uuid()::text||'.'||floor(extract(epoch from clock_timestamp()+interval '5 minutes'))::bigint::text;
@@ -37,18 +51,16 @@ begin
     ),
     'hex'
   );
+
   if not private.fn_consume_writer_proof_v7(v_preimage,v_signature,v_nonce) then
     raise exception 'POSITIVE_CONTROL_FAILED: valid V7 proof was rejected';
   end if;
-
-  -- 2. Replay of exactly the same nonce must fail.
   if private.fn_consume_writer_proof_v7(v_preimage,v_signature,v_nonce) then
     raise exception 'REPLAY_CONTROL_FAILED: reused nonce was accepted';
   end if;
 end
-$positive$;
+$positive_and_replay$;
 
--- 3. Expired nonce must fail.
 do $expired$
 declare
   v_preimage text:='reconciliation-v7:PR93-EXPIRED';
@@ -70,7 +82,6 @@ begin
 end
 $expired$;
 
--- 4. Excessively future-dated nonce must fail.
 do $future$
 declare
   v_preimage text:='reconciliation-v7:PR93-FUTURE';
@@ -92,7 +103,6 @@ begin
 end
 $future$;
 
--- 5. Incorrect HMAC must fail even with service_role claims.
 do $bad_signature$
 declare
   v_preimage text:='reconciliation-v7:PR93-BAD-SIGNATURE';
@@ -105,7 +115,6 @@ begin
 end
 $bad_signature$;
 
--- 6. Missing JWT request context must fail even with a correct HMAC.
 do $no_claims$
 declare
   v_preimage text:='reconciliation-v7:PR93-NO-CLAIMS';
@@ -127,7 +136,6 @@ begin
 end
 $no_claims$;
 
--- 7. anon claims must fail even with a correct HMAC.
 do $anon_claims$
 declare
   v_preimage text:='reconciliation-v7:PR93-ANON-CLAIMS';
@@ -149,7 +157,6 @@ begin
 end
 $anon_claims$;
 
--- Only the positive control may have consumed a nonce.
 do $effects$
 declare
   v_count bigint;
