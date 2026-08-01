@@ -12,6 +12,7 @@ on:
 permissions:
   contents: read
   pull-requests: read
+  actions: read
 
 jobs:
   lf-contract-check:
@@ -46,6 +47,15 @@ jobs:
       - name: Run NO BYPASS judge profile-card-skill self-test
         run: |
           python3 sandbox/no_bypass_judge_profile_card_skill/no_bypass_judge_selftest.py
+
+      - name: Enforce merge and CI evidence for PASS candidates
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 sandbox/lf_contract_gate_test/pass_evidence_gate.py \
+            --self-test \
+            --scan skills/creating-integral-user-stories/evidence/pass-candidates \
+            --repository "$GITHUB_REPOSITORY"
 
       - name: Audit creating-integral-user-stories A01-A62
         run: |
