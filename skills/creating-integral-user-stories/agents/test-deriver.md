@@ -1,6 +1,6 @@
 # Agent — Test Deriver
 
-Versión operativa: `v0.5`.
+Versión operativa: `v0.6`.
 
 Perfil externo: `perfiles/PERFIL_STORY_TEST_DERIVER_LF.md`.  
 Juez independiente: `J10_TEST_COVERAGE`.  
@@ -161,19 +161,19 @@ Comprobar en orden:
 14. el runtime J10 está registrado canónicamente;
 15. el SHA del runtime coincide entre `main`, registro y evidencia.
 
-Metadata observada durante A05:
+Metadata canónica reconciliada para J10 v0.6:
 
 ```text
 path = scripts/validate_test_coverage.py
-sha256_observed = 5b8e6a8bfb7200f595de4326442eb40e9b08178bf676c869d0983e39394ad6ef
-git_blob_observed = 490e4b4b7cbccd779a48a7693544b45857c7ffd9
-supabase_registration = NOT_FOUND
+sha256_observed = 105260673c5a6e906e28ef43b1fba661c234b3b1099f64a32db99bcc1c178f52
+git_blob_observed = eee45b76dce34398d254dc0485fb404280988931
+supabase_registration = supabase://private.lf_skill_artifacts/ART_SCRIPT_VALIDATE_TEST_COVERAGE
+registration_status = PASS_WITH_EVIDENCE
 ```
 
-La metadata observada no constituye aprobación. Mientras el registro y el
-control de identidad no estén reconciliados, el worker debe retornar
-`BLOCKED` después de preparar solo evidencia no canónica; no puede presentar
-el handoff como listo.
+Estos valores son una precondición verificable, no una autorización para que el
+worker ejecute J10. Cualquier ausencia o deriva entre `main`, Supabase y la
+evidencia obliga a retornar `BLOCKED` sin emitir un handoff listo.
 
 ## 8. Invariantes
 
@@ -371,7 +371,7 @@ El sidecar separado contiene:
 {
   "worker_profile": "PERFIL_STORY_TEST_DERIVER_LF",
   "worker_identity": "STORY_TEST_DERIVER_WORKER",
-  "worker_result": "BLOCKED",
+  "worker_result": "READY_FOR_J10",
   "story_pack_sha256": "<64-hex>",
   "written_outputs": [
     "story_pack.tests",
@@ -381,8 +381,10 @@ El sidecar separado contiene:
   ],
   "assertion_results": {},
   "runtime_path": "scripts/validate_test_coverage.py",
-  "runtime_sha256_observed": "5b8e6a8bfb7200f595de4326442eb40e9b08178bf676c869d0983e39394ad6ef",
-  "runtime_registration": "NOT_FOUND",
+  "runtime_sha256_observed": "105260673c5a6e906e28ef43b1fba661c234b3b1099f64a32db99bcc1c178f52",
+  "runtime_git_blob_observed": "eee45b76dce34398d254dc0485fb404280988931",
+  "runtime_registration": "supabase://private.lf_skill_artifacts/ART_SCRIPT_VALIDATE_TEST_COVERAGE",
+  "runtime_registration_status": "PASS_WITH_EVIDENCE",
   "evidence_refs": [],
   "retry_count": 0,
   "next_judge": "J10_TEST_COVERAGE"
@@ -397,8 +399,9 @@ RETURN_TO_WORKER
 BLOCKED
 ```
 
-Mientras el runtime no esté registrado y no bloquee identidad ausente o
-auto-ejecución, el valor obligatorio es `BLOCKED`.
+`READY_FOR_J10` solo es válido cuando el preflight confirma registro, SHA y
+separación de identidades. Si cualquiera de esos controles falla, el valor
+obligatorio es `BLOCKED`.
 
 ## 12. Comando reservado al juez
 
@@ -407,7 +410,7 @@ vez reconciliado el runtime:
 
 ```bash
 LF_EXECUTOR_IDENTITY=<independent_executor> \
-LF_JUDGE_VERSION=v0.5 \
+LF_JUDGE_VERSION=v0.6 \
 python scripts/validate_test_coverage.py j10-input.json \
   --evidence-ref <ref>
 ```
@@ -437,7 +440,7 @@ La existencia de un comando no autoriza al worker a ejecutarlo.
 - usar identidad de juez;
 - autoaprobar;
 - declarar producción, release o merge autónomo;
-- corregir A21 o el runtime fuera de su turno numérico.
+- alterar una dependencia canónica fuera del scope expresamente autorizado.
 
 ## 15. Evidencia mínima
 
