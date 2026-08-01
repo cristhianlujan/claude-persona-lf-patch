@@ -1,0 +1,38 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-BISC-033-A05-A52-COHERENCE-REPAIR",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "4cdb3a446bf4ca6ada26bf6f97303e4f8b508d88b625732922f3d3be86b3f583",
+  "judge_sha": "105260673c5a6e906e28ef43b1fba661c234b3b1099f64a32db99bcc1c178f52",
+  "source_sha_list": [
+    "1649c335e6c07f933fbe880d710373f923357d9a",
+    "048ac6eccc5580b6ad5b5cf4f0275628e62e7f6d5b67c9c55feef328b0b597b1",
+    "c8de1378e357e9e10e21628fce8655999b46e7b32410a367ffcb8d16c3b69d74",
+    "105260673c5a6e906e28ef43b1fba661c234b3b1099f64a32db99bcc1c178f52"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/agents/test-deriver.md",
+    "skills/creating-integral-user-stories/schemas/coverage-report.schema.json"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-01T01:13:00Z",
+  "evidence": {
+    "parent_artifact": "A05",
+    "dependency_artifact": "A52",
+    "scope": "A05_RUNTIME_METADATA_AND_A52_REPORT_SCHEMA_COHERENCE",
+    "a05_candidate_bytes": 13289,
+    "a05_candidate_sha256": "048ac6eccc5580b6ad5b5cf4f0275628e62e7f6d5b67c9c55feef328b0b597b1",
+    "a52_candidate_bytes": 10444,
+    "a52_candidate_sha256": "c8de1378e357e9e10e21628fce8655999b46e7b32410a367ffcb8d16c3b69d74",
+    "schema_draft7_check": "PASS",
+    "schema_v06_sample_check": "PASS",
+    "j10_selftest": "PASS_17_OF_17_AND_15_OF_15",
+    "j11_selftest": "PASS_WITH_EVIDENCE",
+    "artifact_pass_granted": false,
+    "sequence_resume_after_merge_readback": "A05"
+  }
+}
