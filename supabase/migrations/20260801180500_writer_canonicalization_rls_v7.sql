@@ -24,6 +24,17 @@ begin
 end
 $preflight$;
 
+-- Temporary owner context for replacing governance-owned functions and modifying the
+-- verifier-owned nonce relation. Every grant is revoked before commit.
+grant lf_governance_owner_v3 to postgres
+  with admin false inherit true set true
+  granted by postgres;
+grant lf_writer_verifier_v7 to postgres
+  with admin false inherit true set true
+  granted by postgres;
+grant create on schema public to lf_governance_owner_v3;
+grant create on schema private to lf_governance_owner_v3;
+
 -- CA-N31: the keystore must remain usable if postgres no longer has BYPASSRLS.
 drop policy if exists pol_lf_writer_hmac_keys_v7_postgres
   on private.lf_writer_hmac_keys_v7;
@@ -700,5 +711,11 @@ revoke all on function private.fn_writer_key_rotation_status_v7()
   from public,anon,authenticated;
 grant execute on function private.fn_writer_key_rotation_status_v7()
   to postgres,service_role,lf_governance_owner_v3;
+
+-- Remove all temporary owner context created by this migration.
+revoke create on schema public from lf_governance_owner_v3;
+revoke create on schema private from lf_governance_owner_v3;
+revoke lf_writer_verifier_v7 from postgres granted by postgres;
+revoke lf_governance_owner_v3 from postgres granted by postgres;
 
 commit;
