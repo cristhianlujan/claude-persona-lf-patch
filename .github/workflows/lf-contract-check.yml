@@ -127,4 +127,5 @@ jobs:
             .audit-output/creating-integral-user-stories
             skills/creating-integral-user-stories
           if-no-files-found: error
+          include-hidden-files: true
           retention-days: 7
