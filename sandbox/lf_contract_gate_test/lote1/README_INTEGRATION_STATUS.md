@@ -1,31 +1,39 @@
 # PR #93 · LOTE 1 · estado de integración
 
-## Naturaleza del paquete
+## Resultado de la auditoría estática
 
-Los archivos de este directorio son una propuesta versionada derivada del handoff consolidado. No forman parte de `supabase/migrations/` y no se ejecutan automáticamente.
+La auditoría del commit `2c97bb5387f4696fc6c9ea912c1a1ca7f31a5fcc` detectó que las piezas SQL alternativas `20260801_0001` a `20260801_0004` redefinían relaciones ya creadas por la cadena V7 activa. La combinación de estructuras incompatibles con `create table if not exists` podía dejar una migración parcialmente aplicada o una ruta de escritura muerta.
 
-## No es una migración aditiva
+Esas cuatro piezas fueron retiradas del directorio ejecutable. No deben restaurarse ni ejecutarse.
 
-El PR ya contiene objetos V7 con los mismos nombres y una estructura distinta. Por ello, las piezas `20260801_0001` a `20260801_0004` deben evaluarse como una alternativa de diseño que sustituiría la implementación draft correspondiente; no deben ejecutarse encima de la cadena V7 actual sin una migración de integración revisada y probada.
+## Integración activa
 
-## Integraciones todavía pendientes
+La capacidad útil del paquete —rotación con aceptación doble temporal— se integró mediante una única migración hacia adelante:
 
-1. Adaptar `public.record_external_ci_verification_v7` para usar el `key_id` firmado.
-2. Adaptar `public.record_lf_gate_test_v7` para usar el mismo contrato.
-3. Actualizar Edge V7 para firmar exactamente:
+`supabase/migrations/20260801180400_writer_key_rotation_v7.sql`
 
-```text
-<preimage> + 0x0a + <writer_token> + 0x0a + <key_id>
-```
+La migración:
 
-4. Transportar el `key_id` público junto con la firma, sin transportar la clave.
-5. Probar byte a byte los preimages de reconciliación y gate entre Edge y PostgreSQL.
-6. Definir la migración que sustituye o transforma los objetos V7 ya versionados.
-7. Ejecutar la batería adversarial únicamente en un entorno aislado.
+- extiende `private.lf_writer_hmac_keys_v7` sin crear una segunda relación;
+- mantiene `postgres` como owner del almacén de claves;
+- añade `key_id` público y lifecycle `PREPARED → ACTIVE → RETIRING → RETIRED`;
+- conserva el contrato HMAC actual `preimage:nonce`;
+- no cambia Edge ni las firmas de los RPC públicos;
+- acepta una clave `RETIRING` solo durante una ventana de diez minutos;
+- registra en cada nonce qué generación validó la firma;
+- mantiene `key_id` nullable para filas anteriores a la migración;
+- expone funciones administrativas únicamente a `postgres`;
+- mantiene `service_role` sin lectura de la clave ni ejecución de verificadores privados.
 
-## Interpretación correcta
+## Archivos de prueba y readback
 
-- El diagnóstico runtime de CA-N22, CA-N23 y CA-N29 proviene del handoff.
-- El código de este directorio no tiene evidencia runtime.
-- La batería SQL está versionada, pero no ejecutada.
-- La presencia de estos archivos no autoriza merge, despliegue, baseline ni modificación del proyecto activo.
+- `sandbox/lf_contract_gate_test/PR93_WRITER_V7_ADVERSARIAL_TESTS.sql`
+- `sandbox/lf_contract_gate_test/PR93_V7_READBACK.sql`
+- `sandbox/lf_contract_gate_test/lote1/PR93_LOTE1_ADVERSARIAL_TESTS.sql`
+- `sandbox/lf_contract_gate_test/lote1/PR93_LOTE1_READBACK.sql`
+
+Las baterías apuntan a la ruta activa `private.fn_consume_writer_proof_v7` y a los writers públicos. La prueba 13 cambia efectivamente a `service_role`, comprueba denegación del keystore y del verificador privado, llama al writer público con una firma fabricada y verifica que no se persista evidencia.
+
+## Límite
+
+Todo permanece versionado y sin ejecución runtime. La presencia de esta migración y de las pruebas no autoriza despliegue, merge, instalación de claves ni regeneración de baseline.
