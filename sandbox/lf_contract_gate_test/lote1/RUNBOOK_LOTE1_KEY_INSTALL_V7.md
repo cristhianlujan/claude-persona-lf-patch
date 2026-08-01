@@ -2,67 +2,75 @@
 
 ## Alcance
 
-Este runbook documenta un procedimiento futuro para un entorno aislado y, únicamente después de las autorizaciones requeridas, para el despliegue desde `main`. No autoriza ejecuciones sobre el proyecto activo, no contiene material de clave y no sustituye una prueba runtime.
+Procedimiento futuro para un entorno aislado y, solo después de las autorizaciones requeridas, para despliegue desde `main`. No contiene material de clave ni sustituye pruebas runtime.
+
+La implementación activa es:
+
+`supabase/migrations/20260801180400_writer_key_rotation_v7.sql`
+
+No usar las piezas alternativas `20260801_0001` a `20260801_0004`; fueron retiradas por colisión con la cadena V7.
+
+## Contrato que no cambia
+
+Edge y PostgreSQL continúan firmando y verificando exactamente:
+
+```text
+<preimage>:<nonce>
+```
+
+`key_id` no viaja por Edge ni por los RPC. PostgreSQL determina qué generación validó la firma y la registra en la fila del nonce.
 
 ## Condiciones previas
 
-1. El commit que se prueba está fijado por SHA.
-2. Las cuatro piezas SQL del directorio `lote1/` fueron revisadas contra ese SHA.
-3. El entorno de prueba está aislado del proyecto activo.
-4. La identidad administradora y la identidad revisora son distintas.
-5. La clave no se transporta por chat, ticket, PR, correo, log ni historial de terminal.
-6. Edge y PostgreSQL usan el mismo `key_id` público, pero almacenan la clave en superficies separadas.
-
-## Identificadores
-
-Formato de `key_id`:
-
-```text
-lf-writer-AAAA-MM-rNN
-```
-
-Formato de desafío:
-
-```text
-rotation-check-v7:<UUIDv4>
-```
-
-El desafío es disjunto de `reconciliation-v7:` y `gate-v7:`. Su respuesta no puede reutilizarse como prueba operativa.
+1. Commit fijado por SHA.
+2. Migraciones aplicadas en orden hasta `20260801180400` en un entorno aislado.
+3. Identidad administradora y revisora distintas.
+4. La clave no pasa por chat, ticket, PR, correo, log ni argumento visible de terminal.
+5. `service_role`, `anon`, `authenticated` y `lf_governance_owner_v3` no pueden leer ni modificar el keystore.
+6. Control positivo de la cadena activa disponible.
 
 ## Fase 1 · Preparación
 
-1. Generar una clave aleatoria fuera de ChatGPT y fuera del repositorio.
-2. Registrar solamente `rotation_id`, `key_id`, commit SHA y las identidades de operador/revisor.
-3. Instalar la clave como `PREPARED` en el keystore PostgreSQL mediante un canal administrativo que no deje el valor en argumentos, historial o logs.
-4. Configurar la misma clave como secreto Edge de próxima rotación, sin cambiar todavía el firmante activo.
-5. Confirmar mediante readback que `service_role`, `anon`, `authenticated` y `lf_governance_owner_v3` no pueden leer ni modificar el keystore.
+1. Generar una clave aleatoria fuera del repositorio.
+2. Definir un identificador público `lf-writer-AAAA-MM-rNN`.
+3. Instalarla como `PREPARED` mediante `private.fn_install_writer_hmac_key_v7` usando una sesión PostgreSQL administrativa.
+4. Generar un desafío `rotation-check-v7:<UUIDv4>`.
+5. Comparar la respuesta de `private.fn_writer_hmac_challenge_v7` con un HMAC calculado localmente dentro del canal administrativo seguro.
+6. No registrar la respuesta HMAC; persistir únicamente hashes y metadatos no secretos.
 
-## Fase 2 · Coincidencia sin revelar la clave
+## Fase 2 · Promoción en PostgreSQL
 
-1. Generar un UUIDv4 nuevo y formar el desafío `rotation-check-v7:<UUIDv4>`.
-2. Obtener la respuesta HMAC del verificador PostgreSQL para el `key_id` preparado.
-3. Obtener la respuesta HMAC de Edge para el mismo `key_id` y desafío mediante una ruta administrativa separada de la reconciliación operativa.
-4. Comparar localmente ambas respuestas y persistir solo sus SHA-256, nunca la clave ni la respuesta reutilizable.
-5. Ante cualquier diferencia, detener la rotación. La clave activa anterior permanece sin cambios.
+1. Ejecutar `private.fn_promote_writer_hmac_key_v7`.
+2. La clave anterior pasa a `RETIRING` y conserva aceptación durante diez minutos.
+3. La nueva clave pasa a `ACTIVE` en la misma transacción.
+4. PostgreSQL acepta firmas de `ACTIVE` y de `RETIRING` mientras la ventana siga abierta.
 
-## Fase 3 · Promoción y doble aceptación temporal
+## Fase 3 · Cambio de Edge
 
-1. Promover el `key_id` preparado.
-2. PostgreSQL marca la clave anterior como `RETIRING` y la nueva como `ACTIVE` en una sola transacción.
-3. Durante la ventana de transición, el verificador acepta `ACTIVE` y `RETIRING`; cada prueba queda ligada al `key_id` firmado.
-4. Cambiar Edge para firmar exclusivamente con el `key_id` nuevo.
-5. Ejecutar un control positivo completo y luego las pruebas adversariales 7–13.
-6. No interpretar pruebas negativas si el control positivo no produce exactamente un nonce consumido.
+1. Sustituir el secreto Edge `LF_RECONCILIATION_WRITER_HMAC_V7` por la nueva clave.
+2. Ejecutar inmediatamente un control positivo completo a través del writer público.
+3. Si falla, revertir Edge a la clave anterior antes de vencer la ventana de retiro.
+4. Ejecutar las pruebas adversariales 7–13.
+5. No interpretar pruebas negativas si el control positivo no consume exactamente el nonce esperado.
 
 ## Fase 4 · Retiro
 
-1. Esperar el TTL máximo del nonce más la ventana máxima de reintento.
-2. Confirmar que no existen nonces sin expirar para la clave `RETIRING`.
-3. Retirar la clave anterior.
-4. Ejecutar el readback completo.
-5. Registrar únicamente metadatos no secretos.
+1. Esperar al menos la ventana de diez minutos y confirmar que no hay nonces sin expirar ligados a la clave `RETIRING`.
+2. Ejecutar `private.fn_retire_writer_hmac_key_v7`.
+3. Ejecutar `PR93_V7_READBACK.sql`.
+4. Confirmar una sola clave `ACTIVE`, ninguna `PREPARED`, ninguna `RETIRING` vencida y cero acceso API al keystore.
 
-## Evidencia mínima
+## Abortos obligatorios
+
+- El desafío no coincide.
+- El control positivo falla.
+- Más de una clave aparece en `ACTIVE`, `PREPARED` o `RETIRING`.
+- Un rol API puede leer el keystore o ejecutar funciones privadas.
+- Edge y PostgreSQL dejan de coincidir después del cambio de secreto.
+- Aparece una referencia a Vault en la ruta de la clave V7.
+- Se intenta registrar material de clave o respuestas HMAC reutilizables.
+
+## Evidencia no secreta
 
 ```yaml
 rotation_id: <uuid>
@@ -70,8 +78,8 @@ old_key_id: <public-id>
 new_key_id: <public-id>
 commit_sha: <sha40>
 challenge_sha256: <sha256>
-edge_response_sha256: <sha256>
 database_response_sha256: <sha256>
+local_expected_response_sha256: <sha256>
 responses_match: true|false
 positive_control_nonce_count: <integer>
 tests_7_13_executed: true|false
@@ -79,16 +87,6 @@ operator_identity: <identity>
 reviewer_identity: <different-identity>
 ```
 
-## Abortos obligatorios
-
-- El control positivo falla.
-- Edge y PostgreSQL responden distinto al desafío.
-- Más de una clave está `ACTIVE` o `PREPARED`.
-- Un rol API puede leer, modificar o ejecutar directamente el keystore o las funciones administrativas.
-- El código Edge y PostgreSQL no construyen exactamente el mismo mensaje canónico.
-- Aparece una referencia a Vault en la ruta de la clave V7.
-- Se detecta un intento de registrar material secreto.
-
 ## Frontera de confianza
 
-Este diseño excluye a `service_role` de la clave. No protege frente a un administrador PostgreSQL capaz de modificar funciones o tablas privadas. Si ese administrador debe considerarse atacante, la solución requiere firma asimétrica o KMS/HSM: Edge conserva la clave privada y PostgreSQL verifica con una clave pública.
+El diseño excluye a `service_role` de la clave. No protege frente a un administrador PostgreSQL capaz de modificar funciones o tablas privadas. Para excluir también a ese administrador se requiere firma asimétrica o KMS/HSM.
