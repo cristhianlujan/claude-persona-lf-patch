@@ -1,0 +1,250 @@
+name: LF GitHub Reconciliation V3
+
+on:
+  workflow_run:
+    workflows: ["lf-contract-check"]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: read
+  id-token: write
+
+concurrency:
+  group: lf-github-reconcile-v3-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout exact validated commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 2
+
+      - name: Download authoritative audit artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: r8-continuous-audit-${{ github.event.workflow_run.id }}
+          path: .reconciliation-audit
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Capture source run, merged PR and branch protection
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const run = context.payload.workflow_run;
+            const { owner, repo } = context.repo;
+
+            const pullsResponse = await github.request(
+              'GET /repos/{owner}/{repo}/commits/{commit_sha}/pulls',
+              {
+                owner,
+                repo,
+                commit_sha: run.head_sha,
+                headers: { accept: 'application/vnd.github+json' },
+              },
+            );
+            const mergedPr = pullsResponse.data.find(
+              (pr) => Boolean(pr.merged_at) && pr.merge_commit_sha === run.head_sha,
+            ) ?? null;
+
+            let branchProtectionStatus = 'NOT_AUDITABLE_EXTERNAL';
+            let branchProtectionDetails = {};
+            try {
+              const response = await github.rest.repos.getBranchProtection({
+                owner,
+                repo,
+                branch: 'main',
+              });
+              const protection = response.data;
+              const requiredChecks = new Set([
+                ...(protection.required_status_checks?.contexts ?? []),
+                ...((protection.required_status_checks?.checks ?? []).map((check) => check.context)),
+              ]);
+              const criteria = {
+                lf_contract_check_required: requiredChecks.has('lf-contract-check'),
+                strict_status_checks: protection.required_status_checks?.strict === true,
+                admin_enforcement: protection.enforce_admins?.enabled === true,
+                approving_reviews: (protection.required_pull_request_reviews?.required_approving_review_count ?? 0) >= 1,
+                force_pushes_blocked: protection.allow_force_pushes?.enabled !== true,
+                deletions_blocked: protection.allow_deletions?.enabled !== true,
+              };
+              branchProtectionStatus = Object.values(criteria).every(Boolean) ? 'VERIFIED' : 'FAILED';
+              branchProtectionDetails = {
+                criteria,
+                required_checks: [...requiredChecks].sort(),
+              };
+            } catch (error) {
+              const status = error?.status ?? 0;
+              branchProtectionStatus = status === 404 ? 'NOT_CONFIGURED' : 'NOT_AUDITABLE_EXTERNAL';
+              branchProtectionDetails = {
+                http_status: status,
+                message: String(error?.message ?? error).slice(0, 500),
+              };
+            }
+
+            const metadata = {
+              source: {
+                id: Number(run.id),
+                name: run.name,
+                event: run.event,
+                head_sha: run.head_sha,
+                head_branch: run.head_branch,
+                conclusion: run.conclusion,
+                updated_at: run.updated_at,
+                html_url: run.html_url,
+              },
+              pull_request: mergedPr
+                ? {
+                    number: Number(mergedPr.number),
+                    state: 'MERGED',
+                    merged: true,
+                    merge_commit_sha: mergedPr.merge_commit_sha,
+                  }
+                : {
+                    number: null,
+                    state: 'UNKNOWN',
+                    merged: false,
+                    merge_commit_sha: null,
+                  },
+              branch_protection_status: branchProtectionStatus,
+              branch_protection_details: branchProtectionDetails,
+            };
+            fs.writeFileSync('github-metadata.json', JSON.stringify(metadata));
+
+      - name: Request GitHub OIDC token
+        id: oidc
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const token = await core.getIDToken('lf-supabase-github-reconcile-v3');
+            core.setSecret(token);
+            core.setOutput('token', token);
+
+      - name: Fetch governed artifact inventory
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          curl --silent --show-error --fail-with-body \
+            --retry 3 --retry-all-errors \
+            -H "Authorization: Bearer ${OIDC_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{"action":"inventory"}' \
+            "https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-github-reconcile-v3" \
+            -o governed-inventory.json
+          jq '{repository, artifact_count: (.inventory | length)}' governed-inventory.json
+
+      - name: Build reconciliation request
+        env:
+          RECONCILIATION_WORKFLOW_RUN_ID: ${{ github.run_id }}
+          SOURCE_WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
+          SOURCE_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import pathlib
+          import subprocess
+
+          audit_root = pathlib.Path('.reconciliation-audit')
+          manifests = list(audit_root.rglob('reconciliation-manifest-v3.json'))
+          if len(manifests) != 1:
+              raise SystemExit(f'expected exactly one reconciliation manifest, found {len(manifests)}')
+          manifest_path = manifests[0]
+          manifest_bytes = manifest_path.read_bytes()
+          manifest = json.loads(manifest_bytes)
+          metadata = json.loads(pathlib.Path('github-metadata.json').read_text())
+          inventory_response = json.loads(pathlib.Path('governed-inventory.json').read_text())
+          inventory = inventory_response['inventory']
+
+          source_head_sha = os.environ['SOURCE_HEAD_SHA']
+          source_run_id = int(os.environ['SOURCE_WORKFLOW_RUN_ID'])
+          if manifest.get('schema_version') != 'lf-reconciliation-manifest/v3':
+              raise SystemExit('unexpected reconciliation manifest schema')
+          if manifest.get('commit_sha') != source_head_sha:
+              raise SystemExit('manifest commit does not match source workflow head SHA')
+          if int(manifest.get('workflow_run_id', -1)) != source_run_id:
+              raise SystemExit('manifest workflow run ID does not match source workflow')
+          if manifest.get('workflow_event') != 'push':
+              raise SystemExit('manifest was not produced by a push workflow')
+
+          touched = set(
+              subprocess.check_output(
+                  ['git', 'diff-tree', '--no-commit-id', '--name-only', '-r', '--first-parent', source_head_sha],
+                  text=True,
+              ).splitlines()
+          )
+          manifest_files = manifest.get('files', {})
+          artifacts = []
+          for item in inventory:
+              artifact_id = int(item['artifact_id'])
+              relative_path = item['relative_path']
+              evidence = manifest_files.get(relative_path)
+              expected_sha = item['current_content_sha256']
+              audit_covered = bool(
+                  evidence
+                  and evidence.get('sha256') == expected_sha
+                  and isinstance(evidence.get('git_blob'), str)
+                  and len(evidence.get('git_blob')) == 40
+              )
+              artifacts.append(
+                  {
+                      'artifact_id': artifact_id,
+                      'relative_path': relative_path,
+                      'sha256': evidence.get('sha256') if evidence else None,
+                      'git_blob': evidence.get('git_blob') if evidence else None,
+                      'file_touched_by_merge': relative_path in touched,
+                      'audit_covered': audit_covered,
+                  }
+              )
+
+          request = {
+              'action': 'reconcile',
+              'reconciliation_workflow_run_id': int(os.environ['RECONCILIATION_WORKFLOW_RUN_ID']),
+              **metadata,
+              'audit_artifact_name': f'r8-continuous-audit-{source_run_id}',
+              'audit_manifest_sha256': hashlib.sha256(manifest_bytes).hexdigest(),
+              'artifacts': artifacts,
+          }
+          pathlib.Path('reconciliation-request.json').write_text(
+              json.dumps(request, sort_keys=True, separators=(',', ':')),
+              encoding='utf-8',
+          )
+          print(
+              json.dumps(
+                  {
+                      'artifacts': len(artifacts),
+                      'audit_covered': sum(1 for artifact in artifacts if artifact['audit_covered']),
+                      'touched': sum(1 for artifact in artifacts if artifact['file_touched_by_merge']),
+                      'branch_protection_status': metadata['branch_protection_status'],
+                      'merged_pr': metadata['pull_request']['merged'],
+                  },
+                  sort_keys=True,
+              )
+          )
+          PY
+
+      - name: Persist reconciliation and test evidence
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          curl --silent --show-error --fail-with-body \
+            --retry 3 --retry-all-errors \
+            -H "Authorization: Bearer ${OIDC_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data-binary @reconciliation-request.json \
+            "https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-github-reconcile-v3" \
+            -o reconciliation-response.json
+          jq '{execution_id, artifacts_expected, artifacts_reported, pass_count, fail_count, promoted_artifact_ids, promotion_pending_artifact_ids}' reconciliation-response.json
