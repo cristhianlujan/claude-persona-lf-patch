@@ -13,9 +13,11 @@ La migración obtiene temporalmente las membresías de:
 - `lf_writer_verifier_v7`;
 - `lf_governance_owner_v3`.
 
-`fn_writer_preimage_scope_v7(text)` concede `EXECUTE` a `postgres` bajo
-`lf_writer_verifier_v7`. Los helpers de canonicalización, framing y preimage lo hacen
-bajo `lf_governance_owner_v3`. Las dos membresías se revocan antes del `COMMIT`.
+Las dos membresías se obtienen antes de cualquier `ALTER TABLE`, `CREATE TRIGGER` o
+concesión de funciones. `fn_writer_preimage_scope_v7(text)` concede `EXECUTE` a
+`postgres` bajo `lf_writer_verifier_v7`; los helpers de canonicalización, framing y
+preimage lo hacen bajo `lf_governance_owner_v3`. Ambas membresías se revocan antes
+del `COMMIT`.
 
 ## CA-N50 · DDL del trigger
 
