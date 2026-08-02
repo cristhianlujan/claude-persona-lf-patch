@@ -63,6 +63,58 @@ async function gitBlob(bytes: Uint8Array): Promise<string> {
   return hex(await crypto.subtle.digest("SHA-1", payload));
 }
 
+const CANONICAL_KEY_RE = /^[A-Za-z0-9_.-]+$/;
+
+function canonicalJson(value: unknown): string {
+  if (value === null) return "null";
+
+  if (typeof value === "string") return JSON.stringify(value);
+  if (typeof value === "boolean") return value ? "true" : "false";
+  if (typeof value === "number") {
+    if (!Number.isSafeInteger(value)) {
+      throw new Error("Canonical JSON numbers must be JavaScript-safe integers");
+    }
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => canonicalJson(item)).join(",")}]`;
+  }
+
+  if (typeof value === "object") {
+    const object = value as Record<string, unknown>;
+    const keys = Object.keys(object).sort();
+    for (const key of keys) {
+      if (!CANONICAL_KEY_RE.test(key)) {
+        throw new Error("Canonical JSON object keys must be ASCII identifiers");
+      }
+      if (object[key] === undefined) {
+        throw new Error("Canonical JSON does not allow undefined values");
+      }
+    }
+    return `{${keys.map((key) => `${JSON.stringify(key)}:${canonicalJson(object[key])}`).join(",")}}`;
+  }
+
+  throw new Error("Canonical JSON value has unsupported type");
+}
+
+async function payloadSha256(payload: Record<string, unknown>): Promise<string> {
+  return sha256Bytes(encoder.encode(canonicalJson(payload)));
+}
+
+function frameComponent(value: string): string {
+  return `${encoder.encode(value).byteLength}#${value}`;
+}
+
+async function signedPreimage(
+  scope: "reconciliation-v7" | "gate-v7",
+  payload: Record<string, unknown>,
+  execution: string,
+): Promise<string> {
+  const payloadHash = await payloadSha256(payload);
+  return frameComponent(scope) + frameComponent(execution) + frameComponent(payloadHash);
+}
+
 async function writerProof(preimage: string): Promise<{ nonce: string; signature: string }> {
   const nonce = `${crypto.randomUUID()}.${Math.floor(Date.now() / 1000) + 300}`;
   const signature = await crypto.subtle.sign(
@@ -322,43 +374,25 @@ function nativeProtectionVerified(input: ReconcileBody): boolean {
     c.bypass_actors_empty === true;
 }
 
-function reconciliationPreimage(payload: Record<string, any>, execution: string): string {
-  return [
-    "reconciliation-v7",
-    execution,
-    payload.artifact_id,
-    payload.workflow_run_id,
-    payload.merge_commit_sha,
-    payload.artifact_sha256,
-    payload.branch_protection_status,
-    payload.result,
-    payload.audit_manifest_sha256,
-  ].join(":");
+async function reconciliationPreimage(
+  payload: Record<string, unknown>,
+  execution: string,
+): Promise<string> {
+  return signedPreimage("reconciliation-v7", payload, execution);
 }
 
-function gatePreimage(payload: Record<string, any>, execution: string): string {
-  return [
-    "gate-v7",
-    execution,
-    payload.artifact_id,
-    payload.test_code,
-    payload.source_workflow_run_id,
-    payload.source_commit_sha,
-    String(payload.passed),
-    payload.target_relation,
-    payload.gate_code,
-    payload.probe_preimage?.expected_sha256 ?? "",
-    payload.observed_outcome?.artifact_sha256 ?? "",
-    String(payload.observed_outcome?.audit_covered),
-    payload.persisted_effects?.github_reconciliation_run_id ?? "",
-  ].join(":");
+async function gatePreimage(
+  payload: Record<string, unknown>,
+  execution: string,
+): Promise<string> {
+  return signedPreimage("gate-v7", payload, execution);
 }
 
 async function recordReconciliation(
   payload: Record<string, any>,
   execution: string,
 ): Promise<number> {
-  const proof = await writerProof(reconciliationPreimage(payload, execution));
+  const proof = await writerProof(await reconciliationPreimage(payload, execution));
   return Number(await rpc<number>("record_external_ci_verification_v7", {
     p_payload: payload,
     p_execution_id: execution,
@@ -368,7 +402,7 @@ async function recordReconciliation(
 }
 
 async function recordGate(payload: Record<string, any>, execution: string): Promise<number> {
-  const proof = await writerProof(gatePreimage(payload, execution));
+  const proof = await writerProof(await gatePreimage(payload, execution));
   return Number(await rpc<number>("record_lf_gate_test_v7", {
     p_payload: payload,
     p_execution_id: execution,
