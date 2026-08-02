@@ -1,64 +1,98 @@
-# PR #93 · LOTE-C · Guardas CA-N44 a CA-N48
+# PR #93 · LOTE-D · Guardas CA-N49 a CA-N55
 
 ## Alcance
 
-Este lote corrige exclusivamente la capa de evidencia y el anclaje del nonce del gate.
-No autoriza despliegue, instalación de claves, conexión a Supabase, merge ni baseline.
+Este lote corrige la migración `180530` antes de cualquier despliegue. No autoriza
+conexión a Supabase, ejecución SQL, instalación de claves, despliegue Edge, merge ni
+regeneración de baseline.
 
-## CA-N44 · números de prueba
+## CA-N49 · grants bajo el owner correcto
 
-Los identificadores de workflow de la batería están dentro del rango seguro de
-JavaScript/PostgreSQL. Se agrega una prueba negativa explícita para
-`9007199254740992`, que debe fallar con SQLSTATE `22023` antes del HMAC y sin efectos
-en nonces, reconciliaciones, gates o eventos.
+La migración obtiene temporalmente las membresías de:
 
-## CA-N45 · nonce del gate
+- `lf_writer_verifier_v7`;
+- `lf_governance_owner_v3`.
 
-`trg_05_bind_gate_writer_nonce_v7` se ejecuta `BEFORE INSERT` y `ENABLE ALWAYS` sobre
-`private.lf_gate_test_runs_v3`. Obtiene el hash del nonce del evento creado en la misma
-transacción, comprueba el hash del preimage y persiste `writer_nonce_sha256` dentro de
-`persisted_effects` de la fila privada. También recalcula `persisted_effects_sha256`.
+`fn_writer_preimage_scope_v7(text)` concede `EXECUTE` a `postgres` bajo
+`lf_writer_verifier_v7`. Los helpers de canonicalización, framing y preimage lo hacen
+bajo `lf_governance_owner_v3`. Las dos membresías se revocan antes del `COMMIT`.
 
-`fn_gate_nonce_v7_valid` usa la fila privada como ancla primaria y exige que el evento
-asociado coincida tanto en nonce como en preimage. Una mutación aislada del evento
-produce rechazo, no reparación de evidencia.
+## CA-N50 · DDL del trigger
 
-## CA-N46 · readbacks confiables
+La función del trigger se crea bajo `lf_governance_owner_v3`, pero el `DROP TRIGGER`,
+`CREATE TRIGGER` y `ENABLE ALWAYS` se ejecutan nuevamente en el contexto del ejecutor
+de la migración, siguiendo el patrón de `180315`.
 
-`postgres` recibe `EXECUTE` explícito sobre los helpers de canonicalización, framing y
-preimage necesarios para las pruebas y readbacks. `anon`, `authenticated` y
-`service_role` permanecen revocados.
+El preflight confirma que el ejecutor puede administrar la tabla
+`private.lf_gate_test_runs_v3`.
 
-## CA-N47 · cobertura restaurada
+## CA-N51 · corte explícito
 
-La batería incluye:
+V7 continúa sin desplegarse, por lo que el estado esperado es cero gates V7 previos.
 
-- parser framed positivo y vectores malformados;
-- entero inseguro rechazado antes del HMAC;
-- control positivo y replay exacto;
-- nonce expirado y futuro;
-- firma inválida;
-- claims ausentes y claims `anon`;
-- writer público de reconciliación y binding exacto;
-- retry idempotente sin duplicar reconciliaciones ni eventos;
-- payload mutado después de firmar y cero efectos;
-- writer público de gate, nonce privado y cross-check del evento;
-- retry idempotente sin duplicar gate ni evento;
-- aceptación simultánea de clave `RETIRING` y `ACTIVE`;
-- prueba 13 de acceso API denegado;
-- invariante de separación;
-- `ROLLBACK` final.
+La migración no invalida filas silenciosamente. Si encuentra un gate V7 anterior sin
+`writer_nonce_sha256`, aborta con SQLSTATE `55000` y exige un backfill explícito antes
+de continuar. Una reaplicación después de insertar gates con el contrato nuevo sigue
+siendo válida.
 
-## CA-N48 · invariante permanente
+## CA-N52 · alineación fila-evento
 
-`fn_writer_key_separation_v7_valid()` cubre explícitamente:
+El nonce ya no se añade dentro de `persisted_effects`.
 
-- `fn_writer_preimage_scope_v7(text)`;
-- `fn_bind_gate_writer_nonce_v7()`.
+Se agrega la columna privada:
 
-Ambas deben permanecer no ejecutables por `service_role`.
+`private.lf_gate_test_runs_v3.writer_nonce_sha256`
+
+El trigger `trg_05_bind_gate_writer_nonce_v7` se ejecuta `BEFORE INSERT OR UPDATE` y
+`ENABLE ALWAYS`. Para filas V7:
+
+- obtiene el nonce desde el evento de evidencia creado por el writer;
+- exige el mismo `signed_preimage_sha256`;
+- exige igualdad completa de `persisted_effects`;
+- exige igualdad de `persisted_effects_sha256`;
+- recalcula el digest de la fila para comprobarlo;
+- persiste el nonce únicamente en la columna privada;
+- bloquea cambios posteriores de evento, efectos, hash o nonce.
+
+El evento y la fila conservan exactamente los mismos `persisted_effects` firmados.
+
+## CA-N53 y CA-N54 · preflight y readback
+
+El preflight incluye `fn_frame_component_v7(text)`.
+
+El readback comprueba:
+
+- owners de binder, validador e invariante;
+- owner de la tabla;
+- columna y constraint del nonce;
+- seis grants de helpers para `postgres`;
+- denegación de roles API;
+- trigger `BEFORE INSERT OR UPDATE` y `ENABLE ALWAYS`;
+- uso de la columna privada por el validador;
+- alineación fila-evento;
+- membresías y privilegios `CREATE` residuales.
+
+## CA-N55 · batería concluyente
+
+`PR93_WRITER_V7_ADVERSARIAL_TESTS.sql` añade:
+
+- bytes sobrantes después de tres frames válidos;
+- `RESET ROLE` garantizado ante cualquier SQLSTATE;
+- verificación del `key_id` registrado por clave `RETIRING` y `ACTIVE`;
+- ventana de rotación exacta de diez minutos;
+- rechazo de retiro antes del fin del overlap;
+- rechazo de una tercera promoción mientras existe una clave `RETIRING`;
+- comprobación estática de exclusión de claves `RETIRING` expiradas;
+- igualdad de nonce, `persisted_effects` y `persisted_effects_sha256` entre fila y evento.
+
+La batería termina con `ROLLBACK`.
 
 ## Evidencia pendiente
 
-Todo permanece únicamente versionado. Siguen pendientes la auditoría estática del
-nuevo head y la ejecución en un entorno Supabase aislado.
+Todo permanece únicamente versionado. Siguen pendientes:
+
+1. auditoría estática independiente del nuevo head;
+2. aplicación de migraciones en un entorno Supabase aislado;
+3. ejecución completa de baterías y readbacks;
+4. test Edge y comparación Edge/PostgreSQL;
+5. controles administrativos externos previos al merge.
