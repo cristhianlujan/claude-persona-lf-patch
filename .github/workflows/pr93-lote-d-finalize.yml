@@ -1,0 +1,122 @@
+name: PR93 Finalize LOTE-D ordering
+
+on:
+  push:
+    branches:
+      - agent/pr93-lote-d-final
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply deterministic privilege-order patch
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path('supabase/migrations/20260801180530_writer_evidence_runtime_hardening_v7.sql')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace(
+              "do $preflight$\ndeclare\n  v_gate_owner oid;\nbegin\n",
+              "do $preflight$\nbegin\n",
+              1,
+          )
+          s = s.replace(
+              """\n  select c.relowner into v_gate_owner
+          from pg_class c
+          where c.oid='private.lf_gate_test_runs_v3'::regclass;
+
+          if not pg_has_role(current_user,pg_get_userbyid(v_gate_owner),'USAGE')
+             and not coalesce((select r.rolsuper from pg_roles r where r.rolname=current_user),false) then
+            raise exception 'migration executor cannot administer private.lf_gate_test_runs_v3';
+          end if;
+        end
+        $preflight$;
+
+        -- CA-N52: keep signed persisted_effects byte-for-byte aligned with the event.
+        """,
+              """\nend
+        $preflight$;
+
+        -- CA-N49/CA-N50: obtain both owner contexts before any function grant or table DDL.
+        grant lf_writer_verifier_v7 to postgres
+          with admin false inherit true set true
+          granted by postgres;
+        grant lf_governance_owner_v3 to postgres
+          with admin false inherit true set true
+          granted by postgres;
+
+        do $table_owner_preflight$
+        declare
+          v_gate_owner oid;
+        begin
+          select c.relowner into v_gate_owner
+          from pg_class c
+          where c.oid='private.lf_gate_test_runs_v3'::regclass;
+
+          if not pg_has_role(current_user,pg_get_userbyid(v_gate_owner),'USAGE')
+             and not coalesce((select r.rolsuper from pg_roles r where r.rolname=current_user),false) then
+            raise exception 'migration executor cannot administer private.lf_gate_test_runs_v3';
+          end if;
+        end
+        $table_owner_preflight$;
+
+        -- CA-N52: keep signed persisted_effects byte-for-byte aligned with the event.
+        """,
+              1,
+          )
+          s = s.replace(
+              """-- CA-N49: obtain both owner contexts before issuing grants.
+        grant lf_writer_verifier_v7 to postgres
+          with admin false inherit true set true
+          granted by postgres;
+        grant lf_governance_owner_v3 to postgres
+          with admin false inherit true set true
+          granted by postgres;
+
+        set local role lf_writer_verifier_v7;
+        """,
+              """-- CA-N49: issue each helper grant under its actual owner role.
+        set local role lf_writer_verifier_v7;
+        """,
+              1,
+          )
+          if 'do $table_owner_preflight$' not in s:
+              raise SystemExit('migration patch did not apply')
+          p.write_text(s, encoding='utf-8')
+
+          g = Path('sandbox/lf_contract_gate_test/PR93_LOTE_C_GUARDS.md')
+          t = g.read_text(encoding='utf-8')
+          t = t.replace(
+              """`fn_writer_preimage_scope_v7(text)` concede `EXECUTE` a `postgres` bajo
+        `lf_writer_verifier_v7`. Los helpers de canonicalización, framing y preimage lo hacen
+        bajo `lf_governance_owner_v3`. Las dos membresías se revocan antes del `COMMIT`.
+        """,
+              """Las dos membresías se obtienen antes de cualquier `ALTER TABLE`, `CREATE TRIGGER` o
+        concesión de funciones. `fn_writer_preimage_scope_v7(text)` concede `EXECUTE` a
+        `postgres` bajo `lf_writer_verifier_v7`; los helpers de canonicalización, framing y
+        preimage lo hacen bajo `lf_governance_owner_v3`. Ambas membresías se revocan antes
+        del `COMMIT`.
+        """,
+              1,
+          )
+          if 'antes de cualquier `ALTER TABLE`' not in t:
+              raise SystemExit('guards patch did not apply')
+          g.write_text(t, encoding='utf-8')
+          PY
+          rm .github/workflows/pr93-lote-d-finalize.yml
+      - name: Commit final tree
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git diff --cached --check
+          git commit -m "fix(governance): order LOTE-D owner context"
+          git push
