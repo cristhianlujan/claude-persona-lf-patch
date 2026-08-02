@@ -199,4 +199,4 @@ pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
       'lf_governance_owner_v3','private','CREATE'
     )
   )
-) as pr93_lote_d_evidence_readback;
+) as pr93_lote_e_evidence_readback;

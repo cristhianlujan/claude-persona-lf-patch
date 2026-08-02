@@ -17,7 +17,7 @@ begin
          and table_name='lf_gate_test_runs_v3'
          and column_name='writer_nonce_sha256'
      ) then
-    raise exception 'LOTE-D V7 functions or gate nonce column are missing';
+    raise exception 'LOTE-E V7 functions or gate nonce column are missing';
   end if;
   if exists(select 1 from private.lf_writer_hmac_keys_v7) then
     raise exception 'isolated test keystore must be empty';

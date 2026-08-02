@@ -30,7 +30,7 @@ begin
 
   if not exists(select 1 from pg_roles where rolname='lf_writer_verifier_v7')
      or not exists(select 1 from pg_roles where rolname='lf_governance_owner_v3') then
-    raise exception 'V7 owner roles must exist before LOTE-D';
+    raise exception 'V7 owner roles must exist before LOTE-E';
   end if;
 
 end
@@ -77,7 +77,7 @@ begin
   ) then
     raise exception using
       errcode='55000',
-      message='preexisting V7 gate rows require explicit nonce backfill before LOTE-D';
+      message='preexisting V7 gate rows require explicit nonce backfill before LOTE-E';
   end if;
 end
 $preexisting_v7$;
