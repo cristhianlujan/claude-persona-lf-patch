@@ -1,4 +1,4 @@
--- PR #93 V7 writer adversarial tests after LOTE-D.
+-- PR #93 V7 writer adversarial tests after LOTE-E.
 -- Isolated environment only. The transaction always rolls back.
 
 begin;
@@ -17,7 +17,7 @@ begin
          and table_name='lf_gate_test_runs_v3'
          and column_name='writer_nonce_sha256'
      ) then
-    raise exception 'LOTE-D V7 functions or gate nonce column are missing';
+    raise exception 'LOTE-E V7 functions or gate nonce column are missing';
   end if;
   if exists(select 1 from private.lf_writer_hmac_keys_v7) then
     raise exception 'isolated test keystore must be empty';
@@ -28,10 +28,10 @@ $preflight$;
 select private.fn_install_writer_hmac_key_v7(
   'lf-writer-2099-01-r98',
   'PR93_TEST_ONLY_HMAC_KEY_A_7b15d6e2_DO_NOT_REUSE',
-  'PR93-LOTE-D'
+  'PR93-LOTE-E'
 );
 select private.fn_promote_writer_hmac_key_v7(
-  'lf-writer-2099-01-r98','PR93-LOTE-D'
+  'lf-writer-2099-01-r98','PR93-LOTE-E'
 );
 
 -- Parser vectors, including a valid three-frame preimage with trailing bytes.
@@ -50,6 +50,9 @@ begin
        private.fn_gate_preimage_v7(jsonb_build_object('case','gate'),'PR93-PARSER')
      )<>'GATE' then
     raise exception 'valid framed gate was rejected';
+  end if;
+  if private.fn_writer_preimage_scope_v7(v_valid_manual)<>'RECONCILIATION' then
+    raise exception 'manual three-frame control was rejected';
   end if;
   if private.fn_writer_preimage_scope_v7('reconciliation-v7:legacy') is not null
      or private.fn_writer_preimage_scope_v7('017#reconciliation-v7') is not null
@@ -307,6 +310,7 @@ declare
   v_artifact_id bigint; v_path text; v_run bigint; v_payload jsonb;
   v_preimage text; v_nonce text; v_signature text;
   v_gate bigint; v_retry bigint; v_nonces bigint; v_gates bigint; v_events bigint;
+  v_downgrade_rejected boolean:=false; v_message text;
 begin
   select id,relative_path into v_artifact_id,v_path
   from private.lf_skill_artifacts order by id limit 1;
@@ -319,7 +323,7 @@ begin
   if v_run is null then raise exception 'test reconciliation missing'; end if;
 
   v_payload:=jsonb_build_object(
-    'test_code','PR93-LOTE-D','artifact_id',v_artifact_id,
+    'test_code','PR93-LOTE-E','artifact_id',v_artifact_id,
     'gate_code','EXTERNAL-CI-V3','test_kind','INTEGRATION','target_relation',v_path,
     'probe_preimage',jsonb_build_object('expected_sha256',repeat('c',64)),
     'expected_outcome',jsonb_build_object('result','FAIL'),
@@ -373,6 +377,21 @@ begin
     raise exception 'gate proof was not anchored consistently';
   end if;
 
+  begin
+    update private.lf_gate_test_runs_v3
+    set writer_authentication='PR93_DOWNGRADE_ATTEMPT'
+    where id=v_gate;
+  exception when sqlstate '55000' then
+    get stacked diagnostics v_message=message_text;
+    v_downgrade_rejected:=position('cannot be downgraded' in v_message)>0;
+  end;
+  if not v_downgrade_rejected
+     or (select writer_authentication
+         from private.lf_gate_test_runs_v3 where id=v_gate)
+        is distinct from 'GITHUB_OIDC_HMAC_NONCE_V7' then
+    raise exception 'V7 gate authentication downgrade was not blocked';
+  end if;
+
   select count(*) into v_nonces from private.lf_reconciliation_writer_nonces_v7;
   select count(*) into v_gates from private.lf_gate_test_runs_v3;
   select count(*) into v_events from public.lf_eventos;
@@ -399,6 +418,70 @@ begin
 end
 $gate_path$;
 
+-- Expired RETIRING key must be ignored by the verifier, not merely by text inspection.
+do $expired_retiring_key$
+declare
+  v_preimage text:=private.fn_reconciliation_preimage_v7(
+    jsonb_build_object('case','expired-retiring-key'),'PR93-EXPIRED-RETIRING'
+  );
+  v_nonce text:=gen_random_uuid()::text||'.'||
+    floor(extract(epoch from clock_timestamp()+interval '5 minutes'))::bigint;
+  v_signature text;
+  v_nonce_hash text;
+begin
+  insert into private.lf_writer_hmac_keys_v7(
+    key_name,key_id,key_material,active,lifecycle_state,created_at,
+    installed_by_execution_id,activated_at,retiring_at,retiring_until,
+    retired_at,last_transition_execution_id
+  ) values (
+    'lf_reconciliation_writer_hmac_v7',
+    'lf-writer-2099-01-r97',
+    'PR93_TEST_ONLY_EXPIRED_HMAC_KEY_4c71e8aa_DO_NOT_REUSE',
+    false,
+    'RETIRING',
+    clock_timestamp()-interval '20 minutes',
+    'PR93-LOTE-E',
+    clock_timestamp()-interval '20 minutes',
+    clock_timestamp()-interval '15 minutes',
+    clock_timestamp()-interval '5 minutes',
+    null,
+    'PR93-LOTE-E'
+  );
+
+  perform set_config('request.jwt.claims','{"role":"service_role"}',true);
+  v_signature:=encode(extensions.hmac(
+    convert_to(v_preimage||':'||v_nonce,'UTF8'),
+    convert_to('PR93_TEST_ONLY_EXPIRED_HMAC_KEY_4c71e8aa_DO_NOT_REUSE','UTF8'),
+    'sha256'
+  ),'hex');
+  v_nonce_hash:=encode(
+    extensions.digest(convert_to(v_nonce,'UTF8'),'sha256'),
+    'hex'
+  );
+
+  if private.fn_consume_writer_proof_v7(v_preimage,v_signature,v_nonce)
+     or exists(
+       select 1
+       from private.lf_reconciliation_writer_nonces_v7
+       where nonce_sha256=v_nonce_hash
+     ) then
+    raise exception 'expired RETIRING key was accepted';
+  end if;
+
+  perform private.fn_retire_writer_hmac_key_v7(
+    'lf-writer-2099-01-r97','PR93-LOTE-E'
+  );
+  if not exists(
+    select 1
+    from private.lf_writer_hmac_keys_v7
+    where key_id='lf-writer-2099-01-r97'
+      and lifecycle_state='RETIRED'
+  ) then
+    raise exception 'expired RETIRING fixture was not retired';
+  end if;
+end
+$expired_retiring_key$;
+
 -- Rotation overlap: verify exact window, both keys, key_id attribution and guards.
 do $rotation_overlap$
 declare
@@ -416,10 +499,10 @@ begin
   perform private.fn_install_writer_hmac_key_v7(
     'lf-writer-2099-02-r99',
     'PR93_TEST_ONLY_HMAC_KEY_B_9c81f1a4_DO_NOT_REUSE',
-    'PR93-LOTE-D'
+    'PR93-LOTE-E'
   );
   perform private.fn_promote_writer_hmac_key_v7(
-    'lf-writer-2099-02-r99','PR93-LOTE-D'
+    'lf-writer-2099-02-r99','PR93-LOTE-E'
   );
 
   if not exists(
@@ -475,7 +558,7 @@ begin
 
   begin
     perform private.fn_retire_writer_hmac_key_v7(
-      'lf-writer-2099-01-r98','PR93-LOTE-D'
+      'lf-writer-2099-01-r98','PR93-LOTE-E'
     );
   exception when sqlstate '55000' then
     get stacked diagnostics v_message=message_text;
@@ -488,11 +571,11 @@ begin
   perform private.fn_install_writer_hmac_key_v7(
     'lf-writer-2099-03-r100',
     'PR93_TEST_ONLY_HMAC_KEY_C_b0a113dd_DO_NOT_REUSE',
-    'PR93-LOTE-D'
+    'PR93-LOTE-E'
   );
   begin
     perform private.fn_promote_writer_hmac_key_v7(
-      'lf-writer-2099-03-r100','PR93-LOTE-D'
+      'lf-writer-2099-03-r100','PR93-LOTE-E'
     );
   exception when sqlstate '55000' then
     get stacked diagnostics v_message=message_text;

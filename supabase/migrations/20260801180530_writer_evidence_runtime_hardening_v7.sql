@@ -1,4 +1,4 @@
--- PR #93 / LOTE-D / CA-N49..CA-N55 deployment and evidence hardening.
+-- PR #93 / LOTE-E / CA-N56..CA-N60 final static hardening.
 -- This migration has not been deployed. It replaces the pre-deployment LOTE-C
 -- definition so the migration chain remains executable and fail-closed.
 
@@ -15,14 +15,22 @@ begin
      or to_regprocedure('private.fn_canonical_json_v7(jsonb)') is null
      or to_regprocedure('private.fn_payload_sha256_v7(jsonb)') is null
      or to_regprocedure('private.fn_frame_component_v7(text)') is null
+     or to_regprocedure('extensions.digest(bytea,text)') is null
+     or to_regprocedure('private.fn_writer_hmac_v7_valid(text,text,text)') is null
+     or to_regprocedure('private.fn_writer_hmac_v7_match_key(text,text,text)') is null
+     or to_regprocedure('private.fn_consume_writer_proof_v7(text,text,text)') is null
+     or to_regprocedure('private.fn_install_writer_hmac_key_v7(text,text,text)') is null
+     or to_regprocedure('private.fn_writer_hmac_challenge_v7(text,text)') is null
+     or to_regprocedure('private.fn_promote_writer_hmac_key_v7(text,text)') is null
+     or to_regprocedure('private.fn_retire_writer_hmac_key_v7(text,text)') is null
      or to_regprocedure('private.fn_gate_nonce_v7_valid(bigint)') is null
      or to_regprocedure('private.fn_writer_key_separation_v7_valid()') is null then
-    raise exception 'V7 tables, helpers, validator and separation invariant must exist before LOTE-D';
+    raise exception 'V7 tables, crypto dependencies, helpers, validator and separation invariant must exist before LOTE-E';
   end if;
 
   if not exists(select 1 from pg_roles where rolname='lf_writer_verifier_v7')
      or not exists(select 1 from pg_roles where rolname='lf_governance_owner_v3') then
-    raise exception 'V7 owner roles must exist before LOTE-D';
+    raise exception 'V7 owner roles must exist before LOTE-E';
   end if;
 
 end
@@ -69,7 +77,7 @@ begin
   ) then
     raise exception using
       errcode='55000',
-      message='preexisting V7 gate rows require explicit nonce backfill before LOTE-D';
+      message='preexisting V7 gate rows require explicit nonce backfill before LOTE-E';
   end if;
 end
 $preexisting_v7$;
@@ -121,6 +129,14 @@ declare
   v_event_effects_hash text;
   v_row_effects_hash text;
 begin
+  if tg_op='UPDATE'
+     and old.writer_authentication='GITHUB_OIDC_HMAC_NONCE_V7'
+     and new.writer_authentication is distinct from 'GITHUB_OIDC_HMAC_NONCE_V7' then
+    raise exception using
+      errcode='55000',
+      message='V7 gate authentication cannot be downgraded';
+  end if;
+
   if new.writer_authentication is distinct from 'GITHUB_OIDC_HMAC_NONCE_V7' then
     return new;
   end if;
@@ -176,6 +192,7 @@ alter function private.fn_bind_gate_writer_nonce_v7()
   owner to lf_governance_owner_v3;
 revoke all on function private.fn_bind_gate_writer_nonce_v7()
   from public,anon,authenticated,service_role;
+-- CREATE TRIGGER requires EXECUTE for its creator; this grant is temporary.
 grant execute on function private.fn_bind_gate_writer_nonce_v7() to postgres;
 
 -- The private row is authoritative; the event independently cross-checks nonce,
@@ -235,9 +252,22 @@ for each row execute function private.fn_bind_gate_writer_nonce_v7();
 alter table private.lf_gate_test_runs_v3
   enable always trigger trg_05_bind_gate_writer_nonce_v7;
 
+-- The trigger is installed; remove the temporary creator privilege.
+set local role lf_governance_owner_v3;
+revoke execute on function private.fn_bind_gate_writer_nonce_v7() from postgres;
+reset role;
+
 revoke create on schema private from lf_governance_owner_v3;
 revoke lf_governance_owner_v3 from postgres granted by postgres;
 revoke lf_writer_verifier_v7 from postgres granted by postgres;
+
+do $post_create_dependencies$
+begin
+  if to_regprocedure('private.fn_bind_gate_writer_nonce_v7()') is null then
+    raise exception 'V7 gate binder must exist before the separation invariant';
+  end if;
+end
+$post_create_dependencies$;
 
 -- CA-N48: preserve every prior separation check and include the parser/binder.
 create or replace function private.fn_writer_key_separation_v7_valid()
