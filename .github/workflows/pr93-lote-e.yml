@@ -1,0 +1,418 @@
+name: PR93 Apply LOTE-E
+
+on:
+  push:
+    branches:
+      - agent/pr93-lote-e
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply deterministic LOTE-E patch
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def require(text: str, needle: str, label: str) -> None:
+              if needle not in text:
+                  raise SystemExit(f"missing marker: {label}")
+
+          p = Path("supabase/migrations/20260801180530_writer_evidence_runtime_hardening_v7.sql")
+          s = p.read_text(encoding="utf-8")
+          s = s.replace(
+              "-- PR #93 / LOTE-D / CA-N49..CA-N55 deployment and evidence hardening.",
+              "-- PR #93 / LOTE-E / CA-N56..CA-N60 final static hardening.",
+              1,
+          )
+
+          preflight_marker = (
+              "     or to_regprocedure('private.fn_gate_nonce_v7_valid(bigint)') is null\n"
+              "     or to_regprocedure('private.fn_writer_key_separation_v7_valid()') is null then"
+          )
+          require(s, preflight_marker, "migration preflight")
+          preflight_dependencies = (
+              "     or to_regprocedure('extensions.digest(bytea,text)') is null\n"
+              "     or to_regprocedure('private.fn_writer_hmac_v7_valid(text,text,text)') is null\n"
+              "     or to_regprocedure('private.fn_writer_hmac_v7_match_key(text,text,text)') is null\n"
+              "     or to_regprocedure('private.fn_consume_writer_proof_v7(text,text,text)') is null\n"
+              "     or to_regprocedure('private.fn_install_writer_hmac_key_v7(text,text,text)') is null\n"
+              "     or to_regprocedure('private.fn_writer_hmac_challenge_v7(text,text)') is null\n"
+              "     or to_regprocedure('private.fn_promote_writer_hmac_key_v7(text,text)') is null\n"
+              "     or to_regprocedure('private.fn_retire_writer_hmac_key_v7(text,text)') is null\n"
+          )
+          s = s.replace(preflight_marker, preflight_dependencies + preflight_marker, 1)
+          s = s.replace(
+              "raise exception 'V7 tables, helpers, validator and separation invariant must exist before LOTE-D';",
+              "raise exception 'V7 tables, crypto dependencies, helpers, validator and separation invariant must exist before LOTE-E';",
+              1,
+          )
+
+          binder_start = (
+              "begin\n"
+              "  if new.writer_authentication is distinct from 'GITHUB_OIDC_HMAC_NONCE_V7' then\n"
+              "    return new;\n"
+              "  end if;\n\n"
+              "  if tg_op='UPDATE' then"
+          )
+          require(s, binder_start, "binder early return")
+          binder_replacement = (
+              "begin\n"
+              "  if tg_op='UPDATE'\n"
+              "     and old.writer_authentication='GITHUB_OIDC_HMAC_NONCE_V7'\n"
+              "     and new.writer_authentication is distinct from 'GITHUB_OIDC_HMAC_NONCE_V7' then\n"
+              "    raise exception using\n"
+              "      errcode='55000',\n"
+              "      message='V7 gate authentication cannot be downgraded';\n"
+              "  end if;\n\n"
+              "  if new.writer_authentication is distinct from 'GITHUB_OIDC_HMAC_NONCE_V7' then\n"
+              "    return new;\n"
+              "  end if;\n\n"
+              "  if tg_op='UPDATE' then"
+          )
+          s = s.replace(binder_start, binder_replacement, 1)
+
+          grant_marker = (
+              "revoke all on function private.fn_bind_gate_writer_nonce_v7()\n"
+              "  from public,anon,authenticated,service_role;\n"
+              "grant execute on function private.fn_bind_gate_writer_nonce_v7() to postgres;\n"
+          )
+          require(s, grant_marker, "temporary trigger execute grant")
+          s = s.replace(
+              grant_marker,
+              "revoke all on function private.fn_bind_gate_writer_nonce_v7()\n"
+              "  from public,anon,authenticated,service_role;\n"
+              "-- CREATE TRIGGER requires EXECUTE for its creator; this grant is temporary.\n"
+              "grant execute on function private.fn_bind_gate_writer_nonce_v7() to postgres;\n",
+              1,
+          )
+
+          trigger_marker = (
+              "alter table private.lf_gate_test_runs_v3\n"
+              "  enable always trigger trg_05_bind_gate_writer_nonce_v7;\n\n"
+              "revoke create on schema private from lf_governance_owner_v3;"
+          )
+          require(s, trigger_marker, "trigger DDL cleanup")
+          s = s.replace(
+              trigger_marker,
+              "alter table private.lf_gate_test_runs_v3\n"
+              "  enable always trigger trg_05_bind_gate_writer_nonce_v7;\n\n"
+              "-- The trigger is installed; remove the temporary creator privilege.\n"
+              "set local role lf_governance_owner_v3;\n"
+              "revoke execute on function private.fn_bind_gate_writer_nonce_v7() from postgres;\n"
+              "reset role;\n\n"
+              "revoke create on schema private from lf_governance_owner_v3;",
+              1,
+          )
+
+          separation_marker = (
+              "revoke lf_writer_verifier_v7 from postgres granted by postgres;\n\n"
+              "-- CA-N48: preserve every prior separation check and include the parser/binder."
+          )
+          require(s, separation_marker, "post-create dependency check")
+          s = s.replace(
+              separation_marker,
+              "revoke lf_writer_verifier_v7 from postgres granted by postgres;\n\n"
+              "do $post_create_dependencies$\n"
+              "begin\n"
+              "  if to_regprocedure('private.fn_bind_gate_writer_nonce_v7()') is null then\n"
+              "    raise exception 'V7 gate binder must exist before the separation invariant';\n"
+              "  end if;\n"
+              "end\n"
+              "$post_create_dependencies$;\n\n"
+              "-- CA-N48: preserve every prior separation check and include the parser/binder.",
+              1,
+          )
+          p.write_text(s, encoding="utf-8")
+
+          t = Path("sandbox/lf_contract_gate_test/PR93_WRITER_V7_ADVERSARIAL_TESTS.sql")
+          q = t.read_text(encoding="utf-8")
+          q = q.replace("after LOTE-D.", "after LOTE-E.", 1)
+          q = q.replace("PR93-LOTE-D", "PR93-LOTE-E")
+
+          parser_marker = (
+              "  if private.fn_writer_preimage_scope_v7(\n"
+              "       private.fn_gate_preimage_v7(jsonb_build_object('case','gate'),'PR93-PARSER')\n"
+              "     )<>'GATE' then\n"
+              "    raise exception 'valid framed gate was rejected';\n"
+              "  end if;\n"
+              "  if private.fn_writer_preimage_scope_v7('reconciliation-v7:legacy') is not null"
+          )
+          require(q, parser_marker, "parser positive control")
+          q = q.replace(
+              parser_marker,
+              "  if private.fn_writer_preimage_scope_v7(\n"
+              "       private.fn_gate_preimage_v7(jsonb_build_object('case','gate'),'PR93-PARSER')\n"
+              "     )<>'GATE' then\n"
+              "    raise exception 'valid framed gate was rejected';\n"
+              "  end if;\n"
+              "  if private.fn_writer_preimage_scope_v7(v_valid_manual)<>'RECONCILIATION' then\n"
+              "    raise exception 'manual three-frame control was rejected';\n"
+              "  end if;\n"
+              "  if private.fn_writer_preimage_scope_v7('reconciliation-v7:legacy') is not null",
+              1,
+          )
+
+          gate_decl = "  v_gate bigint; v_retry bigint; v_nonces bigint; v_gates bigint; v_events bigint;\n"
+          require(q, gate_decl, "gate test declarations")
+          q = q.replace(
+              gate_decl,
+              gate_decl + "  v_downgrade_rejected boolean:=false; v_message text;\n",
+              1,
+          )
+
+          gate_anchor_marker = (
+              "  end if;\n\n"
+              "  select count(*) into v_nonces from private.lf_reconciliation_writer_nonces_v7;\n"
+              "  select count(*) into v_gates from private.lf_gate_test_runs_v3;"
+          )
+          gate_start = q.find("do $gate_path$")
+          gate_anchor_index = q.find(gate_anchor_marker, gate_start)
+          if gate_anchor_index < 0:
+              raise SystemExit("missing marker: gate downgrade test insertion")
+          downgrade_block = (
+              "  end if;\n\n"
+              "  begin\n"
+              "    update private.lf_gate_test_runs_v3\n"
+              "    set writer_authentication='PR93_DOWNGRADE_ATTEMPT'\n"
+              "    where id=v_gate;\n"
+              "  exception when sqlstate '55000' then\n"
+              "    get stacked diagnostics v_message=message_text;\n"
+              "    v_downgrade_rejected:=position('cannot be downgraded' in v_message)>0;\n"
+              "  end;\n"
+              "  if not v_downgrade_rejected\n"
+              "     or (select writer_authentication\n"
+              "         from private.lf_gate_test_runs_v3 where id=v_gate)\n"
+              "        is distinct from 'GITHUB_OIDC_HMAC_NONCE_V7' then\n"
+              "    raise exception 'V7 gate authentication downgrade was not blocked';\n"
+              "  end if;\n\n"
+              "  select count(*) into v_nonces from private.lf_reconciliation_writer_nonces_v7;\n"
+              "  select count(*) into v_gates from private.lf_gate_test_runs_v3;"
+          )
+          q = q[:gate_anchor_index] + downgrade_block + q[gate_anchor_index + len(gate_anchor_marker):]
+
+          rotation_marker = "-- Rotation overlap: verify exact window, both keys, key_id attribution and guards.\n"
+          require(q, rotation_marker, "expired retiring behavior")
+          expired_block = '''-- Expired RETIRING key must be ignored by the verifier, not merely by text inspection.
+do $expired_retiring_key$
+declare
+  v_preimage text:=private.fn_reconciliation_preimage_v7(
+    jsonb_build_object('case','expired-retiring-key'),'PR93-EXPIRED-RETIRING'
+  );
+  v_nonce text:=gen_random_uuid()::text||'.'||
+    floor(extract(epoch from clock_timestamp()+interval '5 minutes'))::bigint;
+  v_signature text;
+  v_nonce_hash text;
+begin
+  insert into private.lf_writer_hmac_keys_v7(
+    key_name,key_id,key_material,active,lifecycle_state,created_at,
+    installed_by_execution_id,activated_at,retiring_at,retiring_until,
+    retired_at,last_transition_execution_id
+  ) values (
+    'lf_reconciliation_writer_hmac_v7',
+    'lf-writer-2099-01-r97',
+    'PR93_TEST_ONLY_EXPIRED_HMAC_KEY_4c71e8aa_DO_NOT_REUSE',
+    false,
+    'RETIRING',
+    clock_timestamp()-interval '20 minutes',
+    'PR93-LOTE-E',
+    clock_timestamp()-interval '20 minutes',
+    clock_timestamp()-interval '15 minutes',
+    clock_timestamp()-interval '5 minutes',
+    null,
+    'PR93-LOTE-E'
+  );
+
+  perform set_config('request.jwt.claims','{"role":"service_role"}',true);
+  v_signature:=encode(extensions.hmac(
+    convert_to(v_preimage||':'||v_nonce,'UTF8'),
+    convert_to('PR93_TEST_ONLY_EXPIRED_HMAC_KEY_4c71e8aa_DO_NOT_REUSE','UTF8'),
+    'sha256'
+  ),'hex');
+  v_nonce_hash:=encode(
+    extensions.digest(convert_to(v_nonce,'UTF8'),'sha256'),
+    'hex'
+  );
+
+  if private.fn_consume_writer_proof_v7(v_preimage,v_signature,v_nonce)
+     or exists(
+       select 1
+       from private.lf_reconciliation_writer_nonces_v7
+       where nonce_sha256=v_nonce_hash
+     ) then
+    raise exception 'expired RETIRING key was accepted';
+  end if;
+
+  perform private.fn_retire_writer_hmac_key_v7(
+    'lf-writer-2099-01-r97','PR93-LOTE-E'
+  );
+  if not exists(
+    select 1
+    from private.lf_writer_hmac_keys_v7
+    where key_id='lf-writer-2099-01-r97'
+      and lifecycle_state='RETIRED'
+  ) then
+    raise exception 'expired RETIRING fixture was not retired';
+  end if;
+end
+$expired_retiring_key$;
+
+'''
+          q = q.replace(rotation_marker, expired_block + rotation_marker, 1)
+          t.write_text(q, encoding="utf-8")
+
+          rpath = Path("sandbox/lf_contract_gate_test/PR93_LOTE_C_EVIDENCE_READBACK.sql")
+          r = rpath.read_text(encoding="utf-8")
+          r = r.replace("LOTE-D structural readback", "LOTE-E structural readback", 1)
+          start = r.index("  'definition_checks',jsonb_build_object(")
+          end = r.index("  'gate_event_alignment_gaps',(", start)
+          normalized_block = """  'definition_checks',jsonb_build_object(
+    'gate_validator_private_nonce_column',position(
+      't.writer_nonce_sha256'
+      in regexp_replace(
+        pg_get_functiondef('private.fn_gate_nonce_v7_valid(bigint)'::regprocedure),
+        '\\s','','g'
+      )
+    )>0,
+    'gate_validator_event_crosscheck',position(
+      'e.payload->>''writer_nonce_sha256'''
+      in regexp_replace(
+        pg_get_functiondef('private.fn_gate_nonce_v7_valid(bigint)'::regprocedure),
+        '\\s','','g'
+      )
+    )>0,
+    'gate_validator_effects_crosscheck',position(
+      'e.payload->''persisted_effects''=t.persisted_effects'
+      in regexp_replace(
+        pg_get_functiondef('private.fn_gate_nonce_v7_valid(bigint)'::regprocedure),
+        '\\s','','g'
+      )
+    )>0,
+    'binder_preserves_persisted_effects',(
+      position(
+        'new.persisted_effects:='
+        in regexp_replace(
+          pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
+          '\\s','','g'
+        )
+      )=0
+      and position(
+        'new.persisted_effects_sha256:='
+        in regexp_replace(
+          pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
+          '\\s','','g'
+        )
+      )=0
+    ),
+    'binder_blocks_authentication_downgrade',(
+      position(
+        'old.writer_authentication=''GITHUB_OIDC_HMAC_NONCE_V7'''
+        in regexp_replace(
+          pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
+          '\\s','','g'
+        )
+      )>0
+      and position(
+        'V7gateauthenticationcannotbedowngraded'
+        in regexp_replace(
+          pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
+          '\\s','','g'
+        )
+      )>0
+    ),
+    'separation_covers_parser',position(
+      'fn_writer_preimage_scope_v7'
+      in regexp_replace(
+        pg_get_functiondef('private.fn_writer_key_separation_v7_valid()'::regprocedure),
+        '\\s','','g'
+      )
+    )>0,
+    'separation_covers_binder',position(
+      'fn_bind_gate_writer_nonce_v7'
+      in regexp_replace(
+        pg_get_functiondef('private.fn_writer_key_separation_v7_valid()'::regprocedure),
+        '\\s','','g'
+      )
+    )>0
+  ),
+"""
+          r = r[:start] + normalized_block + r[end:]
+          api_marker = "  'api_helper_denial',jsonb_build_object(\n"
+          require(r, api_marker, "readback temporary binder ACL")
+          r = r.replace(
+              api_marker,
+              "  'temporary_creator_acl_removed',not has_function_privilege(\n"
+              "    'postgres','private.fn_bind_gate_writer_nonce_v7()','EXECUTE'\n"
+              "  ),\n"
+              "  'api_helper_denial',jsonb_build_object(\n",
+              1,
+          )
+          rpath.write_text(r, encoding="utf-8")
+
+          g = Path("sandbox/lf_contract_gate_test/PR93_LOTE_C_GUARDS.md")
+          d = g.read_text(encoding="utf-8")
+          d = d.replace(
+              "# PR #93 · LOTE-D · Guardas CA-N49 a CA-N55",
+              "# PR #93 · LOTE-E · Guardas CA-N56 a CA-N60",
+              1,
+          )
+          d = d.replace(
+              "- comprobación estática de exclusión de claves `RETIRING` expiradas;",
+              "- prueba conductual de exclusión de claves `RETIRING` expiradas;",
+              1,
+          )
+          evidence_marker = "## Evidencia pendiente\n"
+          require(d, evidence_marker, "guard evidence section")
+          additions = '''## CA-N56 · downgrade de autenticación
+
+El binder bloquea cualquier `UPDATE` que intente cambiar una fila V7 hacia otro modo
+de autenticación. La batería ejecuta el downgrade y exige SQLSTATE `55000`, conservando
+la fila como `GITHUB_OIDC_HMAC_NONCE_V7`.
+
+## CA-N57 · readback normalizado
+
+Todas las inspecciones de `pg_get_functiondef` eliminan whitespace con
+`regexp_replace(...,'\\s','','g')`. La comprobación negativa cubre tanto
+`persisted_effects` como `persisted_effects_sha256`, y el readback verifica además el
+guard de downgrade.
+
+## CA-N58 · control positivo del framing manual
+
+El vector manual de tres frames debe ser aceptado antes de añadir el byte sobrante.
+Así, el rechazo del vector con sufijo queda atribuido a bytes residuales y no a un
+preimage base inválido.
+
+## CA-N59 · dependencias completas
+
+El preflight valida `extensions.digest(bytea,text)` y todas las funciones externas
+referenciadas por el invariante de separación. El binder, creado por esta misma
+migración, se comprueba inmediatamente después de su instalación.
+
+## CA-N60 · privilegio temporal del trigger
+
+PostgreSQL exige `EXECUTE` sobre la trigger function al crear el trigger. La migración
+concede ese privilegio a `postgres` únicamente durante `CREATE TRIGGER` y lo revoca
+después de `ENABLE ALWAYS`. El readback exige que no quede ACL residual.
+
+'''
+          d = d.replace(evidence_marker, additions + evidence_marker, 1)
+          g.write_text(d, encoding="utf-8")
+          PY
+          rm .github/workflows/pr93-lote-e.yml
+
+      - name: Commit LOTE-E
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git diff --cached --check
+          git commit -m "fix(governance): close LOTE-E static gaps"
+          git push
