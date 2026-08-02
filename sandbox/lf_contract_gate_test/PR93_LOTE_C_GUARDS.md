@@ -1,4 +1,4 @@
-# PR #93 · LOTE-D · Guardas CA-N49 a CA-N55
+# PR #93 · LOTE-E · Guardas CA-N56 a CA-N60
 
 ## Alcance
 
@@ -84,10 +84,41 @@ El readback comprueba:
 - ventana de rotación exacta de diez minutos;
 - rechazo de retiro antes del fin del overlap;
 - rechazo de una tercera promoción mientras existe una clave `RETIRING`;
-- comprobación estática de exclusión de claves `RETIRING` expiradas;
+- prueba conductual de exclusión de claves `RETIRING` expiradas;
 - igualdad de nonce, `persisted_effects` y `persisted_effects_sha256` entre fila y evento.
 
 La batería termina con `ROLLBACK`.
+
+## CA-N56 · downgrade de autenticación
+
+El binder bloquea cualquier `UPDATE` que intente cambiar una fila V7 hacia otro modo
+de autenticación. La batería ejecuta el downgrade y exige SQLSTATE `55000`, conservando
+la fila como `GITHUB_OIDC_HMAC_NONCE_V7`.
+
+## CA-N57 · readback normalizado
+
+Todas las inspecciones de `pg_get_functiondef` eliminan whitespace con
+`regexp_replace(...,'\s','','g')`. La comprobación negativa cubre tanto
+`persisted_effects` como `persisted_effects_sha256`, y el readback verifica además el
+guard de downgrade.
+
+## CA-N58 · control positivo del framing manual
+
+El vector manual de tres frames debe ser aceptado antes de añadir el byte sobrante.
+Así, el rechazo del vector con sufijo queda atribuido a bytes residuales y no a un
+preimage base inválido.
+
+## CA-N59 · dependencias completas
+
+El preflight valida `extensions.digest(bytea,text)` y todas las funciones externas
+referenciadas por el invariante de separación. El binder, creado por esta misma
+migración, se comprueba inmediatamente después de su instalación.
+
+## CA-N60 · privilegio temporal del trigger
+
+PostgreSQL exige `EXECUTE` sobre la trigger function al crear el trigger. La migración
+concede ese privilegio a `postgres` únicamente durante `CREATE TRIGGER` y lo revoca
+después de `ENABLE ALWAYS`. El readback exige que no quede ACL residual.
 
 ## Evidencia pendiente
 

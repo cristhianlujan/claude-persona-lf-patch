@@ -1,4 +1,4 @@
--- PR #93 / LOTE-D structural readback. SELECT-only.
+-- PR #93 / LOTE-E structural readback. SELECT-only.
 
 select jsonb_build_object(
   'functions',jsonb_build_object(
@@ -63,6 +63,9 @@ select jsonb_build_object(
       'postgres','private.fn_frame_component_v7(text)','EXECUTE'
     )
   ),
+  'temporary_creator_acl_removed',not has_function_privilege(
+    'postgres','private.fn_bind_gate_writer_nonce_v7()','EXECUTE'
+  ),
   'api_helper_denial',jsonb_build_object(
     'service_scope_parser',not has_function_privilege(
       'service_role','private.fn_writer_preimage_scope_v7(text)','EXECUTE'
@@ -100,42 +103,69 @@ select jsonb_build_object(
   'definition_checks',jsonb_build_object(
     'gate_validator_private_nonce_column',position(
       't.writer_nonce_sha256'
-      in pg_get_functiondef(
-        'private.fn_gate_nonce_v7_valid(bigint)'::regprocedure
+      in regexp_replace(
+        pg_get_functiondef('private.fn_gate_nonce_v7_valid(bigint)'::regprocedure),
+        '\s','','g'
       )
     )>0,
     'gate_validator_event_crosscheck',position(
       'e.payload->>''writer_nonce_sha256'''
-      in pg_get_functiondef(
-        'private.fn_gate_nonce_v7_valid(bigint)'::regprocedure
+      in regexp_replace(
+        pg_get_functiondef('private.fn_gate_nonce_v7_valid(bigint)'::regprocedure),
+        '\s','','g'
       )
     )>0,
     'gate_validator_effects_crosscheck',position(
       'e.payload->''persisted_effects''=t.persisted_effects'
-      in replace(
-        pg_get_functiondef(
-          'private.fn_gate_nonce_v7_valid(bigint)'::regprocedure
-        ),
-        ' ',
-        ''
+      in regexp_replace(
+        pg_get_functiondef('private.fn_gate_nonce_v7_valid(bigint)'::regprocedure),
+        '\s','','g'
       )
     )>0,
-    'binder_preserves_persisted_effects',position(
-      'new.persisted_effects:='
-      in pg_get_functiondef(
-        'private.fn_bind_gate_writer_nonce_v7()'::regprocedure
-      )
-    )=0,
+    'binder_preserves_persisted_effects',(
+      position(
+        'new.persisted_effects:='
+        in regexp_replace(
+pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
+'\s','','g'
+        )
+      )=0
+      and position(
+        'new.persisted_effects_sha256:='
+        in regexp_replace(
+pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
+'\s','','g'
+        )
+      )=0
+    ),
+    'binder_blocks_authentication_downgrade',(
+      position(
+        'old.writer_authentication=''GITHUB_OIDC_HMAC_NONCE_V7'''
+        in regexp_replace(
+pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
+'\s','','g'
+        )
+      )>0
+      and position(
+        'V7gateauthenticationcannotbedowngraded'
+        in regexp_replace(
+pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
+'\s','','g'
+        )
+      )>0
+    ),
     'separation_covers_parser',position(
       'fn_writer_preimage_scope_v7'
-      in pg_get_functiondef(
-        'private.fn_writer_key_separation_v7_valid()'::regprocedure
+      in regexp_replace(
+        pg_get_functiondef('private.fn_writer_key_separation_v7_valid()'::regprocedure),
+        '\s','','g'
       )
     )>0,
     'separation_covers_binder',position(
       'fn_bind_gate_writer_nonce_v7'
-      in pg_get_functiondef(
-        'private.fn_writer_key_separation_v7_valid()'::regprocedure
+      in regexp_replace(
+        pg_get_functiondef('private.fn_writer_key_separation_v7_valid()'::regprocedure),
+        '\s','','g'
       )
     )>0
   ),
