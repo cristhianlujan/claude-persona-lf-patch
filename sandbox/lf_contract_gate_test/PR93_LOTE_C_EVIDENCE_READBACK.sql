@@ -1,6 +1,6 @@
 -- PR #93 / LOTE-E structural readback. SELECT-only.
--- LOTE-E.2: NULL proacl is a failure, binder mutation detection is token-aware,
--- and the verifier text inspection lives here as a definition-only check.
+-- LOTE-E.3: comment-safe normalization, broader INTO mutation coverage,
+-- directional vector evidence and exact fail-closed binder body pinning.
 
 with mutation_patterns as (
   select
@@ -8,39 +8,21 @@ with mutation_patterns as (
       as direct_field_assignment,
     '(^|;|\mbegin\M|\mthen\M|\melse\M|\mloop\M)\s*new\M\s*(:=|=)'::text
       as whole_record_assignment,
-    '\mselect\M[^;]*?\minto\M\s+(?:strict\s+)?([^;]*?)(?:\mfrom\M|;)'::text
-      as select_into_statement,
+    '\m(?:select|execute|returning|fetch)\M[^;]*?\minto\M\s+(?:strict\s+)?([^;]*?)(?:\mfrom\M|\musing\M|;)'::text
+      as into_assignment_statement,
     '(^|,)\s*new\M(?:\s*\.\s*persisted_effects(_sha256)?\M)?\s*(,|$)'::text
-      as select_into_target
+      as into_assignment_target,
+    '/\*([^*]|\*+[^*/])*\*+/'::text
+      as block_comment,
+    E'--[^\\r\\n]*'::text
+      as line_comment
 ),
-binder_def as (
-  select
-    regexp_replace(
-      pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
-      '\s','','g'
-    ) as stripped,
-    lower(
-      regexp_replace(
-        pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
-        '\s+',' ','g'
-      )
-    ) as spaced
-),
-binder_mutation_check as (
-  select
-    binder_def.spaced ~ mutation_patterns.direct_field_assignment
-    or binder_def.spaced ~ mutation_patterns.whole_record_assignment
-    or exists(
-      select 1
-      from regexp_matches(
-        binder_def.spaced,
-        mutation_patterns.select_into_statement,
-        'g'
-      ) as matched(captures)
-      where (matched.captures)[1] ~ mutation_patterns.select_into_target
-    ) as mutates_signed_effects
-  from binder_def
-  cross join mutation_patterns
+binder_source as (
+  select coalesce((
+    select p.prosrc
+    from pg_proc p
+    where p.oid=to_regprocedure('private.fn_bind_gate_writer_nonce_v7()')
+  ),'') as source_text
 ),
 mutation_vectors(vector_name,source_text,expected_mutation) as (
   values
@@ -48,10 +30,24 @@ mutation_vectors(vector_name,source_text,expected_mutation) as (
      'begin new.persisted_effects := ''{}''::jsonb; end',true),
     ('direct_equals_with_spaced_dot',
      'begin new . persisted_effects_sha256 = ''x''; end',true),
+    ('direct_after_line_comment',
+     E'BEGIN\n -- normalise\n NEW.persisted_effects := ''{}''::jsonb;\nEND',true),
+    ('direct_after_block_comment',
+     'BEGIN /* normalise */ NEW.persisted_effects_sha256 := ''x''; END',true),
     ('select_into_first_target',
      'begin select payload into new.persisted_effects from t; end',true),
     ('select_into_later_target',
      'begin select payload,hash into v_other, new . persisted_effects_sha256 from t; end',true),
+    ('execute_into_first_target',
+     'begin execute v_sql into new.persisted_effects using p_id; end',true),
+    ('execute_into_later_target',
+     'begin execute v_sql into v_other,new.persisted_effects_sha256 using p_id; end',true),
+    ('returning_into_first_target',
+     'begin insert into t values(1) returning payload into new.persisted_effects; end',true),
+    ('returning_into_later_target',
+     'begin update t set x=1 returning payload,hash into v_other,new.persisted_effects_sha256; end',true),
+    ('fetch_into_target',
+     'begin fetch c into new.persisted_effects; end',true),
     ('whole_record_direct',
      'begin new := old; end',true),
     ('whole_record_select_into',
@@ -66,33 +62,130 @@ mutation_vectors(vector_name,source_text,expected_mutation) as (
      'begin if new.persisted_effects = old.persisted_effects then null; end if; end',false),
     ('select_into_other_then_read',
      'begin select x into v from t where y=new.persisted_effects; end',false),
+    ('execute_without_into_read',
+     'begin execute v_sql using new.persisted_effects; end',false),
+    ('returning_into_other_then_read',
+     'begin insert into t values(new.persisted_effects) returning payload into v_other; end',false),
     ('insert_into_read',
-     'begin insert into log(payload) values(new.persisted_effects); end',false)
+     'begin insert into log(payload) values(new.persisted_effects); end',false),
+    ('line_comment_only',
+     E'begin\n-- new.persisted_effects := ''{}''::jsonb;\nperform 1;\nend',false),
+    ('block_comment_only',
+     'begin /* new.persisted_effects_sha256 := ''x''; */ perform 1; end',false)
 ),
-mutation_vector_results as (
+sources(source_kind,vector_name,source_text,expected_mutation) as (
+  select 'binder'::text,null::text,binder_source.source_text,null::boolean
+  from binder_source
+  union all
+  select 'vector',vector_name,source_text,expected_mutation
+  from mutation_vectors
+),
+normalized_sources as (
   select
-    mutation_vectors.vector_name,
-    mutation_vectors.expected_mutation,
-    mutation_vectors.source_text ~ mutation_patterns.direct_field_assignment
-    or mutation_vectors.source_text ~ mutation_patterns.whole_record_assignment
+    sources.source_kind,
+    sources.vector_name,
+    sources.expected_mutation,
+    sources.source_text as raw_source,
+    lower(
+      regexp_replace(
+        regexp_replace(
+          regexp_replace(
+            sources.source_text,
+            mutation_patterns.block_comment,
+            '',
+            'g'
+          ),
+          mutation_patterns.line_comment,
+          '',
+          'g'
+        ),
+        '\s+',
+        ' ',
+        'g'
+      )
+    ) as spaced,
+    regexp_replace(
+      regexp_replace(
+        regexp_replace(
+          sources.source_text,
+          mutation_patterns.block_comment,
+          '',
+          'g'
+        ),
+        mutation_patterns.line_comment,
+        '',
+        'g'
+      ),
+      '\s',
+      '',
+      'g'
+    ) as stripped
+  from sources
+  cross join mutation_patterns
+),
+binder_def as (
+  select
+    normalized_sources.spaced,
+    normalized_sources.stripped,
+    encode(
+      extensions.digest(
+        convert_to(normalized_sources.raw_source,'UTF8'),
+        'sha256'
+      ),
+      'hex'
+    ) as prosrc_sha256
+  from normalized_sources
+  where normalized_sources.source_kind='binder'
+),
+expected_binder as (
+  select '3927d2b5bc724f10d5f3db09ad204e3212060c30242ccab7b9501869d6396293'::text
+    as prosrc_sha256
+),
+binder_mutation_check as (
+  select
+    binder_def.spaced ~ mutation_patterns.direct_field_assignment
+    or binder_def.spaced ~ mutation_patterns.whole_record_assignment
     or exists(
       select 1
       from regexp_matches(
-        mutation_vectors.source_text,
-        mutation_patterns.select_into_statement,
+        binder_def.spaced,
+        mutation_patterns.into_assignment_statement,
         'g'
       ) as matched(captures)
-      where (matched.captures)[1] ~ mutation_patterns.select_into_target
-    ) as detected_mutation
-  from mutation_vectors
+      where (matched.captures)[1] ~ mutation_patterns.into_assignment_target
+    ) as mutates_signed_effects
+  from binder_def
   cross join mutation_patterns
+),
+mutation_vector_results as (
+  select
+    normalized_sources.vector_name,
+    normalized_sources.expected_mutation,
+    normalized_sources.spaced ~ mutation_patterns.direct_field_assignment
+    or normalized_sources.spaced ~ mutation_patterns.whole_record_assignment
+    or exists(
+      select 1
+      from regexp_matches(
+        normalized_sources.spaced,
+        mutation_patterns.into_assignment_statement,
+        'g'
+      ) as matched(captures)
+      where (matched.captures)[1] ~ mutation_patterns.into_assignment_target
+    ) as detected_mutation
+  from normalized_sources
+  cross join mutation_patterns
+  where normalized_sources.source_kind='vector'
 ),
 mutation_pattern_controls as (
   select
     bool_and(detected_mutation=expected_mutation) as all_pass,
     jsonb_object_agg(
       vector_name,
-      detected_mutation=expected_mutation
+      jsonb_build_object(
+        'expected',expected_mutation,
+        'detected',detected_mutation,
+        'pass',detected_mutation=expected_mutation
+      )
       order by vector_name
     ) as cases
   from mutation_vector_results
@@ -228,8 +321,14 @@ select jsonb_build_object(
       )
     )>0,
     'binder_preserves_persisted_effects',(
-      not binder_mutation_check.mutates_signed_effects
+      binder_def.prosrc_sha256=expected_binder.prosrc_sha256
+      and not binder_mutation_check.mutates_signed_effects
       and mutation_pattern_controls.all_pass
+    ),
+    'binder_definition_digest',jsonb_build_object(
+      'expected',expected_binder.prosrc_sha256,
+      'actual',binder_def.prosrc_sha256,
+      'matches',binder_def.prosrc_sha256=expected_binder.prosrc_sha256
     ),
     'binder_mutation_pattern_controls',jsonb_build_object(
       'all_pass',mutation_pattern_controls.all_pass,
@@ -301,5 +400,6 @@ select jsonb_build_object(
   )
 ) as pr93_lote_e_evidence_readback
 from binder_def
+cross join expected_binder
 cross join binder_mutation_check
 cross join mutation_pattern_controls;
