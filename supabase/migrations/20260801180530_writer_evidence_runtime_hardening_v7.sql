@@ -5,8 +5,6 @@
 begin;
 
 do $preflight$
-declare
-  v_gate_owner oid;
 begin
   if to_regclass('private.lf_gate_test_runs_v3') is null
      or to_regclass('private.lf_reconciliation_writer_nonces_v7') is null
@@ -27,6 +25,22 @@ begin
     raise exception 'V7 owner roles must exist before LOTE-D';
   end if;
 
+end
+$preflight$;
+
+
+-- CA-N49/CA-N50: obtain both owner contexts before any function grant or table DDL.
+grant lf_writer_verifier_v7 to postgres
+  with admin false inherit true set true
+  granted by postgres;
+grant lf_governance_owner_v3 to postgres
+  with admin false inherit true set true
+  granted by postgres;
+
+do $table_owner_preflight$
+declare
+  v_gate_owner oid;
+begin
   select c.relowner into v_gate_owner
   from pg_class c
   where c.oid='private.lf_gate_test_runs_v3'::regclass;
@@ -36,7 +50,7 @@ begin
     raise exception 'migration executor cannot administer private.lf_gate_test_runs_v3';
   end if;
 end
-$preflight$;
+$table_owner_preflight$;
 
 -- CA-N52: keep signed persisted_effects byte-for-byte aligned with the event.
 -- The writer nonce gets a dedicated private column instead of mutating signed JSON.
@@ -78,14 +92,7 @@ begin
 end
 $nonce_constraint$;
 
--- CA-N49: obtain both owner contexts before issuing grants.
-grant lf_writer_verifier_v7 to postgres
-  with admin false inherit true set true
-  granted by postgres;
-grant lf_governance_owner_v3 to postgres
-  with admin false inherit true set true
-  granted by postgres;
-
+-- CA-N49: issue each helper grant under its actual owner role.
 set local role lf_writer_verifier_v7;
 grant execute on function private.fn_writer_preimage_scope_v7(text) to postgres;
 reset role;
