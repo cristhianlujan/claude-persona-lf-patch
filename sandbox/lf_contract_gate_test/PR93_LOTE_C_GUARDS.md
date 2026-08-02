@@ -1,4 +1,4 @@
-# PR #93 · LOTE-E · Guardas CA-N56 a CA-N63
+# PR #93 · LOTE-E · Guardas CA-N56 a CA-N73
 
 ## Alcance
 
@@ -142,41 +142,47 @@ no aparece, `coalesce(...,false)` fuerza fallo.
 
 ## CA-N62 · detección de mutación del binder
 
-`binder_preserves_persisted_effects` se evalúa mediante CTEs reutilizables:
+`binder_preserves_persisted_effects` combina tres controles fail-closed:
 
-- `mutation_patterns`: define una sola vez los patrones de mutación;
-- `binder_def`: expone la definición sin whitespace (`stripped`) y con whitespace
-  colapsado a un espacio y minúsculas (`spaced`);
-- `binder_mutation_check`: aplica los patrones a la definición real;
-- `mutation_pattern_controls`: ejecuta vectores positivos y negativos autocontenidos.
+1. el SHA-256 exacto de `pg_proc.prosrc` debe coincidir con el cuerpo versionado por
+   la migración `180530`;
+2. la inspección textual no debe detectar una mutación de los efectos firmados;
+3. todos los vectores autocontenidos deben producir el resultado esperado.
 
-Se declara mutación cuando se detecta cualquiera de estas familias:
+El pin del cuerpo esperado es:
 
-1. asignación directa a `NEW.persisted_effects` o
-   `NEW.persisted_effects_sha256` con `:=` o `=`, incluso con whitespace alrededor
-   del punto;
-2. asignación a cualquiera de esos campos en cualquier posición de una lista
-   `SELECT ... INTO [STRICT]`, incluida `v_otro, NEW . persisted_effects`;
-3. asignación directa al registro completo `NEW :=` / `NEW =`;
-4. carga del registro completo mediante `SELECT ... INTO NEW`.
+`3927d2b5bc724f10d5f3db09ad204e3212060c30242ccab7b9501869d6396293`
 
-La detección directa exige frontera de sentencia (`BEGIN`, `THEN`, `ELSE`, `LOOP` o
-`;`) antes de `NEW`. Así, no confunde una asignación con expresiones de comparación.
-La inspección de `SELECT ... INTO` analiza únicamente la lista de targets anterior a
-`FROM` o al fin de sentencia; una lectura posterior en `WHERE` no cuenta como mutación.
+Cualquier cambio del cuerpo del binder, incluso mediante una sintaxis no contemplada
+por los patrones, hace que el readback falle hasta que el nuevo cuerpo sea auditado y
+el digest esperado se actualice expresamente.
 
-Los controles positivos cubren `:=`, `=`, punto espaciado, primer y segundo target de
-`INTO`, y registro completo. Los controles negativos cubren `->>`, casts `::`,
-`IS DISTINCT FROM`, comparación con `=`, lectura después de `INTO v FROM ...` e
-`INSERT INTO ... VALUES(NEW.persisted_effects)`.
+La normalización común elimina comentarios `-- ...` y `/* ... */`, colapsa whitespace
+y convierte el texto a minúsculas. Se aplica exactamente igual al binder real y a
+todos los vectores.
+
+Se declara mutación textual cuando se detecta cualquiera de estas familias:
+
+- asignación directa a `NEW.persisted_effects` o
+  `NEW.persisted_effects_sha256` mediante `:=` o `=`;
+- asignación directa al registro completo `NEW`;
+- targets `NEW` o `NEW.campo` en `SELECT ... INTO`;
+- targets equivalentes en `EXECUTE ... INTO`;
+- targets equivalentes en cláusulas `RETURNING ... INTO`;
+- targets equivalentes en `FETCH ... INTO`.
+
+La lista autocontenida contiene 23 casos positivos y negativos. Incluye comentarios,
+mayúsculas, saltos de línea, punto espaciado, targets posteriores, lecturas, casts,
+comparaciones, JSON, `INSERT INTO`, `EXECUTE` sin target y DML cuyo `RETURNING` escribe
+en otra variable.
 
 El readback publica:
 
+- `definition_checks.binder_definition_digest.expected`;
+- `definition_checks.binder_definition_digest.actual`;
+- `definition_checks.binder_definition_digest.matches`;
 - `definition_checks.binder_mutation_pattern_controls.all_pass`;
-- resultado individual de cada vector en `cases`.
-
-`binder_preserves_persisted_effects` solo puede ser `true` si la definición real no
-muta los campos y todos los controles del patrón pasan.
+- por cada vector: `expected`, `detected` y `pass`.
 
 ## CA-N63 · separación entre prueba conductual e inspección de definición
 
@@ -190,6 +196,84 @@ clave `RETIRING` vencida y exige que el verificador la rechace.
 La inspección estática se conserva, movida al readback estructural como
 `definition_checks.verifier_definition_excludes_expired_retiring_keys_definition_only`,
 cuyo nombre declara que es una comprobación de definición y no una prueba de runtime.
+
+## CA-N64 · comentarios antes de la asignación
+
+La definición y los vectores pasan por la misma eliminación de comentarios antes de
+colapsar whitespace. Por ello, una asignación precedida por `-- ...` o `/* ... */`
+conserva la frontera de sentencia y se detecta.
+
+Además, el pin exacto de `pg_proc.prosrc` impide que una variante de comentario no
+reconocida por el normalizador pueda producir un PASS: cualquier modificación del
+cuerpo cambia el digest y falla cerrado.
+
+## CA-N65 · `EXECUTE ... INTO`
+
+El patrón de asignación por `INTO` acepta como origen `SELECT`, `EXECUTE`, `RETURNING`
+o `FETCH`. Los vectores incluyen `EXECUTE ... INTO NEW.campo` como primer target y
+como target posterior, con terminación antes de `USING`.
+
+## CA-N66 · `RETURNING ... INTO`
+
+Las cláusulas DML `RETURNING ... INTO` se inspeccionan con la misma lista de targets.
+Los vectores incluyen primer target y target posterior para los dos campos firmados.
+
+## CA-N67 · normalización ejercitada por los vectores
+
+`normalized_sources` recibe mediante `UNION ALL` el cuerpo real y los vectores. Una
+única expresión elimina comentarios, colapsa whitespace y aplica `lower()`. Los
+patrones nunca se ejecutan contra el `source_text` crudo.
+
+## CA-N68 · evidencia direccional por vector
+
+`cases` ya no publica únicamente un booleano de acierto. Para cada vector entrega:
+
+- `expected`;
+- `detected`;
+- `pass`.
+
+Esto permite distinguir de inmediato un falso positivo de un falso negativo.
+
+## CA-N69 · batería de patrones nuevamente satisfacible
+
+La expresión ARE para sentencias con `INTO` usa el prefijo no voraz
+`\m[a-z]*?(?:select|execute|returning|fetch)\M`. Esta forma conserva la captura corta
+de la lista de targets hasta `FROM`, `USING` o `;`, evitando que el texto terminador
+forme parte del target. Los vectores heredados de `SELECT ... INTO`,
+`EXECUTE ... INTO` y `SELECT ... INTO NEW` vuelven a producir el resultado esperado.
+
+La condición `binder_preserves_persisted_effects` sigue exigiendo simultáneamente:
+
+1. digest exacto del cuerpo;
+2. ausencia de mutación detectada en el binder real;
+3. `all_pass=true` para todos los vectores.
+
+## CA-N70 · enlace del trigger a la función fijada
+
+`gate_trigger.binds_pinned_function` exige que `pg_trigger.tgfoid` sea exactamente
+`private.fn_bind_gate_writer_nonce_v7()`. Un trigger homónimo que invoque otra función
+ya no puede satisfacer el readback aunque el binder fijado conserve su digest.
+
+## CA-N71 · límite conocido del normalizador de comentarios
+
+La eliminación de comentarios es una defensa textual en profundidad y no es un lexer
+PL/pgSQL completo: secuencias `--` o `/*` dentro de literales pueden alterar la vista
+normalizada. Esta limitación no puede producir PASS sobre un cuerpo modificado porque
+el digest exacto se calcula sobre `pg_proc.prosrc` crudo antes de cualquier
+normalización. Un cambio legítimo del binder exige auditoría y actualización expresa
+del digest esperado.
+
+## CA-N72 · identificadores entrecomillados
+
+Los patrones de asignación directa y de targets `INTO` aceptan tanto
+`NEW.persisted_effects` como `NEW."persisted_effects"`, incluyendo la variante
+`persisted_effects_sha256`. Dos vectores adicionales verifican ambas familias.
+
+## CA-N73 · documentación sincronizada
+
+Este documento incorpora CA-N64 a CA-N73, el pin exacto del binder, la regla de
+rotación del digest, la comprobación del enlace del trigger y las limitaciones
+conocidas de la capa textual.
 
 ## Evidencia pendiente
 

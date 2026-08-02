@@ -1,16 +1,16 @@
 -- PR #93 / LOTE-E structural readback. SELECT-only.
--- LOTE-E.3: comment-safe normalization, broader INTO mutation coverage,
--- directional vector evidence and exact fail-closed binder body pinning.
+-- LOTE-E.4: repair INTO matching, pin trigger-to-function linkage,
+-- cover quoted identifiers and retain exact fail-closed binder body pinning.
 
 with mutation_patterns as (
   select
-    '(^|;|\mbegin\M|\mthen\M|\melse\M|\mloop\M)\s*new\M\s*\.\s*persisted_effects(_sha256)?\M\s*(:=|=)'::text
+    '(^|;|\mbegin\M|\mthen\M|\melse\M|\mloop\M)\s*new\M\s*\.\s*"?persisted_effects(_sha256)?\M"?\s*(:=|=)'::text
       as direct_field_assignment,
     '(^|;|\mbegin\M|\mthen\M|\melse\M|\mloop\M)\s*new\M\s*(:=|=)'::text
       as whole_record_assignment,
-    '\m(?:select|execute|returning|fetch)\M[^;]*?\minto\M\s+(?:strict\s+)?([^;]*?)(?:\mfrom\M|\musing\M|;)'::text
+    '\m[a-z]*?(?:select|execute|returning|fetch)\M[^;]*?\minto\M\s+(?:strict\s+)?([^;]*?)(?:\mfrom\M|\musing\M|;)'::text
       as into_assignment_statement,
-    '(^|,)\s*new\M(?:\s*\.\s*persisted_effects(_sha256)?\M)?\s*(,|$)'::text
+    '(^|,)\s*new\M(?:\s*\.\s*"?persisted_effects(_sha256)?\M"?)?\s*(,|$)'::text
       as into_assignment_target,
     '/\*([^*]|\*+[^*/])*\*+/'::text
       as block_comment,
@@ -34,6 +34,8 @@ mutation_vectors(vector_name,source_text,expected_mutation) as (
      E'BEGIN\n -- normalise\n NEW.persisted_effects := ''{}''::jsonb;\nEND',true),
     ('direct_after_block_comment',
      'BEGIN /* normalise */ NEW.persisted_effects_sha256 := ''x''; END',true),
+    ('direct_quoted_identifier',
+     'begin new."persisted_effects" := ''{}''::jsonb; end',true),
     ('select_into_first_target',
      'begin select payload into new.persisted_effects from t; end',true),
     ('select_into_later_target',
@@ -52,6 +54,8 @@ mutation_vectors(vector_name,source_text,expected_mutation) as (
      'begin new := old; end',true),
     ('whole_record_select_into',
      'begin select row(payload,hash) into new from t; end',true),
+    ('select_into_quoted_target',
+     'begin select payload into new."persisted_effects_sha256" from t; end',true),
     ('read_json_operator',
      'begin perform new.persisted_effects->>''x''; end',false),
     ('read_cast',
@@ -287,6 +291,9 @@ select jsonb_build_object(
         and (t.tgtype & 4)=4
         and (t.tgtype & 16)=16
       ),
+      'binds_pinned_function',coalesce(bool_and(
+        t.tgfoid=to_regprocedure('private.fn_bind_gate_writer_nonce_v7()')
+      ),false),
       'function_owner',min(pg_get_userbyid(p.proowner))
     )
     from pg_trigger t
