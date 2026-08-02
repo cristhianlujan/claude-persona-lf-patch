@@ -1,4 +1,5 @@
 -- PR #93 / LOTE-E structural readback. SELECT-only.
+-- LOTE-E.1: inspect explicit ACL entries and both PL/pgSQL assignment operators.
 
 select jsonb_build_object(
   'functions',jsonb_build_object(
@@ -63,8 +64,13 @@ select jsonb_build_object(
       'postgres','private.fn_frame_component_v7(text)','EXECUTE'
     )
   ),
-  'temporary_creator_acl_removed',not has_function_privilege(
-    'postgres','private.fn_bind_gate_writer_nonce_v7()','EXECUTE'
+  'temporary_creator_acl_removed',not exists(
+    select 1
+    from pg_proc p
+    cross join lateral aclexplode(coalesce(p.proacl,'{}'::aclitem[])) acl
+    where p.oid='private.fn_bind_gate_writer_nonce_v7()'::regprocedure
+      and acl.grantee=(select r.oid from pg_roles r where r.rolname='postgres')
+      and acl.privilege_type='EXECUTE'
   ),
   'api_helper_denial',jsonb_build_object(
     'service_scope_parser',not has_function_privilege(
@@ -123,34 +129,28 @@ select jsonb_build_object(
       )
     )>0,
     'binder_preserves_persisted_effects',(
-      position(
-        'new.persisted_effects:='
-        in regexp_replace(
-pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
-'\s','','g'
-        )
-      )=0
-      and position(
-        'new.persisted_effects_sha256:='
-        in regexp_replace(
-pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
-'\s','','g'
-        )
-      )=0
+      regexp_replace(
+        pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
+        '\s','','g'
+      ) !~ 'new\.persisted_effects(:=|=)'
+      and regexp_replace(
+        pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
+        '\s','','g'
+      ) !~ 'new\.persisted_effects_sha256(:=|=)'
     ),
     'binder_blocks_authentication_downgrade',(
       position(
         'old.writer_authentication=''GITHUB_OIDC_HMAC_NONCE_V7'''
         in regexp_replace(
-pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
-'\s','','g'
+          pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
+          '\s','','g'
         )
       )>0
       and position(
         'V7gateauthenticationcannotbedowngraded'
         in regexp_replace(
-pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
-'\s','','g'
+          pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
+          '\s','','g'
         )
       )>0
     ),
