@@ -1,4 +1,4 @@
--- PR #93 V7 writer adversarial tests after LOTE-C.
+-- PR #93 V7 writer adversarial tests after LOTE-D.
 -- Isolated environment only. The transaction always rolls back.
 
 begin;
@@ -9,8 +9,15 @@ begin
      or to_regprocedure('private.fn_bind_gate_writer_nonce_v7()') is null
      or to_regprocedure('private.fn_consume_writer_proof_v7(text,text,text)') is null
      or to_regprocedure('private.fn_reconciliation_nonce_v7_valid(bigint)') is null
-     or to_regprocedure('private.fn_gate_nonce_v7_valid(bigint)') is null then
-    raise exception 'LOTE-C V7 functions are missing';
+     or to_regprocedure('private.fn_gate_nonce_v7_valid(bigint)') is null
+     or not exists(
+       select 1
+       from information_schema.columns
+       where table_schema='private'
+         and table_name='lf_gate_test_runs_v3'
+         and column_name='writer_nonce_sha256'
+     ) then
+    raise exception 'LOTE-D V7 functions or gate nonce column are missing';
   end if;
   if exists(select 1 from private.lf_writer_hmac_keys_v7) then
     raise exception 'isolated test keystore must be empty';
@@ -21,19 +28,20 @@ $preflight$;
 select private.fn_install_writer_hmac_key_v7(
   'lf-writer-2099-01-r98',
   'PR93_TEST_ONLY_HMAC_KEY_A_7b15d6e2_DO_NOT_REUSE',
-  'PR93-LOTE-C'
+  'PR93-LOTE-D'
 );
 select private.fn_promote_writer_hmac_key_v7(
-  'lf-writer-2099-01-r98','PR93-LOTE-C'
+  'lf-writer-2099-01-r98','PR93-LOTE-D'
 );
 
--- Parser vectors, including malformed framing boundaries.
+-- Parser vectors, including a valid three-frame preimage with trailing bytes.
 do $parser_vectors$
 declare
   v_valid text:=private.fn_reconciliation_preimage_v7(
     jsonb_build_object('case','parser','n',1),'PR93-PARSER'
   );
   v_hash text:=repeat('a',64);
+  v_valid_manual text:='17#reconciliation-v71#x64#'||repeat('a',64);
 begin
   if private.fn_writer_preimage_scope_v7(v_valid)<>'RECONCILIATION' then
     raise exception 'valid framed reconciliation was rejected';
@@ -62,7 +70,8 @@ begin
         ) is not null
      or private.fn_writer_preimage_scope_v7(
           '7#gate-v7-extra1#x64#'||v_hash
-        ) is not null then
+        ) is not null
+     or private.fn_writer_preimage_scope_v7(v_valid_manual||'x') is not null then
     raise exception 'malformed parser vector was accepted';
   end if;
 end
@@ -259,7 +268,6 @@ begin
     raise exception 'reconciliation idempotent retry was not exact';
   end if;
 
-  -- Fresh proof for the original payload, then mutate the payload before the RPC.
   v_nonce:=gen_random_uuid()::text||'.'||
     floor(extract(epoch from clock_timestamp()+interval '5 minutes'))::bigint;
   v_signature:=encode(extensions.hmac(
@@ -272,12 +280,18 @@ begin
   select count(*) into v_events from public.lf_eventos;
   begin
     execute 'set local role service_role';
-    perform public.record_external_ci_verification_v7(
-      v_mutated,'PR93-REAL-PATH',v_signature,v_nonce
-    );
-  exception when insufficient_privilege then v_rejected:=true;
+    begin
+      perform public.record_external_ci_verification_v7(
+        v_mutated,'PR93-REAL-PATH',v_signature,v_nonce
+      );
+    exception when insufficient_privilege then
+      v_rejected:=true;
+    end;
+    execute 'reset role';
+  exception when others then
+    execute 'reset role';
+    raise;
   end;
-  execute 'reset role';
   if not v_rejected
      or (select count(*) from private.lf_reconciliation_writer_nonces_v7)<>v_nonces
      or (select count(*) from private.lf_github_reconciliation_runs_v3)<>v_runs
@@ -287,7 +301,7 @@ begin
 end
 $reconciliation_path$;
 
--- Public gate writer, private nonce anchoring, event cross-check and idempotence.
+-- Public gate writer, dedicated private nonce, event cross-check and idempotence.
 do $gate_path$
 declare
   v_artifact_id bigint; v_path text; v_run bigint; v_payload jsonb;
@@ -305,7 +319,7 @@ begin
   if v_run is null then raise exception 'test reconciliation missing'; end if;
 
   v_payload:=jsonb_build_object(
-    'test_code','PR93-LOTE-C','artifact_id',v_artifact_id,
+    'test_code','PR93-LOTE-D','artifact_id',v_artifact_id,
     'gate_code','EXTERNAL-CI-V3','test_kind','INTEGRATION','target_relation',v_path,
     'probe_preimage',jsonb_build_object('expected_sha256',repeat('c',64)),
     'expected_outcome',jsonb_build_object('result','FAIL'),
@@ -331,17 +345,32 @@ begin
     execute 'reset role';
   exception when others then execute 'reset role'; raise;
   end;
+
   if not private.fn_gate_nonce_v7_valid(v_gate)
-     or coalesce((select persisted_effects->>'writer_nonce_sha256'
+     or coalesce((select writer_nonce_sha256
                   from private.lf_gate_test_runs_v3 where id=v_gate),'') !~ '^[0-9a-f]{64}$'
-     or (select persisted_effects->>'writer_nonce_sha256'
+     or (select writer_nonce_sha256
          from private.lf_gate_test_runs_v3 where id=v_gate)
         is distinct from
         (select e.payload->>'writer_nonce_sha256'
          from private.lf_gate_test_runs_v3 t
          join public.lf_eventos e on e.id=t.evidence_event_id
+         where t.id=v_gate)
+     or (select persisted_effects
+         from private.lf_gate_test_runs_v3 where id=v_gate)
+        is distinct from
+        (select e.payload->'persisted_effects'
+         from private.lf_gate_test_runs_v3 t
+         join public.lf_eventos e on e.id=t.evidence_event_id
+         where t.id=v_gate)
+     or (select persisted_effects_sha256
+         from private.lf_gate_test_runs_v3 where id=v_gate)
+        is distinct from
+        (select e.payload->>'persisted_effects_sha256'
+         from private.lf_gate_test_runs_v3 t
+         join public.lf_eventos e on e.id=t.evidence_event_id
          where t.id=v_gate) then
-    raise exception 'gate nonce binding was not anchored in the private row';
+    raise exception 'gate proof was not anchored consistently';
   end if;
 
   select count(*) into v_nonces from private.lf_reconciliation_writer_nonces_v7;
@@ -370,7 +399,7 @@ begin
 end
 $gate_path$;
 
--- Rotation overlap: the prior key becomes RETIRING and both keys verify proofs.
+-- Rotation overlap: verify exact window, both keys, key_id attribution and guards.
 do $rotation_overlap$
 declare
   v_preimage_a text:=private.fn_reconciliation_preimage_v7(
@@ -379,42 +408,112 @@ declare
   v_preimage_b text:=private.fn_reconciliation_preimage_v7(
     jsonb_build_object('case','active-key'),'PR93-ROTATE-B'
   );
-  v_nonce text; v_signature text;
+  v_nonce_a text; v_nonce_b text; v_signature text;
+  v_third_rejected boolean:=false;
+  v_early_retire_rejected boolean:=false;
+  v_message text;
 begin
   perform private.fn_install_writer_hmac_key_v7(
     'lf-writer-2099-02-r99',
     'PR93_TEST_ONLY_HMAC_KEY_B_9c81f1a4_DO_NOT_REUSE',
-    'PR93-LOTE-C'
+    'PR93-LOTE-D'
   );
   perform private.fn_promote_writer_hmac_key_v7(
-    'lf-writer-2099-02-r99','PR93-LOTE-C'
+    'lf-writer-2099-02-r99','PR93-LOTE-D'
   );
-  if not exists(select 1 from private.lf_writer_hmac_keys_v7
-                where key_id='lf-writer-2099-01-r98' and lifecycle_state='RETIRING')
-     or not exists(select 1 from private.lf_writer_hmac_keys_v7
-                   where key_id='lf-writer-2099-02-r99' and lifecycle_state='ACTIVE') then
-    raise exception 'rotation lifecycle states are incorrect';
-  end if;
-  perform set_config('request.jwt.claims','{"role":"service_role"}',true);
 
-  v_nonce:=gen_random_uuid()::text||'.'||
+  if not exists(
+       select 1
+       from private.lf_writer_hmac_keys_v7
+       where key_id='lf-writer-2099-01-r98'
+         and lifecycle_state='RETIRING'
+         and abs(extract(epoch from (retiring_until-retiring_at))-600)<0.001
+     )
+     or not exists(
+       select 1
+       from private.lf_writer_hmac_keys_v7
+       where key_id='lf-writer-2099-02-r99'
+         and lifecycle_state='ACTIVE'
+     ) then
+    raise exception 'rotation lifecycle or overlap window is incorrect';
+  end if;
+
+  perform set_config('request.jwt.claims','{"role":"service_role"}',true);
+  v_nonce_a:=gen_random_uuid()::text||'.'||
     floor(extract(epoch from clock_timestamp()+interval '5 minutes'))::bigint;
   v_signature:=encode(extensions.hmac(
-    convert_to(v_preimage_a||':'||v_nonce,'UTF8'),
+    convert_to(v_preimage_a||':'||v_nonce_a,'UTF8'),
     convert_to('PR93_TEST_ONLY_HMAC_KEY_A_7b15d6e2_DO_NOT_REUSE','UTF8'),'sha256'
   ),'hex');
-  if not private.fn_consume_writer_proof_v7(v_preimage_a,v_signature,v_nonce) then
+  if not private.fn_consume_writer_proof_v7(v_preimage_a,v_signature,v_nonce_a) then
     raise exception 'RETIRING key proof was rejected during overlap';
   end if;
+  if (select key_id
+      from private.lf_reconciliation_writer_nonces_v7
+      where nonce_sha256=encode(
+        extensions.digest(convert_to(v_nonce_a,'UTF8'),'sha256'),'hex'
+      )) is distinct from 'lf-writer-2099-01-r98' then
+    raise exception 'RETIRING proof recorded the wrong key_id';
+  end if;
 
-  v_nonce:=gen_random_uuid()::text||'.'||
+  v_nonce_b:=gen_random_uuid()::text||'.'||
     floor(extract(epoch from clock_timestamp()+interval '5 minutes'))::bigint;
   v_signature:=encode(extensions.hmac(
-    convert_to(v_preimage_b||':'||v_nonce,'UTF8'),
+    convert_to(v_preimage_b||':'||v_nonce_b,'UTF8'),
     convert_to('PR93_TEST_ONLY_HMAC_KEY_B_9c81f1a4_DO_NOT_REUSE','UTF8'),'sha256'
   ),'hex');
-  if not private.fn_consume_writer_proof_v7(v_preimage_b,v_signature,v_nonce) then
+  if not private.fn_consume_writer_proof_v7(v_preimage_b,v_signature,v_nonce_b) then
     raise exception 'ACTIVE key proof was rejected after rotation';
+  end if;
+  if (select key_id
+      from private.lf_reconciliation_writer_nonces_v7
+      where nonce_sha256=encode(
+        extensions.digest(convert_to(v_nonce_b,'UTF8'),'sha256'),'hex'
+      )) is distinct from 'lf-writer-2099-02-r99' then
+    raise exception 'ACTIVE proof recorded the wrong key_id';
+  end if;
+
+  begin
+    perform private.fn_retire_writer_hmac_key_v7(
+      'lf-writer-2099-01-r98','PR93-LOTE-D'
+    );
+  exception when sqlstate '55000' then
+    get stacked diagnostics v_message=message_text;
+    v_early_retire_rejected:=position('overlap window' in v_message)>0;
+  end;
+  if not v_early_retire_rejected then
+    raise exception 'RETIRING key was not protected during overlap';
+  end if;
+
+  perform private.fn_install_writer_hmac_key_v7(
+    'lf-writer-2099-03-r100',
+    'PR93_TEST_ONLY_HMAC_KEY_C_b0a113dd_DO_NOT_REUSE',
+    'PR93-LOTE-D'
+  );
+  begin
+    perform private.fn_promote_writer_hmac_key_v7(
+      'lf-writer-2099-03-r100','PR93-LOTE-D'
+    );
+  exception when sqlstate '55000' then
+    get stacked diagnostics v_message=message_text;
+    v_third_rejected:=position('retiring writer key' in v_message)>0;
+  end;
+  if not v_third_rejected then
+    raise exception 'third promotion was accepted while a key was RETIRING';
+  end if;
+
+  if position(
+       'retiring_until>clock_timestamp()'
+       in regexp_replace(
+         pg_get_functiondef(
+           'private.fn_writer_hmac_v7_match_key(text,text,text)'::regprocedure
+         ),
+         '\s',
+         '',
+         'g'
+       )
+     )=0 then
+    raise exception 'verifier no longer excludes expired RETIRING keys';
   end if;
 end
 $rotation_overlap$;
@@ -441,7 +540,7 @@ exception when others then execute 'reset role'; raise;
 end
 $test_13$;
 
--- Permanent invariants remain true under the LOTE-C additions.
+-- Permanent invariants remain true under the LOTE-D additions.
 do $final_invariants$
 begin
   if not private.fn_writer_key_separation_v7_valid() then
