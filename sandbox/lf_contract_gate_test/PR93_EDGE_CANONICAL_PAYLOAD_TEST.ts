@@ -1,59 +1,22 @@
-const encoder = new TextEncoder();
-const CANONICAL_KEY_RE = /^[A-Za-z0-9_.-]+$/;
-
-function hex(value: ArrayBuffer): string {
-  return [...new Uint8Array(value)]
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-function canonicalJson(value: unknown): string {
-  if (value === null) return "null";
-  if (typeof value === "string") return JSON.stringify(value);
-  if (typeof value === "boolean") return value ? "true" : "false";
-  if (typeof value === "number") {
-    if (!Number.isSafeInteger(value)) {
-      throw new Error("Canonical JSON numbers must be JavaScript-safe integers");
-    }
-    return String(value);
-  }
-  if (Array.isArray(value)) {
-    return `[${value.map((item) => canonicalJson(item)).join(",")}]`;
-  }
-  if (typeof value === "object") {
-    const object = value as Record<string, unknown>;
-    const keys = Object.keys(object).sort();
-    for (const key of keys) {
-      if (!CANONICAL_KEY_RE.test(key)) {
-        throw new Error("Canonical JSON object keys must be ASCII identifiers");
-      }
-      if (object[key] === undefined) {
-        throw new Error("Canonical JSON does not allow undefined values");
-      }
-    }
-    return `{${keys.map((key) => `${JSON.stringify(key)}:${canonicalJson(object[key])}`).join(",")}}`;
-  }
-  throw new Error("Canonical JSON value has unsupported type");
-}
-
-async function payloadSha256(payload: Record<string, unknown>): Promise<string> {
-  return hex(await crypto.subtle.digest("SHA-256", encoder.encode(canonicalJson(payload))));
-}
-
-function frameComponent(value: string): string {
-  return `${encoder.encode(value).byteLength}#${value}`;
-}
-
-async function preimage(
-  scope: "reconciliation-v7" | "gate-v7",
-  payload: Record<string, unknown>,
-  execution: string,
-): Promise<string> {
-  return frameComponent(scope) + frameComponent(execution) + frameComponent(await payloadSha256(payload));
-}
+import {
+  canonicalJson,
+  frameComponent,
+  payloadSha256,
+  signedPreimage,
+} from "../../supabase/migrations/edge_functions/lf-github-reconcile-v3-v7/canonical_payload_v7.ts";
 
 function assert(condition: boolean, message: string): void {
   if (!condition) throw new Error(message);
+}
+
+function assertThrows(action: () => unknown, message: string): void {
+  let rejected = false;
+  try {
+    action();
+  } catch {
+    rejected = true;
+  }
+  assert(rejected, message);
 }
 
 Deno.test("shared canonical JSON vector", async () => {
@@ -73,13 +36,28 @@ Deno.test("shared canonical JSON vector", async () => {
   );
 });
 
-Deno.test("separator distribution cannot collide", async () => {
-  const left = await preimage("gate-v7", { test_code: "a:b", source_workflow_run_id: 3 }, "EXEC:1");
-  const right = await preimage("gate-v7", { test_code: "a", source_workflow_run_id: "b:3" }, "EXEC:1");
-  assert(left !== right, "length-framed canonical preimages collided");
+Deno.test("framed scopes are exact and separator distribution cannot collide", async () => {
+  const reconciliation = await signedPreimage(
+    "reconciliation-v7",
+    { test_code: "a:b", source_workflow_run_id: 3 },
+    "EXEC:1",
+  );
+  const gate = await signedPreimage(
+    "gate-v7",
+    { test_code: "a", source_workflow_run_id: "b:3" },
+    "EXEC:1",
+  );
+
+  assert(reconciliation.startsWith("17#reconciliation-v7"), "reconciliation scope frame differs");
+  assert(gate.startsWith("7#gate-v7"), "gate scope frame differs");
+  assert(reconciliation !== gate, "distinct scope/payload preimages collided");
+
+  const left = frameComponent("a:b") + frameComponent("c");
+  const right = frameComponent("a") + frameComponent("b:c");
+  assert(left !== right, "length-framed components collided");
 });
 
-Deno.test("formerly unsigned fields change the preimage", async () => {
+Deno.test("full payload binding covers nested and formerly unsigned fields", async () => {
   const base = {
     artifact_id: 1,
     artifact_path: "skills/a.md",
@@ -87,13 +65,18 @@ Deno.test("formerly unsigned fields change the preimage", async () => {
     details: { actual_branch_protection_status: "VERIFIED" },
     failure_reasons: [] as string[],
   };
-  const original = await preimage("reconciliation-v7", base, "EXEC-BIND");
+  const original = await signedPreimage("reconciliation-v7", base, "EXEC-BIND");
+
   assert(
-    original !== await preimage("reconciliation-v7", { ...base, artifact_path: "skills/other.md" }, "EXEC-BIND"),
+    original !== await signedPreimage(
+      "reconciliation-v7",
+      { ...base, artifact_path: "skills/other.md" },
+      "EXEC-BIND",
+    ),
     "artifact_path was not bound",
   );
   assert(
-    original !== await preimage(
+    original !== await signedPreimage(
       "reconciliation-v7",
       { ...base, details: { actual_branch_protection_status: "FAILED" } },
       "EXEC-BIND",
@@ -101,20 +84,75 @@ Deno.test("formerly unsigned fields change the preimage", async () => {
     "nested authorization detail was not bound",
   );
   assert(
-    original !== await preimage("reconciliation-v7", { ...base, failure_reasons: ["MUTATED"] }, "EXEC-BIND"),
+    original !== await signedPreimage(
+      "reconciliation-v7",
+      { ...base, failure_reasons: ["MUTATED"] },
+      "EXEC-BIND",
+    ),
     "failure_reasons was not bound",
   );
 });
 
-Deno.test("numeric contract fails closed", () => {
+Deno.test("key order, arrays and nested objects are deterministic", () => {
+  assert(
+    canonicalJson({ b: 2, a: 1 }) === canonicalJson({ a: 1, b: 2 }),
+    "object key order changed the canonical JSON",
+  );
+  assert(
+    canonicalJson({ a: [1, 2] }) !== canonicalJson({ a: [2, 1] }),
+    "array order was not preserved",
+  );
+  assert(
+    canonicalJson({ a: { b: { c: true } } }) === '{"a":{"b":{"c":true}}}',
+    "nested object canonicalization differs",
+  );
+});
+
+Deno.test("string escaping and Unicode remain deterministic", () => {
+  const value = '"\\\b\f\n\r\t\u0001\u007f\u2028\u2029😀ñ';
+  const canonical = canonicalJson(value);
+  assert(canonical === JSON.stringify(value), "string escaping differs from JSON.stringify");
+  assert(canonicalJson("é") !== canonicalJson("e\u0301"), "Unicode normalization was introduced");
+});
+
+Deno.test("numeric contract accepts only safe integers and normalizes negative zero", () => {
+  assert(canonicalJson(0) === "0", "zero canonicalization failed");
+  assert(canonicalJson(-0) === "0", "negative zero was not normalized");
   assert(canonicalJson(1) === "1", "integer canonicalization failed");
-  for (const value of [1.5, Number.MAX_SAFE_INTEGER + 1]) {
-    let rejected = false;
-    try {
-      canonicalJson(value);
-    } catch {
-      rejected = true;
-    }
-    assert(rejected, `numeric value ${value} was not rejected`);
+  assert(canonicalJson(Number.MAX_SAFE_INTEGER) === "9007199254740991", "positive limit failed");
+  assert(canonicalJson(Number.MIN_SAFE_INTEGER) === "-9007199254740991", "negative limit failed");
+
+  for (const value of [
+    1.5,
+    Number.MAX_SAFE_INTEGER + 1,
+    Number.MIN_SAFE_INTEGER - 1,
+    Number.NaN,
+    Number.POSITIVE_INFINITY,
+  ]) {
+    assertThrows(
+      () => canonicalJson(value),
+      `numeric value ${String(value)} was not rejected`,
+    );
   }
+});
+
+Deno.test("canonical objects must be plain records with ASCII keys", () => {
+  assertThrows(() => canonicalJson({ "ñ": 1 }), "non-ASCII object key was accepted");
+  assertThrows(
+    () => canonicalJson({ value: undefined }),
+    "undefined object value was accepted",
+  );
+  assertThrows(() => canonicalJson(new Date()), "Date object was accepted");
+  assertThrows(() => canonicalJson(new Map()), "Map object was accepted");
+
+  const nullPrototype = Object.create(null) as Record<string, unknown>;
+  nullPrototype.a = 1;
+  assert(canonicalJson(nullPrototype) === '{"a":1}', "null-prototype record was rejected");
+});
+
+Deno.test("execution identity is independently framed", async () => {
+  const payload = { artifact_id: 1 };
+  const left = await signedPreimage("gate-v7", payload, "a:b");
+  const right = await signedPreimage("gate-v7", payload, "a");
+  assert(left !== right, "execution identity was not bound");
 });

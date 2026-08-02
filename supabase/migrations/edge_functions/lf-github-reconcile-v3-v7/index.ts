@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from "npm:jose@6.0.11";
+import { signedPreimage } from "./canonical_payload_v7.ts";
 
 const REPOSITORY = "cristhianlujan/claude-persona-lf-patch";
 const REPOSITORY_ID = "1244397752";
@@ -61,58 +62,6 @@ async function gitBlob(bytes: Uint8Array): Promise<string> {
   payload.set(header);
   payload.set(bytes, header.byteLength);
   return hex(await crypto.subtle.digest("SHA-1", payload));
-}
-
-const CANONICAL_KEY_RE = /^[A-Za-z0-9_.-]+$/;
-
-function canonicalJson(value: unknown): string {
-  if (value === null) return "null";
-
-  if (typeof value === "string") return JSON.stringify(value);
-  if (typeof value === "boolean") return value ? "true" : "false";
-  if (typeof value === "number") {
-    if (!Number.isSafeInteger(value)) {
-      throw new Error("Canonical JSON numbers must be JavaScript-safe integers");
-    }
-    return String(value);
-  }
-
-  if (Array.isArray(value)) {
-    return `[${value.map((item) => canonicalJson(item)).join(",")}]`;
-  }
-
-  if (typeof value === "object") {
-    const object = value as Record<string, unknown>;
-    const keys = Object.keys(object).sort();
-    for (const key of keys) {
-      if (!CANONICAL_KEY_RE.test(key)) {
-        throw new Error("Canonical JSON object keys must be ASCII identifiers");
-      }
-      if (object[key] === undefined) {
-        throw new Error("Canonical JSON does not allow undefined values");
-      }
-    }
-    return `{${keys.map((key) => `${JSON.stringify(key)}:${canonicalJson(object[key])}`).join(",")}}`;
-  }
-
-  throw new Error("Canonical JSON value has unsupported type");
-}
-
-async function payloadSha256(payload: Record<string, unknown>): Promise<string> {
-  return sha256Bytes(encoder.encode(canonicalJson(payload)));
-}
-
-function frameComponent(value: string): string {
-  return `${encoder.encode(value).byteLength}#${value}`;
-}
-
-async function signedPreimage(
-  scope: "reconciliation-v7" | "gate-v7",
-  payload: Record<string, unknown>,
-  execution: string,
-): Promise<string> {
-  const payloadHash = await payloadSha256(payload);
-  return frameComponent(scope) + frameComponent(execution) + frameComponent(payloadHash);
 }
 
 async function writerProof(preimage: string): Promise<{ nonce: string; signature: string }> {
