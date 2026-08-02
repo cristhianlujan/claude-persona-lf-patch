@@ -23,29 +23,38 @@ No aplicar migraciones ni desplegar Edge desde la rama del PR. El flujo obligato
 10. `20260801180320_cleanup_idempotency_owner_context.sql`
 11. `20260801180400_writer_key_rotation_v7.sql`
 12. `20260801180500_writer_canonicalization_rls_v7.sql`
+13. `20260801180510_writer_full_payload_binding_v7.sql`
 
 Edge permanece en:
 
 `supabase/migrations/edge_functions/lf-github-reconcile-v3-v7/index.ts`
 
-## Contrato HMAC y canonicalización
+## Contrato HMAC y payload completo
 
-Edge y PostgreSQL firman y verifican:
+Edge y PostgreSQL calculan exactamente:
 
 ```text
-<preimage>:<nonce>
+payload_hash = SHA-256(canonical_json(payload))
+preimage = frame(scope) || frame(execution_id) || frame(payload_hash)
+signature = HMAC-SHA256(preimage || ":" || nonce)
+frame(value) = utf8_byte_length(value) || "#" || value
 ```
 
-La migración `180500` fija el número y la posición de todos los componentes del preimage. PostgreSQL ya no usa `concat_ws`, porque esa función elimina componentes `NULL`.
+La migración `180500` eliminó el desplazamiento de componentes `NULL`. La migración `180510` sustituye el preimage campo por campo por un digest del payload completo y elimina el delimitador ambiguo entre componentes.
 
-Reglas:
+Reglas del JSON canónico:
 
-- cada componente conserva su posición;
-- un valor ordinario ausente o JSON `null` produce un componente vacío;
-- los campos que Edge convierte mediante `String(...)` reproducen esa semántica para primitivas;
-- el writer de gate exige booleanos para `passed` y `observed_outcome.audit_covered`;
-- dos payloads con valores desplazados entre campos no pueden producir el mismo preimage;
+- claves limitadas a `[A-Za-z0-9_.-]+`;
+- claves ordenadas ascendentemente;
+- arrays conservan orden;
+- strings usan escape JSON y UTF-8;
+- `null` y booleanos conservan semántica JSON;
+- números permitidos solo si son enteros seguros de JavaScript;
+- valores no representables fallan en cerrado;
+- cualquier modificación de un campo o valor anidado cambia el preimage;
 - `key_id` no forma parte del mensaje firmado y Edge no necesita conocerlo.
+
+El prefijo de longitud usa bytes UTF-8. Los valores con `:` son válidos y no pueden cambiar los límites entre componentes.
 
 La firma RPC de los writers no cambia.
 
@@ -119,8 +128,11 @@ Valores previstos:
 Ejecutar en un entorno aislado:
 
 - `sandbox/lf_contract_gate_test/PR93_WRITER_V7_ADVERSARIAL_TESTS.sql`
+- `sandbox/lf_contract_gate_test/PR93_CA_N36_N38_ADVERSARIAL_TESTS.sql`
+- `sandbox/lf_contract_gate_test/PR93_EDGE_CANONICAL_PAYLOAD_TEST.ts`
 - `sandbox/lf_contract_gate_test/PR93_V7_READBACK.sql`
 - `sandbox/lf_contract_gate_test/PR93_V7_HARDENING_READBACK.sql`
+- `sandbox/lf_contract_gate_test/PR93_V7_PAYLOAD_BINDING_READBACK.sql`
 
 La batería exige:
 
@@ -130,15 +142,19 @@ La batería exige:
 4. Nonce expirado y futuro rechazados.
 5. Firma incorrecta rechazada.
 6. Claims ausentes y `anon` rechazados.
-7. Dos payloads con componentes nulos en posiciones distintas producen preimages distintos.
-8. Prueba 13 bajo `SET LOCAL ROLE service_role`.
-9. `RESET ROLE` protegido por manejador de excepción.
-10. Cero nonce, reconciliación y evento ante una firma fabricada.
-11. Firma legítima con nonce expirado rechazada sin efectos.
-12. Desafío de una clave `PREPARED`.
-13. Aceptación de la clave anterior dentro de `RETIRING` y de la nueva `ACTIVE`.
-14. Registro del `key_id` que validó cada nonce.
-15. `ROLLBACK` total.
+7. Vector canónico compartido con SHA-256 idéntico en Edge y PostgreSQL.
+8. Orden de claves irrelevante para el digest.
+9. Distribuciones distintas de `:` producen preimages distintos.
+10. Mutaciones de `artifact_path`, `merged`, `failure_reasons` y detalles anidados cambian el preimage.
+11. Números fraccionarios y enteros fuera del rango seguro son rechazados.
+12. Prueba 13 bajo `SET LOCAL ROLE service_role`.
+13. `RESET ROLE` protegido por manejador de excepción.
+14. Cero nonce, reconciliación y evento ante una firma fabricada.
+15. Firma legítima con nonce expirado rechazada sin efectos.
+16. Desafío de una clave `PREPARED`.
+17. Aceptación de la clave anterior dentro de `RETIRING` y de la nueva `ACTIVE`.
+18. Registro del `key_id` que validó cada nonce.
+19. `ROLLBACK` total en las baterías SQL.
 
 No interpretar ningún control negativo si falla alguno de los dos controles positivos.
 
@@ -170,7 +186,9 @@ No dejar una clave vencida en `RETIRING`: produce `RETIREMENT_DUE`, bloquea read
 - Estado de rotación explícito.
 - Política de INSERT de nonces exige `key_id`.
 - Nonces nuevos con `key_id` registrado.
-- Writers públicos usan helpers canónicos y no `concat_ws`.
+- Writers públicos usan helpers canónicos.
+- Helpers activos usan hash de payload completo y framing por longitud.
+- Roles API no ejecutan helpers privados.
 - Writers V5/V6 no ejecutables por roles API.
 - Writers públicos V7 ejecutables solo por `service_role`.
 - Triggers críticos, incluidos los de TRUNCATE, en estado `ALWAYS`.
