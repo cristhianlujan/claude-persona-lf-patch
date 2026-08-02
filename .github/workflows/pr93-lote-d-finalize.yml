@@ -23,92 +23,69 @@ jobs:
 
           p = Path('supabase/migrations/20260801180530_writer_evidence_runtime_hardening_v7.sql')
           s = p.read_text(encoding='utf-8')
-          s = s.replace(
-              "do $preflight$\ndeclare\n  v_gate_owner oid;\nbegin\n",
-              "do $preflight$\nbegin\n",
-              1,
-          )
-          s = s.replace(
-              """\n  select c.relowner into v_gate_owner
-          from pg_class c
-          where c.oid='private.lf_gate_test_runs_v3'::regclass;
 
-          if not pg_has_role(current_user,pg_get_userbyid(v_gate_owner),'USAGE')
-             and not coalesce((select r.rolsuper from pg_roles r where r.rolname=current_user),false) then
-            raise exception 'migration executor cannot administer private.lf_gate_test_runs_v3';
-          end if;
-        end
-        $preflight$;
+          old_header = "do $preflight$\ndeclare\n  v_gate_owner oid;\nbegin"
+          if old_header not in s:
+              raise SystemExit('preflight header not found')
+          s = s.replace(old_header, "do $preflight$\nbegin", 1)
 
-        -- CA-N52: keep signed persisted_effects byte-for-byte aligned with the event.
-        """,
-              """\nend
-        $preflight$;
+          owner_start = s.index("\n  select c.relowner into v_gate_owner")
+          owner_end = s.index("\nend\n$preflight$;", owner_start)
+          s = s[:owner_start] + s[owner_end:]
 
-        -- CA-N49/CA-N50: obtain both owner contexts before any function grant or table DDL.
-        grant lf_writer_verifier_v7 to postgres
-          with admin false inherit true set true
-          granted by postgres;
-        grant lf_governance_owner_v3 to postgres
-          with admin false inherit true set true
-          granted by postgres;
+          preflight_end = "end\n$preflight$;\n"
+          membership = """
 
-        do $table_owner_preflight$
-        declare
-          v_gate_owner oid;
-        begin
-          select c.relowner into v_gate_owner
-          from pg_class c
-          where c.oid='private.lf_gate_test_runs_v3'::regclass;
+          -- CA-N49/CA-N50: obtain both owner contexts before any function grant or table DDL.
+          grant lf_writer_verifier_v7 to postgres
+            with admin false inherit true set true
+            granted by postgres;
+          grant lf_governance_owner_v3 to postgres
+            with admin false inherit true set true
+            granted by postgres;
 
-          if not pg_has_role(current_user,pg_get_userbyid(v_gate_owner),'USAGE')
-             and not coalesce((select r.rolsuper from pg_roles r where r.rolname=current_user),false) then
-            raise exception 'migration executor cannot administer private.lf_gate_test_runs_v3';
-          end if;
-        end
-        $table_owner_preflight$;
+          do $table_owner_preflight$
+          declare
+            v_gate_owner oid;
+          begin
+            select c.relowner into v_gate_owner
+            from pg_class c
+            where c.oid='private.lf_gate_test_runs_v3'::regclass;
 
-        -- CA-N52: keep signed persisted_effects byte-for-byte aligned with the event.
-        """,
-              1,
-          )
-          s = s.replace(
-              """-- CA-N49: obtain both owner contexts before issuing grants.
-        grant lf_writer_verifier_v7 to postgres
-          with admin false inherit true set true
-          granted by postgres;
-        grant lf_governance_owner_v3 to postgres
-          with admin false inherit true set true
-          granted by postgres;
+            if not pg_has_role(current_user,pg_get_userbyid(v_gate_owner),'USAGE')
+               and not coalesce((select r.rolsuper from pg_roles r where r.rolname=current_user),false) then
+              raise exception 'migration executor cannot administer private.lf_gate_test_runs_v3';
+            end if;
+          end
+          $table_owner_preflight$;
+          """
+          if preflight_end not in s:
+              raise SystemExit('preflight end not found')
+          s = s.replace(preflight_end, preflight_end + membership, 1)
 
-        set local role lf_writer_verifier_v7;
-        """,
-              """-- CA-N49: issue each helper grant under its actual owner role.
-        set local role lf_writer_verifier_v7;
-        """,
-              1,
-          )
-          if 'do $table_owner_preflight$' not in s:
-              raise SystemExit('migration patch did not apply')
+          old_comment = '-- CA-N49: obtain both owner contexts before issuing grants.'
+          old_start = s.index(old_comment)
+          set_role = s.index('set local role lf_writer_verifier_v7;', old_start)
+          s = s[:old_start] + '-- CA-N49: issue each helper grant under its actual owner role.\n' + s[set_role:]
+
+          if s.count('grant lf_writer_verifier_v7 to postgres') != 1:
+              raise SystemExit('unexpected verifier membership count')
+          if s.index('grant lf_writer_verifier_v7 to postgres') > s.index('alter table private.lf_gate_test_runs_v3'):
+              raise SystemExit('membership still follows table DDL')
           p.write_text(s, encoding='utf-8')
 
           g = Path('sandbox/lf_contract_gate_test/PR93_LOTE_C_GUARDS.md')
           t = g.read_text(encoding='utf-8')
-          t = t.replace(
-              """`fn_writer_preimage_scope_v7(text)` concede `EXECUTE` a `postgres` bajo
-        `lf_writer_verifier_v7`. Los helpers de canonicalización, framing y preimage lo hacen
-        bajo `lf_governance_owner_v3`. Las dos membresías se revocan antes del `COMMIT`.
-        """,
-              """Las dos membresías se obtienen antes de cualquier `ALTER TABLE`, `CREATE TRIGGER` o
-        concesión de funciones. `fn_writer_preimage_scope_v7(text)` concede `EXECUTE` a
-        `postgres` bajo `lf_writer_verifier_v7`; los helpers de canonicalización, framing y
-        preimage lo hacen bajo `lf_governance_owner_v3`. Ambas membresías se revocan antes
-        del `COMMIT`.
-        """,
-              1,
-          )
-          if 'antes de cualquier `ALTER TABLE`' not in t:
-              raise SystemExit('guards patch did not apply')
+          start = t.index('`fn_writer_preimage_scope_v7(text)` concede')
+          end_marker = 'Las dos membresías se revocan antes del `COMMIT`.\n'
+          end = t.index(end_marker, start) + len(end_marker)
+          replacement = """Las dos membresías se obtienen antes de cualquier `ALTER TABLE`, `CREATE TRIGGER` o
+          concesión de funciones. `fn_writer_preimage_scope_v7(text)` concede `EXECUTE` a
+          `postgres` bajo `lf_writer_verifier_v7`; los helpers de canonicalización, framing y
+          preimage lo hacen bajo `lf_governance_owner_v3`. Ambas membresías se revocan antes
+          del `COMMIT`.
+          """
+          t = t[:start] + replacement + t[end:]
           g.write_text(t, encoding='utf-8')
           PY
           rm .github/workflows/pr93-lote-d-finalize.yml
