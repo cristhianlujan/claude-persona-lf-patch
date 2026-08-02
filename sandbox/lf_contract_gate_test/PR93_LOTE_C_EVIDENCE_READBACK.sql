@@ -1,6 +1,102 @@
 -- PR #93 / LOTE-E structural readback. SELECT-only.
--- LOTE-E.1: inspect explicit ACL entries and both PL/pgSQL assignment operators.
+-- LOTE-E.2: NULL proacl is a failure, binder mutation detection is token-aware,
+-- and the verifier text inspection lives here as a definition-only check.
 
+with mutation_patterns as (
+  select
+    '(^|;|\mbegin\M|\mthen\M|\melse\M|\mloop\M)\s*new\M\s*\.\s*persisted_effects(_sha256)?\M\s*(:=|=)'::text
+      as direct_field_assignment,
+    '(^|;|\mbegin\M|\mthen\M|\melse\M|\mloop\M)\s*new\M\s*(:=|=)'::text
+      as whole_record_assignment,
+    '\mselect\M[^;]*?\minto\M\s+(?:strict\s+)?([^;]*?)(?:\mfrom\M|;)'::text
+      as select_into_statement,
+    '(^|,)\s*new\M(?:\s*\.\s*persisted_effects(_sha256)?\M)?\s*(,|$)'::text
+      as select_into_target
+),
+binder_def as (
+  select
+    regexp_replace(
+      pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
+      '\s','','g'
+    ) as stripped,
+    lower(
+      regexp_replace(
+        pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
+        '\s+',' ','g'
+      )
+    ) as spaced
+),
+binder_mutation_check as (
+  select
+    binder_def.spaced ~ mutation_patterns.direct_field_assignment
+    or binder_def.spaced ~ mutation_patterns.whole_record_assignment
+    or exists(
+      select 1
+      from regexp_matches(
+        binder_def.spaced,
+        mutation_patterns.select_into_statement,
+        'g'
+      ) as matched(captures)
+      where (matched.captures)[1] ~ mutation_patterns.select_into_target
+    ) as mutates_signed_effects
+  from binder_def
+  cross join mutation_patterns
+),
+mutation_vectors(vector_name,source_text,expected_mutation) as (
+  values
+    ('direct_colon_equals',
+     'begin new.persisted_effects := ''{}''::jsonb; end',true),
+    ('direct_equals_with_spaced_dot',
+     'begin new . persisted_effects_sha256 = ''x''; end',true),
+    ('select_into_first_target',
+     'begin select payload into new.persisted_effects from t; end',true),
+    ('select_into_later_target',
+     'begin select payload,hash into v_other, new . persisted_effects_sha256 from t; end',true),
+    ('whole_record_direct',
+     'begin new := old; end',true),
+    ('whole_record_select_into',
+     'begin select row(payload,hash) into new from t; end',true),
+    ('read_json_operator',
+     'begin perform new.persisted_effects->>''x''; end',false),
+    ('read_cast',
+     'begin v := new.persisted_effects::text; end',false),
+    ('comparison_is_distinct',
+     'begin if new.persisted_effects is distinct from old.persisted_effects then null; end if; end',false),
+    ('comparison_equals',
+     'begin if new.persisted_effects = old.persisted_effects then null; end if; end',false),
+    ('select_into_other_then_read',
+     'begin select x into v from t where y=new.persisted_effects; end',false),
+    ('insert_into_read',
+     'begin insert into log(payload) values(new.persisted_effects); end',false)
+),
+mutation_vector_results as (
+  select
+    mutation_vectors.vector_name,
+    mutation_vectors.expected_mutation,
+    mutation_vectors.source_text ~ mutation_patterns.direct_field_assignment
+    or mutation_vectors.source_text ~ mutation_patterns.whole_record_assignment
+    or exists(
+      select 1
+      from regexp_matches(
+        mutation_vectors.source_text,
+        mutation_patterns.select_into_statement,
+        'g'
+      ) as matched(captures)
+      where (matched.captures)[1] ~ mutation_patterns.select_into_target
+    ) as detected_mutation
+  from mutation_vectors
+  cross join mutation_patterns
+),
+mutation_pattern_controls as (
+  select
+    bool_and(detected_mutation=expected_mutation) as all_pass,
+    jsonb_object_agg(
+      vector_name,
+      detected_mutation=expected_mutation
+      order by vector_name
+    ) as cases
+  from mutation_vector_results
+)
 select jsonb_build_object(
   'functions',jsonb_build_object(
     'gate_binder',to_regprocedure('private.fn_bind_gate_writer_nonce_v7()') is not null,
@@ -64,14 +160,17 @@ select jsonb_build_object(
       'postgres','private.fn_frame_component_v7(text)','EXECUTE'
     )
   ),
-  'temporary_creator_acl_removed',not exists(
-    select 1
+  'temporary_creator_acl_removed',coalesce((
+    select p.proacl is not null
+       and not exists(
+         select 1
+         from aclexplode(p.proacl) acl
+         where acl.grantee=(select r.oid from pg_roles r where r.rolname='postgres')
+           and acl.privilege_type='EXECUTE'
+       )
     from pg_proc p
-    cross join lateral aclexplode(coalesce(p.proacl,'{}'::aclitem[])) acl
     where p.oid='private.fn_bind_gate_writer_nonce_v7()'::regprocedure
-      and acl.grantee=(select r.oid from pg_roles r where r.rolname='postgres')
-      and acl.privilege_type='EXECUTE'
-  ),
+  ),false),
   'api_helper_denial',jsonb_build_object(
     'service_scope_parser',not has_function_privilege(
       'service_role','private.fn_writer_preimage_scope_v7(text)','EXECUTE'
@@ -129,29 +228,21 @@ select jsonb_build_object(
       )
     )>0,
     'binder_preserves_persisted_effects',(
-      regexp_replace(
-        pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
-        '\s','','g'
-      ) !~ 'new\.persisted_effects(:=|=)'
-      and regexp_replace(
-        pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
-        '\s','','g'
-      ) !~ 'new\.persisted_effects_sha256(:=|=)'
+      not binder_mutation_check.mutates_signed_effects
+      and mutation_pattern_controls.all_pass
+    ),
+    'binder_mutation_pattern_controls',jsonb_build_object(
+      'all_pass',mutation_pattern_controls.all_pass,
+      'cases',mutation_pattern_controls.cases
     ),
     'binder_blocks_authentication_downgrade',(
       position(
         'old.writer_authentication=''GITHUB_OIDC_HMAC_NONCE_V7'''
-        in regexp_replace(
-          pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
-          '\s','','g'
-        )
+        in binder_def.stripped
       )>0
       and position(
         'V7gateauthenticationcannotbedowngraded'
-        in regexp_replace(
-          pg_get_functiondef('private.fn_bind_gate_writer_nonce_v7()'::regprocedure),
-          '\s','','g'
-        )
+        in binder_def.stripped
       )>0
     ),
     'separation_covers_parser',position(
@@ -165,6 +256,15 @@ select jsonb_build_object(
       'fn_bind_gate_writer_nonce_v7'
       in regexp_replace(
         pg_get_functiondef('private.fn_writer_key_separation_v7_valid()'::regprocedure),
+        '\s','','g'
+      )
+    )>0,
+    'verifier_definition_excludes_expired_retiring_keys_definition_only',position(
+      'retiring_until>clock_timestamp()'
+      in regexp_replace(
+        pg_get_functiondef(
+          'private.fn_writer_hmac_v7_match_key(text,text,text)'::regprocedure
+        ),
         '\s','','g'
       )
     )>0
@@ -199,4 +299,7 @@ select jsonb_build_object(
       'lf_governance_owner_v3','private','CREATE'
     )
   )
-) as pr93_lote_e_evidence_readback;
+) as pr93_lote_e_evidence_readback
+from binder_def
+cross join binder_mutation_check
+cross join mutation_pattern_controls;

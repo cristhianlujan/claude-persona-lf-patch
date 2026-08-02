@@ -585,19 +585,6 @@ begin
     raise exception 'third promotion was accepted while a key was RETIRING';
   end if;
 
-  if position(
-       'retiring_until>clock_timestamp()'
-       in regexp_replace(
-         pg_get_functiondef(
-           'private.fn_writer_hmac_v7_match_key(text,text,text)'::regprocedure
-         ),
-         '\s',
-         '',
-         'g'
-       )
-     )=0 then
-    raise exception 'verifier no longer excludes expired RETIRING keys';
-  end if;
 end
 $rotation_overlap$;
 
