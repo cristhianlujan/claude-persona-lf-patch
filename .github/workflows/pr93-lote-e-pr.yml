@@ -1,0 +1,57 @@
+name: PR93 Apply LOTE-E from temporary PR
+
+on:
+  pull_request:
+    branches:
+      - lf/architecture-v7-hardening
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.head_ref == 'agent/pr93-lote-e' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
+      - name: Extract and apply LOTE-E patch
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          workflow = Path('.github/workflows/pr93-lote-e.yml').read_text(encoding='utf-8')
+          start_marker = "          python3 - <<'PY'\n"
+          end_marker = "          PY\n          rm .github/workflows/pr93-lote-e.yml"
+          start = workflow.index(start_marker) + len(start_marker)
+          end = workflow.index(end_marker, start)
+          lines = []
+          for line in workflow[start:end].splitlines():
+              if line.startswith('          '):
+                  line = line[10:]
+              lines.append(line)
+          Path('/tmp/pr93_lote_e_patch.py').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          PY
+          python3 -m py_compile /tmp/pr93_lote_e_patch.py
+          python3 /tmp/pr93_lote_e_patch.py
+          rm -f \
+            .github/workflows/pr93-lote-e.yml \
+            .github/workflows/pr93-lote-e-pr.yml \
+            sandbox/lf_contract_gate_test/.pr93_lote_e_trigger \
+            sandbox/lf_contract_gate_test/.pr93_lote_e_trigger2 \
+            sandbox/lf_contract_gate_test/.pr93_lote_e_trigger3 \
+            sandbox/lf_contract_gate_test/.pr93_lote_e_trigger4 \
+            sandbox/lf_contract_gate_test/.pr93_lote_e_kick
+
+      - name: Commit LOTE-E
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git diff --cached --check
+          git commit -m "fix(governance): close LOTE-E static gaps"
+          git push origin HEAD:agent/pr93-lote-e
