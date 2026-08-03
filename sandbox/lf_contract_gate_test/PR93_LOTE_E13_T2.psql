@@ -1,0 +1,46 @@
+\set ON_ERROR_STOP on
+
+\if :{?E13_HEAD_SHA}
+\else
+\echo 'E13_HEAD_SHA_REQUIRED'
+do $e13_t2_head_guard$
+begin
+  raise exception 'E13_HEAD_SHA_REQUIRED';
+end
+$e13_t2_head_guard$;
+\endif
+
+\echo 'E13_T2_BEGIN'
+\echo E13_HEAD_SHA=:E13_HEAD_SHA
+
+\if :AUTOCOMMIT
+\else
+\echo 'E13_T2_AUTOCOMMIT_REQUIRED'
+do $e13_t2_autocommit_guard$
+begin
+  raise exception 'E13_T2_AUTOCOMMIT_REQUIRED';
+end
+$e13_t2_autocommit_guard$;
+\endif
+
+select case
+  when pg_catalog.current_setting('transaction_read_only')
+         OPERATOR(pg_catalog.=) 'off'::pg_catalog.text
+  then 'true'
+  else 'false'
+end as e13_t2_context_valid
+\gset
+
+\if :e13_t2_context_valid
+\echo 'E13_T2_CONTEXT_GUARD_PASS'
+\else
+\echo 'E13_T2_MUST_NOT_RUN_INSIDE_T1'
+do $e13_t2_context_guard$
+begin
+  raise exception 'E13_T2_MUST_NOT_RUN_INSIDE_T1';
+end
+$e13_t2_context_guard$;
+\endif
+
+\ir PR93_WRITER_V7_ADVERSARIAL_TESTS.sql
+\echo 'E13_T2_COMPLETE'
