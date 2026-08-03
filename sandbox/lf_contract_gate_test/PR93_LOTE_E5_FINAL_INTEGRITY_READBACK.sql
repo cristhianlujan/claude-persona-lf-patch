@@ -1,5 +1,5 @@
--- PR #93 / LOTE-E.7 final integrity addendum. SELECT-only.
--- Closes CA-N84 to CA-N88 without changing the audited 25-vector readback.
+-- PR #93 / LOTE-E.8 final integrity addendum. SELECT-only.
+-- Closes CA-N89 to CA-N91 without changing the audited 25-vector readback.
 
 with expected_binder as (
   select
@@ -20,6 +20,29 @@ required_dependencies as (
       as governance_owner_available,
     pg_catalog.to_regclass('private.lf_gate_test_runs_v3') is not null
       as gate_table_available
+),
+execution_context as (
+  select
+    pg_catalog.current_setting('search_path')::pg_catalog.text
+      as effective_search_path,
+    pg_catalog.current_setting('transaction_read_only')::pg_catalog.text
+      as transaction_read_only,
+    pg_catalog.current_setting('transaction_isolation')::pg_catalog.text
+      as transaction_isolation,
+    pg_catalog.current_setting('server_version_num')::pg_catalog.text
+      as server_version_num,
+    pg_catalog.version()::pg_catalog.text as server_version,
+    current_user::pg_catalog.text as current_user_name,
+    pg_catalog.pg_backend_pid()::pg_catalog.int4 as backend_pid,
+    pg_catalog.transaction_timestamp() as transaction_started_at,
+    (
+      pg_catalog.current_setting('search_path')
+        OPERATOR(pg_catalog.=) 'pg_catalog'::pg_catalog.text
+    ) as search_path_is_pg_catalog,
+    (
+      pg_catalog.current_setting('transaction_read_only')
+        OPERATOR(pg_catalog.=) 'on'::pg_catalog.text
+    ) as transaction_is_read_only
 ),
 binder_definition as (
   select (
@@ -133,6 +156,57 @@ table_trigger_inventory as (
     on n.oid OPERATOR(pg_catalog.=) c.relnamespace
   where n.nspname OPERATOR(pg_catalog.=) 'private'::pg_catalog.name
     and c.relname OPERATOR(pg_catalog.=) 'lf_gate_test_runs_v3'::pg_catalog.name
+),
+integrity_status as (
+  select
+    (
+      required_dependencies.primary_digest_available
+      and required_dependencies.core_sha256_available
+      and required_dependencies.binder_available
+      and required_dependencies.governance_owner_available
+      and required_dependencies.gate_table_available
+    ) as contract_dependencies_ready,
+    (
+      execution_context.search_path_is_pg_catalog
+      and execution_context.transaction_is_read_only
+    ) as execution_context_valid,
+    (
+      required_dependencies.core_sha256_available
+      and required_dependencies.binder_available
+      and required_dependencies.governance_owner_available
+      and required_dependencies.gate_table_available
+      and coalesce(
+        binder_definition.prosrc_sha256
+          OPERATOR(pg_catalog.=) expected_binder.prosrc_sha256,
+        false
+      )
+      and gate_table_state.present
+      and gate_table_state.ordinary_table
+      and gate_table_state.without_rules
+      and gate_table_state.not_partition
+      and gate_table_state.without_inheritance
+      and gate_trigger_check.present
+      and gate_trigger_check.enabled_always
+      and gate_trigger_check.before_insert_update
+      and gate_trigger_check.for_each_row
+      and gate_trigger_check.without_when_clause
+      and gate_trigger_check.all_update_columns
+      and gate_trigger_check.binds_pinned_function
+      and gate_trigger_check.function_owner_is_governance
+      and table_trigger_inventory.before_insert_update_count
+        OPERATOR(pg_catalog.=) 1::pg_catalog.int8
+      and table_trigger_inventory.before_insert_update_names
+        OPERATOR(pg_catalog.=) pg_catalog.jsonb_build_array(
+          'trg_05_bind_gate_writer_nonce_v7'
+        )
+    ) as core_binder_trigger_integrity
+  from expected_binder
+  cross join required_dependencies
+  cross join execution_context
+  cross join binder_definition
+  cross join gate_table_state
+  cross join gate_trigger_check
+  cross join table_trigger_inventory
 )
 select pg_catalog.jsonb_build_object(
   'dependencies',pg_catalog.jsonb_build_object(
@@ -149,6 +223,18 @@ select pg_catalog.jsonb_build_object(
       and required_dependencies.governance_owner_available
       and required_dependencies.gate_table_available
     )
+  ),
+  'execution_context',pg_catalog.jsonb_build_object(
+    'effective_search_path',execution_context.effective_search_path,
+    'search_path_is_pg_catalog',execution_context.search_path_is_pg_catalog,
+    'transaction_read_only',execution_context.transaction_read_only,
+    'transaction_is_read_only',execution_context.transaction_is_read_only,
+    'transaction_isolation',execution_context.transaction_isolation,
+    'server_version_num',execution_context.server_version_num,
+    'server_version',execution_context.server_version,
+    'current_user',execution_context.current_user_name,
+    'backend_pid',execution_context.backend_pid,
+    'transaction_started_at',execution_context.transaction_started_at
   ),
   'binder_definition_digest',pg_catalog.jsonb_build_object(
     'expected',expected_binder.prosrc_sha256,
@@ -192,36 +278,45 @@ select pg_catalog.jsonb_build_object(
         )
     )
   ),
+  'integrity_status',pg_catalog.jsonb_build_object(
+    'contract_dependencies_ready',
+      integrity_status.contract_dependencies_ready,
+    'execution_context_valid',integrity_status.execution_context_valid,
+    'core_binder_trigger_integrity',
+      integrity_status.core_binder_trigger_integrity,
+    'failure_domain',case
+      when not integrity_status.execution_context_valid
+        then 'EXECUTION_CONTEXT'::pg_catalog.text
+      when not integrity_status.contract_dependencies_ready
+        then 'DEPENDENCY'::pg_catalog.text
+      when not integrity_status.core_binder_trigger_integrity
+        then 'INTEGRITY'::pg_catalog.text
+      else 'NONE'::pg_catalog.text
+    end
+  ),
   'binder_and_trigger_integrity',(
-    required_dependencies.primary_digest_available
-    and required_dependencies.core_sha256_available
-    and required_dependencies.binder_available
-    and required_dependencies.governance_owner_available
-    and required_dependencies.gate_table_available
-    and coalesce(
-      binder_definition.prosrc_sha256
-        OPERATOR(pg_catalog.=) expected_binder.prosrc_sha256,
-      false
-    )
-    and gate_table_state.present
-    and gate_table_state.ordinary_table
-    and gate_table_state.without_rules
-    and gate_table_state.not_partition
-    and gate_table_state.without_inheritance
-    and gate_trigger_check.present
-    and gate_trigger_check.enabled_always
-    and gate_trigger_check.before_insert_update
-    and gate_trigger_check.for_each_row
-    and gate_trigger_check.without_when_clause
-    and gate_trigger_check.all_update_columns
-    and gate_trigger_check.binds_pinned_function
-    and gate_trigger_check.function_owner_is_governance
-    and table_trigger_inventory.before_insert_update_count
-      OPERATOR(pg_catalog.=) 1::pg_catalog.int8
-    and table_trigger_inventory.before_insert_update_names
-      OPERATOR(pg_catalog.=) pg_catalog.jsonb_build_array(
-        'trg_05_bind_gate_writer_nonce_v7'
-      )
+    integrity_status.contract_dependencies_ready
+    and integrity_status.core_binder_trigger_integrity
+  ),
+  'evidence_chain_ready',(
+    integrity_status.contract_dependencies_ready
+    and integrity_status.execution_context_valid
+    and integrity_status.core_binder_trigger_integrity
+  ),
+  'primary_readback_context_requirement',pg_catalog.jsonb_build_object(
+    'structurally_search_path_independent',false,
+    'same_transaction_context_required',true,
+    'required_effective_search_path','pg_catalog'::pg_catalog.text,
+    'required_transaction_read_only','on'::pg_catalog.text
+  ),
+  'required_evidence_chain_fields',pg_catalog.jsonb_build_array(
+    'execution_context_snapshot.context_valid=true',
+    'dependency_preflight.preflight_ready=true',
+    'definition_checks.binder_preserves_persisted_effects=true',
+    'definition_checks.binder_definition_digest.matches=true',
+    'definition_checks.binder_mutation_pattern_controls.all_pass=true',
+    'gate_trigger.binds_pinned_function=true',
+    'final_integrity.evidence_chain_ready=true'
   ),
   'required_primary_readback_fields',pg_catalog.jsonb_build_array(
     'definition_checks.binder_preserves_persisted_effects=true',
@@ -229,10 +324,12 @@ select pg_catalog.jsonb_build_object(
     'definition_checks.binder_mutation_pattern_controls.all_pass=true',
     'gate_trigger.binds_pinned_function=true'
   )
-) as pr93_lote_e7_final_integrity_readback
+) as pr93_lote_e8_final_integrity_readback
 from expected_binder
 cross join required_dependencies
+cross join execution_context
 cross join binder_definition
 cross join gate_table_state
 cross join gate_trigger_check
-cross join table_trigger_inventory;
+cross join table_trigger_inventory
+cross join integrity_status;
