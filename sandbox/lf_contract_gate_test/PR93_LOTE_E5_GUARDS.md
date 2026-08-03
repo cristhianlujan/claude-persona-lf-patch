@@ -37,8 +37,9 @@ ser `true` cuando se cumplen conjuntamente:
 4. es `BEFORE INSERT OR UPDATE`;
 5. `tgfoid` apunta exactamente a `private.fn_bind_gate_writer_nonce_v7()`.
 
-La ausencia del binder, la ausencia del trigger, un trigger duplicado, un trigger
-homónimo apuntado a otra función o un cuerpo diferente producen `false`.
+La ausencia del binder, la ausencia del trigger, un trigger homónimo apuntado a otra
+función o un cuerpo diferente producen `false`. La referencia previa a un trigger
+homónimo duplicado queda sustituida por la enmienda LOTE-E.7 al final de este documento.
 
 ## CA-N75 · procedimiento reproducible de rotación del digest
 
@@ -93,3 +94,11 @@ exacto de `pg_proc.prosrc` es la barrera fail-closed definitiva.
 3. ejecución de ambos readbacks y de la batería adversarial completa;
 4. test Edge y comparación Edge/PostgreSQL;
 5. controles administrativos previos al merge.
+
+## Enmienda LOTE-E.7 sobre trigger duplicado
+
+PostgreSQL impide dos triggers con el mismo nombre sobre una misma tabla. `count(*)=1`
+sobre el nombre esperado demuestra presencia. El riesgo efectivo es un trigger
+adicional con otro nombre, cubierto desde LOTE-E.6 por el inventario completo y
+endurecido por LOTE-E.7. Esta enmienda sustituye cualquier lectura incompatible de la
+redacción histórica.
