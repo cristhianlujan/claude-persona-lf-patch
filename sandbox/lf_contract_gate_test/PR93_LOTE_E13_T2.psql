@@ -11,7 +11,7 @@ $e13_t2_head_guard$;
 \endif
 
 \echo 'E13_T2_BEGIN'
-\echo E13_HEAD_SHA=:E13_HEAD_SHA
+\echo E13_T2_HEAD_SHA=:E13_HEAD_SHA
 
 \if :AUTOCOMMIT
 \else
