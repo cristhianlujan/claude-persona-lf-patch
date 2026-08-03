@@ -1,5 +1,5 @@
--- PR #93 / LOTE-E.8 final integrity addendum. SELECT-only.
--- Closes CA-N89 to CA-N91 without changing the audited 25-vector readback.
+-- PR #93 / LOTE-E.9 final integrity addendum. SELECT-only.
+-- Closes CA-N92 to CA-N94 without changing the audited 25-vector readback.
 
 with expected_binder as (
   select
@@ -42,7 +42,13 @@ execution_context as (
     (
       pg_catalog.current_setting('transaction_read_only')
         OPERATOR(pg_catalog.=) 'on'::pg_catalog.text
-    ) as transaction_is_read_only
+    ) as transaction_is_read_only,
+    (
+      pg_catalog.current_setting('transaction_isolation')
+        OPERATOR(pg_catalog.=) 'repeatable read'::pg_catalog.text
+      or pg_catalog.current_setting('transaction_isolation')
+        OPERATOR(pg_catalog.=) 'serializable'::pg_catalog.text
+    ) as transaction_isolation_valid
 ),
 binder_definition as (
   select (
@@ -169,6 +175,7 @@ integrity_status as (
     (
       execution_context.search_path_is_pg_catalog
       and execution_context.transaction_is_read_only
+      and execution_context.transaction_isolation_valid
     ) as execution_context_valid,
     (
       required_dependencies.core_sha256_available
@@ -230,6 +237,8 @@ select pg_catalog.jsonb_build_object(
     'transaction_read_only',execution_context.transaction_read_only,
     'transaction_is_read_only',execution_context.transaction_is_read_only,
     'transaction_isolation',execution_context.transaction_isolation,
+    'transaction_isolation_valid',
+      execution_context.transaction_isolation_valid,
     'server_version_num',execution_context.server_version_num,
     'server_version',execution_context.server_version,
     'current_user',execution_context.current_user_name,
@@ -307,10 +316,14 @@ select pg_catalog.jsonb_build_object(
     'structurally_search_path_independent',false,
     'same_transaction_context_required',true,
     'required_effective_search_path','pg_catalog'::pg_catalog.text,
-    'required_transaction_read_only','on'::pg_catalog.text
+    'required_transaction_read_only','on'::pg_catalog.text,
+    'allowed_transaction_isolation',pg_catalog.jsonb_build_array(
+      'repeatable read','serializable'
+    )
   ),
   'required_evidence_chain_fields',pg_catalog.jsonb_build_array(
     'execution_context_snapshot.context_valid=true',
+    'execution_context_snapshot.transaction_isolation_valid=true',
     'dependency_preflight.preflight_ready=true',
     'definition_checks.binder_preserves_persisted_effects=true',
     'definition_checks.binder_definition_digest.matches=true',
@@ -324,7 +337,7 @@ select pg_catalog.jsonb_build_object(
     'definition_checks.binder_mutation_pattern_controls.all_pass=true',
     'gate_trigger.binds_pinned_function=true'
   )
-) as pr93_lote_e8_final_integrity_readback
+) as pr93_lote_e9_final_integrity_readback
 from expected_binder
 cross join required_dependencies
 cross join execution_context

@@ -1,4 +1,4 @@
--- PR #93 / LOTE-E.8 dependency and execution-context preflight. SELECT-only.
+-- PR #93 / LOTE-E.9 dependency and execution-context preflight. SELECT-only.
 -- Execute before PR93_LOTE_E5_FINAL_INTEGRITY_READBACK.sql.
 
 with dependencies as (
@@ -35,7 +35,13 @@ execution_context as (
       as search_path_is_pg_catalog,
     (pg_catalog.current_setting('transaction_read_only')
       OPERATOR(pg_catalog.=) 'on'::pg_catalog.text)
-      as transaction_is_read_only
+      as transaction_is_read_only,
+    (
+      pg_catalog.current_setting('transaction_isolation')
+        OPERATOR(pg_catalog.=) 'repeatable read'::pg_catalog.text
+      or pg_catalog.current_setting('transaction_isolation')
+        OPERATOR(pg_catalog.=) 'serializable'::pg_catalog.text
+    ) as transaction_isolation_valid
 )
 select pg_catalog.jsonb_build_object(
   'primary_digest_available',dependencies.primary_digest_available,
@@ -49,6 +55,8 @@ select pg_catalog.jsonb_build_object(
     'transaction_read_only',execution_context.transaction_read_only,
     'transaction_is_read_only',execution_context.transaction_is_read_only,
     'transaction_isolation',execution_context.transaction_isolation,
+    'transaction_isolation_valid',
+      execution_context.transaction_isolation_valid,
     'server_version_num',execution_context.server_version_num,
     'server_version',execution_context.server_version,
     'current_user',execution_context.current_user_name,
@@ -70,7 +78,8 @@ select pg_catalog.jsonb_build_object(
     and dependencies.gate_table_available
     and execution_context.search_path_is_pg_catalog
     and execution_context.transaction_is_read_only
+    and execution_context.transaction_isolation_valid
   )
-) as pr93_lote_e8_dependency_preflight
+) as pr93_lote_e9_dependency_preflight
 from dependencies
 cross join execution_context;

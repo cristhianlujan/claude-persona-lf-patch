@@ -1,4 +1,4 @@
--- PR #93 / LOTE-E.8 execution-context snapshot. SELECT-only.
+-- PR #93 / LOTE-E.9 execution-context snapshot. SELECT-only.
 -- Execute immediately before the inherited primary readback in the same transaction.
 
 select pg_catalog.jsonb_build_object(
@@ -16,6 +16,12 @@ select pg_catalog.jsonb_build_object(
   ),
   'transaction_isolation',
     pg_catalog.current_setting('transaction_isolation')::pg_catalog.text,
+  'transaction_isolation_valid',(
+    pg_catalog.current_setting('transaction_isolation')
+      OPERATOR(pg_catalog.=) 'repeatable read'::pg_catalog.text
+    or pg_catalog.current_setting('transaction_isolation')
+      OPERATOR(pg_catalog.=) 'serializable'::pg_catalog.text
+  ),
   'server_version_num',
     pg_catalog.current_setting('server_version_num')::pg_catalog.text,
   'server_version',pg_catalog.version()::pg_catalog.text,
@@ -27,5 +33,11 @@ select pg_catalog.jsonb_build_object(
       OPERATOR(pg_catalog.=) 'pg_catalog'::pg_catalog.text
     and pg_catalog.current_setting('transaction_read_only')
       OPERATOR(pg_catalog.=) 'on'::pg_catalog.text
+    and (
+      pg_catalog.current_setting('transaction_isolation')
+        OPERATOR(pg_catalog.=) 'repeatable read'::pg_catalog.text
+      or pg_catalog.current_setting('transaction_isolation')
+        OPERATOR(pg_catalog.=) 'serializable'::pg_catalog.text
+    )
   )
-) as pr93_lote_e8_execution_context_readback;
+) as pr93_lote_e9_execution_context_readback;
