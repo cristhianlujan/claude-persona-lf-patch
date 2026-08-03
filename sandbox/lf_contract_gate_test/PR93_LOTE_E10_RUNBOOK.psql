@@ -1,9 +1,15 @@
 \set ON_ERROR_STOP on
 
+\echo 'E12_FULL_TRANSCRIPT_BEGIN'
+
 \if :{?E11_HEAD_SHA}
 \else
 \echo 'E11_HEAD_SHA_REQUIRED'
-\quit 3
+do $e12_head_guard$
+begin
+  raise exception 'E11_HEAD_SHA_REQUIRED';
+end
+$e12_head_guard$;
 \endif
 
 \echo 'E11_T1_BEGIN'
@@ -60,3 +66,4 @@ rollback;
 \echo E11_HEAD_SHA=:E11_HEAD_SHA
 \ir PR93_WRITER_V7_ADVERSARIAL_TESTS.sql
 \echo 'E11_T2_ADVERSARIAL_BATTERY_COMPLETE'
+\echo 'E12_FULL_TRANSCRIPT_END'
