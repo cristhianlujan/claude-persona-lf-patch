@@ -1,28 +1,56 @@
 # PR #93 · LOTE-E.9 · Cierre CA-N92 a CA-N94
 
+## Estado de este documento
+
+El runbook monolítico publicado originalmente en LOTE-E.9 queda **sustituido** por
+LOTE-E.10. No debe ejecutarse la batería adversarial dentro de la transacción read-only
+de la cadena de evidencia.
+
+La autoridad operativa vigente es:
+
+- `PR93_LOTE_E10_RUNBOOK.psql`;
+- `PR93_LOTE_E10_CORRELATION_READBACK.sql`;
+- `PR93_LOTE_E10_GUARDS.md`.
+
+Las condiciones de aislamiento introducidas por E.9 permanecen vigentes.
+
 ## Alcance
 
-Este lote endurece únicamente la atomicidad y la correlación de la cadena de evidencia.
-No modifica el readback primario de 25 vectores, migraciones, batería adversarial, Edge,
-workflows ni código desplegable. No autoriza Supabase, SQL contra el proyecto LF,
-claves, baseline o merge.
+Este lote endurece la atomicidad y la correlación de la cadena de evidencia. No modifica
+el readback primario de 25 vectores, migraciones, Edge ni código desplegable. No
+autoriza Supabase, SQL contra el proyecto LF, claves, baseline o merge.
 
-## Runbook normativo de LOTE-E.9
+## Runbook normativo corregido
+
+### T1 · cadena de evidencia atómica
 
 ```sql
 begin;
 set transaction read only, isolation level repeatable read;
 set local search_path = pg_catalog;
--- 1. PR93_LOTE_E8_EXECUTION_CONTEXT_READBACK.sql
--- 2. PR93_LOTE_E6_DEPENDENCY_PREFLIGHT.sql
--- 3. PR93_LOTE_C_EVIDENCE_READBACK.sql
--- 4. PR93_LOTE_E5_FINAL_INTEGRITY_READBACK.sql
--- 5. PR93_WRITER_V7_ADVERSARIAL_TESTS.sql
+-- correlation probe 1
+-- snapshot
+-- correlation probe 2
+-- preflight
+-- readback primario
+-- correlation probe 3
+-- addendum final
 rollback;
 ```
 
 También se admite `SERIALIZABLE`. `READ COMMITTED` y `READ UNCOMMITTED` no constituyen
-contexto válido para esta cadena, aunque la transacsión sea read-only.
+contexto válido, aunque la transacción sea read-only.
+
+### T2 · batería adversarial
+
+La batería se ejecuta después de cerrar T1:
+
+```text
+PR93_WRITER_V7_ADVERSARIAL_TESTS.sql
+```
+
+La batería conserva su propia transacción read-write y su propio `ROLLBACK`. No forma
+parte de la correlación PID/timestamp de T1.
 
 ## CA-N92 · snapshot transaccional estable
 
@@ -34,115 +62,72 @@ El valor es `true` únicamente cuando `transaction_isolation` es:
 - `serializable`.
 
 `context_valid`, `preflight_ready` y `evidence_chain_ready` consumen esta condición.
-Por tanto, una captura bajo `READ COMMITTED` falla en el dominio
-`EXECUTION_CONTEXT`.
+Una captura bajo `READ COMMITTED` falla en `EXECUTION_CONTEXT`.
 
-El objetivo es que preflight, readback primario, addendum y batería observen el mismo
-snapshot de catálogo y datos durante toda la transacsión.
+El objetivo es que snapshot, preflight, readback primario y addendum observen el mismo
+snapshot durante T1.
 
 ## CA-N93 · runs push 574 y 582
 
-Los dos fallos históricos ocurrieron después de compactaciones que reemplazaron un
-commit técnico intermedio por un commit único no descendiente directo del ref previo.
+Sin los logs autenticados no se atribuye una causa literal definitiva.
 
-El workflow usa `fetch-depth: 0`. El validador `scripts/lf_contract_check.py`, para
-eventos `push`, calcula las rutas mediante:
+Deben distinguirse dos modos:
 
 ```text
-git diff --name-only <payload.before> <payload.after>
+NON_FAST_FORWARD_BEFORE_UNREACHABLE
 ```
 
-La evidencia disponible permite clasificar el patrón como:
+El `payload.before` no está disponible en el checkout y `git diff before after` termina
+con `bad object` o una excepción equivalente.
 
 ```text
-NON_FAST_FORWARD_COMPACTION_DIFF_CONTEXT
+COMPACTION_DIFF_SCOPE_OVERREACH
 ```
 
-No se conserva el stderr autenticado de los runs 574 y 582, por lo que no se atribuye
-un mensaje de error literal no observado. La relación operacional se sustenta en:
+Ambos commits existen, pero el rango calculado incluye rutas ajenas al lote y el
+validador emite un código `FAIL_*` gobernado.
 
-1. ambos fallos siguen una reescritura para compactar commits;
-2. el mismo árbol pasa al ejecutarse localmente;
-3. los runs `pull_request` del mismo head pasan;
-4. los pushes fast-forward de E.6 y E.7 pasan;
-5. E.9 se publica mediante un único avance fast-forward, sin commit técnico intermedio.
+Los runs 574 y 582 permanecen históricos y no se asignan definitivamente a uno de esos
+modos sin log. La clasificación anterior
+`NON_FAST_FORWARD_COMPACTION_DIFF_CONTEXT` queda reemplazada por esta separación.
 
-Antes del gate administrativo, el expediente debe conservar:
+CA-N93 no se cierra hasta inventariar los runs `push` reales o registrar formalmente la
+indisponibilidad de esa evidencia en el gate administrativo.
 
-- runs 574 y 582 como fallos históricos;
-- ausencia de logs por permisos;
-- clasificación anterior;
-- resultado del `push` de E.9;
-- prohibición de presentar solo checks verdes.
+## CA-N94 · correlación obligatoria
 
-## CA-N94 · plantilla obligatoria de correlación
+LOTE-E.10 añade tres sondas de correlación dentro de T1. La aceptación exige igualdad
+de:
 
-La aceptación no se decide leyendo una pieza aislada. El transcript debe completar
-esta plantilla:
+- `runtime_cluster_fingerprint`;
+- `transaction_correlation_id`;
+- `backend_pid`;
+- `transaction_started_at`.
 
-```json
-{
-  "head_sha": "<sha exacto>",
-  "transcript_sha256": "<sha256 del transcript íntegro>",
-  "snapshot": {
-    "backend_pid": 0,
-    "transaction_started_at": "<timestamp>",
-    "context_valid": true,
-    "transaction_isolation_valid": true
-  },
-  "preflight": {
-    "backend_pid": 0,
-    "transaction_started_at": "<timestamp>",
-    "preflight_ready": true
-  },
-  "addendum": {
-    "backend_pid": 0,
-    "transaction_started_at": "<timestamp>",
-    "evidence_chain_ready": true,
-    "failure_domain": "NONE"
-  },
-  "correlation": {
-    "backend_pid_match": true,
-    "transaction_started_at_match": true,
-    "ordered_transcript_verified": true,
-    "rollback_verified": true,
-    "all_match": true
-  },
-  "evidence_chain_accepted": true
-}
-```
+`transaction_started_at` se compara después de parsear cada valor como PostgreSQL
+`timestamptz`; no se permite una comparación textual dependiente del formato JSON.
 
-`evidence_chain_accepted=true` es válido únicamente cuando:
-
-1. los tres `backend_pid` son idénticos;
-2. los tres `transaction_started_at` son idénticos;
-3. snapshot, preflight y addendum publican sus booleanos obligatorios en `true`;
-4. el transcript conserva el orden normativo;
-5. existe `ROLLBACK` final;
-6. `transcript_sha256` corresponde al transcript completo;
-7. el head coincide con el SHA auditado.
-
-Cada SQL sigue siendo SELECT-only y no puede autocorrelacionar resultados de ejecuciones
-anteriores sin introducir estado. La plantilla y el transcript son parte obligatoria de
-la evidencia, no una revisión opcional.
+El transcript debe conservar el orden de T1 y su `ROLLBACK`. T2 tiene transcript y
+resultado propios.
 
 ## Cardinalidad y seguridad
 
-Snapshot, preflight y addendum:
+Snapshot, preflight, addendum y sonda E.10:
 
 - son una sola sentencia `SELECT`;
 - devuelven una fila;
 - no contienen DML ni DDL;
 - no modifican GUCs;
-- funcionan dentro de la transacción read-only;
-- califican las validaciones de contexto con `pg_catalog`.
+- funcionan dentro de T1;
+- califican controles sensibles mediante `pg_catalog`.
 
 ## Evidencia pendiente
 
-1. auditoría estática independiente del head E.9;
-2. ejecución del runbook bajo `REPEATABLE READ` y prueba negativa bajo `READ COMMITTED`;
+1. auditoría estática independiente del head E.10;
+2. ejecución de T1 bajo `REPEATABLE READ` y prueba negativa bajo `READ COMMITTED`;
 3. revalidación de los 25 vectores;
-4. captura correlacionada con la plantilla anterior y `ROLLBACK`;
-5. batería adversarial completa;
-6. test Edge y comparación Edge/PostgreSQL;
-7. controles administrativos previos al merge.
+4. captura correlacionada de T1 con `ROLLBACK`;
+5. ejecución separada de T2;
+6. inventario autenticado de checks `push`;
+7. corrección separada de `scripts/lf_contract_check.py`;
+8. test Edge y controles administrativos previos al merge.
