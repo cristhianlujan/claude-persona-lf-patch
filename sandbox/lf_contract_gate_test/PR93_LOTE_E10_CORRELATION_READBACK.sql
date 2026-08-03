@@ -1,4 +1,5 @@
--- PR #93 / LOTE-E.10 correlation probe. SELECT-only.
+-- PR #93 / LOTE-E.11 mandatory correlation probe. SELECT-only.
+-- Safe for roles without EXECUTE on pg_catalog.pg_control_system().
 -- Execute three times inside T1: before snapshot, before preflight and before addendum.
 
 with raw_context as (
@@ -50,11 +51,8 @@ with raw_context as (
 cluster_context as (
   select
     raw_context.*,
-    case
-      when raw_context.system_identifier_available
-        then (pg_catalog.pg_control_system()).system_identifier::pg_catalog.text
-      else null::pg_catalog.text
-    end as system_identifier
+    null::pg_catalog.text as system_identifier,
+    'RUNTIME_FINGERPRINT'::pg_catalog.text as cluster_identity_strength
   from raw_context
 ),
 fingerprints as (
@@ -65,10 +63,7 @@ fingerprints as (
         pg_catalog.convert_to(
           pg_catalog.concat_ws(
             '|'::pg_catalog.text,
-            coalesce(
-              cluster_context.system_identifier,
-              'SYSTEM_IDENTIFIER_UNAVAILABLE'::pg_catalog.text
-            ),
+            'SYSTEM_IDENTIFIER_OPTIONAL_NOT_USED'::pg_catalog.text,
             cluster_context.database_name,
             cluster_context.database_oid,
             cluster_context.server_version_num,
@@ -116,6 +111,9 @@ select pg_catalog.jsonb_build_object(
   'current_user',correlated.current_user_name,
   'system_identifier_available',correlated.system_identifier_available,
   'system_identifier',correlated.system_identifier,
+  'cluster_identity_strength',correlated.cluster_identity_strength,
+  'optional_system_identifier_probe_required',
+    correlated.system_identifier_available,
   'runtime_cluster_fingerprint',correlated.runtime_cluster_fingerprint,
   'backend_pid',correlated.backend_pid,
   'transaction_started_at',correlated.transaction_started_at,
@@ -128,5 +126,5 @@ select pg_catalog.jsonb_build_object(
     and correlated.transaction_is_read_only
     and correlated.transaction_isolation_valid
   )
-) as pr93_lote_e10_correlation_readback
+) as pr93_lote_e11_correlation_readback
 from correlated;
