@@ -1,7 +1,7 @@
 \set ON_ERROR_STOP on
-\echo 'E13_CAPTURE_RUNNER_REQUIRED'
-do $e13_legacy_runbook_guard$
+\echo 'E14_CAPTURE_RUNNER_REQUIRED'
+do $e14_legacy_runbook_guard$
 begin
-  raise exception 'E13_CAPTURE_RUNNER_REQUIRED: use PR93_LOTE_E13_CAPTURE.py';
+  raise exception 'E14_CAPTURE_RUNNER_REQUIRED: use PR93_LOTE_E14_CAPTURE.py';
 end
-$e13_legacy_runbook_guard$;
+$e14_legacy_runbook_guard$;
