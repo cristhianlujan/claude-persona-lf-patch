@@ -5,7 +5,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
+import stat
 import subprocess
 import sys
 from pathlib import Path
@@ -29,8 +31,56 @@ REQUIRED_EVIDENCE_FILES = (
 )
 
 
+RECEIPT_FILENAME = "PR93_E14_RECEIPT.json"
+RECEIPT_SIDECAR_FILENAME = "PR93_E14_RECEIPT.sha256"
+ALLOWED_BUNDLE_ENTRIES = REQUIRED_EVIDENCE_FILES + (
+    RECEIPT_FILENAME,
+    RECEIPT_SIDECAR_FILENAME,
+)
+
+
 def fail(message: str) -> None:
     raise ValueError(message)
+
+
+def verify_bundle_inventory(bundle_argument: Path) -> Path:
+    """CA-N128/N137: validate the unresolved root first, then canonicalise it.
+
+    The argument is inspected with lstat() *before* any resolve(), so a symlink
+    supplied as the bundle root is rejected instead of being silently followed.
+    The comparison is made against the real directory listing, not against the
+    receipt's declared evidence_files, so an extra regular file, an extra
+    subdirectory, an extra symlink or an extra hidden entry is rejected. Each of
+    the nine allowed entries must itself be a regular non-symlink file, and this
+    is checked before any byte of the bundle is read.
+    """
+    absolute = bundle_argument.absolute()
+    try:
+        root_mode = absolute.lstat().st_mode
+    except FileNotFoundError as exc:
+        raise ValueError("bundle directory does not exist") from exc
+    if stat.S_ISLNK(root_mode) or not stat.S_ISDIR(root_mode):
+        fail("bundle directory must be a real directory, not a symlink")
+    entries: dict[str, os.DirEntry[str]] = {}
+    with os.scandir(absolute) as scan:
+        for entry in scan:
+            entries[entry.name] = entry
+    allowed = set(ALLOWED_BUNDLE_ENTRIES)
+    observed = set(entries)
+    if observed != allowed:
+        unexpected = sorted(observed - allowed)
+        missing = sorted(allowed - observed)
+        fail(
+            "bundle inventory is not exact; "
+            f"unexpected={unexpected}; missing={missing}"
+        )
+    for name in sorted(entries):
+        entry = entries[name]
+        if entry.is_symlink():
+            fail(f"bundle entry must not be a symlink: {name}")
+        if not entry.is_file(follow_symlinks=False):
+            fail(f"bundle entry must be a regular file: {name}")
+    return absolute.resolve(strict=True)
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -117,6 +167,9 @@ def verify_sources(receipt: dict[str, Any], repo_root: Path) -> None:
         "sandbox/lf_contract_gate_test/PR93_LOTE_E14_NEGATIVE_TESTS.py",
         "sandbox/lf_contract_gate_test/PR93_LOTE_E14_SEMANTICS.py",
         "sandbox/lf_contract_gate_test/PR93_LOTE_E14_GUARDS.md",
+        "sandbox/lf_contract_gate_test/PR93_LOTE_E15_GUARDS.md",
+        "sandbox/lf_contract_gate_test/PR93_LOTE_E15_1_REGRESSION_TESTS.py",
+        "sandbox/lf_contract_gate_test/.gitignore",
         "sandbox/lf_contract_gate_test/PR93_LOTE_E13_STATE_READBACK.sql",
         "sandbox/lf_contract_gate_test/PR93_LOTE_E13_T1.psql",
         "sandbox/lf_contract_gate_test/PR93_LOTE_E13_T2.psql",

@@ -20,14 +20,18 @@ El capturador rechaza un output existente antes de conectar. Tras el preflight c
 
 ## CA-N118 y CA-N123 · matriz negativa
 
-El runner autoritativo usa `sys.executable`, captura toda salida auxiliar y localiza el JSON del preflight buscando exactamente un objeto JSON dentro del segmento delimitado. Debe emitir únicamente al cierre:
+El runner autoritativo usa `sys.executable`, captura toda salida auxiliar y localiza el JSON del preflight buscando exactamente un objeto JSON dentro del segmento delimitado.
+
+Actualizado por LOTE-E.15 (CA-N125 y CA-N126): el contador E.13 queda retirado
+porque E.14 no ejecuta esa matriz, y el contador E.14 se deriva de los casos
+realmente ejecutados contra el verificador en subproceso. Al cierre emite:
 
 ```text
-PASS_E13_NEGATIVE_MATRIX=12/12
-PASS_E14_NEGATIVE_MATRIX=14/14
+E13_NEGATIVE_MATRIX=NOT_EXECUTED_BY_E14
+PASS_E14_NEGATIVE_MATRIX=<rechazados>/<ejecutados>
 ```
 
-Los casos 13 y 14 rechazan marcadores de head cruzados entre T1 y T2.
+Ver `PR93_LOTE_E15_GUARDS.md`. Los casos de marcadores rechazan heads cruzados entre T1, T2 y el sobre.
 
 ## CA-N119 · material de clave
 

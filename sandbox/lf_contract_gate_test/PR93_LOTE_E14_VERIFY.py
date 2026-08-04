@@ -10,11 +10,13 @@ from pathlib import Path
 sys.dont_write_bytecode = True
 from PR93_LOTE_E14_VERIFY_COMMON import (
     HEAD_RE,
+    RECEIPT_FILENAME,
     SCHEMA_VERSION,
     SHA256_RE,
     canonical_json_bytes,
     fail,
     sha256_bytes,
+    verify_bundle_inventory,
     verify_evidence,
     verify_sources,
 )
@@ -31,12 +33,13 @@ def main() -> int:
     if SHA256_RE.fullmatch(args.trusted_receipt_sha256) is None:
         fail("trusted receipt digest must be 64 lowercase hexadecimal characters")
 
-    bundle_dir = args.bundle_dir.resolve()
-    receipt_path = (
-        args.receipt or bundle_dir / "PR93_E14_RECEIPT.json"
-    ).resolve()
+    # CA-N137: the unresolved argument is validated before canonicalisation.
+    bundle_dir = verify_bundle_inventory(args.bundle_dir)
+    receipt_path = (args.receipt or bundle_dir / RECEIPT_FILENAME).resolve()
     if receipt_path.parent != bundle_dir:
         fail("receipt must be inside bundle directory")
+    if receipt_path.name != RECEIPT_FILENAME:
+        fail(f"receipt must be named {RECEIPT_FILENAME}")
     receipt_bytes = receipt_path.read_bytes()
     observed_receipt_sha = sha256_bytes(receipt_bytes)
     if observed_receipt_sha != args.trusted_receipt_sha256:
@@ -50,8 +53,8 @@ def main() -> int:
         fail("receipt JSON is not canonical")
     if receipt.get("schema_version") != SCHEMA_VERSION:
         fail("unsupported receipt schema")
-    if receipt.get("governance_contract_version") != "PR93_E14_V1":
-        fail("missing E.14 governance contract")
+    if receipt.get("governance_contract_version") != "PR93_E15_V1":
+        fail("missing E.15 governance contract")
     head_sha = receipt.get("head_sha")
     if not isinstance(head_sha, str) or HEAD_RE.fullmatch(head_sha) is None:
         fail("invalid head SHA in receipt")

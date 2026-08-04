@@ -3,12 +3,17 @@
 from __future__ import annotations
 
 import argparse
+import ctypes
+import errno
 import hashlib
 import json
 import os
 import re
+import shutil
+import stat
 import subprocess
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -46,6 +51,12 @@ SOURCE_PATHS = (
     "sandbox/lf_contract_gate_test/PR93_LOTE_E14_NEGATIVE_TESTS.py",
     "sandbox/lf_contract_gate_test/PR93_LOTE_E14_SEMANTICS.py",
     "sandbox/lf_contract_gate_test/PR93_LOTE_E14_GUARDS.md",
+    "sandbox/lf_contract_gate_test/PR93_LOTE_E15_GUARDS.md",
+    "sandbox/lf_contract_gate_test/PR93_LOTE_E15_1_REGRESSION_TESTS.py",
+    # CA-N138: the bytecode-residue control is a mandatory artifact, therefore
+    # it belongs to the binding inventory instead of being an untracked side
+    # effect of the lote.
+    "sandbox/lf_contract_gate_test/.gitignore",
 )
 
 
@@ -261,8 +272,319 @@ def count_prefixed_line(data: bytes, prefix: str) -> int:
     )
 
 
+# --- CA-N125..N128 / CA-N133..N137 / CA-N143: durable publication ----------
+#
+# Bundles are assembled in exclusive staging directories and published using
+# renameat2(RENAME_NOREPLACE). Cleanup is descriptor-bound: the directory is
+# opened without following symlinks, its inode is verified with fstat(), its
+# contents are removed relative to that descriptor, and the top-level name is
+# revalidated before an atomic no-replace detach and final rmdir.
+
+STAGING_PREFIX = ".pr93-e15-staging-"
+CLEANUP_TOMBSTONE_PREFIX = ".pr93-e15-cleanup-"
+AT_FDCWD = -100
+RENAME_NOREPLACE = 1
+
+
+class ContractError(RuntimeError):
+    """Fail-closed publication or cleanup contract violation."""
+
+
 def write_exclusive(path: Path, data: bytes) -> None:
     with path.open("xb") as handle:
         handle.write(data)
+        handle.flush()
+        os.fsync(handle.fileno())
 
 
+def fsync_file(path: Path) -> None:
+    handle = os.open(path, os.O_RDONLY | os.O_CLOEXEC)
+    try:
+        os.fsync(handle)
+    finally:
+        os.close(handle)
+
+
+def fsync_directory(path: Path) -> None:
+    handle = os.open(path, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC)
+    try:
+        os.fsync(handle)
+    finally:
+        os.close(handle)
+
+
+def path_identity(path: Path) -> tuple[int, int]:
+    current = path.lstat()
+    return current.st_dev, current.st_ino
+
+
+def _identity_from_stat(value: os.stat_result) -> tuple[int, int]:
+    return value.st_dev, value.st_ino
+
+
+def _directory_open_flags() -> int:
+    required = ("O_DIRECTORY", "O_NOFOLLOW")
+    missing = [name for name in required if not hasattr(os, name)]
+    if missing:
+        raise ContractError(
+            "descriptor-bound cleanup is unavailable; missing " + ",".join(missing)
+        )
+    return os.O_RDONLY | os.O_CLOEXEC | os.O_DIRECTORY | os.O_NOFOLLOW
+
+
+def _open_directory_nofollow(
+    path: str | os.PathLike[str], *, dir_fd: int | None = None
+) -> int:
+    """Open one directory component without following a symlink."""
+    return os.open(path, _directory_open_flags(), dir_fd=dir_fd)
+
+
+def _rename_noreplace_at(
+    source_dir_fd: int,
+    source_name: str | bytes,
+    destination_dir_fd: int,
+    destination_name: str | bytes,
+) -> None:
+    libc = ctypes.CDLL(None, use_errno=True)
+    function = getattr(libc, "renameat2", None)
+    if function is None:
+        raise ContractError("renameat2(RENAME_NOREPLACE) is unavailable")
+    function.argtypes = [
+        ctypes.c_int,
+        ctypes.c_char_p,
+        ctypes.c_int,
+        ctypes.c_char_p,
+        ctypes.c_uint,
+    ]
+    function.restype = ctypes.c_int
+    ctypes.set_errno(0)
+    result = function(
+        source_dir_fd,
+        os.fsencode(source_name),
+        destination_dir_fd,
+        os.fsencode(destination_name),
+        RENAME_NOREPLACE,
+    )
+    if result == 0:
+        return
+    error = ctypes.get_errno()
+    if error in (errno.ENOSYS, errno.EINVAL, errno.EOPNOTSUPP):
+        raise ContractError(
+            "renameat2(RENAME_NOREPLACE) is unsupported by this kernel or filesystem"
+        )
+    raise OSError(error, os.strerror(error), os.fsdecode(destination_name))
+
+
+def rename_noreplace(source: Path, destination: Path) -> None:
+    """Linux atomic rename with no-clobber semantics; unsupported hosts fail closed."""
+    _rename_noreplace_at(
+        AT_FDCWD,
+        os.fspath(source),
+        AT_FDCWD,
+        os.fspath(destination),
+    )
+
+
+def staging_directory(destination: Path) -> Path:
+    """Create an exclusive staging directory beside the final destination."""
+    parent = destination.parent
+    parent.mkdir(parents=True, exist_ok=True)
+    if not parent.is_dir() or parent.is_symlink():
+        raise ContractError("destination parent must be a real directory")
+    return Path(tempfile.mkdtemp(prefix=STAGING_PREFIX, dir=parent))
+
+
+def discard_tree_contents(directory_fd: int) -> bool:
+    """Remove entries only through an already-validated directory descriptor."""
+    scan_fd = os.dup(directory_fd)
+    with os.scandir(scan_fd) as entries:
+        snapshot = list(entries)
+
+    for entry in snapshot:
+        try:
+            before = entry.stat(follow_symlinks=False)
+        except FileNotFoundError:
+            continue
+
+        mode = before.st_mode
+        if stat.S_ISDIR(mode):
+            try:
+                child_fd = _open_directory_nofollow(entry.name, dir_fd=directory_fd)
+            except (FileNotFoundError, NotADirectoryError, OSError):
+                return False
+            try:
+                if _identity_from_stat(os.fstat(child_fd)) != _identity_from_stat(before):
+                    return False
+                if not discard_tree_contents(child_fd):
+                    return False
+                try:
+                    current = os.stat(
+                        entry.name,
+                        dir_fd=directory_fd,
+                        follow_symlinks=False,
+                    )
+                except FileNotFoundError:
+                    continue
+                if _identity_from_stat(current) != _identity_from_stat(before):
+                    return False
+                try:
+                    os.rmdir(entry.name, dir_fd=directory_fd)
+                except (FileNotFoundError, NotADirectoryError, OSError):
+                    return False
+            finally:
+                os.close(child_fd)
+            continue
+
+        try:
+            current = os.stat(
+                entry.name,
+                dir_fd=directory_fd,
+                follow_symlinks=False,
+            )
+        except FileNotFoundError:
+            continue
+        if _identity_from_stat(current) != _identity_from_stat(before):
+            return False
+        try:
+            os.unlink(entry.name, dir_fd=directory_fd)
+        except (FileNotFoundError, IsADirectoryError, OSError):
+            return False
+    return True
+
+
+def _unused_cleanup_name(parent_fd: int) -> str:
+    for _ in range(128):
+        candidate = CLEANUP_TOMBSTONE_PREFIX + os.urandom(12).hex()
+        try:
+            os.stat(candidate, dir_fd=parent_fd, follow_symlinks=False)
+        except FileNotFoundError:
+            return candidate
+    raise ContractError("could not allocate a private cleanup name")
+
+
+def discard_owned_tree(path: Path, expected_identity: tuple[int, int]) -> bool:
+    """Remove only the directory inode registered by this process."""
+    absolute = path.absolute()
+    try:
+        parent_fd = _open_directory_nofollow(absolute.parent)
+    except (FileNotFoundError, NotADirectoryError, OSError):
+        return False
+
+    target_fd: int | None = None
+    try:
+        try:
+            target_fd = _open_directory_nofollow(absolute.name, dir_fd=parent_fd)
+        except FileNotFoundError:
+            return True
+        except (NotADirectoryError, OSError):
+            return False
+
+        if _identity_from_stat(os.fstat(target_fd)) != expected_identity:
+            return False
+        if not discard_tree_contents(target_fd):
+            return False
+        if _identity_from_stat(os.fstat(target_fd)) != expected_identity:
+            return False
+
+        try:
+            current = os.stat(
+                absolute.name,
+                dir_fd=parent_fd,
+                follow_symlinks=False,
+            )
+        except FileNotFoundError:
+            return True
+        if _identity_from_stat(current) != expected_identity:
+            return False
+
+        detached_name = _unused_cleanup_name(parent_fd)
+        try:
+            _rename_noreplace_at(
+                parent_fd,
+                absolute.name,
+                parent_fd,
+                detached_name,
+            )
+        except FileNotFoundError:
+            return True
+        except OSError:
+            return False
+
+        try:
+            detached = os.stat(
+                detached_name,
+                dir_fd=parent_fd,
+                follow_symlinks=False,
+            )
+        except FileNotFoundError:
+            return False
+
+        if _identity_from_stat(detached) != expected_identity:
+            try:
+                _rename_noreplace_at(
+                    parent_fd,
+                    detached_name,
+                    parent_fd,
+                    absolute.name,
+                )
+            except OSError:
+                pass
+            return False
+
+        try:
+            os.rmdir(detached_name, dir_fd=parent_fd)
+        except (FileNotFoundError, NotADirectoryError, OSError):
+            return False
+        return True
+    finally:
+        if target_fd is not None:
+            os.close(target_fd)
+        os.close(parent_fd)
+
+
+def discard_staging(
+    staging: Path, expected_identity: tuple[int, int] | None = None
+) -> bool:
+    if expected_identity is None:
+        try:
+            expected_identity = path_identity(staging)
+        except FileNotFoundError:
+            return True
+    return discard_owned_tree(staging, expected_identity)
+
+
+def publish_atomically(staging: Path, destination: Path) -> None:
+    """Publish complete evidence without replacing an existing destination."""
+    if staging.is_symlink() or not staging.is_dir():
+        raise ContractError("staging must be a real directory")
+    staging_identity = path_identity(staging)
+    for child in sorted(staging.iterdir(), key=lambda item: item.name):
+        mode = child.lstat().st_mode
+        if stat.S_ISLNK(mode) or not stat.S_ISREG(mode):
+            raise ContractError(f"staging contains non-regular entry: {child.name}")
+        fsync_file(child)
+    fsync_directory(staging)
+    rename_noreplace(staging, destination)
+    try:
+        fsync_directory(destination.parent)
+    except BaseException:
+        cleaned = discard_owned_tree(destination, staging_identity)
+        if cleaned:
+            try:
+                fsync_directory(destination.parent)
+            except OSError:
+                pass
+        else:
+            raise ContractError(
+                "parent fsync failed and published destination cleanup was not confirmed"
+            )
+        raise
+
+
+def create_owned_output_root(root: Path) -> tuple[Path, tuple[int, int]]:
+    """CA-N133: never remove or reuse a caller-provided existing path."""
+    absolute = root.absolute()
+    if os.path.lexists(absolute):
+        raise ContractError("output root already exists; refusing to alter caller data")
+    absolute.mkdir(parents=False, exist_ok=False)
+    return absolute, path_identity(absolute)
