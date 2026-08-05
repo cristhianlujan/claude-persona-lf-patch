@@ -38,7 +38,18 @@ jobs:
 
       - name: Validate LF contract
         run: |
-          python3 scripts/lf_contract_check.py
+          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py
+
+      - name: Run E.16 governance regression matrices
+        run: |
+          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_REGRESSION_TESTS.py \
+            --validator sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py
+          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_INVENTORY_TESTS.py \
+            --inventory sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py
+          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_RATIFICATION_TESTS.py \
+            --repo-root .
+          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_INTEGRATION_TESTS.py \
+            --candidate-root .
 
       - name: Run LF validation engine self-test
         run: |
@@ -63,6 +74,17 @@ jobs:
             skills/creating-integral-user-stories \
             --output .audit-output/creating-integral-user-stories \
             --commit-sha "$GITHUB_SHA"
+
+      - name: Capture authenticated E.16 Actions inventory
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          E16_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py \
+            --repository "$GITHUB_REPOSITORY" \
+            --head-sha "$E16_HEAD_SHA" \
+            --output .audit-output/creating-integral-user-stories/github-actions-inventory-e16.json
 
       - name: Build authoritative reconciliation manifest
         env:
@@ -107,6 +129,12 @@ jobs:
               "generated_at": datetime.now(timezone.utc).isoformat(),
               "validation_suite": [
                   "scripts/lf_contract_check.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_REGRESSION_TESTS.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_INVENTORY_TESTS.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_RATIFICATION_TESTS.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_INTEGRATION_TESTS.py",
                   "sandbox/lf_contract_gate_test/lf_validation_engine_v0_10_2_selftest.py",
                   "sandbox/no_bypass_judge_profile_card_skill/no_bypass_judge_selftest.py",
                   "sandbox/lf_contract_gate_test/pass_evidence_gate.py --self-test --scan",
