@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - lf/architecture-v7-hardening
   push:
     branches:
       - main
