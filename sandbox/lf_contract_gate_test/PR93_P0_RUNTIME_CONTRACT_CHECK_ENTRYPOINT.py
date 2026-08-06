@@ -24,13 +24,15 @@ TARGET_PR_NUMBER = 93
 PR_BRANCH = "lf/architecture-v7-hardening"
 MAIN_BRANCH = "main"
 RUNTIME_ALERT_PATH = "supabase/functions/lf-architecture-alert-sink-v4/index.ts"
+RUNTIME_ALERT_CONFIG_PATH = "supabase/functions/lf-architecture-alert-sink-v4/deno.json"
 RUNTIME_MIGRATION_PATH = (
     "supabase/migrations/"
-    "20260806062345_pr93_p0_hmac_attempt_receipt_reconciliation_v5.sql"
+    "20260806194820_pr93_p0_hmac_attempt_receipt_v6_no_downgrade.sql"
 )
 EXPECTED_RUNTIME_BLOBS = {
-    RUNTIME_ALERT_PATH: "f944dab3e8b9fa6cfb15fcfa3e355b64c057327a",
-    RUNTIME_MIGRATION_PATH: "24d114782b870c76cd0fa9190241faa6921a48ab",
+    RUNTIME_ALERT_PATH: "74b0a2123ceb5a66008231599bf3a5fb0ec3d66b",
+    RUNTIME_ALERT_CONFIG_PATH: "762e9b22bb21b951e9ddc5a171fe1be106d7cc31",
+    RUNTIME_MIGRATION_PATH: "93510429231fd95a1c5ef3b2400ee38fabba4258",
     "supabase/functions/run-github-write-perfil-lf/index.ts": "9c49218c718391a8829587960d7a7e4165bff383",
     "supabase/functions/run-github-write-perfil-lf/deno.json": "762e9b22bb21b951e9ddc5a171fe1be106d7cc31",
     "supabase/functions/run-github-readback-perfil-lf/index.ts": "0f3de697b0806ea5cb775a40a4e0d1cc58ac3dc4",
@@ -91,10 +93,12 @@ def evaluate_controlled_runtime_scope(
             "FAIL_RUNTIME_EDGE_SCOPE",
             f"unexpected Edge paths: {unexpected!r}",
         )
-    if RUNTIME_ALERT_PATH in changed and RUNTIME_MIGRATION_PATH not in changed:
+    if (
+        RUNTIME_ALERT_PATH in changed or RUNTIME_ALERT_CONFIG_PATH in changed
+    ) and RUNTIME_MIGRATION_PATH not in changed:
         raise RuntimeScopeError(
             "FAIL_RUNTIME_MIGRATION_PAIR_MISSING",
-            f"{RUNTIME_ALERT_PATH} requires {RUNTIME_MIGRATION_PATH}",
+            f"alert sink source/config requires {RUNTIME_MIGRATION_PATH}",
         )
 
     if branch == PR_BRANCH:
