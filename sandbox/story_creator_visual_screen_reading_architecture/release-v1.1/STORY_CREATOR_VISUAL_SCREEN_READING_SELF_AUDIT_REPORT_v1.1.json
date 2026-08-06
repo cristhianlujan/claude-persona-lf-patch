@@ -1,8 +1,12 @@
 {
   "all_checks_pass": true,
-  "check_count": 12,
+  "check_count": 16,
   "checks": {
+    "canonicalizer_ecmascript_number": true,
     "canonicalizer_guards": true,
+    "canonicalizer_rejects_duplicate_keys": true,
+    "canonicalizer_rejects_unsafe_integer": true,
+    "canonicalizer_utf16_order": true,
     "checksum_coverage": true,
     "clean_names": true,
     "counts": true,
