@@ -1,0 +1,51 @@
+name: Temporary finalize P0 visual v1.1
+
+on:
+  push:
+    branches:
+      - agent/p0-visual-architecture-v1
+
+permissions:
+  contents: write
+
+concurrency:
+  group: p0-v1-1-finalize
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/p0-visual-architecture-v1
+          fetch-depth: 0
+
+      - name: Finalize exact v1.1 tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat sandbox/story_creator_p0_visual/v1.1/.tmp_finalize/chunk*.b64 \
+            | tr -d '\n\r ' \
+            | base64 -d > /tmp/p0-v11-payload.tar.gz
+          echo "46bd679e6eb92d17420531435dfde9b98f0b8fa2e560e70ea75794f54272186f  /tmp/p0-v11-payload.tar.gz" | sha256sum -c -
+          rm -rf /tmp/p0-v11-payload
+          mkdir -p /tmp/p0-v11-payload
+          tar -xzf /tmp/p0-v11-payload.tar.gz -C /tmp/p0-v11-payload
+          python3 /tmp/p0-v11-payload/finalize.py "$GITHUB_WORKSPACE"
+          test ! -e sandbox/story_creator_p0_visual/v1.1/TEST_SHOULD_NOT_CREATE.txt
+          test ! -e sandbox/story_creator_p0_visual/v1.1/TEST_SHOULD_NOT_CREATE_2.txt
+          test ! -d sandbox/story_creator_p0_visual/v1.1/.tmp_finalize
+          python3 sandbox/story_creator_p0_visual/v1.1/verify_p0_visual_bundle_v1_1.py
+
+      - name: Commit exact final tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A .github/workflows sandbox/story_creator_p0_visual/v1.1
+          git diff --cached --check
+          git commit -m "docs(p0): finalize v1.1 audit remediation bundle"
+          git push origin HEAD:agent/p0-visual-architecture-v1
