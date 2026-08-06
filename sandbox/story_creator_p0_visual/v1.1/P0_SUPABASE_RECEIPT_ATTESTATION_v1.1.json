@@ -1,0 +1,28 @@
+{
+  "schema_version": "p0-supabase-receipt-attestation/v2",
+  "execution_id": "EXEC-BISC-P0-VISUAL-HANDOFF-005",
+  "architecture_snapshot_id": 9,
+  "registration_event_id": 3248,
+  "attestation_snapshot_id": 11,
+  "attestation_event_id": 3249,
+  "activation_event_id": 3250,
+  "receipt_sha256": "4f1676babb1f15467f957d9ca84e8a4ee7412776528fedfb563b576b8ef57625",
+  "parity_payload_sha256": "713537771fdda72f8a3357fb1d4150eaa0d89793287f33823de81e2b78bfa277",
+  "receipt_storage": {
+    "stored_form": "UTF8_TEXT_IN_JSONB_STRING",
+    "receipt_literal_bytes": 13175,
+    "receipt_literal_sha256": "4f1676babb1f15467f957d9ca84e8a4ee7412776528fedfb563b576b8ef57625",
+    "receipt_literal_recomputed_in_postgres": true
+  },
+  "transactions": {
+    "registration_txid": "34035",
+    "attestation_txid": "34071",
+    "activation_txid": "34079"
+  },
+  "governance": {
+    "runtime_enabled": false,
+    "merge_authorized": false,
+    "production_authorized": false,
+    "acceptance_declared": false
+  }
+}
