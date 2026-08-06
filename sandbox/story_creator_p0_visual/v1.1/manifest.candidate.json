@@ -1,0 +1,114 @@
+{
+  "schema_version": "p0-candidate-manifest/v3",
+  "candidate_root": "sandbox/story_creator_p0_visual/v1.1/",
+  "transport": "DIRECT_UTF8_PLAINTEXT_FRAGMENTS",
+  "base64_transport": false,
+  "binary_archives": false,
+  "canonical_j11_scope": "skills/creating-integral-user-stories/**",
+  "files": [
+    {
+      "file": "fragments/handoff.md.part01",
+      "bytes": 33676,
+      "sha256": "6ec36e8ab034f25c33c6dfeb586443ac53271318c6beb7bbbef6b26454abd71a"
+    },
+    {
+      "file": "fragments/handoff.md.part02",
+      "bytes": 33675,
+      "sha256": "0209336b77184255c91dab2729e3bed4f3f98b5ec1f90aebed3dfd8912adda4a"
+    },
+    {
+      "file": "fragments/manifest.json.part01",
+      "bytes": 32857,
+      "sha256": "3cc543858bfdae57fc6886c98c6ca1a852aad8e228a89fbb26105174a07df159"
+    },
+    {
+      "file": "fragments/manifest.json.part02",
+      "bytes": 32857,
+      "sha256": "930d1dead2b7e5a18783a3687bda752bb50a6296418d8e52d814cd05c36ae506"
+    },
+    {
+      "file": "fragments/manifest.json.part03",
+      "bytes": 32857,
+      "sha256": "25fd7a01f8fe4d07d8fd5a5a6d6e9477045f34571f684e636f1f8e6face7bd28"
+    },
+    {
+      "file": "fragments/manifest.json.part04",
+      "bytes": 32857,
+      "sha256": "b3c09fee9a9b54551421a80160f68bfcbf51e34cd209085b1e3edd3cdfca4df6"
+    },
+    {
+      "file": "README.md",
+      "bytes": 2248,
+      "sha256": "784e328c597948713843ca01bccf44b2aacc5b01ddecd0974b5253555bbc5095"
+    },
+    {
+      "file": "P0_RFC8785_CANONICALIZER_v1.1.mjs",
+      "bytes": 4668,
+      "sha256": "99952f4a1c0819bfc6a7488bea595b43ff31697a0c5ffe034c3e7ea76cde930f"
+    },
+    {
+      "file": "validate_p0_handoff_v1_1.py",
+      "bytes": 11065,
+      "sha256": "41db5bb55bb6676b320c9de0000153d450218a013040086257cd2ed432cbbaa3"
+    },
+    {
+      "file": "HANDOFF_TECNICO_P0_LECTURA_VISUAL_PRE_REGISTRATION_VALIDATION_v1.1.json",
+      "bytes": 3493,
+      "sha256": "eade6bc568b0bf2a63140749cbc86b3123303c91b6ac34b9f15854231d9eafdc"
+    },
+    {
+      "file": "P0_V1_1_SUPABASE_DRY_RUN.sql",
+      "bytes": 2060,
+      "sha256": "b6eeaab4da79d54f92c4dae7832b0e64da7d7b5c03a2995f5b4440614ae661ae"
+    },
+    {
+      "file": "P0_SUPABASE_REGISTRATION_RECEIPT_v1.1.json",
+      "bytes": 13175,
+      "sha256": "4f1676babb1f15467f957d9ca84e8a4ee7412776528fedfb563b576b8ef57625"
+    },
+    {
+      "file": "P0_SUPABASE_RECEIPT_ATTESTATION_v1.1.json",
+      "bytes": 996,
+      "sha256": "85f4a46c14bdf53c875bc4b473de17ea909dda4b59f4e158fa9637f746b4f1d5"
+    },
+    {
+      "file": "P0_SUPABASE_READBACK_v1.1.json",
+      "bytes": 11825,
+      "sha256": "4a1a6002bc1653b4c91c6a57415f7993632f72e8c64259790bb7c5043ff4f223"
+    },
+    {
+      "file": "HANDOFF_TECNICO_P0_LECTURA_VISUAL_VALIDATION_v1.1.json",
+      "bytes": 4574,
+      "sha256": "0d533e40f58f92db7b4b0b0a4bd2a7998faf8fc801fec4118162e221d89686f2"
+    },
+    {
+      "file": "assemble_p0_visual_v1_1.py",
+      "bytes": 1657,
+      "sha256": "c139d10ddda8b7fa78fe87f263258cccd5644ac01873fff9901537ad5fe9ab01"
+    }
+  ],
+  "assembled_artifacts": {
+    "HANDOFF_TECNICO_P0_LECTURA_VISUAL_Y_CONTEXTO_AUXILIAR_LF_v1.1.md": {
+      "bytes": 67351,
+      "sha256": "a8d53b736e7d2d672b0927f7deaca4422f7429fdda0d1997b1eaa54fc06e7531"
+    },
+    "P0_VISUAL_READING_CANONICAL_MANIFEST_v1.1.json": {
+      "bytes": 131428,
+      "sha256": "f1c776c8d4f633aff6dbf362d5ba4702d2307f826c8ce5bd274cbb2cc88185e4"
+    }
+  },
+  "expected_auxiliary_files": [
+    "manifest.candidate.json",
+    "P0_VISUAL_READING_V1_1_SHA256SUMS.txt",
+    "verify_p0_visual_bundle_v1_1.py"
+  ],
+  "forbidden_suffixes": [
+    ".b64",
+    ".tar",
+    ".tar.gz",
+    ".zip"
+  ],
+  "runtime_enabled": false,
+  "merge_authorized": false,
+  "production_authorized": false
+}
