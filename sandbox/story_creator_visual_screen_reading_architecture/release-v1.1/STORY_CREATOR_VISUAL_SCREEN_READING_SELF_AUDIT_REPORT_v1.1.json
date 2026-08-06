@@ -1,0 +1,25 @@
+{
+  "all_checks_pass": true,
+  "check_count": 10,
+  "checks": {
+    "canonicalizer": true,
+    "clean_names": true,
+    "counts": true,
+    "descriptive_identity": true,
+    "exact_inventory": true,
+    "file_hashes": true,
+    "ids": true,
+    "scope_isolated": true,
+    "source_anchor": true,
+    "supabase_anchors": true
+  },
+  "findings": [],
+  "schema_version": "story-creator-visual-screen-reading-self-audit/v4",
+  "scope": {
+    "empirical_quality_not_tested": true,
+    "runtime_not_tested": true,
+    "source_architecture_requires_supabase_readback": true,
+    "static_publication_only": true
+  },
+  "verdict": "STATIC_SELF_AUDIT_PASS"
+}
