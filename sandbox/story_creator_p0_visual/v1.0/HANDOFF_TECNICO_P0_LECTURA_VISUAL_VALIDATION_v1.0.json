@@ -1,0 +1,38 @@
+{
+  "all_checks_pass": true,
+  "checks": {
+    "utf8_lf_final_newline": true,
+    "markdown_hash": true,
+    "canonicalizer_hash": true,
+    "rfc8785_manifest_hash": true,
+    "rfc8785_parity_hash": true,
+    "vector_RFC8785_PRIMITIVES": true,
+    "vector_RFC8785_NUMBER_1_0": true,
+    "vector_RFC8785_UTF16_SORT": true,
+    "metric_ids_exact": true,
+    "negative_ids_exact": true,
+    "audit_ids_exact": true,
+    "category_counts": true,
+    "research_exact": true,
+    "counts_exact": true,
+    "all_metrics_anti_vacuity": true,
+    "criticality_consistency_rules": true,
+    "human_j00r_route": true,
+    "candidate_inventory_sandbox": true,
+    "transverse_security": true,
+    "claims_not_overstated": true,
+    "parity_block_in_markdown": true,
+    "receipt_exact_parity": true,
+    "receipt_files": true,
+    "supabase_exact_parity": true,
+    "supabase_receipt_links": true,
+    "attestation_receipt_hash": true
+  },
+  "computed": {
+    "metrics": 26,
+    "negatives": 80,
+    "audit_controls": 72,
+    "research_sources": 11,
+    "resolved_errors": 38
+  }
+}
