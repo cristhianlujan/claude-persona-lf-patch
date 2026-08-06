@@ -1,20 +1,22 @@
 {
   "all_checks_pass": true,
-  "check_count": 10,
+  "check_count": 12,
   "checks": {
-    "canonicalizer": true,
+    "canonicalizer_guards": true,
+    "checksum_coverage": true,
     "clean_names": true,
     "counts": true,
     "descriptive_identity": true,
     "exact_inventory": true,
     "file_hashes": true,
-    "ids": true,
+    "metric_codes": true,
+    "ranges": true,
     "scope_isolated": true,
     "source_anchor": true,
     "supabase_anchors": true
   },
   "findings": [],
-  "schema_version": "story-creator-visual-screen-reading-self-audit/v4",
+  "schema_version": "story-creator-visual-screen-reading-self-audit/v5",
   "scope": {
     "empirical_quality_not_tested": true,
     "runtime_not_tested": true,

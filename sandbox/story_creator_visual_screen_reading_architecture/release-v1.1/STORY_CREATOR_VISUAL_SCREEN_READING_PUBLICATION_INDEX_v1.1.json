@@ -1,5 +1,5 @@
 {
-  "schema_version": "story-creator-visual-screen-reading-publication-index/v1",
+  "schema_version": "story-creator-visual-screen-reading-publication-index/v2",
   "project_scope": "Story Creator",
   "capability_name": "Visual Screen Reading and Auxiliary Context Reconciliation",
   "release": "v1.1",
@@ -28,41 +28,83 @@
     "receipt_utf8_bytes": 13175,
     "receipt_sha256": "4f1676babb1f15467f957d9ca84e8a4ee7412776528fedfb563b576b8ef57625"
   },
-  "parity_payload": {
-    "architecture_codes": ["J01_SOURCE_INTEGRITY","P0SEC_TRANSVERSE_SECURITY_PRIVACY","P0A_VISUAL_SOURCE_INTEGRITY","P0B_BLIND_MULTISCALE_SCAN","P0C_DENSE_GEOMETRY_PARSE","P0D_VISUAL_SEMANTIC_PARSE","P0E_VISUAL_STRUCTURE","P0F_VISUAL_STATE_TRANSITION_CAPTURE","P0G_UNCERTAINTY_ABSTENTION","P0H_VISUAL_COMPLETENESS_GATE","J00_P0_VISUAL_READING","P0HR_HUMAN_ADJUDICATION","J00R_P0_REJUDGMENT","P0X_AUXILIARY_CONTEXT_RECONCILIATION","P0Y_ENRICHED_MODEL_GATE","J00X_P0_CONTEXT_RECONCILIATION","J02_SCREEN_DECOMPOSITION","P1_STORY_PIPELINE"],
-    "audit_control_ids": ["AC01","AC02","AC03","AC04","AC05","AC06","AC07","AC08","AC09","AC10","AC11","AC12","AC13","AC14","AC15","AC16","AC17","AC18","AC19","AC20","AC21","AC22","AC23","AC24","AC25","AC26","AC27","AC28","AC29","AC30","AC31","AC32","AC33","AC34","AC35","AC36","AC37","AC38","AC39","AC40","AC41","AC42","AC43","AC44","AC45","AC46","AC47","AC48","AC49","AC50","AC51","AC52","AC53","AC54","AC55","AC56","AC57","AC58","AC59","AC60","AC61","AC62","AC63","AC64","AC65","AC66","AC67","AC68","AC69","AC70","AC71","AC72"],
-    "audit_followup_correction_ids": ["C1","C2","C3","C4","C5","C6","C7","C8","C9","C10","C11","C12","C13","C14"],
-    "canonicalization_algorithm": "RFC8785_JCS",
-    "canonicalizer_file": "P0_RFC8785_CANONICALIZER_v1.1.mjs",
-    "counts": {"architecture_steps":18,"audit_controls":72,"audit_followup_corrections":14,"auditor_findings_preempted":21,"fallback_classes":7,"implementation_lots":8,"metrics":26,"negative_cases":80,"negative_categories":15,"research_sources":11,"resolved_historical_red_errors":38,"unresolved_architecture_decisions":0,"validation_tracks":3},
-    "hard_gates": ["M01_CRITICAL_ELEMENT_RECALL","M11_EVIDENCE_COVERAGE","M13_PROMPT_INJECTION_ESCAPE_RATE","M14_SENSITIVE_DATA_EVIDENCE_LEAK_RATE","M15_SCHEMA_AND_SEMANTIC_VALIDATION_RATE","M23_SENSITIVE_VALUE_DETECTION_RECALL","M24_CRITICAL_BOX_IOU_FLOOR","M26_GOLD_ANNOTATION_AGREEMENT"],
-    "implementation_lot_codes": ["P0-0","P0-1","P0-2","P0-3","P0-4","P0-5","P0-6","P0-7"],
-    "metric_codes": ["M01_CRITICAL_ELEMENT_RECALL","M02_ELEMENT_RECALL","M03_ELEMENT_PRECISION","M04_TEXT_EXACT_ACCURACY","M05_TEXT_CHARACTER_ERROR_RATE","M06_TYPE_ACCURACY","M07_PARENT_ACCURACY","M08_STATE_ACCURACY","M09_BOX_IOU_MEDIAN","M10_SMALL_ELEMENT_RECALL","M11_EVIDENCE_COVERAGE","M12_ACCEPTED_PREDICTION_ERROR_RATE","M13_PROMPT_INJECTION_ESCAPE_RATE","M14_SENSITIVE_DATA_EVIDENCE_LEAK_RATE","M15_SCHEMA_AND_SEMANTIC_VALIDATION_RATE","M16_P95_END_TO_END_LATENCY_SECONDS","M17_CORRECTIVE_RETRY_RATE","M18_QUEUE_WAIT_P95_SECONDS","M19_THROUGHPUT_SCREENS_PER_MINUTE","M20_COST_PER_SCREEN_USD","M21_LAYER_RELATION_F1","M22_READING_ORDER_CLASSIFICATION_ACCURACY","M23_SENSITIVE_VALUE_DETECTION_RECALL","M24_CRITICAL_BOX_IOU_FLOOR","M25_ADAPTIVE_EXPANSION_RATE","M26_GOLD_ANNOTATION_AGREEMENT"],
-    "negative_case_ids": ["N001","N002","N003","N004","N005","N006","N007","N008","N009","N010","N011","N012","N013","N014","N015","N016","N017","N018","N019","N020","N021","N022","N023","N024","N025","N026","N027","N028","N029","N030","N031","N032","N033","N034","N035","N036","N037","N038","N039","N040","N041","N042","N043","N044","N045","N046","N047","N048","N049","N050","N051","N052","N053","N054","N055","N056","N057","N058","N059","N060","N061","N062","N063","N064","N065","N066","N067","N068","N069","N070","N071","N072","N073","N074","N075","N076","N077","N078","N079","N080"],
-    "quality_floor_formula": "MIN(M01_CRITICAL_ELEMENT_RECALL,M02_ELEMENT_RECALL,M03_ELEMENT_PRECISION,M04_TEXT_EXACT_ACCURACY,M06_TYPE_ACCURACY,M07_PARENT_ACCURACY,M08_STATE_ACCURACY,M10_SMALL_ELEMENT_RECALL,M11_EVIDENCE_COVERAGE,M23_SENSITIVE_VALUE_DETECTION_RECALL)",
-    "research_sources": [
-      {"accessed_at":"2026-08-05T03:11:00Z","id":"R01","publisher":"Anthropic","source_version":"accessed_live","title":"Claude vision documentation: image sizing and visual processing","url":"https://docs.anthropic.com/en/docs/build-with-claude/vision"},
-      {"accessed_at":"2026-08-05T03:11:00Z","id":"R02","publisher":"Google Research","source_version":"published_2024","title":"ScreenAI: A Vision-Language Model for UI and Infographics Understanding","url":"https://research.google/pubs/screenai-a-vision-language-model-for-ui-and-infographics-understanding/"},
-      {"accessed_at":"2026-08-05T03:11:00Z","id":"R03","publisher":"Microsoft Research","source_version":"published_2024","title":"OmniParser for Pure Vision Based GUI Agent","url":"https://www.microsoft.com/en-us/research/publication/omniparser-for-pure-vision-based-gui-agent/"},
-      {"accessed_at":"2026-08-05T03:11:00Z","id":"R04","publisher":"Apple Machine Learning Research","source_version":"published_2024","title":"Ferret-UI: Grounded Mobile UI Understanding with Multimodal LLMs","url":"https://machinelearning.apple.com/research/ferretui-mobile"},
-      {"accessed_at":"2026-08-05T03:11:00Z","id":"R05","publisher":"OpenReview / ICLR","source_version":"published_2025","title":"Ferret-UI 2: Mastering Universal User Interface Understanding Across Platforms","url":"https://openreview.net/forum?id=GBfYgjOfSe"},
-      {"accessed_at":"2026-08-05T03:11:00Z","id":"R06","publisher":"ICML / Microsoft Research","source_version":"published_2026","title":"Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision","url":"https://www.microsoft.com/en-us/research/publication/moving-beyond-sparse-grounding-with-complete-screen-parsing-supervision/"},
-      {"accessed_at":"2026-08-05T03:11:00Z","id":"R07","publisher":"arXiv / UCSB-UCSC","source_version":"published_2026","title":"SafeGround: Know When to Trust GUI Grounding Models via Uncertainty Calibration","url":"https://arxiv.org/abs/2602.02419"},
-      {"accessed_at":"2026-08-05T03:11:00Z","id":"R08","publisher":"OpenReview / WCUA","source_version":"published_2025","title":"Toward Autonomous UI Exploration: The UIExplorer Benchmark","url":"https://openreview.net/forum?id=DFPYSAyWRv"},
-      {"accessed_at":"2026-08-05T03:11:00Z","id":"R09","publisher":"ACL Anthology / EACL Findings","source_version":"published_2026","title":"Do GUI Grounders Truly Understand UI Elements?","url":"https://aclanthology.org/2026.findings-eacl.144/"},
-      {"accessed_at":"2026-08-05T03:11:00Z","id":"R10","publisher":"arXiv","source_version":"published_2026","title":"Are GUI Agents Focused Enough? Automated Distraction via Semantic-level UI Element Injection","url":"https://arxiv.org/abs/2604.07831"},
-      {"accessed_at":"2026-08-05T03:11:00Z","id":"R11","publisher":"RFC Editor","source_version":"RFC8785","title":"RFC 8785: JSON Canonicalization Scheme (JCS)","url":"https://www.rfc-editor.org/rfc/rfc8785.html"}
+  "architecture_inventory": {
+    "architecture_steps": 18,
+    "metrics": 26,
+    "negative_cases": 80,
+    "audit_controls": 72,
+    "research_sources": 11,
+    "resolved_historical_red_errors": 38,
+    "audit_followup_corrections": 14,
+    "unresolved_architecture_decisions": 0,
+    "negative_id_range": "N001-N080",
+    "audit_control_id_range": "AC01-AC72",
+    "correction_id_range": "C1-C14",
+    "metric_codes": [
+      "M01_CRITICAL_ELEMENT_RECALL",
+      "M02_ELEMENT_RECALL",
+      "M03_ELEMENT_PRECISION",
+      "M04_TEXT_EXACT_ACCURACY",
+      "M05_TEXT_CHARACTER_ERROR_RATE",
+      "M06_TYPE_ACCURACY",
+      "M07_PARENT_ACCURACY",
+      "M08_STATE_ACCURACY",
+      "M09_BOX_IOU_MEDIAN",
+      "M10_SMALL_ELEMENT_RECALL",
+      "M11_EVIDENCE_COVERAGE",
+      "M12_ACCEPTED_PREDICTION_ERROR_RATE",
+      "M13_PROMPT_INJECTION_ESCAPE_RATE",
+      "M14_SENSITIVE_DATA_EVIDENCE_LEAK_RATE",
+      "M15_SCHEMA_AND_SEMANTIC_VALIDATION_RATE",
+      "M16_P95_END_TO_END_LATENCY_SECONDS",
+      "M17_CORRECTIVE_RETRY_RATE",
+      "M18_QUEUE_WAIT_P95_SECONDS",
+      "M19_THROUGHPUT_SCREENS_PER_MINUTE",
+      "M20_COST_PER_SCREEN_USD",
+      "M21_LAYER_RELATION_F1",
+      "M22_READING_ORDER_CLASSIFICATION_ACCURACY",
+      "M23_SENSITIVE_VALUE_DETECTION_RECALL",
+      "M24_CRITICAL_BOX_IOU_FLOOR",
+      "M25_ADAPTIVE_EXPANSION_RATE",
+      "M26_GOLD_ANNOTATION_AGREEMENT"
     ],
-    "resolved_error_ids": ["A06","A15","A16","A17","A18","A19","A20","B11","B12","C15","C16","C17","C18","C19","D12","D17","D18","D19","D20","D21","D22","D23","D24","D25","D26","D27","E18","E19","E20","E22","E23","E24","E25","E28","E32","E33","E34","E35"],
-    "schema_version": "p0-exact-parity/v1",
-    "snapshot_code": "P0_VISUAL_READING_ARCHITECTURE_LF_20260803",
-    "unresolved_architecture_decisions": [],
-    "validation_track_codes": ["ENGINEERING_SMOKE","CONTROLLED_PILOT","EMPIRICAL_ACCEPTANCE"],
-    "version": "v1.1"
+    "hard_gates": [
+      "M01_CRITICAL_ELEMENT_RECALL",
+      "M11_EVIDENCE_COVERAGE",
+      "M13_PROMPT_INJECTION_ESCAPE_RATE",
+      "M14_SENSITIVE_DATA_EVIDENCE_LEAK_RATE",
+      "M15_SCHEMA_AND_SEMANTIC_VALIDATION_RATE",
+      "M23_SENSITIVE_VALUE_DETECTION_RECALL",
+      "M24_CRITICAL_BOX_IOU_FLOOR",
+      "M26_GOLD_ANNOTATION_AGREEMENT"
+    ]
   },
-  "canonicalizer": {"file":"canonicalize_story_creator_visual_screen_reading_rfc8785_v1_1.mjs","rejects_duplicate_json_keys":true,"rejects_unsafe_ijson_integers":true},
-  "canonical_story_creator_inventory": {"current":64,"enumerated":58,"auxiliary":6,"modified":false},
-  "claims": {"workflow_files_modified":false,"canonical_skill_root_modified":false,"runtime_enabled":false,"merge_authorized":false,"production_authorized":false,"task_packet_authorized":false,"empirical_visual_quality_proven":false},
-  "expected_files": ["README.md","STORY_CREATOR_VISUAL_SCREEN_READING_PUBLICATION_INDEX_v1.1.json","audit_story_creator_visual_screen_reading_publication_v1_1.py","STORY_CREATOR_VISUAL_SCREEN_READING_SELF_AUDIT_REPORT_v1.1.json","STORY_CREATOR_VISUAL_SCREEN_READING_SHA256SUMS_v1.1.txt","canonicalize_story_creator_visual_screen_reading_rfc8785_v1_1.mjs"],
-  "file_hashes": {"README.md":"7a96a811d90453bb19e196421c13204b160be72c928bf04c9aed91ba4cc29baa","audit_story_creator_visual_screen_reading_publication_v1_1.py":"95a49d71138056740284a9724ff697b52e6602415b9d4830b064bdc6c30957a2","canonicalize_story_creator_visual_screen_reading_rfc8785_v1_1.mjs":"c6d5ca3855fde335420c56692af38e937e83d7a1b5bf39f56f9e5bcfc88d7f8e"}
+  "canonicalizer": {
+    "file": "canonicalize_story_creator_visual_screen_reading_rfc8785_v1_1.mjs",
+    "rejects_duplicate_json_keys": true,
+    "rejects_unsafe_ijson_integers": true
+  },
+  "canonical_story_creator_inventory": {
+    "current": 64,
+    "enumerated": 58,
+    "auxiliary": 6,
+    "modified": false
+  },
+  "claims": {
+    "workflow_files_modified": false,
+    "canonical_skill_root_modified": false,
+    "runtime_enabled": false,
+    "merge_authorized": false,
+    "production_authorized": false,
+    "task_packet_authorized": false,
+    "empirical_visual_quality_proven": false
+  },
+  "expected_files": [
+    "README.md",
+    "STORY_CREATOR_VISUAL_SCREEN_READING_PUBLICATION_INDEX_v1.1.json",
+    "STORY_CREATOR_VISUAL_SCREEN_READING_SELF_AUDIT_REPORT_v1.1.json",
+    "STORY_CREATOR_VISUAL_SCREEN_READING_SHA256SUMS_v1.1.txt",
+    "audit_story_creator_visual_screen_reading_publication_v1_1.py",
+    "canonicalize_story_creator_visual_screen_reading_rfc8785_v1_1.mjs"
+  ]
 }
