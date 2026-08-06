@@ -1,42 +1,73 @@
 #!/usr/bin/env python3
-"""Fail-closed PR93 runtime-scope adapter layered over the E.16 validator.
+"""Fail-closed PR93 runtime-source adapter layered over the E.16 validator.
 
-This adapter preserves the byte-identical E.16 base validator and grants one
-narrow exception: the exact HMAC alert-sink source is accepted only when it is
-paired with the exact reconciliation migration, on the PR93 branch, and both
-files match their pinned Git blob identifiers.
+Only the pinned PR93 Edge source set is admitted. The PR branch is accepted
+while PR #93 is open. A push on main is accepted only when GitHub confirms that
+PR #93 is merged and its merge_commit_sha equals the workflow head SHA.
 """
 from __future__ import annotations
 
+import json
 import os
 import re
 import sys
+import urllib.error
+import urllib.request
 from collections.abc import Mapping, Sequence
 
 import PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT as e16
 
 sys.dont_write_bytecode = True
 
-RUNTIME_BRANCH = "lf/architecture-v7-hardening"
-RUNTIME_EDGE_PATH = "supabase/functions/lf-architecture-alert-sink-v4/index.ts"
+TARGET_REPOSITORY = "cristhianlujan/claude-persona-lf-patch"
+TARGET_PR_NUMBER = 93
+PR_BRANCH = "lf/architecture-v7-hardening"
+MAIN_BRANCH = "main"
+RUNTIME_ALERT_PATH = "supabase/functions/lf-architecture-alert-sink-v4/index.ts"
 RUNTIME_MIGRATION_PATH = (
     "supabase/migrations/"
-    "20260806063000_pr93_p0_hmac_attempt_receipt_reconciliation_v5.sql"
+    "20260806062345_pr93_p0_hmac_attempt_receipt_reconciliation_v5.sql"
 )
 EXPECTED_RUNTIME_BLOBS = {
-    RUNTIME_EDGE_PATH: "f944dab3e8b9fa6cfb15fcfa3e355b64c057327a",
+    RUNTIME_ALERT_PATH: "f944dab3e8b9fa6cfb15fcfa3e355b64c057327a",
     RUNTIME_MIGRATION_PATH: "24d114782b870c76cd0fa9190241faa6921a48ab",
+    "supabase/functions/run-github-write-perfil-lf/index.ts": "9c49218c718391a8829587960d7a7e4165bff383",
+    "supabase/functions/run-github-write-perfil-lf/deno.json": "762e9b22bb21b951e9ddc5a171fe1be106d7cc31",
+    "supabase/functions/run-github-readback-perfil-lf/index.ts": "0f3de697b0806ea5cb775a40a4e0d1cc58ac3dc4",
+    "supabase/functions/run-github-readback-perfil-lf/deno.json": "762e9b22bb21b951e9ddc5a171fe1be106d7cc31",
+    "supabase/functions/run-creacion-perfil-lf/index.ts": "a4246b3bcc7a4584b165d749d63989e01a11e701",
+    "supabase/functions/run-creacion-perfil-lf/deno.json": "762e9b22bb21b951e9ddc5a171fe1be106d7cc31",
+    "supabase/functions/run-formalizacion-perfil-lf/index.ts": "5fc0953c08307af25703c9e4be2339a0c3d66d4d",
+    "supabase/functions/run-formalizacion-perfil-lf/deno.json": "762e9b22bb21b951e9ddc5a171fe1be106d7cc31",
+    "supabase/functions/get-perfil-lf-runtime-protocol/index.ts": "c87779d11f64f0284e7a69ef63b72e12210cbb30",
+    "supabase/functions/get-perfil-lf-runtime-protocol/deno.json": "762e9b22bb21b951e9ddc5a171fe1be106d7cc31",
+    "supabase/functions/get-perfil-lf-runtime-protocol-public-test/index.ts": "9d5672ba788843330cc0c4785d8413eb12d2d11e",
+    "supabase/functions/get-perfil-lf-runtime-protocol-public-test/deno.json": "762e9b22bb21b951e9ddc5a171fe1be106d7cc31",
 }
+EXPECTED_EDGE_PATHS = frozenset(
+    path for path in EXPECTED_RUNTIME_BLOBS if path.startswith("supabase/functions/")
+)
 BLOB_RE = re.compile(r"^[0-9a-f]{40}$")
 
 
 class RuntimeScopeError(ValueError):
-    """Controlled runtime scope validation error."""
-
     def __init__(self, code: str, message: str) -> None:
         super().__init__(message)
         self.code = code
         self.message = message
+
+
+def _validate_path(path: str) -> None:
+    if (
+        not isinstance(path, str)
+        or not path
+        or not path.isascii()
+        or path.startswith("/")
+        or "\\" in path
+        or "//" in path
+        or any(part in ("", ".", "..") for part in path.split("/"))
+    ):
+        raise RuntimeScopeError("FAIL_RUNTIME_PATH_INVALID", f"invalid controlled path: {path!r}")
 
 
 def evaluate_controlled_runtime_scope(
@@ -44,37 +75,45 @@ def evaluate_controlled_runtime_scope(
     *,
     branch: str,
     blob_by_path: Mapping[str, str],
+    mode_by_path: Mapping[str, str] | None = None,
+    main_merge_verified: bool = False,
 ) -> bool:
-    """Return True only for the pinned Edge+migration scope.
-
-    A change set without any Edge Function is outside this special exception
-    and returns False so the original E.16 rules remain authoritative.
-    """
-
     changed = set(changed_files)
-    edge_paths = sorted(
-        path for path in changed if path.startswith("supabase/functions/")
-    )
+    edge_paths = sorted(path for path in changed if path.startswith("supabase/functions/"))
     if not edge_paths:
         return False
 
-    if edge_paths != [RUNTIME_EDGE_PATH]:
+    for path in edge_paths:
+        _validate_path(path)
+    unexpected = sorted(set(edge_paths) - EXPECTED_EDGE_PATHS)
+    if unexpected:
         raise RuntimeScopeError(
             "FAIL_RUNTIME_EDGE_SCOPE",
-            f"Edge paths must be exactly {RUNTIME_EDGE_PATH!r}: {edge_paths!r}",
+            f"unexpected Edge paths: {unexpected!r}",
         )
-    if RUNTIME_MIGRATION_PATH not in changed:
+    if RUNTIME_ALERT_PATH in changed and RUNTIME_MIGRATION_PATH not in changed:
         raise RuntimeScopeError(
             "FAIL_RUNTIME_MIGRATION_PAIR_MISSING",
-            f"{RUNTIME_EDGE_PATH} requires {RUNTIME_MIGRATION_PATH}",
-        )
-    if branch != RUNTIME_BRANCH:
-        raise RuntimeScopeError(
-            "FAIL_RUNTIME_BRANCH_MISMATCH",
-            f"runtime scope is restricted to {RUNTIME_BRANCH!r}, got {branch!r}",
+            f"{RUNTIME_ALERT_PATH} requires {RUNTIME_MIGRATION_PATH}",
         )
 
+    if branch == PR_BRANCH:
+        pass
+    elif branch == MAIN_BRANCH:
+        if not main_merge_verified:
+            raise RuntimeScopeError(
+                "FAIL_RUNTIME_MAIN_NOT_MERGED",
+                "main is accepted only after GitHub confirms PR #93 merged at this SHA",
+            )
+    else:
+        raise RuntimeScopeError(
+            "FAIL_RUNTIME_BRANCH_MISMATCH",
+            f"runtime scope is restricted to {PR_BRANCH!r} or verified {MAIN_BRANCH!r}, got {branch!r}",
+        )
+
+    modes = mode_by_path or {}
     for path, expected_blob in EXPECTED_RUNTIME_BLOBS.items():
+        _validate_path(path)
         observed_blob = blob_by_path.get(path)
         if not isinstance(observed_blob, str) or BLOB_RE.fullmatch(observed_blob) is None:
             raise RuntimeScopeError(
@@ -85,6 +124,12 @@ def evaluate_controlled_runtime_scope(
             raise RuntimeScopeError(
                 "FAIL_RUNTIME_BLOB_MISMATCH",
                 f"{path} blob {observed_blob} differs from pinned {expected_blob}",
+            )
+        observed_mode = modes.get(path, "100644")
+        if observed_mode != "100644":
+            raise RuntimeScopeError(
+                "FAIL_RUNTIME_FILE_MODE",
+                f"{path} mode {observed_mode!r} is not a regular non-executable blob",
             )
     return True
 
@@ -102,6 +147,46 @@ def git_blob_for_path(path: str) -> str:
     return e16.run_git(["rev-parse", f"HEAD:{path}"]).strip()
 
 
+def git_mode_for_path(path: str) -> str:
+    output = e16.run_git(["ls-tree", "HEAD", "--", path]).strip()
+    if not output:
+        raise RuntimeError(f"path missing from HEAD: {path}")
+    return output.split(None, 1)[0]
+
+
+def verify_main_merge_via_github() -> bool:
+    if current_event_branch() != MAIN_BRANCH:
+        return False
+    if os.environ.get("GITHUB_EVENT_NAME") != "push":
+        return False
+    if os.environ.get("GITHUB_REPOSITORY") != TARGET_REPOSITORY:
+        return False
+    if os.environ.get("GITHUB_REF") != "refs/heads/main":
+        return False
+    head_sha = os.environ.get("GITHUB_SHA", "")
+    if BLOB_RE.fullmatch(head_sha) is None:
+        return False
+    token = os.environ.get("GITHUB_TOKEN", "").strip()
+    if not token:
+        return False
+
+    request = urllib.request.Request(
+        f"https://api.github.com/repos/{TARGET_REPOSITORY}/pulls/{TARGET_PR_NUMBER}",
+        headers={
+            "Accept": "application/vnd.github+json",
+            "Authorization": f"Bearer {token}",
+            "X-GitHub-Api-Version": "2022-11-28",
+            "User-Agent": "pr93-runtime-gate",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=15) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except (urllib.error.URLError, TimeoutError, UnicodeDecodeError, json.JSONDecodeError):
+        return False
+    return payload.get("merged") is True and payload.get("merge_commit_sha") == head_sha
+
+
 _runtime_scope_enabled = False
 _original_is_allowed_path = e16.base.is_allowed_path
 
@@ -109,25 +194,25 @@ _original_is_allowed_path = e16.base.is_allowed_path
 def get_changed_files() -> list[str]:
     global _runtime_scope_enabled
     changed_files = e16.get_changed_files()
-    edge_present = any(
-        path.startswith("supabase/functions/") for path in changed_files
-    )
+    edge_present = any(path.startswith("supabase/functions/") for path in changed_files)
     blobs: dict[str, str] = {}
+    modes: dict[str, str] = {}
     if edge_present:
         for path in EXPECTED_RUNTIME_BLOBS:
             try:
                 blobs[path] = git_blob_for_path(path)
+                modes[path] = git_mode_for_path(path)
             except Exception as exc:
-                e16.fail(
-                    "FAIL_RUNTIME_BLOB_UNRESOLVED",
-                    f"could not read Git blob for {path}: {exc}",
-                )
+                e16.fail("FAIL_RUNTIME_BLOB_UNRESOLVED", f"could not read pinned path {path}: {exc}")
 
+    branch = current_event_branch()
     try:
         _runtime_scope_enabled = evaluate_controlled_runtime_scope(
             changed_files,
-            branch=current_event_branch(),
+            branch=branch,
             blob_by_path=blobs,
+            mode_by_path=modes,
+            main_merge_verified=verify_main_merge_via_github() if branch == MAIN_BRANCH else False,
         )
     except RuntimeScopeError as exc:
         e16.fail(exc.code, exc.message)
@@ -135,7 +220,7 @@ def get_changed_files() -> list[str]:
 
 
 def is_allowed_path(path: str) -> bool:
-    if path == RUNTIME_EDGE_PATH:
+    if path in EXPECTED_EDGE_PATHS:
         return _runtime_scope_enabled
     return _original_is_allowed_path(path)
 
