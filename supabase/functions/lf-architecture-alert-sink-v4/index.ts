@@ -1,103 +1,228 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-if (!SUPABASE_URL || !SERVICE_ROLE_KEY) throw new Error("Supabase runtime secrets are missing");
+const ENDPOINT_VERSION = "v6-attempt-linked-hmac-no-downgrade";
+const DELIVERY_SCHEMA_VERSION = "lf-architecture-alert-delivery/v6";
+const AUTH_MODEL = "HMAC_SHA256_ATTEMPT_LINKED_V6_DATABASE_VERIFIED";
+const MAX_BODY_BYTES = 256_000;
+const UUID_V4_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const SHA256_RE = /^[0-9a-f]{64}$/;
+const ALLOWED_KEYS = new Set([
+  "delivery_schema_version",
+  "attempt_id",
+  "outbox_id",
+  "alert_id",
+  "payload_sha256",
+  "payload",
+  "signature",
+  "signature_issued_at_unix",
+  "signature_nonce",
+  "secret_version",
+]);
 
-function response(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
+function responseHeaders(extra: Record<string, string> = {}): HeadersInit {
+  return {
+    "Content-Type": "application/json",
+    "Cache-Control": "no-store",
+    "X-Content-Type-Options": "nosniff",
+    ...extra,
+  };
+}
+
+function json(body: unknown, status: number, extra: Record<string, string> = {}): Response {
+  return new Response(JSON.stringify(body), {
     status,
-    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
+    headers: responseHeaders(extra),
   });
 }
-function isSha64(value: unknown): value is string {
-  return typeof value === "string" && /^[0-9a-f]{64}$/.test(value);
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
-function hex(bytes: ArrayBuffer): string {
-  return [...new Uint8Array(bytes)].map((value) => value.toString(16).padStart(2, "0")).join("");
+
+function positiveSafeInteger(value: unknown): value is number {
+  return Number.isSafeInteger(value) && Number(value) > 0;
 }
-async function sha256(value: string): Promise<string> {
-  return hex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value)));
-}
-async function rpc<T>(name: string, args: Record<string, unknown>): Promise<T> {
-  const result = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
-    method: "POST",
-    headers: {
-      apikey: SERVICE_ROLE_KEY,
-      authorization: `Bearer ${SERVICE_ROLE_KEY}`,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify(args),
-  });
-  const text = await result.text();
-  if (!result.ok) {
-    const error = new Error(`RPC ${name} failed (${result.status}): ${text.slice(0, 800)}`);
-    (error as Error & { rpcStatus?: number }).rpcStatus = result.status;
-    throw error;
+
+function validateEnvelope(body: unknown): string | null {
+  if (!isPlainObject(body)) return "ENVELOPE_NOT_OBJECT";
+
+  for (const key of Object.keys(body)) {
+    if (!ALLOWED_KEYS.has(key)) return "ENVELOPE_UNKNOWN_FIELD";
   }
-  return (text ? JSON.parse(text) : null) as T;
+  for (const key of ALLOWED_KEYS) {
+    if (!(key in body)) return "ENVELOPE_FIELD_MISSING";
+  }
+
+  if (body.delivery_schema_version !== DELIVERY_SCHEMA_VERSION) return "SCHEMA_VERSION_REJECTED";
+  if (!positiveSafeInteger(body.attempt_id)) return "ATTEMPT_ID_INVALID";
+  if (!positiveSafeInteger(body.outbox_id)) return "OUTBOX_ID_INVALID";
+  if (!positiveSafeInteger(body.alert_id)) return "ALERT_ID_INVALID";
+  if (typeof body.payload_sha256 !== "string" || !SHA256_RE.test(body.payload_sha256)) return "PAYLOAD_SHA256_INVALID";
+  if (!isPlainObject(body.payload)) return "PAYLOAD_INVALID";
+  if (typeof body.signature !== "string" || !SHA256_RE.test(body.signature)) return "SIGNATURE_INVALID";
+  if (!positiveSafeInteger(body.signature_issued_at_unix)) return "SIGNATURE_TIMESTAMP_INVALID";
+  if (typeof body.signature_nonce !== "string" || !UUID_V4_RE.test(body.signature_nonce)) return "SIGNATURE_NONCE_INVALID";
+  if (!positiveSafeInteger(body.secret_version) || body.secret_version > 32767) return "SECRET_VERSION_INVALID";
+
+  return null;
 }
 
 Deno.serve(async (req: Request) => {
-  try {
-    if (req.method !== "POST") return response({ code: "METHOD_NOT_ALLOWED" }, 405);
-    const body = await req.json();
-    const schema = body?.delivery_schema_version;
-    if (schema !== "lf-architecture-alert-delivery/v4" && schema !== "lf-architecture-alert-delivery/v5") {
-      return response({ code: "UNSUPPORTED_DELIVERY_SCHEMA" }, 400);
-    }
-
-    const outboxId = Number(body.outbox_id);
-    const attemptId = schema === "lf-architecture-alert-delivery/v5" ? Number(body.attempt_id) : null;
-    const payloadSha = body.payload_sha256;
-    const signature = body.signature;
-    if (
-      !Number.isSafeInteger(outboxId) || outboxId <= 0 ||
-      (schema === "lf-architecture-alert-delivery/v5" && (!Number.isSafeInteger(attemptId) || Number(attemptId) <= 0)) ||
-      !isSha64(payloadSha) || !isSha64(signature)
-    ) {
-      return response({ code: "INVALID_DELIVERY_ENVELOPE" }, 400);
-    }
-
-    const ack: Record<string, unknown> = {
-      accepted: true,
-      outbox_id: outboxId,
-      payload_sha256: payloadSha,
-      receiver: "lf-architecture-alert-sink-v4",
-      receiver_contract: schema === "lf-architecture-alert-delivery/v5" ? "attempt-linked-v5" : "legacy-v4",
-      received_at: new Date().toISOString(),
-    };
-    if (attemptId !== null) ack.attempt_id = attemptId;
-    const ackSha = await sha256(JSON.stringify(ack));
-
-    const receiptId = schema === "lf-architecture-alert-delivery/v5"
-      ? await rpc<number>("record_lf_alert_delivery_receipt_v5", {
-          p_attempt_id: attemptId,
-          p_outbox_id: outboxId,
-          p_payload_sha256: payloadSha,
-          p_signature: signature,
-          p_http_status: 200,
-          p_response_body_sha256: ackSha,
-          p_details: ack,
-          p_execution_id: `EDGE-ALERT-SINK-V5-${attemptId}`,
-        })
-      : await rpc<number>("record_lf_alert_delivery_receipt_v4", {
-          p_outbox_id: outboxId,
-          p_payload_sha256: payloadSha,
-          p_signature: signature,
-          p_http_status: 200,
-          p_response_sha256: ackSha,
-          p_details: ack,
-          p_execution_id: `EDGE-ALERT-SINK-V4-${outboxId}`,
-        });
-
-    return response({ ...ack, receipt_id: receiptId, response_body_sha256: ackSha });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error(message);
-    if (/invalid alert delivery signature|attempt .*mismatch|outbox payload mismatch|replay mismatch/i.test(message)) {
-      return response({ code: "HMAC_RECEIPT_REJECTED" }, 409);
-    }
-    return response({ code: "ALERT_SINK_INTERNAL_ERROR" }, 500);
+  if (req.method !== "POST") {
+    return json(
+      { outcome: "BLOCKED", code: "METHOD_NOT_ALLOWED", endpoint_version: ENDPOINT_VERSION },
+      405,
+      { "Allow": "POST" },
+    );
   }
+
+  const contentType = (req.headers.get("content-type") ?? "").toLowerCase();
+  if (!contentType.startsWith("application/json")) {
+    return json(
+      { outcome: "BLOCKED", code: "CONTENT_TYPE_REQUIRED", endpoint_version: ENDPOINT_VERSION },
+      415,
+    );
+  }
+
+  const contentLength = Number(req.headers.get("content-length") ?? "0");
+  if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
+    return json(
+      { outcome: "BLOCKED", code: "BODY_TOO_LARGE", endpoint_version: ENDPOINT_VERSION },
+      413,
+    );
+  }
+
+  let raw: string;
+  try {
+    raw = await req.text();
+  } catch {
+    return json(
+      { outcome: "BLOCKED", code: "BODY_READ_FAILED", endpoint_version: ENDPOINT_VERSION },
+      400,
+    );
+  }
+
+  if (new TextEncoder().encode(raw).byteLength > MAX_BODY_BYTES) {
+    return json(
+      { outcome: "BLOCKED", code: "BODY_TOO_LARGE", endpoint_version: ENDPOINT_VERSION },
+      413,
+    );
+  }
+
+  let body: unknown;
+  try {
+    body = JSON.parse(raw);
+  } catch {
+    return json(
+      { outcome: "BLOCKED", code: "INVALID_JSON", endpoint_version: ENDPOINT_VERSION },
+      400,
+    );
+  }
+
+  const validationError = validateEnvelope(body);
+  if (validationError) {
+    return json(
+      { outcome: "BLOCKED", code: validationError, endpoint_version: ENDPOINT_VERSION },
+      400,
+    );
+  }
+
+  const envelope = body as Record<string, unknown>;
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")?.trim() ?? "";
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.trim() ?? "";
+  if (!supabaseUrl || !serviceRoleKey) {
+    return json(
+      { outcome: "BLOCKED", code: "INTERNAL_AUTH_CONFIGURATION_UNAVAILABLE", endpoint_version: ENDPOINT_VERSION },
+      500,
+    );
+  }
+
+  const executionId = `EDGE-HMAC-V6-${crypto.randomUUID()}`;
+  const rpcBody = {
+    p_delivery_schema_version: envelope.delivery_schema_version,
+    p_attempt_id: envelope.attempt_id,
+    p_outbox_id: envelope.outbox_id,
+    p_payload_sha256: envelope.payload_sha256,
+    p_payload: envelope.payload,
+    p_signature: envelope.signature,
+    p_signature_issued_at_unix: envelope.signature_issued_at_unix,
+    p_signature_nonce: envelope.signature_nonce,
+    p_secret_version: envelope.secret_version,
+    p_details: {
+      edge_function: "lf-architecture-alert-sink-v4",
+      edge_version: ENDPOINT_VERSION,
+      auth_model: AUTH_MODEL,
+    },
+    p_execution_id: executionId,
+  };
+
+  let rpcResponse: Response;
+  try {
+    rpcResponse = await fetch(
+      `${supabaseUrl}/rest/v1/rpc/record_lf_alert_delivery_receipt_v6`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${serviceRoleKey}`,
+          "apikey": serviceRoleKey,
+          "Cache-Control": "no-store",
+        },
+        body: JSON.stringify(rpcBody),
+        signal: AbortSignal.timeout(5_000),
+      },
+    );
+  } catch {
+    console.error(JSON.stringify({
+      event: "HMAC_V6_RPC_TRANSPORT_FAILURE",
+      endpoint_version: ENDPOINT_VERSION,
+      execution_id: executionId,
+    }));
+    return json(
+      { outcome: "BLOCKED", code: "INTERNAL_RECEIPT_SERVICE_UNAVAILABLE", endpoint_version: ENDPOINT_VERSION },
+      503,
+    );
+  }
+
+  if (!rpcResponse.ok) {
+    console.warn(JSON.stringify({
+      event: "HMAC_V6_RECEIPT_REJECTED",
+      endpoint_version: ENDPOINT_VERSION,
+      execution_id: executionId,
+      rpc_status: rpcResponse.status,
+    }));
+    return json(
+      { outcome: "BLOCKED", code: "HMAC_RECEIPT_REJECTED", endpoint_version: ENDPOINT_VERSION },
+      409,
+    );
+  }
+
+  let receiptId: number | null = null;
+  try {
+    const value = await rpcResponse.json();
+    if (positiveSafeInteger(value)) receiptId = value;
+  } catch {
+    return json(
+      { outcome: "BLOCKED", code: "INTERNAL_RECEIPT_RESPONSE_INVALID", endpoint_version: ENDPOINT_VERSION },
+      502,
+    );
+  }
+
+  if (receiptId === null) {
+    return json(
+      { outcome: "BLOCKED", code: "INTERNAL_RECEIPT_RESPONSE_INVALID", endpoint_version: ENDPOINT_VERSION },
+      502,
+    );
+  }
+
+  return json(
+    {
+      outcome: "RECEIVER_ACCEPTED",
+      code: "HMAC_V6_ACCEPTED",
+      endpoint_version: ENDPOINT_VERSION,
+      receiver_response_status: 202,
+      receipt_id: receiptId,
+    },
+    202,
+  );
 });
