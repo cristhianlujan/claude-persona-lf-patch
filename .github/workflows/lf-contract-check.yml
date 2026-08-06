@@ -38,7 +38,7 @@ jobs:
 
       - name: Validate LF contract
         run: |
-          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py
+          python3 sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py
 
       - name: Run E.16 governance regression matrices
         run: |
@@ -50,6 +50,7 @@ jobs:
             --repo-root .
           python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_INTEGRATION_TESTS.py \
             --candidate-root .
+          python3 sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_SCOPE_TESTS.py
 
       - name: Run LF validation engine self-test
         run: |
@@ -130,6 +131,8 @@ jobs:
               "validation_suite": [
                   "scripts/lf_contract_check.py",
                   "sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py",
+                  "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py",
+                  "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_SCOPE_TESTS.py",
                   "sandbox/lf_contract_gate_test/PR93_LOTE_E16_REGRESSION_TESTS.py",
                   "sandbox/lf_contract_gate_test/PR93_LOTE_E16_INVENTORY_TESTS.py",
                   "sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py",
