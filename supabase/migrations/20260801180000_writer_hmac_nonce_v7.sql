@@ -30,7 +30,6 @@ create table if not exists private.lf_reconciliation_writer_nonces_v7 (
     check (authentication_mode='GITHUB_OIDC_HMAC_NONCE_V7')
 );
 
-alter table private.lf_reconciliation_writer_nonces_v7 owner to lf_writer_verifier_v7;
 alter table private.lf_reconciliation_writer_nonces_v7 enable row level security;
 alter table private.lf_reconciliation_writer_nonces_v7 force row level security;
 
@@ -104,7 +103,6 @@ begin
 end;
 $function$;
 
-alter function private.fn_writer_hmac_v7_valid(text,text,text) owner to postgres;
 revoke all on function private.fn_writer_hmac_v7_valid(text,text,text)
   from public,anon,authenticated,service_role,lf_governance_owner_v3;
 grant execute on function private.fn_writer_hmac_v7_valid(text,text,text)
@@ -180,7 +178,6 @@ begin
 end;
 $function$;
 
-alter function private.fn_consume_writer_proof_v7(text,text,text) owner to lf_writer_verifier_v7;
 revoke all on function private.fn_consume_writer_proof_v7(text,text,text)
   from public,anon,authenticated,service_role;
 grant execute on function private.fn_consume_writer_proof_v7(text,text,text)
@@ -219,7 +216,6 @@ as $function$
   );
 $function$;
 
-alter function private.fn_reconciliation_nonce_v7_valid(bigint) owner to lf_governance_owner_v3;
 revoke all on function private.fn_reconciliation_nonce_v7_valid(bigint)
   from public,anon,authenticated,service_role;
 
@@ -260,7 +256,6 @@ as $function$
   );
 $function$;
 
-alter function private.fn_gate_nonce_v7_valid(bigint) owner to lf_governance_owner_v3;
 revoke all on function private.fn_gate_nonce_v7_valid(bigint)
   from public,anon,authenticated,service_role;
 
@@ -397,7 +392,6 @@ begin
 end;
 $function$;
 
-alter function public.record_external_ci_verification_v7(jsonb,text,text,text) owner to lf_governance_owner_v3;
 revoke all on function public.record_external_ci_verification_v7(jsonb,text,text,text)
   from public,anon,authenticated;
 grant execute on function public.record_external_ci_verification_v7(jsonb,text,text,text)
@@ -533,7 +527,6 @@ begin
 end;
 $function$;
 
-alter function public.record_lf_gate_test_v7(jsonb,text,text,text) owner to lf_governance_owner_v3;
 revoke all on function public.record_lf_gate_test_v7(jsonb,text,text,text)
   from public,anon,authenticated;
 grant execute on function public.record_lf_gate_test_v7(jsonb,text,text,text)
@@ -549,5 +542,15 @@ revoke execute on function public.record_external_ci_verification_v6(jsonb,text,
   from public,anon,authenticated,service_role;
 revoke execute on function public.record_lf_gate_test_v6(jsonb,text,text,text)
   from public,anon,authenticated,service_role;
+
+-- Ownership transfers are intentionally last so the migration executor retains
+-- authority to finish RLS, policies, grants and revocations atomically.
+alter table private.lf_reconciliation_writer_nonces_v7 owner to lf_writer_verifier_v7;
+alter function private.fn_writer_hmac_v7_valid(text,text,text) owner to postgres;
+alter function private.fn_consume_writer_proof_v7(text,text,text) owner to lf_writer_verifier_v7;
+alter function private.fn_reconciliation_nonce_v7_valid(bigint) owner to lf_governance_owner_v3;
+alter function private.fn_gate_nonce_v7_valid(bigint) owner to lf_governance_owner_v3;
+alter function public.record_external_ci_verification_v7(jsonb,text,text,text) owner to lf_governance_owner_v3;
+alter function public.record_lf_gate_test_v7(jsonb,text,text,text) owner to lf_governance_owner_v3;
 
 commit;
