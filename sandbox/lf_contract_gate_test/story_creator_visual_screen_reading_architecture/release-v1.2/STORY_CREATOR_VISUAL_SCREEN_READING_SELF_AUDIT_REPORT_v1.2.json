@@ -1,0 +1,41 @@
+{
+  "all_checks_pass": true,
+  "check_count": 25,
+  "checks": {
+    "allowed_ci_prefix": true,
+    "canonicalizer_hash": true,
+    "checksum_coverage": true,
+    "clean_descriptive_names": true,
+    "committed_report_matches": true,
+    "control_ids_external": true,
+    "correction_ids_external": true,
+    "counts": true,
+    "exact_recursive_inventory": true,
+    "file_hashes": true,
+    "manifest_self_hash": true,
+    "metric_codes_external": true,
+    "negative_ids_external": true,
+    "reject_duplicate_key": true,
+    "reject_lone_surrogate": true,
+    "reject_lossy_decimal": true,
+    "reject_unsafe_integer": true,
+    "research_ids_external": true,
+    "scope_isolated": true,
+    "source_descriptor": true,
+    "vector_escapes": true,
+    "vector_number_1_0": true,
+    "vector_primitives": true,
+    "vector_proto_preserved": true,
+    "vector_utf16_sort": true
+  },
+  "findings": [],
+  "schema_version": "story-creator-visual-screen-reading-self-audit/v7",
+  "scope": {
+    "ci_required_for_final_head": true,
+    "empirical_quality_not_tested": true,
+    "runtime_not_tested": true,
+    "static_publication_only": true,
+    "supabase_external_attestation_required": true
+  },
+  "verdict": "STATIC_SELF_AUDIT_PASS"
+}

@@ -1,0 +1,125 @@
+{
+  "architecture_source": {
+    "bytes": 69556,
+    "external_readback_required": true,
+    "github_copy_included": false,
+    "sha256": "6f07df8c0e26626749847b0a3286ed331b3f365e3aa43d0b14b506f503991160",
+    "snapshot_code": "STORY_CREATOR_VISUAL_SCREEN_READING_ARCHITECTURE",
+    "storage": "SUPABASE_LITERAL_UTF8_SUCCESSOR_SNAPSHOT",
+    "version": "v1.2"
+  },
+  "canonical_story_creator_inventory": {
+    "auxiliary": 6,
+    "current": 64,
+    "enumerated": 58,
+    "modified": false
+  },
+  "canonicalization": {
+    "algorithm": "RFC8785_JCS",
+    "file": "STORY_CREATOR_VISUAL_SCREEN_READING_RFC8785_CANONICALIZER_v1.2.mjs",
+    "guards": [
+      "DUPLICATE_JSON_KEY",
+      "IJSON_UNSAFE_INTEGER",
+      "IJSON_LOSSY_NUMBER",
+      "RFC8785_LONE_SURROGATE",
+      "PROTO_KEY_PRESERVED"
+    ],
+    "sha256": "baa06972161de32a8c334c4f2e686a4ff74a241afad5c64edc2cbb23066c2a72"
+  },
+  "capability_name": "Visual Screen Reading and Auxiliary Context Reconciliation",
+  "claims": {
+    "canonical_skill_root_modified": false,
+    "ci_pass_claimed": false,
+    "empirical_visual_quality_proven": false,
+    "merge_authorized": false,
+    "production_authorized": false,
+    "runtime_enabled": false,
+    "task_packet_authorized": false,
+    "workflow_files_modified": false
+  },
+  "document": {
+    "canonical_manifest_sha256": "fd1882bad1edcd846595b9f365cea49fe0d120b6dc7a4c893bb8ec73ca0e2476"
+  },
+  "expected_files": [
+    "README.md",
+    "STORY_CREATOR_VISUAL_SCREEN_READING_CANONICAL_MANIFEST_v1.2.json",
+    "audit_story_creator_visual_screen_reading_release_v1_2.py",
+    "STORY_CREATOR_VISUAL_SCREEN_READING_SELF_AUDIT_REPORT_v1.2.json",
+    "STORY_CREATOR_VISUAL_SCREEN_READING_SHA256SUMS_v1.2.txt",
+    "STORY_CREATOR_VISUAL_SCREEN_READING_RFC8785_CANONICALIZER_v1.2.mjs"
+  ],
+  "internal_stage_code": "P0",
+  "internal_stage_code_is_not_project_name": true,
+  "inventory_contract": {
+    "counts": {
+      "architecture_steps": 18,
+      "audit_controls": 72,
+      "audit_followup_corrections": 14,
+      "auditor_findings_preempted": 21,
+      "fallback_classes": 7,
+      "implementation_lots": 8,
+      "metrics": 26,
+      "negative_cases": 80,
+      "negative_categories": 15,
+      "research_sources": 11,
+      "resolved_historical_red_errors": 38,
+      "unresolved_architecture_decisions": 0,
+      "validation_tracks": 3
+    },
+    "digests": {
+      "audit_control_ids": "bf3e07aedceec4d1f4cbb12de4bd328d0a0101db76e64136ac7be0f95f142726",
+      "correction_ids": "e7f34438da475f0927e16da23f58ea76aaad1c2e8bf310bd125adfbd67acf859",
+      "hard_gates": "77fa498ebb774648333897133d2cf59b83808f15ba377f7db0b7c02d70e90eec",
+      "metric_codes": "9f84afa208ee4ecd22967cae5613a7d012483c1b078806cd039768baaf6bca7b",
+      "negative_case_ids": "0421bbebf97dd7c7738e8bc3399d58fb14b0c7ac660b363a4590d519b4aa021c",
+      "research_source_ids": "16525b3e546d0511e8d77279854c4859df008667a4280cde17ea352ec70246d2",
+      "resolved_error_ids": "6cd56a1b3589551aa97d18e7d7ea2368f5cc82b1912dcf8d78d7727f0d189c91"
+    },
+    "parity_payload_sha256": "e47025b73944df3fc13d8d976aa19febbdab40d08300e5c1140aaad0f45b08df",
+    "ranges": {
+      "controls": "AC01-AC72",
+      "corrections": "C1-C14",
+      "metrics": "M01-M26",
+      "negatives": "N001-N080",
+      "research": "R01-R11"
+    }
+  },
+  "knowledge_base_controls": {
+    "rules_applied": [
+      "PRV-AUD-009",
+      "PRV-SRC-002",
+      "PRV-GOV-003",
+      "PRV-AUD-011",
+      "PRV-TEST-002",
+      "ADR-EKB-003",
+      "ADR-EKB-005",
+      "ADR-EKB-009",
+      "ADR-EKB-013"
+    ],
+    "tables": [
+      "lf_error_knowledge",
+      "lf_prevention_rules",
+      "lf_best_practices",
+      "lf_decision_log"
+    ]
+  },
+  "project_scope": "Story Creator",
+  "publication": {
+    "base_sha": "45fea04462f70da8ff8c9e89221595b6283faaf4",
+    "branch": "agent/story-creator-visual-screen-reading-architecture-v1-2",
+    "ci_absence_result": "BLOCKED_NOT_PASS",
+    "ci_required_for_final_head": true,
+    "expected_pr": 111,
+    "global_allowlist_modified": false,
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "root": "sandbox/lf_contract_gate_test/story_creator_visual_screen_reading_architecture/release-v1.2/"
+  },
+  "release": "v1.2",
+  "schema_version": "story-creator-visual-screen-reading-canonical-manifest/v4",
+  "snapshot_code": "STORY_CREATOR_VISUAL_SCREEN_READING_ARCHITECTURE",
+  "supersedes": {
+    "mutation_of_predecessor": false,
+    "snapshot_id": 9,
+    "version": "v1.1"
+  }
+}
