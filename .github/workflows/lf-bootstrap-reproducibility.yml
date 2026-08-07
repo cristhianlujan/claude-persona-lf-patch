@@ -1,0 +1,67 @@
+name: LF Bootstrap Reproducibility Probe
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  schema-bootstrap-probe:
+    name: schema-bootstrap-probe
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+
+    steps:
+      - name: Checkout exact PR source
+        uses: actions/checkout@v4
+
+      - name: Set up pinned Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.112.0
+
+      - name: Require encrypted sandbox credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_ACCESS_TOKEN:-}"
+          test -n "${SUPABASE_DB_PASSWORD:-}"
+
+      - name: Export sandbox schema without data or roles
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase link --project-ref "$SUPABASE_PROJECT_ID"
+          supabase db dump --linked > "$RUNNER_TEMP/lf-remote-schema.sql"
+          test -s "$RUNNER_TEMP/lf-remote-schema.sql"
+
+      - name: Rebuild exported schema in disposable local Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          probe="$RUNNER_TEMP/lf-bootstrap-probe"
+          mkdir -p "$probe"
+          cd "$probe"
+          supabase init
+          mkdir -p supabase/migrations
+          cp "$RUNNER_TEMP/lf-remote-schema.sql" \
+            supabase/migrations/20260807000000_remote_schema_probe.sql
+          supabase start
+          trap 'supabase stop --no-backup || true' EXIT
+          supabase db reset
+
+          schema_sha="$(sha256sum "$RUNNER_TEMP/lf-remote-schema.sql" | cut -d' ' -f1)"
+          schema_lines="$(wc -l < "$RUNNER_TEMP/lf-remote-schema.sql")"
+          {
+            echo "### LF bootstrap reproducibility probe"
+            echo "- project: \`$SUPABASE_PROJECT_ID\`"
+            echo "- source: schema-only linked dump; no data/roles artifact uploaded"
+            echo "- local reset: PASS"
+            echo "- schema sha256: \`$schema_sha\`"
+            echo "- schema lines: \`$schema_lines\`"
+          } >> "$GITHUB_STEP_SUMMARY"
