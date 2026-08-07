@@ -27,10 +27,10 @@ $preflight$;
 -- Temporary owner context for replacing governance-owned functions and modifying the
 -- verifier-owned nonce relation. Every grant is revoked before commit.
 grant lf_governance_owner_v3 to postgres
-  with admin false inherit true set true
+  with admin false, inherit true, set true
   granted by postgres;
 grant lf_writer_verifier_v7 to postgres
-  with admin false inherit true set true
+  with admin false, inherit true, set true
   granted by postgres;
 grant create on schema public to lf_governance_owner_v3;
 grant create on schema private to lf_governance_owner_v3;

@@ -25,10 +25,10 @@ end
 $preflight$;
 
 grant lf_writer_verifier_v7 to postgres
-  with admin false inherit true set true
+  with admin false, inherit true, set true
   granted by postgres;
 grant lf_governance_owner_v3 to postgres
-  with admin false inherit true set true
+  with admin false, inherit true, set true
   granted by postgres;
 grant create on schema private to lf_writer_verifier_v7;
 grant create on schema private to lf_governance_owner_v3;

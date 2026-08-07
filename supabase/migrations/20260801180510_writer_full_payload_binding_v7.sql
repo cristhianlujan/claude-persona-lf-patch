@@ -25,7 +25,7 @@ $preflight$;
 
 -- Temporary owner context. A failure rolls this back with the migration.
 grant lf_governance_owner_v3 to postgres
-  with admin false inherit true set true
+  with admin false, inherit true, set true
   granted by postgres;
 grant create on schema private to lf_governance_owner_v3;
 set local role lf_governance_owner_v3;
