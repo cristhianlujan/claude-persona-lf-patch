@@ -31,6 +31,7 @@ def main() -> int:
     exact_modes = {path: "100644" for path in exact_blobs}
     edge = "supabase/functions/run-github-write-perfil-lf/index.ts"
     alert = candidate.RUNTIME_ALERT_PATH
+    config = candidate.RUNTIME_PLATFORM_CONFIG_PATH
     migration = candidate.RUNTIME_MIGRATION_PATH
 
     if candidate.evaluate_controlled_runtime_scope(
@@ -38,13 +39,18 @@ def main() -> int:
         branch=candidate.PR_BRANCH,
         blob_by_path={},
     ) is not False:
-        raise SystemExit("NO_EDGE_DELEGATES: expected False")
-    print("PASS_NO_EDGE_DELEGATES")
+        raise SystemExit("NO_RUNTIME_DELEGATES: expected False")
+    print("PASS_NO_RUNTIME_DELEGATES")
 
     assert candidate.evaluate_controlled_runtime_scope(
         [edge], branch=candidate.PR_BRANCH, blob_by_path=exact_blobs, mode_by_path=exact_modes
     ) is True
     print("PASS_PR_BRANCH_EXACT")
+
+    assert candidate.evaluate_controlled_runtime_scope(
+        [config], branch=candidate.PR_BRANCH, blob_by_path=exact_blobs, mode_by_path=exact_modes
+    ) is True
+    print("PASS_PLATFORM_CONFIG_EXACT")
 
     assert candidate.evaluate_controlled_runtime_scope(
         [edge], branch=candidate.MAIN_BRANCH, blob_by_path=exact_blobs, mode_by_path=exact_modes, main_merge_verified=True
@@ -59,6 +65,10 @@ def main() -> int:
     wrong_blob = dict(exact_blobs)
     wrong_blob[edge] = "0" * 40
     expect_error("WRONG_BLOB", "FAIL_RUNTIME_BLOB_MISMATCH", [edge], branch=candidate.PR_BRANCH, blobs=wrong_blob, modes=exact_modes)
+
+    wrong_config_blob = dict(exact_blobs)
+    wrong_config_blob[config] = "0" * 40
+    expect_error("WRONG_PLATFORM_CONFIG", "FAIL_RUNTIME_BLOB_MISMATCH", [config], branch=candidate.PR_BRANCH, blobs=wrong_config_blob, modes=exact_modes)
 
     missing_blob = dict(exact_blobs)
     del missing_blob[edge]
@@ -77,7 +87,7 @@ def main() -> int:
     ) is True
     print("PASS_ALERT_PAIR")
 
-    print("PASS_PR93_P0_RUNTIME_SCOPE_MATRIX=14/14")
+    print("PASS_PR93_P0_RUNTIME_SCOPE_MATRIX=16/16")
     return 0
 
 

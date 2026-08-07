@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Fail-closed PR93 runtime-source adapter layered over the E.16 validator.
 
-Only the pinned PR93 Edge source set is admitted. The PR branch is accepted
-while PR #93 is open. A push on main is accepted only when GitHub confirms that
-PR #93 is merged and its merge_commit_sha equals the workflow head SHA.
+Only the pinned PR93 Edge source set and platform function configuration are
+admitted. The PR branch is accepted while PR #93 is open. A push on main is
+accepted only when GitHub confirms that PR #93 is merged and its
+merge_commit_sha equals the workflow head SHA.
 """
 from __future__ import annotations
 
@@ -25,6 +26,7 @@ PR_BRANCH = "lf/architecture-v7-hardening"
 MAIN_BRANCH = "main"
 RUNTIME_ALERT_PATH = "supabase/functions/lf-architecture-alert-sink-v4/index.ts"
 RUNTIME_ALERT_CONFIG_PATH = "supabase/functions/lf-architecture-alert-sink-v4/deno.json"
+RUNTIME_PLATFORM_CONFIG_PATH = "supabase/config.toml"
 RUNTIME_MIGRATION_PATH = (
     "supabase/migrations/"
     "20260806194820_pr93_p0_hmac_attempt_receipt_v6_no_downgrade.sql"
@@ -32,6 +34,7 @@ RUNTIME_MIGRATION_PATH = (
 EXPECTED_RUNTIME_BLOBS = {
     RUNTIME_ALERT_PATH: "74b0a2123ceb5a66008231599bf3a5fb0ec3d66b",
     RUNTIME_ALERT_CONFIG_PATH: "762e9b22bb21b951e9ddc5a171fe1be106d7cc31",
+    RUNTIME_PLATFORM_CONFIG_PATH: "71c6530d72f81f4e787dd1a261b9cb08c73f80fd",
     RUNTIME_MIGRATION_PATH: "93510429231fd95a1c5ef3b2400ee38fabba4258",
     "supabase/functions/run-github-write-perfil-lf/index.ts": "9c49218c718391a8829587960d7a7e4165bff383",
     "supabase/functions/run-github-write-perfil-lf/deno.json": "762e9b22bb21b951e9ddc5a171fe1be106d7cc31",
@@ -49,6 +52,7 @@ EXPECTED_RUNTIME_BLOBS = {
 EXPECTED_EDGE_PATHS = frozenset(
     path for path in EXPECTED_RUNTIME_BLOBS if path.startswith("supabase/functions/")
 )
+CONTROLLED_RUNTIME_PATHS = frozenset(EXPECTED_RUNTIME_BLOBS)
 BLOB_RE = re.compile(r"^[0-9a-f]{40}$")
 
 
@@ -82,10 +86,15 @@ def evaluate_controlled_runtime_scope(
 ) -> bool:
     changed = set(changed_files)
     edge_paths = sorted(path for path in changed if path.startswith("supabase/functions/"))
-    if not edge_paths:
+    controlled_paths = sorted(
+        path
+        for path in changed
+        if path in CONTROLLED_RUNTIME_PATHS or path.startswith("supabase/functions/")
+    )
+    if not controlled_paths:
         return False
 
-    for path in edge_paths:
+    for path in controlled_paths:
         _validate_path(path)
     unexpected = sorted(set(edge_paths) - EXPECTED_EDGE_PATHS)
     if unexpected:
@@ -198,10 +207,13 @@ _original_is_allowed_path = e16.base.is_allowed_path
 def get_changed_files() -> list[str]:
     global _runtime_scope_enabled
     changed_files = e16.get_changed_files()
-    edge_present = any(path.startswith("supabase/functions/") for path in changed_files)
+    runtime_present = any(
+        path in CONTROLLED_RUNTIME_PATHS or path.startswith("supabase/functions/")
+        for path in changed_files
+    )
     blobs: dict[str, str] = {}
     modes: dict[str, str] = {}
-    if edge_present:
+    if runtime_present:
         for path in EXPECTED_RUNTIME_BLOBS:
             try:
                 blobs[path] = git_blob_for_path(path)
@@ -224,7 +236,7 @@ def get_changed_files() -> list[str]:
 
 
 def is_allowed_path(path: str) -> bool:
-    if path in EXPECTED_EDGE_PATHS:
+    if path in CONTROLLED_RUNTIME_PATHS:
         return _runtime_scope_enabled
     return _original_is_allowed_path(path)
 
