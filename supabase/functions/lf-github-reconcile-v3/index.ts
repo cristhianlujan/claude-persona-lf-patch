@@ -316,7 +316,7 @@ function nativeProtectionVerified(input: ReconcileBody): boolean {
     c.active_rules_present === true &&
     c.lf_contract_check_required === true &&
     c.strict_status_checks === true &&
-    c.approving_reviews === true &&
+    c.solo_builder_review_policy === true &&
     c.non_fast_forward === true &&
     c.deletions_blocked === true &&
     c.bypass_actors_auditable === true &&

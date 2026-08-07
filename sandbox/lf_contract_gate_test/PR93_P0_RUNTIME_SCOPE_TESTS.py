@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 
 import PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT as candidate
 
@@ -56,6 +57,24 @@ def main() -> int:
     assert candidate.evaluate_controlled_runtime_scope(
         [reconcile], branch=candidate.PR_BRANCH, blob_by_path=exact_blobs, mode_by_path=exact_modes
     ) is True
+    repo_root = Path(__file__).resolve().parents[2]
+    reconcile_source = (repo_root / reconcile).read_text(encoding="utf-8")
+    reconcile_workflow = (repo_root / ".github/workflows/lf-github-reconcile-v3.yml").read_text(encoding="utf-8")
+    required_solo_builder_terms = (
+        "c.solo_builder_review_policy === true",
+        "solo_builder_review_policy: soloBuilderReviewPolicy",
+        "required_approving_review_count: 0",
+    )
+    combined_reconcile_contract = reconcile_source + "\n" + reconcile_workflow
+    missing_solo_builder_terms = [
+        term for term in required_solo_builder_terms if term not in combined_reconcile_contract
+    ]
+    if missing_solo_builder_terms:
+        raise SystemExit(
+            f"RECONCILE_CANONICAL_EXACT: solo-builder contract incomplete: {missing_solo_builder_terms}"
+        )
+    if "c.approving_reviews === true" in reconcile_source:
+        raise SystemExit("RECONCILE_CANONICAL_EXACT: legacy human-review gate is still active")
     print("PASS_RECONCILE_CANONICAL_EXACT")
 
     assert candidate.evaluate_controlled_runtime_scope(
