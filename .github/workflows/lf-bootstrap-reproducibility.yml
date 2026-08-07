@@ -2,6 +2,10 @@ name: LF Bootstrap Reproducibility Probe
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
@@ -17,22 +21,30 @@ jobs:
       SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
 
     steps:
+      - name: Detect encrypted sandbox credentials
+        id: credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${SUPABASE_ACCESS_TOKEN:-}" ] && [ -n "${SUPABASE_DB_PASSWORD:-}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Schema bootstrap probe skipped: encrypted sandbox credentials are not configured." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Checkout exact PR source
+        if: steps.credentials.outputs.ready == 'true'
         uses: actions/checkout@v4
 
       - name: Set up pinned Supabase CLI
+        if: steps.credentials.outputs.ready == 'true'
         uses: supabase/setup-cli@v1
         with:
           version: 2.112.0
 
-      - name: Require encrypted sandbox credentials
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -n "${SUPABASE_ACCESS_TOKEN:-}"
-          test -n "${SUPABASE_DB_PASSWORD:-}"
-
       - name: Export sandbox schema without data or roles
+        if: steps.credentials.outputs.ready == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -41,6 +53,7 @@ jobs:
           test -s "$RUNNER_TEMP/lf-remote-schema.sql"
 
       - name: Rebuild exported schema in disposable local Supabase
+        if: steps.credentials.outputs.ready == 'true'
         shell: bash
         run: |
           set -euo pipefail
