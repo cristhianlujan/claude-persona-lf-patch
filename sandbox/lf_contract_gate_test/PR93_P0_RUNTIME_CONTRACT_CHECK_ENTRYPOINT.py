@@ -28,6 +28,7 @@ RUNTIME_ALERT_PATH = "supabase/functions/lf-architecture-alert-sink-v4/index.ts"
 RUNTIME_ALERT_CONFIG_PATH = "supabase/functions/lf-architecture-alert-sink-v4/deno.json"
 RUNTIME_PLATFORM_CONFIG_PATH = "supabase/config.toml"
 RUNTIME_RECONCILE_PATH = "supabase/functions/lf-github-reconcile-v3/index.ts"
+RUNTIME_RECONCILE_CANONICAL_PATH = "supabase/functions/lf-github-reconcile-v3/canonical_payload_v7.ts"
 RUNTIME_RECONCILE_CONFIG_PATH = "supabase/functions/lf-github-reconcile-v3/deno.json"
 RUNTIME_MIGRATION_PATH = (
     "supabase/migrations/"
@@ -37,7 +38,8 @@ EXPECTED_RUNTIME_BLOBS = {
     RUNTIME_ALERT_PATH: "74b0a2123ceb5a66008231599bf3a5fb0ec3d66b",
     RUNTIME_ALERT_CONFIG_PATH: "762e9b22bb21b951e9ddc5a171fe1be106d7cc31",
     RUNTIME_PLATFORM_CONFIG_PATH: "71c6530d72f81f4e787dd1a261b9cb08c73f80fd",
-    RUNTIME_RECONCILE_PATH: "44d1b9d0e8aa41907dbef1bcafcc9bd585054812",
+    RUNTIME_RECONCILE_PATH: "49646210486e9487c2f12c7e376724afb64b65d5",
+    RUNTIME_RECONCILE_CANONICAL_PATH: "2eb32d646fae7d36a50b2bf0087924a8bc5ff9d4",
     RUNTIME_RECONCILE_CONFIG_PATH: "26f214064a9165492dfd8a2cf6dc143dd8b29c63",
     RUNTIME_MIGRATION_PATH: "93510429231fd95a1c5ef3b2400ee38fabba4258",
     "supabase/functions/run-github-write-perfil-lf/index.ts": "9c49218c718391a8829587960d7a7e4165bff383",
