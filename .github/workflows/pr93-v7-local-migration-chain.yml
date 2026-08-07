@@ -1,0 +1,56 @@
+name: PR93 V7 Local Migration Chain
+
+on:
+  push:
+    branches:
+      - lf/architecture-v7-hardening
+    paths:
+      - .github/workflows/pr93-v7-local-migration-chain.yml
+      - supabase/migrations/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  local-migration-chain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start isolated local Supabase
+        run: supabase start -x studio,imgproxy,logflare,vector,supavisor
+
+      - name: Rebuild database from repository migrations
+        run: supabase db reset --local --no-seed
+
+      - name: Verify V7 migration objects
+        shell: bash
+        run: |
+          set -euo pipefail
+          DB_URL='postgresql://postgres:postgres@127.0.0.1:54322/postgres'
+          psql "$DB_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          select to_regclass('private.lf_reconciliation_writer_nonces_v7') is not null as nonce_table;
+          select to_regclass('private.lf_github_reconciliation_quarantine_v7') is not null as quarantine_table;
+          select to_regclass('private.lf_writer_hmac_keys_v7') is not null as key_table;
+          select to_regprocedure('private.fn_consume_writer_proof_v7(text,text,text)') is not null as consume_writer;
+          select to_regprocedure('private.fn_writer_hmac_v7_valid(text,text,text)') is not null as hmac_verifier;
+          select pg_get_userbyid(c.relowner) as nonce_owner
+          from pg_class c
+          where c.oid='private.lf_reconciliation_writer_nonces_v7'::regclass;
+          select pg_get_userbyid(c.relowner) as quarantine_owner
+          from pg_class c
+          where c.oid='private.lf_github_reconciliation_quarantine_v7'::regclass;
+          select pg_get_userbyid(c.relowner) as key_owner
+          from pg_class c
+          where c.oid='private.lf_writer_hmac_keys_v7'::regclass;
+          SQL
