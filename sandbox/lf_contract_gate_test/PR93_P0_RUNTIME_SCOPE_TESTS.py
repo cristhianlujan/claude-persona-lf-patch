@@ -32,6 +32,7 @@ def main() -> int:
     edge = "supabase/functions/run-github-write-perfil-lf/index.ts"
     alert = candidate.RUNTIME_ALERT_PATH
     config = candidate.RUNTIME_PLATFORM_CONFIG_PATH
+    reconcile = candidate.RUNTIME_RECONCILE_PATH
     migration = candidate.RUNTIME_MIGRATION_PATH
 
     if candidate.evaluate_controlled_runtime_scope(
@@ -51,6 +52,11 @@ def main() -> int:
         [config], branch=candidate.PR_BRANCH, blob_by_path=exact_blobs, mode_by_path=exact_modes
     ) is True
     print("PASS_PLATFORM_CONFIG_EXACT")
+
+    assert candidate.evaluate_controlled_runtime_scope(
+        [reconcile], branch=candidate.PR_BRANCH, blob_by_path=exact_blobs, mode_by_path=exact_modes
+    ) is True
+    print("PASS_RECONCILE_CANONICAL_EXACT")
 
     assert candidate.evaluate_controlled_runtime_scope(
         [edge], branch=candidate.MAIN_BRANCH, blob_by_path=exact_blobs, mode_by_path=exact_modes, main_merge_verified=True
@@ -87,7 +93,7 @@ def main() -> int:
     ) is True
     print("PASS_ALERT_PAIR")
 
-    print("PASS_PR93_P0_RUNTIME_SCOPE_MATRIX=16/16")
+    print("PASS_PR93_P0_RUNTIME_SCOPE_MATRIX=17/17")
     return 0
 
 
