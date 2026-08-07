@@ -1,0 +1,260 @@
+name: PR93 Generate Static V7 Resume
+
+on:
+  push:
+    branches: [lf/architecture-v7-hardening]
+    paths: [.github/workflows/pr93-generate-static-resume.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: lf/architecture-v7-hardening
+          fetch-depth: 1
+
+      - name: Generate static resume SQL from repository sources
+        shell: python
+        run: |
+          from pathlib import Path
+          import hashlib, re, subprocess
+
+          repo = Path('.')
+          out_dir = repo / 'sandbox' / 'lf_contract_gate_test'
+          out_dir.mkdir(parents=True, exist_ok=True)
+          out = out_dir / 'PR93_V7_STATIC_RESUME_FROM_4.sql'
+          sha_file = out_dir / 'PR93_V7_STATIC_RESUME_FROM_4.sha256.txt'
+
+          applied = [
+              ('20260801175950','prepare_v7_object_owners','20260801175950_prepare_v7_object_owners.sql','484323bfe892cb1824320130203fd86d8aed69bf'),
+              ('20260801175955','prepare_writer_verifier_schema_context','20260801175955_prepare_writer_verifier_schema_context.sql','5a4586911376274efab625b54a5cd16ab6648798'),
+              ('20260801180000','writer_hmac_nonce_v7','20260801180000_writer_hmac_nonce_v7.sql','07f7258d43444f3d871257e9e7095edd0b4a41c7'),
+              ('20260801180005','cleanup_writer_verifier_schema_context','20260801180005_cleanup_writer_verifier_schema_context.sql','470739dac867faa82c25dce5ad17febfbcea422b'),
+          ]
+
+          remaining = [
+              ('20260801180010','prepare_quarantine_owner_context','20260801180010_prepare_quarantine_owner_context.sql'),
+              ('20260801180100','quarantine_compensating_evidence_v7','20260801180100_quarantine_compensating_evidence_v7.sql'),
+              ('20260801180150','trusted_v7_readback_grants','20260801180150_trusted_v7_readback_grants.sql'),
+              ('20260801180200','governance_role_and_rls_v7','20260801180200_governance_role_and_rls_v7.sql'),
+              ('20260801180300','static_audit_corrections_v7','20260801180300_static_audit_corrections_v7.sql'),
+              ('20260801180305','prepare_idempotency_owner_context','20260801180305_prepare_idempotency_owner_context.sql'),
+              ('20260801180310','v7_idempotency_guards','20260801180310_v7_idempotency_guards.sql'),
+              ('20260801180315','v7_row_integrity_guards','20260801180315_v7_row_integrity_guards.sql'),
+              ('20260801180320','cleanup_idempotency_owner_context','20260801180320_cleanup_idempotency_owner_context.sql'),
+              ('20260801180400','writer_key_rotation_v7','20260801180400_writer_key_rotation_v7.sql'),
+              ('20260801180500','writer_canonicalization_rls_v7','20260801180500_writer_canonicalization_rls_v7.sql'),
+              ('20260801180510','writer_full_payload_binding_v7','20260801180510_writer_full_payload_binding_v7.sql'),
+              ('20260801180520','writer_scope_nonce_binding_realign_v7','20260801180520_writer_scope_nonce_binding_realign_v7.sql'),
+              ('20260801180530','writer_evidence_runtime_hardening_v7','20260801180530_writer_evidence_runtime_hardening_v7.sql'),
+          ]
+
+          migration_dir = repo / 'supabase' / 'migrations'
+
+          def git_blob_sha(data: bytes) -> str:
+              return hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest()
+
+          def dollar_quote(text: str, base='pr93_source') -> str:
+              tag = base
+              i = 0
+              while f'${tag}$' in text:
+                  i += 1
+                  tag = f'{base}_{i}'
+              return f'${tag}${text}${tag}$'
+
+          # Verify the four immutable applied sources still match the exact blobs recorded in sandbox.
+          for version,name,filename,expected in applied:
+              data = (migration_dir/filename).read_bytes()
+              actual = git_blob_sha(data)
+              if actual != expected:
+                  raise SystemExit(f'Applied-history drift: {filename}: expected={expected} actual={actual}')
+
+          resolved = []
+          for version,name,filename in remaining:
+              path = migration_dir/filename
+              text = path.read_text(encoding='utf-8')
+              data = text.encode('utf-8')
+              blob = git_blob_sha(data)
+              lines = text.splitlines()
+              begin_idx = [i for i,l in enumerate(lines) if l.strip().lower() == 'begin;']
+              commit_idx = [i for i,l in enumerate(lines) if l.strip().lower() == 'commit;']
+              if len(begin_idx) != 1 or len(commit_idx) != 1 or commit_idx[0] <= begin_idx[0]:
+                  raise SystemExit(f'Invalid transaction wrapper: {filename}')
+              if any(l.strip() for l in lines[commit_idx[0]+1:]):
+                  raise SystemExit(f'Non-empty content after final commit: {filename}')
+              resolved.append((version,name,filename,blob,text,commit_idx[0]))
+
+          applied_values = ',\n'.join(
+              f"      ('{v}','{sha}')" for v,_,_,sha in applied
+          )
+          pending_values = ',\n'.join(
+              f"      ('{v}')" for v,_,_,_,_,_ in resolved
+          )
+
+          parts = []
+          parts.append(f'''-- =============================================================================
+          -- PR #93 · V7 STATIC RESUME FROM 4 APPLIED MIGRATIONS
+          -- Generated deterministically from the repository source files.
+          -- No dynamic SQL download. No global transaction. No production authorization.
+          -- Existing sandbox state required: exactly 175950,175955,180000,180005 applied.
+          -- =============================================================================
+
+          do $preflight$
+          declare
+            v_applied integer;
+            v_pending integer;
+            v_bad_applied integer;
+          begin
+            if current_user <> 'postgres' then
+              raise exception 'Expected current_user=postgres, got %',current_user;
+            end if;
+
+            select count(*) into v_applied
+            from supabase_migrations.schema_migrations sm
+            where sm.version in ('20260801175950','20260801175955','20260801180000','20260801180005');
+            if v_applied <> 4 then
+              raise exception 'Resume preflight requires exactly 4 applied V7 base migrations; found=%',v_applied;
+            end if;
+
+            with expected(version,blob) as (
+              values
+          {applied_values}
+            )
+            select count(*) into v_bad_applied
+            from expected e
+            join supabase_migrations.schema_migrations sm using(version)
+            where sm.idempotency_key is distinct from 'gitblob:'||e.blob;
+            if v_bad_applied <> 0 then
+              raise exception 'Applied V7 base ledger does not match immutable source blobs; mismatches=%',v_bad_applied;
+            end if;
+
+            with pending(version) as (
+              values
+          {pending_values}
+            )
+            select count(*) into v_pending
+            from pending p join supabase_migrations.schema_migrations sm using(version);
+            if v_pending <> 0 then
+              raise exception 'One or more resume migrations are already recorded; count=%',v_pending;
+            end if;
+
+            if to_regclass('private.lf_reconciliation_writer_nonces_v7') is null then
+              raise exception 'Expected nonce table from 180000 is missing';
+            end if;
+            if to_regclass('private.lf_github_reconciliation_quarantine_v7') is not null then
+              raise exception 'Quarantine table already exists before resume';
+            end if;
+            if to_regclass('private.lf_writer_hmac_keys_v7') is not null then
+              raise exception 'Writer key table already exists before resume';
+            end if;
+          end
+          $preflight$;
+
+          ''')
+
+          for seq,(version,name,filename,blob,text,commit_line) in enumerate(resolved, start=5):
+              lines = text.splitlines()
+              before_commit = '\n'.join(lines[:commit_line]).rstrip() + '\n\n'
+              original_literal = dollar_quote(text, f'source_{version}')
+              ledger = f'''-- Ledger record is part of the same transaction as the source migration.
+          insert into supabase_migrations.schema_migrations(
+            version,statements,name,created_by,idempotency_key,rollback
+          ) values (
+            '{version}',
+            array[{original_literal}]::text[],
+            '{name}',
+            'pr93_v7_static_resume_from_4',
+            'gitblob:{blob}',
+            null
+          );
+
+          commit;
+          '''
+              parts.append(f'''-- -----------------------------------------------------------------------------
+          -- {seq:02d}/18 · {filename}
+          -- Git blob SHA-1: {blob}
+          -- -----------------------------------------------------------------------------
+          {before_commit}{ledger}
+
+          ''')
+
+          all_versions = [x[0] for x in applied] + [x[0] for x in resolved]
+          values = ',\n'.join(f"    ('{v}')" for v in all_versions)
+          parts.append(f'''-- =============================================================================
+          -- FINAL SOURCE-APPLICATION READBACK. This is not RUNTIME_PASS/readiness.
+          -- =============================================================================
+          with target(version) as (
+            values
+          {values}
+          ), ledger as (
+            select count(*) as applied_count
+            from target t join supabase_migrations.schema_migrations sm using(version)
+          ), temp_memberships as (
+            select count(*) as cnt
+            from pg_auth_members pam
+            join pg_roles granted on granted.oid=pam.roleid
+            join pg_roles member on member.oid=pam.member
+            join pg_roles grantor on grantor.oid=pam.grantor
+            where member.rolname='postgres'
+              and granted.rolname in ('lf_governance_owner_v3','lf_writer_verifier_v7')
+              and grantor.rolname='postgres'
+          )
+          select jsonb_build_object(
+            'status',case
+              when l.applied_count=18
+               and tm.cnt=0
+               and to_regclass('private.lf_reconciliation_writer_nonces_v7') is not null
+               and to_regclass('private.lf_github_reconciliation_quarantine_v7') is not null
+               and to_regclass('private.lf_writer_hmac_keys_v7') is not null
+               and to_regprocedure('private.fn_consume_writer_proof_v7(text,text,text)') is not null
+               and to_regprocedure('private.fn_writer_hmac_v7_valid(text,text,text)') is not null
+               and not has_schema_privilege('lf_governance_owner_v3','private','CREATE')
+               and not has_schema_privilege('lf_governance_owner_v3','public','CREATE')
+               and not has_schema_privilege('lf_writer_verifier_v7','private','CREATE')
+              then 'SOURCE_PACKAGE_APPLIED_AWAITING_RUNTIME_TESTS'
+              else 'INCOMPLETE_READBACK'
+            end,
+            'applied_migrations',l.applied_count,
+            'expected_migrations',18,
+            'postgres_granted_temp_memberships',tm.cnt,
+            'objects',jsonb_build_object(
+              'nonce_table',to_regclass('private.lf_reconciliation_writer_nonces_v7') is not null,
+              'quarantine_table',to_regclass('private.lf_github_reconciliation_quarantine_v7') is not null,
+              'key_table',to_regclass('private.lf_writer_hmac_keys_v7') is not null,
+              'consume_writer',to_regprocedure('private.fn_consume_writer_proof_v7(text,text,text)') is not null,
+              'hmac_verifier',to_regprocedure('private.fn_writer_hmac_v7_valid(text,text,text)') is not null
+            ),
+            'temporary_create',jsonb_build_object(
+              'governance_private',has_schema_privilege('lf_governance_owner_v3','private','CREATE'),
+              'governance_public',has_schema_privilege('lf_governance_owner_v3','public','CREATE'),
+              'writer_private',has_schema_privilege('lf_writer_verifier_v7','private','CREATE')
+            ),
+            'runtime_pass_declared',false,
+            'production_readiness_declared',false,
+            'merge_authorized',false
+          ) as pr93_v7_resume_readback
+          from ledger l cross join temp_memberships tm;
+          ''')
+
+          sql = ''.join(parts)
+          # Remove workflow indentation introduced by the YAML literal.
+          sql = '\n'.join(line[10:] if line.startswith('          ') else line for line in sql.splitlines()) + '\n'
+          out.write_text(sql,encoding='utf-8',newline='\n')
+          digest = hashlib.sha256(out.read_bytes()).hexdigest()
+          sha_file.write_text(f'{digest}  {out.name}\n',encoding='utf-8')
+          print('generated',out,'bytes',out.stat().st_size,'sha256',digest)
+
+      - name: Commit generated deterministic package
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add sandbox/lf_contract_gate_test/PR93_V7_STATIC_RESUME_FROM_4.sql \
+                  sandbox/lf_contract_gate_test/PR93_V7_STATIC_RESUME_FROM_4.sha256.txt
+          git commit -m 'test(pr93): add static V7 resume package from applied-4 state'
+          git push origin HEAD:lf/architecture-v7-hardening
