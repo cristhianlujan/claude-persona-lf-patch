@@ -13,13 +13,15 @@ $block$;
 
 alter role lf_writer_verifier_v7 nologin noinherit nobypassrls;
 
--- PostgreSQL requires SET OPTION on a target owner role before ownership can be
--- transferred. INHERIT remains false and no operational privileges are inherited.
+-- The migration executor must retain effective owner authority after objects are
+-- transferred, including REFERENCES, DML, trigger and ALTER operations. INHERIT is
+-- enabled only for this atomic migration chain; the final V7 migration revokes both
+-- memberships before COMMIT, restoring the restricted post-migration state.
 grant lf_writer_verifier_v7 to postgres
-  with admin false, inherit false, set true
+  with admin false, inherit true, set true
   granted by postgres;
 grant lf_governance_owner_v3 to postgres
-  with admin false, inherit false, set true
+  with admin false, inherit true, set true
   granted by postgres;
 
 commit;
