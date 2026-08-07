@@ -67,8 +67,11 @@ as $function$
   );
 $function$;
 
+-- This validator is intentionally postgres-owned from this point forward. The next
+-- static-audit migration replaces it after the temporary owner memberships have been
+-- removed; keeping the final owner here prevents a cross-migration ownership gap.
 alter function private.fn_governance_role_separation_v7_valid()
-  owner to lf_governance_owner_v3;
+  owner to postgres;
 revoke all on function private.fn_governance_role_separation_v7_valid()
   from public,anon,authenticated,service_role;
 
@@ -77,7 +80,6 @@ revoke all on function private.fn_governance_role_separation_v7_valid()
 set local role lf_governance_owner_v3;
 grant execute on function private.fn_reconciliation_nonce_v7_valid(bigint) to postgres;
 grant execute on function private.fn_gate_nonce_v7_valid(bigint) to postgres;
-grant execute on function private.fn_governance_role_separation_v7_valid() to postgres;
 reset role;
 
 -- Preserve the V8 public shape while adding the real role-separation requirement to
