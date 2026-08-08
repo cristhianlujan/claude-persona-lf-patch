@@ -69,6 +69,8 @@ jobs:
             postgres:17.6 \
             pg_dump \
               --schema-only \
+              --no-owner \
+              --no-privileges \
               --quote-all-identifiers \
               --role postgres \
               --exclude-schema "$EXCLUDED_SCHEMAS" \
