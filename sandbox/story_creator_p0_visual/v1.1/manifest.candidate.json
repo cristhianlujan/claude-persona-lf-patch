@@ -11,8 +11,8 @@
     "P0-0": "PASS_TARGET_PATH_RECONCILED",
     "P0-1": "PASS_CONTRACTS_AND_SCHEMA_FIXTURES",
     "P0-2": "PARTIAL_SECURITY_AND_DETERMINISTIC_IMAGE_ADMISSION",
-    "P0-3": "PARTIAL_WORKER_CONTRACT_AND_OUTPUT_VALIDATOR",
-    "P0-4": "PARTIAL_J00_J00R_INDEPENDENCE_AND_REVIEW_GATES",
+    "P0-3": "PARTIAL_WORKER_CONTRACT_AND_OUTPUT_VALIDATOR_NO_RUNTIME_WORKER",
+    "P0-4": "PARTIAL_J00_J00R_CONSISTENCY_GATES_AUTHENTICITY_PENDING",
     "P0-5": "SMOKE_ONLY_NO_EMPIRICAL_ACCEPTANCE",
     "P0-6": "PASS_P0_TO_J02_ADAPTER_CONTRACT",
     "P0-7": "BLOCKED_UNTIL_P0_2_TO_P0_5_COMPLETE"
@@ -24,6 +24,12 @@
     "empirical_visual_quality": "NOT_EVALUATED",
     "production_authorized": false,
     "merge_authorized": false
+  },
+  "promotion_blockers": {
+    "authenticated_human_adjudication_binding": "NOT_IMPLEMENTED",
+    "runtime_visual_worker": "NOT_IMPLEMENTED",
+    "real_screen_evidence": "NOT_AVAILABLE",
+    "empirical_benchmark": "NOT_EXECUTED"
   },
   "files": [
     {"path": "P0_RFC8785_CANONICALIZER_v1.1.mjs", "bytes": 4668, "sha256": "99952f4a1c0819bfc6a7488bea595b43ff31697a0c5ffe034c3e7ea76cde930f"},
