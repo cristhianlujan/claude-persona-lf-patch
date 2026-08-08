@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lf/p0/human-review-auth-binding.schema.json",
+  "title": "P0 Authenticated Human Review Binding v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "provider", "repository", "resource_type", "resource_number", "comment_id", "comment_html_url", "comment_api_url", "reviewer_login", "reviewer_external_id", "author_association", "challenge_sha256", "challenge_nonce", "attested_body_sha256", "verified_at", "verification_method", "live_verified"],
+  "properties": {
+    "schema_version": {"const": "p0-human-auth-binding/v1"},
+    "provider": {"const": "GITHUB"},
+    "repository": {"const": "cristhianlujan/claude-persona-lf-patch"},
+    "resource_type": {"const": "PULL_REQUEST_COMMENT"},
+    "resource_number": {"type": "integer", "minimum": 1},
+    "comment_id": {"type": "integer", "minimum": 1},
+    "comment_html_url": {"type": "string", "pattern": "^https://github\\.com/cristhianlujan/claude-persona-lf-patch/(issues|pull)/[0-9]+#issuecomment-[0-9]+$"},
+    "comment_api_url": {"type": "string", "pattern": "^https://api\\.github\\.com/repos/cristhianlujan/claude-persona-lf-patch/issues/comments/[0-9]+$"},
+    "reviewer_login": {"type": "string", "pattern": "^[A-Za-z0-9-]+$"},
+    "reviewer_external_id": {"type": "integer", "minimum": 1},
+    "author_association": {"enum": ["OWNER", "MEMBER", "COLLABORATOR"]},
+    "challenge_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "challenge_nonce": {"type": "string", "pattern": "^[A-Za-z0-9_-]{16,128}$"},
+    "attested_body_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "verified_at": {"type": "string", "format": "date-time"},
+    "verification_method": {"const": "GITHUB_API_TLS_READBACK"},
+    "live_verified": {"const": true}
+  }
+}

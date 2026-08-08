@@ -18,6 +18,8 @@ EXPECTED = {
     "ui-structure.schema.json",
     "enriched-understanding.schema.json",
     "human-review-packet.schema.json",
+    "human-review-challenge.schema.json",
+    "human-review-auth-binding.schema.json",
     "human-review-decision.schema.json",
     "image-admission-record.schema.json",
     "p0-judge-decision.schema.json",

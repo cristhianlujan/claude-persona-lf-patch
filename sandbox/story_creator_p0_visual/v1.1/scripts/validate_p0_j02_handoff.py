@@ -14,6 +14,7 @@ from validate_p0_judge import validate as validate_judge
 ROOT = Path(__file__).resolve().parent.parent
 SCHEMA = ROOT / "schemas" / "p0-j02-handoff.schema.json"
 HUMAN_DECISION_SCHEMA = ROOT / "schemas" / "human-review-decision.schema.json"
+HUMAN_BINDING_SCHEMA = ROOT / "schemas" / "human-review-auth-binding.schema.json"
 FIXTURES = ROOT / "evals" / "p0-contract-fixtures.json"
 ARCHITECTURE_SHA256 = "a8d53b736e7d2d672b0927f7deaca4422f7429fdda0d1997b1eaa54fc06e7531"
 
@@ -58,6 +59,8 @@ def validate(payload: Any) -> dict[str, Any]:
     human = payload.get("human_review_decision") if isinstance(payload.get("human_review_decision"), dict) else {}
     human_present = isinstance(payload.get("human_review_decision"), dict)
     human_schema_errors = schema_errors_for(HUMAN_DECISION_SCHEMA, human) if human_present else []
+    human_binding = human.get("authentication_binding") if isinstance(human.get("authentication_binding"), dict) else {}
+    human_binding_schema_errors = schema_errors_for(HUMAN_BINDING_SCHEMA, human_binding) if human_present else []
     provenance = payload.get("provenance") if isinstance(payload.get("provenance"), dict) else {}
     actions = payload.get("action_inventory") if isinstance(payload.get("action_inventory"), list) else []
     contexts = payload.get("context_inventory") if isinstance(payload.get("context_inventory"), list) else []
@@ -82,8 +85,13 @@ def validate(payload: Any) -> dict[str, Any]:
         "j00_human_decision_unexpected": 1 if is_j00 and human_present else 0,
         "j00r_human_decision_missing": 1 if is_j00r and not human_present else 0,
         "j00r_human_decision_schema_invalid": len(human_schema_errors) if is_j00r else 0,
+        "j00r_human_binding_schema_invalid": len(human_binding_schema_errors) if is_j00r else 0,
         "j00r_human_decision_not_routable": 1 if is_j00r and human.get("decision") not in {"CONFIRM_OBSERVATION", "CORRECT_WITH_ADJUDICATION"} else 0,
         "j00r_human_visual_hash_mismatch": 1 if is_j00r and human.get("visual_output_sha256") != payload.get("visual_output_sha256") else 0,
+        "j00r_human_identity_binding_mismatch": 1 if is_j00r and human.get("reviewer_identity") != f"github:{human_binding.get('reviewer_login')}" else 0,
+        "j00r_challenge_binding_mismatch": 1 if is_j00r and human.get("challenge_sha256") != human_binding.get("challenge_sha256") else 0,
+        "j00r_challenge_evidence_missing": 1 if is_j00r and human.get("challenge_ref") not in (payload.get("evidence_refs") or []) else 0,
+        "j00r_human_binding_not_live": 1 if is_j00r and (human_binding.get("live_verified") is not True or human_binding.get("verification_method") != "GITHUB_API_TLS_READBACK") else 0,
         "j00r_adjudication_overlay_mismatch": 1 if is_j00r and human.get("adjudication_overlay_ref") != adjudication_ref else 0,
         "j00r_adjudication_evidence_missing": 1 if is_j00r and adjudication_ref not in (payload.get("evidence_refs") or []) else 0,
         "worker_execution_mismatch": 0 if decision.get("worker_execution_id") == provenance.get("p0_execution_id") else 1,
@@ -108,6 +116,7 @@ def validate(payload: Any) -> dict[str, Any]:
         "input_sha256": canonical_sha(payload),
         "decision_id": decision.get("decision_id"),
         "p0_execution_id": provenance.get("p0_execution_id"),
+        "external_binding_live_readback_required": is_j00r,
     }
 
 
@@ -135,13 +144,17 @@ def self_test() -> int:
         outcomes.append({"name": name, "result": result["result"], "expected_assertion": expected, "passed": result["result"] == "BLOCKED" and expected in result["blocking_assertions"]})
     good_j00r = copy.deepcopy(good)
     good_j00r["effective_decision"].update({"decision_id": "DEC-P0R-1", "judge_code": "J00R_P0_REJUDGMENT", "result": "J00R_READY_FOR_P1", "judge_execution_id": "EXEC-J00R-1", "judge_identity": "AGENT-J00R-1", "adjudication_overlay_ref": "p0://adjudication/REV-1"})
-    good_j00r["human_review_decision"] = {"review_id": "REV-1", "reviewer_identity": "USR-1", "reviewer_role": "P0_VISUAL_ADJUDICATOR", "decision": "CORRECT_WITH_ADJUDICATION", "visual_output_sha256": good_j00r["visual_output_sha256"], "adjudication_overlay_ref": "p0://adjudication/REV-1", "created_at": "2026-08-08T01:00:00Z"}
-    good_j00r["evidence_refs"] = ["p0://decision/DEC-P0R-1", "p0://adjudication/REV-1"]
+    human_fixture = copy.deepcopy(next(case["positive"] for case in load(FIXTURES)["cases"] if case["schema"] == "human-review-decision.schema.json"))
+    human_fixture.update({"review_id": "REV-1", "decision": "CONFIRM_OBSERVATION", "visual_output_sha256": good_j00r["visual_output_sha256"], "adjudication_overlay_ref": "p0://adjudication/REV-1"})
+    good_j00r["human_review_decision"] = human_fixture
+    good_j00r["evidence_refs"] = ["p0://decision/DEC-P0R-1", "p0://challenge/REV-1", "p0://adjudication/REV-1"]
     positive_j00r = validate(good_j00r)
     x = copy.deepcopy(good_j00r); x["effective_decision"]["adjudication_overlay_ref"] = "x"; x["human_review_decision"]["adjudication_overlay_ref"] = "x"; x["evidence_refs"] = ["p0://decision/DEC-P0R-1"]; fake_overlay = validate(x)
     fake_overlay_blocked = fake_overlay["result"] == "BLOCKED" and ("judge_decision_invalid" in fake_overlay["blocking_assertions"] or "j00r_adjudication_evidence_missing" in fake_overlay["blocking_assertions"])
-    passed = positive["result"] == "PASS_WITH_EVIDENCE" and positive_j00r["result"] == "PASS_WITH_EVIDENCE" and fake_overlay_blocked and all(item["passed"] for item in outcomes)
-    print(json.dumps({"positive_pass": positive["result"] == "PASS_WITH_EVIDENCE", "positive_j00r_pass": positive_j00r["result"] == "PASS_WITH_EVIDENCE", "fake_overlay_blocked": fake_overlay_blocked, "negative_cases_passed": sum(item["passed"] for item in outcomes), "negative_cases_total": len(outcomes), "negative_results": outcomes, "result": "PASS_WITH_EVIDENCE" if passed else "BLOCKED"}, sort_keys=True))
+    x = copy.deepcopy(good_j00r); x["human_review_decision"]["authentication_binding"]["reviewer_login"] = "attacker"; forged_identity = validate(x)
+    forged_identity_blocked = forged_identity["result"] == "BLOCKED" and "j00r_human_identity_binding_mismatch" in forged_identity["blocking_assertions"]
+    passed = positive["result"] == "PASS_WITH_EVIDENCE" and positive_j00r["result"] == "PASS_WITH_EVIDENCE" and fake_overlay_blocked and forged_identity_blocked and all(item["passed"] for item in outcomes)
+    print(json.dumps({"positive_pass": positive["result"] == "PASS_WITH_EVIDENCE", "positive_j00r_contract_pass": positive_j00r["result"] == "PASS_WITH_EVIDENCE", "positive_j00r_live_readback_required": positive_j00r.get("external_binding_live_readback_required") is True, "fake_overlay_blocked": fake_overlay_blocked, "forged_identity_blocked": forged_identity_blocked, "negative_cases_passed": sum(item["passed"] for item in outcomes), "negative_cases_total": len(outcomes), "negative_results": outcomes, "result": "PASS_WITH_EVIDENCE" if passed else "BLOCKED"}, sort_keys=True))
     return 0 if passed else 2
 
 

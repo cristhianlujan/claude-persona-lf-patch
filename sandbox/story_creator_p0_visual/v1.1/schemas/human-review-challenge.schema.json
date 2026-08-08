@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lf/p0/human-review-challenge.schema.json",
+  "title": "P0 Human Review Challenge v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "review_id", "target_screen_code", "visual_output_sha256", "source_raw_sha256", "expected_reviewer_provider", "expected_reviewer_login", "reviewer_role", "reviewer_scope", "training_ack_code", "training_brief_ref", "training_brief_sha256", "allowed_decisions", "nonce", "issued_at", "expires_at"],
+  "properties": {
+    "schema_version": {"const": "p0-human-review-challenge/v1"},
+    "review_id": {"type": "string", "minLength": 3},
+    "target_screen_code": {"type": "string", "pattern": "^SCR-[A-Z0-9-]+$"},
+    "visual_output_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source_raw_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "expected_reviewer_provider": {"const": "GITHUB"},
+    "expected_reviewer_login": {"type": "string", "pattern": "^[A-Za-z0-9-]+$"},
+    "reviewer_role": {"const": "P0_VISUAL_ADJUDICATOR"},
+    "reviewer_scope": {"const": "LF-SANDBOX"},
+    "training_ack_code": {"type": "string", "pattern": "^P0-REVIEW-BRIEF-v[0-9]+$"},
+    "training_brief_ref": {"type": "string", "pattern": "^p0://review-brief/[A-Za-z0-9._-]+$"},
+    "training_brief_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "allowed_decisions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["CONFIRM_OBSERVATION", "REQUEST_NEW_CAPTURE", "REQUEST_ADDITIONAL_CONTEXT", "REJECT_AND_BLOCK", "ESCALATE_SECURITY", "ESCALATE_PRIVACY"]}},
+    "nonce": {"type": "string", "pattern": "^[A-Za-z0-9_-]{16,128}$"},
+    "issued_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"}
+  }
+}

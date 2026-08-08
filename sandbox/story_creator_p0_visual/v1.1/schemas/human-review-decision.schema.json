@@ -4,13 +4,16 @@
   "title": "P0 Human Review Decision v2",
   "type": "object",
   "additionalProperties": false,
-  "required": ["review_id", "reviewer_identity", "reviewer_role", "decision", "visual_output_sha256", "created_at"],
+  "required": ["review_id", "reviewer_identity", "reviewer_role", "decision", "visual_output_sha256", "challenge_ref", "challenge_sha256", "authentication_binding", "created_at"],
   "properties": {
     "review_id": {"type": "string", "minLength": 3},
     "reviewer_identity": {"type": "string", "minLength": 3},
     "reviewer_role": {"type": "string", "enum": ["P0_VISUAL_ADJUDICATOR", "P0_SECURITY_REVIEWER", "P0_PRIVACY_REVIEWER"]},
     "decision": {"type": "string", "enum": ["CONFIRM_OBSERVATION", "CORRECT_WITH_ADJUDICATION", "REQUEST_NEW_CAPTURE", "REQUEST_ADDITIONAL_CONTEXT", "REJECT_AND_BLOCK", "ESCALATE_SECURITY", "ESCALATE_PRIVACY"]},
     "visual_output_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "challenge_ref": {"type": "string", "pattern": "^p0://challenge/[A-Za-z0-9._-]+$"},
+    "challenge_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "authentication_binding": {"type": "object"},
     "adjudication_overlay_ref": {"type": ["string", "null"], "pattern": "^p0://adjudication/[A-Za-z0-9._-]+$"},
     "created_at": {"type": "string", "format": "date-time"}
   }

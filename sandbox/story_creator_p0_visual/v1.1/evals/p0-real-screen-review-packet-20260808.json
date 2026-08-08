@@ -1,0 +1,33 @@
+{
+  "review_id": "REV-LF-LOGIN-20260808-001",
+  "execution_id": "EXEC-P0-REALSCREEN-20260808-001",
+  "visual_output_ref": "p0://visual/EXEC-P0-REALSCREEN-20260808-001",
+  "visual_output_sha256": "d6c9e13b3e92d7114e1ee64bea5fb2f79141b244abb347add341579235293fd1",
+  "reason_codes": [
+    "AUTHENTICATION_SCREEN",
+    "J00_L2_HUMAN_REVIEW_REQUIRED"
+  ],
+  "source_image_refs": [
+    "evidence://real-screen-001/source-sha256/d712967e2ed06dd1a43d05d4cc9606733f43952b2f9c6c6d66e85f3b29d35018"
+  ],
+  "evidence_crops": [],
+  "candidate_interpretations": [
+    "Responsive login specification contains Web, Tablet and Mobile variants.",
+    "The login form visibly contains email, password, password recovery, submit and reCAPTCHA elements.",
+    "Legal/contact links are visible in the responsive specification.",
+    "The raw screenshot remains ephemeral; only hashes and sanitized observations are retained."
+  ],
+  "worker_outputs": [
+    "p0://visual/EXEC-P0-REALSCREEN-20260808-001#sha256=d6c9e13b3e92d7114e1ee64bea5fb2f79141b244abb347add341579235293fd1"
+  ],
+  "judge_findings": [
+    "J00-P0-DECISION-20260808-001:HUMAN_REVIEW_REQUIRED",
+    "critical_screen=true; original visual output must remain immutable",
+    "no dual-review trigger was observed in this smoke: no critical-element disagreement, payment, irreversible action, legal consent, sensitive/minor user data, or security/privacy escalation"
+  ],
+  "data_classification": "INTERNAL",
+  "required_reviewer_role": "P0_VISUAL_ADJUDICATOR",
+  "dual_review_required": false,
+  "created_at": "2026-08-08T05:40:36Z",
+  "expires_at": "2026-08-09T05:40:36Z"
+}

@@ -1,0 +1,15 @@
+{
+  "brief_code": "P0-REVIEW-BRIEF-v1",
+  "reviewer_role": "P0_VISUAL_ADJUDICATOR",
+  "scope": "LF-SANDBOX",
+  "purpose": "Confirm or reject the visual observations bound to one immutable P0 visual-output hash.",
+  "required_checks": [
+    "Compare the supplied LF login screenshot with the review packet's responsive variants, visible fields, actions and legal/contact elements.",
+    "Use CONFIRM_OBSERVATION only when no material visual mismatch is known; otherwise request a new capture/context, reject, or escalate.",
+    "Do not interpret the review as runtime, security, privacy, benchmark, production or merge acceptance.",
+    "Do not mutate the locked visual output; corrections require a separate adjudication overlay followed by J00R.",
+    "Confirm only the exact review_id, visual_output_sha256, challenge_sha256 and nonce carried by the issued challenge."
+  ],
+  "data_handling": "The raw screenshot remains ephemeral; the repository retains hashes, sanitized review evidence and the external attestation reference only.",
+  "decision_scope": "one review challenge only"
+}

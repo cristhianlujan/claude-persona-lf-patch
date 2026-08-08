@@ -1,0 +1,25 @@
+{
+  "schema_version": "p0-human-review-challenge/v1",
+  "review_id": "REV-LF-LOGIN-20260808-001",
+  "target_screen_code": "SCR-LOGIN",
+  "visual_output_sha256": "d6c9e13b3e92d7114e1ee64bea5fb2f79141b244abb347add341579235293fd1",
+  "source_raw_sha256": "d712967e2ed06dd1a43d05d4cc9606733f43952b2f9c6c6d66e85f3b29d35018",
+  "expected_reviewer_provider": "GITHUB",
+  "expected_reviewer_login": "cristhianlujan",
+  "reviewer_role": "P0_VISUAL_ADJUDICATOR",
+  "reviewer_scope": "LF-SANDBOX",
+  "training_ack_code": "P0-REVIEW-BRIEF-v1",
+  "training_brief_ref": "p0://review-brief/P0-REVIEW-BRIEF-v1",
+  "training_brief_sha256": "43153b8f7d653cccccec44e8259e304fcf6a7ab7938911ff8f6bb59c14308f4d",
+  "allowed_decisions": [
+    "CONFIRM_OBSERVATION",
+    "REQUEST_NEW_CAPTURE",
+    "REQUEST_ADDITIONAL_CONTEXT",
+    "REJECT_AND_BLOCK",
+    "ESCALATE_SECURITY",
+    "ESCALATE_PRIVACY"
+  ],
+  "nonce": "2738fec39c2d57c0e2f53a67b7a03f1f",
+  "issued_at": "2026-08-08T05:40:36Z",
+  "expires_at": "2026-08-09T05:40:36Z"
+}
