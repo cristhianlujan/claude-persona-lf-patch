@@ -16,17 +16,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
       SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+      SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
 
     steps:
       - name: Detect encrypted sandbox credentials
         id: credentials
         shell: bash
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
         run: |
           set -euo pipefail
-          if [ -n "${SUPABASE_ACCESS_TOKEN:-}" ] && [ -n "${SUPABASE_DB_PASSWORD:-}" ]; then
+          if [ -n "${SUPABASE_DB_PASSWORD:-}" ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
@@ -41,15 +42,63 @@ jobs:
         if: steps.credentials.outputs.ready == 'true'
         uses: supabase/setup-cli@v1
         with:
-          version: 2.111.0
+          version: 2.112.0
 
       - name: Export sandbox schema without data or roles
         if: steps.credentials.outputs.ready == 'true'
         shell: bash
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
         run: |
           set -euo pipefail
-          supabase link --project-ref "$SUPABASE_PROJECT_ID"
-          supabase db dump --linked > "$RUNNER_TEMP/lf-remote-schema.sql"
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+          export EXCLUDED_SCHEMAS='information_schema|pg_*|_analytics|_realtime|_supavisor|auth|etl|extensions|pgbouncer|realtime|storage|supabase_functions|supabase_migrations|cron|dbdev|graphql|graphql_public|net|pgmq|pgsodium|pgsodium_masks|pgtle|repack|tiger|tiger_data|timescaledb_*|_timescaledb_*|topology|vault'
+
+          docker run --rm \
+            -e PGHOST \
+            -e PGPORT \
+            -e PGUSER \
+            -e PGPASSWORD \
+            -e PGDATABASE \
+            -e PGSSLMODE \
+            -e EXCLUDED_SCHEMAS \
+            postgres:17.6 \
+            pg_dump \
+              --schema-only \
+              --quote-all-identifiers \
+              --role postgres \
+              --exclude-schema "$EXCLUDED_SCHEMAS" \
+          | sed -E 's/^\\(un)?restrict .*$/-- &/' \
+          | sed -E 's/^CREATE SCHEMA "/CREATE SCHEMA IF NOT EXISTS "/' \
+          | sed -E 's/^CREATE TABLE "/CREATE TABLE IF NOT EXISTS "/' \
+          | sed -E 's/^CREATE SEQUENCE "/CREATE SEQUENCE IF NOT EXISTS "/' \
+          | sed -E 's/^CREATE VIEW "/CREATE OR REPLACE VIEW "/' \
+          | sed -E 's/^CREATE FUNCTION "/CREATE OR REPLACE FUNCTION "/' \
+          | sed -E 's/^CREATE TRIGGER "/CREATE OR REPLACE TRIGGER "/' \
+          | sed -E 's/^CREATE PUBLICATION "supabase_realtime/-- &/' \
+          | sed -E 's/^CREATE EVENT TRIGGER /-- &/' \
+          | sed -E 's/^         WHEN TAG IN /-- &/' \
+          | sed -E 's/^   EXECUTE FUNCTION /-- &/' \
+          | sed -E 's/^ALTER EVENT TRIGGER /-- &/' \
+          | sed -E 's/^ALTER PUBLICATION "supabase_realtime_/-- &/' \
+          | sed -E 's/^ALTER FOREIGN DATA WRAPPER (.+) OWNER TO /-- &/' \
+          | sed -E 's/^ALTER DEFAULT PRIVILEGES FOR ROLE "supabase_admin"/-- &/' \
+          | sed -E 's/^GRANT ALL ON FOREIGN DATA WRAPPER (.+) TO "postgres" WITH GRANT OPTION/-- &/' \
+          | sed -E "s/^GRANT (.+) ON (.+) \"(${EXCLUDED_SCHEMAS})\"/-- &/" \
+          | sed -E "s/^REVOKE (.+) ON (.+) \"(${EXCLUDED_SCHEMAS})\"/-- &/" \
+          | sed -E 's/^(CREATE EXTENSION IF NOT EXISTS "pg_tle").+/\1;/' \
+          | sed -E 's/^(CREATE EXTENSION IF NOT EXISTS "pgsodium").+/\1;/' \
+          | sed -E 's/^(CREATE EXTENSION IF NOT EXISTS "pgmq").+/\1;/' \
+          | sed -E 's/^COMMENT ON EXTENSION (.+)/-- &/' \
+          | sed -E 's/^CREATE POLICY "cron_job_/-- &/' \
+          | sed -E 's/^ALTER TABLE "cron"/-- &/' \
+          | sed -E 's/^SET transaction_timeout = 0;/-- &/' \
+          | sed -E '/^--/d' \
+          > "$RUNNER_TEMP/lf-remote-schema.sql"
           test -s "$RUNNER_TEMP/lf-remote-schema.sql"
 
       - name: Rebuild exported schema in disposable local Supabase
