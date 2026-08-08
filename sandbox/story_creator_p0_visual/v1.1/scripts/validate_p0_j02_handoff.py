@@ -1,0 +1,131 @@
+#!/usr/bin/env python3
+"""Fail-closed validator for the P0 -> Screen Decomposer handoff."""
+from __future__ import annotations
+
+import argparse
+import copy
+import hashlib
+import json
+from pathlib import Path
+from typing import Any
+
+ROOT = Path(__file__).resolve().parent.parent
+SCHEMA = ROOT / "schemas" / "p0-j02-handoff.schema.json"
+FIXTURES = ROOT / "evals" / "p0-contract-fixtures.json"
+ARCHITECTURE_SHA256 = "a8d53b736e7d2d672b0927f7deaca4422f7429fdda0d1997b1eaa54fc06e7531"
+
+
+def load(path: Path) -> Any:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def canonical_sha(value: Any) -> str:
+    raw = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()
+
+
+def schema_errors(payload: Any) -> list[str]:
+    try:
+        import jsonschema
+    except ImportError as exc:
+        raise RuntimeError("jsonschema_not_available") from exc
+    schema = load(SCHEMA)
+    jsonschema.Draft7Validator.check_schema(schema)
+    validator = jsonschema.Draft7Validator(schema, format_checker=jsonschema.FormatChecker())
+    return sorted(f"{'/'.join(map(str, e.absolute_path)) or '$'}:{e.message}" for e in validator.iter_errors(payload))
+
+
+def duplicate_count(items: Any, key: str) -> int:
+    if not isinstance(items, list):
+        return 1
+    values = [item.get(key) for item in items if isinstance(item, dict) and isinstance(item.get(key), str)]
+    return len(values) - len(set(values))
+
+
+def validate(payload: Any) -> dict[str, Any]:
+    errors = schema_errors(payload)
+    if not isinstance(payload, dict):
+        return {"result": "BLOCKED", "blocking_assertions": ["handoff_schema_invalid"], "checks": {}, "schema_errors": errors}
+    decision = payload.get("effective_decision") if isinstance(payload.get("effective_decision"), dict) else {}
+    provenance = payload.get("provenance") if isinstance(payload.get("provenance"), dict) else {}
+    actions = payload.get("action_inventory") if isinstance(payload.get("action_inventory"), list) else []
+    contexts = payload.get("context_inventory") if isinstance(payload.get("context_inventory"), list) else []
+    fields = payload.get("field_inventory") if isinstance(payload.get("field_inventory"), list) else []
+    permissions = payload.get("permission_inventory") if isinstance(payload.get("permission_inventory"), list) else []
+    transitions = payload.get("transition_inventory") if isinstance(payload.get("transition_inventory"), list) else []
+    pending = payload.get("pending_decisions") if isinstance(payload.get("pending_decisions"), list) else []
+    action_codes = {item.get("code") for item in actions if isinstance(item, dict)}
+    context_codes = {item.get("code") for item in contexts if isinstance(item, dict)}
+    expected_result = {"J00_P0_VISUAL_READING": "J00_READY_FOR_P1", "J00R_P0_REJUDGMENT": "J00R_READY_FOR_P1"}.get(decision.get("judge_code"))
+    inventories = contexts + fields + actions
+    checks = {
+        "handoff_schema_invalid": len(errors),
+        "architecture_source_mismatch": 0 if provenance.get("architecture_source_sha256") == ARCHITECTURE_SHA256 else 1,
+        "decision_not_current": 0 if decision.get("is_current") is True else 1,
+        "decision_superseded": 0 if decision.get("superseded_by") is None else 1,
+        "decision_not_judged_ready": 0 if expected_result and decision.get("result") == expected_result else 1,
+        "visual_output_hash_mismatch": 0 if decision.get("visual_output_sha256") == payload.get("visual_output_sha256") else 1,
+        "decision_evidence_missing": 0 if f"p0://decision/{decision.get('decision_id')}" in (payload.get("evidence_refs") or []) else 1,
+        "blocking_pending_decisions": sum(1 for item in pending if isinstance(item, dict) and item.get("blocking") is True and item.get("status") == "OPEN"),
+        "unresolved_inferred_inventory": sum(1 for item in inventories if isinstance(item, dict) and item.get("classification") == "INFERRED"),
+        "duplicate_context_codes": duplicate_count(contexts, "code"),
+        "duplicate_field_codes": duplicate_count(fields, "code"),
+        "duplicate_action_codes": duplicate_count(actions, "code"),
+        "duplicate_permission_codes": duplicate_count(permissions, "permission_code"),
+        "fields_with_unknown_context": sum(1 for item in fields if isinstance(item, dict) and item.get("context_code") not in context_codes),
+        "permissions_with_unknown_action": sum(1 for item in permissions if isinstance(item, dict) and item.get("action_code") not in action_codes),
+        "transitions_with_unknown_action": sum(1 for item in transitions if isinstance(item, dict) and item.get("action") not in action_codes),
+    }
+    failed = sorted(key for key, value in checks.items() if value)
+    return {
+        "result": "PASS_WITH_EVIDENCE" if not failed else "BLOCKED",
+        "blocking_assertions": failed,
+        "checks": checks,
+        "schema_errors": errors,
+        "input_sha256": canonical_sha(payload),
+        "decision_id": decision.get("decision_id"),
+        "p0_execution_id": provenance.get("p0_execution_id"),
+    }
+
+
+def positive_fixture() -> dict[str, Any]:
+    doc = load(FIXTURES)
+    return copy.deepcopy(next(case["positive"] for case in doc["cases"] if case["schema"] == "p0-j02-handoff.schema.json"))
+
+
+def self_test() -> int:
+    good = positive_fixture()
+    positive = validate(good)
+    cases: list[tuple[str, dict[str, Any], str]] = []
+    x = copy.deepcopy(good); x["effective_decision"]["is_current"] = False; cases.append(("stale_decision", x, "decision_not_current"))
+    x = copy.deepcopy(good); x["effective_decision"]["superseded_by"] = "DEC-P0-2"; cases.append(("superseded_decision", x, "decision_superseded"))
+    x = copy.deepcopy(good); x["effective_decision"]["result"] = "PENDING"; cases.append(("unjudged_decision", x, "decision_not_judged_ready"))
+    x = copy.deepcopy(good); x["effective_decision"]["visual_output_sha256"] = "e" * 64; cases.append(("visual_hash_mismatch", x, "visual_output_hash_mismatch"))
+    x = copy.deepcopy(good); x["context_inventory"][0]["classification"] = "INFERRED"; cases.append(("unresolved_inference", x, "unresolved_inferred_inventory"))
+    x = copy.deepcopy(good); x["pending_decisions"] = [{"decision_code": "DEC-OPEN", "missing_fact": "Unknown permission", "why_required": "Required before story derivation", "blocking": True, "status": "OPEN"}]; cases.append(("blocking_pending_decision", x, "blocking_pending_decisions"))
+    x = copy.deepcopy(good); x["permission_inventory"] = [{"permission_code": "PERM-ADMIN", "actor_profile": "ADMIN", "action_code": "DELETE", "source_ref": "policy://admin", "classification": "POLICY_CONFIRMED"}]; cases.append(("permission_unknown_action", x, "permissions_with_unknown_action"))
+    outcomes = []
+    for name, payload, expected in cases:
+        result = validate(payload)
+        outcomes.append({"name": name, "result": result["result"], "expected_assertion": expected, "passed": result["result"] == "BLOCKED" and expected in result["blocking_assertions"]})
+    passed = positive["result"] == "PASS_WITH_EVIDENCE" and all(item["passed"] for item in outcomes)
+    print(json.dumps({"positive_pass": positive["result"] == "PASS_WITH_EVIDENCE", "negative_cases_passed": sum(item["passed"] for item in outcomes), "negative_cases_total": len(outcomes), "negative_results": outcomes, "result": "PASS_WITH_EVIDENCE" if passed else "BLOCKED"}, sort_keys=True))
+    return 0 if passed else 2
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("input", nargs="?", type=Path)
+    parser.add_argument("--self-test", action="store_true")
+    args = parser.parse_args()
+    if args.self_test:
+        return self_test()
+    if args.input is None:
+        parser.error("input is required unless --self-test is used")
+    result = validate(load(args.input))
+    print(json.dumps(result, ensure_ascii=False, sort_keys=True))
+    return 0 if result["result"] == "PASS_WITH_EVIDENCE" else 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
