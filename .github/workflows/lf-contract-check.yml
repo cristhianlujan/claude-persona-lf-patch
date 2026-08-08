@@ -30,6 +30,72 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Verify hosted Supabase Data API excludes net schema
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.error
+          import urllib.request
+
+          token = os.environ.get("SUPABASE_ACCESS_TOKEN", "").strip()
+          project = os.environ["SUPABASE_PROJECT_ID"]
+          if not token:
+              raise SystemExit("FAIL_SUPABASE_CONTROL_PLANE_TOKEN_MISSING")
+
+          request = urllib.request.Request(
+              f"https://api.supabase.com/v1/projects/{project}/postgrest",
+              headers={
+                  "Accept": "application/json",
+                  "Authorization": f"Bearer {token}",
+                  "User-Agent": "lf-contract-check-pr93",
+              },
+          )
+          try:
+              with urllib.request.urlopen(request, timeout=20) as response:
+                  config = json.loads(response.read().decode("utf-8"))
+          except (urllib.error.URLError, TimeoutError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+              raise SystemExit(f"FAIL_SUPABASE_POSTGREST_CONFIG_READBACK: {type(exc).__name__}") from exc
+
+          schema_value = None
+          schema_field = None
+          for candidate in ("db_schema", "db_schemas", "schemas"):
+              if candidate in config:
+                  schema_field = candidate
+                  schema_value = config[candidate]
+                  break
+          if schema_value is None:
+              keys = ",".join(sorted(str(key) for key in config))
+              raise SystemExit(f"FAIL_SUPABASE_POSTGREST_SCHEMA_FIELD_MISSING: keys={keys}")
+
+          if isinstance(schema_value, str):
+              schemas = {part.strip() for part in schema_value.split(",") if part.strip()}
+          elif isinstance(schema_value, list):
+              schemas = {str(part).strip() for part in schema_value if str(part).strip()}
+          else:
+              raise SystemExit(
+                  "FAIL_SUPABASE_POSTGREST_SCHEMA_FIELD_TYPE: "
+                  f"field={schema_field} type={type(schema_value).__name__}"
+              )
+
+          if not schemas:
+              raise SystemExit("FAIL_SUPABASE_POSTGREST_EXPOSED_SCHEMAS_EMPTY")
+          if "net" in schemas:
+              raise SystemExit("FAIL_SUPABASE_NET_SCHEMA_EXPOSED")
+
+          rendered = ",".join(sorted(schemas))
+          print(f"PASS_SUPABASE_NET_SCHEMA_NOT_EXPOSED: field={schema_field} schemas={rendered}")
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a", encoding="utf-8") as handle:
+                  handle.write("### Supabase Data API control-plane readback\n")
+                  handle.write(f"- exposed schemas: `{rendered}`\n")
+                  handle.write("- `net` exposed: `false`\n")
+          PY
+
       - name: Install deterministic audit dependencies
         run: |
           python3 -m pip install --disable-pip-version-check \
