@@ -13,11 +13,21 @@
     "visual_output_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "effective_decision": {
       "type": "object", "additionalProperties": false,
-      "required": ["decision_id", "judge_code", "result", "is_current", "superseded_by", "visual_output_sha256"],
+      "required": ["schema_version", "decision_id", "judge_code", "result", "worker_execution_id", "worker_identity", "judge_execution_id", "judge_identity", "independence_level", "critical_screen", "visual_output_sha256", "requires_human_review", "adjudication_overlay_ref", "evidence_refs", "is_current", "superseded_by"],
       "properties": {
+        "schema_version": {"const": "p0-judge-decision/v1"},
         "decision_id": {"type": "string", "minLength": 3},
         "judge_code": {"type": "string", "enum": ["J00_P0_VISUAL_READING", "J00R_P0_REJUDGMENT"]},
         "result": {"type": "string", "enum": ["J00_READY_FOR_P1", "J00R_READY_FOR_P1"]},
+        "worker_execution_id": {"type": "string", "minLength": 1},
+        "worker_identity": {"type": "string", "minLength": 1},
+        "judge_execution_id": {"type": "string", "minLength": 1},
+        "judge_identity": {"type": "string", "minLength": 1},
+        "independence_level": {"enum": ["L2", "L3"]},
+        "critical_screen": {"type": "boolean"},
+        "requires_human_review": {"const": false},
+        "adjudication_overlay_ref": {"type": ["string", "null"], "minLength": 1},
+        "evidence_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
         "is_current": {"const": true},
         "superseded_by": {"type": "null"},
         "visual_output_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}

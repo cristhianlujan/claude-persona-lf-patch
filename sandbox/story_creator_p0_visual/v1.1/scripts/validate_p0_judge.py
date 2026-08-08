@@ -8,11 +8,13 @@ import json
 from pathlib import Path
 from typing import Any
 
-from validate_p0_j02_handoff import load
-
 ROOT = Path(__file__).resolve().parent.parent
 SCHEMA = ROOT / "schemas" / "p0-judge-decision.schema.json"
 FIXTURES = ROOT / "evals" / "p0-contract-fixtures.json"
+
+
+def load(path: Path) -> Any:
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def schema_errors(payload: Any) -> list[str]:

@@ -68,8 +68,14 @@ def self_test() -> int:
         adapt(blocked)
     except ValueError:
         rejects_stale = True
-    passed = all(checks.values()) and rejects_stale
-    print(json.dumps({"checks": checks, "rejects_stale": rejects_stale, "result": "PASS_WITH_EVIDENCE" if passed else "BLOCKED"}, sort_keys=True))
+    forged_j00r = dict(good); forged_j00r["effective_decision"] = dict(good["effective_decision"], judge_code="J00R_P0_REJUDGMENT", result="J00R_READY_FOR_P1")
+    rejects_unadjudicated_j00r = False
+    try:
+        adapt(forged_j00r)
+    except ValueError:
+        rejects_unadjudicated_j00r = True
+    passed = all(checks.values()) and rejects_stale and rejects_unadjudicated_j00r
+    print(json.dumps({"checks": checks, "rejects_stale": rejects_stale, "rejects_unadjudicated_j00r": rejects_unadjudicated_j00r, "result": "PASS_WITH_EVIDENCE" if passed else "BLOCKED"}, sort_keys=True))
     return 0 if passed else 2
 
 
