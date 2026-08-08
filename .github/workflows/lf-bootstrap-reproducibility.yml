@@ -133,7 +133,7 @@ jobs:
               --quote-all-identifiers \
               --no-role-passwords \
               --no-comments \
-          | sed -E 's/^\\(un\\)?restrict .*$/-- &/' \
+          | sed -E 's/^\\(un)?restrict .*$/-- &/' \
           | sed -E "s/^CREATE ROLE \"(${RESERVED_ROLES})\"/-- &/" \
           | sed -E "s/^ALTER ROLE \"(${RESERVED_ROLES})\"/-- &/" \
           | sed -E 's/ (NOSUPERUSER|NOREPLICATION)//g' \
