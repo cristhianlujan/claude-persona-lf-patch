@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "p0-judge-decision.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "decision_id", "judge_code", "result", "worker_execution_id", "worker_identity", "judge_execution_id", "judge_identity", "independence_level", "critical_screen", "visual_output_sha256", "requires_human_review", "adjudication_overlay_ref", "evidence_refs"],
+  "properties": {
+    "schema_version": {"const": "p0-judge-decision/v1"},
+    "decision_id": {"type": "string", "minLength": 1},
+    "judge_code": {"enum": ["J00_P0_VISUAL_READING", "J00R_P0_REJUDGMENT"]},
+    "result": {"enum": ["J00_READY_FOR_P1", "J00R_READY_FOR_P1", "HUMAN_REVIEW_REQUIRED", "BLOCKED"]},
+    "worker_execution_id": {"type": "string", "minLength": 1},
+    "worker_identity": {"type": "string", "minLength": 1},
+    "judge_execution_id": {"type": "string", "minLength": 1},
+    "judge_identity": {"type": "string", "minLength": 1},
+    "independence_level": {"enum": ["L2", "L3"]},
+    "critical_screen": {"type": "boolean"},
+    "visual_output_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "requires_human_review": {"type": "boolean"},
+    "adjudication_overlay_ref": {"type": ["string", "null"], "minLength": 1},
+    "evidence_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+  }
+}

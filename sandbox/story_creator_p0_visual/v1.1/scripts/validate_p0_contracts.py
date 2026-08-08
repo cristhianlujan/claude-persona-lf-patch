@@ -19,6 +19,7 @@ EXPECTED = {
     "enriched-understanding.schema.json",
     "human-review-packet.schema.json",
     "human-review-decision.schema.json",
+    "p0-judge-decision.schema.json",
     "p0-j02-handoff.schema.json",
 }
 
