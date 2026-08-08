@@ -30,6 +30,178 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Verify hosted Supabase Data API excludes net schema
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.error
+          import urllib.request
+
+          token = os.environ.get("SUPABASE_ACCESS_TOKEN", "").strip()
+          project = os.environ["SUPABASE_PROJECT_ID"]
+          if not token:
+              raise SystemExit("FAIL_SUPABASE_CONTROL_PLANE_TOKEN_MISSING")
+
+          request = urllib.request.Request(
+              f"https://api.supabase.com/v1/projects/{project}/postgrest",
+              headers={
+                  "Accept": "application/json",
+                  "Authorization": f"Bearer {token}",
+                  "User-Agent": "lf-contract-check-pr93",
+              },
+          )
+          try:
+              with urllib.request.urlopen(request, timeout=20) as response:
+                  config = json.loads(response.read().decode("utf-8"))
+          except (urllib.error.URLError, TimeoutError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+              raise SystemExit(f"FAIL_SUPABASE_POSTGREST_CONFIG_READBACK: {type(exc).__name__}") from exc
+
+          schema_value = None
+          schema_field = None
+          for candidate in ("db_schema", "db_schemas", "schemas"):
+              if candidate in config:
+                  schema_field = candidate
+                  schema_value = config[candidate]
+                  break
+          if schema_value is None:
+              keys = ",".join(sorted(str(key) for key in config))
+              raise SystemExit(f"FAIL_SUPABASE_POSTGREST_SCHEMA_FIELD_MISSING: keys={keys}")
+
+          if isinstance(schema_value, str):
+              schemas = {part.strip() for part in schema_value.split(",") if part.strip()}
+          elif isinstance(schema_value, list):
+              schemas = {str(part).strip() for part in schema_value if str(part).strip()}
+          else:
+              raise SystemExit(
+                  "FAIL_SUPABASE_POSTGREST_SCHEMA_FIELD_TYPE: "
+                  f"field={schema_field} type={type(schema_value).__name__}"
+              )
+
+          if not schemas:
+              raise SystemExit("FAIL_SUPABASE_POSTGREST_EXPOSED_SCHEMAS_EMPTY")
+          if "net" in schemas:
+              raise SystemExit("FAIL_SUPABASE_NET_SCHEMA_EXPOSED")
+
+          rendered = ",".join(sorted(schemas))
+          print(f"PASS_SUPABASE_NET_SCHEMA_NOT_EXPOSED: field={schema_field} schemas={rendered}")
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a", encoding="utf-8") as handle:
+                  handle.write("### Supabase Data API control-plane readback\n")
+                  handle.write(f"- exposed schemas: `{rendered}`\n")
+                  handle.write("- `net` exposed: `false`\n")
+          PY
+
+      - name: Enforce LF migration source parity after checkpoint
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+          LF_MIGRATION_CUTOVER: "20260808031006"
+        run: |
+          set -euo pipefail
+          if [ -z "${PGPASSWORD:-}" ]; then
+            echo "FAIL_LF_MIGRATION_PARITY_DB_PASSWORD_MISSING"
+            exit 1
+          fi
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,''),encode(convert_to(array_to_string(statements,E'\n'),'UTF8'),'hex') from supabase_migrations.schema_migrations where version > '${LF_MIGRATION_CUTOVER}' and (name like 'pr93\_%' escape '\' or name like 'lf\_%' escape '\') order by version" > "$RUNNER_TEMP/lf-managed-migrations.csv"
+
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select count(*)::text,encode(extensions.digest(convert_to(string_agg(version||E'\n'||coalesce(name,'')||E'\n'||array_to_string(statements,E'\n--STATEMENT--\n'),E'\n--MIGRATION--\n' order by version),'UTF8'),'sha256'),'hex') from supabase_migrations.schema_migrations where version between '20260801063708' and '20260801170332'" > "$RUNNER_TEMP/lf-legacy-checkpoint.csv"
+
+          python3 - <<'PY'
+          import csv
+          import hashlib
+          import os
+          import pathlib
+          import re
+
+          cutover = os.environ["LF_MIGRATION_CUTOVER"]
+          migrations = pathlib.Path("supabase/migrations")
+          marker_re = re.compile(
+              r"^-- LF_MIGRATION_SOURCE_CHECKPOINT_V1 "
+              r"cutover=(\d{14}) legacy_start=(\d{14}) legacy_end=(\d{14}) "
+              r"legacy_count=(\d+) legacy_sha256=([0-9a-f]{64})$"
+          )
+
+          markers = []
+          for path in sorted(migrations.glob("*.sql")):
+              first = path.read_text(encoding="utf-8").splitlines()[0] if path.stat().st_size else ""
+              match = marker_re.fullmatch(first)
+              if match:
+                  markers.append((path, match))
+          if len(markers) != 1:
+              raise SystemExit(f"FAIL_LF_MIGRATION_CHECKPOINT_COUNT: {len(markers)}")
+
+          checkpoint_path, marker = markers[0]
+          marker_cutover, legacy_start, legacy_end, legacy_count, legacy_sha = marker.groups()
+          if marker_cutover != cutover:
+              raise SystemExit("FAIL_LF_MIGRATION_CHECKPOINT_CUTOVER")
+
+          legacy_file = pathlib.Path(os.environ["RUNNER_TEMP"]) / "lf-legacy-checkpoint.csv"
+          with legacy_file.open(newline="", encoding="utf-8") as handle:
+              legacy_rows = list(csv.reader(handle))
+          if len(legacy_rows) != 1:
+              raise SystemExit("FAIL_LF_MIGRATION_LEGACY_ROW_COUNT")
+          observed_count, observed_sha = legacy_rows[0]
+          if observed_count != legacy_count or observed_sha != legacy_sha:
+              raise SystemExit("FAIL_LF_MIGRATION_LEGACY_ATTESTATION")
+
+          def canonical(sql: str) -> bytes:
+              sql = sql.replace("\r\n", "\n").replace("\r", "\n")
+              lines = [line for line in sql.split("\n") if not line.lstrip().startswith("--")]
+              return "\n".join(lines).rstrip("\n").encode("utf-8")
+
+          local = {}
+          filename_re = re.compile(r"^(\d{14})_(.+)\.sql$")
+          for path in sorted(migrations.glob("*.sql")):
+              match = filename_re.fullmatch(path.name)
+              if not match:
+                  continue
+              version, name = match.groups()
+              if version <= cutover:
+                  continue
+              if not name.startswith(("pr93_", "lf_")):
+                  raise SystemExit(f"FAIL_LF_MIGRATION_UNSCOPED_NAME: {path.name}")
+              local[version] = (
+                  name,
+                  hashlib.sha256(canonical(path.read_text(encoding="utf-8"))).hexdigest(),
+              )
+
+          remote = {}
+          remote_file = pathlib.Path(os.environ["RUNNER_TEMP"]) / "lf-managed-migrations.csv"
+          with remote_file.open(newline="", encoding="utf-8") as handle:
+              remote_rows = list(csv.reader(handle))
+          for row in remote_rows:
+              if len(row) != 3:
+                  raise SystemExit(f"FAIL_LF_MIGRATION_LEDGER_ROW: {row!r}")
+              version, name, sql_hex = row
+              sql = bytes.fromhex(sql_hex).decode("utf-8")
+              remote[version] = (name, hashlib.sha256(canonical(sql)).hexdigest())
+
+          if set(local) != set(remote):
+              raise SystemExit(
+                  f"FAIL_LF_MIGRATION_VERSION_PARITY: git={sorted(local)} remote={sorted(remote)}"
+              )
+          mismatches = [version for version in sorted(local) if local[version] != remote[version]]
+          if mismatches:
+              raise SystemExit(f"FAIL_LF_MIGRATION_CONTENT_PARITY: {mismatches}")
+
+          print(
+              f"PASS_LF_MIGRATION_SOURCE_PARITY: checkpoint={checkpoint_path.name} "
+              f"post_cutover={len(local)} legacy={legacy_count} sha256={legacy_sha}"
+          )
+          PY
+
       - name: Install deterministic audit dependencies
         run: |
           python3 -m pip install --disable-pip-version-check \
@@ -38,7 +210,19 @@ jobs:
 
       - name: Validate LF contract
         run: |
-          python3 scripts/lf_contract_check.py
+          python3 sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py
+
+      - name: Run E.16 governance regression matrices
+        run: |
+          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_REGRESSION_TESTS.py \
+            --validator sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py
+          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_INVENTORY_TESTS.py \
+            --inventory sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py
+          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_RATIFICATION_TESTS.py \
+            --repo-root .
+          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_INTEGRATION_TESTS.py \
+            --candidate-root .
+          python3 sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_SCOPE_TESTS.py
 
       - name: Run LF validation engine self-test
         run: |
@@ -63,6 +247,17 @@ jobs:
             skills/creating-integral-user-stories \
             --output .audit-output/creating-integral-user-stories \
             --commit-sha "$GITHUB_SHA"
+
+      - name: Capture authenticated E.16 Actions inventory
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          E16_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py \
+            --repository "$GITHUB_REPOSITORY" \
+            --head-sha "$E16_HEAD_SHA" \
+            --output .audit-output/creating-integral-user-stories/github-actions-inventory-e16.json
 
       - name: Build authoritative reconciliation manifest
         env:
@@ -107,6 +302,14 @@ jobs:
               "generated_at": datetime.now(timezone.utc).isoformat(),
               "validation_suite": [
                   "scripts/lf_contract_check.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py",
+                  "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py",
+                  "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_SCOPE_TESTS.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_REGRESSION_TESTS.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_INVENTORY_TESTS.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_RATIFICATION_TESTS.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_INTEGRATION_TESTS.py",
                   "sandbox/lf_contract_gate_test/lf_validation_engine_v0_10_2_selftest.py",
                   "sandbox/no_bypass_judge_profile_card_skill/no_bypass_judge_selftest.py",
                   "sandbox/lf_contract_gate_test/pass_evidence_gate.py --self-test --scan",
@@ -129,3 +332,4 @@ jobs:
           if-no-files-found: error
           include-hidden-files: true
           retention-days: 7
+

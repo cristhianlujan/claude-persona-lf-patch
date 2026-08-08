@@ -1,0 +1,5 @@
+-- Canonical active-chain tests moved to:
+-- sandbox/lf_contract_gate_test/PR93_WRITER_V7_ADVERSARIAL_TESTS.sql
+--
+-- This compatibility file intentionally contains no executable statements. Keeping a
+-- second copy of the battery would allow the two test contracts to diverge.

@@ -5,7 +5,7 @@ LF Contract Check v0.7
 Sandbox validator for controlled LF governance gates.
 
 v0.7 changes:
-- Allows only the exact GitHub reconciliation v3 workflow path in addition to the existing contract check workflow.
+- Allows only the exact approved GitHub workflow paths in addition to the existing contract check workflow.
 - Keeps every other .github path default-denied.
 
 v0.6 changes:
@@ -32,6 +32,7 @@ VALIDATOR_SELF_PATH = "scripts/lf_contract_check.py"
 
 ALLOWED_GITHUB_EXACT = {
     ".github/workflows/lf-contract-check.yml",
+    ".github/workflows/lf-bootstrap-reproducibility.yml",
     ".github/workflows/lf-github-reconcile-v3.yml",
 }
 ALLOWED_EXACT = {

@@ -1,0 +1,8 @@
+# LOTE-E.15 · preventive control 9.
+# Defence in depth for CA-N124. This does NOT replace `sys.dont_write_bytecode`,
+# which remains set in every accepted entry point and every legacy stub.
+# Scoped to this directory because the repository-root path is rejected by
+# scripts/lf_contract_check.py (FAIL_SCOPE_INVALID).
+__pycache__/
+*.pyc
+*.pyo

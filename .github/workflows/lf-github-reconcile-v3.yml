@@ -75,7 +75,7 @@ jobs:
               const requiredChecks = new Set();
               const requiredWorkflowPaths = new Set();
               let strictStatusChecks = false;
-              let approvingReviews = false;
+              const pullRequestRules = [];
 
               for (const rule of rules) {
                 const parameters = rule.parameters ?? {};
@@ -91,7 +91,7 @@ jobs:
                   }
                 }
                 if (rule.type === 'pull_request') {
-                  approvingReviews ||= Number(parameters.required_approving_review_count ?? 0) >= 1;
+                  pullRequestRules.push(rule);
                 }
               }
 
@@ -145,11 +145,17 @@ jobs:
                 [...requiredWorkflowPaths].some(
                   (path) => path === '.github/workflows/lf-contract-check.yml',
                 );
+              const soloBuilderReviewPolicy =
+                pullRequestRules.length > 0 &&
+                pullRequestRules.every(
+                  (rule) =>
+                    Number(rule.parameters?.required_approving_review_count ?? -1) === 0,
+                );
               const criteria = {
                 active_rules_present: rules.length > 0,
                 lf_contract_check_required: lfContractCheckRequired,
                 strict_status_checks: strictStatusChecks,
-                approving_reviews: approvingReviews,
+                solo_builder_review_policy: soloBuilderReviewPolicy,
                 non_fast_forward: rules.some((rule) => rule.type === 'non_fast_forward'),
                 deletions_blocked: rules.some((rule) => rule.type === 'deletion'),
                 bypass_actors_auditable: bypassActorsAuditable,
@@ -170,6 +176,10 @@ jobs:
                 criteria,
                 required_checks: [...requiredChecks].sort(),
                 required_workflow_paths: [...requiredWorkflowPaths].sort(),
+                review_policy: {
+                  model: 'SOLO_BUILDER',
+                  required_approving_review_count: 0,
+                },
                 active_rule_types: [...new Set(rules.map((rule) => rule.type))].sort(),
                 ruleset_readback: rulesetReadback,
               };

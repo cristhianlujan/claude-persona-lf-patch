@@ -1,0 +1,172 @@
+name: LF Bootstrap Reproducibility Probe
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  schema-bootstrap-probe:
+    name: schema-bootstrap-probe
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+      SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+
+    steps:
+      - name: Detect encrypted sandbox credentials
+        id: credentials
+        shell: bash
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -n "${SUPABASE_DB_PASSWORD:-}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Schema bootstrap probe skipped: encrypted sandbox credentials are not configured." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Checkout exact PR source
+        if: steps.credentials.outputs.ready == 'true'
+        uses: actions/checkout@v4
+
+      - name: Set up pinned Supabase CLI
+        if: steps.credentials.outputs.ready == 'true'
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.112.0
+
+      - name: Export sandbox schema without data or roles
+        if: steps.credentials.outputs.ready == 'true'
+        shell: bash
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+          export EXCLUDED_SCHEMAS='information_schema|pg_*|_analytics|_realtime|_supavisor|auth|etl|extensions|pgbouncer|realtime|storage|supabase_functions|supabase_migrations|cron|dbdev|graphql|graphql_public|net|pgmq|pgsodium|pgsodium_masks|pgtle|repack|tiger|tiger_data|timescaledb_*|_timescaledb_*|topology|vault'
+
+          docker run --rm \
+            -e PGHOST \
+            -e PGPORT \
+            -e PGUSER \
+            -e PGPASSWORD \
+            -e PGDATABASE \
+            -e PGSSLMODE \
+            -e EXCLUDED_SCHEMAS \
+            postgres:17.6 \
+            pg_dump \
+              --schema-only \
+              --no-owner \
+              --no-privileges \
+              --quote-all-identifiers \
+              --role postgres \
+              --exclude-schema "$EXCLUDED_SCHEMAS" \
+          | sed -E 's/^\\(un)?restrict .*$/-- &/' \
+          | sed -E 's/^CREATE SCHEMA "/CREATE SCHEMA IF NOT EXISTS "/' \
+          | sed -E 's/^CREATE TABLE "/CREATE TABLE IF NOT EXISTS "/' \
+          | sed -E 's/^CREATE SEQUENCE "/CREATE SEQUENCE IF NOT EXISTS "/' \
+          | sed -E 's/^CREATE VIEW "/CREATE OR REPLACE VIEW "/' \
+          | sed -E 's/^CREATE FUNCTION "/CREATE OR REPLACE FUNCTION "/' \
+          | sed -E 's/^CREATE TRIGGER "/CREATE OR REPLACE TRIGGER "/' \
+          | sed -E 's/^CREATE PUBLICATION "supabase_realtime/-- &/' \
+          | sed -E 's/^CREATE EVENT TRIGGER /-- &/' \
+          | sed -E 's/^         WHEN TAG IN /-- &/' \
+          | sed -E 's/^   EXECUTE FUNCTION /-- &/' \
+          | sed -E 's/^ALTER EVENT TRIGGER /-- &/' \
+          | sed -E 's/^ALTER PUBLICATION "supabase_realtime_/-- &/' \
+          | sed -E 's/^ALTER FOREIGN DATA WRAPPER (.+) OWNER TO /-- &/' \
+          | sed -E 's/^ALTER DEFAULT PRIVILEGES FOR ROLE "supabase_admin"/-- &/' \
+          | sed -E 's/^GRANT ALL ON FOREIGN DATA WRAPPER (.+) TO "postgres" WITH GRANT OPTION/-- &/' \
+          | sed -E "s/^GRANT (.+) ON (.+) \"(${EXCLUDED_SCHEMAS})\"/-- &/" \
+          | sed -E "s/^REVOKE (.+) ON (.+) \"(${EXCLUDED_SCHEMAS})\"/-- &/" \
+          | sed -E 's/^(CREATE EXTENSION IF NOT EXISTS "pg_tle").+/\1;/' \
+          | sed -E 's/^(CREATE EXTENSION IF NOT EXISTS "pgsodium").+/\1;/' \
+          | sed -E 's/^(CREATE EXTENSION IF NOT EXISTS "pgmq").+/\1;/' \
+          | sed -E 's/^COMMENT ON EXTENSION (.+)/-- &/' \
+          | sed -E 's/^CREATE POLICY "cron_job_/-- &/' \
+          | sed -E 's/^ALTER TABLE "cron"/-- &/' \
+          | sed -E 's/^SET transaction_timeout = 0;/-- &/' \
+          | sed -E '/^--/d' \
+          > "$RUNNER_TEMP/lf-remote-schema.sql"
+          test -s "$RUNNER_TEMP/lf-remote-schema.sql"
+
+      - name: Export custom roles without passwords or managed roles
+        if: steps.credentials.outputs.ready == 'true'
+        shell: bash
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+          export RESERVED_ROLES='anon|authenticated|authenticator|cli_login_.*|dashboard_user|pgbouncer|postgres|service_role|supabase_.*|pgsodium_keyholder|pgsodium_keyiduser|pgsodium_keymaker|pgtle_admin'
+
+          # Mirrors Supabase CLI role-only filtering while keeping the database
+          # password in PGPASSWORD instead of a connection URI/argv.
+          docker run --rm \
+            -e PGHOST \
+            -e PGPORT \
+            -e PGUSER \
+            -e PGPASSWORD \
+            -e PGDATABASE \
+            -e PGSSLMODE \
+            postgres:17.6 \
+            pg_dumpall \
+              --roles-only \
+              --role postgres \
+              --quote-all-identifiers \
+              --no-role-passwords \
+              --no-comments \
+          | sed -E 's/^\\(un)?restrict .*$/-- &/' \
+          | sed -E "s/^CREATE ROLE \"(${RESERVED_ROLES})\"/-- &/" \
+          | sed -E "s/^ALTER ROLE \"(${RESERVED_ROLES})\"/-- &/" \
+          | sed -E 's/ (NOSUPERUSER|NOREPLICATION)//g' \
+          | sed -E "s/GRANT \".*\" TO \"(${RESERVED_ROLES})\"/-- &/" \
+          | sed -E '/^--/d' \
+          | uniq \
+          > "$RUNNER_TEMP/lf-roles.sql"
+          test -s "$RUNNER_TEMP/lf-roles.sql"
+
+      - name: Rebuild exported schema in disposable local Supabase
+        if: steps.credentials.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          probe="$RUNNER_TEMP/lf-bootstrap-probe"
+          mkdir -p "$probe"
+          cd "$probe"
+          supabase init
+          mkdir -p supabase/migrations
+          cp "$RUNNER_TEMP/lf-roles.sql" supabase/roles.sql
+          cp "$RUNNER_TEMP/lf-remote-schema.sql" \
+            supabase/migrations/20260807000000_remote_schema_probe.sql
+          supabase start
+          trap 'supabase stop --no-backup || true' EXIT
+          supabase db reset
+
+          schema_sha="$(sha256sum "$RUNNER_TEMP/lf-remote-schema.sql" | cut -d' ' -f1)"
+          schema_lines="$(wc -l < "$RUNNER_TEMP/lf-remote-schema.sql")"
+          {
+            echo "### LF bootstrap reproducibility probe"
+            echo "- project: \`$SUPABASE_PROJECT_ID\`"
+            echo "- source: custom roles (no passwords) + schema-only linked dump; no dump artifact uploaded"
+            echo "- local reset: PASS"
+            echo "- schema sha256: \`$schema_sha\`"
+            echo "- schema lines: \`$schema_lines\`"
+          } >> "$GITHUB_STEP_SUMMARY"
