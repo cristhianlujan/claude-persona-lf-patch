@@ -15,6 +15,7 @@ ARCHITECTURE_SHA256 = "a8d53b736e7d2d672b0927f7deaca4422f7429fdda0d1997b1eaa54fc
 CANONICALIZER_SHA256 = "99952f4a1c0819bfc6a7488bea595b43ff31697a0c5ffe034c3e7ea76cde930f"
 GATES = [
     ["validate_p0_contracts.py", "--self-test"],
+    ["admit_p0_image.py", "--self-test"],
     ["validate_p0_security.py", "--self-test"],
     ["validate_p0_visual_output.py", "--self-test"],
     ["validate_p0_judge.py", "--self-test"],

@@ -10,7 +10,7 @@
   "lot_status": {
     "P0-0": "PASS_TARGET_PATH_RECONCILED",
     "P0-1": "PASS_CONTRACTS_AND_SCHEMA_FIXTURES",
-    "P0-2": "PARTIAL_SECURITY_GATE_ONLY",
+    "P0-2": "PARTIAL_SECURITY_AND_DETERMINISTIC_IMAGE_ADMISSION",
     "P0-3": "PARTIAL_WORKER_CONTRACT_AND_OUTPUT_VALIDATOR",
     "P0-4": "PARTIAL_J00_J00R_INDEPENDENCE_AND_REVIEW_GATES",
     "P0-5": "SMOKE_ONLY_NO_EMPIRICAL_ACCEPTANCE",
@@ -29,7 +29,7 @@
     {"path": "P0_RFC8785_CANONICALIZER_v1.1.mjs", "bytes": 4668, "sha256": "99952f4a1c0819bfc6a7488bea595b43ff31697a0c5ffe034c3e7ea76cde930f"},
     {"path": "agents/j00-p0-visual-judge.md", "bytes": 1533, "sha256": "5e63a260e5d0f1a86f048f504814feed7ad4b1ee4fbe88839615b0876e8ed907"},
     {"path": "agents/p0-visual-reader.md", "bytes": 1892, "sha256": "cc57a863f31f4165e5fde70b9ec7cd3a4029c5a9e0c740e9de1bd477cee5ade1"},
-    {"path": "evals/p0-contract-fixtures.json", "bytes": 10155, "sha256": "a973bb6a48361657f1fc2c953d9a81912c3cb0d75970f3479f465ca011447a0c"},
+    {"path": "evals/p0-contract-fixtures.json", "bytes": 11184, "sha256": "be40f8efa5124ecad71f496c2ef86294c0b45cf14264838aa703bffee468de54"},
     {"path": "evals/p0-visual-reader-fixture.json", "bytes": 2940, "sha256": "e1df0c17e94289d7e3fb2b206980ca3b1b7ee259b765360124e081c52935442e"},
     {"path": "schemas/blind-input-bundle.schema.json", "bytes": 1787, "sha256": "d8c39adc50273cbd957ecca5e21924a2fcccfb4edf8f44e6d91dcf4d0cb1806d"},
     {"path": "schemas/criticality.schema.json", "bytes": 1295, "sha256": "28148aa5e1de46f18ac0f56930695a7bc55b287655259624038b0bf8cfb18fe1"},
@@ -37,17 +37,19 @@
     {"path": "schemas/evidence.schema.json", "bytes": 908, "sha256": "029580ccad4481eeaf0f06bdc959a1117189bdd42ed6047671a3c51ecbb40441"},
     {"path": "schemas/human-review-decision.schema.json", "bytes": 1010, "sha256": "d5c89f110eb10bf296a501307ec2823a588ca1ffaa836ba4a9ba09a9b5c39dae"},
     {"path": "schemas/human-review-packet.schema.json", "bytes": 1796, "sha256": "dddf0da911178a3421bc8838fed6cf91219ee12a9b7f92bc44a161a5b1d377a6"},
+    {"path": "schemas/image-admission-record.schema.json", "bytes": 1073, "sha256": "5b818c2523f9ec77c262ecdd780d8fce35222270f8b620ca515734cec1da7c81"},
     {"path": "schemas/p0-j02-handoff.schema.json", "bytes": 5093, "sha256": "9ffef34dc4d408bb7b6a82f7a796862d2222d03127c2cb0f4bdc728f6b57e4b1"},
     {"path": "schemas/p0-judge-decision.schema.json", "bytes": 1420, "sha256": "5dc3c54c84cbbe4ab7ea7b2825b81fcb8a31f7f47b5435bc6753c4d574f666e7"},
     {"path": "schemas/ui-structure.schema.json", "bytes": 1851, "sha256": "bf2550b8420eba78e661dcf1f838c2e7b8cf86fc3bb535314475896420a7f006"},
     {"path": "schemas/visual-observation.schema.json", "bytes": 1157, "sha256": "0871de72c1c49dbafe291447254df90354dceca172595ae2c633c42da1a4fb32"},
     {"path": "scripts/adapt_p0_to_screen_decomposer.py", "bytes": 4357, "sha256": "86e3a7febfe70c22af68ba310c57d176fdecbac8a797b08bd9606ac38fcca9c3"},
+    {"path": "scripts/admit_p0_image.py", "bytes": 6809, "sha256": "147ddbfb77c605f5a558a623c6cdfbd02d60a34119fd587d79eb64ca8315caf3"},
     {"path": "scripts/smoke_p0_j02.py", "bytes": 4801, "sha256": "4fbed2b1ceec56b43011800212d0085f88a1d9bd345867a25fc4027b1fad08c0"},
-    {"path": "scripts/validate_p0_contracts.py", "bytes": 2740, "sha256": "7232de16d23dfdad3f13f65b9392f4a51d2f15d7d00d4c381e7208c0d565d5a8"},
+    {"path": "scripts/validate_p0_contracts.py", "bytes": 2782, "sha256": "c4b2eced138b1212269e79912a81a05898b6b5857d2bc6b20013e695683ec724"},
     {"path": "scripts/validate_p0_j02_handoff.py", "bytes": 8112, "sha256": "6b3486780d75c9da419f986bcfd2f692a7fbd3446e98f35b10dfbfb5f42a9e39"},
     {"path": "scripts/validate_p0_judge.py", "bytes": 5688, "sha256": "3a72134d711f654d92fb98dc07c9da6cf5fb47aa193df02f0408a114c9fc303d"},
     {"path": "scripts/validate_p0_security.py", "bytes": 3963, "sha256": "cecaf2895dfac1109eee3bf9ef44388322dcd1d26bb946bdf670acc7dbfb0490"},
     {"path": "scripts/validate_p0_visual_output.py", "bytes": 5681, "sha256": "c27d7c3763960fbfac4b45f4717dfafd76e6caa64e946a71219e3546fc9f7113"},
-    {"path": "scripts/verify_p0_integration_candidate.py", "bytes": 3363, "sha256": "b1d19dbb590564e33bd539a3bf309e41437ee137a270e5c1087af3785244b560"}
+    {"path": "scripts/verify_p0_integration_candidate.py", "bytes": 3405, "sha256": "33a9b617d10199d67796bc82b6f503f2b133ed9d4b7e6661ebb5a7eed545a1f3"}
   ]
 }
