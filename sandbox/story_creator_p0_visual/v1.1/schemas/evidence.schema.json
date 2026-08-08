@@ -4,9 +4,10 @@
   "title": "P0 Evidence Reference v1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["evidence_id", "source_ref", "sha256", "kind", "data_classification", "redacted"],
+  "required": ["evidence_id", "evidence_ref", "source_ref", "sha256", "kind", "data_classification", "redacted"],
   "properties": {
     "evidence_id": {"type": "string", "pattern": "^EV-[A-Z0-9-]+$"},
+    "evidence_ref": {"type": "string", "minLength": 3},
     "source_ref": {"type": "string", "minLength": 3},
     "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "kind": {"type": "string", "enum": ["SOURCE_IMAGE", "CROP", "VISUAL_OUTPUT", "AUXILIARY_SOURCE", "ADJUDICATION"]},

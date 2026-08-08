@@ -13,8 +13,8 @@
     },
     {
       "schema": "evidence.schema.json",
-      "positive": {"evidence_id": "EV-DNI", "source_ref": "image://login", "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "kind": "CROP", "data_classification": "SENSITIVE", "redacted": true, "retention_until": null},
-      "negative": {"evidence_id": "EV-DNI", "source_ref": "image://login", "sha256": "not-a-sha", "kind": "CROP", "data_classification": "SENSITIVE", "redacted": true}
+      "positive": {"evidence_id": "EV-DNI", "evidence_ref": "crop://dni", "source_ref": "image://login", "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "kind": "CROP", "data_classification": "SENSITIVE", "redacted": true, "retention_until": null},
+      "negative": {"evidence_id": "EV-DNI", "evidence_ref": "crop://dni", "source_ref": "image://login", "sha256": "not-a-sha", "kind": "CROP", "data_classification": "SENSITIVE", "redacted": true}
     },
     {
       "schema": "criticality.schema.json",

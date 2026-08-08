@@ -16,6 +16,7 @@ CANONICALIZER_SHA256 = "99952f4a1c0819bfc6a7488bea595b43ff31697a0c5ffe034c3e7ea7
 GATES = [
     ["validate_p0_contracts.py", "--self-test"],
     ["validate_p0_security.py", "--self-test"],
+    ["validate_p0_visual_output.py", "--self-test"],
     ["validate_p0_j02_handoff.py", "--self-test"],
     ["adapt_p0_to_screen_decomposer.py", "--self-test"],
     ["smoke_p0_j02.py"],
