@@ -115,6 +115,7 @@ def self_test() -> int:
         "schema_version": "p0-human-review-challenge/v1", "review_id": "REV-LIVE-1", "target_screen_code": "SCR-LOGIN",
         "visual_output_sha256": good["visual_output_sha256"], "source_raw_sha256": "a" * 64, "expected_reviewer_provider": "GITHUB",
         "expected_reviewer_login": "cristhianlujan", "reviewer_role": "P0_VISUAL_ADJUDICATOR", "reviewer_scope": "LF-SANDBOX",
+        "review_resource_type": "ISSUE", "review_resource_number": 999, "review_resource_url": "https://github.com/cristhianlujan/claude-persona-lf-patch/issues/999",
         "training_ack_code": "P0-REVIEW-BRIEF-v1", "training_brief_ref": "p0://review-brief/P0-REVIEW-BRIEF-v1", "training_brief_sha256": "b" * 64,
         "allowed_decisions": ["CONFIRM_OBSERVATION"], "nonce": "nonce_LIVE_1234567890",
         "issued_at": "2026-08-08T00:00:00Z", "expires_at": "2026-08-09T00:00:00Z",

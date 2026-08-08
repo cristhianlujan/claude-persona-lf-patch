@@ -53,6 +53,7 @@ def expected_comment_body(challenge: dict[str, Any], decision: str) -> str:
         f"visual_sha256={challenge['visual_output_sha256']} "
         f"challenge_sha256={canonical_sha(challenge)} "
         f"nonce={challenge['nonce']} "
+        f"resource=issue:{challenge['review_resource_number']} "
         f"role={challenge['reviewer_role']} "
         f"scope={challenge['reviewer_scope']} "
         f"training_ack={challenge['training_ack_code']} "
@@ -97,6 +98,7 @@ def verify(
         "reviewer_external_id_missing": 0 if isinstance(user.get("id"), int) and user.get("id") > 0 else 1,
         "author_association_not_trusted": 0 if comment.get("author_association") in {"OWNER", "MEMBER", "COLLABORATOR"} else 1,
         "comment_body_mismatch": 0 if body == expected_body else 1,
+        "comment_resource_mismatch": 0 if comment.get("issue_url") == f"https://api.github.com/repos/cristhianlujan/claude-persona-lf-patch/issues/{challenge.get('review_resource_number')}" else 1,
         "comment_api_url_invalid": 0 if isinstance(comment.get("url"), str) and comment["url"].startswith(expected_api_prefix) else 1,
         "comment_html_url_invalid": 0 if isinstance(comment.get("html_url"), str) and comment["html_url"].startswith("https://github.com/cristhianlujan/claude-persona-lf-patch/") else 1,
         "comment_id_missing": 0 if isinstance(comment.get("id"), int) and comment.get("id") > 0 else 1,
@@ -116,12 +118,14 @@ def verify(
 def build_binding(challenge: dict[str, Any], comment: dict[str, Any], verified: dict[str, Any], *, resource_number: int, verified_at: str) -> dict[str, Any]:
     if verified.get("result") != "LIVE_BINDING_VERIFIED":
         raise ValueError("cannot_build_binding_from_unverified_comment")
+    if resource_number != challenge.get("review_resource_number"):
+        raise ValueError("binding_resource_number_mismatch_challenge")
     user = comment["user"]
     payload = {
         "schema_version": "p0-human-auth-binding/v1",
         "provider": "GITHUB",
         "repository": "cristhianlujan/claude-persona-lf-patch",
-        "resource_type": "PULL_REQUEST_COMMENT",
+        "resource_type": "ISSUE_COMMENT",
         "resource_number": resource_number,
         "comment_id": comment["id"],
         "comment_html_url": comment["html_url"],
@@ -186,7 +190,7 @@ def synthetic_comment(challenge: dict[str, Any], decision: str) -> dict[str, Any
     return {
         "id": 987654321,
         "url": "https://api.github.com/repos/cristhianlujan/claude-persona-lf-patch/issues/comments/987654321",
-        "html_url": "https://github.com/cristhianlujan/claude-persona-lf-patch/pull/999#issuecomment-987654321",
+        "html_url": "https://github.com/cristhianlujan/claude-persona-lf-patch/issues/999#issuecomment-987654321",
         "issue_url": "https://api.github.com/repos/cristhianlujan/claude-persona-lf-patch/issues/999",
         "body": expected_comment_body(challenge, decision),
         "user": {"login": challenge["expected_reviewer_login"], "id": 259964988},
@@ -199,6 +203,7 @@ def self_test() -> int:
         "schema_version": "p0-human-review-challenge/v1", "review_id": "REV-TEST-1", "target_screen_code": "SCR-LOGIN",
         "visual_output_sha256": "d" * 64, "source_raw_sha256": "a" * 64, "expected_reviewer_provider": "GITHUB",
         "expected_reviewer_login": "cristhianlujan", "reviewer_role": "P0_VISUAL_ADJUDICATOR", "reviewer_scope": "LF-SANDBOX",
+        "review_resource_type": "ISSUE", "review_resource_number": 999, "review_resource_url": "https://github.com/cristhianlujan/claude-persona-lf-patch/issues/999",
         "training_ack_code": "P0-REVIEW-BRIEF-v1", "training_brief_ref": "p0://review-brief/P0-REVIEW-BRIEF-v1", "training_brief_sha256": "b" * 64,
         "allowed_decisions": ["CONFIRM_OBSERVATION", "REQUEST_NEW_CAPTURE"],
         "nonce": "nonce_TEST_1234567890", "issued_at": "2026-08-08T00:00:00Z", "expires_at": "2026-08-09T00:00:00Z",
