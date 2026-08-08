@@ -4,7 +4,7 @@
   "title": "P0 to J02 Handoff v1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "target_screen_code", "source_version", "source_snapshot_sha256", "visual_output_sha256", "effective_decision", "provenance", "main_responsibility", "context_inventory", "field_inventory", "permission_inventory", "transition_inventory", "action_inventory", "pending_decisions", "evidence_refs"],
+  "required": ["schema_version", "target_screen_code", "source_version", "source_snapshot_sha256", "visual_output_sha256", "effective_decision", "human_review_decision", "provenance", "main_responsibility", "context_inventory", "field_inventory", "permission_inventory", "transition_inventory", "action_inventory", "pending_decisions", "evidence_refs"],
   "properties": {
     "schema_version": {"const": "p0-j02-handoff/v1"},
     "target_screen_code": {"type": "string", "pattern": "^SCR-[A-Z0-9-]+$"},
@@ -33,6 +33,7 @@
         "visual_output_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
       }
     },
+    "human_review_decision": {"type": ["object", "null"]},
     "provenance": {
       "type": "object", "additionalProperties": false, "required": ["architecture_source_sha256", "source_refs", "p0_execution_id"],
       "properties": {

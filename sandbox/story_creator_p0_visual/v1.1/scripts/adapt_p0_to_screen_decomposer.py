@@ -74,8 +74,15 @@ def self_test() -> int:
         adapt(forged_j00r)
     except ValueError:
         rejects_unadjudicated_j00r = True
-    passed = all(checks.values()) and rejects_stale and rejects_unadjudicated_j00r
-    print(json.dumps({"checks": checks, "rejects_stale": rejects_stale, "rejects_unadjudicated_j00r": rejects_unadjudicated_j00r, "result": "PASS_WITH_EVIDENCE" if passed else "BLOCKED"}, sort_keys=True))
+    fake_overlay = dict(good); fake_overlay["effective_decision"] = dict(good["effective_decision"], decision_id="DEC-P0R-FAKE", judge_code="J00R_P0_REJUDGMENT", result="J00R_READY_FOR_P1", judge_execution_id="EXEC-J00R-FAKE", judge_identity="AGENT-J00R-FAKE", adjudication_overlay_ref="x")
+    fake_overlay["evidence_refs"] = ["p0://decision/DEC-P0R-FAKE"]
+    rejects_fake_overlay = False
+    try:
+        adapt(fake_overlay)
+    except ValueError:
+        rejects_fake_overlay = True
+    passed = all(checks.values()) and rejects_stale and rejects_unadjudicated_j00r and rejects_fake_overlay
+    print(json.dumps({"checks": checks, "rejects_stale": rejects_stale, "rejects_unadjudicated_j00r": rejects_unadjudicated_j00r, "rejects_fake_overlay": rejects_fake_overlay, "result": "PASS_WITH_EVIDENCE" if passed else "BLOCKED"}, sort_keys=True))
     return 0 if passed else 2
 
 

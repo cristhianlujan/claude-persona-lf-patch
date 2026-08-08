@@ -17,7 +17,7 @@
     "critical_screen": {"type": "boolean"},
     "visual_output_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "requires_human_review": {"type": "boolean"},
-    "adjudication_overlay_ref": {"type": ["string", "null"], "minLength": 1},
+    "adjudication_overlay_ref": {"type": ["string", "null"], "pattern": "^p0://adjudication/[A-Za-z0-9._-]+$"},
     "evidence_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
     "is_current": {"type": "boolean"},
     "superseded_by": {"type": ["string", "null"], "minLength": 1}

@@ -13,6 +13,7 @@ from validate_p0_judge import validate as validate_judge
 
 ROOT = Path(__file__).resolve().parent.parent
 SCHEMA = ROOT / "schemas" / "p0-j02-handoff.schema.json"
+HUMAN_DECISION_SCHEMA = ROOT / "schemas" / "human-review-decision.schema.json"
 FIXTURES = ROOT / "evals" / "p0-contract-fixtures.json"
 ARCHITECTURE_SHA256 = "a8d53b736e7d2d672b0927f7deaca4422f7429fdda0d1997b1eaa54fc06e7531"
 
@@ -26,15 +27,19 @@ def canonical_sha(value: Any) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
-def schema_errors(payload: Any) -> list[str]:
+def schema_errors_for(schema_path: Path, payload: Any) -> list[str]:
     try:
         import jsonschema
     except ImportError as exc:
         raise RuntimeError("jsonschema_not_available") from exc
-    schema = load(SCHEMA)
+    schema = load(schema_path)
     jsonschema.Draft7Validator.check_schema(schema)
     validator = jsonschema.Draft7Validator(schema, format_checker=jsonschema.FormatChecker())
     return sorted(f"{'/'.join(map(str, e.absolute_path)) or '$'}:{e.message}" for e in validator.iter_errors(payload))
+
+
+def schema_errors(payload: Any) -> list[str]:
+    return schema_errors_for(SCHEMA, payload)
 
 
 def duplicate_count(items: Any, key: str) -> int:
@@ -50,6 +55,9 @@ def validate(payload: Any) -> dict[str, Any]:
         return {"result": "BLOCKED", "blocking_assertions": ["handoff_schema_invalid"], "checks": {}, "schema_errors": errors}
     decision = payload.get("effective_decision") if isinstance(payload.get("effective_decision"), dict) else {}
     judge_gate = validate_judge(decision)
+    human = payload.get("human_review_decision") if isinstance(payload.get("human_review_decision"), dict) else {}
+    human_present = isinstance(payload.get("human_review_decision"), dict)
+    human_schema_errors = schema_errors_for(HUMAN_DECISION_SCHEMA, human) if human_present else []
     provenance = payload.get("provenance") if isinstance(payload.get("provenance"), dict) else {}
     actions = payload.get("action_inventory") if isinstance(payload.get("action_inventory"), list) else []
     contexts = payload.get("context_inventory") if isinstance(payload.get("context_inventory"), list) else []
@@ -60,6 +68,9 @@ def validate(payload: Any) -> dict[str, Any]:
     action_codes = {item.get("code") for item in actions if isinstance(item, dict)}
     context_codes = {item.get("code") for item in contexts if isinstance(item, dict)}
     expected_result = {"J00_P0_VISUAL_READING": "J00_READY_FOR_P1", "J00R_P0_REJUDGMENT": "J00R_READY_FOR_P1"}.get(decision.get("judge_code"))
+    is_j00 = decision.get("judge_code") == "J00_P0_VISUAL_READING"
+    is_j00r = decision.get("judge_code") == "J00R_P0_REJUDGMENT"
+    adjudication_ref = decision.get("adjudication_overlay_ref")
     inventories = contexts + fields + actions
     checks = {
         "handoff_schema_invalid": len(errors),
@@ -68,6 +79,13 @@ def validate(payload: Any) -> dict[str, Any]:
         "decision_superseded": 0 if decision.get("superseded_by") is None else 1,
         "decision_not_judged_ready": 0 if expected_result and decision.get("result") == expected_result else 1,
         "judge_decision_invalid": 0 if judge_gate.get("result") == "PASS_WITH_EVIDENCE" else 1,
+        "j00_human_decision_unexpected": 1 if is_j00 and human_present else 0,
+        "j00r_human_decision_missing": 1 if is_j00r and not human_present else 0,
+        "j00r_human_decision_schema_invalid": len(human_schema_errors) if is_j00r else 0,
+        "j00r_human_decision_not_routable": 1 if is_j00r and human.get("decision") not in {"CONFIRM_OBSERVATION", "CORRECT_WITH_ADJUDICATION"} else 0,
+        "j00r_human_visual_hash_mismatch": 1 if is_j00r and human.get("visual_output_sha256") != payload.get("visual_output_sha256") else 0,
+        "j00r_adjudication_overlay_mismatch": 1 if is_j00r and human.get("adjudication_overlay_ref") != adjudication_ref else 0,
+        "j00r_adjudication_evidence_missing": 1 if is_j00r and adjudication_ref not in (payload.get("evidence_refs") or []) else 0,
         "worker_execution_mismatch": 0 if decision.get("worker_execution_id") == provenance.get("p0_execution_id") else 1,
         "visual_output_hash_mismatch": 0 if decision.get("visual_output_sha256") == payload.get("visual_output_sha256") else 1,
         "decision_evidence_missing": 0 if f"p0://decision/{decision.get('decision_id')}" in (payload.get("evidence_refs") or []) else 1,
@@ -117,10 +135,13 @@ def self_test() -> int:
         outcomes.append({"name": name, "result": result["result"], "expected_assertion": expected, "passed": result["result"] == "BLOCKED" and expected in result["blocking_assertions"]})
     good_j00r = copy.deepcopy(good)
     good_j00r["effective_decision"].update({"decision_id": "DEC-P0R-1", "judge_code": "J00R_P0_REJUDGMENT", "result": "J00R_READY_FOR_P1", "judge_execution_id": "EXEC-J00R-1", "judge_identity": "AGENT-J00R-1", "adjudication_overlay_ref": "p0://adjudication/REV-1"})
+    good_j00r["human_review_decision"] = {"review_id": "REV-1", "reviewer_identity": "USR-1", "reviewer_role": "P0_VISUAL_ADJUDICATOR", "decision": "CORRECT_WITH_ADJUDICATION", "visual_output_sha256": good_j00r["visual_output_sha256"], "adjudication_overlay_ref": "p0://adjudication/REV-1", "created_at": "2026-08-08T01:00:00Z"}
     good_j00r["evidence_refs"] = ["p0://decision/DEC-P0R-1", "p0://adjudication/REV-1"]
     positive_j00r = validate(good_j00r)
-    passed = positive["result"] == "PASS_WITH_EVIDENCE" and positive_j00r["result"] == "PASS_WITH_EVIDENCE" and all(item["passed"] for item in outcomes)
-    print(json.dumps({"positive_pass": positive["result"] == "PASS_WITH_EVIDENCE", "positive_j00r_pass": positive_j00r["result"] == "PASS_WITH_EVIDENCE", "negative_cases_passed": sum(item["passed"] for item in outcomes), "negative_cases_total": len(outcomes), "negative_results": outcomes, "result": "PASS_WITH_EVIDENCE" if passed else "BLOCKED"}, sort_keys=True))
+    x = copy.deepcopy(good_j00r); x["effective_decision"]["adjudication_overlay_ref"] = "x"; x["human_review_decision"]["adjudication_overlay_ref"] = "x"; x["evidence_refs"] = ["p0://decision/DEC-P0R-1"]; fake_overlay = validate(x)
+    fake_overlay_blocked = fake_overlay["result"] == "BLOCKED" and ("judge_decision_invalid" in fake_overlay["blocking_assertions"] or "j00r_adjudication_evidence_missing" in fake_overlay["blocking_assertions"])
+    passed = positive["result"] == "PASS_WITH_EVIDENCE" and positive_j00r["result"] == "PASS_WITH_EVIDENCE" and fake_overlay_blocked and all(item["passed"] for item in outcomes)
+    print(json.dumps({"positive_pass": positive["result"] == "PASS_WITH_EVIDENCE", "positive_j00r_pass": positive_j00r["result"] == "PASS_WITH_EVIDENCE", "fake_overlay_blocked": fake_overlay_blocked, "negative_cases_passed": sum(item["passed"] for item in outcomes), "negative_cases_total": len(outcomes), "negative_results": outcomes, "result": "PASS_WITH_EVIDENCE" if passed else "BLOCKED"}, sort_keys=True))
     return 0 if passed else 2
 
 
