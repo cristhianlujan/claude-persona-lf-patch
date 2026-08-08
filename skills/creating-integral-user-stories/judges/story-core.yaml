@@ -1,62 +1,398 @@
 judge_code: J03_STORY_CORE
-version: v0.5
+judge_version: v0.7
 status: CANDIDATO_READ_ONLY
-scope: Verifica núcleo A-B, trazabilidad, schema y presupuesto de contexto del Story Pack.
+scope: Verifica exclusivamente el núcleo A-B producido para una unidad funcional CREATE_STORY, su atomicidad, trazabilidad y criterios verificables.
 independence: worker_must_not_execute_own_judge
 retry_limit: 2
+
 required_inputs:
-  - approved_functional_units
-  - story_pack
+- target_functional_unit
+- story_core
+- source_snapshot
+- j02_evidence
+
+input_contract:
+  envelope_type: object
+  additional_envelope_properties_allowed: false
+  required_fields:
+  - target_functional_unit
+  - story_core
   - source_snapshot
-  - schemas/story-pack.schema.json
+  - j02_evidence
+  story_core_required_sections:
+  - identity
+  - core
+  identity_schema_ref: schemas/story-pack.schema.json#properties/identity
+  core_schema_ref: schemas/story-pack.schema.json#properties/core
+  full_story_pack_required_at_j03: false
+  sections_c_q_must_not_be_written_by_worker: true
+
 preflight:
-  - all_required_inputs_are_present
-  - input_versions_are_compatible
-  - source_and_evidence_refs_are_resolvable
-  - judge_is_not_executed_by_worker
+- all_required_inputs_are_present
+- executor_identity_is_present
+- judge_version_matches_contract
+- worker_and_judge_identities_are_independent
+- target_functional_unit_is_unique
+- target_decision_is_CREATE_STORY
+- j02_result_is_PASS_WITH_EVIDENCE
+- j02_evidence_refs_are_non_empty_and_resolvable
+- source_snapshot_version_and_sha256_are_present
+- source_refs_are_resolvable_in_snapshot
+- identity_and_core_are_objects
+- validator_is_available
+- validator_is_registered_in_canonical_inventory
+- validator_sha_matches_main_and_recorded_evidence
+- preflight_is_enforced_before_semantic_assertions
+
+validators:
+  static_contract_ref: scripts/validate_package.py#audit_artifact
+  identity_schema_ref: schemas/story-pack.schema.json#properties/identity
+  core_schema_ref: schemas/story-pack.schema.json#properties/core
+  output_schema_ref: schemas/judge-result.schema.json
+  semantic_validator_ref: scripts/validate_story_pack.py
+  semantic_validator_name: story_core_semantic_validator
+  semantic_validator_registration_required: true
+  semantic_validator_sha_reconciliation_required: true
+  semantic_validator_sha256: 6e4422167eab1f1ab12492c70a8afb71c69bce5f3264c8c57c0c0058c8298d20
+  semantic_validator_git_blob_sha1: 404110421b6372601288960140daf5e02f0acc97
+  semantic_validator_supabase_row_id: 234
+  semantic_validator_registration_ref: supabase://private.lf_skill_artifacts/ART_SCRIPT_VALIDATE_STORY_PACK
+
+runtime_status: AVAILABLE
+runtime_blockers: []
+
+runtime_registration:
+  semantic_validator_sha256: 6e4422167eab1f1ab12492c70a8afb71c69bce5f3264c8c57c0c0058c8298d20
+  semantic_validator_git_blob_sha1: 404110421b6372601288960140daf5e02f0acc97
+  semantic_validator_supabase_row_id: 234
+  semantic_validator_registration_ref: supabase://private.lf_skill_artifacts/ART_SCRIPT_VALIDATE_STORY_PACK
+  strict_positive_assertions: 20/20
+  strict_negative_cases: 16/16
+  legacy_compatibility_scope: LF_JUDGE_VERSION_v0.6_without_sha_or_registration_only
+
+runtime_command: LF_EXECUTOR_IDENTITY=<independent_executor> LF_JUDGE_VERSION=v0.7 python scripts/validate_story_pack.py <story-core-envelope.json> --evidence-ref <ref> --expected-validator-sha256 6e4422167eab1f1ab12492c70a8afb71c69bce5f3264c8c57c0c0058c8298d20 --registration-ref supabase://private.lf_skill_artifacts/ART_SCRIPT_VALIDATE_STORY_PACK
+self_test_command: LF_EXECUTOR_IDENTITY=LF_SELF_TEST LF_JUDGE_VERSION=v0.7 python scripts/validate_story_pack.py --self-test
+
+deterministic_procedure:
+- validate_executor_identity_judge_version_and_worker_independence
+- validate_required_envelope_and_preflight
+- validate_identity_against_story_pack_identity_subschema
+- validate_core_against_story_pack_core_subschema
+- verify_target_functional_unit_and_source_decision_match
+- verify_j02_pass_and_resolvable_evidence
+- verify_snapshot_sha_version_and_source_refs
+- recompute_atomicity_from_actor_trigger_result_permission_resource_and_state_boundaries
+- validate_actor_need_benefit_preconditions_trigger_flows_postconditions_and_out_of_scope
+- validate_each_acceptance_criterion_given_when_then_and_source_ref
+- reject_duplicate_criterion_codes
+- reject_blocking_pending_decisions
+- record_actual_expected_for_every_assertion
+- emit_schema_valid_judge_result
+
+assertions:
+- assertion_id: input_envelope_valid
+  actual_ref: evidence.checks.input_envelope_valid
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: identity_schema_valid
+  actual_ref: evidence.checks.identity_schema_valid
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: core_schema_valid
+  actual_ref: evidence.checks.core_schema_valid
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: target_functional_unit_matches
+  actual_ref: evidence.checks.target_functional_unit_matches
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: source_decision_matches
+  actual_ref: evidence.checks.source_decision_matches
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: source_snapshot_matches
+  actual_ref: evidence.checks.source_snapshot_matches
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: actor_missing
+  actual_ref: evidence.checks.actor_missing
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: need_missing
+  actual_ref: evidence.checks.need_missing
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: benefit_missing
+  actual_ref: evidence.checks.benefit_missing
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: preconditions_missing
+  actual_ref: evidence.checks.preconditions_missing
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: trigger_missing
+  actual_ref: evidence.checks.trigger_missing
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: main_flow_missing
+  actual_ref: evidence.checks.main_flow_missing
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: postconditions_missing
+  actual_ref: evidence.checks.postconditions_missing
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: acceptance_criteria_missing
+  actual_ref: evidence.checks.acceptance_criteria_missing
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: criteria_without_given_when_then
+  actual_ref: evidence.checks.criteria_without_given_when_then
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: criteria_without_source_ref
+  actual_ref: evidence.checks.criteria_without_source_ref
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: duplicate_criterion_codes
+  actual_ref: evidence.checks.duplicate_criterion_codes
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: out_of_scope_missing
+  actual_ref: evidence.checks.out_of_scope_missing
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: multiple_independent_results
+  actual_ref: evidence.checks.multiple_independent_results
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: blocking_pending_decisions
+  actual_ref: evidence.checks.blocking_pending_decisions
+  expected: 0
+  critical: true
+  evidence_required: true
+
 pass_if:
-  - missing_sections = 0
-  - core_keys_missing = 0
-  - criteria_without_given_when_then = 0
-  - duplicate_criterion_codes = 0
-  - stories_without_source_trace = 0
-  - context_budget_missing = 0
-  - context_budget_rule_violations = 0
-  - schema_validation_errors = 0
+- runtime_status = AVAILABLE
+- semantic_validator_exit_code = 0
+- assertions_passed = assertions_total
+- compliance_bit = 1
+- evidence_refs_non_empty = true
+- executor_identity_not_missing = true
+- judge_version_matches_contract = true
+- validator_sha_reconciled = true
+
 fail_if:
-  - criterion_without_source_ref = true
-  - oversized_story_direct_load_allowed = true
-  - active_context_over_limit_direct_load_allowed = true
+- worker_self_approval = true
+- full_story_pack_required_from_A04 = true
+- context_budget_required_from_A04 = true
+- criterion_without_source_ref_received_pass = true
+- multiple_independent_results_received_pass = true
+- j02_not_passed_received_pass = true
+
 block_if:
-  - source_snapshot_unavailable = true
-  - approved_functional_units_missing = true
-  - retry_limit_exhausted = true
-result_values: [PASS_WITH_EVIDENCE, RETURN_TO_WORKER, BLOCKED, FAIL]
+- required_input_missing = true
+- executor_identity_missing = true
+- judge_version_missing_or_mismatch = true
+- worker_judge_independence_broken = true
+- source_snapshot_unavailable = true
+- source_hash_missing = true
+- source_ref_unresolvable = true
+- approved_functional_unit_missing_or_ambiguous = true
+- target_decision_not_CREATE_STORY = true
+- j02_not_passed_with_evidence = true
+- validator_unavailable = true
+- validator_unregistered = true
+- validator_sha_unreconciled = true
+- retry_limit_exhausted = true
+
+result_values:
+- PASS_WITH_EVIDENCE
+- RETURN_TO_WORKER
+- BLOCKED
+- FAIL
+
 required_evidence:
-  - sections_present
-  - acceptance_criteria_count
-  - source_trace_count
-  - context_budget_measurement_method
-  - canonical_story_tokens
-  - active_context_tokens
-  - schema_error_count
-  - failed_assertions
-  - positive_eval_result
-  - negative_eval_result
+- input_envelope_ref
+- identity_schema_ref
+- core_schema_ref
+- target_functional_unit_code
+- source_decision_id
+- source_snapshot_sha256
+- source_version
+- j02_result
+- j02_evidence_refs
+- acceptance_criteria_count
+- duplicate_criterion_codes
+- atomicity_boundaries
+- failed_assertions
+- blocking_assertions
+- repair_instructions
+- executor_identity
+- judge_version
+- semantic_validator_path
+- semantic_validator_sha256
+- semantic_validator_git_blob_sha1
+- command
+- started_at
+- completed_at
+- assertions_total
+- assertions_passed
+- input_sha256
+- output_sha256
+- evidence_sha256
+
+positive_behavior:
+  command: LF_EXECUTOR_IDENTITY=LF_SELF_TEST LF_JUDGE_VERSION=v0.7 python scripts/validate_story_pack.py --self-test
+  expected: positive_pass=true and assertions_passed=20 and exit_code=0
+
+negative_cases:
+- case: missing_j02_evidence
+  expected_result: BLOCKED
+  assertion: j02_not_passed_with_evidence
+- case: target_decision_not_create_story
+  expected_result: BLOCKED
+  assertion: target_decision_not_CREATE_STORY
+- case: functional_unit_mismatch
+  expected_result: RETURN_TO_WORKER
+  assertion: target_functional_unit_matches
+- case: source_decision_mismatch
+  expected_result: RETURN_TO_WORKER
+  assertion: source_decision_matches
+- case: snapshot_sha_mismatch
+  expected_result: RETURN_TO_WORKER
+  assertion: source_snapshot_matches
+- case: missing_actor
+  expected_result: RETURN_TO_WORKER
+  assertion: actor_missing
+- case: missing_trigger
+  expected_result: RETURN_TO_WORKER
+  assertion: trigger_missing
+- case: empty_main_flow
+  expected_result: RETURN_TO_WORKER
+  assertion: main_flow_missing
+- case: criterion_missing_given
+  expected_result: RETURN_TO_WORKER
+  assertion: criteria_without_given_when_then
+- case: criterion_missing_source_ref
+  expected_result: RETURN_TO_WORKER
+  assertion: criteria_without_source_ref
+- case: duplicate_criterion_code
+  expected_result: RETURN_TO_WORKER
+  assertion: duplicate_criterion_codes
+- case: missing_out_of_scope
+  expected_result: RETURN_TO_WORKER
+  assertion: out_of_scope_missing
+- case: multiple_independent_results
+  expected_result: RETURN_TO_WORKER
+  assertion: multiple_independent_results
+- case: blocking_pending_decision
+  expected_result: BLOCKED
+  assertion: blocking_pending_decisions
+- case: missing_executor_identity
+  expected_result: BLOCKED
+  assertion: executor_identity_missing
+- case: validator_sha_mismatch
+  expected_result: BLOCKED
+  assertion: validator_sha_unreconciled
+
 repair_matrix:
-  - assertion_id: context_budget_rule_violations
-    instruction: Corregir medición, carga directa, vistas especializadas y revisión de atomicidad sin bajar límites.
-    prohibited_shortcuts: [delete_assertion, lower_threshold, invent_source, self_approve]
-  - assertion_id: schema_validation_errors
-    instruction: Corregir instancia o contrato; nunca desactivar el schema.
-    prohibited_shortcuts: [delete_assertion, lower_threshold, weaken_schema, self_approve]
-validator_ref: scripts/validate_story_pack.py
+- assertion_id: identity_schema_valid
+  target_path: story_core.identity
+  instruction: Reparar A identity conforme al subschema canónico sin escribir C-Q.
+  prohibited_shortcuts: [weaken_schema, add_unconfirmed_value, self_approve]
+- assertion_id: core_schema_valid
+  target_path: story_core.core
+  instruction: Reparar B core conforme al subschema canónico sin escribir C-Q.
+  prohibited_shortcuts: [weaken_schema, delete_required_key, self_approve]
+- assertion_id: multiple_independent_results
+  target_path: target_functional_unit
+  instruction: Retornar a J02 para separar resultados independientes; no dividir por tamaño visual ni ocultar el segundo resultado.
+  prohibited_shortcuts: [ignore_result, merge_without_source, self_approve]
+- assertion_id: criteria_without_given_when_then
+  target_path: story_core.core.acceptance_criteria
+  instruction: Completar cada criterio con given, when, then y fuente resoluble.
+  prohibited_shortcuts: [delete_criterion, vague_then, invent_source, self_approve]
+- assertion_id: blocking_pending_decisions
+  target_path: pending_decisions
+  instruction: Resolver mediante fuente o devolver BLOCKED; no cambiar blocking para obtener PASS.
+  prohibited_shortcuts: [mark_non_blocking_without_source, delete_decision, self_approve]
+
 output:
   schema_ref: schemas/judge-result.schema.json
-  required_fields: [judge_code, result, compliance_bit, failed_assertions, blocking_assertions, evidence_refs, evidence, repair_instructions, retry_count, judged_at]
-prohibitions: [worker_self_approval, threshold_reduction_to_obtain_pass, pass_without_evidence, context_budget_omission]
+  schema_version: v0.5
+  required_fields:
+  - schema_version
+  - judge_code
+  - judge_version
+  - executor_identity
+  - command
+  - started_at
+  - completed_at
+  - exit_code
+  - result
+  - compliance_bit
+  - assertions_total
+  - assertions_passed
+  - failed_assertions
+  - blocking_assertions
+  - repairs
+  - repair_instructions
+  - evidence_refs
+  - evidence
+  - evidence_sha256
+  - input_sha256
+  - output_sha256
+  - retry_count
 
-executable_evals:
-  positive: E21_STORY_CORE_POSITIVE
-  negative: E22_STORY_CORE_NEGATIVE
-  negative_must_be_rejected: true
+prohibitions:
+- worker_self_approval
+- assertion_deletion_to_obtain_pass
+- threshold_reduction_to_obtain_pass
+- pass_without_evidence
+- pass_without_j02_evidence
+- pass_without_source_trace
+- pass_with_multiple_independent_results
+- require_sections_C_Q_from_A04
+- require_context_budget_from_A04
+- modify_story_pack_schema_to_make_invalid_core_pass
+
+benchmark_dual:
+  verified_at: 2026-07-29
+  claude:
+    repository: anthropics/skills
+    reference: skills/skill-creator/SKILL.md
+    blob: 65b3a402dbd09b8e83f9d637c6b553875189085c
+    practice: deterministic workflow and objective evals
+  github:
+    repository: freeCodeCamp/freeCodeCamp
+    stars_verified: 453125
+    reference: curriculum/schema/challenge-schema.js
+    blob: 7db60817942625110525fd313bf80f1df067f006
+    practice: conditional constraints and uniqueness
+  complement: Validate only the stage-owned A-B subschemas and prove atomicity against J02 evidence.
+
+preflight_enforcement:
+  enforced_by_validator: true
+  current_state: AVAILABLE
+  entrypoint: scripts/validate_story_pack.py
+  rule: Emitir BLOCKED antes de assertions cuando falten identidad, versión, fuente, evidencia J02, unidad objetivo, registro o SHA; validar exclusivamente A-B en J03.
