@@ -41,7 +41,7 @@ jobs:
         if: steps.credentials.outputs.ready == 'true'
         uses: supabase/setup-cli@v1
         with:
-          version: 2.112.0
+          version: 2.111.0
 
       - name: Export sandbox schema without data or roles
         if: steps.credentials.outputs.ready == 'true'
