@@ -103,6 +103,46 @@ jobs:
           > "$RUNNER_TEMP/lf-remote-schema.sql"
           test -s "$RUNNER_TEMP/lf-remote-schema.sql"
 
+      - name: Export custom roles without passwords or managed roles
+        if: steps.credentials.outputs.ready == 'true'
+        shell: bash
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+          export RESERVED_ROLES='anon|authenticated|authenticator|cli_login_.*|dashboard_user|pgbouncer|postgres|service_role|supabase_.*|pgsodium_keyholder|pgsodium_keyiduser|pgsodium_keymaker|pgtle_admin'
+
+          # Mirrors Supabase CLI role-only filtering while keeping the database
+          # password in PGPASSWORD instead of a connection URI/argv.
+          docker run --rm \
+            -e PGHOST \
+            -e PGPORT \
+            -e PGUSER \
+            -e PGPASSWORD \
+            -e PGDATABASE \
+            -e PGSSLMODE \
+            postgres:17.6 \
+            pg_dumpall \
+              --roles-only \
+              --role postgres \
+              --quote-all-identifiers \
+              --no-role-passwords \
+              --no-comments \
+          | sed -E 's/^\\(un\\)?restrict .*$/-- &/' \
+          | sed -E "s/^CREATE ROLE \"(${RESERVED_ROLES})\"/-- &/" \
+          | sed -E "s/^ALTER ROLE \"(${RESERVED_ROLES})\"/-- &/" \
+          | sed -E 's/ (NOSUPERUSER|NOREPLICATION)//g' \
+          | sed -E "s/GRANT \".*\" TO \"(${RESERVED_ROLES})\"/-- &/" \
+          | sed -E '/^--/d' \
+          | uniq \
+          > "$RUNNER_TEMP/lf-roles.sql"
+          test -s "$RUNNER_TEMP/lf-roles.sql"
+
       - name: Rebuild exported schema in disposable local Supabase
         if: steps.credentials.outputs.ready == 'true'
         shell: bash
@@ -113,6 +153,7 @@ jobs:
           cd "$probe"
           supabase init
           mkdir -p supabase/migrations
+          cp "$RUNNER_TEMP/lf-roles.sql" supabase/roles.sql
           cp "$RUNNER_TEMP/lf-remote-schema.sql" \
             supabase/migrations/20260807000000_remote_schema_probe.sql
           supabase start
@@ -124,7 +165,7 @@ jobs:
           {
             echo "### LF bootstrap reproducibility probe"
             echo "- project: \`$SUPABASE_PROJECT_ID\`"
-            echo "- source: schema-only linked dump; no data/roles artifact uploaded"
+            echo "- source: custom roles (no passwords) + schema-only linked dump; no dump artifact uploaded"
             echo "- local reset: PASS"
             echo "- schema sha256: \`$schema_sha\`"
             echo "- schema lines: \`$schema_lines\`"
