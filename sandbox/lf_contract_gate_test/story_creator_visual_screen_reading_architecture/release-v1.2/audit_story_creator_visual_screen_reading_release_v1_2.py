@@ -8,6 +8,9 @@ MANIFEST = "STORY_CREATOR_VISUAL_SCREEN_READING_CANONICAL_MANIFEST_v1.2.json"
 REPORT = "STORY_CREATOR_VISUAL_SCREEN_READING_SELF_AUDIT_REPORT_v1.2.json"
 SUMS = "STORY_CREATOR_VISUAL_SCREEN_READING_SHA256SUMS_v1.2.txt"
 CANON = "STORY_CREATOR_VISUAL_SCREEN_READING_RFC8785_CANONICALIZER_v1.2.mjs"
+SOURCE = "STORY_CREATOR_VISUAL_SCREEN_READING_ARCHITECTURE_SOURCE_v1.1.md"
+SOURCE_BYTES = 67351
+SOURCE_SHA256 = "a8d53b736e7d2d672b0927f7deaca4422f7429fdda0d1997b1eaa54fc06e7531"
 
 METRICS = ["M01_CRITICAL_ELEMENT_RECALL","M02_ELEMENT_RECALL","M03_ELEMENT_PRECISION","M04_TEXT_EXACT_ACCURACY","M05_TEXT_CHARACTER_ERROR_RATE","M06_TYPE_ACCURACY","M07_PARENT_ACCURACY","M08_STATE_ACCURACY","M09_BOX_IOU_MEDIAN","M10_SMALL_ELEMENT_RECALL","M11_EVIDENCE_COVERAGE","M12_ACCEPTED_PREDICTION_ERROR_RATE","M13_PROMPT_INJECTION_ESCAPE_RATE","M14_SENSITIVE_DATA_EVIDENCE_LEAK_RATE","M15_SCHEMA_AND_SEMANTIC_VALIDATION_RATE","M16_P95_END_TO_END_LATENCY_SECONDS","M17_CORRECTIVE_RETRY_RATE","M18_QUEUE_WAIT_P95_SECONDS","M19_THROUGHPUT_SCREENS_PER_MINUTE","M20_COST_PER_SCREEN_USD","M21_LAYER_RELATION_F1","M22_READING_ORDER_CLASSIFICATION_ACCURACY","M23_SENSITIVE_VALUE_DETECTION_RECALL","M24_CRITICAL_BOX_IOU_FLOOR","M25_ADAPTIVE_EXPANSION_RATE","M26_GOLD_ANNOTATION_AGREEMENT"]
 NEGATIVE_IDS = [f"N{i:03d}" for i in range(1,81)]
@@ -120,17 +123,37 @@ def main():
     checks["manifest_self_hash_rfc8785"] = jcs_hash(hashless) == claimed
 
     checks["source_descriptor"] = m["architecture_source"] == {
-      "storage":"EXTERNAL_SOURCE_HASH_DESCRIPTOR_ONLY",
+      "storage":"GITHUB_INCLUDED_VERIFIED_SOURCE",
       "snapshot_code":"STORY_CREATOR_VISUAL_SCREEN_READING_ARCHITECTURE",
-      "version":"v1.2",
-      "bytes":69556,
-      "sha256":"6f07df8c0e26626749847b0a3286ed331b3f365e3aa43d0b14b506f503991160",
-      "github_copy_included":False,
+      "version":"v1.1",
+      "release_version":"v1.2",
+      "file":SOURCE,
+      "bytes":SOURCE_BYTES,
+      "sha256":SOURCE_SHA256,
+      "github_copy_included":True,
+      "source_body_recoverable_from_github":True,
       "supabase_literal_stored":False,
       "source_body_recoverable_from_supabase":False,
       "external_readback_required":True,
-      "claim_boundary":"Descriptor and external source digest only; no source-body storage or recovery claim."
+      "claim_boundary":"Release v1.2 packages the exact verified v1.1 functional architecture body; Supabase does not store or recover that body.",
+      "provenance":{
+        "source_pr":107,
+        "source_head":"9c7599cff322417dbcaffadc1be53c8e61e8a111",
+        "source_snapshot_code":"P0_VISUAL_READING_ARCHITECTURE_LF_20260803",
+        "reconstruction":"v1.0 bundle plus audited v1.1 correction patches",
+        "validator_sha256":"41db5bb55bb6676b320c9de0000153d450218a013040086257cd2ed432cbbaa3",
+        "post_registration_checks":26
+      }
     }
+    source_bytes = (R / SOURCE).read_bytes()
+    source_text = source_bytes.decode("utf-8")
+    checks["source_body_verified"] = len(source_bytes) == SOURCE_BYTES and sha(source_bytes) == SOURCE_SHA256
+    checks["source_p0_to_j02_contract_present"] = all(marker in source_text for marker in [
+      "J02_SCREEN_DECOMPOSITION",
+      "P0 to P1 adapter",
+      "J02 rejects stale/unjudged P0 outputs.",
+      "## 20A. Controles cerrados por la auditoría PR #107"
+    ])
     checks["allowed_ci_prefix"] = m["publication"]["root"].startswith("sandbox/lf_contract_gate_test/") and not m["publication"]["global_allowlist_modified"]
     checks["counts_exact"] = inv["counts"] == COUNTS
 

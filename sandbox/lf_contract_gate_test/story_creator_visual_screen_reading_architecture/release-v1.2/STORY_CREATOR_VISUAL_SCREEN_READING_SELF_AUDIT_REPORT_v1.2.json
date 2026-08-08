@@ -1,6 +1,6 @@
 {
   "all_checks_pass": true,
-  "check_count": 30,
+  "check_count": 32,
   "checks": {
     "allowed_ci_prefix": true,
     "canonicalizer_hash": true,
@@ -26,7 +26,9 @@
     "reject_unsafe_integer": true,
     "resolved_error_ids_verifiable": true,
     "scope_isolated": true,
+    "source_body_verified": true,
     "source_descriptor": true,
+    "source_p0_to_j02_contract_present": true,
     "vector_escapes": true,
     "vector_number_1_0": true,
     "vector_primitives": true,
