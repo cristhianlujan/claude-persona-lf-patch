@@ -1,0 +1,74 @@
+{
+  "schema_version": "p0-integration-candidate/v2",
+  "architecture_source": "github://cristhianlujan/claude-persona-lf-patch/commit/d8b2b9c8fa49cf4fcdcbb054d341fff1e2e8c730/sandbox/lf_contract_gate_test/story_creator_visual_screen_reading_architecture/release-v1.2/STORY_CREATOR_VISUAL_SCREEN_READING_ARCHITECTURE_SOURCE_v1.1.md",
+  "architecture_source_sha256": "a8d53b736e7d2d672b0927f7deaca4422f7429fdda0d1997b1eaa54fc06e7531",
+  "story_creator_baseline": {
+    "main_commit": "dfb6385e55eb4ee533aa2f982633e8da1cdd22ea",
+    "implementation_parent_commit": "dfb6385e55eb4ee533aa2f982633e8da1cdd22ea",
+    "recovered_p0_source_commit": "4bd1935d341cad17141cdecf3c01e4c6b3e4ab49",
+    "recovered_architecture_source_commit": "d8b2b9c8fa49cf4fcdcbb054d341fff1e2e8c730",
+    "skill_tree_sha1": "c7f238e576d5f51ef1ab4720027278042fcaeb9d"
+  },
+  "recovery_provenance": {
+    "strategy": "VERIFIABLE_GIT_BYTES_ONLY",
+    "audited_v3_2_bundle_sha256": "0afb3e9b1786440372a3e601fc0f2fda7e327b2cd84663d66a4bb3cc4c762d9d",
+    "audited_v3_2_bytes_recovered": false,
+    "v3_2_byte_identity_claimed": false
+  },
+  "lot_status": {
+    "P0-0": "PASS_TARGET_PATH_RECONCILED",
+    "P0-1": "PASS_CONTRACTS_AND_SCHEMA_FIXTURES",
+    "P0-2": "PARTIAL_REAL_SCREEN_ADMISSION_WITH_TRUSTED_SOURCE_BINDING",
+    "P0-3": "PARTIAL_REAL_SCREEN_FORWARD_TEST_NO_RUNTIME_WORKER",
+    "P0-4": "PARTIAL_L2_JUDGE_HUMAN_REVIEW_REQUIRED_AUTHENTICITY_PENDING",
+    "P0-5": "REAL_SCREEN_SMOKE_ONLY_NO_GOVERNED_BENCHMARK",
+    "P0-6": "PASS_P0_TO_J02_ADAPTER_CONTRACT",
+    "P0-7": "BLOCKED_UNTIL_P0_2_TO_P0_5_COMPLETE"
+  },
+  "claims": {
+    "candidate_package_integrity": "TESTABLE",
+    "p0_to_j02_contract_wiring": "TESTABLE",
+    "runtime_enabled": false,
+    "empirical_visual_quality": "NOT_ACCEPTED_SINGLE_REAL_SCREEN_SMOKE_ONLY",
+    "production_authorized": false,
+    "merge_authorized": false
+  },
+  "promotion_blockers": {
+    "authenticated_human_adjudication_binding": "NOT_IMPLEMENTED",
+    "runtime_visual_worker": "NOT_IMPLEMENTED",
+    "empirical_benchmark": "NOT_EXECUTED"
+  },
+  "resolved_evidence": {
+    "real_screen_smoke": "EXECUTED_EPHEMERAL_SOURCE_RECEIPT_RETAINED",
+    "schema_validation_without_external_jsonschema": "PASS_WITH_EVIDENCE"
+  },
+  "files": [
+    {"path": "P0_RFC8785_CANONICALIZER_v1.1.mjs", "bytes": 4668, "sha256": "99952f4a1c0819bfc6a7488bea595b43ff31697a0c5ffe034c3e7ea76cde930f"},
+    {"path": "agents/j00-p0-visual-judge.md", "bytes": 1533, "sha256": "5e63a260e5d0f1a86f048f504814feed7ad4b1ee4fbe88839615b0876e8ed907"},
+    {"path": "agents/p0-visual-reader.md", "bytes": 1892, "sha256": "cc57a863f31f4165e5fde70b9ec7cd3a4029c5a9e0c740e9de1bd477cee5ade1"},
+    {"path": "evals/p0-contract-fixtures.json", "bytes": 12046, "sha256": "e9299375224351169665c5c3b68312d159299c035c109000023ba5c5ac142700"},
+    {"path": "evals/p0-real-screen-smoke-receipt-20260808.json", "bytes": 2251, "sha256": "71b1e73d4d8b383cb2b9977dcbada159e079eda9e36adcf8e146f691bea00577"},
+    {"path": "evals/p0-visual-reader-fixture.json", "bytes": 2940, "sha256": "e1df0c17e94289d7e3fb2b206980ca3b1b7ee259b765360124e081c52935442e"},
+    {"path": "schemas/blind-input-bundle.schema.json", "bytes": 1787, "sha256": "d8c39adc50273cbd957ecca5e21924a2fcccfb4edf8f44e6d91dcf4d0cb1806d"},
+    {"path": "schemas/criticality.schema.json", "bytes": 1295, "sha256": "28148aa5e1de46f18ac0f56930695a7bc55b287655259624038b0bf8cfb18fe1"},
+    {"path": "schemas/enriched-understanding.schema.json", "bytes": 1549, "sha256": "13d7ed78dd113d5c86417ecc4423723e4972c67388da505e421b7a41f026cdb3"},
+    {"path": "schemas/evidence.schema.json", "bytes": 908, "sha256": "029580ccad4481eeaf0f06bdc959a1117189bdd42ed6047671a3c51ecbb40441"},
+    {"path": "schemas/human-review-decision.schema.json", "bytes": 1044, "sha256": "1ffd7778ba7abeb53dfd0169251f6a547bccb6edf57d2c598a28b7dc07a72543"},
+    {"path": "schemas/human-review-packet.schema.json", "bytes": 1796, "sha256": "dddf0da911178a3421bc8838fed6cf91219ee12a9b7f92bc44a161a5b1d377a6"},
+    {"path": "schemas/image-admission-record.schema.json", "bytes": 1073, "sha256": "5b818c2523f9ec77c262ecdd780d8fce35222270f8b620ca515734cec1da7c81"},
+    {"path": "schemas/p0-j02-handoff.schema.json", "bytes": 6067, "sha256": "7c2a42c96921da65ff58efc3cfde0c115523429a4d56733368389f67b0c0f33d"},
+    {"path": "schemas/p0-judge-decision.schema.json", "bytes": 1591, "sha256": "322df8d13d0665ad91ad5fbf3002edc42e1d6cb90b2757808928df6dabe75ebc"},
+    {"path": "schemas/ui-structure.schema.json", "bytes": 1851, "sha256": "bf2550b8420eba78e661dcf1f838c2e7b8cf86fc3bb535314475896420a7f006"},
+    {"path": "schemas/visual-observation.schema.json", "bytes": 1157, "sha256": "0871de72c1c49dbafe291447254df90354dceca172595ae2c633c42da1a4fb32"},
+    {"path": "scripts/adapt_p0_to_screen_decomposer.py", "bytes": 5304, "sha256": "9040b631a2204d096b77bf5fe0a281be918e715174eb4011c83c7000650efe77"},
+    {"path": "scripts/admit_p0_image.py", "bytes": 6637, "sha256": "c3e6cfbe8548ed7170a5f19ad609c8645f99d3b9f6aa7599772a4ed7f7a25e50"},
+    {"path": "scripts/p0_schema.py", "bytes": 10620, "sha256": "f32d74e1116b0f37a717997377e2d4f2708cfd95947cc80fd4eb1489ef1b1993"},
+    {"path": "scripts/smoke_p0_j02.py", "bytes": 5291, "sha256": "52c9b3663dbd119a9c0d7e095db472dd84b81544d91e0aba0e2249e9ad3fc807"},
+    {"path": "scripts/validate_p0_contracts.py", "bytes": 2620, "sha256": "33218c5d9a588598b4cc1cdd16fddfdd235ed40a2458ff0e010e5ebc7fdd2fa4"},
+    {"path": "scripts/validate_p0_j02_handoff.py", "bytes": 11414, "sha256": "95833948820d63fe41274bc96feb216c425ebe11e03c9d84ebc39dae6a9644a9"},
+    {"path": "scripts/validate_p0_judge.py", "bytes": 5562, "sha256": "94c5032cf0b421506d712cd1550255147a29f7ffd1b9487bc95abc3586114ce9"},
+    {"path": "scripts/validate_p0_security.py", "bytes": 3748, "sha256": "160e2bc149a528b42e9f052a6be724c5786ccf8d5439db7b153fb9a39663cd3c"},
+    {"path": "scripts/validate_p0_visual_output.py", "bytes": 11021, "sha256": "f1faef4e0fdc3020707c20a110bf5ea89c03c7208c666eeb6a2fac9aab000060"},
+    {"path": "scripts/verify_p0_integration_candidate.py", "bytes": 3405, "sha256": "33a9b617d10199d67796bc82b6f503f2b133ed9d4b7e6661ebb5a7eed545a1f3"}
+  ]
+}
