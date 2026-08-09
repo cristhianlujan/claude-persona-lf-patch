@@ -209,6 +209,8 @@ jobs:
             jsonschema==4.23.0
 
       - name: Validate LF contract
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python3 sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py
 
@@ -332,4 +334,3 @@ jobs:
           if-no-files-found: error
           include-hidden-files: true
           retention-days: 7
-
