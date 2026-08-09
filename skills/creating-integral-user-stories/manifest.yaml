@@ -1,8 +1,8 @@
 skill_code: creating-integral-user-stories
-version: v0.6
+version: v0.7
 status: CANDIDATO_READ_ONLY
 operation_code: BUILD_INTEGRAL_STORY_CREATOR_LF
-execution_id: EXEC-BISC-005-DEEP-AUDIT
+execution_id: EXEC-BISC-008-MATURITY-FOUNDATION
 canonical_store: private.lf_skill_artifacts
 source_document: HANDOFF_CLAUDE_WEB_CREACION_STORY_CREATOR_LF
 source_version: v0.1
@@ -18,6 +18,8 @@ validator_dependencies:
   availability_policy: BLOCK_IF_MISSING
   required_by:
   - scripts/validate_story_pack.py
+  - scripts/validate_screen_decomposition_v08.py
+  - scripts/validate_screen_ingestion.py
 - package: PyYAML
   availability_policy: BLOCK_IF_MISSING
   required_by:
@@ -25,28 +27,32 @@ validator_dependencies:
   - scripts/validate_test_coverage.py
   - scripts/validate_source_integrity.py
   - scripts/validate_screen_decomposition.py
+  - scripts/validate_screen_decomposition_v08.py
   - scripts/validate_github_integrity.py
 github_contract:
   repository: cristhianlujan/claude-persona-lf-patch
-  base_branch: feat/integral-story-creator-r8-forward
-  target_branch: fix/r8-mass-validator-hardening
+  base_branch: main
+  target_branch: agent/pr93-story-maturity-foundation
   write_mode: FEATURE_BRANCH_ONLY
   direct_main_write: BLOCKED
   merge_allowed: false
   draft_pr_required: true
-  draft_pr_number: 61
-  transport_status: ACTIVE
+  transport_status: CANDIDATE_MATURITY_EXTENSION
   readback_required: true
 package_contract:
   canonical_file_count: 62
+  operational_inventory_file_count: 75
+  maturity_candidate_file_count: 9
   encoding: UTF-8
   line_endings: LF
   final_newline: true
   hash_algorithm: SHA-256
   unexpected_canonical_files_allowed: 0
   auxiliary_files_are_non_canonical: true
+  maturity_candidates_are_noncanonical_until_promoted: true
+  readback_required: true
 quality_policy:
-  audit_scope: ALL_CURRENT_ARTIFACTS
+  audit_scope: ALL_CURRENT_ARTIFACTS_PLUS_MATURITY_CANDIDATES
   canonical_total: 62
   benchmark_gate: DUAL_REQUIRED
   score_formula: MIN(CLAUDE,GITHUB,TECHNICAL)
@@ -75,17 +81,68 @@ quality_policy:
   - negative_behavior
   - contract_schema_consistency
   - github_supabase_parity
+  - evidence_tier
+  - external_fixture_independence
+  - screen_ingestion_completeness
   threshold_weakening_forbidden: true
   global_close_requires:
-  - all_62_artifacts_dual_green
-  - all_13_judges_executed
-  - positive_cases_passed
+  - all_canonical_artifacts_dual_green
+  - all_registered_judges_executed
+  - external_positive_fixtures_executed
   - negative_cases_rejected
+  - blocking_cases_exercised
   - zero_runtime_blockers
   - zero_sha_mismatch
   - zero_current_duplicates
   - github_equals_supabase
+  - screen_ingestion_gate_executed
+  - inventory_complete_vs_ingestion_zero
+  - provenance_anchors_promoted
   - checklist_updated
+evidence_tier_policy:
+  assessor: scripts/assess_evidence_tier.py
+  mutates_validation_status: false
+  tiers:
+    T1: external positive + rejected negative + executed block + runtime chain + independent double score + confirmed resolvable source
+    T2: file integrity + external positive + rejected negative
+    T3: file integrity + external positive
+    T4: file integrity only
+    UNASSESSED: file integrity not proven
+  t1_is_required_for_quality_10: true
+  mass_rewrite_of_existing_validation_evidence: false
+provenance_anchors:
+  JUDGES_SOURCE_INTEGRITY_YAML:
+    path: judges/source-integrity.yaml
+    github_blob_sha1: 67631b9eecc51a567546b15d26fc87f8b86d8798
+    supabase_content_sha256: d53e3c2a1589768cc2f7370999986defb2d15795bb4342738b2c2e075a793742
+    live_classification: INFERRED
+    promotion_target: CONFIRMED
+    promotion_requires_live_authorization: true
+  ART_SCRIPT_LF_COMMON:
+    path: scripts/lf_common.py
+    github_blob_sha1: 0958ec2e3c78e10f261d64977827385908742c2e
+    supabase_content_sha256: 635928d91dee9c7b1e2f156ac7286b8847e8861897b8b3fc992a32cf17c234c6
+    live_classification: INFERRED
+    promotion_target: CONFIRMED
+    promotion_requires_live_authorization: true
+maturity_extension:
+  status: CANDIDATO_READ_ONLY
+  canonical_promotion_authorized: false
+  production_authorized: false
+  merge_authorized: false
+  visual_runtime_proven: false
+  pre_decomposition_gate:
+    after: J01_SOURCE_INTEGRITY
+    before: J02_SCREEN_DECOMPOSITION
+    judge: J00_SCREEN_INGESTION
+    agent: agents/screen-ingestor.md
+    schema: schemas/screen-ingestion.schema.json
+    validator: scripts/validate_screen_ingestion.py
+  j02_candidate:
+    judge_version: v0.8
+    validator: scripts/validate_screen_decomposition_v08.py
+    external_positive_fixture: evals/fixtures/j02_external_positive.json
+    source_omission_fixture: evals/fixtures/j02_source_omission.json
 files:
   root:
   - SKILL.md
@@ -96,6 +153,7 @@ files:
   - agents/screen-decomposer.md
   - agents/story-core-author.md
   - agents/test-deriver.md
+  - agents/screen-ingestor.md
   profiles:
   - perfiles/PERFIL_CROSS_CUTTING_ENRICHER_LF.md
   - perfiles/PERFIL_FIELD_CONTRACT_AUDITOR_LF.md
@@ -121,6 +179,7 @@ files:
   - schemas/screen-decomposition.schema.json
   - schemas/story-pack.schema.json
   - schemas/task-packet.schema.json
+  - schemas/screen-ingestion.schema.json
   templates:
   - templates/execution-report.template.md
   - templates/judge-contract.template.yaml
@@ -140,6 +199,9 @@ files:
   - scripts/validate_test_coverage.py
   - scripts/validate_tokens.py
   - scripts/validate_traceability.py
+  - scripts/validate_screen_ingestion.py
+  - scripts/validate_screen_decomposition_v08.py
+  - scripts/assess_evidence_tier.py
   judges:
   - judges/analytics-observability.yaml
   - judges/audit-traceability.yaml
@@ -154,6 +216,7 @@ files:
   - judges/story-core.yaml
   - judges/test-coverage.yaml
   - judges/tokens-messages.yaml
+  - judges/screen-ingestion.yaml
   evals:
   - evals/assertions.json
   - evals/evals.json
@@ -163,10 +226,18 @@ files:
   - evals/fixtures/screen_sensitive_fields.json
   - evals/fixtures/screen_simple_query.json
   - evals/fixtures/screen_wizard_six_steps.json
+  - evals/fixtures/screen_ingestion_dense.json
+  - evals/fixtures/j02_external_positive.json
+  - evals/fixtures/j02_source_omission.json
 auxiliary_files:
 - AUDIT_CHECKLIST_R8.md
 - AUDIT_CHECKLIST_R8_62_ARTEFACTOS.xlsx
 workflow:
+  pre_decomposition_gate:
+    after: SOURCE_INTEGRITY
+    before: SCREEN_DECOMPOSITION
+    judge: J00_SCREEN_INGESTION
+    promotion_status: CANDIDATE_CI_ONLY
   retry_limit: 2
   worker_self_approval: false
   steps:
@@ -215,12 +286,15 @@ chain_policy:
   - schema
   - validator
   - judge
-  - positive_eval
+  - external_positive_eval
   - negative_eval
-  - evidence
+  - blocking_eval
+  - evidence_tier
   - github_readback
   - supabase_readback
   close_only_when_negative_is_rejected: true
+  external_positive_fixture_required_for_t1: true
+  screen_ingestion_required_before_j02_candidate_v08: true
 limits:
   no_validated: true
   no_production: true
@@ -237,13 +311,14 @@ limits:
   - PRODUCTION_AUTHORIZED
   - VIGENTE
 current_state:
-  audit_execution: EXEC-BISC-005-DEEP-AUDIT
-  global_close: DEEP_REAUDIT_IN_PROGRESS
+  audit_execution: EXEC-BISC-008-MATURITY-FOUNDATION
+  global_close: MATURITY_REMEDIATION_IN_PROGRESS
   production_authorized: false
   merge_authorized: false
   runtime_enabled: false
-  last_individually_audited_artifact: A02
-  individually_audited_artifact_count: 2
+  pass_v8_scope: PR93_TECHNICAL_CLOSURE_ONLY
+  pass_v8_closes_package_maturity: false
   canonical_validation_status:
-    NOT_VALIDATED: 62
-    PASS_WITH_EVIDENCE: 0
+    NOT_VALIDATED: 0
+    PASS_WITH_EVIDENCE: 64
+  maturity_candidate_status: NOT_PROMOTED
