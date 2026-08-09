@@ -183,11 +183,13 @@ jobs:
       postgres:
         image: postgres:17.6
         env:
+          POSTGRES_USER: lf_ci_cluster_admin
           POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U postgres"
+          --health-cmd "pg_isready -U lf_ci_cluster_admin -d postgres"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 12
@@ -229,18 +231,19 @@ jobs:
 
           server_version="$(
             docker exec "$POSTGRES_CONTAINER" \
-              psql -X -U postgres -d postgres -Atqc "show server_version"
+              psql -X -U lf_ci_cluster_admin -d postgres -Atqc "show server_version"
           )"
           server_major="${server_version%%.*}"
           [ "$server_major" = "17" ]
 
           docker exec -i "$POSTGRES_CONTAINER" \
-            psql -X -v ON_ERROR_STOP=1 -U postgres -d postgres <<'SQL'
-          create role lf_ci_cluster_admin superuser login;
+            psql -X -v ON_ERROR_STOP=1 \
+              -U lf_ci_cluster_admin -d postgres <<'SQL'
+          create role postgres superuser createrole createdb login inherit nobypassrls;
           SQL
 
           docker exec "$POSTGRES_CONTAINER" \
-            createdb -U postgres -O postgres "$RUNTIME_DB"
+            createdb -U lf_ci_cluster_admin -O postgres "$RUNTIME_DB"
 
           docker exec -i "$POSTGRES_CONTAINER" \
             psql -X -v ON_ERROR_STOP=1 \
