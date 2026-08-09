@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - "lf/**"
+      - "agent/pr93-runtime-ci-gate"
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
 
@@ -334,4 +335,3 @@ jobs:
           if-no-files-found: error
           include-hidden-files: true
           retention-days: 7
-
