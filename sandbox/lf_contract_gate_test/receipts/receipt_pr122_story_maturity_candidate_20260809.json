@@ -13,9 +13,9 @@
     "91e8610438be0acb13ada822e5235d0f73430e63",
     "482c82b79db640bfa14c78862c69c301b466c531eb51023958292a7580fb4978",
     "56278f0469efa1d6d030651d008f296e93e6e0df313e8d70eebc9bcedfcf9cd6",
-    "e3df609021c80b3a56f5fc9bc1849a07372595f5",
+    "245bab9b11d85571ca746eb65a250aa79d6bb463",
     "823ce27c5922acb633824e6f8c11c82e40946fb4",
-    "fd184f5f9f6fcfe24ab2ec7f89e1b70becfd6a32"
+    "bad950568bc04c3fc6973f7ac5a464b8b3ba86fe"
   ],
   "target_paths": [
     "skills/creating-integral-user-stories/agents/screen-ingestor.md",
@@ -34,7 +34,7 @@
     "skills/creating-integral-user-stories/scripts/validate_screen_ingestion.py"
   ],
   "blocking_codes": [],
-  "issued_at": "2026-08-09T21:46:00Z",
+  "issued_at": "2026-08-09T21:52:00Z",
   "evidence": {
     "scope": "PR122_STORY_MATURITY_CANDIDATE_READ_ONLY",
     "github_actions_run_id": 31336836982,
@@ -50,6 +50,7 @@
     "maturity_score_threshold_rule": "package_score > 9.5",
     "maturity_score_min_independent_evaluators": 2,
     "maturity_score_fixture_is_synthetic": true,
+    "maturity_score_external_runtime_executed": false,
     "real_maturity_score_computed": false,
     "real_maturity_score_blockers": [
       "independent_real_evaluator_receipts_missing",
