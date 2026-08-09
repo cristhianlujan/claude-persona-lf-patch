@@ -2,6 +2,9 @@ name: LF Bootstrap Reproducibility Probe
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - "agent/pr93-*"
   pull_request:
     branches:
       - main
@@ -169,4 +172,189 @@ jobs:
             echo "- local reset: PASS"
             echo "- schema sha256: \`$schema_sha\`"
             echo "- schema lines: \`$schema_lines\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  v7-runtime-apply-rollback:
+    name: v7-runtime-apply-rollback
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify migration manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          manifest="sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_MIGRATIONS.txt"
+          count=0
+          previous=""
+          while IFS= read -r migration || [ -n "$migration" ]; do
+            [ -n "$migration" ] || continue
+            case "$migration" in \#*) continue ;; esac
+            [ -f "$migration" ]
+            if [ -n "$previous" ] && [[ "$migration" < "$previous" ]]; then
+              echo "Migration manifest is not ordered: $migration"
+              exit 1
+            fi
+            previous="$migration"
+            count=$((count + 1))
+          done < "$manifest"
+          [ "$count" -eq 19 ]
+
+      - name: Bootstrap non-superuser PostgreSQL 17 boundary
+        id: v7-bootstrap
+        shell: bash
+        env:
+          POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
+          RUNTIME_DB: lf_v7_runtime
+        run: |
+          set -euo pipefail
+
+          server_version="$(
+            docker exec "$POSTGRES_CONTAINER" \
+              psql -X -U postgres -d postgres -Atqc "show server_version"
+          )"
+          server_major="${server_version%%.*}"
+          [ "$server_major" = "17" ]
+
+          docker exec -i "$POSTGRES_CONTAINER" \
+            psql -X -v ON_ERROR_STOP=1 -U postgres -d postgres <<'SQL'
+          create role lf_ci_cluster_admin superuser login;
+          SQL
+
+          docker exec "$POSTGRES_CONTAINER" \
+            createdb -U postgres -O postgres "$RUNTIME_DB"
+
+          docker exec -i "$POSTGRES_CONTAINER" \
+            psql -X -v ON_ERROR_STOP=1 \
+              -U lf_ci_cluster_admin -d "$RUNTIME_DB" \
+            < sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_BASE.sql
+
+          postgres_is_super="$(
+            docker exec "$POSTGRES_CONTAINER" \
+              psql -X -U postgres -d "$RUNTIME_DB" -Atqc \
+                "select rolsuper from pg_roles where rolname='postgres'"
+          )"
+          [ "$postgres_is_super" = "f" ]
+
+          docker exec "$POSTGRES_CONTAINER" \
+            pg_dump -U lf_ci_cluster_admin -d "$RUNTIME_DB" \
+              --format=custom --file=/tmp/pr93-v7-pre.dump
+
+          read -r pre_hash _ < <(
+            docker exec "$POSTGRES_CONTAINER" \
+              pg_dump -U lf_ci_cluster_admin -d "$RUNTIME_DB" \
+                --schema-only --no-owner --no-privileges \
+            | sed -E \
+                -e '/^\\(un)?restrict /d' \
+                -e '/^-- Dumped /d' \
+                -e '/^-- Started /d' \
+                -e '/^-- Completed /d' \
+            | sha256sum
+          )
+          printf '%s\n' "$pre_hash" > "$RUNNER_TEMP/pr93-v7-pre.sha256"
+          echo "server_version=$server_version" >> "$GITHUB_OUTPUT"
+
+      - name: Apply complete V7 source package
+        shell: bash
+        env:
+          POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
+          RUNTIME_DB: lf_v7_runtime
+        run: |
+          set -euo pipefail
+          manifest="sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_MIGRATIONS.txt"
+          applied=0
+          while IFS= read -r migration || [ -n "$migration" ]; do
+            [ -n "$migration" ] || continue
+            case "$migration" in \#*) continue ;; esac
+            docker exec -i "$POSTGRES_CONTAINER" \
+              psql -X -v ON_ERROR_STOP=1 \
+                -U postgres -d "$RUNTIME_DB" \
+              < "$migration"
+            applied=$((applied + 1))
+          done < "$manifest"
+          [ "$applied" -eq 19 ]
+
+      - name: Read back apply and consume a valid proof
+        shell: bash
+        env:
+          POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
+          RUNTIME_DB: lf_v7_runtime
+        run: |
+          set -euo pipefail
+          docker exec -i "$POSTGRES_CONTAINER" \
+            psql -X -v ON_ERROR_STOP=1 \
+              -U lf_ci_cluster_admin -d "$RUNTIME_DB" \
+            < sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_APPLY_READBACK.sql
+
+      - name: Execute restore rollback and compare pre-V7 state
+        shell: bash
+        env:
+          POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
+          RUNTIME_DB: lf_v7_runtime
+        run: |
+          set -euo pipefail
+
+          docker exec "$POSTGRES_CONTAINER" \
+            dropdb -U lf_ci_cluster_admin "$RUNTIME_DB"
+          docker exec -i "$POSTGRES_CONTAINER" \
+            psql -X -v ON_ERROR_STOP=1 \
+              -U lf_ci_cluster_admin -d postgres <<'SQL'
+          drop role if exists lf_writer_verifier_v7;
+          SQL
+          docker exec "$POSTGRES_CONTAINER" \
+            createdb -U lf_ci_cluster_admin -O postgres "$RUNTIME_DB"
+          docker exec "$POSTGRES_CONTAINER" \
+            pg_restore -U lf_ci_cluster_admin -d "$RUNTIME_DB" \
+              --exit-on-error /tmp/pr93-v7-pre.dump
+
+          read -r expected_hash < "$RUNNER_TEMP/pr93-v7-pre.sha256"
+          read -r restored_hash _ < <(
+            docker exec "$POSTGRES_CONTAINER" \
+              pg_dump -U lf_ci_cluster_admin -d "$RUNTIME_DB" \
+                --schema-only --no-owner --no-privileges \
+            | sed -E \
+                -e '/^\\(un)?restrict /d' \
+                -e '/^-- Dumped /d' \
+                -e '/^-- Started /d' \
+                -e '/^-- Completed /d' \
+            | sha256sum
+          )
+          [ "$restored_hash" = "$expected_hash" ]
+
+          docker exec -i "$POSTGRES_CONTAINER" \
+            psql -X -v ON_ERROR_STOP=1 \
+              -U lf_ci_cluster_admin -d "$RUNTIME_DB" \
+            < sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_ROLLBACK_READBACK.sql
+
+      - name: Publish non-secret runtime summary
+        if: success()
+        shell: bash
+        env:
+          SERVER_VERSION: ${{ steps.v7-bootstrap.outputs.server_version }}
+        run: |
+          {
+            echo "### PR93 V7 runtime migration gate"
+            echo "- PostgreSQL server: \`$SERVER_VERSION\`"
+            echo "- source migrations executed: \`19\`"
+            echo "- apply readback: \`MATCHED\`"
+            echo "- valid proof consumed and replay rejected: \`true\`"
+            echo "- restore rollback readback: \`MATCHED\`"
           } >> "$GITHUB_STEP_SUMMARY"
