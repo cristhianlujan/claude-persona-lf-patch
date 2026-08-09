@@ -3,20 +3,36 @@
 
 The assessor does not mutate validation_status. It makes the strength of
 existing evidence explicit so file integrity cannot be mistaken for runtime
-behavior.
+behavior. Provenance resolution is evaluated separately from the artifact's
+semantic classification: a legitimately derived artifact may remain INFERRED
+while its derivation chain is fully resolved and auditable.
 """
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 from pathlib import Path
 from typing import Any
 
-SHA40 = set("0123456789abcdef")
+HEX = set("0123456789abcdef")
 
 
 def valid_hex(value: Any, length: int) -> bool:
-    return isinstance(value, str) and len(value) == length and all(c in SHA40 for c in value)
+    return isinstance(value, str) and len(value) == length and all(c in HEX for c in value)
+
+
+def provenance_resolved(provenance: dict[str, Any]) -> bool:
+    semantic = str(provenance.get("semantic_classification") or "").strip()
+    derivation_ok = semantic == "CONFIRMED" or (
+        semantic == "INFERRED" and provenance.get("derivation_declared") is True
+    )
+    return (
+        provenance.get("resolution_status") == "RESOLVED"
+        and provenance.get("resolvable") is True
+        and len(str(provenance.get("source_ref") or "").strip()) >= 3
+        and derivation_ok
+    )
 
 
 def assess(evidence: dict[str, Any]) -> dict[str, Any]:
@@ -60,11 +76,7 @@ def assess(evidence: dict[str, Any]) -> dict[str, Any]:
             identities.add(identity)
             executions.add(execution)
     independent_double_score = len(identities) >= 2 and len(executions) >= 2
-    source_confirmed = (
-        provenance.get("classification") == "CONFIRMED"
-        and provenance.get("resolvable") is True
-        and len(str(provenance.get("source_ref") or "").strip()) >= 3
-    )
+    resolved_source_provenance = provenance_resolved(provenance)
 
     criteria = {
         "file_integrity": file_integrity,
@@ -73,7 +85,7 @@ def assess(evidence: dict[str, Any]) -> dict[str, Any]:
         "real_block": real_block,
         "runtime_chain": runtime_chain,
         "independent_double_score": independent_double_score,
-        "confirmed_resolvable_source": source_confirmed,
+        "resolved_source_provenance": resolved_source_provenance,
     }
     if all(criteria.values()):
         tier = "T1"
@@ -91,8 +103,9 @@ def assess(evidence: dict[str, Any]) -> dict[str, Any]:
         "criteria": criteria,
         "missing_for_t1": [name for name, passed in criteria.items() if not passed],
         "mutates_validation_status": False,
+        "semantic_classification_mutated": False,
         "meaning": {
-            "T1": "external positive + executed negative + executed block + runtime chain + independent double score + confirmed source",
+            "T1": "external positive + executed negative + executed block + runtime chain + independent double score + resolved provenance",
             "T2": "file integrity + external positive + executed rejected negative",
             "T3": "file integrity + external positive",
             "T4": "file integrity only",
@@ -112,7 +125,13 @@ def sample(tier: str) -> dict[str, Any]:
             {"evaluator_identity": "EVAL-A", "execution_id": "EXEC-SCORE-A", "score": 9.7},
             {"evaluator_identity": "EVAL-B", "execution_id": "EXEC-SCORE-B", "score": 9.6},
         ],
-        "source_provenance": {"classification": "CONFIRMED", "source_ref": "SRC-1", "resolvable": True},
+        "source_provenance": {
+            "resolution_status": "RESOLVED",
+            "semantic_classification": "INFERRED",
+            "derivation_declared": True,
+            "source_ref": "SRC-1",
+            "resolvable": True,
+        },
     }
     if tier == "T4":
         for key in ("positive_execution","negative_execution","blocked_execution","runtime_chain","independent_scores","source_provenance"):
@@ -131,8 +150,29 @@ def sample(tier: str) -> dict[str, Any]:
 def self_test() -> int:
     expected = ["T1", "T2", "T3", "T4", "UNASSESSED"]
     observed = {tier: assess(sample(tier))["evidence_tier"] for tier in expected}
-    passed = all(observed[tier] == tier for tier in expected)
-    print(json.dumps({"self_test_pass": passed, "observed": observed}, sort_keys=True))
+
+    unresolved_inferred = copy.deepcopy(sample("T1"))
+    unresolved_inferred["source_provenance"]["derivation_declared"] = False
+    inferred_without_derivation = assess(unresolved_inferred)
+
+    confirmed = copy.deepcopy(sample("T1"))
+    confirmed["source_provenance"].update({
+        "semantic_classification": "CONFIRMED",
+        "derivation_declared": False,
+    })
+    confirmed_result = assess(confirmed)
+
+    passed = (
+        all(observed[tier] == tier for tier in expected)
+        and inferred_without_derivation["evidence_tier"] != "T1"
+        and confirmed_result["evidence_tier"] == "T1"
+    )
+    print(json.dumps({
+        "self_test_pass": passed,
+        "observed": observed,
+        "inferred_without_derivation_tier": inferred_without_derivation["evidence_tier"],
+        "confirmed_source_tier": confirmed_result["evidence_tier"],
+    }, sort_keys=True))
     return 0 if passed else 1
 
 
