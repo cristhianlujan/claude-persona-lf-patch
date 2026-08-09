@@ -16,6 +16,8 @@
   },
   "human_attestation_present": false,
   "human_attestation_simulated": false,
-  "next_valid_action": "Re-capture a real governed screen, persist its reviewable source/output/evidence packet, then issue a fresh time-bounded challenge and obtain authenticated reviewer readback.",
+  "reviewable_packet_builder": "scripts/build_p0_review_evidence_packet.py",
+  "reviewable_packet_builder_status": "PASS_SYNTHETIC_CONTRACT_SELFTEST_EXTERNAL_DURABLE_PERSISTENCE_STILL_REQUIRED",
+  "next_valid_action": "Provide one real governed screen to the packet builder, persist the resulting source/output/crops in an approved private durable store, then issue a fresh time-bounded challenge and obtain authenticated reviewer readback.",
   "p0_4_result": "BLOCKED_EVIDENCE_BEFORE_HUMAN_ATTESTATION"
 }

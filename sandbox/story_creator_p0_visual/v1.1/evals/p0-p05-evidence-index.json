@@ -2,6 +2,7 @@
   "schema_version": "p0-p05-evidence-index/v1",
   "target_lane": "EMPIRICAL_ACCEPTANCE",
   "applicability_frozen": false,
+  "applicability_manifest_ref": null,
   "applicability_manifest_sha256": null,
   "sources": [
     {

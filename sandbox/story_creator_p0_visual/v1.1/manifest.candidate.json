@@ -3,8 +3,8 @@
   "architecture_source": "github://cristhianlujan/claude-persona-lf-patch/commit/d8b2b9c8fa49cf4fcdcbb054d341fff1e2e8c730/sandbox/lf_contract_gate_test/story_creator_visual_screen_reading_architecture/release-v1.2/STORY_CREATOR_VISUAL_SCREEN_READING_ARCHITECTURE_SOURCE_v1.1.md",
   "architecture_source_sha256": "a8d53b736e7d2d672b0927f7deaca4422f7429fdda0d1997b1eaa54fc06e7531",
   "story_creator_baseline": {
-    "main_commit": "dfb6385e55eb4ee533aa2f982633e8da1cdd22ea",
-    "implementation_parent_commit": "dfb6385e55eb4ee533aa2f982633e8da1cdd22ea",
+    "main_commit": "7153fc1e328be583a622bf70d30f6cc0e587de76",
+    "implementation_parent_commit": "7153fc1e328be583a622bf70d30f6cc0e587de76",
     "recovered_p0_source_commit": "4bd1935d341cad17141cdecf3c01e4c6b3e4ab49",
     "recovered_architecture_source_commit": "d8b2b9c8fa49cf4fcdcbb054d341fff1e2e8c730",
     "skill_tree_sha1": "c7f238e576d5f51ef1ab4720027278042fcaeb9d"
@@ -45,8 +45,10 @@
     "schema_validation_without_external_jsonschema": "PASS_WITH_EVIDENCE",
     "p0_3_runtime_worker_engineering_smoke": "evals/p0-p03-runtime-smoke-receipt-20260809.json",
     "p0_4_binding_contract_regression": "scripts/validate_p0_human_binding.py:10/10_NEGATIVES",
+    "p0_4_reviewable_packet_builder": "scripts/build_p0_review_evidence_packet.py:SOURCE_OUTPUT_CROPS_RETAINED_NO_HUMAN_CLAIM",
     "p0_4_readiness": "evals/p0-p04-binding-readiness-20260809.json",
     "p0_5_denominator_preflight": "evals/p0-p05-denominator-report-20260809.json",
+    "p0_5_empirical_source_admission": "scripts/report_p0_metric_denominators.py:ARTIFACT_READBACK_AND_8_NEGATIVES",
     "hierarchy_regression": "validate_p0_visual_output.py:graph_and_geometry_negatives",
     "crop_recomputation_regression": "run_p0_visual_worker.py:crop_recompute_mutation_blocked"
   },
@@ -83,18 +85,18 @@
     },
     {
       "path": "evals/p0-p04-binding-readiness-20260809.json",
-      "bytes": 1297,
-      "sha256": "f3edbd15deece2e4dc81407f43cbb7845dfbe667138c71f28f99c1ad809d0e61"
+      "bytes": 1539,
+      "sha256": "a8aeed310477358ac11626c0c59368c68dc55010f609f083ba8b9d4eeceda911"
     },
     {
       "path": "evals/p0-p05-denominator-report-20260809.json",
-      "bytes": 8729,
-      "sha256": "cbab828dc823cb2e10f1af8714f69aec888d4094bbd0139933771c388ed82a06"
+      "bytes": 8852,
+      "sha256": "7d107f4eed120037d6096d60b426aa122542777d8b167a844e4b3856f77ea187"
     },
     {
       "path": "evals/p0-p05-evidence-index.json",
-      "bytes": 977,
-      "sha256": "389926a3eb91ee63931d4395b6c0d641b6bfbb530011df39f16c06ff00c2c806"
+      "bytes": 1015,
+      "sha256": "a4bd7548d1d02f081df166048149e2babb831fc8cc5888cf633864352b24b2bb"
     },
     {
       "path": "evals/p0-real-screen-smoke-receipt-20260808.json",
@@ -172,14 +174,19 @@
       "sha256": "c3e6cfbe8548ed7170a5f19ad609c8645f99d3b9f6aa7599772a4ed7f7a25e50"
     },
     {
+      "path": "scripts/build_p0_review_evidence_packet.py",
+      "bytes": 25846,
+      "sha256": "ab59ce28ac1c67487b2d83c7b655b91f3259090a5d988453aff636b0d22fbd4e"
+    },
+    {
       "path": "scripts/p0_schema.py",
       "bytes": 10620,
       "sha256": "f32d74e1116b0f37a717997377e2d4f2708cfd95947cc80fd4eb1489ef1b1993"
     },
     {
       "path": "scripts/report_p0_metric_denominators.py",
-      "bytes": 8294,
-      "sha256": "ae38070eb57cff1255b53d14da599137395c875bfa42dd6a0bc016c18b7eef45"
+      "bytes": 17033,
+      "sha256": "f539068ee13b98990c267283ace1494ebbe9daf493eb998bebb256d9e61ad279"
     },
     {
       "path": "scripts/run_p0_visual_worker.py",
@@ -223,8 +230,8 @@
     },
     {
       "path": "scripts/verify_p0_integration_candidate.py",
-      "bytes": 3548,
-      "sha256": "9ca4dbf2c6ee937bb37b67ecab71d7cce364d956b379d7eace36deb46f23f1d4"
+      "bytes": 3705,
+      "sha256": "940518af23623c31d5e5631a75b65b047d75b5dddbd2a3e5a4c2fe8749f72e25"
     }
   ]
 }

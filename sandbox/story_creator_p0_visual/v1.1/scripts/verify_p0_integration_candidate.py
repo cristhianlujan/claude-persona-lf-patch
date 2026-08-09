@@ -24,6 +24,8 @@ GATES = [
     ["adapt_p0_to_screen_decomposer.py", "--self-test"],
     ["smoke_p0_j02.py"],
     ["run_p0_visual_worker.py", "--self-test"],
+    ["build_p0_review_evidence_packet.py", "--self-test"],
+    ["report_p0_metric_denominators.py", "--self-test"],
     ["report_p0_metric_denominators.py"],
 ]
 
@@ -57,6 +59,7 @@ def main() -> int:
     canonicalizer = ROOT / "P0_RFC8785_CANONICALIZER_v1.1.mjs"
     gate_results = []
     env = dict(os.environ)
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
     for script, *args in GATES:
         proc = subprocess.run([sys.executable, str(ROOT / "scripts" / script), *args], text=True, capture_output=True, env=env)
         gate_results.append({"gate": script, "exit_code": proc.returncode, "last_line": proc.stdout.strip().splitlines()[-1] if proc.stdout.strip() else proc.stderr.strip()[-500:]})

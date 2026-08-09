@@ -4,6 +4,8 @@
   "canonical_metric_count": 26,
   "checks": {
     "applicability_not_falsely_frozen": true,
+    "eligible_sources_require_verified_artifacts": true,
+    "global_applicability_freeze_blocks_premature_sources": true,
     "metric_inventory_exact_26": true,
     "no_smoke_or_synthetic_source_counted": true,
     "zero_denominator_never_passes": true
