@@ -87,6 +87,7 @@ quality_policy:
   - screen_ingestion_completeness
   - reproducible_maturity_scoring
   - real_visual_reference_binding
+  - provenance_resolution
   threshold_weakening_forbidden: true
   global_close_requires:
   - all_canonical_artifacts_dual_green
@@ -100,7 +101,7 @@ quality_policy:
   - github_equals_supabase
   - screen_ingestion_gate_executed
   - inventory_complete_vs_ingestion_zero
-  - provenance_anchors_promoted
+  - provenance_resolution_completed
   - reproducible_maturity_score_executed
   - independent_score_receipts_present
   - real_visual_reference_adjudicated
@@ -109,12 +110,14 @@ quality_policy:
 evidence_tier_policy:
   assessor: scripts/assess_evidence_tier.py
   mutates_validation_status: false
+  mutates_semantic_classification: false
   tiers:
-    T1: external positive + rejected negative + executed block + runtime chain + independent double score + confirmed resolvable source
+    T1: external positive + rejected negative + executed block + runtime chain + independent double score + resolved source provenance
     T2: file integrity + external positive + rejected negative
     T3: file integrity + external positive
     T4: file integrity only
     UNASSESSED: file integrity not proven
+  provenance_rule: A derived artifact may remain semantically INFERRED when derivation is declared, resolvable and independently evidenced; provenance resolution must not be implemented by false reclassification.
   t1_is_required_for_quality_10: true
   mass_rewrite_of_existing_validation_evidence: false
 maturity_scoring_policy:
@@ -135,30 +138,55 @@ maturity_scoring_policy:
   - blocking_case_executed
   - runtime_chain_executed
   - visual_runtime_proven
-  - provenance_confirmed
+  - provenance_resolved
   - source_completeness_executed
   - github_supabase_reconciled
   current_real_score_status: NOT_COMPUTED
   current_real_score_reason:
   - two_independent_real_evaluator_receipts_missing
   - visual_runtime_proven_false
-  - provenance_anchors_not_confirmed
+  - provenance_resolution_incomplete
   synthetic_fixture_must_not_be_used_as_real_score: true
+provenance_policy:
+  semantic_classification_domain:
+  - CONFIRMED
+  - INFERRED
+  - PROPOSED
+  - BLOCKED
+  validation_provenance_ledger_domain:
+  - V2_NATIVE
+  - LEGACY_REVALIDATED
+  - LEGACY_PENDING
+  - LEGACY_REJECTED
+  domains_are_distinct: true
+  resolution_must_not_force_semantic_reclassification: true
 provenance_anchors:
   JUDGES_SOURCE_INTEGRITY_YAML:
     path: judges/source-integrity.yaml
+    semantic_classification: INFERRED
+    derivation_declared: true
+    derivation_basis: v0.1 S14-S16
+    source_ref: v0.1 S14-S16
     github_blob_sha1: 67631b9eecc51a567546b15d26fc87f8b86d8798
     supabase_content_sha256: d53e3c2a1589768cc2f7370999986defb2d15795bb4342738b2c2e075a793742
-    live_classification: INFERRED
-    promotion_target: CONFIRMED
-    promotion_requires_live_authorization: true
+    provenance_ledger_current: NONE
+    provenance_resolution_status: OPEN
+    resolution_target: RESOLVED
+    semantic_classification_change_required: false
+    resolution_requires_live_authorization: true
   ART_SCRIPT_LF_COMMON:
     path: scripts/lf_common.py
+    semantic_classification: INFERRED
+    derivation_declared: true
+    derivation_basis: derived from v0.1 S15 result_values; shared module not explicitly listed in S17
+    source_ref: v0.1 S15 result_values
     github_blob_sha1: 0958ec2e3c78e10f261d64977827385908742c2e
     supabase_content_sha256: 635928d91dee9c7b1e2f156ac7286b8847e8861897b8b3fc992a32cf17c234c6
-    live_classification: INFERRED
-    promotion_target: CONFIRMED
-    promotion_requires_live_authorization: true
+    provenance_ledger_current: LEGACY_PENDING
+    provenance_resolution_status: OPEN
+    resolution_target: RESOLVED
+    semantic_classification_change_required: false
+    resolution_requires_live_authorization: true
 maturity_extension:
   status: CANDIDATO_READ_ONLY
   canonical_promotion_authorized: false
@@ -343,6 +371,7 @@ chain_policy:
   - negative_eval
   - blocking_eval
   - evidence_tier
+  - provenance_resolution
   - real_visual_reference
   - independent_blind_visual_run
   - reproducible_maturity_score
@@ -384,6 +413,6 @@ current_state:
   real_maturity_score_blockers:
   - independent_real_evaluator_receipts_missing
   - visual_runtime_proven_false
-  - provenance_anchors_not_confirmed
+  - provenance_resolution_incomplete
   real_visual_reference_count: 1
   independent_blind_visual_run_status: NOT_EXECUTED
