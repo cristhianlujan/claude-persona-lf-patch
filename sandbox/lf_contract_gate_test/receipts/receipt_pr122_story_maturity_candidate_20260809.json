@@ -15,7 +15,9 @@
     "56278f0469efa1d6d030651d008f296e93e6e0df313e8d70eebc9bcedfcf9cd6",
     "245bab9b11d85571ca746eb65a250aa79d6bb463",
     "823ce27c5922acb633824e6f8c11c82e40946fb4",
-    "bad950568bc04c3fc6973f7ac5a464b8b3ba86fe"
+    "bad950568bc04c3fc6973f7ac5a464b8b3ba86fe",
+    "b1213fe2b0b88513753f7dd1dc798bb59380acc0",
+    "e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7"
   ],
   "target_paths": [
     "skills/creating-integral-user-stories/agents/screen-ingestor.md",
@@ -23,6 +25,7 @@
     "skills/creating-integral-user-stories/evals/fixtures/j02_source_omission.json",
     "skills/creating-integral-user-stories/evals/fixtures/screen_ingestion_dense.json",
     "skills/creating-integral-user-stories/evals/fixtures/maturity_score_synthetic.json",
+    "skills/creating-integral-user-stories/evals/fixtures/real_screen_onboarding_step1_reference.json",
     "skills/creating-integral-user-stories/judges/screen-decomposition.yaml",
     "skills/creating-integral-user-stories/judges/screen-ingestion.yaml",
     "skills/creating-integral-user-stories/manifest.yaml",
@@ -34,7 +37,7 @@
     "skills/creating-integral-user-stories/scripts/validate_screen_ingestion.py"
   ],
   "blocking_codes": [],
-  "issued_at": "2026-08-09T21:52:00Z",
+  "issued_at": "2026-08-09T21:58:00Z",
   "evidence": {
     "scope": "PR122_STORY_MATURITY_CANDIDATE_READ_ONLY",
     "github_actions_run_id": 31336836982,
@@ -57,11 +60,18 @@
       "visual_runtime_proven_false",
       "provenance_anchors_not_confirmed"
     ],
+    "real_visual_reference_count": 1,
+    "real_visual_reference_drive_file_id": "1H1Dku625GZl6qFR22sBdIo8MJgJU55sw",
+    "real_visual_reference_sha256": "e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7",
+    "real_visual_reference_dimensions": "1536x1024",
+    "real_visual_reference_read_performed": true,
+    "real_visual_reference_blind_independent": false,
+    "real_visual_reference_quality_gate_eligible": false,
     "visual_runtime_proven": false,
     "supabase_canonical_write_performed": false,
     "production_runtime_enabled": false,
     "merge_authorized": false,
     "merge_performed": false,
-    "scope_note": "Sandbox contract receipt for the PR122 maturity candidate only. Synthetic score fixtures cannot be used as a real package score. It does not promote artifacts, confirm visual-runtime recall, authorize Supabase canonical writes, authorize production, or authorize merge."
+    "scope_note": "Sandbox contract receipt for the PR122 maturity candidate only. The real LF screen reference was visually inspected with project context and therefore cannot satisfy the independent blind visual gate. Synthetic score fixtures cannot be used as a real package score. This receipt does not promote artifacts, authorize Supabase canonical writes, authorize production, or authorize merge."
   }
 }
