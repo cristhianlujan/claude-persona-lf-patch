@@ -1,0 +1,237 @@
+{
+  "applicability_frozen": false,
+  "blocked_metric_count": 26,
+  "canonical_metric_count": 26,
+  "checks": {
+    "applicability_not_falsely_frozen": true,
+    "metric_inventory_exact_26": true,
+    "no_smoke_or_synthetic_source_counted": true,
+    "zero_denominator_never_passes": true
+  },
+  "eligible_source_count": 0,
+  "empirical_acceptance_claimed": false,
+  "excluded_sources": [
+    {
+      "reason": "Receipt explicitly disclaims empirical visual quality and benchmark acceptance; source bytes and governed gold are not retained.",
+      "ref": "evals/p0-real-screen-smoke-receipt-20260808.json"
+    },
+    {
+      "reason": "Synthetic P0-3 runtime regression is explicitly ineligible for P0-5 denominators.",
+      "ref": "evals/p0-p03-runtime-smoke-receipt-20260809.json"
+    }
+  ],
+  "metrics": [
+    {
+      "deficit": 30,
+      "mechanism": "Govern and freeze a disjoint gold acceptance set containing at least 30 HIGH/CRITICAL gold elements, then run the worker and one-to-one matcher.",
+      "metric": "M01_CRITICAL_ELEMENT_RECALL",
+      "obtained": 0,
+      "required": 30,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 50,
+      "mechanism": "Govern and freeze a disjoint gold acceptance set with at least 50 gold elements, then run the worker and matcher.",
+      "metric": "M02_ELEMENT_RECALL",
+      "obtained": 0,
+      "required": 50,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 50,
+      "mechanism": "Run the frozen acceptance set until at least 50 predicted elements have gold matching outcomes.",
+      "metric": "M03_ELEMENT_PRECISION",
+      "obtained": 0,
+      "required": 50,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 50,
+      "mechanism": "Collect at least 50 matched text-bearing gold elements on the frozen acceptance set and compare normalized exact text.",
+      "metric": "M04_TEXT_EXACT_ACCURACY",
+      "obtained": 0,
+      "required": 50,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 50,
+      "mechanism": "Collect matched gold text totaling the canonical minimum denominator on the frozen set and compute normalized character errors without reusing smoke data.",
+      "metric": "M05_TEXT_CHARACTER_ERROR_RATE",
+      "obtained": 0,
+      "required": 50,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 50,
+      "mechanism": "Collect at least 50 matched elements with governed gold types and score exact type compatibility.",
+      "metric": "M06_TYPE_ACCURACY",
+      "obtained": 0,
+      "required": 50,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 50,
+      "mechanism": "Collect at least 50 matched non-root elements with governed visual-containment gold parents and score exact visual parent mapping.",
+      "metric": "M07_PARENT_ACCURACY",
+      "obtained": 0,
+      "required": 50,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 50,
+      "mechanism": "Collect at least 50 matched elements with governed visual-state labels and score exact state matches.",
+      "metric": "M08_STATE_ACCURACY",
+      "obtained": 0,
+      "required": 50,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 50,
+      "mechanism": "Collect at least 50 governed matched elements and compute IoU from source-bound gold/predicted boxes.",
+      "metric": "M09_BOX_IOU_MEDIAN",
+      "obtained": 0,
+      "required": 50,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 50,
+      "mechanism": "Govern at least 50 gold elements below the 0.1% screen-area stratum and measure matched recall.",
+      "metric": "M10_SMALL_ELEMENT_RECALL",
+      "obtained": 0,
+      "required": 50,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 50,
+      "mechanism": "Run the frozen acceptance set until at least 50 predicted elements have independently resolvable source-bound crop evidence.",
+      "metric": "M11_EVIDENCE_COVERAGE",
+      "obtained": 0,
+      "required": 50,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 100,
+      "mechanism": "Collect at least 100 accepted predictions with adjudicated correctness labels in the governed acceptance lane.",
+      "metric": "M12_ACCEPTED_PREDICTION_ERROR_RATE",
+      "obtained": 0,
+      "required": 100,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 50,
+      "mechanism": "Execute at least 50 governed visual prompt-injection tests and record whether image text changes policy or triggers tools.",
+      "metric": "M13_PROMPT_INJECTION_ESCAPE_RATE",
+      "obtained": 0,
+      "required": 50,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 50,
+      "mechanism": "Execute the approved privacy suite with at least 50 gold/seeded sensitive values and inspect retained evidence for leaks.",
+      "metric": "M14_SENSITIVE_DATA_EVIDENCE_LEAK_RATE",
+      "obtained": 0,
+      "required": 50,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 50,
+      "mechanism": "Run at least 50 governed acceptance outputs through the schema and semantic validators and retain their receipts.",
+      "metric": "M15_SCHEMA_AND_SEMANTIC_VALIDATION_RATE",
+      "obtained": 0,
+      "required": 50,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 50,
+      "mechanism": "Execute at least 50 jobs under the frozen benchmark load profile and retain admitted/completed timestamps.",
+      "metric": "M16_P95_END_TO_END_LATENCY_SECONDS",
+      "obtained": 0,
+      "required": 50,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 100,
+      "mechanism": "Complete at least 100 governed jobs and record corrective retries separately from planned adaptive expansions.",
+      "metric": "M17_CORRECTIVE_RETRY_RATE",
+      "obtained": 0,
+      "required": 100,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 50,
+      "mechanism": "Execute at least 50 jobs under the frozen load profile and retain enqueued/started timestamps.",
+      "metric": "M18_QUEUE_WAIT_P95_SECONDS",
+      "obtained": 0,
+      "required": 50,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 50,
+      "mechanism": "Execute load profile LP-P0-01 with at least 50 screens and retain successful completions plus elapsed time.",
+      "metric": "M19_THROUGHPUT_SCREENS_PER_MINUTE",
+      "obtained": 0,
+      "required": 50,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 50,
+      "mechanism": "Execute at least 50 benchmark-load screens with auditable provider/compute cost records.",
+      "metric": "M20_COST_PER_SCREEN_USD",
+      "obtained": 0,
+      "required": 50,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 50,
+      "mechanism": "Govern at least 50 applicable overlay/modal/popover/occlusion/sticky/scroll relation instances and score layer-relation precision/recall.",
+      "metric": "M21_LAYER_RELATION_F1",
+      "obtained": 0,
+      "required": 50,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 50,
+      "mechanism": "Collect at least 50 emitted reading-order outputs with governed candidate-vs-confirmed basis labels.",
+      "metric": "M22_READING_ORDER_CLASSIFICATION_ACCURACY",
+      "obtained": 0,
+      "required": 50,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 50,
+      "mechanism": "Govern at least 50 gold/seeded sensitive values and independently score sensitive-value detection recall.",
+      "metric": "M23_SENSITIVE_VALUE_DETECTION_RECALL",
+      "obtained": 0,
+      "required": 50,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 30,
+      "mechanism": "Govern and match at least 30 critical gold elements with source-bound boxes, then compute the canonical critical IoU floor.",
+      "metric": "M24_CRITICAL_BOX_IOU_FLOOR",
+      "obtained": 0,
+      "required": 30,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 100,
+      "mechanism": "Complete at least 100 governed jobs and record planned crop/resolution expansions independently from corrective retries.",
+      "metric": "M25_ADAPTIVE_EXPANSION_RATE",
+      "obtained": 0,
+      "required": 100,
+      "status": "BLOCKED_BENCHMARK"
+    },
+    {
+      "deficit": 100,
+      "mechanism": "Double-annotate at least 100 governed gold items independently, retain change logs/adjudication, and compute the approved agreement statistic.",
+      "metric": "M26_GOLD_ANNOTATION_AGREEMENT",
+      "obtained": 0,
+      "required": 100,
+      "status": "BLOCKED_BENCHMARK"
+    }
+  ],
+  "p0_5_result": "BLOCKED_BENCHMARK",
+  "preflight_result": "PASS_WITH_EVIDENCE",
+  "schema_version": "p0-m01-m26-denominator-preflight/v1",
+  "target_lane": "EMPIRICAL_ACCEPTANCE"
+}

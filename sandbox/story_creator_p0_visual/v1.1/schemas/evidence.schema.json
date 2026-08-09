@@ -10,9 +10,17 @@
     "evidence_ref": {"type": "string", "minLength": 3},
     "source_ref": {"type": "string", "minLength": 3},
     "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source_raw_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "region": {
+      "type": "object", "additionalProperties": false, "required": ["x", "y", "width", "height"],
+      "properties": {"x": {"type": "number", "minimum": 0}, "y": {"type": "number", "minimum": 0}, "width": {"type": "number", "exclusiveMinimum": 0}, "height": {"type": "number", "exclusiveMinimum": 0}}
+    },
     "kind": {"type": "string", "enum": ["SOURCE_IMAGE", "CROP", "VISUAL_OUTPUT", "AUXILIARY_SOURCE", "ADJUDICATION"]},
     "data_classification": {"type": "string", "enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL", "SENSITIVE"]},
     "redacted": {"type": "boolean"},
     "retention_until": {"type": ["string", "null"], "format": "date-time"}
-  }
+  },
+  "allOf": [
+    {"if": {"properties": {"kind": {"const": "CROP"}}}, "then": {"required": ["source_raw_sha256", "region"]}}
+  ]
 }

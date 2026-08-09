@@ -19,9 +19,12 @@ GATES = [
     ["validate_p0_security.py", "--self-test"],
     ["validate_p0_visual_output.py", "--self-test"],
     ["validate_p0_judge.py", "--self-test"],
+    ["validate_p0_human_binding.py", "--self-test"],
     ["validate_p0_j02_handoff.py", "--self-test"],
     ["adapt_p0_to_screen_decomposer.py", "--self-test"],
     ["smoke_p0_j02.py"],
+    ["run_p0_visual_worker.py", "--self-test"],
+    ["report_p0_metric_denominators.py"],
 ]
 
 

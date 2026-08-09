@@ -25,6 +25,15 @@ EXPECTED = {
     "p0-judge-decision.schema.json",
     "p0-j02-handoff.schema.json",
 }
+HUMAN_DECISIONS = {
+    "CONFIRM_OBSERVATION",
+    "CORRECT_WITH_ADJUDICATION",
+    "REQUEST_NEW_CAPTURE",
+    "REQUEST_ADDITIONAL_CONTEXT",
+    "REJECT_AND_BLOCK",
+    "ESCALATE_SECURITY",
+    "ESCALATE_PRIVACY",
+}
 
 
 def load(path: Path) -> Any:
@@ -43,9 +52,19 @@ def run() -> tuple[bool, dict[str, Any]]:
         positive_errors = validate_instance(schema, case["positive"])
         negative_errors = validate_instance(schema, case["negative"])
         results.append({"schema": name, "schema_definition_errors": definition_errors, "positive_pass": not positive_errors, "negative_rejected": bool(negative_errors), "positive_errors": positive_errors, "negative_error_count": len(negative_errors)})
+    human_case = next((case for case in cases if case.get("schema") == "human-review-decision.schema.json"), None)
+    human_schema = load(SCHEMA_DIR / "human-review-decision.schema.json")
+    declared_human_decisions = set(human_schema.get("properties", {}).get("decision", {}).get("enum", []))
+    decision_results = []
+    if isinstance(human_case, dict):
+        for decision in sorted(HUMAN_DECISIONS):
+            candidate = dict(human_case["positive"])
+            candidate["decision"] = decision
+            decision_results.append({"decision": decision, "accepted": not validate_instance(human_schema, candidate)})
     exact = names == EXPECTED and len(cases) == len(EXPECTED)
-    passed = exact and all(row["positive_pass"] and row["negative_rejected"] for row in results)
-    return passed, {"schema_version": fixture_doc.get("schema_version"), "expected_schema_count": len(EXPECTED), "observed_schema_count": len(names), "expected_set_exact": exact, "results": results}
+    human_exact = declared_human_decisions == HUMAN_DECISIONS and len(decision_results) == 7 and all(row["accepted"] for row in decision_results)
+    passed = exact and human_exact and all(row["positive_pass"] and row["negative_rejected"] for row in results)
+    return passed, {"schema_version": fixture_doc.get("schema_version"), "expected_schema_count": len(EXPECTED), "observed_schema_count": len(names), "expected_set_exact": exact, "human_decision_universe_exact": human_exact, "human_decision_count": len(declared_human_decisions), "human_decision_results": decision_results, "results": results}
 
 
 def main() -> int:
