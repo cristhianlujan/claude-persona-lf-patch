@@ -1,3 +1,4 @@
+
 insert into private.lf_repository_governance_bundle_v4(
   path,expected_sha256,expected_git_blob,control_kind,active,
   approved_commit_sha,approved_by_execution_id
