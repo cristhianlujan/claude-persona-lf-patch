@@ -46,7 +46,16 @@ def validate_schema(payload: dict[str, Any]) -> list[str]:
     )
 
 
+def unwrap_input(payload: dict[str, Any]) -> dict[str, Any]:
+    """Accept either the raw score contract or the governed fixture envelope."""
+    fixture = payload.get("fixture")
+    if isinstance(fixture, dict) and isinstance(fixture.get("score_input"), dict):
+        return fixture["score_input"]
+    return payload
+
+
 def score(payload: dict[str, Any]) -> dict[str, Any]:
+    payload = unwrap_input(payload)
     schema_errors = validate_schema(payload)
     evaluations = payload.get("evaluations") if isinstance(payload.get("evaluations"), list) else []
 
@@ -180,6 +189,17 @@ def self_test() -> int:
     cases.append({
         "case": "exclusive_threshold_enforced",
         "passed": result["quality_10_eligible"] is False and result["package_score"] == 9.5,
+        "observed": result,
+    })
+
+    envelope = {
+        "fixture": {"score_input": copy.deepcopy(good)},
+        "fixture_id": "SYNTHETIC-ENVELOPE",
+    }
+    result = score(envelope)
+    cases.append({
+        "case": "governed_fixture_envelope_unwrapped",
+        "passed": result["quality_10_eligible"] is True and result["package_score"] == 9.6,
         "observed": result,
     })
 
