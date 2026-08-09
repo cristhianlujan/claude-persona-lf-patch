@@ -1,0 +1,50 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-BISC-PR122-MATURITY-FOUNDATION-20260809",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "f37e531e9b913c2026780313978a11f7e4337458",
+  "judge_sha": "d5855e10889030850805b4e46f52ce824712e0bb",
+  "source_sha_list": [
+    "1404d50f20874e95cfb880c58b274e8f230d887d",
+    "91e8610438be0acb13ada822e5235d0f73430e63",
+    "482c82b79db640bfa14c78862c69c301b466c531eb51023958292a7580fb4978",
+    "56278f0469efa1d6d030651d008f296e93e6e0df313e8d70eebc9bcedfcf9cd6"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/agents/screen-ingestor.md",
+    "skills/creating-integral-user-stories/evals/fixtures/j02_external_positive.json",
+    "skills/creating-integral-user-stories/evals/fixtures/j02_source_omission.json",
+    "skills/creating-integral-user-stories/evals/fixtures/screen_ingestion_dense.json",
+    "skills/creating-integral-user-stories/judges/screen-decomposition.yaml",
+    "skills/creating-integral-user-stories/judges/screen-ingestion.yaml",
+    "skills/creating-integral-user-stories/manifest.yaml",
+    "skills/creating-integral-user-stories/schemas/screen-ingestion.schema.json",
+    "skills/creating-integral-user-stories/scripts/assess_evidence_tier.py",
+    "skills/creating-integral-user-stories/scripts/validate_screen_decomposition_v08.py",
+    "skills/creating-integral-user-stories/scripts/validate_screen_ingestion.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-09T21:34:00Z",
+  "evidence": {
+    "scope": "PR122_STORY_MATURITY_CANDIDATE_READ_ONLY",
+    "github_actions_run_id": 31336836982,
+    "github_actions_job_id": 93303978997,
+    "j00_external_fixture_assertions": "8/8",
+    "j02_external_fixture_assertions": "23/23",
+    "j02_source_omission_observation": "RETURN_TO_WORKER",
+    "j02_source_omission_missing_item": "FLD-NAME",
+    "j02_validator_sha256": "482c82b79db640bfa14c78862c69c301b466c531eb51023958292a7580fb4978",
+    "j02_validator_git_blob_sha1": "1404d50f20874e95cfb880c58b274e8f230d887d",
+    "screen_ingestion_snapshot_sha256": "56278f0469efa1d6d030651d008f296e93e6e0df313e8d70eebc9bcedfcf9cd6",
+    "visual_runtime_proven": false,
+    "supabase_canonical_write_performed": false,
+    "production_runtime_enabled": false,
+    "merge_authorized": false,
+    "merge_performed": false,
+    "scope_note": "Sandbox contract receipt for the PR122 maturity candidate only. It does not promote artifacts, confirm visual-runtime recall, authorize Supabase canonical writes, authorize production, or authorize merge."
+  }
+}
