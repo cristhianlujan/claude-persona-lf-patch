@@ -20,6 +20,7 @@ validator_dependencies:
   - scripts/validate_story_pack.py
   - scripts/validate_screen_decomposition_v08.py
   - scripts/validate_screen_ingestion.py
+  - scripts/score_maturity.py
 - package: PyYAML
   availability_policy: BLOCK_IF_MISSING
   required_by:
@@ -41,8 +42,8 @@ github_contract:
   readback_required: true
 package_contract:
   canonical_file_count: 62
-  operational_inventory_file_count: 75
-  maturity_candidate_file_count: 9
+  operational_inventory_file_count: 78
+  maturity_candidate_file_count: 12
   encoding: UTF-8
   line_endings: LF
   final_newline: true
@@ -84,6 +85,7 @@ quality_policy:
   - evidence_tier
   - external_fixture_independence
   - screen_ingestion_completeness
+  - reproducible_maturity_scoring
   threshold_weakening_forbidden: true
   global_close_requires:
   - all_canonical_artifacts_dual_green
@@ -98,6 +100,8 @@ quality_policy:
   - screen_ingestion_gate_executed
   - inventory_complete_vs_ingestion_zero
   - provenance_anchors_promoted
+  - reproducible_maturity_score_executed
+  - independent_score_receipts_present
   - checklist_updated
 evidence_tier_policy:
   assessor: scripts/assess_evidence_tier.py
@@ -110,6 +114,33 @@ evidence_tier_policy:
     UNASSESSED: file integrity not proven
   t1_is_required_for_quality_10: true
   mass_rewrite_of_existing_validation_evidence: false
+maturity_scoring_policy:
+  status: CANDIDATO_READ_ONLY
+  input_schema: schemas/maturity-score-input.schema.json
+  scorer: scripts/score_maturity.py
+  synthetic_fixture: evals/fixtures/maturity_score_synthetic.json
+  formula: MIN(each evaluator MIN(CLAUDE,GITHUB,TECHNICAL))
+  threshold_rule: package_score > 9.5
+  minimum_independent_evaluators: 2
+  evaluator_identity_must_be_distinct: true
+  evaluator_execution_id_must_be_distinct: true
+  numeric_score_is_approval: false
+  promotion_authorized_by_score: false
+  quality_10_hard_gates:
+  - external_positive_executed
+  - negative_rejected
+  - blocking_case_executed
+  - runtime_chain_executed
+  - visual_runtime_proven
+  - provenance_confirmed
+  - source_completeness_executed
+  - github_supabase_reconciled
+  current_real_score_status: NOT_COMPUTED
+  current_real_score_reason:
+  - two_independent_real_evaluator_receipts_missing
+  - visual_runtime_proven_false
+  - provenance_anchors_not_confirmed
+  synthetic_fixture_must_not_be_used_as_real_score: true
 provenance_anchors:
   JUDGES_SOURCE_INTEGRITY_YAML:
     path: judges/source-integrity.yaml
@@ -143,6 +174,11 @@ maturity_extension:
     validator: scripts/validate_screen_decomposition_v08.py
     external_positive_fixture: evals/fixtures/j02_external_positive.json
     source_omission_fixture: evals/fixtures/j02_source_omission.json
+  maturity_score_candidate:
+    scorer: scripts/score_maturity.py
+    input_schema: schemas/maturity-score-input.schema.json
+    synthetic_fixture: evals/fixtures/maturity_score_synthetic.json
+    real_score_status: NOT_COMPUTED
 files:
   root:
   - SKILL.md
@@ -180,6 +216,7 @@ files:
   - schemas/story-pack.schema.json
   - schemas/task-packet.schema.json
   - schemas/screen-ingestion.schema.json
+  - schemas/maturity-score-input.schema.json
   templates:
   - templates/execution-report.template.md
   - templates/judge-contract.template.yaml
@@ -202,6 +239,7 @@ files:
   - scripts/validate_screen_ingestion.py
   - scripts/validate_screen_decomposition_v08.py
   - scripts/assess_evidence_tier.py
+  - scripts/score_maturity.py
   judges:
   - judges/analytics-observability.yaml
   - judges/audit-traceability.yaml
@@ -229,6 +267,7 @@ files:
   - evals/fixtures/screen_ingestion_dense.json
   - evals/fixtures/j02_external_positive.json
   - evals/fixtures/j02_source_omission.json
+  - evals/fixtures/maturity_score_synthetic.json
 auxiliary_files:
 - AUDIT_CHECKLIST_R8.md
 - AUDIT_CHECKLIST_R8_62_ARTEFACTOS.xlsx
@@ -290,11 +329,13 @@ chain_policy:
   - negative_eval
   - blocking_eval
   - evidence_tier
+  - reproducible_maturity_score
   - github_readback
   - supabase_readback
   close_only_when_negative_is_rejected: true
   external_positive_fixture_required_for_t1: true
   screen_ingestion_required_before_j02_candidate_v08: true
+  real_score_requires_independent_evaluator_receipts: true
 limits:
   no_validated: true
   no_production: true
@@ -322,3 +363,8 @@ current_state:
     NOT_VALIDATED: 0
     PASS_WITH_EVIDENCE: 64
   maturity_candidate_status: NOT_PROMOTED
+  real_maturity_score_status: NOT_COMPUTED
+  real_maturity_score_blockers:
+  - independent_real_evaluator_receipts_missing
+  - visual_runtime_proven_false
+  - provenance_anchors_not_confirmed
