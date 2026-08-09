@@ -17,7 +17,20 @@ begin
 end
 $block$;
 
-alter role lf_writer_verifier_v7 nologin noinherit nobypassrls;
+do $block$
+begin
+  if exists (
+    select 1
+    from pg_roles
+    where rolname='lf_writer_verifier_v7'
+      and (rolcanlogin or rolinherit or rolbypassrls)
+  ) then
+    raise exception using
+      errcode='42501',
+      message='lf_writer_verifier_v7 must be NOLOGIN, NOINHERIT and NOBYPASSRLS';
+  end if;
+end
+$block$;
 
 create table if not exists private.lf_reconciliation_writer_nonces_v7 (
   nonce_sha256 text primary key check (nonce_sha256 ~ '^[0-9a-f]{64}$'),

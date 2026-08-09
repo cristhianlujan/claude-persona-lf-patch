@@ -11,7 +11,23 @@ begin
 end
 $block$;
 
-alter role lf_writer_verifier_v7 nologin noinherit nobypassrls;
+-- A CREATEROLE executor without BYPASSRLS cannot issue ALTER ROLE ...
+-- NOBYPASSRLS, even when the stored value is already false. Read back the
+-- security boundary instead of requesting authority this migration must not have.
+do $block$
+begin
+  if exists (
+    select 1
+    from pg_roles
+    where rolname='lf_writer_verifier_v7'
+      and (rolcanlogin or rolinherit or rolbypassrls)
+  ) then
+    raise exception using
+      errcode='42501',
+      message='lf_writer_verifier_v7 must be NOLOGIN, NOINHERIT and NOBYPASSRLS';
+  end if;
+end
+$block$;
 
 -- The migration executor must retain effective owner authority after objects are
 -- transferred, including REFERENCES, DML, trigger and ALTER operations. INHERIT is
