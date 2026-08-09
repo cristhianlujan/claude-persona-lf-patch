@@ -5,7 +5,8 @@ The scorer operationalizes the package formula MIN(CLAUDE,GITHUB,TECHNICAL)
 without turning a numeric result into approval. At least two genuinely
 independent evaluator identities/executions are required. Quality-10 eligibility
 also requires every hard evidence gate, including real visual runtime and
-confirmed provenance.
+resolved provenance. Provenance resolution does not force a derived artifact
+from INFERRED to CONFIRMED.
 """
 from __future__ import annotations
 
@@ -22,7 +23,7 @@ HARD_GATES = (
     "blocking_case_executed",
     "runtime_chain_executed",
     "visual_runtime_proven",
-    "provenance_confirmed",
+    "provenance_resolved",
     "source_completeness_executed",
     "github_supabase_reconciled",
 )
@@ -180,6 +181,15 @@ def self_test() -> int:
     cases.append({
         "case": "visual_runtime_missing_blocks_quality10",
         "passed": result["quality_10_eligible"] is False and "HARD_GATE_MISSING:visual_runtime_proven" in result["blockers"],
+        "observed": result,
+    })
+
+    no_provenance = copy.deepcopy(good)
+    no_provenance["hard_gates"]["provenance_resolved"] = False
+    result = score(no_provenance)
+    cases.append({
+        "case": "unresolved_provenance_blocks_quality10",
+        "passed": result["quality_10_eligible"] is False and "HARD_GATE_MISSING:provenance_resolved" in result["blockers"],
         "observed": result,
     })
 
