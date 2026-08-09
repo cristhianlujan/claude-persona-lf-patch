@@ -251,7 +251,7 @@ jobs:
             --commit-sha "$GITHUB_SHA"
 
       - name: Capture authenticated E.16 Actions inventory
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'lf/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           E16_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -334,4 +334,3 @@ jobs:
           if-no-files-found: error
           include-hidden-files: true
           retention-days: 7
-

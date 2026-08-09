@@ -46,7 +46,7 @@ def main() -> int:
     workflow = (source / ".github/workflows/lf-contract-check.yml").read_text(encoding="utf-8")
     required_workflow_terms = (
         "actions: read",
-        "if: github.event_name == 'pull_request'",
+        "if: github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'lf/')",
         'E16_HEAD_SHA: ${{ github.event.pull_request.head.sha }}',
         '--head-sha "$E16_HEAD_SHA"',
         "PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py",
