@@ -8,14 +8,11 @@ create role authenticated nologin noinherit;
 create role service_role nologin noinherit;
 create role lf_governance_owner_v3 nologin noinherit nobypassrls;
 
--- Model the managed grantor: it must retain ADMIN OPTION for the membership
--- edge it grants to postgres to remain attributable and independently revocable.
-grant lf_governance_owner_v3 to lf_ci_cluster_admin
-  with admin true, inherit false, set false;
-
+-- The synthetic cluster administrator is a superuser at this boundary. Omitting
+-- GRANTED BY lets PostgreSQL record that executor as the grantor without creating
+-- the circular ADMIN dependency PostgreSQL 17 correctly rejects.
 grant lf_governance_owner_v3 to postgres
-  with admin true, inherit false, set false
-  granted by lf_ci_cluster_admin;
+  with admin true, inherit false, set false;
 
 create schema private authorization postgres;
 create schema vault authorization postgres;
