@@ -42,8 +42,8 @@ github_contract:
   readback_required: true
 package_contract:
   canonical_file_count: 62
-  operational_inventory_file_count: 78
-  maturity_candidate_file_count: 12
+  operational_inventory_file_count: 79
+  maturity_candidate_file_count: 13
   encoding: UTF-8
   line_endings: LF
   final_newline: true
@@ -86,6 +86,7 @@ quality_policy:
   - external_fixture_independence
   - screen_ingestion_completeness
   - reproducible_maturity_scoring
+  - real_visual_reference_binding
   threshold_weakening_forbidden: true
   global_close_requires:
   - all_canonical_artifacts_dual_green
@@ -102,6 +103,8 @@ quality_policy:
   - provenance_anchors_promoted
   - reproducible_maturity_score_executed
   - independent_score_receipts_present
+  - real_visual_reference_adjudicated
+  - independent_blind_visual_run_executed
   - checklist_updated
 evidence_tier_policy:
   assessor: scripts/assess_evidence_tier.py
@@ -179,6 +182,16 @@ maturity_extension:
     input_schema: schemas/maturity-score-input.schema.json
     synthetic_fixture: evals/fixtures/maturity_score_synthetic.json
     real_score_status: NOT_COMPUTED
+  real_visual_reference:
+    fixture: evals/fixtures/real_screen_onboarding_step1_reference.json
+    source_type: GOOGLE_DRIVE_REAL_PNG
+    drive_file_id: 1H1Dku625GZl6qFR22sBdIo8MJgJU55sw
+    raw_content_sha256: e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7
+    dimensions: 1536x1024
+    reference_read_performed: true
+    independent_blind_read: false
+    quality_gate_eligible: false
+    purpose: adjudicated ground-truth reference for a future separate-context blind J00 run
 files:
   root:
   - SKILL.md
@@ -268,6 +281,7 @@ files:
   - evals/fixtures/j02_external_positive.json
   - evals/fixtures/j02_source_omission.json
   - evals/fixtures/maturity_score_synthetic.json
+  - evals/fixtures/real_screen_onboarding_step1_reference.json
 auxiliary_files:
 - AUDIT_CHECKLIST_R8.md
 - AUDIT_CHECKLIST_R8_62_ARTEFACTOS.xlsx
@@ -329,6 +343,8 @@ chain_policy:
   - negative_eval
   - blocking_eval
   - evidence_tier
+  - real_visual_reference
+  - independent_blind_visual_run
   - reproducible_maturity_score
   - github_readback
   - supabase_readback
@@ -336,6 +352,7 @@ chain_policy:
   external_positive_fixture_required_for_t1: true
   screen_ingestion_required_before_j02_candidate_v08: true
   real_score_requires_independent_evaluator_receipts: true
+  visual_reference_does_not_satisfy_blind_gate: true
 limits:
   no_validated: true
   no_production: true
@@ -368,3 +385,5 @@ current_state:
   - independent_real_evaluator_receipts_missing
   - visual_runtime_proven_false
   - provenance_anchors_not_confirmed
+  real_visual_reference_count: 1
+  independent_blind_visual_run_status: NOT_EXECUTED
