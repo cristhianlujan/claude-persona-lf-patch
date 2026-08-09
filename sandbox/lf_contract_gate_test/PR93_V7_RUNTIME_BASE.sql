@@ -286,6 +286,19 @@ create table public.lf_eventos (
   updated_at timestamptz
 );
 
+alter table private.lf_architecture_alerts_v4 owner to postgres;
+alter table private.lf_architecture_delivery_secrets_v4 owner to postgres;
+alter table private.lf_architecture_monitor_runs_v4 owner to postgres;
+alter table private.lf_architecture_notification_attempts_v4 owner to postgres;
+alter table private.lf_architecture_notification_outbox_v4 owner to postgres;
+alter table private.lf_architecture_notification_receipts_v4 owner to postgres;
+alter table private.lf_edge_function_deployment_evidence_v6 owner to postgres;
+alter table private.lf_event_contract_provenance_overlay_v4 owner to postgres;
+alter table private.lf_legacy_event_quarantine_v4 owner to postgres;
+alter table private.lf_reconciliation_writer_nonces_v6 owner to postgres;
+alter table private.lf_schema_fingerprint_baseline_v4 owner to postgres;
+alter table public.lf_eventos owner to postgres;
+
 alter table private.lf_artifact_inventory_baseline_v3 owner to lf_governance_owner_v3;
 alter table private.lf_gate_test_runs_v3 owner to lf_governance_owner_v3;
 alter table private.lf_github_reconciliation_runs_v3 owner to lf_governance_owner_v3;
