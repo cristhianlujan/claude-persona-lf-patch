@@ -16,7 +16,7 @@
     "245bab9b11d85571ca746eb65a250aa79d6bb463",
     "823ce27c5922acb633824e6f8c11c82e40946fb4",
     "bad950568bc04c3fc6973f7ac5a464b8b3ba86fe",
-    "b1213fe2b0b88513753f7dd1dc798bb59380acc0",
+    "82973f993a7a4f11f5a7a79ce29406f15a8c89b6",
     "e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7"
   ],
   "target_paths": [
@@ -37,7 +37,7 @@
     "skills/creating-integral-user-stories/scripts/validate_screen_ingestion.py"
   ],
   "blocking_codes": [],
-  "issued_at": "2026-08-09T21:58:00Z",
+  "issued_at": "2026-08-09T22:02:00Z",
   "evidence": {
     "scope": "PR122_STORY_MATURITY_CANDIDATE_READ_ONLY",
     "github_actions_run_id": 31336836982,
