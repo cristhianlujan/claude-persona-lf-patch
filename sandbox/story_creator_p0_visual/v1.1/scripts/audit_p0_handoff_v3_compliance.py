@@ -5,7 +5,7 @@ Premerge mode proves repository-contained obligations. Final mode additionally
 requires private-rerun, post-merge CI, Supabase/EKB readback and merge evidence.
 """
 from __future__ import annotations
-import argparse,json,re,subprocess,sys
+import argparse,json,re
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1];REPO=ROOT.parents[2]
 PC={f'PC{i:02d}':'UNVERIFIED' for i in range(1,65)}
@@ -23,14 +23,14 @@ def main()->int:
  local_ok=all((ROOT/x).exists() for x in required)
  if local_ok:
   mark([f'PC{i:02d}' for i in range(1,55) if i!=55]);mark(['PC56','PC57','PC61','PC62','PC63'])
- core=text('sandbox/story_creator_p0_visual/v1.1/scripts/p0_visual_fidelity_v3.py');suite=text('sandbox/story_creator_p0_visual/v1.1/evals/p0_visual_fidelity_v3_suite.py');reader=text('sandbox/story_creator_p0_visual/v1.1/agents/p0-visual-reader.md');judge=text('sandbox/story_creator_p0_visual/v1.1/agents/j00-p0-visual-judge.md')
+ core=text('sandbox/story_creator_p0_visual/v1.1/scripts/p0_visual_fidelity_v3.py');suite=text('sandbox/story_creator_p0_visual/v1.1/evals/p0_visual_fidelity_v3_suite.py');reader=text('sandbox/story_creator_p0_visual/v1.1/agents/p0-visual-reader.md');judge=text('sandbox/story_creator_p0_visual/v1.1/agents/j00-p0-visual-judge.md');canonical_ci=text('sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_SCOPE_TESTS.py')
  checks={
   'PC12':'text_groups' in core and 'word_observation_refs' in core,
   'PC31':'UNSUPPORTED_EXACT_FONT_FAMILY' in core,'PC32':'UNSUPPORTED_EXACT_CSS_FONT_SIZE' in core,
   'PC35':'blind_output_mutated' in core and 'observed' in core and 'declared' in core,
   'PC38':'blind_output_mutated' in core,'PC40':'PIXEL_COLOR_MISMATCH' in core and 'P0_VISUAL_FIDELITY_JUDGE' in text('sandbox/story_creator_p0_visual/v1.1/scripts/run_p0_visual_fidelity_judge.py'),
   'PC44':'EXCEPTION_FIRST' in reader or 'exception-first' in reader.lower(),
-  'PC51':'p0_machine_visual_quality_negative_suite_v2.py' in text('.github/workflows/p0-visual-fidelity-v3.yml'),
+  'PC51':'p0_machine_visual_quality_negative_suite_v2.py' in canonical_ci and 'p0_visual_quality_runtime_regression_suite.py' in canonical_ci and 'p0_blind_forward_adversarial_test.py' in canonical_ci,
   'PC52':all(f'N{i}' in suite for i in range(29,51)),'PC53':'positive_restores' in suite,'PC54':all(f'R{i}' in suite for i in range(16,41)),
   'PC56':'FRESH_P0_V3_ADVERSARY' in text('sandbox/story_creator_p0_visual/v1.1/evals/p0_visual_fidelity_forward_adversarial_v3.py'),
   'PC61':'production_authorized' in text('sandbox/story_creator_p0_visual/v1.1/evals/p0-visual-fidelity-runtime-config-v3.json') and 'false' in text('sandbox/story_creator_p0_visual/v1.1/evals/p0-visual-fidelity-runtime-config-v3.json').lower(),
