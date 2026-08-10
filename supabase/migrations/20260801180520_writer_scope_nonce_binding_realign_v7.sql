@@ -33,6 +33,13 @@ grant lf_governance_owner_v3 to postgres
 grant create on schema private to lf_writer_verifier_v7;
 grant create on schema private to lf_governance_owner_v3;
 
+-- This is the first migration that compiles an extensions.digest reference while
+-- executing as the verifier owner. Grant parser/runtime USAGE before SET ROLE;
+-- the later extensions migration keeps the grant idempotent and performs the
+-- final no-CREATE/function-EXECUTE readback.
+grant usage on schema extensions to lf_writer_verifier_v7;
+revoke create on schema extensions from lf_writer_verifier_v7;
+
 set local role lf_writer_verifier_v7;
 
 -- Decode all three length-framed components. Returning NULL is the fail-closed result

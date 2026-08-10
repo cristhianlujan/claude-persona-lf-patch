@@ -5,8 +5,23 @@
 
 begin;
 
-alter role lf_governance_owner_v3 nologin noinherit nobypassrls;
-alter role lf_writer_verifier_v7 nologin noinherit nobypassrls;
+-- PostgreSQL restricts ALTER ROLE ... NOBYPASSRLS to executors that already
+-- have BYPASSRLS. The managed postgres boundary intentionally does not, so
+-- enforce these role attributes with a catalog assertion instead.
+do $block$
+begin
+  if exists (
+    select 1
+    from pg_roles
+    where rolname in ('lf_governance_owner_v3','lf_writer_verifier_v7')
+      and (rolcanlogin or rolinherit or rolbypassrls)
+  ) then
+    raise exception using
+      errcode='42501',
+      message='V7 governance roles must be NOLOGIN, NOINHERIT and NOBYPASSRLS';
+  end if;
+end
+$block$;
 
 -- Defense in depth for all V4 governance relations identified by the independent audit.
 alter table private.lf_architecture_alerts_v4 enable row level security;
