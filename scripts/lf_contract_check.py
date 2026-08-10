@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.7
+LF Contract Check v0.8
 
 Sandbox validator for controlled LF governance gates.
+
+v0.8 changes:
+- Allows exactly three shared operational-protocol paths: CLAUDE.md,
+  .claude/operational-execution.md, and .claude/scripts/validate_artifact_output.py.
+- Keeps sibling/lookalike .claude paths default-denied.
 
 v0.7 changes:
 - Allows only the exact approved GitHub workflow paths in addition to the existing contract check workflow.
@@ -38,6 +43,9 @@ ALLOWED_GITHUB_EXACT = {
 ALLOWED_EXACT = {
     *ALLOWED_GITHUB_EXACT,
     VALIDATOR_SELF_PATH,
+    "CLAUDE.md",
+    ".claude/operational-execution.md",
+    ".claude/scripts/validate_artifact_output.py",
 }
 ALLOWED_PREFIXES = [
     "sandbox/lf_contract_gate_test/",
