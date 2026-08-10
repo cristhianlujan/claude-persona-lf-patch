@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "P0 auxiliary design source",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "source_type",
+    "source_version",
+    "source_sha256",
+    "captured_at",
+    "screen_mapping",
+    "provenance",
+    "trust_level",
+    "authorization",
+    "claims"
+  ],
+  "properties": {
+    "source_type": {
+      "enum": [
+        "DOM_SNAPSHOT",
+        "COMPUTED_STYLE_SNAPSHOT",
+        "CSS_STYLESHEET",
+        "FIGMA_FILE_EXPORT",
+        "FIGMA_NODE_SNAPSHOT",
+        "DESIGN_TOKEN_BUNDLE",
+        "DESIGN_SYSTEM_SPEC"
+      ]
+    },
+    "source_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{64}$"
+    },
+    "captured_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "screen_mapping": {},
+    "provenance": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trust_level": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authorization": {
+      "type": "string",
+      "minLength": 1
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "element_id",
+          "property",
+          "value",
+          "kind"
+        ],
+        "properties": {
+          "element_id": {
+            "type": "string"
+          },
+          "property": {
+            "type": "string"
+          },
+          "value": {},
+          "kind": {
+            "type": "string"
+          },
+          "critical": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

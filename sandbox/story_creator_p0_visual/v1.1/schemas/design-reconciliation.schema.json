@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "P0 enriched design reconciliation",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "blind_output_sha256",
+    "auxiliary_source_sha256",
+    "auxiliary_source_type",
+    "reconciliations",
+    "summary",
+    "blind_output_mutated",
+    "result"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "p0-enriched-design-reconciliation/v1"
+    },
+    "blind_output_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "auxiliary_source_sha256": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "auxiliary_source_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reconciliations": {
+      "type": "array"
+    },
+    "summary": {
+      "type": "object"
+    },
+    "blind_output_mutated": {
+      "const": false
+    },
+    "result": {
+      "enum": [
+        "PASS_RECONCILIATION",
+        "BLOCKED_AUXILIARY_CONFLICT"
+      ]
+    }
+  }
+}

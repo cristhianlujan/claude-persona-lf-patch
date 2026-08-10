@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "P0 consolidated visual reading V2",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "elements",
+    "text_groups",
+    "layout_regions",
+    "spatial_relations",
+    "observed_style_clusters",
+    "visual_fidelity_summary",
+    "legacy_semantic_sha256",
+    "blind_lock"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "p0-consolidated-visual-reading/v2"
+    },
+    "elements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "element_id",
+          "region",
+          "geometry",
+          "visual_style",
+          "fidelity_property_status"
+        ]
+      }
+    },
+    "text_groups": {
+      "type": "array"
+    },
+    "layout_regions": {
+      "type": "array"
+    },
+    "spatial_relations": {
+      "type": "array"
+    },
+    "observed_style_clusters": {
+      "type": "array"
+    },
+    "visual_fidelity_summary": {
+      "type": "object"
+    },
+    "legacy_semantic_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "blind_lock": {
+      "type": "object",
+      "required": [
+        "input_sha256",
+        "output_sha256",
+        "auxiliary_context_before_lock",
+        "blind_output_mutated"
+      ],
+      "properties": {
+        "input_sha256": {
+          "type": "string"
+        },
+        "output_sha256": {
+          "type": "string"
+        },
+        "auxiliary_context_before_lock": {
+          "const": false
+        },
+        "blind_output_mutated": {
+          "const": false
+        }
+      }
+    }
+  }
+}

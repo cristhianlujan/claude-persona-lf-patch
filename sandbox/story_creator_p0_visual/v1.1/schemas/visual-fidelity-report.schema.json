@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "P0 visual fidelity report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "candidate_sha256",
+    "checks",
+    "metrics",
+    "errors",
+    "warnings",
+    "result"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "p0-visual-fidelity-report/v1"
+    },
+    "candidate_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "checks": {
+      "type": "object"
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "material_geometry_coverage",
+        "material_container_geometry_coverage",
+        "text_grouping_coverage",
+        "text_style_coverage",
+        "color_profile_coverage",
+        "control_style_coverage",
+        "spatial_relation_consistency",
+        "unsupported_exact_style_claims",
+        "grouping_conflicts",
+        "layout_conflicts",
+        "style_conflicts",
+        "auxiliary_mismatches_total",
+        "auxiliary_mismatches_critical",
+        "visual_fidelity_remediations_before",
+        "visual_fidelity_remediations_after",
+        "final_visual_fidelity_result"
+      ]
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "result": {
+      "enum": [
+        "PASS_VISUAL_FIDELITY",
+        "BLOCKED_VISUAL_FIDELITY",
+        "BLOCKED_SOURCE_QUALITY",
+        "BLOCKED_AUXILIARY_CONFLICT"
+      ]
+    }
+  }
+}

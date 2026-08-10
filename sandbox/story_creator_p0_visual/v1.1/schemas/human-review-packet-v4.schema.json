@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "P0 human review packet V4",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "candidate_sha256",
+    "fidelity_report_sha256",
+    "human_review_ready",
+    "screen_summary",
+    "layout_regions",
+    "typography_summary",
+    "color_summary",
+    "text_groups",
+    "human_attention_required",
+    "automatically_resolved_count",
+    "remediation_history",
+    "technical_appendix"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "p0-human-review-packet-v4/v1"
+    },
+    "candidate_sha256": {
+      "type": "string"
+    },
+    "fidelity_report_sha256": {
+      "type": "string"
+    },
+    "human_review_ready": {
+      "type": "boolean"
+    },
+    "screen_summary": {
+      "type": "object"
+    },
+    "layout_regions": {
+      "type": "array"
+    },
+    "typography_summary": {
+      "type": "array"
+    },
+    "color_summary": {
+      "type": "array"
+    },
+    "text_groups": {
+      "type": "array"
+    },
+    "human_attention_required": {
+      "type": "array"
+    },
+    "automatically_resolved_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "remediation_history": {
+      "type": "array"
+    },
+    "reconciliation": {},
+    "technical_appendix": {
+      "type": "object"
+    }
+  }
+}
