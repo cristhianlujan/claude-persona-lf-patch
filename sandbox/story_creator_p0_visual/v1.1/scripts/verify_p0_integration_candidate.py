@@ -11,7 +11,7 @@ ARCHITECTURE_SHA256='a8d53b736e7d2d672b0927f7deaca4422f7429fdda0d1997b1eaa54fc06
 CANONICALIZER_SHA256='99952f4a1c0819bfc6a7488bea595b43ff31697a0c5ffe034c3e7ea76cde930f'
 LEGACY_BAD_SHA='c0acd3f52388447958b9f60c839f7f4e289488110654784b9d9f94cfccb8b6ff'
 SCRIPT_GATES=[['validate_p0_contracts.py','--self-test'],['admit_p0_image.py','--self-test'],['validate_p0_security.py','--self-test'],['validate_p0_visual_output.py','--self-test'],['validate_p0_judge.py','--self-test'],['validate_p0_human_binding.py','--self-test'],['validate_p0_j02_handoff.py','--self-test'],['adapt_p0_to_screen_decomposer.py','--self-test'],['smoke_p0_j02.py'],['report_p0_metric_denominators.py','--self-test'],['report_p0_metric_denominators.py'],['audit_p0_handoff_compliance.py','--self-test'],['validate_p0_v3_schemas.py'],['verify_p0_v3_manifest.py']]
-EVAL_GATES=['p0_machine_visual_quality_negative_suite.py','p0_machine_visual_quality_negative_suite_v2.py','p0_visual_quality_runtime_regression_suite.py','p0_blind_forward_adversarial_test.py','p0_visual_fidelity_v3_suite.py','p0_visual_fidelity_forward_adversarial_v3.py']
+EVAL_GATES=['p0_machine_visual_quality_negative_suite.py','p0_machine_visual_quality_negative_suite_v2.py','p0_visual_quality_runtime_regression_suite.py','p0_blind_forward_adversarial_test.py','p0_visual_fidelity_v3_suite.py','p0_visual_fidelity_forward_adversarial_v3.py','p0_inferred_parent_reassignment_regression.py']
 LEGACY_FILES=['scripts/run_p0_visual_worker.py','scripts/build_p0_review_evidence_packet.py','schemas/human-review-packet.schema.json','evals/p0_real_screen_bad_legacy_regression.json']
 def sha256(path:Path)->str:return hashlib.sha256(path.read_bytes()).hexdigest()
 def git_blob_sha(path:Path)->str:
