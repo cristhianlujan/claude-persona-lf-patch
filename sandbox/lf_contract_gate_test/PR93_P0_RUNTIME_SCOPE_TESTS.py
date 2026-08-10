@@ -44,6 +44,18 @@ def main() -> int:
         raise SystemExit("NO_RUNTIME_DELEGATES: expected False")
     print("PASS_NO_RUNTIME_DELEGATES")
 
+    if not candidate.is_allowed_path(candidate.P0_CANDIDATE_PREFIX + "manifest.candidate.json"):
+        raise SystemExit("P0_CANDIDATE_SCOPE: versioned P0 candidate path must be allowed")
+    print("PASS_P0_CANDIDATE_SCOPE")
+
+    if candidate.is_allowed_path("sandbox/story_creator_p0_visual/v1.2/manifest.candidate.json"):
+        raise SystemExit("P0_SIBLING_DEFAULT_DENY: unapproved sibling version was allowed")
+    print("PASS_P0_SIBLING_DEFAULT_DENY")
+
+    if candidate.is_allowed_path("sandbox/story_creator_p0_visual_evil/v1.1/file.json"):
+        raise SystemExit("P0_PREFIX_BOUNDARY: lookalike P0 prefix was allowed")
+    print("PASS_P0_PREFIX_BOUNDARY")
+
     assert candidate.evaluate_controlled_runtime_scope(
         [edge], branch=candidate.PR_BRANCH, blob_by_path=exact_blobs, mode_by_path=exact_modes
     ) is True
@@ -112,7 +124,7 @@ def main() -> int:
     ) is True
     print("PASS_ALERT_PAIR")
 
-    print("PASS_PR93_P0_RUNTIME_SCOPE_MATRIX=17/17")
+    print("PASS_PR93_P0_RUNTIME_SCOPE_MATRIX=20/20")
     return 0
 
 

@@ -1,0 +1,29 @@
+{
+  "schema_version": "p0-local-runtime-config/v1",
+  "configuration_id": "P0-LOCAL-TESSERACT-5.3.4-PILLOW-12.2.0",
+  "execution_lane": "ENGINEERING_SMOKE",
+  "runtime_enabled": false,
+  "production_authorized": false,
+  "network_egress_required": false,
+  "ocr_runtime": {"name": "tesseract", "version": "5.3.4", "language": "eng", "psm": 6},
+  "image_runtime": {"name": "Pillow", "version": "12.2.0"},
+  "scan_scales": [1.0, 2.0],
+  "confidence_threshold": 0.7,
+  "confidence_threshold_origin": "validate_p0_visual_output.LOW_CONFIDENCE_THRESHOLD",
+  "max_image_bytes": 15000000,
+  "max_images_per_screen_set": 10,
+  "max_total_pixels_per_screen_set": 120000000,
+  "calibration_scope": {
+    "status": "SYNTHETIC_ENGINEERING_SMOKE_ONLY",
+    "fixture": "generated:p0-p03-dense-text-v1",
+    "evidence_ref": "evals/p0-p03-runtime-smoke-receipt-20260809.json",
+    "empirical_calibration": false,
+    "p0_5_denominator_eligible": false
+  },
+  "known_limitations": [
+    "OCR text observations only; interactive semantics are not inferred from appearance",
+    "No empirical visual-quality claim",
+    "No container/model capability registration claim",
+    "Not an operational or production-enabled runtime"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lf/p0/criticality.schema.json",
+  "title": "P0 Criticality v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["criticality", "criticality_tier", "criticality_reason_codes", "criticality_source"],
+  "properties": {
+    "criticality": {"type": "boolean"},
+    "criticality_tier": {"type": "string", "enum": ["NON_CRITICAL", "IMPORTANT", "HIGH", "CRITICAL"]},
+    "criticality_reason_codes": {"type": "array", "uniqueItems": true, "items": {"type": "string", "enum": ["AUTHENTICATION_OR_IDENTITY", "MONETARY_VALUE", "MONETARY_COMMITMENT", "LEGAL_OR_CONSENT", "PERSONAL_OR_SENSITIVE_DATA", "IRREVERSIBLE_ACTION", "PROCESS_FINALIZATION", "SAFETY_OR_FRAUD_WARNING", "BLOCKING_ERROR_OR_RECOVERY"]}},
+    "criticality_source": {"type": "string", "enum": ["GOLD_ANNOTATION", "APPROVED_SCREEN_POLICY"]},
+    "source_ref": {"type": "string", "minLength": 3}
+  },
+  "allOf": [
+    {"if": {"properties": {"criticality_tier": {"enum": ["HIGH", "CRITICAL"]}}}, "then": {"properties": {"criticality": {"const": true}, "criticality_reason_codes": {"minItems": 1}}}},
+    {"if": {"properties": {"criticality_tier": {"enum": ["NON_CRITICAL", "IMPORTANT"]}}}, "then": {"properties": {"criticality": {"const": false}}}}
+  ]
+}

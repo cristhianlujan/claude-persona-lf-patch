@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lf/p0/p0-j02-handoff.schema.json",
+  "title": "P0 to J02 Handoff v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "target_screen_code", "source_version", "source_snapshot_sha256", "visual_output_sha256", "effective_decision", "human_review_decision", "provenance", "main_responsibility", "context_inventory", "field_inventory", "permission_inventory", "transition_inventory", "action_inventory", "pending_decisions", "evidence_refs"],
+  "properties": {
+    "schema_version": {"const": "p0-j02-handoff/v1"},
+    "target_screen_code": {"type": "string", "pattern": "^SCR-[A-Z0-9-]+$"},
+    "source_version": {"type": "string", "minLength": 1},
+    "source_snapshot_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "visual_output_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "effective_decision": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema_version", "decision_id", "judge_code", "result", "worker_execution_id", "worker_identity", "judge_execution_id", "judge_identity", "independence_level", "critical_screen", "visual_output_sha256", "requires_human_review", "adjudication_overlay_ref", "evidence_refs", "is_current", "superseded_by"],
+      "properties": {
+        "schema_version": {"const": "p0-judge-decision/v1"},
+        "decision_id": {"type": "string", "minLength": 3},
+        "judge_code": {"type": "string", "enum": ["J00_P0_VISUAL_READING", "J00R_P0_REJUDGMENT"]},
+        "result": {"type": "string", "enum": ["J00_READY_FOR_P1", "J00R_READY_FOR_P1"]},
+        "worker_execution_id": {"type": "string", "minLength": 1},
+        "worker_identity": {"type": "string", "minLength": 1},
+        "judge_execution_id": {"type": "string", "minLength": 1},
+        "judge_identity": {"type": "string", "minLength": 1},
+        "independence_level": {"enum": ["L2", "L3"]},
+        "critical_screen": {"type": "boolean"},
+        "requires_human_review": {"const": false},
+        "adjudication_overlay_ref": {"type": ["string", "null"], "minLength": 1},
+        "evidence_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "is_current": {"const": true},
+        "superseded_by": {"type": "null"},
+        "visual_output_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "human_review_decision": {"type": ["object", "null"]},
+    "provenance": {
+      "type": "object", "additionalProperties": false, "required": ["architecture_source_sha256", "source_refs", "p0_execution_id"],
+      "properties": {
+        "architecture_source_sha256": {"const": "a8d53b736e7d2d672b0927f7deaca4422f7429fdda0d1997b1eaa54fc06e7531"},
+        "source_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 3}},
+        "p0_execution_id": {"type": "string", "minLength": 3}
+      }
+    },
+    "main_responsibility": {"type": "string", "minLength": 15},
+    "context_inventory": {
+      "type": "array", "minItems": 1,
+      "items": {"type": "object", "additionalProperties": false, "required": ["code", "description", "source_ref", "classification"], "properties": {"code": {"type": "string", "minLength": 2}, "description": {"type": "string", "minLength": 3}, "source_ref": {"type": "string", "minLength": 3}, "classification": {"type": "string", "enum": ["VISUAL_CONFIRMED", "AUXILIARY_CONFIRMED", "INFERRED"]}}}
+    },
+    "field_inventory": {
+      "type": "array",
+      "items": {"type": "object", "additionalProperties": false, "required": ["code", "context_code", "source_ref", "classification"], "properties": {"code": {"type": "string", "minLength": 2}, "context_code": {"type": "string", "minLength": 2}, "source_ref": {"type": "string", "minLength": 3}, "classification": {"type": "string", "enum": ["VISUAL_CONFIRMED", "AUXILIARY_CONFIRMED", "INFERRED"]}}}
+    },
+    "permission_inventory": {
+      "type": "array",
+      "items": {"type": "object", "additionalProperties": false, "required": ["permission_code", "actor_profile", "action_code", "source_ref", "classification"], "properties": {"permission_code": {"type": "string", "minLength": 2}, "actor_profile": {"type": "string", "minLength": 2}, "action_code": {"type": "string", "minLength": 2}, "source_ref": {"type": "string", "minLength": 3}, "classification": {"type": "string", "enum": ["AUXILIARY_CONFIRMED", "POLICY_CONFIRMED"]}}}
+    },
+    "transition_inventory": {
+      "type": "array",
+      "items": {"type": "object", "additionalProperties": false, "required": ["from", "action", "to", "allowed", "source_ref", "classification"], "properties": {"from": {"type": "string", "minLength": 1}, "action": {"type": "string", "minLength": 2}, "to": {"type": "string", "minLength": 1}, "allowed": {"type": "boolean"}, "source_ref": {"type": "string", "minLength": 3}, "classification": {"type": "string", "enum": ["VISUAL_OBSERVED", "AUXILIARY_CONFIRMED", "POLICY_CONFIRMED"]}}}
+    },
+    "action_inventory": {
+      "type": "array", "minItems": 1,
+      "items": {"type": "object", "additionalProperties": false, "required": ["code", "source_ref", "classification"], "properties": {"code": {"type": "string", "minLength": 2}, "source_ref": {"type": "string", "minLength": 3}, "classification": {"type": "string", "enum": ["VISUAL_CONFIRMED", "AUXILIARY_CONFIRMED", "INFERRED"]}}}
+    },
+    "pending_decisions": {
+      "type": "array",
+      "items": {"type": "object", "additionalProperties": false, "required": ["decision_code", "missing_fact", "why_required", "blocking", "status"], "properties": {"decision_code": {"type": "string", "minLength": 3}, "missing_fact": {"type": "string", "minLength": 3}, "why_required": {"type": "string", "minLength": 3}, "blocking": {"type": "boolean"}, "status": {"type": "string", "enum": ["OPEN", "RESOLVED"]}}}
+    },
+    "evidence_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 3}}
+  }
+}
