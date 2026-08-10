@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Regression matrix for the pinned PR93 runtime source gate plus P0 quality gate."""
 from __future__ import annotations
-import os,subprocess,sys
+import os,shutil,subprocess,sys
 from pathlib import Path
 import PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT as candidate
 sys.dont_write_bytecode=True
@@ -13,8 +13,11 @@ def expect_error(name:str,code:str,changed:list[str],*,branch:str,blobs:dict[str
     raise SystemExit(f"{name}: expected {code}, but scope was accepted")
 def ensure_p0_visual_test_dependencies(repo_root:Path)->None:
     if os.environ.get("CI")!="true":return
-    requirements=repo_root/"sandbox/story_creator_p0_visual/v1.1/requirements-p0-visual-quality.txt";subprocess.run([sys.executable,"-m","pip","install","--disable-pip-version-check","-r",str(requirements)],check=True);probe=subprocess.run(["tesseract","--list-langs"],text=True,capture_output=True,check=False);langs=set(probe.stdout.split()) if probe.returncode==0 else set()
-    if "spa" not in langs:subprocess.run(["sudo","apt-get","update","-qq"],check=True);subprocess.run(["sudo","apt-get","install","-y","-qq","tesseract-ocr","tesseract-ocr-spa"],check=True)
+    requirements=repo_root/"sandbox/story_creator_p0_visual/v1.1/requirements-p0-visual-quality.txt";subprocess.run([sys.executable,"-m","pip","install","--disable-pip-version-check","-r",str(requirements)],check=True)
+    if shutil.which("tesseract") is None:
+        subprocess.run(["sudo","apt-get","update","-qq"],check=True);subprocess.run(["sudo","apt-get","install","-y","-qq","tesseract-ocr","tesseract-ocr-spa"],check=True)
+    probe=subprocess.run(["tesseract","--list-langs"],text=True,capture_output=True,check=False);langs=set(probe.stdout.split()) if probe.returncode==0 else set()
+    if "spa" not in langs:subprocess.run(["sudo","apt-get","update","-qq"],check=True);subprocess.run(["sudo","apt-get","install","-y","-qq","tesseract-ocr-spa"],check=True)
     os.environ["P0_CI_ENGINEERING_REGRESSION"]="1";print("PASS_P0_VISUAL_TEST_DEPENDENCIES=PINNED_PYTHON_PLUS_TESSERACT_SPA")
 def run_p0_quality_regressions(repo_root:Path)->None:
     ensure_p0_visual_test_dependencies(repo_root);commands=[[sys.executable,str(repo_root/"sandbox/story_creator_p0_visual/v1.1/evals/p0_machine_visual_quality_negative_suite.py")],[sys.executable,str(repo_root/"sandbox/story_creator_p0_visual/v1.1/scripts/validate_p0_human_binding.py"),"--self-test"],[sys.executable,str(repo_root/"sandbox/story_creator_p0_visual/v1.1/scripts/verify_p0_integration_candidate.py")]]
