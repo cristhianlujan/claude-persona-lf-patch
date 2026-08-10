@@ -28,6 +28,13 @@ grant lf_governance_owner_v3 to postgres
   with admin false, inherit true, set true
   granted by postgres;
 grant create on schema private to lf_governance_owner_v3;
+
+-- This is the first V7 owner-context function compilation that references
+-- extensions.digest. Parser/runtime schema USAGE must exist before SET ROLE;
+-- CREATE remains forbidden.
+grant usage on schema extensions to lf_governance_owner_v3;
+revoke create on schema extensions from lf_governance_owner_v3;
+
 set local role lf_governance_owner_v3;
 
 create or replace function private.fn_canonical_json_v7(p_value jsonb)
