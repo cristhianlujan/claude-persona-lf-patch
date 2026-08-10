@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "p0-machine-visual-quality-report/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "execution_id", "source_image_refs", "source_sha256", "raw_visual_output_sha256", "consolidated_visual_reading_sha256", "p0h_execution_id", "j00_execution_id", "j00_identity", "remediation_cycles", "max_remediation_cycles", "counts", "checks", "result", "human_review_ready", "blocking_assertions", "created_at", "model_configuration_id", "calibration_reference"],
+  "properties": {
+    "schema_version": {"const": "p0-machine-visual-quality-report/v1"},
+    "execution_id": {"type": "string", "minLength": 1},
+    "source_image_refs": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "raw_visual_output_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "consolidated_visual_reading_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "p0h_execution_id": {"type": "string", "minLength": 1},
+    "j00_execution_id": {"type": "string", "minLength": 1},
+    "j00_identity": {"type": "string", "minLength": 1},
+    "remediation_cycles": {"type": "integer", "minimum": 0},
+    "max_remediation_cycles": {"type": "integer", "minimum": 1},
+    "counts": {"type": "object", "additionalProperties": false, "required": ["consolidated_elements", "confirmed", "inferred", "not_observable", "audit_only", "reader_only", "contradictions", "unsupported_claims", "critical_omissions", "noncritical_omissions", "unresolved_critical_uncertainties", "pending_remediations"], "properties": {
+      "consolidated_elements": {"type": "integer", "minimum": 0}, "confirmed": {"type": "integer", "minimum": 0}, "inferred": {"type": "integer", "minimum": 0}, "not_observable": {"type": "integer", "minimum": 0}, "audit_only": {"type": "integer", "minimum": 0}, "reader_only": {"type": "integer", "minimum": 0}, "contradictions": {"type": "integer", "minimum": 0}, "unsupported_claims": {"type": "integer", "minimum": 0}, "critical_omissions": {"type": "integer", "minimum": 0}, "noncritical_omissions": {"type": "integer", "minimum": 0}, "unresolved_critical_uncertainties": {"type": "integer", "minimum": 0}, "pending_remediations": {"type": "integer", "minimum": 0}
+    }},
+    "checks": {"type": "object"},
+    "result": {"enum": ["PASS_VISUAL_QUALITY", "BLOCKED_VISUAL_QUALITY", "BLOCKED_SOURCE_QUALITY", "BLOCKED_MAX_REMEDIATION", "BLOCKED_SECURITY", "BLOCKED_PRIVACY", "BLOCKED_MODEL_CONFIGURATION", "BLOCKED_CALIBRATION"]},
+    "human_review_ready": {"type": "boolean"},
+    "blocking_assertions": {"type": "array", "items": {"type": "string"}},
+    "created_at": {"type": "string", "minLength": 1},
+    "model_configuration_id": {"type": "string", "minLength": 1},
+    "calibration_reference": {"type": "string", "minLength": 1}
+  }
+}
