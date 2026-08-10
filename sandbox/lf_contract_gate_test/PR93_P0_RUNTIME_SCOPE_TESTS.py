@@ -88,6 +88,17 @@ def run_p0_quality_regressions(repo_root: Path) -> None:
             if completed.stderr:
                 print(completed.stderr.rstrip(), file=sys.stderr)
             raise SystemExit(f"P0_VISUAL_QUALITY_REGRESSION_FAILED[{label}]: {' '.join(command)}")
+
+    snapshot_dir = evidence_dir / "runtime-snapshot"
+    snapshot_dir.mkdir(parents=True, exist_ok=True)
+    for rel in (
+        "scripts/p0_visual_fidelity_v3.py",
+        "scripts/run_p0_visual_fidelity_v3_private.py",
+        "evals/p0-visual-fidelity-runtime-config-v3.json",
+        "manifest.visual-fidelity-v3.json",
+    ):
+        shutil.copy2(p0 / rel, snapshot_dir / Path(rel).name)
+    print("PASS_P0_V3_RUNTIME_SNAPSHOT=4_PUBLIC_REPO_FILES")
     print(f"PASS_P0_VISUAL_QUALITY_REGRESSIONS={len(commands)}/{len(commands)}")
 
 
