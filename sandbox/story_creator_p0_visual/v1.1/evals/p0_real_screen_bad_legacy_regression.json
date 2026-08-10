@@ -6,5 +6,6 @@
   "observation_count": 328,
   "element_type_distribution": {"VISIBLE_TEXT": 328},
   "required_blocking_reason_codes": ["OCR_ONLY_OUTPUT_NOT_HUMAN_READY", "SEMANTIC_UI_COVERAGE_MISSING", "VISUAL_STRUCTURE_DEGENERATE", "MACHINE_AUDIT_NOT_PRESENT"],
+  "new_human_challenge_requires": "PASS_VISUAL_QUALITY_PLUS_J00_SHA_BINDING",
   "p0_5_denominator_eligible": false
 }
