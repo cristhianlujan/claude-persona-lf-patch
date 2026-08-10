@@ -10,6 +10,7 @@
   "judge_sha": "d5855e10889030850805b4e46f52ce824712e0bb",
   "source_sha_list": [
     "65019d3091abeb401849f6bb95efa74acc15efba",
+    "7fed483fe0e53ef61b2e48d886f866784ec986bc",
     "e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7",
     "5fc4a998c2abd22e505b62b9ff16aefa3762f8c1e2dc68ee2e597656e2a39365",
     "02e46b620d55f53c8cc05bc3eebf038c83edbf8f1b6a0e4636db2bf538afdf4d",
@@ -20,7 +21,7 @@
     "skills/creating-integral-user-stories/*"
   ],
   "blocking_codes": [],
-  "issued_at": "2026-08-10T03:19:39Z",
+  "issued_at": "2026-08-10T03:27:00Z",
   "evidence": {
     "scope": "PR122_M6_M7_REAL_VISUAL_CANDIDATE_READ_ONLY",
     "parent_head": "65019d3091abeb401849f6bb95efa74acc15efba",
@@ -62,6 +63,8 @@
     "exact_head_ci_status": "PENDING_AFTER_COMMIT",
     "real_maturity_score_computed": false,
     "real_maturity_score_blocker": "two_independent_real_evaluator_receipts_missing",
-    "scope_note": "PASS_SANDBOX covers the branch write contract only. M6/M7 close only after deterministic readback and exact-head CI; merge and production remain blocked."
+    "scope_note": "PASS_SANDBOX covers the branch write contract only. M6/M7 close only after deterministic readback and exact-head CI; merge and production remain blocked.",
+    "candidate_content_head": "7fed483fe0e53ef61b2e48d886f866784ec986bc",
+    "ci_trigger_transport": "GITHUB_CONTENTS_API_RECEIPT_ONLY_COMMIT"
   }
 }
