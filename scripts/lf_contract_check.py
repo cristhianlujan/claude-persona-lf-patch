@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.7
+LF Contract Check v0.8
 
 Sandbox validator for controlled LF governance gates.
+
+v0.8 changes:
+- Allows exactly three shared operational-protocol paths: CLAUDE.md,
+  .claude/operational-execution.md, and .claude/scripts/validate_artifact_output.py.
+- Runs an intrinsic fail-closed invariant that keeps sibling/lookalike .claude
+  paths default-denied on every contract-check execution.
 
 v0.7 changes:
 - Allows only the exact approved GitHub workflow paths in addition to the existing contract check workflow.
@@ -35,9 +41,23 @@ ALLOWED_GITHUB_EXACT = {
     ".github/workflows/lf-bootstrap-reproducibility.yml",
     ".github/workflows/lf-github-reconcile-v3.yml",
 }
+OPERATIONAL_PROTOCOL_ALLOWED_EXACT = {
+    "CLAUDE.md",
+    ".claude/operational-execution.md",
+    ".claude/scripts/validate_artifact_output.py",
+}
+OPERATIONAL_PROTOCOL_DENIED_LOOKALIKES = {
+    "CLAUDE.md.bak",
+    ".claude/operational-execution.md.bak",
+    ".claude/operational-execution/child.md",
+    ".claude/scripts/validate_artifact_output.py.bak",
+    ".claude/scripts/extra.py",
+    ".claude/other.md",
+}
 ALLOWED_EXACT = {
     *ALLOWED_GITHUB_EXACT,
     VALIDATOR_SELF_PATH,
+    *OPERATIONAL_PROTOCOL_ALLOWED_EXACT,
 }
 ALLOWED_PREFIXES = [
     "sandbox/lf_contract_gate_test/",
@@ -184,6 +204,25 @@ def is_allowed_path(path: str) -> bool:
     return any(path.startswith(prefix) for prefix in ALLOWED_PREFIXES)
 
 
+def validate_operational_protocol_scope() -> None:
+    failures: list[str] = []
+    if ".claude/" in ALLOWED_PREFIXES:
+        failures.append("dot_claude_prefix_must_remain_denied")
+    for path in sorted(OPERATIONAL_PROTOCOL_ALLOWED_EXACT):
+        if not is_allowed_path(path):
+            failures.append(f"approved_exact_missing:{path}")
+    for path in sorted(OPERATIONAL_PROTOCOL_DENIED_LOOKALIKES):
+        if is_allowed_path(path):
+            failures.append(f"lookalike_unexpectedly_allowed:{path}")
+    if failures:
+        fail("FAIL_OPERATIONAL_PROTOCOL_SCOPE_INVARIANT", ",".join(failures))
+    print(
+        "PASS_OPERATIONAL_PROTOCOL_SCOPE_INVARIANT: "
+        f"approved={len(OPERATIONAL_PROTOCOL_ALLOWED_EXACT)} "
+        f"denied={len(OPERATIONAL_PROTOCOL_DENIED_LOOKALIKES)}"
+    )
+
+
 def is_governed_path(path: str) -> bool:
     return any(path.startswith(prefix) for prefix in GOVERNED_PREFIXES)
 
@@ -300,6 +339,7 @@ def validate_forbidden_terms(changed_files: list[str]) -> None:
 
 def main() -> None:
     validate_contract()
+    validate_operational_protocol_scope()
     changed_files = get_changed_files()
     print("Changed files:")
     for path in changed_files:
