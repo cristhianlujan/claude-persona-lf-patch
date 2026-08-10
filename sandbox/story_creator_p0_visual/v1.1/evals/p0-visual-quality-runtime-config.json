@@ -1,0 +1,82 @@
+{
+  "schema_version": "p0-visual-quality-runtime-config/v1",
+  "configuration_id": "P0-CV-OCR-CLOSED-LOOP-v1",
+  "execution_lane": "GOVERNED_P0_SANDBOX",
+  "runtime_enabled": true,
+  "production_authorized": false,
+  "network_egress_required": false,
+  "provider": "local-deterministic-runtime",
+  "model": "opencv-tesseract-structured-reader",
+  "model_version": "1.0.0",
+  "structured_output_mode": "p0-consolidated-visual-reading/v1",
+  "dependencies": {
+    "tesseract": "5.5.0",
+    "Pillow": "12.3.0",
+    "numpy": "2.3.5",
+    "opencv-python-headless": "4.13.0.92"
+  },
+  "ocr": {
+    "languages": "spa+eng",
+    "reader_psm": 11,
+    "judge_psm": 6,
+    "scan_scales": [1.0, 2.0],
+    "adaptive_crop_scale": 3.0
+  },
+  "quality": {
+    "max_remediation_cycles": 3,
+    "critical_text_similarity": 0.82,
+    "geometry_iou_threshold": 0.45,
+    "small_element_max_area_ratio": 0.0025,
+    "no_progress_repeat_limit": 1
+  },
+  "calibration": {
+    "calibration_reference": "p0://calibration/cv-ocr-closed-loop-v1",
+    "status": "GOVERNED_OPERATIONAL_CALIBRATION",
+    "empirical_benchmark_acceptance": false,
+    "p0_5_denominator_eligible": false,
+    "invalidation_inputs": ["model_version", "ocr.languages", "ocr.reader_psm", "ocr.judge_psm", "dependencies", "quality"]
+  },
+  "privacy_security": {
+    "screenshot_text_untrusted": true,
+    "action_tools_allowed": false,
+    "network_deny_by_default": true,
+    "raw_source_private": true,
+    "sensitive_crop_retention": "TERMINAL_REVIEW_STATE_OR_POLICY_LEASE"
+  },
+  "known_limitations": [
+    "Semantic role is inferred only from visible geometry, text and local visual context.",
+    "Single static screenshots do not prove hidden states or transitions.",
+    "Operational machine quality is separate from P0-5 empirical benchmark acceptance."
+  ],
+  "execution_controls": {
+    "namespace": "LF_SUPABASE_SANDBOX:creating-integral-user-stories:P0",
+    "idempotency_key_strategy": "sha256(namespace|source_sha256|configuration_sha256)",
+    "partial_failure_policy": "FAIL_CLOSED_RETAIN_RECEIPT",
+    "queue_backpressure_policy": "EXTERNAL_ORCHESTRATOR_BOUNDED_NO_UNBOUNDED_FANOUT",
+    "planned_adaptive_expansion_class": "PLANNED_NOT_FAILURE",
+    "corrective_retry_class": "BOUNDED_REMEDIATION",
+    "permanent_input_class": "NO_RETRY_REQUEST_NEW_CAPTURE",
+    "security_privacy_class": "NO_RETRY_BLOCK_ESCALATE",
+    "dead_letter_policy": "BLOCKED_MAX_REMEDIATION_WITH_DURABLE_RECEIPT"
+  },
+  "criticality": {
+    "authority": "GOLD_ANNOTATION_OR_APPROVED_SCREEN_POLICY_ONLY",
+    "reader_may_self_assign": false
+  },
+  "holdout_leakage": {
+    "reader_expected_inventory_allowed": false,
+    "hidden_labels_available_to_reader": false,
+    "real_screen_regression_private": true,
+    "synthetic_fixture_empirical_denominator_eligible": false,
+    "calibration_acceptance_holdout_separated": true
+  },
+  "state_transition_policy": {
+    "static_single_frame": "NOT_OBSERVABLE_UNLESS_TRANSITION_EVIDENCE_EXISTS",
+    "invent_hidden_states": false
+  },
+  "evidence_retention": {
+    "raw_source": "PRIVATE_EPHEMERAL_UNTIL_TERMINAL_REVIEW_STATE_OR_POLICY_LEASE",
+    "sensitive_crops": "REDACT_OR_ENCRYPT_PER_POLICY",
+    "review_packet": "DURABLE_REPRODUCIBLE"
+  }
+}
