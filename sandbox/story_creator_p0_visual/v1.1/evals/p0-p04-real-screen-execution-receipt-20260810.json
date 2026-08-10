@@ -1,0 +1,36 @@
+{
+  "binary_upload_transport_status": "BLOCKED_CONNECTOR_HAS_NO_BINARY_STORAGE_UPLOAD",
+  "blind_bundle_sha256": "53d76b5f0afa6c07c52e0df29eb16bb8a7314b590e82a660421822d56e4045c4",
+  "challenge_issued": false,
+  "crop_count": 328,
+  "empirical_visual_quality_claimed": false,
+  "evidence_count": 329,
+  "execution_id": "EXEC-P0-4-LF-ONBOARDING-STEP1-20260810",
+  "external_durable_persistence_verified": false,
+  "human_attestation_claimed": false,
+  "p0_4_closed": false,
+  "p0_5_denominator_eligible": false,
+  "packet_inventory_count": 333,
+  "packet_manifest_sha256": "3754aadf00ddd31d9bf512713123143770047881567b96dc1631c9fffa0fd79d",
+  "packet_result": "PASS_REVIEW_PACKET_READY_EXTERNAL_PERSISTENCE_REQUIRED",
+  "packet_zip_sha256": "8f768e7a996881d82549698c6bd3bb415b2d9b6d655568a2bd3f02e85bd8438a",
+  "private_governance_migrations": [
+    "20260810073150_lf_p0_private_review_evidence_governance_v1",
+    "20260810073231_lf_p0_private_evidence_chunk_upload_v1"
+  ],
+  "result": "PASS_REAL_SCREEN_PACKET_READY_PERSISTENCE_AND_HUMAN_REVIEW_PENDING",
+  "review_id": "REV-P0-LF-ONBOARDING-STEP1-20260810",
+  "runtime_configuration_id": "P0-LOCAL-TESSERACT-5.5.0-PILLOW-12.3.0",
+  "runtime_versions": {
+    "pillow": "12.3.0",
+    "tesseract": "5.5.0"
+  },
+  "schema_version": "p0-real-screen-execution-receipt/v1",
+  "source_count": 1,
+  "source_head_sha": "a51ec8f64e6e0f86d5be2c569abb6f5cff7e5c35",
+  "source_ref": "IMG-LF-ONBOARDING-STEP1-001",
+  "source_sha256": "e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7",
+  "visual_observation_count": 328,
+  "visual_output_sha256": "c0acd3f52388447958b9f60c839f7f4e289488110654784b9d9f94cfccb8b6ff",
+  "worker_result": "PASS_WITH_EVIDENCE"
+}
