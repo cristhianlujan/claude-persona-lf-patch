@@ -1,0 +1,23 @@
+{
+  "active_challenge_reissue_blocker": "Binary evidence must be persisted in the authorized private durable store before issuing a human-review challenge.",
+  "active_challenge_reissued": false,
+  "authenticated_external_readback_required": true,
+  "crop_count": 328,
+  "execution_id": "EXEC-P0-4-LF-ONBOARDING-STEP1-20260810",
+  "external_durable_persistence_verified": false,
+  "human_attestation_present": false,
+  "human_attestation_simulated": false,
+  "next_valid_action": "Upload the exact packet ZIP to the governed private evidence store, verify SHA-256 readback, then issue a fresh time-bounded challenge and obtain authenticated reviewer readback.",
+  "p0_4_result": "BLOCKED_DURABLE_PERSISTENCE_BEFORE_HUMAN_ATTESTATION",
+  "packet_inventory_count": 333,
+  "packet_manifest_sha256": "3754aadf00ddd31d9bf512713123143770047881567b96dc1631c9fffa0fd79d",
+  "packet_zip_sha256": "8f768e7a996881d82549698c6bd3bb415b2d9b6d655568a2bd3f02e85bd8438a",
+  "private_durable_store_governance_ready": true,
+  "review_id": "REV-P0-LF-ONBOARDING-STEP1-20260810",
+  "reviewable_crop_bytes_available": true,
+  "reviewable_source_bytes_available": true,
+  "reviewable_visual_output_bytes_available": true,
+  "schema_version": "p0-p04-binding-readiness/v2",
+  "source_raw_sha256": "e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7",
+  "visual_output_sha256": "c0acd3f52388447958b9f60c839f7f4e289488110654784b9d9f94cfccb8b6ff"
+}

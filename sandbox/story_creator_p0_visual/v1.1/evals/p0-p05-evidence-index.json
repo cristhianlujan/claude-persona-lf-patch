@@ -9,7 +9,9 @@
       "ref": "evals/p0-real-screen-smoke-receipt-20260808.json",
       "lane": "ENGINEERING_SMOKE",
       "source_kind": "REAL_SCREEN_EPHEMERAL_SOURCE",
-      "observed_units": {"visual_observations": 50},
+      "observed_units": {
+        "visual_observations": 50
+      },
       "eligible_for_empirical_denominators": false,
       "reason": "Receipt explicitly disclaims empirical visual quality and benchmark acceptance; source bytes and governed gold are not retained."
     },
@@ -17,9 +19,23 @@
       "ref": "evals/p0-p03-runtime-smoke-receipt-20260809.json",
       "lane": "ENGINEERING_SMOKE",
       "source_kind": "SYNTHETIC_DENSE_RUNTIME_FIXTURE",
-      "observed_units": {"visual_observations": 31},
+      "observed_units": {
+        "visual_observations": 31
+      },
       "eligible_for_empirical_denominators": false,
       "reason": "Synthetic P0-3 runtime regression is explicitly ineligible for P0-5 denominators."
+    },
+    {
+      "ref": "evals/p0-p04-real-screen-execution-receipt-20260810.json",
+      "lane": "ENGINEERING_SMOKE",
+      "source_kind": "REAL_SCREEN_REVIEW_PACKET_READY",
+      "observed_units": {
+        "visual_observations": 328,
+        "evidence_items": 329,
+        "crops": 328
+      },
+      "eligible_for_empirical_denominators": false,
+      "reason": "Real source/output/crops are available and hashed, but external durable persistence and authenticated governed gold adjudication are not yet complete."
     }
   ]
 }
