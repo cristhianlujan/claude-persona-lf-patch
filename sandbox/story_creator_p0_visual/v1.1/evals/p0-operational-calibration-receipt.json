@@ -1,0 +1,26 @@
+{
+  "schema_version": "p0-operational-calibration-receipt/v1",
+  "calibration_reference": "p0://calibration/cv-ocr-closed-loop-v1",
+  "configuration_id": "P0-CV-OCR-CLOSED-LOOP-v1",
+  "scope": "OPERATIONAL_MACHINE_GATE_ONLY",
+  "empirical_benchmark_acceptance": false,
+  "p0_5_denominator_eligible": false,
+  "thresholds": {
+    "critical_text_similarity": 0.82,
+    "geometry_iou_threshold": 0.45,
+    "max_remediation_cycles": 3,
+    "no_progress_repeat_limit": 1
+  },
+  "abstention_policy": "LOW_CONFIDENCE_OR_DISAGREEMENT_REMEDIATES_OR_BLOCKS",
+  "disagreement_policy": "INDEPENDENT_J00_PLUS_TARGETED_SOURCE_REREAD",
+  "invalidation_inputs": [
+    "model_version",
+    "ocr.languages",
+    "ocr.reader_psm",
+    "ocr.judge_psm",
+    "dependencies",
+    "quality"
+  ],
+  "status": "GOVERNED_OPERATIONAL_CALIBRATION",
+  "note": "This receipt does not assert P0-5 empirical performance or gold acceptance."
+}
