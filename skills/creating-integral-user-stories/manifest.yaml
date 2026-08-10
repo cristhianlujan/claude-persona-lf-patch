@@ -149,7 +149,6 @@ maturity_scoring_policy:
   current_real_score_status: NOT_COMPUTED
   current_real_score_reason:
   - two_independent_real_evaluator_receipts_missing
-  - visual_runtime_proven_false
   synthetic_fixture_must_not_be_used_as_real_score: true
 provenance_policy:
   semantic_classification_domain:
@@ -202,7 +201,16 @@ maturity_extension:
   canonical_promotion_authorized: false
   production_authorized: false
   merge_authorized: false
-  visual_runtime_proven: false
+  visual_runtime_proven: true
+  visual_runtime_evidence:
+    schema_version: screen-ingestion/v0.2
+    blind_read_id: a3c8f724-1f5d-47b2-9a11-6e0870c08b61
+    execution_id: d62fe9ac-f61b-4e78-a08c-f9229f8d3b2c
+    source_snapshot_sha: 5fc4a998c2abd22e505b62b9ff16aefa3762f8c1e2dc68ee2e597656e2a39365
+    visual_observation_count: 58
+    critical_uncertainties: 0
+    real_chain_status: PASS_WITH_EVIDENCE
+    exact_pipeline: J01 -> J00_v0.2 -> visual_runtime_v0.2 -> J02 -> visual_bridge -> J08 -> J10 -> J11 -> J12 -> J13
   pre_decomposition_gate:
     after: J01_SOURCE_INTEGRITY
     before: J02_SCREEN_DECOMPOSITION
@@ -230,7 +238,7 @@ maturity_extension:
     reference_read_performed: true
     independent_blind_read: false
     quality_gate_eligible: false
-    purpose: adjudicated ground-truth reference for a future separate-context blind J00 run
+    purpose: adjudicated ground-truth reference used by the completed separate-context blind J00 v0.2 run
   package_gate_candidate:
     validator: scripts/validate_package_v13.py
     legacy_validator: scripts/validate_package.py
@@ -239,17 +247,33 @@ maturity_extension:
   visual_bridge:
     validator: scripts/validate_visual_evidence_bridge.py
     fixture: evals/fixtures/visual_bridge_positive.json
-    status: CANDIDATE_TESTED_LOCAL
+    status: REAL_CHAIN_PASS_WITH_EVIDENCE
+    covered_visual_observations: 58
+    missing_visual_observations: 0
     rule: preserve source_ref; no registered token/breakpoint/nonvisual accessibility invention
-  historical_blind_runtime_evidence:
+  independent_blind_runtime_evidence:
     path: evals/fixtures/real_screen_onboarding_step1_blind_run.json
+    schema_version: screen-ingestion/v0.2
+    sha256: 02e46b620d55f53c8cc05bc3eebf038c83edbf8f1b6a0e4636db2bf538afdf4d
+    bytes: 40997
+    blind_read_id: a3c8f724-1f5d-47b2-9a11-6e0870c08b61
+    execution_id: d62fe9ac-f61b-4e78-a08c-f9229f8d3b2c
+    reader_identity: GPT-5.6 Sol
+    pass_count_completed: 7
+    visual_observation_count: 58
+    omitted_candidate_count: 0
+    critical_uncertainties: 0
+    final_visual_runtime_eligible: true
+    visual_runtime_proven: true
+    final_validator: scripts/validate_real_visual_runtime_v02.py
+  legacy_v01_blind_runtime_history:
+    source_commit: 65019d3091abeb401849f6bb95efa74acc15efba
+    path_at_source_commit: evals/fixtures/real_screen_onboarding_step1_blind_run.json
     schema_version: screen-ingestion/v0.1
     sha256: 48eb8aeb0696202045e30d2371d140cb8f7bfbd560a92088af39db29883c73bb
     bytes: 10691
-    preserved_byte_for_byte: true
     final_visual_runtime_eligible: false
     reason: v0.2 multi-pass protocol required
-    final_validator: scripts/validate_real_visual_runtime_v02.py
 files:
   root:
   - SKILL.md
@@ -267,6 +291,7 @@ files:
   - perfiles/PERFIL_SCREEN_DECOMPOSER_LF.md
   - perfiles/PERFIL_STORY_CORE_AUTHOR_LF.md
   - perfiles/PERFIL_STORY_TEST_DERIVER_LF.md
+  - perfiles/PERFIL_CROSS_CUTTING_ENRICHER_LF.md
   references:
   - references/accessibility-responsive-contract.md
   - references/analytics-observability-contract.md
@@ -450,7 +475,9 @@ current_state:
   real_maturity_score_status: NOT_COMPUTED
   real_maturity_score_blockers:
   - independent_real_evaluator_receipts_missing
-  - visual_runtime_proven_false
   real_visual_reference_count: 1
-  independent_blind_visual_run_status: LEGACY_V01_EXECUTED_NOT_FINAL_ELIGIBLE
+  independent_blind_visual_run_status: V02_REAL_SCREEN_RUN_PASS_WITH_EVIDENCE
+  m6_visual_runtime_status: PASS_WITH_EVIDENCE
+  m7_real_pipeline_status: PASS_WITH_EVIDENCE
+  m10_exact_head_push_matrix_status: PENDING
   provenance_resolution_status: RESOLVED_P6
