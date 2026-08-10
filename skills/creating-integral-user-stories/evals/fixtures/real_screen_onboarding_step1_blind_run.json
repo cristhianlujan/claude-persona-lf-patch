@@ -1,5 +1,5 @@
 {
-  "schema_version": "screen-ingestion/v0.1",
+  "schema_version": "screen-ingestion/v0.2",
   "screen_code": "SCR-LF-ONBOARDING-STEP1-BLIND",
   "source_version": "source-v1",
   "evidence_kind": "REAL_SCREEN_RUN",
@@ -15,9 +15,9 @@
     }
   ],
   "source_snapshot_sha": "5fc4a998c2abd22e505b62b9ff16aefa3762f8c1e2dc68ee2e597656e2a39365",
-  "blind_read_id": "7b84c03e-864f-4b3c-982d-70722253916e",
-  "execution_id": "2eb56020-f1b2-4f05-a637-658f1025862d",
-  "reader_identity": "GPT-5.6 Sol visual blind reader",
+  "blind_read_id": "a3c8f724-1f5d-47b2-9a11-6e0870c08b61",
+  "execution_id": "d62fe9ac-f61b-4e78-a08c-f9229f8d3b2c",
+  "reader_identity": "GPT-5.6 Sol",
   "context_isolation": {
     "auxiliary_context_before_lock": false,
     "separate_context_window": true,
@@ -26,142 +26,215 @@
   },
   "region_inventory": [
     {
-      "region_ref": "R-01",
+      "region_ref": "REG-001",
+      "image_ref": "IMG-LF-ONBOARDING-STEP1-001",
+      "bbox": [0, 0, 1536, 1024],
+      "description": "Viewport completo visible de la captura.",
+      "confidence": 1
+    },
+    {
+      "region_ref": "REG-002",
       "image_ref": "IMG-LF-ONBOARDING-STEP1-001",
       "bbox": [0, 0, 1536, 95],
-      "description": "Franja superior con logotipo Libertad Financiera, mensaje de seguridad, acceso a Ayuda y bloque de ingreso para usuarios con cuenta.",
+      "description": "Cabecera horizontal superior con marca, mensajes y acciones.",
       "confidence": 0.99
     },
     {
-      "region_ref": "R-02",
+      "region_ref": "REG-003",
       "image_ref": "IMG-LF-ONBOARDING-STEP1-001",
-      "bbox": [45, 145, 475, 585],
-      "description": "Panel informativo izquierdo con titular sobre opciones para resolver deuda, texto explicativo y tres mensajes de confianza con iconos.",
-      "confidence": 0.99
-    },
-    {
-      "region_ref": "R-03",
-      "image_ref": "IMG-LF-ONBOARDING-STEP1-001",
-      "bbox": [0, 705, 563, 319],
-      "description": "Ilustración inferior izquierda con paisaje, camino y figura humana.",
-      "confidence": 0.99
-    },
-    {
-      "region_ref": "R-04",
-      "image_ref": "IMG-LF-ONBOARDING-STEP1-001",
-      "bbox": [45, 847, 478, 142],
-      "description": "Tarjeta superpuesta sobre la ilustración con tres indicadores visibles: Entidad regulada, Datos encriptados y Registro seguro.",
+      "bbox": [45, 150, 525, 460],
+      "description": "Bloque introductorio izquierdo con título y descripción.",
       "confidence": 0.98
     },
     {
-      "region_ref": "R-05",
+      "region_ref": "REG-004",
       "image_ref": "IMG-LF-ONBOARDING-STEP1-001",
-      "bbox": [563, 113, 946, 510],
-      "description": "Card principal derecha con indicador Paso 1 de 3, barra visual de progreso, título Confirma tus datos, texto explicativo y campos de identificación y contacto.",
+      "bbox": [50, 465, 525, 730],
+      "description": "Bloque izquierdo de tres mensajes de beneficio o confianza.",
+      "confidence": 0.98
+    },
+    {
+      "region_ref": "REG-005",
+      "image_ref": "IMG-LF-ONBOARDING-STEP1-001",
+      "bbox": [0, 715, 560, 1024],
+      "description": "Zona inferior izquierda con ilustración y bloque de tres indicadores de confianza.",
+      "confidence": 0.97
+    },
+    {
+      "region_ref": "REG-006",
+      "image_ref": "IMG-LF-ONBOARDING-STEP1-001",
+      "bbox": [562, 111, 1511, 1000],
+      "description": "Contenedor principal derecho del formulario.",
       "confidence": 0.99
     },
     {
-      "region_ref": "R-06",
+      "region_ref": "REG-007",
       "image_ref": "IMG-LF-ONBOARDING-STEP1-001",
-      "bbox": [603, 624, 866, 228],
-      "description": "Bloque con tres filas de consentimiento, cada una con checkbox visible; incluye enlaces visibles a Términos y Condiciones y Política de Privacidad.",
+      "bbox": [603, 145, 1469, 292],
+      "description": "Cabecera interna del formulario con indicador de paso, progreso, título y explicación.",
       "confidence": 0.99
     },
     {
-      "region_ref": "R-07",
+      "region_ref": "REG-008",
       "image_ref": "IMG-LF-ONBOARDING-STEP1-001",
-      "bbox": [603, 868, 866, 54],
-      "description": "Botón principal verde con texto Verificar mi celular e icono de flecha hacia la derecha.",
+      "bbox": [603, 307, 1469, 608],
+      "description": "Área de campos de identidad y contacto.",
       "confidence": 0.99
     },
     {
-      "region_ref": "R-08",
+      "region_ref": "REG-009",
       "image_ref": "IMG-LF-ONBOARDING-STEP1-001",
-      "bbox": [603, 936, 866, 42],
-      "description": "Nota inferior con icono de candado y texto sobre el uso de datos para verificar identidad y mostrar alternativas disponibles.",
+      "bbox": [603, 624, 1469, 851],
+      "description": "Panel de consentimientos con tres casillas visibles.",
+      "confidence": 0.99
+    },
+    {
+      "region_ref": "REG-010",
+      "image_ref": "IMG-LF-ONBOARDING-STEP1-001",
+      "bbox": [603, 868, 1469, 982],
+      "description": "Área inferior del formulario con acción principal y aviso de uso de datos.",
       "confidence": 0.99
     }
   ],
   "context_inventory": [
     {
-      "code": "CTX-01",
-      "description": "Cabecera global con marca, mensaje Tu información está segura, acceso Ayuda y bloque ¿Ya tienes cuenta? Ingresar.",
-      "source_ref": "SRC-C001",
-      "region_ref": "R-01",
+      "code": "CTX-001",
+      "description": "Cabecera con identidad visual, mensaje de seguridad, ayuda y acceso a cuenta.",
+      "source_ref": "IMG-LF-ONBOARDING-STEP1-001#CTX-001",
+      "region_ref": "REG-002",
       "confidence": 0.99
     },
     {
-      "code": "CTX-02",
-      "description": "Mensaje principal: Conoce qué opciones tienes para resolver tu deuda. Texto visible: Verificaremos si encontramos información asociada a tus datos y te mostraremos las alternativas disponibles.",
-      "source_ref": "SRC-C002",
-      "region_ref": "R-02",
+      "code": "CTX-002",
+      "description": "Presentación del propósito visible de conocer opciones relacionadas con una deuda.",
+      "source_ref": "IMG-LF-ONBOARDING-STEP1-001#CTX-002",
+      "region_ref": "REG-003",
       "confidence": 0.99
     },
     {
-      "code": "CTX-03",
-      "description": "Tres mensajes visibles: Consulta segura y rápida — Resultados en pocos minutos; Tus datos están protegidos — Usamos cifrado y altos estándares de seguridad; Sin compromiso — Conoce tus opciones sin obligaciones ni pagos.",
-      "source_ref": "SRC-C003",
-      "region_ref": "R-02",
+      "code": "CTX-003",
+      "description": "Mensajes visibles de rapidez, protección de datos y ausencia de compromiso.",
+      "source_ref": "IMG-LF-ONBOARDING-STEP1-001#CTX-003",
+      "region_ref": "REG-004",
       "confidence": 0.99
     },
     {
-      "code": "CTX-04",
-      "description": "Tres indicadores visibles de confianza: Entidad regulada, Datos encriptados y Registro seguro.",
-      "source_ref": "SRC-C004",
-      "region_ref": "R-04",
+      "code": "CTX-004",
+      "description": "Ilustración decorativa y tres indicadores visibles de confianza o seguridad.",
+      "source_ref": "IMG-LF-ONBOARDING-STEP1-001#CTX-004",
+      "region_ref": "REG-005",
       "confidence": 0.98
     },
     {
-      "code": "CTX-05",
-      "description": "Primer paso visible de un flujo de tres pasos. Título Confirma tus datos y texto Necesitamos validar tu identidad antes de buscar información relacionada con tu deuda.",
-      "source_ref": "SRC-C005",
-      "region_ref": "R-05",
+      "code": "CTX-005",
+      "description": "Primer paso visible de un flujo de tres pasos con solicitud de confirmación de datos.",
+      "source_ref": "IMG-LF-ONBOARDING-STEP1-001#CTX-005",
+      "region_ref": "REG-007",
       "confidence": 0.99
     },
     {
-      "code": "CTX-06",
-      "description": "Formulario visible de identificación y contacto con nombre completo, tipo de documento, número de documento, celular y correo electrónico.",
-      "source_ref": "SRC-C006",
-      "region_ref": "R-05",
+      "code": "CTX-006",
+      "description": "Formulario visible para nombre, documento, celular y correo electrónico.",
+      "source_ref": "IMG-LF-ONBOARDING-STEP1-001#CTX-006",
+      "region_ref": "REG-008",
       "confidence": 0.99
     },
     {
-      "code": "CTX-07",
-      "description": "Bloque visible de consentimientos con tres checkboxes; el tercer consentimiento está marcado textualmente como Opcional.",
-      "source_ref": "SRC-C007",
-      "region_ref": "R-06",
+      "code": "CTX-007",
+      "description": "Grupo visible de aceptación legal y autorizaciones de tratamiento y comunicaciones.",
+      "source_ref": "IMG-LF-ONBOARDING-STEP1-001#CTX-007",
+      "region_ref": "REG-009",
       "confidence": 0.99
     },
     {
-      "code": "CTX-08",
-      "description": "Acción principal visible Verificar mi celular.",
-      "source_ref": "SRC-C008",
-      "region_ref": "R-07",
-      "confidence": 0.99
-    },
-    {
-      "code": "CTX-09",
-      "description": "Nota visible: Tus datos se utilizan únicamente para verificar tu identidad y mostrarte alternativas disponibles.",
-      "source_ref": "SRC-C009",
-      "region_ref": "R-08",
+      "code": "CTX-008",
+      "description": "Acción principal visible para verificar celular y aviso inferior sobre uso de datos.",
+      "source_ref": "IMG-LF-ONBOARDING-STEP1-001#CTX-008",
+      "region_ref": "REG-010",
       "confidence": 0.99
     }
   ],
   "field_inventory": [
-    {"code":"FLD-01","context_code":"CTX-01","source_ref":"SRC-F001","region_ref":"R-01","control_type":"link_or_button","visible_label":"Ayuda","conditionally_visible":false,"confidence":0.96},
-    {"code":"FLD-02","context_code":"CTX-01","source_ref":"SRC-F002","region_ref":"R-01","control_type":"link_or_button","visible_label":"Ingresar","conditionally_visible":false,"confidence":0.98},
-    {"code":"FLD-03","context_code":"CTX-06","source_ref":"SRC-F003","region_ref":"R-05","control_type":"text_input","visible_label":"Nombre completo","conditionally_visible":false,"confidence":0.99},
-    {"code":"FLD-04","context_code":"CTX-06","source_ref":"SRC-F004","region_ref":"R-05","control_type":"select","visible_label":"Tipo de documento","conditionally_visible":false,"confidence":0.99},
-    {"code":"FLD-05","context_code":"CTX-06","source_ref":"SRC-F005","region_ref":"R-05","control_type":"text_input","visible_label":"Número de documento","conditionally_visible":false,"confidence":0.99},
-    {"code":"FLD-06","context_code":"CTX-06","source_ref":"SRC-F006","region_ref":"R-05","control_type":"country_code_select","visible_label":"+51","conditionally_visible":false,"confidence":0.98},
-    {"code":"FLD-07","context_code":"CTX-06","source_ref":"SRC-F007","region_ref":"R-05","control_type":"phone_input","visible_label":"Celular","conditionally_visible":false,"confidence":0.99},
-    {"code":"FLD-08","context_code":"CTX-06","source_ref":"SRC-F008","region_ref":"R-05","control_type":"email_input","visible_label":"Correo electrónico","conditionally_visible":false,"confidence":0.99},
-    {"code":"FLD-09","context_code":"CTX-07","source_ref":"SRC-F009","region_ref":"R-06","control_type":"checkbox","visible_label":"He leído y acepto los Términos y Condiciones y la Política de Privacidad.","conditionally_visible":false,"confidence":0.99},
-    {"code":"FLD-10","context_code":"CTX-07","source_ref":"SRC-F010","region_ref":"R-06","control_type":"link","visible_label":"Términos y Condiciones","conditionally_visible":false,"confidence":0.99},
-    {"code":"FLD-11","context_code":"CTX-07","source_ref":"SRC-F011","region_ref":"R-06","control_type":"link","visible_label":"Política de Privacidad","conditionally_visible":false,"confidence":0.99},
-    {"code":"FLD-12","context_code":"CTX-07","source_ref":"SRC-F012","region_ref":"R-06","control_type":"checkbox","visible_label":"Autorizo el tratamiento de mis datos personales para validar mi identidad, consultar información relacionada con mis obligaciones y mostrarme opciones disponibles.","conditionally_visible":false,"confidence":0.99},
-    {"code":"FLD-13","context_code":"CTX-07","source_ref":"SRC-F013","region_ref":"R-06","control_type":"checkbox","visible_label":"Autorizo recibir comunicaciones comerciales, promociones, recordatorios y ofertas por WhatsApp, llamada, SMS y correo electrónico. (Opcional) Puedes retirar esta autorización cuando lo desees.","conditionally_visible":false,"confidence":0.99},
-    {"code":"FLD-14","context_code":"CTX-08","source_ref":"SRC-F014","region_ref":"R-07","control_type":"primary_button","visible_label":"Verificar mi celular","conditionally_visible":false,"confidence":0.99}
+    {
+      "code": "FLD-001",
+      "context_code": "CTX-006",
+      "source_ref": "IMG-LF-ONBOARDING-STEP1-001#FLD-001",
+      "region_ref": "REG-008",
+      "control_type": "text_input",
+      "visible_label": "Nombre completo",
+      "conditionally_visible": false,
+      "confidence": 0.99
+    },
+    {
+      "code": "FLD-002",
+      "context_code": "CTX-006",
+      "source_ref": "IMG-LF-ONBOARDING-STEP1-001#FLD-002",
+      "region_ref": "REG-008",
+      "control_type": "select",
+      "visible_label": "Tipo de documento",
+      "conditionally_visible": false,
+      "confidence": 0.99
+    },
+    {
+      "code": "FLD-003",
+      "context_code": "CTX-006",
+      "source_ref": "IMG-LF-ONBOARDING-STEP1-001#FLD-003",
+      "region_ref": "REG-008",
+      "control_type": "text_input",
+      "visible_label": "Número de documento",
+      "conditionally_visible": false,
+      "confidence": 0.99
+    },
+    {
+      "code": "FLD-004",
+      "context_code": "CTX-006",
+      "source_ref": "IMG-LF-ONBOARDING-STEP1-001#FLD-004",
+      "region_ref": "REG-008",
+      "control_type": "composite_telephone_input_with_country_code_selector",
+      "visible_label": "Celular",
+      "conditionally_visible": false,
+      "confidence": 0.99
+    },
+    {
+      "code": "FLD-005",
+      "context_code": "CTX-006",
+      "source_ref": "IMG-LF-ONBOARDING-STEP1-001#FLD-005",
+      "region_ref": "REG-008",
+      "control_type": "email_input",
+      "visible_label": "Correo electrónico",
+      "conditionally_visible": false,
+      "confidence": 0.99
+    },
+    {
+      "code": "FLD-006",
+      "context_code": "CTX-007",
+      "source_ref": "IMG-LF-ONBOARDING-STEP1-001#FLD-006",
+      "region_ref": "REG-009",
+      "control_type": "checkbox",
+      "visible_label": "He leído y acepto los Términos y Condiciones y la Política de Privacidad.",
+      "conditionally_visible": false,
+      "confidence": 0.99
+    },
+    {
+      "code": "FLD-007",
+      "context_code": "CTX-007",
+      "source_ref": "IMG-LF-ONBOARDING-STEP1-001#FLD-007",
+      "region_ref": "REG-009",
+      "control_type": "checkbox",
+      "visible_label": "Autorizo el tratamiento de mis datos personales para validar mi identidad, consultar información relacionada con mis obligaciones y mostrarme opciones disponibles.",
+      "conditionally_visible": false,
+      "confidence": 0.99
+    },
+    {
+      "code": "FLD-008",
+      "context_code": "CTX-007",
+      "source_ref": "IMG-LF-ONBOARDING-STEP1-001#FLD-008",
+      "region_ref": "REG-009",
+      "control_type": "checkbox",
+      "visible_label": "Autorizo recibir comunicaciones comerciales, promociones, recordatorios y ofertas por WhatsApp, llamada, SMS y correo electrónico. (Opcional)",
+      "conditionally_visible": false,
+      "confidence": 0.99
+    }
   ],
   "permission_inventory": [],
   "transition_inventory": [],
@@ -169,15 +242,156 @@
     "images_scanned": ["IMG-LF-ONBOARDING-STEP1-001"],
     "full_viewport_scanned": true,
     "off_viewport_evidence": "NOT_APPLICABLE",
-    "omitted_candidate_count": 0
+    "omitted_candidate_count": 0,
+    "omission_scan_completed": true,
+    "consistency_scan_completed": true,
+    "pass_count_completed": 7,
+    "visual_candidate_count": 58,
+    "structured_visual_candidate_count": 58
   },
   "uncertainties": [
-    {"uncertainty_code":"UNC-01","critical":false,"description":"Los desplegables visibles están cerrados; no se observan opciones adicionales para Tipo de documento ni para el selector de código telefónico.","source_ref":"SRC-U001"},
-    {"uncertainty_code":"UNC-02","critical":false,"description":"No se observan estados de validación, error, éxito, foco, carga o contenido completado para los campos del formulario.","source_ref":"SRC-U002"},
-    {"uncertainty_code":"UNC-03","critical":false,"description":"Los tres checkboxes se muestran visualmente sin marcar; no es observable qué combinación habilita o bloquea la acción principal.","source_ref":"SRC-U003"},
-    {"uncertainty_code":"UNC-04","critical":false,"description":"La imagen muestra una única composición de viewport; no permite verificar variantes responsive, reordenamiento de componentes ni comportamiento en otras dimensiones.","source_ref":"SRC-U004"},
-    {"uncertainty_code":"UNC-05","critical":false,"description":"La presencia visual de Ayuda, Ingresar, enlaces legales y Verificar mi celular no permite confirmar destinos, navegación, permisos ni transiciones funcionales.","source_ref":"SRC-U005"}
+    {
+      "uncertainty_code": "UNC-001",
+      "critical": false,
+      "description": "Solo existe un viewport visible, por lo que no se pueden verificar breakpoints ni diferencias responsive entre tamaños.",
+      "source_ref": "IMG-LF-ONBOARDING-STEP1-001#UNC-001"
+    },
+    {
+      "uncertainty_code": "UNC-002",
+      "critical": false,
+      "description": "ARIA, orden de foco, navegación por teclado y anuncios programáticos no son observables en una captura estática.",
+      "source_ref": "IMG-LF-ONBOARDING-STEP1-001#UNC-002"
+    },
+    {
+      "uncertainty_code": "UNC-003",
+      "critical": false,
+      "description": "El botón principal presenta una apariencia verde activa, pero su estado interactivo real o posibilidad efectiva de activación no puede verificarse visualmente.",
+      "source_ref": "IMG-LF-ONBOARDING-STEP1-001#UNC-003"
+    },
+    {
+      "uncertainty_code": "UNC-004",
+      "critical": false,
+      "description": "La tercera autorización está marcada textualmente como opcional; la obligatoriedad técnica o validación de las dos primeras no puede verificarse únicamente con la captura.",
+      "source_ref": "IMG-LF-ONBOARDING-STEP1-001#UNC-004"
+    },
+    {
+      "uncertainty_code": "UNC-005",
+      "critical": false,
+      "description": "No se pueden determinar nombres de tokens, colores exactos, familia tipográfica exacta ni métricas exactas de spacing o radius desde los píxeles.",
+      "source_ref": "IMG-LF-ONBOARDING-STEP1-001#UNC-005"
+    }
+  ],
+  "observation_passes": [
+    {
+      "pass_code": "MACRO_STRUCTURE",
+      "status": "COMPLETED",
+      "image_refs": ["IMG-LF-ONBOARDING-STEP1-001"],
+      "candidates_added": 5,
+      "uncertainty_refs": []
+    },
+    {
+      "pass_code": "FUNCTIONAL_CONTROLS",
+      "status": "COMPLETED",
+      "image_refs": ["IMG-LF-ONBOARDING-STEP1-001"],
+      "candidates_added": 11,
+      "uncertainty_refs": ["UNC-003", "UNC-004"]
+    },
+    {
+      "pass_code": "MICROCOPY",
+      "status": "COMPLETED",
+      "image_refs": ["IMG-LF-ONBOARDING-STEP1-001"],
+      "candidates_added": 21,
+      "uncertainty_refs": []
+    },
+    {
+      "pass_code": "VISUAL_CHARACTERISTICS",
+      "status": "COMPLETED",
+      "image_refs": ["IMG-LF-ONBOARDING-STEP1-001"],
+      "candidates_added": 19,
+      "uncertainty_refs": ["UNC-005"]
+    },
+    {
+      "pass_code": "RESPONSIVE",
+      "status": "COMPLETED",
+      "image_refs": ["IMG-LF-ONBOARDING-STEP1-001"],
+      "candidates_added": 2,
+      "uncertainty_refs": ["UNC-001", "UNC-002"]
+    },
+    {
+      "pass_code": "ADVERSARIAL_OMISSION",
+      "status": "COMPLETED",
+      "image_refs": ["IMG-LF-ONBOARDING-STEP1-001"],
+      "candidates_added": 0,
+      "uncertainty_refs": []
+    },
+    {
+      "pass_code": "CONSISTENCY",
+      "status": "COMPLETED",
+      "image_refs": ["IMG-LF-ONBOARDING-STEP1-001"],
+      "candidates_added": 0,
+      "uncertainty_refs": []
+    }
+  ],
+  "visual_observation_inventory": [
+    {"observation_code":"OBS-001","observation_type":"SPACING_APPEARANCE","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-001","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-001","semantic_role":"overall_layout","visible_text":null,"visual_value":"La pantalla presenta una cabecera superior y una composición principal en dos columnas: contenido informativo a la izquierda y formulario a la derecha.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.99},
+    {"observation_code":"OBS-002","observation_type":"SPACING_APPEARANCE","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-002","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-002","semantic_role":"header_layout","visible_text":null,"visual_value":"Cabecera horizontal con marca alineada a la izquierda y seguridad, ayuda y acceso agrupados hacia la derecha.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.99},
+    {"observation_code":"OBS-003","observation_type":"SPACING_APPEARANCE","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-003","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-003","semantic_role":"left_information_hierarchy","visible_text":null,"visual_value":"La columna izquierda organiza título grande, descripción, beneficios y una zona ilustrada inferior en secuencia vertical.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.98},
+    {"observation_code":"OBS-004","observation_type":"SIZE_RADIUS_APPEARANCE","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-004","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-006","semantic_role":"main_form_container","visible_text":null,"visual_value":"El formulario está contenido en una tarjeta blanca grande con borde fino y esquinas redondeadas.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.99},
+    {"observation_code":"OBS-005","observation_type":"SPACING_APPEARANCE","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-005","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-006","semantic_role":"form_content_hierarchy","visible_text":null,"visual_value":"Dentro de la tarjeta se observan progreso y encabezado, campos, consentimientos, CTA y aviso inferior en bloques verticales diferenciados.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.99},
+    {"observation_code":"OBS-006","observation_type":"CONTROL","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-006","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-008","semantic_role":"full_name_input","visible_text":"Nombre completo","visual_value":"Campo de entrada horizontal con icono de persona a la izquierda.","value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_PIXELS","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-007","observation_type":"CONTROL","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-007","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-008","semantic_role":"document_type_selector","visible_text":"Tipo de documento","visual_value":"Selector visible con valor DNI, icono de documento y chevrón descendente.","value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_PIXELS","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-008","observation_type":"CONTROL","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-008","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-008","semantic_role":"document_number_input","visible_text":"Número de documento","visual_value":"Campo de entrada horizontal con icono de documento.","value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_PIXELS","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-009","observation_type":"CONTROL","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-009","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-008","semantic_role":"telephone_input","visible_text":"Celular","visual_value":"Control compuesto con icono de teléfono, prefijo visible +51, chevrón y zona de ingreso del número.","value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_PIXELS","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-010","observation_type":"CONTROL","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-010","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-008","semantic_role":"email_input","visible_text":"Correo electrónico","visual_value":"Campo de entrada horizontal con icono de sobre.","value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_PIXELS","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-011","observation_type":"CONTROL","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-011","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-009","semantic_role":"legal_acceptance_checkbox","visible_text":"He leído y acepto los Términos y Condiciones y la Política de Privacidad.","visual_value":"Casilla cuadrada visible al inicio de la primera fila de consentimiento.","value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_PIXELS","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-012","observation_type":"CONTROL","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-012","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-009","semantic_role":"personal_data_checkbox","visible_text":"Autorizo el tratamiento de mis datos personales para validar mi identidad, consultar información relacionada con mis obligaciones y mostrarme opciones disponibles.","visual_value":"Casilla cuadrada visible al inicio de la segunda fila de consentimiento.","value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_PIXELS","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-013","observation_type":"CONTROL","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-013","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-009","semantic_role":"commercial_communications_checkbox","visible_text":"Autorizo recibir comunicaciones comerciales, promociones, recordatorios y ofertas por WhatsApp, llamada, SMS y correo electrónico. (Opcional)","visual_value":"Casilla cuadrada visible al inicio de la tercera fila de consentimiento.","value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_PIXELS","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-014","observation_type":"CONTROL","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-014","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-010","semantic_role":"primary_action","visible_text":"Verificar mi celular","visual_value":"Botón ancho de acción primaria con relleno verde.","value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_PIXELS","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-015","observation_type":"CONTROL","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-015","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-002","semantic_role":"help_action","visible_text":"Ayuda","visual_value":"Acción visible acompañada por icono de signo de interrogación.","value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_PIXELS","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-016","observation_type":"CONTROL","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-016","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-002","semantic_role":"sign_in_action","visible_text":"Ingresar","visual_value":"Acción de ingreso visible dentro de un contenedor con borde.","value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_PIXELS","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-017","observation_type":"COPY","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-017","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-003","semantic_role":"left_primary_heading","visible_text":"Conoce qué opciones tienes para resolver tu deuda","visual_value":null,"value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_TEXT","token_relation":"NOT_APPLICABLE","confidence":1},
+    {"observation_code":"OBS-018","observation_type":"COPY","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-018","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-003","semantic_role":"left_supporting_copy","visible_text":"Verificaremos si encontramos información asociada a tus datos y te mostraremos las alternativas disponibles.","visual_value":null,"value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_TEXT","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-019","observation_type":"COPY","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-019","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-004","semantic_role":"benefit_copy","visible_text":"Consulta segura y rápida — Resultados en pocos minutos.","visual_value":null,"value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_TEXT","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-020","observation_type":"COPY","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-020","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-004","semantic_role":"benefit_copy","visible_text":"Tus datos están protegidos — Usamos cifrado y altos estándares de seguridad.","visual_value":null,"value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_TEXT","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-021","observation_type":"COPY","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-021","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-004","semantic_role":"benefit_copy","visible_text":"Sin compromiso — Conoce tus opciones sin obligaciones ni pagos.","visual_value":null,"value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_TEXT","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-022","observation_type":"COPY","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-022","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-007","semantic_role":"step_label","visible_text":"Paso 1 de 3","visual_value":null,"value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_TEXT","token_relation":"NOT_APPLICABLE","confidence":1},
+    {"observation_code":"OBS-023","observation_type":"COPY","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-023","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-007","semantic_role":"form_heading","visible_text":"Confirma tus datos","visual_value":null,"value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_TEXT","token_relation":"NOT_APPLICABLE","confidence":1},
+    {"observation_code":"OBS-024","observation_type":"COPY","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-024","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-007","semantic_role":"form_supporting_copy","visible_text":"Necesitamos validar tu identidad antes de buscar información relacionada con tu deuda.","visual_value":null,"value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_TEXT","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-025","observation_type":"PLACEHOLDER","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-025","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-008","semantic_role":"full_name_placeholder","visible_text":"Ej. Miguel Pérez García","visual_value":null,"value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_TEXT","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-026","observation_type":"PLACEHOLDER","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-026","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-008","semantic_role":"document_number_placeholder","visible_text":"Ej. 12345678","visual_value":null,"value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_TEXT","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-027","observation_type":"PLACEHOLDER","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-027","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-008","semantic_role":"telephone_placeholder","visible_text":"Ej. 987 654 321","visual_value":null,"value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_TEXT","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-028","observation_type":"PLACEHOLDER","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-028","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-008","semantic_role":"email_placeholder","visible_text":"Ej. miguel@correo.com","visual_value":null,"value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_TEXT","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-029","observation_type":"CONSENT","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-029","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-009","semantic_role":"legal_acceptance_copy","visible_text":"He leído y acepto los Términos y Condiciones y la Política de Privacidad.","visual_value":null,"value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_TEXT","token_relation":"NOT_APPLICABLE","confidence":1},
+    {"observation_code":"OBS-030","observation_type":"LINK","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-030","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-009","semantic_role":"terms_link","visible_text":"Términos y Condiciones","visual_value":"Texto mostrado con apariencia de enlace azul y subrayado.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-031","observation_type":"LINK","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-031","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-009","semantic_role":"privacy_link","visible_text":"Política de Privacidad","visual_value":"Texto mostrado con apariencia de enlace azul y subrayado.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-032","observation_type":"CONSENT","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-032","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-009","semantic_role":"personal_data_authorization_copy","visible_text":"Autorizo el tratamiento de mis datos personales para validar mi identidad, consultar información relacionada con mis obligaciones y mostrarme opciones disponibles.","visual_value":null,"value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_TEXT","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-033","observation_type":"CONSENT","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-033","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-009","semantic_role":"commercial_communications_authorization_copy","visible_text":"Autorizo recibir comunicaciones comerciales, promociones, recordatorios y ofertas por WhatsApp, llamada, SMS y correo electrónico. (Opcional)","visual_value":null,"value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_TEXT","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-034","observation_type":"COPY","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-034","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-009","semantic_role":"authorization_withdrawal_note","visible_text":"Puedes retirar esta autorización cuando lo desees.","visual_value":null,"value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_TEXT","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-035","observation_type":"SECURITY_TRUST","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-035","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-010","semantic_role":"data_usage_notice","visible_text":"Tus datos se utilizan únicamente para verificar tu identidad y mostrarte alternativas disponibles.","visual_value":null,"value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_TEXT","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-036","observation_type":"SECURITY_TRUST","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-036","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-002","semantic_role":"header_security_message","visible_text":"Tu información está segura","visual_value":null,"value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_TEXT","token_relation":"NOT_APPLICABLE","confidence":1},
+    {"observation_code":"OBS-037","observation_type":"COPY","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-037","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-002","semantic_role":"existing_account_prompt","visible_text":"¿Ya tienes cuenta?","visual_value":null,"value_precision":"SEMANTIC_ONLY","observation_basis":"VISIBLE_TEXT","token_relation":"NOT_APPLICABLE","confidence":1},
+    {"observation_code":"OBS-038","observation_type":"ICON","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-038","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-002","semantic_role":"brand_mark","visible_text":"Libertad Financiera","visual_value":"Símbolo abstracto multicolor junto a wordmark de dos líneas.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.99},
+    {"observation_code":"OBS-039","observation_type":"COLOR_APPEARANCE","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-039","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-001","semantic_role":"primary_palette","visible_text":null,"visual_value":"Predominan fondo blanco, texto azul marino oscuro y acentos verdes; existen grises claros para bordes y progreso inactivo.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.98},
+    {"observation_code":"OBS-040","observation_type":"TYPOGRAPHY_APPEARANCE","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-040","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-001","semantic_role":"typographic_hierarchy","visible_text":null,"visual_value":"Títulos grandes y de peso visual fuerte; labels y textos secundarios usan tamaños menores y pesos más regulares.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.98},
+    {"observation_code":"OBS-041","observation_type":"SIZE_RADIUS_APPEARANCE","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-041","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-008","semantic_role":"form_control_shape","visible_text":null,"visual_value":"Campos y selectores presentan altura visual consistente, bordes finos claros y esquinas moderadamente redondeadas.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.98},
+    {"observation_code":"OBS-042","observation_type":"VISUAL_STATE","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-042","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-009","semantic_role":"checkbox_states","visible_text":null,"visual_value":"Las tres casillas de consentimiento se muestran vacías, sin marca visible.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-043","observation_type":"VISUAL_STATE","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-043","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-010","semantic_role":"primary_action_visual_state","visible_text":"Verificar mi celular","visual_value":"El CTA se muestra con relleno verde sólido, texto blanco y alta prominencia visual.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.99},
+    {"observation_code":"OBS-044","observation_type":"PROGRESS","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-044","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-007","semantic_role":"step_progress_indicator","visible_text":"Paso 1 de 3","visual_value":"Se observan tres segmentos horizontales; el primero aparece verde y los dos restantes en gris claro.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.99},
+    {"observation_code":"OBS-045","observation_type":"ICON","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-045","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-008","semantic_role":"field_leading_icons","visible_text":null,"visual_value":"Los campos muestran iconos lineales asociados visualmente a persona, documento, teléfono y correo.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.99},
+    {"observation_code":"OBS-046","observation_type":"ICON","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-046","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-009","semantic_role":"consent_trailing_icons","visible_text":null,"visual_value":"Cada fila de consentimiento presenta un pequeño icono lineal de escudo hacia el extremo derecho.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.98},
+    {"observation_code":"OBS-047","observation_type":"ICON","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-047","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-002","semantic_role":"header_security_icon","visible_text":null,"visual_value":"Icono lineal de escudo con marca de verificación junto al mensaje de seguridad.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.99},
+    {"observation_code":"OBS-048","observation_type":"ICON","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-048","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-002","semantic_role":"help_icon","visible_text":null,"visual_value":"Icono circular con signo de interrogación junto a Ayuda.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.99},
+    {"observation_code":"OBS-049","observation_type":"ICON","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-049","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-004","semantic_role":"benefit_icons","visible_text":null,"visual_value":"Los tres beneficios usan iconos de rayo, candado y persona dentro de fondos circulares claros.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.99},
+    {"observation_code":"OBS-050","observation_type":"ICON","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-050","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-005","semantic_role":"decorative_illustration","visible_text":null,"visual_value":"Ilustración de paisaje con colinas, camino, vegetación y una persona vista de espaldas.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"NOT_APPLICABLE","confidence":0.99},
+    {"observation_code":"OBS-051","observation_type":"SECURITY_TRUST","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-051","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-005","semantic_role":"trust_badges","visible_text":"Entidad regulada | Datos encriptados | Registro seguro","visual_value":"Tres indicadores alineados horizontalmente dentro de una tarjeta blanca, separados por divisores verticales y acompañados por iconos.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.99},
+    {"observation_code":"OBS-052","observation_type":"SIZE_RADIUS_APPEARANCE","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-052","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-009","semantic_role":"consent_panel_container","visible_text":null,"visual_value":"Los consentimientos están contenidos en un panel claro de esquinas redondeadas con divisores horizontales entre filas.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.99},
+    {"observation_code":"OBS-053","observation_type":"COLOR_APPEARANCE","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-053","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-005","semantic_role":"illustration_palette","visible_text":null,"visual_value":"La ilustración inferior izquierda utiliza verdes y tonos crema muy claros con contraste suave.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.97},
+    {"observation_code":"OBS-054","observation_type":"SPACING_APPEARANCE","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-054","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-008","semantic_role":"field_grid","visible_text":null,"visual_value":"Nombre ocupa una fila completa; debajo se observan dos pares de campos en dos columnas, con labels encima y separación visual consistente.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.99},
+    {"observation_code":"OBS-055","observation_type":"ICON","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-055","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-010","semantic_role":"data_notice_icon","visible_text":null,"visual_value":"Pequeño icono lineal de candado precede al aviso inferior de uso de datos.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.99},
+    {"observation_code":"OBS-056","observation_type":"ICON","observability":"OBSERVED","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-056","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-010","semantic_role":"primary_action_arrow","visible_text":null,"visual_value":"El extremo derecho del CTA contiene un icono de flecha orientada hacia la derecha.","value_precision":"APPROXIMATE_VISUAL","observation_basis":"VISIBLE_PIXELS","token_relation":"UNRESOLVED_REGISTRY","confidence":0.99},
+    {"observation_code":"OBS-057","observation_type":"RESPONSIVE","observability":"NOT_OBSERVABLE","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-057","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-001","semantic_role":"responsive_behavior","visible_text":null,"visual_value":"No es posible verificar breakpoints, reflow, ocultamiento o cambios de componentes porque solo existe una captura de un viewport.","value_precision":"NOT_APPLICABLE","observation_basis":"DECLARED_SOURCE_METADATA","token_relation":"NOT_APPLICABLE","confidence":1},
+    {"observation_code":"OBS-058","observation_type":"ACCESSIBILITY","observability":"NOT_OBSERVABLE","source_ref":"IMG-LF-ONBOARDING-STEP1-001#OBS-058","image_ref":"IMG-LF-ONBOARDING-STEP1-001","region_ref":"REG-001","semantic_role":"programmatic_accessibility","visible_text":null,"visual_value":"ARIA, orden de foco, navegación por teclado, estados programáticos y anuncios para tecnologías de asistencia no pueden verificarse mediante esta captura.","value_precision":"NOT_APPLICABLE","observation_basis":"VISIBLE_PIXELS","token_relation":"NOT_APPLICABLE","confidence":1}
   ],
   "locked": true,
-  "locked_at": "2026-08-09T18:40:00-05:00"
+  "locked_at": "2026-08-09T21:16:00-05:00"
 }
