@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Regression matrix for the pinned PR93 runtime source gate."""
+"""Regression matrix for the pinned PR93 runtime source gate plus P0 quality gate."""
 from __future__ import annotations
 
+import subprocess
 import sys
 from pathlib import Path
 
@@ -25,6 +26,22 @@ def expect_error(name: str, code: str, changed: list[str], *, branch: str, blobs
         print(f"PASS_{name}={code}")
         return
     raise SystemExit(f"{name}: expected {code}, but scope was accepted")
+
+
+def run_p0_quality_regressions(repo_root: Path) -> None:
+    commands = [
+        [sys.executable, str(repo_root / "sandbox/story_creator_p0_visual/v1.1/evals/p0_machine_visual_quality_negative_suite.py")],
+        [sys.executable, str(repo_root / "sandbox/story_creator_p0_visual/v1.1/scripts/validate_p0_human_binding.py"), "--self-test"],
+    ]
+    for command in commands:
+        completed = subprocess.run(command, cwd=repo_root, text=True, capture_output=True, check=False)
+        if completed.stdout:
+            print(completed.stdout.rstrip())
+        if completed.returncode != 0:
+            if completed.stderr:
+                print(completed.stderr.rstrip(), file=sys.stderr)
+            raise SystemExit(f"P0_VISUAL_QUALITY_REGRESSION_FAILED: {' '.join(command)}")
+    print("PASS_P0_VISUAL_QUALITY_REGRESSIONS=2/2")
 
 
 def main() -> int:
@@ -125,6 +142,7 @@ def main() -> int:
     print("PASS_ALERT_PAIR")
 
     print("PASS_PR93_P0_RUNTIME_SCOPE_MATRIX=20/20")
+    run_p0_quality_regressions(repo_root)
     return 0
 
 
