@@ -1,0 +1,56 @@
+{
+  "schema_version": "p0-real-screen-smoke-receipt/v1",
+  "executed_at": "2026-08-08T05:23:21Z",
+  "evidence_mode": "REAL_SCREEN_EPHEMERAL_SOURCE",
+  "source_persistence": {
+    "raw_image_committed": false,
+    "source_ref_persisted": false,
+    "reason": "raw screenshot remains ephemeral; receipt retains only cryptographic and execution evidence"
+  },
+  "admission": {
+    "input_format": "JPEG",
+    "width": 1536,
+    "height": 864,
+    "raw_bytes_sha256": "d712967e2ed06dd1a43d05d4cc9606733f43952b2f9c6c6d66e85f3b29d35018",
+    "normalized_pixel_sha256": "76ca8845f5f72c3a8719ba632777e2afeda705d33ce91d920c0234ed04c2bf07",
+    "processing_manifest_sha256": "baf3bca879564d5d8d4545ffb3c2548a0a2057e0d299032978a791cc03ad2935",
+    "extension_mime_mismatch_observed": true
+  },
+  "visual_reader": {
+    "execution_id": "EXEC-P0-REALSCREEN-20260808-001",
+    "identity": "AGENT-P0-VISUAL-WORKER-ISOLATED-001",
+    "mode": "ISOLATED_FORWARD_TEST",
+    "observation_count": 50,
+    "validator_result": "PASS_WITH_EVIDENCE",
+    "canonical_visual_output_sha256": "d6c9e13b3e92d7114e1ee64bea5fb2f79141b244abb347add341579235293fd1"
+  },
+  "independent_judge": {
+    "decision_id": "J00-P0-DECISION-20260808-001",
+    "execution_id": "EXEC-P0-J00-L2-20260808-001",
+    "identity": "AGENT-P0-VISUAL-JUDGE-ISOLATED-001",
+    "independence_level": "L2",
+    "critical_screen": true,
+    "result": "HUMAN_REVIEW_REQUIRED",
+    "requires_human_review": true
+  },
+  "integrity_regression": {
+    "finding": "visual output validator previously accepted self-consistent forged source hashes without trusted admission binding",
+    "fixed_in_candidate": true,
+    "negative_attack_result_after_fix": "BLOCKED:source_sha_mismatch_admission",
+    "visual_validator_negative_cases_after_fix": "8/8"
+  },
+  "claims": {
+    "real_screen_smoke_executed": true,
+    "empirical_visual_quality_claimed": false,
+    "benchmark_acceptance_claimed": false,
+    "runtime_visual_worker_implemented": false,
+    "j02_routed": false,
+    "p0_7_promoted": false
+  },
+  "remaining_blockers": [
+    "authenticated_human_adjudication_binding",
+    "runtime_visual_worker",
+    "governed_disjoint_empirical_benchmark",
+    "L3_or_governed_human_resolution_for_critical_screen"
+  ]
+}

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Fail-closed PR93 runtime-source adapter layered over the E.16 validator.
 
-Only the pinned PR93 Edge source set and platform function configuration are
-admitted. The PR branch is accepted while PR #93 is open. A push on main is
-accepted only when GitHub confirms that PR #93 is merged and its
+Only the pinned PR93 Edge source set, platform function configuration, and the
+versioned Story Creator P0 sandbox candidate are admitted beyond the base LF
+contract scope. The PR93 branch is accepted while PR #93 is open. A push on
+main is accepted only when GitHub confirms that PR #93 is merged and its
 merge_commit_sha equals the workflow head SHA.
 """
 from __future__ import annotations
@@ -60,6 +61,7 @@ EXPECTED_EDGE_PATHS = frozenset(
 )
 CONTROLLED_RUNTIME_PATHS = frozenset(EXPECTED_RUNTIME_BLOBS)
 BLOB_RE = re.compile(r"^[0-9a-f]{40}$")
+P0_CANDIDATE_PREFIX = "sandbox/story_creator_p0_visual/v1.1/"
 
 
 class RuntimeScopeError(ValueError):
@@ -244,6 +246,8 @@ def get_changed_files() -> list[str]:
 def is_allowed_path(path: str) -> bool:
     if path in CONTROLLED_RUNTIME_PATHS:
         return _runtime_scope_enabled
+    if path.startswith(P0_CANDIDATE_PREFIX):
+        return True
     return _original_is_allowed_path(path)
 
 

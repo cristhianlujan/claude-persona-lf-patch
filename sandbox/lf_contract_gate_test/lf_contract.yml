@@ -29,6 +29,7 @@ lf_contract:
       - ".github/workflows/lf-contract-check.yml"
       - "scripts/lf_contract_check.py"
       - "sandbox/lf_contract_gate_test/**"
+      - "sandbox/story_creator_p0_visual/v1.1/**"
     blocked_paths:
       - "profiles/**"
       - "skills/**"

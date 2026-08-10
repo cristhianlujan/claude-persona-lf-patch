@@ -1,0 +1,25 @@
+{
+  "schema_version": "p0-p05-evidence-index/v1",
+  "target_lane": "EMPIRICAL_ACCEPTANCE",
+  "applicability_frozen": false,
+  "applicability_manifest_ref": null,
+  "applicability_manifest_sha256": null,
+  "sources": [
+    {
+      "ref": "evals/p0-real-screen-smoke-receipt-20260808.json",
+      "lane": "ENGINEERING_SMOKE",
+      "source_kind": "REAL_SCREEN_EPHEMERAL_SOURCE",
+      "observed_units": {"visual_observations": 50},
+      "eligible_for_empirical_denominators": false,
+      "reason": "Receipt explicitly disclaims empirical visual quality and benchmark acceptance; source bytes and governed gold are not retained."
+    },
+    {
+      "ref": "evals/p0-p03-runtime-smoke-receipt-20260809.json",
+      "lane": "ENGINEERING_SMOKE",
+      "source_kind": "SYNTHETIC_DENSE_RUNTIME_FIXTURE",
+      "observed_units": {"visual_observations": 31},
+      "eligible_for_empirical_denominators": false,
+      "reason": "Synthetic P0-3 runtime regression is explicitly ineligible for P0-5 denominators."
+    }
+  ]
+}
