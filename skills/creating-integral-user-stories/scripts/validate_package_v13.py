@@ -138,11 +138,16 @@ def _decomposition(blind:dict[str,Any])->dict[str,Any]:
 
 def _story_pack(blind:dict[str,Any])->dict[str,Any]:
     obs=[x for x in blind.get("visual_observation_inventory",[]) if isinstance(x,dict)]
-    token_refs=[str(x["source_ref"]) for x in obs if x.get("observation_type") in TOKEN_TYPES]
+    token_refs=[str(x["source_ref"]) for x in obs if x.get("observation_type") in TOKEN_TYPES and x.get("observation_type") != "ICON"]
+    icon_obs=[x for x in obs if x.get("observation_type")=="ICON"]
     msg_obs=[x for x in obs if x.get("observation_type") in MESSAGE_TYPES]
     resp_refs=[str(x["source_ref"]) for x in obs if x.get("observation_type") in RESP_TYPES]
     sec_refs=[str(x["source_ref"]) for x in obs if x.get("observation_type") in {"CONSENT","SECURITY_TRUST"}]
     first=token_refs[0] if token_refs else str(obs[0]["source_ref"])
+    visual_references=[{
+      "source_ref":str(x["source_ref"]),"resolution_status":"UNRESOLVED",
+      "canonical_source_kind":"UNRESOLVED","canonical_ref":None,"resolution_evidence_ref":None,
+    } for x in icon_obs]
     criterion={"criterion_code":"AC-VISUAL-EVIDENCE-PRESERVED","given":"a locked screen-ingestion v0.2 payload exists","when":"visual evidence is routed downstream","then":"every visual source_ref remains covered or explicitly pending","source_ref":"M7://visual-evidence-chain"}
     test={"test_code":"TEST-VISUAL-EVIDENCE-PRESERVED","family":"TRACEABILITY","criterion_ref":"AC-VISUAL-EVIDENCE-PRESERVED","preconditions":["locked v0.2 blind evidence"],"steps":["compare ingestion refs with downstream coverage refs"],"expected_result":"all visual source refs remain covered","negative":False,"critical":True,"automatable":True,"evidence_path":"evidence/M7-visual-evidence-chain.json"}
     return {
@@ -151,6 +156,7 @@ def _story_pack(blind:dict[str,Any])->dict[str,Any]:
       "tokens_messages":{
         "tokens":[{"token_code":"candidate.visual.evidence-anchor","registered":False,"status":"CANDIDATO","source_ref":first}],
         "messages":[{"message_code":f"MSG-{str(x['observation_code']).replace('OBS-','')}","severity":"INFO","text_ref":str(x["source_ref"]),"source_ref":str(x["source_ref"])} for x in msg_obs],
+        "visual_references":visual_references,
       },
       "security_privacy":{"source_observation_refs":sec_refs},
       "responsive_accessibility":{"breakpoints_supported":[],"source_observation_refs":resp_refs,"status":"PENDING_DECISION"},
@@ -180,7 +186,7 @@ def real_chain(root:Path)->dict[str,Any]:
     j02_out=j02.legacy.build(j02_payload,["m7://real-visual-chain"],0,"M7_J02_VALIDATOR",j02.legacy.VERSION,meta["semantic_validator_sha256"],j02.REGISTRATION,_sha(j02_payload),None,"M7 real visual J02")
 
     story=_story_pack(blind)
-    bridge_payload={"screen_ingestion":blind,"story_pack":story,"external_context":{"accessibility_baseline_confirmed":False,"supported_breakpoints_confirmed":False,"token_registry_refs":[]}}
+    bridge_payload={"screen_ingestion":blind,"story_pack":story,"external_context":{"accessibility_baseline_confirmed":False,"supported_breakpoints_confirmed":False,"token_registry_refs":[],"canonical_visual_refs":[]}}
     bridge_checks,bridge_evidence=bridge.evaluate(bridge_payload)
     j08=_j08(root,story)
 
@@ -199,6 +205,7 @@ def real_chain(root:Path)->dict[str,Any]:
       "visual_runtime":runtime.get("visual_runtime_proven") is True,
       "j02":j02_out.get("result")=="PASS_WITH_EVIDENCE",
       "visual_bridge":all(v==0 for v in bridge_checks.values()),
+      "canonical_visual_ownership_accounted":bridge_evidence.get("icon_observation_count")==bridge_evidence.get("visual_reference_count") and not bridge_evidence.get("missing_icon_visual_refs"),
       "j08":j08["passed"] is True,
       "j10":all(v==0 for v in j10_checks.values()),
       "source_to_ingestion_count":len(blind.get("source_images",[]))==1,
@@ -209,7 +216,7 @@ def real_chain(root:Path)->dict[str,Any]:
     return {
       "local_chain_pass":all(checks.values()),"checks":checks,
       "source_snapshot_sha":blind.get("source_snapshot_sha"),"blind_read_id":blind.get("blind_read_id"),"execution_id":blind.get("execution_id"),
-      "counts":{"source_images":len(blind.get("source_images",[])),"contexts":len(blind.get("context_inventory",[])),"fields":len(blind.get("field_inventory",[])),"ingestion_visual_observations":len(observations),"decomposition_visual_observations":len(dec.get("visual_observation_inventory",[])),"story_pack_covered_visual_observations":bridge_evidence.get("covered_visual_observation_count"),"responsive_accessibility_pending":len(story["responsive_accessibility"]["source_observation_refs"])},
+      "counts":{"source_images":len(blind.get("source_images",[])),"contexts":len(blind.get("context_inventory",[])),"fields":len(blind.get("field_inventory",[])),"ingestion_visual_observations":len(observations),"decomposition_visual_observations":len(dec.get("visual_observation_inventory",[])),"story_pack_covered_visual_observations":bridge_evidence.get("covered_visual_observation_count"),"icon_visual_observations":bridge_evidence.get("icon_observation_count"),"visual_reference_records":bridge_evidence.get("visual_reference_count"),"resolved_visual_references":bridge_evidence.get("resolved_visual_reference_count"),"unresolved_visual_references":bridge_evidence.get("unresolved_visual_reference_count"),"responsive_accessibility_pending":len(story["responsive_accessibility"]["source_observation_refs"])},
       "runtime_blockers":runtime.get("blockers",[]),"j02_failed_assertions":j02_out.get("failed_assertions",[]),"bridge_checks":bridge_checks,"j08":j08,"j10_checks":j10_checks,
       "j11":"THIS_SELF_TEST","j12_j13":"EXACT_HEAD_CI_REQUIRED",
     }
