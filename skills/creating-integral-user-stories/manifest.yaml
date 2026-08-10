@@ -291,7 +291,6 @@ files:
   - perfiles/PERFIL_SCREEN_DECOMPOSER_LF.md
   - perfiles/PERFIL_STORY_CORE_AUTHOR_LF.md
   - perfiles/PERFIL_STORY_TEST_DERIVER_LF.md
-  - perfiles/PERFIL_CROSS_CUTTING_ENRICHER_LF.md
   references:
   - references/accessibility-responsive-contract.md
   - references/analytics-observability-contract.md
