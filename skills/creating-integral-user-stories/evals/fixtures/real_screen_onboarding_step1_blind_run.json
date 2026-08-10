@@ -1,0 +1,183 @@
+{
+  "schema_version": "screen-ingestion/v0.1",
+  "screen_code": "SCR-LF-ONBOARDING-STEP1-BLIND",
+  "source_version": "source-v1",
+  "evidence_kind": "REAL_SCREEN_RUN",
+  "source_images": [
+    {
+      "image_ref": "IMG-LF-ONBOARDING-STEP1-001",
+      "raw_content_sha256": "e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7",
+      "width_px": 1536,
+      "height_px": 1024,
+      "format": "PNG",
+      "viewport_role": "FULL",
+      "sequence_order": 1
+    }
+  ],
+  "source_snapshot_sha": "5fc4a998c2abd22e505b62b9ff16aefa3762f8c1e2dc68ee2e597656e2a39365",
+  "blind_read_id": "7b84c03e-864f-4b3c-982d-70722253916e",
+  "execution_id": "2eb56020-f1b2-4f05-a637-658f1025862d",
+  "reader_identity": "GPT-5.6 Sol visual blind reader",
+  "context_isolation": {
+    "auxiliary_context_before_lock": false,
+    "separate_context_window": true,
+    "action_tools_enabled": false,
+    "network_egress": "DENY_BY_DEFAULT"
+  },
+  "region_inventory": [
+    {
+      "region_ref": "R-01",
+      "image_ref": "IMG-LF-ONBOARDING-STEP1-001",
+      "bbox": [0, 0, 1536, 95],
+      "description": "Franja superior con logotipo Libertad Financiera, mensaje de seguridad, acceso a Ayuda y bloque de ingreso para usuarios con cuenta.",
+      "confidence": 0.99
+    },
+    {
+      "region_ref": "R-02",
+      "image_ref": "IMG-LF-ONBOARDING-STEP1-001",
+      "bbox": [45, 145, 475, 585],
+      "description": "Panel informativo izquierdo con titular sobre opciones para resolver deuda, texto explicativo y tres mensajes de confianza con iconos.",
+      "confidence": 0.99
+    },
+    {
+      "region_ref": "R-03",
+      "image_ref": "IMG-LF-ONBOARDING-STEP1-001",
+      "bbox": [0, 705, 563, 319],
+      "description": "Ilustración inferior izquierda con paisaje, camino y figura humana.",
+      "confidence": 0.99
+    },
+    {
+      "region_ref": "R-04",
+      "image_ref": "IMG-LF-ONBOARDING-STEP1-001",
+      "bbox": [45, 847, 478, 142],
+      "description": "Tarjeta superpuesta sobre la ilustración con tres indicadores visibles: Entidad regulada, Datos encriptados y Registro seguro.",
+      "confidence": 0.98
+    },
+    {
+      "region_ref": "R-05",
+      "image_ref": "IMG-LF-ONBOARDING-STEP1-001",
+      "bbox": [563, 113, 946, 510],
+      "description": "Card principal derecha con indicador Paso 1 de 3, barra visual de progreso, título Confirma tus datos, texto explicativo y campos de identificación y contacto.",
+      "confidence": 0.99
+    },
+    {
+      "region_ref": "R-06",
+      "image_ref": "IMG-LF-ONBOARDING-STEP1-001",
+      "bbox": [603, 624, 866, 228],
+      "description": "Bloque con tres filas de consentimiento, cada una con checkbox visible; incluye enlaces visibles a Términos y Condiciones y Política de Privacidad.",
+      "confidence": 0.99
+    },
+    {
+      "region_ref": "R-07",
+      "image_ref": "IMG-LF-ONBOARDING-STEP1-001",
+      "bbox": [603, 868, 866, 54],
+      "description": "Botón principal verde con texto Verificar mi celular e icono de flecha hacia la derecha.",
+      "confidence": 0.99
+    },
+    {
+      "region_ref": "R-08",
+      "image_ref": "IMG-LF-ONBOARDING-STEP1-001",
+      "bbox": [603, 936, 866, 42],
+      "description": "Nota inferior con icono de candado y texto sobre el uso de datos para verificar identidad y mostrar alternativas disponibles.",
+      "confidence": 0.99
+    }
+  ],
+  "context_inventory": [
+    {
+      "code": "CTX-01",
+      "description": "Cabecera global con marca, mensaje Tu información está segura, acceso Ayuda y bloque ¿Ya tienes cuenta? Ingresar.",
+      "source_ref": "SRC-C001",
+      "region_ref": "R-01",
+      "confidence": 0.99
+    },
+    {
+      "code": "CTX-02",
+      "description": "Mensaje principal: Conoce qué opciones tienes para resolver tu deuda. Texto visible: Verificaremos si encontramos información asociada a tus datos y te mostraremos las alternativas disponibles.",
+      "source_ref": "SRC-C002",
+      "region_ref": "R-02",
+      "confidence": 0.99
+    },
+    {
+      "code": "CTX-03",
+      "description": "Tres mensajes visibles: Consulta segura y rápida — Resultados en pocos minutos; Tus datos están protegidos — Usamos cifrado y altos estándares de seguridad; Sin compromiso — Conoce tus opciones sin obligaciones ni pagos.",
+      "source_ref": "SRC-C003",
+      "region_ref": "R-02",
+      "confidence": 0.99
+    },
+    {
+      "code": "CTX-04",
+      "description": "Tres indicadores visibles de confianza: Entidad regulada, Datos encriptados y Registro seguro.",
+      "source_ref": "SRC-C004",
+      "region_ref": "R-04",
+      "confidence": 0.98
+    },
+    {
+      "code": "CTX-05",
+      "description": "Primer paso visible de un flujo de tres pasos. Título Confirma tus datos y texto Necesitamos validar tu identidad antes de buscar información relacionada con tu deuda.",
+      "source_ref": "SRC-C005",
+      "region_ref": "R-05",
+      "confidence": 0.99
+    },
+    {
+      "code": "CTX-06",
+      "description": "Formulario visible de identificación y contacto con nombre completo, tipo de documento, número de documento, celular y correo electrónico.",
+      "source_ref": "SRC-C006",
+      "region_ref": "R-05",
+      "confidence": 0.99
+    },
+    {
+      "code": "CTX-07",
+      "description": "Bloque visible de consentimientos con tres checkboxes; el tercer consentimiento está marcado textualmente como Opcional.",
+      "source_ref": "SRC-C007",
+      "region_ref": "R-06",
+      "confidence": 0.99
+    },
+    {
+      "code": "CTX-08",
+      "description": "Acción principal visible Verificar mi celular.",
+      "source_ref": "SRC-C008",
+      "region_ref": "R-07",
+      "confidence": 0.99
+    },
+    {
+      "code": "CTX-09",
+      "description": "Nota visible: Tus datos se utilizan únicamente para verificar tu identidad y mostrarte alternativas disponibles.",
+      "source_ref": "SRC-C009",
+      "region_ref": "R-08",
+      "confidence": 0.99
+    }
+  ],
+  "field_inventory": [
+    {"code":"FLD-01","context_code":"CTX-01","source_ref":"SRC-F001","region_ref":"R-01","control_type":"link_or_button","visible_label":"Ayuda","conditionally_visible":false,"confidence":0.96},
+    {"code":"FLD-02","context_code":"CTX-01","source_ref":"SRC-F002","region_ref":"R-01","control_type":"link_or_button","visible_label":"Ingresar","conditionally_visible":false,"confidence":0.98},
+    {"code":"FLD-03","context_code":"CTX-06","source_ref":"SRC-F003","region_ref":"R-05","control_type":"text_input","visible_label":"Nombre completo","conditionally_visible":false,"confidence":0.99},
+    {"code":"FLD-04","context_code":"CTX-06","source_ref":"SRC-F004","region_ref":"R-05","control_type":"select","visible_label":"Tipo de documento","conditionally_visible":false,"confidence":0.99},
+    {"code":"FLD-05","context_code":"CTX-06","source_ref":"SRC-F005","region_ref":"R-05","control_type":"text_input","visible_label":"Número de documento","conditionally_visible":false,"confidence":0.99},
+    {"code":"FLD-06","context_code":"CTX-06","source_ref":"SRC-F006","region_ref":"R-05","control_type":"country_code_select","visible_label":"+51","conditionally_visible":false,"confidence":0.98},
+    {"code":"FLD-07","context_code":"CTX-06","source_ref":"SRC-F007","region_ref":"R-05","control_type":"phone_input","visible_label":"Celular","conditionally_visible":false,"confidence":0.99},
+    {"code":"FLD-08","context_code":"CTX-06","source_ref":"SRC-F008","region_ref":"R-05","control_type":"email_input","visible_label":"Correo electrónico","conditionally_visible":false,"confidence":0.99},
+    {"code":"FLD-09","context_code":"CTX-07","source_ref":"SRC-F009","region_ref":"R-06","control_type":"checkbox","visible_label":"He leído y acepto los Términos y Condiciones y la Política de Privacidad.","conditionally_visible":false,"confidence":0.99},
+    {"code":"FLD-10","context_code":"CTX-07","source_ref":"SRC-F010","region_ref":"R-06","control_type":"link","visible_label":"Términos y Condiciones","conditionally_visible":false,"confidence":0.99},
+    {"code":"FLD-11","context_code":"CTX-07","source_ref":"SRC-F011","region_ref":"R-06","control_type":"link","visible_label":"Política de Privacidad","conditionally_visible":false,"confidence":0.99},
+    {"code":"FLD-12","context_code":"CTX-07","source_ref":"SRC-F012","region_ref":"R-06","control_type":"checkbox","visible_label":"Autorizo el tratamiento de mis datos personales para validar mi identidad, consultar información relacionada con mis obligaciones y mostrarme opciones disponibles.","conditionally_visible":false,"confidence":0.99},
+    {"code":"FLD-13","context_code":"CTX-07","source_ref":"SRC-F013","region_ref":"R-06","control_type":"checkbox","visible_label":"Autorizo recibir comunicaciones comerciales, promociones, recordatorios y ofertas por WhatsApp, llamada, SMS y correo electrónico. (Opcional) Puedes retirar esta autorización cuando lo desees.","conditionally_visible":false,"confidence":0.99},
+    {"code":"FLD-14","context_code":"CTX-08","source_ref":"SRC-F014","region_ref":"R-07","control_type":"primary_button","visible_label":"Verificar mi celular","conditionally_visible":false,"confidence":0.99}
+  ],
+  "permission_inventory": [],
+  "transition_inventory": [],
+  "coverage_evidence": {
+    "images_scanned": ["IMG-LF-ONBOARDING-STEP1-001"],
+    "full_viewport_scanned": true,
+    "off_viewport_evidence": "NOT_APPLICABLE",
+    "omitted_candidate_count": 0
+  },
+  "uncertainties": [
+    {"uncertainty_code":"UNC-01","critical":false,"description":"Los desplegables visibles están cerrados; no se observan opciones adicionales para Tipo de documento ni para el selector de código telefónico.","source_ref":"SRC-U001"},
+    {"uncertainty_code":"UNC-02","critical":false,"description":"No se observan estados de validación, error, éxito, foco, carga o contenido completado para los campos del formulario.","source_ref":"SRC-U002"},
+    {"uncertainty_code":"UNC-03","critical":false,"description":"Los tres checkboxes se muestran visualmente sin marcar; no es observable qué combinación habilita o bloquea la acción principal.","source_ref":"SRC-U003"},
+    {"uncertainty_code":"UNC-04","critical":false,"description":"La imagen muestra una única composición de viewport; no permite verificar variantes responsive, reordenamiento de componentes ni comportamiento en otras dimensiones.","source_ref":"SRC-U004"},
+    {"uncertainty_code":"UNC-05","critical":false,"description":"La presencia visual de Ayuda, Ingresar, enlaces legales y Verificar mi celular no permite confirmar destinos, navegación, permisos ni transiciones funcionales.","source_ref":"SRC-U005"}
+  ],
+  "locked": true,
+  "locked_at": "2026-08-09T18:40:00-05:00"
+}
