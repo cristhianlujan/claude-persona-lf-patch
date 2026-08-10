@@ -1,4 +1,4 @@
-# PR120 runtime CI synchronization marker; comments are ignored by the manifest reader.
+# PR120 exact-head push-evidence transport; comments are ignored by the manifest reader.
 supabase/migrations/20260801175950_prepare_v7_object_owners.sql
 supabase/migrations/20260801175955_prepare_writer_verifier_schema_context.sql
 supabase/migrations/20260801180000_writer_hmac_nonce_v7.sql
