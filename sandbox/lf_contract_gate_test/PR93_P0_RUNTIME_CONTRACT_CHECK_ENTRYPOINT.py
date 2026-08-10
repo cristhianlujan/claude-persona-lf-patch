@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Fail-closed PR93 runtime-source adapter layered over the E.16 validator.
 
-Only the pinned PR93 Edge source set, platform function configuration, the
-versioned Story Creator P0 sandbox candidate, and the exact P0 V3 CI workflow
-are admitted beyond the base LF contract scope. The PR93 runtime branch rules
-remain unchanged; the P0 V3 workflow allowance is exact-path only.
+Only the pinned PR93 Edge source set, platform function configuration, and the
+versioned Story Creator P0 sandbox candidate are admitted beyond the base LF
+contract scope. The PR93 branch is accepted while PR #93 is open. A push on
+main is accepted only when GitHub confirms that PR #93 is merged and its
+merge_commit_sha equals the workflow head SHA.
 """
 from __future__ import annotations
 
@@ -61,7 +62,6 @@ EXPECTED_EDGE_PATHS = frozenset(
 CONTROLLED_RUNTIME_PATHS = frozenset(EXPECTED_RUNTIME_BLOBS)
 BLOB_RE = re.compile(r"^[0-9a-f]{40}$")
 P0_CANDIDATE_PREFIX = "sandbox/story_creator_p0_visual/v1.1/"
-P0_V3_WORKFLOW_PATH = ".github/workflows/p0-visual-fidelity-v3.yml"
 
 
 class RuntimeScopeError(ValueError):
@@ -248,29 +248,12 @@ def is_allowed_path(path: str) -> bool:
         return _runtime_scope_enabled
     if path.startswith(P0_CANDIDATE_PREFIX):
         return True
-    if path == P0_V3_WORKFLOW_PATH:
-        return True
     return _original_is_allowed_path(path)
-
-
-def validate_p0_v3_workflow_scope() -> None:
-    if not is_allowed_path(P0_V3_WORKFLOW_PATH):
-        e16.fail("FAIL_P0_V3_WORKFLOW_SCOPE", "exact P0 V3 workflow path must be admitted")
-    denied = (
-        ".github/workflows/p0-visual-fidelity-v3.yml.bak",
-        ".github/workflows/p0-visual-fidelity-v4.yml",
-        ".github/workflows/p0-visual-fidelity-v3/child.yml",
-    )
-    leaked = [path for path in denied if is_allowed_path(path)]
-    if leaked:
-        e16.fail("FAIL_P0_V3_WORKFLOW_SCOPE", f"lookalike workflow paths admitted: {leaked!r}")
-    print("PASS_P0_V3_WORKFLOW_EXACT_SCOPE")
 
 
 def main() -> None:
     e16.base.get_changed_files = get_changed_files
     e16.base.is_allowed_path = is_allowed_path
-    validate_p0_v3_workflow_scope()
     e16.base.main()
 
 
