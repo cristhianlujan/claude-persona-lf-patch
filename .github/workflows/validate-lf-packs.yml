@@ -40,3 +40,12 @@ jobs:
 
       - name: Validate learning engine pack
         run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
+
+      - name: Export exact P0 visual package for governed local execution
+        if: github.ref == 'refs/heads/lf/p0-packet-export-20260810'
+        uses: actions/upload-artifact@v4
+        with:
+          name: p0-visual-package-${{ github.sha }}
+          path: sandbox/story_creator_p0_visual/v1.1
+          if-no-files-found: error
+          retention-days: 1
