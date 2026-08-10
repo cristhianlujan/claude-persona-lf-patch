@@ -36,14 +36,14 @@ validators:
   decomposition_schema_ref: schemas/screen-decomposition.schema.json
   ingestion_schema_ref: schemas/screen-ingestion.schema.json
   output_schema_ref: schemas/judge-result.schema.json
-  semantic_validator_ref: scripts/validate_screen_decomposition_v08.py
+  semantic_validator_ref: scripts/validate_screen_decomposition_visual.py
   semantic_validator_name: screen_decomposition_semantic_validator_v08
-  semantic_validator_registration_ref: candidate://creating-integral-user-stories/ART_SCRIPT_VALIDATE_SCREEN_DECOMPOSITION_V08
+  semantic_validator_registration_ref: candidate://creating-integral-user-stories/ART_SCRIPT_VALIDATE_SCREEN_DECOMPOSITION_VISUAL
   promotion_registration_required: true
 
 runtime_status: CANDIDATE_CI_ONLY
 production_runtime_status: NOT_AUTHORIZED
-self_test_command: LF_EXECUTOR_IDENTITY=LF_J02_SELF_TEST LF_JUDGE_VERSION=v0.8 python scripts/validate_screen_decomposition_v08.py --self-test
+self_test_command: LF_EXECUTOR_IDENTITY=LF_J02_SELF_TEST LF_JUDGE_VERSION=v0.8 python scripts/validate_screen_decomposition_visual.py --self-test
 
 deterministic_procedure:
 - validate_decomposition_and_ingestion_schemas
@@ -95,6 +95,9 @@ assertions:
 - assertion_id: transition_coverage
   expected: 0
   critical: true
+- assertion_id: visual_observation_coverage
+  expected: 0
+  critical: true
 - assertion_id: unmapped_count
   expected: 0
   critical: true
@@ -130,6 +133,7 @@ assertions:
   critical: true
 
 assertion_semantics:
+  visual_observation_passthrough: Para screen-ingestion/v0.2, toda observación visual debe preservarse en screen_decomposition por observation_code + source_ref; no se exige convertirla en unidad funcional.
   inventory_complete_vs_ingestion: Cada observación de contexto, campo, permiso o transición presente en la ingesta bloqueada debe aparecer en el inventario de descomposición por código o source_ref; comparar solo cardinalidades está prohibido.
   ingestion_source_snapshot_hash_matches: El hash se recalcula desde el manifiesto de hashes de las imágenes y debe coincidir tanto con la ingesta como con source_snapshot_sha de la descomposición.
   ingestion_locked: La ingesta debe declarar locked=true y demostrar que no recibió contexto auxiliar ni action tools antes del lock.
@@ -182,8 +186,8 @@ required_evidence:
 - output_sha256
 
 positive_behavior:
-  command: LF_EXECUTOR_IDENTITY=CI_EXTERNAL_FIXTURE LF_JUDGE_VERSION=v0.8 python scripts/validate_screen_decomposition_v08.py evals/fixtures/j02_external_positive.json --evidence-ref fixture://j02_external_positive --expected-validator-sha256 <computed-ci-sha256> --registration-ref candidate://creating-integral-user-stories/ART_SCRIPT_VALIDATE_SCREEN_DECOMPOSITION_V08
-  expected: PASS_WITH_EVIDENCE and assertions_passed=23
+  command: LF_EXECUTOR_IDENTITY=CI_EXTERNAL_FIXTURE LF_JUDGE_VERSION=v0.8 python scripts/validate_screen_decomposition_visual.py evals/fixtures/j02_external_positive.json --evidence-ref fixture://j02_external_positive --expected-validator-sha256 <computed-ci-sha256> --registration-ref candidate://creating-integral-user-stories/ART_SCRIPT_VALIDATE_SCREEN_DECOMPOSITION_VISUAL
+  expected: PASS_WITH_EVIDENCE and assertions_passed=24
   fixture_is_external_to_validator: true
 
 negative_cases:

@@ -1,194 +1,24 @@
 {
   "assertions": [
-    "inventory_complete_vs_ingestion"
+    "all_visual_observations_covered",
+    "candidate_tokens_not_registered",
+    "single_viewport_responsive_pending"
   ],
-  "expected_result": "RETURN_TO_WORKER",
-  "fixture_id": "J02_SOURCE_OMISSION",
-  "negative_cases": [
-    "inventory_complete_vs_ingestion"
-  ],
-  "purpose": "External J02 maturity fixture",
-  "screen_decomposition": {
-    "context_inventory": [
-      {
-        "code": "CTX-SEARCH",
-        "description": "Customer search",
-        "source_ref": "IMG-001#REG-SEARCH"
-      }
-    ],
-    "coverage_items": [
-      {
-        "justification": "Context mapped",
-        "mapped_to": [
-          "FU-SEARCH"
-        ],
-        "mapping_status": "MAPPED",
-        "source_item_code": "CTX-SEARCH",
-        "source_ref": "IMG-001#REG-SEARCH",
-        "source_type": "CONTEXT"
-      },
-      {
-        "justification": "Document field mapped",
-        "mapped_to": [
-          "FU-SEARCH"
-        ],
-        "mapping_status": "MAPPED",
-        "source_item_code": "FLD-DOC",
-        "source_ref": "IMG-001#FIELD-DOC",
-        "source_type": "FIELD"
-      },
-      {
-        "justification": "Permission mapped",
-        "mapped_to": [
-          "FU-SEARCH"
-        ],
-        "mapping_status": "MAPPED",
-        "source_item_code": "PERM-SEARCH",
-        "source_ref": "IMG-001#ACTION-SEARCH",
-        "source_type": "PERMISSION"
-      },
-      {
-        "justification": "Transition mapped",
-        "mapped_to": [
-          "FU-SEARCH"
-        ],
-        "mapping_status": "MAPPED",
-        "source_item_code": "TR-SEARCH",
-        "source_ref": "IMG-001#STATE-PAIR-SEARCH",
-        "source_type": "TRANSITION"
-      }
-    ],
-    "coverage_summary": {
-      "conflicting_count": 0,
-      "duplicate_functional_units_count": 0,
-      "justified_count": 0,
-      "mapped_count": 4,
-      "source_items_count": 4,
-      "unjustified_count": 0,
-      "unmapped_count": 0
-    },
-    "field_inventory": [
-      {
-        "code": "FLD-DOC",
-        "context_code": "CTX-SEARCH",
-        "source_ref": "IMG-001#FIELD-DOC"
-      }
-    ],
-    "functional_units": [
-      {
-        "actor": "Operator",
-        "classification": "CONFIRMED",
-        "decision": "CREATE_STORY",
-        "functional_unit_code": "FU-SEARCH",
-        "goal": "Search and identify an authorized customer",
-        "justification": "Independent observable customer-search outcome",
-        "observable_output": "Authorized customer search result is displayed",
-        "risk_level": "LOW",
-        "source_ref": "IMG-001#REG-SEARCH",
-        "trigger": "Submit customer search"
-      }
-    ],
-    "main_responsibility": "Allow an operator to search and identify an authorized customer",
-    "module_code": "MOD-CUSTOMERS",
-    "pending_decisions": [],
-    "permission_inventory": [
-      {
-        "action_code": "SEARCH",
-        "actor_profile": "OPERATOR",
-        "permission_code": "PERM-SEARCH",
-        "source_ref": "IMG-001#ACTION-SEARCH"
-      }
-    ],
-    "screen_code": "SCR-CUSTOMER-SEARCH",
-    "source_snapshot_sha": "56278f0469efa1d6d030651d008f296e93e6e0df313e8d70eebc9bcedfcf9cd6",
-    "source_version": "fixture-v1",
-    "transition_inventory": [
-      {
-        "action": "SEARCH",
-        "allowed": true,
-        "from": "IDLE",
-        "source_ref": "IMG-001#STATE-PAIR-SEARCH",
-        "to": "RESULTS"
-      }
-    ],
-    "visual_observation_inventory": [
-      {
-        "confidence": 0.99,
-        "image_ref": "IMG-001",
-        "observability": "OBSERVED",
-        "observation_basis": "VISIBLE_PIXELS",
-        "observation_code": "OBS-CONTROL-1",
-        "observation_type": "CONTROL",
-        "region_ref": "REG-SEARCH",
-        "semantic_role": "field_control",
-        "source_ref": "IMG-001#FIELD-DOC#CONTROL",
-        "token_relation": "CANDIDATE_ONLY",
-        "value_precision": "SEMANTIC_ONLY",
-        "visible_text": "Documento",
-        "visual_value": "TEXT_INPUT"
-      },
-      {
-        "confidence": 0.99,
-        "image_ref": "IMG-001",
-        "observability": "OBSERVED",
-        "observation_basis": "VISIBLE_TEXT",
-        "observation_code": "OBS-COPY-1",
-        "observation_type": "COPY",
-        "region_ref": "REG-SEARCH",
-        "semantic_role": "field_label",
-        "source_ref": "IMG-001#FIELD-DOC#LABEL",
-        "token_relation": "NOT_APPLICABLE",
-        "value_precision": "SEMANTIC_ONLY",
-        "visible_text": "Documento",
-        "visual_value": null
-      },
-      {
-        "confidence": 0.98,
-        "image_ref": "IMG-001",
-        "observability": "OBSERVED",
-        "observation_basis": "VISIBLE_PIXELS",
-        "observation_code": "OBS-CONTROL-2",
-        "observation_type": "CONTROL",
-        "region_ref": "REG-SEARCH",
-        "semantic_role": "field_control",
-        "source_ref": "IMG-001#FIELD-NAME#CONTROL",
-        "token_relation": "CANDIDATE_ONLY",
-        "value_precision": "SEMANTIC_ONLY",
-        "visible_text": "Nombre",
-        "visual_value": "TEXT_INPUT"
-      },
-      {
-        "confidence": 0.98,
-        "image_ref": "IMG-001",
-        "observability": "OBSERVED",
-        "observation_basis": "VISIBLE_TEXT",
-        "observation_code": "OBS-COPY-2",
-        "observation_type": "COPY",
-        "region_ref": "REG-SEARCH",
-        "semantic_role": "field_label",
-        "source_ref": "IMG-001#FIELD-NAME#LABEL",
-        "token_relation": "NOT_APPLICABLE",
-        "value_precision": "SEMANTIC_ONLY",
-        "visible_text": "Nombre",
-        "visual_value": null
-      },
-      {
-        "confidence": 1.0,
-        "image_ref": "IMG-001",
-        "observability": "NOT_OBSERVABLE",
-        "observation_basis": "VISIBLE_PIXELS",
-        "observation_code": "OBS-RESPONSIVE-1",
-        "observation_type": "RESPONSIVE",
-        "region_ref": "REG-SEARCH",
-        "semantic_role": "single_viewport_limit",
-        "source_ref": "IMG-001#RESPONSIVE-NOT-OBSERVABLE",
-        "token_relation": "NOT_APPLICABLE",
-        "value_precision": "NOT_APPLICABLE",
-        "visible_text": null,
-        "visual_value": null
-      }
-    ]
+  "expected_result": "PASS_WITH_EVIDENCE",
+  "external_context": {
+    "accessibility_baseline_confirmed": false,
+    "supported_breakpoints_confirmed": false,
+    "token_registry_refs": []
   },
+  "fixture_id": "VISUAL-BRIDGE-POSITIVE",
+  "negative_cases": [
+    "downstream_omission",
+    "false_registered_token",
+    "invented_breakpoint",
+    "invented_keyboard_claim",
+    "legacy_v01_not_bridge_eligible"
+  ],
+  "purpose": "Prove lossless v0.2 visual evidence routing without invented tokens or breakpoints",
   "screen_ingestion": {
     "blind_read_id": "BLIND-J00-FIXTURE-001",
     "context_inventory": [
@@ -452,5 +282,61 @@
       }
     ]
   },
-  "target_screen_code": "SCR-CUSTOMER-SEARCH"
+  "story_pack": {
+    "dependencies_risks": {
+      "pending_decisions": [
+        {
+          "decision_code": "PD-RESPONSIVE-1",
+          "source_ref": "IMG-001#RESPONSIVE-NOT-OBSERVABLE",
+          "status": "PENDING_DECISION"
+        }
+      ]
+    },
+    "interaction": {
+      "source_observation_refs": [
+        "IMG-001#FIELD-DOC#CONTROL",
+        "IMG-001#FIELD-NAME#CONTROL"
+      ]
+    },
+    "responsive_accessibility": {
+      "breakpoints_supported": [],
+      "source_observation_refs": [
+        "IMG-001#RESPONSIVE-NOT-OBSERVABLE"
+      ],
+      "status": "PENDING_DECISION"
+    },
+    "security_privacy": {
+      "source_observation_refs": []
+    },
+    "tokens_messages": {
+      "messages": [
+        {
+          "message_code": "MSG-COPY-1",
+          "severity": "INFO",
+          "source_ref": "IMG-001#FIELD-DOC#LABEL",
+          "text_ref": "IMG-001#FIELD-DOC#LABEL"
+        },
+        {
+          "message_code": "MSG-COPY-2",
+          "severity": "INFO",
+          "source_ref": "IMG-001#FIELD-NAME#LABEL",
+          "text_ref": "IMG-001#FIELD-NAME#LABEL"
+        }
+      ],
+      "tokens": [
+        {
+          "registered": false,
+          "source_ref": "IMG-001#FIELD-DOC#CONTROL",
+          "status": "CANDIDATO",
+          "token_code": "candidate.control.1"
+        },
+        {
+          "registered": false,
+          "source_ref": "IMG-001#FIELD-NAME#CONTROL",
+          "status": "CANDIDATO",
+          "token_code": "candidate.control.2"
+        }
+      ]
+    }
+  }
 }

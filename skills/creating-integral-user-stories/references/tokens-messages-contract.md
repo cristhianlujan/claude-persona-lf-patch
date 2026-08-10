@@ -14,6 +14,7 @@ Evitar valores visuales y textos repetidos hardcodeados mediante referencias reg
 | `token_registry` | Tokens visuales, formato y componentes. |
 | `message_catalog` | Códigos, severidad, audiencia y acciones. |
 | `source_copy` | Texto de negocio confirmado cuando exista. |
+| `visual_observation_inventory` | Evidencia post-lock v0.2 de copy, iconos y apariencia; cada elemento conserva source_ref y aún no implica token registrado. |
 
 ## 3. Preflight
 
@@ -27,9 +28,9 @@ Antes de aplicar este contrato:
 
 ## 4. Procedimiento obligatorio
 
-1. Inventariar colores, espacios, tamaños, tipografías, iconos, formatos y componentes requeridos.
+1. Inventariar colores, espacios, tamaños, tipografías, iconos, formatos y componentes requeridos desde fuentes y, cuando exista, desde `visual_observation_inventory` post-lock.
 2. Resolver cada valor contra token_registry.
-3. Declarar tokens inexistentes como CANDIDATO con fallback y source_ref.
+3. Declarar tokens inexistentes como CANDIDATO con fallback y source_ref. Una observación blind con `token_relation=CANDIDATE_ONLY|UNRESOLVED_REGISTRY` jamás se transforma en REGISTERED sin evidencia del registry.
 4. Inventariar mensajes funcionales, observaciones y errores.
 5. Asignar message_code, severidad, audiencia, text_ref y action_token.
 6. Detectar textos duplicados y sustituirlos por referencia.
@@ -41,6 +42,7 @@ Antes de aplicar este contrato:
 ## 5. Reglas e invariantes
 
 - Prohibidos HEX, RGB, px, rem, tipografías o iconos literales dentro del Story Pack.
+- Una familia tipográfica exacta observada solo en píxeles no es CONFIRMED; requiere metadata declarada o registry.
 - Un token nuevo se marca CANDIDATO; esta skill no puede declararlo vigente.
 - Todo mensaje tiene severidad y audiencia.
 - Mensajes técnicos no exponen detalles internos.

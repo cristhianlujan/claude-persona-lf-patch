@@ -1,5 +1,5 @@
 skill_code: creating-integral-user-stories
-version: v0.7
+version: v0.8
 status: CANDIDATO_READ_ONLY
 operation_code: BUILD_INTEGRAL_STORY_CREATOR_LF
 execution_id: EXEC-BISC-008-MATURITY-FOUNDATION
@@ -20,11 +20,14 @@ validator_dependencies:
   - scripts/validate_story_pack.py
   - scripts/validate_screen_decomposition_v08.py
   - scripts/validate_screen_ingestion.py
+  - scripts/validate_screen_ingestion_v02.py
+  - scripts/validate_screen_decomposition_visual.py
   - scripts/score_maturity.py
 - package: PyYAML
   availability_policy: BLOCK_IF_MISSING
   required_by:
   - scripts/validate_package.py
+  - scripts/validate_package_v13.py
   - scripts/validate_test_coverage.py
   - scripts/validate_source_integrity.py
   - scripts/validate_screen_decomposition.py
@@ -42,8 +45,8 @@ github_contract:
   readback_required: true
 package_contract:
   canonical_file_count: 62
-  operational_inventory_file_count: 79
-  maturity_candidate_file_count: 13
+  operational_inventory_file_count: 87
+  maturity_candidate_file_count: 17
   encoding: UTF-8
   line_endings: LF
   final_newline: true
@@ -112,12 +115,14 @@ evidence_tier_policy:
   mutates_validation_status: false
   mutates_semantic_classification: false
   tiers:
-    T1: external positive + rejected negative + executed block + runtime chain + independent double score + resolved source provenance
+    T1: external positive + rejected negative + executed block + runtime chain + independent double score + resolved source
+      provenance
     T2: file integrity + external positive + rejected negative
     T3: file integrity + external positive
     T4: file integrity only
     UNASSESSED: file integrity not proven
-  provenance_rule: A derived artifact may remain semantically INFERRED when derivation is declared, resolvable and independently evidenced; provenance resolution must not be implemented by false reclassification.
+  provenance_rule: A derived artifact may remain semantically INFERRED when derivation is declared, resolvable and independently
+    evidenced; provenance resolution must not be implemented by false reclassification.
   t1_is_required_for_quality_10: true
   mass_rewrite_of_existing_validation_evidence: false
 maturity_scoring_policy:
@@ -145,7 +150,6 @@ maturity_scoring_policy:
   current_real_score_reason:
   - two_independent_real_evaluator_receipts_missing
   - visual_runtime_proven_false
-  - provenance_resolution_incomplete
   synthetic_fixture_must_not_be_used_as_real_score: true
 provenance_policy:
   semantic_classification_domain:
@@ -169,11 +173,14 @@ provenance_anchors:
     source_ref: v0.1 S14-S16
     github_blob_sha1: 67631b9eecc51a567546b15d26fc87f8b86d8798
     supabase_content_sha256: d53e3c2a1589768cc2f7370999986defb2d15795bb4342738b2c2e075a793742
-    provenance_ledger_current: NONE
-    provenance_resolution_status: OPEN
+    provenance_ledger_current: LEGACY_REVALIDATED
+    provenance_resolution_status: RESOLVED
     resolution_target: RESOLVED
     semantic_classification_change_required: false
-    resolution_requires_live_authorization: true
+    resolution_requires_live_authorization: false
+    resolution_event_id: 3579
+    resolution_ledger_id: 27
+    resolution_execution_id: EXEC-PR122-P6-LEGACY-REVALIDATION-20260809-004
   ART_SCRIPT_LF_COMMON:
     path: scripts/lf_common.py
     semantic_classification: INFERRED
@@ -182,11 +189,14 @@ provenance_anchors:
     source_ref: v0.1 S15 result_values
     github_blob_sha1: 0958ec2e3c78e10f261d64977827385908742c2e
     supabase_content_sha256: 635928d91dee9c7b1e2f156ac7286b8847e8861897b8b3fc992a32cf17c234c6
-    provenance_ledger_current: LEGACY_PENDING
-    provenance_resolution_status: OPEN
+    provenance_ledger_current: LEGACY_REVALIDATED
+    provenance_resolution_status: RESOLVED
     resolution_target: RESOLVED
     semantic_classification_change_required: false
-    resolution_requires_live_authorization: true
+    resolution_requires_live_authorization: false
+    resolution_event_id: 3578
+    resolution_ledger_id: 26
+    resolution_execution_id: EXEC-PR122-P6-LEGACY-REVALIDATION-20260809-004
 maturity_extension:
   status: CANDIDATO_READ_ONLY
   canonical_promotion_authorized: false
@@ -199,10 +209,11 @@ maturity_extension:
     judge: J00_SCREEN_INGESTION
     agent: agents/screen-ingestor.md
     schema: schemas/screen-ingestion.schema.json
-    validator: scripts/validate_screen_ingestion.py
+    validator: scripts/validate_screen_ingestion_v02.py
+    protocol_version: screen-ingestion/v0.2
   j02_candidate:
     judge_version: v0.8
-    validator: scripts/validate_screen_decomposition_v08.py
+    validator: scripts/validate_screen_decomposition_visual.py
     external_positive_fixture: evals/fixtures/j02_external_positive.json
     source_omission_fixture: evals/fixtures/j02_source_omission.json
   maturity_score_candidate:
@@ -220,6 +231,25 @@ maturity_extension:
     independent_blind_read: false
     quality_gate_eligible: false
     purpose: adjudicated ground-truth reference for a future separate-context blind J00 run
+  package_gate_candidate:
+    validator: scripts/validate_package_v13.py
+    legacy_validator: scripts/validate_package.py
+    runtime_evidence_type: RUNTIME_EVIDENCE
+    fixture_band_unchanged: true
+  visual_bridge:
+    validator: scripts/validate_visual_evidence_bridge.py
+    fixture: evals/fixtures/visual_bridge_positive.json
+    status: CANDIDATE_TESTED_LOCAL
+    rule: preserve source_ref; no registered token/breakpoint/nonvisual accessibility invention
+  historical_blind_runtime_evidence:
+    path: evals/fixtures/real_screen_onboarding_step1_blind_run.json
+    schema_version: screen-ingestion/v0.1
+    sha256: 48eb8aeb0696202045e30d2371d140cb8f7bfbd560a92088af39db29883c73bb
+    bytes: 10691
+    preserved_byte_for_byte: true
+    final_visual_runtime_eligible: false
+    reason: v0.2 multi-pass protocol required
+    final_validator: scripts/validate_real_visual_runtime_v02.py
 files:
   root:
   - SKILL.md
@@ -281,6 +311,12 @@ files:
   - scripts/validate_screen_decomposition_v08.py
   - scripts/assess_evidence_tier.py
   - scripts/score_maturity.py
+  - scripts/validate_real_visual_runtime.py
+  - scripts/validate_screen_ingestion_v02.py
+  - scripts/validate_screen_decomposition_visual.py
+  - scripts/validate_real_visual_runtime_v02.py
+  - scripts/validate_package_v13.py
+  - scripts/validate_visual_evidence_bridge.py
   judges:
   - judges/analytics-observability.yaml
   - judges/audit-traceability.yaml
@@ -310,6 +346,8 @@ files:
   - evals/fixtures/j02_source_omission.json
   - evals/fixtures/maturity_score_synthetic.json
   - evals/fixtures/real_screen_onboarding_step1_reference.json
+  - evals/fixtures/real_screen_onboarding_step1_blind_run.json
+  - evals/fixtures/visual_bridge_positive.json
 auxiliary_files:
 - AUDIT_CHECKLIST_R8.md
 - AUDIT_CHECKLIST_R8_62_ARTEFACTOS.xlsx
@@ -413,6 +451,6 @@ current_state:
   real_maturity_score_blockers:
   - independent_real_evaluator_receipts_missing
   - visual_runtime_proven_false
-  - provenance_resolution_incomplete
   real_visual_reference_count: 1
-  independent_blind_visual_run_status: NOT_EXECUTED
+  independent_blind_visual_run_status: LEGACY_V01_EXECUTED_NOT_FINAL_ELIGIBLE
+  provenance_resolution_status: RESOLVED_P6

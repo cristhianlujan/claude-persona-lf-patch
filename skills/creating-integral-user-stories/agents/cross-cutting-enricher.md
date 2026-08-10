@@ -30,6 +30,7 @@ El worker puede escribir exclusivamente:
 - `states`;
 - `audit`;
 - `tokens_messages`;
+- `visual_observation_inventory` preservado desde screen-ingestion/v0.2 cuando exista;
 - `analytics`;
 - `observability`;
 - `responsive_accessibility`;
@@ -46,6 +47,8 @@ No puede cambiar decisiones previas, criterios, pruebas, identidad de historia n
 | J06 | permisos, tenant model, privacidad, almacenamiento, MFA e idempotencia |
 | J07 | criterios, reglas, pruebas, auditoría y `source_ref` |
 | J08 | registro de tokens, interacción y catálogo de mensajes |
+| J08 visual bridge | COPY/PLACEHOLDER/LINK/ICON/apariencia visual con source_ref; resolver contra registry post-lock, nunca auto-registrar |
+| J10 visual bridge | RESPONSIVE/ACCESSIBILITY observables; lo no observable queda pending y no genera breakpoints/ARIA/teclado inventados |
 | J09 | campos clasificados, analytics, logs, métricas, errores y alertas |
 
 Son comunes: `task_packet`, `story_pack`, `source_snapshot_sha256`, contratos de juez vigentes y referencias resolubles.
@@ -91,7 +94,9 @@ required_policy_or_catalog_missing = true
 2. Completar J05 y entregar `READY_FOR_JUDGE`, `RETURN_TO_WORKER` o `BLOCKED`.
 3. Completar J06 con resultado independiente.
 4. Completar J07 con resultado independiente.
-5. Completar J08 con resultado independiente.
+5. Enrutar `visual_observation_inventory` por `source_ref`: controles/copy/tokens hacia interacción/J08; seguridad visible hacia security_privacy; responsive/accesibilidad observable hacia responsive_accessibility; `NOT_OBSERVABLE` hacia pending_decisions cuando requiera definición externa.
+6. Validar el bridge con `scripts/validate_visual_evidence_bridge.py`; ninguna observación visual puede desaparecer silenciosamente.
+7. Completar J08 con resultado independiente.
 6. Completar J09 con resultado independiente.
 7. Verificar los 46 assertion IDs de la sección 9.
 8. Ejecutar un caso positivo y uno negativo por cada validador.

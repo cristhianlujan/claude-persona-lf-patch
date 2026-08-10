@@ -1,13 +1,11 @@
 judge_code: J00_SCREEN_INGESTION
-judge_version: v0.1
+judge_version: v0.2
 status: CANDIDATO_READ_ONLY
-scope: Valida la estructura de una lectura ciega bloqueada de la pantalla antes de J02; no afirma por sí solo calidad empírica del runtime visual.
+scope: Valida estructura, aislamiento y protocolo multi-pass de una lectura blind bloqueada antes de J02; nunca auto-certifica calidad empírica del runtime visual.
 independence: screen_ingestor_must_not_approve_own_output
 retry_limit: 2
-
 required_inputs:
 - screen_ingestion
-
 preflight:
 - source_images_are_present
 - raw_content_sha256_is_present_for_each_image
@@ -17,72 +15,55 @@ preflight:
 - separate_context_window_is_true
 - action_tools_are_disabled
 - screen_ingestion_schema_is_available
-
 validators:
   input_schema_ref: schemas/screen-ingestion.schema.json
-  semantic_validator_ref: scripts/validate_screen_ingestion.py
-  runtime_status: STRUCTURAL_VALIDATOR_AVAILABLE
-  visual_runtime_status: NOT_PROVEN
-
+  semantic_validator_ref: scripts/validate_screen_ingestion_v02.py
+  runtime_status: STRUCTURAL_AND_PROTOCOL_VALIDATOR_AVAILABLE
+  visual_runtime_status: REQUIRES_SEPARATE_POST_LOCK_ADJUDICATION
 deterministic_procedure:
 - validate_screen_ingestion_against_schema
 - recompute_source_snapshot_hash_from_declared_raw_image_hashes
 - verify_region_and_inventory_references
 - verify_blind_context_lock
 - verify_all_declared_source_images_were_scanned
-- reject_known_omission_candidates
+- verify_v02_multi_pass_sequence_when_v02
+- verify_adversarial_omission_and_consistency_scans_when_v02
+- reconcile_visual_candidate_accounting_when_v02
+- reject_unresolvable_or_duplicate_visual_refs
+- reject_exact_typography_inferred_from_pixels
+- reject_responsive_inference_from_single_viewport
 - reject_critical_uncertainties
 - preserve_locked_observation_without_auxiliary_context_mutation
-
 assertions:
-- assertion_id: input_schema_valid
-  expected: 0
-  critical: true
-- assertion_id: source_snapshot_hash_matches
-  expected: 0
-  critical: true
-- assertion_id: source_images_unique
-  expected: 0
-  critical: true
-- assertion_id: region_refs_resolvable
-  expected: 0
-  critical: true
-- assertion_id: inventory_source_refs_unique
-  expected: 0
-  critical: true
-- assertion_id: blind_context_lock
-  expected: 0
-  critical: true
-- assertion_id: coverage_complete
-  expected: 0
-  critical: true
-- assertion_id: no_blocking_uncertainty
-  expected: 0
-  critical: true
-
+- {assertion_id: input_schema_valid, expected: 0, critical: true}
+- {assertion_id: source_snapshot_hash_matches, expected: 0, critical: true}
+- {assertion_id: source_images_unique, expected: 0, critical: true}
+- {assertion_id: region_refs_resolvable, expected: 0, critical: true}
+- {assertion_id: inventory_source_refs_unique, expected: 0, critical: true}
+- {assertion_id: blind_context_lock, expected: 0, critical: true}
+- {assertion_id: coverage_complete, expected: 0, critical: true}
+- {assertion_id: no_blocking_uncertainty, expected: 0, critical: true}
+- {assertion_id: observation_pass_sequence, expected: 0, critical: true}
+- {assertion_id: visual_observation_refs_resolvable, expected: 0, critical: true}
+- {assertion_id: candidate_accounting_consistent, expected: 0, critical: true}
+- {assertion_id: visual_provenance_safe, expected: 0, critical: true}
+- {assertion_id: single_viewport_responsive_safe, expected: 0, critical: true}
 pass_if:
-- structural_validator_exit_code = 0
+- semantic_validator_exit_code = 0
 - all_assertions_pass = true
 - locked = true
 - evidence_refs_non_empty = true
-
 fail_if:
 - source_snapshot_hash_is_decorative = true
 - auxiliary_context_used_before_lock = true
-- known_omission_candidate_ignored = true
-
+- omission_scan_missing_but_zero_omissions_claimed = true
+- invented_exact_visual_fact = true
 block_if:
 - raw_image_hash_missing = true
 - source_images_missing = true
 - critical_uncertainty_open = true
-- visual_runtime_claimed_without_receipt = true
-
-result_values:
-- PASS_WITH_EVIDENCE
-- RETURN_TO_WORKER
-- BLOCKED
-- FAIL
-
+- visual_runtime_claimed_without_separate_adjudication = true
+result_values: [PASS_WITH_EVIDENCE, RETURN_TO_WORKER, BLOCKED, FAIL]
 required_evidence:
 - input_schema_sha256
 - declared_source_snapshot_sha
@@ -92,31 +73,23 @@ required_evidence:
 - reader_identity
 - checks
 - validation_scope
+- v02_protocol_eligible
 - visual_runtime_proven
-
 positive_behavior:
-  command: python scripts/validate_screen_ingestion.py evals/fixtures/screen_ingestion_dense.json --evidence-ref fixture://screen_ingestion_dense
-  expected: structural PASS_WITH_EVIDENCE with all checks at zero
+  command: python scripts/validate_screen_ingestion_v02.py evals/fixtures/screen_ingestion_dense.json --evidence-ref fixture://screen_ingestion_dense
+  expected: PASS_WITH_EVIDENCE with 13/13 checks and v02_protocol_eligible=true
   fixture_is_external_to_validator: true
-
 negative_cases:
-- case: source_snapshot_hash_mismatch
-  expected_result: RETURN_TO_WORKER
-  assertion: source_snapshot_hash_matches
-- case: auxiliary_context_before_lock
-  expected_result: RETURN_TO_WORKER
-  assertion: blind_context_lock
-- case: critical_uncertainty
-  expected_result: RETURN_TO_WORKER
-  assertion: no_blocking_uncertainty
-- case: omitted_candidate_declared
-  expected_result: RETURN_TO_WORKER
-  assertion: coverage_complete
-
+- {case: omission_scan_missing, expected_result: RETURN_TO_WORKER, assertion: observation_pass_sequence}
+- {case: pass_order_mutated, expected_result: RETURN_TO_WORKER, assertion: observation_pass_sequence}
+- {case: candidate_accounting_false_zero, expected_result: RETURN_TO_WORKER, assertion: candidate_accounting_consistent}
+- {case: exact_font_from_pixels, expected_result: RETURN_TO_WORKER, assertion: visual_provenance_safe}
+- {case: single_viewport_breakpoint_inferred, expected_result: RETURN_TO_WORKER, assertion: single_viewport_responsive_safe}
+- {case: auxiliary_context_before_lock, expected_result: RETURN_TO_WORKER, assertion: blind_context_lock}
+- {case: critical_uncertainty, expected_result: RETURN_TO_WORKER, assertion: no_blocking_uncertainty}
 output:
   schema_ref: schemas/judge-result.schema.json
   schema_version: v0.5
-
 prohibitions:
 - worker_self_approval
 - claim_perfect_visual_recall
@@ -124,9 +97,9 @@ prohibitions:
 - action_tools_during_blind_read
 - network_egress_by_default
 - mutate_locked_visual_observation
+- infer_registered_token_without_registry
+- infer_breakpoint_from_single_viewport
 - promote_to_production_without_visual_runtime_evidence
-
 benchmark_note:
-  source_contract: HANDOFF_TECNICO_P0_LECTURA_VISUAL_Y_CONTEXTO_AUXILIAR_LF_v1.0
-  adopted_principle: blind_read_then_validate_then_lock_then_enrich
-  current_limit: structural contract and synthetic fixtures only; real visual benchmark remains open
+  adopted_principle: blind_multi_pass_then_lock_then_structural_validate_then_independent_adjudicate_then_enrich
+  legacy_v01_status: STRUCTURAL_ONLY_NOT_VISUAL_RUNTIME_ELIGIBLE
