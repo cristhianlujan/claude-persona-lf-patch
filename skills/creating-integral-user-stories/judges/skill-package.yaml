@@ -1,5 +1,5 @@
 judge_code: J11_SKILL_PACKAGE
-version: v0.4
+version: v0.5
 status: CANDIDATO_READ_ONLY
 scope: Verifica inventario exacto, calidad por tier, referencias, consistencia contrato-schema, scripts y evaluaciones.
 independence: worker_must_not_execute_own_judge
@@ -50,7 +50,7 @@ repair_matrix:
   - assertion_id: contract_schema_consistency_errors
     instruction: Alinear campos declarados en contrato y schema y repetir el fixture negativo.
     prohibited_shortcuts: [ignore_field, weaken_schema, delete_contract_requirement, self_approve]
-validator_ref: scripts/validate_package.py
+validator_ref: scripts/validate_package_v13.py
 output:
   schema_ref: schemas/judge-result.schema.json
   required_fields: [judge_code, result, compliance_bit, failed_assertions, blocking_assertions, evidence_refs, evidence, repair_instructions, retry_count, judged_at]

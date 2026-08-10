@@ -1,0 +1,342 @@
+{
+  "assertions": [
+    "all_visual_observations_covered",
+    "candidate_tokens_not_registered",
+    "single_viewport_responsive_pending"
+  ],
+  "expected_result": "PASS_WITH_EVIDENCE",
+  "external_context": {
+    "accessibility_baseline_confirmed": false,
+    "supported_breakpoints_confirmed": false,
+    "token_registry_refs": []
+  },
+  "fixture_id": "VISUAL-BRIDGE-POSITIVE",
+  "negative_cases": [
+    "downstream_omission",
+    "false_registered_token",
+    "invented_breakpoint",
+    "invented_keyboard_claim",
+    "legacy_v01_not_bridge_eligible"
+  ],
+  "purpose": "Prove lossless v0.2 visual evidence routing without invented tokens or breakpoints",
+  "screen_ingestion": {
+    "blind_read_id": "BLIND-J00-FIXTURE-001",
+    "context_inventory": [
+      {
+        "code": "CTX-SEARCH",
+        "confidence": 0.99,
+        "description": "Customer search",
+        "region_ref": "REG-SEARCH",
+        "source_ref": "IMG-001#REG-SEARCH"
+      }
+    ],
+    "context_isolation": {
+      "action_tools_enabled": false,
+      "auxiliary_context_before_lock": false,
+      "network_egress": "DENY_BY_DEFAULT",
+      "separate_context_window": true
+    },
+    "coverage_evidence": {
+      "consistency_scan_completed": true,
+      "full_viewport_scanned": true,
+      "images_scanned": [
+        "IMG-001"
+      ],
+      "off_viewport_evidence": "NOT_APPLICABLE",
+      "omission_scan_completed": true,
+      "omitted_candidate_count": 0,
+      "pass_count_completed": 7,
+      "structured_visual_candidate_count": 5,
+      "visual_candidate_count": 5
+    },
+    "evidence_kind": "SYNTHETIC_FIXTURE",
+    "execution_id": "EXEC-J00-EXTERNAL-FIXTURE-001",
+    "field_inventory": [
+      {
+        "code": "FLD-DOC",
+        "conditionally_visible": false,
+        "confidence": 0.99,
+        "context_code": "CTX-SEARCH",
+        "control_type": "TEXT_INPUT",
+        "region_ref": "REG-SEARCH",
+        "source_ref": "IMG-001#FIELD-DOC",
+        "visible_label": "Documento"
+      },
+      {
+        "code": "FLD-NAME",
+        "conditionally_visible": false,
+        "confidence": 0.98,
+        "context_code": "CTX-SEARCH",
+        "control_type": "TEXT_INPUT",
+        "region_ref": "REG-SEARCH",
+        "source_ref": "IMG-001#FIELD-NAME",
+        "visible_label": "Nombre"
+      }
+    ],
+    "locked": true,
+    "locked_at": "2026-08-09T20:30:00Z",
+    "observation_passes": [
+      {
+        "candidates_added": 0,
+        "image_refs": [
+          "IMG-001"
+        ],
+        "pass_code": "MACRO_STRUCTURE",
+        "status": "COMPLETED",
+        "uncertainty_refs": []
+      },
+      {
+        "candidates_added": 0,
+        "image_refs": [
+          "IMG-001"
+        ],
+        "pass_code": "FUNCTIONAL_CONTROLS",
+        "status": "COMPLETED",
+        "uncertainty_refs": []
+      },
+      {
+        "candidates_added": 0,
+        "image_refs": [
+          "IMG-001"
+        ],
+        "pass_code": "MICROCOPY",
+        "status": "COMPLETED",
+        "uncertainty_refs": []
+      },
+      {
+        "candidates_added": 0,
+        "image_refs": [
+          "IMG-001"
+        ],
+        "pass_code": "VISUAL_CHARACTERISTICS",
+        "status": "COMPLETED",
+        "uncertainty_refs": []
+      },
+      {
+        "candidates_added": 0,
+        "image_refs": [
+          "IMG-001"
+        ],
+        "pass_code": "RESPONSIVE",
+        "status": "COMPLETED",
+        "uncertainty_refs": []
+      },
+      {
+        "candidates_added": 0,
+        "image_refs": [
+          "IMG-001"
+        ],
+        "pass_code": "ADVERSARIAL_OMISSION",
+        "status": "COMPLETED",
+        "uncertainty_refs": []
+      },
+      {
+        "candidates_added": 0,
+        "image_refs": [
+          "IMG-001"
+        ],
+        "pass_code": "CONSISTENCY",
+        "status": "COMPLETED",
+        "uncertainty_refs": []
+      }
+    ],
+    "permission_inventory": [
+      {
+        "action_code": "SEARCH",
+        "actor_profile": "OPERATOR",
+        "confidence": 0.95,
+        "observation_basis": "DECLARED_SCREEN_METADATA",
+        "permission_code": "PERM-SEARCH",
+        "source_ref": "IMG-001#ACTION-SEARCH"
+      }
+    ],
+    "reader_identity": "CI_EXTERNAL_FIXTURE_READER",
+    "region_inventory": [
+      {
+        "bbox": [
+          80,
+          120,
+          1280,
+          520
+        ],
+        "confidence": 0.99,
+        "description": "Search form",
+        "image_ref": "IMG-001",
+        "region_ref": "REG-SEARCH"
+      },
+      {
+        "bbox": [
+          80,
+          700,
+          1280,
+          1100
+        ],
+        "confidence": 0.98,
+        "description": "Result panel",
+        "image_ref": "IMG-001",
+        "region_ref": "REG-RESULT"
+      }
+    ],
+    "schema_version": "screen-ingestion/v0.2",
+    "screen_code": "SCR-CUSTOMER-SEARCH",
+    "source_images": [
+      {
+        "format": "PNG",
+        "height_px": 2200,
+        "image_ref": "IMG-001",
+        "raw_content_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "sequence_order": 1,
+        "viewport_role": "FULL",
+        "width_px": 1440
+      }
+    ],
+    "source_snapshot_sha": "56278f0469efa1d6d030651d008f296e93e6e0df313e8d70eebc9bcedfcf9cd6",
+    "source_version": "fixture-v1",
+    "transition_inventory": [
+      {
+        "action": "SEARCH",
+        "allowed": true,
+        "confidence": 0.95,
+        "from": "IDLE",
+        "observation_basis": "DECLARED_SCREEN_METADATA",
+        "source_ref": "IMG-001#STATE-PAIR-SEARCH",
+        "to": "RESULTS"
+      }
+    ],
+    "uncertainties": [],
+    "visual_observation_inventory": [
+      {
+        "confidence": 0.99,
+        "image_ref": "IMG-001",
+        "observability": "OBSERVED",
+        "observation_basis": "VISIBLE_PIXELS",
+        "observation_code": "OBS-CONTROL-1",
+        "observation_type": "CONTROL",
+        "region_ref": "REG-SEARCH",
+        "semantic_role": "field_control",
+        "source_ref": "IMG-001#FIELD-DOC#CONTROL",
+        "token_relation": "CANDIDATE_ONLY",
+        "value_precision": "SEMANTIC_ONLY",
+        "visible_text": "Documento",
+        "visual_value": "TEXT_INPUT"
+      },
+      {
+        "confidence": 0.99,
+        "image_ref": "IMG-001",
+        "observability": "OBSERVED",
+        "observation_basis": "VISIBLE_TEXT",
+        "observation_code": "OBS-COPY-1",
+        "observation_type": "COPY",
+        "region_ref": "REG-SEARCH",
+        "semantic_role": "field_label",
+        "source_ref": "IMG-001#FIELD-DOC#LABEL",
+        "token_relation": "NOT_APPLICABLE",
+        "value_precision": "SEMANTIC_ONLY",
+        "visible_text": "Documento",
+        "visual_value": null
+      },
+      {
+        "confidence": 0.98,
+        "image_ref": "IMG-001",
+        "observability": "OBSERVED",
+        "observation_basis": "VISIBLE_PIXELS",
+        "observation_code": "OBS-CONTROL-2",
+        "observation_type": "CONTROL",
+        "region_ref": "REG-SEARCH",
+        "semantic_role": "field_control",
+        "source_ref": "IMG-001#FIELD-NAME#CONTROL",
+        "token_relation": "CANDIDATE_ONLY",
+        "value_precision": "SEMANTIC_ONLY",
+        "visible_text": "Nombre",
+        "visual_value": "TEXT_INPUT"
+      },
+      {
+        "confidence": 0.98,
+        "image_ref": "IMG-001",
+        "observability": "OBSERVED",
+        "observation_basis": "VISIBLE_TEXT",
+        "observation_code": "OBS-COPY-2",
+        "observation_type": "COPY",
+        "region_ref": "REG-SEARCH",
+        "semantic_role": "field_label",
+        "source_ref": "IMG-001#FIELD-NAME#LABEL",
+        "token_relation": "NOT_APPLICABLE",
+        "value_precision": "SEMANTIC_ONLY",
+        "visible_text": "Nombre",
+        "visual_value": null
+      },
+      {
+        "confidence": 1.0,
+        "image_ref": "IMG-001",
+        "observability": "NOT_OBSERVABLE",
+        "observation_basis": "VISIBLE_PIXELS",
+        "observation_code": "OBS-RESPONSIVE-1",
+        "observation_type": "RESPONSIVE",
+        "region_ref": "REG-SEARCH",
+        "semantic_role": "single_viewport_limit",
+        "source_ref": "IMG-001#RESPONSIVE-NOT-OBSERVABLE",
+        "token_relation": "NOT_APPLICABLE",
+        "value_precision": "NOT_APPLICABLE",
+        "visible_text": null,
+        "visual_value": null
+      }
+    ]
+  },
+  "story_pack": {
+    "dependencies_risks": {
+      "pending_decisions": [
+        {
+          "decision_code": "PD-RESPONSIVE-1",
+          "source_ref": "IMG-001#RESPONSIVE-NOT-OBSERVABLE",
+          "status": "PENDING_DECISION"
+        }
+      ]
+    },
+    "interaction": {
+      "source_observation_refs": [
+        "IMG-001#FIELD-DOC#CONTROL",
+        "IMG-001#FIELD-NAME#CONTROL"
+      ]
+    },
+    "responsive_accessibility": {
+      "breakpoints_supported": [],
+      "source_observation_refs": [
+        "IMG-001#RESPONSIVE-NOT-OBSERVABLE"
+      ],
+      "status": "PENDING_DECISION"
+    },
+    "security_privacy": {
+      "source_observation_refs": []
+    },
+    "tokens_messages": {
+      "messages": [
+        {
+          "message_code": "MSG-COPY-1",
+          "severity": "INFO",
+          "source_ref": "IMG-001#FIELD-DOC#LABEL",
+          "text_ref": "IMG-001#FIELD-DOC#LABEL"
+        },
+        {
+          "message_code": "MSG-COPY-2",
+          "severity": "INFO",
+          "source_ref": "IMG-001#FIELD-NAME#LABEL",
+          "text_ref": "IMG-001#FIELD-NAME#LABEL"
+        }
+      ],
+      "tokens": [
+        {
+          "registered": false,
+          "source_ref": "IMG-001#FIELD-DOC#CONTROL",
+          "status": "CANDIDATO",
+          "token_code": "candidate.control.1"
+        },
+        {
+          "registered": false,
+          "source_ref": "IMG-001#FIELD-NAME#CONTROL",
+          "status": "CANDIDATO",
+          "token_code": "candidate.control.2"
+        }
+      ]
+    }
+  }
+}

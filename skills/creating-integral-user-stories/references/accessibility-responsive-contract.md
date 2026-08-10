@@ -15,6 +15,7 @@ Convertir requisitos de adaptación y acceso inclusivo en comportamientos observ
 | `token_registry` | Tokens de layout y foco. |
 | `supported_breakpoints` | Rangos confirmados por producto. |
 | `accessibility_baseline` | Nivel y políticas vigentes. |
+| `visual_observation_inventory` | Evidencia post-lock de labels/estados/viewports observables; no sustituye supported_breakpoints ni accessibility_baseline. |
 
 ## 3. Preflight
 
@@ -40,6 +41,10 @@ Antes de aplicar este contrato:
 10. Derivar pruebas por breakpoint y modalidad de interacción.
 
 ## 5. Reglas e invariantes
+
+- Con una sola captura, responsive es `NOT_OBSERVABLE`; no se derivan breakpoints.
+- ARIA, orden de foco, operación por teclado y anuncios programáticos no se confirman por píxeles; requieren evidencia externa/implementación.
+- Evidencia visual observable se preserva por `source_ref`; requisitos no observables quedan `PENDING_DECISION` hasta disponer de baseline/política.
 
 - La acción primaria nunca queda inaccesible en el breakpoint menor.
 - El estado no se comunica únicamente por color.

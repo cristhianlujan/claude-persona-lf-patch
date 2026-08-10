@@ -5,7 +5,7 @@ description: >
   specification, handoff, or partial story set must be decomposed into complete,
   traceable and implementation-ready Story Packs with security, privacy,
   analytics, observability, auditability, accessibility and tests.
-version: v0.5
+version: v0.6
 status: CANDIDATO_READ_ONLY
 operation_code: BUILD_INTEGRAL_STORY_CREATOR_LF
 runtime: disabled
@@ -20,6 +20,7 @@ Convertir una fuente funcional verificable en historias de usuario atómicas, co
 ```text
 fuente + versión + SHA-256
 → integridad J01
+→ ingesta visual blind J00 (pre-descomposición; v0.2 multi-pass cuando la fuente es imagen)
 → descomposición J02
 → Story Pack A–Q J03–J09
 → pruebas J10
@@ -76,7 +77,7 @@ Antes de escribir:
 2. resolver referencias internas;
 3. confirmar alcance de lectura y escritura;
 4. confirmar worker y juez independientes;
-5. fijar inventario esperado de outputs;
+5. fijar inventario esperado de outputs en el controlador; ese inventario NO se transfiere al lector visual blind antes del lock;
 6. verificar dependencias y validadores;
 7. detectar concurrencia y cambios posteriores;
 8. registrar contradicciones y decisiones pendientes.
@@ -95,12 +96,13 @@ required_validator_unavailable = true
 concurrent_write_unreconciled = true
 ```
 
-## 5. Flujo obligatorio J01–J13
+## 5. Flujo obligatorio J01–J13 con gate visual J00
 
 | Orden | Step | Worker principal | Juez | Validador determinista |
 |---:|---|---|---|---|
 | 1 | Integridad de fuente | Screen Decomposer | J01 | `scripts/validate_source_integrity.py` |
-| 2 | Descomposición | Screen Decomposer | J02 | `scripts/validate_screen_decomposition.py` |
+| Gate | Ingesta visual blind pre-descomposición | Screen Ingestor en contexto separado | J00 | `scripts/validate_screen_ingestion_v02.py` |
+| 2 | Descomposición | Screen Decomposer | J02 | `scripts/validate_screen_decomposition_visual.py` |
 | 3 | Núcleo A–B | Story Core Author | J03 | `scripts/validate_story_pack.py` |
 | 4 | Campos | Field Contract Author | J04 | `scripts/validate_field_coverage.py` |
 | 5 | Observaciones y errores | Cross Cutting Enricher | J05 | validadores de paquete |
@@ -109,9 +111,11 @@ concurrent_write_unreconciled = true
 | 8 | Tokens y mensajes | Cross Cutting Enricher | J08 | `scripts/validate_tokens.py` |
 | 9 | Analytics y observabilidad | Cross Cutting Enricher | J09 | `scripts/detect_pii_telemetry.py` |
 | 10 | Pruebas | Test Deriver | J10 | `scripts/validate_test_coverage.py` |
-| 11 | Paquete | Orquestador independiente | J11 | `scripts/validate_package.py` |
+| 11 | Paquete | Orquestador independiente | J11 | `scripts/validate_package_v13.py` |
 | 12 | GitHub | Orquestador independiente | J12 | `scripts/validate_github_integrity.py` |
 | 13 | Cierre | Orquestador independiente | J13 | `scripts/calculate_binary_completion.py` |
+
+El gate J00 ocurre después de J01 y antes de J02 cuando hay evidencia visual. Su código histórico no altera la numeración J01–J13. `screen-ingestion/v0.1` es compatible solo como estructura legacy; el gate final de runtime visual exige v0.2 multi-pass y adjudicación post-lock independiente.
 
 Cada step exige `PASS_WITH_EVIDENCE`. `retry_limit = 2`. Después de dos reparaciones fallidas, retornar `BLOCKED` con evidencia acumulada.
 

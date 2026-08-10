@@ -52,6 +52,7 @@ No ejecutar para redacción libre, implementación de código, aprobación, prod
 | `screen_identity` | `screen_code`, módulo, estado y responsabilidad principal |
 | `context_inventory` | contextos, zonas, modos, estados vacíos y variantes |
 | `field_inventory` | campos visibles, editables, calculados y sensibles |
+| `visual_observation_inventory` | evidencia visual profunda bloqueada v0.2; se preserva 1:1 para capas transversales y no crea unidades funcionales por sí sola |
 | `permission_inventory` | roles, permisos y restricciones por acción |
 | `transition_inventory` | estados, eventos y transiciones permitidas o prohibidas |
 | `related_screens` | pantallas origen, destino o dependientes |
@@ -124,6 +125,7 @@ required_decision_prevents_decomposition = true
 9. Detectar duplicados por código y por equivalencia semántica de actor, objetivo y resultado.
 10. Clasificar controles transversales como `CROSS_CUTTING` salvo capacidad independiente demostrable.
 11. Crear un `coverage_item` para cada contexto, campo, permiso y transición.
+12. Si la ingesta es `screen-ingestion/v0.2`, copiar `visual_observation_inventory` sin mutarlo y verificar cobertura 1:1 por `(observation_code, source_ref)`; no convertir tokens, copy, responsive o accesibilidad en unidades funcionales solo por existir visualmente.
 12. Verificar que cada `mapped_to` resuelva a una unidad declarada.
 13. Registrar contradicciones como `CONFLICT` o `pending_decision`; no convertirlas en hechos.
 14. Recalcular `coverage_summary` desde los objetos, sin confiar en conteos autorreportados.
