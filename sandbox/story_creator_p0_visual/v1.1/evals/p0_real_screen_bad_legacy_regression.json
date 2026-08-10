@@ -1,0 +1,11 @@
+{
+  "schema_version": "p0-real-screen-regression-reference/v1",
+  "screen_code": "SCR-LF-ONBOARDING-STEP1-BLIND",
+  "source_sha256": "e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7",
+  "legacy_visual_output_sha256": "c0acd3f52388447958b9f60c839f7f4e289488110654784b9d9f94cfccb8b6ff",
+  "observation_count": 328,
+  "element_type_distribution": {"VISIBLE_TEXT": 328},
+  "required_blocking_reason_codes": ["OCR_ONLY_OUTPUT_NOT_HUMAN_READY", "SEMANTIC_UI_COVERAGE_MISSING", "VISUAL_STRUCTURE_DEGENERATE", "MACHINE_AUDIT_NOT_PRESENT"],
+  "new_human_challenge_requires": "PASS_VISUAL_QUALITY_PLUS_J00_SHA_BINDING",
+  "p0_5_denominator_eligible": false
+}

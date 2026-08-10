@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "p0-human-review-packet-v3/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "review_id", "execution_id", "source_refs", "raw_visual_output_ref", "consolidated_visual_reading_ref", "machine_quality_report_ref", "machine_quality_report_sha256", "j00_judgment_ref", "human_review_ready", "reviewer_role", "expires_at", "data_classification", "summary", "region_rows"],
+  "properties": {
+    "schema_version": {"const": "p0-human-review-packet-v3/v1"},
+    "review_id": {"type": "string", "minLength": 1},
+    "execution_id": {"type": "string", "minLength": 1},
+    "source_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "raw_visual_output_ref": {"type": "string", "minLength": 1},
+    "consolidated_visual_reading_ref": {"type": "string", "minLength": 1},
+    "machine_quality_report_ref": {"type": "string", "minLength": 1},
+    "machine_quality_report_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "j00_judgment_ref": {"type": "string", "minLength": 1},
+    "human_review_ready": {"const": true},
+    "reviewer_role": {"type": "string", "minLength": 1},
+    "expires_at": {"type": "string", "minLength": 1},
+    "data_classification": {"enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL", "SENSITIVE"]},
+    "summary": {"type": "object"},
+    "region_rows": {"type": "array"}
+  }
+}
