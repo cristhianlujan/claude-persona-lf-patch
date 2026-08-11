@@ -23,9 +23,19 @@ def make_image(path:Path,variant:int=1):
   cv2.rectangle(im,(480,75),(790,210),(0,0,0),5);cv2.circle(im,(250,365),65,(0,0,0),5)
  cv2.imwrite(str(path),im)
 
+def make_crowded(path:Path,count:int):
+ cols=26 if count>100 else 15;rows=(count+cols-1)//cols;cell_w=52;cell_h=37
+ im=np.full((rows*cell_h+30,cols*cell_w+30,3),255,np.uint8)
+ for i in range(count):
+  row,col=divmod(i,cols);x=15+col*cell_w;y=15+row*cell_h
+  cv2.rectangle(im,(x,y),(x+40,y+25),(0,0,0),3)
+ cv2.imwrite(str(path),im)
+
 def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 def read(path,source_sha,pid='P-01'):
  return full_reader(str(path),{'cycle_id':'C-01','pass_id':pid,'reader_execution_id':'R-'+pid,'source_sha256':source_sha,'remediation_state':{}})
+def root_only(width:int,height:int):
+ return {'width':width,'height':height,'fresh_source_read':True,'reader_origin':'SOURCE_PIXELS','elements':[{'element_id':'V4-ROOT','element_type':'CONTAINER','visible_text':None,'classification':'CONFIRMED','confidence':1.0,'region':{'x':0,'y':0,'width':width,'height':height},'parent_id':None,'evidence_refs':['source://root'],'ocr_variants':[],'ocr_consensus_text':'','graphic_score':0.0,'bbox_reproducible':True,'style':{},'style_provenance':{},'independent_redetection':True}]}
 def run(candidate,sweep,source_sha,pid='P-01'):
  csha=canonical_sha({k:v for k,v in candidate.items() if k!='reader_execution_id'});ctx={'cycle_id':'C-01','pass_id':pid,'reader_execution_id':candidate.get('reader_execution_id','R-'+pid),'source_sha256':source_sha,'candidate_sha256':csha,'coverage_execution_id':'COV-'+pid,'independent_sweep':sweep};outs=run_all(candidate,ctx);return union_findings(outs),coverage_receipt(candidate,outs,ctx),ctx
 def cats(findings):return {f['category'] for f in findings}
@@ -51,6 +61,8 @@ def main():
    if e.get('parent_id') in mapping:e['parent_id']=mapping[e['parent_id']]
   swi=run_independent_omission_sweep(str(p),s,renamed,execution_id='SW-I');assert not swi['unrepresented_observation_ids'] and swi['status']=='COMPLETE';checks.append('I_ID_ONLY_CHANGE_INVARIANT')
   p2=Path(td)/'novel.png';make_image(p2,2);s2=sha(p2);cand2=read(p2,s2,'P-J');swj0=run_independent_omission_sweep(str(p2),s2,cand2,execution_id='SW-J0');mutj,_=drop_matched(cand2,swj0,'TEXT');swj=run_independent_omission_sweep(str(p2),s2,mutj,execution_id='SW-J');fsj,covj,_=run(mutj,swj,s2,'P-J');assert 'MATERIAL_OMISSION' in cats(fsj) and not covj['coverage_pass'];checks.append('J_NOVEL_IMAGE_GENERALIZES')
-  print(json.dumps({'gate':'PASS_V4_INDEPENDENT_OMISSION_SWEEP','cases':len(checks),'results':checks,'base_observations':len([o for o in sw['observations'] if o.get('material')]),'base_represented':sum(o.get('match_status')=='REPRESENTED' for o in sw['observations'] if o.get('material'))},sort_keys=True))
+  crowded=Path(td)/'crowded90.png';make_crowded(crowded,90);sc=sha(crowded);im=cv2.imread(str(crowded));cc=root_only(im.shape[1],im.shape[0]);swk=run_independent_omission_sweep(str(crowded),sc,cc,execution_id='SW-K');fsk,covk,ctxk=run(cc,swk,sc,'P-K');assert not validate_sweep_receipt(swk,cc,ctxk) and swk['object_sweep']['deduped_count']>60 and swk['object_sweep']['emitted_count']>60 and swk['object_sweep']['truncated'] is False and len(swk['unrepresented_observation_ids'])>60 and 'MATERIAL_OMISSION' in cats(fsk) and not covk['coverage_pass'];checks.append('K_CROWDED_90_NO_SILENT_60_CAP')
+  saturated=Path(td)/'saturated520.png';make_crowded(saturated,520);ss=sha(saturated);ims=cv2.imread(str(saturated));cs=root_only(ims.shape[1],ims.shape[0]);swl=run_independent_omission_sweep(str(saturated),ss,cs,execution_id='SW-L');fsl,covl,ctxl=run(cs,swl,ss,'P-L');assert not validate_sweep_receipt(swl,cs,ctxl) and swl['object_sweep']['truncated'] is True and swl['status']=='BLOCKED' and 'SWEEP_UNIVERSE_TRUNCATED' in swl['errors'] and 'OMISSION_SWEEP_INCOMPLETE' in cats(fsl) and not covl['coverage_pass'];checks.append('L_SATURATION_FAILS_CLOSED')
+  print(json.dumps({'gate':'PASS_V4_INDEPENDENT_OMISSION_SWEEP','cases':len(checks),'results':checks,'base_observations':len([o for o in sw['observations'] if o.get('material')]),'base_represented':sum(o.get('match_status')=='REPRESENTED' for o in sw['observations'] if o.get('material')),'crowded_emitted':swk['object_sweep']['emitted_count'],'saturation':swl['object_sweep']},sort_keys=True))
  return 0
 if __name__=='__main__':raise SystemExit(main())
