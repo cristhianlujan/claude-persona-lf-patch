@@ -1,0 +1,50 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.3",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-BISC-010-FRT-V1-SOURCE-AUTHORITY-REMEDIATION",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "40969a55fc1eb86fe72dea56a7d3ba59ba977e176a7103a3fa9e88d67e5c94c6",
+  "judge_sha": "a9e1e5db596f788c6c83904b1db40f07f56b611c",
+  "source_sha_list": [
+    "da950cca43698a3ad1ac3743c6714bdcac75f6a1",
+    "874ff512bdb5e8dc0e211bd4b467006b9080faea",
+    "ea0c050b21a3499f4fd1450b536f64aaa71d9133",
+    "c33f1d2e42bc25e0e5bac159e50294ef3b16f839"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/scripts/validate_traceability.py",
+    "skills/creating-integral-user-stories/scripts/assess_evidence_tier.py",
+    "skills/creating-integral-user-stories/judges/audit-traceability.yaml",
+    "skills/creating-integral-user-stories/references/audit-traceability-contract.md"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-11T19:05:00Z",
+  "evidence": {
+    "purpose": "Remediate LF Functional Red Team V1 by making source coverage and semantic traceability independent from the candidate universe.",
+    "owner_authorization": "USER_AUTHORIZED_AUTONOMOUS_REMEDIATION_20260811",
+    "red_team_baseline_head": "0b402dc6e371c451218b85ff9a046f22d8f09b3e",
+    "red_team_artifact_id": 9113016691,
+    "red_team_artifact_sha256": "cc9a0e6372e2f7cf86b90a779cb34023d101ee6e5db23ab798ce1c9eea61faf7",
+    "baseline_result": "FAIL_CRITICAL_FUNCTIONAL_RED_TEAM_V1",
+    "baseline_cases": "30/30",
+    "baseline_fail": 14,
+    "baseline_critical": 12,
+    "remediation": [
+      "J07 source-authority sidecar with caller-pinned SHA-256",
+      "independent source-to-candidate coverage",
+      "source_ref resolution against external authority",
+      "semantic assertions for conditions, states, permissions, locale, time and conflicts",
+      "INFERRED_TO_CONFIRMED transition requires new evidence"
+    ],
+    "post_remediation_regression": "30/30 defended in functional_red_team_v1_regression.py",
+    "supabase_source_mutated": false,
+    "maintenance_transport_branch": "lf/p0-v4-closed-loop",
+    "direct_main_write": false,
+    "merge_performed": false,
+    "production_authorized": false,
+    "post_change_ci_required": true
+  }
+}
