@@ -9,6 +9,7 @@ from p0_visual_grader_core_v4 import canonical_sha
 
 ROOT_IDS={"ROOT","V4-ROOT"}
 VISUAL_TYPES={'VISUAL_OBJECT','BRAND_MARK','ICON','IMAGE','ICON_OR_GLYPH'}
+OBJECT_SWEEP_LIMIT=500
 
 def file_sha256(path:str)->str:
  h=hashlib.sha256()
@@ -33,8 +34,9 @@ def _text_similarity(a:str|None,b:str|None)->float:
 def _candidate_nonroot(candidate:dict)->list[dict]:
  return [e for e in candidate.get('elements',[]) if e.get('element_id') not in ROOT_IDS and e.get('parent_id') is not None]
 
-def _sweep_objects(image,text_regions:list[dict])->list[dict]:
- """Second object pass: fresh Canny/contour run with parameters distinct from full reader."""
+def _sweep_objects(image,text_regions:list[dict],*,limit:int=OBJECT_SWEEP_LIMIT)->tuple[list[dict],dict]:
+ """Fresh Canny/contour pass. Any safety cap is explicit and fail-closed."""
+ if limit<=0:raise ValueError('OBJECT_SWEEP_LIMIT_INVALID')
  gray=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY);edges=cv2.Canny(gray,70,180);kernel=cv2.getStructuringElement(cv2.MORPH_RECT,(3,3));edges=cv2.morphologyEx(edges,cv2.MORPH_CLOSE,kernel);contours,_=cv2.findContours(edges,cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE);raw=[];page=image.shape[0]*image.shape[1]
  for c in contours:
   x,y,w,h=cv2.boundingRect(c);area=w*h
@@ -42,24 +44,24 @@ def _sweep_objects(image,text_regions:list[dict])->list[dict]:
   r={'x':int(x),'y':int(y),'width':int(w),'height':int(h)}
   if any(overlap_primary(r,t)>.65 for t in text_regions):continue
   raw.append(r)
- raw.sort(key=lambda r:r['width']*r['height'],reverse=True);kept=[]
+ raw.sort(key=lambda r:r['width']*r['height'],reverse=True);deduped=[]
  for r in raw:
-  if any(iou(r,k)>.80 for k in kept):continue
-  kept.append(r)
-  if len(kept)>=60:break
- return kept
+  if any(iou(r,k)>.80 for k in deduped):continue
+  deduped.append(r)
+ truncated=len(deduped)>limit;kept=deduped[:limit]
+ return kept,{'detector':'CV_CANNY_70_180','raw_count':len(raw),'deduped_count':len(deduped),'emitted_count':len(kept),'limit':int(limit),'truncated':truncated}
 
-def _independent_observations(image,source_sha:str)->list[dict]:
+def _independent_observations(image,source_sha:str)->tuple[list[dict],dict]:
  observations=[]
  # Fixed PSM 6 is a separate full-image observation pass. It does not consume candidate.elements.
  for idx,line in enumerate(ocr_lines(image,6),1):
   text=' '.join((line.get('text') or '').split());conf=float(line.get('confidence',0.0) or 0.0);r=line['region'];material=bool(text) and conf>=45 and (len(text.strip())>=2 or any(ch.isalnum() for ch in text));ref,pixel_sha=_pixel_evidence(source_sha,'OCR_PSM6',r,image)
   observations.append({'observation_id':f'OBS-T-{idx:04d}','detector':'OCR_PSM6','kind':'TEXT','classification':'CONFIRMED' if conf>=65 else 'INFERRED','material':material,'text':text,'confidence':round(max(0,min(1,conf/100.0)),6),'region':r,'pixel_sha256':pixel_sha,'evidence_refs':[ref]})
- text_regions=[o['region'] for o in observations if o['kind']=='TEXT']
- for idx,r in enumerate(_sweep_objects(image,text_regions),1):
+ text_regions=[o['region'] for o in observations if o['kind']=='TEXT'];objects,object_sweep=_sweep_objects(image,text_regions)
+ for idx,r in enumerate(objects,1):
   area=int(r['width'])*int(r['height']);ref,pixel_sha=_pixel_evidence(source_sha,'CV_CANNY_70_180',r,image)
   observations.append({'observation_id':f'OBS-O-{idx:04d}','detector':'CV_CANNY_70_180','kind':'VISUAL_OBJECT','classification':'INFERRED','material':area>=1200,'text':None,'confidence':.72,'region':r,'pixel_sha256':pixel_sha,'evidence_refs':[ref]})
- return observations
+ return observations,object_sweep
 
 def _best_match(obs:dict,candidates:list[dict])->tuple[dict|None,float]:
  best=None;best_score=0.0
@@ -104,11 +106,11 @@ def _region_rows(observations:list[dict],width:int)->list[dict]:
 
 def run_independent_omission_sweep(source_path:str,expected_source_sha256:str,candidate:dict,*,execution_id:str)->dict:
  try:actual=file_sha256(source_path)
- except Exception as exc:return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':None,'candidate_sha256':None,'width':0,'height':0,'status':'ERROR','fresh_source_read':False,'observations':[],'regions':[],'unrepresented_observation_ids':[],'unsupported_candidate_ids':[],'candidate_support_uncertain_ids':[],'errors':['SOURCE_READ_ERROR:'+type(exc).__name__]}
- if actual!=expected_source_sha256:return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':actual,'candidate_sha256':None,'width':0,'height':0,'status':'BLOCKED','fresh_source_read':False,'observations':[],'regions':[],'unrepresented_observation_ids':[],'unsupported_candidate_ids':[],'candidate_support_uncertain_ids':[],'errors':['SOURCE_SHA256_MISMATCH']}
+ except Exception as exc:return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':None,'candidate_sha256':None,'width':0,'height':0,'status':'ERROR','fresh_source_read':False,'observations':[],'regions':[],'object_sweep':None,'unrepresented_observation_ids':[],'unsupported_candidate_ids':[],'candidate_support_uncertain_ids':[],'errors':['SOURCE_READ_ERROR:'+type(exc).__name__]}
+ if actual!=expected_source_sha256:return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':actual,'candidate_sha256':None,'width':0,'height':0,'status':'BLOCKED','fresh_source_read':False,'observations':[],'regions':[],'object_sweep':None,'unrepresented_observation_ids':[],'unsupported_candidate_ids':[],'candidate_support_uncertain_ids':[],'errors':['SOURCE_SHA256_MISMATCH']}
  image=cv2.imread(source_path)
- if image is None:return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':actual,'candidate_sha256':None,'width':0,'height':0,'status':'ERROR','fresh_source_read':True,'observations':[],'regions':[],'unrepresented_observation_ids':[],'unsupported_candidate_ids':[],'candidate_support_uncertain_ids':[],'errors':['SOURCE_DECODE_FAILED']}
- h,w=image.shape[:2];observations=_independent_observations(image,actual);candidates=_candidate_nonroot(candidate)
+ if image is None:return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':actual,'candidate_sha256':None,'width':0,'height':0,'status':'ERROR','fresh_source_read':True,'observations':[],'regions':[],'object_sweep':None,'unrepresented_observation_ids':[],'unsupported_candidate_ids':[],'candidate_support_uncertain_ids':[],'errors':['SOURCE_DECODE_FAILED']}
+ h,w=image.shape[:2];observations,object_sweep=_independent_observations(image,actual);candidates=_candidate_nonroot(candidate)
  for o in observations:
   if not o['material']:o['match_status']='NON_MATERIAL';o['matched_element_id']=None;o['match_score']=0.0;continue
   match,score=_best_match(o,candidates)
@@ -121,8 +123,8 @@ def run_independent_omission_sweep(source_path:str,expected_source_sha256:str,ca
   support=_candidate_support(image,e)
   if support=='UNSUPPORTED':unsupported.append(e.get('element_id'))
   elif support=='UNCERTAIN':support_uncertain.append(e.get('element_id'))
- regions=_region_rows(observations,w);status='COMPLETE' if regions and all(r['sweep_status']=='COMPLETE' for r in regions) else 'INCOMPLETE';candidate_sha=canonical_sha({k:v for k,v in candidate.items() if k!='reader_execution_id'})
- return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':actual,'candidate_sha256':candidate_sha,'width':w,'height':h,'status':status,'fresh_source_read':True,'observations':observations,'regions':regions,'unrepresented_observation_ids':[o['observation_id'] for o in material_obs if o['match_status']=='UNREPRESENTED'],'unsupported_candidate_ids':sorted(x for x in unsupported if x),'candidate_support_uncertain_ids':sorted(x for x in support_uncertain if x),'errors':[]}
+ regions=_region_rows(observations,w);errors=['SWEEP_UNIVERSE_TRUNCATED'] if object_sweep.get('truncated') else [];status='BLOCKED' if errors else ('COMPLETE' if regions and all(r['sweep_status']=='COMPLETE' for r in regions) else 'INCOMPLETE');candidate_sha=canonical_sha({k:v for k,v in candidate.items() if k!='reader_execution_id'})
+ return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':actual,'candidate_sha256':candidate_sha,'width':w,'height':h,'status':status,'fresh_source_read':True,'observations':observations,'regions':regions,'object_sweep':object_sweep,'unrepresented_observation_ids':[o['observation_id'] for o in material_obs if o['match_status']=='UNREPRESENTED'],'unsupported_candidate_ids':sorted(x for x in unsupported if x),'candidate_support_uncertain_ids':sorted(x for x in support_uncertain if x),'errors':errors}
 
 def validate_sweep_receipt(sweep:dict|None,candidate:dict,ctx:dict)->list[str]:
  if not isinstance(sweep,dict):return ['INDEPENDENT_SWEEP_MISSING']
@@ -135,6 +137,19 @@ def validate_sweep_receipt(sweep:dict|None,candidate:dict,ctx:dict)->list[str]:
  observations=sweep.get('observations');regions=sweep.get('regions')
  if not isinstance(observations,list):errors.append('SWEEP_OBSERVATIONS_INVALID');observations=[]
  if not isinstance(regions,list) or not regions:errors.append('SWEEP_REGIONS_INVALID');regions=[]
+ object_sweep=sweep.get('object_sweep');object_observations=[o for o in observations if isinstance(o,dict) and o.get('kind')=='VISUAL_OBJECT']
+ if not isinstance(object_sweep,dict):errors.append('SWEEP_OBJECT_UNIVERSE_METADATA_MISSING')
+ else:
+  try:raw_count=int(object_sweep.get('raw_count',-1));deduped_count=int(object_sweep.get('deduped_count',-1));emitted_count=int(object_sweep.get('emitted_count',-1));limit=int(object_sweep.get('limit',-1))
+  except Exception:raw_count=deduped_count=emitted_count=limit=-1;errors.append('SWEEP_OBJECT_UNIVERSE_METADATA_INVALID')
+  if min(raw_count,deduped_count,emitted_count)<0 or limit<=0 or deduped_count>raw_count or emitted_count>deduped_count or emitted_count>limit:errors.append('SWEEP_OBJECT_UNIVERSE_COUNTS_INVALID')
+  if emitted_count!=len(object_observations):errors.append('SWEEP_OBJECT_EMITTED_COUNT_INCONSISTENT')
+  expected_truncated=deduped_count>limit
+  if bool(object_sweep.get('truncated'))!=expected_truncated:errors.append('SWEEP_OBJECT_TRUNCATION_FLAG_INCONSISTENT')
+  if expected_truncated:
+   if sweep.get('status')!='BLOCKED':errors.append('SWEEP_TRUNCATION_NOT_BLOCKED')
+   if 'SWEEP_UNIVERSE_TRUNCATED' not in (sweep.get('errors') or []):errors.append('SWEEP_TRUNCATION_ERROR_MISSING')
+  elif 'SWEEP_UNIVERSE_TRUNCATED' in (sweep.get('errors') or []):errors.append('SWEEP_TRUNCATION_ERROR_SPURIOUS')
  material=[o for o in observations if isinstance(o,dict) and o.get('material') is True];declared_unrep=set(sweep.get('unrepresented_observation_ids') or []);actual_unrep={o.get('observation_id') for o in material if o.get('match_status')=='UNREPRESENTED'}
  if declared_unrep!=actual_unrep:errors.append('SWEEP_UNREPRESENTED_SET_INCONSISTENT')
  width=int(sweep.get('width') or candidate.get('width') or 0)
