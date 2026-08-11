@@ -24,11 +24,13 @@ def make_image(path:Path,variant:int=1):
  cv2.imwrite(str(path),im)
 
 def make_crowded(path:Path,count:int):
- cols=15;rows=(count+cols-1)//cols;cell_w=52;cell_h=37
+ # Solid isolated objects are deliberately OCR-neutral, so the test exercises
+ # the real Canny object-universe cap rather than Tesseract text exclusion.
+ cols=15;rows=(count+cols-1)//cols;cell_w=52;cell_h=52
  im=np.full((rows*cell_h+30,cols*cell_w+30,3),255,np.uint8)
  for i in range(count):
-  row,col=divmod(i,cols);x=15+col*cell_w;y=15+row*cell_h
-  cv2.rectangle(im,(x,y),(x+40,y+25),(0,0,0),3)
+  row,col=divmod(i,cols);cx=26+col*cell_w;cy=26+row*cell_h
+  cv2.circle(im,(cx,cy),18,(0,0,0),-1)
  cv2.imwrite(str(path),im)
 
 def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
