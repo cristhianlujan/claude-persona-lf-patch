@@ -6,7 +6,6 @@ from difflib import SequenceMatcher
 import cv2
 from p0_full_reader_v4 import ocr_lines,iou,overlap_primary,norm
 from p0_visual_grader_core_v4 import canonical_sha
-
 ROOT_IDS={"ROOT","V4-ROOT"}
 VISUAL_TYPES={'VISUAL_OBJECT','BRAND_MARK','ICON','IMAGE','ICON_OR_GLYPH'}
 OBJECT_SWEEP_LIMIT=60
@@ -19,13 +18,10 @@ def file_sha256(path:str)->str:
  with open(path,'rb') as f:
   for block in iter(lambda:f.read(1024*1024),b''):h.update(block)
  return h.hexdigest()
-
 def _crop(image,r:dict):
  h,w=image.shape[:2];x=max(0,int(r.get('x',0)));y=max(0,int(r.get('y',0)));x2=min(w,x+max(0,int(r.get('width',0))));y2=min(h,y+max(0,int(r.get('height',0))));return image[y:y2,x:x2]
-
 def _pixel_evidence(source_sha:str,kind:str,r:dict,image)->tuple[str,str]:
  crop=_crop(image,r);pixel_sha=hashlib.sha256(crop.tobytes()).hexdigest() if crop.size else hashlib.sha256(b'').hexdigest();bbox=f"{int(r['x'])},{int(r['y'])},{int(r['width'])},{int(r['height'])}";return f"p0://v4/source-pixels/{source_sha}/{pixel_sha}/{kind}/{bbox}",pixel_sha
-
 def _spatial(a:dict,b:dict)->float:return max(iou(a,b),overlap_primary(a,b),overlap_primary(b,a))
 def _text_similarity(a:str|None,b:str|None)->float:
  if not a or not b:return 0.0
@@ -39,12 +35,8 @@ def _text_material(text:str,confidence:float)->bool:
  if confidence>=TEXT_CONF_STRONG:return True
  return confidence>=TEXT_CONF_LONG and len(clean)>=4
 def _object_material(area:int)->bool:return int(area)>=OBJECT_MATERIAL_AREA
-
-def _candidate_nonroot(candidate:dict)->list[dict]:
- return [e for e in candidate.get('elements',[]) if e.get('element_id') not in ROOT_IDS and e.get('parent_id') is not None]
-
+def _candidate_nonroot(candidate:dict)->list[dict]:return [e for e in candidate.get('elements',[]) if e.get('element_id') not in ROOT_IDS and e.get('parent_id') is not None]
 def _sweep_objects(image,text_regions:list[dict],*,limit:int=OBJECT_SWEEP_LIMIT)->tuple[list[dict],dict]:
- """Fresh Canny/contour pass. Any safety cap is explicit and fail-closed."""
  if limit<=0:raise ValueError('OBJECT_SWEEP_LIMIT_INVALID')
  gray=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY);edges=cv2.Canny(gray,70,180);kernel=cv2.getStructuringElement(cv2.MORPH_RECT,(3,3));edges=cv2.morphologyEx(edges,cv2.MORPH_CLOSE,kernel);contours,_=cv2.findContours(edges,cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE);raw=[];page=image.shape[0]*image.shape[1]
  for c in contours:
@@ -59,10 +51,8 @@ def _sweep_objects(image,text_regions:list[dict],*,limit:int=OBJECT_SWEEP_LIMIT)
   deduped.append(r)
  truncated=len(deduped)>limit;kept=deduped[:limit]
  return kept,{'detector':'CV_CANNY_70_180','raw_count':len(raw),'deduped_count':len(deduped),'emitted_count':len(kept),'limit':int(limit),'truncated':truncated}
-
 def _independent_observations(image,source_sha:str)->tuple[list[dict],dict]:
  observations=[]
- # PSM 6 is a separate full-image pass. Materiality is conservative but no longer discards long 35-44 confidence text.
  for idx,line in enumerate(ocr_lines(image,6),1):
   text=' '.join((line.get('text') or '').split());conf=float(line.get('confidence',0.0) or 0.0);r=line['region'];material=_text_material(text,conf);ref,pixel_sha=_pixel_evidence(source_sha,'OCR_PSM6',r,image)
   observations.append({'observation_id':f'OBS-T-{idx:04d}','detector':'OCR_PSM6','kind':'TEXT','classification':'CONFIRMED' if conf>=65 else 'INFERRED','material':material,'text':text,'confidence':round(max(0,min(1,conf/100.0)),6),'region':r,'pixel_sha256':pixel_sha,'evidence_refs':[ref]})
@@ -71,7 +61,6 @@ def _independent_observations(image,source_sha:str)->tuple[list[dict],dict]:
   area=int(r['width'])*int(r['height']);ref,pixel_sha=_pixel_evidence(source_sha,'CV_CANNY_70_180',r,image)
   observations.append({'observation_id':f'OBS-O-{idx:04d}','detector':'CV_CANNY_70_180','kind':'VISUAL_OBJECT','classification':'INFERRED','material':_object_material(area),'text':None,'confidence':.72,'region':r,'pixel_sha256':pixel_sha,'evidence_refs':[ref]})
  return observations,object_sweep
-
 def _best_match(obs:dict,candidates:list[dict])->tuple[dict|None,float]:
  best=None;best_score=0.0
  for e in candidates:
@@ -86,20 +75,16 @@ def _best_match(obs:dict,candidates:list[dict])->tuple[dict|None,float]:
    acceptable=spatial>=.18 or iou(r,er)>=.10;score=spatial
   if acceptable and score>best_score:best,best_score=e,score
  return best,best_score
-
-def _candidate_support(image,e:dict)->str:
+def _candidate_support(image,e:dict,text_observations:list[dict])->str:
  r=e.get('region') or {};crop=_crop(image,r)
  if crop.size==0:return 'UNSUPPORTED'
  if e.get('visible_text'):
-  target=str(e.get('visible_text') or '').strip();reads=[]
-  for psm in (7,6):
-   try:reads.extend(ocr_lines(crop,psm))
-   except Exception:return 'UNCERTAIN'
-  texts=[x.get('text') or '' for x in reads];best=max([_text_similarity(target,t) for t in texts] or [0.0])
+  target=str(e.get('visible_text') or '').strip();near=[o for o in text_observations if _spatial(r,o.get('region') or {})>=.08]
+  best=max([_text_similarity(target,o.get('text')) for o in near] or [0.0])
   if best>=.62:return 'SUPPORTED'
   gray=cv2.cvtColor(crop,cv2.COLOR_BGR2GRAY);std=float(gray.std());edge=float((cv2.Canny(gray,70,180)>0).mean())
   if std<8 and edge<.006:return 'UNSUPPORTED'
-  if texts and max(float(x.get('confidence',0) or 0) for x in reads)>=60 and best<.30:return 'UNSUPPORTED'
+  if near and max(float(o.get('confidence',0) or 0) for o in near)>=.60 and best<.30:return 'UNSUPPORTED'
   return 'UNCERTAIN'
  if e.get('element_type') in VISUAL_TYPES:
   gray=cv2.cvtColor(crop,cv2.COLOR_BGR2GRAY);edge=float((cv2.Canny(gray,70,180)>0).mean());return 'SUPPORTED' if edge>=.01 else 'UNSUPPORTED'
@@ -112,10 +97,7 @@ def _region_rows(observations:list[dict],width:int)->list[dict]:
   items=[o for o in observations if o.get('material') and (rid=='FULL' or _region_of(o['region'],width)==rid)];represented=sum(o.get('match_status')=='REPRESENTED' for o in items);uncertain=sum(o.get('match_status')=='UNCERTAIN' for o in items);unrepresented=sum(o.get('match_status')=='UNREPRESENTED' for o in items);status='COMPLETE' if uncertain==0 else 'INCOMPLETE';refs=sorted({ref for o in items for ref in o.get('evidence_refs',[])})
   rows.append({'region_id':rid,'material':True,'observed_count':len(items),'represented_count':represented,'uncertain_count':uncertain,'unrepresented_count':unrepresented,'sweep_status':status,'evidence_refs':refs})
  return rows
-
-def _materiality_policy()->dict:
- return {'schema_version':'p0-sweep-materiality-policy/v1','text_confidence_strong_min':TEXT_CONF_STRONG,'text_confidence_long_min':TEXT_CONF_LONG,'text_long_min_alnum':4,'object_material_area_min_px2':OBJECT_MATERIAL_AREA,'rationale':'Fail-closed recall bias: long OCR strings at 35-44 confidence remain material; every contour admitted by the object sweep is material from 900 px2 upward.'}
-
+def _materiality_policy()->dict:return {'schema_version':'p0-sweep-materiality-policy/v1','text_confidence_strong_min':TEXT_CONF_STRONG,'text_confidence_long_min':TEXT_CONF_LONG,'text_long_min_alnum':4,'object_material_area_min_px2':OBJECT_MATERIAL_AREA,'rationale':'Fail-closed recall bias: long OCR strings at 35-44 confidence remain material; every contour admitted by the object sweep is material from 900 px2 upward.'}
 def run_independent_omission_sweep(source_path:str,expected_source_sha256:str,candidate:dict,*,execution_id:str)->dict:
  try:actual=file_sha256(source_path)
  except Exception as exc:return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':None,'candidate_sha256':None,'width':0,'height':0,'status':'ERROR','fresh_source_read':False,'observations':[],'regions':[],'object_sweep':None,'materiality_policy':_materiality_policy(),'unrepresented_observation_ids':[],'unsupported_candidate_ids':[],'candidate_support_uncertain_ids':[],'errors':['SOURCE_READ_ERROR:'+type(exc).__name__]}
@@ -129,15 +111,14 @@ def run_independent_omission_sweep(source_path:str,expected_source_sha256:str,ca
   if match is not None:o['match_status']='REPRESENTED';o['matched_element_id']=match.get('element_id');o['match_score']=round(score,6)
   elif o['kind']=='TEXT' and o.get('classification')!='CONFIRMED':o['match_status']='UNCERTAIN';o['matched_element_id']=None;o['match_score']=0.0
   else:o['match_status']='UNREPRESENTED';o['matched_element_id']=None;o['match_score']=0.0
- material_obs=[o for o in observations if o.get('material')];matched_ids={o.get('matched_element_id') for o in material_obs if o.get('match_status')=='REPRESENTED'};unsupported=[];support_uncertain=[]
+ material_obs=[o for o in observations if o.get('material')];matched_ids={o.get('matched_element_id') for o in material_obs if o.get('match_status')=='REPRESENTED'};unsupported=[];support_uncertain=[];text_observations=[o for o in observations if o.get('kind')=='TEXT']
  for e in candidates:
   if e.get('classification')!='CONFIRMED' or not (e.get('visible_text') or e.get('element_type') in VISUAL_TYPES) or e.get('element_id') in matched_ids:continue
-  support=_candidate_support(image,e)
+  support=_candidate_support(image,e,text_observations)
   if support=='UNSUPPORTED':unsupported.append(e.get('element_id'))
   elif support=='UNCERTAIN':support_uncertain.append(e.get('element_id'))
  regions=_region_rows(observations,w);errors=['SWEEP_UNIVERSE_TRUNCATED'] if object_sweep.get('truncated') else [];status='BLOCKED' if errors else ('COMPLETE' if regions and all(r['sweep_status']=='COMPLETE' for r in regions) else 'INCOMPLETE');candidate_sha=canonical_sha({k:v for k,v in candidate.items() if k!='reader_execution_id'})
  return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':actual,'candidate_sha256':candidate_sha,'width':w,'height':h,'status':status,'fresh_source_read':True,'observations':observations,'regions':regions,'object_sweep':object_sweep,'materiality_policy':_materiality_policy(),'unrepresented_observation_ids':[o['observation_id'] for o in material_obs if o['match_status']=='UNREPRESENTED'],'unsupported_candidate_ids':sorted(x for x in unsupported if x),'candidate_support_uncertain_ids':sorted(x for x in support_uncertain if x),'errors':errors}
-
 def validate_sweep_receipt(sweep:dict|None,candidate:dict,ctx:dict)->list[str]:
  if not isinstance(sweep,dict):return ['INDEPENDENT_SWEEP_MISSING']
  errors=[]
