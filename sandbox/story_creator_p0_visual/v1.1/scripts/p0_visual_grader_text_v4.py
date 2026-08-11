@@ -17,7 +17,7 @@ def j_text(candidate:dict,ctx:dict)->dict:
    elif txt in consensus and len(consensus)-len(txt)<=4:fs.append(finding(ctx,g,'OCR_SUFFIX_OR_PREFIX_OMISSION','MEDIUM',e,{'candidate':txt,'independent_consensus':consensus},'REREAD',.90,'incomplete-text'))
    elif len(txt)<=3 or len(consensus)<=3:fs.append(finding(ctx,g,'OCR_SHORT_TOKEN_DISAGREEMENT','HIGH',e,{'candidate':txt,'independent_consensus':consensus},'REREAD',.93,'short-token-disagreement'))
    else:fs.append(finding(ctx,g,'OCR_UNCLASSIFIED_DISAGREEMENT','MEDIUM',e,{'candidate':txt,'independent_consensus':consensus,'ocr_variants':variants},'REREAD',.90,'unclassified-ocr-disagreement'))
-  if e.get('text_group_consistency') is False:fs.append(finding(ctx,g,'TEXT_GROUPING_MISMATCH','MEDIUM',e,{'group_id':e.get('text_group_id'),'atomic_refs':e.get('source_observation_refs',[])},'REREAD',.91,'line-grouping'))
+  if e.get('classification')=='CONFIRMED' and e.get('text_group_consistency') is False:fs.append(finding(ctx,g,'TEXT_GROUPING_MISMATCH','MEDIUM',e,{'group_id':e.get('text_group_id'),'atomic_refs':e.get('source_observation_refs',[])},'REREAD',.91,'line-grouping'))
  return output(ctx,g,app,app,fs)
 def j_uncertainty(candidate:dict,ctx:dict)->dict:
  g='J-UNCERTAINTY';els=candidate.get('elements',[]);app=[e['element_id'] for e in els];fs=[]
