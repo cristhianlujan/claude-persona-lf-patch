@@ -36,7 +36,7 @@ preflight:
   on_fail: BLOCKED
 validator:
   entrypoint: scripts/validate_traceability.py
-  git_blob_sha1: 39f9e42b0997ad4abc442c491478b33c6ce1d24f
+  git_blob_sha1: ae40b9ecdec7b515a9c94d5f2a3655a3c29dff35
   command_template: python scripts/validate_traceability.py <story_pack.json> --require-source-authority --source-authority <source-authority.json> --source-authority-sha256 <sha256> --judge-version <git_blob_sha1> --executor-identity <actor> --evidence-ref <resolvable_ref>
   exit_codes:
     PASS_WITH_EVIDENCE: 0
