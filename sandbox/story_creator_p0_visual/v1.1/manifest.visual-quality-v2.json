@@ -30,7 +30,7 @@
     {"path":"scripts/run_p0_visual_quality_loop.py","git_blob_sha":"83a6d2261bf7c69bb5b8fe3533b781761e4d5106"},
     {"path":"scripts/validate_p0_human_binding.py","git_blob_sha":"f6c54418d0cef45b2ba00ee759d39ce9380581c3"},
     {"path":"scripts/validate_p0_human_review_packet_v3.py","git_blob_sha":"a33da3706f97eb1f87d1128d5fe66ae24e9231c2"},
-    {"path":"scripts/validate_p0_machine_visual_quality.py","git_blob_sha":"5d59a6848071f640b37fcb9ddc934931726fb063"},
+    {"path":"scripts/validate_p0_machine_visual_quality.py","git_blob_sha":"b9a340ae7df27540ed1dadd3ac369d2dd9494324"},
     {"path":"scripts/validate_p0_visual_quality_receipt.py","git_blob_sha":"0f5a7de9a35437dab4de38bdc07aadc15d7ce557"},
     {"path":"scripts/verify_p0_integration_candidate.py","git_blob_sha":"640ed04cc5d47580ccaa49d6e0bef19685004e04"}
   ]
