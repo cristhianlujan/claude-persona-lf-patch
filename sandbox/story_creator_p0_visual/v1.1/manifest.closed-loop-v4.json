@@ -24,7 +24,7 @@
     {"path":"evals/p0_visual_grader_coverage_v4.py","git_blob_sha":"1c901b7768276010b9b1e9d44bd94b1c32b8f0b6"},
     {"path":"evals/p0_visual_known_failure_regression_v4.py","git_blob_sha":"c6b17cf54a09bc8573b4618f180dfd0ce22e9cb0"},
     {"path":"evals/p0_visual_real_rerun_v4.py","git_blob_sha":"750572cf5bfff5dd2278a9c6e02ad22ae3bac7d0"},
-    {"path":"schemas/p0-convergence-receipt-v4.schema.json","git_blob_sha":"047715f0c12f230eda1a5ccc031b81f00ac2bbb0"},
+    {"path":"schemas/p0-convergence-receipt-v4.schema.json","git_blob_sha":"6abe25bd0530584d87ff40d1ccaa1e51ebe04278"},
     {"path":"schemas/p0-grader-coverage-v4.schema.json","git_blob_sha":"1f1cfd8f80cda8799b2ea63e0a123947dd832c75"},
     {"path":"schemas/p0-grader-output-v4.schema.json","git_blob_sha":"71daa5110ae2a2c2b5912ffd8f671027c0209899"},
     {"path":"schemas/p0-loop-cycle-v4.schema.json","git_blob_sha":"5f4e61ac2e6cc1690ebecf76c9702eb86e327cfa"},
@@ -42,7 +42,7 @@
     {"path":"scripts/p0_visual_real_rerun_support_v4.py","git_blob_sha":"91efb7a635cb9b72c456ff1b42b5dcb4f8fad19f"},
     {"path":"scripts/persist_p0_visual_loop_v4.py","git_blob_sha":"07fb8ff9da8a686098d1937a0c593ad64bbbcbca"},
     {"path":"scripts/run_p0_visual_quality_loop_v4.py","git_blob_sha":"7304a2eaf99d74be332037c3f51526979d5cd0e5"},
-    {"path":"scripts/validate_p0_v4_closed_loop.py","git_blob_sha":"f857839713a3d73254c7b75a273a3ff6d3e87955"}
+    {"path":"scripts/validate_p0_v4_closed_loop.py","git_blob_sha":"beb2afe1a1a0f20da76f3f32deb0d4014700ee22"}
   ],
   "human_adjudication": "NOT_PERFORMED",
   "p0_5_state": "UNASSESSED_SEPARATE",
