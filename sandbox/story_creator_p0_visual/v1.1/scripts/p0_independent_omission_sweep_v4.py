@@ -10,6 +10,9 @@ from p0_visual_grader_core_v4 import canonical_sha
 ROOT_IDS={"ROOT","V4-ROOT"}
 VISUAL_TYPES={'VISUAL_OBJECT','BRAND_MARK','ICON','IMAGE','ICON_OR_GLYPH'}
 OBJECT_SWEEP_LIMIT=500
+TEXT_CONF_STRONG=45.0
+TEXT_CONF_LONG=35.0
+OBJECT_MATERIAL_AREA=900
 
 def file_sha256(path:str)->str:
  h=hashlib.sha256()
@@ -30,6 +33,12 @@ def _text_similarity(a:str|None,b:str|None)->float:
  if not aa or not bb:return 0.0
  if aa in bb or bb in aa:return .90
  return SequenceMatcher(None,aa,bb).ratio()
+def _text_material(text:str,confidence:float)->bool:
+ clean=''.join(ch for ch in text.strip() if ch.isalnum())
+ if not clean:return False
+ if confidence>=TEXT_CONF_STRONG:return True
+ return confidence>=TEXT_CONF_LONG and len(clean)>=4
+def _object_material(area:int)->bool:return int(area)>=OBJECT_MATERIAL_AREA
 
 def _candidate_nonroot(candidate:dict)->list[dict]:
  return [e for e in candidate.get('elements',[]) if e.get('element_id') not in ROOT_IDS and e.get('parent_id') is not None]
@@ -40,7 +49,7 @@ def _sweep_objects(image,text_regions:list[dict],*,limit:int=OBJECT_SWEEP_LIMIT)
  gray=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY);edges=cv2.Canny(gray,70,180);kernel=cv2.getStructuringElement(cv2.MORPH_RECT,(3,3));edges=cv2.morphologyEx(edges,cv2.MORPH_CLOSE,kernel);contours,_=cv2.findContours(edges,cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE);raw=[];page=image.shape[0]*image.shape[1]
  for c in contours:
   x,y,w,h=cv2.boundingRect(c);area=w*h
-  if area<900 or area>min(130000,int(page*.22)) or w<16 or h<10:continue
+  if area<OBJECT_MATERIAL_AREA or area>min(130000,int(page*.22)) or w<16 or h<10:continue
   r={'x':int(x),'y':int(y),'width':int(w),'height':int(h)}
   if any(overlap_primary(r,t)>.65 for t in text_regions):continue
   raw.append(r)
@@ -53,14 +62,14 @@ def _sweep_objects(image,text_regions:list[dict],*,limit:int=OBJECT_SWEEP_LIMIT)
 
 def _independent_observations(image,source_sha:str)->tuple[list[dict],dict]:
  observations=[]
- # Fixed PSM 6 is a separate full-image observation pass. It does not consume candidate.elements.
+ # PSM 6 is a separate full-image pass. Materiality is conservative but no longer discards long 35-44 confidence text.
  for idx,line in enumerate(ocr_lines(image,6),1):
-  text=' '.join((line.get('text') or '').split());conf=float(line.get('confidence',0.0) or 0.0);r=line['region'];material=bool(text) and conf>=45 and (len(text.strip())>=2 or any(ch.isalnum() for ch in text));ref,pixel_sha=_pixel_evidence(source_sha,'OCR_PSM6',r,image)
+  text=' '.join((line.get('text') or '').split());conf=float(line.get('confidence',0.0) or 0.0);r=line['region'];material=_text_material(text,conf);ref,pixel_sha=_pixel_evidence(source_sha,'OCR_PSM6',r,image)
   observations.append({'observation_id':f'OBS-T-{idx:04d}','detector':'OCR_PSM6','kind':'TEXT','classification':'CONFIRMED' if conf>=65 else 'INFERRED','material':material,'text':text,'confidence':round(max(0,min(1,conf/100.0)),6),'region':r,'pixel_sha256':pixel_sha,'evidence_refs':[ref]})
  text_regions=[o['region'] for o in observations if o['kind']=='TEXT'];objects,object_sweep=_sweep_objects(image,text_regions)
  for idx,r in enumerate(objects,1):
   area=int(r['width'])*int(r['height']);ref,pixel_sha=_pixel_evidence(source_sha,'CV_CANNY_70_180',r,image)
-  observations.append({'observation_id':f'OBS-O-{idx:04d}','detector':'CV_CANNY_70_180','kind':'VISUAL_OBJECT','classification':'INFERRED','material':area>=1200,'text':None,'confidence':.72,'region':r,'pixel_sha256':pixel_sha,'evidence_refs':[ref]})
+  observations.append({'observation_id':f'OBS-O-{idx:04d}','detector':'CV_CANNY_70_180','kind':'VISUAL_OBJECT','classification':'INFERRED','material':_object_material(area),'text':None,'confidence':.72,'region':r,'pixel_sha256':pixel_sha,'evidence_refs':[ref]})
  return observations,object_sweep
 
 def _best_match(obs:dict,candidates:list[dict])->tuple[dict|None,float]:
@@ -104,12 +113,15 @@ def _region_rows(observations:list[dict],width:int)->list[dict]:
   rows.append({'region_id':rid,'material':True,'observed_count':len(items),'represented_count':represented,'uncertain_count':uncertain,'unrepresented_count':unrepresented,'sweep_status':status,'evidence_refs':refs})
  return rows
 
+def _materiality_policy()->dict:
+ return {'schema_version':'p0-sweep-materiality-policy/v1','text_confidence_strong_min':TEXT_CONF_STRONG,'text_confidence_long_min':TEXT_CONF_LONG,'text_long_min_alnum':4,'object_material_area_min_px2':OBJECT_MATERIAL_AREA,'rationale':'Fail-closed recall bias: long OCR strings at 35-44 confidence remain material; every contour admitted by the object sweep is material from 900 px2 upward.'}
+
 def run_independent_omission_sweep(source_path:str,expected_source_sha256:str,candidate:dict,*,execution_id:str)->dict:
  try:actual=file_sha256(source_path)
- except Exception as exc:return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':None,'candidate_sha256':None,'width':0,'height':0,'status':'ERROR','fresh_source_read':False,'observations':[],'regions':[],'object_sweep':None,'unrepresented_observation_ids':[],'unsupported_candidate_ids':[],'candidate_support_uncertain_ids':[],'errors':['SOURCE_READ_ERROR:'+type(exc).__name__]}
- if actual!=expected_source_sha256:return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':actual,'candidate_sha256':None,'width':0,'height':0,'status':'BLOCKED','fresh_source_read':False,'observations':[],'regions':[],'object_sweep':None,'unrepresented_observation_ids':[],'unsupported_candidate_ids':[],'candidate_support_uncertain_ids':[],'errors':['SOURCE_SHA256_MISMATCH']}
+ except Exception as exc:return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':None,'candidate_sha256':None,'width':0,'height':0,'status':'ERROR','fresh_source_read':False,'observations':[],'regions':[],'object_sweep':None,'materiality_policy':_materiality_policy(),'unrepresented_observation_ids':[],'unsupported_candidate_ids':[],'candidate_support_uncertain_ids':[],'errors':['SOURCE_READ_ERROR:'+type(exc).__name__]}
+ if actual!=expected_source_sha256:return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':actual,'candidate_sha256':None,'width':0,'height':0,'status':'BLOCKED','fresh_source_read':False,'observations':[],'regions':[],'object_sweep':None,'materiality_policy':_materiality_policy(),'unrepresented_observation_ids':[],'unsupported_candidate_ids':[],'candidate_support_uncertain_ids':[],'errors':['SOURCE_SHA256_MISMATCH']}
  image=cv2.imread(source_path)
- if image is None:return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':actual,'candidate_sha256':None,'width':0,'height':0,'status':'ERROR','fresh_source_read':True,'observations':[],'regions':[],'object_sweep':None,'unrepresented_observation_ids':[],'unsupported_candidate_ids':[],'candidate_support_uncertain_ids':[],'errors':['SOURCE_DECODE_FAILED']}
+ if image is None:return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':actual,'candidate_sha256':None,'width':0,'height':0,'status':'ERROR','fresh_source_read':True,'observations':[],'regions':[],'object_sweep':None,'materiality_policy':_materiality_policy(),'unrepresented_observation_ids':[],'unsupported_candidate_ids':[],'candidate_support_uncertain_ids':[],'errors':['SOURCE_DECODE_FAILED']}
  h,w=image.shape[:2];observations,object_sweep=_independent_observations(image,actual);candidates=_candidate_nonroot(candidate)
  for o in observations:
   if not o['material']:o['match_status']='NON_MATERIAL';o['matched_element_id']=None;o['match_score']=0.0;continue
@@ -124,7 +136,7 @@ def run_independent_omission_sweep(source_path:str,expected_source_sha256:str,ca
   if support=='UNSUPPORTED':unsupported.append(e.get('element_id'))
   elif support=='UNCERTAIN':support_uncertain.append(e.get('element_id'))
  regions=_region_rows(observations,w);errors=['SWEEP_UNIVERSE_TRUNCATED'] if object_sweep.get('truncated') else [];status='BLOCKED' if errors else ('COMPLETE' if regions and all(r['sweep_status']=='COMPLETE' for r in regions) else 'INCOMPLETE');candidate_sha=canonical_sha({k:v for k,v in candidate.items() if k!='reader_execution_id'})
- return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':actual,'candidate_sha256':candidate_sha,'width':w,'height':h,'status':status,'fresh_source_read':True,'observations':observations,'regions':regions,'object_sweep':object_sweep,'unrepresented_observation_ids':[o['observation_id'] for o in material_obs if o['match_status']=='UNREPRESENTED'],'unsupported_candidate_ids':sorted(x for x in unsupported if x),'candidate_support_uncertain_ids':sorted(x for x in support_uncertain if x),'errors':errors}
+ return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':actual,'candidate_sha256':candidate_sha,'width':w,'height':h,'status':status,'fresh_source_read':True,'observations':observations,'regions':regions,'object_sweep':object_sweep,'materiality_policy':_materiality_policy(),'unrepresented_observation_ids':[o['observation_id'] for o in material_obs if o['match_status']=='UNREPRESENTED'],'unsupported_candidate_ids':sorted(x for x in unsupported if x),'candidate_support_uncertain_ids':sorted(x for x in support_uncertain if x),'errors':errors}
 
 def validate_sweep_receipt(sweep:dict|None,candidate:dict,ctx:dict)->list[str]:
  if not isinstance(sweep,dict):return ['INDEPENDENT_SWEEP_MISSING']
@@ -137,6 +149,8 @@ def validate_sweep_receipt(sweep:dict|None,candidate:dict,ctx:dict)->list[str]:
  observations=sweep.get('observations');regions=sweep.get('regions')
  if not isinstance(observations,list):errors.append('SWEEP_OBSERVATIONS_INVALID');observations=[]
  if not isinstance(regions,list) or not regions:errors.append('SWEEP_REGIONS_INVALID');regions=[]
+ policy=sweep.get('materiality_policy')
+ if not isinstance(policy,dict) or policy.get('schema_version')!='p0-sweep-materiality-policy/v1':errors.append('SWEEP_MATERIALITY_POLICY_MISSING')
  object_sweep=sweep.get('object_sweep');object_observations=[o for o in observations if isinstance(o,dict) and o.get('kind')=='VISUAL_OBJECT']
  if not isinstance(object_sweep,dict):errors.append('SWEEP_OBJECT_UNIVERSE_METADATA_MISSING')
  else:
