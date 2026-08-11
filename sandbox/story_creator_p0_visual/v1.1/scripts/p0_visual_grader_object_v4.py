@@ -28,5 +28,5 @@ def j_skeptic(candidate:dict,ctx:dict)->dict:
  if candidate.get('fresh_source_read') is False or candidate.get('reader_origin')=='CLONED_PREVIOUS_PASS' or (prev and prev==ctx['candidate_sha256']):fs.append(finding(ctx,g,'FULL_PASS_CANDIDATE_REUSED','HIGH',None,{'previous_candidate_sha256':prev,'candidate_sha256':ctx['candidate_sha256'],'fresh_source_read':candidate.get('fresh_source_read'),'reader_origin':candidate.get('reader_origin')},'BLOCK',.99,'context-reset-failure'))
  for e in els:
   if float(e.get('confidence',0) or 0)>=.97 and e.get('classification')=='CONFIRMED' and len(e.get('evidence_refs') or [])<1:fs.append(finding(ctx,g,'HIGH_CONFIDENCE_WITHOUT_PROVENANCE','HIGH',e,{'confidence':e.get('confidence')},'REREAD',.98,'skeptical-provenance'))
-  if e.get('risk_zone') in {'DENSE','LEGAL','BRANDING','ILLUSTRATION'} and not e.get('independent_redetection',False):fs.append(finding(ctx,g,'HIGH_RISK_ZONE_NOT_REDETECTED','MEDIUM',e,{'risk_zone':e.get('risk_zone')},'REREAD',.91,'skeptical-redetection'))
+  if e.get('classification')=='CONFIRMED' and e.get('risk_zone') in {'DENSE','LEGAL','BRANDING','ILLUSTRATION'} and not e.get('independent_redetection',False):fs.append(finding(ctx,g,'HIGH_RISK_ZONE_NOT_REDETECTED','MEDIUM',e,{'risk_zone':e.get('risk_zone')},'REREAD',.91,'skeptical-redetection'))
  return output(ctx,g,app,app,fs)
