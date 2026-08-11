@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-"""Fresh pixel reader for P0 V4. No prior candidate or known-error list is accepted."""
 from __future__ import annotations
-import hashlib,json,collections
-from difflib import SequenceMatcher
+import hashlib,collections
 from pathlib import Path
 import cv2,pytesseract
 from pytesseract import Output
@@ -34,7 +32,6 @@ def match_alt(primary:dict,alts:list[dict])->str:
  candidates=[x for x in alts if overlap_primary(primary['region'],x['region'])>=.25 or iou(primary['region'],x['region'])>=.12]
  if not candidates:return ''
  candidates.sort(key=lambda x:(overlap_primary(primary['region'],x['region']),x['confidence']),reverse=True)
- # If several fragments overlap the primary line, stitch left-to-right.
  y0=primary['region']['y'];near=[x for x in candidates if abs(x['region']['y']-y0)<=max(12,primary['region']['height'])]
  near=sorted(near,key=lambda x:x['region']['x'])[:4]
  text=' '.join(x['text'] for x in near) if len(near)>1 else candidates[0]['text']
@@ -46,7 +43,6 @@ def cv_objects(image,text_regions:list[dict])->list[dict]:
   if a<500 or a>100000 or w<12 or h<8:continue
   if w/h<1.35 and a<900:continue
   r={'x':int(x),'y':int(y),'width':int(w),'height':int(h)}
-  # avoid boxes that are just a text line envelope
   if any(overlap_primary(r,t)>.75 and a<3000 for t in text_regions):continue
   raw.append(r)
  raw.sort(key=lambda r:r['width']*r['height'],reverse=True);kept=[]
@@ -78,8 +74,4 @@ def full_reader(source_path:str,ctx:dict)->dict:
   if not stable:unc.append({'element_id':e['element_id'],'code':'OCR_DISAGREEMENT','region':line['region']})
  text_regions=[e['region'] for e in elements if e['element_type']=='TEXT']
  for idx,r in enumerate(cv_objects(image,text_regions),1):elements.append({'element_id':f'V4-O-{idx:04d}','element_type':'VISUAL_OBJECT','visible_text':None,'classification':'INFERRED','confidence':.75,'region':r,'parent_id':'V4-ROOT','semantic_role':'visual_object','evidence_refs':[region_ref(ctx['source_sha256'],r)],'bbox_reproducible':True,'style':{},'style_provenance':{},'independent_redetection':True})
- def count_region(side):
-  if side=='LEFT':return sum(1 for e in elements[1:] if e['region']['x']+e['region']['width']/2<w/2)
-  return sum(1 for e in elements[1:] if e['region']['x']+e['region']['width']/2>=w/2)
- cov=[{'region_id':'FULL','material':True,'observed_count':len(elements)-1,'represented_count':len(elements)-1,'sweep_status':'COMPLETE'},{'region_id':'LEFT','material':True,'observed_count':count_region('LEFT'),'represented_count':count_region('LEFT'),'sweep_status':'COMPLETE'},{'region_id':'RIGHT','material':True,'observed_count':count_region('RIGHT'),'represented_count':count_region('RIGHT'),'sweep_status':'COMPLETE'}]
- return {'schema_version':'p0-full-reader-v4/v1','execution_id':ctx['reader_execution_id'],'pass_id':ctx['pass_id'],'reader_execution_id':ctx['reader_execution_id'],'source_sha256':ctx['source_sha256'],'width':w,'height':h,'fresh_source_read':True,'reader_origin':'SOURCE_PIXELS','reader_profile':'STRICT_CONSENSUS' if strict else 'RAW_DISCOVERY','elements':elements,'raw_observations':{'primary_psm':primary_psm,'line_counts':{str(k):len(v) for k,v in lines.items()},'cv_object_count':len(elements)-1-len(primary)},'reader_uncertainties':unc,'coverage_map':cov}
+ return {'schema_version':'p0-full-reader-v4/v1','execution_id':ctx['reader_execution_id'],'pass_id':ctx['pass_id'],'reader_execution_id':ctx['reader_execution_id'],'source_sha256':ctx['source_sha256'],'width':w,'height':h,'fresh_source_read':True,'reader_origin':'SOURCE_PIXELS','reader_profile':'STRICT_CONSENSUS' if strict else 'RAW_DISCOVERY','elements':elements,'raw_observations':{'primary_psm':primary_psm,'line_counts':{str(k):len(v) for k,v in lines.items()},'cv_object_count':len(elements)-1-len(primary)},'reader_uncertainties':unc}
