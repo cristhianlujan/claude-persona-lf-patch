@@ -15,7 +15,7 @@
   "files": [
     {"path":"evals/p0-closed-loop-runtime-config-v4.json","git_blob_sha":"8d680b3e85eb51479a725db0eb6401305f78c081"},
     {"path":"evals/p0_grader_producer_field_audit_v4.py","git_blob_sha":"53fe4e465fdb6df88cb5d5d870d6ca4d299b8e48"},
-    {"path":"evals/p0_independent_omission_sweep_v4.py","git_blob_sha":"a24d747437a4462eb1700fc5a80a9a6cd82d91e9"},
+    {"path":"evals/p0_independent_omission_sweep_v4.py","git_blob_sha":"79812340e0d719413feb619baed352648f1fb9ae"},
     {"path":"evals/p0_reader_producer_contract_v4.py","git_blob_sha":"fc46f9db4aad29407974a856cc5f6aee7966cc68"},
     {"path":"evals/p0_visual_closed_loop_v4_suite.py","git_blob_sha":"90eedab0846710ef4d03f1d7466b22a2a97f8daa"},
     {"path":"evals/p0_visual_discovery_v4_suite.py","git_blob_sha":"d75fc800c5c405e2c38bcc821abdf22488b66ef4"},
