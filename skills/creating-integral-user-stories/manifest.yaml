@@ -55,6 +55,12 @@ package_contract:
   auxiliary_files_are_non_canonical: true
   maturity_candidates_are_noncanonical_until_promoted: true
   readback_required: true
+  denominator_semantics:
+    canonical_closure: 62
+    operational_package_integrity: 87
+    maturity_candidate_cohort: 17
+    raw_current_store_rows_are_not_canonical_denominator: true
+    closure_domains_are_non_substitutable: true
 quality_policy:
   audit_scope: ALL_CURRENT_ARTIFACTS_PLUS_MATURITY_CANDIDATES
   canonical_total: 62
@@ -163,6 +169,28 @@ provenance_policy:
   - LEGACY_REJECTED
   domains_are_distinct: true
   resolution_must_not_force_semantic_reclassification: true
+schema_fingerprint_baseline_policy:
+  active_version: v16
+  active_table: private.lf_schema_fingerprint_baseline_v16
+  active_drift_view: public.v_lf_schema_fingerprint_drift_v16
+  historical_versions:
+  - v3
+  - v4
+  - v5
+  - v6
+  - v7
+  - v8
+  - v9
+  - v10
+  - v11
+  - v12
+  - v13
+  - v14
+  - v15
+  historical_mode: HISTORICAL_READ_ONLY
+  historical_versions_are_current_gate_eligible: false
+  active_gate_must_resolve_to_single_drift_view: true
+  physical_retirement_requires_forward_migration_and_zero_dependencies: true
 provenance_anchors:
   JUDGES_SOURCE_INTEGRITY_YAML:
     path: judges/source-integrity.yaml
@@ -469,7 +497,11 @@ current_state:
   pass_v8_closes_package_maturity: false
   canonical_validation_status:
     NOT_VALIDATED: 0
-    PASS_WITH_EVIDENCE: 64
+    PASS_WITH_EVIDENCE: 62
+  canonical_validation_denominator: 62
+  raw_current_store_rows_last_readback: 64
+  raw_current_store_rows_are_canonical_denominator: false
+  noncanonical_current_rows_last_readback: 2
   maturity_candidate_status: NOT_PROMOTED
   real_maturity_score_status: NOT_COMPUTED
   real_maturity_score_blockers:
