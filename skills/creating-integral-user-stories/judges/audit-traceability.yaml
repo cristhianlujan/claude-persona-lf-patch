@@ -13,6 +13,8 @@ independence:
 retry_limit: 2
 required_inputs:
 - story_pack
+- independent_source_authority
+- independent_source_authority_sha256
 preflight:
 - check_id: input_present
   condition: story_pack is a readable UTF-8 JSON object
@@ -26,13 +28,16 @@ preflight:
 - check_id: evidence_ref_resolvable
   condition: at least one evidence_ref is resolvable
   on_fail: BLOCKED
+- check_id: source_authority_sha_bound
+  condition: independent source authority is readable and its observed SHA-256 equals the caller-pinned SHA
+  on_fail: BLOCKED
 - check_id: independent_executor
   condition: executor_identity differs from artifact author identity
   on_fail: BLOCKED
 validator:
   entrypoint: scripts/validate_traceability.py
-  git_blob_sha1: da950cca43698a3ad1ac3743c6714bdcac75f6a1
-  command_template: python scripts/validate_traceability.py <story_pack.json> --judge-version <git_blob_sha1> --executor-identity <actor> --evidence-ref <resolvable_ref>
+  git_blob_sha1: 39f9e42b0997ad4abc442c491478b33c6ce1d24f
+  command_template: python scripts/validate_traceability.py <story_pack.json> --require-source-authority --source-authority <source-authority.json> --source-authority-sha256 <sha256> --judge-version <git_blob_sha1> --executor-identity <actor> --evidence-ref <resolvable_ref>
   exit_codes:
     PASS_WITH_EVIDENCE: 0
     RETURN_TO_WORKER: 1
@@ -73,8 +78,14 @@ assertions:
 - tests_without_story_reference
 - tests_without_evidence_path
 - duplicate_test_codes
+- unresolvable_source_refs
+- duplicate_authority_source_refs
+- authority_objects_without_source_ref
+- independent_source_coverage_missing
+- source_semantic_assertions_failed
+- source_conflicts_not_surfaced
 pass_if:
-- all 10 assertion result collections are empty
+- all 16 assertion result collections are empty
 - blocking_assertions is empty
 - assertions_passed = assertions_total
 - compliance_bit = 1
@@ -110,6 +121,10 @@ required_evidence:
 - traceability_breaks
 - checks
 - input_path
+- source_authority_sha256
+- authority_object_count
+- authority_assertion_count
+- authority_conflict_count
 output:
   schema_ref: schemas/judge-result.schema.json
   schema_version: v0.5
@@ -145,8 +160,8 @@ output:
 positive_behavior:
   case_id: J07-P01
   expected_result: PASS_WITH_EVIDENCE
-  expected_assertions_total: 10
-  expected_assertions_passed: 10
+  expected_assertions_total: 16
+  expected_assertions_passed: 16
 negative_behavior:
 - case_id: J07-N01
   input_patch:
