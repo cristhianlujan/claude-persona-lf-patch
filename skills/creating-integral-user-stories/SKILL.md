@@ -5,7 +5,7 @@ description: >
   specification, handoff, or partial story set must be decomposed into complete,
   traceable and implementation-ready Story Packs with security, privacy,
   analytics, observability, auditability, accessibility and tests.
-version: v0.6
+version: v0.8
 status: CANDIDATO_READ_ONLY
 operation_code: BUILD_INTEGRAL_STORY_CREATOR_LF
 runtime: disabled
@@ -247,7 +247,7 @@ J13 recalcula el porcentaje desde el ledger y exige todas las condiciones de cie
 Orden obligatorio:
 
 1. readback Supabase y GitHub;
-2. escribir solo en `feat/integral-story-creator-r8-forward`;
+2. escribir solo en `agent/pr93-story-maturity-foundation` para la operación normal declarada por `manifest.yaml`;
 3. readback del archivo;
 4. registrar commit, Git blob y SHA-256;
 5. crear nueva versión Supabase sin borrar historial;
@@ -255,6 +255,8 @@ Orden obligatorio:
 7. verificar SHA GitHub–Supabase;
 8. registrar evento;
 9. actualizar `AUDIT_CHECKLIST_R8.md`.
+
+Las ramas de auditoría, recuperación o remediación pueden transportar correcciones únicamente cuando exista autorización explícita para ese lote; no redefinen `github_contract.target_branch` de la skill.
 
 Ante concurrencia: no sobrescribir silenciosamente; crear versión nueva, reconciliar y registrar diferencia.
 
@@ -278,7 +280,7 @@ Todos los objetos incluyen evidencia resoluble. Los resultados de jueces validan
 
 ```text
 repository: cristhianlujan/claude-persona-lf-patch
-branch: feat/integral-story-creator-r8-forward
+branch: agent/pr93-story-maturity-foundation
 main_write: false
 merge: false
 pr_ready: false
@@ -293,46 +295,74 @@ Estados prohibidos: `VALIDATED`, `APPROVED`, `VIGENTE`, `PRODUCTION_READY` y `PR
 
 ## 15. Condiciones de cierre R8
 
-Cerrar únicamente cuando:
+Los denominadores son distintos y no se pueden sustituir entre sí:
 
 ```text
-62/62 PASS_WITH_EVIDENCE
+CANONICAL_CLOSURE_DENOMINATOR = 62
+OPERATIONAL_PACKAGE_INTEGRITY_DENOMINATOR = 87
+MATURITY_CANDIDATE_DENOMINATOR = 17
+```
+
+El universo canónico de 62 corresponde exclusivamente al mapa A01–A62. El conteo bruto de filas `is_current` en Supabase no puede usarse como denominador canónico. Los artefactos operativos o candidatos añadidos después del mapa A01–A62 no quedan aprobados por un `62/62`.
+
+Cerrar el **denominador canónico** únicamente cuando:
+
+```text
+62/62 PASS_WITH_EVIDENCE sobre el mapa A01–A62
 62/62 benchmark Claude ejecutado
 62/62 benchmark GitHub 150k+ ejecutado
 62/62 notas Claude, GitHub, técnica y final > 9.5
-0 runtime bloqueados
-0 pruebas positivas pendientes
-0 pruebas negativas pendientes
-0 assertions huérfanas
-0 SHA mismatch
-0 current duplicados
-0 bloqueos abiertos
-J01–J13 verificados
-GitHub = Supabase
-checklist actualizado
+0 runtime bloqueados del universo canónico
+0 pruebas positivas pendientes del universo canónico
+0 pruebas negativas pendientes del universo canónico
+0 assertions huérfanas del universo canónico
+0 SHA mismatch del universo canónico
+0 current duplicados del universo canónico
+J01–J13 verificados para la cadena canónica aplicable
+GitHub = Supabase para el universo canónico
 ```
 
-Único cierre permitido:
+La **integridad operacional del paquete** exige además:
+
+```text
+87/87 archivos del inventario operacional presentes y auditados por J11
+0 archivos inesperados
+0 referencias rotas
+0 SHA mismatch del inventario operacional
+```
+
+La **cohorte de madurez** exige además:
+
+```text
+17/17 candidatos de madurez evaluados dentro de su cohorte registrada
+0 candidatos promovidos implícitamente por el cierre 62/62
+score real solo con >=2 evaluadores independientes y receipts distintos
+0 promoción automática por score numérico
+```
+
+El cierre global solo puede emitirse si los tres universos aplicables están identificados, sus denominadores se conservan separados y todos sus gates obligatorios están satisfechos. Un PASS en 62/62 no implica 87/87 ni 17/17.
+
+Único cierre histórico del universo R8 canónico:
 
 ```text
 R8_AUDIT_COMPLETE_WITH_DUAL_BENCHMARK_EVIDENCE
 ```
 
-Este cierre no significa producción, merge, release ni runtime habilitado.
+Este cierre no significa producción, merge, release ni runtime habilitado, y no promueve por sí mismo el inventario operacional ni la cohorte de madurez.
 
 ## 16. Casos de control
 
 ### Positivo
 
-Una fuente íntegra produce inventario, Story Packs A–Q, pruebas exactas, J01–J13 PASS, hashes iguales y ledger binario 100%.
+Una fuente íntegra produce inventario, Story Packs A–Q, pruebas exactas, J01–J13 PASS, hashes iguales y ledger binario 100% dentro del denominador explícitamente declarado.
 
 ### Negativo
 
-Rechazar cuando exista fuente sin hash, regla inventada, cobertura pendiente, fixture genérico, evidencia vacía, SHA distinto, rama incorrecta o cierre declarado al 100% con un step sin evidencia.
+Rechazar cuando exista fuente sin hash, regla inventada, cobertura pendiente, fixture genérico, evidencia vacía, SHA distinto, rama incorrecta, mezcla de denominadores o cierre declarado al 100% con un step sin evidencia.
 
 ### Bloqueado
 
-Bloquear ante fuente ausente, validador no disponible, conflicto de versión, escritura concurrente no reconciliada o dependencia material sin resolver.
+Bloquear ante fuente ausente, validador no disponible, conflicto de versión, escritura concurrente no reconciliada, dependencia material sin resolver o denominador ambiguo.
 
 ## 17. Fuentes de diseño no normativas
 
@@ -341,3 +371,22 @@ Bloquear ante fuente ausente, validador no disponible, conflicto de versión, es
 - **freeCodeCamp:** constraints condicionales, unicidad y rechazo determinista.
 
 Los contratos LF y la fuente operativa prevalecen ante cualquier diferencia.
+
+## 18. Ciclo de vida del schema fingerprint baseline
+
+La baseline activa para los gates actuales es exclusivamente:
+
+```text
+private.lf_schema_fingerprint_baseline_v16
+public.v_lf_schema_fingerprint_drift_v16
+```
+
+Las baselines y vistas `v3` a `v15` se conservan como **HISTORICAL_READ_ONLY** para trazabilidad y linaje. No forman parte del gate de drift vigente y no pueden competir con `v16` como fuente activa.
+
+Reglas de retiro:
+
+- no borrar ni mutar baselines históricas para “limpiar” versiones;
+- una baseline nueva solo sustituye a la anterior mediante migración forward-only con preflight, captura de drift autorizado y postflight sin drift inesperado;
+- el cierre arquitectónico vigente debe apuntar a una sola vista `v_lf_schema_fingerprint_drift_vN` activa;
+- una versión histórica puede eliminarse físicamente solo mediante una migración explícita posterior que pruebe cero dependencias y preserve evidencia de linaje;
+- coexistencia histórica no equivale a múltiples baselines activas.
