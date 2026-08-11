@@ -98,3 +98,29 @@ Entregar al juez: versión de fuente, SHA-256, objetos procesados, conteos, asse
 - **Significant-Gravitas/AutoGPT** (~185,000 estrellas): `classic/original_autogpt/CLAUDE.md`; patrones: arquitectura explícita, ciclo operativo, estado, pruebas y gotchas.
 
 Estas fuentes aportan patrones de ejecutabilidad, validación y pruebas. Los contratos LF y la fuente operativa prevalecen ante cualquier diferencia.
+
+## 13. Autoridad independiente de fuente — FRT V1
+
+Para una ejecución operacional J07, el universo que se audita no puede derivarse del mismo Story Pack que se está juzgando. El caller debe entregar un sidecar `lf-source-authority/v1` externo al candidate y fijar su SHA-256 antes de ejecutar el judge.
+
+Contrato mínimo:
+
+```text
+source_authority.schema_version = lf-source-authority/v1
+source_authority.objects[] = inventario independiente de campos/reglas/errores/permisos/estados/transiciones/evidencia
+source_authority.assertions[] = restricciones semánticas fuente -> candidate
+source_authority.conflicts[] = contradicciones que no pueden resolverse silenciosamente
+```
+
+J07 debe fallar cerrado cuando ocurra cualquiera de estos casos:
+
+- una `source_ref` del candidate no resuelve en el sidecar;
+- un objeto fuente obligatorio desaparece de las superficies requeridas del Story Pack;
+- la cobertura se calcula contra un universo derivado del candidate;
+- requiredness, condición, dependencia, estado, transición, permiso efectivo, idempotencia, límite, locale o frontera temporal contradicen una assertion fuente;
+- existe un conflicto fuente abierto y el Story Pack no lo declara;
+- el SHA observado del sidecar difiere del SHA fijado por el caller.
+
+Normalización de texto no autoriza pérdida global de significado. NFC, smart quotes y whitespace pueden normalizarse si la policy de comparación lo permite; cambios lexicales materiales, autocompletado de texto truncado o elevación de evidencia requieren soporte fuente adicional.
+
+El modo sin `--require-source-authority` existe únicamente para regresiones históricas de compatibilidad. No es el contrato operacional para generación o cierre funcional.
