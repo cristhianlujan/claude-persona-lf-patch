@@ -1,90 +1,18 @@
 {
-  "baseline_main_sha": "7ed6ac03a5364276ed138ff92e079cc01309551c",
-  "configuration_id": "P0-VISUAL-CLOSED-LOOP-V4",
-  "configuration_sha256": "0c957b460318a117765a9a7d5ea8acbf97ee9446ea55c106f3202b69b3359a36",
-  "convergence_receipt_sha256": "7adb8d8db193300b8bcce287c8056c7063c8703ee6fb53623ca8d634497ff8f5",
-  "durable_readback": {
-    "artifacts": 17,
-    "hash_bytes_verified": 17,
-    "hash_chain_verified": 17
-  },
-  "forward_adversarial": {
-    "cases": 15,
-    "critical_false_passes": 0,
-    "result": "PASS"
-  },
-  "gates": {
-    "closed_loop_engine": "PASS_V4_CLOSED_LOOP_ENGINE",
-    "contracts": "PASS_V4_CONTRACTS",
-    "durable_loop_state": "PASS_V4_DURABLE_LOOP_STATE",
-    "grader_coverage": "PASS_V4_GRADER_COVERAGE",
-    "graders": "PASS_V4_GRADERS",
-    "human_findings_regressions": "PASS_V4_HUMAN_FINDINGS_AS_REGRESSIONS",
-    "human_packet": "PASS_V4_HUMAN_PACKET_READY",
-    "real_screen_convergence": "PASS_V4_REAL_SCREEN_CONVERGENCE",
-    "self_diagnostic": "PASS_V4_SELF_DIAGNOSTIC"
-  },
-  "human_adjudication": "NOT_PERFORMED",
-  "human_packet_manifest": {
-    "durable_object_id": "8e726ab2-9869-48cb-8609-931718f15009",
-    "html_sha256": "5e05be59b2365defd68309db348f3cf8675b4f949e1e0adc8025c4c3f214f33d",
-    "manifest_content_sha256": "2a2b5315988d907364ee3da8043d882083dd3af23cf48dfbe67b9fad326d8449",
-    "packet_zip_sha256": "c615b02001c77e009cdc377ecd03c6e58cd8d0cf2ae982e266278d6b63747307"
-  },
-  "issue_125_must_remain_open_until_valid_human_adjudication": true,
-  "known_real_regression_seeds": {
-    "detected": 10,
-    "total": 10
-  },
-  "p0_5_state": "UNASSESSED_SEPARATE",
-  "private_source_or_crops_in_github": false,
-  "production_authorized": false,
-  "real_rerun": {
-    "clean_pass_02": {
-      "candidate_sha256": "db8df09a4df2029e541cfca9e2cf94828e110ec2b568132ad1821fc63dc38422",
-      "coverage_receipt_sha256": "5a5bcdc1b89e881e908b259cf87493e63d56b119d70fbf65647d6070c8e0e967",
-      "independent_sweep": {
-        "missing": 0,
-        "observations": 52
-      },
-      "reader_execution_id": "READER-P-02-02-73b5f564b4e2"
-    },
-    "clean_pass_03": {
-      "candidate_sha256": "f0074fbd8509f984f8bd76006fc1ec21b452e80e20ff70da376230bacb7b7c70",
-      "coverage_receipt_sha256": "75b39f6966dee38e11b31fedb0f13a56ba36b89954b5c809f69a3cf21aaf8311",
-      "independent_sweep": {
-        "missing": 0,
-        "observations": 52
-      },
-      "reader_execution_id": "READER-P-03-03-95d45ff460e8"
-    },
-    "pass_01": {
-      "candidate_sha256": "00bbbbd2b5dc42f390b30c6b38bb5f5fb55c23f1cefa691b81b0d89e0b2a3c67",
-      "coverage_percent": 100.0,
-      "material_findings": 25
-    },
-    "remediation_cycles": 1
-  },
-  "real_rerun_trace_sha256": "ac011b4514bf51a3469e7bc944d695e0f5bd7158052a8cb2e645bc04237cbf6b",
+  "schema_version": "p0-closed-loop-manifest-v4/remediation-marker-v1",
   "repo": "cristhianlujan/claude-persona-lf-patch",
-  "required_graders": [
-    "J-TEXT",
-    "J-OBJECT",
-    "J-COMPLETE",
-    "J-GEOMETRY",
-    "J-STRUCTURE",
-    "J-STYLE",
-    "J-SEMANTIC",
-    "J-UNCERTAINTY",
-    "J-SKEPTIC"
-  ],
-  "rerun_code_head_sha": "160271d6ca938ed06e94b3de16a4717d82e754ed",
-  "schema_version": "p0-closed-loop-manifest-v4/v1",
-  "source_dimensions": {
-    "format": "PNG",
-    "height": 1024,
-    "width": 1536
-  },
-  "source_image_ref": "IMG-LF-ONBOARDING-STEP1-001",
-  "source_sha256": "e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7"
+  "pr": 133,
+  "branch": "lf/p0-v4-closed-loop",
+  "source_sha256": "e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7",
+  "audited_head": "d9c9fbfdee911b684c9509cf6d8597cf38818f0f",
+  "prior_executable_head": "160271d6ca938ed06e94b3de16a4717d82e754ed",
+  "audit_state": "FAIL_AUDIT_V4",
+  "remediation_state": "IMPLEMENTED_PENDING_REQUIRED_CHECKS_AND_POST_AUDIT",
+  "invalidated_claim": "Prior PASS manifest used omission coverage whose denominator was not independently derived from SOURCE_PIXELS.",
+  "historical_evidence_policy": "Prior Supabase V4 evidence remains immutable historical evidence of the audited failed rerun.",
+  "required_global_check": "lf-contract-check",
+  "human_adjudication": "NOT_PERFORMED",
+  "p0_5_state": "UNASSESSED_SEPARATE",
+  "production_authorized": false,
+  "issue_125_must_remain_open": true
 }
