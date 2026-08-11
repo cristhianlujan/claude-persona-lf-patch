@@ -1,4 +1,4 @@
-version: v0.1
+version: v0.2
 source_verified_at: 2026-08-11
 supabase_project_ref: mhwmirqcgxxukpctffuv
 
@@ -32,6 +32,25 @@ projects:
       SYSTEM_ERROR: errores_catalogo
       SYSTEM_ERROR_SCREEN: errores_pantallas
       SYSTEM_ERROR_OCCURRENCE: errores_ocurrencias
+    visual_system:
+      schema: lf_design
+      design_system_code: LF_DS_V1
+      mappings:
+        DESIGN_SYSTEM: design_systems
+        COLOR_TOKEN: color_tokens
+        TYPOGRAPHY_TOKEN: typography_tokens
+        SPACING_TOKEN: spacing_tokens
+        RESPONSIVE_TOKEN: responsive_tokens
+        COMPONENT_TOKEN: component_tokens
+        THEME_BINDING: theme_bindings
+        ICON: icon_catalog
+        BRAND_ASSET: brand_assets
+        VISUAL_DECISION: visual_decisions
+      rules:
+        prefer_status: VIGENTE
+        candidate_values_are_not_final: true
+        deprecated_values_forbidden: true
+        never_invent_visual_token: true
     cross_project_knowledge:
       schema: public
       mappings:
@@ -86,3 +105,4 @@ rules:
   duplicate_found: REUSE_OR_RELATE
   never_create_table_automatically: true
   never_fallback_to_public: true
+  never_cross_project_schema: true
