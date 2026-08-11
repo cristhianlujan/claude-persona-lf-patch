@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 import hashlib,collections
+from difflib import SequenceMatcher
 from pathlib import Path
 import cv2,pytesseract
 from pytesseract import Output
@@ -42,16 +43,32 @@ def match_alt(primary:dict,alts:list[dict])->str:
  text=' '.join(x['text'] for x in near) if len(near)>1 else candidates[0]['text']
  return ' '.join(text.split())
 def grouping_signal(primary:dict,lines:dict[int,list[dict]],primary_psm:int,source_sha:str)->tuple[bool,str,list[str],dict]:
- counts=[];refs=[];by_psm={}
+ refs=[];by_psm={};reconstructed_by_psm={};primary_text=norm(primary.get('text') or '')
  for psm,observations in lines.items():
   matched=overlapping_lines(primary,observations)
   if psm==primary_psm and not matched:matched=[primary]
-  count=len(matched);by_psm[str(psm)]=count
-  if count:counts.append(count)
+  by_psm[str(psm)]=len(matched)
+  reconstructed=norm(match_alt(primary,observations)) if psm!=primary_psm else primary_text
+  reconstructed_by_psm[str(psm)]=reconstructed
   for item in matched:refs.append(observation_ref(source_sha,psm,item['region'],item.get('text') or ''))
- consistency=len(set(counts))<=1 if counts else True
+ primary_count=by_psm.get(str(primary_psm),1);disagree=[]
+ for psm in sorted(lines):
+  if psm==primary_psm:continue
+  text=reconstructed_by_psm.get(str(psm),'');count=by_psm.get(str(psm),0)
+  if not text or count==primary_count:continue
+  sim=SequenceMatcher(None,primary_text,text).ratio() if primary_text else 1.0
+  if sim<.72:disagree.append(text)
+ # One segmentation outlier is insufficient. Require two independent PSM passes
+ # to agree on a materially different reconstructed unit before declaring mismatch.
+ corroborated=False
+ for i,a in enumerate(disagree):
+  for b in disagree[i+1:]:
+   if SequenceMatcher(None,a,b).ratio()>=.80:corroborated=True;break
+  if corroborated:break
+ consistency=not corroborated
  gid='TG-'+hashlib.sha256(('|'.join(sorted(set(refs))) or observation_ref(source_sha,primary_psm,primary['region'],primary.get('text') or '')).encode()).hexdigest()[:16]
  return consistency,gid,sorted(set(refs)),by_psm
+
 def cv_objects(image,text_regions:list[dict])->list[dict]:
  gray=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY);edges=cv2.Canny(gray,50,150);contours,_=cv2.findContours(edges,cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE);raw=[]
  for c in contours:
@@ -71,13 +88,13 @@ def full_reader(source_path:str,ctx:dict)->dict:
  image=cv2.imread(source_path)
  if image is None:raise ValueError('SOURCE_DECODE_FAILED')
  h,w=image.shape[:2];strict=bool((ctx.get('remediation_state') or {}).get('strict_mode'));primary_psm=3 if strict else 11
- lines={p:ocr_lines(image,p) for p in (3,6,11,12)};primary=lines[primary_psm];elements=[{'element_id':'V4-ROOT','element_type':'CONTAINER','visible_text':None,'classification':'CONFIRMED','confidence':1.0,'region':{'x':0,'y':0,'width':w,'height':h},'parent_id':None,'evidence_refs':['p0://v4/source/'+ctx['source_sha256']],'bbox_reproducible':True,'style':{},'style_provenance':{},'independent_redetection':True,'risk_zone':None,'business_rule_claim':None,'business_rule_visible_evidence':False}];unc=[]
+ psms=(3,11,12);lines={p:ocr_lines(image,p) for p in psms};primary=lines[primary_psm];elements=[{'element_id':'V4-ROOT','element_type':'CONTAINER','visible_text':None,'classification':'CONFIRMED','confidence':1.0,'region':{'x':0,'y':0,'width':w,'height':h},'parent_id':None,'evidence_refs':['p0://v4/source/'+ctx['source_sha256']],'bbox_reproducible':True,'style':{},'style_provenance':{},'independent_redetection':True,'risk_zone':None,'business_rule_claim':None,'business_rule_visible_evidence':False}];unc=[]
  for idx,line in enumerate(primary,1):
   variants=[]
-  for p in (3,6,11,12):
+  for p in psms:
    if p==primary_psm:variants.append(line['text'])
    else:variants.append(match_alt(line,lines[p]))
-  non=[v for v in variants if v];alt_non=[v for i,v in enumerate(variants) if i!=(0 if primary_psm==3 else 2) and v];counts=collections.Counter(norm(v) for v in (alt_non or non));best_norm,best_n=counts.most_common(1)[0] if counts else ('',0);best_text=next((v for v in (alt_non or non) if norm(v)==best_norm),'')
+  non=[v for v in variants if v];alt_non=[v for p,v in zip(psms,variants) if p!=primary_psm and v];counts=collections.Counter(norm(v) for v in (alt_non or non));best_norm,best_n=counts.most_common(1)[0] if counts else ('',0);best_text=next((v for v in (alt_non or non) if norm(v)==best_norm),'')
   exact_agree=sum(norm(v)==norm(line['text']) for v in non);stable=exact_agree>=2 and line['confidence']>=65
   txt=line['text'];classification='CONFIRMED' if (not strict and line['confidence']>=45) or (strict and stable) else 'INFERRED';etype='TEXT';consensus=best_text if not strict else (line['text'] if stable else '')
   r=line['region'];aspect=r['width']/max(1,r['height']);glyph_shape=len(txt.strip())<=1 and 0.65<=aspect<=1.55 and max(r['width'],r['height'])<=32
@@ -86,7 +103,7 @@ def full_reader(source_path:str,ctx:dict)->dict:
   graphic=.82 if (not strict and txt and len(txt.strip())<=3 and exact_agree<2) else .05
   role='control_visible_text' if txt and txt.strip().startswith('+') and any(ch.isdigit() for ch in txt) else 'visible_copy';group_ok,group_id,source_refs,group_counts=grouping_signal(line,lines,primary_psm,ctx['source_sha256'])
   subrole='GLYPH' if glyph_shape and etype in {'TEXT','LABEL'} else None;risk='LEGAL' if txt and len(txt)>=120 else ('DENSE' if r['width']*r['height']>=18000 and txt and len(txt)>=50 else None)
-  e={'element_id':f'V4-T-{idx:04d}','element_type':etype,'visible_text':txt,'classification':classification,'confidence':round(max(0,min(1,line['confidence']/100.0)),6),'region':line['region'],'parent_id':'V4-ROOT','semantic_role':role,'subcomponent_role':subrole,'evidence_refs':[region_ref(ctx['source_sha256'],line['region'])],'source_observation_refs':source_refs,'text_group_consistency':group_ok,'text_group_id':group_id,'text_group_observation_counts':group_counts,'ocr_variants':variants,'ocr_consensus_text':consensus,'ocr_read_count':4,'ocr_empty_reads':sum(not v for v in variants),'ocr_agreement_count':exact_agree,'graphic_score':graphic,'brand_mark_score':0.0,'business_rule_claim':None,'business_rule_visible_evidence':False,'risk_zone':risk,'bbox_reproducible':True,'style':{},'style_provenance':{},'independent_redetection':stable,'redetection_status':'REDETECTED' if stable else 'AMBIGUOUS'}
+  e={'element_id':f'V4-T-{idx:04d}','element_type':etype,'visible_text':txt,'classification':classification,'confidence':round(max(0,min(1,line['confidence']/100.0)),6),'region':line['region'],'parent_id':'V4-ROOT','semantic_role':role,'subcomponent_role':subrole,'evidence_refs':[region_ref(ctx['source_sha256'],line['region'])],'source_observation_refs':source_refs,'text_group_consistency':group_ok,'text_group_id':group_id,'text_group_observation_counts':group_counts,'ocr_variants':variants,'ocr_consensus_text':consensus,'ocr_read_count':len(psms),'ocr_empty_reads':sum(not v for v in variants),'ocr_agreement_count':exact_agree,'graphic_score':graphic,'brand_mark_score':0.0,'business_rule_claim':None,'business_rule_visible_evidence':False,'risk_zone':risk,'bbox_reproducible':True,'style':{},'style_provenance':{},'independent_redetection':stable,'redetection_status':'REDETECTED' if stable else 'AMBIGUOUS'}
   elements.append(e)
   if not stable:unc.append({'element_id':e['element_id'],'code':'OCR_DISAGREEMENT','region':line['region']})
   if not group_ok:unc.append({'element_id':e['element_id'],'code':'TEXT_GROUPING_DISAGREEMENT','region':line['region'],'observation_counts':group_counts})
