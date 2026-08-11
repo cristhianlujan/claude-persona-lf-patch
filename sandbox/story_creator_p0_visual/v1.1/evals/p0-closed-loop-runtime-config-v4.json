@@ -1,0 +1,16 @@
+{
+  "schema_version":"p0-closed-loop-runtime-config/v4",
+  "configuration_id":"P0-VISUAL-CLOSED-LOOP-V4",
+  "extends":"P0-VISUAL-FIDELITY-V3-LOCAL-DETERMINISTIC",
+  "max_remediation_cycles":5,
+  "required_consecutive_clean_full_passes":2,
+  "full_reread_after_effective_remediation":true,
+  "targeted_reread_can_global_pass":false,
+  "fresh_reader_execution_each_full_pass":true,
+  "fresh_grader_execution_each_full_pass":true,
+  "required_graders":["J-TEXT","J-OBJECT","J-COMPLETE","J-GEOMETRY","J-STRUCTURE","J-STYLE","J-SEMANTIC","J-UNCERTAINTY","J-SKEPTIC"],
+  "required_grader_coverage_percent":100,
+  "fail_closed_on_grader_error":true,
+  "production_authorized":false,
+  "private_real_source_in_repo":false
+}

@@ -1,0 +1,11 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"p0-run-state-v4.schema.json","title":"P0 Run State V4","type":"object","additionalProperties":false,
+  "required":["schema_version","repo","baseline_main_sha","branch","branch_head_sha","issue","pr","source_sha256","configuration_id","configuration_sha256","phase","last_completed_gate","cycle_id","pass_id","clean_pass_count","open_findings","latest_artifacts","next_action","blockers"],
+  "properties":{
+    "schema_version":{"const":"p0-v4-run-state/v1"},"repo":{"const":"cristhianlujan/claude-persona-lf-patch"},"baseline_main_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},"branch":{"type":"string","minLength":1},"branch_head_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},"issue":{"const":125},"pr":{"type":["integer","null"],"minimum":1},"source_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},"configuration_id":{"type":"string","minLength":1},"configuration_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "phase":{"enum":["IMPLEMENTATION","EVAL","RERUN","PR","POSTMERGE"]},"last_completed_gate":{"type":"string","minLength":1},"cycle_id":{"type":"string","minLength":1},"pass_id":{"type":"string","minLength":1},"clean_pass_count":{"type":"integer","minimum":0},
+    "open_findings":{"type":"object","additionalProperties":false,"required":["critical","high","medium","low"],"properties":{"critical":{"type":"integer","minimum":0},"high":{"type":"integer","minimum":0},"medium":{"type":"integer","minimum":0},"low":{"type":"integer","minimum":0}}},
+    "latest_artifacts":{"type":"object","additionalProperties":false,"required":["candidate_sha256","findings_sha256","coverage_sha256","receipt_sha256"],"properties":{"candidate_sha256":{"anyOf":[{"type":"string","pattern":"^[0-9a-f]{64}$"},{"type":"null"}]},"findings_sha256":{"anyOf":[{"type":"string","pattern":"^[0-9a-f]{64}$"},{"type":"null"}]},"coverage_sha256":{"anyOf":[{"type":"string","pattern":"^[0-9a-f]{64}$"},{"type":"null"}]},"receipt_sha256":{"anyOf":[{"type":"string","pattern":"^[0-9a-f]{64}$"},{"type":"null"}]}}},
+    "next_action":{"type":"string","minLength":1},"blockers":{"type":"array","items":{"type":"string"}},"baseline_evidence":{"type":"object"}
+  }
+}
