@@ -6,13 +6,14 @@ ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT/'scripts'))
 from p0_visual_graders_v4 import run_all,canonical_sha,MATERIAL_SEVERITIES
 from p0_visual_discovery_v4 import union_findings,coverage_receipt
 H='a'*64
+POLICY={'schema_version':'p0-sweep-materiality-policy/v1','text_confidence_strong_min':45.0,'text_confidence_long_min':35.0,'text_long_min_alnum':4,'object_material_area_min_px2':900,'rationale':'test fixture mirrors product policy'}
 
 def E(txt='OK',typ='TEXT',**kw):
  d={'element_id':'E1','element_type':typ,'visible_text':txt,'classification':'CONFIRMED','confidence':.9,'semantic_role':'visible_copy','region':{'x':10,'y':10,'width':90,'height':18},'parent_id':'ROOT','evidence_refs':['adv://crop'],'ocr_variants':[txt] if txt else [],'ocr_consensus_text':txt or '','graphic_score':.05,'bbox_reproducible':True,'style':{},'style_provenance':{},'independent_redetection':True};d.update(kw);return d
 def C(e,**kw):
  d={'width':320,'height':120,'fresh_source_read':True,'reader_origin':'SOURCE_PIXELS','elements':[{'element_id':'ROOT','element_type':'CONTAINER','visible_text':None,'classification':'CONFIRMED','confidence':1,'region':{'x':0,'y':0,'width':320,'height':120},'parent_id':None,'evidence_refs':['adv://full'],'bbox_reproducible':True,'style':{},'style_provenance':{},'independent_redetection':True},e]};d.update(kw);return d
 def S(c,status='COMPLETE'):
- return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':'SW-A','source_sha256':H,'candidate_sha256':canonical_sha(c),'width':320,'height':120,'status':status,'fresh_source_read':True,'observations':[],'regions':[{'region_id':r,'material':True,'observed_count':0,'represented_count':0,'uncertain_count':0,'unrepresented_count':0,'sweep_status':'COMPLETE','evidence_refs':[]} for r in ('FULL','LEFT','RIGHT')],'unrepresented_observation_ids':[],'unsupported_candidate_ids':[],'candidate_support_uncertain_ids':[],'errors':[]}
+ return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':'SW-A','source_sha256':H,'candidate_sha256':canonical_sha(c),'width':320,'height':120,'status':status,'fresh_source_read':True,'observations':[],'regions':[{'region_id':r,'material':True,'observed_count':0,'represented_count':0,'uncertain_count':0,'unrepresented_count':0,'sweep_status':'COMPLETE','evidence_refs':[]} for r in ('FULL','LEFT','RIGHT')],'object_sweep':{'detector':'TEST_FIXTURE','raw_count':0,'deduped_count':0,'emitted_count':0,'limit':500,'truncated':False},'materiality_policy':POLICY,'unrepresented_observation_ids':[],'unsupported_candidate_ids':[],'candidate_support_uncertain_ids':[],'errors':[]}
 def run(c,sweep=None):
  ctx={'cycle_id':'C-A','pass_id':'P-A','reader_execution_id':'R-A','source_sha256':H,'candidate_sha256':canonical_sha(c),'coverage_execution_id':'JC-A','independent_sweep':sweep or S(c)};o=run_all(c,ctx);return union_findings(o),coverage_receipt(c,o,ctx),ctx,o
 def blocked(label,c,cat=None,sweep=None):
