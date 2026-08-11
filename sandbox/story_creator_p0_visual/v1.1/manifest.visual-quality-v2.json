@@ -13,7 +13,7 @@
     {"path":"evals/p0_machine_visual_quality_negative_suite_v2.py","git_blob_sha":"16bf2bc3d116f4519be8e4f90c9cb8fd2940f8ae"},
     {"path":"evals/p0_real_screen_bad_legacy_regression.json","git_blob_sha":"73112fb62f6df22c39ef1cd95485c34f4f35e5cd"},
     {"path":"evals/p0_visual_quality_runtime_regression_suite.py","git_blob_sha":"35d85365d2b362d0d5571665f089ffc72b89f2a5"},
-    {"path":"requirements-p0-visual-quality.txt","git_blob_sha":"0c9fed52d49777a1964ac7976f2d7ab44afa65b9"},
+    {"path":"requirements-p0-visual-quality.txt","git_blob_sha":"be492755856ad83efc799e1ad58d9f870b5c034e"},
     {"path":"schemas/consolidated-visual-reading.schema.json","git_blob_sha":"7f9712e5008ab6540bb8a9b012e27770892f188a"},
     {"path":"schemas/human-review-packet-v3.schema.json","git_blob_sha":"02fd02023b6e26364c786d971b17f63b256bbac3"},
     {"path":"schemas/machine-visual-quality-report.schema.json","git_blob_sha":"16d5d63bd1ffd1504ebc0c7f0eb054cd925b156e"},
