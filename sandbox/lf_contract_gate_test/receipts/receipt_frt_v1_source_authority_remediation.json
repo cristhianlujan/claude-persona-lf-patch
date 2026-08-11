@@ -7,12 +7,12 @@
   "result": "PASS_SANDBOX",
   "all_required_steps_pass": true,
   "contract_sha": "40969a55fc1eb86fe72dea56a7d3ba59ba977e176a7103a3fa9e88d67e5c94c6",
-  "judge_sha": "a9e1e5db596f788c6c83904b1db40f07f56b611c",
+  "judge_sha": "eaf30d782d32b4da78a9b00e3ae14477a942d971",
   "source_sha_list": [
-    "da950cca43698a3ad1ac3743c6714bdcac75f6a1",
-    "874ff512bdb5e8dc0e211bd4b467006b9080faea",
-    "ea0c050b21a3499f4fd1450b536f64aaa71d9133",
-    "c33f1d2e42bc25e0e5bac159e50294ef3b16f839"
+    "ae40b9ecdec7b515a9c94d5f2a3655a3c29dff35",
+    "8dcfe2908ba67d34415ccb6a5f81fd23ad43b31d",
+    "eaf30d782d32b4da78a9b00e3ae14477a942d971",
+    "41b5d42e326820a0f37831addd7e385d24fa3d11"
   ],
   "target_paths": [
     "skills/creating-integral-user-stories/scripts/validate_traceability.py",
