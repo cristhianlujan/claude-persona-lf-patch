@@ -7,6 +7,7 @@ from run_p0_visual_quality_loop_v4 import run_loop
 from p0_visual_grader_core_v4 import canonical_sha
 from p0_visual_convergence_v4 import convergence_receipt_binding
 H40='b'*40;CFG='c'*64
+POLICY={'schema_version':'p0-sweep-materiality-policy/v1','text_confidence_strong_min':45.0,'text_confidence_long_min':35.0,'text_long_min_alnum':4,'object_material_area_min_px2':900,'rationale':'test fixture mirrors product policy'}
 
 def source():
  p=Path(tempfile.mkstemp(suffix='.bin')[1]);p.write_bytes(b'fixed-original-pixels');return p,hashlib.sha256(p.read_bytes()).hexdigest()
@@ -15,7 +16,7 @@ def candidate(bad=False):
  if bad:e.update({'element_type':'TEXT','visible_text':'7','graphic_score':.9,'ocr_variants':['7','?']})
  return {'width':100,'height':100,'elements':[e],'fresh_source_read':True,'reader_origin':'SOURCE_PIXELS'}
 def blank_sweep(path,sha,candidate,*,execution_id):
- return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':sha,'candidate_sha256':canonical_sha({k:v for k,v in candidate.items() if k!='reader_execution_id'}),'width':100,'height':100,'status':'COMPLETE','fresh_source_read':True,'observations':[],'regions':[{'region_id':r,'material':True,'observed_count':0,'represented_count':0,'uncertain_count':0,'unrepresented_count':0,'sweep_status':'COMPLETE','evidence_refs':[]} for r in ('FULL','LEFT','RIGHT')],'object_sweep':{'detector':'TEST_FIXTURE','raw_count':0,'deduped_count':0,'emitted_count':0,'limit':500,'truncated':False},'unrepresented_observation_ids':[],'unsupported_candidate_ids':[],'candidate_support_uncertain_ids':[],'errors':[]}
+ return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':sha,'candidate_sha256':canonical_sha({k:v for k,v in candidate.items() if k!='reader_execution_id'}),'width':100,'height':100,'status':'COMPLETE','fresh_source_read':True,'observations':[],'regions':[{'region_id':r,'material':True,'observed_count':0,'represented_count':0,'uncertain_count':0,'unrepresented_count':0,'sweep_status':'COMPLETE','evidence_refs':[]} for r in ('FULL','LEFT','RIGHT')],'object_sweep':{'detector':'TEST_FIXTURE','raw_count':0,'deduped_count':0,'emitted_count':0,'limit':500,'truncated':False},'materiality_policy':POLICY,'unrepresented_observation_ids':[],'unsupported_candidate_ids':[],'candidate_support_uncertain_ids':[],'errors':[]}
 def targeted(path,actions,ctx):return {'verified':True,'actions':len(actions),'source_sha256':ctx['source_sha256']}
 def remediate(c,findings,state):state['fixed']=True;return state,[{'category':findings[0]['category']}]
 def base(reader,**kw):
