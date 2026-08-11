@@ -6,13 +6,14 @@ ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT/'scripts'))
 from p0_visual_graders_v4 import run_all,canonical_sha
 from p0_visual_discovery_v4 import union_findings
 H='a'*64
-PRODUCT=[ROOT/'scripts/p0_visual_graders_v4.py',ROOT/'scripts/p0_visual_discovery_v4.py',ROOT/'scripts/p0_visual_convergence_v4.py',ROOT/'scripts/run_p0_visual_quality_loop_v4.py',ROOT/'scripts/persist_p0_visual_loop_v4.py']
+PRODUCT=[ROOT/'scripts/p0_visual_graders_v4.py',ROOT/'scripts/p0_visual_discovery_v4.py',ROOT/'scripts/p0_independent_omission_sweep_v4.py',ROOT/'scripts/p0_visual_convergence_v4.py',ROOT/'scripts/run_p0_visual_quality_loop_v4.py',ROOT/'scripts/persist_p0_visual_loop_v4.py']
 FORBIDDEN=['EL-0034','EL-0038','EL-0079','EL-0088','+51 Y','mn relacionada']
 def E(txt,**kw):
  d={'element_id':'SYN-1','element_type':'TEXT','visible_text':txt,'classification':'CONFIRMED','confidence':.9,'semantic_role':'visible_copy','region':{'x':10,'y':10,'width':80,'height':20},'parent_id':'ROOT','evidence_refs':['synthetic://crop'],'ocr_variants':[txt] if txt else [],'ocr_consensus_text':txt,'graphic_score':.1,'bbox_reproducible':True,'style':{},'style_provenance':{},'independent_redetection':True};d.update(kw);return d
-def C(e):return {'width':300,'height':100,'fresh_source_read':True,'reader_origin':'SOURCE_PIXELS','elements':[{'element_id':'ROOT','element_type':'CONTAINER','visible_text':None,'classification':'CONFIRMED','confidence':1,'region':{'x':0,'y':0,'width':300,'height':100},'parent_id':None,'evidence_refs':['synthetic://full'],'bbox_reproducible':True,'style':{},'style_provenance':{},'independent_redetection':True},e],'coverage_map':[{'region_id':'FULL','material':True,'observed_count':2,'represented_count':2,'sweep_status':'COMPLETE'}]}
+def C(e):return {'width':300,'height':100,'fresh_source_read':True,'reader_origin':'SOURCE_PIXELS','elements':[{'element_id':'ROOT','element_type':'CONTAINER','visible_text':None,'classification':'CONFIRMED','confidence':1,'region':{'x':0,'y':0,'width':300,'height':100},'parent_id':None,'evidence_refs':['synthetic://full'],'bbox_reproducible':True,'style':{},'style_provenance':{},'independent_redetection':True},e]}
+def S(c):return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':'SW-R','source_sha256':H,'candidate_sha256':canonical_sha(c),'width':300,'height':100,'status':'COMPLETE','fresh_source_read':True,'observations':[],'regions':[{'region_id':r,'material':True,'observed_count':0,'represented_count':0,'uncertain_count':0,'unrepresented_count':0,'sweep_status':'COMPLETE','evidence_refs':[]} for r in ('FULL','LEFT','RIGHT')],'unrepresented_observation_ids':[],'unsupported_candidate_ids':[],'candidate_support_uncertain_ids':[],'errors':[]}
 def cats(c):
- ctx={'cycle_id':'C-R','pass_id':'P-R','reader_execution_id':'R-R','source_sha256':H,'candidate_sha256':canonical_sha(c),'coverage_execution_id':'JC-R'};return {f['category'] for f in union_findings(run_all(c,ctx))}
+ ctx={'cycle_id':'C-R','pass_id':'P-R','reader_execution_id':'R-R','source_sha256':H,'candidate_sha256':canonical_sha(c),'coverage_execution_id':'JC-R','independent_sweep':S(c)};return {f['category'] for f in union_findings(run_all(c,ctx))}
 def expect(label,cat,c):x=cats(c);assert cat in x,(label,cat,x);return label
 def main():
  checks=[]
