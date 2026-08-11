@@ -97,8 +97,8 @@ def j_uncertainty(candidate:dict,ctx:dict)->dict:
  g='J-UNCERTAINTY';els=candidate.get('elements',[]);app=[e['element_id'] for e in els];fs=[]
  for e in els:
   if e.get('classification')!='CONFIRMED':continue
-  txt=str(e.get('visible_text') or '').strip();refs=e.get('evidence_refs') or [];variants={str(v).strip() for v in e.get('ocr_variants',[]) if str(v).strip()};weak=(len(refs)==0 or e.get('redetection_status')=='NOT_REDETECTED' or len(variants)>1 or (txt and len(txt)<=3 and float(e.get('graphic_score',0) or 0)>=.55))
-  if weak:fs.append(finding(ctx,g,'CONFIRMED_WITH_WEAK_EVIDENCE','HIGH',e,{'evidence_ref_count':len(refs),'ocr_variant_count':len(variants),'redetection_status':e.get('redetection_status'),'graphic_score':e.get('graphic_score')},'REREAD',.96,'certainty-inflation'))
+  txt=str(e.get('visible_text') or '').strip();refs=e.get('evidence_refs') or [];variants={str(v).strip() for v in e.get('ocr_variants',[]) if str(v).strip()};disagreement=len(variants)>1 and int(e.get('ocr_agreement_count',0) or 0)<2;weak=(len(refs)==0 or e.get('redetection_status')=='NOT_REDETECTED' or disagreement or (txt and len(txt)<=3 and float(e.get('graphic_score',0) or 0)>=.55))
+  if weak:fs.append(finding(ctx,g,'CONFIRMED_WITH_WEAK_EVIDENCE','HIGH',e,{'evidence_ref_count':len(refs),'ocr_variant_count':len(variants),'ocr_agreement_count':e.get('ocr_agreement_count'),'redetection_status':e.get('redetection_status'),'graphic_score':e.get('graphic_score')},'REREAD',.96,'certainty-inflation'))
  return output(ctx,g,app,app,fs)
 def j_skeptic(candidate:dict,ctx:dict)->dict:
  g='J-SKEPTIC';els=candidate.get('elements',[]);app=[e['element_id'] for e in els];fs=[];prev=candidate.get('previous_full_pass_candidate_sha256')
