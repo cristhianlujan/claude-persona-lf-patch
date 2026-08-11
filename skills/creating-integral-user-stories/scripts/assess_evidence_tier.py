@@ -24,9 +24,23 @@ def valid_hex(value: Any, length: int) -> bool:
 
 def provenance_resolved(provenance: dict[str, Any]) -> bool:
     semantic = str(provenance.get("semantic_classification") or "").strip()
-    derivation_ok = semantic == "CONFIRMED" or (
-        semantic == "INFERRED" and provenance.get("derivation_declared") is True
+    prior = str(provenance.get("prior_semantic_classification") or "").strip()
+    new_refs = provenance.get("new_evidence_refs") if isinstance(provenance.get("new_evidence_refs"), list) else []
+    direct_confirmed = (
+        semantic == "CONFIRMED"
+        and provenance.get("direct_confirmation") is True
+        and bool(str(provenance.get("confirmation_execution_id") or "").strip())
+        and bool(new_refs)
     )
+    promoted_confirmed = (
+        semantic == "CONFIRMED"
+        and prior in {"INFERRED", "NOT_OBSERVABLE"}
+        and provenance.get("classification_transition") == f"{prior}->CONFIRMED"
+        and bool(str(provenance.get("confirmation_execution_id") or "").strip())
+        and bool(new_refs)
+    )
+    inferred_resolved = semantic == "INFERRED" and provenance.get("derivation_declared") is True
+    derivation_ok = direct_confirmed or promoted_confirmed or inferred_resolved
     return (
         provenance.get("resolution_status") == "RESOLVED"
         and provenance.get("resolvable") is True
@@ -159,19 +173,44 @@ def self_test() -> int:
     confirmed["source_provenance"].update({
         "semantic_classification": "CONFIRMED",
         "derivation_declared": False,
+        "direct_confirmation": True,
+        "confirmation_execution_id": "EXEC-CONFIRM-DIRECT",
+        "new_evidence_refs": ["EVIDENCE-DIRECT-1"],
     })
     confirmed_result = assess(confirmed)
+
+    illicit_promotion = copy.deepcopy(sample("T1"))
+    illicit_promotion["source_provenance"].update({
+        "semantic_classification": "CONFIRMED",
+        "prior_semantic_classification": "INFERRED",
+        "derivation_declared": False,
+        "direct_confirmation": False,
+        "new_evidence_refs": [],
+    })
+    illicit_result = assess(illicit_promotion)
+
+    valid_promotion = copy.deepcopy(illicit_promotion)
+    valid_promotion["source_provenance"].update({
+        "classification_transition": "INFERRED->CONFIRMED",
+        "confirmation_execution_id": "EXEC-CONFIRM-PROMOTION",
+        "new_evidence_refs": ["EVIDENCE-NEW-1"],
+    })
+    valid_promotion_result = assess(valid_promotion)
 
     passed = (
         all(observed[tier] == tier for tier in expected)
         and inferred_without_derivation["evidence_tier"] != "T1"
         and confirmed_result["evidence_tier"] == "T1"
+        and illicit_result["evidence_tier"] != "T1"
+        and valid_promotion_result["evidence_tier"] == "T1"
     )
     print(json.dumps({
         "self_test_pass": passed,
         "observed": observed,
         "inferred_without_derivation_tier": inferred_without_derivation["evidence_tier"],
         "confirmed_source_tier": confirmed_result["evidence_tier"],
+        "illicit_inferred_to_confirmed_tier": illicit_result["evidence_tier"],
+        "valid_inferred_to_confirmed_tier": valid_promotion_result["evidence_tier"],
     }, sort_keys=True))
     return 0 if passed else 1
 
