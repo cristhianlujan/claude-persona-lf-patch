@@ -5,7 +5,7 @@ from pathlib import Path
 import cv2,numpy as np
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT/'scripts'))
 from p0_full_reader_v4 import full_reader
-from p0_independent_omission_sweep_v4 import run_independent_omission_sweep,validate_sweep_receipt
+from p0_independent_omission_sweep_v4 import run_independent_omission_sweep,validate_sweep_receipt,_text_material,_object_material
 from p0_visual_grader_core_v4 import canonical_sha
 from p0_visual_graders_v4 import run_all
 from p0_visual_discovery_v4 import union_findings,coverage_receipt
@@ -24,7 +24,7 @@ def make_image(path:Path,variant:int=1):
  cv2.imwrite(str(path),im)
 
 def make_crowded(path:Path,count:int):
- cols=26 if count>100 else 15;rows=(count+cols-1)//cols;cell_w=52;cell_h=37
+ cols=15;rows=(count+cols-1)//cols;cell_w=52;cell_h=37
  im=np.full((rows*cell_h+30,cols*cell_w+30,3),255,np.uint8)
  for i in range(count):
   row,col=divmod(i,cols);x=15+col*cell_w;y=15+row*cell_h
@@ -61,8 +61,9 @@ def main():
    if e.get('parent_id') in mapping:e['parent_id']=mapping[e['parent_id']]
   swi=run_independent_omission_sweep(str(p),s,renamed,execution_id='SW-I');assert not swi['unrepresented_observation_ids'] and swi['status']=='COMPLETE';checks.append('I_ID_ONLY_CHANGE_INVARIANT')
   p2=Path(td)/'novel.png';make_image(p2,2);s2=sha(p2);cand2=read(p2,s2,'P-J');swj0=run_independent_omission_sweep(str(p2),s2,cand2,execution_id='SW-J0');mutj,_=drop_matched(cand2,swj0,'TEXT');swj=run_independent_omission_sweep(str(p2),s2,mutj,execution_id='SW-J');fsj,covj,_=run(mutj,swj,s2,'P-J');assert 'MATERIAL_OMISSION' in cats(fsj) and not covj['coverage_pass'];checks.append('J_NOVEL_IMAGE_GENERALIZES')
-  crowded=Path(td)/'crowded90.png';make_crowded(crowded,90);sc=sha(crowded);im=cv2.imread(str(crowded));cc=root_only(im.shape[1],im.shape[0]);swk=run_independent_omission_sweep(str(crowded),sc,cc,execution_id='SW-K');fsk,covk,ctxk=run(cc,swk,sc,'P-K');assert not validate_sweep_receipt(swk,cc,ctxk) and swk['object_sweep']['deduped_count']>60 and swk['object_sweep']['emitted_count']>60 and swk['object_sweep']['truncated'] is False and len(swk['unrepresented_observation_ids'])>60 and 'MATERIAL_OMISSION' in cats(fsk) and not covk['coverage_pass'];checks.append('K_CROWDED_90_NO_SILENT_60_CAP')
-  saturated=Path(td)/'saturated520.png';make_crowded(saturated,520);ss=sha(saturated);ims=cv2.imread(str(saturated));cs=root_only(ims.shape[1],ims.shape[0]);swl=run_independent_omission_sweep(str(saturated),ss,cs,execution_id='SW-L');fsl,covl,ctxl=run(cs,swl,ss,'P-L');assert not validate_sweep_receipt(swl,cs,ctxl) and swl['object_sweep']['truncated'] is True and swl['status']=='BLOCKED' and 'SWEEP_UNIVERSE_TRUNCATED' in swl['errors'] and 'OMISSION_SWEEP_INCOMPLETE' in cats(fsl) and not covl['coverage_pass'];checks.append('L_SATURATION_FAILS_CLOSED')
-  print(json.dumps({'gate':'PASS_V4_INDEPENDENT_OMISSION_SWEEP','cases':len(checks),'results':checks,'base_observations':len([o for o in sw['observations'] if o.get('material')]),'base_represented':sum(o.get('match_status')=='REPRESENTED' for o in sw['observations'] if o.get('material')),'crowded_emitted':swk['object_sweep']['emitted_count'],'saturation':swl['object_sweep']},sort_keys=True))
+  crowded=Path(td)/'crowded90.png';make_crowded(crowded,90);sc=sha(crowded);im=cv2.imread(str(crowded));cc=root_only(im.shape[1],im.shape[0]);swk=run_independent_omission_sweep(str(crowded),sc,cc,execution_id='SW-K');fsk,covk,ctxk=run(cc,swk,sc,'P-K');assert not validate_sweep_receipt(swk,cc,ctxk) and swk['object_sweep']['deduped_count']>60 and swk['object_sweep']['emitted_count']==60 and swk['object_sweep']['limit']==60 and swk['object_sweep']['truncated'] is True and swk['status']=='BLOCKED' and 'SWEEP_UNIVERSE_TRUNCATED' in swk['errors'] and 'OMISSION_SWEEP_INCOMPLETE' in cats(fsk) and not covk['coverage_pass'];checks.append('K_MORE_THAN_60_OBJECTS_BLOCKS')
+  assert _text_material('campo largo',40.0) and not _text_material('x',40.0);checks.append('L_LOW_CONF_LONG_TEXT_RETAINED')
+  assert _object_material(900) and _object_material(1199) and not _object_material(899);checks.append('M_OBJECT_900_TO_1199_RETAINED')
+  print(json.dumps({'gate':'PASS_V4_INDEPENDENT_OMISSION_SWEEP','cases':len(checks),'results':checks,'base_observations':len([o for o in sw['observations'] if o.get('material')]),'base_represented':sum(o.get('match_status')=='REPRESENTED' for o in sw['observations'] if o.get('material')),'crowded_object_sweep':swk['object_sweep'],'materiality_policy':swk['materiality_policy']},sort_keys=True))
  return 0
 if __name__=='__main__':raise SystemExit(main())
