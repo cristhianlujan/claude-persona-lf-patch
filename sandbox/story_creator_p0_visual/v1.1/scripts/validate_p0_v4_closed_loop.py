@@ -1,46 +1,32 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import hashlib, json
+import hashlib,json
 from pathlib import Path
 try:
-    import jsonschema
-except Exception as exc:
-    raise SystemExit(f"BLOCKED_MODEL_CONFIGURATION: jsonschema unavailable: {exc}")
-ROOT=Path(__file__).resolve().parents[1]
-SCHEMAS=ROOT/'schemas'
+ import jsonschema
+except Exception as exc:raise SystemExit(f"BLOCKED_MODEL_CONFIGURATION: jsonschema unavailable: {exc}")
+ROOT=Path(__file__).resolve().parents[1];SCHEMAS=ROOT/'schemas'
 NAMES=['p0-visual-finding-v4.schema.json','p0-grader-output-v4.schema.json','p0-grader-coverage-v4.schema.json','p0-loop-cycle-v4.schema.json','p0-convergence-receipt-v4.schema.json','p0-run-state-v4.schema.json']
-H='a'*64; C='b'*40
-
-def load(name): return json.loads((SCHEMAS/name).read_text(encoding='utf-8'))
-def registry(): return {s['$id']:s for s in map(load,NAMES)}
+H='a'*64;C='b'*40;GR=['J-TEXT','J-OBJECT','J-COMPLETE','J-GEOMETRY','J-STRUCTURE','J-STYLE','J-SEMANTIC','J-UNCERTAINTY','J-SKEPTIC']
+def load(name):return json.loads((SCHEMAS/name).read_text(encoding='utf-8'))
+def registry():return {s['$id']:s for s in map(load,NAMES)}
 def validate(name,obj):
-    schemas=registry(); schema=schemas[name]
-    reg=jsonschema.RefResolver.from_schema(schema, store=schemas)
-    jsonschema.Draft202012Validator(schema,resolver=reg).validate(obj)
-def finding(): return {'schema_version':'p0-visual-finding-v4/v1','finding_id':'F-001','cycle_id':'C-01','pass_id':'P-01','grader_id':'J-TEXT','category':'OCR_ICON_TEXT_CONFUSION','severity':'HIGH','element_id':'EL-1','region':{'x':1,'y':2,'width':3,'height':4},'candidate_claim':'63','observed_evidence':'graphic morphology','evidence_refs':['crop://1'],'confidence':.91,'actionability':'AUTO_REMEDIATE','root_cause_candidate':'icon-text','status':'OPEN'}
-def grader(): return {'schema_version':'p0-grader-output-v4/v1','execution_id':'J1','reader_execution_id':'R1','cycle_id':'C-01','pass_id':'P-01','grader_id':'J-TEXT','source_sha256':H,'candidate_sha256':H,'applicable_element_ids':['EL-1'],'evaluated_element_ids':['EL-1'],'screen_regions_evaluated':['FULL'],'findings':[finding()],'coverage_complete':True,'status':'BLOCKED','error':None}
-def coverage(): return {'schema_version':'p0-grader-coverage-v4/v1','execution_id':'JC1','cycle_id':'C-01','pass_id':'P-01','source_sha256':H,'candidate_sha256':H,'reader_execution_id':'R1','required_graders':['J-TEXT','J-OBJECT','J-COMPLETE','J-GEOMETRY','J-STRUCTURE','J-STYLE','J-SEMANTIC','J-UNCERTAINTY','J-SKEPTIC'],'grader_execution_ids':{k:k+'-1' for k in ['J-TEXT','J-OBJECT','J-COMPLETE','J-GEOMETRY','J-STRUCTURE','J-STYLE','J-SEMANTIC','J-UNCERTAINTY','J-SKEPTIC']},'element_matrix':[{'element_id':'EL-1','applicable_graders':['J-TEXT'],'evaluated_graders':['J-TEXT'],'evidence_refs':['crop://1'],'complete':True}],'region_sweeps':[{'region_id':'FULL','omission_sweep_status':'COMPLETE','evidence_refs':['source://full']}],'grader_errors':[],'coverage_percent':100,'coverage_pass':True}
-def cycle(): return {'schema_version':'p0-loop-cycle-v4/v1','cycle_id':'C-01','pass_id':'P-01','reader_execution_id':'R1','source_sha256':H,'candidate_sha256':H,'grader_execution_ids':['G'+str(i) for i in range(9)],'coverage_receipt_sha256':H,'finding_counts':{'critical':0,'high':0,'medium':0,'low':0,'info':0},'material_findings':0,'remediation_applied':False,'targeted_reread_sha256':None,'forced_full_reread_required':False,'clean_pass_count_after':1,'result':'CLEAN_CONTINUE'}
-def convergence(): return {'schema_version':'p0-convergence-receipt-v4/v1','source_sha256':H,'code_head_sha':C,'configuration_id':'P0-V4','configuration_sha256':H,'clean_passes':[{'pass_id':'P-01','reader_execution_id':'R1','candidate_sha256':H,'coverage_receipt_sha256':H,'grader_execution_ids':['A'+str(i) for i in range(9)]},{'pass_id':'P-02','reader_execution_id':'R2','candidate_sha256':H,'coverage_receipt_sha256':H,'grader_execution_ids':['B'+str(i) for i in range(9)]}],'grader_coverage_percent':100,'critical':0,'high':0,'unresolved_medium':0,'suspicious_confirmed':0,'contradictions':0,'unsupported_claims':0,'critical_omissions':0,'regression_suite':'PASS','adversarial_suite':'PASS','source_sha_binding':'PASS','artifact_hash_chain':'PASS','human_review_ready':True,'result':'PASS_P0_V4_CLOSED_LOOP'}
-def runstate(): return {'schema_version':'p0-v4-run-state/v1','repo':'cristhianlujan/claude-persona-lf-patch','baseline_main_sha':C,'branch':'lf/p0-v4-closed-loop','branch_head_sha':C,'issue':125,'pr':None,'source_sha256':H,'configuration_id':'P0-V4','configuration_sha256':H,'phase':'IMPLEMENTATION','last_completed_gate':'PASS_V4_CONTRACTS','cycle_id':'C-00','pass_id':'P-00','clean_pass_count':0,'open_findings':{'critical':0,'high':0,'medium':0,'low':0},'latest_artifacts':{'candidate_sha256':None,'findings_sha256':None,'coverage_sha256':None,'receipt_sha256':None},'next_action':'graders','blockers':[]}
+ schemas=registry();schema=schemas[name];reg=jsonschema.RefResolver.from_schema(schema,store=schemas);jsonschema.Draft202012Validator(schema,resolver=reg).validate(obj)
+def finding():return {'schema_version':'p0-visual-finding-v4/v1','finding_id':'F-001','cycle_id':'C-01','pass_id':'P-01','grader_id':'J-TEXT','category':'OCR_ICON_TEXT_CONFUSION','severity':'HIGH','element_id':'EL-1','region':{'x':1,'y':2,'width':3,'height':4},'candidate_claim':'63','observed_evidence':'graphic morphology','evidence_refs':['crop://1'],'confidence':.91,'actionability':'AUTO_REMEDIATE','root_cause_candidate':'icon-text','status':'OPEN'}
+def grader():return {'schema_version':'p0-grader-output-v4/v1','execution_id':'J1','reader_execution_id':'R1','cycle_id':'C-01','pass_id':'P-01','grader_id':'J-TEXT','source_sha256':H,'candidate_sha256':H,'applicable_element_ids':['EL-1'],'evaluated_element_ids':['EL-1'],'screen_regions_evaluated':['FULL'],'findings':[finding()],'coverage_complete':True,'status':'BLOCKED','error':None}
+def coverage():return {'schema_version':'p0-grader-coverage-v4/v1','execution_id':'JC1','cycle_id':'C-01','pass_id':'P-01','source_sha256':H,'candidate_sha256':H,'reader_execution_id':'R1','required_graders':GR,'grader_execution_ids':{k:k+'-1' for k in GR},'candidate_grader_coverage':{'element_count':1,'fully_evaluated_count':1,'coverage_percent':100,'complete':True},'independent_screen_coverage':{'sweep_execution_id':'SW1','observed_count':1,'represented_count':1,'evaluated_count':1,'unrepresented_count':0,'uncertain_count':0,'coverage_percent':100,'complete':True},'element_matrix':[{'element_id':'EL-1','applicable_graders':['J-TEXT'],'evaluated_graders':['J-TEXT'],'evidence_refs':['crop://1'],'complete':True}],'region_sweeps':[{'region_id':'FULL','omission_sweep_status':'COMPLETE','evidence_refs':['source://full']}],'grader_errors':[],'coverage_percent':100,'coverage_pass':True}
+def cycle():return {'schema_version':'p0-loop-cycle-v4/v1','cycle_id':'C-01','pass_id':'P-01','reader_execution_id':'R1','omission_sweep_execution_id':'SW1','omission_sweep_sha256':H,'source_sha256':H,'candidate_sha256':H,'grader_execution_ids':['G'+str(i) for i in range(9)],'coverage_receipt_sha256':H,'finding_counts':{'critical':0,'high':0,'medium':0,'low':0,'info':0},'material_findings':0,'remediation_applied':False,'targeted_reread_sha256':None,'forced_full_reread_required':False,'clean_pass_count_after':1,'result':'CLEAN_CONTINUE'}
+def clean(i):return {'pass_id':f'P-0{i}','reader_execution_id':f'R{i}','omission_sweep_execution_id':f'SW{i}','omission_sweep_sha256':H,'candidate_sha256':H,'coverage_receipt_sha256':H,'grader_execution_ids':[chr(64+i)+str(j) for j in range(9)]}
+def convergence():return {'schema_version':'p0-convergence-receipt-v4/v1','source_sha256':H,'code_head_sha':C,'configuration_id':'P0-V4','configuration_sha256':H,'clean_passes':[clean(1),clean(2)],'grader_coverage_percent':100,'critical':0,'high':0,'unresolved_medium':0,'suspicious_confirmed':0,'contradictions':0,'unsupported_claims':0,'critical_omissions':0,'regression_suite':'PASS','adversarial_suite':'PASS','source_sha_binding':'PASS','artifact_hash_chain':'PASS','human_review_ready':True,'result':'PASS_P0_V4_CLOSED_LOOP'}
+def runstate():return {'schema_version':'p0-v4-run-state/v1','repo':'cristhianlujan/claude-persona-lf-patch','baseline_main_sha':C,'branch':'lf/p0-v4-closed-loop','branch_head_sha':C,'issue':125,'pr':None,'source_sha256':H,'configuration_id':'P0-V4','configuration_sha256':H,'phase':'IMPLEMENTATION','last_completed_gate':'PASS_V4_CONTRACTS','cycle_id':'C-00','pass_id':'P-00','clean_pass_count':0,'open_findings':{'critical':0,'high':0,'medium':0,'low':0},'latest_artifacts':{'candidate_sha256':None,'findings_sha256':None,'coverage_sha256':None,'receipt_sha256':None},'next_action':'graders','blockers':[]}
 def must_fail(label,name,obj):
-    try: validate(name,obj)
-    except jsonschema.ValidationError: return label
-    raise AssertionError(f'{label}: invalid object accepted')
+ try:validate(name,obj)
+ except jsonschema.ValidationError:return label
+ raise AssertionError(f'{label}: invalid object accepted')
 def main():
-    cases=[('p0-visual-finding-v4.schema.json',finding()),('p0-grader-output-v4.schema.json',grader()),('p0-grader-coverage-v4.schema.json',coverage()),('p0-loop-cycle-v4.schema.json',cycle()),('p0-convergence-receipt-v4.schema.json',convergence()),('p0-run-state-v4.schema.json',runstate())]
-    passed=[]
-    for name,obj in cases: validate(name,obj); passed.append('VALID:'+name)
-    x=finding(); del x['severity']; passed.append(must_fail('MISSING_FIELD','p0-visual-finding-v4.schema.json',x))
-    x=finding(); x['unexpected']=1; passed.append(must_fail('UNKNOWN_FIELD','p0-visual-finding-v4.schema.json',x))
-    x=finding(); x['severity']='URGENT'; passed.append(must_fail('INVALID_ENUM','p0-visual-finding-v4.schema.json',x))
-    x=grader(); x['source_sha256']='bad'; passed.append(must_fail('MALFORMED_HASH','p0-grader-output-v4.schema.json',x))
-    x=coverage(); x['required_graders']=x['required_graders'][:-1]; passed.append(must_fail('INCOMPLETE_GRADER_SET','p0-grader-coverage-v4.schema.json',x))
-    x=convergence(); x['clean_passes']=x['clean_passes'][:1]; passed.append(must_fail('ONE_CLEAN_PASS','p0-convergence-receipt-v4.schema.json',x))
-    x=runstate(); x['phase']='DONE'; passed.append(must_fail('INVALID_PHASE','p0-run-state-v4.schema.json',x))
-    config=json.loads((ROOT/'evals/p0-closed-loop-runtime-config-v4.json').read_text())
-    assert config['required_consecutive_clean_full_passes']==2 and config['max_remediation_cycles']==5
-    assert config['targeted_reread_can_global_pass'] is False and config['full_reread_after_effective_remediation'] is True
-    out={'gate':'PASS_V4_CONTRACTS','schema_count':len(cases),'positive_validations':len(cases),'negative_validations':7,'configuration_id':config['configuration_id'],'configuration_sha256':hashlib.sha256(json.dumps(config,sort_keys=True,separators=(',',':')).encode()).hexdigest(),'checks':passed}
-    print(json.dumps(out,sort_keys=True)); return 0
-if __name__=='__main__': raise SystemExit(main())
+ cases=[('p0-visual-finding-v4.schema.json',finding()),('p0-grader-output-v4.schema.json',grader()),('p0-grader-coverage-v4.schema.json',coverage()),('p0-loop-cycle-v4.schema.json',cycle()),('p0-convergence-receipt-v4.schema.json',convergence()),('p0-run-state-v4.schema.json',runstate())];passed=[]
+ for name,obj in cases:validate(name,obj);passed.append('VALID:'+name)
+ x=finding();del x['severity'];passed.append(must_fail('MISSING_FIELD','p0-visual-finding-v4.schema.json',x));x=finding();x['unexpected']=1;passed.append(must_fail('UNKNOWN_FIELD','p0-visual-finding-v4.schema.json',x));x=finding();x['severity']='URGENT';passed.append(must_fail('INVALID_ENUM','p0-visual-finding-v4.schema.json',x));x=grader();x['source_sha256']='bad';passed.append(must_fail('MALFORMED_HASH','p0-grader-output-v4.schema.json',x));x=coverage();x['required_graders']=x['required_graders'][:-1];passed.append(must_fail('INCOMPLETE_GRADER_SET','p0-grader-coverage-v4.schema.json',x));x=coverage();del x['independent_screen_coverage'];passed.append(must_fail('MISSING_INDEPENDENT_SCREEN_COVERAGE','p0-grader-coverage-v4.schema.json',x));x=cycle();del x['omission_sweep_execution_id'];passed.append(must_fail('MISSING_SWEEP_BINDING','p0-loop-cycle-v4.schema.json',x));x=convergence();x['clean_passes']=x['clean_passes'][:1];passed.append(must_fail('ONE_CLEAN_PASS','p0-convergence-receipt-v4.schema.json',x));x=convergence();del x['clean_passes'][0]['omission_sweep_sha256'];passed.append(must_fail('CLEAN_PASS_WITHOUT_SWEEP','p0-convergence-receipt-v4.schema.json',x));x=runstate();x['phase']='DONE';passed.append(must_fail('INVALID_PHASE','p0-run-state-v4.schema.json',x))
+ config=json.loads((ROOT/'evals/p0-closed-loop-runtime-config-v4.json').read_text());assert config['required_consecutive_clean_full_passes']==2 and config['max_remediation_cycles']==5;assert config['targeted_reread_can_global_pass'] is False and config['full_reread_after_effective_remediation'] is True
+ out={'gate':'PASS_V4_CONTRACTS','schema_count':len(cases),'positive_validations':len(cases),'negative_validations':10,'configuration_id':config['configuration_id'],'configuration_sha256':hashlib.sha256(json.dumps(config,sort_keys=True,separators=(',',':')).encode()).hexdigest(),'checks':passed};print(json.dumps(out,sort_keys=True));return 0
+if __name__=='__main__':raise SystemExit(main())
