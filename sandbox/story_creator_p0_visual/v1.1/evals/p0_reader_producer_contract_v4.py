@@ -16,13 +16,17 @@ def main():
  original=reader.ocr_lines
  with tempfile.TemporaryDirectory() as td:
   p=Path(td)/'source.png';cv2.imwrite(str(p),np.full((120,420,3),255,np.uint8));source_sha=hashlib.sha256(p.read_bytes()).hexdigest()
-  observations={3:[line('Cuenta bancaria principal',20,300)],6:[line('Cuenta bancaria',20,185),line('principal',215,105)],11:[line('Cuenta bancaria principal',20,300)],12:[line('Cuenta bancaria principal',20,300)]}
+  observations={
+   3:[line('Cuenta bloqueada',20,180),line('rechazada',215,105)],
+   11:[line('Documento principal aprobado',20,300)],
+   12:[line('Cuenta bloqueada',20,180),line('rechazada',215,105)],
+  }
   reader.ocr_lines=lambda image,psm:json.loads(json.dumps(observations[psm]))
   try:candidate=reader.full_reader(str(p),{'cycle_id':'C-PROD','pass_id':'P-PROD','reader_execution_id':'R-PROD','source_sha256':source_sha,'remediation_state':{}})
   finally:reader.ocr_lines=original
   text_elements=[e for e in candidate['elements'] if e.get('visible_text')]
   assert len(text_elements)==1,text_elements
-  e=text_elements[0];assert e.get('text_group_consistency') is False,e;assert e.get('text_group_observation_counts')=={'3':1,'6':2,'11':1,'12':1},e.get('text_group_observation_counts');assert len(e.get('source_observation_refs') or [])>=4
+  e=text_elements[0];assert e.get('classification')=='CONFIRMED',e;assert e.get('text_group_consistency') is False,e;assert e.get('text_group_observation_counts')=={'3':2,'11':1,'12':2},e.get('text_group_observation_counts');assert len(e.get('source_observation_refs') or [])>=5
   sweep=blank_sweep(candidate,source_sha);ctx={'cycle_id':'C-PROD','pass_id':'P-PROD','reader_execution_id':'R-PROD','source_sha256':source_sha,'candidate_sha256':canonical_sha({k:v for k,v in candidate.items() if k!='reader_execution_id'}),'coverage_execution_id':'COV-PROD','independent_sweep':sweep};outs=run_all(candidate,ctx);findings=union_findings(outs);cats={f['category'] for f in findings};cov=coverage_receipt(candidate,outs,ctx)
   assert 'TEXT_GROUPING_MISMATCH' in cats,(cats,e);assert cov['coverage_pass'],cov
   grouping=[f for f in findings if f['category']=='TEXT_GROUPING_MISMATCH'];assert grouping and grouping[0]['severity']=='MEDIUM' and grouping[0]['actionability']=='REREAD'
