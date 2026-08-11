@@ -208,6 +208,18 @@ jobs:
             PyYAML==6.0.2 \
             jsonschema==4.23.0
 
+      - name: Provision governed P0 visual runtime
+        run: |
+          set -euo pipefail
+          if [ -n "${P0_CI_ENGINEERING_REGRESSION:-}" ]; then
+            echo "FAIL_P0_CI_ENGINEERING_REGRESSION_OVERRIDE_FORBIDDEN"
+            exit 1
+          fi
+          python3 -m pip install --disable-pip-version-check \
+            -r sandbox/story_creator_p0_visual/v1.1/requirements-p0-visual-quality.txt
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq tesseract-ocr tesseract-ocr-spa
+
       - name: Validate LF contract
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -307,6 +319,7 @@ jobs:
                   "sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py",
                   "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py",
                   "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_SCOPE_TESTS.py",
+                  "sandbox/lf_contract_gate_test/functional_red_team_v1_regression.py",
                   "sandbox/lf_contract_gate_test/PR93_LOTE_E16_REGRESSION_TESTS.py",
                   "sandbox/lf_contract_gate_test/PR93_LOTE_E16_INVENTORY_TESTS.py",
                   "sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py",
@@ -334,4 +347,3 @@ jobs:
           if-no-files-found: error
           include-hidden-files: true
           retention-days: 7
-
