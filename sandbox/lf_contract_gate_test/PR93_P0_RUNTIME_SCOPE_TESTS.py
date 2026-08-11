@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Regression matrix for pinned PR93 runtime source gate plus P0 V2/V3/V4 quality gates."""
 from __future__ import annotations
-import os,shutil,subprocess,sys
+import importlib.metadata as md,json,os,shutil,subprocess,sys
 from pathlib import Path
 import PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT as candidate
 sys.dont_write_bytecode=True
@@ -22,7 +22,13 @@ def ensure_p0_visual_test_dependencies(repo_root:Path)->None:
  probe=subprocess.run(['tesseract','--list-langs'],text=True,capture_output=True,check=False);langs=set(probe.stdout.split()) if probe.returncode==0 else set()
  if 'spa' not in langs:
   subprocess.run(['sudo','apt-get','update','-qq'],check=True);subprocess.run(['sudo','apt-get','install','-y','-qq','tesseract-ocr-spa'],check=True)
- os.environ['P0_CI_ENGINEERING_REGRESSION']='1';print('PASS_P0_VISUAL_TEST_DEPENDENCIES=PINNED_PYTHON_PLUS_TESSERACT_SPA')
+ config_path=repo_root/'sandbox/story_creator_p0_visual/v1.1/evals/p0-visual-quality-runtime-config.json';config=json.loads(config_path.read_text(encoding='utf-8'))
+ if config.get('calibration',{}).get('status')!='GOVERNED_OPERATIONAL_CALIBRATION':raise SystemExit('FAIL_P0_VISUAL_GOVERNED_CALIBRATION_STATUS')
+ try:tesseract=subprocess.run(['tesseract','--version'],text=True,capture_output=True,check=True).stdout.splitlines()[0].split()[1]
+ except Exception:tesseract='UNAVAILABLE'
+ actual={'tesseract':tesseract,'Pillow':md.version('Pillow'),'numpy':md.version('numpy'),'opencv-python-headless':md.version('opencv-python-headless')};expected=config.get('dependencies',{});mismatches={k:{'expected':v,'actual':actual.get(k)} for k,v in expected.items() if actual.get(k)!=v}
+ if mismatches:raise SystemExit('FAIL_P0_VISUAL_GOVERNED_DEPENDENCY_MISMATCH='+json.dumps(mismatches,sort_keys=True))
+ os.environ.pop('P0_CI_ENGINEERING_REGRESSION',None);print('PASS_P0_VISUAL_TEST_DEPENDENCIES=GOVERNED_EXACT '+json.dumps(actual,sort_keys=True))
 
 def run_p0_quality_regressions(repo_root:Path)->None:
  ensure_p0_visual_test_dependencies(repo_root);p0=repo_root/'sandbox/story_creator_p0_visual/v1.1'
