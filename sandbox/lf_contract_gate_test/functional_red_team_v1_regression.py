@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+"""Permanent regression for the 30 LF Functional Red Team V1 attacks.
+
+Real-case source truth was captured read-only from lf_ops; synthetic cases are
+explicitly tagged. This regression is evidence of defense behavior, not an
+independent approval or a merge/production authorization.
+"""
+from __future__ import annotations
+import base64,importlib.util,json,sys,zlib
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[2]
+SKILL=ROOT/'skills/creating-integral-user-stories'
+TRACE=SKILL/'scripts/validate_traceability.py'
+TIER=SKILL/'scripts/assess_evidence_tier.py'
+BASELINE_HEAD='0b402dc6e371c451218b85ff9a046f22d8f09b3e'
+REPORT_ARTIFACT_ID=9113016691
+REPORT_ARTIFACT_SHA256='cc9a0e6372e2f7cf86b90a779cb34023d101ee6e5db23ab798ce1c9eea61faf7'
+CASES=json.loads(zlib.decompress(base64.b64decode("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")).decode())
+def load_module(path,name):
+ sys.path.insert(0,str(SKILL/'scripts'));spec=importlib.util.spec_from_file_location(name,path);mod=importlib.util.module_from_spec(spec);assert spec.loader;spec.loader.exec_module(mod);return mod
+def evi04_defended(tier_mod):
+ p=tier_mod.sample('T1');p['source_provenance'].update({'semantic_classification':'CONFIRMED','prior_semantic_classification':'INFERRED','derivation_declared':False,'direct_confirmation':False,'new_evidence_refs':[]});r=tier_mod.assess(p);return r['evidence_tier']!='T1'
+def main():
+ tr=load_module(TRACE,'frt_traceability');tier=load_module(TIER,'frt_evidence_tier');outcomes=[]
+ for case in CASES:
+  cid=case['case_id'];expected_reject=case['attack_should_be_rejected']
+  if cid=='FRT-EVI-04':
+   rejected=evi04_defended(tier);checks={'evidence_transition_guard':['blocked'] if rejected else []}
+  else:
+   checks,_=tr.validate_against_authority(case['pack'],case['authority']);rejected=any(checks.values())
+  defended=rejected if expected_reject else not rejected;expected=case.get('expected_failure')
+  if expected and cid!='FRT-EVI-04':defended=defended and bool(checks.get(expected))
+  outcomes.append({'case_id':cid,'severity':case['severity'],'evidence_kind':case['evidence_kind'],'expected_reject':expected_reject,'rejected':rejected,'defended':defended,'failed_checks':[k for k,v in checks.items() if v]})
+ failed=[x for x in outcomes if not x['defended']];result={'schema_version':'lf-functional-red-team-v1/regression-result-v1','baseline_head':BASELINE_HEAD,'artifact_id':REPORT_ARTIFACT_ID,'artifact_sha256':REPORT_ARTIFACT_SHA256,'required':30,'executed':len(outcomes),'passed':len(outcomes)-len(failed),'failed':len(failed),'all_defended':not failed,'failed_cases':[x['case_id'] for x in failed],'outcomes':outcomes};print(json.dumps(result,ensure_ascii=False,sort_keys=True));return 0 if not failed and len(outcomes)==30 else 2
+if __name__=='__main__':raise SystemExit(main())
