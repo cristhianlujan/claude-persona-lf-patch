@@ -41,6 +41,10 @@ def run_loop(*,source_path,expected_source_sha256,full_reader,remediator,targete
   ids=[o.get('execution_id') for o in outs]
   if any(not x for x in ids) or len(ids)!=len(set(ids)) or any(x in seen_graders for x in ids):return {'result':'BLOCKED_GRADER_FAILURE','human_review_ready':False,'reason':'REUSED_OR_MISSING_GRADER_EXECUTION','cycles':cycles}
   seen_graders.update(ids);cov=coverage_receipt(cand,outs,gctx);fs=union_findings(outs);material=[f for f in fs if f.get('severity') in MATERIAL_SEVERITIES and f.get('status')=='OPEN'];cycle={'schema_version':'p0-loop-cycle-v4/v1','cycle_id':cid,'pass_id':pid,'reader_execution_id':rex,'omission_sweep_execution_id':swid,'omission_sweep_sha256':ssha,'source_sha256':actual,'candidate_sha256':csha,'grader_execution_ids':ids,'coverage_receipt_sha256':canonical_sha(cov),'finding_counts':counts(fs),'material_findings':len(material),'remediation_applied':False,'targeted_reread_sha256':None,'forced_full_reread_required':False,'clean_pass_count_after':clean,'result':'CLEAN_CONTINUE'}
+  # A detector-level ERROR/BLOCKED (including SWEEP_UNIVERSE_TRUNCATED) is terminal.
+  # It is not a candidate defect and therefore must never be routed through remediation cycles.
+  if sweep.get('status') in {'ERROR','BLOCKED'}:
+   cycle['result']='BLOCKED_DISCOVERY_COVERAGE';cycles.append(cycle);return {'result':'BLOCKED_DISCOVERY_COVERAGE','human_review_ready':False,'reason':'INDEPENDENT_SWEEP_'+str(sweep.get('status')),'cycles':cycles,'coverage':cov,'independent_sweep':sweep}
   if not cov['coverage_pass']:
    hard_errors=[e for e in cov.get('grader_errors',[]) if e.get('error')!='INDEPENDENT_SCREEN_COVERAGE_INCOMPLETE']
    candidate_complete=bool((cov.get('candidate_grader_coverage') or {}).get('complete'))
