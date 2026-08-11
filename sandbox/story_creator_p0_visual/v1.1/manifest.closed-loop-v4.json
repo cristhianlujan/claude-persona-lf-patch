@@ -41,7 +41,7 @@
     {"path":"scripts/p0_visual_graders_v4.py","git_blob_sha":"517fda6dde23929564d659d5e4cacb7b19e3d59a"},
     {"path":"scripts/p0_visual_real_rerun_support_v4.py","git_blob_sha":"3acc1d7ed72dc1417e75814574e9477fdfd789f6"},
     {"path":"scripts/persist_p0_visual_loop_v4.py","git_blob_sha":"07fb8ff9da8a686098d1937a0c593ad64bbbcbca"},
-    {"path":"scripts/run_p0_visual_quality_loop_v4.py","git_blob_sha":"f02da7a99a8c19927620fbee6f4c417fc0ed1d0e"},
+    {"path":"scripts/run_p0_visual_quality_loop_v4.py","git_blob_sha":"fb47f33f8a4a767b009e5bb5b8325ffb746ac0d5"},
     {"path":"scripts/validate_p0_v4_closed_loop.py","git_blob_sha":"f857839713a3d73254c7b75a273a3ff6d3e87955"}
   ],
   "human_adjudication": "NOT_PERFORMED",
