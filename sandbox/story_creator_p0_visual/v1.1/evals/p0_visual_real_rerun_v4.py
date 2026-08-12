@@ -29,14 +29,16 @@ def build_gate_proofs(*,source_sha:str,head:str,config_sha:str)->tuple[dict,dict
  runtime=execute_gate('evals/p0_visual_quality_runtime_regression_suite.py',lambda x:x.get('result')=='PASS_WITH_EVIDENCE' and x.get('required')==15 and x.get('passed')==15)
  negative=execute_gate('evals/p0_machine_visual_quality_negative_suite_v2.py',lambda x:x.get('result')=='PASS_WITH_EVIDENCE' and x.get('required')==28 and x.get('passed')==28 and x.get('positive_restore_count')==28)
  forward=execute_gate('evals/p0_visual_forward_adversarial_v4.py',lambda x:x.get('gate')=='PASS_V4_FORWARD_ADVERSARIAL' and x.get('critical_false_passes')==0)
+ atomic=execute_gate('evals/p0_visual_known_failure_regression_v4.py',lambda x:x.get('gate')=='PASS_V4_HUMAN_FINDINGS_AS_REGRESSIONS' and x.get('atomic_segmentation_defended') is True)
  if not runtime['passed']:raise RuntimeError('RUNTIME_REGRESSION_NOT_PROVEN')
  if not negative['passed'] or not forward['passed']:raise RuntimeError('ADVERSARIAL_SUITE_NOT_PROVEN')
- regression=make_gate_proof(gate='regression_suite',source_sha256=source_sha,code_head_sha=head,configuration_sha256=config_sha,details={'runtime_regression':runtime})
+ if not atomic['passed']:raise RuntimeError('ATOMIC_SEGMENTATION_REGRESSION_NOT_PROVEN')
+ regression=make_gate_proof(gate='regression_suite',source_sha256=source_sha,code_head_sha=head,configuration_sha256=config_sha,details={'runtime_regression':runtime,'atomic_segmentation_regression':atomic})
  adversarial=make_gate_proof(gate='adversarial_suite',source_sha256=source_sha,code_head_sha=head,configuration_sha256=config_sha,details={'required_negative':negative,'forward_adversarial':forward})
- artifact_rel=['scripts/p0_visual_convergence_v4.py','scripts/run_p0_visual_quality_loop_v4.py','evals/p0_visual_real_rerun_v4.py','evals/p0_visual_quality_runtime_regression_suite.py','evals/p0_machine_visual_quality_negative_suite_v2.py','evals/p0_visual_forward_adversarial_v4.py','evals/p0-closed-loop-runtime-config-v4.json','requirements-p0-visual-quality.txt']
+ artifact_rel=['scripts/p0_full_reader_v4.py','scripts/p0_visual_grader_structure_v4.py','scripts/p0_visual_convergence_v4.py','scripts/run_p0_visual_quality_loop_v4.py','evals/p0_visual_real_rerun_v4.py','evals/p0_visual_quality_runtime_regression_suite.py','evals/p0_visual_known_failure_regression_v4.py','evals/p0_machine_visual_quality_negative_suite_v2.py','evals/p0_visual_forward_adversarial_v4.py','evals/p0-closed-loop-runtime-config-v4.json','requirements-p0-visual-quality.txt']
  hashes={rel:file_sha(ROOT/rel) for rel in artifact_rel};chain=hashlib.sha256(json.dumps(hashes,sort_keys=True,separators=(',',':')).encode()).hexdigest()
  artifact=make_gate_proof(gate='artifact_hash_chain',source_sha256=source_sha,code_head_sha=head,configuration_sha256=config_sha,details={'files':hashes,'chain_sha256':chain,'file_count':len(hashes)})
- return regression,adversarial,artifact,{'runtime_regression':runtime,'required_negative':negative,'forward_adversarial':forward,'artifact_chain_sha256':chain}
+ return regression,adversarial,artifact,{'runtime_regression':runtime,'atomic_segmentation_regression':atomic,'required_negative':negative,'forward_adversarial':forward,'artifact_chain_sha256':chain}
 def main():
  ap=argparse.ArgumentParser();ap.add_argument('--source',required=True);ap.add_argument('--source-sha',required=True);ap.add_argument('--code-head',required=True);ap.add_argument('--config-sha',required=True);ap.add_argument('--output',required=True);a=ap.parse_args();reset_trace()
  try:regression,adversarial,artifact,preflight=build_gate_proofs(source_sha=a.source_sha,head=a.code_head,config_sha=a.config_sha)
