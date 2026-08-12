@@ -30,9 +30,16 @@ def _text_similarity(a:str|None,b:str|None)->float:
  if aa in bb or bb in aa:return .90
  return SequenceMatcher(None,aa,bb).ratio()
 def _text_material(text:str,confidence:float)->bool:
- clean=''.join(ch for ch in text.strip() if ch.isalnum())
+ # Short high-confidence OCR fragments can be detector hallucinations over
+ # illustration edges (for example, ``e » En``). Preserve real short labels
+ # such as ``No``, ``Sí`` and ``DNI`` when they form one lexical token, while
+ # requiring four alphanumerics for fragmented/multi-token evidence.
+ tokens=[''.join(ch for ch in token if ch.isalnum()) for token in text.strip().split()]
+ tokens=[token for token in tokens if token]
+ clean=''.join(tokens)
  if not clean:return False
- if confidence>=TEXT_CONF_STRONG:return True
+ if confidence>=TEXT_CONF_STRONG:
+  return len(clean)>=4 or (len(tokens)==1 and len(tokens[0])>=2)
  return confidence>=TEXT_CONF_LONG and len(clean)>=4
 def _object_material(area:int)->bool:return int(area)>=OBJECT_MATERIAL_AREA
 def _candidate_nonroot(candidate:dict)->list[dict]:return [e for e in candidate.get('elements',[]) if e.get('element_id') not in ROOT_IDS and e.get('parent_id') is not None]
@@ -97,7 +104,7 @@ def _region_rows(observations:list[dict],width:int)->list[dict]:
   items=[o for o in observations if o.get('material') and (rid=='FULL' or _region_of(o['region'],width)==rid)];represented=sum(o.get('match_status')=='REPRESENTED' for o in items);uncertain=sum(o.get('match_status')=='UNCERTAIN' for o in items);unrepresented=sum(o.get('match_status')=='UNREPRESENTED' for o in items);status='COMPLETE' if uncertain==0 else 'INCOMPLETE';refs=sorted({ref for o in items for ref in o.get('evidence_refs',[])})
   rows.append({'region_id':rid,'material':True,'observed_count':len(items),'represented_count':represented,'uncertain_count':uncertain,'unrepresented_count':unrepresented,'sweep_status':status,'evidence_refs':refs})
  return rows
-def _materiality_policy()->dict:return {'schema_version':'p0-sweep-materiality-policy/v1','text_confidence_strong_min':TEXT_CONF_STRONG,'text_confidence_long_min':TEXT_CONF_LONG,'text_long_min_alnum':4,'object_material_area_min_px2':OBJECT_MATERIAL_AREA,'rationale':'Fail-closed recall bias: long OCR strings at 35-44 confidence remain material; every contour admitted by the object sweep is material from 900 px2 upward.'}
+def _materiality_policy()->dict:return {'schema_version':'p0-sweep-materiality-policy/v1','text_confidence_strong_min':TEXT_CONF_STRONG,'text_confidence_long_min':TEXT_CONF_LONG,'text_long_min_alnum':4,'object_material_area_min_px2':OBJECT_MATERIAL_AREA,'rationale':'Fail-closed recall bias: long OCR strings at 35-44 confidence remain material; strong short labels remain material when they form one lexical token, while fragmented sub-4-alphanumeric OCR noise is non-material; every contour admitted by the object sweep is material from 900 px2 upward.'}
 def run_independent_omission_sweep(source_path:str,expected_source_sha256:str,candidate:dict,*,execution_id:str)->dict:
  try:actual=file_sha256(source_path)
  except Exception as exc:return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':None,'candidate_sha256':None,'width':0,'height':0,'status':'ERROR','fresh_source_read':False,'observations':[],'regions':[],'object_sweep':None,'materiality_policy':_materiality_policy(),'unrepresented_observation_ids':[],'unsupported_candidate_ids':[],'candidate_support_uncertain_ids':[],'errors':['SOURCE_READ_ERROR:'+type(exc).__name__]}
