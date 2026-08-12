@@ -1,0 +1,52 @@
+{
+  "schema_version": "p0-pre-remediation-invariant-diagnostic-v4.2/v1",
+  "source_sha256": "e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7",
+  "invalidated_loop_version": "p0-v4-r2-pre-atomicity",
+  "invalidated_candidate": {
+    "pass_id": "P-02",
+    "reader_profile": "STRICT_CONSENSUS",
+    "element_count": 71,
+    "candidate_canonical_sha256": "52697bcc6376d20208bbab1d93f25637e7321b4d2c8292568da1336adee03c4f"
+  },
+  "independent_denominator": {
+    "candidate_list_producer_excluded": true,
+    "modalities": [
+      "OCR_PSM6",
+      "CV_CANNY_70_180",
+      "CV_BINARY_THRESHOLD_180"
+    ],
+    "material_observed_count": 69,
+    "unrepresented_count": 16,
+    "compact_visual_observed_count": 15,
+    "compact_visual_represented_count": 2,
+    "compact_visual_unrepresented_count": 13
+  },
+  "visual_residual": {
+    "status": "BLOCKED_UNCALIBRATED",
+    "total_edge_pixels": 66389,
+    "represented_edge_pixels": 51887,
+    "residual_edge_pixels": 14502,
+    "residual_edge_ratio": 0.2184398,
+    "unexplained_component_count": 70,
+    "calibration_blocker": "RESIDUAL_THRESHOLD_REQUIRES_VERSIONED_CORPUS_F01"
+  },
+  "human_finding_reproduction": [
+    {
+      "finding": "H-04_THIRD_CHECKBOX_OMITTED",
+      "observation_id": "OBS-C-0008",
+      "detector": "CV_BINARY_REPEATED_QUADRILATERAL",
+      "region": {"x": 623, "y": 692, "width": 20, "height": 20},
+      "pixel_sha256": "b5887072833ca19ea12c37c863c20ad535b6f9cbe507503317b184f71a80bd6d",
+      "match_status": "UNREPRESENTED"
+    },
+    {
+      "finding": "H-05_LEFT_PANEL_LOCK_OMITTED",
+      "observation_id": "OBS-C-0013",
+      "detector": "CV_BINARY_STRUCTURED_COMPACT",
+      "region": {"x": 262, "y": 883, "width": 24, "height": 30},
+      "pixel_sha256": "0cb59ad02f018655ba92f5aa417c413300ffb49aafb39a7216f0592b6713c15a",
+      "match_status": "UNREPRESENTED"
+    }
+  ],
+  "conclusion": "Running the invariants before remediation found the two cited omissions and additional unexplained material. The five human findings were therefore not an exhaustive ground-truth set. The residual ratio is diagnostic only and cannot be promoted to a calibrated acceptance threshold without F-01."
+}

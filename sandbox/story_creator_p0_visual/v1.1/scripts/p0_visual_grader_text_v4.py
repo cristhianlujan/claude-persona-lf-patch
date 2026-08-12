@@ -5,7 +5,7 @@ def j_text(candidate:dict,ctx:dict)->dict:
  for e in els:
   if e['element_id'] not in app:continue
   txt=str(e.get('visible_text') or '').strip();variants=[str(x).strip() for x in e.get('ocr_variants',[]) if str(x).strip()];consensus=str(e.get('ocr_consensus_text') or '').strip();graphic=float(e.get('graphic_score',0) or 0);read_count=int(e.get('ocr_read_count',len(e.get('ocr_variants',[]) or [])) or 0);empty_reads=int(e.get('ocr_empty_reads',0) or 0)
-  if txt and len(txt)<=3 and e.get('classification')=='CONFIRMED' and (graphic>=.60 or len(set(variants))>1 or (read_count>=3 and empty_reads/read_count>=.5)):fs.append(finding(ctx,g,'SHORT_TOKEN_UNCORROBORATED','HIGH',e,{'text':txt,'graphic_score':graphic,'ocr_variants':variants,'ocr_read_count':read_count,'ocr_empty_reads':empty_reads},'REREAD',.94,'short-token-evidence-policy'))
+  if txt and len(txt)<=3 and e.get('classification')=='CONFIRMED' and (graphic>=.60 or (len(set(variants))>1 and int(e.get('ocr_agreement_count',0) or 0)<2) or (read_count>=3 and empty_reads/read_count>=.5)):fs.append(finding(ctx,g,'SHORT_TOKEN_UNCORROBORATED','HIGH',e,{'text':txt,'graphic_score':graphic,'ocr_variants':variants,'ocr_read_count':read_count,'ocr_empty_reads':empty_reads},'REREAD',.94,'short-token-evidence-policy'))
   if txt and consensus and txt!=consensus:
    cp=common_prefix(txt,consensus);tail_txt=txt[len(cp):].strip();tail_cons=consensus[len(cp):].strip()
    if e.get('semantic_role')=='control_visible_text' and len(cp.strip())>=2 and 0<len(tail_txt)<=3 and 0<len(tail_cons)<=3:fs.append(finding(ctx,g,'CONTROL_SUFFIX_GLYPH_CONFLICT','HIGH',e,{'candidate':txt,'independent_consensus':consensus,'stable_prefix':cp},'REREAD',.95,'control-adornment-text-conflict'))

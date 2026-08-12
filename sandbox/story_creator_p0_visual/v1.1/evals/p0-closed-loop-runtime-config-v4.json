@@ -1,6 +1,7 @@
 {
   "schema_version":"p0-closed-loop-runtime-config/v4",
   "configuration_id":"P0-VISUAL-CLOSED-LOOP-V4",
+  "loop_version":"p0-v4.2-atomicity-invariants-2026-08-12",
   "extends":"P0-VISUAL-FIDELITY-V3-LOCAL-DETERMINISTIC",
   "max_remediation_cycles":5,
   "required_consecutive_clean_full_passes":2,
@@ -11,6 +12,31 @@
   "required_graders":["J-TEXT","J-OBJECT","J-COMPLETE","J-GEOMETRY","J-STRUCTURE","J-STYLE","J-SEMANTIC","J-UNCERTAINTY","J-SKEPTIC"],
   "required_grader_coverage_percent":100,
   "fail_closed_on_grader_error":true,
+  "atomicity_invariants": {
+    "exclusive_evidence_partition": "REQUIRED",
+    "independent_denominator_modalities": ["OCR_PSM6", "CV_CANNY_70_180", "CV_BINARY_THRESHOLD_180"],
+    "candidate_list_producer_in_denominator": false,
+    "visual_residual_gate": "BLOCKED_UNCALIBRATED_UNTIL_F01"
+  },
+  "mutation_campaign": {
+    "required_mutations": 100,
+    "required_detection_rate": 1.0,
+    "seed": 20260812
+  },
+  "empirical_readiness": {
+    "minimum_versioned_labeled_screens": 10,
+    "available_labeled_screens": 1,
+    "required_unseen_consecutive_screens_without_escaped_defects": 5,
+    "human_review_required": true
+  },
+  "retroactive_invalidation": {
+    "policy": "REJECT_PASS_FROM_INVALIDATED_LOOP_VERSION",
+    "invalidated_loop_versions": [
+      "p0-v4-r2-pre-atomicity",
+      "unversioned-pr137-head-f51ddc0c9b0f854bec4dc9fa68672e2a7ac5d022"
+    ],
+    "reason": "Sibling contamination, unjustified fragmentation and zero-assignment visual omissions invalidate every PASS produced by the same loop version."
+  },
   "production_authorized":false,
   "private_real_source_in_repo":false
 }

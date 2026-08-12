@@ -33,6 +33,14 @@ Every visual claim must be one of `OBSERVED`, `ESTIMATED`, `DECLARED`, `RECONCIL
 
 Visually continuous words may form one `text_group` using compatible baseline, vertical overlap, local gap, text height/style/color, parent and punctuation/linguistic continuity. Do not merge across parents, independent controls/labels/columns, material style breaks or separating controls. Atomic observations remain intact and reversible.
 
+## V4.2 atomicity invariants
+
+- Every OCR token and pixel crop has exactly one atomic owner. Shared ownership is `SHARED_EVIDENCE_VIOLATION`; a split inside one contiguous source line without a recorded geometric/control boundary is `UNJUSTIFIED_PARTITION`.
+- A label and its control remain separate elements linked by `describes_control_id` / `field_group_id`. A compact icon or control is never absorbed into adjacent text.
+- Repeated compact controls carry a source-derived `repeated_control_group_id`; their count must reconcile against an independent geometry producer.
+- Large containers explain only their own boundary for residual accounting. They cannot consume unexplained visual material inside their box.
+- The candidate list is never an omission denominator. Reader output and independent denominator producers remain modality- and execution-distinct.
+
 ## Closed-loop rule
 
 A first pass may fail. On J00 findings use only bounded machine remediation: targeted text-group rebuild, alternate segmentation/high-resolution crop, baseline re-estimation, panel/card edge re-detection, color re-sampling excluding antialiasing, radius re-estimation, parent reassignment, spatial-relation/style-cluster recomputation and machine-fixable auxiliary mapping retry. Default budget is governed in one versioned config; no-progress ends blocked.
