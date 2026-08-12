@@ -8,7 +8,7 @@ from p0_visual_discovery_v4 import union_findings,coverage_receipt
 from p0_visual_convergence_v4 import convergence_receipt_binding,make_gate_proof
 from run_p0_visual_quality_loop_v4 import run_loop
 from p0_visual_real_rerun_support_v4 import TRACE,reset_trace,traced_reader,traced_grader_runner,traced_sweep,remediator,targeted
-from p0_visual_mutation_campaign_v4 import run_mutation_campaign
+from p0_visual_mutation_campaign_v4 import REQUIRED_FAMILIES,REQUIRED_FAMILY_COUNT,REQUIRED_MUTATION_COUNT,run_mutation_campaign
 from p0_visual_residual_v4 import run_visual_residual_gate
 
 def file_sha(path:Path)->str:return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -22,6 +22,9 @@ def last_json(text:str):
 def execute_gate(rel:str,validator)->dict:
  path=ROOT/rel;p=subprocess.run([sys.executable,str(path)],cwd=ROOT.parent.parent,text=True,capture_output=True,check=False,env=os.environ.copy());parsed=last_json(p.stdout);ok=p.returncode==0 and isinstance(parsed,dict) and validator(parsed)
  return {'path':rel,'exit_code':p.returncode,'stdout_sha256':hashlib.sha256(p.stdout.encode()).hexdigest(),'stderr_sha256':hashlib.sha256(p.stderr.encode()).hexdigest(),'parsed':parsed,'passed':ok}
+def atomicity_proven(x:dict)->bool:
+ summary=x.get('mutation_summary') or {};counts=summary.get('family_counts') or {};detected=summary.get('family_detected_counts') or {}
+ return x.get('gate')=='PASS_V4_ATOMICITY_INVARIANTS' and not x.get('failed') and summary.get('mutation_count')==REQUIRED_MUTATION_COUNT and summary.get('detected_count')==REQUIRED_MUTATION_COUNT and all(counts.get(f)==REQUIRED_FAMILY_COUNT and detected.get(f)==REQUIRED_FAMILY_COUNT for f in REQUIRED_FAMILIES)
 def build_gate_proofs(*,source_sha:str,head:str,config_sha:str)->tuple[dict,dict,dict,dict]:
  if os.environ.get('P0_CI_ENGINEERING_REGRESSION') is not None:raise RuntimeError('ENGINEERING_REGRESSION_OVERRIDE_FORBIDDEN')
  repo_root=ROOT.parents[2];observed_head=subprocess.run(['git','rev-parse','HEAD'],cwd=repo_root,text=True,capture_output=True,check=True).stdout.strip()
@@ -31,7 +34,7 @@ def build_gate_proofs(*,source_sha:str,head:str,config_sha:str)->tuple[dict,dict
  runtime=execute_gate('evals/p0_visual_quality_runtime_regression_suite.py',lambda x:x.get('result')=='PASS_WITH_EVIDENCE' and x.get('required')==15 and x.get('passed')==15)
  negative=execute_gate('evals/p0_machine_visual_quality_negative_suite_v2.py',lambda x:x.get('result')=='PASS_WITH_EVIDENCE' and x.get('required')==28 and x.get('passed')==28 and x.get('positive_restore_count')==28)
  forward=execute_gate('evals/p0_visual_forward_adversarial_v4.py',lambda x:x.get('gate')=='PASS_V4_FORWARD_ADVERSARIAL' and x.get('critical_false_passes')==0)
- atomicity=execute_gate('evals/p0_visual_atomicity_invariants_v4.py',lambda x:x.get('gate')=='PASS_V4_ATOMICITY_INVARIANTS' and not x.get('failed') and (x.get('mutation_summary') or {}).get('detected_count')==100)
+ atomicity=execute_gate('evals/p0_visual_atomicity_invariants_v4.py',atomicity_proven)
  if not runtime['passed']:raise RuntimeError('RUNTIME_REGRESSION_NOT_PROVEN')
  if not negative['passed'] or not forward['passed'] or not atomicity['passed']:raise RuntimeError('ADVERSARIAL_OR_ATOMICITY_SUITE_NOT_PROVEN')
  regression=make_gate_proof(gate='regression_suite',source_sha256=source_sha,code_head_sha=head,configuration_sha256=config_sha,details={'runtime_regression':runtime})
