@@ -1,0 +1,12 @@
+{
+  "schema_version": "p0-persistence-normalization-config/v1",
+  "configuration_id": "P0-PERSISTENCE-NORMALIZATION-v1",
+  "purpose": "Normalize already durable real P0 visual evidence into the append-only execution graph without promoting historical machine PASS claims.",
+  "source_execution_id": "EXEC-P0-VQ-FINAL-20260810",
+  "source_packet_sha256": "acfa623917fc8fb9058a6908cd0908584dfbc163a83fe5e72eb04b47c73d433e",
+  "source_sha256": "e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7",
+  "element_policy": "preserve_97_consolidated_elements_and_regions",
+  "evidence_policy": "one_real_crop_evidence_unit_per_consolidated_element",
+  "historical_pass_policy": "do_not_promote_historical_machine_pass_to_current_pass",
+  "terminal_policy": "BLOCKED until same-head current rerun, current atomicity controls, corpus gate and human adjudication requirements are independently satisfied"
+}
