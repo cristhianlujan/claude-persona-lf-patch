@@ -81,7 +81,7 @@ def _independent_observations(image,source_sha:str)->tuple[list[dict],dict]:
   material=_text_material(text,conf)
   if material and _alnum_len(text)<=3 and not _corroborated_line(line,p6):material=False
   emit(line,'OCR_PSM12_FALLBACK',material)
- text_regions=[o['region'] for o in observations if o['kind']=='TEXT'];objects,object_sweep=_sweep_objects(image,text_regions)
+ text_regions=[o['region'] for o in observations if o['kind']=='TEXT' and o.get('detector')=='OCR_PSM6'];objects,object_sweep=_sweep_objects(image,text_regions)
  for idx,r in enumerate(objects,1):
   area=int(r['width'])*int(r['height']);ref,pixel_sha=_pixel_evidence(source_sha,'CV_CANNY_70_180',r,image)
   observations.append({'observation_id':f'OBS-O-{idx:04d}','detector':'CV_CANNY_70_180','kind':'VISUAL_OBJECT','classification':'INFERRED','material':_object_material(area),'text':None,'confidence':.72,'region':r,'pixel_sha256':pixel_sha,'evidence_refs':[ref]})
