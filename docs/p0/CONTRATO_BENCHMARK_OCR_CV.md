@@ -1,5 +1,7 @@
 # CONTRATO DE BENCHMARK OCR/CV — P0
 
+> **Rol de este archivo:** resumen normativo. El plan técnico canónico y más detallado es `docs/p0/OCR_BENCHMARK_PLAN.md`; la decisión arquitectónica es `docs/p0/ADR_OCR_UI_PIPELINE_20260812.md`. Si existe una diferencia, prevalece el plan canónico reconciliado.
+
 ## Objetivo
 
 Comparar motores/capas de percepción sobre exactamente las mismas pantallas y ground truth, sin permitir que una mejora textual o de velocidad oculte una regresión estructural.
@@ -12,7 +14,8 @@ Comparar motores/capas de percepción sobre exactamente las mismas pantallas y g
 - Cada fuente conserva SHA-256, dimensiones, formato y procedencia.
 
 Estado actual: 1/10 `KNOWN_REAL`; holdout insuficiente.
-Resultado actual: `BLOCKED_REAL_EVIDENCE`.
+Resultado de autonomía: `BLOCKED_REAL_EVIDENCE`.
+Resultado de reproducción B0/C1 en PR #140: `BLOCKED_MISSING_BENCHMARK_PRODUCER_ARTIFACTS`, porque el ground truth y runner nombrados por el artefacto histórico no están versionados en este PR.
 
 ## Métricas críticas
 
@@ -37,7 +40,8 @@ Resultado actual: `BLOCKED_REAL_EVIDENCE`.
 3. tiene cero escapes CRITICAL/HIGH/MEDIUM en known + holdout;
 4. no produce overmerge atómico ni evidence ownership duplicado;
 5. su configuración completa es reproducible;
-6. el resultado puede persistirse y reconstruirse por `execution_id`.
+6. el resultado puede persistirse y reconstruirse por `execution_id`;
+7. cumple la campaña mínima de 100 mutaciones por familia / 400 total y las mutaciones reales exigidas por EKB cuando exista artefacto actual elegible.
 
 Si no se cumplen todos: `NO_SUPERIOR_CANDIDATE_PROVEN`.
 
@@ -65,3 +69,6 @@ Si no se cumplen todos: `NO_SUPERIOR_CANDIDATE_PROVEN`.
 - No elegir motor por una sola pantalla.
 - No sumar un score global que compense una omisión HIGH con mejoras de latencia.
 - No declarar PASS sin artifacts/evidence/versiones persistibles.
+- No tratar PSM distintos de Tesseract como motores OCR independientes.
+- No reutilizar un resultado histórico para certificar un HEAD diferente.
+- No reconstruir silenciosamente el ground truth desde el output/candidate.
