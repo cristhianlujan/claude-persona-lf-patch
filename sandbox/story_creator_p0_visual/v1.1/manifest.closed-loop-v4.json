@@ -1,21 +1,43 @@
 {
-  "schema_version": "p0-closed-loop-manifest-v4/remediation-marker-v1",
+  "schema_version": "p0-closed-loop-manifest-v4.2/atomicity-invariants-v1",
   "repo": "cristhianlujan/claude-persona-lf-patch",
-  "pr": 133,
-  "branch": "lf/p0-v4-closed-loop",
+  "pr": 137,
+  "branch": "lf/p0-human-review-shell-v4-real-data",
+  "loop_version": "p0-v4.2-atomicity-invariants-2026-08-12",
   "source_sha256": "e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7",
-  "audited_head": "7cb3d831e3fbcad5ac447b45833487dcb09893ae",
-  "prior_executable_head": "7cb3d831e3fbcad5ac447b45833487dcb09893ae",
-  "audit_state": "FAIL_AUDIT_V4",
-  "remediation_state": "ROUND_2_IMPLEMENTED_PENDING_REQUIRED_CHECKS_AND_POST_AUDIT",
-  "invalidated_claim": "Independent audit found a silent >60 object-universe truncation plus grader producer/consumer gaps after the original denominator fix.",
+  "audited_head": "f51ddc0c9b0f854bec4dc9fa68672e2a7ac5d022",
+  "prior_executable_head": "f51ddc0c9b0f854bec4dc9fa68672e2a7ac5d022",
+  "audit_state": "P0_HUMAN_FINDINGS_CONFIRMED",
+  "remediated_code_head": "1f083e2516598cecc655d0366ad978633c7db99e",
+  "remediation_state": "READY_FOR_HUMAN_REVIEW_RECHECK_AUTONOMY_BLOCKED",
+  "invalidated_claim": "Every PASS produced by the pre-atomicity loop version is retroactively invalid: independent human review found sibling contamination, unjustified text fragmentation, one omitted repeated control and one omitted material icon.",
+  "retroactive_invalidation_policy": "REJECT_PASS_FROM_INVALIDATED_LOOP_VERSION",
+  "atomicity_invariants": [
+    "VISUAL_MATERIAL_CONSERVATION",
+    "EXCLUSIVE_EVIDENCE_PARTITION",
+    "MODALITY_DISTINCT_DENOMINATOR"
+  ],
+  "mutation_requirement": "100_OF_100",
+  "empirical_readiness": "BLOCKED_F01_CORPUS_AND_F05_UNSEEN_STOPPING_RULE",
   "historical_evidence_policy": "Prior Supabase V4 evidence remains immutable historical evidence of earlier audited reruns; round-2 evidence must be appended under a new review id.",
   "required_global_check": "lf-contract-check",
   "inventory_mode": "EXACT_GIT_BLOB_SHA",
   "files": [
     {
+      "path": "agents/j00-p0-visual-judge.md",
+      "git_blob_sha": "d901b3ffab3e0dae1b851f4d7a9e96613efa541b"
+    },
+    {
+      "path": "agents/p0-completeness-v4.md",
+      "git_blob_sha": "0d50e907eb15aea316ea286a0af398b5b95ad0c6"
+    },
+    {
+      "path": "agents/p0-visual-reader.md",
+      "git_blob_sha": "cd60a0adcef54f011b392a52e668eefed6da6c4c"
+    },
+    {
       "path": "evals/p0-closed-loop-runtime-config-v4.json",
-      "git_blob_sha": "8d680b3e85eb51479a725db0eb6401305f78c081"
+      "git_blob_sha": "35a6ef4095849495af34ab1cc69bc127df0e8324"
     },
     {
       "path": "evals/p0_grader_producer_field_audit_v4.py",
@@ -28,6 +50,10 @@
     {
       "path": "evals/p0_reader_producer_contract_v4.py",
       "git_blob_sha": "fc46f9db4aad29407974a856cc5f6aee7966cc68"
+    },
+    {
+      "path": "evals/p0_visual_atomicity_invariants_v4.py",
+      "git_blob_sha": "59ce53170aee68788be98ba42a98d44928540b4f"
     },
     {
       "path": "evals/p0_visual_closed_loop_v4_suite.py",
@@ -55,7 +81,19 @@
     },
     {
       "path": "evals/p0_visual_real_rerun_v4.py",
-      "git_blob_sha": "750572cf5bfff5dd2278a9c6e02ad22ae3bac7d0"
+      "git_blob_sha": "3d88143f02d54b6bd285b56c947f51ba1751f87c"
+    },
+    {
+      "path": "evidence/r3/LOTE-AUD-P0V4-R3-01-pre-remediation-invariant-diagnostic.json",
+      "git_blob_sha": "9bb736ee7203887de19a894ed9940eb5b4bbfbbd"
+    },
+    {
+      "path": "evidence/r3/LOTE-AUD-P0V4-R3-02-real-rerun-receipt.json",
+      "git_blob_sha": "b7065ac8591114beba2693b13c697035ba25d85f"
+    },
+    {
+      "path": "evidence/r3/P0-HUMAN-REVIEW-SHELL-V4.2.html",
+      "git_blob_sha": "fdfc22ff2e6b2bcd029b2c6af3b72206cd52aa18"
     },
     {
       "path": "schemas/p0-convergence-receipt-v4.schema.json",
@@ -83,11 +121,19 @@
     },
     {
       "path": "scripts/p0_full_reader_v4.py",
-      "git_blob_sha": "08474c8b47a900ad8f7245d2f40e65b771b00278"
+      "git_blob_sha": "d5bfad46ae91281f3c0ab53f269b756f533f4f5b"
+    },
+    {
+      "path": "scripts/p0_human_review_shell_v4.py",
+      "git_blob_sha": "91144c0f3c01f22b84f5c8a79c43a4e378cb9d18"
     },
     {
       "path": "scripts/p0_independent_omission_sweep_v4.py",
-      "git_blob_sha": "055ef90f169e96b4155ed87de3dba097f4c17889"
+      "git_blob_sha": "0490bd5449374caa317217bf6a9d882eba1bc46a"
+    },
+    {
+      "path": "scripts/p0_visual_atomicity_v4.py",
+      "git_blob_sha": "fb7534d4ab52a0cb2e8731e451a5115ea3a7dafc"
     },
     {
       "path": "scripts/p0_visual_convergence_v4.py",
@@ -107,19 +153,27 @@
     },
     {
       "path": "scripts/p0_visual_grader_structure_v4.py",
-      "git_blob_sha": "529da951d91b2d88ecb53a46edaabcf1e04dfa89"
+      "git_blob_sha": "68c04d8bd270d73060825d9bd0c52fb03054207f"
     },
     {
       "path": "scripts/p0_visual_grader_text_v4.py",
-      "git_blob_sha": "dbc0159123082f0cabba7d7c86d21761b47620b3"
+      "git_blob_sha": "219c47a6aff923beffa1d01ea5b3e53ec4867235"
     },
     {
       "path": "scripts/p0_visual_graders_v4.py",
       "git_blob_sha": "517fda6dde23929564d659d5e4cacb7b19e3d59a"
     },
     {
+      "path": "scripts/p0_visual_mutation_campaign_v4.py",
+      "git_blob_sha": "ce324e52b434d2d92b0d210cbc58c58cbc2d1513"
+    },
+    {
       "path": "scripts/p0_visual_real_rerun_support_v4.py",
       "git_blob_sha": "91efb7a635cb9b72c456ff1b42b5dcb4f8fad19f"
+    },
+    {
+      "path": "scripts/p0_visual_residual_v4.py",
+      "git_blob_sha": "57d9544c3e3a6349fce7a3d6ab73fe585ccf9fa4"
     },
     {
       "path": "scripts/persist_p0_visual_loop_v4.py",
@@ -132,6 +186,10 @@
     {
       "path": "scripts/validate_p0_v4_closed_loop.py",
       "git_blob_sha": "beb2afe1a1a0f20da76f3f32deb0d4014700ee22"
+    },
+    {
+      "path": "scripts/verify_p0_integration_candidate.py",
+      "git_blob_sha": "f145bb5af9ce606bca97f6c223c1b58e98bacf4d"
     }
   ],
   "human_adjudication": "NOT_PERFORMED",

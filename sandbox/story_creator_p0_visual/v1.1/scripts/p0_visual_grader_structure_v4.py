@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from p0_visual_grader_core_v4 import *
 from p0_independent_omission_sweep_v4 import validate_sweep_receipt
+from p0_visual_atomicity_v4 import evidence_purity_issues, exclusive_partition_issues
 
 def j_complete(candidate:dict,ctx:dict)->dict:
  g='J-COMPLETE';els=candidate.get('elements',[]);app=[e['element_id'] for e in els];fs=[];sweep=ctx.get('independent_sweep');errors=validate_sweep_receipt(sweep,candidate,ctx)
@@ -13,6 +14,10 @@ def j_complete(candidate:dict,ctx:dict)->dict:
   pseudo={'element_id':None,'region':o.get('region') or {},'evidence_refs':o.get('evidence_refs') or []}
   if o.get('match_status')=='UNREPRESENTED':fs.append(finding(ctx,g,'MATERIAL_OMISSION','HIGH',pseudo,{'observation_id':o.get('observation_id'),'kind':o.get('kind'),'text':o.get('text'),'match_status':'UNREPRESENTED'},'REREAD',.96,'independent-omission-sweep'))
   elif o.get('match_status')=='UNCERTAIN':fs.append(finding(ctx,g,'OMISSION_SWEEP_UNCERTAIN','MEDIUM',pseudo,{'observation_id':o.get('observation_id'),'kind':o.get('kind'),'text':o.get('text')},'BLOCK',.90,'independent-omission-uncertainty'))
+ for group in sweep.get('repeated_control_groups') or []:
+  if group.get('status')!='PASS':
+   pseudo={'element_id':None,'region':{},'evidence_refs':[]}
+   fs.append(finding(ctx,g,'REPEATED_CONTROL_CARDINALITY_MISMATCH','HIGH',pseudo,group,'REREAD',.99,'independent-control-cardinality'))
  by={e.get('element_id'):e for e in els}
  for eid in sweep.get('unsupported_candidate_ids') or []:
   e=by.get(eid)
@@ -44,4 +49,10 @@ def j_structure(candidate:dict,ctx:dict)->dict:
    if not pid or pid not in by:break
    if pid in seen:fs.append(finding(ctx,g,'PARENT_CYCLE','CRITICAL',e,{'cycle_at':pid},'BLOCK',1.0,'structure-cycle'));break
    seen.add(pid);cur=by[pid]
+ for issue in evidence_purity_issues(els):
+  element=by.get(issue.get('element_id'))
+  fs.append(finding(ctx,g,'SHARED_EVIDENCE_VIOLATION','HIGH',element,issue,'REREAD',.99,'exclusive-evidence-partition'))
+ for issue in exclusive_partition_issues(els):
+  element=by.get((issue.get('element_ids') or [None])[0])
+  fs.append(finding(ctx,g,issue['code'],'HIGH',element,issue,'REREAD',.99,'exclusive-evidence-partition'))
  return output(ctx,g,app,app,fs)

@@ -28,6 +28,10 @@ Attempt to falsify:
 
 Emit independent findings plus machine-remediation targets. Any material geometry/style/grouping contradiction, unsupported exact claim, critical auxiliary mismatch, pending remediation or blind mutation blocks visual-fidelity PASS.
 
+## V4.2 conservation and empirical gates
+
+J00 recomputes, without trusting reader flags: exclusive OCR/crop ownership, justified partitions, independent repeated-control cardinality and modality-distinct screen coverage. Any zero-assignment material, duplicate assignment or unjustified split is HIGH and fail-closed. The edge-residual gate remains `BLOCKED_UNCALIBRATED` until a versioned corpus of at least 10 manually labelled screens supplies its threshold. A source-bound campaign of exactly 100 systematic mutations must achieve 100/100 detection for a screen packet to reach human recheck. This engineering result never satisfies the five-unseen-screen stopping rule by itself.
+
 ## Human/P1 boundary
 
 J00 may support `HUMAN_REVIEW_READY` only after P0H semantic + fidelity hard gates pass. It cannot fabricate human adjudication, P0-5 benchmark acceptance, J00R authority or production authorization.
