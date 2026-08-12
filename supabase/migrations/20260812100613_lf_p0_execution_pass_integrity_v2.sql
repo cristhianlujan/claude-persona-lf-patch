@@ -60,9 +60,11 @@ begin
     end if;
 
     if exists (
-      select 1 from jsonb_array_elements(p_bundle->'elements') e
+      select 1
+      from jsonb_array_elements(p_bundle->'elements') e
       where not exists (
-        select 1 from jsonb_array_elements(p_bundle->'element_evidence') l
+        select 1
+        from jsonb_array_elements(p_bundle->'element_evidence') l
         where l->>'element_id' = e->>'element_id'
       )
     ) then
@@ -70,7 +72,8 @@ begin
     end if;
 
     if exists (
-      select 1 from (
+      select 1
+      from (
         select l->>'evidence_unit_id' as evidence_unit_id, count(*) as c
         from jsonb_array_elements(p_bundle->'element_evidence') l
         group by l->>'evidence_unit_id'
@@ -81,9 +84,11 @@ begin
     end if;
 
     if exists (
-      select 1 from jsonb_array_elements(p_bundle->'evidence_units') u
+      select 1
+      from jsonb_array_elements(p_bundle->'evidence_units') u
       where not exists (
-        select 1 from jsonb_array_elements(p_bundle->'element_evidence') l
+        select 1
+        from jsonb_array_elements(p_bundle->'element_evidence') l
         where l->>'evidence_unit_id' = u->>'evidence_unit_id'
       )
     ) then
@@ -94,7 +99,8 @@ begin
       select 1
       from unnest(array['SOURCE','CONFIGURATION','RECEIPT','MANIFEST','AUDIT']::text[]) required_role
       where not exists (
-        select 1 from jsonb_array_elements(p_bundle->'artifacts') a
+        select 1
+        from jsonb_array_elements(p_bundle->'artifacts') a
         where a->>'artifact_role' = required_role
       )
     ) then
@@ -102,7 +108,8 @@ begin
     end if;
 
     if not exists (
-      select 1 from jsonb_array_elements(p_bundle->'artifacts') a
+      select 1
+      from jsonb_array_elements(p_bundle->'artifacts') a
       where a->>'artifact_role' = 'SOURCE'
         and a->>'content_sha256' = v_execution->>'source_sha256'
     ) then
@@ -110,7 +117,8 @@ begin
     end if;
 
     if not exists (
-      select 1 from jsonb_array_elements(p_bundle->'artifacts') a
+      select 1
+      from jsonb_array_elements(p_bundle->'artifacts') a
       where a->>'artifact_role' = 'CONFIGURATION'
         and a->>'content_sha256' = v_execution->>'configuration_sha256'
     ) then
@@ -118,7 +126,8 @@ begin
     end if;
 
     if exists (
-      select 1 from jsonb_array_elements(p_bundle->'records') r
+      select 1
+      from jsonb_array_elements(p_bundle->'records') r
       where r->>'record_kind' in ('RULE','VALIDATION')
         and nullif(r->>'rule_version','') is null
     ) then
@@ -126,7 +135,8 @@ begin
     end if;
 
     if exists (
-      select 1 from jsonb_array_elements(p_bundle->'records') r
+      select 1
+      from jsonb_array_elements(p_bundle->'records') r
       where r->>'record_kind' = 'VALIDATION'
         and r->>'status' <> 'PASS'
     ) then
@@ -134,7 +144,8 @@ begin
     end if;
 
     if not exists (
-      select 1 from jsonb_array_elements(p_bundle->'records') r
+      select 1
+      from jsonb_array_elements(p_bundle->'records') r
       where r->>'record_kind' = 'PASS_RESULT'
         and r->>'status' = 'PASS'
     ) then
@@ -142,7 +153,8 @@ begin
     end if;
 
     if exists (
-      select 1 from jsonb_array_elements(p_bundle->'records') r
+      select 1
+      from jsonb_array_elements(p_bundle->'records') r
       where r->>'record_kind' in ('OMISSION','CONTAMINATION','RESIDUAL','EXCEPTION')
         and r->>'severity' in ('CRITICAL','HIGH','MEDIUM')
         and r->>'status' not in ('PASS','RESOLVED','CLOSED','NOT_APPLICABLE')
@@ -175,10 +187,16 @@ begin
       raise exception using errcode = '23505', message = 'LF_P0_EXECUTION_ID_CONFLICT';
     end if;
 
-    insert into private.lf_p0_execution_persist_attempts_v1(execution_id, request_fingerprint_sha256, outcome)
+    insert into private.lf_p0_execution_persist_attempts_v1(
+      execution_id, request_fingerprint_sha256, outcome
+    )
     values (v_execution_id, v_fingerprint, 'IDEMPOTENT_REPLAY');
 
-    return jsonb_build_object('execution_id', v_execution_id, 'outcome', 'IDEMPOTENT_REPLAY', 'request_fingerprint_sha256', v_fingerprint);
+    return jsonb_build_object(
+      'execution_id', v_execution_id,
+      'outcome', 'IDEMPOTENT_REPLAY',
+      'request_fingerprint_sha256', v_fingerprint
+    );
   end if;
 
   insert into private.lf_p0_execution_runs_v1(
@@ -212,58 +230,118 @@ begin
   );
 
   for v_item in select value from jsonb_array_elements(p_bundle->'elements') loop
-    insert into private.lf_p0_execution_elements_v1(execution_id, element_id, parent_element_id, element_type, visible_text, bbox, cardinality, confidence, modality, payload)
-    values (v_execution_id, v_item->>'element_id', nullif(v_item->>'parent_element_id', ''), v_item->>'element_type', v_item->>'visible_text', v_item->'bbox', coalesce((v_item->>'cardinality')::integer, 1), nullif(v_item->>'confidence', '')::numeric, v_item->>'modality', coalesce(v_item->'payload', '{}'::jsonb));
+    insert into private.lf_p0_execution_elements_v1(
+      execution_id, element_id, parent_element_id, element_type, visible_text,
+      bbox, cardinality, confidence, modality, payload
+    ) values (
+      v_execution_id, v_item->>'element_id', nullif(v_item->>'parent_element_id', ''),
+      v_item->>'element_type', v_item->>'visible_text', v_item->'bbox',
+      coalesce((v_item->>'cardinality')::integer, 1),
+      nullif(v_item->>'confidence', '')::numeric, v_item->>'modality',
+      coalesce(v_item->'payload', '{}'::jsonb)
+    );
   end loop;
 
   for v_item in select value from jsonb_array_elements(p_bundle->'evidence_units') loop
-    insert into private.lf_p0_execution_evidence_units_v1(execution_id, evidence_unit_id, evidence_kind, evidence_ref, content_sha256, bbox, modality, payload)
-    values (v_execution_id, v_item->>'evidence_unit_id', v_item->>'evidence_kind', v_item->>'evidence_ref', nullif(v_item->>'content_sha256', ''), v_item->'bbox', v_item->>'modality', coalesce(v_item->'payload', '{}'::jsonb));
+    insert into private.lf_p0_execution_evidence_units_v1(
+      execution_id, evidence_unit_id, evidence_kind, evidence_ref,
+      content_sha256, bbox, modality, payload
+    ) values (
+      v_execution_id, v_item->>'evidence_unit_id', v_item->>'evidence_kind',
+      v_item->>'evidence_ref', nullif(v_item->>'content_sha256', ''),
+      v_item->'bbox', v_item->>'modality', coalesce(v_item->'payload', '{}'::jsonb)
+    );
   end loop;
 
   for v_item in select value from jsonb_array_elements(p_bundle->'element_evidence') loop
-    insert into private.lf_p0_execution_element_evidence_v1(execution_id, element_id, evidence_unit_id, relationship)
-    values (v_execution_id, v_item->>'element_id', v_item->>'evidence_unit_id', v_item->>'relationship');
+    insert into private.lf_p0_execution_element_evidence_v1(
+      execution_id, element_id, evidence_unit_id, relationship
+    )
+    values (
+      v_execution_id, v_item->>'element_id',
+      v_item->>'evidence_unit_id', v_item->>'relationship'
+    );
   end loop;
 
   for v_item in select value from jsonb_array_elements(p_bundle->'records') loop
-    insert into private.lf_p0_execution_records_v1(execution_id, record_kind, record_id, stage, rule_version, severity, status, payload)
-    values (v_execution_id, v_item->>'record_kind', v_item->>'record_id', v_item->>'stage', nullif(v_item->>'rule_version', ''), nullif(v_item->>'severity', ''), v_item->>'status', coalesce(v_item->'payload', '{}'::jsonb));
+    insert into private.lf_p0_execution_records_v1(
+      execution_id, record_kind, record_id, stage, rule_version, severity, status, payload
+    ) values (
+      v_execution_id, v_item->>'record_kind', v_item->>'record_id', v_item->>'stage',
+      nullif(v_item->>'rule_version', ''), nullif(v_item->>'severity', ''),
+      v_item->>'status', coalesce(v_item->'payload', '{}'::jsonb)
+    );
   end loop;
 
   for v_item in select value from jsonb_array_elements(p_bundle->'artifacts') loop
-    insert into private.lf_p0_execution_artifacts_v1(execution_id, artifact_id, artifact_role, artifact_ref, content_sha256, content_bytes, external_evidence_ref, payload)
-    values (v_execution_id, v_item->>'artifact_id', v_item->>'artifact_role', v_item->>'artifact_ref', v_item->>'content_sha256', nullif(v_item->>'content_bytes', '')::bigint, nullif(v_item->>'external_evidence_ref', ''), coalesce(v_item->'payload', '{}'::jsonb));
+    insert into private.lf_p0_execution_artifacts_v1(
+      execution_id, artifact_id, artifact_role, artifact_ref, content_sha256,
+      content_bytes, external_evidence_ref, payload
+    ) values (
+      v_execution_id, v_item->>'artifact_id', v_item->>'artifact_role',
+      v_item->>'artifact_ref', v_item->>'content_sha256',
+      nullif(v_item->>'content_bytes', '')::bigint,
+      nullif(v_item->>'external_evidence_ref', ''),
+      coalesce(v_item->'payload', '{}'::jsonb)
+    );
   end loop;
 
   for v_item in select value from jsonb_array_elements(p_bundle->'transitions') loop
-    insert into private.lf_p0_execution_transitions_v1(execution_id, transition_ordinal, from_state, to_state, occurred_at, reason, payload)
-    values (v_execution_id, (v_item->>'transition_ordinal')::integer, nullif(v_item->>'from_state', ''), v_item->>'to_state', (v_item->>'occurred_at')::timestamptz, v_item->>'reason', coalesce(v_item->'payload', '{}'::jsonb));
+    insert into private.lf_p0_execution_transitions_v1(
+      execution_id, transition_ordinal, from_state, to_state, occurred_at, reason, payload
+    ) values (
+      v_execution_id, (v_item->>'transition_ordinal')::integer,
+      nullif(v_item->>'from_state', ''), v_item->>'to_state',
+      (v_item->>'occurred_at')::timestamptz, v_item->>'reason',
+      coalesce(v_item->'payload', '{}'::jsonb)
+    );
   end loop;
 
-  if not exists (select 1 from private.lf_p0_execution_records_v1 where execution_id = v_execution_id and record_kind = 'RULE')
-     or not exists (select 1 from private.lf_p0_execution_records_v1 where execution_id = v_execution_id and record_kind = 'VALIDATION')
-     or not exists (select 1 from private.lf_p0_execution_records_v1 where execution_id = v_execution_id and record_kind = 'PASS_RESULT') then
+  if not exists (
+       select 1
+       from private.lf_p0_execution_records_v1
+       where execution_id = v_execution_id and record_kind = 'RULE'
+     )
+     or not exists (
+       select 1
+       from private.lf_p0_execution_records_v1
+       where execution_id = v_execution_id and record_kind = 'VALIDATION'
+     )
+     or not exists (
+       select 1
+       from private.lf_p0_execution_records_v1
+       where execution_id = v_execution_id and record_kind = 'PASS_RESULT'
+     ) then
     raise exception using errcode = '23514', message = 'LF_P0_RULE_VALIDATION_PASS_RECORDS_REQUIRED';
   end if;
 
   if exists (
-    select 1 from private.lf_p0_execution_evidence_units_v1 u
+    select 1
+    from private.lf_p0_execution_evidence_units_v1 u
     where u.execution_id = v_execution_id
       and not exists (
-        select 1 from private.lf_p0_execution_element_evidence_v1 l
-        where l.execution_id = u.execution_id and l.evidence_unit_id = u.evidence_unit_id
+        select 1
+        from private.lf_p0_execution_element_evidence_v1 l
+        where l.execution_id = u.execution_id
+          and l.evidence_unit_id = u.evidence_unit_id
       )
   ) then
     raise exception using errcode = '23514', message = 'LF_P0_ORPHAN_EVIDENCE_UNIT';
   end if;
 
-  insert into private.lf_p0_execution_persist_attempts_v1(execution_id, request_fingerprint_sha256, outcome)
+  insert into private.lf_p0_execution_persist_attempts_v1(
+    execution_id, request_fingerprint_sha256, outcome
+  )
   values (v_execution_id, v_fingerprint, 'INSERTED');
 
-  return jsonb_build_object('execution_id', v_execution_id, 'outcome', 'INSERTED', 'request_fingerprint_sha256', v_fingerprint);
+  return jsonb_build_object(
+    'execution_id', v_execution_id,
+    'outcome', 'INSERTED',
+    'request_fingerprint_sha256', v_fingerprint
+  );
 exception
-  when others then raise;
+  when others then
+    raise;
 end;
 $$;
 
