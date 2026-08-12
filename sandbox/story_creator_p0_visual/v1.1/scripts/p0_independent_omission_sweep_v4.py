@@ -58,12 +58,30 @@ def _sweep_objects(image,text_regions:list[dict],*,limit:int=OBJECT_SWEEP_LIMIT)
   deduped.append(r)
  truncated=len(deduped)>limit;kept=deduped[:limit]
  return kept,{'detector':'CV_CANNY_70_180','raw_count':len(raw),'deduped_count':len(deduped),'emitted_count':len(kept),'limit':int(limit),'truncated':truncated}
+def _alnum_len(text:str)->int:return len(''.join(ch for ch in (text or '') if ch.isalnum()))
+def _corroborated_line(line:dict,others:list[dict])->bool:
+ return any(_spatial(line.get('region') or {},o.get('region') or {})>=.12 and _text_similarity(line.get('text'),o.get('text'))>=.72 for o in others)
 def _independent_observations(image,source_sha:str)->tuple[list[dict],dict]:
- observations=[]
- for idx,line in enumerate(ocr_lines(image,6),1):
-  text=' '.join((line.get('text') or '').split());conf=float(line.get('confidence',0.0) or 0.0);r=line['region'];material=_text_material(text,conf);ref,pixel_sha=_pixel_evidence(source_sha,'OCR_PSM6',r,image)
-  observations.append({'observation_id':f'OBS-T-{idx:04d}','detector':'OCR_PSM6','kind':'TEXT','classification':'CONFIRMED' if conf>=65 else 'INFERRED','material':material,'text':text,'confidence':round(max(0,min(1,conf/100.0)),6),'region':r,'pixel_sha256':pixel_sha,'evidence_refs':[ref]})
- text_regions=[o['region'] for o in observations if o['kind']=='TEXT'];objects,object_sweep=_sweep_objects(image,text_regions)
+ # PSM6 remains the independent full-page sweep. PSM12 is used only as a
+ # segmentation corroborator/fallback so a weak PSM6 crop cannot erase a real
+ # side-by-side UI label. Short 2-3 alphanumeric fragments require cross-PSM
+ # corroboration; this suppresses icon/illustration hallucinations such as "En".
+ p6=ocr_lines(image,6);p12=ocr_lines(image,12);observations=[];seq=0
+ def emit(line:dict,detector:str,material:bool):
+  nonlocal seq
+  seq+=1;text=' '.join((line.get('text') or '').split());conf=float(line.get('confidence',0.0) or 0.0);r=line['region'];ref,pixel_sha=_pixel_evidence(source_sha,detector,r,image)
+  observations.append({'observation_id':f'OBS-T-{seq:04d}','detector':detector,'kind':'TEXT','classification':'CONFIRMED' if conf>=65 else 'INFERRED','material':bool(material),'text':text,'confidence':round(max(0,min(1,conf/100.0)),6),'region':r,'pixel_sha256':pixel_sha,'evidence_refs':[ref]})
+ for line in p6:
+  text=' '.join((line.get('text') or '').split());conf=float(line.get('confidence',0.0) or 0.0);material=_text_material(text,conf)
+  if material and _alnum_len(text)<=3 and not _corroborated_line(line,p12):material=False
+  emit(line,'OCR_PSM6',material)
+ for line in p12:
+  text=' '.join((line.get('text') or '').split());conf=float(line.get('confidence',0.0) or 0.0)
+  if any(_spatial(line.get('region') or {},x.get('region') or {})>=.18 and _text_similarity(text,x.get('text'))>=.62 for x in p6):continue
+  material=_text_material(text,conf)
+  if material and _alnum_len(text)<=3 and not _corroborated_line(line,p6):material=False
+  emit(line,'OCR_PSM12_FALLBACK',material)
+ text_regions=[o['region'] for o in observations if o['kind']=='TEXT' and o.get('detector')=='OCR_PSM6'];objects,object_sweep=_sweep_objects(image,text_regions)
  for idx,r in enumerate(objects,1):
   area=int(r['width'])*int(r['height']);ref,pixel_sha=_pixel_evidence(source_sha,'CV_CANNY_70_180',r,image)
   observations.append({'observation_id':f'OBS-O-{idx:04d}','detector':'CV_CANNY_70_180','kind':'VISUAL_OBJECT','classification':'INFERRED','material':_object_material(area),'text':None,'confidence':.72,'region':r,'pixel_sha256':pixel_sha,'evidence_refs':[ref]})
@@ -104,7 +122,7 @@ def _region_rows(observations:list[dict],width:int)->list[dict]:
   items=[o for o in observations if o.get('material') and (rid=='FULL' or _region_of(o['region'],width)==rid)];represented=sum(o.get('match_status')=='REPRESENTED' for o in items);uncertain=sum(o.get('match_status')=='UNCERTAIN' for o in items);unrepresented=sum(o.get('match_status')=='UNREPRESENTED' for o in items);status='COMPLETE' if uncertain==0 else 'INCOMPLETE';refs=sorted({ref for o in items for ref in o.get('evidence_refs',[])})
   rows.append({'region_id':rid,'material':True,'observed_count':len(items),'represented_count':represented,'uncertain_count':uncertain,'unrepresented_count':unrepresented,'sweep_status':status,'evidence_refs':refs})
  return rows
-def _materiality_policy()->dict:return {'schema_version':'p0-sweep-materiality-policy/v1','text_confidence_strong_min':TEXT_CONF_STRONG,'text_confidence_long_min':TEXT_CONF_LONG,'text_long_min_alnum':4,'object_material_area_min_px2':OBJECT_MATERIAL_AREA,'rationale':'Fail-closed recall bias: long OCR strings at 35-44 confidence remain material; strong short labels remain material when they form one lexical token, while fragmented sub-4-alphanumeric OCR noise is non-material; every contour admitted by the object sweep is material from 900 px2 upward.'}
+def _materiality_policy()->dict:return {'schema_version':'p0-sweep-materiality-policy/v1','text_confidence_strong_min':TEXT_CONF_STRONG,'text_confidence_long_min':TEXT_CONF_LONG,'text_long_min_alnum':4,'object_material_area_min_px2':OBJECT_MATERIAL_AREA,'rationale':'Fail-closed recall bias: long OCR strings at 35-44 confidence remain material; every contour admitted by the object sweep is material from 900 px2 upward.'}
 def run_independent_omission_sweep(source_path:str,expected_source_sha256:str,candidate:dict,*,execution_id:str)->dict:
  try:actual=file_sha256(source_path)
  except Exception as exc:return {'schema_version':'p0-independent-omission-sweep-v4/v1','execution_id':execution_id,'source_sha256':None,'candidate_sha256':None,'width':0,'height':0,'status':'ERROR','fresh_source_read':False,'observations':[],'regions':[],'object_sweep':None,'materiality_policy':_materiality_policy(),'unrepresented_observation_ids':[],'unsupported_candidate_ids':[],'candidate_support_uncertain_ids':[],'errors':['SOURCE_READ_ERROR:'+type(exc).__name__]}
@@ -118,7 +136,7 @@ def run_independent_omission_sweep(source_path:str,expected_source_sha256:str,ca
   if match is not None:o['match_status']='REPRESENTED';o['matched_element_id']=match.get('element_id');o['match_score']=round(score,6)
   elif o['kind']=='TEXT' and o.get('classification')!='CONFIRMED':o['match_status']='UNCERTAIN';o['matched_element_id']=None;o['match_score']=0.0
   else:o['match_status']='UNREPRESENTED';o['matched_element_id']=None;o['match_score']=0.0
- material_obs=[o for o in observations if o.get('material')];matched_ids={o.get('matched_element_id') for o in material_obs if o.get('match_status')=='REPRESENTED'};unsupported=[];support_uncertain=[];text_observations=[o for o in observations if o.get('kind')=='TEXT']
+ material_obs=[o for o in observations if o.get('material')];matched_ids={o.get('matched_element_id') for o in material_obs if o.get('match_status')=='REPRESENTED'};unsupported=[];support_uncertain=[];text_observations=[o for o in observations if o.get('kind')=='TEXT' and o.get('material')]
  for e in candidates:
   if e.get('classification')!='CONFIRMED' or not (e.get('visible_text') or e.get('element_type') in VISUAL_TYPES) or e.get('element_id') in matched_ids:continue
   support=_candidate_support(image,e,text_observations)

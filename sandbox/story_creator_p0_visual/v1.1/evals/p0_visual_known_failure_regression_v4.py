@@ -5,9 +5,12 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT/'scripts'))
 from p0_visual_graders_v4 import run_all,canonical_sha
 from p0_visual_discovery_v4 import union_findings
+from p0_full_reader_v4 import _split_atomic_columns,_merge_same_visual_line,_lexical_corroboration,_strict_primary_with_alt_fallback,_control_suffix_glyph_split
+from p0_visual_grader_structure_v4 import _atomic_overmerge_groups
+from p0_independent_omission_sweep_v4 import _corroborated_line,_alnum_len
 H='a'*64
 POLICY={'schema_version':'p0-sweep-materiality-policy/v1','text_confidence_strong_min':45.0,'text_confidence_long_min':35.0,'text_long_min_alnum':4,'object_material_area_min_px2':900,'rationale':'test fixture mirrors product policy'}
-PRODUCT=[ROOT/'scripts/p0_visual_graders_v4.py',ROOT/'scripts/p0_visual_discovery_v4.py',ROOT/'scripts/p0_independent_omission_sweep_v4.py',ROOT/'scripts/p0_visual_convergence_v4.py',ROOT/'scripts/run_p0_visual_quality_loop_v4.py',ROOT/'scripts/persist_p0_visual_loop_v4.py']
+PRODUCT=[ROOT/'scripts/p0_visual_graders_v4.py',ROOT/'scripts/p0_visual_discovery_v4.py',ROOT/'scripts/p0_independent_omission_sweep_v4.py',ROOT/'scripts/p0_visual_convergence_v4.py',ROOT/'scripts/run_p0_visual_quality_loop_v4.py',ROOT/'scripts/persist_p0_visual_loop_v4.py',ROOT/'scripts/p0_full_reader_v4.py',ROOT/'scripts/p0_visual_grader_structure_v4.py']
 FORBIDDEN=['EL-0034','EL-0038','EL-0079','EL-0088','+51 Y','mn relacionada']
 def E(txt,**kw):
  d={'element_id':'SYN-1','element_type':'TEXT','visible_text':txt,'classification':'CONFIRMED','confidence':.9,'semantic_role':'visible_copy','region':{'x':10,'y':10,'width':80,'height':20},'parent_id':'ROOT','evidence_refs':['synthetic://crop'],'ocr_variants':[txt] if txt else [],'ocr_consensus_text':txt,'graphic_score':.1,'bbox_reproducible':True,'style':{},'style_provenance':{},'independent_redetection':True};d.update(kw);return d
@@ -16,6 +19,10 @@ def S(c):return {'schema_version':'p0-independent-omission-sweep-v4/v1','executi
 def cats(c):
  ctx={'cycle_id':'C-R','pass_id':'P-R','reader_execution_id':'R-R','source_sha256':H,'candidate_sha256':canonical_sha(c),'coverage_execution_id':'JC-R','independent_sweep':S(c)};return {f['category'] for f in union_findings(run_all(c,ctx))}
 def expect(label,cat,c):x=cats(c);assert cat in x,(label,cat,x);return label
+def _fake_ocr_data(words:list[tuple[str,int,int,int,int]])->dict:
+ # (text,left,top,width,height); all words intentionally share one Tesseract line.
+ n=len(words);return {'left':[x[1] for x in words],'top':[x[2] for x in words],'width':[x[3] for x in words],'height':[x[4] for x in words]}
+def _items(words:list[tuple[str,int,int,int,int]]):return [(i,w[0],96.0) for i,w in enumerate(words)]
 def main():
  checks=[]
  for p in PRODUCT:
@@ -32,5 +39,24 @@ def main():
  checks.append(expect('unclassified_disagreement','OCR_UNCLASSIFIED_DISAGREEMENT',C(E('DOCUMENTO APROBADO',ocr_consensus_text='DOCUMENTO RECHAZADO',ocr_variants=['DOCUMENTO APROBADO','DOCUMENTO RECHAZADO']))))
  checks.append(expect('unseen_case_mismatch','OCR_CASE_MISMATCH',C(E('x',ocr_consensus_text='X'))))
  stable=cats(C(E('51',ocr_consensus_text='51',ocr_variants=['51'],ocr_read_count=4,ocr_empty_reads=0)));assert 'SHORT_TOKEN_UNCORROBORATED' not in stable;checks.append('RESTORE_REAL_SHORT_NUMBER')
- print(json.dumps({'gate':'PASS_V4_HUMAN_FINDINGS_AS_REGRESSIONS','checks':len(checks),'known_classes_detected':9,'unseen_holdout_detected':1,'restores':1,'results':checks},sort_keys=True));return 0
+ # Regression: side-by-side labels in one OCR line must be split into atomic UI units.
+ words=[('Celular',10,10,50,12),('Correo',310,10,50,12),('electrónico',365,10,80,12)];clusters=_split_atomic_columns(_items(words),_fake_ocr_data(words));assert len(clusters)==2;checks.append('ATOMIC_SPLIT_SIDE_BY_SIDE_LABELS')
+ # Ordinary multi-word labels remain one element.
+ words=[('Número',10,10,50,12),('de',65,10,16,12),('documento',86,10,78,12)];clusters=_split_atomic_columns(_items(words),_fake_ocr_data(words));assert len(clusters)==1;checks.append('RESTORE_MULTIWORD_LABEL_GROUPING')
+ # Phrase fragments split by Tesseract blocks but on the same baseline are merged back.
+ words=[('tu',10,10,38,28),('deuda',62,6,122,33)];data=_fake_ocr_data(words);groups=_merge_same_visual_line([[_items(words)[0]],[_items(words)[1]]],data);assert len(groups)==1;checks.append('RESTORE_SAME_BASELINE_PHRASE')
+ # Different-scale step/index glyph must not be merged into adjacent body copy.
+ words=[('1',10,10,16,28),('Consulta',65,15,68,13)];data=_fake_ocr_data(words);groups=_merge_same_visual_line([[_items(words)[0]],[_items(words)[1]]],data);assert len(groups)==2;checks.append('NO_STEP_NUMBER_OVERMERGE')
+ # Short real lexical tokens stay text when alternate OCR reads contain the same token in a larger phrase.
+ assert _lexical_corroboration('tu',['tu','tu deuda','tu deuda'])==3;checks.append('RESTORE_SHORT_LEXICAL_TOKEN_CORROBORATION')
+ # Coverage cannot be satisfied by one candidate mapped to two separated material observations.
+ sw={'observations':[{'observation_id':'O1','kind':'TEXT','material':True,'match_status':'REPRESENTED','matched_element_id':'E-MERGED','text':'Celular','region':{'x':10,'y':10,'width':50,'height':12}},{'observation_id':'O2','kind':'TEXT','material':True,'match_status':'REPRESENTED','matched_element_id':'E-MERGED','text':'Correo electrónico','region':{'x':310,'y':10,'width':130,'height':12}}]};assert 'E-MERGED' in _atomic_overmerge_groups(sw);checks.append('BLOCK_OVERMERGED_COVERAGE')
+ # Closely spaced word fragments are not falsely treated as independent UI fields.
+ sw={'observations':[{'observation_id':'O1','kind':'TEXT','material':True,'match_status':'REPRESENTED','matched_element_id':'E-PHRASE','text':'Número','region':{'x':10,'y':10,'width':50,'height':12}},{'observation_id':'O2','kind':'TEXT','material':True,'match_status':'REPRESENTED','matched_element_id':'E-PHRASE','text':'documento','region':{'x':66,'y':10,'width':78,'height':12}}]};assert 'E-PHRASE' not in _atomic_overmerge_groups(sw);checks.append('NO_FALSE_OVERMERGE_WITHIN_LABEL')
+ lines={3:[],11:[{'text':'Registro','confidence':93.0,'region':{'x':407,'y':930,'width':47,'height':13}}],12:[{'text':'Registro','confidence':93.0,'region':{'x':407,'y':930,'width':47,'height':13}}]};fallback=_strict_primary_with_alt_fallback(lines,3);assert len(fallback)==1 and fallback[0].get('source_psm')==11;checks.append('STRICT_ALT_FALLBACK_RETAINS_CORROBORATED_LINE')
+ lines={3:[],11:[{'text':'fantasma','confidence':93.0,'region':{'x':407,'y':930,'width':47,'height':13}}],12:[]};assert _strict_primary_with_alt_fallback(lines,3)==[];checks.append('STRICT_ALT_FALLBACK_REQUIRES_TWO_PSMS')
+ prefix,suffix=_control_suffix_glyph_split('+51 Y');assert prefix=='+51' and suffix=='Y';assert _control_suffix_glyph_split('DNI')==('DNI',None);checks.append('CONTROL_SUFFIX_GLYPH_SPLIT_GENERIC')
+ short={'text':'En','region':{'x':10,'y':10,'width':20,'height':12}};assert _alnum_len('En')==2 and not _corroborated_line(short,[]);checks.append('SHORT_SWEEP_FRAGMENT_REQUIRES_CROSS_PSM')
+ dni={'text':'DNI','region':{'x':10,'y':10,'width':30,'height':12}};dni2={'text':'DNI','region':{'x':11,'y':10,'width':30,'height':12}};assert _corroborated_line(dni,[dni2]);checks.append('SHORT_REAL_TOKEN_CROSS_PSM_RESTORE')
+ out={'gate':'PASS_V4_HUMAN_FINDINGS_AS_REGRESSIONS','checks':len(checks),'known_classes_detected':9,'unseen_holdout_detected':1,'restores':10,'atomic_segmentation_defended':True,'strict_fallback_defended':True,'sweep_corroboration_defended':True,'results':checks};print(json.dumps(out,sort_keys=True));return 0
 if __name__=='__main__':raise SystemExit(main())
