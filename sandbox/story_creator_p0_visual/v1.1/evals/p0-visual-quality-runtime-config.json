@@ -10,7 +10,7 @@
   "model_version": "1.0.0",
   "structured_output_mode": "p0-consolidated-visual-reading/v1",
   "dependencies": {
-    "tesseract": "5.5.0",
+    "tesseract": "5.3.4",
     "Pillow": "12.3.0",
     "numpy": "2.3.5",
     "opencv-python-headless": "4.13.0.92"
@@ -30,7 +30,7 @@
     "no_progress_repeat_limit": 1
   },
   "calibration": {
-    "calibration_reference": "p0://calibration/cv-ocr-closed-loop-v1",
+    "calibration_reference": "p0://calibration/cv-ocr-closed-loop-v2",
     "status": "GOVERNED_OPERATIONAL_CALIBRATION",
     "empirical_benchmark_acceptance": false,
     "p0_5_denominator_eligible": false,

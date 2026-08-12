@@ -1,0 +1,141 @@
+{
+  "schema_version": "p0-closed-loop-manifest-v4/remediation-marker-v1",
+  "repo": "cristhianlujan/claude-persona-lf-patch",
+  "pr": 133,
+  "branch": "lf/p0-v4-closed-loop",
+  "source_sha256": "e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7",
+  "audited_head": "7cb3d831e3fbcad5ac447b45833487dcb09893ae",
+  "prior_executable_head": "7cb3d831e3fbcad5ac447b45833487dcb09893ae",
+  "audit_state": "FAIL_AUDIT_V4",
+  "remediation_state": "ROUND_2_IMPLEMENTED_PENDING_REQUIRED_CHECKS_AND_POST_AUDIT",
+  "invalidated_claim": "Independent audit found a silent >60 object-universe truncation plus grader producer/consumer gaps after the original denominator fix.",
+  "historical_evidence_policy": "Prior Supabase V4 evidence remains immutable historical evidence of earlier audited reruns; round-2 evidence must be appended under a new review id.",
+  "required_global_check": "lf-contract-check",
+  "inventory_mode": "EXACT_GIT_BLOB_SHA",
+  "files": [
+    {
+      "path": "evals/p0-closed-loop-runtime-config-v4.json",
+      "git_blob_sha": "8d680b3e85eb51479a725db0eb6401305f78c081"
+    },
+    {
+      "path": "evals/p0_grader_producer_field_audit_v4.py",
+      "git_blob_sha": "53fe4e465fdb6df88cb5d5d870d6ca4d299b8e48"
+    },
+    {
+      "path": "evals/p0_independent_omission_sweep_v4.py",
+      "git_blob_sha": "201dc4d7b0e038d24643d4d619c3d87655c1755a"
+    },
+    {
+      "path": "evals/p0_reader_producer_contract_v4.py",
+      "git_blob_sha": "fc46f9db4aad29407974a856cc5f6aee7966cc68"
+    },
+    {
+      "path": "evals/p0_visual_closed_loop_v4_suite.py",
+      "git_blob_sha": "ab9d9837e6b7e55938712c7556e99b14a28fe5cd"
+    },
+    {
+      "path": "evals/p0_visual_discovery_v4_suite.py",
+      "git_blob_sha": "d75fc800c5c405e2c38bcc821abdf22488b66ef4"
+    },
+    {
+      "path": "evals/p0_visual_durable_state_v4.py",
+      "git_blob_sha": "b6f748ebed7490015398834865e968ac7e8d5a0b"
+    },
+    {
+      "path": "evals/p0_visual_forward_adversarial_v4.py",
+      "git_blob_sha": "672877effca9309d5b69d078d9bec0af7d013b4e"
+    },
+    {
+      "path": "evals/p0_visual_grader_coverage_v4.py",
+      "git_blob_sha": "1c901b7768276010b9b1e9d44bd94b1c32b8f0b6"
+    },
+    {
+      "path": "evals/p0_visual_known_failure_regression_v4.py",
+      "git_blob_sha": "c6b17cf54a09bc8573b4618f180dfd0ce22e9cb0"
+    },
+    {
+      "path": "evals/p0_visual_real_rerun_v4.py",
+      "git_blob_sha": "750572cf5bfff5dd2278a9c6e02ad22ae3bac7d0"
+    },
+    {
+      "path": "schemas/p0-convergence-receipt-v4.schema.json",
+      "git_blob_sha": "6abe25bd0530584d87ff40d1ccaa1e51ebe04278"
+    },
+    {
+      "path": "schemas/p0-grader-coverage-v4.schema.json",
+      "git_blob_sha": "1f1cfd8f80cda8799b2ea63e0a123947dd832c75"
+    },
+    {
+      "path": "schemas/p0-grader-output-v4.schema.json",
+      "git_blob_sha": "71daa5110ae2a2c2b5912ffd8f671027c0209899"
+    },
+    {
+      "path": "schemas/p0-loop-cycle-v4.schema.json",
+      "git_blob_sha": "5f4e61ac2e6cc1690ebecf76c9702eb86e327cfa"
+    },
+    {
+      "path": "schemas/p0-run-state-v4.schema.json",
+      "git_blob_sha": "f4860573a0343482409e0ed60d8c6237ae760eaf"
+    },
+    {
+      "path": "schemas/p0-visual-finding-v4.schema.json",
+      "git_blob_sha": "d60aff0fe24dbaa5515854e174943526de75a1c2"
+    },
+    {
+      "path": "scripts/p0_full_reader_v4.py",
+      "git_blob_sha": "08474c8b47a900ad8f7245d2f40e65b771b00278"
+    },
+    {
+      "path": "scripts/p0_independent_omission_sweep_v4.py",
+      "git_blob_sha": "055ef90f169e96b4155ed87de3dba097f4c17889"
+    },
+    {
+      "path": "scripts/p0_visual_convergence_v4.py",
+      "git_blob_sha": "f98a8c8ec52a719a940310c7c50d082371a1e99d"
+    },
+    {
+      "path": "scripts/p0_visual_discovery_v4.py",
+      "git_blob_sha": "fc04e43d8cb410ec991daacd0fd15a0f91a12d1d"
+    },
+    {
+      "path": "scripts/p0_visual_grader_core_v4.py",
+      "git_blob_sha": "e2c7b9d76b77ebdce50062f1b0839253a02fce27"
+    },
+    {
+      "path": "scripts/p0_visual_grader_object_v4.py",
+      "git_blob_sha": "0ec5c90fca863723b6408bb9dcb539daf1e5c0ac"
+    },
+    {
+      "path": "scripts/p0_visual_grader_structure_v4.py",
+      "git_blob_sha": "529da951d91b2d88ecb53a46edaabcf1e04dfa89"
+    },
+    {
+      "path": "scripts/p0_visual_grader_text_v4.py",
+      "git_blob_sha": "dbc0159123082f0cabba7d7c86d21761b47620b3"
+    },
+    {
+      "path": "scripts/p0_visual_graders_v4.py",
+      "git_blob_sha": "517fda6dde23929564d659d5e4cacb7b19e3d59a"
+    },
+    {
+      "path": "scripts/p0_visual_real_rerun_support_v4.py",
+      "git_blob_sha": "91efb7a635cb9b72c456ff1b42b5dcb4f8fad19f"
+    },
+    {
+      "path": "scripts/persist_p0_visual_loop_v4.py",
+      "git_blob_sha": "07fb8ff9da8a686098d1937a0c593ad64bbbcbca"
+    },
+    {
+      "path": "scripts/run_p0_visual_quality_loop_v4.py",
+      "git_blob_sha": "7304a2eaf99d74be332037c3f51526979d5cd0e5"
+    },
+    {
+      "path": "scripts/validate_p0_v4_closed_loop.py",
+      "git_blob_sha": "beb2afe1a1a0f20da76f3f32deb0d4014700ee22"
+    }
+  ],
+  "human_adjudication": "NOT_PERFORMED",
+  "p0_5_state": "UNASSESSED_SEPARATE",
+  "production_authorized": false,
+  "issue_125_must_remain_open": true
+}

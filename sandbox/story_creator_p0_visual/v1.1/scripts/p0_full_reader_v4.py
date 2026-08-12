@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+import hashlib,collections
+from difflib import SequenceMatcher
+from pathlib import Path
+import cv2,pytesseract
+from pytesseract import Output
+
+def region_ref(source_sha:str,r:dict)->str:
+ raw=f"{source_sha}:{r['x']}:{r['y']}:{r['width']}:{r['height']}".encode();return 'p0://v4/source-region/'+hashlib.sha256(raw).hexdigest()
+def observation_ref(source_sha:str,psm:int,r:dict,text:str)->str:
+ raw=f"{source_sha}:{psm}:{r['x']}:{r['y']}:{r['width']}:{r['height']}:{norm(text)}".encode();return 'p0://v4/ocr-observation/'+hashlib.sha256(raw).hexdigest()
+def norm(s:str)->str:return ' '.join(s.casefold().split())
+def iou(a:dict,b:dict)->float:
+ x1=max(a['x'],b['x']);y1=max(a['y'],b['y']);x2=min(a['x']+a['width'],b['x']+b['width']);y2=min(a['y']+a['height'],b['y']+b['height']);inter=max(0,x2-x1)*max(0,y2-y1)
+ if not inter:return 0.0
+ return inter/float(a['width']*a['height']+b['width']*b['height']-inter)
+def overlap_primary(a:dict,b:dict)->float:
+ x1=max(a['x'],b['x']);y1=max(a['y'],b['y']);x2=min(a['x']+a['width'],b['x']+b['width']);y2=min(a['y']+a['height'],b['y']+b['height']);inter=max(0,x2-x1)*max(0,y2-y1);return inter/max(1,a['width']*a['height'])
+def ocr_lines(image,psm:int)->list[dict]:
+ d=pytesseract.image_to_data(image,lang='spa',config=f'--psm {psm}',output_type=Output.DICT);groups={}
+ for i,t in enumerate(d['text']):
+  t=(t or '').strip()
+  if not t:continue
+  try:conf=float(d['conf'][i])
+  except:conf=-1
+  if conf<0:continue
+  key=(d['block_num'][i],d['par_num'][i],d['line_num'][i]);groups.setdefault(key,[]).append((i,t,conf))
+ out=[]
+ for key,items in groups.items():
+  items.sort(key=lambda z:d['left'][z[0]]);text=' '.join(x[1] for x in items);xs=[d['left'][x[0]] for x in items];ys=[d['top'][x[0]] for x in items];xe=[d['left'][x[0]]+d['width'][x[0]] for x in items];ye=[d['top'][x[0]]+d['height'][x[0]] for x in items]
+  out.append({'text':text,'confidence':sum(x[2] for x in items)/len(items),'region':{'x':min(xs),'y':min(ys),'width':max(xe)-min(xs),'height':max(ye)-min(ys)}})
+ return sorted(out,key=lambda x:(x['region']['y'],x['region']['x']))
+def overlapping_lines(primary:dict,alts:list[dict])->list[dict]:
+ r=primary['region'];items=[x for x in alts if overlap_primary(r,x['region'])>=.15 or iou(r,x['region'])>=.08]
+ return sorted(items,key=lambda x:(x['region']['y'],x['region']['x']))
+def match_alt(primary:dict,alts:list[dict])->str:
+ candidates=[x for x in alts if overlap_primary(primary['region'],x['region'])>=.25 or iou(primary['region'],x['region'])>=.12]
+ if not candidates:return ''
+ candidates.sort(key=lambda x:(overlap_primary(primary['region'],x['region']),x['confidence']),reverse=True)
+ y0=primary['region']['y'];near=[x for x in candidates if abs(x['region']['y']-y0)<=max(12,primary['region']['height'])]
+ near=sorted(near,key=lambda x:x['region']['x'])[:4]
+ text=' '.join(x['text'] for x in near) if len(near)>1 else candidates[0]['text']
+ return ' '.join(text.split())
+def grouping_signal(primary:dict,lines:dict[int,list[dict]],primary_psm:int,source_sha:str)->tuple[bool,str,list[str],dict]:
+ refs=[];by_psm={};reconstructed_by_psm={};primary_text=norm(primary.get('text') or '')
+ for psm,observations in lines.items():
+  matched=overlapping_lines(primary,observations)
+  if psm==primary_psm and not matched:matched=[primary]
+  by_psm[str(psm)]=len(matched)
+  reconstructed=norm(match_alt(primary,observations)) if psm!=primary_psm else primary_text
+  reconstructed_by_psm[str(psm)]=reconstructed
+  for item in matched:refs.append(observation_ref(source_sha,psm,item['region'],item.get('text') or ''))
+ primary_count=by_psm.get(str(primary_psm),1);disagree=[]
+ for psm in sorted(lines):
+  if psm==primary_psm:continue
+  text=reconstructed_by_psm.get(str(psm),'');count=by_psm.get(str(psm),0)
+  if not text or count==primary_count:continue
+  sim=SequenceMatcher(None,primary_text,text).ratio() if primary_text else 1.0
+  if sim<.72:disagree.append(text)
+ # One segmentation outlier is insufficient. Require two independent PSM passes
+ # to agree on a materially different reconstructed unit before declaring mismatch.
+ corroborated=False
+ for i,a in enumerate(disagree):
+  for b in disagree[i+1:]:
+   if SequenceMatcher(None,a,b).ratio()>=.80:corroborated=True;break
+  if corroborated:break
+ consistency=not corroborated
+ gid='TG-'+hashlib.sha256(('|'.join(sorted(set(refs))) or observation_ref(source_sha,primary_psm,primary['region'],primary.get('text') or '')).encode()).hexdigest()[:16]
+ return consistency,gid,sorted(set(refs)),by_psm
+
+def cv_objects(image,text_regions:list[dict])->list[dict]:
+ gray=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY);edges=cv2.Canny(gray,50,150);contours,_=cv2.findContours(edges,cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE);raw=[]
+ for c in contours:
+  x,y,w,h=cv2.boundingRect(c);a=w*h
+  if a<500 or a>100000 or w<12 or h<8:continue
+  if w/h<1.35 and a<900:continue
+  r={'x':int(x),'y':int(y),'width':int(w),'height':int(h)}
+  if any(overlap_primary(r,t)>.75 and a<3000 for t in text_regions):continue
+  raw.append(r)
+ raw.sort(key=lambda r:r['width']*r['height'],reverse=True);kept=[]
+ for r in raw:
+  if any(iou(r,k)>.82 for k in kept):continue
+  kept.append(r)
+  if len(kept)>=60:break
+ return kept
+def full_reader(source_path:str,ctx:dict)->dict:
+ image=cv2.imread(source_path)
+ if image is None:raise ValueError('SOURCE_DECODE_FAILED')
+ h,w=image.shape[:2];strict=bool((ctx.get('remediation_state') or {}).get('strict_mode'));primary_psm=3 if strict else 11
+ psms=(3,11,12);lines={p:ocr_lines(image,p) for p in psms};primary=lines[primary_psm];elements=[{'element_id':'V4-ROOT','element_type':'CONTAINER','visible_text':None,'classification':'CONFIRMED','confidence':1.0,'region':{'x':0,'y':0,'width':w,'height':h},'parent_id':None,'evidence_refs':['p0://v4/source/'+ctx['source_sha256']],'bbox_reproducible':True,'style':{},'style_provenance':{},'independent_redetection':True,'risk_zone':None,'business_rule_claim':None,'business_rule_visible_evidence':False}];unc=[]
+ for idx,line in enumerate(primary,1):
+  variants=[]
+  for p in psms:
+   if p==primary_psm:variants.append(line['text'])
+   else:variants.append(match_alt(line,lines[p]))
+  non=[v for v in variants if v];alt_non=[v for p,v in zip(psms,variants) if p!=primary_psm and v];counts=collections.Counter(norm(v) for v in (alt_non or non));best_norm,best_n=counts.most_common(1)[0] if counts else ('',0);best_text=next((v for v in (alt_non or non) if norm(v)==best_norm),'')
+  exact_agree=sum(norm(v)==norm(line['text']) for v in non);stable=exact_agree>=2 and line['confidence']>=65
+  txt=line['text'];classification='CONFIRMED' if (not strict and line['confidence']>=45) or (strict and stable) else 'INFERRED';etype='TEXT';consensus=best_text if not strict else (line['text'] if stable else '')
+  r=line['region'];aspect=r['width']/max(1,r['height']);glyph_shape=len(txt.strip())<=1 and 0.65<=aspect<=1.55 and max(r['width'],r['height'])<=32
+  if strict and len(txt.strip())<=3 and (exact_agree<3 or glyph_shape):
+   etype='ICON_OR_GLYPH';txt=None;classification='INFERRED';consensus=''
+  graphic=.82 if (not strict and txt and len(txt.strip())<=3 and exact_agree<2) else .05
+  role='control_visible_text' if txt and txt.strip().startswith('+') and any(ch.isdigit() for ch in txt) else 'visible_copy';group_ok,group_id,source_refs,group_counts=grouping_signal(line,lines,primary_psm,ctx['source_sha256'])
+  subrole='GLYPH' if glyph_shape and etype in {'TEXT','LABEL'} else None;risk='LEGAL' if txt and len(txt)>=120 else ('DENSE' if r['width']*r['height']>=18000 and txt and len(txt)>=50 else None)
+  e={'element_id':f'V4-T-{idx:04d}','element_type':etype,'visible_text':txt,'classification':classification,'confidence':round(max(0,min(1,line['confidence']/100.0)),6),'region':line['region'],'parent_id':'V4-ROOT','semantic_role':role,'subcomponent_role':subrole,'evidence_refs':[region_ref(ctx['source_sha256'],line['region'])],'source_observation_refs':source_refs,'text_group_consistency':group_ok,'text_group_id':group_id,'text_group_observation_counts':group_counts,'ocr_variants':variants,'ocr_consensus_text':consensus,'ocr_read_count':len(psms),'ocr_empty_reads':sum(not v for v in variants),'ocr_agreement_count':exact_agree,'graphic_score':graphic,'brand_mark_score':0.0,'business_rule_claim':None,'business_rule_visible_evidence':False,'risk_zone':risk,'bbox_reproducible':True,'style':{},'style_provenance':{},'independent_redetection':stable,'redetection_status':'REDETECTED' if stable else 'AMBIGUOUS'}
+  elements.append(e)
+  if not stable:unc.append({'element_id':e['element_id'],'code':'OCR_DISAGREEMENT','region':line['region']})
+  if not group_ok:unc.append({'element_id':e['element_id'],'code':'TEXT_GROUPING_DISAGREEMENT','region':line['region'],'observation_counts':group_counts})
+ text_regions=[e['region'] for e in elements if e['element_type']=='TEXT']
+ for idx,r in enumerate(cv_objects(image,text_regions),1):elements.append({'element_id':f'V4-O-{idx:04d}','element_type':'VISUAL_OBJECT','visible_text':None,'classification':'INFERRED','confidence':.75,'region':r,'parent_id':'V4-ROOT','semantic_role':'visual_object','subcomponent_role':None,'evidence_refs':[region_ref(ctx['source_sha256'],r)],'source_observation_refs':[region_ref(ctx['source_sha256'],r)],'brand_mark_score':0.0,'business_rule_claim':None,'business_rule_visible_evidence':False,'risk_zone':None,'bbox_reproducible':True,'style':{},'style_provenance':{},'independent_redetection':True})
+ return {'schema_version':'p0-full-reader-v4/v1','execution_id':ctx['reader_execution_id'],'pass_id':ctx['pass_id'],'reader_execution_id':ctx['reader_execution_id'],'source_sha256':ctx['source_sha256'],'width':w,'height':h,'fresh_source_read':True,'reader_origin':'SOURCE_PIXELS','reader_profile':'STRICT_CONSENSUS' if strict else 'RAW_DISCOVERY','elements':elements,'raw_observations':{'primary_psm':primary_psm,'line_counts':{str(k):len(v) for k,v in lines.items()},'cv_object_count':len(elements)-1-len(primary),'ocr_engine_family':'TESSERACT','object_detector_family':'OPENCV_CANNY'},'reader_uncertainties':unc}

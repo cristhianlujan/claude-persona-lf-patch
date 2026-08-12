@@ -1,10 +1,16 @@
 {
   "schema_version": "p0-operational-calibration-receipt/v1",
-  "calibration_reference": "p0://calibration/cv-ocr-closed-loop-v1",
+  "calibration_reference": "p0://calibration/cv-ocr-closed-loop-v2",
   "configuration_id": "P0-CV-OCR-CLOSED-LOOP-v1",
   "scope": "OPERATIONAL_MACHINE_GATE_ONLY",
   "empirical_benchmark_acceptance": false,
   "p0_5_denominator_eligible": false,
+  "dependencies": {
+    "tesseract": "5.3.4",
+    "Pillow": "12.3.0",
+    "numpy": "2.3.5",
+    "opencv-python-headless": "4.13.0.92"
+  },
   "thresholds": {
     "critical_text_similarity": 0.82,
     "geometry_iou_threshold": 0.45,
@@ -22,5 +28,7 @@
     "quality"
   ],
   "status": "GOVERNED_OPERATIONAL_CALIBRATION",
-  "note": "This receipt does not assert P0-5 empirical performance or gold acceptance."
+  "verification_policy": "EXACT_DEPENDENCY_MATCH_AND_REQUIRED_NEGATIVE_PLUS_RUNTIME_REGRESSION_SUITES_MUST_PASS_WITHOUT_ENGINEERING_OVERRIDE",
+  "engineering_override_is_operational_evidence": false,
+  "note": "Operational machine-gate calibration only. Tesseract 5.3.4 is the exact governed Ubuntu 24.04 CI runtime baseline; dependency mismatch fails closed. This receipt does not assert P0-5 empirical performance or gold acceptance."
 }

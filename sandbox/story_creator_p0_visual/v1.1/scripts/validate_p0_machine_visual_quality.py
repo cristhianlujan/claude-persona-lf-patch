@@ -2,12 +2,17 @@
 """Fail-closed P0 machine visual-quality gate.
 
 This validator derives HUMAN_REVIEW_READY from evidence-bound hard gates. It never
-trusts a stored PASS/ready flag as authority.
+trusts a stored PASS/ready flag as authority. The historical engineering-regression
+override is forbidden at import time so required suites cannot use it to rewrite
+governed dependency expectations.
 """
 from __future__ import annotations
-import argparse, hashlib, json
+import argparse, hashlib, json, os
 from pathlib import Path
 from typing import Any
+
+if os.environ.get("P0_CI_ENGINEERING_REGRESSION") is not None:
+    raise SystemExit("FAIL_P0_CI_ENGINEERING_REGRESSION_OVERRIDE_FORBIDDEN")
 
 SHA256_KEYS = ("source_sha256","raw_visual_output_sha256","consolidated_visual_reading_sha256")
 REQUIRED_ZERO = ("critical_omissions","contradictions","unsupported_claims","pending_remediations","unresolved_critical_uncertainties")
