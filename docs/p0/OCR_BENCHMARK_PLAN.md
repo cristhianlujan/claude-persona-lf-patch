@@ -1,6 +1,6 @@
 # OCR benchmark plan
 
-Version: 1.1 — reconciled 2026-08-12
+Version: 1.2 — reconciled and execution-aligned 2026-08-12
 
 ## Scope and dataset
 
@@ -20,6 +20,16 @@ The uploaded benchmark plan declares 47 text regions, 13 compact controls/icons,
 - this does not block persistence V2 verification, which was executed independently and returned 20/20 PASS.
 
 This distinction implements EKB `AUD-008` (every required field must have a producer/verifier) and `ARC-006` (historical success cannot certify a newer HEAD).
+
+### Durable-source and execution checkpoint — 2026-08-12
+
+- The authorized real PNG was recovered from governed Google Drive object `1H1Dku625GZl6qFR22sBdIo8MJgJU55sw` and its bytes recomputed to the expected SHA-256 `e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7`; dimensions are 1536×1024 and size is 1,384,686 bytes.
+- Recursive Git-tree searches of historical PR #137 HEAD `07a4abd3302351ed3ae198bbe7115232b2b9ed40` and PR #138 HEAD `cd693f2cea440a0036100d317cc3d449f26f7d90`, exact-name Drive searches, and Supabase execution-artifact/event/external-evidence registry searches did not locate a durable copy of `ground_truth_real_screen_001.json` or `ocr_benchmark_ui_v1.py`. This is a searched-authority result, not a claim that no copy can exist anywhere.
+- The runtime mutation producer, runtime configuration, atomicity regression, and real-rerun proof contract now require exactly four mutation families × 100 cases = 400 total, with 100/100 detection required independently in every family. Integrated CI executions observed 400/400 globally and 100/100 in each family.
+- EKB `AUD-025` applies to CI identity: a GitHub `pull_request` workflow may be associated with the PR head SHA while `actions/checkout` executes `refs/pull/<n>/merge`. Such a run is therefore evidence for the integrated PR merge-ref candidate unless the workflow separately proves `git rev-parse HEAD == pinned_pr_head_sha`.
+- The fresh real-source exact-HEAD rerun remains blocked because the available local execution environment cannot establish an exact Git checkout while retaining the runner's `git rev-parse HEAD` anti-substitution binding. That guard was not bypassed.
+
+Consequently, merge-ref CI/regression evidence and fresh exact-HEAD real-source evidence are kept as distinct authorities. Neither substitutes for the missing benchmark producers or the real-corpus/human gates.
 
 ## Variants
 
