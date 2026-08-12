@@ -87,6 +87,31 @@ def _lexical_corroboration(primary_text:str,variants:list[str])->int:
  token=norm(primary_text)
  if not token or ' ' in token:return 0
  return sum(token in norm(v).split() for v in variants if v)
+def _control_suffix_glyph_split(text:str)->tuple[str,str|None]:
+ parts=' '.join((text or '').split()).split()
+ if len(parts)>=2 and parts[0].startswith('+') and any(ch.isdigit() for ch in ''.join(parts[:-1])) and parts[-1].isalpha() and len(parts[-1])<=2:
+  return ' '.join(parts[:-1]),parts[-1]
+ return ' '.join(parts),None
+def _line_text_similarity(a:dict,b:dict)->float:
+ aa,bb=norm(a.get('text') or ''),norm(b.get('text') or '')
+ return SequenceMatcher(None,aa,bb).ratio() if aa and bb else 0.0
+def _line_spatially_same(a:dict,b:dict)->bool:
+ ra,rb=a.get('region') or {},b.get('region') or {}
+ return overlap_primary(ra,rb)>=.35 or overlap_primary(rb,ra)>=.35 or iou(ra,rb)>=.18
+def _strict_primary_with_alt_fallback(lines:dict[int,list[dict]],primary_psm:int)->list[dict]:
+ primary=[dict(x,source_psm=primary_psm) for x in lines.get(primary_psm,[])]
+ # PSM 11 and 12 are independent segmentation passes of the same pinned OCR engine.
+ # If both agree on a material line that PSM 3 omitted, retain it as a strict-source
+ # fallback rather than silently losing a visible UI unit.
+ if primary_psm!=3:return primary
+ a_lines,b_lines=lines.get(11,[]),lines.get(12,[])
+ extras=[]
+ for a in a_lines:
+  mates=[b for b in b_lines if _line_spatially_same(a,b) and _line_text_similarity(a,b)>=.88]
+  if not mates or min(float(a.get('confidence',0) or 0),max(float(b.get('confidence',0) or 0) for b in mates))<65:continue
+  if any(_line_spatially_same(a,p) and _line_text_similarity(a,p)>=.55 for p in primary):continue
+  x=dict(a);x['source_psm']=11;extras.append(x)
+ return sorted(primary+extras,key=lambda x:(x['region']['y'],x['region']['x']))
 def grouping_signal(primary:dict,lines:dict[int,list[dict]],primary_psm:int,source_sha:str)->tuple[bool,str,list[str],dict]:
  refs=[];by_psm={};reconstructed_by_psm={};primary_text=norm(primary.get('text') or '')
  for psm,observations in lines.items():
@@ -131,25 +156,27 @@ def full_reader(source_path:str,ctx:dict)->dict:
  image=cv2.imread(source_path)
  if image is None:raise ValueError('SOURCE_DECODE_FAILED')
  h,w=image.shape[:2];strict=bool((ctx.get('remediation_state') or {}).get('strict_mode'));primary_psm=3 if strict else 11
- psms=(3,11,12);lines={p:ocr_lines(image,p) for p in psms};primary=lines[primary_psm];elements=[{'element_id':'V4-ROOT','element_type':'CONTAINER','visible_text':None,'classification':'CONFIRMED','confidence':1.0,'region':{'x':0,'y':0,'width':w,'height':h},'parent_id':None,'evidence_refs':['p0://v4/source/'+ctx['source_sha256']],'bbox_reproducible':True,'style':{},'style_provenance':{},'independent_redetection':True,'risk_zone':None,'business_rule_claim':None,'business_rule_visible_evidence':False}];unc=[]
+ psms=(3,11,12);lines={p:ocr_lines(image,p) for p in psms};primary=_strict_primary_with_alt_fallback(lines,primary_psm) if strict else [dict(x,source_psm=primary_psm) for x in lines[primary_psm]];elements=[{'element_id':'V4-ROOT','element_type':'CONTAINER','visible_text':None,'classification':'CONFIRMED','confidence':1.0,'region':{'x':0,'y':0,'width':w,'height':h},'parent_id':None,'evidence_refs':['p0://v4/source/'+ctx['source_sha256']],'bbox_reproducible':True,'style':{},'style_provenance':{},'independent_redetection':True,'risk_zone':None,'business_rule_claim':None,'business_rule_visible_evidence':False}];unc=[]
  for idx,line in enumerate(primary,1):
-  variants=[]
+  line_psm=int(line.get('source_psm',primary_psm));variants=[]
   for p in psms:
-   if p==primary_psm:variants.append(line['text'])
+   if p==line_psm:variants.append(line['text'])
    else:variants.append(match_alt(line,lines[p]))
   non=[v for v in variants if v];alt_non=[v for p,v in zip(psms,variants) if p!=primary_psm and v];counts=collections.Counter(norm(v) for v in (alt_non or non));best_norm,best_n=counts.most_common(1)[0] if counts else ('',0);best_text=next((v for v in (alt_non or non) if norm(v)==best_norm),'')
   exact_agree=sum(norm(v)==norm(line['text']) for v in non);lexical_agree=_lexical_corroboration(line['text'],non);stable=(exact_agree>=2 or lexical_agree>=2) and line['confidence']>=65
-  txt=line['text'];classification='CONFIRMED' if (not strict and line['confidence']>=45) or (strict and stable) else 'INFERRED';etype='TEXT';consensus=best_text if not strict else (line['text'] if stable else '')
+  txt,control_suffix=_control_suffix_glyph_split(line['text']);classification='CONFIRMED' if (not strict and line['confidence']>=45) or (strict and stable) else 'INFERRED';etype='TEXT';consensus_raw=best_text if not strict else (line['text'] if stable else '');consensus,_=_control_suffix_glyph_split(consensus_raw)
+  if control_suffix:classification='INFERRED'
   r=line['region'];aspect=r['width']/max(1,r['height']);glyph_shape=len(txt.strip())<=1 and 0.65<=aspect<=1.55 and max(r['width'],r['height'])<=32
   if strict and len(txt.strip())<=3 and ((exact_agree<3 and lexical_agree<2) or glyph_shape):
    etype='ICON_OR_GLYPH';txt=None;classification='INFERRED';consensus=''
   graphic=.82 if (not strict and txt and len(txt.strip())<=3 and exact_agree<2) else .05
-  role='control_visible_text' if txt and txt.strip().startswith('+') and any(ch.isdigit() for ch in txt) else 'visible_copy';group_ok,group_id,source_refs,group_counts=grouping_signal(line,lines,primary_psm,ctx['source_sha256'])
-  subrole='GLYPH' if glyph_shape and etype in {'TEXT','LABEL'} else None;risk='LEGAL' if txt and len(txt)>=120 else ('DENSE' if r['width']*r['height']>=18000 and txt and len(txt)>=50 else None)
-  e={'element_id':f'V4-T-{idx:04d}','element_type':etype,'visible_text':txt,'classification':classification,'confidence':round(max(0,min(1,line['confidence']/100.0)),6),'region':line['region'],'parent_id':'V4-ROOT','semantic_role':role,'subcomponent_role':subrole,'evidence_refs':[region_ref(ctx['source_sha256'],line['region'])],'source_observation_refs':source_refs,'text_group_consistency':group_ok,'text_group_id':group_id,'text_group_observation_counts':group_counts,'ocr_variants':variants,'ocr_consensus_text':consensus,'ocr_read_count':len(psms),'ocr_empty_reads':sum(not v for v in variants),'ocr_agreement_count':exact_agree,'ocr_lexical_corroboration_count':lexical_agree,'graphic_score':graphic,'brand_mark_score':0.0,'business_rule_claim':None,'business_rule_visible_evidence':False,'risk_zone':risk,'bbox_reproducible':True,'style':{},'style_provenance':{},'independent_redetection':stable,'redetection_status':'REDETECTED' if stable else 'AMBIGUOUS'}
+  role='control_visible_text' if txt and txt.strip().startswith('+') and any(ch.isdigit() for ch in txt) else 'visible_copy';group_ok,group_id,source_refs,group_counts=grouping_signal(line,lines,line_psm,ctx['source_sha256'])
+  subrole='CONTROL_TEXT_WITH_SUFFIX_GLYPH' if control_suffix else ('GLYPH' if glyph_shape and etype in {'TEXT','LABEL'} else None);risk='LEGAL' if txt and len(txt)>=120 else ('DENSE' if r['width']*r['height']>=18000 and txt and len(txt)>=50 else None)
+  e={'element_id':f'V4-T-{idx:04d}','element_type':etype,'visible_text':txt,'classification':classification,'confidence':round(max(0,min(1,line['confidence']/100.0)),6),'region':line['region'],'parent_id':'V4-ROOT','semantic_role':role,'subcomponent_role':subrole,'evidence_refs':[region_ref(ctx['source_sha256'],line['region'])],'source_observation_refs':source_refs,'text_group_consistency':group_ok,'text_group_id':group_id,'text_group_observation_counts':group_counts,'ocr_variants':variants,'ocr_consensus_text':consensus,'ocr_read_count':len(psms),'ocr_empty_reads':sum(not v for v in variants),'ocr_agreement_count':exact_agree,'ocr_lexical_corroboration_count':lexical_agree,'ocr_primary_psm':line_psm,'graphic_score':graphic,'brand_mark_score':0.0,'business_rule_claim':None,'business_rule_visible_evidence':False,'risk_zone':risk,'bbox_reproducible':True,'style':{},'style_provenance':{},'independent_redetection':stable,'redetection_status':'REDETECTED' if stable else 'AMBIGUOUS'}
   elements.append(e)
+  if control_suffix:unc.append({'element_id':e['element_id'],'code':'CONTROL_SUFFIX_GLYPH_SEPARATED','region':line['region'],'suffix':control_suffix})
   if not stable:unc.append({'element_id':e['element_id'],'code':'OCR_DISAGREEMENT','region':line['region']})
   if not group_ok:unc.append({'element_id':e['element_id'],'code':'TEXT_GROUPING_DISAGREEMENT','region':line['region'],'observation_counts':group_counts})
  text_regions=[e['region'] for e in elements if e['element_type']=='TEXT']
  for idx,r in enumerate(cv_objects(image,text_regions),1):elements.append({'element_id':f'V4-O-{idx:04d}','element_type':'VISUAL_OBJECT','visible_text':None,'classification':'INFERRED','confidence':.75,'region':r,'parent_id':'V4-ROOT','semantic_role':'visual_object','subcomponent_role':None,'evidence_refs':[region_ref(ctx['source_sha256'],r)],'source_observation_refs':[region_ref(ctx['source_sha256'],r)],'brand_mark_score':0.0,'business_rule_claim':None,'business_rule_visible_evidence':False,'risk_zone':None,'bbox_reproducible':True,'style':{},'style_provenance':{},'independent_redetection':True})
- return {'schema_version':'p0-full-reader-v4/v1','execution_id':ctx['reader_execution_id'],'pass_id':ctx['pass_id'],'reader_execution_id':ctx['reader_execution_id'],'source_sha256':ctx['source_sha256'],'width':w,'height':h,'fresh_source_read':True,'reader_origin':'SOURCE_PIXELS','reader_profile':'STRICT_CONSENSUS' if strict else 'RAW_DISCOVERY','elements':elements,'raw_observations':{'primary_psm':primary_psm,'line_counts':{str(k):len(v) for k,v in lines.items()},'cv_object_count':len(elements)-1-len(primary),'ocr_engine_family':'TESSERACT','object_detector_family':'OPENCV_CANNY','atomic_text_segmentation':'GEOMETRIC_GAP_V1'},'reader_uncertainties':unc}
+ return {'schema_version':'p0-full-reader-v4/v1','execution_id':ctx['reader_execution_id'],'pass_id':ctx['pass_id'],'reader_execution_id':ctx['reader_execution_id'],'source_sha256':ctx['source_sha256'],'width':w,'height':h,'fresh_source_read':True,'reader_origin':'SOURCE_PIXELS','reader_profile':'STRICT_CONSENSUS' if strict else 'RAW_DISCOVERY','elements':elements,'raw_observations':{'primary_psm':primary_psm,'line_counts':{str(k):len(v) for k,v in lines.items()},'cv_object_count':len(elements)-1-len(primary),'ocr_engine_family':'TESSERACT','object_detector_family':'OPENCV_CANNY','atomic_text_segmentation':'GEOMETRIC_GAP_V1','strict_alt_fallback_count':sum(1 for x in primary if int(x.get('source_psm',primary_psm))!=primary_psm)},'reader_uncertainties':unc}
