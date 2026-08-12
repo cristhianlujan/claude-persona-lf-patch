@@ -1,5 +1,5 @@
 {
-  "schema_version": "p0-closed-loop-manifest-v4.2/atomicity-invariants-v2",
+  "schema_version": "p0-closed-loop-manifest-v4.2/atomicity-invariants-v1",
   "repo": "cristhianlujan/claude-persona-lf-patch",
   "pr": 137,
   "branch": "lf/p0-human-review-shell-v4-real-data",
@@ -43,7 +43,7 @@
     {"path":"schemas/p0-grader-output-v4.schema.json","git_blob_sha":"71daa5110ae2a2c2b5912ffd8f671027c0209899"},
     {"path":"schemas/p0-loop-cycle-v4.schema.json","git_blob_sha":"5f4e61ac2e6cc1690ebecf76c9702eb86e327cfa"},
     {"path":"schemas/p0-run-state-v4.schema.json","git_blob_sha":"f4860573a0343482409e0ed60d8c6237ae760eaf"},
-    {"path":"schemas/p0-visual-finding-v4.schema.json","git_blob_sha":"d60aff0fe24dbaa5515854e174943526de75a1c2"},
+    {"path":"schemas/p0-visual-finding-v4.schema.json","git_blob_sha":"d60aff0fe24bbaa5515854e174943526de75a1c2"},
     {"path":"scripts/p0_full_reader_v4.py","git_blob_sha":"d5bfad46ae91281f3c0ab53f269b756f533f4f5b"},
     {"path":"scripts/p0_human_review_shell_v4.py","git_blob_sha":"91144c0f3c01f22b84f5c8a79c43a4e378cb9d18"},
     {"path":"scripts/p0_independent_omission_sweep_v4.py","git_blob_sha":"0490bd5449374caa317217bf6a9d882eba1bc46a"},
