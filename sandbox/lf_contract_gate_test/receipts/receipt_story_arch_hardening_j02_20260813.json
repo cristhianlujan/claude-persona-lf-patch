@@ -1,0 +1,42 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-STORY-ARCH-HARDENING-J02-20260813-01",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "55a842e7805c88673762eb2fcadec654b5ba213f",
+  "judge_sha": "63bd13fc5158528c777ede56e2f2ad09d0827669",
+  "source_sha_list": [
+    "1404d50f20874e95cfb880c58b274e8f230d887d",
+    "51a5bd1a58968f5f3880a4dc2a41688d8e5d4972",
+    "f3f1afebf29f81a84f4a12d3c90d44996766fd7b",
+    "8c841a8cf9055d614bcd1c842675c0976107897e"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/scripts/validate_screen_decomposition_visual.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-13T18:22:00Z",
+  "evidence": {
+    "candidate_head_before_receipt": "1346b74e53f02701def9a2b9ea3bd71420c2b872",
+    "source_artifact_run_id": 31730157844,
+    "source_artifact_digest": "sha256:5417c89f70955a67cf6f6b9cc8acab4f6ee69448bcb986bb9c8bf39985ad9785",
+    "validator_sha256": "af30bd17d5c2fb91d1d2932b64e762bfc30cd27f963d0cbf215417c6dc95e7c2",
+    "validator_git_blob_sha1": "63bd13fc5158528c777ede56e2f2ad09d0827669",
+    "self_test_pass": true,
+    "positive_result": "PASS_WITH_EVIDENCE",
+    "positive_assertions": "26/26",
+    "source_omission_result": "RETURN_TO_WORKER",
+    "source_omission_failed_assertions": [
+      "inventory_complete_vs_ingestion"
+    ],
+    "epistemic_negative_non_observed_exercised": true,
+    "epistemic_negative_uncertainty_exercised": true,
+    "automatic_semantic_promotion_allowed": false,
+    "production_authorized": false,
+    "p0_5_authorized": false,
+    "scope_note": "This receipt covers only the J02 candidate hardening validation. It does not constitute human adjudication, empirical acceptance, production authorization or P0-5 promotion."
+  }
+}
