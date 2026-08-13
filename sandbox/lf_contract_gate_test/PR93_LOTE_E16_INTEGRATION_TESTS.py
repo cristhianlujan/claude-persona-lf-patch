@@ -43,6 +43,21 @@ def main() -> int:
     parser.add_argument("--candidate-root", type=Path, required=True)
     args = parser.parse_args()
     source = args.candidate_root.resolve()
+
+    hardening = run(
+        [sys.executable, "sandbox/lf_contract_gate_test/STORY_CREATOR_ARCHITECTURE_HARDENING_V1.py"],
+        source,
+    )
+    if hardening.returncode != 0:
+        raise SystemExit(f"story creator architecture hardening failed ({hardening.returncode}):\n{hardening.stdout}")
+    try:
+        hardening_result = json.loads(hardening.stdout.strip().splitlines()[-1])
+    except (IndexError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"story creator architecture hardening emitted invalid evidence: {exc}")
+    if hardening_result.get("result") != "PASS" or hardening_result.get("production_authorized") is not False:
+        raise SystemExit(f"story creator architecture hardening evidence invalid: {hardening_result}")
+    print("PASS_STORY_CREATOR_ARCHITECTURE_HARDENING=1/1")
+
     workflow = (source / ".github/workflows/lf-contract-check.yml").read_text(encoding="utf-8")
     required_workflow_terms = (
         "actions: read",
