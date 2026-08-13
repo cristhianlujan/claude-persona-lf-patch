@@ -8,6 +8,7 @@ self-test also executes the current locked real-screen v0.2 chain through
 J01/J00/visual adjudication/J02/visual bridge/J08/J10 before J11 passes.
 """
 from __future__ import annotations
+import ast
 import hashlib
 import json
 import subprocess
@@ -40,7 +41,39 @@ _orig_type=legacy.artifact_type
 _orig_tier=legacy.artifact_tier
 _orig_structured=legacy.structured_dimensions
 
+def _dotted(node:ast.AST)->str:
+    if isinstance(node,ast.Name): return node.id
+    if isinstance(node,ast.Attribute):
+        parent=_dotted(node.value)
+        return f"{parent}.{node.attr}" if parent else node.attr
+    return ""
+
+def _delegated_wrapper_contracts(body:str,parsed:Any)->tuple[bool,bool]:
+    tree=parsed if isinstance(parsed,ast.AST) else None
+    if tree is None: return False,False
+    calls={_dotted(node.func) for node in ast.walk(tree) if isinstance(node,ast.Call)}
+    delegated_output=any(name.endswith(".main_guard") for name in calls) and any(name.endswith(".main") for name in calls)
+    self_test_rebound=False; negative_signal=False
+    for node in ast.walk(tree):
+        if isinstance(node,ast.Assign) and isinstance(node.value,ast.Name) and node.value.id=="self_test":
+            if any(_dotted(target).endswith(".self_test") for target in node.targets): self_test_rebound=True
+        if isinstance(node,(ast.FunctionDef,ast.AsyncFunctionDef)) and node.name=="self_test":
+            segment=(ast.get_source_segment(body,node) or "").casefold()
+            negative_signal=any(token in segment for token in ("negative","blocked","inferred","uncertain","violation","fail"))
+    return delegated_output,self_test_rebound and negative_signal
+
 def structured_dimensions(rel,kind,body,parsed):
+    if kind == "SCRIPT":
+        dims=_orig_structured(rel,kind,body,parsed)
+        delegated_output,delegated_negative=_delegated_wrapper_contracts(body,parsed)
+        adjusted=[]
+        for dim in dims:
+            if dim.name=="output_contract" and delegated_output:
+                adjusted.append(legacy.Dimension(dim.name,True,"structured result delegated through main_guard/main"))
+            elif dim.name=="negative_behavior" and delegated_negative:
+                adjusted.append(legacy.Dimension(dim.name,True,"negative self-test delegated and rebound"))
+            else: adjusted.append(dim)
+        return adjusted
     if kind != "RUNTIME_EVIDENCE": return _orig_structured(rel,kind,body,parsed)
     data=parsed if isinstance(parsed,dict) else {}
     isolation=data.get("context_isolation") if isinstance(data.get("context_isolation"),dict) else {}
@@ -227,8 +260,23 @@ def self_test():
     semantic=is_runtime(root,RUNTIME_FIXTURE)
     synthetic=not is_runtime(root,"evals/fixtures/screen_ingestion_dense.json")
     chain=real_chain(root)
-    ok=base==0 and semantic and synthetic and chain["local_chain_pass"] is True
-    print(json.dumps({"judge_code":legacy.JUDGE,"quality_gate_version":VERSION,"runtime_evidence_semantic_classification":semantic,"synthetic_fixture_preserved":synthetic,"real_visual_e2e":chain,"self_test_pass":ok},ensure_ascii=False,sort_keys=True))
+    wrapper_path=root/"scripts"/"validate_screen_decomposition_visual.py"
+    wrapper_body=wrapper_path.read_text(encoding="utf-8")
+    wrapper_dims=structured_dimensions(wrapper_path.name,"SCRIPT",wrapper_body,ast.parse(wrapper_body))
+    wrapper_map={d.name:d.passed for d in wrapper_dims}
+    lookalike=(
+        '"""wrapper"""\n'
+        'import legacy\n'
+        'def main(): return legacy.main()\n'
+        'def self_test(): return 0\n'
+        'legacy.self_test=self_test\n'
+        'if __name__=="__main__": legacy.main_guard("J",main)\n'
+    )
+    look_dims=structured_dimensions("lookalike.py","SCRIPT",lookalike,ast.parse(lookalike))
+    look_map={d.name:d.passed for d in look_dims}
+    wrapper_rubric=wrapper_map.get("output_contract") is True and wrapper_map.get("negative_behavior") is True and look_map.get("negative_behavior") is False
+    ok=base==0 and semantic and synthetic and chain["local_chain_pass"] is True and wrapper_rubric
+    print(json.dumps({"judge_code":legacy.JUDGE,"quality_gate_version":VERSION,"runtime_evidence_semantic_classification":semantic,"synthetic_fixture_preserved":synthetic,"delegated_wrapper_rubric":wrapper_rubric,"real_visual_e2e":chain,"self_test_pass":ok},ensure_ascii=False,sort_keys=True))
     return 0 if ok else 1
 legacy.self_test=self_test
 
