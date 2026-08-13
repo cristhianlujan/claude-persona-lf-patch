@@ -15,6 +15,13 @@ OBJECT_SWEEP_LIMIT=60
 TEXT_CONF_STRONG=45.0
 TEXT_CONF_LONG=35.0
 OBJECT_MATERIAL_AREA=900
+TEXT_MATCH_HIGH_SPATIAL_MIN=.70
+TEXT_MATCH_MEDIUM_SPATIAL_MIN=.12
+TEXT_MATCH_WHOLE_MIN=.60
+TEXT_MATCH_WHOLE_STRONG_MIN=.88
+OBJECT_MATCH_AREA_SIMILARITY_MIN=.75
+OBJECT_MATCH_IOU_MIN=.30
+OBJECT_MATCH_OBSERVATION_COVERAGE_MIN=.65
 
 def file_sha256(path:str)->str:
  h=hashlib.sha256()
@@ -26,6 +33,11 @@ def _crop(image,r:dict):
 def _pixel_evidence(source_sha:str,kind:str,r:dict,image)->tuple[str,str]:
  crop=_crop(image,r);pixel_sha=hashlib.sha256(crop.tobytes()).hexdigest() if crop.size else hashlib.sha256(b'').hexdigest();bbox=f"{int(r['x'])},{int(r['y'])},{int(r['width'])},{int(r['height'])}";return f"p0://v4/source-pixels/{source_sha}/{pixel_sha}/{kind}/{bbox}",pixel_sha
 def _spatial(a:dict,b:dict)->float:return max(iou(a,b),overlap_primary(a,b),overlap_primary(b,a))
+def _whole_text_similarity(a:str|None,b:str|None)->float:
+ if not a or not b:return 0.0
+ aa,bb=norm(a),norm(b)
+ if not aa or not bb:return 0.0
+ return SequenceMatcher(None,aa,bb).ratio()
 def _text_similarity(a:str|None,b:str|None)->float:
  if not a or not b:return 0.0
  aa,bb=norm(a),norm(b)
@@ -162,7 +174,15 @@ def _best_match(obs:dict,candidates:list[dict])->tuple[dict|None,float]:
   spatial=_spatial(r,er)
   if obs['kind']=='TEXT':
    if not e.get('visible_text'):continue
-   sim=_text_similarity(obs.get('text'),e.get('visible_text'));short=min(len(norm(obs.get('text') or '').replace(' ','')),len(norm(e.get('visible_text') or '').replace(' ','')))<=8;minimum=.72 if short else .55;acceptable=(spatial>=.12 and sim>=minimum) or (sim>=.85 and spatial>=.05);score=.58*spatial+.42*sim
+   local_sim=_text_similarity(obs.get('text'),e.get('visible_text'));whole_sim=_whole_text_similarity(obs.get('text'),e.get('visible_text'));short=min(len(norm(obs.get('text') or '').replace(' ','')),len(norm(e.get('visible_text') or '').replace(' ','')))<=8;local_min=.72 if short else .55
+   # Strong geometric coincidence may tolerate severe OCR corruption (e.g.
+   # PSM6 ``Pao`` versus reader ``Paso 1 de 3``). With only modest overlap,
+   # the entire phrase must agree; one similar word can never substitute for
+   # another material line after deletion.
+   if spatial>=TEXT_MATCH_HIGH_SPATIAL_MIN:acceptable=local_sim>=local_min
+   elif spatial>=TEXT_MATCH_MEDIUM_SPATIAL_MIN:acceptable=whole_sim>=TEXT_MATCH_WHOLE_MIN
+   else:acceptable=spatial>=.05 and whole_sim>=TEXT_MATCH_WHOLE_STRONG_MIN
+   score=.50*spatial+.30*whole_sim+.20*local_sim
   else:
    if e.get('visible_text') or e.get('element_type') not in VISUAL_TYPES:continue
    if obs['kind']=='COMPACT_VISUAL':
@@ -172,9 +192,12 @@ def _best_match(obs:dict,candidates:list[dict])->tuple[dict|None,float]:
     acceptable=spatial>=.18 or iou(r,er)>=.10;score=spatial
    else:
     if e.get('element_type') not in {'VISUAL_OBJECT','IMAGE','CONTROL_REGION'}:continue
-    observation_area=max(1,int(r.get('width',0))*int(r.get('height',0)));candidate_area=max(1,int(er.get('width',0))*int(er.get('height',0)));ratio=candidate_area/observation_area
+    observation_area=max(1,int(r.get('width',0))*int(r.get('height',0)));candidate_area=max(1,int(er.get('width',0))*int(er.get('height',0)));area_similarity=min(observation_area,candidate_area)/max(observation_area,candidate_area)
     obs_coverage=overlap_primary(r,er);joint_iou=iou(r,er)
-    acceptable=.30<=ratio<=3.0 and (joint_iou>=.18 or obs_coverage>=.55);score=max(joint_iou,obs_coverage)
+    # A larger nested contour is not an equivalent substitute for a deleted
+    # material object. Require comparable area in addition to overlap.
+    acceptable=area_similarity>=OBJECT_MATCH_AREA_SIMILARITY_MIN and (joint_iou>=OBJECT_MATCH_IOU_MIN or obs_coverage>=OBJECT_MATCH_OBSERVATION_COVERAGE_MIN)
+    score=.50*joint_iou+.30*obs_coverage+.20*area_similarity
   if acceptable and score>best_score:best,best_score=e,score
  return best,best_score
 def _candidate_support(image,e:dict,text_observations:list[dict])->str:
