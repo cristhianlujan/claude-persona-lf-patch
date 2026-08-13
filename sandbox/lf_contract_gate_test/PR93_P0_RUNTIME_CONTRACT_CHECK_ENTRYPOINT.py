@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Fail-closed PR93 contract wrapper with exact-head P0 real-source evidence."""
+"""Fail-closed PR93 contract wrapper with exact-head P0 real-source evidence.
+
+The wrapper must remain a substitutable adapter for the historical PR93 runtime
+entrypoint.  Public runtime-scope symbols are re-exported from the versioned core
+so existing regression consumers exercise the same contract while this wrapper
+adds only the exact-head real-source hook.
+"""
 from __future__ import annotations
 
 import os
@@ -10,6 +16,34 @@ from pathlib import Path
 import PR93_P0_RUNTIME_CONTRACT_CHECK_CORE_V1 as core
 
 sys.dont_write_bytecode = True
+
+# Preserve the public surface of the previous entrypoint.  This is explicit
+# instead of ``from ... import *`` so an accidental core interface change is
+# reviewable and fails consumers deterministically.
+TARGET_REPOSITORY = core.TARGET_REPOSITORY
+TARGET_PR_NUMBER = core.TARGET_PR_NUMBER
+PR_BRANCH = core.PR_BRANCH
+MAIN_BRANCH = core.MAIN_BRANCH
+RUNTIME_ALERT_PATH = core.RUNTIME_ALERT_PATH
+RUNTIME_ALERT_CONFIG_PATH = core.RUNTIME_ALERT_CONFIG_PATH
+RUNTIME_PLATFORM_CONFIG_PATH = core.RUNTIME_PLATFORM_CONFIG_PATH
+RUNTIME_RECONCILE_PATH = core.RUNTIME_RECONCILE_PATH
+RUNTIME_RECONCILE_CANONICAL_PATH = core.RUNTIME_RECONCILE_CANONICAL_PATH
+RUNTIME_RECONCILE_CONFIG_PATH = core.RUNTIME_RECONCILE_CONFIG_PATH
+RUNTIME_MIGRATION_PATH = core.RUNTIME_MIGRATION_PATH
+EXPECTED_RUNTIME_BLOBS = core.EXPECTED_RUNTIME_BLOBS
+EXPECTED_EDGE_PATHS = core.EXPECTED_EDGE_PATHS
+CONTROLLED_RUNTIME_PATHS = core.CONTROLLED_RUNTIME_PATHS
+BLOB_RE = core.BLOB_RE
+P0_CANDIDATE_PREFIX = core.P0_CANDIDATE_PREFIX
+RuntimeScopeError = core.RuntimeScopeError
+evaluate_controlled_runtime_scope = core.evaluate_controlled_runtime_scope
+current_event_branch = core.current_event_branch
+git_blob_for_path = core.git_blob_for_path
+git_mode_for_path = core.git_mode_for_path
+verify_main_merge_via_github = core.verify_main_merge_via_github
+get_changed_files = core.get_changed_files
+is_allowed_path = core.is_allowed_path
 
 EXACT_HEAD_REF = "refs/heads/lf/p0-persistence-ocr-completion-20260812"
 HELPER = Path(__file__).with_name("p0_exact_head_real_source_ci_v1.py")
