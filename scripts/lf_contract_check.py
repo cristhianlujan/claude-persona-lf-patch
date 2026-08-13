@@ -1,8 +1,20 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.8
+LF Contract Check v0.10
 
 Sandbox validator for controlled LF governance gates.
+
+v0.10 changes:
+- Adds only the exact reconciled P0 source-derived documents and the exact V2
+  persistence contract test produced by PR #140.
+- Keeps both docs/p0 and supabase/tests default-denied as broad prefixes.
+- Adds intrinsic lookalike negatives for the new exact paths.
+
+v0.9 changes:
+- Allows only the exact P0 closure evidence documents produced by the durable
+  persistence/OCR completion scope.
+- Runs an intrinsic fail-closed invariant that keeps sibling/lookalike docs/p0
+  paths default-denied; the docs/ prefix is never broadly authorized.
 
 v0.8 changes:
 - Allows exactly three shared operational-protocol paths: CLAUDE.md,
@@ -54,10 +66,44 @@ OPERATIONAL_PROTOCOL_DENIED_LOOKALIKES = {
     ".claude/scripts/extra.py",
     ".claude/other.md",
 }
+P0_CLOSURE_EVIDENCE_ALLOWED_EXACT = {
+    "docs/p0/CONTRATO_BENCHMARK_OCR_CV.md",
+    "docs/p0/MAPA_BRECHAS_OCR_CV.md",
+    "docs/p0/MATRIZ_OPCIONES_OCR_CV.md",
+    "docs/p0/PERSISTENCE_CONTRACT_AUDIT_20260812.md",
+    "docs/p0/REAL_PERSISTENCE_READBACK_20260812.md",
+    "docs/p0/RESEARCH_OCR_SCREEN_P0.md",
+    "docs/p0/persistence-normalization-config-v1.json",
+    "docs/p0/P0_EXECUTION_PERSISTENCE_CONTRACT_V2.md",
+    "docs/p0/ADR_OCR_UI_PIPELINE_20260812.md",
+    "docs/p0/OCR_BENCHMARK_PLAN.md",
+    "docs/p0/OCR_GAP_MATRIX.md",
+    "docs/p0/OCR_RESEARCH_REPORT.md",
+}
+P0_CLOSURE_EVIDENCE_DENIED_LOOKALIKES = {
+    "docs/p0/CONTRATO_BENCHMARK_OCR_CV.md.bak",
+    "docs/p0/P0_EXECUTION_PERSISTENCE_CONTRACT_V2.md.bak",
+    "docs/p0/OCR_RESEARCH_REPORT.md.tmp",
+    "docs/p0/OCR_BENCHMARK_PLAN/child.md",
+    "docs/p0/UNSCOPED.md",
+    "docs/p0/subdir/RESEARCH_OCR_SCREEN_P0.md",
+    "docs/P0/RESEARCH_OCR_SCREEN_P0.md",
+}
+P0_PERSISTENCE_TEST_ALLOWED_EXACT = {
+    "supabase/tests/p0_execution_persistence_v2_contract.sql",
+}
+P0_PERSISTENCE_TEST_DENIED_LOOKALIKES = {
+    "supabase/tests/p0_execution_persistence_v2_contract.sql.bak",
+    "supabase/tests/p0_execution_persistence_v1_contract.sql",
+    "supabase/tests/p0_execution_persistence_v3_contract.sql",
+    "supabase/tests/subdir/p0_execution_persistence_v2_contract.sql",
+}
 ALLOWED_EXACT = {
     *ALLOWED_GITHUB_EXACT,
     VALIDATOR_SELF_PATH,
     *OPERATIONAL_PROTOCOL_ALLOWED_EXACT,
+    *P0_CLOSURE_EVIDENCE_ALLOWED_EXACT,
+    *P0_PERSISTENCE_TEST_ALLOWED_EXACT,
 }
 ALLOWED_PREFIXES = [
     "sandbox/lf_contract_gate_test/",
@@ -223,6 +269,44 @@ def validate_operational_protocol_scope() -> None:
     )
 
 
+def validate_p0_closure_evidence_scope() -> None:
+    failures: list[str] = []
+    if "docs/" in ALLOWED_PREFIXES or "docs/p0/" in ALLOWED_PREFIXES:
+        failures.append("docs_prefix_must_remain_denied")
+    for path in sorted(P0_CLOSURE_EVIDENCE_ALLOWED_EXACT):
+        if not is_allowed_path(path):
+            failures.append(f"approved_exact_missing:{path}")
+    for path in sorted(P0_CLOSURE_EVIDENCE_DENIED_LOOKALIKES):
+        if is_allowed_path(path):
+            failures.append(f"lookalike_unexpectedly_allowed:{path}")
+    if failures:
+        fail("FAIL_P0_CLOSURE_EVIDENCE_SCOPE_INVARIANT", ",".join(failures))
+    print(
+        "PASS_P0_CLOSURE_EVIDENCE_SCOPE_INVARIANT: "
+        f"approved={len(P0_CLOSURE_EVIDENCE_ALLOWED_EXACT)} "
+        f"denied={len(P0_CLOSURE_EVIDENCE_DENIED_LOOKALIKES)}"
+    )
+
+
+def validate_p0_persistence_test_scope() -> None:
+    failures: list[str] = []
+    if "supabase/tests/" in ALLOWED_PREFIXES:
+        failures.append("supabase_tests_prefix_must_remain_denied")
+    for path in sorted(P0_PERSISTENCE_TEST_ALLOWED_EXACT):
+        if not is_allowed_path(path):
+            failures.append(f"approved_exact_missing:{path}")
+    for path in sorted(P0_PERSISTENCE_TEST_DENIED_LOOKALIKES):
+        if is_allowed_path(path):
+            failures.append(f"lookalike_unexpectedly_allowed:{path}")
+    if failures:
+        fail("FAIL_P0_PERSISTENCE_TEST_SCOPE_INVARIANT", ",".join(failures))
+    print(
+        "PASS_P0_PERSISTENCE_TEST_SCOPE_INVARIANT: "
+        f"approved={len(P0_PERSISTENCE_TEST_ALLOWED_EXACT)} "
+        f"denied={len(P0_PERSISTENCE_TEST_DENIED_LOOKALIKES)}"
+    )
+
+
 def is_governed_path(path: str) -> bool:
     return any(path.startswith(prefix) for prefix in GOVERNED_PREFIXES)
 
@@ -340,6 +424,8 @@ def validate_forbidden_terms(changed_files: list[str]) -> None:
 def main() -> None:
     validate_contract()
     validate_operational_protocol_scope()
+    validate_p0_closure_evidence_scope()
+    validate_p0_persistence_test_scope()
     changed_files = get_changed_files()
     print("Changed files:")
     for path in changed_files:

@@ -19,8 +19,11 @@
     "visual_residual_gate": "BLOCKED_UNCALIBRATED_UNTIL_F01"
   },
   "mutation_campaign": {
-    "required_mutations": 100,
+    "required_mutations": 400,
+    "required_mutations_per_family": 100,
+    "required_families": ["DELETE_MATERIAL_ELEMENT","DELETE_NON_TEXT_COMPACT","MERGE_SIBLING_EVIDENCE","UNJUSTIFIED_TEXT_SPLIT"],
     "required_detection_rate": 1.0,
+    "required_family_detection_rate": 1.0,
     "seed": 20260812
   },
   "empirical_readiness": {
