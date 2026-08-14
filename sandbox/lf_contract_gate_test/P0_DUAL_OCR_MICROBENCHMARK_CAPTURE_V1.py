@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-BENCHMARK = Path(__file__).with_name("P0_DUAL_OCR_MICROBENCHMARK_EXEC_V1.py")
+BENCHMARK = Path(__file__).with_name("P0_DUAL_OCR_MICROBENCHMARK_EXEC_V2.py")
 OUTPUT = ROOT / ".audit-output" / "creating-integral-user-stories" / "p0-dual-ocr-microbenchmark-result.json"
 PREFIX = "DUAL_OCR_RESULT="
 
