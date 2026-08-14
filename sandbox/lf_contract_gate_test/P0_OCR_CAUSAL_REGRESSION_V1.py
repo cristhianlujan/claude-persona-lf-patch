@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPTS = ROOT / "story_creator_p0_visual" / "v1.1" / "scripts"
+SCRIPTS = ROOT / "sandbox" / "story_creator_p0_visual" / "v1.1" / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
 import p0_full_reader_v4 as reader  # noqa: E402
