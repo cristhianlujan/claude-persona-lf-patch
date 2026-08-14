@@ -52,7 +52,7 @@
     {"path":"scripts/p0_visual_discovery_v4.py","git_blob_sha":"fc04e43d8cb410ec991daacd0fd15a0f91a12d1d"},
     {"path":"scripts/p0_visual_grader_core_v4.py","git_blob_sha":"e2c7b9d76b77ebdce50062f1b0839253a02fce27"},
     {"path":"scripts/p0_visual_grader_object_v4.py","git_blob_sha":"0ec5c90fca863723b6408bb9dcb539daf1e5c0ac"},
-    {"path":"scripts/p0_visual_grader_structure_v4.py","git_blob_sha":"6e0c6966ba32645289f46d4f444a0cd38dc7811f"},
+    {"path":"scripts/p0_visual_grader_structure_v4.py","git_blob_sha":"2b9a3fd59e0d70861012f8e56f0bfac1db8d53f5"},
     {"path":"scripts/p0_visual_grader_text_v4.py","git_blob_sha":"219c47a6aff923beffa1d01ea5b3e53ec4867235"},
     {"path":"scripts/p0_visual_graders_v4.py","git_blob_sha":"517fda6dde23929564d659d5e4cacb7b19e3d59a"},
     {"path":"scripts/p0_visual_mutation_campaign_v4.py","git_blob_sha":"36580c829f5e09581c5b99764787e44ac7101d92"},
