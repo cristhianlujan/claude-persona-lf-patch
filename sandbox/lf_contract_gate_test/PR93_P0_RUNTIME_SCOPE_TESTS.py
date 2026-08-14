@@ -59,6 +59,7 @@ def run_p0_quality_regressions(repo_root:Path)->None:
   ('v4-independent-omission-sweep',[sys.executable,str(p0/'evals/p0_independent_omission_sweep_v4.py')]),
   ('v4-reader-producer-contract',[sys.executable,str(p0/'evals/p0_reader_producer_contract_v4.py')]),
   ('v4-grader-producer-field-audit',[sys.executable,str(p0/'evals/p0_grader_producer_field_audit_v4.py')]),
+  ('p0-5-blind-annotation-contract',[sys.executable,str(repo_root/'sandbox/lf_contract_gate_test/P0_5_BLIND_ANNOTATION_CONTRACT_V1.py')]),
  ]
  evidence_dir=repo_root/'.audit-output/creating-integral-user-stories/p0-v3';evidence_dir.mkdir(parents=True,exist_ok=True);env=os.environ.copy()
  if env.get('P0_CI_ENGINEERING_REGRESSION') is not None:raise SystemExit('FAIL_P0_CI_ENGINEERING_REGRESSION_OVERRIDE_FORBIDDEN')
