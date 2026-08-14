@@ -58,6 +58,26 @@ def main() -> int:
         raise SystemExit(f"story creator architecture hardening evidence invalid: {hardening_result}")
     print("PASS_STORY_CREATOR_ARCHITECTURE_HARDENING=1/1")
 
+    ekb_binding = run(
+        [sys.executable, "sandbox/lf_contract_gate_test/EKB_EXECUTABLE_BINDING_GATE_V1.py"],
+        source,
+    )
+    if ekb_binding.returncode != 0:
+        raise SystemExit(f"EKB executable binding gate failed ({ekb_binding.returncode}):\n{ekb_binding.stdout}")
+    try:
+        ekb_binding_result = json.loads(ekb_binding.stdout.strip().splitlines()[-1])
+    except (IndexError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"EKB executable binding gate emitted invalid evidence: {exc}")
+    if (
+        ekb_binding_result.get("result") != "PASS"
+        or ekb_binding_result.get("legacy_status_only_blocked") is not True
+        or ekb_binding_result.get("executed_blockers_visible") != ["EKB-P0-014", "EKB-P0-020"]
+        or ekb_binding_result.get("tampered_receipt_blocked") is not True
+        or ekb_binding_result.get("production_authorized") is not False
+    ):
+        raise SystemExit(f"EKB executable binding evidence invalid: {ekb_binding_result}")
+    print("PASS_EKB_EXECUTABLE_BINDING_GATE=3/3")
+
     workflow = (source / ".github/workflows/lf-contract-check.yml").read_text(encoding="utf-8")
     required_workflow_terms = (
         "actions: read",
