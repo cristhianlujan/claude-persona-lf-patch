@@ -1,0 +1,103 @@
+name: P0 Icon OmniParser Microbenchmark
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "lf/p0-icon-omniparser-*"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  icon-semantic-microbenchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      HF_HOME: ${{ runner.temp }}/hf
+      TOKENIZERS_PARALLELISM: "false"
+      PYTHONUNBUFFERED: "1"
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pinned Hugging Face assets
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.HF_HOME }}
+          key: omniparser-icon-caption-f69bfad5-florence-386f84a8
+
+      - name: Install pinned CPU inference dependencies
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --upgrade pip
+          python -m pip install --disable-pip-version-check \
+            torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install --disable-pip-version-check \
+            transformers==4.46.1 \
+            huggingface_hub==0.26.2 \
+            safetensors==0.4.5 \
+            timm==1.0.11 \
+            einops==0.8.0 \
+            accelerate==1.1.1 \
+            numpy==1.26.4 \
+            opencv-python-headless==4.10.0.84 \
+            pillow==11.0.0
+
+      - name: Run evaluator self-test
+        run: |
+          python sandbox/lf_contract_gate_test/P0_ICON_OMNIPARSER_MICROBENCHMARK_V1.py --self-test
+
+      - name: Run source-bound OmniParser caption benchmark
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p .audit-output
+          python sandbox/lf_contract_gate_test/P0_ICON_OMNIPARSER_MICROBENCHMARK_V1.py \
+            --output .audit-output/omniparser-icon-microbenchmark.json
+
+      - name: Publish non-secret summary
+        if: always()
+        run: |
+          python - <<'PY'
+          import json, os, pathlib
+          path = pathlib.Path('.audit-output/omniparser-icon-microbenchmark.json')
+          summary = pathlib.Path(os.environ['GITHUB_STEP_SUMMARY'])
+          if not path.is_file():
+              summary.write_text('### OmniParser icon benchmark\n- result: `NO_RESULT`\n', encoding='utf-8')
+              raise SystemExit(0)
+          data = json.loads(path.read_text(encoding='utf-8'))
+          m = data['metrics']
+          summary.write_text(
+              '### OmniParser icon benchmark\n'
+              f"- targets: `{m['target_count']}`\n"
+              f"- identity matches: `{m['identity_family_match_count']}`\n"
+              f"- safe policy resolutions: `{m['safe_policy_resolution_supported_count']}`\n"
+              f"- icon observations remaining: `{m['icon_observations_remaining_if_policy_adopted']}`\n"
+              '- interaction functions confirmed from pixels: `0`\n'
+              '- real corpus / P0-5 credit: `0`\n'
+              '- production authorized: `false`\n',
+              encoding='utf-8',
+          )
+          PY
+
+      - name: Upload benchmark evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p0-icon-omniparser-${{ github.run_id }}
+          path: |
+            .audit-output/omniparser-icon-microbenchmark.json
+            .audit-output/icon-crops
+          if-no-files-found: warn
+          retention-days: 7
