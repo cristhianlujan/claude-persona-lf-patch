@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Fail-closed reconciliation + adversarial routing contract for dual OCR.
+"""Fail-closed dual-OCR reconciliation and adversarial routing contract.
 
-The durable source-bound benchmark remains distinct from synthetic regression
-fixtures. Synthetic fixtures never grant real-corpus/P0-5 credit and this file
-does not load or promote PaddleOCR.
+Eight SOURCE_BOUND_TECHNICAL_SLICE cases encode only outcomes supported by the
+durable microbenchmark; abstract tokens are used where the durable note does
+not disclose literal screen text. Twenty-seven SYNTHETIC_ADVERSARIAL fixtures
+are regression-only and grant zero real-corpus/P0-5 credit.
 """
 from __future__ import annotations
 
@@ -59,16 +60,13 @@ def reconcile(
 ) -> tuple[str, str]:
     """Conservative baseline + challenger reconciliation.
 
-    Confidence arguments are accepted for evidence transport only. The decision
-    logic deliberately never compares them across engines.
+    Confidence values are evidence only; they are never cross-compared.
     """
     del baseline_confidence, challenger_confidence
     if baseline and challenger and norm(baseline) == norm(challenger):
         return baseline, "EXACT_AGREEMENT"
-
     baseline_valid = structurally_valid(kind, baseline)
     challenger_valid = structurally_valid(kind, challenger)
-
     if challenger_valid and not baseline_valid:
         return challenger, "CHALLENGER_STRUCTURAL_CORRECTION"
     if baseline_valid and not challenger_valid:
@@ -107,25 +105,25 @@ def route(case: Case) -> tuple[str, str]:
 
 
 CASES = [
-    # 8 durable source-bound technical slices from OCR_DUAL_ENGINE_MICROBENCHMARK_20260814.md.
-    Case("REAL-01", SOURCE_BOUND, "accented_name", baseline="María José", challenger="María José", expected_action="EXACT_AGREEMENT", expected_value="María José"),
-    Case("REAL-02", SOURCE_BOUND, "document_number", kind="document_number", baseline="Ej. 12345678", challenger="Ej. 12345678", expected_action="EXACT_AGREEMENT", expected_value="Ej. 12345678"),
+    # Durable source-bound outcomes. Sentinels avoid inventing undisclosed literal text.
+    Case("REAL-01", SOURCE_BOUND, "accented_name", baseline="NAME_WITH_ACCENTS", challenger="NAME_WITH_ACCENTS", expected_action="EXACT_AGREEMENT", expected_value="NAME_WITH_ACCENTS"),
+    Case("REAL-02", SOURCE_BOUND, "document_number", baseline="DOCUMENT_NUMBER", challenger="DOCUMENT_NUMBER", expected_action="EXACT_AGREEMENT", expected_value="DOCUMENT_NUMBER"),
     Case("REAL-03", SOURCE_BOUND, "phone_prefix", kind="phone_prefix", baseline="+51", challenger="+51", expected_action="EXACT_AGREEMENT", expected_value="+51"),
-    Case("REAL-04", SOURCE_BOUND, "phone_placeholder", kind="phone", baseline="Ej. 987 654 321", challenger="Ej. 987 654 321", expected_action="EXACT_AGREEMENT", expected_value="Ej. 987 654 321"),
-    Case("REAL-05", SOURCE_BOUND, "email_label", baseline="Correo electrónico", challenger="Correo electrónico", expected_action="EXACT_AGREEMENT", expected_value="Correo electrónico"),
+    Case("REAL-04", SOURCE_BOUND, "phone_placeholder", baseline="PHONE_PLACEHOLDER", challenger="PHONE_PLACEHOLDER", expected_action="EXACT_AGREEMENT", expected_value="PHONE_PLACEHOLDER"),
+    Case("REAL-05", SOURCE_BOUND, "email_label", baseline="EMAIL_LABEL", challenger="EMAIL_LABEL", expected_action="EXACT_AGREEMENT", expected_value="EMAIL_LABEL"),
     Case("REAL-06", SOURCE_BOUND, "email_at_sign", kind="email", baseline="Ej. miguelxcorreo.com", challenger="Ej. miguel@correo.com", expected_action="CHALLENGER_STRUCTURAL_CORRECTION", expected_value="Ej. miguel@correo.com"),
-    Case("REAL-07", SOURCE_BOUND, "privacy_punctuation", baseline="Política de Privacidad.", challenger="Política de Privacidad", expected_action="BASELINE_PRESERVED_DISAGREEMENT", expected_value="Política de Privacidad."),
-    Case("REAL-08", SOURCE_BOUND, "small_footer", baseline="¿Necesitas ayuda?", challenger="¿Necesitas ayuda?", expected_action="EXACT_AGREEMENT", expected_value="¿Necesitas ayuda?"),
+    Case("REAL-07", SOURCE_BOUND, "privacy_punctuation", baseline="PRIVACY_SENTENCE.", challenger="PRIVACY_SENTENCE", expected_action="BASELINE_PRESERVED_DISAGREEMENT", expected_value="PRIVACY_SENTENCE."),
+    Case("REAL-08", SOURCE_BOUND, "small_footer", baseline="SMALL_FOOTER", challenger="SMALL_FOOTER", expected_action="EXACT_AGREEMENT", expected_value="SMALL_FOOTER"),
 
-    # 27 synthetic adversarial fixtures; regression only, never real-corpus credit.
+    # Synthetic adversarial fixtures: regression only.
     Case("SYN-01", SYNTHETIC, "zero_vs_o_money", kind="money", baseline="S/ 1,O08.00", challenger="S/ 1,008.00", expected_action="CHALLENGER_STRUCTURAL_CORRECTION", expected_value="S/ 1,008.00"),
     Case("SYN-02", SYNTHETIC, "one_l_code", kind="code", baseline="LF-l0118", challenger="LF-10118", expected_action="CHALLENGER_STRUCTURAL_CORRECTION", expected_value="LF-10118"),
     Case("SYN-03", SYNTHETIC, "decimal_separator", kind="money", baseline="S/ 2.111,92", challenger="S/ 2,111.92", expected_action="CHALLENGER_STRUCTURAL_CORRECTION", expected_value="S/ 2,111.92"),
     Case("SYN-04", SYNTHETIC, "tilde_disagreement", baseline="Politica de Privacidad", challenger="Política de Privacidad", expected_action="BASELINE_PRESERVED_DISAGREEMENT", expected_value="Politica de Privacidad"),
     Case("SYN-05", SYNTHETIC, "enye_disagreement", baseline="Ano", challenger="Año", expected_action="BASELINE_PRESERVED_DISAGREEMENT", expected_value="Ano"),
-    Case("SYN-06", SYNTHETIC, "small_gray_omission", baseline="", challenger="Información referencial", omission=True, detector_class="TEXT", expected_action="TARGETED_CROP_REREAD", expected_value="Información referencial"),
+    Case("SYN-06", SYNTHETIC, "small_gray_omission", challenger="Información referencial", omission=True, detector_class="TEXT", expected_action="TARGETED_CROP_REREAD", expected_value="Información referencial"),
     Case("SYN-07", SYNTHETIC, "truncated_privacy", baseline="Política de Privaci…", challenger="Política de Privacidad", truncated_visible=True, expected_action="VISIBLE_ONLY_NO_COMPLETION", expected_value="Política de Privaci…"),
-    Case("SYN-08", SYNTHETIC, "disabled_button_omission", baseline="", challenger="Continuar", omission=True, detector_class="CONTROL", expected_action="TARGETED_CROP_REREAD", expected_value="Continuar"),
+    Case("SYN-08", SYNTHETIC, "disabled_button_omission", challenger="Continuar", omission=True, detector_class="CONTROL", expected_action="TARGETED_CROP_REREAD", expected_value="Continuar"),
     Case("SYN-09", SYNTHETIC, "empty_checkbox_icon", baseline="O", detector_class="NON_TEXT_ICON", expected_action="DISCARD_NON_TEXT_OCR", expected_value=""),
     Case("SYN-10", SYNTHETIC, "checked_checkbox_icon", baseline="V", detector_class="NON_TEXT_ICON", expected_action="DISCARD_NON_TEXT_OCR", expected_value=""),
     Case("SYN-11", SYNTHETIC, "notification_badge", baseline="3", challenger="3", expected_action="EXACT_AGREEMENT", expected_value="3"),
@@ -142,8 +140,8 @@ CASES = [
     Case("SYN-22", SYNTHETIC, "percent_letter_o", kind="percent", baseline="5O%", challenger="50%", expected_action="CHALLENGER_STRUCTURAL_CORRECTION", expected_value="50%"),
     Case("SYN-23", SYNTHETIC, "valid_money_disagreement", kind="money", baseline="S/ 1,000.00", challenger="S/ 1,008.00", expected_action="BASELINE_PRESERVED_DISAGREEMENT", expected_value="S/ 1,000.00"),
     Case("SYN-24", SYNTHETIC, "valid_code_disagreement", kind="code", baseline="LF-10118", challenger="LF-10119", expected_action="BASELINE_PRESERVED_DISAGREEMENT", expected_value="LF-10118"),
-    Case("SYN-25", SYNTHETIC, "ambiguous_missing_email", kind="email", baseline="", challenger="miguelecorreo.com", expected_action="NEEDS_REVIEW", expected_value=""),
-    Case("SYN-26", SYNTHETIC, "email_missing_baseline_valid_challenger", kind="email", baseline="", challenger="miguel@correo.com", expected_action="CHALLENGER_STRUCTURAL_CORRECTION", expected_value="miguel@correo.com"),
+    Case("SYN-25", SYNTHETIC, "ambiguous_missing_email", kind="email", challenger="miguelecorreo.com", expected_action="NEEDS_REVIEW", expected_value=""),
+    Case("SYN-26", SYNTHETIC, "email_missing_baseline_valid_challenger", kind="email", challenger="miguel@correo.com", expected_action="CHALLENGER_STRUCTURAL_CORRECTION", expected_value="miguel@correo.com"),
     Case("SYN-27", SYNTHETIC, "generic_valid_disagreement", baseline="baseline", challenger="challenger", expected_action="BASELINE_PRESERVED_DISAGREEMENT", expected_value="baseline"),
 ]
 
@@ -153,59 +151,44 @@ def check(condition: bool, name: str) -> None:
         raise SystemExit(f"FAIL_DUAL_OCR_RECONCILIATION:{name}")
 
 
-def _core_invariant_tests() -> int:
-    passed = 0
-    out = reconcile(kind="email", baseline="Ej. miguel@correo.com", challenger="Ej. miguel@correo.com")
-    check(out == ("Ej. miguel@correo.com", "EXACT_AGREEMENT"), "exact_agreement"); passed += 1
-    out = reconcile(kind="email", baseline="Ej. miguelxcorreo.com", challenger="Ej. miguel@correo.com")
-    check(out == ("Ej. miguel@correo.com", "CHALLENGER_STRUCTURAL_CORRECTION"), "email_structural_correction"); passed += 1
-    out = reconcile(kind="email", baseline="Ej. miguel@correo.com", challenger="Ej. miguelxcorreo.com")
-    check(out == ("Ej. miguel@correo.com", "BASELINE_STRUCTURALLY_VALID"), "preserve_valid_baseline"); passed += 1
-    out = reconcile(kind="text", baseline="Política de Privacidad.", challenger="Política de Privacidad")
-    check(out == ("Política de Privacidad.", "BASELINE_PRESERVED_DISAGREEMENT"), "both_valid_disagreement"); passed += 1
-
+def core_invariant_tests() -> int:
+    cases = [
+        ("exact_agreement", reconcile(kind="email", baseline="Ej. miguel@correo.com", challenger="Ej. miguel@correo.com"), ("Ej. miguel@correo.com", "EXACT_AGREEMENT")),
+        ("email_structural_correction", reconcile(kind="email", baseline="Ej. miguelxcorreo.com", challenger="Ej. miguel@correo.com"), ("Ej. miguel@correo.com", "CHALLENGER_STRUCTURAL_CORRECTION")),
+        ("preserve_valid_baseline", reconcile(kind="email", baseline="Ej. miguel@correo.com", challenger="Ej. miguelxcorreo.com"), ("Ej. miguel@correo.com", "BASELINE_STRUCTURALLY_VALID")),
+        ("both_valid_disagreement", reconcile(kind="text", baseline="Política de Privacidad.", challenger="Política de Privacidad"), ("Política de Privacidad.", "BASELINE_PRESERVED_DISAGREEMENT")),
+        ("phone_prefix_guard", reconcile(kind="phone_prefix", baseline="+51", challenger="51"), ("+51", "BASELINE_STRUCTURALLY_VALID")),
+        ("document_guard", reconcile(kind="document_number", baseline="Ej. 12345678", challenger="Ej. 1234567"), ("Ej. 12345678", "BASELINE_STRUCTURALLY_VALID")),
+        ("phone_guard", reconcile(kind="phone", baseline="Ej. 987 654 321", challenger="98765"), ("Ej. 987 654 321", "BASELINE_STRUCTURALLY_VALID")),
+        ("ambiguous_abstains", reconcile(kind="email", baseline="", challenger="not-an-email"), ("", "NEEDS_REVIEW")),
+        ("valid_missing_baseline", reconcile(kind="email", baseline="", challenger="a@b.com"), ("a@b.com", "CHALLENGER_STRUCTURAL_CORRECTION")),
+    ]
+    for name, got, expected in cases:
+        check(got == expected, name)
     low_high = reconcile(kind="text", baseline="baseline", challenger="challenger", baseline_confidence=0.01, challenger_confidence=0.99)
     high_low = reconcile(kind="text", baseline="baseline", challenger="challenger", baseline_confidence=0.99, challenger_confidence=0.01)
-    check(low_high == high_low == ("baseline", "BASELINE_PRESERVED_DISAGREEMENT"), "confidence_not_cross_calibrated"); passed += 1
-
-    out = reconcile(kind="phone_prefix", baseline="+51", challenger="51")
-    check(out == ("+51", "BASELINE_STRUCTURALLY_VALID"), "phone_prefix_guard"); passed += 1
-    out = reconcile(kind="document_number", baseline="Ej. 12345678", challenger="Ej. 1234567")
-    check(out == ("Ej. 12345678", "BASELINE_STRUCTURALLY_VALID"), "document_guard"); passed += 1
-    out = reconcile(kind="phone", baseline="Ej. 987 654 321", challenger="98765")
-    check(out == ("Ej. 987 654 321", "BASELINE_STRUCTURALLY_VALID"), "phone_guard"); passed += 1
-    out = reconcile(kind="email", baseline="", challenger="not-an-email")
-    check(out == ("", "NEEDS_REVIEW"), "ambiguous_abstains"); passed += 1
-    out = reconcile(kind="email", baseline="", challenger="a@b.com")
-    check(out == ("a@b.com", "CHALLENGER_STRUCTURAL_CORRECTION"), "challenger_can_fill_structurally_valid_missing_baseline"); passed += 1
-    check(structurally_valid("email", "Ej. miguel@correo.com"), "email_validator_positive"); passed += 1
-    check(not structurally_valid("email", "Ej. miguelxcorreo.com"), "email_validator_negative"); passed += 1
-    return passed
+    check(low_high == high_low == ("baseline", "BASELINE_PRESERVED_DISAGREEMENT"), "confidence_not_cross_calibrated")
+    check(structurally_valid("email", "Ej. miguel@correo.com"), "email_validator_positive")
+    check(not structurally_valid("email", "Ej. miguelxcorreo.com"), "email_validator_negative")
+    return 12
 
 
-def _adversarial_tests() -> tuple[int, int, int]:
-    if len(CASES) != 35:
-        raise SystemExit(f"FAIL_ADVERSARIAL_CASE_COUNT:{len(CASES)}")
-    passed = source_bound = synthetic = 0
+def adversarial_tests() -> tuple[int, int, int]:
+    check(len(CASES) == 35, "adversarial_case_count")
+    source_bound = synthetic = 0
     for case in CASES:
-        value, action = route(case)
-        if (value, action) != (case.expected_value, case.expected_action):
-            raise SystemExit(
-                f"FAIL_ADVERSARIAL_CASE:{case.case_id}:"
-                f"expected={(case.expected_value, case.expected_action)!r}:"
-                f"got={(value, action)!r}"
-            )
-        passed += 1
+        got = route(case)
+        expected = (case.expected_value, case.expected_action)
+        check(got == expected, f"adversarial_{case.case_id}")
         source_bound += case.source_class == SOURCE_BOUND
         synthetic += case.source_class == SYNTHETIC
-    if source_bound != 8 or synthetic != 27:
-        raise SystemExit(f"FAIL_ADVERSARIAL_SOURCE_SPLIT:{source_bound}:{synthetic}")
-    return passed, source_bound, synthetic
+    check((source_bound, synthetic) == (8, 27), "adversarial_source_split")
+    return 35, source_bound, synthetic
 
 
 def main() -> int:
-    core_passed = _core_invariant_tests()
-    adversarial_passed, source_bound, synthetic = _adversarial_tests()
+    core_passed = core_invariant_tests()
+    adversarial_passed, source_bound, synthetic = adversarial_tests()
     print(f"PASS_P0_DUAL_OCR_RECONCILIATION_CONTRACT={core_passed}/12")
     print(f"PASS_P0_DUAL_OCR_ADVERSARIAL_CONTRACT={adversarial_passed}/35")
     print(f"SOURCE_BOUND_TECHNICAL_SLICES={source_bound}")
