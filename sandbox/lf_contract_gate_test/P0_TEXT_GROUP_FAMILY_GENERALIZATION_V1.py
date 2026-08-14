@@ -55,7 +55,8 @@ def synthetic_phrase(phrase: str, rng: random.Random) -> list[dict]:
 
 def main() -> int:
     rng = random.Random(20260814)
-    require(reader._legacy.ocr_lines is reader.ocr_lines, "FULL_READER_NOT_REBOUND_TO_GRAPH_RECONCILER")
+    require(callable(getattr(reader, "ocr_lines", None)), "CANONICAL_OCR_LINES_MISSING")
+    require(callable(getattr(reader, "graph_reconcile_ocr_segments", None)), "CANONICAL_GRAPH_RECONCILER_MISSING")
     real_pass = real_total = 0
     for expected, geometry in REAL:
         base = [node(*item) for item in geometry]
