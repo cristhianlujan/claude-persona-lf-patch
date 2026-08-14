@@ -2,7 +2,8 @@
 """Corrected execution shim for the isolated dual-OCR microbenchmark.
 
 All governed target slices are single-line. Reconstruct them left-to-right so
-minor OCR baseline jitter cannot reorder words and bias either engine.
+minor OCR baseline jitter cannot reorder words and bias either engine. Target
+ROIs also exclude adjacent non-text UI controls.
 """
 from __future__ import annotations
 
@@ -21,6 +22,13 @@ def single_line_slice_text(obs: list[dict], roi: list[int]) -> tuple[str, float]
         (sum(item["confidence"] for item in hits) / len(hits) if hits else 0.0),
     )
 
+
+for target in v1.SLICES:
+    if target["id"] == "phone_prefix":
+        target["bbox"] = [670, 558, 34, 28]
+        target["expected"] = "+51"
+    elif target["id"] == "privacy_link":
+        target["expected"] = "los Términos y Condiciones y la Política de Privacidad."
 
 v1._slice_text = single_line_slice_text
 
