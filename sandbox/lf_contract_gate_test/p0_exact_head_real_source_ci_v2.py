@@ -140,6 +140,8 @@ def verify_persisted_summary(technical_exit_code: int) -> dict:
 
 
 def run_capture_mode(config: dict) -> int:
+    if self_test() != 0:
+        return 2
     run_broker_policy_test()
     live_broker_negative_probes(config["broker_url"])
     technical_exit_code = 0
