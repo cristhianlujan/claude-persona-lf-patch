@@ -2,7 +2,7 @@
 """Fail-closed PR93 contract wrapper with exact-head P0 real-source evidence.
 
 The wrapper must remain a substitutable adapter for the historical PR93 runtime
-entrypoint.  Public runtime-scope symbols are re-exported from the versioned core
+entrypoint. Public runtime-scope symbols are re-exported from the versioned core
 so existing regression consumers exercise the same contract while this wrapper
 adds only the exact-head real-source hook.
 """
@@ -14,10 +14,11 @@ import sys
 from pathlib import Path
 
 import PR93_P0_RUNTIME_CONTRACT_CHECK_CORE_V1 as core
+from p0_exact_head_real_source_ci_v2 import governed_ref
 
 sys.dont_write_bytecode = True
 
-# Preserve the public surface of the previous entrypoint.  This is explicit
+# Preserve the public surface of the previous entrypoint. This is explicit
 # instead of ``from ... import *`` so an accidental core interface change is
 # reviewable and fails consumers deterministically.
 TARGET_REPOSITORY = core.TARGET_REPOSITORY
@@ -45,17 +46,16 @@ verify_main_merge_via_github = core.verify_main_merge_via_github
 get_changed_files = core.get_changed_files
 is_allowed_path = core.is_allowed_path
 
-EXACT_HEAD_REF = "refs/heads/lf/p0-persistence-ocr-completion-20260812"
-HELPER = Path(__file__).with_name("p0_exact_head_real_source_ci_v1.py")
+HELPER = Path(__file__).with_name("p0_exact_head_real_source_ci_v2.py")
 
 
 def _run_exact_head_real_source_if_required() -> None:
     event_name = os.environ.get("GITHUB_EVENT_NAME", "")
     github_ref = os.environ.get("GITHUB_REF", "")
-    if event_name not in {"push", "workflow_dispatch"} or github_ref != EXACT_HEAD_REF:
+    if event_name not in {"push", "workflow_dispatch"} or not governed_ref(github_ref):
         return
     completed = subprocess.run(
-        [sys.executable, str(HELPER)],
+        [sys.executable, str(HELPER), "--evidence-capture"],
         cwd=Path(__file__).resolve().parents[2],
         env=os.environ.copy(),
         check=False,
