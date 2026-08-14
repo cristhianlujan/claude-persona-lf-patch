@@ -37,6 +37,8 @@ def _apply_remediation_state(candidate,state):
   if matched is None:continue
   element['remediation_disposition']={'code':'RECLASSIFIED_UNSUPPORTED_SHORT_TEXT','source_category':matched['source_category'],'original_visible_text':text,'source_region':copy.deepcopy(matched['region'])}
   element['visible_text']=None;element['element_type']='ICON_OR_GLYPH';element['semantic_role']='visual_fragment';element['subcomponent_role']='GLYPH';element['ocr_consensus_text']='';element['independent_redetection']=False;element['redetection_status']='RECLASSIFIED_UNSUPPORTED_SHORT_TEXT';element['graphic_score']=max(.82,float(element.get('graphic_score',0) or 0))
+  text_only_codes={'OCR_DISAGREEMENT','TEXT_GROUPING_DISAGREEMENT'}
+  out['reader_uncertainties']=[u for u in list(out.get('reader_uncertainties') or []) if not (u.get('element_id')==element.get('element_id') and u.get('code') in text_only_codes)]
   uncertainties.append({'element_id':element.get('element_id'),'code':'UNSUPPORTED_SHORT_TEXT_RECLASSIFIED','region':copy.deepcopy(region),'source_category':matched['source_category']})
  out['uncertainties']=uncertainties
  return out
@@ -45,9 +47,6 @@ def traced_reader(path,ctx):
 def remediator(candidate,findings,state):
  actions=[];seen=set();state=dict(state);state['strict_mode']=True
  suppressed=_dedupe_regions(state.get('unsupported_short_text_regions') or [])
- # If an independently material observation later becomes omitted in a region
- # previously suppressed as unsupported short text, remove that suppression so
- # the next full read can restore the text instead of locking in a stale choice.
  material_regions=[f.get('region') or {} for f in findings if f.get('category')=='MATERIAL_OMISSION']
  if material_regions:
   suppressed=[item for item in suppressed if not any(_region_overlap(item['region'],region)>=.35 for region in material_regions)]
@@ -67,8 +66,6 @@ def targeted(source_path,actions,ctx):
  if im is None:return {'verified':False,'action_count':len(actions),'source_sha256':ctx['source_sha256'],'reread_execution':'TARGET-'+ctx['pass_id'],'region_verifications':0,'reread_scope':'SOURCE_DECODE_FAILED'}
  for a in actions:
   r=a['region'];x=max(0,int(r.get('x',0))-8);y=max(0,int(r.get('y',0))-8);x2=min(im.shape[1],int(r.get('x',0))+int(r.get('width',0))+8);y2=min(im.shape[0],int(r.get('y',0))+int(r.get('height',0))+8);verified.append(bool(x2>x and y2>y and im[y:y2,x:x2].size))
- # Fresh whole-source corroboration is executed once per targeted receipt instead of
- # spawning two OCR subprocesses per finding category. This does not count as a global clean pass.
  if verified and all(verified):
   for psm in (6,11):pytesseract.image_to_string(im,lang='spa',config=f'--psm {psm}')
  out={'verified':all(verified) if verified else False,'action_count':len(actions),'source_sha256':ctx['source_sha256'],'reread_execution':'TARGET-'+ctx['pass_id'],'region_verifications':len(verified),'reread_scope':'SELECTED_REGIONS_CORROBORATED_BY_FRESH_SOURCE_PSM6_PSM11'};TRACE['targeted'].append(copy.deepcopy(out));return out
