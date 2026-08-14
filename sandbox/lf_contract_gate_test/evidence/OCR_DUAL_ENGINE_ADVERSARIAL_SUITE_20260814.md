@@ -13,7 +13,7 @@ The 35 adversarial cases are deliberately split:
 - **8 SOURCE_BOUND_TECHNICAL_SLICE cases**: only the eight durable target slices already recorded in `OCR_DUAL_ENGINE_MICROBENCHMARK_20260814.md` for source SHA-256 `e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7`.
 - **27 SYNTHETIC_ADVERSARIAL cases**: designed regression fixtures for failure families that must be handled before any future runtime promotion. They are not observations from additional real screens.
 
-No synthetic fixture is relabeled as real evidence.
+No synthetic fixture is relabeled as real evidence. Where the durable benchmark records only an outcome such as `exact` and does not disclose the literal target text, the executable contract uses an abstract sentinel rather than inventing a screen value.
 
 ## Durable source-bound cases
 
@@ -69,6 +69,13 @@ The original 12 reconciliation invariants remain in the same mandatory contract 
 - detector-classified icon/decorative/QR evidence is not converted into text;
 - truncation remains visible-only and cannot be silently completed;
 - layout and omission families route to reconstruction or targeted reread instead of unrestricted challenger voting.
+
+## Autoaudit corrections before merge
+
+Two fail-closed corrections were made before accepting this suite:
+
+1. illustrative literal values were removed from source-bound cases wherever the durable artifact only supported an abstract `exact` outcome;
+2. the initial transport branch used `agent/...`, which cannot satisfy the E.16 required `push + pull_request` workflow matrix because `lf-contract-check` push events are restricted to `main` and `lf/**`. The gate was not weakened; execution moved to the governed `lf/p0-dual-ocr-adversarial-suite` branch.
 
 ## Expected contract output
 
