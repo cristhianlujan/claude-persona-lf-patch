@@ -25,10 +25,10 @@ def j_complete(candidate:dict,ctx:dict)->dict:
  for eid in sweep.get('candidate_support_uncertain_ids') or []:
   e=by.get(eid)
   if e is not None:fs.append(finding(ctx,g,'UNSUPPORTED_CANDIDATE_UNCERTAIN','MEDIUM',e,{'element_id':eid,'independent_support':'UNCERTAIN'},'BLOCK',.90,'unsupported-candidate-uncertainty'))
- # EKB-P0-020: a short inferred OCR token must not become harmless merely
- # because multiple reads from the same Tesseract family repeat it. Require
- # material contextual support from the independent source sweep; otherwise
- # keep the candidate fail-closed for reread/human review.
+ # EKB-P0-020: a short inferred numeric OCR token must not become harmless
+ # merely because multiple reads from the same Tesseract family repeat it.
+ # Require material contextual support from the independent source sweep;
+ # otherwise keep the candidate fail-closed for reread/human review.
  supported_short_ids={
   o.get('matched_element_id') for o in sweep.get('observations',[])
   if o.get('kind')=='TEXT' and o.get('material') is True and o.get('match_status')=='REPRESENTED'
@@ -36,7 +36,7 @@ def j_complete(candidate:dict,ctx:dict)->dict:
  for e in els:
   if e.get('classification')!='INFERRED' or e.get('element_type')!='TEXT':continue
   txt=str(e.get('visible_text') or '').strip();clean=''.join(ch for ch in txt if ch.isalnum())
-  if 2<=len(clean)<=3 and e.get('element_id') not in supported_short_ids:
+  if 2<=len(clean)<=3 and clean.isdigit() and e.get('element_id') not in supported_short_ids:
    fs.append(finding(ctx,g,'SHORT_TEXT_WITHOUT_MATERIAL_SUPPORT','MEDIUM',e,{'text':txt,'independent_material_text_match':False,'same_family_ocr_is_not_independent_support':True},'BLOCK',.95,'short-text-materiality-support'))
  return output(ctx,g,app,app,fs,regions or ['FULL'])
 
