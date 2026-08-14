@@ -571,9 +571,9 @@ def full_reader(source_path: str, ctx: dict) -> dict:
             "redetection_status": "REDETECTED" if stable else "AMBIGUOUS",
         }
         elements.append(element)
-        if not stable:
+        if element_type == "TEXT" and not stable:
             uncertainties.append({"element_id": element["element_id"], "code": "OCR_DISAGREEMENT", "region": region})
-        if not group_ok:
+        if element_type == "TEXT" and not group_ok:
             uncertainties.append(
                 {
                     "element_id": element["element_id"],
