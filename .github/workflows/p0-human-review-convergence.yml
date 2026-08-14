@@ -1,0 +1,28 @@
+name: P0 Human Review Convergence
+
+on:
+  push:
+    branches:
+      - main
+      - 'lf/**'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  human-review-convergence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Enforce P0 human review convergence contract
+        run: python sandbox/lf_contract_gate_test/P0_HUMAN_REVIEW_CONVERGENCE_V1.py
