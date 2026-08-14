@@ -138,4 +138,15 @@ _legacy.ocr_lines = ocr_lines
 
 
 def full_reader(source_path: str, ctx: dict) -> dict:
-    return _legacy.full_reader(source_path, ctx)
+    """Delegate while preserving the canonical `ocr_lines` injection surface.
+
+    Tests and governed runners may temporarily replace `p0_full_reader_v4.ocr_lines`.
+    The legacy implementation resolves `ocr_lines` in its own module globals, so
+    the active canonical function must be forwarded for the duration of the call.
+    """
+    previous = _legacy.ocr_lines
+    _legacy.ocr_lines = globals()["ocr_lines"]
+    try:
+        return _legacy.full_reader(source_path, ctx)
+    finally:
+        _legacy.ocr_lines = previous
