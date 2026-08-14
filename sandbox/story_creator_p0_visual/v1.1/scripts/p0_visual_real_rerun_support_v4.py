@@ -13,14 +13,55 @@ def traced_sweep(source_path,expected_sha,candidate,*,execution_id):
 def traced_grader_runner(candidate,ctx):
  outs=run_all(candidate,ctx);TRACE['grader_runs'].append({'ctx':copy.deepcopy(ctx),'outputs':copy.deepcopy(outs)});return outs
 def make_grader_runner(source_path=None):return traced_grader_runner
+def _region_overlap(a,b):
+ ax1,ay1=float(a.get('x',0)),float(a.get('y',0));ax2,ay2=ax1+float(a.get('width',0)),ay1+float(a.get('height',0))
+ bx1,by1=float(b.get('x',0)),float(b.get('y',0));bx2,by2=bx1+float(b.get('width',0)),by1+float(b.get('height',0))
+ inter=max(0.0,min(ax2,bx2)-max(ax1,bx1))*max(0.0,min(ay2,by2)-max(ay1,by1));aa=max(1.0,(ax2-ax1)*(ay2-ay1));bb=max(1.0,(bx2-bx1)*(by2-by1));return max(inter/aa,inter/bb)
+def _dedupe_regions(items):
+ out=[]
+ for item in items:
+  r=item.get('region') if isinstance(item,dict) and isinstance(item.get('region'),dict) else item
+  if not isinstance(r,dict):continue
+  row={'region':{k:int(r.get(k,0)) for k in ('x','y','width','height')},'source_category':str(item.get('source_category') or 'SHORT_TEXT_WITHOUT_MATERIAL_SUPPORT') if isinstance(item,dict) else 'SHORT_TEXT_WITHOUT_MATERIAL_SUPPORT'}
+  if not any(_region_overlap(row['region'],existing['region'])>=.80 for existing in out):out.append(row)
+ return out
+def _apply_remediation_state(candidate,state):
+ suppressed=_dedupe_regions((state or {}).get('unsupported_short_text_regions') or [])
+ if not suppressed:return candidate
+ out=copy.deepcopy(candidate);uncertainties=list(out.get('uncertainties') or [])
+ for element in out.get('elements',[]):
+  if element.get('classification')!='INFERRED' or element.get('element_type')!='TEXT':continue
+  text=str(element.get('visible_text') or '').strip();clean=''.join(ch for ch in text if ch.isalnum())
+  if not (2<=len(clean)<=3 and clean.isdigit()):continue
+  region=element.get('region') or {};matched=next((item for item in suppressed if _region_overlap(region,item['region'])>=.35),None)
+  if matched is None:continue
+  element['remediation_disposition']={'code':'RECLASSIFIED_UNSUPPORTED_SHORT_TEXT','source_category':matched['source_category'],'original_visible_text':text,'source_region':copy.deepcopy(matched['region'])}
+  element['visible_text']=None;element['element_type']='ICON_OR_GLYPH';element['semantic_role']='visual_fragment';element['subcomponent_role']='GLYPH';element['ocr_consensus_text']='';element['independent_redetection']=False;element['redetection_status']='RECLASSIFIED_UNSUPPORTED_SHORT_TEXT';element['graphic_score']=max(.82,float(element.get('graphic_score',0) or 0))
+  uncertainties.append({'element_id':element.get('element_id'),'code':'UNSUPPORTED_SHORT_TEXT_RECLASSIFIED','region':copy.deepcopy(region),'source_category':matched['source_category']})
+ out['uncertainties']=uncertainties
+ return out
 def traced_reader(path,ctx):
- c=full_reader(path,ctx);TRACE['readers'].append(copy.deepcopy(c));return c
+ c=full_reader(path,ctx);c=_apply_remediation_state(c,ctx.get('remediation_state') or {});TRACE['readers'].append(copy.deepcopy(c));return c
 def remediator(candidate,findings,state):
- actions=[];seen=set()
+ actions=[];seen=set();state=dict(state);state['strict_mode']=True
+ suppressed=_dedupe_regions(state.get('unsupported_short_text_regions') or [])
+ # If an independently material observation later becomes omitted in a region
+ # previously suppressed as unsupported short text, remove that suppression so
+ # the next full read can restore the text instead of locking in a stale choice.
+ material_regions=[f.get('region') or {} for f in findings if f.get('category')=='MATERIAL_OMISSION']
+ if material_regions:
+  suppressed=[item for item in suppressed if not any(_region_overlap(item['region'],region)>=.35 for region in material_regions)]
  for f in findings:
-  if f['category'] in seen:continue
-  seen.add(f['category']);actions.append({'category':f['category'],'region':f.get('region') or {'x':0,'y':0,'width':0,'height':0},'action':'STRICT_CONSENSUS_REREAD','affected_findings':sum(x['category']==f['category'] for x in findings)})
- state=dict(state);state['strict_mode']=True;TRACE['remediations'].append({'finding_count':len(findings),'categories':sorted(seen),'actions':copy.deepcopy(actions)});return state,actions
+  category=f['category'];region=f.get('region') or {'x':0,'y':0,'width':0,'height':0}
+  if category=='SHORT_TEXT_WITHOUT_MATERIAL_SUPPORT':
+   suppressed=_dedupe_regions(suppressed+[{'region':region,'source_category':category}]);action='RECLASSIFY_UNSUPPORTED_SHORT_TEXT'
+  elif category=='MATERIAL_OMISSION':action='RESTORE_MATERIAL_TEXT_IF_SUPPRESSED'
+  else:action='STRICT_CONSENSUS_REREAD'
+  if category in seen:continue
+  seen.add(category);actions.append({'category':category,'region':region,'action':action,'affected_findings':sum(x['category']==category for x in findings)})
+ if suppressed:state['unsupported_short_text_regions']=suppressed
+ else:state.pop('unsupported_short_text_regions',None)
+ TRACE['remediations'].append({'finding_count':len(findings),'categories':sorted(seen),'actions':copy.deepcopy(actions),'unsupported_short_text_region_count':len(suppressed)});return state,actions
 def targeted(source_path,actions,ctx):
  im=cv2.imread(source_path);verified=[]
  if im is None:return {'verified':False,'action_count':len(actions),'source_sha256':ctx['source_sha256'],'reread_execution':'TARGET-'+ctx['pass_id'],'region_verifications':0,'reread_scope':'SOURCE_DECODE_FAILED'}
