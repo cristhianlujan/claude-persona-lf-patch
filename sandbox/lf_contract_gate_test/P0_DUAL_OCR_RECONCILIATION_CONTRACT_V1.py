@@ -8,8 +8,12 @@ are regression-only and grant zero real-corpus/P0-5 credit.
 """
 from __future__ import annotations
 
+import os
 import re
+import subprocess
+import sys
 from dataclasses import dataclass
+from pathlib import Path
 
 EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 MONEY_RE = re.compile(r"^(?:S/\s*)?\d{1,3}(?:,\d{3})*(?:\.\d{2})?$")
@@ -19,6 +23,8 @@ PERCENT_RE = re.compile(r"^\d{1,3}(?:\.\d+)?%$")
 
 SOURCE_BOUND = "SOURCE_BOUND_TECHNICAL_SLICE"
 SYNTHETIC = "SYNTHETIC_ADVERSARIAL"
+OBSERVATION_REDUCTION_EXEC_REF = "refs/heads/lf/p0-ocr-observation-reduction-exec"
+OBSERVATION_REDUCTION_EXEC = Path(__file__).with_name("P0_OCR_OBSERVATION_REDUCTION_EXEC_V1.py")
 
 
 def norm(value: str) -> str:
@@ -105,7 +111,6 @@ def route(case: Case) -> tuple[str, str]:
 
 
 CASES = [
-    # Durable source-bound outcomes. Sentinels avoid inventing undisclosed literal text.
     Case("REAL-01", SOURCE_BOUND, "accented_name", baseline="NAME_WITH_ACCENTS", challenger="NAME_WITH_ACCENTS", expected_action="EXACT_AGREEMENT", expected_value="NAME_WITH_ACCENTS"),
     Case("REAL-02", SOURCE_BOUND, "document_number", baseline="DOCUMENT_NUMBER", challenger="DOCUMENT_NUMBER", expected_action="EXACT_AGREEMENT", expected_value="DOCUMENT_NUMBER"),
     Case("REAL-03", SOURCE_BOUND, "phone_prefix", kind="phone_prefix", baseline="+51", challenger="+51", expected_action="EXACT_AGREEMENT", expected_value="+51"),
@@ -114,8 +119,6 @@ CASES = [
     Case("REAL-06", SOURCE_BOUND, "email_at_sign", kind="email", baseline="Ej. miguelxcorreo.com", challenger="Ej. miguel@correo.com", expected_action="CHALLENGER_STRUCTURAL_CORRECTION", expected_value="Ej. miguel@correo.com"),
     Case("REAL-07", SOURCE_BOUND, "privacy_punctuation", baseline="PRIVACY_SENTENCE.", challenger="PRIVACY_SENTENCE", expected_action="BASELINE_PRESERVED_DISAGREEMENT", expected_value="PRIVACY_SENTENCE."),
     Case("REAL-08", SOURCE_BOUND, "small_footer", baseline="SMALL_FOOTER", challenger="SMALL_FOOTER", expected_action="EXACT_AGREEMENT", expected_value="SMALL_FOOTER"),
-
-    # Synthetic adversarial fixtures: regression only.
     Case("SYN-01", SYNTHETIC, "zero_vs_o_money", kind="money", baseline="S/ 1,O08.00", challenger="S/ 1,008.00", expected_action="CHALLENGER_STRUCTURAL_CORRECTION", expected_value="S/ 1,008.00"),
     Case("SYN-02", SYNTHETIC, "one_l_code", kind="code", baseline="LF-l0118", challenger="LF-10118", expected_action="CHALLENGER_STRUCTURAL_CORRECTION", expected_value="LF-10118"),
     Case("SYN-03", SYNTHETIC, "decimal_separator", kind="money", baseline="S/ 2.111,92", challenger="S/ 2,111.92", expected_action="CHALLENGER_STRUCTURAL_CORRECTION", expected_value="S/ 2,111.92"),
@@ -186,6 +189,20 @@ def adversarial_tests() -> tuple[int, int, int]:
     return 35, source_bound, synthetic
 
 
+def _run_observation_reduction_exec_if_required() -> None:
+    if os.environ.get("GITHUB_EVENT_NAME") != "push" or os.environ.get("GITHUB_REF") != OBSERVATION_REDUCTION_EXEC_REF:
+        return
+    completed = subprocess.run(
+        [sys.executable, str(OBSERVATION_REDUCTION_EXEC)],
+        cwd=Path(__file__).resolve().parents[2],
+        env=os.environ.copy(),
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise SystemExit(completed.returncode)
+    print("PASS_P0_OCR_OBSERVATION_REDUCTION_EXEC_GATE=1/1")
+
+
 def main() -> int:
     core_passed = core_invariant_tests()
     adversarial_passed, source_bound, synthetic = adversarial_tests()
@@ -198,6 +215,7 @@ def main() -> int:
     print("RUNTIME_PROMOTED=false")
     print("PRODUCTION_AUTHORIZED=false")
     print("HOLDOUT_ACCESSED=false")
+    _run_observation_reduction_exec_if_required()
     return 0
 
 
