@@ -126,6 +126,10 @@ Earlier exploratory runs were not used as final evidence after audit found bench
 
 The accepted runs listed above include all four corrections.
 
+## Fail-closed scope integrity
+
+An initial evidence placement under `docs/p0` was rejected by the existing default-deny contract gate. The validator allowlist was **not** broadened. Durable evidence was moved into the already governed `sandbox/lf_contract_gate_test/evidence` namespace. The deletion commits for the rejected paths also failed their individual push checks, as expected; this final commit changes only an authorized sandbox path so the exact-head push and pull-request evidence can converge without bypassing scope controls.
+
 ## Remaining gates before runtime promotion
 
 The second family remains experimental until all of the following are satisfied:
