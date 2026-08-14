@@ -93,10 +93,13 @@ def main() -> int:
         or causal_result.get("ekb_code") != "EKB-P0-014"
         or causal_result.get("real_geometry_recomposed") is not True
         or causal_result.get("far_gap_remains_separate") is not True
+        or causal_result.get("different_baseline_remains_separate") is not True
+        or causal_result.get("compact_glyph_remains_separate") is not True
         or causal_result.get("production_authorized") is not False
     ):
         raise SystemExit(f"P0 OCR causal regression evidence invalid: {causal_result}")
-    print("PASS_P0_OCR_CAUSAL_REGRESSION=2/2")
+    print("PASS_P0_OCR_CAUSAL_REGRESSION=4/4")
+    print(f"P0_OCR_READER_SHA256={causal_result.get('reader_file_sha256')}")
 
     workflow = (source / ".github/workflows/lf-contract-check.yml").read_text(encoding="utf-8")
     required_workflow_terms = (
