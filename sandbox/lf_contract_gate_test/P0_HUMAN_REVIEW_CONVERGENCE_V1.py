@@ -2,7 +2,8 @@
 """Execution-only wrapper for the dual-OCR microbenchmark branch.
 
 It runs the exact Human Review Convergence contract from the pinned clean main
-parent, then runs the isolated OCR experiment. This wrapper MUST NOT be merged.
+parent, then runs the isolated OCR experiment with auditable result capture.
+This wrapper MUST NOT be merged.
 """
 from __future__ import annotations
 
@@ -15,7 +16,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 PINNED_CLEAN_MAIN = "045e1214f7320f3632d88ec0ed9cc1ada1d7bc07"
 CONTRACT_PATH = "sandbox/lf_contract_gate_test/P0_HUMAN_REVIEW_CONVERGENCE_V1.py"
-BENCHMARK = Path(__file__).with_name("P0_DUAL_OCR_MICROBENCHMARK_EXEC_V1.py")
+CAPTURE = Path(__file__).with_name("P0_DUAL_OCR_MICROBENCHMARK_CAPTURE_V1.py")
 EXPECTED_REF = "refs/heads/lf/p0-dual-ocr-microbenchmark-exec"
 
 
@@ -35,7 +36,7 @@ def main() -> int:
         contract = Path(td) / "P0_HUMAN_REVIEW_CONVERGENCE_V1.py"
         contract.write_bytes(original)
         run([sys.executable, str(contract)])
-    run([sys.executable, str(BENCHMARK)])
+    run([sys.executable, str(CAPTURE)])
     print("PASS_DUAL_OCR_EXECUTION_WRAPPER=1/1")
     return 0
 
