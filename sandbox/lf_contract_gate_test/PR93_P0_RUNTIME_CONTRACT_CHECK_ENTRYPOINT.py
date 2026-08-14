@@ -152,6 +152,7 @@ get_changed_files = core.get_changed_files
 is_allowed_path = core.is_allowed_path
 
 HELPER = Path(__file__).with_name("p0_exact_head_real_source_ci_v2.py")
+HUMAN_REVIEW_CONVERGENCE_HELPER = Path(__file__).with_name("P0_HUMAN_REVIEW_CONVERGENCE_V1.py")
 
 
 def _runtime_extension_self_test() -> None:
@@ -200,6 +201,18 @@ def _runtime_extension_self_test() -> None:
     print("PASS_P0_EXACT_HEAD_RUNTIME_EXTENSION_V2=4/4")
 
 
+def _run_human_review_convergence_contract() -> None:
+    completed = subprocess.run(
+        [sys.executable, str(HUMAN_REVIEW_CONVERGENCE_HELPER)],
+        cwd=Path(__file__).resolve().parents[2],
+        env=os.environ.copy(),
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise SystemExit(completed.returncode)
+    print("PASS_P0_HUMAN_REVIEW_CONVERGENCE_GATE=1/1")
+
+
 def _run_exact_head_real_source_if_required() -> None:
     event_name = os.environ.get("GITHUB_EVENT_NAME", "")
     github_ref = os.environ.get("GITHUB_REF", "")
@@ -217,6 +230,7 @@ def _run_exact_head_real_source_if_required() -> None:
 
 def main() -> None:
     _runtime_extension_self_test()
+    _run_human_review_convergence_contract()
     original_pass_check = core.e16.base.pass_check
 
     def pass_check_with_real_source(message: str) -> None:
