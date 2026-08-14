@@ -1,0 +1,23 @@
+{
+  "schema_version": "p0-5-candidate-source-integrity/v1",
+  "issue": 142,
+  "verification_event_id": 5449,
+  "verification_method": "GOOGLE_DRIVE_RAW_BYTES_SHA256",
+  "candidate_output_visible_to_annotator": false,
+  "independent_human_annotation_count": 0,
+  "corpus_credit_granted": 0,
+  "sealed_holdout_accessed": false,
+  "p0_5_authorized": false,
+  "production_authorized": false,
+  "sources": [
+    {"source_id":"P0-GOLD-CAND-02","drive_file_id":"1K7PdA_jOWMzwKTUkP7PGDQIWsNx6hbjI","file_name":"02_onboarding paso 2.png","content_bytes":1664543,"expected_sha256":"9f824b1d357ea0dd156046dfc6a410fe92f1942bb225223208602abbb7fb6560","observed_sha256":"9f824b1d357ea0dd156046dfc6a410fe92f1942bb225223208602abbb7fb6560","byte_identity_verified":true,"holdout":false,"annotation_state":"UNANNOTATED","candidate_output_visible_to_annotator":false,"corpus_credit":0},
+    {"source_id":"P0-GOLD-CAND-03","drive_file_id":"1m-E5mdVxw36kx-IePr9MmDPy7UySc2A9","file_name":"home_ruta_claridad_reference_owner_1774x887.png","content_bytes":2388342,"expected_sha256":"950d98c4183b99441950306c80614d17f3cdd223eaa7ca64bc60d28c8548c3bc","observed_sha256":"950d98c4183b99441950306c80614d17f3cdd223eaa7ca64bc60d28c8548c3bc","byte_identity_verified":true,"holdout":false,"annotation_state":"UNANNOTATED","candidate_output_visible_to_annotator":false,"corpus_credit":0},
+    {"source_id":"P0-GOLD-CAND-04","drive_file_id":"11ruWTB1JcLMVzhOJ5prWuO9VNfYEL4rw","file_name":"OfertaUnicaEnCuotas_MedioPago_ErrorDePagopng.png","content_bytes":1057868,"expected_sha256":"e8e483eb28d7ec6e9cead43c18f9fe52582a1048a4056ec3cb030a58328fbeb3","observed_sha256":"e8e483eb28d7ec6e9cead43c18f9fe52582a1048a4056ec3cb030a58328fbeb3","byte_identity_verified":true,"holdout":false,"annotation_state":"UNANNOTATED","candidate_output_visible_to_annotator":false,"corpus_credit":0},
+    {"source_id":"P0-GOLD-CAND-05","drive_file_id":"1gUlSIDgAw9ncG3yGyf_IXnSrrKEZwSJr","file_name":"c2OfertaUnicaEnCuotas_MedioPago_PagoExitoso.png","content_bytes":1278549,"expected_sha256":"0a968b162c66f1804281937bdb9cc538d15c5d60c24bee25e0392bbc1e318201","observed_sha256":"0a968b162c66f1804281937bdb9cc538d15c5d60c24bee25e0392bbc1e318201","byte_identity_verified":true,"holdout":false,"annotation_state":"UNANNOTATED","candidate_output_visible_to_annotator":false,"corpus_credit":0},
+    {"source_id":"P0-GOLD-CAND-06","drive_file_id":"1QZl9fxk1txKLN-PxNyyAP30ym60QaUiI","file_name":"OfertaUnicaEnCuotas_MedioPago_escaneaQrYape.png","content_bytes":1624479,"expected_sha256":"e66ffaf70dded658a72debed6000c74fab4ad93f7133d4dc2184a09ce39c86e0","observed_sha256":"e66ffaf70dded658a72debed6000c74fab4ad93f7133d4dc2184a09ce39c86e0","byte_identity_verified":true,"holdout":false,"annotation_state":"UNANNOTATED","candidate_output_visible_to_annotator":false,"corpus_credit":0},
+    {"source_id":"P0-GOLD-CAND-07","drive_file_id":"13v4ghwEmrZp2KA7z_Gk5Zh4Wg5fNQ1AQ","file_name":"OfertaUnicaEnCuotas_MedioPago_ingresaTarjeta.png","content_bytes":1328943,"expected_sha256":"363458208157255121173b40d1d888679e6a892a6b8306c27a4bc226fd53abb0","observed_sha256":"363458208157255121173b40d1d888679e6a892a6b8306c27a4bc226fd53abb0","byte_identity_verified":true,"holdout":false,"annotation_state":"UNANNOTATED","candidate_output_visible_to_annotator":false,"corpus_credit":0},
+    {"source_id":"P0-GOLD-CAND-08","drive_file_id":"1csYw9CYGl-NFFUzk-7vNSK20zBowUdoH","file_name":"OfertaUnicaEnCuotas_cronograna.png","content_bytes":1277537,"expected_sha256":"47e07b0979773e867726c97a9c3fbb9845e842f0b8ccf458d8f4945676dcd777","observed_sha256":"47e07b0979773e867726c97a9c3fbb9845e842f0b8ccf458d8f4945676dcd777","byte_identity_verified":true,"holdout":false,"annotation_state":"UNANNOTATED","candidate_output_visible_to_annotator":false,"corpus_credit":0},
+    {"source_id":"P0-GOLD-CAND-09","drive_file_id":"1zYhMt_IBBGa5iv2rBije8-mNh9Zoq1QL","file_name":"OfertaUnicaEnCuotas_Seleccione_01.png","content_bytes":1167752,"expected_sha256":"701dd1db59b8e5af8c2f2cf6b0e2a2a757c62756b30dc40df6fde4c90ceeb93e","observed_sha256":"701dd1db59b8e5af8c2f2cf6b0e2a2a757c62756b30dc40df6fde4c90ceeb93e","byte_identity_verified":true,"holdout":false,"annotation_state":"UNANNOTATED","candidate_output_visible_to_annotator":false,"corpus_credit":0},
+    {"source_id":"P0-GOLD-CAND-10","drive_file_id":"1fVoa7roFrnx8FkmKT49oBi9s4iG69Thn","file_name":"desglose del pago.png","content_bytes":1410240,"expected_sha256":"3aef1abd41dea96f68912e548758d9dbc62b48e7e6139318e89f0d708762c427","observed_sha256":"3aef1abd41dea96f68912e548758d9dbc62b48e7e6139318e89f0d708762c427","byte_identity_verified":true,"holdout":false,"annotation_state":"UNANNOTATED","candidate_output_visible_to_annotator":false,"corpus_credit":0}
+  ]
+}
