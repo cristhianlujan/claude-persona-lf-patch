@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
-"""Causal regression for EKB-P0-014/EKB-P0-020 using the real reader.
+"""Causal regression for EKB-P0-014/EKB-P0-020 using real product logic.
 
-The geometry fixture reproduces the canonical ordering defect. The classification
-fixtures additionally prove that an OCR fragment reclassified by the reader as
-ICON_OR_GLYPH is not surfaced as a text OCR/grouping uncertainty, while a genuine
-TEXT element with the same unstable evidence still is. Product logic is invoked
-directly; no copied reconciliation implementation is used.
+Covers geometric OCR reconstruction, final reader classification, and downstream
+short-text remediation so text-only uncertainty cannot survive after a material
+is reclassified as ICON_OR_GLYPH. Genuine TEXT uncertainty remains fail-closed.
 """
 from __future__ import annotations
 
@@ -19,6 +17,7 @@ SCRIPTS = ROOT / "sandbox" / "story_creator_p0_visual" / "v1.1" / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
 import p0_full_reader_v4 as reader  # noqa: E402
+import p0_visual_real_rerun_support_v4 as rerun_support  # noqa: E402
 
 SOURCE_SHA = "e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7"
 
@@ -127,6 +126,36 @@ def _run_full_reader_uncertainty_case(text: str, *, width: int, height: int) -> 
         reader.annotate_evidence_purity = originals["annotate_evidence_purity"]
 
 
+def _postremediation_fixture() -> tuple[dict, dict]:
+    region = {"x": 467, "y": 723, "width": 23, "height": 28}
+    candidate = {
+        "elements": [{
+            "element_id": "V4-T-POST",
+            "classification": "INFERRED",
+            "element_type": "TEXT",
+            "visible_text": "10",
+            "region": dict(region),
+            "semantic_role": "visible_copy",
+            "ocr_consensus_text": "10",
+            "independent_redetection": False,
+            "redetection_status": "AMBIGUOUS",
+            "graphic_score": 0.05,
+        }],
+        "reader_uncertainties": [
+            {"element_id": "V4-T-POST", "code": "OCR_DISAGREEMENT", "region": dict(region)},
+            {"element_id": "V4-T-POST", "code": "TEXT_GROUPING_DISAGREEMENT", "region": dict(region)},
+            {"element_id": "OTHER", "code": "OCR_DISAGREEMENT", "region": {"x": 1, "y": 1, "width": 10, "height": 10}},
+        ],
+    }
+    state = {
+        "unsupported_short_text_regions": [{
+            "region": dict(region),
+            "source_category": "SHORT_TEXT_WITHOUT_MATERIAL_SUPPORT",
+        }]
+    }
+    return candidate, state
+
+
 def main() -> int:
     real_geometry = [
         {"text": "tu", "block_num": 6, "left": 67, "top": 324, "width": 38, "height": 28},
@@ -135,15 +164,9 @@ def main() -> int:
     observed = _run(real_geometry)
     observed_texts = _texts(observed)
     if observed_texts != ["tu deuda"]:
-        raise SystemExit(
-            "FAIL_EKB_P0_014_REAL_GEOMETRY: "
-            f"expected=['tu deuda'] observed={observed_texts!r} source={SOURCE_SHA}"
-        )
+        raise SystemExit(f"FAIL_EKB_P0_014_REAL_GEOMETRY:{observed_texts!r}")
     if observed[0].get("source_tokens") != ["tu", "deuda"]:
-        raise SystemExit(
-            "FAIL_EKB_P0_014_TOKEN_ORDER: "
-            f"observed={observed[0].get('source_tokens')!r}"
-        )
+        raise SystemExit(f"FAIL_EKB_P0_014_TOKEN_ORDER:{observed[0].get('source_tokens')!r}")
 
     far_gap = [
         {"text": "tu", "block_num": 6, "left": 67, "top": 324, "width": 38, "height": 28},
@@ -151,10 +174,7 @@ def main() -> int:
     ]
     negative_gap = _texts(_run(far_gap))
     if len(negative_gap) != 2 or set(negative_gap) != {"tu", "deuda"}:
-        raise SystemExit(
-            "FAIL_EKB_P0_014_OVERMERGE_GAP: "
-            f"expected two separate units observed={negative_gap!r}"
-        )
+        raise SystemExit(f"FAIL_EKB_P0_014_OVERMERGE_GAP:{negative_gap!r}")
 
     different_baseline = [
         {"text": "tu", "block_num": 6, "left": 67, "top": 324, "width": 38, "height": 28},
@@ -162,10 +182,7 @@ def main() -> int:
     ]
     negative_baseline = _texts(_run(different_baseline))
     if len(negative_baseline) != 2 or set(negative_baseline) != {"tu", "deuda"}:
-        raise SystemExit(
-            "FAIL_EKB_P0_014_OVERMERGE_BASELINE: "
-            f"expected two separate units observed={negative_baseline!r}"
-        )
+        raise SystemExit(f"FAIL_EKB_P0_014_OVERMERGE_BASELINE:{negative_baseline!r}")
 
     compact_glyph = [
         {"text": "e", "block_num": 6, "left": 67, "top": 324, "width": 18, "height": 18},
@@ -173,10 +190,7 @@ def main() -> int:
     ]
     negative_glyph = _texts(_run(compact_glyph))
     if len(negative_glyph) != 2 or set(negative_glyph) != {"e", "correo"}:
-        raise SystemExit(
-            "FAIL_EKB_P0_014_GLYPH_GUARD: "
-            f"expected compact glyph to remain separate observed={negative_glyph!r}"
-        )
+        raise SystemExit(f"FAIL_EKB_P0_014_GLYPH_GUARD:{negative_glyph!r}")
 
     glyph_output = _run_full_reader_uncertainty_case("e", width=18, height=18)
     glyph_elements = [item for item in glyph_output["elements"] if item.get("element_id", "").startswith("V4-T-")]
@@ -194,15 +208,30 @@ def main() -> int:
     if text_codes.count("OCR_DISAGREEMENT") != 1 or text_codes.count("TEXT_GROUPING_DISAGREEMENT") != 1:
         raise SystemExit(f"FAIL_EKB_P0_020_TEXT_UNCERTAINTY_LOST:{text_codes!r}")
 
+    candidate, state = _postremediation_fixture()
+    remediated = rerun_support._apply_remediation_state(candidate, state)
+    remediated_element = remediated["elements"][0]
+    if remediated_element.get("element_type") != "ICON_OR_GLYPH" or remediated_element.get("visible_text") is not None:
+        raise SystemExit(f"FAIL_EKB_P0_020_POST_REMEDIATION_CLASSIFICATION:{remediated_element!r}")
+    remaining = [(u.get("element_id"), u.get("code")) for u in remediated.get("reader_uncertainties") or []]
+    if ("V4-T-POST", "OCR_DISAGREEMENT") in remaining or ("V4-T-POST", "TEXT_GROUPING_DISAGREEMENT") in remaining:
+        raise SystemExit(f"FAIL_EKB_P0_020_POST_REMEDIATION_STALE_TEXT_DEBT:{remaining!r}")
+    if ("OTHER", "OCR_DISAGREEMENT") not in remaining:
+        raise SystemExit(f"FAIL_EKB_P0_020_POST_REMEDIATION_UNRELATED_DEBT_LOST:{remaining!r}")
+    remediation_codes = [u.get("code") for u in remediated.get("uncertainties") or []]
+    if remediation_codes.count("UNSUPPORTED_SHORT_TEXT_RECLASSIFIED") != 1:
+        raise SystemExit(f"FAIL_EKB_P0_020_POST_REMEDIATION_TRACE_LOST:{remediation_codes!r}")
+
     reader_path = Path(reader.__file__).resolve()
-    reader_file_sha256 = hashlib.sha256(reader_path.read_bytes()).hexdigest()
+    support_path = Path(rerun_support.__file__).resolve()
     print(json.dumps({
         "result": "PASS",
         "ekb_code": "EKB-P0-014",
         "ekb_codes": ["EKB-P0-014", "EKB-P0-020"],
         "classification_ekb_code": "EKB-P0-020",
         "source_sha256": SOURCE_SHA,
-        "reader_file_sha256": reader_file_sha256,
+        "reader_file_sha256": hashlib.sha256(reader_path.read_bytes()).hexdigest(),
+        "rerun_support_file_sha256": hashlib.sha256(support_path.read_bytes()).hexdigest(),
         "real_geometry_recomposed": True,
         "token_order_left_to_right": True,
         "far_gap_remains_separate": True,
@@ -210,8 +239,11 @@ def main() -> int:
         "compact_glyph_remains_separate": True,
         "glyph_false_text_uncertainty_suppressed": True,
         "genuine_text_uncertainty_preserved": True,
+        "postremediation_stale_text_uncertainty_suppressed": True,
+        "postremediation_trace_preserved": True,
+        "unrelated_reader_uncertainty_preserved": True,
         "producer": "p0_full_reader_v4.ocr_lines",
-        "classification_producer": "p0_full_reader_v4",
+        "classification_producer": "p0_full_reader_v4+p0_visual_real_rerun_support_v4",
         "production_authorized": False,
     }, sort_keys=True))
     return 0
