@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      HF_HOME: ${{ runner.temp }}/hf
+      HF_HOME: /tmp/lf-p0-hf
       TOKENIZERS_PARALLELISM: "false"
       PYTHONUNBUFFERED: "1"
 
@@ -33,7 +33,7 @@ jobs:
       - name: Cache pinned Hugging Face assets
         uses: actions/cache@v4
         with:
-          path: ${{ env.HF_HOME }}
+          path: /tmp/lf-p0-hf
           key: omniparser-icon-caption-f69bfad5-florence-386f84a8
 
       - name: Install pinned CPU inference dependencies
