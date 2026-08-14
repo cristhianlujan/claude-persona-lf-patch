@@ -3,8 +3,9 @@
 
 All governed target slices are single-line. Reconstruct them left-to-right so
 minor OCR baseline jitter cannot reorder words and bias either engine. Target
-ROIs exclude adjacent non-text UI controls. Reconciliation is baseline +
-challenger: cross-engine confidence scores are never treated as calibrated.
+ROIs exclude adjacent non-text UI controls and span the same semantic unit for
+word-level and line-level OCR. Reconciliation is baseline + challenger:
+cross-engine confidence scores are never treated as calibrated.
 """
 from __future__ import annotations
 
@@ -50,7 +51,8 @@ for target in v1.SLICES:
         target["bbox"] = [670, 558, 34, 28]
         target["expected"] = "+51"
     elif target["id"] == "privacy_link":
-        target["expected"] = "los Términos y Condiciones y la Política de Privacidad."
+        target["bbox"] = [655, 640, 470, 25]
+        target["expected"] = "He leído y acepto los Términos y Condiciones y la Política de Privacidad."
 
 v1._slice_text = single_line_slice_text
 v1._reconcile = conservative_reconcile
