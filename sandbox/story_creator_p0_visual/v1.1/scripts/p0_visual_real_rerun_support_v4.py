@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import cv2,pytesseract
 from p0_full_reader_v4 import full_reader
+from p0_icon_structural_roles_v1 import reconcile_icon_structural_roles
 from p0_independent_omission_sweep_v4 import run_independent_omission_sweep
 from p0_visual_graders_v4 import run_all
 TRACE={'readers':[],'grader_runs':[],'omission_sweeps':[],'remediations':[],'targeted':[]}
@@ -43,7 +44,7 @@ def _apply_remediation_state(candidate,state):
  out['uncertainties']=uncertainties
  return out
 def traced_reader(path,ctx):
- c=full_reader(path,ctx);c=_apply_remediation_state(c,ctx.get('remediation_state') or {});TRACE['readers'].append(copy.deepcopy(c));return c
+ c=full_reader(path,ctx);c=_apply_remediation_state(c,ctx.get('remediation_state') or {});c=reconcile_icon_structural_roles(c);TRACE['readers'].append(copy.deepcopy(c));return c
 def remediator(candidate,findings,state):
  actions=[];seen=set();state=dict(state);state['strict_mode']=True
  suppressed=_dedupe_regions(state.get('unsupported_short_text_regions') or [])
