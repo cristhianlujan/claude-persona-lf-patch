@@ -44,14 +44,9 @@ jobs:
             torch==2.5.1+cpu torchvision==0.20.1+cpu \
             --index-url https://download.pytorch.org/whl/cpu
           python -m pip install --disable-pip-version-check \
-            transformers==4.46.1 \
-            huggingface_hub==0.26.2 \
-            safetensors==0.4.5 \
-            einops==0.8.0 \
-            accelerate==1.1.1 \
-            numpy==1.26.4 \
-            opencv-python-headless==4.10.0.84 \
-            pillow==11.0.0
+            transformers==4.46.1 huggingface_hub==0.26.2 safetensors==0.4.5 \
+            einops==0.8.0 accelerate==1.1.1 numpy==1.26.4 \
+            opencv-python-headless==4.10.0.84 pillow==11.0.0
           python -m pip install --disable-pip-version-check --no-deps timm==1.0.11
           python - <<'PY'
           import torch, torchvision
@@ -61,7 +56,7 @@ jobs:
           print('PASS_ICON_CPU_RUNTIME_PIN')
           PY
 
-      - name: Fetch governed source from Supabase read-only
+      - name: Fetch governed source and exact-main packet from Supabase read-only
         env:
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
@@ -69,88 +64,72 @@ jobs:
           SOURCE_EVIDENCE_OBJECT_ID: be7fcf20-5f83-46d4-be0e-c80dc3ceed7c
           SOURCE_SHA256: e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7
           SOURCE_BYTES: "1384686"
+          PACKET_EVIDENCE_OBJECT_ID: 6684ff30-08a6-4b0c-aae5-4525908d4213
+          PACKET_SHA256: 64b518a6f36164f27db3ca8797fb588f249841c762cdaf0c136638f126b39e54
+          PACKET_BYTES: "1236524"
         run: |
           set -euo pipefail
           test -n "${PGPASSWORD:-}"
-          export PGHOST="$SUPABASE_POOLER_HOST"
-          export PGPORT=5432
-          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
-          export PGDATABASE=postgres
-          export PGSSLMODE=require
-          SOURCE_HEX="$RUNNER_TEMP/lf-p0-icon-source.hex"
-          SOURCE_PATH="$RUNNER_TEMP/lf-p0-icon-source.png"
-          docker run --rm \
-            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
-            postgres:17.6 psql -X -v ON_ERROR_STOP=1 -At \
-            -c "select encode(content,'hex') from private.lf_p0_review_evidence_objects_v1 where evidence_object_id='${SOURCE_EVIDENCE_OBJECT_ID}'::uuid and object_role='SOURCE_IMAGE' limit 1" \
-            > "$SOURCE_HEX"
-          test -s "$SOURCE_HEX"
-          tr -d '\n\r' < "$SOURCE_HEX" | xxd -r -p > "$SOURCE_PATH"
-          rm -f "$SOURCE_HEX"
-          python - "$SOURCE_PATH" "$SOURCE_SHA256" "$SOURCE_BYTES" <<'PY'
+          export PGHOST="$SUPABASE_POOLER_HOST" PGPORT=5432 PGUSER="postgres.${SUPABASE_PROJECT_ID}" PGDATABASE=postgres PGSSLMODE=require
+          fetch_object() {
+            local evidence_id="$1" role="$2" out="$3" expected_sha="$4" expected_bytes="$5"
+            local hex="$RUNNER_TEMP/$(basename "$out").hex"
+            docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+              postgres:17.6 psql -X -v ON_ERROR_STOP=1 -At \
+              -c "select encode(content,'hex') from private.lf_p0_review_evidence_objects_v1 where evidence_object_id='${evidence_id}'::uuid and object_role='${role}' limit 1" > "$hex"
+            test -s "$hex"
+            tr -d '\n\r' < "$hex" | xxd -r -p > "$out"
+            rm -f "$hex"
+            python - "$out" "$expected_sha" "$expected_bytes" <<'PY'
           import hashlib, pathlib, sys
-          path = pathlib.Path(sys.argv[1])
-          expected_sha = sys.argv[2]
-          expected_bytes = int(sys.argv[3])
-          data = path.read_bytes()
-          observed = hashlib.sha256(data).hexdigest()
-          if len(data) != expected_bytes or observed != expected_sha:
-              raise SystemExit(f'FAIL_ICON_SOURCE_BINDING:bytes={len(data)} sha={observed}')
-          print(f'PASS_ICON_SOURCE_BINDING:{len(data)}:{observed}')
+          path=pathlib.Path(sys.argv[1]); expected_sha=sys.argv[2]; expected_bytes=int(sys.argv[3]); data=path.read_bytes(); observed=hashlib.sha256(data).hexdigest()
+          if len(data)!=expected_bytes or observed!=expected_sha: raise SystemExit(f'FAIL_ICON_EVIDENCE_BINDING:{path.name}:bytes={len(data)} sha={observed}')
+          print(f'PASS_ICON_EVIDENCE_BINDING:{path.name}:{len(data)}:{observed}')
           PY
+          }
+          fetch_object "$SOURCE_EVIDENCE_OBJECT_ID" SOURCE_IMAGE "$RUNNER_TEMP/lf-p0-icon-source.png" "$SOURCE_SHA256" "$SOURCE_BYTES"
+          fetch_object "$PACKET_EVIDENCE_OBJECT_ID" PACKET_MANIFEST "$RUNNER_TEMP/lf-p0-icon-packet.json" "$PACKET_SHA256" "$PACKET_BYTES"
 
       - name: Run benchmark self-tests
         run: |
           python sandbox/lf_contract_gate_test/P0_ICON_OMNIPARSER_MICROBENCHMARK_V1.py --self-test
           python sandbox/lf_contract_gate_test/P0_ICON_CLIP_IDENTITY_MICROBENCHMARK_V1.py --self-test
+          python sandbox/lf_contract_gate_test/P0_ICON_ROLE_RECONCILIATION_V1.py --packet x --clip x --targets x --output x --self-test
 
       - name: Run source-bound OmniParser caption benchmark
         run: |
-          set -euo pipefail
           mkdir -p .audit-output
-          python sandbox/lf_contract_gate_test/P0_ICON_OMNIPARSER_MICROBENCHMARK_V1.py \
-            --source "$RUNNER_TEMP/lf-p0-icon-source.png" \
-            --output .audit-output/omniparser-icon-microbenchmark.json
+          python sandbox/lf_contract_gate_test/P0_ICON_OMNIPARSER_MICROBENCHMARK_V1.py --source "$RUNNER_TEMP/lf-p0-icon-source.png" --output .audit-output/omniparser-icon-microbenchmark.json
 
       - name: Run source-bound CLIP identity benchmark
         run: |
-          set -euo pipefail
-          python sandbox/lf_contract_gate_test/P0_ICON_CLIP_IDENTITY_MICROBENCHMARK_V1.py \
-            --source "$RUNNER_TEMP/lf-p0-icon-source.png" \
-            --output .audit-output/clip-icon-identity-microbenchmark.json
-          rm -f "$RUNNER_TEMP/lf-p0-icon-source.png"
+          python sandbox/lf_contract_gate_test/P0_ICON_CLIP_IDENTITY_MICROBENCHMARK_V1.py --source "$RUNNER_TEMP/lf-p0-icon-source.png" --output .audit-output/clip-icon-identity-microbenchmark.json
+
+      - name: Run conservative role reconciliation benchmark
+        run: |
+          python sandbox/lf_contract_gate_test/P0_ICON_ROLE_RECONCILIATION_V1.py \
+            --packet "$RUNNER_TEMP/lf-p0-icon-packet.json" \
+            --clip .audit-output/clip-icon-identity-microbenchmark.json \
+            --targets sandbox/lf_contract_gate_test/evidence/OMNIPARSER_ICON_TARGETS_20260814.json \
+            --output .audit-output/icon-role-reconciliation.json
+          rm -f "$RUNNER_TEMP/lf-p0-icon-source.png" "$RUNNER_TEMP/lf-p0-icon-packet.json"
 
       - name: Publish non-secret summary
         if: always()
         run: |
           python - <<'PY'
           import json, os, pathlib
-          summary = pathlib.Path(os.environ['GITHUB_STEP_SUMMARY'])
-          omni_path = pathlib.Path('.audit-output/omniparser-icon-microbenchmark.json')
-          clip_path = pathlib.Path('.audit-output/clip-icon-identity-microbenchmark.json')
-          lines = ['### P0 icon semantic microbenchmarks']
-          if omni_path.is_file():
-              omni = json.loads(omni_path.read_text(encoding='utf-8'))['metrics']
-              lines += [
-                  f"- OmniParser exact-crop identity matches: `{omni['identity_family_match_count']}/18`",
-                  f"- OmniParser safe policy resolutions: `{omni['safe_policy_resolution_supported_count']}/18`",
-              ]
-          else:
-              lines.append('- OmniParser: `NO_RESULT`')
-          if clip_path.is_file():
-              clip = json.loads(clip_path.read_text(encoding='utf-8'))['metrics']
-              lines += [
-                  f"- CLIP top-1 identity correct: `{clip['top1_identity_correct_count']}/18`",
-                  f"- CLIP expected in top-2: `{clip['expected_in_top2_count']}/18`",
-              ]
-          else:
-              lines.append('- CLIP: `NO_RESULT`')
-          lines += [
-              '- interaction functions confirmed from pixels: `0`',
-              '- real corpus / P0-5 credit: `0`',
-              '- production authorized: `false`',
+          summary=pathlib.Path(os.environ['GITHUB_STEP_SUMMARY']); lines=['### P0 icon semantic microbenchmarks']
+          specs=[
+            ('.audit-output/omniparser-icon-microbenchmark.json', lambda m:f"- OmniParser identity matches: `{m['identity_family_match_count']}/18`"),
+            ('.audit-output/clip-icon-identity-microbenchmark.json', lambda m:f"- CLIP top-1 identity correct: `{m['top1_identity_correct_count']}/18`"),
+            ('.audit-output/icon-role-reconciliation.json', lambda m:f"- conservative role resolver: `{m['icon_uncertainties_before']}→{m['candidate_icon_uncertainties_remaining']}` (`{m['candidate_reduction_rate']:.2%}` reduction)"),
           ]
-          summary.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          for p,fmt in specs:
+            path=pathlib.Path(p)
+            lines.append(fmt(json.loads(path.read_text(encoding='utf-8'))['metrics']) if path.is_file() else f'- {path.name}: `NO_RESULT`')
+          lines += ['- interaction functions confirmed from pixels: `0`','- real corpus / P0-5 credit: `0`','- production authorized: `false`']
+          summary.write_text('\n'.join(lines)+'\n',encoding='utf-8')
           PY
 
       - name: Upload benchmark evidence
@@ -163,5 +142,6 @@ jobs:
             .audit-output/icon-crops
             .audit-output/clip-icon-identity-microbenchmark.json
             .audit-output/clip-icon-crops
+            .audit-output/icon-role-reconciliation.json
           if-no-files-found: warn
           retention-days: 7
