@@ -33,7 +33,7 @@
     {"path":"evals/p0_visual_durable_state_v4.py","git_blob_sha":"b6f748ebed7490015398834865e968ac7e8d5a0b"},
     {"path":"evals/p0_visual_forward_adversarial_v4.py","git_blob_sha":"672877effca9309d5b69d078d9bec0af7d013b4e"},
     {"path":"evals/p0_visual_grader_coverage_v4.py","git_blob_sha":"1c901b7768276010b9b1e9d44bd94b1c32b8f0b6"},
-    {"path":"evals/p0_visual_known_failure_regression_v4.py","git_blob_sha":"97be49129b28714793d2efd5bba8e8508eb2aa11"},
+    {"path":"evals/p0_visual_known_failure_regression_v4.py","git_blob_sha":"4e9e7a3c46eee7e18a5c0eed86c164f4a7ed9234"},
     {"path":"evals/p0_visual_real_rerun_v4.py","git_blob_sha":"2cc41fefd2dae2918692ce8edbc19cd2f6ff9f3b"},
     {"path":"evidence/r3/LOTE-AUD-P0V4-R3-01-pre-remediation-invariant-diagnostic.json","git_blob_sha":"9bb736ee7203887de19a894ed9940eb5b4bbfbbd"},
     {"path":"evidence/r3/LOTE-AUD-P0V4-R3-02-real-rerun-receipt.json","git_blob_sha":"b7065ac8591114beba2693b13c697035ba25d85f"},
