@@ -82,7 +82,7 @@ jobs:
           docker run --rm \
             -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
             postgres:17.6 psql -X -v ON_ERROR_STOP=1 -At \
-            -c "select encode(content,'hex') from private.lf_p0_review_evidence_objects_v1 where evidence_object_id='${SOURCE_EVIDENCE_OBJECT_ID}'::uuid and object_role='SOURCE_SCREEN' limit 1" \
+            -c "select encode(content,'hex') from private.lf_p0_review_evidence_objects_v1 where evidence_object_id='${SOURCE_EVIDENCE_OBJECT_ID}'::uuid and object_role='SOURCE_IMAGE' limit 1" \
             > "$SOURCE_HEX"
           test -s "$SOURCE_HEX"
           tr -d '\n\r' < "$SOURCE_HEX" | xxd -r -p > "$SOURCE_PATH"
