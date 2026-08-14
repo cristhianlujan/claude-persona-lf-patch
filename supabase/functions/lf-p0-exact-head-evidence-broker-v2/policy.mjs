@@ -1,6 +1,6 @@
 export const REPOSITORY = "cristhianlujan/claude-persona-lf-patch";
-export const WORKFLOW_NAME = "P0 Exact-HEAD Real-Source Evidence";
-export const WORKFLOW_PATH = ".github/workflows/p0-exact-head-real-source.yml";
+export const WORKFLOW_NAME = "lf-contract-check";
+export const WORKFLOW_PATH = ".github/workflows/lf-contract-check.yml";
 export const SOURCE_EVIDENCE_OBJECT_ID = "be7fcf20-5f83-46d4-be0e-c80dc3ceed7c";
 export const SOURCE_SHA256 = "e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7";
 export const SOURCE_BYTES = 1384686;
