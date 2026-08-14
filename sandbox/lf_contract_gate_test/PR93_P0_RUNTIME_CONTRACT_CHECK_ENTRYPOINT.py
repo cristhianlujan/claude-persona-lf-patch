@@ -210,6 +210,7 @@ def _run_human_review_convergence_contract() -> None:
     )
     if completed.returncode != 0:
         raise SystemExit(completed.returncode)
+    print("PASS_P0_HUMAN_REVIEW_CONVERGENCE_GATE=1/1")
 
 
 def _run_exact_head_real_source_if_required() -> None:
