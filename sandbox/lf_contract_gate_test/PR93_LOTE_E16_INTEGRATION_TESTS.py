@@ -78,6 +78,26 @@ def main() -> int:
         raise SystemExit(f"EKB executable binding evidence invalid: {ekb_binding_result}")
     print("PASS_EKB_EXECUTABLE_BINDING_GATE=3/3")
 
+    causal = run(
+        [sys.executable, "sandbox/lf_contract_gate_test/P0_OCR_CAUSAL_REGRESSION_V1.py"],
+        source,
+    )
+    if causal.returncode != 0:
+        raise SystemExit(f"P0 OCR causal regression failed ({causal.returncode}):\n{causal.stdout}")
+    try:
+        causal_result = json.loads(causal.stdout.strip().splitlines()[-1])
+    except (IndexError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"P0 OCR causal regression emitted invalid evidence: {exc}")
+    if (
+        causal_result.get("result") != "PASS"
+        or causal_result.get("ekb_code") != "EKB-P0-014"
+        or causal_result.get("real_geometry_recomposed") is not True
+        or causal_result.get("far_gap_remains_separate") is not True
+        or causal_result.get("production_authorized") is not False
+    ):
+        raise SystemExit(f"P0 OCR causal regression evidence invalid: {causal_result}")
+    print("PASS_P0_OCR_CAUSAL_REGRESSION=2/2")
+
     workflow = (source / ".github/workflows/lf-contract-check.yml").read_text(encoding="utf-8")
     required_workflow_terms = (
         "actions: read",
