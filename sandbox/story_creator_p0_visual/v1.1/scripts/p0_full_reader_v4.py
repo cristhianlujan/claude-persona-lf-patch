@@ -55,6 +55,113 @@ def overlap_primary(a: dict, b: dict) -> float:
     return intersection / max(1, a["width"] * a["height"])
 
 
+def _compact_nonword_segment(item: dict) -> bool:
+    """Protect compact symbol-like OCR without treating short alphabetic words as icons."""
+    text = str(item.get("text") or "").strip()
+    region = item.get("region") or {}
+    width = int(region.get("width", 0))
+    height = int(region.get("height", 0))
+    aspect = width / max(1, height)
+    compact = len(text) <= 4 and 0.65 <= aspect <= 1.55 and max(width, height) <= 32
+    if not compact:
+        return False
+    return len(text) <= 1 or not text.isalpha()
+
+
+def _same_visual_text_line(left_item: dict, right_item: dict) -> bool:
+    left_item, right_item = sorted(
+        (left_item, right_item),
+        key=lambda candidate: (int(candidate["region"]["x"]), int(candidate["region"]["y"])),
+    )
+    left = left_item["region"]
+    right = right_item["region"]
+    gap = int(right["x"]) - (int(left["x"]) + int(left["width"]))
+    min_height = max(1, min(int(left["height"]), int(right["height"])))
+    baseline_delta = abs(
+        (int(left["y"]) + int(left["height"]))
+        - (int(right["y"]) + int(right["height"]))
+    )
+    gap_limit = max(24, int(round(0.90 * min_height)))
+    baseline_limit = max(5, int(round(0.35 * min_height)))
+    if _compact_nonword_segment(left_item) or _compact_nonword_segment(right_item):
+        return False
+    return (
+        0 <= gap <= gap_limit
+        and vertical_overlap_ratio(left, right) >= 0.65
+        and baseline_delta <= baseline_limit
+    )
+
+
+def _merge_component(component: list[dict]) -> dict:
+    component = sorted(
+        component,
+        key=lambda item: (int(item["region"]["x"]), int(item["region"]["y"])),
+    )
+    if len(component) == 1:
+        return component[0]
+    merged = dict(component[0])
+    token_count = sum(max(1, int(item.get("token_count") or 1)) for item in component)
+    merged["confidence"] = sum(
+        float(item.get("confidence") or 0.0) * max(1, int(item.get("token_count") or 1))
+        for item in component
+    ) / max(1, token_count)
+    merged["text"] = " ".join(str(item.get("text") or "").strip() for item in component).strip()
+    merged["region"] = bbox_union(item["region"] for item in component)
+    merged["token_count"] = token_count
+    for field in ("source_tokens", "source_token_ids", "source_token_regions"):
+        values = []
+        for item in component:
+            values.extend(list(item.get(field) or []))
+        merged[field] = values
+    line_keys: list[str] = []
+    for item in component:
+        for key in item.get("source_line_keys") or []:
+            if key not in line_keys:
+                line_keys.append(key)
+    merged["source_line_keys"] = line_keys
+    excluded: list[str] = []
+    for item in component:
+        for token_id in item.get("excluded_compact_token_ids") or []:
+            if token_id not in excluded:
+                excluded.append(token_id)
+    if excluded:
+        merged["excluded_compact_token_ids"] = excluded
+    merged["cross_line_merge_justification"] = "GEOMETRIC_GRAPH_CONNECTED_COMPONENT"
+    return merged
+
+
+def graph_reconcile_ocr_segments(items: list[dict]) -> list[dict]:
+    """Reconstruct visual text independently of OCR block/line partition topology."""
+    if len(items) <= 1:
+        return list(items)
+    adjacency: list[set[int]] = [set() for _ in items]
+    for left_index in range(len(items)):
+        for right_index in range(left_index + 1, len(items)):
+            if _same_visual_text_line(items[left_index], items[right_index]):
+                adjacency[left_index].add(right_index)
+                adjacency[right_index].add(left_index)
+    seen: set[int] = set()
+    merged: list[dict] = []
+    for start in range(len(items)):
+        if start in seen:
+            continue
+        seen.add(start)
+        stack = [start]
+        component: list[dict] = []
+        while stack:
+            index = stack.pop()
+            component.append(items[index])
+            for neighbor in adjacency[index]:
+                if neighbor not in seen:
+                    seen.add(neighbor)
+                    stack.append(neighbor)
+        merged.append(_merge_component(component))
+    return sorted(
+        merged,
+        key=lambda item: (int(item["region"]["y"]), int(item["region"]["x"])),
+    )
+
+
 def ocr_lines(image, psm: int) -> list[dict]:
     data = pytesseract.image_to_data(image, lang="spa", config=f"--psm {psm}", output_type=Output.DICT)
     grouped: dict[tuple[int, int, int], list[dict]] = {}
@@ -116,57 +223,7 @@ def ocr_lines(image, psm: int) -> list[dict]:
                     "partition_boundary_before": "STRONG_GEOMETRIC_GAP" if segment_index > 1 else None,
                 }
             )
-    ordered = sorted(output, key=lambda item: (item["region"]["y"], item["region"]["x"]))
-    merged: list[dict] = []
-    for item in ordered:
-        matches: list[tuple[int, int, int]] = []
-        for index, existing in enumerate(merged):
-            left_item, right_item = sorted(
-                (existing, item), key=lambda candidate: (candidate["region"]["x"], candidate["region"]["y"])
-            )
-            left, right = left_item["region"], right_item["region"]
-            gap = int(right["x"]) - (int(left["x"]) + int(left["width"]))
-            baseline_delta = abs((left["y"] + left["height"]) - (right["y"] + right["height"]))
-            glyph_like = any(
-                len(str(candidate.get("text") or "").strip()) <= 4
-                and 0.65 <= candidate["region"]["width"] / max(1, candidate["region"]["height"]) <= 1.55
-                and max(candidate["region"]["width"], candidate["region"]["height"]) <= 32
-                for candidate in (existing, item)
-            )
-            contiguous = 0 <= gap <= 24 and vertical_overlap_ratio(left, right) >= 0.65 and baseline_delta <= 5
-            if contiguous and not glyph_like:
-                matches.append((gap, baseline_delta, index))
-        if not matches:
-            merged.append(item)
-            continue
-
-        _, _, index = min(matches)
-        existing = merged[index]
-        left_item, right_item = sorted(
-            (existing, item), key=lambda candidate: (candidate["region"]["x"], candidate["region"]["y"])
-        )
-        left_text, right_text = left_item["text"], right_item["text"]
-        left_region, right_region = dict(left_item["region"]), dict(right_item["region"])
-        left_tokens, right_tokens = list(left_item["source_tokens"]), list(right_item["source_tokens"])
-        left_ids, right_ids = list(left_item["source_token_ids"]), list(right_item["source_token_ids"])
-        left_regions = list(left_item["source_token_regions"])
-        right_regions = list(right_item["source_token_regions"])
-        left_keys, right_keys = list(left_item["source_line_keys"]), list(right_item["source_line_keys"])
-        existing_tokens = int(existing["token_count"])
-        item_tokens = int(item["token_count"])
-        total_tokens = existing_tokens + item_tokens
-        existing["confidence"] = (
-            existing["confidence"] * existing_tokens + item["confidence"] * item_tokens
-        ) / total_tokens
-        existing["text"] = f"{left_text} {right_text}"
-        existing["region"] = bbox_union((left_region, right_region))
-        existing["token_count"] = total_tokens
-        existing["source_tokens"] = left_tokens + right_tokens
-        existing["source_token_ids"] = left_ids + right_ids
-        existing["source_token_regions"] = left_regions + right_regions
-        existing["source_line_keys"] = left_keys + right_keys
-        existing["cross_line_merge_justification"] = "CONTIGUOUS_BASELINE_NO_CONTROL_BOUNDARY"
-    return sorted(merged, key=lambda item: (item["region"]["y"], item["region"]["x"]))
+    return graph_reconcile_ocr_segments(output)
 
 
 def overlapping_lines(primary: dict, alternatives: list[dict]) -> list[dict]:

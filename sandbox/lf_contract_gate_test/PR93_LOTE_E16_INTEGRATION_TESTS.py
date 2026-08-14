@@ -101,6 +101,31 @@ def main() -> int:
     print("PASS_P0_OCR_CAUSAL_REGRESSION=4/4")
     print(f"P0_OCR_READER_SHA256={causal_result.get('reader_file_sha256')}")
 
+    family = run(
+        [sys.executable, "sandbox/lf_contract_gate_test/P0_TEXT_GROUP_FAMILY_GENERALIZATION_V1.py"],
+        source,
+    )
+    if family.returncode != 0:
+        raise SystemExit(f"P0 text-group family generalization failed ({family.returncode}):\n{family.stdout}")
+    try:
+        family_result = json.loads(family.stdout.strip().splitlines()[-1])
+    except (IndexError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"P0 text-group family gate emitted invalid evidence: {exc}")
+    if (
+        family_result.get("result") != "PASS"
+        or family_result.get("family") != "EKB-P0-014_TEXT_GROUPING"
+        or family_result.get("architecture") != "GEOMETRIC_COMPATIBILITY_GRAPH_CONNECTED_COMPONENTS"
+        or family_result.get("real_topology_invariance") != "600/600"
+        or family_result.get("synthetic_family") != "1600/1600"
+        or family_result.get("negative_guards") != "600/600"
+        or family_result.get("transitive_bridge") != "500/500"
+        or family_result.get("screen_literals_in_production_logic") is not False
+        or family_result.get("fixed_source_coordinates_in_production_logic") is not False
+        or family_result.get("production_authorized") is not False
+    ):
+        raise SystemExit(f"P0 text-group family evidence invalid: {family_result}")
+    print("PASS_P0_TEXT_GROUP_FAMILY_GENERALIZATION=3300/3300")
+
     workflow = (source / ".github/workflows/lf-contract-check.yml").read_text(encoding="utf-8")
     required_workflow_terms = (
         "actions: read",
