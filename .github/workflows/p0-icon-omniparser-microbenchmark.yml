@@ -1,4 +1,4 @@
-name: P0 Icon OmniParser Microbenchmark
+name: P0 Icon Semantic Microbenchmarks
 
 on:
   workflow_dispatch:
@@ -34,7 +34,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/lf-p0-hf
-          key: omniparser-icon-caption-f69bfad5-florence-386f84a8
+          key: icon-semantic-omniparser-f69bfad5-clip-c7244be8
 
       - name: Install pinned CPU inference dependencies
         run: |
@@ -99,9 +99,10 @@ jobs:
           print(f'PASS_ICON_SOURCE_BINDING:{len(data)}:{observed}')
           PY
 
-      - name: Run evaluator self-test
+      - name: Run benchmark self-tests
         run: |
           python sandbox/lf_contract_gate_test/P0_ICON_OMNIPARSER_MICROBENCHMARK_V1.py --self-test
+          python sandbox/lf_contract_gate_test/P0_ICON_CLIP_IDENTITY_MICROBENCHMARK_V1.py --self-test
 
       - name: Run source-bound OmniParser caption benchmark
         run: |
@@ -110,6 +111,13 @@ jobs:
           python sandbox/lf_contract_gate_test/P0_ICON_OMNIPARSER_MICROBENCHMARK_V1.py \
             --source "$RUNNER_TEMP/lf-p0-icon-source.png" \
             --output .audit-output/omniparser-icon-microbenchmark.json
+
+      - name: Run source-bound CLIP identity benchmark
+        run: |
+          set -euo pipefail
+          python sandbox/lf_contract_gate_test/P0_ICON_CLIP_IDENTITY_MICROBENCHMARK_V1.py \
+            --source "$RUNNER_TEMP/lf-p0-icon-source.png" \
+            --output .audit-output/clip-icon-identity-microbenchmark.json
           rm -f "$RUNNER_TEMP/lf-p0-icon-source.png"
 
       - name: Publish non-secret summary
@@ -117,33 +125,43 @@ jobs:
         run: |
           python - <<'PY'
           import json, os, pathlib
-          path = pathlib.Path('.audit-output/omniparser-icon-microbenchmark.json')
           summary = pathlib.Path(os.environ['GITHUB_STEP_SUMMARY'])
-          if not path.is_file():
-              summary.write_text('### OmniParser icon benchmark\n- result: `NO_RESULT`\n', encoding='utf-8')
-              raise SystemExit(0)
-          data = json.loads(path.read_text(encoding='utf-8'))
-          m = data['metrics']
-          summary.write_text(
-              '### OmniParser icon benchmark\n'
-              f"- targets: `{m['target_count']}`\n"
-              f"- identity matches: `{m['identity_family_match_count']}`\n"
-              f"- safe policy resolutions: `{m['safe_policy_resolution_supported_count']}`\n"
-              f"- icon observations remaining: `{m['icon_observations_remaining_if_policy_adopted']}`\n"
-              '- interaction functions confirmed from pixels: `0`\n'
-              '- real corpus / P0-5 credit: `0`\n'
-              '- production authorized: `false`\n',
-              encoding='utf-8',
-          )
+          omni_path = pathlib.Path('.audit-output/omniparser-icon-microbenchmark.json')
+          clip_path = pathlib.Path('.audit-output/clip-icon-identity-microbenchmark.json')
+          lines = ['### P0 icon semantic microbenchmarks']
+          if omni_path.is_file():
+              omni = json.loads(omni_path.read_text(encoding='utf-8'))['metrics']
+              lines += [
+                  f"- OmniParser exact-crop identity matches: `{omni['identity_family_match_count']}/18`",
+                  f"- OmniParser safe policy resolutions: `{omni['safe_policy_resolution_supported_count']}/18`",
+              ]
+          else:
+              lines.append('- OmniParser: `NO_RESULT`')
+          if clip_path.is_file():
+              clip = json.loads(clip_path.read_text(encoding='utf-8'))['metrics']
+              lines += [
+                  f"- CLIP top-1 identity correct: `{clip['top1_identity_correct_count']}/18`",
+                  f"- CLIP expected in top-2: `{clip['expected_in_top2_count']}/18`",
+              ]
+          else:
+              lines.append('- CLIP: `NO_RESULT`')
+          lines += [
+              '- interaction functions confirmed from pixels: `0`',
+              '- real corpus / P0-5 credit: `0`',
+              '- production authorized: `false`',
+          ]
+          summary.write_text('\n'.join(lines) + '\n', encoding='utf-8')
           PY
 
       - name: Upload benchmark evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: p0-icon-omniparser-${{ github.run_id }}
+          name: p0-icon-semantic-${{ github.run_id }}
           path: |
             .audit-output/omniparser-icon-microbenchmark.json
             .audit-output/icon-crops
+            .audit-output/clip-icon-identity-microbenchmark.json
+            .audit-output/clip-icon-crops
           if-no-files-found: warn
           retention-days: 7
