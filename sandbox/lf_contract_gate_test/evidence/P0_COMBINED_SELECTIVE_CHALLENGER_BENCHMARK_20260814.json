@@ -1,0 +1,154 @@
+{
+  "schema_version": "p0-combined-selective-challenger-evidence/v1",
+  "evidence_class": "SOURCE_BOUND_TECHNICAL_DIAGNOSTIC_NOT_HUMAN_ADJUDICATION",
+  "repository": "cristhianlujan/claude-persona-lf-patch",
+  "baseline_main_sha": "714aaf959c0cbfb951075f4394c45cdfb4d0bf89",
+  "experimental_head_sha": "e7ce871d9932aa9290d136403ce5161612667132",
+  "source": {
+    "evidence_object_id": "be7fcf20-5f83-46d4-be0e-c80dc3ceed7c",
+    "sha256": "e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7",
+    "bytes": 1384686,
+    "dimensions": [1536, 1024]
+  },
+  "baseline_packet": {
+    "evidence_object_id": "2319ae4d-5f22-4ff9-850d-23b4697cc94c",
+    "sha256": "089ac58eede164d1e6fcd42070373d2abf482e5a4cc18d163ad9189a7015c781",
+    "bytes": 1237214,
+    "pass_id": "P-03",
+    "observation_count": 21,
+    "icon_observations": 13,
+    "text_observations": 8
+  },
+  "execution": {
+    "github_run_id": 31843502338,
+    "workflow_name": "P0 Combined Selective Challenger Benchmark",
+    "benchmark_conclusion": "success",
+    "artifact_id": 9235173497,
+    "artifact_name": "p0-combined-selective-31843502338",
+    "artifact_digest": "sha256:202a98857d436c6fb6bc7cbb2785610b256ced5b2d7c9ed51604486f3575d929",
+    "result_json_sha256": "6ff3b16a2db20ad0fc777f68ac169bc10ae94baa824df737fd7e0d9428afbe27"
+  },
+  "clip_identity_lane": {
+    "frozen_reference_commit": "00cd418d5137d2d0520ecf25b9422ca056583004",
+    "model_repo": "openai/clip-vit-base-patch32",
+    "model_revision": "c7244be81152024ce0e99ac8d2e373a8953d9f9a",
+    "model_weight": "model.safetensors",
+    "model_weight_sha256": "99d28a652e6ec46629ab7047a0ac82c69b1fe11e0ce672c43af65d3a9a3fc05d",
+    "historical_identity_metrics_reproduced": {
+      "targets": 18,
+      "top1_correct": 14,
+      "top1_accuracy": 0.7777777777777778,
+      "expected_in_top2": 15,
+      "top2_rate": 0.8333333333333334
+    },
+    "current_observations_before": 13,
+    "resolved_by_identity_plus_context": 11,
+    "remaining": 2,
+    "technical_false_positive": 0,
+    "interaction_functions_confirmed": 0
+  },
+  "paddle_text_lane": {
+    "paddle_version": "3.2.0",
+    "paddleocr_version": "3.5.0",
+    "ocr_version": "PP-OCRv5",
+    "lang": "es",
+    "device": "cpu",
+    "model_source_pinning_complete": false,
+    "observations_before": 8,
+    "resolved": 7,
+    "remaining": 1,
+    "resolved_elements": [
+      {
+        "element_id": "V4-T-0022",
+        "baseline_text": "55 12345678",
+        "challenger_text": "Ej. 12345678",
+        "resolved_codes": ["OCR_DISAGREEMENT"],
+        "reason": "STRUCTURAL_DOCUMENT_CORRECTION"
+      },
+      {
+        "element_id": "V4-T-0028",
+        "baseline_text": "OD +5s1v 8j.987654321",
+        "challenger_text": "0 Ej. 987 654 321 +51",
+        "resolved_codes": ["OCR_DISAGREEMENT", "TEXT_GROUPING_DISAGREEMENT"],
+        "reason": "STRUCTURAL_PHONE_BUNDLE_CORRECTION_AND_INDEPENDENT_GROUPING_CORROBORATION",
+        "caution": "The challenger still emitted an extra token '0'; this benchmark resolves only the pre-existing structural/grouping observations and does not treat the full challenger string as authoritative truth."
+      },
+      {
+        "element_id": "V4-T-0029",
+        "baseline_text": "E Ej miguelecorreo.com",
+        "challenger_text": "Ej. miguel@correo.com",
+        "resolved_codes": ["OCR_DISAGREEMENT"],
+        "reason": "STRUCTURAL_EMAIL_CORRECTION"
+      },
+      {
+        "element_id": "V4-T-0039",
+        "baseline_text": "consultar información relacionada con mis obligaciones y mostrarme",
+        "challenger_text": "consultar información relacionada con mis obligaciones y mostrarme",
+        "resolved_codes": ["OCR_DISAGREEMENT"],
+        "reason": "EXACT_CROSS_FAMILY_AGREEMENT"
+      },
+      {
+        "element_id": "V4-T-0047",
+        "baseline_text": "Verificar mi celular",
+        "challenger_text": "Verificar mi celular",
+        "resolved_codes": ["OCR_DISAGREEMENT", "TEXT_GROUPING_DISAGREEMENT"],
+        "reason": "EXACT_CROSS_FAMILY_AGREEMENT_AND_SINGLE_LINE_GROUPING_CORROBORATION"
+      }
+    ]
+  },
+  "combined_result": {
+    "resolved_count": 18,
+    "residual_count": 3,
+    "reduction_pct": 85.71,
+    "double_counted_observations": 0,
+    "interaction_functions_confirmed": 0,
+    "residual_observations": [
+      {
+        "element_id": "V4-I-0001",
+        "code": "ICON_FUNCTION_NOT_OBSERVABLE",
+        "reason": "CLIP top-1 was ARROW_RIGHT while the technical identity reference is BRAND_MARK; conservative role reconciler abstained."
+      },
+      {
+        "element_id": "V4-I-0003",
+        "code": "ICON_FUNCTION_NOT_OBSERVABLE",
+        "reason": "HELP_QUESTION identity is recognized, but pixel evidence does not prove its independent interaction behavior."
+      },
+      {
+        "element_id": "V4-T-0037",
+        "code": "OCR_DISAGREEMENT",
+        "baseline_text": "Autorizo el tratamiento de mis datos personales para validar mi identidad,",
+        "challenger_text": "tratamiento de mis datos personales para validar mi identidad, Autorizo el t",
+        "reason": "Paddle was stable but changed order/fragmentation, so the observation remains unresolved."
+      }
+    ]
+  },
+  "governance": {
+    "same_screen_hypothesis_21_to_3_reproduced": true,
+    "governed_real_screen_count": 1,
+    "multi_screen_replication_complete": false,
+    "real_corpus_credit": 0,
+    "p0_5_credit": 0,
+    "holdout_accessed": false,
+    "runtime_promoted": false,
+    "production_authorized": false,
+    "cross_engine_confidence_comparison_used": false,
+    "authentic_human_adjudication_used": false,
+    "current_integrated_runtime_observation_count_remains": 21
+  },
+  "ci_scope_audit": {
+    "experimental_head_contract_run_id": 31843502211,
+    "experimental_head_contract_conclusion": "failure",
+    "failure_code": "FAIL_UNAUTHORIZED_GITHUB_PATH",
+    "failure_path": ".github/workflows/p0-combined-selective-challenger-benchmark.yml",
+    "semantic_benchmark_failed": false,
+    "remediation": "The experimental workflow transport is removed before PR. Governance allowlists are not widened. Durable evidence and benchmark code remain under sandbox paths and must pass the normal repository gate on the remediated head."
+  },
+  "next_replication_candidate": {
+    "status": "DISCOVERED_NOT_GOVERNED_NOT_COUNTED",
+    "drive_file_id": "1K7PdA_jOWMzwKTUkP7PGDQIWsNx6hbjI",
+    "name": "02_onboarding paso 2.png",
+    "sha256": "9f824b1d357ea0dd156046dfc6a410fe92f1942bb225223208602abbb7fb6560",
+    "bytes": 1664543,
+    "dimensions": [1536, 1024]
+  }
+}
