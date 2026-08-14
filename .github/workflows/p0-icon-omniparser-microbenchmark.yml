@@ -41,30 +41,76 @@ jobs:
           set -euo pipefail
           python -m pip install --disable-pip-version-check --upgrade pip
           python -m pip install --disable-pip-version-check \
-            torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
+            torch==2.5.1+cpu torchvision==0.20.1+cpu \
+            --index-url https://download.pytorch.org/whl/cpu
           python -m pip install --disable-pip-version-check \
             transformers==4.46.1 \
             huggingface_hub==0.26.2 \
             safetensors==0.4.5 \
-            timm==1.0.11 \
             einops==0.8.0 \
             accelerate==1.1.1 \
             numpy==1.26.4 \
             opencv-python-headless==4.10.0.84 \
             pillow==11.0.0
+          python -m pip install --disable-pip-version-check --no-deps timm==1.0.11
+          python - <<'PY'
+          import torch, torchvision
+          assert torch.__version__ == '2.5.1+cpu', torch.__version__
+          assert torchvision.__version__.startswith('0.20.1'), torchvision.__version__
+          assert not torch.cuda.is_available()
+          print('PASS_ICON_CPU_RUNTIME_PIN')
+          PY
+
+      - name: Fetch governed source from Supabase read-only
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+          SOURCE_EVIDENCE_OBJECT_ID: be7fcf20-5f83-46d4-be0e-c80dc3ceed7c
+          SOURCE_SHA256: e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7
+          SOURCE_BYTES: "1384686"
+        run: |
+          set -euo pipefail
+          test -n "${PGPASSWORD:-}"
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+          SOURCE_HEX="$RUNNER_TEMP/lf-p0-icon-source.hex"
+          SOURCE_PATH="$RUNNER_TEMP/lf-p0-icon-source.png"
+          docker run --rm \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            postgres:17.6 psql -X -v ON_ERROR_STOP=1 -At \
+            -c "select encode(content,'hex') from private.lf_p0_review_evidence_objects_v1 where evidence_object_id='${SOURCE_EVIDENCE_OBJECT_ID}'::uuid and object_role='SOURCE_SCREEN' limit 1" \
+            > "$SOURCE_HEX"
+          test -s "$SOURCE_HEX"
+          tr -d '\n\r' < "$SOURCE_HEX" | xxd -r -p > "$SOURCE_PATH"
+          rm -f "$SOURCE_HEX"
+          python - "$SOURCE_PATH" "$SOURCE_SHA256" "$SOURCE_BYTES" <<'PY'
+          import hashlib, pathlib, sys
+          path = pathlib.Path(sys.argv[1])
+          expected_sha = sys.argv[2]
+          expected_bytes = int(sys.argv[3])
+          data = path.read_bytes()
+          observed = hashlib.sha256(data).hexdigest()
+          if len(data) != expected_bytes or observed != expected_sha:
+              raise SystemExit(f'FAIL_ICON_SOURCE_BINDING:bytes={len(data)} sha={observed}')
+          print(f'PASS_ICON_SOURCE_BINDING:{len(data)}:{observed}')
+          PY
 
       - name: Run evaluator self-test
         run: |
           python sandbox/lf_contract_gate_test/P0_ICON_OMNIPARSER_MICROBENCHMARK_V1.py --self-test
 
       - name: Run source-bound OmniParser caption benchmark
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           mkdir -p .audit-output
           python sandbox/lf_contract_gate_test/P0_ICON_OMNIPARSER_MICROBENCHMARK_V1.py \
+            --source "$RUNNER_TEMP/lf-p0-icon-source.png" \
             --output .audit-output/omniparser-icon-microbenchmark.json
+          rm -f "$RUNNER_TEMP/lf-p0-icon-source.png"
 
       - name: Publish non-secret summary
         if: always()
