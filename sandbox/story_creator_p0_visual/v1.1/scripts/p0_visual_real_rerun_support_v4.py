@@ -13,8 +13,6 @@ def traced_sweep(source_path,expected_sha,candidate,*,execution_id):
 def traced_grader_runner(candidate,ctx):
  outs=run_all(candidate,ctx);TRACE['grader_runs'].append({'ctx':copy.deepcopy(ctx),'outputs':copy.deepcopy(outs)});return outs
 def make_grader_runner(source_path=None):return traced_grader_runner
-def traced_reader(path,ctx):
- c=full_reader(path,ctx);TRACE['readers'].append(copy.deepcopy(c));return c
 def _region_overlap(a,b):
  ax1,ay1=float(a.get('x',0)),float(a.get('y',0));ax2,ay2=ax1+float(a.get('width',0)),ay1+float(a.get('height',0))
  bx1,by1=float(b.get('x',0)),float(b.get('y',0));bx2,by2=bx1+float(b.get('width',0)),by1+float(b.get('height',0))
@@ -27,6 +25,23 @@ def _dedupe_regions(items):
   row={'region':{k:int(r.get(k,0)) for k in ('x','y','width','height')},'source_category':str(item.get('source_category') or 'SHORT_TEXT_WITHOUT_MATERIAL_SUPPORT') if isinstance(item,dict) else 'SHORT_TEXT_WITHOUT_MATERIAL_SUPPORT'}
   if not any(_region_overlap(row['region'],existing['region'])>=.80 for existing in out):out.append(row)
  return out
+def _apply_remediation_state(candidate,state):
+ suppressed=_dedupe_regions((state or {}).get('unsupported_short_text_regions') or [])
+ if not suppressed:return candidate
+ out=copy.deepcopy(candidate);uncertainties=list(out.get('uncertainties') or [])
+ for element in out.get('elements',[]):
+  if element.get('classification')!='INFERRED' or element.get('element_type')!='TEXT':continue
+  text=str(element.get('visible_text') or '').strip();clean=''.join(ch for ch in text if ch.isalnum())
+  if not (2<=len(clean)<=3 and clean.isdigit()):continue
+  region=element.get('region') or {};matched=next((item for item in suppressed if _region_overlap(region,item['region'])>=.35),None)
+  if matched is None:continue
+  element['remediation_disposition']={'code':'RECLASSIFIED_UNSUPPORTED_SHORT_TEXT','source_category':matched['source_category'],'original_visible_text':text,'source_region':copy.deepcopy(matched['region'])}
+  element['visible_text']=None;element['element_type']='ICON_OR_GLYPH';element['semantic_role']='visual_fragment';element['subcomponent_role']='GLYPH';element['ocr_consensus_text']='';element['independent_redetection']=False;element['redetection_status']='RECLASSIFIED_UNSUPPORTED_SHORT_TEXT';element['graphic_score']=max(.82,float(element.get('graphic_score',0) or 0))
+  uncertainties.append({'element_id':element.get('element_id'),'code':'UNSUPPORTED_SHORT_TEXT_RECLASSIFIED','region':copy.deepcopy(region),'source_category':matched['source_category']})
+ out['uncertainties']=uncertainties
+ return out
+def traced_reader(path,ctx):
+ c=full_reader(path,ctx);c=_apply_remediation_state(c,ctx.get('remediation_state') or {});TRACE['readers'].append(copy.deepcopy(c));return c
 def remediator(candidate,findings,state):
  actions=[];seen=set();state=dict(state);state['strict_mode']=True
  suppressed=_dedupe_regions(state.get('unsupported_short_text_regions') or [])
