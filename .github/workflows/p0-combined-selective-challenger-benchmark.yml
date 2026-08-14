@@ -1,0 +1,164 @@
+name: P0 Combined Selective Challenger Benchmark
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "lf/p0-combined-selective-challenger-benchmark-20260814"
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  SOURCE_EVIDENCE_OBJECT_ID: be7fcf20-5f83-46d4-be0e-c80dc3ceed7c
+  SOURCE_SHA256: e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7
+  SOURCE_BYTES: "1384686"
+  PACKET_EVIDENCE_OBJECT_ID: 2319ae4d-5f22-4ff9-850d-23b4697cc94c
+  PACKET_SHA256: 089ac58eede164d1e6fcd42070373d2abf482e5a4cc18d163ad9189a7015c781
+  PACKET_BYTES: "1237214"
+  BASELINE_MAIN_SHA: 714aaf959c0cbfb951075f4394c45cdfb4d0bf89
+  ICON_BENCHMARK_COMMIT: 00cd418d5137d2d0520ecf25b9422ca056583004
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  clip-identity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      HF_HOME: /tmp/lf-p0-hf-combined
+      TOKENIZERS_PARALLELISM: "false"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/cache@v4
+        with:
+          path: /tmp/lf-p0-hf-combined
+          key: combined-clip-c7244be8
+      - name: Materialize frozen CLIP benchmark assets by immutable commit
+        run: |
+          set -euo pipefail
+          git cat-file -e "${ICON_BENCHMARK_COMMIT}^{commit}"
+          git show "${ICON_BENCHMARK_COMMIT}:sandbox/lf_contract_gate_test/P0_ICON_CLIP_IDENTITY_MICROBENCHMARK_V1.py" > "$RUNNER_TEMP/clip.py"
+          git show "${ICON_BENCHMARK_COMMIT}:sandbox/lf_contract_gate_test/evidence/OMNIPARSER_ICON_TARGETS_20260814.json" > "$RUNNER_TEMP/icon-targets.json"
+      - name: Install frozen CLIP CPU environment
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --upgrade pip
+          python -m pip install --disable-pip-version-check torch==2.5.1+cpu torchvision==0.20.1+cpu --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install --disable-pip-version-check transformers==4.46.1 huggingface_hub==0.26.2 safetensors==0.4.5 numpy==1.26.4 pillow==11.0.0
+      - name: Fetch governed source read-only and verify bytes
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+        run: |
+          set -euo pipefail
+          export PGHOST="$SUPABASE_POOLER_HOST" PGPORT=5432 PGUSER="postgres.${SUPABASE_PROJECT_ID}" PGDATABASE=postgres PGSSLMODE=require
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 -At -c "select encode(content,'hex') from private.lf_p0_review_evidence_objects_v1 where evidence_object_id='${SOURCE_EVIDENCE_OBJECT_ID}'::uuid and object_role='SOURCE_IMAGE' limit 1" > "$RUNNER_TEMP/source.hex"
+          tr -d '\n\r' < "$RUNNER_TEMP/source.hex" | xxd -r -p > "$RUNNER_TEMP/source.png"
+          python - <<'PY'
+          import hashlib,os,pathlib
+          p=pathlib.Path(os.environ['RUNNER_TEMP'])/'source.png'; b=p.read_bytes()
+          assert len(b)==int(os.environ['SOURCE_BYTES']) and hashlib.sha256(b).hexdigest()==os.environ['SOURCE_SHA256']
+          print('PASS_COMBINED_SOURCE_BINDING_CLIP')
+          PY
+      - name: Run frozen CLIP identity lane
+        run: |
+          mkdir -p .audit-output
+          python "$RUNNER_TEMP/clip.py" --source "$RUNNER_TEMP/source.png" --targets "$RUNNER_TEMP/icon-targets.json" --output .audit-output/clip-icon-identity-microbenchmark.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: combined-clip-${{ github.run_id }}
+          path: .audit-output/clip-icon-identity-microbenchmark.json
+          if-no-files-found: error
+          retention-days: 7
+
+  combined-evaluate:
+    needs: clip-identity
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/download-artifact@v4
+        with:
+          name: combined-clip-${{ github.run_id }}
+          path: .audit-input
+      - name: Materialize frozen technical icon reference
+        run: |
+          set -euo pipefail
+          git cat-file -e "${ICON_BENCHMARK_COMMIT}^{commit}"
+          git show "${ICON_BENCHMARK_COMMIT}:sandbox/lf_contract_gate_test/evidence/OMNIPARSER_ICON_TARGETS_20260814.json" > "$RUNNER_TEMP/icon-targets.json"
+      - name: Install isolated PaddleOCR CPU environment
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --upgrade pip
+          python -m pip install --disable-pip-version-check paddlepaddle==3.2.0 -i https://www.paddlepaddle.org.cn/packages/stable/cpu/
+          python -m pip install --disable-pip-version-check paddleocr==3.5.0
+          python - <<'PY'
+          import paddle,paddleocr
+          assert paddle.__version__=='3.2.0' and paddleocr.__version__=='3.5.0'
+          print('PASS_COMBINED_PADDLE_ENV_PIN')
+          PY
+      - name: Fetch current governed source and exact post-PR159 packet read-only
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+        run: |
+          set -euo pipefail
+          export PGHOST="$SUPABASE_POOLER_HOST" PGPORT=5432 PGUSER="postgres.${SUPABASE_PROJECT_ID}" PGDATABASE=postgres PGSSLMODE=require
+          fetch_object() {
+            local id="$1" role="$2" out="$3" sha="$4" bytes="$5" hex="$RUNNER_TEMP/$(basename "$out").hex"
+            docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 -At -c "select encode(content,'hex') from private.lf_p0_review_evidence_objects_v1 where evidence_object_id='${id}'::uuid and object_role='${role}' limit 1" > "$hex"
+            test -s "$hex"; tr -d '\n\r' < "$hex" | xxd -r -p > "$out"
+            python - "$out" "$sha" "$bytes" <<'PY'
+          import hashlib,pathlib,sys
+          p=pathlib.Path(sys.argv[1]);b=p.read_bytes();assert len(b)==int(sys.argv[3]) and hashlib.sha256(b).hexdigest()==sys.argv[2]
+          print('PASS_COMBINED_OBJECT_BINDING:'+p.name)
+          PY
+          }
+          fetch_object "$SOURCE_EVIDENCE_OBJECT_ID" SOURCE_IMAGE "$RUNNER_TEMP/source.png" "$SOURCE_SHA256" "$SOURCE_BYTES"
+          fetch_object "$PACKET_EVIDENCE_OBJECT_ID" PACKET_MANIFEST "$RUNNER_TEMP/packet.json" "$PACKET_SHA256" "$PACKET_BYTES"
+      - name: Run combined current-baseline benchmark
+        env:
+          PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK: "True"
+        run: |
+          mkdir -p .audit-output
+          python sandbox/lf_contract_gate_test/P0_COMBINED_SELECTIVE_CHALLENGER_BENCHMARK_V1.py --self-test
+          python sandbox/lf_contract_gate_test/P0_COMBINED_SELECTIVE_CHALLENGER_BENCHMARK_V1.py \
+            --source "$RUNNER_TEMP/source.png" \
+            --packet "$RUNNER_TEMP/packet.json" \
+            --clip .audit-input/clip-icon-identity-microbenchmark.json \
+            --targets "$RUNNER_TEMP/icon-targets.json" \
+            --output .audit-output/combined-selective-challenger-result.json
+      - name: Publish non-secret benchmark summary
+        if: always()
+        run: |
+          python - <<'PY'
+          import json,os,pathlib
+          p=pathlib.Path('.audit-output/combined-selective-challenger-result.json'); lines=['### Combined selective challenger benchmark']
+          if p.is_file():
+            r=json.loads(p.read_text()); lines += [f"- baseline: `{r['baseline']['observation_count']}`",f"- Paddle text lane: `{r['text_lane']['resolved']}/{r['text_lane']['before']}` resolved",f"- CLIP/context icon lane: `{r['icon_lane']['resolved']}/{r['icon_lane']['before']}` resolved",f"- combined residual: `{r['combined']['residual_count']}`",f"- combined reduction: `{r['combined']['reduction_pct']}%`"]
+          else: lines.append('- result: `NO_RESULT`')
+          lines += ['- authentic human adjudication: `false`','- real corpus / P0-5 credit: `0`','- runtime promoted: `false`','- production authorized: `false`']
+          pathlib.Path(os.environ['GITHUB_STEP_SUMMARY']).write_text('\n'.join(lines)+'\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p0-combined-selective-${{ github.run_id }}
+          path: |
+            .audit-input/clip-icon-identity-microbenchmark.json
+            .audit-output/combined-selective-challenger-result.json
+          if-no-files-found: warn
+          retention-days: 7
