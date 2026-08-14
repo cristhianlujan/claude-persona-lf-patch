@@ -31,6 +31,7 @@ def main():
  checks.append(expect('grouping','TEXT_GROUPING_MISMATCH',C(E('texto partido',text_group_consistency=False,text_group_id='G-SYN'))))
  checks.append(expect('unclassified_disagreement','OCR_UNCLASSIFIED_DISAGREEMENT',C(E('DOCUMENTO APROBADO',ocr_consensus_text='DOCUMENTO RECHAZADO',ocr_variants=['DOCUMENTO APROBADO','DOCUMENTO RECHAZADO']))))
  checks.append(expect('unseen_case_mismatch','OCR_CASE_MISMATCH',C(E('x',ocr_consensus_text='X'))))
- stable=cats(C(E('51',ocr_consensus_text='51',ocr_variants=['51'],ocr_read_count=4,ocr_empty_reads=0)));assert 'SHORT_TOKEN_UNCORROBORATED' not in stable;checks.append('RESTORE_REAL_SHORT_NUMBER')
- print(json.dumps({'gate':'PASS_V4_HUMAN_FINDINGS_AS_REGRESSIONS','checks':len(checks),'known_classes_detected':9,'unseen_holdout_detected':1,'restores':1,'results':checks},sort_keys=True));return 0
+ checks.append(expect('inferred_short_same_family_only','SHORT_TEXT_WITHOUT_MATERIAL_SUPPORT',C(E('10',classification='INFERRED',independent_redetection=False,ocr_variants=['10','10'],ocr_read_count=3,ocr_empty_reads=1,ocr_agreement_count=2))))
+ stable=cats(C(E('51',ocr_consensus_text='51',ocr_variants=['51'],ocr_read_count=4,ocr_empty_reads=0)));assert 'SHORT_TOKEN_UNCORROBORATED' not in stable and 'SHORT_TEXT_WITHOUT_MATERIAL_SUPPORT' not in stable;checks.append('RESTORE_REAL_SHORT_NUMBER')
+ print(json.dumps({'gate':'PASS_V4_HUMAN_FINDINGS_AS_REGRESSIONS','checks':len(checks),'known_classes_detected':10,'unseen_holdout_detected':1,'restores':1,'results':checks},sort_keys=True));return 0
 if __name__=='__main__':raise SystemExit(main())
