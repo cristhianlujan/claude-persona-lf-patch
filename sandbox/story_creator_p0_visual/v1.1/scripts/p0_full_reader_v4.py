@@ -119,36 +119,54 @@ def ocr_lines(image, psm: int) -> list[dict]:
     ordered = sorted(output, key=lambda item: (item["region"]["y"], item["region"]["x"]))
     merged: list[dict] = []
     for item in ordered:
-        if not merged:
+        matches: list[tuple[int, int, int]] = []
+        for index, existing in enumerate(merged):
+            left_item, right_item = sorted(
+                (existing, item), key=lambda candidate: (candidate["region"]["x"], candidate["region"]["y"])
+            )
+            left, right = left_item["region"], right_item["region"]
+            gap = int(right["x"]) - (int(left["x"]) + int(left["width"]))
+            baseline_delta = abs((left["y"] + left["height"]) - (right["y"] + right["height"]))
+            glyph_like = any(
+                len(str(candidate.get("text") or "").strip()) <= 4
+                and 0.65 <= candidate["region"]["width"] / max(1, candidate["region"]["height"]) <= 1.55
+                and max(candidate["region"]["width"], candidate["region"]["height"]) <= 32
+                for candidate in (existing, item)
+            )
+            contiguous = 0 <= gap <= 24 and vertical_overlap_ratio(left, right) >= 0.65 and baseline_delta <= 5
+            if contiguous and not glyph_like:
+                matches.append((gap, baseline_delta, index))
+        if not matches:
             merged.append(item)
             continue
-        previous = merged[-1]
-        left, right = previous["region"], item["region"]
-        gap = int(right["x"]) - (int(left["x"]) + int(left["width"]))
-        baseline_delta = abs((left["y"] + left["height"]) - (right["y"] + right["height"]))
-        glyph_like = any(
-            len(str(candidate.get("text") or "").strip()) <= 4
-            and 0.65 <= candidate["region"]["width"] / max(1, candidate["region"]["height"]) <= 1.55
-            and max(candidate["region"]["width"], candidate["region"]["height"]) <= 32
-            for candidate in (previous, item)
+
+        _, _, index = min(matches)
+        existing = merged[index]
+        left_item, right_item = sorted(
+            (existing, item), key=lambda candidate: (candidate["region"]["x"], candidate["region"]["y"])
         )
-        contiguous = 0 <= gap <= 24 and vertical_overlap_ratio(left, right) >= 0.65 and baseline_delta <= 5
-        if not contiguous or glyph_like:
-            merged.append(item)
-            continue
-        total_tokens = int(previous["token_count"]) + int(item["token_count"])
-        previous["confidence"] = (
-            previous["confidence"] * previous["token_count"] + item["confidence"] * item["token_count"]
+        left_text, right_text = left_item["text"], right_item["text"]
+        left_region, right_region = dict(left_item["region"]), dict(right_item["region"])
+        left_tokens, right_tokens = list(left_item["source_tokens"]), list(right_item["source_tokens"])
+        left_ids, right_ids = list(left_item["source_token_ids"]), list(right_item["source_token_ids"])
+        left_regions = list(left_item["source_token_regions"])
+        right_regions = list(right_item["source_token_regions"])
+        left_keys, right_keys = list(left_item["source_line_keys"]), list(right_item["source_line_keys"])
+        existing_tokens = int(existing["token_count"])
+        item_tokens = int(item["token_count"])
+        total_tokens = existing_tokens + item_tokens
+        existing["confidence"] = (
+            existing["confidence"] * existing_tokens + item["confidence"] * item_tokens
         ) / total_tokens
-        previous["text"] = f"{previous['text']} {item['text']}"
-        previous["region"] = bbox_union((left, right))
-        previous["token_count"] = total_tokens
-        previous["source_tokens"].extend(item["source_tokens"])
-        previous["source_token_ids"].extend(item["source_token_ids"])
-        previous["source_token_regions"].extend(item["source_token_regions"])
-        previous["source_line_keys"].extend(item["source_line_keys"])
-        previous["cross_line_merge_justification"] = "CONTIGUOUS_BASELINE_NO_CONTROL_BOUNDARY"
-    return merged
+        existing["text"] = f"{left_text} {right_text}"
+        existing["region"] = bbox_union((left_region, right_region))
+        existing["token_count"] = total_tokens
+        existing["source_tokens"] = left_tokens + right_tokens
+        existing["source_token_ids"] = left_ids + right_ids
+        existing["source_token_regions"] = left_regions + right_regions
+        existing["source_line_keys"] = left_keys + right_keys
+        existing["cross_line_merge_justification"] = "CONTIGUOUS_BASELINE_NO_CONTROL_BOUNDARY"
+    return sorted(merged, key=lambda item: (item["region"]["y"], item["region"]["x"]))
 
 
 def overlapping_lines(primary: dict, alternatives: list[dict]) -> list[dict]:
