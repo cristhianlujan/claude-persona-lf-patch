@@ -37,10 +37,12 @@ def is_sha64(value: object) -> bool:
 
 
 def canonical_annotation_preimage(annotation: dict) -> bytes:
+    # The annotation hash is finalized before independent review/provider readback.
+    # The entire review block is therefore excluded from the preimage; the review
+    # later attests this immutable human-annotation hash without circularity.
     value = copy.deepcopy(annotation)
-    review = value.get("review")
+    review = value.pop("review", None)
     require(isinstance(review, dict), "ANNOTATION_REVIEW_OBJECT_REQUIRED")
-    review.pop("annotation_sha256", None)
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
 
 
@@ -240,11 +242,11 @@ def main() -> int:
     negatives.append(must_semantic_fail(validator, sources, mutated, "REVIEW_SOURCE_SHA_MISMATCH"))
     mutated = copy.deepcopy(fixture); mutated["review"]["annotation_sha256"] = "f" * 64
     negatives.append(must_semantic_fail(validator, sources, mutated, "ANNOTATION_SHA_MISMATCH"))
-    mutated = copy.deepcopy(fixture); mutated["review"]["reviewer_identity"] = mutated["annotator"]["identity"]; mutated["review"]["annotation_sha256"] = canonical_annotation_sha256(mutated)
+    mutated = copy.deepcopy(fixture); mutated["review"]["reviewer_identity"] = mutated["annotator"]["identity"]
     negatives.append(must_semantic_fail(validator, sources, mutated, "SAME_ANNOTATOR_AND_REVIEWER"))
-    mutated = copy.deepcopy(fixture); mutated["groups"][0]["member_truth_item_ids"] = ["MISSING-TRUTH-ID"]; mutated["review"]["annotation_sha256"] = canonical_annotation_sha256(mutated)
+    mutated = copy.deepcopy(fixture); mutated["groups"][0]["member_truth_item_ids"] = ["MISSING-TRUTH-ID"]
     negatives.append(must_semantic_fail(validator, sources, mutated, "DANGLING_GROUP_MEMBER"))
-    mutated = copy.deepcopy(fixture); mutated["nontext_items"] = [{"truth_item_id":"FIX-TEXT-1","bbox_xywh":[2,2,1,1],"kind":"fixture","material":False}]; mutated["review"]["annotation_sha256"] = canonical_annotation_sha256(mutated)
+    mutated = copy.deepcopy(fixture); mutated["nontext_items"] = [{"truth_item_id":"FIX-TEXT-1","bbox_xywh":[2,2,1,1],"kind":"fixture","material":False}]
     negatives.append(must_semantic_fail(validator, sources, mutated, "DUPLICATE_TRUTH_ITEM_ID"))
 
     result = {
@@ -256,7 +258,7 @@ def main() -> int:
         "exact_source_identity_count": len(sources),
         "contract_fixture_ground_truth": False,
         "contract_fixture_persisted": False,
-        "annotation_sha_preimage": "CANONICAL_JSON_EXCLUDING_review.annotation_sha256",
+        "annotation_sha_preimage": "CANONICAL_JSON_EXCLUDING_entire_review_block",
         "negative_mutations_blocked": len(negatives),
         "negative_mutations": negatives,
         "candidate_output_visible_to_annotator": False,
