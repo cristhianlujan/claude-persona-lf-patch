@@ -2,7 +2,7 @@
   "$schema":"https://json-schema.org/draft/2020-12/schema",
   "$id":"p0-independent-ground-truth-annotation-v1.schema.json",
   "title":"P0 Independent Human Ground Truth Annotation V1",
-  "description":"Blind human ground-truth contract. annotation_sha256 is the SHA-256 of canonical JSON for the full annotation object excluding the entire review block; review then attests that immutable hash and provider readback separately.",
+  "description":"Blind human ground-truth contract. annotation_sha256 is the SHA-256 of canonical JSON for the full annotation object excluding the entire review block; review then attests that immutable hash and provider readback separately. The reviewer reuses the already-governed P0_VISUAL_ADJUDICATOR role; no new reviewer-role taxonomy is introduced.",
   "type":"object",
   "additionalProperties":false,
   "required":["schema_version","annotation_id","source","annotator","text_items","nontext_items","groups","review"],
@@ -62,7 +62,7 @@
       "required":["reviewer_identity","reviewer_role","source_sha256","annotation_sha256","reviewed_at","provider_readback_ref"],
       "properties":{
         "reviewer_identity":{"type":"string","minLength":3},
-        "reviewer_role":{"const":"INDEPENDENT_GROUND_TRUTH_REVIEWER"},
+        "reviewer_role":{"const":"P0_VISUAL_ADJUDICATOR"},
         "source_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},
         "annotation_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$","description":"SHA-256 of canonical JSON for the annotation object with the entire review block excluded."},
         "reviewed_at":{"type":"string","format":"date-time"},
