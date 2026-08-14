@@ -198,7 +198,9 @@ def main() -> int:
     reader_file_sha256 = hashlib.sha256(reader_path.read_bytes()).hexdigest()
     print(json.dumps({
         "result": "PASS",
+        "ekb_code": "EKB-P0-014",
         "ekb_codes": ["EKB-P0-014", "EKB-P0-020"],
+        "classification_ekb_code": "EKB-P0-020",
         "source_sha256": SOURCE_SHA,
         "reader_file_sha256": reader_file_sha256,
         "real_geometry_recomposed": True,
@@ -208,7 +210,8 @@ def main() -> int:
         "compact_glyph_remains_separate": True,
         "glyph_false_text_uncertainty_suppressed": True,
         "genuine_text_uncertainty_preserved": True,
-        "producer": "p0_full_reader_v4",
+        "producer": "p0_full_reader_v4.ocr_lines",
+        "classification_producer": "p0_full_reader_v4",
         "production_authorized": False,
     }, sort_keys=True))
     return 0
