@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Causal regression for EKB-P0-014 using the real reader function.
+"""Causal regression for EKB-P0-014/EKB-P0-020 using the real reader.
 
-The fixture reproduces the geometry observed on canonical source e308b...:
-`tu` is visually left of `deuda`, but its top y is four pixels lower.  The
-regression invokes p0_full_reader_v4.ocr_lines itself and therefore catches
-ordering-dependent baseline reconstruction without copying the product logic.
+The geometry fixture reproduces the canonical ordering defect. The classification
+fixtures additionally prove that an OCR fragment reclassified by the reader as
+ICON_OR_GLYPH is not surfaced as a text OCR/grouping uncertainty, while a genuine
+TEXT element with the same unstable evidence still is. Product logic is invoked
+directly; no copied reconciliation implementation is used.
 """
 from __future__ import annotations
 
@@ -55,6 +56,75 @@ def _run(items: list[dict]) -> list[dict]:
 
 def _texts(items: list[dict]) -> list[str]:
     return [item["text"] for item in items]
+
+
+class _FakeImage:
+    shape = (100, 100, 3)
+
+
+def _reader_line(text: str, *, width: int, height: int, psm: int) -> dict:
+    region = {"x": 10, "y": 10, "width": width, "height": height}
+    return {
+        "text": text,
+        "confidence": 50.0,
+        "region": region,
+        "block_id": 1,
+        "paragraph_id": 1,
+        "line_id": 1,
+        "segment_index": 1,
+        "origin_psm": psm,
+        "token_count": 1,
+        "source_tokens": [text],
+        "source_token_ids": [f"TEST-{psm}-1"],
+        "source_token_regions": [dict(region)],
+        "source_line_keys": [f"{psm}:1:1:1"],
+        "partition_boundary_before": None,
+    }
+
+
+def _run_full_reader_uncertainty_case(text: str, *, width: int, height: int) -> dict:
+    originals = {
+        "imread": reader.cv2.imread,
+        "ocr_lines": reader.ocr_lines,
+        "detect_compact_visuals": reader.detect_compact_visuals,
+        "grouping_signal": reader.grouping_signal,
+        "cv_objects": reader.cv_objects,
+        "crop_evidence_ref": reader.crop_evidence_ref,
+        "crop_sha256": reader.crop_sha256,
+        "annotate_evidence_purity": reader.annotate_evidence_purity,
+    }
+    try:
+        reader.cv2.imread = lambda *args, **kwargs: _FakeImage()
+        reader.ocr_lines = lambda image, psm: [_reader_line(text, width=width, height=height, psm=psm)]
+        reader.detect_compact_visuals = lambda image, observations: []
+        reader.grouping_signal = lambda primary, lines, primary_psm, source_sha: (
+            False,
+            "TG-TEST",
+            ["p0://test/source-observation"],
+            {"3": 1, "11": 2, "12": 2},
+        )
+        reader.cv_objects = lambda image, text_regions: []
+        reader.crop_evidence_ref = lambda *args, **kwargs: "p0://test/crop"
+        reader.crop_sha256 = lambda *args, **kwargs: "0" * 64
+        reader.annotate_evidence_purity = lambda elements: None
+        return reader.full_reader(
+            "fixture.png",
+            {
+                "source_sha256": SOURCE_SHA,
+                "reader_execution_id": "EXEC-P0-OCR-CLASSIFICATION-REGRESSION",
+                "pass_id": "PASS-P0-OCR-CLASSIFICATION-REGRESSION",
+                "remediation_state": {"strict_mode": True},
+            },
+        )
+    finally:
+        reader.cv2.imread = originals["imread"]
+        reader.ocr_lines = originals["ocr_lines"]
+        reader.detect_compact_visuals = originals["detect_compact_visuals"]
+        reader.grouping_signal = originals["grouping_signal"]
+        reader.cv_objects = originals["cv_objects"]
+        reader.crop_evidence_ref = originals["crop_evidence_ref"]
+        reader.crop_sha256 = originals["crop_sha256"]
+        reader.annotate_evidence_purity = originals["annotate_evidence_purity"]
 
 
 def main() -> int:
@@ -108,11 +178,29 @@ def main() -> int:
             f"expected compact glyph to remain separate observed={negative_glyph!r}"
         )
 
+    glyph_output = _run_full_reader_uncertainty_case("e", width=18, height=18)
+    glyph_elements = [item for item in glyph_output["elements"] if item.get("element_id", "").startswith("V4-T-")]
+    if len(glyph_elements) != 1 or glyph_elements[0].get("element_type") != "ICON_OR_GLYPH":
+        raise SystemExit(f"FAIL_EKB_P0_020_GLYPH_CLASSIFICATION:{glyph_elements!r}")
+    glyph_codes = [item.get("code") for item in glyph_output["reader_uncertainties"]]
+    if "OCR_DISAGREEMENT" in glyph_codes or "TEXT_GROUPING_DISAGREEMENT" in glyph_codes:
+        raise SystemExit(f"FAIL_EKB_P0_020_GLYPH_FALSE_TEXT_UNCERTAINTY:{glyph_codes!r}")
+
+    text_output = _run_full_reader_uncertainty_case("Correo", width=80, height=18)
+    text_elements = [item for item in text_output["elements"] if item.get("element_id", "").startswith("V4-T-")]
+    if len(text_elements) != 1 or text_elements[0].get("element_type") != "TEXT":
+        raise SystemExit(f"FAIL_EKB_P0_020_TEXT_CLASSIFICATION:{text_elements!r}")
+    text_codes = [item.get("code") for item in text_output["reader_uncertainties"]]
+    if text_codes.count("OCR_DISAGREEMENT") != 1 or text_codes.count("TEXT_GROUPING_DISAGREEMENT") != 1:
+        raise SystemExit(f"FAIL_EKB_P0_020_TEXT_UNCERTAINTY_LOST:{text_codes!r}")
+
     reader_path = Path(reader.__file__).resolve()
     reader_file_sha256 = hashlib.sha256(reader_path.read_bytes()).hexdigest()
     print(json.dumps({
         "result": "PASS",
         "ekb_code": "EKB-P0-014",
+        "ekb_codes": ["EKB-P0-014", "EKB-P0-020"],
+        "classification_ekb_code": "EKB-P0-020",
         "source_sha256": SOURCE_SHA,
         "reader_file_sha256": reader_file_sha256,
         "real_geometry_recomposed": True,
@@ -120,7 +208,10 @@ def main() -> int:
         "far_gap_remains_separate": True,
         "different_baseline_remains_separate": True,
         "compact_glyph_remains_separate": True,
+        "glyph_false_text_uncertainty_suppressed": True,
+        "genuine_text_uncertainty_preserved": True,
         "producer": "p0_full_reader_v4.ocr_lines",
+        "classification_producer": "p0_full_reader_v4",
         "production_authorized": False,
     }, sort_keys=True))
     return 0
