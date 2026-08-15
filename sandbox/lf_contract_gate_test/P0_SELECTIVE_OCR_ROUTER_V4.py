@@ -1,36 +1,41 @@
 #!/usr/bin/env python3
-"""Fail-closed extension for visibly masked structured OCR values.
+"""Fail-closed extension for visibly obscured structured OCR values.
 
 V4 preserves the V3 selective OCR contract and adds general invariants:
 structured values containing strong obscuration evidence must never be promoted
 as exact machine truth or sent to a challenger to reconstruct hidden content;
 and a stable variant_id may not silently identify contradictory payloads.
 
-This is screen/product agnostic. It only reasons over traceable OCR evidence.
+The primary obscuration gate is source-bound visual evidence. Text markers are
+a narrow fallback for the empirically reproduced U+2022 / >=3-star family; the
+router does not expand that alphabet by guessing that lookalike OCR glyphs are
+masks. This is screen/product agnostic.
 
 Orden de evaluación en route_observation (CAMBIO DE CONTRATO RESPECTO DE V3):
 
   1. conflicto global de identidad variant_id       <-- ARC-014/AUD-027
   2. conflicto intra-Tesseract de identidad/profile
-  3. evidencia de máscara en valor estructurado     <-- AUD-026 carrier-safe
-  4. materialidad no-textual
-  5. resolución estructural probada por píxeles
-  6. truncamiento visible
-  7. consenso Tesseract dirigido
-  8. baseline machine-valid
-  9. carril challenger / abstención
+  3. riesgo visual source-bound de ocultamiento      <-- AUD-03
+  4. evidencia textual de máscara estructurada       <-- AUD-026 carrier-safe
+  5. materialidad no-textual
+  6. resolución estructural probada por píxeles
+  7. truncamiento visible
+  8. consenso Tesseract dirigido
+  9. baseline machine-valid
+ 10. carril challenger / abstención
 
-El guard de máscara conserva precedencia sobre materialidad no-textual y
-resolución estructural porque esos metadatos son suministrados por el caller.
-La evidencia de máscara se inspecciona sobre TODOS los attempts de la familia,
+Los guards de ocultamiento conservan precedencia sobre materialidad no-textual
+y resolución estructural porque esos metadatos son suministrados por el caller.
+La evidencia textual de máscara se inspecciona sobre TODOS los attempts,
 incluso cuando variant_id está vacío: identidad ausente impide consenso, pero
 no puede borrar evidencia material. Un stable variant_id se interpreta además
 como identidad global de evidencia; payloads textuales distintos no pueden
 coexistir bajo ese ID aunque provengan de familias OCR distintas.
 
-AUD-03 permanece como limitación explícita: sólo U+2022 y runs OCR de >=3 '*'
-son marcadores de máscara empíricamente respaldados. Glifos adicionales no se
-reclasifican sin evidencia source-bound independiente.
+AUD-03 se cierra sin enumerar glifos adicionales: evidencia visual canónica,
+sellada y ligada a source SHA + ROI SHA + coordenadas bloquea verdad exacta
+independientemente de cómo el OCR represente los píxeles. Sin esa evidencia,
+glifos no demostrados no se reclasifican silenciosamente como máscaras.
 """
 from __future__ import annotations
 
@@ -39,6 +44,7 @@ from collections import defaultdict
 from typing import Any
 
 import P0_SELECTIVE_OCR_ROUTER_V3 as _v3
+import P0_VISUAL_OBSCURATION_EVIDENCE_V1 as _visual
 
 MACHINE_VALIDATED_KINDS = _v3.MACHINE_VALIDATED_KINDS
 PROFILE_DIVERSITY_REQUIRED_KINDS = _v3.PROFILE_DIVERSITY_REQUIRED_KINDS
@@ -49,13 +55,11 @@ MIN_LANGUAGE_PROFILES_BEFORE_CHALLENGER = _v3.MIN_LANGUAGE_PROFILES_BEFORE_CHALL
 normalize_text = _v3.normalize_text
 has_machine_validator = _v3.has_machine_validator
 
-# The real source visibly contains U+2022 bullets and Tesseract reproducibly
-# renders that obscuration as a run of >=3 asterisks. Do not generalize to
-# merely similar glyphs without independent evidence. A single '*' remains
-# allowed so legitimate local-parts are not globally rejected.
+# Narrow text fallback only. The source-bound visual gate below is the
+# generalized protection and does not depend on this glyph alphabet.
 VISIBLE_BULLET_MASK_RE = re.compile(r"•")
 REPEATED_STAR_MASK_RE = re.compile(r"\*{3,}")
-MASK_SCOPE_LIMITATION = "AUD-03_UNSUPPORTED_MASK_GLYPHS_REQUIRE_SOURCE_BOUND_EVIDENCE"
+MASK_SCOPE_LIMITATION = "TEXT_ONLY_MASK_HEURISTIC_REMAINS_SOURCE_EVIDENCE_BOUND"
 
 
 def is_masked_structured_text(value: Any) -> bool:
@@ -66,7 +70,7 @@ def is_masked_structured_text(value: Any) -> bool:
 
 
 def validate_text(kind: str, value: Any) -> bool:
-    """Reject obscured structured values before delegating syntax validation."""
+    """Reject empirically reproduced textual masks before syntax validation."""
     if kind in MACHINE_VALIDATED_KINDS and is_masked_structured_text(value):
         return False
     return _v3.validate_text(kind, value)
@@ -173,6 +177,24 @@ def _traceable_targeted_texts(observation: dict) -> list[str]:
     ]
 
 
+def _has_source_bound_visual_obscuration_risk(observation: dict) -> bool:
+    """Accept only canonical visual evidence bound to this exact source ROI.
+
+    This is a negative safety gate, not positive text recognition. A verified
+    risk says only that the source pixels do not justify exact structured truth.
+    It never reconstructs or guesses hidden characters.
+    """
+    kind = str(observation.get("kind") or "generic_text")
+    if kind not in MACHINE_VALIDATED_KINDS:
+        return False
+    return _visual.verify_obscuration_evidence(
+        observation.get("visual_obscuration_evidence"),
+        source_sha256=observation.get("source_sha256"),
+        roi_sha256=observation.get("roi_sha256"),
+        roi_xyxy=observation.get("roi_xyxy"),
+    )
+
+
 def _has_structured_mask_evidence(observation: dict) -> bool:
     kind = str(observation.get("kind") or "generic_text")
     if kind not in MACHINE_VALIDATED_KINDS:
@@ -185,12 +207,19 @@ def _has_structured_mask_evidence(observation: dict) -> bool:
 
 
 def route_observation(observation: dict) -> dict:
-    """Block global identity conflict, local provenance conflict, then mask."""
+    """Fail closed on identity conflict, source visual risk, then text masks."""
     attempts = observation.get("targeted_attempts")
     if _has_variant_id_conflict(attempts, None):
         return _variant_conflict_result("MULTI_FAMILY")
     if _has_variant_id_conflict(attempts, "TESSERACT"):
         return _variant_conflict_result("TESSERACT")
+    if _has_source_bound_visual_obscuration_risk(observation):
+        return {
+            "decision": "VISUAL_OBSCURATION_RISK_NO_EXACT_TRUTH",
+            "resolved": False,
+            "invoke_paddle": False,
+            "reason": "SOURCE_PIXELS_DO_NOT_SUPPORT_EXACT_STRUCTURED_TEXT",
+        }
     if _has_structured_mask_evidence(observation):
         return {
             "decision": "VISIBLE_MASKED_NO_COMPLETION",
@@ -242,10 +271,12 @@ def _challenger_mask_evidence(kind: str, attempts: Any) -> bool:
 def reconcile_paddle(observation: dict, paddle_attempts: Any) -> dict:
     """Never allow an orthogonal OCR engine to reconstruct hidden content.
 
-    Challenger identity conflict is evaluated after confirming PADDLE_REQUIRED
-    and before mask evidence or consensus. Stable IDs are global across the
-    observation + challenger evidence universe; missing IDs still carry blocking
-    mask evidence but cannot create identity conflicts or positive consensus.
+    Source-bound visual risk is evaluated by route_observation before Paddle can
+    be authorized. Challenger identity conflict is evaluated after confirming
+    PADDLE_REQUIRED and before mask evidence or consensus. Stable IDs are global
+    across the observation + challenger evidence universe; missing IDs still
+    carry blocking mask evidence but cannot create identity conflicts or positive
+    consensus.
     """
     route = route_observation(observation)
     if route["decision"] != "PADDLE_REQUIRED":
