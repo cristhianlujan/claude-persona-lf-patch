@@ -23,10 +23,11 @@ MIN_LANGUAGE_PROFILES_BEFORE_CHALLENGER = _v3.MIN_LANGUAGE_PROFILES_BEFORE_CHALL
 normalize_text = _v3.normalize_text
 has_machine_validator = _v3.has_machine_validator
 
-# Unicode bullet-like glyphs are not literal email/phone/card/currency content.
-# A run of >=3 asterisks is treated as strong masking evidence; a single '*'
-# remains allowed so legitimate local-parts are not globally rejected.
-MASK_GLYPH_RE = re.compile(r"[•●∙·]")
+# The real source visibly contains U+2022 bullets and Tesseract reproducibly
+# renders that obscuration as a run of >=3 asterisks. Do not generalize to
+# merely similar glyphs without independent evidence. A single '*' remains
+# allowed so legitimate local-parts are not globally rejected.
+VISIBLE_BULLET_MASK_RE = re.compile(r"•")
 REPEATED_STAR_MASK_RE = re.compile(r"\*{3,}")
 
 
@@ -34,7 +35,7 @@ def is_masked_structured_text(value: Any) -> bool:
     text = str(value or "").strip()
     if not text:
         return False
-    return bool(MASK_GLYPH_RE.search(text) or REPEATED_STAR_MASK_RE.search(text))
+    return bool(VISIBLE_BULLET_MASK_RE.search(text) or REPEATED_STAR_MASK_RE.search(text))
 
 
 def validate_text(kind: str, value: Any) -> bool:
