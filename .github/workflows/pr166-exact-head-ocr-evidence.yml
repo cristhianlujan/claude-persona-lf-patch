@@ -77,9 +77,31 @@ jobs:
       - name: Run exact-head V6 regression
         working-directory: sandbox/lf_contract_gate_test
         run: |
-          set -euo pipefail
-          python3 P0_MULTISCREEN_STRUCTURAL_GENERALIZATION_REGRESSION_V6.py \
-            | tee "$GITHUB_WORKSPACE/.audit-output/pr166-exact-head/v6-output.jsonl"
+          set +e
+          output="$GITHUB_WORKSPACE/.audit-output/pr166-exact-head/v6-output.jsonl"
+          python3 P0_MULTISCREEN_STRUCTURAL_GENERALIZATION_REGRESSION_V6.py >"$output" 2>&1
+          rc=$?
+          cat "$output"
+          if [ "$rc" -ne 0 ]; then
+            failed="$(python3 - "$output" <<'PY'
+          import json
+          import pathlib
+          import sys
+          path = pathlib.Path(sys.argv[1])
+          failed = []
+          for line in path.read_text(encoding='utf-8', errors='replace').splitlines():
+              try:
+                  obj = json.loads(line)
+              except Exception:
+                  continue
+              if isinstance(obj, dict) and obj.get('failed'):
+                  failed = obj.get('failed')
+          print(','.join(str(x) for x in failed) if failed else 'UNPARSED_V6_FAILURE')
+          PY
+          )"
+            echo "::error title=PR166 V6 regression failed::failed_checks=$failed"
+            exit "$rc"
+          fi
 
       - name: Upload exact-head receipt
         if: always()
