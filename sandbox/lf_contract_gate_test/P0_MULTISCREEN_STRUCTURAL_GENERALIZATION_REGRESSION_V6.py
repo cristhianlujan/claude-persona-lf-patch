@@ -5,6 +5,10 @@ The real non-holdout source shows a partially obscured email. Tesseract can
 stably render the hidden bullets as repeated asterisks, which V3's broad email
 syntax accepted. V6 proves that obscuration evidence now blocks exact truth and
 Paddle reconstruction while preserving ordinary structured values.
+
+LOTE-REM-PR166-02 adds adversarial checks for ARC-014: duplicate stable
+variant_id values may coalesce only when their relevant payload is equivalent;
+conflicting duplicates must fail closed independent of input order.
 """
 from __future__ import annotations
 
@@ -246,6 +250,109 @@ def main() -> int:
     checks["single_bullet_blocks"] = router.is_masked_structured_text("ju•@gmail.com") is True
     checks["double_star_does_not_block"] = router.is_masked_structured_text("ab**c@example.com") is False
 
+    # ARC-014 RED/GREEN matrix. Stable variant IDs are identity claims; two
+    # materially different payloads with the same ID are contradictory evidence.
+    _dup_same = {
+        "materiality": "TEXT", "kind": "email", "baseline_text": "bad-email",
+        "targeted_attempts": [
+            t_attempt("dup", "tucorreo@email.com", "eng"),
+            t_attempt("dup", "tucorreo@email.com", "eng"),
+        ],
+        "challenger_allowed": True,
+    }
+    _dup_same_route = router.route_observation(_dup_same)
+    checks["duplicate_id_same_payload_benign"] = _dup_same_route.get("decision") != "EVIDENCE_VARIANT_ID_CONFLICT"
+    checks["duplicate_id_same_payload_counts_once"] = _dup_same_route.get("targeted_attempt_count") == 1
+
+    def _dup_conflict_route(first: str, second: str, first_profile: str = "eng", second_profile: str = "eng") -> dict:
+        return router.route_observation({
+            "materiality": "TEXT", "kind": "email", "baseline_text": "bad-email",
+            "targeted_attempts": [
+                t_attempt("dup", first, first_profile),
+                t_attempt("dup", second, second_profile),
+                t_attempt("other", first, "spa"),
+            ],
+            "challenger_allowed": True,
+        })
+
+    _clean_masked = _dup_conflict_route("tucorreo@email.com", "jus***@gmail.com")
+    _masked_clean = _dup_conflict_route("jus***@gmail.com", "tucorreo@email.com")
+    checks["duplicate_id_clean_then_masked_conflict"] = (
+        _clean_masked.get("decision") == "EVIDENCE_VARIANT_ID_CONFLICT"
+        and _clean_masked.get("resolved") is False
+        and _clean_masked.get("invoke_paddle") is False
+    )
+    checks["duplicate_id_masked_then_clean_conflict"] = (
+        _masked_clean.get("decision") == "EVIDENCE_VARIANT_ID_CONFLICT"
+        and _masked_clean.get("resolved") is False
+        and _masked_clean.get("invoke_paddle") is False
+    )
+    checks["duplicate_id_conflict_order_invariant"] = _clean_masked.get("decision") == _masked_clean.get("decision")
+
+    _valid_valid = _dup_conflict_route("alpha@example.com", "beta@example.com")
+    checks["duplicate_id_valid_text_conflict"] = _valid_valid.get("decision") == "EVIDENCE_VARIANT_ID_CONFLICT"
+
+    _profile_mismatch = _dup_conflict_route(
+        "tucorreo@email.com", "tucorreo@email.com", first_profile="eng", second_profile="spa"
+    )
+    checks["duplicate_id_profile_mismatch_conflict"] = _profile_mismatch.get("decision") == "EVIDENCE_VARIANT_ID_CONFLICT"
+
+    _t_conflict = _dup_conflict_route("tucorreo@email.com", "otro@email.com")
+    checks["tesseract_duplicate_conflict_not_consensus"] = (
+        _t_conflict.get("decision") == "EVIDENCE_VARIANT_ID_CONFLICT"
+        and _t_conflict.get("decision") != "TARGETED_TESSERACT_ACCEPT"
+    )
+
+    _unique_consensus = router.route_observation({
+        "materiality": "TEXT", "kind": "email", "baseline_text": "bad-email",
+        "targeted_attempts": [
+            t_attempt("u1", "tucorreo@email.com", "eng"),
+            t_attempt("u2", "tucorreo@email.com", "spa"),
+        ],
+        "challenger_allowed": True,
+    })
+    checks["unique_ids_legitimate_consensus_preserved"] = (
+        _unique_consensus.get("decision") == "TARGETED_TESSERACT_ACCEPT"
+        and _unique_consensus.get("resolved") is True
+    )
+
+    _empty_ids = router.route_observation({
+        "materiality": "TEXT", "kind": "email", "baseline_text": "bad-email",
+        "targeted_attempts": [
+            t_attempt("", "alpha@example.com", "eng"),
+            t_attempt("", "beta@example.com", "spa"),
+            t_attempt("u1", "alpha@example.com", "eng"),
+        ],
+        "challenger_allowed": True,
+    })
+    checks["empty_ids_do_not_create_conflict"] = _empty_ids.get("decision") != "EVIDENCE_VARIANT_ID_CONFLICT"
+
+    def _paddle_conflict(first: str, second: str) -> dict:
+        return router.reconcile_paddle(
+            unmasked_paddle_case,
+            [
+                p_attempt("p1", first),
+                p_attempt("p1", second),
+                p_attempt("p2", first),
+            ],
+        )
+
+    _p_clean_masked = _paddle_conflict("tucorreo@email.com", "jus***@gmail.com")
+    _p_masked_clean = _paddle_conflict("jus***@gmail.com", "tucorreo@email.com")
+    checks["paddle_duplicate_id_clean_then_masked_conflict"] = (
+        _p_clean_masked.get("decision") == "EVIDENCE_VARIANT_ID_CONFLICT"
+        and _p_clean_masked.get("resolved") is False
+    )
+    checks["paddle_duplicate_id_masked_then_clean_conflict"] = (
+        _p_masked_clean.get("decision") == "EVIDENCE_VARIANT_ID_CONFLICT"
+        and _p_masked_clean.get("resolved") is False
+    )
+    checks["paddle_duplicate_id_conflict_order_invariant"] = (
+        _p_clean_masked.get("decision") == _p_masked_clean.get("decision")
+    )
+    _p_valid_valid = _paddle_conflict("alpha@example.com", "beta@example.com")
+    checks["paddle_duplicate_id_valid_text_conflict"] = _p_valid_valid.get("decision") == "EVIDENCE_VARIANT_ID_CONFLICT"
+
     failed = sorted(name for name, ok in checks.items() if not ok)
     result = {
         "gate": "PASS_P0_MULTISCREEN_STRUCTURAL_GENERALIZATION_V6" if not failed else "FAIL_P0_MULTISCREEN_STRUCTURAL_GENERALIZATION_V6",
@@ -259,7 +366,7 @@ def main() -> int:
         "fixture_raw_gray_sha256": raw_sha,
         "tesseract_outputs": observed,
         "root_cause": "MASKED_STRUCTURED_VALUE_FALSE_POSITIVE",
-        "remediated_findings": ["F-PR166-01", "F-PR166-02", "F-PR166-03"],
+        "remediated_findings": ["F-PR166-01", "F-PR166-02", "F-PR166-03", "ARC-014"],
         "decision_after": route.get("decision"),
         "false_positive_before": 1,
         "false_positive_after": 0 if not failed else None,
