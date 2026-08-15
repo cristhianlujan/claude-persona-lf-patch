@@ -38,7 +38,7 @@
     {"path":"evidence/p0-5-candidate-source-integrity-v1.json","git_blob_sha":"cd51da5ee3c1126b10249c7f6ff32275d43b2328"},
     {"path":"evidence/r3/LOTE-AUD-P0V4-R3-01-pre-remediation-invariant-diagnostic.json","git_blob_sha":"9bb736ee7203887de19a894ed9940eb5b4bbfbbd"},
     {"path":"evidence/r3/LOTE-AUD-P0V4-R3-02-real-rerun-receipt.json","git_blob_sha":"b7065ac8591114beba2693b13c697035ba25d85f"},
-    {"path":"evidence/r3/P0-HUMAN-REVIEW-SHELL-V4.2.html","git_blob_sha":"fdfc22ff2e6b2cde19a894ed9940eb5b4bbfbbd"},
+    {"path":"evidence/r3/P0-HUMAN-REVIEW-SHELL-V4.2.html","git_blob_sha":"fdfc22ff2e6b2bcd029b2c6af3b72206cd52aa18"},
     {"path":"schemas/p0-convergence-receipt-v4.schema.json","git_blob_sha":"6abe25bd0530584d87ff40d1ccaa1e51ebe04278"},
     {"path":"schemas/p0-grader-coverage-v4.schema.json","git_blob_sha":"1f1cfd8f80cda8799b2ea63e0a123947dd832c75"},
     {"path":"schemas/p0-grader-output-v4.schema.json","git_blob_sha":"71daa5110ae2a2c2b5912ffd8f671027c0209899"},
