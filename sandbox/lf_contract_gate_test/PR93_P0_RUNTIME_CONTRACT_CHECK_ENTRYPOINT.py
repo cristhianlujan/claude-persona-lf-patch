@@ -116,7 +116,7 @@ def evaluate_controlled_runtime_scope(
         path for path in changed
         if path in CONTROLLED_RUNTIME_PATHS or path.startswith("supabase/functions/")
     }
-    broker_specific = set(P0_EXACT_HEAD_BROKER_BLOBS)
+    broker_specific = set(P0_EXACT_HEAD_BLOBS) if False else set(P0_EXACT_HEAD_BROKER_BLOBS)
     extension_only = bool(controlled & broker_specific) and controlled.issubset(P0_EXACT_HEAD_EXTENSION_PATHS)
     if not extension_only:
         return _original_evaluate_controlled_runtime_scope(
@@ -155,7 +155,7 @@ HELPER = Path(__file__).with_name("p0_exact_head_real_source_ci_v2.py")
 HUMAN_REVIEW_CONVERGENCE_HELPER = Path(__file__).with_name("P0_HUMAN_REVIEW_CONVERGENCE_V1.py")
 DUAL_OCR_RECONCILIATION_HELPER = Path(__file__).with_name("P0_DUAL_OCR_RECONCILIATION_CONTRACT_V1.py")
 ICON_STRUCTURAL_ROLE_HELPER = Path(__file__).with_name("P0_ICON_STRUCTURAL_ROLE_REGRESSION_V1.py")
-MULTISCREEN_STRUCTURAL_GENERALIZATION_HELPER = Path(__file__).with_name("P0_MULTISCREEN_STRUCTURAL_GENERALIZATION_REGRESSION_V2.py")
+MULTISCREEN_STRUCTURAL_GENERALIZATION_HELPER = Path(__file__).with_name("P0_MULTISCREEN_STRUCTURAL_GENERALIZATION_REGRESSION_V3.py")
 
 
 def _runtime_extension_self_test() -> None:
