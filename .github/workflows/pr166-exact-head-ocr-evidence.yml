@@ -96,10 +96,15 @@ jobs:
                   continue
               if isinstance(obj, dict) and obj.get('failed'):
                   failed = obj.get('failed')
-          print(','.join(str(x) for x in failed) if failed else 'UNPARSED_V6_FAILURE')
+          print(','.join(str(x) for x in failed) if failed else '')
           PY
           )"
-            echo "::error title=PR166 V6 regression failed::failed_checks=$failed"
+            if [ -z "$failed" ]; then
+              detail="$(tail -c 1800 "$output" | tr '\n\r' '  ' | sed 's/%/%25/g')"
+              echo "::error title=PR166 V6 regression crash::detail=$detail"
+            else
+              echo "::error title=PR166 V6 regression failed::failed_checks=$failed"
+            fi
             exit "$rc"
           fi
 
