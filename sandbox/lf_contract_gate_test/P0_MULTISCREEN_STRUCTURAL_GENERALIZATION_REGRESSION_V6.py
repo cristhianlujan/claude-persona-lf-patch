@@ -9,6 +9,9 @@ Paddle reconstruction while preserving ordinary structured values.
 LOTE-REM-PR166-02 adds adversarial checks for ARC-014: duplicate stable
 variant_id values may coalesce only when their relevant payload is equivalent;
 conflicting duplicates must fail closed independent of input order.
+
+Final builder evidence is expected from the canonical push CI checkout; no
+standalone workflow is part of the governed candidate tree.
 """
 from __future__ import annotations
 
