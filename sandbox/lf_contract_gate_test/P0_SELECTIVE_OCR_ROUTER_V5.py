@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
-"""Mandatory pixel-first structured OCR router for PR166 remediation lot 05.
+"""Mandatory pixel-first structured OCR router for PR166 consolidated remediation.
 
-V5 preserves V4's OCR identity, mask-text and challenger rules but changes the
-structured acceptance boundary: every machine-validated observation must carry
-its source ROI pixels. The router itself derives deterministic visual evidence
-before any machine-valid OCR text can be accepted.
-
-This removes the opt-in evidence bypass and prevents forged/replayed evidence
-from authorizing or blocking an unrelated observation.
+V5 preserves V4's OCR identity, mask-text and challenger rules while making
+structured visual preflight mandatory. The current preflight uses V3 local
+geometry and a three-state observability contract so a heuristic false negative
+cannot silently become exact truth.
 """
 from __future__ import annotations
 
@@ -16,7 +13,7 @@ from typing import Any
 import numpy as np
 
 import P0_SELECTIVE_OCR_ROUTER_V4 as _v4
-import P0_VISUAL_OBSCURATION_EVIDENCE_V2 as _visual
+import P0_VISUAL_OBSCURATION_EVIDENCE_V3 as _visual
 
 MACHINE_VALIDATED_KINDS = _v4.MACHINE_VALIDATED_KINDS
 PROFILE_DIVERSITY_REQUIRED_KINDS = _v4.PROFILE_DIVERSITY_REQUIRED_KINDS
@@ -29,7 +26,7 @@ has_machine_validator = _v4.has_machine_validator
 is_masked_structured_text = _v4.is_masked_structured_text
 validate_text = _v4.validate_text
 
-VISUAL_CONTRACT = "MANDATORY_PIXEL_DERIVED_OBSERVATION_BOUND_V2"
+VISUAL_CONTRACT = "MANDATORY_PIXEL_DERIVED_OBSERVATION_BOUND_LOCAL_V3"
 
 
 def _blocked(decision: str, reason: str) -> dict:
@@ -46,7 +43,8 @@ def _structured_visual_preflight(observation: dict) -> tuple[dict | None, dict |
 
     Non-machine-validated observations are outside this visual contract and
     return (None, None). Machine-validated observations fail closed if pixels or
-    their binding are absent/invalid.
+    their binding are absent/invalid. RISK and AMBIGUOUS both block exact truth;
+    only CLEAR may proceed to the OCR contract.
     """
     kind = str(observation.get("kind") or "generic_text").strip()
     if kind not in MACHINE_VALIDATED_KINDS:
@@ -99,7 +97,8 @@ def _structured_visual_preflight(observation: dict) -> tuple[dict | None, dict |
             "SUPPLIED_VISUAL_EVIDENCE_NOT_DERIVED_FROM_CURRENT_OBSERVATION_PIXELS",
         ), None
 
-    if evidence.get("obscuration_risk_proven") is True:
+    visual_state = str(evidence.get("visual_state") or "")
+    if visual_state == _visual.STATE_RISK:
         result = _blocked(
             "VISUAL_OBSCURATION_RISK_NO_EXACT_TRUTH",
             "SOURCE_PIXELS_DO_NOT_SUPPORT_EXACT_STRUCTURED_TEXT",
@@ -108,8 +107,28 @@ def _structured_visual_preflight(observation: dict) -> tuple[dict | None, dict |
             "visual_evidence_sha256": evidence["evidence_sha256"],
             "visual_roi_sha256": evidence["roi_sha256"],
             "visual_detector": evidence["detector"],
+            "visual_state": visual_state,
         })
         return result, evidence
+
+    if visual_state == _visual.STATE_AMBIGUOUS:
+        result = _blocked(
+            "VISUAL_EVIDENCE_AMBIGUOUS_NO_EXACT_TRUTH",
+            "SOURCE_PIXELS_ARE_VISUALLY_AMBIGUOUS_FOR_EXACT_STRUCTURED_TEXT",
+        )
+        result.update({
+            "visual_evidence_sha256": evidence["evidence_sha256"],
+            "visual_roi_sha256": evidence["roi_sha256"],
+            "visual_detector": evidence["detector"],
+            "visual_state": visual_state,
+        })
+        return result, evidence
+
+    if visual_state != _visual.STATE_CLEAR:
+        return _blocked(
+            "VISUAL_SOURCE_EVIDENCE_INVALID",
+            "VISUAL_EVIDENCE_STATE_NOT_RECOGNIZED",
+        ), None
 
     return None, evidence
 
@@ -121,7 +140,9 @@ def _attach_visual_receipt(result: dict, evidence: dict | None) -> dict:
             "visual_evidence_sha256": evidence["evidence_sha256"],
             "visual_roi_sha256": evidence["roi_sha256"],
             "visual_detector": evidence["detector"],
+            "visual_state": evidence["visual_state"],
             "visual_obscuration_risk_proven": evidence["obscuration_risk_proven"],
+            "visual_ambiguous_evidence": evidence["ambiguous_visual_evidence"],
         })
     return output
 
@@ -130,7 +151,7 @@ def _delegate_observation(observation: dict) -> dict:
     delegated = dict(observation)
     delegated.pop("source_roi_gray", None)
     # V4 consumes only its v1 evidence format. V5 has already recomputed and
-    # validated the v2 evidence, so do not feed v2 into the legacy verifier.
+    # validated the current evidence, so do not feed it into the legacy verifier.
     delegated.pop("visual_obscuration_evidence", None)
     return delegated
 
@@ -154,15 +175,18 @@ def reconcile_paddle(observation: dict, paddle_attempts: Any) -> dict:
             "visual_evidence_sha256": route.get("visual_evidence_sha256"),
             "visual_roi_sha256": route.get("visual_roi_sha256"),
             "visual_detector": route.get("visual_detector"),
+            "visual_state": route.get("visual_state"),
         }
 
-    # Visual preflight has already proved the current structured ROI does not
-    # carry detector-level obscuration risk. V4 remains authoritative for
+    # CLEAR visual preflight has already proved the current structured ROI does
+    # not carry detector-level risk/ambiguity. V4 remains authoritative for
     # identity conflict, text-mask contamination and Paddle consensus.
     result = _v4.reconcile_paddle(_delegate_observation(observation), paddle_attempts)
     return _attach_visual_receipt(result, {
         "evidence_sha256": route["visual_evidence_sha256"],
         "roi_sha256": route["visual_roi_sha256"],
         "detector": route["visual_detector"],
+        "visual_state": route["visual_state"],
         "obscuration_risk_proven": False,
+        "ambiguous_visual_evidence": False,
     })
