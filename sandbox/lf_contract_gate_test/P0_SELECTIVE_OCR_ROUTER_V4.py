@@ -10,20 +10,27 @@ This is screen/product agnostic. It only reasons over traceable OCR evidence.
 
 Orden de evaluación en route_observation (CAMBIO DE CONTRATO RESPECTO DE V3):
 
-  1. conflicto de identidad variant_id             <-- ARC-014, fail-closed
-  2. evidencia de máscara en valor estructurado
-  3. materialidad no-textual
-  4. resolución estructural probada por píxeles
-  5. truncamiento visible
-  6. consenso Tesseract dirigido
-  7. baseline machine-valid
-  8. carril challenger / abstención
+  1. conflicto global de identidad variant_id       <-- ARC-014/AUD-027
+  2. conflicto intra-Tesseract de identidad/profile
+  3. evidencia de máscara en valor estructurado     <-- AUD-026 carrier-safe
+  4. materialidad no-textual
+  5. resolución estructural probada por píxeles
+  6. truncamiento visible
+  7. consenso Tesseract dirigido
+  8. baseline machine-valid
+  9. carril challenger / abstención
 
 El guard de máscara conserva precedencia sobre materialidad no-textual y
 resolución estructural porque esos metadatos son suministrados por el caller.
-El nuevo guard de identidad es todavía más temprano: si un mismo ID afirma dos
-payloads materiales distintos, ninguna de las dos evidencias puede ganar por
-orden de llegada. El contrato falla cerrado antes de deduplicar.
+La evidencia de máscara se inspecciona sobre TODOS los attempts de la familia,
+incluso cuando variant_id está vacío: identidad ausente impide consenso, pero
+no puede borrar evidencia material. Un stable variant_id se interpreta además
+como identidad global de evidencia; payloads textuales distintos no pueden
+coexistir bajo ese ID aunque provengan de familias OCR distintas.
+
+AUD-03 permanece como limitación explícita: sólo U+2022 y runs OCR de >=3 '*'
+son marcadores de máscara empíricamente respaldados. Glifos adicionales no se
+reclasifican sin evidencia source-bound independiente.
 """
 from __future__ import annotations
 
@@ -48,6 +55,7 @@ has_machine_validator = _v3.has_machine_validator
 # allowed so legitimate local-parts are not globally rejected.
 VISIBLE_BULLET_MASK_RE = re.compile(r"•")
 REPEATED_STAR_MASK_RE = re.compile(r"\*{3,}")
+MASK_SCOPE_LIMITATION = "AUD-03_UNSUPPORTED_MASK_GLYPHS_REQUIRE_SOURCE_BOUND_EVIDENCE"
 
 
 def is_masked_structured_text(value: Any) -> bool:
@@ -64,48 +72,70 @@ def validate_text(kind: str, value: Any) -> bool:
     return _v3.validate_text(kind, value)
 
 
-def _raw_traceable_attempts(attempts: Any, engine_family: str) -> list[dict]:
-    """Return every traceable attempt from one family without deduplicating IDs.
+def _raw_family_attempts(attempts: Any, engine_family: str | None = None) -> list[dict]:
+    """Return raw family evidence without requiring a stable variant identity.
 
-    Duplicate IDs are intentionally preserved here so blocking validation can
-    compare their payloads before any coalescing step.
+    Missing/blank variant_id makes an attempt ineligible for identity-based
+    consensus, but its text can still carry blocking evidence such as a visible
+    mask. This separation closes AUD-026 without granting untraceable attempts
+    positive consensus credit.
     """
     output: list[dict] = []
     for attempt in attempts or []:
-        if str(attempt.get("engine_family") or "") != engine_family:
-            continue
-        variant_id = str(attempt.get("variant_id") or "").strip()
-        if not variant_id:
+        family = str(attempt.get("engine_family") or "").strip()
+        if engine_family is not None and family != engine_family:
             continue
         output.append({
-            "variant_id": variant_id,
+            "engine_family": family,
+            "variant_id": str(attempt.get("variant_id") or "").strip(),
             "text": str(attempt.get("text") or "").strip(),
             "language_profile": str(attempt.get("language_profile") or "").strip(),
         })
     return output
 
 
-def _attempt_payload(item: dict) -> tuple[str, str]:
+def _raw_traceable_attempts(attempts: Any, engine_family: str) -> list[dict]:
+    """Return traceable attempts from one family without deduplicating IDs."""
+    return [
+        item
+        for item in _raw_family_attempts(attempts, engine_family)
+        if item["variant_id"]
+    ]
+
+
+def _attempt_payload(item: dict, include_profile: bool = True) -> tuple[str, ...]:
     """Canonical material payload for identity-consistency checks.
 
-    Text and language profile are both material: profile identity participates
-    in the profile-diversity gate, so two records cannot share a stable ID while
-    disagreeing about which profile produced the observation.
+    Within one OCR family, language profile is material because profile identity
+    participates in diversity gates. Across OCR families, profile namespaces are
+    not comparable; global identity conflict therefore compares normalized text
+    while family-local validation still checks profile consistency.
     """
-    return (str(item.get("text") or "").strip(), str(item.get("language_profile") or "").strip())
+    text = str(item.get("text") or "").strip()
+    if include_profile:
+        return (text, str(item.get("language_profile") or "").strip())
+    return (text,)
 
 
-def _has_variant_id_conflict(attempts: Any, engine_family: str) -> bool:
-    """Detect same stable ID bound to materially different payloads.
+def _has_variant_id_conflict(attempts: Any, engine_family: str | None = None) -> bool:
+    """Detect one stable ID bound to materially different payloads.
 
     Identical duplicates are benign and may later coalesce. Conflicting
     duplicates fail closed; no first-wins/last-wins semantics are allowed.
-    The check is scoped to the engine family consumed by the current lane.
+    If engine_family is None, identity is checked across the full evidence
+    universe using text as the cross-family comparable payload.
     """
-    payload_by_id: dict[str, tuple[str, str]] = {}
-    for item in _raw_traceable_attempts(attempts, engine_family):
+    payload_by_id: dict[str, tuple[str, ...]] = {}
+    if engine_family is None:
+        universe = [item for item in _raw_family_attempts(attempts) if item["variant_id"]]
+        include_profile = False
+    else:
+        universe = _raw_traceable_attempts(attempts, engine_family)
+        include_profile = True
+
+    for item in universe:
         variant_id = item["variant_id"]
-        payload = _attempt_payload(item)
+        payload = _attempt_payload(item, include_profile=include_profile)
         previous = payload_by_id.get(variant_id)
         if previous is None:
             payload_by_id[variant_id] = payload
@@ -125,10 +155,17 @@ def _variant_conflict_result(engine_family: str) -> dict:
     }
 
 
+def _raw_attempt_texts(attempts: Any, engine_family: str | None = None) -> list[str]:
+    """Return non-empty texts without using identity as an evidence filter."""
+    return [
+        item["text"]
+        for item in _raw_family_attempts(attempts, engine_family)
+        if item["text"]
+    ]
+
+
 def _traceable_targeted_texts(observation: dict) -> list[str]:
-    # Inspect the raw traceable universe, not V3's first-wins projection. This
-    # guarantees that a later masked duplicate cannot disappear before the mask
-    # guard even when ARC-014 already blocks the conflict at a higher level.
+    """Compatibility helper: traceable Tesseract texts, pre-deduplication."""
     return [
         item["text"]
         for item in _raw_traceable_attempts(observation.get("targeted_attempts"), "TESSERACT")
@@ -140,13 +177,19 @@ def _has_structured_mask_evidence(observation: dict) -> bool:
     kind = str(observation.get("kind") or "generic_text")
     if kind not in MACHINE_VALIDATED_KINDS:
         return False
-    candidates = [str(observation.get("baseline_text") or "").strip(), *_traceable_targeted_texts(observation)]
+    candidates = [
+        str(observation.get("baseline_text") or "").strip(),
+        *_raw_attempt_texts(observation.get("targeted_attempts")),
+    ]
     return any(is_masked_structured_text(text) for text in candidates if text)
 
 
 def route_observation(observation: dict) -> dict:
-    """Block identity conflict, then obscuration, before legacy routing."""
-    if _has_variant_id_conflict(observation.get("targeted_attempts"), "TESSERACT"):
+    """Block global identity conflict, local provenance conflict, then mask."""
+    attempts = observation.get("targeted_attempts")
+    if _has_variant_id_conflict(attempts, None):
+        return _variant_conflict_result("MULTI_FAMILY")
+    if _has_variant_id_conflict(attempts, "TESSERACT"):
         return _variant_conflict_result("TESSERACT")
     if _has_structured_mask_evidence(observation):
         return {
@@ -184,12 +227,15 @@ def _machine_valid_consensus(kind: str, attempts: Any, engine_family: str) -> di
 
 
 def _challenger_mask_evidence(kind: str, attempts: Any) -> bool:
-    """Return True when any raw traceable Paddle attempt carries mask evidence."""
+    """Return True when any raw Paddle attempt carries mask evidence.
+
+    Identity is intentionally not a prerequisite for blocking evidence.
+    """
     if kind not in MACHINE_VALIDATED_KINDS:
         return False
     return any(
-        is_masked_structured_text(item["text"])
-        for item in _raw_traceable_attempts(attempts, "PADDLE")
+        is_masked_structured_text(text)
+        for text in _raw_attempt_texts(attempts, "PADDLE")
     )
 
 
@@ -197,8 +243,9 @@ def reconcile_paddle(observation: dict, paddle_attempts: Any) -> dict:
     """Never allow an orthogonal OCR engine to reconstruct hidden content.
 
     Challenger identity conflict is evaluated after confirming PADDLE_REQUIRED
-    and before mask evidence or consensus. A masked challenger attempt still
-    contaminates the whole non-conflicting batch.
+    and before mask evidence or consensus. Stable IDs are global across the
+    observation + challenger evidence universe; missing IDs still carry blocking
+    mask evidence but cannot create identity conflicts or positive consensus.
     """
     route = route_observation(observation)
     if route["decision"] != "PADDLE_REQUIRED":
@@ -210,6 +257,10 @@ def reconcile_paddle(observation: dict, paddle_attempts: Any) -> dict:
         }
 
     kind = str(observation.get("kind") or "generic_text")
+    combined_attempts = [*(observation.get("targeted_attempts") or []), *(paddle_attempts or [])]
+
+    if _has_variant_id_conflict(combined_attempts, None):
+        return _variant_conflict_result("MULTI_FAMILY")
 
     if _has_variant_id_conflict(paddle_attempts, "PADDLE"):
         return _variant_conflict_result("PADDLE")
