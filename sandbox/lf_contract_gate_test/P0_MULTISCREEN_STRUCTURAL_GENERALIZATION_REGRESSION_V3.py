@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 import subprocess
 import sys
+import tempfile
+import zlib
 from pathlib import Path
 
 import cv2
@@ -13,11 +16,12 @@ import numpy as np
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT_ROOT = REPO_ROOT / "sandbox" / "story_creator_p0_visual" / "v1.1" / "scripts"
 CONTRACT_ROOT = Path(__file__).resolve().parent
-FIXTURE = CONTRACT_ROOT / "evidence" / "P0_S03_EMAIL_CROP_20260815.png"
-FIXTURE_SHA256 = "10f9a45e7bfaf898460ae8d7424c9127bfd374daf6a7cd77bb2bd659d979b4fb"
+FIXTURE_RECORD = CONTRACT_ROOT / "evidence" / "P0_S03_EMAIL_CROP_GRAY_ZLIB_V1.json"
 FIXTURE_DIMENSIONS = (325, 80)
+FIXTURE_RAW_GRAY_SHA256 = "0dc0c40503bb45c3f821713d5c11f5fdb3daba5e9a0ba78c7d19c70607c18dd2"
 EXPECTED_EMAIL = "tucorreo@email.com"
 GOVERNED_S03_SOURCE_SHA256 = "af332f828d4c0e39ac36fc9fa9459062d59ee52cad9400349ba7bb3e2c0e97df"
+EXPECTED_ROI_XYXY = [105, 980, 430, 1060]
 
 sys.path.insert(0, str(SCRIPT_ROOT))
 sys.path.insert(0, str(CONTRACT_ROOT))
@@ -61,6 +65,41 @@ def mask_image(plus_shapes: bool = False) -> tuple[np.ndarray, dict]:
     return image, {"x": 24, "y": 24, "width": 53, "height": 13}
 
 
+def load_source_bound_gray_fixture() -> tuple[np.ndarray, dict]:
+    record = json.loads(FIXTURE_RECORD.read_text(encoding="utf-8"))
+    if record.get("schema") != "p0-source-bound-gray-zlib/v1":
+        raise SystemExit("FAIL_EMAIL_FIXTURE_SCHEMA")
+    if record.get("source_sha256") != GOVERNED_S03_SOURCE_SHA256:
+        raise SystemExit("FAIL_EMAIL_FIXTURE_SOURCE_SHA")
+    if record.get("source_roi_xyxy") != EXPECTED_ROI_XYXY:
+        raise SystemExit("FAIL_EMAIL_FIXTURE_SOURCE_ROI")
+    if (record.get("width"), record.get("height")) != FIXTURE_DIMENSIONS:
+        raise SystemExit("FAIL_EMAIL_FIXTURE_DIMENSIONS")
+    if record.get("mode") != "L":
+        raise SystemExit("FAIL_EMAIL_FIXTURE_MODE")
+    try:
+        compressed = base64.b64decode(record["zlib_base64"], validate=True)
+        raw = zlib.decompress(compressed)
+    except Exception as exc:
+        raise SystemExit(f"FAIL_EMAIL_FIXTURE_DECODE:{type(exc).__name__}") from exc
+    expected_bytes = FIXTURE_DIMENSIONS[0] * FIXTURE_DIMENSIONS[1]
+    if len(raw) != expected_bytes:
+        raise SystemExit("FAIL_EMAIL_FIXTURE_RAW_LENGTH")
+    raw_sha = hashlib.sha256(raw).hexdigest()
+    if raw_sha != FIXTURE_RAW_GRAY_SHA256 or record.get("raw_gray_sha256") != raw_sha:
+        raise SystemExit("FAIL_EMAIL_FIXTURE_RAW_SHA")
+    image = np.frombuffer(raw, dtype=np.uint8).reshape(FIXTURE_DIMENSIONS[1], FIXTURE_DIMENSIONS[0]).copy()
+    return image, record
+
+
+def write_pgm_p2(image: np.ndarray, path: Path) -> None:
+    height, width = image.shape
+    with path.open("w", encoding="ascii", newline="\n") as handle:
+        handle.write(f"P2\n{width} {height}\n255\n")
+        for row in image:
+            handle.write(" ".join(str(int(value)) for value in row) + "\n")
+
+
 def tesseract_languages() -> set[str]:
     completed = subprocess.run(
         ["tesseract", "--list-langs"],
@@ -74,9 +113,9 @@ def tesseract_languages() -> set[str]:
     return {line for line in lines if not line.lower().startswith("list of available languages")}
 
 
-def run_tesseract(profile: str, psm: int = 7) -> str:
+def run_tesseract(fixture: Path, profile: str, psm: int = 7) -> str:
     completed = subprocess.run(
-        ["tesseract", str(FIXTURE), "stdout", "-l", profile, "--psm", str(psm)],
+        ["tesseract", str(fixture), "stdout", "-l", profile, "--psm", str(psm)],
         capture_output=True,
         text=True,
         check=False,
@@ -107,30 +146,33 @@ def main() -> int:
     checks["clear_text_crop_eligible"] = text_crop_has_clear_margin(clear, margin_px=2)
     checks["edge_clipped_text_crop_rejected"] = not text_crop_has_clear_margin(clipped, margin_px=2)
 
-    # Source-bound fixture derived byte-for-byte from governed S03 SOURCE_IMAGE.
-    raw = FIXTURE.read_bytes()
-    fixture_sha = hashlib.sha256(raw).hexdigest()
-    fixture_image = cv2.imread(str(FIXTURE))
-    checks["email_fixture_sha_exact"] = fixture_sha == FIXTURE_SHA256
-    checks["email_fixture_decodes"] = fixture_image is not None
+    # Source-bound evidence is a deterministic grayscale transform of the exact
+    # governed S03 SOURCE_IMAGE ROI, stored losslessly as zlib+base64 text.
+    fixture_image, fixture_record = load_source_bound_gray_fixture()
+    fixture_sha = hashlib.sha256(fixture_image.tobytes()).hexdigest()
+    checks["email_fixture_raw_sha_exact"] = fixture_sha == FIXTURE_RAW_GRAY_SHA256
     checks["email_fixture_dimensions_exact"] = (
-        fixture_image is not None
-        and (fixture_image.shape[1], fixture_image.shape[0]) == FIXTURE_DIMENSIONS
+        fixture_image.shape[1], fixture_image.shape[0]
+    ) == FIXTURE_DIMENSIONS
+    checks["email_fixture_source_binding_exact"] = (
+        fixture_record.get("source_sha256") == GOVERNED_S03_SOURCE_SHA256
+        and fixture_record.get("source_roi_xyxy") == EXPECTED_ROI_XYXY
     )
-    checks["email_fixture_crop_complete"] = (
-        fixture_image is not None
-        and text_crop_has_clear_margin(cv2.cvtColor(fixture_image, cv2.COLOR_BGR2GRAY), margin_px=2)
-    )
+    checks["email_fixture_crop_complete"] = text_crop_has_clear_margin(fixture_image, margin_px=2)
 
     languages = tesseract_languages()
     checks["tesseract_spa_available"] = "spa" in languages
     checks["tesseract_eng_available"] = "eng" in languages
 
-    observed = {
-        "spa": run_tesseract("spa", 7),
-        "eng": run_tesseract("eng", 7),
-        "spa+eng": run_tesseract("spa+eng", 7),
-    }
+    with tempfile.TemporaryDirectory(prefix="p0-s03-email-") as tmp:
+        pgm_path = Path(tmp) / "s03_email_source_bound.pgm"
+        write_pgm_p2(fixture_image, pgm_path)
+        observed = {
+            "spa": run_tesseract(pgm_path, "spa", 7),
+            "eng": run_tesseract(pgm_path, "eng", 7),
+            "spa+eng": run_tesseract(pgm_path, "spa+eng", 7),
+        }
+
     checks["spa_reproduces_machine_invalid_email"] = not router.validate_text("email", observed["spa"])
     checks["eng_recovers_exact_email"] = observed["eng"] == EXPECTED_EMAIL
     checks["spa_eng_recovers_exact_email"] = observed["spa+eng"] == EXPECTED_EMAIL
@@ -151,8 +193,8 @@ def main() -> int:
     checks["s03_email_exact_text"] = s03_route.get("text") == EXPECTED_EMAIL
     checks["s03_email_does_not_invoke_paddle"] = s03_route.get("invoke_paddle") is False
 
-    # Regression: repeated PSMs under one language profile do not prove that
-    # same-family recovery space is exhausted for punctuation-sensitive email.
+    # Repeated PSMs under one language profile do not prove that same-family
+    # recovery space is exhausted for punctuation-sensitive email.
     same_profile_failure = {
         "materiality": "TEXT",
         "kind": "email",
@@ -257,8 +299,9 @@ def main() -> int:
         "failed": failed,
         "governed_source_images_available": 10,
         "governed_s03_source_sha256": GOVERNED_S03_SOURCE_SHA256,
-        "email_fixture_sha256": fixture_sha,
+        "email_fixture_raw_gray_sha256": fixture_sha,
         "email_fixture_dimensions": list(FIXTURE_DIMENSIONS),
+        "email_fixture_source_roi_xyxy": EXPECTED_ROI_XYXY,
         "tesseract_profile_outputs": observed,
         "s03_email_route": s03_route.get("decision"),
         "s03_email_resolved_text": s03_route.get("text"),
