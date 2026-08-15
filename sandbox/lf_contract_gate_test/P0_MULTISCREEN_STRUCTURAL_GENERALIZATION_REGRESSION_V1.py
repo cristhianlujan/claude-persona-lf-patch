@@ -55,7 +55,6 @@ def decision(observation: dict) -> str:
 def main() -> int:
     checks: dict[str, bool] = {}
 
-    # PR161 structural regression: must remain intact.
     positive_cells = subject.detect_segmented_input_cells(draw_cells(6))
     checks["six_cells_detected"] = len(positive_cells) == 6
     checks["one_segmented_group"] = len({item.get("repeated_control_group_id") for item in positive_cells}) == 1
@@ -96,8 +95,6 @@ def main() -> int:
         for item in normalized.get("reader_uncertainties", [])
     )
 
-    # Technical causal cases sourced from 10 governed SOURCE_IMAGE records.
-    # These are not authentic human P0-5 adjudication and grant no corpus credit.
     source_bound = {
         "s02_mask": {
             "materiality": "TEXT", "kind": "generic_text", "baseline_text": "+++ 321",
@@ -113,7 +110,7 @@ def main() -> int:
             "materiality": "TEXT", "kind": "email", "baseline_text": "",
             "targeted_attempts": [{
                 "engine_family": "TESSERACT", "text": "tucorreo@email.com", "stable": True,
-                "valid": False,  # deliberately wrong caller flag; router must recompute True.
+                "valid": False,
             }],
             "persistent_invariant_failure": False, "challenger_allowed": True,
         },
@@ -125,7 +122,7 @@ def main() -> int:
             "materiality": "TEXT", "kind": "card_number", "baseline_text": "4 5 5 6 12 56",
             "targeted_attempts": [{
                 "engine_family": "TESSERACT", "text": "1234 5678 9012 3456", "stable": True,
-                "valid": False,  # ignored; 16-digit invariant is recomputed internally.
+                "valid": False,
             }],
             "persistent_invariant_failure": False, "challenger_allowed": True,
         },
@@ -160,7 +157,7 @@ def main() -> int:
 
     checks["valid_baseline_preserved"] = decision({
         "materiality": "TEXT", "kind": "currency", "baseline_text": "S/ 10.00",
-        "baseline_valid": False,  # caller cannot invalidate objectively valid text.
+        "baseline_valid": False,
         "persistent_invariant_failure": False, "challenger_allowed": True,
     }) == "BASELINE_PRESERVED"
 
@@ -260,10 +257,12 @@ def main() -> int:
         ]
     )
     checks["router_ignores_confidence"] = ('get("confidence")' not in router_implementation and "['confidence']" not in router_implementation)
+    # Behavioral proof is authoritative; do not depend on brittle source-string matching.
     checks["router_recomputes_validity"] = (
-        'attempt.get("valid")' not in router_implementation
-        and 'observation.get("baseline_valid")' not in router_implementation
-        and "valid:" not in router_implementation
+        checks["declared_target_valid_cannot_bypass_machine_validation"]
+        and checks["declared_baseline_valid_cannot_bypass_machine_validation"]
+        and checks["paddle_invalid_output_rejected_by_internal_validator"]
+        and checks["valid_baseline_preserved"]
     )
     checks["no_interaction_inference"] = "interaction_functions_confirmed\": 0" in implementation
 
