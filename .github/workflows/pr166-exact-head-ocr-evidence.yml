@@ -76,6 +76,8 @@ jobs:
 
       - name: Run exact-head V6 regression
         working-directory: sandbox/lf_contract_gate_test
+        env:
+          PYTHONPATH: ${{ github.workspace }}/sandbox/story_creator_p0_visual/v1.1/scripts:${{ github.workspace }}/sandbox/lf_contract_gate_test
         run: |
           set +e
           output="$GITHUB_WORKSPACE/.audit-output/pr166-exact-head/v6-output.jsonl"
