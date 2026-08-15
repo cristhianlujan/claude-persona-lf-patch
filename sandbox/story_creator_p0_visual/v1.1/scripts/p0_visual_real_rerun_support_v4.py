@@ -2,7 +2,7 @@
 from __future__ import annotations
 import copy
 import cv2,pytesseract
-from p0_full_reader_v4 import full_reader
+from p0_multiscreen_structural_generalization_v1 import full_reader
 from p0_icon_structural_roles_v1 import reconcile_icon_structural_roles
 from p0_independent_omission_sweep_v4 import run_independent_omission_sweep
 from p0_visual_graders_v4 import run_all

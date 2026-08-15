@@ -1,0 +1,89 @@
+{
+  "schema_version": "p0-second-real-screen-technical-observations/v1",
+  "source": {
+    "source_name": "02_onboarding paso 2.png",
+    "drive_file_id": "1K7PdA_jOWMzwKTUkP7PGDQIWsNx6hbjI",
+    "source_sha256": "9f824b1d357ea0dd156046dfc6a410fe92f1942bb225223208602abbb7fb6560",
+    "source_bytes": 1664543,
+    "width": 1536,
+    "height": 1024,
+    "mime_type": "image/png",
+    "source_location_class": "GOOGLE_DRIVE_CONNECTED_SOURCE_NOT_YET_GOVERNED_EVIDENCE_OBJECT",
+    "governed_source_object": false
+  },
+  "reference_class": "TECHNICAL_OBSERVABLE_REFERENCE_NOT_HUMAN_ADJUDICATION",
+  "environment": {
+    "ocr_engine_family": "TESSERACT",
+    "tesseract_version_observed": "5.5.0",
+    "pytesseract_version_observed": "0.3.13",
+    "opencv_version_observed": "4.13.0",
+    "language": "spa",
+    "psm_set": [3, 6, 11, 12]
+  },
+  "observations": [
+    {
+      "observation_id": "SECOND-SCREEN-MASK-001",
+      "category": "PIXEL_MASK_GLYPH_OCR_SUBSTITUTION",
+      "visible_reference": "••• 321",
+      "ocr_psm11_token": "+++",
+      "ocr_token_bbox": {"x": 940, "y": 349, "width": 26, "height": 5},
+      "ocr_psm11_confidence": 88.0,
+      "neighbor_token": {
+        "ocr_text": "321,",
+        "bbox": {"x": 974, "y": 344, "width": 32, "height": 14},
+        "confidence": 78.0
+      },
+      "source_pixel_components": [
+        {"x": 0, "y": 0, "width": 5, "height": 5, "area": 20, "fill": 0.8, "aspect": 1.0, "cx": 1.75, "cy": 1.75},
+        {"x": 10, "y": 0, "width": 5, "height": 5, "area": 18, "fill": 0.72, "aspect": 1.0, "cx": 12.111, "cy": 1.722},
+        {"x": 21, "y": 0, "width": 4, "height": 4, "area": 16, "fill": 1.0, "aspect": 1.0, "cx": 22.5, "cy": 1.5}
+      ],
+      "causal_read": "OCR reports repeated plus punctuation while the exact source-token pixels contain three aligned filled compact components. A pixel-shape invariant can correct only the glyph token without accepting the whole OCR string as authoritative.",
+      "allowed_resolution": "PIXEL_FILLED_DOT_MASK_NORMALIZATION",
+      "forbidden_resolution": "SCREEN_LITERAL_REPLACEMENT_OR_CROSS_ENGINE_CONFIDENCE_VOTE"
+    },
+    {
+      "observation_id": "SECOND-SCREEN-SEGMENTED-CONTROLS-001",
+      "category": "REPEATED_LARGE_INPUT_CELLS_MISREAD_AS_TEXT",
+      "visible_reference": "six empty aligned input cells",
+      "outer_cell_regions": [
+        {"x": 687, "y": 405, "width": 75, "height": 91, "contour_fill": 0.9442, "polygon_sides": 4},
+        {"x": 793, "y": 405, "width": 75, "height": 91, "contour_fill": 0.9512, "polygon_sides": 4},
+        {"x": 898, "y": 405, "width": 76, "height": 90, "contour_fill": 0.9446, "polygon_sides": 4},
+        {"x": 1004, "y": 405, "width": 75, "height": 91, "contour_fill": 0.938, "polygon_sides": 4},
+        {"x": 1110, "y": 405, "width": 75, "height": 91, "contour_fill": 0.9379, "polygon_sides": 4},
+        {"x": 1216, "y": 405, "width": 75, "height": 91, "contour_fill": 0.9511, "polygon_sides": 4}
+      ],
+      "diagnostic_crop": {"x": 650, "y": 390, "width": 650, "height": 130},
+      "diagnostic_crop_ocr": {
+        "psm6": "MOSS",
+        "psm11": "DOI",
+        "psm12": "DOI"
+      },
+      "causal_read": "Large repeated empty closed cells are a structured control family absent from the prior 14-31 px repeated-square detector. OCR strings from their borders are non-text artifacts and same-family PSM agreement is not independent corroboration.",
+      "allowed_resolution": "GENERIC_REPEATED_SEGMENTED_CONTROL_DETECTION_AND_OCR_EXCLUSION",
+      "forbidden_resolution": "OTP_OR_PIN_BEHAVIOR_INFERENCE"
+    },
+    {
+      "observation_id": "SECOND-SCREEN-ICON-OCR-001",
+      "category": "ICON_FALSE_TEXT_REMAINS_MODEL_IDENTITY_LANE",
+      "diagnostic_examples": [
+        {"region_role": "help_compact_visual", "crop": {"x": 1110, "y": 35, "width": 100, "height": 60}, "ocr_psm11": "(O Ayu"},
+        {"region_role": "message_service_icon", "crop": {"x": 650, "y": 285, "width": 650, "height": 95}, "ocr_psm11_prefix": "(O)"}
+      ],
+      "causal_read": "The second screen independently reproduces icon-to-text leakage. This observation alone does not select an icon identity model or prove interaction behavior.",
+      "allowed_resolution": "STRUCTURAL_ICON_OR_CONTROL_EXCLUSION_WHEN_PIXEL_GEOMETRY_PROVES_IT_OTHERWISE_ABSTAIN",
+      "forbidden_resolution": "CLIP_RUNTIME_PROMOTION_FROM_THIS_UNGOVERNED_SINGLE_SCREEN"
+    }
+  ],
+  "governance": {
+    "authentic_human_adjudication": false,
+    "second_screen_model_lane_executed": false,
+    "real_corpus_credit": 0,
+    "p0_5_credit": 0,
+    "holdout_accessed": false,
+    "runtime_promoted_models": false,
+    "production_authorized": false,
+    "note": "This file freezes source-bound technical observations from a connected real screen. The canonical image bytes are not yet persisted as a governed SOURCE_IMAGE evidence object, so this must not be counted as governed real-corpus validation."
+  }
+}

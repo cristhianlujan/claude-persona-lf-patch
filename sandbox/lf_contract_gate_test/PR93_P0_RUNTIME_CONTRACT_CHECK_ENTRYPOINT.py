@@ -155,6 +155,7 @@ HELPER = Path(__file__).with_name("p0_exact_head_real_source_ci_v2.py")
 HUMAN_REVIEW_CONVERGENCE_HELPER = Path(__file__).with_name("P0_HUMAN_REVIEW_CONVERGENCE_V1.py")
 DUAL_OCR_RECONCILIATION_HELPER = Path(__file__).with_name("P0_DUAL_OCR_RECONCILIATION_CONTRACT_V1.py")
 ICON_STRUCTURAL_ROLE_HELPER = Path(__file__).with_name("P0_ICON_STRUCTURAL_ROLE_REGRESSION_V1.py")
+MULTISCREEN_STRUCTURAL_GENERALIZATION_HELPER = Path(__file__).with_name("P0_MULTISCREEN_STRUCTURAL_GENERALIZATION_REGRESSION_V1.py")
 
 
 def _runtime_extension_self_test() -> None:
@@ -239,6 +240,18 @@ def _run_icon_structural_role_contract() -> None:
     print("PASS_P0_ICON_STRUCTURAL_ROLE_GATE=1/1")
 
 
+def _run_multiscreen_structural_generalization_contract() -> None:
+    completed = subprocess.run(
+        [sys.executable, str(MULTISCREEN_STRUCTURAL_GENERALIZATION_HELPER)],
+        cwd=Path(__file__).resolve().parents[2],
+        env=os.environ.copy(),
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise SystemExit(completed.returncode)
+    print("PASS_P0_MULTISCREEN_STRUCTURAL_GENERALIZATION_GATE=1/1")
+
+
 def _run_exact_head_real_source_if_required() -> None:
     event_name = os.environ.get("GITHUB_EVENT_NAME", "")
     github_ref = os.environ.get("GITHUB_REF", "")
@@ -259,6 +272,7 @@ def main() -> None:
     _run_human_review_convergence_contract()
     _run_dual_ocr_reconciliation_contract()
     _run_icon_structural_role_contract()
+    _run_multiscreen_structural_generalization_contract()
     original_pass_check = core.e16.base.pass_check
 
     def pass_check_with_real_source(message: str) -> None:
