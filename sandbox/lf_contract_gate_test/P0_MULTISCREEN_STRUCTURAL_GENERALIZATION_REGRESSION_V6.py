@@ -139,6 +139,8 @@ def main() -> int:
     checks["normal_email_preserved"] = router.validate_text("email", "tucorreo@email.com")
     checks["plus_tag_email_preserved"] = router.validate_text("email", "user+tag@example.com")
     checks["single_star_localpart_not_overblocked"] = router.validate_text("email", "ab*c@example.com")
+    checks["two_stars_not_overblocked"] = router.validate_text("email", "ab**c@example.com")
+    checks["middle_dot_not_inferred_as_mask"] = not router.is_masked_structured_text("ab·cd@example.com")
     checks["currency_validator_preserved"] = router.validate_text("currency", "S/ 2,111.92")
 
     failed = sorted(name for name, ok in checks.items() if not ok)
