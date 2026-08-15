@@ -207,7 +207,7 @@ def _similar_component(left: dict, right: dict, local_scale: float) -> bool:
     gap = int(right["x"]) - (int(left["x"]) + int(left["w"]))
     if gap < 0:
         return False
-    if gap > max(3.0, 2.50 * max(int(left["w"]), int(right["w"])), 0.80 * local_scale):
+    if gap > max(3.0, 4.00 * max(int(left["w"]), int(right["w"])), 0.80 * local_scale):
         return False
     return True
 
