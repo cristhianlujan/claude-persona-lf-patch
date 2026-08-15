@@ -10,9 +10,12 @@ import numpy as np
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT_ROOT = REPO_ROOT / "sandbox" / "story_creator_p0_visual" / "v1.1" / "scripts"
+CONTRACT_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_ROOT))
+sys.path.insert(0, str(CONTRACT_ROOT))
 
 import p0_multiscreen_structural_generalization_v1 as subject
+import P0_SELECTIVE_OCR_ROUTER_V2 as router
 
 
 def fail(code: str, detail: str = "") -> None:
@@ -45,6 +48,10 @@ def mask_image(*, plus_shapes: bool = False) -> tuple[np.ndarray, dict]:
     return image, {"x": 24, "y": 24, "width": 53, "height": 13}
 
 
+def decision(observation: dict) -> str:
+    return str(router.route_observation(observation).get("decision"))
+
+
 def main() -> int:
     checks: dict[str, bool] = {}
 
@@ -52,7 +59,6 @@ def main() -> int:
     checks["six_cells_detected"] = len(positive_cells) == 6
     checks["one_segmented_group"] = len({item.get("repeated_control_group_id") for item in positive_cells}) == 1
     checks["generic_control_type"] = all(item.get("control_type") == "SEGMENTED_INPUT_CELL" for item in positive_cells)
-
     checks["three_cells_rejected"] = subject.detect_segmented_input_cells(draw_cells(3)) == []
     checks["misaligned_cells_rejected"] = subject.detect_segmented_input_cells(draw_cells(6, misaligned=True)) == []
 
@@ -70,10 +76,7 @@ def main() -> int:
                 "visible_text": "terminado en +++ 321.",
                 "ocr_variants": ["terminado en +++ 321.", "terminado en +++ 321.", "terminado en +++ 321."],
                 "ocr_consensus_text": "terminado en +++ 321.",
-                "text_lineage": {
-                    "source_tokens": ["+++"],
-                    "source_token_regions": [dot_region],
-                },
+                "text_lineage": {"source_tokens": ["+++"], "source_token_regions": [dot_region]},
             }
         ],
         "reader_uncertainties": [
@@ -94,16 +97,147 @@ def main() -> int:
         for item in normalized.get("reader_uncertainties", [])
     )
 
+    # Source-bound technical causal cases from 10 governed SOURCE_IMAGE records.
+    # These are diagnostic targets, not authentic P0-5 human adjudication.
+    source_bound = {
+        "s02_mask": {
+            "materiality": "TEXT", "kind": "generic_text", "baseline_text": "+++ 321",
+            "structural_resolution_proven": True,
+            "structural_resolution_code": "PIXEL_FILLED_DOT_MASK_NORMALIZATION",
+            "challenger_allowed": True,
+        },
+        "s02_cells": {
+            "materiality": "NON_TEXT_CONTROL", "kind": "generic_text", "baseline_text": "HOOO0O",
+            "persistent_invariant_failure": True, "challenger_allowed": True,
+        },
+        "s03_email": {
+            "materiality": "TEXT", "kind": "email", "baseline_text": "", "baseline_valid": False,
+            "targeted_attempts": [
+                {"engine_family": "TESSERACT", "text": "tucorreo@email.com", "stable": True, "valid": True}
+            ],
+            "persistent_invariant_failure": False, "challenger_allowed": True,
+        },
+        "cand06_qr": {
+            "materiality": "NON_TEXT_QR", "kind": "generic_text", "baseline_text": "cn ES Ea E paga pe",
+            "persistent_invariant_failure": True, "challenger_allowed": True,
+        },
+        "cand07_card": {
+            "materiality": "TEXT", "kind": "generic_text", "baseline_text": "4 5 5 6 12 56",
+            "baseline_valid": False,
+            "targeted_attempts": [
+                {"engine_family": "TESSERACT", "text": "1234 5678 9012 3456", "stable": True, "valid": True}
+            ],
+            "persistent_invariant_failure": False, "challenger_allowed": True,
+        },
+        "cand08_sep_amount": {
+            "materiality": "TEXT", "kind": "currency", "baseline_text": "S/ 211.19", "baseline_valid": True,
+            "targeted_attempts": [
+                {"engine_family": "TESSERACT", "text": "S/ 211.19", "stable": True, "valid": True}
+            ],
+            "persistent_invariant_failure": True, "challenger_allowed": True,
+        },
+        "cand10_igv": {
+            "materiality": "TEXT", "kind": "currency", "baseline_text": "S/ 1", "baseline_valid": False,
+            "targeted_attempts": [
+                {"engine_family": "TESSERACT", "text": "S/ 18", "stable": True, "valid": False},
+                {"engine_family": "TESSERACT", "text": "S/ 18.", "stable": True, "valid": False},
+                {"engine_family": "TESSERACT", "text": "S/ 18.1", "stable": True, "valid": False}
+            ],
+            "persistent_invariant_failure": True, "challenger_allowed": True,
+        },
+    }
+    expected = {
+        "s02_mask": "STRUCTURAL_PIXEL_RESOLVED",
+        "s02_cells": "DISCARD_NON_TEXT_OCR",
+        "s03_email": "TARGETED_TESSERACT_ACCEPT",
+        "cand06_qr": "DISCARD_NON_TEXT_OCR",
+        "cand07_card": "TARGETED_TESSERACT_ACCEPT",
+        "cand08_sep_amount": "TARGETED_TESSERACT_ACCEPT",
+        "cand10_igv": "PADDLE_REQUIRED",
+    }
+    for name, observation in source_bound.items():
+        checks[f"route_{name}"] = decision(observation) == expected[name]
+
+    checks["valid_baseline_preserved"] = decision({
+        "materiality": "TEXT", "kind": "currency", "baseline_text": "S/ 10.00",
+        "persistent_invariant_failure": False, "challenger_allowed": True,
+    }) == "BASELINE_PRESERVED"
+
+    checks["valid_vs_valid_disagreement_abstains"] = decision({
+        "materiality": "TEXT", "kind": "currency", "baseline_text": "S/ 10.00",
+        "targeted_attempts": [{"engine_family": "TESSERACT", "text": "S/ 100.00", "stable": True, "valid": True}],
+        "persistent_invariant_failure": True, "challenger_allowed": True,
+    }) == "NEEDS_REVIEW_VALID_DISAGREEMENT"
+
+    checks["invalid_high_confidence_cannot_bypass"] = decision({
+        "materiality": "TEXT", "kind": "email", "baseline_text": "aXb.com", "baseline_valid": False,
+        "baseline_confidence": 0.9999,
+        "targeted_attempts": [
+            {"engine_family": "TESSERACT", "text": "aXb.com", "stable": True, "valid": False, "confidence": 0.99999}
+        ],
+        "persistent_invariant_failure": True, "challenger_allowed": True,
+    }) == "PADDLE_REQUIRED"
+
+    checks["visible_truncation_never_completed"] = decision({
+        "materiality": "TEXT", "kind": "generic_text", "baseline_text": "Política de priv...",
+        "visible_truncated": True, "persistent_invariant_failure": True, "challenger_allowed": True,
+    }) == "VISIBLE_ONLY_NO_COMPLETION"
+
+    checks["pixel_correction_requires_proof"] = decision({
+        "materiality": "TEXT", "kind": "generic_text", "baseline_text": "+++",
+        "structural_resolution_proven": False,
+        "structural_resolution_code": "PIXEL_FILLED_DOT_MASK_NORMALIZATION",
+        "persistent_invariant_failure": True, "challenger_allowed": True,
+    }) == "PADDLE_REQUIRED"
+
+    checks["nontext_never_invokes_paddle"] = router.route_observation({
+        "materiality": "NON_TEXT_ICON", "baseline_text": "E", "persistent_invariant_failure": True,
+        "challenger_allowed": True,
+    }).get("invoke_paddle") is False
+
+    checks["targeted_tesseract_stops_paddle"] = router.route_observation(source_bound["s03_email"]).get("invoke_paddle") is False
+    checks["persistent_failure_authorizes_paddle_only_after_crop"] = router.route_observation(source_bound["cand10_igv"]).get("invoke_paddle") is True
+
+    paddle_fix = router.reconcile_paddle(source_bound["cand10_igv"], "S/ 18.00", stable=True, valid=True)
+    checks["paddle_structural_correction_only_after_authorized_route"] = (
+        paddle_fix.get("decision") == "PADDLE_STRUCTURAL_CORRECTION"
+        and paddle_fix.get("resolved") is True
+        and paddle_fix.get("text") == "S/ 18.00"
+    )
+
+    checks["paddle_not_authorized_when_tesseract_crop_succeeds"] = (
+        router.reconcile_paddle(source_bound["s03_email"], "tucorreo@email.com", stable=True, valid=True).get("decision")
+        == "PADDLE_NOT_AUTHORIZED_FOR_OBSERVATION"
+    )
+    checks["unstable_paddle_abstains"] = (
+        router.reconcile_paddle(source_bound["cand10_igv"], "S/ 18.00", stable=False, valid=True).get("decision")
+        == "NEEDS_REVIEW"
+    )
+
+    both_valid = {
+        "materiality": "TEXT", "kind": "currency", "baseline_text": "S/ 10.00", "baseline_valid": True,
+        "targeted_attempts": [], "persistent_invariant_failure": True, "challenger_allowed": True,
+    }
+    checks["both_valid_cross_engine_disagreement_preserves_baseline"] = (
+        router.reconcile_paddle(both_valid, "S/ 11.00", stable=True, valid=True).get("decision")
+        == "BASELINE_PRESERVED_DISAGREEMENT"
+    )
+
     implementation_path = SCRIPT_ROOT / "p0_multiscreen_structural_generalization_v1.py"
     implementation = implementation_path.read_text(encoding="utf-8")
+    router_implementation = (CONTRACT_ROOT / "P0_SELECTIVE_OCR_ROUTER_V2.py").read_text(encoding="utf-8")
     forbidden_literals = [
-        "WhatsApp",
-        "321",
-        "Paso 2",
-        "Confirma tu celular",
+        "WhatsApp", "321", "Paso 2", "Confirma tu celular",
         "9f824b1d357ea0dd156046dfc6a410fe92f1942bb225223208602abbb7fb6560",
     ]
     checks["implementation_has_no_screen_literals"] = not any(value in implementation for value in forbidden_literals)
+    checks["router_has_no_source_sha_or_coordinates"] = not any(
+        token in router_implementation for token in [
+            "9f824b1d357ea0dd156046dfc6a410fe92f1942bb225223208602abbb7fb6560",
+            "af332f828d4c0e39ac36fc9fa9459062d59ee52cad9400349ba7bb3e2c0e97df", "1536", "1844",
+        ]
+    )
+    checks["router_ignores_confidence"] = ('get("confidence")' not in router_implementation and "['confidence']" not in router_implementation)
     checks["no_interaction_inference"] = "interaction_functions_confirmed\": 0" in implementation
 
     failed = sorted(name for name, passed in checks.items() if not passed)
@@ -112,10 +246,16 @@ def main() -> int:
         "checks": checks,
         "check_count": len(checks),
         "failed": failed,
-        "synthetic_regression_only": True,
+        "source_bound_technical_cases": len(source_bound),
+        "governed_source_images_available": 10,
+        "routing_order": [
+            "STRUCTURAL_OR_NON_TEXT", "TARGETED_TESSERACT",
+            "PADDLE_ONLY_FOR_PERSISTENT_MACHINE_FAILURE", "ABSTAIN_OR_HUMAN_REVIEW",
+        ],
+        "paddle_runtime_promoted": False,
+        "synthetic_and_source_bound_technical_regression_only": True,
         "real_corpus_credit": 0,
         "p0_5_credit": 0,
-        "runtime_promoted_models": False,
         "production_authorized": False,
     }
     print(json.dumps(result, sort_keys=True, ensure_ascii=False))
