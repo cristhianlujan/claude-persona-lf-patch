@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+"""Source-bound regression for language-profile fallback before Paddle escalation.
+
+This gate intentionally keeps Paddle available only after distinct Tesseract
+language profiles continue to fail machine-checkable structured-text invariants.
+"""
 from __future__ import annotations
 
 import hashlib
