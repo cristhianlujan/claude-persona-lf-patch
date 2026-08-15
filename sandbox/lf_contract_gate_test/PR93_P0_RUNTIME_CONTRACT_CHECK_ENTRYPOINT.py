@@ -116,7 +116,7 @@ def evaluate_controlled_runtime_scope(
         path for path in changed
         if path in CONTROLLED_RUNTIME_PATHS or path.startswith("supabase/functions/")
     }
-    broker_specific = set(P0_EXACT_HEAD_BLOBS) if False else set(P0_EXACT_HEAD_BROKER_BLOBS)
+    broker_specific = set(P0_EXACT_HEAD_BROKER_BLOBS)
     extension_only = bool(controlled & broker_specific) and controlled.issubset(P0_EXACT_HEAD_EXTENSION_PATHS)
     if not extension_only:
         return _original_evaluate_controlled_runtime_scope(
