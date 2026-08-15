@@ -143,6 +143,109 @@ def main() -> int:
     checks["middle_dot_not_inferred_as_mask"] = not router.is_masked_structured_text("ab·cd@example.com")
     checks["currency_validator_preserved"] = router.validate_text("currency", "S/ 2,111.92")
 
+    # F-PR166-01: exercise the Paddle lane from an unmasked observation that
+    # legitimately reaches PADDLE_REQUIRED.
+    unmasked_paddle_case = {
+        "materiality": "TEXT",
+        "kind": "email",
+        "baseline_text": "tucorreoOemail.com",
+        "targeted_attempts": [
+            t_attempt("v1", "tucorreoOemail.com", "eng"),
+            t_attempt("v2", "tucorreo0email.com", "spa"),
+        ],
+        "challenger_allowed": True,
+    }
+
+    checks["unmasked_case_reaches_paddle_lane"] = (
+        router.route_observation(unmasked_paddle_case).get("decision") == "PADDLE_REQUIRED"
+    )
+
+    _star = router.reconcile_paddle(
+        unmasked_paddle_case,
+        [p_attempt("p1", "jus***@gmail.com"), p_attempt("p2", "jus***@gmail.com")],
+    )
+    checks["paddle_star_masked_output_rejected"] = (
+        _star.get("decision") == "PADDLE_MASKED_NO_COMPLETION"
+        and _star.get("resolved") is False
+        and _star.get("text") is None
+    )
+
+    _bullet = router.reconcile_paddle(
+        unmasked_paddle_case,
+        [p_attempt("p1", "ju•••@gmail.com"), p_attempt("p2", "ju•••@gmail.com")],
+    )
+    checks["paddle_bullet_masked_output_rejected"] = (
+        _bullet.get("decision") == "PADDLE_MASKED_NO_COMPLETION"
+        and _bullet.get("resolved") is False
+    )
+
+    _mixed = router.reconcile_paddle(
+        unmasked_paddle_case,
+        [
+            p_attempt("p1", "jus***@gmail.com"),
+            p_attempt("p2", "tucorreo@email.com"),
+            p_attempt("p3", "tucorreo@email.com"),
+        ],
+    )
+    checks["paddle_mixed_masked_batch_rejected"] = (
+        _mixed.get("decision") == "PADDLE_MASKED_NO_COMPLETION"
+        and _mixed.get("resolved") is False
+    )
+
+    _card_case = {
+        "materiality": "TEXT",
+        "kind": "card_number",
+        "baseline_text": "4111 1111 1111 111X",
+        "targeted_attempts": [
+            t_attempt("v1", "4111 1111 1111 111X", "eng"),
+            t_attempt("v2", "4111-1111-1111-111O", "spa"),
+        ],
+        "challenger_allowed": True,
+    }
+    _card = router.reconcile_paddle(
+        _card_case,
+        [p_attempt("p1", "•••• •••• •••• 1111"), p_attempt("p2", "•••• •••• •••• 1111")],
+    )
+    checks["paddle_masked_card_rejected"] = (
+        _card.get("decision") == "PADDLE_MASKED_NO_COMPLETION"
+    )
+
+    _ok = router.reconcile_paddle(
+        unmasked_paddle_case,
+        [p_attempt("p1", "tucorreo@email.com"), p_attempt("p2", "tucorreo@email.com")],
+    )
+    checks["paddle_unmasked_repair_preserved"] = (
+        _ok.get("decision") == "PADDLE_STRUCTURAL_CORRECTION"
+        and _ok.get("resolved") is True
+        and _ok.get("text") == "tucorreo@email.com"
+    )
+
+    _no_consensus = router.reconcile_paddle(
+        unmasked_paddle_case,
+        [p_attempt("p1", "tucorreo@email.com"), p_attempt("p2", "otro@email.com")],
+    )
+    checks["paddle_without_consensus_still_needs_review"] = (
+        _no_consensus.get("decision") == "NEEDS_REVIEW"
+        and _no_consensus.get("resolved") is False
+    )
+
+    checks["mask_guard_precedes_non_text_gate"] = router.route_observation({
+        "materiality": "NON_TEXT_QR", "kind": "email",
+        "baseline_text": "jus***@gmail.com",
+        "targeted_attempts": [], "challenger_allowed": False,
+    }).get("decision") == "VISIBLE_MASKED_NO_COMPLETION"
+
+    checks["mask_guard_precedes_structural_gate"] = router.route_observation({
+        "materiality": "TEXT", "kind": "card_number",
+        "baseline_text": "•••• 1234",
+        "structural_resolution_proven": True,
+        "structural_resolution_code": "PIXEL_FILLED_DOT_MASK_NORMALIZATION",
+        "targeted_attempts": [], "challenger_allowed": False,
+    }).get("decision") == "VISIBLE_MASKED_NO_COMPLETION"
+
+    checks["single_bullet_blocks"] = router.is_masked_structured_text("ju•@gmail.com") is True
+    checks["double_star_does_not_block"] = router.is_masked_structured_text("ab**c@example.com") is False
+
     failed = sorted(name for name, ok in checks.items() if not ok)
     result = {
         "gate": "PASS_P0_MULTISCREEN_STRUCTURAL_GENERALIZATION_V6" if not failed else "FAIL_P0_MULTISCREEN_STRUCTURAL_GENERALIZATION_V6",
@@ -156,6 +259,7 @@ def main() -> int:
         "fixture_raw_gray_sha256": raw_sha,
         "tesseract_outputs": observed,
         "root_cause": "MASKED_STRUCTURED_VALUE_FALSE_POSITIVE",
+        "remediated_findings": ["F-PR166-01", "F-PR166-02", "F-PR166-03"],
         "decision_after": route.get("decision"),
         "false_positive_before": 1,
         "false_positive_after": 0 if not failed else None,
