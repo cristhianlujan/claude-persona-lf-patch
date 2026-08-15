@@ -14,8 +14,9 @@ Required order:
      failure;
   5. valid-vs-valid disagreements and all unresolved cases abstain/review.
 
-Confidence values are deliberately ignored: confidence is not comparable
-across OCR engines and cannot authorize a correction.
+Caller-supplied confidence or validity flags are never authoritative. Machine
+validity is recomputed inside this contract. Confidence is deliberately ignored:
+it is not comparable across OCR engines and cannot authorize a correction.
 """
 from __future__ import annotations
 
@@ -23,10 +24,12 @@ import re
 from typing import Any
 
 EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
-CURRENCY_RE = re.compile(r"^(?:S/|US\$|\$)\s*\d{1,3}(?:,\d{3})*(?:\.\d{2})$")
+CURRENCY_RE = re.compile(r"^(?:S/|US\$|\$)\s*(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{2})$")
 DOCUMENT_RE = re.compile(r"^\d{8}$")
-PHONE_RE = re.compile(r"^(?:\+51\s*)?\d{9}$")
+PHONE_RE = re.compile(r"^(?:\+51)?\d{9}$")
+CARD_NUMBER_RE = re.compile(r"^\d{16}$")
 
+MACHINE_VALIDATED_KINDS = frozenset({"email", "currency", "document", "phone", "card_number"})
 NON_TEXT_CLASSES = {
     "NON_TEXT",
     "NON_TEXT_CONTROL",
@@ -46,7 +49,12 @@ def normalize_text(value: Any) -> str:
     return " ".join(str(value or "").strip().casefold().split())
 
 
+def has_machine_validator(kind: str) -> bool:
+    return kind in MACHINE_VALIDATED_KINDS
+
+
 def validate_text(kind: str, value: Any) -> bool:
+    """Recompute objective syntax validity. Unstructured text is never self-validating."""
     text = str(value or "").strip()
     if not text:
         return False
@@ -55,17 +63,22 @@ def validate_text(kind: str, value: Any) -> bool:
     if kind == "currency":
         return bool(CURRENCY_RE.fullmatch(text))
     if kind == "document":
-        return bool(DOCUMENT_RE.fullmatch(re.sub(r"^Ej\.\s*", "", text, flags=re.I)))
+        compact = re.sub(r"^Ej\.\s*", "", text, flags=re.I).strip()
+        return bool(DOCUMENT_RE.fullmatch(compact))
     if kind == "phone":
-        compact = re.sub(r"[\s-]", "", re.sub(r"^Ej\.\s*", "", text, flags=re.I))
+        compact = re.sub(r"^Ej\.\s*", "", text, flags=re.I)
+        compact = re.sub(r"[\s()-]", "", compact)
         return bool(PHONE_RE.fullmatch(compact))
-    if kind in {"exact_text", "button_text", "generic_text"}:
-        return bool(text)
+    if kind == "card_number":
+        compact = re.sub(r"[\s-]", "", text)
+        return bool(CARD_NUMBER_RE.fullmatch(compact))
     return False
 
 
-def _stable_valid_targeted_attempts(observation: dict) -> list[dict]:
+def _stable_machine_valid_targeted_attempts(observation: dict) -> list[dict]:
     kind = str(observation.get("kind") or "generic_text")
+    if not has_machine_validator(kind):
+        return []
     output: list[dict] = []
     for attempt in observation.get("targeted_attempts") or []:
         if str(attempt.get("engine_family") or "TESSERACT") != "TESSERACT":
@@ -73,22 +86,20 @@ def _stable_valid_targeted_attempts(observation: dict) -> list[dict]:
         if attempt.get("stable") is not True:
             continue
         text = str(attempt.get("text") or "").strip()
-        valid = attempt.get("valid")
-        if valid is None:
-            valid = validate_text(kind, text)
-        if valid is True:
-            output.append({**attempt, "text": text, "valid": True})
+        # Deliberately ignore attempt['valid'] and any confidence supplied by caller.
+        if validate_text(kind, text):
+            output.append({"engine_family": "TESSERACT", "text": text, "stable": True})
     return output
 
 
 def route_observation(observation: dict) -> dict:
-    """Choose a fail-closed lane without using OCR confidence."""
+    """Choose a fail-closed lane without using OCR confidence or declared validity."""
     materiality = str(observation.get("materiality") or "TEXT")
     baseline_text = str(observation.get("baseline_text") or "").strip()
     kind = str(observation.get("kind") or "generic_text")
-    baseline_valid = observation.get("baseline_valid")
-    if baseline_valid is None:
-        baseline_valid = validate_text(kind, baseline_text)
+    machine_validated = has_machine_validator(kind)
+    # Deliberately ignore observation['baseline_valid']; recompute internally.
+    baseline_valid = validate_text(kind, baseline_text) if machine_validated else False
 
     if materiality in NON_TEXT_CLASSES:
         return {
@@ -115,16 +126,15 @@ def route_observation(observation: dict) -> dict:
             "reason": "DO_NOT_COMPLETE_TEXT_BEYOND_VISIBLE_PIXELS",
         }
 
-    targeted = _stable_valid_targeted_attempts(observation)
+    targeted = _stable_machine_valid_targeted_attempts(observation)
     if targeted:
-        selected = targeted[0]
-        candidate_text = selected["text"]
+        candidate_text = targeted[0]["text"]
         if baseline_valid and normalize_text(candidate_text) != normalize_text(baseline_text):
             return {
                 "decision": "NEEDS_REVIEW_VALID_DISAGREEMENT",
                 "resolved": False,
                 "invoke_paddle": False,
-                "reason": "BASELINE_AND_TARGETED_TESSERACT_BOTH_VALID_BUT_DIFFER",
+                "reason": "BASELINE_AND_TARGETED_TESSERACT_BOTH_MACHINE_VALID_BUT_DIFFER",
                 "baseline_text": baseline_text,
                 "targeted_text": candidate_text,
             }
@@ -142,11 +152,11 @@ def route_observation(observation: dict) -> dict:
             "decision": "BASELINE_PRESERVED",
             "resolved": True,
             "invoke_paddle": False,
-            "reason": "BASELINE_VALID_NO_MACHINE_FAILURE",
+            "reason": "BASELINE_MACHINE_VALID_NO_MACHINE_FAILURE",
             "text": baseline_text,
         }
 
-    if persistent_failure and observation.get("challenger_allowed") is True:
+    if persistent_failure and observation.get("challenger_allowed") is True and machine_validated:
         return {
             "decision": "PADDLE_REQUIRED",
             "resolved": False,
@@ -162,8 +172,8 @@ def route_observation(observation: dict) -> dict:
     }
 
 
-def reconcile_paddle(observation: dict, paddle_text: Any, *, stable: bool, valid: bool | None = None) -> dict:
-    """Reconcile a Paddle result only after route_observation authorized it."""
+def reconcile_paddle(observation: dict, paddle_text: Any, *, stable: bool) -> dict:
+    """Reconcile Paddle only after authorization and internal machine validation."""
     route = route_observation(observation)
     if route["decision"] != "PADDLE_REQUIRED":
         return {
@@ -175,9 +185,9 @@ def reconcile_paddle(observation: dict, paddle_text: Any, *, stable: bool, valid
 
     candidate = str(paddle_text or "").strip()
     kind = str(observation.get("kind") or "generic_text")
-    if valid is None:
-        valid = validate_text(kind, candidate)
-    if not stable or not valid:
+    # Never trust caller-supplied valid/confidence flags; recompute here.
+    candidate_valid = validate_text(kind, candidate)
+    if not stable or not candidate_valid:
         return {
             "decision": "NEEDS_REVIEW",
             "resolved": False,
@@ -185,10 +195,7 @@ def reconcile_paddle(observation: dict, paddle_text: Any, *, stable: bool, valid
         }
 
     baseline = str(observation.get("baseline_text") or "").strip()
-    baseline_valid = observation.get("baseline_valid")
-    if baseline_valid is None:
-        baseline_valid = validate_text(kind, baseline)
-
+    baseline_valid = validate_text(kind, baseline)
     if baseline_valid:
         if normalize_text(baseline) == normalize_text(candidate):
             return {
@@ -201,7 +208,7 @@ def reconcile_paddle(observation: dict, paddle_text: Any, *, stable: bool, valid
             "decision": "BASELINE_PRESERVED_DISAGREEMENT",
             "resolved": False,
             "text": baseline,
-            "reason": "BOTH_VALID_BUT_DIFFER",
+            "reason": "BOTH_MACHINE_VALID_BUT_DIFFER",
         }
 
     return {
