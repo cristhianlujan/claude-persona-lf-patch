@@ -48,13 +48,22 @@ def mask_image(*, plus_shapes: bool = False) -> tuple[np.ndarray, dict]:
     return image, {"x": 24, "y": 24, "width": 53, "height": 13}
 
 
-def decision(observation: dict) -> str:
-    return str(router.route_observation(observation).get("decision"))
+def route(observation: dict) -> dict:
+    return router.route_observation(observation)
+
+
+def t_attempt(variant_id: str, text: str, **untrusted: object) -> dict:
+    return {"engine_family": "TESSERACT", "variant_id": variant_id, "text": text, **untrusted}
+
+
+def p_attempt(variant_id: str, text: str, **untrusted: object) -> dict:
+    return {"engine_family": "PADDLE", "variant_id": variant_id, "text": text, **untrusted}
 
 
 def main() -> int:
     checks: dict[str, bool] = {}
 
+    # PR161 structural regressions remain mandatory.
     positive_cells = subject.detect_segmented_input_cells(draw_cells(6))
     checks["six_cells_detected"] = len(positive_cells) == 6
     checks["one_segmented_group"] = len({item.get("repeated_control_group_id") for item in positive_cells}) == 1
@@ -95,6 +104,8 @@ def main() -> int:
         for item in normalized.get("reader_uncertainties", [])
     )
 
+    # Technical causal cases measured on 10 governed SOURCE_IMAGE records.
+    # No authentic P0-5 human adjudication is claimed.
     source_bound = {
         "s02_mask": {
             "materiality": "TEXT", "kind": "generic_text", "baseline_text": "+++ 321",
@@ -104,166 +115,215 @@ def main() -> int:
         },
         "s02_cells": {
             "materiality": "NON_TEXT_CONTROL", "kind": "generic_text", "baseline_text": "HOOO0O",
-            "persistent_invariant_failure": True, "challenger_allowed": True,
+            "challenger_allowed": True,
         },
         "s03_email": {
             "materiality": "TEXT", "kind": "email", "baseline_text": "",
-            "targeted_attempts": [{
-                "engine_family": "TESSERACT", "text": "tucorreo@email.com", "stable": True,
-                "valid": False,
-            }],
-            "persistent_invariant_failure": False, "challenger_allowed": True,
+            "targeted_attempts": [
+                t_attempt("psm6-tight", "tucorreoO'email.com", valid=True, stable=True, confidence=0.999),
+                t_attempt("psm7-tight", "tucorreoO'email.com", valid=True, stable=True),
+                t_attempt("psm11-input", "tucorreoOemail.com", valid=True, stable=True),
+            ],
+            "challenger_allowed": True,
         },
         "cand06_qr": {
             "materiality": "NON_TEXT_QR", "kind": "generic_text", "baseline_text": "cn ES Ea E paga pe",
-            "persistent_invariant_failure": True, "challenger_allowed": True,
+            "challenger_allowed": True,
         },
         "cand07_card": {
             "materiality": "TEXT", "kind": "card_number", "baseline_text": "4 5 5 6 12 56",
-            "targeted_attempts": [{
-                "engine_family": "TESSERACT", "text": "1234 5678 9012 3456", "stable": True,
-                "valid": False,
-            }],
-            "persistent_invariant_failure": False, "challenger_allowed": True,
+            "targeted_attempts": [
+                t_attempt("psm6-form", "1234 5678 9012 3456", valid=False, stable=False),
+                t_attempt("psm11-form", "1234 5678 9012 3456", valid=False, stable=False),
+                t_attempt("psm12-form", "1234 5678 9012 3456", valid=False, stable=False),
+            ],
+            "challenger_allowed": True,
         },
         "cand08_sep_amount": {
             "materiality": "TEXT", "kind": "currency", "baseline_text": "S/ 211.19",
-            "targeted_attempts": [{
-                "engine_family": "TESSERACT", "text": "S/ 211.19", "stable": True, "valid": False,
-            }],
-            "persistent_invariant_failure": True, "challenger_allowed": True,
+            "targeted_attempts": [
+                t_attempt("psm6-up2", "S/ 211.19", valid=False),
+                t_attempt("psm7-up2", "S/ 211.19", valid=False),
+                t_attempt("psm11-up2", "S/ 211.19", valid=False),
+            ],
+            "challenger_allowed": True,
         },
         "cand10_igv": {
             "materiality": "TEXT", "kind": "currency", "baseline_text": "S/ 1",
             "targeted_attempts": [
-                {"engine_family": "TESSERACT", "text": "S/ 18", "stable": True, "valid": True},
-                {"engine_family": "TESSERACT", "text": "S/ 18.", "stable": True, "valid": True},
-                {"engine_family": "TESSERACT", "text": "S/ 18.1", "stable": True, "valid": True},
+                t_attempt("psm6-up3", "S/ 18", valid=True, stable=True),
+                t_attempt("psm7-up3", "S/ 18", valid=True, stable=True),
+                t_attempt("psm11-up3", "S/ 18", valid=True, stable=True),
             ],
-            "persistent_invariant_failure": True, "challenger_allowed": True,
+            "challenger_allowed": True,
         },
     }
     expected = {
         "s02_mask": "STRUCTURAL_PIXEL_RESOLVED",
         "s02_cells": "DISCARD_NON_TEXT_OCR",
-        "s03_email": "TARGETED_TESSERACT_ACCEPT",
+        "s03_email": "PADDLE_REQUIRED",
         "cand06_qr": "DISCARD_NON_TEXT_OCR",
         "cand07_card": "TARGETED_TESSERACT_ACCEPT",
         "cand08_sep_amount": "TARGETED_TESSERACT_ACCEPT",
         "cand10_igv": "PADDLE_REQUIRED",
     }
     for name, observation in source_bound.items():
-        checks[f"route_{name}"] = decision(observation) == expected[name]
+        checks[f"route_{name}"] = route(observation).get("decision") == expected[name]
 
-    checks["valid_baseline_preserved"] = decision({
+    checks["two_real_persistent_paddle_triggers"] = sum(
+        1 for observation in source_bound.values() if route(observation).get("decision") == "PADDLE_REQUIRED"
+    ) == 2
+
+    # Caller-declared validity/stability/confidence/persistence must not bypass.
+    checks["declared_valid_and_stable_invalid_email_still_routes_paddle"] = (
+        route(source_bound["s03_email"]).get("decision") == "PADDLE_REQUIRED"
+    )
+    checks["duplicate_variant_cannot_fake_consensus"] = route({
+        "materiality": "TEXT", "kind": "email", "baseline_text": "bad-email",
+        "targeted_attempts": [
+            t_attempt("same", "a@b.com", valid=True, stable=True),
+            t_attempt("same", "a@b.com", valid=True, stable=True),
+        ],
+        "challenger_allowed": True,
+    }).get("decision") == "NEEDS_REVIEW"
+    checks["single_valid_variant_cannot_stop_before_paddle"] = route({
+        "materiality": "TEXT", "kind": "email", "baseline_text": "bad-email",
+        "targeted_attempts": [
+            t_attempt("one", "a@b.com", valid=True, stable=True),
+            t_attempt("two", "still-bad", valid=True, stable=True),
+        ],
+        "challenger_allowed": True,
+    }).get("decision") == "PADDLE_REQUIRED"
+    checks["two_distinct_valid_variants_create_consensus"] = route({
+        "materiality": "TEXT", "kind": "email", "baseline_text": "bad-email",
+        "targeted_attempts": [
+            t_attempt("one", "a@b.com", valid=False, stable=False),
+            t_attempt("two", "a@b.com", valid=False, stable=False),
+        ],
+        "challenger_allowed": True,
+    }).get("decision") == "TARGETED_TESSERACT_ACCEPT"
+    checks["untraceable_attempts_do_not_count"] = route({
+        "materiality": "TEXT", "kind": "currency", "baseline_text": "S/ 18",
+        "targeted_attempts": [
+            {"engine_family": "TESSERACT", "text": "S/ 18.00", "valid": True, "stable": True},
+            {"engine_family": "TESSERACT", "text": "S/ 18.00", "valid": True, "stable": True},
+        ],
+        "challenger_allowed": True,
+    }).get("decision") == "NEEDS_REVIEW"
+    checks["caller_persistent_flag_cannot_authorize_single_variant"] = route({
+        "materiality": "TEXT", "kind": "currency", "baseline_text": "S/ 18",
+        "persistent_invariant_failure": True,
+        "targeted_attempts": [t_attempt("only", "S/ 18", valid=True, stable=True)],
+        "challenger_allowed": True,
+    }).get("decision") == "NEEDS_REVIEW"
+    checks["caller_persistent_false_cannot_suppress_derived_failure"] = route({
+        "materiality": "TEXT", "kind": "currency", "baseline_text": "S/ 18",
+        "persistent_invariant_failure": False,
+        "targeted_attempts": [
+            t_attempt("a", "S/ 18", valid=True, stable=True),
+            t_attempt("b", "S/ 18.1", valid=True, stable=True),
+        ],
+        "challenger_allowed": True,
+    }).get("decision") == "PADDLE_REQUIRED"
+    checks["invalid_high_confidence_cannot_bypass"] = route({
+        "materiality": "TEXT", "kind": "email", "baseline_text": "aXb.com", "baseline_confidence": 0.99999,
+        "targeted_attempts": [
+            t_attempt("one", "aXb.com", valid=True, stable=True, confidence=0.99999),
+            t_attempt("two", "aXb.com", valid=True, stable=True, confidence=0.99999),
+        ],
+        "challenger_allowed": True,
+    }).get("decision") == "PADDLE_REQUIRED"
+
+    checks["valid_baseline_preserved"] = route({
+        "materiality": "TEXT", "kind": "currency", "baseline_text": "S/ 10.00", "baseline_valid": False,
+        "targeted_attempts": [], "challenger_allowed": True,
+    }).get("decision") == "BASELINE_PRESERVED"
+    checks["valid_vs_valid_targeted_disagreement_abstains"] = route({
         "materiality": "TEXT", "kind": "currency", "baseline_text": "S/ 10.00",
-        "baseline_valid": False,
-        "persistent_invariant_failure": False, "challenger_allowed": True,
-    }) == "BASELINE_PRESERVED"
-
-    checks["valid_vs_valid_disagreement_abstains"] = decision({
-        "materiality": "TEXT", "kind": "currency", "baseline_text": "S/ 10.00",
-        "targeted_attempts": [{"engine_family": "TESSERACT", "text": "S/ 100.00", "stable": True, "valid": False}],
-        "persistent_invariant_failure": True, "challenger_allowed": True,
-    }) == "NEEDS_REVIEW_VALID_DISAGREEMENT"
-
-    checks["declared_target_valid_cannot_bypass_machine_validation"] = decision({
-        "materiality": "TEXT", "kind": "email", "baseline_text": "aXb.com",
-        "targeted_attempts": [{
-            "engine_family": "TESSERACT", "text": "still-not-an-email", "stable": True,
-            "valid": True, "confidence": 0.99999,
-        }],
-        "persistent_invariant_failure": True, "challenger_allowed": True,
-    }) == "PADDLE_REQUIRED"
-
-    checks["declared_baseline_valid_cannot_bypass_machine_validation"] = decision({
-        "materiality": "TEXT", "kind": "currency", "baseline_text": "S/ 18", "baseline_valid": True,
-        "persistent_invariant_failure": True, "challenger_allowed": True,
-    }) == "PADDLE_REQUIRED"
-
-    checks["unstructured_text_cannot_self_validate_or_invoke_paddle"] = decision({
+        "targeted_attempts": [
+            t_attempt("one", "S/ 100.00"), t_attempt("two", "S/ 100.00")
+        ],
+        "challenger_allowed": True,
+    }).get("decision") == "NEEDS_REVIEW_VALID_DISAGREEMENT"
+    checks["unstructured_text_cannot_self_validate_or_invoke_paddle"] = route({
         "materiality": "TEXT", "kind": "generic_text", "baseline_text": "garbled",
-        "targeted_attempts": [{"engine_family": "TESSERACT", "text": "different words", "stable": True, "valid": True}],
-        "persistent_invariant_failure": True, "challenger_allowed": True,
-    }) == "NEEDS_REVIEW"
-
-    checks["invalid_high_confidence_cannot_bypass"] = decision({
-        "materiality": "TEXT", "kind": "email", "baseline_text": "aXb.com",
-        "baseline_confidence": 0.9999,
-        "targeted_attempts": [{
-            "engine_family": "TESSERACT", "text": "aXb.com", "stable": True,
-            "valid": True, "confidence": 0.99999,
-        }],
-        "persistent_invariant_failure": True, "challenger_allowed": True,
-    }) == "PADDLE_REQUIRED"
-
-    checks["visible_truncation_never_completed"] = decision({
+        "targeted_attempts": [t_attempt("one", "different words"), t_attempt("two", "different words")],
+        "challenger_allowed": True,
+    }).get("decision") == "NEEDS_REVIEW"
+    checks["visible_truncation_never_completed"] = route({
         "materiality": "TEXT", "kind": "generic_text", "baseline_text": "Política de priv...",
-        "visible_truncated": True, "persistent_invariant_failure": True, "challenger_allowed": True,
-    }) == "VISIBLE_ONLY_NO_COMPLETION"
-
-    checks["pixel_correction_requires_proof_and_no_unstructured_paddle"] = decision({
+        "visible_truncated": True, "targeted_attempts": [t_attempt("one", "Política de privacidad"), t_attempt("two", "Política de privacidad")],
+        "challenger_allowed": True,
+    }).get("decision") == "VISIBLE_ONLY_NO_COMPLETION"
+    checks["pixel_correction_requires_proof"] = route({
         "materiality": "TEXT", "kind": "generic_text", "baseline_text": "+++",
         "structural_resolution_proven": False,
         "structural_resolution_code": "PIXEL_FILLED_DOT_MASK_NORMALIZATION",
-        "persistent_invariant_failure": True, "challenger_allowed": True,
-    }) == "NEEDS_REVIEW"
-
-    checks["nontext_never_invokes_paddle"] = router.route_observation({
+        "challenger_allowed": True,
+    }).get("decision") == "NEEDS_REVIEW"
+    checks["nontext_never_invokes_paddle"] = route({
         "materiality": "NON_TEXT_ICON", "baseline_text": "E",
-        "persistent_invariant_failure": True, "challenger_allowed": True,
+        "targeted_attempts": [t_attempt("one", "E"), t_attempt("two", "E")],
+        "challenger_allowed": True,
     }).get("invoke_paddle") is False
-    checks["targeted_tesseract_stops_paddle"] = router.route_observation(source_bound["s03_email"]).get("invoke_paddle") is False
-    checks["persistent_failure_authorizes_paddle_only_after_crop"] = router.route_observation(source_bound["cand10_igv"]).get("invoke_paddle") is True
+    checks["successful_targeted_consensus_stops_paddle"] = route(source_bound["cand07_card"]).get("invoke_paddle") is False
+    checks["persistent_email_failure_authorizes_paddle"] = route(source_bound["s03_email"]).get("invoke_paddle") is True
+    checks["persistent_igv_failure_authorizes_paddle"] = route(source_bound["cand10_igv"]).get("invoke_paddle") is True
 
-    paddle_fix = router.reconcile_paddle(source_bound["cand10_igv"], "S/ 18.00", stable=True)
-    checks["paddle_structural_correction_only_after_authorized_route"] = (
-        paddle_fix.get("decision") == "PADDLE_STRUCTURAL_CORRECTION"
-        and paddle_fix.get("resolved") is True
-        and paddle_fix.get("text") == "S/ 18.00"
+    # Paddle reconciliation is synthetic contract testing only; no real Paddle result is claimed here.
+    synthetic_paddle_good = [
+        p_attempt("run-1", "S/ 18.00", valid=False, stable=False, confidence=0.01),
+        p_attempt("run-2", "S/ 18.00", valid=False, stable=False, confidence=0.99),
+    ]
+    synthetic_fix = router.reconcile_paddle(source_bound["cand10_igv"], synthetic_paddle_good)
+    checks["two_traceable_valid_paddle_variants_can_repair"] = (
+        synthetic_fix.get("decision") == "PADDLE_STRUCTURAL_CORRECTION"
+        and synthetic_fix.get("resolved") is True
+        and synthetic_fix.get("text") == "S/ 18.00"
     )
-    checks["paddle_invalid_output_rejected_by_internal_validator"] = (
-        router.reconcile_paddle(source_bound["cand10_igv"], "S/ 18", stable=True).get("decision") == "NEEDS_REVIEW"
+    checks["one_paddle_variant_cannot_claim_stability"] = (
+        router.reconcile_paddle(source_bound["cand10_igv"], [p_attempt("only", "S/ 18.00", stable=True)]).get("decision")
+        == "NEEDS_REVIEW"
     )
-    checks["paddle_not_authorized_when_tesseract_crop_succeeds"] = (
-        router.reconcile_paddle(source_bound["s03_email"], "tucorreo@email.com", stable=True).get("decision")
-        == "PADDLE_NOT_AUTHORIZED_FOR_OBSERVATION"
+    checks["duplicate_paddle_variant_cannot_claim_stability"] = (
+        router.reconcile_paddle(source_bound["cand10_igv"], [
+            p_attempt("same", "S/ 18.00", stable=True), p_attempt("same", "S/ 18.00", stable=True)
+        ]).get("decision") == "NEEDS_REVIEW"
     )
-    checks["unstable_paddle_abstains"] = (
-        router.reconcile_paddle(source_bound["cand10_igv"], "S/ 18.00", stable=False).get("decision") == "NEEDS_REVIEW"
+    checks["two_different_valid_paddle_values_abstain"] = (
+        router.reconcile_paddle(source_bound["cand10_igv"], [
+            p_attempt("a", "S/ 18.00"), p_attempt("b", "S/ 19.00")
+        ]).get("decision") == "NEEDS_REVIEW"
+    )
+    checks["invalid_paddle_outputs_rejected"] = (
+        router.reconcile_paddle(source_bound["cand10_igv"], [
+            p_attempt("a", "S/ 18", valid=True, stable=True), p_attempt("b", "S/ 18", valid=True, stable=True)
+        ]).get("decision") == "NEEDS_REVIEW"
+    )
+    checks["paddle_not_authorized_when_tesseract_consensus_succeeds"] = (
+        router.reconcile_paddle(source_bound["cand07_card"], [
+            p_attempt("a", "1234 5678 9012 3456"), p_attempt("b", "1234 5678 9012 3456")
+        ]).get("decision") == "PADDLE_NOT_AUTHORIZED_FOR_OBSERVATION"
     )
 
-    both_valid = {
-        "materiality": "TEXT", "kind": "currency", "baseline_text": "S/ 10.00",
-        "targeted_attempts": [], "persistent_invariant_failure": True, "challenger_allowed": True,
-    }
-    checks["both_valid_cross_engine_disagreement_preserves_baseline"] = (
-        router.reconcile_paddle(both_valid, "S/ 11.00", stable=True).get("decision")
-        == "BASELINE_PRESERVED_DISAGREEMENT"
-    )
-
-    implementation_path = SCRIPT_ROOT / "p0_multiscreen_structural_generalization_v1.py"
-    implementation = implementation_path.read_text(encoding="utf-8")
-    router_implementation = (CONTRACT_ROOT / "P0_SELECTIVE_OCR_ROUTER_V2.py").read_text(encoding="utf-8")
+    implementation = (SCRIPT_ROOT / "p0_multiscreen_structural_generalization_v1.py").read_text(encoding="utf-8")
+    router_source = (CONTRACT_ROOT / "P0_SELECTIVE_OCR_ROUTER_V2.py").read_text(encoding="utf-8")
     forbidden_literals = [
         "WhatsApp", "321", "Paso 2", "Confirma tu celular",
         "9f824b1d357ea0dd156046dfc6a410fe92f1942bb225223208602abbb7fb6560",
     ]
     checks["implementation_has_no_screen_literals"] = not any(value in implementation for value in forbidden_literals)
-    checks["router_has_no_source_sha_or_coordinates"] = not any(
-        token in router_implementation for token in [
-            "9f824b1d357ea0dd156046dfc6a410fe92f1942bb225223208602abbb7fb6560",
-            "af332f828d4c0e39ac36fc9fa9459062d59ee52cad9400349ba7bb3e2c0e97df", "1536", "1844",
-        ]
-    )
-    checks["router_ignores_confidence"] = ('get("confidence")' not in router_implementation and "['confidence']" not in router_implementation)
-    # Behavioral proof is authoritative; do not depend on brittle source-string matching.
-    checks["router_recomputes_validity"] = (
-        checks["declared_target_valid_cannot_bypass_machine_validation"]
-        and checks["declared_baseline_valid_cannot_bypass_machine_validation"]
-        and checks["paddle_invalid_output_rejected_by_internal_validator"]
-        and checks["valid_baseline_preserved"]
-    )
+    checks["router_has_no_source_sha_or_coordinates"] = not any(token in router_source for token in [
+        "9f824b1d357ea0dd156046dfc6a410fe92f1942bb225223208602abbb7fb6560",
+        "af332f828d4c0e39ac36fc9fa9459062d59ee52cad9400349ba7bb3e2c0e97df", "1536", "1844",
+    ])
+    checks["router_ignores_confidence"] = ('get("confidence")' not in router_source and "['confidence']" not in router_source)
+    checks["router_ignores_declared_valid_stable_persistent"] = all([
+        checks["declared_valid_and_stable_invalid_email_still_routes_paddle"],
+        checks["caller_persistent_flag_cannot_authorize_single_variant"],
+        checks["caller_persistent_false_cannot_suppress_derived_failure"],
+        checks["invalid_paddle_outputs_rejected"],
+    ])
     checks["no_interaction_inference"] = "interaction_functions_confirmed\": 0" in implementation
 
     failed = sorted(name for name, passed in checks.items() if not passed)
@@ -274,11 +334,16 @@ def main() -> int:
         "failed": failed,
         "source_bound_technical_cases": len(source_bound),
         "governed_source_images_available": 10,
+        "persistent_paddle_required_cases": 2,
+        "persistent_paddle_required_case_names": ["s03_email", "cand10_igv"],
+        "real_paddle_outcome_for_new_cases": "NOT_EXECUTED",
         "routing_order": [
-            "STRUCTURAL_OR_NON_TEXT", "TARGETED_TESSERACT",
-            "PADDLE_ONLY_FOR_PERSISTENT_MACHINE_FAILURE", "ABSTAIN_OR_HUMAN_REVIEW",
+            "STRUCTURAL_OR_NON_TEXT",
+            "TARGETED_TESSERACT_REPEATED_CONSENSUS",
+            "PADDLE_ONLY_AFTER_REPEATED_TARGETED_FAILURE",
+            "ABSTAIN_OR_HUMAN_REVIEW",
         ],
-        "caller_validity_flags_authoritative": False,
+        "caller_validity_stability_persistence_flags_authoritative": False,
         "unstructured_text_autocorrection_allowed": False,
         "paddle_runtime_promoted": False,
         "synthetic_and_source_bound_technical_regression_only": True,
