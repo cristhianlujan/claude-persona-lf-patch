@@ -22,6 +22,7 @@ BEGIN
     RAISE EXCEPTION 'BROWSER_REVIEW_BODY_END_MISSING';
   END IF;
 
+  -- Preserve the v1 human-language contract and layer v2 on top of it.
   v_base := private.fn_lf_p0_human_review_human_language_v1(p_html);
 
   v_script := $human_language_v2$
@@ -37,12 +38,13 @@ BEGIN
   const area=e=>hasRegion(e)?Number(reg(e).width)*Number(reg(e).height):Number.POSITIVE_INFINITY;
   const dist=(a,b)=>{if(!hasRegion(a)||!hasRegion(b))return Number.POSITIVE_INFINITY;const A=center(a),B=center(b);return Math.hypot(A.x-B.x,A.y-B.y);};
   const rawText=e=>norm(e?.visible_text||e?.ocr_consensus_text||e?.text||e?.label||'');
+  const escapeHuman=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const confidenceSummary=e=>{let c=Number(e?.confidence);if(!Number.isFinite(c))return 'Confianza no disponible';if(c<=1)c*=100;c=Math.max(0,Math.min(100,c));const level=c>=85?'alta':c>=65?'media':'baja';return `${c.toFixed(c>=99?0:1)}% · confianza ${level}`;};
 
   const ocrVariantStats=e=>{
-    const values=[];
-    if(Array.isArray(e?.ocr_variants))values.push(...e.ocr_variants);
-    if(e?.ocr_consensus_text)values.push(e.ocr_consensus_text);
-    if(e?.visible_text)values.push(e.visible_text);
+    const values=Array.isArray(e?.ocr_variants)?[...e.ocr_variants]:[];
+    if(!values.length&&e?.ocr_consensus_text)values.push(e.ocr_consensus_text);
+    if(!values.length&&e?.visible_text)values.push(e.visible_text);
     const counts=new Map();
     values.map(norm).filter(Boolean).forEach(v=>counts.set(v,(counts.get(v)||0)+1));
     return [...counts.entries()].map(([text,count])=>({text,count})).sort((a,b)=>b.count-a.count||a.text.length-b.text.length||a.text.localeCompare(b.text));
@@ -147,7 +149,7 @@ BEGIN
 
   const iconReading=e=>{
     const h=iconHypothesis(e);if(!h)return null;
-    const detection=(typeof confidenceInfo==='function'?confidenceInfo(e).summary:`Confianza del elemento ${Number(e?.confidence||0)*100}%`);
+    const detection=confidenceSummary(e);
     const identityScore=h.identityConfidence==null?'Sin score separado para identidad':`Confianza de identidad ${Number(h.identityConfidence)<=1?(Number(h.identityConfidence)*100).toFixed(1):Number(h.identityConfidence).toFixed(1)}%`;
     return {h,detection,identityScore};
   };
@@ -158,7 +160,7 @@ BEGIN
       return h?.method==='UNAVAILABLE'?'Icono detectado · identidad no determinada':`Hipótesis: ${h?.identity||'identidad no determinada'}`;
     }
     if(e?.element_type==='TEXT')return textEvidence(e).primary;
-    return typeof displayText==='function'?displayText(e):norm(e?._display_text||rawText(e)||e?.element_type||'Elemento visual');
+    return norm(e?._display_text||rawText(e)||e?.element_type||'Elemento visual');
   };
 
   const ocrHtml=e=>{
@@ -181,16 +183,16 @@ BEGIN
         setText('#selected-text',r.h.identity);
         setText('#selected-role',`Hipótesis del sistema: ${r.h.identity}. ${r.h.basis}`);
         setText('#selected-confidence',r.detection);
-        const sys=document.querySelector('#system-reading');if(sys)sys.innerHTML=`<strong>Icono detectado.</strong><br>Hipótesis de identidad: ${escHuman(r.h.identity)}.<br><span class="evidence-meta">${escHuman(r.h.basis)} ${escHuman(r.identityScore)}. ${escHuman(r.detection)}.</span>`;
+        const sys=document.querySelector('#system-reading');if(sys)sys.innerHTML=`<strong>Icono detectado.</strong><br>Hipótesis de identidad: ${escapeHuman(r.h.identity)}.<br><span class="evidence-meta">${escapeHuman(r.h.basis)} ${escapeHuman(r.identityScore)}. ${escapeHuman(r.detection)}.</span>`;
         setText('#system-meta','Qué revisar: compara la forma que ves con la hipótesis del sistema. Si no coincide, corrígela; la confianza del elemento no equivale a confianza de identidad.');
         const sem=document.querySelector('#tab-semantic');if(sem&&typeof kv==='function')sem.innerHTML=kv('Tipo','Icono o símbolo visual')+kv('Hipótesis de identidad',r.h.identity)+kv('Método',r.h.method)+kv('Base de inferencia',r.h.basis)+kv('Confianza de identidad',r.identityScore)+kv('Confianza del elemento',r.detection)+kv('Clasificación',typeof friendlyStatus==='function'?friendlyStatus(e._review?.classification):e._review?.classification||e.classification||'—');
         const note=document.querySelector('#review-note');if(note)note.textContent='La identidad del icono es una hipótesis separada de su detección. Compara la forma visible con la hipótesis y corrígela si tu lectura difiere.';
       }else if(e?.element_type==='TEXT'){
         const o=ocrHtml(e);
         setText('#selected-text',o.t.primary);
-        const sys=document.querySelector('#system-reading');if(sys)sys.innerHTML=`<strong>Lectura principal: ${escHuman(o.t.primary)}</strong><br><span class="evidence-meta">${o.t.disagreement?'Existen lecturas OCR diferentes; se muestran para revisión.':'Las lecturas OCR son consistentes.'}</span>`;
+        const sys=document.querySelector('#system-reading');if(sys)sys.innerHTML=`<strong>Lectura principal: ${escapeHuman(o.t.primary)}</strong><br><span class="evidence-meta">${o.t.disagreement?'Existen lecturas OCR diferentes; se muestran para revisión.':'Las lecturas OCR son consistentes.'}</span>`;
         setText('#system-meta',o.compact||`Variantes OCR: ${o.variantText}`);
-        const sem=document.querySelector('#tab-semantic');if(sem&&typeof kv==='function')sem.innerHTML=kv('Tipo','Texto visible')+kv('Lectura principal',o.t.primary)+kv('Clasificación',typeof friendlyStatus==='function'?friendlyStatus(e._review?.classification):e._review?.classification||e.classification||'—')+kv('Confianza',typeof confidenceInfo==='function'?confidenceInfo(e).summary:e.confidence||'—')+kv('Lecturas OCR observadas',o.variantText)+kv('Tokens detectados',o.tokenText)+(o.compact?kv('Separación de prefijo/glifo',o.compact):'');
+        const sem=document.querySelector('#tab-semantic');if(sem&&typeof kv==='function')sem.innerHTML=kv('Tipo','Texto visible')+kv('Lectura principal',o.t.primary)+kv('Clasificación',typeof friendlyStatus==='function'?friendlyStatus(e._review?.classification):e._review?.classification||e.classification||'—')+kv('Confianza',confidenceSummary(e))+kv('Lecturas OCR observadas',o.variantText)+kv('Tokens detectados',o.tokenText)+(o.compact?kv('Separación de prefijo/glifo',o.compact):'');
         if(o.t.disagreement){const note=document.querySelector('#review-note');if(note)note.textContent='Las lecturas OCR no coinciden completamente. Usa la imagen y las variantes observadas para decidir cuál texto es correcto.';}
       }
     };
@@ -294,6 +296,8 @@ GRANT EXECUTE ON FUNCTION private.fn_lf_p0_human_review_human_language_v2(text) 
 COMMENT ON FUNCTION private.fn_lf_p0_human_review_human_language_v2(text) IS
 'Presentation-only Human Review v2 contract. Shows reviewer-facing icon identity hypotheses separately from detection confidence, states the inference basis, exposes OCR variants/tokens, and separates compact prefixes such as +51 from adjacent glyph-like tokens without mutating source evidence.';
 
+-- Migration-level regressions: v1 preservation, icon hypothesis semantics, OCR variants,
+-- compact prefix separation, idempotency, and V4.2 design preservation.
 DO $$
 DECLARE
   v_input text := '<!doctype html><html lang="es" data-review-shell-version="4.2"><body><div id="element-list"></div><div id="detail-panel"></div></body></html>';
