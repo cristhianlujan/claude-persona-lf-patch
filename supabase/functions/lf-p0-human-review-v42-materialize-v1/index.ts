@@ -1,204 +1,25 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { Pool } from "jsr:@db/postgres@0.19.5";
-
-const ENDPOINT_VERSION = "p0-human-review-v42-canonical-materializer/v1";
-const REPO = "cristhianlujan/claude-persona-lf-patch";
-const RENDERER_REF = "a2a62eefb5312d3740bca1ce4ad19a66ad0b4373";
-const RENDERER_PATH = "sandbox/story_creator_p0_visual/v1.1/scripts/p0_human_review_shell_v4.py";
-const RENDERER_BLOB_SHA = "91144c0f3c01f22b84f5c8a79c43a4e378cb9d18";
-const DB_URL = Deno.env.get("SUPABASE_DB_URL")?.trim() ?? "";
-if (!DB_URL) throw new Error("SUPABASE_DB_URL_MISSING");
-const pool = new Pool(DB_URL, 1, true);
-
-function text(v: unknown): string { return String(v ?? "").trim(); }
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
-  });
-}
-function constantTimeEqual(a: string, b: string): boolean {
-  const aa = new TextEncoder().encode(a), bb = new TextEncoder().encode(b);
-  let diff = aa.length ^ bb.length;
-  const n = Math.max(aa.length, bb.length, 1);
-  for (let i = 0; i < n; i++) diff |= (aa[i % Math.max(aa.length, 1)] ?? 0) ^ (bb[i % Math.max(bb.length, 1)] ?? 0);
-  return diff === 0;
-}
-function requireServiceRole(req: Request): Response | null {
-  const expected = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.trim() ?? "";
-  if (!expected) return json({ outcome: "BLOCKED", code: "SERVICE_ROLE_SECRET_UNAVAILABLE", endpoint_version: ENDPOINT_VERSION }, 500);
-  const m = (req.headers.get("authorization") ?? "").match(/^Bearer\s+(.+)$/i);
-  const received = m?.[1]?.trim() ?? "";
-  if (!received || !constantTimeEqual(received, expected)) return json({ outcome: "BLOCKED", code: "SERVICE_ROLE_REQUIRED", endpoint_version: ENDPOINT_VERSION }, 403);
-  return null;
-}
-function decodeBase64Utf8(s: string): string {
-  const compact = s.replace(/\s+/g, "");
-  const bin = atob(compact);
-  const bytes = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-  return new TextDecoder().decode(bytes);
-}
-function extractTemplate(source: string): string {
-  const startMarker = "_TEMPLATE = r'''";
-  const start = source.indexOf(startMarker);
-  if (start < 0) throw new Error("CANONICAL_TEMPLATE_START_MISSING");
-  const from = start + startMarker.length;
-  const end = source.lastIndexOf("'''");
-  if (end <= from) throw new Error("CANONICAL_TEMPLATE_END_MISSING");
-  const template = source.slice(from, end);
-  const required = [
-    'data-review-shell-version="4.2"', 'id="review-tabs"', 'id="source-stage"',
-    'id="source-canvas"', 'id="element-list"', 'id="detail-panel"', 'id="selected-crop"',
-    'id="decision-bar"', "pageOrder=['summary','screen','elements','detail','decision']", "ResizeObserver",
-  ];
-  for (const marker of required) if (!template.includes(marker)) throw new Error(`CANONICAL_TEMPLATE_MARKER_MISSING:${marker}`);
-  return template;
-}
-async function fetchCanonicalTemplate(): Promise<string> {
-  const token = Deno.env.get("GITHUB_TOKEN")?.trim() ?? Deno.env.get("GH_TOKEN")?.trim() ?? "";
-  if (!token) throw new Error("GITHUB_SECRET_UNAVAILABLE");
-  const url = `https://api.github.com/repos/${REPO}/contents/${RENDERER_PATH}?ref=${RENDERER_REF}`;
-  const resp = await fetch(url, {
-    headers: {
-      authorization: `Bearer ${token}`,
-      accept: "application/vnd.github+json",
-      "x-github-api-version": "2022-11-28",
-      "user-agent": "LF-P0-Canonical-Human-Review-Materializer",
-    },
-  });
-  if (!resp.ok) throw new Error(`GITHUB_RENDERER_FETCH_FAILED:${resp.status}`);
-  const payload = await resp.json();
-  if (text(payload?.sha) !== RENDERER_BLOB_SHA) throw new Error(`CANONICAL_RENDERER_BLOB_MISMATCH:${text(payload?.sha)}`);
-  return extractTemplate(decodeBase64Utf8(text(payload?.content)));
-}
-function stamp(d: Date): string {
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getUTCFullYear()}${p(d.getUTCMonth()+1)}${p(d.getUTCDate())}${p(d.getUTCHours())}${p(d.getUTCMinutes())}${p(d.getUTCSeconds())}`;
-}
-
-const RENDER_SQL = String.raw`
-with c as (
-  select * from private.lf_p0_human_review_challenges_v1 where challenge_id=$1
-), v as (
-  select convert_from(o.content,'UTF8')::jsonb j, c.*
-  from c join private.lf_p0_review_evidence_objects_v1 o on o.evidence_object_id=c.visual_output_object_id
-), el as (
-  select ord::int ordinal,e,
-    coalesce(nullif(e->>'element_id',''),'EL-'||lpad(ord::text,4,'0')) element_id,
-    coalesce(nullif(e->>'classification',''),'NOT_OBSERVABLE') classification,
-    coalesce(nullif(e->>'visible_text',''),nullif(e->>'ocr_consensus_text',''),nullif(e->>'text',''),nullif(e->>'label',''),nullif(e->>'semantic_role',''),nullif(e->>'subcomponent_role',''),nullif(e->>'element_type',''),'Elemento visual') display_text,
-    coalesce((select jsonb_agg(u) from jsonb_array_elements(coalesce(v.j->'reader_uncertainties','[]'::jsonb)) u where u->>'element_id'=e->>'element_id'),'[]'::jsonb) explicit_uncertainties
-  from v cross join lateral jsonb_array_elements(v.j->'elements') with ordinality a(e,ord)
-), enriched as (
-  select ordinal,
-    e||jsonb_build_object(
-      '_review',jsonb_build_object(
-        'ordinal',ordinal,'element_id',element_id,'classification',classification,
-        'uncertain',jsonb_array_length(explicit_uncertainties)>0,'problem',false,
-        'omission',coalesce((e->>'omission')::boolean,(e->>'is_omission')::boolean,false)
-      ),
-      '_explicit_uncertainties',explicit_uncertainties,
-      '_display_text',display_text
-    ) x,
-    classification,
-    jsonb_array_length(explicit_uncertainties)>0 uncertain,
-    coalesce((e->>'omission')::boolean,(e->>'is_omission')::boolean,false) omission
-  from el
-), agg as (
-  select jsonb_agg(x order by ordinal) elements,
-    count(*) total,
-    count(*) filter(where classification='CONFIRMED') confirmed,
-    count(*) filter(where classification='INFERRED') inferred,
-    count(*) filter(where classification='NOT_OBSERVABLE') not_observable,
-    count(*) filter(where uncertain) uncertainties,
-    count(*) filter(where omission) omissions
-  from enriched
-), d as (
-  select jsonb_build_object(
-    'metadata',jsonb_build_object(
-      'screen','01_onboarding paso 1.png','mode','REAL_RERUN_RECEIPT_V4',
-      'source_sha256',v.source_sha256,'head',v.source_head_sha,
-      'candidate_sha256',v.visual_output_sha256,
-      'pass_id',coalesce(v.j->>'pass_id',''),
-      'reader_execution_id',coalesce(v.j->>'reader_execution_id',''),
-      'machine_result','READY_FOR_HUMAN_REVIEW_RECHECK','human_review_ready',true,
-      'challenge_id',$3,'review_id',$4,'expires_at',$5,'expired',false,'binding_valid',true,
-      'issue_number',125,'required_reviewer_role',v.required_reviewer_role,
-      'counts',jsonb_build_object(
-        'total',a.total,'confirmed',a.confirmed,'inferred',a.inferred,'not_observable',a.not_observable,
-        'uncertainties',a.uncertainties,'problems',0,'omissions',a.omissions
-      ),
-      'coverage_percent',100,'coverage',jsonb_build_object(),'limitations',jsonb_build_array(),
-      'p0_5_state','BLOCKED_BENCHMARK','production_authorized',false,
-      'source_width',(v.j->>'width')::int,'source_height',(v.j->>'height')::int,'source_bytes',s.content_bytes
-    ),
-    'elements',a.elements,
-    'allowed_actions',jsonb_build_array(
-      'CONFIRM_OBSERVATION','CORRECT_WITH_ADJUDICATION','REQUEST_NEW_CAPTURE',
-      'REQUEST_ADDITIONAL_CONTEXT','REJECT_AND_BLOCK','ESCALATE_SECURITY','ESCALATE_PRIVACY'
-    )
-  ) data,
-  '<img id="source-image" alt="Pantalla fuente 01_onboarding paso 1.png" src="data:image/png;base64,'||replace(encode(s.content,'base64'),E'\n','')||'">' source_html
-  from v cross join agg a
-  join private.lf_p0_review_evidence_objects_v1 s on s.evidence_object_id=v.source_evidence_object_id
-), rendered as (
-  select replace(replace(replace(replace(replace(
-    $2,'__TITLE__','01_onboarding paso 1.png'),
-    '__DATA__',replace(d.data::text,'</','<\\/')),
-    '__SOURCE_HTML__',d.source_html),
-    '__ACTION_BUTTONS__','<button class="decision-btn" data-action="CONFIRM_OBSERVATION" type="button"></button><button class="decision-btn" data-action="CORRECT_WITH_ADJUDICATION" type="button"></button><button class="decision-btn" data-action="REQUEST_NEW_CAPTURE" type="button"></button><button class="decision-btn" data-action="REQUEST_ADDITIONAL_CONTEXT" type="button"></button><button class="decision-btn" data-action="REJECT_AND_BLOCK" type="button"></button>'),
-    '__MORE_ACTION_BUTTONS__','<button class="decision-btn secondary" data-action="ESCALATE_SECURITY" type="button"></button><button class="decision-btn secondary" data-action="ESCALATE_PRIVACY" type="button"></button>'
-  ) html
-  from d
-)
-select private.fn_lf_p0_human_review_human_language_v2(html) as html from rendered
-`;
-
-Deno.serve(async (req: Request) => {
-  if (req.method !== "POST") return json({ outcome: "BLOCKED", code: "METHOD_NOT_ALLOWED", endpoint_version: ENDPOINT_VERSION }, 405);
-  const auth = requireServiceRole(req); if (auth) return auth;
-  let body: Record<string, unknown> = {};
-  try { body = await req.json(); } catch { return json({ outcome: "BLOCKED", code: "INVALID_JSON", endpoint_version: ENDPOINT_VERSION }, 400); }
-  const sourceChallenge = text(body.challenge_id);
-  if (!sourceChallenge) return json({ outcome: "BLOCKED", code: "CHALLENGE_ID_REQUIRED", endpoint_version: ENDPOINT_VERSION }, 400);
-
-  const cn = await pool.connect();
-  try {
-    const seed = await cn.queryObject<{source_head_sha:string; review_lane:string; pending_human_count:number}>({
-      text: "select source_head_sha,review_lane,pending_human_count from private.lf_p0_human_review_challenges_v1 where challenge_id=$1",
-      args: [sourceChallenge],
-    });
-    if (seed.rows.length !== 1) return json({ outcome: "BLOCKED", code: "SOURCE_CHALLENGE_NOT_FOUND", endpoint_version: ENDPOINT_VERSION }, 404);
-    if (seed.rows[0].review_lane !== "P0-4") return json({ outcome: "BLOCKED", code: "P0_4_CHALLENGE_REQUIRED", endpoint_version: ENDPOINT_VERSION }, 400);
-
-    const template = await fetchCanonicalTemplate();
-    const now = new Date(); const expires = new Date(now.getTime() + 24*60*60*1000);
-    const shortHead = seed.rows[0].source_head_sha.slice(0,12);
-    const s = stamp(now);
-    const reviewId = `P0-HUMAN-REVIEW-${shortHead.toUpperCase()}-CANONICAL-${s}`;
-    const executionId = `EXEC-P0-HUMAN-CANONICAL-${shortHead}-${s}`;
-    const challengeId = `CH-P0-HUMAN-${shortHead.toUpperCase()}-CANONICAL-${s}`;
-
-    const rendered = await cn.queryObject<{html:string}>({
-      text: RENDER_SQL,
-      args: [sourceChallenge, template, challengeId, reviewId, expires.toISOString()],
-    });
-    if (rendered.rows.length !== 1 || !rendered.rows[0].html) throw new Error("CANONICAL_RENDER_EMPTY");
-    let html = rendered.rows[0].html;
-    html = html.replace("</head>", `<meta name="p0-renderer-contract" content="p0-human-review-shell-v4.2-canonical-single-renderer/v1"><meta name="p0-renderer-blob-sha" content="${RENDERER_BLOB_SHA}"></head>`);
-
-    const publish = await cn.queryObject<{result:unknown}>({
-      text: "select public.fn_lf_p0_publish_canonical_review_v42_v1($1,$2,$3,$4,$5::timestamptz,$6::timestamptz,$7,$8,$9) as result",
-      args: [
-        sourceChallenge, reviewId, executionId, challengeId, now.toISOString(), expires.toISOString(), html,
-        RENDERER_BLOB_SHA, `${REPO}@${RENDERER_REF}:${RENDERER_PATH}`,
-      ],
-    });
-    if (publish.rows.length !== 1) throw new Error("CANONICAL_PUBLISH_EMPTY");
-    return json({ outcome: "OK", endpoint_version: ENDPOINT_VERSION, ...((publish.rows[0].result as Record<string, unknown>) ?? {}) });
-  } catch (e) {
-    console.error(e instanceof Error ? e.stack ?? e.message : String(e));
-    return json({ outcome: "BLOCKED", code: e instanceof Error ? e.message : "CANONICAL_MATERIALIZER_ERROR", endpoint_version: ENDPOINT_VERSION }, 500);
-  } finally { cn.release(); }
-});
+const ENDPOINT_VERSION="p0-human-review-v42-canonical-materializer/v1";
+const REPO="cristhianlujan/claude-persona-lf-patch";
+const RENDERER_REF="a2a62eefb5312d3740bca1ce4ad19a66ad0b4373";
+const RENDERER_PATH="sandbox/story_creator_p0_visual/v1.1/scripts/p0_human_review_shell_v4.py";
+const RENDERER_BLOB_SHA="91144c0f3c01f22b84f5c8a79c43a4e378cb9d18";
+const DB_URL=Deno.env.get("SUPABASE_DB_URL")?.trim()??"";if(!DB_URL)throw new Error("SUPABASE_DB_URL_MISSING");const pool=new Pool(DB_URL,1,true);
+function text(v:unknown){return String(v??"").trim()}function json(body:unknown,status=200){return new Response(JSON.stringify(body),{status,headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store"}})}
+function eq(a:string,b:string){const aa=new TextEncoder().encode(a),bb=new TextEncoder().encode(b);let d=aa.length^bb.length,n=Math.max(aa.length,bb.length,1);for(let i=0;i<n;i++)d|=(aa[i%Math.max(aa.length,1)]??0)^(bb[i%Math.max(bb.length,1)]??0);return d===0}
+function auth(req:Request){const expected=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.trim()??"";if(!expected)return json({outcome:"BLOCKED",code:"SERVICE_ROLE_SECRET_UNAVAILABLE",endpoint_version:ENDPOINT_VERSION},500);const m=(req.headers.get("authorization")??"").match(/^Bearer\s+(.+)$/i),got=m?.[1]?.trim()??"";return !got||!eq(got,expected)?json({outcome:"BLOCKED",code:"SERVICE_ROLE_REQUIRED",endpoint_version:ENDPOINT_VERSION},403):null}
+function decode(s:string){const b=atob(s.replace(/\s+/g,"")),a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return new TextDecoder().decode(a)}
+function templateOf(source:string){const m="_TEMPLATE = r'''",s=source.indexOf(m),f=s+m.length,e=source.lastIndexOf("'''");if(s<0)throw new Error("CANONICAL_TEMPLATE_START_MISSING");if(e<=f)throw new Error("CANONICAL_TEMPLATE_END_MISSING");const t=source.slice(f,e);for(const x of ['data-review-shell-version="4.2"','id="review-tabs"','id="source-stage"','id="source-canvas"','id="element-list"','id="detail-panel"','id="selected-crop"','id="decision-bar"',"pageOrder=['summary','screen','elements','detail','decision']","ResizeObserver"])if(!t.includes(x))throw new Error(`CANONICAL_TEMPLATE_MARKER_MISSING:${x}`);return t}
+async function canonicalTemplate(){const token=Deno.env.get("GITHUB_TOKEN")?.trim()??Deno.env.get("GH_TOKEN")?.trim()??"";if(!token)throw new Error("GITHUB_SECRET_UNAVAILABLE");const r=await fetch(`https://api.github.com/repos/${REPO}/contents/${RENDERER_PATH}?ref=${RENDERER_REF}`,{headers:{authorization:`Bearer ${token}`,accept:"application/vnd.github+json","x-github-api-version":"2022-11-28","user-agent":"LF-P0-Canonical-Human-Review-Materializer"}});if(!r.ok)throw new Error(`GITHUB_RENDERER_FETCH_FAILED:${r.status}`);const p=await r.json();if(text(p?.sha)!==RENDERER_BLOB_SHA)throw new Error(`CANONICAL_RENDERER_BLOB_MISMATCH:${text(p?.sha)}`);return templateOf(decode(text(p?.content)))}
+function stamp(d:Date){const p=(n:number)=>String(n).padStart(2,"0");return `${d.getUTCFullYear()}${p(d.getUTCMonth()+1)}${p(d.getUTCDate())}${p(d.getUTCHours())}${p(d.getUTCMinutes())}${p(d.getUTCSeconds())}`}
+const RENDER_SQL=String.raw`
+with c as (select * from private.lf_p0_human_review_challenges_v1 where challenge_id=$1::text),
+v as (select convert_from(o.content,'UTF8')::jsonb j,c.* from c join private.lf_p0_review_evidence_objects_v1 o on o.evidence_object_id=c.visual_output_object_id),
+el as (select ord::int ordinal,e,coalesce(nullif(e->>'element_id',''),'EL-'||lpad(ord::text,4,'0')) element_id,coalesce(nullif(e->>'classification',''),'NOT_OBSERVABLE') classification,coalesce(nullif(e->>'visible_text',''),nullif(e->>'ocr_consensus_text',''),nullif(e->>'text',''),nullif(e->>'label',''),nullif(e->>'semantic_role',''),nullif(e->>'subcomponent_role',''),nullif(e->>'element_type',''),'Elemento visual') display_text,coalesce((select jsonb_agg(u) from jsonb_array_elements(coalesce(v.j->'reader_uncertainties','[]'::jsonb)) u where u->>'element_id'=e->>'element_id'),'[]'::jsonb) explicit_uncertainties from v cross join lateral jsonb_array_elements(v.j->'elements') with ordinality a(e,ord)),
+enriched as (select ordinal,e||jsonb_build_object('_review',jsonb_build_object('ordinal',ordinal,'element_id',element_id,'classification',classification,'uncertain',jsonb_array_length(explicit_uncertainties)>0,'problem',false,'omission',coalesce((e->>'omission')::boolean,(e->>'is_omission')::boolean,false)),'_explicit_uncertainties',explicit_uncertainties,'_display_text',display_text) x,classification,jsonb_array_length(explicit_uncertainties)>0 uncertain,coalesce((e->>'omission')::boolean,(e->>'is_omission')::boolean,false) omission from el),
+agg as (select jsonb_agg(x order by ordinal) elements,count(*) total,count(*) filter(where classification='CONFIRMED') confirmed,count(*) filter(where classification='INFERRED') inferred,count(*) filter(where classification='NOT_OBSERVABLE') not_observable,count(*) filter(where uncertain) uncertainties,count(*) filter(where omission) omissions from enriched),
+d as (select jsonb_build_object('metadata',jsonb_build_object('screen','01_onboarding paso 1.png','mode','REAL_RERUN_RECEIPT_V4','source_sha256',v.source_sha256,'head',v.source_head_sha,'candidate_sha256',v.visual_output_sha256,'pass_id',coalesce(v.j->>'pass_id',''),'reader_execution_id',coalesce(v.j->>'reader_execution_id',''),'machine_result','READY_FOR_HUMAN_REVIEW_RECHECK','human_review_ready',true,'challenge_id',$3::text,'review_id',$4::text,'expires_at',$5::text,'expired',false,'binding_valid',true,'issue_number',125,'required_reviewer_role',v.required_reviewer_role,'counts',jsonb_build_object('total',a.total,'confirmed',a.confirmed,'inferred',a.inferred,'not_observable',a.not_observable,'uncertainties',a.uncertainties,'problems',0,'omissions',a.omissions),'coverage_percent',100,'coverage',jsonb_build_object(),'limitations',jsonb_build_array(),'p0_5_state','BLOCKED_BENCHMARK','production_authorized',false,'source_width',(v.j->>'width')::int,'source_height',(v.j->>'height')::int,'source_bytes',s.content_bytes),'elements',a.elements,'allowed_actions',jsonb_build_array('CONFIRM_OBSERVATION','CORRECT_WITH_ADJUDICATION','REQUEST_NEW_CAPTURE','REQUEST_ADDITIONAL_CONTEXT','REJECT_AND_BLOCK','ESCALATE_SECURITY','ESCALATE_PRIVACY')) data,'<img id="source-image" alt="Pantalla fuente 01_onboarding paso 1.png" src="data:image/png;base64,'||replace(encode(s.content,'base64'),E'\n','')||'">' source_html from v cross join agg a join private.lf_p0_review_evidence_objects_v1 s on s.evidence_object_id=v.source_evidence_object_id),
+rendered as (select replace(replace(replace(replace(replace($2::text,'__TITLE__','01_onboarding paso 1.png'),'__DATA__',replace(d.data::text,'</','<\\/')),'__SOURCE_HTML__',d.source_html),'__ACTION_BUTTONS__','<button class="decision-btn" data-action="CONFIRM_OBSERVATION" type="button"></button><button class="decision-btn" data-action="CORRECT_WITH_ADJUDICATION" type="button"></button><button class="decision-btn" data-action="REQUEST_NEW_CAPTURE" type="button"></button><button class="decision-btn" data-action="REQUEST_ADDITIONAL_CONTEXT" type="button"></button><button class="decision-btn" data-action="REJECT_AND_BLOCK" type="button"></button>'),'__MORE_ACTION_BUTTONS__','<button class="decision-btn secondary" data-action="ESCALATE_SECURITY" type="button"></button><button class="decision-btn secondary" data-action="ESCALATE_PRIVACY" type="button"></button>') html from d)
+select private.fn_lf_p0_human_review_human_language_v2(html) as html from rendered`;
+Deno.serve(async(req:Request)=>{if(req.method!=="POST")return json({outcome:"BLOCKED",code:"METHOD_NOT_ALLOWED",endpoint_version:ENDPOINT_VERSION},405);const a=auth(req);if(a)return a;let body:Record<string,unknown>={};try{body=await req.json()}catch{return json({outcome:"BLOCKED",code:"INVALID_JSON",endpoint_version:ENDPOINT_VERSION},400)}const source=text(body.challenge_id);if(!source)return json({outcome:"BLOCKED",code:"CHALLENGE_ID_REQUIRED",endpoint_version:ENDPOINT_VERSION},400);const cn=await pool.connect();try{const q=await cn.queryObject<{source_head_sha:string;review_lane:string}>({text:"select source_head_sha,review_lane from private.lf_p0_human_review_challenges_v1 where challenge_id=$1",args:[source]});if(q.rows.length!==1)return json({outcome:"BLOCKED",code:"SOURCE_CHALLENGE_NOT_FOUND",endpoint_version:ENDPOINT_VERSION},404);if(q.rows[0].review_lane!=="P0-4")return json({outcome:"BLOCKED",code:"P0_4_CHALLENGE_REQUIRED",endpoint_version:ENDPOINT_VERSION},400);const t=await canonicalTemplate(),now=new Date(),expires=new Date(now.getTime()+86400000),short=q.rows[0].source_head_sha.slice(0,12),s=stamp(now),review=`P0-HUMAN-REVIEW-${short.toUpperCase()}-CANONICAL-${s}`,execution=`EXEC-P0-HUMAN-CANONICAL-${short}-${s}`,challenge=`CH-P0-HUMAN-${short.toUpperCase()}-CANONICAL-${s}`;const rr=await cn.queryObject<{html:string}>({text:RENDER_SQL,args:[source,t,challenge,review,expires.toISOString()]});if(rr.rows.length!==1||!rr.rows[0].html)throw new Error("CANONICAL_RENDER_EMPTY");let h=rr.rows[0].html;h=h.replace("</head>",`<meta name="p0-renderer-contract" content="p0-human-review-shell-v4.2-canonical-single-renderer/v1"><meta name="p0-renderer-blob-sha" content="${RENDERER_BLOB_SHA}"></head>`);const p=await cn.queryObject<{result:unknown}>({text:"select public.fn_lf_p0_publish_canonical_review_v42_v1($1,$2,$3,$4,$5::timestamptz,$6::timestamptz,$7,$8,$9) as result",args:[source,review,execution,challenge,now.toISOString(),expires.toISOString(),h,RENDERER_BLOB_SHA,`${REPO}@${RENDERER_REF}:${RENDERER_PATH}`]});return json({outcome:"OK",endpoint_version:ENDPOINT_VERSION,...((p.rows[0]?.result as Record<string,unknown>)??{})})}catch(e){console.error(e instanceof Error?e.stack??e.message:String(e));return json({outcome:"BLOCKED",code:e instanceof Error?e.message:"CANONICAL_MATERIALIZER_ERROR",endpoint_version:ENDPOINT_VERSION},500)}finally{cn.release()}});
