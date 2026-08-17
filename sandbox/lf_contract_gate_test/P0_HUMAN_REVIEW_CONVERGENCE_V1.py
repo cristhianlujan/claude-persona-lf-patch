@@ -7,7 +7,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
+import sys
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Any
 
 BINDING_FIELDS = (
@@ -17,6 +20,13 @@ BINDING_FIELDS = (
     "review_id", "challenge_id",
 )
 COUNTERS = ("element_count", "uncertain_count", "inferred_count", "changed_count", "pending_human_count")
+CANONICAL_RENDERER_SUITE = (
+    Path(__file__).resolve().parents[1]
+    / "story_creator_p0_visual"
+    / "v1.1"
+    / "evals"
+    / "p0_human_review_canonical_single_renderer_suite.py"
+)
 
 
 def canonical_element(e: dict[str, Any]) -> dict[str, Any]:
@@ -104,6 +114,17 @@ def expect_fail(label: str, fn, code: str) -> None:
     raise SystemExit(f"FAIL_{label}: negative case passed")
 
 
+def run_canonical_renderer_suite() -> None:
+    completed = subprocess.run(
+        [sys.executable, str(CANONICAL_RENDERER_SUITE)],
+        cwd=Path(__file__).resolve().parents[2],
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise SystemExit(completed.returncode)
+    print("PASS_P0_HUMAN_REVIEW_CANONICAL_SINGLE_RENDERER_GATE=1/1")
+
+
 def main() -> int:
     now = datetime(2026, 8, 14, 6, 0, tzinfo=timezone.utc)
     head = "0" * 40; sha = "1" * 64
@@ -160,6 +181,7 @@ def main() -> int:
     assert_sensitive_dual("SENSITIVE",True)
 
     if neg != 14: raise SystemExit(f"FAIL_NEGATIVE_COUNT:{neg}")
+    run_canonical_renderer_suite()
     print("PASS_P0_HUMAN_REVIEW_CONVERGENCE=20/20")
     print("PASS_HUMAN_DEBT_CONVERGENCE=4/4")
     print(json.dumps({"result":"PASS","negative_contracts":14,"semantic_lineage_invariant":True,"removed_elements_visible":True,"max_one_active":True,"p0_4_p0_5_separate":True,"sealed_holdout_used":False,"human_decisions_simulated":False,"production_authorized":False},sort_keys=True))
