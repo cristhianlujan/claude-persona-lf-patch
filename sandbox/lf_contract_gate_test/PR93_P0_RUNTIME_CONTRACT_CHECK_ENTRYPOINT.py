@@ -2,8 +2,8 @@
 """Fail-closed PR93 contract wrapper with exact-head P0 real-source evidence.
 
 The wrapper remains substitutable for the historical PR93 runtime entrypoint.
-It preserves the original runtime scope while admitting one separately pinned
-P0 exact-head broker extension on governed refs.
+It preserves the original runtime scope while admitting separately pinned P0
+extensions on governed refs: exact-head evidence and canonical Human Review V4.2.
 """
 from __future__ import annotations
 
@@ -47,9 +47,16 @@ P0_EXACT_HEAD_BROKER_BLOBS = {
 }
 P0_EXACT_HEAD_EXTENSION_PATHS = frozenset({RUNTIME_PLATFORM_CONFIG_PATH, *P0_EXACT_HEAD_BROKER_BLOBS})
 
+P0_CANONICAL_HUMAN_REVIEW_BLOBS = {
+    "supabase/functions/lf-p0-human-review-v42-materialize-v1/index.ts": "9fdeb7dbd331a12e61d67c1cac386fb004c2e974",
+    "supabase/functions/lf-p0-human-review-web-v1/index.ts": "bf1e0ac69a2c171e28bf89df80f97ebd63b95222",
+}
+P0_CANONICAL_HUMAN_REVIEW_EXTENSION_PATHS = frozenset(P0_CANONICAL_HUMAN_REVIEW_BLOBS)
+
 _pinned = dict(core.EXPECTED_RUNTIME_BLOBS)
 _pinned[RUNTIME_PLATFORM_CONFIG_PATH] = "e7f46a6874d254dcb474871f988d687678e218a0"
 _pinned.update(P0_EXACT_HEAD_BROKER_BLOBS)
+_pinned.update(P0_CANONICAL_HUMAN_REVIEW_BLOBS)
 core.EXPECTED_RUNTIME_BLOBS = _pinned
 core.EXPECTED_EDGE_PATHS = frozenset(path for path in _pinned if path.startswith("supabase/functions/"))
 core.CONTROLLED_RUNTIME_PATHS = frozenset(_pinned)
@@ -103,6 +110,35 @@ def _verify_p0_main_merge_via_github() -> bool:
     )
 
 
+def _evaluate_governed_p0_extension(
+    changed_files,
+    *,
+    branch: str,
+    blob_by_path,
+    mode_by_path=None,
+    main_merge_verified: bool = False,
+):
+    if branch == MAIN_BRANCH:
+        verified = main_merge_verified or _verify_p0_main_merge_via_github()
+        if not verified:
+            raise RuntimeScopeError(
+                "FAIL_RUNTIME_MAIN_NOT_MERGED",
+                "Pinned P0 runtime extension main transition requires a merged governed P0 pull request at the exact workflow SHA",
+            )
+    elif not _governed_p0_branch_name(branch):
+        raise RuntimeScopeError(
+            "FAIL_RUNTIME_BRANCH_MISMATCH",
+            f"Pinned P0 runtime extension requires main or lf/p0-*; got {branch!r}",
+        )
+    return _original_evaluate_controlled_runtime_scope(
+        changed_files,
+        branch=PR_BRANCH,
+        blob_by_path=blob_by_path,
+        mode_by_path=mode_by_path,
+        main_merge_verified=False,
+    )
+
+
 def evaluate_controlled_runtime_scope(
     changed_files,
     *,
@@ -117,33 +153,23 @@ def evaluate_controlled_runtime_scope(
         if path in CONTROLLED_RUNTIME_PATHS or path.startswith("supabase/functions/")
     }
     broker_specific = set(P0_EXACT_HEAD_BROKER_BLOBS)
-    extension_only = bool(controlled & broker_specific) and controlled.issubset(P0_EXACT_HEAD_EXTENSION_PATHS)
-    if not extension_only:
-        return _original_evaluate_controlled_runtime_scope(
+    exact_head_only = bool(controlled & broker_specific) and controlled.issubset(P0_EXACT_HEAD_EXTENSION_PATHS)
+    review_specific = set(P0_CANONICAL_HUMAN_REVIEW_BLOBS)
+    human_review_only = bool(controlled & review_specific) and controlled.issubset(P0_CANONICAL_HUMAN_REVIEW_EXTENSION_PATHS)
+    if exact_head_only or human_review_only:
+        return _evaluate_governed_p0_extension(
             changed_files,
             branch=branch,
             blob_by_path=blob_by_path,
             mode_by_path=mode_by_path,
             main_merge_verified=main_merge_verified,
         )
-    if branch == MAIN_BRANCH:
-        verified = main_merge_verified or _verify_p0_main_merge_via_github()
-        if not verified:
-            raise RuntimeScopeError(
-                "FAIL_RUNTIME_MAIN_NOT_MERGED",
-                "P0 exact-head broker main transition requires a merged governed P0 pull request at the exact workflow SHA",
-            )
-    elif not _governed_p0_branch_name(branch):
-        raise RuntimeScopeError(
-            "FAIL_RUNTIME_BRANCH_MISMATCH",
-            f"P0 exact-head broker extension requires main or lf/p0-*; got {branch!r}",
-        )
     return _original_evaluate_controlled_runtime_scope(
         changed_files,
-        branch=PR_BRANCH,
+        branch=branch,
         blob_by_path=blob_by_path,
         mode_by_path=mode_by_path,
-        main_merge_verified=False,
+        main_merge_verified=main_merge_verified,
     )
 
 
@@ -202,6 +228,52 @@ def _runtime_extension_self_test() -> None:
     else:
         raise SystemExit("FAIL_P0_EXACT_HEAD_EXTENSION_ARBITRARY_EDGE_ALLOWED")
     print("PASS_P0_EXACT_HEAD_RUNTIME_EXTENSION_V2=4/4")
+
+
+def _canonical_human_review_runtime_self_test() -> None:
+    exact = dict(EXPECTED_RUNTIME_BLOBS)
+    modes = {path: "100644" for path in exact}
+    paths = list(P0_CANONICAL_HUMAN_REVIEW_BLOBS)
+    if evaluate_controlled_runtime_scope(
+        paths,
+        branch="lf/p0-canonical-human-review-self-test",
+        blob_by_path=exact,
+        mode_by_path=modes,
+    ) is not True:
+        raise SystemExit("FAIL_P0_CANONICAL_HUMAN_REVIEW_EXTENSION_POSITIVE")
+    if evaluate_controlled_runtime_scope(
+        paths,
+        branch=MAIN_BRANCH,
+        blob_by_path=exact,
+        mode_by_path=modes,
+        main_merge_verified=True,
+    ) is not True:
+        raise SystemExit("FAIL_P0_CANONICAL_HUMAN_REVIEW_EXTENSION_MAIN_POSITIVE")
+    try:
+        evaluate_controlled_runtime_scope(
+            paths,
+            branch="feature/arbitrary",
+            blob_by_path=exact,
+            mode_by_path=modes,
+        )
+    except RuntimeScopeError as exc:
+        if exc.code != "FAIL_RUNTIME_BRANCH_MISMATCH":
+            raise
+    else:
+        raise SystemExit("FAIL_P0_CANONICAL_HUMAN_REVIEW_ARBITRARY_BRANCH_ALLOWED")
+    try:
+        evaluate_controlled_runtime_scope(
+            [*paths, "supabase/functions/arbitrary/index.ts"],
+            branch="lf/p0-canonical-human-review-self-test",
+            blob_by_path=exact,
+            mode_by_path=modes,
+        )
+    except RuntimeScopeError as exc:
+        if exc.code not in {"FAIL_RUNTIME_EDGE_SCOPE", "FAIL_RUNTIME_BRANCH_MISMATCH"}:
+            raise
+    else:
+        raise SystemExit("FAIL_P0_CANONICAL_HUMAN_REVIEW_ARBITRARY_EDGE_ALLOWED")
+    print("PASS_P0_CANONICAL_HUMAN_REVIEW_RUNTIME_EXTENSION_V1=4/4")
 
 
 def _run_human_review_convergence_contract() -> None:
@@ -269,6 +341,7 @@ def _run_exact_head_real_source_if_required() -> None:
 
 def main() -> None:
     _runtime_extension_self_test()
+    _canonical_human_review_runtime_self_test()
     _run_human_review_convergence_contract()
     _run_dual_ocr_reconciliation_contract()
     _run_icon_structural_role_contract()

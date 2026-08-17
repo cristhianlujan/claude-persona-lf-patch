@@ -8,6 +8,7 @@ from __future__ import annotations
 import hashlib
 import json
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Any
 
 BINDING_FIELDS = (
@@ -17,6 +18,12 @@ BINDING_FIELDS = (
     "review_id", "challenge_id",
 )
 COUNTERS = ("element_count", "uncertain_count", "inferred_count", "changed_count", "pending_human_count")
+REPO_ROOT = Path(__file__).resolve().parents[2]
+CANONICAL_RENDERER = REPO_ROOT / "sandbox/story_creator_p0_visual/v1.1/scripts/p0_human_review_shell_v4.py"
+CANONICAL_MIGRATION = REPO_ROOT / "supabase/migrations/20260817001205_lf_p0_canonical_human_review_single_renderer_v1.sql"
+CANONICAL_MATERIALIZER = REPO_ROOT / "supabase/functions/lf-p0-human-review-v42-materialize-v1/index.ts"
+CANONICAL_WEB = REPO_ROOT / "supabase/functions/lf-p0-human-review-web-v1/index.ts"
+CANONICAL_RENDERER_BLOB = "91144c0f3c01f22b84f5c8a79c43a4e378cb9d18"
 
 
 def canonical_element(e: dict[str, Any]) -> dict[str, Any]:
@@ -104,6 +111,44 @@ def expect_fail(label: str, fn, code: str) -> None:
     raise SystemExit(f"FAIL_{label}: negative case passed")
 
 
+def run_canonical_renderer_contract() -> None:
+    renderer = CANONICAL_RENDERER.read_text(encoding="utf-8")
+    migration = CANONICAL_MIGRATION.read_text(encoding="utf-8")
+    materializer = CANONICAL_MATERIALIZER.read_text(encoding="utf-8")
+    web = CANONICAL_WEB.read_text(encoding="utf-8")
+    checks = {
+        "R01_v42_tabs": 'data-review-shell-version="4.2"' in renderer and 'id="review-tabs"' in renderer,
+        "R02_ordered_pages": "pageOrder=['summary','screen','elements','detail','decision']" in renderer,
+        "R03_dynamic_observation_count": "LISTA DE ELEMENTOS DETECTADOS (${M.counts.total})" in renderer and "${M.counts.total} elementos detectados" in renderer,
+        "R04_single_source_background": '<div id="source-stage"><div id="source-canvas">__SOURCE_HTML__<div id="overlay"></div>' in renderer,
+        "R05_single_selected_crop": renderer.count('<canvas id="selected-crop"') == 1 and "function drawCrop(e)" in renderer,
+        "R06_no_parallel_crop_gallery": all(x not in renderer.lower() for x in ("crop-gallery", "crops-grid", "all-crops")),
+        "R07_source_title_preserved": "IMAGEN ORIGINAL CON ANOTACIONES" in renderer,
+        "R08_element_list_preserved": 'id="element-list"' in renderer and 'id="detail-panel"' in renderer,
+        "R09_db_gate_renderer_blob": CANONICAL_RENDERER_BLOB in migration and "CANONICAL_V42_RENDERER_BLOB_MISMATCH" in migration,
+        "R10_db_gate_structural_markers": all(x in migration for x in (
+            "CANONICAL_V42_MARKER_MISSING", "M.counts.total", "IMAGEN ORIGINAL CON ANOTACIONES",
+            "LISTA DE ELEMENTOS DETECTADOS", "CANONICAL_V42_SELECTED_CROP_COUNT_INVALID",
+            "CANONICAL_V42_PARALLEL_CROP_COMPOSITION_FORBIDDEN",
+        )),
+        "R11_copy_refresh_retired": "CANONICAL_V42_MATERIALIZER_REQUIRED" in migration and "copying an existing BROWSER_REVIEW is forbidden" in migration,
+        "R12_presentation_only_metadata": "human_language_presentation_only" in migration and "structural_redesign_forbidden" in migration,
+        "R13_materializer_fetches_frozen_renderer": CANONICAL_RENDERER_BLOB in materializer and "GITHUB_RENDERER_FETCH_FAILED" in materializer and "CANONICAL_RENDERER_BLOB_MISMATCH" in materializer,
+        "R14_materializer_uses_canonical_publish": "fn_lf_p0_publish_canonical_review_v42_v1" in materializer,
+        "R15_human_language_after_render": "fn_lf_p0_human_review_human_language_v2" in materializer,
+        "R16_typed_bindings": all(x in materializer for x in ("$3::text", "$4::text", "$5::text", "$2::text")),
+        "R17_web_requires_canonical_markers": all(x in web for x in (
+            CANONICAL_RENDERER_BLOB, "CANONICAL_V42_CONTRACT_MISMATCH", "CANONICAL_CROP_POLICY_MISMATCH",
+            "IMAGEN ORIGINAL CON ANOTACIONES", "LISTA DE ELEMENTOS DETECTADOS", "M.counts.total",
+        )),
+    }
+    failed = [name for name, ok in checks.items() if not ok]
+    print(json.dumps({"suite":"P0_HUMAN_REVIEW_CANONICAL_SINGLE_RENDERER","passed":len(checks)-len(failed),"total":len(checks),"failed":failed,"results":checks},sort_keys=True))
+    if failed:
+        raise SystemExit("FAIL_P0_HUMAN_REVIEW_CANONICAL_SINGLE_RENDERER:" + ",".join(failed))
+    print("PASS_P0_HUMAN_REVIEW_CANONICAL_SINGLE_RENDERER_GATE=17/17")
+
+
 def main() -> int:
     now = datetime(2026, 8, 14, 6, 0, tzinfo=timezone.utc)
     head = "0" * 40; sha = "1" * 64
@@ -160,6 +205,7 @@ def main() -> int:
     assert_sensitive_dual("SENSITIVE",True)
 
     if neg != 14: raise SystemExit(f"FAIL_NEGATIVE_COUNT:{neg}")
+    run_canonical_renderer_contract()
     print("PASS_P0_HUMAN_REVIEW_CONVERGENCE=20/20")
     print("PASS_HUMAN_DEBT_CONVERGENCE=4/4")
     print(json.dumps({"result":"PASS","negative_contracts":14,"semantic_lineage_invariant":True,"removed_elements_visible":True,"max_one_active":True,"p0_4_p0_5_separate":True,"sealed_holdout_used":False,"human_decisions_simulated":False,"production_authorized":False},sort_keys=True))
