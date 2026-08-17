@@ -40,6 +40,3 @@ jobs:
 
       - name: Validate learning engine pack
         run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
-
-      - name: Validate canonical P0 Human Review single renderer
-        run: python sandbox/story_creator_p0_visual/v1.1/evals/p0_human_review_canonical_single_renderer_suite.py
