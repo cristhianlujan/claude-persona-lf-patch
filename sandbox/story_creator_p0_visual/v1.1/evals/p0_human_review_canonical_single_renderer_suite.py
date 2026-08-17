@@ -26,7 +26,7 @@ def main() -> int:
     results["R02_ordered_pages"] = "pageOrder=['summary','screen','elements','detail','decision']" in renderer
     results["R03_dynamic_observation_count"] = "LISTA DE ELEMENTOS DETECTADOS (${M.counts.total})" in renderer and "${M.counts.total} elementos detectados" in renderer
     results["R04_single_source_background"] = '<div id="source-stage"><div id="source-canvas">__SOURCE_HTML__<div id="overlay"></div>' in renderer
-    results["R05_single_selected_crop"] = renderer.count('id="selected-crop"') == 1 and "drawCrop(e)" in renderer
+    results["R05_single_selected_crop"] = renderer.count('id="selected-crop"') == 1 and "function drawCrop(e)" in renderer
     results["R06_no_parallel_crop_gallery"] = all(x not in renderer.lower() for x in ("crop-gallery", "crops-grid", "all-crops"))
     results["R07_source_title_preserved"] = "IMAGEN ORIGINAL CON ANOTACIONES" in renderer
     results["R08_element_list_preserved"] = 'id="element-list"' in renderer and 'id="detail-panel"' in renderer
