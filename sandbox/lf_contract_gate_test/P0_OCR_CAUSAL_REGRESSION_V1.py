@@ -45,11 +45,14 @@ def run_root_regressions() -> None:
     if _text_groups(normal) != [["Carta", "de", "No", "Adeudo"]]:
         raise SystemExit(f"FAIL_OCR_ROOT_GEOMETRIC_OVERSEGMENT:{_text_groups(normal)!r}")
 
-    consensus = reader.resolve_ocr_consensus([
-        "55 12345678",
-        "Ej. 12345678",
-        "Ej. 12345678",
+    short_word = reader.segment_ocr_line_items([
+        _token("de", 100, 18, y=100, height=18),
+        _token("pago", 132, 42, y=100, height=18),
     ])
+    if _text_groups(short_word) != [["de", "pago"]]:
+        raise SystemExit(f"FAIL_OCR_ROOT_SHORT_WORD_OVERSEGMENT:{_text_groups(short_word)!r}")
+
+    consensus = reader.resolve_ocr_consensus(["55 12345678", "Ej. 12345678", "Ej. 12345678"])
     if consensus.get("text") != "Ej. 12345678" or consensus.get("support") != 2 or consensus.get("method") != "INDEPENDENT_PSM_EXACT":
         raise SystemExit(f"FAIL_OCR_ROOT_CONSENSUS:{consensus!r}")
 
@@ -59,15 +62,11 @@ def run_root_regressions() -> None:
 
     low_confidence = {
         "elements": [{
-            "element_id": "T-LOW",
-            "element_type": "TEXT",
-            "visible_text": "55 12345678",
-            "classification": "INFERRED",
-            "confidence": 0.50,
+            "element_id": "T-LOW", "element_type": "TEXT", "visible_text": "55 12345678",
+            "classification": "INFERRED", "confidence": 0.50,
             "region": {"x": 10, "y": 10, "width": 150, "height": 20},
             "ocr_variants": ["55 12345678", "Ej. 12345678", "Ej. 12345678"],
-            "independent_redetection": False,
-            "redetection_status": "AMBIGUOUS",
+            "independent_redetection": False, "redetection_status": "AMBIGUOUS",
         }],
         "reader_uncertainties": [{"element_id": "T-LOW", "code": "OCR_DISAGREEMENT"}],
         "raw_observations": {},
@@ -85,34 +84,48 @@ def run_root_regressions() -> None:
     if reader.single_internal_symbol_replacement("abcdef.com", "abc@def.com") is not None:
         raise SystemExit("FAIL_OCR_ROOT_SYMBOL_INSERTION_ACCEPTED")
 
+    same_profile = reader._targeted_consensus([
+        {"variant_id": "spa-7", "language_profile": "spa", "text": "a@b.com"},
+        {"variant_id": "spa-11", "language_profile": "spa", "text": "a@b.com"},
+    ])
+    if same_profile is not None:
+        raise SystemExit(f"FAIL_OCR_ROOT_SAME_PROFILE_FALSE_INDEPENDENCE:{same_profile!r}")
+
+    profiles = reader._available_target_profiles()
+    if not {"eng", "spa+eng"}.issubset(set(profiles)):
+        raise SystemExit(f"FAIL_OCR_ROOT_PROFILE_DIVERSITY_UNAVAILABLE:{profiles!r}")
+
     original_attempts = reader._targeted_profile_attempts
     try:
         reader._targeted_profile_attempts = lambda image, region: [
-            {"variant_id": "localized-a", "text": "Ej. miguel@correo.com"},
-            {"variant_id": "localized-b", "text": "Ej. miguel@correo.com"},
+            {"variant_id": "eng-11", "language_profile": "eng", "text": "Ej. miguel@correo.com"},
+            {"variant_id": "spa-eng-11", "language_profile": "spa+eng", "text": "Ej. miguel@correo.com"},
         ]
         symbol_candidate = {
             "elements": [{
-                "element_id": "T-SYMBOL",
-                "element_type": "TEXT",
-                "visible_text": "Ej. miguelxcorreo.com",
-                "classification": "INFERRED",
-                "confidence": 0.90,
+                "element_id": "T-SYMBOL", "element_type": "TEXT", "visible_text": "Ej. miguelxcorreo.com",
+                "classification": "INFERRED", "confidence": 0.90,
                 "region": {"x": 10, "y": 10, "width": 220, "height": 22},
                 "ocr_variants": ["Ej. miguelecorreo.com", "Ej. miguelxcorreo.com", "Ej. miguelxcorreo.com"],
-                "independent_redetection": False,
-                "redetection_status": "AMBIGUOUS",
+                "independent_redetection": False, "redetection_status": "AMBIGUOUS",
             }],
             "reader_uncertainties": [{"element_id": "T-SYMBOL", "code": "OCR_DISAGREEMENT"}],
             "raw_observations": {},
         }
-        symbol_out = reader.resolve_reader_output(symbol_candidate, object(), strict=True)
+        original_purity = reader.annotate_evidence_purity
+        reader.annotate_evidence_purity = lambda elements: None
+        try:
+            symbol_out = reader.resolve_reader_output(symbol_candidate, object(), strict=True)
+        finally:
+            reader.annotate_evidence_purity = original_purity
     finally:
         reader._targeted_profile_attempts = original_attempts
 
     symbol = symbol_out["elements"][0]
-    if symbol.get("visible_text") != "Ej. miguel@correo.com" or symbol.get("redetection_status") != "PROFILE_REDETECTED" or symbol.get("targeted_symbol_replacement") != {"from": "x", "to": "@"}:
+    if symbol.get("visible_text") != "Ej. miguel@correo.com" or symbol.get("redetection_status") != "CROSS_PROFILE_REDETECTED" or symbol.get("targeted_symbol_replacement") != {"from": "x", "to": "@"}:
         raise SystemExit(f"FAIL_OCR_ROOT_LOCALIZED_REDETECTION:{symbol!r}")
+    if set(symbol.get("targeted_ocr_language_profiles") or []) != {"eng", "spa+eng"}:
+        raise SystemExit(f"FAIL_OCR_ROOT_PROFILE_TRACE:{symbol!r}")
     if any(item.get("element_id") == "T-SYMBOL" and item.get("code") == "OCR_DISAGREEMENT" for item in symbol_out.get("reader_uncertainties") or []):
         raise SystemExit("FAIL_OCR_ROOT_RESOLVED_DEBT_PERSISTED")
 
@@ -122,7 +135,7 @@ def run_root_regressions() -> None:
     if present:
         raise SystemExit(f"FAIL_OCR_ROOT_SCREEN_LITERAL:{present!r}")
 
-    print("PASS_P0_OCR_ROOT_REMEDIATION=9/9")
+    print("PASS_P0_OCR_ROOT_REMEDIATION=11/11")
 
 
 def main() -> int:

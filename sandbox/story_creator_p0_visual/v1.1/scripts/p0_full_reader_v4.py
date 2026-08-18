@@ -8,8 +8,8 @@ general invariants before Human Review:
    compact leading glyph/prefix tokens separated from adjacent field text.
 2. Independent PSM readings may select the visible text by evidence consensus
    without silently increasing source confidence.
-3. A disputed internal alphanumeric glyph may become punctuation only after two
-   localized, traceable rereads of the same crop independently agree.
+3. A disputed internal alphanumeric glyph may become punctuation only after
+   localized rereads from at least two OCR language profiles independently agree.
 
 No screen literals, field names, product semantics or fixed source coordinates
 are used by this module.
@@ -39,8 +39,8 @@ def _compact_boundary_token(item: dict, median_height: float) -> bool:
     if not text or len(text) > 4 or width > 3.5 * height:
         return False
     has_symbol = any(not char.isalnum() for char in text)
-    very_compact = width <= 1.55 * height and len(text) <= 2
-    return has_symbol or very_compact
+    single_compact_glyph = width <= 1.55 * height and len(text) == 1
+    return has_symbol or single_compact_glyph
 
 
 def segment_ocr_line_items(items: list[dict]) -> list[list[dict]]:
@@ -160,22 +160,22 @@ def single_internal_symbol_replacement(reference: str, candidate: str):
     return {"from": old, "to": new}
 
 
-def _available_target_profile():
+def _available_target_profiles() -> list[str]:
     try:
         languages = set(pytesseract.get_languages(config=""))
     except Exception:
-        return None
+        return []
     if {"spa", "eng"}.issubset(languages):
-        return "spa+eng"
-    return None
+        return ["eng", "spa+eng"]
+    return []
 
 
 def _targeted_profile_attempts(image, region: dict) -> list[dict[str, Any]]:
     """Reread the existing crop only; never expand into sibling pixels."""
     if image is None or not hasattr(image, "shape") or len(getattr(image, "shape", ())) < 2:
         return []
-    profile = _available_target_profile()
-    if not profile:
+    profiles = _available_target_profiles()
+    if len(profiles) < 2:
         return []
     height, width = image.shape[:2]
     x1 = max(0, int(region.get("x", 0)))
@@ -188,14 +188,15 @@ def _targeted_profile_attempts(image, region: dict) -> list[dict[str, Any]]:
     if crop is None or not getattr(crop, "size", 0):
         return []
     attempts: list[dict[str, Any]] = []
-    for psm in (7, 11):
-        try:
-            raw = pytesseract.image_to_string(crop, lang=profile, config=f"--psm {psm}")
-        except Exception:
-            continue
-        text = " ".join(str(raw or "").split())
-        if text:
-            attempts.append({"engine_family": "TESSERACT", "language_profile": profile, "psm": psm, "variant_id": f"localized-{profile}-psm{psm}", "text": text})
+    for profile in profiles:
+        for psm in (7, 11):
+            try:
+                raw = pytesseract.image_to_string(crop, lang=profile, config=f"--psm {psm}")
+            except Exception:
+                continue
+            text = " ".join(str(raw or "").split())
+            if text:
+                attempts.append({"engine_family": "TESSERACT", "language_profile": profile, "psm": psm, "variant_id": f"localized-{profile}-psm{psm}", "text": text})
     return attempts
 
 
@@ -206,11 +207,21 @@ def _targeted_consensus(attempts: list[dict[str, Any]]):
         variant_id = str(attempt.get("variant_id") or "").strip()
         if text and variant_id:
             by_text[_normalized(text)].append(attempt)
-    winners = [members for members in by_text.values() if len({str(item["variant_id"]) for item in members}) >= 2]
+    winners = []
+    for members in by_text.values():
+        variant_ids = {str(item.get("variant_id") or "") for item in members if str(item.get("variant_id") or "")}
+        profiles = {str(item.get("language_profile") or "") for item in members if str(item.get("language_profile") or "")}
+        if len(variant_ids) >= 2 and len(profiles) >= 2:
+            winners.append(members)
     if len(winners) != 1:
         return None
     members = winners[0]
-    return {"text": str(members[0]["text"]), "support": len({str(item["variant_id"]) for item in members}), "variant_ids": sorted({str(item["variant_id"]) for item in members})}
+    return {
+        "text": str(members[0]["text"]),
+        "support": len({str(item["variant_id"]) for item in members}),
+        "variant_ids": sorted({str(item["variant_id"]) for item in members}),
+        "language_profiles": sorted({str(item["language_profile"]) for item in members}),
+    }
 
 
 def _has_variant_disagreement(element: dict) -> bool:
@@ -233,17 +244,20 @@ def _eligible_for_targeted_symbol_reread(element: dict) -> bool:
 
 
 def resolve_reader_output(candidate: dict, image, *, strict: bool) -> dict:
-    """Apply evidence consensus and localized symbol redetection."""
+    """Apply evidence consensus and localized cross-profile symbol redetection."""
     if not strict:
         return candidate
     consensus_selected: set[str] = set()
     independently_resolved: set[str] = set()
+    text_mutated = False
     for element in candidate.get("elements") or []:
         if element.get("element_type") != "TEXT" or not element.get("visible_text"):
             continue
         variants = [str(value or "") for value in element.get("ocr_variants") or []]
         resolution = resolve_ocr_consensus(variants)
         if int(resolution.get("support") or 0) >= 2 and resolution.get("text"):
+            if str(element.get("visible_text") or "") != str(resolution["text"]):
+                text_mutated = True
             element["visible_text"] = resolution["text"]
             element["ocr_consensus_text"] = resolution["text"]
             element["ocr_consensus_support"] = int(resolution["support"])
@@ -267,24 +281,28 @@ def resolve_reader_output(candidate: dict, image, *, strict: bool) -> dict:
         replacement = single_internal_symbol_replacement(str(element.get("visible_text") or ""), str(targeted["text"]))
         if replacement is None:
             continue
+        text_mutated = text_mutated or str(element.get("visible_text") or "") != str(targeted["text"])
         element["visible_text"] = targeted["text"]
         element["ocr_consensus_text"] = targeted["text"]
         element["ocr_consensus_support"] = int(targeted["support"])
-        element["ocr_consensus_method"] = "TARGETED_PROFILE_SINGLE_SYMBOL_REDETECTION"
+        element["ocr_consensus_method"] = "TARGETED_CROSS_PROFILE_SINGLE_SYMBOL_REDETECTION"
         element["targeted_symbol_replacement"] = replacement
         element["targeted_ocr_variant_ids"] = list(targeted["variant_ids"])
+        element["targeted_ocr_language_profiles"] = list(targeted["language_profiles"])
         element["classification"] = "CONFIRMED"
         element["independent_redetection"] = True
-        element["redetection_status"] = "PROFILE_REDETECTED"
+        element["redetection_status"] = "CROSS_PROFILE_REDETECTED"
         independently_resolved.add(str(element.get("element_id")))
 
     if independently_resolved:
         candidate["reader_uncertainties"] = [uncertainty for uncertainty in (candidate.get("reader_uncertainties") or []) if not (str(uncertainty.get("element_id")) in independently_resolved and str(uncertainty.get("code")) == "OCR_DISAGREEMENT")]
+    if text_mutated:
+        annotate_evidence_purity(candidate.get("elements") or [])
 
     raw = candidate.setdefault("raw_observations", {})
     raw["ocr_consensus_resolver"] = "EVIDENCE_WEIGHTED_PSM_V2"
     raw["ocr_geometric_partition"] = "ADAPTIVE_GAP_AND_COMPACT_PREFIX_V2"
-    raw["targeted_symbol_redetection"] = "LOCALIZED_TESSERACT_SPA_ENG_PSM7_11_V1"
+    raw["targeted_symbol_redetection"] = "LOCALIZED_TESSERACT_CROSS_PROFILE_ENG_SPA_ENG_PSM7_11_V2"
     raw["consensus_selected_count"] = len(consensus_selected)
     raw["independently_resolved_count"] = len(independently_resolved)
     return candidate
