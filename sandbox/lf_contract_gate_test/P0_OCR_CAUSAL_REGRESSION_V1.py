@@ -304,6 +304,18 @@ def main() -> int:
     case23_text = [e for e in case23["elements"] if e.get("element_id", "").startswith("V4-T-")][0]
     if case23_text.get("visible_text") != "Ej. 12345678" or case23_text.get("ocr_consensus_text") != "Ej. 12345678":
         raise SystemExit(f"FAIL_ROOTFIX_CASE23_VISIBLE_CONSENSUS:{case23_text!r}")
+    if case23_text.get("classification") != "INFERRED" or case23_text.get("independent_redetection") is not False:
+        raise SystemExit(f"FAIL_ROOTFIX_CASE23_CONSENSUS_NOT_CONFIRMATION:{case23_text!r}")
+    case23_codes = [item.get("code") for item in case23.get("reader_uncertainties") or []]
+    if "OCR_DISAGREEMENT" not in case23_codes:
+        raise SystemExit(f"FAIL_ROOTFIX_CASE23_UNCERTAINTY_LOST:{case23_codes!r}")
+
+    case23_positive = _run_full_reader_variants(
+        {3: "Ej. 12345678", 11: "Ej. 12345678", 12: "Ej. 12345678"}
+    )
+    case23_positive_text = [e for e in case23_positive["elements"] if e.get("element_id", "").startswith("V4-T-")][0]
+    if case23_positive_text.get("classification") != "CONFIRMED" or case23_positive_text.get("independent_redetection") is not True:
+        raise SystemExit(f"FAIL_ROOTFIX_CASE23_POSITIVE_CONFIRMATION_GATE:{case23_positive_text!r}")
 
     if not reader._symbol_only_delta("Ej. miguelxcorreo.com", "Ej. miguel@correo.com"):
         raise SystemExit("FAIL_ROOTFIX_SYMBOL_ONLY_ACCEPT")
@@ -321,6 +333,11 @@ def main() -> int:
         raise SystemExit(f"FAIL_ROOTFIX_CASE30_PROVENANCE:{case30_text!r}")
     if (case30_text.get("localized_redetection") or {}).get("support") != 3:
         raise SystemExit(f"FAIL_ROOTFIX_CASE30_SUPPORT:{case30_text!r}")
+    if case30_text.get("classification") != "INFERRED" or case30_text.get("independent_redetection") is not False:
+        raise SystemExit(f"FAIL_ROOTFIX_CASE30_SAME_FAMILY_NOT_INDEPENDENT:{case30_text!r}")
+    case30_codes = [item.get("code") for item in case30.get("reader_uncertainties") or []]
+    if "OCR_DISAGREEMENT" not in case30_codes:
+        raise SystemExit(f"FAIL_ROOTFIX_CASE30_UNCERTAINTY_LOST:{case30_codes!r}")
 
     glyph_output = _run_full_reader_uncertainty_case("e", width=18, height=18)
     glyph_elements = [item for item in glyph_output["elements"] if item.get("element_id", "").startswith("V4-T-")]
@@ -357,7 +374,7 @@ def main() -> int:
     print(json.dumps({
         "result": "PASS",
         "ekb_code": "EKB-P0-014",
-        "ekb_codes": ["EKB-P0-014", "EKB-P0-020"],
+        "ekb_codes": ["EKB-P0-014", "EKB-P0-017", "EKB-P0-020"],
         "classification_ekb_code": "EKB-P0-020",
         "source_sha256": SOURCE_SHA,
         "reader_file_sha256": hashlib.sha256(reader_path.read_bytes()).hexdigest(),
@@ -370,7 +387,10 @@ def main() -> int:
         "relative_gap_repartition": True,
         "crop_contamination_removed": True,
         "majority_consensus_selected": True,
+        "consensus_selection_not_confirmation": True,
+        "positive_primary_confidence_gate_confirmed": True,
         "localized_symbol_redetection": True,
+        "localized_same_family_not_independent": True,
         "symbol_only_rewrite_guard": True,
         "glyph_false_text_uncertainty_suppressed": True,
         "genuine_text_uncertainty_preserved": True,
