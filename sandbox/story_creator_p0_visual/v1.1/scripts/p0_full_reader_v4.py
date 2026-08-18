@@ -659,7 +659,8 @@ def full_reader(source_path: str, ctx: dict) -> dict:
             consensus_source = localized["method"]
         exact_agreement = sum(norm(value) == norm(line["text"]) for value in nonempty)
         consensus_available = consensus_support >= 2
-        stable = consensus_available and (float(line["confidence"]) >= 65 or localized is not None)
+        selected_matches_primary = bool(best_text) and norm(best_text) == norm(line["text"])
+        stable = consensus_available and selected_matches_primary and float(line["confidence"]) >= 65
         text = best_text if (strict and consensus_available and best_text) else line["text"]
         classification = "CONFIRMED" if (not strict and line["confidence"] >= 45) or (strict and stable) else "INFERRED"
         element_type = "TEXT"
