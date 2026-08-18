@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import collections
 import hashlib
+import statistics
 from difflib import SequenceMatcher
 
 import cv2
@@ -226,6 +227,67 @@ def ocr_lines(image, psm: int) -> list[dict]:
     return graph_reconcile_ocr_segments(output)
 
 
+def _refine_line_relative_geometry(line: dict) -> list[dict]:
+    """Split an OCR segment when token gaps are large relative to glyph height.
+
+    This is a second, source-agnostic atomicity guard after Tesseract line grouping.
+    It prevents compact prefixes/icons and neighboring placeholders from sharing one
+    crop just because the OCR engine assigned them to one line.
+    """
+    tokens = list(line.get("source_tokens") or [])
+    token_ids = list(line.get("source_token_ids") or [])
+    token_regions = list(line.get("source_token_regions") or [])
+    if len(tokens) < 2 or len(tokens) != len(token_regions):
+        return [line]
+
+    order = sorted(range(len(tokens)), key=lambda i: (int(token_regions[i]["x"]), int(token_regions[i]["y"])))
+    median_height = float(statistics.median(max(1, int(token_regions[i]["height"])) for i in order))
+    relative_gap_limit = max(18.0, 1.75 * median_height)
+    groups: list[list[int]] = [[order[0]]]
+    for index in order[1:]:
+        previous_index = groups[-1][-1]
+        previous = token_regions[previous_index]
+        current = token_regions[index]
+        gap = int(current["x"]) - (int(previous["x"]) + int(previous["width"]))
+        center_delta = abs(
+            (int(current["y"]) + int(current["height"]) / 2)
+            - (int(previous["y"]) + int(previous["height"]) / 2)
+        )
+        height_limit = 0.8 * max(int(current["height"]), int(previous["height"]), 1)
+        strong_boundary = gap > relative_gap_limit or (gap > 12 and center_delta > height_limit)
+        if strong_boundary:
+            groups.append([index])
+        else:
+            groups[-1].append(index)
+
+    if len(groups) == 1:
+        return [line]
+
+    refined: list[dict] = []
+    for group_index, group in enumerate(groups, 1):
+        item = dict(line)
+        item["source_tokens"] = [tokens[i] for i in group]
+        item["source_token_ids"] = [token_ids[i] for i in group if i < len(token_ids)]
+        item["source_token_regions"] = [token_regions[i] for i in group]
+        item["text"] = " ".join(item["source_tokens"]).strip()
+        item["region"] = bbox_union(item["source_token_regions"])
+        item["token_count"] = len(group)
+        item["segment_index"] = group_index
+        item["partition_boundary_before"] = (
+            line.get("partition_boundary_before") if group_index == 1 else "RELATIVE_GEOMETRIC_GAP"
+        )
+        item["cross_line_merge_justification"] = None
+        refined.append(item)
+    return refined
+
+
+def refine_ocr_geometry(items: list[dict]) -> list[dict]:
+    refined: list[dict] = []
+    for item in items:
+        refined.extend(_refine_line_relative_geometry(item))
+    return sorted(refined, key=lambda item: (int(item["region"]["y"]), int(item["region"]["x"])))
+
+
 def overlapping_lines(primary: dict, alternatives: list[dict]) -> list[dict]:
     region = primary["region"]
     items = [
@@ -258,6 +320,93 @@ def match_alt(primary: dict, alternatives: list[dict]) -> str:
         return ""
     candidates.sort(key=lambda pair: (pair[0], pair[1].get("confidence", 0.0)), reverse=True)
     return " ".join((candidates[0][1].get("text") or "").split())
+
+
+def _consensus_from_variants(variants: list[str]) -> tuple[str, int]:
+    nonempty = [value for value in variants if norm(value)]
+    if not nonempty:
+        return "", 0
+    counts = collections.Counter(norm(value) for value in nonempty)
+    best_norm, support = counts.most_common(1)[0]
+    best_text = next(value for value in nonempty if norm(value) == best_norm)
+    return best_text, support
+
+
+def _has_localizable_disagreement(variants: list[str]) -> bool:
+    values = [norm(value) for value in variants if norm(value)]
+    if len(set(values)) < 2:
+        return False
+    return any(
+        left != right
+        and abs(len(left) - len(right)) <= 2
+        and SequenceMatcher(None, left, right).ratio() >= 0.78
+        for index, left in enumerate(values)
+        for right in values[index + 1 :]
+    )
+
+
+def _symbol_only_delta(base: str, candidate: str) -> bool:
+    """Allow a localized reread to change only ambiguous punctuation/symbol glyphs."""
+    left = " ".join(str(base or "").split())
+    right = " ".join(str(candidate or "").split())
+    if not left or not right or left == right:
+        return False
+    changed = 0
+    for tag, i1, i2, j1, j2 in SequenceMatcher(None, left, right).get_opcodes():
+        if tag == "equal":
+            continue
+        removed = left[i1:i2]
+        added = right[j1:j2]
+        if any(char.isalnum() for char in added):
+            return False
+        if tag == "delete" and any(char.isalnum() for char in removed):
+            return False
+        changed += max(len(removed), len(added))
+    return 1 <= changed <= 2
+
+
+def localized_symbol_redetection(image, line: dict, variants: list[str]) -> dict | None:
+    """Reread only an uncertain local crop with an alternate OCR language model.
+
+    The alternate model is never allowed to rewrite words. It is accepted only when
+    multiple local passes agree and the delta against an existing source reading is
+    limited to one or two non-alphanumeric glyphs.
+    """
+    if not _has_localizable_disagreement(variants):
+        return None
+    region = line.get("region") or {}
+    if not all(key in region for key in ("x", "y", "width", "height")):
+        return None
+    height, width = image.shape[:2]
+    pad = max(2, int(round(max(1, int(region["height"])) * 0.20)))
+    x1 = max(0, int(region["x"]) - pad)
+    y1 = max(0, int(region["y"]) - pad)
+    x2 = min(width, int(region["x"]) + int(region["width"]) + pad)
+    y2 = min(height, int(region["y"]) + int(region["height"]) + pad)
+    crop = image[y1:y2, x1:x2]
+    if crop.size == 0:
+        return None
+    enlarged = cv2.resize(crop, None, fx=4, fy=4, interpolation=cv2.INTER_CUBIC)
+    readings: list[str] = []
+    psms = (6, 7, 11)
+    for psm in psms:
+        raw = pytesseract.image_to_string(enlarged, lang="eng", config=f"--psm {psm}")
+        readings.append(" ".join(str(raw or "").split()))
+    candidate, support = _consensus_from_variants(readings)
+    if support < 2 or not candidate:
+        return None
+    baselines = [value for value in variants if value]
+    if not any(_symbol_only_delta(base, candidate) for base in baselines):
+        return None
+    return {
+        "text": candidate,
+        "support": support,
+        "readings": readings,
+        "psms": list(psms),
+        "language_model": "eng",
+        "region": {"x": x1, "y": y1, "width": x2 - x1, "height": y2 - y1},
+        "method": "LOCALIZED_SYMBOL_REDETECTION",
+    }
 
 
 def grouping_signal(primary: dict, lines: dict[int, list[dict]], primary_psm: int, source_sha: str) -> tuple[bool, str, list[str], dict]:
@@ -460,7 +609,7 @@ def full_reader(source_path: str, ctx: dict) -> dict:
     strict = bool((ctx.get("remediation_state") or {}).get("strict_mode"))
     primary_psm = 3 if strict else 11
     psms = (3, 11, 12)
-    lines = {psm: ocr_lines(image, psm) for psm in psms}
+    lines = {psm: refine_ocr_geometry(ocr_lines(image, psm)) for psm in psms}
     compact = detect_compact_visuals(image, lines[primary_psm])
     lines = {
         psm: [filtered for line in observations if (filtered := _exclude_compact_tokens(line, compact)) is not None]
@@ -488,6 +637,7 @@ def full_reader(source_path: str, ctx: dict) -> dict:
     )
     elements = [root]
     uncertainties: list[dict] = []
+    localized_redetection_count = 0
 
     text_ordinal = 0
     for line in primary:
@@ -497,26 +647,32 @@ def full_reader(source_path: str, ctx: dict) -> dict:
         line_psm = int(line.get("origin_psm", primary_psm))
         variants = [line["text"] if psm == line_psm else match_alt(line, lines[psm]) for psm in psms]
         nonempty = [value for value in variants if value]
-        alternate_nonempty = [value for psm, value in zip(psms, variants) if psm != primary_psm and value]
-        counts = collections.Counter(norm(value) for value in (alternate_nonempty or nonempty))
-        best_norm = counts.most_common(1)[0][0] if counts else ""
-        best_text = next((value for value in (alternate_nonempty or nonempty) if norm(value) == best_norm), "")
+        best_text, consensus_support = _consensus_from_variants(nonempty)
+        localized = localized_symbol_redetection(image, line, variants) if strict else None
+        evidence_variants = list(variants)
+        consensus_source = "OCR_PSM_CONSENSUS"
+        if localized:
+            localized_redetection_count += 1
+            evidence_variants.extend(localized["readings"])
+            best_text = localized["text"]
+            consensus_support = int(localized["support"])
+            consensus_source = localized["method"]
         exact_agreement = sum(norm(value) == norm(line["text"]) for value in nonempty)
-        stable = exact_agreement >= 2 and line["confidence"] >= 65
-        text = line["text"]
+        stable = consensus_support >= 2
+        text = best_text if (strict and stable and best_text) else line["text"]
         classification = "CONFIRMED" if (not strict and line["confidence"] >= 45) or (strict and stable) else "INFERRED"
         element_type = "TEXT"
-        consensus = best_text if not strict else (line["text"] if stable else "")
+        consensus = best_text if (not strict or stable) else ""
         region = line["region"]
         aspect = region["width"] / max(1, region["height"])
         glyph_shape = len(text.strip()) <= 1 and 0.65 <= aspect <= 1.55 and max(region["width"], region["height"]) <= 32
         numeric_short = sum(char.isdigit() for char in text) >= 2
-        if strict and len(text.strip()) <= 3 and (glyph_shape or (exact_agreement < 3 and not numeric_short)):
+        if strict and len(text.strip()) <= 3 and (glyph_shape or (consensus_support < 3 and not numeric_short)):
             element_type = "ICON_OR_GLYPH"
             text = None
             classification = "INFERRED"
             consensus = ""
-        graphic_score = 0.82 if (not strict and text and len(text.strip()) <= 3 and exact_agreement < 2) else 0.05
+        graphic_score = 0.82 if (not strict and text and len(text.strip()) <= 3 and consensus_support < 2) else 0.05
         semantic_role = "control_visible_text" if text and text.strip().startswith("+") and any(char.isdigit() for char in text) else "visible_copy"
         group_ok, group_id, source_refs, group_counts = grouping_signal(line, lines, line_psm, ctx["source_sha256"])
         subrole = "GLYPH" if glyph_shape and element_type in {"TEXT", "LABEL"} else None
@@ -554,11 +710,14 @@ def full_reader(source_path: str, ctx: dict) -> dict:
                 "partition_boundary_before": line.get("partition_boundary_before"),
                 "cross_line_merge_justification": line.get("cross_line_merge_justification"),
             },
-            "ocr_variants": variants,
+            "ocr_variants": evidence_variants,
             "ocr_consensus_text": consensus,
-            "ocr_read_count": len(psms),
-            "ocr_empty_reads": sum(not value for value in variants),
+            "ocr_read_count": len(evidence_variants),
+            "ocr_empty_reads": sum(not value for value in evidence_variants),
             "ocr_agreement_count": exact_agreement,
+            "ocr_consensus_support": consensus_support,
+            "ocr_consensus_source": consensus_source,
+            "localized_redetection": localized,
             "graphic_score": graphic_score,
             "brand_mark_score": 0.0,
             "business_rule_claim": None,
@@ -687,6 +846,9 @@ def full_reader(source_path: str, ctx: dict) -> dict:
             "material_icon_count": compact_counts.get("ICON", 0),
             "repeated_control_group_counts": dict(sorted(repeated_counts.items())),
             "ocr_engine_family": "TESSERACT",
+            "ocr_geometry_refiner": "RELATIVE_GAP_V2",
+            "localized_symbol_redetection_count": localized_redetection_count,
+            "localized_symbol_model": "TESSERACT_ENG_PSM_6_7_11",
             "object_detector_family": "OPENCV_CANNY_CONTOUR_HIERARCHY",
         },
         "reader_uncertainties": uncertainties,
