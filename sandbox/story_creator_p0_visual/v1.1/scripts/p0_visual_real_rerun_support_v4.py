@@ -26,6 +26,24 @@ def _dedupe_regions(items):
   row={'region':{k:int(r.get(k,0)) for k in ('x','y','width','height')},'source_category':str(item.get('source_category') or 'SHORT_TEXT_WITHOUT_MATERIAL_SUPPORT') if isinstance(item,dict) else 'SHORT_TEXT_WITHOUT_MATERIAL_SUPPORT'}
   if not any(_region_overlap(row['region'],existing['region'])>=.80 for existing in out):out.append(row)
  return out
+def _apply_same_family_consensus_selection_guard(candidate):
+ out=copy.deepcopy(candidate)
+ for element in out.get('elements',[]):
+  if element.get('element_type')!='TEXT' or element.get('classification')!='INFERRED':continue
+  if element.get('ocr_consensus_source')!='OCR_PSM_CONSENSUS' or element.get('independent_redetection') is not False:continue
+  variants=[str(v or '').strip() for v in (element.get('ocr_variants') or [])]
+  if not variants or not variants[0]:continue
+  primary=variants[0];selected=str(element.get('visible_text') or '').strip()
+  if not selected or primary.casefold()==selected.casefold():continue
+  confidence=float(element.get('confidence') or 0.0)
+  if confidence<0.90:continue
+  element['visible_text']=primary
+  element['same_family_consensus_selection_guard']={
+   'code':'PRESERVE_HIGH_CONFIDENCE_PRIMARY_ON_SAME_FAMILY_DISAGREEMENT',
+   'primary_text':primary,'same_family_consensus_text':selected,'primary_confidence':confidence,
+   'basis':'SAME_FAMILY_CONSENSUS_CANNOT_OVERRIDE_HIGH_CONFIDENCE_PRIMARY_WITHOUT_ORTHOGONAL_EVIDENCE'
+  }
+ return out
 def _apply_remediation_state(candidate,state):
  suppressed=_dedupe_regions((state or {}).get('unsupported_short_text_regions') or [])
  if not suppressed:return candidate
@@ -44,7 +62,7 @@ def _apply_remediation_state(candidate,state):
  out['uncertainties']=uncertainties
  return out
 def traced_reader(path,ctx):
- c=full_reader(path,ctx);c=_apply_remediation_state(c,ctx.get('remediation_state') or {});c=reconcile_icon_structural_roles(c);TRACE['readers'].append(copy.deepcopy(c));return c
+ c=full_reader(path,ctx);c=_apply_same_family_consensus_selection_guard(c);c=_apply_remediation_state(c,ctx.get('remediation_state') or {});c=reconcile_icon_structural_roles(c);TRACE['readers'].append(copy.deepcopy(c));return c
 def remediator(candidate,findings,state):
  actions=[];seen=set();state=dict(state);state['strict_mode']=True
  suppressed=_dedupe_regions(state.get('unsupported_short_text_regions') or [])
