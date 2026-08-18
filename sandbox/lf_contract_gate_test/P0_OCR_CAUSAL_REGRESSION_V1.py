@@ -213,6 +213,30 @@ def _postremediation_fixture() -> tuple[dict, dict]:
     return candidate, state
 
 
+def _same_family_guard_fixture(primary: str, selected: str, *, confidence: float, source: str = "OCR_PSM_CONSENSUS") -> dict:
+    return {
+        "elements": [{
+            "element_id": "V4-T-GUARD",
+            "classification": "INFERRED",
+            "element_type": "TEXT",
+            "visible_text": selected,
+            "confidence": confidence,
+            "ocr_variants": [primary, selected, selected],
+            "ocr_consensus_text": selected,
+            "ocr_consensus_source": source,
+            "ocr_consensus_support": 2,
+            "independent_redetection": False,
+            "redetection_status": "AMBIGUOUS",
+            "region": {"x": 1, "y": 1, "width": 100, "height": 16},
+        }],
+        "reader_uncertainties": [{
+            "element_id": "V4-T-GUARD",
+            "code": "OCR_DISAGREEMENT",
+            "region": {"x": 1, "y": 1, "width": 100, "height": 16},
+        }],
+    }
+
+
 def main() -> int:
     real_geometry = [
         {"text": "tu", "block_num": 6, "left": 67, "top": 324, "width": 38, "height": 28},
@@ -249,8 +273,6 @@ def main() -> int:
     if len(negative_glyph) != 2 or set(negative_glyph) != {"e", "correo"}:
         raise SystemExit(f"FAIL_EKB_P0_014_GLYPH_GUARD:{negative_glyph!r}")
 
-    # Root cause regression: a single OCR line containing three visually independent
-    # tokens must be repartitioned by relative geometry, while normal prose remains intact.
     contaminated = {
         "text": "OD +5s1v 8j.987654321",
         "confidence": 56.0,
@@ -339,6 +361,41 @@ def main() -> int:
     if "OCR_DISAGREEMENT" not in case30_codes:
         raise SystemExit(f"FAIL_ROOTFIX_CASE30_UNCERTAINTY_LOST:{case30_codes!r}")
 
+    preserved_identity = rerun_support._apply_same_family_consensus_selection_guard(
+        _same_family_guard_fixture(
+            "Autorizo el tratamiento de mis datos personales para validar mi identidad,",
+            "Autorizo el tratamiento de mis datos personales para validar mi lentidad,",
+            confidence=0.952727,
+        )
+    )["elements"][0]
+    if preserved_identity.get("visible_text") != "Autorizo el tratamiento de mis datos personales para validar mi identidad,":
+        raise SystemExit(f"FAIL_ROOTFIX_HIGH_CONFIDENCE_PRIMARY_WORD:{preserved_identity!r}")
+    if preserved_identity.get("ocr_consensus_text") != "Autorizo el tratamiento de mis datos personales para validar mi lentidad,":
+        raise SystemExit(f"FAIL_ROOTFIX_HIGH_CONFIDENCE_CONSENSUS_EVIDENCE_LOST:{preserved_identity!r}")
+
+    preserved_truncation = rerun_support._apply_same_family_consensus_selection_guard(
+        _same_family_guard_fixture("Verificar mi celular", "Celular", confidence=0.96)
+    )["elements"][0]
+    if preserved_truncation.get("visible_text") != "Verificar mi celular":
+        raise SystemExit(f"FAIL_ROOTFIX_HIGH_CONFIDENCE_PRIMARY_TRUNCATION:{preserved_truncation!r}")
+
+    low_confidence_consensus = rerun_support._apply_same_family_consensus_selection_guard(
+        _same_family_guard_fixture("55 12345678", "Ej. 12345678", confidence=0.563333)
+    )["elements"][0]
+    if low_confidence_consensus.get("visible_text") != "Ej. 12345678":
+        raise SystemExit(f"FAIL_ROOTFIX_LOW_CONFIDENCE_CONSENSUS_BLOCKED:{low_confidence_consensus!r}")
+
+    localized_symbol = rerun_support._apply_same_family_consensus_selection_guard(
+        _same_family_guard_fixture(
+            "Ej. miguelxcorreo.com",
+            "Ej. miguel@correo.com",
+            confidence=0.95,
+            source="LOCALIZED_SYMBOL_REDETECTION",
+        )
+    )["elements"][0]
+    if localized_symbol.get("visible_text") != "Ej. miguel@correo.com":
+        raise SystemExit(f"FAIL_ROOTFIX_LOCALIZED_SYMBOL_OVERRIDDEN:{localized_symbol!r}")
+
     glyph_output = _run_full_reader_uncertainty_case("e", width=18, height=18)
     glyph_elements = [item for item in glyph_output["elements"] if item.get("element_id", "").startswith("V4-T-")]
     if len(glyph_elements) != 1 or glyph_elements[0].get("element_type") != "ICON_OR_GLYPH":
@@ -392,6 +449,9 @@ def main() -> int:
         "localized_symbol_redetection": True,
         "localized_same_family_not_independent": True,
         "symbol_only_rewrite_guard": True,
+        "same_family_high_confidence_primary_preserved": True,
+        "same_family_low_confidence_consensus_preserved": True,
+        "localized_symbol_not_overridden_by_guard": True,
         "glyph_false_text_uncertainty_suppressed": True,
         "genuine_text_uncertainty_preserved": True,
         "postremediation_stale_text_uncertainty_suppressed": True,
