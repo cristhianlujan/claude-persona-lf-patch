@@ -54,6 +54,7 @@ select
 from lf_proto.proto_offers o;
 
 revoke all on lf_proto.v_offer_runtime_identity from public;
+
 grant select on lf_proto.v_offer_runtime_identity to authenticated;
 
 create table public.lf_user_offer_selections (
