@@ -46,7 +46,7 @@
     {"path":"schemas/p0-loop-cycle-v4.schema.json","git_blob_sha":"5f4e61ac2e6cc1690ebecf76c9702eb86e327cfa"},
     {"path":"schemas/p0-run-state-v4.schema.json","git_blob_sha":"f4860573a0343482409e0ed60d8c6237ae760eaf"},
     {"path":"schemas/p0-visual-finding-v4.schema.json","git_blob_sha":"d60aff0fe24dbaa5515854e174943526de75a1c2"},
-    {"path":"scripts/p0_full_reader_v4.py","git_blob_sha":"6b35b5c4097ce358bccd1eb2a6ef2fe74d41fa40"},
+    {"path":"scripts/p0_full_reader_v4.py","git_blob_sha":"f89cc9e9b893a542de2d4d7d5aec8ae438a2f9c9"},
     {"path":"scripts/p0_human_review_shell_v4.py","git_blob_sha":"91144c0f3c01f22b84f5c8a79c43a4e378cb9d18"},
     {"path":"scripts/p0_icon_structural_roles_v1.py","git_blob_sha":"6c19f0dcffe7ae91384d48a1e1be2cd461163f7b"},
     {"path":"scripts/p0_independent_omission_sweep_v4.py","git_blob_sha":"014283735288eba99fdf96cbd5458add499a2324"},
