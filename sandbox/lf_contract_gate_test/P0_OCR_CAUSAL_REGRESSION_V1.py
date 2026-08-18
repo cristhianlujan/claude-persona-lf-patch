@@ -18,6 +18,7 @@ SCRIPTS = ROOT / "sandbox" / "story_creator_p0_visual" / "v1.1" / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
 import p0_full_reader_v4 as reader  # noqa: E402
+import p0_visual_grader_text_v4 as grader_text  # noqa: E402
 import p0_visual_real_rerun_support_v4 as rerun_support  # noqa: E402
 
 SOURCE_SHA = "e308b66778d1108241e2832997f6628f47841d7da1fc53820007834fdbb720d7"
@@ -237,6 +238,17 @@ def _same_family_guard_fixture(primary: str, selected: str, *, confidence: float
     }
 
 
+def _grader_ctx() -> dict:
+    return {
+        "grader_execution_id": "GRADER-SAME-FAMILY-EVIDENCE-DISPOSITION",
+        "reader_execution_id": "READER-SAME-FAMILY-EVIDENCE-DISPOSITION",
+        "cycle_id": "C-SAME-FAMILY-EVIDENCE-DISPOSITION",
+        "pass_id": "P-SAME-FAMILY-EVIDENCE-DISPOSITION",
+        "source_sha256": SOURCE_SHA,
+        "candidate_sha256": "0" * 64,
+    }
+
+
 def main() -> int:
     real_geometry = [
         {"text": "tu", "block_num": 6, "left": 67, "top": 324, "width": 38, "height": 28},
@@ -361,29 +373,45 @@ def main() -> int:
     if "OCR_DISAGREEMENT" not in case30_codes:
         raise SystemExit(f"FAIL_ROOTFIX_CASE30_UNCERTAINTY_LOST:{case30_codes!r}")
 
+    identity_primary = "Autorizo el tratamiento de mis datos personales para validar mi identidad,"
+    identity_same_family = "Autorizo el tratamiento de mis datos personales para validar mi lentidad,"
     preserved_identity = rerun_support._apply_same_family_consensus_selection_guard(
-        _same_family_guard_fixture(
-            "Autorizo el tratamiento de mis datos personales para validar mi identidad,",
-            "Autorizo el tratamiento de mis datos personales para validar mi lentidad,",
-            confidence=0.952727,
-        )
+        _same_family_guard_fixture(identity_primary, identity_same_family, confidence=0.952727)
     )["elements"][0]
-    if preserved_identity.get("visible_text") != "Autorizo el tratamiento de mis datos personales para validar mi identidad,":
+    if preserved_identity.get("visible_text") != identity_primary:
         raise SystemExit(f"FAIL_ROOTFIX_HIGH_CONFIDENCE_PRIMARY_WORD:{preserved_identity!r}")
-    if preserved_identity.get("ocr_consensus_text") != "Autorizo el tratamiento de mis datos personales para validar mi lentidad,":
+    if preserved_identity.get("ocr_consensus_text") != identity_same_family:
         raise SystemExit(f"FAIL_ROOTFIX_HIGH_CONFIDENCE_CONSENSUS_EVIDENCE_LOST:{preserved_identity!r}")
+    if preserved_identity.get("ocr_consensus_disposition") != "REJECTED_AS_INDEPENDENT_SAME_FAMILY":
+        raise SystemExit(f"FAIL_ROOTFIX_SAME_FAMILY_DISPOSITION_MISSING:{preserved_identity!r}")
+    if preserved_identity.get("ocr_variants") != [identity_primary, identity_same_family, identity_same_family]:
+        raise SystemExit(f"FAIL_ROOTFIX_SAME_FAMILY_RAW_EVIDENCE_LOST:{preserved_identity!r}")
+    guarded_grader = grader_text.j_text({"elements": [preserved_identity]}, _grader_ctx())
+    if guarded_grader.get("findings"):
+        raise SystemExit(f"FAIL_ROOTFIX_REJECTED_SAME_FAMILY_STILL_TREATED_INDEPENDENT:{guarded_grader!r}")
+
+    unrejected = _same_family_guard_fixture(identity_primary, identity_same_family, confidence=0.952727)["elements"][0]
+    unrejected["visible_text"] = identity_primary
+    negative_grader = grader_text.j_text({"elements": [unrejected]}, _grader_ctx())
+    negative_categories = [finding.get("category") for finding in negative_grader.get("findings") or []]
+    if "OCR_UNCLASSIFIED_DISAGREEMENT" not in negative_categories:
+        raise SystemExit(f"FAIL_ROOTFIX_UNREJECTED_DISAGREEMENT_NO_LONGER_BLOCKS:{negative_grader!r}")
 
     preserved_truncation = rerun_support._apply_same_family_consensus_selection_guard(
         _same_family_guard_fixture("Verificar mi celular", "Celular", confidence=0.96)
     )["elements"][0]
     if preserved_truncation.get("visible_text") != "Verificar mi celular":
         raise SystemExit(f"FAIL_ROOTFIX_HIGH_CONFIDENCE_PRIMARY_TRUNCATION:{preserved_truncation!r}")
+    if preserved_truncation.get("ocr_consensus_disposition") != "REJECTED_AS_INDEPENDENT_SAME_FAMILY":
+        raise SystemExit(f"FAIL_ROOTFIX_HIGH_CONFIDENCE_PRIMARY_TRUNCATION_DISPOSITION:{preserved_truncation!r}")
 
     low_confidence_consensus = rerun_support._apply_same_family_consensus_selection_guard(
         _same_family_guard_fixture("55 12345678", "Ej. 12345678", confidence=0.563333)
     )["elements"][0]
     if low_confidence_consensus.get("visible_text") != "Ej. 12345678":
         raise SystemExit(f"FAIL_ROOTFIX_LOW_CONFIDENCE_CONSENSUS_BLOCKED:{low_confidence_consensus!r}")
+    if low_confidence_consensus.get("ocr_consensus_disposition") is not None:
+        raise SystemExit(f"FAIL_ROOTFIX_LOW_CONFIDENCE_CONSENSUS_WRONGLY_REJECTED:{low_confidence_consensus!r}")
 
     localized_symbol = rerun_support._apply_same_family_consensus_selection_guard(
         _same_family_guard_fixture(
@@ -395,6 +423,8 @@ def main() -> int:
     )["elements"][0]
     if localized_symbol.get("visible_text") != "Ej. miguel@correo.com":
         raise SystemExit(f"FAIL_ROOTFIX_LOCALIZED_SYMBOL_OVERRIDDEN:{localized_symbol!r}")
+    if localized_symbol.get("ocr_consensus_disposition") is not None:
+        raise SystemExit(f"FAIL_ROOTFIX_LOCALIZED_SYMBOL_WRONGLY_REJECTED:{localized_symbol!r}")
 
     glyph_output = _run_full_reader_uncertainty_case("e", width=18, height=18)
     glyph_elements = [item for item in glyph_output["elements"] if item.get("element_id", "").startswith("V4-T-")]
@@ -450,6 +480,9 @@ def main() -> int:
         "localized_same_family_not_independent": True,
         "symbol_only_rewrite_guard": True,
         "same_family_high_confidence_primary_preserved": True,
+        "same_family_rejected_consensus_not_independent": True,
+        "same_family_unrejected_disagreement_still_blocks": True,
+        "same_family_raw_evidence_preserved": True,
         "same_family_low_confidence_consensus_preserved": True,
         "localized_symbol_not_overridden_by_guard": True,
         "glyph_false_text_uncertainty_suppressed": True,
@@ -458,7 +491,7 @@ def main() -> int:
         "postremediation_trace_preserved": True,
         "unrelated_reader_uncertainty_preserved": True,
         "producer": "p0_full_reader_v4.ocr_lines+refine_ocr_geometry",
-        "classification_producer": "p0_full_reader_v4+p0_visual_real_rerun_support_v4",
+        "classification_producer": "p0_full_reader_v4+p0_visual_real_rerun_support_v4+p0_visual_grader_text_v4",
         "production_authorized": False,
     }, sort_keys=True))
     return 0

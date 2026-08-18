@@ -38,9 +38,13 @@ def _apply_same_family_consensus_selection_guard(candidate):
   confidence=float(element.get('confidence') or 0.0)
   if confidence<0.90:continue
   element['visible_text']=primary
+  element['ocr_consensus_disposition']='REJECTED_AS_INDEPENDENT_SAME_FAMILY'
   element['same_family_consensus_selection_guard']={
    'code':'PRESERVE_HIGH_CONFIDENCE_PRIMARY_ON_SAME_FAMILY_DISAGREEMENT',
    'primary_text':primary,'same_family_consensus_text':selected,'primary_confidence':confidence,
+   'consensus_support':int(element.get('ocr_consensus_support') or 0),
+   'engine_family':'TESSERACT_PSM',
+   'disposition':'REJECTED_AS_INDEPENDENT_SAME_FAMILY',
    'basis':'SAME_FAMILY_CONSENSUS_CANNOT_OVERRIDE_HIGH_CONFIDENCE_PRIMARY_WITHOUT_ORTHOGONAL_EVIDENCE'
   }
  return out
