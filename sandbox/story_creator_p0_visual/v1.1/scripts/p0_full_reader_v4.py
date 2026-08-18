@@ -658,11 +658,12 @@ def full_reader(source_path: str, ctx: dict) -> dict:
             consensus_support = int(localized["support"])
             consensus_source = localized["method"]
         exact_agreement = sum(norm(value) == norm(line["text"]) for value in nonempty)
-        stable = consensus_support >= 2
-        text = best_text if (strict and stable and best_text) else line["text"]
+        consensus_available = consensus_support >= 2
+        stable = consensus_available and (float(line["confidence"]) >= 65 or localized is not None)
+        text = best_text if (strict and consensus_available and best_text) else line["text"]
         classification = "CONFIRMED" if (not strict and line["confidence"] >= 45) or (strict and stable) else "INFERRED"
         element_type = "TEXT"
-        consensus = best_text if (not strict or stable) else ""
+        consensus = best_text if (not strict or consensus_available) else ""
         region = line["region"]
         aspect = region["width"] / max(1, region["height"])
         glyph_shape = len(text.strip()) <= 1 and 0.65 <= aspect <= 1.55 and max(region["width"], region["height"]) <= 32
