@@ -24,7 +24,7 @@
     {"path":"agents/p0-completeness-v4.md","git_blob_sha":"0d50e907eb15aea316ea286a0af398b5b95ad0c6"},
     {"path":"agents/p0-visual-reader.md","git_blob_sha":"cd60a0adcef54f011b392a52e668eefed6da6c4c"},
     {"path":"evals/p0-closed-loop-runtime-config-v4.json","git_blob_sha":"cb3509c601b39a7d832a87a8384a4560a7acfa56"},
-    {"path":"evals/p0_grader_producer_field_audit_v4.py","git_blob_sha":"53fe4e465fdb6df88cb5d5d870d6ca4d299b8e48"},
+    {"path":"evals/p0_grader_producer_field_audit_v4.py","git_blob_sha":"b24ec2e1c207b5bae6c37449ddb6e2da6139b65c"},
     {"path":"evals/p0_independent_omission_sweep_v4.py","git_blob_sha":"201dc4d7b0e038d24643d4d619c3d87655c1755a"},
     {"path":"evals/p0_reader_producer_contract_v4.py","git_blob_sha":"fc46f9db4aad29407974a856cc5f6aee7966cc68"},
     {"path":"evals/p0_visual_atomicity_invariants_v4.py","git_blob_sha":"a24cd5b1c4481a8ab6494c8d739625f4b03cb9ae"},
