@@ -1,0 +1,15 @@
+cases:
+  - name: lf_rule
+    project_code: LF_BACKOFFICE
+    data_type: RULE
+    expected_schema: lf_ops
+    expected_table: reglas
+  - name: overall_screen
+    project_code: OVERALL
+    data_type: SCREEN
+    expected_schema: overall_design
+    expected_table: app_screens
+  - name: saly_screen_blocked
+    project_code: SALY
+    data_type: SCREEN
+    expected_action: BLOCKED_NO_DESTINATION

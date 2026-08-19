@@ -1,0 +1,21 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "CREACION_SKILL_LF",
+  "execution_id": "DATA-PLACEMENT-ROUTER-20260811-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "a172c77c1727ac401d91f3ef1a93ed2ebe8fa9db",
+  "judge_sha": "cc0783b351b89478bea6c87418d9dae94371ac55",
+  "source_sha_list": [
+    "63c41dca46cad1e3091f94407c5d596baba57172",
+    "48a11b7b26ddddeb396a4923167767ac1fc89882"
+  ],
+  "target_paths": [
+    "skills/data-placement-router/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-11T06:01:31Z",
+  "notes": "Gobernanza v0.1. Pack completado con contracts, schemas, judges, checklists, examples, fixtures, validators, evals, handoffs y adapters. Routing contrastado contra Supabase para LF Backoffice, Overall y Saly. Saly SCREEN/RULE/FIELD permanecen BLOCKED_NO_DESTINATION cuando no existe tabla autorizada. Sin cambios de esquema ni runtime productivo."
+}
