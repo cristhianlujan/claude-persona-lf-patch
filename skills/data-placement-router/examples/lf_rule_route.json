@@ -1,0 +1,11 @@
+{
+  "input": {
+    "project_code": "LF_BACKOFFICE",
+    "data_type": "RULE"
+  },
+  "expected": {
+    "schema": "lf_ops",
+    "table": "reglas",
+    "action": "REUSE_OR_INSERT_AFTER_DUP_CHECK"
+  }
+}
