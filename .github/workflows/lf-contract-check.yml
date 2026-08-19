@@ -114,7 +114,7 @@ jobs:
           export PGDATABASE=postgres
           export PGSSLMODE=require
 
-          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,''),encode(convert_to(array_to_string(statements,E'\n'),'UTF8'),'hex') from supabase_migrations.schema_migrations where version > '${LF_MIGRATION_CUTOVER}' and (name like 'pr93\_%' escape '\' or name like 'lf\_%' escape '\') order by version" > "$RUNNER_TEMP/lf-managed-migrations.csv"
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,''),encode(convert_to(array_to_string(statements,E'\n'),'UTF8'),'hex') from supabase_migrations.schema_migrations where version > '${LF_MIGRATION_CUTOVER}' and (name like 'pr93\_%' escape '\' or name like 'lf\_%' escape '\' or name like 'programacion\_story\_agent\_task\_%' escape '\' or name like 'programacion\_task\_sizing\_%' escape '\' or name like 'programacion\_task\_dependency\_%' escape '\' or name like 'programacion\_agent\_task\_%' escape '\' or name like 'programacion\_dependency\_context\_%' escape '\') order by version" > "$RUNNER_TEMP/lf-managed-migrations.csv"
 
           docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select count(*)::text,encode(extensions.digest(convert_to(string_agg(version||E'\n'||coalesce(name,'')||E'\n'||array_to_string(statements,E'\n--STATEMENT--\n'),E'\n--MIGRATION--\n' order by version),'UTF8'),'sha256'),'hex') from supabase_migrations.schema_migrations where version between '20260801063708' and '20260801170332'" > "$RUNNER_TEMP/lf-legacy-checkpoint.csv"
 
@@ -131,6 +131,15 @@ jobs:
               r"^-- LF_MIGRATION_SOURCE_CHECKPOINT_V1 "
               r"cutover=(\d{14}) legacy_start=(\d{14}) legacy_end=(\d{14}) "
               r"legacy_count=(\d+) legacy_sha256=([0-9a-f]{64})$"
+          )
+          managed_prefixes = (
+              "pr93_",
+              "lf_",
+              "programacion_story_agent_task_",
+              "programacion_task_sizing_",
+              "programacion_task_dependency_",
+              "programacion_agent_task_",
+              "programacion_dependency_context_",
           )
 
           markers = []
@@ -170,7 +179,7 @@ jobs:
               version, name = match.groups()
               if version <= cutover:
                   continue
-              if not name.startswith(("pr93_", "lf_")):
+              if not name.startswith(managed_prefixes):
                   raise SystemExit(f"FAIL_LF_MIGRATION_UNSCOPED_NAME: {path.name}")
               local[version] = (
                   name,
