@@ -20,7 +20,7 @@ Three post-boundary ledger sources missing from the branch were restored from th
 - `20260819181508_input_governance_r5_11_rate_builder_sync_6.sql`
 - `20260819231953_input_governance_r5_11_semantic_assertion_recuration.sql`
 
-Six recent migration files were renamed to the versions actually assigned by the Supabase migration registry. Git blob contents were reused unchanged:
+Six recent migration files were renamed to the versions actually assigned by the Supabase migration registry. The exact SQL bytes are sourced from the authoritative migration registry:
 
 - `20260821031021_input_governance_v511_auth001_visual_recuration_template.sql`
 - `20260821031447_input_governance_v511_canonical_drift_successors.sql`
@@ -28,6 +28,12 @@ Six recent migration files were renamed to the versions actually assigned by the
 - `20260821031702_input_governance_v511_canonical_drift_successor_screen53.sql`
 - `20260821031748_input_governance_v511_canonical_drift_successor_screen54.sql`
 - `20260821031832_input_governance_v511_canonical_drift_successor_screen56.sql`
+
+The parity gate also identified a serialization mismatch in:
+
+- `20260819040924_input_governance_r4_contract_v5_constraint.sql`
+
+That file and the six recent files were replaced with the exact bytes stored in `supabase_migrations.schema_migrations`; no database row was changed or replayed.
 
 ## Explicit non-actions
 
