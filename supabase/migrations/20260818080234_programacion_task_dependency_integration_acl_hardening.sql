@@ -1,0 +1,1 @@
+revoke all on function programacion.fn_open_dependency_integration_blockers() from public;
