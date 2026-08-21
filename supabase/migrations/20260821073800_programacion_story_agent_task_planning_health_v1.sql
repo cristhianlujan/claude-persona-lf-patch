@@ -58,9 +58,9 @@ with f as (
   group by x.ref
 ), coverage as (
   select
-    coalesce((select array_agg(x order by x) from f cross join lateral unnest(f.required_ac) x where not exists (select 1 from ac_owners o where o.ref=x)),'{}'::text[]) as missing_ac,
-    coalesce((select array_agg(x order by x) from f cross join lateral unnest(f.required_inv) x where not exists (select 1 from inv_owners o where o.ref=x)),'{}'::text[]) as missing_inv,
-    coalesce((select array_agg(x order by x) from f cross join lateral unnest(f.required_neg) x where not exists (select 1 from neg_owners o where o.ref=x)),'{}'::text[]) as missing_neg,
+    coalesce((select array_agg(x.ref order by x.ref) from f cross join lateral unnest(f.required_ac) x(ref) where not exists (select 1 from ac_owners o where o.ref=x.ref)),'{}'::text[]) as missing_ac,
+    coalesce((select array_agg(x.ref order by x.ref) from f cross join lateral unnest(f.required_inv) x(ref) where not exists (select 1 from inv_owners o where o.ref=x.ref)),'{}'::text[]) as missing_inv,
+    coalesce((select array_agg(x.ref order by x.ref) from f cross join lateral unnest(f.required_neg) x(ref) where not exists (select 1 from neg_owners o where o.ref=x.ref)),'{}'::text[]) as missing_neg,
     coalesce((select array_agg(ref order by ref) from ac_owners where owner_count>1),'{}'::text[]) as multi_owner_ac,
     coalesce((select array_agg(ref order by ref) from inv_owners where owner_count>1),'{}'::text[]) as multi_owner_inv,
     coalesce((select array_agg(ref order by ref) from neg_owners where owner_count>1),'{}'::text[]) as multi_owner_neg
