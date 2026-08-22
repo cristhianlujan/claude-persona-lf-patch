@@ -145,6 +145,12 @@ jobs:
               "programacion_revoke_security_definer_",
           )
 
+          def delegated_input_governance(name: str) -> bool:
+              return (
+                  name.startswith(("input_governance_", "programacion_input_governance_"))
+                  or name == "retire_b2b_auth005_legacy_totp_screen"
+              )
+
           markers = []
           for path in sorted(migrations.glob("*.sql")):
               first = path.read_text(encoding="utf-8").splitlines()[0] if path.stat().st_size else ""
@@ -183,6 +189,8 @@ jobs:
               if version <= cutover:
                   continue
               if not name.startswith(managed_prefixes):
+                  if delegated_input_governance(name):
+                      continue
                   raise SystemExit(f"FAIL_LF_MIGRATION_UNSCOPED_NAME: {path.name}")
               local[version] = (
                   name,
@@ -213,6 +221,31 @@ jobs:
               f"post_cutover={len(local)} legacy={legacy_count} sha256={legacy_sha}"
           )
           PY
+
+      - name: Enforce Input Governance migration source parity
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+          INPUT_GOVERNANCE_CUTOVER: "20260818213426"
+        run: |
+          set -euo pipefail
+          if [ -z "${PGPASSWORD:-}" ]; then
+            echo "FAIL_INPUT_GOVERNANCE_MIGRATION_PARITY_DB_PASSWORD_MISSING"
+            exit 1
+          fi
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,''),encode(convert_to(array_to_string(statements,E'\n'),'UTF8'),'hex') from supabase_migrations.schema_migrations where version >= '${INPUT_GOVERNANCE_CUTOVER}' and (name like 'input\_governance\_%' escape '\' or name like 'programacion\_input\_governance\_%' escape '\' or name = 'retire_b2b_auth005_legacy_totp_screen') order by version" > "$RUNNER_TEMP/input-governance-migrations.csv"
+
+          python3 scripts/input_governance_migration_parity.py \
+            --migrations supabase/migrations \
+            --remote "$RUNNER_TEMP/input-governance-migrations.csv" \
+            --cutover "$INPUT_GOVERNANCE_CUTOVER"
 
       - name: Install deterministic audit dependencies
         run: |
