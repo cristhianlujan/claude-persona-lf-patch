@@ -155,6 +155,19 @@ jobs:
               "programacion_revoke_security_definer_",
               "programacion_worker_spec_",
           )
+          classified_external_prefixes = (
+              "input_governance_",
+          )
+
+          def classified(name: str) -> bool:
+              return name.startswith(managed_prefixes + classified_external_prefixes)
+
+          if not classified("programacion_worker_spec_probe"):
+              raise SystemExit("FAIL_CI009_SELFTEST_MANAGED_WORKER_SPEC")
+          if not classified("input_governance_probe"):
+              raise SystemExit("FAIL_CI009_SELFTEST_EXTERNAL_OWNER")
+          if classified("totally_unknown_future_migration"):
+              raise SystemExit("FAIL_CI009_SELFTEST_UNKNOWN_ACCEPTED")
 
           markers = []
           for path in sorted(migrations.glob("*.sql")):
@@ -200,7 +213,7 @@ jobs:
               if len(row) != 2:
                   raise SystemExit(f"FAIL_LF_MIGRATION_CLASSIFICATION_ROW: {row!r}")
               version, name = row
-              if version > classification_baseline_end and not name.startswith(managed_prefixes):
+              if version > classification_baseline_end and not classified(name):
                   unclassified_remote.append(f"{version}_{name}")
           if unclassified_remote:
               raise SystemExit(
@@ -222,7 +235,7 @@ jobs:
               if version <= cutover:
                   continue
               if not name.startswith(managed_prefixes):
-                  if version > classification_baseline_end:
+                  if version > classification_baseline_end and not name.startswith(classified_external_prefixes):
                       raise SystemExit(f"FAIL_UNCLASSIFIED_POST_CUTOVER_MIGRATION: git={path.name}")
                   continue
               local[version] = (
@@ -255,6 +268,7 @@ jobs:
               f"grandfathered={grandfathered_count}/{grandfathered_sha} "
               f"classification_baseline_end={classification_baseline_end}"
           )
+          print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=3/3")
           PY
 
       - name: Install deterministic audit dependencies
