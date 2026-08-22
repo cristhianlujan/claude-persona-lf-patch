@@ -4,6 +4,12 @@
 The wrapper remains substitutable for the historical PR93 runtime entrypoint.
 It preserves the original runtime scope while admitting separately pinned P0
 extensions on governed refs: exact-head evidence and canonical Human Review V4.2.
+
+Input Governance extension:
+- admits only the exact PR #179 audit/parity artifacts required for reproducible
+  review;
+- keeps audits/, docs/ and scripts/ broad prefixes default-denied;
+- proves sibling/lookalike paths remain rejected before delegating to base.main.
 """
 from __future__ import annotations
 
@@ -52,6 +58,25 @@ P0_CANONICAL_HUMAN_REVIEW_BLOBS = {
     "supabase/functions/lf-p0-human-review-web-v1/index.ts": "bf1e0ac69a2c171e28bf89df80f97ebd63b95222",
 }
 P0_CANONICAL_HUMAN_REVIEW_EXTENSION_PATHS = frozenset(P0_CANONICAL_HUMAN_REVIEW_BLOBS)
+
+INPUT_GOVERNANCE_ALLOWED_EXACT = frozenset({
+    "audits/input-governance/HANDOFF_REAUDIT_INPUT_GOVERNANCE_V511_AUD039_2026-08-19.md",
+    "audits/input-governance/HANDOFF_REAUDIT_INPUT_GOVERNANCE_V511_LIVE_RECONCILIATION_2026-08-20.md",
+    "audits/input-governance/HANDOFF_REAUDIT_INPUT_GOVERNANCE_V55R2_2026-08-18.md",
+    "docs/audits/INPUT_GOVERNANCE_V55_CLAUDE_HANDOFF_20260818.md",
+    "docs/audits/INPUT_GOVERNANCE_V55_SUPABASE_MIGRATION_GAP_20260818.md",
+    "scripts/input_governance_migration_parity.py",
+})
+INPUT_GOVERNANCE_DENIED_LOOKALIKES = frozenset({
+    "audits/input-governance/HANDOFF_REAUDIT_INPUT_GOVERNANCE_V511_AUD039_2026-08-19.md.bak",
+    "audits/input-governance/HANDOFF_REAUDIT_INPUT_GOVERNANCE_V511_LIVE_RECONCILIATION_2026-08-20.md.tmp",
+    "audits/input-governance/UNSCOPED.md",
+    "audits/input-governance/subdir/HANDOFF_REAUDIT_INPUT_GOVERNANCE_V55R2_2026-08-18.md",
+    "docs/audits/INPUT_GOVERNANCE_V55_CLAUDE_HANDOFF_20260818.md.bak",
+    "docs/audits/UNSCOPED.md",
+    "scripts/input_governance_migration_parity.py.bak",
+    "scripts/input_governance_migration_parity_v2.py",
+})
 
 _pinned = dict(core.EXPECTED_RUNTIME_BLOBS)
 _pinned[RUNTIME_PLATFORM_CONFIG_PATH] = "e7f46a6874d254dcb474871f988d687678e218a0"
@@ -276,6 +301,43 @@ def _canonical_human_review_runtime_self_test() -> None:
     print("PASS_P0_CANONICAL_HUMAN_REVIEW_RUNTIME_EXTENSION_V1=4/4")
 
 
+def _install_input_governance_scope_extension() -> None:
+    base = core.e16.base
+    broad_forbidden = {"audits/", "docs/", "scripts/"}
+    leaked_prefixes = sorted(broad_forbidden.intersection(base.ALLOWED_PREFIXES))
+    if leaked_prefixes:
+        raise SystemExit(
+            "FAIL_INPUT_GOVERNANCE_SCOPE_BROAD_PREFIX_ALLOWED: "
+            + ",".join(leaked_prefixes)
+        )
+
+    base.ALLOWED_EXACT = set(base.ALLOWED_EXACT) | set(INPUT_GOVERNANCE_ALLOWED_EXACT)
+
+    missing = sorted(
+        path for path in INPUT_GOVERNANCE_ALLOWED_EXACT
+        if not base.is_allowed_path(path)
+    )
+    if missing:
+        raise SystemExit(
+            "FAIL_INPUT_GOVERNANCE_SCOPE_EXACT_MISSING: " + ",".join(missing)
+        )
+
+    escaped = sorted(
+        path for path in INPUT_GOVERNANCE_DENIED_LOOKALIKES
+        if base.is_allowed_path(path)
+    )
+    if escaped:
+        raise SystemExit(
+            "FAIL_INPUT_GOVERNANCE_SCOPE_LOOKALIKE_ALLOWED: " + ",".join(escaped)
+        )
+
+    print(
+        "PASS_INPUT_GOVERNANCE_EXACT_SCOPE_EXTENSION: "
+        f"approved={len(INPUT_GOVERNANCE_ALLOWED_EXACT)} "
+        f"denied={len(INPUT_GOVERNANCE_DENIED_LOOKALIKES)}"
+    )
+
+
 def _run_human_review_convergence_contract() -> None:
     completed = subprocess.run(
         [sys.executable, str(HUMAN_REVIEW_CONVERGENCE_HELPER)],
@@ -346,6 +408,7 @@ def main() -> None:
     _run_dual_ocr_reconciliation_contract()
     _run_icon_structural_role_contract()
     _run_multiscreen_structural_generalization_contract()
+    _install_input_governance_scope_extension()
     original_pass_check = core.e16.base.pass_check
 
     def pass_check_with_real_source(message: str) -> None:
