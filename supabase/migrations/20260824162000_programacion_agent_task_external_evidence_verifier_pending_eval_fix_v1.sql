@@ -61,12 +61,13 @@ begin
   if v_ex.estado<>'RUNNING' or v_ex.request_ref!~'^agent-task://[1-9][0-9]*$' then raise exception 'EXTERNAL_VERIFY_AGENT_TASK_RUNNING_REQUIRED'; end if;
   if v_ex.head_sha is distinct from p_expected_head_sha then raise exception 'EXTERNAL_VERIFY_HEAD_MISMATCH'; end if;
 
-  select ev.*,eva.resultado,eva.id into v_ev,v_eval_status,v_eval_id
+  select ev.* into v_ev
   from programacion.evidencias ev
   join programacion.evaluaciones eva on eva.id=ev.evaluacion_id
   join programacion.objetivos_ejecucion obj on obj.id=eva.objetivo_id and obj.execution_id=v_ex.id
   where ev.id=p_evidence_id;
   if not found then raise exception 'EXTERNAL_VERIFY_EVIDENCE_NOT_FOUND'; end if;
+  select resultado,id into v_eval_status,v_eval_id from programacion.evaluaciones where id=v_ev.evaluacion_id;
   if v_eval_status<>'PENDING' then raise exception 'EXTERNAL_VERIFY_EVALUATION_PENDING_REQUIRED'; end if;
   if v_ev.tipo<>'VERIFIED_WORKER_RECEIPT' then raise exception 'EXTERNAL_VERIFY_WORKER_RECEIPT_REQUIRED'; end if;
   if v_ev.sha256 is distinct from p_expected_evidence_sha256 then raise exception 'EXTERNAL_VERIFY_EVIDENCE_SHA_MISMATCH'; end if;
