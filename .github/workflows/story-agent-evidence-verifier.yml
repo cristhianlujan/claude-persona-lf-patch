@@ -8,6 +8,7 @@ on:
       - ".github/workflows/story-agent-evidence-verifier.yml"
       - "supabase/functions/story-agent-evidence-verifier-v1/**"
       - "supabase/migrations/*programacion_agent_task_external_evidence_verifier_v1.sql"
+      - "supabase/migrations/*programacion_agent_task_worker_v10_external_receipt_v1.sql"
 
 permissions:
   contents: read
@@ -35,22 +36,50 @@ jobs:
           curl --silent --show-error --fail-with-body \
             -H "Authorization: Bearer ${OIDC_TOKEN}" \
             -H "Content-Type: application/json" \
-            -d '{"action":"verify_pending_agent_task_v1","task_id":21}' \
+            -d '{"action":"verify_pending_agent_task_any_v2","task_id":21}' \
             "https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/story-agent-evidence-verifier-v1" \
             -o verifier-response.json
           python3 - <<'PY'
           import json
+
           data=json.load(open('verifier-response.json',encoding='utf-8'))
-          if data.get('outcome')!='VERIFIED':
+          outcome=data.get('outcome')
+          mode=data.get('mode')
+
+          if outcome=='NO_PENDING_EVIDENCE':
+              print('PASS_EXTERNAL_EVIDENCE_VERIFIER_IDLE')
+              print('mode='+str(mode))
+              raise SystemExit(0)
+
+          if outcome!='VERIFIED':
               raise SystemExit('FAIL_EXTERNAL_EVIDENCE_VERIFIER: '+json.dumps(data,sort_keys=True))
+
           probes=data.get('negative_probes') or {}
-          required={'wrong_head','wrong_evidence_sha','wrong_source_system','wrong_source_ref','self_verification'}
-          if set(k for k,v in probes.items() if v=='PASS') != required:
-              raise SystemExit('FAIL_EXTERNAL_EVIDENCE_NEGATIVE_PROBES: '+json.dumps(probes,sort_keys=True))
           result=data.get('result') or {}
-          print('PASS_EXTERNAL_EVIDENCE_VERIFIER')
-          print('execution_id='+str(result.get('execution_id')))
-          print('evidence_id='+str(result.get('evidence_id')))
-          print('authority_receipt_id='+str(result.get('authority_receipt_id')))
-          print('evidence_verification_id='+str(result.get('evidence_verification_id')))
+
+          if mode=='worker_v10':
+              required={'wrong_execution','wrong_head','wrong_receipt_sha','wrong_source_ref','self_verification'}
+              if set(k for k,v in probes.items() if v=='PASS') != required:
+                  raise SystemExit('FAIL_WORKER_V10_EXTERNAL_NEGATIVE_PROBES: '+json.dumps(probes,sort_keys=True))
+              if result.get('status')!='VERIFIED_PASS':
+                  raise SystemExit('FAIL_WORKER_V10_GATE_RESULT: '+json.dumps(result,sort_keys=True))
+              if result.get('verified_gate_count')!=4 or result.get('pass_gate_count')!=4:
+                  raise SystemExit('FAIL_WORKER_V10_GATE_COUNT: '+json.dumps(result,sort_keys=True))
+              print('PASS_EXTERNAL_WORKER_V10_VERIFIER')
+              print('execution_id='+str(result.get('execution_id')))
+              print('receipt_sha256='+str(result.get('receipt_sha256')))
+              print('candidate_head_sha='+str(result.get('candidate_head_sha')))
+          elif mode=='legacy':
+              required={'wrong_head','wrong_evidence_sha','wrong_source_system','wrong_source_ref','self_verification'}
+              if set(k for k,v in probes.items() if v=='PASS') != required:
+                  raise SystemExit('FAIL_EXTERNAL_EVIDENCE_NEGATIVE_PROBES: '+json.dumps(probes,sort_keys=True))
+              if result.get('status')!='VERIFIED':
+                  raise SystemExit('FAIL_LEGACY_VERIFICATION_RESULT: '+json.dumps(result,sort_keys=True))
+              print('PASS_EXTERNAL_EVIDENCE_VERIFIER')
+              print('execution_id='+str(result.get('execution_id')))
+              print('evidence_id='+str(result.get('evidence_id')))
+              print('authority_receipt_id='+str(result.get('authority_receipt_id')))
+              print('evidence_verification_id='+str(result.get('evidence_verification_id')))
+          else:
+              raise SystemExit('FAIL_EXTERNAL_EVIDENCE_MODE: '+str(mode))
           PY
