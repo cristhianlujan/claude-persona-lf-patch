@@ -157,10 +157,14 @@ jobs:
           )
           classified_external_prefixes = (
               "input_governance_",
+              "programacion_input_governance_",
           )
+          classified_external_names = {
+              "retire_b2b_auth005_legacy_totp_screen",
+          }
 
           def classified(name: str) -> bool:
-              return name.startswith(managed_prefixes + classified_external_prefixes)
+              return name.startswith(managed_prefixes + classified_external_prefixes) or name in classified_external_names
 
           if not classified("programacion_worker_spec_probe"):
               raise SystemExit("FAIL_CI009_SELFTEST_MANAGED_WORKER_SPEC")
@@ -235,7 +239,7 @@ jobs:
               if version <= cutover:
                   continue
               if not name.startswith(managed_prefixes):
-                  if version > classification_baseline_end and not name.startswith(classified_external_prefixes):
+                  if version > classification_baseline_end and not classified(name):
                       raise SystemExit(f"FAIL_UNCLASSIFIED_POST_CUTOVER_MIGRATION: git={path.name}")
                   continue
               local[version] = (
@@ -270,6 +274,31 @@ jobs:
           )
           print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=3/3")
           PY
+
+      - name: Enforce Input Governance migration source parity
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+          INPUT_GOVERNANCE_CUTOVER: "20260818213426"
+        run: |
+          set -euo pipefail
+          if [ -z "${PGPASSWORD:-}" ]; then
+            echo "FAIL_INPUT_GOVERNANCE_MIGRATION_PARITY_DB_PASSWORD_MISSING"
+            exit 1
+          fi
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,''),encode(convert_to(array_to_string(statements,E'\n'),'UTF8'),'hex') from supabase_migrations.schema_migrations where version >= '${INPUT_GOVERNANCE_CUTOVER}' and (name like 'input\_governance\_%' escape '\' or name like 'programacion\_input\_governance\_%' escape '\' or name = 'retire_b2b_auth005_legacy_totp_screen') order by version" > "$RUNNER_TEMP/input-governance-migrations.csv"
+
+          python3 scripts/input_governance_migration_parity.py \
+            --migrations supabase/migrations \
+            --remote "$RUNNER_TEMP/input-governance-migrations.csv" \
+            --cutover "$INPUT_GOVERNANCE_CUTOVER"
 
       - name: Install deterministic audit dependencies
         run: |
