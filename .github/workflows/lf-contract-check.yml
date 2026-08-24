@@ -102,6 +102,9 @@ jobs:
           SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
           SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
           LF_MIGRATION_CUTOVER: "20260808031006"
+          LF_MIGRATION_CLASSIFICATION_BASELINE_END: "20260822195004"
+          LF_MIGRATION_GRANDFATHERED_COUNT: "154"
+          LF_MIGRATION_GRANDFATHERED_SHA256: "f6694a57d984bb02266630c12151e6334ef40535d17f7986be6e1820956186a5"
         run: |
           set -euo pipefail
           if [ -z "${PGPASSWORD:-}" ]; then
@@ -114,7 +117,11 @@ jobs:
           export PGDATABASE=postgres
           export PGSSLMODE=require
 
-          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,''),encode(convert_to(array_to_string(statements,E'\n'),'UTF8'),'hex') from supabase_migrations.schema_migrations where version > '${LF_MIGRATION_CUTOVER}' and (name like 'pr93\_%' escape '\' or name like 'lf\_%' escape '\' or name like 'programacion\_story\_agent\_task\_%' escape '\' or name like 'programacion\_task\_sizing\_%' escape '\' or name like 'programacion\_task\_dependency\_%' escape '\' or name like 'programacion\_agent\_task\_%' escape '\' or name like 'programacion\_dependency\_context\_%' escape '\' or name like 'programacion\_propagate\_execution\_%' escape '\' or name like 'programacion\_deprecate\_declared\_independence\_%' escape '\' or name like 'programacion\_revoke\_security\_definer\_%' escape '\') order by version" > "$RUNNER_TEMP/lf-managed-migrations.csv"
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,''),encode(convert_to(array_to_string(statements,E'\n'),'UTF8'),'hex') from supabase_migrations.schema_migrations where version > '${LF_MIGRATION_CUTOVER}' and (name like 'pr93\_%' escape '\' or name like 'lf\_%' escape '\' or name like 'programacion\_story\_agent\_task\_%' escape '\' or name like 'programacion\_task\_sizing\_%' escape '\' or name like 'programacion\_task\_dependency\_%' escape '\' or name like 'programacion\_agent\_task\_%' escape '\' or name like 'programacion\_dependency\_context\_%' escape '\' or name like 'programacion\_propagate\_execution\_%' escape '\' or name like 'programacion\_deprecate\_declared\_independence\_%' escape '\' or name like 'programacion\_revoke\_security\_definer\_%' escape '\' or name like 'programacion\_worker\_spec\_%' escape '\') order by version" > "$RUNNER_TEMP/lf-managed-migrations.csv"
+
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,'') from supabase_migrations.schema_migrations where version > '${LF_MIGRATION_CUTOVER}' order by version" > "$RUNNER_TEMP/lf-post-cutover-migrations.csv"
+
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "with x as (select version,coalesce(name,'') as name,array_to_string(statements,E'\n') as sql_text from supabase_migrations.schema_migrations where version > '${LF_MIGRATION_CUTOVER}' and version <= '${LF_MIGRATION_CLASSIFICATION_BASELINE_END}' and not (coalesce(name,'') like 'pr93\_%' escape '\' or coalesce(name,'') like 'lf\_%' escape '\' or coalesce(name,'') like 'programacion\_story\_agent\_task\_%' escape '\' or coalesce(name,'') like 'programacion\_task\_sizing\_%' escape '\' or coalesce(name,'') like 'programacion\_task\_dependency\_%' escape '\' or coalesce(name,'') like 'programacion\_agent\_task\_%' escape '\' or coalesce(name,'') like 'programacion\_dependency\_context\_%' escape '\' or coalesce(name,'') like 'programacion\_propagate\_execution\_%' escape '\' or coalesce(name,'') like 'programacion\_deprecate\_declared\_independence\_%' escape '\' or coalesce(name,'') like 'programacion\_revoke\_security\_definer\_%' escape '\' or coalesce(name,'') like 'programacion\_worker\_spec\_%' escape '\')) select count(*)::text,encode(extensions.digest(convert_to(coalesce(string_agg(version||E'\n'||name||E'\n'||sql_text,E'\n--MIGRATION--\n' order by version),''),'UTF8'),'sha256'),'hex') from x" > "$RUNNER_TEMP/lf-grandfathered-migrations.csv"
 
           docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select count(*)::text,encode(extensions.digest(convert_to(string_agg(version||E'\n'||coalesce(name,'')||E'\n'||array_to_string(statements,E'\n--STATEMENT--\n'),E'\n--MIGRATION--\n' order by version),'UTF8'),'sha256'),'hex') from supabase_migrations.schema_migrations where version between '20260801063708' and '20260801170332'" > "$RUNNER_TEMP/lf-legacy-checkpoint.csv"
 
@@ -126,6 +133,9 @@ jobs:
           import re
 
           cutover = os.environ["LF_MIGRATION_CUTOVER"]
+          classification_baseline_end = os.environ["LF_MIGRATION_CLASSIFICATION_BASELINE_END"]
+          grandfathered_count = os.environ["LF_MIGRATION_GRANDFATHERED_COUNT"]
+          grandfathered_sha = os.environ["LF_MIGRATION_GRANDFATHERED_SHA256"]
           migrations = pathlib.Path("supabase/migrations")
           marker_re = re.compile(
               r"^-- LF_MIGRATION_SOURCE_CHECKPOINT_V1 "
@@ -143,13 +153,25 @@ jobs:
               "programacion_propagate_execution_",
               "programacion_deprecate_declared_independence_",
               "programacion_revoke_security_definer_",
+              "programacion_worker_spec_",
           )
+          classified_external_prefixes = (
+              "input_governance_",
+              "programacion_input_governance_",
+          )
+          classified_external_names = {
+              "retire_b2b_auth005_legacy_totp_screen",
+          }
 
-          def delegated_input_governance(name: str) -> bool:
-              return (
-                  name.startswith(("input_governance_", "programacion_input_governance_"))
-                  or name == "retire_b2b_auth005_legacy_totp_screen"
-              )
+          def classified(name: str) -> bool:
+              return name.startswith(managed_prefixes + classified_external_prefixes) or name in classified_external_names
+
+          if not classified("programacion_worker_spec_probe"):
+              raise SystemExit("FAIL_CI009_SELFTEST_MANAGED_WORKER_SPEC")
+          if not classified("input_governance_probe"):
+              raise SystemExit("FAIL_CI009_SELFTEST_EXTERNAL_OWNER")
+          if classified("totally_unknown_future_migration"):
+              raise SystemExit("FAIL_CI009_SELFTEST_UNKNOWN_ACCEPTED")
 
           markers = []
           for path in sorted(migrations.glob("*.sql")):
@@ -174,6 +196,34 @@ jobs:
           if observed_count != legacy_count or observed_sha != legacy_sha:
               raise SystemExit("FAIL_LF_MIGRATION_LEGACY_ATTESTATION")
 
+          grandfather_file = pathlib.Path(os.environ["RUNNER_TEMP"]) / "lf-grandfathered-migrations.csv"
+          with grandfather_file.open(newline="", encoding="utf-8") as handle:
+              grandfather_rows = list(csv.reader(handle))
+          if len(grandfather_rows) != 1 or len(grandfather_rows[0]) != 2:
+              raise SystemExit("FAIL_LF_MIGRATION_GRANDFATHER_BASELINE_ROW")
+          observed_grandfathered_count, observed_grandfathered_sha = grandfather_rows[0]
+          if observed_grandfathered_count != grandfathered_count or observed_grandfathered_sha != grandfathered_sha:
+              raise SystemExit(
+                  "FAIL_LF_MIGRATION_GRANDFATHER_BASELINE: "
+                  f"expected={grandfathered_count}/{grandfathered_sha} "
+                  f"observed={observed_grandfathered_count}/{observed_grandfathered_sha}"
+              )
+
+          all_remote_file = pathlib.Path(os.environ["RUNNER_TEMP"]) / "lf-post-cutover-migrations.csv"
+          with all_remote_file.open(newline="", encoding="utf-8") as handle:
+              all_remote_rows = list(csv.reader(handle))
+          unclassified_remote = []
+          for row in all_remote_rows:
+              if len(row) != 2:
+                  raise SystemExit(f"FAIL_LF_MIGRATION_CLASSIFICATION_ROW: {row!r}")
+              version, name = row
+              if version > classification_baseline_end and not classified(name):
+                  unclassified_remote.append(f"{version}_{name}")
+          if unclassified_remote:
+              raise SystemExit(
+                  "FAIL_UNCLASSIFIED_POST_CUTOVER_MIGRATION: remote=" + ",".join(unclassified_remote)
+              )
+
           def canonical(sql: str) -> bytes:
               sql = sql.replace("\r\n", "\n").replace("\r", "\n")
               lines = [line for line in sql.split("\n") if not line.lstrip().startswith("--")]
@@ -189,9 +239,9 @@ jobs:
               if version <= cutover:
                   continue
               if not name.startswith(managed_prefixes):
-                  if delegated_input_governance(name):
-                      continue
-                  raise SystemExit(f"FAIL_LF_MIGRATION_UNSCOPED_NAME: {path.name}")
+                  if version > classification_baseline_end and not classified(name):
+                      raise SystemExit(f"FAIL_UNCLASSIFIED_POST_CUTOVER_MIGRATION: git={path.name}")
+                  continue
               local[version] = (
                   name,
                   hashlib.sha256(canonical(path.read_text(encoding="utf-8"))).hexdigest(),
@@ -218,8 +268,11 @@ jobs:
 
           print(
               f"PASS_LF_MIGRATION_SOURCE_PARITY: checkpoint={checkpoint_path.name} "
-              f"post_cutover={len(local)} legacy={legacy_count} sha256={legacy_sha}"
+              f"post_cutover={len(local)} legacy={legacy_count} sha256={legacy_sha} "
+              f"grandfathered={grandfathered_count}/{grandfathered_sha} "
+              f"classification_baseline_end={classification_baseline_end}"
           )
+          print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=3/3")
           PY
 
       - name: Enforce Input Governance migration source parity
