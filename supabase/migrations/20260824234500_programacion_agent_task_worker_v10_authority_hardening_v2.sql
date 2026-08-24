@@ -60,11 +60,12 @@ declare
   v_source_ref text;
   v_receipt jsonb;
   v_candidate_head_sha text;
-  v_origin programacion.authority_attestations%rowtype;
-  v_origin_challenge programacion.authority_challenges%rowtype;
-  v_hidden programacion.authority_attestations%rowtype;
-  v_hidden_challenge programacion.authority_challenges%rowtype;
+  v_origin_id bigint;
+  v_origin_sha256 text;
+  v_origin_payload jsonb;
   v_hidden_id bigint;
+  v_hidden_sha256 text;
+  v_hidden_payload jsonb;
   v_expected_result text;
   v_origin_ok boolean:=false;
   v_hidden_ok boolean:=false;
@@ -119,8 +120,8 @@ begin
     v_expected_result:='FAIL';
   end if;
 
-  select a.*,c.*
-    into v_origin,v_origin_challenge
+  select a.id,a.attestation_sha256,a.attestation_payload
+    into v_origin_id,v_origin_sha256,v_origin_payload
   from programacion.authority_attestations a
   join programacion.authority_challenges c on c.id=a.challenge_id
   where a.authority_role='programacion_verifier'
@@ -147,13 +148,13 @@ begin
   order by a.id desc
   limit 1;
 
-  v_origin_ok:=v_origin.id is not null;
+  v_origin_ok:=v_origin_id is not null;
 
   if v_origin_ok
-     and coalesce(v_origin.attestation_payload->>'hidden_authority_attestation_id','')~'^[0-9]+$' then
-    v_hidden_id:=(v_origin.attestation_payload->>'hidden_authority_attestation_id')::bigint;
-    select a.*,c.*
-      into v_hidden,v_hidden_challenge
+     and coalesce(v_origin_payload->>'hidden_authority_attestation_id','')~'^[0-9]+$' then
+    v_hidden_id:=(v_origin_payload->>'hidden_authority_attestation_id')::bigint;
+    select a.attestation_sha256,a.attestation_payload
+      into v_hidden_sha256,v_hidden_payload
     from programacion.authority_attestations a
     join programacion.authority_challenges c on c.id=a.challenge_id
     where a.id=v_hidden_id
@@ -173,7 +174,7 @@ begin
       and coalesce(a.attestation_payload->>'broker_policy_id','')~'^[0-9a-f]{64}$'
       and coalesce(a.attestation_payload->>'receipt_contract_version','')~'^[0-9]+$'
       and (a.attestation_payload->>'receipt_contract_version')::integer>=3;
-    v_hidden_ok:=v_hidden.id is not null;
+    v_hidden_ok:=v_hidden_sha256 is not null;
   end if;
 
   return jsonb_build_object(
@@ -187,11 +188,11 @@ begin
     'worker_source_ref',v_source_ref,
     'expected_result',v_expected_result,
     'origin_ok',v_origin_ok,
-    'origin_attestation_id',v_origin.id,
-    'origin_attestation_sha256',v_origin.attestation_sha256,
+    'origin_attestation_id',v_origin_id,
+    'origin_attestation_sha256',v_origin_sha256,
     'hidden_ok',v_hidden_ok,
-    'hidden_authority_attestation_id',v_hidden.id,
-    'hidden_authority_attestation_sha256',v_hidden.attestation_sha256
+    'hidden_authority_attestation_id',case when v_hidden_ok then v_hidden_id else null end,
+    'hidden_authority_attestation_sha256',v_hidden_sha256
   );
 end;
 $function$;
