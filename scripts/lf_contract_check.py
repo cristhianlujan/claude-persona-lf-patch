@@ -52,6 +52,7 @@ ALLOWED_GITHUB_EXACT = {
     ".github/workflows/lf-contract-check.yml",
     ".github/workflows/lf-bootstrap-reproducibility.yml",
     ".github/workflows/lf-github-reconcile-v3.yml",
+    ".github/workflows/story-agent-evidence-verifier.yml",
 }
 OPERATIONAL_PROTOCOL_ALLOWED_EXACT = {
     "CLAUDE.md",
