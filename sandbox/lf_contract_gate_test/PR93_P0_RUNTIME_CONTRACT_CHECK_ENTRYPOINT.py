@@ -64,12 +64,12 @@ P0_CANONICAL_HUMAN_REVIEW_EXTENSION_PATHS = frozenset(P0_CANONICAL_HUMAN_REVIEW_
 INPUT_GOVERNANCE_RUNTIME_PR_NUMBER = 194
 INPUT_GOVERNANCE_RUNTIME_BRANCH = "lf/input-governance-execution-dispatcher-v1-20260824"
 INPUT_GOVERNANCE_RUNTIME_BLOBS = {
-    "supabase/functions/input-governance-agent-v1/index.ts": "2a7c34f41b6968905253cfc69b0586a86d8a0c03",
-    "supabase/functions/input-governance-agent-v1/deno.json": "3330dbff6d5d9af491be18a3d12a2ff4e8d5e974",
-    "supabase/functions/input-governance-curator-v1/index.ts": "6e5cc1959cdb07ea21307b0b53a2872f0ba903f4",
-    "supabase/functions/input-governance-curator-v1/deno.json": "3330dbff6d5d9af491be18a3d12a2ff4e8d5e974",
-    "supabase/functions/input-governance-validator-v1/index.ts": "9dbd0d9a72e1a527023ae2312033525273a1bb4d",
-    "supabase/functions/input-governance-validator-v1/deno.json": "3330dbff6d5d9af491be18a3d12a2ff4e8d5e974",
+    "supabase/functions/input-governance-agent-v1/index.ts": "2a7c34eba458f32bcb3ff684bdaa329c431402eb",
+    "supabase/functions/input-governance-agent-v1/deno.json": "3330a0cb91e661bb049dba3b26f1d1d1b6c1139c",
+    "supabase/functions/input-governance-curator-v1/index.ts": "6e5ccf8f817d575183bc619b312016b7e653aeab",
+    "supabase/functions/input-governance-curator-v1/deno.json": "3330a0cb91e661bb049dba3b26f1d1d1b6c1139c",
+    "supabase/functions/input-governance-validator-v1/index.ts": "9dbd37eb8f5c400074fddef7472a6fb2eca620d6",
+    "supabase/functions/input-governance-validator-v1/deno.json": "3330a0cb91e661bb049dba3b26f1d1d1b6c1139c",
 }
 INPUT_GOVERNANCE_RUNTIME_EXTENSION_PATHS = frozenset(INPUT_GOVERNANCE_RUNTIME_BLOBS)
 
