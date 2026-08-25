@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Fail-closed PR93 runtime-source adapter layered over the E.16 validator.
 
-Only the pinned PR93 Edge source set, platform function configuration, and the
+Only pinned governed Edge source sets, platform function configuration, and the
 versioned Story Creator P0 sandbox candidate are admitted beyond the base LF
-contract scope. The PR93 branch is accepted while PR #93 is open. A push on
-main is accepted only when GitHub confirms that PR #93 is merged and its
-merge_commit_sha equals the workflow head SHA.
+contract scope. The historical PR93 branch remains supported. The Story Agent
+evidence-verifier branch is admitted only with exact pinned blobs. A push on
+main is accepted only when GitHub proves the exact workflow SHA came from an
+allowed merged pull request.
 """
 from __future__ import annotations
 
@@ -25,6 +26,7 @@ TARGET_REPOSITORY = "cristhianlujan/claude-persona-lf-patch"
 TARGET_PR_NUMBER = 93
 PR_BRANCH = "lf/architecture-v7-hardening"
 MAIN_BRANCH = "main"
+STORY_AGENT_VERIFIER_BRANCH_PREFIX = "lf/story-agent-evidence-verifier-"
 RUNTIME_ALERT_PATH = "supabase/functions/lf-architecture-alert-sink-v4/index.ts"
 RUNTIME_ALERT_CONFIG_PATH = "supabase/functions/lf-architecture-alert-sink-v4/deno.json"
 RUNTIME_PLATFORM_CONFIG_PATH = "supabase/config.toml"
@@ -55,6 +57,8 @@ EXPECTED_RUNTIME_BLOBS = {
     "supabase/functions/get-perfil-lf-runtime-protocol/deno.json": "762e9b22bb21b951e9ddc5a171fe1be106d7cc31",
     "supabase/functions/get-perfil-lf-runtime-protocol-public-test/index.ts": "9d5672ba788843330cc0c4785d8413eb12d2d11e",
     "supabase/functions/get-perfil-lf-runtime-protocol-public-test/deno.json": "762e9b22bb21b951e9ddc5a171fe1be106d7cc31",
+    "supabase/functions/story-agent-evidence-verifier-v1/index.ts": "21539b1da7de8d35d9e209b5b7cf6f0a538dd10f",
+    "supabase/functions/story-agent-evidence-verifier-v1/deno.json": "26f214064a9165492dfd8a2cf6dc143dd8b29c63",
 }
 EXPECTED_EDGE_PATHS = frozenset(
     path for path in EXPECTED_RUNTIME_BLOBS if path.startswith("supabase/functions/")
@@ -82,6 +86,10 @@ def _validate_path(path: str) -> None:
         or any(part in ("", ".", "..") for part in path.split("/"))
     ):
         raise RuntimeScopeError("FAIL_RUNTIME_PATH_INVALID", f"invalid controlled path: {path!r}")
+
+
+def _allowed_runtime_branch(branch: str) -> bool:
+    return branch == PR_BRANCH or branch.startswith(STORY_AGENT_VERIFIER_BRANCH_PREFIX)
 
 
 def evaluate_controlled_runtime_scope(
@@ -118,18 +126,18 @@ def evaluate_controlled_runtime_scope(
             f"alert sink source/config requires {RUNTIME_MIGRATION_PATH}",
         )
 
-    if branch == PR_BRANCH:
+    if _allowed_runtime_branch(branch):
         pass
     elif branch == MAIN_BRANCH:
         if not main_merge_verified:
             raise RuntimeScopeError(
                 "FAIL_RUNTIME_MAIN_NOT_MERGED",
-                "main is accepted only after GitHub confirms PR #93 merged at this SHA",
+                "main is accepted only after GitHub confirms an allowed governed PR merged at this SHA",
             )
     else:
         raise RuntimeScopeError(
             "FAIL_RUNTIME_BRANCH_MISMATCH",
-            f"runtime scope is restricted to {PR_BRANCH!r} or verified {MAIN_BRANCH!r}, got {branch!r}",
+            f"runtime scope is restricted to governed runtime branches or verified {MAIN_BRANCH!r}; got {branch!r}",
         )
 
     modes = mode_by_path or {}
@@ -175,6 +183,20 @@ def git_mode_for_path(path: str) -> str:
     return output.split(None, 1)[0]
 
 
+def _github_json(url: str, token: str, user_agent: str):
+    request = urllib.request.Request(
+        url,
+        headers={
+            "Accept": "application/vnd.github+json",
+            "Authorization": f"Bearer {token}",
+            "X-GitHub-Api-Version": "2022-11-28",
+            "User-Agent": user_agent,
+        },
+    )
+    with urllib.request.urlopen(request, timeout=15) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
 def verify_main_merge_via_github() -> bool:
     if current_event_branch() != MAIN_BRANCH:
         return False
@@ -191,21 +213,31 @@ def verify_main_merge_via_github() -> bool:
     if not token:
         return False
 
-    request = urllib.request.Request(
-        f"https://api.github.com/repos/{TARGET_REPOSITORY}/pulls/{TARGET_PR_NUMBER}",
-        headers={
-            "Accept": "application/vnd.github+json",
-            "Authorization": f"Bearer {token}",
-            "X-GitHub-Api-Version": "2022-11-28",
-            "User-Agent": "pr93-runtime-gate",
-        },
-    )
     try:
-        with urllib.request.urlopen(request, timeout=15) as response:
-            payload = json.loads(response.read().decode("utf-8"))
+        historical = _github_json(
+            f"https://api.github.com/repos/{TARGET_REPOSITORY}/pulls/{TARGET_PR_NUMBER}",
+            token,
+            "pr93-runtime-gate",
+        )
+        if historical.get("merged") is True and historical.get("merge_commit_sha") == head_sha:
+            return True
+        payload = _github_json(
+            f"https://api.github.com/repos/{TARGET_REPOSITORY}/commits/{head_sha}/pulls",
+            token,
+            "story-agent-runtime-gate-v1",
+        )
     except (urllib.error.URLError, TimeoutError, UnicodeDecodeError, json.JSONDecodeError):
         return False
-    return payload.get("merged") is True and payload.get("merge_commit_sha") == head_sha
+    if not isinstance(payload, list):
+        return False
+    return any(
+        isinstance(pr, dict)
+        and pr.get("merged_at")
+        and pr.get("merge_commit_sha") == head_sha
+        and (pr.get("base") or {}).get("ref") == MAIN_BRANCH
+        and str((pr.get("head") or {}).get("ref", "")).startswith(STORY_AGENT_VERIFIER_BRANCH_PREFIX)
+        for pr in payload
+    )
 
 
 _runtime_scope_enabled = False

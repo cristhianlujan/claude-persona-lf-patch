@@ -1,0 +1,56 @@
+name: Story Agent Evidence Verifier
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/story-agent-evidence-verifier.yml"
+      - "supabase/functions/story-agent-evidence-verifier-v1/**"
+      - "supabase/migrations/*programacion_agent_task_external_evidence_verifier_v1.sql"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  verify-agent-task-worker-receipt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Request dedicated GitHub OIDC identity
+        id: oidc
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const token = await core.getIDToken('story-agent-evidence-verifier-v1');
+            core.setSecret(token);
+            core.setOutput('token', token);
+
+      - name: Verify pending HU-HMO-001 worker evidence
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail-with-body \
+            -H "Authorization: Bearer ${OIDC_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{"action":"verify_pending_agent_task_v1","task_id":21}' \
+            "https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/story-agent-evidence-verifier-v1" \
+            -o verifier-response.json
+          python3 - <<'PY'
+          import json
+          data=json.load(open('verifier-response.json',encoding='utf-8'))
+          if data.get('outcome')!='VERIFIED':
+              raise SystemExit('FAIL_EXTERNAL_EVIDENCE_VERIFIER: '+json.dumps(data,sort_keys=True))
+          probes=data.get('negative_probes') or {}
+          required={'wrong_head','wrong_evidence_sha','wrong_source_system','wrong_source_ref','self_verification'}
+          if set(k for k,v in probes.items() if v=='PASS') != required:
+              raise SystemExit('FAIL_EXTERNAL_EVIDENCE_NEGATIVE_PROBES: '+json.dumps(probes,sort_keys=True))
+          result=data.get('result') or {}
+          print('PASS_EXTERNAL_EVIDENCE_VERIFIER')
+          print('execution_id='+str(result.get('execution_id')))
+          print('evidence_id='+str(result.get('evidence_id')))
+          print('authority_receipt_id='+str(result.get('authority_receipt_id')))
+          print('evidence_verification_id='+str(result.get('evidence_verification_id')))
+          PY
