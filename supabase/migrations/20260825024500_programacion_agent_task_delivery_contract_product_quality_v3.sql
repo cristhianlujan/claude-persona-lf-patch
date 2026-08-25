@@ -135,7 +135,7 @@ begin
   for v_ref in select unnest(coalesce(v_ac,'{}'::text[])||coalesce(v_inv,'{}'::text[])||coalesce(v_neg,'{}'::text[])) loop
     if not exists(
       select 1 from jsonb_array_elements(new.required_tests) rt
-      where rt->>'test_ref' like 'SEMANTIC:%' or rt->>'test_ref' like 'MUTATION:%'
+      where (rt->>'test_ref' like 'SEMANTIC:%' or rt->>'test_ref' like 'MUTATION:%')
         and exists(select 1 from jsonb_array_elements_text(rt->'covers_refs') cr where cr=v_ref)
     ) then raise exception 'DELIVERY_TEST_COVERAGE_INCOMPLETE: semantic ref % has no SEMANTIC/MUTATION test coverage',v_ref; end if;
   end loop;
