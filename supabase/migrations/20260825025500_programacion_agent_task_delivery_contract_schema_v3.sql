@@ -1,0 +1,7 @@
+-- Allow Product/Quality delivery-contract schema v3 while preserving historical v2.
+alter table programacion.agent_task_delivery_contracts
+  drop constraint if exists agent_task_delivery_contracts_schema_version_check;
+
+alter table programacion.agent_task_delivery_contracts
+  add constraint agent_task_delivery_contracts_schema_version_check
+  check (schema_version in (2,3));
