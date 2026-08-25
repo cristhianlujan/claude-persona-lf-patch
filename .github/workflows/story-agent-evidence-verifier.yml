@@ -11,6 +11,8 @@ on:
       - "supabase/migrations/*programacion_agent_task_pending_worker_current_task_v2.sql"
       - "supabase/migrations/*programacion_agent_task_authority_receipts_reconcile_v1.sql"
       - "supabase/migrations/*programacion_agent_task_external_v10_token_boundary_v1.sql"
+      - "supabase/migrations/*programacion_agent_task_external_v10_no_manual_secret_v1.sql"
+      - "supabase/migrations/*programacion_agent_task_external_v10_compat_sentinel_sanitize_v1.sql"
 
 permissions:
   contents: read
@@ -61,22 +63,18 @@ jobs:
           print('evidence_verification_id='+str(result.get('evidence_verification_id')))
           PY
 
-      - name: Verify pending Worker v10 evidence without PostgreSQL authority logins
+      - name: Verify pending Worker v10 evidence without manual authority credentials
         env:
           OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
-          PROVENANCE_TOKEN: ${{ secrets.EVIDENCE_VERIFIER_V1_TOKEN }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
           import json, os
-          token=os.environ.get('PROVENANCE_TOKEN','')
-          if len(token)<32:
-              raise SystemExit('FAIL_EXTERNAL_V10_PROVENANCE_SECRET_MISSING')
           with open('verifier-v10-request.json','w',encoding='utf-8') as f:
               json.dump({
                   'action':'verify_pending_agent_task_worker_v10_v1',
                   'task_id':int(os.environ['AGENT_TASK_ID']),
-                  'channel_token':token,
+                  'channel_token':'OIDC_AUTHORITY_ONLY_COMPAT_V1_0001',
               },f,separators=(',',':'))
           PY
           curl --silent --show-error --fail-with-body \
