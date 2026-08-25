@@ -7,7 +7,6 @@ const WORKFLOW_NAME = "Story Agent Evidence Verifier";
 const WORKFLOW_REF = `${REPOSITORY}/.github/workflows/story-agent-evidence-verifier.yml@refs/heads/main`;
 const AUDIENCE = "story-agent-evidence-verifier-v1";
 const ISSUER = "https://token.actions.githubusercontent.com";
-const TASK_ID = 21;
 const METHOD = "GITHUB_ACTIONS_OIDC_EXACT_EVIDENCE_V1";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")?.trim() ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.trim() ?? "";
@@ -136,12 +135,16 @@ Deno.serve(async (req: Request) => {
     const claims = await oidc(req);
     let body: Record<string, unknown>;
     try { body = await req.json(); } catch { return response({ outcome: "BLOCKED", code: "INVALID_JSON" }, 400); }
-    if (body.action !== "verify_pending_agent_task_v1" || Number(body.task_id) !== TASK_ID) {
-      return response({ outcome: "BLOCKED", code: "ACTION_OR_TASK_NOT_ALLOWED" }, 400);
+    if (body.action !== "verify_pending_agent_task_v1") {
+      return response({ outcome: "BLOCKED", code: "ACTION_NOT_ALLOWED" }, 400);
+    }
+    const taskId = Number(body.task_id);
+    if (!Number.isSafeInteger(taskId) || taskId < 1) {
+      return response({ outcome: "BLOCKED", code: "TASK_ID_INVALID" }, 400);
     }
 
-    const pending = await rpc<Pending>("fn_agent_task_pending_worker_evidence_v1", { p_task_id: TASK_ID });
-    if (!pending || pending.request_ref !== `agent-task://${TASK_ID}` || pending.worker_receipt_status !== "PASS") {
+    const pending = await rpc<Pending>("fn_agent_task_pending_worker_evidence_v1", { p_task_id: taskId });
+    if (!pending || pending.request_ref !== `agent-task://${taskId}` || pending.worker_receipt_status !== "PASS") {
       throw new Error("PENDING_EVIDENCE_CONTRACT_INVALID");
     }
     if (!/^[0-9a-f]{40}$/.test(pending.head_sha) || !/^[0-9a-f]{64}$/.test(pending.evidence_sha256)) {
@@ -179,7 +182,7 @@ Deno.serve(async (req: Request) => {
     if (verified?.status !== "VERIFIED") throw new Error("VERIFICATION_RESULT_NOT_VERIFIED");
     return response({
       outcome: "VERIFIED",
-      task_id: TASK_ID,
+      task_id: taskId,
       external_identity: verifierIdentity,
       negative_probes: {
         wrong_head: "PASS",
