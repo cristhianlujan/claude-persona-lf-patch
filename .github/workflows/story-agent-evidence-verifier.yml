@@ -8,10 +8,14 @@ on:
       - ".github/workflows/story-agent-evidence-verifier.yml"
       - "supabase/functions/story-agent-evidence-verifier-v1/**"
       - "supabase/migrations/*programacion_agent_task_external_evidence_verifier_v1.sql"
+      - "supabase/migrations/*programacion_agent_task_pending_worker_current_task_v2.sql"
 
 permissions:
   contents: read
   id-token: write
+
+env:
+  AGENT_TASK_ID: "27"
 
 jobs:
   verify-agent-task-worker-receipt:
@@ -27,7 +31,7 @@ jobs:
             core.setSecret(token);
             core.setOutput('token', token);
 
-      - name: Verify pending HU-HMO-001 worker evidence
+      - name: Verify pending HU-HMO-001 current worker evidence
         env:
           OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
@@ -35,7 +39,7 @@ jobs:
           curl --silent --show-error --fail-with-body \
             -H "Authorization: Bearer ${OIDC_TOKEN}" \
             -H "Content-Type: application/json" \
-            -d '{"action":"verify_pending_agent_task_v1","task_id":21}' \
+            -d "{\"action\":\"verify_pending_agent_task_v1\",\"task_id\":${AGENT_TASK_ID}}" \
             "https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/story-agent-evidence-verifier-v1" \
             -o verifier-response.json
           python3 - <<'PY'
