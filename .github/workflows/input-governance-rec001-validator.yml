@@ -33,7 +33,7 @@ jobs:
             -H "Authorization: Bearer ${service_key}" \
             -H "apikey: ${service_key}" \
             -H 'Content-Type: application/json' \
-            --data '{"run_id":206}' \
+            --data '{"run_id":207}' \
             "https://${PROJECT_REF}.supabase.co/functions/v1/input-governance-validator-v1")"
           echo "VALIDATOR_HTTP_STATUS=${http_status}"
           cat validator-response.json
