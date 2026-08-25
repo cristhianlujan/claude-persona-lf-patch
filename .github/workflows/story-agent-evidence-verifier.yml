@@ -9,6 +9,7 @@ on:
       - "supabase/functions/story-agent-evidence-verifier-v1/**"
       - "supabase/migrations/*programacion_agent_task_external_evidence_verifier_v1.sql"
       - "supabase/migrations/*programacion_agent_task_pending_worker_current_task_v2.sql"
+      - "supabase/migrations/*programacion_agent_task_authority_receipts_reconcile_v1.sql"
 
 permissions:
   contents: read
@@ -29,7 +30,7 @@ jobs:
           script: |
             const token = await core.getIDToken('story-agent-evidence-verifier-v1');
             core.setSecret(token);
-            core.setOutput('token', token);
+            core.setOutput('token', token)
 
       - name: Verify pending HU-HMO-001 current worker evidence
         env:
@@ -57,4 +58,35 @@ jobs:
           print('evidence_id='+str(result.get('evidence_id')))
           print('authority_receipt_id='+str(result.get('authority_receipt_id')))
           print('evidence_verification_id='+str(result.get('evidence_verification_id')))
+          PY
+
+      - name: Verify pending Worker v10 evidence without PostgreSQL authority logins
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail-with-body \
+            -H "Authorization: Bearer ${OIDC_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"action\":\"verify_pending_agent_task_worker_v10_v1\",\"task_id\":${AGENT_TASK_ID}}" \
+            "https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/story-agent-evidence-verifier-v1" \
+            -o verifier-v10-response.json
+          python3 - <<'PY'
+          import json
+          data=json.load(open('verifier-v10-response.json',encoding='utf-8'))
+          if data.get('outcome')!='VERIFIED':
+              raise SystemExit('FAIL_EXTERNAL_V10_EVIDENCE_VERIFIER: '+json.dumps(data,sort_keys=True))
+          probes=data.get('negative_probes') or {}
+          required={'wrong_head','wrong_evidence_sha','wrong_source_system','wrong_source_ref','self_verification','wrong_task_sha'}
+          if set(k for k,v in probes.items() if v=='PASS') != required:
+              raise SystemExit('FAIL_EXTERNAL_V10_NEGATIVE_PROBES: '+json.dumps(probes,sort_keys=True))
+          results=data.get('results') or []
+          if not results or any(row.get('status')!='VERIFIED' for row in results):
+              raise SystemExit('FAIL_EXTERNAL_V10_RESULTS: '+json.dumps(results,sort_keys=True))
+          print('PASS_EXTERNAL_V10_EVIDENCE_VERIFIER')
+          print('verified_count='+str(len(results)))
+          for row in results:
+              print('gate='+str(row.get('gate_code'))+
+                    ' evidence_id='+str(row.get('evidence_id'))+
+                    ' authority_receipt_id='+str(row.get('authority_receipt_id')))
           PY
