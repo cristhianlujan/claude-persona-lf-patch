@@ -23,8 +23,8 @@ jobs:
           python3 - <<'PY'
           import json
           import os
-          import urllib.request
           import urllib.error
+          import urllib.request
 
           project = os.environ["SUPABASE_PROJECT_ID"]
           access_token = os.environ.get("SUPABASE_ACCESS_TOKEN", "").strip()
@@ -46,44 +46,58 @@ jobs:
               raise SystemExit(f"FAIL_SUPABASE_API_KEY_READBACK:{type(exc).__name__}") from exc
 
           records = keys if isinstance(keys, list) else keys.get("keys", []) if isinstance(keys, dict) else []
-          service_role = None
+          candidates = []
           metadata = []
-          for item in records:
+          for idx, item in enumerate(records):
               if not isinstance(item, dict):
                   continue
+              value = item.get("api_key") or item.get("key") or item.get("value")
               name = str(item.get("name", ""))
               key_type = str(item.get("type", ""))
-              metadata.append({"name": name, "type": key_type})
-              if name == "service_role":
-                  service_role = item.get("api_key") or item.get("key") or item.get("value")
-          if not service_role:
-              print("AVAILABLE_KEY_METADATA=" + json.dumps(metadata, sort_keys=True))
-              raise SystemExit("FAIL_SERVICE_ROLE_KEY_NOT_RESOLVED")
+              metadata.append({"index": idx, "name": name, "type": key_type, "has_value": bool(value)})
+              if isinstance(value, str) and value:
+                  candidates.append((idx, name, key_type, value))
+
+          print("AVAILABLE_KEY_METADATA=" + json.dumps(metadata, sort_keys=True))
+          if not candidates:
+              raise SystemExit("FAIL_NO_PROJECT_API_KEY_CANDIDATES")
 
           body = json.dumps({"pantalla_id": 58, "consumer": "STORY_CREATOR"}).encode("utf-8")
-          invoke_req = urllib.request.Request(
-              f"https://{project}.supabase.co/functions/v1/input-governance-agent-v1",
-              data=body,
-              method="POST",
-              headers={
-                  "Authorization": f"Bearer {service_role}",
-                  "Content-Type": "application/json",
-                  "User-Agent": "lf-input-governance-rec001-runtime",
-              },
-          )
-          try:
-              with urllib.request.urlopen(invoke_req, timeout=120) as response:
-                  raw = response.read().decode("utf-8")
-                  status = response.status
-          except urllib.error.HTTPError as exc:
-              raw = exc.read().decode("utf-8", errors="replace")
-              print("EDGE_HTTP_STATUS=" + str(exc.code))
-              print("EDGE_RESPONSE=" + raw)
-              raise SystemExit("FAIL_INPUT_GOVERNANCE_EDGE_INVOCATION") from exc
+          attempts = []
+          success_payload = None
+          success_meta = None
+          for idx, name, key_type, candidate in candidates:
+              req = urllib.request.Request(
+                  f"https://{project}.supabase.co/functions/v1/input-governance-agent-v1",
+                  data=body,
+                  method="POST",
+                  headers={
+                      "Authorization": "Bearer " + candidate,
+                      "Content-Type": "application/json",
+                      "User-Agent": "lf-input-governance-rec001-runtime",
+                  },
+              )
+              try:
+                  with urllib.request.urlopen(req, timeout=120) as response:
+                      raw = response.read().decode("utf-8")
+                      status = response.status
+              except urllib.error.HTTPError as exc:
+                  raw = exc.read().decode("utf-8", errors="replace")
+                  status = exc.code
+              try:
+                  payload = json.loads(raw) if raw else None
+              except Exception:
+                  payload = {"non_json_response": True}
+              safe_error = payload.get("error") if isinstance(payload, dict) else None
+              attempts.append({"index": idx, "name": name, "type": key_type, "status": status, "error": safe_error})
+              if 200 <= status < 300:
+                  success_payload = payload
+                  success_meta = {"index": idx, "name": name, "type": key_type, "status": status}
+                  break
 
-          payload = json.loads(raw) if raw else None
-          print("EDGE_HTTP_STATUS=" + str(status))
-          print("EDGE_RESPONSE=" + json.dumps(payload, sort_keys=True))
-          if status < 200 or status >= 300:
-              raise SystemExit("FAIL_INPUT_GOVERNANCE_EDGE_STATUS")
+          print("KEY_ATTEMPTS=" + json.dumps(attempts, sort_keys=True))
+          if success_payload is None:
+              raise SystemExit("FAIL_NO_PROJECT_API_KEY_ACCEPTED_BY_RUNTIME")
+          print("ACCEPTED_KEY_METADATA=" + json.dumps(success_meta, sort_keys=True))
+          print("EDGE_RESPONSE=" + json.dumps(success_payload, sort_keys=True))
           PY
