@@ -9,6 +9,8 @@ Input Governance extension:
 - admits only the exact PR #179 audit/parity artifacts required for reproducible
   review;
 - keeps audits/, docs/ and scripts/ broad prefixes default-denied;
+- admits the exact PR #194 Input Governance runtime bundle only on its governed
+  feature branch or an exact verified merge to main;
 - proves sibling/lookalike paths remain rejected before delegating to base.main.
 """
 from __future__ import annotations
@@ -59,6 +61,18 @@ P0_CANONICAL_HUMAN_REVIEW_BLOBS = {
 }
 P0_CANONICAL_HUMAN_REVIEW_EXTENSION_PATHS = frozenset(P0_CANONICAL_HUMAN_REVIEW_BLOBS)
 
+INPUT_GOVERNANCE_RUNTIME_PR_NUMBER = 194
+INPUT_GOVERNANCE_RUNTIME_BRANCH = "lf/input-governance-execution-dispatcher-v1-20260824"
+INPUT_GOVERNANCE_RUNTIME_BLOBS = {
+    "supabase/functions/input-governance-agent-v1/index.ts": "2140c07b67a36cb93c89d056f8180f4736de2eca",
+    "supabase/functions/input-governance-agent-v1/deno.json": "3330a0cb91e661bb049dba3b26f1d1d1b6c1139c",
+    "supabase/functions/input-governance-curator-v1/index.ts": "6e5ccf8f817d575183bc619b312016b7e653aeab",
+    "supabase/functions/input-governance-curator-v1/deno.json": "3330a0cb91e661bb049dba3b26f1d1d1b6c1139c",
+    "supabase/functions/input-governance-validator-v1/index.ts": "9dbd37eb8f5c400074fddef7472a6fb2eca620d6",
+    "supabase/functions/input-governance-validator-v1/deno.json": "3330a0cb91e661bb049dba3b26f1d1d1b6c1139c",
+}
+INPUT_GOVERNANCE_RUNTIME_EXTENSION_PATHS = frozenset(INPUT_GOVERNANCE_RUNTIME_BLOBS)
+
 INPUT_GOVERNANCE_ALLOWED_EXACT = frozenset({
     "audits/input-governance/HANDOFF_REAUDIT_INPUT_GOVERNANCE_V511_AUD039_2026-08-19.md",
     "audits/input-governance/HANDOFF_REAUDIT_INPUT_GOVERNANCE_V511_LIVE_RECONCILIATION_2026-08-20.md",
@@ -82,6 +96,7 @@ _pinned = dict(core.EXPECTED_RUNTIME_BLOBS)
 _pinned[RUNTIME_PLATFORM_CONFIG_PATH] = "e7f46a6874d254dcb474871f988d687678e218a0"
 _pinned.update(P0_EXACT_HEAD_BROKER_BLOBS)
 _pinned.update(P0_CANONICAL_HUMAN_REVIEW_BLOBS)
+_pinned.update(INPUT_GOVERNANCE_RUNTIME_BLOBS)
 core.EXPECTED_RUNTIME_BLOBS = _pinned
 core.EXPECTED_EDGE_PATHS = frozenset(path for path in _pinned if path.startswith("supabase/functions/"))
 core.CONTROLLED_RUNTIME_PATHS = frozenset(_pinned)
@@ -135,6 +150,43 @@ def _verify_p0_main_merge_via_github() -> bool:
     )
 
 
+def _verify_input_governance_main_merge_via_github() -> bool:
+    if os.environ.get("GITHUB_EVENT_NAME") != "push":
+        return False
+    if os.environ.get("GITHUB_REPOSITORY") != TARGET_REPOSITORY:
+        return False
+    if os.environ.get("GITHUB_REF") != "refs/heads/main":
+        return False
+    head_sha = os.environ.get("GITHUB_SHA", "")
+    if BLOB_RE.fullmatch(head_sha) is None:
+        return False
+    token = os.environ.get("GITHUB_TOKEN", "").strip()
+    if not token:
+        return False
+    request = urllib.request.Request(
+        f"https://api.github.com/repos/{TARGET_REPOSITORY}/pulls/{INPUT_GOVERNANCE_RUNTIME_PR_NUMBER}",
+        headers={
+            "Accept": "application/vnd.github+json",
+            "Authorization": f"Bearer {token}",
+            "X-GitHub-Api-Version": "2022-11-28",
+            "User-Agent": "input-governance-runtime-extension-v1",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=15) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except (urllib.error.URLError, TimeoutError, UnicodeDecodeError, json.JSONDecodeError):
+        return False
+    if not isinstance(payload, dict):
+        return False
+    return (
+        payload.get("merged") is True
+        and (payload.get("base") or {}).get("ref") == MAIN_BRANCH
+        and (payload.get("head") or {}).get("ref") == INPUT_GOVERNANCE_RUNTIME_BRANCH
+        and payload.get("merge_commit_sha") == head_sha
+    )
+
+
 def _evaluate_governed_p0_extension(
     changed_files,
     *,
@@ -164,6 +216,35 @@ def _evaluate_governed_p0_extension(
     )
 
 
+def _evaluate_input_governance_runtime_extension(
+    changed_files,
+    *,
+    branch: str,
+    blob_by_path,
+    mode_by_path=None,
+    main_merge_verified: bool = False,
+):
+    if branch == MAIN_BRANCH:
+        verified = main_merge_verified or _verify_input_governance_main_merge_via_github()
+        if not verified:
+            raise RuntimeScopeError(
+                "FAIL_RUNTIME_MAIN_NOT_MERGED",
+                "Input Governance runtime main transition requires merged PR #194 at the exact workflow SHA",
+            )
+    elif branch != INPUT_GOVERNANCE_RUNTIME_BRANCH:
+        raise RuntimeScopeError(
+            "FAIL_RUNTIME_BRANCH_MISMATCH",
+            f"Input Governance runtime requires {INPUT_GOVERNANCE_RUNTIME_BRANCH!r} or verified main; got {branch!r}",
+        )
+    return _original_evaluate_controlled_runtime_scope(
+        changed_files,
+        branch=PR_BRANCH,
+        blob_by_path=blob_by_path,
+        mode_by_path=mode_by_path,
+        main_merge_verified=False,
+    )
+
+
 def evaluate_controlled_runtime_scope(
     changed_files,
     *,
@@ -181,8 +262,18 @@ def evaluate_controlled_runtime_scope(
     exact_head_only = bool(controlled & broker_specific) and controlled.issubset(P0_EXACT_HEAD_EXTENSION_PATHS)
     review_specific = set(P0_CANONICAL_HUMAN_REVIEW_BLOBS)
     human_review_only = bool(controlled & review_specific) and controlled.issubset(P0_CANONICAL_HUMAN_REVIEW_EXTENSION_PATHS)
+    input_runtime_specific = set(INPUT_GOVERNANCE_RUNTIME_BLOBS)
+    input_runtime_only = bool(controlled & input_runtime_specific) and controlled.issubset(INPUT_GOVERNANCE_RUNTIME_EXTENSION_PATHS)
     if exact_head_only or human_review_only:
         return _evaluate_governed_p0_extension(
+            changed_files,
+            branch=branch,
+            blob_by_path=blob_by_path,
+            mode_by_path=mode_by_path,
+            main_merge_verified=main_merge_verified,
+        )
+    if input_runtime_only:
+        return _evaluate_input_governance_runtime_extension(
             changed_files,
             branch=branch,
             blob_by_path=blob_by_path,
@@ -301,6 +392,52 @@ def _canonical_human_review_runtime_self_test() -> None:
     print("PASS_P0_CANONICAL_HUMAN_REVIEW_RUNTIME_EXTENSION_V1=4/4")
 
 
+def _input_governance_runtime_self_test() -> None:
+    exact = dict(EXPECTED_RUNTIME_BLOBS)
+    modes = {path: "100644" for path in exact}
+    paths = list(INPUT_GOVERNANCE_RUNTIME_BLOBS)
+    if evaluate_controlled_runtime_scope(
+        paths,
+        branch=INPUT_GOVERNANCE_RUNTIME_BRANCH,
+        blob_by_path=exact,
+        mode_by_path=modes,
+    ) is not True:
+        raise SystemExit("FAIL_INPUT_GOVERNANCE_RUNTIME_EXTENSION_POSITIVE")
+    if evaluate_controlled_runtime_scope(
+        paths,
+        branch=MAIN_BRANCH,
+        blob_by_path=exact,
+        mode_by_path=modes,
+        main_merge_verified=True,
+    ) is not True:
+        raise SystemExit("FAIL_INPUT_GOVERNANCE_RUNTIME_EXTENSION_MAIN_POSITIVE")
+    try:
+        evaluate_controlled_runtime_scope(
+            paths,
+            branch="feature/arbitrary",
+            blob_by_path=exact,
+            mode_by_path=modes,
+        )
+    except RuntimeScopeError as exc:
+        if exc.code != "FAIL_RUNTIME_BRANCH_MISMATCH":
+            raise
+    else:
+        raise SystemExit("FAIL_INPUT_GOVERNANCE_RUNTIME_ARBITRARY_BRANCH_ALLOWED")
+    try:
+        evaluate_controlled_runtime_scope(
+            [*paths, "supabase/functions/input-governance-lookalike-v1/index.ts"],
+            branch=INPUT_GOVERNANCE_RUNTIME_BRANCH,
+            blob_by_path=exact,
+            mode_by_path=modes,
+        )
+    except RuntimeScopeError as exc:
+        if exc.code not in {"FAIL_RUNTIME_EDGE_SCOPE", "FAIL_RUNTIME_BRANCH_MISMATCH"}:
+            raise
+    else:
+        raise SystemExit("FAIL_INPUT_GOVERNANCE_RUNTIME_ARBITRARY_EDGE_ALLOWED")
+    print("PASS_INPUT_GOVERNANCE_RUNTIME_EXTENSION_V1=4/4")
+
+
 def _install_input_governance_scope_extension() -> None:
     base = core.e16.base
     broad_forbidden = {"audits/", "docs/", "scripts/"}
@@ -404,6 +541,7 @@ def _run_exact_head_real_source_if_required() -> None:
 def main() -> None:
     _runtime_extension_self_test()
     _canonical_human_review_runtime_self_test()
+    _input_governance_runtime_self_test()
     _run_human_review_convergence_contract()
     _run_dual_ocr_reconciliation_contract()
     _run_icon_structural_role_contract()
