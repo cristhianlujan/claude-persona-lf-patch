@@ -1,9 +1,7 @@
 name: input-governance-rec001-runtime
 
 on:
-  push:
-    branches:
-      - "lf/input-gov-rec001-runtime-*"
+  workflow_dispatch:
 
 permissions:
   contents: read
