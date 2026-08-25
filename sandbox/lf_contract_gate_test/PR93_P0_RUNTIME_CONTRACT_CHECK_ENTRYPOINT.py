@@ -64,7 +64,7 @@ P0_CANONICAL_HUMAN_REVIEW_EXTENSION_PATHS = frozenset(P0_CANONICAL_HUMAN_REVIEW_
 INPUT_GOVERNANCE_RUNTIME_PR_NUMBER = 194
 INPUT_GOVERNANCE_RUNTIME_BRANCH = "lf/input-governance-execution-dispatcher-v1-20260824"
 INPUT_GOVERNANCE_RUNTIME_BLOBS = {
-    "supabase/functions/input-governance-agent-v1/index.ts": "2a7c34eba458f32bcb3ff684bdaa329c431402eb",
+    "supabase/functions/input-governance-agent-v1/index.ts": "2140c07b67a36cb93c89d056f8180f4736de2eca",
     "supabase/functions/input-governance-agent-v1/deno.json": "3330a0cb91e661bb049dba3b26f1d1d1b6c1139c",
     "supabase/functions/input-governance-curator-v1/index.ts": "6e5ccf8f817d575183bc619b312016b7e653aeab",
     "supabase/functions/input-governance-curator-v1/deno.json": "3330a0cb91e661bb049dba3b26f1d1d1b6c1139c",
@@ -167,7 +167,7 @@ def _verify_input_governance_main_merge_via_github() -> bool:
         f"https://api.github.com/repos/{TARGET_REPOSITORY}/pulls/{INPUT_GOVERNANCE_RUNTIME_PR_NUMBER}",
         headers={
             "Accept": "application/vnd.github+json",
-            "Authorization": f"Bearer {token}",
+            "Authorization": f"Bearer ${token}",
             "X-GitHub-Api-Version": "2022-11-28",
             "User-Agent": "input-governance-runtime-extension-v1",
         },
