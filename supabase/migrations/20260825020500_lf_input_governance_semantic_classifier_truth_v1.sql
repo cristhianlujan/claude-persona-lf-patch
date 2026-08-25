@@ -155,7 +155,7 @@ begin
 
   elsif p_family_code='LOADING_EMPTY_ERROR_STATES' then
     v_probe:=programacion.fn_input_bootstrap_rule_probe_v1(
-      v_rules,array['error_states','estados_ui'],
+      v_rules,null,
       '(UI_STATES|ERROR_STATE|LOADING|EMPTY_STATE|supported_errors|error_slots_reserved)'
     );
     v_aux:=jsonb_array_length(coalesce(v_graph->'canonical_contract'->'errors','[]'::jsonb));
