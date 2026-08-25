@@ -16,7 +16,7 @@ jobs:
       SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
     steps:
-      - name: Invoke governed Input Governance runtime for REC_001
+      - name: Invoke governed Validator runtime for REC_001 run 205
         shell: bash
         run: |
           set -euo pipefail
@@ -36,68 +36,53 @@ jobs:
               headers={
                   "Authorization": f"Bearer {access_token}",
                   "Accept": "application/json",
-                  "User-Agent": "lf-input-governance-rec001-runtime",
+                  "User-Agent": "lf-input-governance-rec001-validator",
               },
           )
-          try:
-              with urllib.request.urlopen(keys_req, timeout=30) as response:
-                  keys = json.loads(response.read().decode("utf-8"))
-          except Exception as exc:
-              raise SystemExit(f"FAIL_SUPABASE_API_KEY_READBACK:{type(exc).__name__}") from exc
+          with urllib.request.urlopen(keys_req, timeout=30) as response:
+              keys = json.loads(response.read().decode("utf-8"))
 
           records = keys if isinstance(keys, list) else keys.get("keys", []) if isinstance(keys, dict) else []
-          candidates = []
-          metadata = []
+          secret_key = None
+          safe_meta = []
           for idx, item in enumerate(records):
               if not isinstance(item, dict):
                   continue
-              value = item.get("api_key") or item.get("key") or item.get("value")
-              name = str(item.get("name", ""))
               key_type = str(item.get("type", ""))
-              metadata.append({"index": idx, "name": name, "type": key_type, "has_value": bool(value)})
-              if isinstance(value, str) and value:
-                  candidates.append((idx, name, key_type, value))
+              name = str(item.get("name", ""))
+              value = item.get("api_key") or item.get("key") or item.get("value")
+              safe_meta.append({"index": idx, "name": name, "type": key_type, "has_value": bool(value)})
+              if key_type == "secret" and isinstance(value, str) and value:
+                  secret_key = value
+          print("AVAILABLE_KEY_METADATA=" + json.dumps(safe_meta, sort_keys=True))
+          if not secret_key:
+              raise SystemExit("FAIL_SECRET_KEY_NOT_RESOLVED")
 
-          print("AVAILABLE_KEY_METADATA=" + json.dumps(metadata, sort_keys=True))
-          if not candidates:
-              raise SystemExit("FAIL_NO_PROJECT_API_KEY_CANDIDATES")
+          body = json.dumps({"run_id": 205}).encode("utf-8")
+          req = urllib.request.Request(
+              f"https://{project}.supabase.co/functions/v1/input-governance-validator-v1",
+              data=body,
+              method="POST",
+              headers={
+                  "Authorization": "Bearer " + secret_key,
+                  "Content-Type": "application/json",
+                  "User-Agent": "lf-input-governance-rec001-validator",
+              },
+          )
+          try:
+              with urllib.request.urlopen(req, timeout=120) as response:
+                  raw = response.read().decode("utf-8")
+                  status = response.status
+          except urllib.error.HTTPError as exc:
+              raw = exc.read().decode("utf-8", errors="replace")
+              status = exc.code
 
-          body = json.dumps({"pantalla_id": 58, "consumer": "STORY_CREATOR"}).encode("utf-8")
-          attempts = []
-          success_payload = None
-          success_meta = None
-          for idx, name, key_type, candidate in candidates:
-              req = urllib.request.Request(
-                  f"https://{project}.supabase.co/functions/v1/input-governance-agent-v1",
-                  data=body,
-                  method="POST",
-                  headers={
-                      "Authorization": "Bearer " + candidate,
-                      "Content-Type": "application/json",
-                      "User-Agent": "lf-input-governance-rec001-runtime",
-                  },
-              )
-              try:
-                  with urllib.request.urlopen(req, timeout=120) as response:
-                      raw = response.read().decode("utf-8")
-                      status = response.status
-              except urllib.error.HTTPError as exc:
-                  raw = exc.read().decode("utf-8", errors="replace")
-                  status = exc.code
-              try:
-                  payload = json.loads(raw) if raw else None
-              except Exception:
-                  payload = {"non_json_response": True}
-              safe_error = payload.get("error") if isinstance(payload, dict) else None
-              attempts.append({"index": idx, "name": name, "type": key_type, "status": status, "error": safe_error})
-              if 200 <= status < 300:
-                  success_payload = payload
-                  success_meta = {"index": idx, "name": name, "type": key_type, "status": status}
-                  break
-
-          print("KEY_ATTEMPTS=" + json.dumps(attempts, sort_keys=True))
-          if success_payload is None:
-              raise SystemExit("FAIL_NO_PROJECT_API_KEY_ACCEPTED_BY_RUNTIME")
-          print("ACCEPTED_KEY_METADATA=" + json.dumps(success_meta, sort_keys=True))
-          print("EDGE_RESPONSE=" + json.dumps(success_payload, sort_keys=True))
+          try:
+              payload = json.loads(raw) if raw else None
+          except Exception:
+              payload = {"non_json_response": True, "status": status}
+          print("VALIDATOR_HTTP_STATUS=" + str(status))
+          print("VALIDATOR_RESPONSE=" + json.dumps(payload, sort_keys=True))
+          if status < 200 or status >= 300:
+              raise SystemExit("FAIL_VALIDATOR_RUNTIME")
           PY
