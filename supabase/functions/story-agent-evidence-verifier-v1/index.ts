@@ -155,6 +155,7 @@ function argsForV10(
   verifierIdentity: string,
   runId: string,
   workflowSha: string,
+  channelToken: string,
   overrides: Record<string, unknown> = {},
 ): Record<string, unknown> {
   const payload = {
@@ -179,6 +180,7 @@ function argsForV10(
     github_workflow_ref: WORKFLOW_REF,
     github_run_id: runId,
     github_workflow_sha: workflowSha,
+    channel_token: channelToken,
   };
   const base: Record<string, unknown> = {
     p_execution_id: pending.execution_id,
@@ -241,6 +243,7 @@ async function verifyWorkerV10(
   verifierIdentity: string,
   runId: string,
   workflowSha: string,
+  channelToken: string,
 ): Promise<Record<string, unknown>[]> {
   const pending = await rpc<PendingV10[]>("fn_agent_task_pending_worker_v10_evidence_v1", { p_task_id: taskId });
   if (!Array.isArray(pending) || pending.length < 1) throw new Error("PENDING_V10_EVIDENCE_CONTRACT_INVALID");
@@ -260,7 +263,7 @@ async function verifyWorkerV10(
   }
 
   const first = pending[0];
-  const firstValid = argsForV10(first, verifierIdentity, runId, workflowSha);
+  const firstValid = argsForV10(first, verifierIdentity, runId, workflowSha, channelToken);
   await rpcMustFail("fn_agent_task_external_verify_worker_v10_evidence_v1", {
     ...firstValid,
     p_expected_head_sha: flip(first.head_sha),
@@ -293,7 +296,7 @@ async function verifyWorkerV10(
   for (const item of pending) {
     const verified = await rpc<Record<string, unknown>>(
       "fn_agent_task_external_verify_worker_v10_evidence_v1",
-      argsForV10(item, verifierIdentity, runId, workflowSha),
+      argsForV10(item, verifierIdentity, runId, workflowSha, channelToken),
     );
     if (verified?.status !== "VERIFIED") throw new Error("V10_VERIFICATION_RESULT_NOT_VERIFIED");
     results.push(verified);
@@ -339,7 +342,11 @@ Deno.serve(async (req: Request) => {
     }
 
     if (body.action === "verify_pending_agent_task_worker_v10_v1") {
-      const results = await verifyWorkerV10(taskId, verifierIdentity, runId, workflowSha);
+      const channelToken = typeof body.channel_token === "string" ? body.channel_token : "";
+      if (channelToken.length < 32) {
+        return response({ outcome: "BLOCKED", code: "CHANNEL_TOKEN_REQUIRED" }, 400);
+      }
+      const results = await verifyWorkerV10(taskId, verifierIdentity, runId, workflowSha, channelToken);
       return response({
         outcome: "VERIFIED",
         task_id: taskId,
