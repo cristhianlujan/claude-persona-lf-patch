@@ -167,7 +167,7 @@ def _verify_input_governance_main_merge_via_github() -> bool:
         f"https://api.github.com/repos/{TARGET_REPOSITORY}/pulls/{INPUT_GOVERNANCE_RUNTIME_PR_NUMBER}",
         headers={
             "Accept": "application/vnd.github+json",
-            "Authorization": f"Bearer ${token}",
+            "Authorization": f"Bearer {token}",
             "X-GitHub-Api-Version": "2022-11-28",
             "User-Agent": "input-governance-runtime-extension-v1",
         },
