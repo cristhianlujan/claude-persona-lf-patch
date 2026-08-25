@@ -13,12 +13,14 @@ on:
       - "supabase/migrations/*programacion_agent_task_external_v10_token_boundary_v1.sql"
       - "supabase/migrations/*programacion_agent_task_external_v10_no_manual_secret_v1.sql"
       - "supabase/migrations/*programacion_agent_task_external_v10_compat_sentinel_sanitize_v1.sql"
+      - "supabase/migrations/*programacion_agent_task_machine_gate_evidence_consumer_v1.sql"
 
 permissions:
   contents: read
   id-token: write
 
 env:
+  LEGACY_AGENT_TASK_ID: "21"
   AGENT_TASK_ID: "27"
 
 jobs:
@@ -34,6 +36,40 @@ jobs:
             const token = await core.getIDToken('story-agent-evidence-verifier-v1');
             core.setSecret(token);
             core.setOutput('token', token)
+
+      - name: Materialize verified Task21 machine gates
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail-with-body \
+            -H "Authorization: Bearer ${OIDC_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"action\":\"verify_pending_agent_task_v1\",\"task_id\":${LEGACY_AGENT_TASK_ID}}" \
+            "https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/story-agent-evidence-verifier-v1" \
+            -o legacy-machine-response.json
+          python3 - <<'PY'
+          import json
+          data=json.load(open('legacy-machine-response.json',encoding='utf-8'))
+          if data.get('outcome')!='VERIFIED':
+              raise SystemExit('FAIL_LEGACY_MACHINE_VERIFIER: '+json.dumps(data,sort_keys=True))
+          probes=data.get('negative_probes') or {}
+          required={'wrong_head','wrong_evidence_sha','wrong_source_system','wrong_source_ref','self_verification'}
+          if set(k for k,v in probes.items() if v=='PASS') != required:
+              raise SystemExit('FAIL_LEGACY_MACHINE_NEGATIVE_PROBES: '+json.dumps(probes,sort_keys=True))
+          machine=data.get('machine_gates') or {}
+          if machine.get('status')!='MATERIALIZED':
+              raise SystemExit('FAIL_LEGACY_MACHINE_MATERIALIZATION: '+json.dumps(machine,sort_keys=True))
+          results=machine.get('results') or []
+          expected={'G_BUILD_TYPECHECK','G_LINT_FORMAT','G_TEST_POSITIVE','G_TEST_NEGATIVE'}
+          observed={row.get('gate_code') for row in results if row.get('status') in {'PASS','ALREADY_PASS'}}
+          if observed != expected:
+              raise SystemExit('FAIL_LEGACY_MACHINE_GATE_SET: '+json.dumps(results,sort_keys=True))
+          print('PASS_LEGACY_MACHINE_MATERIALIZATION')
+          print('execution_id='+str(machine.get('execution_id')))
+          print('materialized_count='+str(machine.get('materialized_count')))
+          print('skipped_count='+str(machine.get('skipped_count')))
+          PY
 
       - name: Verify pending HU-HMO-001 current worker evidence
         env:
