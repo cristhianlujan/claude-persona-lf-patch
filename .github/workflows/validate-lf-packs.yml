@@ -36,7 +36,7 @@ jobs:
         run: python skills/skill_creator/validators/validate_pack.py skills/skill_creator
 
       - name: Validate profile creator pack
-        run: python profiles/profile_creator/validators/validate_pack.py profiles/profile_creator
+        run: python skills/profile_creator/validators/validate_pack.py skills/profile_creator
 
       - name: Validate learning engine pack
         run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
