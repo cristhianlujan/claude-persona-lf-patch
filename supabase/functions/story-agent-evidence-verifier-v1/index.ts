@@ -8,6 +8,7 @@ const WORKFLOW_REF = `${REPOSITORY}/.github/workflows/story-agent-evidence-verif
 const AUDIENCE = "story-agent-evidence-verifier-v1";
 const ISSUER = "https://token.actions.githubusercontent.com";
 const METHOD = "GITHUB_ACTIONS_OIDC_EXACT_EVIDENCE_V1";
+const METHOD_V10 = "GITHUB_ACTIONS_OIDC_WORKER_V10_EVIDENCE_V1";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")?.trim() ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.trim() ?? "";
 if (!SUPABASE_URL || !SERVICE_ROLE_KEY) throw new Error("SUPABASE_RUNTIME_CREDENTIALS_MISSING");
@@ -76,6 +77,8 @@ async function rpcMustFail(name: string, args: Record<string, unknown>, expected
   throw new Error(`NEGATIVE_PROBE_ACCEPTED:${expected}`);
 }
 
+const flip = (value: string) => `${value[0] === "0" ? "1" : "0"}${value.slice(1)}`;
+
 type Pending = {
   execution_id: number;
   request_ref: string;
@@ -87,6 +90,24 @@ type Pending = {
   evidence_sha256: string;
   source_system: string;
   source_ref: string;
+  worker_receipt_status: string;
+};
+
+type PendingV10 = {
+  execution_id: number;
+  request_ref: string;
+  agent_task_id: number;
+  task_code: string;
+  task_version: number;
+  task_sha256: string;
+  head_sha: string;
+  evaluation_id: number;
+  gate_code: string;
+  evidence_id: number;
+  evidence_sha256: string;
+  source_system: string;
+  source_ref: string;
+  candidate_head_sha: string;
   worker_receipt_status: string;
 };
 
@@ -129,70 +150,213 @@ function argsFor(
   return { ...base, ...overrides };
 }
 
+function argsForV10(
+  pending: PendingV10,
+  verifierIdentity: string,
+  runId: string,
+  workflowSha: string,
+  overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
+  const payload = {
+    schema_version: 1,
+    execution_id: String(pending.execution_id),
+    agent_task_id: String(pending.agent_task_id),
+    task_code: pending.task_code,
+    task_version: String(pending.task_version),
+    task_sha256: pending.task_sha256,
+    evaluation_id: String(pending.evaluation_id),
+    gate_code: pending.gate_code,
+    evidence_id: String(pending.evidence_id),
+    head_sha: pending.head_sha,
+    candidate_head_sha: pending.candidate_head_sha,
+    evidence_sha256: pending.evidence_sha256,
+    source_system: pending.source_system,
+    source_ref: pending.source_ref,
+    worker_receipt_status: pending.worker_receipt_status,
+    verification_status: "VERIFIED",
+    verifier_identity: verifierIdentity,
+    github_repository: REPOSITORY,
+    github_workflow_ref: WORKFLOW_REF,
+    github_run_id: runId,
+    github_workflow_sha: workflowSha,
+  };
+  const base: Record<string, unknown> = {
+    p_execution_id: pending.execution_id,
+    p_evidence_id: pending.evidence_id,
+    p_expected_head_sha: pending.head_sha,
+    p_expected_evidence_sha256: pending.evidence_sha256,
+    p_expected_source_system: pending.source_system,
+    p_expected_source_ref: pending.source_ref,
+    p_verification_method: METHOD_V10,
+    p_verifier_identity: verifierIdentity,
+    p_verification_payload: payload,
+    p_verification_ref: `github-actions://run/${runId}/worker-v10/evidence/${pending.evidence_id}`,
+  };
+  return { ...base, ...overrides };
+}
+
+async function verifyStandard(
+  taskId: number,
+  verifierIdentity: string,
+  runId: string,
+  workflowSha: string,
+): Promise<Record<string, unknown>> {
+  const pending = await rpc<Pending>("fn_agent_task_pending_worker_evidence_v1", { p_task_id: taskId });
+  if (!pending || pending.request_ref !== `agent-task://${taskId}` || pending.worker_receipt_status !== "PASS") {
+    throw new Error("PENDING_EVIDENCE_CONTRACT_INVALID");
+  }
+  if (!/^[0-9a-f]{40}$/.test(pending.head_sha) || !/^[0-9a-f]{64}$/.test(pending.evidence_sha256)) {
+    throw new Error("PENDING_EVIDENCE_IDENTITY_INVALID");
+  }
+
+  const valid = argsFor(pending, verifierIdentity, runId, workflowSha);
+  await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1", {
+    ...valid,
+    p_expected_head_sha: flip(pending.head_sha),
+  }, "EXTERNAL_VERIFY_HEAD_MISMATCH");
+  await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1", {
+    ...valid,
+    p_expected_evidence_sha256: flip(pending.evidence_sha256),
+  }, "EXTERNAL_VERIFY_EVIDENCE_SHA_MISMATCH");
+  await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1", {
+    ...valid,
+    p_expected_source_system: "PROGRAMMING_AGENT_WORKER_MUTATED",
+  }, "EXTERNAL_VERIFY_SOURCE_SYSTEM_MISMATCH");
+  await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1", {
+    ...valid,
+    p_expected_source_ref: `${pending.source_ref}-mutated`,
+  }, "EXTERNAL_VERIFY_SOURCE_REF_MISMATCH");
+  await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1", {
+    ...valid,
+    p_verifier_identity: pending.source_system,
+  }, "EXTERNAL_VERIFIER_IDENTITY_INVALID");
+
+  const verified = await rpc<Record<string, unknown>>("fn_agent_task_external_verify_worker_evidence_v1", valid);
+  if (verified?.status !== "VERIFIED") throw new Error("VERIFICATION_RESULT_NOT_VERIFIED");
+  return verified;
+}
+
+async function verifyWorkerV10(
+  taskId: number,
+  verifierIdentity: string,
+  runId: string,
+  workflowSha: string,
+): Promise<Record<string, unknown>[]> {
+  const pending = await rpc<PendingV10[]>("fn_agent_task_pending_worker_v10_evidence_v1", { p_task_id: taskId });
+  if (!Array.isArray(pending) || pending.length < 1) throw new Error("PENDING_V10_EVIDENCE_CONTRACT_INVALID");
+
+  for (const item of pending) {
+    if (
+      item.request_ref !== `agent-task://${taskId}` ||
+      Number(item.agent_task_id) !== taskId ||
+      item.source_system !== "STORY_AGENT_WORKER_V10_RUNNER" ||
+      !/^[0-9a-f]{40}$/.test(item.head_sha) ||
+      !/^[0-9a-f]{40}$/.test(item.candidate_head_sha) ||
+      !/^[0-9a-f]{64}$/.test(item.task_sha256) ||
+      !/^[0-9a-f]{64}$/.test(item.evidence_sha256)
+    ) {
+      throw new Error("PENDING_V10_EVIDENCE_IDENTITY_INVALID");
+    }
+  }
+
+  const first = pending[0];
+  const firstValid = argsForV10(first, verifierIdentity, runId, workflowSha);
+  await rpcMustFail("fn_agent_task_external_verify_worker_v10_evidence_v1", {
+    ...firstValid,
+    p_expected_head_sha: flip(first.head_sha),
+  }, "EXTERNAL_V10_VERIFY_HEAD_MISMATCH");
+  await rpcMustFail("fn_agent_task_external_verify_worker_v10_evidence_v1", {
+    ...firstValid,
+    p_expected_evidence_sha256: flip(first.evidence_sha256),
+  }, "EXTERNAL_V10_VERIFY_EVIDENCE_SHA_MISMATCH");
+  await rpcMustFail("fn_agent_task_external_verify_worker_v10_evidence_v1", {
+    ...firstValid,
+    p_expected_source_system: "STORY_AGENT_WORKER_V10_MUTATED",
+  }, "EXTERNAL_V10_VERIFY_SOURCE_SYSTEM_MISMATCH");
+  await rpcMustFail("fn_agent_task_external_verify_worker_v10_evidence_v1", {
+    ...firstValid,
+    p_expected_source_ref: `${first.source_ref}-mutated`,
+  }, "EXTERNAL_V10_VERIFY_SOURCE_REF_MISMATCH");
+  await rpcMustFail("fn_agent_task_external_verify_worker_v10_evidence_v1", {
+    ...firstValid,
+    p_verifier_identity: first.source_system,
+  }, "EXTERNAL_V10_VERIFIER_IDENTITY_INVALID");
+  await rpcMustFail("fn_agent_task_external_verify_worker_v10_evidence_v1", {
+    ...firstValid,
+    p_verification_payload: {
+      ...(firstValid.p_verification_payload as Record<string, unknown>),
+      task_sha256: flip(first.task_sha256),
+    },
+  }, "EXTERNAL_V10_VERIFY_PAYLOAD_IDENTITY_MISMATCH");
+
+  const results: Record<string, unknown>[] = [];
+  for (const item of pending) {
+    const verified = await rpc<Record<string, unknown>>(
+      "fn_agent_task_external_verify_worker_v10_evidence_v1",
+      argsForV10(item, verifierIdentity, runId, workflowSha),
+    );
+    if (verified?.status !== "VERIFIED") throw new Error("V10_VERIFICATION_RESULT_NOT_VERIFIED");
+    results.push(verified);
+  }
+  return results;
+}
+
 Deno.serve(async (req: Request) => {
   try {
     if (req.method !== "POST") return response({ outcome: "BLOCKED", code: "METHOD_NOT_ALLOWED" }, 405);
     const claims = await oidc(req);
     let body: Record<string, unknown>;
-    try { body = await req.json(); } catch { return response({ outcome: "BLOCKED", code: "INVALID_JSON" }, 400); }
-    if (body.action !== "verify_pending_agent_task_v1") {
-      return response({ outcome: "BLOCKED", code: "ACTION_NOT_ALLOWED" }, 400);
+    try {
+      body = await req.json();
+    } catch {
+      return response({ outcome: "BLOCKED", code: "INVALID_JSON" }, 400);
     }
+
     const taskId = Number(body.task_id);
     if (!Number.isSafeInteger(taskId) || taskId < 1) {
       return response({ outcome: "BLOCKED", code: "TASK_ID_INVALID" }, 400);
     }
 
-    const pending = await rpc<Pending>("fn_agent_task_pending_worker_evidence_v1", { p_task_id: taskId });
-    if (!pending || pending.request_ref !== `agent-task://${taskId}` || pending.worker_receipt_status !== "PASS") {
-      throw new Error("PENDING_EVIDENCE_CONTRACT_INVALID");
-    }
-    if (!/^[0-9a-f]{40}$/.test(pending.head_sha) || !/^[0-9a-f]{64}$/.test(pending.evidence_sha256)) {
-      throw new Error("PENDING_EVIDENCE_IDENTITY_INVALID");
-    }
-
     const runId = String(claims.run_id);
     const workflowSha = String(claims.workflow_sha);
     const verifierIdentity = `github-actions://${WORKFLOW_REF}#run-${runId}`;
-    const valid = argsFor(pending, verifierIdentity, runId, workflowSha);
-    const flip = (value: string) => `${value[0] === "0" ? "1" : "0"}${value.slice(1)}`;
 
-    await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1", {
-      ...valid,
-      p_expected_head_sha: flip(pending.head_sha),
-    }, "EXTERNAL_VERIFY_HEAD_MISMATCH");
-    await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1", {
-      ...valid,
-      p_expected_evidence_sha256: flip(pending.evidence_sha256),
-    }, "EXTERNAL_VERIFY_EVIDENCE_SHA_MISMATCH");
-    await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1", {
-      ...valid,
-      p_expected_source_system: "PROGRAMMING_AGENT_WORKER_MUTATED",
-    }, "EXTERNAL_VERIFY_SOURCE_SYSTEM_MISMATCH");
-    await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1", {
-      ...valid,
-      p_expected_source_ref: `${pending.source_ref}-mutated`,
-    }, "EXTERNAL_VERIFY_SOURCE_REF_MISMATCH");
-    await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1", {
-      ...valid,
-      p_verifier_identity: pending.source_system,
-    }, "EXTERNAL_VERIFIER_IDENTITY_INVALID");
+    if (body.action === "verify_pending_agent_task_v1") {
+      const verified = await verifyStandard(taskId, verifierIdentity, runId, workflowSha);
+      return response({
+        outcome: "VERIFIED",
+        task_id: taskId,
+        external_identity: verifierIdentity,
+        negative_probes: {
+          wrong_head: "PASS",
+          wrong_evidence_sha: "PASS",
+          wrong_source_system: "PASS",
+          wrong_source_ref: "PASS",
+          self_verification: "PASS",
+        },
+        result: verified,
+      }, 201);
+    }
 
-    const verified = await rpc<Record<string, unknown>>("fn_agent_task_external_verify_worker_evidence_v1", valid);
-    if (verified?.status !== "VERIFIED") throw new Error("VERIFICATION_RESULT_NOT_VERIFIED");
-    return response({
-      outcome: "VERIFIED",
-      task_id: taskId,
-      external_identity: verifierIdentity,
-      negative_probes: {
-        wrong_head: "PASS",
-        wrong_evidence_sha: "PASS",
-        wrong_source_system: "PASS",
-        wrong_source_ref: "PASS",
-        self_verification: "PASS",
-      },
-      result: verified,
-    }, 201);
+    if (body.action === "verify_pending_agent_task_worker_v10_v1") {
+      const results = await verifyWorkerV10(taskId, verifierIdentity, runId, workflowSha);
+      return response({
+        outcome: "VERIFIED",
+        task_id: taskId,
+        external_identity: verifierIdentity,
+        negative_probes: {
+          wrong_head: "PASS",
+          wrong_evidence_sha: "PASS",
+          wrong_source_system: "PASS",
+          wrong_source_ref: "PASS",
+          self_verification: "PASS",
+          wrong_task_sha: "PASS",
+        },
+        results,
+      }, 201);
+    }
+
+    return response({ outcome: "BLOCKED", code: "ACTION_NOT_ALLOWED" }, 400);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(message.replace(/Bearer\s+\S+/g, "Bearer [REDACTED]"));
