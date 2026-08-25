@@ -278,7 +278,7 @@ begin
         'earliest_blocking_stage','IMPLEMENTATION'
       )),true);
       v:=jsonb_set(v,'{rationale}',to_jsonb(
-        'INPUT_READINESS_CONTRACT 5.12: behavioral contract is sufficient for Story acceptance criteria; resolvable operation/schema authority remains required for Implementation.'
+        'INPUT_READINESS_CONTRACT 5.12: behavioral contract is sufficient for Story acceptance criteria; resolvable operation/schema authority remains required for Implementation.'::text
       ),true);
     end if;
   end if;
@@ -342,7 +342,7 @@ begin
       v:=jsonb_set(v,'{production_ready_status}','"READY"'::jsonb,true);
       v:=jsonb_set(v,'{blockers}','[]'::jsonb,true);
       v:=jsonb_set(v,'{rationale}',to_jsonb(
-        'Direct VIGENTE Client recovery rule binds an active governed recovery OTP operation and active sensitive OTP field catalog. The OTP is a recovery proof and does not satisfy MFA.'
+        'Direct VIGENTE Client recovery rule binds an active governed recovery OTP operation and active sensitive OTP field catalog. The OTP is a recovery proof and does not satisfy MFA.'::text
       ),true);
     end if;
   end if;
