@@ -1,0 +1,4 @@
+update supabase_migrations.schema_migrations
+set name='programacion_agent_task_worker_v10_pending_evaluator_role_bridge_v1'
+where version='20260825085109'
+  and name='programacion_worker_v10_pending_evaluator_role_bridge_v1';
