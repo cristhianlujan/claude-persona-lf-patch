@@ -39,3 +39,5 @@ jobs:
           cat curator-response.json
           echo
           test "$http_status" = "200"
+
+# Trigger successor recuration after API stage authority migration 20260825143239.
