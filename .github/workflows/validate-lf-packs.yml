@@ -40,3 +40,6 @@ jobs:
 
       - name: Validate learning engine pack
         run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
+
+      - name: Validate independent Quality Pack semantic review receipts
+        run: python profiles/quality_pack/validators/validate_independent_semantic_review.py --matrix profiles/quality_pack/evals/independent_chat_semantic_review_matrix.json
