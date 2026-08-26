@@ -21,7 +21,8 @@
     "4222896d6fce07191bad2ddc823e146e6ec6cb13",
     "96bebdeeca1e343e6671bb62c65d6e1338d00197",
     "d6427bda4f8b456124e40ab973ef1487152061f8",
-    "b7e4a5bac97c06de939522a49086003710887654"
+    "b7e4a5bac97c06de939522a49086003710887654",
+    "101ff70d609bd34b6fc152f578b803d0ca2c319e"
   ],
   "target_paths": [
     "profiles/quality_pack/SKILL.md",
@@ -35,7 +36,9 @@
     "profiles/quality_pack/validators/run_handoff_intake.py"
   ],
   "blocking_codes": [],
-  "issued_at": "2026-08-26T17:10:00Z",
+  "source_parity_main_sha": "4b14a39a834e0077ffccf708d963c6ed5722535d",
+  "source_parity_migration_blob_sha": "101ff70d609bd34b6fc152f578b803d0ca2c319e",
+  "issued_at": "2026-08-26T18:16:00Z",
   "lote": "ACT-0045-QUALITY-PACK-DETERMINISTIC-INTAKE-P0",
-  "notas": "Target eval inicial persistido antes del runner en 59cdbb9b559d4061d91edec0c714ba6e7fb8b879. PR #225 real produjo un target eval antes del fix de evidencia objeto y luego pasó por REFERENCED_MATERIALIZED_ARTIFACT. PR #222 real produjo un target eval antes del fix de artefacto embebido en 01ad6ca6e7c0107f25d971611a45a1914dc73bb8/e03c9d7c4bcef89ef7bdf9c145e0932f91edbc85; el parche mínimo 12b345e861abbba401cbf7739e26d61ee0ebed00 acepta EMBEDDED_CANDIDATE_ARTIFACT con identidad verificable. Self-test actual-vs-expected 4/4 PASS: baseline negativo preservado, sintético positivo, PR #225 real y PR #222 real. Se demuestra sólo intake determinista; semantic_quality_review_status=NOT_EXECUTED y no se declara score, PASS_TO_COMPOSER, PASS_WITH_RESTRICTIONS ni behavioral PASS general. No autoriza runtime, producción, Supabase, Docs, merge ni impacto automático."
+  "notas": "Target eval inicial persistido antes del runner en 59cdbb9b559d4061d91edec0c714ba6e7fb8b879. PR #225 real produjo un target eval antes del fix de evidencia objeto y luego pasó por REFERENCED_MATERIALIZED_ARTIFACT. PR #222 real produjo un target eval antes del fix de artefacto embebido en 01ad6ca6e7c0107f25d971611a45a1914dc73bb8/e03c9d7c4bcef89ef7bdf9c145e0932f91edbc85; el parche mínimo 12b345e861abbba401cbf7739e26d61ee0ebed00 acepta EMBEDDED_CANDIDATE_ARTIFACT con identidad verificable. Self-test actual-vs-expected 4/4 PASS: baseline negativo preservado, sintético positivo, PR #225 real y PR #222 real. La fuente de migración 20260826150414 fue reconciliada en main mediante PR #226 y este receipt deja el checkpoint de esa paridad. Se demuestra sólo intake determinista; semantic_quality_review_status=NOT_EXECUTED y no se declara score, PASS_TO_COMPOSER, PASS_WITH_RESTRICTIONS ni behavioral PASS general. No autoriza runtime, producción, Supabase, Docs, merge ni impacto automático."
 }
