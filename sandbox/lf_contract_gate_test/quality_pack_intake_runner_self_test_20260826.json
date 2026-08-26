@@ -1,0 +1,39 @@
+{
+  "execution_id": "QUALITY-PACK-HANDOFF-INTAKE-2026-08-26",
+  "source_branch": "lf/quality-pack-intake-runner-20260826",
+  "target_eval_commit": "59cdbb9b559d4061d91edec0c714ba6e7fb8b879",
+  "runner_commit": "bd3ee0834d598c3e1c5d26520ce92971f88d434d",
+  "runner_sha": "137fa6f02653ed6ae59d5f1f6e1da8f7b8945087",
+  "matrix_sha": "43e42294a2c452019fa6ffba54ed211c558ed3e4",
+  "execution_scope": "DETERMINISTIC_INTAKE_ONLY",
+  "semantic_quality_review_status": "NOT_EXECUTED",
+  "result": "PASS",
+  "cases": [
+    {
+      "case_id": "created_claim_without_delivered_artifact",
+      "expected": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+      "actual": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+      "blocking_codes": ["CREATED_ARTIFACT_NOT_DELIVERED"],
+      "next_gate": "SELF_REPAIR_THEN_RETRY_INTAKE",
+      "pass": true
+    },
+    {
+      "case_id": "materialized_profile_pack_ready_for_intake",
+      "expected": "QUALITY_INTAKE_READY",
+      "actual": "QUALITY_INTAKE_READY",
+      "blocking_codes": [],
+      "next_gate": "SEMANTIC_QUALITY_REVIEW",
+      "pass": true
+    }
+  ],
+  "failed_cases": [],
+  "demonstrated_capability": "QUALITY_PACK_INTAKE_CAN_START_WITHOUT_RECONSTRUCTING_MATERIALIZED_PRODUCER_ARTIFACT",
+  "not_demonstrated": [
+    "Quality Pack semantic score",
+    "LF safety semantic judgment",
+    "leakage/scope semantic judgment",
+    "PASS_TO_COMPOSER",
+    "PASS_WITH_RESTRICTIONS",
+    "general Quality Pack behavioral pass"
+  ]
+}

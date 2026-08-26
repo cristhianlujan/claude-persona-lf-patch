@@ -1,0 +1,34 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "QUALITY_PACK_HANDOFF_INTAKE_EXECUTABLE_ACT0045",
+  "execution_id": "ACT-0045-QUALITY-PACK-INTAKE-2026-08-26",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "f1f7b93d62cf22b4e93f5ba4787b3fb2bd5d9fec",
+  "judge_sha": "05f1cbae6ce1b54d58bce03dbd1f6a1730e6f71f",
+  "source_sha_list": [
+    "f74451e2f4ef99f14720b862212f0ee194489397",
+    "f1f7b93d62cf22b4e93f5ba4787b3fb2bd5d9fec",
+    "e0dc34295cacc854cba05f686e8ade564686d7d3",
+    "43e42294a2c452019fa6ffba54ed211c558ed3e4",
+    "a55eda6a3018da99afc316d7d1bf996ea20ead3d",
+    "4acf7d981bcded00636f2cf4c8ed82c3efc3a9ea",
+    "137fa6f02653ed6ae59d5f1f6e1da8f7b8945087",
+    "1ebd54b0e0d6b6bcd48af3d9bf33f47f0e28f627"
+  ],
+  "target_paths": [
+    "profiles/quality_pack/SKILL.md",
+    "profiles/quality_pack/contracts/handoff_intake_contract.md",
+    "profiles/quality_pack/schemas/handoff_intake_result.schema.json",
+    "profiles/quality_pack/evals/handoff_intake_matrix.json",
+    "profiles/quality_pack/fixtures/handoff_intake/created_claim_without_delivered_artifact.json",
+    "profiles/quality_pack/fixtures/handoff_intake/materialized_profile_pack_ready.json",
+    "profiles/quality_pack/validators/run_handoff_intake.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-26T17:00:00Z",
+  "lote": "ACT-0045-QUALITY-PACK-DETERMINISTIC-INTAKE-P0",
+  "notas": "El target eval fue persistido antes del runner en commit 59cdbb9b559d4061d91edec0c714ba6e7fb8b879. El self-test ejecutó actual-vs-expected sobre dos fixtures: reproduce CREATED_ARTIFACT_NOT_DELIVERED para el baseline y obtiene QUALITY_INTAKE_READY para un artefacto materializado completo. La evidencia demuestra sólo intake determinista; semantic_quality_review_status permanece NOT_EXECUTED y no se declara PASS_TO_COMPOSER, PASS_WITH_RESTRICTIONS ni behavioral PASS general. No autoriza runtime, producción, Supabase, Docs, merge ni impacto automático."
+}
