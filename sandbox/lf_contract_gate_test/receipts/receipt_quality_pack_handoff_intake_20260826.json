@@ -12,11 +12,14 @@
     "f74451e2f4ef99f14720b862212f0ee194489397",
     "f1f7b93d62cf22b4e93f5ba4787b3fb2bd5d9fec",
     "e0dc34295cacc854cba05f686e8ade564686d7d3",
-    "43e42294a2c452019fa6ffba54ed211c558ed3e4",
+    "f70425c1822d74ccf773aa283ffbf8b7a9e3510a",
     "a55eda6a3018da99afc316d7d1bf996ea20ead3d",
     "4acf7d981bcded00636f2cf4c8ed82c3efc3a9ea",
-    "137fa6f02653ed6ae59d5f1f6e1da8f7b8945087",
-    "1ebd54b0e0d6b6bcd48af3d9bf33f47f0e28f627"
+    "91ba331ad38e7f8cc96336408f7037ced2805f78",
+    "f7696aa704d63e61e93bbd08334614cf18e484ed",
+    "eb8a2f3ea9a908e7197ea4a255f514bd060edab7",
+    "96bebdeeca1e343e6671bb62c65d6e1338d00197",
+    "d6427bda4f8b456124e40ab973ef1487152061f8"
   ],
   "target_paths": [
     "profiles/quality_pack/SKILL.md",
@@ -25,10 +28,11 @@
     "profiles/quality_pack/evals/handoff_intake_matrix.json",
     "profiles/quality_pack/fixtures/handoff_intake/created_claim_without_delivered_artifact.json",
     "profiles/quality_pack/fixtures/handoff_intake/materialized_profile_pack_ready.json",
+    "profiles/quality_pack/fixtures/handoff_intake/profile_creator_pr225_real.json",
     "profiles/quality_pack/validators/run_handoff_intake.py"
   ],
   "blocking_codes": [],
-  "issued_at": "2026-08-26T17:00:00Z",
+  "issued_at": "2026-08-26T17:05:00Z",
   "lote": "ACT-0045-QUALITY-PACK-DETERMINISTIC-INTAKE-P0",
-  "notas": "El target eval fue persistido antes del runner en commit 59cdbb9b559d4061d91edec0c714ba6e7fb8b879. El self-test ejecutó actual-vs-expected sobre dos fixtures: reproduce CREATED_ARTIFACT_NOT_DELIVERED para el baseline y obtiene QUALITY_INTAKE_READY para un artefacto materializado completo. La evidencia demuestra sólo intake determinista; semantic_quality_review_status permanece NOT_EXECUTED y no se declara PASS_TO_COMPOSER, PASS_WITH_RESTRICTIONS ni behavioral PASS general. No autoriza runtime, producción, Supabase, Docs, merge ni impacto automático."
+  "notas": "Target eval inicial persistido antes del runner en 59cdbb9b559d4061d91edec0c714ba6e7fb8b879. El caso real PR #225 reprodujo un falso rechazo del runner por evidence_map tipo objeto; ese caso se convirtió en target eval antes del fix en 21fe74ff30f876c2576cf9f28f449194a5dd2e6e. El parche mínimo 4ea0e7836299a0877313b9370140316faa5e0fbf acepta evidencia desarrollada lista u objeto. Self-test actual-vs-expected 3/3 PASS, incluido PR #225 real. Se demuestra sólo intake determinista: semantic_quality_review_status=NOT_EXECUTED; no PASS_TO_COMPOSER, PASS_WITH_RESTRICTIONS ni behavioral PASS general. No autoriza runtime, producción, Supabase, Docs, merge ni impacto automático."
 }
