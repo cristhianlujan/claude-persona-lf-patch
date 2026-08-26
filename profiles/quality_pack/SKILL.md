@@ -54,14 +54,33 @@ If a trigger from the learning card is present and the output channel gate was n
 6. `../../orchestrator/decision_logic.md`
    - Defines recipient/output allowlists and gates that prevent suggestion-only outputs, internal leakage and contaminated image/tool payloads.
 
+7. `contracts/handoff_intake_contract.md`
+   - Defines the executable deterministic intake pre-check used before semantic Quality Pack review for producer→receiver continuity cases.
+
+## Deterministic handoff intake pre-check
+
+For producer→Quality Pack continuity evaluation, run `validators/run_handoff_intake.py` before any semantic review claim.
+
+This executable pre-check answers only whether the receiver has enough explicit context and a materialized upstream artifact to begin normal Quality Pack review without reconstructing producer state.
+
+- `QUALITY_INTAKE_READY` means deterministic intake succeeded and the next gate is `SEMANTIC_QUALITY_REVIEW`.
+- It does **not** mean `PASS_TO_COMPOSER`, `PASS_WITH_RESTRICTIONS`, a Quality Pack score, LF safety PASS, or general behavioral PASS.
+- Missing receiver context returns to the orchestrator.
+- A producer that claims a created artifact but fails to deliver the exact artifact or claimed components returns to the worker for self-repair.
+- `semantic_quality_review_status` remains `NOT_EXECUTED` until the normal semantic Quality Pack review actually runs.
+
+The preserved eval definition is `evals/handoff_intake_matrix.json`. The target eval must exist before changes to the intake runner that are intended to satisfy it.
+
 ## Required output modes
-Quality Pack must return one of:
+Quality Pack semantic review must return one of:
 
 - `PASS_TO_COMPOSER`
 - `PASS_WITH_RESTRICTIONS`
 - `RETURN_TO_WORKER_FOR_SELF_REPAIR`
 - `RETURN_TO_ORCHESTRATOR`
 - `BLOCK_PIPELINE`
+
+The deterministic intake runner uses its separate `intake_status`; it is not a semantic Quality Pack verdict.
 
 ## Non-negotiable rule
 Quality Pack cannot accept a worker PASS if evidence is missing. Claims without evidence count as false.
@@ -96,8 +115,10 @@ If the answer only says what to use in general, lists ingredients, says “use l
 - A concrete UI decision was requested but the output is only a concept name, rationale, ingredient list or recommendation.
 
 ## Traceability
-Every Quality Pack review must be saved under:
+Every semantic Quality Pack review must be saved under:
 
 `sandbox_runs/<profile_or_case>/<run_id>/quality_review.json`
 
 Quality Pack must include: verdict, evidence map, score breakdown, blocking codes, required repair actions and next gate.
+
+Deterministic intake evidence must preserve the exact input fixture, runner revision, output and actual-vs-expected result separately from the semantic review artifact.
