@@ -47,7 +47,10 @@
     "skills/learning_engine/validators/validate_pack.py"
   ],
   "blocking_codes": [],
-  "behavioral_blocking_codes": ["BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER"],
+  "behavioral_blocking_codes": [
+    "SEMANTIC_QUALITY_REVIEW_NOT_EXECUTED",
+    "BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER"
+  ],
   "source_parity_main_sha": "569cbaabb2e65e61fb2d184016a2ca766bd1cd00",
   "source_parity_migration_v1_blob_sha": "8b7f21304c5cb4200cb502e42f57e3f5f7a1df8f",
   "source_parity_migration_v2_blob_sha": "101ff70d609bd34b6fc152f578b803d0ca2c319e",
@@ -61,5 +64,5 @@
   },
   "issued_at": "2026-08-26T20:20:51Z",
   "lote": "ACT-0046-HANDOFF-OUTCOME-P0-P1",
-  "notas": "Evidencia por capas reconciliada contra main 569cbaabb2e65e61fb2d184016a2ca766bd1cd00. PR #227 quedó mergeado y demuestra DETERMINISTIC_INTAKE ejecutable con CI exact-head PASS (Validate LF Packs 33004435405, lf-contract-check 33004435406, Bootstrap 33004435404). La revisión semántica disponible es ASSISTED_RUBRIC_REVIEW realizada en el chat, sin Copilot ni servicio externo de pago; no constituye receiver ejecutable independiente. Estado vigente: DETERMINISTIC_INTAKE=PASS, ASSISTED_RUBRIC_REVIEW=AVAILABLE, EXECUTABLE_SEMANTIC_RECEIVER=NOT_AVAILABLE, FULL_HANDOFF_OUTCOME=NOT_PROVEN; blocker BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER. No BEHAVIORAL_EVAL_PASS, PASS_TO_COMPOSER ni promoción a REGRESSION_EVAL. ACT-0046 permanece CANDIDATE_READ_ONLY; no runtime, producción, Supabase/Docs ni impacto automático."
+  "notas": "Evidencia por capas reconciliada contra main 569cbaabb2e65e61fb2d184016a2ca766bd1cd00. PR #227 quedó mergeado y demuestra DETERMINISTIC_INTAKE ejecutable con CI exact-head PASS (Validate LF Packs 33004435405, lf-contract-check 33004435406, Bootstrap 33004435404). La revisión semántica disponible es ASSISTED_RUBRIC_REVIEW realizada en el chat, sin Copilot ni servicio externo de pago; no constituye receiver ejecutable independiente. Estado vigente: DETERMINISTIC_INTAKE=PASS_SANDBOX_CI_VERIFIED, ASSISTED_RUBRIC_REVIEW=AVAILABLE, INDEPENDENT_EXECUTABLE_SEMANTIC_REVIEW=NOT_EXECUTED, FULL_HANDOFF_OUTCOME=NOT_PROVEN. SEMANTIC_QUALITY_REVIEW_NOT_EXECUTED describe la capa pendiente y BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER la causa de fondo para un PASS conductual independiente. No BEHAVIORAL_EVAL_PASS, PASS_TO_COMPOSER ni promoción a REGRESSION_EVAL. ACT-0046 permanece CANDIDATE_READ_ONLY; no runtime, producción, Supabase/Docs ni impacto automático."
 }
