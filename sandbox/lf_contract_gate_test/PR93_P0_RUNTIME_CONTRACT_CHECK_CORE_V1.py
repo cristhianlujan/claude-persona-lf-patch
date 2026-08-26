@@ -57,7 +57,7 @@ EXPECTED_RUNTIME_BLOBS = {
     "supabase/functions/get-perfil-lf-runtime-protocol/deno.json": "762e9b22bb21b951e9ddc5a171fe1be106d7cc31",
     "supabase/functions/get-perfil-lf-runtime-protocol-public-test/index.ts": "9d5672ba788843330cc0c4785d8413eb12d2d11e",
     "supabase/functions/get-perfil-lf-runtime-protocol-public-test/deno.json": "762e9b22bb21b951e9ddc5a171fe1be106d7cc31",
-    "supabase/functions/story-agent-evidence-verifier-v1/index.ts": "133db8727f48c90511e8e75480ae51efac479c69",
+    "supabase/functions/story-agent-evidence-verifier-v1/index.ts": "60687c77f132befdbb6a1bfc244e236a73869a7e",
     "supabase/functions/story-agent-evidence-verifier-v1/deno.json": "26f214064a9165492dfd8a2cf6dc143dd8b29c63",
 }
 EXPECTED_EDGE_PATHS = frozenset(
