@@ -1,4 +1,4 @@
-version: v0.2
+version: v0.3
 status: CANDIDATO_READ_ONLY
 operation: CREACION_PERFIL_LF
 regularization: REGULARIZACION_STEP_GATE_L2L3_001
@@ -9,6 +9,7 @@ required_before_write:
   - read_contract
   - validate_repo
   - validate_path
+  - declared_paths_exist_in_tree
   - validate_file_name
   - research_pack_pass
   - research_pack_evidence_strong
@@ -16,7 +17,7 @@ required_before_write:
   - decision_matrix_present
 allowed:
   repository: cristhianlujan/claude-persona-lf-patch
-  path_prefix: /perfiles/
+  path_prefix: /profiles/
   document_status: CANDIDATO
   operational_status: READ_ONLY
   runtime: NO_HABILITADO
@@ -30,6 +31,8 @@ blocked:
   - missing_research_to_rules_matrix
   - missing_decision_matrix
   - assistant_freeform_decision
+  - declared_path_not_present_in_tree
+  - translated_identifier_adopted_without_reconciliation
   - enable_runtime
   - mark_vigente
   - mark_aprobado
