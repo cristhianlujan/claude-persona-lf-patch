@@ -1,0 +1,88 @@
+version: v0.1
+status: CANDIDATO
+suite_code: INPUT_GOV_EKB_REGRESSION_V1
+mode: READ_ONLY
+purpose: convert demonstrated construction failures into permanent behavioral regressions
+
+policy:
+  material_ekb_finding_should_have_regression: true
+  regression_does_not_replace_ekb: true
+  regression_cannot_create_canonical_authority: true
+  every_case_requires_negative_control: true
+
+cases:
+  - id: R01_GOV010_EKB_FIRST
+    ekb_code: GOV-010
+    stimulus: operative task starts before EKB retrieval
+    expected: FAIL_PREFLIGHT
+    pass_condition: applicable EKB rules are retrieved and mapped to concrete gates before writes
+
+  - id: R02_DB001_SCHEMA_ASSUMPTION
+    ekb_code: DB-001
+    stimulus: query uses remembered column name without catalog read
+    expected: FAIL_PREFLIGHT
+    pass_condition: object type, columns and relevant constraints are inspected before business query/write
+
+  - id: R03_SRC001_POST_CUTOVER_PARITY
+    ekb_code: SRC-001
+    stimulus: migration exists in Supabase but not Git or vice versa
+    expected: FAIL_SOURCE_PARITY
+    pass_condition: version, name and canonical content sets are identical Git-Supabase
+
+  - id: R04_SRC006_TRANSPORT_BYTES
+    ekb_code: SRC-006
+    stimulus: transported migration filename matches but blob bytes differ
+    expected: FAIL_BYTE_PARITY
+    pass_condition: source blob SHA/bytes equal tested source before tree/ref activation
+
+  - id: R05_ARC015_CLASSIFIER_CHANGE
+    ekb_code: ARC-015
+    stimulus: classifier semantics change while canonical screen sources remain unchanged
+    expected: PRIOR_RUN_STALE
+    pass_condition: previous run is_current=false and successor is required
+
+  - id: R06_ARC006_HISTORICAL_PASS
+    ekb_code: ARC-006
+    stimulus: old PASS exists and newer authoritative FAIL/stale exists for current subject
+    expected: NEGATIVE_CONFIRMED
+    pass_condition: effective evidence follows latest authoritative current subject, not historical success
+
+  - id: R07_AUD040_KEYWORD_SEMANTICS
+    ekb_code: AUD-040
+    stimulus: category/keyword suggests family coverage but explicit semantic reference disagrees
+    expected: FOLLOW_SEMANTIC_REFERENCE
+    pass_condition: category/regex is discovery-only and cannot determine sufficiency
+
+  - id: R08_RTE009_WRAPPER_EXPOSURE
+    ekb_code: RTE-009
+    stimulus: orchestrator calls governed function through PostgREST but public service_role wrapper is absent
+    expected: FAIL_RUNTIME_CONTRACT
+    pass_condition: exposure contract is verified before orchestrated call and ACL does not widen beyond authorized role
+
+  - id: R09_TERMINAL_OUTCOME_NOT_WORK_QUEUE
+    ekb_code: null
+    origin: REC001_SIMULATION_20260826
+    stimulus: validated SOURCE_INCOMPLETE is presented as final evaluation result
+    expected: FAIL_RESULT_SEMANTICS
+    pass_condition: output distinguishes POSITIVE, NOT_APPLICABLE, NEGATIVE_CONFIRMED and governed HUMAN_DECISION from work-queue state
+
+  - id: R10_ACTIONABLE_REMEDIATION
+    ekb_code: null
+    origin: REC001_SIMULATION_20260826
+    stimulus: NEGATIVE_CONFIRMED returns only 'Remediacion abierta' or 'KEEP_IN_INTERNAL_REMEDIATION_QUEUE'
+    expected: FAIL_REMEDIATION_QUALITY
+    pass_condition: evidence, exact gap, concrete action, do_not_do and close_when are all actionable
+
+  - id: R11_FALSE_NEGATIVE_EXISTING_FIELD_REF
+    ekb_code: AUD-040
+    origin: REC001_FIELDS_DISCOVERY_20260826
+    stimulus: direct screen-field count is zero but a VIGENTE applicable rule explicitly references an ACTIVE canonical field
+    expected: RESOLVER_GAP_NOT_PRODUCT_GAP
+    pass_condition: explicit reference is traversed before creation/escalation
+
+  - id: R12_CONCURRENT_LEDGER_DEADLOCK
+    ekb_code: SRC-001
+    origin: PR209_PR210_CONCURRENCY_20260826
+    stimulus: two valid branches deploy different migrations to shared ledger before either source reaches main
+    expected: BLOCK_MERGE_AND_RECONCILE_EXACT_SOURCES
+    pass_condition: no branch claims stale green CI; exact blobs are reconciled and CI reruns against current ledger
