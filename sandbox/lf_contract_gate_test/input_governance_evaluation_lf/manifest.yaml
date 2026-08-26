@@ -4,7 +4,7 @@ estado_operativo: READ_ONLY
 runtime_estado: NO_HABILITADO
 impacto_automatico: BLOQUEADO
 adapter_code: ADAPTER_INPUT_GOVERNANCE_EVALUATION_LF_v0.1_CANDIDATO
-base_path: adapters/input_governance_evaluation_lf
+base_path: sandbox/lf_contract_gate_test/input_governance_evaluation_lf
 purpose: EVALUATE_OUTCOME_TRAJECTORY_AND_REMEDIATION_QUALITY
 required_files:
   - ADAPTER.md
