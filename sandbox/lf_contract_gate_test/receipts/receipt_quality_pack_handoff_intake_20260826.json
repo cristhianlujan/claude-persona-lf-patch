@@ -6,20 +6,22 @@
   "execution_id": "ACT-0045-QUALITY-PACK-INTAKE-2026-08-26",
   "result": "PASS_SANDBOX",
   "all_required_steps_pass": true,
-  "contract_sha": "f1f7b93d62cf22b4e93f5ba4787b3fb2bd5d9fec",
+  "contract_sha": "5c3a5a77eba289a52ad0fd57a770335d66d46b5f",
   "judge_sha": "05f1cbae6ce1b54d58bce03dbd1f6a1730e6f71f",
   "source_sha_list": [
-    "f74451e2f4ef99f14720b862212f0ee194489397",
-    "f1f7b93d62cf22b4e93f5ba4787b3fb2bd5d9fec",
+    "13382537071ad91922d36518e475c157adc3ce17",
+    "5c3a5a77eba289a52ad0fd57a770335d66d46b5f",
     "e0dc34295cacc854cba05f686e8ade564686d7d3",
-    "f70425c1822d74ccf773aa283ffbf8b7a9e3510a",
+    "f7297a5efafb414112d4fb99110c986ebc2eb557",
     "a55eda6a3018da99afc316d7d1bf996ea20ead3d",
     "4acf7d981bcded00636f2cf4c8ed82c3efc3a9ea",
     "91ba331ad38e7f8cc96336408f7037ced2805f78",
-    "f7696aa704d63e61e93bbd08334614cf18e484ed",
-    "eb8a2f3ea9a908e7197ea4a255f514bd060edab7",
+    "f99b64716758b3c2fa87c552a5993c9c1758be20",
+    "7bd460c7177365afac768f5c14f5897b68423746",
+    "4222896d6fce07191bad2ddc823e146e6ec6cb13",
     "96bebdeeca1e343e6671bb62c65d6e1338d00197",
-    "d6427bda4f8b456124e40ab973ef1487152061f8"
+    "d6427bda4f8b456124e40ab973ef1487152061f8",
+    "b7e4a5bac97c06de939522a49086003710887654"
   ],
   "target_paths": [
     "profiles/quality_pack/SKILL.md",
@@ -29,10 +31,11 @@
     "profiles/quality_pack/fixtures/handoff_intake/created_claim_without_delivered_artifact.json",
     "profiles/quality_pack/fixtures/handoff_intake/materialized_profile_pack_ready.json",
     "profiles/quality_pack/fixtures/handoff_intake/profile_creator_pr225_real.json",
+    "profiles/quality_pack/fixtures/handoff_intake/learning_engine_pr222_real.json",
     "profiles/quality_pack/validators/run_handoff_intake.py"
   ],
   "blocking_codes": [],
-  "issued_at": "2026-08-26T17:05:00Z",
+  "issued_at": "2026-08-26T17:10:00Z",
   "lote": "ACT-0045-QUALITY-PACK-DETERMINISTIC-INTAKE-P0",
-  "notas": "Target eval inicial persistido antes del runner en 59cdbb9b559d4061d91edec0c714ba6e7fb8b879. El caso real PR #225 reprodujo un falso rechazo del runner por evidence_map tipo objeto; ese caso se convirtió en target eval antes del fix en 21fe74ff30f876c2576cf9f28f449194a5dd2e6e. El parche mínimo 4ea0e7836299a0877313b9370140316faa5e0fbf acepta evidencia desarrollada lista u objeto. Self-test actual-vs-expected 3/3 PASS, incluido PR #225 real. Se demuestra sólo intake determinista: semantic_quality_review_status=NOT_EXECUTED; no PASS_TO_COMPOSER, PASS_WITH_RESTRICTIONS ni behavioral PASS general. No autoriza runtime, producción, Supabase, Docs, merge ni impacto automático."
+  "notas": "Target eval inicial persistido antes del runner en 59cdbb9b559d4061d91edec0c714ba6e7fb8b879. PR #225 real produjo un target eval antes del fix de evidencia objeto y luego pasó por REFERENCED_MATERIALIZED_ARTIFACT. PR #222 real produjo un target eval antes del fix de artefacto embebido en 01ad6ca6e7c0107f25d971611a45a1914dc73bb8/e03c9d7c4bcef89ef7bdf9c145e0932f91edbc85; el parche mínimo 12b345e861abbba401cbf7739e26d61ee0ebed00 acepta EMBEDDED_CANDIDATE_ARTIFACT con identidad verificable. Self-test actual-vs-expected 4/4 PASS: baseline negativo preservado, sintético positivo, PR #225 real y PR #222 real. Se demuestra sólo intake determinista; semantic_quality_review_status=NOT_EXECUTED y no se declara score, PASS_TO_COMPOSER, PASS_WITH_RESTRICTIONS ni behavioral PASS general. No autoriza runtime, producción, Supabase, Docs, merge ni impacto automático."
 }
