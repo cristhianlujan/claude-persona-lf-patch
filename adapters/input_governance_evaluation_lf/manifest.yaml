@@ -1,0 +1,24 @@
+version: v0.1
+status: CANDIDATO
+estado_operativo: READ_ONLY
+runtime_estado: NO_HABILITADO
+impacto_automatico: BLOQUEADO
+adapter_code: ADAPTER_INPUT_GOVERNANCE_EVALUATION_LF_v0.1_CANDIDATO
+base_path: adapters/input_governance_evaluation_lf
+purpose: EVALUATE_OUTCOME_TRAJECTORY_AND_REMEDIATION_QUALITY
+required_files:
+  - ADAPTER.md
+  - manifest.yaml
+  - references/remediation_quality_contract.md
+  - examples/golden_remediation_examples.md
+  - examples/remediation_antipatterns.md
+  - evals/remediation_quality_suite.yaml
+  - evals/ekb_regression_suite.yaml
+  - judges/judge_input_governance_remediation.yaml
+activation_gate: MANUAL_BENCHMARK_ONLY
+allowed_final_state: CANDIDATO_READ_ONLY_NO_HABILITADO
+canonical_write_authority: DENY
+runtime_mutation_authority: DENY
+human_decision_authority: DENY
+promotion_authority: DENY
+production_authority: DENY
