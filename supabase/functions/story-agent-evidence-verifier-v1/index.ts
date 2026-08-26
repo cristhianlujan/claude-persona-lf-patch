@@ -71,6 +71,31 @@ async function rpcMustFail(name: string, args: Record<string, unknown>, expected
   throw new Error(`NEGATIVE_PROBE_ACCEPTED:${expected}`);
 }
 
+function canonicalJson(value: unknown): string {
+  if (value === null) return "null";
+  if (typeof value === "string" || typeof value === "boolean") return JSON.stringify(value);
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) throw new Error("CANONICAL_JSON_NON_FINITE_NUMBER");
+    return JSON.stringify(value);
+  }
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key])}`).join(",")}}`;
+  }
+  throw new Error("CANONICAL_JSON_UNSUPPORTED_TYPE");
+}
+
+async function sha256Text(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function withObservedSha(value: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const { observed_sha256: _ignored, ...body } = value;
+  return { ...body, observed_sha256: await sha256Text(canonicalJson(body)) };
+}
+
 const flip = (value: string) => `${value[0] === "0" ? "1" : "0"}${value.slice(1)}`;
 type Pending = { execution_id:number; request_ref:string; head_sha:string; source_snapshot_sha256:string; context_pack_id:number; context_pack_sha256:string; evidence_id:number; evidence_sha256:string; source_system:string; source_ref:string; worker_receipt_status:string };
 type PendingV10 = { execution_id:number; request_ref:string; agent_task_id:number; task_code:string; task_version:number; task_sha256:string; head_sha:string; evaluation_id:number; gate_code:string; evidence_id:number; evidence_sha256:string; source_system:string; source_ref:string; candidate_head_sha:string; worker_receipt_status:string };
@@ -110,9 +135,9 @@ async function verifyMachine(taskId:number, verifierIdentity:string, runId:strin
   await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1",{...valid,p_expected_head_sha:flip(p.head_sha)},"EXTERNAL_VERIFY_HEAD_MISMATCH");
   await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1",{...valid,p_expected_evidence_sha256:flip(p.evidence_sha256)},"EXTERNAL_VERIFY_EVIDENCE_SHA_MISMATCH");
   await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1",{...valid,p_expected_source_ref:`${p.source_ref}-mutated`},"EXTERNAL_VERIFY_SOURCE_REF_MISMATCH");
-  const wrongRun={...observed,producer_run_id:Number(observed.producer_run_id??0)+1};
+  const wrongRun=await withObservedSha({...observed,producer_run_id:Number(observed.producer_run_id??0)+1});
   await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1",{...valid,p_verification_payload:{...(valid.p_verification_payload as Record<string,unknown>),observed:wrongRun}},"EXTERNAL_VERIFY_V2_PRODUCER_RUN_MISMATCH");
-  const wrongTree={...observed,remote_tree_sha:flip(String(observed.remote_tree_sha??"0"))};
+  const wrongTree=await withObservedSha({...observed,remote_tree_sha:flip(String(observed.remote_tree_sha??"0"))});
   await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1",{...valid,p_verification_payload:{...(valid.p_verification_payload as Record<string,unknown>),observed:wrongTree}},"EXTERNAL_VERIFY_V2_TREE_SHA_MISMATCH");
   await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1",{...valid,p_verifier_identity:p.source_system},"EXTERNAL_VERIFIER_IDENTITY_INVALID");
   const result=await rpc<Record<string,unknown>>("fn_agent_task_external_verify_worker_evidence_v1",valid);
