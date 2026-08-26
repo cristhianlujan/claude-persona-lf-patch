@@ -18,7 +18,7 @@ The intake gate must verify:
 1. required Quality Pack intake context is present;
 2. upstream output is machine-readable;
 3. upstream evidence is explicitly delivered;
-4. if a created deliverable is claimed, an exact artifact reference and materialized artifact are delivered;
+4. if a created deliverable is claimed, an observable materialized artifact is delivered either by exact reference plus artifact payload or as an explicit embedded `candidate_artifact`;
 5. artifact identity matches the producer claim;
 6. every component claimed in `files_created` exists with non-empty developed content.
 
@@ -49,7 +49,7 @@ This gate must never emit or imply:
 ## Routing
 
 - Missing receiver context → `RETURN_TO_ORCHESTRATOR`.
-- Producer claims a created artifact but fails to deliver it or its claimed components → `RETURN_TO_WORKER_FOR_SELF_REPAIR`.
+- Producer claims a created artifact but fails to deliver an observable materialized artifact, or fails to deliver claimed components → `RETURN_TO_WORKER_FOR_SELF_REPAIR`.
 - Deterministic intake satisfied → `QUALITY_INTAKE_READY` then `SEMANTIC_QUALITY_REVIEW`.
 
 ## Promotion rule
