@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Independent Chat Semantic Review Receipt",
+  "type": "object",
+  "required": [
+    "receipt_version",
+    "execution_mode",
+    "semantic_status",
+    "review_case_id",
+    "reviewer_is_producer",
+    "producer_context_available",
+    "external_paid_model_used",
+    "automated_semantic_judge_implemented",
+    "review_completed",
+    "source_bundle",
+    "quality_review",
+    "execution_blockers"
+  ],
+  "properties": {
+    "receipt_version": {"const": "v0.1"},
+    "execution_mode": {"const": "INDEPENDENT_CHAT_CONTEXT"},
+    "semantic_status": {
+      "enum": ["EXECUTED_INDEPENDENT_CONTEXT", "NOT_EXECUTED"]
+    },
+    "review_case_id": {"type": "string", "minLength": 1},
+    "reviewer_is_producer": {"const": false},
+    "producer_context_available": {"const": false},
+    "external_paid_model_used": {"const": false},
+    "automated_semantic_judge_implemented": {"const": false},
+    "review_completed": {"type": "boolean"},
+    "source_bundle": {
+      "type": "object",
+      "required": [
+        "artifact_ref",
+        "upstream_worker_contract_ref",
+        "quality_gate_contract_ref",
+        "lf_quality_controls_ref",
+        "score_rubric_ref",
+        "mini_judge_ref",
+        "quality_review_schema_ref"
+      ],
+      "properties": {
+        "artifact_ref": {"type": "string", "minLength": 1},
+        "artifact_sha_or_digest": {"type": ["string", "null"]},
+        "upstream_worker_contract_ref": {"type": "string", "minLength": 1},
+        "quality_gate_contract_ref": {"type": "string", "minLength": 1},
+        "lf_quality_controls_ref": {"type": "string", "minLength": 1},
+        "score_rubric_ref": {"type": "string", "minLength": 1},
+        "mini_judge_ref": {"type": "string", "minLength": 1},
+        "quality_review_schema_ref": {"type": "string", "minLength": 1}
+      }
+    },
+    "quality_review": {
+      "type": "object",
+      "required": [
+        "review_id",
+        "reviewed_artifact",
+        "verdict",
+        "score_breakdown",
+        "evidence_map",
+        "blocking_codes",
+        "repair_actions",
+        "remaining_risks",
+        "next_gate"
+      ],
+      "properties": {
+        "review_id": {"type": "string", "minLength": 1},
+        "reviewed_artifact": {"type": "string", "minLength": 1},
+        "verdict": {
+          "enum": [
+            "PASS_TO_COMPOSER",
+            "PASS_WITH_RESTRICTIONS",
+            "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+            "RETURN_TO_ORCHESTRATOR",
+            "BLOCK_PIPELINE"
+          ]
+        },
+        "score_breakdown": {
+          "type": "object",
+          "required": [
+            "contract_schema_compliance",
+            "evidence_integrity",
+            "lf_safety_governance",
+            "handoff_readiness",
+            "leakage_scope_control",
+            "total"
+          ]
+        },
+        "evidence_map": {"type": "array"},
+        "blocking_codes": {"type": "array"},
+        "repair_actions": {"type": "array"},
+        "remaining_risks": {"type": "array"},
+        "next_gate": {"type": "string", "minLength": 1}
+      }
+    },
+    "execution_blockers": {"type": "array"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"review_completed": {"const": true}}},
+      "then": {"properties": {"semantic_status": {"const": "EXECUTED_INDEPENDENT_CONTEXT"}}}
+    },
+    {
+      "if": {"properties": {"review_completed": {"const": false}}},
+      "then": {"properties": {"semantic_status": {"const": "NOT_EXECUTED"}}}
+    }
+  ]
+}

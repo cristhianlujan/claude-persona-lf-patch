@@ -1,0 +1,16 @@
+{
+  "matrix_id": "QUALITY_PACK_INDEPENDENT_CHAT_SEMANTIC_REVIEW_V0_1",
+  "purpose": "Prove deterministic receipt validation for the no-additional-cost independent chat semantic review path.",
+  "cases": [
+    {
+      "case_id": "VALID_INDEPENDENT_CHAT_RECEIPT",
+      "fixture": "profiles/quality_pack/fixtures/independent_chat_semantic_review/valid_receipt.json",
+      "expected_valid": true
+    },
+    {
+      "case_id": "REJECT_PRODUCER_AS_REVIEWER",
+      "fixture": "profiles/quality_pack/fixtures/independent_chat_semantic_review/invalid_producer_receipt.json",
+      "expected_valid": false
+    }
+  ]
+}

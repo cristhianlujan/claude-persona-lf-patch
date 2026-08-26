@@ -57,6 +57,15 @@ If a trigger from the learning card is present and the output channel gate was n
 7. `contracts/handoff_intake_contract.md`
    - Defines the executable deterministic intake pre-check used before semantic Quality Pack review for producer→receiver continuity cases.
 
+8. `contracts/independent_chat_semantic_review_contract.md`
+   - Defines the no-additional-cost independent clean-context semantic review execution boundary.
+
+9. `handoffs/independent_chat_semantic_review.md`
+   - Copy/paste handoff template for a clean reviewer chat. It must not include a target verdict or prior semantic conclusion.
+
+10. `schemas/independent_semantic_review_receipt.schema.json`
+   - Receipt contract that separates independent semantic execution from automated semantic judge implementation.
+
 ## Deterministic handoff intake pre-check
 
 For producer→Quality Pack continuity evaluation, run `validators/run_handoff_intake.py` before any semantic review claim.
@@ -71,6 +80,22 @@ This executable pre-check answers only whether the receiver has enough explicit 
 - `semantic_quality_review_status` remains `NOT_EXECUTED` until the normal semantic Quality Pack review actually runs.
 
 The preserved eval definition is `evals/handoff_intake_matrix.json`. The target eval must exist before changes to the intake runner that are intended to satisfy it.
+
+## Independent clean-chat semantic review
+
+When deterministic intake is ready but no executable independent semantic receiver exists, Quality Pack may use `INDEPENDENT_CHAT_CONTEXT` as the lowest-cost manual execution mode.
+
+Required sequence:
+1. Freeze the exact review bundle defined by `contracts/independent_chat_semantic_review_contract.md`.
+2. Open a new reviewer chat/context that did not produce the artifact.
+3. Paste `handoffs/independent_chat_semantic_review.md` populated only with the frozen bundle. Do not provide a prior semantic verdict, expected score or desired result.
+4. Require one JSON receipt matching `schemas/independent_semantic_review_receipt.schema.json`.
+5. Validate it deterministically with `validators/validate_independent_semantic_review.py`.
+6. Store the validated receipt and semantic review under the case sandbox run.
+
+A valid receipt allows the exact claim `SEMANTIC_REVIEW=EXECUTED_INDEPENDENT_CONTEXT` for that artifact. It does not mean `AUTOMATED_SEMANTIC_JUDGE=IMPLEMENTED` and does not authorize production, automatic impact or general behavioral promotion.
+
+The receipt validator's target eval is `evals/independent_chat_semantic_review_matrix.json`.
 
 ## Required output modes
 Quality Pack semantic review must return one of:
@@ -121,5 +146,9 @@ Every semantic Quality Pack review must be saved under:
 `sandbox_runs/<profile_or_case>/<run_id>/quality_review.json`
 
 Quality Pack must include: verdict, evidence map, score breakdown, blocking codes, required repair actions and next gate.
+
+For `INDEPENDENT_CHAT_CONTEXT`, also save the validated wrapper receipt as:
+
+`sandbox_runs/<profile_or_case>/<run_id>/independent_semantic_review_receipt.json`
 
 Deterministic intake evidence must preserve the exact input fixture, runner revision, output and actual-vs-expected result separately from the semantic review artifact.
