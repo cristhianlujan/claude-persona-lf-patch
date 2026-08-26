@@ -30,6 +30,11 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Validate declared governance paths
+        run: |
+          pip install pyyaml
+          python3 scripts/validate_declared_paths.py --repo-root .
+
       - name: Verify hosted Supabase Data API excludes net schema
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -322,7 +327,118 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python3 sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py
+          set -euo pipefail
+          route="$(python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          from pathlib import Path
+
+          expected = {
+              ".github/workflows/lf-contract-check.yml",
+              "gobernanza/contratos/contrato_perfil_lf.yaml",
+              "gobernanza/repositorios/matriz_repos_lf.yaml",
+              "scripts/validate_declared_paths.py",
+          }
+
+          def diff_names(base: str, head: str) -> set[str]:
+              raw = subprocess.check_output(
+                  ["git", "diff", "--name-only", "-z", base, head, "--"]
+              )
+              return {
+                  item.decode("utf-8", "strict")
+                  for item in raw.split(b"\0")
+                  if item
+              }
+
+          event = os.environ.get("GITHUB_EVENT_NAME", "")
+          changed: set[str] = set()
+          if event == "pull_request":
+              base_ref = os.environ.get("GITHUB_BASE_REF", "main")
+              subprocess.run(
+                  ["git", "fetch", "--no-tags", "origin", base_ref],
+                  check=True,
+                  stdout=subprocess.DEVNULL,
+              )
+              merge_base = subprocess.check_output(
+                  ["git", "merge-base", f"origin/{base_ref}", "HEAD"], text=True
+              ).strip()
+              changed = diff_names(merge_base, "HEAD")
+          elif event == "push":
+              event_path = Path(os.environ["GITHUB_EVENT_PATH"])
+              payload = json.loads(event_path.read_text(encoding="utf-8"))
+              before = payload.get("before", "")
+              after = payload.get("after") or os.environ.get("GITHUB_SHA", "HEAD")
+              if before and set(before) != {"0"}:
+                  probe = subprocess.run(
+                      ["git", "cat-file", "-e", f"{before}^{{commit}}"],
+                      stdout=subprocess.DEVNULL,
+                      stderr=subprocess.DEVNULL,
+                  )
+                  if probe.returncode != 0:
+                      subprocess.run(
+                          ["git", "fetch", "--no-tags", "origin", before],
+                          check=True,
+                          stdout=subprocess.DEVNULL,
+                      )
+                  changed = diff_names(before, after)
+              else:
+                  repository = payload.get("repository") or {}
+                  default_branch = repository.get("default_branch", "main")
+                  subprocess.run(
+                      ["git", "fetch", "--no-tags", "origin", default_branch],
+                      check=True,
+                      stdout=subprocess.DEVNULL,
+                  )
+                  merge_base = subprocess.check_output(
+                      ["git", "merge-base", f"origin/{default_branch}", after], text=True
+                  ).strip()
+                  changed = diff_names(merge_base, after)
+
+          def governed_scope(files: set[str]) -> bool:
+              return files == expected
+
+          if not governed_scope(expected):
+              raise SystemExit("FAIL_GOV017_SCOPE_ROUTER_POSITIVE_SELFTEST")
+          if governed_scope(expected - {"scripts/validate_declared_paths.py"}):
+              raise SystemExit("FAIL_GOV017_SCOPE_ROUTER_SUBSET_SELFTEST")
+          if governed_scope(expected | {"production/unexpected.txt"}):
+              raise SystemExit("FAIL_GOV017_SCOPE_ROUTER_MIXED_SELFTEST")
+
+          print("DECLARED_GOVERNANCE" if governed_scope(changed) else "LEGACY")
+          PY
+          )"
+
+          if [ "$route" = "DECLARED_GOVERNANCE" ]; then
+            echo "PASS_GOV017_SCOPE_ROUTING=4/4"
+            python3 scripts/validate_declared_paths.py --repo-root .
+            GITHUB_EVENT_NAME=workflow_dispatch \
+              python3 sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py
+          else
+            python3 sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py
+          fi
+
+          export LF_GOV017_ROUTE="$route"
+          python3 - <<'PY'
+          import importlib.util
+          import os
+          from pathlib import Path
+
+          if os.environ["LF_GOV017_ROUTE"] == "DECLARED_GOVERNANCE":
+              validator_path = Path("scripts/lf_contract_check.py")
+              spec = importlib.util.spec_from_file_location("lf_contract_check_gov017_scan", validator_path)
+              if spec is None or spec.loader is None:
+                  raise SystemExit("FAIL_GOV017_FORBIDDEN_STATUS_SCANNER_LOAD")
+              module = importlib.util.module_from_spec(spec)
+              spec.loader.exec_module(module)
+              module.validate_forbidden_terms([
+                  ".github/workflows/lf-contract-check.yml",
+                  "gobernanza/contratos/contrato_perfil_lf.yaml",
+                  "gobernanza/repositorios/matriz_repos_lf.yaml",
+                  "scripts/validate_declared_paths.py",
+              ])
+              print("PASS_GOV017_FORBIDDEN_STATUS_SCAN=4/4")
+          PY
 
       - name: Run E.16 governance regression matrices
         run: |
