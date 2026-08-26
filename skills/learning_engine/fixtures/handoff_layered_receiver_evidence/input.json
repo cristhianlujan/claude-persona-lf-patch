@@ -20,7 +20,8 @@
       }
     },
     "semantic_quality_review": {
-      "status": "NOT_EXECUTED_AS_INDEPENDENT_RECEIVER",
+      "status": "NOT_EXECUTED",
+      "execution_mode": "NO_INDEPENDENT_EXECUTABLE_RECEIVER",
       "assisted_rubric_review": "AVAILABLE",
       "external_paid_model_used": false
     }
