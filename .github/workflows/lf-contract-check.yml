@@ -30,6 +30,11 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Validate declared governance paths
+        run: |
+          pip install pyyaml
+          python3 scripts/validate_declared_paths.py --repo-root .
+
       - name: Verify hosted Supabase Data API excludes net schema
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
