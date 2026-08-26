@@ -61,12 +61,13 @@ If a trigger from the learning card is present and the output channel gate was n
 
 For producer→Quality Pack continuity evaluation, run `validators/run_handoff_intake.py` before any semantic review claim.
 
-This executable pre-check answers only whether the receiver has enough explicit context and a materialized upstream artifact to begin normal Quality Pack review without reconstructing producer state.
+This executable pre-check answers only whether the receiver has enough explicit context and an observable materialized upstream artifact to begin normal Quality Pack review without reconstructing producer state.
 
 - `QUALITY_INTAKE_READY` means deterministic intake succeeded and the next gate is `SEMANTIC_QUALITY_REVIEW`.
 - It does **not** mean `PASS_TO_COMPOSER`, `PASS_WITH_RESTRICTIONS`, a Quality Pack score, LF safety PASS, or general behavioral PASS.
 - Missing receiver context returns to the orchestrator.
-- A producer that claims a created artifact but fails to deliver the exact artifact or claimed components returns to the worker for self-repair.
+- A created artifact may be delivered by an exact reference plus materialized payload or as an explicit embedded `candidate_artifact`; in either mode its identity must match the producer claim.
+- A producer that claims a created artifact but fails to deliver an observable materialized artifact or claimed components returns to the worker for self-repair.
 - `semantic_quality_review_status` remains `NOT_EXECUTED` until the normal semantic Quality Pack review actually runs.
 
 The preserved eval definition is `evals/handoff_intake_matrix.json`. The target eval must exist before changes to the intake runner that are intended to satisfy it.
