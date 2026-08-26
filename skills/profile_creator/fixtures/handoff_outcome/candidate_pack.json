@@ -16,6 +16,7 @@
     "validators/validate_pack.py": "print('STRUCTURAL_PASS')",
     "evals/eval_matrix.json": "{\"cases\":[{\"id\":\"happy_path\",\"expected\":\"executable evidenced decision\"}]}",
     "handoffs/to_quality_pack.handoff.json": "{\"to\":\"quality_pack_review\",\"requires_artifact\":true}",
-    "adapters/github_pack_adapter.md": "# Adapter\nMaterialize only through a draft PR; no merge, runtime or official-source impact without its gate."
+    "adapters/github_pack_adapter.md": "# Adapter\nMaterialize only through a draft PR; no merge, runtime or official-source impact without its gate.",
+    "manifest.json": "{\"schema_version\":\"lf-profile-pack-manifest/v1\",\"profile_pack_id\":\"PROFILE_UI_INTERFACE_ARCHITECT_LF_CANDIDATE\",\"operation\":\"CREACION_PERFIL_LF\",\"document_status\":\"CANDIDATO\",\"operational_status\":\"READ_ONLY\",\"runtime\":\"NO_HABILITADO\",\"automatic_impact\":\"BLOQUEADO\"}"
   }
 }

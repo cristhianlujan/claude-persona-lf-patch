@@ -1,0 +1,11 @@
+{
+  "status": "RETURN_TO_SOURCE_FOR_READBACK",
+  "claim": "Main contains requested change",
+  "authority_reads": ["router"],
+  "source_readbacks": [],
+  "revision_binding": {"expected":"requested_head","observed":null,"match":false},
+  "structural_identifier_reconciliation": {"required":false,"result":"NOT_EVALUATED"},
+  "evidence_map": [],
+  "blocking_codes": ["DIRECT_READBACK_MISSING"],
+  "next_gate": "SOURCE_READBACK"
+}

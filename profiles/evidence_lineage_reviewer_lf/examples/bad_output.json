@@ -1,0 +1,11 @@
+{
+  "status": "BLOCK_PIPELINE",
+  "claim": "Use /perfiles/ from translated handoff",
+  "authority_reads": ["gobernanza/contratos/contrato_perfil_lf.yaml"],
+  "source_readbacks": ["handoff://translated"],
+  "revision_binding": {"expected":"n/a","observed":"n/a","match":true},
+  "structural_identifier_reconciliation": {"required":true,"handoff_value":"/perfiles/","governing_value":"/profiles/","result":"CONFLICT"},
+  "evidence_map": ["translated_handoff","governing_contract"],
+  "blocking_codes": ["TRANSLATED_IDENTIFIER_CONFLICT"],
+  "next_gate": "RETURN_TO_ORCHESTRATOR"
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Evidence Lineage Review",
+  "type": "object",
+  "required": ["status", "claim", "authority_reads", "source_readbacks", "revision_binding", "structural_identifier_reconciliation", "evidence_map", "blocking_codes", "next_gate"],
+  "properties": {
+    "status": {"type":"string","enum":["PASS_EVIDENCE_LINEAGE","PASS_WITH_RESTRICTIONS","RETURN_TO_SOURCE_FOR_READBACK","BLOCK_PIPELINE"]},
+    "claim": {"type":"string"},
+    "authority_reads": {"type":"array"},
+    "source_readbacks": {"type":"array"},
+    "revision_binding": {"type":"object"},
+    "structural_identifier_reconciliation": {"type":"object"},
+    "evidence_map": {"type":"array"},
+    "blocking_codes": {"type":"array"},
+    "next_gate": {"type":"string"}
+  }
+}

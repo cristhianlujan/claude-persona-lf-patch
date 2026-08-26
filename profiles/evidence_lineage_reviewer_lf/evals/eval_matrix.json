@@ -1,0 +1,12 @@
+{
+  "schema_version": "evidence-lineage-evals/v1",
+  "profile_pack_id": "EVIDENCE_LINEAGE_REVIEWER_LF_V0_1",
+  "cases": [
+    {"id":"happy_exact_head","fixture":"fixtures/happy_path/input.json","expected_status":"PASS_EVIDENCE_LINEAGE"},
+    {"id":"missing_observed_readback","fixture":"fixtures/missing_inputs/input.json","expected_status":"RETURN_TO_SOURCE_FOR_READBACK"},
+    {"id":"translated_identifier_conflict","fixture":"fixtures/unsafe_or_blocked/input.json","expected_status":"BLOCK_PIPELINE"},
+    {"id":"stale_revision","fixture":"fixtures/self_repair/bad_output.json","expected_status":"RETURN_TO_SOURCE_FOR_READBACK"},
+    {"id":"same_value_without_authority_read","fixture":"fixtures/self_repair/bad_output.json","expected_status":"BLOCK_PIPELINE"},
+    {"id":"authority_conflict","fixture":"fixtures/unsafe_or_blocked/input.json","expected_status":"BLOCK_PIPELINE"}
+  ]
+}

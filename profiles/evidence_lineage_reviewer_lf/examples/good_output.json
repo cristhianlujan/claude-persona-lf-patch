@@ -1,0 +1,11 @@
+{
+  "status": "PASS_EVIDENCE_LINEAGE",
+  "claim": "PR exact-head checks passed",
+  "authority_reads": ["gobernanza/contratos/contrato_perfil_lf.yaml"],
+  "source_readbacks": ["github-actions://run/exact-head"],
+  "revision_binding": {"expected":"abc123","observed":"abc123","match":true},
+  "structural_identifier_reconciliation": {"required":false,"result":"NOT_APPLICABLE"},
+  "evidence_map": ["authority_read","exact_head_readback"],
+  "blocking_codes": [],
+  "next_gate": "REPORT_ONLY"
+}

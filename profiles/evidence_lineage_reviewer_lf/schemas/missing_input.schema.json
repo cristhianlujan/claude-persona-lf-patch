@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["missing_inputs", "required_action"],
+  "properties": {
+    "missing_inputs": {"type":"array","items":{"type":"string"}},
+    "required_action": {"const":"RETURN_TO_SOURCE_FOR_READBACK"}
+  }
+}
