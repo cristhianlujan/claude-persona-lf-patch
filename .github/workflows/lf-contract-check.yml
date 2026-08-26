@@ -122,11 +122,11 @@ jobs:
           export PGDATABASE=postgres
           export PGSSLMODE=require
 
-          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,''),encode(convert_to(array_to_string(statements,E'\n'),'UTF8'),'hex') from supabase_migrations.schema_migrations where version > '${LF_MIGRATION_CUTOVER}' and (name like 'pr93\_%' escape '\' or name like 'lf\_%' escape '\' or name like 'programacion\_story\_agent\_task\_%' escape '\' or name like 'programacion\_task\_sizing\_%' escape '\' or name like 'programacion\_task\_dependency\_%' escape '\' or name like 'programacion\_agent\_task\_%' escape '\' or name like 'programacion\_dependency\_context\_%' escape '\' or name like 'programacion\_propagate\_execution\_%' escape '\' or name like 'programacion\_deprecate\_declared\_independence\_%' escape '\' or name like 'programacion\_revoke\_security\_definer\_%' escape '\' or name like 'programacion\_worker\_spec\_%' escape '\') order by version" > "$RUNNER_TEMP/lf-managed-migrations.csv"
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,''),encode(convert_to(array_to_string(statements,E'\n'),'UTF8'),'hex') from supabase_migrations.schema_migrations where version > '${LF_MIGRATION_CUTOVER}' and (name like 'pr93\_%' escape '\' or name like 'lf\_%' escape '\' or name like 'programacion\_story\_agent\_task\_%' escape '\' or name like 'programacion\_task\_sizing\_%' escape '\' or name like 'programacion\_task\_dependency\_%' escape '\' or name like 'programacion\_agent\_task\_%' escape '\' or name like 'programacion\_dependency\_context\_%' escape '\' or name like 'programacion\_propagate\_execution\_%' escape '\' or name like 'programacion\_deprecate\_declared\_independence\_%' escape '\' or name like 'programacion\_revoke\_security\_definer\_%' escape '\' or name like 'programacion\_worker\_spec\_%' escape '\' or name like 'programacion\_prog017\_%' escape '\') order by version" > "$RUNNER_TEMP/lf-managed-migrations.csv"
 
           docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,'') from supabase_migrations.schema_migrations where version > '${LF_MIGRATION_CUTOVER}' order by version" > "$RUNNER_TEMP/lf-post-cutover-migrations.csv"
 
-          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "with x as (select version,coalesce(name,'') as name,array_to_string(statements,E'\n') as sql_text from supabase_migrations.schema_migrations where version > '${LF_MIGRATION_CUTOVER}' and version <= '${LF_MIGRATION_CLASSIFICATION_BASELINE_END}' and not (coalesce(name,'') like 'pr93\_%' escape '\' or coalesce(name,'') like 'lf\_%' escape '\' or coalesce(name,'') like 'programacion\_story\_agent\_task\_%' escape '\' or coalesce(name,'') like 'programacion\_task\_sizing\_%' escape '\' or coalesce(name,'') like 'programacion\_task\_dependency\_%' escape '\' or coalesce(name,'') like 'programacion\_agent\_task\_%' escape '\' or coalesce(name,'') like 'programacion\_dependency\_context\_%' escape '\' or coalesce(name,'') like 'programacion\_propagate\_execution\_%' escape '\' or coalesce(name,'') like 'programacion\_deprecate\_declared\_independence\_%' escape '\' or coalesce(name,'') like 'programacion\_revoke\_security\_definer\_%' escape '\' or coalesce(name,'') like 'programacion\_worker\_spec\_%' escape '\')) select count(*)::text,encode(extensions.digest(convert_to(coalesce(string_agg(version||E'\n'||name||E'\n'||sql_text,E'\n--MIGRATION--\n' order by version),''),'UTF8'),'sha256'),'hex') from x" > "$RUNNER_TEMP/lf-grandfathered-migrations.csv"
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "with x as (select version,coalesce(name,'') as name,array_to_string(statements,E'\n') as sql_text from supabase_migrations.schema_migrations where version > '${LF_MIGRATION_CUTOVER}' and version <= '${LF_MIGRATION_CLASSIFICATION_BASELINE_END}' and not (coalesce(name,'') like 'pr93\_%' escape '\' or coalesce(name,'') like 'lf\_%' escape '\' or coalesce(name,'') like 'programacion\_story\_agent\_task\_%' escape '\' or coalesce(name,'') like 'programacion\_task\_sizing\_%' escape '\' or coalesce(name,'') like 'programacion\_task\_dependency\_%' escape '\' or coalesce(name,'') like 'programacion\_agent\_task\_%' escape '\' or coalesce(name,'') like 'programacion\_dependency\_context\_%' escape '\' or coalesce(name,'') like 'programacion\_propagate\_execution\_%' escape '\' or coalesce(name,'') like 'programacion\_deprecate\_declared\_independence\_%' escape '\' or coalesce(name,'') like 'programacion\_revoke\_security\_definer\_%' escape '\' or coalesce(name,'') like 'programacion\_worker\_spec\_%' escape '\' or coalesce(name,'') like 'programacion\_prog017\_%' escape '\')) select count(*)::text,encode(extensions.digest(convert_to(coalesce(string_agg(version||E'\n'||name||E'\n'||sql_text,E'\n--MIGRATION--\n' order by version),''),'UTF8'),'sha256'),'hex') from x" > "$RUNNER_TEMP/lf-grandfathered-migrations.csv"
 
           docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select count(*)::text,encode(extensions.digest(convert_to(string_agg(version||E'\n'||coalesce(name,'')||E'\n'||array_to_string(statements,E'\n--STATEMENT--\n'),E'\n--MIGRATION--\n' order by version),'UTF8'),'sha256'),'hex') from supabase_migrations.schema_migrations where version between '20260801063708' and '20260801170332'" > "$RUNNER_TEMP/lf-legacy-checkpoint.csv"
 
@@ -159,6 +159,7 @@ jobs:
               "programacion_deprecate_declared_independence_",
               "programacion_revoke_security_definer_",
               "programacion_worker_spec_",
+              "programacion_prog017_",
           )
           classified_external_prefixes = (
               "input_governance_",
@@ -173,6 +174,8 @@ jobs:
 
           if not classified("programacion_worker_spec_probe"):
               raise SystemExit("FAIL_CI009_SELFTEST_MANAGED_WORKER_SPEC")
+          if not classified("programacion_prog017_probe"):
+              raise SystemExit("FAIL_CI009_SELFTEST_MANAGED_PROG017")
           if not classified("input_governance_probe"):
               raise SystemExit("FAIL_CI009_SELFTEST_EXTERNAL_OWNER")
           if classified("totally_unknown_future_migration"):
@@ -277,7 +280,7 @@ jobs:
               f"grandfathered={grandfathered_count}/{grandfathered_sha} "
               f"classification_baseline_end={classification_baseline_end}"
           )
-          print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=3/3")
+          print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=4/4")
           PY
 
       - name: Enforce Input Governance migration source parity
