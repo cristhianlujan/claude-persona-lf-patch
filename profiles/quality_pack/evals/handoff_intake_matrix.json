@@ -17,6 +17,16 @@
       "fixture": "fixtures/handoff_intake/materialized_profile_pack_ready.json",
       "expected_intake_status": "QUALITY_INTAKE_READY",
       "expected_next_gate": "SEMANTIC_QUALITY_REVIEW"
+    },
+    {
+      "id": "profile_creator_pr225_object_evidence_ready",
+      "eval_type": "CAPABILITY_EVAL",
+      "fixture": "fixtures/handoff_intake/profile_creator_pr225_real.json",
+      "expected_intake_status": "QUALITY_INTAKE_READY",
+      "expected_next_gate": "SEMANTIC_QUALITY_REVIEW",
+      "source_pr": 225,
+      "source_producer_sha": "96bebdeeca1e343e6671bb62c65d6e1338d00197",
+      "source_artifact_sha": "d6427bda4f8b456124e40ab973ef1487152061f8"
     }
   ],
   "promotion_rule": "No case may become REGRESSION_EVAL until the deterministic intake runner executes actual-vs-expected on isolated fixtures and exact-head CI passes.",
