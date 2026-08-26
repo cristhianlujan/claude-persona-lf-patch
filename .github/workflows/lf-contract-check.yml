@@ -414,27 +414,31 @@ jobs:
             python3 scripts/validate_declared_paths.py --repo-root .
             GITHUB_EVENT_NAME=workflow_dispatch \
               python3 sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py
-            python3 - <<'PY'
-            import importlib.util
-            from pathlib import Path
-
-            validator_path = Path("scripts/lf_contract_check.py")
-            spec = importlib.util.spec_from_file_location("lf_contract_check_gov017_scan", validator_path)
-            if spec is None or spec.loader is None:
-                raise SystemExit("FAIL_GOV017_FORBIDDEN_STATUS_SCANNER_LOAD")
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            module.validate_forbidden_terms([
-                ".github/workflows/lf-contract-check.yml",
-                "gobernanza/contratos/contrato_perfil_lf.yaml",
-                "gobernanza/repositorios/matriz_repos_lf.yaml",
-                "scripts/validate_declared_paths.py",
-            ])
-            print("PASS_GOV017_FORBIDDEN_STATUS_SCAN=4/4")
-            PY
           else
             python3 sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py
           fi
+
+          export LF_GOV017_ROUTE="$route"
+          python3 - <<'PY'
+          import importlib.util
+          import os
+          from pathlib import Path
+
+          if os.environ["LF_GOV017_ROUTE"] == "DECLARED_GOVERNANCE":
+              validator_path = Path("scripts/lf_contract_check.py")
+              spec = importlib.util.spec_from_file_location("lf_contract_check_gov017_scan", validator_path)
+              if spec is None or spec.loader is None:
+                  raise SystemExit("FAIL_GOV017_FORBIDDEN_STATUS_SCANNER_LOAD")
+              module = importlib.util.module_from_spec(spec)
+              spec.loader.exec_module(module)
+              module.validate_forbidden_terms([
+                  ".github/workflows/lf-contract-check.yml",
+                  "gobernanza/contratos/contrato_perfil_lf.yaml",
+                  "gobernanza/repositorios/matriz_repos_lf.yaml",
+                  "scripts/validate_declared_paths.py",
+              ])
+              print("PASS_GOV017_FORBIDDEN_STATUS_SCAN=4/4")
+          PY
 
       - name: Run E.16 governance regression matrices
         run: |
