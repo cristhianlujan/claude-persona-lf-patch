@@ -1,0 +1,16 @@
+{
+  "case_id": "LEARNING_ENGINE_HANDOFF_OUTCOME_001",
+  "request_type": "classify_learning_signal",
+  "learning_signal": "At PR #222 baseline head b46aae16c3d58fe846cd5d84294e58f6073802b4, the Learning Engine good output declares LEARNING_CARD_CANDIDATE_CREATED but contains no created candidate artifact; its next action asks another worker to create that candidate, while handoff_target says learning_backlog and the pack handoff contract routes to quality_pack_review.",
+  "source_context": "cross-agent handoff continuity in ACT-0046 sandbox",
+  "evidence": [
+    "skills/learning_engine/examples/good_output.json@b46aae16c3d58fe846cd5d84294e58f6073802b4: status=LEARNING_CARD_CANDIDATE_CREATED, candidate artifact absent, proposed_next_action asks to create candidate, handoff_target=learning_backlog",
+    "skills/learning_engine/handoffs/to_quality_pack.handoff.json@b46aae16c3d58fe846cd5d84294e58f6073802b4: to=quality_pack_review",
+    "profiles/quality_pack/contracts/quality_gate_contract.md@e81bcf30870980edd09260937f2bc68c105af6a7: handoff quality asks whether the next worker can continue without inventing",
+    "profiles/quality_pack/SKILL.md@e81bcf30870980edd09260937f2bc68c105af6a7: Quality Pack validates an upstream executable artifact and must not invent the solution"
+  ],
+  "source_authority": "ACT-0001 + ACT-0046 + public.v_lf_fuente_operativa",
+  "expected_status": "LEARNING_CARD_CANDIDATE_CREATED",
+  "expected_receiver": "quality_pack_review",
+  "expected_outcome": "QUALITY_PACK_CAN_REVIEW_WITHOUT_INVENTING"
+}

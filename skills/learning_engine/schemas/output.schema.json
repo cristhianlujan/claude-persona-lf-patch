@@ -28,9 +28,32 @@
     "classification": { "type": "string" },
     "source_authority": { "type": "string" },
     "evidence_map": { "type": "array", "items": { "type": "string" } },
+    "candidate_artifact": {
+      "type": "object",
+      "required": ["artifact_id", "artifact_type", "content"],
+      "properties": {
+        "artifact_id": { "type": "string" },
+        "artifact_type": { "type": "string" },
+        "content": { "type": "object" }
+      },
+      "additionalProperties": true
+    },
     "proposed_next_action": { "type": "string" },
     "handoff_target": { "type": "string" },
     "blocking_codes": { "type": "array", "items": { "type": "string" } },
     "next_gate": { "type": "string" }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": { "const": "LEARNING_CARD_CANDIDATE_CREATED" }
+        },
+        "required": ["status"]
+      },
+      "then": {
+        "required": ["candidate_artifact"]
+      }
+    }
+  ]
 }

@@ -1,0 +1,41 @@
+{
+  "status": "LEARNING_CARD_CANDIDATE_CREATED",
+  "learning_candidate_id": "LEARN_CANDIDATE_HANDOFF_OUTCOME_001",
+  "classification": "cross_agent_handoff_reliability",
+  "source_authority": "ACT-0001 + ACT-0046 + public.v_lf_fuente_operativa",
+  "evidence_map": [
+    "Baseline PR #222 head b46aae16c3d58fe846cd5d84294e58f6073802b4 good_output declares LEARNING_CARD_CANDIDATE_CREATED but contains no candidate artifact.",
+    "The same baseline good_output asks the next worker to create the candidate it already claimed to create.",
+    "The same baseline good_output routes handoff_target to learning_backlog while the pack handoff contract routes to quality_pack_review.",
+    "Quality Pack contract requires the next worker to continue without inventing missing structure."
+  ],
+  "candidate_artifact": {
+    "artifact_id": "LEARN_CANDIDATE_HANDOFF_OUTCOME_001",
+    "artifact_type": "LEARNING_CARD_CANDIDATE",
+    "content": {
+      "finding": "Learning Engine can produce a structurally valid handoff whose declared state, delivered artifact and receiver are inconsistent, forcing the next worker to infer what the producer meant.",
+      "observed_failure": "The producer claimed a learning card candidate was created, did not deliver the candidate, then asked the next worker to create it and named a handoff target inconsistent with the pack handoff contract.",
+      "root_cause_hypothesis": "The Learning Engine contract validated output fields independently but did not require the claimed state to be observable or the producer output to be consumable by the declared receiver.",
+      "required_outcome": "A handoff only succeeds when the producer delivers the artifact implied by its status and the real receiver can perform the next gate with that output plus its normal context, without inventing missing intent, structure, evidence or artifact content.",
+      "proposed_change": "Make outcome continuity part of the Learning Engine contract and test the producer-to-Quality-Pack path as a capability eval before generalizing behavioral PASS.",
+      "evidence_refs": [
+        "skills/learning_engine/examples/good_output.json@b46aae16c3d58fe846cd5d84294e58f6073802b4",
+        "skills/learning_engine/handoffs/to_quality_pack.handoff.json@b46aae16c3d58fe846cd5d84294e58f6073802b4",
+        "profiles/quality_pack/contracts/quality_gate_contract.md@e81bcf30870980edd09260937f2bc68c105af6a7",
+        "profiles/quality_pack/SKILL.md@e81bcf30870980edd09260937f2bc68c105af6a7"
+      ],
+      "boundaries": [
+        "single capability case only",
+        "no general BEHAVIORAL_EVAL_PASS claim",
+        "no Supabase write",
+        "no Google Docs write",
+        "no runtime or production enablement",
+        "no automatic impact"
+      ]
+    }
+  },
+  "proposed_next_action": "Quality Pack reviews the included candidate artifact for evidence integrity, governance and handoff usability; it must not recreate or reinterpret the candidate.",
+  "handoff_target": "quality_pack_review",
+  "blocking_codes": [],
+  "next_gate": "QUALITY_PACK_REVIEW"
+}

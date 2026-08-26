@@ -1,32 +1,84 @@
 {
   "pack_id": "learning_engine",
   "version": "v0.1_candidate",
-  "minimum_pass_rate": "5/5",
+  "validation_scope": "STRUCTURAL_ONLY",
+  "behavioral_eval_status": "NOT_EXECUTED",
+  "minimum_pass_rate": "5/5 regression evals when behavior is executed",
+  "eval_types": {
+    "REGRESSION_EVAL": "Protects previously validated behavior and must remain at 100% for protected cases before impact.",
+    "CAPABILITY_EVAL": "Measures desired or emerging behavior; failure may be informative and never authorizes impact by itself."
+  },
   "cases": [
     {
       "id": "happy_path",
+      "eval_type": "REGRESSION_EVAL",
       "fixture": "fixtures/happy_path/input.json",
       "expected_status": "LEARNING_CARD_CANDIDATE_CREATED"
     },
     {
       "id": "missing_inputs",
+      "eval_type": "REGRESSION_EVAL",
       "fixture": "fixtures/missing_inputs/input.json",
       "expected_status": "RETURN_TO_ORCHESTRATOR"
     },
     {
       "id": "unsafe_or_blocked",
+      "eval_type": "REGRESSION_EVAL",
       "fixture": "fixtures/unsafe_or_blocked/input.json",
       "expected_status": "BLOCK_PIPELINE"
     },
     {
       "id": "self_repair",
+      "eval_type": "REGRESSION_EVAL",
       "fixture": "fixtures/self_repair/bad_output.json",
       "expected_status": "RETURN_TO_WORKER_FOR_SELF_REPAIR"
     },
     {
       "id": "profile_card_handoff",
+      "eval_type": "REGRESSION_EVAL",
       "fixture": "fixtures/profile_card_handoff/input.json",
       "expected_status": "HANDOFF_TO_ACT_0045"
+    },
+    {
+      "id": "trace_without_target_eval",
+      "eval_type": "CAPABILITY_EVAL",
+      "fixture": "fixtures/trace_without_target_eval/input.json",
+      "expected_status": "RETURN_TO_ORCHESTRATOR",
+      "expected_blocking_code": "TARGET_EVAL_REQUIRED"
+    },
+    {
+      "id": "handoff_without_executable_receiver",
+      "eval_type": "CAPABILITY_EVAL",
+      "fixture": "fixtures/handoff_without_executable_receiver/input.json",
+      "expected_status": "RETURN_TO_ORCHESTRATOR",
+      "expected_blocking_code": "BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER"
+    },
+    {
+      "id": "handoff_layered_receiver_evidence",
+      "eval_type": "CAPABILITY_EVAL",
+      "fixture": "fixtures/handoff_layered_receiver_evidence/input.json",
+      "expected_status": "RETURN_TO_ORCHESTRATOR",
+      "expected_blocking_code": "SEMANTIC_QUALITY_REVIEW_NOT_EXECUTED",
+      "forbidden_blocking_code": "BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER",
+      "expected_evidence_layers": [
+        "DETERMINISTIC_INTAKE",
+        "SEMANTIC_REVIEW",
+        "FULL_HANDOFF_OUTCOME"
+      ]
+    },
+    {
+      "id": "learning_engine_to_quality_pack_handoff_outcome",
+      "eval_type": "CAPABILITY_EVAL",
+      "fixture": "fixtures/handoff_outcome/input.json",
+      "producer_output": "fixtures/handoff_outcome/producer_actual.json",
+      "receiver_output": "fixtures/handoff_outcome/quality_review_actual.json",
+      "receipt": "fixtures/handoff_outcome/receipt.json",
+      "expected_status": "LEARNING_CARD_CANDIDATE_CREATED",
+      "expected_receiver": "quality_pack_review",
+      "receiver_execution_target": null,
+      "expected_outcome": "QUALITY_PACK_CAN_REVIEW_WITHOUT_INVENTING",
+      "expected_handoff_evidence_status": "ARTIFACT_CONSUMABILITY_DEMONSTRATED_BEHAVIORAL_NOT_PROVEN",
+      "expected_behavioral_blocking_code": "BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER"
     }
   ]
 }
