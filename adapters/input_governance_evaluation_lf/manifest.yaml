@@ -11,6 +11,7 @@ required_files:
   - manifest.yaml
   - references/remediation_quality_contract.md
   - references/research_basis_2026.md
+  - references/baseline_run209_20260826.md
   - examples/golden_remediation_examples.md
   - examples/remediation_antipatterns.md
   - evals/remediation_quality_suite.yaml
