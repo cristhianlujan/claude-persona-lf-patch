@@ -1,0 +1,13 @@
+{
+  "review_id": "QUALITY-EVIDENCE-LINEAGE-CANARY-001",
+  "reviewed_artifact": "profiles/evidence_lineage_reviewer_lf/manifest.json",
+  "review_mode": "SAME_SESSION_SEMANTIC_REVIEW",
+  "independent_review": false,
+  "verdict": "PASS_WITH_RESTRICTIONS",
+  "score_breakdown": {"contract_schema_compliance":5,"evidence_integrity":5,"lf_safety_governance":5,"handoff_readiness":5,"leakage_scope_control":5,"total":25},
+  "evidence_map": ["candidate validator PASS","authority read before write","destination reconciled against registry and contract","runtime remains NO_HABILITADO","automatic impact remains BLOQUEADO","manifest required by registry is materialized"],
+  "blocking_codes": [],
+  "repair_actions": [],
+  "remaining_risks": ["Semantic review was executed in the builder session, not by an independent auditor.","Longitudinal operational usefulness is not yet demonstrated by repeated real tasks."],
+  "next_gate": "EXACT_HEAD_CI_AND_MERGE_CANDIDATE_READ_ONLY"
+}

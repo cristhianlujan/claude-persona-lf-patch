@@ -1,0 +1,11 @@
+{
+  "schema_version": "lf-profile-pack-manifest/v1",
+  "profile_pack_id": "PROFILE_TEMPLATE",
+  "profile_slug": "_template",
+  "operation": "CREACION_PERFIL_LF",
+  "document_status": "TEMPLATE",
+  "operational_status": "READ_ONLY",
+  "runtime": "NO_HABILITADO",
+  "automatic_impact": "BLOQUEADO",
+  "required_files": ["SKILL.md","README.md","contracts/main_contract.md","schemas/output.schema.json","judges/mini_judge.md","evals/eval_matrix.json","manifest.json"]
+}

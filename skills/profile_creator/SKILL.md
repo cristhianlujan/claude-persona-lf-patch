@@ -32,6 +32,7 @@ A structured profile pack candidate containing:
 - Evals.
 - Handoffs.
 - Adapters.
+- `manifest.json` when the resolved `PROFILE_PACK` destination requires it. The manifest must preserve profile identity, operation, file inventory and the candidate/read-only/runtime/automatic-impact boundaries from governing authority.
 
 When returning `PROFILE_PACK_CREATED`, the output must also deliver the created candidate through an exact `deliverable_artifact_ref`. The receiver must be able to inspect that artifact directly; a pack ID, a list of intended filenames or a prose description is not evidence that the pack exists.
 
@@ -59,6 +60,8 @@ Block or return to orchestrator when:
 - The request enables runtime or production general.
 - The output is only prose or prompt text.
 - `PROFILE_PACK_CREATED` is claimed without a resolvable created candidate artifact.
+- The resolved `PROFILE_PACK` destination requires `manifest.json` and the created candidate does not materialize it.
+- The manifest contradicts the governing profile identity, operation, candidate/read-only status, runtime boundary or automatic-impact boundary.
 - Deterministic intake evidence is presented as semantic Quality Pack approval.
 - A full handoff outcome is claimed while a required receiver layer remains unexecuted.
 - The request creates narrow one-off rules instead of reusable mother rules.
