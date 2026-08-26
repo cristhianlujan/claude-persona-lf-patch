@@ -94,11 +94,11 @@ async function verifyLegacy(taskId:number, verifierIdentity:string, runId:string
   const p=await rpc<Pending>("fn_agent_task_pending_worker_evidence_v1",{p_task_id:taskId});
   if(!p||p.request_ref!==`agent-task://${taskId}`||p.worker_receipt_status!=="PASS") throw new Error("PENDING_EVIDENCE_CONTRACT_INVALID");
   const valid=argsForV1(p,verifierIdentity,runId,workflowSha);
-  await rpcMustFail("fn_external_verify_worker_evidence_v1",{...valid,p_expected_head_sha:flip(p.head_sha)},"EXTERNAL_VERIFY_HEAD_MISMATCH");
-  await rpcMustFail("fn_external_verify_worker_evidence_v1",{...valid,p_expected_evidence_sha256:flip(p.evidence_sha256)},"EXTERNAL_VERIFY_EVIDENCE_SHA_MISMATCH");
-  await rpcMustFail("fn_external_verify_worker_evidence_v1",{...valid,p_expected_source_ref:`${p.source_ref}-mutated`},"EXTERNAL_VERIFY_SOURCE_REF_MISMATCH");
-  await rpcMustFail("fn_external_verify_worker_evidence_v1",{...valid,p_verifier_identity:p.source_system},"EXTERNAL_VERIFIER_IDENTITY_INVALID");
-  return await rpc<Record<string,unknown>>("fn_external_verify_worker_evidence_v1",valid);
+  await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1",{...valid,p_expected_head_sha:flip(p.head_sha)},"EXTERNAL_VERIFY_HEAD_MISMATCH");
+  await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1",{...valid,p_expected_evidence_sha256:flip(p.evidence_sha256)},"EXTERNAL_VERIFY_EVIDENCE_SHA_MISMATCH");
+  await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1",{...valid,p_expected_source_ref:`${p.source_ref}-mutated`},"EXTERNAL_VERIFY_SOURCE_REF_MISMATCH");
+  await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1",{...valid,p_verifier_identity:p.source_system},"EXTERNAL_VERIFIER_IDENTITY_INVALID");
+  return await rpc<Record<string,unknown>>("fn_agent_task_external_verify_worker_evidence_v1",valid);
 }
 
 async function verifyMachine(taskId:number, verifierIdentity:string, runId:string, workflowSha:string, observed:Record<string,unknown>):Promise<{result:Record<string,unknown>; probes:Record<string,string>}> {
@@ -107,15 +107,15 @@ async function verifyMachine(taskId:number, verifierIdentity:string, runId:strin
   if(!/^[0-9a-f]{40}$/.test(p.head_sha)||!/^[0-9a-f]{64}$/.test(p.evidence_sha256)) throw new Error("PENDING_EVIDENCE_IDENTITY_INVALID");
   if(!observed||typeof observed!=="object"||observed.remote_readback_status!=="PASS"||(observed.independent_execution as Record<string,unknown>|undefined)?.status!=="PASS") throw new Error("OBSERVED_MACHINE_EVIDENCE_INVALID");
   const valid=argsForV2(p,verifierIdentity,runId,workflowSha,observed);
-  await rpcMustFail("fn_external_verify_worker_evidence_v1",{...valid,p_expected_head_sha:flip(p.head_sha)},"EXTERNAL_VERIFY_HEAD_MISMATCH");
-  await rpcMustFail("fn_external_verify_worker_evidence_v1",{...valid,p_expected_evidence_sha256:flip(p.evidence_sha256)},"EXTERNAL_VERIFY_EVIDENCE_SHA_MISMATCH");
-  await rpcMustFail("fn_external_verify_worker_evidence_v1",{...valid,p_expected_source_ref:`${p.source_ref}-mutated`},"EXTERNAL_VERIFY_SOURCE_REF_MISMATCH");
+  await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1",{...valid,p_expected_head_sha:flip(p.head_sha)},"EXTERNAL_VERIFY_HEAD_MISMATCH");
+  await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1",{...valid,p_expected_evidence_sha256:flip(p.evidence_sha256)},"EXTERNAL_VERIFY_EVIDENCE_SHA_MISMATCH");
+  await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1",{...valid,p_expected_source_ref:`${p.source_ref}-mutated`},"EXTERNAL_VERIFY_SOURCE_REF_MISMATCH");
   const wrongRun={...observed,producer_run_id:Number(observed.producer_run_id??0)+1};
-  await rpcMustFail("fn_external_verify_worker_evidence_v1",{...valid,p_verification_payload:{...(valid.p_verification_payload as Record<string,unknown>),observed:wrongRun}},"EXTERNAL_VERIFY_V2_PRODUCER_RUN_MISMATCH");
+  await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1",{...valid,p_verification_payload:{...(valid.p_verification_payload as Record<string,unknown>),observed:wrongRun}},"EXTERNAL_VERIFY_V2_PRODUCER_RUN_MISMATCH");
   const wrongTree={...observed,remote_tree_sha:flip(String(observed.remote_tree_sha??"0"))};
-  await rpcMustFail("fn_external_verify_worker_evidence_v1",{...valid,p_verification_payload:{...(valid.p_verification_payload as Record<string,unknown>),observed:wrongTree}},"EXTERNAL_VERIFY_V2_TREE_SHA_MISMATCH");
-  await rpcMustFail("fn_external_verify_worker_evidence_v1",{...valid,p_verifier_identity:p.source_system},"EXTERNAL_VERIFIER_IDENTITY_INVALID");
-  const result=await rpc<Record<string,unknown>>("fn_external_verify_worker_evidence_v1",valid);
+  await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1",{...valid,p_verification_payload:{...(valid.p_verification_payload as Record<string,unknown>),observed:wrongTree}},"EXTERNAL_VERIFY_V2_TREE_SHA_MISMATCH");
+  await rpcMustFail("fn_agent_task_external_verify_worker_evidence_v1",{...valid,p_verifier_identity:p.source_system},"EXTERNAL_VERIFIER_IDENTITY_INVALID");
+  const result=await rpc<Record<string,unknown>>("fn_agent_task_external_verify_worker_evidence_v1",valid);
   return {result,probes:{wrong_head:"PASS",wrong_evidence_sha:"PASS",wrong_source_ref:"PASS",wrong_producer_run:"PASS",wrong_tree_sha:"PASS",self_verification:"PASS"}};
 }
 
@@ -129,10 +129,10 @@ async function verifyWorkerV10(taskId:number,verifierIdentity:string,runId:strin
   const pending=await rpc<PendingV10[]>("fn_agent_task_pending_worker_v10_evidence_v1",{p_task_id:taskId});
   if(!Array.isArray(pending)||pending.length<1) throw new Error("PENDING_V10_EVIDENCE_CONTRACT_INVALID");
   const first=pending[0]; const valid=argsForV10(first,verifierIdentity,runId,workflowSha,channelToken);
-  await rpcMustFail("fn_external_verify_worker_v10_evidence_v1",{...valid,p_expected_head_sha:flip(first.head_sha)},"EXTERNAL_V10_VERIFY_HEAD_MISMATCH");
-  await rpcMustFail("fn_external_verify_worker_v10_evidence_v1",{...valid,p_expected_evidence_sha256:flip(first.evidence_sha256)},"EXTERNAL_V10_VERIFY_EVIDENCE_SHA_MISMATCH");
+  await rpcMustFail("fn_agent_task_external_verify_worker_v10_evidence_v1",{...valid,p_expected_head_sha:flip(first.head_sha)},"EXTERNAL_V10_VERIFY_HEAD_MISMATCH");
+  await rpcMustFail("fn_agent_task_external_verify_worker_v10_evidence_v1",{...valid,p_expected_evidence_sha256:flip(first.evidence_sha256)},"EXTERNAL_V10_VERIFY_EVIDENCE_SHA_MISMATCH");
   const results:Record<string,unknown>[]=[];
-  for(const p of pending){const v=await rpc<Record<string,unknown>>("fn_external_verify_worker_v10_evidence_v1",argsForV10(p,verifierIdentity,runId,workflowSha,channelToken)); if(v?.status!=="VERIFIED") throw new Error("V10_VERIFICATION_RESULT_NOT_VERIFIED"); results.push(v);}
+  for(const p of pending){const v=await rpc<Record<string,unknown>>("fn_agent_task_external_verify_worker_v10_evidence_v1",argsForV10(p,verifierIdentity,runId,workflowSha,channelToken)); if(v?.status!=="VERIFIED") throw new Error("V10_VERIFICATION_RESULT_NOT_VERIFIED"); results.push(v);}
   return results;
 }
 
