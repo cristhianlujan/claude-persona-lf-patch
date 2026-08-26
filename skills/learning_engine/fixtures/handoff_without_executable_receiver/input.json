@@ -1,0 +1,20 @@
+{
+  "case_id": "LEARNING_ENGINE_HANDOFF_EXECUTABLE_RECEIVER_GATE_001",
+  "request_type": "claim_handoff_behavioral_outcome",
+  "learning_signal": "A producer artifact is materialized and an assisted rubric review can interpret it, but no verified executable receiver target has run the next gate.",
+  "source_context": "Profile Creator to Quality Pack remediation discovered during ACT-0046 handoff evaluation",
+  "evidence": [
+    "The producer now delivers an exact resolvable candidate artifact.",
+    "An assisted rubric review reports handoff_readiness=5 without reconstructing the artifact.",
+    "profiles/quality_pack exposes Markdown skill, contracts and judges but no verified execution runner.",
+    ".claude/scripts/validate_artifact_output.py validates artifact encoding, structure and parsability only; it does not execute Quality Pack behavior.",
+    "The prior Learning Engine to Quality Pack single-case receipt states producer and receiver roles were exercised in the same controlled model session."
+  ],
+  "receiver": "profiles/quality_pack",
+  "receiver_execution_target": null,
+  "assisted_review_available": true,
+  "proposed_claim": "HANDOFF_CAPABILITY_DEMONSTRATED_SINGLE_CASE",
+  "source_authority": "ACT-0001 + ACT-0046 + public.v_lf_fuente_operativa",
+  "expected_status": "RETURN_TO_ORCHESTRATOR",
+  "expected_blocking_code": "BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER"
+}

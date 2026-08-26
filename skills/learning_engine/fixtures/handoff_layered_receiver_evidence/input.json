@@ -1,0 +1,38 @@
+{
+  "case_id": "LEARNING_ENGINE_LAYERED_RECEIVER_EVIDENCE_001",
+  "learning_signal": "A real deterministic receiver intake now executes successfully for preserved Profile Creator and Learning Engine artifacts, while semantic Quality Pack review remains unexecuted.",
+  "source_evidence": {
+    "quality_pack_pr": 227,
+    "quality_pack_head": "aae3e67fbf7bbeb8a84e5e9be042d559fba2acea",
+    "deterministic_intake_execution": {
+      "status": "PASS",
+      "cases_passed": 4,
+      "cases_total": 4,
+      "real_producers": [222, 225],
+      "evidence_ref": "sandbox/lf_contract_gate_test/quality_pack_intake_runner_self_test_20260826.json",
+      "governed_receipt_ref": "sandbox/lf_contract_gate_test/receipts/receipt_quality_pack_handoff_intake_20260826.json",
+      "exact_head_ci_status": "PENDING"
+    },
+    "semantic_quality_review": {
+      "status": "NOT_EXECUTED"
+    }
+  },
+  "previous_classification": {
+    "behavioral_blocking_code": "BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER"
+  },
+  "expected_classification": {
+    "deterministic_intake_status": "PASS_SANDBOX_CI_PENDING",
+    "semantic_review_status": "NOT_EXECUTED",
+    "full_handoff_outcome_status": "NOT_PROVEN",
+    "behavioral_blocking_code": "SEMANTIC_QUALITY_REVIEW_NOT_EXECUTED"
+  },
+  "expected_status": "RETURN_TO_ORCHESTRATOR",
+  "expected_blocking_code": "SEMANTIC_QUALITY_REVIEW_NOT_EXECUTED",
+  "forbidden_blocking_code": "BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER",
+  "forbidden_claims": [
+    "BEHAVIORAL_EVAL_PASS",
+    "PASS_TO_COMPOSER",
+    "PASS_WITH_RESTRICTIONS",
+    "full receiver semantic outcome proven"
+  ]
+}
