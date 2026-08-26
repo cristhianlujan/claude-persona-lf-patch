@@ -1,3 +1,4 @@
+# verification rerun after governed safe-autofix PostgREST wrapper
 name: Input Governance REC001 Orchestrator V2
 
 on:
