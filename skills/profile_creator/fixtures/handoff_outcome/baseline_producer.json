@@ -1,9 +1,9 @@
 {
+  "source_ref": "skills/profile_creator/examples/good_output.json@da842754bb2564f0202c81b9e449550e171751a9",
   "status": "PROFILE_PACK_CREATED",
   "profile_pack_id": "PROFILE_UI_INTERFACE_ARCHITECT_LF_CANDIDATE",
   "source_authority": "ACT-0001 + ACT-0045 + public.v_lf_fuente_operativa",
   "deliverable_created": true,
-  "deliverable_artifact_ref": "fixtures/handoff_outcome/candidate_pack.json",
   "files_created": [
     "README.md",
     "PROFILE.md",
@@ -21,7 +21,6 @@
   "evidence_map": {
     "router_applied": true,
     "asset_verified": "ACT-0045",
-    "created_artifact_resolves": true,
     "runtime_enabled": false,
     "automatic_impact": "BLOCKED"
   },

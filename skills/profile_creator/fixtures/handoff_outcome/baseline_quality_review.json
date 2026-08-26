@@ -1,0 +1,30 @@
+{
+  "review_id": "QP_PROFILE_CREATOR_HANDOFF_BASELINE_001",
+  "reviewed_artifact": "PROFILE_UI_INTERFACE_ARCHITECT_LF_CANDIDATE",
+  "verdict": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+  "score_breakdown": {
+    "contract_schema_compliance": 5,
+    "evidence_integrity": 3,
+    "lf_safety_governance": 5,
+    "handoff_readiness": 0,
+    "leakage_scope_control": 5,
+    "total": 18
+  },
+  "evidence_map": [
+    "The producer declares PROFILE_PACK_CREATED and deliverable_created=true.",
+    "The producer supplies only relative filenames and does not deliver the created pack or an exact retrievable artifact reference.",
+    "Quality Pack requires an upstream artifact and cannot inspect the claimed pack from the producer output alone."
+  ],
+  "blocking_codes": ["CREATED_ARTIFACT_NOT_DELIVERED"],
+  "repair_actions": [
+    {
+      "target_worker": "skills/profile_creator",
+      "missing_or_failed_item": "Consumable created profile pack",
+      "why_it_fails": "Quality Pack cannot inspect the deliverable that the producer claims was created.",
+      "required_fix": "Deliver the actual pack or an exact retrievable artifact reference that resolves the created pack; do not require Quality Pack to reconstruct it from a filename list.",
+      "blocking_code": "CREATED_ARTIFACT_NOT_DELIVERED"
+    }
+  ],
+  "remaining_risks": ["Schema-valid output can still claim creation without a reviewable deliverable."],
+  "next_gate": "PROFILE_CREATOR_SELF_REPAIR"
+}

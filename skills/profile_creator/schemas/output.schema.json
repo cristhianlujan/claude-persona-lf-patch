@@ -25,9 +25,22 @@
     "profile_pack_id": { "type": "string" },
     "source_authority": { "type": "string" },
     "deliverable_created": { "type": "boolean" },
+    "deliverable_artifact_ref": { "type": "string", "minLength": 1 },
     "files_created": { "type": "array", "items": { "type": "string" } },
     "evidence_map": { "type": "object" },
     "blocking_codes": { "type": "array", "items": { "type": "string" } },
     "next_gate": { "type": "string" }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "status": { "const": "PROFILE_PACK_CREATED" } },
+        "required": ["status"]
+      },
+      "then": {
+        "required": ["deliverable_artifact_ref"],
+        "properties": { "deliverable_created": { "const": true } }
+      }
+    }
+  ]
 }

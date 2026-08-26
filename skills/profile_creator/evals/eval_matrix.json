@@ -1,26 +1,61 @@
 {
   "pack_id": "profile_creator",
   "version": "v0.1_candidate",
+  "validation_scope": "STRUCTURAL_ONLY",
+  "behavioral_eval_status": "NOT_EXECUTED",
+  "minimum_pass_rate": "4/4 regression evals when behavior is executed",
+  "eval_types": {
+    "REGRESSION_EVAL": "Protects previously validated Profile Creator behavior.",
+    "CAPABILITY_EVAL": "Measures desired behavior not yet protected by the regression baseline."
+  },
   "cases": [
     {
       "id": "happy_path",
+      "eval_type": "REGRESSION_EVAL",
       "fixture": "fixtures/happy_path/input.json",
       "expected_status": "PROFILE_PACK_CREATED"
     },
     {
       "id": "missing_inputs",
+      "eval_type": "REGRESSION_EVAL",
       "fixture": "fixtures/missing_inputs/input.json",
       "expected_status": "RETURN_TO_ORCHESTRATOR"
     },
     {
       "id": "unsafe_or_blocked",
+      "eval_type": "REGRESSION_EVAL",
       "fixture": "fixtures/unsafe_or_blocked/input.json",
       "expected_status": "BLOCK_PIPELINE"
     },
     {
       "id": "self_repair",
+      "eval_type": "REGRESSION_EVAL",
       "fixture": "fixtures/self_repair/bad_output.json",
       "expected_status": "RETURN_TO_WORKER_FOR_SELF_REPAIR"
+    },
+    {
+      "id": "profile_creator_to_quality_pack_handoff_outcome",
+      "eval_type": "CAPABILITY_EVAL",
+      "fixture": "fixtures/handoff_outcome/input.json",
+      "baseline_producer": "fixtures/handoff_outcome/baseline_producer.json",
+      "baseline_receiver": "fixtures/handoff_outcome/baseline_quality_review.json",
+      "baseline_receipt": "fixtures/handoff_outcome/baseline_receipt.json",
+      "candidate_producer": "fixtures/handoff_outcome/candidate_producer.json",
+      "candidate_artifact": "fixtures/handoff_outcome/candidate_pack.json",
+      "candidate_receiver": "fixtures/handoff_outcome/candidate_quality_review.json",
+      "candidate_receipt": "fixtures/handoff_outcome/candidate_receipt.json",
+      "deterministic_intake_execution": "fixtures/handoff_outcome/deterministic_intake_execution.json",
+      "expected_status": "PROFILE_PACK_CREATED",
+      "expected_receiver": "quality_pack_review",
+      "target_outcome": "QUALITY_PACK_CAN_REVIEW_CREATED_PROFILE_PACK_WITHOUT_INVENTING",
+      "baseline_expected_result": "TARGET_CAPABILITY_GAP_REPRODUCED",
+      "baseline_expected_gap_code": "CREATED_ARTIFACT_NOT_DELIVERED",
+      "historical_candidate_result": "ARTIFACT_CONSUMABILITY_DEMONSTRATED_BEHAVIORAL_NOT_PROVEN",
+      "expected_deterministic_intake_status": "QUALITY_INTAKE_READY",
+      "expected_semantic_review_status": "NOT_EXECUTED",
+      "expected_full_handoff_outcome_status": "NOT_PROVEN",
+      "historical_behavioral_blocking_code": "BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER",
+      "behavioral_blocking_code": "SEMANTIC_QUALITY_REVIEW_NOT_EXECUTED"
     }
   ]
 }

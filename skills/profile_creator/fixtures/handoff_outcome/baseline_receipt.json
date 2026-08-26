@@ -1,0 +1,21 @@
+{
+  "execution_id": "PROFILE-CREATOR-HANDOFF-BASELINE-2026-08-26",
+  "eval_id": "profile_creator_to_quality_pack_handoff_outcome",
+  "execution_scope": "TARGET_EVAL_BASELINE",
+  "producer": "skills/profile_creator@da842754bb2564f0202c81b9e449550e171751a9",
+  "producer_output_ref": "fixtures/handoff_outcome/baseline_producer.json",
+  "receiver": "profiles/quality_pack@da842754bb2564f0202c81b9e449550e171751a9",
+  "receiver_output_ref": "fixtures/handoff_outcome/baseline_quality_review.json",
+  "observed_outcome": {
+    "producer_claimed_pack_created": true,
+    "created_pack_consumable_by_receiver": false,
+    "receiver_completed_quality_review": false,
+    "receiver_required_invention": true,
+    "governance_boundaries_preserved": true
+  },
+  "result": "TARGET_CAPABILITY_GAP_REPRODUCED",
+  "gap_code": "CREATED_ARTIFACT_NOT_DELIVERED",
+  "target_outcome": "QUALITY_PACK_CAN_REVIEW_CREATED_PROFILE_PACK_WITHOUT_INVENTING",
+  "candidate_patch_applied": false,
+  "general_behavioral_eval_status": "NOT_CLAIMED"
+}
