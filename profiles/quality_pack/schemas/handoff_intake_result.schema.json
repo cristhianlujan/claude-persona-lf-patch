@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "lf://quality-pack/handoff-intake-result.schema.json",
+  "title": "Quality Pack Deterministic Intake Result",
+  "type": "object",
+  "required": [
+    "intake_status",
+    "validation_scope",
+    "semantic_quality_review_status",
+    "quality_pack_verdict",
+    "blocking_codes",
+    "evidence_map",
+    "next_gate"
+  ],
+  "properties": {
+    "intake_status": {
+      "enum": [
+        "QUALITY_INTAKE_READY",
+        "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+        "RETURN_TO_ORCHESTRATOR",
+        "BLOCK_PIPELINE"
+      ]
+    },
+    "validation_scope": {
+      "const": "DETERMINISTIC_INTAKE_ONLY"
+    },
+    "semantic_quality_review_status": {
+      "const": "NOT_EXECUTED"
+    },
+    "quality_pack_verdict": {
+      "type": "null"
+    },
+    "blocking_codes": {
+      "type": "array",
+      "items": {"type": "string"},
+      "uniqueItems": true
+    },
+    "evidence_map": {
+      "type": "array",
+      "items": {"type": "string"},
+      "minItems": 1
+    },
+    "next_gate": {
+      "enum": [
+        "SEMANTIC_QUALITY_REVIEW",
+        "SELF_REPAIR_THEN_RETRY_INTAKE",
+        "ORCHESTRATOR_REPAIR_CONTEXT",
+        "BLOCKED"
+      ]
+    }
+  },
+  "additionalProperties": false
+}
