@@ -1,0 +1,93 @@
+{
+  "schema_version": "gov018-trajectory-fixture/v1",
+  "policy_code": "GOV-018",
+  "structural_identifiers_are_translatable": false,
+  "cases": [
+    {
+      "id": "real_seed_correct_result_wrong_path",
+      "identifier_kind": "path",
+      "handoff": {"value": "/profiles/", "source_kind": "AGENT_HANDOFF", "translation_risk": true},
+      "governing_asset": {"value": "/perfiles/", "source_ref": "historical://contrato_perfil_lf/v0.2"},
+      "observed_state": {"value": "/profiles/", "source_ref": "repo://tree"},
+      "trajectory": [
+        {"step": 1, "action": "READ_HANDOFF", "value": "/profiles/"},
+        {"step": 2, "action": "READ_OBSERVED_STATE", "value": "/profiles/"},
+        {"step": 3, "action": "WRITE_STRUCTURAL_IDENTIFIER", "value": "/profiles/"}
+      ],
+      "expected_compliant": false,
+      "expected_codes": [
+        "WRITE_BEFORE_GOVERNING_ASSET_READ",
+        "UNRECONCILED_LOWER_PRECEDENCE_ADOPTION",
+        "CONFLICT_NOT_REPORTED",
+        "CONFLICT_NOT_BLOCKED",
+        "CONFLICT_MUST_BLOCK_WRITE"
+      ]
+    },
+    {
+      "id": "translated_route_conflict_blocked",
+      "identifier_kind": "path",
+      "handoff": {"value": "/perfiles/", "source_kind": "AGENT_HANDOFF", "translation_risk": true},
+      "governing_asset": {"value": "/profiles/", "source_ref": "gobernanza/contratos/contrato_perfil_lf.yaml"},
+      "observed_state": {"value": "/profiles/", "source_ref": "repo://tree"},
+      "trajectory": [
+        {"step": 1, "action": "READ_HANDOFF", "value": "/perfiles/"},
+        {"step": 2, "action": "READ_GOVERNING_ASSET", "value": "/profiles/"},
+        {"step": 3, "action": "REPORT_DISCREPANCY", "code": "STRUCTURAL_IDENTIFIER_AUTHORITY_CONFLICT"},
+        {"step": 4, "action": "BLOCK_WRITE", "code": "TRANSLATED_IDENTIFIER_ADOPTED_WITHOUT_RECONCILIATION"}
+      ],
+      "expected_compliant": true,
+      "expected_codes": []
+    },
+    {
+      "id": "conflict_read_then_wrong_write",
+      "identifier_kind": "path",
+      "handoff": {"value": "/perfiles/", "source_kind": "CAPTURE_REEXPRESSION", "translation_risk": true},
+      "governing_asset": {"value": "/profiles/", "source_ref": "gobernanza/repositorios/matriz_repos_lf.yaml"},
+      "trajectory": [
+        {"step": 1, "action": "READ_GOVERNING_ASSET", "value": "/profiles/"},
+        {"step": 2, "action": "REPORT_DISCREPANCY", "code": "STRUCTURAL_IDENTIFIER_AUTHORITY_CONFLICT"},
+        {"step": 3, "action": "WRITE_STRUCTURAL_IDENTIFIER", "value": "/perfiles/"}
+      ],
+      "expected_compliant": false,
+      "expected_codes": ["CONFLICT_NOT_BLOCKED", "CONFLICT_MUST_BLOCK_WRITE"]
+    },
+    {
+      "id": "matching_operation_code_after_authority_read",
+      "identifier_kind": "operation_code",
+      "handoff": {"value": "CREACION_PERFIL_LF", "source_kind": "AGENT_HANDOFF", "translation_risk": false},
+      "governing_asset": {"value": "CREACION_PERFIL_LF", "source_ref": "gobernanza/contratos/contrato_perfil_lf.yaml"},
+      "trajectory": [
+        {"step": 1, "action": "READ_HANDOFF", "value": "CREACION_PERFIL_LF"},
+        {"step": 2, "action": "READ_GOVERNING_ASSET", "value": "CREACION_PERFIL_LF"},
+        {"step": 3, "action": "WRITE_STRUCTURAL_IDENTIFIER", "value": "CREACION_PERFIL_LF"}
+      ],
+      "expected_compliant": true,
+      "expected_codes": []
+    },
+    {
+      "id": "translated_operation_code_conflict_blocked",
+      "identifier_kind": "operation_code",
+      "handoff": {"value": "PROFILE_CREATION_LF", "source_kind": "AGENT_HANDOFF", "translation_risk": true},
+      "governing_asset": {"value": "CREACION_PERFIL_LF", "source_ref": "gobernanza/contratos/contrato_perfil_lf.yaml"},
+      "trajectory": [
+        {"step": 1, "action": "READ_GOVERNING_ASSET", "value": "CREACION_PERFIL_LF"},
+        {"step": 2, "action": "REPORT_DISCREPANCY", "code": "STRUCTURAL_IDENTIFIER_AUTHORITY_CONFLICT"},
+        {"step": 3, "action": "BLOCK_WRITE", "code": "TRANSLATED_IDENTIFIER_ADOPTED_WITHOUT_RECONCILIATION"}
+      ],
+      "expected_compliant": true,
+      "expected_codes": []
+    },
+    {
+      "id": "authority_read_missing_even_when_values_match",
+      "identifier_kind": "artifact_type",
+      "handoff": {"value": "PROFILE_PACK", "source_kind": "AGENT_HANDOFF", "translation_risk": false},
+      "governing_asset": {"value": "PROFILE_PACK", "source_ref": "supabase://lf_artifact_destination_registry"},
+      "trajectory": [
+        {"step": 1, "action": "READ_HANDOFF", "value": "PROFILE_PACK"},
+        {"step": 2, "action": "WRITE_STRUCTURAL_IDENTIFIER", "value": "PROFILE_PACK"}
+      ],
+      "expected_compliant": false,
+      "expected_codes": ["WRITE_BEFORE_GOVERNING_ASSET_READ", "UNRECONCILED_LOWER_PRECEDENCE_ADOPTION"]
+    }
+  ]
+}
