@@ -1,22 +1,30 @@
-version: v0.2
+version: v0.3
 status: CANDIDATO_READ_ONLY
 project: 00_GOBERNANZA_PORTAFOLIO_OPERATIVO_LF
 rule: CTRL_NO_ASSUME_WHEN_READ_ACCESS_EXISTS
 repositories:
   - id: lf_artifacts
     repo: cristhianlujan/claude-persona-lf-patch
-    use: perfiles_skills_cards_lf
+    use: profiles_skills_cards_lf
+    path_language: en
+    path_language_note: structural identifiers are not translated across handoffs
     allowed_paths:
-      - /perfiles/
-      - /perfiles/_plantilla/
+      - /profiles/
+      - /profiles/_template/
       - /skills/
-      - /skills/_plantilla/
+      - /skills/_template/
       - /cards/
-      - /cards/_plantilla/
       - /gobernanza/contratos/
       - /gobernanza/procedimientos/
       - /gobernanza/repositorios/
       - /gobernanza/judges/
+    legacy_exceptions:
+      - path: /skills/creating-integral-user-stories/perfiles/
+        status: FROZEN
+        note: five internal profiles use PERFIL_*.md in UPPER_UNDERSCORE and scripts/validate_package.py is wired to perfiles/; do not rename
+    pending_paths:
+      - path: /cards/_template/
+        note: move to allowed_paths in the same commit that creates this directory
     status: AUTHORIZED
   - id: marketplace_ssot
     repo: cristhianlujan/marketplace-ssot
