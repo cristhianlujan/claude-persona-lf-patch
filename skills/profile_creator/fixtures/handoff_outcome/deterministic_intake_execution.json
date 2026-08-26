@@ -1,0 +1,36 @@
+{
+  "evidence_type": "DETERMINISTIC_QUALITY_PACK_INTAKE_EXECUTION",
+  "source_pr": 227,
+  "source_head": "30244030937e160bc1b2b57799c4873b6089ac6d",
+  "source_merge_sha": "569cbaabb2e65e61fb2d184016a2ca766bd1cd00",
+  "validation_scope": "DETERMINISTIC_INTAKE_ONLY",
+  "execution_result": "PASS",
+  "cases_passed": 4,
+  "cases_total": 4,
+  "real_profile_creator_case": {
+    "source_pr": 225,
+    "producer_sha": "96bebdeeca1e343e6671bb62c65d6e1338d00197",
+    "artifact_sha": "d6427bda4f8b456124e40ab973ef1487152061f8",
+    "delivery_mode": "REFERENCED_MATERIALIZED_ARTIFACT",
+    "intake_status": "QUALITY_INTAKE_READY",
+    "next_gate": "SEMANTIC_QUALITY_REVIEW"
+  },
+  "semantic_quality_review_status": "NOT_EXECUTED",
+  "assisted_rubric_review_status": "AVAILABLE",
+  "external_paid_model_used": false,
+  "full_handoff_outcome_status": "NOT_PROVEN",
+  "current_behavioral_blocking_code": "SEMANTIC_QUALITY_REVIEW_NOT_EXECUTED",
+  "historical_behavioral_blocking_code": "BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER",
+  "exact_head_ci_status": "PASS",
+  "exact_head_ci_runs": {
+    "validate_lf_packs": 33004435405,
+    "lf_contract_check": 33004435406,
+    "bootstrap": 33004435404
+  },
+  "non_claims": [
+    "No PASS_TO_COMPOSER",
+    "No PASS_WITH_RESTRICTIONS",
+    "No semantic Quality Pack score",
+    "No general behavioral PASS"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "case_id": "PROFILE_CREATOR_HANDOFF_OUTCOME_001",
+  "request_type": "create_profile_pack_candidate",
+  "profile_purpose": "Create a governed reusable LF profile pack candidate and route it to Quality Pack review.",
+  "source_authority": "ACT-0001 + ACT-0045 + public.v_lf_fuente_operativa",
+  "observed_baseline_failure": "PROFILE_PACK_CREATED is emitted with deliverable_created=true and a filename list, but the created pack itself or an exact retrievable artifact reference is not delivered to Quality Pack.",
+  "target_outcome": "Quality Pack can inspect the exact created profile pack using the producer output and its normal context, without inventing where the pack exists or reconstructing its contents.",
+  "forbidden_shortcut": "Do not satisfy the eval by merely adding another boolean or descriptive string that still leaves the receiver unable to inspect the created pack.",
+  "expected_status": "PROFILE_PACK_CREATED",
+  "expected_receiver": "quality_pack_review"
+}
