@@ -1,0 +1,21 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "CREACION_PERFIL_LF",
+  "execution_id": "ACT-0045-CANARY-20260826-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "c33169e652046d65d5d5df16cea0be019833dcab",
+  "judge_sha": "f1ca87619ca3ba8375ef73ef219fdef95cd8a8fd",
+  "source_sha_list": [
+    "0e5eea99d425b73c6e46474121757b293decc1df"
+  ],
+  "target_paths": [
+    "profiles/**",
+    "skills/profile_creator/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-26T23:03:58Z",
+  "notes": "Canary E2E gobernado de CREACION_PERFIL_LF. Candidato READ_ONLY/NO_HABILITADO/BLOQUEADO; Validate LF Packs y LF Bootstrap Reproducibility Probe exitosos sobre source_sha; readback de contrato y judge realizado antes de emitir el receipt. El receipt no autoriza runtime ni produccion."
+}
