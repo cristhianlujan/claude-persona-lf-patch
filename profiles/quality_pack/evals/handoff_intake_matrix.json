@@ -1,0 +1,29 @@
+{
+  "matrix_id": "QUALITY_PACK_HANDOFF_INTAKE_V0_1",
+  "purpose": "Prove only that Quality Pack intake can start from an upstream artifact without reconstructing missing producer state. This matrix does not prove semantic quality judgment.",
+  "validation_scope": "DETERMINISTIC_INTAKE",
+  "semantic_quality_review_status": "NOT_EXECUTED",
+  "cases": [
+    {
+      "id": "created_claim_without_delivered_artifact",
+      "eval_type": "CAPABILITY_EVAL",
+      "fixture": "fixtures/handoff_intake/created_claim_without_delivered_artifact.json",
+      "expected_intake_status": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+      "expected_blocking_code": "CREATED_ARTIFACT_NOT_DELIVERED"
+    },
+    {
+      "id": "materialized_profile_pack_ready_for_intake",
+      "eval_type": "CAPABILITY_EVAL",
+      "fixture": "fixtures/handoff_intake/materialized_profile_pack_ready.json",
+      "expected_intake_status": "QUALITY_INTAKE_READY",
+      "expected_next_gate": "SEMANTIC_QUALITY_REVIEW"
+    }
+  ],
+  "promotion_rule": "No case may become REGRESSION_EVAL until the deterministic intake runner executes actual-vs-expected on isolated fixtures and exact-head CI passes.",
+  "non_claims": [
+    "No PASS_TO_COMPOSER",
+    "No PASS_WITH_RESTRICTIONS",
+    "No semantic LF safety judgment",
+    "No general Quality Pack behavioral pass"
+  ]
+}
