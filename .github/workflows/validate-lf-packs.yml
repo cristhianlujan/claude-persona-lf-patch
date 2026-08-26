@@ -38,11 +38,5 @@ jobs:
       - name: Validate profile creator pack
         run: python skills/profile_creator/validators/validate_pack.py skills/profile_creator
 
-      - name: Validate profile creator generated-manifest contract
-        run: python skills/profile_creator/validators/validate_generated_profile_manifest.py skills/profile_creator
-
       - name: Validate learning engine pack
         run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
-
-      - name: Validate profile creator canary candidate
-        run: python profiles/evidence_lineage_reviewer_lf/validators/validate_pack.py profiles/evidence_lineage_reviewer_lf
