@@ -17,6 +17,7 @@ required_files:
   - evals/ekb_regression_suite.yaml
   - judges/judge_input_governance_remediation.yaml
   - validators/validate_remediation_output.py
+  - validators/selftest_remediation_validator.py
 activation_gate: MANUAL_BENCHMARK_ONLY
 allowed_final_state: CANDIDATO_READ_ONLY_NO_HABILITADO
 canonical_write_authority: DENY
