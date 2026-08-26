@@ -36,6 +36,10 @@ def load_json(path: Path) -> dict[str, Any]:
     return data
 
 
+def has_developed_evidence(value: Any) -> bool:
+    return isinstance(value, (list, dict)) and bool(value)
+
+
 def result(
     intake_status: str,
     blocking_codes: list[str],
@@ -74,11 +78,11 @@ def evaluate(envelope: dict[str, Any]) -> dict[str, Any]:
 
     evidence = upstream.get("evidence_map")
     declared_evidence = envelope.get("declared_worker_evidence")
-    if not isinstance(evidence, list) or not evidence or not isinstance(declared_evidence, list) or not declared_evidence:
+    if not has_developed_evidence(evidence) or not has_developed_evidence(declared_evidence):
         return result(
             "RETURN_TO_WORKER_FOR_SELF_REPAIR",
             ["UPSTREAM_EVIDENCE_NOT_DELIVERED"],
-            ["Quality Pack intake requires explicit upstream evidence; claims without evidence are not intake-ready."],
+            ["Quality Pack intake requires explicit developed upstream evidence; claims without evidence are not intake-ready."],
             "SELF_REPAIR_THEN_RETRY_INTAKE",
         )
 
