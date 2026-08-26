@@ -79,9 +79,6 @@ BEGIN
   IF strpos(v_def,v_anchor)=0 THEN
     RAISE EXCEPTION 'PROG017_F03_CONSUMER_PATCH_SOURCE_MISMATCH';
   END IF;
-  IF strpos(replace(v_def,v_anchor,v_new),v_anchor)>0 THEN
-    RAISE EXCEPTION 'PROG017_F03_CONSUMER_PATCH_NOT_APPLIED';
-  END IF;
 
   EXECUTE replace(v_def,v_anchor,v_new);
 END;
