@@ -97,12 +97,21 @@ def evaluate(envelope: dict[str, Any]) -> dict[str, Any]:
         )
 
     artifact_ref = upstream.get("deliverable_artifact_ref")
-    artifact = envelope.get("deliverable_artifact")
-    if not artifact_ref or not isinstance(artifact, dict):
+    referenced_artifact = envelope.get("deliverable_artifact")
+    embedded_artifact = upstream.get("candidate_artifact")
+    delivery_mode = None
+    artifact = None
+    if artifact_ref and isinstance(referenced_artifact, dict):
+        artifact = referenced_artifact
+        delivery_mode = "REFERENCED_MATERIALIZED_ARTIFACT"
+    elif isinstance(embedded_artifact, dict):
+        artifact = embedded_artifact
+        delivery_mode = "EMBEDDED_CANDIDATE_ARTIFACT"
+    else:
         return result(
             "RETURN_TO_WORKER_FOR_SELF_REPAIR",
             ["CREATED_ARTIFACT_NOT_DELIVERED"],
-            ["Producer claims a created deliverable but no exact artifact reference plus materialized artifact was delivered."],
+            ["Producer claims a created deliverable but no materialized referenced artifact or embedded candidate artifact was delivered."],
             "SELF_REPAIR_THEN_RETRY_INTAKE",
         )
 
@@ -143,9 +152,9 @@ def evaluate(envelope: dict[str, Any]) -> dict[str, Any]:
         [],
         [
             "Required Quality Pack intake context is explicit.",
-            "Created deliverable has an exact reference and materialized artifact.",
+            f"Created deliverable is observable via {delivery_mode}.",
             "Artifact identity matches the producer claim.",
-            "Every claimed component is delivered with developed content.",
+            "Every claimed component is delivered with developed content when component files are declared.",
         ],
         "SEMANTIC_QUALITY_REVIEW",
     )
