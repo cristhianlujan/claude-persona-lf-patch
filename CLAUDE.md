@@ -33,6 +33,15 @@ Before Composer, image generation, a tool payload, or a final artifact may use t
 7. validate the receipt with `sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py`;
 8. continue downstream only on `PASS_PROFILE_EXECUTION_PROVENANCE`.
 
-The repository operational provider implementation is `OpenAIResponsesAdapter` plus `OpenAIResponsesReadbackVerifier` in `sandbox/lf_contract_gate_test/profile_execution_runtime/openai_responses_runtime.py`. It uses the OpenAI Responses API, provider-side stored response metadata and independent response-id readback. Credentials must come from server-side environment variables; never commit API keys.
+## Zero-cost runtime policy
 
-Operational profile execution must reject test adapters/verifiers. A static fixture, expected output, manually reconstructed response or summarized decision is not evidence that the profile executed. If a trusted real model runtime, credential or independent attestation verifier is unavailable, fail closed; do not fabricate `profile_output` and do not bypass directly to a generator.
+Operational profile execution is `ZERO_COST_ONLY`.
+
+- Do not invoke any API, hosted model, external service, credit pool, subscription add-on, paid inference endpoint or other runtime that can generate incremental monetary charges.
+- OpenAI API live execution is explicitly disabled, even when credentials are present.
+- The former OpenAI Responses implementation is retained only as quarantined reference/test code and is not an authorized operational provider.
+- `run_openai_profile.py` must fail closed with `PAID_PROVIDER_DISABLED_BY_ZERO_COST_POLICY` and must never issue an OpenAI API request.
+- An operational provider must be local or otherwise demonstrably zero incremental monetary cost in the current environment before it can be authorized.
+- Absence of a zero-cost runtime means `BLOCK_PIPELINE`; it never authorizes a fallback to a paid provider, fixture, expected output, manually reconstructed response or direct downstream generator.
+
+Operational profile execution must reject test adapters/verifiers. A static fixture, expected output, manually reconstructed response or summarized decision is not evidence that the profile executed. If a trusted zero-cost real model runtime or independent attestation verifier is unavailable, fail closed; do not fabricate `profile_output` and do not bypass directly to a generator.
