@@ -1,4 +1,4 @@
-# Contract — Existing Screen Review / Remediation V4
+# Contract — Existing Screen Review / Remediation V5
 
 Status: CANDIDATE_READ_ONLY / SANDBOX
 Applies to: `profiles/ui_architect/SKILL.md`
@@ -42,6 +42,27 @@ Optional:
   - `authority_type`: e.g. `RAW_INPUT`, `UPSTREAM_PRODUCT_CONTRACT`, `CONSERVATIVE_REDUCTION`.
   - `claim_boundary`: what the source does and does not authorize.
 
+## Defect-direction invariant
+For every material finding, preserve this sequence explicitly:
+
+`observed defect -> intended correction -> observable postcondition`
+
+The intended correction and postcondition must reduce or eliminate the diagnosed defect. Merely touching the same component is not sufficient.
+
+Hard rules:
+- Never invert an undesired current-state statement into an instruction to reproduce or amplify that state.
+- If the evidence says an element, value, label or block is duplicated/repeated/redundant, do not `SHOW`, add, copy or create another duplicate unless explicit upstream authority states that duplication is intentional and required.
+- For an unintended duplicate pair, the normal correction is to keep one authoritative presentation and `REMOVE`, `HIDE` or `MERGE` the redundant presentation. `MOVE`, `ALIGN` or `REORDER` may be used only when the duplication itself is explicitly intentional.
+- Choose which duplicate survives from visible hierarchy or upstream semantic authority. If the evidence cannot establish the authoritative survivor, return `BLOCKED_SOURCE_INSUFFICIENT` instead of guessing.
+- The acceptance criterion must prove the defect is gone or reduced. Example: for duplicated primary amount presentation, assert that exactly one primary amount source remains in the intended hierarchy; do not merely assert that a new amount element renders correctly.
+- A transformation that increases the diagnosed distance, duplication, ambiguity, contradiction, density or unsupported semantic strength is a semantic failure even when its structure validates.
+
+This invariant generalizes beyond duplicates. Examples:
+- `too far apart` cannot become `move farther apart`;
+- `too dense` cannot become `add more competing content`;
+- `contradictory labels` cannot become `add another contradictory label`;
+- `unsupported guarantee` cannot become a stronger guarantee.
+
 ## Executability rules
 - No “could use”, “should consider”, “consider”, “maybe”, “improve hierarchy” or equivalent recommendation-only wording in `decision`.
 - Repeated observations must be consolidated into one action.
@@ -65,7 +86,9 @@ A score of 5 requires structural support in the relevant deliverable section; a 
 Structural validity does not authorize a business-semantic claim.
 
 The semantic judge must compare raw input/upstream constraints to the selected decision. It must fail structurally valid but semantically damaging actions, including:
+- reproducing or amplifying the diagnosed defect;
 - removing the wrong duplicate component;
+- adding or showing another duplicate when duplication is the diagnosed issue and no authority requires it;
 - claiming debt closure from payment-registration evidence only;
 - creating urgency/guarantee language not authorized by source;
 - choosing a layout transformation that worsens the diagnosed relationship;

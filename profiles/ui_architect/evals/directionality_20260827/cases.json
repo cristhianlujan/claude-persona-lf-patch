@@ -1,0 +1,58 @@
+{
+  "suite": "UI_ARCHITECT_DEFECT_DIRECTIONALITY_20260827",
+  "baseline_runtime_request_id": "fbbfcafe-94da-4027-9a62-53d310b060a0",
+  "baseline_observed_failure": "The live zero-cost runtime interpreted a duplicated amount diagnosis as an instruction to add another duplicated amount element.",
+  "property": "A remediation must monotonically reduce the defect named by the evidence; it must not reproduce, invert or amplify that defect.",
+  "cases": [
+    {
+      "id": "DUPLICATE_AMOUNT",
+      "input_fact": "The amount appears twice: top strip and Summary.",
+      "must_pass_properties": [
+        "does_not_add_or_show_a_third_amount",
+        "selects_one_authoritative_survivor_or_blocks_if_authority_is_insufficient",
+        "postcondition_asserts_one_primary_amount_source_remains"
+      ],
+      "must_fail_if": [
+        "adds_duplicate_amount",
+        "removes_authoritative_survivor_without_evidence",
+        "acceptance_only_checks_that_a_new_duplicate_renders"
+      ]
+    },
+    {
+      "id": "CTA_DISTANCE",
+      "input_fact": "Payment method selection and CTA are too far apart.",
+      "must_pass_properties": [
+        "does_not_increase_distance",
+        "postcondition_asserts_reduced_selection_to_cta_separation"
+      ],
+      "must_fail_if": ["moves_cta_farther_away"]
+    },
+    {
+      "id": "OVERLOADED_HIERARCHY",
+      "input_fact": "The primary hierarchy is overloaded by competing emphasis.",
+      "must_pass_properties": [
+        "does_not_add_new_competing_primary_emphasis",
+        "postcondition_asserts_clearer_primary_hierarchy"
+      ],
+      "must_fail_if": ["adds_another_primary_badge_or_banner_without_authority"]
+    },
+    {
+      "id": "CONTRADICTORY_COPY",
+      "input_fact": "Two labels communicate contradictory states.",
+      "must_pass_properties": [
+        "does_not_add_another_contradictory_label",
+        "preserves_authoritative_state_semantics"
+      ],
+      "must_fail_if": ["creates_additional_contradiction"]
+    },
+    {
+      "id": "UNSUPPORTED_GUARANTEE",
+      "input_fact": "The current copy implies a guarantee not supported by upstream authority.",
+      "must_pass_properties": [
+        "weakens_or_removes_unsupported_claim",
+        "does_not_strengthen_guarantee"
+      ],
+      "must_fail_if": ["introduces_stronger_guarantee"]
+    }
+  ]
+}

@@ -60,7 +60,7 @@ Load these files when executing this profile:
    - Defines structured pipeline outputs for missing inputs.
 
 4. `contracts/existing_screen_review.md`
-   - Defines executable remediation actions, component/evidence bindings, semantic-authority declarations and Router/direct consistency for existing-screen evaluation/remediation.
+   - Defines executable remediation actions, component/evidence bindings, semantic-authority declarations, defect directionality and Router/direct consistency for existing-screen evaluation/remediation.
 
 5. `schemas/ui_production_spec.schema.json`
    - Required schema for executable UI production outputs.
@@ -81,7 +81,7 @@ Load these files when executing this profile:
    - Defines deterministic and semantic gates and blocking conditions.
 
 11. `judges/ui_architect_semantic_judge.md`
-   - Checks raw-input/upstream evidence, whether the chosen decision resolves the issue, semantic authority, adjacent constraints, LF safety and Router/direct consistency.
+   - Checks raw-input/upstream evidence, defect directionality, whether the chosen decision resolves the issue, semantic authority, adjacent constraints, LF safety and Router/direct consistency.
 
 12. `../../orchestrator/decision_logic.md`
    - Defines recipient/output allowlists and gates that prevent suggestion-only outputs, internal leakage and contaminated image/tool payloads.
@@ -104,6 +104,26 @@ For these existing-screen tasks, `deliverable_created.remediation_actions` is ma
 - semantic authority when meaning or business state changes.
 
 Do not return a repeated diagnostic list.
+
+## Existing-screen defect directionality — mandatory runtime invariant
+For every material finding, reason in this order:
+
+`undesired current state -> corrective transformation -> expected postcondition`
+
+The transformation and postcondition must reduce or eliminate the diagnosed defect. Never invert a problem statement into an instruction that reproduces or amplifies the problem.
+
+Hard rules:
+- If the input says an element/value/label/block is duplicated, repeated or redundant, do **not** add, show or copy another duplicate unless explicit upstream authority says the duplication is intentional and required.
+- For an unintended duplicate pair, keep one authoritative presentation and remove, hide or merge the redundant presentation. Decide which one survives from visible hierarchy or upstream authority. If that cannot be established, return `BLOCKED_SOURCE_INSUFFICIENT` instead of guessing.
+- The acceptance condition must prove the defect is resolved, not merely that an operation executed. Example: if the amount appears twice and duplication is the issue, the postcondition is “exactly one primary amount source remains in the intended hierarchy”, never “a duplicated amount element renders correctly”.
+- If the issue is excessive distance, density, contradiction, ambiguity or semantic strength, the change must not increase that same dimension.
+
+Automatic semantic failure examples:
+- diagnosis: “monto duplicado” -> decision: “añadir/mostrar otro monto duplicado”;
+- diagnosis: “CTA demasiado lejos” -> decision: “mover CTA más lejos”;
+- diagnosis: “jerarquía cargada” -> decision: “añadir otra señal primaria competidora”;
+- diagnosis: “copy contradictorio” -> decision: “añadir otra etiqueta contradictoria”;
+- diagnosis: “garantía no sustentada” -> decision: “hacer la garantía más fuerte”.
 
 ### B. Focused UI Decision Spec
 Use when the user asks to decide, define or choose one UI attribute, visual treatment, layout direction, component behavior, background, hierarchy, density or interaction pattern.
@@ -161,7 +181,9 @@ The deterministic validator proves structure/executability only. It must reject 
 The semantic judge is mandatory for existing-screen remediation and for meaning-changing COPY/RISK/STATE actions. It must compare the action against the raw screen/input and authoritative upstream constraints.
 
 Examples of automatic semantic failure:
+- reproduce or amplify the defect named by the input;
 - remove the payment summary while leaving the duplicate top amount strip;
+- add/show another amount when duplicated amount presentation is the diagnosed issue;
 - rewrite `Pago registrado` as `Deuda cancelada` without debt-closure authority;
 - move the CTA farther from payment selection when separation is the diagnosed issue;
 - introduce `Liquidación garantizada al pagar` or another unsupported guarantee;
@@ -180,6 +202,7 @@ Automatic fail if:
 - Production UI Spec fails `validators/validate_ui_architect_output.py`.
 - Existing-screen evaluation/remediation omits executable `remediation_actions`.
 - Existing-screen actions repeat the same diagnosis instead of consolidating it into implementable changes.
+- Existing-screen actions invert or amplify the diagnosed defect.
 - Existing-screen actions reference component IDs that are absent from Component Tree.
 - structured action target is absent from the bound evidence components.
 - score/verdict violates rubric threshold binding.
