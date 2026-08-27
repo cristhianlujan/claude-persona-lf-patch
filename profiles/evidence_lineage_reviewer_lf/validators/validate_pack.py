@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import json, sys
+import json, subprocess, sys
 from pathlib import Path
 
 REQUIRED = [
@@ -8,9 +8,9 @@ REQUIRED = [
 "checklists/preflight_checklist.md","checklists/priority_checklist.md","examples/good_output.json",
 "examples/bad_output.json","examples/self_repair_output.json","fixtures/happy_path/input.json",
 "fixtures/missing_inputs/input.json","fixtures/unsafe_or_blocked/input.json","fixtures/self_repair/bad_output.json",
-"evals/eval_matrix.json","handoffs/to_quality_pack.handoff.json","adapters/github_pack_adapter.md",
+"evals/eval_matrix.json","evals/lineage_adversarial.py","handoffs/to_quality_pack.handoff.json","adapters/github_pack_adapter.md",
 "adapters/document_patch_adapter.md","references/research_to_rules_matrix.md","references/decision_matrix.md",
-"manifest.json","validators/validate_pack.py"
+"manifest.json","validators/validate_pack.py","validators/evaluate_lineage.py"
 ]
 STATUSES={"PASS_EVIDENCE_LINEAGE","PASS_WITH_RESTRICTIONS","RETURN_TO_SOURCE_FOR_READBACK","BLOCK_PIPELINE"}
 
@@ -49,6 +49,10 @@ def main():
                 fixture=c.get("fixture")
                 if not fixture or not (root/fixture).exists(): blocking.append("EVAL_FIXTURE_MISSING:"+str(fixture))
                 if c.get("expected_status") not in STATUSES: blocking.append("EVAL_EXPECTED_STATUS_INVALID:"+str(cid))
+            run=subprocess.run([sys.executable,str(root/"evals/lineage_adversarial.py")],cwd=root,text=True,capture_output=True)
+            if run.returncode!=0:
+                blocking.append("LINEAGE_ADVERSARIAL_EVAL_FAILED")
+                if run.stderr.strip(): blocking.append("LINEAGE_ADVERSARIAL_STDERR:"+run.stderr.strip()[:300])
         except Exception as exc:
             blocking.append("VALIDATION_EXCEPTION:"+str(exc))
     result={"status":"PASS" if not blocking else "FAIL","profile_pack_id":"EVIDENCE_LINEAGE_REVIEWER_LF_V0_1","blocking_codes":blocking,"runtime_authorized":False,"automatic_impact_authorized":False,"recommended_action":"READY_FOR_QUALITY_PACK" if not blocking else "RETURN_TO_WORKER_FOR_SELF_REPAIR"}
