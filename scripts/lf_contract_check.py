@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.10
+LF Contract Check v0.11
 
 Sandbox validator for controlled LF governance gates.
+
+v0.11 changes:
+- Runs the governed profile runtime provenance/runner regression intrinsically.
+- Keeps the runner inside the existing sandbox allowlist; no workflow path is widened.
 
 v0.10 changes:
 - Adds only the exact reconciled P0 source-derived documents and the exact V2
@@ -46,6 +50,8 @@ from pathlib import Path
 
 CONTRACT_PATH = Path("sandbox/lf_contract_gate_test/lf_contract.yml")
 RECEIPT_DIR = Path("sandbox/lf_contract_gate_test/receipts")
+PROFILE_RUNTIME_TEST_PATH = Path("sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py")
+PROFILE_RUNTIME_PASS_MARKER = "PROFILE_RUNTIME_GATE_TESTS_PASS 16/16"
 VALIDATOR_SELF_PATH = "scripts/lf_contract_check.py"
 
 ALLOWED_GITHUB_EXACT = {
@@ -308,6 +314,26 @@ def validate_p0_persistence_test_scope() -> None:
     )
 
 
+def validate_profile_runtime_regression() -> None:
+    if not PROFILE_RUNTIME_TEST_PATH.exists():
+        fail("FAIL_PROFILE_RUNTIME_TEST_MISSING", str(PROFILE_RUNTIME_TEST_PATH))
+    result = subprocess.run(
+        [sys.executable, str(PROFILE_RUNTIME_TEST_PATH)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.stdout:
+        print(result.stdout, end="" if result.stdout.endswith("\n") else "\n")
+    if result.stderr:
+        print(result.stderr, file=sys.stderr, end="" if result.stderr.endswith("\n") else "\n")
+    if result.returncode != 0:
+        fail("FAIL_PROFILE_RUNTIME_REGRESSION", f"exit={result.returncode}")
+    if PROFILE_RUNTIME_PASS_MARKER not in result.stdout:
+        fail("FAIL_PROFILE_RUNTIME_REGRESSION_MARKER", PROFILE_RUNTIME_PASS_MARKER)
+    print(f"PASS_PROFILE_RUNTIME_REGRESSION: {PROFILE_RUNTIME_PASS_MARKER}")
+
+
 def is_governed_path(path: str) -> bool:
     return any(path.startswith(prefix) for prefix in GOVERNED_PREFIXES)
 
@@ -427,6 +453,7 @@ def main() -> None:
     validate_operational_protocol_scope()
     validate_p0_closure_evidence_scope()
     validate_p0_persistence_test_scope()
+    validate_profile_runtime_regression()
     changed_files = get_changed_files()
     print("Changed files:")
     for path in changed_files:

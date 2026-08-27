@@ -26,10 +26,11 @@ Before Composer, image generation, a tool payload, or a final artifact may use t
 
 1. resolve exactly one `PERFIL` and read its real source;
 2. preserve the literal user input;
-3. execute the profile in a real model runtime;
+3. execute the profile through a trusted runtime adapter in a real model runtime;
 4. capture the model's RAW profile output without summarizing or reconstructing it;
-5. produce `PROFILE_EXECUTION_RECEIPT_V1` binding profile source, input and RAW output hashes plus runtime attestation;
-6. validate the receipt with `sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py`;
-7. continue downstream only on `PASS_PROFILE_EXECUTION_PROVENANCE`.
+5. independently verify the runtime attestation against the exact request and response;
+6. produce `PROFILE_EXECUTION_RECEIPT_V1` binding profile source, input, RAW output, runtime attestation and independent verification evidence;
+7. validate the receipt with `sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py`;
+8. continue downstream only on `PASS_PROFILE_EXECUTION_PROVENANCE`.
 
-A static fixture, expected output, manually reconstructed response or summarized decision is not evidence that the profile executed. If real model-runtime execution or attestation is unavailable, fail closed; do not fabricate `profile_output` and do not bypass directly to a generator.
+Operational profile execution must reject test adapters/verifiers. A static fixture, expected output, manually reconstructed response or summarized decision is not evidence that the profile executed. If a trusted real model runtime or independent attestation verifier is unavailable, fail closed; do not fabricate `profile_output` and do not bypass directly to a generator.

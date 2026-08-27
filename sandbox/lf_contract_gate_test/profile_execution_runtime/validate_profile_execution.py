@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -13,6 +14,7 @@ RECEIPT_TYPE = "PROFILE_EXECUTION_RECEIPT_V1"
 OPERATION_CODE = "EJECUCION_PERFIL_LF"
 ALLOWED_RUNTIME_ORIGINS = {"MODEL_RUNTIME"}
 DOWNSTREAM_RECIPIENTS = {"IMAGE_GENERATOR", "TOOL_PAYLOAD", "FINAL_USER", "INTERNAL_AGENT"}
+SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
 def sha256_text(value: str) -> str:
@@ -54,6 +56,10 @@ def _nonempty_string(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
 
+def _is_sha256(value: Any) -> bool:
+    return isinstance(value, str) and bool(SHA256_RE.fullmatch(value))
+
+
 def validate_receipt(
     receipt: Any, *, expected_profile_code: str | None = None,
     expected_input_literal: str | None = None, expected_raw_output: Any | None = None,
@@ -69,6 +75,9 @@ def validate_receipt(
     for key in required_strings:
         if not _nonempty_string(receipt.get(key)):
             errors.append(f"MISSING_OR_EMPTY_{key.upper()}")
+    for key in ("profile_source_sha256", "input_sha256", "raw_output_sha256", "receipt_sha256"):
+        if _nonempty_string(receipt.get(key)) and not _is_sha256(receipt.get(key)):
+            errors.append(f"{key.upper()}_INVALID")
     if receipt.get("receipt_type") != RECEIPT_TYPE:
         errors.append("RECEIPT_TYPE_INVALID")
     if receipt.get("operation_code") != OPERATION_CODE:
@@ -84,9 +93,18 @@ def validate_receipt(
     if not isinstance(attestation, dict):
         errors.append("RUNTIME_ATTESTATION_MISSING")
     else:
-        for key in ("provider", "model_id", "run_id", "attested_at"):
+        for key in (
+            "provider", "model_id", "run_id", "attested_at",
+            "attestation_verifier", "attestation_evidence_sha256",
+            "verified_request_sha256", "verified_response_sha256",
+        ):
             if not _nonempty_string(attestation.get(key)):
                 errors.append(f"RUNTIME_ATTESTATION_{key.upper()}_MISSING")
+        for key in (
+            "attestation_evidence_sha256", "verified_request_sha256", "verified_response_sha256",
+        ):
+            if _nonempty_string(attestation.get(key)) and not _is_sha256(attestation.get(key)):
+                errors.append(f"RUNTIME_ATTESTATION_{key.upper()}_INVALID")
     if expected_profile_code is not None and receipt.get("profile_code") != expected_profile_code:
         errors.append("PROFILE_CODE_MISMATCH")
     if expected_profile_source_sha256 is not None and receipt.get("profile_source_sha256") != expected_profile_source_sha256:

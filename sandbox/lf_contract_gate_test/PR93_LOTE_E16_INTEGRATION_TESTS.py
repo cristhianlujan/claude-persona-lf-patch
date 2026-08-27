@@ -175,6 +175,9 @@ def main() -> int:
         files = [
             ".github/workflows/lf-contract-check.yml",
             "scripts/lf_contract_check.py",
+            "sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_runner.py",
+            "sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py",
+            "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py",
             "sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py",
             "sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py",
             "sandbox/lf_contract_gate_test/PR93_LOTE_E16_INVENTORY_TESTS.py",
