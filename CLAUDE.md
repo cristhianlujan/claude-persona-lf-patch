@@ -20,9 +20,9 @@ Preserve this sequence for delegated agents and subagents.
 
 ## Governed profile updates
 
-When creating a patch that modifies an existing repository profile under `profiles/**`, route the operation as `ACTUALIZACION_PERFIL_LF` and apply the pass protocol before the first GitHub write and through post-merge closure:
+When creating a patch that modifies an existing repository profile under `profiles/**`, route the operation as `ACTUALIZACION_PERFIL_LF` and apply section 15, **Protocolo de pase para actualización de perfiles**, in:
 
-@docs/operations/LF_PROFILE_UPDATE_PASS_PROTOCOL_v0.1.md
+@.claude/operational-execution.md
 
 Supabase remains the canonical authority for the operation contract, execution binding, judge and state. The GitHub protocol is the reproducible pass procedure and does not supersede Supabase.
 
