@@ -1,11 +1,11 @@
 {
   "pack_id": "profile_creator",
-  "version": "v0.1_candidate",
-  "validation_scope": "STRUCTURAL_ONLY",
+  "version": "v0.2_candidate",
+  "validation_scope": "STRUCTURAL_PLUS_DETERMINISTIC_DEPTH",
   "behavioral_eval_status": "NOT_EXECUTED",
-  "minimum_pass_rate": "4/4 regression evals when behavior is executed",
+  "minimum_pass_rate": "6/6 regression evals when deterministic behavior is executed",
   "eval_types": {
-    "REGRESSION_EVAL": "Protects previously validated Profile Creator behavior.",
+    "REGRESSION_EVAL": "Protects previously validated or now deterministically demonstrated Profile Creator behavior.",
     "CAPABILITY_EVAL": "Measures desired behavior not yet protected by the regression baseline."
   },
   "cases": [
@@ -32,6 +32,28 @@
       "eval_type": "REGRESSION_EVAL",
       "fixture": "fixtures/self_repair/bad_output.json",
       "expected_status": "RETURN_TO_WORKER_FOR_SELF_REPAIR"
+    },
+    {
+      "id": "semantic_stub_pack_rejected",
+      "eval_type": "REGRESSION_EVAL",
+      "fixture": "fixtures/handoff_outcome/candidate_pack.json",
+      "validator": "validators/validate_candidate_depth.py",
+      "expected_status": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+      "depth_expected_status": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+      "expected_blocking_codes_any": [
+        "EVIDENCE_MAP_REQUIRED",
+        "OUTPUT_SCHEMA_PROPERTIES_REQUIRED",
+        "EVAL_MINIMUM_CASES_NOT_MET",
+        "HANDOFF_FAILURE_ROUTING_REQUIRED"
+      ]
+    },
+    {
+      "id": "semantic_depth_positive_pack",
+      "eval_type": "REGRESSION_EVAL",
+      "fixture": "fixtures/semantic_depth/positive_candidate_pack.json",
+      "validator": "validators/validate_candidate_depth.py",
+      "expected_status": "PROFILE_PACK_CREATED",
+      "depth_expected_status": "DEPTH_READY_FOR_SEMANTIC_REVIEW"
     },
     {
       "id": "profile_creator_to_quality_pack_handoff_outcome",
