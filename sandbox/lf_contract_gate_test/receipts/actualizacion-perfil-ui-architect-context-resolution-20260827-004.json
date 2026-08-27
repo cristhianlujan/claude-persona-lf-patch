@@ -1,0 +1,25 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260827-004",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "2e451cfbddf52c819290da2e9490c4936fc78fef",
+    "7095645c95225aaf2fda561c06aea27f7c781984",
+    "a8b1415f342b653b289a2edff2ae359256f8108c",
+    "7291d07feb8b6ff71b83ef2491e1adf504d5d650",
+    "32adb4e4cd9c9089ddcfe11ad24864295a695247",
+    "53965a271fa98f397eec3dcfc2535d10f6f4ed43",
+    "045ebd24626d20dbab60b3af07d51cea103e5d3e",
+    "7dab35af5b23f46bb155096c0d581eaca1dba4f4"
+  ],
+  "target_paths": ["profiles/ui_architect/**"],
+  "blocking_codes": [],
+  "issued_at": "2026-08-27T14:43:00Z",
+  "notes": "PASS_SANDBOX for governed UI Architect context-resolution and implementation-precision hardening. Pre-write binding was refreshed before rebuilding the candidate after main advanced during PR #250. The rebuilt candidate is based on main@2e451cfbddf52c819290da2e9490c4936fc78fef and preserves the newly merged RUNTIME CRITICAL defect-direction gate verbatim. Runtime SKILL then resolves CANONICAL_TOKEN -> UPSTREAM_VALUE -> EXPLORATORY_PROPOSAL/RELATIVE_GUIDANCE -> RETURN_TO_ORCHESTRATOR_IF_MATERIAL. Deterministic context-resolution regression passes 11/11. Existing output modes, LF safety, Ruta de Claridad semantic qualifier, runtime enablement and automatic promotion remain unchanged. Mergeability depends on exact-head CI after this rebuilt candidate; behavioral closure additionally requires a fresh post-merge profile smoke from main."
+}

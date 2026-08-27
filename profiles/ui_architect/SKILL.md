@@ -67,16 +67,16 @@ If the worker cannot produce the required artifact safely, it must return `RETUR
 Load these files when executing this profile:
 
 1. `contracts/production_ui_spec.md`
-   - Defines required Production UI Spec and Component Tree format.
+   - Defines required Production UI Spec, Component Tree format and precision provenance for canonical/upstream/proposed values.
 
 2. `contracts/lf_visual_governance.md`
    - Defines LF debt-context visual safety, semantic tokens and anti-dark-pattern rules.
 
 3. `contracts/missing_input_policy.md`
-   - Defines structured pipeline outputs for missing inputs.
+   - Defines context-resolution order, materiality and structured pipeline outputs for missing inputs.
 
 4. `contracts/existing_screen_review.md`
-   - Defines executable remediation actions, component/evidence bindings, semantic-authority declarations, defect directionality and Router/direct consistency for existing-screen evaluation/remediation.
+   - Defines executable remediation actions, component/evidence bindings, precision basis, semantic-authority declarations, defect directionality and Router/direct consistency for existing-screen evaluation/remediation.
 
 5. `schemas/ui_production_spec.schema.json`
    - Required schema for executable UI production outputs.
@@ -97,7 +97,7 @@ Load these files when executing this profile:
    - Defines deterministic and semantic gates and blocking conditions.
 
 11. `judges/ui_architect_semantic_judge.md`
-   - Checks raw-input/upstream evidence, defect directionality, whether the chosen decision resolves the issue, semantic authority, adjacent constraints, LF safety and Router/direct consistency.
+   - Checks raw-input/upstream evidence, defect directionality, context/precision provenance, whether the chosen decision resolves the issue, semantic authority, adjacent constraints, LF safety and Router/direct consistency.
 
 12. `../../orchestrator/decision_logic.md`
    - Defines recipient/output allowlists and gates that prevent suggestion-only outputs, internal leakage and contaminated image/tool payloads.
@@ -117,7 +117,8 @@ For these existing-screen tasks, `deliverable_created.remediation_actions` is ma
 - selected decision;
 - structured execution target/operation/property/desired value;
 - observable acceptance check;
-- semantic authority when meaning or business state changes.
+- semantic authority when meaning or business state changes;
+- precision basis when a material implementation value is specified.
 
 Do not return a repeated diagnostic list.
 
@@ -140,6 +141,19 @@ Automatic semantic failure examples:
 - diagnosis: “jerarquía cargada” -> decision: “añadir otra señal primaria competidora”;
 - diagnosis: “copy contradictorio” -> decision: “añadir otra etiqueta contradictoria”;
 - diagnosis: “garantía no sustentada” -> decision: “hacer la garantía más fuerte”.
+
+## Runtime context-resolution and precision invariant
+Before fixing a material implementation detail, do not treat the literal user prompt as the only available context. Consume relevant context already supplied or resolved for the run: design-system tokens, component/state contracts, interaction rules, upstream UX/product constraints, frozen shell/delta boundaries and visible source facts.
+
+Resolve precision in this order:
+1. **Canonical value exists** -> use the exact token/value and bind its source. Example: `payment_amount -> divider = space_24`, not only `dar más aire`.
+2. **Exact user/upstream value exists but is not a DS token** -> preserve it exactly and classify it as `UPSTREAM_VALUE`.
+3. **No canonical value exists and the choice is exploratory or low-risk** -> continue. Use a concrete `EXPLORATORY_PROPOSAL / PROPOSED_NOT_CANONICAL` when useful, or `RELATIVE_GUIDANCE` when exact units would create false precision. Missing a token alone is never a reason to block exploration.
+4. **The unresolved detail materially changes interaction semantics, business meaning, safety, primary action, route or a protected constraint** -> return `RETURN_TO_ORCHESTRATOR`; do not silently invent it and do not ask the final user directly from the worker. The orchestrator should try repo/Supabase/upstream resolution before escalating to the user.
+
+Never present an exploratory proposal as a canonical token, design-system rule or upstream requirement. Never re-ask for information already recoverable from supplied canonical context.
+
+User-facing precision must stay compact. For each material finding communicate only what changes execution: observation, selected correction, and the exact canonical/upstream value or explicitly labeled proposal/relative rule. Do not dump internal schemas, EKB or governance metadata into the visible report.
 
 ### B. Focused UI Decision Spec
 Use when the user asks to decide, define or choose one UI attribute, visual treatment, layout direction, component behavior, background, hierarchy, density or interaction pattern.
@@ -194,7 +208,7 @@ A PASS-like self verdict requires:
 ## Deterministic vs semantic authority
 The deterministic validator proves structure/executability only. It must reject malformed or weakly bound artifacts without crashing, but it cannot decide whether a structurally valid UI decision is the correct decision.
 
-The semantic judge is mandatory for existing-screen remediation and for meaning-changing COPY/RISK/STATE actions. It must compare the action against the raw screen/input and authoritative upstream constraints.
+The semantic judge is mandatory for existing-screen remediation and for meaning-changing COPY/RISK/STATE actions. It must compare the action against the raw screen/input and authoritative upstream constraints, including applicable resolved context.
 
 Examples of automatic semantic failure:
 - reproduce or amplify the defect named by the input;
@@ -204,6 +218,10 @@ Examples of automatic semantic failure:
 - move the CTA farther from payment selection when separation is the diagnosed issue;
 - introduce `Liquidación garantizada al pagar` or another unsupported guarantee;
 - drop an upstream-required qualifier such as `Simulación referencial sujeta a validación`;
+- ignore an applicable supplied/resolved canonical token and degrade it to vague implementation wording;
+- represent an invented/proposed token or pixel value as canonical authority;
+- block an exploratory low-risk case solely because no token exists;
+- silently invent a materially unresolved interaction/business state;
 - materially different Router/direct decisions for the same input without contextual evidence.
 
 ## Upstream semantic preservation
@@ -224,6 +242,10 @@ Automatic fail if:
 - score/verdict violates rubric threshold binding.
 - score evidence is nominal, generic or points to non-existing deliverable refs.
 - semantic judge fails a decision or unsupported claim.
+- a supplied/resolved canonical value materially applies but the output ignores it or substitutes vague wording.
+- an exploratory proposal is presented as canonical/upstream authority.
+- an exploratory low-risk case is blocked solely because no canonical token exists.
+- a materially unresolved interaction/business-state ambiguity is silently invented rather than returned to the orchestrator.
 - Router and direct activation materially diverge on remediation actions for the same screen/input without a contextual reason.
 - A focused UI decision is requested but the output does not include the required Focused UI Decision Spec fields.
 - Focused UI decision output does not validate against `schemas/ui_focused_decision.schema.json`.
@@ -233,6 +255,7 @@ Automatic fail if:
 - Score appears without evidence.
 - The UI introduces dark patterns, aggressive debt pressure, red danger cues, fake urgency or guaranteed debt promises.
 - The worker asks the end user directly inside an automated run instead of returning a structured pipeline action.
+- The worker asks for information already recoverable from supplied canonical context.
 - The worker returns suggestions, recommendations or commentary instead of the required executable artifact.
 - The output may proceed to Composer/image/render/tool and the output channel gate was not loaded.
 
