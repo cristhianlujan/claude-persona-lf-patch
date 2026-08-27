@@ -1,1 +1,0 @@
-{"worker":"ui_architect","case_id":"checkout_direct_001","output_type":"UI_REVIEW","observations":["Duplicate amount is reported in top strip and summary.","Summary is recommended sticky and aligned with payment methods.","Selected method and CTA are reported as visually separated."],"verdict":"generic_review_before"}
