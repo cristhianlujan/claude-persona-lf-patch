@@ -1,0 +1,26 @@
+{
+  "evaluation_id": "PROFILE-RUNTIME-HARNESS-CONTRACT-20260827-001",
+  "status": "PASS_HARNESS_ONLY",
+  "behavioral_evidence_eligible": false,
+  "real_model_canary_executed": false,
+  "tested_assertions": [
+    "missing real executor returns BLOCKED with exit code 2",
+    "raw stdout is captured before parse",
+    "DIRECT and ROUTER are separate executor calls",
+    "synthetic executor returns PASS_HARNESS_ONLY, never PASS_WITH_EVIDENCE",
+    "synthetic executor never sets behavioral_evidence_eligible=true"
+  ],
+  "local_test_exit_code": 0,
+  "readback_exact_blob_match": true,
+  "readback_blobs": {
+    "profile_runtime/runner.py": "6c6723bdf4422554a1eabd86aaa8b309aa36ba2a",
+    "profile_runtime/manifests/ui_architect.json": "18c01e5d94783be21e9b5d90f71c6c2908247553",
+    "profile_runtime/tests/test_harness.py": "44308faaaeef09a0e54d50002e8c17d1d537e113"
+  },
+  "ui_architect_connected": true,
+  "ui_architect_runtime_manifest": "profile_runtime/manifests/ui_architect.json",
+  "ui_architect_canary_request": "profile_runtime/examples/ui_architect_checkout_canary_request.json",
+  "remaining_gate": "Configure a REAL_MODEL PROFILE_RUNTIME_EXECUTOR and run the ui_architect canary through the harness. Only that run may become behavioral evidence.",
+  "runtime_enabled": false,
+  "production_authorized": false
+}
