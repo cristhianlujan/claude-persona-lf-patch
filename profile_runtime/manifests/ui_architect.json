@@ -1,0 +1,59 @@
+{
+  "manifest_version": "PROFILE_RUNTIME_MANIFEST_V1",
+  "profile_id": "PERFIL-UI-ARCHITECT",
+  "profile_slug": "ui_architect",
+  "status": "CANDIDATO_READ_ONLY",
+  "entrypoint": "profiles/ui_architect/SKILL.md",
+  "load_paths": [
+    "profiles/ui_architect/contracts/production_ui_spec.md",
+    "profiles/ui_architect/contracts/lf_visual_governance.md",
+    "profiles/ui_architect/contracts/missing_input_policy.md",
+    "profiles/ui_architect/contracts/existing_screen_review.md",
+    "profiles/ui_architect/schemas/ui_production_spec.schema.json"
+  ],
+  "adapters": [
+    "adapters/lf_shell_profile_adapter/ADAPTER.md",
+    "adapters/lf_shell_profile_adapter/references/shell_resolution_contract.md",
+    "adapters/lf_shell_profile_adapter/references/profile_authority_matrix.md",
+    "adapters/lf_shell_profile_adapter/schemas/lf_shell_binding.schema.json"
+  ],
+  "deterministic_validators": [
+    {
+      "name": "ui_architect_output",
+      "required": true,
+      "command": [
+        "python3",
+        "profiles/ui_architect/validators/validate_ui_architect_output.py",
+        "{parsed_output}"
+      ]
+    }
+  ],
+  "semantic_judge": {
+    "enabled": true,
+    "judge_file": "profiles/ui_architect/judges/ui_architect_semantic_judge.md",
+    "required_for_modes": [
+      "EVALUATE_EXISTING",
+      "REMEDIATE_EXISTING"
+    ],
+    "pass_verdicts": [
+      "PASS_INDEPENDENT_SEMANTIC"
+    ]
+  },
+  "router": {
+    "path": "ACT-0001 -> EJECUCION_PERFIL_LF -> PERFIL-UI-ARCHITECT",
+    "rule": "Resolve the same profile and canonical context as direct activation; routing provenance must not change material remediation decisions."
+  },
+  "context_contract": {
+    "canonical_source": "SUPABASE",
+    "drive_authority_allowed": false,
+    "external_resolver_env": "PROFILE_RUNTIME_CONTEXT_RESOLVER",
+    "request_passthrough_allowed_with_source_refs": true
+  },
+  "executor_contract": {
+    "env": "PROFILE_RUNTIME_EXECUTOR",
+    "stdin": "one PROFILE_RUNTIME_EXECUTOR_V1 JSON envelope",
+    "stdout": "exactly one JSON object",
+    "raw_capture_before_parse": true,
+    "fixture_substitution_allowed": false
+  }
+}
