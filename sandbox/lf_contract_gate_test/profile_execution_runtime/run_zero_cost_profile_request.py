@@ -112,6 +112,7 @@ def execute_request(request: dict[str, Any], *, repo_root: Path, work_dir: Path)
         profile_code=request["profile_code"], profile_slug=profile_slug,
         profile_sources=sources, input_literal=request["input_literal"],
         adapter=adapter, attestation_verifier=verifier, allow_test_doubles=False,
+        obligation_manifest=request.get("obligation_manifest"),
     )
     package["queue_request_id"] = request["request_id"]
     package["input_image_sha256"] = image_sha
