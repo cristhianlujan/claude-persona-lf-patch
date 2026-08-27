@@ -1,32 +1,29 @@
 # Ethical Financial Gamification Contract
 
 ## Purpose
-Protect user autonomy, clarity, emotional safety and financial wellbeing in gamified LF flows.
+Protect autonomy, clarity, emotional safety and financial wellbeing while preserving product intent.
 
 ## Required controls
-Every gamification spec must include:
-- user autonomy control
-- clarity control
-- emotional safety control
-- financial-context sensitivity control
-- no-pressure control
-- recovery path
-- blocked mechanics list
+Every system must show:
+- user autonomy and clear voluntary participation;
+- no-pressure/no-false-urgency control;
+- financial-context sensitivity;
+- recovery/exit path;
+- activation and deactivation conditions;
+- blocked mechanics;
+- explicit guardrails per material mechanic.
 
-## Blocked mechanics
-Block mechanics that introduce unsafe pressure, unclear rewards, hidden cost, false scarcity, public comparison by financial status, punitive loss, confusing financial benefit or guaranteed outcomes.
+## Hard blocks
+- dark patterns, pressure or false scarcity;
+- rewards that encourage financially harmful action;
+- punitive streak loss or shame;
+- public comparison by sensitive financial status;
+- unsupported eligibility/debt/payment/urgency/guarantee claims;
+- mechanics that trade LF clarity for engagement;
+- “successful outcome guaranteed” framing without authority.
+
+## Counterfactual rule
+Do not accept a mechanic merely because its apparent engagement/result matches a healthy mechanic. If the trajectory depends on pressure, unsupported claims or harmful incentives, it fails even when the same top-line metric improves.
 
 ## Allowed direction
-Prefer small missions, clear completion signals, supportive feedback, symbolic rewards, educational progress, recovery paths and non-punitive streaks.
-
-## Hard fail
-The profile must return `BLOCKED_ETHICAL_RISK` when the requested mechanic cannot be repaired without changing the product intent.
-
-## Research basis
-- Internal LF: no pressure, no dark-pattern, clarity and wellbeing rules.
-- Own repo: LF safety controls in UI Architect and Quality Pack.
-- External official: skill evaluation best practices.
-- External comparable: accepted/rejected gamification mechanics from comparable products.
-- Critical/risk: self-determination, behavior design and dark-pattern risk.
-- Adapted into: `contracts/ethical_financial_gamification.md`.
-- Reason for location: ethical boundaries belong in a reusable contract, not scattered inside examples.
+Prefer supportive micro-missions, educational progress, symbolic/limited rewards, recovery paths and private non-punitive progress.

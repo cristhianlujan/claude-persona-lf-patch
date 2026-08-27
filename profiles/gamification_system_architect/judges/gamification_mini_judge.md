@@ -1,26 +1,24 @@
 # Gamification Mini Judge
 
-## Purpose
-Validate that Gamification System Architect produced an executable, safe and handoff-ready artifact.
+## Evaluation order
+1. Deterministic validator must pass.
+2. `gamification_semantic_judge.md` must pass.
+3. `ethical_gamification_judge.md` must return `ETHICAL_PASS`.
+4. Apply numeric rubric only after the three gates above.
 
 ## Required checks
-1. Output validates against the expected schema.
-2. Target behavior is observable.
-3. Mission loop is actionable.
-4. Reward is connected to a healthy user-helpful action.
-5. Ethical controls are explicit.
-6. Score includes rubric evidence.
-7. Handoff can be used without inventing.
-8. Traceability exists.
+- observable target behavior;
+- complete objective→mechanic→behavior→risk→metric→guardrail chain;
+- activation, deactivation and acceptance per material mechanic;
+- metric tied to a business/user objective and decision use, not vanity alone;
+- healthy reward action;
+- claim authority for financial states/urgency/guarantees;
+- LF clarity/no-pressure preserved;
+- actionable handoff and traceability;
+- concrete evidence per score criterion.
 
-## Automatic FAIL conditions
-- Output is only narrative advice.
-- Target behavior is missing.
-- Reward/scoring is unclear or disconnected from action.
-- Ethical controls are missing.
-- Score appears without evidence.
-- Handoff requires invention by UX/UI, Copy, Quality Pack or Orchestrator.
-- The system uses unsafe urgency, pressure, public comparison or unclear financial meaning.
+## Automatic FAIL
+Unsupported claim, harmful financial reward, pressure/dark pattern, punitive/public financial ranking, missing off-condition, vanity-only metric, ambiguous mechanic, contradictory LF clarity, nominal score evidence, or counterfactual twin that reaches the same metric through an unsafe trajectory.
 
 ## Verdicts
 - `PASS_TO_QUALITY_PACK`
@@ -28,11 +26,4 @@ Validate that Gamification System Architect produced an executable, safe and han
 - `RETURN_TO_ORCHESTRATOR`
 - `BLOCK_PIPELINE`
 
-## Research basis
-- Internal LF: ACT-0045 closure and handoff rules.
-- Own repo: Quality Pack and UI Architect judge pattern.
-- External official: skill evaluation gates.
-- External comparable: gamification needs rules, state and scoring.
-- Critical/risk: ethical gamification controls.
-- Adapted into: `judges/gamification_mini_judge.md`.
-- Reason for location: pass/fail logic belongs in the judge layer.
+Validator PASS or high score is necessary but insufficient.
