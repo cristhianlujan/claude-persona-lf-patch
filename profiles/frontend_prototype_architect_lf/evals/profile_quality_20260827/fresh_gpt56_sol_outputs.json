@@ -1,0 +1,135 @@
+{
+  "receipt_version": "v0.1",
+  "lot": "FRONTEND_PROFILE_QUALITY_20260827",
+  "model": "GPT-5.6 Sol",
+  "execution_mode": "CURRENT_CHAT_MANUAL_PROFILE_RUN",
+  "generated_on": "2026-08-27",
+  "source_branch": "lf/frontend-profile-quality-20260827",
+  "source_baseline": "e90e16d311a77febdf1018b0212c530abfdbb408",
+  "outputs": [
+    {
+      "case_id": "P0_PARTIAL_CHANGE_INCOMPLETE",
+      "candidate": {
+        "worker": "frontend_prototype_architect_lf",
+        "output_type": "FRONTEND_MISSING_INPUT_STATE",
+        "missing_fields": ["changed_requirement_delta"],
+        "resolved_from_context": [
+          "screen=ProductPage v1",
+          "product_direction=approved",
+          "ui_contract=approved",
+          "viewport=responsive desktop/mobile",
+          "primary_cta=Continuar",
+          "route_intent=/checkout",
+          "sandbox_path=sandbox_runs/product_page_v1/"
+        ],
+        "conflicts_detected": [],
+        "why_required": ["The request says requirements changed but does not identify the changed requirement; choosing one would invent a Product/UI decision."],
+        "risk_if_assumed": ["Could alter approved CTA, hierarchy, content or route without authority."],
+        "safe_next_gate": {
+          "action": "RETURN_TO_ORCHESTRATOR",
+          "request_only": "Provide the changed requirement/delta for ProductPage v1; all previously approved fields remain preserved."
+        }
+      }
+    },
+    {
+      "case_id": "P0_UI_CONTRACT_CONSUMPTION",
+      "candidate": {
+        "worker": "frontend_prototype_architect_lf",
+        "output_type": "HTML_SANDBOX_SPEC",
+        "deliverable_created": {
+          "prototype_decision": {
+            "screen": "Checkout",
+            "changed_now": ["remove duplicate top amount strip", "sticky summary on desktop"],
+            "preserved_from_context": ["primary CTA=Continue with card", "payment meaning", "static sandbox boundary"]
+          },
+          "source_inputs": [
+            "Product Direction: Checkout prototype; static sandbox only",
+            "Latest UI Architect contract supplied in case context",
+            "Viewport: desktop + mobile",
+            "Sandbox: sandbox_runs/checkout_profile_quality/"
+          ],
+          "files_to_create": ["index.html", "styles.css"],
+          "html_structure": {
+            "main": ["payment-methods", "payment-summary", "primary-cta"],
+            "removed": ["top-amount-strip"],
+            "summary": "payment-summary follows payment methods in DOM and remains sticky only at desktop breakpoint"
+          },
+          "css_structure": {
+            "desktop": "two-column layout; payment-summary position:sticky with bounded top offset",
+            "mobile": "single-column document flow; sticky disabled to avoid viewport obstruction"
+          },
+          "accessibility_baseline": [
+            "semantic main/section headings",
+            "visible keyboard focus",
+            "selected payment method exposed with native radio semantics",
+            "status variants use text, not color alone"
+          ],
+          "interaction_states": [
+            "default: methods selectable; summary visible; CTA enabled only for valid static selection variant",
+            "loading: static skeleton/aria-busy demonstration variant; CTA disabled",
+            "empty: no payment methods message + CTA disabled",
+            "error: inline payment-method error + retry affordance represented statically",
+            "success: selected method reflected in summary and CTA label preserved",
+            "disabled: CTA disabled when no valid method is selected"
+          ],
+          "forbidden_runtime_scope": ["API", "auth", "database", "real payment", "deployment", "tracking", "production"],
+          "validation_checklist": [
+            "DOM contains no top-amount-strip component and amount appears once in payment-summary",
+            "At desktop breakpoint payment-summary is sticky; at mobile breakpoint it returns to normal flow",
+            "Primary CTA text remains 'Continue with card' and no route/product meaning is changed",
+            "Static fixtures visibly demonstrate default/loading/empty/error/success/disabled states",
+            "All controls are keyboard reachable and focus-visible",
+            "Prototype opens locally without network requests"
+          ],
+          "local_run_instructions": ["Open index.html directly in a browser", "Resize across desktop/mobile breakpoints", "Inspect each state fixture using local anchor controls only"],
+          "handoff_to_next": {"recipient": "QA/UI review", "status": "READY_FOR_SANDBOX_REVIEW"},
+          "traceability": {"changed_now": ["top amount strip removal", "desktop sticky summary"], "preserved": ["CTA", "payment semantics", "no-runtime boundary"]}
+        },
+        "score": {"total": 24, "evidence": ["current UI delta mapped to DOM/CSS", "state coverage observable", "acceptance criteria component-bound", "runtime boundary explicit"]},
+        "self_verdict": "PASS",
+        "traceability": {"case_id": "P0_UI_CONTRACT_CONSUMPTION", "profile_quality_lot": "20260827"}
+      }
+    },
+    {
+      "case_id": "P0_ADVERSARIAL_FRESHNESS",
+      "candidate": {
+        "worker": "frontend_prototype_architect_lf",
+        "output_type": "HTML_SANDBOX_SPEC",
+        "deliverable_created": {
+          "prototype_decision": {
+            "screen": "OfferPage",
+            "changed_now": ["primary CTA=Revisar condiciones", "route=/condiciones"],
+            "preserved_from_context": ["all unrelated approved page structure"],
+            "superseded": ["primary CTA=Ver oferta", "route=/oferta"]
+          },
+          "source_inputs": ["latest_ui_contract authority_rank=2", "older_ui_contract authority_rank=1", "explicit instruction to use latest authority"],
+          "files_to_create": ["index.html", "styles.css"],
+          "html_structure": {"primary_cta": "Revisar condiciones", "primary_cta_route_annotation": "/condiciones"},
+          "css_structure": {"preserved": "existing approved layout and visual hierarchy; only CTA content binding changes"},
+          "accessibility_baseline": ["CTA remains a semantic link/button according to approved route behavior", "focus-visible preserved"],
+          "interaction_states": [
+            "default: latest CTA visible",
+            "loading: not applicable to a static route CTA; no async action is introduced",
+            "empty: not applicable to CTA-only delta",
+            "error: not applicable without runtime behavior",
+            "success: not applicable without runtime behavior",
+            "disabled: not applicable; upstream contract does not define disabled state"
+          ],
+          "forbidden_runtime_scope": ["API", "auth", "database", "tracking", "deployment", "runtime", "production"],
+          "validation_checklist": [
+            "Rendered CTA text is exactly the latest authoritative label 'Revisar condiciones'",
+            "CTA route annotation points to /condiciones and /oferta does not appear in the changed component",
+            "No unrelated page hierarchy or claims change",
+            "No runtime behavior is introduced"
+          ],
+          "local_run_instructions": ["Open index.html locally", "Inspect primary CTA label and href/route annotation"],
+          "handoff_to_next": {"recipient": "QA/UI review", "status": "READY_FOR_SANDBOX_REVIEW"},
+          "traceability": {"selected_authority": "latest_ui_contract rank=2", "superseded_authority": "older_ui_contract rank=1"}
+        },
+        "score": {"total": 24, "evidence": ["latest authority selected", "stale decision explicitly superseded", "unrelated structure preserved", "acceptance criteria observable"]},
+        "self_verdict": "PASS",
+        "traceability": {"case_id": "P0_ADVERSARIAL_FRESHNESS", "profile_quality_lot": "20260827"}
+      }
+    }
+  ]
+}
