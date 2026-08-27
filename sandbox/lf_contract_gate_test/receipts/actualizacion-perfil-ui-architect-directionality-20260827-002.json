@@ -1,0 +1,21 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260827-002",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "90cc13f93eec59b87b6430089e85b23cab0be63c",
+    "f27b2a3818dfc99d6b310aef27b0117e7da917ef",
+    "ffdd994ed10dd2ebaf18f5a0f490a06f5314f8a2",
+    "2e20256ce08f9abde0b1aeca99876a2b0c9df538"
+  ],
+  "target_paths": ["profiles/ui_architect/**"],
+  "blocking_codes": [],
+  "issued_at": "2026-08-27T13:55:00Z",
+  "notes": "PASS_SANDBOX for governed existing-profile semantic directionality hardening. The production enforcement trigger accepted all 14 canonical step writes and derived STEP_PASS_WITH_EVIDENCE metadata. A separate stale checklist-view compatibility defect currently expects symbolic PASS (which the production trigger explicitly forbids); that governance defect also affects the previously closed UI execution and is not treated here as evidence that the profile patch failed. Mergeability still depends on PR CI; behavioral closure additionally requires a fresh post-merge live zero-cost runtime run from main. Runtime enablement and automatic promotion remain unchanged."
+}
