@@ -28,6 +28,8 @@ cases=[
  ("sha_head_mismatch","negative",case_mutator(lambda x:x["sources"][0].update({"observed_sha":B})),"RETURN_TO_SOURCE_FOR_READBACK","SOURCE_0_SHA_MISMATCH"),
  ("named_not_read","negative",case_mutator(lambda x:x["sources"][0].update({"read":False})),"RETURN_TO_SOURCE_FOR_READBACK","SOURCE_0_NOT_READ"),
  ("stale_reference","negative",case_mutator(lambda x:x["sources"][1].update({"current":False})),"RETURN_TO_SOURCE_FOR_READBACK","SOURCE_1_STALE"),
+ ("artifact_missing","negative",case_mutator(lambda x:x.update({"artifact_verified":False})),"RETURN_TO_SOURCE_FOR_READBACK","ARTIFACT_NOT_VERIFIED"),
+ ("provenance_missing","negative",case_mutator(lambda x:x["sources"][1].update({"receipt_id":None})),"RETURN_TO_SOURCE_FOR_READBACK","SOURCE_1_RECEIPT_MISSING"),
  ("self_certified_authority","adversarial",case_mutator(lambda x:x["sources"][0].update({"derived_from_candidate":True})),"BLOCK_PIPELINE","SOURCE_0_SELF_CERTIFIED_AUTHORITY"),
  ("receipt_replay","adversarial",case_mutator(lambda x:x["sources"][1].update({"receipt_replayed":True})),"BLOCK_PIPELINE","RECEIPT_REPLAY"),
  ("receipt_subject_mismatch","negative",case_mutator(lambda x:x["sources"][1].update({"receipt_subject_sha":A})),"BLOCK_PIPELINE","SOURCE_1_RECEIPT_SUBJECT_MISMATCH"),
@@ -35,7 +37,8 @@ cases=[
  ("structural_identifier_unreconciled","negative",case_mutator(lambda x:x["structural_identifiers"][0].update({"reconciled":False})),"BLOCK_PIPELINE","STRUCTURAL_IDENTIFIER_0_UNRECONCILED"),
  ("contradictory_source","crosscheck",case_mutator(lambda x:x.update({"conflicts":[{"resolved":False}]})),"BLOCK_PIPELINE","SOURCE_CONFLICT_0_UNRESOLVED"),
  ("correlated_oracle","adversarial",case_mutator(lambda x:x["semantic_assertions"][0].update({"oracle_id":"candidate-builder-v1"})),"BLOCK_PIPELINE","ASSERTION_0_CORRELATED_ORACLE"),
- ("trace_complete_semantics_false","holdout",case_mutator(lambda x:x["semantic_assertions"][0].update({"match":False})),"BLOCK_PIPELINE","ASSERTION_0_SEMANTIC_MISMATCH")
+ ("trace_complete_semantics_false","holdout",case_mutator(lambda x:x["semantic_assertions"][0].update({"match":False})),"BLOCK_PIPELINE","ASSERTION_0_SEMANTIC_MISMATCH"),
+ ("malformed_case","negative",None,"BLOCK_PIPELINE","MALFORMED_CASE")
 ]
 results=[]; failed=False
 for case_id,kind,data,expected_status,expected_code in cases:
