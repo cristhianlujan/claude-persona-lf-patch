@@ -4,6 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+
 def run(command):
     completed = subprocess.run(command, text=True, capture_output=True)
     if completed.stdout:
@@ -12,6 +13,7 @@ def run(command):
         print(completed.stderr, end='', file=sys.stderr)
     return completed.returncode
 
+
 def main():
     root = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path.cwd().resolve()
     repo_root = root.parent.parent
@@ -19,6 +21,7 @@ def main():
         ('PROFILE_CREATOR_CORE', [sys.executable, str(root/'validators/validate_pack_core.py'), str(root)]),
         ('GENERATED_PROFILE_MANIFEST', [sys.executable, str(root/'validators/validate_generated_profile_manifest.py'), str(root)]),
         ('CANDIDATE_DEPTH_SELF_TEST', [sys.executable, str(root/'validators/validate_candidate_depth.py'), '--self-test', str(root)]),
+        ('GOV021_CHAMPION_CHALLENGER', [sys.executable, str(root/'validators/champion_challenger_depth.py'), str(root)]),
     ]
     canary = repo_root/'profiles/evidence_lineage_reviewer_lf'
     if canary.exists():
@@ -38,6 +41,7 @@ def main():
     }
     print(json.dumps(result, indent=2))
     return 0 if not failed else 1
+
 
 if __name__ == '__main__':
     raise SystemExit(main())
