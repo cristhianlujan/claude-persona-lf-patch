@@ -1,0 +1,22 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "CREACION_ADAPTER_LF",
+  "execution_id": "EXEC-ADAPTER-LF-SHELL-PROFILE-20260827-002",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "ADAPTER-DEPTH-20260601-001",
+  "judge_sha": "JUDGE-ADAPTER-EXAMPLES-DEPTH-20260601-001",
+  "source_sha_list": [
+    "0728e6d60d2a2215f3a2ad66db5af66cdf0384c0",
+    "c347b33c9997faf48a349a8e2bdfa3095ab7add4",
+    "33f0fcbc0bb38d6acb0e8add67c58a3000f11eb6",
+    "e0bbfb5c7827c06e684a3d7efe128027aa007497",
+    "7b51558a6e6e2bcff23f44916752ac38fb72fe5b"
+  ],
+  "target_paths": ["adapters/lf_shell_profile_adapter/**"],
+  "blocking_codes": [],
+  "issued_at": "2026-08-27T20:47:00Z",
+  "notes": "PASS_SANDBOX for LF Shell/Profile adapter candidate. Pre-write execution binding exists in Supabase before writes on feat/lf-shell-profile-adapter-v1-governed. Examples/judge/schema and authority boundaries were reviewed; runtime remains NO_HABILITADO and automatic impact BLOQUEADO. Exact-head CI and merge remain separate gates."
+}

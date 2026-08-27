@@ -1,0 +1,30 @@
+version: v0.1
+status: CANDIDATO
+estado_operativo: READ_ONLY
+runtime_estado: NO_HABILITADO
+impacto_automatico: BLOQUEADO
+adapter_code: ADAPTER_LF_SHELL_PROFILE_v0.1_CANDIDATO
+base_path: adapters/lf_shell_profile_adapter
+required_files:
+  - ADAPTER.md
+  - manifest.yaml
+  - references/shell_resolution_contract.md
+  - references/profile_authority_matrix.md
+  - schemas/lf_shell_binding.schema.json
+  - examples/ui_architect_existing_screen_binding.yaml
+  - examples/frontend_prototype_binding.yaml
+  - evals/lf_shell_profile_adapter_cases.yaml
+  - judges/judge_lf_shell_profile_adapter.yaml
+activation_gate: LF_SCREEN_OR_UI_AFFECTING_PROFILE_DECISION
+canonical_source_order:
+  - lf_ops.pantallas
+  - lf_ops.modulos
+  - lf_ops.app_shells
+  - lf_ops.pantalla_variantes
+  - lf_ops.pantalla_elementos
+  - lf_design.component_tokens
+  - lf_design.spacing_tokens
+  - lf_design.color_tokens
+  - lf_design.typography_tokens
+  - lf_design.responsive_tokens
+allowed_final_state: CANDIDATO_READ_ONLY_NO_HABILITADO
