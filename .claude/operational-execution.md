@@ -487,6 +487,8 @@ Antes de cualquier GitHub write sobre el perfil:
    - `GOV-022`: incompatibilidad de scope/receipt/evidencia;
    - `GOV-024`: write anterior al binding canónico;
    - `RTE-010`: deriva de vocabulario/cobertura vista-enforcement;
+   - `CI-007`: matriz push/pull_request exact-head puede quedar bloqueada por un
+     run del otro evento sobre el mismo SHA;
    - `CI-014`: `main` avanza durante CI y vuelve stale el exact-head;
    - `OPS-005`: PR auxiliar usado indebidamente para comparar ramas;
 6. crear la ejecución oficial del perfil antes del write;
@@ -540,6 +542,28 @@ Si `main` cambió mientras corría CI:
 
 No esperar a que finalice un CI que ya se sabe stale para strict-base sólo para
 intentar reutilizarlo después.
+
+#### Recuperación de matriz E.16 push/pull_request (`CI-007`)
+
+Si el `lf-contract-check` del PR supera contrato, matrices y self-tests pero
+falla exclusivamente en `Capture authenticated E.16 Actions inventory` porque
+el último `lf-contract-check/push` del **mismo exact-head** está rojo o stale:
+
+1. demostrar primero que el fallo push no representa una regresión vigente del
+   candidato; si el push falló por scope, contrato o código real, corregir esa
+   causa antes de cualquier recuperación;
+2. no crear commit vacío, no rotar contenido y no cambiar el SHA sólo para
+   destrabar Actions;
+3. crear un ref/branch de checkpoint CI sobre el **mismo exact SHA** para provocar
+   una nueva matriz `push` canónica sin alterar el candidato;
+4. exigir `Validate LF Packs/push` y `lf-contract-check/push` `SUCCESS` sobre ese
+   SHA;
+5. reejecutar el job fallido del PR sobre el mismo SHA para que consuma la matriz
+   saneada;
+6. conservar workflow + event + exact-head + run/job como evidencia explícita.
+
+Un fallo de dependencia `push` no debe presentarse como regresión funcional del
+perfil, pero sigue bloqueando el merge hasta que la matriz exact-head esté sana.
 
 ### 15.6 Merge protegido
 
@@ -610,6 +634,8 @@ La omisión de estos campos no autoriza a continuar por inferencia.
 - Fabricar evidencia no observada por el sistema.
 - Publicar un protocolo o evidencia en una ruta que el gate global mantiene
   default-denied; usar las rutas exactas autorizadas o escalar la gobernanza.
+- Crear commits vacíos o cambios de contenido artificiales para sanear una matriz
+  E.16; usar checkpoint/ref exact-head y rerun cuando `CI-007` aplique.
 
 ### 15.11 Evidencia inicial del patrón
 
