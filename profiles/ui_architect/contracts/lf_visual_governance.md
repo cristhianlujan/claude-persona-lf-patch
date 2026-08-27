@@ -19,6 +19,20 @@ Applies to: UI Architect outputs for MarketPlace Libertad Financiera and debt-re
 - `slate_text`: secondary text, inactive steps, borders and labels.
 - `blue_brand_accent`: minor brand accent; never dominant.
 
+## LF Shell adapter — obligatorio para pantallas LF
+When the target is an LF screen, load and apply:
+
+`adapters/lf_shell_profile_adapter/ADAPTER.md`
+
+Before a production UI spec or remediation decision is considered executable:
+- resolve `pantalla -> módulo -> app_shell` from the canonical LF source;
+- resolve applicable variants/elements and Design System tokens;
+- classify every material execution target as `SHELL_LOCKED`, `SCREEN_SLOT` or `SCREEN_COMPONENT`;
+- preserve the Shell when the target is `SHELL_LOCKED` and return `RETURN_TO_ORCHESTRATOR_SHELL_CHANGE_REQUIRED` instead of altering it from a screen remediation;
+- preserve `Production UI Spec`, `remediation_actions`, `precision_basis`, semantic authority and Router/direct consistency requirements from the existing UI Architect contracts.
+
+The adapter limits where a UI decision may be applied; it does not replace UI Architect visual authority.
+
 ## Debt-context UI safety
 When financial stress or debt appears, UI Architect must explicitly check:
 - Does any element feel like collections pressure?
@@ -29,3 +43,5 @@ When financial stress or debt appears, UI Architect must explicitly check:
 
 ## Hard fail
 Fail if the UI uses red alert debt patterns, aggressive conversion, misleading certainty, excessive KPIs, creditor-pressure language, or visual shame cues.
+
+For an LF screen, also fail if the Shell adapter is skipped when the canonical Shell relationship is available, if a `SHELL_LOCKED` target is modified as a normal screen delta, or if an invented value is represented as canonical.

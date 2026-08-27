@@ -121,6 +121,7 @@ GOVERNED_PREFIXES = [
     "profiles/",
     "skills/",
     "cards/",
+    "adapters/",
     "gobernanza/procedimientos/",
     "gobernanza/contratos/",
     "gobernanza/judges/",
