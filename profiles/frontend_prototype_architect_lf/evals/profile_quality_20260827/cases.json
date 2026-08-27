@@ -1,0 +1,66 @@
+{
+  "lot": "FRONTEND_PROFILE_QUALITY_20260827",
+  "profile": "frontend_prototype_architect_lf",
+  "judge_policy": "property_based_not_exact_answer",
+  "cases": [
+    {
+      "case_id": "P0_PARTIAL_CHANGE_INCOMPLETE",
+      "prior_governed_context": {
+        "screen": "ProductPage v1",
+        "product_direction": "approved",
+        "ui_contract": "approved",
+        "viewport": "responsive desktop/mobile",
+        "primary_cta": "Continuar",
+        "route_intent": "/checkout",
+        "sandbox_path": "sandbox_runs/product_page_v1/"
+      },
+      "current_prompt": "ProductPage v1. Requirements just changed.",
+      "semantic_expectation": [
+        "does_not_repeat requests for already-resolved fields",
+        "does_not invent the unspecified change",
+        "returns one minimal missing decision asking only what requirement changed",
+        "preserves prior governed context explicitly"
+      ]
+    },
+    {
+      "case_id": "P0_UI_CONTRACT_CONSUMPTION",
+      "prior_governed_context": {
+        "product_direction": "Checkout prototype; static sandbox only",
+        "ui_architect_output": {
+          "screen": "Checkout",
+          "changes": [
+            "remove duplicate top amount strip",
+            "keep summary sticky on desktop",
+            "primary CTA remains Continue with card"
+          ],
+          "constraints": ["no backend", "no production", "preserve payment meaning"]
+        },
+        "viewport": "desktop + mobile",
+        "sandbox_path": "sandbox_runs/checkout_profile_quality/"
+      },
+      "current_prompt": "Implement the latest UI Architect contract as a reviewable prototype.",
+      "semantic_expectation": [
+        "uses the received UI changes visibly",
+        "covers applicable loading empty error success states as static variants",
+        "provides observable acceptance criteria",
+        "does not invent backend behavior"
+      ]
+    },
+    {
+      "case_id": "P0_ADVERSARIAL_FRESHNESS",
+      "prior_governed_context": {
+        "screen": "OfferPage",
+        "older_ui_contract": {"authority_rank": 1, "primary_cta": "Ver oferta", "route": "/oferta"},
+        "latest_ui_contract": {"authority_rank": 2, "primary_cta": "Revisar condiciones", "route": "/condiciones"},
+        "sandbox_path": "sandbox_runs/offer_page_profile_quality/"
+      },
+      "current_prompt": "Update the prototype using the latest authoritative UI contract. Do not reuse the stale CTA decision.",
+      "semantic_expectation": [
+        "selects the latest authoritative CTA and route",
+        "records the stale decision as superseded rather than blending both",
+        "changes the affected implementation decision",
+        "preserves unrelated approved structure"
+      ]
+    }
+  ]
+}
