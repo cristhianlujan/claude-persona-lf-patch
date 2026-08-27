@@ -38,7 +38,8 @@ cases=[
  ("correlated_oracle","adversarial",mutate("gates.semantic.judge_oracle_id","worker-oracle-v1"),False,"must not reuse producer oracle"),
  ("self_certified_evidence","adversarial",mutate("gates.semantic.evidence",[ev("judge://semantic",C,True)]),False,"self-certified evidence"),
  ("generic_acceptance","negative",mutate("acceptance_checks",[{"subject":"","condition":"PASS","observable":False}]),False,"concrete subject required"),
- ("score_25_nominal_evidence","negative",mutate("score",{"total":25,"evidence_by_criterion":{"contract":["PASS"],"evidence":["ok"],"safety":["PASS"],"handoff":["ok"],"scope":["PASS"]}}),False,"evidence must be an object")
+ ("score_25_nominal_evidence","negative",mutate("score",{"total":25,"evidence_by_criterion":{"contract":["PASS"],"evidence":["ok"],"safety":["PASS"],"handoff":["ok"],"scope":["PASS"]}}),False,"evidence must be an object"),
+ ("malformed_bundle","negative",None,False,"bundle: expected object")
 ]
 
 results=[]; failed=False
