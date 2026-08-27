@@ -15,9 +15,10 @@
   ],
   "target_paths": [
     "skills/profile_creator/fixtures/handoff_outcome/candidate_pack_v2.json",
+    "profiles/quality_pack/fixtures/independent_semantic_reviews/pr225_profile_creator_20260826.json",
     "sandbox/lf_contract_gate_test/receipts/**"
   ],
   "blocking_codes": [],
   "issued_at": "2026-08-26T19:20:00-05:00",
-  "notes": "Self-repair canary v2 for the same UI Interface Architect case that received independent semantic BLOCK_PIPELINE 6/25 on the PR225 artifact. The historical failed artifact remains immutable by exact commit/blob reference. The v2 candidate is CANDIDATO/READ_ONLY/NO_HABILITADO with automatic impact BLOQUEADO and passes its local structural+semantic-guardrail validator. Independent semantic Quality Pack review of v2 remains NOT_EXECUTED; this receipt does not claim semantic PASS, runtime, production or promotion."
+  "notes": "Self-repair canary v2 for the same UI Interface Architect case that received independent semantic BLOCK_PIPELINE 6/25 on the PR225 artifact. The historical failed artifact remains immutable by exact commit/blob reference and its independent semantic receipt is stored under Quality Pack evidence. The v2 candidate is CANDIDATO/READ_ONLY/NO_HABILITADO with automatic impact BLOQUEADO and passes its local structural+semantic-guardrail validator. Independent semantic Quality Pack review of v2 remains NOT_EXECUTED; this receipt does not claim semantic PASS, runtime, production or promotion."
 }
