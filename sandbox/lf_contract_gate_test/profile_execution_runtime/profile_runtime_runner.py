@@ -6,6 +6,11 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Protocol
 
+from semantic_obligation_manifest import (
+    ObligationManifestError,
+    obligation_manifest_sha256,
+    validate_obligation_manifest,
+)
 from validate_profile_execution import (
     OPERATION_CODE,
     build_receipt,
@@ -109,6 +114,7 @@ def build_runtime_request(
     profile_slug: str,
     profile_sources: list[dict[str, str]],
     input_literal: str,
+    obligation_manifest: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     for name, value in (
         ("execution_id", execution_id),
@@ -121,6 +127,7 @@ def build_runtime_request(
         raise RuntimeExecutionBlocked("INPUT_LITERAL_MISSING")
 
     normalized_sources, source_refs, source_sha256 = _validate_sources(profile_sources)
+    input_sha = sha256_text(input_literal)
     request = {
         "request_type": REQUEST_TYPE,
         "operation_code": OPERATION_CODE,
@@ -131,8 +138,20 @@ def build_runtime_request(
         "profile_source_refs": source_refs,
         "profile_source_sha256": source_sha256,
         "input_literal": input_literal,
-        "input_sha256": sha256_text(input_literal),
+        "input_sha256": input_sha,
     }
+    if obligation_manifest is not None:
+        try:
+            normalized_manifest = validate_obligation_manifest(
+                obligation_manifest,
+                expected_execution_id=execution_id,
+                expected_profile_code=profile_code,
+                expected_profile_source_sha256=source_sha256,
+                expected_input_sha256=input_sha,
+            )
+        except ObligationManifestError as exc:
+            raise RuntimeExecutionBlocked("OBLIGATION_MANIFEST_INVALID", str(exc)) from exc
+        request["obligation_manifest_sha256"] = obligation_manifest_sha256(normalized_manifest)
     request["request_sha256"] = canonical_json_sha256(request)
     return request
 
@@ -250,6 +269,7 @@ def execute_profile_runtime(
     adapter: RuntimeAdapter,
     attestation_verifier: RuntimeAttestationVerifier,
     allow_test_doubles: bool = False,
+    obligation_manifest: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     _validate_adapter(adapter, allow_test_doubles=allow_test_doubles)
     _validate_verifier(attestation_verifier, allow_test_doubles=allow_test_doubles)
@@ -259,6 +279,7 @@ def execute_profile_runtime(
         profile_slug=profile_slug,
         profile_sources=profile_sources,
         input_literal=input_literal,
+        obligation_manifest=obligation_manifest,
     )
 
     try:
@@ -305,6 +326,7 @@ def execute_profile_runtime(
         input_literal=input_literal,
         raw_output=raw_output,
         runtime_attestation=runtime_attestation,
+        obligation_manifest_sha256=request.get("obligation_manifest_sha256"),
     )
 
     return {
