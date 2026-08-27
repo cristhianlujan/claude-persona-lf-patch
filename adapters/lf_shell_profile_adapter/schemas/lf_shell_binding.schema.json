@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "lf_shell_binding.schema.json",
+  "title": "LF Shell Binding",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["binding_state", "profile_id", "target_mode", "screen", "shell", "source_refs", "protected_targets", "writable_targets", "profile_delta", "conflicts", "handoff"],
+  "properties": {
+    "binding_state": {"enum": ["BOUND", "BOUND_CANDIDATE_ONLY", "RETURN_TO_ORCHESTRATOR_MISSING_AUTHORITY", "RETURN_TO_ORCHESTRATOR_SHELL_CHANGE_REQUIRED", "BLOCKED_SOURCE_CONFLICT", "BLOCKED_SCREEN_UNRESOLVED"]},
+    "profile_id": {"type": "string", "minLength": 1},
+    "target_mode": {"enum": ["EVALUATE", "REMEDIATE", "CREATE_SPEC", "IMPLEMENT_PROTOTYPE", "REVIEW"]},
+    "screen": {
+      "type": "object", "additionalProperties": false, "required": ["screen_code", "module_code"],
+      "properties": {
+        "screen_code": {"type": "string", "minLength": 1},
+        "module_code": {"type": "string", "minLength": 1},
+        "status": {"type": ["string", "null"]},
+        "variant_refs": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "shell": {
+      "type": "object", "additionalProperties": false, "required": ["app_shell_code", "version", "status", "design_system_code", "locked"],
+      "properties": {
+        "app_shell_code": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "status": {"type": "string", "minLength": 1},
+        "design_system_code": {"type": "string", "minLength": 1},
+        "locked": {"const": true}
+      }
+    },
+    "source_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "protected_targets": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["target_id", "classification", "source_ref"],
+        "properties": {
+          "target_id": {"type": "string", "minLength": 1},
+          "classification": {"const": "SHELL_LOCKED"},
+          "source_ref": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "writable_targets": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["target_id", "classification", "source_ref"],
+        "properties": {
+          "target_id": {"type": "string", "minLength": 1},
+          "classification": {"enum": ["SCREEN_SLOT", "SCREEN_COMPONENT"]},
+          "source_ref": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "profile_delta": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["decision_id", "target_id", "authority", "change", "precision_mode", "execution_allowed"],
+        "properties": {
+          "decision_id": {"type": "string", "minLength": 1},
+          "target_id": {"type": "string", "minLength": 1},
+          "authority": {"type": "string", "minLength": 1},
+          "change": {"type": "string", "minLength": 1},
+          "precision_mode": {"enum": ["CANONICAL_TOKEN", "UPSTREAM_VALUE", "EXPLORATORY_PROPOSAL", "RELATIVE_GUIDANCE", "NOT_APPLICABLE"]},
+          "precision_ref": {"type": ["string", "null"]},
+          "execution_allowed": {"type": "boolean"}
+        }
+      }
+    },
+    "conflicts": {"type": "array", "items": {"type": "string"}},
+    "handoff": {
+      "type": "object", "additionalProperties": false, "required": ["next_profile", "allowed_scope"],
+      "properties": {
+        "next_profile": {"type": ["string", "null"]},
+        "allowed_scope": {"type": "string"}
+      }
+    }
+  }
+}
