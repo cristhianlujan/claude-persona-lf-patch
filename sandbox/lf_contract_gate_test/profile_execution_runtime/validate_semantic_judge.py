@@ -13,6 +13,12 @@ from semantic_mini_judge import (
     canonical_json_sha256,
     validate_bundle,
 )
+from semantic_obligation_manifest import (
+    ObligationManifestError,
+    build_check_bundle,
+    obligation_manifest_sha256,
+    validate_obligation_manifest,
+)
 
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 ALLOWED_DECIDERS = {"PYTHON_DETERMINISTIC", "LOCAL_SEMANTIC_MODEL"}
@@ -46,22 +52,50 @@ def _bundle_or_errors(bundle: Any) -> tuple[dict[str, Any] | None, list[str]]:
         return None, [f"SEMANTIC_CHECK_BUNDLE_INVALID:{exc}"]
 
 
+def _manifest_or_errors(
+    manifest: Any,
+    *,
+    execution_receipt: dict[str, Any],
+) -> tuple[dict[str, Any] | None, list[str]]:
+    if manifest is None:
+        return None, ["SEMANTIC_OBLIGATION_MANIFEST_MISSING"]
+    try:
+        normalized = validate_obligation_manifest(
+            manifest,
+            expected_execution_id=execution_receipt.get("execution_id"),
+            expected_profile_code=execution_receipt.get("profile_code"),
+            expected_profile_source_sha256=execution_receipt.get("profile_source_sha256"),
+            expected_input_sha256=execution_receipt.get("input_sha256"),
+        )
+        return normalized, []
+    except ObligationManifestError as exc:
+        return None, [f"SEMANTIC_OBLIGATION_MANIFEST_INVALID:{exc}"]
+
+
 def validate_semantic_judge_receipt(
     semantic_receipt: Any,
     *,
     expected_bundle: Any,
+    expected_obligation_manifest: Any,
+    expected_raw_output: Any,
     execution_receipt: dict[str, Any],
 ) -> list[str]:
-    """Validate semantic receipt, exact bundle binding, and execution binding.
+    """Validate semantic receipt plus complete pre-bound obligation coverage.
 
-    This gate intentionally validates a supplied check bundle; it does not claim that the
-    bundle itself is a complete extraction of every semantic obligation in the profile.
-    Bundle-completeness remains a separate upstream responsibility.
+    The obligation manifest is created before model execution and its digest is bound into
+    the execution request/receipt. The check bundle is then reconstructed deterministically
+    from that manifest and the exact RAW output. A caller cannot obtain PASS by supplying a
+    manual subset of checks, changing a rule, or dropping an enumerated obligation.
     """
 
     errors: list[str] = []
     bundle, bundle_errors = _bundle_or_errors(expected_bundle)
     errors.extend(bundle_errors)
+    manifest, manifest_errors = _manifest_or_errors(
+        expected_obligation_manifest,
+        execution_receipt=execution_receipt,
+    )
+    errors.extend(manifest_errors)
 
     if semantic_receipt is None:
         errors.append("PROFILE_SEMANTIC_JUDGE_RECEIPT_MISSING")
@@ -69,8 +103,30 @@ def validate_semantic_judge_receipt(
     if not isinstance(semantic_receipt, dict):
         errors.append("PROFILE_SEMANTIC_JUDGE_RECEIPT_NOT_OBJECT")
         return sorted(set(errors))
-    if bundle is None:
+    if bundle is None or manifest is None:
         return sorted(set(errors))
+    if expected_raw_output is None:
+        errors.append("SEMANTIC_RAW_OUTPUT_REQUIRED_FOR_COMPLETENESS")
+        return sorted(set(errors))
+
+    manifest_sha = obligation_manifest_sha256(manifest)
+    execution_manifest_sha = execution_receipt.get("obligation_manifest_sha256")
+    if not _sha(execution_manifest_sha):
+        errors.append("EXECUTION_OBLIGATION_MANIFEST_SHA256_MISSING")
+    elif execution_manifest_sha != manifest_sha:
+        errors.append("EXECUTION_OBLIGATION_MANIFEST_SHA256_MISMATCH")
+
+    try:
+        expected_derived_bundle = build_check_bundle(
+            manifest,
+            expected_raw_output,
+            raw_output_sha256=execution_receipt.get("raw_output_sha256"),
+        )
+    except ObligationManifestError as exc:
+        errors.append(f"SEMANTIC_BUNDLE_DERIVATION_FAILED:{exc}")
+        expected_derived_bundle = None
+    if expected_derived_bundle is not None and canonical_json_sha256(bundle) != canonical_json_sha256(expected_derived_bundle):
+        errors.append("SEMANTIC_CHECK_BUNDLE_NOT_DERIVED_FROM_MANIFEST")
 
     for field in (
         "receipt_type",
@@ -78,6 +134,7 @@ def validate_semantic_judge_receipt(
         "profile_code",
         "input_sha256",
         "raw_output_sha256",
+        "obligation_manifest_sha256",
         "check_bundle_sha256",
         "verdict",
         "downstream_disposition",
@@ -89,6 +146,7 @@ def validate_semantic_judge_receipt(
     for field in (
         "input_sha256",
         "raw_output_sha256",
+        "obligation_manifest_sha256",
         "check_bundle_sha256",
         "receipt_sha256",
     ):
@@ -106,6 +164,11 @@ def validate_semantic_judge_receipt(
         errors.append("SEMANTIC_VERDICT_NOT_PASS")
     if semantic_receipt.get("downstream_disposition") != "ELIGIBLE":
         errors.append("SEMANTIC_DOWNSTREAM_NOT_ELIGIBLE")
+
+    if bundle.get("obligation_manifest_sha256") != manifest_sha:
+        errors.append("BUNDLE_OBLIGATION_MANIFEST_SHA256_MISMATCH")
+    if semantic_receipt.get("obligation_manifest_sha256") != manifest_sha:
+        errors.append("SEMANTIC_OBLIGATION_MANIFEST_SHA256_MISMATCH")
 
     expected_bundle_sha = canonical_json_sha256(bundle)
     if semantic_receipt.get("check_bundle_sha256") != expected_bundle_sha:
@@ -132,6 +195,10 @@ def validate_semantic_judge_receipt(
             errors.append("SEMANTIC_RECEIPT_SHA256_MISMATCH")
 
     expected_checks = {check["check_id"]: check for check in bundle["checks"]}
+    manifest_obligation_ids = {item["obligation_id"] for item in manifest["obligations"]}
+    if set(expected_checks) != manifest_obligation_ids:
+        errors.append("SEMANTIC_OBLIGATION_COVERAGE_MISMATCH")
+
     receipt_checks = semantic_receipt.get("checks")
     if not isinstance(receipt_checks, list) or not receipt_checks:
         errors.append("SEMANTIC_RECEIPT_CHECKS_INVALID")
