@@ -48,22 +48,28 @@ Load these files when executing this profile:
 3. `contracts/missing_input_policy.md`
    - Defines structured pipeline outputs for missing inputs.
 
-4. `schemas/ui_production_spec.schema.json`
+4. `contracts/existing_screen_review.md`
+   - Defines executable remediation actions and direct-vs-router consistency for existing-screen evaluation/remediation.
+
+5. `schemas/ui_production_spec.schema.json`
    - Required schema for executable UI production outputs.
 
-5. `schemas/ui_focused_decision.schema.json`
+6. `schemas/ui_focused_decision.schema.json`
    - Required schema for Focused UI Decision Spec outputs.
 
-6. `schemas/ui_missing_input.schema.json`
+7. `schemas/ui_missing_input.schema.json`
    - Required schema when the worker cannot proceed safely.
 
-7. `judges/ui_architect_score_rubric.md`
+8. `validators/validate_ui_architect_output.py`
+   - Deterministic fail-closed validation for Production UI Spec outputs, score rubric compatibility and existing-screen remediation actions.
+
+9. `judges/ui_architect_score_rubric.md`
    - Defines the 25-point rubric. Scores without evidence are invalid.
 
-8. `judges/ui_architect_mini_judge.md`
+10. `judges/ui_architect_mini_judge.md`
    - Defines pass/fail gates and blocking conditions.
 
-9. `../../orchestrator/decision_logic.md`
+11. `../../orchestrator/decision_logic.md`
    - Defines recipient/output allowlists and gates that prevent suggestion-only outputs, internal leakage and contaminated image/tool payloads.
 
 ## Required output modes
@@ -72,6 +78,10 @@ The worker must return one of these modes:
 ### A. Production UI Spec
 Use when enough information exists or safe low-risk assumptions are available and the requested deliverable is a screen, layout, component map or full render specification.
 Output must validate against `schemas/ui_production_spec.schema.json`.
+
+When the task evaluates or remediates an existing screen, also set `deliverable_created.screen_definition.task_mode` to `EVALUATE_EXISTING` or `REMEDIATE_EXISTING` and satisfy `contracts/existing_screen_review.md`.
+
+For these existing-screen tasks, `deliverable_created.remediation_actions` is mandatory. Each material finding must become one concrete implementation action with evidence anchor, selected decision, implementation change and observable acceptance criteria. Do not return a repeated diagnostic list.
 
 ### B. Focused UI Decision Spec
 Use when the user asks to decide, define or choose one UI attribute, visual treatment, layout direction, component behavior, background, hierarchy, density or interaction pattern.
@@ -115,11 +125,16 @@ All scores must follow `judges/ui_architect_score_rubric.md`:
 - Handoff quality: 5
 
 If evidence is missing, that criterion scores 0.
+For Production UI Spec, the deterministic validator must pass before a score can be used by the mini-judge.
 
 ## Blocking criteria
 Automatic fail if:
 - `deliverable_created` is free-form paragraph text when a Production UI Spec is required.
 - Component Tree is missing when a Production UI Spec is required.
+- Production UI Spec fails `validators/validate_ui_architect_output.py`.
+- Existing-screen evaluation/remediation omits executable `remediation_actions`.
+- Existing-screen actions repeat the same diagnosis instead of consolidating it into implementable changes.
+- Router and direct activation materially diverge on remediation actions for the same screen/input without a contextual reason.
 - A focused UI decision is requested but the output does not include the required Focused UI Decision Spec fields.
 - Focused UI decision output does not validate against `schemas/ui_focused_decision.schema.json`.
 - Focused UI decision output is only a concept name, rationale, ingredient list or recommendation.
