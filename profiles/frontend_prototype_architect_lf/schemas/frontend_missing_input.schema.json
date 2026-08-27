@@ -7,6 +7,8 @@
     "worker": {"const": "frontend_prototype_architect_lf"},
     "output_type": {"const": "FRONTEND_MISSING_INPUT_STATE"},
     "missing_fields": {"type": "array"},
+    "resolved_from_context": {"type": "array"},
+    "conflicts_detected": {"type": "array"},
     "why_required": {"type": "array"},
     "risk_if_assumed": {"type": "array"},
     "safe_next_gate": {"type": "object"}
