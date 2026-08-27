@@ -1,0 +1,113 @@
+version: v0.1
+adapter: ADAPTER_LF_SHELL_PROFILE_v0.1_CANDIDATO
+cases:
+  - id: LFSA-001
+    name: ui_remediation_preserves_shell
+    given:
+      profile_id: ui_architect
+      shell_status: VIGENTE
+      target_classification: SCREEN_COMPONENT
+      canonical_token_available: true
+    expect:
+      binding_state: BOUND
+      uses_canonical_token: true
+      shell_modified: false
+      remediation_action_preserved: true
+
+  - id: LFSA-002
+    name: ui_attempts_locked_shell_change
+    given:
+      profile_id: ui_architect
+      target_classification: SHELL_LOCKED
+    expect:
+      binding_state: RETURN_TO_ORCHESTRATOR_SHELL_CHANGE_REQUIRED
+      execution_allowed: false
+      shell_modified: false
+
+  - id: LFSA-003
+    name: frontend_requires_ui_authority
+    given:
+      profile_id: frontend_prototype_architect_lf
+      ui_spec_available: false
+      ui_spec_recoverable: false
+    expect:
+      binding_state: RETURN_TO_ORCHESTRATOR_MISSING_AUTHORITY
+      frontend_invents_layout: false
+
+  - id: LFSA-004
+    name: direct_router_consistency
+    given:
+      profile_id: ui_architect
+      same_screen_context: true
+      activation_paths: [DIRECT, ROUTER]
+    expect:
+      same_shell_binding: true
+      materially_same_profile_delta: true
+
+  - id: LFSA-005
+    name: candidate_shell_never_promoted
+    given:
+      shell_status: CANDIDATO
+      target_classification: SCREEN_SLOT
+    expect:
+      binding_state: BOUND_CANDIDATE_ONLY
+      production_enabled: false
+      shell_promoted: false
+
+  - id: LFSA-006
+    name: canonical_precision_beats_invented_pixels
+    given:
+      canonical_token_available: true
+      profile_proposes_unbound_pixel_value: true
+    expect:
+      canonical_value_wins: true
+      proposed_value_presented_as_canonical: false
+
+  - id: LFSA-007
+    name: exploratory_precision_allowed
+    given:
+      canonical_token_available: false
+      material_semantics_affected: false
+      target_classification: SCREEN_COMPONENT
+    expect:
+      binding_state: BOUND
+      allowed_precision_modes: [EXPLORATORY_PROPOSAL, RELATIVE_GUIDANCE]
+
+  - id: LFSA-008
+    name: copy_semantics_require_authority
+    given:
+      profile_id: ui_architect
+      action_category: COPY
+      semantic_authority_available: false
+      meaning_change_material: true
+    expect:
+      binding_state: RETURN_TO_ORCHESTRATOR_MISSING_AUTHORITY
+      invented_claim: false
+
+  - id: LFSA-009
+    name: product_decision_does_not_claim_visual_authority
+    given:
+      profile_id: product_director_lf
+      request_affects_visual_layout: true
+    expect:
+      next_profile: ui_architect
+      product_profile_modifies_shell: false
+
+  - id: LFSA-010
+    name: gamification_enters_as_semantic_delta
+    given:
+      profile_id: gamification_system_architect
+      visible_ui_change: true
+      target_classification: SCREEN_SLOT
+    expect:
+      next_profile: ui_architect
+      visual_hierarchy_finalized_by_gamification: false
+
+hard_fail_if:
+  - drive_used_as_shell_authority
+  - shell_duplicated_locally_as_canonical
+  - shell_locked_target_executed_without_escalation
+  - invented_token_labeled_canonical
+  - frontend_changes_product_or_ui_authority
+  - direct_router_material_divergence_with_same_context
+  - adapter_enables_runtime_or_production
