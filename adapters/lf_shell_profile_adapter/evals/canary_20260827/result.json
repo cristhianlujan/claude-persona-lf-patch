@@ -1,0 +1,32 @@
+{
+  "canary_id": "LFSA-CANARY-20260827-001",
+  "screen_code": "CHECKOUT_PAGO_UNICO_MEDIO_PAGO",
+  "direct_raw_blob_sha": "05800d0e035c527fd0af9d52014cd2d490d2297e",
+  "router_raw_blob_sha": "d298c3f7e122254afbefe08ee34e45a5f5b7c6c2",
+  "direct_ui_validator_pass": true,
+  "router_ui_validator_pass": true,
+  "direct_shell_binding_schema_pass": true,
+  "router_shell_binding_schema_pass": true,
+  "remediation_actions_materially_equal": true,
+  "shell_binding_equal_except_router_provenance": true,
+  "shell_mutation_emitted_as_ui_action": false,
+  "shell_mutation_execution_allowed": false,
+  "screen_delta_execution_allowed": true,
+  "binding_state": "RETURN_TO_ORCHESTRATOR_SHELL_CHANGE_REQUIRED",
+  "judge": {
+    "shell_resolution": 5,
+    "authority_boundaries": 5,
+    "ui_contract_fidelity": 5,
+    "downstream_executability": 5,
+    "governance_safety": 5,
+    "total": 25,
+    "verdict": "PASS_CANDIDATO_READ_ONLY"
+  },
+  "hard_fail_triggered": false,
+  "limitations": [
+    "The repository has no standalone model/profile invocation runtime. profiles/ui_architect/evals/remediation_20260827/run_cases.py constructs fixture outputs and only validates them.",
+    "This canary therefore used the current agent as the model runtime after loading the exact ui_architect profile, adapter contracts and canonical Supabase context. The RAW outputs were generated for this fresh input and persisted separately; they were not emitted by run_cases.py."
+  ],
+  "production_runtime_enabled": false,
+  "merge_authorized": false
+}
