@@ -1,80 +1,86 @@
-# Judge — UI Architect Mini-Judge
+# Judge — UI Architect Mini-Judge V4
 
 Status: CANDIDATE_READ_ONLY / SANDBOX
 
 ## Purpose
-Validate that UI Architect produced an executable UI artifact, not advice.
+Validate that UI Architect produced an executable UI artifact and that no PASS is produced from structural scoring alone when semantic correctness is material.
+
+## Gate order
+1. Validate selected output mode/schema.
+2. For `PRODUCTION_UI_SPEC`, run `validators/validate_ui_architect_output.py`.
+3. If deterministic validation fails, stop with `PRODUCTION_UI_SPEC_DETERMINISTIC_GATE_FAILED`.
+4. For existing-screen remediation or meaning-changing actions, run `judges/ui_architect_semantic_judge.md` against raw input/upstream authority.
+5. Only then evaluate rubric/verdict/handoff.
 
 ## Required checks
 1. Required JSON fields are present for the selected output mode.
-2. If output mode is `Production UI Spec`, `deliverable_created` follows Component Tree format.
-3. If output mode is `Focused UI Decision Spec`, output validates against `schemas/ui_focused_decision.schema.json`.
-4. If output mode is `Missing Input State`, output validates against `schemas/ui_missing_input.schema.json`.
-5. 25-point rubric is calculated with evidence when scoring is used.
-6. No criterion receives points without evidence.
-7. Missing-input policy was followed when needed.
-8. LF visual governance was respected.
-9. Handoff can be used by composer without inventing.
-10. If image prompt or UI mockup rendering is requested, `prompt_constraints`, `visual_output_requirements`, or `short_generator_prompt` protect layout, hierarchy, legibility, states and visual drift according to the selected output mode.
+2. If output mode is Production UI Spec, `deliverable_created` follows Component Tree format.
+3. V4 validator is total on malformed input and returns structured rejection instead of crashing.
+4. Existing-screen actions satisfy `contracts/existing_screen_review.md` including component bindings and execution/check objects.
+5. Score uses exactly the canonical five criteria.
+6. Every criterion has structured evidence references and substantive evidence summary.
+7. PASS-like verdict is bound to >=20/25, Layout precision >0, Handoff quality >0.
+8. Semantic judge evaluates issue evidence -> selected decision -> issue resolved + adjacent constraints preserved.
+9. Meaning-changing COPY/RISK/STATE changes have source authority.
+10. LF safety remains fail-closed.
+11. Router/direct same-input decisions are materially equivalent unless context differs.
+12. Handoff is implementation-ready without invention.
 
-## Output mode validation
+## Production UI Spec automatic fail
+Fail if any applies:
+- Component Tree missing or malformed.
+- deterministic validator rejects.
+- score vocabulary is stale or incomplete.
+- score evidence is nominal (`ok`, `PASS`, criterion restatement) or points to absent refs.
+- PASS-like verdict violates threshold binding.
+- existing-screen review omits remediation actions.
+- action target is not present in Component Tree/evidence bindings.
+- category/operation/check semantics are structurally incompatible.
+- human decision/implementation/acceptance text is generic despite valid machine bindings.
 
-### Production UI Spec
-Validate against:
-- `schemas/ui_production_spec.schema.json`
+Required blocking codes when applicable:
+- `PRODUCTION_UI_SPEC_DETERMINISTIC_GATE_FAILED`
+- `EXISTING_SCREEN_REMEDIATION_NOT_EXECUTABLE`
+- `SCORE_VERDICT_BINDING_FAILED`
+- `SCORE_EVIDENCE_NOT_GROUNDED`
 
-Automatic fail if:
-- component tree missing;
-- `deliverable_created` is free-form paragraph text;
-- token usage named but not mapped to components;
-- state fields claimed true but not listed;
-- no prompt constraints when image/render is requested.
+## Semantic automatic fail
+The deterministic validator is not semantic authority. The semantic judge must fail when any applies:
+- visible evidence does not support the diagnosed issue;
+- selected decision does not resolve the issue or worsens it;
+- adjacent authoritative constraints are dropped;
+- new business state/copy is stronger than source authority;
+- LF safety is violated;
+- Router/direct same-input decisions materially diverge.
 
-### Focused UI Decision Spec
-Validate against:
-- `schemas/ui_focused_decision.schema.json`
+Known required semantic negatives:
+- remove `payment_summary` while leaving duplicate `top_amount_strip`;
+- `Pago registrado` -> `Deuda cancelada` without closure authority;
+- move CTA farther away when method↔CTA separation is the issue;
+- introduce `Liquidación garantizada al pagar`;
+- remove visible `Simulación referencial sujeta a validación` from Ruta when upstream requires it.
 
-Automatic fail if:
-- required focused decision fields are missing;
-- output is returned as prose instead of structured fields;
-- output is only a concept name;
-- output is only a rationale;
-- output is only an ingredient list such as “use layers, lines, gradients, points, shadows”;
-- output uses vague recommendation wording such as “could use”, “should consider”, “recommended to use” without concrete values;
-- `base_color_or_surface`, `size_or_coverage`, `density_limits`, `depth_style`, `visual_weight`, `relationship_to_main_element`, `implementation_format`, or `hard_exclusions` are empty or generic;
-- image/render may follow and `short_generator_prompt` is missing or still contains audit/worker/QA language.
+Required semantic blocking codes:
+- `FAIL_SEMANTIC_DECISION`
+- `FAIL_UNSUPPORTED_CLAIM`
+- `FAIL_ADJACENT_CONSTRAINT_NOT_PRESERVED`
+- `FAIL_LF_SAFETY`
+- `FAIL_ROUTER_DIRECT_DIVERGENCE`
 
-Required blocking code:
-- `FOCUSED_UI_DECISION_NOT_EXECUTABLE`
+## Focused UI Decision Spec
+Validate against `schemas/ui_focused_decision.schema.json`.
+Automatic fail if output is prose, a concept name, ingredient list, rationale-only, or vague recommendation rather than a selected executable value.
 
-### Missing Input State
-Validate against:
-- `schemas/ui_missing_input.schema.json`
+## Missing Input State
+Validate against `schemas/ui_missing_input.schema.json`. Do not invent high-risk product decisions or ask the final user from an automated worker run.
 
-Automatic fail if:
-- worker asks the end user directly inside automated run instead of returning pipeline action;
-- missing critical input is ignored;
-- worker invents high-risk product decisions.
+## Verdict boundary
+This mini-judge may emit a candidate PASS only after deterministic and applicable semantic gates pass. It must not describe its own same-session semantic check as independent audit.
 
-## General automatic FAIL conditions
-- `only_suggested = true`
-- score present without evidence
-- prompt constraints rely only on vague adjectives such as clean, modern, premium, beautiful, intuitive or professional
-- dark pattern or aggressive debt/collection cue
-- image/render requested but the next worker would need to invent composition, focal point, spacing or acceptance criteria
+Allowed operational verdict vocabulary for the UI artifact:
+- `PASS_TO_QUALITY_PACK_CANDIDATE`
+- `NEEDS_INPUT`
+- `NEEDS_ADJUSTMENT`
+- `BLOCKED`
 
-## Verdicts
-- `PASS`: complete, safe and usable.
-- `PASS_WITH_RESTRICTIONS`: usable but requires quality review before prompt/render.
-- `NEEDS_INPUT`: orchestrator must supply missing input.
-- `NEEDS_ADJUSTMENT`: worker must self-repair using existing input.
-- `BLOCKED`: unsafe or not executable.
-
-## Output
-Mini-judge must return:
-- `verdict`
-- `score_breakdown`
-- `evidence_by_criterion`
-- `missing_outputs`
-- `blocking_codes`
-- `next_gate`
+Independent semantic audit uses the separate semantic-judge verdict vocabulary and remains a later gate.
