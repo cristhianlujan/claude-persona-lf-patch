@@ -1,0 +1,22 @@
+{
+  "schema": "LF_GOVERNED_SKILL_UPDATE_RECEIPT_V1",
+  "execution_id": "EXEC-ACTUALIZACION-SKILL-LEARNING-ENGINE-20260827-001",
+  "operation_code": "ACTUALIZACION_SKILL_LF",
+  "target_type": "SKILL",
+  "target_code": "ACT-0046",
+  "target_path": "skills/learning_engine",
+  "baseline_main_sha": "93bf5840b974b15499453b4f73d449b7412325ce",
+  "branch": "lf/learning-engine-support-hardening-v1-20260827",
+  "user_authorization": "CURRENT_CHAT_20260827_CONTINUE_UNTIL_MERGE",
+  "pre_write_binding": "STEP_PASS_WITH_EVIDENCE",
+  "deterministic_semantic_support_matrix": "20/20_PASS_LOCAL_PREWRITE",
+  "deterministic_scope": "DETERMINISTIC_SUPPORT_CONTRACT_ONLY_NOT_BEHAVIORAL",
+  "runtime_unchanged": true,
+  "automatic_promotion": false,
+  "state_ceiling": "CANDIDATE_PACKAGE_UPDATE_ONLY_NO_BEHAVIORAL_RUNTIME_CLAIM",
+  "candidate_exact_head": null,
+  "pr_number": null,
+  "ci": "PENDING",
+  "merge_sha": null,
+  "final_result": "IN_PROGRESS"
+}

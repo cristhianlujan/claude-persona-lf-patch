@@ -40,3 +40,6 @@ jobs:
 
       - name: Validate learning engine pack
         run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
+
+      - name: Validate learning engine semantic support contract
+        run: python skills/learning_engine/validators/validate_semantic_support.py skills/learning_engine/evals/semantic_support_matrix.json
