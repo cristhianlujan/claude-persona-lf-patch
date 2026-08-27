@@ -6,6 +6,12 @@ from profile_runtime_runner import (
     RuntimeExecutionBlocked,
     execute_profile_runtime,
 )
+from semantic_mini_judge import (
+    CheckResult as SemanticCheckResult,
+    build_receipt as build_semantic_receipt,
+    canonical_json_sha256 as semantic_json_sha256,
+    validate_bundle as validate_semantic_bundle,
+)
 from validate_profile_execution import (
     authorize_downstream,
     build_receipt,
@@ -58,8 +64,44 @@ def make_receipt():
     )
 
 
+def make_semantic_pass(execution_receipt):
+    bundle = validate_semantic_bundle({
+        "schema": "PROFILE_SEMANTIC_CHECK_BUNDLE_V1",
+        "execution_id": execution_receipt["execution_id"],
+        "profile_code": execution_receipt["profile_code"],
+        "input_sha256": execution_receipt["input_sha256"],
+        "raw_output_sha256": execution_receipt["raw_output_sha256"],
+        "checks": [{
+            "check_id": "D-TEST-01",
+            "check_type": "EXACT_VALUE",
+            "rule": "Preserve the declared task mode.",
+            "evidence": "REMEDIATE_EXISTING",
+            "expected_value": "REMEDIATE_EXISTING",
+            "observed_value": "REMEDIATE_EXISTING",
+            "source_refs": ["raw:/deliverable_created/screen_definition/task_mode"],
+        }],
+    })
+    semantic_receipt = build_semantic_receipt(
+        bundle,
+        [SemanticCheckResult(
+            "D-TEST-01",
+            "COMPLIES",
+            "EXACT_VALUE_MATCH",
+            "PYTHON_DETERMINISTIC",
+        )],
+    )
+    return bundle, semantic_receipt
+
+
 def rehash(receipt):
     receipt["receipt_sha256"] = canonical_json_sha256(
+        {key: value for key, value in receipt.items() if key != "receipt_sha256"}
+    )
+    return receipt
+
+
+def rehash_semantic(receipt):
+    receipt["receipt_sha256"] = semantic_json_sha256(
         {key: value for key, value in receipt.items() if key != "receipt_sha256"}
     )
     return receipt
@@ -165,10 +207,10 @@ def main():
 
     receipt = make_receipt()
     assert_status(
-        "valid_runtime_receipt",
+        "provenance_allows_semantic_judge",
         authorize_downstream(
             profile_execution_required=True,
-            recipient="IMAGE_GENERATOR",
+            recipient="SEMANTIC_JUDGE",
             receipt=receipt,
             expected_profile_code="PERFIL-UI-ARCHITECT",
             expected_input_literal=INPUT,
@@ -177,6 +219,49 @@ def main():
         ),
         "PASS_PROFILE_EXECUTION_PROVENANCE",
     )
+    provenance_only = authorize_downstream(
+        profile_execution_required=True,
+        recipient="IMAGE_GENERATOR",
+        receipt=receipt,
+        expected_profile_code="PERFIL-UI-ARCHITECT",
+        expected_input_literal=INPUT,
+        expected_raw_output=RAW,
+        expected_profile_source_sha256=SOURCE_SHA,
+    )
+    assert_status("provenance_only_blocks_generator", provenance_only, "BLOCK_PIPELINE")
+    assert "PROFILE_SEMANTIC_JUDGE_RECEIPT_MISSING" in provenance_only["blocking_codes"]
+    assert "SEMANTIC_CHECK_BUNDLE_MISSING" in provenance_only["blocking_codes"]
+
+    semantic_bundle, semantic_receipt = make_semantic_pass(receipt)
+    assert_status(
+        "execution_plus_semantic_pass_allows_generator",
+        authorize_downstream(
+            profile_execution_required=True,
+            recipient="IMAGE_GENERATOR",
+            receipt=receipt,
+            expected_profile_code="PERFIL-UI-ARCHITECT",
+            expected_input_literal=INPUT,
+            expected_raw_output=RAW,
+            expected_profile_source_sha256=SOURCE_SHA,
+            semantic_receipt=semantic_receipt,
+            semantic_check_bundle=semantic_bundle,
+        ),
+        "PASS_PROFILE_EXECUTION_AND_SEMANTIC_QUALITY",
+    )
+
+    semantic_fail = deepcopy(semantic_receipt)
+    semantic_fail["verdict"] = "FAIL"
+    semantic_fail["downstream_disposition"] = "BLOCK"
+    rehash_semantic(semantic_fail)
+    result = authorize_downstream(
+        profile_execution_required=True,
+        recipient="IMAGE_GENERATOR",
+        receipt=receipt,
+        semantic_receipt=semantic_fail,
+        semantic_check_bundle=semantic_bundle,
+    )
+    assert_status("semantic_fail_blocks_generator", result, "BLOCK_PIPELINE")
+    assert "SEMANTIC_VERDICT_NOT_PASS" in result["blocking_codes"]
     tests += 1
 
     assert_status(
@@ -266,7 +351,7 @@ def main():
     assert runner_receipt["runtime_attestation"]["attestation_verifier"] == "test-attestation-verifier"
     result = authorize_downstream(
         profile_execution_required=True,
-        recipient="IMAGE_GENERATOR",
+        recipient="SEMANTIC_JUDGE",
         receipt=runner_receipt,
         expected_profile_code="PERFIL-UI-ARCHITECT",
         expected_input_literal=INPUT,

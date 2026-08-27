@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deterministic provenance gate for governed LF profile execution."""
+"""Deterministic provenance + semantic-quality gate for governed LF profile execution."""
 
 from __future__ import annotations
 
@@ -10,10 +10,20 @@ import re
 from pathlib import Path
 from typing import Any, Iterable
 
+from validate_semantic_judge import validate_semantic_judge_receipt
+
 RECEIPT_TYPE = "PROFILE_EXECUTION_RECEIPT_V1"
 OPERATION_CODE = "EJECUCION_PERFIL_LF"
 ALLOWED_RUNTIME_ORIGINS = {"MODEL_RUNTIME"}
-DOWNSTREAM_RECIPIENTS = {"IMAGE_GENERATOR", "TOOL_PAYLOAD", "FINAL_USER", "INTERNAL_AGENT"}
+PROVENANCE_ONLY_RECIPIENTS = {"SEMANTIC_JUDGE"}
+FINAL_DOWNSTREAM_RECIPIENTS = {
+    "COMPOSER",
+    "IMAGE_GENERATOR",
+    "TOOL_PAYLOAD",
+    "FINAL_USER",
+    "INTERNAL_AGENT",
+}
+DOWNSTREAM_RECIPIENTS = PROVENANCE_ONLY_RECIPIENTS | FINAL_DOWNSTREAM_RECIPIENTS
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
@@ -127,7 +137,15 @@ def authorize_downstream(
     *, profile_execution_required: bool, recipient: str, receipt: Any | None,
     expected_profile_code: str | None = None, expected_input_literal: str | None = None,
     expected_raw_output: Any | None = None, expected_profile_source_sha256: str | None = None,
+    semantic_receipt: Any | None = None, semantic_check_bundle: Any | None = None,
 ) -> dict[str, Any]:
+    """Authorize a profile-dependent recipient.
+
+    SEMANTIC_JUDGE is the only provenance-only transition. Composer, generator, tool,
+    internal-agent and final-user recipients require both valid execution provenance and
+    a PASS semantic receipt bound to the exact supplied semantic check bundle.
+    """
+
     if recipient not in DOWNSTREAM_RECIPIENTS:
         return {"status": "BLOCK_PIPELINE", "blocking_codes": ["RECIPIENT_NOT_SUPPORTED"]}
     if not profile_execution_required:
@@ -141,7 +159,30 @@ def authorize_downstream(
     )
     if errors:
         return {"status": "BLOCK_PIPELINE", "blocking_codes": errors}
-    return {"status": "PASS_PROFILE_EXECUTION_PROVENANCE", "blocking_codes": [], "receipt_sha256": receipt["receipt_sha256"]}
+
+    if recipient in PROVENANCE_ONLY_RECIPIENTS:
+        return {
+            "status": "PASS_PROFILE_EXECUTION_PROVENANCE",
+            "blocking_codes": [],
+            "receipt_sha256": receipt["receipt_sha256"],
+            "authorized_recipient": recipient,
+        }
+
+    semantic_errors = validate_semantic_judge_receipt(
+        semantic_receipt,
+        expected_bundle=semantic_check_bundle,
+        execution_receipt=receipt,
+    )
+    if semantic_errors:
+        return {"status": "BLOCK_PIPELINE", "blocking_codes": semantic_errors}
+
+    return {
+        "status": "PASS_PROFILE_EXECUTION_AND_SEMANTIC_QUALITY",
+        "blocking_codes": [],
+        "execution_receipt_sha256": receipt["receipt_sha256"],
+        "semantic_receipt_sha256": semantic_receipt["receipt_sha256"],
+        "authorized_recipient": recipient,
+    }
 
 
 def _load_json(path: Path) -> Any:
@@ -156,15 +197,25 @@ def main(argv: Iterable[str] | None = None) -> int:
     parser.add_argument("--input-file", type=Path)
     parser.add_argument("--raw-output", type=Path)
     parser.add_argument("--profile-source-sha256")
+    parser.add_argument("--semantic-receipt", type=Path)
+    parser.add_argument("--semantic-check-bundle", type=Path)
     parser.add_argument("--recipient", default="INTERNAL_AGENT")
     args = parser.parse_args(list(argv) if argv is not None else None)
     receipt = _load_json(args.receipt)
     input_literal = args.input_file.read_text(encoding="utf-8") if args.input_file else None
     raw_output = _load_json(args.raw_output) if args.raw_output else None
+    semantic_receipt = _load_json(args.semantic_receipt) if args.semantic_receipt else None
+    semantic_bundle = _load_json(args.semantic_check_bundle) if args.semantic_check_bundle else None
     result = authorize_downstream(
-        profile_execution_required=True, recipient=args.recipient, receipt=receipt,
-        expected_profile_code=args.profile_code, expected_input_literal=input_literal,
-        expected_raw_output=raw_output, expected_profile_source_sha256=args.profile_source_sha256,
+        profile_execution_required=True,
+        recipient=args.recipient,
+        receipt=receipt,
+        expected_profile_code=args.profile_code,
+        expected_input_literal=input_literal,
+        expected_raw_output=raw_output,
+        expected_profile_source_sha256=args.profile_source_sha256,
+        semantic_receipt=semantic_receipt,
+        semantic_check_bundle=semantic_bundle,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0 if result["status"].startswith("PASS_") else 1

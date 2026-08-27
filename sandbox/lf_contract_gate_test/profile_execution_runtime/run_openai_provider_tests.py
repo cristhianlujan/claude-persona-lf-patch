@@ -221,7 +221,7 @@ def main():
     receipt = package["receipt"]
     result = authorize_downstream(
         profile_execution_required=True,
-        recipient="IMAGE_GENERATOR",
+        recipient="SEMANTIC_JUDGE",
         receipt=receipt,
         expected_profile_code=request["profile_code"],
         expected_input_literal=INPUT,
@@ -231,7 +231,7 @@ def main():
     assert result["status"] == "PASS_PROFILE_EXECUTION_PROVENANCE"
     assert receipt["runtime_attestation"]["attestation_verifier"] == verifier2.verifier_id
     assert receipt["runtime_attestation"]["adapter_id"] == ADAPTER_ID
-    print("PASS openai_runner_receipt_end_to_end")
+    print("PASS openai_runner_receipt_to_semantic_judge")
     tests += 1
 
     print(f"OPENAI_PROFILE_RUNTIME_TESTS_PASS {tests}/{tests}")
