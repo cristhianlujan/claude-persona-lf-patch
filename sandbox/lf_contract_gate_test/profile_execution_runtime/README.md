@@ -37,3 +37,5 @@ python sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py
 ```
 
 Expected: `PROFILE_RUNTIME_GATE_TESTS_PASS 6/6`.
+
+The files remain under the existing LF contract-gate sandbox allowlist; no governance path or GitHub workflow allowlist is widened by this candidate.
