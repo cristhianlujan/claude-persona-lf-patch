@@ -2,67 +2,97 @@
 
 ## Role
 
-Create complete LF profile pack candidates under governance control.
+Create complete LF profile pack candidates under governance control. A pack is not complete merely because its files exist: the producer must prove that the candidate is sufficiently developed for independent semantic review.
 
 ## Mandatory route
 
 Router → Supabase `public.v_lf_fuente_operativa` → Active governing asset → Adapter when applicable → Operation → Verification → Closure.
 
+If two live authorities disagree, or a required destination/contract cannot be resolved, block and report the conflict. Never choose a structural identifier or requirement because it matches the observed repository state or a translated handoff.
+
 ## Inputs
 
 - Requested profile purpose.
 - Scope and target user/task.
-- Source authority.
+- Source authority with exact references.
 - Allowed and blocked impacts.
 - Required gates.
 - Existing assets to avoid duplication.
+- Whether the profile exposes user-facing output.
 
 ## Outputs
 
-A structured profile pack candidate containing:
+A structured profile pack candidate containing developed:
 
-- Profile definition.
-- Contracts.
-- Schemas.
-- Judges.
+- Profile/skill definition.
+- Contracts and failure routing.
+- Typed schemas.
+- Judges/rubrics.
 - Checklists.
-- Examples.
+- Positive and negative examples.
+- Positive and negative evals with assertions.
 - Fixtures.
-- Validators.
-- Evals.
-- Handoffs.
+- Executable validators.
+- Actionable handoffs.
 - Adapters.
-- `manifest.json` when the resolved `PROFILE_PACK` destination requires it. The manifest must preserve profile identity, operation, file inventory and the candidate/read-only/runtime/automatic-impact boundaries from governing authority.
+- `manifest.json` when the resolved destination requires it.
 
-When returning `PROFILE_PACK_CREATED`, the output must also deliver the created candidate through an exact `deliverable_artifact_ref`. The receiver must be able to inspect that artifact directly; a pack ID, a list of intended filenames or a prose description is not evidence that the pack exists.
+The candidate artifact must also declare:
+
+- `artifact_type=PROFILE_PACK_CANDIDATE`;
+- `profile_pack_id`;
+- `source_authority`;
+- candidate/read-only/runtime/automatic-impact boundaries;
+- `exposes_user_facing_output` as a boolean;
+- an `evidence_map` with explicit `source_ref` and supported claims;
+- the materialized `files` map.
+
+When `exposes_user_facing_output=true`, the generated profile must separate user-facing content from orchestration metadata through an explicit contract boundary such as `user_payload` / `internal_envelope`. When false, the candidate must not invent that boundary merely to satisfy a template.
+
+## Deterministic depth gate
+
+Before returning `PROFILE_PACK_CREATED`, execute:
+
+`skills/profile_creator/validators/validate_candidate_depth.py <deliverable_artifact_ref>`
+
+The required result is:
+
+`DEPTH_READY_FOR_SEMANTIC_REVIEW`
+
+The validator checks deterministic reviewability invariants: developed core contracts, typed output schema, traceable evidence, positive and negative evals with assertions, actionable Quality Pack handoff, governance boundaries, and conditional user/internal output separation.
+
+This depth gate is **not** semantic Quality Pack approval. It must return `semantic_quality_review=NOT_EXECUTED`. A candidate that fails the gate returns to the worker for self-repair.
+
+The outer Profile Creator result must include a `depth_gate` receipt bound to the exact same `deliverable_artifact_ref`.
 
 ## Handoff outcome rule
 
-For outputs routed to Quality Pack, success is not that Profile Creator says the pack was created. The created candidate must be observable and Quality Pack must be able to continue from that delivered artifact without inventing missing structure, content or intent.
+For outputs routed to Quality Pack, the evidence layers remain distinct:
 
-Receiver evidence is evaluated in separate layers:
+1. `PRODUCER_DEPTH`: the created candidate passes `validate_candidate_depth.py`.
+2. `DETERMINISTIC_INTAKE`: Quality Pack receives explicit context and the exact observable artifact.
+3. `SEMANTIC_REVIEW`: an independent reviewer evaluates evidence quality, governance, safety, leakage/scope and the Quality Pack rubric.
+4. `FULL_HANDOFF_OUTCOME`: only after all required layers and observable next state are complete.
 
-1. `DETERMINISTIC_INTAKE`: proves that Quality Pack received explicit context and an observable artifact with consistent identity.
-2. `SEMANTIC_REVIEW`: evaluates evidence quality, governance, safety, leakage/scope and the Quality Pack rubric.
-3. `FULL_HANDOFF_OUTCOME`: is proven only after all required receiver layers and observable next state are complete.
-
-A deterministic intake PASS is valid receiver execution evidence for the intake layer, but it is not a semantic Quality Pack PASS and must never be promoted to `PASS_TO_COMPOSER`, `PASS_WITH_RESTRICTIONS` or a general behavioral PASS. When intake is executed successfully but semantic review has not run, the current blocker is `SEMANTIC_QUALITY_REVIEW_NOT_EXECUTED`. The older `BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER` may remain only as historical evidence for runs made before an executable intake target existed.
-
-A substantive Quality Pack rejection is still a valid handoff execution if the relevant receiver layer actually received and reviewed the candidate; an inability to locate the candidate is a producer handoff failure.
+Neither producer depth nor deterministic intake may be promoted to `PASS_TO_COMPOSER`, `PASS_WITH_RESTRICTIONS`, `BEHAVIORAL_EVAL_PASS` or general semantic PASS.
 
 ## Blocking rules
 
-Block or return to orchestrator when:
+Block or return when:
 
-- Source authority is missing.
-- ACT-0045 or applicable asset is not verified.
+- Source authority is missing, contradictory or unresolved.
+- ACT-0045 or the applicable asset is not verified.
+- A required destination contract cannot be resolved.
 - The request tries to create a final operational profile directly.
 - The request enables runtime or production general.
-- The output is only prose or prompt text.
+- The output is only prose, filenames or prompt text.
 - `PROFILE_PACK_CREATED` is claimed without a resolvable created candidate artifact.
-- The resolved `PROFILE_PACK` destination requires `manifest.json` and the created candidate does not materialize it.
-- The manifest contradicts the governing profile identity, operation, candidate/read-only status, runtime boundary or automatic-impact boundary.
-- Deterministic intake evidence is presented as semantic Quality Pack approval.
+- The resolved destination requires `manifest.json` and the candidate does not materialize it.
+- The manifest contradicts profile identity, operation, candidate/read-only status, runtime or automatic-impact boundaries.
+- The candidate lacks developed contract/schema/judge/evals/handoff/evidence required by the deterministic depth gate.
+- A user-facing profile exposes internal orchestration metadata without a protected output boundary.
+- `depth_gate.candidate_ref` differs from `deliverable_artifact_ref`.
+- Producer depth or deterministic intake is presented as semantic Quality Pack approval.
 - A full handoff outcome is claimed while a required receiver layer remains unexecuted.
 - The request creates narrow one-off rules instead of reusable mother rules.
 
