@@ -41,15 +41,17 @@ Every material `PRODUCT_DIRECTION_SPEC` must make this chain observable:
 Required inside the deliverable:
 - `product_decision.source_refs[]` with `source_ref`, `authority`, `supports`, `current`;
 - `authority_status` and, if sources conflict, explicit `conflict_resolution`;
-- `material_claims[]` bound to an observed `authority_ref`;
+- `material_claims[]` bound to an observed authoritative/constraint `source_ref`;
 - `decision_lineage` linking evidence, constraints, acceptance and downstream effect;
 - `acceptance_criteria[]` with an observable check;
 - `handoff_to_next.qualifiers_to_preserve` so UI/Copy/Tech cannot turn a referential or conditional statement into a guarantee.
 
+The same decision must reconcile across `product_decision.selected_decision`, `decision_lineage.selected_decision`, acceptance references and downstream handoff. A cross-artifact mismatch is invalid even when each field is individually well formed.
+
 A high score never substitutes for any of these fields.
 
 ## Scoring
-Five 0–5 criteria, total 25; PASS candidate requires >=22 and no blocking risk. `score.evidence_by_criterion` must contain concrete field/source references; `PASS`, `ok` or similar nominal evidence is invalid.
+Five 0–5 criteria, total 25; PASS candidate requires >=22 and no blocking risk. `score.evidence_by_criterion` must contain concrete field/source references for every exact rubric key; `PASS`, `ok` or similar nominal evidence is invalid.
 
 ## Automatic block / needs-input
 Block or request input when:
@@ -62,11 +64,19 @@ Block or request input when:
 - score is used as evidence.
 
 ## Validation layers
-1. `validators/validate_product_director_output.py`: deterministic structure/evidence gate, fail-closed without crash.
-2. `judges/product_director_semantic_judge.md`: semantic authority, trajectory and counterfactual review.
+1. `validators/validate_product_director_output.py`: deterministic structure/evidence/cross-reference gate, fail-closed without crash.
+2. `judges/product_director_semantic_judge.md`: semantic authority, trajectory, counterfactual and Router/direct review.
 3. Fresh adversarial/holdout evals under `evals/remediation_20260827/`.
+4. `evals/remediation_20260827/behavioral_eval_protocol.md`: mandatory evidence boundary for any claim that the profile actually produced or passed a decision.
 
 Provenance or schema validity does not prove semantic correctness.
+
+## Behavioral proof boundary
+`evals/remediation_20260827/run_cases.py` is a deterministic contract regression suite. It does **not** execute this profile and must never be described as RAW profile behavior.
+
+A behavioral claim requires actual RAW model output plus a canonical execution receipt bound to the exact profile source/input/output, deterministic validation, semantic judging, a fresh holdout and fresh adversarial challenges. Receipt authenticity proves execution only; it does not prove the decision is correct.
+
+When the same material request reaches this profile directly and through Router, normalized product decisions must be materially equivalent unless different contextual authority is explicitly evidenced. Compare selected decision, scope, preserved qualifiers, acceptance intent, blockers and handoff effect; ignore runtime metadata.
 
 ## Handoff
 Valid targets: Orchestrator, UX/UI, Copy, Legal/Data, Tech, QA, Quality Pack or Backlog. Downstream receives only the selected decision, preserved constraints/qualifiers, acceptance conditions, source refs and unresolved blockers—never invented business truth.
