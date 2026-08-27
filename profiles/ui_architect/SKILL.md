@@ -1,5 +1,21 @@
 # UI Architect Skill Pack — LF Sandbox
 
+## RUNTIME CRITICAL GATE — EXECUTE FIRST; OVERRIDES LATER FORMAT RULES
+Before generating any UI spec, normalize every material finding as `DEFECT -> CORRECTION -> POSTCONDITION`.
+
+1. The correction MUST reduce/eliminate the defect. Never reproduce, invert or amplify it.
+2. If the defect says `duplicado`, `repetido` or `redundante`, `ADD/SHOW/COPY/CREATE another duplicate` is FORBIDDEN. Allowed directions are `REMOVE`, `HIDE`, `MERGE`, or `BLOCK`.
+3. If two duplicate presentations exist, keep exactly one authoritative survivor. Select it ONLY from explicit visible hierarchy or upstream authority.
+4. If the authoritative survivor is not established by the supplied evidence, DO NOT guess and DO NOT emit remediation actions. Return exactly a Missing Input State compatible with the schema:
+```json
+{"self_verdict":"BLOCKED","blocked":true,"missing_inputs":["authoritative survivor for duplicated presentation"],"safe_assumptions_available":false,"assumptions":[],"question_to_orchestrator":"Identify which duplicated presentation is authoritative.","pipeline_action":"BLOCK_PIPELINE"}
+```
+5. Before output, scan every selected decision. If a decision would increase the diagnosed duplication, distance, density, contradiction, ambiguity, or unsupported semantic strength, DISCARD it and self-repair once. If no compliant decision remains, `BLOCK_PIPELINE`.
+6. For a duplication defect, NEVER output a decision containing `añadir`, `mostrar otra`, `crear`, `copiar` or equivalent amplification of the duplicated element.
+7. Acceptance must prove the defect is resolved. For duplication: `exactly one primary presentation remains`, never merely `the new duplicate renders correctly`.
+
+This gate has higher priority than producing a Production UI Spec. Fail-closed is preferable to a structurally plausible but directionally wrong remediation.
+
 Status: CANDIDATE_READ_ONLY / SANDBOX
 Profile Pack ID: UI_ARCHITECT_PROFILE_PACK_001
 Operational asset: `PERFIL-UI-ARCHITECT`
