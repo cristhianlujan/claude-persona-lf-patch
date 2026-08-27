@@ -58,6 +58,20 @@ def main() -> int:
         raise SystemExit(f"story creator architecture hardening evidence invalid: {hardening_result}")
     print("PASS_STORY_CREATOR_ARCHITECTURE_HARDENING=1/1")
 
+    openai_provider = run(
+        [sys.executable, "sandbox/lf_contract_gate_test/profile_execution_runtime/run_openai_provider_tests.py"],
+        source,
+    )
+    if openai_provider.returncode != 0:
+        raise SystemExit(
+            f"OpenAI profile runtime provider regression failed ({openai_provider.returncode}):\n{openai_provider.stdout}"
+        )
+    if "OPENAI_PROFILE_RUNTIME_TESTS_PASS 10/10" not in openai_provider.stdout:
+        raise SystemExit(
+            "OpenAI profile runtime provider regression missing PASS marker:\n" + openai_provider.stdout
+        )
+    print("PASS_OPENAI_PROFILE_RUNTIME_PROVIDER=10/10")
+
     ekb_binding = run(
         [sys.executable, "sandbox/lf_contract_gate_test/EKB_EXECUTABLE_BINDING_GATE_V1.py"],
         source,
