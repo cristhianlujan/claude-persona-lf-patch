@@ -1,7 +1,8 @@
 {
   "pack_id": "profile_creator",
   "version": "v0.2_candidate",
-  "validation_scope": "STRUCTURAL_PLUS_DETERMINISTIC_DEPTH",
+  "validation_scope": "STRUCTURAL_ONLY",
+  "producer_depth_validation_scope": "DETERMINISTIC_DEPTH_ONLY",
   "behavioral_eval_status": "NOT_EXECUTED",
   "minimum_pass_rate": "6/6 regression evals when deterministic behavior is executed",
   "eval_types": {
