@@ -1,0 +1,23 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "CREACION_PERFIL_LF",
+  "execution_id": "ACT-0045-UIA-SEMANTIC-REPAIR-V2-20260826-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "c33169e652046d65d5d5df16cea0be019833dcab",
+  "judge_sha": "f1ca87619ca3ba8375ef73ef219fdef95cd8a8fd",
+  "source_sha_list": [
+    "7ec2b3a7e3b55b5b8c606cc01d726a2edae3bfb1",
+    "d6427bda4f8b456124e40ab973ef1487152061f8",
+    "ee5943622cb833b3222c13a6c1c443c366737e54"
+  ],
+  "target_paths": [
+    "skills/profile_creator/fixtures/handoff_outcome/candidate_pack_v2.json",
+    "sandbox/lf_contract_gate_test/receipts/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-26T19:20:00-05:00",
+  "notes": "Self-repair canary v2 for the same UI Interface Architect case that received independent semantic BLOCK_PIPELINE 6/25 on the PR225 artifact. The historical failed artifact remains immutable by exact commit/blob reference. The v2 candidate is CANDIDATO/READ_ONLY/NO_HABILITADO with automatic impact BLOQUEADO and passes its local structural+semantic-guardrail validator. Independent semantic Quality Pack review of v2 remains NOT_EXECUTED; this receipt does not claim semantic PASS, runtime, production or promotion."
+}
