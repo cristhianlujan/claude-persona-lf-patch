@@ -18,6 +18,7 @@ def main():
     checks = [
         ('PROFILE_CREATOR_CORE', [sys.executable, str(root/'validators/validate_pack_core.py'), str(root)]),
         ('GENERATED_PROFILE_MANIFEST', [sys.executable, str(root/'validators/validate_generated_profile_manifest.py'), str(root)]),
+        ('CANDIDATE_DEPTH_SELF_TEST', [sys.executable, str(root/'validators/validate_candidate_depth.py'), '--self-test', str(root)]),
     ]
     canary = repo_root/'profiles/evidence_lineage_reviewer_lf'
     if canary.exists():
@@ -33,6 +34,7 @@ def main():
         'failed_checks': failed,
         'runtime_authorized': False,
         'automatic_impact_authorized': False,
+        'semantic_quality_review_authorized': False,
     }
     print(json.dumps(result, indent=2))
     return 0 if not failed else 1
