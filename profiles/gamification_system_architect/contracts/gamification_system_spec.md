@@ -1,46 +1,37 @@
 # Gamification System Spec Contract
 
 ## Required output
-The worker must produce a `GAMIFICATION_SYSTEM_SPEC` when enough safe inputs exist.
+Return `GAMIFICATION_SYSTEM_SPEC` only when safe, source-authorized inputs exist.
 
-Required top-level keys:
-- `worker`
-- `output_type`
-- `deliverable_created`
-- `score`
-- `handoff_to_next`
-- `self_verdict`
-- `traceability`
+Preserve the existing system fields and require additionally:
+- `material_mechanics[]`;
+- `claims[]`;
+- `system_lineage`.
 
-## `deliverable_created` minimum
-- `system_definition`
-- `target_behavior`
-- `user_state`
-- `mission_map`
-- `loop_design`
-- `behavior_trigger`
-- `progress_model`
-- `reward_policy`
-- `risk_controls`
-- `ethical_controls`
-- `metrics`
-- `handoff_to_next`
-- `blocked_mechanics`
+## Material mechanic contract
+Every material mechanic requires:
+- `mechanic_id`;
+- `objective`;
+- `mechanic`;
+- `expected_behavior`;
+- `activation_condition`;
+- `deactivation_condition`;
+- `acceptance_check`;
+- `risk` and `risk_flags`;
+- `metric_id`;
+- `guardrails`;
+- `authority_refs`.
 
-## Mission map
-Each mission must define the user goal, observable action, completion signal, feedback, reward, blocked variants and recovery path.
+This materializes `objective -> mechanic -> behavior -> risk -> metric -> guardrail`; no link may be inferred by the next worker.
 
-## Loop design
-The loop must state: trigger, action, feedback, progress, reward and next action. Loops must be useful without pressuring the user.
+## Metric contract
+Each metric requires `metric_id`, `name`, `business_objective`, `decision_use` and `target_signal`. `VANITY_ONLY` cannot justify a material mechanic.
+
+## Claim contract
+Every material financial claim declares `claim_type`, `claim_text`, `status`, and where relevant `authority_ref`. Eligibility, debt, payment, urgency and guarantee claims without authority are blocked.
+
+## Reward contract
+`reward_policy.healthy_action` must name the observable healthy action earning the reward. `harmful_financial_incentive` must be explicitly false for a PASS candidate.
 
 ## Hard fail
-The output fails if it is only a list of ideas, if the target behavior is missing, if reward/scoring is not bound to a healthy observable action, or if the next worker must invent structure.
-
-## Research basis
-- Internal LF: ACT-0045 and ACT-0017.
-- Own repo: UI Architect and Quality Pack contract pattern.
-- External official: Skills standards for executable artifacts.
-- External comparable: Habitica scoring/state pattern.
-- Critical/risk: behavior design and financial-wellbeing controls.
-- Adapted into: `contracts/gamification_system_spec.md`.
-- Reason for location: this file defines the primary output contract.
+Narrative-only output, missing target behavior, missing activation/deactivation, ambiguous metric use, unsupported financial claim, harmful reward, pressure/dark-pattern trajectory, missing guardrails, or handoff invention.

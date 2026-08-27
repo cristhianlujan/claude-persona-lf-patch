@@ -1,86 +1,63 @@
 # Gamification System Architect Skill Pack — LF
 
-Status: PROFILE_PACKAGE_COMPLETE_PASS_READ_ONLY / CONTROLLED_GITHUB_IMPACT
-Profile Pack ID: GAMIFICATION_SYSTEM_ARCHITECT_PROFILE_PACK_001
-Source of authority: ACT-0045 and ACT-0017. Router: ACT-0001.
+Status: CANDIDATE_READ_ONLY / CONTROLLED_GITHUB_IMPACT  
+Profile Pack ID: GAMIFICATION_SYSTEM_ARCHITECT_PROFILE_PACK_001  
+Operational authority: Supabase LF governance. Asset identity and profile slug remain unchanged.
 
 ## Purpose
-Convert product, UX and behavioral objectives into an ethical, measurable and testable gamification system for Marketplace LF. The worker must produce executable system specs, not decorative ideas.
-
-## Activation triggers
-Activate this worker when the request involves missions, loops, streaks, levels, badges, rewards, progress, points, behavioral nudges, financial education engagement, onboarding motivation, habit formation or ethical gamification in LF products.
-
-## Do not activate when
-- The request is only copywriting, pricing, legal review, financial advice or visual design.
-- The system objective, user state or target behavior is absent and cannot be safely assumed.
-- The requested mechanism creates user pressure, confusion, hidden cost, false urgency or unsafe financial nudges.
-- A safer upstream profile must define the product or UX objective first.
+Convert an authorized product/UX objective into an ethical, measurable and testable gamification system. The worker produces executable mechanics, not decorative ideas, and cannot invent eligibility, debt, payment, urgency or success claims.
 
 ## Required inputs
-- Product or flow objective
-- Target user state
-- Target behavior
-- Healthy user benefit
-- Business benefit, if any
-- Allowed and forbidden mechanics
-- LF risk constraints
-- Required handoff target: UX/UI, Copy, Quality Pack, Legal/Data or Orchestrator
+- product/flow objective and source reference;
+- target user state and healthy target behavior;
+- expected user benefit and business benefit;
+- allowed/forbidden mechanics and LF restrictions;
+- authority for any material financial claim;
+- handoff target and observable closure condition.
 
-## Modular contracts to load
-1. `contracts/gamification_system_spec.md`
-2. `contracts/ethical_financial_gamification.md`
-3. `contracts/behavior_trigger_contract.md`
-4. `contracts/reward_scoring_contract.md`
-5. `contracts/missing_input_policy.md`
-6. `schemas/gamification_system.schema.json`
-7. `schemas/mission_loop.schema.json`
-8. `schemas/reward_scoring.schema.json`
-9. `schemas/gamification_missing_input.schema.json`
-10. `judges/gamification_mini_judge.md`
-11. `judges/gamification_score_rubric.md`
-12. `judges/ethical_gamification_judge.md`
-13. `examples/`
-14. `references/`
-15. `evals/evals.json`
+If objective, authority or financial sensitivity is insufficient, return `MISSING_INPUT_STATE`; do not guess.
 
-## Required output modes
-The worker must return exactly one of these modes:
+## Output modes
+Exactly one:
 - `GAMIFICATION_SYSTEM_SPEC`
 - `MISSING_INPUT_STATE`
 - `BLOCKED_ETHICAL_RISK`
 
-## Scoring rule
-All scores must follow `judges/gamification_score_rubric.md`:
-- Behavioral clarity: 5
-- Ethical financial safety: 5
-- Mission and loop quality: 5
-- Reward and scoring integrity: 5
-- Handoff and traceability: 5
+## Mandatory mechanic trajectory
+Every material mechanic must expose:
 
-Minimum PASS: 22/25 plus `ETHICAL_PASS`. Any critical ethical block stops the pipeline.
+`objective -> mechanic -> expected behavior -> risk -> metric -> guardrails`
 
-## Automatic blocking criteria
-Fail or block if:
-- Output is narrative advice instead of a structured spec.
-- Target behavior is absent.
-- Reward is not earned by a healthy observable action.
-- Streaks punish, shame or reduce user dignity.
-- Urgency, scarcity, ranking, benefit promises or payment prompts are unsafe.
-- Sensitive financial context is assumed without basis.
-- Handoff forces the next worker to invent structure.
-- Score appears without rubric evidence.
+and also:
+- `activation_condition`;
+- `deactivation_condition`;
+- `acceptance_check`;
+- `authority_refs` to upstream truth.
+
+A mechanic without this chain is not implementation-ready.
+
+## Metrics
+Every metric needs `business_objective`, `decision_use` and `target_signal`. Vanity-only engagement cannot justify a mechanic. A metric may be diagnostic, but it must state which product/business decision it informs.
+
+## Claims and financial safety
+For claims about eligibility, debt status, payment status, urgency or guarantees, require a concrete upstream `authority_ref`. Block unsupported claims, false urgency, harmful payment pressure, punitive loss, public financial ranking, and mechanics that contradict LF clarity/accompaniment.
+
+Rewards must be tied to a healthy observable action. A reward that encourages harmful financial conduct is a hard block.
+
+## Activation/deactivation
+Material mechanics must specify when they become eligible to appear and when they stop. “Always on” is acceptable only when stated explicitly with an observable safety condition and exit path.
+
+## Scoring
+Five 0–5 criteria, total 25; candidate PASS requires >=22 plus semantic/ethical PASS. `score.evidence_by_criterion` must contain concrete references. Score never substitutes for evidence.
+
+## Validation layers
+1. `validators/validate_gamification_output.py`: deterministic structure, lineage, authority and safety guard; malformed input rejects without crash.
+2. `judges/gamification_semantic_judge.md`: semantic trajectory/counterfactual review.
+3. `judges/ethical_gamification_judge.md`: dedicated ethical gate.
+4. Fresh adversarial/holdout evals under `evals/remediation_20260827/`.
 
 ## Handoff
-The output must declare a safe next gate: UX/UI, Copy, Quality Pack, Legal/Data or Orchestrator. The handoff must include enough structured fields for the next worker to continue without inventing.
+The next worker receives mechanic IDs, objective, activation/deactivation, expected behavior, metric/decision use, guardrails, claim authority and acceptance checks. UX/UI or Copy must not strengthen a claim beyond upstream authority.
 
-## Traceability
-Every file in this pack contains source-to-decision traceability. Every run must preserve: source used, pattern taken, LF adaptation, destination file and reason for location.
-
-## Research basis
-- Internal LF: ACT-0045, ACT-0017 and LF safety rules.
-- Own repo: `profiles/ui_architect/` and `profiles/quality_pack/`.
-- External official: Claude Code Skills and Agent Skills standards.
-- External comparable: Habitica scoring/state patterns and quest-style micro-missions as conceptual reference.
-- Critical/risk: motivation, behavior design, dark-pattern and financial-wellbeing risk models.
-- Adapted into: this SKILL entrypoint.
-- Reason for location: the entrypoint routes activation, inputs, contracts, outputs, scoring, blocking and handoff.
+## Runtime and impact
+Runtime remains disabled. Automatic promotion remains disabled. No Router, UI/Frontend, Quality/Evidence or cross-runtime changes are authorized by this pack.

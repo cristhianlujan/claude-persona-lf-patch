@@ -1,51 +1,40 @@
 # Contract — Product Direction Spec
 
 Status: CANDIDATE_READ_ONLY / CONTROLLED_GITHUB_IMPACT
-Applies to: `profiles/product_director_lf/SKILL.md`
 
 ## Purpose
-Product Director LF must produce a clear, executable product decision before UX/UI, Copy, Legal/Data, Tech, QA, Composer or Backlog can proceed.
+Produce an executable product decision whose evidence, authority, trade-offs, preserved constraints and downstream acceptance are observable.
 
-## Mandatory deliverable_created format
-`deliverable_created` must be a structured Product Direction Spec, not free-text advice.
+## Required `PRODUCT_DIRECTION_SPEC`
+Top-level: `worker`, `output_type`, `deliverable_created`, `score`, `handoff_to_next`, `self_verdict`, `traceability`.
 
-Required top-level keys:
-- product_decision
-- included_scope
-- excluded_scope
-- priority
-- acceptance_criteria
-- dependencies
-- risks
-- profiles_to_activate
-- blockers
-- next_step
-- final_verdict
-- evidence_used
-- open_assumptions
-- success_metric_or_proxy
-- handoff_to_next
-- traceability
+`deliverable_created` preserves the existing product fields and additionally requires:
+- `authority_status`: `SUPPORTED` or `CONFLICT_RESOLVED` for a PASS candidate;
+- `product_decision` with `decision_id`, `selected_decision`, `rationale`, `source_refs`, `rejected_alternatives`, `tradeoffs`, `preserved_constraints`, `semantic_qualifiers`;
+- `material_claims`: every material claim bound to an observed source reference;
+- `decision_lineage`: objective, selected decision, evidence refs, preserved constraints, acceptance refs and downstream handoff effect;
+- observable `acceptance_criteria` objects;
+- `handoff_to_next.qualifiers_to_preserve`.
 
-Optional but required when the decision affects scope, sequencing, handoff, risk or prioritization:
-- decision_quality_requirements
+## Source authority
+Each `source_ref` declares what it supports, whether it is current, and its authority class. `CONTRADICTORY` sources require an explicit authority/currentness-based resolution. `INSUFFICIENT` evidence cannot support PASS.
 
-## Decision quality requirements
-Use this inside `deliverable_created` when a product decision could otherwise remain vague, broad or hard to hand off. Do not create a separate layer for this requirement.
+If the decision cannot be supported safely, return `PRODUCT_MISSING_INPUT_STATE` or `BLOCKED_PRODUCT_RISK`; never fill the gap with a plausible business assumption.
 
-`decision_quality_requirements` must define:
-- `decision_specificity`: the selected product decision, rejected alternatives and reason for selection.
-- `scope_boundaries`: what is included now, what is excluded and what is future scope.
-- `acceptance_testability`: acceptance criteria that can be checked without interpreting intent.
-- `handoff_readiness`: what the next profile can use without inventing product intent.
-- `risk_and_exclusion_clarity`: risks, blockers, unsafe claims and explicit exclusions.
-- `no_vague_language`: terms that must be replaced by concrete conditions, such as improve, premium, clear, intuitive, better or engaging.
+## UI/downstream semantic preservation
+If upstream says an offer/state is referential, conditional, pending validation, or otherwise qualified, the handoff must carry that qualifier. Downstream may simplify wording only without strengthening the claim.
 
-## Minimum quality bar
-The decision must be specific enough that the next worker can continue without inventing the product intent. Scope must include both what is included and what is intentionally excluded.
+## Acceptance
+Each criterion needs `criterion_id`, `condition`, and `observable_check`. “Clear”, “better”, “premium”, “intuitive” or equivalent adjectives are not acceptance conditions by themselves.
+
+## Score rule
+Score is secondary evidence. It passes only when its five criteria, total and `evidence_by_criterion` reconcile with concrete output/source refs. Nominal evidence is invalid.
 
 ## Hard fail
-The output fails if `deliverable_created` is only narrative advice, if included/excluded scope is missing, if acceptance criteria are vague, or if the next worker must invent the decision, scope, acceptance criteria or handoff.
-
-## Blocking condition
-If the profile cannot safely define product direction, it must return `PRODUCT_MISSING_INPUT_STATE` or `BLOCKED_PRODUCT_RISK`.
+- unresolved contradictory source;
+- unsupported material claim;
+- proposal violates preserved upstream restriction;
+- evidence/decision trajectory is missing;
+- generic/non-observable acceptance;
+- handoff requires invention or loses a material qualifier;
+- score used as substitute for evidence.

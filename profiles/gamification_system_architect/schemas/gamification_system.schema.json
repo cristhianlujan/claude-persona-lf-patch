@@ -1,34 +1,29 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Gamification System Spec",
-  "type": "object",
-  "required": ["worker", "output_type", "deliverable_created", "score", "handoff_to_next", "self_verdict", "traceability"],
-  "properties": {
-    "worker": {"const": "gamification_system_architect"},
-    "output_type": {"const": "GAMIFICATION_SYSTEM_SPEC"},
-    "deliverable_created": {
-      "type": "object",
-      "required": ["system_definition", "target_behavior", "user_state", "mission_map", "loop_design", "behavior_trigger", "progress_model", "reward_policy", "risk_controls", "ethical_controls", "metrics", "handoff_to_next", "blocked_mechanics"],
-      "properties": {
-        "system_definition": {"type": "object"},
-        "target_behavior": {"type": "object"},
-        "user_state": {"type": "object"},
-        "mission_map": {"type": "array"},
-        "loop_design": {"type": "object"},
-        "behavior_trigger": {"type": "object"},
-        "progress_model": {"type": "object"},
-        "reward_policy": {"type": "object"},
-        "risk_controls": {"type": "array"},
-        "ethical_controls": {"type": "array"},
-        "metrics": {"type": "array"},
-        "handoff_to_next": {"type": "object"},
-        "blocked_mechanics": {"type": "array"}
-      }
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"Gamification System Spec",
+  "type":"object",
+  "required":["worker","output_type","deliverable_created","score","handoff_to_next","self_verdict","traceability"],
+  "properties":{
+    "worker":{"const":"gamification_system_architect"},
+    "output_type":{"const":"GAMIFICATION_SYSTEM_SPEC"},
+    "deliverable_created":{
+      "type":"object",
+      "required":["system_definition","target_behavior","user_state","mission_map","loop_design","behavior_trigger","progress_model","reward_policy","risk_controls","ethical_controls","metrics","handoff_to_next","blocked_mechanics","material_mechanics","claims","system_lineage"],
+      "properties":{
+        "system_definition":{"type":"object"},
+        "target_behavior":{"type":"object","required":["behavior","completion_signal"],"properties":{"behavior":{"type":"string","minLength":1},"completion_signal":{"type":"string","minLength":1}},"additionalProperties":true},
+        "user_state":{"type":"object"},"mission_map":{"type":"array"},"loop_design":{"type":"object"},"behavior_trigger":{"type":"object"},"progress_model":{"type":"object"},
+        "reward_policy":{"type":"object","required":["healthy_action","harmful_financial_incentive"],"properties":{"healthy_action":{"type":"string","minLength":1},"harmful_financial_incentive":{"const":false}},"additionalProperties":true},
+        "risk_controls":{"type":"array","minItems":1},"ethical_controls":{"type":"array","minItems":1},
+        "metrics":{"type":"array","minItems":1,"items":{"type":"object","required":["metric_id","name","business_objective","decision_use","target_signal"],"properties":{"metric_id":{"type":"string","minLength":1},"name":{"type":"string","minLength":1},"business_objective":{"type":"string","minLength":1},"decision_use":{"type":"string","minLength":1},"target_signal":{"type":"string","minLength":1},"metric_type":{"type":"string"}},"additionalProperties":true}},
+        "handoff_to_next":{"type":"object","required":["target","input_contract"],"properties":{"target":{"type":"string","minLength":1},"input_contract":{"type":"string","minLength":1}},"additionalProperties":true},
+        "blocked_mechanics":{"type":"array"},
+        "material_mechanics":{"type":"array","minItems":1,"items":{"type":"object","required":["mechanic_id","objective","mechanic","expected_behavior","activation_condition","deactivation_condition","acceptance_check","risk","metric_id","guardrails","authority_refs","risk_flags"],"properties":{"mechanic_id":{"type":"string","minLength":1},"objective":{"type":"string","minLength":1},"mechanic":{"type":"string","minLength":1},"expected_behavior":{"type":"string","minLength":1},"activation_condition":{"type":"string","minLength":1},"deactivation_condition":{"type":"string","minLength":1},"acceptance_check":{"type":"string","minLength":1},"risk":{"type":"string","minLength":1},"metric_id":{"type":"string","minLength":1},"guardrails":{"type":"array","minItems":1},"authority_refs":{"type":"array","minItems":1},"risk_flags":{"type":"array"}},"additionalProperties":true}},
+        "claims":{"type":"array","items":{"type":"object","required":["claim_type","claim_text","status"],"properties":{"claim_type":{"type":"string","minLength":1},"claim_text":{"type":"string","minLength":1},"status":{"enum":["SUPPORTED","CONSERVATIVE_QUALIFIER"]},"authority_ref":{"type":"string"}},"additionalProperties":true}},
+        "system_lineage":{"type":"object","required":["objective","expected_user_benefit","expected_business_benefit","source_refs"],"properties":{"objective":{"type":"string","minLength":1},"expected_user_benefit":{"type":"string","minLength":1},"expected_business_benefit":{"type":"string","minLength":1},"source_refs":{"type":"array","minItems":1}},"additionalProperties":false}
+      },"additionalProperties":true
     },
-    "score": {"type": "object"},
-    "handoff_to_next": {"type": "object"},
-    "self_verdict": {"enum": ["PASS", "BLOCKED_ETHICAL_RISK", "NEEDS_INPUT"]},
-    "traceability": {"type": "object"}
-  },
-  "additionalProperties": false
+    "score":{"type":"object","required":["behavioral_clarity","ethical_financial_safety","mission_loop_quality","reward_scoring_integrity","handoff_traceability","total","evidence_by_criterion"],"properties":{"behavioral_clarity":{"type":"integer","minimum":0,"maximum":5},"ethical_financial_safety":{"type":"integer","minimum":0,"maximum":5},"mission_loop_quality":{"type":"integer","minimum":0,"maximum":5},"reward_scoring_integrity":{"type":"integer","minimum":0,"maximum":5},"handoff_traceability":{"type":"integer","minimum":0,"maximum":5},"total":{"type":"integer","minimum":0,"maximum":25},"evidence_by_criterion":{"type":"object"}},"additionalProperties":false},
+    "handoff_to_next":{"type":"object"},"self_verdict":{"const":"PASS"},"traceability":{"type":"object"}
+  },"additionalProperties":false
 }
