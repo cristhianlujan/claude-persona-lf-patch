@@ -18,15 +18,22 @@ from profile_runtime_runner import RuntimeExecutionBlocked
 from semantic_mini_judge import CheckResult, compact_semantic_payload, parse_model_response
 from validate_profile_execution import canonical_json_sha256
 
-ADAPTER_ID = "github-standard-qwen25vl-semantic-minijudge-server-v2"
-VERIFIER_ID = "github-standard-qwen25vl-semantic-minijudge-readback-v2"
+ADAPTER_ID = "github-standard-qwen25vl7b-semantic-minijudge-server-v3"
+VERIFIER_ID = "github-standard-qwen25vl7b-semantic-minijudge-readback-v3"
+SEMANTIC_MODEL_ID = (
+    "ggml-org/Qwen2.5-VL-7B-Instruct-GGUF@"
+    "508edd0afaa66bb9e9f40587acc2184f02daf1f6:"
+    "Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf"
+)
+SEMANTIC_MODEL_SHA256 = "9258bf05b12686d097ff3b6b18d968ab393649780aa2b3cd67fec43d50554392"
 SYSTEM_TEXT = """You are a narrow semantic compliance classifier, not a task solver.
 Judge only whether EVIDENCE complies with RULE.
 Do not rewrite, repair, propose, or expand the evidence.
 Return exactly one JSON object with two keys:
 {"verdict":"COMPLIES|CONTRADICTS|UNCERTAIN","reason_code":"SHORT_MACHINE_CODE"}
+Use COMPLIES when the evidence directly follows the rule, even if it uses different wording.
 Use CONTRADICTS when the evidence reverses, violates, or ignores an explicit rule.
-Use UNCERTAIN when the relationship cannot be established from the supplied text.
+Use UNCERTAIN only when the relationship cannot be established from the supplied text.
 Never use UNCERTAIN as a substitute for an obvious contradiction.
 """
 
@@ -41,7 +48,7 @@ class GitHubHostedSemanticMiniJudge:
     adapter_id = ADAPTER_ID
     is_test_double = False
 
-    def __init__(self, *, work_dir: Path, timeout_seconds: int = 90,
+    def __init__(self, *, work_dir: Path, timeout_seconds: int = 120,
                  max_output_tokens: int = 96, context_tokens: int = 2048,
                  port: int = 18080) -> None:
         self.work_dir = work_dir
@@ -67,7 +74,7 @@ class GitHubHostedSemanticMiniJudge:
     def _assets(self) -> dict[str, Path]:
         local._require_zero_cost_runner()
         server = local._required_asset("LF_LLAMA_SERVER_PATH")
-        model = local._required_asset("LF_MODEL_PATH", local.MODEL_SHA256)
+        model = local._required_asset("LF_SEMANTIC_MODEL_PATH", SEMANTIC_MODEL_SHA256)
         if not os.access(server, os.X_OK):
             raise RuntimeExecutionBlocked("SEMANTIC_JUDGE_SERVER_NOT_EXECUTABLE")
         self.asset_paths = {"llama_server": server, "model": model}
@@ -145,7 +152,7 @@ class GitHubHostedSemanticMiniJudge:
 
     def _chat_completion(self, payload: dict[str, str]) -> str:
         request_payload = {
-            "model": local.MODEL_ID,
+            "model": SEMANTIC_MODEL_ID,
             "messages": [
                 {"role": "system", "content": SYSTEM_TEXT},
                 {"role": "user", "content": json.dumps(payload, ensure_ascii=False, sort_keys=True)},
@@ -197,7 +204,7 @@ class GitHubHostedSemanticMiniJudge:
             "adapter_id": self.adapter_id,
             "provider": "local_llama_cpp_github_standard_public",
             "transport": "LOCALHOST_LLAMA_SERVER",
-            "model_id": local.MODEL_ID,
+            "model_id": SEMANTIC_MODEL_ID,
             "github_run_id": os.environ.get("GITHUB_RUN_ID", ""),
             "github_run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT", "1"),
             "github_sha": os.environ.get("GITHUB_SHA", ""),
@@ -228,7 +235,7 @@ class GitHubHostedSemanticMiniJudgeVerifier:
         if set(assets) != {"llama_server", "model"} or set(files) != {"system", "input", "output"}:
             raise RuntimeExecutionBlocked("SEMANTIC_JUDGE_EVIDENCE_PATHS_MISSING")
         expected = {
-            "model_sha256": local.MODEL_SHA256,
+            "model_sha256": SEMANTIC_MODEL_SHA256,
             "llama_server_sha256": evidence.get("llama_server_sha256"),
             "system_prompt_sha256": evidence.get("system_prompt_sha256"),
             "check_input_sha256": evidence.get("check_input_sha256"),
@@ -246,6 +253,8 @@ class GitHubHostedSemanticMiniJudgeVerifier:
                 raise RuntimeExecutionBlocked("SEMANTIC_JUDGE_VERIFIER_HASH_MISMATCH", key)
         if evidence.get("classification") != result.as_dict():
             raise RuntimeExecutionBlocked("SEMANTIC_JUDGE_CLASSIFICATION_MISMATCH")
+        if evidence.get("model_id") != SEMANTIC_MODEL_ID:
+            raise RuntimeExecutionBlocked("SEMANTIC_JUDGE_MODEL_ID_MISMATCH")
         if evidence.get("llama_source_commit") != local.LLAMA_SOURCE_COMMIT:
             raise RuntimeExecutionBlocked("SEMANTIC_JUDGE_LLAMA_COMMIT_MISMATCH")
         if evidence.get("repository_visibility") != "public":
@@ -257,6 +266,7 @@ class GitHubHostedSemanticMiniJudgeVerifier:
             "check_id": check["check_id"],
             "classification": result.as_dict(),
             "observed_hashes": observed,
+            "model_id": SEMANTIC_MODEL_ID,
             "github_run_id": os.environ.get("GITHUB_RUN_ID", ""),
             "github_sha": os.environ.get("GITHUB_SHA", ""),
             "llama_source_commit": local.LLAMA_SOURCE_COMMIT,
