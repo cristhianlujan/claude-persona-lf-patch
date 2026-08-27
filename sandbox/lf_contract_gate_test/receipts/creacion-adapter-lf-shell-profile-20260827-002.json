@@ -18,5 +18,5 @@
   "target_paths": ["adapters/lf_shell_profile_adapter/**"],
   "blocking_codes": [],
   "issued_at": "2026-08-27T20:47:00Z",
-  "notes": "PASS_SANDBOX for LF Shell/Profile adapter candidate. Pre-write execution binding exists in Supabase before writes on feat/lf-shell-profile-adapter-v1-governed. Examples/judge/schema and authority boundaries were reviewed; runtime remains NO_HABILITADO and automatic impact BLOQUEADO. Exact-head CI and merge remain separate gates."
+  "notes": "PASS_SANDBOX for LF Shell/Profile adapter candidate. Pre-write execution binding exists in Supabase before governed writes. The candidate was moved without content changes to lf/shell-profile-adapter-v1-governed so the repository's existing push+pull_request exact-head CI matrix can execute as designed. Examples/judge/schema and authority boundaries were reviewed; runtime remains NO_HABILITADO and automatic impact BLOQUEADO. Exact-head CI and merge remain separate gates."
 }
