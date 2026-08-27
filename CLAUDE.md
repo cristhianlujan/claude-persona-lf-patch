@@ -18,6 +18,27 @@ For every artifact operation:
 
 Preserve this sequence for delegated agents and subagents.
 
+## Governed profile updates
+
+When creating a patch that modifies an existing repository profile under `profiles/**`, route the operation as `ACTUALIZACION_PERFIL_LF` and apply the pass protocol before the first GitHub write and through post-merge closure:
+
+@docs/operations/LF_PROFILE_UPDATE_PASS_PROTOCOL_v0.1.md
+
+Supabase remains the canonical authority for the operation contract, execution binding, judge and state. The GitHub protocol is the reproducible pass procedure and does not supersede Supabase.
+
+At minimum:
+
+1. query EKB first;
+2. resolve exactly one profile and the canonical `ACTUALIZACION_PERFIL_LF` operation;
+3. create and pass the canonical pre-write execution binding before any repository write;
+4. branch from the current exact `main` SHA;
+5. write only authorized paths and read them back from the remote branch;
+6. require deterministic, semantic, adversarial/holdout and Router/direct evidence as applicable;
+7. require all required workflows to be `SUCCESS` on the exact candidate HEAD;
+8. immediately before merge, re-read `main`; if it advanced during CI, refresh the pre-write binding before the next write, integrate the new `main` without force-push, update exact-head/readback and rerun the full required CI;
+9. never create retroactive receipts or auxiliary PRs merely to compare branches;
+10. after merge, read back from the new `main`, close the canonical execution with evidence and enrich EKB.
+
 ## Governed profile execution
 
 When the user explicitly asks to use an existing repository profile, or Router resolves a request to profile execution, route it as `EJECUCION_PERFIL_LF`.
