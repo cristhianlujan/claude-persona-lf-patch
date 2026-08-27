@@ -1,0 +1,45 @@
+{
+  "runtime_case_id": "LFSA-RUNTIME-CANARY-UI-001",
+  "task_mode": "REMEDIATE_EXISTING",
+  "screen_code": "CHECKOUT_PAGO_UNICO_MEDIO_PAGO",
+  "user_request": "En CHECKOUT_PAGO_UNICO_MEDIO_PAGO elimina la navegación permanente del cliente para dejar la pantalla más limpia. Dentro de la pantalla cambia el título a 'Elige cómo pagar', coloca el CTA dentro del resumen inmediatamente después del contenido del resumen y mantenlo deshabilitado hasta que exista exactamente un medio de pago elegible seleccionado.",
+  "canonical_context": {
+    "screen": {
+      "screen_code": "CHECKOUT_PAGO_UNICO_MEDIO_PAGO",
+      "status": "CANDIDATO",
+      "module_code": "CLIENT_PAYMENTS",
+      "objective": "Permitir que el cliente elija explícitamente entre los medios de pago directo que el backend declare elegibles para la operación.",
+      "dependencies": [
+        "REG_CLIENT_CHECKOUT_ENTRY_001",
+        "REG_CLIENT_CHECKOUT_PRICING_QUOTE_001",
+        "REG_CLIENT_CHECKOUT_PAYMENT_METHOD_ELIGIBILITY_001",
+        "REG_CLIENT_CHECKOUT_PROVIDER_HANDOFF_001",
+        "REG_CLIENT_CHECKOUT_CARD_DATA_BOUNDARY_001",
+        "REG_CLIENT_CHECKOUT_QR_CONFIRMATION_001"
+      ]
+    },
+    "shell": {
+      "app_shell_code": "CLIENT_APP_SHELL",
+      "version": "v1.1",
+      "status": "VIGENTE",
+      "design_system_code": "LF_DS_V1",
+      "locked": true,
+      "persistent_navigation": [
+        "Inicio",
+        "Mi oferta",
+        "Mis pagos",
+        "Documentos",
+        "Ayuda"
+      ]
+    },
+    "screen_specific_registry": {
+      "registered_elements": 0,
+      "registered_variants": 0
+    }
+  },
+  "canonical_source_refs": [
+    "supabase:lf_ops.pantallas:CHECKOUT_PAGO_UNICO_MEDIO_PAGO",
+    "supabase:lf_ops.modulos:CLIENT_PAYMENTS",
+    "supabase:lf_ops.app_shells:CLIENT_APP_SHELL@v1.1"
+  ]
+}
