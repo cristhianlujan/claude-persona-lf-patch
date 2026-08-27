@@ -2,10 +2,21 @@
 
 Status: CANDIDATE_READ_ONLY / SANDBOX
 Profile Pack ID: UI_ARCHITECT_PROFILE_PACK_001
-Source of authority: ACT-0045 sections 24.16, 24.17 and 24.18.
+Operational asset: `PERFIL-UI-ARCHITECT`
+Source of authority: ACT-0001 Router + Supabase operational registry/contracts. ACT-0045 remains historical/creation authority for new profiles only.
 
 ## Purpose
 Convert product, UX and brand decisions into a realistic, usable screen specification before any composer, image prompt or render is generated.
+
+## Routing semantics
+This profile has two distinct governed routes:
+
+- **Execution / expert opinion on an external UI artifact**: `ACT-0001 -> EJECUCION_PERFIL_LF -> PERFIL-UI-ARCHITECT`.
+  Example: “Pídele al UI que evalúe esta pantalla”. The screen is the subject; the profile is being used, not modified.
+- **Maintenance / remediation of the profile package itself**: `ACT-0001 -> ACTUALIZACION_PERFIL_LF -> PERFIL-UI-ARCHITECT`.
+  Example: “Mejora/corrige ui_architect”. The profile is the subject being changed.
+
+Do not route an existing `ui_architect` profile to `CREACION_PERFIL_LF`.
 
 ## Activation triggers
 Activate this worker when the request involves: screen, app, web UI, interface, layout, component map, visual hierarchy, render, image prompt, design system, product screen, route screen, onboarding screen or visual QA.
@@ -48,30 +59,51 @@ Load these files when executing this profile:
 3. `contracts/missing_input_policy.md`
    - Defines structured pipeline outputs for missing inputs.
 
-4. `schemas/ui_production_spec.schema.json`
+4. `contracts/existing_screen_review.md`
+   - Defines executable remediation actions, component/evidence bindings, semantic-authority declarations and Router/direct consistency for existing-screen evaluation/remediation.
+
+5. `schemas/ui_production_spec.schema.json`
    - Required schema for executable UI production outputs.
 
-5. `schemas/ui_focused_decision.schema.json`
+6. `schemas/ui_focused_decision.schema.json`
    - Required schema for Focused UI Decision Spec outputs.
 
-6. `schemas/ui_missing_input.schema.json`
+7. `schemas/ui_missing_input.schema.json`
    - Required schema when the worker cannot proceed safely.
 
-7. `judges/ui_architect_score_rubric.md`
+8. `validators/validate_ui_architect_output.py`
+   - Deterministic V4 fail-closed validation for Production UI Spec structure, rubric binding and executable action bindings. It must be total on malformed input and must never be treated as semantic authority.
+
+9. `judges/ui_architect_score_rubric.md`
    - Defines the 25-point rubric. Scores without evidence are invalid.
 
-8. `judges/ui_architect_mini_judge.md`
-   - Defines pass/fail gates and blocking conditions.
+10. `judges/ui_architect_mini_judge.md`
+   - Defines deterministic and semantic gates and blocking conditions.
 
-9. `../../orchestrator/decision_logic.md`
+11. `judges/ui_architect_semantic_judge.md`
+   - Checks raw-input/upstream evidence, whether the chosen decision resolves the issue, semantic authority, adjacent constraints, LF safety and Router/direct consistency.
+
+12. `../../orchestrator/decision_logic.md`
    - Defines recipient/output allowlists and gates that prevent suggestion-only outputs, internal leakage and contaminated image/tool payloads.
 
 ## Required output modes
-The worker must return one of these modes:
+The worker must return one of these modes only:
 
 ### A. Production UI Spec
 Use when enough information exists or safe low-risk assumptions are available and the requested deliverable is a screen, layout, component map or full render specification.
 Output must validate against `schemas/ui_production_spec.schema.json`.
+
+When the task evaluates or remediates an existing screen, also set `deliverable_created.screen_definition.task_mode` to `EVALUATE_EXISTING` or `REMEDIATE_EXISTING` and satisfy `contracts/existing_screen_review.md`.
+
+For these existing-screen tasks, `deliverable_created.remediation_actions` is mandatory. Each material finding must become one concrete implementation action with:
+- visible evidence anchor;
+- one or more bound `evidence_component_ids`;
+- selected decision;
+- structured execution target/operation/property/desired value;
+- observable acceptance check;
+- semantic authority when meaning or business state changes.
+
+Do not return a repeated diagnostic list.
 
 ### B. Focused UI Decision Spec
 Use when the user asks to decide, define or choose one UI attribute, visual treatment, layout direction, component behavior, background, hierarchy, density or interaction pattern.
@@ -114,12 +146,46 @@ All scores must follow `judges/ui_architect_score_rubric.md`:
 - State mapping: 5
 - Handoff quality: 5
 
-If evidence is missing, that criterion scores 0.
+Every scored criterion must include structured evidence that points to actual deliverable sections/components. Nominal evidence such as `ok`, `PASS`, or criterion restatement is invalid.
+
+A PASS-like self verdict requires:
+- total score >= 20;
+- Layout precision > 0;
+- Handoff quality > 0;
+- deterministic validator PASS;
+- semantic judge PASS when semantic evaluation is applicable.
+
+## Deterministic vs semantic authority
+The deterministic validator proves structure/executability only. It must reject malformed or weakly bound artifacts without crashing, but it cannot decide whether a structurally valid UI decision is the correct decision.
+
+The semantic judge is mandatory for existing-screen remediation and for meaning-changing COPY/RISK/STATE actions. It must compare the action against the raw screen/input and authoritative upstream constraints.
+
+Examples of automatic semantic failure:
+- remove the payment summary while leaving the duplicate top amount strip;
+- rewrite `Pago registrado` as `Deuda cancelada` without debt-closure authority;
+- move the CTA farther from payment selection when separation is the diagnosed issue;
+- introduce `Liquidación garantizada al pagar` or another unsupported guarantee;
+- drop an upstream-required qualifier such as `Simulación referencial sujeta a validación`;
+- materially different Router/direct decisions for the same input without contextual evidence.
+
+## Upstream semantic preservation
+A UI change must preserve adjacent authoritative product constraints even when the requested change is visual.
+
+For Ruta de Claridad, when the upstream product context includes referential simulation subject to validation, the UI spec must carry that qualifier visibly in a component/copy constraint. A generic `no guaranteed offer` risk-control note is not an equivalent substitute for the required user-visible qualifier.
 
 ## Blocking criteria
 Automatic fail if:
 - `deliverable_created` is free-form paragraph text when a Production UI Spec is required.
 - Component Tree is missing when a Production UI Spec is required.
+- Production UI Spec fails `validators/validate_ui_architect_output.py`.
+- Existing-screen evaluation/remediation omits executable `remediation_actions`.
+- Existing-screen actions repeat the same diagnosis instead of consolidating it into implementable changes.
+- Existing-screen actions reference component IDs that are absent from Component Tree.
+- structured action target is absent from the bound evidence components.
+- score/verdict violates rubric threshold binding.
+- score evidence is nominal, generic or points to non-existing deliverable refs.
+- semantic judge fails a decision or unsupported claim.
+- Router and direct activation materially diverge on remediation actions for the same screen/input without a contextual reason.
 - A focused UI decision is requested but the output does not include the required Focused UI Decision Spec fields.
 - Focused UI decision output does not validate against `schemas/ui_focused_decision.schema.json`.
 - Focused UI decision output is only a concept name, rationale, ingredient list or recommendation.
@@ -132,8 +198,10 @@ Automatic fail if:
 - The output may proceed to Composer/image/render/tool and the output channel gate was not loaded.
 
 ## Traceability
-Every run must save worker output, mini-judge result and final judge result under a profile-based run path, for example:
+Candidate remediation evidence for a governed profile update must live under:
 
-`sandbox_runs/ui_architect/<case_id>/`
+`profiles/ui_architect/evals/<remediation_lot>/`
 
-Do not create a new profile pack per case. Cases belong under sandbox runs; the profile pack remains reusable.
+Do not create a new profile pack per case. Do not use historical PR #238 as a canonical receipt for a new update execution.
+
+For any future write that changes this profile package, `ACTUALIZACION_PERFIL_LF` must have an execution bound to `PERFIL-UI-ARCHITECT` before the first GitHub write. Runtime enablement and automatic promotion remain blocked.
