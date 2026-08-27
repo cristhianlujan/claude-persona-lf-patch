@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -25,6 +26,7 @@ TEXT_MINIMUMS = {
 }
 
 PLACEHOLDER_TOKENS = ("TODO", "TBD", "PLACEHOLDER", "LOREM IPSUM")
+GENERIC_ASSERTIONS = {"ok", "pass", "valid", "true", "yes", "expected", "works", "success"}
 
 
 def parse_json_text(files, path, blocking):
@@ -44,7 +46,18 @@ def has_any(text, words):
     return any(word in low for word in words)
 
 
-def validate_text_contract(files, path, minimum, groups, blocking):
+def markdown_headings(text):
+    return [
+        re.sub(r"\s+", " ", match.group(1).strip().lower())
+        for match in re.finditer(r"^\s*#{1,6}\s+(.+?)\s*$", text, re.MULTILINE)
+    ]
+
+
+def heading_group_present(headings, options):
+    return any(any(option in heading for option in options) for heading in headings)
+
+
+def validate_text_contract(files, path, minimum, keyword_groups, heading_groups, blocking):
     raw = files.get(path)
     if not isinstance(raw, str) or not raw.strip():
         blocking.append(f"MISSING_OR_EMPTY:{path}")
@@ -54,9 +67,57 @@ def validate_text_contract(files, path, minimum, groups, blocking):
     upper = raw.upper()
     if any(token in upper for token in PLACEHOLDER_TOKENS):
         blocking.append(f"PLACEHOLDER_CONTENT:{path}")
-    for code, words in groups:
+    for code, words in keyword_groups:
         if not has_any(raw, words):
             blocking.append(f"{code}:{path}")
+    headings = markdown_headings(raw)
+    for code, options in heading_groups:
+        if not heading_group_present(headings, options):
+            blocking.append(f"{code}:{path}")
+
+
+def authority_evidence_present(evidence_map):
+    for item in evidence_map:
+        if not isinstance(item, dict):
+            continue
+        ref = str(item.get("source_ref", "")).strip().lower()
+        supports = " ".join(str(v).lower() for v in item.get("supports", []) if isinstance(v, str))
+        if (
+            ref.startswith(("ekb://", "lf://authority/", "supabase://", "github://"))
+            or "act-" in ref
+            or "authority" in ref
+            or "authority" in supports
+            or "governance" in supports
+        ):
+            return True
+    return False
+
+
+def validate_evidence_schema(schema, blocking):
+    properties = schema.get("properties")
+    if not isinstance(properties, dict):
+        return
+    evidence_spec = properties.get("evidence_map")
+    if not isinstance(evidence_spec, dict) or evidence_spec.get("type") != "array":
+        blocking.append("OUTPUT_SCHEMA_EVIDENCE_MAP_MUST_BE_ARRAY")
+        return
+    items = evidence_spec.get("items")
+    if not isinstance(items, dict) or items.get("type") != "object":
+        blocking.append("OUTPUT_SCHEMA_EVIDENCE_ITEM_MUST_BE_OBJECT")
+        return
+    required = set(items.get("required", []))
+    if not {"source_ref", "supports"} <= required:
+        blocking.append("OUTPUT_SCHEMA_EVIDENCE_REQUIRED_FIELDS_MISSING")
+    item_props = items.get("properties")
+    if not isinstance(item_props, dict):
+        blocking.append("OUTPUT_SCHEMA_EVIDENCE_PROPERTIES_MISSING")
+        return
+    source_ref = item_props.get("source_ref")
+    supports = item_props.get("supports")
+    if not isinstance(source_ref, dict) or source_ref.get("type") != "string" or source_ref.get("minLength", 0) < 1:
+        blocking.append("OUTPUT_SCHEMA_SOURCE_REF_NOT_STRICT")
+    if not isinstance(supports, dict) or supports.get("type") != "array" or supports.get("minItems", 0) < 1:
+        blocking.append("OUTPUT_SCHEMA_SUPPORTS_NOT_STRICT")
 
 
 def validate_candidate(pack):
@@ -95,11 +156,16 @@ def validate_candidate(pack):
             if not isinstance(item, dict):
                 blocking.append(f"EVIDENCE_ITEM_INVALID:{idx}")
                 continue
-            if not isinstance(item.get("source_ref"), str) or not item.get("source_ref", "").strip():
+            ref = item.get("source_ref")
+            if not isinstance(ref, str) or not ref.strip():
                 blocking.append(f"EVIDENCE_SOURCE_REF_MISSING:{idx}")
             supports = item.get("supports")
             if not isinstance(supports, list) or not supports:
                 blocking.append(f"EVIDENCE_SUPPORTS_MISSING:{idx}")
+            elif any(not isinstance(value, str) or len(value.strip()) < 4 for value in supports):
+                blocking.append(f"EVIDENCE_SUPPORTS_WEAK:{idx}")
+        if not authority_evidence_present(evidence_map):
+            blocking.append("SOURCE_AUTHORITY_NOT_EVIDENCED")
 
     files = pack.get("files")
     if not isinstance(files, dict):
@@ -121,6 +187,13 @@ def validate_candidate(pack):
             ("SKILL_FAILURE_BEHAVIOR_MISSING", ("failure", "block", "return")),
             ("SKILL_AUTHORITY_LIMITS_MISSING", ("limit", "must not", "cannot", "forbidden")),
         ],
+        [
+            ("SKILL_ROLE_SECTION_MISSING", ("role", "purpose")),
+            ("SKILL_INPUT_SECTION_MISSING", ("input", "required input")),
+            ("SKILL_ROUTE_SECTION_MISSING", ("route", "workflow", "trajectory", "steps")),
+            ("SKILL_FAILURE_SECTION_MISSING", ("failure", "blocking")),
+            ("SKILL_LIMITS_SECTION_MISSING", ("authority limit", "limits", "boundaries")),
+        ],
         blocking,
     )
     validate_text_contract(
@@ -134,6 +207,14 @@ def validate_candidate(pack):
             ("CONTRACT_FAILURE_ROUTING_MISSING", ("failure", "reject", "block", "return")),
             ("CONTRACT_OUTPUT_MISSING", ("output", "decision", "result")),
         ],
+        [
+            ("CONTRACT_INPUT_SECTION_MISSING", ("input contract", "inputs")),
+            ("CONTRACT_SCOPE_SECTION_MISSING", ("decision scope", "scope")),
+            ("CONTRACT_EVIDENCE_SECTION_MISSING", ("evidence contract", "evidence")),
+            ("CONTRACT_FAILURE_SECTION_MISSING", ("failure routing", "failure")),
+            ("CONTRACT_OUTPUT_SECTION_MISSING", ("output contract", "output")),
+            ("CONTRACT_LIMITS_SECTION_MISSING", ("authority limit", "limits", "boundaries")),
+        ],
         blocking,
     )
     validate_text_contract(
@@ -144,6 +225,10 @@ def validate_candidate(pack):
             ("RUBRIC_PASS_MISSING", ("pass", "ready")),
             ("RUBRIC_FAIL_MISSING", ("fail", "block", "return")),
             ("RUBRIC_EVIDENCE_MISSING", ("evidence", "source")),
+        ],
+        [
+            ("RUBRIC_PASS_SECTION_MISSING", ("pass", "ready")),
+            ("RUBRIC_FAIL_SECTION_MISSING", ("return", "fail", "block")),
         ],
         blocking,
     )
@@ -156,8 +241,13 @@ def validate_candidate(pack):
             ("MINI_JUDGE_FAILURE_MISSING", ("block", "return", "fail")),
             ("MINI_JUDGE_OUTPUT_MISSING", ("output", "artifact", "result")),
         ],
+        [],
         blocking,
     )
+    mini_judge = files.get("judges/mini_judge.md", "")
+    numbered_checks = re.findall(r"^\s*\d+\.\s+\S+", mini_judge, re.MULTILINE)
+    if len(numbered_checks) < 4:
+        blocking.append("MINI_JUDGE_INSUFFICIENT_DECISION_CHECKS")
 
     manifest = parse_json_text(files, "manifest.json", blocking)
     if manifest is not None:
@@ -174,14 +264,15 @@ def validate_candidate(pack):
         if manifest.get("automatic_impact") != "BLOQUEADO":
             blocking.append("MANIFEST_AUTOMATIC_IMPACT_INVALID")
         required_files = set(manifest.get("required_files", []))
-        missing = sorted(CORE_FILES - required_files)
-        for path in missing:
+        for path in sorted(CORE_FILES - required_files):
             blocking.append(f"MANIFEST_REQUIRED_FILE_NOT_DECLARED:{path}")
 
     schema = parse_json_text(files, "schemas/output.schema.json", blocking)
     if schema is not None:
         if schema.get("type") != "object":
             blocking.append("OUTPUT_SCHEMA_TYPE_MUST_BE_OBJECT")
+        if schema.get("additionalProperties") is not False:
+            blocking.append("OUTPUT_SCHEMA_ADDITIONAL_PROPERTIES_MUST_BE_FALSE")
         properties = schema.get("properties")
         required = schema.get("required")
         if not isinstance(properties, dict) or not properties:
@@ -192,15 +283,25 @@ def validate_candidate(pack):
             for field in required:
                 if field not in properties:
                     blocking.append(f"OUTPUT_SCHEMA_REQUIRED_PROPERTY_UNDEFINED:{field}")
-            typed = 0
-            for spec in properties.values():
-                if isinstance(spec, dict) and any(k in spec for k in ("type", "enum", "const", "oneOf", "anyOf", "allOf")):
-                    typed += 1
+            typed = sum(
+                1
+                for spec in properties.values()
+                if isinstance(spec, dict) and any(k in spec for k in ("type", "enum", "const", "oneOf", "anyOf", "allOf"))
+            )
             if typed < max(1, len(properties) // 2):
                 blocking.append("OUTPUT_SCHEMA_INSUFFICIENTLY_TYPED")
+            status_spec = properties.get("status")
+            if not isinstance(status_spec, dict) or not any(k in status_spec for k in ("enum", "const", "oneOf")):
+                blocking.append("OUTPUT_SCHEMA_STATUS_NOT_CLOSED")
+        validate_evidence_schema(schema, blocking)
         if pack.get("exposes_user_facing_output") is True:
             if not isinstance(properties, dict) or "user_payload" not in properties or "internal_envelope" not in properties:
                 blocking.append("USER_INTERNAL_OUTPUT_BOUNDARY_MISSING")
+            else:
+                for name in ("user_payload", "internal_envelope"):
+                    spec = properties.get(name)
+                    if not isinstance(spec, dict) or spec.get("type") != "object":
+                        blocking.append(f"USER_INTERNAL_BOUNDARY_NOT_TYPED:{name}")
             contract_text = files.get("contracts/main_contract.md", "")
             if "user_payload" not in contract_text or "internal_envelope" not in contract_text:
                 blocking.append("USER_INTERNAL_CONTRACT_BOUNDARY_MISSING")
@@ -240,6 +341,15 @@ def validate_candidate(pack):
                 assertions = case.get("assertions")
                 if not isinstance(assertions, list) or not assertions:
                     blocking.append(f"EVAL_ASSERTIONS_REQUIRED:{cid}")
+                else:
+                    for assertion in assertions:
+                        if (
+                            not isinstance(assertion, str)
+                            or len(assertion.strip()) < 5
+                            or assertion.strip().lower() in GENERIC_ASSERTIONS
+                        ):
+                            blocking.append(f"EVAL_ASSERTION_NOT_BEHAVIORAL:{cid}")
+                            break
             if positive < 1:
                 blocking.append("EVAL_POSITIVE_CASE_REQUIRED")
             if negative < 2:
@@ -250,27 +360,35 @@ def validate_candidate(pack):
         target = handoff.get("to") or handoff.get("target_profile")
         if not isinstance(target, str) or not target.strip():
             blocking.append("HANDOFF_TARGET_MISSING")
-        artifact_required = handoff.get("requires_artifact") is True or handoff.get("artifact_identity_required") is True
-        if not artifact_required:
+        if not (handoff.get("requires_artifact") is True or handoff.get("artifact_identity_required") is True):
             blocking.append("HANDOFF_ARTIFACT_IDENTITY_NOT_REQUIRED")
         context = handoff.get("required_receiver_context") or handoff.get("required_evidence")
         if not isinstance(context, list) or not context:
             blocking.append("HANDOFF_REQUIRED_CONTEXT_MISSING")
         else:
-            joined = " ".join(str(v).lower() for v in context)
-            concept_groups = {
-                "HANDOFF_CONTEXT_ARTIFACT_MISSING": ("artifact", "deliverable"),
-                "HANDOFF_CONTEXT_EVIDENCE_MISSING": ("evidence", "source"),
-                "HANDOFF_CONTEXT_SCHEMA_OR_CONTRACT_MISSING": ("schema", "contract"),
-                "HANDOFF_CONTEXT_RUBRIC_OR_JUDGE_MISSING": ("rubric", "judge"),
-                "HANDOFF_CONTEXT_BLOCKING_MISSING": ("block", "failure", "risk"),
+            exact_context = {value for value in context if isinstance(value, str)}
+            required_context = {
+                "deliverable_artifact_ref",
+                "main_contract_ref",
+                "output_schema_ref",
+                "evidence_map",
+                "score_rubric_ref",
+                "blocking_codes",
+                "remaining_risks",
             }
-            for code, words in concept_groups.items():
-                if not any(word in joined for word in words):
-                    blocking.append(code)
+            for missing in sorted(required_context - exact_context):
+                blocking.append(f"HANDOFF_REQUIRED_CONTEXT_ITEM_MISSING:{missing}")
         failure_routing = handoff.get("failure_routing")
         if not isinstance(failure_routing, dict) or not failure_routing:
             blocking.append("HANDOFF_FAILURE_ROUTING_REQUIRED")
+        else:
+            keys = " ".join(str(k).lower() for k in failure_routing)
+            if "artifact" not in keys:
+                blocking.append("HANDOFF_FAILURE_ARTIFACT_ROUTE_MISSING")
+            if not any(token in keys for token in ("evidence", "depth", "context", "incomplete")):
+                blocking.append("HANDOFF_FAILURE_REPAIR_ROUTE_MISSING")
+            if not any(token in keys for token in ("authority", "safety", "governance")):
+                blocking.append("HANDOFF_FAILURE_AUTHORITY_ROUTE_MISSING")
         if not isinstance(handoff.get("next_gate"), str) or not handoff.get("next_gate"):
             blocking.append("HANDOFF_NEXT_GATE_MISSING")
 
@@ -371,7 +489,7 @@ def self_test(root):
     except Exception as exc:
         failures.append(f"CREATOR_EVAL_MATRIX_READ_ERROR:{exc}")
 
-    result = {
+    return {
         "status": "PASS" if not failures else "FAIL",
         "validation_scope": "DETERMINISTIC_DEPTH_SELF_TEST",
         "historical_stub_status": neg_result["status"],
@@ -381,7 +499,6 @@ def self_test(root):
         "blocking_codes": failures,
         "semantic_quality_review": "NOT_EXECUTED",
     }
-    return result
 
 
 def main():
