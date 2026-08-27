@@ -9,19 +9,34 @@
 This is structural BEFORE evidence only; it is not presented as a real profile execution.
 
 ## Root cause
-Safety is described narratively, but the package did not deterministically materialize `objective -> mechanic -> behavior -> risk -> metric -> guardrail`, activation/deactivation, claim authority and evidence-bound scoring.
+Safety was described narratively, but the package did not deterministically materialize and cross-bind `objective -> mechanic -> behavior -> risk -> metric -> guardrail`, activation/deactivation, claim authority, downstream preservation and evidence-bound scoring.
+
+The UI remediation established two reusable lessons applied here:
+- provenance/receipt proves execution, not semantic/ethical correctness;
+- synthetic fixtures cannot substitute for RAW profile behavior.
 
 ## AFTER controls
-- every material mechanic gets activation, deactivation, acceptance, risk, metric, guardrails and authority refs;
+- every material mechanic has activation, deactivation, acceptance, risk, metric, guardrails and authority refs;
+- mechanic authority and financial claim authority must bind actual `system_lineage.source_refs`; a non-empty invented URI does not count;
+- mechanic and metric IDs are unique and cross-referenced;
+- handoff must preserve every material mechanic and its guardrails, plus risky-claim authority refs;
 - vanity-only metrics cannot justify a mechanic;
-- risky financial claims require upstream authority;
 - harmful financial incentives and pressure/clarity conflicts reject;
-- semantic counterfactual judge remains separate from deterministic validation and ethical judge.
+- semantic judge checks whether the mechanic actually resolves the objective and whether guardrails mitigate the stated risk;
+- ethical judge remains a separate gate;
+- `behavioral_eval_protocol.md` requires RAW output + canonical execution receipt + semantic/ethical judges + fresh holdout/adversarials before any behavioral remediation claim.
 
-## Regression matrix
-`run_cases.py` currently exercises 12 cases: 2 positive, 1 missing-input, 7 negative/adversarial including counterfactual, 1 fresh holdout and 1 malformed-input totality case.
+## Structural regression matrix
+`run_cases.py` now exercises 17 cases:
+- 2 positive structural candidates;
+- 1 missing-input state;
+- 12 negative/adversarial controls, including invented authority, unsafe activation/deactivation, vanity metric, guardrail loss, mechanic loss and counterfactual pressure trajectory;
+- 1 fresh holdout;
+- 1 malformed-input totality case.
 
-Expected local candidate result before GitHub write: `12/12`.
+The suite emits `evidence_class=STRUCTURAL_VALIDATOR_ONLY_NOT_PROFILE_EXECUTION` by design.
 
 ## Evidence ceiling
-These fixtures prove contract behavior of the candidate package. They do not prove an external runtime profile execution and do not replace an independent semantic audit.
+These fixtures prove contract/validator behavior of the candidate package only. They do not prove an external runtime profile execution, semantic/ethical judge PASS, Router/direct consistency, or independent remediation verification.
+
+Behavioral closure must follow `behavioral_eval_protocol.md`.
