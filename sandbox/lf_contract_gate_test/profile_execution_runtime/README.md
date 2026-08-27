@@ -1,119 +1,128 @@
-# Governed Profile Execution Provenance Gate
+# Governed Profile Execution Provenance + Semantic Gate
 
 Status: CANDIDATE_READ_ONLY / FAIL_CLOSED / ZERO_COST_ONLY
 
 ## Purpose
-Prevent a governed flow from claiming that a repository profile executed when the result was reconstructed, summarized, fixture-generated or produced directly by a downstream composer/generator.
+
+Prevent a governed flow from claiming that a repository profile executed when the result was reconstructed, summarized, fixture-generated or produced directly by a downstream composer/generator; and prevent a semantically incomplete subset of obligations from obtaining downstream PASS.
 
 ## Required flow
 
 ```text
-Router
+Router / orchestrator
 -> exact PERFIL resolution
 -> profile source read
 -> literal input
+-> enumerable authority sources
+-> PROFILE_SEMANTIC_OBLIGATION_MANIFEST_V1
+-> bind manifest SHA before worker execution
 -> trusted zero-cost RuntimeAdapter
 -> real MODEL_RUNTIME execution
 -> RAW output capture
 -> independent RuntimeAttestationVerifier
 -> PROFILE_EXECUTION_RECEIPT_V1
--> deterministic contract checks
--> narrow semantic mini-judge when needed
+-> Python derives PROFILE_SEMANTIC_CHECK_BUNDLE_V2 from manifest + exact RAW
+-> deterministic checks
+-> only unresolved atomic SEMANTIC_RELATION checks to local mini-judge
+-> PROFILE_SEMANTIC_JUDGE_RECEIPT_V2
+-> complete semantic PASS
 -> downstream recipient
 ```
 
-A static fixture, expected answer, manually reconstructed response or summarized worker decision is not proof of profile execution.
+A static fixture, expected answer, manually reconstructed response or summarized worker decision is not proof of profile execution. A manually selected subset of semantic checks is not proof of complete semantic coverage.
+
+## Pre-execution obligation authority
+
+`semantic_obligation_manifest.py` defines `PROFILE_SEMANTIC_OBLIGATION_MANIFEST_V1`.
+
+The manifest must exist before model execution and is bound into the runtime request/receipt by SHA-256. It requires:
+
+- exact execution id and profile code;
+- exact aggregate profile-source digest;
+- exact literal-input digest;
+- at least the mandatory `PROFILE_CONTRACT` and `EXECUTION_INPUT` authority types;
+- stable obligation IDs;
+- an enumerable `required_obligation_ids` set for every authority source;
+- 1:1 correspondence between the union of required IDs and the obligations in the manifest;
+- exact evidence pointers into the future RAW output;
+- deterministic check type/rule parameters.
+
+Additional enumerable authority sources may be `DECISION_SET` or `UPSTREAM_CONSTRAINTS`.
+
+If a governing source cannot enumerate its required obligations, it is not eligible to claim complete semantic PASS through this gate. The correct result is fail-closed, not a partial manual bundle.
+
+## Deterministic bundle derivation
+
+After RAW capture, Python reconstructs `PROFILE_SEMANTIC_CHECK_BUNDLE_V2` directly from the pre-bound manifest and exact RAW output. `check_id == obligation_id` is mandatory.
+
+Final downstream validation independently rebuilds the expected bundle and compares its canonical digest. It blocks when a caller:
+
+- omits an obligation;
+- inserts an unknown obligation;
+- changes a rule or check type;
+- changes the evidence pointer;
+- swaps the manifest after execution;
+- supplies a bundle not deterministically derived from the manifest;
+- cannot resolve a required evidence pointer.
+
+This closes GOV-034 at the bundle-coverage boundary: PASS is over the complete enumerable obligation set, not over a caller-selected subset.
+
+## Semantic mini-judge boundary
+
+The local Qwen runtime is **not** authorized as the primary reasoning worker for profile quality. GPT-5.6 Sol / the stronger primary worker produces the candidate RAW output.
+
+Python must resolve exact checks (`REQUIRED_SUBSTRING`, `FORBIDDEN_SUBSTRING`, `EXACT_VALUE`) before invoking a model. Only `SEMANTIC_RELATION` checks are sent to Qwen, one compact rule/evidence/question tuple at a time.
+
+The authorized zero-cost semantic classifier is the pinned Qwen2.5-VL-7B Q4_K_M runtime on a public standard `ubuntu-latest` runner. It may only classify `COMPLIES`, `CONTRADICTS` or `UNCERTAIN`; it must not rewrite or repair the worker output. `UNCERTAIN` blocks.
+
+Known mandatory live regressions include:
+
+- GOV-032 inversion: an already duplicated amount must not be duplicated again;
+- explicit context authority ignored;
+- correct duplicate removal (positive control);
+- unsupported invented card suffix (`4242`).
+
+## Downstream boundary
+
+`SEMANTIC_JUDGE` is the only provenance-only recipient.
+
+`COMPOSER`, `IMAGE_GENERATOR`, `TOOL_PAYLOAD`, `INTERNAL_AGENT` and `FINAL_USER` require all of:
+
+1. valid `PROFILE_EXECUTION_RECEIPT_V1`;
+2. the pre-execution obligation manifest whose SHA is bound in that receipt;
+3. exact RAW output binding;
+4. deterministically derived check bundle covering all required obligation IDs;
+5. valid `PROFILE_SEMANTIC_JUDGE_RECEIPT_V2`;
+6. all checks `COMPLIES`;
+7. verified Qwen runtime evidence for semantic checks.
+
+Missing manifest, partial bundle, semantic FAIL or `UNCERTAIN` => `BLOCK_PIPELINE`.
 
 ## Zero-cost policy
 
 Operational execution is strictly `ZERO_COST_ONLY`.
 
-A provider is not authorized if invoking it can create incremental monetary charges, including token/API billing, paid hosted inference, paid credits or subscription add-ons. If a zero-cost real runtime is unavailable, the pipeline blocks. There is no fallback to a paid provider, fixture or direct generator.
+No provider may be used if invoking it can create incremental monetary charges, including token/API billing, paid hosted inference, credits or subscription add-ons. If a zero-cost real runtime is unavailable, the pipeline blocks. There is no fallback to paid inference, fixtures or a direct generator.
 
-The OpenAI Responses adapter added in PR #242 is retained only as quarantined reference/test code. It is **not** an authorized operational provider. The canonical `run_openai_profile.py` entrypoint is a fail-closed tombstone and returns `PAID_PROVIDER_DISABLED_BY_ZERO_COST_POLICY`; it must not issue network requests.
+The OpenAI Responses adapter remains quarantined reference/test code only. Its offline regression performs no API calls and must not be selected operationally.
 
-## Provider-agnostic runner
+## Request and receipt binding
 
-`profile_runtime_runner.py` materializes the execution boundary. The host injects two distinct capabilities:
+`PROFILE_RUNTIME_REQUEST_V1` binds operation code, execution id, exact profile identity, source references/hashes, literal input and, when supplied, the pre-execution obligation-manifest digest. The request digest therefore proves the manifest was fixed before the worker response.
 
-- `RuntimeAdapter`: invokes the configured real model runtime and returns RAW output plus an attestation bound to the exact request.
-- `RuntimeAttestationVerifier`: independently verifies that attestation and binds verification evidence to the exact request and response hashes.
+The execution receipt binds profile identity, source digest, input digest, RAW digest, runtime attestation, independent verifier evidence and the same obligation-manifest digest. It cannot self-authorize downstream use.
 
-Operational mode rejects adapters or verifiers marked as test doubles.
-
-## Semantic mini-judge boundary
-
-The local Qwen runtime is **not** authorized as the primary reasoning worker for profile quality. Its narrow role is semantic classification after stronger reasoning has already produced the candidate RAW output.
-
-The preferred sequence is:
-
-```text
-GPT-5.6 Sol / primary worker
--> original RAW output
--> Python deterministic checks
--> only unresolved atomic SEMANTIC_RELATION checks
--> local zero-cost mini-judge
--> PROFILE_SEMANTIC_JUDGE_RECEIPT_V1
--> PASS => eligible for downstream gate
--> FAIL or UNCERTAIN => BLOCK
-```
-
-`semantic_mini_judge.py` defines the atomic check contract. Python must resolve exact checks (`REQUIRED_SUBSTRING`, `FORBIDDEN_SUBSTRING`, `EXACT_VALUE`) before invoking a model. Only `SEMANTIC_RELATION` checks are sent to Qwen, and each model call receives only one compact rule/evidence/question tuple.
-
-The model may only classify `COMPLIES`, `CONTRADICTS` or `UNCERTAIN`. It must not rewrite or repair the worker output. `UNCERTAIN` blocks. The semantic receipt never self-authorizes downstream use.
-
-`github_actions_semantic_judge.py` reuses the pinned public `ubuntu-latest` + llama.cpp + Qwen2.5-VL-3B assets as a text-only zero-cost classifier and independently re-hashes local evidence. It does not require the multimodal projector for text-only semantic checks.
-
-Known mandatory live regressions include:
-- the GOV-032 inversion where a duplicated amount was incorrectly duplicated again;
-- a context-authority failure where the worker claimed the authoritative survivor was missing despite the input explicitly identifying it;
-- a compliant duplicate-removal case;
-- an unsupported invented card suffix (`4242`).
-
-## OpenAI reference implementation
-
-`openai_responses_runtime.py` remains in the repository only to preserve the provider contract work and deterministic offline regression coverage. It must not be selected for operational execution while `ZERO_COST_ONLY` is active.
-
-The provider-specific offline suite performs no API calls and therefore remains valid as a contract regression:
-
-```bash
-python sandbox/lf_contract_gate_test/profile_execution_runtime/run_openai_provider_tests.py
-```
-
-Expected: `OPENAI_PROFILE_RUNTIME_TESTS_PASS 10/10`.
-
-## Request binding
-
-`PROFILE_RUNTIME_REQUEST_V1` binds operation code, execution id, exact profile identity, source references/hashes, literal input and canonical request digest.
-
-## Receipt binding
-
-The execution receipt binds exact profile identity, source digest, literal input digest, RAW output digest, runtime attestation, independent verifier evidence and a self digest. It cannot authorize itself for downstream use.
-
-The semantic receipt separately binds the exact input hash, RAW output hash, atomic check bundle and per-check result. Provenance PASS and semantic PASS are different gates.
+The semantic receipt separately binds the obligation-manifest digest, exact check-bundle digest and per-check results.
 
 ## Fail closed
 
-Block on a paid provider, missing zero-cost runtime, missing RAW, malformed hashes, mismatched request/source/input/profile binding, absent independent verifier, failed attestation verification, test doubles in operational mode, invalid receipt digest or self-authorization.
-
-For semantic quality, block on any `CONTRADICTS`, `UNCERTAIN`, malformed model response, unverified local runtime evidence, or deterministic check failure.
+Block on paid provider, missing RAW, malformed hashes, mismatched request/source/input/profile binding, absent independent verifier, failed attestation verification, test doubles in operational mode, invalid receipt digest, self-authorization, missing pre-bound obligation manifest, incomplete obligation coverage, non-derived bundle, any `CONTRADICTS`, any `UNCERTAIN`, malformed model response or unverified local semantic runtime evidence.
 
 ## Regression
 
-Generic runner regression:
-
 ```bash
 python sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py
-```
-
-Expected: `PROFILE_RUNTIME_GATE_TESTS_PASS 16/16`.
-
-Semantic mini-judge offline regression:
-
-```bash
 python sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py
 ```
 
-Expected: `SEMANTIC_MINI_JUDGE_TESTS_PASS 11/11`.
-
-The live semantic smoke is intentionally isolated to the dedicated PR workflow and uses only the pinned zero-cost local model. CI must not make billable model calls.
+The live semantic smoke runs in the authorized Story Agent Evidence Verifier workflow with the pinned zero-cost local model. CI must not make billable model calls.
