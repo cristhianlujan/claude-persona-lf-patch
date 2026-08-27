@@ -51,21 +51,26 @@ def main() -> int:
     passed = 0
     with tempfile.TemporaryDirectory(prefix="lf-semantic-smoke-") as td:
         work_dir = Path(td)
-        adapter = GitHubHostedSemanticMiniJudge(work_dir=work_dir)
         verifier = GitHubHostedSemanticMiniJudgeVerifier()
-        for case in CASES:
-            check = {key: value for key, value in case.items() if key != "expected"}
-            result, evidence = adapter.classify(check)
-            verification = verifier.verify(check=check, result=result, evidence=evidence, adapter=adapter)
-            print(f"SEMANTIC_SMOKE {case['check_id']} verdict={result.verdict} verified={verification['verified']}")
-            if result.verdict != case["expected"]:
-                raise SystemExit(
-                    f"SEMANTIC_MINI_JUDGE_LIVE_SMOKE_FAIL {case['check_id']} expected={case['expected']} observed={result.verdict}"
+        with GitHubHostedSemanticMiniJudge(work_dir=work_dir) as adapter:
+            for case in CASES:
+                check = {key: value for key, value in case.items() if key != "expected"}
+                result, evidence = adapter.classify(check)
+                verification = verifier.verify(check=check, result=result, evidence=evidence, adapter=adapter)
+                print(
+                    f"SEMANTIC_SMOKE {case['check_id']} verdict={result.verdict} "
+                    f"verified={verification['verified']}",
+                    flush=True,
                 )
-            passed += 1
+                if result.verdict != case["expected"]:
+                    raise SystemExit(
+                        f"SEMANTIC_MINI_JUDGE_LIVE_SMOKE_FAIL {case['check_id']} "
+                        f"expected={case['expected']} observed={result.verdict}"
+                    )
+                passed += 1
     if passed != len(CASES):
         raise SystemExit(f"SEMANTIC_MINI_JUDGE_LIVE_SMOKE_FAIL {passed}/{len(CASES)}")
-    print(f"SEMANTIC_MINI_JUDGE_LIVE_SMOKE_PASS {passed}/{len(CASES)}")
+    print(f"SEMANTIC_MINI_JUDGE_LIVE_SMOKE_PASS {passed}/{len(CASES)}", flush=True)
     return 0
 
 
