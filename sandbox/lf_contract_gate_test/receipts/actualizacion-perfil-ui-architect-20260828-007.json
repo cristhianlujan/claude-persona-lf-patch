@@ -9,13 +9,13 @@
   "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
   "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
   "source_sha_list": [
-    "73275f8ec24318c84b4c03170dad1fe5741b4b82",
+    "150b0cdc2e786a5d523b197982a3e2a057edaf83",
     "e229b7e1cf130541754255e3e85a7b7329a49939",
-    "52b6a18547d2623b6dfa004f8618c928453fe175",
-    "695bfede8af61a1db9ee9c40edb918079d1a7d98"
+    "3b89e12e005f02a38cefe59bd2ea405201294244",
+    "d07f431da1a6b7cf9a267fc28fd2a46069afbbd6"
   ],
   "target_paths": ["profiles/ui_architect/**"],
   "blocking_codes": [],
-  "issued_at": "2026-08-28T15:56:07Z",
-  "notes": "PASS_SANDBOX candidate-source receipt for P1 runtime-closure V9 under canonical execution 007. PR #289 merged V8 to main@b97234d2c87f0c0211c290f668b195b577002787. Fresh post-merge canary B f383677a-0e3b-44ea-a991-5b68f79fcc2d / run 33185648132 passed with one complete Missing Input State, MODEL_RUNTIME, ZERO_COST_ONLY and exact merged SHA. Fresh post-merge canary A 337fd41d-a86d-428a-9441-10c119173582 / run 33185638102 corrected the semantic decision by preserving payment_summary and removing only top_amount_strip, but deterministic readback proved valid_json=false, score_key_count=2 and evidence_component_ids absent. V9 minimally requires one JSON envelope, root fields exactly once, immediate stop after the final root brace, and mandatory evidence_component_ids bound to execution.target_component_id; the V6 salience gate and live evidence now assert both structural repairs. This receipt does not claim behavioral PASS, production, VALIDATED, runtime enablement or automatic promotion. Execution 007 remains IN_PROGRESS until exact-head CI, merge/readback, and two fresh post-merge zero-cost MODEL_RUNTIME canaries both pass."
+  "issued_at": "2026-08-28T17:00:40.533835Z",
+  "notes": "PASS_SANDBOX candidate-source receipt for P1 runtime-closure V11 under canonical execution 007. PR #292 merged V10 to exact main@a42682ecfa465fb7969ff26adf73bdc0add3da0c. Fresh post-merge Canary B c3848f7d-55ef-41d0-89db-b496317661ce / run 33190953272 passed with an unfenced complete Missing Input State and RETURN_TO_ORCHESTRATOR. Fresh post-merge resolved-authority Canary A 14663c45-478e-4e7f-a54e-decb5bb5a74c / run 33190946118 was attested MODEL_RUNTIME and ZERO_COST_ONLY, preserved payment_summary, removed only top_amount_strip, included evidence_component_ids bound to target+survivor, and emitted no Markdown fences, but structural closure still failed because score, handoff_to_next, and self_verdict were nested under deliverable_created rather than root siblings. V11 minimally introduces an explicit root-tail closure sentinel, fixed serialization order, forbidden nested root-tail paths, and self-repair for root-tail nesting. Final branch cleanup removed a temporary README; this receipt reconciliation intentionally makes the current push itself governed and traceable after that cleanup. This receipt does not claim behavioral PASS, production, VALIDATED, runtime enablement or automatic promotion. Execution 007 remains IN_PROGRESS until exact-head CI, protected merge/readback, and two fresh post-merge zero-cost MODEL_RUNTIME canaries both pass."
 }
