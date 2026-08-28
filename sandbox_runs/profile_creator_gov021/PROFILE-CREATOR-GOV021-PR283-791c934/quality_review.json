@@ -1,0 +1,24 @@
+{
+  "review_id": "QP-PROFILE-CREATOR-GOV021-PR283-791c934",
+  "reviewed_artifact": "github://cristhianlujan/claude-persona-lf-patch@791c934fecbac9682f87c9637064c991b3f205bc/skills/profile_creator",
+  "verdict": "PASS_WITH_RESTRICTIONS",
+  "score_breakdown": {
+    "contract_schema_compliance": 5,
+    "evidence_integrity": 5,
+    "lf_safety_governance": 5,
+    "handoff_readiness": 5,
+    "leakage_scope_control": 5,
+    "total": 25
+  },
+  "evidence_map": [
+    {"criterion":"contract_schema_compliance","refs":["skills/profile_creator/contracts/main_contract.md","skills/profile_creator/schemas/output.schema.json"],"finding":"Created-state, depth-gate binding and typed output requirements are explicit and fail closed."},
+    {"criterion":"evidence_integrity","refs":["skills/profile_creator/SKILL.md","skills/profile_creator/fixtures/semantic_depth/positive_candidate_pack.json","skills/profile_creator/validators/validate_candidate_depth.py"],"finding":"Depth readiness is tied to materialized evidence and explicitly separated from semantic approval."},
+    {"criterion":"lf_safety_governance","refs":["skills/profile_creator/SKILL.md","skills/profile_creator/contracts/main_contract.md"],"finding":"Authority conflicts block; candidate/read-only boundaries, runtime disabled and automatic impact blocked are preserved."},
+    {"criterion":"handoff_readiness","refs":["skills/profile_creator/handoffs/to_quality_pack.handoff.json"],"finding":"Quality Pack receives artifact identity, authority, depth receipt, schema/contract, evidence, rubric/judge, blockers and risks with explicit failure routing."},
+    {"criterion":"leakage_scope_control","refs":["skills/profile_creator/SKILL.md","skills/profile_creator/validators/validate_candidate_depth.py"],"finding":"User-facing output requires a protected user/internal boundary; non-user-facing profiles do not invent one."}
+  ],
+  "blocking_codes": [],
+  "repair_actions": [],
+  "remaining_risks": ["ACT-0045 remains read-only/non-promoted; runtime and automatic impact remain outside this review and blocked."],
+  "next_gate": "PROTECTED_PR_MERGE_AND_POSTMERGE_READBACK"
+}
