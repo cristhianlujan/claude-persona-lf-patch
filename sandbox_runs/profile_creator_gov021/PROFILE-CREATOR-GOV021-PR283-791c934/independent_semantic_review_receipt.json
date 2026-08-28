@@ -1,0 +1,46 @@
+{
+  "receipt_version": "v0.1",
+  "execution_mode": "INDEPENDENT_CHAT_CONTEXT",
+  "semantic_status": "EXECUTED_INDEPENDENT_CONTEXT",
+  "review_case_id": "PROFILE-CREATOR-GOV021-PR283-791c934",
+  "reviewer_is_producer": false,
+  "producer_context_available": false,
+  "external_paid_model_used": false,
+  "automated_semantic_judge_implemented": false,
+  "review_completed": true,
+  "source_bundle": {
+    "artifact_ref": "github://cristhianlujan/claude-persona-lf-patch@791c934fecbac9682f87c9637064c991b3f205bc/skills/profile_creator",
+    "artifact_sha_or_digest": "fdc5541520c704922d7b7760db34a44134178390",
+    "upstream_worker_contract_ref": "skills/profile_creator/SKILL.md + skills/profile_creator/contracts/main_contract.md",
+    "quality_gate_contract_ref": "profiles/quality_pack/contracts/quality_gate_contract.md",
+    "lf_quality_controls_ref": "profiles/quality_pack/contracts/lf_quality_controls.md",
+    "score_rubric_ref": "profiles/quality_pack/judges/quality_pack_score_rubric.md",
+    "mini_judge_ref": "profiles/quality_pack/judges/quality_pack_mini_judge.md",
+    "quality_review_schema_ref": "profiles/quality_pack/schemas/quality_review.schema.json"
+  },
+  "quality_review": {
+    "review_id": "QP-PROFILE-CREATOR-GOV021-PR283-791c934",
+    "reviewed_artifact": "github://cristhianlujan/claude-persona-lf-patch@791c934fecbac9682f87c9637064c991b3f205bc/skills/profile_creator",
+    "verdict": "PASS_WITH_RESTRICTIONS",
+    "score_breakdown": {
+      "contract_schema_compliance": 5,
+      "evidence_integrity": 5,
+      "lf_safety_governance": 5,
+      "handoff_readiness": 5,
+      "leakage_scope_control": 5,
+      "total": 25
+    },
+    "evidence_map": [
+      {"criterion":"contract_schema_compliance","refs":["contracts/main_contract.md","schemas/output.schema.json"]},
+      {"criterion":"evidence_integrity","refs":["SKILL.md","fixtures/semantic_depth/positive_candidate_pack.json","validators/validate_candidate_depth.py"]},
+      {"criterion":"lf_safety_governance","refs":["SKILL.md","contracts/main_contract.md"]},
+      {"criterion":"handoff_readiness","refs":["handoffs/to_quality_pack.handoff.json"]},
+      {"criterion":"leakage_scope_control","refs":["SKILL.md","validators/validate_candidate_depth.py"]}
+    ],
+    "blocking_codes": [],
+    "repair_actions": [],
+    "remaining_risks": ["ACT-0045 remains read-only/non-promoted; runtime and automatic impact remain blocked and outside this bounded review."],
+    "next_gate": "PROTECTED_PR_MERGE_AND_POSTMERGE_READBACK"
+  },
+  "execution_blockers": []
+}
