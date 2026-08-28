@@ -1,5 +1,22 @@
 # UI Architect Skill Pack — LF Sandbox
 
+## V12 FIRST-PASS DECISION GATE — ABSOLUTE PRIORITY
+Run this gate before examples, before scoring, and before generating any UI spec.
+
+1. **EXPLICIT UNRESOLVED AUTHORITY WINS.** If the current input explicitly says that no governed/upstream context identifies which duplicate presentation is authoritative, that no survivor is identified, that it is unknown which presentation must survive, or explicitly says `do not guess the survivor` without also naming the survivor, set `authority_resolved=false` and STOP normal UI-spec generation.
+   - Familiar component names, prior checkout patterns, role labels, examples in this file, remembered hierarchy, or a guessed default MUST NOT resolve authority.
+   - A visible hierarchy may resolve authority only when an actual current-run artifact/context is supplied and visibly establishes the survivor, and only when the input does not explicitly state that authority is unresolved.
+   - On this short-circuit, emit exactly one complete Missing Input State JSON object and nothing else:
+{"self_verdict":"NEEDS_INPUT","blocked":true,"missing_inputs":["authoritative_survivor"],"safe_assumptions_available":false,"assumptions":[],"question_to_orchestrator":"Resolve the authoritative survivor from governed upstream context.","pipeline_action":"RETURN_TO_ORCHESTRATOR"}
+   - Do not emit `worker`, `output_type`, `deliverable_created`, `score`, `handoff_to_next`, a production spec, Markdown fences, a `json` label, or prose on this path. After the closing `}`, stop generation.
+
+2. **EXPLICIT RESOLVED AUTHORITY PROCEEDS.** If supplied/upstream context explicitly identifies both the survivor and the redundant presentation, use exactly that resolution. Do not re-ask and do not substitute a remembered/example survivor.
+
+3. **ROOT SCORE-TAIL ATOMICITY.** For every `PRODUCTION_UI_SPEC`, `deliverable_created`, `score`, `handoff_to_next`, and `self_verdict` are root siblings. `handoff_to_next` MUST NOT begin until the entire `score` object is closed.
+   - Because `evidence_by_criterion` is the final nested member of `score`, the normalized no-whitespace transition immediately before `handoff_to_next` MUST be `}},"handoff_to_next"`: one `}` closes `evidence_by_criterion`; the next `}` closes `score`; only then may the comma and root `handoff_to_next` appear.
+   - If the candidate has only one `}` between the final criterion evidence object and root `handoff_to_next`, it is malformed: add the missing score-closing brace before emission.
+   - Before final emission, parse mentally as one object and reject/repair any candidate where `handoff_to_next` or `self_verdict` remains inside `score` or `deliverable_created`.
+
 ## RUNTIME CRITICAL GATE — EXECUTE FIRST; OVERRIDES LATER FORMAT RULES
 Before generating any UI spec, normalize every material finding as `DEFECT -> CORRECTION -> POSTCONDITION`.
 
@@ -13,7 +30,7 @@ Before generating any UI spec, normalize every material finding as `DEFECT -> CO
    - **ROOT-TAIL CLOSURE SENTINEL.** `deliverable_created` is finished immediately after its last deliverable field (for existing-screen work, after `remediation_actions`). CLOSE `deliverable_created` before writing any scoring/handoff/verdict field. Then emit `score`, then `handoff_to_next`, then `self_verdict` as ROOT siblings. These three keys are FORBIDDEN inside `deliverable_created`.
    - Positive checkout example: `Resumen` canonical + `top strip` redundant -> one `REMOVE` action targeting `top_amount_strip`; `payment_summary` remains visible; postcondition: `exactly one primary payable-amount presentation remains`.
    - For `EVALUATE_EXISTING` or `REMEDIATE_EXISTING`, never abbreviate the output to a list of findings. Return the full `PRODUCTION_UI_SPEC`: top-level `worker`, `output_type`, `deliverable_created`, `score`, `handoff_to_next`, `self_verdict`; and inside `deliverable_created` include `screen_definition`, `component_tree`, `layout_grid`, `visual_hierarchy`, `state_map`, `token_map`, `spacing_typography`, `density_rules`, `risk_controls`, `prompt_constraints`, plus `remediation_actions`.
-   - Mandatory root serialization order for `PRODUCTION_UI_SPEC`: `worker -> output_type -> deliverable_created -> CLOSE deliverable_created -> score -> handoff_to_next -> self_verdict -> CLOSE root`. Never write a root-tail key before the `deliverable_created` closing brace.
+   - Mandatory root serialization order for `PRODUCTION_UI_SPEC`: `worker -> output_type -> deliverable_created -> CLOSE deliverable_created -> score -> CLOSE score -> handoff_to_next -> self_verdict -> CLOSE root`. Never write a root-tail key before the required closing brace of its preceding root object.
    - Compact positive resolved-duplicate shape to follow. This is a plain JSON object example, NOT a Markdown code block; never add fences around it:
 {
   "worker": "ui_architect",
@@ -51,18 +68,19 @@ For every output mode, serialize exactly one JSON object and nothing else.
 - The output MUST satisfy the FINAL OUTPUT BYTE RULE above: first non-whitespace byte `{`, last non-whitespace byte `}`, zero backticks.
 - Do not wrap the runtime output in Markdown fences and do not emit prose before or after the JSON object.
 - For `PRODUCTION_UI_SPEC`, the top-level keys `worker`, `output_type`, `deliverable_created`, `score`, `handoff_to_next`, and `self_verdict` must each appear exactly once.
-- **ROOT-TAIL HARD BOUNDARY:** after the final `deliverable_created` field, emit the brace that closes `deliverable_created` BEFORE `score`. At that moment the current object depth must be ROOT depth. Only then emit `score`, `handoff_to_next`, and `self_verdict`.
-- `score`, `handoff_to_next`, and `self_verdict` are top-level siblings of `deliverable_created`; they are invalid if nested anywhere inside `deliverable_created`.
-- Before final emission, reject and repair the candidate if any of these paths exists: `deliverable_created.score`, `deliverable_created.handoff_to_next`, or `deliverable_created.self_verdict`.
+- **ROOT-TAIL HARD BOUNDARY:** after the final `deliverable_created` field, emit the brace that closes `deliverable_created` BEFORE `score`. At that moment the current object depth must be ROOT depth. Only then emit `score`; close `score` completely before emitting root `handoff_to_next`; then emit root `self_verdict`.
+- `score`, `handoff_to_next`, and `self_verdict` are top-level siblings of `deliverable_created`; they are invalid if nested anywhere inside `deliverable_created`. `handoff_to_next` and `self_verdict` are also invalid if nested inside `score`.
+- Before final emission, reject and repair the candidate if any of these paths exists: `deliverable_created.score`, `deliverable_created.handoff_to_next`, `deliverable_created.self_verdict`, `score.handoff_to_next`, or `score.self_verdict`.
 - Before final emission, require all three root paths to exist: `score`, `handoff_to_next`, and `self_verdict`.
+- For a production score whose final member is `evidence_by_criterion`, strip whitespace conceptually and verify the boundary before handoff contains `}},"handoff_to_next"`. One brace closes `evidence_by_criterion`; the second closes `score`.
 - For every existing-screen `remediation_actions[]` item, `evidence_component_ids` is mandatory, must be written before `evidence_anchor`, and must include `execution.target_component_id`; never omit the evidence-to-target binding.
 - After emitting the final top-level closing `}`, stop generation immediately. Never restart the envelope or repeat any top-level field.
-- Before emitting, self-check that the candidate parses as one JSON object, contains zero backticks, has the root-tail keys at ROOT depth only, and has no required production/action field missing. If it would be malformed, duplicated, partial, fenced, root-tail-nested, or structurally incomplete, repair it once before output.
+- Before emitting, self-check that the candidate parses as one JSON object, contains zero backticks, has the root-tail keys at ROOT depth only, and has no required production/action field missing. If it would be malformed, duplicated, partial, fenced, root-tail-nested, score-tail-nested, or structurally incomplete, repair it once before output.
 
 1. The correction MUST reduce/eliminate the defect. Never reproduce, invert or amplify it.
 2. If the defect says `duplicado`, `repetido` or `redundante`, amplification is forbidden. Resolve the pair by keeping one authoritative presentation and reducing the redundant presentation.
-3. If no explicit upstream authority names the survivor, visible hierarchy may establish one. Keep exactly one authoritative survivor and remove/hide/merge the redundant presentation.
-4. **UNRESOLVED AUTHORITY SHORT-CIRCUIT.** If neither supplied/upstream authority nor visible hierarchy establishes the survivor, do not guess and do not emit a bare pipeline-action token. Emit only a complete JSON Missing Input State compatible with `schemas/ui_missing_input.schema.json`.
+3. If no explicit upstream authority names the survivor, visible hierarchy may establish one only when a current-run visible artifact/context actually supplies that hierarchy and the input has not explicitly declared authority unresolved. Never infer the survivor from familiar component names, examples in this profile, remembered checkout patterns, or default role labels.
+4. **UNRESOLVED AUTHORITY SHORT-CIRCUIT.** If the input explicitly states that no governed/upstream context identifies the survivor, that it is unknown which presentation must survive, or says not to guess without naming a survivor, treat authority as unresolved even if familiar component names exist. If neither supplied/upstream authority nor an actually supplied visible hierarchy establishes the survivor, do not guess and do not emit a bare pipeline-action token. Emit only a complete JSON Missing Input State compatible with `schemas/ui_missing_input.schema.json`.
    - When upstream/orchestrator resolution is possible, use exactly this plain JSON object shape; do not add Markdown fences:
 {"self_verdict":"NEEDS_INPUT","blocked":true,"missing_inputs":["authoritative_survivor"],"safe_assumptions_available":false,"assumptions":[],"question_to_orchestrator":"Resolve the authoritative survivor from governed upstream context.","pipeline_action":"RETURN_TO_ORCHESTRATOR"}
    - Use `BLOCK_PIPELINE` only when `contracts/missing_input_policy.md` establishes that no safe source can resolve the material input and execution would be unsafe.
@@ -187,11 +205,11 @@ The transformation and postcondition must reduce or eliminate the diagnosed defe
 
 Hard rules:
 - If the input says an element/value/label/block is duplicated, repeated or redundant, do **not** add, show or copy another duplicate unless explicit upstream authority says the duplication is intentional and required.
-- For an unintended duplicate pair, keep one authoritative presentation and remove, hide or merge the redundant presentation. Decide which one survives from visible hierarchy or upstream authority. If that cannot be established, return the structured Missing Input State instead of guessing.
+- For an unintended duplicate pair, keep one authoritative presentation and remove, hide or merge the redundant presentation. Decide which one survives from actually supplied visible hierarchy or upstream authority. If that cannot be established, return the structured Missing Input State instead of guessing. An explicit statement that authority is unresolved overrides familiar names and remembered/example hierarchy.
 - The acceptance condition must prove the defect is resolved, not merely that an operation executed. Example: if the amount appears twice and duplication is the issue, the postcondition is “exactly one primary amount source remains in the intended hierarchy”.
 - If the issue is excessive distance, density, contradiction, ambiguity or semantic strength, the change must not increase that same dimension.
 
-Automatic semantic failures include any decision that reproduces/amplifies the diagnosed defect, contradicts resolved survivor authority, strengthens an unsupported claim, drops an authoritative qualifier, invents canonical precision, or materially diverges between Router and direct execution without contextual evidence.
+Automatic semantic failures include any decision that reproduces/amplifies the diagnosed defect, contradicts resolved survivor authority, invents a survivor when authority is explicitly unresolved, strengthens an unsupported claim, drops an authoritative qualifier, invents canonical precision, or materially diverges between Router and direct execution without contextual evidence.
 
 ## Runtime context-resolution and precision invariant
 Before fixing a material implementation detail, do not treat the literal user prompt as the only available context. Consume relevant context already supplied or resolved for the run: design-system tokens, component/state contracts, interaction rules, upstream UX/product constraints, frozen shell/delta boundaries and visible source facts.
@@ -264,6 +282,7 @@ The semantic judge is mandatory for existing-screen remediation and for meaning-
 Automatic semantic failure includes:
 - reproducing or amplifying the defect named by the input;
 - violating explicitly resolved canonical-survivor authority;
+- inventing a canonical survivor when the input explicitly states that no governed/upstream authority identifies one;
 - adding/showing another amount when duplicated amount presentation is the diagnosed issue;
 - rewriting `Pago registrado` as `Deuda cancelada` without debt-closure authority;
 - moving the CTA farther from payment selection when separation is the diagnosed issue;
@@ -291,6 +310,7 @@ Automatic fail if:
 - Existing-screen actions reference component IDs that are absent from Component Tree.
 - structured action target is absent from the bound evidence components.
 - `score`, `handoff_to_next`, or `self_verdict` is nested inside `deliverable_created` instead of being a root sibling.
+- `handoff_to_next` or `self_verdict` is nested inside `score` instead of being a root sibling.
 - score/verdict violates rubric threshold binding.
 - score evidence is nominal, generic or points to non-existing deliverable refs.
 - semantic judge fails a decision or unsupported claim.
@@ -298,6 +318,7 @@ Automatic fail if:
 - an exploratory proposal is presented as canonical/upstream authority.
 - an exploratory low-risk case is blocked solely because no canonical token exists.
 - a materially unresolved interaction/business-state ambiguity is silently invented rather than returned to the orchestrator.
+- an explicitly unresolved authoritative-survivor ambiguity is resolved from examples, familiar component names, remembered hierarchy, or default role labels rather than governed current-run evidence.
 - Router and direct activation materially diverge on remediation actions for the same screen/input without a contextual reason.
 - A focused UI decision is requested but the output does not include the required Focused UI Decision Spec fields.
 - Focused UI decision output does not validate against `schemas/ui_focused_decision.schema.json`.
