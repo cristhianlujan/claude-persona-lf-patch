@@ -39,5 +39,8 @@ V13 does not add another layer. It reduces prompt complexity in the same profile
 
 No Router, Shell, adapter, runtime infrastructure, policy, Supabase schema, production state, `VALIDATED`, runtime enablement, or automatic promotion change is included.
 
+## CI exact-head binding
+The final V13 branch commit intentionally co-locates this governed evidence change with the `LF_OPERATION_CONTRACT_RECEIPT` for execution 007. This prevents the push-scoped contract gate from observing a governed-path-only commit without its receipt. No runtime/profile semantics are changed by this CI binding note.
+
 ## Closure boundary
 No behavioral closure is claimed here. Required: exact-head CI, merge/readback, then two fresh post-merge zero-cost MODEL_RUNTIME canaries (resolved and explicitly unresolved authority), both semantically and structurally PASS.
