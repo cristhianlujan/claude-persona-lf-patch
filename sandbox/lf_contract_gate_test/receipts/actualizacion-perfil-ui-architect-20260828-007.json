@@ -9,13 +9,13 @@
   "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
   "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
   "source_sha_list": [
-    "150b0cdc2e786a5d523b197982a3e2a057edaf83",
+    "aeca0ec1a6734e72b21885e7ffa0465ae36079ac",
     "e229b7e1cf130541754255e3e85a7b7329a49939",
-    "3b89e12e005f02a38cefe59bd2ea405201294244",
-    "d07f431da1a6b7cf9a267fc28fd2a46069afbbd6"
+    "783a3d685d0f236bbcac4073088cd60649c79f52",
+    "6de53d2b434cfccf499331b746641f2bbcb65d2c"
   ],
   "target_paths": ["profiles/ui_architect/**"],
   "blocking_codes": [],
-  "issued_at": "2026-08-28T17:00:40.533835Z",
-  "notes": "PASS_SANDBOX candidate-source receipt for P1 runtime-closure V11 under canonical execution 007. PR #292 merged V10 to exact main@a42682ecfa465fb7969ff26adf73bdc0add3da0c. Fresh post-merge Canary B c3848f7d-55ef-41d0-89db-b496317661ce / run 33190953272 passed with an unfenced complete Missing Input State and RETURN_TO_ORCHESTRATOR. Fresh post-merge resolved-authority Canary A 14663c45-478e-4e7f-a54e-decb5bb5a74c / run 33190946118 was attested MODEL_RUNTIME and ZERO_COST_ONLY, preserved payment_summary, removed only top_amount_strip, included evidence_component_ids bound to target+survivor, and emitted no Markdown fences, but structural closure still failed because score, handoff_to_next, and self_verdict were nested under deliverable_created rather than root siblings. V11 minimally introduces an explicit root-tail closure sentinel, fixed serialization order, forbidden nested root-tail paths, and self-repair for root-tail nesting. Final branch cleanup removed a temporary README; this receipt reconciliation intentionally makes the current push itself governed and traceable after that cleanup. This receipt does not claim behavioral PASS, production, VALIDATED, runtime enablement or automatic promotion. Execution 007 remains IN_PROGRESS until exact-head CI, protected merge/readback, and two fresh post-merge zero-cost MODEL_RUNTIME canaries both pass."
+  "issued_at": "2026-08-28T17:45:42.646454Z",
+  "notes": "PASS_SANDBOX candidate-source receipt for P1 runtime-closure V12 under canonical execution 007. PR #293 merged V11 to exact main@e240f1020372a4fcf049a013c4e1178d4e8b41da. Fresh post-merge Canary A 2f0a2d4f-10cb-417e-8719-d3082d224e9f / run 33193420331 was attested MODEL_RUNTIME and ZERO_COST_ONLY, preserved payment_summary, removed only top_amount_strip, retained target+survivor evidence binding and emitted zero fences, but remained structurally invalid because score was not closed before root handoff_to_next. Fresh post-merge Canary B 01ffc626-220b-4f6c-b50b-615f71b0da9b / run 33193426630 was technically SUCCEEDED but behaviorally failed: despite explicit unresolved authority and a do-not-guess instruction, it invented payment_summary as canonical, removed top_amount_strip and wrapped the output in Markdown fences instead of returning the complete Missing Input State. V12 minimally frontloads explicit unresolved-authority fail-closed precedence, removes the full Production UI Spec example from the runtime-critical gate, and adds an explicit score-closure sentinel before root handoff. This receipt does not claim behavioral PASS, production, VALIDATED, runtime enablement or automatic promotion. Execution 007 remains IN_PROGRESS until exact-head CI, protected merge/readback, and two fresh post-merge zero-cost MODEL_RUNTIME canaries both pass."
 }
