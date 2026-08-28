@@ -1,0 +1,20 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF-20260828-006",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "437dd820142f91cc894add4c1e17a21a3024851a"
+  ],
+  "target_paths": ["profiles/frontend_prototype_architect_lf/**"],
+  "blocking_codes": [],
+  "issued_at": "2026-08-28T05:21:08Z",
+  "notes": "PASS_SANDBOX candidate-source receipt for the governed continuation after the post-merge live canary of PR #278 disproved behavioral closure. Canonical execution 006 has 14/14 judge-derived steps recorded as STEP_PASS_WITH_EVIDENCE. Exact candidate SKILL blob 437dd820142f91cc894add4c1e17a21a3024851a makes RETURN_TO_ORCHESTRATOR the mandatory second segment of every routable response and serializes the Shell case as BLOCKED_FRONTEND_SCOPE / RETURN_TO_ORCHESTRATOR / SHELL_CHANGE_REQUIRED / LF_SHELL_GOVERNANCE. Validate LF Packs run 33144249389 succeeded; lf-contract-check run 33144249506 reached only FAIL_RECEIPT_MISSING after migration and runtime regressions passed. This receipt proves candidate source/operation evidence only. It does not claim live behavioral PASS, production, VALIDATED, runtime enablement or automatic promotion. Final behavioral closure still requires exact-head CI, protected merge/readback and a fresh live canary from merged main. The contract/judge digest pair follows the existing ACTUALIZACION_PERFIL_LF receipt convention currently used by the repository; the Supabase registry SHA columns are presently null and are tracked as governance debt rather than fabricated here.",
+  "supersedes_execution": "EXEC-ACTUALIZACION-PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF-20260828-005",
+  "supersedes_pr": 278
+}
