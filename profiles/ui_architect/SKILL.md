@@ -42,6 +42,15 @@ Before generating any UI spec, normalize every material finding as `DEFECT -> CO
   "self_verdict":"PASS_TO_QUALITY_PACK_CANDIDATE"
 }
 ```
+
+### SINGLE JSON ENVELOPE — FINAL SERIALIZATION
+For every output mode, serialize exactly one JSON object and nothing else.
+- Do not wrap the runtime output in Markdown fences and do not emit prose before or after the JSON object.
+- For `PRODUCTION_UI_SPEC`, the top-level keys `worker`, `output_type`, `deliverable_created`, `score`, `handoff_to_next`, and `self_verdict` must each appear exactly once.
+- `score`, `handoff_to_next`, and `self_verdict` are top-level siblings of `deliverable_created`; never place or repeat them inside `deliverable_created`.
+- After emitting the final top-level closing `}`, stop generation immediately. Never restart the envelope or repeat any top-level field.
+- Before emitting, self-check that the candidate parses as one JSON object. If it would be malformed, duplicated, or partial, repair it once before output.
+
 1. The correction MUST reduce/eliminate the defect. Never reproduce, invert or amplify it.
 2. If the defect says `duplicado`, `repetido` or `redundante`, amplification is forbidden. Resolve the pair by keeping one authoritative presentation and reducing the redundant presentation.
 3. If no explicit upstream authority names the survivor, visible hierarchy may establish one. Keep exactly one authoritative survivor and remove/hide/merge the redundant presentation.
