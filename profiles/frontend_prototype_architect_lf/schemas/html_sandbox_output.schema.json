@@ -1,6 +1,48 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Frontend Prototype HTML Sandbox Output",
+  "$defs": {
+    "sourceInput": {
+      "type": "object",
+      "required": ["authority_role", "source_ref", "source_sha256", "currentness", "verdict"],
+      "properties": {
+        "authority_role": {"enum": ["PRODUCT_DIRECTION", "UI_ARCHITECT", "OTHER"]},
+        "source_ref": {"type": "string", "minLength": 1},
+        "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "currentness": {"const": "CURRENT"},
+        "verdict": {"enum": ["PASS", "APPROVED"]}
+      },
+      "additionalProperties": true
+    },
+    "artifactEvidence": {
+      "type": "object",
+      "required": ["path", "declared_sha256", "readback_sha256", "bytes", "exists", "readback", "parse_status"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "declared_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "readback_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "bytes": {"type": "integer", "minimum": 1},
+        "exists": {"const": true},
+        "readback": {"const": true},
+        "parse_status": {"enum": ["HTML_PARSE_PASS", "CSS_READ_PASS", "STATIC_ASSET_READ_PASS"]}
+      },
+      "additionalProperties": false
+    },
+    "scoreCriterion": {
+      "type": "object",
+      "required": ["criterion", "points", "evidence_refs"],
+      "properties": {
+        "criterion": {"enum": ["Source fidelity", "Static implementation quality", "Accessibility and semantic structure", "Boundary control", "Handoff/readback readiness"]},
+        "points": {"type": "integer", "minimum": 0, "maximum": 5},
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 3}
+        }
+      },
+      "additionalProperties": false
+    }
+  },
   "type": "object",
   "required": ["worker", "output_type", "deliverable_created", "score", "self_verdict", "traceability"],
   "properties": {
@@ -8,25 +50,161 @@
     "output_type": {"const": "HTML_SANDBOX_SPEC"},
     "deliverable_created": {
       "type": "object",
-      "required": ["prototype_decision", "source_inputs", "files_to_create", "html_structure", "css_structure", "accessibility_baseline", "interaction_states", "forbidden_runtime_scope", "validation_checklist", "local_run_instructions", "handoff_to_next", "traceability"],
+      "required": ["prototype_decision", "source_inputs", "files_to_create", "artifact_evidence", "html_structure", "css_structure", "accessibility_baseline", "interaction_states", "forbidden_runtime_scope", "validation_checklist", "local_run_instructions", "handoff_to_next", "traceability"],
       "properties": {
-        "prototype_decision": {"type": "object"},
-        "source_inputs": {"type": "array"},
-        "files_to_create": {"type": "array"},
-        "html_structure": {"type": "object"},
-        "css_structure": {"type": "object"},
-        "accessibility_baseline": {"type": "array"},
-        "interaction_states": {"type": "array"},
-        "forbidden_runtime_scope": {"type": "array"},
-        "validation_checklist": {"type": "array"},
-        "local_run_instructions": {"type": "array"},
-        "handoff_to_next": {"type": "object"},
-        "traceability": {"type": "object"}
+        "prototype_decision": {
+          "type": "object",
+          "required": ["execution_mode"],
+          "properties": {
+            "execution_mode": {"enum": ["ADVISORY_SPEC_ONLY", "CREATE_AND_VERIFY_ARTIFACT"]}
+          },
+          "additionalProperties": true
+        },
+        "source_inputs": {
+          "type": "array",
+          "minItems": 2,
+          "items": {"$ref": "#/$defs/sourceInput"},
+          "allOf": [
+            {
+              "contains": {
+                "type": "object",
+                "required": ["authority_role"],
+                "properties": {"authority_role": {"const": "PRODUCT_DIRECTION"}}
+              },
+              "minContains": 1
+            },
+            {
+              "contains": {
+                "type": "object",
+                "required": ["authority_role"],
+                "properties": {"authority_role": {"const": "UI_ARCHITECT"}}
+              },
+              "minContains": 1
+            }
+          ]
+        },
+        "files_to_create": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1},
+          "contains": {"type": "string", "pattern": "(^|/)index\\.html$"},
+          "minContains": 1
+        },
+        "artifact_evidence": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/artifactEvidence"}
+        },
+        "html_structure": {"type": "object", "minProperties": 1},
+        "css_structure": {"type": "object", "minProperties": 1},
+        "accessibility_baseline": {"type": "array", "minItems": 1},
+        "interaction_states": {"type": "array", "minItems": 1},
+        "forbidden_runtime_scope": {"type": "array", "minItems": 1},
+        "validation_checklist": {"type": "array", "minItems": 1},
+        "local_run_instructions": {"type": "array", "minItems": 1},
+        "handoff_to_next": {"type": "object", "minProperties": 1},
+        "traceability": {"type": "object", "minProperties": 1}
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "prototype_decision": {
+                "properties": {"execution_mode": {"const": "CREATE_AND_VERIFY_ARTIFACT"}},
+                "required": ["execution_mode"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "artifact_evidence": {
+                "minItems": 1,
+                "contains": {
+                  "type": "object",
+                  "required": ["path", "parse_status"],
+                  "properties": {
+                    "path": {"pattern": "(^|/)index\\.html$"},
+                    "parse_status": {"const": "HTML_PARSE_PASS"}
+                  }
+                },
+                "minContains": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "prototype_decision": {
+                "properties": {"execution_mode": {"const": "ADVISORY_SPEC_ONLY"}},
+                "required": ["execution_mode"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "artifact_evidence": {"maxItems": 0}
+            }
+          }
+        }
+      ]
+    },
+    "score": {
+      "type": "object",
+      "required": ["total", "criteria"],
+      "properties": {
+        "total": {"type": "integer", "minimum": 0, "maximum": 25},
+        "criteria": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {"$ref": "#/$defs/scoreCriterion"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "self_verdict": {"enum": ["ADVISORY_COMPLETE", "PASS_ARTIFACT_VERIFIED", "NEEDS_INPUT", "BLOCKED_FRONTEND_SCOPE"]},
+    "traceability": {"type": "object", "minProperties": 1}
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {"self_verdict": {"const": "PASS_ARTIFACT_VERIFIED"}},
+        "required": ["self_verdict"]
+      },
+      "then": {
+        "properties": {
+          "score": {
+            "properties": {"total": {"minimum": 22}}
+          },
+          "deliverable_created": {
+            "properties": {
+              "prototype_decision": {
+                "properties": {"execution_mode": {"const": "CREATE_AND_VERIFY_ARTIFACT"}}
+              }
+            }
+          }
+        }
       }
     },
-    "score": {"type": "object"},
-    "self_verdict": {"enum": ["PASS", "NEEDS_INPUT", "BLOCKED_FRONTEND_SCOPE"]},
-    "traceability": {"type": "object"}
-  },
-  "additionalProperties": false
+    {
+      "if": {
+        "properties": {"self_verdict": {"const": "ADVISORY_COMPLETE"}},
+        "required": ["self_verdict"]
+      },
+      "then": {
+        "properties": {
+          "deliverable_created": {
+            "properties": {
+              "prototype_decision": {
+                "properties": {"execution_mode": {"const": "ADVISORY_SPEC_ONLY"}}
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }
