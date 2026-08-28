@@ -2,7 +2,7 @@
 
 Status: CANDIDATE_READ_ONLY / SANDBOX
 Profile Pack ID: QUALITY_PACK_GATE_001
-Source of authority: ACT-0045 sections 24.16, 24.17 and 24.18.
+Source of authority: ACT-0001 Router + Supabase operational registry/contracts. ACT-0045 remains historical/creation authority for new profiles only.
 
 ## Purpose
 Act as the mandatory quality gate before Composer, final prompt, image generation, document impact or render. Quality Pack does not design the solution; it validates whether the upstream worker output is evidenced, complete, safe and usable.
