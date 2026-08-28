@@ -1,0 +1,44 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "schema": "LF_GOVERNED_SKILL_UPDATE_RECEIPT_V1",
+  "operation_code": "ACTUALIZACION_SKILL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-SKILL-LEARNING-ENGINE-20260827-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "57d0533a0a6a62064e72a4f521fa463eeec2eb76354071cfab6b4746b13814c6",
+  "judge_sha": "00a4d79ad3db028cde41524fed6e3ef34a7f97f43cf1168e324bce496bb64dbf",
+  "source_sha_list": [
+    "93bf5840b974b15499453b4f73d449b7412325ce",
+    "af31d3f251aab2da1ea0918c5f0319ddfc0c8e61",
+    "7a166702199b46925f19d690696edc179ee49d20",
+    "9258bf05b12686d097ff3b6b18d968ab393649780aa2b3cd67fec43d50554392"
+  ],
+  "target_paths": [
+    "skills/learning_engine/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-27T18:44:42Z",
+  "target_type": "SKILL",
+  "target_code": "ACT-0046",
+  "target_path": "skills/learning_engine",
+  "branch": "lf/learning-engine-support-hardening-v1-20260827",
+  "pr_number": 258,
+  "user_authorization": "CURRENT_CHAT_20260827_CONTINUE_UNTIL_MERGE",
+  "judge_clean_required_steps": "14/14",
+  "deterministic_semantic_support_matrix": "20/20_PASS",
+  "deterministic_scope": "DETERMINISTIC_SUPPORT_CONTRACT_ONLY_NOT_BEHAVIORAL",
+  "independent_semantic_evidence": {
+    "github_actions_run_id": 33102280626,
+    "job_id": 98622844637,
+    "qwen_checks": "10/10_COMPLIES_VERIFIED",
+    "coverage_manifest": "10/10_1_TO_1_COMPLETE",
+    "evidence_ceiling": "SEMANTIC_SUPPORTED_PACKAGE_ONLY_NOT_BEHAVIORAL",
+    "qwen_evaluated_head": "7a166702199b46925f19d690696edc179ee49d20"
+  },
+  "runtime_unchanged": true,
+  "automatic_promotion": false,
+  "state_ceiling": "CANDIDATE_PACKAGE_UPDATE_ONLY_NO_BEHAVIORAL_RUNTIME_CLAIM",
+  "notes": "Canonical judge-derived execution readback: 14/14 required steps are STEP_PASS_WITH_EVIDENCE and 0 are blocked/returned. The legacy generic checklist view still recognizes symbolic PASS rather than judge-derived clean values; no global governance bypass or allowlist widening was performed. Final merge remains gated by exact-head CI."
+}
