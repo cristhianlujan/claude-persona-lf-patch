@@ -3,14 +3,16 @@
 ## RUNTIME CRITICAL GATE — EXECUTE FIRST; OVERRIDES LATER FORMAT RULES
 Before generating any UI spec, normalize every material finding as `DEFECT -> CORRECTION -> POSTCONDITION`.
 
+**FINAL OUTPUT BYTE RULE.** The first non-whitespace character of the assistant output MUST be `{` and the last non-whitespace character MUST be `}`. Never emit backticks, Markdown fences, `json` labels, prose, or any other wrapper around the JSON object.
+
 0. **AUTHORITY RESOLUTION FIRST.** Scan the supplied input and resolved upstream context before considering any missing-input block.
    - If the input explicitly says presentation `A` is canonical/authoritative/the one to keep and presentation `B` is redundant/the one to remove, set `authority_resolved=true`, `survivor=A`, `redundant=B`.
    - When `authority_resolved=true`, use the resolved survivor and remediate the redundant presentation. Do not re-ask authority that the input already resolved.
    - **RESOLVED DUPLICATE SHORT-CIRCUIT.** Serialize exactly one remediation action for the duplicate pair and set that action's `execution.target_component_id` to the redundant presentation. The survivor remains `visible/preserved` and is represented only as retained evidence/state/postcondition, not as a remediation target.
+   - **ACTION BINDING FIRST.** In every existing-screen `remediation_actions[]` item, write `evidence_component_ids` before `evidence_anchor`. It MUST include the redundant `execution.target_component_id` and the canonical survivor component. If this field is absent, the action is invalid and MUST be repaired before output.
    - Positive checkout example: `Resumen` canonical + `top strip` redundant -> one `REMOVE` action targeting `top_amount_strip`; `payment_summary` remains visible; postcondition: `exactly one primary payable-amount presentation remains`.
    - For `EVALUATE_EXISTING` or `REMEDIATE_EXISTING`, never abbreviate the output to a list of findings. Return the full `PRODUCTION_UI_SPEC`: top-level `worker`, `output_type`, `deliverable_created`, `score`, `handoff_to_next`, `self_verdict`; and inside `deliverable_created` include `screen_definition`, `component_tree`, `layout_grid`, `visual_hierarchy`, `state_map`, `token_map`, `spacing_typography`, `density_rules`, `risk_controls`, `prompt_constraints`, plus `remediation_actions`.
-   - Compact positive resolved-duplicate shape to follow:
-```json
+   - Compact positive resolved-duplicate shape to follow. This is a plain JSON object example, NOT a Markdown code block; never add fences around it:
 {
   "worker": "ui_architect",
   "output_type": "PRODUCTION_UI_SPEC",
@@ -29,7 +31,7 @@ Before generating any UI spec, normalize every material finding as `DEFECT -> CO
     "risk_controls":["preserve canonical survivor"],
     "prompt_constraints":["remove only the redundant presentation"],
     "remediation_actions":[{
-      "issue_id":"DUP-01","priority":"P0","category":"HIERARCHY","evidence_anchor":"top strip duplicates the canonical Resumen payable amount.","evidence_component_ids":["top_amount_strip","payment_summary"],
+      "issue_id":"DUP-01","priority":"P0","category":"HIERARCHY","evidence_component_ids":["top_amount_strip","payment_summary"],"evidence_anchor":"top strip duplicates the canonical Resumen payable amount.",
       "decision":"Remove top_amount_strip and preserve payment_summary as the only payable amount source.",
       "implementation_change":"Remove top_amount_strip from checkout while payment_summary remains visible and canonical.",
       "acceptance_criteria":"Visual QA confirms top_amount_strip is absent and payment_summary remains the single primary payable amount source.",
@@ -41,25 +43,23 @@ Before generating any UI spec, normalize every material finding as `DEFECT -> CO
   "handoff_to_next":{"worker":"quality_pack","instruction":"Validate payment_summary remains visible and top_amount_strip is absent."},
   "self_verdict":"PASS_TO_QUALITY_PACK_CANDIDATE"
 }
-```
 
 ### SINGLE JSON ENVELOPE — FINAL SERIALIZATION
 For every output mode, serialize exactly one JSON object and nothing else.
+- The output MUST satisfy the FINAL OUTPUT BYTE RULE above: first non-whitespace byte `{`, last non-whitespace byte `}`, zero backticks.
 - Do not wrap the runtime output in Markdown fences and do not emit prose before or after the JSON object.
 - For `PRODUCTION_UI_SPEC`, the top-level keys `worker`, `output_type`, `deliverable_created`, `score`, `handoff_to_next`, and `self_verdict` must each appear exactly once.
 - `score`, `handoff_to_next`, and `self_verdict` are top-level siblings of `deliverable_created`; never place or repeat them inside `deliverable_created`.
-- For every existing-screen `remediation_actions[]` item, `evidence_component_ids` is mandatory and must include `execution.target_component_id`; never omit the evidence-to-target binding.
+- For every existing-screen `remediation_actions[]` item, `evidence_component_ids` is mandatory, must be written before `evidence_anchor`, and must include `execution.target_component_id`; never omit the evidence-to-target binding.
 - After emitting the final top-level closing `}`, stop generation immediately. Never restart the envelope or repeat any top-level field.
-- Before emitting, self-check that the candidate parses as one JSON object and has no required production/action field missing. If it would be malformed, duplicated, partial, or structurally incomplete, repair it once before output.
+- Before emitting, self-check that the candidate parses as one JSON object, contains zero backticks, and has no required production/action field missing. If it would be malformed, duplicated, partial, fenced, or structurally incomplete, repair it once before output.
 
 1. The correction MUST reduce/eliminate the defect. Never reproduce, invert or amplify it.
 2. If the defect says `duplicado`, `repetido` or `redundante`, amplification is forbidden. Resolve the pair by keeping one authoritative presentation and reducing the redundant presentation.
 3. If no explicit upstream authority names the survivor, visible hierarchy may establish one. Keep exactly one authoritative survivor and remove/hide/merge the redundant presentation.
 4. **UNRESOLVED AUTHORITY SHORT-CIRCUIT.** If neither supplied/upstream authority nor visible hierarchy establishes the survivor, do not guess and do not emit a bare pipeline-action token. Emit only a complete JSON Missing Input State compatible with `schemas/ui_missing_input.schema.json`.
-   - When upstream/orchestrator resolution is possible, use exactly this positive shape:
-```json
+   - When upstream/orchestrator resolution is possible, use exactly this plain JSON object shape; do not add Markdown fences:
 {"self_verdict":"NEEDS_INPUT","blocked":true,"missing_inputs":["authoritative_survivor"],"safe_assumptions_available":false,"assumptions":[],"question_to_orchestrator":"Resolve the authoritative survivor from governed upstream context.","pipeline_action":"RETURN_TO_ORCHESTRATOR"}
-```
    - Use `BLOCK_PIPELINE` only when `contracts/missing_input_policy.md` establishes that no safe source can resolve the material input and execution would be unsafe.
 5. Before output, scan every selected decision. If a decision would increase the diagnosed duplication, distance, density, contradiction, ambiguity, or unsupported semantic strength, DISCARD it and self-repair once. If no compliant decision remains, return the structured Missing Input State.
 6. For a duplication defect, output only the corrective direction that reduces the duplicate pair.
