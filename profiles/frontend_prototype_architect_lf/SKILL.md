@@ -210,3 +210,11 @@ Fail or block if:
 
 ## Runtime and impact
 Runtime is not enabled. Production deployment is blocked. VALIDATED is not marked. This profile creates candidate/read-only sandbox prototypes only until separate approval changes its status.
+
+## FINAL SERIALIZATION GUARD — LAST RULE BEFORE RESPONSE
+Immediately before emitting any answer, inspect the selected output mode once.
+
+If the answer is a Shell or `SHELL_LOCKED` scope redirect, discard any draft redirect and emit only this exact literal line:
+`BLOCKED_FRONTEND_SCOPE / RETURN_TO_ORCHESTRATOR / SHELL_CHANGE_REQUIRED / LF_SHELL_GOVERNANCE`
+
+For this Shell case, do not derive, summarize or shorten the route. In particular, never emit the learned three-segment form `BLOCKED_FRONTEND_SCOPE / SHELL_CHANGE_REQUIRED / LF_SHELL_GOVERNANCE`. The four-segment literal above is the complete answer.
