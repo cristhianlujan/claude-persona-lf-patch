@@ -1,6 +1,48 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Frontend Prototype HTML Sandbox Output",
+  "$defs": {
+    "sourceInput": {
+      "type": "object",
+      "required": ["authority_role", "source_ref", "source_sha256", "currentness", "verdict"],
+      "properties": {
+        "authority_role": {"enum": ["PRODUCT_DIRECTION", "UI_ARCHITECT", "OTHER"]},
+        "source_ref": {"type": "string", "minLength": 1},
+        "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "currentness": {"const": "CURRENT"},
+        "verdict": {"enum": ["PASS", "APPROVED"]}
+      },
+      "additionalProperties": true
+    },
+    "artifactEvidence": {
+      "type": "object",
+      "required": ["path", "declared_sha256", "readback_sha256", "bytes", "exists", "readback", "parse_status"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "declared_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "readback_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "bytes": {"type": "integer", "minimum": 1},
+        "exists": {"const": true},
+        "readback": {"const": true},
+        "parse_status": {"enum": ["HTML_PARSE_PASS", "CSS_READ_PASS", "STATIC_ASSET_READ_PASS"]}
+      },
+      "additionalProperties": false
+    },
+    "scoreCriterion": {
+      "type": "object",
+      "required": ["criterion", "points", "evidence_refs"],
+      "properties": {
+        "criterion": {"enum": ["Source fidelity", "Static implementation quality", "Accessibility and semantic structure", "Boundary control", "Handoff/readback readiness"]},
+        "points": {"type": "integer", "minimum": 0, "maximum": 5},
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 3}
+        }
+      },
+      "additionalProperties": false
+    }
+  },
   "type": "object",
   "required": ["worker", "output_type", "deliverable_created", "score", "self_verdict", "traceability"],
   "properties": {
@@ -21,21 +63,24 @@
         "source_inputs": {
           "type": "array",
           "minItems": 2,
-          "items": {
-            "type": "object",
-            "required": ["authority_role", "source_ref", "source_sha256", "currentness", "verdict"],
-            "properties": {
-              "authority_role": {"enum": ["PRODUCT_DIRECTION", "UI_ARCHITECT", "OTHER"]},
-              "source_ref": {"type": "string", "minLength": 1},
-              "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-              "currentness": {"const": "CURRENT"},
-              "verdict": {"enum": ["PASS", "APPROVED"]}
-            },
-            "additionalProperties": true
-          },
+          "items": {"$ref": "#/$defs/sourceInput"},
           "allOf": [
-            {"contains": {"type": "object", "properties": {"authority_role": {"const": "PRODUCT_DIRECTION"}}, "required": ["authority_role"]}, "minContains": 1},
-            {"contains": {"type": "object", "properties": {"authority_role": {"const": "UI_ARCHITECT"}}, "required": ["authority_role"]}, "minContains": 1}
+            {
+              "contains": {
+                "type": "object",
+                "required": ["authority_role"],
+                "properties": {"authority_role": {"const": "PRODUCT_DIRECTION"}}
+              },
+              "minContains": 1
+            },
+            {
+              "contains": {
+                "type": "object",
+                "required": ["authority_role"],
+                "properties": {"authority_role": {"const": "UI_ARCHITECT"}}
+              },
+              "minContains": 1
+            }
           ]
         },
         "files_to_create": {
@@ -48,20 +93,7 @@
         },
         "artifact_evidence": {
           "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["path", "declared_sha256", "readback_sha256", "bytes", "exists", "readback", "parse_status"],
-            "properties": {
-              "path": {"type": "string", "minLength": 1},
-              "declared_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-              "readback_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-              "bytes": {"type": "integer", "minimum": 1},
-              "exists": {"const": true},
-              "readback": {"const": true},
-              "parse_status": {"enum": ["HTML_PARSE_PASS", "CSS_READ_PASS", "STATIC_ASSET_READ_PASS"]}
-            },
-            "additionalProperties": false
-          }
+          "items": {"$ref": "#/$defs/artifactEvidence"}
         },
         "html_structure": {"type": "object", "minProperties": 1},
         "css_structure": {"type": "object", "minProperties": 1},
@@ -76,20 +108,45 @@
       "additionalProperties": false,
       "allOf": [
         {
-          "if": {"properties": {"prototype_decision": {"properties": {"execution_mode": {"const": "CREATE_AND_VERIFY_ARTIFACT"}}, "required": ["execution_mode"]}}},
+          "if": {
+            "properties": {
+              "prototype_decision": {
+                "properties": {"execution_mode": {"const": "CREATE_AND_VERIFY_ARTIFACT"}},
+                "required": ["execution_mode"]
+              }
+            }
+          },
           "then": {
             "properties": {
               "artifact_evidence": {
                 "minItems": 1,
-                "contains": {"type": "object", "properties": {"path": {"pattern": "(^|/)index\\.html$"}, "parse_status": {"const": "HTML_PARSE_PASS"}}, "required": ["path", "parse_status"]},
+                "contains": {
+                  "type": "object",
+                  "required": ["path", "parse_status"],
+                  "properties": {
+                    "path": {"pattern": "(^|/)index\\.html$"},
+                    "parse_status": {"const": "HTML_PARSE_PASS"}
+                  }
+                },
                 "minContains": 1
               }
             }
           }
         },
         {
-          "if": {"properties": {"prototype_decision": {"properties": {"execution_mode": {"const": "ADVISORY_SPEC_ONLY"}}, "required": ["execution_mode"]}}},
-          "then": {"properties": {"artifact_evidence": {"maxItems": 0}}}
+          "if": {
+            "properties": {
+              "prototype_decision": {
+                "properties": {"execution_mode": {"const": "ADVISORY_SPEC_ONLY"}},
+                "required": ["execution_mode"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "artifact_evidence": {"maxItems": 0}
+            }
+          }
         }
       ]
     },
@@ -102,16 +159,7 @@
           "type": "array",
           "minItems": 5,
           "maxItems": 5,
-          "items": {
-            "type": "object",
-            "required": ["criterion", "points", "evidence_refs"],
-            "properties": {
-              "criterion": {"enum": ["Source fidelity", "Static implementation quality", "Accessibility and semantic structure", "Boundary control", "Handoff/readback readiness"]},
-              "points": {"type": "integer", "minimum": 0, "maximum": 5},
-              "evidence_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 3}}
-            },
-            "additionalProperties": false
-          }
+          "items": {"$ref": "#/$defs/scoreCriterion"}
         }
       },
       "additionalProperties": false
@@ -122,17 +170,41 @@
   "additionalProperties": false,
   "allOf": [
     {
-      "if": {"properties": {"self_verdict": {"const": "PASS_ARTIFACT_VERIFIED"}}, "required": ["self_verdict"]},
+      "if": {
+        "properties": {"self_verdict": {"const": "PASS_ARTIFACT_VERIFIED"}},
+        "required": ["self_verdict"]
+      },
       "then": {
         "properties": {
-          "score": {"properties": {"total": {"minimum": 22}}},
-          "deliverable_created": {"properties": {"prototype_decision": {"properties": {"execution_mode": {"const": "CREATE_AND_VERIFY_ARTIFACT"}}}}}
+          "score": {
+            "properties": {"total": {"minimum": 22}}
+          },
+          "deliverable_created": {
+            "properties": {
+              "prototype_decision": {
+                "properties": {"execution_mode": {"const": "CREATE_AND_VERIFY_ARTIFACT"}}
+              }
+            }
+          }
         }
       }
     },
     {
-      "if": {"properties": {"self_verdict": {"const": "ADVISORY_COMPLETE"}}, "required": ["self_verdict"]},
-      "then": {"properties": {"deliverable_created": {"properties": {"prototype_decision": {"properties": {"execution_mode": {"const": "ADVISORY_SPEC_ONLY"}}}}}}
+      "if": {
+        "properties": {"self_verdict": {"const": "ADVISORY_COMPLETE"}},
+        "required": ["self_verdict"]
+      },
+      "then": {
+        "properties": {
+          "deliverable_created": {
+            "properties": {
+              "prototype_decision": {
+                "properties": {"execution_mode": {"const": "ADVISORY_SPEC_ONLY"}}
+              }
+            }
+          }
+        }
+      }
     }
   ]
 }
