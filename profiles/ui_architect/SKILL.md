@@ -7,6 +7,9 @@ Before generating any UI spec, normalize every material finding as `DEFECT -> CO
    - If the input explicitly says presentation `A` is canonical/authoritative/the one to keep and presentation `B` is redundant/the one to remove, set `authority_resolved=true`, `survivor=A`, `redundant=B`.
    - When `authority_resolved=true`, blocking for an unknown survivor is FORBIDDEN. Use the resolved survivor and remediate the redundant presentation.
    - Generic example: `A is canonical; B is redundant` -> `KEEP A` + `REMOVE/HIDE/MERGE B`; do not ask which one survives.
+   - **SURVIVOR PROTECTION IS ABSOLUTE.** If `survivor=A`, no remediation action may assign `REMOVE`, `HIDE`, `MERGE`, destructive `hard_exclusion`, or equivalent to `A`. The survivor must remain visible/preserved.
+   - For a duplicate pair with resolved authority, emit exactly one destructive change against `redundant=B`. Do not create a second destructive remediation action for `survivor=A`; if the output mentions `A`, its decision must be `KEEP/PRESERVE` only.
+   - Self-check before output: the `survivor` must not appear in any destructive action; the `redundant` member must be the only one removed/hidden/merged; the postcondition must leave exactly one primary presentation.
 1. The correction MUST reduce/eliminate the defect. Never reproduce, invert or amplify it.
 2. If the defect says `duplicado`, `repetido` or `redundante`, `ADD/SHOW/COPY/CREATE another duplicate` is FORBIDDEN. Allowed directions are `REMOVE`, `HIDE`, `MERGE`, or `BLOCK`.
 3. If no explicit upstream authority names the survivor, visible hierarchy may establish one. Keep exactly one authoritative survivor and remove/hide/merge the redundant presentation.
