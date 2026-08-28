@@ -50,6 +50,22 @@ A deterministic intake PASS is valid receiver execution evidence for the intake 
 
 A substantive Quality Pack rejection is still a valid handoff execution if the relevant receiver layer actually received and reviewed the candidate; an inability to locate the candidate is a producer handoff failure.
 
+## CI profile-validator discovery contract
+
+The repository's existing `Validate LF Packs` workflow invokes `skills/profile_creator/validators/validate_pack.py`. That validator is therefore the reusable discovery boundary for profile-local deterministic pack validation; no profile slug may be hardcoded as a privileged canary.
+
+Rules:
+
+- A governed profile opts into this CI boundary by materializing `profiles/<slug>/validators/validate_pack.py`.
+- Profile Creator discovers every such entrypoint under `profiles/`, excluding template/private underscore directories.
+- Each discovered validator executes exactly once and its stdout/stderr remains visible in CI evidence.
+- A discovered validator failure fails Profile Creator validation; a later PASS cannot mask it.
+- A profile without the entrypoint is not silently treated as validated; it is simply outside this deterministic CI contract until the profile publishes the entrypoint through its own governed update.
+- Symlinked or out-of-tree validators are rejected.
+- Discovery must remain generic: a future profile that publishes the contract is picked up without changing `.github/workflows/**` or adding its slug to Profile Creator.
+
+This boundary proves only deterministic/profile-local validation at the exact checkout. It does not replace semantic judge execution, Router/direct behavioral evidence, runtime receipts, post-merge smoke, independent audit, runtime authorization or promotion.
+
 ## Blocking rules
 
 Block or return to orchestrator when:
