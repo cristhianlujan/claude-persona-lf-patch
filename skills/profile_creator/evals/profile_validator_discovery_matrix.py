@@ -79,6 +79,33 @@ cases.append(run_case(
     [],
 ))
 
+
+def symlink_validator(repo):
+    real = repo / 'external_validator.py'
+    real.write_text('raise SystemExit(0)\n', encoding='utf-8')
+    link = repo / 'profiles' / 'symlink_profile' / 'validators' / 'validate_pack.py'
+    link.parent.mkdir(parents=True, exist_ok=True)
+    link.symlink_to(real)
+
+cases.append(run_case(
+    'symlink_validator_rejected_fail_closed',
+    symlink_validator,
+    [],
+    ['PROFILE_VALIDATOR_SYMLINK_FORBIDDEN:symlink_profile'],
+))
+
+with tempfile.TemporaryDirectory() as tmp:
+    repo = Path(tmp)
+    discovered, errors = module.discover_profile_validators(repo)
+    cases.append({
+        'id': 'missing_profiles_root_rejected',
+        'expected_slugs': [],
+        'actual_slugs': [slug for slug, _, _ in discovered],
+        'expected_errors': ['PROFILES_ROOT_MISSING'],
+        'actual_errors': errors,
+        'passed': discovered == [] and errors == ['PROFILES_ROOT_MISSING'],
+    })
+
 passed = all(case['passed'] for case in cases)
 print(json.dumps({'passed': passed, 'case_count': len(cases), 'cases': cases}, indent=2))
 raise SystemExit(0 if passed else 1)
