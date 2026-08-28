@@ -1,20 +1,26 @@
 {
-  "eval_pack_id":"PRODUCT_DIRECTOR_LF_EVALS_002",
+  "eval_pack_id":"PRODUCT_DIRECTOR_LF_EVALS_003",
   "profile":"product_director_lf",
   "status":"CANDIDATE_READ_ONLY_CONTROLLED_GITHUB_IMPACT",
   "legacy_examples":["examples/good_scope_decision.json","examples/missing_target_user.json","examples/blocked_uncontrolled_scope.json","examples/self_repair_vague_acceptance.json","examples/good_mvp_vs_future.json","examples/blocked_unsafe_financial_promise.json"],
   "required_remediation_suite":"evals/remediation_20260827/run_cases.py",
+  "required_runtime_context_cases":"evals/remediation_20260827/runtime_context_cases.json",
   "closure_conditions":[
     "supported product decision passes schema + deterministic validator",
-    "insufficient input returns missing-input state rather than invented decision",
+    "insufficient material input returns missing-input state rather than invented decision",
+    "authority already supplied/resolved is consumed and must not be re-requested",
+    "low-risk non-material gap may proceed only as explicitly noncanonical proposal",
     "contradictory source without authority resolution rejects",
     "attractive proposal that violates upstream restriction rejects",
+    "unsupported stronger claim rejects",
     "generic recommendation/acceptance rejects",
     "score without concrete evidence rejects",
     "counterfactual same-result/wrong-trajectory rejects",
+    "Router/direct normalized decision remains materially equivalent for same context",
     "fresh holdout passes",
     "malformed input rejects without crash",
-    "semantic judge remains a separate mandatory gate"
+    "semantic judge remains a separate mandatory gate",
+    "structural suite is never reported as RAW profile execution"
   ],
-  "traceability":{"baseline_main_sha":"e90e16d311a77febdf1018b0212c530abfdbb408","baseline_schema_blob":"1c8c7de421a34fbf407e12be033720cc47337271","remediation_evidence":"evals/remediation_20260827/evidence.md"}
+  "traceability":{"baseline_main_sha":"b2fe89d63cbc041536a2634ee3bdbbcddc14a39b","baseline_skill_blob":"95d904b2ed4a0e7653ebc1729368602799a28e01","remediation_evidence":"evals/remediation_20260827/evidence.md"}
 }
