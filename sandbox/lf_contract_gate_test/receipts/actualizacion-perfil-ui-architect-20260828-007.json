@@ -1,0 +1,18 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260828-007",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "f8a02807182f450f186133f1fe99d913af8e2a5d"
+  ],
+  "target_paths": ["profiles/ui_architect/**"],
+  "blocking_codes": [],
+  "issued_at": "2026-08-28T05:28:18Z",
+  "notes": "PASS_SANDBOX candidate-source receipt for survivor-protection remediation. Canonical execution 007 has 14/14 enforcement-derived steps recorded as STEP_PASS_WITH_EVIDENCE. Baseline live evidence is intentionally mixed: unresolved-authority request 88fdeadd-1cf0-4346-8dbb-6e3b44c97033 correctly returned RETURN_TO_ORCHESTRATOR, while resolved-authority request 965da7c8-e3f0-4f7c-997b-2df2cdd02e2a incorrectly removed the redundant top strip and hid canonical Resumen. Candidate blob f8a02807182f450f186133f1fe99d913af8e2a5d makes survivor protection absolute and allows exactly one destructive action against the redundant member. Validate LF Packs run 33144731124 succeeded; lf-contract-check run 33144731267 reached FAIL_RECEIPT_MISSING only after migration/runtime checks passed. This receipt does not claim live behavioral PASS, production, VALIDATED, runtime enablement or automatic promotion. Final behavioral closure requires exact-head CI, protected merge/readback and fresh resolved/unresolved live canaries from merged main. The contract/judge digest pair follows the existing ACTUALIZACION_PERFIL_LF repository convention; the Supabase registry SHA columns are presently null and are not fabricated here."
+}
