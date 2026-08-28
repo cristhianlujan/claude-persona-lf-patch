@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import copy
 import hashlib
 import importlib.util
 import json
@@ -10,7 +9,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 VALIDATOR_PATH = ROOT / "validators" / "validate_frontend_artifact.py"
-SCHEMA_PATH = ROOT / "schemas" / "html_sandbox_output.schema.json"
+HTML_SCHEMA_PATH = ROOT / "schemas" / "html_sandbox_output.schema.json"
+MISSING_SCHEMA_PATH = ROOT / "schemas" / "frontend_missing_input.schema.json"
+SCOPE_BLOCK_SCHEMA_PATH = ROOT / "schemas" / "frontend_scope_block.schema.json"
 
 spec = importlib.util.spec_from_file_location("frontend_validator", VALIDATOR_PATH)
 validator = importlib.util.module_from_spec(spec)
@@ -88,9 +89,9 @@ def base_payload(workspace: Path, mode: str = "CREATE_AND_VERIFY_ARTIFACT") -> d
     }
 
 
-def schema_validate(payload: dict) -> tuple[bool, str]:
+def schema_validate(payload: dict, schema_path: Path = HTML_SCHEMA_PATH) -> tuple[bool, str]:
     import jsonschema
-    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
     try:
         jsonschema.Draft202012Validator(schema).validate(payload)
         return True, "PASS"
@@ -117,6 +118,17 @@ def run_case(name: str, mutate, expect_validator: bool, expect_schema: bool) -> 
             "schema_detail": schema_detail,
             "pass": ok,
         }
+
+
+def run_schema_case(name: str, payload: dict, schema_path: Path, expect_schema: bool) -> dict:
+    schema_ok, schema_detail = schema_validate(payload, schema_path)
+    return {
+        "case": name,
+        "expected_schema_valid": expect_schema,
+        "schema_valid": schema_ok,
+        "schema_detail": schema_detail,
+        "pass": schema_ok is expect_schema,
+    }
 
 
 def main() -> int:
@@ -164,8 +176,55 @@ def main() -> int:
             "pass": validated["valid"] and schema_ok,
         })
 
+    missing_product = {
+        "worker": "frontend_prototype_architect_lf",
+        "output_type": "FRONTEND_MISSING_INPUT_STATE",
+        "blocked": True,
+        "missing_fields": ["authoritative Product Direction for CTA intent"],
+        "resolved_from_context": ["viewport=desktop", "UI hierarchy=current"],
+        "conflicts_detected": [],
+        "why_required": ["CTA intent is a Product decision"],
+        "risk_if_assumed": ["frontend could change product intent"],
+        "pipeline_action": "RETURN_TO_ORCHESTRATOR",
+        "resolution_target": "PRODUCT_DIRECTION",
+        "question_to_orchestrator": "Resolve the authoritative CTA intent only."
+    }
+    cases.append(run_schema_case("REDIRECT_MISSING_PRODUCT_TO_ORCHESTRATOR", missing_product, MISSING_SCHEMA_PATH, True))
+
+    direct_profile_call = dict(missing_product)
+    direct_profile_call["target_profile"] = "product_director_lf"
+    cases.append(run_schema_case("ADVERSARIAL_DIRECT_PROFILE_REDIRECT_FIELD", direct_profile_call, MISSING_SCHEMA_PATH, False))
+
+    shell_redirect = {
+        "worker": "frontend_prototype_architect_lf",
+        "output_type": "BLOCKED_FRONTEND_SCOPE",
+        "blocked": True,
+        "blocking_code": "SHELL_CHANGE_REQUIRED",
+        "requested_capability": "change locked LF shell header",
+        "pipeline_action": "RETURN_TO_ORCHESTRATOR",
+        "resolution_target": "LF_SHELL_GOVERNANCE",
+        "reason": "requested implementation modifies a SHELL_LOCKED target"
+    }
+    cases.append(run_schema_case("REDIRECT_SHELL_CHANGE_TO_ORCHESTRATOR", shell_redirect, SCOPE_BLOCK_SCHEMA_PATH, True))
+
+    wrong_shell_target = dict(shell_redirect)
+    wrong_shell_target["resolution_target"] = "BACKEND_OR_RUNTIME_OWNER"
+    cases.append(run_schema_case("ADVERSARIAL_SHELL_REDIRECT_WRONG_TARGET", wrong_shell_target, SCOPE_BLOCK_SCHEMA_PATH, False))
+
+    sensitive_block = {
+        "worker": "frontend_prototype_architect_lf",
+        "output_type": "BLOCKED_FRONTEND_SCOPE",
+        "blocked": True,
+        "blocking_code": "REAL_OR_SENSITIVE_DATA_REQUIRED",
+        "requested_capability": "render prototype using real user credentials",
+        "pipeline_action": "BLOCK_PIPELINE",
+        "resolution_target": "NONE",
+        "reason": "real or sensitive user data is forbidden in the sandbox prototype"
+    }
+    cases.append(run_schema_case("BLOCK_SENSITIVE_DATA_FAIL_CLOSED", sensitive_block, SCOPE_BLOCK_SCHEMA_PATH, True))
+
     all_ok = all(item["pass"] for item in cases)
-    print(json.dumps({"suite": "FRONTEND_AUDIT_REMEDIATION_20260827", "all_pass": all_ok, "results": cases}, ensure_ascii=False, indent=2))
+    print(json.dumps({"suite": "FRONTEND_AUDIT_REMEDIATION_20260827", "all_pass": all_ok, "count": len(cases), "results": cases}, ensure_ascii=False, indent=2))
     return 0 if all_ok else 1
 
 
