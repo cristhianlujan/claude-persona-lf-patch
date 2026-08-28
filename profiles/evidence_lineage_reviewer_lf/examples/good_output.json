@@ -7,5 +7,11 @@
   "structural_identifier_reconciliation": {"required":false,"result":"NOT_APPLICABLE"},
   "evidence_map": ["authority_read","exact_head_readback"],
   "blocking_codes": [],
-  "next_gate": "REPORT_ONLY"
+  "next_gate": "QUALITY_PACK",
+  "routing": {
+    "activation_path": "DIRECT",
+    "via": "ORCHESTRATOR",
+    "pipeline_action": "CONTINUE",
+    "resolution_target": "QUALITY_PACK"
+  }
 }
