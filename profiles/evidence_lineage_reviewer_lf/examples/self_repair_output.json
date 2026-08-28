@@ -7,5 +7,11 @@
   "structural_identifier_reconciliation": {"required":false,"result":"NOT_EVALUATED"},
   "evidence_map": [],
   "blocking_codes": ["DIRECT_READBACK_MISSING"],
-  "next_gate": "SOURCE_READBACK"
+  "next_gate": "SOURCE_READBACK",
+  "routing": {
+    "activation_path": "ROUTER",
+    "via": "ORCHESTRATOR",
+    "pipeline_action": "RETURN_TO_ORCHESTRATOR",
+    "resolution_target": "SOURCE_READBACK"
+  }
 }
