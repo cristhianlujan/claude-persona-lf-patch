@@ -19,6 +19,8 @@ FINAL_VERDICTS = {
 }
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 NOMINAL = {"pass", "ok", "green", "valid", "done", "success", "true"}
+PROFILE_EXECUTION_RECEIPT_TYPE = "PROFILE_EXECUTION_RECEIPT_V1"
+PROFILE_EXECUTION_OPERATION = "EJECUCION_PERFIL_LF"
 
 
 def _nonempty(value):
@@ -29,12 +31,58 @@ def _valid_sha(value):
     return isinstance(value, str) and bool(SHA256_RE.fullmatch(value.lower()))
 
 
+def _canonical_json_sha256(value):
+    rendered = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(rendered.encode("utf-8")).hexdigest()
+
+
 def _resolve_ref(ref, resolver, prefix, errors):
     try:
         return resolver.resolve(ref)
     except ResolutionError as exc:
         errors.append(f"{prefix}.ref: resolver-backed readback failed ({exc.code})")
         return None
+
+
+def _validate_profile_execution_receipt(observed, errors):
+    try:
+        receipt = json.loads(observed["raw"].decode("utf-8"))
+    except Exception:
+        errors.append("gates.provenance.receipt: resolved receipt is not valid JSON")
+        return
+    if not isinstance(receipt, dict):
+        errors.append("gates.provenance.receipt: resolved receipt must be an object")
+        return
+    if receipt.get("receipt_type") != PROFILE_EXECUTION_RECEIPT_TYPE:
+        errors.append("gates.provenance.receipt: resolved receipt_type is not PROFILE_EXECUTION_RECEIPT_V1")
+    if receipt.get("operation_code") != PROFILE_EXECUTION_OPERATION:
+        errors.append("gates.provenance.receipt: resolved operation_code is not EJECUCION_PERFIL_LF")
+    if receipt.get("execution_origin") != "MODEL_RUNTIME":
+        errors.append("gates.provenance.receipt: resolved execution_origin is not MODEL_RUNTIME")
+    if receipt.get("raw_output_captured") is not True:
+        errors.append("gates.provenance.receipt: resolved RAW output was not captured")
+    attestation = receipt.get("runtime_attestation")
+    if not isinstance(attestation, dict):
+        errors.append("gates.provenance.receipt: runtime_attestation missing")
+    else:
+        for key in (
+            "provider", "model_id", "run_id", "attested_at", "attestation_verifier",
+            "attestation_evidence_sha256", "verified_request_sha256", "verified_response_sha256",
+        ):
+            if not _nonempty(attestation.get(key)):
+                errors.append(f"gates.provenance.receipt.runtime_attestation.{key}: missing")
+        for key in ("attestation_evidence_sha256", "verified_request_sha256", "verified_response_sha256"):
+            if _nonempty(attestation.get(key)) and not _valid_sha(attestation.get(key)):
+                errors.append(f"gates.provenance.receipt.runtime_attestation.{key}: invalid sha256")
+    claimed = receipt.get("receipt_sha256")
+    if not _valid_sha(claimed):
+        errors.append("gates.provenance.receipt: receipt_sha256 missing or invalid")
+    else:
+        recalculated = _canonical_json_sha256({key: value for key, value in receipt.items() if key != "receipt_sha256"})
+        if claimed.lower() != recalculated:
+            errors.append("gates.provenance.receipt: internal receipt_sha256 mismatch")
+    if receipt.get("downstream_authorized") is True:
+        errors.append("gates.provenance.receipt: self-authorization forbidden")
 
 
 def _validate_evidence(gate_name, evidence, errors, resolver):
@@ -140,8 +188,10 @@ def validate_bundle(data, resolver=None):
             errors.append("gates.provenance: PASS requires receipt_ref + receipt_sha256 bound to resolver readback")
         else:
             receipt = _resolve_ref(receipt_ref, resolver, "gates.provenance.receipt", errors)
-            if receipt is not None and receipt_sha.lower() != receipt["sha256"]:
-                errors.append("gates.provenance.receipt_sha256: declared receipt digest does not match resolver-derived bytes")
+            if receipt is not None:
+                if receipt_sha.lower() != receipt["sha256"]:
+                    errors.append("gates.provenance.receipt_sha256: declared receipt digest does not match resolver-derived bytes")
+                _validate_profile_execution_receipt(receipt, errors)
 
     artifact = gates.get("artifact", {}) if isinstance(gates.get("artifact"), dict) else {}
     if artifact.get("applicable") is True and artifact.get("status") == "PASS":
