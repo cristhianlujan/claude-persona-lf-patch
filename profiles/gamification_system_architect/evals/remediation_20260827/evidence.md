@@ -27,7 +27,7 @@ The UI remediation established two reusable lessons applied here:
 - `behavioral_eval_protocol.md` requires RAW output + canonical execution receipt + semantic/ethical judges + fresh holdout/adversarials before any behavioral remediation claim.
 
 ## Structural regression matrix
-`run_cases.py` now exercises 17 cases:
+`run_cases.py` exercises 17 cases:
 - 2 positive structural candidates;
 - 1 missing-input state;
 - 12 negative/adversarial controls, including invented authority, unsafe activation/deactivation, vanity metric, guardrail loss, mechanic loss and counterfactual pressure trajectory;
@@ -36,7 +36,29 @@ The UI remediation established two reusable lessons applied here:
 
 The suite emits `evidence_class=STRUCTURAL_VALIDATOR_ONLY_NOT_PROFILE_EXECUTION` by design.
 
-## Evidence ceiling
-These fixtures prove contract/validator behavior of the candidate package only. They do not prove an external runtime profile execution, semantic/ethical judge PASS, Router/direct consistency, or independent remediation verification.
+## Runtime-context hardening V2 — current main comparison
+Comparison baseline for this pass: `main@b2fe89d63cbc041536a2634ee3bdbbcddc14a39b`.
 
-Behavioral closure must follow `behavioral_eval_protocol.md`.
+Current UI Architect has a runtime-first authority/context resolution and self-repair invariant. The V2 Gamification patch adds the domain-equivalent safety behavior:
+- consume supplied/resolved objective, guardrails and claim authority before missing-input classification;
+- forbid re-asking resolved guardrail/authority;
+- distinguish low-risk non-material proposals from material financial/safety truth;
+- discard mechanics that improve engagement by pressure, punitive loss, harmful incentive or hidden persistence;
+- self-repair once before output on pressure, unsupported strengthening, missing exit/off-condition or guardrail loss;
+- require ethical judge to compare raw/resolved context, not only the mechanic in isolation;
+- require Router/direct normalized mechanic consistency.
+
+`runtime_context_cases.json` adds 7 fresh semantic cases: resolved-guardrail short-circuit, material financial truth unresolved, noncanonical proposal boundary, pressure counterfactual, unsafe reward, Router/direct divergence and a fresh clarity-progress holdout.
+
+The semantic case catalog is explicitly `SEMANTIC_CASE_CATALOG_NOT_RAW_PROFILE_EXECUTION`.
+
+## Immutable structural evidence reuse
+The V2 patch does not modify the deterministic validator, schema or `run_cases.py`. Their exact blobs remain:
+- validator: `5f56b9023b4c58ad510435a05832d8065407e8b4`;
+- schema: `628c38df451b500f2d3ae3017524af557fe362b6`;
+- runner: `cff4722b478c22104a293215f23cc4cd0d328940`.
+
+Those immutable blobs are the same artifacts previously executed 17/17. The current pass still requires exact-head CI/readback and the new semantic/ethical layer before merge; prior execution is not treated as RAW runtime behavior.
+
+## Evidence ceiling
+These fixtures prove contract/validator and semantic-case coverage of the candidate package only. They do not prove an external runtime profile execution. A real behavioral claim still requires literal input + RAW output + canonical execution receipt + semantic judge + ethical judge + fresh holdout/adversarial evidence under `EJECUCION_PERFIL_LF`.
