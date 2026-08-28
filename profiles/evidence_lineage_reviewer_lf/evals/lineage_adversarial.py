@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "validators"))
 from evaluate_lineage import evaluate
+from validate_routing import normalized_route, validate_routing
 
 ROOT = Path(subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip())
 HEAD = subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True).strip()
@@ -40,9 +41,10 @@ def sha(path):
     return hashlib.sha256(git_bytes(path)).hexdigest()
 
 
-def base():
+def base(activation_path="DIRECT"):
     authority_ref = ref(AUTHORITY_PATH)
     return {
+        "activation_path": activation_path,
         "claim": "Candidate preserves the governing source at exact revision",
         "candidate_sha": CANDIDATE_SHA,
         "candidate_oracle_id": "candidate-builder-v1",
@@ -152,6 +154,7 @@ cases = [
     ("correlated_oracle", "adversarial", case_mutator(lambda x: x["semantic_assertions"][0].update({"oracle_id": "candidate-builder-v1"})), "BLOCK_PIPELINE", "ASSERTION_0_CORRELATED_ORACLE"),
     ("trace_complete_semantics_false", "holdout", case_mutator(lambda x: x["semantic_assertions"][0].update({"match": False})), "BLOCK_PIPELINE", "ASSERTION_0_SEMANTIC_MISMATCH"),
     ("malformed_case", "negative", None, "BLOCK_PIPELINE", "MALFORMED_CASE"),
+    ("invalid_activation_path", "routing_adversarial", case_mutator(lambda x: x.update({"activation_path": "DIRECT_TO_PROFILE"})), "BLOCK_PIPELINE", "ACTIVATION_PATH_INVALID"),
 ]
 
 results = []
@@ -173,6 +176,55 @@ for case_id, kind, data, expected_status, expected_code in cases:
             "passed": passed,
         }
     )
+
+# Router/direct equivalence is a property of the resulting status + normalized redirect,
+# not of the activation label itself.
+direct = evaluate(base("DIRECT"))
+router = evaluate(base("ROUTER"))
+pair_pass = (
+    direct["status"] == router["status"] == "PASS_EVIDENCE_LINEAGE"
+    and normalized_route(direct["routing"]) == normalized_route(router["routing"])
+)
+failed |= not pair_pass
+results.append({
+    "id": "routing_direct_router_equivalent",
+    "kind": "routing_holdout",
+    "expected_status": "PASS_EVIDENCE_LINEAGE",
+    "actual": {"direct": direct, "router": router},
+    "passed": pair_pass,
+})
+
+routing_negatives = [
+    (
+        "routing_readback_wrong_target",
+        "RETURN_TO_SOURCE_FOR_READBACK",
+        {"activation_path": "ROUTER", "via": "ORCHESTRATOR", "pipeline_action": "RETURN_TO_ORCHESTRATOR", "resolution_target": "QUALITY_PACK"},
+        "RESOLUTION_TARGET_MISMATCH",
+    ),
+    (
+        "routing_direct_target_profile_forbidden",
+        "PASS_EVIDENCE_LINEAGE",
+        {"activation_path": "DIRECT", "via": "ORCHESTRATOR", "pipeline_action": "CONTINUE", "resolution_target": "QUALITY_PACK", "target_profile": "quality_pack"},
+        "DIRECT_TARGET_PROFILE_FORBIDDEN",
+    ),
+    (
+        "routing_orchestrator_bypass_forbidden",
+        "PASS_EVIDENCE_LINEAGE",
+        {"activation_path": "ROUTER", "via": "EVIDENCE_LINEAGE", "pipeline_action": "CONTINUE", "resolution_target": "QUALITY_PACK"},
+        "ROUTING_MUST_RETURN_THROUGH_ORCHESTRATOR",
+    ),
+]
+for case_id, status, routing, expected_error in routing_negatives:
+    errors = validate_routing(status, routing)
+    passed = expected_error in errors
+    failed |= not passed
+    results.append({
+        "id": case_id,
+        "kind": "routing_adversarial",
+        "expected_status": status,
+        "errors": errors,
+        "passed": passed,
+    })
 
 digest = hashlib.sha256(json.dumps(results, sort_keys=True).encode()).hexdigest()
 print(json.dumps({"passed": not failed, "case_count": len(results), "results_sha256": digest, "results": results}, indent=2))
