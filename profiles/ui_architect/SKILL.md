@@ -5,18 +5,65 @@ Before generating any UI spec, normalize every material finding as `DEFECT -> CO
 
 0. **AUTHORITY RESOLUTION FIRST.** Scan the supplied input and resolved upstream context before considering any missing-input block.
    - If the input explicitly says presentation `A` is canonical/authoritative/the one to keep and presentation `B` is redundant/the one to remove, set `authority_resolved=true`, `survivor=A`, `redundant=B`.
-   - When `authority_resolved=true`, blocking for an unknown survivor is FORBIDDEN. Use the resolved survivor and remediate the redundant presentation.
-   - Generic example: `A is canonical; B is redundant` -> `KEEP A` + `REMOVE/HIDE/MERGE B`; do not ask which one survives.
-   - **SURVIVOR PROTECTION IS ABSOLUTE.** If `survivor=A`, no remediation action may assign `REMOVE`, `HIDE`, `MERGE`, destructive `hard_exclusion`, or equivalent to `A`. The survivor must remain visible/preserved.
-   - For a duplicate pair with resolved authority, emit exactly one destructive change against `redundant=B`. Do not create a second destructive remediation action for `survivor=A`; if the output mentions `A`, its decision must be `KEEP/PRESERVE` only.
-   - Self-check before output: the `survivor` must not appear in any destructive action; the `redundant` member must be the only one removed/hidden/merged; the postcondition must leave exactly one primary presentation.
+   - When `authority_resolved=true`, use the resolved survivor and remediate the redundant presentation. Do not re-ask authority that the input already resolved.
+   - **RESOLVED DUPLICATE SHORT-CIRCUIT.** Serialize exactly one remediation action for the duplicate pair and set that action's `execution.target_component_id` to the redundant presentation. The survivor remains `visible/preserved` and is represented only as retained evidence/state/postcondition, not as a remediation target.
+   - Positive checkout example: `Resumen` canonical + `top strip` redundant -> one `REMOVE` action targeting `top_amount_strip`; `payment_summary` remains visible; postcondition: `exactly one primary payable-amount presentation remains`.
+   - For `EVALUATE_EXISTING` or `REMEDIATE_EXISTING`, never abbreviate the output to a list of findings. Return the full `PRODUCTION_UI_SPEC`: top-level `worker`, `output_type`, `deliverable_created`, `score`, `handoff_to_next`, `self_verdict`; and inside `deliverable_created` include `screen_definition`, `component_tree`, `layout_grid`, `visual_hierarchy`, `state_map`, `token_map`, `spacing_typography`, `density_rules`, `risk_controls`, `prompt_constraints`, plus `remediation_actions`.
+   - Compact positive resolved-duplicate shape to follow:
+```json
+{
+  "worker": "ui_architect",
+  "output_type": "PRODUCTION_UI_SPEC",
+  "deliverable_created": {
+    "screen_definition": {"task_mode": "EVALUATE_EXISTING", "screen": "checkout", "primary_action": "continue"},
+    "component_tree": [
+      {"zone_id":"summary","component_id":"payment_summary","component_type":"BLOCK","role":"canonical payable amount source","content":{"label":"Resumen"},"visual_priority":1,"color_tokens":{"surface":"neutral_surface"},"typography":{"body":"14px/400"},"spacing":{"gap":"12px"},"state":{"default":"visible"},"allowed_variants":["default"],"blocked_variants":["duplicate"]},
+      {"zone_id":"top","component_id":"top_amount_strip","component_type":"BLOCK","role":"redundant payable amount source","content":{"label":"top strip"},"visual_priority":2,"color_tokens":{"surface":"neutral_surface"},"typography":{"body":"14px/400"},"spacing":{"gap":"12px"},"state":{"default":"visible"},"allowed_variants":["default"],"blocked_variants":["duplicate"]}
+    ],
+    "layout_grid":{"desktop":"preserve existing grid"},
+    "visual_hierarchy":[{"rank":1,"component_id":"payment_summary"}],
+    "state_map":{"payment_summary":"visible","top_amount_strip":"removed"},
+    "token_map":{"neutral_surface":{"use":["payment_summary"]}},
+    "spacing_typography":{"basis":"preserve existing"},
+    "density_rules":["exactly one primary payable-amount presentation"],
+    "risk_controls":["preserve canonical survivor"],
+    "prompt_constraints":["remove only the redundant presentation"],
+    "remediation_actions":[{
+      "issue_id":"DUP-01","priority":"P0","category":"HIERARCHY","evidence_anchor":"top strip duplicates the canonical Resumen payable amount.","evidence_component_ids":["top_amount_strip","payment_summary"],
+      "decision":"Remove top_amount_strip and preserve payment_summary as the only payable amount source.",
+      "implementation_change":"Remove top_amount_strip from checkout while payment_summary remains visible and canonical.",
+      "acceptance_criteria":"Visual QA confirms top_amount_strip is absent and payment_summary remains the single primary payable amount source.",
+      "execution":{"operation":"REMOVE","target_component_id":"top_amount_strip","property":"visibility","desired_value":"absent"},
+      "acceptance_check":{"check_type":"ABSENT","target_component_id":"top_amount_strip","expected":"absent"}
+    }]
+  },
+  "score":{"layout_precision":4,"visual_hierarchy":4,"lf_system_fidelity":4,"state_mapping":4,"handoff_quality":4,"total":20,"evidence_by_criterion":{"layout_precision":{"refs":["layout_grid","spacing_typography"],"summary":"Layout and spacing preserve the existing checkout structure."},"visual_hierarchy":{"refs":["visual_hierarchy"],"summary":"Hierarchy keeps payment_summary as the sole primary amount source."},"lf_system_fidelity":{"refs":["token_map","risk_controls"],"summary":"Token and risk controls preserve the canonical survivor."},"state_mapping":{"refs":["state_map"],"summary":"State map makes the survivor visible and redundant strip absent."},"handoff_quality":{"refs":["handoff_to_next"],"summary":"Handoff gives Quality Pack an observable survivor check."}}},
+  "handoff_to_next":{"worker":"quality_pack","instruction":"Validate payment_summary remains visible and top_amount_strip is absent."},
+  "self_verdict":"PASS_TO_QUALITY_PACK_CANDIDATE"
+}
+```
+
+### SINGLE JSON ENVELOPE — FINAL SERIALIZATION
+For every output mode, serialize exactly one JSON object and nothing else.
+- Do not wrap the runtime output in Markdown fences and do not emit prose before or after the JSON object.
+- For `PRODUCTION_UI_SPEC`, the top-level keys `worker`, `output_type`, `deliverable_created`, `score`, `handoff_to_next`, and `self_verdict` must each appear exactly once.
+- `score`, `handoff_to_next`, and `self_verdict` are top-level siblings of `deliverable_created`; never place or repeat them inside `deliverable_created`.
+- For every existing-screen `remediation_actions[]` item, `evidence_component_ids` is mandatory and must include `execution.target_component_id`; never omit the evidence-to-target binding.
+- After emitting the final top-level closing `}`, stop generation immediately. Never restart the envelope or repeat any top-level field.
+- Before emitting, self-check that the candidate parses as one JSON object and has no required production/action field missing. If it would be malformed, duplicated, partial, or structurally incomplete, repair it once before output.
+
 1. The correction MUST reduce/eliminate the defect. Never reproduce, invert or amplify it.
-2. If the defect says `duplicado`, `repetido` or `redundante`, `ADD/SHOW/COPY/CREATE another duplicate` is FORBIDDEN. Allowed directions are `REMOVE`, `HIDE`, `MERGE`, or `BLOCK`.
+2. If the defect says `duplicado`, `repetido` or `redundante`, amplification is forbidden. Resolve the pair by keeping one authoritative presentation and reducing the redundant presentation.
 3. If no explicit upstream authority names the survivor, visible hierarchy may establish one. Keep exactly one authoritative survivor and remove/hide/merge the redundant presentation.
-4. **BLOCK ONLY IF AUTHORITY IS STILL UNRESOLVED.** `BLOCK_PIPELINE` for missing survivor is allowed only when neither supplied/upstream authority nor visible hierarchy establishes the survivor. Never block for information already resolved in the supplied context. Return the structured Missing Input State defined later in this skill; do not substitute a block when `authority_resolved=true`.
-5. Before output, scan every selected decision. If a decision would increase the diagnosed duplication, distance, density, contradiction, ambiguity, or unsupported semantic strength, DISCARD it and self-repair once. If no compliant decision remains, `BLOCK_PIPELINE`.
-6. For a duplication defect, NEVER output a decision containing `añadir`, `mostrar otra`, `crear`, `copiar` or equivalent amplification of the duplicated element.
-7. Acceptance must prove the defect is resolved. For duplication: `exactly one primary presentation remains`, never merely `the new duplicate renders correctly`.
+4. **UNRESOLVED AUTHORITY SHORT-CIRCUIT.** If neither supplied/upstream authority nor visible hierarchy establishes the survivor, do not guess and do not emit a bare pipeline-action token. Emit only a complete JSON Missing Input State compatible with `schemas/ui_missing_input.schema.json`.
+   - When upstream/orchestrator resolution is possible, use exactly this positive shape:
+```json
+{"self_verdict":"NEEDS_INPUT","blocked":true,"missing_inputs":["authoritative_survivor"],"safe_assumptions_available":false,"assumptions":[],"question_to_orchestrator":"Resolve the authoritative survivor from governed upstream context.","pipeline_action":"RETURN_TO_ORCHESTRATOR"}
+```
+   - Use `BLOCK_PIPELINE` only when `contracts/missing_input_policy.md` establishes that no safe source can resolve the material input and execution would be unsafe.
+5. Before output, scan every selected decision. If a decision would increase the diagnosed duplication, distance, density, contradiction, ambiguity, or unsupported semantic strength, DISCARD it and self-repair once. If no compliant decision remains, return the structured Missing Input State.
+6. For a duplication defect, output only the corrective direction that reduces the duplicate pair.
+7. Acceptance must prove the defect is resolved. For duplication: `exactly one primary presentation remains`.
 
 This gate has higher priority than producing a Production UI Spec. Fail-closed is preferable to a structurally plausible but directionally wrong remediation, but fail-closed must not ignore authority that the current input has already resolved.
 
@@ -49,7 +96,7 @@ When this worker is activated for a flow that may proceed to Composer, final use
 
 This worker must not return suggestions only. It must return a Production UI Spec, a Focused UI Decision Spec or a structured Missing Input State.
 
-If the worker cannot produce the required artifact safely, it must return `RETURN_TO_ORCHESTRATOR` or `BLOCK_PIPELINE` instead of asking the final user directly or sending recommendations to Composer.
+If the worker cannot produce the required artifact safely, it must return a structured Missing Input State instead of asking the final user directly or sending recommendations to Composer.
 
 ## Do not activate when
 - The request is only legal, accounting or non-visual.
@@ -135,16 +182,11 @@ The transformation and postcondition must reduce or eliminate the diagnosed defe
 
 Hard rules:
 - If the input says an element/value/label/block is duplicated, repeated or redundant, do **not** add, show or copy another duplicate unless explicit upstream authority says the duplication is intentional and required.
-- For an unintended duplicate pair, keep one authoritative presentation and remove, hide or merge the redundant presentation. Decide which one survives from visible hierarchy or upstream authority. If that cannot be established, return `BLOCKED_SOURCE_INSUFFICIENT` instead of guessing.
-- The acceptance condition must prove the defect is resolved, not merely that an operation executed. Example: if the amount appears twice and duplication is the issue, the postcondition is “exactly one primary amount source remains in the intended hierarchy”, never “a duplicated amount element renders correctly”.
+- For an unintended duplicate pair, keep one authoritative presentation and remove, hide or merge the redundant presentation. Decide which one survives from visible hierarchy or upstream authority. If that cannot be established, return the structured Missing Input State instead of guessing.
+- The acceptance condition must prove the defect is resolved, not merely that an operation executed. Example: if the amount appears twice and duplication is the issue, the postcondition is “exactly one primary amount source remains in the intended hierarchy”.
 - If the issue is excessive distance, density, contradiction, ambiguity or semantic strength, the change must not increase that same dimension.
 
-Automatic semantic failure examples:
-- diagnosis: “monto duplicado” -> decision: “añadir/mostrar otro monto duplicado”;
-- diagnosis: “CTA demasiado lejos” -> decision: “mover CTA más lejos”;
-- diagnosis: “jerarquía cargada” -> decision: “añadir otra señal primaria competidora”;
-- diagnosis: “copy contradictorio” -> decision: “añadir otra etiqueta contradictoria”;
-- diagnosis: “garantía no sustentada” -> decision: “hacer la garantía más fuerte”.
+Automatic semantic failures include any decision that reproduces/amplifies the diagnosed defect, contradicts resolved survivor authority, strengthens an unsupported claim, drops an authoritative qualifier, invents canonical precision, or materially diverges between Router and direct execution without contextual evidence.
 
 ## Runtime context-resolution and precision invariant
 Before fixing a material implementation detail, do not treat the literal user prompt as the only available context. Consume relevant context already supplied or resolved for the run: design-system tokens, component/state contracts, interaction rules, upstream UX/product constraints, frozen shell/delta boundaries and visible source facts.
@@ -153,7 +195,7 @@ Resolve precision in this order:
 1. **Canonical value exists** -> use the exact token/value and bind its source. Example: `payment_amount -> divider = space_24`, not only `dar más aire`.
 2. **Exact user/upstream value exists but is not a DS token** -> preserve it exactly and classify it as `UPSTREAM_VALUE`.
 3. **No canonical value exists and the choice is exploratory or low-risk** -> continue. Use a concrete `EXPLORATORY_PROPOSAL / PROPOSED_NOT_CANONICAL` when useful, or `RELATIVE_GUIDANCE` when exact units would create false precision. Missing a token alone is never a reason to block exploration.
-4. **The unresolved detail materially changes interaction semantics, business meaning, safety, primary action, route or a protected constraint** -> return `RETURN_TO_ORCHESTRATOR`; do not silently invent it and do not ask the final user directly from the worker. The orchestrator should try repo/Supabase/upstream resolution before escalating to the user.
+4. **The unresolved detail materially changes interaction semantics, business meaning, safety, primary action, route or a protected constraint** -> return a structured Missing Input State with `pipeline_action=RETURN_TO_ORCHESTRATOR`; do not silently invent it and do not ask the final user directly from the worker. The orchestrator should try repo/Supabase/upstream resolution before escalating to the user.
 
 Never present an exploratory proposal as a canonical token, design-system rule or upstream requirement. Never re-ask for information already recoverable from supplied canonical context.
 
@@ -186,7 +228,7 @@ If this mode outputs only a concept name, rationale, ingredient list, recommenda
 
 ### C. Missing Input State
 Use when required information is missing.
-Output must validate against `schemas/ui_missing_input.schema.json` and return one of:
+Output must validate against `schemas/ui_missing_input.schema.json` and always serialize the complete JSON object, never only the action token. `pipeline_action` must be one of:
 - `CONTINUE_WITH_ASSUMPTIONS`
 - `RETURN_TO_ORCHESTRATOR`
 - `BLOCK_PIPELINE`
@@ -214,18 +256,18 @@ The deterministic validator proves structure/executability only. It must reject 
 
 The semantic judge is mandatory for existing-screen remediation and for meaning-changing COPY/RISK/STATE actions. It must compare the action against the raw screen/input and authoritative upstream constraints, including applicable resolved context.
 
-Examples of automatic semantic failure:
-- reproduce or amplify the defect named by the input;
-- remove the payment summary while leaving the duplicate top amount strip;
-- add/show another amount when duplicated amount presentation is the diagnosed issue;
-- rewrite `Pago registrado` as `Deuda cancelada` without debt-closure authority;
-- move the CTA farther from payment selection when separation is the diagnosed issue;
-- introduce `Liquidación garantizada al pagar` or another unsupported guarantee;
-- drop an upstream-required qualifier such as `Simulación referencial sujeta a validación`;
-- ignore an applicable supplied/resolved canonical token and degrade it to vague implementation wording;
-- represent an invented/proposed token or pixel value as canonical authority;
-- block an exploratory low-risk case solely because no token exists;
-- silently invent a materially unresolved interaction/business state;
+Automatic semantic failure includes:
+- reproducing or amplifying the defect named by the input;
+- violating explicitly resolved canonical-survivor authority;
+- adding/showing another amount when duplicated amount presentation is the diagnosed issue;
+- rewriting `Pago registrado` as `Deuda cancelada` without debt-closure authority;
+- moving the CTA farther from payment selection when separation is the diagnosed issue;
+- introducing `Liquidación garantizada al pagar` or another unsupported guarantee;
+- dropping an upstream-required qualifier such as `Simulación referencial sujeta a validación`;
+- ignoring an applicable supplied/resolved canonical token and degrading it to vague implementation wording;
+- representing an invented/proposed token or pixel value as canonical authority;
+- blocking an exploratory low-risk case solely because no token exists;
+- silently inventing a materially unresolved interaction/business state;
 - materially different Router/direct decisions for the same input without contextual evidence.
 
 ## Upstream semantic preservation

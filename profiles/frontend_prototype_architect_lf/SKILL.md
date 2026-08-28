@@ -3,6 +3,12 @@
 ## 0. ROUTING SHORT-CIRCUIT — EVALUATE BEFORE ALL OTHER RULES
 When the request requires another governed owner, emit the complete governed redirect and stop. Never compress the route and never omit `RETURN_TO_ORCHESTRATOR`.
 
+### SHELL REDIRECT — ZERO TRANSFORMATION
+If the request contains `SHELL_LOCKED`, or otherwise requires any change owned by the canonical Shell, stop all other reasoning and emit exactly this one line:
+`BLOCKED_FRONTEND_SCOPE / RETURN_TO_ORCHESTRATOR / SHELL_CHANGE_REQUIRED / LF_SHELL_GOVERNANCE`
+
+This Shell response has exactly four slash-separated segments. Segment 2 is always `RETURN_TO_ORCHESTRATOR`. Do not emit, quote, rehearse, summarize, shorten, or generate any alternative Shell serialization.
+
 Mandatory serializations:
 - Shell or `SHELL_LOCKED` change -> exactly `BLOCKED_FRONTEND_SCOPE / RETURN_TO_ORCHESTRATOR / SHELL_CHANGE_REQUIRED / LF_SHELL_GOVERNANCE`.
 - unresolved Product intent -> exactly `FRONTEND_MISSING_INPUT_STATE / RETURN_TO_ORCHESTRATOR / PRODUCT_DIRECTION`.
@@ -10,7 +16,7 @@ Mandatory serializations:
 
 Serialization invariant: for every routable block or missing-input state, the second segment MUST be `RETURN_TO_ORCHESTRATOR`. The blocking reason comes after that pipeline action; the governed resolution target is last.
 
-`RETURN_TO_ORCHESTRATOR` is the pipeline action. `LF_SHELL_GOVERNANCE`, `PRODUCT_DIRECTION` and `UI_ARCHITECT` are resolution targets; they never replace the pipeline action. A three-segment Shell response such as `BLOCKED_FRONTEND_SCOPE / SHELL_CHANGE_REQUIRED / LF_SHELL_GOVERNANCE` is invalid because it drops `RETURN_TO_ORCHESTRATOR`. Do not invoke another profile or adapter directly.
+`RETURN_TO_ORCHESTRATOR` is the pipeline action. `LF_SHELL_GOVERNANCE`, `PRODUCT_DIRECTION` and `UI_ARCHITECT` are resolution targets; they never replace the pipeline action. Any Shell redirect with fewer than four segments is invalid. Do not print or rehearse invalid Shell serializations. Do not invoke another profile or adapter directly.
 
 Status: CANDIDATE_READ_ONLY / CONTROLLED_GITHUB_IMPACT
 Profile Pack ID: FRONTEND_PROTOTYPE_ARCHITECT_LF_PROFILE_PACK_001
@@ -210,3 +216,11 @@ Fail or block if:
 
 ## Runtime and impact
 Runtime is not enabled. Production deployment is blocked. VALIDATED is not marked. This profile creates candidate/read-only sandbox prototypes only until separate approval changes its status.
+
+## FINAL SERIALIZATION GUARD — LAST RULE BEFORE RESPONSE
+Immediately before emitting any answer, inspect the selected output mode once.
+
+If the answer is a Shell or `SHELL_LOCKED` scope redirect, discard any draft redirect and emit only this exact literal line:
+`BLOCKED_FRONTEND_SCOPE / RETURN_TO_ORCHESTRATOR / SHELL_CHANGE_REQUIRED / LF_SHELL_GOVERNANCE`
+
+For this Shell case, do not derive, summarize or shorten the route. Never output a Shell route with fewer than four segments. The four-segment literal above is the complete answer.

@@ -1,37 +1,79 @@
 # UI Architect directionality remediation V3 — live evidence
 
-Status: CANDIDATE / LIVE_RUNTIME_RETEST_REQUIRED
+Status: SUPERSEDED_BY_MISSING_INPUT_POLICY_V2 / RUNTIME_RETEST_REQUIRED
 
 ## Governance binding
 - Operation: `ACTUALIZACION_PERFIL_LF`
-- Execution: `EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260827-003`
+- Current closure execution: `EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260828-007`
 - Asset: `PERFIL-UI-ARCHITECT`
-- Baseline main: `a8e82a9941db479775a2c78a25b590d4431fa6e6`
-- Candidate branch: `lf/ui-architect-salient-direction-gate-20260827`
+- Historical V3 baseline main: `a8e82a9941db479775a2c78a25b590d4431fa6e6`
+- Current remediation branch: `lf/ui-single-envelope-v9-20260828`
 
-## Demonstrated live failure after V2
-Runtime request `8fdd51e7-3422-4324-b433-cce7d6b22d99` executed from `main@a8e82a9941db479775a2c78a25b590d4431fa6e6` with the pinned zero-cost Qwen2.5-VL 3B runtime.
+## Historical V3 evidence preserved
+Runtime request `8fdd51e7-3422-4324-b433-cce7d6b22d99` executed from historical `main@a8e82a9941db479775a2c78a25b590d4431fa6e6` with the pinned zero-cost Qwen2.5-VL 3B runtime.
 
-Input explicitly stated that the checkout amount was duplicated between a top strip and Summary and required the remediation to resolve the defect or block if the authoritative survivor could not be established.
+That run reproduced a duplicate-amplification defect. The historical V3 remediation therefore made directionality salient and treated unresolved survivor authority as an exact `BLOCK_PIPELINE` case.
 
-Observed RAW still emitted `Añadir una nueva presentación de monto en la franja superior`, reproducing the defect. Therefore V2 was not behaviorally remediated.
+This historical observation remains valid evidence of the old defect. What is superseded is the assumption that every unresolved material input must serialize to `BLOCK_PIPELINE`.
 
-## V3 root-cause hypothesis
-The directionality rule existed in `SKILL.md` but was too deep and verbose relative to the live 3B runtime. The runtime structurally followed later artifact instructions while ignoring the semantic correction invariant.
+## Missing Input Policy V2 reconciliation
+The current governed Missing Input Policy distinguishes two fail-closed routes:
+- `RETURN_TO_ORCHESTRATOR` when a material input can still be resolved from a governed upstream/orchestrator source;
+- `BLOCK_PIPELINE` only when no safe source can resolve the material input and execution would be unsafe.
 
-## V3 minimal patch
-A short, first-position `RUNTIME CRITICAL GATE` now precedes all other profile rules and explicitly overrides later format rules. It requires:
-- `DEFECT -> CORRECTION -> POSTCONDITION`;
-- duplicate defects may only resolve via `REMOVE`, `HIDE`, `MERGE`, or `BLOCK`;
-- `ADD/SHOW/COPY/CREATE` amplification is forbidden for duplicate defects;
-- if the authoritative survivor cannot be established, return the exact schema-compatible `BLOCK_PIPELINE` Missing Input State;
-- final self-scan rejects decisions that increase duplication, distance, density, contradiction, ambiguity or unsupported semantic strength.
+Accordingly, the V3 static assertion that required an exact `BLOCK_PIPELINE` literal in the first 25 lines is superseded by the current structured policy. The current salience test must prove both branches are explicit and that the complete Missing Input State is serialized instead of a bare action token.
+
+## P1 closure canaries on main@5079a3f8fbb6edd4cbdfdcfa092da887479cb0e7
+Two fresh zero-cost MODEL_RUNTIME executions exposed the remaining live defects before V8 remediation:
+
+1. Resolved authority — request `5ea5c0c5-315b-4f83-b177-e64baa10e7cd`, run `33183201945`:
+   - input explicitly established `Resumen` as canonical survivor and `top strip` as redundant;
+   - RAW removed `top strip` but also hid `Resumen`;
+   - semantic result: FAIL because the canonical survivor was destructively targeted and the output was not a complete Production UI Spec.
+
+2. Unresolved authority — request `5ad2bde5-8d4e-438a-a55d-99cfedf51a80`, run `33183212795`:
+   - RAW was only `RETURN_TO_ORCHESTRATOR`;
+   - directionality was fail-closed, but the current contract requires a complete JSON Missing Input State;
+   - schema result: FAIL.
+
+Both runs were attested `MODEL_RUNTIME`, `ZERO_COST_ONLY`, on exact `main@5079a3f8fbb6edd4cbdfdcfa092da887479cb0e7`.
+
+## V8 minimal remediation
+The current branch strengthens only `profiles/ui_architect/**` behavior/evidence:
+- resolved duplicate authority short-circuits to exactly one destructive remediation action against the redundant presentation;
+- the survivor is retained as visible/preserved state/evidence, never a destructive target;
+- existing-screen execution must serialize the complete Production UI Spec instead of an abbreviated findings fragment;
+- unresolved authority must serialize the complete Missing Input State JSON;
+- `RETURN_TO_ORCHESTRATOR` and `BLOCK_PIPELINE` remain distinct according to Missing Input Policy V2;
+- the V3 salience test is reconciled to the current policy rather than forcing every unresolved case to BLOCK.
+
+## Post-V8 canaries on main@b97234d2c87f0c0211c290f668b195b577002787
+Two fresh zero-cost `MODEL_RUNTIME` runs evaluated merged PR #289:
+
+1. Unresolved authority — request `f383677a-0e3b-44ea-a991-5b68f79fcc2d`, run `33185648132`:
+   - returned one complete Missing Input State;
+   - did not guess the survivor;
+   - used `pipeline_action=RETURN_TO_ORCHESTRATOR`;
+   - structural and semantic result: PASS.
+
+2. Resolved authority — request `337fd41d-a86d-428a-9441-10c119173582`, run `33185638102`:
+   - preserved `payment_summary` and removed only `top_amount_strip`;
+   - satisfied the semantic direction and survivor invariant;
+   - repeated the top-level `score`, `handoff_to_next`, and `self_verdict` tail after an early root close;
+   - omitted mandatory `evidence_component_ids` from the remediation action;
+   - structural result: FAIL because the RAW is not one valid contract-complete JSON object.
+
+Both runs are attested `MODEL_RUNTIME`, `ZERO_COST_ONLY`, on exact merged `main@b97234d2c87f0c0211c290f668b195b577002787`.
+
+## V9 minimal remediation
+V9 remains within `profiles/ui_architect/**` and adds only final serialization safeguards:
+- emit exactly one JSON object, with no Markdown wrapper or surrounding prose;
+- serialize each required top-level field exactly once and stop after the final root closing brace;
+- keep `score`, `handoff_to_next`, and `self_verdict` as root siblings, never nested or repeated;
+- require `evidence_component_ids` in each existing-screen remediation action and bind it to `execution.target_component_id`;
+- self-repair malformed, duplicated, partial, or structurally incomplete output once before emission.
 
 ## Verification boundary
-Static/readback evidence can prove the gate is present and first in the runtime source. It cannot prove the 3B model obeys it.
-
-Closure requires a fresh post-merge live runtime execution from `main` using the same semantic defect. PASS is only valid if the RAW either:
-1. removes/hides/merges the redundant presentation while preserving exactly one authoritative amount source when supported by evidence; or
-2. returns `BLOCK_PIPELINE` when the survivor is not established.
-
-Any output that adds, shows, copies or creates another amount presentation is a behavioral FAIL and must not be closed.
+This file does not claim behavioral closure. Closure still requires exact-head CI, merge/readback, and two fresh post-merge MODEL_RUNTIME canaries from merged `main` proving:
+1. resolved authority preserves `Resumen`, destroys only `top strip`, leaves exactly one primary amount presentation, and returns a structurally valid executable UI artifact;
+2. unresolved authority does not guess and returns a schema-valid complete Missing Input State with the governed pipeline action.
