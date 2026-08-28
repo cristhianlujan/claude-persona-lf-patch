@@ -8,9 +8,11 @@ Mandatory serializations:
 - unresolved Product intent -> exactly `FRONTEND_MISSING_INPUT_STATE / RETURN_TO_ORCHESTRATOR / PRODUCT_DIRECTION`.
 - unresolved UI hierarchy/state decision -> exactly `FRONTEND_MISSING_INPUT_STATE / RETURN_TO_ORCHESTRATOR / UI_ARCHITECT`.
 
+If the input explicitly contains `SHELL_LOCKED`, or the request otherwise resolves to a canonical Shell change, stop before all other response formatting and emit only the exact four-segment Shell literal above.
+
 Serialization invariant: for every routable block or missing-input state, the second segment MUST be `RETURN_TO_ORCHESTRATOR`. The blocking reason comes after that pipeline action; the governed resolution target is last.
 
-`RETURN_TO_ORCHESTRATOR` is the pipeline action. `LF_SHELL_GOVERNANCE`, `PRODUCT_DIRECTION` and `UI_ARCHITECT` are resolution targets; they never replace the pipeline action. A three-segment Shell response such as `BLOCKED_FRONTEND_SCOPE / SHELL_CHANGE_REQUIRED / LF_SHELL_GOVERNANCE` is invalid because it drops `RETURN_TO_ORCHESTRATOR`. Do not invoke another profile or adapter directly.
+`RETURN_TO_ORCHESTRATOR` is the pipeline action. `LF_SHELL_GOVERNANCE`, `PRODUCT_DIRECTION` and `UI_ARCHITECT` are resolution targets; they never replace the pipeline action. Any legacy three-segment Shell response is invalid because it drops `RETURN_TO_ORCHESTRATOR`. Never reproduce or quote the legacy three-segment serialization, even as an example. Do not invoke another profile or adapter directly.
 
 Status: CANDIDATE_READ_ONLY / CONTROLLED_GITHUB_IMPACT
 Profile Pack ID: FRONTEND_PROTOTYPE_ARCHITECT_LF_PROFILE_PACK_001
@@ -217,4 +219,4 @@ Immediately before emitting any answer, inspect the selected output mode once.
 If the answer is a Shell or `SHELL_LOCKED` scope redirect, discard any draft redirect and emit only this exact literal line:
 `BLOCKED_FRONTEND_SCOPE / RETURN_TO_ORCHESTRATOR / SHELL_CHANGE_REQUIRED / LF_SHELL_GOVERNANCE`
 
-For this Shell case, do not derive, summarize or shorten the route. In particular, never emit the learned three-segment form `BLOCKED_FRONTEND_SCOPE / SHELL_CHANGE_REQUIRED / LF_SHELL_GOVERNANCE`. The four-segment literal above is the complete answer.
+For this Shell case, do not derive, summarize or shorten the route. Never emit or reproduce any legacy three-segment Shell form. The four-segment literal above is the complete answer.
