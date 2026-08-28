@@ -7,5 +7,11 @@
   "structural_identifier_reconciliation": {"required":true,"handoff_value":"/perfiles/","governing_value":"/profiles/","result":"CONFLICT"},
   "evidence_map": ["translated_handoff","governing_contract"],
   "blocking_codes": ["TRANSLATED_IDENTIFIER_CONFLICT"],
-  "next_gate": "RETURN_TO_ORCHESTRATOR"
+  "next_gate": "NONE",
+  "routing": {
+    "activation_path": "DIRECT",
+    "via": "ORCHESTRATOR",
+    "pipeline_action": "BLOCK_PIPELINE",
+    "resolution_target": "NONE"
+  }
 }
