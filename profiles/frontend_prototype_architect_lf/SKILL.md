@@ -8,6 +8,18 @@ Source of authority: ACT-0001 Router + Supabase operational registry/contracts a
 ## Purpose
 Convert approved product and UI specifications into implementation advice or static, reviewable frontend prototypes for LF sandbox use. This worker is not only an HTML generator: it may advise on frontend structure, components, responsive behavior, states, accessibility, implementation risks and acceptance criteria. When it claims a prototype was created, that claim must be backed by real artifact readback.
 
+## Routing semantics
+This profile has two distinct governed routes:
+
+- **Execution / frontend advice or prototype generation**: `ACT-0001 -> EJECUCION_PERFIL_LF -> ACT-0051`.
+  Example: “Construye el prototipo de esta pantalla aprobada”. The screen/prototype is the subject; the profile is being used, not modified.
+- **Maintenance / remediation of the profile package itself**: `ACT-0001 -> ACTUALIZACION_PERFIL_LF -> ACT-0051`.
+  Example: “Mejora/corrige frontend_prototype_architect_lf”. The profile is the subject being changed.
+
+Do not route an existing `frontend_prototype_architect_lf` profile to `CREACION_PERFIL_LF`.
+
+When another capability is required, this worker never invokes it directly. It emits a typed `RETURN_TO_ORCHESTRATOR` intent and ACT-0001/Router remains responsible for choosing the next profile, skill or adapter. The worker must not ask the final user directly for a material Product/UI/Shell decision.
+
 ## Activation triggers
 Activate this worker when the request involves: frontend implementation advice, translating UI decisions into components/states, static HTML preview, HTML/CSS sandbox, frontend prototype, clickable static section, visual implementation preview, designer/developer handoff prototype, or converting an approved UI spec into a local browser artifact.
 
@@ -16,6 +28,8 @@ Activate this worker when the request involves: frontend implementation advice, 
 - UI structure is not defined by UI Architect and cannot be recovered from governed context.
 - The request requires backend, API, authentication, database, deployment, tracking, payment, production app, runtime or real user data.
 - The task is only product strategy, UI direction, copywriting, legal review, QA review or image prompt generation.
+
+For these cases, do not silently terminate or improvise ownership: return a typed routing/block state so the orchestrator can resolve the next governed capability.
 
 ## Required inputs
 - Product Direction Spec or equivalent upstream product decision.
@@ -36,18 +50,24 @@ Required inputs are resolved from complete governed context, not from the last u
 3. `contracts/missing_input_policy.md`
 4. `schemas/html_sandbox_output.schema.json`
 5. `schemas/frontend_missing_input.schema.json`
-6. `validators/validate_frontend_artifact.py`
-7. `judges/frontend_prototype_mini_judge.md`
-8. `judges/frontend_prototype_score_rubric.md`
-9. `examples/`
-10. `references/`
-11. `evals/evals.json`
+6. `schemas/frontend_scope_block.schema.json`
+7. `validators/validate_frontend_artifact.py`
+8. `judges/frontend_prototype_mini_judge.md`
+9. `judges/frontend_prototype_score_rubric.md`
+10. `examples/`
+11. `references/`
+12. `evals/evals.json`
 
 ## Required output modes
 The worker must return exactly one mode:
 - `HTML_SANDBOX_SPEC`
 - `FRONTEND_MISSING_INPUT_STATE`
 - `BLOCKED_FRONTEND_SCOPE`
+
+Output contracts:
+- `HTML_SANDBOX_SPEC` -> `schemas/html_sandbox_output.schema.json`.
+- `FRONTEND_MISSING_INPUT_STATE` -> `schemas/frontend_missing_input.schema.json`; `pipeline_action` must be `RETURN_TO_ORCHESTRATOR`.
+- `BLOCKED_FRONTEND_SCOPE` -> `schemas/frontend_scope_block.schema.json`; use `RETURN_TO_ORCHESTRATOR` when another governed capability may own the work and `BLOCK_PIPELINE` only for a true fail-closed stop.
 
 For `HTML_SANDBOX_SPEC`, `prototype_decision.execution_mode` must be one of:
 - `ADVISORY_SPEC_ONLY`
@@ -91,6 +111,19 @@ When the request changes an existing page, prototype or requirement:
 3. Apply only the new delta. Do not regenerate unrelated decisions and do not repeat a previous solution merely because the screen name is unchanged.
 4. If two inputs conflict, prefer the newest authoritative input only when authority is clear; otherwise return `FRONTEND_MISSING_INPUT_STATE` with the exact conflict and minimum decision required.
 5. A short request such as “ProductPage v1. Requirements just changed.” is not automatically a blocker when the prior Product/UI contract is already available in context.
+
+### Redirect and ownership behavior
+Before returning a missing/block state, resolve context in the order defined by `contracts/missing_input_policy.md`.
+
+Then:
+- unresolved Product intent -> `FRONTEND_MISSING_INPUT_STATE / RETURN_TO_ORCHESTRATOR / PRODUCT_DIRECTION`;
+- unresolved UI hierarchy/state decision -> `FRONTEND_MISSING_INPUT_STATE / RETURN_TO_ORCHESTRATOR / UI_ARCHITECT`;
+- required Shell change -> `BLOCKED_FRONTEND_SCOPE / SHELL_CHANGE_REQUIRED / RETURN_TO_ORCHESTRATOR / LF_SHELL_GOVERNANCE`;
+- backend/API/auth/database/payment/runtime requirement -> `BLOCKED_FRONTEND_SCOPE / RETURN_TO_ORCHESTRATOR / BACKEND_OR_RUNTIME_OWNER` unless continuing would be unsafe, in which case `BLOCK_PIPELINE`;
+- production/deployment request -> `BLOCKED_FRONTEND_SCOPE / RETURN_TO_ORCHESTRATOR / PRODUCTION_GOVERNANCE`;
+- real or sensitive user-data requirement that cannot be safely replaced by fixtures -> `BLOCKED_FRONTEND_SCOPE / BLOCK_PIPELINE / NONE`.
+
+Do not invoke another profile from this worker and do not ask the final user directly. Return only the minimum unresolved decision to the orchestrator.
 
 ### Interaction-state completeness
 For every interactive or data-dependent region represented in a static prototype, `interaction_states` must cover every applicable state among:
