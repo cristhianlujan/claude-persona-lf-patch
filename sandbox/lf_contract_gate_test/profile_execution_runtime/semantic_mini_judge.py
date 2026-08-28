@@ -9,14 +9,9 @@ import re
 from dataclasses import dataclass
 from typing import Any, Iterable
 
-BUNDLE_SCHEMA = "PROFILE_SEMANTIC_CHECK_BUNDLE_V1"
-RECEIPT_TYPE = "PROFILE_SEMANTIC_JUDGE_RECEIPT_V1"
-CHECK_TYPES = {
-    "REQUIRED_SUBSTRING",
-    "FORBIDDEN_SUBSTRING",
-    "EXACT_VALUE",
-    "SEMANTIC_RELATION",
-}
+from semantic_obligation_manifest import BUNDLE_SCHEMA, CHECK_TYPES
+
+RECEIPT_TYPE = "PROFILE_SEMANTIC_JUDGE_RECEIPT_V2"
 MODEL_VERDICTS = {"COMPLIES", "CONTRADICTS", "UNCERTAIN"}
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
 
@@ -84,10 +79,14 @@ def validate_bundle(bundle: Any) -> dict[str, Any]:
     profile_code = _required_text(bundle.get("profile_code"), "PROFILE_CODE", max_len=256)
     input_sha = bundle.get("input_sha256")
     raw_sha = bundle.get("raw_output_sha256")
-    if not isinstance(input_sha, str) or not HEX64.fullmatch(input_sha):
-        raise MiniJudgeInputError("INPUT_SHA256_INVALID")
-    if not isinstance(raw_sha, str) or not HEX64.fullmatch(raw_sha):
-        raise MiniJudgeInputError("RAW_OUTPUT_SHA256_INVALID")
+    manifest_sha = bundle.get("obligation_manifest_sha256")
+    for value, name in (
+        (input_sha, "INPUT_SHA256"),
+        (raw_sha, "RAW_OUTPUT_SHA256"),
+        (manifest_sha, "OBLIGATION_MANIFEST_SHA256"),
+    ):
+        if not isinstance(value, str) or not HEX64.fullmatch(value):
+            raise MiniJudgeInputError(f"{name}_INVALID")
     checks = bundle.get("checks")
     if not isinstance(checks, list) or not 1 <= len(checks) <= 64:
         raise MiniJudgeInputError("CHECKS_INVALID")
@@ -98,6 +97,9 @@ def validate_bundle(bundle: Any) -> dict[str, Any]:
         if not isinstance(item, dict):
             raise MiniJudgeInputError(f"CHECK_{index}_NOT_OBJECT")
         check_id = _required_text(item.get("check_id"), f"CHECK_{index}_ID", max_len=128)
+        obligation_id = _required_text(item.get("obligation_id"), f"CHECK_{index}_OBLIGATION_ID", max_len=128)
+        if check_id != obligation_id:
+            raise MiniJudgeInputError("CHECK_ID_OBLIGATION_ID_MISMATCH")
         if check_id in seen:
             raise MiniJudgeInputError("CHECK_ID_DUPLICATE")
         seen.add(check_id)
@@ -112,6 +114,7 @@ def validate_bundle(bundle: Any) -> dict[str, Any]:
 
         out: dict[str, Any] = {
             "check_id": check_id,
+            "obligation_id": obligation_id,
             "check_type": check_type,
             "rule": rule,
             "evidence": evidence,
@@ -135,6 +138,7 @@ def validate_bundle(bundle: Any) -> dict[str, Any]:
         "profile_code": profile_code,
         "input_sha256": input_sha,
         "raw_output_sha256": raw_sha,
+        "obligation_manifest_sha256": manifest_sha,
         "checks": normalized,
     }
 
@@ -232,6 +236,7 @@ def build_receipt(bundle: dict[str, Any], results: list[CheckResult], *, runtime
         "profile_code": bundle["profile_code"],
         "input_sha256": bundle["input_sha256"],
         "raw_output_sha256": bundle["raw_output_sha256"],
+        "obligation_manifest_sha256": bundle["obligation_manifest_sha256"],
         "check_bundle_sha256": canonical_json_sha256(bundle),
         "verdict": verdict,
         "downstream_disposition": downstream,

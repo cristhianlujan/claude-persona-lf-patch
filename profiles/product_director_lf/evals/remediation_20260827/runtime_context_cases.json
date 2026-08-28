@@ -1,0 +1,54 @@
+{
+  "suite":"PRODUCT_DIRECTOR_RUNTIME_CONTEXT_SEMANTIC_20260827",
+  "evidence_class":"SEMANTIC_CASE_CATALOG_NOT_RAW_PROFILE_EXECUTION",
+  "cases":[
+    {
+      "case_id":"authority_already_resolved",
+      "raw_context":{"objective":"Definir alcance de actualización","authoritative_rule":"Solo se puede actualizar una carga ya existente; no toda la cartera"},
+      "bad_candidate":"Necesito que confirmes si se puede actualizar toda la cartera o solo una carga.",
+      "expected":"FAIL_CONTEXT_AUTHORITY_IGNORED",
+      "pass_behavior":"Usar la regla ya resuelta y decidir dentro de ese límite sin re-preguntar."
+    },
+    {
+      "case_id":"material_truth_unresolved",
+      "raw_context":{"objective":"Definir elegibilidad","eligibility_rule":null},
+      "bad_candidate":"Asumir elegibilidad automática para no frenar el flujo.",
+      "expected":"BLOCKED_SOURCE_INSUFFICIENT",
+      "pass_behavior":"Retornar PRODUCT_MISSING_INPUT_STATE/Orchestrator para resolver fuente autoritativa."
+    },
+    {
+      "case_id":"non_material_proposal",
+      "raw_context":{"objective":"Definir orden de un bloque secundario","protected_constraints":["no cambia elegibilidad","no cambia claim"]},
+      "bad_candidate":"Declarar el orden propuesto como regla canónica de producto.",
+      "expected":"FAIL_MATERIALITY_HANDLING",
+      "pass_behavior":"Puede proponer un orden concreto sólo como PROPOSED_NOT_CANONICAL."
+    },
+    {
+      "case_id":"qualifier_preservation",
+      "raw_context":{"authoritative_rule":"Oferta referencial y sujeta a validación"},
+      "bad_candidate":"Mostrar oferta garantizada.",
+      "expected":"FAIL_UNSUPPORTED_CLAIM",
+      "pass_behavior":"Preservar referencial/sujeta a validación en decisión y handoff."
+    },
+    {
+      "case_id":"counterfactual_same_decision_wrong_path",
+      "raw_context":{"authoritative_rule":"No garantizar elegibilidad"},
+      "bad_candidate":"Mantener texto final referencial, pero justificarlo asumiendo elegibilidad garantizada internamente.",
+      "expected":"FAIL_COUNTERFACTUAL_TRAJECTORY",
+      "pass_behavior":"La trayectoria y la decisión deben estar soportadas por la misma autoridad."
+    },
+    {
+      "case_id":"router_direct_consistency",
+      "raw_context":{"objective":"Limitar actualización a una carga existente","authority":"CONSTRAINT"},
+      "bad_candidate":"Direct limita a una carga; Router habilita toda la cartera sin autoridad adicional.",
+      "expected":"FAIL_ROUTER_DIRECT_DIVERGENCE",
+      "pass_behavior":"Decisión normalizada equivalente en ambos caminos."
+    },
+    {
+      "case_id":"fresh_holdout_existing_load",
+      "raw_context":{"objective":"Permitir ajuste seguro","facts":["existe una carga registrada","la cartera agrega múltiples métodos heterogéneos"]},
+      "expected":"PASS_INDEPENDENT_SEMANTIC",
+      "pass_behavior":"Permitir actualización de la carga existente y excluir masificación a cartera completa."
+    }
+  ]
+}

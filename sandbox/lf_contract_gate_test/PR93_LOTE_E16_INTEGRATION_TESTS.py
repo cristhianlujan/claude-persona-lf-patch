@@ -192,6 +192,7 @@ def main() -> int:
             "sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_runner.py",
             "sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py",
             "sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_mini_judge.py",
+            "sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_obligation_manifest.py",
             "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py",
             "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_semantic_judge.py",
             "sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py",

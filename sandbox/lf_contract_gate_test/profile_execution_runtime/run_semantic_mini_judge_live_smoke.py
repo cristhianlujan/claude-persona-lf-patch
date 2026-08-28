@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
-"""Real zero-cost semantic mini-judge + downstream gate smoke on GitHub Actions."""
+"""Real zero-cost semantic mini-judge + complete downstream gate smoke on GitHub Actions."""
 
 from __future__ import annotations
 
 import tempfile
 from pathlib import Path
 
-from github_actions_semantic_judge import (
-    GitHubHostedSemanticMiniJudge,
-    GitHubHostedSemanticMiniJudgeVerifier,
-)
+from github_actions_semantic_judge import GitHubHostedSemanticMiniJudge, GitHubHostedSemanticMiniJudgeVerifier
 from semantic_mini_judge import build_receipt as build_semantic_receipt, validate_bundle
-from validate_profile_execution import (
-    authorize_downstream,
-    build_receipt as build_execution_receipt,
+from semantic_obligation_manifest import (
+    build_check_bundle,
+    obligation_manifest_sha256,
+    validate_obligation_manifest,
 )
+from validate_profile_execution import authorize_downstream, build_receipt as build_execution_receipt, sha256_text
 
 CASES = [
     {
@@ -59,15 +58,53 @@ SMOKE_RAW = {
         ]
     }
 }
+EXECUTION_ID = "EXEC-SEMANTIC-DOWNSTREAM-SMOKE-001"
+PROFILE_CODE = "PERFIL-UI-ARCHITECT"
+PROFILE_SOURCE_SHA = "c" * 64
 
 
-def execution_receipt():
+def semantic_manifest():
+    input_sha = sha256_text(SMOKE_INPUT)
+    return validate_obligation_manifest({
+        "schema": "PROFILE_SEMANTIC_OBLIGATION_MANIFEST_V1",
+        "execution_id": EXECUTION_ID,
+        "profile_code": PROFILE_CODE,
+        "profile_source_sha256": PROFILE_SOURCE_SHA,
+        "input_sha256": input_sha,
+        "authority_sources": [
+            {
+                "authority_id": "PROFILE-CONTRACT",
+                "authority_type": "PROFILE_CONTRACT",
+                "source_ref": "profiles/ui_architect/SKILL.md",
+                "source_sha256": PROFILE_SOURCE_SHA,
+                "required_obligation_ids": ["DOWNSTREAM-COMPLIANT-ACTION"],
+            },
+            {
+                "authority_id": "EXECUTION-INPUT",
+                "authority_type": "EXECUTION_INPUT",
+                "source_ref": "input:/literal",
+                "source_sha256": input_sha,
+                "required_obligation_ids": ["DOWNSTREAM-COMPLIANT-ACTION"],
+            },
+        ],
+        "obligations": [{
+            "obligation_id": "DOWNSTREAM-COMPLIANT-ACTION",
+            "check_type": "SEMANTIC_RELATION",
+            "rule": "The duplicated amount must be consolidated by removing the redundant upper strip and keeping Resumen as the sole authoritative amount presentation.",
+            "evidence_pointer": "/deliverable_created/remediation_actions/0",
+            "authority_ids": ["PROFILE-CONTRACT", "EXECUTION-INPUT"],
+            "question": "Does this remediation comply with the rule?",
+        }],
+    })
+
+
+def execution_receipt(manifest):
     return build_execution_receipt(
-        execution_id="EXEC-SEMANTIC-DOWNSTREAM-SMOKE-001",
-        profile_code="PERFIL-UI-ARCHITECT",
+        execution_id=EXECUTION_ID,
+        profile_code=PROFILE_CODE,
         profile_slug="ui_architect",
         profile_source_refs=["profiles/ui_architect/SKILL.md"],
-        profile_source_sha256="c" * 64,
+        profile_source_sha256=PROFILE_SOURCE_SHA,
         input_literal=SMOKE_INPUT,
         raw_output=SMOKE_RAW,
         runtime_attestation={
@@ -80,6 +117,7 @@ def execution_receipt():
             "verified_request_sha256": "e" * 64,
             "verified_response_sha256": "f" * 64,
         },
+        obligation_manifest_sha256=obligation_manifest_sha256(manifest),
     )
 
 
@@ -94,34 +132,23 @@ def main() -> int:
                 result, evidence = adapter.classify(check)
                 verification = verifier.verify(check=check, result=result, evidence=evidence, adapter=adapter)
                 print(
-                    f"SEMANTIC_SMOKE {case['check_id']} verdict={result.verdict} "
-                    f"verified={verification['verified']}",
+                    f"SEMANTIC_SMOKE {case['check_id']} verdict={result.verdict} verified={verification['verified']}",
                     flush=True,
                 )
                 if result.verdict != case["expected"]:
                     raise SystemExit(
-                        f"SEMANTIC_MINI_JUDGE_LIVE_SMOKE_FAIL {case['check_id']} "
-                        f"expected={case['expected']} observed={result.verdict}"
+                        f"SEMANTIC_MINI_JUDGE_LIVE_SMOKE_FAIL {case['check_id']} expected={case['expected']} observed={result.verdict}"
                     )
                 passed += 1
 
-            exec_receipt = execution_receipt()
-            pass_check = {
-                "check_id": "DOWNSTREAM_COMPLIANT_ACTION",
-                "check_type": "SEMANTIC_RELATION",
-                "rule": "The duplicated amount must be consolidated by removing the redundant upper strip and keeping Resumen as the sole authoritative amount presentation.",
-                "evidence": SMOKE_RAW["deliverable_created"]["remediation_actions"][0],
-                "question": "Does this remediation comply with the rule?",
-                "source_refs": ["raw:/deliverable_created/remediation_actions/0"],
-            }
-            bundle = validate_bundle({
-                "schema": "PROFILE_SEMANTIC_CHECK_BUNDLE_V1",
-                "execution_id": exec_receipt["execution_id"],
-                "profile_code": exec_receipt["profile_code"],
-                "input_sha256": exec_receipt["input_sha256"],
-                "raw_output_sha256": exec_receipt["raw_output_sha256"],
-                "checks": [pass_check],
-            })
+            manifest = semantic_manifest()
+            exec_receipt = execution_receipt(manifest)
+            bundle = validate_bundle(build_check_bundle(
+                manifest,
+                SMOKE_RAW,
+                raw_output_sha256=exec_receipt["raw_output_sha256"],
+            ))
+            pass_check = bundle["checks"][0]
             semantic_result, adapter_evidence = adapter.classify(pass_check)
             semantic_verification = verifier.verify(
                 check=pass_check,
@@ -131,8 +158,7 @@ def main() -> int:
             )
             if semantic_result.verdict != "COMPLIES":
                 raise SystemExit(
-                    "SEMANTIC_DOWNSTREAM_SMOKE_FAIL expected=COMPLIES "
-                    f"observed={semantic_result.verdict}"
+                    "SEMANTIC_DOWNSTREAM_SMOKE_FAIL expected=COMPLIES observed=" + semantic_result.verdict
                 )
             semantic_receipt = build_semantic_receipt(
                 bundle,
@@ -152,15 +178,9 @@ def main() -> int:
                 expected_raw_output=SMOKE_RAW,
             )
             if provenance_only["status"] != "BLOCK_PIPELINE":
-                raise SystemExit(
-                    "SEMANTIC_DOWNSTREAM_SMOKE_FAIL provenance-only unexpectedly authorized"
-                )
-            if "PROFILE_SEMANTIC_JUDGE_RECEIPT_MISSING" not in provenance_only["blocking_codes"]:
-                raise SystemExit(
-                    "SEMANTIC_DOWNSTREAM_SMOKE_FAIL missing semantic-receipt blocker"
-                )
+                raise SystemExit("SEMANTIC_DOWNSTREAM_SMOKE_FAIL provenance-only unexpectedly authorized")
 
-            combined = authorize_downstream(
+            complete = authorize_downstream(
                 profile_execution_required=True,
                 recipient="IMAGE_GENERATOR",
                 receipt=exec_receipt,
@@ -168,13 +188,28 @@ def main() -> int:
                 expected_raw_output=SMOKE_RAW,
                 semantic_receipt=semantic_receipt,
                 semantic_check_bundle=bundle,
+                semantic_obligation_manifest=manifest,
             )
-            if combined["status"] != "PASS_PROFILE_EXECUTION_AND_SEMANTIC_QUALITY":
-                raise SystemExit(
-                    "SEMANTIC_DOWNSTREAM_SMOKE_FAIL combined gate=" + str(combined)
-                )
+            if complete["status"] != "PASS_PROFILE_EXECUTION_AND_SEMANTIC_QUALITY":
+                raise SystemExit("SEMANTIC_DOWNSTREAM_SMOKE_FAIL complete gate=" + str(complete))
+
+            partial_bundle = dict(bundle)
+            partial_bundle["checks"] = []
+            partial = authorize_downstream(
+                profile_execution_required=True,
+                recipient="IMAGE_GENERATOR",
+                receipt=exec_receipt,
+                expected_input_literal=SMOKE_INPUT,
+                expected_raw_output=SMOKE_RAW,
+                semantic_receipt=semantic_receipt,
+                semantic_check_bundle=partial_bundle,
+                semantic_obligation_manifest=manifest,
+            )
+            if partial["status"] != "BLOCK_PIPELINE":
+                raise SystemExit("SEMANTIC_COMPLETENESS_SMOKE_FAIL partial bundle authorized")
+
             print(
-                "SEMANTIC_DOWNSTREAM_GATE_SMOKE_PASS provenance_only=BLOCK combined=PASS",
+                "SEMANTIC_DOWNSTREAM_GATE_SMOKE_PASS provenance_only=BLOCK complete=PASS partial_bundle=BLOCK",
                 flush=True,
             )
 

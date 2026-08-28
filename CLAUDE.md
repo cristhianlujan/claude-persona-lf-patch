@@ -18,6 +18,52 @@ For every artifact operation:
 
 Preserve this sequence for delegated agents and subagents.
 
+## Governed profile updates
+
+When creating a patch that modifies an existing repository profile under `profiles/**`, route the operation as `ACTUALIZACION_PERFIL_LF` and apply section 15, **Protocolo de pase para actualización de perfiles**, in:
+
+@.claude/operational-execution.md
+
+Supabase remains the canonical authority for the operation contract, execution binding, judge, state **and active pass policy**. The GitHub protocol is a reproducible human-readable projection and does not supersede the active Supabase policy snapshot.
+
+### Dynamic pass-policy snapshot
+
+Every new `ACTUALIZACION_PERFIL_LF` execution is automatically bound by Supabase to the active policy registered for that operation. Read the execution manifest before doing any repository write and require:
+
+```text
+manifest.operation_policy_source = SUPABASE
+manifest.operation_policy_snapshots.PASS_POLICY.policy_code
+manifest.operation_policy_snapshots.PASS_POLICY.policy_version
+manifest.operation_policy_snapshots.PASS_POLICY.policy_sha
+manifest.operation_policy_snapshots.PASS_POLICY.policy_payload
+```
+
+The current policy family is inventoried as `POL-PROFILE-UPDATE-PASS` (`tipo_activo=REGLA`, `subtipo_activo=POLICY_TRANSVERSAL_GOV`) and is resolved through `public.v_lf_operation_policy_snapshot`.
+
+Rules:
+
+- Router and direct profile-update invocations consume the same Supabase policy snapshot.
+- Never use a prior PR, branch, chat, example or previous successful profile as the operational source of truth for how to pass.
+- Prior PRs are historical evidence only.
+- If the required policy snapshot is missing, fail closed with `BLOCK_PROFILE_UPDATE_POLICY_MISSING`.
+- The policy snapshot in an execution is immutable.
+- On any execution status transition, Supabase compares the bound `policy_sha` with the active policy. A stale SHA must block with `BLOCK_STALE_PROFILE_UPDATE_POLICY`.
+- If this file or section 15 disagrees with the bound active `policy_payload`, the Supabase snapshot wins and the divergence must be recorded/remediated as governance drift.
+
+At minimum:
+
+1. query EKB first;
+2. resolve exactly one profile and the canonical `ACTUALIZACION_PERFIL_LF` operation;
+3. create the canonical execution and read its active policy snapshot before any repository write;
+4. create and pass the canonical pre-write execution binding before any repository write;
+5. branch from the current exact `main` SHA;
+6. write only authorized paths and read them back from the remote branch;
+7. require deterministic, semantic, adversarial/holdout and Router/direct evidence as required by the bound policy;
+8. require all required workflows to be `SUCCESS` on the exact candidate HEAD;
+9. immediately before merge, re-read both `main` and the active operation policy; if either advanced, fail closed and recertify under the current authority without force-push;
+10. never create retroactive receipts or auxiliary PRs merely to compare branches;
+11. after merge, read back from the new `main`, close the canonical execution with evidence and enrich EKB.
+
 ## Governed profile execution
 
 When the user explicitly asks to use an existing repository profile, or Router resolves a request to profile execution, route it as `EJECUCION_PERFIL_LF`.

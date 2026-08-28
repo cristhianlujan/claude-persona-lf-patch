@@ -40,6 +40,7 @@ def build_receipt(
     *, execution_id: str, profile_code: str, profile_slug: str,
     profile_source_refs: list[str], profile_source_sha256: str,
     input_literal: str, raw_output: Any, runtime_attestation: dict[str, Any],
+    obligation_manifest_sha256: str | None = None,
 ) -> dict[str, Any]:
     receipt = {
         "receipt_type": RECEIPT_TYPE,
@@ -56,6 +57,8 @@ def build_receipt(
         "runtime_attestation": runtime_attestation,
         "downstream_authorized": False,
     }
+    if obligation_manifest_sha256 is not None:
+        receipt["obligation_manifest_sha256"] = obligation_manifest_sha256
     receipt["receipt_sha256"] = canonical_json_sha256(
         {key: value for key, value in receipt.items() if key != "receipt_sha256"}
     )
@@ -88,6 +91,9 @@ def validate_receipt(
     for key in ("profile_source_sha256", "input_sha256", "raw_output_sha256", "receipt_sha256"):
         if _nonempty_string(receipt.get(key)) and not _is_sha256(receipt.get(key)):
             errors.append(f"{key.upper()}_INVALID")
+    manifest_sha = receipt.get("obligation_manifest_sha256")
+    if manifest_sha is not None and not _is_sha256(manifest_sha):
+        errors.append("OBLIGATION_MANIFEST_SHA256_INVALID")
     if receipt.get("receipt_type") != RECEIPT_TYPE:
         errors.append("RECEIPT_TYPE_INVALID")
     if receipt.get("operation_code") != OPERATION_CODE:
@@ -138,12 +144,13 @@ def authorize_downstream(
     expected_profile_code: str | None = None, expected_input_literal: str | None = None,
     expected_raw_output: Any | None = None, expected_profile_source_sha256: str | None = None,
     semantic_receipt: Any | None = None, semantic_check_bundle: Any | None = None,
+    semantic_obligation_manifest: Any | None = None,
 ) -> dict[str, Any]:
     """Authorize a profile-dependent recipient.
 
-    SEMANTIC_JUDGE is the only provenance-only transition. Composer, generator, tool,
-    internal-agent and final-user recipients require both valid execution provenance and
-    a PASS semantic receipt bound to the exact supplied semantic check bundle.
+    SEMANTIC_JUDGE is the only provenance-only transition. Final recipients require
+    execution provenance plus a semantic PASS derived from the complete pre-execution
+    obligation manifest bound to the same execution receipt.
     """
 
     if recipient not in DOWNSTREAM_RECIPIENTS:
@@ -171,6 +178,8 @@ def authorize_downstream(
     semantic_errors = validate_semantic_judge_receipt(
         semantic_receipt,
         expected_bundle=semantic_check_bundle,
+        expected_obligation_manifest=semantic_obligation_manifest,
+        expected_raw_output=expected_raw_output,
         execution_receipt=receipt,
     )
     if semantic_errors:
@@ -181,6 +190,7 @@ def authorize_downstream(
         "blocking_codes": [],
         "execution_receipt_sha256": receipt["receipt_sha256"],
         "semantic_receipt_sha256": semantic_receipt["receipt_sha256"],
+        "obligation_manifest_sha256": receipt["obligation_manifest_sha256"],
         "authorized_recipient": recipient,
     }
 
@@ -199,6 +209,7 @@ def main(argv: Iterable[str] | None = None) -> int:
     parser.add_argument("--profile-source-sha256")
     parser.add_argument("--semantic-receipt", type=Path)
     parser.add_argument("--semantic-check-bundle", type=Path)
+    parser.add_argument("--semantic-obligation-manifest", type=Path)
     parser.add_argument("--recipient", default="INTERNAL_AGENT")
     args = parser.parse_args(list(argv) if argv is not None else None)
     receipt = _load_json(args.receipt)
@@ -206,6 +217,7 @@ def main(argv: Iterable[str] | None = None) -> int:
     raw_output = _load_json(args.raw_output) if args.raw_output else None
     semantic_receipt = _load_json(args.semantic_receipt) if args.semantic_receipt else None
     semantic_bundle = _load_json(args.semantic_check_bundle) if args.semantic_check_bundle else None
+    semantic_manifest = _load_json(args.semantic_obligation_manifest) if args.semantic_obligation_manifest else None
     result = authorize_downstream(
         profile_execution_required=True,
         recipient=args.recipient,
@@ -216,6 +228,7 @@ def main(argv: Iterable[str] | None = None) -> int:
         expected_profile_source_sha256=args.profile_source_sha256,
         semantic_receipt=semantic_receipt,
         semantic_check_bundle=semantic_bundle,
+        semantic_obligation_manifest=semantic_manifest,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0 if result["status"].startswith("PASS_") else 1

@@ -3,18 +3,19 @@
 ## RUNTIME CRITICAL GATE — EXECUTE FIRST; OVERRIDES LATER FORMAT RULES
 Before generating any UI spec, normalize every material finding as `DEFECT -> CORRECTION -> POSTCONDITION`.
 
+0. **AUTHORITY RESOLUTION FIRST.** Scan the supplied input and resolved upstream context before considering any missing-input block.
+   - If the input explicitly says presentation `A` is canonical/authoritative/the one to keep and presentation `B` is redundant/the one to remove, set `authority_resolved=true`, `survivor=A`, `redundant=B`.
+   - When `authority_resolved=true`, blocking for an unknown survivor is FORBIDDEN. Use the resolved survivor and remediate the redundant presentation.
+   - Generic example: `A is canonical; B is redundant` -> `KEEP A` + `REMOVE/HIDE/MERGE B`; do not ask which one survives.
 1. The correction MUST reduce/eliminate the defect. Never reproduce, invert or amplify it.
 2. If the defect says `duplicado`, `repetido` or `redundante`, `ADD/SHOW/COPY/CREATE another duplicate` is FORBIDDEN. Allowed directions are `REMOVE`, `HIDE`, `MERGE`, or `BLOCK`.
-3. If two duplicate presentations exist, keep exactly one authoritative survivor. Select it ONLY from explicit visible hierarchy or upstream authority.
-4. If the authoritative survivor is not established by the supplied evidence, DO NOT guess and DO NOT emit remediation actions. Return exactly a Missing Input State compatible with the schema:
-```json
-{"self_verdict":"BLOCKED","blocked":true,"missing_inputs":["authoritative survivor for duplicated presentation"],"safe_assumptions_available":false,"assumptions":[],"question_to_orchestrator":"Identify which duplicated presentation is authoritative.","pipeline_action":"BLOCK_PIPELINE"}
-```
+3. If no explicit upstream authority names the survivor, visible hierarchy may establish one. Keep exactly one authoritative survivor and remove/hide/merge the redundant presentation.
+4. **BLOCK ONLY IF AUTHORITY IS STILL UNRESOLVED.** `BLOCK_PIPELINE` for missing survivor is allowed only when neither supplied/upstream authority nor visible hierarchy establishes the survivor. Never block for information already resolved in the supplied context. Return the structured Missing Input State defined later in this skill; do not substitute a block when `authority_resolved=true`.
 5. Before output, scan every selected decision. If a decision would increase the diagnosed duplication, distance, density, contradiction, ambiguity, or unsupported semantic strength, DISCARD it and self-repair once. If no compliant decision remains, `BLOCK_PIPELINE`.
 6. For a duplication defect, NEVER output a decision containing `añadir`, `mostrar otra`, `crear`, `copiar` or equivalent amplification of the duplicated element.
 7. Acceptance must prove the defect is resolved. For duplication: `exactly one primary presentation remains`, never merely `the new duplicate renders correctly`.
 
-This gate has higher priority than producing a Production UI Spec. Fail-closed is preferable to a structurally plausible but directionally wrong remediation.
+This gate has higher priority than producing a Production UI Spec. Fail-closed is preferable to a structurally plausible but directionally wrong remediation, but fail-closed must not ignore authority that the current input has already resolved.
 
 Status: CANDIDATE_READ_ONLY / SANDBOX
 Profile Pack ID: UI_ARCHITECT_PROFILE_PACK_001

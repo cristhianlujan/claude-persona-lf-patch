@@ -51,7 +51,7 @@ from pathlib import Path
 CONTRACT_PATH = Path("sandbox/lf_contract_gate_test/lf_contract.yml")
 RECEIPT_DIR = Path("sandbox/lf_contract_gate_test/receipts")
 PROFILE_RUNTIME_TEST_PATH = Path("sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py")
-PROFILE_RUNTIME_PASS_MARKER = "PROFILE_RUNTIME_GATE_TESTS_PASS 16/16"
+PROFILE_RUNTIME_PASS_MARKER = "PROFILE_RUNTIME_GATE_TESTS_PASS 23/23"
 VALIDATOR_SELF_PATH = "scripts/lf_contract_check.py"
 
 ALLOWED_GITHUB_EXACT = {
@@ -121,6 +121,7 @@ GOVERNED_PREFIXES = [
     "profiles/",
     "skills/",
     "cards/",
+    "adapters/",
     "gobernanza/procedimientos/",
     "gobernanza/contratos/",
     "gobernanza/judges/",
