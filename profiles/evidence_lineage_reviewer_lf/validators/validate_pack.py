@@ -10,7 +10,7 @@ REQUIRED = [
 "fixtures/missing_inputs/input.json","fixtures/unsafe_or_blocked/input.json","fixtures/self_repair/bad_output.json",
 "evals/eval_matrix.json","evals/lineage_adversarial.py","handoffs/to_quality_pack.handoff.json","adapters/github_pack_adapter.md",
 "adapters/document_patch_adapter.md","references/research_to_rules_matrix.md","references/decision_matrix.md",
-"manifest.json","validators/validate_pack.py","validators/evaluate_lineage.py"
+"manifest.json","validators/validate_pack.py","validators/evaluate_lineage.py","validators/trusted_ref_resolver.py"
 ]
 STATUSES={"PASS_EVIDENCE_LINEAGE","PASS_WITH_RESTRICTIONS","RETURN_TO_SOURCE_FOR_READBACK","BLOCK_PIPELINE"}
 
