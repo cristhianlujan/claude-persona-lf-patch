@@ -9,11 +9,7 @@
   "all_required_steps_pass": true,
   "contract_sha": "57d0533a0a6a62064e72a4f521fa463eeec2eb76354071cfab6b4746b13814c6",
   "judge_sha": "00a4d79ad3db028cde41524fed6e3ef34a7f97f43cf1168e324bce496bb64dbf",
-  "source_sha_list": [
-    "791c934fecbac9682f87c9637064c991b3f205bc",
-    "ae172a3c67ef2359c92f814776925ecc8b93d151",
-    "fdc5541520c704922d7b7760db34a44134178390"
-  ],
+  "source_sha_list": ["791c934fecbac9682f87c9637064c991b3f205bc","ae172a3c67ef2359c92f814776925ecc8b93d151","fdc5541520c704922d7b7760db34a44134178390"],
   "target_paths": ["skills/profile_creator/**"],
   "blocking_codes": [],
   "issued_at": "2026-08-28T17:40:00Z",
@@ -42,5 +38,5 @@
   "automatic_promotion": false,
   "state_ceiling": "GOV021_DEPTH_REMEDIATION_VERIFIED_PENDING_MERGE_READBACK",
   "post_merge_steps_pending": [120,130],
-  "notes": "Independent semantic evidence is preserved on immutable commit ae172a3c. Final PR diff intentionally excludes sandbox_runs/** because the repository's existing sandbox gate-install rejects that path; this receipt pins the immutable evidence refs without modifying Profile Creator content. Runtime and automatic impact remain unchanged/blocked."
+  "notes": "Independent semantic evidence is preserved on immutable commit ae172a3c. Final PR diff excludes sandbox_runs/** because the repository's existing sandbox gate-install rejects that path; this receipt pins exact immutable evidence refs without modifying Profile Creator content. Runtime and automatic impact remain unchanged/blocked."
 }
