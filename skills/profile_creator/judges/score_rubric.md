@@ -1,28 +1,29 @@
 # Score Rubric — LF Profile Creator
 
-## PASS
+## PRODUCER ACCEPTANCE
 
-- Router-first route is explicit.
-- Supabase source verification is required.
-- Active governing asset is checked.
-- Output is a complete profile pack candidate.
-- If `PROFILE_PACK_CREATED` is claimed, the created artifact is directly resolvable and contains the components claimed by the producer.
-- The declared receiver can consume that artifact without inventing missing structure, content or intent.
+- Router/source authority is explicit and conflicts are not silently resolved.
+- The created candidate is exact and resolvable.
+- The candidate passes `skills/profile_creator/validators/validate_candidate_depth.py`.
+- `depth_gate.status` is `DEPTH_READY_FOR_SEMANTIC_REVIEW` and is bound to the same artifact reference.
+- Core contract, schema, judge, evals, evidence and handoff are developed enough for review rather than stub-only.
+- Positive and negative eval cases contain assertions.
+- User-facing candidates protect internal orchestration metadata; internal-only candidates do not invent a user boundary.
 - Runtime and automatic impact remain blocked.
-- Review gates are preserved.
-- Rules are consolidated as reusable mother rules.
 
-## PASS_WITH_RESTRICTIONS
+## RETURN_TO_WORKER
 
-- Pack is complete and consumable but still requires sandbox evidence before use.
-- Minor wording or adapter details remain open.
+- A required semantic-depth component is missing, nominal, untyped, unsupported by evidence, or not actionable.
+- Evals lack negative coverage/assertions.
+- Handoff forces Quality Pack to reconstruct artifact identity, evidence, schema/rubric or failure routing.
+- Depth gate was not executed against the exact deliverable.
 
-## FAIL
+## BLOCK
 
-- Output is prompt-only.
-- `PROFILE_PACK_CREATED` is claimed but no resolvable candidate artifact is delivered.
-- The next worker must reconstruct the supposedly created pack from filenames, prose or assumptions.
-- Final profile is created directly.
-- Runtime or production general is enabled.
-- Supabase write or ACT-0045 modification is proposed without explicit approval.
-- Narrow rules are multiplied instead of consolidated.
+- Authority is contradictory and a value is selected anyway.
+- Evidence is fabricated or only asserted generically.
+- Internal metadata leaks into a declared user-facing payload.
+- Runtime, production or automatic impact is enabled.
+- Producer depth is presented as independent semantic approval.
+
+`DEPTH_READY_FOR_SEMANTIC_REVIEW` is only a deterministic producer gate. Independent semantic Quality Pack review remains required before any semantic PASS or promotion.

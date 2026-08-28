@@ -22,24 +22,98 @@
         "BLOCK_PIPELINE"
       ]
     },
-    "profile_pack_id": { "type": "string" },
-    "source_authority": { "type": "string" },
-    "deliverable_created": { "type": "boolean" },
-    "deliverable_artifact_ref": { "type": "string", "minLength": 1 },
-    "files_created": { "type": "array", "items": { "type": "string" } },
-    "evidence_map": { "type": "object" },
-    "blocking_codes": { "type": "array", "items": { "type": "string" } },
-    "next_gate": { "type": "string" }
+    "profile_pack_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_authority": {
+      "type": "string",
+      "minLength": 1
+    },
+    "deliverable_created": {
+      "type": "boolean"
+    },
+    "deliverable_artifact_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "files_created": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "evidence_map": {
+      "type": "object"
+    },
+    "blocking_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_gate": {
+      "type": "string",
+      "minLength": 1
+    },
+    "depth_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "validator_ref",
+        "candidate_ref",
+        "validation_scope",
+        "semantic_quality_review",
+        "blocking_codes"
+      ],
+      "properties": {
+        "status": {
+          "const": "DEPTH_READY_FOR_SEMANTIC_REVIEW"
+        },
+        "validator_ref": {
+          "const": "skills/profile_creator/validators/validate_candidate_depth.py"
+        },
+        "candidate_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "validation_scope": {
+          "const": "DETERMINISTIC_DEPTH_ONLY"
+        },
+        "semantic_quality_review": {
+          "const": "NOT_EXECUTED"
+        },
+        "blocking_codes": {
+          "type": "array",
+          "maxItems": 0
+        }
+      }
+    }
   },
   "allOf": [
     {
       "if": {
-        "properties": { "status": { "const": "PROFILE_PACK_CREATED" } },
-        "required": ["status"]
+        "properties": {
+          "status": {
+            "const": "PROFILE_PACK_CREATED"
+          }
+        },
+        "required": [
+          "status"
+        ]
       },
       "then": {
-        "required": ["deliverable_artifact_ref"],
-        "properties": { "deliverable_created": { "const": true } }
+        "required": [
+          "deliverable_artifact_ref",
+          "depth_gate"
+        ],
+        "properties": {
+          "deliverable_created": {
+            "const": true
+          }
+        }
       }
     }
   ]
