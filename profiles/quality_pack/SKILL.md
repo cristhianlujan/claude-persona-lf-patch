@@ -166,3 +166,6 @@ For `INDEPENDENT_CHAT_CONTEXT`, also save the validated wrapper receipt as:
 `sandbox_runs/<profile_or_case>/<run_id>/independent_semantic_review_receipt.json`
 
 Deterministic intake evidence must preserve the exact input fixture, runner revision, output and actual-vs-expected result separately from the semantic review artifact.
+
+## CI validation entrypoint
+`validators/validate_pack.py` is the deterministic pack-validation entrypoint for repository CI. It must execute `evals/quality_gate_adversarial.py`, expose the matrix JSON (including `case_count` and `results_sha256`) in CI logs, and fail closed when the matrix fails, its output is malformed, or the expected GOV-037 regression coverage is missing. A CI PASS from this entrypoint proves only the deterministic/adversarial package suite at that exact checkout; it does not self-authorize runtime, production, semantic promotion or independent post-merge remediation closure.
