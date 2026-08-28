@@ -27,14 +27,30 @@ def _resolve(resolver, ref):
         return None, exc.code
 
 
-def _receipt_identity(raw):
+def _receipt_facts(raw):
     try:
         payload = json.loads(raw.decode("utf-8"))
     except Exception:
-        return None
+        return None, set()
     if not isinstance(payload, dict):
-        return None
-    return payload.get("receipt_id") or payload.get("execution_id")
+        return None, set()
+    receipt_id = payload.get("receipt_id") or payload.get("execution_id")
+    subjects = set()
+    for key in (
+        "subject_sha256",
+        "candidate_sha",
+        "candidate_sha256",
+        "raw_output_sha256",
+        "artifact_sha256",
+        "contract_sha",
+    ):
+        value = payload.get(key)
+        if good_sha(value):
+            subjects.add(value.lower())
+    for value in payload.get("source_sha_list", []):
+        if good_sha(value):
+            subjects.add(value.lower())
+    return receipt_id, subjects
 
 
 def evaluate(case, resolver=None):
@@ -68,7 +84,6 @@ def evaluate(case, resolver=None):
     refs = set()
     receipts = set()
     resolved_authorities = set()
-    resolved_sources = {}
     candidate_sha = case.get("candidate_sha")
     provenance_required = case.get("provenance_required", True)
     artifact_required = case.get("artifact_required", True)
@@ -101,8 +116,6 @@ def evaluate(case, resolver=None):
             observed, resolve_code = _resolve(resolver, ref)
             if observed is None:
                 readback.append(prefix + "_REF_UNRESOLVED:" + str(resolve_code))
-            else:
-                resolved_sources[ref] = observed
 
         if source.get("required") is True:
             if source.get("read") is not True:
@@ -139,6 +152,7 @@ def evaluate(case, resolver=None):
 
             receipt_id = source.get("receipt_id")
             receipt_ref = source.get("receipt_ref")
+            receipt_subject = source.get("receipt_subject_sha")
             if provenance_required and not text(receipt_id):
                 readback.append(prefix + "_RECEIPT_MISSING")
             if provenance_required and not text(receipt_ref):
@@ -148,16 +162,18 @@ def evaluate(case, resolver=None):
                     blocking.append("RECEIPT_REPLAY")
                 else:
                     receipts.add(receipt_id)
-                if source.get("receipt_subject_sha") != candidate_sha:
+                if receipt_subject != candidate_sha:
                     blocking.append(prefix + "_RECEIPT_SUBJECT_MISMATCH")
             if text(receipt_ref):
                 receipt_observed, receipt_code = _resolve(resolver, receipt_ref)
                 if receipt_observed is None:
                     readback.append(prefix + "_RECEIPT_REF_UNRESOLVED:" + str(receipt_code))
                 elif text(receipt_id):
-                    actual_receipt_id = _receipt_identity(receipt_observed["raw"])
+                    actual_receipt_id, actual_subjects = _receipt_facts(receipt_observed["raw"])
                     if actual_receipt_id != receipt_id:
                         blocking.append(prefix + "_RECEIPT_ID_NOT_RESOLVER_VERIFIED")
+                    if good_sha(receipt_subject) and receipt_subject.lower() not in actual_subjects:
+                        blocking.append(prefix + "_RECEIPT_SUBJECT_NOT_RESOLVER_VERIFIED")
 
     if sources and not resolved_authorities:
         blocking.append("INDEPENDENT_AUTHORITY_MISSING")
