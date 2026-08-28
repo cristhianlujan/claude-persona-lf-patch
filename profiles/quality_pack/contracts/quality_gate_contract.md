@@ -30,6 +30,22 @@ The deterministic same-repository GitHub resolver is `validators/trusted_ref_res
 
 If evidence is absent, unresolvable, self-certified, digest-mismatched, stale, or receipt-unverified, Quality Pack must not mark the applicable gate PASS.
 
+## Routing semantics
+Quality Pack has two governed activation routes:
+- execution: `ACT-0001 -> EJECUCION_PERFIL_LF -> PERFIL-QUALITY-PACK`;
+- maintenance: `ACT-0001 -> ACTUALIZACION_PERFIL_LF -> PERFIL-QUALITY-PACK`.
+
+A direct profile invocation and a Router invocation with materially equivalent context must produce the same verdict and normalized redirect. The output records only the activation path difference.
+
+All downstream transitions return through the Orchestrator; Quality Pack does not name or call an arbitrary `target_profile`:
+- `PASS_TO_COMPOSER` -> `CONTINUE / COMPOSER` via Orchestrator;
+- `PASS_WITH_RESTRICTIONS` -> `CONTINUE_WITH_RESTRICTIONS / COMPOSER` via Orchestrator;
+- `RETURN_TO_WORKER_FOR_SELF_REPAIR` -> `RETURN_TO_ORCHESTRATOR / PRODUCER_REPAIR`;
+- `RETURN_TO_ORCHESTRATOR` -> `RETURN_TO_ORCHESTRATOR / AUTHORITY_OR_CONTEXT_RESOLUTION`;
+- `BLOCK_PIPELINE` -> `BLOCK_PIPELINE / NONE`.
+
+`validators/validate_routing.py` is the deterministic routing gate. A mismatched target, direct `target_profile`, invalid activation path, or bypass of the Orchestrator is invalid even when the underlying quality verdict is otherwise correct.
+
 ## Repair routing
 - Use `RETURN_TO_WORKER_FOR_SELF_REPAIR` when the input is sufficient but the worker output is incomplete.
 - Use `RETURN_TO_ORCHESTRATOR` when upstream context/source readback is insufficient or wrong profile was activated.
