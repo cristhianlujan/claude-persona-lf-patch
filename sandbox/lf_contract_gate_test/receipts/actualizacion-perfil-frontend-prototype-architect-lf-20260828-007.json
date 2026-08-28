@@ -9,12 +9,12 @@
   "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
   "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
   "source_sha_list": [
-    "dd81e4f567941e4ad907e4ffd219170b17697a79"
+    "19fcbebb9c475724aa4acdcb21e009db769bd1b2"
   ],
   "target_paths": ["profiles/frontend_prototype_architect_lf/**"],
   "blocking_codes": [],
-  "issued_at": "2026-08-28T05:44:00Z",
-  "notes": "PASS_SANDBOX candidate-source receipt for governed execution 007. Fresh MODEL_RUNTIME evidence after merged PR #279 still omitted RETURN_TO_ORCHESTRATOR for the Shell redirect on exact main ff68af4d70c1ec509b64d27b09cb7b3efaa73ffc. Candidate blob dd81e4f567941e4ad907e4ffd219170b17697a79 adds a final-position Shell serialization guard while preserving ACT-0051 identity, frontend boundaries, runtime/production blocks and no automatic promotion. Validate LF Packs passed before this receipt; lf-contract-check reached only FAIL_RECEIPT_MISSING after migration and runtime regressions passed. This receipt proves candidate source/operation evidence only and does not claim live behavioral PASS. Final closure requires exact-head CI, merge/readback and a fresh MODEL_RUNTIME canary from merged main emitting the exact four-segment redirect.",
+  "issued_at": "2026-08-28T06:50:20Z",
+  "notes": "PASS_SANDBOX candidate-source receipt for governed execution 007 after the first post-merge direct canary on main 3f906c97b495a299d90d74c02216d9d4186cb60e reproduced the forbidden three-segment Shell redirect while the Router holdout emitted the required four-segment form. Candidate blob 19fcbebb9c475724aa4acdcb21e009db769bd1b2 removes negative serialization priming and adds a zero-transformation SHELL_LOCKED short-circuit while preserving ACT-0051 identity, frontend boundaries, runtime/production blocks and no automatic promotion. This receipt proves candidate source/operation evidence only and does not claim live behavioral PASS. Final closure still requires exact-head CI, merge/readback and two fresh MODEL_RUNTIME canaries from the remediated merged main emitting the exact four-segment redirect.",
   "supersedes_execution": "EXEC-ACTUALIZACION-PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF-20260828-006",
-  "supersedes_pr": 279
+  "supersedes_pr": 284
 }
