@@ -12,12 +12,9 @@
   "source_sha_list": [
     "791c934fecbac9682f87c9637064c991b3f205bc",
     "ae172a3c67ef2359c92f814776925ecc8b93d151",
-    "fdc5541520c704922d7b7760db34a44134178390",
-    "4ca5b06c1d4cc74b67a6212e408ab24beb0379cf"
+    "fdc5541520c704922d7b7760db34a44134178390"
   ],
-  "target_paths": [
-    "skills/profile_creator/**"
-  ],
+  "target_paths": ["skills/profile_creator/**"],
   "blocking_codes": [],
   "issued_at": "2026-08-28T17:40:00Z",
   "target_type": "SKILL",
@@ -44,6 +41,6 @@
   "runtime_unchanged": true,
   "automatic_promotion": false,
   "state_ceiling": "GOV021_DEPTH_REMEDIATION_VERIFIED_PENDING_MERGE_READBACK",
-  "post_merge_steps_pending": [120, 130],
-  "notes": "GOV-021 Profile Creator remediation remains bounded to deterministic depth readiness plus an independent semantic review of the unchanged profile_creator tree. The semantic review artifacts were materialized on immutable commit ae172a3c and removed from the final PR diff because the repository's sandbox gate-install scope rejects sandbox_runs/**; immutable Git history preserves both artifacts and this governed receipt pins their exact refs. Runtime remains unchanged, automatic impact remains blocked, and close/report_output remain pending until exact-head CI, protected merge, and postmerge readback."
+  "post_merge_steps_pending": [120,130],
+  "notes": "Independent semantic evidence is preserved on immutable commit ae172a3c. Final PR diff intentionally excludes sandbox_runs/** because the repository's existing sandbox gate-install rejects that path; this receipt pins the immutable evidence refs without modifying Profile Creator content. Runtime and automatic impact remain unchanged/blocked."
 }
