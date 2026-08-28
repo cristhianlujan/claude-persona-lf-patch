@@ -10,17 +10,16 @@
   "contract_sha": "57d0533a0a6a62064e72a4f521fa463eeec2eb76354071cfab6b4746b13814c6",
   "judge_sha": "00a4d79ad3db028cde41524fed6e3ef34a7f97f43cf1168e324bce496bb64dbf",
   "source_sha_list": [
-    "e8aa7cd581c5ee6a9c91c38f133f512b14b0ac3d",
-    "4ca5b06c1d4cc74b67a6212e408ab24beb0379cf",
-    "af55af135772c5ef3ed5c46a4ab064fe5e84e4fe",
-    "a502d652c52f4b5532e62d714d49340a1b2cf818",
-    "025d9dd3df5215281c806ddfa1b50ac158a7cd79"
+    "791c934fecbac9682f87c9637064c991b3f205bc",
+    "ae172a3c67ef2359c92f814776925ecc8b93d151",
+    "fdc5541520c704922d7b7760db34a44134178390",
+    "4ca5b06c1d4cc74b67a6212e408ab24beb0379cf"
   ],
   "target_paths": [
     "skills/profile_creator/**"
   ],
   "blocking_codes": [],
-  "issued_at": "2026-08-28T05:38:14Z",
+  "issued_at": "2026-08-28T17:40:00Z",
   "target_type": "SKILL",
   "target_code": "ACT-0045",
   "target_path": "skills/profile_creator",
@@ -32,13 +31,19 @@
   "required_after_write": "9/9_PASS",
   "deterministic_gov021_champion_challenger": "8/8_PASS",
   "generic_profile_discovery_matrix": "6/6_PASS",
-  "exact_head_validation_run_id": 33145184409,
-  "validated_substantive_head": "e8aa7cd581c5ee6a9c91c38f133f512b14b0ac3d",
+  "validated_substantive_head": "791c934fecbac9682f87c9637064c991b3f205bc",
+  "validated_profile_creator_tree": "fdc5541520c704922d7b7760db34a44134178390",
+  "semantic_review_case_id": "PROFILE-CREATOR-GOV021-PR283-791c934",
+  "semantic_review_evidence_commit": "ae172a3c67ef2359c92f814776925ecc8b93d151",
+  "semantic_review_receipt_ref": "github://cristhianlujan/claude-persona-lf-patch@ae172a3c67ef2359c92f814776925ecc8b93d151/sandbox_runs/profile_creator_gov021/PROFILE-CREATOR-GOV021-PR283-791c934/independent_semantic_review_receipt.json",
+  "semantic_review_quality_ref": "github://cristhianlujan/claude-persona-lf-patch@ae172a3c67ef2359c92f814776925ecc8b93d151/sandbox_runs/profile_creator_gov021/PROFILE-CREATOR-GOV021-PR283-791c934/quality_review.json",
+  "semantic_review_receipt_valid": true,
+  "semantic_review_score": "25/25",
+  "semantic_review_verdict": "PASS_WITH_RESTRICTIONS",
+  "semantic_review_blocking_codes": [],
   "runtime_unchanged": true,
   "automatic_promotion": false,
-  "state_ceiling": "DETERMINISTIC_DEPTH_READY_NOT_SEMANTIC_QUALITY_PASS",
-  "semantic_quality_review": "NOT_EXECUTED",
+  "state_ceiling": "GOV021_DEPTH_REMEDIATION_VERIFIED_PENDING_MERGE_READBACK",
   "post_merge_steps_pending": [120, 130],
-  "hash_provenance": "contract_sha and judge_sha reuse the attested ACTUALIZACION_SKILL_LF v0.1 hashes from the prior governed Profile Creator CI015 receipt; Supabase ACTUALIZACION_SKILL_LF v0.1 contract/judge rows remain active and currently store null hash columns.",
-  "notes": "Receipt asserts the active ACTUALIZACION_SKILL_LF before/after-write obligations for the GOV-021 rescue. Fresh candidate validation on e8aa7cd581c5ee6a9c91c38f133f512b14b0ac3d passed GOV-021 champion/challenger 8/8 and generic profile validator discovery 6/6. Historical PR #237 is source evidence only. Deterministic depth readiness is not independent semantic Quality Pack approval. close/report_output remain post-merge and this receipt does not declare execution closure."
+  "notes": "GOV-021 Profile Creator remediation remains bounded to deterministic depth readiness plus an independent semantic review of the unchanged profile_creator tree. The semantic review artifacts were materialized on immutable commit ae172a3c and removed from the final PR diff because the repository's sandbox gate-install scope rejects sandbox_runs/**; immutable Git history preserves both artifacts and this governed receipt pins their exact refs. Runtime remains unchanged, automatic impact remains blocked, and close/report_output remain pending until exact-head CI, protected merge, and postmerge readback."
 }
