@@ -7,7 +7,7 @@ Status: SUPERSEDED_BY_MISSING_INPUT_POLICY_V2 / RUNTIME_RETEST_REQUIRED
 - Current closure execution: `EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260828-007`
 - Asset: `PERFIL-UI-ARCHITECT`
 - Historical V3 baseline main: `a8e82a9941db479775a2c78a25b590d4431fa6e6`
-- Current remediation branch: `lf/ui-runtime-closure-v8-20260828`
+- Current remediation branch: `lf/ui-single-envelope-v9-20260828`
 
 ## Historical V3 evidence preserved
 Runtime request `8fdd51e7-3422-4324-b433-cce7d6b22d99` executed from historical `main@a8e82a9941db479775a2c78a25b590d4431fa6e6` with the pinned zero-cost Qwen2.5-VL 3B runtime.
@@ -46,6 +46,32 @@ The current branch strengthens only `profiles/ui_architect/**` behavior/evidence
 - unresolved authority must serialize the complete Missing Input State JSON;
 - `RETURN_TO_ORCHESTRATOR` and `BLOCK_PIPELINE` remain distinct according to Missing Input Policy V2;
 - the V3 salience test is reconciled to the current policy rather than forcing every unresolved case to BLOCK.
+
+## Post-V8 canaries on main@b97234d2c87f0c0211c290f668b195b577002787
+Two fresh zero-cost `MODEL_RUNTIME` runs evaluated merged PR #289:
+
+1. Unresolved authority — request `f383677a-0e3b-44ea-a991-5b68f79fcc2d`, run `33185648132`:
+   - returned one complete Missing Input State;
+   - did not guess the survivor;
+   - used `pipeline_action=RETURN_TO_ORCHESTRATOR`;
+   - structural and semantic result: PASS.
+
+2. Resolved authority — request `337fd41d-a86d-428a-9441-10c119173582`, run `33185638102`:
+   - preserved `payment_summary` and removed only `top_amount_strip`;
+   - satisfied the semantic direction and survivor invariant;
+   - repeated the top-level `score`, `handoff_to_next`, and `self_verdict` tail after an early root close;
+   - omitted mandatory `evidence_component_ids` from the remediation action;
+   - structural result: FAIL because the RAW is not one valid contract-complete JSON object.
+
+Both runs are attested `MODEL_RUNTIME`, `ZERO_COST_ONLY`, on exact merged `main@b97234d2c87f0c0211c290f668b195b577002787`.
+
+## V9 minimal remediation
+V9 remains within `profiles/ui_architect/**` and adds only final serialization safeguards:
+- emit exactly one JSON object, with no Markdown wrapper or surrounding prose;
+- serialize each required top-level field exactly once and stop after the final root closing brace;
+- keep `score`, `handoff_to_next`, and `self_verdict` as root siblings, never nested or repeated;
+- require `evidence_component_ids` in each existing-screen remediation action and bind it to `execution.target_component_id`;
+- self-repair malformed, duplicated, partial, or structurally incomplete output once before emission.
 
 ## Verification boundary
 This file does not claim behavioral closure. Closure still requires exact-head CI, merge/readback, and two fresh post-merge MODEL_RUNTIME canaries from merged `main` proving:

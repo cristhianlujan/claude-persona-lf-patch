@@ -9,13 +9,13 @@
   "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
   "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
   "source_sha_list": [
-    "13d42c045a34cb09d5c2002d301f4e1880b44653",
+    "73275f8ec24318c84b4c03170dad1fe5741b4b82",
     "e229b7e1cf130541754255e3e85a7b7329a49939",
-    "24d8b69eee3eb720d61ace25d29b0039890b19a2",
-    "155281e01cab7629739dee25c23c8bb83263781c"
+    "52b6a18547d2623b6dfa004f8618c928453fe175",
+    "695bfede8af61a1db9ee9c40edb918079d1a7d98"
   ],
   "target_paths": ["profiles/ui_architect/**"],
   "blocking_codes": [],
-  "issued_at": "2026-08-28T15:49:33Z",
-  "notes": "PASS_SANDBOX candidate-source receipt for P1 runtime-closure V9 under canonical execution 007. Pre-remediation MODEL_RUNTIME evidence from main@5079a3f8fbb6edd4cbdfdcfa092da887479cb0e7 recorded two behavioral failures: resolved-authority request 5ea5c0c5-315b-4f83-b177-e64baa10e7cd / run 33183201945 removed top strip and also hid canonical Resumen and returned an incomplete Production UI Spec; unresolved-authority request 5ad2bde5-8d4e-438a-a55d-99cfedf51a80 / run 33183212795 returned only RETURN_TO_ORCHESTRATOR instead of the complete Missing Input State. V8 was merged as PR #289 to main@b97234d2c87f0c0211c290f668b195b577002787. Fresh post-merge canary B f383677a-0e3b-44ea-a991-5b68f79fcc2d / run 33185648132 passed with complete Missing Input State, MODEL_RUNTIME, ZERO_COST_ONLY, exact merged SHA. Fresh post-merge canary A 337fd41d-a86d-428a-9441-10c119173582 / run 33185638102 corrected the semantic decision by preserving payment_summary and removing only top_amount_strip, but its RAW repeated top-level score/handoff/self_verdict after an early close and therefore was not one valid JSON object. V9 minimally adds a single-JSON-envelope final serialization invariant in profiles/ui_architect/SKILL.md: exactly one JSON object, top-level fields exactly once, no Markdown wrapper/prose, and stop immediately after the final top-level closing brace. This receipt does not claim behavioral PASS, production, VALIDATED, runtime enablement or automatic promotion. Execution 007 remains IN_PROGRESS until exact-head CI, merge/readback, and two fresh post-merge zero-cost MODEL_RUNTIME canaries both pass."
+  "issued_at": "2026-08-28T15:56:07Z",
+  "notes": "PASS_SANDBOX candidate-source receipt for P1 runtime-closure V9 under canonical execution 007. PR #289 merged V8 to main@b97234d2c87f0c0211c290f668b195b577002787. Fresh post-merge canary B f383677a-0e3b-44ea-a991-5b68f79fcc2d / run 33185648132 passed with one complete Missing Input State, MODEL_RUNTIME, ZERO_COST_ONLY and exact merged SHA. Fresh post-merge canary A 337fd41d-a86d-428a-9441-10c119173582 / run 33185638102 corrected the semantic decision by preserving payment_summary and removing only top_amount_strip, but deterministic readback proved valid_json=false, score_key_count=2 and evidence_component_ids absent. V9 minimally requires one JSON envelope, root fields exactly once, immediate stop after the final root brace, and mandatory evidence_component_ids bound to execution.target_component_id; the V6 salience gate and live evidence now assert both structural repairs. This receipt does not claim behavioral PASS, production, VALIDATED, runtime enablement or automatic promotion. Execution 007 remains IN_PROGRESS until exact-head CI, merge/readback, and two fresh post-merge zero-cost MODEL_RUNTIME canaries both pass."
 }

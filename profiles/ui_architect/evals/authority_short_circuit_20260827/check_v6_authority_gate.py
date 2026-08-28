@@ -14,6 +14,10 @@ checks = {
     "positive_resumen_survivor_example": "Resumen` canonical + `top strip` redundant" in head and "top_amount_strip" in head and "payment_summary" in head,
     "survivor_kept_out_of_remediation_target": "not as a remediation target" in head,
     "full_production_spec_required": "never abbreviate the output to a list of findings" in head and "PRODUCTION_UI_SPEC" in head,
+    "single_json_envelope_required": "SINGLE JSON ENVELOPE" in head and "exactly one JSON object and nothing else" in head,
+    "top_level_fields_exactly_once": "must each appear exactly once" in head and "never place or repeat them inside" in head,
+    "evidence_target_binding_required": "evidence_component_ids` is mandatory" in head and "execution.target_component_id" in head,
+    "stop_after_final_object": "stop generation immediately" in head and "Never restart the envelope" in head,
     "unresolved_authority_short_circuit": "UNRESOLVED AUTHORITY SHORT-CIRCUIT" in head,
     "complete_missing_state_not_bare_token": "do not emit a bare pipeline-action token" in head,
 }
