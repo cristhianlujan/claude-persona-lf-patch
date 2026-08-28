@@ -34,10 +34,14 @@ def main():
             for rel in REQUIRED:
                 if rel not in declared: blocking.append("MANIFEST_MISSING_DECLARATION:"+rel)
             for name in ["good_output.json","bad_output.json","self_repair_output.json"]:
-                obj=load(root/"examples"/name)
+                example_path=root/"examples"/name
+                obj=load(example_path)
                 if obj.get("status") not in STATUSES: blocking.append("INVALID_EXAMPLE_STATUS:"+name)
                 for key in ["claim","authority_reads","source_readbacks","revision_binding","structural_identifier_reconciliation","evidence_map","blocking_codes","next_gate","routing"]:
                     if key not in obj: blocking.append("EXAMPLE_MISSING_FIELD:"+name+":"+key)
+                routing_run=subprocess.run([sys.executable,str(root/"validators/validate_routing.py"),str(example_path)],cwd=root,text=True,capture_output=True)
+                if routing_run.returncode!=0:
+                    blocking.append("EXAMPLE_ROUTING_INVALID:"+name)
             matrix=load(root/"evals/eval_matrix.json")
             cases=matrix.get("cases",[])
             if len(cases)<5: blocking.append("EVAL_MATRIX_REQUIRES_MINIMUM_5_CASES")
