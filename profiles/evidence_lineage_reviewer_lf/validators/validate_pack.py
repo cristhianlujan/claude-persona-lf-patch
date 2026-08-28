@@ -50,6 +50,10 @@ def main():
                 if not fixture or not (root/fixture).exists(): blocking.append("EVAL_FIXTURE_MISSING:"+str(fixture))
                 if c.get("expected_status") not in STATUSES: blocking.append("EVAL_EXPECTED_STATUS_INVALID:"+str(cid))
             run=subprocess.run([sys.executable,str(root/"evals/lineage_adversarial.py")],cwd=root,text=True,capture_output=True)
+            if run.stdout:
+                print(run.stdout, end="" if run.stdout.endswith("\n") else "\n")
+            if run.stderr:
+                print(run.stderr, end="" if run.stderr.endswith("\n") else "\n", file=sys.stderr)
             if run.returncode!=0:
                 blocking.append("LINEAGE_ADVERSARIAL_EVAL_FAILED")
                 if run.stderr.strip(): blocking.append("LINEAGE_ADVERSARIAL_STDERR:"+run.stderr.strip()[:300])
