@@ -1,0 +1,30 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-QUALITY-PACK-20260827-002",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "6668383112ee3478beb0504a1e1a9d2ce07516c7",
+    "ac3f179b3c3d657027a919c0a0ff7deaf29c2c71",
+    "03d1555f3bc8f2d67ddf89d836be5815ccbc3f03"
+  ],
+  "target_paths": ["profiles/quality_pack/**"],
+  "blocking_codes": [],
+  "issued_at": "2026-08-28T04:08:16Z",
+  "target_type": "PROFILE",
+  "target_code": "QUALITY_PACK_GATE_001",
+  "branch": "lf/quality-evidence-gov037-v3-20260827",
+  "pr_number": 265,
+  "validated_substantive_head": "ac3f179b3c3d657027a919c0a0ff7deaf29c2c71",
+  "deterministic_matrix": "21/21_PASS",
+  "deterministic_run_id": 33140897137,
+  "runtime_unchanged": true,
+  "automatic_promotion": false,
+  "post_merge_steps_pending": [120, 130],
+  "notes": "Canonical ACTUALIZACION_PERFIL_LF steps 0-110 are STEP_PASS_WITH_EVIDENCE after refreshing the pre-write binding to main@6668383112ee3478beb0504a1e1a9d2ce07516c7. Fresh Actions run 33140897137 executed Quality Pack through generic Profile Creator discovery and produced 21/21 PASS, including GOV-037 resolver-backed negatives, malformed input fail-closed, adversarial routing, Router/direct equivalence and fresh holdout. The prior candidate 03d1555f3bc8f2d67ddf89d836be5815ccbc3f03 is superseded. all_required_steps_pass refers to proven pre-merge obligations; close/report 120/130 remain post-merge. No runtime enablement, promotion, merge, or independent behavioral audit is claimed."
+}

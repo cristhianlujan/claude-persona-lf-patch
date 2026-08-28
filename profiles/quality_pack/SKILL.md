@@ -37,7 +37,7 @@ If a trigger from the learning card is present and the output channel gate was n
 
 ## Modular contracts to load
 1. `contracts/quality_gate_contract.md`
-   - Defines how Quality Pack audits evidence, score, schema, risks and handoff.
+   - Defines how Quality Pack audits independently resolved evidence, score, schema, risks and handoff.
 
 2. `contracts/lf_quality_controls.md`
    - Defines LF-specific quality controls for debt/financial stress, clarity, no pressure and visual safety.
@@ -49,7 +49,7 @@ If a trigger from the learning card is present and the output channel gate was n
    - Defines the 25-point Quality Pack score.
 
 5. `judges/quality_pack_mini_judge.md`
-   - Defines PASS/FAIL gates and mandatory blocking logic.
+   - Defines PASS/FAIL gates, resolver-backed evidence and mandatory blocking logic.
 
 6. `../../orchestrator/decision_logic.md`
    - Defines recipient/output allowlists and gates that prevent suggestion-only outputs, internal leakage and contaminated image/tool payloads.
@@ -66,8 +66,22 @@ If a trigger from the learning card is present and the output channel gate was n
 10. `schemas/independent_semantic_review_receipt.schema.json`
    - Receipt contract that separates independent semantic execution from automated semantic judge implementation.
 
-## Deterministic handoff intake pre-check
+## Resolver-backed evidence boundary — GOV-037
+Quality Pack must never infer that a source was observed because the candidate payload says `observed=true`, `read=true`, `current=true`, `sha_match=true` or `receipt_valid=true`.
 
+For every evidence object that contributes to an applicable PASS:
+1. resolve its ref with an independently trusted provider resolver;
+2. read the actual bytes/data from that boundary;
+3. recompute SHA-256;
+4. compare the derived digest to the declared digest;
+5. derive currentness from the resolved revision;
+6. when provenance is applicable, resolve the receipt independently as its own evidence object.
+
+`validators/trusted_ref_resolver.py` is the deterministic resolver for immutable same-repository GitHub refs (`github://owner/repo@<40-hex-commit>/<path>`). Unsupported providers remain fail-closed until an independently authorized resolver is supplied.
+
+A nonexistent ref + valid-looking SHA + all boolean flags true must never yield PASS. A real ref with the wrong declared digest must never yield PASS. A declared `current=true` cannot override resolver-derived stale revision evidence.
+
+## Deterministic handoff intake pre-check
 For producer→Quality Pack continuity evaluation, run `validators/run_handoff_intake.py` before any semantic review claim.
 
 This executable pre-check answers only whether the receiver has enough explicit context and an observable materialized upstream artifact to begin normal Quality Pack review without reconstructing producer state.
@@ -82,7 +96,6 @@ This executable pre-check answers only whether the receiver has enough explicit 
 The preserved eval definition is `evals/handoff_intake_matrix.json`. The target eval must exist before changes to the intake runner that are intended to satisfy it.
 
 ## Independent clean-chat semantic review
-
 When deterministic intake is ready but no executable independent semantic receiver exists, Quality Pack may use `INDEPENDENT_CHAT_CONTEXT` as the lowest-cost manual execution mode.
 
 Required sequence:
@@ -99,7 +112,6 @@ The receipt validator's target eval is `evals/independent_chat_semantic_review_m
 
 ## Required output modes
 Quality Pack semantic review must return one of:
-
 - `PASS_TO_COMPOSER`
 - `PASS_WITH_RESTRICTIONS`
 - `RETURN_TO_WORKER_FOR_SELF_REPAIR`
@@ -109,7 +121,7 @@ Quality Pack semantic review must return one of:
 The deterministic intake runner uses its separate `intake_status`; it is not a semantic Quality Pack verdict.
 
 ## Non-negotiable rule
-Quality Pack cannot accept a worker PASS if evidence is missing. Claims without evidence count as false.
+Quality Pack cannot accept a worker PASS if independently resolved evidence is missing. Claims without resolver-backed evidence count as unproven.
 
 ## Focused UI Decision validation
 When the user asked for a concrete UI decision, definition or one selected visual treatment, Quality Pack must validate that the upstream output contains concrete selected values, not a vague concept or ingredient list.
@@ -129,9 +141,11 @@ Required minimum fields:
 If the answer only says what to use in general, lists ingredients, says “use layers/lines/gradients”, or gives rationale without values, Quality Pack must return `RETURN_TO_WORKER_FOR_SELF_REPAIR` with blocking code `FOCUSED_UI_DECISION_NOT_EXECUTABLE`.
 
 ## Automatic blocking conditions
-- Score appears without rubric evidence.
+- Score appears without resolver-backed rubric evidence.
 - Required schema is missing or invalid.
 - Required fields are declared but not developed.
+- An evidence ref is absent, unresolvable, digest-mismatched or self-certified while its gate claims PASS.
+- Provenance is applicable but the receipt ref/digest cannot be independently resolved.
 - Handoff requires Composer to invent structure.
 - Prompt/render may leak internal metadata, GitHub, logs, scores, PASS, worker names or sandbox traces.
 - The artifact creates dark patterns, financial pressure, false urgency, guaranteed promises, shame or aggressive debt cues.
@@ -152,3 +166,6 @@ For `INDEPENDENT_CHAT_CONTEXT`, also save the validated wrapper receipt as:
 `sandbox_runs/<profile_or_case>/<run_id>/independent_semantic_review_receipt.json`
 
 Deterministic intake evidence must preserve the exact input fixture, runner revision, output and actual-vs-expected result separately from the semantic review artifact.
+
+## CI validation entrypoint
+`validators/validate_pack.py` is the deterministic pack-validation entrypoint for repository CI. It must execute `evals/quality_gate_adversarial.py`, expose the matrix JSON (including `case_count` and `results_sha256`) in CI logs, and fail closed when the matrix fails, its output is malformed, or the expected GOV-037 regression coverage is missing. A CI PASS from this entrypoint proves only the deterministic/adversarial package suite at that exact checkout; it does not self-authorize runtime, production, semantic promotion or independent post-merge remediation closure.

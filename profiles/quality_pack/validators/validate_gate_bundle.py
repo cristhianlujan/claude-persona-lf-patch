@@ -6,6 +6,8 @@ import re
 import sys
 from pathlib import Path
 
+from trusted_ref_resolver import ResolutionError, TrustedRefResolver
+
 GATES = ("structural", "provenance", "semantic", "artifact", "upstream")
 GATE_STATUSES = {"PASS", "FAIL", "UNCERTAIN", "NOT_APPLICABLE"}
 FINAL_VERDICTS = {
@@ -17,6 +19,8 @@ FINAL_VERDICTS = {
 }
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 NOMINAL = {"pass", "ok", "green", "valid", "done", "success", "true"}
+PROFILE_EXECUTION_RECEIPT_TYPE = "PROFILE_EXECUTION_RECEIPT_V1"
+PROFILE_EXECUTION_OPERATION = "EJECUCION_PERFIL_LF"
 
 
 def _nonempty(value):
@@ -27,10 +31,65 @@ def _valid_sha(value):
     return isinstance(value, str) and bool(SHA256_RE.fullmatch(value.lower()))
 
 
-def _validate_evidence(gate_name, evidence, errors):
+def _canonical_json_sha256(value):
+    rendered = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(rendered.encode("utf-8")).hexdigest()
+
+
+def _resolve_ref(ref, resolver, prefix, errors):
+    try:
+        return resolver.resolve(ref)
+    except ResolutionError as exc:
+        errors.append(f"{prefix}.ref: resolver-backed readback failed ({exc.code})")
+        return None
+
+
+def _validate_profile_execution_receipt(observed, errors):
+    try:
+        receipt = json.loads(observed["raw"].decode("utf-8"))
+    except Exception:
+        errors.append("gates.provenance.receipt: resolved receipt is not valid JSON")
+        return
+    if not isinstance(receipt, dict):
+        errors.append("gates.provenance.receipt: resolved receipt must be an object")
+        return
+    if receipt.get("receipt_type") != PROFILE_EXECUTION_RECEIPT_TYPE:
+        errors.append("gates.provenance.receipt: resolved receipt_type is not PROFILE_EXECUTION_RECEIPT_V1")
+    if receipt.get("operation_code") != PROFILE_EXECUTION_OPERATION:
+        errors.append("gates.provenance.receipt: resolved operation_code is not EJECUCION_PERFIL_LF")
+    if receipt.get("execution_origin") != "MODEL_RUNTIME":
+        errors.append("gates.provenance.receipt: resolved execution_origin is not MODEL_RUNTIME")
+    if receipt.get("raw_output_captured") is not True:
+        errors.append("gates.provenance.receipt: resolved RAW output was not captured")
+    attestation = receipt.get("runtime_attestation")
+    if not isinstance(attestation, dict):
+        errors.append("gates.provenance.receipt: runtime_attestation missing")
+    else:
+        for key in (
+            "provider", "model_id", "run_id", "attested_at", "attestation_verifier",
+            "attestation_evidence_sha256", "verified_request_sha256", "verified_response_sha256",
+        ):
+            if not _nonempty(attestation.get(key)):
+                errors.append(f"gates.provenance.receipt.runtime_attestation.{key}: missing")
+        for key in ("attestation_evidence_sha256", "verified_request_sha256", "verified_response_sha256"):
+            if _nonempty(attestation.get(key)) and not _valid_sha(attestation.get(key)):
+                errors.append(f"gates.provenance.receipt.runtime_attestation.{key}: invalid sha256")
+    claimed = receipt.get("receipt_sha256")
+    if not _valid_sha(claimed):
+        errors.append("gates.provenance.receipt: receipt_sha256 missing or invalid")
+    else:
+        recalculated = _canonical_json_sha256({key: value for key, value in receipt.items() if key != "receipt_sha256"})
+        if claimed.lower() != recalculated:
+            errors.append("gates.provenance.receipt: internal receipt_sha256 mismatch")
+    if receipt.get("downstream_authorized") is True:
+        errors.append("gates.provenance.receipt: self-authorization forbidden")
+
+
+def _validate_evidence(gate_name, evidence, errors, resolver):
+    resolved = []
     if not isinstance(evidence, list) or not evidence:
         errors.append(f"{gate_name}: PASS requires non-empty evidence objects")
-        return
+        return resolved
     for index, item in enumerate(evidence):
         prefix = f"{gate_name}.evidence[{index}]"
         if not isinstance(item, dict):
@@ -39,18 +98,32 @@ def _validate_evidence(gate_name, evidence, errors):
         ref = item.get("ref")
         if not _nonempty(ref) or ref.strip().lower() in NOMINAL:
             errors.append(f"{prefix}.ref: concrete evidence reference required")
+            continue
         if not _valid_sha(item.get("sha256")):
             errors.append(f"{prefix}.sha256: exact sha256 required")
         if item.get("observed") is not True:
-            errors.append(f"{prefix}.observed: direct readback must be true")
+            errors.append(f"{prefix}.observed: producer must declare direct readback, but declaration is not proof")
         if item.get("self_certified") is True:
             errors.append(f"{prefix}.self_certified: self-certified evidence is not independent evidence")
 
+        observed = _resolve_ref(ref, resolver, prefix, errors)
+        if observed is None:
+            continue
+        resolved.append(observed)
+        if _valid_sha(item.get("sha256")) and item.get("sha256").lower() != observed["sha256"]:
+            errors.append(f"{prefix}.sha256: declared digest does not match resolver-derived bytes")
+    return resolved
 
-def validate_bundle(data):
+
+def validate_bundle(data, resolver=None):
     errors = []
     if not isinstance(data, dict):
         return ["bundle: expected object"]
+
+    try:
+        resolver = resolver or TrustedRefResolver()
+    except ResolutionError as exc:
+        return [f"trusted_ref_resolver: unavailable ({exc.code})"]
 
     verdict = data.get("final_verdict")
     if verdict not in FINAL_VERDICTS:
@@ -61,6 +134,7 @@ def validate_bundle(data):
         return errors + ["gates: expected object"]
 
     applicable_results = []
+    resolved_by_gate = {}
     for gate_name in GATES:
         gate = gates.get(gate_name)
         if not isinstance(gate, dict):
@@ -81,7 +155,9 @@ def validate_bundle(data):
         if applicable:
             applicable_results.append(status)
         if status == "PASS":
-            _validate_evidence(f"gates.{gate_name}", gate.get("evidence"), errors)
+            resolved_by_gate[gate_name] = _validate_evidence(
+                f"gates.{gate_name}", gate.get("evidence"), errors, resolver
+            )
 
     semantic = gates.get("semantic", {}) if isinstance(gates.get("semantic"), dict) else {}
     if semantic.get("applicable") is True and semantic.get("status") == "PASS":
@@ -106,12 +182,24 @@ def validate_bundle(data):
             errors.append("gates.provenance.execution_origin: PASS requires MODEL_RUNTIME")
         if provenance.get("raw_output_captured") is not True:
             errors.append("gates.provenance.raw_output_captured: PASS requires exact RAW output")
+        receipt_ref = provenance.get("receipt_ref")
+        receipt_sha = provenance.get("receipt_sha256")
+        if not _nonempty(receipt_ref) or not _valid_sha(receipt_sha):
+            errors.append("gates.provenance: PASS requires receipt_ref + receipt_sha256 bound to resolver readback")
+        else:
+            receipt = _resolve_ref(receipt_ref, resolver, "gates.provenance.receipt", errors)
+            if receipt is not None:
+                if receipt_sha.lower() != receipt["sha256"]:
+                    errors.append("gates.provenance.receipt_sha256: declared receipt digest does not match resolver-derived bytes")
+                _validate_profile_execution_receipt(receipt, errors)
 
     artifact = gates.get("artifact", {}) if isinstance(gates.get("artifact"), dict) else {}
     if artifact.get("applicable") is True and artifact.get("status") == "PASS":
         for key in ("exists", "readback_ok", "parseable"):
             if artifact.get(key) is not True:
                 errors.append(f"gates.artifact.{key}: artifact PASS requires true")
+        if not resolved_by_gate.get("artifact"):
+            errors.append("gates.artifact: PASS requires resolver-backed artifact bytes")
 
     upstream = gates.get("upstream", {}) if isinstance(gates.get("upstream"), dict) else {}
     if upstream.get("applicable") is True and upstream.get("status") == "PASS":
@@ -121,6 +209,11 @@ def validate_bundle(data):
             errors.append("gates.upstream.sha_match: exact upstream hash binding required")
         if upstream.get("validator_status") not in {"PASS", "PASS_WITH_RESTRICTIONS"}:
             errors.append("gates.upstream.validator_status: upstream must pass its current validator")
+        resolved_upstream = resolved_by_gate.get("upstream", [])
+        if not resolved_upstream:
+            errors.append("gates.upstream: PASS requires resolver-backed upstream readback")
+        elif any(item.get("current") is not True for item in resolved_upstream):
+            errors.append("gates.upstream.current: declared current=true cannot override a non-current resolved revision")
 
     checks = data.get("acceptance_checks", [])
     if not isinstance(checks, list):
@@ -152,7 +245,9 @@ def validate_bundle(data):
                     if not isinstance(evidence, list) or not evidence:
                         errors.append(f"score.evidence_by_criterion.{criterion}: non-empty evidence list required")
                     else:
-                        _validate_evidence(f"score.evidence_by_criterion.{criterion}", evidence, errors)
+                        _validate_evidence(
+                            f"score.evidence_by_criterion.{criterion}", evidence, errors, resolver
+                        )
 
     blocking_codes = data.get("blocking_codes", [])
     if not isinstance(blocking_codes, list):

@@ -10,7 +10,7 @@ REQUIRED = [
 "fixtures/missing_inputs/input.json","fixtures/unsafe_or_blocked/input.json","fixtures/self_repair/bad_output.json",
 "evals/eval_matrix.json","evals/lineage_adversarial.py","handoffs/to_quality_pack.handoff.json","adapters/github_pack_adapter.md",
 "adapters/document_patch_adapter.md","references/research_to_rules_matrix.md","references/decision_matrix.md",
-"manifest.json","validators/validate_pack.py","validators/evaluate_lineage.py"
+"manifest.json","validators/validate_pack.py","validators/evaluate_lineage.py","validators/trusted_ref_resolver.py","validators/validate_routing.py"
 ]
 STATUSES={"PASS_EVIDENCE_LINEAGE","PASS_WITH_RESTRICTIONS","RETURN_TO_SOURCE_FOR_READBACK","BLOCK_PIPELINE"}
 
@@ -34,10 +34,14 @@ def main():
             for rel in REQUIRED:
                 if rel not in declared: blocking.append("MANIFEST_MISSING_DECLARATION:"+rel)
             for name in ["good_output.json","bad_output.json","self_repair_output.json"]:
-                obj=load(root/"examples"/name)
+                example_path=root/"examples"/name
+                obj=load(example_path)
                 if obj.get("status") not in STATUSES: blocking.append("INVALID_EXAMPLE_STATUS:"+name)
-                for key in ["claim","authority_reads","source_readbacks","revision_binding","structural_identifier_reconciliation","evidence_map","blocking_codes","next_gate"]:
+                for key in ["claim","authority_reads","source_readbacks","revision_binding","structural_identifier_reconciliation","evidence_map","blocking_codes","next_gate","routing"]:
                     if key not in obj: blocking.append("EXAMPLE_MISSING_FIELD:"+name+":"+key)
+                routing_run=subprocess.run([sys.executable,str(root/"validators/validate_routing.py"),str(example_path)],cwd=root,text=True,capture_output=True)
+                if routing_run.returncode!=0:
+                    blocking.append("EXAMPLE_ROUTING_INVALID:"+name)
             matrix=load(root/"evals/eval_matrix.json")
             cases=matrix.get("cases",[])
             if len(cases)<5: blocking.append("EVAL_MATRIX_REQUIRES_MINIMUM_5_CASES")
@@ -50,9 +54,19 @@ def main():
                 if not fixture or not (root/fixture).exists(): blocking.append("EVAL_FIXTURE_MISSING:"+str(fixture))
                 if c.get("expected_status") not in STATUSES: blocking.append("EVAL_EXPECTED_STATUS_INVALID:"+str(cid))
             run=subprocess.run([sys.executable,str(root/"evals/lineage_adversarial.py")],cwd=root,text=True,capture_output=True)
+            if run.stdout:
+                print(run.stdout, end="" if run.stdout.endswith("\n") else "\n")
+            if run.stderr:
+                print(run.stderr, end="" if run.stderr.endswith("\n") else "\n", file=sys.stderr)
             if run.returncode!=0:
                 blocking.append("LINEAGE_ADVERSARIAL_EVAL_FAILED")
                 if run.stderr.strip(): blocking.append("LINEAGE_ADVERSARIAL_STDERR:"+run.stderr.strip()[:300])
+            else:
+                summary=json.loads(run.stdout)
+                if summary.get("passed") is not True: blocking.append("LINEAGE_ADVERSARIAL_NOT_PASS")
+                if int(summary.get("case_count",0)) < 25: blocking.append("LINEAGE_ADVERSARIAL_CASE_COUNT_TOO_LOW")
+                digest=summary.get("results_sha256")
+                if not isinstance(digest,str) or len(digest)!=64: blocking.append("LINEAGE_ADVERSARIAL_DIGEST_MISSING")
         except Exception as exc:
             blocking.append("VALIDATION_EXCEPTION:"+str(exc))
     result={"status":"PASS" if not blocking else "FAIL","profile_pack_id":"EVIDENCE_LINEAGE_REVIEWER_LF_V0_1","blocking_codes":blocking,"runtime_authorized":False,"automatic_impact_authorized":False,"recommended_action":"READY_FOR_QUALITY_PACK" if not blocking else "RETURN_TO_WORKER_FOR_SELF_REPAIR"}

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Evidence Lineage Review",
   "type": "object",
-  "required": ["status", "claim", "authority_reads", "source_readbacks", "revision_binding", "structural_identifier_reconciliation", "evidence_map", "blocking_codes", "next_gate"],
+  "required": ["status", "claim", "authority_reads", "source_readbacks", "revision_binding", "structural_identifier_reconciliation", "evidence_map", "blocking_codes", "next_gate", "routing"],
   "properties": {
     "status": {"type":"string","enum":["PASS_EVIDENCE_LINEAGE","PASS_WITH_RESTRICTIONS","RETURN_TO_SOURCE_FOR_READBACK","BLOCK_PIPELINE"]},
     "claim": {"type":"string"},
@@ -12,6 +12,35 @@
     "structural_identifier_reconciliation": {"type":"object"},
     "evidence_map": {"type":"array"},
     "blocking_codes": {"type":"array"},
-    "next_gate": {"type":"string"}
-  }
+    "next_gate": {"type":"string"},
+    "routing": {
+      "type": "object",
+      "required": ["activation_path", "via", "pipeline_action", "resolution_target"],
+      "additionalProperties": false,
+      "properties": {
+        "activation_path": {"type": "string", "enum": ["DIRECT", "ROUTER"]},
+        "via": {"const": "ORCHESTRATOR"},
+        "pipeline_action": {"type": "string", "enum": ["CONTINUE", "CONTINUE_WITH_RESTRICTIONS", "RETURN_TO_ORCHESTRATOR", "BLOCK_PIPELINE"]},
+        "resolution_target": {"type": "string", "enum": ["QUALITY_PACK", "SOURCE_READBACK", "NONE"]}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "PASS_EVIDENCE_LINEAGE"}}, "required": ["status"]},
+      "then": {"properties": {"routing": {"properties": {"pipeline_action": {"const": "CONTINUE"}, "resolution_target": {"const": "QUALITY_PACK"}}}}}
+    },
+    {
+      "if": {"properties": {"status": {"const": "PASS_WITH_RESTRICTIONS"}}, "required": ["status"]},
+      "then": {"properties": {"routing": {"properties": {"pipeline_action": {"const": "CONTINUE_WITH_RESTRICTIONS"}, "resolution_target": {"const": "QUALITY_PACK"}}}}}
+    },
+    {
+      "if": {"properties": {"status": {"const": "RETURN_TO_SOURCE_FOR_READBACK"}}, "required": ["status"]},
+      "then": {"properties": {"routing": {"properties": {"pipeline_action": {"const": "RETURN_TO_ORCHESTRATOR"}, "resolution_target": {"const": "SOURCE_READBACK"}}}}}
+    },
+    {
+      "if": {"properties": {"status": {"const": "BLOCK_PIPELINE"}}, "required": ["status"]},
+      "then": {"properties": {"routing": {"properties": {"pipeline_action": {"const": "BLOCK_PIPELINE"}, "resolution_target": {"const": "NONE"}}}}}
+    }
+  ]
 }
