@@ -9,10 +9,13 @@
   "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
   "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
   "source_sha_list": [
-    "f8a02807182f450f186133f1fe99d913af8e2a5d"
+    "a8e6ca8e576f7ec018dab5990aafae72bb71e069",
+    "e229b7e1cf130541754255e3e85a7b7329a49939",
+    "24d8b69eee3eb720d61ace25d29b0039890b19a2",
+    "155281e01cab7629739dee25c23c8bb83263781c"
   ],
   "target_paths": ["profiles/ui_architect/**"],
   "blocking_codes": [],
-  "issued_at": "2026-08-28T05:28:18Z",
-  "notes": "PASS_SANDBOX candidate-source receipt for survivor-protection remediation. Canonical execution 007 has 14/14 enforcement-derived steps recorded as STEP_PASS_WITH_EVIDENCE. Baseline live evidence is intentionally mixed: unresolved-authority request 88fdeadd-1cf0-4346-8dbb-6e3b44c97033 correctly returned RETURN_TO_ORCHESTRATOR, while resolved-authority request 965da7c8-e3f0-4f7c-997b-2df2cdd02e2a incorrectly removed the redundant top strip and hid canonical Resumen. Candidate blob f8a02807182f450f186133f1fe99d913af8e2a5d makes survivor protection absolute and allows exactly one destructive action against the redundant member. Validate LF Packs run 33144731124 succeeded; lf-contract-check run 33144731267 reached FAIL_RECEIPT_MISSING only after migration/runtime checks passed. This receipt does not claim live behavioral PASS, production, VALIDATED, runtime enablement or automatic promotion. Final behavioral closure requires exact-head CI, protected merge/readback and fresh resolved/unresolved live canaries from merged main. The contract/judge digest pair follows the existing ACTUALIZACION_PERFIL_LF repository convention; the Supabase registry SHA columns are presently null and are not fabricated here."
+  "issued_at": "2026-08-28T15:20:44Z",
+  "notes": "PASS_SANDBOX candidate-source receipt for P1 runtime-closure V8 under canonical execution 007. Fresh pre-remediation MODEL_RUNTIME evidence from main@5079a3f8fbb6edd4cbdfdcfa092da887479cb0e7 is intentionally recorded as behavioral FAIL: resolved-authority request 5ea5c0c5-315b-4f83-b177-e64baa10e7cd / run 33183201945 removed top strip and also hid canonical Resumen and returned an incomplete Production UI Spec; unresolved-authority request 5ad2bde5-8d4e-438a-a55d-99cfedf51a80 / run 33183212795 returned only RETURN_TO_ORCHESTRATOR instead of the complete schema-valid Missing Input State. V8 minimally changes profiles/ui_architect/**: resolved duplicates serialize one destructive action against the redundant member while preserving the survivor, existing-screen outputs must serialize the full PRODUCTION_UI_SPEC, unresolved authority must serialize the complete Missing Input State JSON, and V3/V6 salience assertions are reconciled with Missing Input Policy V2. This receipt does not claim behavioral PASS, production, VALIDATED, runtime enablement or automatic promotion. Execution 007 remains IN_PROGRESS until exact-head CI, merge/readback, and two fresh post-merge zero-cost MODEL_RUNTIME canaries both pass."
 }
