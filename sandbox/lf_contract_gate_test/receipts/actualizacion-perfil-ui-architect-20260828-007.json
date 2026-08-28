@@ -9,12 +9,14 @@
   "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
   "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
   "source_sha_list": [
-    "0515e664e3900464baed53c5e76c34a45d220893",
+    "59bb501f3aa1c09ed1f9ad14e255f23baba6729b",
     "00ac20f074c61f81afcea655cc32b5ce46d217ed",
     "e37d97fb9c14176eba679565cd4ecec3d4fbe375"
   ],
-  "target_paths": ["profiles/ui_architect/**"],
+  "target_paths": [
+    "profiles/ui_architect/**"
+  ],
   "blocking_codes": [],
-  "issued_at": "2026-08-28T19:02:00Z",
-  "notes": "PASS_SANDBOX candidate-source receipt for V15 under canonical execution 007. PR #298 merged V14 to main@e1a855c02471a12108f27f4d8e2f43d47f5db67e. Fresh V14 Canary B 57db9826-9dc0-45e9-a7cc-ea368675ad6e / run 33201175087 passed exact unresolved fail-closed behavior. Fresh V14 Canary A 85dbb6f0-a6ce-4107-a955-a99033a4f80d / run 33201166915 was authentic MODEL_RUNTIME / ZERO_COST_ONLY and chose the correct UI direction, but failed the output-byte/root-depth contract by emitting Markdown fences and nesting score/handoff/self_verdict inside deliverable_created. EKB GOV-023 and GOV-032 were incremented before this write. V15 is profile-local and replaces only the resolved checkout generation path with a shorter literal one-line fast path while preserving the unresolved short-circuit and all lifecycle boundaries. This receipt does not claim behavioral PASS, production, VALIDATED, runtime enablement or automatic promotion. Execution 007 remains IN_PROGRESS until exact-head CI, merge/readback, and fresh post-merge resolved/unresolved MODEL_RUNTIME canaries both pass."
+  "issued_at": "2026-08-28T19:59:00Z",
+  "notes": "PASS_SANDBOX candidate-source receipt for V16 under canonical Execution 007. V15 is merged at main@438e8da709fa391b72cd909aeb9fbfd9f60f6562. Fresh V15 Canary B 6edbe5c2-cc41-4531-8cb4-a617df398cc0 / run 33203183618 passed exact unresolved authority. Fresh V15 Canary A 7f97961a-3afd-4d8a-9a3c-d08fc4160103 / run 33203177976 was authentic MODEL_RUNTIME / ZERO_COST_ONLY and chose the correct survivor/removal direction but repeated top_amount_strip component entries until truncation. EKB GOV-023 and GOV-032 were incremented before this write. V16 is profile-local and constrains the resolved checkout literal to exactly two component_tree entries, one remediation action, explicit post-second-component closure, and a shorter validator-compatible Production UI Spec. This receipt does not claim behavioral PASS, production, VALIDATED, runtime enablement, or automatic promotion. Execution 007 remains IN_PROGRESS until exact-head CI, merge/readback, and fresh post-merge canaries A+B both pass."
 }
