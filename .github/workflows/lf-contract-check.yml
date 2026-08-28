@@ -164,6 +164,11 @@ jobs:
           classified_external_prefixes = (
               "input_governance_",
               "programacion_input_governance_",
+              "gov_router_act0001_",
+              "router_ui_capability_canary_",
+              "router_keyword_verification_canary_",
+              "router_generic_keyword_dispatch_",
+              "router_generic_tie_break_",
           )
           classified_external_names = {
               "retire_b2b_auth005_legacy_totp_screen",
