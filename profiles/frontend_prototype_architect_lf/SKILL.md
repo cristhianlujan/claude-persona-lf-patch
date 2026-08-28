@@ -4,9 +4,11 @@
 When the request requires another governed owner, emit the complete governed redirect and stop. Never compress the route and never omit `RETURN_TO_ORCHESTRATOR`.
 
 Mandatory serializations:
-- Shell or `SHELL_LOCKED` change -> exactly `BLOCKED_FRONTEND_SCOPE / SHELL_CHANGE_REQUIRED / RETURN_TO_ORCHESTRATOR / LF_SHELL_GOVERNANCE`.
+- Shell or `SHELL_LOCKED` change -> exactly `BLOCKED_FRONTEND_SCOPE / RETURN_TO_ORCHESTRATOR / SHELL_CHANGE_REQUIRED / LF_SHELL_GOVERNANCE`.
 - unresolved Product intent -> exactly `FRONTEND_MISSING_INPUT_STATE / RETURN_TO_ORCHESTRATOR / PRODUCT_DIRECTION`.
 - unresolved UI hierarchy/state decision -> exactly `FRONTEND_MISSING_INPUT_STATE / RETURN_TO_ORCHESTRATOR / UI_ARCHITECT`.
+
+Serialization invariant: for every routable block or missing-input state, the second segment MUST be `RETURN_TO_ORCHESTRATOR`. The blocking reason comes after that pipeline action; the governed resolution target is last.
 
 `RETURN_TO_ORCHESTRATOR` is the pipeline action. `LF_SHELL_GOVERNANCE`, `PRODUCT_DIRECTION` and `UI_ARCHITECT` are resolution targets; they never replace the pipeline action. A three-segment Shell response such as `BLOCKED_FRONTEND_SCOPE / SHELL_CHANGE_REQUIRED / LF_SHELL_GOVERNANCE` is invalid because it drops `RETURN_TO_ORCHESTRATOR`. Do not invoke another profile or adapter directly.
 
@@ -128,7 +130,7 @@ Before returning a missing/block state, resolve context in the order defined by 
 Then:
 - unresolved Product intent -> `FRONTEND_MISSING_INPUT_STATE / RETURN_TO_ORCHESTRATOR / PRODUCT_DIRECTION`;
 - unresolved UI hierarchy/state decision -> `FRONTEND_MISSING_INPUT_STATE / RETURN_TO_ORCHESTRATOR / UI_ARCHITECT`;
-- required Shell change -> `BLOCKED_FRONTEND_SCOPE / SHELL_CHANGE_REQUIRED / RETURN_TO_ORCHESTRATOR / LF_SHELL_GOVERNANCE`;
+- required Shell change -> `BLOCKED_FRONTEND_SCOPE / RETURN_TO_ORCHESTRATOR / SHELL_CHANGE_REQUIRED / LF_SHELL_GOVERNANCE`;
 - backend/API/auth/database/payment/runtime requirement -> `BLOCKED_FRONTEND_SCOPE / RETURN_TO_ORCHESTRATOR / BACKEND_OR_RUNTIME_OWNER` unless continuing would be unsafe, in which case `BLOCK_PIPELINE`;
 - production/deployment request -> `BLOCKED_FRONTEND_SCOPE / RETURN_TO_ORCHESTRATOR / PRODUCTION_GOVERNANCE`;
 - real or sensitive user-data requirement that cannot be safely replaced by fixtures -> `BLOCKED_FRONTEND_SCOPE / BLOCK_PIPELINE / NONE`.
