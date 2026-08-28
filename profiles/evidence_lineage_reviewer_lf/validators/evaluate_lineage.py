@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 from trusted_ref_resolver import ResolutionError, TrustedRefResolver
+from validate_routing import routing_for_status, validate_routing
 
 SHA = re.compile(r"^[0-9a-f]{64}$")
 PASS_UPSTREAM = {"PASS", "PASS_WITH_RESTRICTIONS", "PASS_EVIDENCE_LINEAGE"}
@@ -53,6 +54,23 @@ def _receipt_facts(raw):
     return receipt_id, subjects
 
 
+def _result(status, blocking, readback, gate_states, activation_path):
+    routing = routing_for_status(status, activation_path)
+    routing_errors = validate_routing(status, routing)
+    if routing_errors:
+        status = "BLOCK_PIPELINE"
+        blocking = list(blocking) + ["ROUTING_INTERNAL_INVALID:" + item for item in routing_errors]
+        routing = routing_for_status(status, activation_path)
+    return {
+        "status": status,
+        "blocking_codes": sorted(set(blocking)),
+        "readback_codes": sorted(set(readback)),
+        "gate_states": gate_states,
+        "routing": routing,
+        "next_gate": routing["resolution_target"],
+    }
+
+
 def evaluate(case, resolver=None):
     empty_states = {
         "STRUCTURALLY_VALID": False,
@@ -62,24 +80,25 @@ def evaluate(case, resolver=None):
         "UPSTREAM_VALID": False,
     }
     if not isinstance(case, dict):
-        return {
-            "status": "BLOCK_PIPELINE",
-            "blocking_codes": ["MALFORMED_CASE"],
-            "readback_codes": [],
-            "gate_states": empty_states,
-        }
+        return _result("BLOCK_PIPELINE", ["MALFORMED_CASE"], [], empty_states, "DIRECT")
+
+    activation_path = case.get("activation_path", "DIRECT")
+    preflight_blocking = []
+    if activation_path not in {"DIRECT", "ROUTER"}:
+        preflight_blocking.append("ACTIVATION_PATH_INVALID")
 
     try:
         resolver = resolver or TrustedRefResolver()
     except ResolutionError as exc:
-        return {
-            "status": "BLOCK_PIPELINE",
-            "blocking_codes": [f"TRUSTED_RESOLVER_UNAVAILABLE:{exc.code}"],
-            "readback_codes": [],
-            "gate_states": empty_states,
-        }
+        return _result(
+            "BLOCK_PIPELINE",
+            preflight_blocking + [f"TRUSTED_RESOLVER_UNAVAILABLE:{exc.code}"],
+            [],
+            empty_states,
+            activation_path,
+        )
 
-    blocking = []
+    blocking = list(preflight_blocking)
     readback = []
     refs = set()
     receipts = set()
@@ -238,33 +257,29 @@ def evaluate(case, resolver=None):
         "RETURN_TO_SOURCE_FOR_READBACK" if readback else "PASS_EVIDENCE_LINEAGE"
     )
     provenance_issues = blocking + readback
-    return {
-        "status": status,
-        "blocking_codes": sorted(set(blocking)),
-        "readback_codes": sorted(set(readback)),
-        "gate_states": {
-            "STRUCTURALLY_VALID": not any("MALFORMED" in item or "INVALID" in item for item in blocking),
-            "PROVENANCE_VALID": not any(
-                "RECEIPT" in item
-                or "SHA" in item
-                or "_STALE" in item
-                or "_NOT_READ" in item
-                or "UNRESOLVED" in item
-                or "RESOLVER" in item
-                for item in provenance_issues
-            ),
-            "SEMANTICALLY_VALID": not any(
-                "ASSERTION" in item
-                or "SEMANTIC" in item
-                or "CORRELATED" in item
-                or "AUTHORITY" in item
-                or "CONFLICT" in item
-                for item in blocking
-            ),
-            "ARTIFACT_VERIFIED": not any(item.startswith("ARTIFACT_") for item in readback),
-            "UPSTREAM_VALID": not any("UPSTREAM" in item for item in blocking),
-        },
+    gate_states = {
+        "STRUCTURALLY_VALID": not any("MALFORMED" in item or "INVALID" in item for item in blocking),
+        "PROVENANCE_VALID": not any(
+            "RECEIPT" in item
+            or "SHA" in item
+            or "_STALE" in item
+            or "_NOT_READ" in item
+            or "UNRESOLVED" in item
+            or "RESOLVER" in item
+            for item in provenance_issues
+        ),
+        "SEMANTICALLY_VALID": not any(
+            "ASSERTION" in item
+            or "SEMANTIC" in item
+            or "CORRELATED" in item
+            or "AUTHORITY" in item
+            or "CONFLICT" in item
+            for item in blocking
+        ),
+        "ARTIFACT_VERIFIED": not any(item.startswith("ARTIFACT_") for item in readback),
+        "UPSTREAM_VALID": not any("UPSTREAM" in item for item in blocking),
     }
+    return _result(status, blocking, readback, gate_states, activation_path)
 
 
 def run_matrix(path):
