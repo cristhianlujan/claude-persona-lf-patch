@@ -9,12 +9,12 @@
   "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
   "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
   "source_sha_list": [
-    "dd81e4f567941e4ad907e4ffd219170b17697a79"
+    "131bca5bc738024036b426dc6abf258efa3a3227"
   ],
   "target_paths": ["profiles/frontend_prototype_architect_lf/**"],
   "blocking_codes": [],
-  "issued_at": "2026-08-28T05:44:00Z",
-  "notes": "PASS_SANDBOX candidate-source receipt for governed execution 007. Fresh MODEL_RUNTIME evidence after merged PR #279 still omitted RETURN_TO_ORCHESTRATOR for the Shell redirect on exact main ff68af4d70c1ec509b64d27b09cb7b3efaa73ffc. Candidate blob dd81e4f567941e4ad907e4ffd219170b17697a79 adds a final-position Shell serialization guard while preserving ACT-0051 identity, frontend boundaries, runtime/production blocks and no automatic promotion. Validate LF Packs passed before this receipt; lf-contract-check reached only FAIL_RECEIPT_MISSING after migration and runtime regressions passed. This receipt proves candidate source/operation evidence only and does not claim live behavioral PASS. Final closure requires exact-head CI, merge/readback and a fresh MODEL_RUNTIME canary from merged main emitting the exact four-segment redirect.",
+  "issued_at": "2026-08-28T06:51:52Z",
+  "notes": "PASS_SANDBOX candidate-source receipt for governed execution 007; this does not claim live behavioral PASS. PR #284 merged at main 3f906c97b495a299d90d74c02216d9d4186cb60e and the post-merge Router holdout request 92e71c27-0719-4b25-9a4b-009a9c09d769 emitted the required four-segment redirect, but the direct SHELL_LOCKED request ee39d3b9-959d-4ef4-a63a-6265764916c5 reproduced the legacy three-segment form and therefore failed semantically despite status SUCCEEDED. Candidate blob 131bca5bc738024036b426dc6abf258efa3a3227 removes all quoted legacy Shell serialization examples and adds an early SHELL_LOCKED short-circuit while preserving ACT-0051 identity, frontend boundaries, runtime/production blocks and no automatic promotion. Final closure still requires exact-head deterministic/CI gates, merge/readback and two fresh post-merge MODEL_RUNTIME canaries with identical exact four-segment RAW.",
   "supersedes_execution": "EXEC-ACTUALIZACION-PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF-20260828-006",
-  "supersedes_pr": 279
+  "supersedes_pr": 284
 }
