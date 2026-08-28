@@ -36,28 +36,20 @@ def ev(path, self_certified=False):
 
 
 STRUCTURAL_PATH = "profiles/quality_pack/validators/validate_gate_bundle.py"
-PROVENANCE_PATH = "sandbox/lf_contract_gate_test/receipts/actualizacion-perfil-quality-pack-20260827-001.json"
+OPERATION_RECEIPT_PATH = "sandbox/lf_contract_gate_test/receipts/actualizacion-perfil-quality-pack-20260827-001.json"
 SEMANTIC_PATH = "profiles/quality_pack/judges/quality_pack_mini_judge.md"
 ARTIFACT_PATH = "profiles/quality_pack/SKILL.md"
 UPSTREAM_PATH = "profiles/evidence_lineage_reviewer_lf/SKILL.md"
 
 
 def base():
-    provenance_evidence = ev(PROVENANCE_PATH)
     return {
         "final_verdict": "PASS_TO_COMPOSER",
         "gates": {
             "structural": {"applicable": True, "status": "PASS", "evidence": [ev(STRUCTURAL_PATH)]},
-            "provenance": {
-                "applicable": True,
-                "status": "PASS",
-                "evidence": [provenance_evidence],
-                "receipt_valid": True,
-                "receipt_ref": provenance_evidence["ref"],
-                "receipt_sha256": provenance_evidence["sha256"],
-                "execution_origin": "MODEL_RUNTIME",
-                "raw_output_captured": True,
-            },
+            # No genuine PROFILE_EXECUTION_RECEIPT_V1 is asserted by this deterministic fixture.
+            # Provenance is therefore honestly N/A in the positive instead of being fabricated.
+            "provenance": {"applicable": False, "status": "NOT_APPLICABLE", "evidence": []},
             "semantic": {
                 "applicable": True,
                 "status": "PASS",
@@ -96,7 +88,7 @@ def base():
             "total": 25,
             "evidence_by_criterion": {
                 "contract": [ev(STRUCTURAL_PATH)],
-                "evidence": [ev(PROVENANCE_PATH)],
+                "evidence": [ev(OPERATION_RECEIPT_PATH)],
                 "safety": [ev(SEMANTIC_PATH)],
                 "handoff": [ev(ARTIFACT_PATH)],
                 "scope": [ev(UPSTREAM_PATH)],
@@ -136,22 +128,45 @@ def wrong_digest_bundle():
     return data
 
 
-def fake_receipt_bundle():
+def provenance_pass(receipt_ref, receipt_sha):
     data = base()
+    data["gates"]["provenance"] = {
+        "applicable": True,
+        "status": "PASS",
+        "evidence": [ev(OPERATION_RECEIPT_PATH)],
+        "receipt_valid": True,
+        "receipt_ref": receipt_ref,
+        "receipt_sha256": receipt_sha,
+        "execution_origin": "MODEL_RUNTIME",
+        "raw_output_captured": True,
+    }
+    return data
+
+
+def fake_receipt_bundle():
     fake = f"github://{REPO}@{HEAD}/does/not/exist-receipt.json"
-    data["gates"]["provenance"]["receipt_ref"] = fake
-    data["gates"]["provenance"]["receipt_sha256"] = "0" * 64
-    data["gates"]["provenance"]["receipt_valid"] = True
+    return provenance_pass(fake, "0" * 64)
+
+
+def wrong_receipt_type_bundle():
+    operation_receipt = ev(OPERATION_RECEIPT_PATH)
+    return provenance_pass(operation_receipt["ref"], operation_receipt["sha256"])
+
+
+def missing_provenance_bundle():
+    data = base()
+    data["gates"]["provenance"] = {"applicable": True, "status": "UNCERTAIN", "evidence": []}
     return data
 
 
 cases = [
-    ("positive_all_gates_resolved", "positive", base(), True, None),
+    ("positive_applicable_gates_resolver_backed", "positive", base(), True, None),
     ("gov037_nonexistent_ref_self_declared_observed", "adversarial", fake_ref_bundle(), False, "resolver-backed readback failed"),
     ("gov037_real_ref_wrong_declared_sha", "adversarial", wrong_digest_bundle(), False, "declared digest does not match resolver-derived bytes"),
     ("gov037_receipt_valid_flag_without_resolved_receipt", "adversarial", fake_receipt_bundle(), False, "resolver-backed readback failed"),
+    ("gov037_real_but_wrong_receipt_type_cannot_prove_model_runtime", "adversarial", wrong_receipt_type_bundle(), False, "resolved receipt_type is not PROFILE_EXECUTION_RECEIPT_V1"),
     ("receipt_real_semantic_wrong", "crosscheck", mutate("gates.semantic.decision_supported", False), False, "decision_supported"),
-    ("correct_missing_provenance", "crosscheck", mutate("gates.provenance.status", "UNCERTAIN"), False, "PASS_TO_COMPOSER requires every applicable gate PASS"),
+    ("correct_missing_provenance", "crosscheck", missing_provenance_bundle(), False, "PASS_TO_COMPOSER requires every applicable gate PASS"),
     ("upstream_stale", "negative", mutate("gates.upstream.current", False), False, "stale upstream"),
     ("artifact_plan_only", "negative", mutate("gates.artifact.exists", False), False, "artifact PASS requires true"),
     ("router_direct_diverge", "adversarial", mutate("gates.semantic.router_direct_equivalent", False), False, "divergence blocks semantic PASS"),
