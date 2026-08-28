@@ -1,15 +1,39 @@
 {
   "handoff_id": "profile_creator_to_quality_pack",
+  "handoff_version": "v0.2",
   "from": "skills/profile_creator",
   "to": "quality_pack_review",
-  "required_evidence": [
-    "router_applied",
-    "source_verified",
-    "asset_verified",
-    "pack_structure_complete",
-    "validator_passed",
-    "runtime_disabled",
-    "automatic_impact_blocked"
+  "requires_artifact": true,
+  "required_receiver_context": [
+    "deliverable_artifact_ref",
+    "profile_pack_id",
+    "source_authority",
+    "depth_gate",
+    "output_schema_ref",
+    "main_contract_ref",
+    "evidence_map",
+    "score_rubric_ref",
+    "mini_judge_ref",
+    "blocking_codes",
+    "remaining_risks"
   ],
-  "next_gate": "QUALITY_PACK_REVIEW"
+  "producer_preconditions": [
+    "EXACT_ARTIFACT_RESOLVES",
+    "DEPTH_READY_FOR_SEMANTIC_REVIEW",
+    "RUNTIME_DISABLED",
+    "AUTOMATIC_IMPACT_BLOCKED"
+  ],
+  "receiver_layers": {
+    "DETERMINISTIC_INTAKE": "REQUIRED",
+    "SEMANTIC_REVIEW": "REQUIRED_INDEPENDENT_GATE",
+    "FULL_HANDOFF_OUTCOME": "NOT_PROVEN_UNTIL_REQUIRED_LAYERS_COMPLETE"
+  },
+  "failure_routing": {
+    "artifact_unresolvable": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+    "depth_gate_not_ready": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+    "missing_receiver_context": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+    "semantic_rejection": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+    "authority_or_safety_block": "BLOCK_PIPELINE"
+  },
+  "next_gate": "SEMANTIC_QUALITY_REVIEW"
 }
