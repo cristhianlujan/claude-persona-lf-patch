@@ -32,6 +32,20 @@ After the resolution order above, at least one unresolved item would force the w
 
 Do not block solely because a Product/UI spec is not repeated verbatim in the latest message.
 
+## Redirection contract
+The worker never calls Product Director, UI Architect, Shell governance, a backend owner or the final user directly to resolve a material gap. It returns one typed routing intent to the orchestrator; ACT-0001/Router remains responsible for selecting and invoking the next profile, skill or adapter.
+
+Every `FRONTEND_MISSING_INPUT_STATE` must validate against `schemas/frontend_missing_input.schema.json` and contain:
+- `pipeline_action = RETURN_TO_ORCHESTRATOR`;
+- exactly one `resolution_target` among `PRODUCT_DIRECTION`, `UI_ARCHITECT`, `LF_SHELL_GOVERNANCE`, `ORCHESTRATOR_DECISION`;
+- one minimal `question_to_orchestrator` describing only the unresolved decision;
+- `resolved_from_context` so already-known values are not requested again.
+
+For requests that are outside the frontend sandbox boundary, use `BLOCKED_FRONTEND_SCOPE` and validate against `schemas/frontend_scope_block.schema.json`:
+- `RETURN_TO_ORCHESTRATOR` when another governed capability may own the request;
+- `BLOCK_PIPELINE` only when the request cannot safely proceed in the current pipeline;
+- a Shell change must return `SHELL_CHANGE_REQUIRED -> RETURN_TO_ORCHESTRATOR -> LF_SHELL_GOVERNANCE`.
+
 ## Contradictory or late-changing inputs
 When requirements change:
 - identify `changed_now`;
@@ -48,7 +62,9 @@ A stale previous answer is not evidence. The current delta must be reflected in 
 - conflicts_detected
 - why_required
 - risk_if_assumed
-- safe_next_gate
+- pipeline_action
+- resolution_target
+- question_to_orchestrator
 
 ## Rule
 Request only the minimum missing information. Do not ask for data already available in Router, Supabase, GitHub sandbox runs or upstream profile outputs. Structural completeness is not a reason to discard sufficient governed context.
