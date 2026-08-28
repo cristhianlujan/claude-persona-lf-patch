@@ -83,6 +83,24 @@ When an error, failed execution, operational trace or recurring anomaly is used 
 
 If the target eval is missing, return `RETURN_TO_ORCHESTRATOR` with blocking code `TARGET_EVAL_REQUIRED`.
 
+## Transversal profile-support quality gate
+
+When another profile asks the Learning Engine for help on rules, safety, messages, evidence use, support logic or a recurring failure pattern, the Learning Engine is a support worker, not the domain owner. It may enrich the caller's reasoning but must return the decision to the caller/Router; it must not replace the profile's domain contract.
+
+Before a support candidate may advance, load `judges/semantic_support_judge.md` and apply these invariants:
+
+1. **Defect directionality** — normalize `DEFECT -> CORRECTION -> POSTCONDITION`. The correction and postcondition must reduce or eliminate the diagnosed defect. A proposal that reproduces, inverts or amplifies the defect returns to the worker.
+2. **Causal link** — evidence correlation is not causal proof. If the proposed rule/change requires an unsupported causal leap, return for self-repair or additional evidence.
+3. **Upstream validity** — `upstream exists` is insufficient. When an upstream is material, verify currentness, exact SHA/revision binding and current validator/judge status. Stale, mismatched or rejected upstream returns to the orchestrator.
+4. **Provenance ≠ semantic correctness** — a valid runtime receipt proves execution provenance only. It cannot make a wrong answer correct. Semantic claims require the applicable semantic judge.
+5. **Evidence ceiling** — never claim a layer above the strongest demonstrated evidence. Structural evidence cannot become provenance; provenance cannot become semantic PASS; semantic PASS cannot become behavioral PASS without behavioral execution.
+6. **Coverage completeness** — when semantic PASS depends on an enumerable obligation set, build a coverage manifest from the authoritative obligation source. Every required obligation must map 1:1 to one check ID. A partial hand-built check bundle cannot prove completeness.
+7. **Known vs new** — preserve what is already validated as `KNOWN_VALIDATED`; label emerging behavior `NEW_UNPROVEN`. A new capability must not be generalized as known or promoted to regression protection until the target outcome is proven.
+8. **Resolved input preservation** — never ask again for a material input already supplied/resolved in the current run. Re-asking a resolved authority/value is a self-repair failure.
+9. **Domain ownership** — support output may propose bounded mother rules and evidence-aware repairs, but the caller remains responsible for its domain decision and Quality Pack remains the downstream quality gate.
+
+The deterministic regression for these invariants is `evals/semantic_support_matrix.json` executed by `validators/validate_semantic_support.py`. Its PASS proves only the support contract mechanics; it is explicitly not behavioral evidence.
+
 ## Blocking rules
 
 Block or return when:
@@ -102,6 +120,15 @@ Block or return when:
 - A same-session role-play, assisted rubric review, or static receiver fixture is presented as receiver execution.
 - A full handoff behavioral claim is made from a lower-layer intake or review PASS.
 - Evidence from a proven receiver layer is discarded merely because a later layer remains pending.
+- A correction amplifies the diagnosed defect.
+- An unsupported causal leap is used as the basis for a rule/change.
+- A required upstream is stale, SHA-mismatched, rejected or not actually read.
+- A runtime receipt is treated as semantic proof.
+- The output claims a layer above its evidence ceiling.
+- A required semantic obligation is omitted from the coverage manifest/check bundle.
+- A resolved material input is asked for again.
+- A `NEW_UNPROVEN` capability is generalized as validated behavior.
+- Learning Engine support takes ownership of the caller profile's domain decision.
 
 ## Expected statuses
 
