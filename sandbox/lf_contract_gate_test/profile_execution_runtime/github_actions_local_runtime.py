@@ -28,6 +28,8 @@ MMPROJ_FILENAME = "mmproj-Qwen2.5-VL-3B-Instruct-Q8_0.gguf"
 MMPROJ_SHA256 = "980c9b2f78c04e6cff93d277ada09e768394f112d75db3b4e9dea8a69f9fb904"
 MODEL_ID = f"{MODEL_REPO}@{MODEL_COMMIT}:{MODEL_FILENAME}"
 MAX_IMAGE_BYTES = 12 * 1024 * 1024
+REPEAT_PENALTY = 1.15
+REPEAT_LAST_N = 256
 
 
 def _sha256_bytes(value: bytes) -> str:
@@ -155,6 +157,8 @@ class GitHubHostedLlamaCppAdapter:
             "--no-show-timings", "--log-disable", "-co", "off",
             "-c", str(self.context_tokens), "-n", str(self.max_output_tokens),
             "-t", "4", "--temp", "0.2", "--top-p", "0.9", "-s", "42",
+            "--repeat-penalty", str(REPEAT_PENALTY),
+            "--repeat-last-n", str(REPEAT_LAST_N),
             "-o", str(output_file),
         ]
         if self.image_path is not None:
@@ -198,6 +202,8 @@ class GitHubHostedLlamaCppAdapter:
             "system_prompt_sha256": _sha256_file(system_file),
             "literal_input_file_sha256": _sha256_file(input_file),
             "raw_output_file_sha256": _sha256_file(output_file),
+            "repeat_penalty": str(REPEAT_PENALTY),
+            "repeat_last_n": str(REPEAT_LAST_N),
         }
         if self.image_path is not None:
             attestation["input_image_sha256"] = self.image_sha256
@@ -224,6 +230,10 @@ class GitHubHostedLlamaCppVerifier:
         attestation = response.get("runtime_attestation")
         if not isinstance(attestation, dict):
             raise RuntimeExecutionBlocked("LOCAL_VERIFIER_ATTESTATION_MISSING")
+        if attestation.get("repeat_penalty") != str(REPEAT_PENALTY):
+            raise RuntimeExecutionBlocked("LOCAL_VERIFIER_REPEAT_PENALTY_MISMATCH")
+        if attestation.get("repeat_last_n") != str(REPEAT_LAST_N):
+            raise RuntimeExecutionBlocked("LOCAL_VERIFIER_REPEAT_WINDOW_MISMATCH")
         assets = getattr(adapter, "asset_paths", {})
         files = getattr(adapter, "execution_files", {})
         if set(assets) != {"llama_cli", "model", "mmproj"} or set(files) != {"system", "input", "output"}:
@@ -273,6 +283,8 @@ class GitHubHostedLlamaCppVerifier:
             "llama_source_commit": LLAMA_SOURCE_COMMIT, **observed_hashes,
             "literal_input_sha256": _sha256_file(files["input"]),
             "input_image_sha256": self.expected_image_sha256,
+            "repeat_penalty": str(REPEAT_PENALTY),
+            "repeat_last_n": str(REPEAT_LAST_N),
         }
         return {"verified": True, "verifier_id": self.verifier_id,
                 "request_sha256": request["request_sha256"],
