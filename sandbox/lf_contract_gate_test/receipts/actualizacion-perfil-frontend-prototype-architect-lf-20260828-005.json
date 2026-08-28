@@ -1,0 +1,18 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF-20260828-005",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "22a1e5fb4b50963a3846b8dbef5bd94bca43a4be"
+  ],
+  "target_paths": ["profiles/frontend_prototype_architect_lf/**"],
+  "blocking_codes": [],
+  "issued_at": "2026-08-28T04:19:00Z",
+  "notes": "PASS_SANDBOX for the minimal Frontend Prototype Architect LF Shell redirect salience remediation reconciled without force-push onto main@b19fc99d529787b0ba783c362b2a43fbb357453b after unrelated concurrent merges advanced the protected base. The same Frontend SKILL blob 22a1e5fb4b50963a3846b8dbef5bd94bca43a4be was reapplied. The change requires the exact four-segment Shell redirect BLOCKED_FRONTEND_SCOPE / SHELL_CHANGE_REQUIRED / RETURN_TO_ORCHESTRATOR / LF_SHELL_GOVERNANCE and explicitly rejects the prior reproducible three-segment RAW. Two pre-remediation live canaries produced the same failing raw_output_sha256 36a3ac8f840b72db54b44d16b15846493f5e121bb3cf2ac634bb46c5a4047d9a. This receipt proves only the candidate source/contract gate; it does not claim live behavioral PASS, merge, VALIDATED, runtime enablement, production impact or automatic promotion. Final closure requires exact-head CI, merge/readback and fresh live main-runtime canaries."
+}
