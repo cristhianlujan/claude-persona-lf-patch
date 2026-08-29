@@ -1,0 +1,1 @@
+Verification phase: deterministic CI and PR readback only.
