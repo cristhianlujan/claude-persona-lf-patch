@@ -1,0 +1,20 @@
+adapter: ADAPTER_PROJECT_BRAND_MOCKUP_RENDER_LF
+assurance_revision: v2
+activation: ROUTER_BOUND_ONLY
+max_chars: 1600
+rules:
+  - resolve project and design_system from current governed source
+  - use project route/theme/component/color/spacing/typography/responsive tokens when applicable
+  - read screen_visual_specs for screen-based deliverables
+  - never mix tokens between projects
+  - never present fallback or generic mockup as canonical project brand
+  - preserve Product/UI authority; adapter only normalizes visual sources and render constraints
+  - require app/device frame when the deliverable represents app screens
+  - require QA/readback for brand, screen state, frame and source lineage
+  - exactly one ROUTER-bound lf_adapter_invocation is required when applicable
+  - never perform a separate LLM call for the adapter
+fail_closed:
+  missing_receipt: BLOCK_MISSING_ADAPTER_INVOCATION
+  duplicate_receipt: BLOCK_DUPLICATE_ADAPTER_INVOCATION
+  unbound_call: BLOCK_UNBOUND_ADAPTER_INVOCATION
+  context_budget: BLOCK_CONTEXT_BUDGET_EXCEEDED
