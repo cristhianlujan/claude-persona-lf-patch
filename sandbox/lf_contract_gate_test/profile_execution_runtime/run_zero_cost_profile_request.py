@@ -150,6 +150,39 @@ def _materialize_image(request: dict[str, Any], work_dir: Path) -> tuple[Path | 
     return image_path, actual_sha
 
 
+def _materialize_runtime_output_schema(profile_slug: str, repo_root: Path, work_dir: Path) -> Path | None:
+    if not profile_slug or "/" in profile_slug or "\\" in profile_slug or profile_slug in {".", ".."}:
+        raise RuntimeExecutionBlocked("QUEUE_RUNTIME_SCHEMA_PROFILE_SLUG_INVALID")
+    profiles_root = (repo_root / "profiles").resolve()
+    profile_root = (profiles_root / profile_slug).resolve()
+    try:
+        profile_root.relative_to(profiles_root)
+    except ValueError as exc:
+        raise RuntimeExecutionBlocked("QUEUE_RUNTIME_SCHEMA_PATH_ESCAPE") from exc
+    source = (profile_root / "schemas" / "runtime_output.schema.json").resolve()
+    try:
+        source.relative_to(profile_root / "schemas")
+    except ValueError as exc:
+        raise RuntimeExecutionBlocked("QUEUE_RUNTIME_SCHEMA_PATH_ESCAPE") from exc
+    if not source.exists():
+        return None
+    if not source.is_file():
+        raise RuntimeExecutionBlocked("QUEUE_RUNTIME_SCHEMA_INVALID")
+    try:
+        raw = source.read_bytes()
+        payload = json.loads(raw.decode("utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise RuntimeExecutionBlocked("QUEUE_RUNTIME_SCHEMA_INVALID_JSON") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeExecutionBlocked("QUEUE_RUNTIME_SCHEMA_INVALID")
+    destination = work_dir / "profiles" / profile_slug / "schemas" / "runtime_output.schema.json"
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_bytes(raw)
+    if _sha256_bytes(destination.read_bytes()) != _sha256_bytes(raw):
+        raise RuntimeExecutionBlocked("QUEUE_RUNTIME_SCHEMA_COPY_MISMATCH")
+    return destination
+
+
 def execute_request(request: dict[str, Any], *, repo_root: Path, work_dir: Path) -> dict[str, Any]:
     required = ("request_id", "operation_code", "profile_code", "profile_slug", "input_literal")
     for key in required:
@@ -175,6 +208,7 @@ def execute_request(request: dict[str, Any], *, repo_root: Path, work_dir: Path)
 
     lf_adapter_sources = _safe_adapter_sources(request, repo_root)
     image_path, image_sha = _materialize_image(request, work_dir)
+    _materialize_runtime_output_schema(profile_slug, repo_root, work_dir)
     adapter = GitHubHostedLlamaCppAdapter(work_dir=work_dir, image_path=image_path, image_sha256=image_sha)
     verifier = GitHubHostedLlamaCppVerifier(expected_image_path=image_path, expected_image_sha256=image_sha)
     package = execute_profile_runtime(
