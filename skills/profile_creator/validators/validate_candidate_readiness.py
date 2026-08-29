@@ -12,16 +12,36 @@ REPAIR = "RETURN_TO_WORKER_FOR_SELF_REPAIR"
 LEGACY_STATUS_OVERFIT = "OUTPUT_SCHEMA_STATUS_NOT_CLOSED"
 
 
+def is_legacy_status_only_block(code):
+    return (
+        code == "OUTPUT_SCHEMA_STATUS_NOT_CLOSED"
+        or code.startswith("EVAL_EXPECTED_STATUS_MISSING:")
+        or code in {"EVAL_POSITIVE_CASE_REQUIRED", "EVAL_NEGATIVE_CASES_REQUIRED"}
+    )
+
+
+def generic_discriminator_contract_is_clean(consistency_blocking):
+    prefixes = (
+        "OUTPUT_DISCRIMINATOR_",
+        "EVAL_UNDECLARED_DISCRIMINATOR_VALUE:",
+        "EVAL_EXPECTED_DISCRIMINATOR_MISSING:",
+        "EXAMPLE_UNDECLARED_DISCRIMINATOR_VALUE:",
+        "EXAMPLE_DISCRIMINATOR_MISSING:",
+    )
+    return not any(code.startswith(prefixes) for code in consistency_blocking)
+
+
 def merged_validation(pack):
     depth_blocking, depth_warnings = depth.validate_candidate(pack)
     consistency_blocking, consistency_warnings = consistency.validate_candidate(pack)
 
-    # GOV-021 depth validation historically assumed every generated worker used a
-    # root `status`. Strong LF profiles use other closed root discriminators such
-    # as `output_type` / `self_verdict`. Suppress only that one legacy assumption
-    # when the generic consistency gate proves a closed discriminator exists.
-    if LEGACY_STATUS_OVERFIT in depth_blocking and "OUTPUT_DISCRIMINATOR_NOT_CLOSED" not in consistency_blocking:
-        depth_blocking = [code for code in depth_blocking if code != LEGACY_STATUS_OVERFIT]
+    # GOV-021 depth validation historically assumed every generated worker used
+    # root `status` and `expected_status`. Strong LF profiles use other closed
+    # discriminators such as `output_type` / `self_verdict`. The aggregate gate
+    # suppresses only those status-name assumptions when the generic contract is
+    # independently clean; every other GOV-021 depth blocker is preserved.
+    if generic_discriminator_contract_is_clean(consistency_blocking):
+        depth_blocking = [code for code in depth_blocking if not is_legacy_status_only_block(code)]
 
     blocking = []
     for code in depth_blocking + consistency_blocking:
@@ -31,7 +51,7 @@ def merged_validation(pack):
     for item in depth_warnings + consistency_warnings:
         if item not in warnings:
             warnings.append(item)
-    if LEGACY_STATUS_OVERFIT not in blocking:
+    if not any(is_legacy_status_only_block(code) for code in blocking):
         warnings.append("GENERIC_CLOSED_OUTPUT_DISCRIMINATOR_ACCEPTED")
     return blocking, warnings, depth_blocking, consistency_blocking
 
