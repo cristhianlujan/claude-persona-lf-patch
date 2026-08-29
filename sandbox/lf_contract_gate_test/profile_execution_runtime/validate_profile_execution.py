@@ -16,15 +16,10 @@ RECEIPT_TYPE = "PROFILE_EXECUTION_RECEIPT_V1"
 OPERATION_CODE = "EJECUCION_PERFIL_LF"
 ALLOWED_RUNTIME_ORIGINS = {"MODEL_RUNTIME"}
 PROVENANCE_ONLY_RECIPIENTS = {"SEMANTIC_JUDGE"}
-FINAL_DOWNSTREAM_RECIPIENTS = {
-    "COMPOSER",
-    "IMAGE_GENERATOR",
-    "TOOL_PAYLOAD",
-    "FINAL_USER",
-    "INTERNAL_AGENT",
-}
+FINAL_DOWNSTREAM_RECIPIENTS = {"COMPOSER", "IMAGE_GENERATOR", "TOOL_PAYLOAD", "FINAL_USER", "INTERNAL_AGENT"}
 DOWNSTREAM_RECIPIENTS = PROVENANCE_ONLY_RECIPIENTS | FINAL_DOWNSTREAM_RECIPIENTS
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+MAX_LF_ADAPTER_CAPSULE_CHARS = 2000
 
 
 def sha256_text(value: str) -> str:
@@ -36,11 +31,65 @@ def canonical_json_sha256(value: Any) -> str:
     return sha256_text(rendered)
 
 
+def _nonempty_string(value: Any) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
+def _is_sha256(value: Any) -> bool:
+    return isinstance(value, str) and bool(SHA256_RE.fullmatch(value))
+
+
+def _validate_lf_adapter_invocations(value: Any, profile_code: str | None) -> list[str]:
+    if value is None:
+        return []
+    errors: list[str] = []
+    if not isinstance(value, list):
+        return ["LF_ADAPTER_INVOCATIONS_NOT_ARRAY"]
+    seen: set[tuple[str, str]] = set()
+    for index, item in enumerate(value):
+        prefix = f"LF_ADAPTER_INVOCATION_{index}"
+        if not isinstance(item, dict):
+            errors.append(f"{prefix}_NOT_OBJECT")
+            continue
+        required = (
+            "invocation_id", "adapter_code", "assurance_revision", "activation_source",
+            "binding_ref", "profile_id", "target_ref", "capsule_ref", "capsule_char_count",
+            "source_refs", "verdict",
+        )
+        for key in required:
+            if key not in item:
+                errors.append(f"{prefix}_{key.upper()}_MISSING")
+        for key in (
+            "invocation_id", "adapter_code", "assurance_revision", "activation_source",
+            "binding_ref", "profile_id", "target_ref", "capsule_ref", "verdict",
+        ):
+            if key in item and not _nonempty_string(item.get(key)):
+                errors.append(f"{prefix}_{key.upper()}_INVALID")
+        if item.get("activation_source") != "ROUTER":
+            errors.append(f"{prefix}_ACTIVATION_SOURCE_NOT_ROUTER")
+        if item.get("verdict") not in {"APPLIED", "BLOCKED"}:
+            errors.append(f"{prefix}_VERDICT_INVALID")
+        if profile_code is not None and item.get("profile_id") != profile_code:
+            errors.append(f"{prefix}_PROFILE_ID_MISMATCH")
+        chars = item.get("capsule_char_count")
+        if not isinstance(chars, int) or isinstance(chars, bool) or not 1 <= chars <= MAX_LF_ADAPTER_CAPSULE_CHARS:
+            errors.append(f"{prefix}_CAPSULE_CHAR_COUNT_INVALID")
+        refs = item.get("source_refs")
+        if not isinstance(refs, list) or not refs or len(refs) > 8 or len(refs) != len(set(refs)) or not all(_nonempty_string(ref) for ref in refs):
+            errors.append(f"{prefix}_SOURCE_REFS_INVALID")
+        key = (str(item.get("adapter_code", "")), str(item.get("target_ref", "")))
+        if key in seen:
+            errors.append("LF_ADAPTER_INVOCATION_DUPLICATE_ADAPTER_TARGET")
+        seen.add(key)
+    return sorted(set(errors))
+
+
 def build_receipt(
     *, execution_id: str, profile_code: str, profile_slug: str,
     profile_source_refs: list[str], profile_source_sha256: str,
     input_literal: str, raw_output: Any, runtime_attestation: dict[str, Any],
     obligation_manifest_sha256: str | None = None,
+    lf_adapter_invocations: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     receipt = {
         "receipt_type": RECEIPT_TYPE,
@@ -59,18 +108,10 @@ def build_receipt(
     }
     if obligation_manifest_sha256 is not None:
         receipt["obligation_manifest_sha256"] = obligation_manifest_sha256
-    receipt["receipt_sha256"] = canonical_json_sha256(
-        {key: value for key, value in receipt.items() if key != "receipt_sha256"}
-    )
+    if lf_adapter_invocations:
+        receipt["lf_adapter_invocations"] = lf_adapter_invocations
+    receipt["receipt_sha256"] = canonical_json_sha256({key: value for key, value in receipt.items() if key != "receipt_sha256"})
     return receipt
-
-
-def _nonempty_string(value: Any) -> bool:
-    return isinstance(value, str) and bool(value.strip())
-
-
-def _is_sha256(value: Any) -> bool:
-    return isinstance(value, str) and bool(SHA256_RE.fullmatch(value))
 
 
 def validate_receipt(
@@ -110,15 +151,12 @@ def validate_receipt(
         errors.append("RUNTIME_ATTESTATION_MISSING")
     else:
         for key in (
-            "provider", "model_id", "run_id", "attested_at",
-            "attestation_verifier", "attestation_evidence_sha256",
-            "verified_request_sha256", "verified_response_sha256",
+            "provider", "model_id", "run_id", "attested_at", "attestation_verifier",
+            "attestation_evidence_sha256", "verified_request_sha256", "verified_response_sha256",
         ):
             if not _nonempty_string(attestation.get(key)):
                 errors.append(f"RUNTIME_ATTESTATION_{key.upper()}_MISSING")
-        for key in (
-            "attestation_evidence_sha256", "verified_request_sha256", "verified_response_sha256",
-        ):
+        for key in ("attestation_evidence_sha256", "verified_request_sha256", "verified_response_sha256"):
             if _nonempty_string(attestation.get(key)) and not _is_sha256(attestation.get(key)):
                 errors.append(f"RUNTIME_ATTESTATION_{key.upper()}_INVALID")
     if expected_profile_code is not None and receipt.get("profile_code") != expected_profile_code:
@@ -129,6 +167,7 @@ def validate_receipt(
         errors.append("INPUT_SHA256_MISMATCH")
     if expected_raw_output is not None and receipt.get("raw_output_sha256") != canonical_json_sha256(expected_raw_output):
         errors.append("RAW_OUTPUT_SHA256_MISMATCH")
+    errors.extend(_validate_lf_adapter_invocations(receipt.get("lf_adapter_invocations"), receipt.get("profile_code")))
     claimed_receipt_sha = receipt.get("receipt_sha256")
     if _nonempty_string(claimed_receipt_sha):
         recalculated = canonical_json_sha256({key: value for key, value in receipt.items() if key != "receipt_sha256"})
@@ -146,13 +185,6 @@ def authorize_downstream(
     semantic_receipt: Any | None = None, semantic_check_bundle: Any | None = None,
     semantic_obligation_manifest: Any | None = None,
 ) -> dict[str, Any]:
-    """Authorize a profile-dependent recipient.
-
-    SEMANTIC_JUDGE is the only provenance-only transition. Final recipients require
-    execution provenance plus a semantic PASS derived from the complete pre-execution
-    obligation manifest bound to the same execution receipt.
-    """
-
     if recipient not in DOWNSTREAM_RECIPIENTS:
         return {"status": "BLOCK_PIPELINE", "blocking_codes": ["RECIPIENT_NOT_SUPPORTED"]}
     if not profile_execution_required:
@@ -166,28 +198,17 @@ def authorize_downstream(
     )
     if errors:
         return {"status": "BLOCK_PIPELINE", "blocking_codes": errors}
-
     if recipient in PROVENANCE_ONLY_RECIPIENTS:
-        return {
-            "status": "PASS_PROFILE_EXECUTION_PROVENANCE",
-            "blocking_codes": [],
-            "receipt_sha256": receipt["receipt_sha256"],
-            "authorized_recipient": recipient,
-        }
-
+        return {"status": "PASS_PROFILE_EXECUTION_PROVENANCE", "blocking_codes": [], "receipt_sha256": receipt["receipt_sha256"], "authorized_recipient": recipient}
     semantic_errors = validate_semantic_judge_receipt(
-        semantic_receipt,
-        expected_bundle=semantic_check_bundle,
+        semantic_receipt, expected_bundle=semantic_check_bundle,
         expected_obligation_manifest=semantic_obligation_manifest,
-        expected_raw_output=expected_raw_output,
-        execution_receipt=receipt,
+        expected_raw_output=expected_raw_output, execution_receipt=receipt,
     )
     if semantic_errors:
         return {"status": "BLOCK_PIPELINE", "blocking_codes": semantic_errors}
-
     return {
-        "status": "PASS_PROFILE_EXECUTION_AND_SEMANTIC_QUALITY",
-        "blocking_codes": [],
+        "status": "PASS_PROFILE_EXECUTION_AND_SEMANTIC_QUALITY", "blocking_codes": [],
         "execution_receipt_sha256": receipt["receipt_sha256"],
         "semantic_receipt_sha256": semantic_receipt["receipt_sha256"],
         "obligation_manifest_sha256": receipt["obligation_manifest_sha256"],
@@ -219,15 +240,10 @@ def main(argv: Iterable[str] | None = None) -> int:
     semantic_bundle = _load_json(args.semantic_check_bundle) if args.semantic_check_bundle else None
     semantic_manifest = _load_json(args.semantic_obligation_manifest) if args.semantic_obligation_manifest else None
     result = authorize_downstream(
-        profile_execution_required=True,
-        recipient=args.recipient,
-        receipt=receipt,
-        expected_profile_code=args.profile_code,
-        expected_input_literal=input_literal,
-        expected_raw_output=raw_output,
-        expected_profile_source_sha256=args.profile_source_sha256,
-        semantic_receipt=semantic_receipt,
-        semantic_check_bundle=semantic_bundle,
+        profile_execution_required=True, recipient=args.recipient, receipt=receipt,
+        expected_profile_code=args.profile_code, expected_input_literal=input_literal,
+        expected_raw_output=raw_output, expected_profile_source_sha256=args.profile_source_sha256,
+        semantic_receipt=semantic_receipt, semantic_check_bundle=semantic_bundle,
         semantic_obligation_manifest=semantic_manifest,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2))
