@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import copy
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -149,15 +150,18 @@ def validate_candidate(pack):
         if marker not in combined:
             blocking.append(code)
 
-    forbidden = (
-        "invoke input_governance_agent on every execution",
-        "always invoke input_governance_agent",
-        "full policy injection",
-        "bypass router",
-    )
-    for marker in forbidden:
-        if marker in combined:
-            blocking.append(f"PROFILE_INPUT_GOVERNANCE_ANTIPATTERN:{marker.replace(' ', '_').upper()}")
+    # Only reject affirmative bypass/default-invocation language. Negative guardrail
+    # wording such as "must not bypass Router" is valid and must not self-trigger.
+    antipatterns = {
+        r"\binvoke\s+input_governance_agent\s+on\s+every\s+execution\b": "ALWAYS_INVOKE",
+        r"\balways\s+invoke\s+input_governance_agent\b": "ALWAYS_INVOKE",
+        r"\b(?:may|can|will|should)\s+bypass\s+(?:the\s+)?router\b": "BYPASS_ROUTER",
+        r"\binvoke(?:d|s)?\s+(?:directly\s+)?outside\s+(?:the\s+)?router\b": "BYPASS_ROUTER",
+        r"\bwithout\s+(?:the\s+)?router\b": "BYPASS_ROUTER",
+    }
+    for pattern, label in antipatterns.items():
+        if re.search(pattern, combined):
+            blocking.append(f"PROFILE_INPUT_GOVERNANCE_ANTIPATTERN:{label}")
 
     if not blocking:
         warnings.extend([
@@ -229,6 +233,14 @@ def self_test():
         cases.append({"case": name, "aligned": aligned, "blocking_codes": blocking})
 
     run("canonical_binding_passes", positive, True)
+
+    negated = copy.deepcopy(positive)
+    negated["files"]["SKILL.md"] += "\nThe profile must not bypass Router.\n"
+    run("negated_bypass_guardrail_allowed", negated, True)
+
+    affirmative = copy.deepcopy(positive)
+    affirmative["files"]["SKILL.md"] += "\nThe profile may bypass Router.\n"
+    run("affirmative_bypass_rejected", affirmative, False, "PROFILE_INPUT_GOVERNANCE_ANTIPATTERN:BYPASS_ROUTER")
 
     missing = copy.deepcopy(positive)
     missing["files"].pop(BINDING_PATH, None)
