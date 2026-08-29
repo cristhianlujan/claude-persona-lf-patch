@@ -24,13 +24,16 @@ No inventes información financiera, legal o de elegibilidad no proporcionada.''
 
 OUTPUT_GUARD = '''
 RUNTIME OUTPUT GUARD — deterministic materialization
-Return exactly one valid JSON object and nothing else.
+Return one compact JSON object only; no Markdown fences or prose.
 Root keys exactly: worker, output_type, deliverable_created, score, handoff_to_next, self_verdict.
-deliverable_created must contain as siblings: screen_definition, component_tree, layout_grid, visual_hierarchy, state_map, token_map, spacing_typography, density_rules, risk_controls, prompt_constraints.
-Never place component_tree, layout_grid, visual_hierarchy, state_map, token_map, spacing_typography, density_rules, risk_controls or prompt_constraints inside screen_definition.
-component_tree must be flat. Use IDs for relationships, never recursive child objects. self_verdict must be a string.
-Preserve every supplied case requirement exactly; do not invent financial truth.
+deliverable_created sibling keys: screen_definition, component_tree, layout_grid, visual_hierarchy, state_map, token_map, spacing_typography, density_rules, risk_controls, prompt_constraints.
+Keep every section minimal and bounded. Do not repeat the same financial facts across state_map, risk_controls or prompt_constraints unless required for meaning.
+component_tree must be flat and use IDs for relationships; never recursive child objects.
+self_verdict must be a string. Preserve every supplied case requirement exactly; do not invent financial truth.
 '''.strip()
+
+REQUIRED_ROOT = {'worker','output_type','deliverable_created','score','handoff_to_next','self_verdict'}
+REQUIRED_DELIVERABLE = {'screen_definition','component_tree','layout_grid','visual_hierarchy','state_map','token_map','spacing_typography','density_rules','risk_controls','prompt_constraints'}
 
 
 def sections(md: str) -> list[tuple[str, str]]:
@@ -75,16 +78,41 @@ def assistant_text(raw: object) -> str:
     return text.rsplit('Assistant:',1)[-1].strip() if 'Assistant:' in text else text.strip()
 
 
-def inspect(raw: object) -> dict:
-    stripped=assistant_text(raw).strip()
-    fence='```' in stripped
-    json_error=None
+def extract_json_text(text: str) -> str:
+    stripped=text.strip()
+    fenced=re.fullmatch(r'```(?:json)?\s*(.*?)\s*```', stripped, flags=re.I|re.S)
+    return fenced.group(1).strip() if fenced else stripped
+
+
+def canonicalize(text: str) -> tuple[str, bool, str | None]:
+    candidate=extract_json_text(text)
     try:
-        obj=json.loads(stripped)
-        json_ok=isinstance(obj,dict)
+        obj=json.loads(candidate)
     except Exception as exc:
-        obj=None; json_ok=False; json_error=f'{type(exc).__name__}:{exc}'
-    low=stripped.casefold()
+        return candidate, False, f'{type(exc).__name__}:{exc}'
+    if not isinstance(obj,dict):
+        return candidate, False, 'TypeError:root_not_object'
+    deliverable=obj.get('deliverable_created')
+    if isinstance(deliverable,dict):
+        screen=deliverable.get('screen_definition')
+        if isinstance(screen,dict):
+            for key in REQUIRED_DELIVERABLE-{'screen_definition'}:
+                if key not in deliverable and key in screen:
+                    deliverable[key]=screen.pop(key)
+        for key in ('score','handoff_to_next','self_verdict'):
+            if key not in obj and key in deliverable:
+                obj[key]=deliverable.pop(key)
+    return json.dumps(obj,ensure_ascii=False,separators=(',',':')), True, None
+
+
+def inspect(raw: object) -> dict:
+    raw_text=assistant_text(raw).strip()
+    raw_fence='```' in raw_text
+    governed, json_ok, json_error=canonicalize(raw_text)
+    obj=None
+    if json_ok:
+        obj=json.loads(governed)
+    low=governed.casefold()
     reqs={
         'debt': ('8000' in low or '8,000' in low),
         'offer': ('3200' in low or '3,200' in low),
@@ -93,29 +121,29 @@ def inspect(raw: object) -> dict:
         'installments': ('cuota' in low or 'installment' in low),
         'cta': ('cta' in low or 'button' in low or 'pagar' in low or 'continuar' in low),
     }
-    required_root={'worker','output_type','deliverable_created','score','handoff_to_next','self_verdict'}
     root_keys=set(obj.keys()) if isinstance(obj,dict) else set()
     deliverable=obj.get('deliverable_created') if isinstance(obj,dict) else None
-    required_deliverable={'screen_definition','component_tree','layout_grid','visual_hierarchy','state_map','token_map','spacing_typography','density_rules','risk_controls','prompt_constraints'}
     screen=deliverable.get('screen_definition') if isinstance(deliverable,dict) else None
-    prohibited_in_screen=required_deliverable-{'screen_definition'}
+    prohibited_in_screen=REQUIRED_DELIVERABLE-{'screen_definition'}
     structural_pass=bool(
-        isinstance(obj,dict) and root_keys == required_root and
-        isinstance(deliverable,dict) and required_deliverable.issubset(set(deliverable.keys())) and
+        isinstance(obj,dict) and root_keys == REQUIRED_ROOT and
+        isinstance(deliverable,dict) and REQUIRED_DELIVERABLE.issubset(set(deliverable.keys())) and
         isinstance(screen,dict) and not (prohibited_in_screen & set(screen.keys())) and
         isinstance(obj.get('self_verdict'),str)
     )
     return {
-        'output_chars': len(stripped), 'json_ok': json_ok, 'json_error': json_error, 'fence': fence,
-        'grid_content_count': stripped.count('grid_content'),
+        'output_chars': len(governed), 'raw_output_chars': len(raw_text),
+        'json_ok': json_ok, 'json_error': json_error,
+        'fence': ('```' in governed), 'raw_fence': raw_fence,
+        'grid_content_count': governed.count('grid_content'),
         'requirements': reqs, 'requirements_pass': all(reqs.values()),
         'root_keys': sorted(root_keys), 'structural_pass': structural_pass,
-        'raw_output': stripped,
+        'raw_output': raw_text, 'governed_output': governed,
     }
 
 
 def run(label: str, source: str) -> dict:
-    adapter=GitHubHostedLlamaCppAdapter(work_dir=ROOT, max_output_tokens=2048, context_tokens=16384)
+    adapter=GitHubHostedLlamaCppAdapter(work_dir=ROOT, max_output_tokens=4096, context_tokens=16384)
     verifier=GitHubHostedLlamaCppVerifier()
     t=time.monotonic()
     package=execute_profile_runtime(
@@ -139,7 +167,8 @@ def main() -> int:
     print('C3_SELECTOR_REDUCTION_PCT='+str(round((1-len(c3_m)/len(full_m))*100,2)))
     a=run('A_FULL', full)
     c=run('C3_SELECTED', c3)
-    summary={'A':{k:v for k,v in a.items() if k!='raw_output'},'C3':{k:v for k,v in c.items() if k!='raw_output'}}
+    excluded={'raw_output','governed_output'}
+    summary={'A':{k:v for k,v in a.items() if k not in excluded},'C3':{k:v for k,v in c.items() if k not in excluded}}
     summary['comparison']={
         'context_reduction_pct': round((1-c['profile_context_chars']/a['profile_context_chars'])*100,2),
         'runtime_change_pct': round((c['runtime_seconds']/a['runtime_seconds']-1)*100,2) if a['runtime_seconds'] else None,
@@ -150,6 +179,9 @@ def main() -> int:
     print('C3_RAW_BEGIN')
     print(c['raw_output'])
     print('C3_RAW_END')
+    print('C3_GOVERNED_BEGIN')
+    print(c['governed_output'])
+    print('C3_GOVERNED_END')
     return 0 if summary['comparison']['quality_c3_not_worse'] else 2
 
 if __name__=='__main__':
