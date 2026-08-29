@@ -1,0 +1,13 @@
+{
+  "lf_adapter_invocations": [
+    {
+      "adapter_code": "ADAPTER_LF_SHELL_PROFILE",
+      "adapter_version": "v0.2-candidate",
+      "invocation_id": "inv-example-0001",
+      "activation_reason": "governed LF screen delta for bound profile",
+      "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "capsule_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "verdict": "APPLIED"
+    }
+  ]
+}
