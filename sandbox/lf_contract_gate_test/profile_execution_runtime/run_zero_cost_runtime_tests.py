@@ -92,6 +92,8 @@ def main() -> int:
         passed += 1
         runtime_source = Path(local.__file__).read_text(encoding="utf-8")
         assert '"--log-disable"' not in runtime_source
+        assert '"--prompt", request["input_literal"]' in runtime_source
+        assert '"-f", str(input_file)' not in runtime_source
         assert "context_tokens: int = 16384" in runtime_source
         assert "max_output_tokens: int = 2048" in runtime_source
         assert '"context_tokens": str(self.context_tokens)' in runtime_source
