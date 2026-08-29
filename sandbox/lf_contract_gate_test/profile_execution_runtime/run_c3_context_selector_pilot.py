@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import json, re, time
+import json, re, shutil, time
 from pathlib import Path
 from github_actions_local_runtime import GitHubHostedLlamaCppAdapter, GitHubHostedLlamaCppVerifier
 from profile_runtime_runner import execute_profile_runtime
 
 ROOT = Path(__file__).resolve().parents[3]
 SKILL = ROOT / 'profiles/ui_architect/SKILL.md'
+CANONICAL_SCHEMA = ROOT / 'profiles/ui_architect/schemas/ui_production_spec.schema.json'
+RUNTIME_SCHEMA = ROOT / 'profiles/ui_architect/schemas/runtime_output.schema.json'
 INPUT = '''Define una nueva pantalla de oferta de deuda.
 
 Datos autorizados:
@@ -67,11 +69,12 @@ def inspect(raw: object) -> dict:
     text=assistant_text(raw)
     stripped=text.strip()
     fence='```' in stripped
+    json_error=None
     try:
         obj=json.loads(stripped)
         json_ok=isinstance(obj,dict)
-    except Exception:
-        obj=None; json_ok=False
+    except Exception as exc:
+        obj=None; json_ok=False; json_error=f'{type(exc).__name__}:{exc}'
     low=stripped.casefold()
     reqs={
         'debt': ('8000' in low or '8,000' in low),
@@ -81,11 +84,21 @@ def inspect(raw: object) -> dict:
         'installments': ('cuota' in low or 'installment' in low),
         'cta': ('cta' in low or 'button' in low or 'pagar' in low or 'continuar' in low),
     }
+    required_root={'worker','output_type','deliverable_created','score','handoff_to_next','self_verdict'}
+    root_keys=set(obj.keys()) if isinstance(obj,dict) else set()
+    deliverable=obj.get('deliverable_created') if isinstance(obj,dict) else None
+    screen=deliverable.get('screen_definition') if isinstance(deliverable,dict) else None
+    prohibited_in_screen={'component_tree','layout_grid','visual_hierarchy','state_map','token_map','spacing_typography','density_rules','risk_controls','prompt_constraints','remediation_actions'}
+    structural_pass=bool(
+        isinstance(obj,dict) and required_root.issubset(root_keys) and
+        isinstance(deliverable,dict) and isinstance(screen,dict) and
+        not (prohibited_in_screen & set(screen.keys()))
+    )
     return {
-        'output_chars': len(stripped), 'json_ok': json_ok, 'fence': fence,
+        'output_chars': len(stripped), 'json_ok': json_ok, 'json_error': json_error, 'fence': fence,
         'grid_content_count': stripped.count('grid_content'),
         'requirements': reqs, 'requirements_pass': all(reqs.values()),
-        'root_keys': sorted(obj.keys()) if isinstance(obj,dict) else [],
+        'root_keys': sorted(root_keys), 'structural_pass': structural_pass,
         'raw_output': stripped,
     }
 
@@ -112,14 +125,18 @@ def main() -> int:
     print('C3_SELECTOR_FULL_CHARS='+str(len(full)))
     print('C3_SELECTOR_SELECTED_CHARS='+str(len(c3)))
     print('C3_SELECTOR_REDUCTION_PCT='+str(round((1-len(c3)/len(full))*100,2)))
-    a=run('A_FULL', full)
-    c=run('C3_SELECTED', c3)
+    shutil.copyfile(CANONICAL_SCHEMA, RUNTIME_SCHEMA)
+    try:
+        a=run('A_FULL', full)
+        c=run('C3_SELECTED', c3)
+    finally:
+        RUNTIME_SCHEMA.unlink(missing_ok=True)
     summary={'A':{k:v for k,v in a.items() if k!='raw_output'},'C3':{k:v for k,v in c.items() if k!='raw_output'}}
     summary['comparison']={
         'context_reduction_pct': round((1-c['profile_context_chars']/a['profile_context_chars'])*100,2),
         'runtime_change_pct': round((c['runtime_seconds']/a['runtime_seconds']-1)*100,2) if a['runtime_seconds'] else None,
         'output_change_pct': round((c['output_chars']/a['output_chars']-1)*100,2) if a['output_chars'] else None,
-        'quality_c3_not_worse': bool(c['json_ok'] and not c['fence'] and c['requirements_pass'] and c['grid_content_count'] <= a['grid_content_count']),
+        'quality_c3_not_worse': bool(c['json_ok'] and c['structural_pass'] and not c['fence'] and c['requirements_pass'] and c['grid_content_count'] <= a['grid_content_count']),
     }
     print('C3_PILOT_SUMMARY='+json.dumps(summary,ensure_ascii=False,sort_keys=True))
     print('C3_RAW_BEGIN')
