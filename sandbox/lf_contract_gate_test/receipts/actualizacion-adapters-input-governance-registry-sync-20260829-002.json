@@ -1,0 +1,22 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_ADAPTER_INPUT_GOVERNANCE_REGISTRY_SYNC",
+  "execution_id": "EXEC-ADAPTER-INPUT-GOVERNANCE-REGISTRY-SYNC-20260829-002",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "5508e21d1611054ec3fc50f3e3687badbc9545f772ab0083abca9f27532ed4e0",
+  "judge_sha": "62888829f5f3be97edde291421f2e2bacb1fa61bc0d15bb2683e7ef483550900",
+  "source_sha_list": [
+    "08ff31dba7154a662b35d6784ca7740fb7a44faa",
+    "fffcad5ce6d7fc722091195e2d2829859d64f8a145d3a35c7d911d0fcd79d3f8",
+    "b3a4d34a8e32e6f698b27431833fbdda87f24ad1"
+  ],
+  "target_paths": [
+    "supabase/migrations/20260829060746_lf_adapter_input_governance_registry_sync_v1.sql"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-29T06:07:00Z",
+  "notes": "PASS_SANDBOX for post-merge registry synchronization only. Supabase assigned ledger version 20260829060746 to lf_adapter_input_governance_registry_sync_v1; the Git source path is aligned to that authoritative version. The migration records the already-merged Input Governance binding for ADAPTER_LF_SHELL_PROFILE and ADAPTER_PROJECT_BRAND_MOCKUP_RENDER_LF in lf_activos metadata/raw_payload, pinned to main merge 08ff31d and PR #314. It does not alter adapter status, runtime enablement, production enablement, Router binding, Marketplace assets, or Input Readiness authority."
+}
