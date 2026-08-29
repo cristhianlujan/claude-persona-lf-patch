@@ -1,0 +1,1 @@
+Only an applicable runtime capsule is intended for prompt composition; quality assets remain offline.
