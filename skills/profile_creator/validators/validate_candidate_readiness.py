@@ -6,6 +6,7 @@ from pathlib import Path
 
 import validate_candidate_consistency as consistency
 import validate_candidate_depth as depth
+import validate_governance_binding as governance
 
 READY = "DEPTH_READY_FOR_SEMANTIC_REVIEW"
 REPAIR = "RETURN_TO_WORKER_FOR_SELF_REPAIR"
@@ -34,6 +35,7 @@ def generic_discriminator_contract_is_clean(consistency_blocking):
 def merged_validation(pack):
     depth_blocking, depth_warnings = depth.validate_candidate(pack)
     consistency_blocking, consistency_warnings = consistency.validate_candidate(pack)
+    governance_blocking, governance_warnings = governance.validate_candidate(pack)
 
     # GOV-021 depth validation historically assumed every generated worker used
     # root `status` and `expected_status`. Strong LF profiles use other closed
@@ -44,16 +46,16 @@ def merged_validation(pack):
         depth_blocking = [code for code in depth_blocking if not is_legacy_status_only_block(code)]
 
     blocking = []
-    for code in depth_blocking + consistency_blocking:
+    for code in depth_blocking + consistency_blocking + governance_blocking:
         if code not in blocking:
             blocking.append(code)
     warnings = []
-    for item in depth_warnings + consistency_warnings:
+    for item in depth_warnings + consistency_warnings + governance_warnings:
         if item not in warnings:
             warnings.append(item)
     if not any(is_legacy_status_only_block(code) for code in blocking):
         warnings.append("GENERIC_CLOSED_OUTPUT_DISCRIMINATOR_ACCEPTED")
-    return blocking, warnings, depth_blocking, consistency_blocking
+    return blocking, warnings, depth_blocking, consistency_blocking, governance_blocking
 
 
 def validate_file(path):
@@ -68,7 +70,7 @@ def validate_file(path):
             "blocking_codes": [f"CANDIDATE_READ_ERROR:{exc}"],
             "warnings": [],
         }
-    blocking, warnings, depth_blocking, consistency_blocking = merged_validation(pack)
+    blocking, warnings, depth_blocking, consistency_blocking, governance_blocking = merged_validation(pack)
     return {
         "status": READY if not blocking else REPAIR,
         "validation_scope": "DETERMINISTIC_READINESS_DEPTH_AND_CONSISTENCY",
@@ -77,6 +79,7 @@ def validate_file(path):
         "component_gates": {
             "producer_depth": "PASS" if not depth_blocking else "FAIL",
             "cross_artifact_consistency": "PASS" if not consistency_blocking else "FAIL",
+            "input_governance_binding": "PASS" if not governance_blocking else "FAIL",
         },
         "blocking_codes": blocking,
         "warnings": warnings,
@@ -86,11 +89,11 @@ def validate_file(path):
 def self_test(root):
     root = Path(root)
     fixture = root / "fixtures/architecture_consistency/positive_candidate_pack.json"
-    positive = json.loads(fixture.read_text(encoding="utf-8"))
+    positive = governance.inject_binding(json.loads(fixture.read_text(encoding="utf-8")))
     cases = []
 
     def run(name, pack, expected_ready, expected_code=None):
-        blocking, warnings, _, _ = merged_validation(pack)
+        blocking, warnings, _, _, _ = merged_validation(pack)
         ready = not blocking
         aligned = ready == expected_ready and (expected_code is None or expected_code in blocking)
         cases.append({"case": name, "aligned": aligned, "blocking_codes": blocking, "warnings": warnings})
@@ -107,6 +110,16 @@ def self_test(root):
     no_validator = copy.deepcopy(positive)
     no_validator["files"].pop("validators/validate_pack.py", None)
     run("missing_executable_validator_rejected", no_validator, False, "EXECUTABLE_PROFILE_VALIDATOR_REQUIRED")
+
+    no_governance = copy.deepcopy(positive)
+    no_governance["files"].pop(governance.BINDING_PATH, None)
+    run("missing_input_governance_binding_rejected", no_governance, False, "INPUT_GOVERNANCE_BINDING_REQUIRED")
+
+    duplicate_checks = copy.deepcopy(positive)
+    binding = json.loads(duplicate_checks["files"][governance.BINDING_PATH])
+    binding["governance_binding"]["token_policy"]["duplicate_checks"] = True
+    duplicate_checks["files"][governance.BINDING_PATH] = json.dumps(binding, indent=2)
+    run("duplicate_governance_checks_rejected", duplicate_checks, False, "INPUT_GOVERNANCE_TOKEN_POLICY_INVALID")
 
     failed = [case["case"] for case in cases if not case["aligned"]]
     return {
