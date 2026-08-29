@@ -21,6 +21,7 @@ from github_actions_local_runtime import (
 from profile_runtime_runner import RuntimeExecutionBlocked, execute_profile_runtime
 
 RESULT_SCHEMA = "LF_PROFILE_RUNTIME_QUEUE_RESULT_V1"
+MAX_LF_ADAPTERS = 4
 
 
 def _load_request(path: Path) -> dict[str, Any]:
@@ -54,6 +55,74 @@ def _safe_source_paths(profile_slug: str, value: Any) -> list[str]:
         seen.add(normalized)
         result.append(normalized)
     return sorted(result)
+
+
+def _capsule_scalar(content: str, key: str) -> str | None:
+    prefix = f"{key}:"
+    for raw in content.splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith(prefix):
+            value = line[len(prefix):].strip().strip('"\'')
+            return value or None
+    return None
+
+
+def _safe_adapter_sources(request: dict[str, Any], repo_root: Path) -> list[dict[str, Any]]:
+    bindings = request.get("lf_adapter_bindings", [])
+    if bindings is None:
+        bindings = []
+    if not isinstance(bindings, list):
+        raise RuntimeExecutionBlocked("QUEUE_LF_ADAPTER_BINDINGS_NOT_ARRAY")
+    if len(bindings) > MAX_LF_ADAPTERS:
+        raise RuntimeExecutionBlocked("QUEUE_LF_ADAPTER_BINDING_COUNT_EXCEEDED", str(len(bindings)))
+    sources: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for item in bindings:
+        if not isinstance(item, dict):
+            raise RuntimeExecutionBlocked("QUEUE_LF_ADAPTER_BINDING_INVALID")
+        canonical_id = item.get("canonical_adapter_id")
+        current_path = item.get("current_path")
+        binding_ref = item.get("binding_ref")
+        if not all(_nonempty(value) for value in (canonical_id, current_path, binding_ref)):
+            raise RuntimeExecutionBlocked("QUEUE_LF_ADAPTER_BINDING_INCOMPLETE")
+        if canonical_id in seen:
+            raise RuntimeExecutionBlocked("BLOCK_DUPLICATE_ADAPTER_INVOCATION", canonical_id)
+        seen.add(canonical_id)
+        normalized_current = str(Path(current_path).as_posix())
+        current_parts = Path(normalized_current).parts
+        if normalized_current.startswith("/") or ".." in current_parts or not normalized_current.startswith("adapters/") or Path(normalized_current).name != "ADAPTER.md":
+            raise RuntimeExecutionBlocked("QUEUE_LF_ADAPTER_CURRENT_PATH_INVALID", normalized_current)
+        capsule_relative = str((Path(normalized_current).parent / "runtime" / "runtime_capsule.yaml").as_posix())
+        capsule_path = repo_root / capsule_relative
+        if not capsule_path.is_file():
+            raise RuntimeExecutionBlocked("QUEUE_LF_ADAPTER_CAPSULE_MISSING", capsule_relative)
+        try:
+            content = capsule_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            raise RuntimeExecutionBlocked("QUEUE_LF_ADAPTER_CAPSULE_READ_FAILED", capsule_relative) from exc
+        if not content:
+            raise RuntimeExecutionBlocked("QUEUE_LF_ADAPTER_CAPSULE_EMPTY", capsule_relative)
+        declared_adapter = _capsule_scalar(content, "adapter")
+        assurance_revision = _capsule_scalar(content, "assurance_revision")
+        activation = _capsule_scalar(content, "activation")
+        if declared_adapter != canonical_id:
+            raise RuntimeExecutionBlocked("QUEUE_LF_ADAPTER_CAPSULE_ID_MISMATCH", canonical_id)
+        if not _nonempty(assurance_revision):
+            raise RuntimeExecutionBlocked("QUEUE_LF_ADAPTER_ASSURANCE_REVISION_MISSING", canonical_id)
+        if activation != "ROUTER_BOUND_ONLY":
+            raise RuntimeExecutionBlocked("BLOCK_UNBOUND_ADAPTER_INVOCATION", canonical_id)
+        sources.append({
+            "adapter_code": canonical_id,
+            "assurance_revision": assurance_revision,
+            "activation_source": "ROUTER",
+            "binding_ref": binding_ref,
+            "target_ref": request["profile_code"],
+            "ref": capsule_relative,
+            "content": content,
+        })
+    return sorted(sources, key=lambda item: item["adapter_code"])
 
 
 def _materialize_image(request: dict[str, Any], work_dir: Path) -> tuple[Path | None, str | None]:
@@ -104,6 +173,7 @@ def execute_request(request: dict[str, Any], *, repo_root: Path, work_dir: Path)
             raise RuntimeExecutionBlocked("QUEUE_PROFILE_SOURCE_EMPTY", relative)
         sources.append({"ref": relative, "content": content})
 
+    lf_adapter_sources = _safe_adapter_sources(request, repo_root)
     image_path, image_sha = _materialize_image(request, work_dir)
     adapter = GitHubHostedLlamaCppAdapter(work_dir=work_dir, image_path=image_path, image_sha256=image_sha)
     verifier = GitHubHostedLlamaCppVerifier(expected_image_path=image_path, expected_image_sha256=image_sha)
@@ -113,6 +183,7 @@ def execute_request(request: dict[str, Any], *, repo_root: Path, work_dir: Path)
         profile_sources=sources, input_literal=request["input_literal"],
         adapter=adapter, attestation_verifier=verifier, allow_test_doubles=False,
         obligation_manifest=request.get("obligation_manifest"),
+        lf_adapter_sources=lf_adapter_sources,
     )
     package["queue_request_id"] = request["request_id"]
     package["input_image_sha256"] = image_sha
@@ -151,8 +222,7 @@ def main() -> int:
                   "error_code": "ZERO_COST_RUNTIME_UNEXPECTED_EXCEPTION",
                   "error_detail": type(exc).__name__}
         rc = 3
-    args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-                           encoding="utf-8")
+    args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(f"LF_PROFILE_RUNTIME_STATUS={result['status']}")
     if result.get("error_code"):
         print(f"LF_PROFILE_RUNTIME_ERROR={result['error_code']}", file=sys.stderr)
