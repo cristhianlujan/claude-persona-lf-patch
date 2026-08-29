@@ -15,6 +15,7 @@ on:
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_semantic_judge.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_live_smoke.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_profile_strategy_ab.py"
   issue_comment:
     types: [created]
 
@@ -208,3 +209,33 @@ jobs:
             --request-id "$REQUEST_ID" \
             --comment-id "$COMMENT_ID" \
             --repo-root .
+
+  evaluate-profile-strategy-ab:
+    if: >-
+      github.event_name == 'issue_comment' &&
+      github.event.issue.number == 244 &&
+      github.event.comment.author_association == 'OWNER' &&
+      github.event.comment.body == '/lf-ab-evaluate'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Evaluate synthetic A/B corpus
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check 'psycopg[binary]==3.2.9'
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_profile_strategy_ab.py
