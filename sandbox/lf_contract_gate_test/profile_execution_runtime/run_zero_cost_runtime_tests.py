@@ -9,8 +9,9 @@ import tempfile
 from pathlib import Path
 
 import github_actions_local_runtime as local
+from github_actions_queue_worker import _assistant_completion, _enforce_nonempty_completion
 from profile_runtime_runner import RuntimeExecutionBlocked
-from run_zero_cost_profile_request import _materialize_image, _safe_source_paths
+from run_zero_cost_profile_request import _materialize_image, _materialize_runtime_output_schema, _safe_source_paths
 
 
 def expect_block(code: str, fn) -> None:
@@ -89,11 +90,25 @@ def main() -> int:
         assert local.MODEL_COMMIT == "5037fcf163dd95d1e41d1974465f0898ed108ca2"
         assert local.LLAMA_RELEASE == "b10642"
         passed += 1
+        with tempfile.TemporaryDirectory() as td:
+            copied = _materialize_runtime_output_schema("ui_architect", Path.cwd(), Path(td))
+            canonical = Path("profiles/ui_architect/schemas/runtime_output.schema.json")
+            assert copied is not None and copied.read_bytes() == canonical.read_bytes()
+        passed += 1
+        assert _assistant_completion("User:\nrequest\n\nAssistant:\n{\"ok\":true}") == '{"ok":true}'
+        empty = _enforce_nonempty_completion({
+            "schema": "LF_PROFILE_RUNTIME_QUEUE_RESULT_V1",
+            "status": "SUCCEEDED",
+            "raw_output": "User:\nrequest\n\nAssistant:",
+        })
+        assert empty["status"] == "BLOCKED"
+        assert empty["error_code"] == "LOCAL_RUNTIME_ASSISTANT_COMPLETION_EMPTY"
+        passed += 1
     finally:
         restore_env(prior)
-    if passed != 10:
-        raise SystemExit(f"ZERO_COST_PROFILE_RUNTIME_TESTS_FAIL {passed}/10")
-    print("ZERO_COST_PROFILE_RUNTIME_TESTS_PASS 10/10")
+    if passed != 12:
+        raise SystemExit(f"ZERO_COST_PROFILE_RUNTIME_TESTS_FAIL {passed}/12")
+    print("ZERO_COST_PROFILE_RUNTIME_TESTS_PASS 12/12")
     return 0
 
 
