@@ -64,6 +64,7 @@ OPERATIONAL_PROTOCOL_ALLOWED_EXACT = {
     "CLAUDE.md",
     ".claude/operational-execution.md",
     ".claude/scripts/validate_artifact_output.py",
+    "claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md",
 }
 OPERATIONAL_PROTOCOL_DENIED_LOOKALIKES = {
     "CLAUDE.md.bak",
@@ -72,6 +73,10 @@ OPERATIONAL_PROTOCOL_DENIED_LOOKALIKES = {
     ".claude/scripts/validate_artifact_output.py.bak",
     ".claude/scripts/extra.py",
     ".claude/other.md",
+    "claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md.bak",
+    "claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF/child.md",
+    "claude/protocolo_consumo_compacto_router_lf.md",
+    "claude/OTHER_PROTOCOL.md",
 }
 P0_CLOSURE_EVIDENCE_ALLOWED_EXACT = {
     "docs/p0/CONTRATO_BENCHMARK_OCR_CV.md",
@@ -262,6 +267,8 @@ def validate_operational_protocol_scope() -> None:
     failures: list[str] = []
     if ".claude/" in ALLOWED_PREFIXES:
         failures.append("dot_claude_prefix_must_remain_denied")
+    if "claude/" in ALLOWED_PREFIXES:
+        failures.append("claude_prefix_must_remain_denied")
     for path in sorted(OPERATIONAL_PROTOCOL_ALLOWED_EXACT):
         if not is_allowed_path(path):
             failures.append(f"approved_exact_missing:{path}")
@@ -467,3 +474,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
