@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import subprocess
 import tempfile
@@ -83,6 +84,35 @@ def _required_asset(env_name: str, expected_sha: str | None = None) -> Path:
     return path
 
 
+def _resolve_runtime_output_schema(work_dir: Path, profile_slug: str) -> Path | None:
+    if not profile_slug or "/" in profile_slug or "\\" in profile_slug or profile_slug in {".", ".."}:
+        raise RuntimeExecutionBlocked("LOCAL_RUNTIME_SCHEMA_PROFILE_SLUG_INVALID")
+    repo_root = work_dir.resolve()
+    profiles_root = (repo_root / "profiles").resolve()
+    profile_root = (profiles_root / profile_slug).resolve()
+    try:
+        profile_root.relative_to(profiles_root)
+    except ValueError as exc:
+        raise RuntimeExecutionBlocked("LOCAL_RUNTIME_SCHEMA_PATH_ESCAPE") from exc
+    schema_root = (profile_root / "schemas").resolve()
+    schema_path = (schema_root / "runtime_output.schema.json").resolve()
+    try:
+        schema_path.relative_to(schema_root)
+    except ValueError as exc:
+        raise RuntimeExecutionBlocked("LOCAL_RUNTIME_SCHEMA_PATH_ESCAPE") from exc
+    if not schema_path.exists():
+        return None
+    if not schema_path.is_file():
+        raise RuntimeExecutionBlocked("LOCAL_RUNTIME_SCHEMA_INVALID")
+    try:
+        payload = json.loads(schema_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        raise RuntimeExecutionBlocked("LOCAL_RUNTIME_SCHEMA_INVALID_JSON") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeExecutionBlocked("LOCAL_RUNTIME_SCHEMA_INVALID")
+    return schema_path
+
+
 def _render_profile_instructions(request: dict[str, Any]) -> str:
     parts = [
         "Execute the governed repository profile defined by the canonical sources below.",
@@ -134,6 +164,7 @@ class GitHubHostedLlamaCppAdapter:
         self.context_tokens = context_tokens
         self.asset_paths: dict[str, Path] = {}
         self.execution_files: dict[str, Path] = {}
+        self.structured_output_schema_path: Path | None = None
         if (image_path is None) != (image_sha256 is None):
             raise RuntimeExecutionBlocked("LOCAL_RUNTIME_IMAGE_BINDING_INCOMPLETE")
         if image_path is not None:
@@ -154,6 +185,7 @@ class GitHubHostedLlamaCppAdapter:
     def execute(self, request: dict[str, Any]) -> dict[str, Any]:
         runner = _require_zero_cost_runner()
         assets = self._assets()
+        self.structured_output_schema_path = _resolve_runtime_output_schema(self.work_dir, request["profile_slug"])
         run_dir = Path(tempfile.mkdtemp(prefix="lf-profile-run-", dir=self.work_dir))
         system_file = run_dir / "system.txt"
         input_file = run_dir / "input.txt"
@@ -170,6 +202,8 @@ class GitHubHostedLlamaCppAdapter:
             "-t", "4", "--temp", "0.2", "--top-p", "0.9", "-s", "42",
             "-o", str(output_file),
         ]
+        if self.structured_output_schema_path is not None:
+            command.extend(["-jf", str(self.structured_output_schema_path)])
         if self.image_path is not None:
             command.extend(["--image", str(self.image_path)])
         try:
@@ -212,6 +246,11 @@ class GitHubHostedLlamaCppAdapter:
             "raw_output_file_sha256": _sha256_file(output_file),
             "lf_adapter_invocation_count": str(len(request.get("lf_adapter_sources") or [])),
         }
+        if self.structured_output_schema_path is not None:
+            attestation["structured_output_schema_ref"] = str(
+                self.structured_output_schema_path.relative_to(self.work_dir.resolve())
+            )
+            attestation["structured_output_schema_sha256"] = _sha256_file(self.structured_output_schema_path)
         if request.get("lf_adapter_source_sha256"):
             attestation["lf_adapter_source_sha256"] = request["lf_adapter_source_sha256"]
         if self.image_path is not None:
@@ -276,6 +315,20 @@ class GitHubHostedLlamaCppVerifier:
             raise RuntimeExecutionBlocked("LOCAL_VERIFIER_LF_ADAPTER_COUNT_MISMATCH")
         if request.get("lf_adapter_source_sha256") and attestation.get("lf_adapter_source_sha256") != request["lf_adapter_source_sha256"]:
             raise RuntimeExecutionBlocked("LOCAL_VERIFIER_LF_ADAPTER_SOURCE_SHA_MISMATCH")
+
+        schema_path = getattr(adapter, "structured_output_schema_path", None)
+        schema_ref = attestation.get("structured_output_schema_ref")
+        schema_sha = attestation.get("structured_output_schema_sha256")
+        if schema_path is None:
+            if schema_ref is not None or schema_sha is not None:
+                raise RuntimeExecutionBlocked("LOCAL_VERIFIER_SCHEMA_ATTESTATION_UNEXPECTED")
+        else:
+            if not schema_path.is_file():
+                raise RuntimeExecutionBlocked("LOCAL_VERIFIER_SCHEMA_MISSING")
+            expected_ref = str(schema_path.relative_to(adapter.work_dir.resolve()))
+            if schema_ref != expected_ref or schema_sha != _sha256_file(schema_path):
+                raise RuntimeExecutionBlocked("LOCAL_VERIFIER_SCHEMA_ATTESTATION_MISMATCH")
+
         if self.expected_image_path is not None:
             if not self.expected_image_path.is_file() or _sha256_file(self.expected_image_path) != self.expected_image_sha256:
                 raise RuntimeExecutionBlocked("LOCAL_VERIFIER_IMAGE_MISMATCH")
