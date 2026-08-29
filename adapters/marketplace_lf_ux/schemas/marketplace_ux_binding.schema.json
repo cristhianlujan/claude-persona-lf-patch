@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "marketplace_ux_binding.schema.json",
+  "title": "Marketplace LF UX Binding",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["source_refs", "marketplace_context", "prioritized_frictions", "improvements", "protected_constraints", "downstream_dependencies", "blockers"],
+  "properties": {
+    "source_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "marketplace_context": {"type": "object"},
+    "prioritized_frictions": {"type": "array", "items": {"type": "object"}},
+    "improvements": {"type": "array", "items": {"type": "object"}},
+    "protected_constraints": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "downstream_dependencies": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "blockers": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+  }
+}
