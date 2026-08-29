@@ -1,0 +1,13 @@
+adapter_id: ADAPTER_MARKETPLACE_LF_CX_TRUST
+canonical_asset: ADAPTER-MARKETPLACE-LF-CX-TRUST-20260531
+version: v0.2-candidate
+status: CANDIDATE_READ_ONLY
+runtime_enabled: false
+production_enabled: false
+validated: false
+router_discoverable: true
+activation: ROUTER_ORCHESTRATOR_ONLY
+binds_profile: PERFIL_CX_TRUST_EXPERIENCE_ARCHITECT_LF
+runtime_capsule: runtime_capsule.md
+quality_standard: ADAPTER_QUALITY_V2
+single_model_call: true
