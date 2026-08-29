@@ -1,1 +1,0 @@
-Candidate scope frozen for verification; no additional adapter package surface is required before CI/readback.
