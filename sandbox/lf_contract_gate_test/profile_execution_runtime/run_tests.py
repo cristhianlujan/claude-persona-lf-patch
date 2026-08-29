@@ -2,6 +2,7 @@
 from copy import deepcopy
 
 from profile_runtime_runner import RESPONSE_TYPE, RuntimeExecutionBlocked, execute_profile_runtime
+from run_lf_adapter_binding_tests import main as run_lf_adapter_binding_tests
 from semantic_mini_judge import (
     CheckResult as SemanticCheckResult,
     build_receipt as build_semantic_receipt,
@@ -397,6 +398,7 @@ def main():
     expect_block("pre_execution_manifest_binding_blocks", "OBLIGATION_MANIFEST_INVALID", lambda: runner_call(manifest=invalid_manifest))
     passed += 1
 
+    run_lf_adapter_binding_tests()
     print(f"PROFILE_RUNTIME_GATE_TESTS_PASS {passed}/{passed}")
 
 
