@@ -1,0 +1,2 @@
+# Marketplace UX Behavioral Protocol
+Live canaries: bound Marketplace UX task applies exactly once; unbound/non-Marketplace UX task loads zero capsule; missing material authority returns to orchestrator; source conflict blocks; direct adapter naming does not dispatch it; repeated governed input yields materially equivalent binding. Retain exact hashes, RAW output, validator/judge results and canonical receipt.
