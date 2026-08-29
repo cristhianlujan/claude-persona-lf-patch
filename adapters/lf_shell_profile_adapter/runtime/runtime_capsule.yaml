@@ -1,0 +1,22 @@
+adapter: ADAPTER_LF_SHELL_PROFILE
+assurance_revision: v2
+activation: ROUTER_BOUND_ONLY
+max_chars: 1800
+rules:
+  - resolve pantalla -> modulo -> app_shell from current Supabase authority
+  - preserve profile semantic authority; adapter only constrains target/application
+  - classify every target as SHELL_LOCKED, SCREEN_COMPONENT, or SCREEN_SLOT
+  - SHELL_LOCKED => RETURN_TO_ORCHESTRATOR_SHELL_CHANGE_REQUIRED
+  - canonical token/upstream value outranks invented precision
+  - low-risk ungoverned precision may be EXPLORATORY_PROPOSAL or RELATIVE_GUIDANCE only
+  - never let Product/Gamification/Frontend acquire UI visual authority
+  - never use Drive as authority over current Supabase Shell/tokens
+  - binding applies only with Router binding_ref and invocation_id
+  - exactly one lf_adapter_invocation receipt is required when applicable
+  - never perform a second LLM call for the adapter
+  - never enable runtime, production, VALIDATED, or automatic promotion
+fail_closed:
+  missing_receipt: BLOCK_MISSING_ADAPTER_INVOCATION
+  duplicate_receipt: BLOCK_DUPLICATE_ADAPTER_INVOCATION
+  unbound_call: BLOCK_UNBOUND_ADAPTER_INVOCATION
+  context_budget: BLOCK_CONTEXT_BUDGET_EXCEEDED

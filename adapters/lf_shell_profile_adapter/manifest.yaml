@@ -1,21 +1,32 @@
 version: v0.1
+assurance_revision: v2
 status: CANDIDATO
 estado_operativo: READ_ONLY
 runtime_estado: NO_HABILITADO
 impacto_automatico: BLOQUEADO
 adapter_code: ADAPTER_LF_SHELL_PROFILE_v0.1_CANDIDATO
+canonical_adapter_id: ADAPTER_LF_SHELL_PROFILE
 base_path: adapters/lf_shell_profile_adapter
 required_files:
   - ADAPTER.md
   - manifest.yaml
+  - runtime/runtime_capsule.yaml
   - references/shell_resolution_contract.md
   - references/profile_authority_matrix.md
   - schemas/lf_shell_binding.schema.json
+  - schemas/lf_adapter_invocation.schema.json
+  - validators/validate_lf_shell_profile_adapter.py
   - examples/ui_architect_existing_screen_binding.yaml
   - examples/frontend_prototype_binding.yaml
   - evals/lf_shell_profile_adapter_cases.yaml
   - judges/judge_lf_shell_profile_adapter.yaml
-activation_gate: LF_SCREEN_OR_UI_AFFECTING_PROFILE_DECISION
+activation_gate: ROUTER_BOUND_LF_SCREEN_OR_UI_AFFECTING_PROFILE_DECISION
+invocation_policy: ROUTER_BOUND_ONLY
+separate_llm_call: FORBIDDEN
+context_budget:
+  capsule_path: runtime/runtime_capsule.yaml
+  max_chars: 1800
+  max_material_rules: 12
 canonical_source_order:
   - lf_ops.pantallas
   - lf_ops.modulos
