@@ -1,0 +1,3 @@
+# Brand Adapter Behavioral Protocol
+
+Live canaries must prove: governed visual deliverable applies adapter exactly once; complete project tokens/specs are preserved; missing brand authority returns to orchestrator; visual-source conflict blocks; non-visual work loads zero capsule; direct adapter naming does not dispatch it; repeated governed input yields materially equivalent binding. Retain exact hashes, RAW output, validator/judge results and canonical receipt.
