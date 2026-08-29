@@ -1,0 +1,12 @@
+{
+  "standard": "ADAPTER_QUALITY_V2",
+  "branch": "feat/adapter-quality-gate-v2",
+  "scope": [
+    "ADAPTER_LF_SHELL_PROFILE",
+    "ADAPTER_PROJECT_BRAND_MOCKUP_RENDER_LF"
+  ],
+  "runtime_enabled": false,
+  "production_enabled": false,
+  "validated": false,
+  "target_closure": "CANDIDATE_CONTRACT_QUALITY_PASS"
+}
