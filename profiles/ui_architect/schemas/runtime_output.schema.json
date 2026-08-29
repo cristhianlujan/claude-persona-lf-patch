@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UI Architect Runtime Output",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["worker", "output_type", "deliverable_created", "score", "handoff_to_next", "self_verdict"],
+      "properties": {
+        "worker": {"const": "ui_architect"},
+        "output_type": {"const": "PRODUCTION_UI_SPEC"},
+        "deliverable_created": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["screen_definition", "component_tree", "layout_grid", "visual_hierarchy", "state_map", "token_map", "spacing_typography", "density_rules", "risk_controls", "prompt_constraints"],
+          "properties": {
+            "screen_definition": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["task_mode"],
+              "properties": {"task_mode": {"enum": ["CREATE_NEW", "REMEDIATE_EXISTING"]}}
+            },
+            "component_tree": {
+              "type": "array",
+              "maxItems": 16,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["zone_id", "component_id", "component_type", "role", "content", "visual_priority", "state", "allowed_variants", "blocked_variants"],
+                "properties": {
+                  "zone_id": {"type": "string"},
+                  "component_id": {"type": "string"},
+                  "component_type": {"type": "string"},
+                  "role": {"type": "string"},
+                  "content": {"type": "object", "additionalProperties": {"type": ["string", "number", "boolean", "null"]}},
+                  "visual_priority": {"type": "integer", "minimum": 1, "maximum": 20},
+                  "state": {"type": "object", "additionalProperties": {"type": ["string", "number", "boolean", "null"]}},
+                  "allowed_variants": {"type": "array", "maxItems": 12, "items": {"type": "string"}},
+                  "blocked_variants": {"type": "array", "maxItems": 12, "items": {"type": "string"}}
+                }
+              }
+            },
+            "layout_grid": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["ordered_component_ids"],
+              "properties": {
+                "ordered_component_ids": {"type": "array", "maxItems": 16, "items": {"type": "string"}},
+                "columns": {"type": "integer", "minimum": 1, "maximum": 12}
+              }
+            },
+            "visual_hierarchy": {
+              "type": "array",
+              "maxItems": 16,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["rank", "component_id"],
+                "properties": {
+                  "rank": {"type": "integer", "minimum": 1, "maximum": 20},
+                  "component_id": {"type": "string"}
+                }
+              }
+            },
+            "state_map": {"type": "object", "additionalProperties": {"type": "string"}},
+            "token_map": {"type": "object", "additionalProperties": {"type": "string"}},
+            "spacing_typography": {"type": "object", "additionalProperties": {"type": "string"}},
+            "density_rules": {"type": "array", "maxItems": 12, "items": {"type": "string"}},
+            "risk_controls": {"type": "array", "maxItems": 16, "items": {"type": "string"}},
+            "prompt_constraints": {"type": "array", "maxItems": 16, "items": {"type": "string"}},
+            "remediation_actions": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["issue_id", "priority", "category", "evidence_component_ids", "decision", "acceptance_criteria", "target_component_id", "operation"],
+                "properties": {
+                  "issue_id": {"type": "string"},
+                  "priority": {"type": "string"},
+                  "category": {"type": "string"},
+                  "evidence_component_ids": {"type": "array", "maxItems": 8, "items": {"type": "string"}},
+                  "decision": {"type": "string"},
+                  "acceptance_criteria": {"type": "string"},
+                  "target_component_id": {"type": "string"},
+                  "operation": {"enum": ["REMOVE", "HIDE", "MERGE", "UPDATE"]}
+                }
+              }
+            }
+          }
+        },
+        "score": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["layout_precision", "visual_hierarchy", "lf_system_fidelity", "state_mapping", "handoff_quality", "total"],
+          "properties": {
+            "layout_precision": {"type": "integer", "minimum": 0, "maximum": 5},
+            "visual_hierarchy": {"type": "integer", "minimum": 0, "maximum": 5},
+            "lf_system_fidelity": {"type": "integer", "minimum": 0, "maximum": 5},
+            "state_mapping": {"type": "integer", "minimum": 0, "maximum": 5},
+            "handoff_quality": {"type": "integer", "minimum": 0, "maximum": 5},
+            "total": {"type": "integer", "minimum": 0, "maximum": 25}
+          }
+        },
+        "handoff_to_next": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["worker", "instruction"],
+          "properties": {"worker": {"type": "string"}, "instruction": {"type": "string"}}
+        },
+        "self_verdict": {"enum": ["PASS_TO_QUALITY_PACK_CANDIDATE", "NEEDS_INPUT", "BLOCKED"]}
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["self_verdict", "blocked", "missing_inputs", "safe_assumptions_available", "assumptions", "question_to_orchestrator", "pipeline_action"],
+      "properties": {
+        "self_verdict": {"const": "NEEDS_INPUT"},
+        "blocked": {"const": true},
+        "missing_inputs": {"type": "array", "maxItems": 12, "items": {"type": "string"}},
+        "safe_assumptions_available": {"type": "boolean"},
+        "assumptions": {"type": "array", "maxItems": 12, "items": {"type": "string"}},
+        "question_to_orchestrator": {"type": "string"},
+        "pipeline_action": {"const": "RETURN_TO_ORCHESTRATOR"}
+      }
+    }
+  ]
+}
