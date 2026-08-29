@@ -1,0 +1,22 @@
+{
+  "state": "BOUND",
+  "render_binding": {
+    "project_code": "LF",
+    "output_target": "PPTX",
+    "canonical_refs": ["lf_design.color_tokens:v1", "screen_visual_specs:checkout"],
+    "resolved_tokens": {"primary": "token:brand.primary"},
+    "screen_frame_policy": {"device": "mobile", "frame": "app"},
+    "mockup_template": "mobile_app_standard",
+    "qa_checks": ["token provenance", "screen frame integrity"],
+    "blockers": []
+  },
+  "lf_adapter_invocations": [{
+    "adapter_code": "ADAPTER_PROJECT_BRAND_MOCKUP_RENDER_LF",
+    "adapter_version": "v0.2-candidate",
+    "invocation_id": "inv-example-brand-001",
+    "activation_reason": "governed LF screen in visual deliverable",
+    "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "capsule_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "verdict": "APPLIED"
+  }]
+}
