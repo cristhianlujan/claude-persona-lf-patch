@@ -1,0 +1,22 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260829-008",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "2100cf8c116498e7cb6b5916b9da6d2269e307aa",
+    "ba93fd450668e259d936b6c060e454dd1e9f8b01",
+    "50f8f82f04e5655e2a7f3a94ac78b59bf8865783"
+  ],
+  "target_paths": [
+    "profiles/ui_architect/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-29T08:22:00Z",
+  "notes": "PASS_SANDBOX candidate-source receipt for V20 under execution 008. V19 live baseline retained correct unresolved-authority fail-closed behavior but three normal executable outputs remained structurally noncanonical or recursively nested. V20 activates the already-governed optional runtime JSON-schema constrained decoding convention for ui_architect and aligns the validator so REMOVE/HIDE targets may exist only as historical evidence after removal while non-destructive targets remain active-tree-bound. Runtime regression on the first V20 candidate reached PROFILE_RUNTIME_GATE_TESTS_PASS 23/23 and LF_ADAPTER_BINDING_TESTS_PASS 14/14 before CI correctly blocked only because this receipt was absent. This receipt does not claim live behavioral PASS, VALIDATED, production promotion, automatic promotion, or execution closure; fresh exact-head CI and post-merge four-case RAW canaries remain mandatory."
+}
