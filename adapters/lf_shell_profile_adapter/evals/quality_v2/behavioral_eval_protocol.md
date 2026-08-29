@@ -1,0 +1,3 @@
+# Shell Adapter Behavioral Protocol
+
+Live canaries must prove: bound UI/Gamification/Frontend LF screen work applies adapter exactly once; `SHELL_LOCKED` returns to orchestrator with adapter evidence; unbound/non-UI work loads zero Shell capsule; direct adapter naming does not dispatch it; source conflict blocks; repeated governed input yields materially equivalent binding. Retain exact profile/adapter/capsule hashes, input, RAW output, validator/judge results and canonical receipt.
