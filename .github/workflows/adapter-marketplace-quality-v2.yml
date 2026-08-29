@@ -1,0 +1,32 @@
+name: Marketplace Adapter Quality V2
+
+on:
+  pull_request:
+    paths:
+      - 'adapters/marketplace_lf_ux/**'
+      - 'adapters/marketplace_lf_cx_trust/**'
+      - 'adapters/legacy_adapter_quality_v2_check.py'
+      - '.github/workflows/adapter-marketplace-quality-v2.yml'
+  push:
+    branches:
+      - 'feat/adapter-quality-gate-v2'
+    paths:
+      - 'adapters/marketplace_lf_ux/**'
+      - 'adapters/marketplace_lf_cx_trust/**'
+      - 'adapters/legacy_adapter_quality_v2_check.py'
+      - '.github/workflows/adapter-marketplace-quality-v2.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  deterministic-marketplace-adapters:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python adapters/legacy_adapter_quality_v2_check.py
+      - run: python adapters/marketplace_lf_ux/evals/quality_v2/run_cases.py
+      - run: python adapters/marketplace_lf_cx_trust/evals/quality_v2/run_cases.py
