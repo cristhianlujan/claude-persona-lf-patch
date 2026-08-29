@@ -68,5 +68,4 @@ jobs:
           LF_MMPROJ_PATH: ${{ runner.temp }}/lf-model/mmproj.gguf
         run: |
           set -euo pipefail
-          cd sandbox/lf_contract_gate_test/profile_execution_runtime
-          python3 run_neutral_strategy_ab_live.py
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_neutral_strategy_ab_live.py
