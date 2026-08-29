@@ -26,17 +26,24 @@ Una solicitud puede originarse en usuario o perfil, pero eso NO constituye una i
 ## Contrato de invocación v2
 Ruta obligatoria:
 
-`request -> ACT-0001 Router -> resolve profile -> resolve adapter binding -> load runtime capsule + profile in SAME model execution -> produce shell_binding -> validate -> record lf_adapter_invocation -> downstream/readback`
+`request -> ACT-0001 Router -> resolve profile -> resolve adapter binding -> input governance preflight -> load runtime capsule + profile in SAME model execution -> produce shell_binding -> validate -> record lf_adapter_invocation -> downstream/readback`
 
 Reglas:
 - el perfil no auto-invoca el adapter;
 - el usuario no invoca el adapter como worker suelto;
-- el adapter no genera una segunda llamada LLM;
+- el adapter no genera una segunda llamada LLM propia;
 - si el binding aplica, debe existir exactamente un `lf_adapter_invocation` conforme a `schemas/lf_adapter_invocation.schema.json`;
 - si aplica y falta receipt: `BLOCK_MISSING_ADAPTER_INVOCATION`;
 - si aparece más de una invocación para el mismo adapter/target: `BLOCK_DUPLICATE_ADAPTER_INVOCATION`;
 - si no existe binding Router vigente: `BLOCK_UNBOUND_ADAPTER_INVOCATION`;
 - usar `lf_adapter_invocation`, nunca el campo genérico `adapter_id` del runtime/model provider.
+
+## Binding de gobernanza de inputs
+Referencia única: `gobernanza/contratos/ADAPTER_INPUT_GOVERNANCE_BINDING_v1.md`.
+
+Cuando el input contiene requisitos funcionales, autoridad/provenance, freshness, requisitos negativos, conflictos/precedencia o readiness, resolver la revisión vigente de `INPUT_READINESS_CONTRACT` y consumir solo las secciones necesarias entre `APPLICABILITY_READINESS`, `SOURCE_AUTHORITY_PROVENANCE`, `FRESHNESS_INVALIDATION`, `NEGATIVE_REQUIREMENTS` y `CONFLICT_PRECEDENCE`.
+
+Persistir `governance_receipt`. Solo `decision=PASS` permite aplicar el delta técnico. `PARTIAL` o `NEGATIVE_CONFIRMED` bloquean/retornan con razón gobernada. `N/A` solo es válido si `input_governance_applicable=false` con razón explícita. El adapter no copia, forkea ni sustituye la lógica de `INPUT_READINESS_CONTRACT`.
 
 ## Presupuesto de contexto
 Runtime carga `runtime/runtime_capsule.yaml`, no el pack completo. Límite determinístico: máximo 1800 caracteres UTF-8 para la cápsula y máximo 12 reglas materiales. El pack completo (contratos, examples, evals y judge) se usa para validación/evidencia, no como prompt normal.
@@ -69,10 +76,12 @@ Drive o campos heredados no desplazan estas fuentes.
 - `router_binding_ref`
 - `invocation_id`
 - `upstream_refs` cuando apliquen
+- `input_governance_applicable`
 
 ## Salida
 1. `shell_binding` conforme a `schemas/lf_shell_binding.schema.json`.
 2. Exactamente un `lf_adapter_invocation` cuando el binding aplica.
+3. Un `governance_receipt` cuando el adapter aplica, incluyendo N/A gobernado si corresponde.
 
 El binding conserva identidad/estado del Shell, fuentes, targets protegidos/escribibles, delta del perfil, conflictos y handoff.
 
@@ -86,6 +95,7 @@ El binding conserva identidad/estado del Shell, fuentes, targets protegidos/escr
 - `BLOCK_MISSING_ADAPTER_INVOCATION`
 - `BLOCK_DUPLICATE_ADAPTER_INVOCATION`
 - `BLOCK_UNBOUND_ADAPTER_INVOCATION`
+- `BLOCK_INPUT_GOVERNANCE`
 - `BLOCK_CONTEXT_BUDGET_EXCEEDED`
 
 ## Hard fail
@@ -98,6 +108,9 @@ Fallar si:
 - un perfil expande su autoridad;
 - hay auto-invocación/direct-call sin binding Router;
 - falta, se duplica o colisiona el receipt LF;
+- input funcional relevante carece de governance binding/receipt;
+- se aplica con decisión de gobernanza distinta de PASS o sin snapshot/source refs verificables;
+- se forkea `INPUT_READINESS_CONTRACT` o se usa gobernanza ad hoc;
 - la cápsula excede presupuesto;
 - el adapter habilita runtime, producción, VALIDATED o promoción automática.
 
