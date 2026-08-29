@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import copy
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -156,21 +157,77 @@ def validate_score_taxonomy(schema, rubric, blocking):
             blocking.append(f"RUBRIC_SCORE_CRITERION_MISSING:{criterion}")
 
 
+def affirmative_match(text, patterns):
+    return any(re.search(pattern, text) for pattern in patterns)
+
+
 def validate_adapter_bindings(files, blocking):
-    adapters = [(path, text) for path, text in files.items() if path.startswith("adapters/") and path.endswith((".md", ".json", ".yaml", ".yml"))]
+    adapters = [
+        (path, text)
+        for path, text in files.items()
+        if path.startswith("adapters/") and path.endswith((".md", ".json", ".yaml", ".yml"))
+    ]
     for path, text in adapters:
-        low = text.lower() if isinstance(text, str) else ""
+        low = " ".join(str(text).lower().split()) if isinstance(text, str) else ""
         if len(low.strip()) < 100:
             blocking.append(f"ADAPTER_UNDERDEVELOPED:{path}")
             continue
-        if "router" not in low:
+
+        bypass_patterns = (
+            r"\bwithout\s+(?:the\s+)?router\b",
+            r"\bbypass(?:es|ing)?\s+(?:the\s+)?router\b",
+            r"\bcalled\s+directly\b",
+            r"\binvoked\s+directly\b",
+            r"\bused\s+directly\b",
+            r"\bstandalone\s+(?:worker|entrypoint|entry\s+point)\b",
+            r"\barbitrary\s+context\b",
+            r"\bbroad\s+(?:input|context)\b",
+        )
+        if affirmative_match(low, bypass_patterns):
+            blocking.append(f"ADAPTER_STANDALONE_OR_BYPASS_FORBIDDEN:{path}")
+
+        router_patterns = (
+            r"\brouter\s+(?:resolves|routes|selects|invokes|activates)\b",
+            r"\bafter\s+(?:the\s+)?router\b",
+            r"\brouter\s*(?:->|→)\s*(?:profile|skill)\b",
+            r"\brouter/profile\s+(?:resolution|invocation)\b",
+        )
+        if not affirmative_match(low, router_patterns):
             blocking.append(f"ADAPTER_ROUTER_ENTRY_BOUNDARY_MISSING:{path}")
-        if not any(token in low for token in ("profile", "skill", "caller")):
+
+        caller_patterns = (
+            r"\b(?:the\s+)?profile\s+is\s+the\s+caller\b",
+            r"\b(?:the\s+)?skill\s+is\s+the\s+caller\b",
+            r"\bcaller\s*[:=]\s*(?:profile|skill)\b",
+            r"\bcalled\s+by\s+(?:the\s+)?(?:profile|skill)\b",
+        )
+        if not affirmative_match(low, caller_patterns):
             blocking.append(f"ADAPTER_CALLER_BINDING_MISSING:{path}")
-        if not any(token in low for token in ("trigger", "invocation", "invoke")):
+
+        invocation_patterns = (
+            r"\binvocation\s+trigger\b",
+            r"\bactivation\s+trigger\b",
+            r"\btrigger\s*[:=]",
+            r"\binvoke(?:d|s)?\s+only\s+when\b",
+        )
+        if not affirmative_match(low, invocation_patterns):
             blocking.append(f"ADAPTER_INVOCATION_CONTRACT_MISSING:{path}")
-        if not any(token in low for token in ("token", "compact", "minimal context", "execution-changing")):
+
+        context_patterns = (
+            r"\bcompact\s+(?:execution-changing\s+)?context\b",
+            r"\bminimal\s+(?:execution-changing\s+)?context\b",
+            r"\bminimal\s+token\s+budget\b",
+            r"\bexecution-changing\s+context\b",
+        )
+        if not affirmative_match(low, context_patterns):
             blocking.append(f"ADAPTER_CONTEXT_BUDGET_MISSING:{path}")
+
+        return_patterns = (
+            r"\breturns?\s+(?:the\s+)?(?:result\s+)?to\s+(?:the\s+)?(?:profile|skill|orchestrator)\b",
+            r"\bfailure\s+returns?\s+to\s+(?:the\s+)?(?:profile|skill|orchestrator)\b",
+        )
+        if not affirmative_match(low, return_patterns):
+            blocking.append(f"ADAPTER_RETURN_BOUNDARY_MISSING:{path}")
 
 
 def validate_candidate(pack):
