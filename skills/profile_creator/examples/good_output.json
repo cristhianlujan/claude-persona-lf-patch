@@ -1,9 +1,9 @@
 {
   "status": "PROFILE_PACK_CREATED",
-  "profile_pack_id": "PROFILE_GOV021_DEPTH_POSITIVE_FIXTURE",
-  "source_authority": "ACT-0045 + EKB:GOV-021 + governed source refs",
+  "profile_pack_id": "PROFILE_ARCHITECTURE_READY_POSITIVE_FIXTURE",
+  "source_authority": "ACT-0045 + governed profile creation contract",
   "deliverable_created": true,
-  "deliverable_artifact_ref": "fixtures/semantic_depth/positive_candidate_pack.json",
+  "deliverable_artifact_ref": "fixtures/architecture_consistency/positive_candidate_pack.json",
   "files_created": [
     "README.md",
     "SKILL.md",
@@ -19,24 +19,32 @@
     "fixtures/missing_inputs/input.json",
     "fixtures/unsafe_or_blocked/input.json",
     "fixtures/self_repair/bad_output.json",
+    "validators/validate_pack.py",
     "manifest.json"
   ],
   "evidence_map": {
     "router_applied": true,
     "asset_verified": "ACT-0045",
-    "ekb_prevention_loaded": "GOV-021",
     "created_artifact_resolves": true,
-    "deterministic_depth_gate": "DEPTH_READY_FOR_SEMANTIC_REVIEW",
+    "deterministic_readiness_gate": "DEPTH_READY_FOR_SEMANTIC_REVIEW",
+    "cross_artifact_consistency": "PASS",
+    "profile_local_validator": "PRESENT_AND_EXECUTABLE",
+    "behavioral_eval_status": "NOT_EXECUTED",
     "semantic_quality_review": "NOT_EXECUTED",
     "runtime_enabled": false,
     "automatic_impact": "BLOQUEADO"
   },
   "depth_gate": {
     "status": "DEPTH_READY_FOR_SEMANTIC_REVIEW",
-    "validator_ref": "skills/profile_creator/validators/validate_candidate_depth.py",
-    "candidate_ref": "fixtures/semantic_depth/positive_candidate_pack.json",
-    "validation_scope": "DETERMINISTIC_DEPTH_ONLY",
+    "validator_ref": "skills/profile_creator/validators/validate_candidate_readiness.py",
+    "candidate_ref": "fixtures/architecture_consistency/positive_candidate_pack.json",
+    "validation_scope": "DETERMINISTIC_READINESS_DEPTH_AND_CONSISTENCY",
     "semantic_quality_review": "NOT_EXECUTED",
+    "behavioral_eval_status": "NOT_EXECUTED",
+    "component_gates": {
+      "producer_depth": "PASS",
+      "cross_artifact_consistency": "PASS"
+    },
     "blocking_codes": []
   },
   "blocking_codes": [],
