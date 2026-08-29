@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "lf_adapter_invocation.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["adapter_code", "adapter_version", "invocation_id", "activation_reason", "source_sha256", "capsule_sha256", "verdict"],
+  "properties": {
+    "adapter_code": {"const": "ADAPTER_PROJECT_BRAND_MOCKUP_RENDER_LF"},
+    "adapter_version": {"type": "string", "minLength": 1},
+    "invocation_id": {"type": "string", "minLength": 8},
+    "activation_reason": {"type": "string", "minLength": 1},
+    "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "capsule_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "verdict": {"enum": ["APPLIED", "BLOCKED"]}
+  }
+}
