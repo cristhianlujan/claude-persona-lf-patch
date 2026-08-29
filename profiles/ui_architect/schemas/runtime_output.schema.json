@@ -1,0 +1,262 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UI Architect Runtime Output",
+  "oneOf": [
+    {
+      "title": "Missing input state",
+      "type": "object",
+      "required": [
+        "self_verdict",
+        "blocked",
+        "missing_inputs",
+        "safe_assumptions_available",
+        "assumptions",
+        "question_to_orchestrator",
+        "pipeline_action"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "self_verdict": {"type": "string", "enum": ["NEEDS_INPUT", "BLOCKED", "PASS_WITH_ASSUMPTIONS"]},
+        "blocked": {"type": "boolean"},
+        "missing_inputs": {"type": "array", "maxItems": 12, "items": {"type": "string"}},
+        "safe_assumptions_available": {"type": "boolean"},
+        "assumptions": {"type": "array", "maxItems": 12, "items": {"type": "string"}},
+        "question_to_orchestrator": {"type": ["string", "null"]},
+        "pipeline_action": {"type": "string", "enum": ["RETURN_TO_ORCHESTRATOR", "BLOCK_PIPELINE", "CONTINUE_WITH_ASSUMPTIONS"]}
+      }
+    },
+    {
+      "title": "Production UI spec",
+      "type": "object",
+      "required": ["worker", "output_type", "deliverable_created", "score", "handoff_to_next", "self_verdict"],
+      "additionalProperties": false,
+      "properties": {
+        "worker": {"type": "string"},
+        "output_type": {"const": "PRODUCTION_UI_SPEC"},
+        "deliverable_created": {
+          "type": "object",
+          "required": [
+            "screen_definition",
+            "component_tree",
+            "layout_grid",
+            "visual_hierarchy",
+            "state_map",
+            "token_map",
+            "spacing_typography",
+            "density_rules",
+            "risk_controls",
+            "prompt_constraints"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "screen_definition": {"$ref": "#/$defs/shallowObject"},
+            "component_tree": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 24,
+              "items": {"$ref": "#/$defs/component"}
+            },
+            "layout_grid": {"$ref": "#/$defs/shallowObject"},
+            "visual_hierarchy": {
+              "type": "array",
+              "maxItems": 32,
+              "items": {"$ref": "#/$defs/hierarchyRelation"}
+            },
+            "state_map": {"$ref": "#/$defs/shallowMap"},
+            "token_map": {"$ref": "#/$defs/shallowMap"},
+            "spacing_typography": {"$ref": "#/$defs/shallowObject"},
+            "density_rules": {"type": "array", "maxItems": 24, "items": {"$ref": "#/$defs/terminalValue"}},
+            "risk_controls": {"type": "array", "maxItems": 24, "items": {"$ref": "#/$defs/terminalValue"}},
+            "prompt_constraints": {"type": "array", "maxItems": 24, "items": {"$ref": "#/$defs/terminalValue"}},
+            "remediation_actions": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 12,
+              "items": {"$ref": "#/$defs/remediationAction"}
+            },
+            "visual_output_requirements": {"$ref": "#/$defs/shallowMap"}
+          }
+        },
+        "score": {"$ref": "#/$defs/score"},
+        "handoff_to_next": {"$ref": "#/$defs/shallowObject"},
+        "self_verdict": {
+          "type": "string",
+          "enum": [
+            "PASS_TO_QUALITY_PACK_CANDIDATE",
+            "PASS_TO_QUALITY_PACK",
+            "PASS",
+            "NEEDS_ADJUSTMENT",
+            "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+            "RETURN_TO_ORCHESTRATOR",
+            "BLOCK_PIPELINE",
+            "BLOCKED"
+          ]
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "primitive": {
+      "type": ["string", "number", "integer", "boolean", "null"]
+    },
+    "terminalValue": {
+      "oneOf": [
+        {"$ref": "#/$defs/primitive"},
+        {
+          "type": "array",
+          "maxItems": 32,
+          "items": {"$ref": "#/$defs/primitive"}
+        },
+        {
+          "type": "object",
+          "maxProperties": 24,
+          "additionalProperties": {"$ref": "#/$defs/primitive"}
+        }
+      ]
+    },
+    "shallowObject": {
+      "type": "object",
+      "maxProperties": 40,
+      "additionalProperties": {"$ref": "#/$defs/terminalValue"}
+    },
+    "shallowMap": {
+      "type": "object",
+      "maxProperties": 40,
+      "additionalProperties": {"$ref": "#/$defs/terminalValue"}
+    },
+    "component": {
+      "type": "object",
+      "required": [
+        "zone_id",
+        "component_id",
+        "component_type",
+        "role",
+        "content",
+        "visual_priority",
+        "color_tokens",
+        "typography",
+        "spacing",
+        "state",
+        "allowed_variants",
+        "blocked_variants"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "zone_id": {"type": "string"},
+        "component_id": {"type": "string"},
+        "component_type": {"type": "string"},
+        "role": {"type": "string"},
+        "content": {"$ref": "#/$defs/terminalValue"},
+        "visual_priority": {"$ref": "#/$defs/primitive"},
+        "color_tokens": {"$ref": "#/$defs/terminalValue"},
+        "typography": {"$ref": "#/$defs/terminalValue"},
+        "spacing": {"$ref": "#/$defs/terminalValue"},
+        "state": {"$ref": "#/$defs/terminalValue"},
+        "allowed_variants": {"type": "array", "maxItems": 12, "items": {"$ref": "#/$defs/primitive"}},
+        "blocked_variants": {"type": "array", "maxItems": 12, "items": {"$ref": "#/$defs/primitive"}}
+      }
+    },
+    "hierarchyRelation": {
+      "type": "object",
+      "required": ["parent_id", "child_ids"],
+      "additionalProperties": false,
+      "properties": {
+        "parent_id": {"type": "string"},
+        "child_ids": {"type": "array", "maxItems": 24, "items": {"type": "string"}}
+      }
+    },
+    "execution": {
+      "type": "object",
+      "required": ["operation", "target_component_id", "property", "desired_value"],
+      "additionalProperties": false,
+      "properties": {
+        "operation": {"type": "string", "enum": ["REMOVE", "MOVE", "ALIGN", "REPLACE_COPY", "RESIZE", "REORDER", "SET_STATE", "SET_SPACING", "MERGE", "SPLIT", "HIDE", "SHOW", "CHANGE_TOKEN"]},
+        "target_component_id": {"type": "string"},
+        "property": {"type": "string"},
+        "desired_value": {"$ref": "#/$defs/terminalValue"}
+      }
+    },
+    "acceptanceCheck": {
+      "type": "object",
+      "required": ["check_type", "target_component_id", "expected"],
+      "additionalProperties": false,
+      "properties": {
+        "check_type": {"type": "string", "enum": ["ABSENT", "PRESENT", "ALIGNED", "STATE", "COPY_EQUALS", "COUNT_EQUALS", "SPACING", "ORDER", "TOKEN", "RELATIONSHIP"]},
+        "target_component_id": {"type": "string"},
+        "expected": {"$ref": "#/$defs/terminalValue"}
+      }
+    },
+    "semanticAuthority": {
+      "type": "object",
+      "required": ["source_refs", "claim_scope"],
+      "additionalProperties": false,
+      "properties": {
+        "source_refs": {"type": "array", "minItems": 1, "maxItems": 12, "items": {"type": "string"}},
+        "claim_scope": {"type": "string", "enum": ["INPUT_SUPPORTED", "CONSERVATIVE_REDUCTION", "PRESENTATION_ONLY"]}
+      }
+    },
+    "remediationAction": {
+      "type": "object",
+      "required": [
+        "issue_id",
+        "priority",
+        "category",
+        "evidence_component_ids",
+        "evidence_anchor",
+        "decision",
+        "implementation_change",
+        "acceptance_criteria",
+        "execution",
+        "acceptance_check"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "issue_id": {"type": "string"},
+        "priority": {"type": "string", "enum": ["P0", "P1", "P2", "P3"]},
+        "category": {"type": "string", "enum": ["LAYOUT", "HIERARCHY", "INTERACTION", "COPY", "RISK"]},
+        "evidence_component_ids": {"type": "array", "minItems": 1, "maxItems": 12, "items": {"type": "string"}},
+        "evidence_anchor": {"type": "string"},
+        "decision": {"type": "string"},
+        "implementation_change": {"type": "string"},
+        "acceptance_criteria": {"type": "string"},
+        "execution": {"$ref": "#/$defs/execution"},
+        "acceptance_check": {"$ref": "#/$defs/acceptanceCheck"},
+        "semantic_authority": {"$ref": "#/$defs/semanticAuthority"}
+      }
+    },
+    "criterionEvidence": {
+      "type": "object",
+      "required": ["refs", "summary"],
+      "additionalProperties": false,
+      "properties": {
+        "refs": {"type": "array", "minItems": 1, "maxItems": 12, "items": {"type": "string"}},
+        "summary": {"type": "string"}
+      }
+    },
+    "score": {
+      "type": "object",
+      "required": ["layout_precision", "visual_hierarchy", "lf_system_fidelity", "state_mapping", "handoff_quality", "total", "evidence_by_criterion"],
+      "additionalProperties": false,
+      "properties": {
+        "layout_precision": {"type": "integer", "minimum": 0, "maximum": 5},
+        "visual_hierarchy": {"type": "integer", "minimum": 0, "maximum": 5},
+        "lf_system_fidelity": {"type": "integer", "minimum": 0, "maximum": 5},
+        "state_mapping": {"type": "integer", "minimum": 0, "maximum": 5},
+        "handoff_quality": {"type": "integer", "minimum": 0, "maximum": 5},
+        "total": {"type": "integer", "minimum": 0, "maximum": 25},
+        "evidence_by_criterion": {
+          "type": "object",
+          "required": ["layout_precision", "visual_hierarchy", "lf_system_fidelity", "state_mapping", "handoff_quality"],
+          "additionalProperties": false,
+          "properties": {
+            "layout_precision": {"$ref": "#/$defs/criterionEvidence"},
+            "visual_hierarchy": {"$ref": "#/$defs/criterionEvidence"},
+            "lf_system_fidelity": {"$ref": "#/$defs/criterionEvidence"},
+            "state_mapping": {"$ref": "#/$defs/criterionEvidence"},
+            "handoff_quality": {"$ref": "#/$defs/criterionEvidence"}
+          }
+        }
+      }
+    }
+  }
+}
