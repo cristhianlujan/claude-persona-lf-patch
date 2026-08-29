@@ -1,0 +1,2 @@
+# Marketplace CX/Trust Behavioral Protocol
+Live canaries: bound Marketplace trust task applies exactly once; unbound/non-Marketplace task loads zero capsule; missing material promise authority returns to orchestrator; claim outside governed authority blocks; source conflict blocks; direct adapter naming does not dispatch it; repeated governed input yields materially equivalent binding. Retain exact hashes, RAW output, validator/judge results and canonical receipt.
