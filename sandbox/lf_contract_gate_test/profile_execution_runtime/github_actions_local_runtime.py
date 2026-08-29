@@ -196,7 +196,7 @@ class GitHubHostedLlamaCppAdapter:
         command = [
             str(assets["llama_cli"]), "-m", str(assets["model"]),
             "-mm", str(assets["mmproj"]), "-sysf", str(system_file),
-            "-f", str(input_file), "-st", "--simple-io", "--no-display-prompt",
+            "--prompt", request["input_literal"], "-st", "--simple-io", "--no-display-prompt",
             "--no-show-timings", "-co", "off",
             "-c", str(self.context_tokens), "-n", str(self.max_output_tokens),
             "-t", "4", "--temp", "0.2", "--top-p", "0.9", "-s", "42",
