@@ -41,6 +41,8 @@ def build_receipt(
     profile_source_refs: list[str], profile_source_sha256: str,
     input_literal: str, raw_output: Any, runtime_attestation: dict[str, Any],
     obligation_manifest_sha256: str | None = None,
+    lf_adapter_resolution: list[dict[str, Any]] | None = None,
+    lf_adapter_invocations: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     receipt = {
         "receipt_type": RECEIPT_TYPE,
@@ -55,6 +57,8 @@ def build_receipt(
         "raw_output_captured": True,
         "execution_origin": "MODEL_RUNTIME",
         "runtime_attestation": runtime_attestation,
+        "lf_adapter_resolution": [] if lf_adapter_resolution is None else lf_adapter_resolution,
+        "lf_adapter_invocations": [] if lf_adapter_invocations is None else lf_adapter_invocations,
         "downstream_authorized": False,
     }
     if obligation_manifest_sha256 is not None:
@@ -71,6 +75,69 @@ def _nonempty_string(value: Any) -> bool:
 
 def _is_sha256(value: Any) -> bool:
     return isinstance(value, str) and bool(SHA256_RE.fullmatch(value))
+
+
+def _validate_lf_adapter_evidence(receipt: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    resolution = receipt.get("lf_adapter_resolution")
+    invocations = receipt.get("lf_adapter_invocations")
+    if not isinstance(resolution, list):
+        return ["LF_ADAPTER_RESOLUTION_NOT_ARRAY"]
+    if not isinstance(invocations, list):
+        return ["LF_ADAPTER_INVOCATIONS_NOT_ARRAY"]
+
+    seen_assets: set[str] = set()
+    apply_count = 0
+    for item in resolution:
+        if not isinstance(item, dict) or set(item) != {"adapter_asset_code", "decision", "activation_reason"}:
+            errors.append("LF_ADAPTER_RESOLUTION_ITEM_INVALID")
+            continue
+        asset_code = item.get("adapter_asset_code")
+        decision = item.get("decision")
+        reason = item.get("activation_reason")
+        if not all(_nonempty_string(x) for x in (asset_code, decision, reason)):
+            errors.append("LF_ADAPTER_RESOLUTION_VALUE_MISSING")
+            continue
+        if asset_code in seen_assets:
+            errors.append("LF_ADAPTER_RESOLUTION_DUPLICATE")
+        seen_assets.add(asset_code)
+        if decision not in {"APPLY", "SKIP"}:
+            errors.append("LF_ADAPTER_RESOLUTION_DECISION_INVALID")
+        elif decision == "APPLY":
+            apply_count += 1
+
+    required_invocation = {
+        "adapter_code", "adapter_version", "invocation_id", "activation_reason",
+        "source_sha256", "capsule_sha256", "verdict",
+    }
+    seen_codes: set[str] = set()
+    seen_invocation_ids: set[str] = set()
+    for item in invocations:
+        if not isinstance(item, dict) or set(item) != required_invocation:
+            errors.append("LF_ADAPTER_INVOCATION_ITEM_INVALID")
+            continue
+        for key in ("adapter_code", "adapter_version", "invocation_id", "activation_reason"):
+            if not _nonempty_string(item.get(key)):
+                errors.append(f"LF_ADAPTER_INVOCATION_{key.upper()}_MISSING")
+        for key in ("source_sha256", "capsule_sha256"):
+            if not _is_sha256(item.get(key)):
+                errors.append(f"LF_ADAPTER_INVOCATION_{key.upper()}_INVALID")
+        if item.get("verdict") != "APPLIED":
+            errors.append("LF_ADAPTER_INVOCATION_VERDICT_INVALID")
+        code = item.get("adapter_code")
+        invocation_id = item.get("invocation_id")
+        if _nonempty_string(code):
+            if code in seen_codes:
+                errors.append("LF_ADAPTER_INVOCATION_DUPLICATE_CODE")
+            seen_codes.add(code)
+        if _nonempty_string(invocation_id):
+            if invocation_id in seen_invocation_ids:
+                errors.append("LF_ADAPTER_INVOCATION_DUPLICATE_ID")
+            seen_invocation_ids.add(invocation_id)
+
+    if len(invocations) != apply_count:
+        errors.append("LF_ADAPTER_INVOCATION_CARDINALITY_MISMATCH")
+    return errors
 
 
 def validate_receipt(
@@ -105,6 +172,7 @@ def validate_receipt(
     source_refs = receipt.get("profile_source_refs")
     if not isinstance(source_refs, list) or not source_refs or not all(_nonempty_string(x) for x in source_refs):
         errors.append("PROFILE_SOURCE_REFS_INVALID")
+    errors.extend(_validate_lf_adapter_evidence(receipt))
     attestation = receipt.get("runtime_attestation")
     if not isinstance(attestation, dict):
         errors.append("RUNTIME_ATTESTATION_MISSING")
