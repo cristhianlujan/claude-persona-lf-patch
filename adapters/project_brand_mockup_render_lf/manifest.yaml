@@ -27,6 +27,19 @@ required_files:
 activation_gate: ROUTER_BOUND_VISUAL_DELIVERABLE
 invocation_policy: ROUTER_BOUND_ONLY
 separate_llm_call: FORBIDDEN
+input_governance:
+  binding_contract: gobernanza/contratos/ADAPTER_INPUT_GOVERNANCE_BINDING_v1.md
+  authority_contract: INPUT_READINESS_CONTRACT
+  observed_revision: "5.12"
+  contract_resolution: LIVE_CURRENT
+  selective_sections:
+    - APPLICABILITY_READINESS
+    - SOURCE_AUTHORITY_PROVENANCE
+    - FRESHNESS_INVALIDATION
+    - NEGATIVE_REQUIREMENTS
+    - CONFLICT_PRECEDENCE
+  receipt_required_when_adapter_applies: true
+  continuation_policy: PASS_ONLY
 context_budget:
   capsule_path: runtime/runtime_capsule.yaml
   max_chars: 1600
