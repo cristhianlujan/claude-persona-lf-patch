@@ -1,0 +1,61 @@
+version: v0.2
+adapter: ADAPTER_PROJECT_BRAND_MOCKUP_RENDER_LF
+assurance_revision: v2
+cases:
+  - id: PBMA-001
+    name: governed_project_binding
+    given: {router_binding: true, project_code: OVERALL, project_tokens_present: true, screen_spec_present: true}
+    expect: {binding_state: BOUND, invocation_count: 1, activation_source: ROUTER}
+  - id: PBMA-002
+    name: loose_direct_call_rejected
+    given: {router_binding: false, direct_adapter_call: true}
+    expect: {verdict: BLOCK_UNBOUND_ADAPTER_INVOCATION}
+  - id: PBMA-003
+    name: missing_receipt_rejected
+    given: {router_binding: true, adapter_applicable: true, invocation_receipts: 0}
+    expect: {verdict: BLOCK_MISSING_ADAPTER_INVOCATION}
+  - id: PBMA-004
+    name: duplicate_receipt_rejected
+    given: {router_binding: true, adapter_applicable: true, invocation_receipts: 2}
+    expect: {verdict: BLOCK_DUPLICATE_ADAPTER_INVOCATION}
+  - id: PBMA-005
+    name: cross_project_tokens_rejected
+    given: {project_code: OVERALL, token_project_codes: [OVERALL, LF]}
+    expect: {verdict: CROSS_PROJECT_TOKEN_CONTAMINATION}
+  - id: PBMA-006
+    name: invented_palette_not_canonical
+    given: {project_tokens_present: false, fallback_approved: false, palette_invented: true}
+    expect: {binding_state: RETURN_TO_ORCHESTRATOR_MISSING_SOURCE, canonical_palette: false}
+  - id: PBMA-007
+    name: approved_fallback_labeled
+    given: {project_tokens_present: false, fallback_approved: true}
+    expect: {binding_state: BOUND_WITH_APPROVED_FALLBACK, fallback_mode: APPROVED_FALLBACK}
+  - id: PBMA-008
+    name: screen_spec_required
+    given: {screen_id: checkout, screen_spec_present: false, material_screen_render: true}
+    expect: {binding_state: RETURN_TO_ORCHESTRATOR_MISSING_SOURCE}
+  - id: PBMA-009
+    name: context_budget_enforced
+    given: {capsule_char_count: 1601}
+    expect: {verdict: BLOCK_CONTEXT_BUDGET_EXCEEDED}
+  - id: PBMA-010
+    name: no_second_llm_call
+    given: {adapter_llm_call_count: 1}
+    expect: {verdict: SECOND_LLM_CALL_FORBIDDEN}
+  - id: PBMA-011
+    name: visual_qa_required
+    given: {render_complete: true, qa_readback_present: false}
+    expect: {verdict: RETURN_TO_WORKER}
+
+holdout:
+  id: PBMA-H01
+  rule: unseen branded screen deliverable must bind one project only, preserve source lineage, use exactly one Router invocation receipt, stay inside context budget and perform zero adapter-specific LLM calls
+
+hard_fail_if:
+  - profile_or_user_invokes_adapter_without_router_binding
+  - missing_or_duplicate_lf_adapter_invocation
+  - cross_project_token_contamination
+  - fallback_presented_as_canonical
+  - context_budget_exceeded
+  - adapter_performs_separate_llm_call
+  - runtime_or_production_enabled
