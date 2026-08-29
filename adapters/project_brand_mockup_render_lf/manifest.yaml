@@ -1,13 +1,18 @@
 version: v0.1
+assurance_revision: v2
 status: CANDIDATO
 estado_operativo: READ_ONLY
 runtime_estado: NO_HABILITADO
 impacto_automatico: BLOQUEADO
 adapter_code: ADAPTER_PROJECT_BRAND_MOCKUP_RENDER_LF_v0.1_CANDIDATO
+canonical_adapter_id: ADAPTER_PROJECT_BRAND_MOCKUP_RENDER_LF
 base_path: adapters/project_brand_mockup_render_lf
 required_files:
   - ADAPTER.md
   - manifest.yaml
+  - runtime/runtime_capsule.yaml
+  - schemas/project_brand_mockup_binding.schema.json
+  - validators/validate_project_brand_mockup_adapter.py
   - references/token_resolution_contract.md
   - references/screen_mockup_contract.md
   - references/project_brand_guardrails.md
@@ -17,6 +22,13 @@ required_files:
   - examples/overall_good_mockup_spec.md
   - examples/overall_bad_mockup_antipatterns.md
   - evals/mockup_brand_quality_checklist.yaml
+  - evals/project_brand_mockup_adapter_cases.yaml
   - judges/judge_project_brand_mockup_render_lf.yaml
-activation_gate: PDF_OR_DECK_WITH_SCREENS
+activation_gate: ROUTER_BOUND_VISUAL_DELIVERABLE
+invocation_policy: ROUTER_BOUND_ONLY
+separate_llm_call: FORBIDDEN
+context_budget:
+  capsule_path: runtime/runtime_capsule.yaml
+  max_chars: 1600
+  max_material_rules: 10
 allowed_final_state: CANDIDATO_READ_ONLY_NO_HABILITADO
