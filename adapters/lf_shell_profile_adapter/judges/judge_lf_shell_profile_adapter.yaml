@@ -1,4 +1,4 @@
-version: v0.1
+version: v0.2
 judge_id: JUDGE_LF_SHELL_PROFILE_ADAPTER
 max_score: 25
 pass_score: 22
@@ -9,22 +9,26 @@ criteria:
   - id: authority_boundaries
     score: 5
     require: [profile_authority_respected, shell_locked_targets_not_executed, missing_material_authority_escalated]
-  - id: ui_contract_fidelity
+  - id: invocation_traceability
     score: 5
-    require: [ui_architect_structured_decisions_preserved, precision_provenance_preserved, router_direct_consistency_preserved]
+    require: [router_binding_present, exactly_one_lf_adapter_invocation_when_applicable, no_profile_self_invocation, no_second_llm_call]
   - id: downstream_executability
     score: 5
-    require: [writable_targets_identified, profile_delta_target_bound, handoff_scope_explicit]
-  - id: governance_safety
+    require: [writable_targets_identified, profile_delta_target_bound, handoff_scope_explicit, receipt_target_matches_binding]
+  - id: efficiency_and_governance
     score: 5
-    require: [no_drive_authority_fallback, no_candidate_to_vigente_promotion, no_runtime_or_production_enablement]
+    require: [runtime_capsule_used, capsule_within_1800_chars, no_drive_authority_fallback, no_runtime_or_production_enablement]
 hard_fail:
   - unresolved_shell_marked_bound
   - shell_locked_change_executed
   - invented_token_marked_canonical
   - profile_authority_expanded_by_adapter
-  - frontend_invents_product_or_visual_hierarchy
-  - direct_router_material_divergence_with_same_context
+  - profile_self_invokes_adapter
+  - unbound_adapter_invocation
+  - missing_adapter_invocation_receipt
+  - duplicate_adapter_invocation_receipt
+  - adapter_performs_separate_llm_call
+  - context_budget_exceeded
   - runtime_enabled
   - production_enabled
 verdicts:
