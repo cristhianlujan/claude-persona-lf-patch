@@ -33,6 +33,7 @@ OPERATIONS = {
     "SET_STATE", "SET_SPACING", "MERGE", "SPLIT", "HIDE", "SHOW",
     "CHANGE_TOKEN"
 }
+HISTORICAL_TARGET_OPERATIONS = {"REMOVE", "HIDE"}
 CHECK_TYPES = {
     "ABSENT", "PRESENT", "ALIGNED", "STATE", "COPY_EQUALS", "COUNT_EQUALS",
     "SPACING", "ORDER", "TOKEN", "RELATIONSHIP"
@@ -191,15 +192,6 @@ def validate_action(action, index, component_ids, errors):
     if not isinstance(anchor, str) or len(anchor.strip()) < 12 or normalize_text(anchor) in {"screen", "ui", "layout", "page"}:
         fail("EVIDENCE_ANCHOR_GENERIC", anchor, errors)
 
-    evidence_ids = action.get("evidence_component_ids")
-    if not isinstance(evidence_ids, list) or not evidence_ids:
-        fail("EVIDENCE_COMPONENT_IDS_MISSING", f"action[{index}]", errors)
-        evidence_ids = []
-    else:
-        unknown = sorted(set(evidence_ids) - component_ids)
-        if unknown:
-            fail("EVIDENCE_COMPONENT_UNKNOWN", f"action[{index}]: {', '.join(unknown)}", errors)
-
     execution = action.get("execution")
     if not isinstance(execution, dict):
         fail("EXECUTION_BINDING_MISSING", f"action[{index}]", errors)
@@ -212,7 +204,26 @@ def validate_action(action, index, component_ids, errors):
     target = execution.get("target_component_id")
     if operation not in OPERATIONS:
         fail("EXECUTION_OPERATION_INVALID", operation, errors)
-    if not isinstance(target, str) or target not in component_ids:
+
+    evidence_ids = action.get("evidence_component_ids")
+    if not isinstance(evidence_ids, list) or not evidence_ids:
+        fail("EVIDENCE_COMPONENT_IDS_MISSING", f"action[{index}]", errors)
+        evidence_ids = []
+    else:
+        allowed_refs = set(component_ids)
+        if operation in HISTORICAL_TARGET_OPERATIONS and isinstance(target, str) and target.strip():
+            allowed_refs.add(target)
+        unknown = sorted(set(evidence_ids) - allowed_refs)
+        if unknown:
+            fail("EVIDENCE_COMPONENT_UNKNOWN", f"action[{index}]: {', '.join(unknown)}", errors)
+
+    historical_target = (
+        operation in HISTORICAL_TARGET_OPERATIONS
+        and isinstance(target, str)
+        and target.strip()
+        and target in evidence_ids
+    )
+    if not isinstance(target, str) or (target not in component_ids and not historical_target):
         fail("EXECUTION_TARGET_UNKNOWN", target, errors)
     if target not in evidence_ids:
         fail("EXECUTION_TARGET_NOT_EVIDENCED", f"{target} must appear in evidence_component_ids", errors)
@@ -237,7 +248,8 @@ def validate_action(action, index, component_ids, errors):
         fail("ACCEPTANCE_CHECK_TYPE_INVALID", check_type, errors)
     if operation in OPERATION_CHECKS and check_type not in OPERATION_CHECKS[operation]:
         fail("OPERATION_CHECK_MISMATCH", f"{operation} incompatible with {check_type}", errors)
-    if not isinstance(check_target, str) or check_target not in component_ids:
+    historical_check_target = historical_target and check_target == target
+    if not isinstance(check_target, str) or (check_target not in component_ids and not historical_check_target):
         fail("ACCEPTANCE_TARGET_UNKNOWN", check_target, errors)
     if check.get("expected") in (None, "", [], {}):
         fail("ACCEPTANCE_EXPECTED_INVALID", f"action[{index}]", errors)
