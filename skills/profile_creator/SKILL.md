@@ -16,10 +16,11 @@ Before materializing a profile candidate, normalize the request as:
 4. **Cross-artifact consistency is mandatory.** Output modes/discriminators, schema, examples, eval expectations, rubric, mini-judge and handoff cannot contradict one another. An undeclared mode, stale rubric taxonomy or example that the schema cannot represent is a blocking defect.
 5. **Executable validation is mandatory.** Every generated candidate must carry a real profile-local `validators/validate_pack.py`, declared in its manifest. A nominal filename or unconditional PASS is invalid.
 6. **Adapters are bindings, not alternate workers.** Create adapters only when needed. They may be invoked only after Router/profile or governed skill resolution, must name caller + trigger + input/output boundary, receive compact execution-changing context, and must not become loose standalone entrypoints.
-7. **Self-repair once before producer success.** If the candidate re-asks resolved context, invents authority, uses inconsistent output modes, omits an executable validator, leaks internal metadata, creates an unbound adapter, or overclaims behavioral proof, repair once. If material defects remain, return to worker or block.
-8. **Behavioral proof is separate.** Fixtures, deterministic validators and contract regression do not prove RAW model behavior. `PROFILE_PACK_CREATED` may mean review-ready only; it never means behavioral PASS, runtime approval or production authorization.
-9. **Router/direct equivalence.** For the same governed creation request, Router and direct worker invocation must converge on materially equivalent purpose, authority, output contract, guardrails and failure behavior unless different authoritative context is explicitly evidenced.
-10. **Reference strong profiles by pattern, not by domain.** UI Architect and Gamification may inform operational quality patterns such as execute-first gates, context resolution, typed outputs, semantic guards and proof boundaries. Never copy their UI/gamification domain rules into unrelated profiles.
+7. **Input governance is selective, not permanent overhead.** Every generated or repaired Profile must declare the compact `INPUT_GOVERNANCE_AGENT` binding, reuse valid Adapter receipts, skip covered checks, prefer local deterministic checks, and invoke compact governance only for unresolved profile-relevant risk.
+8. **Self-repair once before producer success.** If the candidate re-asks resolved context, invents authority, uses inconsistent output modes, omits an executable validator, leaks internal metadata, creates an unbound adapter, duplicates Adapter governance, or overclaims behavioral proof, repair once. If material defects remain, return to worker or block.
+9. **Behavioral proof is separate.** Fixtures, deterministic validators and contract regression do not prove RAW model behavior. `PROFILE_PACK_CREATED` may mean review-ready only; it never means behavioral PASS, runtime approval or production authorization.
+10. **Router/direct equivalence.** For the same governed creation request, Router and direct worker invocation must converge on materially equivalent purpose, authority, output contract, guardrails and failure behavior unless different authoritative context is explicitly evidenced.
+11. **Reference strong profiles by pattern, not by domain.** UI Architect and Gamification may inform operational quality patterns such as execute-first gates, context resolution, typed outputs, semantic guards and proof boundaries. Never copy their UI/gamification domain rules into unrelated profiles.
 
 This gate overrides any later wording that could be read as allowing a structurally complete but operationally inconsistent candidate.
 
@@ -55,6 +56,7 @@ A generated candidate must materialize a reviewable package containing at minimu
 - `README.md`;
 - `SKILL.md` with execute-first behavior, inputs, route, output contract, failure behavior and authority limits;
 - `contracts/main_contract.md`;
+- `contracts/input_governance_binding.json` with the canonical selective `INPUT_GOVERNANCE_AGENT` binding;
 - a typed primary output schema, normally `schemas/output.schema.json`, with a closed root discriminator;
 - `judges/score_rubric.md` and `judges/mini_judge.md` consistent with the schema;
 - positive, negative, adversarial and Router/direct eval coverage with observable assertions;
@@ -65,6 +67,35 @@ A generated candidate must materialize a reviewable package containing at minimu
 - adapters only when needed, with explicit invocation/caller/context-budget rules.
 
 A user-facing profile must additionally protect `user_payload` from `internal_envelope` or an equivalent typed boundary. Internal governance/orchestration metadata must never leak into declared user output.
+
+## Input Governance Agent binding
+
+Every new or repaired Profile must know `INPUT_GOVERNANCE_AGENT` as a **selective capability**, never as a default extra reasoning pass.
+
+Mandatory flow:
+
+`Router -> Profile -> Adapter(s) -> Adapter receipts -> Profile -> INPUT_GOVERNANCE_AGENT only for residual risk -> PASS / REPAIR / BLOCK -> Profile execution or BLOCK`
+
+Before governance invocation, the Profile must inspect valid Adapter receipts. If a receipt covers the same check for the same governed input/version, governance is skipped for that check. Covered checks must never be repeated merely to obtain a second opinion.
+
+Allowed triggers are closed to:
+
+- `input_not_governed_by_adapter`;
+- `cross_adapter_conflict`;
+- `profile_specific_constraint`;
+- `authority_or_policy_uncertainty`;
+- `critical_input_validation`.
+
+Context policy:
+
+- L0: reuse valid Adapter receipt; additional governance cost approximately zero;
+- L1: resolve deterministic Profile-local checks with no extra model call;
+- L2: send only `input_ref`, `intent`, `profile_id`, unresolved checks, Profile-scope constraints and compact evidence refs;
+- L3: expand only for a critical unresolved decision and persist `reason_for_expansion`, `additional_refs_loaded`, `token_budget_class` and `receipt_id`.
+
+Do not inject the full Profile prompt, all Adapter outputs, complete conversation, full EKB, complete policies or general documentation by default. A second LLM call is exception-only; prefer the same execution context.
+
+The machine-readable source of truth is `contracts/input_governance_binding.json`, validated by `skills/profile_creator/validators/validate_governance_binding.py`. Its cache key is `input_hash+governance_version+profile_id`. `PASS` may execute, `REPAIR` must preserve original/governed input lineage, and `BLOCK` is fail-closed and cannot be downgraded to warning. Every governed decision requires a receipt.
 
 ## Producer output
 
@@ -100,17 +131,32 @@ It proves reviewable depth only and never independent semantic approval.
 - adapter files, when present, are bound to Router/profile invocation and compact context;
 - behavioral PASS is not claimed without an execution receipt.
 
-### 3. Canonical aggregate readiness gate
+### 3. Input-governance binding component
+
+`skills/profile_creator/validators/validate_governance_binding.py` verifies that:
+
+- the Profile declares `INPUT_GOVERNANCE_AGENT` with `mode=selective` and `entrypoint=router_only`;
+- the trigger set is closed to Profile-relevant residual risk;
+- valid Adapter receipts have precedence and duplicate checks are disabled;
+- normal context is capped at L2 compact and L3 is exception-only;
+- full policy injection and default second LLM calls are forbidden;
+- PASS / REPAIR / BLOCK and mandatory receipts are encoded;
+- critical uncertainty and missing governed receipts fail closed;
+- the binding file is declared by the candidate manifest.
+
+### 4. Canonical aggregate readiness gate
 
 For new Profile Creator success claims, execute:
 
 `skills/profile_creator/validators/validate_candidate_readiness.py`
 
-This composes the GOV-021 depth component with cross-artifact consistency. It preserves all depth blockers and removes only the historical `OUTPUT_SCHEMA_STATUS_NOT_CLOSED` assumption when a different closed root discriminator is deterministically proven.
+This composes GOV-021 depth, cross-artifact consistency and the input-governance binding gate. It preserves all depth blockers and removes only the historical `OUTPUT_SCHEMA_STATUS_NOT_CLOSED` assumption when a different closed root discriminator is deterministically proven.
 
-A successful aggregate result is still named `DEPTH_READY_FOR_SEMANTIC_REVIEW`, with:
+A successful aggregate result remains named `DEPTH_READY_FOR_SEMANTIC_REVIEW`, with the backward-compatible validation scope:
 
 `validation_scope=DETERMINISTIC_READINESS_DEPTH_AND_CONSISTENCY`
+
+and must expose `component_gates.input_governance_binding=PASS` in addition to the existing components.
 
 Independent semantic Quality Pack review remains mandatory after this gate.
 
@@ -125,6 +171,8 @@ Reject or self-repair a candidate when any of these occurs:
 - mini-judge evaluates fields/modes no longer present;
 - a validator is missing, nominal or unconditional;
 - an adapter can be invoked as a standalone bypass of Router/profile resolution;
+- a Profile invokes `INPUT_GOVERNANCE_AGENT` on every execution or duplicates Adapter-covered checks;
+- a Profile omits the governance receipt contract, allows fail-open BLOCK handling, or injects full policy/context by default;
 - the candidate claims behavioral execution from fixtures or deterministic contract tests;
 - Router and direct behavior materially diverge without authoritative reason.
 
@@ -149,7 +197,7 @@ The receiver must get only review-relevant execution context:
 - exact artifact identity/reference;
 - source authority and evidence map;
 - main contract and output schema refs;
-- aggregate readiness/depth receipt;
+- aggregate readiness/depth receipt including input-governance component status;
 - score rubric and mini-judge refs;
 - blocking codes and remaining risks;
 - explicit behavioral proof status;
@@ -160,7 +208,7 @@ Do not dump unrelated governance history into the generated worker payload.
 ## Failure routing
 
 - materially unresolved authority or destination -> `RETURN_TO_ORCHESTRATOR`;
-- repairable candidate inconsistency/depth/validator/adapter defect -> `RETURN_TO_WORKER_FOR_SELF_REPAIR`;
+- repairable candidate inconsistency/depth/validator/adapter/governance-binding defect -> `RETURN_TO_WORKER_FOR_SELF_REPAIR`;
 - fabricated evidence, identity change, runtime enablement, unsupported production/VALIDATED mark, automatic promotion, governance bypass or irreconcilable authority conflict -> `BLOCK_PIPELINE`.
 
 ## Authority limits
