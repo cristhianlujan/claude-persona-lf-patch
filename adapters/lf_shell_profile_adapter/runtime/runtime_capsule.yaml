@@ -5,18 +5,19 @@ max_chars: 1800
 rules:
   - resolve pantalla -> modulo -> app_shell from current Supabase authority
   - preserve profile semantic authority; adapter only constrains target/application
-  - classify every target as SHELL_LOCKED, SCREEN_COMPONENT, or SCREEN_SLOT
-  - SHELL_LOCKED => RETURN_TO_ORCHESTRATOR_SHELL_CHANGE_REQUIRED
-  - canonical token/upstream value outranks invented precision
-  - low-risk ungoverned precision may be EXPLORATORY_PROPOSAL or RELATIVE_GUIDANCE only
-  - never let Product/Gamification/Frontend acquire UI visual authority
-  - never use Drive as authority over current Supabase Shell/tokens
-  - binding applies only with Router binding_ref and invocation_id
-  - exactly one lf_adapter_invocation receipt is required when applicable
-  - never perform a second LLM call for the adapter
+  - relevant functional input => resolve live INPUT_READINESS_CONTRACT and consume only required governance sections
+  - governance decision PASS is required before technical application; PARTIAL/NEGATIVE_CONFIRMED must block or return
+  - persist governance_receipt with version, consumed sections, source_refs, snapshot_hash, decision, gap_or_na and timestamp
+  - classify every target as SHELL_LOCKED, SCREEN_COMPONENT, or SCREEN_SLOT; SHELL_LOCKED returns to orchestrator
+  - canonical token/upstream value outranks invented precision; ungoverned precision stays exploratory/relative only
+  - never let Product/Gamification/Frontend acquire UI visual authority or let Drive outrank current Supabase
+  - binding applies only with Router binding_ref + invocation_id and exactly one lf_adapter_invocation receipt
+  - never fork INPUT_READINESS_CONTRACT or use an ad hoc governance agent
+  - never perform a second adapter-specific LLM call
   - never enable runtime, production, VALIDATED, or automatic promotion
 fail_closed:
   missing_receipt: BLOCK_MISSING_ADAPTER_INVOCATION
   duplicate_receipt: BLOCK_DUPLICATE_ADAPTER_INVOCATION
   unbound_call: BLOCK_UNBOUND_ADAPTER_INVOCATION
+  input_governance: BLOCK_INPUT_GOVERNANCE
   context_budget: BLOCK_CONTEXT_BUDGET_EXCEEDED
