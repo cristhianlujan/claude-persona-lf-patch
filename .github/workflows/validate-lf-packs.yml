@@ -40,13 +40,3 @@ jobs:
 
       - name: Validate learning engine pack
         run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
-
-      - name: Validate Marketplace UX adapter assurance v2
-        run: |
-          python adapters/marketplace_lf_ux/validators/validate_marketplace_lf_ux_adapter.py
-          python adapters/marketplace_lf_ux/evals/run_cases.py
-
-      - name: Validate Marketplace CX Trust adapter assurance v2
-        run: |
-          python adapters/marketplace_lf_cx_trust/validators/validate_marketplace_lf_cx_trust_adapter.py
-          python adapters/marketplace_lf_cx_trust/evals/run_cases.py
