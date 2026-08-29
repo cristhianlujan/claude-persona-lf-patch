@@ -190,6 +190,7 @@ def main() -> int:
             ".github/workflows/lf-contract-check.yml",
             "scripts/lf_contract_check.py",
             "sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_runner.py",
+            "sandbox/lf_contract_gate_test/profile_execution_runtime/run_lf_adapter_binding_tests.py",
             "sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py",
             "sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_mini_judge.py",
             "sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_obligation_manifest.py",

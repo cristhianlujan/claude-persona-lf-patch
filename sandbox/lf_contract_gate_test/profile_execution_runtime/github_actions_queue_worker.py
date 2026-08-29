@@ -14,6 +14,7 @@ import psycopg
 from psycopg.types.json import Jsonb
 
 TABLE = "private.lf_profile_runtime_queue_v1"
+MAX_LF_ADAPTERS = 4
 
 
 def _connect() -> psycopg.Connection:
@@ -26,6 +27,44 @@ def _connect() -> psycopg.Connection:
         host=host, port=5432, user=f"postgres.{project}", password=password,
         dbname="postgres", sslmode="require", autocommit=False,
     )
+
+
+def _resolve_enabled_adapter_bindings(cur: psycopg.Cursor, profile_code: str) -> list[dict]:
+    cur.execute(
+        """
+        select adapter_code,
+               adapter_metadata->>'canonical_adapter_id' as canonical_adapter_id,
+               adapter_metadata->>'current_path' as current_path,
+               adapter_version,
+               relacion_tipo
+          from public.v_lf_router_adapter_bindings
+         where target_asset_code=%s
+           and lower(coalesce(adapter_metadata->>'router_discoverable','false'))='true'
+           and lower(coalesce(adapter_metadata->>'runtime_enabled','false'))='true'
+         order by adapter_code
+        """,
+        (profile_code,),
+    )
+    rows = cur.fetchall()
+    if len(rows) > MAX_LF_ADAPTERS:
+        raise SystemExit(f"BLOCK_LF_ADAPTER_BINDING_COUNT_EXCEEDED:{len(rows)}")
+    result: list[dict] = []
+    seen: set[str] = set()
+    for adapter_asset_code, canonical_adapter_id, current_path, adapter_version, relation_type in rows:
+        if not all(isinstance(value, str) and value.strip() for value in (adapter_asset_code, canonical_adapter_id, current_path, relation_type)):
+            raise SystemExit("BLOCK_LF_ADAPTER_BINDING_INCOMPLETE")
+        if canonical_adapter_id in seen:
+            raise SystemExit(f"BLOCK_DUPLICATE_ADAPTER_INVOCATION:{canonical_adapter_id}")
+        seen.add(canonical_adapter_id)
+        result.append({
+            "adapter_asset_code": adapter_asset_code,
+            "canonical_adapter_id": canonical_adapter_id,
+            "current_path": current_path,
+            "adapter_version": adapter_version,
+            "relation_type": relation_type,
+            "binding_ref": f"public.v_lf_router_adapter_bindings:{adapter_asset_code}:{profile_code}",
+        })
+    return result
 
 
 def _claim(conn: psycopg.Connection, request_id: str, comment_id: int) -> dict:
@@ -50,6 +89,7 @@ def _claim(conn: psycopg.Connection, request_id: str, comment_id: int) -> dict:
             raise SystemExit("BLOCK_PROFILE_RUNTIME_REQUEST_NOT_PENDING")
         cols = [d.name for d in cur.description]
         payload = dict(zip(cols, row))
+        payload["lf_adapter_bindings"] = _resolve_enabled_adapter_bindings(cur, payload["profile_code"])
         conn.commit()
         return payload
 
