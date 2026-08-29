@@ -14,6 +14,7 @@ import psycopg
 from psycopg.types.json import Jsonb
 
 TABLE = "private.lf_profile_runtime_queue_v1"
+ADAPTER_BINDING_VIEW = "public.v_lf_router_adapter_bindings"
 
 
 def _connect() -> psycopg.Connection:
@@ -38,7 +39,7 @@ def _claim(conn: psycopg.Connection, request_id: str, comment_id: int) -> dict:
                    error_code=null, error_detail=null
              where request_id=%s::uuid and status='PENDING'
          returning request_id::text, operation_code, profile_code, profile_slug,
-                   profile_source_paths, input_literal, input_image_base64,
+                   profile_source_paths, lf_adapter_resolution, input_literal, input_image_base64,
                    input_image_media_type, input_image_sha256
             """,
             (comment_id, int(os.environ["GITHUB_RUN_ID"]), int(os.environ.get("GITHUB_RUN_ATTEMPT", "1")),
@@ -50,6 +51,24 @@ def _claim(conn: psycopg.Connection, request_id: str, comment_id: int) -> dict:
             raise SystemExit("BLOCK_PROFILE_RUNTIME_REQUEST_NOT_PENDING")
         cols = [d.name for d in cur.description]
         payload = dict(zip(cols, row))
+
+        cur.execute(
+            f"""
+            select adapter_code, adapter_version, target_asset_code
+              from {ADAPTER_BINDING_VIEW}
+             where target_asset_code=%s and target_asset_type='PERFIL'
+             order by adapter_code
+            """,
+            (payload["profile_code"],),
+        )
+        payload["governed_adapter_bindings"] = [
+            {
+                "adapter_asset_code": adapter_code,
+                "adapter_version": adapter_version,
+                "target_asset_code": target_asset_code,
+            }
+            for adapter_code, adapter_version, target_asset_code in cur.fetchall()
+        ]
         conn.commit()
         return payload
 
