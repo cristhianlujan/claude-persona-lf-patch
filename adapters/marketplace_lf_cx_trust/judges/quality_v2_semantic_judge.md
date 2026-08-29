@@ -1,0 +1,2 @@
+# Marketplace CX/Trust Adapter Semantic Judge
+PASS only if current evidence and promise boundaries are preserved, no unsupported claim is strengthened, trust risks are evidence-backed, qualifiers/guardrails survive, noncanonical improvements are labeled, exactly one LF invocation identity is present, and no separate adapter model call is required. Hidden blockers or authority expansion are FAIL.
