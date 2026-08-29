@@ -1,0 +1,25 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260829-008",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "2100cf8c116498e7cb6b5916b9da6d2269e307aa",
+    "50f8f82f04e5655e2a7f3a94ac78b59bf8865783",
+    "7e07c906-d612-48b4-9ef3-200effe6572f",
+    "1072186f-4d67-4fba-9e70-0bd9a08ece4b",
+    "564dab32-4058-48bc-8adf-101637a7c10f",
+    "511a5503-9b42-42a6-b9ee-7ba67be0b2f7"
+  ],
+  "target_paths": [
+    "profiles/ui_architect/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-29T08:12:00Z",
+  "notes": "PASS_SANDBOX governance receipt for V20 candidate source. V19 live canaries proved a structural recursion failure across CREATE_NEW and resolved REMEDIATE_EXISTING outputs while the unresolved-authority path was semantically near-correct but contract-imprecise. V20 adds only the profile-local runtime_output.schema.json consumed by the already-merged optional constrained-decoding runtime. This receipt certifies governed candidate binding and sandbox source eligibility; it does not claim live semantic PASS, A/B closure, VALIDATED, production, runtime promotion, adapter activation, automatic impact, or final execution closure. Fresh exact-head CI and live canaries remain mandatory before merge."
+}
