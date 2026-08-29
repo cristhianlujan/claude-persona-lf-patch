@@ -1,0 +1,11 @@
+{
+  "quality_standard": "ADAPTER_QUALITY_V2",
+  "adapters": [
+    "ADAPTER_LF_SHELL_PROFILE",
+    "ADAPTER_PROJECT_BRAND_MOCKUP_RENDER_LF",
+    "ADAPTER_MARKETPLACE_LF_UX",
+    "ADAPTER_MARKETPLACE_LF_CX_TRUST"
+  ],
+  "candidate_only": true,
+  "live_runtime_proof_pending": true
+}
