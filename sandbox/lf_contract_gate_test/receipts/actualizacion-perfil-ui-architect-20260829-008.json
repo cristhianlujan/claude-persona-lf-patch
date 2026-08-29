@@ -1,23 +1,23 @@
 {
   "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
-  "receipt_version": "v0.1",
+  "receipt_version": "v0.2",
   "issued_by": "operation_judge",
   "operation_code": "ACTUALIZACION_PERFIL_LF",
   "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260829-008",
-  "result": "PASS_SANDBOX",
-  "all_required_steps_pass": true,
+  "result": "IN_PROGRESS_REMEDIATION",
+  "all_required_steps_pass": false,
   "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
   "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
   "source_sha_list": [
-    "59bb501f3aa1c09ed1f9ad14e255f23baba6729b",
-    "39c7dd64426083b62cf5e2a3aec0b286a0b984ed",
-    "ffec66f63ab5eb515d069a5d59925ba0b02c901caeab1a3568b93b79293524ed",
-    "c01a647ff3fa2b5f1db742b118ca165258ebddcb"
+    "8921566e83b609c10d34e2b326d9adb747eef5c7",
+    "ffec66f63ab5eb515d069a5d59925ba0b02c901caeab1a3568b93b79293524ed"
   ],
   "target_paths": [
     "profiles/ui_architect/**"
   ],
-  "blocking_codes": [],
-  "issued_at": "2026-08-29T06:50:00Z",
-  "notes": "PASS_SANDBOX candidate-source receipt for execution 008, reapplied without semantic change onto current main after concurrent main movement. Baseline live A/B requests exposed a cross-task contamination defect: unrelated CREATE_NEW requests were captured by the V16 duplicate-remediation literal or authoritative-survivor short-circuit. Candidate patch classifies CREATE_NEW before existing-screen special cases, scopes V16 and survivor resolution to explicit REMEDIATE_EXISTING duplicate cases, preserves supplied functional requirements, and forbids fabricated removals, URLs and material claims. Existing V16 exact behavior and unresolved duplicate fail-closed semantics are preserved. This receipt authorizes sandbox candidate validation only; it does not claim live behavioral PASS, VALIDATED, production, runtime enablement, automatic promotion, or final closure. Execution 008 remains IN_PROGRESS until exact-head CI, merge/readback and fresh post-merge live canaries pass."
+  "blocking_codes": [
+    "LIVE_AB_SEMANTIC_FAIL_V17"
+  ],
+  "issued_at": "2026-08-29T07:32:00Z",
+  "notes": "Post-main live A/B on merge 1f942e4bb95fd1fd6b5cfe5ba9a1e6be8971f222 produced 6/6 authentic SUCCEEDED runtime receipts with RAW integrity, but semantic/operational quality failed. V16 remediation content still contaminated CREATE_NEW cases; one case fabricated example.com and recursive CTA params; other cases removed or omitted supplied requirements. V18 remediation removes the high-salience legacy fixture from the always-loaded general source, makes CREATE_NEW the dominant isolated path, forbids remediation_actions and fabricated URLs for CREATE_NEW, and keeps legacy remediation fixtures profile-local for Router-selected context only. This receipt is not PASS and does not authorize VALIDATED, runtime enablement, production or automatic promotion. Execution remains IN_PROGRESS pending exact-head CI, merge/readback and a full fresh 6-case A/B plus adversarial canaries."
 }
