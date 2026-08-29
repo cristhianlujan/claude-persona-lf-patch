@@ -34,6 +34,7 @@ The candidate must include:
 
 - developed `SKILL.md` with execute-first behavior, inputs, route, output contract, failure behavior and authority limits;
 - developed main contract;
+- `contracts/input_governance_binding.json` with the canonical selective `INPUT_GOVERNANCE_AGENT` binding;
 - typed primary output schema;
 - developed rubric and mini-judge;
 - positive, negative, adversarial and Router/direct eval coverage with observable assertions;
@@ -79,6 +80,33 @@ Adapters are optional. When present, every adapter must declare:
 
 An adapter that can be called loosely as an alternate worker is not creation-ready.
 
+## Input governance binding contract
+
+Every generated or repaired Profile must declare `contracts/input_governance_binding.json` and list it in `manifest.json.required_files`.
+
+The binding is a capability contract, not a new orchestration layer:
+
+`Router -> Profile -> Adapter(s) -> Adapter receipts -> Profile -> governance only for residual risk -> PASS / REPAIR / BLOCK`
+
+Canonical invariants:
+
+- `capability=INPUT_GOVERNANCE_AGENT`;
+- `mode=selective`;
+- `invoke_from=profile`;
+- `entrypoint=router_only`;
+- allowed triggers only: `input_not_governed_by_adapter`, `cross_adapter_conflict`, `profile_specific_constraint`, `authority_or_policy_uncertainty`, `critical_input_validation`;
+- valid Adapter receipts have precedence and their `covered_checks` must not be repeated;
+- L0 receipt reuse and L1 local deterministic checks precede any governance call;
+- normal governance context is capped at L2 compact;
+- L3 expansion is exception-only and must persist expansion reason, loaded refs, token class and receipt;
+- full policy injection is forbidden;
+- a second LLM call is exception-only and the same execution context is preferred;
+- cache key is `input_hash+governance_version+profile_id`;
+- response is structured as `PASS|REPAIR|BLOCK` with compact findings/evidence and mandatory receipt;
+- `BLOCK` is fail-closed; critical uncertainty, missing governed receipt, out-of-scope input or unresolved receipt conflict cannot be downgraded to warning.
+
+The Profile must declare the capability and Adapter-receipt reuse in its SKILL/main contract. Governance does not replace the Adapter and does not change the Profile's functional responsibility.
+
 ## Evidence contract
 
 Every material producer claim must map to exact evidence. Historical PRs, fixtures and repository coincidence may be evidence but are not authority by themselves. Conflicting current authorities remain visible and block a definitive creation claim.
@@ -97,21 +125,25 @@ Cross-artifact architecture consistency is implemented by:
 
 `skills/profile_creator/validators/validate_candidate_consistency.py`
 
+Selective input-governance binding is implemented by:
+
+`skills/profile_creator/validators/validate_governance_binding.py`
+
 The canonical aggregate gate for new producer success claims is:
 
 `skills/profile_creator/validators/validate_candidate_readiness.py`
 
-The aggregate gate composes both checks. It preserves every GOV-021 blocker and may suppress only the legacy `OUTPUT_SCHEMA_STATUS_NOT_CLOSED` assumption when the candidate deterministically proves another closed root discriminator.
+The aggregate gate composes all three checks. It preserves every GOV-021 blocker and may suppress only the legacy `OUTPUT_SCHEMA_STATUS_NOT_CLOSED` assumption when the candidate deterministically proves another closed root discriminator.
 
 For `PROFILE_PACK_CREATED`, `depth_gate` must bind to the exact candidate and report:
 
 - `status=DEPTH_READY_FOR_SEMANTIC_REVIEW`;
 - `validator_ref=skills/profile_creator/validators/validate_candidate_readiness.py`;
 - `candidate_ref` equal to `deliverable_artifact_ref`;
-- `validation_scope=DETERMINISTIC_READINESS_DEPTH_AND_CONSISTENCY`;
+- backward-compatible `validation_scope=DETERMINISTIC_READINESS_DEPTH_AND_CONSISTENCY`;
 - `semantic_quality_review=NOT_EXECUTED`;
 - `behavioral_eval_status=NOT_EXECUTED`;
-- component gates for producer depth and cross-artifact consistency both PASS;
+- component gates for producer depth, cross-artifact consistency and input governance binding all PASS;
 - empty blocking codes.
 
 ## Behavioral proof boundary
@@ -129,7 +161,7 @@ This is a creation-readiness invariant. Actual runtime equivalence remains a sep
 ## Failure routing
 
 - unresolved material authority/destination -> `RETURN_TO_ORCHESTRATOR`;
-- repairable depth, schema/example/eval/judge, validator, adapter or handoff inconsistency -> `RETURN_TO_WORKER_FOR_SELF_REPAIR`;
+- repairable depth, schema/example/eval/judge, validator, adapter, governance-binding or handoff inconsistency -> `RETURN_TO_WORKER_FOR_SELF_REPAIR`;
 - fabricated evidence, identity change, runtime/production enablement, automatic promotion, unsupported VALIDATED mark or governance bypass -> `BLOCK_PIPELINE`.
 
 ## Output contract
