@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """Exact-head fail-closed regression for Router-bound LF adapter capsules."""
+import json
+import tempfile
 from copy import deepcopy
+from pathlib import Path
 
+from github_actions_local_runtime import _resolve_runtime_output_schema
 from profile_runtime_runner import RESPONSE_TYPE, RuntimeExecutionBlocked, execute_profile_runtime
 from validate_profile_execution import canonical_json_sha256, sha256_text, validate_receipt
 
@@ -94,6 +98,36 @@ def expect_block(name, code, fn):
     raise AssertionError(f"{name}: expected {code}")
 
 
+def test_structured_schema_resolution():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        assert _resolve_runtime_output_schema(root, "ui_architect") is None
+        print("PASS structured_schema_absent_zero_overhead")
+
+        schema_dir = root / "profiles" / "ui_architect" / "schemas"
+        schema_dir.mkdir(parents=True)
+        schema = schema_dir / "runtime_output.schema.json"
+        schema.write_text(json.dumps({"type": "object"}), encoding="utf-8")
+        assert _resolve_runtime_output_schema(root, "ui_architect") == schema.resolve()
+        print("PASS structured_schema_canonical_path")
+
+        expect_block(
+            "structured_schema_invalid_slug",
+            "LOCAL_RUNTIME_SCHEMA_PROFILE_SLUG_INVALID",
+            lambda: _resolve_runtime_output_schema(root, "../ui_architect"),
+        )
+
+        outside = root / "outside.schema.json"
+        outside.write_text(json.dumps({"type": "object"}), encoding="utf-8")
+        schema.unlink()
+        schema.symlink_to(outside)
+        expect_block(
+            "structured_schema_symlink_escape",
+            "LOCAL_RUNTIME_SCHEMA_PATH_ESCAPE",
+            lambda: _resolve_runtime_output_schema(root, "ui_architect"),
+        )
+
+
 def main():
     package, calls = run([adapter_source()])
     assert calls == 1
@@ -135,7 +169,8 @@ def main():
     assert "LF_ADAPTER_INVOCATION_0_PROFILE_ID_MISMATCH" in errors
     print("PASS tampered_lf_adapter_receipt_blocks")
 
-    print("LF_ADAPTER_BINDING_TESTS_PASS 10/10")
+    test_structured_schema_resolution()
+    print("LF_ADAPTER_BINDING_TESTS_PASS 14/14")
 
 
 if __name__ == "__main__":
