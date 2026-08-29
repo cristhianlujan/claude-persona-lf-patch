@@ -91,9 +91,11 @@ def _render_profile_instructions(request: dict[str, Any]) -> str:
         "Execute the governed repository profile defined by the canonical sources below.",
         "Treat those sources as the governing profile instructions for this run.",
         "Apply them to the user's literal input and attached image, if present.",
+        "Governed LF adapter capsules below, when present, constrain translation/placement only within their stated authority.",
+        "They do not replace the specialist profile and must not expand its authority.",
         "Return the profile's direct output only.",
         "Do not reconstruct an expected answer or discuss the runtime wrapper.",
-        "Do not invent facts absent from the canonical sources, literal input, or image.",
+        "Do not invent facts absent from the canonical sources, literal input, image, or governed adapter capsules.",
         "",
     ]
     for source in request["profile_sources"]:
@@ -101,6 +103,14 @@ def _render_profile_instructions(request: dict[str, Any]) -> str:
             f"--- BEGIN CANONICAL PROFILE SOURCE: {source['ref']} ---",
             source["content"],
             f"--- END CANONICAL PROFILE SOURCE: {source['ref']} ---",
+            "",
+        ])
+    for context in request.get("lf_adapter_contexts", []):
+        parts.extend([
+            f"--- BEGIN GOVERNED LF ADAPTER CAPSULE: {context['adapter_code']} {context['adapter_version']} ---",
+            f"Activation reason: {context['activation_reason']}",
+            context["capsule_content"],
+            f"--- END GOVERNED LF ADAPTER CAPSULE: {context['adapter_code']} ---",
             "",
         ])
     return "\n".join(parts).rstrip()
@@ -188,6 +198,8 @@ class GitHubHostedLlamaCppAdapter:
             "input_sha256": request["input_sha256"],
             "operation_code": request["operation_code"],
             "profile_code": request["profile_code"], "profile_slug": request["profile_slug"],
+            "lf_adapter_context_sha256": canonical_json_sha256(request.get("lf_adapter_contexts", [])),
+            "lf_adapter_context_count": str(len(request.get("lf_adapter_contexts", []))),
             "zero_cost_policy": "ZERO_COST_ONLY", "github_repository": runner["repository"],
             "github_sha": os.getenv("GITHUB_SHA", ""), "github_run_id": os.environ["GITHUB_RUN_ID"],
             "github_run_attempt": os.getenv("GITHUB_RUN_ATTEMPT", "1"),
@@ -257,6 +269,11 @@ class GitHubHostedLlamaCppVerifier:
             raise RuntimeExecutionBlocked("LOCAL_VERIFIER_RUNNER_LABEL_MISMATCH")
         if attestation.get("github_run_id") != os.environ.get("GITHUB_RUN_ID"):
             raise RuntimeExecutionBlocked("LOCAL_VERIFIER_RUN_ID_MISMATCH")
+        expected_adapter_context_sha = canonical_json_sha256(request.get("lf_adapter_contexts", []))
+        if attestation.get("lf_adapter_context_sha256") != expected_adapter_context_sha:
+            raise RuntimeExecutionBlocked("LOCAL_VERIFIER_LF_ADAPTER_CONTEXT_MISMATCH")
+        if attestation.get("lf_adapter_context_count") != str(len(request.get("lf_adapter_contexts", []))):
+            raise RuntimeExecutionBlocked("LOCAL_VERIFIER_LF_ADAPTER_CONTEXT_COUNT_MISMATCH")
         if self.expected_image_path is not None:
             if _sha256_file(self.expected_image_path) != self.expected_image_sha256:
                 raise RuntimeExecutionBlocked("LOCAL_VERIFIER_IMAGE_SHA256_MISMATCH")
@@ -272,6 +289,8 @@ class GitHubHostedLlamaCppVerifier:
             "runner_label": runner["runner_label"], "llama_release": LLAMA_RELEASE,
             "llama_source_commit": LLAMA_SOURCE_COMMIT, **observed_hashes,
             "literal_input_sha256": _sha256_file(files["input"]),
+            "lf_adapter_context_sha256": expected_adapter_context_sha,
+            "lf_adapter_context_count": str(len(request.get("lf_adapter_contexts", []))),
             "input_image_sha256": self.expected_image_sha256,
         }
         return {"verified": True, "verifier_id": self.verifier_id,
