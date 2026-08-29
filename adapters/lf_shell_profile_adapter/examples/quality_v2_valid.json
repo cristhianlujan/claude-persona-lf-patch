@@ -1,0 +1,23 @@
+{
+  "state": "BOUND",
+  "shell_binding": {
+    "profile_id": "PERFIL-UI-ARCHITECT",
+    "screen_code": "CHECKOUT",
+    "canonical_refs": ["lf_ops.pantallas:CHECKOUT", "lf_ops.app_shells:CLIENT_APP_SHELL"],
+    "protected_targets": ["global_header", "global_footer"],
+    "writable_targets": ["payment_summary"],
+    "normalized_delta": {"remove": ["top_amount_strip"]},
+    "precision_basis": "UPSTREAM_VALUE",
+    "blockers": [],
+    "handoff": "UI_ARCHITECT"
+  },
+  "lf_adapter_invocations": [{
+    "adapter_code": "ADAPTER_LF_SHELL_PROFILE",
+    "adapter_version": "v0.2-candidate",
+    "invocation_id": "inv-example-shell-001",
+    "activation_reason": "LF screen remediation bound to UI profile",
+    "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "capsule_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "verdict": "APPLIED"
+  }]
+}
