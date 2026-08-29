@@ -1,0 +1,1 @@
+Scope is frozen pending deterministic CI and canonical runtime follow-up.
