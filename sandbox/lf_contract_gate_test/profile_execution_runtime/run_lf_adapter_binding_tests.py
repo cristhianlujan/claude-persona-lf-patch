@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Exact-head fail-closed regression for Router-bound LF adapter capsules."""
 from copy import deepcopy
 
 from profile_runtime_runner import RESPONSE_TYPE, RuntimeExecutionBlocked, execute_profile_runtime
