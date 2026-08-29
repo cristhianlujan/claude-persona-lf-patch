@@ -1,0 +1,13 @@
+adapter: ADAPTER_MARKETPLACE_LF_UX
+assurance_revision: v2
+activation: ROUTER_BOUND_ONLY
+purpose: Bind governed Marketplace LF context to the UX/Product Experience specialist without changing profile authority.
+rules:
+  - Preserve current product, financial and LF constraints; never invent eligibility, debt/payment meaning or conversion targets.
+  - Use current Marketplace asset, user objective, expected action and supplied UX evidence.
+  - Prioritize evidence-backed UX friction; low-risk unresolved proposals remain PROPOSED_NOT_CANONICAL.
+  - Do not claim UI visual authority, product authority or financial authority.
+  - Missing material authority returns to orchestrator; conflicting authority blocks.
+  - Preserve protected constraints and downstream dependencies in the specialist result.
+  - This capsule is context for the same specialist execution, never a separate LLM call.
+  - Runtime/production/VALIDATED promotion is forbidden from this adapter.
