@@ -90,6 +90,13 @@ def main() -> int:
         assert local.MODEL_COMMIT == "5037fcf163dd95d1e41d1974465f0898ed108ca2"
         assert local.LLAMA_RELEASE == "b10642"
         passed += 1
+        runtime_source = Path(local.__file__).read_text(encoding="utf-8")
+        assert '"--log-disable"' not in runtime_source
+        assert "context_tokens: int = 16384" in runtime_source
+        assert "max_output_tokens: int = 2048" in runtime_source
+        assert '"context_tokens": str(self.context_tokens)' in runtime_source
+        assert '"max_output_tokens": str(self.max_output_tokens)' in runtime_source
+        passed += 1
         with tempfile.TemporaryDirectory() as td:
             copied = _materialize_runtime_output_schema("ui_architect", Path.cwd(), Path(td))
             canonical = Path("profiles/ui_architect/schemas/runtime_output.schema.json")
@@ -106,9 +113,9 @@ def main() -> int:
         passed += 1
     finally:
         restore_env(prior)
-    if passed != 12:
-        raise SystemExit(f"ZERO_COST_PROFILE_RUNTIME_TESTS_FAIL {passed}/12")
-    print("ZERO_COST_PROFILE_RUNTIME_TESTS_PASS 12/12")
+    if passed != 13:
+        raise SystemExit(f"ZERO_COST_PROFILE_RUNTIME_TESTS_FAIL {passed}/13")
+    print("ZERO_COST_PROFILE_RUNTIME_TESTS_PASS 13/13")
     return 0
 
 

@@ -197,7 +197,7 @@ class GitHubHostedLlamaCppAdapter:
             str(assets["llama_cli"]), "-m", str(assets["model"]),
             "-mm", str(assets["mmproj"]), "-sysf", str(system_file),
             "-f", str(input_file), "-st", "--simple-io", "--no-display-prompt",
-            "--no-show-timings", "--log-disable", "-co", "off",
+            "--no-show-timings", "-co", "off",
             "-c", str(self.context_tokens), "-n", str(self.max_output_tokens),
             "-t", "4", "--temp", "0.2", "--top-p", "0.9", "-s", "42",
             "-o", str(output_file),
@@ -245,6 +245,8 @@ class GitHubHostedLlamaCppAdapter:
             "literal_input_file_sha256": _sha256_file(input_file),
             "raw_output_file_sha256": _sha256_file(output_file),
             "lf_adapter_invocation_count": str(len(request.get("lf_adapter_sources") or [])),
+            "context_tokens": str(self.context_tokens),
+            "max_output_tokens": str(self.max_output_tokens),
         }
         if self.structured_output_schema_path is not None:
             attestation["structured_output_schema_ref"] = str(
@@ -313,6 +315,10 @@ class GitHubHostedLlamaCppVerifier:
         expected_adapter_count = str(len(request.get("lf_adapter_sources") or []))
         if attestation.get("lf_adapter_invocation_count") != expected_adapter_count:
             raise RuntimeExecutionBlocked("LOCAL_VERIFIER_LF_ADAPTER_COUNT_MISMATCH")
+        if attestation.get("context_tokens") != str(adapter.context_tokens):
+            raise RuntimeExecutionBlocked("LOCAL_VERIFIER_CONTEXT_TOKENS_MISMATCH")
+        if attestation.get("max_output_tokens") != str(adapter.max_output_tokens):
+            raise RuntimeExecutionBlocked("LOCAL_VERIFIER_MAX_OUTPUT_TOKENS_MISMATCH")
         if request.get("lf_adapter_source_sha256") and attestation.get("lf_adapter_source_sha256") != request["lf_adapter_source_sha256"]:
             raise RuntimeExecutionBlocked("LOCAL_VERIFIER_LF_ADAPTER_SOURCE_SHA_MISMATCH")
 
