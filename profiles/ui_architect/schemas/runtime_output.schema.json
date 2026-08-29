@@ -4,30 +4,6 @@
   "required": ["self_verdict"],
   "additionalProperties": false,
   "properties": {
-    "self_verdict": {
-      "type": "string",
-      "enum": [
-        "NEEDS_INPUT",
-        "BLOCKED",
-        "PASS_WITH_ASSUMPTIONS",
-        "PASS_TO_QUALITY_PACK_CANDIDATE",
-        "PASS_TO_QUALITY_PACK",
-        "PASS",
-        "NEEDS_ADJUSTMENT",
-        "RETURN_TO_WORKER_FOR_SELF_REPAIR",
-        "RETURN_TO_ORCHESTRATOR",
-        "BLOCK_PIPELINE"
-      ]
-    },
-    "blocked": {"type": "boolean"},
-    "missing_inputs": {"type": "array", "maxItems": 12, "items": {"type": "string"}},
-    "safe_assumptions_available": {"type": "boolean"},
-    "assumptions": {"type": "array", "maxItems": 12, "items": {"type": "string"}},
-    "question_to_orchestrator": {"type": "string"},
-    "pipeline_action": {
-      "type": "string",
-      "enum": ["RETURN_TO_ORCHESTRATOR", "BLOCK_PIPELINE", "CONTINUE_WITH_ASSUMPTIONS"]
-    },
     "worker": {"type": "string"},
     "output_type": {"type": "string", "enum": ["PRODUCTION_UI_SPEC"]},
     "deliverable_created": {
@@ -195,6 +171,30 @@
       "type": "object",
       "maxProperties": 24,
       "additionalProperties": {"type": "string"}
+    },
+    "self_verdict": {
+      "type": "string",
+      "enum": [
+        "NEEDS_INPUT",
+        "BLOCKED",
+        "PASS_WITH_ASSUMPTIONS",
+        "PASS_TO_QUALITY_PACK_CANDIDATE",
+        "PASS_TO_QUALITY_PACK",
+        "PASS",
+        "NEEDS_ADJUSTMENT",
+        "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+        "RETURN_TO_ORCHESTRATOR",
+        "BLOCK_PIPELINE"
+      ]
+    },
+    "blocked": {"type": "boolean"},
+    "missing_inputs": {"type": "array", "maxItems": 12, "items": {"type": "string"}},
+    "safe_assumptions_available": {"type": "boolean"},
+    "assumptions": {"type": "array", "maxItems": 12, "items": {"type": "string"}},
+    "question_to_orchestrator": {"type": "string"},
+    "pipeline_action": {
+      "type": "string",
+      "enum": ["RETURN_TO_ORCHESTRATOR", "BLOCK_PIPELINE", "CONTINUE_WITH_ASSUMPTIONS"]
     }
   }
 }
