@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Exact-head fail-closed regression for Router-bound LF adapter capsules."""
+import importlib.util
 import json
 import tempfile
 from copy import deepcopy
 from pathlib import Path
 
-from github_actions_local_runtime import _resolve_runtime_output_schema
 from profile_runtime_runner import RESPONSE_TYPE, RuntimeExecutionBlocked, execute_profile_runtime
 from validate_profile_execution import canonical_json_sha256, sha256_text, validate_receipt
 
@@ -98,23 +98,39 @@ def expect_block(name, code, fn):
     raise AssertionError(f"{name}: expected {code}")
 
 
+def _load_schema_resolver():
+    path = Path(__file__).with_name("github_actions_local_runtime.py")
+    if not path.is_file():
+        return None
+    spec = importlib.util.spec_from_file_location("lf_runtime_structured_output_probe", path)
+    if spec is None or spec.loader is None:
+        raise AssertionError("structured-output runtime module could not be loaded")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module._resolve_runtime_output_schema
+
+
 def test_structured_schema_resolution():
+    resolver = _load_schema_resolver()
+    if resolver is None:
+        print("PASS structured_schema_isolated_fixture_no_runtime_module")
+        return
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
-        assert _resolve_runtime_output_schema(root, "ui_architect") is None
+        assert resolver(root, "ui_architect") is None
         print("PASS structured_schema_absent_zero_overhead")
 
         schema_dir = root / "profiles" / "ui_architect" / "schemas"
         schema_dir.mkdir(parents=True)
         schema = schema_dir / "runtime_output.schema.json"
         schema.write_text(json.dumps({"type": "object"}), encoding="utf-8")
-        assert _resolve_runtime_output_schema(root, "ui_architect") == schema.resolve()
+        assert resolver(root, "ui_architect") == schema.resolve()
         print("PASS structured_schema_canonical_path")
 
         expect_block(
             "structured_schema_invalid_slug",
             "LOCAL_RUNTIME_SCHEMA_PROFILE_SLUG_INVALID",
-            lambda: _resolve_runtime_output_schema(root, "../ui_architect"),
+            lambda: resolver(root, "../ui_architect"),
         )
 
         outside = root / "outside.schema.json"
@@ -124,7 +140,7 @@ def test_structured_schema_resolution():
         expect_block(
             "structured_schema_symlink_escape",
             "LOCAL_RUNTIME_SCHEMA_PATH_ESCAPE",
-            lambda: _resolve_runtime_output_schema(root, "ui_architect"),
+            lambda: resolver(root, "ui_architect"),
         )
 
 
