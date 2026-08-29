@@ -57,6 +57,10 @@ Lote total: 13 resoluciones, 4 `operation_code` distintos, 8 cache hits, repetic
 
 Control BLOCKED: `Crear nuevamente la skill ACT-0052`, con `action_hint='SKILL_CREATE'`, resolvió `BLOCK_TARGET_ALREADY_EXISTS`; crudo 171 bytes, compacto 257 bytes y consumo final RAW.
 
+Segundo canario (`PERFIL-PRODUCT-DIRECTOR-LF`): 7 resoluciones, 2 `operation_code` distintos, 4 cache hits, repetición 0.5714, 53,874 bytes crudos y 13,677 bytes efectivos. Ahorro real: 74.61%. Resultado: 1 BLOCKED consumido RAW, 0 solo-enrutar, 8/8 campos verificados y rehidratación íntegra en las resoluciones compactas no bloqueadas.
+
+Gate de dos perfiles: PASS (`PERFIL-UI-ARCHITECT-LF` y `PERFIL-PRODUCT-DIRECTOR-LF`). La propuesta de promoción y cierre de backlog 85/86 queda condicionada al review y merge del PR del protocolo.
+
 ## 9.2 Helper SQL de resolución
 
 ```sql
