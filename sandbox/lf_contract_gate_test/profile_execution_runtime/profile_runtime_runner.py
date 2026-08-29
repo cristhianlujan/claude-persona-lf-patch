@@ -21,6 +21,7 @@ from validate_profile_execution import (
 REQUEST_TYPE = "PROFILE_RUNTIME_REQUEST_V1"
 RESPONSE_TYPE = "PROFILE_RUNTIME_RESPONSE_V1"
 RESULT_TYPE = "PROFILE_RUNTIME_RESULT_V1"
+MAX_LF_ADAPTER_CAPSULE_CHARS = 2000
 
 
 class RuntimeExecutionBlocked(RuntimeError):
@@ -107,6 +108,88 @@ def _validate_sources(
     return normalized, source_refs, source_sha256
 
 
+def _normalize_lf_adapter_resolution(value: Any) -> list[dict[str, str]]:
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        raise RuntimeExecutionBlocked("LF_ADAPTER_RESOLUTION_NOT_ARRAY")
+    normalized: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for item in value:
+        if not isinstance(item, dict):
+            raise RuntimeExecutionBlocked("LF_ADAPTER_RESOLUTION_ITEM_INVALID")
+        if set(item) != {"adapter_asset_code", "decision", "activation_reason"}:
+            raise RuntimeExecutionBlocked("LF_ADAPTER_RESOLUTION_KEYS_INVALID")
+        asset_code = item.get("adapter_asset_code")
+        decision = item.get("decision")
+        reason = item.get("activation_reason")
+        if not all(_nonempty_string(x) for x in (asset_code, decision, reason)):
+            raise RuntimeExecutionBlocked("LF_ADAPTER_RESOLUTION_VALUE_MISSING")
+        if decision not in {"APPLY", "SKIP"}:
+            raise RuntimeExecutionBlocked("LF_ADAPTER_RESOLUTION_DECISION_INVALID", str(decision))
+        if asset_code in seen:
+            raise RuntimeExecutionBlocked("LF_ADAPTER_RESOLUTION_DUPLICATE", str(asset_code))
+        seen.add(asset_code)
+        normalized.append({
+            "adapter_asset_code": asset_code,
+            "decision": decision,
+            "activation_reason": reason,
+        })
+    normalized.sort(key=lambda item: item["adapter_asset_code"])
+    return normalized
+
+
+def _normalize_lf_adapter_contexts(value: Any) -> list[dict[str, str]]:
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        raise RuntimeExecutionBlocked("LF_ADAPTER_CONTEXTS_NOT_ARRAY")
+    required = {
+        "adapter_asset_code", "adapter_code", "adapter_version", "activation_reason",
+        "source_ref", "source_sha256", "capsule_ref", "capsule_sha256", "capsule_content",
+    }
+    normalized: list[dict[str, str]] = []
+    seen_assets: set[str] = set()
+    seen_codes: set[str] = set()
+    for item in value:
+        if not isinstance(item, dict) or set(item) != required:
+            raise RuntimeExecutionBlocked("LF_ADAPTER_CONTEXT_INVALID")
+        if not all(_nonempty_string(item.get(key)) for key in required):
+            raise RuntimeExecutionBlocked("LF_ADAPTER_CONTEXT_VALUE_MISSING")
+        if not _is_sha256(item["source_sha256"]) or not _is_sha256(item["capsule_sha256"]):
+            raise RuntimeExecutionBlocked("LF_ADAPTER_CONTEXT_HASH_INVALID")
+        if sha256_text(item["capsule_content"]) != item["capsule_sha256"]:
+            raise RuntimeExecutionBlocked("LF_ADAPTER_CAPSULE_HASH_MISMATCH")
+        if len(item["capsule_content"]) > MAX_LF_ADAPTER_CAPSULE_CHARS:
+            raise RuntimeExecutionBlocked("LF_ADAPTER_CAPSULE_BUDGET_EXCEEDED", item["adapter_code"])
+        if item["adapter_asset_code"] in seen_assets or item["adapter_code"] in seen_codes:
+            raise RuntimeExecutionBlocked("LF_ADAPTER_CONTEXT_DUPLICATE", item["adapter_code"])
+        seen_assets.add(item["adapter_asset_code"])
+        seen_codes.add(item["adapter_code"])
+        normalized.append(dict(item))
+    normalized.sort(key=lambda item: item["adapter_asset_code"])
+    return normalized
+
+
+def _build_lf_adapter_invocations(
+    *, execution_id: str, contexts: list[dict[str, str]],
+) -> list[dict[str, str]]:
+    return [
+        {
+            "adapter_code": item["adapter_code"],
+            "adapter_version": item["adapter_version"],
+            "invocation_id": sha256_text(
+                f"{execution_id}|{item['adapter_asset_code']}|{item['capsule_sha256']}"
+            )[:24],
+            "activation_reason": item["activation_reason"],
+            "source_sha256": item["source_sha256"],
+            "capsule_sha256": item["capsule_sha256"],
+            "verdict": "APPLIED",
+        }
+        for item in contexts
+    ]
+
+
 def build_runtime_request(
     *,
     execution_id: str,
@@ -115,6 +198,8 @@ def build_runtime_request(
     profile_sources: list[dict[str, str]],
     input_literal: str,
     obligation_manifest: dict[str, Any] | None = None,
+    lf_adapter_resolution: list[dict[str, str]] | None = None,
+    lf_adapter_contexts: list[dict[str, str]] | None = None,
 ) -> dict[str, Any]:
     for name, value in (
         ("execution_id", execution_id),
@@ -127,6 +212,15 @@ def build_runtime_request(
         raise RuntimeExecutionBlocked("INPUT_LITERAL_MISSING")
 
     normalized_sources, source_refs, source_sha256 = _validate_sources(profile_sources)
+    normalized_resolution = _normalize_lf_adapter_resolution(lf_adapter_resolution)
+    normalized_contexts = _normalize_lf_adapter_contexts(lf_adapter_contexts)
+    applied_assets = {item["adapter_asset_code"] for item in normalized_contexts}
+    resolved_apply_assets = {
+        item["adapter_asset_code"] for item in normalized_resolution if item["decision"] == "APPLY"
+    }
+    if applied_assets != resolved_apply_assets:
+        raise RuntimeExecutionBlocked("LF_ADAPTER_CONTEXT_RESOLUTION_MISMATCH")
+
     input_sha = sha256_text(input_literal)
     request = {
         "request_type": REQUEST_TYPE,
@@ -137,6 +231,8 @@ def build_runtime_request(
         "profile_sources": normalized_sources,
         "profile_source_refs": source_refs,
         "profile_source_sha256": source_sha256,
+        "lf_adapter_resolution": normalized_resolution,
+        "lf_adapter_contexts": normalized_contexts,
         "input_literal": input_literal,
         "input_sha256": input_sha,
     }
@@ -270,6 +366,8 @@ def execute_profile_runtime(
     attestation_verifier: RuntimeAttestationVerifier,
     allow_test_doubles: bool = False,
     obligation_manifest: dict[str, Any] | None = None,
+    lf_adapter_resolution: list[dict[str, str]] | None = None,
+    lf_adapter_contexts: list[dict[str, str]] | None = None,
 ) -> dict[str, Any]:
     _validate_adapter(adapter, allow_test_doubles=allow_test_doubles)
     _validate_verifier(attestation_verifier, allow_test_doubles=allow_test_doubles)
@@ -280,6 +378,8 @@ def execute_profile_runtime(
         profile_sources=profile_sources,
         input_literal=input_literal,
         obligation_manifest=obligation_manifest,
+        lf_adapter_resolution=lf_adapter_resolution,
+        lf_adapter_contexts=lf_adapter_contexts,
     )
 
     try:
@@ -317,6 +417,10 @@ def execute_profile_runtime(
     runtime_attestation["verified_request_sha256"] = verification["request_sha256"]
     runtime_attestation["verified_response_sha256"] = verification["response_sha256"]
 
+    lf_adapter_invocations = _build_lf_adapter_invocations(
+        execution_id=execution_id,
+        contexts=request["lf_adapter_contexts"],
+    )
     receipt = build_receipt(
         execution_id=execution_id,
         profile_code=profile_code,
@@ -327,6 +431,8 @@ def execute_profile_runtime(
         raw_output=raw_output,
         runtime_attestation=runtime_attestation,
         obligation_manifest_sha256=request.get("obligation_manifest_sha256"),
+        lf_adapter_resolution=request["lf_adapter_resolution"],
+        lf_adapter_invocations=lf_adapter_invocations,
     )
 
     return {
