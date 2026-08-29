@@ -1,0 +1,21 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_ADAPTER_LF",
+  "execution_id": "EXEC-ACTUALIZACION-ADAPTER-BRAND-MOCKUP-20260828-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "5508e21d1611054ec3fc50f3e3687badbc9545f772ab0083abca9f27532ed4e0",
+  "judge_sha": "1f11fc23544e7acfc1f18c2cbd2c26a06736606fd072382ae3a5f7615d92b9ab",
+  "source_sha_list": [
+    "ea72fd301c2fc28e44dae021459dc04ff7299aad",
+    "f1beb4222d8143dd5f5044d9745c493998e29f64"
+  ],
+  "target_paths": [
+    "adapters/project_brand_mockup_render_lf/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-29T03:12:00Z",
+  "notes": "PASS_SANDBOX candidate-source receipt for Project Brand/Mockup Adapter assurance revision v2. Canonical execution binding and pre-write steps 0-60 are recorded in Supabase. This receipt covers source/contract hardening only: structured binding schema, deterministic validator, project-lineage and token-contamination checks, Router-bound LF invocation receipt, adversarial/holdout cases and compact runtime capsule. It does not claim central runtime dispatch, and does not authorize runtime, production, VALIDATED, automatic promotion or merge. Execution remains IN_PROGRESS until exact-head CI/readback and later central runtime integration evidence are complete."
+}
