@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "render_binding.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_code",
+    "output_target",
+    "canonical_refs",
+    "resolved_tokens",
+    "screen_frame_policy",
+    "mockup_template",
+    "qa_checks",
+    "blockers"
+  ],
+  "properties": {
+    "project_code": {"type": "string", "minLength": 1},
+    "output_target": {"enum": ["PDF", "PPTX", "HTML", "BRANDBOOK"]},
+    "canonical_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "resolved_tokens": {"type": "object"},
+    "screen_frame_policy": {"type": "object"},
+    "mockup_template": {"type": ["string", "null"]},
+    "qa_checks": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "blockers": {"type": "array", "items": {"type": "string", "minLength": 1}}
+  }
+}
