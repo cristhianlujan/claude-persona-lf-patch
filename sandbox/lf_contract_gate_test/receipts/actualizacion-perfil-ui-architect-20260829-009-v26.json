@@ -1,0 +1,22 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260829-009",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "4264f3697ab019a904034e65643bf6f15eb8daa3",
+    "cd6299249407416f488a3015680ca3983a81ba5b",
+    "bd5508872ff19e9946ba8a8fe7d0eb94ffa7f5d2"
+  ],
+  "target_paths": [
+    "profiles/ui_architect/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-29T11:41:00Z",
+  "notes": "PASS_SANDBOX candidate-source receipt for V26 under execution 009. Scope is only root property ordering in profiles/ui_architect/schemas/runtime_output.schema.json to remove the constrained-decoding collision between the production profile root order and llama.cpp JSON-schema grammar. No field, type, enum, required key, profile identity, Router binding, adapter identity, model, invocation count, domain authority, VALIDATED state, production activation, runtime promotion, or automatic promotion changes are claimed. Fresh exact-head CI and post-merge six-case RAW A/B canaries remain mandatory before behavioral closure or any Clientes profile work."
+}
