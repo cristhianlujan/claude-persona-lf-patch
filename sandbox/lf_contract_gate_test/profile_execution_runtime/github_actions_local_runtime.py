@@ -67,10 +67,7 @@ def _require_zero_cost_runner() -> dict[str, str]:
     }
     for key, value in expected.items():
         if observed[key] != value:
-            raise RuntimeExecutionBlocked(
-                "ZERO_COST_GITHUB_RUNNER_PRECONDITION_FAILED",
-                f"{key}={observed[key]!r}",
-            )
+            raise RuntimeExecutionBlocked("ZERO_COST_GITHUB_RUNNER_PRECONDITION_FAILED", f"{key}={observed[key]!r}")
     return observed
 
 
@@ -93,7 +90,7 @@ def _render_profile_instructions(request: dict[str, Any]) -> str:
         "Apply them to the user's literal input and attached image, if present.",
         "Return the profile's direct output only.",
         "Do not reconstruct an expected answer or discuss the runtime wrapper.",
-        "Do not invent facts absent from the canonical sources, literal input, or image.",
+        "Do not invent facts absent from the canonical sources, literal input, image, or Router-bound adapter capsules.",
         "",
     ]
     for source in request["profile_sources"]:
@@ -103,6 +100,22 @@ def _render_profile_instructions(request: dict[str, Any]) -> str:
             f"--- END CANONICAL PROFILE SOURCE: {source['ref']} ---",
             "",
         ])
+
+    adapter_sources = request.get("lf_adapter_sources") or []
+    if adapter_sources:
+        parts.extend([
+            "The LF Router resolved the following adapter capsules for this SAME model execution.",
+            "They constrain how the profile decision is applied; they do not replace or expand profile authority.",
+            "Apply each capsule in this execution only. Never call, simulate, or delegate to a separate adapter worker or second model call.",
+            "",
+        ])
+        for source in adapter_sources:
+            parts.extend([
+                f"--- BEGIN ROUTER-BOUND LF ADAPTER CAPSULE: {source['adapter_code']} | {source['ref']} ---",
+                source["content"],
+                f"--- END ROUTER-BOUND LF ADAPTER CAPSULE: {source['adapter_code']} | {source['ref']} ---",
+                "",
+            ])
     return "\n".join(parts).rstrip()
 
 
@@ -169,8 +182,7 @@ class GitHubHostedLlamaCppAdapter:
             raise RuntimeExecutionBlocked("LOCAL_RUNTIME_TIMEOUT") from exc
         if completed.returncode != 0:
             detail = completed.stderr[-1500:].replace("\n", " ").strip()
-            raise RuntimeExecutionBlocked("LOCAL_RUNTIME_PROCESS_FAILED",
-                                          f"rc={completed.returncode} stderr={detail}")
+            raise RuntimeExecutionBlocked("LOCAL_RUNTIME_PROCESS_FAILED", f"rc={completed.returncode} stderr={detail}")
         if not output_file.is_file():
             raise RuntimeExecutionBlocked("LOCAL_RUNTIME_OUTPUT_FILE_MISSING")
         raw_text = output_file.read_text(encoding="utf-8").strip()
@@ -198,12 +210,14 @@ class GitHubHostedLlamaCppAdapter:
             "system_prompt_sha256": _sha256_file(system_file),
             "literal_input_file_sha256": _sha256_file(input_file),
             "raw_output_file_sha256": _sha256_file(output_file),
+            "lf_adapter_invocation_count": str(len(request.get("lf_adapter_sources") or [])),
         }
+        if request.get("lf_adapter_source_sha256"):
+            attestation["lf_adapter_source_sha256"] = request["lf_adapter_source_sha256"]
         if self.image_path is not None:
             attestation["input_image_sha256"] = self.image_sha256
             attestation["input_image_size_bytes"] = str(self.image_path.stat().st_size)
-        return {"response_type": RESPONSE_TYPE, "raw_output": raw_text,
-                "runtime_attestation": attestation}
+        return {"response_type": RESPONSE_TYPE, "raw_output": raw_text, "runtime_attestation": attestation}
 
 
 class GitHubHostedLlamaCppVerifier:
@@ -257,24 +271,25 @@ class GitHubHostedLlamaCppVerifier:
             raise RuntimeExecutionBlocked("LOCAL_VERIFIER_RUNNER_LABEL_MISMATCH")
         if attestation.get("github_run_id") != os.environ.get("GITHUB_RUN_ID"):
             raise RuntimeExecutionBlocked("LOCAL_VERIFIER_RUN_ID_MISMATCH")
+        expected_adapter_count = str(len(request.get("lf_adapter_sources") or []))
+        if attestation.get("lf_adapter_invocation_count") != expected_adapter_count:
+            raise RuntimeExecutionBlocked("LOCAL_VERIFIER_LF_ADAPTER_COUNT_MISMATCH")
+        if request.get("lf_adapter_source_sha256") and attestation.get("lf_adapter_source_sha256") != request["lf_adapter_source_sha256"]:
+            raise RuntimeExecutionBlocked("LOCAL_VERIFIER_LF_ADAPTER_SOURCE_SHA_MISMATCH")
         if self.expected_image_path is not None:
-            if _sha256_file(self.expected_image_path) != self.expected_image_sha256:
-                raise RuntimeExecutionBlocked("LOCAL_VERIFIER_IMAGE_SHA256_MISMATCH")
+            if not self.expected_image_path.is_file() or _sha256_file(self.expected_image_path) != self.expected_image_sha256:
+                raise RuntimeExecutionBlocked("LOCAL_VERIFIER_IMAGE_MISMATCH")
             if attestation.get("input_image_sha256") != self.expected_image_sha256:
-                raise RuntimeExecutionBlocked("LOCAL_VERIFIER_ATTESTED_IMAGE_SHA256_MISMATCH")
-        elif attestation.get("input_image_sha256") is not None:
-            raise RuntimeExecutionBlocked("LOCAL_VERIFIER_UNEXPECTED_IMAGE_ATTESTATION")
-
-        evidence = {
-            "provider": attestation.get("provider"), "model_id": attestation.get("model_id"),
-            "request_sha256": request["request_sha256"], "github_run_id": os.environ["GITHUB_RUN_ID"],
-            "github_sha": os.getenv("GITHUB_SHA", ""), "repository_visibility": runner["visibility"],
-            "runner_label": runner["runner_label"], "llama_release": LLAMA_RELEASE,
-            "llama_source_commit": LLAMA_SOURCE_COMMIT, **observed_hashes,
-            "literal_input_sha256": _sha256_file(files["input"]),
-            "input_image_sha256": self.expected_image_sha256,
+                raise RuntimeExecutionBlocked("LOCAL_VERIFIER_IMAGE_ATTESTATION_MISMATCH")
+        response_sha256 = canonical_json_sha256(response)
+        evidence_sha256 = sha256_text("|".join([
+            self.verifier_id, request["request_sha256"], response_sha256,
+            observed_hashes["system_prompt_sha256"], observed_hashes["raw_output_file_sha256"],
+        ]))
+        return {
+            "verified": True,
+            "verifier_id": self.verifier_id,
+            "request_sha256": request["request_sha256"],
+            "response_sha256": response_sha256,
+            "evidence_sha256": evidence_sha256,
         }
-        return {"verified": True, "verifier_id": self.verifier_id,
-                "request_sha256": request["request_sha256"],
-                "response_sha256": canonical_json_sha256(response),
-                "evidence_sha256": canonical_json_sha256(evidence)}
