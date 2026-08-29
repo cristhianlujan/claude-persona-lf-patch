@@ -1,0 +1,23 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260829-008",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "59bb501f3aa1c09ed1f9ad14e255f23baba6729b",
+    "39c7dd64426083b62cf5e2a3aec0b286a0b984ed",
+    "ffec66f63ab5eb515d069a5d59925ba0b02c901caeab1a3568b93b79293524ed",
+    "5c07f9de298d0622958baee1a56723f18cac2d85"
+  ],
+  "target_paths": [
+    "profiles/ui_architect/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-29T06:50:00Z",
+  "notes": "PASS_SANDBOX candidate-source receipt for execution 008. Baseline live A/B requests exposed a cross-task contamination defect: unrelated CREATE_NEW requests were captured by the V16 duplicate-remediation literal or authoritative-survivor short-circuit. Candidate patch classifies CREATE_NEW before existing-screen special cases, scopes V16 and survivor resolution to explicit REMEDIATE_EXISTING duplicate cases, preserves supplied functional requirements, and forbids fabricated removals, URLs and material claims. Existing V16 exact behavior and unresolved duplicate fail-closed semantics are preserved. This receipt authorizes sandbox candidate validation only; it does not claim live behavioral PASS, VALIDATED, production, runtime enablement, automatic promotion, or final closure. Execution 008 remains IN_PROGRESS until exact-head CI, merge/readback and fresh post-merge live canaries pass."
+}
