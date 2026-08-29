@@ -17,6 +17,29 @@ TABLE = "private.lf_profile_runtime_queue_v1"
 MAX_LF_ADAPTERS = 4
 
 
+def _assistant_completion(raw_output: object) -> str:
+    if not isinstance(raw_output, str):
+        return ""
+    text = raw_output.strip()
+    if not text:
+        return ""
+    if "Assistant:" in text:
+        return text.rsplit("Assistant:", 1)[1].strip()
+    return text
+
+
+def _enforce_nonempty_completion(result: dict) -> dict:
+    if result.get("status") != "SUCCEEDED":
+        return result
+    if _assistant_completion(result.get("raw_output")):
+        return result
+    result = dict(result)
+    result["status"] = "BLOCKED"
+    result["error_code"] = "LOCAL_RUNTIME_ASSISTANT_COMPLETION_EMPTY"
+    result["error_detail"] = "llama.cpp returned success but no assistant completion after the rendered prompt"
+    return result
+
+
 def _connect() -> psycopg.Connection:
     password = os.environ.get("LF_SUPABASE_DB_PASSWORD", "").strip()
     project = os.environ.get("SUPABASE_PROJECT_ID", "mhwmirqcgxxukpctffuv").strip()
@@ -158,6 +181,7 @@ def main() -> int:
                     "request_id": args.request_id, "error_code": "QUEUE_RESULT_FILE_MISSING",
                     "error_detail": f"executor_rc={completed.returncode}",
                 }
+            result = _enforce_nonempty_completion(result)
             _persist(conn, args.request_id, result)
             print(f"LF_PROFILE_RUNTIME_REQUEST_ID={args.request_id}")
             print(f"LF_PROFILE_RUNTIME_FINAL_STATUS={result.get('status')}")

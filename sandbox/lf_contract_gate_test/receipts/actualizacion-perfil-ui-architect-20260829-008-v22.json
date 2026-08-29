@@ -1,0 +1,22 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260829-008",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "13565209c52705bb92742c7b3936f5b4713fd318",
+    "bf4d9d00505551b278b7d1704c2732fa781a49de"
+  ],
+  "target_paths": [
+    "profiles/ui_architect/**",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-29T09:30:00Z",
+  "notes": "PASS_SANDBOX candidate-source receipt for V22 under execution 008. Fresh V21 post-merge RAW canaries verified that the V20 runtime-root wiring fix correctly materialized and attested runtime_output.schema.json, but all four constrained runs returned exit code 0 with an output transcript ending at Assistant: and no assistant completion. V22 narrows the grammar layer to a bounded single-object structural schema, leaves semantic completeness to the existing deterministic validator, and adds an explicit queue completion gate so a zero-content assistant response can never persist as SUCCEEDED. The prior contract run on the V22 candidate reached PROFILE_RUNTIME_GATE_TESTS_PASS 23/23 and LF_ADAPTER_BINDING_TESTS_PASS 14/14 before governance correctly blocked only because this receipt was absent. This receipt does not claim live behavioral PASS, VALIDATED, production promotion, automatic promotion, or execution closure; fresh exact-head CI and post-merge four-case RAW canaries remain mandatory."
+}
