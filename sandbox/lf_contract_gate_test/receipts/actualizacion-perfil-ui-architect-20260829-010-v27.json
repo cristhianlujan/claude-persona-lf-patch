@@ -1,0 +1,21 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260829-010",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "be6c0f8a320c5cdcfa242ee775ba769745eb82df",
+    "bd5508872ff19e9946ba8a8fe7d0eb94ffa7f5d2"
+  ],
+  "target_paths": [
+    "profiles/ui_architect/schemas/runtime_output.schema.json"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-29T12:40:00Z",
+  "notes": "PASS_SANDBOX candidate for V27. Fresh V21-V26 evidence isolates profiles/ui_architect/schemas/runtime_output.schema.json constrained decoding (-jf) as the common cause of six-case assistant-empty behavior: pre-schema runtime generated content, while every schema-enabled generation ended at Assistant with llama.cpp rc=0. V27 removes only the optional runtime grammar trigger for ui_architect; the canonical SKILL contract and deterministic validate_ui_architect_output.py remain authoritative for structure, semantics, authority and fail-closed validation. One model call, Router binding, LF adapter, pinned model/runtime, context/output budgets and no-production posture are unchanged. Exact-head CI and fresh post-merge six-case A/B remain mandatory before closure."
+}
