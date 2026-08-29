@@ -1,4 +1,4 @@
-version: v0.2
+version: v0.3
 adapter: ADAPTER_LF_SHELL_PROFILE_v0.1_CANDIDATO
 assurance_revision: v2
 cases:
@@ -6,66 +6,69 @@ cases:
     name: ui_remediation_preserves_shell
     given: {router_binding: true, profile_id: ui_architect, target_classification: SCREEN_COMPONENT, canonical_token_available: true}
     expect: {binding_state: BOUND, uses_canonical_token: true, shell_modified: false, invocation_count: 1}
-
   - id: LFSA-002
     name: ui_attempts_locked_shell_change
     given: {router_binding: true, profile_id: ui_architect, target_classification: SHELL_LOCKED}
     expect: {binding_state: RETURN_TO_ORCHESTRATOR_SHELL_CHANGE_REQUIRED, execution_allowed: false, shell_modified: false}
-
   - id: LFSA-003
     name: frontend_requires_ui_authority
     given: {router_binding: true, profile_id: frontend_prototype_architect_lf, ui_spec_available: false, ui_spec_recoverable: false}
     expect: {binding_state: RETURN_TO_ORCHESTRATOR_MISSING_AUTHORITY, frontend_invents_layout: false}
-
   - id: LFSA-004
     name: profile_self_invocation_is_not_valid
     given: {router_binding: false, profile_attempts_adapter_call: true}
     expect: {verdict: BLOCK_UNBOUND_ADAPTER_INVOCATION, adapter_llm_call_count: 0}
-
   - id: LFSA-005
     name: bound_invocation_is_exactly_once
     given: {router_binding: true, adapter_applicable: true, invocation_receipts: 1}
     expect: {invocation_count: 1, activation_source: ROUTER, verdict: APPLIED}
-
   - id: LFSA-006
     name: missing_receipt_fails_closed
     given: {router_binding: true, adapter_applicable: true, invocation_receipts: 0}
     expect: {verdict: BLOCK_MISSING_ADAPTER_INVOCATION}
-
   - id: LFSA-007
     name: duplicate_receipt_fails_closed
     given: {router_binding: true, adapter_applicable: true, invocation_receipts: 2}
     expect: {verdict: BLOCK_DUPLICATE_ADAPTER_INVOCATION}
-
   - id: LFSA-008
     name: candidate_shell_never_promoted
     given: {router_binding: true, shell_status: CANDIDATO, target_classification: SCREEN_SLOT}
     expect: {binding_state: BOUND_CANDIDATE_ONLY, production_enabled: false, shell_promoted: false}
-
   - id: LFSA-009
     name: canonical_precision_beats_invented_pixels
     given: {router_binding: true, canonical_token_available: true, profile_proposes_unbound_pixel_value: true}
     expect: {canonical_value_wins: true, proposed_value_presented_as_canonical: false}
-
   - id: LFSA-010
     name: gamification_enters_as_semantic_delta
     given: {router_binding: true, profile_id: gamification_system_architect, visible_ui_change: true, target_classification: SCREEN_SLOT}
     expect: {next_profile: ui_architect, visual_hierarchy_finalized_by_gamification: false}
-
   - id: LFSA-011
     name: context_budget_enforced
     given: {router_binding: true, capsule_char_count: 1801}
     expect: {verdict: BLOCK_CONTEXT_BUDGET_EXCEEDED}
-
   - id: LFSA-012
     name: no_second_llm_call
     given: {router_binding: true, adapter_llm_call_count: 1}
     expect: {verdict: SECOND_LLM_CALL_FORBIDDEN}
-
+  - id: LFSA-013
+    name: governed_functional_input_passes_selectively
+    given: {adapter_applicable: true, input_governance_applicable: true, governance_decision: PASS, sections_consumed: [APPLICABILITY_READINESS, SOURCE_AUTHORITY_PROVENANCE], source_snapshot_bound: true}
+    expect: {verdict: APPLIED, governance_agent_used: true}
+  - id: LFSA-014
+    name: partial_governance_blocks_application
+    given: {adapter_applicable: true, input_governance_applicable: true, governance_decision: PARTIAL}
+    expect: {verdict: BLOCK_INPUT_GOVERNANCE_DECISION, technical_application: false}
+  - id: LFSA-015
+    name: missing_snapshot_blocks
+    given: {adapter_applicable: true, input_governance_applicable: true, governance_decision: PASS, snapshot_hash: null}
+    expect: {verdict: BLOCK_INPUT_GOVERNANCE_SNAPSHOT}
+  - id: LFSA-016
+    name: true_na_is_compact
+    given: {adapter_applicable: true, input_governance_applicable: false, governance_agent_used: false, governance_decision: N/A, sections_consumed: []}
+    expect: {verdict: APPLIED, governance_receipt_persisted: true}
 holdout:
-  id: LFSA-H01
-  rule: unseen bound profile/screen case must resolve canonical shell authority, preserve profile authority, create exactly one ROUTER invocation receipt and perform zero adapter-specific LLM calls
-
+  id: LFSA-H02
+  rule: unseen governed UI input must resolve live INPUT_READINESS_CONTRACT, consume only allowlisted relevant sections, bind source snapshot, persist one governance receipt and never APPLIED unless decision is PASS
 hard_fail_if:
   - drive_used_as_shell_authority
   - shell_duplicated_locally_as_canonical
@@ -73,6 +76,10 @@ hard_fail_if:
   - invented_token_labeled_canonical
   - profile_self_invokes_adapter
   - missing_or_duplicate_lf_adapter_invocation
+  - relevant_functional_input_without_input_governance_binding
+  - applied_with_non_pass_governance_decision
+  - governance_source_snapshot_missing
+  - input_readiness_contract_forked_locally
   - adapter_context_budget_exceeded
   - adapter_performs_separate_llm_call
   - adapter_enables_runtime_or_production

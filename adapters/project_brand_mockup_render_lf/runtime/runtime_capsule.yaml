@@ -3,18 +3,19 @@ assurance_revision: v2
 activation: ROUTER_BOUND_ONLY
 max_chars: 1600
 rules:
-  - resolve project and design_system from current governed source
-  - use project route/theme/component/color/spacing/typography/responsive tokens when applicable
-  - read screen_visual_specs for screen-based deliverables
-  - never mix tokens between projects
+  - resolve project/design_system and current governed visual sources
+  - relevant functional input => resolve live INPUT_READINESS_CONTRACT and consume only required governance sections
+  - governance decision PASS is required before technical application; PARTIAL/NEGATIVE_CONFIRMED must block or return
+  - persist governance_receipt with version, sections, source_refs, snapshot_hash, decision, gap_or_na and timestamp
+  - use project tokens/screen_visual_specs when applicable and never mix tokens between projects
   - never present fallback or generic mockup as canonical project brand
-  - preserve Product/UI authority; adapter only normalizes visual sources and render constraints
-  - require app/device frame when the deliverable represents app screens
-  - require QA/readback for brand, screen state, frame and source lineage
-  - exactly one ROUTER-bound lf_adapter_invocation is required when applicable
-  - never perform a separate LLM call for the adapter
+  - preserve Product/UI authority; adapter only normalizes visual sources/render constraints
+  - require app/device frame plus QA/readback when materially applicable
+  - require exactly one ROUTER-bound lf_adapter_invocation and never fork/ad-hoc input governance
+  - never perform a separate adapter-specific LLM call or enable runtime/production/promotion
 fail_closed:
   missing_receipt: BLOCK_MISSING_ADAPTER_INVOCATION
   duplicate_receipt: BLOCK_DUPLICATE_ADAPTER_INVOCATION
   unbound_call: BLOCK_UNBOUND_ADAPTER_INVOCATION
+  input_governance: BLOCK_INPUT_GOVERNANCE
   context_budget: BLOCK_CONTEXT_BUDGET_EXCEEDED

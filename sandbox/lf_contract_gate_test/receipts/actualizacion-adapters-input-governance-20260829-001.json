@@ -1,0 +1,24 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_ADAPTER_INPUT_GOVERNANCE",
+  "execution_id": "EXEC-ADAPTER-INPUT-GOVERNANCE-20260829-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "5508e21d1611054ec3fc50f3e3687badbc9545f772ab0083abca9f27532ed4e0",
+  "judge_sha": "62888829f5f3be97edde291421f2e2bacb1fa61bc0d15bb2683e7ef483550900",
+  "source_sha_list": [
+    "d508ec27cdf629467ad798bdb637536f301c44cf549528d3a7e627428c345058",
+    "fffcad5ce6d7fc722091195e2d2829859d64f8a145d3a35c7d911d0fcd79d3f8",
+    "d8cc037c3d46d61ad08a7caaaac8fbc9f58f2e12"
+  ],
+  "target_paths": [
+    "gobernanza/contratos/ADAPTER_INPUT_GOVERNANCE_BINDING_v1.md",
+    "adapters/lf_shell_profile_adapter/**",
+    "adapters/project_brand_mockup_render_lf/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-29T05:29:11Z",
+  "notes": "PASS_SANDBOX for the candidate adapter input-governance binding. The handoff source was hashed locally; current INPUT_READINESS_CONTRACT revision 5.12 and snapshot were read back from Supabase before editing; repository base is main@d8cc037. Scope adds one canonical binding contract plus selective references, compact runtime rules, deterministic governance_receipt enforcement and adversarial evals for both GitHub-versioned adapters. No runtime/production enablement, no promotion and no merge are claimed."
+}

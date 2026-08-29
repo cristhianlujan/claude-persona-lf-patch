@@ -1,4 +1,4 @@
-version: v0.2
+version: v0.3
 adapter: ADAPTER_PROJECT_BRAND_MOCKUP_RENDER_LF
 assurance_revision: v2
 cases:
@@ -46,14 +46,32 @@ cases:
     name: visual_qa_required
     given: {render_complete: true, qa_readback_present: false}
     expect: {verdict: RETURN_TO_WORKER}
-
+  - id: PBMA-012
+    name: governed_visual_input_passes_selectively
+    given: {adapter_applicable: true, input_governance_applicable: true, governance_decision: PASS, sections_consumed: [SOURCE_AUTHORITY_PROVENANCE, FRESHNESS_INVALIDATION], source_snapshot_bound: true}
+    expect: {verdict: APPLIED, governance_agent_used: true}
+  - id: PBMA-013
+    name: negative_requirement_blocks_render
+    given: {adapter_applicable: true, input_governance_applicable: true, governance_decision: NEGATIVE_CONFIRMED, sections_consumed: [NEGATIVE_REQUIREMENTS]}
+    expect: {verdict: BLOCK_INPUT_GOVERNANCE_DECISION, render_applied: false}
+  - id: PBMA-014
+    name: missing_governance_receipt_blocks
+    given: {adapter_applicable: true, input_governance_applicable: true, governance_receipt: null}
+    expect: {verdict: BLOCK_INPUT_GOVERNANCE_RECEIPT}
+  - id: PBMA-015
+    name: true_na_is_compact
+    given: {adapter_applicable: true, input_governance_applicable: false, governance_agent_used: false, governance_decision: N/A, sections_consumed: []}
+    expect: {verdict: APPLIED, governance_receipt_persisted: true}
 holdout:
-  id: PBMA-H01
-  rule: unseen branded screen deliverable must bind one project only, preserve source lineage, use exactly one Router invocation receipt, stay inside context budget and perform zero adapter-specific LLM calls
-
+  id: PBMA-H02
+  rule: unseen governed visual deliverable must resolve live INPUT_READINESS_CONTRACT, consume only allowlisted relevant sections, bind source snapshot, persist governance receipt and never APPLIED unless decision is PASS
 hard_fail_if:
   - profile_or_user_invokes_adapter_without_router_binding
   - missing_or_duplicate_lf_adapter_invocation
+  - relevant_functional_input_without_input_governance_binding
+  - applied_with_non_pass_governance_decision
+  - governance_source_snapshot_missing
+  - input_readiness_contract_forked_locally
   - cross_project_token_contamination
   - fallback_presented_as_canonical
   - context_budget_exceeded

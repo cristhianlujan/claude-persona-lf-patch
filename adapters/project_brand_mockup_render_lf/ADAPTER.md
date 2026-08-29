@@ -24,9 +24,16 @@ Aplica a entregables con pantallas, onboarding, journey UX, dashboard, mockups, 
 Una solicitud directa no es una invocación. La invocación válida debe ser resuelta por Router para el proyecto/entregable y registrada exactamente una vez.
 
 ## Ruta v2
-`request -> ACT-0001 Router -> resolve project binding -> resolve design_system/tokens/screen specs -> load compact capsule in SAME worker execution -> produce project_brand_mockup_binding -> validate -> record lf_adapter_invocation -> render -> QA/readback`
+`request -> ACT-0001 Router -> resolve project binding -> input governance preflight -> resolve design_system/tokens/screen specs -> load compact capsule in SAME worker execution -> produce project_brand_mockup_binding -> validate -> record lf_adapter_invocation -> render -> QA/readback`
 
-No ejecutar una llamada LLM separada para el adapter.
+No ejecutar una llamada LLM separada propia del adapter.
+
+## Binding de gobernanza de inputs
+Referencia única: `gobernanza/contratos/ADAPTER_INPUT_GOVERNANCE_BINDING_v1.md`.
+
+Cuando el input incluye requisitos funcionales, fuente/autoridad, freshness, requisitos negativos, conflictos/precedencia o readiness, resolver la revisión vigente de `INPUT_READINESS_CONTRACT` y consumir solo las secciones necesarias entre `APPLICABILITY_READINESS`, `SOURCE_AUTHORITY_PROVENANCE`, `FRESHNESS_INVALIDATION`, `NEGATIVE_REQUIREMENTS` y `CONFLICT_PRECEDENCE`.
+
+Persistir `governance_receipt`. Solo `decision=PASS` permite aplicar la normalización/render técnico. `PARTIAL` o `NEGATIVE_CONFIRMED` bloquean/retornan con razón gobernada. `N/A` solo es válido cuando `input_governance_applicable=false`. No copiar ni forkar la lógica del agente dentro del adapter.
 
 ## Precedencia de autoridad
 1. proyecto/producto/flow/screen resueltos en fuente operativa;
@@ -46,6 +53,7 @@ Nunca mezclar tokens entre proyectos.
 - `invocation_id`
 - `product_code`, `flow_code`, `screen_id` cuando apliquen
 - `upstream_refs`
+- `input_governance_applicable`
 
 ## Salida obligatoria
 Emitir `project_brand_mockup_binding` conforme a `schemas/project_brand_mockup_binding.schema.json` con:
@@ -58,12 +66,12 @@ Emitir `project_brand_mockup_binding` conforme a `schemas/project_brand_mockup_b
 - blockers;
 - handoff.
 
-Cuando aplica, registrar exactamente un `lf_adapter_invocation` dentro del envelope validado por `validators/validate_project_brand_mockup_adapter.py`.
+Cuando aplica, registrar exactamente un `lf_adapter_invocation` y un `governance_receipt` —incluido N/A gobernado cuando corresponda— dentro del envelope validado por `validators/validate_project_brand_mockup_adapter.py`.
 
 ## Contrato de invocación
 - `activation_source=ROUTER` obligatorio;
 - binding Router obligatorio;
-- exactamente un receipt cuando aplica;
+- exactamente un receipt LF cuando aplica;
 - `BLOCK_MISSING_ADAPTER_INVOCATION` si falta;
 - `BLOCK_DUPLICATE_ADAPTER_INVOCATION` si se duplica;
 - `BLOCK_UNBOUND_ADAPTER_INVOCATION` ante llamada suelta;
@@ -85,8 +93,11 @@ Bloquear si:
 - una pantalla se representa solo como tabla cuando se requiere mockup;
 - falta QA/readback visual material;
 - falta o se duplica la invocación gobernada;
+- input funcional relevante carece de governance binding/receipt;
+- se intenta aplicar con decisión de gobernanza distinta de PASS o sin snapshot/source refs verificables;
+- se forkea `INPUT_READINESS_CONTRACT` o se usa un agente ad hoc;
 - la cápsula excede presupuesto;
-- el adapter intenta una segunda llamada LLM;
+- el adapter intenta una segunda llamada LLM propia;
 - se declara producción, runtime habilitado, VALIDATED o promoción automática.
 
 ## Modos de salida
@@ -98,6 +109,7 @@ Bloquear si:
 - `BLOCK_MISSING_ADAPTER_INVOCATION`
 - `BLOCK_DUPLICATE_ADAPTER_INVOCATION`
 - `BLOCK_UNBOUND_ADAPTER_INVOCATION`
+- `BLOCK_INPUT_GOVERNANCE`
 - `BLOCK_CONTEXT_BUDGET_EXCEEDED`
 
 ## Validación
