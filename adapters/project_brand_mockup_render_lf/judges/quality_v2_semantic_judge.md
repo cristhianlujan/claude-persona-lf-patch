@@ -1,0 +1,3 @@
+# Brand Adapter Quality V2 Semantic Judge
+
+PASS only if governed project/design authority is used, templates never override it, Product/UI semantics remain upstream-owned, no canonical visual values are invented, source conflicts/missing authority are surfaced, QA proves provenance/frame integrity, exactly one LF invocation identity is present, and the compact capsule requires no separate model call. Fixtures do not prove live runtime behavior.
