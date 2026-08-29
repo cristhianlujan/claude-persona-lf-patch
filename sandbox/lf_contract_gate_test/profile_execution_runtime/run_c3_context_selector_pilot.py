@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import json, re, shutil, time
+import json, re, time
 from pathlib import Path
 from github_actions_local_runtime import GitHubHostedLlamaCppAdapter, GitHubHostedLlamaCppVerifier
 from profile_runtime_runner import execute_profile_runtime
 
 ROOT = Path(__file__).resolve().parents[3]
 SKILL = ROOT / 'profiles/ui_architect/SKILL.md'
-CANONICAL_SCHEMA = ROOT / 'profiles/ui_architect/schemas/ui_production_spec.schema.json'
-RUNTIME_SCHEMA = ROOT / 'profiles/ui_architect/schemas/runtime_output.schema.json'
 INPUT = '''Define una nueva pantalla de oferta de deuda.
 
 Datos autorizados:
@@ -23,6 +21,16 @@ Especialidades activas: financial UX y trust clarity.
 
 Conserva todos los requisitos suministrados.
 No inventes información financiera, legal o de elegibilidad no proporcionada.'''
+
+OUTPUT_GUARD = '''
+RUNTIME OUTPUT GUARD — deterministic materialization
+Return exactly one valid JSON object and nothing else.
+Root keys exactly: worker, output_type, deliverable_created, score, handoff_to_next, self_verdict.
+deliverable_created must contain as siblings: screen_definition, component_tree, layout_grid, visual_hierarchy, state_map, token_map, spacing_typography, density_rules, risk_controls, prompt_constraints.
+Never place component_tree, layout_grid, visual_hierarchy, state_map, token_map, spacing_typography, density_rules, risk_controls or prompt_constraints inside screen_definition.
+component_tree must be flat. Use IDs for relationships, never recursive child objects. self_verdict must be a string.
+Preserve every supplied case requirement exactly; do not invent financial truth.
+'''.strip()
 
 
 def sections(md: str) -> list[tuple[str, str]]:
@@ -44,9 +52,7 @@ def select_c3(md: str) -> str:
     }
     parts=[]
     for title,body in sections(md):
-        if title in keep_exact:
-            parts.append(body)
-        elif title.startswith('CREATE_NEW'):
+        if title in keep_exact or title.startswith('CREATE_NEW'):
             parts.append(body)
     selected='\n\n'.join(parts).strip()+"\n"
     forbidden=['RESOLVED EXISTING DUPLICATE','UNRESOLVED AUTHORITY SHORT-CIRCUIT','Existing-screen invariants','top_amount_strip','payment_summary']
@@ -60,14 +66,17 @@ def select_c3(md: str) -> str:
     return selected
 
 
+def materialize(source: str) -> str:
+    return source.rstrip() + '\n\n' + OUTPUT_GUARD + '\n'
+
+
 def assistant_text(raw: object) -> str:
     text=raw if isinstance(raw,str) else json.dumps(raw,ensure_ascii=False)
     return text.rsplit('Assistant:',1)[-1].strip() if 'Assistant:' in text else text.strip()
 
 
 def inspect(raw: object) -> dict:
-    text=assistant_text(raw)
-    stripped=text.strip()
+    stripped=assistant_text(raw).strip()
     fence='```' in stripped
     json_error=None
     try:
@@ -87,12 +96,14 @@ def inspect(raw: object) -> dict:
     required_root={'worker','output_type','deliverable_created','score','handoff_to_next','self_verdict'}
     root_keys=set(obj.keys()) if isinstance(obj,dict) else set()
     deliverable=obj.get('deliverable_created') if isinstance(obj,dict) else None
+    required_deliverable={'screen_definition','component_tree','layout_grid','visual_hierarchy','state_map','token_map','spacing_typography','density_rules','risk_controls','prompt_constraints'}
     screen=deliverable.get('screen_definition') if isinstance(deliverable,dict) else None
-    prohibited_in_screen={'component_tree','layout_grid','visual_hierarchy','state_map','token_map','spacing_typography','density_rules','risk_controls','prompt_constraints','remediation_actions'}
+    prohibited_in_screen=required_deliverable-{'screen_definition'}
     structural_pass=bool(
-        isinstance(obj,dict) and required_root.issubset(root_keys) and
-        isinstance(deliverable,dict) and isinstance(screen,dict) and
-        not (prohibited_in_screen & set(screen.keys()))
+        isinstance(obj,dict) and root_keys == required_root and
+        isinstance(deliverable,dict) and required_deliverable.issubset(set(deliverable.keys())) and
+        isinstance(screen,dict) and not (prohibited_in_screen & set(screen.keys())) and
+        isinstance(obj.get('self_verdict'),str)
     )
     return {
         'output_chars': len(stripped), 'json_ok': json_ok, 'json_error': json_error, 'fence': fence,
@@ -109,28 +120,25 @@ def run(label: str, source: str) -> dict:
     t=time.monotonic()
     package=execute_profile_runtime(
         execution_id='C3_PILOT_'+label, profile_code='PERFIL-UI-ARCHITECT', profile_slug='ui_architect',
-        profile_sources=[{'ref':'profiles/ui_architect/SKILL.md','content':source}],
+        profile_sources=[{'ref':'profiles/ui_architect/SKILL.md','content':materialize(source)}],
         input_literal=INPUT, adapter=adapter, attestation_verifier=verifier, allow_test_doubles=False,
         lf_adapter_sources=None,
     )
     elapsed=round(time.monotonic()-t,3)
     result=inspect(package['raw_output'])
-    result.update({'variant':label,'runtime_seconds':elapsed,'profile_context_chars':len(source),'input_chars':len(INPUT)})
+    result.update({'variant':label,'runtime_seconds':elapsed,'profile_context_chars':len(materialize(source)),'input_chars':len(INPUT)})
     return result
 
 
 def main() -> int:
     full=SKILL.read_text(encoding='utf-8')
     c3=select_c3(full)
-    print('C3_SELECTOR_FULL_CHARS='+str(len(full)))
-    print('C3_SELECTOR_SELECTED_CHARS='+str(len(c3)))
-    print('C3_SELECTOR_REDUCTION_PCT='+str(round((1-len(c3)/len(full))*100,2)))
-    shutil.copyfile(CANONICAL_SCHEMA, RUNTIME_SCHEMA)
-    try:
-        a=run('A_FULL', full)
-        c=run('C3_SELECTED', c3)
-    finally:
-        RUNTIME_SCHEMA.unlink(missing_ok=True)
+    full_m=materialize(full); c3_m=materialize(c3)
+    print('C3_SELECTOR_FULL_CHARS='+str(len(full_m)))
+    print('C3_SELECTOR_SELECTED_CHARS='+str(len(c3_m)))
+    print('C3_SELECTOR_REDUCTION_PCT='+str(round((1-len(c3_m)/len(full_m))*100,2)))
+    a=run('A_FULL', full)
+    c=run('C3_SELECTED', c3)
     summary={'A':{k:v for k,v in a.items() if k!='raw_output'},'C3':{k:v for k,v in c.items() if k!='raw_output'}}
     summary['comparison']={
         'context_reduction_pct': round((1-c['profile_context_chars']/a['profile_context_chars'])*100,2),
