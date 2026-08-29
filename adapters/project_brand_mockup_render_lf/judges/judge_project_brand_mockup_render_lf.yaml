@@ -1,29 +1,38 @@
-version: v0.1
+version: v0.2
 judge: JUDGE_PROJECT_BRAND_MOCKUP_RENDER_LF
 adapter: ADAPTER_PROJECT_BRAND_MOCKUP_RENDER_LF
 status: CANDIDATO_READ_ONLY
-
-pass_if:
-  - project_brand_resolved
-  - tokens_from_source_used
-  - screen_visual_specs_applied
-  - mockup_frame_present
-  - no_generic_palette
-  - no_blocked_visual_pattern
-  - qa_visual_readback_present
-
-return_to_worker_if:
-  - missing_mockup_examples
-  - missing_screen_specs
-  - missing_readback
-  - key_screen_only_as_table
-
-fail_if:
+max_score: 25
+pass_score: 22
+criteria:
+  - id: project_and_source_resolution
+    score: 5
+    require: [project_resolved, design_system_resolved, source_lineage_present, no_cross_project_tokens]
+  - id: visual_contract_fidelity
+    score: 5
+    require: [project_tokens_used_when_available, screen_visual_specs_applied_when_material, fallback_explicitly_labeled]
+  - id: invocation_traceability
+    score: 5
+    require: [router_binding_present, exactly_one_lf_adapter_invocation_when_applicable, no_direct_self_invocation, no_second_llm_call]
+  - id: render_and_qa_executability
+    score: 5
+    require: [mockup_frame_policy_explicit, screen_state_requirement_explicit, qa_visual_readback_required, handoff_scope_explicit]
+  - id: efficiency_and_governance
+    score: 5
+    require: [runtime_capsule_used, capsule_within_1600_chars, no_generic_palette_as_canonical, no_runtime_or_production_enablement]
+hard_fail:
   - brand_mismatch
-  - invented_colors
-  - generic_mockup
-  - production_claim
-
+  - invented_colors_marked_canonical
+  - cross_project_token_contamination
+  - fallback_presented_as_canonical
+  - material_screen_spec_ignored
+  - unbound_adapter_invocation
+  - missing_adapter_invocation_receipt
+  - duplicate_adapter_invocation_receipt
+  - adapter_performs_separate_llm_call
+  - context_budget_exceeded
+  - runtime_enabled
+  - production_enabled
 allowed_results:
   - PASS_CANDIDATO_READ_ONLY
   - PASS_WITH_OBSERVATIONS
