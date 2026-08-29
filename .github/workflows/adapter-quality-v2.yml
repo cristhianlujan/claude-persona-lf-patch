@@ -1,0 +1,31 @@
+name: Adapter Quality V2
+
+on:
+  pull_request:
+    paths:
+      - 'adapters/**'
+      - '.github/workflows/adapter-quality-v2.yml'
+  push:
+    branches:
+      - 'feat/adapter-quality-gate-v2'
+    paths:
+      - 'adapters/**'
+      - '.github/workflows/adapter-quality-v2.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  deterministic-adapter-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Static adapter package check
+        run: python adapters/adapter_quality_v2_check.py
+      - name: Shell adapter contract cases
+        run: python adapters/lf_shell_profile_adapter/evals/quality_v2/run_cases.py
+      - name: Brand adapter contract cases
+        run: python adapters/project_brand_mockup_render_lf/evals/quality_v2/run_cases.py
