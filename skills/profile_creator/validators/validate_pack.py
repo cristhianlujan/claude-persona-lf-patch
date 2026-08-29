@@ -52,7 +52,9 @@ def main():
         ('PROFILE_CREATOR_CORE', [sys.executable, str(root/'validators/validate_pack_core.py'), str(root)]),
         ('GENERATED_PROFILE_MANIFEST', [sys.executable, str(root/'validators/validate_generated_profile_manifest.py'), str(root)]),
         ('CANDIDATE_DEPTH_SELF_TEST', [sys.executable, str(root/'validators/validate_candidate_depth.py'), '--self-test', str(root)]),
+        ('CANDIDATE_CONSISTENCY_SELF_TEST', [sys.executable, str(root/'validators/validate_candidate_consistency.py'), '--self-test', str(root)]),
         ('CANDIDATE_READINESS_SELF_TEST', [sys.executable, str(root/'validators/validate_candidate_readiness.py'), '--self-test', str(root)]),
+        ('ARCHITECTURE_CONSISTENCY_FRESH_HOLDOUT', [sys.executable, str(root/'evals/architecture_consistency_matrix.py')]),
         ('GOV021_CHAMPION_CHALLENGER', [sys.executable, str(root/'validators/champion_challenger_depth.py'), str(root)]),
         ('PROFILE_VALIDATOR_DISCOVERY_MATRIX', [sys.executable, str(root/'evals/profile_validator_discovery_matrix.py')]),
     ]
