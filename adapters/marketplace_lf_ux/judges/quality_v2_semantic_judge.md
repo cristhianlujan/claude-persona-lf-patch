@@ -1,0 +1,2 @@
+# Marketplace UX Adapter Semantic Judge
+PASS only if current Marketplace/product truth is preserved, frictions are evidence-backed, noncanonical improvements are labeled, constraints/dependencies survive, profile authority does not expand, exactly one LF invocation identity is present, and no separate adapter model call is required. Unsupported financial/product claims or hidden blockers are FAIL.
