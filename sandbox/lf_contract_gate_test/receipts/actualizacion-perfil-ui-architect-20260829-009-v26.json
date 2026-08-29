@@ -1,0 +1,27 @@
+{
+  "schema": "LF_OPERATION_RECEIPT_V1",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260829-009",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "target_code": "PERFIL-UI-ARCHITECT",
+  "target_path": "profiles/ui_architect/schemas/runtime_output.schema.json",
+  "base_main_sha": "4264f3697ab019a904034e65643bf6f15eb8daa3",
+  "policy_code": "POL-PROFILE-UPDATE-PASS",
+  "policy_version": "v1.0",
+  "policy_sha": "ffec66f63ab5eb515d069a5d59925ba0b02c901caeab1a3568b93b79293524ed",
+  "source_ref": "GOV-036",
+  "change_scope": "Reorder existing runtime schema root properties to align constrained-decoding order with the profile output contract; no field, type, enum, required key, authority, Router, adapter, model, or invocation-count change.",
+  "pre_write_execution_binding": true,
+  "runtime_enable": false,
+  "validated_mark": false,
+  "automatic_promotion": false,
+  "user_authorization": "CURRENT_AUTOMATION_AUTOREPAIR_AND_MERGE",
+  "required_post_write_gates": [
+    "exact_head_ci",
+    "schema_semantic_equivalence",
+    "fresh_6_case_ab_runtime",
+    "raw_output_and_receipt_integrity",
+    "semantic_authority_adversarial_holdout",
+    "pre_merge_main_and_policy_reread",
+    "post_merge_readback"
+  ]
+}
