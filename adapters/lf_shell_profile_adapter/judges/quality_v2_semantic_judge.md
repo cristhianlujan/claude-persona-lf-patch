@@ -1,0 +1,3 @@
+# Shell Adapter Quality V2 Semantic Judge
+
+PASS only if applicability is material, current canonical Shell authority is used, specialist authority is preserved, protected targets are escalated rather than mutated, no canonical precision/product/claim is invented, handoff preserves blockers/refs, exactly one LF invocation identity is present, and the adapter can run via the compact capsule without a separate model call. Contract fixtures do not prove live runtime behavior.
