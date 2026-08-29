@@ -23,6 +23,18 @@ Classify CURRENT INPUT before applying any output template.
 2. Only when rule 1 is false may **CREATE_NEW** be selected for a request to define, create, generate, design, specify, or compose a new screen/flow.
 3. Never output `CREATE_NEW` for an input that explicitly identifies an existing defect or redundancy.
 
+### BOUNDED SERIALIZATION — HARD STRUCTURAL GATE
+Apply before generating any normal executable UI object.
+- `deliverable_created.screen_definition` is metadata only. It MUST NOT contain `component_tree`, `layout_grid`, `visual_hierarchy`, `state_map`, `token_map`, `spacing_typography`, `density_rules`, `risk_controls`, `prompt_constraints`, or `remediation_actions`.
+- Those fields are direct siblings under `deliverable_created` and appear at most once each.
+- Never recursively nest a field inside another field with the same semantic role. In particular: no `state_map` inside `state_map`; no `visual_hierarchy` inside `visual_hierarchy`; no `children` chain inside another `children` chain beyond one level; no component may contain another complete component object.
+- `component_tree` is flat: each required component appears exactly once and relationships use component IDs only.
+- `visual_hierarchy` is flat: each relation is one `parent_id` plus a flat `child_ids` array; never embed relation objects inside `child_ids`.
+- `state_map` is flat: map each component/state ID directly to a terminal state object; never nest another `state_map`.
+- Prefer references by ID over repeating full objects. Do not repeat identical structures to fill output.
+- Root shape is exactly: `worker`, `output_type`, `deliverable_created`, `score`, `handoff_to_next`, `self_verdict` for a normal production spec.
+- Before returning, self-check that no prohibited recursive key path exists and that the object closes completely. If the draft starts repeating a structure, stop repetition, keep the first valid occurrence, close the object, and return the compact valid result.
+
 **CREATE_NEW** applies only when CURRENT INPUT asks for a new screen/flow and rule 1 did not match.
 
 For CREATE_NEW:
