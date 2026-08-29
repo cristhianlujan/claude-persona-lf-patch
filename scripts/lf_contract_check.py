@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.11
+LF Contract Check v0.12
 
 Sandbox validator for controlled LF governance gates.
+
+v0.12 changes:
+- Allows the exact historical compact-protocol locator under claude/ while
+  keeping the broad claude/ prefix and all lookalikes denied.
 
 v0.11 changes:
 - Runs the governed profile runtime provenance/runner regression intrinsically.
@@ -53,6 +57,18 @@ RECEIPT_DIR = Path("sandbox/lf_contract_gate_test/receipts")
 PROFILE_RUNTIME_TEST_PATH = Path("sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py")
 PROFILE_RUNTIME_PASS_MARKER = "PROFILE_RUNTIME_GATE_TESTS_PASS 23/23"
 VALIDATOR_SELF_PATH = "scripts/lf_contract_check.py"
+COMPACT_PROTOCOL_PATH = Path("docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md")
+COMPACT_PROTOCOL_LOCATOR_PATH = Path("claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md")
+COMPACT_PROTOCOL_TOP_LEVEL_FIELDS = [
+    "status",
+    "blocking_code",
+    "asset_code",
+    "asset_type",
+    "action_code",
+    "operation_code",
+    "operation_payload",
+    "adapter_payload",
+]
 
 ALLOWED_GITHUB_EXACT = {
     ".github/workflows/lf-contract-check.yml",
@@ -65,6 +81,7 @@ OPERATIONAL_PROTOCOL_ALLOWED_EXACT = {
     ".claude/operational-execution.md",
     ".claude/scripts/validate_artifact_output.py",
     "docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md",
+    "claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md",
 }
 OPERATIONAL_PROTOCOL_DENIED_LOOKALIKES = {
     "CLAUDE.md.bak",
@@ -76,7 +93,10 @@ OPERATIONAL_PROTOCOL_DENIED_LOOKALIKES = {
     "docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md.bak",
     "docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF/child.md",
     "docs/operations/protocolo_consumo_compacto_router_lf.md",
-    "claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md",
+    "claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md.bak",
+    "claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF/child.md",
+    "claude/protocolo_consumo_compacto_router_lf.md",
+    "claude/OTHER_PROTOCOL.md",
 }
 P0_CLOSURE_EVIDENCE_ALLOWED_EXACT = {
     "docs/p0/CONTRATO_BENCHMARK_OCR_CV.md",
@@ -284,6 +304,52 @@ def validate_operational_protocol_scope() -> None:
     )
 
 
+def validate_compact_protocol_contract() -> None:
+    if not COMPACT_PROTOCOL_PATH.exists():
+        fail("FAIL_COMPACT_PROTOCOL_MISSING", str(COMPACT_PROTOCOL_PATH))
+    if not COMPACT_PROTOCOL_LOCATOR_PATH.exists():
+        fail("FAIL_COMPACT_PROTOCOL_LOCATOR_MISSING", str(COMPACT_PROTOCOL_LOCATOR_PATH))
+
+    protocol = COMPACT_PROTOCOL_PATH.read_text(encoding="utf-8")
+    if "Estado del documento: PROMOVIDO v1.0" not in protocol:
+        fail("FAIL_COMPACT_PROTOCOL_STATUS", "El protocolo compacto no está promovido a v1.0")
+
+    projection_match = re.search(
+        r"## 3\. Proyección canónica(?P<body>.*?)(?:\n###|\n## )",
+        protocol,
+        re.DOTALL,
+    )
+    if not projection_match:
+        fail("FAIL_COMPACT_PROTOCOL_PROJECTION", "No se encontró la proyección canónica")
+    fields = re.findall(r"^\d+\. `([^`]+)`$", projection_match.group("body"), re.MULTILINE)
+    if fields != COMPACT_PROTOCOL_TOP_LEVEL_FIELDS:
+        fail("FAIL_COMPACT_PROTOCOL_FIELDS", f"Campos superiores inválidos: {fields}")
+    if "coalesce(raw.asset_code, raw.asset.codigo_activo)" not in protocol:
+        fail(
+            "FAIL_COMPACT_PROTOCOL_ASSET_NORMALIZATION",
+            "Falta la normalización de asset_code para la caché de adapters",
+        )
+
+    helper_match = re.search(
+        r"### 9\.2 Helper SQL de resolución\s*```sql(?P<sql>.*?)```",
+        protocol,
+        re.DOTALL,
+    )
+    if not helper_match:
+        fail("FAIL_COMPACT_PROTOCOL_HELPER", "No se encontró el helper SQL de §9.2")
+    helper_sql = helper_match.group("sql")
+    if "target_hint" in helper_sql:
+        fail("FAIL_COMPACT_PROTOCOL_TARGET_HINT", "El helper SQL no puede pasar target_hint")
+    if "p_action_hint => :action_hint" not in helper_sql:
+        fail("FAIL_COMPACT_PROTOCOL_ACTION_HINT", "El helper SQL debe pasar action_hint explícito")
+
+    locator = COMPACT_PROTOCOL_LOCATOR_PATH.read_text(encoding="utf-8")
+    if str(COMPACT_PROTOCOL_PATH).replace("\\", "/") not in locator:
+        fail("FAIL_COMPACT_PROTOCOL_LOCATOR_TARGET", "El localizador no apunta a la fuente canónica")
+
+    print("PASS_COMPACT_PROTOCOL_CONTRACT: promoted_v1 fields=8 target_hint=omitted locator=valid")
+
+
 def validate_p0_closure_evidence_scope() -> None:
     failures: list[str] = []
     if "docs/" in ALLOWED_PREFIXES or "docs/p0/" in ALLOWED_PREFIXES:
@@ -459,6 +525,7 @@ def validate_forbidden_terms(changed_files: list[str]) -> None:
 def main() -> None:
     validate_contract()
     validate_operational_protocol_scope()
+    validate_compact_protocol_contract()
     validate_p0_closure_evidence_scope()
     validate_p0_persistence_test_scope()
     validate_profile_runtime_regression()
@@ -474,3 +541,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

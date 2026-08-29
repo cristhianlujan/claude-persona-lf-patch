@@ -1,6 +1,6 @@
 # PROTOCOLO DE CONSUMO COMPACTO — ROUTER ACT-0001
 
-Estado del documento: CANDIDATO v0.2
+Estado del documento: PROMOVIDO v1.0
 Router rector: ACT-0001
 Consumidores: Claude y GPT
 Alcance de modo: solo `distribution_mode = 'ROUTER'`
@@ -24,7 +24,7 @@ Toda resolución entra por `public.lf_router_resolve_v1`. Cada llamada pasa `act
 
 ## 3. Proyección canónica
 
-Once campos. Ninguno es opcional.
+Ocho campos de nivel superior. Ninguno es opcional.
 
 1. `status`
 2. `blocking_code`
@@ -32,23 +32,22 @@ Once campos. Ninguno es opcional.
 4. `asset_type`
 5. `action_code`
 6. `operation_code`
-7. `operation_status`
-8. `step_count`
-9. `distribution_mode`
-10. `operation_payload`
-11. `adapter_payload`
+7. `operation_payload`
+8. `adapter_payload`
 
-`operation_payload` usa `operation_code` como clave y contiene `cache_hit`, `steps` y `contracts`; en hit omite los bloques. `adapter_payload` usa `asset_code` como clave y contiene `cache_hit` y `adapters`; en hit omite el bloque.
+`operation_payload` usa `operation_code` como clave y contiene `operation_status`, `step_count`, `distribution_mode`, `cache_hit`, `steps`, `contracts` y `policies`; en hit omite los bloques cacheados. `adapter_payload` usa `asset_code` como clave y contiene `cache_hit` y `adapters`; en hit omite el bloque.
 
-### Por qué `operation_status` no puede omitirse
+La normalización toma `asset_code` de `coalesce(raw.asset_code, raw.asset.codigo_activo)` y `asset_type` de `coalesce(raw.asset_type, raw.asset.tipo_activo)`. Las resoluciones listas anidan la identidad en `asset`; omitir ese fallback impide reutilizar la caché de adapters.
+
+### Por qué `operation_status` se conserva dentro de `operation_payload`
 
 Es el semáforo de gobernanza de la resolución y **no es constante**. Medido el 2026-08-29 en modo ROUTER: las operaciones de perfil devuelven `PRODUCCION_CONTROLADA_READ_ONLY`, mientras que `ACTUALIZACION_PERFIL_LF` devuelve `PRODUCCION_CONTROLADA`. Omitirlo hace que el consumidor no sepa si está en modo lectura o en producción controlada.
 
-### Por qué `step_count` no puede omitirse
+### Por qué `step_count` se conserva dentro de `operation_payload`
 
 Es el control de integridad contra rehidratación truncada: permite detectar que la caché devolvió menos pasos de los que la operación declara.
 
-### Por qué `distribution_mode` se conserva
+### Por qué `distribution_mode` se conserva dentro de `operation_payload`
 
 `policies` depende del modo, no solo de `operation_code`. Probado: con un modo fuera de la lista de un binding activo, el Router excluye la policy y una rehidratación que ignore el modo la incluiría, mostrando como requerida una policy que el Router descartó. Este protocolo fija `'ROUTER'` y lo transporta explícito para que la clave de caché y la rehidratación sean verificables.
 
@@ -121,7 +120,9 @@ Segundo canario (`PERFIL-PRODUCT-DIRECTOR-LF`): 7 resoluciones, 2 `operation_cod
 
 Gate de dos perfiles: PASS sobre `PERFIL-UI-ARCHITECT` y `PERFIL-PRODUCT-DIRECTOR-LF`.
 
-### Verificación del delta introducido en v0.2
+Canario de cierre v1.0: 4 resoluciones, 2 `operation_code` distintos, 2 cache hits, repetición 0.5000, 21 894 bytes crudos y 10 813 bytes efectivos. Ahorro real 50.61%, 0 bloqueados, 0 solo-enrutar y ocho campos superiores verificados. El cálculo normaliza la identidad anidada del activo antes de aplicar la caché de adapters.
+
+### Verificación histórica del delta introducido en v0.2
 
 Agregar `operation_status`, `step_count` y `distribution_mode` a la proyección cuesta 96 a 105 bytes por resolución. Medido en modo ROUTER sobre seis resoluciones:
 
@@ -134,23 +135,26 @@ Agregar `operation_status`, `step_count` y `distribution_mode` a la proyección 
 | Evidence Lineage | 4503 | 365 | 470 | +105 | 91.89% | 89.56% |
 | Actualización perfil | 11810 | 338 | 434 | +96 | 97.14% | 96.33% |
 
-El costo es de 1.4 a 2.4 puntos porcentuales de ahorro. Las cifras de la sección 8 se mantienen por encima del umbral de promoción.
+El costo observado fue de 1.4 a 2.4 puntos porcentuales de ahorro. La v1.0 conserva esos tres valores dentro de `operation_payload`, sin ampliar los ocho campos superiores. Las cifras de la sección 8 se mantienen por encima del umbral de promoción.
 
 Rehidratación del payload completo desde la proyección v0.2, comparada por `md5` contra la salida real del Router en modo ROUTER: 6 de 6 idénticas, ninguna clave distinta.
 
-## 9. Helper SQL de resolución
+## 9. Resolución canónica
+
+### 9.1 Regla de invocación
+
+Pasar `action_hint` explícito y omitir completamente el argumento `target_hint`.
+
+### 9.2 Helper SQL de resolución
 
 ```sql
 select public.lf_router_resolve_v1(
   p_request_text => :request_text,
-  p_target_hint => null,
   p_action_hint => :action_hint,
   p_asset_type_hint => :asset_type_hint,
   p_distribution_mode => 'ROUTER'
 ) as router_result;
 ```
-
-`p_target_hint` se fija en `null` por posición y nunca se usa como vía de resolución.
 
 ## 10. EKB y eventos
 
@@ -163,8 +167,9 @@ Ejecutar PRE_EKB_GATE. Las resoluciones quedan en `lf_eventos`; cada error o apr
 - Las mediciones son en bytes, no en tokens facturados.
 - No se midió latencia ni número de llamadas.
 
-## 12. Pendientes
+## 12. Cierre de promoción
 
-- Backlog 85 `COMPACT-ROUTER-PADDING-001`: guardrail de tamaño incorporado en la sección 4.
-- Backlog 86 `COMPACT-ROUTER-CACHEKEY-002`: guardrail de clave incorporado en las secciones 5 y 6.
-- EKB `GOV-039`: el documento existía fuera del repo, no faltaba. Este archivo lo resuelve.
+- Backlog 85 `COMPACT-ROUTER-PADDING-001`: criterio de cierre cumplido; guardrail de tamaño incorporado en la sección 4.
+- Backlog 86 `COMPACT-ROUTER-CACHEKEY-002`: criterio de cierre cumplido; caché y prohibición de `target_hint` incorporadas en las secciones 5 y 6.
+- EKB `GOV-039`: resuelto por la publicación canónica en `docs/operations/` y el localizador compatible en `claude/`.
+
