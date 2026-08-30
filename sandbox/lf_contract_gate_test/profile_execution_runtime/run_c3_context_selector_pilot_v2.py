@@ -1,7 +1,101 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import hashlib
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+import github_actions_local_runtime as runtime_module
 import run_c3_context_selector_pilot as base
+from profile_runtime_runner import RuntimeExecutionBlocked
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open('rb') as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b''):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _schema_converter() -> Path:
+    cli = Path(os.environ['LF_LLAMA_CLI_PATH']).resolve()
+    candidate = (cli.parents[2] / 'examples' / 'json_schema_to_grammar.py').resolve()
+    if not candidate.is_file():
+        raise RuntimeExecutionBlocked('C3_GBNF_CONVERTER_MISSING', str(candidate))
+    return candidate
+
+
+class GBNFSchemaAdapter(base.GitHubHostedLlamaCppAdapter):
+    """Pilot-only transport fix: preconvert -jf schema to pinned GBNF."""
+
+    def execute(self, request):
+        converter = _schema_converter()
+        original_run = runtime_module.subprocess.run
+        converted: dict[str, Path] = {}
+
+        def intercept(command, *args, **kwargs):
+            if isinstance(command, list) and '-jf' in command:
+                if converted:
+                    raise RuntimeExecutionBlocked('C3_GBNF_DUPLICATE_CONVERSION')
+                idx = command.index('-jf')
+                if idx + 1 >= len(command):
+                    raise RuntimeExecutionBlocked('C3_GBNF_SCHEMA_ARG_MISSING')
+                schema_path = Path(command[idx + 1]).resolve()
+                if not schema_path.is_file():
+                    raise RuntimeExecutionBlocked('C3_GBNF_SCHEMA_MISSING', str(schema_path))
+
+                conversion = original_run(
+                    [sys.executable, str(converter), str(schema_path)],
+                    cwd=self.work_dir,
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    timeout=120,
+                    check=False,
+                )
+                grammar_text = conversion.stdout.strip()
+                if conversion.returncode != 0 or not grammar_text or 'root ::=' not in grammar_text:
+                    detail = conversion.stderr[-1200:].replace('\n', ' ').strip()
+                    raise RuntimeExecutionBlocked(
+                        'C3_GBNF_CONVERSION_FAILED',
+                        f'rc={conversion.returncode} stderr={detail}',
+                    )
+
+                output_idx = command.index('-o') + 1
+                grammar_path = Path(command[output_idx]).resolve().with_name('runtime-output.gbnf')
+                grammar_path.write_text(grammar_text + '\n', encoding='utf-8')
+                converted['schema'] = schema_path
+                converted['grammar'] = grammar_path
+
+                rewritten = list(command)
+                rewritten[idx:idx + 2] = ['--grammar-file', str(grammar_path)]
+                return original_run(rewritten, *args, **kwargs)
+            return original_run(command, *args, **kwargs)
+
+        runtime_module.subprocess.run = intercept
+        try:
+            response = super().execute(request)
+        finally:
+            runtime_module.subprocess.run = original_run
+
+        if converted:
+            grammar_path = converted['grammar']
+            self.structured_output_grammar_path = grammar_path
+            attestation = response.get('runtime_attestation')
+            if not isinstance(attestation, dict):
+                raise RuntimeExecutionBlocked('C3_GBNF_ATTESTATION_MISSING')
+            attestation.update({
+                'structured_output_transport': 'GBNF_PRECONVERTED',
+                'structured_output_grammar_sha256': _sha256_file(grammar_path),
+                'json_schema_converter_ref': 'llama.cpp/examples/json_schema_to_grammar.py',
+                'json_schema_converter_sha256': _sha256_file(converter),
+            })
+        return response
+
 
 # Pilot-only structured-output boundary. Every object declares explicit properties
 # so the pinned llama.cpp JSON-schema -> grammar converter never has to materialize
@@ -171,6 +265,7 @@ C3_RUNTIME_SCHEMA_V2 = {
 }
 
 base.C3_RUNTIME_SCHEMA = C3_RUNTIME_SCHEMA_V2
+base.GitHubHostedLlamaCppAdapter = GBNFSchemaAdapter
 base.OUTPUT_GUARD = '''
 RUNTIME OUTPUT GUARD — deterministic materialization
 Return one compact JSON object only; no Markdown fences or prose.
