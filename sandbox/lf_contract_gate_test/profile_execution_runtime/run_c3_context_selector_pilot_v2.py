@@ -32,11 +32,11 @@ class GBNFSchemaAdapter(base.GitHubHostedLlamaCppAdapter):
     """Pilot-only transport fix: preconvert -jf schema to pinned GBNF."""
 
     def __init__(self, *args, **kwargs):
-        # C3 previously reached the score section with every functional requirement
-        # preserved but truncated at the 2048-token ceiling. Give the bounded schema
-        # enough room to close without matching A's unbounded 4096-token behavior.
+        # Long authoritative cases reached the score section with every functional
+        # requirement preserved but truncated at the previous output ceiling.
+        # Keep generation bounded while giving structured JSON enough room to close.
         if kwargs.get('max_output_tokens') == 2048:
-            kwargs['max_output_tokens'] = 3072
+            kwargs['max_output_tokens'] = 4096
         super().__init__(*args, **kwargs)
 
     def execute(self, request):
@@ -246,12 +246,12 @@ C3_RUNTIME_SCHEMA_V2 = {
             'type': 'object',
             'additionalProperties': False,
             'properties': {
-                'layout_precision': {'type': 'integer'},
-                'visual_hierarchy': {'type': 'integer'},
-                'lf_system_fidelity': {'type': 'integer'},
-                'state_mapping': {'type': 'integer'},
-                'handoff_quality': {'type': 'integer'},
-                'total': {'type': 'integer'},
+                'layout_precision': {'type': 'integer', 'minimum': 0, 'maximum': 5},
+                'visual_hierarchy': {'type': 'integer', 'minimum': 0, 'maximum': 5},
+                'lf_system_fidelity': {'type': 'integer', 'minimum': 0, 'maximum': 4},
+                'state_mapping': {'type': 'integer', 'minimum': 0, 'maximum': 5},
+                'handoff_quality': {'type': 'integer', 'minimum': 0, 'maximum': 5},
+                'total': {'type': 'integer', 'minimum': 0, 'maximum': 24},
                 'evidence_by_criterion': {'type': 'array', 'maxItems': 5, 'items': {'type': 'string'}},
             },
             'required': [
