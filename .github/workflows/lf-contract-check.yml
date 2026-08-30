@@ -128,7 +128,7 @@ jobs:
 
           docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select count(*)::text,encode(extensions.digest(convert_to(string_agg(version||E'\n'||coalesce(name,'')||E'\n'||array_to_string(statements,E'\n--STATEMENT--\n'),E'\n--MIGRATION--\n' order by version),'UTF8'),'sha256'),'hex') from supabase_migrations.schema_migrations where version between '20260801063708' and '20260801170332'" > "$RUNNER_TEMP/lf-legacy-checkpoint.csv"
 
-          python3 scripts/lf_migration_source_parity.py \
+          python3 sandbox/lf_contract_gate_test/lf_migration_source_parity.py \
             supabase/migrations \
             "$RUNNER_TEMP/lf-post-cutover-migrations-full.csv" \
             "$RUNNER_TEMP/lf-grandfathered-migrations.csv" \
