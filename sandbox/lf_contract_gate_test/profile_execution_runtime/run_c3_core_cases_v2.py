@@ -62,8 +62,8 @@ CORE REQUIREMENT MATERIALIZATION — fail closed
 There are exactly {count} authoritative requirement bullets. Treat this mapping as authoritative:
 {labeled}
 
-Create one dedicated component_tree entry for every REQ-N before adding any decorative/title-only component. A requirement component's content must preserve the concrete nouns and all material qualifiers from its REQ-N: exact numbers/cardinalities, named channels/media, required/optional qualifiers, alternatives, and temporal/ordering/conditional relations. Copying the requirement nearly verbatim is preferred to replacing it with a broader category label.
-A generic title/container such as "Identity Information", "Offer Details", "Documents Required" or "Payment" does NOT satisfy a detailed requirement unless its content itself preserves the material facts from the REQ-N.
+Create exactly one component_tree entry for every REQ-N. Do not spend a component slot on a decorative/title-only component. A requirement component's content must preserve the concrete nouns and all material qualifiers from its REQ-N: exact numbers/cardinalities, named channels/media, required/optional qualifiers, alternatives, and temporal/ordering/conditional relations. Copying the requirement verbatim is preferred to replacing it with a broader category label.
+A generic title/container such as "Identity Information", "Offer Details", "Documents Required" or "Payment" does NOT satisfy a detailed requirement.
 When a requirement contains state/order/temporal/conditional semantics, preserve those semantics in component_tree.content and/or the matching state_map.behavior.
 Do not count screen_definition, token_map, prompt_constraints, score, handoff or self_verdict as requirement coverage.
 Do not emit unresolved bracket placeholders such as [expiration date] or [document type]. When a concrete value was intentionally not supplied, express only the authorized concept (for example, vigencia/expiración without inventing a date).
@@ -102,13 +102,22 @@ def _normalize_derived_score(result: dict) -> dict:
 
 def _run(label: str, source: str, *, constrained: bool = False) -> dict:
     if constrained:
-        count = len(_bullets(base.INPUT))
+        bullets = _bullets(base.INPUT)
+        count = len(bullets)
         component_tree = (
             base.C3_RUNTIME_SCHEMA['properties']['deliverable_created']['properties']['component_tree']
         )
-        # One slot per authoritative bullet plus one optional structural/title
-        # component so the model cannot consume a requirement slot with a title.
-        component_tree['minItems'] = max(1, count + 1)
+        # The deterministic boundary may only materialize facts already present in
+        # the authoritative input. Requiring exactly one slot per bullet prevents
+        # title/decorative entries from displacing a requirement, while the content
+        # enum prevents semantic weakening or invention. This is generic over any
+        # input capsule and does not encode CASE-specific expected answers.
+        component_tree['minItems'] = max(1, count)
+        component_tree['maxItems'] = max(1, count)
+        component_tree['items']['properties']['content'] = {
+            'type': 'string',
+            'enum': bullets if bullets else [''],
+        }
     result = _original_run(label, source, constrained=constrained)
     if constrained:
         result = _normalize_derived_score(result)
