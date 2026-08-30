@@ -6,6 +6,7 @@ on:
       - '.github/workflows/profile-c3-python-selector-pilot.yml'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_context_selector_pilot.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_context_selector_pilot_v2.py'
+      - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_structured_output_smoke.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_local_runtime.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_runner.py'
       - 'profiles/ui_architect/SKILL.md'
@@ -57,6 +58,14 @@ jobs:
           curl -L --fail --retry 3 --retry-delay 2 "https://huggingface.co/ggml-org/Qwen2.5-VL-3B-Instruct-GGUF/resolve/${MODEL_COMMIT}/mmproj-Qwen2.5-VL-3B-Instruct-Q8_0.gguf?download=true" -o "$RUNNER_TEMP/lf-model/mmproj.gguf"
           echo "${MODEL_SHA256}  $RUNNER_TEMP/lf-model/model.gguf" | sha256sum -c -
           echo "${MMPROJ_SHA256}  $RUNNER_TEMP/lf-model/mmproj.gguf" | sha256sum -c -
+      - name: Structured-output smoke
+        env:
+          LF_LLAMA_CLI_PATH: ${{ runner.temp }}/llama.cpp/build/bin/llama-cli
+          LF_MODEL_PATH: ${{ runner.temp }}/lf-model/model.gguf
+          LF_MMPROJ_PATH: ${{ runner.temp }}/lf-model/mmproj.gguf
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_structured_output_smoke.py
       - name: Run A vs C3 real runtime
         env:
           LF_REPOSITORY_VISIBILITY: public
