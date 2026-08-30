@@ -8,6 +8,7 @@ on:
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_context_selector_pilot_v2.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_core_cases.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_core_cases_v2.py'
+      - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_family_cases.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_structured_output_smoke.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_local_runtime.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_runner.py'
@@ -22,9 +23,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  c3-selector-real-runtime:
+  c3-family-real-runtime:
+    name: c3-family-${{ matrix.family }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        family:
+          - OFFER_PRICING
+          - INSTALLMENTS_LIFECYCLE
+          - IDENTITY_AUTH
+          - CONSENT_CHANNELS
+          - DOCUMENTS_EVIDENCE
+          - TEMPORAL_CONDITIONAL
+          - ALTERNATIVES_CARDINALITY
+          - NEGATIVE_CONSTRAINTS
+          - STATES_RECOVERY
+          - MULTI_DOMAIN_COMPLEX
     steps:
       - uses: actions/checkout@v4
         with:
@@ -73,8 +89,9 @@ jobs:
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_structured_output_smoke.py
-      - name: Run C3 core 3 cases
+      - name: Run C3 family 5 cases
         env:
+          C3_FAMILY: ${{ matrix.family }}
           LF_REPOSITORY_VISIBILITY: public
           LF_RUNNER_LABEL: ubuntu-latest
           LF_LLAMA_SOURCE_COMMIT: 925e1179947ea0c0ebfb0032df18af3a729822be
@@ -83,4 +100,26 @@ jobs:
           LF_MMPROJ_PATH: ${{ runner.temp }}/lf-model/mmproj.gguf
         run: |
           set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_core_cases_v2.py
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_family_cases.py
+
+  c3-core-50-gate:
+    name: c3-core-50-gate
+    if: always()
+    needs: c3-family-real-runtime
+    runs-on: ubuntu-latest
+    steps:
+      - name: Aggregate 50-case family gate
+        env:
+          MATRIX_RESULT: ${{ needs.c3-family-real-runtime.result }}
+        run: |
+          set -euo pipefail
+          echo "C3_FAMILIES=10"
+          echo "C3_CASES_TOTAL=50"
+          if [ "$MATRIX_RESULT" = "success" ]; then
+            echo "C3_CORE_VERDICT=CORE_50_OF_50_PASS"
+            echo "C3_REPLICATION_UNLOCKED=true"
+          else
+            echo "C3_CORE_VERDICT=NO_MASSIFY"
+            echo "C3_REPLICATION_UNLOCKED=false"
+            exit 2
+          fi
