@@ -1,0 +1,24 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "LEARNING_BRIDGE_KB_CARD_LF",
+  "execution_id": "LF-AUTOLEARN-CONTRACTS-20260830-003",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "53e567455217a25af3a3e56f57a063f15a067bb0529151275e5d46579edb21a3",
+  "judge_sha": "569453fefa1f16cdc054a3a8e43b3a3822a24afa221f9b0abd31020f52a463bc",
+  "source_sha_list": [
+    "098fa9dc8f96463c1d5745f2a73a32edea85f44a",
+    "0e2260a0ae55fa2cea7ab93f3ffd3e4f2a86ae79",
+    "a9e8fb3125197c39e21be067a995ed3f320be55e"
+  ],
+  "target_paths": [
+    "gobernanza/contratos/contrato_learning_bridge_kb_card_lf.yaml",
+    "gobernanza/judges/judge_learning_bridge_kb_card_lf.yaml",
+    "gobernanza/procedimientos/learning_bridge_kb_card_lf_steps.yaml"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-30T22:16:34Z",
+  "notes": "Receipt source-bound del paquete candidato del bridge KB→Learning→Card. Confirma únicamente que contrato, procedimiento y judge candidatos están presentes, trazables y cubiertos por el gate de rutas gobernadas. No declara ejecución del lifecycle E2E, no materializa la operación en Supabase, no habilita ACT-0046, no autoriza runtime, producción, impacto automático, merge ni aprobación humana. El siguiente gate es CI exact-head y posterior canary gobernado."
+}
