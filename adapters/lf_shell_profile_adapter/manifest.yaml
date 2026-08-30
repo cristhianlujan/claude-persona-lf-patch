@@ -20,6 +20,7 @@ required_files:
   - examples/frontend_prototype_binding.yaml
   - examples/depth_scenarios.yaml
   - evals/lf_shell_profile_adapter_cases.yaml
+  - evals/depth_scenarios_cases.yaml
   - judges/judge_lf_shell_profile_adapter.yaml
 activation_gate: ROUTER_BOUND_LF_SCREEN_OR_UI_AFFECTING_PROFILE_DECISION
 invocation_policy: ROUTER_BOUND_ONLY
