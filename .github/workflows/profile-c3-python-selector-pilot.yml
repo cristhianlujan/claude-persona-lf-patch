@@ -7,6 +7,7 @@ on:
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_context_selector_pilot.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_context_selector_pilot_v2.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_core_cases.py'
+      - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_core_cases_v2.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_structured_output_smoke.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_local_runtime.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_runner.py'
@@ -82,4 +83,4 @@ jobs:
           LF_MMPROJ_PATH: ${{ runner.temp }}/lf-model/mmproj.gguf
         run: |
           set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_core_cases.py
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_core_cases_v2.py
