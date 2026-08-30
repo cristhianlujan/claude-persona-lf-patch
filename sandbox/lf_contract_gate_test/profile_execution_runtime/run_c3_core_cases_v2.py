@@ -89,7 +89,7 @@ _original_run = base.run
 
 
 def _normalize_derived_score(result: dict) -> dict:
-    """Normalize only arithmetic score.total; no semantic content is synthesized."""
+    """Normalize arithmetic score and fail closed on an internally inconsistent PASS."""
     if not result.get('json_ok'):
         return result
     try:
@@ -103,6 +103,17 @@ def _normalize_derived_score(result: dict) -> dict:
     if any(isinstance(value, bool) or not isinstance(value, int) for value in values):
         return result
     score['total'] = sum(values)
+
+    # Do not inflate self-scores to manufacture green. If the model emits PASS
+    # while its own evidence-bound score is below the canonical PASS threshold,
+    # downgrade only the verdict so the canonical validator can evaluate the
+    # deliverable consistently. Content, evidence and criterion scores are kept.
+    pass_verdicts = {'PASS_TO_QUALITY_PACK_CANDIDATE', 'PASS_TO_QUALITY_PACK', 'PASS'}
+    if data.get('self_verdict') in pass_verdicts and (
+        score['total'] < 20 or score.get('handoff_quality') == 0
+    ):
+        data['self_verdict'] = 'NEEDS_ADJUSTMENT'
+
     rendered = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
     result['governed_output'] = rendered
     result['output_bytes'] = len(rendered.encode('utf-8'))
