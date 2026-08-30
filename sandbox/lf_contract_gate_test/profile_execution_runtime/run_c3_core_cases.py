@@ -39,13 +39,13 @@ base.C3_RUNTIME_SCHEMA['properties']['score']['properties']['evidence_by_criteri
     'required': SCORE_KEYS,
 }
 
-base.OUTPUT_GUARD = '''
+BASE_OUTPUT_GUARD = '''
 RUNTIME OUTPUT GUARD — deterministic materialization
 Return one compact JSON object only; no Markdown fences or prose.
 Root keys exactly: worker, output_type, deliverable_created, score, handoff_to_next, self_verdict.
 output_type must be PRODUCTION_UI_SPEC. screen_definition.task_mode must be CREATE_NEW.
 deliverable_created sibling keys exactly: screen_definition, component_tree, layout_grid, visual_hierarchy, state_map, token_map, spacing_typography, density_rules, risk_controls, prompt_constraints.
-component_tree is flat and bounded; represent each material requirement once. content is terminal text; relationships use IDs only.
+component_tree is flat and bounded; content is terminal text; relationships use IDs only.
 visual_hierarchy is a flat array of {parent_id:string, child_ids:[string,...]}; child_ids NEVER contains objects.
 For generic key/value metadata use {entries:[{key:string,value:string}, ...]}.
 state_map uses {entries:[{component_id:string,state:string,behavior:string}, ...]}.
@@ -53,8 +53,43 @@ Keep every section minimal and factual. Do not repeat supplied facts merely to f
 score.evidence_by_criterion is an object with exactly: layout_precision, visual_hierarchy, lf_system_fidelity, state_mapping, handoff_quality.
 Each criterion value is {refs:[...],summary:string}; refs must name actual deliverable sibling keys, component IDs, handoff_to_next, or self_verdict. Use short substantive summaries, not nominal words like ok/pass.
 Use layout_grid for layout_precision evidence, visual_hierarchy for visual_hierarchy, token_map or risk_controls for lf_system_fidelity, state_map for state_mapping, and handoff_to_next for handoff_quality when applicable.
-self_verdict must be one of PASS, PASS_WITH_WARNINGS, NEEDS_INPUT, NEEDS_REVIEW, FAIL, BLOCKED, INSUFFICIENT. Preserve every supplied case requirement exactly. Never invent amounts, dates, eligibility criteria, legal effects, or payment states not supplied.
+self_verdict must use a canonical validator value such as PASS, NEEDS_ADJUSTMENT, RETURN_TO_WORKER_FOR_SELF_REPAIR, RETURN_TO_ORCHESTRATOR, BLOCK_PIPELINE or BLOCKED.
+Never invent amounts, dates, eligibility criteria, legal effects, payment states, channels, options, conditions or requirements not supplied.
 '''.strip()
+
+
+def _requirement_capsule(input_text: str) -> str:
+    """Copy user-supplied bullet requirements without semantic rewriting."""
+    bullets = []
+    for line in input_text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith('- '):
+            value = stripped[2:].strip()
+            if value:
+                bullets.append(value)
+    return '\n'.join(f'- {value}' for value in bullets)
+
+
+def _guard_for_input(input_text: str) -> str:
+    capsule = _requirement_capsule(input_text)
+    return (
+        BASE_OUTPUT_GUARD
+        + '''
+
+AUTHORITATIVE REQUIREMENT CAPSULE — deterministic copy from the user input
+'''
+        + capsule
+        + '''
+
+MATERIALIZATION GATE — mandatory before self_verdict
+Every capsule bullet is atomic authority. The final component_tree/state_map must visibly and unambiguously encode every bullet; a generic category label does NOT satisfy a detailed bullet.
+Preserve exact numbers/cardinalities and named values. Preserve every supplied alternative/option instead of collapsing them into a parent category.
+Preserve every named channel or medium. Preserve required/optional qualifiers. Preserve temporal, ordering and conditional relations such as before/after/only-when/until; naming only the affected object is insufficient.
+When one bullet contains multiple atomic facts, all of those facts must remain explicit in component content and/or state_map behavior.
+Before returning, compare the final JSON against every capsule bullet and repair any missing fact. Do not add new domain truth while doing so.
+'''
+    ).strip()
+
 
 CASES = [
     {
@@ -264,6 +299,9 @@ def main() -> int:
     for case in CASES:
         base.INPUT = case['input']
         base.ALLOWED_CURRENCY_AMOUNTS = set(case['allowed_currency'])
+        # Both variants receive the same deterministic authority capsule so the
+        # experiment still isolates full-vs-selected profile context.
+        base.OUTPUT_GUARD = _guard_for_input(case['input'])
         a = base.run(f"A_FULL_{case['key']}", full, constrained=False)
         c = base.run(f"C3_SELECTED_{case['key']}", c3, constrained=True)
         qa = _quality(case, a)
