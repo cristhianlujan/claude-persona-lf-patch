@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import copy
 import json
 import re
 
@@ -69,6 +70,7 @@ Do not count screen_definition, token_map, prompt_constraints, score, handoff or
 Do not emit unresolved bracket placeholders such as [expiration date] or [document type]. When a concrete value was intentionally not supplied, express only the authorized concept (for example, vigencia/expiración without inventing a date).
 Score evidence refs are restricted as follows: layout_precision -> layout_grid or spacing_typography; visual_hierarchy -> visual_hierarchy; lf_system_fidelity -> token_map or risk_controls; state_mapping -> state_map; handoff_quality -> handoff_to_next.
 score.total MUST equal the arithmetic sum of the five criterion scores.
+Canonical PASS scoring is evidence-bound: never emit self_verdict PASS with score.total below 20 or handoff_quality=0. Rate each criterion only from evidence actually present in its allowed refs; do not inflate a score to obtain PASS. If the produced evidence supports a passing deliverable, reflect that evidence consistently in the five criterion scores before returning.
 Before returning, verify REQ-1 through REQ-{count} one by one against component_tree/state_map and repair any missing material fact.
 '''
     ).strip()
@@ -107,17 +109,29 @@ def _run(label: str, source: str, *, constrained: bool = False) -> dict:
         component_tree = (
             base.C3_RUNTIME_SCHEMA['properties']['deliverable_created']['properties']['component_tree']
         )
-        # The deterministic boundary may only materialize facts already present in
-        # the authoritative input. Requiring exactly one slot per bullet prevents
-        # title/decorative entries from displacing a requirement, while the content
-        # enum prevents semantic weakening or invention. This is generic over any
-        # input capsule and does not encode CASE-specific expected answers.
-        component_tree['minItems'] = max(1, count)
-        component_tree['maxItems'] = max(1, count)
-        component_tree['items']['properties']['content'] = {
-            'type': 'string',
-            'enum': bullets if bullets else [''],
-        }
+        # Bind each authoritative requirement to one deterministic array position.
+        # The previous shared enum allowed a model to repeat one valid bullet and
+        # omit another while still satisfying cardinality. Tuple items preserve
+        # exactly the supplied facts, in order, without synthesizing semantic data.
+        template = component_tree['items']
+        tuple_items = []
+        for bullet in bullets:
+            item = copy.deepcopy(template)
+            item['properties']['content'] = {
+                'type': 'string',
+                'enum': [bullet],
+            }
+            tuple_items.append(item)
+        if tuple_items:
+            component_tree.pop('minItems', None)
+            component_tree.pop('maxItems', None)
+            component_tree['items'] = tuple_items
+        else:
+            component_tree['minItems'] = 1
+            component_tree['maxItems'] = 1
+            item = copy.deepcopy(template)
+            item['properties']['content'] = {'type': 'string', 'enum': ['']}
+            component_tree['items'] = item
     result = _original_run(label, source, constrained=constrained)
     if constrained:
         result = _normalize_derived_score(result)
