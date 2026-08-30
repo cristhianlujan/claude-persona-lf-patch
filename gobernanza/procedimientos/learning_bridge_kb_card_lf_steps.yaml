@@ -1,0 +1,74 @@
+version: v0.1
+operation: LEARNING_BRIDGE_KB_CARD_LF
+status: CANDIDATO_READ_ONLY
+source_model: GIT_FIRST_YAML
+steps:
+  - order: 1
+    id: router
+    evidence: router_read
+  - order: 2
+    id: operational_source
+    evidence: operational_source_read
+  - order: 3
+    id: ekb_precheck
+    evidence: ekb_read
+  - order: 4
+    id: select_kb_candidate
+    evidence: kb_source_readback
+  - order: 5
+    id: eligibility_gate
+    evidence: grounded_consumer_ready_allow_prod_gate
+  - order: 6
+    id: deterministic_dedup
+    evidence: duplicate_and_existing_card_check
+  - order: 7
+    id: lifecycle_detectado
+    evidence: detectado_transition_receipt
+  - order: 8
+    id: semantic_analysis
+    evidence: analysis_pack
+  - order: 9
+    id: lifecycle_analizado
+    evidence: analizado_transition_receipt
+  - order: 10
+    id: research_to_rules_matrix
+    evidence: research_to_rules_matrix_present
+  - order: 11
+    id: decision_matrix
+    evidence: decision_matrix_present
+  - order: 12
+    id: card_factory_contract
+    evidence: creacion_card_lf_contract_read
+  - order: 13
+    id: card_candidate
+    evidence: card_factory_candidate_receipt
+  - order: 14
+    id: lifecycle_card_creada
+    evidence: card_creada_transition_receipt
+  - order: 15
+    id: lifecycle_en_revision
+    evidence: en_revision_transition_receipt
+  - order: 16
+    id: sandbox
+    evidence: sandbox_test_receipt
+  - order: 17
+    id: quality_gate
+    evidence: quality_gate_result
+  - order: 18
+    id: performance_gate
+    evidence: performance_gate_result
+  - order: 19
+    id: governance_gate
+    evidence: governance_gate_result
+  - order: 20
+    id: approval_boundary
+    evidence: approval_or_blocked_governance_gate
+  - order: 21
+    id: impact_if_authorized
+    evidence: authorized_executor_receipt
+  - order: 22
+    id: verify
+    evidence: verification_readback
+  - order: 23
+    id: close
+    evidence: closure_event
