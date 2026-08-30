@@ -29,7 +29,8 @@ base.C3_RUNTIME_SCHEMA['properties']['score']['properties']['lf_system_fidelity'
 # Constrain score evidence refs to canonical, stable refs. The validator accepts
 # deliverable sibling keys, component IDs, handoff_to_next and self_verdict. The
 # generation grammar cannot know dynamic component IDs in advance, so use the
-# canonical sibling refs for each criterion.
+# canonical sibling refs for each criterion. Mirror the canonical validator's
+# substantive-summary boundary in generation rather than weakening validation.
 SAFE_EVIDENCE_REFS = {
     'layout_precision': ['layout_grid', 'spacing_typography'],
     'visual_hierarchy': ['visual_hierarchy'],
@@ -45,6 +46,7 @@ for _criterion, _refs in SAFE_EVIDENCE_REFS.items():
         'type': 'string',
         'enum': _refs,
     }
+    _evidence_schema[_criterion]['properties']['summary']['minLength'] = 12
 
 
 def _bullets(input_text: str) -> list[str]:
@@ -71,11 +73,13 @@ There are exactly {count} authoritative requirement bullets. Treat this mapping 
 {labeled}
 
 Create exactly one component_tree entry for every REQ-N. Do not spend a component slot on a decorative/title-only component. A requirement component's content must preserve the concrete nouns and all material qualifiers from its REQ-N: exact numbers/cardinalities, named channels/media, required/optional qualifiers, alternatives, and temporal/ordering/conditional relations. Copying the requirement verbatim is preferred to replacing it with a broader category label.
+Each requirement component must have its own unique component_id; never reuse a component_id across two REQ-N entries.
 A generic title/container such as "Identity Information", "Offer Details", "Documents Required" or "Payment" does NOT satisfy a detailed requirement.
 When a requirement contains state/order/temporal/conditional semantics, preserve those semantics in component_tree.content and/or the matching state_map.behavior.
 Do not count screen_definition, token_map, prompt_constraints, score, handoff or self_verdict as requirement coverage.
 Do not emit unresolved bracket placeholders such as [expiration date] or [document type]. When a concrete value was intentionally not supplied, express only the authorized concept (for example, vigencia/expiración without inventing a date).
 Score evidence refs are restricted as follows: layout_precision -> layout_grid or spacing_typography; visual_hierarchy -> visual_hierarchy; lf_system_fidelity -> token_map or risk_controls; state_mapping -> state_map; handoff_quality -> handoff_to_next.
+Every score evidence summary must be substantive (at least 12 characters) and describe the evidence in its allowed refs; nominal labels such as ok/pass/valid are not evidence.
 score.total MUST equal the arithmetic sum of the five criterion scores.
 Canonical PASS scoring is evidence-bound: never emit self_verdict PASS with score.total below 20 or handoff_quality=0. Rate each criterion only from evidence actually present in its allowed refs; do not inflate a score to obtain PASS. If the produced evidence supports a passing deliverable, reflect that evidence consistently in the five criterion scores before returning.
 Before returning, verify REQ-1 through REQ-{count} one by one against component_tree/state_map and repair any missing material fact.
@@ -128,10 +132,16 @@ def _run(label: str, source: str, *, constrained: bool = False) -> dict:
         )
         # Bind each authoritative requirement to one deterministic array position.
         # Always rebuild from the immutable object template so sequential cases do
-        # not inherit the previous case's tuple/list schema.
+        # not inherit the previous case's tuple/list schema. Bind a deterministic
+        # component_id per position so the canonical duplicate-ID guard is enforced
+        # by generation instead of repaired after the fact.
         tuple_items = []
-        for bullet in bullets:
+        for idx, bullet in enumerate(bullets, 1):
             item = copy.deepcopy(_COMPONENT_ITEM_TEMPLATE)
+            item['properties']['component_id'] = {
+                'type': 'string',
+                'enum': [f'req_{idx}'],
+            }
             item['properties']['content'] = {
                 'type': 'string',
                 'enum': [bullet],
