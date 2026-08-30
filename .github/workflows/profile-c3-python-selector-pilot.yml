@@ -8,7 +8,9 @@ on:
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_context_selector_pilot_v2.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_core_cases.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_core_cases_v2.py'
+      - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_core_cases_v3.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_family_cases.py'
+      - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_family_cases_v2.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_structured_output_smoke.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_local_runtime.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_runner.py'
@@ -100,7 +102,7 @@ jobs:
           LF_MMPROJ_PATH: ${{ runner.temp }}/lf-model/mmproj.gguf
         run: |
           set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_family_cases.py
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_family_cases_v2.py
 
   c3-core-50-gate:
     name: c3-core-50-gate
@@ -116,10 +118,73 @@ jobs:
           echo "C3_FAMILIES=10"
           echo "C3_CASES_TOTAL=50"
           if [ "$MATRIX_RESULT" = "success" ]; then
-            echo "C3_CORE_VERDICT=CORE_50_OF_50_PASS"
-            echo "C3_REPLICATION_UNLOCKED=true"
+            echo "C3_CORE_50_VERDICT=CORE_50_OF_50_PASS"
           else
-            echo "C3_CORE_VERDICT=NO_MASSIFY"
-            echo "C3_REPLICATION_UNLOCKED=false"
+            echo "C3_CORE_50_VERDICT=NO_MASSIFY"
             exit 2
           fi
+
+  c3-authoritative-core-3:
+    name: c3-authoritative-core-3
+    needs: c3-core-50-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Exact-head readback
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          ACTUAL_HEAD="$(git rev-parse HEAD)"
+          echo "EXPECTED_HEAD=$EXPECTED_HEAD"
+          echo "ACTUAL_HEAD=$ACTUAL_HEAD"
+          test "$ACTUAL_HEAD" = "$EXPECTED_HEAD"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Build pinned llama.cpp
+        env:
+          LLAMA_COMMIT: 925e1179947ea0c0ebfb0032df18af3a729822be
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/ggml-org/llama.cpp.git "$RUNNER_TEMP/llama.cpp"
+          cd "$RUNNER_TEMP/llama.cpp"
+          git checkout --detach "$LLAMA_COMMIT"
+          test "$(git rev-parse HEAD)" = "$LLAMA_COMMIT"
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=OFF
+          cmake --build build --config Release -j 4 --target llama-cli
+      - name: Download pinned model
+        env:
+          MODEL_COMMIT: 5037fcf163dd95d1e41d1974465f0898ed108ca2
+          MODEL_SHA256: d02fe9b69ad8cadbbd228e387667af66612c44bed29ffc8eb1e7caf9ac486c12
+          MMPROJ_SHA256: 980c9b2f78c04e6cff93d277ada09e768394f112d75db3b4e9dea8a69f9fb904
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/lf-model"
+          curl -L --fail --retry 3 --retry-delay 2 "https://huggingface.co/ggml-org/Qwen2.5-VL-3B-Instruct-GGUF/resolve/${MODEL_COMMIT}/Qwen2.5-VL-3B-Instruct-Q4_K_M.gguf?download=true" -o "$RUNNER_TEMP/lf-model/model.gguf"
+          curl -L --fail --retry 3 --retry-delay 2 "https://huggingface.co/ggml-org/Qwen2.5-VL-3B-Instruct-GGUF/resolve/${MODEL_COMMIT}/mmproj-Qwen2.5-VL-3B-Instruct-Q8_0.gguf?download=true" -o "$RUNNER_TEMP/lf-model/mmproj.gguf"
+          echo "${MODEL_SHA256}  $RUNNER_TEMP/lf-model/model.gguf" | sha256sum -c -
+          echo "${MMPROJ_SHA256}  $RUNNER_TEMP/lf-model/mmproj.gguf" | sha256sum -c -
+      - name: Structured-output smoke
+        env:
+          LF_LLAMA_CLI_PATH: ${{ runner.temp }}/llama.cpp/build/bin/llama-cli
+          LF_MODEL_PATH: ${{ runner.temp }}/lf-model/model.gguf
+          LF_MMPROJ_PATH: ${{ runner.temp }}/lf-model/mmproj.gguf
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_structured_output_smoke.py
+      - name: Run authoritative CORE 3/3
+        env:
+          LF_REPOSITORY_VISIBILITY: public
+          LF_RUNNER_LABEL: ubuntu-latest
+          LF_LLAMA_SOURCE_COMMIT: 925e1179947ea0c0ebfb0032df18af3a729822be
+          LF_LLAMA_CLI_PATH: ${{ runner.temp }}/llama.cpp/build/bin/llama-cli
+          LF_MODEL_PATH: ${{ runner.temp }}/lf-model/model.gguf
+          LF_MMPROJ_PATH: ${{ runner.temp }}/lf-model/mmproj.gguf
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_core_cases_v3.py
