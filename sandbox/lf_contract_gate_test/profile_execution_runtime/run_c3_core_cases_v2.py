@@ -10,6 +10,13 @@ import run_c3_core_cases as core
 base = core.base
 SCORE_KEYS = core.SCORE_KEYS
 
+# Preserve one immutable object-item template. Per-case tuple binding mutates the
+# shared runtime schema, so reading component_tree['items'] on the next case would
+# return the previous tuple/list instead of the original object schema.
+_COMPONENT_ITEM_TEMPLATE = copy.deepcopy(
+    base.C3_RUNTIME_SCHEMA['properties']['deliverable_created']['properties']['component_tree']['items']
+)
+
 # The canonical validator allows lf_system_fidelity=5 only when both token_map
 # and risk_controls carry evidence. The pilot must not invent a risk control just
 # to earn a perfect self-score, so cap this self-rating at 4 at generation time.
@@ -105,18 +112,15 @@ def _normalize_derived_score(result: dict) -> dict:
 def _run(label: str, source: str, *, constrained: bool = False) -> dict:
     if constrained:
         bullets = _bullets(base.INPUT)
-        count = len(bullets)
         component_tree = (
             base.C3_RUNTIME_SCHEMA['properties']['deliverable_created']['properties']['component_tree']
         )
         # Bind each authoritative requirement to one deterministic array position.
-        # The previous shared enum allowed a model to repeat one valid bullet and
-        # omit another while still satisfying cardinality. Tuple items preserve
-        # exactly the supplied facts, in order, without synthesizing semantic data.
-        template = component_tree['items']
+        # Always rebuild from the immutable object template so sequential cases do
+        # not inherit the previous case's tuple/list schema.
         tuple_items = []
         for bullet in bullets:
-            item = copy.deepcopy(template)
+            item = copy.deepcopy(_COMPONENT_ITEM_TEMPLATE)
             item['properties']['content'] = {
                 'type': 'string',
                 'enum': [bullet],
@@ -129,7 +133,7 @@ def _run(label: str, source: str, *, constrained: bool = False) -> dict:
         else:
             component_tree['minItems'] = 1
             component_tree['maxItems'] = 1
-            item = copy.deepcopy(template)
+            item = copy.deepcopy(_COMPONENT_ITEM_TEMPLATE)
             item['properties']['content'] = {'type': 'string', 'enum': ['']}
             component_tree['items'] = item
     result = _original_run(label, source, constrained=constrained)
