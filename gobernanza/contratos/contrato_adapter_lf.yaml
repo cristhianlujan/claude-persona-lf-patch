@@ -1,4 +1,4 @@
-version: v0.2
+version: v0.3
 status: CANDIDATO_READ_ONLY
 operation: CREACION_ADAPTER_LF
 regularization: REGULARIZACION_STEP_GATE_L2L3_001
@@ -19,6 +19,7 @@ required_before_write:
   - validate_file_name
   - duplicate_check
   - classification
+  - adapter_binding_authority_check
   - adapter_design_complete
   - operational_evidence_pack_check
   - research_pack_pass
@@ -27,17 +28,34 @@ required_before_write:
   - decision_matrix_present
 allowed:
   repository: cristhianlujan/claude-persona-lf-patch
-  path_prefix: /skills/
+  path_prefix: /adapters/
   document_status: CANDIDATO
   operational_status: READ_ONLY
   runtime: NO_HABILITADO
   automatic_impact: BLOQUEADO
+binding_authority:
+  canonical_pattern: ROUTER_BOUND_ONLY
+  required_manifest_fields:
+    - base_path
+    - activation_gate
+    - invocation_policy
+  accepted_target_patterns:
+    - binds_profile
+    - applies_to_profiles
+    - router_bound_project_or_deliverable
+  rules:
+    - invocation_policy_must_equal_ROUTER_BOUND_ONLY
+    - activation_gate_must_be_router_bound
+    - base_path_must_start_with_adapters
+    - declared_profile_targets_must_resolve_in_operational_source
+    - project_or_deliverable_adapters_may_bind_by_router_activation_without_parent_skill
+    - parent_skill_is_not_required_without_explicit_future_contract
 blocked:
   - write_without_contract
   - write_without_readback
-  - write_without_owner_skill_declared
+  - write_without_router_binding_authority
   - missing_duplicate_check
-  - adapter_without_parent_skill
+  - unbound_adapter_creation
   - assistant_freeform_decision
   - enable_runtime
   - mark_vigente
@@ -54,14 +72,17 @@ required_after_write:
   - contract_judge
   - evidence_log_if_available
 coverage_note:
-  total_steps_operation: 16
-  steps_with_supabase_contract: 3
-  steps_covered:
-    - step_order: 1
-      step_id: router
-    - step_order: 2
-      step_id: operational_source
-    - step_order: 5
-      step_id: duplicate_check
-  coverage_pct: "18.75%"
-  pending_coverage_lote: LOTE_20D_O_SIGUIENTE
+  total_steps_operation: 17
+  step_binding_authority:
+    step_order: 4
+    step_id: creator_asset
+    compatibility_note: >
+      El step_id histórico se conserva para no romper consumers. Su propósito vigente
+      es validar la autoridad de binding Router del Adapter, no exigir un parent Skill.
+  current_architecture_evidence:
+    - adapters/lf_shell_profile_adapter/manifest.yaml
+    - adapters/marketplace_lf_ux/manifest.yaml
+    - adapters/marketplace_lf_cx_trust/manifest.yaml
+    - adapters/project_brand_mockup_render_lf/manifest.yaml
+    - public.v_lf_router_adapter_bindings
+  pending_coverage_lote: CONTINUOUS_GOVERNANCE
