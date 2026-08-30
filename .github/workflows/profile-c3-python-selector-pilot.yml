@@ -6,18 +6,24 @@ on:
       - '.github/workflows/profile-c3-python-selector-pilot.yml'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_context_selector_pilot.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_context_selector_pilot_v2.py'
+      - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_core_cases.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/run_structured_output_smoke.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_local_runtime.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_runner.py'
       - 'profiles/ui_architect/SKILL.md'
+      - 'profiles/ui_architect/validators/validate_ui_architect_output.py'
 
 permissions:
   contents: read
 
+concurrency:
+  group: profile-c3-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   c3-selector-real-runtime:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
         with:
@@ -66,7 +72,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_structured_output_smoke.py
-      - name: Run A vs C3 real runtime
+      - name: Run C3 core 3 cases
         env:
           LF_REPOSITORY_VISIBILITY: public
           LF_RUNNER_LABEL: ubuntu-latest
@@ -76,4 +82,4 @@ jobs:
           LF_MMPROJ_PATH: ${{ runner.temp }}/lf-model/mmproj.gguf
         run: |
           set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_context_selector_pilot_v2.py
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_c3_core_cases.py
