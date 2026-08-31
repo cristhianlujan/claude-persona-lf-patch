@@ -1,0 +1,27 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "CREACION_ADAPTER_LF",
+  "execution_id": "EXEC-ADAPTER-LF-SHELL-DEPTH-CANARY-20260829-005",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "da808edc5b016980db99ececaee3ed279ae1b254",
+  "judge_sha": "JUDGE-ADAPTER-EXAMPLES-DEPTH-20260601-001",
+  "source_sha_list": [
+    "5925b0316ddaf5269f36f89cd94aeaf88630fcd2",
+    "da808edc5b016980db99ececaee3ed279ae1b254",
+    "3dccb272f61558ceea2cefae8e0ff78b1fd2de98",
+    "aaac393d3ddfa0fba7ba1a4e0fc79649d1e4c64f",
+    "07c70e11b7d5f2331c6a676dd8a1c4573629ae5d",
+    "61e109f4d6a4136512e0fdde31f107453dce7303",
+    "7b51558a6e6e2bcff23f44916752ac38fb72fe5b",
+    "915043af7870db6956a4b29d26c73ae2f91760eb"
+  ],
+  "target_paths": [
+    "adapters/lf_shell_profile_adapter/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-30T04:45:00Z",
+  "notes": "PASS_SANDBOX source-bound receipt for governed revalidation of the existing LF Shell/Profile Adapter candidate. Supabase execution EXEC-ADAPTER-LF-SHELL-DEPTH-CANARY-20260829-005 persisted all 17 canonical CREACION_ADAPTER_LF steps; v_lf_operation_execution_judge returned required_steps=17, required_steps_pass=17, fail_count=0, blocked_count=0, judge_result=PASS, and all 17 step statuses matched their judge-derived results. The revalidation used current Router-bound authority, contract v0.3, six explicit depth scenarios, five depth eval cases, closed schemas and the exact shared depth/examples judges. It does not create a second Adapter, enable runtime, authorize production, modify profiles or permit automatic impact. Exact-head push+pull_request CI and merge/readback remain separate gates."
+}
