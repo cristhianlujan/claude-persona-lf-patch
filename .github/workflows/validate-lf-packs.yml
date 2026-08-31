@@ -50,36 +50,27 @@ jobs:
           export PGHOST="$SUPABASE_POOLER_HOST" PGPORT=5432 PGUSER="postgres.${SUPABASE_PROJECT_ID}" PGDATABASE=postgres PGSSLMODE=require
           q() { psql -X -v ON_ERROR_STOP=1 -Atqc "$1"; }
           echo "READBACK_TS=$(q "select now()")"
-
           echo "ROUTER_REGISTRY_BEGIN"
           q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select * from public.lf_router_action_registry where operation_code='LEARNING_BRIDGE_KB_CARD_LF' or action_code='KNOWLEDGE_LEARNING_BRIDGE' order by updated_at desc) x"
           echo "ROUTER_REGISTRY_END"
-
-          echo "RUN30_STEPS_SCHEMA_BEGIN"
-          q "select coalesce(string_agg(column_name||':'||data_type,',' order by ordinal_position),'') from information_schema.columns where table_schema='public' and table_name='lf_operation_execution_steps'"
-          echo "RUN30_STEPS_SCHEMA_END"
           echo "RUN30_STEPS_BEGIN"
-          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select step_order,step_code,status,input_payload,output_payload,evidence_refs,judge_summary,error_code from public.lf_operation_execution_steps where execution_id='LF-AUTOLEARN-RUN-20260831-030' order by step_order,attempt_no) x"
+          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select * from public.lf_operation_execution_steps where execution_id='LF-AUTOLEARN-RUN-20260831-030' order by step_order,created_at) x"
           echo "RUN30_STEPS_END"
-
           echo "RUN30_EVENTS_BEGIN"
           q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select id,evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,payload,created_at from public.lf_eventos where id between 9683 and 9700 order by id) x"
           echo "RUN30_EVENTS_END"
-
           echo "ELIGIBLE_COUNT_BEGIN"
           q "select count(*) from public.lf_knowledge_base where kb_category='COMPETENCIA' and consumer_ready=true and grounding_status='GROUNDED' and decision_upstream='ALLOW_PROD_GATE'"
           echo "ELIGIBLE_COUNT_END"
           echo "RUN30_MARKED_KB_BEGIN"
           q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select kb_id,kb_subcategory,topic,competitor,quality_score,source_url,evidence_event_id,updated_by_execution_id from public.lf_knowledge_base where updated_by_execution_id='LF-AUTOLEARN-RUN-20260831-030' order by quality_score desc nulls last) x"
           echo "RUN30_MARKED_KB_END"
-
           echo "ASSET_STATUS_DISTRIBUTION_BEGIN"
           q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select tipo_activo,estado_operativo,runtime_estado,count(*) n from public.v_lf_fuente_operativa where tipo_activo in ('PERFIL','PROFILE','AGENT','SKILL','ADAPTER','OPERATION') group by 1,2,3 order by 1,2,3) x"
           echo "ASSET_STATUS_DISTRIBUTION_END"
           echo "CONSUMER_CANDIDATES_BEGIN"
           q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select codigo_activo,nombre_canonico,tipo_activo,subtipo_activo,estado_documental,estado_operativo,runtime_estado,version_normalizada from public.v_lf_fuente_operativa where tipo_activo in ('PERFIL','PROFILE','AGENT','SKILL','ADAPTER','OPERATION') and (nombre_canonico ilike '%cliente%' or nombre_canonico ilike '%ui%' or nombre_canonico ilike '%deuda%' or nombre_canonico ilike '%oferta%' or nombre_canonico ilike '%pago%' or nombre_canonico ilike '%learning%' or nombre_canonico ilike '%aprendiz%' or codigo_activo in ('ACT-0046','ACT-0012')) order by tipo_activo,codigo_activo limit 100) x"
           echo "CONSUMER_CANDIDATES_END"
-
           echo "CARD_FACTORY_ROUTER_BEGIN"
           q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select * from public.lf_router_action_registry where operation_code='CREACION_CARD_LF' order by updated_at desc) x"
           echo "CARD_FACTORY_ROUTER_END"
