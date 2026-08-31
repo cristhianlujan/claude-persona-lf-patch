@@ -1,4 +1,4 @@
-version: v0.3
+version: v0.4
 judge: JUDGE_CONTRATO_CARD_LF
 operation: CREACION_CARD_LF
 regularization: REGULARIZACION_STEP_GATE_L2L3_001
@@ -38,7 +38,7 @@ fail_if:
   - missing_judge_sha
   - blocking_observations
 result_values:
-  - PASS
+  - STEP_CLEAN_PASS
   - FAIL
   - BLOCKED
   - RETURN_TO_WORKER
