@@ -40,3 +40,6 @@ jobs:
 
       - name: Validate learning engine pack
         run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
+
+      - name: Validate learning consumer champion benchmark
+        run: python sandbox/lf_contract_gate_test/validate_learning_consumer_benchmark.py
