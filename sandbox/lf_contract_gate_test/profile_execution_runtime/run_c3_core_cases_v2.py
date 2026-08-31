@@ -46,6 +46,8 @@ for _criterion, _refs in SAFE_EVIDENCE_REFS.items():
         'type': 'string',
         'enum': _refs,
     }
+    _evidence_schema[_criterion]['properties']['refs']['minItems'] = 1
+    _evidence_schema[_criterion]['properties']['refs']['maxItems'] = len(_refs)
     _evidence_schema[_criterion]['properties']['summary']['minLength'] = 12
 
 
