@@ -44,7 +44,11 @@ CLASSIFIED_EXTERNAL_PREFIXES = (
     "router_generic_keyword_dispatch_",
     "router_generic_tie_break_",
 )
-CLASSIFIED_EXTERNAL_NAMES = {"retire_b2b_auth005_legacy_totp_screen"}
+CLASSIFIED_EXTERNAL_NAMES = {
+    "retire_b2b_auth005_legacy_totp_screen",
+    "create_lf_cross_audit_control_plane_v1",
+    "index_lf_cross_audit_foreign_keys_v1",
+}
 FILENAME_RE = re.compile(r"^(\d{14})_(.+)\.sql$")
 MARKER_RE = re.compile(
     r"^-- LF_MIGRATION_SOURCE_CHECKPOINT_V1 "
