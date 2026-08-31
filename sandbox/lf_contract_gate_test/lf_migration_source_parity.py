@@ -23,8 +23,8 @@ MANAGED_PREFIXES = (
     "programacion_prog017_",
 )
 
-# Exact historical names that are LF-managed and were applied before their
-# source files were materialized. Do not replace this with a broad prefix.
+# Exact historical and explicitly governed LF migration names.
+# Do not replace this with a broad prefix.
 MANAGED_EXACT_NAMES = {
     "promote_router_compact_jit_v1",
     "promote_card_deterministic_resolvers_safe_subset",
@@ -35,6 +35,7 @@ MANAGED_EXACT_NAMES = {
     "index_lf_cross_audit_foreign_keys_v1",
     "fix_operation_step_enforcement_status_compatibility",
     "materialize_router_enforcement_and_gate0_inventory",
+    "fix_operation_judge_jsonb_shape_compatibility",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
@@ -106,6 +107,8 @@ def main() -> int:
         fail("FAIL_CI009_SELFTEST_OPERATION_STEP_ENFORCEMENT_COMPATIBILITY")
     if not managed("materialize_router_enforcement_and_gate0_inventory"):
         fail("FAIL_CI009_SELFTEST_ROUTER_ENFORCEMENT_GATE0_INVENTORY")
+    if not managed("fix_operation_judge_jsonb_shape_compatibility"):
+        fail("FAIL_CI009_SELFTEST_OPERATION_JUDGE_JSONB_SHAPE_COMPATIBILITY")
     if managed("create_lf_unreviewed_future_change"):
         fail("FAIL_CI009_SELFTEST_MANAGED_PREFIX_TOO_BROAD")
     if not classified("programacion_worker_spec_probe"):
@@ -184,7 +187,7 @@ def main() -> int:
         f"grandfathered={grandfathered_count}/{grandfathered_sha} "
         f"classification_baseline_end={classification_baseline_end}"
     )
-    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=9/9")
+    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=10/10")
     return 0
 
 
