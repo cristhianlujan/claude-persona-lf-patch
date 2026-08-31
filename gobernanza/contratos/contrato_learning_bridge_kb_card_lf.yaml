@@ -1,8 +1,8 @@
-version: v0.3
+version: v0.2
 status: CANDIDATO_READ_ONLY
 operation: LEARNING_BRIDGE_KB_CARD_LF
 source_model: GIT_FIRST_YAML
-purpose: Conectar conocimiento LF elegible con lifecycle de aprendizaje, Card Factory y consumo gobernado sin impacto automatico.
+purpose: Conectar conocimiento LF elegible con lifecycle de aprendizaje y Card Factory sin impacto automatico.
 router_first:
   required: true
   router_asset: ACT-0001
@@ -46,21 +46,38 @@ clustering:
     - competitor_fallback_used
   priority:
     - cluster_code: PAGOS_Y_NO_ADEUDO
-      match_any: [kb_subcategory=CONSTANCIA_PAGO, topic_contains=NO_ADEUDO, topic_contains=PROCEDIMIENTO_DE_PAGOS]
+      match_any:
+        - kb_subcategory=CONSTANCIA_PAGO
+        - topic_contains=NO_ADEUDO
+        - topic_contains=PROCEDIMIENTO_DE_PAGOS
     - cluster_code: CAMPANAS_Y_OFERTAS
-      match_any: [topic_contains=CAMPANA, topic_contains=DESCUENTO, source_url_contains=Terminos_y_Condiciones_Campanas]
+      match_any:
+        - topic_contains=CAMPANA
+        - topic_contains=DESCUENTO
+        - source_url_contains=Terminos_y_Condiciones_Campanas
     - cluster_code: AUTOGESTION_DIGITAL
-      match_any: [topic_contains=AUTOGESTION, topic_contains=REGISTRO, source_url_host=mi.finanty.com]
+      match_any:
+        - topic_contains=AUTOGESTION
+        - topic_contains=REGISTRO
+        - source_url_host=mi.finanty.com
     - cluster_code: EDUCACION_CREDITICIA
-      match_any: [kb_subcategory=CENTRAL_RIESGO, kb_subcategory=HISTORIAL_CREDITICIO]
+      match_any:
+        - kb_subcategory=CENTRAL_RIESGO
+        - kb_subcategory=HISTORIAL_CREDITICIO
     - cluster_code: REINSERCION_FINANCIERA
-      match_any: [kb_subcategory=REINSERCION_FINANCIERA]
+      match_any:
+        - kb_subcategory=REINSERCION_FINANCIERA
     - cluster_code: ALTERNATIVAS_FINANCIERAS
-      match_any: [kb_subcategory=PRESTAMOS_REPORTADO, topic_contains=PRESTAMO, topic_contains=CONSOLIDACION]
+      match_any:
+        - kb_subcategory=PRESTAMOS_REPORTADO
+        - topic_contains=PRESTAMO
+        - topic_contains=CONSOLIDACION
     - cluster_code: NEGOCIACION_DEUDA
-      match_any: [kb_subcategory=NEGOCIAR_DEUDA]
+      match_any:
+        - kb_subcategory=NEGOCIAR_DEUDA
     - cluster_code: BENCHMARK_PERIFERICO
-      match_any: [fallback=true]
+      match_any:
+        - fallback=true
   no_llm_for_assignment: true
   unknown_behavior: BLOCKED_CLUSTER_UNCLASSIFIED
 outputs:
@@ -75,8 +92,6 @@ outputs:
     - VERIFICADO
     - CERRADO
   card_operation: CREACION_CARD_LF
-  consumer_binding_contract: gobernanza/contratos/contrato_learning_consumer_binding_benchmark_lf.yaml
-  benchmark_matrix: gobernanza/benchmarks/learning_consumer_50_cases_v1.yaml
 required_before_analysis:
   - router_read
   - operational_source_read
@@ -99,53 +114,20 @@ required_before_card:
   - research_to_rules_matrix_present
   - decision_matrix_present
   - card_factory_contract_read
-required_before_consumer_use:
-  - card_or_capability_candidate_present
-  - exact_consumer_binding_present
-  - consumer_context_pack_present
-  - champion_id_present
-  - challenger_id_present
-  - benchmark_dataset_present
-  - positive_routing_cases_present
-  - should_not_invoke_cases_present
-  - authority_judge_present
-  - bounded_output_contract_present
-required_before_close:
-  - consumer_binding_readback
-  - champion_challenger_benchmark_readback
-  - benchmark_family_results_present
-  - quality_metrics_present
-  - routing_metrics_present
-  - efficiency_metrics_present
-  - performance_metrics_present
-  - cost_metrics_or_provider_unavailable_marker
-  - stability_metrics_present
-  - no_critical_family_regression
-  - authority_pass_100
-  - critical_must_not_invoke_false_positives_zero
-  - rollback_to_champion_available
 allowed:
   - read_sources
   - deterministic_filtering
   - deterministic_deduplication
   - deterministic_attribution
   - deterministic_clustering
-  - deterministic_consumer_selection_by_exact_binding
-  - deterministic_context_selection
   - semantic_analysis
   - persist_candidate_learning_evidence
   - invoke_card_factory_candidate_path
-  - consumer_champion_challenger_benchmark
   - sandbox_testing
 blocked:
   - bypass_router
   - llm_cluster_assignment
-  - llm_consumer_selection_when_deterministic_binding_exists
   - detectado_without_taxonomy
-  - implicit_consumer_binding
-  - close_without_consumer_binding
-  - close_without_champion_benchmark
-  - aggregate_metric_hiding_critical_fail
   - direct_write_official_rules
   - direct_production_impact
   - enable_act_0046_runtime_by_force
@@ -162,7 +144,5 @@ required_after_each_transition:
   - evidence_readback
   - source_ref
   - lifecycle_state
-  - consumer_binding_state_if_applicable
-  - champion_challenger_state_if_applicable
   - ekb_write_if_error_or_reusable_pattern
   - closure_event
