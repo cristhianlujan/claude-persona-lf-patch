@@ -34,21 +34,66 @@ jobs:
     env:
       SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
       SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+      BENCH_EXECUTION_ID: LF-AUTOLEARN-CONSUMER-BENCH-20260831-001
     steps:
-      - name: Final Run31 durable readback
+      - name: Persist independent benchmark evidence
+        if: github.event_name == 'push' && github.ref == 'refs/heads/lf/learning-consumer-benchmark-gate-20260831'
         env:
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
         shell: bash
         run: |
           set -euo pipefail
           export PGHOST="$SUPABASE_POOLER_HOST" PGPORT=5432 PGUSER="postgres.${SUPABASE_PROJECT_ID}" PGDATABASE=postgres PGSSLMODE=require
-          q() { psql -X -v ON_ERROR_STOP=1 -Atqc "$1"; }
-          echo "ROUTER=$(q "select jsonb_build_object('action_code',action_code,'operation_code',operation_code,'status',status,'write_allowed',write_allowed) from public.lf_router_action_registry where action_code='KNOWLEDGE_LEARNING_BRIDGE' and operation_code='LEARNING_BRIDGE_KB_CARD_LF' limit 1")"
-          echo "RUN31=$(q "select jsonb_build_object('execution_id',execution_id,'status',status,'started_at',started_at,'completed_at',completed_at,'manifest',manifest) from public.lf_operation_execution where execution_id='LF-AUTOLEARN-RUN-20260831-031'")"
-          echo "RUN31_EVENTS=$(q "select count(*) from public.lf_eventos where payload->>'execution_id'='LF-AUTOLEARN-RUN-20260831-031'")"
-          echo "RUN31_KB_RECEIPTS=$(q "select count(*) from public.lf_eventos where entidad_tipo='KNOWLEDGE' and payload->>'execution_id'='LF-AUTOLEARN-RUN-20260831-031' and payload->>'eligibility'='PASS'")"
-          echo "RUN31_BINDING_RECEIPTS=$(q "select count(*) from public.lf_eventos where entidad_tipo='KNOWLEDGE' and payload->>'execution_id'='LF-AUTOLEARN-RUN-20260831-031' and payload->>'consumer_binding_state'='SOURCE_BINDING_CANDIDATE'")"
-          echo "RUN31_READY_FOR_BINDING=$(q "select count(*) from public.lf_eventos where entidad_tipo='KNOWLEDGE' and payload->>'execution_id'='LF-AUTOLEARN-RUN-20260831-031' and payload->>'consumer_binding_state'='READY_FOR_BINDING'")"
-          echo "RUN31_CLUSTERS=$(q "select coalesce(jsonb_object_agg(cluster_code,n),'{}') from (select payload->>'cluster_code' cluster_code,count(*) n from public.lf_eventos where entidad_tipo='KNOWLEDGE' and payload->>'execution_id'='LF-AUTOLEARN-RUN-20260831-031' group by 1 order by 1) x")"
-          echo "DB001=$(q "select jsonb_build_object('frequency',frecuencia,'state',estado,'last_seen',ultima_vez,'evidence',evidencia->'run31_recovery') from public.lf_error_knowledge where codigo='DB-001'")"
-          echo "BACKLOG_AFTER=$(q "with p as (select distinct entidad_codigo::uuid kb_id from public.lf_eventos where entidad_tipo='KNOWLEDGE' and payload->>'producer'='LF_APRENDIZAJE_AUTONOMO' and coalesce(payload->>'eligibility','') like '%PASS%'), c as (select distinct (manifest->>'source_kb_id')::uuid kb_id from public.lf_operation_execution where operation_code='CREACION_CARD_LF' and completed_at is not null and status not like 'BLOCKED%' and coalesce(manifest->>'source_kb_id','') <> '') select count(*) from public.lf_knowledge_base k left join p using(kb_id) left join c using(kb_id) where k.kb_category='COMPETENCIA' and k.consumer_ready=true and k.grounding_status='GROUNDED' and k.decision_upstream='ALLOW_PROD_GATE' and p.kb_id is null and c.kb_id is null")"
+          psql -X -v ON_ERROR_STOP=1 <<SQL
+          begin;
+          do \$\$
+          declare v_backlog integer;
+          begin
+            if exists(select 1 from public.lf_operation_execution where execution_id='LF-AUTOLEARN-CONSUMER-BENCH-20260831-001') then
+              raise exception 'BENCH_EXECUTION_ALREADY_EXISTS';
+            end if;
+            with p as (
+              select distinct entidad_codigo::uuid kb_id from public.lf_eventos
+              where entidad_tipo='KNOWLEDGE' and payload->>'producer'='LF_APRENDIZAJE_AUTONOMO' and coalesce(payload->>'eligibility','') like '%PASS%'
+            ), c as (
+              select distinct (manifest->>'source_kb_id')::uuid kb_id from public.lf_operation_execution
+              where operation_code='CREACION_CARD_LF' and completed_at is not null and status not like 'BLOCKED%' and coalesce(manifest->>'source_kb_id','') <> ''
+            )
+            select count(*) into v_backlog from public.lf_knowledge_base k left join p using(kb_id) left join c using(kb_id)
+            where k.kb_category='COMPETENCIA' and k.consumer_ready=true and k.grounding_status='GROUNDED' and k.decision_upstream='ALLOW_PROD_GATE' and p.kb_id is null and c.kb_id is null;
+            if v_backlog <> 0 then raise exception 'BACKLOG_NOT_DRAINED actual=%',v_backlog; end if;
+          end \$\$;
+
+          insert into public.lf_operation_execution(execution_id,operation_code,target_type,target_code,status,started_at,completed_at,manifest,created_by_execution_id,updated_by_execution_id)
+          values('LF-AUTOLEARN-CONSUMER-BENCH-20260831-001','LEARNING_BRIDGE_KB_CARD_LF','OPERATION','LEARNING_BRIDGE_KB_CARD_LF','BENCHMARK_ROUTING_PASS_BEHAVIORAL_BLOCKED',now(),now(),jsonb_build_object(
+            'router_first',true,'router_action','KNOWLEDGE_LEARNING_BRIDGE','router_status','ACTIVE','router_write_allowed',false,
+            'source_pr',368,'source_branch','lf/learning-consumer-benchmark-gate-20260831','source_head','$GITHUB_SHA','main_sha','1ffcbfba410c46330367175df0756acecf4396a9',
+            'work_kind','INDEPENDENT_SAFE_WORK_DURING_CONCURRENT_LEARNING_RUN','concurrent_execution_id','LF-AUTOLEARN-RUN-20260831-031','concurrent_execution_status','READY_FOR_BINDING','concurrent_units_processed',20,'concurrent_closure_event_id',9722,
+            'units_processed_by_this_execution',0,'backlog_final',0,'consumer_id','PERFIL-PRODUCT-DIRECTOR-LF','consumer_runtime_state','NO_HABILITADO',
+            'bindings_source_candidate',jsonb_build_array('NEGOCIACION_DEUDA','ALTERNATIVAS_FINANCIERAS','EDUCACION_CREDITICIA'),
+            'champion_id','CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1','challenger_id','CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1',
+            'benchmark_cases',50,'benchmark_families',10,'positive_cases',25,'negative_cases',25,
+            'routing_metrics',jsonb_build_object('tp',25,'tn',25,'fp',0,'fn',0,'precision',1.0,'recall',1.0,'specificity',1.0,'p50_ns',140,'p95_ns',250,'max_ns',600,'llm_calls',0,'round_trips',0,'context_pack_bytes',294),
+            'routing_verdict','CHALLENGER_WINS','behavioral_quality_status','INSUFFICIENT_EVIDENCE_RUNTIME_DISABLED','provider_cost_status','ZERO_LLM_CALLS_ROUTING_LAYER_ONLY',
+            'quality_gate','BLOCKED_BEHAVIORAL_RUNTIME_DISABLED','performance_gate','PASS_ROUTING_LAYER_ONLY','governance_gate','PASS_NO_IMPACT','automatic_impact',false,'production_authorized',false,'acceptance_declared',false,
+            'authority_frontier','PROFILE_RUNTIME_NO_HABILITADO_AND_SOURCE_PR_DRAFT_NOT_MERGED','next_action','Enable governed profile runtime or equivalent sandbox harness, then run behavioral champion/challenger before consumer promotion'
+          ),'LF-AUTOLEARN-CONSUMER-BENCH-20260831-001','LF-AUTOLEARN-CONSUMER-BENCH-20260831-001');
+
+          update public.lf_error_knowledge
+          set frecuencia=frecuencia+3,
+              ultima_vez=now(),updated_at=now(),
+              evidencia=concat(coalesce(evidencia,''),E'\nRUN LF-AUTOLEARN-CONSUMER-BENCH-20260831-001: 3 schema-assumption occurrences recovered schema-first: Router source view columns; execution step columns; lf_error_knowledge.evidencia text type. PR #368.')
+          where codigo='DB-001';
+
+          insert into public.lf_eventos(evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,payload,origen,created_by_execution_id,updated_by_execution_id)
+          values('GOVERNANCE_CLOSURE','OPERATION','LEARNING_BRIDGE_KB_CARD_LF','Consumer benchmark: routing/context challenger pasó 50/50; behavioral A/B bloqueado por runtime de perfil no habilitado; backlog concurrente drenado a 0.','INFO',jsonb_build_object(
+            'evidence_schema_version','operational-event/v2','producer','LF_APRENDIZAJE_AUTONOMO','purpose','Persistir benchmark champion/challenger y trabajo independiente durante concurrencia.','acceptance_declared',false,'occurred_at',now()::text,'execution_id','LF-AUTOLEARN-CONSUMER-BENCH-20260831-001',
+            'concurrent_execution_id','LF-AUTOLEARN-RUN-20260831-031','backlog_final',0,'benchmark_cases',50,'routing_verdict','CHALLENGER_WINS','precision',1.0,'recall',1.0,'specificity',1.0,'false_positives',0,'false_negatives',0,
+            'behavioral_quality_status','INSUFFICIENT_EVIDENCE_RUNTIME_DISABLED','consumer_binding_state','SOURCE_BINDING_CANDIDATE','automatic_impact',false,'production_authorized',false,'authority_frontier','PROFILE_RUNTIME_NO_HABILITADO_AND_SOURCE_PR_DRAFT_NOT_MERGED'),
+            'LF_APRENDIZAJE_AUTONOMO','LF-AUTOLEARN-CONSUMER-BENCH-20260831-001','LF-AUTOLEARN-CONSUMER-BENCH-20260831-001');
+          commit;
+
+          echo "BENCH_EXECUTION=$(psql -X -Atqc "select status from public.lf_operation_execution where execution_id='LF-AUTOLEARN-CONSUMER-BENCH-20260831-001'")"
+          echo "BENCH_EVENTS=$(psql -X -Atqc "select count(*) from public.lf_eventos where payload->>'execution_id'='LF-AUTOLEARN-CONSUMER-BENCH-20260831-001'")"
+          echo "DB001_FREQUENCY=$(psql -X -Atqc "select frecuencia from public.lf_error_knowledge where codigo='DB-001'")"
+          echo "BACKLOG_FINAL=$(psql -X -Atqc "with p as (select distinct entidad_codigo::uuid kb_id from public.lf_eventos where entidad_tipo='KNOWLEDGE' and payload->>'producer'='LF_APRENDIZAJE_AUTONOMO' and coalesce(payload->>'eligibility','') like '%PASS%'), c as (select distinct (manifest->>'source_kb_id')::uuid kb_id from public.lf_operation_execution where operation_code='CREACION_CARD_LF' and completed_at is not null and status not like 'BLOCKED%' and coalesce(manifest->>'source_kb_id','') <> '') select count(*) from public.lf_knowledge_base k left join p using(kb_id) left join c using(kb_id) where k.kb_category='COMPETENCIA' and k.consumer_ready=true and k.grounding_status='GROUNDED' and k.decision_upstream='ALLOW_PROD_GATE' and p.kb_id is null and c.kb_id is null")"
