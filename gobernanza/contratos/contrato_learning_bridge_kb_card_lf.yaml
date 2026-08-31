@@ -1,0 +1,148 @@
+version: v0.2
+status: CANDIDATO_READ_ONLY
+operation: LEARNING_BRIDGE_KB_CARD_LF
+source_model: GIT_FIRST_YAML
+purpose: Conectar conocimiento LF elegible con lifecycle de aprendizaje y Card Factory sin impacto automatico.
+router_first:
+  required: true
+  router_asset: ACT-0001
+  operational_source: public.v_lf_fuente_operativa
+inputs:
+  canonical_source: public.lf_knowledge_base
+  eligibility:
+    - kb_category=COMPETENCIA
+    - consumer_ready=true
+    - grounding_status=GROUNDED
+    - decision_upstream=ALLOW_PROD_GATE
+  complementary_raw_source: public.sbx_competitive_*
+attribution:
+  field: effective_competitor
+  source_priority:
+    - competitor
+    - source_url_host_if_unequivocal
+  host_fallback_map:
+    finanty.com: Finanty
+    www.finanty.com: Finanty
+    mi.finanty.com: Finanty
+    reevalua.com: Reevalua
+    www.reevalua.com: Reevalua
+    cdn.reevalua.com: Reevalua
+  normalization:
+    - trim
+    - lowercase_for_comparison
+    - remove_diacritics_for_comparison
+  preserve_original_kb: true
+  require_fallback_used_flag: true
+clustering:
+  required_before_detectado: true
+  taxonomy_version: LF_LEARNING_CLUSTER_V1
+  assignment_mode: DETERMINISTIC_PRIORITY_FIRST_MATCH
+  required_output:
+    - taxonomy_version
+    - cluster_code
+    - assignment_rule
+    - assignment_reason
+    - effective_competitor
+    - competitor_fallback_used
+  priority:
+    - cluster_code: PAGOS_Y_NO_ADEUDO
+      match_any:
+        - kb_subcategory=CONSTANCIA_PAGO
+        - topic_contains=NO_ADEUDO
+        - topic_contains=PROCEDIMIENTO_DE_PAGOS
+    - cluster_code: CAMPANAS_Y_OFERTAS
+      match_any:
+        - topic_contains=CAMPANA
+        - topic_contains=DESCUENTO
+        - source_url_contains=Terminos_y_Condiciones_Campanas
+    - cluster_code: AUTOGESTION_DIGITAL
+      match_any:
+        - topic_contains=AUTOGESTION
+        - topic_contains=REGISTRO
+        - source_url_host=mi.finanty.com
+    - cluster_code: EDUCACION_CREDITICIA
+      match_any:
+        - kb_subcategory=CENTRAL_RIESGO
+        - kb_subcategory=HISTORIAL_CREDITICIO
+    - cluster_code: REINSERCION_FINANCIERA
+      match_any:
+        - kb_subcategory=REINSERCION_FINANCIERA
+    - cluster_code: ALTERNATIVAS_FINANCIERAS
+      match_any:
+        - kb_subcategory=PRESTAMOS_REPORTADO
+        - topic_contains=PRESTAMO
+        - topic_contains=CONSOLIDACION
+    - cluster_code: NEGOCIACION_DEUDA
+      match_any:
+        - kb_subcategory=NEGOCIAR_DEUDA
+    - cluster_code: BENCHMARK_PERIFERICO
+      match_any:
+        - fallback=true
+  no_llm_for_assignment: true
+  unknown_behavior: BLOCKED_CLUSTER_UNCLASSIFIED
+outputs:
+  lifecycle:
+    - DETECTADO
+    - ANALIZADO
+    - CARD_CREADA
+    - EN_REVISION
+    - PRUEBA_SANDBOX
+    - APROBADO
+    - IMPACTADO
+    - VERIFICADO
+    - CERRADO
+  card_operation: CREACION_CARD_LF
+required_before_analysis:
+  - router_read
+  - operational_source_read
+  - ekb_read
+  - source_record_readback
+  - source_grounded
+  - source_consumer_ready
+  - effective_competitor_resolved
+  - duplicate_check
+  - existing_card_check
+  - taxonomy_version_present
+  - cluster_assignment_deterministic
+required_before_card:
+  - lifecycle_detectado
+  - lifecycle_analizado
+  - evidence_pack_present
+  - applicability_lf_present
+  - novelty_assessed
+  - risk_assessed
+  - research_to_rules_matrix_present
+  - decision_matrix_present
+  - card_factory_contract_read
+allowed:
+  - read_sources
+  - deterministic_filtering
+  - deterministic_deduplication
+  - deterministic_attribution
+  - deterministic_clustering
+  - semantic_analysis
+  - persist_candidate_learning_evidence
+  - invoke_card_factory_candidate_path
+  - sandbox_testing
+blocked:
+  - bypass_router
+  - llm_cluster_assignment
+  - detectado_without_taxonomy
+  - direct_write_official_rules
+  - direct_production_impact
+  - enable_act_0046_runtime_by_force
+  - create_second_card_factory
+  - fabricate_human_approval
+  - n8n_llm_reasoning
+  - promote_without_quality_performance_governance_pass
+impact_boundary:
+  automatic_impact: BLOQUEADO
+  production: BLOQUEADO
+  n8n_role: EXECUTOR_ONLY_AFTER_VALID_APPROVAL
+required_after_each_transition:
+  - execution_id
+  - evidence_readback
+  - source_ref
+  - lifecycle_state
+  - ekb_write_if_error_or_reusable_pattern
+  - closure_event
