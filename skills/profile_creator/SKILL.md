@@ -1,124 +1,226 @@
 # SKILL — LF Profile Creator
 
+Status: APPROVED / CONTROLLED_PRODUCTION_READ_ONLY  
+Operational asset: `ACT-0045`  
+Automatic impact: `BLOQUEADO`
+
+## RUNTIME CRITICAL GATE — EXECUTE FIRST
+
+Before materializing a profile candidate, normalize the request as:
+
+`AUTHORIZED PURPOSE -> RESOLVED CONTEXT/AUTHORITY -> PROFILE BEHAVIOR -> OUTPUT CONTRACT -> CROSS-ARTIFACT CONSISTENCY -> VALIDATION/PROOF BOUNDARY -> HANDOFF`
+
+1. **Resolve context before asking.** Read the literal request plus already supplied authoritative context. Do not re-ask a purpose, guardrail, source authority or boundary that is already resolved.
+2. **Build a worker, not a folder.** The candidate must define executable behavior, failure routing, an observable output contract and a handoff effect. File presence or long prose is not profile quality.
+3. **Do not hardcode one output shape.** A generated worker may use a closed `status`, `output_type`, `self_verdict` or another explicit root discriminator appropriate to its contract. The factory must not impose `status` merely because the factory itself uses it.
+4. **Cross-artifact consistency is mandatory.** Output modes/discriminators, schema, examples, eval expectations, rubric, mini-judge and handoff cannot contradict one another. An undeclared mode, stale rubric taxonomy or example that the schema cannot represent is a blocking defect.
+5. **Executable validation is mandatory.** Every generated candidate must carry a real profile-local `validators/validate_pack.py`, declared in its manifest. A nominal filename or unconditional PASS is invalid.
+6. **Adapters are bindings, not alternate workers.** Create adapters only when needed. They may be invoked only after Router/profile or governed skill resolution, must name caller + trigger + input/output boundary, receive compact execution-changing context, and must not become loose standalone entrypoints.
+7. **Input governance is selective, not permanent overhead.** Every generated or repaired Profile must declare the compact `INPUT_GOVERNANCE_AGENT` binding, reuse valid Adapter receipts, skip covered checks, prefer local deterministic checks, and invoke compact governance only for unresolved profile-relevant risk.
+8. **Self-repair once before producer success.** If the candidate re-asks resolved context, invents authority, uses inconsistent output modes, omits an executable validator, leaks internal metadata, creates an unbound adapter, duplicates Adapter governance, or overclaims behavioral proof, repair once. If material defects remain, return to worker or block.
+9. **Behavioral proof is separate.** Fixtures, deterministic validators and contract regression do not prove RAW model behavior. `PROFILE_PACK_CREATED` may mean review-ready only; it never means behavioral PASS, runtime approval or production authorization.
+10. **Router/direct equivalence.** For the same governed creation request, Router and direct worker invocation must converge on materially equivalent purpose, authority, output contract, guardrails and failure behavior unless different authoritative context is explicitly evidenced.
+11. **Reference strong profiles by pattern, not by domain.** UI Architect and Gamification may inform operational quality patterns such as execute-first gates, context resolution, typed outputs, semantic guards and proof boundaries. Never copy their UI/gamification domain rules into unrelated profiles.
+
+This gate overrides any later wording that could be read as allowing a structurally complete but operationally inconsistent candidate.
+
 ## Role
 
-Create complete LF profile pack candidates under governance control. A pack is not complete merely because its files exist: the producer must prove that the candidate is sufficiently developed for independent semantic review.
+Create complete LF profile pack candidates under governance control. A pack is not complete merely because files exist: the producer must prove that the candidate is developed, internally consistent and executable enough to enter independent semantic review.
 
 ## Mandatory route
 
-Router → Supabase `public.v_lf_fuente_operativa` → Active governing asset → Adapter when applicable → Operation → Verification → Closure.
+`ACT-0001 Router -> ACTUALIZACION/CREACION governed operation -> exact authority resolution -> Profile Creator -> candidate validators -> Quality Pack semantic gate -> governed closure`
 
-If two live authorities disagree, or a required destination/contract cannot be resolved, block and report the conflict. Never choose a structural identifier or requirement because it matches the observed repository state or a translated handoff.
+For profile creation, preserve the official `CREACION_PERFIL_LF` destination contract. For maintenance of this factory, use `ACTUALIZACION_SKILL_LF` bound to `ACT-0045` before the first GitHub write.
+
+If two live authorities disagree, or a required destination/contract cannot be resolved, block and report the conflict. Never choose structural identifiers or requirements because they merely match repository state, memory or a translated handoff.
 
 ## Inputs
 
-- Requested profile purpose.
-- Scope and target user/task.
-- Source authority with exact references.
-- Allowed and blocked impacts.
-- Required gates.
-- Existing assets to avoid duplication.
-- Whether the profile exposes user-facing output.
+- requested profile purpose and bounded responsibility;
+- target user/task and whether output is user-facing or internal;
+- exact source authority references;
+- allowed and blocked impacts;
+- required routing and handoff target;
+- existing assets to avoid duplication;
+- material guardrails and claims that must be preserved;
+- adapter need, only when an integration boundary is actually required.
 
-## Outputs
+Treat these as a resolution set, not a questionnaire. Resolve supplied context first. Missing information blocks only when it can materially change authority, product meaning, safety, consent, output semantics or governed impact.
 
-A structured profile pack candidate containing developed:
+## Candidate pack contract
 
-- Profile/skill definition.
-- Contracts and failure routing.
-- Typed schemas.
-- Judges/rubrics.
-- Checklists.
-- Positive and negative examples.
-- Fixtures.
-- Executable validators.
-- Positive and negative evals with assertions.
-- Actionable handoffs.
-- Adapters.
-- `manifest.json` when the resolved destination requires it.
+A generated candidate must materialize a reviewable package containing at minimum:
 
-The candidate artifact must also declare:
+- `README.md`;
+- `SKILL.md` with execute-first behavior, inputs, route, output contract, failure behavior and authority limits;
+- `contracts/main_contract.md`;
+- `contracts/input_governance_binding.json` with the canonical selective `INPUT_GOVERNANCE_AGENT` binding;
+- a typed primary output schema, normally `schemas/output.schema.json`, with a closed root discriminator;
+- `judges/score_rubric.md` and `judges/mini_judge.md` consistent with the schema;
+- positive, negative, adversarial and Router/direct eval coverage with observable assertions;
+- `examples/good_output.json` and `examples/bad_output.json` that the schema can represent;
+- executable `validators/validate_pack.py`;
+- actionable handoff to Quality Pack;
+- `manifest.json` declaring required files and candidate/read-only/runtime boundaries;
+- adapters only when needed, with explicit invocation/caller/context-budget rules.
 
-- `artifact_type=PROFILE_PACK_CANDIDATE`;
-- `profile_pack_id`;
-- `source_authority`;
-- candidate/read-only/runtime/automatic-impact boundaries;
-- `exposes_user_facing_output` as a boolean;
-- an `evidence_map` with explicit `source_ref` and supported claims;
-- the materialized `files` map.
+A user-facing profile must additionally protect `user_payload` from `internal_envelope` or an equivalent typed boundary. Internal governance/orchestration metadata must never leak into declared user output.
 
-When returning `PROFILE_PACK_CREATED`, the output must deliver the created candidate through an exact `deliverable_artifact_ref`. The receiver must be able to inspect that artifact directly; a pack ID, a list of intended filenames or a prose description is not evidence that the pack exists.
+## Input Governance Agent binding
 
-When `exposes_user_facing_output=true`, the generated profile must separate user-facing content from orchestration metadata through an explicit contract boundary such as `user_payload` / `internal_envelope`. When false, the candidate must not invent that boundary merely to satisfy a template.
+Every new or repaired Profile must know `INPUT_GOVERNANCE_AGENT` as a **selective capability**, never as a default extra reasoning pass.
 
-## Deterministic depth gate
+Mandatory flow:
 
-Before returning `PROFILE_PACK_CREATED`, execute:
+`Router -> Profile -> Adapter(s) -> Adapter receipts -> Profile -> INPUT_GOVERNANCE_AGENT only for residual risk -> PASS / REPAIR / BLOCK -> Profile execution or BLOCK`
 
-`skills/profile_creator/validators/validate_candidate_depth.py <deliverable_artifact_ref>`
+Before governance invocation, the Profile must inspect valid Adapter receipts. If a receipt covers the same check for the same governed input/version, governance is skipped for that check. Covered checks must never be repeated merely to obtain a second opinion.
 
-The required result is:
+Allowed triggers are closed to:
+
+- `input_not_governed_by_adapter`;
+- `cross_adapter_conflict`;
+- `profile_specific_constraint`;
+- `authority_or_policy_uncertainty`;
+- `critical_input_validation`.
+
+Context policy:
+
+- L0: reuse valid Adapter receipt; additional governance cost approximately zero;
+- L1: resolve deterministic Profile-local checks with no extra model call;
+- L2: send only `input_ref`, `intent`, `profile_id`, unresolved checks, Profile-scope constraints and compact evidence refs;
+- L3: expand only for a critical unresolved decision and persist `reason_for_expansion`, `additional_refs_loaded`, `token_budget_class` and `receipt_id`.
+
+Do not inject the full Profile prompt, all Adapter outputs, complete conversation, full EKB, complete policies or general documentation by default. A second LLM call is exception-only; prefer the same execution context.
+
+The machine-readable source of truth is `contracts/input_governance_binding.json`, validated by `skills/profile_creator/validators/validate_governance_binding.py`. Its cache key is `input_hash+governance_version+profile_id`. `PASS` may execute, `REPAIR` must preserve original/governed input lineage, and `BLOCK` is fail-closed and cannot be downgraded to warning. Every governed decision requires a receipt.
+
+## Producer output
+
+The Profile Creator itself returns one governed producer result using `schemas/output.schema.json` and one of:
+
+- `PROFILE_PACK_CREATED`
+- `RETURN_TO_ORCHESTRATOR`
+- `RETURN_TO_WORKER_FOR_SELF_REPAIR`
+- `BLOCK_PIPELINE`
+
+`PROFILE_PACK_CREATED` requires a resolvable `deliverable_artifact_ref` bound to the exact candidate. Filename lists, prompts, prose-only profiles and unresolved references are not created artifacts.
+
+## Deterministic readiness gates
+
+### 1. GOV-021 producer-depth component
+
+`skills/profile_creator/validators/validate_candidate_depth.py` remains the historical deterministic depth component. Its positive status remains:
 
 `DEPTH_READY_FOR_SEMANTIC_REVIEW`
 
-The validator checks deterministic reviewability invariants: developed core contracts, typed output schema, traceable evidence, positive and negative evals with assertions, actionable Quality Pack handoff, governance boundaries, and conditional user/internal output separation.
+It proves reviewable depth only and never independent semantic approval.
 
-This depth gate is **not** semantic Quality Pack approval. It must return `semantic_quality_review=NOT_EXECUTED`. A candidate that fails the gate returns to the worker for self-repair.
+### 2. Cross-artifact consistency component
 
-The outer Profile Creator result must include a `depth_gate` receipt bound to the exact same `deliverable_artifact_ref`.
+`skills/profile_creator/validators/validate_candidate_consistency.py` verifies generically that:
 
-## Handoff outcome rule
+- a profile-local executable validator exists and is declared;
+- the output discriminator is closed without forcing the field name `status`;
+- examples and eval expectations use only declared output values;
+- schema and rubric score taxonomy agree when scoring exists;
+- mini-judge references the output/schema contract;
+- Router/direct equivalence has explicit eval coverage;
+- adapter files, when present, are bound to Router/profile invocation and compact context;
+- behavioral PASS is not claimed without an execution receipt.
 
-For outputs routed to Quality Pack, the evidence layers remain distinct:
+### 3. Input-governance binding component
 
-1. `PRODUCER_DEPTH`: the created candidate passes `validate_candidate_depth.py`.
-2. `DETERMINISTIC_INTAKE`: Quality Pack receives explicit context and the exact observable artifact.
-3. `SEMANTIC_REVIEW`: an independent reviewer evaluates evidence quality, governance, safety, leakage/scope and the Quality Pack rubric.
-4. `FULL_HANDOFF_OUTCOME`: only after all required layers and observable next state are complete.
+`skills/profile_creator/validators/validate_governance_binding.py` verifies that:
 
-Neither producer depth nor deterministic intake may be promoted to `PASS_TO_COMPOSER`, `PASS_WITH_RESTRICTIONS`, `BEHAVIORAL_EVAL_PASS` or general semantic PASS.
+- the Profile declares `INPUT_GOVERNANCE_AGENT` with `mode=selective` and `entrypoint=router_only`;
+- the trigger set is closed to Profile-relevant residual risk;
+- valid Adapter receipts have precedence and duplicate checks are disabled;
+- normal context is capped at L2 compact and L3 is exception-only;
+- full policy injection and default second LLM calls are forbidden;
+- PASS / REPAIR / BLOCK and mandatory receipts are encoded;
+- critical uncertainty and missing governed receipts fail closed;
+- the binding file is declared by the candidate manifest.
 
-A substantive Quality Pack rejection is still a valid handoff execution if the relevant receiver layer actually received and reviewed the candidate; an inability to locate the candidate is a producer handoff failure.
+### 4. Canonical aggregate readiness gate
 
-## CI profile-validator discovery contract
+For new Profile Creator success claims, execute:
 
-The repository's existing `Validate LF Packs` workflow invokes `skills/profile_creator/validators/validate_pack.py`. That validator is therefore the reusable discovery boundary for profile-local deterministic pack validation; no profile slug may be hardcoded as a privileged canary.
+`skills/profile_creator/validators/validate_candidate_readiness.py`
 
-Rules:
+This composes GOV-021 depth, cross-artifact consistency and the input-governance binding gate. It preserves all depth blockers and removes only the historical `OUTPUT_SCHEMA_STATUS_NOT_CLOSED` assumption when a different closed root discriminator is deterministically proven.
 
-- A governed profile opts into this CI boundary by materializing `profiles/<slug>/validators/validate_pack.py`.
-- Profile Creator discovers every such entrypoint under `profiles/`, excluding template/private underscore directories.
-- Each discovered validator executes exactly once and its stdout/stderr remains visible in CI evidence.
-- A discovered validator failure fails Profile Creator validation; a later PASS cannot mask it.
-- A profile without the entrypoint is not silently treated as validated; it is simply outside this deterministic CI contract until the profile publishes the entrypoint through its own governed update.
-- Symlinked or out-of-tree validators are rejected.
-- Discovery must remain generic: a future profile that publishes the contract is picked up without changing `.github/workflows/**` or adding its slug to Profile Creator.
+A successful aggregate result remains named `DEPTH_READY_FOR_SEMANTIC_REVIEW`, with the backward-compatible validation scope:
 
-This boundary proves only deterministic/profile-local validation at the exact checkout. It does not replace semantic judge execution, Router/direct behavioral evidence, runtime receipts, post-merge smoke, independent audit, runtime authorization or promotion.
+`validation_scope=DETERMINISTIC_READINESS_DEPTH_AND_CONSISTENCY`
 
-## Blocking rules
+and must expose `component_gates.input_governance_binding=PASS` in addition to the existing components.
 
-Block or return when:
+Independent semantic Quality Pack review remains mandatory after this gate.
 
-- Source authority is missing, contradictory or unresolved.
-- ACT-0045 or the applicable asset is not verified.
-- A required destination contract cannot be resolved.
-- The request tries to create a final operational profile directly.
-- The request enables runtime or production general.
-- The output is only prose, filenames or prompt text.
-- `PROFILE_PACK_CREATED` is claimed without a resolvable created candidate artifact.
-- The resolved destination requires `manifest.json` and the candidate does not materialize it.
-- The manifest contradicts profile identity, operation, candidate/read-only status, runtime or automatic-impact boundaries.
-- The candidate lacks developed contract/schema/judge/evals/handoff/evidence required by the deterministic depth gate.
-- A user-facing profile exposes internal orchestration metadata without a protected output boundary.
-- `depth_gate.candidate_ref` differs from `deliverable_artifact_ref`.
-- Producer depth or deterministic intake is presented as semantic Quality Pack approval.
-- A full handoff outcome is claimed while a required receiver layer remains unexecuted.
-- The request creates narrow one-off rules instead of reusable mother rules.
+## Cross-artifact invariants
 
-## Expected statuses
+Reject or self-repair a candidate when any of these occurs:
 
-- PROFILE_PACK_CREATED
-- RETURN_TO_ORCHESTRATOR
-- RETURN_TO_WORKER_FOR_SELF_REPAIR
-- BLOCK_PIPELINE
+- SKILL declares output modes absent from the schema;
+- evals expect a discriminator value the schema does not permit;
+- examples contain a root mode or required shape the schema cannot represent;
+- rubric criteria/evidence taxonomy disagree with the score schema;
+- mini-judge evaluates fields/modes no longer present;
+- a validator is missing, nominal or unconditional;
+- an adapter can be invoked as a standalone bypass of Router/profile resolution;
+- a Profile invokes `INPUT_GOVERNANCE_AGENT` on every execution or duplicates Adapter-covered checks;
+- a Profile omits the governance receipt contract, allows fail-open BLOCK handling, or injects full policy/context by default;
+- the candidate claims behavioral execution from fixtures or deterministic contract tests;
+- Router and direct behavior materially diverge without authoritative reason.
+
+These are producer invariants, not domain-specific UI or gamification rules.
+
+## Behavioral proof boundary
+
+A deterministic fixture demonstrates that a contract accepts/rejects a prepared object. It does **not** demonstrate what the profile actually answered.
+
+A behavioral claim requires actual RAW model output plus an execution receipt bound to exact profile source, exact input and exact output, followed by the appropriate deterministic validator, semantic judge and fresh adversarial/holdout evidence. If that execution surface is unavailable, keep behavioral status `NOT_EXECUTED` or explicitly blocked; never promote a fixture result into behavioral PASS.
+
+## Profile-validator CI discovery
+
+The existing `skills/profile_creator/validators/validate_pack.py` generically discovers `profiles/<slug>/validators/validate_pack.py`, excluding underscore/template directories, rejects symlink/out-of-tree/duplicate validator targets, and executes every discovered profile validator exactly once.
+
+This generic discovery contract must be preserved. A future profile with a valid `validators/validate_pack.py` must enter CI without a Profile Creator slug-specific patch.
+
+## Handoff to Quality Pack
+
+The receiver must get only review-relevant execution context:
+
+- exact artifact identity/reference;
+- source authority and evidence map;
+- main contract and output schema refs;
+- aggregate readiness/depth receipt including input-governance component status;
+- score rubric and mini-judge refs;
+- blocking codes and remaining risks;
+- explicit behavioral proof status;
+- runtime/automatic-impact boundary.
+
+Do not dump unrelated governance history into the generated worker payload.
+
+## Failure routing
+
+- materially unresolved authority or destination -> `RETURN_TO_ORCHESTRATOR`;
+- repairable candidate inconsistency/depth/validator/adapter/governance-binding defect -> `RETURN_TO_WORKER_FOR_SELF_REPAIR`;
+- fabricated evidence, identity change, runtime enablement, unsupported production/VALIDATED mark, automatic promotion, governance bypass or irreconcilable authority conflict -> `BLOCK_PIPELINE`.
+
+## Authority limits
+
+Profile Creator may create candidate profile packages only within the governed operation. It must not:
+
+- create or alter ACT-0045 authority;
+- enable runtime or production automatically;
+- mark a generated profile VALIDATED by producer assertion;
+- merge without the governing merge authorization;
+- edit official sources outside the bound operation;
+- treat its own deterministic readiness as independent semantic approval;
+- use UI/Gamification-specific domain mechanics as a universal template.
+
+Runtime state and automatic impact remain exactly as governed upstream.
