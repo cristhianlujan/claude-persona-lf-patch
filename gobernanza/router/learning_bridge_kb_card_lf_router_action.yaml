@@ -1,0 +1,18 @@
+version: v0.1
+status: CANDIDATO_SOURCE
+router_asset: ACT-0001
+asset_type: KNOWLEDGE
+action_code: KNOWLEDGE_LEARNING_BRIDGE
+operation_code: LEARNING_BRIDGE_KB_CARD_LF
+operation_resolution: STATIC
+requires_existing_target: true
+requires_missing_target: false
+write_allowed: false
+purpose: Route eligible canonical LF knowledge into the governed learning bridge without production impact.
+constraints:
+  - router_first
+  - public.v_lf_fuente_operativa_readback
+  - public.lf_knowledge_base_is_canonical
+  - act_0046_runtime_not_forced
+  - automatic_impact_blocked
+  - no_policy_or_judge_binding_before_qpg
