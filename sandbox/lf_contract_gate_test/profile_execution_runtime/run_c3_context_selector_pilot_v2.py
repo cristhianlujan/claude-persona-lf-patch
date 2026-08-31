@@ -32,9 +32,9 @@ class GBNFSchemaAdapter(base.GitHubHostedLlamaCppAdapter):
     """Pilot-only transport fix: preconvert -jf schema to pinned GBNF."""
 
     def __init__(self, *args, **kwargs):
-        # Structured JSON must remain bounded. The previous 4096 ceiling is retained
-        # as a transport safety net, while schema-level string bounds below prevent
-        # one free-form field from consuming the whole generation budget.
+        # Long authoritative cases reached the score section with every functional
+        # requirement preserved but truncated at the previous output ceiling.
+        # Keep generation bounded while giving structured JSON enough room to close.
         if kwargs.get('max_output_tokens') == 2048:
             kwargs['max_output_tokens'] = 4096
         super().__init__(*args, **kwargs)
@@ -105,18 +105,15 @@ class GBNFSchemaAdapter(base.GitHubHostedLlamaCppAdapter):
         return response
 
 
-# Bound every free-form terminal string in the structured contract. This is a
-# general serialization invariant: no individual field may consume an unbounded
-# share of the JSON token budget. Requirement content is later replaced with
-# exact enums by run_c3_core_cases_v2, so authoritative literals are not clipped.
-SHORT_STRING = {'type': 'string', 'maxLength': 160}
-TEXT_STRING = {'type': 'string', 'maxLength': 320}
+# Pilot-only structured-output boundary. Cardinalities are explicitly bounded so
+# the grammar cannot consume the output budget by expanding optional/repeated data.
+# This does not alter the canonical profile or its domain authority.
 ENTRY = {
     'type': 'object',
     'additionalProperties': False,
     'properties': {
-        'key': SHORT_STRING,
-        'value': TEXT_STRING,
+        'key': {'type': 'string'},
+        'value': {'type': 'string'},
     },
     'required': ['key', 'value'],
 }
@@ -125,8 +122,8 @@ C3_RUNTIME_SCHEMA_V2 = {
     'type': 'object',
     'additionalProperties': False,
     'properties': {
-        'worker': SHORT_STRING,
-        'output_type': SHORT_STRING,
+        'worker': {'type': 'string'},
+        'output_type': {'type': 'string'},
         'deliverable_created': {
             'type': 'object',
             'additionalProperties': False,
@@ -135,11 +132,11 @@ C3_RUNTIME_SCHEMA_V2 = {
                     'type': 'object',
                     'additionalProperties': False,
                     'properties': {
-                        'task_mode': SHORT_STRING,
-                        'screen_name': SHORT_STRING,
-                        'purpose': TEXT_STRING,
-                        'mode_operativo': SHORT_STRING,
-                        'specialties': {'type': 'array', 'maxItems': 4, 'items': SHORT_STRING},
+                        'task_mode': {'type': 'string'},
+                        'screen_name': {'type': 'string'},
+                        'purpose': {'type': 'string'},
+                        'mode_operativo': {'type': 'string'},
+                        'specialties': {'type': 'array', 'maxItems': 4, 'items': {'type': 'string'}},
                     },
                     'required': ['task_mode', 'screen_name'],
                 },
@@ -150,81 +147,169 @@ C3_RUNTIME_SCHEMA_V2 = {
                         'type': 'object',
                         'additionalProperties': False,
                         'properties': {
-                            'zone_id': SHORT_STRING,
-                            'component_id': SHORT_STRING,
-                            'component_type': SHORT_STRING,
-                            'role': SHORT_STRING,
-                            'content': TEXT_STRING,
+                            'zone_id': {'type': 'string'},
+                            'component_id': {'type': 'string'},
+                            'component_type': {'type': 'string'},
+                            'role': {'type': 'string'},
+                            'content': {'type': 'string'},
                             'visual_priority': {'type': 'integer'},
-                            'color_tokens': {'type': 'array', 'maxItems': 4, 'items': SHORT_STRING},
+                            'color_tokens': {'type': 'array', 'maxItems': 4, 'items': {'type': 'string'}},
                             'typography': {
-                                'type': 'object', 'additionalProperties': False,
+                                'type': 'object',
+                                'additionalProperties': False,
                                 'properties': {'entries': {'type': 'array', 'maxItems': 3, 'items': ENTRY}},
                                 'required': ['entries'],
                             },
                             'spacing': {
-                                'type': 'object', 'additionalProperties': False,
+                                'type': 'object',
+                                'additionalProperties': False,
                                 'properties': {'entries': {'type': 'array', 'maxItems': 3, 'items': ENTRY}},
                                 'required': ['entries'],
                             },
-                            'state': SHORT_STRING,
-                            'allowed_variants': {'type': 'array', 'maxItems': 4, 'items': SHORT_STRING},
-                            'blocked_variants': {'type': 'array', 'maxItems': 4, 'items': SHORT_STRING},
+                            'state': {'type': 'string'},
+                            'allowed_variants': {'type': 'array', 'maxItems': 4, 'items': {'type': 'string'}},
+                            'blocked_variants': {'type': 'array', 'maxItems': 4, 'items': {'type': 'string'}},
                         },
-                        'required': ['zone_id','component_id','component_type','role','content','visual_priority','color_tokens','typography','spacing','state','allowed_variants','blocked_variants'],
+                        'required': [
+                            'zone_id','component_id','component_type','role','content','visual_priority',
+                            'color_tokens','typography','spacing','state','allowed_variants','blocked_variants'
+                        ],
                     },
                 },
                 'layout_grid': {
-                    'type': 'object', 'additionalProperties': False,
+                    'type': 'object',
+                    'additionalProperties': False,
                     'properties': {
-                        'pattern': SHORT_STRING, 'columns': {'type': 'integer'}, 'rows': {'type': 'integer'},
-                        'responsive_notes': {'type': 'array', 'maxItems': 3, 'items': TEXT_STRING},
+                        'pattern': {'type': 'string'},
+                        'columns': {'type': 'integer'},
+                        'rows': {'type': 'integer'},
+                        'responsive_notes': {'type': 'array', 'maxItems': 3, 'items': {'type': 'string'}},
                     },
                     'required': ['pattern', 'responsive_notes'],
                 },
                 'visual_hierarchy': {
-                    'type': 'array', 'maxItems': 10,
+                    'type': 'array',
+                    'maxItems': 10,
                     'items': {
-                        'type': 'object', 'additionalProperties': False,
-                        'properties': {'parent_id': SHORT_STRING, 'child_ids': {'type': 'array', 'maxItems': 10, 'items': SHORT_STRING}},
+                        'type': 'object',
+                        'additionalProperties': False,
+                        'properties': {
+                            'parent_id': {'type': 'string'},
+                            'child_ids': {'type': 'array', 'maxItems': 10, 'items': {'type': 'string'}},
+                        },
                         'required': ['parent_id', 'child_ids'],
                     },
                 },
                 'state_map': {
-                    'type': 'object', 'additionalProperties': False,
-                    'properties': {'entries': {'type': 'array', 'maxItems': 10, 'items': {
-                        'type': 'object', 'additionalProperties': False,
-                        'properties': {'component_id': SHORT_STRING, 'state': SHORT_STRING, 'behavior': TEXT_STRING},
-                        'required': ['component_id', 'state', 'behavior'],
-                    }}},
+                    'type': 'object',
+                    'additionalProperties': False,
+                    'properties': {
+                        'entries': {
+                            'type': 'array',
+                            'maxItems': 10,
+                            'items': {
+                                'type': 'object',
+                                'additionalProperties': False,
+                                'properties': {
+                                    'component_id': {'type': 'string'},
+                                    'state': {'type': 'string'},
+                                    'behavior': {'type': 'string'},
+                                },
+                                'required': ['component_id', 'state', 'behavior'],
+                            },
+                        },
+                    },
                     'required': ['entries'],
                 },
-                'token_map': {'type': 'object','additionalProperties': False,'properties': {'entries': {'type': 'array','maxItems': 8,'items': ENTRY}},'required': ['entries']},
-                'spacing_typography': {'type': 'object','additionalProperties': False,'properties': {'entries': {'type': 'array','maxItems': 8,'items': ENTRY}},'required': ['entries']},
-                'density_rules': {'type': 'array', 'maxItems': 6, 'items': TEXT_STRING},
-                'risk_controls': {'type': 'array', 'maxItems': 8, 'items': TEXT_STRING},
-                'prompt_constraints': {'type': 'array', 'maxItems': 8, 'items': TEXT_STRING},
+                'token_map': {
+                    'type': 'object',
+                    'additionalProperties': False,
+                    'properties': {'entries': {'type': 'array', 'maxItems': 8, 'items': ENTRY}},
+                    'required': ['entries'],
+                },
+                'spacing_typography': {
+                    'type': 'object',
+                    'additionalProperties': False,
+                    'properties': {'entries': {'type': 'array', 'maxItems': 8, 'items': ENTRY}},
+                    'required': ['entries'],
+                },
+                'density_rules': {'type': 'array', 'maxItems': 6, 'items': {'type': 'string'}},
+                'risk_controls': {'type': 'array', 'maxItems': 8, 'items': {'type': 'string'}},
+                'prompt_constraints': {'type': 'array', 'maxItems': 8, 'items': {'type': 'string'}},
             },
-            'required': ['screen_definition','component_tree','layout_grid','visual_hierarchy','state_map','token_map','spacing_typography','density_rules','risk_controls','prompt_constraints'],
+            'required': [
+                'screen_definition','component_tree','layout_grid','visual_hierarchy','state_map',
+                'token_map','spacing_typography','density_rules','risk_controls','prompt_constraints'
+            ],
         },
         'score': {
-            'type': 'object', 'additionalProperties': False,
+            'type': 'object',
+            'additionalProperties': False,
             'properties': {
-                'layout_precision': {'type': 'integer'}, 'visual_hierarchy': {'type': 'integer'},
-                'lf_system_fidelity': {'type': 'integer'}, 'state_mapping': {'type': 'integer'},
-                'handoff_quality': {'type': 'integer'}, 'total': {'type': 'integer'},
+                'layout_precision': {'type': 'integer', 'minimum': 0, 'maximum': 5},
+                'visual_hierarchy': {'type': 'integer', 'minimum': 0, 'maximum': 5},
+                'lf_system_fidelity': {'type': 'integer', 'minimum': 0, 'maximum': 4},
+                'state_mapping': {'type': 'integer', 'minimum': 0, 'maximum': 5},
+                'handoff_quality': {'type': 'integer', 'minimum': 0, 'maximum': 5},
+                'total': {'type': 'integer', 'minimum': 0, 'maximum': 24},
+                'evidence_by_criterion': {'type': 'array', 'maxItems': 5, 'items': {'type': 'string'}},
             },
-            'required': ['layout_precision','visual_hierarchy','lf_system_fidelity','state_mapping','handoff_quality','total'],
+            'required': [
+                'layout_precision','visual_hierarchy','lf_system_fidelity','state_mapping',
+                'handoff_quality','total','evidence_by_criterion'
+            ],
         },
         'handoff_to_next': {
-            'type': 'object', 'additionalProperties': False,
-            'properties': {'entries': {'type': 'array', 'maxItems': 8, 'items': ENTRY}},
-            'required': ['entries'],
+            'type': 'object',
+            'additionalProperties': False,
+            'properties': {
+                'next_worker': {'type': 'string'},
+                'status': {'type': 'string'},
+                'notes': {'type': 'array', 'maxItems': 3, 'items': {'type': 'string'}},
+            },
+            'required': ['status', 'notes'],
         },
-        'self_verdict': SHORT_STRING,
+        'self_verdict': {'type': 'string'},
     },
     'required': ['worker','output_type','deliverable_created','score','handoff_to_next','self_verdict'],
 }
 
+
+def _bound_free_strings(node, path: tuple[str, ...] = ()) -> None:
+    """Bound only unconstrained free-form strings without changing schema shape."""
+    if isinstance(node, dict):
+        if (
+            node.get('type') == 'string'
+            and 'enum' not in node
+            and 'const' not in node
+            and 'maxLength' not in node
+            and path[-4:] != ('component_tree', 'items', 'properties', 'content')
+        ):
+            node['maxLength'] = 320
+        for key, value in node.items():
+            _bound_free_strings(value, path + (str(key),))
+    elif isinstance(node, list):
+        for idx, value in enumerate(node):
+            _bound_free_strings(value, path + (str(idx),))
+
+
+_bound_free_strings(C3_RUNTIME_SCHEMA_V2)
+
 base.C3_RUNTIME_SCHEMA = C3_RUNTIME_SCHEMA_V2
 base.GitHubHostedLlamaCppAdapter = GBNFSchemaAdapter
+base.OUTPUT_GUARD = '''
+RUNTIME OUTPUT GUARD — deterministic materialization
+Return one compact JSON object only; no Markdown fences or prose.
+Root keys exactly: worker, output_type, deliverable_created, score, handoff_to_next, self_verdict.
+deliverable_created sibling keys exactly: screen_definition, component_tree, layout_grid, visual_hierarchy, state_map, token_map, spacing_typography, density_rules, risk_controls, prompt_constraints.
+component_tree is flat and bounded; represent each material requirement once. content is terminal text; relationships use IDs only.
+visual_hierarchy is a flat array of {parent_id:string, child_ids:[string,...]}; child_ids NEVER contains objects.
+For generic key/value metadata use {entries:[{key:string,value:string}, ...]}.
+state_map uses {entries:[{component_id:string,state:string,behavior:string}, ...]}.
+Keep every section minimal. score.evidence_by_criterion uses short non-duplicative evidence, never a restatement of the whole screen.
+Do not repeat financial facts across sections unless required for meaning.
+self_verdict must be a string. Preserve every supplied case requirement exactly; do not invent financial truth.
+'''.strip()
+
+if __name__ == '__main__':
+    raise SystemExit(base.main())
