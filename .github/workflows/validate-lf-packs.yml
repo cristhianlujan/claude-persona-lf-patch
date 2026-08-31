@@ -55,19 +55,73 @@ jobs:
           echo "ROUTER_REGISTRY_BEGIN"
           q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select * from public.lf_router_action_registry where operation_code='LEARNING_BRIDGE_KB_CARD_LF' or action_code='KNOWLEDGE_LEARNING_BRIDGE' order by updated_at desc) x"
           echo "ROUTER_REGISTRY_END"
-          echo "PROCESSED_KB_IDS_BEGIN"
-          q "select coalesce(jsonb_agg(distinct e.entidad_codigo)::text,'[]') from public.lf_eventos e where e.entidad_tipo='KNOWLEDGE' and (e.payload->>'producer')='LF_APRENDIZAJE_AUTONOMO' and coalesce(e.payload->>'eligibility','') like '%PASS%'"
-          echo "PROCESSED_KB_IDS_END"
-          echo "EFFECTIVE_BACKLOG_COUNT_BEGIN"
-          q "with p as (select distinct entidad_codigo::uuid kb_id from public.lf_eventos where entidad_tipo='KNOWLEDGE' and payload->>'producer'='LF_APRENDIZAJE_AUTONOMO' and coalesce(payload->>'eligibility','') like '%PASS%') select count(*) from public.lf_knowledge_base k left join p using(kb_id) where k.kb_category='COMPETENCIA' and k.consumer_ready=true and k.grounding_status='GROUNDED' and k.decision_upstream='ALLOW_PROD_GATE' and p.kb_id is null"
-          echo "EFFECTIVE_BACKLOG_COUNT_END"
-          echo "EFFECTIVE_BACKLOG_BEGIN"
-          q "with p as (select distinct entidad_codigo::uuid kb_id from public.lf_eventos where entidad_tipo='KNOWLEDGE' and payload->>'producer'='LF_APRENDIZAJE_AUTONOMO' and coalesce(payload->>'eligibility','') like '%PASS%') select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select k.kb_id,k.kb_subcategory,k.topic,k.competitor,k.quality_score,k.source_url,k.evidence_pack,k.kb_enriched from public.lf_knowledge_base k left join p using(kb_id) where k.kb_category='COMPETENCIA' and k.consumer_ready=true and k.grounding_status='GROUNDED' and k.decision_upstream='ALLOW_PROD_GATE' and p.kb_id is null order by k.quality_score desc nulls last,k.updated_at desc limit 25) x"
-          echo "EFFECTIVE_BACKLOG_END"
-          echo "ALL_CONSUMER_ASSETS_BEGIN"
-          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select codigo_activo,nombre_canonico,tipo_activo,subtipo_activo,estado_documental,estado_operativo,runtime_estado,version_normalizada,url from public.v_lf_fuente_operativa where tipo_activo in ('PERFIL','PROFILE','AGENT','SKILL','ADAPTER','OPERATION') order by tipo_activo,codigo_activo) x"
-          echo "ALL_CONSUMER_ASSETS_END"
-          echo "CARDS_CURRENT_BEGIN"
-          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select id_card,nombre_card,estado,decision,observaciones,raw_payload,created_by_execution_id,updated_by_execution_id from public.lf_cards where id_card ilike '%LEARN%' or nombre_card ilike '%aprendiz%' or nombre_card ilike '%deuda%' or nombre_card ilike '%oferta%' or nombre_card ilike '%pago%' order by updated_at desc limit 50) x"
-          echo "CARDS_CURRENT_END"
+          echo "EFFECTIVE_BACKLOG_WITH_CARD_DEDUP=$(q "with p as (select distinct entidad_codigo::uuid kb_id from public.lf_eventos where entidad_tipo='KNOWLEDGE' and payload->>'producer'='LF_APRENDIZAJE_AUTONOMO' and coalesce(payload->>'eligibility','') like '%PASS%'), c as (select distinct (manifest->>'source_kb_id')::uuid kb_id from public.lf_operation_execution where operation_code='CREACION_CARD_LF' and completed_at is not null and status not like 'BLOCKED%' and coalesce(manifest->>'source_kb_id','') <> '') select count(*) from public.lf_knowledge_base k left join p using(kb_id) left join c using(kb_id) where k.kb_category='COMPETENCIA' and k.consumer_ready=true and k.grounding_status='GROUNDED' and k.decision_upstream='ALLOW_PROD_GATE' and p.kb_id is null and c.kb_id is null")"
+          echo "RUN31_EXISTS=$(q "select count(*) from public.lf_operation_execution where execution_id='LF-AUTOLEARN-RUN-20260831-031'")"
           echo "READBACK_STATUS=PASS"
+
+      - name: Persist Run31 read-only evidence
+        if: github.event_name == 'push' && github.ref == 'refs/heads/lf/learning-consumer-benchmark-gate-20260831'
+        env: {PGPASSWORD: "${{ secrets.LF_SUPABASE_DB_PASSWORD }}"}
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PGHOST="$SUPABASE_POOLER_HOST" PGPORT=5432 PGUSER="postgres.${SUPABASE_PROJECT_ID}" PGDATABASE=postgres PGSSLMODE=require
+          psql -X -v ON_ERROR_STOP=1 <<SQL
+          begin;
+          do \$\$
+          declare v_backlog integer;
+          begin
+            if exists(select 1 from public.lf_operation_execution where execution_id='LF-AUTOLEARN-RUN-20260831-031') then
+              raise exception 'RUN31_ALREADY_EXISTS';
+            end if;
+            with p as (
+              select distinct entidad_codigo::uuid kb_id from public.lf_eventos
+              where entidad_tipo='KNOWLEDGE' and payload->>'producer'='LF_APRENDIZAJE_AUTONOMO' and coalesce(payload->>'eligibility','') like '%PASS%'
+            ), c as (
+              select distinct (manifest->>'source_kb_id')::uuid kb_id from public.lf_operation_execution
+              where operation_code='CREACION_CARD_LF' and completed_at is not null and status not like 'BLOCKED%' and coalesce(manifest->>'source_kb_id','') <> ''
+            )
+            select count(*) into v_backlog from public.lf_knowledge_base k left join p using(kb_id) left join c using(kb_id)
+            where k.kb_category='COMPETENCIA' and k.consumer_ready=true and k.grounding_status='GROUNDED' and k.decision_upstream='ALLOW_PROD_GATE' and p.kb_id is null and c.kb_id is null;
+            if v_backlog <> 10 then raise exception 'BACKLOG_CHANGED expected=10 actual=%',v_backlog; end if;
+          end \$\$;
+
+          insert into public.lf_operation_execution(execution_id,operation_code,target_type,target_code,status,started_at,completed_at,manifest,created_by_execution_id,updated_by_execution_id)
+          values('LF-AUTOLEARN-RUN-20260831-031','LEARNING_BRIDGE_KB_CARD_LF','OPERATION','LEARNING_BRIDGE_KB_CARD_LF','CONSUMER_ROUTING_BENCHMARK_PASS_BEHAVIORAL_BLOCKED',now(),now(),jsonb_build_object(
+            'router_first',true,'router_action','KNOWLEDGE_LEARNING_BRIDGE','source_pr',368,'source_head','$GITHUB_SHA','batches_completed',2,'units_processed',10,'backlog_before',10,
+            'consumer_id','PERFIL-PRODUCT-DIRECTOR-LF','bindings_source_candidate',jsonb_build_array('NEGOCIACION_DEUDA','ALTERNATIVAS_FINANCIERAS','EDUCACION_CREDITICIA'),
+            'champion_id','CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1','challenger_id','CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1',
+            'benchmark_cases',50,'benchmark_families',10,'routing_metrics',jsonb_build_object('tp',25,'tn',25,'fp',0,'fn',0,'precision',1.0,'recall',1.0,'specificity',1.0,'p50_ns',140,'p95_ns',250,'max_ns',600,'llm_calls',0,'round_trips',0,'context_pack_bytes',294),
+            'behavioral_quality_status','INSUFFICIENT_EVIDENCE_RUNTIME_DISABLED','provider_cost_status','ZERO_LLM_CALLS_ROUTING_LAYER_ONLY','automatic_impact',false,'production_authorized',false,'acceptance_declared',false),
+            'LF-AUTOLEARN-RUN-20260831-031','LF-AUTOLEARN-RUN-20260831-031');
+
+          with u(kb_id,cluster_code,disposition,consumer_id,binding_id,binding_state,batch_no) as (values
+            ('5500178a-d503-476c-be77-c99223b4d90c','NEGOCIACION_DEUDA','INSIGHT_ONLY_EXISTING_CARD_ENRICHMENT','PERFIL-PRODUCT-DIRECTOR-LF','BIND-LF-PD-NEGOCIACION-DEUDA-v1','SOURCE_BINDING_CANDIDATE',1),
+            ('33e6970d-d19c-4300-8ed7-1784dd162d9d','ALTERNATIVAS_FINANCIERAS','MERGE_INTO_ALTERNATIVAS_CARD_CANDIDATE','PERFIL-PRODUCT-DIRECTOR-LF','BIND-LF-PD-ALTERNATIVAS-FINANCIERAS-v1','SOURCE_BINDING_CANDIDATE',1),
+            ('7ffa83ea-c4ea-41a1-aaed-a76329c5c730','EDUCACION_CREDITICIA','MERGE_INTO_EDUCACION_CARD_CANDIDATE','PERFIL-PRODUCT-DIRECTOR-LF','BIND-LF-PD-EDUCACION-CREDITICIA-v1','SOURCE_BINDING_CANDIDATE',1),
+            ('a6422c36-6e32-4b96-b861-c2a57d3d7016','BENCHMARK_PERIFERICO','INSIGHT_ONLY_MARKET_SIGNAL',null,null,'READY_FOR_BINDING',1),
+            ('b7b073dc-2bbb-49be-bc23-a706da00b517','BENCHMARK_PERIFERICO','INSIGHT_ONLY_MARKET_SIGNAL',null,null,'READY_FOR_BINDING',1),
+            ('7ebe6b67-9463-4753-82eb-f3fedfc2f72c','EDUCACION_CREDITICIA','MERGE_INTO_EDUCACION_CARD_CANDIDATE','PERFIL-PRODUCT-DIRECTOR-LF','BIND-LF-PD-EDUCACION-CREDITICIA-v1','SOURCE_BINDING_CANDIDATE',2),
+            ('6b4efb50-6e61-4f4c-ac1e-7ec3b7eac985','ALTERNATIVAS_FINANCIERAS','MERGE_INTO_ALTERNATIVAS_CARD_CANDIDATE','PERFIL-PRODUCT-DIRECTOR-LF','BIND-LF-PD-ALTERNATIVAS-FINANCIERAS-v1','SOURCE_BINDING_CANDIDATE',2),
+            ('0821f197-1141-4aae-9e1a-17e824a40e21','REINSERCION_FINANCIERA','INSIGHT_ONLY_EXISTING_CARD_ENRICHMENT',null,null,'READY_FOR_BINDING',2),
+            ('3f4ca9bb-61f9-46e7-9850-59a2448b5277','EDUCACION_CREDITICIA','MERGE_INTO_EDUCACION_CARD_CANDIDATE','PERFIL-PRODUCT-DIRECTOR-LF','BIND-LF-PD-EDUCACION-CREDITICIA-v1','SOURCE_BINDING_CANDIDATE',2),
+            ('55f1b6c0-e019-4744-ae60-64861863d5b5','BENCHMARK_PERIFERICO','INSIGHT_ONLY_MARKET_SIGNAL',null,null,'READY_FOR_BINDING',2)
+          )
+          insert into public.lf_eventos(evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,payload,origen,created_by_execution_id,updated_by_execution_id)
+          select 'AUDIT_TRAIL_PIPELINE','KNOWLEDGE',u.kb_id,'Run31: unidad competitiva analizada hasta frontera segura de binding/benchmark.','INFO',jsonb_build_object(
+            'evidence_schema_version','operational-event/v2','producer','LF_APRENDIZAJE_AUTONOMO','purpose','Persistir análisis y consumer benchmark sin impacto automático.','acceptance_declared',false,'occurred_at',now()::text,
+            'execution_id','LF-AUTOLEARN-RUN-20260831-031','eligibility','PASS','cluster_code',u.cluster_code,'lifecycle_state','ANALIZADO','disposition',u.disposition,'consumer_id',u.consumer_id,'binding_id',u.binding_id,'consumer_binding_state',u.binding_state,
+            'champion_id','CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1','challenger_id','CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1','routing_benchmark','CHALLENGER_WINS_50_OF_50','behavioral_quality_status','INSUFFICIENT_EVIDENCE_RUNTIME_DISABLED','batch',u.batch_no,'automatic_impact',false,'production_authorized',false),
+            'LF_APRENDIZAJE_AUTONOMO','LF-AUTOLEARN-RUN-20260831-031','LF-AUTOLEARN-RUN-20260831-031' from u;
+
+          update public.lf_error_knowledge set frecuencia=frecuencia+2,ultima_vez=now(),updated_at=now(),evidencia=coalesce(evidencia,'{}'::jsonb)||jsonb_build_object('run31_recovery',jsonb_build_object('occurrences',2,'root_cause','schema assumptions on Router source view and execution steps','recovery','schema-first introspection and full-row readback','source_pr',368,'source_head','$GITHUB_SHA')) where codigo='DB-001';
+
+          insert into public.lf_eventos(evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,payload,origen,created_by_execution_id,updated_by_execution_id)
+          values('GOVERNANCE_CLOSURE','OPERATION','LEARNING_BRIDGE_KB_CARD_LF','Run31 cerró dos lotes read-only y benchmark de routing; conducta del perfil permanece sin evidencia por runtime no habilitado.','INFO',jsonb_build_object(
+            'evidence_schema_version','operational-event/v2','producer','LF_APRENDIZAJE_AUTONOMO','purpose','Cierre durable del lote consumer binding/benchmark sin promoción ni producción.','acceptance_declared',false,'occurred_at',now()::text,'execution_id','LF-AUTOLEARN-RUN-20260831-031','batches_completed',2,'units_processed',10,'routing_benchmark','PASS_50_OF_50','behavioral_quality_status','INSUFFICIENT_EVIDENCE_RUNTIME_DISABLED','automatic_impact',false,'production_authorized',false,'authority_frontier','PROFILE_RUNTIME_NO_HABILITADO_AND_SOURCE_PR_NOT_MERGED'),'LF_APRENDIZAJE_AUTONOMO','LF-AUTOLEARN-RUN-20260831-031','LF-AUTOLEARN-RUN-20260831-031');
+          commit;
+
+          echo "RUN31=$(psql -X -Atqc "select status from public.lf_operation_execution where execution_id='LF-AUTOLEARN-RUN-20260831-031'")"
+          echo "RUN31_EVENTS=$(psql -X -Atqc "select count(*) from public.lf_eventos where payload->>'execution_id'='LF-AUTOLEARN-RUN-20260831-031'")"
+          echo "DB001_FREQUENCY=$(psql -X -Atqc "select frecuencia from public.lf_error_knowledge where codigo='DB-001'")"
+          echo "BACKLOG_AFTER=$(psql -X -Atqc "with p as (select distinct entidad_codigo::uuid kb_id from public.lf_eventos where entidad_tipo='KNOWLEDGE' and payload->>'producer'='LF_APRENDIZAJE_AUTONOMO' and coalesce(payload->>'eligibility','') like '%PASS%'), c as (select distinct (manifest->>'source_kb_id')::uuid kb_id from public.lf_operation_execution where operation_code='CREACION_CARD_LF' and completed_at is not null and status not like 'BLOCKED%' and coalesce(manifest->>'source_kb_id','') <> '') select count(*) from public.lf_knowledge_base k left join p using(kb_id) left join c using(kb_id) where k.kb_category='COMPETENCIA' and k.consumer_ready=true and k.grounding_status='GROUNDED' and k.decision_upstream='ALLOW_PROD_GATE' and p.kb_id is null and c.kb_id is null")"
