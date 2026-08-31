@@ -1,0 +1,33 @@
+{
+  "execution_id": "LF-AUTOLEARN-RUN-20260831-031",
+  "router_action": "KNOWLEDGE_LEARNING_BRIDGE",
+  "operation_code": "LEARNING_BRIDGE_KB_CARD_LF",
+  "automatic_impact": false,
+  "production_authorized": false,
+  "batches": [
+    {
+      "batch": 1,
+      "units": [
+        {"kb_id":"5500178a-d503-476c-be77-c99223b4d90c","cluster":"NEGOCIACION_DEUDA","source_url":"https://bravocredito.com","disposition":"INSIGHT_ONLY_EXISTING_CARD_ENRICHMENT","consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","binding_id":"BIND-LF-PD-NEGOCIACION-DEUDA-v1","binding_state":"SOURCE_BINDING_CANDIDATE","constraint":"No garantizar descuentos, restauracion de historial ni resultados automaticos."},
+        {"kb_id":"33e6970d-d19c-4300-8ed7-1784dd162d9d","cluster":"ALTERNATIVAS_FINANCIERAS","source_url":"https://rtc.pe","disposition":"MERGE_INTO_ALTERNATIVAS_CARD_CANDIDATE","consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","binding_id":"BIND-LF-PD-ALTERNATIVAS-FINANCIERAS-v1","binding_state":"SOURCE_BINDING_CANDIDATE","constraint":"No recomendar credito garantizado ni inventar elegibilidad, tasa o conveniencia individual."},
+        {"kb_id":"7ffa83ea-c4ea-41a1-aaed-a76329c5c730","cluster":"EDUCACION_CREDITICIA","source_url":"https://www.finanty.com/blog/%C2%BFcomo-mejorar-mi-historial-crediticio","disposition":"MERGE_INTO_EDUCACION_CARD_CANDIDATE","consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","binding_id":"BIND-LF-PD-EDUCACION-CREDITICIA-v1","binding_state":"SOURCE_BINDING_CANDIDATE","constraint":"Contenido antiguo del competidor; no convertir claims en verdad LF ni prometer mejora de score."},
+        {"kb_id":"a6422c36-6e32-4b96-b861-c2a57d3d7016","cluster":"BENCHMARK_PERIFERICO","source_url":"https://reevalua.com/blog/caso-claudia-ortiz","disposition":"INSIGHT_ONLY_MARKET_SIGNAL","consumer_id":null,"binding_id":null,"binding_state":"READY_FOR_BINDING","constraint":"Caso testimonial sin datos financieros verificables completos; usar solo como senal comercial."},
+        {"kb_id":"b7b073dc-2bbb-49be-bc23-a706da00b517","cluster":"BENCHMARK_PERIFERICO","source_url":"https://kambista.com","disposition":"INSIGHT_ONLY_MARKET_SIGNAL","consumer_id":null,"binding_id":null,"binding_state":"READY_FOR_BINDING","constraint":"Benchmark periferico de confianza; no forzar binding sin fuente canonica del consumidor CX."}
+      ]
+    },
+    {
+      "batch": 2,
+      "units": [
+        {"kb_id":"7ebe6b67-9463-4753-82eb-f3fedfc2f72c","cluster":"EDUCACION_CREDITICIA","source_url":"https://reevalua.com/blog/como-leer-mi-reporte-crediticio-linea-por-linea-peru","disposition":"MERGE_INTO_EDUCACION_CARD_CANDIDATE","consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","binding_id":"BIND-LF-PD-EDUCACION-CREDITICIA-v1","binding_state":"SOURCE_BINDING_CANDIDATE","constraint":"No publicar claims del competidor como hechos LF sin autoridad independiente."},
+        {"kb_id":"6b4efb50-6e61-4f4c-ac1e-7ec3b7eac985","cluster":"ALTERNATIVAS_FINANCIERAS","source_url":"https://reevalua.com/blog/prestamo-estando-en-infocorp-opciones-reales-peru","disposition":"MERGE_INTO_ALTERNATIVAS_CARD_CANDIDATE","consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","binding_id":"BIND-LF-PD-ALTERNATIVAS-FINANCIERAS-v1","binding_state":"SOURCE_BINDING_CANDIDATE","constraint":"No recomendar prestamo ni inventar elegibilidad; contexto solo para decision de producto."},
+        {"kb_id":"0821f197-1141-4aae-9e1a-17e824a40e21","cluster":"REINSERCION_FINANCIERA","source_url":"https://reevalua.com/blog/como-conseguir-primer-prestamo-sin-historial-crediticio-peru","disposition":"INSIGHT_ONLY_EXISTING_CARD_ENRICHMENT","consumer_id":null,"binding_id":null,"binding_state":"READY_FOR_BINDING","constraint":"No existe binding exacto de reinsercion en v1; no inferir consumidor."},
+        {"kb_id":"3f4ca9bb-61f9-46e7-9850-59a2448b5277","cluster":"EDUCACION_CREDITICIA","source_url":"https://reevalua.com/blog/cuanto-sube-mi-score-al-pagar-una-deuda-cuanto-tiempo-peru","disposition":"MERGE_INTO_EDUCACION_CARD_CANDIDATE","consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","binding_id":"BIND-LF-PD-EDUCACION-CREDITICIA-v1","binding_state":"SOURCE_BINDING_CANDIDATE","constraint":"Score y tiempos son claims sensibles; no garantizar magnitud ni plazo."},
+        {"kb_id":"55f1b6c0-e019-4744-ae60-64861863d5b5","cluster":"BENCHMARK_PERIFERICO","source_url":"https://reevalua.com/blog/cuanto-podria-calificar-hoy-comparar-prestamos-peru","disposition":"INSIGHT_ONLY_MARKET_SIGNAL","consumer_id":null,"binding_id":null,"binding_state":"READY_FOR_BINDING","constraint":"Taxonomia deterministica v1 no clasifica por intent enriquecido; mantener fallback periferico."}
+      ]
+    }
+  ],
+  "champion_id": "CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1",
+  "challenger_id": "CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1",
+  "routing_benchmark": "LEARNING_CONSUMER_ROUTING_AB_V1",
+  "behavioral_quality_status": "INSUFFICIENT_EVIDENCE_RUNTIME_DISABLED"
+}
