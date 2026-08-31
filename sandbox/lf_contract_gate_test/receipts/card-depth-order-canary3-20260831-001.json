@@ -1,0 +1,24 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "CREACION_CARD_LF",
+  "execution_id": "LF-CARD-CANARY3-CAMPANAS-20260831-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "c4819910b85ae7dfaa36e3d3c311da19a3faed8d",
+  "judge_sha": "b11a9acd965b6e71f40fbd4a1fd3fc472fd7c465",
+  "source_sha_list": [
+    "29e147df8640831f205df8ee69c84da9649ba5ff",
+    "b11a9acd965b6e71f40fbd4a1fd3fc472fd7c465",
+    "f34e69bc334400a51cb940e03deed8f0f69088c4"
+  ],
+  "target_paths": [
+    "gobernanza/judges/judge_contrato_card_lf.yaml",
+    "gobernanza/procedimientos/creacion_card_lf_steps_validation.yaml",
+    "cards/learning_competitive/campanas_y_ofertas/CARD.md"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-31T10:20:00Z",
+  "notes": "Fresh governed replay after depth-order reconciliation. Execution reached steps 1-38 in order; write occurred only after pre-write binding step24; exact Card blob readback at step26; depth gates 28-36 passed; contract_judge step37 derived STEP_CLEAN_PASS; close step38 derived PASS_CLEAN. Candidate/read-only only; no runtime, production, automatic impact or massification."
+}
