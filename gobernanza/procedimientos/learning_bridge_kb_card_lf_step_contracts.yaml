@@ -1,0 +1,38 @@
+version: v0.1
+status: CANDIDATO_SOURCE
+operation: LEARNING_BRIDGE_KB_CARD_LF
+contract_code: CONTRACT-LEARNING-BRIDGE-KB-CARD-LF-v0.2
+rules:
+  execution_order_equals_step_order: true
+  required_evidence_nonempty: true
+  default_resolver: DETERMINISTIC_SUPABASE_GITHUB
+  semantic_resolver_only_for:
+    - semantic_analysis
+    - decision_matrix
+  automatic_impact: BLOQUEADO
+steps:
+  - {order: 1, id: router, purpose: "Resolve ACT-0001 route", evidence: router_read, mini_judge: JUDGE_LB_STEP_ROUTER_V1}
+  - {order: 2, id: operational_source, purpose: "Read operational source", evidence: operational_source_read, mini_judge: JUDGE_LB_STEP_OPERATIONAL_SOURCE_V1}
+  - {order: 3, id: ekb_precheck, purpose: "Read EKB before mutation", evidence: ekb_read, mini_judge: JUDGE_LB_STEP_EKB_PRECHECK_V1}
+  - {order: 4, id: select_kb_candidate, purpose: "Select traced canonical KB candidate", evidence: kb_source_readback, mini_judge: JUDGE_LB_STEP_KB_SELECT_V1}
+  - {order: 5, id: eligibility_gate, purpose: "Verify grounded consumer-ready eligibility", evidence: grounded_consumer_ready_allow_prod_gate, mini_judge: JUDGE_LB_STEP_ELIGIBILITY_V1}
+  - {order: 6, id: effective_competitor, purpose: "Resolve effective competitor deterministically", evidence: effective_competitor_and_fallback_flag, mini_judge: JUDGE_LB_STEP_COMPETITOR_V1}
+  - {order: 7, id: deterministic_dedup, purpose: "Deduplicate learning and card target", evidence: duplicate_and_existing_card_check, mini_judge: JUDGE_LB_STEP_DEDUP_V1}
+  - {order: 8, id: deterministic_cluster, purpose: "Assign canonical learning cluster", evidence: taxonomy_version_cluster_code_assignment_rule_reason, mini_judge: JUDGE_LB_STEP_CLUSTER_V1}
+  - {order: 9, id: lifecycle_detectado, purpose: "Persist DETECTADO transition", evidence: detectado_transition_receipt, mini_judge: JUDGE_LB_STEP_DETECTADO_V1}
+  - {order: 10, id: semantic_analysis, purpose: "Perform bounded semantic analysis", evidence: analysis_pack, mini_judge: JUDGE_LB_STEP_SEMANTIC_ANALYSIS_V1, resolver: GPT_RUNTIME_WITH_SUPABASE_CONTEXT}
+  - {order: 11, id: lifecycle_analizado, purpose: "Persist ANALIZADO transition", evidence: analizado_transition_receipt, mini_judge: JUDGE_LB_STEP_ANALIZADO_V1}
+  - {order: 12, id: research_to_rules_matrix, purpose: "Materialize research-to-rules matrix", evidence: research_to_rules_matrix_present, mini_judge: JUDGE_LB_STEP_RULES_MATRIX_V1}
+  - {order: 13, id: decision_matrix, purpose: "Materialize bounded decision matrix", evidence: decision_matrix_present, mini_judge: JUDGE_LB_STEP_DECISION_MATRIX_V1, resolver: GPT_RUNTIME_WITH_SUPABASE_CONTEXT}
+  - {order: 14, id: card_factory_contract, purpose: "Read current CREACION_CARD_LF contract", evidence: creacion_card_lf_contract_read, mini_judge: JUDGE_LB_STEP_CARD_CONTRACT_V1}
+  - {order: 15, id: card_candidate, purpose: "Invoke governed Card candidate path", evidence: card_factory_candidate_receipt, mini_judge: JUDGE_LB_STEP_CARD_CANDIDATE_V1}
+  - {order: 16, id: lifecycle_card_creada, purpose: "Persist CARD_CREADA transition", evidence: card_creada_transition_receipt, mini_judge: JUDGE_LB_STEP_CARD_CREADA_V1}
+  - {order: 17, id: lifecycle_en_revision, purpose: "Persist EN_REVISION transition", evidence: en_revision_transition_receipt, mini_judge: JUDGE_LB_STEP_EN_REVISION_V1}
+  - {order: 18, id: sandbox, purpose: "Execute governed sandbox tests", evidence: sandbox_test_receipt, mini_judge: JUDGE_LB_STEP_SANDBOX_V1}
+  - {order: 19, id: quality_gate, purpose: "Evaluate quality gate", evidence: quality_gate_result, mini_judge: JUDGE_LB_STEP_QUALITY_V1}
+  - {order: 20, id: performance_gate, purpose: "Evaluate measured performance gate", evidence: performance_gate_result, mini_judge: JUDGE_LB_STEP_PERFORMANCE_V1}
+  - {order: 21, id: governance_gate, purpose: "Evaluate governance minimum lifecycle", evidence: governance_gate_result, mini_judge: JUDGE_LB_STEP_GOVERNANCE_V1}
+  - {order: 22, id: approval_boundary, purpose: "Enforce approval boundary", evidence: approval_or_blocked_governance_gate, mini_judge: JUDGE_LB_STEP_APPROVAL_BOUNDARY_V1}
+  - {order: 23, id: impact_if_authorized, purpose: "Allow impact only with valid authorization", evidence: authorized_executor_receipt, mini_judge: JUDGE_LB_STEP_IMPACT_AUTH_V1}
+  - {order: 24, id: verify, purpose: "Read back authorized effects or no-impact state", evidence: verification_readback, mini_judge: JUDGE_LB_STEP_VERIFY_V1}
+  - {order: 25, id: close, purpose: "Close with durable event", evidence: closure_event, mini_judge: JUDGE_LB_STEP_CLOSE_V1}
