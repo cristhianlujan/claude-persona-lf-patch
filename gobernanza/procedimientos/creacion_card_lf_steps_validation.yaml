@@ -1,4 +1,4 @@
-version: v0.6
+version: v0.7
 operation: CREACION_CARD_LF
 status: CANDIDATO_READ_ONLY
 source_model: GIT_FIRST_YAML
@@ -44,11 +44,38 @@ steps:
     id: evidence_log
     evidence: lf_eventos_if_available_and_scope_confirmed
   - order: 28
+    id: step_depth_validation
+    evidence: step_has_depth_evidence_payload
+  - order: 29
+    id: pack_internal_depth_validation
+    evidence: pack_items_have_depth_matrix
+  - order: 30
+    id: examples_depth_validation
+    evidence: examples_are_robust_and_testable
+  - order: 31
+    id: evals_depth_validation
+    evidence: evals_are_executable_with_expected_result
+  - order: 32
+    id: judge_depth_validation
+    evidence: judges_have_fail_if_thresholds_and_overrides
+  - order: 33
+    id: schema_depth_validation
+    evidence: schemas_require_non_generic_evidence
+  - order: 34
+    id: output_modes_validation
+    evidence: closed_output_modes_and_templates_present
+  - order: 35
+    id: blocking_overrides_validation
+    evidence: blocking_overrides_prevent_weak_depth_close
+  - order: 36
+    id: card_examples_depth_judge
+    evidence: card_examples_depth_judge_pass
+  - order: 37
     id: contract_judge
     evidence: judge_pass_and_scope_confirmed
-  - order: 29
+  - order: 38
     id: close
     evidence: no_blocking_observations_and_scope_confirmed
-  - order: 30
+  - order: 39
     id: report_output
     evidence: act0046_report_or_execution_summary_with_scope_status
