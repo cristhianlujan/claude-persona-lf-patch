@@ -2,6 +2,7 @@
   "execution_id": "LF-AUTOLEARN-RUN-20260831-031",
   "router_action": "KNOWLEDGE_LEARNING_BRIDGE",
   "operation_code": "LEARNING_BRIDGE_KB_CARD_LF",
+  "persistence_trigger": "RUN31_GOVERNED_READ_ONLY",
   "automatic_impact": false,
   "production_authorized": false,
   "batches": [
