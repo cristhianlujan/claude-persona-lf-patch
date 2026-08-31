@@ -1,4 +1,4 @@
-version: v0.1
+version: v0.2
 operation: LEARNING_BRIDGE_KB_CARD_LF
 status: CANDIDATO_READ_ONLY
 source_model: GIT_FIRST_YAML
@@ -19,56 +19,62 @@ steps:
     id: eligibility_gate
     evidence: grounded_consumer_ready_allow_prod_gate
   - order: 6
+    id: effective_competitor
+    evidence: effective_competitor_and_fallback_flag
+  - order: 7
     id: deterministic_dedup
     evidence: duplicate_and_existing_card_check
-  - order: 7
+  - order: 8
+    id: deterministic_cluster
+    evidence: taxonomy_version_cluster_code_assignment_rule_reason
+  - order: 9
     id: lifecycle_detectado
     evidence: detectado_transition_receipt
-  - order: 8
+  - order: 10
     id: semantic_analysis
     evidence: analysis_pack
-  - order: 9
+  - order: 11
     id: lifecycle_analizado
     evidence: analizado_transition_receipt
-  - order: 10
+  - order: 12
     id: research_to_rules_matrix
     evidence: research_to_rules_matrix_present
-  - order: 11
+  - order: 13
     id: decision_matrix
     evidence: decision_matrix_present
-  - order: 12
+  - order: 14
     id: card_factory_contract
     evidence: creacion_card_lf_contract_read
-  - order: 13
+  - order: 15
     id: card_candidate
     evidence: card_factory_candidate_receipt
-  - order: 14
+  - order: 16
     id: lifecycle_card_creada
     evidence: card_creada_transition_receipt
-  - order: 15
+  - order: 17
     id: lifecycle_en_revision
     evidence: en_revision_transition_receipt
-  - order: 16
+  - order: 18
     id: sandbox
     evidence: sandbox_test_receipt
-  - order: 17
+  - order: 19
     id: quality_gate
     evidence: quality_gate_result
-  - order: 18
+  - order: 20
     id: performance_gate
     evidence: performance_gate_result
-  - order: 19
+  - order: 21
     id: governance_gate
     evidence: governance_gate_result
-  - order: 20
+  - order: 22
     id: approval_boundary
     evidence: approval_or_blocked_governance_gate
-  - order: 21
+  - order: 23
     id: impact_if_authorized
     evidence: authorized_executor_receipt
-  - order: 22
+  - order: 24
     id: verify
     evidence: verification_readback
-  - order: 23
+  - order: 25
     id: close
     evidence: closure_event
