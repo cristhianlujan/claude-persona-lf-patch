@@ -36,6 +36,7 @@ MANAGED_EXACT_NAMES = {
     "fix_operation_step_enforcement_status_compatibility",
     "materialize_router_enforcement_and_gate0_inventory",
     "fix_operation_judge_jsonb_shape_compatibility",
+    "reconcile_card_depth_gate_order_v1",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
@@ -109,6 +110,8 @@ def main() -> int:
         fail("FAIL_CI009_SELFTEST_ROUTER_ENFORCEMENT_GATE0_INVENTORY")
     if not managed("fix_operation_judge_jsonb_shape_compatibility"):
         fail("FAIL_CI009_SELFTEST_OPERATION_JUDGE_JSONB_SHAPE_COMPATIBILITY")
+    if not managed("reconcile_card_depth_gate_order_v1"):
+        fail("FAIL_CI009_SELFTEST_CARD_DEPTH_ORDER_RECONCILIATION")
     if managed("create_lf_unreviewed_future_change"):
         fail("FAIL_CI009_SELFTEST_MANAGED_PREFIX_TOO_BROAD")
     if not classified("programacion_worker_spec_probe"):
@@ -187,7 +190,7 @@ def main() -> int:
         f"grandfathered={grandfathered_count}/{grandfathered_sha} "
         f"classification_baseline_end={classification_baseline_end}"
     )
-    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=10/10")
+    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=11/11")
     return 0
 
 
