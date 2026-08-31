@@ -31,6 +31,8 @@ MANAGED_EXACT_NAMES = {
     "promote_card_github_read_resolvers",
     "fix_operation_execution_judge_binding_status_compatibility",
     "harden_operation_execution_views_security_invoker",
+    "create_lf_cross_audit_control_plane_v1",
+    "index_lf_cross_audit_foreign_keys_v1",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
@@ -94,7 +96,11 @@ def main() -> int:
     # Self-tests prove exact names are managed without opening a generic prefix.
     if not managed("promote_router_compact_jit_v1"):
         fail("FAIL_CI009_SELFTEST_MANAGED_EXACT")
-    if managed("promote_unreviewed_future_change"):
+    if not managed("create_lf_cross_audit_control_plane_v1"):
+        fail("FAIL_CI009_SELFTEST_CROSS_AUDIT_CONTROL_PLANE")
+    if not managed("index_lf_cross_audit_foreign_keys_v1"):
+        fail("FAIL_CI009_SELFTEST_CROSS_AUDIT_FK_INDEXES")
+    if managed("create_lf_unreviewed_future_change"):
         fail("FAIL_CI009_SELFTEST_MANAGED_PREFIX_TOO_BROAD")
     if not classified("programacion_worker_spec_probe"):
         fail("FAIL_CI009_SELFTEST_MANAGED_WORKER_SPEC")
@@ -172,7 +178,7 @@ def main() -> int:
         f"grandfathered={grandfathered_count}/{grandfathered_sha} "
         f"classification_baseline_end={classification_baseline_end}"
     )
-    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=5/5")
+    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=7/7")
     return 0
 
 
