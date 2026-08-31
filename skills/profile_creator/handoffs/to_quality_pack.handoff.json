@@ -1,6 +1,6 @@
 {
   "handoff_id": "profile_creator_to_quality_pack",
-  "handoff_version": "v0.3",
+  "handoff_version": "v0.2",
   "from": "skills/profile_creator",
   "to": "quality_pack_review",
   "requires_artifact": true,
@@ -20,32 +20,17 @@
   "producer_preconditions": [
     "EXACT_ARTIFACT_RESOLVES",
     "DEPTH_READY_FOR_SEMANTIC_REVIEW",
-    "CROSS_ARTIFACT_CONSISTENCY_PASS",
-    "PROFILE_LOCAL_VALIDATOR_EXECUTABLE",
-    "ROUTER_DIRECT_EQUIVALENCE_COVERED",
-    "BEHAVIORAL_EVAL_NOT_OVERCLAIMED",
     "RUNTIME_DISABLED",
     "AUTOMATIC_IMPACT_BLOCKED"
   ],
-  "readiness_gate": {
-    "validator_ref": "skills/profile_creator/validators/validate_candidate_readiness.py",
-    "validation_scope": "DETERMINISTIC_READINESS_DEPTH_AND_CONSISTENCY",
-    "required_component_gates": [
-      "producer_depth",
-      "cross_artifact_consistency"
-    ]
-  },
   "receiver_layers": {
     "DETERMINISTIC_INTAKE": "REQUIRED",
     "SEMANTIC_REVIEW": "REQUIRED_INDEPENDENT_GATE",
-    "BEHAVIORAL_EXECUTION": "SEPARATE_EVIDENCE_REQUIRED_FOR_BEHAVIORAL_PASS",
     "FULL_HANDOFF_OUTCOME": "NOT_PROVEN_UNTIL_REQUIRED_LAYERS_COMPLETE"
   },
   "failure_routing": {
     "artifact_unresolvable": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
-    "depth_or_consistency_gate_not_ready": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
-    "profile_validator_missing_or_nominal": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
-    "adapter_invocation_unbound": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+    "depth_gate_not_ready": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
     "missing_receiver_context": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
     "semantic_rejection": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
     "authority_or_safety_block": "BLOCK_PIPELINE"

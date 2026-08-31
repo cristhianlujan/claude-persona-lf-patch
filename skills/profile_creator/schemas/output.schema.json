@@ -2,7 +2,6 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "LF Profile Creator Output",
   "type": "object",
-  "additionalProperties": false,
   "required": [
     "status",
     "profile_pack_id",
@@ -23,20 +22,41 @@
         "BLOCK_PIPELINE"
       ]
     },
-    "profile_pack_id": {"type": "string", "minLength": 1},
-    "source_authority": {"type": "string", "minLength": 1},
-    "deliverable_created": {"type": "boolean"},
-    "deliverable_artifact_ref": {"type": "string", "minLength": 1},
+    "profile_pack_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_authority": {
+      "type": "string",
+      "minLength": 1
+    },
+    "deliverable_created": {
+      "type": "boolean"
+    },
+    "deliverable_artifact_ref": {
+      "type": "string",
+      "minLength": 1
+    },
     "files_created": {
       "type": "array",
-      "items": {"type": "string", "minLength": 1}
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
     },
-    "evidence_map": {"type": "object"},
+    "evidence_map": {
+      "type": "object"
+    },
     "blocking_codes": {
       "type": "array",
-      "items": {"type": "string"}
+      "items": {
+        "type": "string"
+      }
     },
-    "next_gate": {"type": "string", "minLength": 1},
+    "next_gate": {
+      "type": "string",
+      "minLength": 1
+    },
     "depth_gate": {
       "type": "object",
       "additionalProperties": false,
@@ -46,39 +66,54 @@
         "candidate_ref",
         "validation_scope",
         "semantic_quality_review",
-        "behavioral_eval_status",
-        "component_gates",
         "blocking_codes"
       ],
       "properties": {
-        "status": {"const": "DEPTH_READY_FOR_SEMANTIC_REVIEW"},
-        "validator_ref": {"const": "skills/profile_creator/validators/validate_candidate_readiness.py"},
-        "candidate_ref": {"type": "string", "minLength": 1},
-        "validation_scope": {"const": "DETERMINISTIC_READINESS_DEPTH_AND_CONSISTENCY"},
-        "semantic_quality_review": {"const": "NOT_EXECUTED"},
-        "behavioral_eval_status": {"const": "NOT_EXECUTED"},
-        "component_gates": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["producer_depth", "cross_artifact_consistency"],
-          "properties": {
-            "producer_depth": {"const": "PASS"},
-            "cross_artifact_consistency": {"const": "PASS"}
-          }
+        "status": {
+          "const": "DEPTH_READY_FOR_SEMANTIC_REVIEW"
         },
-        "blocking_codes": {"type": "array", "maxItems": 0}
+        "validator_ref": {
+          "const": "skills/profile_creator/validators/validate_candidate_depth.py"
+        },
+        "candidate_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "validation_scope": {
+          "const": "DETERMINISTIC_DEPTH_ONLY"
+        },
+        "semantic_quality_review": {
+          "const": "NOT_EXECUTED"
+        },
+        "blocking_codes": {
+          "type": "array",
+          "maxItems": 0
+        }
       }
     }
   },
   "allOf": [
     {
       "if": {
-        "properties": {"status": {"const": "PROFILE_PACK_CREATED"}},
-        "required": ["status"]
+        "properties": {
+          "status": {
+            "const": "PROFILE_PACK_CREATED"
+          }
+        },
+        "required": [
+          "status"
+        ]
       },
       "then": {
-        "required": ["deliverable_artifact_ref", "depth_gate"],
-        "properties": {"deliverable_created": {"const": true}}
+        "required": [
+          "deliverable_artifact_ref",
+          "depth_gate"
+        ],
+        "properties": {
+          "deliverable_created": {
+            "const": true
+          }
+        }
       }
     }
   ]

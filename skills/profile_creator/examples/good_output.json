@@ -19,7 +19,6 @@
     "fixtures/missing_inputs/input.json",
     "fixtures/unsafe_or_blocked/input.json",
     "fixtures/self_repair/bad_output.json",
-    "validators/validate_pack.py",
     "manifest.json"
   ],
   "evidence_map": {
@@ -27,25 +26,17 @@
     "asset_verified": "ACT-0045",
     "ekb_prevention_loaded": "GOV-021",
     "created_artifact_resolves": true,
-    "deterministic_readiness_gate": "DEPTH_READY_FOR_SEMANTIC_REVIEW",
-    "cross_artifact_consistency": "PASS",
-    "profile_local_validator": "PRESENT_AND_EXECUTABLE",
-    "behavioral_eval_status": "NOT_EXECUTED",
+    "deterministic_depth_gate": "DEPTH_READY_FOR_SEMANTIC_REVIEW",
     "semantic_quality_review": "NOT_EXECUTED",
     "runtime_enabled": false,
     "automatic_impact": "BLOQUEADO"
   },
   "depth_gate": {
     "status": "DEPTH_READY_FOR_SEMANTIC_REVIEW",
-    "validator_ref": "skills/profile_creator/validators/validate_candidate_readiness.py",
+    "validator_ref": "skills/profile_creator/validators/validate_candidate_depth.py",
     "candidate_ref": "fixtures/semantic_depth/positive_candidate_pack.json",
-    "validation_scope": "DETERMINISTIC_READINESS_DEPTH_AND_CONSISTENCY",
+    "validation_scope": "DETERMINISTIC_DEPTH_ONLY",
     "semantic_quality_review": "NOT_EXECUTED",
-    "behavioral_eval_status": "NOT_EXECUTED",
-    "component_gates": {
-      "producer_depth": "PASS",
-      "cross_artifact_consistency": "PASS"
-    },
     "blocking_codes": []
   },
   "blocking_codes": [],
