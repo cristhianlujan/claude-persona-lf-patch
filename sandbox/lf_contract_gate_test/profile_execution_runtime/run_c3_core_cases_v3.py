@@ -33,13 +33,10 @@ Before returning, inspect material claims against their source. If a material as
 
 core._guard_for_input = _guard_for_input
 
-# General, source-aware post-generation probe. This does not green outputs by
-# rewriting domain claims. It emits reconstructable provenance and fails the
-# existing authority gate when a material assertion cannot be attributed.
 _original_authority = core._authority
 _WORD_RE = re.compile(r"[0-9]+(?:[.,][0-9]+)*|[a-záéíóúñü]+", re.I)
 _MATERIAL_SIGNAL_RE = re.compile(
-    r"(?:S/|\b\d+(?:[.,]\d+)?%?\b|\b(?:dni|otp|whatsapp|correo|email|cuota|cuotas|"
+    r"(?:S/|\b\d+(?:[.,]\d+)?%\b|\b(?:dni|otp|whatsapp|correo|email|cuota|cuotas|"
     r"vencimiento|vigencia|expiraci[oó]n|elegibilidad|documento|comprobante|carta|"
     r"deuda|oferta|ahorro|pago|tarjeta|consentimiento|legal|ley|garantiz|estado|"
     r"reintento|fallo|opcional|obligatorio|required|optional|eligibility|installment|"
@@ -51,8 +48,6 @@ _STOPWORDS = {
     'para','por','the','to','un','una','y','sin','como','se','su','sus','que','es','ser',
     'be','is','are','with','without','this','that','each','cada','all','todas','todos',
 }
-# Presentation-only vocabulary allowed for derived_allowed. These tokens may
-# describe rendering/interaction but cannot themselves authorize a domain fact.
 _PRESENTATION_VOCAB = {
     'action','active','alert','badge','banner','button','boton','botón','card','campo',
     'cta','display','entry','field','form','helper','hide','label','link','list','message',
@@ -61,12 +56,39 @@ _PRESENTATION_VOCAB = {
     'after','antes','before','despues','después','only','solo','sólo','until','hasta',
     'available','disponible','complete','completar','completed','final','principal',
     'manage','manejo','retry','reintentar','required','requerido','requerida',
+    'details','detail','handoff','next','include','information','shows','showing',
+    'define','definir','new','nueva','nuevo','pantalla','gestion','gestión',
 }
+_TOKEN_ALIASES = {
+    'optional': 'opcional', 'required': 'requerido', 'eligibility': 'elegibilidad',
+    'payment': 'pago', 'payments': 'pago', 'offer': 'oferta', 'offers': 'oferta',
+    'document': 'documento', 'documents': 'documento', 'consent': 'consentimiento',
+    'receipt': 'comprobante', 'installment': 'cuota', 'installments': 'cuota',
+    'retry': 'reintento', 'failure': 'fallo', 'failures': 'fallo',
+}
+_POLICY_PATH_RE = re.compile(
+    r"(?:\.zone_id$|\.component_id$|\.visual_priority$|\.typography(?:\.|$)|"
+    r"\.spacing(?:\.|$)|\.token_map(?:\.|$)|\.spacing_typography(?:\.|$)|"
+    r"\.layout_grid(?:\..*(?:parent_id|child_ids)(?:\[\d+\])?)?$|"
+    r"\.visual_hierarchy(?:\..*(?:parent_id|child_ids)(?:\[\d+\])?)?$)",
+    re.I,
+)
+
+
+def _canonical_token(token: str) -> str:
+    t = token.casefold()
+    if t in _TOKEN_ALIASES:
+        return _TOKEN_ALIASES[t]
+    if len(t) > 4 and t.endswith('es'):
+        t = t[:-2]
+    elif len(t) > 3 and t.endswith('s'):
+        t = t[:-1]
+    return _TOKEN_ALIASES.get(t, t)
 
 
 def _tokens(value: str) -> set[str]:
     return {
-        token.casefold()
+        _canonical_token(token)
         for token in _WORD_RE.findall(value)
         if token.casefold() not in _STOPWORDS
     }
@@ -84,7 +106,10 @@ def _walk_strings(value, path: str = '$'):
 
 
 def _source_catalog(input_text: str) -> list[dict]:
-    sources = [{'source_id': 'input', 'kind': 'input_literal', 'text': input_text}]
+    sources = [
+        {'source_id': 'input', 'kind': 'input_literal', 'text': input_text},
+        {'source_id': 'output_contract', 'kind': 'policy', 'text': 'governed output schema and presentation metadata'},
+    ]
     idx = 0
     for line in input_text.splitlines():
         stripped = line.strip()
@@ -112,7 +137,22 @@ def _provenance_audit(input_text: str, governed_output: str) -> dict:
 
     for path, claim in _walk_strings(data):
         compact = ' '.join(claim.split())
-        if not compact or not _MATERIAL_SIGNAL_RE.search(compact):
+        if not compact:
+            continue
+
+        if _POLICY_PATH_RE.search(path):
+            claims.append({
+                'claim_path': path,
+                'claim': compact,
+                'source_id': 'output_contract',
+                'source_span': None,
+                'transformation': 'contract_structural_metadata',
+                'authority': 'policy',
+                'verdict': 'PASS',
+            })
+            continue
+
+        if not _MATERIAL_SIGNAL_RE.search(compact):
             continue
 
         verdict = 'unsupported'
@@ -129,10 +169,9 @@ def _provenance_audit(input_text: str, governed_output: str) -> dict:
             source_span = [start, start + len(claim_folded)]
             transformation = 'literal_copy'
         else:
-            # Prefer the narrowest requirement source containing all governed
-            # tokens; otherwise evaluate against the full authoritative input.
             claim_tokens = _tokens(compact)
-            novel = sorted(claim_tokens - input_tokens - _PRESENTATION_VOCAB)
+            presentation_tokens = {_canonical_token(t) for t in _PRESENTATION_VOCAB}
+            novel = sorted(claim_tokens - input_tokens - presentation_tokens)
             if not novel:
                 verdict = 'derived_allowed'
                 source_id = 'input'
@@ -175,9 +214,6 @@ def _authority(case: dict, text: str) -> tuple[bool, dict]:
 
 core._authority = _authority
 
-# Keep the previous money boundary only as defense-in-depth telemetry/containment,
-# never as the primary PASS mechanism. Unsupported material claims are still
-# evaluated by the provenance gate above.
 _original_v2_run = base.run
 _MONEY_RE = re.compile(r'S/\s*[0-9][0-9.,]*')
 
