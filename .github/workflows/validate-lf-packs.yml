@@ -43,3 +43,65 @@ jobs:
 
       - name: Validate learning consumer champion benchmark
         run: python sandbox/lf_contract_gate_test/validate_learning_consumer_benchmark.py
+
+  readback-lf-learning-state:
+    name: Read LF learning state
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+      SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+    steps:
+      - name: Detect sandbox credentials
+        id: credentials
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${SUPABASE_DB_PASSWORD:-}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "READBACK_STATUS=NO_DB_CREDENTIALS"
+          fi
+
+      - name: Read Router, executions, EKB and learning schema
+        if: steps.credentials.outputs.ready == 'true'
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+          q() { psql -X -v ON_ERROR_STOP=1 -Atqc "$1"; }
+
+          echo "READBACK_TS=$(q "select now()")"
+          echo "ROUTER_BEGIN"
+          q "select coalesce(jsonb_agg(jsonb_build_object('asset_type',asset_type,'action_code',action_code,'operation_code',operation_code,'write_allowed',write_allowed,'status',status))::text,'[]') from public.v_lf_fuente_operativa where operation_code='LEARNING_BRIDGE_KB_CARD_LF' or (asset_type='KNOWLEDGE' and action_code='KNOWLEDGE_LEARNING_BRIDGE')"
+          echo "ROUTER_END"
+
+          echo "EXECUTIONS_BEGIN"
+          q "select coalesce(jsonb_agg(x)::text,'[]') from (select execution_id,operation_code,status,started_at,completed_at,created_at from public.lf_operation_execution where operation_code='LEARNING_BRIDGE_KB_CARD_LF' or execution_id like 'LF-AUTOLEARN%' order by created_at desc limit 15) x"
+          echo "EXECUTIONS_END"
+
+          echo "EKB_BEGIN"
+          q "select coalesce(jsonb_agg(x)::text,'[]') from (select codigo,categoria,titulo,causa_raiz,patron,severidad,frecuencia,estado,ultima_vez from public.lf_error_knowledge where codigo in ('DB-001','CI-MIGRATION-SOURCE-PARITY-001') or titulo ilike '%learning%' or titulo ilike '%consumer%' or patron ilike '%learning_bridge%' order by ultima_vez desc nulls last limit 25) x"
+          echo "EKB_END"
+
+          echo "KB_SCHEMA_BEGIN"
+          q "select coalesce(string_agg(column_name||':'||data_type,',' order by ordinal_position),'') from information_schema.columns where table_schema='public' and table_name='lf_knowledge_base'"
+          echo "KB_SCHEMA_END"
+
+          echo "RELATED_TABLES_BEGIN"
+          q "select coalesce(string_agg(table_name,',' order by table_name),'') from information_schema.tables where table_schema='public' and (table_name ilike '%card%' or table_name ilike '%learning%' or table_name ilike '%consumer%' or table_name ilike '%binding%')"
+          echo "RELATED_TABLES_END"
+
+          echo "RELATED_SCHEMA_BEGIN"
+          q "select coalesce(string_agg(table_name||'.'||column_name,',' order by table_name,ordinal_position),'') from information_schema.columns where table_schema='public' and (table_name ilike '%consumer%' or table_name ilike '%binding%' or table_name ilike '%learning%')"
+          echo "RELATED_SCHEMA_END"
+          echo "READBACK_STATUS=PASS"
