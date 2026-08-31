@@ -1,0 +1,92 @@
+version: v1
+status: CANDIDATO_READ_ONLY
+consumer:
+  consumer_id: PERFIL-PRODUCT-DIRECTOR-LF
+  consumer_type: PROFILE
+  consumer_source: profiles/product_director_lf/SKILL.md
+  consumer_runtime_state: NO_HABILITADO
+  router_action: EJECUCION_PERFIL_LF
+  authority_scope: product_scope_priority_tradeoffs_acceptance
+champion:
+  champion_id: CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1
+  definition: exact current Product Director profile without competitive learning context injection
+challenger:
+  challenger_id: CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1
+  definition: exact same Product Director profile plus deterministic selected competitive context pack
+  single_variable_change: selected_competitive_context
+bindings:
+  - binding_id: BIND-LF-PD-NEGOCIACION-DEUDA-v1
+    capability_id: NEGOCIACION_DEUDA
+    invoke_when:
+      - task_requires_product_scope_or_tradeoff_for_debt_negotiation
+      - task_requires_acceptance_or_product_direction_for_negotiation_flow
+    must_not_invoke_when:
+      - legal_approval_only
+      - visual_design_only
+      - technical_architecture_only
+      - user_specific_financial_advice
+    minimum_context:
+      - grounded_competitive_pattern
+      - source_ref
+      - explicit_constraints
+      - observed_vs_proposed_boundary
+    policy_capsule_ref: POL-LF-OPERATION-LIFECYCLE
+    output_schema_ref: profiles/product_director_lf/SKILL.md#Required-output-modes
+    fallback: NO_COMPETITIVE_CONTEXT
+    timeout_budget_ms: 0
+    context_budget_bytes: 6000
+  - binding_id: BIND-LF-PD-ALTERNATIVAS-FINANCIERAS-v1
+    capability_id: ALTERNATIVAS_FINANCIERAS
+    invoke_when:
+      - task_requires_product_alternative_comparison_or_tradeoff
+      - task_requires_scope_decision_between_debt_resolution_and_new_credit_paths
+    must_not_invoke_when:
+      - user_specific_credit_recommendation
+      - eligibility_claim_without_authority
+      - legal_approval_only
+      - technical_implementation_only
+    minimum_context:
+      - grounded_alternative_pattern
+      - risk_boundary
+      - source_ref
+      - non_recommendation_constraint
+    policy_capsule_ref: POL-LF-OPERATION-LIFECYCLE
+    output_schema_ref: profiles/product_director_lf/SKILL.md#Required-output-modes
+    fallback: NO_COMPETITIVE_CONTEXT
+    timeout_budget_ms: 0
+    context_budget_bytes: 6000
+  - binding_id: BIND-LF-PD-EDUCACION-CREDITICIA-v1
+    capability_id: EDUCACION_CREDITICIA
+    invoke_when:
+      - task_requires_product_decision_for_credit_education_or_clarity
+      - task_requires_acceptance_or_scope_for_debt_education_experience
+    must_not_invoke_when:
+      - user_specific_credit_advice
+      - legal_or_regulatory_truth_without_independent_authority
+      - score_guarantee
+      - visual_copy_only
+    minimum_context:
+      - grounded_education_pattern
+      - source_ref
+      - claim_limits
+      - observed_vs_proposed_boundary
+    policy_capsule_ref: POL-LF-OPERATION-LIFECYCLE
+    output_schema_ref: profiles/product_director_lf/SKILL.md#Required-output-modes
+    fallback: NO_COMPETITIVE_CONTEXT
+    timeout_budget_ms: 0
+    context_budget_bytes: 6000
+judges:
+  - exact_binding_required
+  - authority_preservation
+  - no_invention
+  - bounded_context
+  - must_not_invoke
+benchmark:
+  matrix: gobernanza/benchmarks/learning_consumer_50_cases_v1.yaml
+  champion_id: CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1
+  challenger_id: CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1
+  behavioral_profile_ab_status: BLOCKED_RUNTIME_DISABLED
+  routing_context_ab_allowed: true
+rollback:
+  action: remove_selected_competitive_context_and_use_champion
+  production_impact: false
