@@ -1,4 +1,4 @@
-version: v0.5
+version: v0.6
 operation: CREACION_CARD_LF
 status: CANDIDATO_READ_ONLY
 source_model: GIT_FIRST_YAML
@@ -32,20 +32,23 @@ steps:
     id: partial_scope_guard
     evidence: complete_operation_scope_confirmed_or_blocked
   - order: 24
+    id: pre_write_execution_binding_gate
+    evidence: execution_bound_to_target_before_change
+  - order: 25
     id: github_write
     evidence: file_commit_sha
-  - order: 25
+  - order: 26
     id: github_readback
     evidence: file_readback_sha
-  - order: 26
+  - order: 27
     id: evidence_log
     evidence: lf_eventos_if_available_and_scope_confirmed
-  - order: 27
+  - order: 28
     id: contract_judge
     evidence: judge_pass_and_scope_confirmed
-  - order: 28
+  - order: 29
     id: close
     evidence: no_blocking_observations_and_scope_confirmed
-  - order: 29
+  - order: 30
     id: report_output
     evidence: act0046_report_or_execution_summary_with_scope_status
