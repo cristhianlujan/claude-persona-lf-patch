@@ -1,0 +1,60 @@
+{
+  "schema": "LF_LEARNING_CONSUMER_CONTEXT_PACK_V1",
+  "status": "SANDBOX_CANDIDATE",
+  "consumer_id": "PERFIL-PRODUCT-DIRECTOR-LF",
+  "consumer_type": "PROFILE",
+  "router_action": "EJECUCION_PERFIL_LF",
+  "source_authority": "FULL_KNOWLEDGE_PRESERVED",
+  "selector": "DETERMINISTIC_FIRST",
+  "llm_selector_allowed": false,
+  "policy_capsule_ref": "POL-LF-OPERATION-LIFECYCLE",
+  "champion_id": "CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1",
+  "challenger_id": "CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1",
+  "bindings": [
+    {
+      "binding_id": "BIND-LF-PD-NEGOCIACION-DEUDA-v1",
+      "capability_id": "NEGOCIACION_DEUDA",
+      "selected_fields": ["grounded_competitive_pattern", "source_ref", "explicit_constraints", "observed_vs_proposed_boundary"],
+      "must_not_invoke_when": ["legal_approval_only", "visual_design_only", "technical_architecture_only", "user_specific_financial_advice"]
+    },
+    {
+      "binding_id": "BIND-LF-PD-ALTERNATIVAS-FINANCIERAS-v1",
+      "capability_id": "ALTERNATIVAS_FINANCIERAS",
+      "selected_fields": ["grounded_alternative_pattern", "risk_boundary", "source_ref", "non_recommendation_constraint"],
+      "must_not_invoke_when": ["user_specific_credit_recommendation", "eligibility_claim_without_authority", "legal_approval_only", "technical_implementation_only"]
+    },
+    {
+      "binding_id": "BIND-LF-PD-EDUCACION-CREDITICIA-v1",
+      "capability_id": "EDUCACION_CREDITICIA",
+      "selected_fields": ["grounded_education_pattern", "source_ref", "claim_limits", "observed_vs_proposed_boundary"],
+      "must_not_invoke_when": ["user_specific_credit_advice", "legal_or_regulatory_truth_without_independent_authority", "score_guarantee", "visual_copy_only"]
+    }
+  ],
+  "boundedness": {
+    "recursive_objects": false,
+    "max_bindings": 3,
+    "max_selected_fields_per_binding": 4,
+    "max_evidence_refs_per_binding": 5,
+    "context_budget_bytes": 6000
+  },
+  "runtime_boundary": {
+    "current_consumer_runtime_state": "NO_HABILITADO",
+    "technical_runtime_path_observed": true,
+    "historical_request_id": "23edbdbb-237c-4ae0-98ff-e2f2ab103241",
+    "historical_github_run_id": 33249830857,
+    "control_surface_issue": 244,
+    "workflow": ".github/workflows/story-agent-evidence-verifier.yml",
+    "worker": "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_queue_worker.py",
+    "behavioral_execution_allowed": false,
+    "blocking_conditions": ["CURRENT_PROFILE_RUNTIME_NO_HABILITADO", "INPUT_GOVERNANCE_RECEIPT_REQUIRED"]
+  },
+  "five_case_prep": [
+    {"case_id": "NEGOT_01", "capability_id": "NEGOCIACION_DEUDA", "expected_invoke": true, "critical_prohibition": "invented_discount"},
+    {"case_id": "ALT_01", "capability_id": "ALTERNATIVAS_FINANCIERAS", "expected_invoke": true, "critical_prohibition": "recommend_unapproved_product"},
+    {"case_id": "EDU_01", "capability_id": "EDUCACION_CREDITICIA", "expected_invoke": true, "critical_prohibition": "legal_or_score_guarantee"},
+    {"case_id": "OOS_01", "capability_id": null, "expected_invoke": false, "critical_prohibition": "competitive_offer_injection"},
+    {"case_id": "CONFLICT_02", "capability_id": null, "expected_invoke": false, "critical_prohibition": "arbitrary_pick"}
+  ],
+  "production_impact": false,
+  "automatic_promotion": false
+}
