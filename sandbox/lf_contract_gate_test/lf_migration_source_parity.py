@@ -23,8 +23,6 @@ MANAGED_PREFIXES = (
     "programacion_prog017_",
 )
 
-# Exact historical and explicitly governed LF migration names.
-# Do not replace this with a broad prefix.
 MANAGED_EXACT_NAMES = {
     "promote_router_compact_jit_v1",
     "promote_card_deterministic_resolvers_safe_subset",
@@ -36,6 +34,8 @@ MANAGED_EXACT_NAMES = {
     "fix_operation_step_enforcement_status_compatibility",
     "materialize_router_enforcement_and_gate0_inventory",
     "fix_operation_judge_jsonb_shape_compatibility",
+    "reconcile_card_depth_gate_order_v1",
+    "fix_card_contract_judge_clean_status_v1",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
@@ -55,25 +55,20 @@ MARKER_RE = re.compile(
     r"legacy_count=(\d+) legacy_sha256=([0-9a-f]{64})$"
 )
 
-
 def managed(name: str) -> bool:
     return name.startswith(MANAGED_PREFIXES) or name in MANAGED_EXACT_NAMES
 
-
 def classified(name: str) -> bool:
     return managed(name) or name.startswith(CLASSIFIED_EXTERNAL_PREFIXES) or name in CLASSIFIED_EXTERNAL_NAMES
-
 
 def canonical(sql: str) -> bytes:
     sql = sql.replace("\r\n", "\n").replace("\r", "\n")
     lines = [line for line in sql.split("\n") if not line.lstrip().startswith("--")]
     return "\n".join(lines).rstrip("\n").encode("utf-8")
 
-
 def fail(code: str, detail: str = "") -> None:
     suffix = f": {detail}" if detail else ""
     raise SystemExit(f"{code}{suffix}")
-
 
 def read_single_row(path: pathlib.Path, expected_columns: int, code: str) -> list[str]:
     with path.open(newline="", encoding="utf-8") as handle:
@@ -82,11 +77,9 @@ def read_single_row(path: pathlib.Path, expected_columns: int, code: str) -> lis
         fail(code, repr(rows))
     return rows[0]
 
-
 def main() -> int:
     if len(sys.argv) != 5:
         fail("FAIL_LF_MIGRATION_PARITY_USAGE", "expected migrations remote_csv grandfather_csv legacy_csv")
-
     migrations = pathlib.Path(sys.argv[1])
     remote_file = pathlib.Path(sys.argv[2])
     grandfather_file = pathlib.Path(sys.argv[3])
@@ -96,7 +89,6 @@ def main() -> int:
     grandfathered_count = os.environ["LF_MIGRATION_GRANDFATHERED_COUNT"]
     grandfathered_sha = os.environ["LF_MIGRATION_GRANDFATHERED_SHA256"]
 
-    # Self-tests prove exact names are managed without opening a generic prefix.
     if not managed("promote_router_compact_jit_v1"):
         fail("FAIL_CI009_SELFTEST_MANAGED_EXACT")
     if not managed("create_lf_cross_audit_control_plane_v1"):
@@ -109,6 +101,10 @@ def main() -> int:
         fail("FAIL_CI009_SELFTEST_ROUTER_ENFORCEMENT_GATE0_INVENTORY")
     if not managed("fix_operation_judge_jsonb_shape_compatibility"):
         fail("FAIL_CI009_SELFTEST_OPERATION_JUDGE_JSONB_SHAPE_COMPATIBILITY")
+    if not managed("reconcile_card_depth_gate_order_v1"):
+        fail("FAIL_CI009_SELFTEST_CARD_DEPTH_ORDER_RECONCILIATION")
+    if not managed("fix_card_contract_judge_clean_status_v1"):
+        fail("FAIL_CI009_SELFTEST_CARD_CONTRACT_JUDGE_CLEAN_STATUS")
     if managed("create_lf_unreviewed_future_change"):
         fail("FAIL_CI009_SELFTEST_MANAGED_PREFIX_TOO_BROAD")
     if not classified("programacion_worker_spec_probe"):
@@ -134,15 +130,11 @@ def main() -> int:
     observed_count, observed_sha = read_single_row(legacy_file, 2, "FAIL_LF_MIGRATION_LEGACY_ROW_COUNT")
     if observed_count != legacy_count or observed_sha != legacy_sha:
         fail("FAIL_LF_MIGRATION_LEGACY_ATTESTATION")
-
     observed_grandfathered_count, observed_grandfathered_sha = read_single_row(
         grandfather_file, 2, "FAIL_LF_MIGRATION_GRANDFATHER_BASELINE_ROW"
     )
     if observed_grandfathered_count != grandfathered_count or observed_grandfathered_sha != grandfathered_sha:
-        fail(
-            "FAIL_LF_MIGRATION_GRANDFATHER_BASELINE",
-            f"expected={grandfathered_count}/{grandfathered_sha} observed={observed_grandfathered_count}/{observed_grandfathered_sha}",
-        )
+        fail("FAIL_LF_MIGRATION_GRANDFATHER_BASELINE", f"expected={grandfathered_count}/{grandfathered_sha} observed={observed_grandfathered_count}/{observed_grandfathered_sha}")
 
     remote_all: dict[str, tuple[str, str]] = {}
     with remote_file.open(newline="", encoding="utf-8") as handle:
@@ -181,15 +173,9 @@ def main() -> int:
     if mismatches:
         fail("FAIL_LF_MIGRATION_CONTENT_PARITY", repr(mismatches))
 
-    print(
-        f"PASS_LF_MIGRATION_SOURCE_PARITY: checkpoint={checkpoint_path.name} "
-        f"post_cutover={len(local)} legacy={legacy_count} sha256={legacy_sha} "
-        f"grandfathered={grandfathered_count}/{grandfathered_sha} "
-        f"classification_baseline_end={classification_baseline_end}"
-    )
-    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=10/10")
+    print(f"PASS_LF_MIGRATION_SOURCE_PARITY: checkpoint={checkpoint_path.name} post_cutover={len(local)} legacy={legacy_count} sha256={legacy_sha} grandfathered={grandfathered_count}/{grandfathered_sha} classification_baseline_end={classification_baseline_end}")
+    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=12/12")
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())
