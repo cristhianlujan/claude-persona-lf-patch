@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-MATRIX = ROOT / "gobernanza/benchmarks/learning_consumer_50_cases_v1.yaml"
+MATRIX = ROOT / "sandbox/lf_contract_gate_test/learning_consumer_50_cases_v1.yaml"
 CONSUMER = "PERFIL-PRODUCT-DIRECTOR-LF"
 
 POSITIVE_TASK = {
@@ -61,20 +61,32 @@ def metrics(cases: list[dict], selector) -> dict:
         lat.append(time.perf_counter_ns() - t0)
         actual = result is not None
         expected = case["expected"]
-        if actual and expected: tp += 1
-        elif actual and not expected: fp += 1
-        elif not actual and expected: fn += 1
-        else: tn += 1
+        if actual and expected:
+            tp += 1
+        elif actual and not expected:
+            fp += 1
+        elif not actual and expected:
+            fn += 1
+        else:
+            tn += 1
     precision = tp / (tp + fp) if tp + fp else 0.0
     recall = tp / (tp + fn) if tp + fn else 0.0
     specificity = tn / (tn + fp) if tn + fp else 0.0
     ordered = sorted(lat)
     p95 = ordered[max(0, int(len(ordered) * .95) - 1)]
     return {
-        "tp": tp, "tn": tn, "fp": fp, "fn": fn,
-        "precision": round(precision, 4), "recall": round(recall, 4), "specificity": round(specificity, 4),
-        "runtime_ns_p50": int(statistics.median(lat)), "runtime_ns_p95": int(p95), "runtime_ns_max": max(lat),
-        "llm_calls": 0, "round_trips": 0,
+        "tp": tp,
+        "tn": tn,
+        "fp": fp,
+        "fn": fn,
+        "precision": round(precision, 4),
+        "recall": round(recall, 4),
+        "specificity": round(specificity, 4),
+        "runtime_ns_p50": int(statistics.median(lat)),
+        "runtime_ns_p95": int(p95),
+        "runtime_ns_max": max(lat),
+        "llm_calls": 0,
+        "round_trips": 0,
     }
 
 
