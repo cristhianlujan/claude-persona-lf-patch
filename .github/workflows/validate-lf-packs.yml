@@ -2,12 +2,9 @@ name: Validate LF Packs
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
   push:
-    branches:
-      - main
-      - "lf/**"
+    branches: [main, "lf/**"]
 
 permissions:
   contents: read
@@ -16,31 +13,15 @@ jobs:
   validate-lf-packs:
     name: Run LF pack validators
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Validate profile template pack
-        run: python profiles/_template/validators/validate_pack.py profiles/_template
-
-      - name: Validate skill template pack
-        run: python skills/_template/validators/validate_pack.py skills/_template
-
-      - name: Validate skill creator pack
-        run: python skills/skill_creator/validators/validate_pack.py skills/skill_creator
-
-      - name: Validate profile creator pack
-        run: python skills/profile_creator/validators/validate_pack.py skills/profile_creator
-
-      - name: Validate learning engine pack
-        run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
-
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - run: python profiles/_template/validators/validate_pack.py profiles/_template
+      - run: python skills/_template/validators/validate_pack.py skills/_template
+      - run: python skills/skill_creator/validators/validate_pack.py skills/skill_creator
+      - run: python skills/profile_creator/validators/validate_pack.py skills/profile_creator
+      - run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
       - name: Validate learning consumer champion benchmark
         run: python sandbox/lf_contract_gate_test/validate_learning_consumer_benchmark.py
 
@@ -54,89 +35,55 @@ jobs:
     steps:
       - name: Detect sandbox credentials
         id: credentials
-        env:
-          SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        env: {SUPABASE_DB_PASSWORD: "${{ secrets.LF_SUPABASE_DB_PASSWORD }}"}
         shell: bash
         run: |
           set -euo pipefail
-          if [ -n "${SUPABASE_DB_PASSWORD:-}" ]; then
-            echo "ready=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "READBACK_STATUS=NO_DB_CREDENTIALS"
-          fi
-
-      - name: Read Router, executions, EKB, backlog and consumers
+          test -n "${SUPABASE_DB_PASSWORD:-}"
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+      - name: Reconcile Router, processed KB and consumers
         if: steps.credentials.outputs.ready == 'true'
-        env:
-          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        env: {PGPASSWORD: "${{ secrets.LF_SUPABASE_DB_PASSWORD }}"}
         shell: bash
         run: |
           set -euo pipefail
-          export PGHOST="$SUPABASE_POOLER_HOST"
-          export PGPORT=5432
-          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
-          export PGDATABASE=postgres
-          export PGSSLMODE=require
+          export PGHOST="$SUPABASE_POOLER_HOST" PGPORT=5432 PGUSER="postgres.${SUPABASE_PROJECT_ID}" PGDATABASE=postgres PGSSLMODE=require
           q() { psql -X -v ON_ERROR_STOP=1 -Atqc "$1"; }
-
           echo "READBACK_TS=$(q "select now()")"
 
-          echo "ROUTER_SCHEMA_BEGIN"
-          q "select coalesce(string_agg(column_name||':'||data_type,',' order by ordinal_position),'') from information_schema.columns where table_schema='public' and table_name='v_lf_fuente_operativa'"
-          echo "ROUTER_SCHEMA_END"
-          echo "ROUTER_TABLES_BEGIN"
-          q "select coalesce(string_agg(table_name,',' order by table_name),'') from information_schema.tables where table_schema='public' and table_name ilike '%router%'"
-          echo "ROUTER_TABLES_END"
-          echo "ROUTER_SCHEMA_ALL_BEGIN"
-          q "select coalesce(string_agg(table_name||'.'||column_name,',' order by table_name,ordinal_position),'') from information_schema.columns where table_schema='public' and table_name ilike '%router%'"
-          echo "ROUTER_SCHEMA_ALL_END"
-          echo "ROUTER_MATCHES_BEGIN"
-          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select * from public.v_lf_fuente_operativa v where to_jsonb(v)::text ilike '%LEARNING_BRIDGE_KB_CARD_LF%' or to_jsonb(v)::text ilike '%KNOWLEDGE_LEARNING_BRIDGE%' limit 10) x"
-          echo "ROUTER_MATCHES_END"
+          echo "ROUTER_REGISTRY_BEGIN"
+          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select * from public.lf_router_action_registry where operation_code='LEARNING_BRIDGE_KB_CARD_LF' or action_code='KNOWLEDGE_LEARNING_BRIDGE' order by updated_at desc) x"
+          echo "ROUTER_REGISTRY_END"
 
-          echo "EXECUTIONS_BEGIN"
-          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select execution_id,operation_code,status,started_at,completed_at,created_at from public.lf_operation_execution where operation_code='LEARNING_BRIDGE_KB_CARD_LF' or execution_id like 'LF-AUTOLEARN%' order by created_at desc limit 20) x"
-          echo "EXECUTIONS_END"
-          echo "ACTIVE_EXECUTIONS_BEGIN"
-          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select execution_id,operation_code,target_type,target_code,status,started_at,created_at from public.lf_operation_execution where completed_at is null and status not in ('SUPERSEDED','CLOSED','COMPLETED','PASS','SUCCESS') order by created_at desc limit 25) x"
-          echo "ACTIVE_EXECUTIONS_END"
-          echo "RUN30_MANIFEST_BEGIN"
-          q "select coalesce(manifest::text,'{}') from public.lf_operation_execution where execution_id='LF-AUTOLEARN-RUN-20260831-030' limit 1"
-          echo "RUN30_MANIFEST_END"
+          echo "RUN30_STEPS_SCHEMA_BEGIN"
+          q "select coalesce(string_agg(column_name||':'||data_type,',' order by ordinal_position),'') from information_schema.columns where table_schema='public' and table_name='lf_operation_execution_steps'"
+          echo "RUN30_STEPS_SCHEMA_END"
+          echo "RUN30_STEPS_BEGIN"
+          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select step_order,step_code,status,input_payload,output_payload,evidence_refs,judge_summary,error_code from public.lf_operation_execution_steps where execution_id='LF-AUTOLEARN-RUN-20260831-030' order by step_order,attempt_no) x"
+          echo "RUN30_STEPS_END"
 
-          echo "EKB_BEGIN"
-          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select codigo,categoria,titulo,causa_raiz,patron,severidad,frecuencia,estado,ultima_vez from public.lf_error_knowledge where codigo in ('DB-001','CI-MIGRATION-SOURCE-PARITY-001') or titulo ilike '%learning%' or titulo ilike '%consumer%' or patron ilike '%learning_bridge%' order by ultima_vez desc nulls last limit 25) x"
-          echo "EKB_END"
+          echo "RUN30_EVENTS_BEGIN"
+          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select id,evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,payload,created_at from public.lf_eventos where id between 9683 and 9700 order by id) x"
+          echo "RUN30_EVENTS_END"
 
-          echo "KB_SCHEMA_BEGIN"
-          q "select coalesce(string_agg(column_name||':'||data_type,',' order by ordinal_position),'') from information_schema.columns where table_schema='public' and table_name='lf_knowledge_base'"
-          echo "KB_SCHEMA_END"
-          echo "ELIGIBLE_BACKLOG_COUNT_BEGIN"
+          echo "ELIGIBLE_COUNT_BEGIN"
           q "select count(*) from public.lf_knowledge_base where kb_category='COMPETENCIA' and consumer_ready=true and grounding_status='GROUNDED' and decision_upstream='ALLOW_PROD_GATE'"
-          echo "ELIGIBLE_BACKLOG_COUNT_END"
-          echo "ELIGIBLE_BACKLOG_BEGIN"
-          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select kb_id,kb_subcategory,topic,competitor,quality_score,source_url,evidence_event_id,updated_by_execution_id,created_at,updated_at from public.lf_knowledge_base where kb_category='COMPETENCIA' and consumer_ready=true and grounding_status='GROUNDED' and decision_upstream='ALLOW_PROD_GATE' order by quality_score desc nulls last, updated_at desc limit 30) x"
-          echo "ELIGIBLE_BACKLOG_END"
+          echo "ELIGIBLE_COUNT_END"
+          echo "RUN30_MARKED_KB_BEGIN"
+          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select kb_id,kb_subcategory,topic,competitor,quality_score,source_url,evidence_event_id,updated_by_execution_id from public.lf_knowledge_base where updated_by_execution_id='LF-AUTOLEARN-RUN-20260831-030' order by quality_score desc nulls last) x"
+          echo "RUN30_MARKED_KB_END"
 
-          echo "CARDS_SCHEMA_BEGIN"
-          q "select coalesce(string_agg(column_name||':'||data_type,',' order by ordinal_position),'') from information_schema.columns where table_schema='public' and table_name='lf_cards'"
-          echo "CARDS_SCHEMA_END"
-          echo "RUN30_CARDS_BEGIN"
-          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select * from public.lf_cards c where to_jsonb(c)::text ilike '%LF-AUTOLEARN-RUN-20260831-030%' or to_jsonb(c)::text ilike '%LEARNING_BRIDGE_KB_CARD_LF%' order by c.created_at desc limit 30) x"
-          echo "RUN30_CARDS_END"
+          echo "ASSET_STATUS_DISTRIBUTION_BEGIN"
+          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select tipo_activo,estado_operativo,runtime_estado,count(*) n from public.v_lf_fuente_operativa where tipo_activo in ('PERFIL','PROFILE','AGENT','SKILL','ADAPTER','OPERATION') group by 1,2,3 order by 1,2,3) x"
+          echo "ASSET_STATUS_DISTRIBUTION_END"
+          echo "CONSUMER_CANDIDATES_BEGIN"
+          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select codigo_activo,nombre_canonico,tipo_activo,subtipo_activo,estado_documental,estado_operativo,runtime_estado,version_normalizada from public.v_lf_fuente_operativa where tipo_activo in ('PERFIL','PROFILE','AGENT','SKILL','ADAPTER','OPERATION') and (nombre_canonico ilike '%cliente%' or nombre_canonico ilike '%ui%' or nombre_canonico ilike '%deuda%' or nombre_canonico ilike '%oferta%' or nombre_canonico ilike '%pago%' or nombre_canonico ilike '%learning%' or nombre_canonico ilike '%aprendiz%' or codigo_activo in ('ACT-0046','ACT-0012')) order by tipo_activo,codigo_activo limit 100) x"
+          echo "CONSUMER_CANDIDATES_END"
 
-          echo "CONSUMER_ASSETS_BEGIN"
-          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select codigo_activo,nombre_canonico,tipo_activo,subtipo_activo,estado_operativo,runtime_estado,version_normalizada from public.v_lf_fuente_operativa where tipo_activo in ('PROFILE','AGENT','SKILL','ADAPTER','OPERATION') and estado_operativo in ('ACTIVE','ACTIVO','VIGENTE') order by tipo_activo,codigo_activo limit 100) x"
-          echo "CONSUMER_ASSETS_END"
-
-          echo "POLICY_BINDINGS_BEGIN"
-          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select * from public.lf_operation_policy_bindings where operation_code='LEARNING_BRIDGE_KB_CARD_LF' order by policy_code) x"
-          echo "POLICY_BINDINGS_END"
-          echo "JUDGE_BINDINGS_BEGIN"
-          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select operation_code,step_order,step_id,judge_code,status from public.lf_operation_step_judge_bindings where operation_code='LEARNING_BRIDGE_KB_CARD_LF' order by step_order) x"
-          echo "JUDGE_BINDINGS_END"
-          echo "ADAPTER_BINDINGS_BEGIN"
-          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select * from public.v_lf_router_adapter_bindings v where to_jsonb(v)::text ilike '%LEARNING%' or to_jsonb(v)::text ilike '%KNOWLEDGE%' limit 50) x"
-          echo "ADAPTER_BINDINGS_END"
+          echo "CARD_FACTORY_ROUTER_BEGIN"
+          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select * from public.lf_router_action_registry where operation_code='CREACION_CARD_LF' order by updated_at desc) x"
+          echo "CARD_FACTORY_ROUTER_END"
+          echo "CARD_FACTORY_EXECUTIONS_BEGIN"
+          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select execution_id,status,target_type,target_code,started_at,completed_at,manifest from public.lf_operation_execution where operation_code='CREACION_CARD_LF' order by created_at desc limit 8) x"
+          echo "CARD_FACTORY_EXECUTIONS_END"
           echo "READBACK_STATUS=PASS"
