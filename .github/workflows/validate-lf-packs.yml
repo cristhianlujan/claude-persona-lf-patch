@@ -81,16 +81,26 @@ jobs:
           q() { psql -X -v ON_ERROR_STOP=1 -Atqc "$1"; }
 
           echo "READBACK_TS=$(q "select now()")"
+
+          echo "ROUTER_SCHEMA_BEGIN"
+          q "select coalesce(string_agg(column_name||':'||data_type,',' order by ordinal_position),'') from information_schema.columns where table_schema='public' and table_name='v_lf_fuente_operativa'"
+          echo "ROUTER_SCHEMA_END"
           echo "ROUTER_BEGIN"
-          q "select coalesce(jsonb_agg(jsonb_build_object('asset_type',asset_type,'action_code',action_code,'operation_code',operation_code,'write_allowed',write_allowed,'status',status))::text,'[]') from public.v_lf_fuente_operativa where operation_code='LEARNING_BRIDGE_KB_CARD_LF' or (asset_type='KNOWLEDGE' and action_code='KNOWLEDGE_LEARNING_BRIDGE')"
+          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select * from public.v_lf_fuente_operativa v where to_jsonb(v)::text ilike '%LEARNING_BRIDGE_KB_CARD_LF%' or to_jsonb(v)::text ilike '%KNOWLEDGE_LEARNING_BRIDGE%' limit 10) x"
           echo "ROUTER_END"
 
+          echo "EXECUTION_SCHEMA_BEGIN"
+          q "select coalesce(string_agg(column_name||':'||data_type,',' order by ordinal_position),'') from information_schema.columns where table_schema='public' and table_name='lf_operation_execution'"
+          echo "EXECUTION_SCHEMA_END"
           echo "EXECUTIONS_BEGIN"
-          q "select coalesce(jsonb_agg(x)::text,'[]') from (select execution_id,operation_code,status,started_at,completed_at,created_at from public.lf_operation_execution where operation_code='LEARNING_BRIDGE_KB_CARD_LF' or execution_id like 'LF-AUTOLEARN%' order by created_at desc limit 15) x"
+          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select execution_id,operation_code,status,started_at,completed_at,created_at from public.lf_operation_execution where operation_code='LEARNING_BRIDGE_KB_CARD_LF' or execution_id like 'LF-AUTOLEARN%' order by created_at desc limit 15) x"
           echo "EXECUTIONS_END"
 
+          echo "EKB_SCHEMA_BEGIN"
+          q "select coalesce(string_agg(column_name||':'||data_type,',' order by ordinal_position),'') from information_schema.columns where table_schema='public' and table_name='lf_error_knowledge'"
+          echo "EKB_SCHEMA_END"
           echo "EKB_BEGIN"
-          q "select coalesce(jsonb_agg(x)::text,'[]') from (select codigo,categoria,titulo,causa_raiz,patron,severidad,frecuencia,estado,ultima_vez from public.lf_error_knowledge where codigo in ('DB-001','CI-MIGRATION-SOURCE-PARITY-001') or titulo ilike '%learning%' or titulo ilike '%consumer%' or patron ilike '%learning_bridge%' order by ultima_vez desc nulls last limit 25) x"
+          q "select coalesce(jsonb_agg(to_jsonb(x))::text,'[]') from (select codigo,categoria,titulo,causa_raiz,patron,severidad,frecuencia,estado,ultima_vez from public.lf_error_knowledge where codigo in ('DB-001','CI-MIGRATION-SOURCE-PARITY-001') or titulo ilike '%learning%' or titulo ilike '%consumer%' or patron ilike '%learning_bridge%' order by ultima_vez desc nulls last limit 25) x"
           echo "EKB_END"
 
           echo "KB_SCHEMA_BEGIN"
