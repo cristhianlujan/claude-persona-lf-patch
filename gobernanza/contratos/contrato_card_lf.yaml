@@ -1,4 +1,4 @@
-version: v0.2
+version: v0.3
 status: CANDIDATO_READ_ONLY
 operation: CREACION_CARD_LF
 regularization: REGULARIZACION_STEP_GATE_L2L3_001
@@ -14,6 +14,7 @@ required_before_write:
   - research_pack_evidence_strong
   - research_to_rules_matrix_present
   - decision_matrix_present
+  - execution_bound_to_target_before_change
 allowed:
   repository: cristhianlujan/claude-persona-lf-patch
   path_prefix: /cards/
@@ -24,6 +25,7 @@ allowed:
 blocked:
   - write_without_contract
   - write_without_readback
+  - direct_write_without_lf_operation_execution
   - write_to_marketplace_ssot_for_cards
   - missing_research_pack
   - weak_research_pack_evidence
