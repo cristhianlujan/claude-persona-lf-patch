@@ -31,6 +31,8 @@ MANAGED_EXACT_NAMES = {
     "promote_card_github_read_resolvers",
     "fix_operation_execution_judge_binding_status_compatibility",
     "harden_operation_execution_views_security_invoker",
+    "fix_operation_step_enforcement_status_compatibility",
+    "materialize_router_enforcement_and_gate0_inventory",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
