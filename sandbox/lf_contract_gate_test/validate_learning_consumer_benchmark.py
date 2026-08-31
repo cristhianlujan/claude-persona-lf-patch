@@ -6,8 +6,8 @@ from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-MATRIX = ROOT / "gobernanza/benchmarks/learning_consumer_50_cases_v1.yaml"
-CONTRACT = ROOT / "gobernanza/contratos/contrato_learning_consumer_binding_benchmark_lf.yaml"
+MATRIX = ROOT / "sandbox/lf_contract_gate_test/learning_consumer_50_cases_v1.yaml"
+CONTRACT = ROOT / "sandbox/lf_contract_gate_test/learning_consumer_binding_benchmark_contract_v1.yaml"
 
 EXPECTED_FAMILIES = {
     "COMPETITIVE_OFFER_INSIGHT",
