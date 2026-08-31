@@ -1,0 +1,141 @@
+version: v0.1
+status: CANDIDATO_READ_ONLY
+operation: LEARNING_BRIDGE_KB_CARD_LF
+purpose: Gobernar el consumo de aprendizajes competitivos por consumidores LF con binding exacto y benchmark champion/challenger antes de cualquier promocion.
+router_first:
+  required: true
+  router_asset: ACT-0001
+  operational_source: public.v_lf_fuente_operativa
+consumer_binding:
+  required_before_close: true
+  allowed_consumer_types: [PROFILE, AGENT, SKILL, ADAPTER, OPERATION]
+  required_fields:
+    - consumer_id
+    - consumer_type
+    - capability_id
+    - router_action
+    - invoke_when
+    - must_not_invoke_when
+    - input_contract
+    - minimum_context
+    - selected_evidence_refs
+    - policy_capsule_ref
+    - output_schema_ref
+    - judges
+    - fallback
+    - timeout_budget
+    - context_budget
+    - lifecycle_state
+    - version
+    - source_learning_ids
+    - champion_id
+    - challenger_id
+    - provenance
+  missing_binding_state: READY_FOR_BINDING
+  exact_binding_required: true
+  no_implicit_consumer_selection: true
+consumer_context_pack:
+  source_authority: FULL_KNOWLEDGE_PRESERVED
+  selector: DETERMINISTIC_FIRST
+  llm_selector_allowed: false
+  include_only:
+    - relevant_grounded_facts
+    - required_constraints
+    - applicable_policy_capsule
+    - evidence_refs
+    - expected_output_contract
+  bounded_output_required: true
+  recursive_output_blocked: true
+champion_benchmark:
+  required_before_consumer_promotion: true
+  champion_definition: CURRENT_ACCEPTED_BEHAVIOR_OR_REPRODUCIBLE_BASELINE
+  challenger_definition: CHAMPION_PLUS_ONE_LEARNING_OR_BINDING_CHANGE
+  same_inputs: true
+  same_model_runtime: true
+  same_judges: true
+  single_variable_change_required: true
+  rollback_to_champion_required: true
+  minimum_cases: 20
+  default_cases: 50
+  critical_cases: 50
+  preferred_shape: 10_FAMILIES_X_5_CASES
+  result_states: [CHALLENGER_WINS, CHAMPION_RETAINS, NEEDS_REPAIR, INSUFFICIENT_EVIDENCE]
+benchmark_families:
+  - COMPETITIVE_OFFER_INSIGHT
+  - DEBT_EDUCATION
+  - PAYMENT_NO_ADEUDO
+  - DIGITAL_SELF_SERVICE
+  - FINANCIAL_ALTERNATIVES
+  - NEGOTIATION
+  - OUT_OF_SCOPE_NO_INVOKE
+  - CONFLICT_PRECEDENCE
+  - STALE_LOW_GROUNDING
+  - MULTI_DOMAIN_COMPLEX
+metrics:
+  quality:
+    - requirement_retention
+    - canonical_pass
+    - structural_pass
+    - bounded_pass
+    - authority_pass
+    - hallucination_rate
+    - placeholder_rate
+    - task_success
+    - judge_score
+  routing:
+    - true_positive
+    - true_negative
+    - false_positive
+    - false_negative
+    - precision
+    - recall
+    - specificity
+  efficiency:
+    - input_context_bytes
+    - input_tokens
+    - output_bytes
+    - output_tokens
+    - llm_calls
+    - round_trips
+    - tool_calls
+    - deterministic_executor_share
+    - cache_hit_rate
+  performance:
+    - runtime_per_case
+    - p50
+    - p95
+    - max
+    - timeout_rate
+    - error_rate
+  cost:
+    - provider_cost_if_available
+    - tokens_proxy_if_unavailable
+    - runtime_proxy_if_unavailable
+  stability:
+    - repeated_run_variance
+    - harness_reproducibility
+promotion_gates:
+  authority_pass_pct: 100
+  governed_output_pass_pct: 100
+  critical_must_not_invoke_false_positives: 0
+  requirements_not_worse_than_champion: true
+  no_critical_family_regression: true
+  p95_within_consumer_budget: true
+  context_or_cost_growth_requires_explicit_justification: true
+  aggregate_cannot_hide_critical_fail: true
+consumer_tests:
+  - ROUTING_POSITIVE
+  - ROUTING_NEGATIVE
+  - CONTRACT_INPUT_OUTPUT
+  - AUTHORITY_NO_INVENTION
+  - FALLBACK
+  - CONFLICT_RESOLUTION
+  - CONTEXT_TOKEN_BUDGET
+  - PERFORMANCE_BUDGET
+  - EKB_REGRESSION
+  - ADVERSARIAL_CONTROLLED
+  - E2E_ROUTER_TO_JUDGE
+impact_boundary:
+  automatic_impact: BLOQUEADO
+  production: BLOQUEADO
+  human_authority_never_fabricated: true
