@@ -57,7 +57,7 @@ _PRESENTATION_VOCAB = {
     'available','disponible','complete','completar','completed','final','principal',
     'manage','manejo','retry','reintentar','required','requerido','requerida',
     'details','detail','handoff','next','include','information','shows','showing',
-    'define','definir','new','nueva','nuevo','pantalla','gestion','gestión',
+    'define','definir','new','nueva','nuevo','pantalla','gestion','gestión','should',
 }
 _TOKEN_ALIASES = {
     'optional': 'opcional', 'required': 'requerido', 'eligibility': 'elegibilidad',
