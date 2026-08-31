@@ -1,7 +1,3 @@
--- Source-first Gate 9 remediation for LEARNING_BRIDGE_KB_CARD_LF.
--- Materializes only ACTIVE_ROUTER_MAPPING + ACTIVE_STEP_CONTRACT.
--- Does not activate runtime, policy binding, judge binding, ACT-0046, production, or automatic impact.
-
 insert into public.lf_router_action_registry(
   asset_type,action_code,operation_code,operation_resolution,
   requires_existing_target,requires_missing_target,write_allowed,status,notes,
