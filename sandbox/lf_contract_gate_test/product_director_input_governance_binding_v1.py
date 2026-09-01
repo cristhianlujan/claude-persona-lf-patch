@@ -6,6 +6,7 @@ import json
 from typing import Any
 
 SCHEMA = "LF_INPUT_GOVERNANCE_RUNTIME_BINDING_V1"
+ALLOWED_GOVERNANCE_CONSUMERS = {"STORY_CREATOR", "CONTEXT_PACK", "MANUAL"}
 
 
 class GovernanceBindingError(ValueError):
@@ -32,8 +33,11 @@ def _is_sha256(value: Any) -> bool:
 
 
 def build_bound_governance_receipt(
-    router_result: dict[str, Any], *, request_id: str, profile_code: str, input_literal: str
+    router_result: dict[str, Any], *, request_id: str, profile_code: str, input_literal: str,
+    governance_consumer: str = "CONTEXT_PACK",
 ) -> dict[str, Any]:
+    if governance_consumer not in ALLOWED_GOVERNANCE_CONSUMERS:
+        raise GovernanceBindingError("INPUT_GOVERNANCE_CONSUMER_NOT_ALLOWED")
     if not isinstance(router_result, dict):
         raise GovernanceBindingError("ROUTER_RESULT_NOT_OBJECT")
     if router_result.get("status") != "READY" or router_result.get("continuation_allowed") is not True:
@@ -59,6 +63,7 @@ def build_bound_governance_receipt(
         "schema": SCHEMA,
         "request_id": request_id,
         "profile_code": profile_code,
+        "governance_consumer": governance_consumer,
         "input_sha256": _sha256_text(input_literal),
         "source_snapshot_sha256": snapshot_hash,
         "contract_snapshot_sha256": contract_snapshot_hash,
@@ -75,13 +80,17 @@ def build_bound_governance_receipt(
 
 
 def validate_bound_governance_receipt(
-    bound: dict[str, Any], *, request_id: str, profile_code: str, input_literal: str
+    bound: dict[str, Any], *, request_id: str, profile_code: str, input_literal: str,
+    governance_consumer: str = "CONTEXT_PACK",
 ) -> dict[str, Any]:
+    if governance_consumer not in ALLOWED_GOVERNANCE_CONSUMERS:
+        raise GovernanceBindingError("INPUT_GOVERNANCE_CONSUMER_NOT_ALLOWED")
     if not isinstance(bound, dict) or bound.get("schema") != SCHEMA:
         raise GovernanceBindingError("INPUT_GOVERNANCE_BINDING_SCHEMA_INVALID")
     expected = {
         "request_id": request_id,
         "profile_code": profile_code,
+        "governance_consumer": governance_consumer,
         "input_sha256": _sha256_text(input_literal),
         "decision": "PASS",
         "currentness": "LIVE_CURRENT",
