@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import json
+import json, subprocess, sys
 from pathlib import Path
 R=Path(__file__).resolve().parent
 D=json.loads((R/'learning_exact_nonbinding_guard_v1.json').read_text())
@@ -25,3 +25,8 @@ req(clusters['BENCHMARK_PERIFERICO']['next_state']=='NO_CARD','BENCH_NO_CARD')
 for k in ('semantic_search','automatic_binding','automatic_card_creation','automatic_impact','production_authorized'):
     req(D[k] is False,'AUTH_'+k.upper())
 print('LEARNING_EXACT_NONBINDING_GUARD=PASS authority_refs=3 explicit_nonbindings=4 unbound_clusters=3 no_direct_specialized=2 no_auto_card=3')
+r=subprocess.run([sys.executable,str(R/'validate_learning_specialized_selector_nonbinding_v1.py')],capture_output=True,text=True)
+if r.stdout: print(r.stdout.strip())
+if r.returncode:
+    if r.stderr: sys.stderr.write(r.stderr)
+    raise SystemExit(r.returncode)
