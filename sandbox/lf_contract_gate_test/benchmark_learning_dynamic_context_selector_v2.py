@@ -8,6 +8,7 @@ ROOT=Path(__file__).resolve().parents[2]
 MOD=ROOT/'sandbox/lf_contract_gate_test/learning_dynamic_context_selector_v2.py'
 spec=importlib.util.spec_from_file_location('dynamic_selector',MOD); mod=importlib.util.module_from_spec(spec); sys.modules[spec.name]=mod; spec.loader.exec_module(mod)
 DynamicBindingSpec=mod.DynamicBindingSpec
+DynamicLearningSelectionError=mod.DynamicLearningSelectionError
 select=mod.select_dynamic_read_only_context
 
 FAMILIES=[
@@ -70,6 +71,14 @@ def one(family,variant):
   control=select(rows,events,binding=binding,satisfied_prerequisites={'PRODUCT_DIRECTION_AUTHORIZED_CURRENT'})
   if control['selected_count']!=5 or control.get('blocked_by_prerequisite') is not None or not control.get('context_budget_pass'):
    raise AssertionError(f'{family}-{variant}: authorized control failed')
+  unbound=DynamicBindingSpec('PERFIL-UNBOUND-LF','DIGITAL_SELF_SERVICE',('AUTOGESTION_DIGITAL',),5)
+  try:
+   select(rows,events,binding=unbound)
+  except DynamicLearningSelectionError as exc:
+   if str(exc)!='EXACT_GOVERNED_CONSUMER_BINDING_REQUIRED':
+    raise AssertionError(f'{family}-{variant}: wrong unbound error {exc}')
+  else:
+   raise AssertionError(f'{family}-{variant}: ungoverned binding accepted')
  return True
 
 def main():
@@ -77,7 +86,7 @@ def main():
  for family in FAMILIES:
   for variant in range(1,6):
    one(family,variant); passed+=1
- print(f'LEARNING_DYNAMIC_SELECTOR_BENCHMARK=PASS cases={passed}/50 families=10x5 llm_calls=0 round_trips=0 max_evidence=5 exact_eligibility=1 prerequisite_no_bypass=5/5 byte_budget=5/5')
+ print(f'LEARNING_DYNAMIC_SELECTOR_BENCHMARK=PASS cases={passed}/50 families=10x5 llm_calls=0 round_trips=0 max_evidence=5 exact_eligibility=1 prerequisite_no_bypass=5/5 byte_budget=5/5 exact_binding_no_bypass=5/5')
  print('families='+','.join(FAMILIES))
  return 0
 if __name__=='__main__': raise SystemExit(main())
