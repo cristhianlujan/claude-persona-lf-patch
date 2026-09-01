@@ -28,3 +28,7 @@ Canonical candidate bytes are reserved at:
 The reservation blob SHA is `e27f08459aff113b193b801c0a18086fc6c070bc`, exactly equal to the previously proposed migration blob. This preserves the reviewed candidate without creating Git-ahead migration parity drift.
 
 Do **not** execute the reservation file directly from this PR. The governed sequence is: certify source-reservation -> land source evidence -> apply exact bytes through the authorized sandbox migration path -> read back the real ledger version/bytes -> materialize the canonical `supabase/migrations/<real_version>_...sql` source -> recertify parity.
+
+## Incident correction
+
+The previous branch state placed version `20260901223000` under `supabase/migrations/` before a matching sandbox ledger entry existed. This caused `FAIL_INPUT_GOVERNANCE_MIGRATION_VERSION_PARITY: only_git=['20260901223000'] only_remote=[]` and unnecessarily blocked unrelated agents at the shared contract gate. That canonical migration file has been removed; the candidate bytes remain preserved only as the sandbox reservation above.
