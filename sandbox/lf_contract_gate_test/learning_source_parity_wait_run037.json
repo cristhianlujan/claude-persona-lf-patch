@@ -1,0 +1,21 @@
+{
+  "schema":"LF_LEARNING_SOURCE_PARITY_WAIT_V1",
+  "execution_id":"LF-AUTOLEARN-RUN-20260901-037",
+  "candidate_head":"934027448b6b733af059407cc6291ac7463c3b6e",
+  "observed_main_sha":"e5b9febcfebd7c16f8cc8a0cb146cfc467eadc42",
+  "supabase_post_1400_migrations":[
+    {"version":"20260901150124","name":"lf_router_adapter_runtime_authority_guard_v1","source_in_main":true},
+    {"version":"20260901151435","name":"lf_input_governance_validator_phase_split_v1","source_in_main":false,"source_pr":408}
+  ],
+  "exact_head_ci":{
+    "validate_lf_packs":{"run_id":33526258686,"status":"SUCCESS"},
+    "bootstrap":{"run_id":33526258506,"status":"SUCCESS"},
+    "lf_contract_check":{"run_id":33526258435,"job_id":99917741497,"status":"FAILURE","first_bad_step":"Enforce LF migration source parity after checkpoint"}
+  },
+  "classification":"WAITING_SOURCE_PARITY_EXTERNAL_CARRIL",
+  "forbidden_action":"COPY_EXTERNAL_MIGRATION_INTO_LEARNING_PR_ONLY_TO_GREEN_CI",
+  "next_action":"RECHECK_PR408_AND_MAIN_THEN_RERUN_EXACT_HEAD",
+  "learning_contract_regression_proven":false,
+  "production_authorized":false,
+  "automatic_impact":false
+}
