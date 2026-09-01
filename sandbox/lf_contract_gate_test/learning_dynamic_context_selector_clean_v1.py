@@ -9,13 +9,25 @@ class SelectionError(ValueError):
 def _catalog():
     data=json.loads(CATALOG.read_text(encoding='utf-8'))
     if data.get('mode')!='READ_ONLY': raise SelectionError('READ_ONLY_REQUIRED')
+    bounded=data.get('boundedness',{})
+    if bounded.get('llm_calls_for_selection')!=0 or bounded.get('round_trips_for_selection')!=0 or bounded.get('reader_writes')!=0 or bounded.get('semantic_search') is not False:
+        raise SelectionError('READ_ONLY_INVARIANTS_REQUIRED')
     return data
+
+def _fallback(consumer_id, capability_id, reason):
+    return {'mode':'READ_ONLY','consumer_id':consumer_id,'capability_id':capability_id,'selected':[],'fallback':'NO_COMPETITIVE_CONTEXT','llm_calls':0,'round_trips':0,'writes':0,'semantic_search':False,'nonbinding_reason':reason}
 
 def select_context(kb_rows, classification_events, consumer_id, capability_id, prerequisites=()):
     c=_catalog(); b=next((x for x in c['bindings'] if x['consumer_id']==consumer_id and x['capability_id']==capability_id),None)
-    if not b: raise SelectionError('EXACT_BINDING_REQUIRED')
+    if not b:
+        nonbinding=next((x for x in c.get('explicit_nonbindings',[]) if x['consumer_id']==consumer_id),None)
+        if nonbinding:
+            return _fallback(consumer_id,capability_id,nonbinding['reason'])
+        raise SelectionError('EXACT_BINDING_REQUIRED')
     if b.get('prerequisite') and b['prerequisite'] not in set(prerequisites):
-        return {'mode':'READ_ONLY','consumer_id':consumer_id,'capability_id':capability_id,'selected':[],'fallback':'NO_COMPETITIVE_CONTEXT','llm_calls':0,'round_trips':0,'writes':0,'semantic_search':False,'blocked_by_prerequisite':b['prerequisite']}
+        out=_fallback(consumer_id,capability_id,'PREREQUISITE_REQUIRED')
+        out['blocked_by_prerequisite']=b['prerequisite']
+        return out
     allowed=set(b['cluster_codes']); receipts={}
     for e in classification_events:
         p=e.get('payload',{}); clusters=set(str(p.get('cluster_code','')).split('|'))
