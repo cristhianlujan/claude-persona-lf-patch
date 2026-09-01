@@ -15,7 +15,7 @@ def select_context(kb_rows, classification_events, consumer_id, capability_id, p
     c=_catalog(); b=next((x for x in c['bindings'] if x['consumer_id']==consumer_id and x['capability_id']==capability_id),None)
     if not b: raise SelectionError('EXACT_BINDING_REQUIRED')
     if b.get('prerequisite') and b['prerequisite'] not in set(prerequisites):
-        return {'mode':'READ_ONLY','selected':[],'fallback':'NO_COMPETITIVE_CONTEXT','llm_calls':0,'round_trips':0,'blocked_by_prerequisite':b['prerequisite']}
+        return {'mode':'READ_ONLY','consumer_id':consumer_id,'capability_id':capability_id,'selected':[],'fallback':'NO_COMPETITIVE_CONTEXT','llm_calls':0,'round_trips':0,'writes':0,'semantic_search':False,'blocked_by_prerequisite':b['prerequisite']}
     allowed=set(b['cluster_codes']); receipts={}
     for e in classification_events:
         p=e.get('payload',{}); clusters=set(str(p.get('cluster_code','')).split('|'))
@@ -33,4 +33,4 @@ def select_context(kb_rows, classification_events, consumer_id, capability_id, p
         trial=out+[item]
         if len(json.dumps(trial,ensure_ascii=False,sort_keys=True).encode())<=budget: out=trial
         if len(out)>=max_refs: break
-    return {'mode':'READ_ONLY','consumer_id':consumer_id,'capability_id':capability_id,'selected':out,'fallback':None if out else 'NO_COMPETITIVE_CONTEXT','llm_calls':0,'round_trips':0,'context_bytes':len(json.dumps(out,ensure_ascii=False,sort_keys=True).encode()),'context_budget_bytes':budget}
+    return {'mode':'READ_ONLY','consumer_id':consumer_id,'capability_id':capability_id,'selected':out,'fallback':None if out else 'NO_COMPETITIVE_CONTEXT','llm_calls':0,'round_trips':0,'writes':0,'semantic_search':False,'context_bytes':len(json.dumps(out,ensure_ascii=False,sort_keys=True).encode()),'context_budget_bytes':budget}
