@@ -11,9 +11,10 @@ MATRIX=ROOT/'sandbox/lf_contract_gate_test/learning_consumer_50_cases_v1.yaml'
 CONTRACT=ROOT/'sandbox/lf_contract_gate_test/learning_consumer_binding_benchmark_contract_v1.yaml'
 BINDINGS=ROOT/'sandbox/lf_contract_gate_test/learning_consumer_bindings_v1.yaml'
 BINDING_VALIDATOR=ROOT/'sandbox/lf_contract_gate_test/validate_product_director_input_governance_binding_v1.py'
+READ_ONLY_SELECTOR_VALIDATOR=ROOT/'sandbox/lf_contract_gate_test/validate_learning_read_only_context_selector_v1.py'
 EXPECTED_FAMILIES={'COMPETITIVE_OFFER_INSIGHT','DEBT_EDUCATION','PAYMENT_NO_ADEUDO','DIGITAL_SELF_SERVICE','FINANCIAL_ALTERNATIVES','NEGOTIATION','OUT_OF_SCOPE_NO_INVOKE','CONFLICT_PRECEDENCE','STALE_LOW_GROUNDING','MULTI_DOMAIN_COMPLEX'}
 EXPECTED_CAPABILITIES={'NEGOCIACION_DEUDA','ALTERNATIVAS_FINANCIERAS','EDUCACION_CREDITICIA'}
-REQUIRED_CONTRACT_TERMS={'consumer_id','consumer_type','capability_id','invoke_when','must_not_invoke_when','minimum_context','selected_evidence_refs','policy_capsule_ref','output_schema_ref','champion_id','challenger_id','READY_FOR_BINDING','DETERMINISTIC_FIRST','authority_pass_pct: 100','critical_must_not_invoke_false_positives: 0','automatic_impact: BLOQUEADO','production: BLOQUEADO','execution_consumer_role: CONTEXT_PACK','profile_asset_code_as_governance_consumer: FORBIDDEN'}
+REQUIRED_CONTRACT_TERMS={'consumer_id','consumer_type','capability_id','invoke_when','must_not_invoke_when','minimum_context','selected_evidence_refs','policy_capsule_ref','output_schema_ref','champion_id','challenger_id','READY_FOR_BINDING','DETERMINISTIC_FIRST','authority_pass_pct: 100','critical_must_not_invoke_false_positives: 0','automatic_impact: BLOQUEADO','production: BLOQUEADO','execution_consumer_role: CONTEXT_PACK','profile_asset_code_as_governance_consumer: FORBIDDEN','selector_mode: DETERMINISTIC_EXACT_ID','no_extra_llm_call: true','no_extra_round_trip: true','initial_benchmark_cases: 50','preferred_shape: 10_FAMILIES_X_5_CASES'}
 REQUIRED_BINDING_FIELDS={'version','consumer_id','consumer_type','capability_id','router_action','invoke_when','must_not_invoke_when','input_contract','minimum_context','selected_evidence_refs','policy_capsule_ref','output_schema_ref','judges','fallback','timeout_budget','context_budget','lifecycle_state','source_learning_ids','champion_id','challenger_id','provenance'}
 
 def fail(msg): raise SystemExit(f'FAIL learning-consumer-benchmark: {msg}')
@@ -55,6 +56,11 @@ def validate_bindings(text: str) -> None:
  if text.count('reason: BRAND_OR_COPY_SCOPE_NOT_PRODUCT_DIRECTOR_COMPETITIVE_CAPABILITY')!=1: fail('brand/copy no-invoke exclusion missing')
  if text.count('reason: LEGAL_REGULATORY_TRUTH_REQUIRES_INDEPENDENT_AUTHORITY')!=1: fail('legal/regulatory no-invoke exclusion missing')
 
+def run_validator(path: Path, label: str) -> str:
+ completed=subprocess.run([sys.executable,str(path)],cwd=ROOT,check=False,capture_output=True,text=True)
+ if completed.returncode!=0: fail(f'{label} failed: {completed.stdout} {completed.stderr}')
+ return completed.stdout.strip()
+
 def main():
  matrix=MATRIX.read_text(encoding='utf-8'); contract=CONTRACT.read_text(encoding='utf-8'); bindings=BINDINGS.read_text(encoding='utf-8')
  case_lines=[line.strip() for line in matrix.splitlines() if line.strip().startswith('- {id:')]
@@ -75,9 +81,8 @@ def main():
  if missing: fail(f'contract missing required terms: {missing}')
  if 'same_inputs: true' not in matrix or 'same_model_runtime: true' not in matrix or 'same_judges: true' not in matrix: fail('champion/challenger comparison invariants missing')
  validate_bindings(bindings)
- completed=subprocess.run([sys.executable,str(BINDING_VALIDATOR)],cwd=ROOT,check=False,capture_output=True,text=True)
- if completed.returncode!=0: fail(f'input governance binding selftest failed: {completed.stdout} {completed.stderr}')
- print(completed.stdout.strip())
+ print(run_validator(BINDING_VALIDATOR,'input governance binding selftest'))
+ print(run_validator(READ_ONLY_SELECTOR_VALIDATOR,'read-only learning selector selftest'))
  print('LEARNING_CONSUMER_BINDINGS=PASS exact_bindings=3')
  print('LEARNING_CONSUMER_BENCHMARK_VERDICT=PASS'); print(f"cases=50 families=10 positive={invokes['true']} negative={invokes['false']}")
  for family,count in sorted(counts.items()): print(f'family={family} cases={count}')
