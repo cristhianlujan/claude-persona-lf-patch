@@ -1,7 +1,7 @@
 {
   "schema": "LF_LEARNING_DYNAMIC_SELECTOR_LIVE_AB_V1",
   "status": "CANDIDATO_READ_ONLY",
-  "observed_at_basis": "live Supabase lf_eventos + lf_knowledge_base readback",
+  "observed_at_basis": "live Supabase lf_eventos + lf_knowledge_base readback + GitHub deterministic validator receipt",
   "production_impact": false,
   "champion": {
     "selector": "DETERMINISTIC_EXACT_ID",
@@ -9,10 +9,7 @@
     "selected_total": 17,
     "exact_cluster_matches": 12,
     "exact_cluster_match_pct": 70.59,
-    "mismatches": {
-      "NEGOCIACION_DEUDA": 2,
-      "EDUCACION_CREDITICIA": 3
-    }
+    "mismatches": {"NEGOCIACION_DEUDA": 2, "EDUCACION_CREDITICIA": 3}
   },
   "challenger": {
     "selector": "DETERMINISTIC_CLASSIFIED_CLUSTER_CURRENT_KB",
@@ -39,6 +36,17 @@
     "NEGOCIACION_DEUDA": ["8b744f07-75f6-4332-9df5-12e7c6914bf1", "5500178a-d503-476c-be77-c99223b4d90c", "4589a1dd-b797-453b-97b6-ff54411dd015", "acac846b-2d41-404a-b7dc-5d892ed39496", "e2def384-720a-4b92-9545-31bd9f1d5eae"],
     "PAYMENT_NO_ADEUDO": ["bd2a3a05-b53b-400c-846d-3634e422a500", "92fc4ad2-1581-4aa1-b01b-e986bb3cc71c", "acac846b-2d41-404a-b7dc-5d892ed39496"]
   },
-  "promotion_status": "WAITING_EXACT_HEAD_CI_AND_ROUTING_REGRESSION",
+  "routing_regression": {
+    "status": "PASS_BY_IMMUTABLE_EXECUTABLE_CLOSURE",
+    "validated_head": "d93578ad5e5a97f9dd10e949397447acf2e0265e",
+    "validated_run_id": 33481122129,
+    "current_head_at_reconciliation": "2c660baea7cfbd3bb152f2f36a5c7b9446912da6",
+    "current_head_changes_outside_validator_closure": true,
+    "dynamic_selector_cases": "50/50",
+    "product_routing_cases": "50/50",
+    "ui_routing_cases": "50/50",
+    "downstream_no_bypass": "40/40"
+  },
+  "promotion_status": "ROUTING_PASS_WAITING_GLOBAL_EXACT_HEAD_CI_AND_BEHAVIORAL_RUNTIME",
   "rollback": "retain static exact-id champion"
 }
