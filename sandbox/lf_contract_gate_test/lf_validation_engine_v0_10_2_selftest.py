@@ -15,29 +15,20 @@ ALLOWED_JUDGE_RESULTS={"PASS","FAIL","BLOCKED","PASS_WITH_RESTRICTIONS","NOT_RUN
 ALLOWED_NA_REASONS={"NOT_APPLICABLE_BY_OPERATION_TYPE","DEFERRED_BY_APPROVED_SCOPE","BLOCKED_BY_DEPENDENCY","READ_ONLY_AUDIT_ONLY"}
 HASH64=set("0123456789abcdef")
 
-
-def canonical_json(data:Dict[str,Any])->str:
-    return json.dumps(data,ensure_ascii=False,sort_keys=True,separators=(",",":"))
-
-
+def canonical_json(data:Dict[str,Any])->str: return json.dumps(data,ensure_ascii=False,sort_keys=True,separators=(",",":"))
 def compute_hash(proof:Dict[str,Any])->str:
     data=copy.deepcopy(proof); data.setdefault("verification",{})
     if isinstance(data["verification"],dict): data["verification"]["verification_hash"]=""
     return hashlib.sha256(canonical_json(data).encode()).hexdigest()
-
-
 def gp(data:Dict[str,Any], path:str, default=None):
     cur=data
     for part in path.split("."):
         if not isinstance(cur,dict) or part not in cur: return default
         cur=cur[part]
     return cur
-
-
 def is_sha256(v): return isinstance(v,str) and len(v)==64 and all(c in HASH64 for c in v)
 def src_ref_ok(r): return isinstance(r,dict) and r.get("source_type") and r.get("source_id") and r.get("source_sha_or_row_id")
 def ev_ref_ok(r): return isinstance(r,dict) and r.get("id") and r.get("hash_referencia")
-
 
 def validate(proof:Dict[str,Any])->Dict[str,Any]:
     fail=[]
@@ -80,87 +71,67 @@ def validate(proof:Dict[str,Any])->Dict[str,Any]:
     fail=sorted(set(fail)); fatal=any(x.startswith("FATAL") for x in fail)
     return {"status":"PASS" if not fail else ("FAIL" if fatal else "RETURN_TO_WORKER"),"fail_codes":fail}
 
-
 def base_proof():
-    src={"source_type":"SUPABASE_ROW","source_id":"public.lf_eventos.id=38","source_sha_or_row_id":"38"}
-    ev={"id":"EV-PROOF-001","hash_referencia":hashlib.sha256(b"evidence").hexdigest()}
+    src={"source_type":"SUPABASE_ROW","source_id":"public.lf_eventos.id=38","source_sha_or_row_id":"38"}; ev={"id":"EV-PROOF-001","hash_referencia":hashlib.sha256(b"evidence").hexdigest()}
     p={"schema_version":"PROOF_OBJECT_SCHEMA_LF_v0.2_DRAFT","context_integrity_ref":{"source_event_id":38,"source_snapshot_version":"v0.8_consolidado","context_hash":hashlib.sha256(b"lf-context-v0.10.2").hexdigest()},"operation_type":"VALIDATION_ENGINE_TEST_LF","operation_code":"PYTHON_LOCAL_VALIDATION_ENGINE_TEST","execution_id":"EXEC-LF-PY-VALIDATION-001","actor":{"actor_type":"LLM","actor_id":"chatgpt","producer_validator_separated":True},"target_asset":{"asset_code":"PLAN_GOV_SECURITY_PROFILE_CARDS_CORRECCION_ORIGEN_LF","asset_type":"PLAN"},"phase":"E","step":{"step_order":29,"step_id":"report_output","is_canonical":True},"protocol":{"protocol_id":"PROTOCOLO_TEST_LF","max_canonical_step":29},"source_refs":[src],"judge":{"judge_result":"PASS"},"result":{"final_result":"PASS","clean_pass_allowed":True,"closure_allowed":True,"promotion_allowed":False},"assertions_checked":[{"assertion_id":"A001","status":"PASS","evidence_ref":ev}],"hard_fails_checked":[{"hard_fail_id":"HF001","triggered":False,"evidence_ref":ev}],"na_controls":[],"readback":{"required":True,"performed":True,"readback_refs":[src]},"verification":{"hash_algorithm":"SHA-256","verification_hash":""}}
     p["verification"]["verification_hash"]=compute_hash(p); return p
-
-
 def with_hash(p): p["verification"]["verification_hash"]=compute_hash(p); return p
 
-
 def validate_learning_behavioral_readiness_manifest(root: Path) -> None:
-    path = root / "learning_behavioral_readiness_v1.json"
-    if not path.exists():
-        return
-    d = json.loads(path.read_text(encoding="utf-8"))
-    assert d["schema"] == "LF_LEARNING_BEHAVIORAL_READINESS_V1"
-    assert d["mode"] == "READ_ONLY"
-    assert d["input_governance_contract_revision"] == "5.12"
-    assert d["rule"] == "UNRELATED_SCREEN_READINESS_RUNS_MUST_NOT_BE_REUSED_AS_CONSUMER_AUTHORITY"
+    path=root/"learning_behavioral_readiness_v1.json"
+    if not path.exists(): return
+    d=json.loads(path.read_text(encoding="utf-8"))
+    assert d["schema"]=="LF_LEARNING_BEHAVIORAL_READINESS_V1" and d["mode"]=="READ_ONLY"
+    assert d["input_governance_contract_revision"]=="5.12"
+    assert d["rule"]=="UNRELATED_SCREEN_READINESS_RUNS_MUST_NOT_BE_REUSED_AS_CONSUMER_AUTHORITY"
     assert d["automatic_promotion"] is False and d["production_authorized"] is False
-    expected = {"PERFIL-PRODUCT-DIRECTOR-LF", "PERFIL-UI-ARCHITECT"}
-    seen = set()
+    expected={"PERFIL-PRODUCT-DIRECTOR-LF","PERFIL-UI-ARCHITECT"}; seen=set()
     for row in d["consumer_targets"]:
-        seen.add(row["consumer_id"])
-        assert row["required_governance_consumer"] == "CONTEXT_PACK"
-        assert row["exact_target_bound_readiness_receipt_observed"] is False
-        assert row["behavioral_ab_status"] == "INSUFFICIENT_EVIDENCE"
-    assert seen == expected
+        seen.add(row["consumer_id"]); assert row["required_governance_consumer"]=="CONTEXT_PACK"; assert row["exact_target_bound_readiness_receipt_observed"] is False; assert row["behavioral_ab_status"]=="INSUFFICIENT_EVIDENCE"
+    assert seen==expected
     print("LEARNING_BEHAVIORAL_READINESS=PASS consumers=2/2 exact_receipt_missing=2/2 behavioral_ab=INSUFFICIENT_EVIDENCE")
 
-
 def run_optional_learning_suites() -> None:
-    root = Path(__file__).resolve().parent
-    scripts = [
+    root=Path(__file__).resolve().parent
+    scripts=[
         "validate_product_director_learning_suite_v1.py",
         "validate_ui_architect_learning_suite_v1.py",
         "validate_learning_cluster_consumer_coverage_v1.py",
         "validate_learning_next_consumer_applicability_v1.py",
         "validate_learning_additional_consumer_applicability_v1.py",
         "validate_learning_unbound_cluster_card_readback_v1.py",
+        "validate_learning_exact_nonbinding_guard_v1.py",
+        "validate_learning_additional_consumer_binding_candidates_v1.py",
+        "validate_learning_additional_consumer_context_pack_candidates_v1.py",
+        "validate_learning_specialized_consumer_authority_guard_v1.py",
+        "validate_learning_specialized_consumer_authority_negative_cases_v1.py",
     ]
-    executed = 0
+    executed=0
     for script in scripts:
-        path = root / script
-        if not path.exists():
-            continue
-        proc = subprocess.run([sys.executable, str(path)], capture_output=True, text=True)
-        if proc.stdout:
-            print(proc.stdout.strip())
-        if proc.returncode != 0:
-            if proc.stderr:
-                sys.stderr.write(proc.stderr)
+        path=root/script
+        if not path.exists(): continue
+        proc=subprocess.run([sys.executable,str(path)],capture_output=True,text=True)
+        if proc.stdout: print(proc.stdout.strip())
+        if proc.returncode!=0:
+            if proc.stderr: sys.stderr.write(proc.stderr)
             raise SystemExit(proc.returncode)
-        executed += 1
+        executed+=1
     validate_learning_behavioral_readiness_manifest(root)
-    if executed:
-        print(f"PASS_OPTIONAL_LEARNING_READ_ONLY_SUITES={executed}/{executed} production_authorized=false")
-
+    if executed: print(f"PASS_OPTIONAL_LEARNING_READ_ONLY_SUITES={executed}/{executed} production_authorized=false")
 
 def main():
     cases={"valid_pass":"PASS"}; proofs={"valid_pass":base_proof()}
-    def add(name, expected, mut):
+    def add(name,expected,mut):
         p=copy.deepcopy(base_proof()); mut(p); proofs[name]=with_hash(p); cases[name]=expected
     add("invalid_noncanonical_step_30","FAIL",lambda p:p["step"].update({"step_order":30,"step_id":"production_read_only_promotion","is_canonical":False}))
     add("invalid_pass_when_blocked","RETURN_TO_WORKER",lambda p:p["result"].update({"closure_allowed":False,"clean_pass_allowed":False,"final_result":"PASS"}))
     p=copy.deepcopy(base_proof()); p["verification"]["verification_hash"]="0"*64; proofs["invalid_bad_hash"]=p; cases["invalid_bad_hash"]="FAIL"
     add("invalid_narrative_readback","RETURN_TO_WORKER",lambda p:p["readback"].update({"readback_refs":["lo revise en el chat anterior"]}))
-    add("invalid_empty_assertions","RETURN_TO_WORKER",lambda p:p.update({"assertions_checked":[]}))
-    add("invalid_empty_hard_fails","RETURN_TO_WORKER",lambda p:p.update({"hard_fails_checked":[]}))
-    add("invalid_empty_source_refs","RETURN_TO_WORKER",lambda p:p.update({"source_refs":[]}))
-    add("invalid_weak_evidence_ref","RETURN_TO_WORKER",lambda p:p["assertions_checked"][0].update({"evidence_ref":{"id":"EV-WEAK"}}))
+    add("invalid_empty_assertions","RETURN_TO_WORKER",lambda p:p.update({"assertions_checked":[]})); add("invalid_empty_hard_fails","RETURN_TO_WORKER",lambda p:p.update({"hard_fails_checked":[]})); add("invalid_empty_source_refs","RETURN_TO_WORKER",lambda p:p.update({"source_refs":[]})); add("invalid_weak_evidence_ref","RETURN_TO_WORKER",lambda p:p["assertions_checked"][0].update({"evidence_ref":{"id":"EV-WEAK"}}))
     results=[]; ok_all=True
     for name,exp in cases.items():
-        out=validate(proofs[name]); ok=out["status"]==exp; ok_all=ok_all and ok
-        results.append({"case":name,"expected":exp,"actual":out["status"],"ok":ok,"fail_codes":out["fail_codes"]})
-    report={"suite":"LF_VALIDATION_ENGINE_PYTHON_LOCAL_v0_10_2_SELFTEST","overall_status":"PASS" if ok_all else "FAIL","results":results}
-    print(json.dumps(report,indent=2,ensure_ascii=False))
-    if not ok_all:
-        raise SystemExit(1)
+        out=validate(proofs[name]); ok=out["status"]==exp; ok_all=ok_all and ok; results.append({"case":name,"expected":exp,"actual":out["status"],"ok":ok,"fail_codes":out["fail_codes"]})
+    print(json.dumps({"suite":"LF_VALIDATION_ENGINE_PYTHON_LOCAL_v0_10_2_SELFTEST","overall_status":"PASS" if ok_all else "FAIL","results":results},indent=2,ensure_ascii=False))
+    if not ok_all: raise SystemExit(1)
     run_optional_learning_suites()
-
-
 if __name__=="__main__": main()
