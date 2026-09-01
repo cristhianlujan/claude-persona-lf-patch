@@ -21,6 +21,7 @@ class DynamicBindingSpec:
     cluster_codes: tuple[str, ...]
     max_evidence_refs: int = DEFAULT_MAX_EVIDENCE
     taxonomy_version: str = DEFAULT_TAXONOMY
+    prerequisite: str | None = None
 
 
 def _text(value: Any) -> str:
@@ -67,11 +68,33 @@ def _classification_receipt_eligible(event: dict[str, Any], binding: DynamicBind
     return _text(payload.get("kb_id")) != ""
 
 
+def _result(binding: DynamicBindingSpec, selected: list[dict[str, Any]], *, blocked_by_prerequisite: str | None = None) -> dict[str, Any]:
+    return {
+        "schema": SCHEMA,
+        "mode": "READ_ONLY",
+        "selector": "DETERMINISTIC_CLASSIFIED_CLUSTER_CURRENT_KB",
+        "taxonomy_version": binding.taxonomy_version,
+        "cluster_codes": list(binding.cluster_codes),
+        "required_kb_category": REQUIRED_KB_CATEGORY,
+        "llm_calls": 0,
+        "round_trips": 0,
+        "consumer_id": binding.consumer_id,
+        "capability_id": binding.capability_id,
+        "prerequisite": binding.prerequisite,
+        "prerequisite_satisfied": blocked_by_prerequisite is None,
+        "blocked_by_prerequisite": blocked_by_prerequisite,
+        "selected_count": len(selected),
+        "selected": selected,
+        "fallback": "NO_COMPETITIVE_CONTEXT" if not selected else None,
+    }
+
+
 def select_dynamic_read_only_context(
     kb_rows: Iterable[dict[str, Any]],
     classification_events: Iterable[dict[str, Any]],
     *,
     binding: DynamicBindingSpec,
+    satisfied_prerequisites: Iterable[str] = (),
 ) -> dict[str, Any]:
     if not binding.consumer_id or not binding.capability_id:
         raise DynamicLearningSelectionError("EXACT_CONSUMER_BINDING_REQUIRED")
@@ -79,6 +102,12 @@ def select_dynamic_read_only_context(
         raise DynamicLearningSelectionError("EXACT_CLUSTER_MAPPING_REQUIRED")
     if binding.max_evidence_refs < 1 or binding.max_evidence_refs > 5:
         raise DynamicLearningSelectionError("MAX_EVIDENCE_REFS_OUT_OF_BOUNDS")
+    if binding.prerequisite is not None and not _text(binding.prerequisite):
+        raise DynamicLearningSelectionError("INVALID_PREREQUISITE")
+
+    granted = {_text(value) for value in satisfied_prerequisites if _text(value)}
+    if binding.prerequisite and binding.prerequisite not in granted:
+        return _result(binding, [], blocked_by_prerequisite=binding.prerequisite)
 
     current_by_id: dict[str, dict[str, Any]] = {}
     for row in kb_rows:
@@ -118,18 +147,4 @@ def select_dynamic_read_only_context(
             "evidence_ref": f"public.lf_knowledge_base/{kb_id}",
         })
 
-    return {
-        "schema": SCHEMA,
-        "mode": "READ_ONLY",
-        "selector": "DETERMINISTIC_CLASSIFIED_CLUSTER_CURRENT_KB",
-        "taxonomy_version": binding.taxonomy_version,
-        "cluster_codes": list(binding.cluster_codes),
-        "required_kb_category": REQUIRED_KB_CATEGORY,
-        "llm_calls": 0,
-        "round_trips": 0,
-        "consumer_id": binding.consumer_id,
-        "capability_id": binding.capability_id,
-        "selected_count": len(selected),
-        "selected": selected,
-        "fallback": "NO_COMPETITIVE_CONTEXT" if not selected else None,
-    }
+    return _result(binding, selected)
