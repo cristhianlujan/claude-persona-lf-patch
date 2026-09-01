@@ -1,0 +1,118 @@
+version: v1
+status: CANDIDATO_READ_ONLY
+consumer:
+  consumer_id: PERFIL-UI-ARCHITECT
+  consumer_type: PROFILE
+  consumer_source: profiles/ui_architect/SKILL.md
+  router_action: EJECUCION_PERFIL_LF
+  authority_scope: presentation_hierarchy_components_states_tokens
+  upstream_required_consumer_id: PERFIL-PRODUCT-DIRECTOR-LF
+  upstream_artifact_required: product_direction_ref
+  upstream_current_required: true
+  competitive_context_authority_type: UPSTREAM_CONSTRAINTS
+champion:
+  champion_id: CHAMPION-UI-ARCHITECT-NO-COMPETITIVE-CONTEXT-v1
+  definition: canonical UI Architect with current product direction and without competitive context
+challenger:
+  challenger_id: CHALLENGER-UI-ARCHITECT-SELECTED-COMPETITIVE-CONTEXT-v1
+  definition: same UI Architect plus deterministic exact-bound competitive context after current product direction
+  single_variable_change: selected_competitive_context
+binding_defaults:
+  judges: [exact_binding_required, upstream_product_authority_current, authority_preservation, no_invention, bounded_context, must_not_invoke]
+  fallback: PRODUCT_CONTEXT_ONLY_NO_COMPETITIVE_UI_PATTERN
+  timeout_budget: 0
+  context_budget: {max_bytes: 5000, selection: DETERMINISTIC_FIRST}
+  lifecycle_state: READY_FOR_BINDING
+  policy_capsule_ref: POL-LF-OPERATION-LIFECYCLE
+  output_schema_ref: profiles/ui_architect/SKILL.md#Production-UI-Spec-contract
+  production_impact: false
+bindings:
+  - binding_id: BIND-LF-UI-NEGOCIACION-PRESENTATION-v1
+    version: v1
+    consumer_id: PERFIL-UI-ARCHITECT
+    consumer_type: PROFILE
+    capability_id: NEGOCIACION_DEUDA_PRESENTATION
+    router_action: EJECUCION_PERFIL_LF
+    invoke_when: [product_direction_current, ui_spec_requires_negotiation_or_offer_presentation]
+    must_not_invoke_when: [product_direction_missing_or_stale, product_scope_decision_required, legal_approval_only, no_exact_ui_binding]
+    input_contract:
+      required: [task_intent, explicit_constraints, product_direction_ref, evidence_refs]
+      authority: PRODUCT_DIRECTION_FIRST_COMPETITIVE_CONTEXT_SECOND
+      prohibitions: [invented_discount, invented_urgency, invented_eligibility, copied_competitor_layout]
+    minimum_context: [product_direction_ref, explicit_constraints, grounded_competitive_pattern, source_ref, observed_vs_proposed_boundary]
+    selected_evidence_refs:
+      - public.lf_knowledge_base/19461cc1-dc9c-4261-8b36-2bc8401160a1
+      - public.lf_knowledge_base/07fec06f-51fd-4b3f-a322-114878881f5c
+      - public.lf_knowledge_base/46ff730d-d561-4cab-ba2e-b4f45a87171c
+      - public.lf_knowledge_base/8c5324d1-14a0-43b0-8816-c7e0bb85d24c
+    policy_capsule_ref: POL-LF-OPERATION-LIFECYCLE
+    output_schema_ref: profiles/ui_architect/SKILL.md#Production-UI-Spec-contract
+    judges: [exact_binding_required, upstream_product_authority_current, authority_preservation, no_invention, bounded_context, must_not_invoke]
+    fallback: PRODUCT_CONTEXT_ONLY_NO_COMPETITIVE_UI_PATTERN
+    timeout_budget: 0
+    context_budget: {max_bytes: 5000, selection: DETERMINISTIC_FIRST}
+    lifecycle_state: READY_FOR_BINDING
+    source_learning_ids: [19461cc1-dc9c-4261-8b36-2bc8401160a1, 07fec06f-51fd-4b3f-a322-114878881f5c, 46ff730d-d561-4cab-ba2e-b4f45a87171c, 8c5324d1-14a0-43b0-8816-c7e0bb85d24c]
+    champion_id: CHAMPION-UI-ARCHITECT-NO-COMPETITIVE-CONTEXT-v1
+    challenger_id: CHALLENGER-UI-ARCHITECT-SELECTED-COMPETITIVE-CONTEXT-v1
+    provenance: {source_bound: true, automatic_impact: false}
+  - binding_id: BIND-LF-UI-ALTERNATIVAS-PRESENTATION-v1
+    version: v1
+    consumer_id: PERFIL-UI-ARCHITECT
+    consumer_type: PROFILE
+    capability_id: ALTERNATIVAS_FINANCIERAS_PRESENTATION
+    router_action: EJECUCION_PERFIL_LF
+    invoke_when: [product_direction_current, ui_spec_requires_financial_alternative_comparison]
+    must_not_invoke_when: [product_direction_missing_or_stale, user_specific_credit_recommendation, eligibility_claim_without_authority, no_exact_ui_binding]
+    input_contract:
+      required: [task_intent, explicit_constraints, product_direction_ref, evidence_refs]
+      authority: PRODUCT_DIRECTION_FIRST_COMPETITIVE_CONTEXT_SECOND
+      prohibitions: [invented_rate, invented_eligibility, unapproved_product_recommendation, copied_competitor_layout]
+    minimum_context: [product_direction_ref, explicit_constraints, grounded_alternative_pattern, source_ref, non_recommendation_constraint]
+    selected_evidence_refs:
+      - public.lf_knowledge_base/96872c14-85be-4ac6-bda0-0cb343a67f36
+      - public.lf_knowledge_base/e0a9d700-ba7e-4f47-924a-ca5436095cf7
+    policy_capsule_ref: POL-LF-OPERATION-LIFECYCLE
+    output_schema_ref: profiles/ui_architect/SKILL.md#Production-UI-Spec-contract
+    judges: [exact_binding_required, upstream_product_authority_current, authority_preservation, no_invention, bounded_context, must_not_invoke]
+    fallback: PRODUCT_CONTEXT_ONLY_NO_COMPETITIVE_UI_PATTERN
+    timeout_budget: 0
+    context_budget: {max_bytes: 5000, selection: DETERMINISTIC_FIRST}
+    lifecycle_state: READY_FOR_BINDING
+    source_learning_ids: [96872c14-85be-4ac6-bda0-0cb343a67f36, e0a9d700-ba7e-4f47-924a-ca5436095cf7]
+    champion_id: CHAMPION-UI-ARCHITECT-NO-COMPETITIVE-CONTEXT-v1
+    challenger_id: CHALLENGER-UI-ARCHITECT-SELECTED-COMPETITIVE-CONTEXT-v1
+    provenance: {source_bound: true, automatic_impact: false}
+  - binding_id: BIND-LF-UI-EDUCACION-PRESENTATION-v1
+    version: v1
+    consumer_id: PERFIL-UI-ARCHITECT
+    consumer_type: PROFILE
+    capability_id: EDUCACION_CREDITICIA_PRESENTATION
+    router_action: EJECUCION_PERFIL_LF
+    invoke_when: [product_direction_current, ui_spec_requires_debt_education_or_clarity_presentation]
+    must_not_invoke_when: [product_direction_missing_or_stale, legal_or_regulatory_truth_without_independent_authority, score_guarantee, no_exact_ui_binding]
+    input_contract:
+      required: [task_intent, explicit_constraints, product_direction_ref, evidence_refs]
+      authority: PRODUCT_DIRECTION_FIRST_COMPETITIVE_CONTEXT_SECOND
+      prohibitions: [score_guarantee, automatic_bureau_exit_claim, copied_competitor_language, invented_legal_effect]
+    minimum_context: [product_direction_ref, explicit_constraints, grounded_education_pattern, source_ref, claim_limits]
+    selected_evidence_refs:
+      - public.lf_knowledge_base/cd247c51-4734-474a-b0a4-f4e6dfe4d13b
+      - public.lf_knowledge_base/4784cf4b-77e9-4e76-84fe-e689e6dd140e
+      - public.lf_knowledge_base/f7f643db-ed5e-4f93-8347-9020828ba3c5
+      - public.lf_knowledge_base/8f62a71c-9b64-4a9b-9bc9-8df50b5aa088
+      - public.lf_knowledge_base/e06ed042-653c-4c39-ad74-f416061f4956
+    policy_capsule_ref: POL-LF-OPERATION-LIFECYCLE
+    output_schema_ref: profiles/ui_architect/SKILL.md#Production-UI-Spec-contract
+    judges: [exact_binding_required, upstream_product_authority_current, authority_preservation, no_invention, bounded_context, must_not_invoke]
+    fallback: PRODUCT_CONTEXT_ONLY_NO_COMPETITIVE_UI_PATTERN
+    timeout_budget: 0
+    context_budget: {max_bytes: 5000, selection: DETERMINISTIC_FIRST}
+    lifecycle_state: READY_FOR_BINDING
+    source_learning_ids: [cd247c51-4734-474a-b0a4-f4e6dfe4d13b, 4784cf4b-77e9-4e76-84fe-e689e6dd140e, f7f643db-ed5e-4f93-8347-9020828ba3c5, 8f62a71c-9b64-4a9b-9bc9-8df50b5aa088, e06ed042-653c-4c39-ad74-f416061f4956]
+    champion_id: CHAMPION-UI-ARCHITECT-NO-COMPETITIVE-CONTEXT-v1
+    challenger_id: CHALLENGER-UI-ARCHITECT-SELECTED-COMPETITIVE-CONTEXT-v1
+    provenance: {source_bound: true, automatic_impact: false}
+rollback:
+  action: remove_selected_competitive_context_and_keep_current_product_direction
+  production_impact: false
