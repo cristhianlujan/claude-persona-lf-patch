@@ -1,0 +1,1 @@
+Governance CI regression intent: authorize only .github/workflows/input-governance-pr418-holdout-replay.yml through ALLOWED_GITHUB_EXACT. Broad .github/ remains default-denied. Source failure: lf-contract-check run 33568100741 emitted FAIL_UNAUTHORIZED_GITHUB_PATH for that exact workflow. No SCOPED_PASS, downstream, production, Router/Adapter or Supabase mutation authorized.
