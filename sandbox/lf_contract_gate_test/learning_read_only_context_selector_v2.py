@@ -71,21 +71,25 @@ def select_read_only_context(rows: Iterable[dict[str, Any]], *, binding: Binding
         'consumer_id':binding.consumer_id,'capability_id':binding.capability_id,
         'max_context_bytes':binding.max_context_bytes,
     }
-    budget_blocked=[]
+    minimal={**base,'selected_count':0,'selected':[],'fallback':'NO_COMPETITIVE_CONTEXT','budget_blocked_count':0}
+    if _encoded_bytes(minimal)>binding.max_context_bytes:
+        raise LearningSelectionError('MAX_CONTEXT_BYTES_BELOW_ENVELOPE_MINIMUM')
+
+    budget_blocked_count=0
     for kb_id in binding.source_learning_ids:
         row=by_id.get(kb_id)
         if row is None: continue
         candidate=_project(row,kb_id)
-        trial={**base,'selected_count':len(selected)+1,'selected':selected+[candidate],'fallback':None}
+        trial={**base,'selected_count':len(selected)+1,'selected':selected+[candidate],'fallback':None,'budget_blocked_count':budget_blocked_count}
         if _encoded_bytes(trial)>binding.max_context_bytes:
-            budget_blocked.append(kb_id)
+            budget_blocked_count+=1
             continue
         selected.append(candidate)
         if len(selected)>=binding.max_evidence_refs: break
 
     out={**base,'selected_count':len(selected),'selected':selected,
          'fallback':'NO_COMPETITIVE_CONTEXT' if not selected else None,
-         'budget_blocked_learning_ids':budget_blocked}
+         'budget_blocked_count':budget_blocked_count}
     out['context_bytes']=_encoded_bytes(out)
     if out['context_bytes']>binding.max_context_bytes:
         raise LearningSelectionError('CONTEXT_BUDGET_POSTCONDITION_FAILED')
