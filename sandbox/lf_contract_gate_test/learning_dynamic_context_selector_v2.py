@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+import json
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from typing import Any, Iterable
@@ -7,6 +8,7 @@ from typing import Any, Iterable
 SCHEMA = "LF_LEARNING_DYNAMIC_CONTEXT_SELECTION_V2"
 REQUIRED_KB_CATEGORY = "COMPETENCIA"
 DEFAULT_MAX_EVIDENCE = 5
+DEFAULT_CONTEXT_BUDGET_BYTES = 6000
 DEFAULT_TAXONOMY = "LF_LEARNING_CLUSTER_V1"
 ALLOWED_LIFECYCLES = {"ANALIZADO", "CARD_CREADA"}
 ALLOWED_ELIGIBILITIES = {"PASS", "CANONICAL_PASS", "CANONICAL_PASS_STALE_NOTE_FLAGGED"}
@@ -22,6 +24,7 @@ class DynamicBindingSpec:
     max_evidence_refs: int = DEFAULT_MAX_EVIDENCE
     taxonomy_version: str = DEFAULT_TAXONOMY
     prerequisite: str | None = None
+    context_budget_bytes: int = DEFAULT_CONTEXT_BUDGET_BYTES
 
 
 def _text(value: Any) -> str:
@@ -33,6 +36,10 @@ def _score(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, ValueError, TypeError):
         return Decimal("-1")
+
+
+def _selected_bytes(selected: list[dict[str, Any]]) -> int:
+    return len(json.dumps(selected, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8"))
 
 
 def _current_kb_eligible(row: dict[str, Any]) -> bool:
@@ -68,7 +75,8 @@ def _classification_receipt_eligible(event: dict[str, Any], binding: DynamicBind
     return _text(payload.get("kb_id")) != ""
 
 
-def _result(binding: DynamicBindingSpec, selected: list[dict[str, Any]], *, blocked_by_prerequisite: str | None = None) -> dict[str, Any]:
+def _result(binding: DynamicBindingSpec, selected: list[dict[str, Any]], *, blocked_by_prerequisite: str | None = None, skipped_oversize_count: int = 0) -> dict[str, Any]:
+    context_bytes = _selected_bytes(selected)
     return {
         "schema": SCHEMA,
         "mode": "READ_ONLY",
@@ -83,6 +91,10 @@ def _result(binding: DynamicBindingSpec, selected: list[dict[str, Any]], *, bloc
         "prerequisite": binding.prerequisite,
         "prerequisite_satisfied": blocked_by_prerequisite is None,
         "blocked_by_prerequisite": blocked_by_prerequisite,
+        "context_budget_bytes": binding.context_budget_bytes,
+        "context_bytes": context_bytes,
+        "context_budget_pass": context_bytes <= binding.context_budget_bytes,
+        "skipped_oversize_count": skipped_oversize_count,
         "selected_count": len(selected),
         "selected": selected,
         "fallback": "NO_COMPETITIVE_CONTEXT" if not selected else None,
@@ -102,6 +114,8 @@ def select_dynamic_read_only_context(
         raise DynamicLearningSelectionError("EXACT_CLUSTER_MAPPING_REQUIRED")
     if binding.max_evidence_refs < 1 or binding.max_evidence_refs > 5:
         raise DynamicLearningSelectionError("MAX_EVIDENCE_REFS_OUT_OF_BOUNDS")
+    if binding.context_budget_bytes < 256 or binding.context_budget_bytes > 65536:
+        raise DynamicLearningSelectionError("CONTEXT_BUDGET_BYTES_OUT_OF_BOUNDS")
     if binding.prerequisite is not None and not _text(binding.prerequisite):
         raise DynamicLearningSelectionError("INVALID_PREREQUISITE")
 
@@ -133,9 +147,12 @@ def select_dynamic_read_only_context(
         ))
     candidates.sort(key=lambda item: (item[0], item[1], item[2]))
 
-    selected = []
-    for _, _, kb_id, row, event_id in candidates[: binding.max_evidence_refs]:
-        selected.append({
+    selected: list[dict[str, Any]] = []
+    skipped_oversize_count = 0
+    for _, _, kb_id, row, event_id in candidates:
+        if len(selected) >= binding.max_evidence_refs:
+            break
+        item = {
             "kb_id": kb_id,
             "kb_category": REQUIRED_KB_CATEGORY,
             "topic": _text(row.get("topic")),
@@ -145,6 +162,10 @@ def select_dynamic_read_only_context(
             "quality_score": row.get("quality_score"),
             "classification_event_id": event_id,
             "evidence_ref": f"public.lf_knowledge_base/{kb_id}",
-        })
+        }
+        if _selected_bytes(selected + [item]) > binding.context_budget_bytes:
+            skipped_oversize_count += 1
+            continue
+        selected.append(item)
 
-    return _result(binding, selected)
+    return _result(binding, selected, skipped_oversize_count=skipped_oversize_count)
