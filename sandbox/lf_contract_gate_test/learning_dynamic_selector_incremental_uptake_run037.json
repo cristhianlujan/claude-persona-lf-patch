@@ -1,0 +1,40 @@
+{
+  "schema": "LF_LEARNING_DYNAMIC_SELECTOR_INCREMENTAL_UPTAKE_V1",
+  "execution_id": "LF-AUTOLEARN-RUN-20260901-037",
+  "taxonomy_version": "LF_LEARNING_CLUSTER_V1",
+  "mode": "READ_ONLY",
+  "eligible_competitive_kb": 35,
+  "classified_before": 30,
+  "classified_after": 35,
+  "unclassified_after": 0,
+  "newly_classified": 5,
+  "selector": "DETERMINISTIC_CLASSIFIED_CLUSTER_CURRENT_KB",
+  "llm_calls_for_selection": 0,
+  "round_trips_for_selection": 0,
+  "max_evidence_per_capability": 5,
+  "dynamic_uptake": {
+    "NEGOCIACION_DEUDA": {
+      "eligible_count_after": 9,
+      "new_ids_entering_top5": [
+        "02bcfdd4-6859-4d56-9fbc-02af0ddf65b5",
+        "a789f419-b05f-4eba-af99-015bd56d24d5",
+        "88c3ea18-3146-4590-a91b-cbfaac26b3ca"
+      ]
+    },
+    "DIGITAL_SELF_SERVICE": {
+      "eligible_count_after": 3,
+      "new_ids_entering_top5": ["7d55562e-9266-478b-b071-dca7ba1ade1a"]
+    },
+    "PAYMENT_NO_ADEUDO": {
+      "eligible_count_after": 4,
+      "new_ids_entering_top5": ["3118e5f0-9b7c-4a90-839a-33ad0f14384d"]
+    },
+    "ALTERNATIVAS_FINANCIERAS": {"eligible_count_after": 6, "new_ids_entering_top5": []},
+    "EDUCACION_CREDITICIA": {"eligible_count_after": 8, "new_ids_entering_top5": []}
+  },
+  "binding_changes_required_for_uptake": 0,
+  "kb_mutations_performed": 0,
+  "consumer_ready_mutations_performed": 0,
+  "automatic_impact": false,
+  "production_authorized": false
+}
