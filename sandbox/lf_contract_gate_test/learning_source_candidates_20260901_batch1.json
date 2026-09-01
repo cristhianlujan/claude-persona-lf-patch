@@ -1,0 +1,61 @@
+{
+  "schema": "LF_LEARNING_SOURCE_CANDIDATE_BATCH_V1",
+  "batch_id": "LEARNING-SOURCE-20260901-B1",
+  "status": "DISCOVERED_LIVE_KB_DEDUP_REQUIRED",
+  "kb_write_allowed": false,
+  "consumer_ready_allowed": false,
+  "production_impact": false,
+  "dedup_evidence": {"github_exact_url_hits": 0, "live_kb_dedup": "UNAVAILABLE_SQL_CHANNEL_BLOCKED"},
+  "sources": [
+    {
+      "source_id": "SRC-IBK-COMPRA-DEUDA-CONSUMER-20260901",
+      "organization": "Interbank",
+      "url": "https://interbank.pe/web/guest/tarjetas/beneficios-tarjeta-credito/compra-deuda",
+      "source_type": "OFFICIAL_PRODUCT_PAGE",
+      "candidate_capabilities": ["ALTERNATIVAS_FINANCIERAS", "DIGITAL_SELF_SERVICE"],
+      "observed_pattern": "consolidacion de deudas en una tarjeta dedicada; oferta/campana condicionada; hasta 48 meses; canal digital y tarjeta virtual Visa Access exclusiva para compra de deuda",
+      "claim_boundary": "sujeto a evaluacion/oferta; no extrapolar a elegibilidad LF",
+      "status": "DISCOVERED_DEDUP_PENDING"
+    },
+    {
+      "source_id": "SRC-BBVA-COMPRA-DEUDA-20260901",
+      "organization": "BBVA Peru",
+      "url": "https://www.bbva.pe/personas/productos/tarjetas/beneficios/compra-deuda.html",
+      "source_type": "OFFICIAL_PRODUCT_PAGE",
+      "candidate_capabilities": ["DIGITAL_SELF_SERVICE", "ALTERNATIVAS_FINANCIERAS"],
+      "observed_pattern": "flujo App/Web de tres pasos: seleccionar compra de deuda, ingresar datos, revisar tasa/cuota y confirmar; hasta 36 cuotas; condiciones y exclusiones explicitas",
+      "claim_boundary": "perfil de credito, linea disponible y evaluacion condicionan la oferta",
+      "status": "DISCOVERED_DEDUP_PENDING"
+    },
+    {
+      "source_id": "SRC-SCOTIA-COMPRA-DEUDA-20260901",
+      "organization": "Scotiabank Peru",
+      "url": "https://www.scotiabank.com.pe/personas/tarjetas/compra-deuda",
+      "source_type": "OFFICIAL_PRODUCT_PAGE",
+      "candidate_capabilities": ["DIGITAL_SELF_SERVICE", "ALTERNATIVAS_FINANCIERAS"],
+      "observed_pattern": "simulacion repetible por app/web antes de operar; saldo visible; unificacion a una tasa/plazo; 2 a 60 cuotas",
+      "claim_boundary": "requiere buen historial y campana activa; no equivale a solucion para deuda castigada",
+      "status": "DISCOVERED_DEDUP_PENDING"
+    },
+    {
+      "source_id": "SRC-FALABELLA-COMPRA-DEUDA-20260901",
+      "organization": "Banco Falabella Peru",
+      "url": "https://www.bancofalabella.pe/compra-de-deudas",
+      "source_type": "OFFICIAL_PRODUCT_PAGE",
+      "candidate_capabilities": ["ALTERNATIVAS_FINANCIERAS", "PAYMENT_NO_ADEUDO"],
+      "observed_pattern": "el banco paga directamente la deuda a otras entidades y el cliente no ejecuta esa operacion; hasta 48 cuotas; multiples canales de pago",
+      "claim_boundary": "solo observar ownership/claridad del pago; no inferir carta de no adeudo ni elegibilidad",
+      "status": "DISCOVERED_DEDUP_PENDING"
+    },
+    {
+      "source_id": "SRC-RIPLEY-CONSOLIDACION-DEUDA-20260901",
+      "organization": "Banco Ripley Peru",
+      "url": "https://www.bancoripley.com.pe/prestamos/compra-de-deuda.html",
+      "source_type": "OFFICIAL_PRODUCT_PAGE",
+      "candidate_capabilities": ["ALTERNATIVAS_FINANCIERAS", "DIGITAL_SELF_SERVICE"],
+      "observed_pattern": "consolidacion de tarjetas/prestamos de bancos, cajas y financieras; canales web/telefono/agencia/retail; 36 a 60 meses; contacto WhatsApp disponible",
+      "claim_boundary": "sujeto a evaluacion y calificacion Normal; no extrapolar a cartera castigada",
+      "status": "DISCOVERED_DEDUP_PENDING"
+    }
+  ]
+}
