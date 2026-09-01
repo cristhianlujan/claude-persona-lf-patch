@@ -1,7 +1,8 @@
 {
   "schema":"LF_PRODUCT_DIRECTOR_KB_ELIGIBILITY_READBACK_V1",
-  "observed_live_at_utc":"2026-09-01T20:02:39.624817Z",
+  "observed_live_at_utc":"2026-09-01T22:01:08.090588Z",
   "source":"public.lf_knowledge_base",
+  "fresh_readback_event_ref":"public.lf_eventos/9950",
   "predicate":"kb_category=COMPETENCIA AND grounding_status=GROUNDED AND consumer_ready=true",
   "selected_ids":[
     "8b744f07-75f6-4332-9df5-12e7c6914bf1","02bcfdd4-6859-4d56-9fbc-02af0ddf65b5","a789f419-b05f-4eba-af99-015bd56d24d5","5500178a-d503-476c-be77-c99223b4d90c",
