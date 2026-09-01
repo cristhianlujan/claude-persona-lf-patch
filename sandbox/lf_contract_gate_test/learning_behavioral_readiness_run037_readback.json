@@ -1,0 +1,23 @@
+{
+  "schema": "LF_LEARNING_BEHAVIORAL_READINESS_READBACK_V1",
+  "execution_id": "LF-AUTOLEARN-RUN-20260901-037",
+  "observed_at": "2026-09-01T08:04:00Z",
+  "authority_contract": "INPUT_READINESS_CONTRACT",
+  "continuation_policy": "PASS_ONLY",
+  "contract_resolution": "LIVE_CURRENT",
+  "target": {"pantalla_id":21,"screen_code":"CHECKOUT_CUOTAS_MEDIO_PAGO","governance_consumer":"CONTEXT_PACK"},
+  "live_programacion_input_readiness_runs": {
+    "rows_for_pantalla_21": 0,
+    "current_run_id": null,
+    "current_receipt": null
+  },
+  "decision": "BLOCK_BEHAVIORAL_RUNTIME",
+  "required_role": "INPUT_CURATOR",
+  "runtime_invoked": false,
+  "holdout_consumed": false,
+  "independent_work_allowed": true,
+  "product_director_routing_evidence": "50/50_PASS",
+  "ui_architect_routing_evidence": "50/50_PASS",
+  "production_impact": false,
+  "production_authorized": false
+}
