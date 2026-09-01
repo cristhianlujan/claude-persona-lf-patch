@@ -9,7 +9,8 @@ A=json.loads((R/'learning_additional_consumer_applicability_v1.json').read_text(
 def req(c,m):
     if not c: raise SystemExit('FAIL_'+m)
 req(D['schema']=='LF_LEARNING_SPECIALIZED_CONSUMER_READINESS_MATRIX_V1','SCHEMA')
-req(D['mode']=='READ_ONLY' and D['source_scope']=='GITHUB_CANDIDATE_TREE_ONLY','MODE')
+req(D['mode']=='READ_ONLY' and D['source_scope']=='GITHUB_CANDIDATE_TREE_PLUS_LIVE_ROUTER_READBACK','MODE')
+req(D.get('fresh_router_readback_event_ref')==A.get('fresh_readback_event_ref') and bool(D.get('fresh_router_readback_event_ref')),'FRESH_ROUTER_READBACK')
 rows={(x['consumer_id'],x['capability_id']):x for x in D['rows']}
 bind={(x['consumer_id'],x['capability_id']):x for x in B['bindings']}
 pack={(x['consumer_id'],x['capability_id']):x for x in C['packs']}
@@ -26,4 +27,4 @@ for k,r in rows.items():
     req(r['readiness']=='READY_FOR_BINDING' and r['outcome']=='NO_COMPETITIVE_CONTEXT','OUTCOME_'+k[0])
 req(D['row_count']==4 and D['ready_for_binding_count']==4 and D['active_binding_count']==0 and D['delivery_enabled_count']==0,'COUNTS')
 req(D['automatic_promotion'] is False and D['production_authorized'] is False,'NO_PROMOTION')
-print('LEARNING_SPECIALIZED_CONSUMER_READINESS_MATRIX=PASS rows=4/4 ready_for_binding=4 active=0 delivery=0')
+print('LEARNING_SPECIALIZED_CONSUMER_READINESS_MATRIX=PASS rows=4/4 ready_for_binding=4 active=0 delivery=0 fresh_router_readback=PASS')
