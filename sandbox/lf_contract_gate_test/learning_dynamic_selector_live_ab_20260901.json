@@ -1,0 +1,44 @@
+{
+  "schema": "LF_LEARNING_DYNAMIC_SELECTOR_LIVE_AB_V1",
+  "status": "CANDIDATO_READ_ONLY",
+  "observed_at_basis": "live Supabase lf_eventos + lf_knowledge_base readback",
+  "production_impact": false,
+  "champion": {
+    "selector": "DETERMINISTIC_EXACT_ID",
+    "source": "learning_consumer_bindings_v2.yaml",
+    "selected_total": 17,
+    "exact_cluster_matches": 12,
+    "exact_cluster_match_pct": 70.59,
+    "mismatches": {
+      "NEGOCIACION_DEUDA": 2,
+      "EDUCACION_CREDITICIA": 3
+    }
+  },
+  "challenger": {
+    "selector": "DETERMINISTIC_CLASSIFIED_CLUSTER_CURRENT_KB",
+    "source": "LF_LEARNING_CLUSTER_V1 receipts + current COMPETENCIA/GROUNDED/consumer_ready KB",
+    "selected_total": 20,
+    "exact_cluster_matches": 20,
+    "exact_cluster_match_pct": 100.0,
+    "llm_calls": 0,
+    "round_trips": 0,
+    "max_evidence_per_capability": 5,
+    "ranking": ["quality_score_desc", "classification_event_id_desc", "kb_id_asc"]
+  },
+  "capability_cluster_map": {
+    "NEGOCIACION_DEUDA": ["NEGOCIACION_DEUDA"],
+    "ALTERNATIVAS_FINANCIERAS": ["ALTERNATIVAS_FINANCIERAS"],
+    "EDUCACION_CREDITICIA": ["EDUCACION_CREDITICIA"],
+    "DIGITAL_SELF_SERVICE": ["AUTOGESTION_DIGITAL"],
+    "PAYMENT_NO_ADEUDO": ["PAGOS_Y_NO_ADEUDO"]
+  },
+  "challenger_top_evidence": {
+    "ALTERNATIVAS_FINANCIERAS": ["33e6970d-d19c-4300-8ed7-1784dd162d9d", "663f9684-5ec5-4bfc-bc91-469bbf01f57b", "a19d068a-f67c-4b5b-a6a1-09e84233f463", "6b4efb50-6e61-4f4c-ac1e-7ec3b7eac985", "55f1b6c0-e019-4744-ae60-64861863d5b5"],
+    "DIGITAL_SELF_SERVICE": ["35cfab0c-1d91-4aa4-9761-f8af91181e17", "92fc4ad2-1581-4aa1-b01b-e986bb3cc71c"],
+    "EDUCACION_CREDITICIA": ["7ffa83ea-c4ea-41a1-aaed-a76329c5c730", "7ebe6b67-9463-4753-82eb-f3fedfc2f72c", "3f4ca9bb-61f9-46e7-9850-59a2448b5277", "0821f197-1141-4aae-9e1a-17e824a40e21", "c1eb138f-086f-41fc-a65d-a866a223df99"],
+    "NEGOCIACION_DEUDA": ["8b744f07-75f6-4332-9df5-12e7c6914bf1", "5500178a-d503-476c-be77-c99223b4d90c", "4589a1dd-b797-453b-97b6-ff54411dd015", "acac846b-2d41-404a-b7dc-5d892ed39496", "e2def384-720a-4b92-9545-31bd9f1d5eae"],
+    "PAYMENT_NO_ADEUDO": ["bd2a3a05-b53b-400c-846d-3634e422a500", "92fc4ad2-1581-4aa1-b01b-e986bb3cc71c", "acac846b-2d41-404a-b7dc-5d892ed39496"]
+  },
+  "promotion_status": "WAITING_EXACT_HEAD_CI_AND_ROUTING_REGRESSION",
+  "rollback": "retain static exact-id champion"
+}
