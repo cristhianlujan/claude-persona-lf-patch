@@ -1,0 +1,37 @@
+{
+  "schema": "LF_UI_ARCHITECT_LEARNING_CONTEXT_PACK_V1",
+  "mode": "READ_ONLY",
+  "consumer_id": "PERFIL-UI-ARCHITECT",
+  "prerequisite": "PRODUCT_DIRECTION_AUTHORIZED_CURRENT",
+  "source_authority": "public.lf_knowledge_base",
+  "eligibility": {
+    "kb_category": "COMPETENCIA",
+    "grounding_status": "GROUNDED",
+    "consumer_ready": true,
+    "exact_binding_required": true
+  },
+  "selection": {
+    "strategy": "DETERMINISTIC_EXACT_IDS",
+    "semantic_search": false,
+    "llm_calls": 0,
+    "round_trips": 0,
+    "max_evidence_refs": 5,
+    "max_context_bytes": 5000,
+    "recursive_expansion": false
+  },
+  "capabilities": {
+    "DIGITAL_SELF_SERVICE": {
+      "binding_id": "BIND-LF-UI-DIGITAL-SELF-SERVICE-v1",
+      "source_learning_ids": ["35cfab0c-1d91-4aa4-9761-f8af91181e17", "7d55562e-9266-478b-b071-dca7ba1ade1a"]
+    },
+    "PAYMENT_NO_ADEUDO": {
+      "binding_id": "BIND-LF-UI-PAYMENT-NO-ADEUDO-v1",
+      "source_learning_ids": ["bd2a3a05-b53b-400c-846d-3634e422a500", "92fc4ad2-1581-4aa1-b01b-e986bb3cc71c"]
+    }
+  },
+  "required_sections": ["product_direction_ref", "facts", "evidence_refs", "constraints", "policy_refs"],
+  "fallback": "NO_COMPETITIVE_CONTEXT",
+  "writes_per_reader": 0,
+  "automatic_impact": false,
+  "production_authorized": false
+}
