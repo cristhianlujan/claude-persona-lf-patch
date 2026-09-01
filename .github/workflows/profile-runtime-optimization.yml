@@ -18,7 +18,7 @@ permissions:
   issues: read
 
 env:
-  CACHE_NAMESPACE: lf-profile-runtime-v2-20260901
+  CACHE_NAMESPACE: lf-profile-runtime-v3-20260901
   LLAMA_COMMIT: 925e1179947ea0c0ebfb0032df18af3a729822be
   LLAMA_RELEASE: b7100
   MODEL_ID: Qwen2.5-VL-3B-Instruct-Q4_K_M.gguf
@@ -50,14 +50,14 @@ jobs:
           fp="$( { cmake --version; c++ --version; } | sha256sum | awk '{print $1}')"
           echo "fingerprint=$fp" >> "$GITHUB_OUTPUT"
 
-      - name: Restore pinned llama.cpp binary
+      - name: Restore pinned llama.cpp runtime bundle
         id: llama-cache
         uses: actions/cache@v4
         with:
           path: ${{ runner.temp }}/lf-cache/llama
           key: ${{ env.CACHE_NAMESPACE }}-llama-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.fingerprint }}-${{ env.LLAMA_COMMIT }}-${{ env.LLAMA_RELEASE }}
 
-      - name: Build pinned llama.cpp on cache miss
+      - name: Build pinned llama.cpp runtime bundle on cache miss
         if: steps.llama-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
@@ -70,23 +70,25 @@ jobs:
           test "$(git rev-parse HEAD)" = "$LLAMA_COMMIT"
           cmake -B build -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=OFF
           cmake --build build --config Release -j 4 --target llama-cli
-          mkdir -p "$RUNNER_TEMP/lf-cache/llama"
-          cp build/bin/llama-cli "$RUNNER_TEMP/lf-cache/llama/llama-cli"
-          chmod +x "$RUNNER_TEMP/lf-cache/llama/llama-cli"
-          cli_sha=$(sha256sum "$RUNNER_TEMP/lf-cache/llama/llama-cli" | awk '{print $1}')
+          mkdir -p "$RUNNER_TEMP/lf-cache/llama/bin"
+          cp -a build/bin/. "$RUNNER_TEMP/lf-cache/llama/bin/"
+          test -x "$RUNNER_TEMP/lf-cache/llama/bin/llama-cli"
+          cli_sha=$(sha256sum "$RUNNER_TEMP/lf-cache/llama/bin/llama-cli" | awk '{print $1}')
           printf 'llama_commit=%s\nllama_release=%s\nllama_cli_sha256=%s\n' "$LLAMA_COMMIT" "$LLAMA_RELEASE" "$cli_sha" > "$RUNNER_TEMP/lf-cache/llama/manifest.txt"
           echo "LF_LLAMA_BUILD_MS=$(( $(date +%s%3N) - start ))" >> "$GITHUB_ENV"
 
-      - name: Verify cached llama.cpp
+      - name: Verify cached llama.cpp runtime bundle
         shell: bash
         run: |
           set -euo pipefail
-          test -x "$RUNNER_TEMP/lf-cache/llama/llama-cli"
+          cli="$RUNNER_TEMP/lf-cache/llama/bin/llama-cli"
+          test -x "$cli"
           grep -Fx "llama_commit=$LLAMA_COMMIT" "$RUNNER_TEMP/lf-cache/llama/manifest.txt"
           grep -Fx "llama_release=$LLAMA_RELEASE" "$RUNNER_TEMP/lf-cache/llama/manifest.txt"
           expected=$(awk -F= '$1=="llama_cli_sha256"{print $2}' "$RUNNER_TEMP/lf-cache/llama/manifest.txt")
-          actual=$(sha256sum "$RUNNER_TEMP/lf-cache/llama/llama-cli" | awk '{print $1}')
+          actual=$(sha256sum "$cli" | awk '{print $1}')
           test -n "$expected" && test "$expected" = "$actual"
+          "$cli" --version >/dev/null
 
       - name: Restore pinned model assets
         id: model-cache
@@ -166,7 +168,8 @@ jobs:
           pat=re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$',re.I)
           if not 1 <= len(ids) <= 3 or len(set(ids)) != len(ids) or any(not pat.fullmatch(x) for x in ids):
               raise SystemExit('BLOCK_PROFILE_RUNTIME_BATCH_COMMENT_FORMAT')
-          with open(os.environ['GITHUB_OUTPUT'],'a',encoding='utf-8') as f: f.write('request_ids='+','.join(ids)+'\n')
+          with open(os.environ['GITHUB_OUTPUT'],'a',encoding='utf-8') as f:
+              f.write('request_ids='+','.join(ids)+'\n')
           PY
 
       - name: Record preparation start and toolchain fingerprint
@@ -177,36 +180,42 @@ jobs:
           fp="$( { cmake --version; c++ --version; } | sha256sum | awk '{print $1}')"
           echo "fingerprint=$fp" >> "$GITHUB_OUTPUT"
 
-      - name: Restore pinned llama.cpp binary
+      - name: Restore pinned llama.cpp runtime bundle
         id: llama-cache
         uses: actions/cache@v4
         with:
           path: ${{ runner.temp }}/lf-cache/llama
           key: ${{ env.CACHE_NAMESPACE }}-llama-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.fingerprint }}-${{ env.LLAMA_COMMIT }}-${{ env.LLAMA_RELEASE }}
 
-      - name: Build pinned llama.cpp on cache miss
+      - name: Build pinned llama.cpp runtime bundle on cache miss
         if: steps.llama-cache.outputs.cache-hit != 'true'
         run: |
           set -euo pipefail
           start=$(date +%s%3N)
+          rm -rf "$RUNNER_TEMP/llama.cpp" "$RUNNER_TEMP/lf-cache/llama"
           git clone --filter=blob:none https://github.com/ggml-org/llama.cpp.git "$RUNNER_TEMP/llama.cpp"
-          cd "$RUNNER_TEMP/llama.cpp" && git checkout --detach "$LLAMA_COMMIT" && test "$(git rev-parse HEAD)" = "$LLAMA_COMMIT"
+          cd "$RUNNER_TEMP/llama.cpp"
+          git checkout --detach "$LLAMA_COMMIT"
+          test "$(git rev-parse HEAD)" = "$LLAMA_COMMIT"
           cmake -B build -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=OFF
           cmake --build build --config Release -j 4 --target llama-cli
-          mkdir -p "$RUNNER_TEMP/lf-cache/llama"
-          cp build/bin/llama-cli "$RUNNER_TEMP/lf-cache/llama/llama-cli" && chmod +x "$RUNNER_TEMP/lf-cache/llama/llama-cli"
-          cli_sha=$(sha256sum "$RUNNER_TEMP/lf-cache/llama/llama-cli" | awk '{print $1}')
+          mkdir -p "$RUNNER_TEMP/lf-cache/llama/bin"
+          cp -a build/bin/. "$RUNNER_TEMP/lf-cache/llama/bin/"
+          test -x "$RUNNER_TEMP/lf-cache/llama/bin/llama-cli"
+          cli_sha=$(sha256sum "$RUNNER_TEMP/lf-cache/llama/bin/llama-cli" | awk '{print $1}')
           printf 'llama_commit=%s\nllama_release=%s\nllama_cli_sha256=%s\n' "$LLAMA_COMMIT" "$LLAMA_RELEASE" "$cli_sha" > "$RUNNER_TEMP/lf-cache/llama/manifest.txt"
           echo "LF_LLAMA_BUILD_MS=$(( $(date +%s%3N) - start ))" >> "$GITHUB_ENV"
 
-      - name: Verify cached llama.cpp
+      - name: Verify cached llama.cpp runtime bundle
         run: |
           set -euo pipefail
-          test -x "$RUNNER_TEMP/lf-cache/llama/llama-cli"
+          cli="$RUNNER_TEMP/lf-cache/llama/bin/llama-cli"
+          test -x "$cli"
           grep -Fx "llama_commit=$LLAMA_COMMIT" "$RUNNER_TEMP/lf-cache/llama/manifest.txt"
           grep -Fx "llama_release=$LLAMA_RELEASE" "$RUNNER_TEMP/lf-cache/llama/manifest.txt"
           expected=$(awk -F= '$1=="llama_cli_sha256"{print $2}' "$RUNNER_TEMP/lf-cache/llama/manifest.txt")
-          test "$expected" = "$(sha256sum "$RUNNER_TEMP/lf-cache/llama/llama-cli" | awk '{print $1}')"
+          test "$expected" = "$(sha256sum "$cli" | awk '{print $1}')"
+          "$cli" --version >/dev/null
 
       - name: Restore pinned model assets
         id: model-cache
@@ -220,6 +229,7 @@ jobs:
         run: |
           set -euo pipefail
           start=$(date +%s%3N)
+          rm -rf "$RUNNER_TEMP/lf-cache/model"
           mkdir -p "$RUNNER_TEMP/lf-cache/model"
           curl -L --fail --retry 3 --retry-delay 2 "https://huggingface.co/ggml-org/Qwen2.5-VL-3B-Instruct-GGUF/resolve/${MODEL_COMMIT}/Qwen2.5-VL-3B-Instruct-Q4_K_M.gguf?download=true" -o "$RUNNER_TEMP/lf-cache/model/model.gguf"
           curl -L --fail --retry 3 --retry-delay 2 "https://huggingface.co/ggml-org/Qwen2.5-VL-3B-Instruct-GGUF/resolve/${MODEL_COMMIT}/mmproj-Qwen2.5-VL-3B-Instruct-Q8_0.gguf?download=true" -o "$RUNNER_TEMP/lf-cache/model/mmproj.gguf"
@@ -236,6 +246,7 @@ jobs:
           echo "LF_CACHE_HIT_RUNTIME=${{ steps.llama-cache.outputs.cache-hit == 'true' }}" >> "$GITHUB_ENV"
           echo "LF_CACHE_HIT_MODEL=${{ steps.model-cache.outputs.cache-hit == 'true' }}" >> "$GITHUB_ENV"
           if [ "${{ steps.model-cache.outputs.cache-hit }}" = "true" ]; then echo "LF_MODEL_DOWNLOAD_MS=0" >> "$GITHUB_ENV"; fi
+          if [ "${{ steps.llama-cache.outputs.cache-hit }}" = "true" ]; then echo "LF_LLAMA_BUILD_MS=0" >> "$GITHUB_ENV"; fi
 
       - name: Execute queued profiles on shared prepared runtime
         env:
@@ -245,7 +256,7 @@ jobs:
           LF_REPOSITORY_VISIBILITY: public
           LF_RUNNER_LABEL: ubuntu-latest
           LF_LLAMA_SOURCE_COMMIT: ${{ env.LLAMA_COMMIT }}
-          LF_LLAMA_CLI_PATH: ${{ runner.temp }}/lf-cache/llama/llama-cli
+          LF_LLAMA_CLI_PATH: ${{ runner.temp }}/lf-cache/llama/bin/llama-cli
           LF_MODEL_PATH: ${{ runner.temp }}/lf-cache/model/model.gguf
           LF_MMPROJ_PATH: ${{ runner.temp }}/lf-cache/model/mmproj.gguf
         run: |
