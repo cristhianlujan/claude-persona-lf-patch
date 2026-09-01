@@ -1,0 +1,32 @@
+{
+  "schema": "LF_ACT0058_PENDING_SOURCE_REOPEN_V2",
+  "mode": "READ_ONLY_SOURCE_INSPECTION",
+  "operation_code": "ORQUESTACION_PIPELINE_LF",
+  "queue_scope": "6_REEVALUA_PENDING_EXACT_URLS",
+  "automatic_impact": false,
+  "production_authorized": false,
+  "queue_mutation_performed": false,
+  "capture_write_performed": false,
+  "kb_write_performed": false,
+  "sources": [
+    {"url":"https://reevalua.com/blog/sueldo-necesario-para-prestamo-10000-30000-50000-peru","read_state":"CONTENT_READABLE","eligible_for_governed_capture":true,"topic":"capacidad_de_pago_y_comparacion_crediticia"},
+    {"url":"https://reevalua.com/blog/consolidar-deudas-peru-cuanto-ahorras","read_state":"CONTENT_READABLE_EXACT_URL_SEARCH_CRAWL","eligible_for_governed_capture":true,"topic":"consolidacion_deudas_tcea_plazo_costo_total"},
+    {"url":"https://reevalua.com/blog/independiente-sin-recibo-honorarios-historial-crediticio-peru","read_state":"CONTENT_READABLE_EXACT_URL_SEARCH_CRAWL","eligible_for_governed_capture":true,"topic":"construccion_historial_independiente"},
+    {"url":"https://reevalua.com/blog/deudas-que-nunca-pedi-usaron-mi-dni-peru","read_state":"CONTENT_READABLE_EXACT_URL_SEARCH_CRAWL","eligible_for_governed_capture":true,"topic":"deuda_no_reconocida_suplantacion_y_reclamo"},
+    {"url":"https://reevalua.com/blog/cuotas-sin-intereses-costos-ocultos-peru","read_state":"CONTENT_READABLE","eligible_for_governed_capture":true,"topic":"cuotas_costos_adicionales_tcea"},
+    {"url":"https://reevalua.com/blog/septiembre-sin-gratificacion-plan-4-semanas-peru","read_state":"CONTENT_READABLE_EXACT_URL_SEARCH_CRAWL","eligible_for_governed_capture":true,"topic":"planificacion_presupuesto_prevencion_credito_apurado"}
+  ],
+  "summary": {
+    "exact_urls_checked": 6,
+    "content_readable": 6,
+    "eligible_for_governed_capture": 6,
+    "existing_kb_rows_for_exact_urls_at_precheck": 0,
+    "capture_or_kb_write_allowed_before_act0058_judge_gate": false
+  },
+  "authority_boundaries": [
+    "COMPETITOR_CONTENT_NOT_LF_PRODUCT_TRUTH",
+    "REGULATORY_OR_MARKET_CLAIMS_REQUIRE_INDEPENDENT_AUTHORITY_BEFORE_LF_USE",
+    "ILLUSTRATIVE_FINANCIAL_EXAMPLES_ARE_NOT_LF_PRICING_OR_ELIGIBILITY",
+    "NO_CAPTURE_OR_KB_WRITE_UNTIL_ACT0058_GOVERNED_JUDGE_PATH_IS_READY"
+  ]
+}
