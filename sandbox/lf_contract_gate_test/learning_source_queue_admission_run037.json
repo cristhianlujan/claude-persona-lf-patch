@@ -1,0 +1,27 @@
+{
+  "schema": "LF_LEARNING_SOURCE_QUEUE_ADMISSION_V1",
+  "execution_id": "LF-AUTOLEARN-RUN-20260901-037",
+  "mode": "GOVERNED_CAPTURE_PENDING",
+  "router_asset": "ACT-0001",
+  "capture_asset": "ACT-0052",
+  "orchestrator_asset": "ACT-0058",
+  "source_batch": "LEARNING-SOURCE-20260901-B1",
+  "live_exact_dedup_before_admission": {
+    "lf_url_queue": "0_OF_5_FOUND",
+    "lf_capture_records": "0_OF_5_FOUND",
+    "lf_knowledge_base": "0_OF_5_FOUND"
+  },
+  "admitted": [
+    {"source_id":"SRC-IBK-COMPRA-DEUDA-CONSUMER-20260901","queue_id":"e97740ae-af47-414a-b65f-70e113e6f950","url":"https://interbank.pe/web/guest/tarjetas/beneficios-tarjeta-credito/compra-deuda","estado":"PENDIENTE","url_tipo":"COMPETENCIA"},
+    {"source_id":"SRC-BBVA-COMPRA-DEUDA-20260901","queue_id":"cae813e0-e7b7-43ec-9880-12e4347efcc4","url":"https://www.bbva.pe/personas/productos/tarjetas/beneficios/compra-deuda.html","estado":"PENDIENTE","url_tipo":"COMPETENCIA"},
+    {"source_id":"SRC-SCOTIA-COMPRA-DEUDA-20260901","queue_id":"91d4eda0-fd41-4f0f-a620-948a05ac5fa9","url":"https://www.scotiabank.com.pe/personas/tarjetas/compra-deuda","estado":"PENDIENTE","url_tipo":"COMPETENCIA"},
+    {"source_id":"SRC-FALABELLA-COMPRA-DEUDA-20260901","queue_id":"a13d3c8d-1523-4afb-abaa-4d2b9522ec07","url":"https://www.bancofalabella.pe/compra-de-deudas","estado":"PENDIENTE","url_tipo":"COMPETENCIA"},
+    {"source_id":"SRC-RIPLEY-CONSOLIDACION-DEUDA-20260901","queue_id":"975a947f-5836-4ec6-89a7-514eca7691cf","url":"https://www.bancoripley.com.pe/prestamos/compra-de-deuda.html","estado":"PENDIENTE","url_tipo":"COMPETENCIA"}
+  ],
+  "readback": "5_OF_5_PENDING_COMPETENCIA",
+  "direct_kb_writes": 0,
+  "consumer_ready_mutations": 0,
+  "capture_records_created": 0,
+  "production_impact": false,
+  "next_gate": "ACT-0058_GOVERNED_CAPTURE_OR_SAFE_PIPELINE_OWNER"
+}
