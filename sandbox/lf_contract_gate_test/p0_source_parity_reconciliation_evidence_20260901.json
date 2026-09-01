@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "incident": "P0_CONCURRENT_MIGRATION_SOURCE_PARITY_20260901",
+  "base_main_sha": "1ffcbfba410c46330367175df0756acecf4396a9",
+  "canonical_reconciliation": {
+    "pr": 374,
+    "source_head_before_evidence": "be2081bef9b9681aa0b9b78c824787b894370292",
+    "source_tree_before_evidence": "bebdabbbd836e262f783341d157e751b6670bc74",
+    "ddl_reapplied": false,
+    "broad_allowlist_added": false
+  },
+  "migration_ownership": [
+    {"version":"20260901000922","name":"input_governance_enforce_router_v1","functional_owner":"PR-371"},
+    {"version":"20260901001107","name":"lf_guard_operation_materialization_provenance","functional_owner":"PR-370"},
+    {"version":"20260901012406","name":"programacion_f05_provenance_channel_v1","functional_owner":"PROGRAMMING_AGENT_F05"},
+    {"version":"20260901012423","name":"lf_operation_registry_materialization_guard_v1","functional_owner":"PR-372"},
+    {"version":"20260901012800","name":"programacion_f05_public_rpc_bridge_v1","functional_owner":"PROGRAMMING_AGENT_F05"}
+  ],
+  "anti_tautology": {
+    "probe_pr": 375,
+    "probe_head": "7130df7b2a471d857bd9116bf087c00c2f8e5b38",
+    "workflow_run": 33464599003,
+    "expected_failure": "FAIL_UNCLASSIFIED_POST_CUTOVER_MIGRATION",
+    "observed_failure": "FAIL_UNCLASSIFIED_POST_CUTOVER_MIGRATION: git=20260901235959_programacion_unowned_antitautology_probe_v1.sql",
+    "result": "PASS_FAIL_CLOSED",
+    "probe_pr_closed_unmerged": true
+  }
+}
