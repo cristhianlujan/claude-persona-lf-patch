@@ -2,11 +2,18 @@
   "schema": "LF_LEARNING_SOURCE_CANDIDATE_BATCH_V1",
   "batch_id": "LEARNING-SOURCE-20260901-B1",
   "status": "SEMANTIC_DEDUP_COMPLETED_PIPELINE_CAPTURE_PENDING",
-  "live_revalidated_at": "2026-09-01T07:00:00Z",
+  "live_revalidated_at": "2026-09-01T09:08:52Z",
   "live_revalidation": {
     "official_pages_accessible": 5,
     "exact_url_dedup_vs_kb_queue_capture": "5_OF_5_NEW",
-    "claims_rechecked": ["INTERBANK_DEDICATED_VIRTUAL_CARD_AND_UP_TO_48_MONTHS", "BBVA_APP_RATE_INSTALLMENT_PRE_CONFIRMATION", "SCOTIA_REPEATABLE_APP_WEB_SIMULATION_AND_2_TO_60", "FALABELLA_BANK_SIDE_PAYMENT_AND_UP_TO_48", "RIPLEY_OMNICHANNEL_AND_36_TO_60"],
+    "claims_rechecked": [
+      "INTERBANK_DEDICATED_VIRTUAL_CARD_AND_UP_TO_48_MONTHS",
+      "BBVA_APP_RATE_INSTALLMENT_PRE_CONFIRMATION",
+      "SCOTIA_REPEATABLE_APP_WEB_SIMULATION_AND_2_TO_60",
+      "FALABELLA_BANK_SIDE_PAYMENT_AND_UP_TO_48",
+      "RIPLEY_OMNICHANNEL_AND_36_TO_60"
+    ],
+    "live_claim_readback": "5_OF_5_CONFIRMED_OFFICIAL_SOURCE",
     "unverified_claims": []
   },
   "kb_write_allowed": false,
@@ -30,6 +37,12 @@
       "claim_boundary": "sujeto a evaluacion/oferta; no extrapolar a elegibilidad LF",
       "semantic_disposition": "NEW_INCREMENTAL_MECHANIC",
       "incremental_signal": "DEDICATED_VIRTUAL_CARD_FOR_DEBT_PURCHASE",
+      "live_claim_status": "CONFIRMED_OFFICIAL_SOURCE_20260901",
+      "live_observed_evidence": [
+        "virtual Visa Access assigned exclusively for Compra de Deuda",
+        "12,18,24,36 or up to 48 months",
+        "offer limited to previously evaluated/invited customers and rate varies by customer"
+      ],
       "status": "READY_FOR_GOVERNED_CAPTURE_NOT_KB"
     },
     {
@@ -42,6 +55,12 @@
       "claim_boundary": "perfil de credito, linea disponible y evaluacion condicionan la oferta",
       "semantic_disposition": "NEW_INCREMENTAL_MECHANIC",
       "incremental_signal": "PRE_CONFIRMATION_RATE_AND_INSTALLMENT_REVIEW_IN_SELF_SERVICE_FLOW",
+      "live_claim_status": "CONFIRMED_OFFICIAL_SOURCE_20260901",
+      "live_observed_evidence": [
+        "App flow selects Compra de Deuda and enters transferred-card data",
+        "customer reviews rate and monthly installment before confirmation",
+        "up to 36 installments; subject to credit evaluation and available line"
+      ],
       "status": "READY_FOR_GOVERNED_CAPTURE_NOT_KB"
     },
     {
@@ -54,6 +73,12 @@
       "claim_boundary": "requiere buen historial y campana activa; no equivale a solucion para deuda castigada",
       "semantic_disposition": "PARTIAL_INCREMENTAL",
       "incremental_signal": "REPEATABLE_PRE_OPERATION_SIMULATION_WITH_VISIBLE_BALANCE",
+      "live_claim_status": "CONFIRMED_OFFICIAL_SOURCE_20260901",
+      "live_observed_evidence": [
+        "2 to 60 months",
+        "simulation in app/web as many times as needed before proceeding and balance readback in app/web",
+        "requires good financial-system credit history and an active Compra de Deuda campaign"
+      ],
       "status": "READY_FOR_GOVERNED_CAPTURE_NOT_KB"
     },
     {
@@ -66,6 +91,12 @@
       "claim_boundary": "solo observar ownership/claridad del pago; no inferir carta de no adeudo ni elegibilidad",
       "semantic_disposition": "NEW_INCREMENTAL_MECHANIC",
       "incremental_signal": "CREDITOR_PAYMENT_OWNERSHIP_IS_EXPLICITLY_BANK_SIDE_NOT_CUSTOMER_TRANSFER",
+      "live_claim_status": "CONFIRMED_OFFICIAL_SOURCE_20260901",
+      "live_observed_evidence": [
+        "Banco Falabella performs payment to the other banks; customer performs no operation",
+        "up to 48 installments / four years",
+        "page explicitly advertises payment through different channels"
+      ],
       "status": "READY_FOR_GOVERNED_CAPTURE_NOT_KB"
     },
     {
@@ -78,6 +109,12 @@
       "claim_boundary": "sujeto a evaluacion y calificacion Normal; no extrapolar a cartera castigada",
       "semantic_disposition": "ENRICHMENT_ONLY_EXISTING_PATTERN",
       "incremental_signal": "OMNICHANNEL_CONSOLIDATION_EVIDENCE_ONLY",
+      "live_claim_status": "CONFIRMED_OFFICIAL_SOURCE_20260901",
+      "live_observed_evidence": [
+        "covers credit-card or consumer-loan debt from other banks and eligible banks/cajas/financieras",
+        "36 to 60 months and subject to credit evaluation",
+        "web, phone, Banco Ripley agencies and Ripley stores; WhatsApp contact available; Normal credit classification condition shown"
+      ],
       "status": "READY_FOR_GOVERNED_CAPTURE_NOT_NEW_CARD"
     }
   ]
