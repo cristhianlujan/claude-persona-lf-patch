@@ -1,0 +1,38 @@
+version: v1
+status: CANDIDATO_READ_ONLY
+router_asset: ACT-0001
+router_action: EJECUCION_PERFIL_LF
+selection: DETERMINISTIC_EXACT_BINDING
+consumers:
+  - consumer_id: PERFIL-PRODUCT-DIRECTOR-LF
+    consumer_type: PROFILE
+    binding_file: learning_consumer_bindings_v1.yaml
+    context_pack_file: learning_consumer_context_pack_v2.json
+    upstream_required: false
+    read_only_enabled_candidate: true
+    behavioral_gate: BENCHMARK_REQUIRED_PROFILE_RUNTIME
+    production_impact: false
+  - consumer_id: PERFIL-UI-ARCHITECT
+    consumer_type: PROFILE
+    binding_file: learning_ui_architect_bindings_v1.yaml
+    context_pack_file: learning_ui_architect_context_pack_v1.json
+    upstream_required: true
+    upstream_consumer_id: PERFIL-PRODUCT-DIRECTOR-LF
+    upstream_artifact: product_direction_ref
+    upstream_current_required: true
+    read_only_enabled_candidate: true
+    behavioral_gate: BENCHMARK_REQUIRED_PROFILE_RUNTIME
+    production_impact: false
+blocked_consumers:
+  - {consumer_id: FRONTEND_IMPLEMENTATION, state: BLOCKED_NO_EXACT_BINDING, reason: product_and_ui_authority_required_before_learning}
+  - {consumer_id: GAMIFICATION, state: BLOCKED_NO_EXACT_BINDING, reason: authorized_product_or_ux_objective_required_before_learning}
+  - {consumer_id: GENERIC_PROFILE, state: BLOCKED_NO_EXACT_BINDING, reason: implicit_consumer_selection_forbidden}
+prohibitions:
+  - implicit_consumer_selection
+  - direct_learning_to_frontend
+  - direct_learning_to_gamification
+  - learning_context_as_product_truth
+  - profile_source_mutation
+  - automatic_promotion
+fallback: NO_EXACT_BINDING_NO_COMPETITIVE_CONTEXT
+production_impact: false
