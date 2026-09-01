@@ -18,7 +18,7 @@ permissions:
   issues: read
 
 env:
-  CACHE_NAMESPACE: lf-profile-runtime-v3-20260901
+  CACHE_NAMESPACE: lf-profile-runtime-v4-20260901
   LLAMA_COMMIT: 925e1179947ea0c0ebfb0032df18af3a729822be
   LLAMA_RELEASE: b7100
   MODEL_ID: Qwen2.5-VL-3B-Instruct-Q4_K_M.gguf
@@ -88,7 +88,7 @@ jobs:
           expected=$(awk -F= '$1=="llama_cli_sha256"{print $2}' "$RUNNER_TEMP/lf-cache/llama/manifest.txt")
           actual=$(sha256sum "$cli" | awk '{print $1}')
           test -n "$expected" && test "$expected" = "$actual"
-          "$cli" --version >/dev/null
+          LD_LIBRARY_PATH="$RUNNER_TEMP/lf-cache/llama/bin" "$cli" --version >/dev/null
 
       - name: Restore pinned model assets
         id: model-cache
@@ -215,7 +215,7 @@ jobs:
           grep -Fx "llama_release=$LLAMA_RELEASE" "$RUNNER_TEMP/lf-cache/llama/manifest.txt"
           expected=$(awk -F= '$1=="llama_cli_sha256"{print $2}' "$RUNNER_TEMP/lf-cache/llama/manifest.txt")
           test "$expected" = "$(sha256sum "$cli" | awk '{print $1}')"
-          "$cli" --version >/dev/null
+          LD_LIBRARY_PATH="$RUNNER_TEMP/lf-cache/llama/bin" "$cli" --version >/dev/null
 
       - name: Restore pinned model assets
         id: model-cache
@@ -259,6 +259,7 @@ jobs:
           LF_LLAMA_CLI_PATH: ${{ runner.temp }}/lf-cache/llama/bin/llama-cli
           LF_MODEL_PATH: ${{ runner.temp }}/lf-cache/model/model.gguf
           LF_MMPROJ_PATH: ${{ runner.temp }}/lf-cache/model/mmproj.gguf
+          LD_LIBRARY_PATH: ${{ runner.temp }}/lf-cache/llama/bin
         run: |
           set -euo pipefail
           python3 -m pip install --disable-pip-version-check 'psycopg[binary]==3.2.9'
