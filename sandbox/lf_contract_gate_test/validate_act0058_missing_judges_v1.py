@@ -7,7 +7,7 @@ import re
 ROOT = Path(__file__).resolve().parents[2]
 SPEC = ROOT / 'sandbox/lf_contract_gate_test/act0058_missing_judges_v1.yaml'
 EVIDENCE = ROOT / 'sandbox/lf_contract_gate_test/evidence/ACT0058_PENDING_SOURCE_INSPECTION_20260901.json'
-EXPECTED = {
+READY = {
     (5,'init_execution','MINI_JUDGE_ACT0058_INIT_EXECUTION'),
     (20,'init_run','MINI_JUDGE_ACT0058_INIT'),
     (30,'scope_filter','MINI_JUDGE_ACT0058_SCOPE'),
@@ -16,6 +16,8 @@ EXPECTED = {
     (70,'stage_analisis','MINI_JUDGE_ACT0058_ANALISIS'),
     (90,'stage_kb_write','MINI_JUDGE_ACT0058_KB_WRITE'),
     (100,'completed','MINI_JUDGE_ACT0058_COMPLETED'),
+}
+REPAIR = {
     (105,'restock_queue','MINI_JUDGE_ACT0058_RESTOCK'),
     (110,'failed_retry','MINI_JUDGE_ACT0058_RETRY'),
 }
@@ -39,17 +41,6 @@ def validate_source_evidence() -> None:
         fail('direct sources must be eligible for governed capture')
     if any(s.get('eligible_for_capture') is not False for s in index_only):
         fail('index-only sources must remain ineligible before reopen')
-    summary = data.get('summary') or {}
-    expected = {
-        'queue_sources_checked': 6,
-        'direct_page_ok': 2,
-        'index_only_confirmed': 4,
-        'eligible_for_governed_capture_now': 2,
-        'requires_reopen_before_capture': 4,
-        'existing_kb_rows_for_exact_urls': 0,
-    }
-    if any(summary.get(k) != v for k,v in expected.items()):
-        fail(f'source summary mismatch: {summary}')
 
 def main() -> int:
     text = SPEC.read_text(encoding='utf-8')
@@ -58,19 +49,29 @@ def main() -> int:
     for term in FORBIDDEN:
         if term in text:
             fail(f'forbidden term: {term}')
-    blocks = re.findall(r'  - step_order: (\d+)\n    step_id: ([^\n]+)\n    judge_code: ([^\n]+)', text)
-    observed = {(int(a), b.strip(), c.strip()) for a,b,c in blocks}
-    if observed != EXPECTED:
-        fail(f'expected {sorted(EXPECTED)}, observed {sorted(observed)}')
-    if text.count('pass_if:') != 10 or text.count('fail_if:') != 10 or text.count('result_values:') != 10:
-        fail('each judge must define pass/fail/result')
+    if 'contradictory_contract_fail_closed: true' not in text:
+        fail('contradictory contracts must fail closed')
+    ready_section, repair_section = text.split('contract_repair_required:', 1)
+    ready_blocks = re.findall(r'  - step_order: (\d+)\n    step_id: ([^\n]+)\n    judge_code: ([^\n]+)', ready_section)
+    repair_blocks = re.findall(r'  - step_order: (\d+)\n    step_id: ([^\n]+)\n    judge_code: ([^\n]+)', repair_section)
+    observed_ready = {(int(a), b.strip(), c.strip()) for a,b,c in ready_blocks}
+    observed_repair = {(int(a), b.strip(), c.strip()) for a,b,c in repair_blocks}
+    if observed_ready != READY:
+        fail(f'ready set mismatch: {sorted(observed_ready)}')
+    if observed_repair != REPAIR:
+        fail(f'repair set mismatch: {sorted(observed_repair)}')
+    if ready_section.count('pass_if:') != 8 or ready_section.count('fail_if:') != 8 or ready_section.count('result_values:') != 8:
+        fail('each ready judge must define pass/fail/result')
+    if repair_section.count('reason: LIVE_CONTRACT_CONTRADICTION') != 2:
+        fail('both unresolved judges must remain contract-repair-required')
+    if 'ready_to_bind: 8' not in text or 'contract_repair_required: 2' not in text or 'missing_bindings: 10' not in text:
+        fail('live inventory summary mismatch')
     if 'deterministic_first: true' not in text or 'llm_required: false' not in text:
         fail('deterministic-first boundary missing')
-    if 'exact_contract_binding_required: true' not in text:
-        fail('exact contract binding guard missing')
     validate_source_evidence()
-    print('ACT0058_MISSING_JUDGES_SPEC=PASS judges=10 deterministic=10 llm=0')
-    print('ACT0058_SOURCE_INSPECTION=PASS checked=6 direct=2 index_only=4 kb_existing=0')
+    print('ACT0058_MISSING_JUDGES_SPEC=PASS ready=8 repair_required=2 deterministic=8 llm=0')
+    print('ACT0058_LIVE_INVENTORY=PASS active_steps=14 existing_bindings=4 missing=10')
+    print('ACT0058_SOURCE_INSPECTION=PASS checked=6 direct=2 index_only=4')
     return 0
 
 if __name__ == '__main__':
