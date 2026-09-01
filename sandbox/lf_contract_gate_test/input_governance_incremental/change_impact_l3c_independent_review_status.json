@@ -1,0 +1,42 @@
+{
+  "schema": "INPUT_GOV_CHANGE_IMPACT_L3C_ADJUDICATION_STATUS_V1",
+  "scope": {
+    "project": "LF_EMPRESA",
+    "screen_code": "B2B-CARGA-001",
+    "research_only": true,
+    "production_authorized": false,
+    "downstream_authorized": false,
+    "scoped_pass_authorized": false
+  },
+  "gold": {
+    "benchmark": "INPUT_GOV_CHANGE_IMPACT_L3C_GOLD50_V1",
+    "gold_status": "CANDIDATE_RESEARCH",
+    "source_path": "sandbox/lf_contract_gate_test/input_governance_incremental/change_impact_l3c_gold_50.sql",
+    "baseline_path": "sandbox/lf_contract_gate_test/input_governance_incremental/change_impact_l3c_baseline_evidence.json",
+    "total_cases": 50,
+    "families": 10,
+    "cases_per_family": 5
+  },
+  "adjudication": {
+    "status": "INDEPENDENT_REVIEW_REQUIRED",
+    "oracle_authorized": false,
+    "resolver_build_authorized": false,
+    "reason": "No current repository source was found that grants an existing independent adjudicator authority to certify this Input Governance change-impact gold as an oracle. Input Governance cannot self-adjudicate. Generic support/judge assets do not establish domain adjudication authority.",
+    "searched_repository_head": "b6b7067e2fdbec9239556711dab2c96ef1a821e4",
+    "reviewed_candidate_assets": [
+      "skills/learning_engine/SKILL.md",
+      "profiles/quality_pack/SKILL.md",
+      "profiles/product_director_lf/SKILL.md"
+    ],
+    "learning_engine_authority_result": "NOT_ADJUDICATOR_SUPPORT_ONLY",
+    "quality_pack_authority_result": "NOT_SELECTED_NO_SEMANTIC_CONTRACT_MATCH_ESTABLISHED",
+    "product_director_authority_result": "NOT_SELECTED_NO_GOLD_ADJUDICATION_AUTHORITY_ESTABLISHED"
+  },
+  "required_next_gate": {
+    "type": "HUMAN_OR_EXPLICIT_INDEPENDENT_DOMAIN_ADJUDICATION",
+    "must_preserve_candidate_research": true,
+    "must_not_modify_contracts_to_improve_benchmark": true,
+    "unsafe_under_block_target": 0,
+    "unknown_mixed_shared_dependency": "FAIL_CLOSED_ESCALATE"
+  }
+}
