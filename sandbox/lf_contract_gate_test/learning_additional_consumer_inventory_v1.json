@@ -1,0 +1,43 @@
+{
+  "schema": "LF_LEARNING_ADDITIONAL_CONSUMER_INVENTORY_V1",
+  "source_main": "17903f544c5e53e1d94b08664a4fb6704c0dc087",
+  "status": "DISCOVERED_NOT_BOUND",
+  "consumers": [
+    {
+      "consumer_id": "PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531",
+      "consumer_type": "PROFILE",
+      "adapter_id": "ADAPTER-MARKETPLACE-LF-UX-20260531",
+      "adapter_source": "adapters/marketplace_lf_ux/ADAPTER.md",
+      "adapter_status": "CANDIDATO_READ_ONLY_NO_HABILITADO",
+      "router_bound_only": true,
+      "authority_summary": "Marketplace UX specialist; upstream product authority preserved; cannot invent product, financial, UI or conversion truth",
+      "learning_binding_state": "NO_EXACT_LEARNING_BINDING_YET",
+      "required_before_binding": [
+        "CAPABILITY_SCOPE_MAPPING",
+        "UPSTREAM_PRODUCT_AUTHORITY_PREREQUISITE",
+        "50_CASE_10_FAMILY_ROUTING_BENCHMARK",
+        "MUST_NOT_INVOKE_CASES"
+      ]
+    },
+    {
+      "consumer_id": "PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531",
+      "consumer_type": "PROFILE",
+      "adapter_id": "ADAPTER-MARKETPLACE-LF-CX-TRUST-20260531",
+      "adapter_source": "adapters/marketplace_lf_cx_trust/ADAPTER.md",
+      "adapter_status": "CANDIDATO_READ_ONLY_NO_HABILITADO",
+      "router_bound_only": true,
+      "authority_summary": "Marketplace trust/CX specialist; current product/support/claim authority preserved; cannot invent guarantees, debt/payment status, eligibility or support SLAs",
+      "learning_binding_state": "NO_EXACT_LEARNING_BINDING_YET",
+      "required_before_binding": [
+        "CAPABILITY_SCOPE_MAPPING",
+        "CURRENT_CLAIM_AND_SUPPORT_AUTHORITY_PREREQUISITE",
+        "50_CASE_10_FAMILY_ROUTING_BENCHMARK",
+        "MUST_NOT_INVOKE_CASES"
+      ]
+    }
+  ],
+  "implicit_consumer_selection": false,
+  "direct_learning_injection": false,
+  "production_authorized": false,
+  "next_gate": "MAP_CAPABILITIES_WITHOUT_WIDENING_AUTHORITY"
+}
