@@ -1,14 +1,16 @@
 {
-  "schema":"ACT0058_CANDIDATE_JUDGE_QPG_GATE_V1",
+  "schema":"ACT0058_CANDIDATE_JUDGE_QPG_GATE_V2",
   "operation_code":"ORQUESTACION_PIPELINE_LF",
   "status":"BENCHMARK_REQUIRED",
-  "candidate_scope":{"judges":10,"cases":30,"cases_per_judge":3,"active_bindings_before":4,"candidate_bindings_to_activate":0},
+  "candidate_scope":{"judges":10,"cases":30,"cases_per_judge":3,"active_bindings_before":4,"candidate_bindings_to_activate":0,"required_missing_bindings":9},
   "quality_gate":{
     "required_accuracy_pct":100.0,
     "required_critical_false_positives":0,
     "required_case_pass":"30/30",
     "restock_noop_boundary_required":true,
-    "retry_terminal_at_3_required":true
+    "retry_terminal_at_3_required":true,
+    "retry_material_evidence_required":["retry_count","stage_status","error_detail"],
+    "synthetic_next_action_forbidden":true
   },
   "performance_gate":{
     "selector_llm_calls_required":0,
