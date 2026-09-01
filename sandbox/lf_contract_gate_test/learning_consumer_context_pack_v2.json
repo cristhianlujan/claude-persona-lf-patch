@@ -1,0 +1,32 @@
+{
+  "schema": "LF_LEARNING_CONSUMER_CONTEXT_PACK_V2",
+  "status": "SANDBOX_CANDIDATE",
+  "consumer_id": "PERFIL-PRODUCT-DIRECTOR-LF",
+  "consumer_type": "PROFILE",
+  "router_action": "EJECUCION_PERFIL_LF",
+  "selector": "DETERMINISTIC_EXACT_ID",
+  "llm_selector_allowed": false,
+  "source_authority": "public.lf_knowledge_base",
+  "policy_capsule_ref": "POL-LF-OPERATION-LIFECYCLE",
+  "champion_id": "CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1",
+  "challenger_id": "CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1",
+  "bindings_ref": "sandbox/lf_contract_gate_test/learning_consumer_bindings_v2.yaml",
+  "capabilities": ["NEGOCIACION_DEUDA", "ALTERNATIVAS_FINANCIERAS", "EDUCACION_CREDITICIA"],
+  "boundedness": {
+    "recursive_objects": false,
+    "max_bindings": 3,
+    "max_evidence_refs_per_binding": 5,
+    "context_budget_bytes": 6000,
+    "llm_calls_for_selection": 0,
+    "round_trips_for_selection": 0
+  },
+  "authority_boundaries": [
+    "COMPETITIVE_EVIDENCE_IS_CONTEXT_NOT_PRODUCT_TRUTH",
+    "NO_USER_SPECIFIC_FINANCIAL_ADVICE",
+    "NO_AUTOMATIC_PRODUCTION_IMPACT",
+    "NO_UNBOUND_KB_INJECTION"
+  ],
+  "fallback": "NO_COMPETITIVE_CONTEXT",
+  "production_impact": false,
+  "automatic_promotion": false
+}
