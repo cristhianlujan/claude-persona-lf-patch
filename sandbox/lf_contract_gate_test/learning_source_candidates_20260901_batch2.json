@@ -1,0 +1,40 @@
+{
+  "schema": "LF_LEARNING_SOURCE_CANDIDATE_BATCH_V1",
+  "batch_id": "LEARNING-SOURCE-20260901-B2",
+  "execution_id": "LF-AUTOLEARN-RUN-20260901-037",
+  "status": "GOVERNED_QUEUE_ADMITTED_CAPTURE_PENDING",
+  "production_impact": false,
+  "direct_kb_write_allowed": false,
+  "sources": [
+    {
+      "source_id": "SRC-BCP-CENTRO-SOLUCIONES-PAGO-20260901",
+      "organization": "BCP",
+      "url": "https://www.viabcp.com/creditosbcp/centro-soluciones-pago",
+      "source_type": "OFFICIAL_DEBT_SOLUTION_PAGE",
+      "candidate_capabilities": ["NEGOCIACION_DEUDA"],
+      "observed_pattern": "para deudas pendientes ofrece una ruta dedicada de Solución con central telefónica y solicitud para contacto de asesor; separa orientación de deuda de la ejecución de una solución",
+      "claim_boundary": "no inferir descuento, refinanciamiento, elegibilidad ni resultado garantizado; la página solo prueba canal/ruta de solución y orientación",
+      "semantic_disposition": "NEW_INCREMENTAL_MECHANIC",
+      "incremental_signal": "DEDICATED_DEBT_SOLUTION_INTAKE_PLUS_ADVISOR_CALLBACK",
+      "queue_id": "d712bb32-4199-48d9-8912-f8dbae72bcfd",
+      "queue_state": "PENDIENTE"
+    },
+    {
+      "source_id": "SRC-COMPARTAMOS-CONSOLIDACION-NEGOCIO-20260901",
+      "organization": "Compartamos Banco",
+      "url": "https://www.compartamos.com.pe/Peru/Credito/CreditoNegocio/Consolidacion",
+      "source_type": "OFFICIAL_BUSINESS_DEBT_CONSOLIDATION_PAGE",
+      "candidate_capabilities": ["ALTERNATIVAS_FINANCIERAS"],
+      "observed_pattern": "consolidación dirigida a empresarios; exige estado de cuenta o cronograma de los créditos a comprar y documentación del negocio antes de evaluación",
+      "claim_boundary": "segmento empresario/B2B; no extrapolar requisitos, montos, elegibilidad ni solución a consumidor B2C o deuda castigada LF",
+      "semantic_disposition": "INCREMENTAL_EVIDENCE_REQUIREMENTS_PATTERN_WITH_SCOPE_LIMIT",
+      "incremental_signal": "SOURCE_DEBT_SCHEDULE_REQUIRED_BEFORE_CONSOLIDATION_EVALUATION",
+      "queue_id": "c1059a31-d860-420a-b5d1-1bfc80252bf6",
+      "queue_state": "PENDIENTE"
+    }
+  ],
+  "exact_url_dedup_before_admission": "2_OF_2_NEW_VS_QUEUE_CAPTURE_KB",
+  "kb_writes": 0,
+  "consumer_ready_changes": 0,
+  "next_gate": "GOVERNED_CAPTURE"
+}
