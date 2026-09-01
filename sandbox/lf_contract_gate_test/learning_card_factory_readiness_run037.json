@@ -2,27 +2,46 @@
   "schema": "LF_LEARNING_CARD_FACTORY_READINESS_V1",
   "execution_id": "LF-AUTOLEARN-RUN-20260901-037",
   "mode": "READ_ONLY",
+  "live_reconciled_at": "2026-09-01T08:04:53Z",
   "candidate_clusters": ["EDUCACION_CREDITICIA", "ALTERNATIVAS_FINANCIERAS"],
   "card_rows_existing": 0,
+  "source": {
+    "git_main_pre_write_execution_binding_gate": 24,
+    "git_main_github_write": 25,
+    "git_main_github_readback": 26,
+    "git_main_evidence_log": 27,
+    "source_receipt": "sandbox/lf_contract_gate_test/receipts/card-prewrite-binding-order-352-20260830-001.json",
+    "source_receipt_result": "PASS_SANDBOX"
+  },
   "runtime": {
     "active_step_contracts": 39,
     "active_step_judge_bindings_by_step_id": 19,
-    "exact_order_and_id_bindings": 17,
-    "binding_order_drift_count": 2,
-    "contract_order_drift": {
-      "runtime_contract_pre_write_execution_binding_gate": 30,
-      "runtime_contract_github_write": 24,
-      "canonical_operation_step_pre_write_execution_binding_gate": 24,
-      "canonical_operation_step_github_write": 25,
-      "git_source_pre_write_execution_binding_gate": 24,
-      "git_source_github_write": 25
-    }
+    "operation_steps": {
+      "pre_write_execution_binding_gate": 24,
+      "github_write": 25,
+      "github_readback": 26,
+      "evidence_log": 27,
+      "source_alignment": "PASS"
+    },
+    "step_contracts": {
+      "pre_write_execution_binding_gate": 30,
+      "github_write": 24,
+      "github_readback": 25,
+      "evidence_log": 26,
+      "source_alignment": "FAIL_ORDER_DRIFT"
+    },
+    "active_boundary_judge_bindings": {
+      "pre_write_execution_binding_gate": 24,
+      "evidence_log": 27
+    },
+    "missing_boundary_judge_bindings": ["github_write", "github_readback"]
   },
   "matched_ekb": ["GOV-CARD-PREWRITE-ORDER-001", "GOV-CARD-DETERMINISTIC-FIRST-RESOLVER-001"],
-  "verdict": "BLOCK_CARD_CREATION_RUNTIME_CONTRACT_ORDER_DRIFT",
+  "verdict": "BLOCK_CARD_CREATION_RUNTIME_CONTRACT_AND_BINDING_DRIFT",
   "card_write_allowed": false,
   "partial_card_allowed": false,
+  "learning_readonly_independent_work_allowed": true,
   "automatic_impact": false,
   "production_authorized": false,
-  "next_safe_action": "reconcile Card Factory runtime contracts source-first in its own governed scope; keep learning consumers READ_ONLY meanwhile"
+  "next_safe_action": "reconcile Card Factory step contracts and missing github_write/github_readback judge bindings source-first in its governed scope; keep learning consumers READ_ONLY meanwhile"
 }
