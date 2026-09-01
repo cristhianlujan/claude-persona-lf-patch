@@ -36,11 +36,16 @@ async function requireOidc(req: Request): Promise<JWTPayload> {
   if (!authorization.startsWith("Bearer ")) throw new Error("OIDC_BEARER_MISSING");
   const token = authorization.slice(7).trim();
   if (!token) throw new Error("OIDC_BEARER_EMPTY");
-  const { payload } = await jwtVerify(token, JWKS, {
-    issuer: ISSUER,
-    audience: AUDIENCE,
-    algorithms: ["RS256"],
-  });
+  let payload: JWTPayload;
+  try {
+    ({ payload } = await jwtVerify(token, JWKS, {
+      issuer: ISSUER,
+      audience: AUDIENCE,
+      algorithms: ["RS256"],
+    }));
+  } catch {
+    throw new Error("OIDC_TOKEN_INVALID");
+  }
   if (payload.repository !== REPOSITORY || String(payload.repository_id ?? "") !== REPOSITORY_ID) throw new Error("OIDC_REPOSITORY_MISMATCH");
   if (payload.ref !== REF) throw new Error("OIDC_REF_MISMATCH");
   if (payload.workflow_ref !== WORKFLOW_REF || payload.workflow !== WORKFLOW_NAME) throw new Error("OIDC_WORKFLOW_MISMATCH");
@@ -125,7 +130,7 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(message.replace(/Bearer\s+\S+/g, "Bearer [REDACTED]"));
-    const unauthorized = message.startsWith("OIDC_") || message.includes("JWT");
+    const unauthorized = message.startsWith("OIDC_");
     return json({ outcome: "BLOCKED", code: message.slice(0, 1000) }, unauthorized ? 401 : 409);
   }
 });
