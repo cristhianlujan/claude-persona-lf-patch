@@ -3,12 +3,14 @@
   "mode":"READ_ONLY_GOVERNANCE_METADATA",
   "current_candidate":{"pr":410,"state":"OPEN_DRAFT","role":"CURRENT_CLEAN_READ_ONLY_LANE"},
   "superseded_candidates":[
-    {"pr":369,"title":"test: sandbox learning consumer champion benchmark","reason":"OLDER_BENCHMARK_ONLY_LANE_WITH_BEHAVIORAL_RUNTIME_BLOCKED","close_only_after_current_exact_head_ci":true},
-    {"pr":391,"title":"feat: read-only learning consumer path v2","reason":"OLDER_READ_ONLY_ROUTE_SUPERSEDED_BY_CLEAN_CURRENT_LANE","close_only_after_current_exact_head_ci":true},
-    {"pr":401,"title":"feat(learning): isolate READ_ONLY consumer route v2","reason":"INTERMEDIATE_CLEAN_EXTRACTION_SUPERSEDED_BY_CURRENT_LANE","close_only_after_current_exact_head_ci":true}
+    {"pr":369,"title":"test: sandbox learning consumer champion benchmark","reason":"OLDER_BENCHMARK_ONLY_LANE_WITH_BEHAVIORAL_RUNTIME_BLOCKED","close_only_after_current_exact_head_ci":true,"observed_state":"CLOSED_UNMERGED","observed_closed_at":"2026-09-01T20:37:42Z"},
+    {"pr":391,"title":"feat: read-only learning consumer path v2","reason":"OLDER_READ_ONLY_ROUTE_SUPERSEDED_BY_CLEAN_CURRENT_LANE","close_only_after_current_exact_head_ci":true,"observed_state":"CLOSED_UNMERGED","observed_closed_at":"2026-09-01T20:37:48Z"},
+    {"pr":401,"title":"feat(learning): isolate READ_ONLY consumer route v2","reason":"INTERMEDIATE_CLEAN_EXTRACTION_SUPERSEDED_BY_CURRENT_LANE","close_only_after_current_exact_head_ci":true,"observed_state":"CLOSED_UNMERGED","observed_closed_at":"2026-09-01T20:37:53Z"}
   ],
   "closure_preconditions":["PR410_OPEN_DRAFT","PR410_EXACT_HEAD_CANONICAL_CI_3_OF_3_PASS","PR410_BEHAVIORAL_REMAINS_INSUFFICIENT_EVIDENCE","NO_PRODUCTION_PROMOTION","NO_MERGE"],
   "closure_action":"CLOSE_SUPERSEDED_PRS_ONLY",
+  "closure_completed":true,
+  "closure_readback_source":"GitHub live PR metadata",
   "delete_branches":false,
   "merge_any_pr":false,
   "production_authorized":false
