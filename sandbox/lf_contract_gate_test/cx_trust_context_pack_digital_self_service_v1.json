@@ -1,7 +1,0 @@
-{
-  "schema":"LF_LEARNING_CONTEXT_PACK_V1","mode":"READ_ONLY","consumer_id":"PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531","capability_id":"DIGITAL_SELF_SERVICE","binding_ref":"cx_trust_learning_binding_digital_self_service_v1.json","selection_mode":"DETERMINISTIC_EXACT_IDS","max_evidence_refs":2,"max_bytes":3000,
-  "selected_learning_ids":["35cfab0c-1d91-4aa4-9761-f8af91181e17","7d55562e-9266-478b-b071-dca7ba1ade1a"],
-  "evidence":[{"kb_id":"35cfab0c-1d91-4aa4-9761-f8af91181e17","cluster":"AUTOGESTION_DIGITAL","classification_event_id":9719},{"kb_id":"7d55562e-9266-478b-b071-dca7ba1ade1a","cluster":"AUTOGESTION_DIGITAL","classification_event_id":9803}],
-  "constraints":["preserve_current_product_direction","do_not_invent_claims_or_guarantees","do_not_expand_beyond_exact_refs","adapter_runtime_disabled_means_no_delivery"],
-  "fallback":"NO_COMPETITIVE_CONTEXT","selector_llm_calls":0,"selector_round_trips":0,"reader_writes":0,"delivery_enabled":false,"production_authorized":false
-}
