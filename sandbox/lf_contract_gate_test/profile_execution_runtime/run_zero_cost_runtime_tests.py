@@ -9,7 +9,11 @@ import tempfile
 from pathlib import Path
 
 import github_actions_local_runtime as local
-from github_actions_queue_worker import _assistant_completion, _enforce_nonempty_completion
+from github_actions_queue_worker import (
+    _assistant_completion,
+    _enforce_nonempty_completion,
+    _prepare_governed_payload,
+)
 from profile_runtime_runner import RuntimeExecutionBlocked
 from run_zero_cost_profile_request import _materialize_image, _materialize_runtime_output_schema, _safe_source_paths
 
@@ -42,6 +46,101 @@ def restore_env(prior: dict[str, str | None]) -> None:
             os.environ.pop(key, None)
         else:
             os.environ[key] = value
+
+
+def _governance_dispatch() -> dict:
+    return {
+        "applicable": True,
+        "status": "INPUT_GOVERNANCE_REQUIRED",
+        "blocking_code": "BLOCK_INPUT_GOVERNANCE_RECEIPT_REQUIRED",
+        "decision": "PENDING",
+        "continuation_allowed": False,
+        "pantalla_id": 2,
+        "screen_code": "ONB_002",
+        "required_by_adapters": ["ADAPTER_LF_SHELL_PROFILE"],
+        "dispatch": {
+            "runtime_orchestrator": "SUPABASE_EDGE_FUNCTION:input-governance-agent-v1",
+            "consumer": "STORY_CREATOR",
+        },
+    }
+
+
+def _governance_pass() -> dict:
+    receipt = {
+        "governance_agent_used": True,
+        "governance_agent": "input-governance-agent-v1",
+        "governance_version": "5.12",
+        "sections_consumed": ["APPLICABILITY_READINESS"],
+        "source_refs": ["programacion.input_readiness_runs/9001"],
+        "snapshot_hash": "a" * 64,
+        "contract_snapshot_hash": "b" * 64,
+        "decision": "PASS",
+        "gap_or_na": "NONE",
+        "timestamp": "2026-08-31T23:50:00Z",
+        "run_id": 9001,
+        "pantalla_id": 2,
+        "screen_code": "ONB_002",
+        "run_created_at": "2026-08-31T23:49:00Z",
+        "agent_output_sha256": "c" * 64,
+        "currentness": "LIVE_CURRENT",
+    }
+    return {
+        "applicable": True,
+        "status": "READY",
+        "decision": "PASS",
+        "continuation_allowed": True,
+        "pantalla_id": 2,
+        "screen_code": "ONB_002",
+        "required_by_adapters": ["ADAPTER_LF_SHELL_PROFILE"],
+        "governance_receipt": receipt,
+    }
+
+
+def _router_result(*, status="READY_TO_EXECUTE", governance_required=True, input_governance=None, blocking_code=None) -> dict:
+    return {
+        "router": "ACT-0001",
+        "status": status,
+        "blocking_code": blocking_code,
+        "operation_code": "EJECUCION_PERFIL_LF",
+        "asset": {"codigo_activo": "PERFIL-UI-ARCHITECT"},
+        "adapters": [{
+            "adapter_code": "ADAPTER-LF-SHELL-PROFILE-20260827",
+            "adapter_version": "v0.1",
+            "relacion_tipo": "ADAPTER_APLICA_A",
+            "adapter_metadata": {
+                "canonical_adapter_id": "ADAPTER_LF_SHELL_PROFILE",
+                "current_path": "adapters/lf_shell_profile_adapter/ADAPTER.md",
+                "runtime_enabled": True,
+                "router_discoverable": True,
+                "input_governance_receipt_required": governance_required,
+                "input_governance_continuation_policy": "PASS_ONLY" if governance_required else None,
+                "input_governance_contract_resolution": "LIVE_CURRENT" if governance_required else None,
+                "input_governance_authority_contract": "INPUT_READINESS_CONTRACT" if governance_required else None,
+            },
+        }],
+        "input_governance": input_governance,
+        "downstream_execution_allowed": True if status == "READY_TO_EXECUTE" else False,
+    }
+
+
+def _queue_payload() -> dict:
+    return {
+        "request_id": "11111111-1111-4111-8111-111111111111",
+        "operation_code": "EJECUCION_PERFIL_LF",
+        "profile_code": "PERFIL-UI-ARCHITECT",
+        "input_literal": "Evalúa ONB_002",
+    }
+
+
+def _sequence_resolver(results):
+    pending = list(results)
+
+    def resolve(_payload):
+        if not pending:
+            raise AssertionError("router resolver called too many times")
+        return pending.pop(0)
+
+    return resolve
 
 
 def main() -> int:
@@ -112,11 +211,79 @@ def main() -> int:
         assert empty["status"] == "BLOCKED"
         assert empty["error_code"] == "LOCAL_RUNTIME_ASSISTANT_COMPLETION_EMPTY"
         passed += 1
+
+        dispatch_calls = []
+        prepared = _prepare_governed_payload(
+            _queue_payload(),
+            router_resolver=_sequence_resolver([
+                _router_result(status="INPUT_GOVERNANCE_REQUIRED", input_governance=_governance_dispatch()),
+                _router_result(input_governance=_governance_pass()),
+            ]),
+            governance_dispatcher=lambda gov: dispatch_calls.append(gov) or {"runtime": "input-governance-agent-v1", "result": {"status": "READY"}},
+        )
+        assert len(dispatch_calls) == 1
+        assert [item["status"] for item in prepared["router_trace"]] == ["INPUT_GOVERNANCE_REQUIRED", "READY_TO_EXECUTE"]
+        assert prepared["input_governance"]["decision"] == "PASS"
+        assert prepared["lf_adapter_bindings"][0]["input_governance_receipt_required"] is True
+        passed += 1
+
+        expect_block(
+            "INPUT_GOVERNANCE_RECEIPT_MISSING",
+            lambda: _prepare_governed_payload(
+                _queue_payload(),
+                router_resolver=_sequence_resolver([_router_result(input_governance=None)]),
+                governance_dispatcher=lambda _gov: (_ for _ in ()).throw(AssertionError("unexpected dispatch")),
+            ),
+        )
+        passed += 1
+
+        expect_block(
+            "BLOCK_INPUT_GOVERNANCE_RECEIPT_STALE",
+            lambda: _prepare_governed_payload(
+                _queue_payload(),
+                router_resolver=_sequence_resolver([
+                    _router_result(status="INPUT_GOVERNANCE_REQUIRED", input_governance=_governance_dispatch()),
+                    _router_result(status="INPUT_GOVERNANCE_REQUIRED", input_governance=_governance_dispatch(), blocking_code="BLOCK_INPUT_GOVERNANCE_RECEIPT_STALE"),
+                ]),
+                governance_dispatcher=lambda _gov: {"runtime": "input-governance-agent-v1", "result": {"status": "READY"}},
+            ),
+        )
+        passed += 1
+
+        expect_block(
+            "BLOCK_INPUT_GOVERNANCE",
+            lambda: _prepare_governed_payload(
+                _queue_payload(),
+                router_resolver=_sequence_resolver([_router_result(status="BLOCKED", input_governance={"status": "BLOCKED"}, blocking_code="BLOCK_INPUT_GOVERNANCE")]),
+                governance_dispatcher=lambda _gov: (_ for _ in ()).throw(AssertionError("unexpected dispatch")),
+            ),
+        )
+        passed += 1
+
+        expect_block(
+            "BLOCK_INPUT_GOVERNANCE_HUMAN_DECISION_REQUIRED",
+            lambda: _prepare_governed_payload(
+                _queue_payload(),
+                router_resolver=_sequence_resolver([_router_result(status="HUMAN_DECISION_REQUIRED", input_governance={"status": "HUMAN_DECISION_REQUIRED"}, blocking_code="BLOCK_INPUT_GOVERNANCE_HUMAN_DECISION_REQUIRED")]),
+                governance_dispatcher=lambda _gov: (_ for _ in ()).throw(AssertionError("unexpected dispatch")),
+            ),
+        )
+        passed += 1
+
+        dispatch_calls = []
+        prepared = _prepare_governed_payload(
+            _queue_payload(),
+            router_resolver=_sequence_resolver([_router_result(governance_required=False)]),
+            governance_dispatcher=lambda gov: dispatch_calls.append(gov) or {},
+        )
+        assert not dispatch_calls
+        assert "input_governance" not in prepared
+        passed += 1
     finally:
         restore_env(prior)
-    if passed != 13:
-        raise SystemExit(f"ZERO_COST_PROFILE_RUNTIME_TESTS_FAIL {passed}/13")
-    print("ZERO_COST_PROFILE_RUNTIME_TESTS_PASS 13/13")
+    if passed != 19:
+        raise SystemExit(f"ZERO_COST_PROFILE_RUNTIME_TESTS_FAIL {passed}/19")
+    print("ZERO_COST_PROFILE_RUNTIME_TESTS_PASS 19/19")
     return 0
 
 

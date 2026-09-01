@@ -85,8 +85,11 @@ def _safe_adapter_sources(request: dict[str, Any], repo_root: Path) -> list[dict
         canonical_id = item.get("canonical_adapter_id")
         current_path = item.get("current_path")
         binding_ref = item.get("binding_ref")
+        governance_required = item.get("input_governance_receipt_required")
         if not all(_nonempty(value) for value in (canonical_id, current_path, binding_ref)):
             raise RuntimeExecutionBlocked("QUEUE_LF_ADAPTER_BINDING_INCOMPLETE")
+        if not isinstance(governance_required, bool):
+            raise RuntimeExecutionBlocked("QUEUE_LF_ADAPTER_GOVERNANCE_FLAG_INVALID", str(canonical_id))
         if canonical_id in seen:
             raise RuntimeExecutionBlocked("BLOCK_DUPLICATE_ADAPTER_INVOCATION", canonical_id)
         seen.add(canonical_id)
@@ -121,6 +124,10 @@ def _safe_adapter_sources(request: dict[str, Any], repo_root: Path) -> list[dict
             "target_ref": request["profile_code"],
             "ref": capsule_relative,
             "content": content,
+            "input_governance_receipt_required": governance_required,
+            "input_governance_continuation_policy": item.get("input_governance_continuation_policy"),
+            "input_governance_contract_resolution": item.get("input_governance_contract_resolution"),
+            "input_governance_authority_contract": item.get("input_governance_authority_contract"),
         })
     return sorted(sources, key=lambda item: item["adapter_code"])
 
@@ -218,15 +225,22 @@ def execute_request(request: dict[str, Any], *, repo_root: Path, work_dir: Path)
         adapter=adapter, attestation_verifier=verifier, allow_test_doubles=False,
         obligation_manifest=request.get("obligation_manifest"),
         lf_adapter_sources=lf_adapter_sources,
+        input_governance=request.get("input_governance"),
     )
     package["queue_request_id"] = request["request_id"]
     package["input_image_sha256"] = image_sha
+    package["router_receipt"] = request.get("router_receipt")
+    package["router_trace"] = request.get("router_trace")
+    package["input_governance_execution"] = request.get("input_governance_execution")
     return {
         "schema": RESULT_SCHEMA, "status": "SUCCEEDED", "request_id": request["request_id"],
         "runtime_provider": package["receipt"]["runtime_attestation"]["provider"],
         "runtime_model_id": package["receipt"]["runtime_attestation"]["model_id"],
         "raw_output": package["raw_output"], "receipt": package["receipt"],
         "runtime_attestation_verification": package["runtime_attestation_verification"],
+        "router_receipt": package["router_receipt"],
+        "router_trace": package["router_trace"],
+        "input_governance_execution": package["input_governance_execution"],
         "package": package,
     }
 

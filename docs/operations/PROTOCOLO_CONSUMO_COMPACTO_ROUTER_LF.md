@@ -7,7 +7,7 @@ Alcance de modo: solo `distribution_mode = 'ROUTER'`
 
 ## 1. Objetivo
 
-Reducir el contexto que el Router propaga al modelo sin alterar discovery, bloqueos, operación, contratos, pasos ni adapters. Se mide en bytes; los tokens se registran por modelo/tokenizador cuando estén disponibles.
+Reducir el contexto que el Router propaga al modelo sin alterar discovery, bloqueos, operación, contratos, pasos, adapters ni obligaciones de Input Governance. Se mide en bytes; los tokens se registran por modelo/tokenizador cuando estén disponibles.
 
 ## 2. Entrada obligatoria
 
@@ -15,7 +15,8 @@ Este documento describe qué hacer con el resultado del Router **después** de h
 
 ```text
 ACT-0001 Router -> v_lf_fuente_operativa_busqueda -> activo canónico vigente
--> adapter si aplica -> operación -> verificación -> cierre
+-> adapter si aplica -> Input Governance preflight si metadata lo exige
+-> operación -> verificación -> cierre
 ```
 
 ACT-0001 sigue siendo rector. No entrar directo por profiles, skills, cards, adapters, prompts ni checklists. Supabase es la fuente operativa principal. Sin verificación de Supabase o sin readback del activo vigente: bloquear.
@@ -35,7 +36,7 @@ Ocho campos de nivel superior. Ninguno es opcional.
 7. `operation_payload`
 8. `adapter_payload`
 
-`operation_payload` usa `operation_code` como clave y contiene `operation_status`, `step_count`, `distribution_mode`, `cache_hit`, `steps`, `contracts` y `policies`; en hit omite los bloques cacheados. `adapter_payload` usa `asset_code` como clave y contiene `cache_hit` y `adapters`; en hit omite el bloque.
+`operation_payload` usa `operation_code` como clave y contiene `operation_status`, `step_count`, `distribution_mode`, `cache_hit`, `steps`, `contracts` y `policies`; en hit omite los bloques cacheados. `adapter_payload` usa `asset_code` como clave y contiene `cache_hit` y `adapters`; en hit omite solo el bloque cacheable de adapters. Cuando el Router devuelve `input_governance`, `adapter_payload` conserva siempre ese objeto completo y `downstream_execution_allowed`: el receipt es por resolución y nunca entra en caché.
 
 La normalización toma `asset_code` de `coalesce(raw.asset_code, raw.asset.codigo_activo)` y `asset_type` de `coalesce(raw.asset_type, raw.asset.tipo_activo)`. Las resoluciones listas anidan la identidad en `asset`; omitir ese fallback impide reutilizar la caché de adapters.
 
@@ -53,7 +54,7 @@ Es el control de integridad contra rehidratación truncada: permite detectar que
 
 ## 4. Excepciones
 
-- Si `status='BLOCKED'`, consumir el crudo. Medido: 27 de 80 activos del catálogo devuelven payloads menores o iguales a la proyección, todos bloqueados; el mínimo observado fue 178 bytes.
+- Si `status` no es `READY_TO_EXECUTE`, consumir el crudo. Esto incluye `INPUT_GOVERNANCE_REQUIRED`, `HUMAN_DECISION_REQUIRED` y `BLOCKED`; ninguno autoriza ejecución downstream.
 - Si el compacto pesa igual o más que el crudo, consumir el crudo.
 - Una resolución sin `operation_code` se cuenta como solo-enrutar y no genera hit de operación.
 
@@ -64,6 +65,7 @@ Es el control de integridad contra rehidratación truncada: permite detectar que
 - `policies`: caché por `operation_code` más `distribution_mode`.
 - En miss se carga el bloque una sola vez. En hit se conserva solo la referencia.
 - El ejecutor rehidrata desde caché únicamente el bloque requerido por el paso actual.
+- `input_governance` y `governance_receipt` no son cacheables. Un hit de adapters no demuestra currentness ni sustituye la revisión `LIVE_CURRENT` del Router.
 
 Consultas de rehidratación verificadas por `md5` contra la salida real del Router:
 
@@ -156,6 +158,17 @@ select public.lf_router_resolve_v1(
 ) as router_result;
 ```
 
+### 9.3 Continuación gobernada
+
+Si un adapter resuelto declara `input_governance_receipt_required=true`, el consumidor obedece el estado del Router:
+
+1. `INPUT_GOVERNANCE_REQUIRED`: invocar `input-governance-agent-v1` con el `pantalla_id` y `consumer` entregados en `input_governance.dispatch`.
+2. Volver a resolver por `public.lf_router_resolve_v1`; no continuar con el resultado anterior.
+3. Continuar solo con `READY_TO_EXECUTE`, `input_governance.status=READY`, `decision=PASS`, `continuation_allowed=true` y un `governance_receipt` vigente.
+4. Persistir el receipt con la ejecución del perfil/adapter. Cualquier otro estado bloquea sin llamada al perfil.
+
+Queda prohibido rehidratar adapters directamente para saltar este preflight o considerar un run histórico como receipt vigente.
+
 ## 10. EKB y eventos
 
 Ejecutar PRE_EKB_GATE. Las resoluciones quedan en `lf_eventos`; cada error o aprendizaje distinto y generalizable se registra enriquecido en EKB y se verifica con readback completo.
@@ -172,4 +185,3 @@ Ejecutar PRE_EKB_GATE. Las resoluciones quedan en `lf_eventos`; cada error o apr
 - Backlog 85 `COMPACT-ROUTER-PADDING-001`: criterio de cierre cumplido; guardrail de tamaño incorporado en la sección 4.
 - Backlog 86 `COMPACT-ROUTER-CACHEKEY-002`: criterio de cierre cumplido; caché y prohibición de `target_hint` incorporadas en las secciones 5 y 6.
 - EKB `GOV-039`: resuelto por la publicación canónica en `docs/operations/` y el localizador compatible en `claude/`.
-

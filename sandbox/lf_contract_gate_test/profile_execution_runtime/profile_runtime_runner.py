@@ -16,6 +16,7 @@ from validate_profile_execution import (
     build_receipt,
     canonical_json_sha256,
     sha256_text,
+    validate_governance_receipt,
 )
 
 REQUEST_TYPE = "PROFILE_RUNTIME_REQUEST_V1"
@@ -109,7 +110,10 @@ def _validate_lf_adapter_sources(
     for item in adapter_sources:
         if not isinstance(item, dict):
             raise RuntimeExecutionBlocked("LF_ADAPTER_SOURCE_INVALID")
-        required = ("adapter_code", "assurance_revision", "activation_source", "binding_ref", "target_ref", "ref", "content")
+        required = (
+            "adapter_code", "assurance_revision", "activation_source", "binding_ref",
+            "target_ref", "ref", "content", "input_governance_receipt_required",
+        )
         for key in required:
             if key not in item:
                 raise RuntimeExecutionBlocked("LF_ADAPTER_SOURCE_FIELD_MISSING", key)
@@ -120,6 +124,7 @@ def _validate_lf_adapter_sources(
         target_ref = item["target_ref"]
         ref = item["ref"]
         content = item["content"]
+        governance_required = item["input_governance_receipt_required"]
         for key, value in (
             ("adapter_code", adapter_code), ("assurance_revision", assurance_revision),
             ("activation_source", activation_source), ("binding_ref", binding_ref),
@@ -129,6 +134,17 @@ def _validate_lf_adapter_sources(
                 raise RuntimeExecutionBlocked("LF_ADAPTER_SOURCE_FIELD_INVALID", key)
         if activation_source != "ROUTER":
             raise RuntimeExecutionBlocked("BLOCK_UNBOUND_ADAPTER_INVOCATION", adapter_code)
+        if not isinstance(governance_required, bool):
+            raise RuntimeExecutionBlocked("LF_ADAPTER_INPUT_GOVERNANCE_FLAG_INVALID", adapter_code)
+        if governance_required:
+            expected_governance_contract = {
+                "input_governance_continuation_policy": "PASS_ONLY",
+                "input_governance_contract_resolution": "LIVE_CURRENT",
+                "input_governance_authority_contract": "INPUT_READINESS_CONTRACT",
+            }
+            for key, expected in expected_governance_contract.items():
+                if item.get(key) != expected:
+                    raise RuntimeExecutionBlocked("LF_ADAPTER_INPUT_GOVERNANCE_CONTRACT_INVALID", f"{adapter_code}:{key}")
         if target_ref != profile_code:
             raise RuntimeExecutionBlocked("LF_ADAPTER_TARGET_MISMATCH", adapter_code)
         if adapter_code in seen_codes:
@@ -153,6 +169,7 @@ def _validate_lf_adapter_sources(
             "ref": ref,
             "content": content,
             "capsule_char_count": chars,
+            "input_governance_receipt_required": governance_required,
         })
     normalized.sort(key=lambda item: item["adapter_code"])
     if not normalized:
@@ -165,11 +182,63 @@ def _validate_lf_adapter_sources(
     return normalized, [item["ref"] for item in normalized], canonical_json_sha256(manifest)
 
 
+def _validate_input_governance(
+    input_governance: dict[str, Any] | None,
+    adapter_sources: list[dict[str, Any]],
+) -> tuple[dict[str, Any] | None, list[str]]:
+    required_adapters = sorted(
+        item["adapter_code"]
+        for item in adapter_sources
+        if item["input_governance_receipt_required"]
+    )
+    if not required_adapters:
+        if input_governance is not None:
+            raise RuntimeExecutionBlocked("INPUT_GOVERNANCE_UNEXPECTED")
+        return None, []
+
+    if not isinstance(input_governance, dict):
+        raise RuntimeExecutionBlocked("INPUT_GOVERNANCE_RECEIPT_MISSING")
+    if input_governance.get("applicable") is not True:
+        raise RuntimeExecutionBlocked("INPUT_GOVERNANCE_APPLICABILITY_INVALID")
+    if input_governance.get("status") != "READY":
+        raise RuntimeExecutionBlocked("INPUT_GOVERNANCE_STATUS_NOT_READY", str(input_governance.get("status")))
+    if input_governance.get("decision") != "PASS":
+        raise RuntimeExecutionBlocked("INPUT_GOVERNANCE_DECISION_NOT_PASS", str(input_governance.get("decision")))
+    if input_governance.get("continuation_allowed") is not True:
+        raise RuntimeExecutionBlocked("INPUT_GOVERNANCE_CONTINUATION_NOT_ALLOWED")
+
+    claimed_adapters = input_governance.get("required_by_adapters")
+    if not isinstance(claimed_adapters, list) or sorted(claimed_adapters) != required_adapters:
+        raise RuntimeExecutionBlocked("INPUT_GOVERNANCE_REQUIRED_ADAPTERS_MISMATCH")
+
+    receipt = input_governance.get("governance_receipt")
+    receipt_errors = validate_governance_receipt(receipt)
+    if receipt_errors:
+        raise RuntimeExecutionBlocked("INPUT_GOVERNANCE_RECEIPT_INVALID", ",".join(receipt_errors))
+    if receipt.get("pantalla_id") != input_governance.get("pantalla_id"):
+        raise RuntimeExecutionBlocked("INPUT_GOVERNANCE_PANTALLA_ID_MISMATCH")
+    if receipt.get("screen_code") != input_governance.get("screen_code"):
+        raise RuntimeExecutionBlocked("INPUT_GOVERNANCE_SCREEN_CODE_MISMATCH")
+
+    normalized = {
+        "applicable": True,
+        "status": "READY",
+        "decision": "PASS",
+        "continuation_allowed": True,
+        "required_by_adapters": required_adapters,
+        "pantalla_id": input_governance["pantalla_id"],
+        "screen_code": input_governance["screen_code"],
+        "governance_receipt": dict(receipt),
+    }
+    return normalized, required_adapters
+
+
 def build_runtime_request(
     *, execution_id: str, profile_code: str, profile_slug: str,
     profile_sources: list[dict[str, str]], input_literal: str,
     obligation_manifest: dict[str, Any] | None = None,
     lf_adapter_sources: list[dict[str, Any]] | None = None,
+    input_governance: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     for name, value in (("execution_id", execution_id), ("profile_code", profile_code), ("profile_slug", profile_slug)):
         if not _nonempty_string(value):
@@ -178,6 +247,7 @@ def build_runtime_request(
         raise RuntimeExecutionBlocked("INPUT_LITERAL_MISSING")
     normalized_sources, source_refs, source_sha256 = _validate_sources(profile_sources)
     normalized_adapters, adapter_refs, adapter_sha256 = _validate_lf_adapter_sources(lf_adapter_sources, profile_code=profile_code)
+    normalized_governance, required_governance_adapters = _validate_input_governance(input_governance, normalized_adapters)
     input_sha = sha256_text(input_literal)
     request: dict[str, Any] = {
         "request_type": REQUEST_TYPE,
@@ -195,6 +265,12 @@ def build_runtime_request(
         request["lf_adapter_sources"] = normalized_adapters
         request["lf_adapter_source_refs"] = adapter_refs
         request["lf_adapter_source_sha256"] = adapter_sha256
+    if normalized_governance is not None:
+        governance_receipt = normalized_governance["governance_receipt"]
+        request["input_governance"] = normalized_governance
+        request["governance_receipt"] = governance_receipt
+        request["governance_receipt_sha256"] = canonical_json_sha256(governance_receipt)
+        request["input_governance_required_adapters"] = required_governance_adapters
     if obligation_manifest is not None:
         try:
             normalized_manifest = validate_obligation_manifest(
@@ -258,6 +334,8 @@ def _validate_response(*, request: dict[str, Any], response: Any, adapter: Runti
         "profile_code": request["profile_code"],
         "profile_slug": request["profile_slug"],
     }
+    if request.get("governance_receipt_sha256"):
+        expected["governance_receipt_sha256"] = request["governance_receipt_sha256"]
     for key, value in expected.items():
         if attestation.get(key) != value:
             raise RuntimeExecutionBlocked(f"RUNTIME_ATTESTATION_{key.upper()}_MISMATCH")
@@ -311,6 +389,7 @@ def execute_profile_runtime(
     adapter: RuntimeAdapter, attestation_verifier: RuntimeAttestationVerifier,
     allow_test_doubles: bool = False, obligation_manifest: dict[str, Any] | None = None,
     lf_adapter_sources: list[dict[str, Any]] | None = None,
+    input_governance: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     _validate_adapter(adapter, allow_test_doubles=allow_test_doubles)
     _validate_verifier(attestation_verifier, allow_test_doubles=allow_test_doubles)
@@ -318,6 +397,7 @@ def execute_profile_runtime(
         execution_id=execution_id, profile_code=profile_code, profile_slug=profile_slug,
         profile_sources=profile_sources, input_literal=input_literal,
         obligation_manifest=obligation_manifest, lf_adapter_sources=lf_adapter_sources,
+        input_governance=input_governance,
     )
     try:
         response = adapter.execute(request)
@@ -344,5 +424,7 @@ def execute_profile_runtime(
         input_literal=input_literal, raw_output=raw_output, runtime_attestation=runtime_attestation,
         obligation_manifest_sha256=request.get("obligation_manifest_sha256"),
         lf_adapter_invocations=invocations,
+        governance_receipt=request.get("governance_receipt"),
+        input_governance_required_adapters=request.get("input_governance_required_adapters"),
     )
     return {"result_type": RESULT_TYPE, "request": request, "raw_output": raw_output, "runtime_attestation_verification": verification, "receipt": receipt}

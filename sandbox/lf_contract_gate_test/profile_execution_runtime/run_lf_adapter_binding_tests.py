@@ -15,6 +15,7 @@ PROFILE_SOURCES = [{"ref": "profiles/ui_architect/SKILL.md", "content": "# UI\nR
 INPUT = "Evalua la pantalla."
 RAW = {"worker": "ui_architect", "self_verdict": "PASS_TO_QUALITY_PACK_CANDIDATE"}
 CAPSULE = "adapter: ADAPTER_LF_SHELL_PROFILE\nassurance_revision: v2\nactivation: ROUTER_BOUND_ONLY\nrules:\n  - preserve authority\n"
+AUTO_GOVERNANCE = object()
 
 
 def adapter_source(**overrides):
@@ -26,6 +27,10 @@ def adapter_source(**overrides):
         "target_ref": PROFILE_CODE,
         "ref": "adapters/lf_shell_profile_adapter/runtime/runtime_capsule.yaml",
         "content": CAPSULE,
+        "input_governance_receipt_required": True,
+        "input_governance_continuation_policy": "PASS_ONLY",
+        "input_governance_contract_resolution": "LIVE_CURRENT",
+        "input_governance_authority_contract": "INPUT_READINESS_CONTRACT",
     }
     value.update(overrides)
     return value
@@ -36,24 +41,30 @@ class Adapter:
     is_test_double = True
     calls = 0
 
+    def __init__(self):
+        self.calls = 0
+
     def execute(self, request):
         self.calls += 1
+        attestation = {
+            "provider": "test-provider",
+            "model_id": "test-model",
+            "run_id": "run-1",
+            "attested_at": "2026-08-29T03:00:00Z",
+            "adapter_id": self.adapter_id,
+            "request_sha256": request["request_sha256"],
+            "profile_source_sha256": request["profile_source_sha256"],
+            "input_sha256": request["input_sha256"],
+            "operation_code": request["operation_code"],
+            "profile_code": request["profile_code"],
+            "profile_slug": request["profile_slug"],
+        }
+        if request.get("governance_receipt_sha256"):
+            attestation["governance_receipt_sha256"] = request["governance_receipt_sha256"]
         return {
             "response_type": RESPONSE_TYPE,
             "raw_output": RAW,
-            "runtime_attestation": {
-                "provider": "test-provider",
-                "model_id": "test-model",
-                "run_id": "run-1",
-                "attested_at": "2026-08-29T03:00:00Z",
-                "adapter_id": self.adapter_id,
-                "request_sha256": request["request_sha256"],
-                "profile_source_sha256": request["profile_source_sha256"],
-                "input_sha256": request["input_sha256"],
-                "operation_code": request["operation_code"],
-                "profile_code": request["profile_code"],
-                "profile_slug": request["profile_slug"],
-            },
+            "runtime_attestation": attestation,
         }
 
 
@@ -72,8 +83,53 @@ class Verifier:
         }
 
 
-def run(sources=None):
-    adapter = Adapter()
+def governance_envelope(sources, **receipt_overrides):
+    required = sorted(
+        item["adapter_code"]
+        for item in (sources or [])
+        if item.get("input_governance_receipt_required") is True
+    )
+    if not required:
+        return None
+    receipt = {
+        "governance_agent_used": True,
+        "governance_agent": "input-governance-agent-v1",
+        "governance_version": "5.12",
+        "sections_consumed": ["APPLICABILITY_READINESS", "SOURCE_AUTHORITY_PROVENANCE"],
+        "source_refs": [
+            "programacion.input_readiness_runs/9001",
+            "lf_ops.pantallas/2",
+            "programacion.contratos/INPUT_READINESS_CONTRACT@5.12",
+        ],
+        "snapshot_hash": "a" * 64,
+        "contract_snapshot_hash": "b" * 64,
+        "decision": "PASS",
+        "gap_or_na": "NONE",
+        "timestamp": "2026-08-31T23:50:00Z",
+        "run_id": 9001,
+        "pantalla_id": 2,
+        "screen_code": "ONB_002",
+        "run_created_at": "2026-08-31T23:49:00Z",
+        "agent_output_sha256": "c" * 64,
+        "currentness": "LIVE_CURRENT",
+    }
+    receipt.update(receipt_overrides)
+    return {
+        "applicable": True,
+        "status": "READY",
+        "decision": receipt["decision"],
+        "continuation_allowed": receipt["decision"] == "PASS",
+        "required_by_adapters": required,
+        "pantalla_id": receipt["pantalla_id"],
+        "screen_code": receipt["screen_code"],
+        "governance_receipt": receipt,
+    }
+
+
+def run(sources=None, governance=AUTO_GOVERNANCE, adapter=None):
+    adapter = Adapter() if adapter is None else adapter
+    if governance is AUTO_GOVERNANCE:
+        governance = governance_envelope(sources)
     package = execute_profile_runtime(
         execution_id="EXEC-RUNTIME-ADAPTER-TEST-001",
         profile_code=PROFILE_CODE,
@@ -84,6 +140,7 @@ def run(sources=None):
         attestation_verifier=Verifier(),
         allow_test_doubles=True,
         lf_adapter_sources=sources,
+        input_governance=governance,
     )
     return package, adapter.calls
 
@@ -153,8 +210,53 @@ def main():
     assert invocations[0]["activation_source"] == "ROUTER"
     assert invocations[0]["profile_id"] == PROFILE_CODE
     assert package["receipt"]["runtime_attestation"]["adapter_id"] == "provider-runtime-adapter"
+    assert package["receipt"]["governance_receipt"]["decision"] == "PASS"
+    assert package["receipt"]["input_governance_required_adapters"] == ["ADAPTER_LF_SHELL_PROFILE"]
+    assert package["receipt"]["runtime_attestation"]["governance_receipt_sha256"] == package["receipt"]["governance_receipt_sha256"]
     assert validate_receipt(package["receipt"], expected_profile_code=PROFILE_CODE) == []
-    print("PASS valid_router_binding_same_call_and_receipt")
+    print("PASS valid_router_binding_governance_pass_same_call_and_receipt")
+
+    missing_adapter = Adapter()
+    expect_block(
+        "governance_receipt_absent_no_model_call",
+        "INPUT_GOVERNANCE_RECEIPT_MISSING",
+        lambda: run([adapter_source()], governance=None, adapter=missing_adapter),
+    )
+    assert missing_adapter.calls == 0
+
+    partial_adapter = Adapter()
+    expect_block(
+        "governance_partial_no_model_call",
+        "INPUT_GOVERNANCE_DECISION_NOT_PASS",
+        lambda: run(
+            [adapter_source()],
+            governance=governance_envelope([adapter_source()], decision="PARTIAL"),
+            adapter=partial_adapter,
+        ),
+    )
+    assert partial_adapter.calls == 0
+
+    stale_adapter = Adapter()
+    expect_block(
+        "governance_stale_no_model_call",
+        "INPUT_GOVERNANCE_RECEIPT_INVALID",
+        lambda: run(
+            [adapter_source()],
+            governance=governance_envelope([adapter_source()], currentness="STALE"),
+            adapter=stale_adapter,
+        ),
+    )
+    assert stale_adapter.calls == 0
+
+    package_no_governance, calls = run([adapter_source(
+        input_governance_receipt_required=False,
+        input_governance_continuation_policy=None,
+        input_governance_contract_resolution=None,
+        input_governance_authority_contract=None,
+    )])
+    assert calls == 1
+    assert "governance_receipt" not in package_no_governance["receipt"]
+    print("PASS adapter_without_governance_zero_overhead")
 
     package_no_adapter, calls = run([])
     assert calls == 1
@@ -185,8 +287,17 @@ def main():
     assert "LF_ADAPTER_INVOCATION_0_PROFILE_ID_MISMATCH" in errors
     print("PASS tampered_lf_adapter_receipt_blocks")
 
+    tampered_governance = deepcopy(package["receipt"])
+    tampered_governance["governance_receipt"]["decision"] = "PARTIAL"
+    tampered_governance["governance_receipt_sha256"] = canonical_json_sha256(tampered_governance["governance_receipt"])
+    tampered_governance["receipt_sha256"] = canonical_json_sha256({k: v for k, v in tampered_governance.items() if k != "receipt_sha256"})
+    errors = validate_receipt(tampered_governance, expected_profile_code=PROFILE_CODE)
+    assert "INPUT_GOVERNANCE_DECISION_NOT_PASS" in errors
+    assert "INPUT_GOVERNANCE_ATTESTATION_SHA256_MISMATCH" in errors
+    print("PASS tampered_governance_receipt_blocks")
+
     test_structured_schema_resolution()
-    print("LF_ADAPTER_BINDING_TESTS_PASS 14/14")
+    print("LF_ADAPTER_BINDING_TESTS_PASS 19/19")
 
 
 if __name__ == "__main__":

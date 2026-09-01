@@ -16,6 +16,14 @@ on:
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_live_smoke.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_profile_strategy_ab.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_queue_worker.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_local_runtime.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_runner.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_lf_adapter_binding_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_zero_cost_profile_request.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_zero_cost_runtime_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py"
+      - "supabase/migrations/*input_governance_enforce_router_v1.sql"
   issue_comment:
     types: [created]
 
@@ -86,6 +94,13 @@ jobs:
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py
+
+      - name: Run Router input-governance regressions
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check 'psycopg[binary]==3.2.9'
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_zero_cost_runtime_tests.py
 
       - name: Build pinned llama.cpp server from source
         env:
@@ -191,6 +206,8 @@ jobs:
       - name: Execute private queued profile request
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_URL: https://mhwmirqcgxxukpctffuv.supabase.co
           SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
           SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
           LF_REPOSITORY_VISIBILITY: public

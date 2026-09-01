@@ -255,6 +255,8 @@ class GitHubHostedLlamaCppAdapter:
             attestation["structured_output_schema_sha256"] = _sha256_file(self.structured_output_schema_path)
         if request.get("lf_adapter_source_sha256"):
             attestation["lf_adapter_source_sha256"] = request["lf_adapter_source_sha256"]
+        if request.get("governance_receipt_sha256"):
+            attestation["governance_receipt_sha256"] = request["governance_receipt_sha256"]
         if self.image_path is not None:
             attestation["input_image_sha256"] = self.image_sha256
             attestation["input_image_size_bytes"] = str(self.image_path.stat().st_size)
@@ -321,6 +323,8 @@ class GitHubHostedLlamaCppVerifier:
             raise RuntimeExecutionBlocked("LOCAL_VERIFIER_MAX_OUTPUT_TOKENS_MISMATCH")
         if request.get("lf_adapter_source_sha256") and attestation.get("lf_adapter_source_sha256") != request["lf_adapter_source_sha256"]:
             raise RuntimeExecutionBlocked("LOCAL_VERIFIER_LF_ADAPTER_SOURCE_SHA_MISMATCH")
+        if request.get("governance_receipt_sha256") and attestation.get("governance_receipt_sha256") != request["governance_receipt_sha256"]:
+            raise RuntimeExecutionBlocked("LOCAL_VERIFIER_INPUT_GOVERNANCE_SHA_MISMATCH")
 
         schema_path = getattr(adapter, "structured_output_schema_path", None)
         schema_ref = attestation.get("structured_output_schema_ref")

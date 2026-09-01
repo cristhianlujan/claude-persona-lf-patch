@@ -11,6 +11,9 @@ Prevent a governed flow from claiming that a repository profile executed when th
 ```text
 Router / orchestrator
 -> exact PERFIL resolution
+-> resolve Router-bound adapters
+-> Input Governance agent when adapter metadata requires it
+-> live governance_receipt with decision=PASS
 -> profile source read
 -> literal input
 -> enumerable authority sources
@@ -108,15 +111,15 @@ The OpenAI Responses adapter remains quarantined reference/test code only. Its o
 
 ## Request and receipt binding
 
-`PROFILE_RUNTIME_REQUEST_V1` binds operation code, execution id, exact profile identity, source references/hashes, literal input and, when supplied, the pre-execution obligation-manifest digest. The request digest therefore proves the manifest was fixed before the worker response.
+`PROFILE_RUNTIME_REQUEST_V1` binds operation code, execution id, exact profile identity, source references/hashes, literal input and, when supplied, the pre-execution obligation-manifest digest. For every Router-bound adapter that declares `input_governance_receipt_required=true`, it also binds the live PASS receipt and its digest before the model call. The request digest therefore proves both governance and the manifest were fixed before the worker response.
 
-The execution receipt binds profile identity, source digest, input digest, RAW digest, runtime attestation, independent verifier evidence and the same obligation-manifest digest. It cannot self-authorize downstream use.
+The execution receipt binds profile identity, source digest, input digest, RAW digest, runtime attestation, independent verifier evidence, the same obligation-manifest digest and, when required, the same governance receipt digest. It cannot self-authorize downstream use.
 
 The semantic receipt separately binds the obligation-manifest digest, exact check-bundle digest and per-check results.
 
 ## Fail closed
 
-Block on paid provider, missing RAW, malformed hashes, mismatched request/source/input/profile binding, absent independent verifier, failed attestation verification, test doubles in operational mode, invalid receipt digest, self-authorization, missing pre-bound obligation manifest, incomplete obligation coverage, non-derived bundle, any `CONTRADICTS`, any `UNCERTAIN`, malformed model response or unverified local semantic runtime evidence.
+Block on paid provider, missing RAW, malformed hashes, mismatched request/source/input/profile binding, absent independent verifier, failed attestation verification, test doubles in operational mode, invalid receipt digest, self-authorization, missing/stale/non-PASS Input Governance receipt for a requiring adapter, missing pre-bound obligation manifest, incomplete obligation coverage, non-derived bundle, any `CONTRADICTS`, any `UNCERTAIN`, malformed model response or unverified local semantic runtime evidence.
 
 ## Regression
 

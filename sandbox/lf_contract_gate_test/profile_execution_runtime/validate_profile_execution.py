@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import re
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -20,6 +21,14 @@ FINAL_DOWNSTREAM_RECIPIENTS = {"COMPOSER", "IMAGE_GENERATOR", "TOOL_PAYLOAD", "F
 DOWNSTREAM_RECIPIENTS = PROVENANCE_ONLY_RECIPIENTS | FINAL_DOWNSTREAM_RECIPIENTS
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 MAX_LF_ADAPTER_CAPSULE_CHARS = 2000
+INPUT_GOVERNANCE_AGENT = "input-governance-agent-v1"
+INPUT_GOVERNANCE_SECTIONS = {
+    "APPLICABILITY_READINESS",
+    "SOURCE_AUTHORITY_PROVENANCE",
+    "FRESHNESS_INVALIDATION",
+    "NEGATIVE_REQUIREMENTS",
+    "CONFLICT_PRECEDENCE",
+}
 
 
 def sha256_text(value: str) -> str:
@@ -29,6 +38,83 @@ def sha256_text(value: str) -> str:
 def canonical_json_sha256(value: Any) -> str:
     rendered = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return sha256_text(rendered)
+
+
+def _is_timezone_aware_iso8601(value: Any) -> bool:
+    if not _nonempty_string(value):
+        return False
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    return parsed.tzinfo is not None
+
+
+def validate_governance_receipt(receipt: Any) -> list[str]:
+    """Validate the live PASS receipt consumed by a Router-bound adapter."""
+    if not isinstance(receipt, dict):
+        return ["INPUT_GOVERNANCE_RECEIPT_MISSING"]
+
+    errors: list[str] = []
+    required_strings = (
+        "governance_agent", "governance_version", "snapshot_hash",
+        "contract_snapshot_hash", "decision", "gap_or_na", "timestamp",
+        "screen_code", "agent_output_sha256", "currentness",
+    )
+    for key in required_strings:
+        if not _nonempty_string(receipt.get(key)):
+            errors.append(f"INPUT_GOVERNANCE_{key.upper()}_MISSING")
+
+    if receipt.get("governance_agent_used") is not True:
+        errors.append("INPUT_GOVERNANCE_AGENT_NOT_USED")
+    if receipt.get("governance_agent") != INPUT_GOVERNANCE_AGENT:
+        errors.append("INPUT_GOVERNANCE_AGENT_INVALID")
+    if receipt.get("decision") != "PASS":
+        errors.append("INPUT_GOVERNANCE_DECISION_NOT_PASS")
+    if receipt.get("currentness") != "LIVE_CURRENT":
+        errors.append("INPUT_GOVERNANCE_RECEIPT_NOT_CURRENT")
+    if receipt.get("gap_or_na") != "NONE":
+        errors.append("INPUT_GOVERNANCE_GAP_PRESENT")
+    if receipt.get("governance_version") == "N/A":
+        errors.append("INPUT_GOVERNANCE_VERSION_INVALID")
+
+    for key in ("snapshot_hash", "contract_snapshot_hash", "agent_output_sha256"):
+        value = receipt.get(key)
+        if _nonempty_string(value) and not _is_sha256(value):
+            errors.append(f"INPUT_GOVERNANCE_{key.upper()}_INVALID")
+
+    for key in ("timestamp", "run_created_at"):
+        if not _is_timezone_aware_iso8601(receipt.get(key)):
+            errors.append(f"INPUT_GOVERNANCE_{key.upper()}_INVALID")
+
+    for key in ("run_id", "pantalla_id"):
+        value = receipt.get(key)
+        if not isinstance(value, int) or isinstance(value, bool) or value < 1:
+            errors.append(f"INPUT_GOVERNANCE_{key.upper()}_INVALID")
+
+    sections = receipt.get("sections_consumed")
+    if (
+        not isinstance(sections, list)
+        or not sections
+        or len(sections) != len(set(sections))
+        or any(section not in INPUT_GOVERNANCE_SECTIONS for section in sections)
+    ):
+        errors.append("INPUT_GOVERNANCE_SECTIONS_INVALID")
+
+    refs = receipt.get("source_refs")
+    if (
+        not isinstance(refs, list)
+        or not refs
+        or len(refs) != len(set(refs))
+        or not all(_nonempty_string(ref) for ref in refs)
+    ):
+        errors.append("INPUT_GOVERNANCE_SOURCE_REFS_INVALID")
+    elif isinstance(receipt.get("run_id"), int):
+        expected_run_ref = f"programacion.input_readiness_runs/{receipt['run_id']}"
+        if expected_run_ref not in refs:
+            errors.append("INPUT_GOVERNANCE_RUN_SOURCE_REF_MISMATCH")
+
+    return sorted(set(errors))
 
 
 def _nonempty_string(value: Any) -> bool:
@@ -90,6 +176,8 @@ def build_receipt(
     input_literal: str, raw_output: Any, runtime_attestation: dict[str, Any],
     obligation_manifest_sha256: str | None = None,
     lf_adapter_invocations: list[dict[str, Any]] | None = None,
+    governance_receipt: dict[str, Any] | None = None,
+    input_governance_required_adapters: list[str] | None = None,
 ) -> dict[str, Any]:
     receipt = {
         "receipt_type": RECEIPT_TYPE,
@@ -110,6 +198,11 @@ def build_receipt(
         receipt["obligation_manifest_sha256"] = obligation_manifest_sha256
     if lf_adapter_invocations:
         receipt["lf_adapter_invocations"] = lf_adapter_invocations
+    if governance_receipt is not None:
+        receipt["governance_receipt"] = governance_receipt
+        receipt["governance_receipt_sha256"] = canonical_json_sha256(governance_receipt)
+    if input_governance_required_adapters:
+        receipt["input_governance_required_adapters"] = sorted(input_governance_required_adapters)
     receipt["receipt_sha256"] = canonical_json_sha256({key: value for key, value in receipt.items() if key != "receipt_sha256"})
     return receipt
 
@@ -168,6 +261,37 @@ def validate_receipt(
     if expected_raw_output is not None and receipt.get("raw_output_sha256") != canonical_json_sha256(expected_raw_output):
         errors.append("RAW_OUTPUT_SHA256_MISMATCH")
     errors.extend(_validate_lf_adapter_invocations(receipt.get("lf_adapter_invocations"), receipt.get("profile_code")))
+
+    required_adapters = receipt.get("input_governance_required_adapters")
+    governance_receipt = receipt.get("governance_receipt")
+    governance_sha = receipt.get("governance_receipt_sha256")
+    attested_governance_sha = attestation.get("governance_receipt_sha256") if isinstance(attestation, dict) else None
+    if required_adapters is None:
+        if governance_receipt is not None or governance_sha is not None or attested_governance_sha is not None:
+            errors.append("INPUT_GOVERNANCE_RECEIPT_UNEXPECTED")
+    elif (
+        not isinstance(required_adapters, list)
+        or not required_adapters
+        or len(required_adapters) != len(set(required_adapters))
+        or not all(_nonempty_string(code) for code in required_adapters)
+    ):
+        errors.append("INPUT_GOVERNANCE_REQUIRED_ADAPTERS_INVALID")
+    else:
+        invocation_codes = {
+            item.get("adapter_code")
+            for item in receipt.get("lf_adapter_invocations", [])
+            if isinstance(item, dict)
+        }
+        if not set(required_adapters).issubset(invocation_codes):
+            errors.append("INPUT_GOVERNANCE_REQUIRED_ADAPTER_INVOCATION_MISSING")
+        errors.extend(validate_governance_receipt(governance_receipt))
+        if not _is_sha256(governance_sha):
+            errors.append("INPUT_GOVERNANCE_RECEIPT_SHA256_INVALID")
+        elif isinstance(governance_receipt, dict) and governance_sha != canonical_json_sha256(governance_receipt):
+            errors.append("INPUT_GOVERNANCE_RECEIPT_SHA256_MISMATCH")
+        if attested_governance_sha != governance_sha:
+            errors.append("INPUT_GOVERNANCE_ATTESTATION_SHA256_MISMATCH")
+
     claimed_receipt_sha = receipt.get("receipt_sha256")
     if _nonempty_string(claimed_receipt_sha):
         recalculated = canonical_json_sha256({key: value for key, value in receipt.items() if key != "receipt_sha256"})
