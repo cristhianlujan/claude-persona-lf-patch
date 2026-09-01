@@ -1,0 +1,22 @@
+{
+  "schema":"LF_LEARNING_EXACT_NONBINDING_GUARD_V1",
+  "mode":"READ_ONLY",
+  "fallback":"NO_COMPETITIVE_CONTEXT",
+  "explicit_nonbindings":[
+    {"consumer_id":"PERFIL-GAMIFICATION-SYSTEM-ARCHITECT","reason":"NO_EXACT_COMPETITIVE_CAPABILITY"},
+    {"consumer_id":"ACT-0051","reason":"UPSTREAM_PRODUCT_AND_UI_AUTHORITY_REQUIRED"},
+    {"consumer_id":"PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531","reason":"READY_FOR_BINDING_REVIEW_ONLY_RUNTIME_DISABLED"},
+    {"consumer_id":"PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531","reason":"READY_FOR_BINDING_REVIEW_ONLY_RUNTIME_DISABLED"}
+  ],
+  "unbound_clusters":[
+    {"cluster_code":"REINSERCION_FINANCIERA","next_state":"READY_FOR_BINDING_ONLY","existing_exact_card_observed":false,"automatic_card_creation":false},
+    {"cluster_code":"CAMPANAS_Y_OFERTAS","next_state":"READY_FOR_BINDING_ONLY","existing_exact_card_observed":false,"automatic_card_creation":false},
+    {"cluster_code":"BENCHMARK_PERIFERICO","next_state":"NO_CARD","existing_exact_card_observed":false,"automatic_card_creation":false}
+  ],
+  "selection_rule":"NO_EXACT_BINDING_MEANS_NO_CONTEXT",
+  "semantic_search":false,
+  "automatic_binding":false,
+  "automatic_card_creation":false,
+  "automatic_impact":false,
+  "production_authorized":false
+}
