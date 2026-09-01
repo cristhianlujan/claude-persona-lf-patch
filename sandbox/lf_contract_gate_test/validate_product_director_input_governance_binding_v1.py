@@ -17,6 +17,7 @@ from product_director_input_governance_binding_v1 import (  # noqa: E402
 
 REQUEST_ID = "req-pd-001"
 PROFILE = "PERFIL-PRODUCT-DIRECTOR-LF"
+CONSUMER = "CONTEXT_PACK"
 INPUT = "CHECKOUT_CUOTAS_MEDIO_PAGO Decide prioridad de claridad del checkout usando solo evidencia suministrada."
 SNAPSHOT = "a" * 64
 CONTRACT = "b" * 64
@@ -48,17 +49,18 @@ def must_fail(label, fn):
 
 
 def main():
-    bound = build_bound_governance_receipt(router_ready(), request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT)
-    validate_bound_governance_receipt(bound, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT)
+    bound = build_bound_governance_receipt(router_ready(), request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT, governance_consumer=CONSUMER)
+    validate_bound_governance_receipt(bound, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT, governance_consumer=CONSUMER)
 
     build_mutations = [
-        ("router_not_ready", lambda: build_bound_governance_receipt({"status": "BLOCKED", "continuation_allowed": False}, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT)),
-        ("receipt_missing", lambda: build_bound_governance_receipt({"status": "READY", "continuation_allowed": True}, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT)),
-        ("decision_not_pass", lambda: build_bound_governance_receipt({**router_ready(), "governance_receipt": {**router_ready()["governance_receipt"], "decision": "BLOCKED"}}, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT)),
-        ("stale", lambda: build_bound_governance_receipt({**router_ready(), "governance_receipt": {**router_ready()["governance_receipt"], "currentness": "STALE"}}, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT)),
-        ("bad_snapshot", lambda: build_bound_governance_receipt({**router_ready(), "governance_receipt": {**router_ready()["governance_receipt"], "snapshot_hash": "bad"}}, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT)),
-        ("bad_contract_snapshot", lambda: build_bound_governance_receipt({**router_ready(), "governance_receipt": {**router_ready()["governance_receipt"], "contract_snapshot_hash": "bad"}}, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT)),
-        ("missing_screen", lambda: build_bound_governance_receipt({**router_ready(), "governance_receipt": {**router_ready()["governance_receipt"], "screen_code": ""}}, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT)),
+        ("router_not_ready", lambda: build_bound_governance_receipt({"status": "BLOCKED", "continuation_allowed": False}, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT, governance_consumer=CONSUMER)),
+        ("receipt_missing", lambda: build_bound_governance_receipt({"status": "READY", "continuation_allowed": True}, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT, governance_consumer=CONSUMER)),
+        ("decision_not_pass", lambda: build_bound_governance_receipt({**router_ready(), "governance_receipt": {**router_ready()["governance_receipt"], "decision": "BLOCKED"}}, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT, governance_consumer=CONSUMER)),
+        ("stale", lambda: build_bound_governance_receipt({**router_ready(), "governance_receipt": {**router_ready()["governance_receipt"], "currentness": "STALE"}}, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT, governance_consumer=CONSUMER)),
+        ("bad_snapshot", lambda: build_bound_governance_receipt({**router_ready(), "governance_receipt": {**router_ready()["governance_receipt"], "snapshot_hash": "bad"}}, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT, governance_consumer=CONSUMER)),
+        ("bad_contract_snapshot", lambda: build_bound_governance_receipt({**router_ready(), "governance_receipt": {**router_ready()["governance_receipt"], "contract_snapshot_hash": "bad"}}, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT, governance_consumer=CONSUMER)),
+        ("missing_screen", lambda: build_bound_governance_receipt({**router_ready(), "governance_receipt": {**router_ready()["governance_receipt"], "screen_code": ""}}, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT, governance_consumer=CONSUMER)),
+        ("consumer_not_allowed", lambda: build_bound_governance_receipt(router_ready(), request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT, governance_consumer=PROFILE)),
     ]
     for label, fn in build_mutations:
         must_fail(label, fn)
@@ -66,6 +68,7 @@ def main():
     validation_mutations = [
         ("request_id", "other"),
         ("profile_code", "OTHER"),
+        ("governance_consumer", "MANUAL"),
         ("input_sha256", "c" * 64),
         ("decision", "BLOCKED"),
         ("currentness", "STALE"),
@@ -77,17 +80,19 @@ def main():
     for key, value in validation_mutations:
         candidate = copy.deepcopy(bound)
         candidate[key] = value
-        must_fail(key, lambda candidate=candidate: validate_bound_governance_receipt(candidate, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT))
+        must_fail(key, lambda candidate=candidate: validate_bound_governance_receipt(candidate, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT, governance_consumer=CONSUMER))
 
     tampered_receipt = copy.deepcopy(bound)
     tampered_receipt["governance_receipt"]["snapshot_hash"] = "9" * 64
-    must_fail("tampered_receipt", lambda: validate_bound_governance_receipt(tampered_receipt, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT))
+    must_fail("tampered_receipt", lambda: validate_bound_governance_receipt(tampered_receipt, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT, governance_consumer=CONSUMER))
 
     wrong_input = INPUT + " tampered"
-    must_fail("wrong_input", lambda: validate_bound_governance_receipt(bound, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=wrong_input))
+    must_fail("wrong_input", lambda: validate_bound_governance_receipt(bound, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=wrong_input, governance_consumer=CONSUMER))
+
+    must_fail("wrong_expected_consumer", lambda: validate_bound_governance_receipt(bound, request_id=REQUEST_ID, profile_code=PROFILE, input_literal=INPUT, governance_consumer="STORY_CREATOR"))
 
     print("PRODUCT_DIRECTOR_INPUT_GOVERNANCE_BINDING=PASS")
-    print("positive=1 negative=18")
+    print("positive=1 negative=20")
     return 0
 
 
