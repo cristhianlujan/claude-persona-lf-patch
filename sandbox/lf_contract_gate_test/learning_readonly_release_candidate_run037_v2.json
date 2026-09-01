@@ -1,0 +1,22 @@
+{
+  "schema":"LF_LEARNING_READONLY_RELEASE_CANDIDATE_V2",
+  "execution_id":"LF-AUTOLEARN-RUN-20260901-037",
+  "status":"CANDIDATO_READ_ONLY",
+  "production_impact":false,
+  "automatic_impact":false,
+  "router_first":true,
+  "consumer_path":{
+    "product_director":{"capabilities":5,"routing":"50/50_PASS","context_budget_bytes":6000},
+    "ui_architect":{"capabilities":2,"routing":"50/50_PASS","context_budget_bytes":5000,"prerequisite":"PRODUCT_DIRECTION_AUTHORIZED_CURRENT"},
+    "downstream_no_bypass":"40/40_PASS"
+  },
+  "dynamic_selector":{"eligible_competitive_kb":35,"classified":35,"unclassified":0,"max_evidence_per_capability":5,"llm_calls":0,"round_trips":0},
+  "request_materialization":{"builder":"learning_profile_request_builder_v1.py","input_governance_current_required":true,"writes_performed":false,"enqueue_performed":false},
+  "behavioral_current_subject":{"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","capability_id":"NEGOCIACION_DEUDA","pantalla_id":5,"screen_code":"HOME_002","current_run_id":215,"contract_revision":"5.12","fixture":"learning_behavioral_current_subject_fixture_v1.json","runtime_invoked":false,"holdout_consumed":false},
+  "source_backlog":{"recovered_in_scope_sources":6,"queue_state":"PENDIENTE","capture_blocker":"ORQUESTACION_PIPELINE_LF_REQUIRED_JUDGE_DEFINITIONS_MISSING_9","direct_kb_writes":0},
+  "card_factory":{"boundary_order":"24_PREWRITE_25_WRITE_26_READBACK_27_EVIDENCE","order_drift_observed":false,"required_judge_definitions_missing":20,"card_write_allowed":false},
+  "learning_bridge":{"active_step_contracts":25,"active_judge_bindings":25,"required_missing":0},
+  "exact_head":{"sha":"42d52226a0c8409c8f7ee4506a47ae34aeae307a","validate_lf_packs":"SUCCESS","lf_contract_check":"IN_PROGRESS","bootstrap":"IN_PROGRESS"},
+  "promotion":"BLOCKED_UNTIL_EXACT_HEAD_CI_AND_GOVERNED_BEHAVIORAL_RUNTIME_EVIDENCE",
+  "rollback":"retain champion without competitive context if exact binding/readiness fails"
+}
