@@ -1,0 +1,66 @@
+{
+  "schema": "act0058-source-inspection/v1",
+  "operation_code": "ORQUESTACION_PIPELINE_LF",
+  "mode": "READ_ONLY_SOURCE_INSPECTION",
+  "automatic_impact": false,
+  "production_authorized": false,
+  "kb_write_performed": false,
+  "sources": [
+    {
+      "url": "https://reevalua.com/blog/sueldo-necesario-para-prestamo-10000-30000-50000-peru",
+      "queue_state": "PENDIENTE",
+      "source_read": "DIRECT_PAGE_OK",
+      "eligible_for_capture": true,
+      "observed_topics": ["capacidad_de_pago", "TCEA", "plazo", "regla_30_por_ciento"],
+      "claim_boundary": "competitor_content_only_not_canonical_financial_rule"
+    },
+    {
+      "url": "https://reevalua.com/blog/consolidar-deudas-peru-cuanto-ahorras",
+      "queue_state": "PENDIENTE",
+      "source_read": "DIRECT_PAGE_TIMEOUT_INDEX_CONFIRMED",
+      "eligible_for_capture": false,
+      "observed_topics": ["consolidacion_deudas", "TCEA", "plazo"],
+      "claim_boundary": "index_summary_only_reopen_required_before_capture"
+    },
+    {
+      "url": "https://reevalua.com/blog/independiente-sin-recibo-honorarios-historial-crediticio-peru",
+      "queue_state": "PENDIENTE",
+      "source_read": "DIRECT_PAGE_500_INDEX_CONFIRMED",
+      "eligible_for_capture": false,
+      "observed_topics": ["primer_historial", "independiente", "inclusion_financiera"],
+      "claim_boundary": "index_summary_only_reopen_required_before_capture"
+    },
+    {
+      "url": "https://reevalua.com/blog/deudas-que-nunca-pedi-usaron-mi-dni-peru",
+      "queue_state": "PENDIENTE",
+      "source_read": "DIRECT_PAGE_500_INDEX_CONFIRMED",
+      "eligible_for_capture": false,
+      "observed_topics": ["suplantacion_identidad", "deuda_no_reconocida", "reclamo_con_evidencia"],
+      "claim_boundary": "index_summary_only_reopen_required_before_capture"
+    },
+    {
+      "url": "https://reevalua.com/blog/cuotas-sin-intereses-costos-ocultos-peru",
+      "queue_state": "PENDIENTE",
+      "source_read": "DIRECT_PAGE_OK",
+      "eligible_for_capture": true,
+      "observed_topics": ["cuotas_sin_intereses", "costos_adicionales", "TCEA", "estado_de_cuenta"],
+      "claim_boundary": "competitor_content_only_regulatory_claims_require_independent_authority"
+    },
+    {
+      "url": "https://reevalua.com/blog/septiembre-sin-gratificacion-plan-4-semanas-peru",
+      "queue_state": "PENDIENTE",
+      "source_read": "DIRECT_PAGE_500_INDEX_CONFIRMED",
+      "eligible_for_capture": false,
+      "observed_topics": ["presupuesto", "prevencion_sobreendeudamiento", "plan_4_semanas"],
+      "claim_boundary": "index_summary_only_reopen_required_before_capture"
+    }
+  ],
+  "summary": {
+    "queue_sources_checked": 6,
+    "direct_page_ok": 2,
+    "index_only_confirmed": 4,
+    "eligible_for_governed_capture_now": 2,
+    "requires_reopen_before_capture": 4,
+    "existing_kb_rows_for_exact_urls": 0
+  }
+}
