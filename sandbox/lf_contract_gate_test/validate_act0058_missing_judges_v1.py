@@ -62,10 +62,12 @@ def validate_reconciliation() -> None:
         if term in text:
             fail(f'reconciliation forbidden term: {term}')
     required = [
-        'version: v2','SOURCE_MIGRATION_MATERIALIZED_NOT_APPLIED',
+        'version: v3','SOURCE_MIGRATION_MATERIALIZED_NOT_APPLIED',
         'step_order: 105','step_id: restock_queue','zero_new_urls_is_controlled_noop_not_batch_failure',
         'RESTOCK_NOOP_WARN','step_order: 110','step_id: failed_retry',
         'retry_count_reaches_3_marks_FAILED_definitive_and_continue_next_url',
+        'returned_by_execution_sql: [retry_count, stage_status, error_detail]','synthetic_next_action: FORBIDDEN',
+        'retry_count_lt_3_and_stage_status_PENDING','retry_count_gte_3_and_stage_status_FAILED',
         'RETRY_TERMINAL_FAILED','EXACT_HEAD_CI_THEN_GOVERNED_APPLY_AND_LIVE_READBACK',
         'before: ACTIVE_JUDGE_BINDING','db_write: false',
         'blob_sha: 3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495',
