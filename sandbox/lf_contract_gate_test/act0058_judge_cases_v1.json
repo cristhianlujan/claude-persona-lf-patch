@@ -1,0 +1,47 @@
+{
+  "schema": "ACT0058_MINI_JUDGE_CASE_MATRIX_V1",
+  "operation_code": "ORQUESTACION_PIPELINE_LF",
+  "status": "CANDIDATE_READ_ONLY",
+  "production_impact": false,
+  "cases": [
+    {"id":"INIT_EXEC_PASS","step_order":5,"judge":"MINI_JUDGE_ACT0058_INIT_EXECUTION","input":{"operation_execution_exists":true,"operation_code_matches":true,"status_in_progress":true},"expected":"EXECUTION_INITIALIZED"},
+    {"id":"INIT_EXEC_BLOCK_MISSING","step_order":5,"judge":"MINI_JUDGE_ACT0058_INIT_EXECUTION","input":{"operation_execution_exists":false,"operation_code_matches":true,"status_in_progress":true},"expected":"BLOCKED"},
+    {"id":"INIT_EXEC_BLOCK_STATUS","step_order":5,"judge":"MINI_JUDGE_ACT0058_INIT_EXECUTION","input":{"operation_execution_exists":true,"operation_code_matches":true,"status_in_progress":false},"expected":"BLOCKED"},
+
+    {"id":"INIT_RUN_PASS","step_order":20,"judge":"MINI_JUDGE_ACT0058_INIT","input":{"pipeline_run_created":true,"source_url_nonempty":true,"dedup_24h_clear":true,"stage_current_captura":true},"expected":"RUN_INITIALIZED"},
+    {"id":"INIT_RUN_DEDUP","step_order":20,"judge":"MINI_JUDGE_ACT0058_INIT","input":{"pipeline_run_created":false,"source_url_nonempty":true,"dedup_24h_clear":false,"stage_current_captura":false},"expected":"DEDUP_BLOCKED"},
+    {"id":"INIT_RUN_BLOCK_URL","step_order":20,"judge":"MINI_JUDGE_ACT0058_INIT","input":{"pipeline_run_created":false,"source_url_nonempty":false,"dedup_24h_clear":true,"stage_current_captura":false},"expected":"BLOCKED"},
+
+    {"id":"SCOPE_PASS","step_order":30,"judge":"MINI_JUDGE_ACT0058_SCOPE","input":{"source_domain_allowed":true},"expected":"SCOPE_ALLOWED"},
+    {"id":"SCOPE_SKIP","step_order":30,"judge":"MINI_JUDGE_ACT0058_SCOPE","input":{"source_domain_allowed":false},"expected":"OUT_OF_SCOPE"},
+    {"id":"SCOPE_NEG_UNKNOWN","step_order":30,"judge":"MINI_JUDGE_ACT0058_SCOPE","input":{"source_domain_allowed":false,"domain_matched":null},"expected":"OUT_OF_SCOPE"},
+
+    {"id":"CAPTURE_PASS","step_order":50,"judge":"MINI_JUDGE_ACT0058_CAPTURA","input":{"capture_run_id_present":true,"capture_status_completed":true},"expected":"CAPTURE_COMPLETED"},
+    {"id":"CAPTURE_BLOCK_ID","step_order":50,"judge":"MINI_JUDGE_ACT0058_CAPTURA","input":{"capture_run_id_present":false,"capture_status_completed":true},"expected":"CAPTURE_BLOCKED"},
+    {"id":"CAPTURE_BLOCK_STATUS","step_order":50,"judge":"MINI_JUDGE_ACT0058_CAPTURA","input":{"capture_run_id_present":true,"capture_status_completed":false},"expected":"CAPTURE_BLOCKED"},
+
+    {"id":"HOMOLOG_PASS","step_order":60,"judge":"MINI_JUDGE_ACT0058_HOMOLOG","input":{"homolog_record_id_present":true,"homolog_status_aprobado":true},"expected":"HOMOLOG_APPROVED"},
+    {"id":"HOMOLOG_BLOCK_ID","step_order":60,"judge":"MINI_JUDGE_ACT0058_HOMOLOG","input":{"homolog_record_id_present":false,"homolog_status_aprobado":true},"expected":"HOMOLOG_BLOCKED"},
+    {"id":"HOMOLOG_BLOCK_REJECT","step_order":60,"judge":"MINI_JUDGE_ACT0058_HOMOLOG","input":{"homolog_record_id_present":true,"homolog_status_aprobado":false},"expected":"HOMOLOG_BLOCKED"},
+
+    {"id":"ANALYSIS_PASS","step_order":70,"judge":"MINI_JUDGE_ACT0058_ANALISIS","input":{"decision_id_present":true,"consumer_gate_passed_true":true},"expected":"ANALYSIS_ALLOWED"},
+    {"id":"ANALYSIS_BLOCK_ID","step_order":70,"judge":"MINI_JUDGE_ACT0058_ANALISIS","input":{"decision_id_present":false,"consumer_gate_passed_true":true},"expected":"ANALYSIS_BLOCKED"},
+    {"id":"ANALYSIS_BLOCK_GATE","step_order":70,"judge":"MINI_JUDGE_ACT0058_ANALISIS","input":{"decision_id_present":true,"consumer_gate_passed_true":false},"expected":"ANALYSIS_BLOCKED"},
+
+    {"id":"KB_PASS","step_order":90,"judge":"MINI_JUDGE_ACT0058_KB_WRITE","input":{"kb_id_present":true,"consumer_gate_passed_true":true,"hitl_triggered_false":true},"expected":"KB_WRITE_CONFIRMED"},
+    {"id":"KB_BLOCK_HITL","step_order":90,"judge":"MINI_JUDGE_ACT0058_KB_WRITE","input":{"kb_id_present":false,"consumer_gate_passed_true":true,"hitl_triggered_false":false},"expected":"KB_WRITE_BLOCKED"},
+    {"id":"KB_BLOCK_GATE","step_order":90,"judge":"MINI_JUDGE_ACT0058_KB_WRITE","input":{"kb_id_present":false,"consumer_gate_passed_true":false,"hitl_triggered_false":true},"expected":"KB_WRITE_BLOCKED"},
+
+    {"id":"COMPLETE_PASS","step_order":100,"judge":"MINI_JUDGE_ACT0058_COMPLETED","input":{"stage_completed":true,"closing_event_present":true},"expected":"COMPLETED_CONFIRMED"},
+    {"id":"COMPLETE_BLOCK_STAGE","step_order":100,"judge":"MINI_JUDGE_ACT0058_COMPLETED","input":{"stage_completed":false,"closing_event_present":true},"expected":"COMPLETION_BLOCKED"},
+    {"id":"COMPLETE_BLOCK_EVENT","step_order":100,"judge":"MINI_JUDGE_ACT0058_COMPLETED","input":{"stage_completed":true,"closing_event_present":false},"expected":"COMPLETION_BLOCKED"},
+
+    {"id":"RESTOCK_PASS","step_order":105,"judge":"MINI_JUDGE_ACT0058_RESTOCK","input":{"restock_attempt_recorded":true,"dedup_performed":true,"urls_insertadas":5,"warn_event_recorded":false},"expected":"RESTOCK_COMPLETED"},
+    {"id":"RESTOCK_NOOP","step_order":105,"judge":"MINI_JUDGE_ACT0058_RESTOCK","input":{"restock_attempt_recorded":true,"dedup_performed":true,"urls_insertadas":0,"warn_event_recorded":true},"expected":"RESTOCK_NOOP_WARN"},
+    {"id":"RESTOCK_BLOCK","step_order":105,"judge":"MINI_JUDGE_ACT0058_RESTOCK","input":{"restock_attempt_recorded":false,"dedup_performed":false,"urls_insertadas":0,"warn_event_recorded":false},"expected":"RESTOCK_BLOCKED"},
+
+    {"id":"RETRY_ALLOWED","step_order":110,"judge":"MINI_JUDGE_ACT0058_RETRY","input":{"retry_count":2,"next_action":"RETRY"},"expected":"RETRY_ALLOWED"},
+    {"id":"RETRY_TERMINAL","step_order":110,"judge":"MINI_JUDGE_ACT0058_RETRY","input":{"retry_count":3,"next_action":"FAILED_CONTINUE_NEXT_URL"},"expected":"RETRY_TERMINAL_FAILED"},
+    {"id":"RETRY_BLOCK_OVER","step_order":110,"judge":"MINI_JUDGE_ACT0058_RETRY","input":{"retry_count":3,"next_action":"RETRY"},"expected":"RETRY_BLOCKED"}
+  ]
+}
