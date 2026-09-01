@@ -2,7 +2,16 @@ do $reconcile$
 declare
   v_105 public.lf_operation_step_contracts%rowtype;
   v_110 public.lf_operation_step_contracts%rowtype;
+  v_execution_id text:=nullif(current_setting('app.lf_execution_id',true),'');
 begin
+  if v_execution_id is null then raise exception 'ACT0058_RECONCILIATION_EXECUTION_ID_REQUIRED'; end if;
+  if not exists (
+    select 1 from public.lf_operation_execution
+    where execution_id=v_execution_id
+      and operation_code='ORQUESTACION_PIPELINE_LF'
+      and status='IN_PROGRESS'
+  ) then raise exception 'ACT0058_RECONCILIATION_EXECUTION_INVALID:%',v_execution_id; end if;
+
   select * into v_105
   from public.lf_operation_step_contracts
   where operation_code='ORQUESTACION_PIPELINE_LF' and step_order=105 and step_id='restock_queue' and status='ACTIVO';
@@ -30,7 +39,8 @@ begin
       block_condition=jsonb_build_object('RESTOCK_EVIDENCE_MISSING',true),
       blocking_code='RESTOCK_GOVERNANCE_EVIDENCE_MISSING',
       notes='Canonical ACT-0058: fewer than 5 new URLs is WARN/no-op, not batch failure. Zero new URLs is valid only after governed restock attempt + dedup + WARN evidence.',
-      updated_at=now()
+      updated_at=now(),
+      updated_by_execution_id=v_execution_id
   where operation_code='ORQUESTACION_PIPELINE_LF' and step_order=105 and step_id='restock_queue' and status='ACTIVO';
 
   update public.lf_operation_step_contracts
@@ -40,7 +50,8 @@ begin
       block_condition=jsonb_build_object('RETRY_INVALID_AFTER_TERMINAL',jsonb_build_object('retry_count','>=3','next_action','RETRY')),
       blocking_code='MAX_RETRY_EXCEEDED',
       notes='Canonical ACT-0058: maximum 3 attempts. At retry_count >= 3 the URL is terminal FAILED and orchestration continues with the next URL; no fourth retry and no batch stop.',
-      updated_at=now()
+      updated_at=now(),
+      updated_by_execution_id=v_execution_id
   where operation_code='ORQUESTACION_PIPELINE_LF' and step_order=110 and step_id='failed_retry' and status='ACTIVO';
 
   if not exists (
@@ -48,6 +59,7 @@ begin
     where operation_code='ORQUESTACION_PIPELINE_LF' and step_order=105
       and pass_condition ? 'RESTOCK_NOOP_WARN'
       and blocking_code='RESTOCK_GOVERNANCE_EVIDENCE_MISSING'
+      and updated_by_execution_id=v_execution_id
   ) then raise exception 'ACT0058_STEP_105_RECONCILIATION_FAILED'; end if;
 
   if not exists (
@@ -55,6 +67,7 @@ begin
     where operation_code='ORQUESTACION_PIPELINE_LF' and step_order=110
       and fail_condition ? 'RETRY_TERMINAL_FAILED'
       and block_condition ? 'RETRY_INVALID_AFTER_TERMINAL'
+      and updated_by_execution_id=v_execution_id
   ) then raise exception 'ACT0058_STEP_110_RECONCILIATION_FAILED'; end if;
 end
 $reconcile$;
