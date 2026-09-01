@@ -3,11 +3,15 @@ from __future__ import annotations
 from pathlib import Path
 import json
 import re
+import subprocess
+import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 SPEC = ROOT / 'sandbox/lf_contract_gate_test/act0058_missing_judges_v1.yaml'
 RECON = ROOT / 'sandbox/lf_contract_gate_test/act0058_step_contract_reconciliation_v1.yaml'
 EVIDENCE = ROOT / 'sandbox/lf_contract_gate_test/evidence/ACT0058_PENDING_SOURCE_INSPECTION_20260901.json'
+CASE_VALIDATOR = ROOT / 'sandbox/lf_contract_gate_test/validate_act0058_judge_cases_v1.py'
+LIVE_RECON_VALIDATOR = ROOT / 'sandbox/lf_contract_gate_test/validate_act0058_live_contract_reconciliation_v1.py'
 READY = {
     (5,'init_execution','MINI_JUDGE_ACT0058_INIT_EXECUTION'),
     (20,'init_run','MINI_JUDGE_ACT0058_INIT'),
@@ -24,6 +28,12 @@ FORBIDDEN = {'production_authorized: true','automatic_impact: true','db_write: t
 
 def fail(msg: str) -> None:
     raise SystemExit(f'FAIL ACT0058_JUDGE_SPEC: {msg}')
+
+def run(path: Path) -> str:
+    p=subprocess.run([sys.executable,str(path)],cwd=ROOT,capture_output=True,text=True)
+    if p.returncode:
+        fail(f'{path.name}: {p.stdout} {p.stderr}')
+    return p.stdout.strip()
 
 def validate_source_evidence() -> None:
     data = json.loads(EVIDENCE.read_text(encoding='utf-8'))
@@ -92,6 +102,8 @@ def main() -> int:
         fail('deterministic-first boundary missing')
     validate_reconciliation()
     validate_source_evidence()
+    print(run(CASE_VALIDATOR))
+    print(run(LIVE_RECON_VALIDATOR))
     print('ACT0058_MISSING_JUDGES_SPEC=PASS ready=10 source_reconciliation=2 deterministic=10 llm=0')
     print('ACT0058_CONTRACT_RECONCILIATION=PASS steps=105,110 db_write=0')
     print('ACT0058_LIVE_INVENTORY=PASS active_steps=14 existing_bindings=4 missing=10')
