@@ -1,0 +1,9 @@
+{
+  "rows": [
+    {"kb_id":"19461cc1-dc9c-4261-8b36-2bc8401160a1","grounding_status":"GROUNDED","consumer_ready":true,"topic":"negotiation","summary":"grounded negotiation pattern","source_url":"https://example.test/neg-1","competitor":"fixture","quality_score":0.9},
+    {"kb_id":"07fec06f-51fd-4b3f-a322-114878881f5c","grounding_status":"GROUNDED","consumer_ready":true,"topic":"negotiation","summary":"grounded negotiation constraint","source_url":"https://example.test/neg-2","competitor":"fixture","quality_score":0.9},
+    {"kb_id":"not-bound","grounding_status":"GROUNDED","consumer_ready":true,"topic":"unbound","summary":"must never be selected","source_url":"https://example.test/no","competitor":"fixture","quality_score":1.0},
+    {"kb_id":"46ff730d-d561-4cab-ba2e-b4f45a87171c","grounding_status":"STALE","consumer_ready":true,"topic":"stale","summary":"must never be selected","source_url":"https://example.test/stale","competitor":"fixture","quality_score":0.9},
+    {"kb_id":"8c5324d1-14a0-43b0-8816-c7e0bb85d24c","grounding_status":"GROUNDED","consumer_ready":false,"topic":"not-ready","summary":"must never be selected","source_url":"https://example.test/not-ready","competitor":"fixture","quality_score":0.9}
+  ]
+}
