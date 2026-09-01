@@ -22,3 +22,5 @@ jobs:
           python-version: "3.12"
       - name: Run READ_ONLY resolver benchmark and held-out controls
         run: python sandbox/lf_contract_gate_test/input_governance_incremental/change_impact_resolver_readonly/run_resolver_tests.py
+      - name: Measure pure resolver cold/warm/cache performance
+        run: python sandbox/lf_contract_gate_test/input_governance_incremental/change_impact_resolver_readonly/benchmark_resolver_perf.py
