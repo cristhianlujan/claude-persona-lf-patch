@@ -1,0 +1,25 @@
+name: Profile Driven Screen Generation Gate
+
+on:
+  pull_request:
+    paths:
+      - "sandbox/lf_contract_gate_test/profile_driven_screen_generation/**"
+      - ".github/workflows/profile-driven-screen-generation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  deterministic-contract-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run profile-driven screen generation contract regressions
+        run: |
+          set -euo pipefail
+          cd sandbox/lf_contract_gate_test/profile_driven_screen_generation
+          python3 run_tests.py
