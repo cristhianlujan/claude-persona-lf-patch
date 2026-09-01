@@ -1,49 +1,18 @@
 {
-  "schema": "LF_LEARNING_CONSUMER_BACKLOG_TRIAGE_V1",
-  "consumer_id": "PERFIL-PRODUCT-DIRECTOR-LF",
-  "mode": "READ_ONLY",
-  "source_authority": "public.lf_knowledge_base",
-  "selection_rule": "EXACT_CAPABILITY_THEN_MAX_5_BOUNDED_EVIDENCE",
-  "dispositions": {
-    "DEDUP_NEGOCIACION_DEUDA": [
-      "88c3ea18-3146-4590-a91b-cbfaac26b3ca",
-      "68f49ee5-07d6-4a46-a80e-418ece7e7269",
-      "5cd72ec1-c2d5-49e9-870e-da87e18e755c",
-      "e2def384-720a-4b92-9545-31bd9f1d5eae",
-      "4589a1dd-b797-453b-97b6-ff54411dd015",
-      "acac846b-2d41-404a-b7dc-5d892ed39496"
-    ],
-    "DEDUP_EDUCACION_CREDITICIA": [
-      "0821f197-1141-4aae-9e1a-17e824a40e21",
-      "7ebe6b67-9463-4753-82eb-f3fedfc2f72c",
-      "7b92a3fb-5ec0-458d-b4b7-8300d81df8cb",
-      "ce61bf67-0a36-42d4-a411-6c43330923a2",
-      "c1eb138f-086f-41fc-a65d-a866a223df99",
-      "a8632f24-3e25-4cf6-9928-6ba0b2ea4657",
-      "3f4ca9bb-61f9-46e7-9850-59a2448b5277",
-      "663f9684-5ec5-4bfc-bc91-469bbf01f57b"
-    ],
-    "DEFER_LOW_QUALITY_OR_OUTSIDE_CURRENT_DEBT_SCOPE": [
-      "55f1b6c0-e019-4744-ae60-64861863d5b5",
-      "6b4efb50-6e61-4f4c-ac1e-7ec3b7eac985",
-      "c346375b-32c1-4b7d-b44c-410951234314",
-      "91ccd266-ed4c-4940-b4e0-6c06871ff62a",
-      "33e6970d-d19c-4300-8ed7-1784dd162d9d"
-    ],
-    "READY_FOR_OTHER_CAPABILITY_OR_CONSUMER_REVIEW": [
-      "7645c4ee-0c9a-4634-9845-d2bd725d3abb",
-      "a6422c36-6e32-4b96-b861-c2a57d3d7016",
-      "b7b073dc-2bbb-49be-bc23-a706da00b517",
-      "a19d068a-f67c-4b5b-a6a1-09e84233f463"
-    ]
+  "schema":"LF_LEARNING_CONSUMER_BACKLOG_TRIAGE_V1",
+  "consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF",
+  "mode":"READ_ONLY",
+  "source_authority":"public.lf_knowledge_base",
+  "eligibility_predicate":"kb_category=COMPETENCIA AND grounding_status=GROUNDED AND consumer_ready=true",
+  "live_eligible_total":35,
+  "selected_in_bindings":17,
+  "remaining_triaged":18,
+  "dispositions":{
+    "DEDUP_NEGOCIACION_DEUDA":["88c3ea18-3146-4590-a91b-cbfaac26b3ca","4589a1dd-b797-453b-97b6-ff54411dd015","acac846b-2d41-404a-b7dc-5d892ed39496","e2def384-720a-4b92-9545-31bd9f1d5eae","5cd72ec1-c2d5-49e9-870e-da87e18e755c","68f49ee5-07d6-4a46-a80e-418ece7e7269"],
+    "DEDUP_EDUCACION_CREDITICIA":["0821f197-1141-4aae-9e1a-17e824a40e21","3f4ca9bb-61f9-46e7-9850-59a2448b5277","7b92a3fb-5ec0-458d-b4b7-8300d81df8cb","a8632f24-3e25-4cf6-9928-6ba0b2ea4657","c1eb138f-086f-41fc-a65d-a866a223df99","ce61bf67-0a36-42d4-a411-6c43330923a2"],
+    "DEFER_LOW_QUALITY_OR_OUTSIDE_CURRENT_DEBT_SCOPE":["91ccd266-ed4c-4940-b4e0-6c06871ff62a","6b4efb50-6e61-4f4c-ac1e-7ec3b7eac985","c346375b-32c1-4b7d-b44c-410951234314"],
+    "READY_FOR_OTHER_CAPABILITY_OR_CONSUMER_REVIEW":["7645c4ee-0c9a-4634-9845-d2bd725d3abb","a6422c36-6e32-4b96-b861-c2a57d3d7016","b7b073dc-2bbb-49be-bc23-a706da00b517"]
   },
-  "selected_or_absorbed_in_current_bindings": [
-    "02bcfdd4-6859-4d56-9fbc-02af0ddf65b5",
-    "a789f419-b05f-4eba-af99-015bd56d24d5",
-    "5500178a-d503-476c-be77-c99223b4d90c",
-    "3118e5f0-9b7c-4a90-839a-33ad0f14384d",
-    "92fc4ad2-1581-4aa1-b01b-e986bb3cc71c"
-  ],
-  "production_impact": false,
-  "automatic_promotion": false
+  "production_impact":false,
+  "automatic_promotion":false
 }
