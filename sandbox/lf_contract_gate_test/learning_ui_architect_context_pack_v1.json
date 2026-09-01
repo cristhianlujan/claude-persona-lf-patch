@@ -1,0 +1,16 @@
+{
+  "schema":"LF_LEARNING_UI_ARCHITECT_CONTEXT_PACK_V1",
+  "status":"CANDIDATO_READ_ONLY",
+  "consumer_id":"PERFIL-UI-ARCHITECT",
+  "consumer_type":"PROFILE",
+  "router_action":"EJECUCION_PERFIL_LF",
+  "upstream_authority":{"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","artifact":"product_direction_ref","current_required":true,"precedence":"PRODUCT_DIRECTION_FIRST"},
+  "selection":{"mode":"DETERMINISTIC_EXACT_ID","llm_selector_allowed":false,"semantic_scope_expansion_allowed":false,"max_evidence_refs_per_binding":5,"context_budget_bytes":5000,"fallback":"PRODUCT_CONTEXT_ONLY_NO_COMPETITIVE_UI_PATTERN"},
+  "authority":{"competitive_context_authority_type":"UPSTREAM_CONSTRAINTS","eligible_grounding_status":"GROUNDED","consumer_ready_required":true,"competitive_evidence_is_context_not_product_truth":true,"profile_source_mutation":false,"production_impact":false,"automatic_promotion":false},
+  "champion_id":"CHAMPION-UI-ARCHITECT-NO-COMPETITIVE-CONTEXT-v1",
+  "challenger_id":"CHALLENGER-UI-ARCHITECT-SELECTED-COMPETITIVE-CONTEXT-v1",
+  "binding_contract":"learning_ui_architect_bindings_v1.yaml",
+  "judges":["exact_binding_required","upstream_product_authority_current","authority_preservation","no_invention","bounded_context","must_not_invoke"],
+  "lifecycle_state":"READY_FOR_BINDING",
+  "rollback":"PRODUCT_CONTEXT_ONLY_NO_COMPETITIVE_UI_PATTERN"
+}
