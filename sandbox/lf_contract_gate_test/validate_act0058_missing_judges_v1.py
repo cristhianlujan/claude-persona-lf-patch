@@ -14,6 +14,8 @@ EVIDENCE = ROOT / 'sandbox/lf_contract_gate_test/evidence/ACT0058_PENDING_SOURCE
 CASE_VALIDATOR = ROOT / 'sandbox/lf_contract_gate_test/validate_act0058_judge_cases_v1.py'
 LIVE_RECON_VALIDATOR = ROOT / 'sandbox/lf_contract_gate_test/validate_act0058_live_contract_reconciliation_v1.py'
 CANDIDATE_MIGRATION_VALIDATOR = ROOT / 'sandbox/lf_contract_gate_test/validate_act0058_candidate_migrations_v1.py'
+BENCHMARK = ROOT / 'sandbox/lf_contract_gate_test/benchmark_act0058_candidate_judges_v1.py'
+QPG_VALIDATOR = ROOT / 'sandbox/lf_contract_gate_test/validate_act0058_candidate_judge_qpg_gate_v1.py'
 READY = {
     (5,'init_execution','MINI_JUDGE_ACT0058_INIT_EXECUTION'),
     (20,'init_run','MINI_JUDGE_ACT0058_INIT'),
@@ -121,6 +123,8 @@ def main() -> int:
     print(run(CASE_VALIDATOR))
     print(run(LIVE_RECON_VALIDATOR))
     print(run(CANDIDATE_MIGRATION_VALIDATOR))
+    print(run(QPG_VALIDATOR))
+    print(run(BENCHMARK))
     print('ACT0058_MISSING_JUDGES_SPEC=PASS ready=10 source_reconciliation=2 deterministic=10 llm=0')
     print('ACT0058_CONTRACT_RECONCILIATION=PASS steps=105,110 source_migration=MATERIALIZED_NOT_APPLIED')
     print('ACT0058_LIVE_INVENTORY=PASS active_steps=14 existing_bindings=4 missing=10')
