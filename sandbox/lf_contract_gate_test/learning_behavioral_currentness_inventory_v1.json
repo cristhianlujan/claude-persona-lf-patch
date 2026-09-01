@@ -2,7 +2,7 @@
   "schema":"LF_LEARNING_BEHAVIORAL_CURRENTNESS_INVENTORY_V1",
   "mode":"READ_ONLY",
   "source":"programacion.input_readiness_runs + programacion.fn_input_readiness_run_is_current",
-  "observed_at_utc":"2026-09-01T20:29:00Z",
+  "observed_at_utc":"2026-09-01T22:07:32.561803Z",
   "runs":[
     {"run_id":210,"pantalla_id":58,"status":"COMPLETED","invalidated_at":null,"is_current":false},
     {"run_id":212,"pantalla_id":2,"status":"COMPLETED","invalidated_at":null,"is_current":true},
