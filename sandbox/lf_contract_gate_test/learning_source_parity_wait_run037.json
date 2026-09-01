@@ -1,21 +1,28 @@
 {
-  "schema":"LF_LEARNING_SOURCE_PARITY_WAIT_V1",
+  "schema":"LF_LEARNING_SOURCE_PARITY_WAIT_V2",
   "execution_id":"LF-AUTOLEARN-RUN-20260901-037",
-  "candidate_head":"934027448b6b733af059407cc6291ac7463c3b6e",
   "observed_main_sha":"e5b9febcfebd7c16f8cc8a0cb146cfc467eadc42",
   "supabase_post_1400_migrations":[
     {"version":"20260901150124","name":"lf_router_adapter_runtime_authority_guard_v1","source_in_main":true},
-    {"version":"20260901151435","name":"lf_input_governance_validator_phase_split_v1","source_in_main":false,"source_pr":408}
+    {"version":"20260901151435","name":"lf_input_governance_validator_phase_split_v1","source_in_main":false,"source_pr":408},
+    {"version":"20260901154622","name":"lf_input_governance_b2b_story_semantic_resolvers_v1","source_in_main":false,"source_pr":408,"source_blob":"7be383cd60c0e37d21ceacd413ce366bb59660b6"}
   ],
-  "exact_head_ci":{
-    "validate_lf_packs":{"run_id":33526258686,"status":"SUCCESS"},
-    "bootstrap":{"run_id":33526258506,"status":"SUCCESS"},
-    "lf_contract_check":{"run_id":33526258435,"job_id":99917741497,"status":"FAILURE","first_bad_step":"Enforce LF migration source parity after checkpoint"}
+  "dedicated_source_parity_pr":{
+    "pr":408,
+    "head":"362271d0e859ecdf6e3875a2f20d8aec1ed80027",
+    "state":"OPEN",
+    "draft":false,
+    "lf_migration_source_parity_step":"SUCCESS",
+    "input_governance_source_parity_step":"SUCCESS",
+    "overall_lf_contract_check":"FAILURE_AFTER_PARITY",
+    "first_bad_step_after_parity":"Capture authenticated E.16 Actions inventory",
+    "failed_job_rerun_requested":true
   },
-  "classification":"WAITING_SOURCE_PARITY_EXTERNAL_CARRIL",
-  "forbidden_action":"COPY_EXTERNAL_MIGRATION_INTO_LEARNING_PR_ONLY_TO_GREEN_CI",
-  "next_action":"RECHECK_PR408_AND_MAIN_THEN_RERUN_EXACT_HEAD",
+  "classification":"WAITING_SOURCE_PARITY_MAIN_MATERIALIZATION",
+  "parity_root_cause_resolved_in_source_candidate":true,
   "learning_contract_regression_proven":false,
+  "forbidden_action":"COPY_EXTERNAL_MIGRATION_INTO_LEARNING_PR_ONLY_TO_GREEN_CI",
+  "next_action":"RECHECK_PR408_RERUN_AND_BOOTSTRAP; ONLY AFTER GOVERNED MAIN MATERIALIZATION RECHECK LEARNING EXACT_HEAD",
   "production_authorized":false,
   "automatic_impact":false
 }
