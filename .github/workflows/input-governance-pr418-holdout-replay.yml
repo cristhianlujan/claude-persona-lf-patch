@@ -28,3 +28,6 @@ jobs:
       - name: Run unknown-compound holdout
         working-directory: sandbox/lf_contract_gate_test/input_governance_incremental
         run: python3 run_change_impact_unknown_compound_holdout_v1.py
+      - name: Run authority-state holdout
+        working-directory: sandbox/lf_contract_gate_test/input_governance_incremental
+        run: python3 run_change_impact_authority_state_holdout_v1.py
