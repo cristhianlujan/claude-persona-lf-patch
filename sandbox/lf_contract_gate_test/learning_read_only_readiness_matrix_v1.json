@@ -1,0 +1,12 @@
+{
+  "schema":"LF_LEARNING_READ_ONLY_READINESS_V1",
+  "status":"CANDIDATO_READ_ONLY",
+  "consumers":[
+    {"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","exact_binding_contract":true,"deterministic_context_pack":true,"reader_supported":true,"routing_context_benchmark_cases":50,"routing_context_benchmark_families":10,"behavioral_profile_ab":"BENCHMARK_REQUIRED_PROFILE_RUNTIME","lifecycle":"READY_FOR_BINDING","production":false},
+    {"consumer_id":"PERFIL-UI-ARCHITECT","exact_binding_contract":true,"deterministic_context_pack":true,"reader_supported":true,"upstream_product_direction_required":true,"routing_context_benchmark_cases":50,"routing_context_benchmark_families":10,"behavioral_profile_ab":"BENCHMARK_REQUIRED_PROFILE_RUNTIME","lifecycle":"READY_FOR_BINDING","production":false}
+  ],
+  "blocked_consumers":["FRONTEND_IMPLEMENTATION","GAMIFICATION","GENERIC_PROFILE"],
+  "shared_reader":{"selection":"DETERMINISTIC_EXACT_ID","selector_llm_calls":0,"selector_round_trips":0,"semantic_scope_expansion":false,"writes":0},
+  "promotion_boundary":{"automatic":false,"production":false,"champion_replacement":false},
+  "next_gate":"GOVERNED_BEHAVIORAL_PROFILE_AB_OR_CANONICAL_BINDING_MATERIALIZATION"
+}
