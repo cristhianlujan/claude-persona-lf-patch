@@ -1,11 +1,41 @@
-version: v0.2
+version: v0.3
 status: CANDIDATO_READ_ONLY
 operation: LEARNING_BRIDGE_KB_CARD_LF
-purpose: Gobernar consumo de aprendizajes competitivos con binding exacto y benchmark champion/challenger antes de promocion.
+purpose: Gobernar consumo incremental de aprendizajes competitivos con binding exacto, selector deterministico y benchmark champion/challenger antes de promocion.
 router_first:
   required: true
   router_asset: ACT-0001
   operational_source: public.v_lf_fuente_operativa
+read_only_rollout:
+  objective: ENABLE_SAFE_INCREMENTAL_CONSUMPTION_BEFORE_BEHAVIORAL_PROMOTION
+  source_of_truth: public.lf_knowledge_base
+  selector_ref: sandbox/lf_contract_gate_test/learning_read_only_context_selector_v1.py
+  selector_mode: DETERMINISTIC_EXACT_ID
+  writes_from_consumer: FORBIDDEN
+  auto_impact: FORBIDDEN
+  production_mutation: FORBIDDEN
+  new_learning_visibility_rule: EXPLICIT_BINDING_CLASSIFICATION_REQUIRED
+  unbound_learning_behavior: DO_NOT_INJECT
+  fallback: NO_COMPETITIVE_CONTEXT
+  max_evidence_refs_per_binding: 5
+  no_extra_llm_call: true
+  no_extra_round_trip: true
+  c3_pattern_reused:
+    same_input: true
+    same_model_runtime: true
+    deterministic_context_selection: true
+    bounded_context: true
+    quality_not_worse_than_champion: true
+    initial_benchmark_cases: 50
+    preferred_shape: 10_FAMILIES_X_5_CASES
+  rollout_gates:
+    selector_structural_pass_pct: 100
+    authority_pass_pct: 100
+    critical_must_not_invoke_false_positives: 0
+    requirements_not_worse_than_champion: true
+    context_growth_over_champion: FORBIDDEN_WITHOUT_JUSTIFICATION
+    llm_calls_change_max: 0
+    round_trips_change_max: 0
 consumer_binding:
   required_before_close: true
   allowed_consumer_types: [PROFILE, AGENT, SKILL, ADAPTER, OPERATION]
