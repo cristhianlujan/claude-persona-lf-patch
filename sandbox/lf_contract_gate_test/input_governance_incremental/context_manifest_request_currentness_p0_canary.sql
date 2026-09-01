@@ -1,0 +1,25 @@
+-- READ_ONLY/PERFORMANCE CANARY PLAN — execute transactionally against LF sandbox and ROLLBACK.
+-- This file is evidence/procedure only; it does not authorize production or promotion.
+--
+-- Preconditions:
+-- 1) EKB ARC-015 loaded.
+-- 2) authoritative currentness is evaluated once for the selected run in the same statement snapshot.
+-- 3) candidate migration is applied only in an ephemeral/bootstrap DB or transactional sandbox canary.
+--
+-- Required assertions after candidate application:
+-- - strong fn_input_context_manifest(bigint) remains byte/definition unchanged;
+-- - helper cannot be EXECUTEd by PUBLIC/anon/authenticated/service_role;
+-- - helper output equals strong manifest output for a run authoritatively proven current in the same snapshot;
+-- - helper rejects p_run_current=false;
+-- - fn_input_governance_execute output is semantically identical to baseline for the same run/consumer;
+-- - classifier/evaluator semantic drift still makes the strong currentness entry reject the old run (ARC-015);
+-- - no currentness/stage recomputation exists inside the helper;
+-- - measure cold/warm p50/p95 separately and label all sandbox timings as non-production.
+--
+-- Current live baseline captured 2026-09-01 before this candidate:
+-- fn_input_readiness_run_is_current_cached_v1(218): 10859.674 ms
+-- fn_input_context_manifest(218):                  28627.725 ms
+-- fn_input_governance_execute(43,'STORY_CREATOR'):42598.812 ms
+--
+-- Target for this P0 micro-lot: remove only the duplicated currentness + stage-currentness
+-- inside context_manifest. Router duplicate worker/currentness calls are intentionally out of scope.
