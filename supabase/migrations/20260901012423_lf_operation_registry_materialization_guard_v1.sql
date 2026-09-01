@@ -32,51 +32,35 @@ begin
     return new;
   end if;
 
-  select count(*)
-    into v_required_steps
+  select count(*) into v_required_steps
   from public.lf_operation_steps s
-  where s.operation_code = new.operation_code
-    and s.required = true;
+  where s.operation_code = new.operation_code and s.required = true;
 
   if v_required_steps = 0 then
-    raise exception 'LF_OPERATION_MATERIALIZATION_REQUIRED_STEPS_MISSING:%', new.operation_code
-      using errcode = '23514';
+    raise exception 'LF_OPERATION_MATERIALIZATION_REQUIRED_STEPS_MISSING:%', new.operation_code using errcode = '23514';
   end if;
 
-  select count(*)
-    into v_active_contracts
+  select count(*) into v_active_contracts
   from public.lf_operation_steps s
   join public.lf_operation_step_contracts c
-    on c.operation_code = s.operation_code
-   and c.step_order = s.step_order
-   and c.step_id = s.step_id
-   and c.status = 'ACTIVE_ENFORCEMENT'
-  where s.operation_code = new.operation_code
-    and s.required = true;
+    on c.operation_code = s.operation_code and c.step_order = s.step_order and c.step_id = s.step_id and c.status = 'ACTIVE_ENFORCEMENT'
+  where s.operation_code = new.operation_code and s.required = true;
 
   if v_active_contracts <> v_required_steps then
-    raise exception 'LF_OPERATION_MATERIALIZATION_CONTRACT_GAP:%:%:%', new.operation_code, v_active_contracts, v_required_steps
-      using errcode = '23514';
+    raise exception 'LF_OPERATION_MATERIALIZATION_CONTRACT_GAP:%:%:%', new.operation_code, v_active_contracts, v_required_steps using errcode = '23514';
   end if;
 
   select count(*), count(*) filter (where j.judge_code is not null)
     into v_active_bindings, v_active_bound_judges
   from public.lf_operation_steps s
   join public.lf_operation_step_judge_bindings b
-    on b.operation_code = s.operation_code
-   and b.step_order = s.step_order
-   and b.step_id = s.step_id
-   and b.status = 'ACTIVE_ENFORCEMENT'
+    on b.operation_code = s.operation_code and b.step_order = s.step_order and b.step_id = s.step_id and b.status = 'ACTIVE_ENFORCEMENT'
   left join public.lf_operation_judges j
-    on j.operation_code = b.operation_code
-   and j.judge_code = b.judge_code
-   and j.status = 'ACTIVE_ENFORCEMENT'
-  where s.operation_code = new.operation_code
-    and s.required = true;
+    on j.operation_code = b.operation_code and j.judge_code = b.judge_code and j.status = 'ACTIVE_ENFORCEMENT'
+  where s.operation_code = new.operation_code and s.required = true;
 
   if v_active_bindings <> v_required_steps or v_active_bound_judges <> v_required_steps then
-    raise exception 'LF_OPERATION_MATERIALIZATION_JUDGE_GAP:%:%:%:%', new.operation_code, v_active_bindings, v_active_bound_judges, v_required_steps
-      using errcode = '23514';
+    raise exception 'LF_OPERATION_MATERIALIZATION_JUDGE_GAP:%:%:%:%', new.operation_code, v_active_bindings, v_active_bound_judges, v_required_steps using errcode = '23514';
   end if;
 
   return new;
