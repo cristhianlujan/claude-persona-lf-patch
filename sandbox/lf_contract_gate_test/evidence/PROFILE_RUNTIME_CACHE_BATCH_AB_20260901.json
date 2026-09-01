@@ -63,17 +63,31 @@
     "remediation": "cache complete build/bin bundle and set LD_LIBRARY_PATH to the restored bundle directory",
     "remediation_verified_by": 99800593611
   },
-  "governance": {
-    "contract_run_id": 33489862492,
-    "current_failure_code": "FAIL_UNAUTHORIZED_GITHUB_PATH",
-    "current_failure_path": ".github/workflows/profile-runtime-optimization.yml",
-    "semantic_runtime_failure": false,
-    "remediation": "Move the proven cache/batch transport into the already-authorized .github/workflows/story-agent-evidence-verifier.yml and remove the experimental workflow. Do not widen governance allowlists."
+  "governed_integration": {
+    "integration_head_sha": "682c86ba3809a0e89dea7e8026fefbfe6d0949e9",
+    "authorized_workflow": ".github/workflows/story-agent-evidence-verifier.yml",
+    "experimental_workflow_present_in_final_tree": false,
+    "governance_allowlist_widened": false,
+    "story_agent_evidence_verifier_run_id": 33490770614,
+    "story_agent_evidence_verifier_conclusion": "success",
+    "validate_lf_packs_run_id": 33490770622,
+    "validate_lf_packs_conclusion": "success",
+    "bootstrap_reproducibility_run_id": 33490770671,
+    "bootstrap_reproducibility_conclusion": "success",
+    "pull_request_contract_run_id": 33490770689,
+    "pull_request_contract_runtime_checks": "PASS before E.16 inventory",
+    "same_head_push_contract_run_id": 33490766198,
+    "same_head_push_failure_code": "FAIL_UNAUTHORIZED_GITHUB_PATH",
+    "same_head_push_failure_path": ".github/workflows/profile-runtime-optimization.yml",
+    "same_head_push_failure_classification": "TRANSITIONAL_PUSH_DIFF_INCLUDED_EXPERIMENTAL_WORKFLOW_DELETION",
+    "same_head_push_failure_is_runtime_failure": false,
+    "readback": "The final PR tree no longer contains the experimental workflow. The failed push validator compared the transition from the previous branch head and therefore saw the deletion path. A subsequent evidence-only exact-head commit is used to obtain a clean push/PR E.16 matrix without widening governance."
   },
   "closure_constraints": [
     "PR remains DRAFT until authorized transport integration and exact-head CI are verified.",
     "Do not merge or modify main in this evidence step.",
     "Do not claim visual review success without verified raster bytes.",
-    "Do not count the failed v3 warm probe as positive evidence."
+    "Do not count the failed v3 warm probe as positive evidence.",
+    "Do not widen governance allowlists to accommodate the retired experimental workflow."
   ]
 }
