@@ -14,7 +14,9 @@
   "boundedness": {
     "max_evidence_refs_per_capability": 5,
     "llm_calls_for_selection": 0,
-    "round_trips_for_selection": 0
+    "round_trips_for_selection": 0,
+    "semantic_search": false,
+    "reader_writes": 0
   },
   "bindings": [
     {"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","capability_id":"NEGOCIACION_DEUDA","cluster_codes":["NEGOCIACION_DEUDA"],"prerequisite":null,"context_budget_bytes":6000},
@@ -24,6 +26,12 @@
     {"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","capability_id":"PAYMENT_NO_ADEUDO","cluster_codes":["PAGOS_Y_NO_ADEUDO"],"prerequisite":null,"context_budget_bytes":6000},
     {"consumer_id":"PERFIL-UI-ARCHITECT","capability_id":"DIGITAL_SELF_SERVICE","cluster_codes":["AUTOGESTION_DIGITAL"],"prerequisite":"PRODUCT_DIRECTION_AUTHORIZED_CURRENT","context_budget_bytes":5000},
     {"consumer_id":"PERFIL-UI-ARCHITECT","capability_id":"PAYMENT_NO_ADEUDO","cluster_codes":["PAGOS_Y_NO_ADEUDO"],"prerequisite":"PRODUCT_DIRECTION_AUTHORIZED_CURRENT","context_budget_bytes":5000}
+  ],
+  "explicit_nonbindings": [
+    {"consumer_id":"PERFIL-GAMIFICATION-SYSTEM-ARCHITECT","reason":"NO_EXACT_COMPETITIVE_CAPABILITY","fallback":"NO_COMPETITIVE_CONTEXT"},
+    {"consumer_id":"ACT-0051","reason":"UPSTREAM_PRODUCT_AND_UI_AUTHORITY_REQUIRED","fallback":"NO_COMPETITIVE_CONTEXT"},
+    {"consumer_id":"PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531","reason":"READY_FOR_BINDING_REVIEW_ONLY_RUNTIME_DISABLED","fallback":"NO_COMPETITIVE_CONTEXT"},
+    {"consumer_id":"PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531","reason":"READY_FOR_BINDING_REVIEW_ONLY_RUNTIME_DISABLED","fallback":"NO_COMPETITIVE_CONTEXT"}
   ],
   "fallback": "NO_COMPETITIVE_CONTEXT",
   "automatic_impact": false,
