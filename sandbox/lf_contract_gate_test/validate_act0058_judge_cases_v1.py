@@ -16,6 +16,7 @@ EXPECTED_JUDGES={
 def fail(msg): raise SystemExit('FAIL ACT0058_JUDGE_CASES: '+msg)
 def main():
  p=json.loads(PATH.read_text(encoding='utf-8'))
+ if p.get('schema')!='ACT0058_MINI_JUDGE_CASE_MATRIX_V2': fail('schema must be V2 material-evidence matrix')
  if p.get('operation_code')!='ORQUESTACION_PIPELINE_LF' or p.get('status')!='CANDIDATE_READ_ONLY' or p.get('production_impact') is not False: fail('unsafe header')
  cases=p.get('cases') or []
  if len(cases)!=30 or len({c['id'] for c in cases})!=30: fail('case cardinality')
@@ -27,7 +28,11 @@ def main():
  for required in ['RESTOCK_COMPLETED','RESTOCK_NOOP_WARN','RESTOCK_BLOCKED','RETRY_ALLOWED','RETRY_TERMINAL_FAILED','RETRY_BLOCKED']:
   if required not in expected_values: fail('missing edge result '+required)
  if not any(c['id']=='RESTOCK_NOOP' and c['input'].get('urls_insertadas')==0 and c['input'].get('warn_event_recorded') is True for c in cases): fail('restock noop boundary')
- if not any(c['id']=='RETRY_TERMINAL' and c['input'].get('retry_count')==3 and c['input'].get('next_action')=='FAILED_CONTINUE_NEXT_URL' for c in cases): fail('retry terminal boundary')
- print('ACT0058_JUDGE_CASES=PASS cases=30 judges=10 per_judge=3 restock_noop=PASS retry_terminal_at_3=PASS')
+ retry=[c for c in cases if c['judge']=='MINI_JUDGE_ACT0058_RETRY']
+ if any('next_action' in c['input'] for c in retry): fail('synthetic next_action forbidden')
+ if any(not {'retry_count','stage_status','error_detail'} <= set(c['input']) for c in retry): fail('retry cases must use material UPDATE evidence')
+ if not any(c['id']=='RETRY_TERMINAL' and c['input'].get('retry_count')==3 and c['input'].get('stage_status')=='FAILED' for c in retry): fail('retry terminal boundary')
+ if not any(c['id']=='RETRY_BLOCK_OVER' and c['input'].get('retry_count')==3 and c['input'].get('stage_status')!='FAILED' for c in retry): fail('retry over-limit negative boundary')
+ print('ACT0058_JUDGE_CASES=PASS cases=30 judges=10 per_judge=3 restock_noop=PASS retry_runtime_evidence=PASS')
  return 0
 if __name__=='__main__': raise SystemExit(main())
