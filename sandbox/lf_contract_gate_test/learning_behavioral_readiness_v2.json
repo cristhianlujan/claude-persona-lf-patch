@@ -40,5 +40,11 @@
       "required_evidence_after_runtime": ["RAW_OUTPUT", "CANONICAL_EXECUTION_RECEIPT", "DETERMINISTIC_VALIDATION", "SEMANTIC_JUDGE", "FRESH_ADVERSARIAL_EVIDENCE"]
     }
   ],
-  "ekb_preflight": {"live_db_readback": false, "status": "CHANNEL_BLOCKED_SOURCE_EVIDENCE_ONLY", "mutation_scope": "SANDBOX_GITHUB_ONLY"}
+  "ekb_preflight": {
+    "live_db_readback": true,
+    "status": "RECOVERED_LIVE_READBACK",
+    "matched_error_codes": ["CI-E16-001", "CI-MIG-001", "DB-001", "DB-EVT-001", "GOV-010", "KB-PROD-001", "LEARNING-EFFICIENCY-METRICS-CONTRACT-001", "OPS-002", "PROFILE-RUNTIME-DISPATCH-001"],
+    "mutation_scope": "SANDBOX_GITHUB_ONLY",
+    "supabase_outage": false
+  }
 }
