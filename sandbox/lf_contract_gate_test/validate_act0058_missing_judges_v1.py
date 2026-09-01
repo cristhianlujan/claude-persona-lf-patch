@@ -13,6 +13,7 @@ MIGRATION = ROOT / 'supabase/migrations/20260901153300_act0058_step_105_110_cont
 EVIDENCE = ROOT / 'sandbox/lf_contract_gate_test/evidence/ACT0058_PENDING_SOURCE_INSPECTION_20260901.json'
 CASE_VALIDATOR = ROOT / 'sandbox/lf_contract_gate_test/validate_act0058_judge_cases_v1.py'
 LIVE_RECON_VALIDATOR = ROOT / 'sandbox/lf_contract_gate_test/validate_act0058_live_contract_reconciliation_v1.py'
+CANDIDATE_MIGRATION_VALIDATOR = ROOT / 'sandbox/lf_contract_gate_test/validate_act0058_candidate_migrations_v1.py'
 READY = {
     (5,'init_execution','MINI_JUDGE_ACT0058_INIT_EXECUTION'),
     (20,'init_run','MINI_JUDGE_ACT0058_INIT'),
@@ -75,9 +76,11 @@ def validate_reconciliation() -> None:
     if text.count('live_conflict:') != 2 or text.count('canonical_source_rule:') != 2 or text.count('proposed_contract:') != 2:
         fail('reconciliation must cover exactly two source conflicts')
     migration_required = [
+        'ACT0058_RECONCILIATION_EXECUTION_ID_REQUIRED','ACT0058_RECONCILIATION_EXECUTION_INVALID',
         'ACT0058_STEP_105_BASELINE_DRIFT','ACT0058_STEP_110_BASELINE_DRIFT',
         'RESTOCK_NOOP_WARN','RETRY_TERMINAL_FAILED','RETRY_INVALID_AFTER_TERMINAL',
-        'ACT0058_STEP_105_RECONCILIATION_FAILED','ACT0058_STEP_110_RECONCILIATION_FAILED'
+        'ACT0058_STEP_105_RECONCILIATION_FAILED','ACT0058_STEP_110_RECONCILIATION_FAILED',
+        'updated_by_execution_id=v_execution_id'
     ]
     missing_migration=[x for x in migration_required if x not in migration]
     if missing_migration:
@@ -117,6 +120,7 @@ def main() -> int:
     validate_source_evidence()
     print(run(CASE_VALIDATOR))
     print(run(LIVE_RECON_VALIDATOR))
+    print(run(CANDIDATE_MIGRATION_VALIDATOR))
     print('ACT0058_MISSING_JUDGES_SPEC=PASS ready=10 source_reconciliation=2 deterministic=10 llm=0')
     print('ACT0058_CONTRACT_RECONCILIATION=PASS steps=105,110 source_migration=MATERIALIZED_NOT_APPLIED')
     print('ACT0058_LIVE_INVENTORY=PASS active_steps=14 existing_bindings=4 missing=10')
