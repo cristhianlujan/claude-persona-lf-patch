@@ -1,0 +1,15 @@
+{
+  "schema": "LF_UI_ARCHITECT_KB_ELIGIBILITY_READBACK_V1",
+  "observed_live_at_utc": "2026-09-01T18:53:14Z",
+  "source": "public.lf_knowledge_base",
+  "predicate": "kb_category=COMPETENCIA AND grounding_status=GROUNDED AND consumer_ready=true",
+  "rows": [
+    {"kb_id":"35cfab0c-1d91-4aa4-9761-f8af91181e17","kb_category":"COMPETENCIA","grounding_status":"GROUNDED","consumer_ready":true,"quality_score":0.96,"topic":"REGISTRO_AUTOGESTION_BENEFICIOS","competitor":"Finanty","source_url":"https://mi.finanty.com/registro"},
+    {"kb_id":"7d55562e-9266-478b-b071-dca7ba1ade1a","kb_category":"COMPETENCIA","grounding_status":"GROUNDED","consumer_ready":true,"quality_score":0.94,"topic":"PORTAL_AUTOGESTION_DEUDA","competitor":"Finanty","source_url":"https://mi.finanty.com/"},
+    {"kb_id":"92fc4ad2-1581-4aa1-b01b-e986bb3cc71c","kb_category":"COMPETENCIA","grounding_status":"GROUNDED","consumer_ready":true,"quality_score":0.90,"topic":"Procedimiento de pagos Finanty","competitor":"Finanty","source_url":"https://finanty.com/procedimientos-pagos"},
+    {"kb_id":"bd2a3a05-b53b-400c-846d-3634e422a500","kb_category":"COMPETENCIA","grounding_status":"GROUNDED","consumer_ready":true,"quality_score":0.94,"topic":"FAQ_DEUDA_PAGO_NO_ADEUDO","competitor":"Finanty","source_url":"https://www.finanty.com/preguntas-frecuentes"}
+  ],
+  "eligible_count": 4,
+  "automatic_impact": false,
+  "production_authorized": false
+}

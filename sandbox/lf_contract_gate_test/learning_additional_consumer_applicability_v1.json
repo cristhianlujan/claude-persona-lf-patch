@@ -1,0 +1,33 @@
+{
+  "schema": "LF_LEARNING_ADDITIONAL_CONSUMER_APPLICABILITY_V1",
+  "mode": "READ_ONLY",
+  "source_authority": "public.v_lf_router_adapter_bindings",
+  "observed_live_at_utc": "2026-09-01T19:14:00Z",
+  "consumers": [
+    {
+      "consumer_id": "PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531",
+      "consumer_type": "PROFILE",
+      "adapter_code": "ADAPTER-MARKETPLACE-LF-CX-TRUST-20260531",
+      "adapter_operational_status": "READ_ONLY",
+      "runtime_enabled": false,
+      "production_enabled": false,
+      "read_only_learning_status": "READY_FOR_BINDING_AFTER_EXACT_CAPABILITY_CLASSIFICATION",
+      "exact_capability_binding_observed": false,
+      "fallback": "NO_COMPETITIVE_CONTEXT"
+    },
+    {
+      "consumer_id": "PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531",
+      "consumer_type": "PROFILE",
+      "adapter_code": "ADAPTER-MARKETPLACE-LF-UX-20260531",
+      "adapter_operational_status": "READ_ONLY",
+      "runtime_enabled": false,
+      "production_enabled": false,
+      "read_only_learning_status": "READY_FOR_BINDING_AFTER_EXACT_CAPABILITY_CLASSIFICATION",
+      "exact_capability_binding_observed": false,
+      "fallback": "NO_COMPETITIVE_CONTEXT"
+    }
+  ],
+  "automatic_binding": false,
+  "automatic_impact": false,
+  "production_authorized": false
+}
