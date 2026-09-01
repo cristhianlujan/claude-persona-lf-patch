@@ -23,6 +23,7 @@ TESTS=[
  'validate_learning_read_only_operational_flow_v1.py',
  'validate_learning_read_only_bridge_integration_v1.py',
  'validate_learning_bridge_source_state_20260901_v1.py',
+ 'validate_learning_behavioral_runtime_candidate_v1.py',
 ]
 def main():
  results=[]
@@ -40,6 +41,6 @@ def main():
  state=json.loads((S/'learning_bridge_source_state_20260901_v1.json').read_text())
  if ref.get('reuse_rule')!='REFERENCE_PATTERN_ONLY_NOT_INHERITED_PASS' or any(x.get('conclusion')!='success' for x in ref.get('exact_head_workflows',[])): return 1
  if state.get('evidence_level')!='SOURCE_DECLARED_DB_UNVERIFIED_THIS_RUN': return 1
- print(json.dumps({'verdict':'PASS','validators':len(TESTS),'upstream_bridge':'LEARNING_BRIDGE_KB_CARD_LF','upstream_bridge_steps':25,'upstream_bridge_live_db':'UNVERIFIED','duplicate_learning_engine':False,'direct_learning_consumers':2,'indirect_downstream_consumers':2,'routing_cases':50,'routing_families':10,'ui_routing':b['routing'],'dynamic_exact_bindings':7,'dynamic_selector_llm_calls':0,'dynamic_selector_round_trips':0,'downstream_no_bypass_cases':40,'selector_llm_calls':0,'selector_round_trips':0,'context_service_writes':0,'downstream_learning_llm_calls':0,'behavioral_profile_ab':'NOT_EXECUTED','profiles_c3_reference_head':ref['head'],'profiles_c3_pass_inherited':False,'production_impact':False},sort_keys=True))
+ print(json.dumps({'verdict':'PASS','validators':len(TESTS),'upstream_bridge':'LEARNING_BRIDGE_KB_CARD_LF','upstream_bridge_steps':25,'upstream_bridge_live_db':'UNVERIFIED','duplicate_learning_engine':False,'direct_learning_consumers':2,'indirect_downstream_consumers':2,'routing_cases':50,'routing_families':10,'ui_routing':b['routing'],'dynamic_exact_bindings':7,'dynamic_selector_llm_calls':0,'dynamic_selector_round_trips':0,'downstream_no_bypass_cases':40,'behavioral_runtime_candidate':'AVAILABLE_NOT_CANONICAL','behavioral_runtime_candidate_exact_head_ci':'4/4','selector_llm_calls':0,'selector_round_trips':0,'context_service_writes':0,'downstream_learning_llm_calls':0,'behavioral_profile_ab':'NOT_EXECUTED','profiles_c3_reference_head':ref['head'],'profiles_c3_pass_inherited':False,'production_impact':False},sort_keys=True))
  return 0
 if __name__=='__main__': raise SystemExit(main())
