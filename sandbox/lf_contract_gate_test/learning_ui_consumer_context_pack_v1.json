@@ -1,0 +1,34 @@
+{
+  "schema": "LF_LEARNING_UI_CONSUMER_CONTEXT_PACK_V1",
+  "status": "SANDBOX_CANDIDATE",
+  "consumer_id": "PERFIL-UI-ARCHITECT",
+  "consumer_type": "PROFILE",
+  "router_action": "EJECUCION_PERFIL_LF",
+  "prerequisite": "PRODUCT_DIRECTION_AUTHORIZED_CURRENT",
+  "selector": "DETERMINISTIC_EXACT_ID",
+  "llm_selector_allowed": false,
+  "source_authority": "public.lf_knowledge_base",
+  "product_authority_precedence": true,
+  "bindings_ref": "sandbox/lf_contract_gate_test/learning_ui_consumer_bindings_v1.yaml",
+  "capabilities": ["DIGITAL_SELF_SERVICE", "PAYMENT_NO_ADEUDO"],
+  "boundedness": {
+    "recursive_objects": false,
+    "max_bindings": 2,
+    "max_evidence_refs_per_binding": 5,
+    "context_budget_bytes": 5000,
+    "llm_calls_for_selection": 0,
+    "round_trips_for_selection": 0
+  },
+  "authority_boundaries": [
+    "PRODUCT_DIRECTION_IS_PRIMARY_AUTHORITY",
+    "COMPETITIVE_UI_EVIDENCE_IS_OBSERVED_PATTERN_ONLY",
+    "NO_DOMAIN_TRUTH_INVENTION",
+    "NO_AUTOMATIC_PRODUCTION_IMPACT",
+    "NO_UNBOUND_KB_INJECTION"
+  ],
+  "fallback": "PRODUCT_CONTEXT_ONLY_NO_COMPETITIVE_UI_PATTERN",
+  "champion_id": "CHAMPION-UI-ARCHITECT-NO-COMPETITIVE-CONTEXT-v1",
+  "challenger_id": "CHALLENGER-UI-ARCHITECT-SELECTED-COMPETITIVE-UI-CONTEXT-v1",
+  "production_impact": false,
+  "automatic_promotion": false
+}
