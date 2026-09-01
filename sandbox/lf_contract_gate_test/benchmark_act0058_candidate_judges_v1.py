@@ -43,13 +43,14 @@ def main():
   outcomes.append((c,got))
  failures=[(c['id'],c['expected'],got) for c,got in outcomes if got!=c['expected']]
  counts=Counter(c['judge'] for c,_ in outcomes)
- critical_fp=sum(1 for c,got in outcomes if c['expected'].endswith(('BLOCKED','BLOCK','OUT_OF_SCOPE')) and got not in {c['expected'],'BLOCKED','DEDUP_BLOCKED','OUT_OF_SCOPE','CAPTURE_BLOCKED','HOMOLOG_BLOCKED','ANALYSIS_BLOCKED','KB_WRITE_BLOCKED','COMPLETION_BLOCKED','RESTOCK_BLOCKED','RETRY_BLOCKED'})
+ blocked_values={'BLOCKED','DEDUP_BLOCKED','OUT_OF_SCOPE','CAPTURE_BLOCKED','HOMOLOG_BLOCKED','ANALYSIS_BLOCKED','KB_WRITE_BLOCKED','COMPLETION_BLOCKED','RESTOCK_BLOCKED','RETRY_BLOCKED'}
+ critical_fp=sum(1 for c,got in outcomes if c['expected'] in blocked_values and got not in blocked_values)
  report={
   'schema':'ACT0058_CANDIDATE_JUDGE_BENCHMARK_V1','cases':len(cases),'judges':len(counts),'cases_per_judge':dict(counts),
   'pass_count':len(cases)-len(failures),'fail_count':len(failures),'accuracy_pct':round(100*(len(cases)-len(failures))/len(cases),2),
   'critical_false_positives':critical_fp,'llm_calls':0,'round_trips':0,'tool_calls':0,'deterministic_share_pct':100.0,
   'runtime_us':{'p50':round(statistics.median(lat),3),'p95':round(pct(lat,.95),3),'max':round(max(lat),3)},
-  'failures':failures,'production_impact':false if False else False
+  'failures':failures,'production_impact':False
  }
  print(json.dumps(report,sort_keys=True))
  if failures or critical_fp: raise SystemExit(1)
