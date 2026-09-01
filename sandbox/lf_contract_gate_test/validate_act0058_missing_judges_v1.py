@@ -81,17 +81,21 @@ def validate_reconciliation() -> None:
         'ACT0058_RECONCILIATION_EXECUTION_ID_REQUIRED','ACT0058_RECONCILIATION_EXECUTION_INVALID',
         'ACT0058_STEP_105_BASELINE_DRIFT','ACT0058_STEP_110_BASELINE_DRIFT',
         'RESTOCK_NOOP_WARN','RETRY_TERMINAL_FAILED','RETRY_INVALID_AFTER_TERMINAL',
+        "array['retry_count','error_detail','stage_status']::text[]",
+        "'stage_status','PENDING'","'stage_status','FAILED'",
         'ACT0058_STEP_105_RECONCILIATION_FAILED','ACT0058_STEP_110_RECONCILIATION_FAILED',
         'updated_by_execution_id=v_execution_id'
     ]
     missing_migration=[x for x in migration_required if x not in migration]
     if missing_migration:
         fail(f'source migration missing guards: {missing_migration}')
+    if 'next_action' in migration:
+        fail('synthetic next_action forbidden in reconciled retry contract')
 
 def main() -> int:
     text = SPEC.read_text(encoding='utf-8')
-    if 'version: v3' not in text:
-        fail('expected v3 spec')
+    if 'version: v4' not in text:
+        fail('expected v4 spec')
     if 'operation_code: ORQUESTACION_PIPELINE_LF' not in text:
         fail('operation code mismatch')
     for term in FORBIDDEN:
@@ -99,6 +103,8 @@ def main() -> int:
             fail(f'forbidden term: {term}')
     if 'contradictory_contract_fail_closed: true' not in text:
         fail('contradictory contracts must fail closed')
+    if 'material_runtime_evidence_only: true' not in text or 'synthetic_next_action_forbidden: true' not in text:
+        fail('material runtime evidence boundary missing')
     if 'blob_sha: 3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495' not in text:
         fail('canonical skill blob not pinned')
     ready_section = text.split('source_reconciliation_required:', 1)[0]
@@ -112,9 +118,13 @@ def main() -> int:
         fail('restock no-op WARN semantics missing')
     if 'terminal_if:' not in ready_section or 'RETRY_TERMINAL_FAILED' not in ready_section:
         fail('retry terminal-at-3 semantics missing')
+    if 'required_evidence_keys: [retry_count, error_detail, stage_status]' not in ready_section:
+        fail('retry judge must consume live UPDATE evidence')
+    if 'next_action' in ready_section:
+        fail('synthetic next_action forbidden in retry judge')
     if 'step_orders: [105, 110]' not in text or 'SOURCE_FIRST_NO_DB_WRITE' not in text:
         fail('source reconciliation scope missing')
-    if 'ready_to_bind: 10' not in text or 'source_reconciliation_required: 2' not in text or 'missing_bindings: 10' not in text:
+    if 'ready_to_bind: 10' not in text or 'source_reconciliation_required: 2' not in text or 'missing_bindings: 10' not in text or 'required_missing_bindings: 9' not in text:
         fail('live inventory summary mismatch')
     if 'deterministic_first: true' not in text or 'llm_required: false' not in text:
         fail('deterministic-first boundary missing')
@@ -125,9 +135,9 @@ def main() -> int:
     print(run(CANDIDATE_MIGRATION_VALIDATOR))
     print(run(QPG_VALIDATOR))
     print(run(BENCHMARK))
-    print('ACT0058_MISSING_JUDGES_SPEC=PASS ready=10 source_reconciliation=2 deterministic=10 llm=0')
+    print('ACT0058_MISSING_JUDGES_SPEC=PASS ready=10 required_missing=9 source_reconciliation=2 deterministic=10 llm=0 material_retry_evidence=PASS')
     print('ACT0058_CONTRACT_RECONCILIATION=PASS steps=105,110 source_migration=MATERIALIZED_NOT_APPLIED')
-    print('ACT0058_LIVE_INVENTORY=PASS active_steps=14 existing_bindings=4 missing=10')
+    print('ACT0058_LIVE_INVENTORY=PASS active_steps=14 existing_bindings=4 missing=10 required_missing=9')
     print('ACT0058_SOURCE_INSPECTION=PASS checked=6 direct=2 index_only=4')
     return 0
 
