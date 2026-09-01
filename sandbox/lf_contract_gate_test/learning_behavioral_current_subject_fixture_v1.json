@@ -1,0 +1,39 @@
+{
+  "schema": "LF_LEARNING_BEHAVIORAL_CURRENT_SUBJECT_FIXTURE_V1",
+  "mode": "READ_ONLY_SANDBOX",
+  "consumer_id": "PERFIL-PRODUCT-DIRECTOR-LF",
+  "capability_id": "NEGOCIACION_DEUDA",
+  "task_intent": "PRODUCT_OFFER_SCOPE_DECISION",
+  "input_governance": {
+    "current_run_id": 215,
+    "pantalla_id": 5,
+    "screen_code": "HOME_002",
+    "screen_name": "Home con oferta",
+    "contract_revision": "5.12",
+    "status": "COMPLETED",
+    "invalidated_at": null,
+    "governance_consumer": "CONTEXT_PACK"
+  },
+  "binding_id": "BIND-LF-PD-NEGOCIACION-DEUDA-v4",
+  "selected_evidence_refs": [
+    "public.lf_knowledge_base/f67ffccd-e710-41f4-ae8c-eb5579227fc7",
+    "public.lf_knowledge_base/8b744f07-75f6-4332-9df5-12e7c6914bf1",
+    "public.lf_knowledge_base/02bcfdd4-6859-4d56-9fbc-02af0ddf65b5",
+    "public.lf_knowledge_base/a789f419-b05f-4eba-af99-015bd56d24d5",
+    "public.lf_knowledge_base/5500178a-d503-476c-be77-c99223b4d90c"
+  ],
+  "constraints": [
+    "COMPETITIVE_EVIDENCE_IS_CONTEXT_NOT_PRODUCT_TRUTH",
+    "NO_USER_SPECIFIC_FINANCIAL_ADVICE",
+    "NO_AUTOMATIC_PRODUCTION_IMPACT",
+    "NO_UNBOUND_KB_INJECTION"
+  ],
+  "champion_id": "CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1",
+  "challenger_id": "CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1",
+  "runtime_invoked": false,
+  "holdout_consumed": false,
+  "enqueue_performed": false,
+  "production_authorized": false,
+  "automatic_impact": false,
+  "next_gate": "GOVERNED_PROFILE_RUNTIME_QUEUE_REQUEST"
+}
