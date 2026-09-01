@@ -1,0 +1,44 @@
+{
+  "schema": "input-governance-change-impact-adjudication/v1",
+  "benchmark": "INPUT_GOV_CHANGE_IMPACT_L3C_GOLD50_V1",
+  "gold_status": "CANDIDATE_RESEARCH",
+  "base_gold_blob_sha": "cfe2731c872e334d95523a3c7f085c31f92a6f70",
+  "main_sha": "b6b7067e2fdbec9239556711dab2c96ef1a821e4",
+  "input_run_id": 218,
+  "cross_audit_run_id": 75,
+  "handoff_message_id": 41,
+  "verdict": "ADJUDICATED_WITH_CORRECTIONS",
+  "authorization": {
+    "scoped_pass_authorized": false,
+    "downstream_authorized": false,
+    "production_authorized": false
+  },
+  "decision_corrections": {
+    "CI-API-04": "HUMAN_REQUIRED"
+  },
+  "impact_additions": {
+    "CI-COPY-04": ["SOURCE_AUTHORITY_PROVENANCE"],
+    "CI-ACT-04": ["SOURCE_AUTHORITY_PROVENANCE"],
+    "CI-PERM-02": ["API_DATA_CONTRACT"],
+    "CI-PERM-03": ["API_DATA_CONTRACT"],
+    "CI-PERM-05": ["SOURCE_AUTHORITY_PROVENANCE"],
+    "CI-FIELD-04": ["SOURCE_AUTHORITY_PROVENANCE"],
+    "CI-STATE-04": ["SOURCE_AUTHORITY_PROVENANCE"],
+    "CI-API-04": ["SOURCE_AUTHORITY_PROVENANCE"]
+  },
+  "anchor_replacements": {
+    "CI-API-01": "api:API_CONTRACT_RESOLUTION_V1:behavioral_contract_present|operation_schema_authority:NOT_MATERIALIZED",
+    "CI-API-02": "api:API_CONTRACT_RESOLUTION_V1:behavioral_contract_present|operation_schema_authority:NOT_MATERIALIZED",
+    "CI-API-03": "api:API_CONTRACT_RESOLUTION_V1:behavioral_contract_present|operation_schema_authority:NOT_MATERIALIZED",
+    "CI-API-05": "api:API_CONTRACT_RESOLUTION_V1:behavioral_contract_present|operation_schema_authority:NOT_MATERIALIZED"
+  },
+  "independent_distribution": {
+    "SCOPED_CANDIDATE": 11,
+    "SCOPED_BLOCK": 7,
+    "GLOBAL_ESCALATE": 21,
+    "HUMAN_REQUIRED": 11
+  },
+  "shared_cross_family_cases": 42,
+  "single_family_cases": 8,
+  "unsafe_under_block_candidates": 0
+}
