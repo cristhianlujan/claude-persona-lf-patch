@@ -1,7 +1,11 @@
-version: v2
+version: v3
 status: CANDIDATE_READ_ONLY
 operation_code: ORQUESTACION_PIPELINE_LF
 source_main: 17903f544c5e53e1d94b08664a4fb6704c0dc087
+canonical_skill:
+  path: skills/orquestador_pipeline_lf/SKILL.md
+  blob_sha: 3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495
+  state: PROD_CONTROLADA_READ_ONLY
 principles:
   deterministic_first: true
   llm_required: false
@@ -9,6 +13,7 @@ principles:
   production_authorized: false
   exact_contract_binding_required: true
   contradictory_contract_fail_closed: true
+  source_precedence: CANONICAL_SKILL_PLUS_LIVE_STEP_CONTRACT
 ready_to_bind:
   - step_order: 5
     step_id: init_execution
@@ -66,28 +71,35 @@ ready_to_bind:
     pass_if: [stage_completed, closing_event_present]
     fail_if: [pipeline_update_failed, closing_event_missing]
     result_values: [COMPLETED_CONFIRMED, COMPLETION_BLOCKED]
-contract_repair_required:
   - step_order: 105
     step_id: restock_queue
     judge_code: MINI_JUDGE_ACT0058_RESTOCK
-    reason: LIVE_CONTRACT_CONTRADICTION
-    evidence:
-      - pass_condition_requires_urls_insertadas_gte_1
-      - fail_condition_NO_NEW_URLS_declares_next_action_SKIP_RESTOCK
-      - candidate_result_RESTOCK_NOOP_cannot_be_classified_without_contract_reconciliation
-    allowed_action: RECONCILE_CONTRACT_SOURCE_FIRST_BEFORE_BINDING
+    required_evidence_keys: [urls_insertadas, urls_duplicadas, source_queries]
+    source_resolution:
+      live_contract_conflict: pass_condition_urls_insertadas_gte_1_vs_NO_NEW_URLS_SKIP_RESTOCK
+      canonical_skill_rule: if_fewer_than_5_new_urls_register_WARN_without_failing_batch
+    pass_if: [restock_attempt_recorded, dedup_performed, urls_insertadas_gte_1]
+    no_op_if: [restock_attempt_recorded, dedup_performed, urls_insertadas_eq_0, warn_event_recorded]
+    fail_if: [restock_attempt_missing, dedup_not_performed]
+    result_values: [RESTOCK_COMPLETED, RESTOCK_NOOP_WARN, RESTOCK_BLOCKED]
   - step_order: 110
     step_id: failed_retry
     judge_code: MINI_JUDGE_ACT0058_RETRY
-    reason: LIVE_CONTRACT_CONTRADICTION
-    evidence:
-      - purpose_and_block_condition_say_retry_count_gt_3
-      - notes_say_maximum_3_attempts
-      - execution_sql_sets_FAILED_when_retry_count_plus_1_gte_3
-    allowed_action: RECONCILE_CONTRACT_SOURCE_FIRST_BEFORE_BINDING
+    required_evidence_keys: [retry_count, error_code, next_action]
+    source_resolution:
+      live_contract_conflict: block_condition_retry_gt_3_vs_execution_sql_gte_3
+      canonical_skill_rule: retry_count_reaches_3_marks_FAILED_and_continues_next_url
+    pass_if: [retry_count_lt_3, next_action_retry]
+    terminal_if: [retry_count_gte_3, next_action_failed_continue_next_url]
+    fail_if: [retry_count_gte_3, next_action_retry]
+    result_values: [RETRY_ALLOWED, RETRY_TERMINAL_FAILED, RETRY_BLOCKED]
+source_reconciliation_required:
+  step_orders: [105, 110]
+  action: reconcile_live_step_contract_text_with_canonical_skill_before_active_binding
+  scope: SOURCE_FIRST_NO_DB_WRITE
 summary:
   live_active_steps: 14
   existing_active_bindings: 4
   missing_bindings: 10
-  ready_to_bind: 8
-  contract_repair_required: 2
+  ready_to_bind: 10
+  source_reconciliation_required: 2
