@@ -1,11 +1,17 @@
 {
   "schema": "LF_LEARNING_SOURCE_CANDIDATE_BATCH_V1",
   "batch_id": "LEARNING-SOURCE-20260901-B1",
-  "status": "DISCOVERED_LIVE_KB_DEDUP_REQUIRED",
+  "status": "SEMANTIC_DEDUP_COMPLETED_PIPELINE_CAPTURE_PENDING",
   "kb_write_allowed": false,
   "consumer_ready_allowed": false,
   "production_impact": false,
-  "dedup_evidence": {"github_exact_url_hits": 0, "live_kb_dedup": "UNAVAILABLE_SQL_CHANNEL_BLOCKED"},
+  "dedup_evidence": {
+    "github_exact_url_hits": 0,
+    "live_exact_url_dedup": "5_OF_5_NEW_VS_KB_QUEUE_CAPTURE",
+    "live_semantic_dedup": "COMPLETED_READ_ONLY",
+    "semantic_reference_scope": "COMPETENCIA_GROUNDED_CONSUMER_READY_DEBT_SELF_SERVICE_ALTERNATIVES",
+    "semantic_result": "3_INCREMENTAL_MECHANICS_1_PARTIAL_INCREMENTAL_1_ENRICHMENT_ONLY"
+  },
   "sources": [
     {
       "source_id": "SRC-IBK-COMPRA-DEUDA-CONSUMER-20260901",
@@ -15,7 +21,9 @@
       "candidate_capabilities": ["ALTERNATIVAS_FINANCIERAS", "DIGITAL_SELF_SERVICE"],
       "observed_pattern": "consolidacion de deudas en una tarjeta dedicada; oferta/campana condicionada; hasta 48 meses; canal digital y tarjeta virtual Visa Access exclusiva para compra de deuda",
       "claim_boundary": "sujeto a evaluacion/oferta; no extrapolar a elegibilidad LF",
-      "status": "DISCOVERED_DEDUP_PENDING"
+      "semantic_disposition": "NEW_INCREMENTAL_MECHANIC",
+      "incremental_signal": "DEDICATED_VIRTUAL_CARD_FOR_DEBT_PURCHASE",
+      "status": "READY_FOR_GOVERNED_CAPTURE_NOT_KB"
     },
     {
       "source_id": "SRC-BBVA-COMPRA-DEUDA-20260901",
@@ -25,7 +33,9 @@
       "candidate_capabilities": ["DIGITAL_SELF_SERVICE", "ALTERNATIVAS_FINANCIERAS"],
       "observed_pattern": "flujo App/Web de tres pasos: seleccionar compra de deuda, ingresar datos, revisar tasa/cuota y confirmar; hasta 36 cuotas; condiciones y exclusiones explicitas",
       "claim_boundary": "perfil de credito, linea disponible y evaluacion condicionan la oferta",
-      "status": "DISCOVERED_DEDUP_PENDING"
+      "semantic_disposition": "NEW_INCREMENTAL_MECHANIC",
+      "incremental_signal": "PRE_CONFIRMATION_RATE_AND_INSTALLMENT_REVIEW_IN_SELF_SERVICE_FLOW",
+      "status": "READY_FOR_GOVERNED_CAPTURE_NOT_KB"
     },
     {
       "source_id": "SRC-SCOTIA-COMPRA-DEUDA-20260901",
@@ -35,7 +45,9 @@
       "candidate_capabilities": ["DIGITAL_SELF_SERVICE", "ALTERNATIVAS_FINANCIERAS"],
       "observed_pattern": "simulacion repetible por app/web antes de operar; saldo visible; unificacion a una tasa/plazo; 2 a 60 cuotas",
       "claim_boundary": "requiere buen historial y campana activa; no equivale a solucion para deuda castigada",
-      "status": "DISCOVERED_DEDUP_PENDING"
+      "semantic_disposition": "PARTIAL_INCREMENTAL",
+      "incremental_signal": "REPEATABLE_PRE_OPERATION_SIMULATION_WITH_VISIBLE_BALANCE",
+      "status": "READY_FOR_GOVERNED_CAPTURE_NOT_KB"
     },
     {
       "source_id": "SRC-FALABELLA-COMPRA-DEUDA-20260901",
@@ -45,7 +57,9 @@
       "candidate_capabilities": ["ALTERNATIVAS_FINANCIERAS", "PAYMENT_NO_ADEUDO"],
       "observed_pattern": "el banco paga directamente la deuda a otras entidades y el cliente no ejecuta esa operacion; hasta 48 cuotas; multiples canales de pago",
       "claim_boundary": "solo observar ownership/claridad del pago; no inferir carta de no adeudo ni elegibilidad",
-      "status": "DISCOVERED_DEDUP_PENDING"
+      "semantic_disposition": "NEW_INCREMENTAL_MECHANIC",
+      "incremental_signal": "CREDITOR_PAYMENT_OWNERSHIP_IS_EXPLICITLY_BANK_SIDE_NOT_CUSTOMER_TRANSFER",
+      "status": "READY_FOR_GOVERNED_CAPTURE_NOT_KB"
     },
     {
       "source_id": "SRC-RIPLEY-CONSOLIDACION-DEUDA-20260901",
@@ -55,7 +69,9 @@
       "candidate_capabilities": ["ALTERNATIVAS_FINANCIERAS", "DIGITAL_SELF_SERVICE"],
       "observed_pattern": "consolidacion de tarjetas/prestamos de bancos, cajas y financieras; canales web/telefono/agencia/retail; 36 a 60 meses; contacto WhatsApp disponible",
       "claim_boundary": "sujeto a evaluacion y calificacion Normal; no extrapolar a cartera castigada",
-      "status": "DISCOVERED_DEDUP_PENDING"
+      "semantic_disposition": "ENRICHMENT_ONLY_EXISTING_PATTERN",
+      "incremental_signal": "OMNICHANNEL_CONSOLIDATION_EVIDENCE_ONLY",
+      "status": "READY_FOR_GOVERNED_CAPTURE_NOT_NEW_CARD"
     }
   ]
 }
