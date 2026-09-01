@@ -1,65 +1,42 @@
 {
-  "schema": "lf-learning-autonomous-run/v1",
-  "program": "LF_APRENDIZAJE_AUTONOMO",
-  "status": "RUNNING",
-  "gate": "P0_READ_ONLY_DYNAMIC_CONSUMPTION",
-  "parent_task": "CLOSE_REUSABLE_LEARNING_READ_PATH",
-  "subtask": "MAP_ADDITIONAL_CONSUMERS_WITHOUT_IMPLICIT_BINDING",
-  "github_pr": 369,
-  "checkpoint_source_head": "5c9fafa4a5511fe72cbb2e7e3a9d59b23652f975",
-  "last_exact_head_green": "c841d42a94e8f042cc21ea96547bf90df5e9abfd",
-  "last_exact_head_green_workflows": {
-    "Validate LF Packs": 33512314412,
-    "lf-contract-check": 33512314351,
-    "LF Bootstrap Reproducibility Probe": 33512314326
-  },
-  "supabase_project": "mhwmirqcgxxukpctffuv",
-  "supabase_sql_channel_status": "LOCAL_TOOL_CHANNEL_BLOCKED_NOT_DATABASE_OUTAGE",
-  "current_run_live_db_claims_added": false,
-  "canonical_bridge": {
-    "operation": "LEARNING_BRIDGE_KB_CARD_LF",
-    "source_contract_status": "CANDIDATO_READ_ONLY",
-    "live_db_status": "UNVERIFIED_THIS_RUN",
-    "write_allowed": false,
-    "steps": 25,
-    "duplicate_engine": false
-  },
-  "material_micro_batches_completed": 52,
-  "control_steps_executed": 142,
-  "control_steps_counter_status": "APPROX_OBSERVABLE_FROM_CONNECTOR_ACTIONS",
-  "micro_batches_blocked": 0,
-  "resume_cursor": "CAPABILITY_SCOPE_MAPPING_FOR_DISCOVERED_UX_CX_CONSUMERS",
-  "material_delta_since_previous_checkpoint": [
-    {"id":"MB50","scope":"ADDITIONAL_CONSUMER_INVENTORY","result":"COMPLETED","evidence":"ec0877c7290cf68b92839c850fd6cc5534304ee7","notes":"discovered exact UX Product Experience and CX Trust profiles/adapters from current main; both remain read-only/no-habilitado and unbound to learning"},
-    {"id":"MB51","scope":"ADDITIONAL_CONSUMER_INVENTORY_VALIDATOR","result":"COMPLETED","evidence":"5d624e57f779cf321c8d24b4fe734ef119d367c9","notes":"validator enforces router-only, 50x10 benchmark requirement, no implicit learning binding and no production"},
-    {"id":"MB52","scope":"ADDITIONAL_CONSUMER_REUSABLE_GATE_INTEGRATION","result":"COMPLETED","evidence":"5c9fafa4a5511fe72cbb2e7e3a9d59b23652f975","notes":"additional consumer discovery is now checked by the reusable learning suite"}
+  "schema":"lf-learning-autonomous-run/v1",
+  "program":"LF_APRENDIZAJE_AUTONOMO",
+  "status":"RUNNING",
+  "gate":"P0_READ_ONLY_DYNAMIC_CONSUMPTION",
+  "parent_task":"CLOSE_REUSABLE_LEARNING_READ_PATH",
+  "subtask":"WIRE_REUSABLE_SUITE_INTO_EXACT_HEAD_CI",
+  "github_pr":369,
+  "checkpoint_source_head":"7d541cf0c04ab47456768de094e7455cb56440ff",
+  "last_exact_head_green":"c841d42a94e8f042cc21ea96547bf90df5e9abfd",
+  "supabase_project":"mhwmirqcgxxukpctffuv",
+  "supabase_sql_channel_status":"LOCAL_TOOL_CHANNEL_BLOCKED_NOT_DATABASE_OUTAGE",
+  "current_run_live_db_claims_added":false,
+  "canonical_bridge":{"operation":"LEARNING_BRIDGE_KB_CARD_LF","source_contract_status":"CANDIDATO_READ_ONLY","live_db_status":"UNVERIFIED_THIS_RUN","write_allowed":false,"steps":25,"duplicate_engine":false},
+  "material_micro_batches_completed":58,
+  "control_steps_executed":160,
+  "control_steps_counter_status":"APPROX_OBSERVABLE_FROM_CONNECTOR_ACTIONS",
+  "micro_batches_blocked":0,
+  "resume_cursor":"WIRE_REUSABLE_SUITE_INTO_EXACT_HEAD_CI",
+  "material_delta_since_previous_checkpoint":[
+    {"id":"MB53","scope":"UX_CX_CAPABILITY_CANDIDATE_MAP","result":"COMPLETED","evidence":"a8e076d3efba534345f729415ec266ea5df2f6a1"},
+    {"id":"MB54","scope":"UX_CX_CAPABILITY_MAP_VALIDATOR","result":"COMPLETED","evidence":"f8d1ca829551605c5ab338d1f848446fd3964fe8"},
+    {"id":"MB55","scope":"UX_CX_50X10_CASESET","result":"COMPLETED","evidence":"cbaaf47f032fde418ed5a37e3b4d21710606b1ea","notes":"50 heterogeneous cases, 10 families x5, including must-not-invoke, authority, claim-boundary, conflict and regression families"},
+    {"id":"MB56","scope":"UX_CX_ROUTING_BENCHMARK_RUNNER","result":"COMPLETED","evidence":"df9a29c3702734c2d26d1a3b8465fd2661502b22","notes":"deterministic routing metrics TP/TN/FP/FN, 0 selector LLM/roundtrips/tools"},
+    {"id":"MB57","scope":"UX_CX_50X10_BENCHMARK_VALIDATOR","result":"COMPLETED","evidence":"d13a289e5ecae7f3ed152af91175410c088c2c39"},
+    {"id":"MB58","scope":"UX_CX_REUSABLE_GATE_INTEGRATION","result":"COMPLETED","evidence":"7d541cf0c04ab47456768de094e7455cb56440ff"}
   ],
-  "local_blockers": [
-    {"scope":"SUPABASE_SQL_READBACK","reason":"execute_sql channel rejected read-only precheck; not evidence of database outage","global":false},
-    {"scope":"CURRENT_EXACT_HEAD_CI","reason":"new source commits require exact-head workflows to complete","global":false},
-    {"scope":"BEHAVIORAL_AB","reason":"CURRENT Input Governance receipt + exact request binding + authorized owner runtime trigger still required","global":false}
+  "local_blockers":[
+    {"scope":"SUPABASE_SQL_READBACK","reason":"read-only SQL channel rejected by tool safety; no outage inferred","global":false},
+    {"scope":"CURRENT_EXACT_HEAD_CI","reason":"Validate LF Packs PASS; lf-contract-check and Bootstrap still in progress on 7d541cf0 at last readback","global":false},
+    {"scope":"REUSABLE_SUITE_CI_EXECUTION","reason":"standard pack CI checked learning-engine pack but direct invocation of sandbox reusable suite not yet evidenced","global":false},
+    {"scope":"BEHAVIORAL_AB","reason":"CURRENT governance receipt/exact request/authorized trigger required","global":false}
   ],
-  "observable_waits": [
-    {"scope":"CURRENT_EXACT_HEAD_CI","state":"WAITING_ON_POST_MB52_HEAD"}
-  ],
-  "independent_work_during_waits": [
-    "additional exact consumer inventory",
-    "consumer-boundary validator",
-    "reusable suite integration"
-  ],
-  "next_safe_batch": "CAPABILITY_SCOPE_MAPPING_FOR_DISCOVERED_UX_CX_CONSUMERS",
-  "can_run_more_question": "¿AÚN PUEDO CORRER MÁS?",
-  "can_run_more_answer": "YES",
-  "can_run_more_evidence": {
-    "safe_work_remaining_count": 5,
-    "scopes": [
-      "ux_cx_capability_mapping",
-      "current_exact_head_ci",
-      "behavioral_exact_request_preparation",
-      "ACT0058_judge_gap_source_inspection",
-      "Supabase_readback_recovery"
-    ]
-  },
-  "context_budget_remaining_estimate": "MEDIUM",
-  "production_impact": false
+  "observable_waits":[{"scope":"CURRENT_EXACT_HEAD_CI","state":"WAITING_PARTIAL_1_OF_3_PASS_ON_7D541CF0"}],
+  "independent_work_during_waits":["UX/CX capability mapping","50x10 cases","deterministic benchmark runner","benchmark validator","reusable gate integration","ACT-0058 source inspection"],
+  "next_safe_batch":"WIRE_REUSABLE_SUITE_INTO_CI_AND_RECHECK_EXACT_HEAD",
+  "can_run_more_question":"¿AÚN PUEDO CORRER MÁS?",
+  "can_run_more_answer":"YES",
+  "can_run_more_evidence":{"safe_work_remaining_count":5,"scopes":["reusable_suite_ci_execution","current_exact_head_ci","ACT0058_source_gap","behavioral_exact_request_preparation","Supabase_readback_recovery"]},
+  "context_budget_remaining_estimate":"MEDIUM",
+  "production_impact":false
 }
