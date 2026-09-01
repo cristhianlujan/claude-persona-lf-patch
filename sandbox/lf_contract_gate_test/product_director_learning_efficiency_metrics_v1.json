@@ -10,7 +10,7 @@
   "performance":{"runtime_case_p50_ms":"NOT_OBSERVED","runtime_case_p95_ms":"NOT_OBSERVED","runtime_case_max_ms":"NOT_OBSERVED","timeout_count":"NOT_OBSERVED","error_count":"NOT_OBSERVED"},
   "cost":{"cost_proxy":"ZERO_SELECTOR_LLM_AND_ZERO_SELECTOR_ROUND_TRIPS_ONLY"},
   "quality":{"authority_gate":"PASS_DETERMINISTIC_ROUTING_CONTRACT","canonical_structural_bounded_gate":"PASS_DETERMINISTIC_CONTRACT","critical_family_regression":"NOT_OBSERVED_BEHAVIORALLY","critical_must_not_invoke_fp":0},
-  "stability":{"repeatability":"DETERMINISTIC_SOURCE_TEST_ONLY_RUNTIME_NOT_EXECUTED"},
+  "stability":{"selector_permutations":"60/60","selector_ordering":"QUALITY_DESC_RECEIPT_DESC_KB_ID_ASC","selector_repeatability":"PASS_DETERMINISTIC","runtime_repeatability":"NOT_OBSERVED_RUNTIME_NOT_EXECUTED"},
   "outcome":"INSUFFICIENT_EVIDENCE",
   "production_authorized":false
 }
