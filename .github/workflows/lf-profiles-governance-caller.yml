@@ -25,7 +25,7 @@ jobs:
             -o negative.json -w '%{http_code}' \
             -H 'Authorization: Bearer not-a-github-oidc-token' \
             -H 'Content-Type: application/json' \
-            -d '{"action":"input_readiness_pilot_v1"}' \
+            -d '{"action":"input_readiness_screen_v1","codigo":"ONB_002"}' \
             'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profiles-governance-caller-v1')
           cat negative.json
           test "$code" = "401"
@@ -44,24 +44,50 @@ jobs:
           OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
           set -euo pipefail
-          code=$(curl --silent --show-error \
-            -o readiness.json -w '%{http_code}' \
-            -H "Authorization: Bearer ${OIDC_TOKEN}" \
-            -H 'Content-Type: application/json' \
-            -d '{"action":"input_readiness_pilot_v1"}' \
-            'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profiles-governance-caller-v1')
-          cat readiness.json
+          : > readiness-results.jsonl
+          for SCREEN in ONB_002 ONB_003 ONB_004 HOME_002; do
+            code=$(curl --silent --show-error \
+              -o "readiness-${SCREEN}.json" -w '%{http_code}' \
+              -H "Authorization: Bearer ${OIDC_TOKEN}" \
+              -H 'Content-Type: application/json' \
+              -d "{\"action\":\"input_readiness_screen_v1\",\"codigo\":\"${SCREEN}\"}" \
+              'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profiles-governance-caller-v1')
+            cat "readiness-${SCREEN}.json"
+            python3 - "$SCREEN" "$code" "readiness-${SCREEN}.json" >> readiness-results.jsonl <<'PY'
+          import json,sys
+          screen,http,path=sys.argv[1:]
+          data=json.load(open(path,encoding='utf-8'))
+          result=data.get('result') or {}
+          print(json.dumps({
+              'codigo': result.get('codigo'),
+              'pantalla_id': result.get('pantalla_id'),
+              'status': result.get('status'),
+              'run_id': result.get('run_id'),
+              'outcome': data.get('outcome'),
+              'http_code': int(http),
+              'requested_codigo': screen,
+          },sort_keys=True))
+          PY
+          done
           python3 - <<'PY'
           import json
-          data=json.load(open('readiness.json',encoding='utf-8'))
-          if data.get('outcome')!='READY' or data.get('ready_count')!=4 or data.get('required_count')!=4:
-              raise SystemExit('FAIL_INPUT_READINESS_4_OF_4: '+json.dumps(data,sort_keys=True)[:4000])
-          codes={row.get('codigo') for row in data.get('results',[])}
-          if codes != {'ONB_002','ONB_003','ONB_004','HOME_002'}:
-              raise SystemExit('FAIL_INPUT_READINESS_SCREEN_SET: '+repr(codes))
+          rows=[json.loads(line) for line in open('readiness-results.jsonl',encoding='utf-8') if line.strip()]
+          expected={'ONB_002','ONB_003','ONB_004','HOME_002'}
+          codes={row.get('codigo') for row in rows}
+          requested={row.get('requested_codigo') for row in rows}
+          bad=[row for row in rows if row.get('http_code')!=200 or row.get('outcome')!='READY' or row.get('status')!='READY' or row.get('codigo')!=row.get('requested_codigo')]
+          aggregate={
+              'outcome':'READY' if not bad and codes==expected and requested==expected and len(rows)==4 else 'BLOCKED',
+              'ready_count':sum(1 for row in rows if row.get('status')=='READY'),
+              'required_count':4,
+              'results':rows,
+          }
+          open('readiness.json','w',encoding='utf-8').write(json.dumps(aggregate,sort_keys=True))
+          print(json.dumps(aggregate,sort_keys=True))
+          if aggregate['outcome']!='READY' or aggregate['ready_count']!=4:
+              raise SystemExit('FAIL_INPUT_READINESS_4_OF_4: '+json.dumps(aggregate,sort_keys=True))
           print('PASS_INPUT_READINESS_4_OF_4')
           PY
-          test "$code" = "200"
 
       - name: Initialize canonical Profile Creator execution
         id: creator
