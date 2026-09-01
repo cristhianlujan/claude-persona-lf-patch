@@ -1,0 +1,45 @@
+{
+  "schema": "LF_LEARNING_SOURCE_CANDIDATE_BATCH_V1",
+  "batch_id": "LEARNING-SOURCE-20260901-B4",
+  "execution_id": "LF-AUTOLEARN-RUN-20260901-037",
+  "status": "DIRECT_SOURCE_REVALIDATED_CAPTURE_PENDING",
+  "production_impact": false,
+  "direct_kb_write_allowed": false,
+  "consumer_ready_changes": 0,
+  "sources": [
+    {
+      "source_id": "SRC-REEVALUA-CUOTAS-COSTOS-20260901",
+      "organization": "Reevalua",
+      "url": "https://reevalua.com/blog/cuotas-sin-intereses-costos-ocultos-peru",
+      "queue_id": "d364f9a9-69ee-439d-9190-d70d091b06b9",
+      "queue_state": "PENDIENTE",
+      "source_read": "DIRECT_PAGE_OK_20260901",
+      "candidate_capabilities": ["EDUCACION_CREDITICIA", "ALTERNATIVAS_FINANCIERAS"],
+      "observed_pattern": "separa tasa de la compra frente a otros cargos del producto y propone revisar costo total/TCEA, estado de cuenta linea por linea y seguimiento mensual de cuotas y vencimientos",
+      "claim_boundary": "la fuente es competencia, no autoridad regulatoria; cualquier afirmacion normativa sobre TCEA debe mantener como autoridad independiente la evidencia SBS ya presente en KB",
+      "semantic_disposition": "INCREMENTAL_DISCLOSURE_AND_MONTHLY_MONITORING_PATTERN",
+      "incremental_signal": "SEPARATE_PROMOTIONAL_RATE_FROM_TOTAL_PRODUCT_COST_AND_MONTHLY_TRACKING",
+      "existing_authoritative_overlap_refs": ["3cbc5735-e56a-4b85-9bea-b280f556af3f"],
+      "eligible_for_governed_capture": true,
+      "new_card_required": false
+    },
+    {
+      "source_id": "SRC-REEVALUA-SUELDO-CAPACIDAD-20260901",
+      "organization": "Reevalua",
+      "url": "https://reevalua.com/blog/sueldo-necesario-para-prestamo-10000-30000-50000-peru",
+      "queue_id": "199a4abd-3254-48d2-9caf-0621db4c8ca4",
+      "queue_state": "PENDIENTE",
+      "source_read": "DIRECT_PAGE_OK_20260901",
+      "candidate_capabilities": ["EDUCACION_CREDITICIA", "ALTERNATIVAS_FINANCIERAS"],
+      "observed_pattern": "explica de forma ilustrativa que el monto de credito no depende solo del sueldo y que la evaluacion considera capacidad de pago, obligaciones e historial",
+      "claim_boundary": "no convertir porcentajes ilustrativos ni montos del articulo en regla LF; la autoridad base sobre capacidad de pago permanece en SBS",
+      "semantic_disposition": "ENRICHMENT_ONLY_EXISTING_CAPACITY_OF_PAYMENT_PATTERN",
+      "existing_authoritative_overlap_refs": ["f381b535-ca8b-4b2c-9737-e68b5081e314", "9c0c67da-77bd-4887-8da9-1d740325ccd6"],
+      "eligible_for_governed_capture": true,
+      "new_card_required": false
+    }
+  ],
+  "exact_url_kb_dedup": "2_OF_2_ZERO_EXACT_KB_ROWS",
+  "semantic_dedup": "1_INCREMENTAL_PATTERN_1_ENRICHMENT_ONLY_NO_NEW_CARD",
+  "next_gate": "ACT0058_GOVERNED_CAPTURE_AFTER_JUDGE_CONTRACT_READY"
+}
