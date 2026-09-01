@@ -1,0 +1,31 @@
+version: v1
+status: CANDIDATO_READ_ONLY
+upstream_bridge:
+  action_code: KNOWLEDGE_LEARNING_BRIDGE
+  operation_code: LEARNING_BRIDGE_KB_CARD_LF
+  router_asset: ACT-0001
+  contract_ref: gobernanza/contratos/contrato_learning_bridge_kb_card_lf.yaml
+  contract_blob_sha: 0d90694549fc11c2e71d0a4f725bb44c103f4941
+  steps_ref: gobernanza/procedimientos/learning_bridge_kb_card_lf_steps.yaml
+  steps_blob_sha: 3f2628a5dd7a95d09f61d4c27c04794855226dd6
+  judge_ref: gobernanza/judges/judge_learning_bridge_kb_card_lf.yaml
+  judge_blob_sha: 0e2260a0ae55fa2cea7ab93f3ffd3e4f2a86ae79
+  status_observed: CANDIDATO_READ_ONLY
+  step_count: 25
+service:
+  role: DOWNSTREAM_READ_ONLY_CONSUMER_CONTEXT
+  duplicate_learning_engine: false
+  consumes_only_after: [router_read, operational_source_read, ekb_read, grounded_consumer_ready_allow_prod_gate, deterministic_dedup, deterministic_cluster]
+  direct_consumers: [PERFIL-PRODUCT-DIRECTOR-LF, PERFIL-UI-ARCHITECT]
+  indirect_consumers: [ACT-0051, PERFIL-GAMIFICATION-SYSTEM-ARCHITECT]
+  selection: DETERMINISTIC_EXACT_BINDING
+  writes: 0
+  selector_llm_calls: 0
+  additional_round_trips: 0
+boundaries:
+  card_factory_not_replaced: true
+  lifecycle_not_skipped: true
+  bridge_judge_not_replaced: true
+  behavioral_profile_ab_separate: true
+  automatic_impact: false
+  production: false
