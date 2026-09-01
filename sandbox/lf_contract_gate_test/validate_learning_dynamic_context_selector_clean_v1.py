@@ -47,4 +47,5 @@ def main():
     print('PASS learning_dynamic_context_selector_clean_v1 writes=0 semantic_search=false llm_calls=0 round_trips=0 unbound_clusters_fail_closed=3/3 explicit_nonbindings_fail_closed=4/4 unknown_binding_error=PASS')
     run('validate_learning_dynamic_exact_join_contract_v1.py')
     run('validate_learning_dynamic_selector_robustness_v1.py')
+    run('validate_learning_dynamic_selector_stability_v1.py')
 if __name__=='__main__': main()
