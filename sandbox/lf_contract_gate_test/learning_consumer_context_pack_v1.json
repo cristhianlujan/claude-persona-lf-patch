@@ -30,6 +30,54 @@
       "must_not_invoke_when": ["user_specific_credit_advice", "legal_or_regulatory_truth_without_independent_authority", "score_guarantee", "visual_copy_only"]
     }
   ],
+  "learning_batch_036": {
+    "selection_mode": "DETERMINISTIC_RULE_AND_AUTHORITY_BOUNDARY",
+    "source_learning_ids": [
+      "cd247c51-4734-474a-b0a4-f4e6dfe4d13b",
+      "4784cf4b-77e9-4e76-84fe-e689e6dd140e",
+      "f7f643db-ed5e-4f93-8347-9020828ba3c5",
+      "96872c14-85be-4ac6-bda0-0cb343a67f36"
+    ],
+    "selected": [
+      {
+        "kb_id": "cd247c51-4734-474a-b0a4-f4e6dfe4d13b",
+        "capability_id": "EDUCACION_CREDITICIA",
+        "pattern": "rehabilitation_as_understandable_sequence_with_documentary_closure",
+        "source_ref": "https://reevalua.com/blog/organiza-tus-finanzas-personales",
+        "claim_limits": ["no_automatic_history_repair", "no_guaranteed_credit_access"]
+      },
+      {
+        "kb_id": "4784cf4b-77e9-4e76-84fe-e689e6dd140e",
+        "capability_id": "EDUCACION_CREDITICIA",
+        "pattern": "explain_credit_limit_vs_available_and_overindebtedness_risk",
+        "source_ref": "https://reevalua.com/blog/linea-de-credito-cupo-disponible-diferencias-tarjeta-peru",
+        "claim_limits": ["no_score_guarantee", "no_user_specific_credit_advice"]
+      },
+      {
+        "kb_id": "f7f643db-ed5e-4f93-8347-9020828ba3c5",
+        "capability_id": "EDUCACION_CREDITICIA",
+        "pattern": "post_payment_clarity_as_confirmation_document_followup_and_responsible_next_steps",
+        "source_ref": "https://finanty.com/blog/dia-de-la-madre-las-mujeres-que-nunca-dejan-de-empezar-de-nuevo",
+        "claim_limits": ["no_automatic_bureau_exit", "no_guaranteed_credit_access", "do_not_copy_competitor_language"]
+      },
+      {
+        "kb_id": "96872c14-85be-4ac6-bda0-0cb343a67f36",
+        "capability_id": "ALTERNATIVAS_FINANCIERAS",
+        "pattern": "compare_debt_repayment_vs_other_financial_use_only_as_product_education_tradeoff",
+        "source_ref": "https://reevalua.com/blog/es-mejor-comprar-dolares-o-pagar-deudas",
+        "risk_boundary": "not_user_specific_investment_or_credit_advice",
+        "non_recommendation_constraint": true
+      }
+    ],
+    "excluded": [
+      {
+        "kb_id": "9fb28b2a-b55f-48e0-bf2f-3b9ef46ec45b",
+        "reason": "REGULATORY_AUTHORITY_SOURCE_NOT_COMPETITIVE_PROFILE_CONTEXT",
+        "must_not_invoke": "Product Director competitive context must not turn SBS authority into a derived commercial or legal claim",
+        "source_ref": "https://www.sbs.gob.pe"
+      }
+    ]
+  },
   "boundedness": {
     "recursive_objects": false,
     "max_bindings": 3,
@@ -38,7 +86,7 @@
     "context_budget_bytes": 6000
   },
   "runtime_boundary": {
-    "current_consumer_runtime_state": "NO_HABILITADO",
+    "current_consumer_runtime_state": "GOVERNED_RECEIPT_REQUIRED",
     "technical_runtime_path_observed": true,
     "historical_request_id": "23edbdbb-237c-4ae0-98ff-e2f2ab103241",
     "historical_github_run_id": 33249830857,
@@ -46,7 +94,7 @@
     "workflow": ".github/workflows/story-agent-evidence-verifier.yml",
     "worker": "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_queue_worker.py",
     "behavioral_execution_allowed": false,
-    "blocking_conditions": ["CURRENT_PROFILE_RUNTIME_NO_HABILITADO", "INPUT_GOVERNANCE_RECEIPT_REQUIRED"]
+    "blocking_conditions": ["CURRENT_INPUT_READINESS_RECEIPT_MISSING", "AUTHORIZED_EDGE_RUNTIME_INVOKE_UNAVAILABLE_IN_CURRENT_CONNECTOR"]
   },
   "five_case_prep": [
     {"case_id": "NEGOT_01", "capability_id": "NEGOCIACION_DEUDA", "expected_invoke": true, "critical_prohibition": "invented_discount"},
