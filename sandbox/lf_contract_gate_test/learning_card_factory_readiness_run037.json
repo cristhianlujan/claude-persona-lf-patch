@@ -1,0 +1,28 @@
+{
+  "schema": "LF_LEARNING_CARD_FACTORY_READINESS_V1",
+  "execution_id": "LF-AUTOLEARN-RUN-20260901-037",
+  "mode": "READ_ONLY",
+  "candidate_clusters": ["EDUCACION_CREDITICIA", "ALTERNATIVAS_FINANCIERAS"],
+  "card_rows_existing": 0,
+  "runtime": {
+    "active_step_contracts": 39,
+    "active_step_judge_bindings_by_step_id": 19,
+    "exact_order_and_id_bindings": 17,
+    "binding_order_drift_count": 2,
+    "contract_order_drift": {
+      "runtime_contract_pre_write_execution_binding_gate": 30,
+      "runtime_contract_github_write": 24,
+      "canonical_operation_step_pre_write_execution_binding_gate": 24,
+      "canonical_operation_step_github_write": 25,
+      "git_source_pre_write_execution_binding_gate": 24,
+      "git_source_github_write": 25
+    }
+  },
+  "matched_ekb": ["GOV-CARD-PREWRITE-ORDER-001", "GOV-CARD-DETERMINISTIC-FIRST-RESOLVER-001"],
+  "verdict": "BLOCK_CARD_CREATION_RUNTIME_CONTRACT_ORDER_DRIFT",
+  "card_write_allowed": false,
+  "partial_card_allowed": false,
+  "automatic_impact": false,
+  "production_authorized": false,
+  "next_safe_action": "reconcile Card Factory runtime contracts source-first in its own governed scope; keep learning consumers READ_ONLY meanwhile"
+}
