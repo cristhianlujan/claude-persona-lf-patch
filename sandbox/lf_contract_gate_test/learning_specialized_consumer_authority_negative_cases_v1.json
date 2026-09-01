@@ -1,0 +1,21 @@
+{
+  "schema":"LF_LEARNING_SPECIALIZED_CONSUMER_AUTHORITY_NEGATIVE_CASES_V1",
+  "mode":"READ_ONLY_OFFLINE",
+  "cases":[
+    {"id":"SC-A01","consumer":"CX_TRUST","condition":"runtime_no_habilitado","expected":"NO_COMPETITIVE_CONTEXT"},
+    {"id":"SC-A02","consumer":"CX_TRUST","condition":"missing_product_authority","expected":"NO_COMPETITIVE_CONTEXT"},
+    {"id":"SC-A03","consumer":"CX_TRUST","condition":"missing_claim_authority","expected":"NO_COMPETITIVE_CONTEXT"},
+    {"id":"SC-A04","consumer":"CX_TRUST","condition":"direct_kb_injection_attempt","expected":"BLOCK"},
+    {"id":"SC-A05","consumer":"CX_TRUST","condition":"semantic_search_broadens_authority","expected":"BLOCK"},
+    {"id":"SC-A06","consumer":"CX_TRUST","condition":"production_claim","expected":"BLOCK"},
+    {"id":"SC-A07","consumer":"UX","condition":"runtime_no_habilitado","expected":"NO_COMPETITIVE_CONTEXT"},
+    {"id":"SC-A08","consumer":"UX","condition":"missing_product_direction","expected":"NO_COMPETITIVE_CONTEXT"},
+    {"id":"SC-A09","consumer":"UX","condition":"missing_ux_authority","expected":"NO_COMPETITIVE_CONTEXT"},
+    {"id":"SC-A10","consumer":"UX","condition":"direct_kb_injection_attempt","expected":"BLOCK"},
+    {"id":"SC-A11","consumer":"UX","condition":"semantic_search_broadens_authority","expected":"BLOCK"},
+    {"id":"SC-A12","consumer":"UX","condition":"production_claim","expected":"BLOCK"}
+  ],
+  "critical_false_positive_budget":0,
+  "automatic_impact":false,
+  "production_authorized":false
+}
