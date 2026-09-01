@@ -28,10 +28,12 @@ begin
   if v_110.mini_judge_code is distinct from 'MINI_JUDGE_ACT0058_RETRY'
      or coalesce(v_110.notes,'') <> 'Politica de reintento: maximo 3 intentos. Superado ese umbral, requiere intervencion manual.'
      or position('retry_count + 1 >= 3' in coalesce(v_110.execution_sql,''))=0
+     or v_110.required_evidence_keys is distinct from array['retry_count','error_detail','stage_status']::text[]
   then raise exception 'ACT0058_STEP_110_BASELINE_DRIFT'; end if;
 
   update public.lf_operation_step_contracts
-  set pass_condition=jsonb_build_object(
+  set required_evidence_keys=array['urls_insertadas','urls_duplicadas','source_queries']::text[],
+      pass_condition=jsonb_build_object(
         'RESTOCK_COMPLETED',jsonb_build_object('restock_attempted',true,'dedup_verified',true,'urls_insertadas','>=1'),
         'RESTOCK_NOOP_WARN',jsonb_build_object('restock_attempted',true,'dedup_verified',true,'urls_insertadas',0,'warn_recorded',true)
       ),
@@ -44,12 +46,13 @@ begin
   where operation_code='ORQUESTACION_PIPELINE_LF' and step_order=105 and step_id='restock_queue' and status='ACTIVO';
 
   update public.lf_operation_step_contracts
-  set purpose='Reintentar solo mientras retry_count < 3. Al alcanzar 3 intentos, marcar FAILED definitivo y continuar con la siguiente URL.',
-      pass_condition=jsonb_build_object('RETRY_ALLOWED',jsonb_build_object('retry_count','<3','next_action','RETRY')),
-      fail_condition=jsonb_build_object('RETRY_TERMINAL_FAILED',jsonb_build_object('retry_count','>=3','next_action','FAILED_CONTINUE_NEXT_URL')),
-      block_condition=jsonb_build_object('RETRY_INVALID_AFTER_TERMINAL',jsonb_build_object('retry_count','>=3','next_action','RETRY')),
+  set purpose='Reintentar solo mientras retry_count < 3. Al alcanzar 3 intentos, stage_status queda FAILED definitivo y la orquestación continúa con la siguiente URL.',
+      required_evidence_keys=array['retry_count','error_detail','stage_status']::text[],
+      pass_condition=jsonb_build_object('RETRY_ALLOWED',jsonb_build_object('retry_count','<3','stage_status','PENDING')),
+      fail_condition=jsonb_build_object('RETRY_TERMINAL_FAILED',jsonb_build_object('retry_count','>=3','stage_status','FAILED')),
+      block_condition=jsonb_build_object('RETRY_INVALID_AFTER_TERMINAL',jsonb_build_object('retry_count','>=3','stage_status','NOT_FAILED')),
       blocking_code='MAX_RETRY_EXCEEDED',
-      notes='Canonical ACT-0058: maximum 3 attempts. At retry_count >= 3 the URL is terminal FAILED and orchestration continues with the next URL; no fourth retry and no batch stop.',
+      notes='Canonical ACT-0058: maximum 3 attempts. Judge consumes only material runtime evidence returned by the UPDATE: retry_count, stage_status and error_detail. At retry_count >= 3 stage_status must be FAILED; no synthetic next_action field and no fourth retry.',
       updated_at=now(),
       updated_by_execution_id=v_execution_id
   where operation_code='ORQUESTACION_PIPELINE_LF' and step_order=110 and step_id='failed_retry' and status='ACTIVO';
@@ -58,6 +61,7 @@ begin
     select 1 from public.lf_operation_step_contracts
     where operation_code='ORQUESTACION_PIPELINE_LF' and step_order=105
       and pass_condition ? 'RESTOCK_NOOP_WARN'
+      and required_evidence_keys @> array['urls_insertadas','urls_duplicadas','source_queries']::text[]
       and blocking_code='RESTOCK_GOVERNANCE_EVIDENCE_MISSING'
       and updated_by_execution_id=v_execution_id
   ) then raise exception 'ACT0058_STEP_105_RECONCILIATION_FAILED'; end if;
@@ -65,8 +69,9 @@ begin
   if not exists (
     select 1 from public.lf_operation_step_contracts
     where operation_code='ORQUESTACION_PIPELINE_LF' and step_order=110
-      and fail_condition ? 'RETRY_TERMINAL_FAILED'
-      and block_condition ? 'RETRY_INVALID_AFTER_TERMINAL'
+      and pass_condition #>> '{RETRY_ALLOWED,stage_status}'='PENDING'
+      and fail_condition #>> '{RETRY_TERMINAL_FAILED,stage_status}'='FAILED'
+      and required_evidence_keys=array['retry_count','error_detail','stage_status']::text[]
       and updated_by_execution_id=v_execution_id
   ) then raise exception 'ACT0058_STEP_110_RECONCILIATION_FAILED'; end if;
 end
