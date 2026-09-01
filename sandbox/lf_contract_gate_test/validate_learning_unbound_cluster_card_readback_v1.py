@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-import json
+import json,subprocess,sys
 from pathlib import Path
-P=Path(__file__).resolve().parent/'learning_unbound_cluster_card_readback_v1.json'
+R=Path(__file__).resolve().parent
+P=R/'learning_unbound_cluster_card_readback_v1.json'
 
 def main():
     d=json.loads(P.read_text(encoding='utf-8'))
@@ -24,5 +25,10 @@ def main():
     assert b['existing_exact_card_observed'] is False and b['keyword_candidate_observed'] is False
     assert b['automatic_card_creation'] is False
     assert d['automatic_binding'] is False and d['automatic_impact'] is False and d['production_authorized'] is False
-    print('LEARNING_UNBOUND_CLUSTER_CARD_READBACK=PASS exact_matches=0 keyword_matches=0 semantic_search=false ready_for_binding_only=2 no_card=1 automatic_card_creation=false')
+    p=subprocess.run([sys.executable,str(R/'validate_learning_source_snapshot_freshness_guard_v1.py')],capture_output=True,text=True)
+    if p.stdout: print(p.stdout.strip())
+    if p.returncode:
+        if p.stderr: sys.stderr.write(p.stderr)
+        raise SystemExit(p.returncode)
+    print('LEARNING_UNBOUND_CLUSTER_CARD_READBACK=PASS historical_matches=0 ready_for_binding_only=2 no_card=1 fresh_readback_required_before_new_binding_or_card=true')
 if __name__=='__main__': main()
