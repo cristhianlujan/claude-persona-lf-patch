@@ -1,0 +1,37 @@
+version: v1
+status: CANDIDATO_READ_ONLY
+purpose: Let downstream profiles benefit from accepted Product/UI decisions informed by competitive learning without granting direct KB authority.
+chain:
+  - stage: PRODUCT_DIRECTION
+    consumer_id: PERFIL-PRODUCT-DIRECTOR-LF
+    direct_learning_context: true
+    output_required: product_direction_ref
+    current_required: true
+  - stage: UI_SPECIFICATION
+    consumer_id: PERFIL-UI-ARCHITECT
+    direct_learning_context: true
+    upstream_required: product_direction_ref
+    output_required: ui_spec_ref
+    current_required: true
+  - stage: FRONTEND_IMPLEMENTATION
+    consumer_id: ACT-0051
+    direct_learning_context: false
+    upstream_required: [product_direction_ref, ui_spec_ref]
+    source_authority: CURRENT_GOVERNED_PRODUCT_UI_ONLY
+    must_not_receive: [competitive_kb_rows, source_learning_ids_as_domain_authority, competitor_claims_as_product_truth]
+    fallback: FRONTEND_MISSING_INPUT_STATE_RETURN_TO_ORCHESTRATOR
+  - stage: GAMIFICATION
+    consumer_id: GAMIFICATION_SYSTEM_ARCHITECT
+    direct_learning_context: false
+    upstream_required: [authorized_product_or_ux_objective]
+    source_authority: CURRENT_GOVERNED_OBJECTIVE_ONLY
+    must_not_receive: [competitive_kb_rows, implicit_behavioral_objective, competitor_mechanic_as_product_truth]
+    fallback: NO_AUTHORIZED_OBJECTIVE_NO_LEARNING_PROPAGATION
+rules:
+  learning_influence_must_be_materialized_upstream: true
+  direct_frontend_learning_binding: false
+  direct_gamification_learning_binding: false
+  product_ui_refs_must_be_current: true
+  downstream_may_not_reinterpret_product_truth: true
+  no_extra_learning_llm_call_downstream: true
+  production_impact: false
