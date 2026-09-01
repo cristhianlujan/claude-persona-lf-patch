@@ -1,0 +1,14 @@
+{
+  "schema":"LF_LEARNING_ACT0058_2_POST_REPAIR_JUDGE_SPECS_V1",
+  "status":"BLOCKED_UNTIL_CONTRACT_REPAIR_READBACK",
+  "operation_code":"ORQUESTACION_PIPELINE_LF",
+  "judges":[
+    {"step_order":5,"step_id":"init_execution","judge_code":"MINI_JUDGE_ACT0058_INIT_EXECUTION","pass_if":["execution_id_present","operation_code_exact","status_IN_PROGRESS","started_at_present"],"fail_if":["execution_id_missing","operation_code_mismatch","status_not_in_progress","started_at_missing"],"required_evidence_keys":["execution_id","operation_code","status","started_at"],"result_values":["EXECUTION_INITIALIZED","BLOCKED"]},
+    {"step_order":105,"step_id":"restock_queue","judge_code":"MINI_JUDGE_ACT0058_RESTOCK","pass_if":["urls_insertadas_gte_1","queue_ids_present"],"non_failure_skip_if":["urls_insertadas_eq_0","dedup_count_observed","warn_event_registered"],"fail_if":["insert_error","invalid_queue_state","missing_required_evidence"],"required_evidence_keys":["urls_insertadas","queue_ids","dedup_count","event_id_if_no_new_urls"],"result_values":["RESTOCKED","SKIP_RESTOCK","FAIL"]}
+  ],
+  "prerequisite_source":"act0058_two_contracts_hardening_candidate.sql",
+  "prerequisite_db_readback":"NOT_EXECUTED",
+  "database_apply_authorized":false,
+  "db_mutation_performed":false,
+  "production_impact":false
+}
