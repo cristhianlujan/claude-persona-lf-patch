@@ -49,4 +49,5 @@ def main():
     run('validate_learning_dynamic_selector_robustness_v1.py')
     run('validate_learning_dynamic_selector_stability_v1.py')
     run('validate_learning_dynamic_selector_boundedness_v1.py')
+    run('validate_learning_dynamic_selector_performance_v1.py')
 if __name__=='__main__': main()
