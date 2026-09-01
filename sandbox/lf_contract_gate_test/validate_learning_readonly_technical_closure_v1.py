@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import json
+import json, subprocess, sys
 from pathlib import Path
 R=Path(__file__).resolve().parent
 D=json.loads((R/'learning_readonly_technical_closure_v1.json').read_text())
@@ -25,12 +25,17 @@ req(D['corpus']['canonical_bridge_eligible']=='35/35' and D['corpus']['eligible_
 req(D['behavioral']['status']=='INSUFFICIENT_EVIDENCE' and D['behavioral']['behavioral_ab']=='NOT_EXECUTED','BEHAVIORAL')
 for k in ('behavioral_promotion_authorized','automatic_promotion','production_authorized','merge_authorized'):
     req(D[k] is False,'AUTH_'+k.upper())
+r=subprocess.run([sys.executable,str(R/'validate_learning_active_consumer_binding_contract_v1.py')],capture_output=True,text=True)
+if r.stdout: print(r.stdout.strip())
+if r.returncode:
+    if r.stderr: sys.stderr.write(r.stderr)
+    raise SystemExit(r.returncode)
 if D['status']=='VERIFICATION_IN_PROGRESS':
     req(D['read_only_route_technically_verified'] is False,'PENDING_NOT_VERIFIED')
     req(D['exact_head_ci']['canonical_workflows_passed']<3,'PENDING_CI_NOT_3')
     req(D['closure_boundary']=='TECHNICAL_READ_ONLY_CI_RECHECK_REQUIRED','PENDING_BOUNDARY')
     req(D['next_gate']=='CURRENT_HEAD_EXACT_CI_3_OF_3','PENDING_NEXT_GATE')
-    print('LEARNING_READONLY_TECHNICAL_CLOSURE=PASS_FAIL_CLOSED status=VERIFICATION_IN_PROGRESS specialized=HARDENED production_authorized=false')
+    print('LEARNING_READONLY_TECHNICAL_CLOSURE=PASS_FAIL_CLOSED status=VERIFICATION_IN_PROGRESS active_bindings=7/7 specialized=HARDENED production_authorized=false')
 elif D['status']=='TECHNICALLY_VERIFIED_READ_ONLY_CANDIDATE':
     req(D['read_only_route_technically_verified'] is True,'VERIFIED_FLAG')
     req(D['exact_head_ci']['canonical_workflows_passed']==D['exact_head_ci']['canonical_workflows_total']==3,'CI_3_OF_3')
