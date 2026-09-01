@@ -16,8 +16,6 @@ READY = {
     (70,'stage_analisis','MINI_JUDGE_ACT0058_ANALISIS'),
     (90,'stage_kb_write','MINI_JUDGE_ACT0058_KB_WRITE'),
     (100,'completed','MINI_JUDGE_ACT0058_COMPLETED'),
-}
-REPAIR = {
     (105,'restock_queue','MINI_JUDGE_ACT0058_RESTOCK'),
     (110,'failed_retry','MINI_JUDGE_ACT0058_RETRY'),
 }
@@ -44,6 +42,8 @@ def validate_source_evidence() -> None:
 
 def main() -> int:
     text = SPEC.read_text(encoding='utf-8')
+    if 'version: v3' not in text:
+        fail('expected v3 spec')
     if 'operation_code: ORQUESTACION_PIPELINE_LF' not in text:
         fail('operation code mismatch')
     for term in FORBIDDEN:
@@ -51,25 +51,27 @@ def main() -> int:
             fail(f'forbidden term: {term}')
     if 'contradictory_contract_fail_closed: true' not in text:
         fail('contradictory contracts must fail closed')
-    ready_section, repair_section = text.split('contract_repair_required:', 1)
+    if 'blob_sha: 3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495' not in text:
+        fail('canonical skill blob not pinned')
+    ready_section = text.split('source_reconciliation_required:', 1)[0]
     ready_blocks = re.findall(r'  - step_order: (\d+)\n    step_id: ([^\n]+)\n    judge_code: ([^\n]+)', ready_section)
-    repair_blocks = re.findall(r'  - step_order: (\d+)\n    step_id: ([^\n]+)\n    judge_code: ([^\n]+)', repair_section)
     observed_ready = {(int(a), b.strip(), c.strip()) for a,b,c in ready_blocks}
-    observed_repair = {(int(a), b.strip(), c.strip()) for a,b,c in repair_blocks}
     if observed_ready != READY:
         fail(f'ready set mismatch: {sorted(observed_ready)}')
-    if observed_repair != REPAIR:
-        fail(f'repair set mismatch: {sorted(observed_repair)}')
-    if ready_section.count('pass_if:') != 8 or ready_section.count('fail_if:') != 8 or ready_section.count('result_values:') != 8:
+    if ready_section.count('pass_if:') != 10 or ready_section.count('fail_if:') != 10 or ready_section.count('result_values:') != 10:
         fail('each ready judge must define pass/fail/result')
-    if repair_section.count('reason: LIVE_CONTRACT_CONTRADICTION') != 2:
-        fail('both unresolved judges must remain contract-repair-required')
-    if 'ready_to_bind: 8' not in text or 'contract_repair_required: 2' not in text or 'missing_bindings: 10' not in text:
+    if 'no_op_if:' not in ready_section or 'RESTOCK_NOOP_WARN' not in ready_section:
+        fail('restock no-op WARN semantics missing')
+    if 'terminal_if:' not in ready_section or 'RETRY_TERMINAL_FAILED' not in ready_section:
+        fail('retry terminal-at-3 semantics missing')
+    if 'step_orders: [105, 110]' not in text or 'SOURCE_FIRST_NO_DB_WRITE' not in text:
+        fail('source reconciliation scope missing')
+    if 'ready_to_bind: 10' not in text or 'source_reconciliation_required: 2' not in text or 'missing_bindings: 10' not in text:
         fail('live inventory summary mismatch')
     if 'deterministic_first: true' not in text or 'llm_required: false' not in text:
         fail('deterministic-first boundary missing')
     validate_source_evidence()
-    print('ACT0058_MISSING_JUDGES_SPEC=PASS ready=8 repair_required=2 deterministic=8 llm=0')
+    print('ACT0058_MISSING_JUDGES_SPEC=PASS ready=10 source_reconciliation=2 deterministic=10 llm=0')
     print('ACT0058_LIVE_INVENTORY=PASS active_steps=14 existing_bindings=4 missing=10')
     print('ACT0058_SOURCE_INSPECTION=PASS checked=6 direct=2 index_only=4')
     return 0
