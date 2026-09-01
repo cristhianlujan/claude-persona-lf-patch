@@ -18,8 +18,11 @@ def _fallback(consumer_id, capability_id, reason):
     return {'mode':'READ_ONLY','consumer_id':consumer_id,'capability_id':capability_id,'selected':[],'fallback':'NO_COMPETITIVE_CONTEXT','llm_calls':0,'round_trips':0,'writes':0,'semantic_search':False,'nonbinding_reason':reason}
 
 def _event_order(e):
-    try: return int(e.get('event_id',e.get('id',0)))
-    except (TypeError,ValueError): return None
+    try:
+        value=int(e.get('event_id',e.get('id',0)))
+        return value if value>0 else None
+    except (TypeError,ValueError):
+        return None
 
 def _quality_score(r):
     try: return float(r.get('quality_score') or 0)
