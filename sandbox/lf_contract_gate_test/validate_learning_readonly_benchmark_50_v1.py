@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from learning_dynamic_context_selector_clean_v1 import select_context, SelectionError
+from learning_dynamic_context_selector_clean_v1 import select_context
 
 FAMILIES=[
  ('pd_neg','PERFIL-PRODUCT-DIRECTOR-LF','NEGOCIACION_DEUDA','NEGOCIACION_DEUDA',None,True),
@@ -29,5 +29,5 @@ def main():
             else: tn+=1
             assert r['llm_calls']==0 and r['round_trips']==0 and r.get('context_bytes',0)<=r.get('context_budget_bytes',10**9)
     assert len(cases)==50 and fp==0 and fn==0
-    print({'cases':50,'families':10,'tp':tp,'tn':tn,'fp':fp,'fn':fn,'precision':1.0,'recall':1.0,'specificity':1.0,'selector_llm_calls':0,'selector_round_trips':0,'result':'CHALLENGER_WINS_ROUTING_ONLY'})
+    print({'cases':50,'families':10,'tp':tp,'tn':tn,'fp':fp,'fn':fn,'precision':1.0,'recall':1.0,'specificity':1.0,'selector_llm_calls':0,'selector_round_trips':0,'routing_gate':'PASS','behavioral_ab':'NOT_EXECUTED','result':'INSUFFICIENT_EVIDENCE'})
 if __name__=='__main__': main()
