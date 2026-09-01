@@ -44,14 +44,17 @@
     "direct_capture_authorized":false
   },
   "ci": {
-    "last_completed_clean_candidate_head":"90ef13f74953d8b32af771281ba2b5099b93995a",
-    "validate_lf_packs":"SUCCESS",
-    "bootstrap":"SUCCESS",
-    "lf_contract_check":"FAIL_CI_E16_001",
-    "contract_and_parity_steps_before_e16":"PASS",
-    "current_head_waiting_ci":true
+    "current_candidate_head":"934027448b6b733af059407cc6291ac7463c3b6e",
+    "validate_lf_packs":{"run_id":33526258686,"status":"SUCCESS"},
+    "bootstrap":{"run_id":33526258506,"status":"SUCCESS"},
+    "lf_contract_check":{"run_id":33526258435,"job_id":99917741497,"status":"FAILURE","first_bad_step":"LF_MIGRATION_SOURCE_PARITY"},
+    "live_missing_source_version":"20260901151435",
+    "live_missing_source_name":"lf_input_governance_validator_phase_split_v1",
+    "external_source_pr":408,
+    "learning_contract_regression_proven":false,
+    "secondary_recurrent_ci_issue":"CI-E16-001"
   },
-  "promotion":"BLOCKED_RUNTIME_AUTHORITY_AND_GLOBAL_EXACT_HEAD_CI",
+  "promotion":"BLOCKED_RUNTIME_AUTHORITY_AND_EXTERNAL_SOURCE_PARITY_AND_GLOBAL_EXACT_HEAD_CI",
   "production_authorized":false,
   "automatic_impact":false,
   "rollback":"retain champion without competitive context and do not invoke profile runtime"
