@@ -1,0 +1,14 @@
+{
+  "schema":"LF_LEARNING_NEXT_CONSUMER_APPLICABILITY_V1",
+  "observed_live_at_utc":"2026-09-01T19:11:00Z",
+  "adapter_id":"ADAPTER_LF_SHELL_PROFILE",
+  "governed_targets":4,
+  "targets":[
+    {"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","consumer_type":"PROFILE","read_only_learning_status":"EXACT_BINDINGS_MATERIALIZED","exact_capabilities":5,"runtime_enabled":true,"production_enabled":false},
+    {"consumer_id":"PERFIL-UI-ARCHITECT","consumer_type":"PROFILE","read_only_learning_status":"EXACT_BINDINGS_MATERIALIZED","exact_capabilities":2,"prerequisite":"PRODUCT_DIRECTION_AUTHORIZED_CURRENT","runtime_enabled":true,"production_enabled":false},
+    {"consumer_id":"PERFIL-GAMIFICATION-SYSTEM-ARCHITECT","consumer_type":"PROFILE","read_only_learning_status":"NO_EXACT_CONSUMER","reason":"CURRENT_COMPETITIVE_CLUSTER_CATALOG_HAS_NO_EXACT_GAMIFICATION_CAPABILITY","fallback":"NO_COMPETITIVE_CONTEXT","runtime_enabled":true,"production_enabled":false},
+    {"consumer_id":"ACT-0051","resolved_name":"PERFIL_FRONTEND_PROTOTYPE_ARCHITECT_LF","consumer_type":"PROFILE","document_status":"CANDIDATO","operational_status":"READ_ONLY","runtime_status":"NO_APLICA","read_only_learning_status":"READY_FOR_BINDING_AFTER_UPSTREAM_UI_AUTHORITY","required_prerequisites":["PRODUCT_DIRECTION_AUTHORIZED_CURRENT","UI_ARCHITECTURE_AUTHORIZED_CURRENT"],"fallback":"NO_COMPETITIVE_CONTEXT","production_enabled":false}
+  ],
+  "automatic_binding":false,
+  "production_authorized":false
+}
