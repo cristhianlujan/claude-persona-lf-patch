@@ -24,8 +24,7 @@ def parse_gold() -> list[dict]:
     for line in text.splitlines():
         if not line_re.match(line):
             continue
-        literal = line.strip().rstrip(",")
-        literal = re.sub(r"''", r"\\'", literal)
+        literal = re.sub(r"''", r"\\'", line.strip().rstrip(","))
         try:
             row = ast.literal_eval(literal)
         except Exception as exc:
@@ -62,6 +61,7 @@ def evaluate():
     rows = apply_adjudication(parse_gold())
     ctx = ResolverContext(api_behavioral_contract=True, operation_schema_authority_materialized=False)
     decision_ok = tp = fp = fn = unsafe_under_block = unnecessary_global_block = 0
+    unknown_count = mixed_count = shared_count = unknown_fail_closed = mixed_fail_closed = shared_fail_closed = 0
     depths = []
     for row in rows:
         result = resolve(row["case_family"], row["mutation"], ctx)
@@ -70,6 +70,12 @@ def evaluate():
         fp += len(result.impacted_families - row["expected_impacts"])
         fn += len(row["expected_impacts"] - result.impacted_families)
         depths.append(result.depth)
+        unknown_count += int(result.unknown)
+        mixed_count += int(result.mixed)
+        shared_count += int(result.shared_dependency)
+        unknown_fail_closed += int(result.unknown and result.fail_closed)
+        mixed_fail_closed += int(result.mixed and result.fail_closed)
+        shared_fail_closed += int(result.shared_dependency and result.fail_closed)
         if row["expected_decision"] in {"GLOBAL_ESCALATE", "HUMAN_REQUIRED"} and result.decision in {"SCOPED_CANDIDATE", "SCOPED_BLOCK"}:
             unsafe_under_block += 1
         if row["expected_decision"] in {"SCOPED_CANDIDATE", "SCOPED_BLOCK"} and result.decision == "GLOBAL_ESCALATE":
@@ -81,20 +87,25 @@ def evaluate():
     assert recall == 1.0, f"IMPACT_RECALL:{recall}"
     assert unsafe_under_block == 0, f"UNSAFE_UNDER_BLOCK:{unsafe_under_block}"
     assert unnecessary_global_block == 0, f"UNNECESSARY_GLOBAL_BLOCK:{unnecessary_global_block}"
+    assert shared_count == 42, f"SHARED_COUNT:{shared_count}"
+    assert unknown_count == unknown_fail_closed, (unknown_count, unknown_fail_closed)
+    assert mixed_count == mixed_fail_closed, (mixed_count, mixed_fail_closed)
 
     negatives = [
-        ("API_DATA_CONTRACT", "Crear endpoint alterno sin operation schema authority", "HUMAN_REQUIRED", True),
-        ("FIELD_CONTRACT", "Agregar campo nuevo sin fuente canónica", "HUMAN_REQUIRED", True),
-        ("PERMISSION_BINDING", "Reemplazar por permiso existente de otro recurso", "GLOBAL_ESCALATE", True),
-        ("ACTION_SEMANTICS", "Cambiar action EXPORT -> DELETE", "GLOBAL_ESCALATE", True),
-        ("STATE_TRANSITION", "Eliminar permission guard de transición", "GLOBAL_ESCALATE", True),
-        ("DESIGN_COMPONENT", "Usar token DEPRECADO", "SCOPED_BLOCK", True),
-        ("ACTION_SEMANTICS", "EXPORT permanece EXPORT", "SCOPED_CANDIDATE", False),
+        ("API_DATA_CONTRACT", "Crear endpoint alterno sin operation schema authority", "HUMAN_REQUIRED", True, True, False),
+        ("FIELD_CONTRACT", "Agregar campo nuevo sin fuente canónica", "HUMAN_REQUIRED", True, True, False),
+        ("PERMISSION_BINDING", "Reemplazar por permiso existente de otro recurso", "GLOBAL_ESCALATE", True, False, True),
+        ("ACTION_SEMANTICS", "Cambiar action EXPORT -> DELETE", "GLOBAL_ESCALATE", True, False, False),
+        ("STATE_TRANSITION", "Eliminar permission guard de transición", "GLOBAL_ESCALATE", True, False, False),
+        ("DESIGN_COMPONENT", "Usar token DEPRECADO", "SCOPED_BLOCK", True, False, False),
+        ("ACTION_SEMANTICS", "EXPORT permanece EXPORT", "SCOPED_CANDIDATE", False, False, False),
     ]
-    for family, mutation, expected, should_fail_closed in negatives:
+    for family, mutation, expected, fail_closed, unknown, mixed in negatives:
         result = resolve(family, mutation, ctx)
         assert result.decision == expected, (family, mutation, result.decision, expected)
-        assert result.fail_closed is should_fail_closed
+        assert result.fail_closed is fail_closed
+        assert result.unknown is unknown
+        assert result.mixed is mixed
 
     print(json.dumps({
         "resolver_quality": {
@@ -102,6 +113,9 @@ def evaluate():
             "impact_precision": precision, "impact_recall": recall,
             "unsafe_under_block": unsafe_under_block,
             "unnecessary_global_block": unnecessary_global_block,
+            "unknown_cases": unknown_count, "unknown_fail_closed": unknown_fail_closed,
+            "mixed_cases": mixed_count, "mixed_fail_closed": mixed_fail_closed,
+            "shared_dependency_cases": shared_count, "shared_fail_closed": shared_fail_closed,
             "heldout_controls": len(negatives), "heldout_pass": len(negatives),
             "depth_min": min(depths), "depth_max": max(depths),
         },
