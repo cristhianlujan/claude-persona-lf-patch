@@ -3,6 +3,8 @@
   "batch_id": "LEARNING-SOURCE-20260901-B2",
   "execution_id": "LF-AUTOLEARN-RUN-20260901-037",
   "status": "GOVERNED_QUEUE_ADMITTED_CAPTURE_PENDING",
+  "live_revalidated_at": "2026-09-01T09:08:52Z",
+  "live_claim_readback": "2_OF_2_CONFIRMED_OFFICIAL_SOURCE",
   "production_impact": false,
   "direct_kb_write_allowed": false,
   "sources": [
@@ -16,6 +18,12 @@
       "claim_boundary": "no inferir descuento, refinanciamiento, elegibilidad ni resultado garantizado; la página solo prueba canal/ruta de solución y orientación",
       "semantic_disposition": "NEW_INCREMENTAL_MECHANIC",
       "incremental_signal": "DEDICATED_DEBT_SOLUTION_INTAKE_PLUS_ADVISOR_CALLBACK",
+      "live_claim_status": "CONFIRMED_OFFICIAL_SOURCE_20260901",
+      "live_observed_evidence": [
+        "BCP states alternatives include refinancing, reprogramming and grace period, all subject to prior evaluation",
+        "for pending debts it offers a dedicated phone solution route or request for advisor callback",
+        "debt orientation is separately directed to Banca por Teléfono"
+      ],
       "queue_id": "d712bb32-4199-48d9-8912-f8dbae72bcfd",
       "queue_state": "PENDIENTE"
     },
@@ -29,6 +37,12 @@
       "claim_boundary": "segmento empresario/B2B; no extrapolar requisitos, montos, elegibilidad ni solución a consumidor B2C o deuda castigada LF",
       "semantic_disposition": "INCREMENTAL_EVIDENCE_REQUIREMENTS_PATTERN_WITH_SCOPE_LIMIT",
       "incremental_signal": "SOURCE_DEBT_SCHEDULE_REQUIRED_BEFORE_CONSOLIDATION_EVALUATION",
+      "live_claim_status": "CONFIRMED_OFFICIAL_SOURCE_20260901",
+      "live_observed_evidence": [
+        "official requirements include business documents",
+        "official requirements include statement or payment schedule of credits to be purchased",
+        "page is located under business-credit/consolidation scope; evidence remains scope-limited"
+      ],
       "queue_id": "c1059a31-d860-420a-b5d1-1bfc80252bf6",
       "queue_state": "PENDIENTE"
     }
