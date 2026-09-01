@@ -44,6 +44,9 @@ jobs:
       - name: Validate learning engine pack
         run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
 
+      - name: Validate learning cluster consumer coverage
+        run: python sandbox/lf_contract_gate_test/validate_learning_cluster_consumer_coverage_v1.py
+
       - name: Validate learning READ_ONLY Product Director route
         run: python sandbox/lf_contract_gate_test/validate_product_director_learning_suite_v1.py
 
