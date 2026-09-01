@@ -1,0 +1,26 @@
+name: LF Learning ReadOnly Consumer V2
+on:
+  pull_request:
+    paths:
+      - 'sandbox/lf_contract_gate_test/learning_*'
+      - 'sandbox/lf_contract_gate_test/profile_input_governance_binding_v1.py'
+      - 'sandbox/lf_contract_gate_test/product_director_input_governance_binding_v1.py'
+      - 'sandbox/lf_contract_gate_test/validate_product_director_input_governance_binding_v1.py'
+      - '.github/workflows/learning-readonly-consumer-v2.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Exact-head readback
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+      - name: Deterministic read-only consumer validation
+        run: python3 sandbox/lf_contract_gate_test/validate_learning_consumer_readonly_v2.py
