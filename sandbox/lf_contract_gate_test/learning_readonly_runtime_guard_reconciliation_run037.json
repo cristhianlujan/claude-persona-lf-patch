@@ -1,0 +1,56 @@
+{
+  "schema": "LF_LEARNING_READONLY_RUNTIME_GUARD_RECONCILIATION_V1",
+  "execution_id": "LF-AUTOLEARN-RUN-20260901-037",
+  "mode": "READ_ONLY",
+  "observed_main_sha": "e5b9febcfebd7c16f8cc8a0cb146cfc467eadc42",
+  "router": {
+    "asset": "ACT-0001",
+    "state": "ACTIVO",
+    "runtime_state": "RUNTIME_OPERATIVO",
+    "automatic_impact": "BLOQUEADO"
+  },
+  "consumers": [
+    {
+      "consumer_id": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "adapter_code": "ADAPTER-LF-SHELL-PROFILE-20260827",
+      "adapter_state": "READ_ONLY",
+      "router_discoverable": true,
+      "runtime_enabled": false,
+      "input_governance_receipt_required": true,
+      "input_governance_continuation_policy": "PASS_ONLY"
+    },
+    {
+      "consumer_id": "PERFIL-UI-ARCHITECT",
+      "adapter_code": "ADAPTER-LF-SHELL-PROFILE-20260827",
+      "adapter_state": "READ_ONLY",
+      "router_discoverable": true,
+      "runtime_enabled": false,
+      "input_governance_receipt_required": true,
+      "input_governance_continuation_policy": "PASS_ONLY"
+    }
+  ],
+  "knowledge_path": {
+    "eligible_competitive_kb": 35,
+    "classified_distinct": 35,
+    "unclassified": 0,
+    "selector_llm_calls": 0,
+    "selector_round_trips": 0
+  },
+  "behavioral": {
+    "latest_current_subject_run_id": 216,
+    "product_director_fixture_run_id": 215,
+    "runtime_invocation_authorized": false,
+    "reason": "ROUTER_BOUND_ADAPTER_RUNTIME_DISABLED"
+  },
+  "act0058": {
+    "active_steps": 14,
+    "active_judge_bindings": 4,
+    "missing_judge_bindings": 10,
+    "pending_recovered_sources": 6,
+    "direct_capture_authorized": false
+  },
+  "result": "READ_ONLY_CONTEXT_ARTIFACTS_VALID_TO_INSPECT_BUT_CONSUMER_RUNTIME_INVOCATION_BLOCKED",
+  "promotion_authorized": false,
+  "production_authorized": false,
+  "automatic_impact": false
+}
