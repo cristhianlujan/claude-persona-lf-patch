@@ -9,6 +9,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 SPEC = ROOT / 'sandbox/lf_contract_gate_test/act0058_missing_judges_v1.yaml'
 RECON = ROOT / 'sandbox/lf_contract_gate_test/act0058_step_contract_reconciliation_v1.yaml'
+MIGRATION = ROOT / 'supabase/migrations/20260901153300_act0058_step_105_110_contract_reconciliation_v1.sql'
 EVIDENCE = ROOT / 'sandbox/lf_contract_gate_test/evidence/ACT0058_PENDING_SOURCE_INSPECTION_20260901.json'
 CASE_VALIDATOR = ROOT / 'sandbox/lf_contract_gate_test/validate_act0058_judge_cases_v1.py'
 LIVE_RECON_VALIDATOR = ROOT / 'sandbox/lf_contract_gate_test/validate_act0058_live_contract_reconciliation_v1.py'
@@ -53,22 +54,34 @@ def validate_source_evidence() -> None:
 
 def validate_reconciliation() -> None:
     text = RECON.read_text(encoding='utf-8')
+    migration = MIGRATION.read_text(encoding='utf-8')
     for term in FORBIDDEN:
         if term in text:
             fail(f'reconciliation forbidden term: {term}')
     required = [
+        'version: v2','SOURCE_MIGRATION_MATERIALIZED_NOT_APPLIED',
         'step_order: 105','step_id: restock_queue','zero_new_urls_is_controlled_noop_not_batch_failure',
         'RESTOCK_NOOP_WARN','step_order: 110','step_id: failed_retry',
         'retry_count_reaches_3_marks_FAILED_definitive_and_continue_next_url',
-        'RETRY_TERMINAL_FAILED','SOURCE_FIRST_MIGRATION_OR_CANONICAL_CONTRACT_PATCH',
+        'RETRY_TERMINAL_FAILED','EXACT_HEAD_CI_THEN_GOVERNED_APPLY_AND_LIVE_READBACK',
         'before: ACTIVE_JUDGE_BINDING','db_write: false',
         'blob_sha: 3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495',
+        'path: supabase/migrations/20260901153300_act0058_step_105_110_contract_reconciliation_v1.sql',
+        'state: SOURCE_ONLY_NOT_APPLIED'
     ]
     missing=[x for x in required if x not in text]
     if missing:
         fail(f'reconciliation missing terms: {missing}')
     if text.count('live_conflict:') != 2 or text.count('canonical_source_rule:') != 2 or text.count('proposed_contract:') != 2:
         fail('reconciliation must cover exactly two source conflicts')
+    migration_required = [
+        'ACT0058_STEP_105_BASELINE_DRIFT','ACT0058_STEP_110_BASELINE_DRIFT',
+        'RESTOCK_NOOP_WARN','RETRY_TERMINAL_FAILED','RETRY_INVALID_AFTER_TERMINAL',
+        'ACT0058_STEP_105_RECONCILIATION_FAILED','ACT0058_STEP_110_RECONCILIATION_FAILED'
+    ]
+    missing_migration=[x for x in migration_required if x not in migration]
+    if missing_migration:
+        fail(f'source migration missing guards: {missing_migration}')
 
 def main() -> int:
     text = SPEC.read_text(encoding='utf-8')
@@ -105,7 +118,7 @@ def main() -> int:
     print(run(CASE_VALIDATOR))
     print(run(LIVE_RECON_VALIDATOR))
     print('ACT0058_MISSING_JUDGES_SPEC=PASS ready=10 source_reconciliation=2 deterministic=10 llm=0')
-    print('ACT0058_CONTRACT_RECONCILIATION=PASS steps=105,110 db_write=0')
+    print('ACT0058_CONTRACT_RECONCILIATION=PASS steps=105,110 source_migration=MATERIALIZED_NOT_APPLIED')
     print('ACT0058_LIVE_INVENTORY=PASS active_steps=14 existing_bindings=4 missing=10')
     print('ACT0058_SOURCE_INSPECTION=PASS checked=6 direct=2 index_only=4')
     return 0
