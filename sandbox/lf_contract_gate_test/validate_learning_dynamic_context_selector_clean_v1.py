@@ -16,6 +16,13 @@ def assert_reader_invariants(result):
     assert result['writes']==0
     assert result['semantic_search'] is False
 
+def run(script):
+    p=subprocess.run([sys.executable,str(R/script)],capture_output=True,text=True)
+    if p.stdout: print(p.stdout.strip())
+    if p.returncode:
+        if p.stderr: sys.stderr.write(p.stderr)
+        raise SystemExit(p.returncode)
+
 def main():
     r=select_context([kb('a'),kb('b',grounding_status='UNGROUNDED'),kb('c',consumer_ready=False)],[ev('a','NEGOCIACION_DEUDA'),ev('b','NEGOCIACION_DEUDA'),ev('c','NEGOCIACION_DEUDA')],'PERFIL-PRODUCT-DIRECTOR-LF','NEGOCIACION_DEUDA')
     assert [x['kb_id'] for x in r['selected']]==['a']; assert_reader_invariants(r); assert r['context_bytes']<=r['context_budget_bytes']
@@ -38,9 +45,6 @@ def main():
     except SelectionError as e: assert str(e)=='EXACT_BINDING_REQUIRED'
     else: raise AssertionError('must fail closed')
     print('PASS learning_dynamic_context_selector_clean_v1 writes=0 semantic_search=false llm_calls=0 round_trips=0 unbound_clusters_fail_closed=3/3 explicit_nonbindings_fail_closed=4/4 unknown_binding_error=PASS')
-    p=subprocess.run([sys.executable,str(R/'validate_learning_dynamic_exact_join_contract_v1.py')],capture_output=True,text=True)
-    if p.stdout: print(p.stdout.strip())
-    if p.returncode:
-        if p.stderr: sys.stderr.write(p.stderr)
-        raise SystemExit(p.returncode)
+    run('validate_learning_dynamic_exact_join_contract_v1.py')
+    run('validate_learning_dynamic_selector_robustness_v1.py')
 if __name__=='__main__': main()
