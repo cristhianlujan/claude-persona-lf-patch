@@ -1,0 +1,17 @@
+{
+  "schema":"LF_LEARNING_READONLY_LIFECYCLE_GUARD_V1",
+  "mode":"READ_ONLY",
+  "technical_candidate_state":"TECHNICALLY_VERIFIED_READ_ONLY_CANDIDATE",
+  "behavioral_state":"INSUFFICIENT_EVIDENCE",
+  "allowed_without_behavioral_receipt":["READY_FOR_BINDING","READY_FOR_BINDING_REVIEW","TECHNICALLY_VERIFIED_READ_ONLY_CANDIDATE","BENCHMARK_REQUIRED","INSUFFICIENT_EVIDENCE"],
+  "forbidden_without_behavioral_receipt":["APROBADO","IMPACTADO","VERIFICADO","CERRADO","PRODUCTION_READY","BEHAVIORAL_WINNER"],
+  "requirements_for_behavioral_transition":["EXACT_TARGET_SCREEN_DECLARED","EXACT_SCREEN_BOUND_INPUT_GOVERNANCE_RECEIPT_CURRENT","SAME_INPUT_MODEL_RUNTIME_JUDGES","BEHAVIORAL_AB_EXECUTED","ALLOWED_BENCHMARK_OUTCOME"],
+  "additional_consumers":[
+    {"consumer_id":"PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531","state":"READY_FOR_BINDING_REVIEW","exact_binding_created":false,"automatic_binding":false},
+    {"consumer_id":"PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531","state":"READY_FOR_BINDING_REVIEW","exact_binding_created":false,"automatic_binding":false}
+  ],
+  "automatic_promotion":false,
+  "automatic_impact":false,
+  "production_authorized":false,
+  "merge_authorized":false
+}
