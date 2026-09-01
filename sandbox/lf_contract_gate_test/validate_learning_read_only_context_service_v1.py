@@ -3,7 +3,8 @@ from pathlib import Path
 import json
 from learning_read_only_context_service_v1 import build_context,LearningContextBlocked
 ROOT=Path(__file__).resolve().parents[2]
-ROWS=json.loads((ROOT/'sandbox/lf_contract_gate_test/learning_read_only_context_rows_fixture_v1.json').read_text())
+FIXTURE=json.loads((ROOT/'sandbox/lf_contract_gate_test/learning_read_only_context_rows_fixture_v1.json').read_text())
+ROWS=FIXTURE['rows']
 def blocked(**kw):
  try: build_context(rows=ROWS,**kw)
  except (LearningContextBlocked,ValueError): return True
