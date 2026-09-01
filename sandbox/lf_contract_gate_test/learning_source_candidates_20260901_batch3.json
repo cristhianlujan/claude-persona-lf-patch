@@ -1,0 +1,58 @@
+{
+  "schema": "LF_LEARNING_SOURCE_CANDIDATE_BATCH_V1",
+  "batch_id": "LEARNING-SOURCE-20260901-B3",
+  "execution_id": "LF-AUTOLEARN-RUN-20260901-037",
+  "status": "GOVERNED_QUEUE_ADMITTED_CAPTURE_PENDING",
+  "production_impact": false,
+  "direct_kb_write_allowed": false,
+  "sources": [
+    {
+      "source_id": "SRC-BBVA-FACILIDADES-PAGO-20260901",
+      "organization": "BBVA Peru",
+      "url": "https://www.bbva.pe/personas/facilidades-de-pago.html",
+      "candidate_capabilities": ["NEGOCIACION_DEUDA", "DIGITAL_SELF_SERVICE"],
+      "observed_pattern": "separa cuotas vencidas de reprogramación; permite regularizar vencidos con tarjeta débito de otro banco y reprogramar deuda sujeta a evaluación",
+      "claim_boundary": "no inferir elegibilidad LF ni resultado; observar taxonomía de solución y canal",
+      "semantic_disposition": "NEW_INCREMENTAL_MECHANIC",
+      "queue_id": "54915002-5953-4665-a781-20b8dcd90a8e",
+      "queue_state": "PENDIENTE"
+    },
+    {
+      "source_id": "SRC-FALABELLA-REPROGRAMACION-20260901",
+      "organization": "Banco Falabella Peru",
+      "url": "https://www.bancofalabella.pe/reprogramacion-de-deuda",
+      "candidate_capabilities": ["NEGOCIACION_DEUDA", "DIGITAL_SELF_SERVICE"],
+      "observed_pattern": "reprograma préstamo extendiendo plazo y reduciendo pago mensual; solicitud por banca internet, chatbot, oficinas o teléfono",
+      "claim_boundary": "no extrapolar condiciones a LF; observar ajuste plazo/cuota y omnicanalidad",
+      "semantic_disposition": "NEW_INCREMENTAL_MECHANIC",
+      "queue_id": "aa4cb2a2-8a05-4533-8861-6cc2ff17a57c",
+      "queue_state": "PENDIENTE"
+    },
+    {
+      "source_id": "SRC-INTERBANK-CUOTA-FLEXIBLE-20260901",
+      "organization": "Interbank",
+      "url": "https://interbank.pe/centro-de-ayuda/credito-vehicular/que-es-una-cuota-flexible-y-que-necesito-para-usar-el-beneficio",
+      "candidate_capabilities": ["NEGOCIACION_DEUDA"],
+      "observed_pattern": "permite postergar una cuota bajo condiciones y genera un nuevo cronograma con recálculo",
+      "claim_boundary": "producto vehicular/personal específico; no extrapolar frecuencia ni condiciones, solo patrón temporal/condicional y necesidad de nuevo cronograma",
+      "semantic_disposition": "INCREMENTAL_TEMPORAL_CONDITIONAL_PATTERN",
+      "queue_id": "cfa14cd9-04ea-4b7b-8b50-8ee05a6301f7",
+      "queue_state": "PENDIENTE"
+    },
+    {
+      "source_id": "SRC-BBVA-PRESTAMO-RENOVADO-20260901",
+      "organization": "BBVA Peru",
+      "url": "https://www.bbva.pe/personas/productos/prestamos/personales/prestamo-renovado.html",
+      "candidate_capabilities": ["ALTERNATIVAS_FINANCIERAS"],
+      "observed_pattern": "refinancia deuda vigente y puede agregar dinero extra, con simulación/contratación digital",
+      "claim_boundary": "nuevo crédito no debe convertirse en solución por defecto para deuda LF; usar como alternativa comparativa y caso negativo de recomendación automática",
+      "semantic_disposition": "CONTROLLED_ALTERNATIVE_AND_MUST_NOT_DEFAULT",
+      "queue_id": "ca8f7c41-1501-41c8-8025-36b8910b1762",
+      "queue_state": "PENDIENTE"
+    }
+  ],
+  "exact_url_dedup_before_admission": "4_OF_4_NEW_VS_QUEUE_CAPTURE_KB",
+  "kb_writes": 0,
+  "consumer_ready_changes": 0,
+  "next_gate": "GOVERNED_CAPTURE"
+}
