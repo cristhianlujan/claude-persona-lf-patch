@@ -13,6 +13,15 @@ from pathlib import Path
 import psycopg
 from psycopg.types.json import Jsonb
 
+HELPER_ROOT = Path(__file__).resolve().parents[1]
+if str(HELPER_ROOT) not in sys.path:
+    sys.path.insert(0, str(HELPER_ROOT))
+
+from product_director_input_governance_binding_v1 import (  # noqa: E402
+    GovernanceBindingError,
+    build_bound_governance_receipt,
+)
+
 TABLE = "private.lf_profile_runtime_queue_v1"
 MAX_LF_ADAPTERS = 4
 
@@ -59,7 +68,8 @@ def _resolve_enabled_adapter_bindings(cur: psycopg.Cursor, profile_code: str) ->
                adapter_metadata->>'canonical_adapter_id' as canonical_adapter_id,
                adapter_metadata->>'current_path' as current_path,
                adapter_version,
-               relacion_tipo
+               relacion_tipo,
+               adapter_metadata
           from public.v_lf_router_adapter_bindings
          where target_asset_code=%s
            and lower(coalesce(adapter_metadata->>'router_discoverable','false'))='true'
@@ -73,11 +83,13 @@ def _resolve_enabled_adapter_bindings(cur: psycopg.Cursor, profile_code: str) ->
         raise SystemExit(f"BLOCK_LF_ADAPTER_BINDING_COUNT_EXCEEDED:{len(rows)}")
     result: list[dict] = []
     seen: set[str] = set()
-    for adapter_asset_code, canonical_adapter_id, current_path, adapter_version, relation_type in rows:
+    for adapter_asset_code, canonical_adapter_id, current_path, adapter_version, relation_type, adapter_metadata in rows:
         if not all(isinstance(value, str) and value.strip() for value in (adapter_asset_code, canonical_adapter_id, current_path, relation_type)):
             raise SystemExit("BLOCK_LF_ADAPTER_BINDING_INCOMPLETE")
         if canonical_adapter_id in seen:
             raise SystemExit(f"BLOCK_DUPLICATE_ADAPTER_INVOCATION:{canonical_adapter_id}")
+        if not isinstance(adapter_metadata, dict):
+            raise SystemExit("BLOCK_LF_ADAPTER_METADATA_INVALID")
         seen.add(canonical_adapter_id)
         result.append({
             "adapter_asset_code": adapter_asset_code,
@@ -86,8 +98,38 @@ def _resolve_enabled_adapter_bindings(cur: psycopg.Cursor, profile_code: str) ->
             "adapter_version": adapter_version,
             "relation_type": relation_type,
             "binding_ref": f"public.v_lf_router_adapter_bindings:{adapter_asset_code}:{profile_code}",
+            "adapter_metadata": adapter_metadata,
         })
     return result
+
+
+def _resolve_input_governance_binding(cur: psycopg.Cursor, payload: dict) -> dict | None:
+    bindings = payload.get("lf_adapter_bindings", [])
+    required = any(
+        isinstance(item, dict)
+        and isinstance(item.get("adapter_metadata"), dict)
+        and item["adapter_metadata"].get("input_governance_receipt_required") is True
+        for item in bindings
+    )
+    if not required:
+        return None
+    cur.execute(
+        "select programacion.fn_lf_router_input_governance_resolve_v1(%s,%s,%s)",
+        (payload["input_literal"], Jsonb(bindings), payload["profile_code"]),
+    )
+    row = cur.fetchone()
+    router_result = row[0] if row else None
+    try:
+        return build_bound_governance_receipt(
+            router_result,
+            request_id=str(payload["request_id"]),
+            profile_code=payload["profile_code"],
+            input_literal=payload["input_literal"],
+        )
+    except GovernanceBindingError as exc:
+        blocking_code = router_result.get("blocking_code") if isinstance(router_result, dict) else None
+        detail = blocking_code or str(exc)
+        raise SystemExit(f"BLOCK_INPUT_GOVERNANCE_RECEIPT_REQUIRED:{detail}") from exc
 
 
 def _claim(conn: psycopg.Connection, request_id: str, comment_id: int) -> dict:
@@ -113,6 +155,9 @@ def _claim(conn: psycopg.Connection, request_id: str, comment_id: int) -> dict:
         cols = [d.name for d in cur.description]
         payload = dict(zip(cols, row))
         payload["lf_adapter_bindings"] = _resolve_enabled_adapter_bindings(cur, payload["profile_code"])
+        governance_binding = _resolve_input_governance_binding(cur, payload)
+        if governance_binding is not None:
+            payload["input_governance_binding"] = governance_binding
         conn.commit()
         return payload
 
