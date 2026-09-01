@@ -1,0 +1,16 @@
+{
+  "schema":"LEARNING_EFFICIENCY_METRICS_V1",
+  "consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF",
+  "champion_id":"CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1",
+  "challenger_id":"CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1",
+  "evidence_mode":"DETERMINISTIC_CONTRACT_AND_ROUTING_ONLY",
+  "routing":{"cases":50,"families":10,"tp":25,"tn":25,"fp":0,"fn":0,"precision":1.0,"recall":1.0,"specificity":1.0},
+  "context":{"champion_bytes":"NOT_COMPARABLE_NO_COMPETITIVE_CONTEXT","challenger_bytes":"BOUNDED_AT_RUNTIME_BY_CAPABILITY","context_reduction_pct":"INSUFFICIENT_EVIDENCE_BEHAVIORAL_CHAMPION_NOT_EXECUTED","requirement_retention":"5/5_CONTRACT_SECTIONS","selected_learning_ids_total":13,"max_active_capabilities_per_request":1,"max_evidence_refs_per_capability":5,"max_challenger_bytes_per_request":6000},
+  "efficiency":{"selector_llm_calls":0,"selector_round_trips":0,"reader_writes":0,"semantic_search":false,"tool_calls":"NOT_OBSERVED_PER_CASE","deterministic_share":1.0},
+  "performance":{"runtime_case_p50_ms":"NOT_OBSERVED","runtime_case_p95_ms":"NOT_OBSERVED","runtime_case_max_ms":"NOT_OBSERVED","timeout_count":"NOT_OBSERVED","error_count":"NOT_OBSERVED"},
+  "cost":{"cost_proxy":"ZERO_SELECTOR_LLM_AND_ZERO_SELECTOR_ROUND_TRIPS_ONLY"},
+  "quality":{"authority_gate":"PASS_DETERMINISTIC_ROUTING_CONTRACT","canonical_structural_bounded_gate":"PASS_DETERMINISTIC_CONTRACT","critical_family_regression":"NOT_OBSERVED_BEHAVIORALLY","critical_must_not_invoke_fp":0},
+  "stability":{"repeatability":"DETERMINISTIC_SOURCE_TEST_ONLY_RUNTIME_NOT_EXECUTED"},
+  "outcome":"INSUFFICIENT_EVIDENCE",
+  "production_authorized":false
+}
