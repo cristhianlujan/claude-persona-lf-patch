@@ -1,6 +1,7 @@
 {
   "schema":"LF_LEARNING_ADDITIONAL_CONSUMER_CAPABILITY_CANDIDATES_V1",
   "mode":"READ_ONLY",
+  "selection_mode":"DETERMINISTIC_SOURCE_SCOPE_MATCH_ONLY",
   "source_refs":[
     {"path":"adapters/marketplace_lf_cx_trust/ADAPTER.md","sha":"a51ea5bc2a1a8c79b27f8ef0df26f9e15675f233"},
     {"path":"adapters/marketplace_lf_ux/ADAPTER.md","sha":"90f77936ef01cff1b29db4eb188802f4d45c1a63"}
@@ -9,21 +10,28 @@
     {
       "consumer_id":"PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531",
       "candidate_capabilities":["DIGITAL_SELF_SERVICE","PAYMENT_NO_ADEUDO"],
+      "source_scope_evidence":["clarity_of_promises","transparency","support_continuity","trust_friction","payment_status_claim_boundary","debt_closure_claim_boundary"],
       "reason":"trust friction, transparency, support continuity and payment/debt promise boundaries may consume grounded observations only after upstream product authority",
       "required_prerequisites":["PRODUCT_DIRECTION_AUTHORIZED_CURRENT","EXACT_CLAIM_AUTHORITY_CURRENT"],
+      "must_not_invoke_without":["EXACT_CLAIM_AUTHORITY_CURRENT"],
       "state":"READY_FOR_BINDING_REVIEW",
       "exact_binding_created":false
     },
     {
       "consumer_id":"PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531",
       "candidate_capabilities":["DIGITAL_SELF_SERVICE","PAYMENT_NO_ADEUDO"],
+      "source_scope_evidence":["listing_selection_experience","funnel_friction","purchase_selection_architecture","user_comprehension","marketplace_experience_constraints"],
       "reason":"listing/selection, funnel friction and user comprehension may consume grounded journey observations only after upstream product authority",
       "required_prerequisites":["PRODUCT_DIRECTION_AUTHORIZED_CURRENT"],
+      "must_not_invoke_without":["PRODUCT_DIRECTION_AUTHORIZED_CURRENT"],
       "state":"READY_FOR_BINDING_REVIEW",
       "exact_binding_created":false
     }
   ],
   "runtime_enabled":false,
+  "selector_llm_calls":0,
+  "selector_round_trips":0,
+  "semantic_search":false,
   "automatic_binding":false,
   "automatic_impact":false,
   "production_authorized":false
