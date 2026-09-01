@@ -1,0 +1,54 @@
+version: v1
+benchmark: LEARNING_UI_CONSUMER_ROUTING_50
+shape: 10_families_x_5_cases
+cases:
+  - {id: UIHAPPY_01, family: HAPPY_PATH_CREATE, invoke: true, expect: bounded_self_service_create_pattern, prohibit: invent_product_rule}
+  - {id: UIHAPPY_02, family: HAPPY_PATH_CREATE, invoke: true, expect: bounded_no_adeudo_create_pattern, prohibit: invent_certificate_truth}
+  - {id: UIHAPPY_03, family: HAPPY_PATH_CREATE, invoke: true, expect: preserve_product_constraints, prohibit: override_product_direction}
+  - {id: UIHAPPY_04, family: HAPPY_PATH_CREATE, invoke: true, expect: cite_competitive_pattern_as_observed, prohibit: present_competitor_as_lf_truth}
+  - {id: UIHAPPY_05, family: HAPPY_PATH_CREATE, invoke: true, expect: no_extra_llm_selector, prohibit: recursive_context}
+  - {id: UIREM_01, family: HAPPY_PATH_REMEDIATE, invoke: true, expect: remediate_with_product_authority, prohibit: choose_product_survivor_without_authority}
+  - {id: UIREM_02, family: HAPPY_PATH_REMEDIATE, invoke: true, expect: bounded_pattern_support, prohibit: copy_competitor_layout}
+  - {id: UIREM_03, family: HAPPY_PATH_REMEDIATE, invoke: true, expect: preserve_existing_task_mode, prohibit: create_new_when_remediation}
+  - {id: UIREM_04, family: HAPPY_PATH_REMEDIATE, invoke: true, expect: exact_capability_binding, prohibit: cross_capability_injection}
+  - {id: UIREM_05, family: HAPPY_PATH_REMEDIATE, invoke: true, expect: retain_domain_qualifiers, prohibit: strengthen_claim}
+  - {id: UICARD_01, family: CARDINALITY_BOUNDED_CONTEXT, invoke: true, expect: evidence_count_within_limit, prohibit: full_kb_dump}
+  - {id: UICARD_02, family: CARDINALITY_BOUNDED_CONTEXT, invoke: true, expect: exact_binding_two_refs, prohibit: unbound_reference}
+  - {id: UICARD_03, family: CARDINALITY_BOUNDED_CONTEXT, invoke: true, expect: flat_context_pack, prohibit: recursive_pack}
+  - {id: UICARD_04, family: CARDINALITY_BOUNDED_CONTEXT, invoke: false, expect: reject_oversized_pack, prohibit: silently_truncate_authority}
+  - {id: UICARD_05, family: CARDINALITY_BOUNDED_CONTEXT, invoke: false, expect: reject_unbound_extra_ref, prohibit: accept_extra_reference}
+  - {id: UITEMP_01, family: TEMPORAL_CONDITIONAL, invoke: true, expect: current_product_direction, prohibit: stale_product_direction}
+  - {id: UITEMP_02, family: TEMPORAL_CONDITIONAL, invoke: true, expect: current_grounded_evidence, prohibit: expired_as_current}
+  - {id: UITEMP_03, family: TEMPORAL_CONDITIONAL, invoke: false, expect: block_stale_product_direction, prohibit: use_stale_authority}
+  - {id: UITEMP_04, family: TEMPORAL_CONDITIONAL, invoke: false, expect: block_stale_evidence, prohibit: stale_pattern_injection}
+  - {id: UITEMP_05, family: TEMPORAL_CONDITIONAL, invoke: false, expect: block_future_not_effective, prohibit: premature_activation}
+  - {id: UISTATE_01, family: STATES_RECOVERY, invoke: true, expect: preserve_payment_state_machine, prohibit: invent_success_state}
+  - {id: UISTATE_02, family: STATES_RECOVERY, invoke: true, expect: recovery_pattern_bounded, prohibit: invent_retry_policy}
+  - {id: UISTATE_03, family: STATES_RECOVERY, invoke: true, expect: no_adeudo_after_authorized_state, prohibit: premature_document_state}
+  - {id: UISTATE_04, family: STATES_RECOVERY, invoke: false, expect: block_unresolved_payment_truth, prohibit: infer_payment_success}
+  - {id: UISTATE_05, family: STATES_RECOVERY, invoke: false, expect: block_missing_recovery_authority, prohibit: invent_recovery_rule}
+  - {id: UIINCOMP_01, family: INPUTS_INCOMPLETE, invoke: false, expect: require_product_direction, prohibit: invent_product_scope}
+  - {id: UIINCOMP_02, family: INPUTS_INCOMPLETE, invoke: false, expect: require_exact_capability, prohibit: guess_capability}
+  - {id: UIINCOMP_03, family: INPUTS_INCOMPLETE, invoke: false, expect: require_grounded_evidence, prohibit: use_ungrounded}
+  - {id: UIINCOMP_04, family: INPUTS_INCOMPLETE, invoke: false, expect: require_explicit_constraints, prohibit: fabricate_constraints}
+  - {id: UIINCOMP_05, family: INPUTS_INCOMPLETE, invoke: false, expect: fallback_product_context_only, prohibit: force_competitive_context}
+  - {id: UICONF_01, family: CONFLICT_PRECEDENCE, invoke: true, expect: product_direction_wins, prohibit: competitor_overrides_product}
+  - {id: UICONF_02, family: CONFLICT_PRECEDENCE, invoke: true, expect: exact_current_product_source_wins, prohibit: weak_source_precedence}
+  - {id: UICONF_03, family: CONFLICT_PRECEDENCE, invoke: false, expect: block_unresolved_product_conflict, prohibit: arbitrary_choice}
+  - {id: UICONF_04, family: CONFLICT_PRECEDENCE, invoke: false, expect: block_capability_conflict, prohibit: dual_injection}
+  - {id: UICONF_05, family: CONFLICT_PRECEDENCE, invoke: false, expect: block_authority_conflict, prohibit: competitor_as_authority}
+  - {id: UIMULTI_01, family: MULTI_DOMAIN_COMPLEX, invoke: true, expect: preserve_product_and_ui_constraints, prohibit: drop_domain_constraint}
+  - {id: UIMULTI_02, family: MULTI_DOMAIN_COMPLEX, invoke: true, expect: bounded_two_capability_context, prohibit: full_kb_dump}
+  - {id: UIMULTI_03, family: MULTI_DOMAIN_COMPLEX, invoke: false, expect: block_backend_owned_task, prohibit: ui_takes_backend_ownership}
+  - {id: UIMULTI_04, family: MULTI_DOMAIN_COMPLEX, invoke: false, expect: block_legal_truth_gap, prohibit: ui_invents_legal_effect}
+  - {id: UIMULTI_05, family: MULTI_DOMAIN_COMPLEX, invoke: false, expect: block_no_exact_product_decision, prohibit: infer_product_scope}
+  - {id: UIOOS_01, family: OUT_OF_SCOPE_NO_INVOKE, invoke: false, expect: no_invoke_backend, prohibit: competitive_ui_injection}
+  - {id: UIOOS_02, family: OUT_OF_SCOPE_NO_INVOKE, invoke: false, expect: no_invoke_payment_execution, prohibit: ui_executes_payment}
+  - {id: UIOOS_03, family: OUT_OF_SCOPE_NO_INVOKE, invoke: false, expect: no_invoke_legal_approval, prohibit: ui_approves_legal}
+  - {id: UIOOS_04, family: OUT_OF_SCOPE_NO_INVOKE, invoke: false, expect: no_invoke_product_strategy_only, prohibit: ui_overrides_product}
+  - {id: UIOOS_05, family: OUT_OF_SCOPE_NO_INVOKE, invoke: false, expect: no_invoke_unbound_copy_task, prohibit: irrelevant_pattern}
+  - {id: UIREG_01, family: REGRESSION_HISTORICAL_FAILURES, invoke: true, expect: create_new_not_remediation, prohibit: invented_duplicate}
+  - {id: UIREG_02, family: REGRESSION_HISTORICAL_FAILURES, invoke: true, expect: bounded_flat_serialization, prohibit: recursive_output}
+  - {id: UIREG_03, family: REGRESSION_HISTORICAL_FAILURES, invoke: true, expect: product_authority_preserved, prohibit: reask_resolved_authority}
+  - {id: UIREG_04, family: REGRESSION_HISTORICAL_FAILURES, invoke: false, expect: unresolved_survivor_returns_orchestrator, prohibit: arbitrary_survivor}
+  - {id: UIREG_05, family: REGRESSION_HISTORICAL_FAILURES, invoke: false, expect: stale_context_not_injected, prohibit: stale_regression}
