@@ -1,0 +1,103 @@
+{
+  "schema": "LF_LEARNING_BEHAVIORAL_RUNTIME_REQUEST_PAIR_V1",
+  "mode": "READ_ONLY_SANDBOX_PRE_DISPATCH",
+  "consumer_id": "PERFIL-PRODUCT-DIRECTOR-LF",
+  "operation_code": "EJECUCION_PERFIL_LF",
+  "profile_slug": "product_director_lf",
+  "input_governance": {
+    "current_run_id": 215,
+    "pantalla_id": 5,
+    "screen_code": "HOME_002",
+    "contract_revision": "5.12",
+    "current_full": true,
+    "current_cached": true,
+    "governance_consumer": "CONTEXT_PACK"
+  },
+  "experiment": {
+    "champion_id": "CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1",
+    "challenger_id": "CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1",
+    "single_variable_change": "selected_competitive_context",
+    "same_profile": true,
+    "same_model_runtime_required": true,
+    "same_base_task": true,
+    "same_judges_required": true,
+    "holdout_consumed": false
+  },
+  "base_task": {
+    "task_intent": "PRODUCT_OFFER_SCOPE_DECISION",
+    "screen_code": "HOME_002",
+    "instruction": "Define the bounded product direction for presenting a debt-negotiation offer in HOME_002. Preserve current LF authority, pending-rule boundaries and no-invention constraints. Do not invent eligibility, discount, legal effect, bureau outcome, pricing or payment guarantees. Return the profile-defined bounded product result or block/missing-input state."
+  },
+  "champion": {
+    "competitive_context": [],
+    "fallback": "NO_COMPETITIVE_CONTEXT"
+  },
+  "challenger": {
+    "binding_id": "BIND-LF-PD-NEGOCIACION-DEUDA-v4",
+    "context_selection": "DETERMINISTIC_EXACT_ID",
+    "llm_selector_calls": 0,
+    "selector_round_trips": 0,
+    "selected_count": 5,
+    "selected_evidence": [
+      {
+        "kb_id": "f67ffccd-e710-41f4-ae8c-eb5579227fc7",
+        "source_url": "https://www.finanty.com/assets/archivos/Terminos_y_Condiciones_Campanas.pdf",
+        "topic": "MECANICA_CAMPANAS_DESCUENTO",
+        "fact": "Competitive campaigns can bind an offer to explicit eligibility, authorized payment channel and acceptance conditions; treat this only as observed competitor mechanics, not LF policy."
+      },
+      {
+        "kb_id": "8b744f07-75f6-4332-9df5-12e7c6914bf1",
+        "source_url": "https://cdn.reevalua.com/terms-25-jun-2025.pdf",
+        "topic": "modelo comercial y negociación de deuda",
+        "fact": "Reevalúa describes an advisory/negotiation intermediary model and limits its role; use as dated competitive evidence only."
+      },
+      {
+        "kb_id": "02bcfdd4-6859-4d56-9fbc-02af0ddf65b5",
+        "source_url": "https://finanty.com/v1/terminos-y-condiciones",
+        "topic": "CAMPAÑAS_DESCUENTO_REGULARIZACION",
+        "fact": "Finanty describes specific campaign eligibility, validity, payment and reconciliation conditions; do not copy those conditions into LF unless LF authority independently provides them."
+      },
+      {
+        "kb_id": "a789f419-b05f-4eba-af99-015bd56d24d5",
+        "source_url": "https://finanty.com/contacto",
+        "topic": "CANALES_CONTACTO_NEGOCIACION",
+        "fact": "Competitor service journeys expose several contact/negotiation channels and privacy consent; use only as product-pattern context."
+      },
+      {
+        "kb_id": "5500178a-d503-476c-be77-c99223b4d90c",
+        "source_url": "https://bravocredito.com",
+        "topic": "Reparadora de deuda transnacional",
+        "fact": "Bravo provides a clear diagnosis-to-negotiation-to-payment journey but also illustrates risks of aggressive restoration or discount claims; LF must preserve traceability and avoid guarantees."
+      }
+    ],
+    "constraints": [
+      "COMPETITIVE_EVIDENCE_IS_CONTEXT_NOT_PRODUCT_TRUTH",
+      "LF_CANONICAL_AUTHORITY_ALWAYS_WINS",
+      "NO_USER_SPECIFIC_FINANCIAL_ADVICE",
+      "NO_INVENTED_DISCOUNT_OR_ELIGIBILITY",
+      "NO_AUTOMATIC_BUREAU_OR_LEGAL_OUTCOME_CLAIM",
+      "NO_AUTOMATIC_PRODUCTION_IMPACT"
+    ]
+  },
+  "required_judges": [
+    "requirement_retention",
+    "authority_preservation",
+    "canonical_structural_bounded",
+    "no_invention",
+    "critical_must_not_invoke",
+    "task_success",
+    "context_budget",
+    "runtime_performance"
+  ],
+  "dispatch": {
+    "enqueue_performed": false,
+    "github_comment_emitted": false,
+    "external_dispatch_performed": false,
+    "reason": "PRE_DISPATCH_FIXTURE_ONLY"
+  },
+  "impact": {
+    "writes_to_product_state": 0,
+    "automatic_impact": false,
+    "production_authorized": false
+  }
+}
