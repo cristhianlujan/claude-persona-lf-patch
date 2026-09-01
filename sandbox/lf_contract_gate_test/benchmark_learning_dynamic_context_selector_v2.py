@@ -45,7 +45,12 @@ def one(family,variant):
   expected=5
  elif family=='BOUNDED_TOP5': expected=5
  elif family=='OUT_OF_SCOPE_NO_INVOKE':
-  binding=DynamicBindingSpec('PERFIL-PRODUCT-DIRECTOR-LF','DIGITAL_SELF_SERVICE',('AUTOGESTION_DIGITAL',),5); expected=0
+  binding=DynamicBindingSpec(
+   'PERFIL-UI-ARCHITECT','DIGITAL_SELF_SERVICE',('AUTOGESTION_DIGITAL',),5,
+   prerequisite='PRODUCT_DIRECTION_AUTHORIZED_CURRENT'
+  )
+  events=[ev(100+i,f'K{i}','AUTOGESTION_DIGITAL') for i in range(1,8)]
+  expected=0
  result=select(rows,events,binding=binding)
  if result['selected_count']!=expected: raise AssertionError(f'{family}-{variant}: {result["selected_count"]}!={expected}')
  if result['llm_calls']!=0 or result['round_trips']!=0: raise AssertionError(f'{family}-{variant}: extra calls')
@@ -53,6 +58,12 @@ def one(family,variant):
  ids=[x['kb_id'] for x in result['selected']]
  if len(ids)!=len(set(ids)): raise AssertionError(f'{family}-{variant}: duplicates')
  if family in {'HAPPY_PATH','QUALITY_RANKING','BOUNDED_TOP5'} and ids and ids[0]!='K7': raise AssertionError(f'{family}-{variant}: ranking not deterministic {ids}')
+ if family=='OUT_OF_SCOPE_NO_INVOKE':
+  if result.get('blocked_by_prerequisite')!='PRODUCT_DIRECTION_AUTHORIZED_CURRENT':
+   raise AssertionError(f'{family}-{variant}: prerequisite blocker missing')
+  control=select(rows,events,binding=binding,satisfied_prerequisites={'PRODUCT_DIRECTION_AUTHORIZED_CURRENT'})
+  if control['selected_count']!=5 or control.get('blocked_by_prerequisite') is not None:
+   raise AssertionError(f'{family}-{variant}: authorized control failed')
  return True
 
 def main():
@@ -60,7 +71,7 @@ def main():
  for family in FAMILIES:
   for variant in range(1,6):
    one(family,variant); passed+=1
- print(f'LEARNING_DYNAMIC_SELECTOR_BENCHMARK=PASS cases={passed}/50 families=10x5 llm_calls=0 round_trips=0 max_evidence=5 exact_eligibility=1')
+ print(f'LEARNING_DYNAMIC_SELECTOR_BENCHMARK=PASS cases={passed}/50 families=10x5 llm_calls=0 round_trips=0 max_evidence=5 exact_eligibility=1 prerequisite_no_bypass=5/5')
  print('families='+','.join(FAMILIES))
  return 0
 if __name__=='__main__': raise SystemExit(main())
