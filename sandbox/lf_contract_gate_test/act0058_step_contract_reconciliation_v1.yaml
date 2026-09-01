@@ -1,0 +1,48 @@
+version: v1
+status: CANDIDATE_READ_ONLY
+operation_code: ORQUESTACION_PIPELINE_LF
+source_main: 17903f544c5e53e1d94b08664a4fb6704c0dc087
+canonical_skill:
+  path: skills/orquestador_pipeline_lf/SKILL.md
+  blob_sha: 3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495
+  authority_scope: ORQUESTACION_PIPELINE_LF_OPERATION_BEHAVIOR
+impact_boundary:
+  db_write: false
+  automatic_impact: false
+  production_authorized: false
+reconciliations:
+  - step_order: 105
+    step_id: restock_queue
+    live_conflict:
+      pass_condition: urls_insertadas_gte_1_and_restantes_pendientes_gte_1
+      fail_condition: NO_NEW_URLS_next_action_SKIP_RESTOCK
+    canonical_source_rule:
+      observed: REDESCUBRIMIENTO_DE_URLS
+      rule: fewer_than_5_new_urls_register_WARN
+      consequence: zero_new_urls_is_controlled_noop_not_batch_failure
+    proposed_contract:
+      pass_condition: restock_attempted_and_dedup_verified_and_urls_insertadas_gte_1
+      return_condition: restock_attempted_and_dedup_verified_and_urls_insertadas_eq_0_and_warn_recorded
+      fail_condition: restock_attempt_missing_or_dedup_not_verified
+      blocking_code: RESTOCK_GOVERNANCE_EVIDENCE_MISSING
+      result_values: [RESTOCK_COMPLETED, RESTOCK_NOOP_WARN, RESTOCK_BLOCKED]
+  - step_order: 110
+    step_id: failed_retry
+    live_conflict:
+      purpose: retry_failures_with_retry_count_gt_3
+      notes: maximum_3_attempts
+      execution_sql: failed_when_retry_count_plus_1_gte_3
+    canonical_source_rule:
+      observed: MODO_RETRY_AND_STOP_CONDITIONS
+      rule: retry_count_reaches_3_marks_FAILED_definitive_and_continue_next_url
+      consequence: retry_threshold_is_3_not_gt_3
+    proposed_contract:
+      pass_condition: retry_count_lt_3_and_next_action_retry
+      return_condition: retry_count_gte_3_and_next_action_failed_continue_next_url
+      fail_condition: retry_count_gte_3_and_next_action_retry
+      blocking_code: RETRY_POLICY_VIOLATION
+      result_values: [RETRY_ALLOWED, RETRY_TERMINAL_FAILED, RETRY_BLOCKED]
+next_gate:
+  required: SOURCE_FIRST_MIGRATION_OR_CANONICAL_CONTRACT_PATCH
+  before: ACTIVE_JUDGE_BINDING
+  evidence_required: [exact_source_diff, exact_head_ci, live_readback]
