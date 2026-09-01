@@ -1,0 +1,43 @@
+version: v1
+status: CANDIDATO_READ_ONLY
+cases:
+  - {id: FE_01, consumer: ACT-0051, direct_kb: false, product_direction: true, ui_spec: true, expect: ALLOW_UPSTREAM_CONTEXT}
+  - {id: FE_02, consumer: ACT-0051, direct_kb: true, product_direction: true, ui_spec: true, expect: BLOCK_DIRECT_KB}
+  - {id: FE_03, consumer: ACT-0051, direct_kb: false, product_direction: false, ui_spec: true, expect: RETURN_PRODUCT_DIRECTION}
+  - {id: FE_04, consumer: ACT-0051, direct_kb: false, product_direction: true, ui_spec: false, expect: RETURN_UI_ARCHITECT}
+  - {id: FE_05, consumer: ACT-0051, direct_kb: true, product_direction: false, ui_spec: false, expect: BLOCK_DIRECT_KB}
+  - {id: FE_06, consumer: ACT-0051, direct_kb: false, product_direction: true, ui_spec: true, expect: ALLOW_UPSTREAM_CONTEXT}
+  - {id: FE_07, consumer: ACT-0051, direct_kb: true, product_direction: true, ui_spec: false, expect: BLOCK_DIRECT_KB}
+  - {id: FE_08, consumer: ACT-0051, direct_kb: false, product_direction: false, ui_spec: false, expect: RETURN_PRODUCT_DIRECTION}
+  - {id: FE_09, consumer: ACT-0051, direct_kb: false, product_direction: false, ui_spec: true, expect: RETURN_PRODUCT_DIRECTION}
+  - {id: FE_10, consumer: ACT-0051, direct_kb: false, product_direction: true, ui_spec: false, expect: RETURN_UI_ARCHITECT}
+  - {id: FE_11, consumer: ACT-0051, direct_kb: true, product_direction: false, ui_spec: true, expect: BLOCK_DIRECT_KB}
+  - {id: FE_12, consumer: ACT-0051, direct_kb: true, product_direction: true, ui_spec: true, expect: BLOCK_DIRECT_KB}
+  - {id: FE_13, consumer: ACT-0051, direct_kb: false, product_direction: true, ui_spec: true, expect: ALLOW_UPSTREAM_CONTEXT}
+  - {id: FE_14, consumer: ACT-0051, direct_kb: false, product_direction: true, ui_spec: true, expect: ALLOW_UPSTREAM_CONTEXT}
+  - {id: FE_15, consumer: ACT-0051, direct_kb: false, product_direction: false, ui_spec: true, expect: RETURN_PRODUCT_DIRECTION}
+  - {id: FE_16, consumer: ACT-0051, direct_kb: false, product_direction: true, ui_spec: false, expect: RETURN_UI_ARCHITECT}
+  - {id: FE_17, consumer: ACT-0051, direct_kb: true, product_direction: false, ui_spec: false, expect: BLOCK_DIRECT_KB}
+  - {id: FE_18, consumer: ACT-0051, direct_kb: true, product_direction: true, ui_spec: false, expect: BLOCK_DIRECT_KB}
+  - {id: FE_19, consumer: ACT-0051, direct_kb: false, product_direction: true, ui_spec: true, expect: ALLOW_UPSTREAM_CONTEXT}
+  - {id: FE_20, consumer: ACT-0051, direct_kb: false, product_direction: false, ui_spec: false, expect: RETURN_PRODUCT_DIRECTION}
+  - {id: GA_01, consumer: PERFIL-GAMIFICATION-SYSTEM-ARCHITECT, direct_kb: false, objective: true, guardrails: true, harmful_mechanic: false, expect: ALLOW_UPSTREAM_CONTEXT}
+  - {id: GA_02, consumer: PERFIL-GAMIFICATION-SYSTEM-ARCHITECT, direct_kb: true, objective: true, guardrails: true, harmful_mechanic: false, expect: BLOCK_DIRECT_KB}
+  - {id: GA_03, consumer: PERFIL-GAMIFICATION-SYSTEM-ARCHITECT, direct_kb: false, objective: false, guardrails: true, harmful_mechanic: false, expect: RETURN_PRODUCT_DIRECTION}
+  - {id: GA_04, consumer: PERFIL-GAMIFICATION-SYSTEM-ARCHITECT, direct_kb: false, objective: true, guardrails: false, harmful_mechanic: false, expect: RETURN_PRODUCT_DIRECTION}
+  - {id: GA_05, consumer: PERFIL-GAMIFICATION-SYSTEM-ARCHITECT, direct_kb: false, objective: true, guardrails: true, harmful_mechanic: true, expect: BLOCK_HARMFUL_MECHANIC}
+  - {id: GA_06, consumer: PERFIL-GAMIFICATION-SYSTEM-ARCHITECT, direct_kb: true, objective: false, guardrails: false, harmful_mechanic: true, expect: BLOCK_DIRECT_KB}
+  - {id: GA_07, consumer: PERFIL-GAMIFICATION-SYSTEM-ARCHITECT, direct_kb: false, objective: false, guardrails: false, harmful_mechanic: false, expect: RETURN_PRODUCT_DIRECTION}
+  - {id: GA_08, consumer: PERFIL-GAMIFICATION-SYSTEM-ARCHITECT, direct_kb: false, objective: true, guardrails: true, harmful_mechanic: false, expect: ALLOW_UPSTREAM_CONTEXT}
+  - {id: GA_09, consumer: PERFIL-GAMIFICATION-SYSTEM-ARCHITECT, direct_kb: true, objective: true, guardrails: true, harmful_mechanic: true, expect: BLOCK_DIRECT_KB}
+  - {id: GA_10, consumer: PERFIL-GAMIFICATION-SYSTEM-ARCHITECT, direct_kb: false, objective: true, guardrails: false, harmful_mechanic: true, expect: BLOCK_HARMFUL_MECHANIC}
+  - {id: GA_11, consumer: PERFIL-GAMIFICATION-SYSTEM-ARCHITECT, direct_kb: false, objective: false, guardrails: true, harmful_mechanic: true, expect: BLOCK_HARMFUL_MECHANIC}
+  - {id: GA_12, consumer: PERFIL-GAMIFICATION-SYSTEM-ARCHITECT, direct_kb: true, objective: true, guardrails: false, harmful_mechanic: false, expect: BLOCK_DIRECT_KB}
+  - {id: GA_13, consumer: PERFIL-GAMIFICATION-SYSTEM-ARCHITECT, direct_kb: false, objective: true, guardrails: true, harmful_mechanic: false, expect: ALLOW_UPSTREAM_CONTEXT}
+  - {id: GA_14, consumer: PERFIL-GAMIFICATION-SYSTEM-ARCHITECT, direct_kb: false, objective: false, guardrails: false, harmful_mechanic: true, expect: BLOCK_HARMFUL_MECHANIC}
+  - {id: GA_15, consumer: PERFIL-GAMIFICATION-SYSTEM-ARCHITECT, direct_kb: false, objective: true, guardrails: false, harmful_mechanic: false, expect: RETURN_PRODUCT_DIRECTION}
+  - {id: GA_16, consumer: PERFIL-GAMIFICATION-SYSTEM-ARCHITECT, direct_kb: false, objective: false, guardrails: true, harmful_mechanic: false, expect: RETURN_PRODUCT_DIRECTION}
+  - {id: GA_17, consumer: PERFIL-GAMIFICATION-SYSTEM-ARCHITECT, direct_kb: true, objective: false, guardrails: true, harmful_mechanic: false, expect: BLOCK_DIRECT_KB}
+  - {id: GA_18, consumer: PERFIL-GAMIFICATION-SYSTEM-ARCHITECT, direct_kb: false, objective: true, guardrails: true, harmful_mechanic: true, expect: BLOCK_HARMFUL_MECHANIC}
+  - {id: GA_19, consumer: PERFIL-GAMIFICATION-SYSTEM-ARCHITECT, direct_kb: false, objective: true, guardrails: true, harmful_mechanic: false, expect: ALLOW_UPSTREAM_CONTEXT}
+  - {id: GA_20, consumer: PERFIL-GAMIFICATION-SYSTEM-ARCHITECT, direct_kb: false, objective: false, guardrails: false, harmful_mechanic: false, expect: RETURN_PRODUCT_DIRECTION}
