@@ -1,20 +1,38 @@
 {
   "schema": "LF_LEARNING_EXTERNAL_BLOCKERS_V1",
   "production_impact": false,
+  "live_reconciled_at": "2026-09-01T08:02:00Z",
   "blockers": [
     {
       "blocker_id": "GLOBAL_LF_MIGRATION_SOURCE_PARITY_20260901",
       "scope": "GLOBAL_EXACT_HEAD_CI_NOT_LEARNING_CONSUMER_LOGIC",
-      "status": "WAITING_EXTERNAL_CONCURRENT_SOURCE_PARITY",
+      "status": "RESOLVED_ON_EXACT_HEAD",
       "evidence": {
         "workflow": "lf-contract-check",
-        "run_id": 33477263043,
-        "failed_step": "Enforce LF migration source parity after checkpoint",
-        "literal_error": "FAIL_LF_MIGRATION_VERSION_PARITY",
-        "remote_only_versions": ["20260901051513", "20260901052401", "20260901052628"]
+        "run_id": 33484256227,
+        "head_sha": "9e60d3a6993895ab81a692ae930ad9d6d22042be",
+        "migration_source_parity": "PASS",
+        "input_governance_migration_source_parity": "PASS",
+        "note": "Prior remote-only migration drift no longer reproduces on this exact head."
       },
       "learning_scope_independent_work_allowed": true,
       "must_not_fix_by_absorbing_concurrent_migrations": true
+    },
+    {
+      "blocker_id": "E16_ACTIONS_INVENTORY_PRIOR_PUSH_FAILURE_20260901",
+      "scope": "EXACT_HEAD_LF_CONTRACT_CHECK_FINAL_E16_INVENTORY_ONLY",
+      "status": "WAITING_EXTERNAL_PRIOR_PUSH_GREEN",
+      "evidence": {
+        "workflow": "lf-contract-check",
+        "run_id": 33484256227,
+        "head_sha": "9e60d3a6993895ab81a692ae930ad9d6d22042be",
+        "preceding_contract_steps": "PASS",
+        "failed_step": "Capture authenticated E.16 Actions inventory",
+        "literal_error": "FAIL_E16_ACTIONS_RUN_FAILED: lf-contract-check/push latest run conclusion=failure",
+        "matched_ekb": ["CI-E16-BRANCH-TRIGGER-MATRIX-001", "CI-E16-001"]
+      },
+      "learning_scope_independent_work_allowed": true,
+      "must_not_relax_e16": true
     },
     {
       "blocker_id": "LIVE_EKB_SQL_CHANNEL_BLOCKED_20260901",
@@ -23,10 +41,9 @@
       "evidence": {
         "postgres_reached_initially": false,
         "supabase_outage_claimed": false,
-        "list_tables_recovered": true,
         "execute_sql_recovered": true,
         "ekb_live_readback": true,
-        "matched_error_codes": ["CI-E16-001", "CI-MIG-001", "DB-001", "DB-EVT-001", "GOV-010", "KB-PROD-001", "LEARNING-EFFICIENCY-METRICS-CONTRACT-001", "OPS-002", "PROFILE-RUNTIME-DISPATCH-001"]
+        "matched_error_codes": ["DB-001", "GOV-OPERATIONAL-EVENT-ENVELOPE-001", "CI-E16-BRANCH-TRIGGER-MATRIX-001", "CI-E16-001"]
       },
       "learning_scope_independent_work_allowed": true,
       "db_mutations_allowed": "ONLY_AFTER_OPERATION_EVENT_CONTRACT_AND_PREWRITE_GATES"
@@ -35,7 +52,15 @@
       "blocker_id": "BEHAVIORAL_CURRENT_RECEIPT_REQUIRED",
       "scope": "PRODUCT_DIRECTOR_AND_UI_BEHAVIORAL_AB",
       "status": "WAITING_GOVERNED_RECEIPT_AND_AUTHORIZED_RUNTIME_TRIGGER",
-      "evidence": {"authority_contract": "INPUT_READINESS_CONTRACT", "observed_revision": "5.12", "continuation_policy": "PASS_ONLY", "contract_resolution": "LIVE_CURRENT", "runtime_source_discovered": true, "runtime_test_doubles": false, "trigger_authority": "OWNER_ISSUE_COMMENT"},
+      "evidence": {
+        "authority_contract": "INPUT_READINESS_CONTRACT",
+        "observed_revision": "5.12",
+        "continuation_policy": "PASS_ONLY",
+        "contract_resolution": "LIVE_CURRENT",
+        "runtime_source_discovered": true,
+        "runtime_test_doubles": false,
+        "trigger_authority": "OWNER_ISSUE_COMMENT"
+      },
       "learning_scope_independent_work_allowed": true,
       "runtime_invocation_allowed_by_this_manifest": false
     }
