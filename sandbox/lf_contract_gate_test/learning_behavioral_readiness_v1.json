@@ -1,7 +1,7 @@
 {
   "schema": "LF_LEARNING_BEHAVIORAL_READINESS_V1",
   "mode": "READ_ONLY",
-  "observed_live_at_utc": "2026-09-01T20:04:42.447745Z",
+  "observed_live_at_utc": "2026-09-01T22:07:32.561803Z",
   "input_governance_contract_revision": "5.12",
   "input_governance_router_contract": {
     "function": "programacion.fn_lf_router_input_governance_resolve_v1(text,jsonb,text)",
@@ -15,6 +15,7 @@
     "latest_run_status": "COMPLETED",
     "latest_run_family_count": 47,
     "latest_run_invalidated": false,
+    "latest_run_current": true,
     "latest_run_validator_completed_at": "2026-09-01T19:37:21.393361Z",
     "latest_run_scope_production_authorized": false
   },
