@@ -1,9 +1,57 @@
--- L4A candidate only. Read-only benchmark invalidation fingerprint.
--- This MUST NOT be used to bypass run currentness, freshness, Validator, Story Gate,
--- production authorization, or canonical source readback.
+-- L4A v2 candidate only. Read-only benchmark invalidation fingerprint.
+-- MUST NOT bypass currentness, freshness, Validator, Story Gate, production authorization,
+-- or canonical source readback.
 -- EKB: EKB-INPUT-GOV-INCREMENTAL-20260901-05
 
 begin;
+
+create or replace function pg_temp.fn_input_governance_runtime_manifest_proto(
+  p_exclude_signature text default null
+) returns jsonb
+language plpgsql
+as $f$
+declare
+  v_dependencies constant text[] := array[
+    'programacion.fn_input_governance_execute(integer,text)',
+    'programacion.fn_input_governance_worker_spec(integer,text)',
+    'programacion.fn_input_governance_worker_spec_known_current_v1(integer,text,bigint)',
+    'programacion.fn_input_stage_gate_summary(bigint)',
+    'programacion.fn_input_stage_gate_summary_known_current_v1(bigint,boolean)',
+    'programacion.fn_input_evaluation_outcome_summary_known_current_v1(bigint,boolean)',
+    'programacion.fn_input_internal_remediation_summary_known_current_v1(bigint,jsonb)',
+    'programacion.fn_input_freshness_delta(bigint)',
+    'programacion.fn_input_readiness_run_is_current(bigint)',
+    'programacion.fn_input_readiness_run_is_current_cached_v1(bigint)',
+    'programacion.fn_input_governance_bootstrap_classify_v1(integer,text,bigint)',
+    'programacion.fn_input_governance_bootstrap_classify_v1_cached_v1(integer,text,bigint,jsonb)',
+    'programacion.fn_input_governance_bootstrap_classify_v2(integer,text,bigint)',
+    'programacion.fn_input_governance_bootstrap_classify_v2_cached_v1(integer,text,bigint,jsonb)',
+    'programacion.fn_input_governance_validate_v2(bigint,text)',
+    'programacion.fn_input_governance_curator_materialize_v1(integer,text,text,boolean)',
+    'programacion.fn_input_governance_recurate_v2(integer,text,text)',
+    'public.fn_input_governance_curator_materialize_v1(integer,text,text)',
+    'public.fn_input_governance_validator_resume_context_v1(bigint)'
+  ];
+  v_sig text;
+  v_oid regprocedure;
+  v_material text := '';
+  v_count integer := 0;
+  v_sha text;
+begin
+  foreach v_sig in array v_dependencies loop
+    if p_exclude_signature is not null and v_sig=p_exclude_signature then
+      continue;
+    end if;
+    v_oid:=to_regprocedure(v_sig);
+    if v_oid is null then
+      raise exception 'FINGERPRINT_RUNTIME_DEPENDENCY_MISSING:%',v_sig;
+    end if;
+    v_material:=v_material||case when v_material='' then '' else E'\n--FUNCTION--\n' end||v_sig||E'\n'||pg_get_functiondef(v_oid::oid);
+    v_count:=v_count+1;
+  end loop;
+  v_sha:=encode(extensions.digest(convert_to(v_material,'UTF8'),'sha256'),'hex');
+  return jsonb_build_object('dependency_count',v_count,'runtime_dependency_sha256',v_sha);
+end;$f$;
 
 create or replace function pg_temp.fn_input_governance_evidence_fingerprint_proto(
   p_run_id bigint,
@@ -22,6 +70,7 @@ declare
   v_count integer;
   v_distinct integer;
   v_bad integer;
+  v_runtime jsonb;
   v_runtime_sha text;
   v_contracts_sha text;
   v_selected_sha text;
@@ -48,18 +97,8 @@ begin
     into v_source_sha,v_universe_sha,v_contract_snapshot_sha
   from programacion.input_readiness_runs where id=p_run_id;
 
-  select encode(extensions.digest(convert_to(
-    string_agg(p.oid::regprocedure::text||E'\n'||pg_get_functiondef(p.oid),E'\n--FUNCTION--\n' order by p.oid::regprocedure::text),
-    'UTF8'),'sha256'),'hex')
-    into v_runtime_sha
-  from pg_proc p join pg_namespace n on n.oid=p.pronamespace
-  where n.nspname='programacion'
-    and p.proname in (
-      'fn_input_governance_worker_spec',
-      'fn_input_stage_gate_summary',
-      'fn_input_freshness_delta',
-      'fn_input_readiness_run_is_current'
-    );
+  v_runtime:=pg_temp.fn_input_governance_runtime_manifest_proto(null);
+  v_runtime_sha:=v_runtime->>'runtime_dependency_sha256';
 
   select programacion.fn_v09_sha256_jsonb(
     jsonb_agg(jsonb_build_object(
@@ -90,6 +129,7 @@ begin
   from jsonb_array_elements_text(p_sections);
 
   v_fingerprint:=encode(extensions.digest(convert_to(concat_ws(E'\n',
+    'schema=INPUT_GOVERNANCE_EVIDENCE_FINGERPRINT_L4A_V2',
     'sections='||v_sections_canonical,
     v_runtime_sha,
     v_contracts_sha,
@@ -100,10 +140,11 @@ begin
   ),'UTF8'),'sha256'),'hex');
 
   return jsonb_build_object(
-    'fingerprint_schema','INPUT_GOVERNANCE_EVIDENCE_FINGERPRINT_L4A_V1',
+    'fingerprint_schema','INPUT_GOVERNANCE_EVIDENCE_FINGERPRINT_L4A_V2',
     'run_id',p_run_id,
     'sections',p_sections,
     'sections_canonical',v_sections_canonical,
+    'runtime_dependency_count',(v_runtime->>'dependency_count')::integer,
     'runtime_dependency_sha256',v_runtime_sha,
     'contracts_sha256',v_contracts_sha,
     'source_snapshot_sha256',v_source_sha,
@@ -133,6 +174,12 @@ with a as (
     212,
     '["APPLICABILITY_READINESS","SOURCE_AUTHORITY_PROVENANCE"]'::jsonb
   ) x
+), full_runtime as (
+  select pg_temp.fn_input_governance_runtime_manifest_proto(null) x
+), without_cache as (
+  select pg_temp.fn_input_governance_runtime_manifest_proto('programacion.fn_input_readiness_run_is_current_cached_v1(bigint)') x
+), without_validator as (
+  select pg_temp.fn_input_governance_runtime_manifest_proto('programacion.fn_input_governance_validate_v2(bigint,text)') x
 )
 select
   a.x->>'fingerprint_sha256' as fingerprint_5,
@@ -140,7 +187,10 @@ select
   (a.x->>'fingerprint_sha256')=(b.x->>'fingerprint_sha256') as deterministic_same_input,
   c.x->>'fingerprint_sha256' as fingerprint_2,
   (a.x->>'fingerprint_sha256')<>(c.x->>'fingerprint_sha256') as section_scope_changes_fingerprint,
+  (full_runtime.x->>'runtime_dependency_sha256')<>(without_cache.x->>'runtime_dependency_sha256') as currentness_cache_is_fingerprinted,
+  (full_runtime.x->>'runtime_dependency_sha256')<>(without_validator.x->>'runtime_dependency_sha256') as validator_is_fingerprinted,
+  (a.x->>'runtime_dependency_count')::integer as runtime_dependency_count,
   (a.x->>'runtime_bypass_authorized')::boolean=false as no_runtime_bypass_pass
-from a,b,c;
+from a,b,c,full_runtime,without_cache,without_validator;
 
 rollback;
