@@ -5,9 +5,10 @@
   "snapshots":[
     {"artifact":"learning_competitive_live_corpus_receipt_v1.json","source":"public.lf_knowledge_base","observed_at_utc":"2026-09-01T20:24:00Z","allowed_use":["VERIFY_ALREADY_PINNED_SELECTED_IDS_IF_SOURCE_IDS_MATCH"],"forbidden_use":["AUTHORIZE_NEW_BINDING","ADMIT_NEW_LEARNING_AFTER_SNAPSHOT","ENABLE_RUNTIME","AUTHORIZE_PRODUCTION"]},
     {"artifact":"learning_unbound_cluster_card_readback_v1.json","source":"public.lf_cards","observed_at_utc":"2026-09-01T19:51:02.227181Z","allowed_use":["HISTORICAL_NO_MATCH_EVIDENCE"],"forbidden_use":["PROVE_CURRENT_NO_CARD","AUTHORIZE_CARD_CREATION","AUTHORIZE_BINDING","AUTHORIZE_PRODUCTION"]},
-    {"artifact":"learning_additional_consumer_applicability_v1.json","source":"public.v_lf_router_adapter_bindings","observed_at_utc":"2026-09-01T19:51:34.016594Z","allowed_use":["HISTORICAL_RUNTIME_DISABLED_EVIDENCE"],"forbidden_use":["PROVE_CURRENT_RUNTIME_STATE","AUTHORIZE_EXACT_BINDING","ENABLE_CONTEXT_DELIVERY","AUTHORIZE_PRODUCTION"]}
+    {"artifact":"learning_additional_consumer_applicability_v1.json","source":"public.v_lf_router_adapter_bindings","observed_at_utc":"2026-09-01T19:51:34.016594Z","allowed_use":["HISTORICAL_RUNTIME_DISABLED_EVIDENCE"],"forbidden_use":["PROVE_CURRENT_RUNTIME_STATE","AUTHORIZE_EXACT_BINDING","ENABLE_CONTEXT_DELIVERY","AUTHORIZE_PRODUCTION"]},
+    {"artifact":"learning_competitive_source_backlog_readback_v1.json","source":"public.sbx_competitive_sources+state+observations+insights","observed_at_utc":"2026-09-01T20:24:00Z","allowed_use":["HISTORICAL_NO_SAFE_SANDBOX_BATCH_EVIDENCE"],"forbidden_use":["PROVE_CURRENT_SOURCE_BACKLOG_EMPTY","SKIP_CURRENT_SOURCE_DISCOVERY","AUTHORIZE_NEW_LEARNING","AUTHORIZE_PRODUCTION"]}
   ],
-  "fresh_readback_required_for":["NEW_EXACT_BINDING","NEW_CONTEXT_PACK_WITH_EVIDENCE","NEW_LEARNING_ADMISSION","RUNTIME_STATE_CHANGE","CARD_CREATION_DECISION"],
+  "fresh_readback_required_for":["NEW_EXACT_BINDING","NEW_CONTEXT_PACK_WITH_EVIDENCE","NEW_LEARNING_ADMISSION","RUNTIME_STATE_CHANGE","CARD_CREATION_DECISION","SOURCE_BACKLOG_EMPTY_DECISION"],
   "fail_closed_outcome":"NO_COMPETITIVE_CONTEXT_OR_READY_FOR_BINDING",
   "automatic_binding":false,
   "automatic_card_creation":false,
