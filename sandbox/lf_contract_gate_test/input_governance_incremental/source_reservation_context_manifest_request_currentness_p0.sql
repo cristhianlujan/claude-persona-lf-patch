@@ -53,6 +53,7 @@ BEGIN
   );
   EXECUTE v_fast_def;
 
+  -- The helper is deliberately not an externally consumable bypass token.
   EXECUTE 'REVOKE ALL ON FUNCTION programacion.fn_input_context_manifest_known_current_v1(bigint,boolean) FROM PUBLIC';
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='anon') THEN
     EXECUTE 'REVOKE ALL ON FUNCTION programacion.fn_input_context_manifest_known_current_v1(bigint,boolean) FROM anon';
@@ -88,6 +89,7 @@ BEGIN
   );
   EXECUTE v_execute_def;
 
+  -- Structural postconditions: original strong entrypoint remains unchanged.
   IF encode(digest(pg_get_functiondef('programacion.fn_input_context_manifest(bigint)'::regprocedure),'sha256'),'hex')
        <> '3163c77328166aa29fc81ecaafc58abcdb21a290371997bad2767e13187234fa' THEN
     RAISE EXCEPTION 'INPUT_CONTEXT_MANIFEST_STRONG_ENTRYPOINT_CHANGED';
