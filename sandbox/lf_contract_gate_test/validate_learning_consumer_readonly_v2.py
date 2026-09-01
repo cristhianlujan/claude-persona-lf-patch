@@ -8,6 +8,7 @@ MATRIX=ROOT/'sandbox/lf_contract_gate_test/learning_consumer_50_cases_v1.yaml'
 CONTRACT=ROOT/'sandbox/lf_contract_gate_test/learning_consumer_binding_benchmark_contract_v1.yaml'
 BINDINGS=ROOT/'sandbox/lf_contract_gate_test/learning_consumer_bindings_v2.yaml'
 SELECTOR_VALIDATOR=ROOT/'sandbox/lf_contract_gate_test/validate_learning_read_only_context_selector_v1.py'
+REQUEST_BUILDER_VALIDATOR=ROOT/'sandbox/lf_contract_gate_test/validate_learning_profile_request_builder_v1.py'
 DYNAMIC_SELECTOR_BENCH=ROOT/'sandbox/lf_contract_gate_test/benchmark_learning_dynamic_context_selector_v2.py'
 DYNAMIC_BINDING_VALIDATOR=ROOT/'sandbox/lf_contract_gate_test/validate_learning_consumer_dynamic_cluster_bindings_v1.py'
 GOV_VALIDATOR=ROOT/'sandbox/lf_contract_gate_test/validate_product_director_input_governance_binding_v1.py'
@@ -49,12 +50,12 @@ def main():
   refs=re.findall(r'public\.lf_knowledge_base/[0-9a-f-]{36}',block)
   if not 1<=len(refs)<=5: fail(f'{cap} evidence refs={len(refs)}')
  if caps!=EXPECTED_CAPS: fail(f'caps={caps}')
- print(run(SELECTOR_VALIDATOR)); print(run(DYNAMIC_SELECTOR_BENCH)); print(run(DYNAMIC_BINDING_VALIDATOR)); print(run(GOV_VALIDATOR)); print(run(ROUTING_BENCH))
+ print(run(SELECTOR_VALIDATOR)); print(run(REQUEST_BUILDER_VALIDATOR)); print(run(DYNAMIC_SELECTOR_BENCH)); print(run(DYNAMIC_BINDING_VALIDATOR)); print(run(GOV_VALIDATOR)); print(run(ROUTING_BENCH))
  print(f'LEARNING_CONSUMER_READONLY_V2=PASS cases=50 families=10 positive={pos} negative={neg} exact_bindings=5')
  print(run(UI_VALIDATOR))
  print(run(DOWNSTREAM_VALIDATOR))
  print(run(BEHAVIORAL_READINESS_VALIDATOR))
  print(run(SOURCE_CANDIDATE_VALIDATOR))
- print('LEARNING_READONLY_MULTI_CONSUMER_GATE=PASS direct_profiles=2 downstream_profiles=2 total_profiles=4 behavioral_runtime_invoked=0 staged_sources=5 dynamic_selector_cases=50/50 dynamic_cluster_bindings=7')
+ print('LEARNING_READONLY_MULTI_CONSUMER_GATE=PASS direct_profiles=2 downstream_profiles=2 total_profiles=4 behavioral_runtime_invoked=0 staged_sources=5 dynamic_selector_cases=50/50 dynamic_cluster_bindings=7 request_builder=PASS')
  return 0
 if __name__=='__main__': raise SystemExit(main())
