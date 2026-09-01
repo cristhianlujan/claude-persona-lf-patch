@@ -22,8 +22,17 @@ def main():
     for i,cluster in enumerate(('REINSERCION_FINANCIERA','CAMPANAS_Y_OFERTAS','BENCHMARK_PERIFERICO'),start=10):
         x=select_context([kb(f'u{i}')],[ev(f'u{i}',cluster,i)],'PERFIL-PRODUCT-DIRECTOR-LF','NEGOCIACION_DEUDA')
         assert x['selected']==[] and x['fallback']=='NO_COMPETITIVE_CONTEXT'; assert_reader_invariants(x)
+    known_nonbindings={
+      'PERFIL-GAMIFICATION-SYSTEM-ARCHITECT':'NO_EXACT_COMPETITIVE_CAPABILITY',
+      'ACT-0051':'UPSTREAM_PRODUCT_AND_UI_AUTHORITY_REQUIRED',
+      'PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531':'READY_FOR_BINDING_REVIEW_ONLY_RUNTIME_DISABLED',
+      'PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531':'READY_FOR_BINDING_REVIEW_ONLY_RUNTIME_DISABLED',
+    }
+    for consumer,reason in known_nonbindings.items():
+        x=select_context([kb('z')],[ev('z','AUTOGESTION_DIGITAL',99)],consumer,'DIGITAL_SELF_SERVICE',['PRODUCT_DIRECTION_AUTHORIZED_CURRENT','UI_ARCHITECTURE_AUTHORIZED_CURRENT','EXACT_CLAIM_AUTHORITY_CURRENT'])
+        assert x['selected']==[] and x['fallback']=='NO_COMPETITIVE_CONTEXT' and x['nonbinding_reason']==reason; assert_reader_invariants(x)
     try: select_context([],[],'UNKNOWN','UNKNOWN')
     except SelectionError as e: assert str(e)=='EXACT_BINDING_REQUIRED'
     else: raise AssertionError('must fail closed')
-    print('PASS learning_dynamic_context_selector_clean_v1 writes=0 semantic_search=false llm_calls=0 round_trips=0 unbound_clusters_fail_closed=3/3')
+    print('PASS learning_dynamic_context_selector_clean_v1 writes=0 semantic_search=false llm_calls=0 round_trips=0 unbound_clusters_fail_closed=3/3 explicit_nonbindings_fail_closed=4/4 unknown_binding_error=PASS')
 if __name__=='__main__': main()
