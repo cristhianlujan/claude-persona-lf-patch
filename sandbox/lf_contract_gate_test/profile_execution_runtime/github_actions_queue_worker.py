@@ -24,6 +24,7 @@ from product_director_input_governance_binding_v1 import (  # noqa: E402
 
 TABLE = "private.lf_profile_runtime_queue_v1"
 MAX_LF_ADAPTERS = 4
+INPUT_GOVERNANCE_CONSUMER = "CONTEXT_PACK"
 
 
 def _assistant_completion(raw_output: object) -> str:
@@ -115,7 +116,7 @@ def _resolve_input_governance_binding(cur: psycopg.Cursor, payload: dict) -> dic
         return None
     cur.execute(
         "select programacion.fn_lf_router_input_governance_resolve_v1(%s,%s,%s)",
-        (payload["input_literal"], Jsonb(bindings), payload["profile_code"]),
+        (payload["input_literal"], Jsonb(bindings), INPUT_GOVERNANCE_CONSUMER),
     )
     row = cur.fetchone()
     router_result = row[0] if row else None
@@ -125,6 +126,7 @@ def _resolve_input_governance_binding(cur: psycopg.Cursor, payload: dict) -> dic
             request_id=str(payload["request_id"]),
             profile_code=payload["profile_code"],
             input_literal=payload["input_literal"],
+            governance_consumer=INPUT_GOVERNANCE_CONSUMER,
         )
     except GovernanceBindingError as exc:
         blocking_code = router_result.get("blocking_code") if isinstance(router_result, dict) else None
