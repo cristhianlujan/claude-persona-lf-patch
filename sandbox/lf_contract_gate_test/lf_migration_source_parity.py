@@ -36,6 +36,10 @@ MANAGED_EXACT_NAMES = {
     "fix_operation_judge_jsonb_shape_compatibility",
     "reconcile_card_depth_gate_order_v1",
     "fix_card_contract_judge_clean_status_v1",
+    "programacion_f05_provenance_channel_v1",
+    "programacion_f05_public_rpc_bridge_v1",
+    "revoke_internal_pipeline_public_grants",
+    "programacion_private_rls_hardening_v1",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
@@ -55,20 +59,25 @@ MARKER_RE = re.compile(
     r"legacy_count=(\d+) legacy_sha256=([0-9a-f]{64})$"
 )
 
+
 def managed(name: str) -> bool:
     return name.startswith(MANAGED_PREFIXES) or name in MANAGED_EXACT_NAMES
 
+
 def classified(name: str) -> bool:
     return managed(name) or name.startswith(CLASSIFIED_EXTERNAL_PREFIXES) or name in CLASSIFIED_EXTERNAL_NAMES
+
 
 def canonical(sql: str) -> bytes:
     sql = sql.replace("\r\n", "\n").replace("\r", "\n")
     lines = [line for line in sql.split("\n") if not line.lstrip().startswith("--")]
     return "\n".join(lines).rstrip("\n").encode("utf-8")
 
+
 def fail(code: str, detail: str = "") -> None:
     suffix = f": {detail}" if detail else ""
     raise SystemExit(f"{code}{suffix}")
+
 
 def read_single_row(path: pathlib.Path, expected_columns: int, code: str) -> list[str]:
     with path.open(newline="", encoding="utf-8") as handle:
@@ -76,6 +85,7 @@ def read_single_row(path: pathlib.Path, expected_columns: int, code: str) -> lis
     if len(rows) != 1 or len(rows[0]) != expected_columns:
         fail(code, repr(rows))
     return rows[0]
+
 
 def main() -> int:
     if len(sys.argv) != 5:
@@ -105,6 +115,14 @@ def main() -> int:
         fail("FAIL_CI009_SELFTEST_CARD_DEPTH_ORDER_RECONCILIATION")
     if not managed("fix_card_contract_judge_clean_status_v1"):
         fail("FAIL_CI009_SELFTEST_CARD_CONTRACT_JUDGE_CLEAN_STATUS")
+    if not managed("programacion_f05_provenance_channel_v1"):
+        fail("FAIL_CI009_SELFTEST_F05_PROVENANCE_CHANNEL")
+    if not managed("programacion_f05_public_rpc_bridge_v1"):
+        fail("FAIL_CI009_SELFTEST_F05_PUBLIC_RPC_BRIDGE")
+    if not managed("revoke_internal_pipeline_public_grants"):
+        fail("FAIL_CI009_SELFTEST_RLS_INTERNAL_GRANTS")
+    if not managed("programacion_private_rls_hardening_v1"):
+        fail("FAIL_CI009_SELFTEST_PROGRAMACION_PRIVATE_RLS")
     if managed("create_lf_unreviewed_future_change"):
         fail("FAIL_CI009_SELFTEST_MANAGED_PREFIX_TOO_BROAD")
     if not classified("programacion_worker_spec_probe"):
@@ -134,7 +152,10 @@ def main() -> int:
         grandfather_file, 2, "FAIL_LF_MIGRATION_GRANDFATHER_BASELINE_ROW"
     )
     if observed_grandfathered_count != grandfathered_count or observed_grandfathered_sha != grandfathered_sha:
-        fail("FAIL_LF_MIGRATION_GRANDFATHER_BASELINE", f"expected={grandfathered_count}/{grandfathered_sha} observed={observed_grandfathered_count}/{observed_grandfathered_sha}")
+        fail(
+            "FAIL_LF_MIGRATION_GRANDFATHER_BASELINE",
+            f"expected={grandfathered_count}/{grandfathered_sha} observed={observed_grandfathered_count}/{observed_grandfathered_sha}",
+        )
 
     remote_all: dict[str, tuple[str, str]] = {}
     with remote_file.open(newline="", encoding="utf-8") as handle:
@@ -173,9 +194,14 @@ def main() -> int:
     if mismatches:
         fail("FAIL_LF_MIGRATION_CONTENT_PARITY", repr(mismatches))
 
-    print(f"PASS_LF_MIGRATION_SOURCE_PARITY: checkpoint={checkpoint_path.name} post_cutover={len(local)} legacy={legacy_count} sha256={legacy_sha} grandfathered={grandfathered_count}/{grandfathered_sha} classification_baseline_end={classification_baseline_end}")
-    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=12/12")
+    print(
+        f"PASS_LF_MIGRATION_SOURCE_PARITY: checkpoint={checkpoint_path.name} post_cutover={len(local)} "
+        f"legacy={legacy_count} sha256={legacy_sha} grandfathered={grandfathered_count}/{grandfathered_sha} "
+        f"classification_baseline_end={classification_baseline_end}"
+    )
+    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=16/16")
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())
