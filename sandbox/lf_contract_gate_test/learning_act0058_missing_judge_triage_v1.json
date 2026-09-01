@@ -1,0 +1,26 @@
+{
+  "schema":"LF_LEARNING_ACT0058_MISSING_JUDGE_TRIAGE_V1",
+  "operation_code":"ORQUESTACION_PIPELINE_LF",
+  "observed_live_at":"2026-09-01T13:43:00Z",
+  "missing_total":11,
+  "ready_for_judge_spec":[
+    {"step_order":-10,"step_id":"PRE_EKB_GATE","judge_code":"MINI_JUDGE_PRE_EKB_GATE_LF_V0_1","evidence_keys":["ekb_query","active_rules_considered","controls_applied","non_applicable_rules","blocking_codes"]},
+    {"step_order":20,"step_id":"init_run","judge_code":"MINI_JUDGE_ACT0058_INIT","evidence_keys":["pipeline_run_id","source_url","dedup_check"]},
+    {"step_order":30,"step_id":"scope_filter","judge_code":"MINI_JUDGE_ACT0058_SCOPE","evidence_keys":["source_url","domain_matched"]},
+    {"step_order":50,"step_id":"stage_captura","judge_code":"MINI_JUDGE_ACT0058_CAPTURA","evidence_keys":["capture_run_id","capture_status_completed"]},
+    {"step_order":60,"step_id":"stage_homolog","judge_code":"MINI_JUDGE_ACT0058_HOMOLOG","evidence_keys":["homolog_record_id","homolog_status_aprobado"]},
+    {"step_order":70,"step_id":"stage_analisis","judge_code":"MINI_JUDGE_ACT0058_ANALISIS","evidence_keys":["decision_id","risk_level","consumer_gate_passed"]},
+    {"step_order":90,"step_id":"stage_kb_write","judge_code":"MINI_JUDGE_ACT0058_KB_WRITE","evidence_keys":["kb_id","consumer_gate_passed","hitl_triggered"]},
+    {"step_order":100,"step_id":"completed","judge_code":"MINI_JUDGE_ACT0058_COMPLETED","evidence_keys":["stage_completed","evento_id"]},
+    {"step_order":110,"step_id":"failed_retry","judge_code":"MINI_JUDGE_ACT0058_RETRY","evidence_keys":["retry_count","error_detail","stage_status"]}
+  ],
+  "needs_contract_repair":[
+    {"step_order":5,"step_id":"init_execution","judge_code":"MINI_JUDGE_ACT0058_INIT_EXECUTION","reasons":["EMPTY_PASS_CONDITION","NO_REQUIRED_EVIDENCE_KEYS"]},
+    {"step_order":105,"step_id":"restock_queue","judge_code":"MINI_JUDGE_ACT0058_RESTOCK","reasons":["INVALID_EVENT_SEVERITY_MEDIA","NO_REQUIRED_EVIDENCE_KEYS"]}
+  ],
+  "existing_bound_judges":4,
+  "source_only":true,
+  "db_mutation_performed":false,
+  "production_impact":false,
+  "next_gate":"SPECIFY_9_JUDGES_AND_REPAIR_2_CONTRACTS_BEFORE_ANY_DB_BINDING"
+}
