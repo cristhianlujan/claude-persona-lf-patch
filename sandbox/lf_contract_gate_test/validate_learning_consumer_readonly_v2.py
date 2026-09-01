@@ -11,6 +11,7 @@ SELECTOR_VALIDATOR=ROOT/'sandbox/lf_contract_gate_test/validate_learning_read_on
 GOV_VALIDATOR=ROOT/'sandbox/lf_contract_gate_test/validate_product_director_input_governance_binding_v1.py'
 ROUTING_BENCH=ROOT/'sandbox/lf_contract_gate_test/run_learning_consumer_routing_benchmark.py'
 UI_VALIDATOR=ROOT/'sandbox/lf_contract_gate_test/validate_learning_ui_consumer_readonly_v1.py'
+DOWNSTREAM_VALIDATOR=ROOT/'sandbox/lf_contract_gate_test/validate_learning_downstream_no_bypass_v1.py'
 EXPECTED_FAMILIES={'COMPETITIVE_OFFER_INSIGHT','DEBT_EDUCATION','PAYMENT_NO_ADEUDO','DIGITAL_SELF_SERVICE','FINANCIAL_ALTERNATIVES','NEGOTIATION','OUT_OF_SCOPE_NO_INVOKE','CONFLICT_PRECEDENCE','STALE_LOW_GROUNDING','MULTI_DOMAIN_COMPLEX'}
 EXPECTED_CAPS={'NEGOCIACION_DEUDA','ALTERNATIVAS_FINANCIERAS','EDUCACION_CREDITICIA','DIGITAL_SELF_SERVICE','PAYMENT_NO_ADEUDO'}
 REQUIRED={'consumer_id','consumer_type','capability_id','router_action','invoke_when','must_not_invoke_when','input_contract','minimum_context','selected_evidence_refs','policy_capsule_ref','output_schema_ref','judges','fallback','timeout_budget','context_budget','lifecycle_state','version','source_learning_ids','champion_id','challenger_id','provenance'}
@@ -47,6 +48,7 @@ def main():
  print(run(SELECTOR_VALIDATOR)); print(run(GOV_VALIDATOR)); print(run(ROUTING_BENCH))
  print(f'LEARNING_CONSUMER_READONLY_V2=PASS cases=50 families=10 positive={pos} negative={neg} exact_bindings=5')
  print(run(UI_VALIDATOR))
- print('LEARNING_READONLY_MULTI_CONSUMER_GATE=PASS profiles=2')
+ print(run(DOWNSTREAM_VALIDATOR))
+ print('LEARNING_READONLY_MULTI_CONSUMER_GATE=PASS direct_profiles=2 downstream_profiles=2 total_profiles=4')
  return 0
 if __name__=='__main__': raise SystemExit(main())
