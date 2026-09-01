@@ -7,6 +7,7 @@ SCRIPTS=[
  'validate_learning_dynamic_context_selector_clean_v1.py',
  'validate_product_director_learning_routing_50_v1.py',
  'validate_product_director_learning_context_pack_v1.py',
+ 'validate_learning_deterministic_context_pack_builder_v1.py',
  'validate_product_director_learning_efficiency_metrics_v1.py',
  'validate_learning_behavioral_readiness_contract_v1.py',
  'validate_learning_readonly_benchmark_50_v1.py',
@@ -26,5 +27,5 @@ def main():
   if p.returncode!=0:
    sys.stderr.write(p.stdout+p.stderr); raise SystemExit(p.returncode)
   print(p.stdout.strip())
- print('PRODUCT_DIRECTOR_LEARNING_SUITE=PASS validators=16/16 production_authorized=false')
+ print('PRODUCT_DIRECTOR_LEARNING_SUITE=PASS validators=17/17 production_authorized=false')
 if __name__=='__main__': main()
