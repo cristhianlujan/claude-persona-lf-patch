@@ -1,6 +1,7 @@
 {
   "schema": "LF_LEARNING_BEHAVIORAL_READINESS_V2",
   "status": "WAITING_CURRENT_INPUT_GOVERNANCE_RECEIPT",
+  "observed_live_at": "2026-09-01T07:00:00Z",
   "production_impact": false,
   "runtime_invoked": false,
   "holdout_consumed": false,
@@ -8,6 +9,21 @@
   "input_governance_observed_revision": "5.12",
   "continuation_policy": "PASS_ONLY",
   "contract_resolution": "LIVE_CURRENT",
+  "live_governance_subject": {
+    "pantalla_id": 21,
+    "screen_code": "CHECKOUT_CUOTAS_MEDIO_PAGO",
+    "governance_consumer": "CONTEXT_PACK",
+    "current_run_id": null,
+    "latest_run_id": null,
+    "required_role": "INPUT_CURATOR",
+    "role_reason": "NO_PRIOR_RUN_GOVERNED_BOOTSTRAP",
+    "runtime_action": "CALL_CURATOR_RUNTIME",
+    "runtime_binding_status": "BOUND_RUNTIME",
+    "worker_spec_sha256": "456a4b1c5e012ac2dbc8f9a801f8a44e1b55fc3082372c3a8ed7de3985a1e374",
+    "blocking_code": "BLOCK_INPUT_GOVERNANCE_RECEIPT_REQUIRED",
+    "continuation_allowed": false,
+    "production_authorized": false
+  },
   "runtime": {
     "operation_code": "EJECUCION_PERFIL_LF",
     "runner_source": "sandbox/lf_contract_gate_test/profile_execution_runtime/run_zero_cost_profile_request.py",
