@@ -1,6 +1,6 @@
 {
   "schema":"LF_PRODUCT_DIRECTOR_KB_ELIGIBILITY_READBACK_V1",
-  "observed_live_at_utc":"2026-09-01T19:02:00Z",
+  "observed_live_at_utc":"2026-09-01T19:22:00Z",
   "source":"public.lf_knowledge_base",
   "predicate":"kb_category=COMPETENCIA AND grounding_status=GROUNDED AND consumer_ready=true",
   "selected_ids":[
@@ -12,6 +12,7 @@
   ],
   "selected_count":13,
   "eligibility_pass_count":13,
+  "quality_score_range":{"min":0.78,"max":0.96},
   "excluded_due_cluster_mismatch":[
     "f67ffccd-e710-41f4-ae8c-eb5579227fc7","07999589-5744-4a87-9cd0-3b04e61d608d","3118e5f0-9b7c-4a90-839a-33ad0f14384d","663f9684-5ec5-4bfc-bc91-469bbf01f57b"
   ],
