@@ -21,7 +21,7 @@ chain:
     must_not_receive: [competitive_kb_rows, source_learning_ids_as_domain_authority, competitor_claims_as_product_truth]
     fallback: FRONTEND_MISSING_INPUT_STATE_RETURN_TO_ORCHESTRATOR
   - stage: GAMIFICATION
-    consumer_id: GAMIFICATION_SYSTEM_ARCHITECT
+    consumer_id: PERFIL-GAMIFICATION-SYSTEM-ARCHITECT
     direct_learning_context: false
     upstream_required: [authorized_product_or_ux_objective]
     source_authority: CURRENT_GOVERNED_OBJECTIVE_ONLY
