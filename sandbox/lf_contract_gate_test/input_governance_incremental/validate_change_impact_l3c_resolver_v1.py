@@ -9,7 +9,7 @@ from change_impact_l3c_resolver_readonly_v1 import resolve_change
 INPUTS=HERE/'change_impact_l3c_structured_inputs_v1.json'
 GOLD=HERE/'change_impact_l3c_adjudicated_gold_v2.json'
 LOCAL={'SCOPED_CANDIDATE','SCOPED_BLOCK'}
-NONLOCAL={'GLOBAL_ESCALATE','HUMAN_REQUIRED'}
+BLOCKING={'SCOPED_BLOCK','GLOBAL_ESCALATE','HUMAN_REQUIRED'}
 
 def pct(xs,p):
     xs=sorted(xs); pos=(len(xs)-1)*p; lo=int(pos); hi=min(lo+1,len(xs)-1); f=pos-lo
@@ -26,7 +26,9 @@ def main():
         actual=resolve_change({'subject_kind':row['subject_kind'],'change_kind':row['change_kind'],'facts':row['facts']})
         exp=gold[row['case_id']]; ei=set(exp['impact_families']); ai=set(actual['impact_families'])
         dok=actual['decision']==exp['decision']; iok=ai==ei; dec+=dok; imp+=iok; tp+=len(ai&ei); fp+=len(ai-ei); fn+=len(ei-ai); depths.append(actual['evidence_depth'])
-        under += int(exp['decision'] in NONLOCAL and actual['decision'] in LOCAL)
+        # Unsafe under-block means the adjudicated gold requires a blocking outcome,
+        # but the resolver relaxes it to the only non-blocking candidate outcome.
+        under += int(exp['decision'] in BLOCKING and actual['decision']=='SCOPED_CANDIDATE')
         over += int(exp['decision'] in LOCAL and actual['decision']=='GLOBAL_ESCALATE')
         if not dok or not iok: failures.append({'case_id':row['case_id'],'decision_ok':dok,'impact_ok':iok,'expected_decision':exp['decision'],'actual_decision':actual['decision']})
     adversarial=[
@@ -34,6 +36,7 @@ def main():
       ({'subject_kind':'field','change_kind':'UNKNOWN','facts':{'canonical_authority':'EXACT_CURRENT'}},'GLOBAL_ESCALATE'),
       ({'subject_kind':'field','change_kind':'MIXED','facts':{'canonical_authority':'EXACT_CURRENT'}},'GLOBAL_ESCALATE'),
       ({'subject_kind':'copy','change_kind':'CANONICAL_RECONCILIATION','facts':{'canonical_authority':'EXACT_CURRENT','shared_dependency_status':'UNKNOWN'}},'GLOBAL_ESCALATE'),
+      ({'subject_kind':'copy','change_kind':'CANONICAL_RECONCILIATION','facts':{'canonical_authority':'EXACT_CURRENT','shared_dependency_status':'MIXED'}},'GLOBAL_ESCALATE'),
       ({'subject_kind':'action','change_kind':'NO_CHANGE','facts':{'canonical_authority':'EXACT_CURRENT','shared_dependency_status':'STALE'}},'GLOBAL_ESCALATE'),
       ({'subject_kind':'permission','change_kind':'NO_CHANGE','facts':{'canonical_authority':'EXACT_CURRENT','shared_dependency_status':'CONFLICT'}},'GLOBAL_ESCALATE'),
       ({'subject_kind':'route','change_kind':'ADD_NEW_SEMANTICS','facts':{'canonical_authority':'MISSING'}},'HUMAN_REQUIRED'),
