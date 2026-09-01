@@ -1,0 +1,4 @@
+Purpose: trigger exact-head push workflow evidence required by E.16 inventory.
+Scope: CI-only marker under sandbox; no runtime, schema, contract, promotion, or production behavior.
+EKB: EKB-INPUT-GOV-INCREMENTAL-20260901-10
+Supersedes no evidence artifacts.
