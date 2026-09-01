@@ -1,0 +1,35 @@
+{
+  "schema": "LF_PRODUCT_DIRECTOR_BEHAVIORAL_AUTHORITY_GAP_V1",
+  "status": "SANDBOX_READ_ONLY",
+  "consumer_id": "PERFIL-PRODUCT-DIRECTOR-LF",
+  "router_route": "ACT-0001 -> EJECUCION_PERFIL_LF -> PERFIL-PRODUCT-DIRECTOR-LF",
+  "observed_profile_source_ref": "profiles/product_director_lf/SKILL.md",
+  "observed_runtime_worker_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_queue_worker.py",
+  "observed_runtime_executor_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/run_zero_cost_profile_request.py",
+  "findings": {
+    "technical_runtime_exists": true,
+    "runtime_claims_only_pending_queue_requests": true,
+    "runtime_resolves_only_router_enabled_adapter_bindings": true,
+    "profile_behavioral_proof_requires_raw_output_and_canonical_execution_receipt": true,
+    "input_governance_receipt_enforced_by_current_profile_runtime_executor": false,
+    "current_safe_behavioral_execution_authorized": false
+  },
+  "blocking_gap": {
+    "code": "INPUT_GOVERNANCE_RECEIPT_NOT_BOUND_TO_PROFILE_RUNTIME_REQUEST",
+    "detail": "The queue/executor path accepts obligation_manifest and router-enabled LF adapter sources, but no current source binds an INPUT_READINESS_CONTRACT governance_receipt into the Product Director runtime request/receipt. Do not infer authority from technical runtime availability.",
+    "required_resolution": [
+      "resolve live Input Governance applicability for the Product Director request",
+      "bind the governed receipt to the exact request/profile/input/source snapshot",
+      "fail closed if applicable receipt is absent or non-PASS",
+      "preserve canonical execution receipt plus raw output, deterministic validation, semantic judge and fresh holdout/adversarial evidence"
+    ]
+  },
+  "benchmark_boundary": {
+    "champion_id": "CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1",
+    "challenger_id": "CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1",
+    "routing_benchmark_may_continue": true,
+    "behavioral_ab_must_wait_for_governed_receipt_binding": true,
+    "production_impact": false,
+    "automatic_promotion": false
+  }
+}
