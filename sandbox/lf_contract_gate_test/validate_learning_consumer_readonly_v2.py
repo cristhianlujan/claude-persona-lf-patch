@@ -11,7 +11,7 @@ SELECTOR_VALIDATOR=ROOT/'sandbox/lf_contract_gate_test/validate_learning_read_on
 GOV_VALIDATOR=ROOT/'sandbox/lf_contract_gate_test/validate_product_director_input_governance_binding_v1.py'
 ROUTING_BENCH=ROOT/'sandbox/lf_contract_gate_test/run_learning_consumer_routing_benchmark.py'
 EXPECTED_FAMILIES={'COMPETITIVE_OFFER_INSIGHT','DEBT_EDUCATION','PAYMENT_NO_ADEUDO','DIGITAL_SELF_SERVICE','FINANCIAL_ALTERNATIVES','NEGOTIATION','OUT_OF_SCOPE_NO_INVOKE','CONFLICT_PRECEDENCE','STALE_LOW_GROUNDING','MULTI_DOMAIN_COMPLEX'}
-EXPECTED_CAPS={'NEGOCIACION_DEUDA','ALTERNATIVAS_FINANCIERAS','EDUCACION_CREDITICIA'}
+EXPECTED_CAPS={'NEGOCIACION_DEUDA','ALTERNATIVAS_FINANCIERAS','EDUCACION_CREDITICIA','DIGITAL_SELF_SERVICE'}
 REQUIRED={'consumer_id','consumer_type','capability_id','router_action','invoke_when','must_not_invoke_when','input_contract','minimum_context','selected_evidence_refs','policy_capsule_ref','output_schema_ref','judges','fallback','timeout_budget','context_budget','lifecycle_state','version','source_learning_ids','champion_id','challenger_id','provenance'}
 def fail(msg): raise SystemExit('FAIL learning-readonly-v2: '+msg)
 def run(path):
@@ -33,7 +33,7 @@ def main():
  if set(counts)!=EXPECTED_FAMILIES or any(v!=5 for v in counts.values()): fail(f'family_counts={dict(counts)}')
  if 'selector_mode: DETERMINISTIC_EXACT_ID' not in contract or 'no_extra_llm_call: true' not in contract or 'no_extra_round_trip: true' not in contract: fail('contract deterministic invariants missing')
  b=blocks(bindings)
- if len(b)!=3: fail(f'bindings={len(b)}')
+ if len(b)!=4: fail(f'bindings={len(b)}')
  caps=set()
  for block in b:
   fields=set(re.findall(r'^    ([a-z_]+):',block,re.M)); miss=REQUIRED-fields
@@ -44,6 +44,6 @@ def main():
   if not 1<=len(refs)<=5: fail(f'{cap} evidence refs={len(refs)}')
  if caps!=EXPECTED_CAPS: fail(f'caps={caps}')
  print(run(SELECTOR_VALIDATOR)); print(run(GOV_VALIDATOR)); print(run(ROUTING_BENCH))
- print(f'LEARNING_CONSUMER_READONLY_V2=PASS cases=50 families=10 positive={pos} negative={neg} exact_bindings=3')
+ print(f'LEARNING_CONSUMER_READONLY_V2=PASS cases=50 families=10 positive={pos} negative={neg} exact_bindings=4')
  return 0
 if __name__=='__main__': raise SystemExit(main())
