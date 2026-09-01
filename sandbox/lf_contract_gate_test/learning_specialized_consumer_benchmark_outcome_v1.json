@@ -1,0 +1,15 @@
+{
+  "schema":"LF_LEARNING_SPECIALIZED_CONSUMER_BENCHMARK_OUTCOME_V1",
+  "mode":"READ_ONLY",
+  "negative_benchmark":{"cases":"50/50","families":"10x5","unsafe_delivery":0,"selector_llm_calls":0,"reader_writes":0,"result":"PASS_FAIL_CLOSED"},
+  "positive_activation_benchmark":{"executed":false,"reason":"EXACT_BINDINGS_AND_CURRENT_RUNTIME_AUTHORITY_NOT_AVAILABLE_IN_CANDIDATE","result":"INSUFFICIENT_EVIDENCE"},
+  "champion_id":null,
+  "challenger_id":null,
+  "champion_challenger_outcome":"INSUFFICIENT_EVIDENCE",
+  "quality_gate":"PASS_FAIL_CLOSED_ONLY",
+  "performance_gate":"NOT_APPLICABLE_ZERO_CONTEXT",
+  "governance_gate":"BLOCKED_READY_FOR_BINDING",
+  "behavioral_promotion_authorized":false,
+  "automatic_promotion":false,
+  "production_authorized":false
+}
