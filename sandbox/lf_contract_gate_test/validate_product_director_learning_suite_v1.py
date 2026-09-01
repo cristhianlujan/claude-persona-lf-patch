@@ -15,7 +15,8 @@ SCRIPTS=[
  'validate_learning_readonly_lifecycle_guard_v1.py',
  'validate_learning_competitive_live_corpus_receipt_v1.py',
  'validate_learning_exact_nonbinding_guard_v1.py',
- 'validate_learning_pr_supersession_plan_v1.py'
+ 'validate_learning_pr_supersession_plan_v1.py',
+ 'validate_learning_additional_consumer_binding_candidates_v1.py'
 ]
 def main():
  for s in SCRIPTS:
@@ -23,5 +24,5 @@ def main():
   if p.returncode!=0:
    sys.stderr.write(p.stdout+p.stderr); raise SystemExit(p.returncode)
   print(p.stdout.strip())
- print('PRODUCT_DIRECTOR_LEARNING_SUITE=PASS validators=13/13 production_authorized=false')
+ print('PRODUCT_DIRECTOR_LEARNING_SUITE=PASS validators=14/14 production_authorized=false')
 if __name__=='__main__': main()
