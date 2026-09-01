@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.12
+LF Contract Check v0.13
 
 Sandbox validator for controlled LF governance gates.
+
+v0.13 changes:
+- Allows only the exact Profiles LF operational runbook path under ops/.
+- Keeps the broad ops/ prefix and runbook lookalikes denied.
 
 v0.12 changes:
 - Allows the exact historical compact-protocol locator under claude/ while
@@ -82,6 +86,7 @@ OPERATIONAL_PROTOCOL_ALLOWED_EXACT = {
     ".claude/scripts/validate_artifact_output.py",
     "docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md",
     "claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md",
+    "ops/runbook-profiles-lf.md",
 }
 OPERATIONAL_PROTOCOL_DENIED_LOOKALIKES = {
     "CLAUDE.md.bak",
@@ -97,6 +102,10 @@ OPERATIONAL_PROTOCOL_DENIED_LOOKALIKES = {
     "claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF/child.md",
     "claude/protocolo_consumo_compacto_router_lf.md",
     "claude/OTHER_PROTOCOL.md",
+    "ops/runbook-profiles-lf.md.bak",
+    "ops/runbook-profiles-lf/child.md",
+    "ops/RUNBOOK-PROFILES-LF.md",
+    "ops/other.md",
 }
 P0_CLOSURE_EVIDENCE_ALLOWED_EXACT = {
     "docs/p0/CONTRATO_BENCHMARK_OCR_CV.md",
@@ -289,6 +298,8 @@ def validate_operational_protocol_scope() -> None:
         failures.append("dot_claude_prefix_must_remain_denied")
     if "claude/" in ALLOWED_PREFIXES:
         failures.append("claude_prefix_must_remain_denied")
+    if "ops/" in ALLOWED_PREFIXES:
+        failures.append("ops_prefix_must_remain_denied")
     for path in sorted(OPERATIONAL_PROTOCOL_ALLOWED_EXACT):
         if not is_allowed_path(path):
             failures.append(f"approved_exact_missing:{path}")
@@ -541,4 +552,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
