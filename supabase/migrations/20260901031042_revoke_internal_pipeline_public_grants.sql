@@ -2,7 +2,6 @@
 -- Existing RLS policies explicitly deny anon/authenticated for ALL commands.
 -- Remove legacy/default table grants so access is denied at the privilege layer first.
 -- Keep service_role privileges and existing RLS policies unchanged.
-
 revoke all privileges on table public.lf_audit_backlog from anon, authenticated;
 revoke all privileges on table public.lf_audit_objetivo from anon, authenticated;
 revoke all privileges on table public.lf_content_decisions from anon, authenticated;
