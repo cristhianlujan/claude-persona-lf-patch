@@ -1,0 +1,15 @@
+{
+  "schema":"LF_LEARNING_ROUTING_CASES_V1","consumer_id":"PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531","mode":"READ_ONLY_OFFLINE","cases":[
+    {"id":"UX-R01","intent":"self service funnel comprehension","capability":"DIGITAL_SELF_SERVICE","expected":"MATCH"},
+    {"id":"UX-R02","intent":"authorized self service user objective","capability":"DIGITAL_SELF_SERVICE","expected":"MATCH"},
+    {"id":"UX-R03","intent":"payment journey comprehension","capability":"PAYMENT_NO_ADEUDO","expected":"MATCH"},
+    {"id":"UX-R04","intent":"visual authority only","capability":"DIGITAL_SELF_SERVICE","expected":"NO_MATCH"},
+    {"id":"UX-R05","intent":"unverified debt meaning","capability":"PAYMENT_NO_ADEUDO","expected":"NO_MATCH"},
+    {"id":"UX-R06","intent":"financial truth requested","capability":"DIGITAL_SELF_SERVICE","expected":"NO_MATCH"},
+    {"id":"UX-R07","intent":"runtime disabled","capability":"DIGITAL_SELF_SERVICE","expected":"NO_DELIVERY"},
+    {"id":"UX-R08","intent":"runtime disabled","capability":"PAYMENT_NO_ADEUDO","expected":"NO_DELIVERY"},
+    {"id":"UX-R09","intent":"product direction not current","capability":"PAYMENT_NO_ADEUDO","expected":"NO_MATCH"},
+    {"id":"UX-R10","intent":"authorized payment UX with exact refs","capability":"PAYMENT_NO_ADEUDO","expected":"MATCH"}
+  ],
+  "selector_llm_calls":0,"selector_round_trips":0,"production_authorized":false
+}
