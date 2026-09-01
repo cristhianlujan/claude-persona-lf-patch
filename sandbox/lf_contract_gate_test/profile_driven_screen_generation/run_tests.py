@@ -1,3 +1,6 @@
+import importlib.util
+from pathlib import Path
+
 from profile_decision_package import (
     DecisionInstruction,
     build_profile_decision_package,
@@ -78,4 +81,24 @@ assert validate_profile_review_receipt(
     require_visual_bytes=True,
 ) == []
 
-print("PROFILE_DRIVEN_SCREEN_GENERATION_TESTS_PASS 8/8")
+# Regression for the CI repair required by #402: only the exact workflow path
+# may be allowed. The broad .github/ prefix and common lookalikes must remain denied.
+validator_path = Path("scripts/lf_contract_check.py")
+spec = importlib.util.spec_from_file_location("lf_contract_check_402", validator_path)
+assert spec is not None and spec.loader is not None
+validator = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(validator)
+workflow = ".github/workflows/profile-driven-screen-generation.yml"
+assert workflow in validator.ALLOWED_GITHUB_EXACT
+assert validator.is_allowed_path(workflow)
+for lookalike in (
+    ".github/workflows/profile-driven-screen-generation.yml.bak",
+    ".github/workflows/profile-driven-screen-generation.yaml",
+    ".github/workflows/profile-driven-screen-generation/child.yml",
+    ".github/workflows/profile-driven-screen-generation-copy.yml",
+):
+    assert lookalike not in validator.ALLOWED_GITHUB_EXACT
+    assert not validator.is_allowed_path(lookalike)
+assert ".github/" not in validator.ALLOWED_PREFIXES
+
+print("PROFILE_DRIVEN_SCREEN_GENERATION_TESTS_PASS 9/9")
