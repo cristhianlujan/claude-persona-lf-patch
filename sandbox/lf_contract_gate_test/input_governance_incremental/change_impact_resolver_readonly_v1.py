@@ -48,7 +48,7 @@ def extract_semantic_atoms(mutation: str) -> FrozenSet[str]:
 
     Production integration should prefer already-structured delta facts. This adapter exists
     only so the research benchmark can exercise the structured core without case ids or gold
-    labels. Unknown phrasing falls through to fail-closed decisions in the core.
+    labels. Unknown/compound phrasing fails closed instead of inheriting a STABLE label.
     """
     s = _norm(mutation)
     atoms: set[str] = set()
@@ -84,6 +84,10 @@ def extract_semantic_atoms(mutation: str) -> FrozenSet[str]:
         atoms.update(("STABLE", "CANONICAL_RECONCILIATION"))
     if _has(s, "solo copy hacia fuente") and _has(s, "mantener", "conservar"):
         atoms.add("STABLE")
+    if re.search(r"\b(pero|ademas|simultaneamente|aunque)\b", s) or _has(
+        s, "no obstante", "sin embargo", "a la vez"
+    ):
+        atoms.add("COMPOUND_SIGNAL")
 
     if _has(
         s,
@@ -247,6 +251,7 @@ _MATERIAL_ATOMS = frozenset({
     "RETRYABILITY_CHANGE", "SENSITIVE_DISCLOSURE", "NEW_ERROR", "FILTER_QUERY_CHANGE",
     "PAGINATION_CHANGE", "EXPORT_PAYLOAD_CHANGE", "INVENT_ENDPOINT_SCHEMA",
 })
+_SAFE_NONMATERIAL_ATOMS = frozenset({"WHITESPACE_ONLY", "CANONICAL_RECONCILIATION"})
 
 
 def resolve_change_impact_atoms(
@@ -257,7 +262,12 @@ def resolve_change_impact_atoms(
     """Structured deterministic core. It never consumes case ids or expected labels."""
     surface = _norm(change_surface).upper()
     atoms = semantic_atoms
-    conflicting = "STABLE" in atoms and bool(atoms & _MATERIAL_ATOMS)
+    compound_unknown = (
+        "STABLE" in atoms
+        and "COMPOUND_SIGNAL" in atoms
+        and not bool(atoms & (_MATERIAL_ATOMS | _SAFE_NONMATERIAL_ATOMS))
+    )
+    conflicting = "STABLE" in atoms and (bool(atoms & _MATERIAL_ATOMS) or compound_unknown)
     stable = "STABLE" in atoms and not conflicting
 
     if conflicting:
@@ -292,7 +302,7 @@ def resolve_change_impact_atoms(
     if surface == "COPY_RECONCILIATION":
         if stable and "WHITESPACE_ONLY" in atoms:
             impacts = ["VISUAL_EVIDENCE"]
-        elif "AUTHORITY_MISSING" in atoms:
+        elif "AUTHORITY_MISSING" in atoms or conflicting:
             impacts = ["ACTIONS", "PERMISSIONS", "UI_MESSAGES", "VISUAL_EVIDENCE", "SOURCE_AUTHORITY_PROVENANCE"]
         else:
             impacts = ["ACTIONS", "PERMISSIONS", "VISUAL_EVIDENCE"]
@@ -303,7 +313,7 @@ def resolve_change_impact_atoms(
             impacts = ["ACTIONS", "PERMISSIONS", "SECURITY", "API_DATA_CONTRACT"]
         elif "REMOVE_ACTION_BINDING" in atoms:
             impacts = ["ACTIONS", "PERMISSIONS", "API_DATA_CONTRACT"]
-        elif "AUTHORITY_MISSING" in atoms or "NEW_ACTION" in atoms:
+        elif "AUTHORITY_MISSING" in atoms or "NEW_ACTION" in atoms or conflicting:
             impacts = ["ACTIONS", "PERMISSIONS", "API_DATA_CONTRACT", "SOURCE_AUTHORITY_PROVENANCE"]
         else:
             impacts = ["ACTIONS", "PERMISSIONS", "API_DATA_CONTRACT"]
@@ -319,7 +329,7 @@ def resolve_change_impact_atoms(
             impacts = ["ROUTING_NAVIGATION"]
         elif "CROSS_ROUTE" in atoms:
             impacts = ["ROUTING_NAVIGATION", "ACTIONS"]
-        elif "AUTHORITY_MISSING" in atoms or "NEW_ROUTE" in atoms:
+        elif "AUTHORITY_MISSING" in atoms or "NEW_ROUTE" in atoms or conflicting:
             impacts = ["ROUTING_NAVIGATION", "SOURCE_AUTHORITY_PROVENANCE"]
         else:
             impacts = ["ROUTING_NAVIGATION"]
@@ -341,7 +351,7 @@ def resolve_change_impact_atoms(
             impacts = ["FIELDS", "VALIDATIONS", "API_DATA_CONTRACT"]
         elif "REQUIREDNESS_CHANGE" in atoms:
             impacts = ["FIELDS", "VALIDATIONS", "UI_MESSAGES", "API_DATA_CONTRACT"]
-        elif "AUTHORITY_MISSING" in atoms or "NEW_FIELD" in atoms:
+        elif "AUTHORITY_MISSING" in atoms or "NEW_FIELD" in atoms or conflicting:
             impacts = ["FIELDS", "VALIDATIONS", "API_DATA_CONTRACT", "DESIGN_SYSTEM", "SOURCE_AUTHORITY_PROVENANCE"]
         else:
             impacts = ["FIELDS", "PRIVACY_PII", "SECURITY", "AUDIT"]
@@ -352,7 +362,7 @@ def resolve_change_impact_atoms(
             impacts = ["VALIDATIONS", "FIELDS", "API_DATA_CONTRACT"]
         elif "VALIDATION_SEVERITY_CHANGE" in atoms:
             impacts = ["VALIDATIONS", "UI_MESSAGES", "OBJECTIVE_OUTCOMES"]
-        elif "AUTHORITY_MISSING" in atoms or "VALIDATION_PARAM_NO_AUTH" in atoms:
+        elif "AUTHORITY_MISSING" in atoms or "VALIDATION_PARAM_NO_AUTH" in atoms or conflicting:
             impacts = ["VALIDATIONS", "FIELDS", "SOURCE_AUTHORITY_PROVENANCE"]
         else:
             impacts = ["VALIDATIONS", "FIELDS"]
@@ -363,7 +373,7 @@ def resolve_change_impact_atoms(
             impacts = ["STATES", "TRANSITIONS", "ACTIONS"]
         elif "REMOVE_PERMISSION_GUARD" in atoms:
             impacts = ["TRANSITIONS", "PERMISSIONS", "SECURITY"]
-        elif "AUTHORITY_MISSING" in atoms or "ADD_STATE_TRANSITION" in atoms:
+        elif "AUTHORITY_MISSING" in atoms or "ADD_STATE_TRANSITION" in atoms or conflicting:
             impacts = ["STATES", "TRANSITIONS", "ACTIONS", "SOURCE_AUTHORITY_PROVENANCE"]
         else:
             impacts = ["STATES", "TRANSITIONS"]
@@ -379,7 +389,7 @@ def resolve_change_impact_atoms(
         else:
             impacts = ["ERRORS", "UI_MESSAGES", "SOURCE_AUTHORITY_PROVENANCE"]
     elif surface == "API_DATA_CONTRACT":
-        if "ARTIFACT_ONLY" in atoms:
+        if "ARTIFACT_ONLY" in atoms and not conflicting:
             impacts = ["ACTIONS", "PERMISSIONS", "VISUAL_EVIDENCE"]
         elif "FILTER_QUERY_CHANGE" in atoms:
             impacts = ["API_DATA_CONTRACT", "FIELDS", "VALIDATIONS", "OBJECTIVE_OUTCOMES"]
