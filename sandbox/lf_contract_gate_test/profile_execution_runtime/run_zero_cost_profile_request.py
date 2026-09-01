@@ -12,6 +12,14 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+HELPER_ROOT = Path(__file__).resolve().parents[1]
+if str(HELPER_ROOT) not in sys.path:
+    sys.path.insert(0, str(HELPER_ROOT))
+
+from product_director_input_governance_binding_v1 import (  # noqa: E402
+    GovernanceBindingError,
+    validate_bound_governance_receipt,
+)
 from github_actions_local_runtime import (
     GitHubHostedLlamaCppAdapter,
     GitHubHostedLlamaCppVerifier,
@@ -19,6 +27,7 @@ from github_actions_local_runtime import (
     _sha256_bytes,
 )
 from profile_runtime_runner import RuntimeExecutionBlocked, execute_profile_runtime
+from validate_profile_execution import canonical_json_sha256
 
 RESULT_SCHEMA = "LF_PROFILE_RUNTIME_QUEUE_RESULT_V1"
 MAX_LF_ADAPTERS = 4
@@ -67,6 +76,36 @@ def _capsule_scalar(content: str, key: str) -> str | None:
             value = line[len(prefix):].strip().strip('"\'')
             return value or None
     return None
+
+
+def _governance_required(request: dict[str, Any]) -> bool:
+    bindings = request.get("lf_adapter_bindings", [])
+    if not isinstance(bindings, list):
+        raise RuntimeExecutionBlocked("QUEUE_LF_ADAPTER_BINDINGS_NOT_ARRAY")
+    return any(
+        isinstance(item, dict)
+        and isinstance(item.get("adapter_metadata"), dict)
+        and item["adapter_metadata"].get("input_governance_receipt_required") is True
+        for item in bindings
+    )
+
+
+def _validated_governance_binding(request: dict[str, Any]) -> dict[str, Any] | None:
+    required = _governance_required(request)
+    bound = request.get("input_governance_binding")
+    if bound is None:
+        if required:
+            raise RuntimeExecutionBlocked("QUEUE_INPUT_GOVERNANCE_BINDING_MISSING")
+        return None
+    try:
+        return validate_bound_governance_receipt(
+            bound,
+            request_id=request["request_id"],
+            profile_code=request["profile_code"],
+            input_literal=request["input_literal"],
+        )
+    except GovernanceBindingError as exc:
+        raise RuntimeExecutionBlocked("QUEUE_INPUT_GOVERNANCE_BINDING_INVALID", str(exc)) from exc
 
 
 def _safe_adapter_sources(request: dict[str, Any], repo_root: Path) -> list[dict[str, Any]]:
@@ -191,6 +230,7 @@ def execute_request(request: dict[str, Any], *, repo_root: Path, work_dir: Path)
     if request["operation_code"] != "EJECUCION_PERFIL_LF":
         raise RuntimeExecutionBlocked("QUEUE_OPERATION_CODE_INVALID")
 
+    governance_binding = _validated_governance_binding(request)
     profile_slug = request["profile_slug"]
     source_paths = _safe_source_paths(profile_slug, request.get("profile_source_paths"))
     sources: list[dict[str, str]] = []
@@ -221,6 +261,12 @@ def execute_request(request: dict[str, Any], *, repo_root: Path, work_dir: Path)
     )
     package["queue_request_id"] = request["request_id"]
     package["input_image_sha256"] = image_sha
+    if governance_binding is not None:
+        package["input_governance_binding"] = governance_binding
+        package["receipt"]["input_governance_binding_sha256"] = governance_binding["binding_sha256"]
+        package["receipt"]["receipt_sha256"] = canonical_json_sha256(
+            {key: value for key, value in package["receipt"].items() if key != "receipt_sha256"}
+        )
     return {
         "schema": RESULT_SCHEMA, "status": "SUCCEEDED", "request_id": request["request_id"],
         "runtime_provider": package["receipt"]["runtime_attestation"]["provider"],
