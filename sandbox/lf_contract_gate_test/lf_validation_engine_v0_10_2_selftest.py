@@ -136,6 +136,10 @@ def main():
     add("invalid_empty_hard_fails","RETURN_TO_WORKER",lambda p:p.update({"hard_fails_checked":[]}))
     add("invalid_empty_source_refs","RETURN_TO_WORKER",lambda p:p.update({"source_refs":[]}))
     add("invalid_weak_evidence_ref","RETURN_TO_WORKER",lambda p:p["assertions_checked"][0].update({"evidence_ref":{"id":"EV-WEAK"}}))
+    add("valid_na_control","PASS",lambda p:p.update({"na_controls":[{"control_id":"NA-OK","na_reason":"READ_ONLY_AUDIT_ONLY","judge_na_result":"VALID_NA","is_critical_control":False}]}))
+    add("invalid_na_reason","RETURN_TO_WORKER",lambda p:p.update({"na_controls":[{"control_id":"NA-BAD-REASON","na_reason":"CONVENIENCE","judge_na_result":"VALID_NA","is_critical_control":False}]}))
+    add("invalid_na_review","RETURN_TO_WORKER",lambda p:p.update({"na_controls":[{"control_id":"NA-BAD-REVIEW","na_reason":"READ_ONLY_AUDIT_ONLY","judge_na_result":"NOT_REVIEWED","is_critical_control":False}]}))
+    add("invalid_critical_na","RETURN_TO_WORKER",lambda p:p.update({"na_controls":[{"control_id":"NA-CRITICAL","na_reason":"READ_ONLY_AUDIT_ONLY","judge_na_result":"VALID_NA","is_critical_control":True}]}))
     results=[]; ok_all=True
     for name,exp in cases.items():
         out=validate(proofs[name]); ok=out["status"]==exp; ok_all=ok_all and ok
