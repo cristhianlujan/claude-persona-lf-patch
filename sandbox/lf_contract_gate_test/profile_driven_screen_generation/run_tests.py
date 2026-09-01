@@ -82,8 +82,11 @@ assert validate_profile_review_receipt(
 ) == []
 
 # Regression for the CI repair required by #402: only the exact workflow path
-# may be allowed. The broad .github/ prefix and common lookalikes must remain denied.
-validator_path = Path("scripts/lf_contract_check.py")
+# may be allowed. Resolve the repository root from this file so the test is
+# independent of the workflow's current working directory.
+repo_root = Path(__file__).resolve().parents[3]
+validator_path = repo_root / "scripts" / "lf_contract_check.py"
+assert validator_path.is_file(), validator_path
 spec = importlib.util.spec_from_file_location("lf_contract_check_402", validator_path)
 assert spec is not None and spec.loader is not None
 validator = importlib.util.module_from_spec(spec)
