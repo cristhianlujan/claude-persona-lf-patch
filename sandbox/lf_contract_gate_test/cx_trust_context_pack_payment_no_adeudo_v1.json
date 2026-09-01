@@ -1,7 +1,0 @@
-{
-  "schema":"LF_LEARNING_CONTEXT_PACK_V1","mode":"READ_ONLY","consumer_id":"PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531","capability_id":"PAYMENT_NO_ADEUDO","binding_ref":"cx_trust_learning_binding_payment_no_adeudo_v1.json","selection_mode":"DETERMINISTIC_EXACT_IDS","max_evidence_refs":2,"max_bytes":3000,
-  "selected_learning_ids":["bd2a3a05-b53b-400c-846d-3634e422a500","92fc4ad2-1581-4aa1-b01b-e986bb3cc71c"],
-  "evidence":[{"kb_id":"bd2a3a05-b53b-400c-846d-3634e422a500","cluster":"PAGOS_Y_NO_ADEUDO","classification_event_id":9716},{"kb_id":"92fc4ad2-1581-4aa1-b01b-e986bb3cc71c","cluster":"PAGOS_Y_NO_ADEUDO|AUTOGESTION_DIGITAL","classification_event_id":9704}],
-  "constraints":["preserve_payment_and_debt_closure_authority","do_not_invent_payment_status_or_certificate_truth","do_not_expand_beyond_exact_refs","adapter_runtime_disabled_means_no_delivery"],
-  "fallback":"NO_COMPETITIVE_CONTEXT","selector_llm_calls":0,"selector_round_trips":0,"reader_writes":0,"delivery_enabled":false,"production_authorized":false
-}
