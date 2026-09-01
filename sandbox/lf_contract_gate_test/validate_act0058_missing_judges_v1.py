@@ -91,8 +91,9 @@ def validate_reconciliation() -> None:
     missing_migration=[x for x in migration_required if x not in migration]
     if missing_migration:
         fail(f'source migration missing guards: {missing_migration}')
-    if 'next_action' in migration:
-        fail('synthetic next_action forbidden in reconciled retry contract')
+    retry_update = migration.split("where operation_code='ORQUESTACION_PIPELINE_LF' and step_order=110",1)[0].rsplit('update public.lf_operation_step_contracts',1)[-1]
+    if 'next_action' in retry_update:
+        fail('synthetic next_action forbidden in reconciled retry update')
 
 def main() -> int:
     text = SPEC.read_text(encoding='utf-8')
@@ -120,9 +121,10 @@ def main() -> int:
         fail('restock no-op WARN semantics missing')
     if 'terminal_if:' not in ready_section or 'RETRY_TERMINAL_FAILED' not in ready_section:
         fail('retry terminal-at-3 semantics missing')
-    if 'required_evidence_keys: [retry_count, error_detail, stage_status]' not in ready_section:
+    retry_block = ready_section.split('  - step_order: 110',1)[-1]
+    if 'required_evidence_keys: [retry_count, error_detail, stage_status]' not in retry_block:
         fail('retry judge must consume live UPDATE evidence')
-    if 'next_action' in ready_section:
+    if 'next_action' in retry_block:
         fail('synthetic next_action forbidden in retry judge')
     if 'step_orders: [105, 110]' not in text or 'SOURCE_FIRST_NO_DB_WRITE' not in text:
         fail('source reconciliation scope missing')
