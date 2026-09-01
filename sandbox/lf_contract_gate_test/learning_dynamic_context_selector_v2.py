@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
+from pathlib import Path
 from typing import Any, Iterable
 
 SCHEMA = "LF_LEARNING_DYNAMIC_CONTEXT_SELECTION_V2"
@@ -12,6 +13,7 @@ DEFAULT_CONTEXT_BUDGET_BYTES = 6000
 DEFAULT_TAXONOMY = "LF_LEARNING_CLUSTER_V1"
 ALLOWED_LIFECYCLES = {"ANALIZADO", "CARD_CREADA"}
 ALLOWED_ELIGIBILITIES = {"PASS", "CANONICAL_PASS", "CANONICAL_PASS_STALE_NOTE_FLAGGED"}
+BINDING_CATALOG_PATH = Path(__file__).with_name("learning_consumer_dynamic_cluster_bindings_v1.json")
 
 class DynamicLearningSelectionError(ValueError):
     pass
@@ -40,6 +42,38 @@ def _score(value: Any) -> Decimal:
 
 def _selected_bytes(selected: list[dict[str, Any]]) -> int:
     return len(json.dumps(selected, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8"))
+
+
+def _load_binding_catalog() -> dict[str, Any]:
+    try:
+        data = json.loads(BINDING_CATALOG_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise DynamicLearningSelectionError(f"GOVERNED_BINDING_CATALOG_UNAVAILABLE:{type(exc).__name__}") from exc
+    if data.get("mode") != "READ_ONLY" or data.get("selector") != "DETERMINISTIC_CLASSIFIED_CLUSTER_CURRENT_KB":
+        raise DynamicLearningSelectionError("GOVERNED_BINDING_CATALOG_INVALID")
+    return data
+
+
+def _assert_governed_binding(binding: DynamicBindingSpec) -> None:
+    catalog = _load_binding_catalog()
+    if binding.taxonomy_version != catalog.get("taxonomy_version"):
+        raise DynamicLearningSelectionError("BINDING_TAXONOMY_NOT_GOVERNED")
+    max_evidence = catalog.get("boundedness", {}).get("max_evidence_refs_per_capability")
+    if not isinstance(max_evidence, int) or binding.max_evidence_refs < 1 or binding.max_evidence_refs > max_evidence:
+        raise DynamicLearningSelectionError("MAX_EVIDENCE_REFS_OUT_OF_GOVERNED_BOUNDS")
+    match = None
+    for row in catalog.get("bindings", []):
+        if row.get("consumer_id") == binding.consumer_id and row.get("capability_id") == binding.capability_id:
+            match = row
+            break
+    if match is None:
+        raise DynamicLearningSelectionError("EXACT_GOVERNED_CONSUMER_BINDING_REQUIRED")
+    if tuple(match.get("cluster_codes", [])) != binding.cluster_codes:
+        raise DynamicLearningSelectionError("BINDING_CLUSTER_MAPPING_MISMATCH")
+    if match.get("prerequisite") != binding.prerequisite:
+        raise DynamicLearningSelectionError("BINDING_PREREQUISITE_MISMATCH")
+    if match.get("context_budget_bytes") != binding.context_budget_bytes:
+        raise DynamicLearningSelectionError("BINDING_CONTEXT_BUDGET_MISMATCH")
 
 
 def _current_kb_eligible(row: dict[str, Any]) -> bool:
@@ -112,12 +146,11 @@ def select_dynamic_read_only_context(
         raise DynamicLearningSelectionError("EXACT_CONSUMER_BINDING_REQUIRED")
     if not binding.cluster_codes or any(not _text(code) for code in binding.cluster_codes):
         raise DynamicLearningSelectionError("EXACT_CLUSTER_MAPPING_REQUIRED")
-    if binding.max_evidence_refs < 1 or binding.max_evidence_refs > 5:
-        raise DynamicLearningSelectionError("MAX_EVIDENCE_REFS_OUT_OF_BOUNDS")
     if binding.context_budget_bytes < 256 or binding.context_budget_bytes > 65536:
         raise DynamicLearningSelectionError("CONTEXT_BUDGET_BYTES_OUT_OF_BOUNDS")
     if binding.prerequisite is not None and not _text(binding.prerequisite):
         raise DynamicLearningSelectionError("INVALID_PREREQUISITE")
+    _assert_governed_binding(binding)
 
     granted = {_text(value) for value in satisfied_prerequisites if _text(value)}
     if binding.prerequisite and binding.prerequisite not in granted:
