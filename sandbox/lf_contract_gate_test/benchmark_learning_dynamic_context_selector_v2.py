@@ -27,7 +27,10 @@ def one(family,variant):
  expected=None
  if family=='HAPPY_PATH': expected=5
  elif family=='NEGATIVE_INELIGIBLE_KB':
-  rows[variant%7]['consumer_ready']=False; rows[(variant+1)%7]['grounding_status']='UNVERIFIED'; expected=5
+  rows[variant%7]['consumer_ready']=False
+  rows[(variant+1)%7]['grounding_status']='UNVERIFIED'
+  events[(variant+2)%7]=ev(700+variant,f'K{((variant+2)%7)+1}',eligibility='NOT_PASS')
+  expected=4
  elif family=='WRONG_CLUSTER':
   events=[ev(100+i,f'K{i}','EDUCACION_CREDITICIA') for i in range(1,8)]; expected=0
  elif family=='STALE_TAXONOMY':
@@ -57,7 +60,7 @@ def main():
  for family in FAMILIES:
   for variant in range(1,6):
    one(family,variant); passed+=1
- print(f'LEARNING_DYNAMIC_SELECTOR_BENCHMARK=PASS cases={passed}/50 families=10x5 llm_calls=0 round_trips=0 max_evidence=5')
+ print(f'LEARNING_DYNAMIC_SELECTOR_BENCHMARK=PASS cases={passed}/50 families=10x5 llm_calls=0 round_trips=0 max_evidence=5 exact_eligibility=1')
  print('families='+','.join(FAMILIES))
  return 0
 if __name__=='__main__': raise SystemExit(main())
