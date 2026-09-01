@@ -104,6 +104,7 @@ def run_optional_learning_suites()->None:
         "validate_learning_next_consumer_applicability_v1.py",
         "validate_learning_additional_consumer_applicability_v1.py",
         "validate_learning_unbound_cluster_card_readback_v1.py",
+        "validate_learning_card_source_boundary_readback_v1.py",
         "validate_learning_exact_nonbinding_guard_v1.py",
         "validate_learning_additional_consumer_binding_candidates_v1.py",
         "validate_learning_additional_consumer_context_pack_candidates_v1.py",
