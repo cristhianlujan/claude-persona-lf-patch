@@ -1,0 +1,23 @@
+{
+  "schema":"LF_LEARNING_BEHAVIORAL_CURRENTNESS_INVENTORY_V1",
+  "mode":"READ_ONLY",
+  "source":"programacion.input_readiness_runs + programacion.fn_input_readiness_run_is_current",
+  "observed_at_utc":"2026-09-01T20:29:00Z",
+  "runs":[
+    {"run_id":210,"pantalla_id":58,"status":"COMPLETED","invalidated_at":null,"is_current":false},
+    {"run_id":212,"pantalla_id":2,"status":"COMPLETED","invalidated_at":null,"is_current":true},
+    {"run_id":213,"pantalla_id":3,"status":"COMPLETED","invalidated_at":null,"is_current":true},
+    {"run_id":214,"pantalla_id":57,"status":"COMPLETED","invalidated_at":null,"is_current":true},
+    {"run_id":215,"pantalla_id":5,"status":"COMPLETED","invalidated_at":null,"is_current":true},
+    {"run_id":218,"pantalla_id":43,"status":"COMPLETED","invalidated_at":null,"is_current":true}
+  ],
+  "current_runs":5,
+  "stale_runs":1,
+  "consumer_behavioral_targets_declared":0,
+  "consumer_count":2,
+  "reusable_as_learning_behavioral_authority":0,
+  "rule":"CURRENT_SCREEN_RUN_IS_NOT_CONSUMER_AUTHORITY_WITHOUT_EXACT_DECLARED_BEHAVIORAL_TARGET",
+  "behavioral_ab":"NOT_EXECUTED",
+  "outcome":"INSUFFICIENT_EVIDENCE",
+  "production_authorized":false
+}
