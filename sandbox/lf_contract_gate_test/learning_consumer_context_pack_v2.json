@@ -11,10 +11,10 @@
   "champion_id": "CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1",
   "challenger_id": "CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1",
   "bindings_ref": "sandbox/lf_contract_gate_test/learning_consumer_bindings_v2.yaml",
-  "capabilities": ["NEGOCIACION_DEUDA", "ALTERNATIVAS_FINANCIERAS", "EDUCACION_CREDITICIA"],
+  "capabilities": ["NEGOCIACION_DEUDA", "ALTERNATIVAS_FINANCIERAS", "EDUCACION_CREDITICIA", "DIGITAL_SELF_SERVICE"],
   "boundedness": {
     "recursive_objects": false,
-    "max_bindings": 3,
+    "max_bindings": 4,
     "max_evidence_refs_per_binding": 5,
     "context_budget_bytes": 6000,
     "llm_calls_for_selection": 0,
