@@ -10,7 +10,8 @@ SCRIPTS=[
  'validate_product_director_learning_efficiency_metrics_v1.py',
  'validate_learning_behavioral_readiness_contract_v1.py',
  'validate_learning_readonly_benchmark_50_v1.py',
- 'validate_learning_benchmark_outcome_contract_v1.py'
+ 'validate_learning_benchmark_outcome_contract_v1.py',
+ 'validate_learning_readonly_technical_closure_v1.py'
 ]
 def main():
  for s in SCRIPTS:
@@ -18,5 +19,5 @@ def main():
   if p.returncode!=0:
    sys.stderr.write(p.stdout+p.stderr); raise SystemExit(p.returncode)
   print(p.stdout.strip())
- print('PRODUCT_DIRECTOR_LEARNING_SUITE=PASS validators=8/8 production_authorized=false')
+ print('PRODUCT_DIRECTOR_LEARNING_SUITE=PASS validators=9/9 production_authorized=false')
 if __name__=='__main__': main()
