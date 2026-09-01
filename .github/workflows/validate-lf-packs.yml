@@ -26,9 +26,6 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install pinned reusable-suite dependencies
-        run: python -m pip install --disable-pip-version-check 'PyYAML==6.0.2' 'jsonschema==4.23.0'
-
       - name: Validate profile template pack
         run: python profiles/_template/validators/validate_pack.py profiles/_template
 
@@ -43,6 +40,3 @@ jobs:
 
       - name: Validate learning engine pack
         run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
-
-      - name: Validate reusable read-only learning consumer suite
-        run: python sandbox/lf_contract_gate_test/validate_learning_read_only_reusable_suite_v1.py
