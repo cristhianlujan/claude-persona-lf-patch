@@ -49,16 +49,20 @@ for script in ('validate_learning_active_consumer_binding_contract_v1.py','valid
         if r.stderr: sys.stderr.write(r.stderr)
         raise SystemExit(r.returncode)
 if D['status']=='VERIFICATION_IN_PROGRESS':
+    req(D['source_manifest_head_semantics']=='SOURCE_EMBEDDED_HEAD_IS_HISTORICAL_EVIDENCE_ONLY; CURRENT_EXACT_HEAD_AUTHORITY_MUST_BE_EXTERNAL_POST_CI_RECEIPT','EXTERNAL_HEAD_SEMANTICS')
+    hist=D['historical_evidence_snapshot']
+    req(len(hist['head_sha'])==40 and hist['canonical_ci']=='3/3_PASS_AT_SNAPSHOT_ONLY','HISTORICAL_SNAPSHOT_ONLY')
+    ci=D['exact_head_ci']
+    req(ci['authority_location']=='EXTERNAL_POST_COMMIT_GITHUB_CI_AND_DURABLE_RECEIPT','EXTERNAL_CI_AUTHORITY')
+    req(ci['verified_head_sha'] is None,'NO_SELF_VERIFIED_HEAD')
+    req(ci['canonical_workflows_passed']==0 and ci['canonical_workflows_total']==3,'PENDING_CI_ZERO_OF_THREE')
+    for k in ('lf_contract_check','validate_lf_packs','lf_bootstrap_reproducibility_probe'):
+        req(ci[k]=='PENDING_EXTERNAL_EXACT_HEAD_RECEIPT','PENDING_'+k.upper())
     req(D['read_only_route_technically_verified'] is False,'PENDING_NOT_VERIFIED')
-    req(D['exact_head_ci']['canonical_workflows_passed']<3,'PENDING_CI_NOT_3')
     req(D['closure_boundary']=='TECHNICAL_READ_ONLY_CI_RECHECK_REQUIRED','PENDING_BOUNDARY')
     req(D['next_gate']=='CURRENT_HEAD_EXACT_CI_3_OF_3_AND_FRESH_SOURCE_READBACK','PENDING_NEXT_GATE')
-    print('LEARNING_READONLY_TECHNICAL_CLOSURE=PASS_FAIL_CLOSED status=VERIFICATION_IN_PROGRESS freshness=4/4 reader=HARDENED context_pack_builder=PASS active_bindings=7/7 specialized=HARDENED production_authorized=false')
+    print('LEARNING_READONLY_TECHNICAL_CLOSURE=PASS_FAIL_CLOSED status=VERIFICATION_IN_PROGRESS exact_head_authority=EXTERNAL_POST_CI freshness=4/4 reader=HARDENED context_pack_builder=PASS active_bindings=7/7 specialized=HARDENED production_authorized=false')
 elif D['status']=='TECHNICALLY_VERIFIED_READ_ONLY_CANDIDATE':
-    req(D['read_only_route_technically_verified'] is True,'VERIFIED_FLAG')
-    req(D['exact_head_ci']['canonical_workflows_passed']==D['exact_head_ci']['canonical_workflows_total']==3,'CI_3_OF_3')
-    for k in ('lf_contract_check','validate_lf_packs','lf_bootstrap_reproducibility_probe'): req(D['exact_head_ci'][k]=='PASS','CI_'+k.upper())
-    req(D['closure_boundary']=='TECHNICAL_READ_ONLY_ONLY','VERIFIED_BOUNDARY')
-    print('LEARNING_READONLY_TECHNICAL_CLOSURE=PASS verified=true ci=3/3 production_authorized=false')
+    raise SystemExit('FAIL_SOURCE_MANIFEST_MUST_NOT_SELF_ASSERT_CURRENT_EXACT_HEAD_VERIFICATION')
 else:
     raise SystemExit('FAIL_STATUS')
