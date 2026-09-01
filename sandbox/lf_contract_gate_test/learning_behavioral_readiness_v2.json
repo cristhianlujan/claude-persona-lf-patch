@@ -1,0 +1,44 @@
+{
+  "schema": "LF_LEARNING_BEHAVIORAL_READINESS_V2",
+  "status": "WAITING_CURRENT_INPUT_GOVERNANCE_RECEIPT",
+  "production_impact": false,
+  "runtime_invoked": false,
+  "holdout_consumed": false,
+  "authority_contract": "INPUT_READINESS_CONTRACT",
+  "input_governance_observed_revision": "5.12",
+  "continuation_policy": "PASS_ONLY",
+  "contract_resolution": "LIVE_CURRENT",
+  "runtime": {
+    "operation_code": "EJECUCION_PERFIL_LF",
+    "runner_source": "sandbox/lf_contract_gate_test/profile_execution_runtime/run_zero_cost_profile_request.py",
+    "trigger_source": ".github/workflows/story-agent-evidence-verifier.yml#run-zero-cost-profile-runtime",
+    "model_runtime_pinned": true,
+    "test_doubles_allowed": false,
+    "external_trigger_required": true
+  },
+  "consumers": [
+    {
+      "consumer_id": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf",
+      "profile_source": "profiles/product_director_lf/SKILL.md",
+      "champion_id": "CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1",
+      "challenger_id": "CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1",
+      "routing_benchmark": "50/50_PASS",
+      "behavioral_status": "BLOCKED_UNTIL_CURRENT_GOVERNANCE_RECEIPT_AND_QUEUE_REQUEST",
+      "required_before_runtime": ["CURRENT_INPUT_READINESS_RECEIPT", "LIVE_CURRENT_ROUTER_DECISION_PASS", "EXACT_REQUEST_BINDING", "AUTHORIZED_OWNER_RUNTIME_TRIGGER"],
+      "required_evidence_after_runtime": ["RAW_OUTPUT", "CANONICAL_EXECUTION_RECEIPT", "DETERMINISTIC_VALIDATION", "SEMANTIC_JUDGE", "FRESH_ADVERSARIAL_EVIDENCE"]
+    },
+    {
+      "consumer_id": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "profile_source": "profiles/ui_architect/SKILL.md",
+      "champion_id": "CHAMPION-UI-ARCHITECT-NO-COMPETITIVE-CONTEXT-v1",
+      "challenger_id": "CHALLENGER-UI-ARCHITECT-SELECTED-COMPETITIVE-UI-CONTEXT-v1",
+      "routing_benchmark": "50/50_PASS",
+      "behavioral_status": "BLOCKED_UNTIL_CURRENT_PRODUCT_DIRECTION_AND_GOVERNANCE_RECEIPT",
+      "required_before_runtime": ["PRODUCT_DIRECTION_AUTHORIZED_CURRENT", "CURRENT_INPUT_READINESS_RECEIPT", "LIVE_CURRENT_ROUTER_DECISION_PASS", "EXACT_REQUEST_BINDING", "AUTHORIZED_OWNER_RUNTIME_TRIGGER"],
+      "required_evidence_after_runtime": ["RAW_OUTPUT", "CANONICAL_EXECUTION_RECEIPT", "DETERMINISTIC_VALIDATION", "SEMANTIC_JUDGE", "FRESH_ADVERSARIAL_EVIDENCE"]
+    }
+  ],
+  "ekb_preflight": {"live_db_readback": false, "status": "CHANNEL_BLOCKED_SOURCE_EVIDENCE_ONLY", "mutation_scope": "SANDBOX_GITHUB_ONLY"}
+}
