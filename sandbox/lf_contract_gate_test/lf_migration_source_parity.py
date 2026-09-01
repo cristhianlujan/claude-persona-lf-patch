@@ -36,6 +36,7 @@ MANAGED_EXACT_NAMES = {
     "fix_operation_judge_jsonb_shape_compatibility",
     "reconcile_card_depth_gate_order_v1",
     "fix_card_contract_judge_clean_status_v1",
+    "programacion_f05_provenance_channel_v1",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
@@ -105,6 +106,8 @@ def main() -> int:
         fail("FAIL_CI009_SELFTEST_CARD_DEPTH_ORDER_RECONCILIATION")
     if not managed("fix_card_contract_judge_clean_status_v1"):
         fail("FAIL_CI009_SELFTEST_CARD_CONTRACT_JUDGE_CLEAN_STATUS")
+    if not managed("programacion_f05_provenance_channel_v1"):
+        fail("FAIL_CI009_SELFTEST_F05_PROVENANCE_CHANNEL")
     if managed("create_lf_unreviewed_future_change"):
         fail("FAIL_CI009_SELFTEST_MANAGED_PREFIX_TOO_BROAD")
     if not classified("programacion_worker_spec_probe"):
@@ -174,7 +177,7 @@ def main() -> int:
         fail("FAIL_LF_MIGRATION_CONTENT_PARITY", repr(mismatches))
 
     print(f"PASS_LF_MIGRATION_SOURCE_PARITY: checkpoint={checkpoint_path.name} post_cutover={len(local)} legacy={legacy_count} sha256={legacy_sha} grandfathered={grandfathered_count}/{grandfathered_sha} classification_baseline_end={classification_baseline_end}")
-    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=12/12")
+    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=13/13")
     return 0
 
 if __name__ == "__main__":
