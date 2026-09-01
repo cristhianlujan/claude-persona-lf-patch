@@ -1,7 +1,8 @@
 {
   "schema": "LF_UI_ARCHITECT_KB_ELIGIBILITY_READBACK_V1",
-  "observed_live_at_utc": "2026-09-01T18:53:14Z",
+  "observed_live_at_utc": "2026-09-01T22:01:08.090588Z",
   "source": "public.lf_knowledge_base",
+  "fresh_readback_event_ref": "public.lf_eventos/9950",
   "predicate": "kb_category=COMPETENCIA AND grounding_status=GROUNDED AND consumer_ready=true",
   "rows": [
     {"kb_id":"35cfab0c-1d91-4aa4-9761-f8af91181e17","kb_category":"COMPETENCIA","grounding_status":"GROUNDED","consumer_ready":true,"quality_score":0.96,"topic":"REGISTRO_AUTOGESTION_BENEFICIOS","competitor":"Finanty","source_url":"https://mi.finanty.com/registro"},
