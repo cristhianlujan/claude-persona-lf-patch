@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-import json
+import json, subprocess, sys
 from pathlib import Path
-P=Path(__file__).resolve().parent/'learning_competitive_source_backlog_readback_v1.json'
+R=Path(__file__).resolve().parent
+P=R/'learning_competitive_source_backlog_readback_v1.json'
 def main():
  d=json.loads(P.read_text(encoding='utf-8'))
  assert d['schema']=='LF_LEARNING_COMPETITIVE_SOURCE_BACKLOG_READBACK_V1' and d['mode']=='READ_ONLY'
@@ -14,5 +15,12 @@ def main():
  assert d['decision']=='NO_NEW_SAFE_CANONICAL_SOURCE_BATCH_FROM_SANDBOX_PIPELINE'
  m=d['manual_source_backlog']; assert m['count']==12 and m['status']=='DEFERRED_TO_GOVERNED_SOURCE_CAPTURE_OPERATION' and m['blocks_readonly_consumer_route'] is False
  assert d['automatic_source_capture'] is False and d['automatic_promotion'] is False and d['production_authorized'] is False
- print('LEARNING_COMPETITIVE_SOURCE_BACKLOG=PASS sandbox_sources=19 manual=19 never_attempted=12 failures=0 observations_current=0 discarded=12 insights=0 canonical_kb=35/35 autonomous_capture=false')
+ probe=R/'validate_learning_competitive_exact_url_probe_v1.py'
+ if probe.exists():
+  r=subprocess.run([sys.executable,str(probe)],capture_output=True,text=True)
+  if r.stdout: print(r.stdout.strip())
+  if r.returncode:
+   if r.stderr: sys.stderr.write(r.stderr)
+   raise SystemExit(r.returncode)
+ print('LEARNING_COMPETITIVE_SOURCE_BACKLOG=PASS sandbox_sources=19 manual=19 never_attempted=12 failures=0 observations_current=0 discarded=12 insights=0 canonical_kb=35/35 autonomous_capture=false exact_url_probe_guarded=true')
 if __name__=='__main__': main()
