@@ -108,7 +108,7 @@ def main() -> int:
         fail("FAIL_CI009_SELFTEST_OPERATION_STEP_ENFORCEMENT_COMPATIBILITY")
     if not managed("materialize_router_enforcement_and_gate0_inventory"):
         fail("FAIL_CI009_SELFTEST_ROUTER_ENFORCEMENT_GATE0_INVENTORY")
-    if not managed("fix_operation_judge_jsonb_shape_compatIBILITY"):
+    if not managed("fix_operation_judge_jsonb_shape_compatibility"):
         fail("FAIL_CI009_SELFTEST_OPERATION_JUDGE_JSONB_SHAPE_COMPATIBILITY")
     if not managed("reconcile_card_depth_gate_order_v1"):
         fail("FAIL_CI009_SELFTEST_CARD_DEPTH_ORDER_RECONCILIATION")
