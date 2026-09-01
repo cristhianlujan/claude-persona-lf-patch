@@ -1,0 +1,31 @@
+{
+  "schema": "LF_LEARNING_DYNAMIC_CLUSTER_BINDINGS_V1",
+  "mode": "READ_ONLY",
+  "taxonomy_version": "LF_LEARNING_CLUSTER_V1",
+  "selector": "DETERMINISTIC_CLASSIFIED_CLUSTER_CURRENT_KB",
+  "source_authority": "public.lf_knowledge_base",
+  "eligibility": {
+    "kb_category": "COMPETENCIA",
+    "grounding_status": "GROUNDED",
+    "consumer_ready": true,
+    "classification_eligibility": ["PASS", "CANONICAL_PASS", "CANONICAL_PASS_STALE_NOTE_FLAGGED"],
+    "classification_lifecycle": ["ANALIZADO", "CARD_CREADA"]
+  },
+  "boundedness": {
+    "max_evidence_refs_per_capability": 5,
+    "llm_calls_for_selection": 0,
+    "round_trips_for_selection": 0
+  },
+  "bindings": [
+    {"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","capability_id":"NEGOCIACION_DEUDA","cluster_codes":["NEGOCIACION_DEUDA"],"prerequisite":null},
+    {"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","capability_id":"ALTERNATIVAS_FINANCIERAS","cluster_codes":["ALTERNATIVAS_FINANCIERAS"],"prerequisite":null},
+    {"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","capability_id":"EDUCACION_CREDITICIA","cluster_codes":["EDUCACION_CREDITICIA"],"prerequisite":null},
+    {"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","capability_id":"DIGITAL_SELF_SERVICE","cluster_codes":["AUTOGESTION_DIGITAL"],"prerequisite":null},
+    {"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","capability_id":"PAYMENT_NO_ADEUDO","cluster_codes":["PAGOS_Y_NO_ADEUDO"],"prerequisite":null},
+    {"consumer_id":"PERFIL-UI-ARCHITECT","capability_id":"DIGITAL_SELF_SERVICE","cluster_codes":["AUTOGESTION_DIGITAL"],"prerequisite":"PRODUCT_DIRECTION_AUTHORIZED_CURRENT"},
+    {"consumer_id":"PERFIL-UI-ARCHITECT","capability_id":"PAYMENT_NO_ADEUDO","cluster_codes":["PAGOS_Y_NO_ADEUDO"],"prerequisite":"PRODUCT_DIRECTION_AUTHORIZED_CURRENT"}
+  ],
+  "fallback": "NO_COMPETITIVE_CONTEXT",
+  "automatic_impact": false,
+  "production_authorized": false
+}
