@@ -26,7 +26,10 @@ def main():
   if not c['required_before_runtime'] or not c['required_evidence_after_runtime']: fail(cid+' readiness incomplete')
   if 'AUTHORIZED_OWNER_RUNTIME_TRIGGER' not in c['required_before_runtime']: fail(cid+' owner trigger absent')
  if 'PRODUCT_DIRECTION_AUTHORIZED_CURRENT' not in consumers['PERFIL-UI-ARCHITECT']['required_before_runtime']: fail('ui product precondition absent')
- if m['ekb_preflight']['status']!='CHANNEL_BLOCKED_SOURCE_EVIDENCE_ONLY': fail('EKB channel state not explicit')
- print('LEARNING_BEHAVIORAL_READINESS_V2=PASS consumers=2 runtime_invoked=0 holdout_consumed=0 fail_closed=1')
+ ekb=m.get('ekb_preflight',{})
+ if ekb.get('status')!='RECOVERED_LIVE_READBACK' or ekb.get('live_db_readback') is not True or ekb.get('supabase_outage') is not False: fail('EKB live recovery not evidenced')
+ required_ekb={'DB-001','GOV-010','KB-PROD-001','PROFILE-RUNTIME-DISPATCH-001'}
+ if not required_ekb.issubset(set(ekb.get('matched_error_codes',[]))): fail('required EKB controls missing')
+ print('LEARNING_BEHAVIORAL_READINESS_V2=PASS consumers=2 runtime_invoked=0 holdout_consumed=0 fail_closed=1 ekb_live=1')
  return 0
 if __name__=='__main__': raise SystemExit(main())
