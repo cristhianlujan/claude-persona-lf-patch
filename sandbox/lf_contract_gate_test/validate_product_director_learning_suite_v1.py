@@ -4,8 +4,8 @@ from pathlib import Path
 R=Path(__file__).resolve().parent
 SCRIPTS=[
  'validate_product_director_learning_exact_binding_v1.py',
- 'validate_learning_readonly_clean_v1.py',
- 'benchmark_learning_dynamic_context_selector_clean_v1.py'
+ 'validate_learning_dynamic_context_selector_clean_v1.py',
+ 'validate_learning_readonly_benchmark_50_v1.py'
 ]
 def main():
  for s in SCRIPTS:
