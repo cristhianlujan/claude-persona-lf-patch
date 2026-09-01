@@ -7,7 +7,8 @@ SCRIPTS=[
  'validate_ui_architect_learning_routing_50_v1.py',
  'validate_ui_architect_learning_adversarial_v1.py',
  'measure_ui_architect_learning_context_v1.py',
- 'validate_ui_architect_selector_integration_v1.py'
+ 'validate_ui_architect_selector_integration_v1.py',
+ 'validate_ui_architect_learning_classification_v1.py'
 ]
 def main():
  for s in SCRIPTS:
@@ -15,5 +16,5 @@ def main():
   if p.returncode!=0:
    sys.stderr.write(p.stdout+p.stderr); raise SystemExit(p.returncode)
   print(p.stdout.strip())
- print('UI_ARCHITECT_LEARNING_SUITE=PASS validators=5/5 production_authorized=false')
+ print('UI_ARCHITECT_LEARNING_SUITE=PASS validators=6/6 production_authorized=false')
 if __name__=='__main__': main()
