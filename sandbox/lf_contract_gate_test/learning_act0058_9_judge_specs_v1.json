@@ -1,0 +1,20 @@
+{
+  "schema":"LF_LEARNING_ACT0058_9_JUDGE_SPECS_V1",
+  "operation_code":"ORQUESTACION_PIPELINE_LF",
+  "status":"SOURCE_ONLY_CANDIDATE",
+  "judges":[
+    {"step_order":-10,"step_id":"PRE_EKB_GATE","judge_code":"MINI_JUDGE_PRE_EKB_GATE_LF_V0_1","pass_if":["ekb_read=true","applicable_rules_mapped=true","unhandled_high_critical_rules=0"],"fail_if":["ekb_query_failed","no_controls_for_applicable_rule","critical_rule_unhandled"],"required_evidence_keys":["ekb_query","active_rules_considered","controls_applied","non_applicable_rules","blocking_codes"],"result_values":["GATE_PASSED","BLOCKED"]},
+    {"step_order":20,"step_id":"init_run","judge_code":"MINI_JUDGE_ACT0058_INIT","pass_if":["pipeline_run_id_created","stage_current_CAPTURA","stage_status_PENDING","dedup_24h_CLEAR"],"fail_if":["pipeline_run_id_missing","source_url_empty","dedup_24h_active"],"required_evidence_keys":["pipeline_run_id","source_url","dedup_check"],"result_values":["RUN_INITIALIZED","DEDUP_BLOCKED","FAIL"]},
+    {"step_order":30,"step_id":"scope_filter","judge_code":"MINI_JUDGE_ACT0058_SCOPE","pass_if":["domain_matched_true"],"fail_if":["domain_not_authorized","source_url_missing"],"required_evidence_keys":["source_url","domain_matched"],"result_values":["IN_SCOPE","OUT_OF_SCOPE","FAIL"]},
+    {"step_order":50,"step_id":"stage_captura","judge_code":"MINI_JUDGE_ACT0058_CAPTURA","pass_if":["capture_run_id_present","capture_status_completed_true"],"fail_if":["capture_run_id_missing","capture_status_not_completed"],"required_evidence_keys":["capture_run_id","capture_status_completed"],"result_values":["CAPTURE_COMPLETED","CAPTURE_REVIEW","FAIL"]},
+    {"step_order":60,"step_id":"stage_homolog","judge_code":"MINI_JUDGE_ACT0058_HOMOLOG","pass_if":["homolog_record_id_present","homolog_status_aprobado_true"],"fail_if":["homolog_record_id_missing","homolog_status_rejected_or_null"],"required_evidence_keys":["homolog_record_id","homolog_status_aprobado"],"result_values":["HOMOLOG_APPROVED","HOMOLOG_REVIEW","FAIL"]},
+    {"step_order":70,"step_id":"stage_analisis","judge_code":"MINI_JUDGE_ACT0058_ANALISIS","pass_if":["decision_id_present","consumer_gate_passed_true"],"fail_if":["decision_id_missing","consumer_gate_passed_false_or_null"],"required_evidence_keys":["decision_id","risk_level","consumer_gate_passed"],"result_values":["ANALYSIS_GATE_PASSED","ANALYSIS_BLOCKED","FAIL"]},
+    {"step_order":90,"step_id":"stage_kb_write","judge_code":"MINI_JUDGE_ACT0058_KB_WRITE","pass_if":["kb_id_present","consumer_gate_passed_true","hitl_triggered_false"],"fail_if":["kb_id_missing","consumer_gate_passed_false","hitl_triggered_true"],"required_evidence_keys":["kb_id","consumer_gate_passed","hitl_triggered"],"result_values":["KB_WRITE_PASSED","KB_WRITE_BLOCKED","FAIL"]},
+    {"step_order":100,"step_id":"completed","judge_code":"MINI_JUDGE_ACT0058_COMPLETED","pass_if":["stage_completed_true","evento_id_present"],"fail_if":["stage_completed_false","evento_id_missing"],"required_evidence_keys":["stage_completed","evento_id"],"result_values":["COMPLETED","COMPLETION_REVIEW","FAIL"]},
+    {"step_order":110,"step_id":"failed_retry","judge_code":"MINI_JUDGE_ACT0058_RETRY","pass_if":["retry_count_lte_3","error_detail_present","stage_status_retryable"],"fail_if":["retry_count_gt_3","error_detail_missing"],"required_evidence_keys":["retry_count","error_detail","stage_status"],"result_values":["RETRY_ALLOWED","MAX_RETRY_EXCEEDED","FAIL"]}
+  ],
+  "excluded_until_contract_repair":["init_execution","restock_queue"],
+  "database_apply_authorized":false,
+  "db_mutation_performed":false,
+  "production_impact":false
+}
