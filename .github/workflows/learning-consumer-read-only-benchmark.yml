@@ -39,6 +39,8 @@ jobs:
         run: python3 validate_learning_read_only_context_selector_v2.py
       - name: Validate reusable exact-binding reader CLI
         run: python3 sandbox/lf_contract_gate_test/validate_learning_read_only_context_reader_cli_v1.py
+      - name: Validate reader across all exact bindings
+        run: python3 sandbox/lf_contract_gate_test/validate_learning_read_only_context_reader_all_bindings_v1.py
       - name: Validate router-bound read-only usage contract
         run: python3 sandbox/lf_contract_gate_test/validate_learning_read_only_consumer_usage_contract_v1.py
       - name: Run champion vs challenger routing benchmark v2
