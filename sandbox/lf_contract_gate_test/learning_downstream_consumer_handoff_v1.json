@@ -1,0 +1,31 @@
+{
+  "schema": "LF_LEARNING_DOWNSTREAM_CONSUMER_HANDOFF_V1",
+  "status": "CANDIDATO_READ_ONLY",
+  "source_authority": "governed upstream profile outputs",
+  "direct_kb_injection": false,
+  "production_impact": false,
+  "consumers": [
+    {
+      "consumer_id": "ACT-0051",
+      "consumer_type": "PROFILE",
+      "profile_source": "profiles/frontend_prototype_architect_lf/SKILL.md",
+      "decision": "UPSTREAM_CONTEXT_ONLY",
+      "required_upstream": ["PRODUCT_DIRECTION_AUTHORIZED_CURRENT", "UI_SPEC_AUTHORIZED_CURRENT"],
+      "allowed_learning_path": "KB -> Product Director binding/context -> Product Direction -> UI Architect binding/context -> UI Spec -> Frontend",
+      "must_not_receive": ["raw_competitive_kb", "competitive_claim_as_domain_truth", "unapproved_product_direction"],
+      "fallback": "RETURN_TO_ORCHESTRATOR_PRODUCT_DIRECTION_OR_UI_ARCHITECT",
+      "automatic_promotion": false
+    },
+    {
+      "consumer_id": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+      "consumer_type": "PROFILE",
+      "profile_source": "profiles/gamification_system_architect/SKILL.md",
+      "decision": "CONDITIONAL_UPSTREAM_CONTEXT_ONLY",
+      "required_upstream": ["AUTHORIZED_PRODUCT_OR_UX_OBJECTIVE_CURRENT", "FINANCIAL_ETHICAL_GUARDRAILS_CURRENT"],
+      "allowed_learning_path": "KB -> Product Director binding/context -> authorized objective/constraints -> Gamification",
+      "must_not_receive": ["raw_competitive_kb", "financial_claim_without_upstream_authority", "mechanic_that_increases_debt_or_payment_pressure"],
+      "fallback": "RETURN_TO_ORCHESTRATOR_PRODUCT_DIRECTION",
+      "automatic_promotion": false
+    }
+  ]
+}
