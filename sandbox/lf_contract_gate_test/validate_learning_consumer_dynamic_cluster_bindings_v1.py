@@ -15,6 +15,7 @@ EXPECTED={
  ('PERFIL-UI-ARCHITECT','DIGITAL_SELF_SERVICE'):('AUTOGESTION_DIGITAL',),
  ('PERFIL-UI-ARCHITECT','PAYMENT_NO_ADEUDO'):('PAGOS_Y_NO_ADEUDO',),
 }
+EXPECTED_BUDGET={key:(6000 if key[0]=='PERFIL-PRODUCT-DIRECTOR-LF' else 5000) for key in EXPECTED}
 def fail(x): raise SystemExit('FAIL dynamic-cluster-bindings: '+x)
 def caps(text): return set(re.findall(r'^    capability_id:\s*(\S+)\s*$',text,re.M))
 def main():
@@ -31,9 +32,11 @@ def main():
   if key in got: fail('duplicate '+repr(key))
   got[key]=tuple(x.get('cluster_codes',[]))
   if key[0]=='PERFIL-UI-ARCHITECT' and x.get('prerequisite')!='PRODUCT_DIRECTION_AUTHORIZED_CURRENT': fail('ui prerequisite')
+  if key[0]=='PERFIL-PRODUCT-DIRECTOR-LF' and x.get('prerequisite') is not None: fail('pd prerequisite must be null')
+  if x.get('context_budget_bytes')!=EXPECTED_BUDGET.get(key): fail('context budget '+repr(key))
  if got!=EXPECTED: fail(f'mapping mismatch {got}')
  if caps(PD.read_text())!={x[1] for x in EXPECTED if x[0]=='PERFIL-PRODUCT-DIRECTOR-LF'}: fail('PD capability mismatch')
  if caps(UI.read_text())!={x[1] for x in EXPECTED if x[0]=='PERFIL-UI-ARCHITECT'}: fail('UI capability mismatch')
  if d.get('automatic_impact') is not False or d.get('production_authorized') is not False: fail('impact boundary')
- print('LEARNING_DYNAMIC_CLUSTER_BINDINGS=PASS exact_bindings=7 consumers=2 capabilities=5 taxonomy=LF_LEARNING_CLUSTER_V1 max_evidence=5 llm_calls=0 round_trips=0')
+ print('LEARNING_DYNAMIC_CLUSTER_BINDINGS=PASS exact_bindings=7 consumers=2 capabilities=5 taxonomy=LF_LEARNING_CLUSTER_V1 max_evidence=5 budgets=PD6000_UI5000 llm_calls=0 round_trips=0')
 if __name__=='__main__': main()
