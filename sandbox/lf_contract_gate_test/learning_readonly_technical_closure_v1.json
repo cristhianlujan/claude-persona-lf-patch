@@ -1,0 +1,91 @@
+{
+  "schema": "LF_LEARNING_READONLY_TECHNICAL_CLOSURE_V1",
+  "mode": "READ_ONLY",
+  "status": "TECHNICALLY_VERIFIED_READ_ONLY_CANDIDATE",
+  "repository": "cristhianlujan/claude-persona-lf-patch",
+  "pr_number": 410,
+  "base_main_sha": "b6b7067e2fdbec9239556711dab2c96ef1a821e4",
+  "candidate_head_sha": "fb0e9e4e9b6a01ec5bb15799d6f4e5879a4cb07d",
+  "router": {
+    "asset": "ACT-0001",
+    "estado_documental": "VIGENTE",
+    "estado_operativo": "ACTIVO",
+    "runtime_estado": "RUNTIME_OPERATIVO",
+    "impacto_automatico": "BLOQUEADO"
+  },
+  "source_parity": {
+    "lf_migration_source_parity": "PASS",
+    "input_governance_migration_source_parity": "PASS"
+  },
+  "exact_head_ci": {
+    "lf_contract_check": "PASS",
+    "validate_lf_packs": "PASS",
+    "lf_bootstrap_reproducibility_probe": "PASS",
+    "canonical_workflows_passed": 3,
+    "canonical_workflows_total": 3
+  },
+  "product_director": {
+    "exact_bindings": "5/5",
+    "selected_learning_ids": "13/13",
+    "routing_cases": "50/50",
+    "routing_families": "10x5",
+    "tp": 25,
+    "tn": 25,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "specificity": 1.0,
+    "max_active_capabilities_per_request": 1,
+    "max_context_bytes": 6000,
+    "selector_llm_calls": 0,
+    "selector_round_trips": 0,
+    "reader_writes": 0,
+    "semantic_search": false
+  },
+  "ui_architect": {
+    "exact_bindings": "2/2",
+    "selected_learning_ids": "4/4",
+    "routing_cases": "50/50",
+    "routing_families": "10x5",
+    "tp": 10,
+    "tn": 40,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "specificity": 1.0,
+    "adversarial_cases": "12/12",
+    "critical_false_positives": 0,
+    "challenger_context_bytes": 1047,
+    "context_budget_bytes": 5000,
+    "requirement_retention": "5/5",
+    "selector_llm_calls": 0,
+    "selector_round_trips": 0,
+    "reader_writes": 0,
+    "semantic_search": false
+  },
+  "corpus": {
+    "eligible_classified": "35/35",
+    "bound_clusters": 5,
+    "unbound_clusters": 3,
+    "explicit_nonbindings": 4,
+    "sandbox_sources_active": 19,
+    "sandbox_source_failures": 0
+  },
+  "behavioral": {
+    "status": "INSUFFICIENT_EVIDENCE",
+    "behavioral_ab": "NOT_EXECUTED",
+    "target_screen_declared": "0/2",
+    "exact_screen_receipt_missing": "2/2",
+    "governance_consumer": "CONTEXT_PACK"
+  },
+  "outcome": "INSUFFICIENT_EVIDENCE",
+  "read_only_route_technically_verified": true,
+  "behavioral_promotion_authorized": false,
+  "automatic_promotion": false,
+  "production_authorized": false,
+  "merge_authorized": false,
+  "closure_boundary": "TECHNICAL_READ_ONLY_ONLY",
+  "next_gate": "EXACT_SCREEN_BOUND_BEHAVIORAL_EVIDENCE_OR_INDEPENDENT_SAFE_CONSUMER_WORK"
+}
