@@ -1,0 +1,30 @@
+name: Input Governance PR418 Holdout Replay
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - input-governance/pr418-independent-holdout-replay
+
+permissions:
+  contents: read
+
+jobs:
+  replay-holdouts:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run resolver evaluator
+        working-directory: sandbox/lf_contract_gate_test/input_governance_incremental
+        run: python3 run_change_impact_resolver_eval_v1.py
+      - name: Run conflicting-semantics holdout
+        working-directory: sandbox/lf_contract_gate_test/input_governance_incremental
+        run: python3 run_change_impact_conflict_holdout_v1.py
+      - name: Run unknown-compound holdout
+        working-directory: sandbox/lf_contract_gate_test/input_governance_incremental
+        run: python3 run_change_impact_unknown_compound_holdout_v1.py
