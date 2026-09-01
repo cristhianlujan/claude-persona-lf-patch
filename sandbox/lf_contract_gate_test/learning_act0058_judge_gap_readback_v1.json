@@ -1,0 +1,28 @@
+{
+  "schema": "LF_LEARNING_ACT0058_JUDGE_GAP_READBACK_V1",
+  "observed_live_at": "2026-09-01T13:40:00Z",
+  "supabase_project": "mhwmirqcgxxukpctffuv",
+  "operation_code": "ORQUESTACION_PIPELINE_LF",
+  "router": {"asset":"ACT-0001","estado_operativo":"ACTIVO","runtime_estado":"RUNTIME_OPERATIVO","nivel_control":"RECTOR"},
+  "orchestrator": {"asset":"ACT-0058","estado_operativo":"APROBADO","runtime_estado":"APROBADO_PRODUCCION_CONTROLADA"},
+  "active_steps": 15,
+  "active_judge_bindings": 4,
+  "missing_judge_bindings": 11,
+  "bound_steps": ["router","keyword_match","hitl_check","audit_trail"],
+  "missing_steps": ["PRE_EKB_GATE","init_execution","init_run","scope_filter","stage_captura","stage_homolog","stage_analisis","stage_kb_write","completed","restock_queue","failed_retry"],
+  "known_active_ekb": ["DB-001","GOV-JUDGE-SHAPE-001","CI-MIG-001","GOV-010","CI-E16-001","KB-PROD-001","OPS-002","DB-EVT-001","SQL-008"],
+  "contract_drift_findings": [
+    {
+      "step_id":"restock_queue",
+      "code":"ACT0058_RESTOCK_INVALID_EVENT_SEVERITY",
+      "observed_contract_value":"MEDIA",
+      "live_constraint":"lf_eventos_severidad_check allows INFO|WARN|CRITICAL",
+      "matched_ekb":"SQL-008",
+      "effect":"do not materialize restock judge from current contract verbatim",
+      "repair":"source-first contract correction to WARN before judge materialization"
+    }
+  ],
+  "db_mutation_performed": false,
+  "production_impact": false,
+  "next_gate": "REPAIR_RESTOCK_CONTRACT_SOURCE_FIRST_THEN_MATERIALIZE_11_JUDGES"
+}
