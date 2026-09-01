@@ -1,6 +1,6 @@
 {
   "schema":"LF_PRODUCT_DIRECTOR_KB_ELIGIBILITY_READBACK_V1",
-  "observed_live_at_utc":"2026-09-01T19:22:00Z",
+  "observed_live_at_utc":"2026-09-01T20:02:39.624817Z",
   "source":"public.lf_knowledge_base",
   "predicate":"kb_category=COMPETENCIA AND grounding_status=GROUNDED AND consumer_ready=true",
   "selected_ids":[
