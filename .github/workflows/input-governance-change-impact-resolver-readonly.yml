@@ -1,0 +1,24 @@
+name: Input Governance Change Impact Resolver READ_ONLY
+
+on:
+  pull_request:
+    paths:
+      - "sandbox/lf_contract_gate_test/input_governance_incremental/change_impact_l3c_gold_50.sql"
+      - "sandbox/lf_contract_gate_test/input_governance_incremental/change_impact_resolver_readonly/**"
+      - ".github/workflows/input-governance-change-impact-resolver-readonly.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  resolver-readonly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run READ_ONLY resolver benchmark and held-out controls
+        run: python sandbox/lf_contract_gate_test/input_governance_incremental/change_impact_resolver_readonly/run_resolver_tests.py
