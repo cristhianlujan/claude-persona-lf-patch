@@ -1,14 +1,11 @@
 {
-  "schema":"LF_LEARNING_NEXT_CONSUMER_APPLICABILITY_V1",
-  "observed_live_at_utc":"2026-09-01T19:53:57.253674Z",
-  "adapter_id":"ADAPTER_LF_SHELL_PROFILE",
-  "governed_targets":4,
+  "schema":"LF_LEARNING_NEXT_CONSUMER_APPLICABILITY_V1","observed_live_at_utc":"2026-09-01T21:01:00Z","adapter_id":"ADAPTER_LF_SHELL_PROFILE","governed_targets":4,
   "targets":[
-    {"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","consumer_type":"PROFILE","read_only_learning_status":"EXACT_BINDINGS_MATERIALIZED","exact_capabilities":5,"runtime_enabled":true,"production_enabled":false},
-    {"consumer_id":"PERFIL-UI-ARCHITECT","consumer_type":"PROFILE","read_only_learning_status":"EXACT_BINDINGS_MATERIALIZED","exact_capabilities":2,"prerequisite":"PRODUCT_DIRECTION_AUTHORIZED_CURRENT","runtime_enabled":true,"production_enabled":false},
-    {"consumer_id":"PERFIL-GAMIFICATION-SYSTEM-ARCHITECT","consumer_type":"PROFILE","read_only_learning_status":"NO_EXACT_CONSUMER","reason":"CURRENT_COMPETITIVE_CLUSTER_CATALOG_HAS_NO_EXACT_GAMIFICATION_CAPABILITY","fallback":"NO_COMPETITIVE_CONTEXT","runtime_enabled":true,"production_enabled":false},
+    {"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","consumer_type":"PROFILE","read_only_learning_status":"EXACT_BINDINGS_MATERIALIZED","exact_capabilities":5,"adapter_runtime_enabled":true,"profile_runtime_state":"NO_HABILITADO","production_enabled":false},
+    {"consumer_id":"PERFIL-UI-ARCHITECT","consumer_type":"PROFILE","read_only_learning_status":"EXACT_BINDINGS_MATERIALIZED","exact_capabilities":2,"prerequisite":"PRODUCT_DIRECTION_AUTHORIZED_CURRENT","adapter_runtime_enabled":true,"profile_runtime_state":"NO_HABILITADO","production_enabled":false},
+    {"consumer_id":"PERFIL-GAMIFICATION-SYSTEM-ARCHITECT","consumer_type":"PROFILE","read_only_learning_status":"NO_EXACT_CONSUMER","reason":"CURRENT_COMPETITIVE_CLUSTER_CATALOG_HAS_NO_EXACT_GAMIFICATION_CAPABILITY","fallback":"NO_COMPETITIVE_CONTEXT","adapter_runtime_enabled":true,"profile_runtime_state":"NO_HABILITADO","production_enabled":false},
     {"consumer_id":"ACT-0051","resolved_name":"PERFIL_FRONTEND_PROTOTYPE_ARCHITECT_LF","consumer_type":"PROFILE","document_status":"CANDIDATO","operational_status":"READ_ONLY","runtime_status":"NO_APLICA","profile_source_ref":"profiles/frontend_prototype_architect_lf/SKILL.md","profile_source_sha":"19fcbebb9c475724aa4acdcb21e009db769bd1b2","router_action":"EJECUCION_PERFIL_LF","route":"ACT-0001 -> EJECUCION_PERFIL_LF -> ACT-0051","read_only_learning_status":"READY_FOR_BINDING_AFTER_UPSTREAM_UI_AUTHORITY","required_prerequisites":["PRODUCT_DIRECTION_AUTHORIZED_CURRENT","UI_ARCHITECTURE_AUTHORIZED_CURRENT"],"must_not_invoke_without":["PRODUCT_DIRECTION_AUTHORIZED_CURRENT","UI_ARCHITECTURE_AUTHORIZED_CURRENT"],"exact_learning_binding_created":false,"direct_competitive_learning_allowed":false,"fallback":"NO_COMPETITIVE_CONTEXT","production_enabled":false}
   ],
-  "automatic_binding":false,
-  "production_authorized":false
+  "source_operativa_readback":{"PERFIL-PRODUCT-DIRECTOR-LF":"NO_HABILITADO","PERFIL-UI-ARCHITECT":"NO_HABILITADO","PERFIL-GAMIFICATION-SYSTEM-ARCHITECT":"NO_HABILITADO","ACT-0051":"NO_APLICA"},
+  "automatic_binding":false,"production_authorized":false
 }
