@@ -24,6 +24,7 @@
       "required_governance_consumer": "CONTEXT_PACK",
       "behavioral_target_screen_declared": false,
       "reusable_exact_screen_receipt_observed": false,
+      "exact_target_bound_readiness_receipt_observed": false,
       "behavioral_ab_status": "INSUFFICIENT_EVIDENCE"
     },
     {
@@ -31,9 +32,11 @@
       "required_governance_consumer": "CONTEXT_PACK",
       "behavioral_target_screen_declared": false,
       "reusable_exact_screen_receipt_observed": false,
+      "exact_target_bound_readiness_receipt_observed": false,
       "behavioral_ab_status": "INSUFFICIENT_EVIDENCE"
     }
   ],
+  "compatibility_note": "exact_target_bound_readiness_receipt_observed is retained for validator compatibility and means exact behavioral screen receipt, not profile identity in input_readiness_runs.scope",
   "rule": "UNRELATED_SCREEN_READINESS_RUNS_MUST_NOT_BE_REUSED_AS_CONSUMER_AUTHORITY",
   "automatic_promotion": false,
   "production_authorized": false
