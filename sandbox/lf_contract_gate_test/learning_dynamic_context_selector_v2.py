@@ -9,6 +9,7 @@ REQUIRED_KB_CATEGORY = "COMPETENCIA"
 DEFAULT_MAX_EVIDENCE = 5
 DEFAULT_TAXONOMY = "LF_LEARNING_CLUSTER_V1"
 ALLOWED_LIFECYCLES = {"ANALIZADO", "CARD_CREADA"}
+ALLOWED_ELIGIBILITIES = {"PASS", "CANONICAL_PASS", "CANONICAL_PASS_STALE_NOTE_FLAGGED"}
 
 class DynamicLearningSelectionError(ValueError):
     pass
@@ -59,8 +60,7 @@ def _classification_receipt_eligible(event: dict[str, Any], binding: DynamicBind
         return False
     if _text(payload.get("lifecycle")) not in ALLOWED_LIFECYCLES:
         return False
-    eligibility = _text(payload.get("eligibility"))
-    if "PASS" not in eligibility:
+    if _text(payload.get("eligibility")) not in ALLOWED_ELIGIBILITIES:
         return False
     if not (_event_clusters(payload) & set(binding.cluster_codes)):
         return False
