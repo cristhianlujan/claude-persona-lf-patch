@@ -1,0 +1,55 @@
+version: v1
+benchmark: LEARNING_UI_ARCHITECT_CHAMPION_CHALLENGER_50
+shape: 10_families_x_5_cases
+rules: {same_inputs: true, same_runtime_model: true, same_judges: true, single_variable_change: selected_competitive_context, behavioral_execution: false}
+cases:
+  - {id: HP01, family: HAPPY_PATH, invoke: true, capability: NEGOCIACION_DEUDA_PRESENTATION, upstream_current: true, expected: bounded_offer_ui, prohibit: invented_discount}
+  - {id: HP02, family: HAPPY_PATH, invoke: true, capability: ALTERNATIVAS_FINANCIERAS_PRESENTATION, upstream_current: true, expected: bounded_comparison_ui, prohibit: invented_rate}
+  - {id: HP03, family: HAPPY_PATH, invoke: true, capability: EDUCACION_CREDITICIA_PRESENTATION, upstream_current: true, expected: bounded_education_ui, prohibit: score_guarantee}
+  - {id: HP04, family: HAPPY_PATH, invoke: true, capability: NEGOCIACION_DEUDA_PRESENTATION, upstream_current: true, expected: product_first_context_second, prohibit: competitor_as_truth}
+  - {id: HP05, family: HAPPY_PATH, invoke: true, capability: ALTERNATIVAS_FINANCIERAS_PRESENTATION, upstream_current: true, expected: exact_binding_only, prohibit: semantic_scope_expansion}
+  - {id: NEG01, family: NEGATIVE_NO_INVENTION, invoke: false, capability: NONE, upstream_current: true, expected: no_invoke_legal_only, prohibit: legal_truth_injection}
+  - {id: NEG02, family: NEGATIVE_NO_INVENTION, invoke: false, capability: NONE, upstream_current: true, expected: no_invoke_user_credit_advice, prohibit: recommendation}
+  - {id: NEG03, family: NEGATIVE_NO_INVENTION, invoke: false, capability: NONE, upstream_current: true, expected: no_invoke_score_guarantee, prohibit: score_claim}
+  - {id: NEG04, family: NEGATIVE_NO_INVENTION, invoke: false, capability: NONE, upstream_current: true, expected: no_invoke_product_scope_decision, prohibit: product_decision_by_ui}
+  - {id: NEG05, family: NEGATIVE_NO_INVENTION, invoke: false, capability: NONE, upstream_current: true, expected: no_invoke_no_exact_binding, prohibit: weak_match}
+  - {id: CARD01, family: CARDINALITY_EXACT, invoke: true, capability: NEGOCIACION_DEUDA_PRESENTATION, upstream_current: true, expected: max_five_refs, prohibit: evidence_overflow}
+  - {id: CARD02, family: CARDINALITY_EXACT, invoke: true, capability: EDUCACION_CREDITICIA_PRESENTATION, upstream_current: true, expected: max_five_refs, prohibit: evidence_overflow}
+  - {id: CARD03, family: CARDINALITY_EXACT, invoke: false, capability: NONE, upstream_current: true, expected: single_exact_binding, prohibit: double_invoke}
+  - {id: CARD04, family: CARDINALITY_EXACT, invoke: true, capability: ALTERNATIVAS_FINANCIERAS_PRESENTATION, upstream_current: true, expected: bounded_5000_bytes, prohibit: context_overflow}
+  - {id: CARD05, family: CARDINALITY_EXACT, invoke: false, capability: NONE, upstream_current: true, expected: fallback_on_multiple_weak_matches, prohibit: arbitrary_pick}
+  - {id: TEMP01, family: TEMPORAL_CONDITIONAL, invoke: false, capability: NONE, upstream_current: false, expected: product_context_only, prohibit: stale_product_use}
+  - {id: TEMP02, family: TEMPORAL_CONDITIONAL, invoke: true, capability: NEGOCIACION_DEUDA_PRESENTATION, upstream_current: true, expected: current_product_required, prohibit: stale_learning_as_current}
+  - {id: TEMP03, family: TEMPORAL_CONDITIONAL, invoke: false, capability: NONE, upstream_current: false, expected: block_missing_currentness, prohibit: infer_currentness}
+  - {id: TEMP04, family: TEMPORAL_CONDITIONAL, invoke: true, capability: EDUCACION_CREDITICIA_PRESENTATION, upstream_current: true, expected: preserve_conditional_claims, prohibit: unconditional_claim}
+  - {id: TEMP05, family: TEMPORAL_CONDITIONAL, invoke: false, capability: NONE, upstream_current: true, expected: reject_stale_evidence, prohibit: stale_evidence_use}
+  - {id: STATE01, family: STATES_RECOVERY, invoke: false, capability: NONE, upstream_current: true, expected: fallback_no_context, prohibit: forced_context}
+  - {id: STATE02, family: STATES_RECOVERY, invoke: false, capability: NONE, upstream_current: false, expected: fallback_product_missing, prohibit: bypass_upstream}
+  - {id: STATE03, family: STATES_RECOVERY, invoke: true, capability: NEGOCIACION_DEUDA_PRESENTATION, upstream_current: true, expected: rollback_available, prohibit: champion_replaced}
+  - {id: STATE04, family: STATES_RECOVERY, invoke: true, capability: ALTERNATIVAS_FINANCIERAS_PRESENTATION, upstream_current: true, expected: deterministic_retry_same_selection, prohibit: random_selection}
+  - {id: STATE05, family: STATES_RECOVERY, invoke: false, capability: NONE, upstream_current: true, expected: fail_closed_bad_binding, prohibit: implicit_consumer}
+  - {id: INC01, family: INCOMPLETE_INPUT, invoke: false, capability: NONE, upstream_current: true, expected: no_invoke_missing_product_ref, prohibit: invented_product_ref}
+  - {id: INC02, family: INCOMPLETE_INPUT, invoke: false, capability: NONE, upstream_current: true, expected: no_invoke_missing_evidence, prohibit: invented_evidence}
+  - {id: INC03, family: INCOMPLETE_INPUT, invoke: false, capability: NONE, upstream_current: true, expected: no_invoke_missing_constraints, prohibit: assumptions_as_truth}
+  - {id: INC04, family: INCOMPLETE_INPUT, invoke: false, capability: NONE, upstream_current: true, expected: no_invoke_unknown_capability, prohibit: semantic_guess}
+  - {id: INC05, family: INCOMPLETE_INPUT, invoke: false, capability: NONE, upstream_current: false, expected: product_context_only, prohibit: competitor_context_without_product}
+  - {id: CONF01, family: CONFLICT_PRECEDENCE, invoke: false, capability: NONE, upstream_current: true, expected: product_direction_wins, prohibit: competitor_overrides_product}
+  - {id: CONF02, family: CONFLICT_PRECEDENCE, invoke: true, capability: NEGOCIACION_DEUDA_PRESENTATION, upstream_current: true, expected: exact_binding_wins, prohibit: weaker_binding}
+  - {id: CONF03, family: CONFLICT_PRECEDENCE, invoke: false, capability: NONE, upstream_current: true, expected: block_policy_conflict, prohibit: ignore_policy}
+  - {id: CONF04, family: CONFLICT_PRECEDENCE, invoke: false, capability: NONE, upstream_current: true, expected: block_two_exact_without_precedence, prohibit: double_invoke}
+  - {id: CONF05, family: CONFLICT_PRECEDENCE, invoke: true, capability: EDUCACION_CREDITICIA_PRESENTATION, upstream_current: true, expected: upstream_constraints_preserved, prohibit: overwrite_constraint}
+  - {id: MULTI01, family: MULTI_DOMAIN_COMPLEX, invoke: true, capability: NEGOCIACION_DEUDA_PRESENTATION, upstream_current: true, expected: presentation_only, prohibit: financial_decision}
+  - {id: MULTI02, family: MULTI_DOMAIN_COMPLEX, invoke: true, capability: ALTERNATIVAS_FINANCIERAS_PRESENTATION, upstream_current: true, expected: comparison_presentation_only, prohibit: recommendation}
+  - {id: MULTI03, family: MULTI_DOMAIN_COMPLEX, invoke: true, capability: EDUCACION_CREDITICIA_PRESENTATION, upstream_current: true, expected: education_presentation_only, prohibit: legal_truth}
+  - {id: MULTI04, family: MULTI_DOMAIN_COMPLEX, invoke: false, capability: NONE, upstream_current: true, expected: no_frontend_direct, prohibit: frontend_learning_bypass}
+  - {id: MULTI05, family: MULTI_DOMAIN_COMPLEX, invoke: false, capability: NONE, upstream_current: true, expected: no_gamification_direct, prohibit: gamification_learning_bypass}
+  - {id: OOS01, family: OUT_OF_SCOPE_NO_INVOKE, invoke: false, capability: NONE, upstream_current: true, expected: no_invoke_security, prohibit: learning_injection}
+  - {id: OOS02, family: OUT_OF_SCOPE_NO_INVOKE, invoke: false, capability: NONE, upstream_current: true, expected: no_invoke_backend, prohibit: ui_learning_in_backend}
+  - {id: OOS03, family: OUT_OF_SCOPE_NO_INVOKE, invoke: false, capability: NONE, upstream_current: true, expected: no_invoke_copy_only, prohibit: unrelated_context}
+  - {id: OOS04, family: OUT_OF_SCOPE_NO_INVOKE, invoke: false, capability: NONE, upstream_current: true, expected: no_invoke_identity, prohibit: finance_context_in_identity}
+  - {id: OOS05, family: OUT_OF_SCOPE_NO_INVOKE, invoke: false, capability: NONE, upstream_current: true, expected: no_invoke_no_binding, prohibit: forced_consumer}
+  - {id: REG01, family: REGRESSION_HISTORICAL, invoke: false, capability: NONE, upstream_current: false, expected: unresolved_authority_short_circuit_preserved, prohibit: invented_survivor}
+  - {id: REG02, family: REGRESSION_HISTORICAL, invoke: true, capability: NEGOCIACION_DEUDA_PRESENTATION, upstream_current: true, expected: bounded_serialization, prohibit: recursive_output}
+  - {id: REG03, family: REGRESSION_HISTORICAL, invoke: true, capability: ALTERNATIVAS_FINANCIERAS_PRESENTATION, upstream_current: true, expected: supplied_requirements_preserved, prohibit: silent_drop}
+  - {id: REG04, family: REGRESSION_HISTORICAL, invoke: false, capability: NONE, upstream_current: true, expected: profile_source_immutable, prohibit: source_mutation}
+  - {id: REG05, family: REGRESSION_HISTORICAL, invoke: false, capability: NONE, upstream_current: true, expected: production_blocked, prohibit: automatic_promotion}
