@@ -1,0 +1,38 @@
+{
+  "schema": "LF_LEARNING_BEHAVIORAL_RUNTIME_CANDIDATE_V1",
+  "status": "CANDIDATE_AVAILABLE_NOT_CANONICAL",
+  "source_pr": 399,
+  "source_head": "6039bae07f126c2856d052b5de620eeaaf7b6a47",
+  "source_branch": "lf/profile-runtime-batch-cache-20260901",
+  "source_pr_state": "OPEN_DRAFT_UNMERGED",
+  "runtime_contract": "sandbox/lf_contract_gate_test/profile_execution_runtime/runtime_optimization_contract.py",
+  "supported_learning_consumers": [
+    "PERFIL-PRODUCT-DIRECTOR-LF",
+    "PERFIL-UI-ARCHITECT"
+  ],
+  "observed_contract": {
+    "max_batch_size": 3,
+    "max_parallelism": 2,
+    "governance_receipt_reusable_requires": [
+      "status_READY",
+      "continuation_allowed_true",
+      "decision_PASS",
+      "currentness_LIVE_CURRENT",
+      "screen_code_match",
+      "snapshot_hash_nonempty"
+    ],
+    "visual_artifact_fail_closed": true
+  },
+  "exact_head_ci": [
+    {"workflow":"Validate LF Packs","run_id":33491727927,"conclusion":"success"},
+    {"workflow":"lf-contract-check","run_id":33491727858,"conclusion":"success"},
+    {"workflow":"Story Agent Evidence Verifier","run_id":33491727887,"conclusion":"success"},
+    {"workflow":"LF Bootstrap Reproducibility Probe","run_id":33491727851,"conclusion":"success"}
+  ],
+  "learning_use": {
+    "behavioral_ab_execution_authorized_from_this_file": false,
+    "canonical_runtime_replacement": false,
+    "production_authorized": false,
+    "allowed_next_step": "PREPARE_EXACT_REQUEST_AND_WAIT_FOR_CANONICAL_OR_EXPLICITLY_GOVERNED_RUNTIME_TRIGGER"
+  }
+}
