@@ -1,0 +1,50 @@
+{
+  "schema": "LF_PRODUCT_DIRECTOR_BEHAVIORAL_CANARY_FIXTURE_V1",
+  "status": "WAITING_INPUT_CURATOR",
+  "consumer_id": "PERFIL-PRODUCT-DIRECTOR-LF",
+  "consumer_type": "PROFILE",
+  "governance_consumer": "CONTEXT_PACK",
+  "router_action": "EJECUCION_PERFIL_LF",
+  "adapter_code": "ADAPTER_LF_SHELL_PROFILE",
+  "screen_subject": {
+    "pantalla_id": 21,
+    "screen_code": "CHECKOUT_CUOTAS_MEDIO_PAGO",
+    "active_required": true
+  },
+  "input_literal": "CHECKOUT_CUOTAS_MEDIO_PAGO Decide prioridad de claridad del checkout usando solo evidencia suministrada.",
+  "expected_pre_runtime_router_result": {
+    "applicable": true,
+    "status_until_current_receipt_exists": "INPUT_GOVERNANCE_REQUIRED",
+    "blocking_code_until_current_receipt_exists": "BLOCK_INPUT_GOVERNANCE_RECEIPT_REQUIRED",
+    "continuation_allowed_until_current_receipt_exists": false,
+    "required_role": "INPUT_CURATOR",
+    "runtime_binding_status": "BOUND_RUNTIME"
+  },
+  "required_before_behavioral_execution": [
+    "current COMPLETED input_readiness_run for pantalla_id=21",
+    "independent validator full authorized PASS",
+    "Router governance_receipt decision=PASS and currentness=LIVE_CURRENT",
+    "bound request_id/profile_code/governance_consumer/input_sha256/source_snapshot_sha256/contract_snapshot_sha256",
+    "canonical profile execution receipt covering input_governance_binding_sha256"
+  ],
+  "behavioral_evidence_required": [
+    "raw_output",
+    "canonical_execution_receipt",
+    "deterministic_validation",
+    "semantic_judge",
+    "fresh_holdout_and_adversarial_evidence"
+  ],
+  "holdout_consumed_by_fixture": false,
+  "runtime_invoked_by_fixture": false,
+  "production_impact": false,
+  "automatic_promotion": false,
+  "source_refs": [
+    "programacion.fn_lf_router_input_governance_resolve_v1",
+    "programacion.fn_input_governance_execute",
+    "programacion.INPUT_GOVERNANCE_EXECUTION_CONTRACT@1.5",
+    "lf_ops.pantallas/21",
+    "SUPABASE_EDGE_FUNCTION:input-governance-agent-v1",
+    "SUPABASE_EDGE_FUNCTION:input-governance-curator-v1",
+    "SUPABASE_EDGE_FUNCTION:input-governance-validator-v1"
+  ]
+}
