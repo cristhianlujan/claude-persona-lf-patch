@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 import re
+import subprocess
+import sys
 from collections import Counter
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
 MATRIX=ROOT/'sandbox/lf_contract_gate_test/learning_consumer_50_cases_v1.yaml'
 CONTRACT=ROOT/'sandbox/lf_contract_gate_test/learning_consumer_binding_benchmark_contract_v1.yaml'
+BINDING_VALIDATOR=ROOT/'sandbox/lf_contract_gate_test/validate_product_director_input_governance_binding_v1.py'
 EXPECTED_FAMILIES={'COMPETITIVE_OFFER_INSIGHT','DEBT_EDUCATION','PAYMENT_NO_ADEUDO','DIGITAL_SELF_SERVICE','FINANCIAL_ALTERNATIVES','NEGOTIATION','OUT_OF_SCOPE_NO_INVOKE','CONFLICT_PRECEDENCE','STALE_LOW_GROUNDING','MULTI_DOMAIN_COMPLEX'}
 REQUIRED_CONTRACT_TERMS={'consumer_id','consumer_type','capability_id','invoke_when','must_not_invoke_when','minimum_context','selected_evidence_refs','policy_capsule_ref','output_schema_ref','champion_id','challenger_id','READY_FOR_BINDING','DETERMINISTIC_FIRST','authority_pass_pct: 100','critical_must_not_invoke_false_positives: 0','automatic_impact: BLOQUEADO','production: BLOQUEADO'}
 def fail(msg): raise SystemExit(f'FAIL learning-consumer-benchmark: {msg}')
@@ -27,6 +30,9 @@ def main():
  missing=sorted(term for term in REQUIRED_CONTRACT_TERMS if term not in contract)
  if missing: fail(f'contract missing required terms: {missing}')
  if 'same_inputs: true' not in matrix or 'same_model_runtime: true' not in matrix or 'same_judges: true' not in matrix: fail('champion/challenger comparison invariants missing')
+ completed=subprocess.run([sys.executable,str(BINDING_VALIDATOR)],cwd=ROOT,check=False,capture_output=True,text=True)
+ if completed.returncode!=0: fail(f'input governance binding selftest failed: {completed.stdout} {completed.stderr}')
+ print(completed.stdout.strip())
  print('LEARNING_CONSUMER_BENCHMARK_VERDICT=PASS'); print(f"cases=50 families=10 positive={invokes['true']} negative={invokes['false']}")
  for family,count in sorted(counts.items()): print(f'family={family} cases={count}')
  return 0
