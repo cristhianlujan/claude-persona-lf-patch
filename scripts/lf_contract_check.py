@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.13
+LF Contract Check v0.14
 
 Sandbox validator for controlled LF governance gates.
+
+v0.14 changes:
+- Allows only the exact Profile Driven Screen Generation workflow path for issue #402.
+- Keeps the broad .github/ prefix and workflow lookalikes denied.
 
 v0.13 changes:
 - Allows only the exact Profiles LF operational runbook path under ops/.
@@ -79,6 +83,7 @@ ALLOWED_GITHUB_EXACT = {
     ".github/workflows/lf-bootstrap-reproducibility.yml",
     ".github/workflows/lf-github-reconcile-v3.yml",
     ".github/workflows/story-agent-evidence-verifier.yml",
+    ".github/workflows/profile-driven-screen-generation.yml",
 }
 OPERATIONAL_PROTOCOL_ALLOWED_EXACT = {
     "CLAUDE.md",
