@@ -1,0 +1,46 @@
+version: v1
+status: BLOCKED_EXTERNAL_AUTHORITY_CHANNEL
+scope: PRODUCT_DIRECTOR_BEHAVIORAL_INPUT_READINESS
+consumer_id: PERFIL-PRODUCT-DIRECTOR-LF
+governance_consumer: CONTEXT_PACK
+screen:
+  pantalla_id: 21
+  screen_code: CHECKOUT_CUOTAS_MEDIO_PAGO
+required_runtime:
+  input_governance_agent: input-governance-agent-v1
+  curator: input-governance-curator-v1
+  validator: input-governance-validator-v1
+  all_must_be_active: true
+observed_secure_caller:
+  slug: lf-profiles-governance-caller-v1
+  auth: GITHUB_ACTIONS_OIDC
+  current_allowed_action: input_readiness_screen_v1
+  current_consumer: STORY_CREATOR
+  current_allowed_screens: [ONB_002, ONB_003, ONB_004, HOME_002]
+  supports_required_context_pack_scope: false
+required_authorized_extension_contract:
+  action: input_readiness_context_pack_v1
+  pantalla_id: 21
+  codigo: CHECKOUT_CUOTAS_MEDIO_PAGO
+  consumer: CONTEXT_PACK
+  exact_scope_only: true
+  oidc_required: true
+  service_role_stays_inside_edge_runtime: true
+  response_required_fields: [outcome, caller, pantalla_id, codigo, consumer, status, run_id]
+  ready_postconditions:
+    - outcome_READY
+    - status_READY
+    - consumer_CONTEXT_PACK
+    - exact_pantalla_id_21
+    - current_completed_input_readiness_run
+    - independent_validator_PASS
+  forbidden:
+    - reuse_STORY_CREATOR_receipt
+    - profile_asset_code_as_consumer
+    - fabricated_service_role
+    - direct_database_receipt_insert
+    - broaden_allowed_screens_without_exact_contract
+behavioral_next_gate:
+  only_after_ready: fresh_Product_Director_champion_vs_challenger_runtime_AB
+  current_status: BLOCK_INPUT_GOVERNANCE_RECEIPT_REQUIRED
+production_impact: false
