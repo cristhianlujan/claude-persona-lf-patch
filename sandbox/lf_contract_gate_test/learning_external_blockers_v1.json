@@ -19,16 +19,23 @@
     {
       "blocker_id": "LIVE_EKB_SQL_CHANNEL_BLOCKED_20260901",
       "scope": "LIVE_EKB_READBACK",
-      "status": "CHANNEL_BLOCKED_SOURCE_EVIDENCE_ONLY",
-      "evidence": {"postgres_reached": false, "supabase_outage_claimed": false},
+      "status": "RESUMED_RECOVERED",
+      "evidence": {
+        "postgres_reached_initially": false,
+        "supabase_outage_claimed": false,
+        "list_tables_recovered": true,
+        "execute_sql_recovered": true,
+        "ekb_live_readback": true,
+        "matched_error_codes": ["CI-E16-001", "CI-MIG-001", "DB-001", "DB-EVT-001", "GOV-010", "KB-PROD-001", "LEARNING-EFFICIENCY-METRICS-CONTRACT-001", "OPS-002", "PROFILE-RUNTIME-DISPATCH-001"]
+      },
       "learning_scope_independent_work_allowed": true,
-      "db_mutations_allowed": false
+      "db_mutations_allowed": "ONLY_AFTER_OPERATION_EVENT_CONTRACT_AND_PREWRITE_GATES"
     },
     {
       "blocker_id": "BEHAVIORAL_CURRENT_RECEIPT_REQUIRED",
       "scope": "PRODUCT_DIRECTOR_AND_UI_BEHAVIORAL_AB",
       "status": "WAITING_GOVERNED_RECEIPT_AND_AUTHORIZED_RUNTIME_TRIGGER",
-      "evidence": {"authority_contract": "INPUT_READINESS_CONTRACT", "observed_revision": "5.12", "continuation_policy": "PASS_ONLY", "contract_resolution": "LIVE_CURRENT"},
+      "evidence": {"authority_contract": "INPUT_READINESS_CONTRACT", "observed_revision": "5.12", "continuation_policy": "PASS_ONLY", "contract_resolution": "LIVE_CURRENT", "runtime_source_discovered": true, "runtime_test_doubles": false, "trigger_authority": "OWNER_ISSUE_COMMENT"},
       "learning_scope_independent_work_allowed": true,
       "runtime_invocation_allowed_by_this_manifest": false
     }
