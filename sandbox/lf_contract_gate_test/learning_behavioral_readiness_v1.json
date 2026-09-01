@@ -1,14 +1,17 @@
 {
   "schema": "LF_LEARNING_BEHAVIORAL_READINESS_V1",
   "mode": "READ_ONLY",
-  "observed_live_at_utc": "2026-09-01T19:26:00Z",
+  "observed_live_at_utc": "2026-09-01T19:57:52.704049Z",
   "input_governance_contract_revision": "5.12",
   "observed_input_readiness": {
-    "latest_run_id": 217,
+    "latest_run_id": 218,
     "latest_run_status": "COMPLETED",
     "latest_run_family_count": 47,
     "latest_run_invalidated": false,
-    "latest_run_scope_production_authorized": false
+    "latest_run_validator_completed_at": "2026-09-01T19:37:21.393361Z",
+    "latest_run_scope_production_authorized": false,
+    "product_target_bound_runs": 0,
+    "ui_target_bound_runs": 0
   },
   "consumer_targets": [
     {
