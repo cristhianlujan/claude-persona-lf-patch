@@ -98,6 +98,7 @@ def run_optional_learning_suites() -> None:
         "validate_ui_architect_learning_suite_v1.py",
         "validate_learning_cluster_consumer_coverage_v1.py",
         "validate_learning_next_consumer_applicability_v1.py",
+        "validate_learning_additional_consumer_applicability_v1.py",
     ]
     executed = 0
     for script in scripts:
