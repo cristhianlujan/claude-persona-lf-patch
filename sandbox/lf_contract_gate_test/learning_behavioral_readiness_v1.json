@@ -1,29 +1,36 @@
 {
   "schema": "LF_LEARNING_BEHAVIORAL_READINESS_V1",
   "mode": "READ_ONLY",
-  "observed_live_at_utc": "2026-09-01T19:57:52.704049Z",
+  "observed_live_at_utc": "2026-09-01T20:04:42.447745Z",
   "input_governance_contract_revision": "5.12",
+  "input_governance_router_contract": {
+    "function": "programacion.fn_lf_router_input_governance_resolve_v1(text,jsonb,text)",
+    "governance_consumer": "CONTEXT_PACK",
+    "receipt_binding": ["pantalla_id","screen_code","run_id","source_snapshot_sha256","contract_revision","contract_snapshot_sha256","currentness"],
+    "profile_identity_in_readiness_scope_required": false,
+    "rule": "PROFILE_ID_MUST_NOT_BE_USED_AS_GOVERNANCE_CONSUMER_OR_EXPECTED_AS_READINESS_SCOPE_IDENTITY"
+  },
   "observed_input_readiness": {
     "latest_run_id": 218,
     "latest_run_status": "COMPLETED",
     "latest_run_family_count": 47,
     "latest_run_invalidated": false,
     "latest_run_validator_completed_at": "2026-09-01T19:37:21.393361Z",
-    "latest_run_scope_production_authorized": false,
-    "product_target_bound_runs": 0,
-    "ui_target_bound_runs": 0
+    "latest_run_scope_production_authorized": false
   },
   "consumer_targets": [
     {
       "consumer_id": "PERFIL-PRODUCT-DIRECTOR-LF",
       "required_governance_consumer": "CONTEXT_PACK",
-      "exact_target_bound_readiness_receipt_observed": false,
+      "behavioral_target_screen_declared": false,
+      "reusable_exact_screen_receipt_observed": false,
       "behavioral_ab_status": "INSUFFICIENT_EVIDENCE"
     },
     {
       "consumer_id": "PERFIL-UI-ARCHITECT",
       "required_governance_consumer": "CONTEXT_PACK",
-      "exact_target_bound_readiness_receipt_observed": false,
+      "behavioral_target_screen_declared": false,
+      "reusable_exact_screen_receipt_observed": false,
       "behavioral_ab_status": "INSUFFICIENT_EVIDENCE"
     }
   ],
