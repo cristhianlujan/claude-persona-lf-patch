@@ -2,6 +2,7 @@
   "schema": "LF_LEARNING_BEHAVIORAL_READINESS_V2",
   "status": "WAITING_CURRENT_INPUT_GOVERNANCE_RECEIPT",
   "observed_live_at": "2026-09-01T07:00:00Z",
+  "github_runtime_candidate_observed_at": "2026-09-01T13:22:00Z",
   "production_impact": false,
   "runtime_invoked": false,
   "holdout_consumed": false,
@@ -30,7 +31,13 @@
     "trigger_source": ".github/workflows/story-agent-evidence-verifier.yml#run-zero-cost-profile-runtime",
     "model_runtime_pinned": true,
     "test_doubles_allowed": false,
-    "external_trigger_required": true
+    "external_trigger_required": true,
+    "candidate_runtime_available": true,
+    "candidate_runtime_ref": "learning_behavioral_runtime_candidate_v1.json",
+    "candidate_runtime_head": "6039bae07f126c2856d052b5de620eeaaf7b6a47",
+    "candidate_runtime_exact_head_ci": "4/4_PASS",
+    "candidate_runtime_canonical": false,
+    "candidate_runtime_authorizes_execution": false
   },
   "consumers": [
     {
@@ -40,7 +47,7 @@
       "champion_id": "CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1",
       "challenger_id": "CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1",
       "routing_benchmark": "50/50_PASS",
-      "behavioral_status": "BLOCKED_UNTIL_CURRENT_GOVERNANCE_RECEIPT_AND_QUEUE_REQUEST",
+      "behavioral_status": "BLOCKED_BY_CURRENT_GOVERNANCE_RECEIPT_NOT_RUNTIME_DISCOVERY",
       "required_before_runtime": ["CURRENT_INPUT_READINESS_RECEIPT", "LIVE_CURRENT_ROUTER_DECISION_PASS", "EXACT_REQUEST_BINDING", "AUTHORIZED_OWNER_RUNTIME_TRIGGER"],
       "required_evidence_after_runtime": ["RAW_OUTPUT", "CANONICAL_EXECUTION_RECEIPT", "DETERMINISTIC_VALIDATION", "SEMANTIC_JUDGE", "FRESH_ADVERSARIAL_EVIDENCE"]
     },
@@ -51,16 +58,18 @@
       "champion_id": "CHAMPION-UI-ARCHITECT-NO-COMPETITIVE-CONTEXT-v1",
       "challenger_id": "CHALLENGER-UI-ARCHITECT-SELECTED-COMPETITIVE-UI-CONTEXT-v1",
       "routing_benchmark": "50/50_PASS",
-      "behavioral_status": "BLOCKED_UNTIL_CURRENT_PRODUCT_DIRECTION_AND_GOVERNANCE_RECEIPT",
+      "behavioral_status": "BLOCKED_BY_CURRENT_PRODUCT_DIRECTION_AND_GOVERNANCE_RECEIPT",
       "required_before_runtime": ["PRODUCT_DIRECTION_AUTHORIZED_CURRENT", "CURRENT_INPUT_READINESS_RECEIPT", "LIVE_CURRENT_ROUTER_DECISION_PASS", "EXACT_REQUEST_BINDING", "AUTHORIZED_OWNER_RUNTIME_TRIGGER"],
       "required_evidence_after_runtime": ["RAW_OUTPUT", "CANONICAL_EXECUTION_RECEIPT", "DETERMINISTIC_VALIDATION", "SEMANTIC_JUDGE", "FRESH_ADVERSARIAL_EVIDENCE"]
     }
   ],
   "ekb_preflight": {
     "live_db_readback": true,
-    "status": "RECOVERED_LIVE_READBACK",
+    "status": "RECOVERED_LIVE_READBACK_PRIOR_DURABLE_CHECKPOINT",
     "matched_error_codes": ["CI-E16-001", "CI-MIG-001", "DB-001", "DB-EVT-001", "GOV-010", "KB-PROD-001", "LEARNING-EFFICIENCY-METRICS-CONTRACT-001", "OPS-002", "PROFILE-RUNTIME-DISPATCH-001"],
     "mutation_scope": "SANDBOX_GITHUB_ONLY",
-    "supabase_outage": false
+    "supabase_outage": false,
+    "current_run_sql_channel": "BLOCKED_BY_TOOL_SAFETY_NOT_DATABASE_OUTAGE",
+    "current_run_live_db_claims_added": false
   }
 }
