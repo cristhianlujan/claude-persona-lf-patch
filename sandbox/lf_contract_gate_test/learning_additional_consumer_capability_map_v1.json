@@ -1,0 +1,45 @@
+{
+  "schema": "LF_LEARNING_ADDITIONAL_CONSUMER_CAPABILITY_MAP_V1",
+  "status": "CANDIDATE_MAPPING_NOT_BOUND",
+  "source_main": "17903f544c5e53e1d94b08664a4fb6704c0dc087",
+  "mappings": [
+    {
+      "consumer_id": "PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531",
+      "capability_id": "DIGITAL_SELF_SERVICE",
+      "cluster_code": "AUTOGESTION_DIGITAL",
+      "state": "CANDIDATE_REQUIRES_BENCHMARK",
+      "source_basis": "adapter activation scope explicitly covers listing/selection experience, funnel friction, user comprehension and Marketplace-specific experience constraints",
+      "required_prerequisites": ["PRODUCT_DIRECTION_AUTHORIZED_CURRENT","TARGET_MARKETPLACE_SURFACE_CURRENT"],
+      "must_not_authorize": ["PRODUCT_RULES","FINANCIAL_CLAIMS","CANONICAL_UI_TOKENS","CONVERSION_TARGETS"]
+    },
+    {
+      "consumer_id": "PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531",
+      "capability_id": "PAYMENT_NO_ADEUDO",
+      "cluster_code": "PAGOS_Y_NO_ADEUDO",
+      "state": "CANDIDATE_REQUIRES_BENCHMARK",
+      "source_basis": "adapter activation scope explicitly covers clarity of promises, transparency, support continuity, confidence signals and trust friction while preserving debt/payment claim authority",
+      "required_prerequisites": ["PRODUCT_CLAIM_AUTHORITY_CURRENT","SUPPORT_AUTHORITY_CURRENT"],
+      "must_not_authorize": ["DEBT_CLOSURE_CLAIM","PAYMENT_STATUS","LEGAL_OUTCOME","SUPPORT_SLA"]
+    },
+    {
+      "consumer_id": "PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531",
+      "capability_id": "NEGOCIACION_DEUDA",
+      "cluster_code": "NEGOCIACION_DEUDA",
+      "state": "CANDIDATE_REQUIRES_BENCHMARK",
+      "source_basis": "competitive negotiation patterns may be inspected only as trust-friction evidence; adapter authority forbids inventing guarantees, debt closure, eligibility or urgency",
+      "required_prerequisites": ["PRODUCT_CLAIM_AUTHORITY_CURRENT","NEGOTIATION_FLOW_CURRENT"],
+      "must_not_authorize": ["GUARANTEE","DEBT_ERASURE","ELIGIBILITY","URGENCY"]
+    }
+  ],
+  "binding_requirements": {
+    "routing_benchmark_cases": 50,
+    "routing_benchmark_families": 10,
+    "must_not_invoke_required": true,
+    "authority_pass_pct": 100,
+    "critical_false_positives": 0
+  },
+  "active_learning_bindings_created": 0,
+  "implicit_binding": false,
+  "production_authorized": false,
+  "next_gate": "BUILD_50X10_CASESETS_FOR_CANDIDATE_MAPPINGS"
+}
