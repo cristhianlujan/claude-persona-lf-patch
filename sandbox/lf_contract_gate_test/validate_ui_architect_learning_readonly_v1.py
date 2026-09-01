@@ -6,6 +6,7 @@ import yaml
 ROOT = Path(__file__).resolve().parent
 BINDINGS = ROOT / 'ui_architect_learning_consumer_bindings_v1.yaml'
 PACK = ROOT / 'ui_architect_learning_context_pack_v1.json'
+ELIGIBILITY = ROOT / 'ui_architect_learning_kb_eligibility_readback_v1.json'
 
 REQUIRED_BINDING_FIELDS = {
     'consumer_id','consumer_type','capability_id','router_action','invoke_when','must_not_invoke_when',
@@ -22,8 +23,13 @@ EXPECTED = {
 def main():
     b = yaml.safe_load(BINDINGS.read_text())
     p = json.loads(PACK.read_text())
+    e = json.loads(ELIGIBILITY.read_text())
     assert b['consumer']['consumer_id'] == 'PERFIL-UI-ARCHITECT'
     assert b['consumer']['prerequisite'] == 'PRODUCT_DIRECTION_AUTHORIZED_CURRENT'
+    assert e.get('fresh_readback_event_ref','').startswith('public.lf_eventos/')
+    assert e['eligible_count'] == 4
+    eligible = {r['kb_id'] for r in e['rows'] if r['kb_category']=='COMPETENCIA' and r['grounding_status']=='GROUNDED' and r['consumer_ready'] is True}
+    assert eligible == set().union(*EXPECTED.values())
     assert p['consumer_id'] == 'PERFIL-UI-ARCHITECT'
     assert p['prerequisite'] == 'PRODUCT_DIRECTION_AUTHORIZED_CURRENT'
     assert p['selection']['semantic_search'] is False
@@ -46,12 +52,13 @@ def main():
         assert 'product_direction_missing_or_stale' in row['must_not_invoke_when']
         ids = set(row['source_learning_ids'])
         assert ids == EXPECTED[row['capability_id']]
+        assert ids.issubset(eligible)
         refs = {x.rsplit('/',1)[-1] for x in row['selected_evidence_refs']}
         assert refs == ids
         assert row['binding_id'] not in seen
         seen.add(row['binding_id'])
     assert len(seen) == 2
-    print('UI_ARCHITECT_LEARNING_READONLY_CONTRACT=PASS bindings=2/2 exact_ids=4/4 prerequisite_no_bypass=2/2 llm_selector=0 round_trips=0 writes=0')
+    print('UI_ARCHITECT_LEARNING_READONLY_CONTRACT=PASS bindings=2/2 exact_ids=4/4 fresh_kb_readback=PASS prerequisite_no_bypass=2/2 llm_selector=0 round_trips=0 writes=0')
 
 if __name__ == '__main__':
     main()
