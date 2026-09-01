@@ -1,0 +1,36 @@
+{
+  "schema":"ACT0058_CANDIDATE_JUDGE_QPG_GATE_V1",
+  "operation_code":"ORQUESTACION_PIPELINE_LF",
+  "status":"BENCHMARK_REQUIRED",
+  "candidate_scope":{"judges":10,"cases":30,"cases_per_judge":3,"active_bindings_before":4,"candidate_bindings_to_activate":0},
+  "quality_gate":{
+    "required_accuracy_pct":100.0,
+    "required_critical_false_positives":0,
+    "required_case_pass":"30/30",
+    "restock_noop_boundary_required":true,
+    "retry_terminal_at_3_required":true
+  },
+  "performance_gate":{
+    "selector_llm_calls_required":0,
+    "round_trips_required":0,
+    "deterministic_share_pct_required":100.0,
+    "runtime_measurements_required":["p50_us","p95_us","max_us"],
+    "no_network_or_tool_call_per_case":true
+  },
+  "governance_gate":{
+    "router_first":true,
+    "source_migration_exact_head_ci_required":true,
+    "real_execution_provenance_required":true,
+    "contract_105_110_apply_before_binding":true,
+    "candidate_judges_apply_before_binding":true,
+    "live_readback_required_before_activation":true,
+    "no_active_binding_in_candidate_migration":true,
+    "production_authorized":false,
+    "automatic_impact":false
+  },
+  "benchmark":"sandbox/lf_contract_gate_test/benchmark_act0058_candidate_judges_v1.py",
+  "cases":"sandbox/lf_contract_gate_test/act0058_judge_cases_v1.json",
+  "outcomes_allowed":["CHALLENGER_WINS","CHAMPION_RETAINS","NEEDS_REPAIR","INSUFFICIENT_EVIDENCE"],
+  "current_outcome":"INSUFFICIENT_EVIDENCE",
+  "reason":"EXACT_HEAD_BENCHMARK_AND_CI_NOT_YET_OBSERVED"
+}
