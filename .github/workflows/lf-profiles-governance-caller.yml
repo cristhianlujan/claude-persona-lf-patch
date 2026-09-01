@@ -89,6 +89,46 @@ jobs:
           print('PASS_INPUT_READINESS_4_OF_4')
           PY
 
+      - name: Materialize B2B-CARGA-001 Input Governance for issue 402
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          set -euo pipefail
+          code=$(curl --silent --show-error \
+            -o readiness-b2b-402.json -w '%{http_code}' \
+            -H "Authorization: Bearer ${OIDC_TOKEN}" \
+            -H 'Content-Type: application/json' \
+            -d '{"action":"input_readiness_b2b_402_v1","codigo":"B2B-CARGA-001"}' \
+            'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profiles-governance-caller-v1')
+          cat readiness-b2b-402.json
+          python3 - "$code" <<'PY'
+          import json,sys
+          http=int(sys.argv[1])
+          data=json.load(open('readiness-b2b-402.json',encoding='utf-8'))
+          result=data.get('result') or {}
+          checks={
+            'http_governed': http in (200,409),
+            'scope': data.get('scope')=='LF_EMPRESA_ISSUE_402',
+            'outcome': data.get('outcome') in ('READY','BLOCKED'),
+            'codigo': result.get('codigo')=='B2B-CARGA-001',
+            'pantalla_id': result.get('pantalla_id')==43,
+            'consumer': result.get('consumer')=='MANUAL',
+            'status_present': isinstance(result.get('status'),str) and bool(result.get('status')),
+          }
+          failed=[k for k,v in checks.items() if not v]
+          if failed:
+              raise SystemExit('FAIL_B2B_402_INPUT_GOVERNANCE_CALL:'+repr(failed)+':'+json.dumps(data,sort_keys=True)[:5000])
+          print('PASS_B2B_402_INPUT_GOVERNANCE_CALL')
+          print(json.dumps({
+            'outcome':data.get('outcome'),
+            'status':result.get('status'),
+            'run_id':result.get('run_id'),
+            'pantalla_id':result.get('pantalla_id'),
+            'codigo':result.get('codigo'),
+            'consumer':result.get('consumer'),
+          },sort_keys=True))
+          PY
+
       - name: Initialize canonical Profile Creator execution
         id: creator
         env:

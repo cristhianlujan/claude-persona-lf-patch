@@ -19,6 +19,9 @@ const PILOT_SCREENS = [
   { pantalla_id: 57, codigo: "ONB_004" },
   { pantalla_id: 5, codigo: "HOME_002" },
 ] as const;
+const B2B_402_SCREENS = [
+  { pantalla_id: 43, codigo: "B2B-CARGA-001" },
+] as const;
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -72,13 +75,16 @@ async function callRuntime(slug: string, body: Record<string, unknown>): Promise
   return payload;
 }
 
-async function materializeScreen(screen: { pantalla_id: number; codigo: string }) {
+async function materializeScreen(
+  screen: { pantalla_id: number; codigo: string },
+  consumer = "STORY_CREATOR",
+) {
   const payload = await callRuntime("input-governance-agent-v1", {
     pantalla_id: screen.pantalla_id,
-    consumer: "STORY_CREATOR",
+    consumer,
   });
   const result = (payload.result ?? {}) as Record<string, unknown>;
-  return { ...screen, status: result.status ?? null, run_id: result.run_id ?? result.latest_run_id ?? null, payload };
+  return { ...screen, consumer, status: result.status ?? null, run_id: result.run_id ?? result.latest_run_id ?? null, payload };
 }
 
 Deno.serve(async (req: Request) => {
@@ -108,6 +114,22 @@ Deno.serve(async (req: Request) => {
       const ready = result.status === "READY";
       return json({
         outcome: ready ? "READY" : "BLOCKED",
+        caller,
+        required_count: 1,
+        ready_count: ready ? 1 : 0,
+        result,
+      }, ready ? 200 : 409);
+    }
+
+    if (body.action === "input_readiness_b2b_402_v1") {
+      const codigo = typeof body.codigo === "string" ? body.codigo : "";
+      const screen = B2B_402_SCREENS.find((item) => item.codigo === codigo);
+      if (!screen) return json({ outcome: "BLOCKED", code: "B2B_402_SCREEN_NOT_ALLOWED", caller, codigo }, 400);
+      const result = await materializeScreen(screen, "MANUAL");
+      const ready = result.status === "READY";
+      return json({
+        outcome: ready ? "READY" : "BLOCKED",
+        scope: "LF_EMPRESA_ISSUE_402",
         caller,
         required_count: 1,
         ready_count: ready ? 1 : 0,
