@@ -1,0 +1,58 @@
+{
+  "schema": "LF_LEARNING_READONLY_RELEASE_CANDIDATE_V3",
+  "execution_id": "LF-AUTOLEARN-RUN-20260901-037",
+  "status": "CANDIDATO_READ_ONLY",
+  "observed_main_sha": "e5b9febcfebd7c16f8cc8a0cb146cfc467eadc42",
+  "consumer_path": {
+    "product_director": {"capabilities":5,"routing":"50/50_PASS","runtime_enabled":false,"context_budget_bytes":6000},
+    "ui_architect": {"capabilities":2,"routing":"50/50_PASS","runtime_enabled":false,"context_budget_bytes":5000,"prerequisite":"PRODUCT_DIRECTION_AUTHORIZED_CURRENT"},
+    "downstream_no_bypass": "40/40_PASS"
+  },
+  "dynamic_selector": {
+    "eligible_competitive_kb":35,
+    "classified":35,
+    "unclassified":0,
+    "max_evidence_per_capability":5,
+    "llm_calls":0,
+    "round_trips":0,
+    "champion_exact_cluster_match_pct":70.59,
+    "challenger_exact_cluster_match_pct":100.0
+  },
+  "governance": {
+    "router_asset":"ACT-0001",
+    "router_state":"ACTIVO",
+    "router_runtime":"RUNTIME_OPERATIVO",
+    "automatic_impact":"BLOQUEADO",
+    "profile_adapter":"ADAPTER-LF-SHELL-PROFILE-20260827",
+    "profile_adapter_state":"READ_ONLY",
+    "profile_adapter_runtime_enabled":false,
+    "input_governance_receipt_required":true
+  },
+  "behavioral": {
+    "product_director_fixture_run_id":215,
+    "runtime_invoked":false,
+    "holdout_consumed":false,
+    "result":"INSUFFICIENT_EVIDENCE_RUNTIME_DISABLED"
+  },
+  "source_pipeline": {
+    "act0058_active_steps":14,
+    "act0058_active_judge_bindings":4,
+    "act0058_missing_judge_bindings":10,
+    "candidate_judges_source_resolved":10,
+    "candidate_judge_cases":30,
+    "pending_recovered_sources":6,
+    "direct_capture_authorized":false
+  },
+  "ci": {
+    "last_completed_clean_candidate_head":"90ef13f74953d8b32af771281ba2b5099b93995a",
+    "validate_lf_packs":"SUCCESS",
+    "bootstrap":"SUCCESS",
+    "lf_contract_check":"FAIL_CI_E16_001",
+    "contract_and_parity_steps_before_e16":"PASS",
+    "current_head_waiting_ci":true
+  },
+  "promotion":"BLOCKED_RUNTIME_AUTHORITY_AND_GLOBAL_EXACT_HEAD_CI",
+  "production_authorized":false,
+  "automatic_impact":false,
+  "rollback":"retain champion without competitive context and do not invoke profile runtime"
+}
