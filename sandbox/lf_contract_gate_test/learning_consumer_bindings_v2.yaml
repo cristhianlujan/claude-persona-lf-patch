@@ -1,0 +1,90 @@
+version: v2
+status: CANDIDATO_READ_ONLY
+consumer:
+  consumer_id: PERFIL-PRODUCT-DIRECTOR-LF
+  consumer_type: PROFILE
+  consumer_source: profiles/product_director_lf/SKILL.md
+  consumer_runtime_state: GOVERNED_RECEIPT_REQUIRED
+  router_action: EJECUCION_PERFIL_LF
+  governance_consumer: CONTEXT_PACK
+champion_id: CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1
+challenger_id: CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1
+bindings:
+  - binding_id: BIND-LF-PD-NEGOCIACION-DEUDA-v2
+    version: v2
+    consumer_id: PERFIL-PRODUCT-DIRECTOR-LF
+    consumer_type: PROFILE
+    capability_id: NEGOCIACION_DEUDA
+    router_action: EJECUCION_PERFIL_LF
+    invoke_when: [task_requires_product_scope_or_tradeoff_for_debt_negotiation, task_requires_acceptance_or_product_direction_for_negotiation_flow]
+    must_not_invoke_when: [legal_approval_only, visual_design_only, technical_architecture_only, user_specific_financial_advice]
+    input_contract: {required: [task_intent, explicit_constraints, evidence_refs], authority: GROUNDED_COMPETITIVE_EVIDENCE_ONLY}
+    minimum_context: [grounded_competitive_pattern, source_ref, explicit_constraints, observed_vs_proposed_boundary]
+    selected_evidence_refs:
+      - public.lf_knowledge_base/19461cc1-dc9c-4261-8b36-2bc8401160a1
+      - public.lf_knowledge_base/07fec06f-51fd-4b3f-a322-114878881f5c
+      - public.lf_knowledge_base/46ff730d-d561-4cab-ba2e-b4f45a87171c
+      - public.lf_knowledge_base/8c5324d1-14a0-43b0-8816-c7e0bb85d24c
+    policy_capsule_ref: POL-LF-OPERATION-LIFECYCLE
+    output_schema_ref: profiles/product_director_lf/SKILL.md#Required-output-modes
+    judges: [exact_binding_required, authority_preservation, no_invention, bounded_context, must_not_invoke]
+    fallback: NO_COMPETITIVE_CONTEXT
+    timeout_budget: 0
+    context_budget: {max_bytes: 6000, selection: DETERMINISTIC_FIRST}
+    lifecycle_state: READY_FOR_BINDING
+    source_learning_ids: [19461cc1-dc9c-4261-8b36-2bc8401160a1, 07fec06f-51fd-4b3f-a322-114878881f5c, 46ff730d-d561-4cab-ba2e-b4f45a87171c, 8c5324d1-14a0-43b0-8816-c7e0bb85d24c]
+    champion_id: CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1
+    challenger_id: CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1
+    provenance: {source_table: public.lf_knowledge_base, verified_live: true, production_authorized: false}
+  - binding_id: BIND-LF-PD-ALTERNATIVAS-FINANCIERAS-v2
+    version: v2
+    consumer_id: PERFIL-PRODUCT-DIRECTOR-LF
+    consumer_type: PROFILE
+    capability_id: ALTERNATIVAS_FINANCIERAS
+    router_action: EJECUCION_PERFIL_LF
+    invoke_when: [task_requires_product_alternative_comparison_or_tradeoff, task_requires_scope_decision_between_debt_resolution_and_new_credit_paths]
+    must_not_invoke_when: [user_specific_credit_recommendation, eligibility_claim_without_authority, legal_approval_only, technical_implementation_only]
+    input_contract: {required: [task_intent, explicit_constraints, evidence_refs], authority: GROUNDED_COMPARISON_ONLY}
+    minimum_context: [grounded_alternative_pattern, risk_boundary, source_ref, non_recommendation_constraint]
+    selected_evidence_refs:
+      - public.lf_knowledge_base/96872c14-85be-4ac6-bda0-0cb343a67f36
+      - public.lf_knowledge_base/e0a9d700-ba7e-4f47-924a-ca5436095cf7
+    policy_capsule_ref: POL-LF-OPERATION-LIFECYCLE
+    output_schema_ref: profiles/product_director_lf/SKILL.md#Required-output-modes
+    judges: [exact_binding_required, authority_preservation, no_invention, bounded_context, must_not_invoke]
+    fallback: NO_COMPETITIVE_CONTEXT
+    timeout_budget: 0
+    context_budget: {max_bytes: 6000, selection: DETERMINISTIC_FIRST}
+    lifecycle_state: READY_FOR_BINDING
+    source_learning_ids: [96872c14-85be-4ac6-bda0-0cb343a67f36, e0a9d700-ba7e-4f47-924a-ca5436095cf7]
+    champion_id: CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1
+    challenger_id: CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1
+    provenance: {source_table: public.lf_knowledge_base, verified_live: true, production_authorized: false}
+  - binding_id: BIND-LF-PD-EDUCACION-CREDITICIA-v2
+    version: v2
+    consumer_id: PERFIL-PRODUCT-DIRECTOR-LF
+    consumer_type: PROFILE
+    capability_id: EDUCACION_CREDITICIA
+    router_action: EJECUCION_PERFIL_LF
+    invoke_when: [task_requires_product_decision_for_credit_education_or_clarity, task_requires_acceptance_or_scope_for_debt_education_experience]
+    must_not_invoke_when: [user_specific_credit_advice, legal_or_regulatory_truth_without_independent_authority, score_guarantee, visual_copy_only]
+    input_contract: {required: [task_intent, explicit_constraints, evidence_refs], authority: GROUNDED_EDUCATION_ONLY}
+    minimum_context: [grounded_education_pattern, source_ref, claim_limits, observed_vs_proposed_boundary]
+    selected_evidence_refs:
+      - public.lf_knowledge_base/cd247c51-4734-474a-b0a4-f4e6dfe4d13b
+      - public.lf_knowledge_base/4784cf4b-77e9-4e76-84fe-e689e6dd140e
+      - public.lf_knowledge_base/f7f643db-ed5e-4f93-8347-9020828ba3c5
+      - public.lf_knowledge_base/8f62a71c-9b64-4a9b-9bc9-8df50b5aa088
+      - public.lf_knowledge_base/88c157a2-4f63-4934-9cc9-8b57eaeddaf8
+    policy_capsule_ref: POL-LF-OPERATION-LIFECYCLE
+    output_schema_ref: profiles/product_director_lf/SKILL.md#Required-output-modes
+    judges: [exact_binding_required, authority_preservation, no_invention, bounded_context, must_not_invoke]
+    fallback: NO_COMPETITIVE_CONTEXT
+    timeout_budget: 0
+    context_budget: {max_bytes: 6000, selection: DETERMINISTIC_FIRST}
+    lifecycle_state: READY_FOR_BINDING
+    source_learning_ids: [cd247c51-4734-474a-b0a4-f4e6dfe4d13b, 4784cf4b-77e9-4e76-84fe-e689e6dd140e, f7f643db-ed5e-4f93-8347-9020828ba3c5, 8f62a71c-9b64-4a9b-9bc9-8df50b5aa088, 88c157a2-4f63-4934-9cc9-8b57eaeddaf8]
+    champion_id: CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1
+    challenger_id: CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1
+    provenance: {source_table: public.lf_knowledge_base, verified_live: true, production_authorized: false}
+rollback: {action: remove_selected_competitive_context_and_use_champion, production_impact: false}
