@@ -1,0 +1,12 @@
+{
+  "schema":"LF_LEARNING_BRIDGE_SOURCE_STATE_V1",
+  "observed_main":"17903f544c5e53e1d94b08664a4fb6704c0dc087",
+  "operation":"LEARNING_BRIDGE_KB_CARD_LF",
+  "router_action":"KNOWLEDGE_LEARNING_BRIDGE",
+  "router_source":{"ref":"supabase/migrations/20260831171812_lf_materialize_learning_bridge_minimum_lifecycle.sql","blob_sha":"051daa8fad6e335cf5abd166d9317805a41f1f7a","declares_status":"ACTIVE","write_allowed":false},
+  "promotion_source":{"ref":"supabase/migrations/20260831175625_lf_promote_learning_bridge_readonly_control_plane.sql","blob_sha":"a1f02d0e8dfbe6f6ad0886094c90a43a253f0232","declares_operation_status":"PRODUCCION_CONTROLADA_READ_ONLY","runtime_disabled":true,"production_disabled":true,"automatic_impact_disabled":true},
+  "step_contracts":{"count":25,"status":"ACTIVE_ENFORCEMENT"},
+  "evidence_level":"SOURCE_DECLARED_DB_UNVERIFIED_THIS_RUN",
+  "reason_db_unverified":"Supabase execute_sql channel blocked by tool safety; project health ACTIVE_HEALTHY verified separately",
+  "safe_interpretation":"Eligible as canonical upstream design for read-only consumer candidate; do not claim live DB activation without readback"
+}
