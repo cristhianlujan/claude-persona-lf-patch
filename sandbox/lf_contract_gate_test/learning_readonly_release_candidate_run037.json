@@ -1,0 +1,92 @@
+{
+  "schema": "LF_LEARNING_READONLY_RELEASE_CANDIDATE_V1",
+  "execution_id": "LF-AUTOLEARN-RUN-20260901-037",
+  "status": "CANDIDATO_READ_ONLY",
+  "production_impact": false,
+  "automatic_impact": false,
+  "router_first": true,
+  "direct_consumers": [
+    {
+      "consumer_id": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "capabilities": 5,
+      "routing": "50/50_PASS",
+      "tp": 25,
+      "tn": 25,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "specificity": 1.0,
+      "context_budget_bytes": 6000,
+      "selector_llm_calls": 0,
+      "selector_round_trips": 0
+    },
+    {
+      "consumer_id": "PERFIL-UI-ARCHITECT",
+      "capabilities": 2,
+      "precondition": "PRODUCT_DIRECTION_AUTHORIZED_CURRENT",
+      "routing": "50/50_PASS",
+      "tp": 25,
+      "tn": 25,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "specificity": 1.0,
+      "context_budget_bytes": 5000,
+      "selector_llm_calls": 0,
+      "selector_round_trips": 0
+    }
+  ],
+  "dynamic_selector": {
+    "taxonomy": "LF_LEARNING_CLUSTER_V1",
+    "cases": "50/50",
+    "families": "10x5",
+    "bindings": 7,
+    "consumers": 2,
+    "capabilities": 5,
+    "max_evidence_per_capability": 5,
+    "llm_calls": 0,
+    "round_trips": 0,
+    "verdict": "CHALLENGER_WINS_ROUTING_ONLY"
+  },
+  "downstream": {
+    "direct_kb_injection": false,
+    "frontend": "20/20_PASS_UPSTREAM_ONLY",
+    "gamification": "20/20_PASS_CONDITIONAL_UPSTREAM_ONLY"
+  },
+  "behavioral": {
+    "status": "WAITING_CURRENT_INPUT_GOVERNANCE_RECEIPT",
+    "pantalla_id": 21,
+    "input_readiness_rows": 0,
+    "runtime_invoked": false,
+    "holdout_consumed": false
+  },
+  "card_factory": {
+    "status": "LOCAL_BLOCKER",
+    "operation_steps_source_aligned": true,
+    "step_contract_order_drift": true,
+    "missing_judge_bindings": ["github_write", "github_readback"],
+    "card_write_allowed": false
+  },
+  "fresh_source_backlog": {
+    "governed_queue_admitted": 11,
+    "pending_capture": 11,
+    "direct_kb_writes": 0,
+    "consumer_ready_changes": 0
+  },
+  "deterministic_evidence": {
+    "validated_head": "d93578ad5e5a97f9dd10e949397447acf2e0265e",
+    "validated_run_id": 33481122129,
+    "immutable_executable_closure_reused": true,
+    "multi_consumer_gate": "PASS",
+    "provider_cost": "PROVIDER_COST_UNAVAILABLE_ZERO_LLM_CALL_ROUTING_LAYER"
+  },
+  "global_ci": {
+    "status": "WAITING_EXACT_HEAD",
+    "known_local_blocker": "E16_ACTIONS_INVENTORY_PRIOR_PUSH_FAILURE",
+    "must_not_relax_e16": true
+  },
+  "promotion": "BLOCKED_UNTIL_GLOBAL_CI_AND_BEHAVIORAL_EVIDENCE",
+  "rollback": "retain static exact-id champion and no competitive context when binding/readiness fails"
+}
