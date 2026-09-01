@@ -11,6 +11,7 @@ SCRIPTS=[
  'validate_ui_architect_learning_classification_v1.py',
  'validate_ui_architect_learning_efficiency_metrics_v1.py',
  'validate_learning_active_consumer_binding_contract_v1.py',
+ 'validate_learning_deterministic_context_pack_builder_v1.py',
  'validate_learning_benchmark_outcome_contract_v1.py'
 ]
 def main():
@@ -19,5 +20,5 @@ def main():
   if p.returncode!=0:
    sys.stderr.write(p.stdout+p.stderr); raise SystemExit(p.returncode)
   print(p.stdout.strip())
- print('UI_ARCHITECT_LEARNING_SUITE=PASS validators=9/9 production_authorized=false')
+ print('UI_ARCHITECT_LEARNING_SUITE=PASS validators=10/10 production_authorized=false')
 if __name__=='__main__': main()
