@@ -14,6 +14,8 @@ on:
       - 'sandbox/lf_contract_gate_test/validate_build_learning_profile_precanary_request_v1.py'
       - 'sandbox/lf_contract_gate_test/learning_sequential_consumer_handoff_v1.yaml'
       - 'sandbox/lf_contract_gate_test/validate_learning_sequential_consumer_handoff_v1.py'
+      - 'sandbox/lf_contract_gate_test/product_director_context_pack_caller_gap_v1.yaml'
+      - 'sandbox/lf_contract_gate_test/validate_product_director_context_pack_caller_gap_v1.py'
       - 'sandbox/lf_contract_gate_test/validate_learning_read_only_*'
       - '.github/workflows/learning-consumer-read-only-benchmark.yml'
   workflow_dispatch:
@@ -65,5 +67,7 @@ jobs:
         run: python3 validate_build_learning_profile_precanary_request_v1.py
       - name: Validate sequential product-to-UI handoff
         run: python3 sandbox/lf_contract_gate_test/validate_learning_sequential_consumer_handoff_v1.py
+      - name: Validate exact behavioral caller authority gap
+        run: python3 sandbox/lf_contract_gate_test/validate_product_director_context_pack_caller_gap_v1.py
       - name: Run champion vs challenger routing benchmark v2
         run: python3 sandbox/lf_contract_gate_test/run_learning_consumer_routing_benchmark_v2.py
