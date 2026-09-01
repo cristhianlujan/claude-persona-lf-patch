@@ -1,4 +1,4 @@
-version: v1
+version: v2
 status: CANDIDATE_READ_ONLY
 operation_code: ORQUESTACION_PIPELINE_LF
 source_main: 17903f544c5e53e1d94b08664a4fb6704c0dc087
@@ -8,64 +8,86 @@ principles:
   automatic_impact: false
   production_authorized: false
   exact_contract_binding_required: true
-judges:
+  contradictory_contract_fail_closed: true
+ready_to_bind:
   - step_order: 5
     step_id: init_execution
     judge_code: MINI_JUDGE_ACT0058_INIT_EXECUTION
-    pass_if: [operation_execution_exists, operation_code_matches, status_initialized]
-    fail_if: [execution_missing, operation_code_mismatch]
+    required_evidence_keys: []
+    pass_if: [operation_execution_exists, operation_code_matches, status_in_progress]
+    fail_if: [execution_missing, operation_code_mismatch, status_not_in_progress]
     result_values: [EXECUTION_INITIALIZED, BLOCKED]
   - step_order: 20
     step_id: init_run
     judge_code: MINI_JUDGE_ACT0058_INIT
-    pass_if: [pipeline_run_created, source_url_nonempty, dedup_24h_clear, stage_pending_capture]
-    fail_if: [source_url_empty, completed_duplicate_within_24h]
+    required_evidence_keys: [pipeline_run_id, source_url, dedup_check]
+    pass_if: [pipeline_run_created, source_url_nonempty, dedup_24h_clear, stage_current_captura]
+    fail_if: [source_url_empty, completed_duplicate_within_24h, pipeline_run_missing]
     result_values: [RUN_INITIALIZED, DEDUP_BLOCKED, BLOCKED]
   - step_order: 30
     step_id: scope_filter
     judge_code: MINI_JUDGE_ACT0058_SCOPE
+    required_evidence_keys: [source_url, domain_matched]
     pass_if: [source_domain_allowed]
     fail_if: [source_domain_out_of_scope]
     result_values: [SCOPE_ALLOWED, OUT_OF_SCOPE]
   - step_order: 50
     step_id: stage_captura
     judge_code: MINI_JUDGE_ACT0058_CAPTURA
+    required_evidence_keys: [capture_run_id, capture_status_completed]
     pass_if: [capture_run_id_present, capture_status_completed]
     fail_if: [capture_run_id_missing, capture_status_not_completed]
     result_values: [CAPTURE_COMPLETED, CAPTURE_BLOCKED]
   - step_order: 60
     step_id: stage_homolog
     judge_code: MINI_JUDGE_ACT0058_HOMOLOG
+    required_evidence_keys: [homolog_record_id, homolog_status_aprobado]
     pass_if: [homolog_record_id_present, homolog_status_aprobado]
     fail_if: [homolog_record_id_missing, homolog_status_rejected_or_null]
     result_values: [HOMOLOG_APPROVED, HOMOLOG_BLOCKED]
   - step_order: 70
     step_id: stage_analisis
     judge_code: MINI_JUDGE_ACT0058_ANALISIS
+    required_evidence_keys: [decision_id, risk_level, consumer_gate_passed]
     pass_if: [decision_id_present, consumer_gate_passed_true]
-    fail_if: [decision_id_missing, high_risk_gate_not_passed]
+    fail_if: [decision_id_missing, consumer_gate_not_passed]
     result_values: [ANALYSIS_ALLOWED, ANALYSIS_BLOCKED]
   - step_order: 90
     step_id: stage_kb_write
     judge_code: MINI_JUDGE_ACT0058_KB_WRITE
+    required_evidence_keys: [kb_id, consumer_gate_passed, hitl_triggered]
     pass_if: [kb_id_present, consumer_gate_passed_true, hitl_triggered_false]
     fail_if: [consumer_gate_not_passed, hitl_triggered_true, kb_id_missing]
     result_values: [KB_WRITE_CONFIRMED, KB_WRITE_BLOCKED]
   - step_order: 100
     step_id: completed
     judge_code: MINI_JUDGE_ACT0058_COMPLETED
+    required_evidence_keys: [stage_completed, evento_id]
     pass_if: [stage_completed, closing_event_present]
     fail_if: [pipeline_update_failed, closing_event_missing]
     result_values: [COMPLETED_CONFIRMED, COMPLETION_BLOCKED]
+contract_repair_required:
   - step_order: 105
     step_id: restock_queue
     judge_code: MINI_JUDGE_ACT0058_RESTOCK
-    pass_if: [new_allowed_url_inserted, queue_state_pending]
-    fail_if: [no_new_allowed_url, insert_failed]
-    result_values: [QUEUE_RESTOCKED, RESTOCK_NOOP, RESTOCK_BLOCKED]
+    reason: LIVE_CONTRACT_CONTRADICTION
+    evidence:
+      - pass_condition_requires_urls_insertadas_gte_1
+      - fail_condition_NO_NEW_URLS_declares_next_action_SKIP_RESTOCK
+      - candidate_result_RESTOCK_NOOP_cannot_be_classified_without_contract_reconciliation
+    allowed_action: RECONCILE_CONTRACT_SOURCE_FIRST_BEFORE_BINDING
   - step_order: 110
     step_id: failed_retry
     judge_code: MINI_JUDGE_ACT0058_RETRY
-    pass_if: [retry_count_lte_3, error_detail_present, retry_state_recorded]
-    fail_if: [retry_count_gt_3]
-    result_values: [RETRY_ALLOWED, MAX_RETRY_BLOCKED]
+    reason: LIVE_CONTRACT_CONTRADICTION
+    evidence:
+      - purpose_and_block_condition_say_retry_count_gt_3
+      - notes_say_maximum_3_attempts
+      - execution_sql_sets_FAILED_when_retry_count_plus_1_gte_3
+    allowed_action: RECONCILE_CONTRACT_SOURCE_FIRST_BEFORE_BINDING
+summary:
+  live_active_steps: 14
+  existing_active_bindings: 4
+  missing_bindings: 10
+  ready_to_bind: 8
+  contract_repair_required: 2
