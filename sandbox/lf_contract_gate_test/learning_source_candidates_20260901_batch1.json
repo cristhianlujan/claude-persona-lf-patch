@@ -2,6 +2,13 @@
   "schema": "LF_LEARNING_SOURCE_CANDIDATE_BATCH_V1",
   "batch_id": "LEARNING-SOURCE-20260901-B1",
   "status": "SEMANTIC_DEDUP_COMPLETED_PIPELINE_CAPTURE_PENDING",
+  "live_revalidated_at": "2026-09-01T07:00:00Z",
+  "live_revalidation": {
+    "official_pages_accessible": 5,
+    "exact_url_dedup_vs_kb_queue_capture": "5_OF_5_NEW",
+    "claims_rechecked": ["INTERBANK_DEDICATED_VIRTUAL_CARD_AND_UP_TO_48_MONTHS", "BBVA_APP_RATE_INSTALLMENT_PRE_CONFIRMATION", "SCOTIA_REPEATABLE_APP_WEB_SIMULATION_AND_2_TO_60", "FALABELLA_BANK_SIDE_PAYMENT_AND_UP_TO_48", "RIPLEY_OMNICHANNEL_AND_36_TO_60"],
+    "unverified_claims": []
+  },
   "kb_write_allowed": false,
   "consumer_ready_allowed": false,
   "production_impact": false,
