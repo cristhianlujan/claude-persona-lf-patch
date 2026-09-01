@@ -91,6 +91,7 @@ spec.loader.exec_module(validator)
 workflow = ".github/workflows/profile-driven-screen-generation.yml"
 assert workflow in validator.ALLOWED_GITHUB_EXACT
 assert validator.is_allowed_path(workflow)
+assert validator.validate_changed_files([workflow]) == []
 for lookalike in (
     ".github/workflows/profile-driven-screen-generation.yml.bak",
     ".github/workflows/profile-driven-screen-generation.yaml",
@@ -99,6 +100,12 @@ for lookalike in (
 ):
     assert lookalike not in validator.ALLOWED_GITHUB_EXACT
     assert not validator.is_allowed_path(lookalike)
+    try:
+        validator.validate_changed_files([lookalike])
+    except SystemExit as exc:
+        assert exc.code == 1
+    else:
+        raise AssertionError(f"lookalike unexpectedly passed changed-file validation: {lookalike}")
 assert ".github/" not in validator.ALLOWED_PREFIXES
 
-print("PROFILE_DRIVEN_SCREEN_GENERATION_TESTS_PASS 9/9")
+print("PROFILE_DRIVEN_SCREEN_GENERATION_TESTS_PASS 10/10")
