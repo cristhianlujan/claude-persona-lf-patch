@@ -1,0 +1,47 @@
+version: v1
+status: CANDIDATO_READ_ONLY
+operation: LEARNING_READ_ONLY_CONTEXT_CONSUMPTION
+router_first:
+  required: true
+  router_asset: ACT-0001
+  router_action: EJECUCION_PERFIL_LF
+  no_direct_consumer_bypass: true
+consumer:
+  consumer_id: PERFIL-PRODUCT-DIRECTOR-LF
+  consumer_type: PROFILE
+binding:
+  exact_binding_required: true
+  source: sandbox/lf_contract_gate_test/learning_consumer_bindings_v1.yaml
+context_pack:
+  schema: LF_LEARNING_CONSUMER_CONTEXT_PACK_V2
+  source: sandbox/lf_contract_gate_test/learning_consumer_context_pack_v2.json
+  selector: DETERMINISTIC_EXACT_ID
+  max_evidence_refs: 5
+  max_context_bytes: 6000
+  llm_selector_allowed: false
+  semantic_scope_expansion_allowed: false
+runtime_reader:
+  source: sandbox/lf_contract_gate_test/learning_read_only_context_reader_cli_v1.py
+  input_mode: READ_ONLY_ROWS
+  writes_allowed: false
+  llm_calls: 0
+  round_trips: 0
+  tool_calls_inside_selector: 0
+eligibility:
+  grounding_status: GROUNDED
+  consumer_ready: true
+  source_learning_id_must_be_bound: true
+fallback: NO_COMPETITIVE_CONTEXT
+judges:
+  - exact_binding_required
+  - authority_preservation
+  - no_invention
+  - bounded_context
+  - must_not_invoke
+promotion_boundary:
+  runtime_behavioral_required_before_profile_promotion: true
+  production_impact: false
+  automatic_promotion: false
+  current_lifecycle: READY_FOR_BINDING
+rollback:
+  action: remove_selected_competitive_context_and_use_champion
