@@ -3,6 +3,8 @@
   "batch_id": "LEARNING-SOURCE-20260901-B3",
   "execution_id": "LF-AUTOLEARN-RUN-20260901-037",
   "status": "GOVERNED_QUEUE_ADMITTED_CAPTURE_PENDING",
+  "live_revalidated_at": "2026-09-01T09:08:52Z",
+  "live_claim_readback": "4_OF_4_CONFIRMED_OFFICIAL_SOURCE",
   "production_impact": false,
   "direct_kb_write_allowed": false,
   "sources": [
@@ -14,6 +16,12 @@
       "observed_pattern": "separa cuotas vencidas de reprogramación; permite regularizar vencidos con tarjeta débito de otro banco y reprogramar deuda sujeta a evaluación",
       "claim_boundary": "no inferir elegibilidad LF ni resultado; observar taxonomía de solución y canal",
       "semantic_disposition": "NEW_INCREMENTAL_MECHANIC",
+      "live_claim_status": "CONFIRMED_OFFICIAL_SOURCE_20260901",
+      "live_observed_evidence": [
+        "official page separates Pagar cuotas vencidas from Reprogramar mis deudas",
+        "overdue payments can be regularized with debit cards from other banks",
+        "reprogramming can reduce installment amount or postpone payment date and is subject to evaluation"
+      ],
       "queue_id": "54915002-5953-4665-a781-20b8dcd90a8e",
       "queue_state": "PENDIENTE"
     },
@@ -25,6 +33,12 @@
       "observed_pattern": "reprograma préstamo extendiendo plazo y reduciendo pago mensual; solicitud por banca internet, chatbot, oficinas o teléfono",
       "claim_boundary": "no extrapolar condiciones a LF; observar ajuste plazo/cuota y omnicanalidad",
       "semantic_disposition": "NEW_INCREMENTAL_MECHANIC",
+      "live_claim_status": "CONFIRMED_OFFICIAL_SOURCE_20260901",
+      "live_observed_evidence": [
+        "official page states extension up to 60 installments and reduced monthly payment",
+        "term can be adjusted according to payment capacity",
+        "request channels include Banca Internet, Chatbot, offices and phone"
+      ],
       "queue_id": "aa4cb2a2-8a05-4533-8861-6cc2ff17a57c",
       "queue_state": "PENDIENTE"
     },
@@ -36,6 +50,12 @@
       "observed_pattern": "permite postergar una cuota bajo condiciones y genera un nuevo cronograma con recálculo",
       "claim_boundary": "producto vehicular/personal específico; no extrapolar frecuencia ni condiciones, solo patrón temporal/condicional y necesidad de nuevo cronograma",
       "semantic_disposition": "INCREMENTAL_TEMPORAL_CONDITIONAL_PATTERN",
+      "live_claim_status": "CONFIRMED_OFFICIAL_SOURCE_20260901",
+      "live_observed_evidence": [
+        "Cuota Flexible postpones one installment subject to conditions",
+        "a new payment schedule is generated with one additional month per use",
+        "installments are recalculated and the new schedule is made available through direct channels"
+      ],
       "queue_id": "cfa14cd9-04ea-4b7b-8b50-8ee05a6301f7",
       "queue_state": "PENDIENTE"
     },
@@ -47,6 +67,12 @@
       "observed_pattern": "refinancia deuda vigente y puede agregar dinero extra, con simulación/contratación digital",
       "claim_boundary": "nuevo crédito no debe convertirse en solución por defecto para deuda LF; usar como alternativa comparativa y caso negativo de recomendación automática",
       "semantic_disposition": "CONTROLLED_ALTERNATIVE_AND_MUST_NOT_DEFAULT",
+      "live_claim_status": "CONFIRMED_OFFICIAL_SOURCE_20260901",
+      "live_observed_evidence": [
+        "official page states current debt can be refinanced with additional money",
+        "refinancing is described as restructuring payments by extending terms",
+        "App flow includes simulation, review and digital contracting"
+      ],
       "queue_id": "ca8f7c41-1501-41c8-8025-36b8910b1762",
       "queue_state": "PENDIENTE"
     }
