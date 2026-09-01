@@ -44,7 +44,7 @@ def _result(decision: str, impacts: Iterable[str], uncertainty: str, code: str) 
 
 
 def extract_semantic_atoms(mutation: str) -> FrozenSet[str]:
-    """Normalize fixture prose into semantic atoms.
+    """Normalize research fixture prose into semantic atoms.
 
     Production integration should prefer already-structured delta facts. This adapter exists
     only so the research benchmark can exercise the structured core without case ids or gold
@@ -53,7 +53,6 @@ def extract_semantic_atoms(mutation: str) -> FrozenSet[str]:
     s = _norm(mutation)
     atoms: set[str] = set()
 
-    # Stable / bounded representations.
     if (
         s.startswith("mantener ")
         or s.startswith("conservar ")
@@ -86,7 +85,6 @@ def extract_semantic_atoms(mutation: str) -> FrozenSet[str]:
     if _has(s, "solo copy hacia fuente") and _has(s, "mantener", "conservar"):
         atoms.add("STABLE")
 
-    # Missing authority / unsupported creation.
     if _has(
         s,
         "sin fuente",
@@ -119,7 +117,6 @@ def extract_semantic_atoms(mutation: str) -> FrozenSet[str]:
     ):
         atoms.add("AUTHORITY_MISSING")
 
-    # Copy / action / permission.
     if _has(s, "eliminar historial"):
         atoms.add("COPY_CONTRADICTION")
     if _has(s, "otro permiso existente", "copy pertenece a otro recurso"):
@@ -150,7 +147,6 @@ def extract_semantic_atoms(mutation: str) -> FrozenSet[str]:
     ):
         atoms.add("REMOVE_PERMISSION")
 
-    # Routing.
     if _has(s, "otra ruta existente", "otra ruta"):
         atoms.add("CROSS_ROUTE")
     if _has(s, "eliminar relacion screen_route", "quitar relacion screen_route", "retirar screen_route"):
@@ -160,7 +156,6 @@ def extract_semantic_atoms(mutation: str) -> FrozenSet[str]:
     if _has(s, "crear ruta nueva", "ruta nueva", "navegacion inedita"):
         atoms.add("NEW_ROUTE")
 
-    # Design system.
     if _has(s, "otro token existente", "token distinto sin equivalencia", "token diferente sin equivalencia"):
         atoms.add("OTHER_TOKEN_UNPROVEN")
     if _has(s, "eliminar component_token_id", "quitar component_token_id", "retirar component_token_id"):
@@ -170,10 +165,9 @@ def extract_semantic_atoms(mutation: str) -> FrozenSet[str]:
     if _has(s, "crear token nuevo", "token nuevo"):
         atoms.add("NEW_TOKEN")
 
-    # Fields / validations.
     if _has(s, "data_type", "tipo de dato", "text -> integer", "texto a entero"):
         atoms.add("TYPE_CHANGE")
-    if _has(s, "required false -> true", "opcional a obligatorio", "hacer obligatorio", "de opcional a requerido"):
+    if _has(s, "required false -> true", "opcional a obligatorio", "hacer obligatorio", "hacerlo obligatorio", "de opcional a requerido"):
         atoms.add("REQUIREDNESS_CHANGE")
     if _has(s, "agregar filtro nuevo", "campo nuevo", "filtro nuevo"):
         atoms.add("NEW_FIELD")
@@ -201,7 +195,6 @@ def extract_semantic_atoms(mutation: str) -> FrozenSet[str]:
     if _has(s, "system/readonly", "solo lectura", "readonly") and _has(s, "validacion"):
         atoms.add("READONLY_VALIDATION")
 
-    # States / transitions.
     if _has(s, "origen/destino", "cambiar origen", "cambiar destino", "modificar el origen", "modificar el destino"):
         atoms.add("TRANSITION_ENDPOINT_CHANGE")
     if _has(s, "permission guard", "guard de permiso", "guarda de permiso") and _has(s, "eliminar", "quitar", "retirar"):
@@ -211,7 +204,6 @@ def extract_semantic_atoms(mutation: str) -> FrozenSet[str]:
     if _has(s, "estado de otra pantalla", "cross-screen", "otra pantalla"):
         atoms.add("CROSS_SCREEN_STATE")
 
-    # Errors / messages.
     if _has(s, "403 -> 200") or ("200" in s and _has(s, "no autorizado", "no esta autorizado", "sin autorizacion", "sin permiso")):
         atoms.add("HTTP_FAILOPEN")
     if _has(s, "retryable false -> true", "hacer reintentable", "reintento habilitado"):
@@ -221,7 +213,6 @@ def extract_semantic_atoms(mutation: str) -> FrozenSet[str]:
     if _has(s, "crear error nuevo", "error nuevo no definido"):
         atoms.add("NEW_ERROR")
 
-    # API contract.
     if _has(s, "artifact-only", "solo artefacto") and _has(s, "api_data_contract", "api global", "gap api", "api"):
         atoms.add("ARTIFACT_ONLY")
     if _has(s, "filtros/query", "filtros o query", "comportamiento de filtros", "consulta/filtros"):
@@ -245,6 +236,19 @@ def extract_semantic_atoms(mutation: str) -> FrozenSet[str]:
     return frozenset(atoms)
 
 
+_MATERIAL_ATOMS = frozenset({
+    "ACTION_DELETE", "REMOVE_ACTION_BINDING", "NEW_ACTION", "CROSS_RESOURCE",
+    "REPLACE_PERMISSION", "REMOVE_PERMISSION", "CROSS_ROUTE", "REMOVE_ROUTE_BINDING",
+    "BROKEN_ROUTE", "NEW_ROUTE", "OTHER_TOKEN_UNPROVEN", "REMOVE_COMPONENT_TOKEN",
+    "DEPRECATED_TOKEN", "NEW_TOKEN", "TYPE_CHANGE", "REQUIREDNESS_CHANGE", "NEW_FIELD",
+    "PII_CHANGE", "REMOVE_REQUIRED_VALIDATION", "VALIDATION_SEVERITY_CHANGE",
+    "VALIDATION_PARAM_NO_AUTH", "READONLY_VALIDATION", "TRANSITION_ENDPOINT_CHANGE",
+    "REMOVE_PERMISSION_GUARD", "ADD_STATE_TRANSITION", "CROSS_SCREEN_STATE", "HTTP_FAILOPEN",
+    "RETRYABILITY_CHANGE", "SENSITIVE_DISCLOSURE", "NEW_ERROR", "FILTER_QUERY_CHANGE",
+    "PAGINATION_CHANGE", "EXPORT_PAYLOAD_CHANGE", "INVENT_ENDPOINT_SCHEMA",
+})
+
+
 def resolve_change_impact_atoms(
     change_surface: str,
     semantic_atoms: FrozenSet[str],
@@ -253,8 +257,12 @@ def resolve_change_impact_atoms(
     """Structured deterministic core. It never consumes case ids or expected labels."""
     surface = _norm(change_surface).upper()
     atoms = semantic_atoms
+    conflicting = "STABLE" in atoms and bool(atoms & _MATERIAL_ATOMS)
+    stable = "STABLE" in atoms and not conflicting
 
-    if surface == "API_DATA_CONTRACT" and "ARTIFACT_ONLY" in atoms and runtime.behavioral_contract_present:
+    if conflicting:
+        decision, uncertainty, code = "HUMAN_REQUIRED", "MIXED", "CONFLICTING_SEMANTIC_ATOMS"
+    elif surface == "API_DATA_CONTRACT" and "ARTIFACT_ONLY" in atoms and runtime.behavioral_contract_present:
         decision, uncertainty, code = "SCOPED_CANDIDATE", "NONE", "STABLE_BOUNDED"
     elif (
         surface == "API_DATA_CONTRACT"
@@ -266,7 +274,7 @@ def resolve_change_impact_atoms(
         "NEW_ROUTE", "NEW_TOKEN", "NEW_FIELD", "ADD_STATE_TRANSITION", "NEW_ERROR", "NEW_ACTION", "INVENT_ENDPOINT_SCHEMA"
     }:
         decision, uncertainty, code = "HUMAN_REQUIRED", "UNKNOWN", "AUTHORITY_MISSING"
-    elif "STABLE" in atoms:
+    elif stable:
         decision, uncertainty, code = "SCOPED_CANDIDATE", "NONE", "STABLE_BOUNDED"
     elif surface == "COPY_RECONCILIATION" and atoms & {"COPY_CONTRADICTION", "COPY_WRONG_PERMISSION"}:
         decision, uncertainty, code = "SCOPED_BLOCK", "NONE", "LOCAL_INVALID"
@@ -282,14 +290,14 @@ def resolve_change_impact_atoms(
             uncertainty = "MIXED"
 
     if surface == "COPY_RECONCILIATION":
-        if "WHITESPACE_ONLY" in atoms:
+        if stable and "WHITESPACE_ONLY" in atoms:
             impacts = ["VISUAL_EVIDENCE"]
         elif "AUTHORITY_MISSING" in atoms:
             impacts = ["ACTIONS", "PERMISSIONS", "UI_MESSAGES", "VISUAL_EVIDENCE", "SOURCE_AUTHORITY_PROVENANCE"]
         else:
             impacts = ["ACTIONS", "PERMISSIONS", "VISUAL_EVIDENCE"]
     elif surface == "ACTION_SEMANTICS":
-        if "STABLE" in atoms:
+        if stable:
             impacts = ["ACTIONS"]
         elif "ACTION_DELETE" in atoms:
             impacts = ["ACTIONS", "PERMISSIONS", "SECURITY", "API_DATA_CONTRACT"]
@@ -300,14 +308,14 @@ def resolve_change_impact_atoms(
         else:
             impacts = ["ACTIONS", "PERMISSIONS", "API_DATA_CONTRACT"]
     elif surface == "PERMISSION_BINDING":
-        if "STABLE" in atoms:
+        if stable:
             impacts = ["PERMISSIONS"]
         elif atoms & {"REPLACE_PERMISSION", "REMOVE_PERMISSION", "ACTION_DELETE"}:
             impacts = ["PERMISSIONS", "ACTIONS", "SECURITY", "API_DATA_CONTRACT"]
         else:
             impacts = ["PERMISSIONS", "SECURITY", "ACTIONS", "SOURCE_AUTHORITY_PROVENANCE"]
     elif surface == "ROUTING_NAVIGATION":
-        if "STABLE" in atoms:
+        if stable:
             impacts = ["ROUTING_NAVIGATION"]
         elif "CROSS_ROUTE" in atoms:
             impacts = ["ROUTING_NAVIGATION", "ACTIONS"]
@@ -316,7 +324,7 @@ def resolve_change_impact_atoms(
         else:
             impacts = ["ROUTING_NAVIGATION"]
     elif surface == "DESIGN_COMPONENT":
-        if "STABLE" in atoms:
+        if stable:
             impacts = ["DESIGN_SYSTEM", "ASSETS_ICONS", "VISUAL_EVIDENCE"]
         elif "OTHER_TOKEN_UNPROVEN" in atoms:
             impacts = ["DESIGN_SYSTEM", "ASSETS_ICONS", "ACCESSIBILITY", "VISUAL_EVIDENCE"]
@@ -327,7 +335,7 @@ def resolve_change_impact_atoms(
         else:
             impacts = ["DESIGN_SYSTEM", "SOURCE_AUTHORITY_PROVENANCE"]
     elif surface == "FIELD_CONTRACT":
-        if "STABLE" in atoms:
+        if stable:
             impacts = ["FIELDS"]
         elif "TYPE_CHANGE" in atoms:
             impacts = ["FIELDS", "VALIDATIONS", "API_DATA_CONTRACT"]
@@ -338,7 +346,7 @@ def resolve_change_impact_atoms(
         else:
             impacts = ["FIELDS", "PRIVACY_PII", "SECURITY", "AUDIT"]
     elif surface == "VALIDATION":
-        if "STABLE" in atoms:
+        if stable:
             impacts = ["VALIDATIONS"]
         elif "REMOVE_REQUIRED_VALIDATION" in atoms:
             impacts = ["VALIDATIONS", "FIELDS", "API_DATA_CONTRACT"]
@@ -349,7 +357,7 @@ def resolve_change_impact_atoms(
         else:
             impacts = ["VALIDATIONS", "FIELDS"]
     elif surface == "STATE_TRANSITION":
-        if "STABLE" in atoms:
+        if stable:
             impacts = ["STATES", "TRANSITIONS"]
         elif "TRANSITION_ENDPOINT_CHANGE" in atoms:
             impacts = ["STATES", "TRANSITIONS", "ACTIONS"]
@@ -360,7 +368,7 @@ def resolve_change_impact_atoms(
         else:
             impacts = ["STATES", "TRANSITIONS"]
     elif surface == "ERROR_UI_MESSAGE":
-        if "STABLE" in atoms:
+        if stable:
             impacts = ["ERRORS", "UI_MESSAGES", "VISUAL_EVIDENCE"]
         elif "HTTP_FAILOPEN" in atoms:
             impacts = ["ERRORS", "SECURITY", "API_DATA_CONTRACT"]
