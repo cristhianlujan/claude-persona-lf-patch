@@ -1,27 +1,89 @@
 {
-  "schema":"lf-learning-autonomous-run/v1",
-  "program":"LF_APRENDIZAJE_AUTONOMO",
-  "status":"RUNNING",
-  "gate":"P2_EXACT_HEAD_VERIFICATION",
-  "parent_task":"CLOSE_REUSABLE_LEARNING_READ_PATH",
-  "subtask":"VERIFY_FINAL_STABLE_HEAD",
-  "github_pr":369,
-  "functional_head":"da8e5ba3706f68d27463fd01e8f2983b24b45d9f",
-  "supabase_project":"mhwmirqcgxxukpctffuv",
-  "supabase_project_health":"ACTIVE_HEALTHY",
-  "supabase_sql_channel_status":"LOCAL_TOOL_CHANNEL_BLOCKED_NOT_DATABASE_OUTAGE",
-  "canonical_bridge":{"operation":"LEARNING_BRIDGE_KB_CARD_LF","source_contract_status":"CANDIDATO_READ_ONLY","source_declared_router_status":"ACTIVE","source_declared_operation_status":"PRODUCCION_CONTROLADA_READ_ONLY","live_db_status":"UNVERIFIED_THIS_RUN","write_allowed":false,"steps":25,"duplicate_engine":false},
-  "material_micro_batches_completed":39,
-  "control_steps_executed":118,
-  "micro_batches_blocked":0,
-  "resume_cursor":"VERIFY_FINAL_STABLE_HEAD",
-  "local_blockers":[{"scope":"SUPABASE_SQL_READBACK","reason":"execute_sql blocked by tool safety channel after two attempts","global":false},{"scope":"LOCAL_REPO_EXECUTION","reason":"container cannot resolve github.com","global":false}],
-  "observable_waits":[{"scope":"EXACT_HEAD_CI","state":"PENDING_STABLE_HEAD_AFTER_CHECKPOINT"}],
-  "independent_work_during_waits":["source-declared bridge state persisted with DB-unverified boundary","suite now validates canonical bridge/no-second-engine"],
-  "next_safe_batch":"EXACT_HEAD_CI_READBACK_AND_FAILURE_REPAIR",
-  "can_run_more_question":"¿AÚN PUEDO CORRER MÁS?",
-  "can_run_more_answer":"YES",
-  "can_run_more_evidence":{"safe_work_remaining_count":3,"scopes":["exact_head_ci","suite_execution_evidence","binding_readiness_reconciliation"]},
-  "context_budget_remaining_estimate":"MEDIUM",
-  "production_impact":false
+  "schema": "lf-learning-autonomous-run/v1",
+  "program": "LF_APRENDIZAJE_AUTONOMO",
+  "status": "RUNNING",
+  "gate": "P0_READ_ONLY_DYNAMIC_CONSUMPTION",
+  "parent_task": "CLOSE_REUSABLE_LEARNING_READ_PATH",
+  "subtask": "VALIDATE_DYNAMIC_SELECTOR_AND_EXACT_HEAD_CI",
+  "github_pr": 369,
+  "functional_head": "c0c4362ad580f47a2a773ae19c6686591dac1495",
+  "supabase_project": "mhwmirqcgxxukpctffuv",
+  "supabase_project_health": "ACTIVE_HEALTHY",
+  "supabase_sql_channel_status": "LOCAL_TOOL_CHANNEL_BLOCKED_NOT_DATABASE_OUTAGE",
+  "canonical_bridge": {
+    "operation": "LEARNING_BRIDGE_KB_CARD_LF",
+    "source_contract_status": "CANDIDATO_READ_ONLY",
+    "source_declared_router_status": "ACTIVE",
+    "source_declared_operation_status": "PRODUCCION_CONTROLADA_READ_ONLY",
+    "live_db_status": "UNVERIFIED_THIS_RUN",
+    "write_allowed": false,
+    "steps": 25,
+    "duplicate_engine": false
+  },
+  "material_micro_batches_completed": 42,
+  "control_steps_executed": 118,
+  "control_steps_counter_status": "PRESERVED_LAST_DURABLE_VALUE_DELTA_NOT_EXACTLY_MEASURED",
+  "micro_batches_blocked": 0,
+  "resume_cursor": "VALIDATE_DYNAMIC_SELECTOR_AND_EXACT_HEAD_CI",
+  "material_delta_since_previous_checkpoint": [
+    {
+      "id": "MB40",
+      "scope": "SOURCE_PARITY_BASE_RECONCILIATION",
+      "result": "COMPLETED",
+      "evidence": "84c32307a045478b25a405fb80a3a9d6a83632e1",
+      "notes": "16 exact source blobs reconciled from current PR base/main without force or DDL"
+    },
+    {
+      "id": "MB41",
+      "scope": "INPUT_GOVERNANCE_LIVE_SOURCE_PARITY",
+      "result": "COMPLETED",
+      "evidence": "2b10087d0de16822fc503a25872d233f2053d7fa",
+      "notes": "9 exact live migration source blobs reconciled from specialized governed branch; no DDL executed"
+    },
+    {
+      "id": "MB42",
+      "scope": "DYNAMIC_READ_ONLY_CONTEXT_SELECTOR",
+      "result": "COMPLETED",
+      "evidence": "c0c4362ad580f47a2a773ae19c6686591dac1495",
+      "notes": "governed dynamic selector + 7 exact bindings + PD/UI bindings + 50x10 benchmark source materialized"
+    }
+  ],
+  "local_blockers": [
+    {
+      "scope": "SUPABASE_SQL_READBACK",
+      "reason": "execute_sql blocked by tool safety channel; project itself reads ACTIVE_HEALTHY through management API",
+      "global": false
+    },
+    {
+      "scope": "EXACT_HEAD_CI",
+      "reason": "concurrent Input Governance source parity drift was observed on prior head and is being revalidated after exact-source reconciliation",
+      "global": false
+    }
+  ],
+  "observable_waits": [
+    {
+      "scope": "EXACT_HEAD_CI",
+      "state": "WAITING_REVALIDATION_ON_C0C4362A"
+    }
+  ],
+  "independent_work_during_waits": [
+    "RCA isolated CI failures from learning logic",
+    "source parity reconciled without DDL",
+    "dynamic read-only selector and governed binding catalog materialized"
+  ],
+  "next_safe_batch": "RUN_DYNAMIC_SELECTOR_VALIDATION_AND_ADOPT_UI_NO_BYPASS_PACKAGE",
+  "can_run_more_question": "¿AÚN PUEDO CORRER MÁS?",
+  "can_run_more_answer": "YES",
+  "can_run_more_evidence": {
+    "safe_work_remaining_count": 5,
+    "scopes": [
+      "dynamic_selector_validation",
+      "ui_consumer_50x10",
+      "downstream_no_bypass",
+      "behavioral_readiness_fixture",
+      "exact_head_ci"
+    ]
+  },
+  "context_budget_remaining_estimate": "MEDIUM",
+  "production_impact": false
 }
