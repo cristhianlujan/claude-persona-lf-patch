@@ -1,0 +1,17 @@
+{
+  "schema":"LF_LEARNING_SPECIALIZED_CONSUMER_READINESS_MATRIX_V1",
+  "mode":"READ_ONLY",
+  "source_scope":"GITHUB_CANDIDATE_TREE_ONLY",
+  "rows":[
+    {"consumer_id":"PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531","capability_id":"DIGITAL_SELF_SERVICE","exact_binding_created":false,"evidence_refs_materialized":false,"source_learning_ids_materialized":false,"runtime_enabled":false,"context_budget_bytes":0,"delivery_enabled":false,"readiness":"READY_FOR_BINDING","outcome":"NO_COMPETITIVE_CONTEXT"},
+    {"consumer_id":"PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531","capability_id":"PAYMENT_NO_ADEUDO","exact_binding_created":false,"evidence_refs_materialized":false,"source_learning_ids_materialized":false,"runtime_enabled":false,"context_budget_bytes":0,"delivery_enabled":false,"readiness":"READY_FOR_BINDING","outcome":"NO_COMPETITIVE_CONTEXT"},
+    {"consumer_id":"PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531","capability_id":"DIGITAL_SELF_SERVICE","exact_binding_created":false,"evidence_refs_materialized":false,"source_learning_ids_materialized":false,"runtime_enabled":false,"context_budget_bytes":0,"delivery_enabled":false,"readiness":"READY_FOR_BINDING","outcome":"NO_COMPETITIVE_CONTEXT"},
+    {"consumer_id":"PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531","capability_id":"PAYMENT_NO_ADEUDO","exact_binding_created":false,"evidence_refs_materialized":false,"source_learning_ids_materialized":false,"runtime_enabled":false,"context_budget_bytes":0,"delivery_enabled":false,"readiness":"READY_FOR_BINDING","outcome":"NO_COMPETITIVE_CONTEXT"}
+  ],
+  "row_count":4,
+  "ready_for_binding_count":4,
+  "active_binding_count":0,
+  "delivery_enabled_count":0,
+  "automatic_promotion":false,
+  "production_authorized":false
+}
