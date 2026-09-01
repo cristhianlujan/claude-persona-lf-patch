@@ -1,4 +1,4 @@
-version: v0.1
+version: v0.2
 status: CANDIDATO_READ_ONLY
 operation: LEARNING_BRIDGE_KB_CARD_LF
 purpose: Gobernar consumo de aprendizajes competitivos con binding exacto y benchmark champion/challenger antes de promocion.
@@ -13,6 +13,20 @@ consumer_binding:
   missing_binding_state: READY_FOR_BINDING
   exact_binding_required: true
   no_implicit_consumer_selection: true
+input_governance_binding:
+  required_when_selected_adapter_requires_receipt: true
+  execution_consumer_role: CONTEXT_PACK
+  downstream_profile_identity_is_separate: true
+  exact_active_screen_subject_required_for_behavioral_execution: true
+  router_resolver: programacion.fn_lf_router_input_governance_resolve_v1
+  authority_contract: INPUT_READINESS_CONTRACT
+  continuation_policy: PASS_ONLY
+  contract_resolution: LIVE_CURRENT
+  required_receipt_fields: [run_id, pantalla_id, screen_code, snapshot_hash, contract_snapshot_hash, decision, currentness]
+  required_request_binding_fields: [request_id, profile_code, governance_consumer, input_sha256, source_snapshot_sha256, contract_snapshot_sha256, binding_sha256]
+  invalid_or_missing_receipt: BLOCK_PIPELINE
+  stale_or_ambiguous_subject: BLOCK_PIPELINE
+  profile_asset_code_as_governance_consumer: FORBIDDEN
 consumer_context_pack:
   source_authority: FULL_KNOWLEDGE_PRESERVED
   selector: DETERMINISTIC_FIRST
