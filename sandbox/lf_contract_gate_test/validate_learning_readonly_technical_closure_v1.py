@@ -19,7 +19,13 @@ req(RDR['adversarial_cases']=='50/50' and RDR['adversarial_families']=='10x5' an
 req(RDR['malformed_input_cases']=='25/25','READER_ROBUSTNESS')
 req(RDR['stability_permutations']=='60/60' and RDR['ordering']=='QUALITY_DESC_RECEIPT_DESC_KB_ID_ASC','READER_STABILITY')
 req(RDR['boundedness']=='MAX_REFS_5_AND_BYTE_BUDGET_ENFORCED' and RDR['utf8_byte_budget']=='PASS' and RDR['oversized_item_skip']=='PASS','READER_BOUNDEDNESS')
+req(RDR['selector_performance_cases']==500 and RDR['selector_p95_budget_ms']==50.0,'READER_PERFORMANCE_CONTRACT')
 req(RDR['selector_llm_calls']==0 and RDR['selector_round_trips']==0 and RDR['reader_writes']==0 and RDR['semantic_search'] is False,'READER_ZERO_COST')
+CP=D['context_pack_builder']
+req(CP['schema']=='LF_LEARNING_DETERMINISTIC_CONTEXT_PACK_V1','PACK_SCHEMA')
+req(set(CP['sections'])=={'facts','evidence_refs','constraints','policy_refs'},'PACK_SECTIONS')
+req(CP['exact_binding_source_required'] is True and CP['ui_product_direction_ref_required'] is True and CP['full_pack_byte_budget_enforced'] is True and CP['deterministic_evidence_trim'] is True,'PACK_GATES')
+req(CP['recursive_expansion'] is False and CP['llm_calls']==0 and CP['round_trips']==0 and CP['writes']==0 and CP['semantic_search'] is False,'PACK_ZERO_COST')
 req(D['product_director']['exact_bindings']=='5/5' and D['product_director']['selected_learning_ids']=='13/13' and D['product_director']['selector_stability']=='60/60','PD_BINDING')
 req(D['product_director']['canonical_bridge_eligibility']=='13/13','PD_CANONICAL_ELIGIBILITY')
 req(D['ui_architect']['exact_bindings']=='2/2' and D['ui_architect']['selected_learning_ids']=='4/4' and D['ui_architect']['selector_stability']=='60/60','UI_BINDING')
@@ -36,7 +42,7 @@ req(D['corpus']['canonical_bridge_eligible']=='35/35' and D['corpus']['eligible_
 req(D['behavioral']['status']=='INSUFFICIENT_EVIDENCE' and D['behavioral']['behavioral_ab']=='NOT_EXECUTED','BEHAVIORAL')
 for k in ('behavioral_promotion_authorized','automatic_promotion','production_authorized','merge_authorized'):
     req(D[k] is False,'AUTH_'+k.upper())
-for script in ('validate_learning_active_consumer_binding_contract_v1.py','validate_learning_source_snapshot_freshness_guard_v1.py'):
+for script in ('validate_learning_active_consumer_binding_contract_v1.py','validate_learning_source_snapshot_freshness_guard_v1.py','validate_learning_deterministic_context_pack_builder_v1.py'):
     r=subprocess.run([sys.executable,str(R/script)],capture_output=True,text=True)
     if r.stdout: print(r.stdout.strip())
     if r.returncode:
@@ -46,8 +52,8 @@ if D['status']=='VERIFICATION_IN_PROGRESS':
     req(D['read_only_route_technically_verified'] is False,'PENDING_NOT_VERIFIED')
     req(D['exact_head_ci']['canonical_workflows_passed']<3,'PENDING_CI_NOT_3')
     req(D['closure_boundary']=='TECHNICAL_READ_ONLY_CI_RECHECK_REQUIRED','PENDING_BOUNDARY')
-    req(D['next_gate']=='CURRENT_HEAD_EXACT_CI_3_OF_3','PENDING_NEXT_GATE')
-    print('LEARNING_READONLY_TECHNICAL_CLOSURE=PASS_FAIL_CLOSED status=VERIFICATION_IN_PROGRESS freshness=4/4 reader=HARDENED active_bindings=7/7 specialized=HARDENED production_authorized=false')
+    req(D['next_gate']=='CURRENT_HEAD_EXACT_CI_3_OF_3_AND_FRESH_SOURCE_READBACK','PENDING_NEXT_GATE')
+    print('LEARNING_READONLY_TECHNICAL_CLOSURE=PASS_FAIL_CLOSED status=VERIFICATION_IN_PROGRESS freshness=4/4 reader=HARDENED context_pack_builder=PASS active_bindings=7/7 specialized=HARDENED production_authorized=false')
 elif D['status']=='TECHNICALLY_VERIFIED_READ_ONLY_CANDIDATE':
     req(D['read_only_route_technically_verified'] is True,'VERIFIED_FLAG')
     req(D['exact_head_ci']['canonical_workflows_passed']==D['exact_head_ci']['canonical_workflows_total']==3,'CI_3_OF_3')
