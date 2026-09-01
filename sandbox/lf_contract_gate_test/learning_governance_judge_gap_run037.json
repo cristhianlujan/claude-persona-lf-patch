@@ -1,0 +1,37 @@
+{
+  "schema":"LF_LEARNING_GOVERNANCE_JUDGE_GAP_V1",
+  "execution_id":"LF-AUTOLEARN-RUN-20260901-037",
+  "mode":"READ_ONLY_DIAGNOSTIC",
+  "observed_live":true,
+  "operations":[
+    {
+      "operation_code":"CREACION_CARD_LF",
+      "active_step_contracts":39,
+      "active_judge_bindings":19,
+      "required_steps_without_active_binding":20,
+      "missing_judge_definitions":20,
+      "boundary_order":{"pre_write_execution_binding_gate":24,"github_write":25,"github_readback":26,"evidence_log":27},
+      "order_drift_observed":false,
+      "card_write_allowed":false
+    },
+    {
+      "operation_code":"ORQUESTACION_PIPELINE_LF",
+      "active_step_contracts":14,
+      "active_judge_bindings":4,
+      "required_steps_without_active_binding":9,
+      "missing_judge_definitions":9,
+      "recovered_source_queue_waiting":6,
+      "capture_execution_allowed_by_this_diagnostic":false
+    },
+    {
+      "operation_code":"LEARNING_BRIDGE_KB_CARD_LF",
+      "active_step_contracts":25,
+      "active_judge_bindings":25,
+      "required_steps_without_active_binding":0
+    }
+  ],
+  "decision":"SOURCE_FIRST_JUDGE_DEFINITION_REQUIRED_NO_DIRECT_BINDING_MUTATION",
+  "automatic_impact":false,
+  "production_authorized":false,
+  "next_safe_action":"keep READ_ONLY consumer path moving; repair judge semantics only from governed source/contract authority"
+}
