@@ -1,11 +1,16 @@
-version: v1
-status: CANDIDATE_READ_ONLY
+version: v2
+status: SOURCE_MIGRATION_MATERIALIZED_NOT_APPLIED
 operation_code: ORQUESTACION_PIPELINE_LF
-source_main: 17903f544c5e53e1d94b08664a4fb6704c0dc087
+observed_main_sha: e5b9febcfebd7c16f8cc8a0cb146cfc467eadc42
 canonical_skill:
   path: skills/orquestador_pipeline_lf/SKILL.md
   blob_sha: 3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495
   authority_scope: ORQUESTACION_PIPELINE_LF_OPERATION_BEHAVIOR
+source_migration:
+  path: supabase/migrations/20260901153300_act0058_step_105_110_contract_reconciliation_v1.sql
+  state: SOURCE_ONLY_NOT_APPLIED
+  exact_head_ci_required: true
+  live_readback_required_after_apply: true
 impact_boundary:
   db_write: false
   automatic_impact: false
@@ -40,9 +45,9 @@ reconciliations:
       pass_condition: retry_count_lt_3_and_next_action_retry
       return_condition: retry_count_gte_3_and_next_action_failed_continue_next_url
       fail_condition: retry_count_gte_3_and_next_action_retry
-      blocking_code: RETRY_POLICY_VIOLATION
+      blocking_code: MAX_RETRY_EXCEEDED
       result_values: [RETRY_ALLOWED, RETRY_TERMINAL_FAILED, RETRY_BLOCKED]
 next_gate:
-  required: SOURCE_FIRST_MIGRATION_OR_CANONICAL_CONTRACT_PATCH
+  required: EXACT_HEAD_CI_THEN_GOVERNED_APPLY_AND_LIVE_READBACK
   before: ACTIVE_JUDGE_BINDING
   evidence_required: [exact_source_diff, exact_head_ci, live_readback]
