@@ -1,6 +1,6 @@
 {
   "schema":"LF_LEARNING_CLUSTER_CONSUMER_COVERAGE_READBACK_V1",
-  "observed_live_at_utc":"2026-09-01T19:24:00Z",
+  "observed_live_at_utc":"2026-09-01T19:49:04.082708Z",
   "source_contract":"gobernanza/contratos/contrato_learning_bridge_kb_card_lf.yaml",
   "source_authority":"public.lf_knowledge_base + public.lf_eventos",
   "eligible_total":35,
