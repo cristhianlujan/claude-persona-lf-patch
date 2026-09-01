@@ -54,8 +54,8 @@ bindings:
     champion_id: CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1
     challenger_id: CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1
     provenance: {source_table: public.lf_knowledge_base, kb_category: COMPETENCIA, verified_live: true, production_authorized: false}
-  - binding_id: BIND-LF-PD-EDUCACION-CREDITICIA-v5
-    version: v5
+  - binding_id: BIND-LF-PD-EDUCACION-CREDITICIA-v6
+    version: v6
     consumer_id: PERFIL-PRODUCT-DIRECTOR-LF
     consumer_type: PROFILE
     capability_id: EDUCACION_CREDITICIA
@@ -64,18 +64,18 @@ bindings:
     must_not_invoke_when: [user_specific_credit_advice, legal_or_regulatory_truth_without_independent_authority, score_guarantee, visual_copy_only]
     input_contract: {required: [task_intent, explicit_constraints, evidence_refs], authority: GROUNDED_COMPETITIVE_EDUCATION_ONLY}
     minimum_context: [grounded_education_pattern, source_ref, claim_limits, observed_vs_proposed_boundary]
-    selected_evidence_refs: [public.lf_knowledge_base/07999589-5744-4a87-9cd0-3b04e61d608d, public.lf_knowledge_base/3118e5f0-9b7c-4a90-839a-33ad0f14384d, public.lf_knowledge_base/663f9684-5ec5-4bfc-bc91-469bbf01f57b, public.lf_knowledge_base/7ffa83ea-c4ea-41a1-aaed-a76329c5c730, public.lf_knowledge_base/7ebe6b67-9463-4753-82eb-f3fedfc2f72c]
+    selected_evidence_refs: [public.lf_knowledge_base/7ffa83ea-c4ea-41a1-aaed-a76329c5c730, public.lf_knowledge_base/7ebe6b67-9463-4753-82eb-f3fedfc2f72c]
     policy_capsule_ref: POL-LF-OPERATION-LIFECYCLE
     output_schema_ref: profiles/product_director_lf/SKILL.md#Required-output-modes
-    judges: [exact_binding_required, authority_preservation, no_invention, bounded_context, must_not_invoke]
+    judges: [exact_binding_required, authority_preservation, no_invention, bounded_context, must_not_invoke, canonical_cluster_match]
     fallback: NO_COMPETITIVE_CONTEXT
     timeout_budget: 0
     context_budget: {max_bytes: 6000, selection: DETERMINISTIC_FIRST}
     lifecycle_state: READY_FOR_BINDING
-    source_learning_ids: [07999589-5744-4a87-9cd0-3b04e61d608d, 3118e5f0-9b7c-4a90-839a-33ad0f14384d, 663f9684-5ec5-4bfc-bc91-469bbf01f57b, 7ffa83ea-c4ea-41a1-aaed-a76329c5c730, 7ebe6b67-9463-4753-82eb-f3fedfc2f72c]
+    source_learning_ids: [7ffa83ea-c4ea-41a1-aaed-a76329c5c730, 7ebe6b67-9463-4753-82eb-f3fedfc2f72c]
     champion_id: CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1
     challenger_id: CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1
-    provenance: {source_table: public.lf_knowledge_base, kb_category: COMPETENCIA, verified_live: true, production_authorized: false}
+    provenance: {source_table: public.lf_knowledge_base, kb_category: COMPETENCIA, canonical_cluster: EDUCACION_CREDITICIA, excluded_mismatched_ids: [07999589-5744-4a87-9cd0-3b04e61d608d, 3118e5f0-9b7c-4a90-839a-33ad0f14384d, 663f9684-5ec5-4bfc-bc91-469bbf01f57b], verified_live: true, production_authorized: false}
   - binding_id: BIND-LF-PD-DIGITAL-SELF-SERVICE-v1
     version: v1
     consumer_id: PERFIL-PRODUCT-DIRECTOR-LF
