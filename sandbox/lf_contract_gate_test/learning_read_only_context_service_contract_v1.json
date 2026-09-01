@@ -1,0 +1,16 @@
+{
+  "schema":"LF_LEARNING_READ_ONLY_CONTEXT_SERVICE_V1",
+  "status":"CANDIDATO_READ_ONLY",
+  "route":["ACT-0001","EJECUCION_PERFIL_LF","CONSUMER_REGISTRY","EXACT_BINDING","DETERMINISTIC_CONTEXT_PACK","CONSUMER"],
+  "inputs":["consumer_id","binding_id","kb_rows","upstream_current_when_required","upstream_artifact_ref_when_required"],
+  "eligibility":{"grounding_status":"GROUNDED","consumer_ready":true,"exact_source_learning_id":true},
+  "selection":{"mode":"DETERMINISTIC_EXACT_ID","semantic_scope_expansion":false,"llm_selector_calls":0,"additional_round_trips":0,"writes":0},
+  "enabled_candidate_consumers":["PERFIL-PRODUCT-DIRECTOR-LF","PERFIL-UI-ARCHITECT"],
+  "blocked_consumers":["FRONTEND_IMPLEMENTATION","GAMIFICATION","GENERIC_PROFILE"],
+  "ui_authority":{"product_direction_first":true,"current_required":true,"competitive_context_authority":"UPSTREAM_CONSTRAINTS"},
+  "fallbacks":{"product_director":"NO_COMPETITIVE_CONTEXT","ui_architect":"PRODUCT_CONTEXT_ONLY_NO_COMPETITIVE_UI_PATTERN","unknown":"BLOCKED_NO_EXACT_BINDING"},
+  "lifecycle":"READY_FOR_BINDING",
+  "behavioral_profile_ab":"BENCHMARK_REQUIRED_PROFILE_RUNTIME",
+  "production_impact":false,
+  "automatic_promotion":false
+}
