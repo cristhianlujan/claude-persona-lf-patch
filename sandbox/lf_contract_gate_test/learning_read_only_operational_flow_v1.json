@@ -1,0 +1,19 @@
+{
+  "schema":"LF_LEARNING_READ_ONLY_OPERATIONAL_FLOW_V1",
+  "status":"CANDIDATO_READ_ONLY",
+  "flow":[
+    {"order":1,"stage":"ROUTER","asset":"ACT-0001"},
+    {"order":2,"stage":"CONSUMER_RESOLUTION","mode":"DETERMINISTIC_EXACT_BINDING"},
+    {"order":3,"stage":"KB_ELIGIBILITY","requirements":["GROUNDED","consumer_ready=true","exact_source_learning_id"]},
+    {"order":4,"stage":"CONTEXT_PACK","mode":"DETERMINISTIC_EXACT_ID","llm_calls":0,"writes":0},
+    {"order":5,"stage":"DIRECT_CONSUMER","allowed":["PERFIL-PRODUCT-DIRECTOR-LF","PERFIL-UI-ARCHITECT"]},
+    {"order":6,"stage":"UPSTREAM_DECISION_MATERIALIZATION","required_before_downstream":true},
+    {"order":7,"stage":"INDIRECT_DOWNSTREAM","allowed":["ACT-0051","PERFIL-GAMIFICATION-SYSTEM-ARCHITECT"],"raw_learning_context":false},
+    {"order":8,"stage":"JUDGES","required":["exact_binding_required","authority_preservation","no_invention","bounded_context","must_not_invoke"]},
+    {"order":9,"stage":"ROUTING_CONTEXT_BENCHMARK","cases":50,"families":10},
+    {"order":10,"stage":"BEHAVIORAL_PROFILE_AB","state":"BENCHMARK_REQUIRED_PROFILE_RUNTIME"},
+    {"order":11,"stage":"PRODUCTION","state":"BLOCKED"}
+  ],
+  "rollback":{"direct":"NO_COMPETITIVE_CONTEXT","ui":"PRODUCT_CONTEXT_ONLY_NO_COMPETITIVE_UI_PATTERN","downstream":"CURRENT_GOVERNED_UPSTREAM_ONLY"},
+  "production_impact":false
+}
