@@ -1,4 +1,4 @@
-version: v2
+version: v3
 status: SOURCE_MIGRATION_MATERIALIZED_NOT_APPLIED
 operation_code: ORQUESTACION_PIPELINE_LF
 observed_main_sha: e5b9febcfebd7c16f8cc8a0cb146cfc467eadc42
@@ -26,6 +26,7 @@ reconciliations:
       rule: fewer_than_5_new_urls_register_WARN
       consequence: zero_new_urls_is_controlled_noop_not_batch_failure
     proposed_contract:
+      required_evidence_keys: [urls_insertadas, urls_duplicadas, source_queries]
       pass_condition: restock_attempted_and_dedup_verified_and_urls_insertadas_gte_1
       return_condition: restock_attempted_and_dedup_verified_and_urls_insertadas_eq_0_and_warn_recorded
       fail_condition: restock_attempt_missing_or_dedup_not_verified
@@ -41,10 +42,14 @@ reconciliations:
       observed: MODO_RETRY_AND_STOP_CONDITIONS
       rule: retry_count_reaches_3_marks_FAILED_definitive_and_continue_next_url
       consequence: retry_threshold_is_3_not_gt_3
+    runtime_evidence_contract:
+      returned_by_execution_sql: [retry_count, stage_status, error_detail]
+      synthetic_next_action: FORBIDDEN
     proposed_contract:
-      pass_condition: retry_count_lt_3_and_next_action_retry
-      return_condition: retry_count_gte_3_and_next_action_failed_continue_next_url
-      fail_condition: retry_count_gte_3_and_next_action_retry
+      required_evidence_keys: [retry_count, error_detail, stage_status]
+      pass_condition: retry_count_lt_3_and_stage_status_PENDING
+      return_condition: retry_count_gte_3_and_stage_status_FAILED
+      fail_condition: retry_count_gte_3_and_stage_status_NOT_FAILED
       blocking_code: MAX_RETRY_EXCEEDED
       result_values: [RETRY_ALLOWED, RETRY_TERMINAL_FAILED, RETRY_BLOCKED]
 next_gate:
