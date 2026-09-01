@@ -1,0 +1,19 @@
+{
+  "schema":"LF_PRODUCT_DIRECTOR_KB_ELIGIBILITY_READBACK_V1",
+  "observed_live_at_utc":"2026-09-01T19:02:00Z",
+  "source":"public.lf_knowledge_base",
+  "predicate":"kb_category=COMPETENCIA AND grounding_status=GROUNDED AND consumer_ready=true",
+  "selected_ids":[
+    "8b744f07-75f6-4332-9df5-12e7c6914bf1","02bcfdd4-6859-4d56-9fbc-02af0ddf65b5","a789f419-b05f-4eba-af99-015bd56d24d5","5500178a-d503-476c-be77-c99223b4d90c",
+    "33e6970d-d19c-4300-8ed7-1784dd162d9d","a19d068a-f67c-4b5b-a6a1-09e84233f463","55f1b6c0-e019-4744-ae60-64861863d5b5",
+    "7ffa83ea-c4ea-41a1-aaed-a76329c5c730","7ebe6b67-9463-4753-82eb-f3fedfc2f72c",
+    "35cfab0c-1d91-4aa4-9761-f8af91181e17","7d55562e-9266-478b-b071-dca7ba1ade1a",
+    "bd2a3a05-b53b-400c-846d-3634e422a500","92fc4ad2-1581-4aa1-b01b-e986bb3cc71c"
+  ],
+  "selected_count":13,
+  "eligibility_pass_count":13,
+  "excluded_due_cluster_mismatch":[
+    "f67ffccd-e710-41f4-ae8c-eb5579227fc7","07999589-5744-4a87-9cd0-3b04e61d608d","3118e5f0-9b7c-4a90-839a-33ad0f14384d","663f9684-5ec5-4bfc-bc91-469bbf01f57b"
+  ],
+  "production_authorized":false
+}
