@@ -1,0 +1,120 @@
+{
+  "schema": "INPUT_GOV_CHANGE_IMPACT_L3C_BASELINE_EVIDENCE_V1",
+  "scope": {
+    "project": "LF_EMPRESA",
+    "screen_code": "B2B-CARGA-001",
+    "screen_id": 43,
+    "research_only": true,
+    "scoped_pass_authorized": false,
+    "downstream_authorized": false,
+    "production_authorized": false
+  },
+  "gold_candidate": {
+    "benchmark": "INPUT_GOV_CHANGE_IMPACT_L3C_GOLD50_V1",
+    "status": "CANDIDATE_RESEARCH",
+    "total_cases": 50,
+    "families": 10,
+    "cases_per_family": 5,
+    "decision_distribution": {
+      "SCOPED_CANDIDATE": 11,
+      "SCOPED_BLOCK": 7,
+      "GLOBAL_ESCALATE": 22,
+      "HUMAN_REQUIRED": 10
+    },
+    "integrity": {
+      "unique_case_codes": 50,
+      "bad_impact_sets": 0,
+      "missing_source_anchor": 0,
+      "missing_rationale": 0
+    },
+    "current_global_block_baseline_against_candidate_gold": {
+      "unsafe_under_blocks": 0,
+      "unnecessary_global_blocks": 18,
+      "unnecessary_global_block_rate": 0.36,
+      "lost_scoped_review_opportunities": 11,
+      "interpretation": "Candidate-gold comparison only. Not sufficient to authorize scoped continuation."
+    }
+  },
+  "input_governance_run_217": {
+    "status": "COMPLETED",
+    "current": true,
+    "families": 47,
+    "validator_pass": 47,
+    "story_ready": 46,
+    "story_open": 1,
+    "story_blocker": "API_DATA_CONTRACT",
+    "source_refs": 52,
+    "negative_requirements": 188,
+    "semantic_depth_bound": 47,
+    "test_obligations_materialized": 0,
+    "curator_validator_independent": true,
+    "direct_source_readback_pass": 47,
+    "validator_source_sha_match": 47,
+    "dual_sha_bound": 47,
+    "avg_sources_per_family": 1.11,
+    "max_sources_per_family": 2,
+    "recorded_timing_ms": {
+      "create_to_curator": 26737.693,
+      "curator_to_validator_recorded": 75742.622,
+      "total": 102480.315
+    }
+  },
+  "walkthrough_timing_ms": {
+    "router_request_single_observation": 26905.927,
+    "input_governance_execute_single_observation": 10864.415,
+    "currentness_cached_single_observation": 10496.626,
+    "freshness_delta_single_observation": 319.816,
+    "note": "Single observations, not p50/p95. Historical L2 benchmark remains the authority for distributions."
+  },
+  "profile_runtime": {
+    "quality_pack_prior_real_request": {
+      "request_id": "50c76f1a-9bfc-41f1-959a-b9ab72fe3b66",
+      "queue_wait_ms": 305919,
+      "runtime_ms": 339671,
+      "total_ms": 645591,
+      "input_image_sha256": null,
+      "model_raw_verdict_was_pass": true,
+      "downstream_authorized": false,
+      "interpretation": "Profile/model quality failed; downstream evidence gate contained the false positive."
+    },
+    "cache_batch_candidate_pr_399": {
+      "pr": 399,
+      "head": "6039bae07f126c2856d052b5de620eeaaf7b6a47",
+      "status": "DRAFT_NOT_MERGED",
+      "cold_runtime_prepare_ms": 341050,
+      "warm_runtime_prepare_ms": 19131,
+      "cold_llama_build_ms": 241750,
+      "warm_llama_build_ms": 0,
+      "cold_model_download_ms": 96264,
+      "warm_model_download_ms": 0,
+      "preparation_reduction_pct": 94.39,
+      "regressions_cold": "49/49 PASS",
+      "regressions_warm": "49/49 PASS",
+      "note": "Candidate evidence only until its governance/merge state changes."
+    }
+  },
+  "quality_planes": {
+    "resolver_quality": "NOT_YET_MEASURED_NO_CHANGE_IMPACT_RESOLVER_EXISTS",
+    "gate_quality": "Observed fail-closed containment of prior Quality Pack false positive; current global gate has zero candidate-gold under-block but may over-block.",
+    "profile_quality": "Insufficient for screen approval; no UI Architect/Product Director exact-raster review and prior Quality Pack raw verdict was false positive.",
+    "orchestrator_quality": {
+      "benchmark_phase_schema_assumption_errors": 3,
+      "benchmark_phase_sql_composition_errors": 1,
+      "tool_safety_blocks": 1,
+      "redundant_branch_refs_created": 2,
+      "redundant_branch_refs": [
+        "lf/input-governance-change-impact-benchmark-20260901-check",
+        "lf/input-governance-change-impact-benchmark-20260901-pr"
+      ],
+      "redundant_refs_changed_product_or_pr": false,
+      "all_query_errors_contained_before_product_dml": true,
+      "note": "These defects and hygiene side effects remain visible in quality reporting rather than being hidden by successful recovery."
+    }
+  },
+  "next_gate": {
+    "requires_independent_gold_adjudication": true,
+    "requires_change_impact_resolver_before_precision_recall_metrics": true,
+    "unsafe_under_block_target": 0,
+    "no_contract_change_before_evidence": true
+  }
+}
