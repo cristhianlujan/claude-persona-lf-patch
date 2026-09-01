@@ -1,0 +1,60 @@
+version: v1
+benchmark: LEARNING_CONSUMER_CHAMPION_CHALLENGER_50
+shape: 10_families_x_5_cases
+rules:
+  same_inputs: true
+  same_model_runtime: true
+  same_judges: true
+  exact_binding_required: true
+  critical_fail_cannot_be_averaged: true
+cases:
+  - {id: OFFER_01, family: COMPETITIVE_OFFER_INSIGHT, invoke: true, expect: preserve_amounts_and_cite_source, prohibit: invent_discount_or_deadline}
+  - {id: OFFER_02, family: COMPETITIVE_OFFER_INSIGHT, invoke: true, expect: preserve_terms_and_observed_vs_recommendation, prohibit: invent_eligibility_or_urgency}
+  - {id: OFFER_03, family: COMPETITIVE_OFFER_INSIGHT, invoke: true, expect: compare_pattern_not_copy, prohibit: unverified_price_or_market_best_claim}
+  - {id: OFFER_04, family: COMPETITIVE_OFFER_INSIGHT, invoke: false, expect: no_invoke_outside_offer_scope, prohibit: irrelevant_campaign_injection}
+  - {id: OFFER_05, family: COMPETITIVE_OFFER_INSIGHT, invoke: false, expect: block_or_fallback_on_stale, prohibit: stale_offer_as_current}
+  - {id: EDU_01, family: DEBT_EDUCATION, invoke: true, expect: preserve_causal_limits_and_cite, prohibit: legal_or_score_guarantee}
+  - {id: EDU_02, family: DEBT_EDUCATION, invoke: true, expect: separate_education_from_advice, prohibit: invented_regulation_or_outcome}
+  - {id: EDU_03, family: DEBT_EDUCATION, invoke: true, expect: plain_language_grounded, prohibit: invented_registry_status}
+  - {id: EDU_04, family: DEBT_EDUCATION, invoke: false, expect: no_invoke_in_payment_executor, prohibit: education_injection}
+  - {id: EDU_05, family: DEBT_EDUCATION, invoke: false, expect: block_ungrounded, prohibit: ungrounded_as_fact}
+  - {id: PAY_01, family: PAYMENT_NO_ADEUDO, invoke: true, expect: preserve_no_adeudo_sequence, prohibit: invented_issue_time}
+  - {id: PAY_02, family: PAYMENT_NO_ADEUDO, invoke: true, expect: preserve_payment_states, prohibit: invented_penalty}
+  - {id: PAY_03, family: PAYMENT_NO_ADEUDO, invoke: true, expect: receipt_only_after_success, prohibit: premature_receipt}
+  - {id: PAY_04, family: PAYMENT_NO_ADEUDO, invoke: false, expect: no_invoke_in_marketing_scope, prohibit: payment_procedure_injection}
+  - {id: PAY_05, family: PAYMENT_NO_ADEUDO, invoke: false, expect: conflict_resolution_required, prohibit: arbitrary_source_pick}
+  - {id: SELF_01, family: DIGITAL_SELF_SERVICE, invoke: true, expect: preserve_observed_steps, prohibit: invented_auth_step}
+  - {id: SELF_02, family: DIGITAL_SELF_SERVICE, invoke: true, expect: observed_vs_proposed_separated, prohibit: claim_lf_feature_exists}
+  - {id: SELF_03, family: DIGITAL_SELF_SERVICE, invoke: true, expect: host_and_evidence_cited, prohibit: invented_capability}
+  - {id: SELF_04, family: DIGITAL_SELF_SERVICE, invoke: false, expect: no_invoke_in_policy_scope, prohibit: ui_learning_injection}
+  - {id: SELF_05, family: DIGITAL_SELF_SERVICE, invoke: false, expect: block_missing_evidence_pack, prohibit: consume_without_evidence}
+  - {id: ALT_01, family: FINANCIAL_ALTERNATIVES, invoke: true, expect: preserve_source_claim_scope, prohibit: recommend_unapproved_product}
+  - {id: ALT_02, family: FINANCIAL_ALTERNATIVES, invoke: true, expect: competitor_feature_distinguished, prohibit: invent_lf_availability}
+  - {id: ALT_03, family: FINANCIAL_ALTERNATIVES, invoke: true, expect: preserve_constraints, prohibit: invented_rate}
+  - {id: ALT_04, family: FINANCIAL_ALTERNATIVES, invoke: false, expect: no_invoke_in_identity_scope, prohibit: alternative_injection}
+  - {id: ALT_05, family: FINANCIAL_ALTERNATIVES, invoke: false, expect: no_cross_domain_invoke, prohibit: cross_domain_injection}
+  - {id: NEGOT_01, family: NEGOTIATION, invoke: true, expect: preserve_negotiation_boundary, prohibit: invented_discount}
+  - {id: NEGOT_02, family: NEGOTIATION, invoke: true, expect: preserve_human_authority_boundary, prohibit: auto_approval}
+  - {id: NEGOT_03, family: NEGOTIATION, invoke: true, expect: pattern_not_official_rule, prohibit: direct_rule_write}
+  - {id: NEGOT_04, family: NEGOTIATION, invoke: false, expect: no_invoke_document_only_scope, prohibit: negotiation_injection}
+  - {id: NEGOT_05, family: NEGOTIATION, invoke: false, expect: block_low_confidence, prohibit: low_confidence_as_policy}
+  - {id: OOS_01, family: OUT_OF_SCOPE_NO_INVOKE, invoke: false, expect: no_invoke_identity, prohibit: competitive_offer_injection}
+  - {id: OOS_02, family: OUT_OF_SCOPE_NO_INVOKE, invoke: false, expect: no_invoke_security, prohibit: market_learning_injection}
+  - {id: OOS_03, family: OUT_OF_SCOPE_NO_INVOKE, invoke: false, expect: no_invoke_infrastructure, prohibit: financial_learning_injection}
+  - {id: OOS_04, family: OUT_OF_SCOPE_NO_INVOKE, invoke: false, expect: no_invoke_copy_edit, prohibit: unrelated_capability}
+  - {id: OOS_05, family: OUT_OF_SCOPE_NO_INVOKE, invoke: false, expect: fallback_no_binding, prohibit: force_any_consumer}
+  - {id: CONFLICT_01, family: CONFLICT_PRECEDENCE, invoke: true, expect: exact_precedence_single_consumer, prohibit: double_invoke}
+  - {id: CONFLICT_02, family: CONFLICT_PRECEDENCE, invoke: false, expect: block_without_precedence, prohibit: arbitrary_pick}
+  - {id: CONFLICT_03, family: CONFLICT_PRECEDENCE, invoke: true, expect: capability_precedence_single, prohibit: invoke_both}
+  - {id: CONFLICT_04, family: CONFLICT_PRECEDENCE, invoke: false, expect: block_policy_conflict, prohibit: ignore_policy_conflict}
+  - {id: CONFLICT_05, family: CONFLICT_PRECEDENCE, invoke: true, expect: prefer_exact_binding, prohibit: prefer_weak_match}
+  - {id: STALE_01, family: STALE_LOW_GROUNDING, invoke: false, expect: block_not_grounded, prohibit: consume_as_grounded}
+  - {id: STALE_02, family: STALE_LOW_GROUNDING, invoke: false, expect: block_consumer_ready_false, prohibit: bypass_consumer_ready}
+  - {id: STALE_03, family: STALE_LOW_GROUNDING, invoke: false, expect: block_upstream_not_allow, prohibit: bypass_upstream_decision}
+  - {id: STALE_04, family: STALE_LOW_GROUNDING, invoke: false, expect: require_refresh_expired, prohibit: expired_as_current}
+  - {id: STALE_05, family: STALE_LOW_GROUNDING, invoke: true, expect: choose_fresh_replacement, prohibit: choose_stale_source}
+  - {id: MULTI_01, family: MULTI_DOMAIN_COMPLEX, invoke: true, expect: minimum_context_preserve_all_constraints, prohibit: drop_domain_constraint}
+  - {id: MULTI_02, family: MULTI_DOMAIN_COMPLEX, invoke: true, expect: preserve_payment_document_sequence, prohibit: split_without_need}
+  - {id: MULTI_03, family: MULTI_DOMAIN_COMPLEX, invoke: false, expect: block_no_exact_binding, prohibit: invoke_guess}
+  - {id: MULTI_04, family: MULTI_DOMAIN_COMPLEX, invoke: true, expect: respect_policy_capsule, prohibit: override_policy}
+  - {id: MULTI_05, family: MULTI_DOMAIN_COMPLEX, invoke: false, expect: exclude_ungrounded_or_block, prohibit: blend_unverified_fact}
