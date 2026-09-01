@@ -91,6 +91,27 @@ def base_proof():
 def with_hash(p): p["verification"]["verification_hash"]=compute_hash(p); return p
 
 
+def validate_learning_behavioral_readiness_manifest(root: Path) -> None:
+    path = root / "learning_behavioral_readiness_v1.json"
+    if not path.exists():
+        return
+    d = json.loads(path.read_text(encoding="utf-8"))
+    assert d["schema"] == "LF_LEARNING_BEHAVIORAL_READINESS_V1"
+    assert d["mode"] == "READ_ONLY"
+    assert d["input_governance_contract_revision"] == "5.12"
+    assert d["rule"] == "UNRELATED_SCREEN_READINESS_RUNS_MUST_NOT_BE_REUSED_AS_CONSUMER_AUTHORITY"
+    assert d["automatic_promotion"] is False and d["production_authorized"] is False
+    expected = {"PERFIL-PRODUCT-DIRECTOR-LF", "PERFIL-UI-ARCHITECT"}
+    seen = set()
+    for row in d["consumer_targets"]:
+        seen.add(row["consumer_id"])
+        assert row["required_governance_consumer"] == "CONTEXT_PACK"
+        assert row["exact_target_bound_readiness_receipt_observed"] is False
+        assert row["behavioral_ab_status"] == "INSUFFICIENT_EVIDENCE"
+    assert seen == expected
+    print("LEARNING_BEHAVIORAL_READINESS=PASS consumers=2/2 exact_receipt_missing=2/2 behavioral_ab=INSUFFICIENT_EVIDENCE")
+
+
 def run_optional_learning_suites() -> None:
     root = Path(__file__).resolve().parent
     scripts = [
@@ -113,6 +134,7 @@ def run_optional_learning_suites() -> None:
                 sys.stderr.write(proc.stderr)
             raise SystemExit(proc.returncode)
         executed += 1
+    validate_learning_behavioral_readiness_manifest(root)
     if executed:
         print(f"PASS_OPTIONAL_LEARNING_READ_ONLY_SUITES={executed}/{executed} production_authorized=false")
 
