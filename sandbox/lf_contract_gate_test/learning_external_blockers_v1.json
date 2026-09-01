@@ -1,0 +1,36 @@
+{
+  "schema": "LF_LEARNING_EXTERNAL_BLOCKERS_V1",
+  "production_impact": false,
+  "blockers": [
+    {
+      "blocker_id": "GLOBAL_LF_MIGRATION_SOURCE_PARITY_20260901",
+      "scope": "GLOBAL_EXACT_HEAD_CI_NOT_LEARNING_CONSUMER_LOGIC",
+      "status": "WAITING_EXTERNAL_CONCURRENT_SOURCE_PARITY",
+      "evidence": {
+        "workflow": "lf-contract-check",
+        "run_id": 33477263043,
+        "failed_step": "Enforce LF migration source parity after checkpoint",
+        "literal_error": "FAIL_LF_MIGRATION_VERSION_PARITY",
+        "remote_only_versions": ["20260901051513", "20260901052401", "20260901052628"]
+      },
+      "learning_scope_independent_work_allowed": true,
+      "must_not_fix_by_absorbing_concurrent_migrations": true
+    },
+    {
+      "blocker_id": "LIVE_EKB_SQL_CHANNEL_BLOCKED_20260901",
+      "scope": "LIVE_EKB_READBACK",
+      "status": "CHANNEL_BLOCKED_SOURCE_EVIDENCE_ONLY",
+      "evidence": {"postgres_reached": false, "supabase_outage_claimed": false},
+      "learning_scope_independent_work_allowed": true,
+      "db_mutations_allowed": false
+    },
+    {
+      "blocker_id": "BEHAVIORAL_CURRENT_RECEIPT_REQUIRED",
+      "scope": "PRODUCT_DIRECTOR_AND_UI_BEHAVIORAL_AB",
+      "status": "WAITING_GOVERNED_RECEIPT_AND_AUTHORIZED_RUNTIME_TRIGGER",
+      "evidence": {"authority_contract": "INPUT_READINESS_CONTRACT", "observed_revision": "5.12", "continuation_policy": "PASS_ONLY", "contract_resolution": "LIVE_CURRENT"},
+      "learning_scope_independent_work_allowed": true,
+      "runtime_invocation_allowed_by_this_manifest": false
+    }
+  ]
+}
