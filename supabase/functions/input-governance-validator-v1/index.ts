@@ -52,7 +52,19 @@ Deno.serve(async (req: Request) => {
     const runId = Number(body?.run_id);
     if (!Number.isInteger(runId) || runId < 1) return Response.json({ error: "RUN_ID_INVALID" }, { status: 400 });
 
-    const identity = `INPUT_VALIDATOR:EDGE:input-governance-validator-v1:${crypto.randomUUID()}`;
+    const resume = await rpc("fn_input_governance_validator_resume_context_v1", { p_run_id: runId });
+    let identity: string;
+    let resumed = false;
+    if (resume?.resume_allowed === true) {
+      identity = String(resume?.validator_identity ?? "");
+      if (!/^INPUT_VALIDATOR:EDGE:input-governance-validator-v1:[A-Za-z0-9_-]{6,128}$/.test(identity)) {
+        return Response.json({ error: "VALIDATOR_RESUME_IDENTITY_INVALID", run_id: runId }, { status: 409 });
+      }
+      resumed = true;
+    } else {
+      identity = `INPUT_VALIDATOR:EDGE:input-governance-validator-v1:${crypto.randomUUID()}`;
+    }
+
     const trace: unknown[] = [];
     let result: any = null;
     for (let chunk = 1; chunk <= MAX_VALIDATION_CHUNKS; chunk++) {
@@ -62,13 +74,13 @@ Deno.serve(async (req: Request) => {
       });
       trace.push({ chunk, status: result?.status ?? null, validator_pass_count: result?.validator_pass_count ?? null, family_count: result?.family_count ?? null });
       if (["COMPLETED", "NOOP_COMPLETED"].includes(result?.status)) {
-        return Response.json({ runtime: "input-governance-validator-v1", identity, chunked_validation: true, trace, result });
+        return Response.json({ runtime: "input-governance-validator-v1", identity, resumed, chunked_validation: true, trace, result });
       }
       if (result?.status !== "VALIDATOR_CONTINUE_REQUIRED") {
-        return Response.json({ error: "VALIDATOR_UNRESOLVED_STATUS", identity, trace, result }, { status: 409 });
+        return Response.json({ error: "VALIDATOR_UNRESOLVED_STATUS", identity, resumed, trace, result }, { status: 409 });
       }
     }
-    return Response.json({ error: "VALIDATOR_CHUNK_LIMIT", identity, max_chunks: MAX_VALIDATION_CHUNKS, trace, result }, { status: 409 });
+    return Response.json({ error: "VALIDATOR_CHUNK_LIMIT", identity, resumed, max_chunks: MAX_VALIDATION_CHUNKS, trace, result }, { status: 409 });
   } catch (e) {
     return Response.json({ error: "VALIDATOR_EXECUTION_FAILED", detail: e instanceof Error ? e.message : String(e) }, { status: 409 });
   }
