@@ -1,0 +1,93 @@
+{
+  "schema": "LF_PROFILE_RUNTIME_CACHE_BATCH_AB_V1",
+  "status": "VERIFIED_CANDIDATE",
+  "recorded_at_utc": "2026-09-01T09:08:00Z",
+  "repository": "cristhianlujan/claude-persona-lf-patch",
+  "pull_request": 399,
+  "branch": "lf/profile-runtime-batch-cache-20260901",
+  "base_sha": "17903f544c5e53e1d94b08664a4fb6704c0dc087",
+  "tested_head_sha": "d73b6eb81ab337661f5af717260197b335cf9de7",
+  "scope": {
+    "runtime_cache": true,
+    "model_cache": true,
+    "batch_size_min": 1,
+    "batch_size_max": 3,
+    "parallelism_max": 2,
+    "input_governance_preserved": true,
+    "visual_evidence_fail_closed": true,
+    "profiles_or_adapters_modified": false,
+    "production_or_main_modified": false
+  },
+  "pins": {
+    "cache_namespace": "lf-profile-runtime-v4-20260901",
+    "llama_commit": "925e1179947ea0c0ebfb0032df18af3a729822be",
+    "llama_release": "b7100",
+    "model_commit": "5037fcf163dd95d1e41d1974465f0898ed108ca2",
+    "model_sha256": "d02fe9b69ad8cadbbd228e387667af66612c44bed29ffc8eb1e7caf9ac486c12",
+    "mmproj_sha256": "980c9b2f78c04e6cff93d277ada09e768394f112d75db3b4e9dea8a69f9fb904"
+  },
+  "cold": {
+    "workflow_run_id": 33489862546,
+    "job_id": 99798541710,
+    "conclusion": "success",
+    "cache_hit_runtime": false,
+    "cache_hit_model": false,
+    "runtime_prepare_ms": 341050,
+    "llama_build_ms": 241750,
+    "model_download_ms": 96264,
+    "runtime_canary": "PASS llama-cli --version with bundled shared libraries",
+    "deterministic_regressions": "49/49 PASS"
+  },
+  "warm": {
+    "workflow_run_id": 33489862546,
+    "job_id": 99800593611,
+    "conclusion": "success",
+    "cache_hit_runtime": true,
+    "cache_hit_model": true,
+    "runtime_prepare_ms": 19131,
+    "llama_build_ms": 0,
+    "model_download_ms": 0,
+    "runtime_canary": "PASS llama-cli --version from restored cache bundle",
+    "deterministic_regressions": "49/49 PASS"
+  },
+  "comparison": {
+    "prepare_reduction_percent": 94.39055856912476,
+    "prepare_speedup_x": 17.827086926977156,
+    "prepare_ms_saved_per_warm_run": 321919
+  },
+  "negative_probe": {
+    "workflow_run_id": 33489202666,
+    "failed_warm_job_id": 99797995663,
+    "expected_fail_closed_result": "failure",
+    "failure": "libllama-cli-impl.so not found after cache restore",
+    "remediation": "cache complete build/bin bundle and set LD_LIBRARY_PATH to the restored bundle directory",
+    "remediation_verified_by": 99800593611
+  },
+  "governed_integration": {
+    "integration_head_sha": "682c86ba3809a0e89dea7e8026fefbfe6d0949e9",
+    "authorized_workflow": ".github/workflows/story-agent-evidence-verifier.yml",
+    "experimental_workflow_present_in_final_tree": false,
+    "governance_allowlist_widened": false,
+    "story_agent_evidence_verifier_run_id": 33490770614,
+    "story_agent_evidence_verifier_conclusion": "success",
+    "validate_lf_packs_run_id": 33490770622,
+    "validate_lf_packs_conclusion": "success",
+    "bootstrap_reproducibility_run_id": 33490770671,
+    "bootstrap_reproducibility_conclusion": "success",
+    "pull_request_contract_run_id": 33490770689,
+    "pull_request_contract_runtime_checks": "PASS before E.16 inventory",
+    "same_head_push_contract_run_id": 33490766198,
+    "same_head_push_failure_code": "FAIL_UNAUTHORIZED_GITHUB_PATH",
+    "same_head_push_failure_path": ".github/workflows/profile-runtime-optimization.yml",
+    "same_head_push_failure_classification": "TRANSITIONAL_PUSH_DIFF_INCLUDED_EXPERIMENTAL_WORKFLOW_DELETION",
+    "same_head_push_failure_is_runtime_failure": false,
+    "readback": "The final PR tree no longer contains the experimental workflow. The failed push validator compared the transition from the previous branch head and therefore saw the deletion path. A subsequent evidence-only exact-head commit is used to obtain a clean push/PR E.16 matrix without widening governance."
+  },
+  "closure_constraints": [
+    "PR remains DRAFT until authorized transport integration and exact-head CI are verified.",
+    "Do not merge or modify main in this evidence step.",
+    "Do not claim visual review success without verified raster bytes.",
+    "Do not count the failed v3 warm probe as positive evidence.",
+    "Do not widen governance allowlists to accommodate the retired experimental workflow."
+  ]
+}
