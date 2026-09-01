@@ -17,13 +17,13 @@
     "round_trips_for_selection": 0
   },
   "bindings": [
-    {"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","capability_id":"NEGOCIACION_DEUDA","cluster_codes":["NEGOCIACION_DEUDA"],"prerequisite":null},
-    {"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","capability_id":"ALTERNATIVAS_FINANCIERAS","cluster_codes":["ALTERNATIVAS_FINANCIERAS"],"prerequisite":null},
-    {"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","capability_id":"EDUCACION_CREDITICIA","cluster_codes":["EDUCACION_CREDITICIA"],"prerequisite":null},
-    {"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","capability_id":"DIGITAL_SELF_SERVICE","cluster_codes":["AUTOGESTION_DIGITAL"],"prerequisite":null},
-    {"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","capability_id":"PAYMENT_NO_ADEUDO","cluster_codes":["PAGOS_Y_NO_ADEUDO"],"prerequisite":null},
-    {"consumer_id":"PERFIL-UI-ARCHITECT","capability_id":"DIGITAL_SELF_SERVICE","cluster_codes":["AUTOGESTION_DIGITAL"],"prerequisite":"PRODUCT_DIRECTION_AUTHORIZED_CURRENT"},
-    {"consumer_id":"PERFIL-UI-ARCHITECT","capability_id":"PAYMENT_NO_ADEUDO","cluster_codes":["PAGOS_Y_NO_ADEUDO"],"prerequisite":"PRODUCT_DIRECTION_AUTHORIZED_CURRENT"}
+    {"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","capability_id":"NEGOCIACION_DEUDA","cluster_codes":["NEGOCIACION_DEUDA"],"prerequisite":null,"context_budget_bytes":6000},
+    {"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","capability_id":"ALTERNATIVAS_FINANCIERAS","cluster_codes":["ALTERNATIVAS_FINANCIERAS"],"prerequisite":null,"context_budget_bytes":6000},
+    {"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","capability_id":"EDUCACION_CREDITICIA","cluster_codes":["EDUCACION_CREDITICIA"],"prerequisite":null,"context_budget_bytes":6000},
+    {"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","capability_id":"DIGITAL_SELF_SERVICE","cluster_codes":["AUTOGESTION_DIGITAL"],"prerequisite":null,"context_budget_bytes":6000},
+    {"consumer_id":"PERFIL-PRODUCT-DIRECTOR-LF","capability_id":"PAYMENT_NO_ADEUDO","cluster_codes":["PAGOS_Y_NO_ADEUDO"],"prerequisite":null,"context_budget_bytes":6000},
+    {"consumer_id":"PERFIL-UI-ARCHITECT","capability_id":"DIGITAL_SELF_SERVICE","cluster_codes":["AUTOGESTION_DIGITAL"],"prerequisite":"PRODUCT_DIRECTION_AUTHORIZED_CURRENT","context_budget_bytes":5000},
+    {"consumer_id":"PERFIL-UI-ARCHITECT","capability_id":"PAYMENT_NO_ADEUDO","cluster_codes":["PAGOS_Y_NO_ADEUDO"],"prerequisite":"PRODUCT_DIRECTION_AUTHORIZED_CURRENT","context_budget_bytes":5000}
   ],
   "fallback": "NO_COMPETITIVE_CONTEXT",
   "automatic_impact": false,
