@@ -1,0 +1,13 @@
+{
+  "schema":"LF_LEARNING_COMPETITIVE_SOURCE_BACKLOG_READBACK_V1",
+  "mode":"READ_ONLY",
+  "source_authorities":["public.sbx_competitive_sources","public.sbx_competitive_source_state","public.sbx_competitive_observations","public.sbx_competitive_insights","public.lf_knowledge_base","public.lf_eventos"],
+  "sandbox_sources":{"total":19,"active":19,"data_status":"active","source_state_total":19,"failed_sources":0,"latest_attempt":"2026-06-04T04:31:52.837645Z","latest_success":"2026-06-04T04:31:52.837645Z"},
+  "sandbox_observations":{"total":12,"current":0,"discarded":12,"latest_captured":"2026-06-04T04:27:07.257031Z"},
+  "sandbox_insights":{"total":0},
+  "canonical_kb":{"eligible_grounded_consumer_ready":35,"classified_eligible":35,"unclassified_eligible":0},
+  "decision":"NO_NEW_SAFE_CANONICAL_SOURCE_BATCH_FROM_SANDBOX_PIPELINE",
+  "reason":"sandbox pipeline has no current observations or insights; existing observations are discarded and old; canonical eligible KB is already classified 35/35",
+  "automatic_promotion":false,
+  "production_authorized":false
+}
