@@ -38,6 +38,7 @@ MANAGED_EXACT_NAMES = {
     "fix_card_contract_judge_clean_status_v1",
     "programacion_f05_provenance_channel_v1",
     "programacion_f05_public_rpc_bridge_v1",
+    "revoke_internal_pipeline_public_grants",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
@@ -107,7 +108,7 @@ def main() -> int:
         fail("FAIL_CI009_SELFTEST_OPERATION_STEP_ENFORCEMENT_COMPATIBILITY")
     if not managed("materialize_router_enforcement_and_gate0_inventory"):
         fail("FAIL_CI009_SELFTEST_ROUTER_ENFORCEMENT_GATE0_INVENTORY")
-    if not managed("fix_operation_judge_jsonb_shape_compatibility"):
+    if not managed("fix_operation_judge_jsonb_shape_compatIBILITY"):
         fail("FAIL_CI009_SELFTEST_OPERATION_JUDGE_JSONB_SHAPE_COMPATIBILITY")
     if not managed("reconcile_card_depth_gate_order_v1"):
         fail("FAIL_CI009_SELFTEST_CARD_DEPTH_ORDER_RECONCILIATION")
@@ -117,6 +118,8 @@ def main() -> int:
         fail("FAIL_CI009_SELFTEST_F05_PROVENANCE_CHANNEL")
     if not managed("programacion_f05_public_rpc_bridge_v1"):
         fail("FAIL_CI009_SELFTEST_F05_PUBLIC_RPC_BRIDGE")
+    if not managed("revoke_internal_pipeline_public_grants"):
+        fail("FAIL_CI009_SELFTEST_RLS_INTERNAL_GRANTS")
     if managed("create_lf_unreviewed_future_change"):
         fail("FAIL_CI009_SELFTEST_MANAGED_PREFIX_TOO_BROAD")
     if not classified("programacion_worker_spec_probe"):
@@ -193,7 +196,7 @@ def main() -> int:
         f"legacy={legacy_count} sha256={legacy_sha} grandfathered={grandfathered_count}/{grandfathered_sha} "
         f"classification_baseline_end={classification_baseline_end}"
     )
-    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=14/14")
+    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=15/15")
     return 0
 
 
