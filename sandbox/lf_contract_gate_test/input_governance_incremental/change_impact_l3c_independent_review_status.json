@@ -1,5 +1,5 @@
 {
-  "schema": "INPUT_GOV_CHANGE_IMPACT_L3C_ADJUDICATION_STATUS_V1",
+  "schema": "INPUT_GOV_CHANGE_IMPACT_L3C_ADJUDICATION_STATUS_V2",
   "scope": {
     "project": "LF_EMPRESA",
     "screen_code": "B2B-CARGA-001",
@@ -12,31 +12,54 @@
     "benchmark": "INPUT_GOV_CHANGE_IMPACT_L3C_GOLD50_V1",
     "gold_status": "CANDIDATE_RESEARCH",
     "source_path": "sandbox/lf_contract_gate_test/input_governance_incremental/change_impact_l3c_gold_50.sql",
+    "source_blob_sha": "cfe2731c872e334d95523a3c7f085c31f92a6f70",
     "baseline_path": "sandbox/lf_contract_gate_test/input_governance_incremental/change_impact_l3c_baseline_evidence.json",
     "total_cases": 50,
     "families": 10,
     "cases_per_family": 5
   },
   "adjudication": {
-    "status": "INDEPENDENT_REVIEW_REQUIRED",
+    "status": "ADJUDICATED_WITH_CORRECTIONS",
+    "authority_mode": "INDEPENDENT_READ_ONLY_ADJUDICATION",
+    "cross_audit_run_id": 75,
+    "cross_audit_work_id": 8,
+    "handoff_message_id": 41,
+    "review_role": "GPT_VERIFIER_RETEST",
+    "adjudicated_cases": 50,
+    "decision_agreement": 49,
+    "decision_disagreements": 1,
+    "corrected_decisions": 1,
+    "corrected_impact_sets": 8,
+    "stale_anchors_reconstructed": 4,
+    "unsafe_underblock_candidates": 0,
+    "independent_distribution": {
+      "SCOPED_CANDIDATE": 11,
+      "SCOPED_BLOCK": 7,
+      "GLOBAL_ESCALATE": 21,
+      "HUMAN_REQUIRED": 11
+    },
     "oracle_authorized": false,
-    "resolver_build_authorized": false,
-    "reason": "No current repository source was found that grants an existing independent adjudicator authority to certify this Input Governance change-impact gold as an oracle. Input Governance cannot self-adjudicate. Generic support/judge assets do not establish domain adjudication authority.",
-    "searched_repository_head": "b6b7067e2fdbec9239556711dab2c96ef1a821e4",
-    "reviewed_candidate_assets": [
-      "skills/learning_engine/SKILL.md",
-      "profiles/quality_pack/SKILL.md",
-      "profiles/product_director_lf/SKILL.md"
-    ],
-    "learning_engine_authority_result": "NOT_ADJUDICATOR_SUPPORT_ONLY",
-    "quality_pack_authority_result": "NOT_SELECTED_NO_SEMANTIC_CONTRACT_MATCH_ESTABLISHED",
-    "product_director_authority_result": "NOT_SELECTED_NO_GOLD_ADJUDICATION_AUTHORITY_ESTABLISHED"
+    "resolver_read_only_evaluation_allowed": true,
+    "resolver_downstream_authorized": false,
+    "reason": "Cross-Audit independently adjudicated all 50 cases against current Main and Input Governance run 218. The adjudication may be used as research evaluation authority for a READ_ONLY resolver, but it does not authorize SCOPED_PASS, downstream execution, promotion or production."
   },
+  "corrections_path": "sandbox/lf_contract_gate_test/input_governance_incremental/change_impact_l3c_adjudication_overlay_v2.json",
   "required_next_gate": {
-    "type": "HUMAN_OR_EXPLICIT_INDEPENDENT_DOMAIN_ADJUDICATION",
-    "must_preserve_candidate_research": true,
-    "must_not_modify_contracts_to_improve_benchmark": true,
+    "type": "READ_ONLY_RESOLVER_EVALUATION",
+    "required_metrics": [
+      "exact_decision_accuracy",
+      "impact_precision",
+      "impact_recall",
+      "unsafe_under_block",
+      "unnecessary_global_block",
+      "UNKNOWN_MIXED_shared_dependency_fail_closed",
+      "p50",
+      "p95",
+      "depth"
+    ],
     "unsafe_under_block_target": 0,
-    "unknown_mixed_shared_dependency": "FAIL_CLOSED_ESCALATE"
+    "unknown_mixed_shared_dependency": "FAIL_CLOSED_ESCALATE",
+    "must_not_modify_contracts_to_improve_benchmark": true,
+    "must_not_use_case_id_lookup": true
   }
 }
