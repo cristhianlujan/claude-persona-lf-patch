@@ -27,7 +27,8 @@ def main():
             elif expect and not actual: fn+=1
             elif not expect and actual: fp+=1
             else: tn+=1
-            assert r['llm_calls']==0 and r['round_trips']==0 and r.get('context_bytes',0)<=r.get('context_budget_bytes',10**9)
+            assert r['llm_calls']==0 and r['round_trips']==0 and r['writes']==0 and r['semantic_search'] is False
+            assert r.get('context_bytes',0)<=r.get('context_budget_bytes',10**9)
     assert len(cases)==50 and fp==0 and fn==0
-    print({'cases':50,'families':10,'tp':tp,'tn':tn,'fp':fp,'fn':fn,'precision':1.0,'recall':1.0,'specificity':1.0,'selector_llm_calls':0,'selector_round_trips':0,'routing_gate':'PASS','behavioral_ab':'NOT_EXECUTED','result':'INSUFFICIENT_EVIDENCE'})
+    print({'cases':50,'families':10,'tp':tp,'tn':tn,'fp':fp,'fn':fn,'precision':1.0,'recall':1.0,'specificity':1.0,'selector_llm_calls':0,'selector_round_trips':0,'reader_writes':0,'semantic_search':False,'routing_gate':'PASS','behavioral_ab':'NOT_EXECUTED','result':'INSUFFICIENT_EVIDENCE'})
 if __name__=='__main__': main()
