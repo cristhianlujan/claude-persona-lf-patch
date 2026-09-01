@@ -10,8 +10,8 @@ consumer:
 champion_id: CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1
 challenger_id: CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1
 bindings:
-  - binding_id: BIND-LF-PD-NEGOCIACION-DEUDA-v2
-    version: v2
+  - binding_id: BIND-LF-PD-NEGOCIACION-DEUDA-v3
+    version: v3
     consumer_id: PERFIL-PRODUCT-DIRECTOR-LF
     consumer_type: PROFILE
     capability_id: NEGOCIACION_DEUDA
@@ -21,10 +21,11 @@ bindings:
     input_contract: {required: [task_intent, explicit_constraints, evidence_refs], authority: GROUNDED_COMPETITIVE_EVIDENCE_ONLY}
     minimum_context: [grounded_competitive_pattern, source_ref, explicit_constraints, observed_vs_proposed_boundary]
     selected_evidence_refs:
+      - public.lf_knowledge_base/f67ffccd-e710-41f4-ae8c-eb5579227fc7
+      - public.lf_knowledge_base/8b744f07-75f6-4332-9df5-12e7c6914bf1
       - public.lf_knowledge_base/19461cc1-dc9c-4261-8b36-2bc8401160a1
       - public.lf_knowledge_base/07fec06f-51fd-4b3f-a322-114878881f5c
       - public.lf_knowledge_base/46ff730d-d561-4cab-ba2e-b4f45a87171c
-      - public.lf_knowledge_base/8c5324d1-14a0-43b0-8816-c7e0bb85d24c
     policy_capsule_ref: POL-LF-OPERATION-LIFECYCLE
     output_schema_ref: profiles/product_director_lf/SKILL.md#Required-output-modes
     judges: [exact_binding_required, authority_preservation, no_invention, bounded_context, must_not_invoke]
@@ -32,7 +33,7 @@ bindings:
     timeout_budget: 0
     context_budget: {max_bytes: 6000, selection: DETERMINISTIC_FIRST}
     lifecycle_state: READY_FOR_BINDING
-    source_learning_ids: [19461cc1-dc9c-4261-8b36-2bc8401160a1, 07fec06f-51fd-4b3f-a322-114878881f5c, 46ff730d-d561-4cab-ba2e-b4f45a87171c, 8c5324d1-14a0-43b0-8816-c7e0bb85d24c]
+    source_learning_ids: [f67ffccd-e710-41f4-ae8c-eb5579227fc7, 8b744f07-75f6-4332-9df5-12e7c6914bf1, 19461cc1-dc9c-4261-8b36-2bc8401160a1, 07fec06f-51fd-4b3f-a322-114878881f5c, 46ff730d-d561-4cab-ba2e-b4f45a87171c]
     champion_id: CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1
     challenger_id: CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1
     provenance: {source_table: public.lf_knowledge_base, verified_live: true, production_authorized: false}
@@ -60,8 +61,8 @@ bindings:
     champion_id: CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1
     challenger_id: CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1
     provenance: {source_table: public.lf_knowledge_base, verified_live: true, production_authorized: false}
-  - binding_id: BIND-LF-PD-EDUCACION-CREDITICIA-v2
-    version: v2
+  - binding_id: BIND-LF-PD-EDUCACION-CREDITICIA-v3
+    version: v3
     consumer_id: PERFIL-PRODUCT-DIRECTOR-LF
     consumer_type: PROFILE
     capability_id: EDUCACION_CREDITICIA
@@ -75,7 +76,7 @@ bindings:
       - public.lf_knowledge_base/4784cf4b-77e9-4e76-84fe-e689e6dd140e
       - public.lf_knowledge_base/f7f643db-ed5e-4f93-8347-9020828ba3c5
       - public.lf_knowledge_base/8f62a71c-9b64-4a9b-9bc9-8df50b5aa088
-      - public.lf_knowledge_base/88c157a2-4f63-4934-9cc9-8b57eaeddaf8
+      - public.lf_knowledge_base/7ffa83ea-c4ea-41a1-aaed-a76329c5c730
     policy_capsule_ref: POL-LF-OPERATION-LIFECYCLE
     output_schema_ref: profiles/product_director_lf/SKILL.md#Required-output-modes
     judges: [exact_binding_required, authority_preservation, no_invention, bounded_context, must_not_invoke]
@@ -83,7 +84,31 @@ bindings:
     timeout_budget: 0
     context_budget: {max_bytes: 6000, selection: DETERMINISTIC_FIRST}
     lifecycle_state: READY_FOR_BINDING
-    source_learning_ids: [cd247c51-4734-474a-b0a4-f4e6dfe4d13b, 4784cf4b-77e9-4e76-84fe-e689e6dd140e, f7f643db-ed5e-4f93-8347-9020828ba3c5, 8f62a71c-9b64-4a9b-9bc9-8df50b5aa088, 88c157a2-4f63-4934-9cc9-8b57eaeddaf8]
+    source_learning_ids: [cd247c51-4734-474a-b0a4-f4e6dfe4d13b, 4784cf4b-77e9-4e76-84fe-e689e6dd140e, f7f643db-ed5e-4f93-8347-9020828ba3c5, 8f62a71c-9b64-4a9b-9bc9-8df50b5aa088, 7ffa83ea-c4ea-41a1-aaed-a76329c5c730]
+    champion_id: CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1
+    challenger_id: CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1
+    provenance: {source_table: public.lf_knowledge_base, verified_live: true, production_authorized: false}
+  - binding_id: BIND-LF-PD-DIGITAL-SELF-SERVICE-v1
+    version: v1
+    consumer_id: PERFIL-PRODUCT-DIRECTOR-LF
+    consumer_type: PROFILE
+    capability_id: DIGITAL_SELF_SERVICE
+    router_action: EJECUCION_PERFIL_LF
+    invoke_when: [task_requires_product_scope_for_self_service_debt_journey, task_requires_product_decision_for_digital_onboarding_or_payment_self_service]
+    must_not_invoke_when: [identity_security_implementation_only, visual_design_only, policy_only, legal_approval_only]
+    input_contract: {required: [task_intent, explicit_constraints, evidence_refs], authority: GROUNDED_COMPETITOR_OBSERVATION_ONLY}
+    minimum_context: [observed_self_service_pattern, source_ref, observed_vs_proposed_boundary, explicit_constraints]
+    selected_evidence_refs:
+      - public.lf_knowledge_base/35cfab0c-1d91-4aa4-9761-f8af91181e17
+      - public.lf_knowledge_base/7d55562e-9266-478b-b071-dca7ba1ade1a
+    policy_capsule_ref: POL-LF-OPERATION-LIFECYCLE
+    output_schema_ref: profiles/product_director_lf/SKILL.md#Required-output-modes
+    judges: [exact_binding_required, authority_preservation, no_invention, bounded_context, must_not_invoke]
+    fallback: NO_COMPETITIVE_CONTEXT
+    timeout_budget: 0
+    context_budget: {max_bytes: 6000, selection: DETERMINISTIC_FIRST}
+    lifecycle_state: READY_FOR_BINDING
+    source_learning_ids: [35cfab0c-1d91-4aa4-9761-f8af91181e17, 7d55562e-9266-478b-b071-dca7ba1ade1a]
     champion_id: CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1
     challenger_id: CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1
     provenance: {source_table: public.lf_knowledge_base, verified_live: true, production_authorized: false}
