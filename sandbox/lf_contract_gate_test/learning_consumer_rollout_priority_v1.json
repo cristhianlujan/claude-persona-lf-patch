@@ -1,34 +1,34 @@
 {
   "schema": "LF_LEARNING_CONSUMER_ROLLOUT_PRIORITY_V1",
-  "source": "live profile contracts on main + public.v_lf_router_adapter_bindings",
+  "source": "live profile contracts on main + PR391 exact-head validation",
   "priority": [
     {
       "rank": 1,
       "consumer_id": "PERFIL-PRODUCT-DIRECTOR-LF",
       "decision": "DIRECT_READ_ONLY_CANDIDATE",
       "reason": "Owns product scope, priority and tradeoffs; competitive evidence is directly relevant as bounded context.",
-      "status": "BENCHMARKED_ROUTING_WAITING_GLOBAL_SOURCE_PARITY"
+      "status": "ROUTING_50_OF_50_PASS_WAITING_GLOBAL_SOURCE_PARITY_AND_BEHAVIORAL_RUNTIME"
     },
     {
       "rank": 2,
       "consumer_id": "PERFIL-UI-ARCHITECT",
       "decision": "CONSUME_VIA_PRODUCT_DECISION_FIRST",
-      "reason": "UI contract converts product/UX decisions to UI specifications and forbids invented domain truth.",
-      "status": "NEXT_SAFE_CONSUMER_REVIEW"
+      "reason": "UI contract converts authorized product/UX decisions to UI specifications and forbids invented domain truth.",
+      "status": "ROUTING_50_OF_50_PASS_PRODUCT_DIRECTION_PRECONDITION_REQUIRED_BEHAVIORAL_RUNTIME_PENDING"
     },
     {
       "rank": 3,
       "consumer_id": "ACT-0051",
       "decision": "NO_DIRECT_COMPETITIVE_INJECTION",
       "reason": "Frontend requires approved Product Direction and UI specification; direct learning would bypass governed upstream owners.",
-      "status": "UPSTREAM_CONTEXT_ONLY"
+      "status": "UPSTREAM_ONLY_NO_BYPASS_CONTRACTED_20_CASES"
     },
     {
       "rank": 4,
       "consumer_id": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
       "decision": "NO_DIRECT_COMPETITIVE_INJECTION_UNLESS_AUTHORIZED_OBJECTIVE",
       "reason": "Gamification requires an authorized product/UX objective and financial/ethical guardrails before mechanics.",
-      "status": "CONDITIONAL_UPSTREAM_CONTEXT_ONLY"
+      "status": "CONDITIONAL_UPSTREAM_ONLY_NO_BYPASS_CONTRACTED_20_CASES"
     }
   ],
   "production_impact": false
