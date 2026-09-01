@@ -1,0 +1,22 @@
+{
+  "schema":"LF_LEARNING_PROFILES_C3_LIVE_REFERENCE_V1",
+  "observed_date":"2026-09-01",
+  "repo":"cristhianlujan/claude-persona-lf-patch",
+  "pr":341,
+  "head":"a0f522c5427e3c07a459eaa242a5434797002dc6",
+  "draft":true,
+  "merged":false,
+  "experiment":"A_FULL_VS_C3_SELECTED",
+  "single_variable":"deterministic_selected_context",
+  "runtime":"pinned_qwen2.5-vl_llama.cpp",
+  "matrix":"10_families_x_5_cases",
+  "authoritative_core_cases":3,
+  "exact_head_workflows":[
+    {"run_id":33435193075,"name":"LF Bootstrap Reproducibility Probe","conclusion":"success"},
+    {"run_id":33435193016,"name":"Validate LF Packs","conclusion":"success"},
+    {"run_id":33435193099,"name":"lf-contract-check","conclusion":"success"},
+    {"run_id":33435193010,"name":"Story Agent Evidence Verifier","conclusion":"success"}
+  ],
+  "reuse_rule":"REFERENCE_PATTERN_ONLY_NOT_INHERITED_PASS",
+  "production_impact":false
+}
