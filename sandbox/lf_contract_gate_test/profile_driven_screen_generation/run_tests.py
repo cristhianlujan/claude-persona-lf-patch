@@ -1,3 +1,4 @@
+# Exact-head CI evidence trigger for #402; no semantic contract change.
 from profile_decision_package import (
     DecisionInstruction,
     build_profile_decision_package,
