@@ -1,0 +1,83 @@
+{
+  "schema": "LF_LEARNING_CONSUMER_CONTEXT_PACK_V2",
+  "status": "CANDIDATO_READ_ONLY",
+  "consumer_id": "PERFIL-PRODUCT-DIRECTOR-LF",
+  "consumer_type": "PROFILE",
+  "router_action": "EJECUCION_PERFIL_LF",
+  "selection": {
+    "mode": "DETERMINISTIC_EXACT_ID",
+    "llm_selector_allowed": false,
+    "semantic_scope_expansion_allowed": false,
+    "max_evidence_refs_per_binding": 5,
+    "context_budget_bytes": 6000,
+    "fallback": "NO_COMPETITIVE_CONTEXT"
+  },
+  "authority": {
+    "source_authority": "FULL_KNOWLEDGE_PRESERVED",
+    "eligible_grounding_status": "GROUNDED",
+    "consumer_ready_required": true,
+    "competitive_evidence_is_context_not_product_truth": true,
+    "production_impact": false,
+    "automatic_promotion": false
+  },
+  "champion_id": "CHAMPION-PRODUCT-DIRECTOR-LF-NO-COMPETITIVE-CONTEXT-v1",
+  "challenger_id": "CHALLENGER-PRODUCT-DIRECTOR-LF-SELECTED-COMPETITIVE-CONTEXT-v1",
+  "bindings": [
+    {
+      "binding_id": "BIND-LF-PD-NEGOCIACION-DEUDA-v2",
+      "capability_id": "NEGOCIACION_DEUDA",
+      "source_learning_ids": [
+        "19461cc1-dc9c-4261-8b36-2bc8401160a1",
+        "07fec06f-51fd-4b3f-a322-114878881f5c",
+        "46ff730d-d561-4cab-ba2e-b4f45a87171c",
+        "8c5324d1-14a0-43b0-8816-c7e0bb85d24c"
+      ],
+      "must_not_invoke_when": [
+        "legal_approval_only",
+        "visual_design_only",
+        "technical_architecture_only",
+        "user_specific_financial_advice"
+      ]
+    },
+    {
+      "binding_id": "BIND-LF-PD-ALTERNATIVAS-FINANCIERAS-v2",
+      "capability_id": "ALTERNATIVAS_FINANCIERAS",
+      "source_learning_ids": [
+        "96872c14-85be-4ac6-bda0-0cb343a67f36",
+        "e0a9d700-ba7e-4f47-924a-ca5436095cf7"
+      ],
+      "must_not_invoke_when": [
+        "user_specific_credit_recommendation",
+        "eligibility_claim_without_authority",
+        "legal_approval_only",
+        "technical_implementation_only"
+      ]
+    },
+    {
+      "binding_id": "BIND-LF-PD-EDUCACION-CREDITICIA-v2",
+      "capability_id": "EDUCACION_CREDITICIA",
+      "source_learning_ids": [
+        "cd247c51-4734-474a-b0a4-f4e6dfe4d13b",
+        "4784cf4b-77e9-4e76-84fe-e689e6dd140e",
+        "f7f643db-ed5e-4f93-8347-9020828ba3c5",
+        "8f62a71c-9b64-4a9b-9bc9-8df50b5aa088",
+        "88c157a2-4f63-4934-9cc9-8b57eaeddaf8"
+      ],
+      "must_not_invoke_when": [
+        "user_specific_credit_advice",
+        "legal_or_regulatory_truth_without_independent_authority",
+        "score_guarantee",
+        "visual_copy_only"
+      ]
+    }
+  ],
+  "judges": [
+    "exact_binding_required",
+    "authority_preservation",
+    "no_invention",
+    "bounded_context",
+    "must_not_invoke"
+  ],
+  "lifecycle_state": "READY_FOR_BINDING",
+  "rollback": "NO_COMPETITIVE_CONTEXT"
+}
