@@ -24,10 +24,12 @@ for script in (
     'validate_learning_specialized_consumer_activation_guard_v1.py',
     'validate_learning_specialized_consumer_activation_negative_v1.py',
     'validate_learning_specialized_consumer_failclosed_benchmark_50_v1.py',
+    'validate_learning_specialized_consumer_readiness_matrix_v1.py',
+    'validate_learning_specialized_consumer_benchmark_outcome_v1.py',
 ):
     r=subprocess.run([sys.executable,str(R/script)],capture_output=True,text=True)
     if r.stdout: print(r.stdout.strip())
     if r.returncode:
         if r.stderr: sys.stderr.write(r.stderr)
         raise SystemExit(r.returncode)
-print('LEARNING_SPECIALIZED_CONSUMER_AUTHORITY_EXTENSION=PASS activation_guard=1 negative=12/12 benchmark=50/50')
+print('LEARNING_SPECIALIZED_CONSUMER_AUTHORITY_EXTENSION=PASS activation_guard=1 negative=12/12 benchmark=50/50 readiness=4/4 outcome=INSUFFICIENT_EVIDENCE')
