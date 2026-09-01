@@ -1,4 +1,5 @@
-from change_impact_resolver_readonly_v1 import RuntimeAuthority, resolve_change_impact
+from change_impact_resolver_readonly_v1 import RuntimeAuthority
+from change_impact_resolver_authority_guard_v1 import resolve_change_impact
 
 cases = [
     (
