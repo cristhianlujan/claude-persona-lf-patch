@@ -1,0 +1,56 @@
+version: v1
+status: CANDIDATO_READ_ONLY
+consumer:
+  consumer_id: PERFIL-UI-ARCHITECT
+  consumer_type: PROFILE
+  consumer_source: profiles/ui_architect/SKILL.md
+  router_action: EJECUCION_PERFIL_LF
+  prerequisite: PRODUCT_DIRECTION_AUTHORIZED_CURRENT
+champion_id: CHAMPION-UI-ARCHITECT-NO-COMPETITIVE-CONTEXT-v1
+challenger_id: CHALLENGER-UI-ARCHITECT-SELECTED-COMPETITIVE-UI-CONTEXT-v1
+bindings:
+  - binding_id: BIND-LF-UI-DIGITAL-SELF-SERVICE-v1
+    version: v1
+    consumer_id: PERFIL-UI-ARCHITECT
+    consumer_type: PROFILE
+    capability_id: DIGITAL_SELF_SERVICE
+    router_action: EJECUCION_PERFIL_LF
+    invoke_when: [product_direction_authorized_current, task_requires_ui_spec_for_self_service_debt_journey, grounded_current_competitive_ui_pattern_available]
+    must_not_invoke_when: [product_direction_missing_or_stale, product_scope_decision_required, backend_or_payment_execution_only, evidence_ungrounded_or_stale]
+    input_contract: {required: [product_direction_ref, task_intent, explicit_constraints, evidence_refs], authority: PRODUCT_DIRECTION_FIRST_COMPETITIVE_PATTERN_SECOND}
+    minimum_context: [selected_product_decision, preserved_product_constraints, observed_self_service_ui_pattern, source_ref, observed_vs_proposed_boundary]
+    selected_evidence_refs: [public.lf_knowledge_base/35cfab0c-1d91-4aa4-9761-f8af91181e17, public.lf_knowledge_base/7d55562e-9266-478b-b071-dca7ba1ade1a]
+    policy_capsule_ref: POL-LF-OPERATION-LIFECYCLE
+    output_schema_ref: profiles/ui_architect/SKILL.md#RUNTIME-CRITICAL-GATE--EXECUTE-FIRST
+    judges: [product_direction_precondition, exact_binding_required, authority_preservation, no_domain_invention, bounded_context, must_not_invoke]
+    fallback: PRODUCT_CONTEXT_ONLY_NO_COMPETITIVE_UI_PATTERN
+    timeout_budget: 0
+    context_budget: {max_bytes: 5000, selection: DETERMINISTIC_FIRST}
+    lifecycle_state: READY_FOR_BINDING
+    source_learning_ids: [35cfab0c-1d91-4aa4-9761-f8af91181e17, 7d55562e-9266-478b-b071-dca7ba1ade1a]
+    champion_id: CHAMPION-UI-ARCHITECT-NO-COMPETITIVE-CONTEXT-v1
+    challenger_id: CHALLENGER-UI-ARCHITECT-SELECTED-COMPETITIVE-UI-CONTEXT-v1
+    provenance: {source_table: public.lf_knowledge_base, verified_live: true, production_authorized: false}
+  - binding_id: BIND-LF-UI-PAYMENT-NO-ADEUDO-v1
+    version: v1
+    consumer_id: PERFIL-UI-ARCHITECT
+    consumer_type: PROFILE
+    capability_id: PAYMENT_NO_ADEUDO
+    router_action: EJECUCION_PERFIL_LF
+    invoke_when: [product_direction_authorized_current, task_requires_ui_spec_for_payment_confirmation_or_documentary_closure, grounded_current_competitive_ui_pattern_available]
+    must_not_invoke_when: [product_direction_missing_or_stale, legal_certificate_truth_required, payment_execution_only, evidence_ungrounded_or_stale]
+    input_contract: {required: [product_direction_ref, task_intent, explicit_constraints, evidence_refs], authority: PRODUCT_DIRECTION_FIRST_COMPETITIVE_PATTERN_SECOND}
+    minimum_context: [selected_product_decision, preserved_product_constraints, observed_payment_to_no_adeudo_ui_sequence, source_ref, documentary_boundary]
+    selected_evidence_refs: [public.lf_knowledge_base/bd2a3a05-b53b-400c-846d-3634e422a500, public.lf_knowledge_base/92fc4ad2-1581-4aa1-b01b-e986bb3cc71c]
+    policy_capsule_ref: POL-LF-OPERATION-LIFECYCLE
+    output_schema_ref: profiles/ui_architect/SKILL.md#RUNTIME-CRITICAL-GATE--EXECUTE-FIRST
+    judges: [product_direction_precondition, exact_binding_required, authority_preservation, no_domain_invention, bounded_context, must_not_invoke]
+    fallback: PRODUCT_CONTEXT_ONLY_NO_COMPETITIVE_UI_PATTERN
+    timeout_budget: 0
+    context_budget: {max_bytes: 5000, selection: DETERMINISTIC_FIRST}
+    lifecycle_state: READY_FOR_BINDING
+    source_learning_ids: [bd2a3a05-b53b-400c-846d-3634e422a500, 92fc4ad2-1581-4aa1-b01b-e986bb3cc71c]
+    champion_id: CHAMPION-UI-ARCHITECT-NO-COMPETITIVE-CONTEXT-v1
+    challenger_id: CHALLENGER-UI-ARCHITECT-SELECTED-COMPETITIVE-UI-CONTEXT-v1
+    provenance: {source_table: public.lf_knowledge_base, verified_live: true, production_authorized: false}
+rollback: {action: remove_competitive_ui_pattern_and_use_product_context_only, production_impact: false}
