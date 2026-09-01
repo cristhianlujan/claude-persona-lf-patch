@@ -47,6 +47,9 @@ jobs:
       - name: Validate learning cluster consumer coverage
         run: python sandbox/lf_contract_gate_test/validate_learning_cluster_consumer_coverage_v1.py
 
+      - name: Validate learning next-consumer applicability
+        run: python sandbox/lf_contract_gate_test/validate_learning_next_consumer_applicability_v1.py
+
       - name: Validate learning READ_ONLY Product Director route
         run: python sandbox/lf_contract_gate_test/validate_product_director_learning_suite_v1.py
 
