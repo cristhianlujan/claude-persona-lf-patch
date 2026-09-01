@@ -28,6 +28,12 @@ TESTS=[
  'validate_learning_additional_consumer_inventory_v1.py',
  'validate_learning_additional_consumer_capability_map_v1.py',
  'validate_learning_additional_consumers_50_cases_v1.py',
+ 'validate_learning_act0058_judge_gap_readback_v1.py',
+ 'validate_act0058_restock_contract_repair_candidate.py',
+ 'validate_learning_act0058_missing_judge_triage_v1.py',
+ 'validate_learning_act0058_9_judge_specs_v1.py',
+ 'validate_act0058_two_contracts_hardening_candidate.py',
+ 'validate_learning_act0058_2_post_repair_judge_specs_v1.py',
 ]
 def main():
  results=[]
@@ -50,6 +56,6 @@ def main():
  state=json.loads((S/'learning_bridge_source_state_20260901_v1.json').read_text())
  if ref.get('reuse_rule')!='REFERENCE_PATTERN_ONLY_NOT_INHERITED_PASS' or any(x.get('conclusion')!='success' for x in ref.get('exact_head_workflows',[])): return 1
  if state.get('evidence_level')!='SOURCE_DECLARED_DB_UNVERIFIED_THIS_RUN': return 1
- print(json.dumps({'verdict':'PASS','validators':len(TESTS),'upstream_bridge':'LEARNING_BRIDGE_KB_CARD_LF','upstream_bridge_steps':25,'upstream_bridge_live_db':'UNVERIFIED','duplicate_learning_engine':False,'direct_learning_consumers':2,'indirect_downstream_consumers':2,'additional_consumers_discovered':2,'additional_consumers_bound':0,'additional_candidate_mappings':3,'additional_routing_cases':50,'additional_routing_families':10,'additional_routing':ab['routing'],'routing_cases':50,'routing_families':10,'ui_routing':b['routing'],'dynamic_exact_bindings':7,'dynamic_selector_llm_calls':0,'dynamic_selector_round_trips':0,'downstream_no_bypass_cases':40,'behavioral_runtime_candidate':'AVAILABLE_NOT_CANONICAL','behavioral_runtime_candidate_exact_head_ci':'4/4','behavioral_readiness':'FAIL_CLOSED_WAITING_CURRENT_GOVERNANCE_RECEIPT','selector_llm_calls':0,'selector_round_trips':0,'context_service_writes':0,'downstream_learning_llm_calls':0,'behavioral_profile_ab':'NOT_EXECUTED','profiles_c3_reference_head':ref['head'],'profiles_c3_pass_inherited':False,'production_impact':False},sort_keys=True))
+ print(json.dumps({'verdict':'PASS','validators':len(TESTS),'upstream_bridge':'LEARNING_BRIDGE_KB_CARD_LF','upstream_bridge_steps':25,'upstream_bridge_live_db':'UNVERIFIED','duplicate_learning_engine':False,'direct_learning_consumers':2,'indirect_downstream_consumers':2,'additional_consumers_discovered':2,'additional_consumers_bound':0,'additional_candidate_mappings':3,'additional_routing_cases':50,'additional_routing_families':10,'additional_routing':ab['routing'],'routing_cases':50,'routing_families':10,'ui_routing':b['routing'],'dynamic_exact_bindings':7,'dynamic_selector_llm_calls':0,'dynamic_selector_round_trips':0,'downstream_no_bypass_cases':40,'behavioral_runtime_candidate':'AVAILABLE_NOT_CANONICAL','behavioral_runtime_candidate_exact_head_ci':'4/4','behavioral_readiness':'FAIL_CLOSED_WAITING_CURRENT_GOVERNANCE_RECEIPT','act0058_live_steps':15,'act0058_bound_judges':4,'act0058_missing_judges':11,'act0058_judge_specs_ready':9,'act0058_contracts_needing_repair':2,'act0058_db_mutation':0,'selector_llm_calls':0,'selector_round_trips':0,'context_service_writes':0,'downstream_learning_llm_calls':0,'behavioral_profile_ab':'NOT_EXECUTED','profiles_c3_reference_head':ref['head'],'profiles_c3_pass_inherited':False,'production_impact':False},sort_keys=True))
  return 0
 if __name__=='__main__': raise SystemExit(main())
