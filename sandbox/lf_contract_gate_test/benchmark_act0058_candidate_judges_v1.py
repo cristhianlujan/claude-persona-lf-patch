@@ -26,9 +26,10 @@ def eval_case(c):
   if i.get('urls_insertadas',0)==0: return 'RESTOCK_NOOP_WARN' if i.get('warn_event_recorded') is True else 'RESTOCK_BLOCKED'
   return 'RESTOCK_COMPLETED'
  if j=='MINI_JUDGE_ACT0058_RETRY':
-  rc=i.get('retry_count'); action=i.get('next_action')
-  if rc is not None and rc>=3: return 'RETRY_TERMINAL_FAILED' if action=='FAILED_CONTINUE_NEXT_URL' else 'RETRY_BLOCKED'
-  return 'RETRY_ALLOWED' if action=='RETRY' else 'RETRY_BLOCKED'
+  rc=i.get('retry_count'); stage=i.get('stage_status')
+  if rc is None or stage not in {'PENDING','FAILED'}: return 'RETRY_BLOCKED'
+  if rc>=3: return 'RETRY_TERMINAL_FAILED' if stage=='FAILED' else 'RETRY_BLOCKED'
+  return 'RETRY_ALLOWED' if stage=='PENDING' else 'RETRY_BLOCKED'
  raise ValueError(j)
 
 def pct(values,q):
@@ -46,10 +47,11 @@ def main():
  blocked_values={'BLOCKED','DEDUP_BLOCKED','OUT_OF_SCOPE','CAPTURE_BLOCKED','HOMOLOG_BLOCKED','ANALYSIS_BLOCKED','KB_WRITE_BLOCKED','COMPLETION_BLOCKED','RESTOCK_BLOCKED','RETRY_BLOCKED'}
  critical_fp=sum(1 for c,got in outcomes if c['expected'] in blocked_values and got not in blocked_values)
  report={
-  'schema':'ACT0058_CANDIDATE_JUDGE_BENCHMARK_V1','cases':len(cases),'judges':len(counts),'cases_per_judge':dict(counts),
+  'schema':'ACT0058_CANDIDATE_JUDGE_BENCHMARK_V2','cases':len(cases),'judges':len(counts),'cases_per_judge':dict(counts),
   'pass_count':len(cases)-len(failures),'fail_count':len(failures),'accuracy_pct':round(100*(len(cases)-len(failures))/len(cases),2),
   'critical_false_positives':critical_fp,'llm_calls':0,'round_trips':0,'tool_calls':0,'deterministic_share_pct':100.0,
   'runtime_us':{'p50':round(statistics.median(lat),3),'p95':round(pct(lat,.95),3),'max':round(max(lat),3)},
+  'retry_evidence_contract':'retry_count+stage_status+error_detail','synthetic_next_action_used':False,
   'failures':failures,'production_impact':False
  }
  print(json.dumps(report,sort_keys=True))
