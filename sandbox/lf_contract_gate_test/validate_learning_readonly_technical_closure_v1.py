@@ -9,6 +9,10 @@ req(D['schema']=='LF_LEARNING_READONLY_TECHNICAL_CLOSURE_V1','SCHEMA')
 req(D['mode']=='READ_ONLY','MODE')
 req(D['router']['asset']=='ACT-0001','ROUTER')
 req(D['router']['impacto_automatico']=='BLOQUEADO','AUTO_IMPACT')
+F=D['source_freshness']
+req(F['snapshots_guarded']=='3/3','FRESHNESS_SNAPSHOTS')
+req(F['fresh_readback_required_for_new_binding'] is True and F['fresh_readback_required_for_new_context_pack_evidence'] is True and F['fresh_readback_required_for_new_learning_admission'] is True and F['fresh_readback_required_for_card_creation_decision'] is True,'FRESHNESS_REQUIRED')
+req(F['historical_snapshot_can_authorize_promotion'] is False,'HISTORICAL_NO_PROMOTION')
 RDR=D['reader']
 req(RDR['dynamic_exact_join_rule']=='NEW_LEARNING_REQUIRES_EXACT_KB_CLASSIFICATION_RECEIPT_AND_EXACT_CONSUMER_CLUSTER_BINDING','READER_JOIN_RULE')
 req(RDR['adversarial_cases']=='50/50' and RDR['adversarial_families']=='10x5' and RDR['positive_controls']=='5/5','READER_JOIN_BENCHMARK')
@@ -32,17 +36,18 @@ req(D['corpus']['canonical_bridge_eligible']=='35/35' and D['corpus']['eligible_
 req(D['behavioral']['status']=='INSUFFICIENT_EVIDENCE' and D['behavioral']['behavioral_ab']=='NOT_EXECUTED','BEHAVIORAL')
 for k in ('behavioral_promotion_authorized','automatic_promotion','production_authorized','merge_authorized'):
     req(D[k] is False,'AUTH_'+k.upper())
-r=subprocess.run([sys.executable,str(R/'validate_learning_active_consumer_binding_contract_v1.py')],capture_output=True,text=True)
-if r.stdout: print(r.stdout.strip())
-if r.returncode:
-    if r.stderr: sys.stderr.write(r.stderr)
-    raise SystemExit(r.returncode)
+for script in ('validate_learning_active_consumer_binding_contract_v1.py','validate_learning_source_snapshot_freshness_guard_v1.py'):
+    r=subprocess.run([sys.executable,str(R/script)],capture_output=True,text=True)
+    if r.stdout: print(r.stdout.strip())
+    if r.returncode:
+        if r.stderr: sys.stderr.write(r.stderr)
+        raise SystemExit(r.returncode)
 if D['status']=='VERIFICATION_IN_PROGRESS':
     req(D['read_only_route_technically_verified'] is False,'PENDING_NOT_VERIFIED')
     req(D['exact_head_ci']['canonical_workflows_passed']<3,'PENDING_CI_NOT_3')
     req(D['closure_boundary']=='TECHNICAL_READ_ONLY_CI_RECHECK_REQUIRED','PENDING_BOUNDARY')
     req(D['next_gate']=='CURRENT_HEAD_EXACT_CI_3_OF_3','PENDING_NEXT_GATE')
-    print('LEARNING_READONLY_TECHNICAL_CLOSURE=PASS_FAIL_CLOSED status=VERIFICATION_IN_PROGRESS reader=HARDENED active_bindings=7/7 specialized=HARDENED production_authorized=false')
+    print('LEARNING_READONLY_TECHNICAL_CLOSURE=PASS_FAIL_CLOSED status=VERIFICATION_IN_PROGRESS freshness=GUARDED reader=HARDENED active_bindings=7/7 specialized=HARDENED production_authorized=false')
 elif D['status']=='TECHNICALLY_VERIFIED_READ_ONLY_CANDIDATE':
     req(D['read_only_route_technically_verified'] is True,'VERIFIED_FLAG')
     req(D['exact_head_ci']['canonical_workflows_passed']==D['exact_head_ci']['canonical_workflows_total']==3,'CI_3_OF_3')
