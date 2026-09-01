@@ -14,6 +14,8 @@ REQ={'consumer_id','consumer_type','capability_id','router_action','invoke_when'
 
 def main():
  assert B['consumer']['consumer_id']=='PERFIL-PRODUCT-DIRECTOR-LF'
+ assert E.get('fresh_readback_event_ref','').startswith('public.lf_eventos/')
+ assert E['selected_count']==E['eligibility_pass_count']==13
  receipts={x['kb_id']:x for x in C['receipts']}
  eligible=set(E['selected_ids'])
  dyn={(x['consumer_id'],x['capability_id']):set(x['cluster_codes']) for x in D['bindings']}
@@ -36,5 +38,4 @@ def main():
   assert row['binding_id'] not in seen; seen.add(row['binding_id'])
  assert checked==13 and len(seen)==5
  assert set(E['excluded_due_cluster_mismatch']).isdisjoint(eligible)
- print('PRODUCT_DIRECTOR_EXACT_BINDING=PASS bindings=5/5 selected_refs=13/13 canonical_cluster_match=13/13 composite_eligibility=13/13')
-if __name__=='__main__': main()
+ print('PRODUCT_DIRECTOR_EXACT_BINDING=PASS bindings=5/5 selected_refs=13/13 canonical_cluster_match=13/13 composite_eligibility=13/13 fresh_kb_readback=PASS')
