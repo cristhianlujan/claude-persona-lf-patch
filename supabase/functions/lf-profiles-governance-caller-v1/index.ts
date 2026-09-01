@@ -72,6 +72,15 @@ async function callRuntime(slug: string, body: Record<string, unknown>): Promise
   return payload;
 }
 
+async function materializeScreen(screen: { pantalla_id: number; codigo: string }) {
+  const payload = await callRuntime("input-governance-agent-v1", {
+    pantalla_id: screen.pantalla_id,
+    consumer: "STORY_CREATOR",
+  });
+  const result = (payload.result ?? {}) as Record<string, unknown>;
+  return { ...screen, status: result.status ?? null, run_id: result.run_id ?? result.latest_run_id ?? null, payload };
+}
+
 Deno.serve(async (req: Request) => {
   try {
     if (req.method !== "POST") return json({ outcome: "BLOCKED", code: "METHOD_NOT_ALLOWED" }, 405);
@@ -91,16 +100,24 @@ Deno.serve(async (req: Request) => {
       workflow_sha: workflowSha,
     };
 
+    if (body.action === "input_readiness_screen_v1") {
+      const codigo = typeof body.codigo === "string" ? body.codigo : "";
+      const screen = PILOT_SCREENS.find((item) => item.codigo === codigo);
+      if (!screen) return json({ outcome: "BLOCKED", code: "PILOT_SCREEN_NOT_ALLOWED", caller, codigo }, 400);
+      const result = await materializeScreen(screen);
+      const ready = result.status === "READY";
+      return json({
+        outcome: ready ? "READY" : "BLOCKED",
+        caller,
+        required_count: 1,
+        ready_count: ready ? 1 : 0,
+        result,
+      }, ready ? 200 : 409);
+    }
+
     if (body.action === "input_readiness_pilot_v1") {
       const results: Record<string, unknown>[] = [];
-      for (const screen of PILOT_SCREENS) {
-        const payload = await callRuntime("input-governance-agent-v1", {
-          pantalla_id: screen.pantalla_id,
-          consumer: "STORY_CREATOR",
-        });
-        const result = (payload.result ?? {}) as Record<string, unknown>;
-        results.push({ ...screen, status: result.status ?? null, run_id: result.run_id ?? result.latest_run_id ?? null, payload });
-      }
+      for (const screen of PILOT_SCREENS) results.push(await materializeScreen(screen));
       const readyCount = results.filter((item) => item.status === "READY").length;
       return json({
         outcome: readyCount === PILOT_SCREENS.length ? "READY" : "BLOCKED",
