@@ -1,0 +1,18 @@
+{
+  "schema":"LF_LEARNING_COMPETITIVE_LIVE_CORPUS_RECEIPT_V1",
+  "mode":"READ_ONLY",
+  "source":"public.lf_knowledge_base",
+  "project":"mhwmirqcgxxukpctffuv",
+  "observed_at_utc":"2026-09-01T20:24:00Z",
+  "competencia_total":43,
+  "eligible_grounded_consumer_ready":35,
+  "ineligible_or_not_ready":8,
+  "latest_competencia_updated_at":"2026-08-28T13:13:17.418362+00:00",
+  "eligibility_predicate":{"kb_category":"COMPETENCIA","grounding_status":"GROUNDED","consumer_ready":true},
+  "new_eligible_since_current_learning_snapshot":0,
+  "automatic_binding":false,
+  "semantic_search":false,
+  "reader_writes":0,
+  "production_authorized":false,
+  "note":"classification cluster is not a column of lf_knowledge_base; cluster authority remains in the separate deterministic classification receipts already validated by the learning suite"
+}
