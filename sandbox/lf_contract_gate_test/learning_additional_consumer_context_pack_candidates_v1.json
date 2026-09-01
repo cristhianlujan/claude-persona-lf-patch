@@ -1,0 +1,14 @@
+{
+  "schema":"LF_LEARNING_ADDITIONAL_CONSUMER_CONTEXT_PACK_CANDIDATES_V1",
+  "mode":"READ_ONLY_CANDIDATE_ONLY",
+  "selector":"DETERMINISTIC_EXACT_BINDING_REQUIRED",
+  "packs":[
+    {"consumer_id":"PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531","capability_id":"DIGITAL_SELF_SERVICE","binding_state":"READY_FOR_BINDING","prerequisites":["PRODUCT_DIRECTION_AUTHORIZED_CURRENT","EXACT_CLAIM_AUTHORITY_CURRENT"],"selected_evidence_refs":[],"source_learning_ids":[],"context_bytes":0,"context_budget_bytes":0,"fallback":"NO_COMPETITIVE_CONTEXT","delivery_enabled":false},
+    {"consumer_id":"PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531","capability_id":"PAYMENT_NO_ADEUDO","binding_state":"READY_FOR_BINDING","prerequisites":["PRODUCT_DIRECTION_AUTHORIZED_CURRENT","EXACT_CLAIM_AUTHORITY_CURRENT"],"selected_evidence_refs":[],"source_learning_ids":[],"context_bytes":0,"context_budget_bytes":0,"fallback":"NO_COMPETITIVE_CONTEXT","delivery_enabled":false},
+    {"consumer_id":"PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531","capability_id":"DIGITAL_SELF_SERVICE","binding_state":"READY_FOR_BINDING","prerequisites":["PRODUCT_DIRECTION_AUTHORIZED_CURRENT"],"selected_evidence_refs":[],"source_learning_ids":[],"context_bytes":0,"context_budget_bytes":0,"fallback":"NO_COMPETITIVE_CONTEXT","delivery_enabled":false},
+    {"consumer_id":"PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531","capability_id":"PAYMENT_NO_ADEUDO","binding_state":"READY_FOR_BINDING","prerequisites":["PRODUCT_DIRECTION_AUTHORIZED_CURRENT"],"selected_evidence_refs":[],"source_learning_ids":[],"context_bytes":0,"context_budget_bytes":0,"fallback":"NO_COMPETITIVE_CONTEXT","delivery_enabled":false}
+  ],
+  "pack_count":4,
+  "selector_llm_calls":0,"selector_round_trips":0,"reader_writes":0,"semantic_search":false,
+  "automatic_binding":false,"automatic_impact":false,"production_authorized":false
+}
