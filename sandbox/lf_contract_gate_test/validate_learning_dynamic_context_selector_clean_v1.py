@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
+import subprocess,sys
+from pathlib import Path
 from learning_dynamic_context_selector_clean_v1 import select_context, SelectionError
+R=Path(__file__).resolve().parent
 
 def ev(kid, cluster, eid=1, lifecycle='ANALIZADO', eligibility='PASS'):
     return {'event_id':eid,'payload':{'kb_id':kid,'cluster_code':cluster,'taxonomy_version':'LF_LEARNING_CLUSTER_V1','lifecycle':lifecycle,'eligibility':eligibility}}
@@ -35,4 +38,9 @@ def main():
     except SelectionError as e: assert str(e)=='EXACT_BINDING_REQUIRED'
     else: raise AssertionError('must fail closed')
     print('PASS learning_dynamic_context_selector_clean_v1 writes=0 semantic_search=false llm_calls=0 round_trips=0 unbound_clusters_fail_closed=3/3 explicit_nonbindings_fail_closed=4/4 unknown_binding_error=PASS')
+    p=subprocess.run([sys.executable,str(R/'validate_learning_dynamic_exact_join_contract_v1.py')],capture_output=True,text=True)
+    if p.stdout: print(p.stdout.strip())
+    if p.returncode:
+        if p.stderr: sys.stderr.write(p.stderr)
+        raise SystemExit(p.returncode)
 if __name__=='__main__': main()
