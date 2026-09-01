@@ -1,0 +1,22 @@
+{
+  "schema":"lf-learning-autonomous-run/v1",
+  "program":"LF_APRENDIZAJE_AUTONOMO",
+  "status":"RUNNING",
+  "gate":"P0_READ_ONLY_CONSUMPTION",
+  "parent_task":"CLOSE_REUSABLE_LEARNING_READ_PATH",
+  "subtask":"EXPAND_EXACT_CONSUMER_BINDINGS",
+  "github_pr":369,
+  "github_head":"4532047e4c5bf0d395bfe02cb36bba9484fca7d6",
+  "supabase_project":"mhwmirqcgxxukpctffuv",
+  "supabase_project_health":"ACTIVE_HEALTHY",
+  "supabase_sql_channel_status":"LOCAL_TOOL_CHANNEL_BLOCKED_NOT_DATABASE_OUTAGE",
+  "material_micro_batches_completed":1,
+  "control_steps_executed":18,
+  "micro_batches_blocked":0,
+  "resume_cursor":"UI_ARCHITECT_EXACT_BINDING",
+  "local_blockers":[{"scope":"SUPABASE_SQL_READBACK","reason":"execute_sql call blocked by tool safety channel","global":false}],
+  "observable_waits":[{"scope":"CI_HEAD_4532047","state":"IN_PROGRESS"}],
+  "next_safe_batch":"MATERIALIZE_UI_ARCHITECT_READ_ONLY_BINDING",
+  "context_budget_remaining_estimate":"HIGH",
+  "production_impact":false
+}
