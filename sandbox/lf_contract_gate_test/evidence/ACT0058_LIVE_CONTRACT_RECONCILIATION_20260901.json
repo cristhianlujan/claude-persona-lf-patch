@@ -1,5 +1,5 @@
 {
-  "schema": "ACT0058_LIVE_CONTRACT_RECONCILIATION_EVIDENCE_V1",
+  "schema": "ACT0058_LIVE_CONTRACT_RECONCILIATION_EVIDENCE_V2",
   "execution_id": "LF-AUTOLEARN-RUN-20260901-037",
   "operation_code": "ORQUESTACION_PIPELINE_LF",
   "observed_main_sha": "e5b9febcfebd7c16f8cc8a0cb146cfc467eadc42",
@@ -13,26 +13,33 @@
       "step_order": 105,
       "step_id": "restock_queue",
       "mini_judge_code": "MINI_JUDGE_ACT0058_RESTOCK",
+      "required_evidence_keys_live": [],
       "pass_condition": {"estado":"PENDIENTE","urls_insertadas":">=1"},
       "fail_condition": {"NO_NEW_URLS":{"next_action":"SKIP_RESTOCK"}},
       "reconciliation": "ZERO_NEW_URLS_IS_CONTROLLED_NOOP_WARN_AFTER_ATTEMPT_AND_DEDUP",
+      "proposed_required_evidence_keys": ["urls_insertadas","urls_duplicadas","source_queries"],
       "active_binding_exists": false
     },
     {
       "step_order": 110,
       "step_id": "failed_retry",
       "mini_judge_code": "MINI_JUDGE_ACT0058_RETRY",
+      "required_evidence_keys_live": ["retry_count","error_detail","stage_status"],
       "purpose": "block if retry_count > 3",
       "execution_sql_boundary": "retry_count + 1 >= 3 => FAILED",
+      "execution_sql_returns": ["pipeline_run_id","retry_count","stage_status","error_detail"],
       "notes": "maximum 3 attempts",
       "reconciliation": "RETRY_AT_3_IS_TERMINAL_FAILED_AND_CONTINUE_NEXT_URL; DO_NOT_RETRY",
+      "synthetic_next_action_allowed": false,
       "active_binding_exists": false
     }
   ],
   "coverage": {
     "active_steps": 14,
+    "required_steps": 13,
     "active_bindings": 4,
     "missing_bindings": 10,
+    "required_missing_bindings": 9,
     "candidate_judges_source_resolved": 10,
     "candidate_cases": 30
   },
