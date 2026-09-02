@@ -1,0 +1,61 @@
+name: LF Customer Profile Creator Governance Caller
+
+on:
+  push:
+    branches:
+      - lf/profiles/profile-creator-customer-caller-20260902
+    paths:
+      - ".github/workflows/lf-customer-profile-creator-governance-caller.yml"
+      - "supabase/functions/lf-profile-creator-governance-caller-v1/**"
+      - "sandbox/lf_contract_gate_test/profile_creator_customer_caller_source_test.py"
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Governed Profile Creator action"
+        required: true
+        type: choice
+        options:
+          - source_canary_only
+      target_code:
+        description: "Reserved for a future separately-authorized non-canary execution"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  customer-profile-creator-source-canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify exclusive source boundary
+        run: python3 sandbox/lf_contract_gate_test/profile_creator_customer_caller_source_test.py
+      - name: Reject non-OIDC caller
+        run: |
+          set -euo pipefail
+          code=$(curl --silent --show-error -o negative.json -w '%{http_code}' \
+            -H 'Authorization: Bearer not-a-github-oidc-token' \
+            -H 'Content-Type: application/json' \
+            -d '{"action":"profile_creator_init_v1","caller_request_id":"negative","target_code":"CUSTOMER_FINANCIAL_UX_DECISIONING","profile_slug":"customer_financial_ux_decisioning"}' \
+            'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1')
+          cat negative.json
+          test "$code" = "401" || test "$code" = "404"
+      - name: Obtain exact GitHub OIDC identity
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'source_canary_only'
+        id: oidc
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const token = await core.getIDToken('lf-profile-creator-governance-caller-v1');
+            core.setSecret(token);
+            core.setOutput('token', token);
+      - name: Confirm source-only authority boundary
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'source_canary_only'
+        run: |
+          echo 'SOURCE_CANARY_ONLY=true'
+          echo 'NON_CANARY_PROFILE_CREATION_EXECUTED=false'
+          echo 'RUNTIME_DEPLOYMENT_EXECUTED=false'
+          echo 'PRODUCTION_AUTHORIZED=false'
