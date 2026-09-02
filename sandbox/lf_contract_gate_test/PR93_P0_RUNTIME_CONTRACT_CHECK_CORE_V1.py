@@ -20,7 +20,7 @@ CUSTOMER_PROFILE_CREATOR_BRANCH = "lf/profiles/profile-creator-customer-caller-2
 CUSTOMER_PROFILE_CREATOR_PR_NUMBER = 470
 CUSTOMER_PROFILE_CREATOR_BLOBS = {
     ".github/workflows/lf-customer-profile-creator-governance-caller.yml": "3a0842729dc695bb478f1a5989b3bfa4e660f123",
-    "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts": "2a5e975518d001ae4618f9e1459b2f652602c883",
+    "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts": "d840f2964b886f9c1daa0e5ac2a344c3e3f2cd7b",
     "supabase/functions/run-creacion-perfil-lf/index.ts": "6902090913c7d393737d5dc83bbed919e11ddcbf",
 }
 CUSTOMER_PROFILE_CREATOR_PATHS = frozenset(CUSTOMER_PROFILE_CREATOR_BLOBS)
