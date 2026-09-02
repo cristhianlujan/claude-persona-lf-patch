@@ -23,12 +23,20 @@ def load(path: Path, name: str):
     return module
 
 
-def output_types(schema: dict) -> set[str]:
+def schema_arms(schema: dict) -> list[dict]:
     arms = schema.get("anyOf") if isinstance(schema.get("anyOf"), list) else [schema]
-    result: set[str] = set()
+    assert arms
     for arm in arms:
         assert isinstance(arm, dict)
         assert arm.get("type") == "object", "runtime schema must forbid bare scalar output"
+        required = arm.get("required")
+        assert isinstance(required, list) and required, "runtime schema arm must require substantive fields"
+    return arms
+
+
+def product_output_types(schema: dict) -> set[str]:
+    result: set[str] = set()
+    for arm in schema_arms(schema):
         props = arm.get("properties") or {}
         output = props.get("output_type") or {}
         value = output.get("const")
@@ -49,7 +57,7 @@ def main() -> int:
             "product_direction_spec.schema.json",
             "product_missing_input.schema.json",
         ]
-        assert output_types(product) == {"PRODUCT_DIRECTION_SPEC", "PRODUCT_MISSING_INPUT_STATE"}
+        assert product_output_types(product) == {"PRODUCT_DIRECTION_SPEC", "PRODUCT_MISSING_INPUT_STATE"}
         product_arms = product["anyOf"]
         direction = next(
             arm for arm in product_arms
@@ -72,20 +80,22 @@ def main() -> int:
             "ui_missing_input.schema.json",
             "ui_production_spec.schema.json",
         ]
-        ui_types = output_types(ui)
-        assert len(ui_types) == 3, ui_types
+        ui_arms = schema_arms(ui)
+        assert len(ui_arms) == 3
+        assert all(len(arm.get("required", [])) >= 2 for arm in ui_arms)
+        assert max(len(arm.get("required", [])) for arm in ui_arms) >= 10
 
     with tempfile.TemporaryDirectory() as td:
         work = Path(td)
         quality_path = runtime._materialize_runtime_output_schema("quality_pack", REPO, work)
         assert quality_path is not None
         quality = json.loads(quality_path.read_text(encoding="utf-8"))
-        assert quality.get("type") == "object"
-        assert isinstance(quality.get("required"), list) and quality["required"]
+        quality_arms = schema_arms(quality)
+        assert len(quality_arms) == 1
 
     print(
         "SEMANTIC_SCHEMA_GUARD_V3_PASS "
-        "bare_scalar_forbidden=true product_substantive_required=true ui_object_union=true quality_object=true"
+        "bare_scalar_forbidden=true product_substantive_required=true ui_substantive_union=true quality_object=true"
     )
     return 0
 
