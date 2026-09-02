@@ -1,22 +1,29 @@
 {
+  "handoff_version": "v1",
   "schema_version": "PROFILE_TO_QUALITY_PACK_HANDOFF_V1",
+  "source_profile": "CUSTOMER_FINANCIAL_UX_DECISIONING",
   "from_profile": "CUSTOMER_FINANCIAL_UX_DECISIONING",
+  "target_profile": "quality_pack",
+  "deliverable": "customer_financial_decision_spec",
+  "deliverable_artifact_ref": "profiles/customer_financial_ux_decisioning",
   "artifact_ref": "profiles/customer_financial_ux_decisioning",
-  "source_authority_status": "GOVERNED_CREATION_PENDING_RUNTIME_CONTINUATION",
+  "requires_artifact": true,
+  "artifact_identity_required": true,
   "main_contract_ref": "profiles/customer_financial_ux_decisioning/contracts/main_contract.md",
   "output_schema_ref": "profiles/customer_financial_ux_decisioning/schemas/output.schema.json",
-  "rubric_ref": "profiles/customer_financial_ux_decisioning/judges/score_rubric.md",
+  "score_rubric_ref": "profiles/customer_financial_ux_decisioning/judges/score_rubric.md",
   "mini_judge_ref": "profiles/customer_financial_ux_decisioning/judges/mini_judge.md",
   "deterministic_validator_ref": "profiles/customer_financial_ux_decisioning/validators/validate_pack.py",
+  "required_receiver_context": ["blocking_codes", "deliverable_artifact_ref", "evidence_map", "main_contract_ref", "output_schema_ref", "remaining_risks", "score_rubric_ref"],
+  "failure_routing": {
+    "artifact_or_schema_failure": "RETURN_TO_PROFILE_WORKER_FOR_REPAIR",
+    "missing_authority_or_receipt": "RETURN_TO_ORCHESTRATOR_FOR_AUTHORITY",
+    "semantic_quality_failure": "RETURN_TO_PROFILE_WORKER_FOR_REPAIR"
+  },
+  "next_gate": "SEMANTIC_QUALITY_REVIEW",
   "behavioral_proof_status": "NOT_EXECUTED",
   "runtime_enabled": false,
   "automatic_promotion": false,
-  "blocking_codes": ["PROFILE_CREATOR_RUNTIME_INIT_ONLY_002", "GOVERNED_CREATION_RECEIPT_PENDING"],
-  "review_focus": [
-    "financial_truth_fidelity",
-    "decision_comparability",
-    "customer_consequence_clarity",
-    "autonomy_and_risk_guardrails",
-    "handoff_integrity"
-  ]
+  "blocking_codes": ["GOVERNED_CREATION_RECEIPT_PENDING"],
+  "remaining_risks": ["semantic_quality_review_not_executed", "governed_creation_receipt_pending"]
 }
