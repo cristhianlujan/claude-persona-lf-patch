@@ -3,11 +3,15 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import sys
 import tempfile
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[3]
-RUNTIME = REPO / "sandbox/lf_contract_gate_test/profile_execution_runtime/run_zero_cost_profile_request.py"
+RUNTIME_DIR = REPO / "sandbox/lf_contract_gate_test/profile_execution_runtime"
+RUNTIME = RUNTIME_DIR / "run_zero_cost_profile_request.py"
+if str(RUNTIME_DIR) not in sys.path:
+    sys.path.insert(0, str(RUNTIME_DIR))
 
 
 def load(path: Path, name: str):
