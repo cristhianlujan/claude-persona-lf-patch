@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
+import importlib.util
 import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = ROOT.parents[1]
 REQUIRED = ["README.md","SKILL.md","contracts/main_contract.md","contracts/input_governance_binding.json","schemas/output.schema.json","judges/score_rubric.md","judges/mini_judge.md","examples/good_output.json","examples/bad_output.json","evals/eval_matrix.json","handoffs/to_quality_pack.handoff.json","manifest.json"]
+CANONICAL_CORE = ["SKILL.md","README.md","contracts/main_contract.md","schemas/output.schema.json","judges/score_rubric.md","judges/mini_judge.md","evals/eval_matrix.json","handoffs/to_quality_pack.handoff.json","examples/good_output.json","examples/bad_output.json","manifest.json"]
 ALLOWED_OUTPUTS = {"CUSTOMER_FINANCIAL_DECISION_SPEC","MISSING_MATERIAL_FINANCIAL_INPUT","BLOCKED_UNSUPPORTED_FINANCIAL_CLAIM"}
 ALLOWED_TRIGGERS = {"input_not_governed_by_adapter","cross_adapter_conflict","profile_specific_constraint","authority_or_policy_uncertainty","critical_input_validation"}
 
@@ -33,4 +36,28 @@ if bad.get("self_verdict")!="READY_FOR_REVIEW" or bad.get("options",[{}])[0].get
 skill=(ROOT/"SKILL.md").read_text()
 for token in ["Never fabricate savings","UI Architect","Gamification System Architect","Router and direct execution"]:
     if token not in skill: fail(f"SKILL_GUARD_MISSING:{token}")
+
+canonical_path = REPO_ROOT / "skills/profile_creator/validators/validate_candidate_depth.py"
+spec = importlib.util.spec_from_file_location("lf_profile_creator_canonical_depth", canonical_path)
+if spec is None or spec.loader is None: fail("CANONICAL_DEPTH_VALIDATOR_LOAD")
+canonical = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(canonical)
+files = {rel: (ROOT/rel).read_text(encoding="utf-8") for rel in CANONICAL_CORE}
+pack = {
+    "artifact_type": "PROFILE_PACK_CANDIDATE",
+    "profile_pack_id": manifest.get("profile_pack_id") or "CUSTOMER_FINANCIAL_UX_DECISIONING_PROFILE_PACK_001",
+    "source_authority": "lf://authority/CREACION_PERFIL_LF + governed champion references",
+    "document_status": "CANDIDATO",
+    "operational_status": "READ_ONLY",
+    "runtime_enabled": False,
+    "runtime": "NO_HABILITADO",
+    "automatic_impact": "BLOQUEADO",
+    "production_authorization": False,
+    "exposes_user_facing_output": False,
+    "evidence_map": [{"source_ref":"lf://authority/CREACION_PERFIL_LF","supports":["governed profile creation authority","candidate read-only boundary"]}],
+    "files": files,
+}
+blocking, warnings = canonical.validate_candidate(pack)
+if blocking: fail("CANONICAL_DEPTH:" + "|".join(blocking))
+print("CUSTOMER_FINANCIAL_UX_DECISIONING_CANONICAL_DEPTH_READY_FOR_SEMANTIC_REVIEW")
 print("CUSTOMER_FINANCIAL_UX_DECISIONING_PACK_PASS")
