@@ -1,0 +1,16 @@
+{
+  "output_type": "CUSTOMER_IDENTITY_CONSENT_PRIVACY_SPEC",
+  "identity_assurance": {"required":true,"purpose":"security","assurance_requirement":"collect everything","authority_refs":[]},
+  "data_requests": [
+    {"data_id":"biometric_and_document","purpose":"maybe useful later","required":true,"authority_refs":[]}
+  ],
+  "consent_items": [
+    {"consent_id":"marketing_and_core","purpose":"all uses","required":true,"affirmative_action":"prechecked checkbox","decline_consequence":"block account access","authority_refs":[]}
+  ],
+  "data_minimization_checks": [],
+  "exposure_controls": ["send raw document and biometric values to all downstream workers"],
+  "prohibited_inferences": [],
+  "uncertainties": [],
+  "handoff_to_next": {"target":"UI_ARCHITECT"},
+  "self_verdict": "READY_FOR_REVIEW"
+}

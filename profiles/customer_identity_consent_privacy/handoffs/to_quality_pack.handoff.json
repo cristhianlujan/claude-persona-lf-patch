@@ -1,0 +1,16 @@
+{
+  "schema_version": "PROFILE_TO_QUALITY_PACK_HANDOFF_V1",
+  "from_profile": "CUSTOMER_IDENTITY_CONSENT_PRIVACY",
+  "artifact_ref": "profiles/customer_identity_consent_privacy",
+  "source_authority_status": "GOVERNED_CREATION_PENDING_RUNTIME_CONTINUATION",
+  "main_contract_ref": "profiles/customer_identity_consent_privacy/contracts/main_contract.md",
+  "output_schema_ref": "profiles/customer_identity_consent_privacy/schemas/output.schema.json",
+  "rubric_ref": "profiles/customer_identity_consent_privacy/judges/score_rubric.md",
+  "mini_judge_ref": "profiles/customer_identity_consent_privacy/judges/mini_judge.md",
+  "deterministic_validator_ref": "profiles/customer_identity_consent_privacy/validators/validate_pack.py",
+  "behavioral_proof_status": "NOT_EXECUTED",
+  "runtime_enabled": false,
+  "automatic_promotion": false,
+  "blocking_codes": ["PROFILE_CREATOR_RUNTIME_INIT_ONLY_002", "GOVERNED_CREATION_RECEIPT_PENDING"],
+  "review_focus": ["purpose_and_authority_fidelity","data_minimization","consent_integrity","privacy_exposure_control","handoff_integrity"]
+}
