@@ -95,7 +95,7 @@ PYTHONPATH=. .venv/bin/python -m pytest
 ```
 
 Sin las dependencias opcionales de integración, la suite `unittest` aún prueba
-caché, currentness/hash, gates, reuse batch, scripts y unidad systemd; los dos casos
+caché, currentness/hash, gates, reuse batch, scripts y unidad systemd; los tres casos
 HTTP se ejecutan automáticamente cuando FastAPI/httpx/jsonschema están instalados.
 
 ## Inspección e instalación
