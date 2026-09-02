@@ -1,0 +1,40 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-QUALITY-PACK-RUNTIME-SCHEMA-20260902-004",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "0eeec4c2374b86390812961e14dabde5d8834d2e",
+    "6d4f02ac9c491e8fbf78ba9d7cc4e7c33d0db19b",
+    "bd9a8efd8da784bd0991eaa35b8a3246d0fcb936"
+  ],
+  "target_paths": [
+    "profiles/quality_pack/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-02T04:32:14Z",
+  "target_type": "PROFILE",
+  "target_code": "QUALITY_PACK_GATE_001",
+  "branch": "fix/quality-pack-structured-schema-bind-20260902",
+  "pr_number": 450,
+  "validated_substantive_head": "bd9a8efd8da784bd0991eaa35b8a3246d0fcb936",
+  "deterministic_matrix": "ZERO_COST_RUNTIME_20/20;PROFILE_RUNTIME_OPTIMIZATION_56/56;QUALITY_PACK_21/21",
+  "deterministic_run_ids": [
+    33591006584,
+    33591006638
+  ],
+  "runtime_contract_changed": true,
+  "runtime_enabled": false,
+  "automatic_promotion": false,
+  "production_authorized": false,
+  "post_merge_steps_pending": [
+    "merge_and_main_readback",
+    "rerun_exact_private_raster_quality_pack_request"
+  ],
+  "notes": "PASS_SANDBOX candidate receipt for the Quality Pack runtime-schema remediation derived from governed request e21d2234-2047-4afb-8241-a37423ab4951 and workflow run 33589173345. That real request consumed the exact private PNG bytes with SHA-256 ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287 and produced a verified runtime attestation, but correctly failed closed as QUALITY_PACK_OUTPUT_NOT_JSON. Readback proved the runtime schema convention was not bound because profiles/quality_pack/schemas/runtime_output.schema.json was absent; the raw candidate also combined PASS_TO_COMPOSER with a blocking code and repair action. The candidate change binds an exact byte-parity runtime schema and adds deterministic guards for contradictory PASS/non-PASS outputs. Local evidence is ZERO_COST_PROFILE_RUNTIME_TESTS_PASS 20/20, PROFILE_RUNTIME_OPTIMIZATION_CASES 56/56, and Quality Pack adversarial matrix 21/21. Exact-head Validate LF Packs run 33591006638 passed; lf-contract-check run 33591006584 completed intrinsic runtime regressions and stopped only at the expected missing-receipt gate. This receipt proves sandbox contract compliance only. It does not claim a valid visual verdict, production, VIGENTE, runtime enablement, automatic promotion, EKB closure, adapter authorization, merge authorization, or post-merge behavioral closure. A fresh exact-byte Quality Pack run from merged main remains mandatory."
+}
