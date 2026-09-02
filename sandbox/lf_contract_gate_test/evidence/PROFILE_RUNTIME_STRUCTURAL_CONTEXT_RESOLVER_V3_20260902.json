@@ -1,117 +1,17 @@
 {
-  "schema": "lf-profile-runtime-structural-context-resolver-v3-evidence/v2",
+  "schema": "lf-profile-runtime-structural-context-resolver-v3-evidence/v3",
   "campaign": "PROFILE_RUNTIME_P0_V3_20260902",
-  "artifact": {
-    "artifact_id": 85,
-    "screen_code": "B2B-CARGA-001",
-    "filename": "B2B_CARGA_001_HISTORIAL_DESKTOP_LIGHT_v0.1_CANDIDATO.png",
-    "sha256": "ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
-    "width_px": 1600,
-    "height_px": 1000,
-    "bytes": 142727
-  },
-  "source_evidence": {
-    "mode": "FALLBACK_OCR_REGENERATED",
-    "historical_334_bbox_baseline": "NOT_PROVEN",
-    "reason": "The historical 334 observation+bbox payload is not durably recovered. The current durable exact-artifact evidence is the fallback OCR run and subsequent same-artifact reread/quality evidence; therefore V3 token counts are not claimed comparable to the historical 334 baseline.",
-    "ocr_engine": "Tesseract 5.5.0",
-    "ocr_lang": "eng+spa",
-    "ocr_psm": 3,
-    "ocr_observation_count": 199,
-    "ocr_elapsed_ms_approx": 1318,
-    "ocr_observations_sha256": "2483a0270d26bfdc9023b12cad2cd0c3385367b41a30ea5f601682a231fd49ef"
-  },
-  "resolver": {
-    "input_count": 199,
-    "residual_count": 18,
-    "reread_reduction_pct": 90.95,
-    "counts": {
-      "SHELL_TOPBAR": 16,
-      "BREADCRUMB": 6,
-      "SHELL_SIDEBAR": 14,
-      "PAGE_HEADER": 15,
-      "PAGE_ACTIONS": 3,
-      "FILTER_BAR": 33,
-      "TABLE_SUMMARY": 5,
-      "TABLE_HEADER": 11,
-      "DYNAMIC_DATA": 59,
-      "STATE_BADGE": 11,
-      "ROW_ACTION": 23,
-      "PAGINATION": 3
-    }
-  },
-  "targeted_reread": {
-    "executed": true,
-    "regions": 18,
-    "prior_invocations": 72,
-    "batched_invocations": 4,
-    "integrated_candidate_ms": 867.052,
-    "repeatability_runs": 8,
-    "repeatability_p50_ms": 901.233,
-    "repeatability_p95_ms": 938.117,
-    "decision_equivalent_regions": "18/18",
-    "worse_regions": 0,
-    "adopted_regions_with_absolute_fit_floor": 6,
-    "preserved_regions": 12,
-    "full_image_ocr_repeated_in_repeatability_probe": false,
-    "source_refs": [
-      "github://cristhianlujan/claude-persona-lf-patch/commit/33d1df28fca9e6308185b10be82173c4422be70c",
-      "github://cristhianlujan/claude-persona-lf-patch/commit/6ec096ae229ee26abc8529292e5242e0ad1567ef",
-      "supabase://public.lf_error_knowledge/PROFILE-RUNTIME-TARGETED-REREAD-REGRESSION-001",
-      "supabase://public.lf_error_knowledge/PROFILE-RUNTIME-TARGETED-REREAD-PROCESS-FANOUT-001"
-    ]
-  },
-  "quality_non_regression": {
-    "visible_span_gate": "11/11",
-    "batch_mapping_gate": "6/6",
-    "overlay_gate": "8/8",
-    "critical_regressions_count": 0,
-    "historical_334_p02_p03_parity": "NOT_PROVEN"
-  },
-  "critical_semantics": {
-    "horizontal_overflow_observed": true,
-    "not_currently_visible_is_material_omission": false,
-    "context_may_fabricate_visual_evidence": false,
-    "dynamic_data_may_be_canonicalized": false
-  },
-  "semantic_utility": {
-    "baseline_transport_succeeded": "3/3",
-    "baseline_consumable_outputs": "0/3",
-    "candidate_after": "NOT_EXECUTED",
-    "reason": "The safe candidate bundle is prepared, but no local reusable llama-cli + pinned model + mmproj assets were observed in the current sandbox; the existing issue_comment runtime checks out main and uses a Supabase secret, so it is not used for the isolated candidate AFTER."
-  },
-  "execution_transport": {
-    "candidate_head_before_this_evidence_update": "a906a66da38a0f33552a4d064fda9683eef0e444",
-    "branch": "lf/profile-runtime-structural-context-resolver-v3-20260902",
-    "pr": 472,
-    "pr_draft": true,
-    "commit_remote_present": true,
-    "branch_points_to_head": true,
-    "workflow_trigger_matches_branch_event": true,
-    "dispatch_or_event_observed": true,
-    "workflow_run_created": true,
-    "job_created": true,
-    "runner_started": true,
-    "checkout_completed": true,
-    "checked_out_head_matches_expected": true,
-    "v3_validator_status_published": true,
-    "v3_validator_check": "Run LF pack validators",
-    "v3_validator_conclusion": "SUCCESS",
-    "global_contract_check": "FAILURE_AT_MIGRATION_SOURCE_PARITY",
-    "global_first_failed_hop": "Enforce LF migration source parity after checkpoint",
-    "global_visual_runtime_provision": "SKIPPED_AFTER_UPSTREAM_FAILURE",
-    "source_refs": [
-      "github://cristhianlujan/claude-persona-lf-patch/actions/runs/33659996674",
-      "github://cristhianlujan/claude-persona-lf-patch/check-runs/100347912166"
-    ]
-  },
-  "gates": {
-    "structural_resolver": "PASS_ON_FALLBACK_199_TOKEN_EVIDENCE",
-    "targeted_reread_quality": "PASS_ON_CURRENT_EXACT_ARTIFACT_EVIDENCE",
-    "profile_contract_valid": "PARTIAL_DETERMINISTIC_SCHEMA_GUARD_ONLY",
-    "semantic_utility_after": "NOT_EXECUTED",
-    "p02_p03_historical_334_parity": "NOT_PROVEN"
-  },
-  "risk": "Main remaining uncertainties are semantic AFTER on the isolated candidate and historical 334+bbox parity. Neither is converted into PASS by transport success or fallback OCR evidence.",
-  "confidence": "HIGH for current exact-artifact structural/reread behavior and transport trace; MEDIUM for semantic utility until AFTER executes; historical 334+bbox parity remains unproven."
+  "artifact": {"artifact_id":85,"screen_code":"B2B-CARGA-001","filename":"B2B_CARGA_001_HISTORIAL_DESKTOP_LIGHT_v0.1_CANDIDATO.png","sha256":"ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287","width_px":1600,"height_px":1000,"bytes":142727},
+  "source_evidence": {"mode":"FALLBACK_OCR_REGENERATED","historical_334_bbox_baseline":"NOT_PROVEN","ocr_engine":"Tesseract 5.5.0","ocr_lang":"eng+spa","ocr_psm":3,"ocr_observation_count":199,"ocr_elapsed_ms_approx":1318,"ocr_observations_sha256":"2483a0270d26bfdc9023b12cad2cd0c3385367b41a30ea5f601682a231fd49ef","comparability":"CURRENT_199_TOKEN_EVIDENCE_IS_NOT_HISTORICAL_334_PARITY"},
+  "resolver": {"input_count":199,"residual_count":18,"reread_reduction_pct":90.95,"counts":{"SHELL_TOPBAR":16,"BREADCRUMB":6,"SHELL_SIDEBAR":14,"PAGE_HEADER":15,"PAGE_ACTIONS":3,"FILTER_BAR":33,"TABLE_SUMMARY":5,"TABLE_HEADER":11,"DYNAMIC_DATA":59,"STATE_BADGE":11,"ROW_ACTION":23,"PAGINATION":3}},
+  "targeted_reread": {"executed":true,"regions":18,"prior_invocations":72,"batched_invocations":4,"integrated_candidate_ms":867.052,"repeatability_runs":8,"repeatability_p50_ms":901.233,"repeatability_p95_ms":938.117,"decision_equivalent_regions":"18/18","worse_regions":0,"full_image_ocr_repeated_in_repeatability_probe":false,"quality_policy":"ORIGINAL_EVIDENCE_IMMUTABLE_EFFECTIVE_TEXT_OVERLAY","source_refs":["github://cristhianlujan/claude-persona-lf-patch/commit/33d1df28fca9e6308185b10be82173c4422be70c","github://cristhianlujan/claude-persona-lf-patch/commit/6ec096ae229ee26abc8529292e5242e0ad1567ef","supabase://public.lf_error_knowledge/PROFILE-RUNTIME-TARGETED-REREAD-REGRESSION-001","supabase://public.lf_error_knowledge/PROFILE-RUNTIME-TARGETED-REREAD-PROCESS-FANOUT-001"]},
+  "trace_data_e2e": {"representative_trace":{"header":"h0","filter":"f0","dynamic_data":"dyn","state_badge":"state","row_action":"action","canonical_offviewport":"Observados"},"flow":"OCR -> Resolver -> Residual -> Targeted reread -> Overlay -> Screen Decomposer Context Pack -> Profile/Gate","lost_trace_count":0,"invented_trace_count":0,"role_changed_without_evidence_count":0,"bbox_changed_without_evidence_count":0,"provenance_missing_count":0,"dynamic_data_canonicalized_count":0,"offviewport_wrongly_omitted_count":0,"gate_bypass_count":0,"critical_regressions_count":0,"source_ref":"sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_data_lineage_e2e_v3.py"},
+  "quality_non_regression": {"transport_success_not_quality_success_negative_controls":"3/3","canonical_root_contract_positive_controls":"3/3","visible_span_gate":"11/11","batch_mapping_gate":"6/6","overlay_gate":"8/8","decomposer_context_pack_gate":"14/14","cache_key_gate":"12/12","critical_regressions_count":0,"historical_334_p02_p03_parity":"NOT_PROVEN"},
+  "cache": {"key_dimensions":["image_sha","context_sha","runtime_version","resolver_version"],"semantic_or_authority_fields_cacheable":false,"forbidden_cached_fields":["profile_contract_valid","semantic_utility","downstream_authorized","authorization","quality_verdict"],"current_gate":"12/12"},
+  "performance": {"resolver_median_ms":1.421,"resolver_p95_ms":1.705,"targeted_reread_prior_ms":15725.76,"targeted_reread_batched_initial_ms":867.052,"targeted_reread_repeatability_p50_ms":901.233,"targeted_reread_repeatability_p95_ms":938.117,"same_artifact_batch_speedup_x":13.26,"same_artifact_worse_decisions":0,"profile_batch_observed_total_ms":787911,"profile_batch_critical_path_ms":787909,"profile_batch_critical_path":"PRODUCT_DIRECTOR_THEN_QUALITY_PACK","parallelism3_theoretical_floor_ms":672969,"parallelism3_actual_improvement":"NOT_TESTED","timeout_increased":false},
+  "semantic_utility": {"baseline_transport_succeeded":"3/3","baseline_consumable_outputs":"0/3","candidate_after":"NOT_EXECUTED","safe_candidate_bundle":"PREPARED","local_reusable_llama_assets_observed":false,"unsafe_path_rejected":"issue_comment runtime checks out main and uses Supabase secret; it is not used for isolated candidate AFTER"},
+  "execution_transport": {"candidate_head_before_v3_update":"39974ea7856d5d203224dcfbb53c85cc73cf6888","branch":"lf/profile-runtime-structural-context-resolver-v3-20260902","pr":472,"pr_draft":true,"commit_remote_present":true,"branch_points_to_head":true,"workflow_trigger_matches_branch_event":true,"dispatch_or_event_observed":true,"workflow_run_created":true,"job_created":true,"runner_started":true,"checkout_completed":true,"checked_out_head_matches_expected":true,"v3_tests_discovered":true,"v3_tests_executed":true,"status_published":true,"v3_validator_run":33662277561,"v3_validator_conclusion":"SUCCESS","global_contract_run":33662277695,"global_contract_conclusion":"FAILURE","global_first_failed_hop":"Enforce LF migration source parity after checkpoint","global_visual_runtime_provision":"SKIPPED_AFTER_UPSTREAM_FAILURE"},
+  "gates": {"structural_resolver":"PASS_ON_FALLBACK_199_TOKEN_EVIDENCE","targeted_reread_quality":"PASS_ON_CURRENT_EXACT_ARTIFACT_EVIDENCE","trace_data_e2e":"PASS_DETERMINISTIC_FIXTURE","profile_contract_valid":"PARTIAL_DETERMINISTIC_SCHEMA_GUARD_ONLY","semantic_utility_after":"NOT_EXECUTED","p02_p03_historical_334_parity":"NOT_PROVEN"},
+  "risk":"Remaining P0 uncertainty is semantic AFTER on the isolated candidate. Historical 334+bbox parity remains explicitly unproven. Global lf-contract-check is independently blocked at migration source parity before visual runtime provisioning.",
+  "confidence":"HIGH for exact-head transport, deterministic V3 gates, current exact-artifact reread performance and lineage fixture; MEDIUM for semantic utility until candidate AFTER executes; historical 334+bbox parity remains unproven."
 }
