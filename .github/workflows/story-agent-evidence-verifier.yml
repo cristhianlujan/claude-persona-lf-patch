@@ -11,10 +11,16 @@ on:
   pull_request:
     paths:
       - ".github/workflows/story-agent-evidence-verifier.yml"
+      - "profiles/quality_pack/schemas/quality_review.schema.json"
+      - "profiles/quality_pack/schemas/runtime_output.schema.json"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_mini_judge.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_semantic_judge.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_local_runtime.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_queue_worker.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_live_smoke.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_zero_cost_profile_request.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_zero_cost_runtime_tests.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_profile_strategy_ab.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/runtime_optimization_contract.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_batch_queue_worker.py"

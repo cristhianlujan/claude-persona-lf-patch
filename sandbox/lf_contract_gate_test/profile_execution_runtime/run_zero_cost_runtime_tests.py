@@ -116,6 +116,12 @@ def main() -> int:
             copied = _materialize_runtime_output_schema("ui_architect", Path.cwd(), Path(td))
             assert copied is None
         passed += 1
+        with tempfile.TemporaryDirectory() as td:
+            copied = _materialize_runtime_output_schema("quality_pack", Path.cwd(), Path(td))
+            canonical = Path.cwd() / "profiles/quality_pack/schemas/quality_review.schema.json"
+            assert copied is not None
+            assert copied.read_bytes() == canonical.read_bytes()
+        passed += 1
         assert _assistant_completion("User:\nrequest\n\nAssistant:\n{\"ok\":true}") == '{"ok":true}'
         empty = _enforce_nonempty_completion({
             "schema": "LF_PROFILE_RUNTIME_QUEUE_RESULT_V1",
@@ -175,11 +181,35 @@ def main() -> int:
         assert blocked["error_code"] == "QUALITY_PACK_OUTPUT_CONTRACT_INVALID"
         assert "PASS_EVIDENCE_MAP_EMPTY" in blocked["error_detail"]
         passed += 1
+
+        contradictory_pass = dict(invalid_pass)
+        contradictory_pass["evidence_map"] = [{"evidence_type": "SHA-256", "evidence_value": "a" * 64}]
+        contradictory_pass["blocking_codes"] = ["BLOCK_PIPELINE"]
+        contradictory_pass["repair_actions"] = []
+        blocked = _enforce_profile_output_contract(quality_pack_result(json.dumps(contradictory_pass)))
+        assert blocked["status"] == "BLOCKED"
+        assert "PASS_BLOCKING_CODES_NONEMPTY" in blocked["error_detail"]
+        passed += 1
+
+        pass_with_repair = dict(contradictory_pass)
+        pass_with_repair["blocking_codes"] = []
+        pass_with_repair["repair_actions"] = [{"required_fix": "repair before continuation"}]
+        blocked = _enforce_profile_output_contract(quality_pack_result(json.dumps(pass_with_repair)))
+        assert blocked["status"] == "BLOCKED"
+        assert "PASS_TO_COMPOSER_REPAIR_ACTIONS_NONEMPTY" in blocked["error_detail"]
+        passed += 1
+
+        nonpass_without_blocker = dict(valid_return)
+        nonpass_without_blocker["blocking_codes"] = []
+        blocked = _enforce_profile_output_contract(quality_pack_result(json.dumps(nonpass_without_blocker)))
+        assert blocked["status"] == "BLOCKED"
+        assert "NONPASS_BLOCKING_CODES_EMPTY" in blocked["error_detail"]
+        passed += 1
     finally:
         restore_env(prior)
-    if passed != 16:
-        raise SystemExit(f"ZERO_COST_PROFILE_RUNTIME_TESTS_FAIL {passed}/16")
-    print("ZERO_COST_PROFILE_RUNTIME_TESTS_PASS 16/16")
+    if passed != 20:
+        raise SystemExit(f"ZERO_COST_PROFILE_RUNTIME_TESTS_FAIL {passed}/20")
+    print("ZERO_COST_PROFILE_RUNTIME_TESTS_PASS 20/20")
     return 0
 
 

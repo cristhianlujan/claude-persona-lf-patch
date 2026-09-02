@@ -10,6 +10,7 @@ REQUIRED = [
     "evals/quality_gate_adversarial.py",
     "judges/quality_pack_mini_judge.md",
     "schemas/quality_review.schema.json",
+    "schemas/runtime_output.schema.json",
     "validators/trusted_ref_resolver.py",
     "validators/validate_gate_bundle.py",
     "validators/validate_routing.py",
@@ -24,6 +25,12 @@ def main():
     for rel in REQUIRED:
         if not (root / rel).exists():
             blocking.append("MISSING_REQUIRED_FILE:" + rel)
+
+    if not blocking:
+        canonical_schema = root / "schemas/quality_review.schema.json"
+        runtime_schema = root / "schemas/runtime_output.schema.json"
+        if runtime_schema.read_bytes() != canonical_schema.read_bytes():
+            blocking.append("RUNTIME_OUTPUT_SCHEMA_DRIFT")
 
     if not blocking:
         run = subprocess.run(
