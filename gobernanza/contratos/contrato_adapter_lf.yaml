@@ -1,23 +1,80 @@
-version: v0.3
+version: v0.4
 status: CANDIDATO_READ_ONLY
 operation: CREACION_ADAPTER_LF
-regularization: REGULARIZACION_STEP_GATE_L2L3_001
+regularization: REGULARIZACION_FACTORY_COMPOSITION_20260831
+
+factory_inheritance:
+  parent_authority: ACT-0040
+  parent_name: DOC_GOV_LINEAMIENTOS_CAPACIDADES_REUTILIZABLES_LF
+  factory_core: ACT-0045
+  factory_name: SKILL_CREADORA_PERFILES_Y_CARDS_LF_v0.1_CANDIDATO
+  composition_mode: IN_PROCESS_COMPOSITION_NOT_FORK
+  source_paths:
+    - skills/profile_creator/SKILL.md
+    - skills/profile_creator/contracts/main_contract.md
+  rule: >
+    CREACION_ADAPTER_LF no implementa una fabrica paralela. Consume el core de ACT-0040/ACT-0045
+    para clasificacion, research, intake, diseno, evidencia, sandbox y lifecycle, y aplica aqui
+    solamente las restricciones y validaciones especificas del tipo ADAPTER.
+  separate_factory_llm_call: FORBIDDEN
+  separate_factory_operation_runtime: FORBIDDEN
+  resulting_adapter_parent_skill_inference: FORBIDDEN
+
+common_factory_lifecycle:
+  inherited_from_act0045:
+    - router_and_operational_source
+    - repository_and_destination_resolution
+    - intake_and_duplicate_check
+    - research_pack_and_research_to_rules
+    - classification_and_decision_matrix
+    - canonical_design
+    - operational_evidence_pack
+    - completeness_and_compatibility
+    - sandbox_and_rubric
+    - manifest_and_rule_trace
+    - pre_write_gate
+    - github_write_and_readback
+    - contract_judge
+    - close_and_report
+  do_not_reimplement_step_by_step: true
+
+adapter_specialization:
+  source_path: gobernanza/procedimientos/creacion_adapter_lf_specialization.yaml
+  assurance_standard: ADAPTER_ASSURANCE_V2
+  owns_only:
+    - router_binding_authority
+    - explicit_consumer_mapping
+    - adapter_scope_and_contamination_boundary
+    - runtime_capsule_if_runtime_applicable
+    - invocation_contract
+    - context_budget
+    - no_second_llm_call
+    - adapter_specific_schemas
+    - adapter_examples_and_evals
+    - adapter_judges_and_canaries
+    - input_governance_binding_when_applicable
+
 supabase_ref:
   project_id: mhwmirqcgxxukpctffuv
   table: lf_operation_step_contracts
   filter: "operation_code = 'CREACION_ADAPTER_LF'"
   note: >
-    Contratos profundos con pass_condition, block_condition y mini_judge_code
-    residen en Supabase. Este archivo es la capa declarativa para GitHub y CI.
+    Los step contracts existentes representan gates de especializacion Adapter. El lifecycle comun
+    se hereda del factory core ACT-0040/ACT-0045 y no debe copiarse como otra secuencia de 40 pasos.
+
 authority:
   invocation_policy: ROUTER_BOUND_ONLY
   activation_gate_prefix: ROUTER_BOUND_
   base_path_prefix: adapters/
   parent_skill_required: false
   rule: >
-    Un adapter puede declarar targets o relaciones explícitas cuando su contrato específico
-    lo requiera, pero no se debe inferir owner_skill ni parent_skill como autoridad universal.
+    ACT-0045 es factory core, no owner ni parent del Adapter resultante. La autoridad de invocacion
+    del Adapter sigue siendo Router-bound. No inferir owner_skill ni parent_skill.
+
 required_before_write:
+  - factory_core_resolved
+  - parent_authority_act0040_resolved
+  - no_parallel_factory
   - read_router
   - read_operational_source
   - read_repo_matrix
@@ -34,8 +91,10 @@ required_before_write:
   - research_to_rules_matrix_present
   - decision_matrix_present
   - binding_authority_checked
+  - explicit_consumer_mapping_checked
   - invocation_policy_router_bound
   - declared_target_refs_checked_if_present
+
 allowed:
   repository: cristhianlujan/claude-persona-lf-patch
   path_prefix: /adapters/
@@ -43,21 +102,30 @@ allowed:
   operational_status: READ_ONLY
   runtime: NO_HABILITADO
   automatic_impact: BLOQUEADO
+
 blocked:
+  - parallel_adapter_factory
+  - reimplement_common_factory_lifecycle
+  - bypass_act0040_act0045_factory_core
+  - separate_factory_llm_call
   - write_without_contract
   - write_without_readback
   - missing_duplicate_check
   - binding_authority_missing
+  - consumer_mapping_missing
   - base_path_outside_adapters
   - activation_gate_not_router_bound
   - invocation_policy_not_router_bound
   - declared_target_ref_not_found
   - parent_skill_requirement_inferred
+  - adapter_as_alternate_worker
+  - adapter_selects_workers_independently_of_router
   - assistant_freeform_decision
   - enable_runtime
   - mark_vigente
   - mark_aprobado
   - write_to_marketplace_ssot_for_adapters
+
 required_after_write:
   - github_readback
   - commit_sha
@@ -68,11 +136,13 @@ required_after_write:
   - judge_sha_present
   - contract_judge
   - evidence_log_if_available
+
 coverage_note:
-  authority_source: SUPABASE_ACT0001_ROUTER
+  authority_source: ACT-0040_PLUS_ACT-0045_PLUS_SUPABASE_ACT0001_ROUTER
   invocation_policy: ROUTER_BOUND_ONLY
+  factory_model: COMPOSED_CORE_PLUS_ADAPTER_SPECIALIZATION
   supabase_step_contracts_materialized: 17
   supabase_step_judge_bindings: 17
   note: >
-    La cobertura operativa profunda se resuelve desde Supabase. GitHub mantiene la
-    declaración canónica de autoridad y CI sin duplicar los contratos step-level.
+    La cobertura comun no se duplica dentro de CREACION_ADAPTER_LF. Los 17 gates materializados
+    complementan el factory core y validan la especializacion Adapter.
