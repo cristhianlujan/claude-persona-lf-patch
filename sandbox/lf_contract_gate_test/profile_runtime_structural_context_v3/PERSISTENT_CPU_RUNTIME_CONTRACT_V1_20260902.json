@@ -1,0 +1,40 @@
+{
+  "schema":"lf-profile-runtime-persistent-cpu-contract/v1",
+  "campaign":"PROFILE_RUNTIME_P0_V3_20260902",
+  "artifact_sha256":"ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+  "status":"IMPLEMENTED_DETERMINISTICALLY_TESTED_NO_REAL_INFERENCE",
+  "implementation":{
+    "adapter":"sandbox/lf_contract_gate_test/profile_execution_runtime/persistent_cpu_local_runtime.py",
+    "request_runner":"sandbox/lf_contract_gate_test/profile_execution_runtime/run_persistent_cpu_profile_request.py",
+    "readiness_probe":"sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/persistent_cpu_readiness_v3.py",
+    "adapter_verifier_gate":"10/10 PASS",
+    "request_wiring_gate":"11/11 PASS",
+    "request_scope":"ISOLATED_CANDIDATE_ONLY",
+    "persistent_scratch_cleanup":"REQUIRED_AND_TESTED",
+    "last_pre_cleanup_validated_head":"818a9fac55bbfc6c901d00c22591af1c7723f2ea",
+    "last_pre_cleanup_validate_run":33675525465
+  },
+  "current_github_adapter_reusable_on_persistent_host":false,
+  "github_adapter_blocker_code":"ZERO_COST_GITHUB_RUNNER_PRECONDITION_FAILED",
+  "reason":"The GitHub adapter remains GitHub-only. A separate persistent CPU adapter/verifier and isolated request runner preserve pinned runtime evidence without requiring GitHub runner identity.",
+  "required_persistent_cpu_contract":{
+    "no_github_runner_identity_dependency":true,
+    "isolated_candidate_scope_required":true,
+    "same_pinned_llama_source_commit":"925e1179947ea0c0ebfb0032df18af3a729822be",
+    "same_model_sha256":"d02fe9b69ad8cadbbd228e387667af66612c44bed29ffc8eb1e7caf9ac486c12",
+    "same_mmproj_sha256":"980c9b2f78c04e6cff93d277ada09e768394f112d75db3b4e9dea8a69f9fb904",
+    "assets_must_be_preinstalled_and_sha_verified":true,
+    "runtime_output_schema_must_be_bound_to_llama_jf":true,
+    "private_raster_must_not_be_persisted_beyond_execution_scope":true,
+    "persistent_scratch_must_be_removed_after_success_or_failure":true,
+    "model_output_receipt_must_bind_artifact_profile_sources_input_runtime_and_output_digest":true,
+    "semantic_after_gate_required":true,
+    "timeout_increase_forbidden":true,
+    "production_authority":false
+  },
+  "real_host_assets_observed":false,
+  "real_host_readiness":"NOT_EXECUTED",
+  "real_model_inference":"NOT_EXECUTED",
+  "semantic_after_status":"NOT_EXECUTED",
+  "next_gate":"Validate cleanup/scope changes in exact-head CI, then run persistent_cpu_readiness_v3.py on the authorized persistent host using exact pinned assets and fixed artifact; only after PASS execute the three-profile Semantic AFTER batch."
+}
