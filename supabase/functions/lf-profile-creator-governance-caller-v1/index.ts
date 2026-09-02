@@ -15,10 +15,10 @@ const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.trim() ?? ""
 const JWKS = createRemoteJWKSet(new URL(`${ISSUER}/.well-known/jwks`));
 
 const TARGETS: Record<string, string> = {
-  CUSTOMER_FINANCIAL_UX_DECISIONING: "customer_financial_ux_decisioning",
-  CUSTOMER_TRUST_CLARITY_VULNERABILITY: "customer_trust_clarity_vulnerability",
-  CUSTOMER_PAYMENTS_RECOVERY: "customer_payments_recovery",
-  CUSTOMER_IDENTITY_CONSENT_PRIVACY: "customer_identity_consent_privacy",
+  "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING": "customer_financial_ux_decisioning",
+  "PERFIL-CUSTOMER-TRUST-CLARITY-VULNERABILITY": "customer_trust_clarity_vulnerability",
+  "PERFIL-CUSTOMER-PAYMENTS-RECOVERY": "customer_payments_recovery",
+  "PERFIL-CUSTOMER-IDENTITY-CONSENT-PRIVACY": "customer_identity_consent_privacy",
 };
 
 function json(body: unknown, status = 200): Response {
