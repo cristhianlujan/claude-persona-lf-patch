@@ -1,6 +1,5 @@
 -- P0 performance hardening: reuse source-stale/no-current proof inside one governed execution request.
 -- Safety: ARC-015 remains authoritative whenever freshness is CURRENT or inconclusive.
--- This source-reservation is not a migration until the predecessor #441 lands and the exact bytes are applied to sandbox.
 
 DO $migration$
 DECLARE
@@ -10,6 +9,9 @@ DECLARE
   v_execute_def text;
   v_execute_sha text;
   v_verify text;
+  v_worker_call_old text := 'v_worker:=programacion.fn_input_governance_worker_spec_known_current_v1(p_pantalla_id,p_consumer,v_run);';
+  v_worker_call_new text := 'v_worker:=programacion.fn_input_governance_worker_spec_known_no_current_v1(p_pantalla_id,p_consumer,true);';
+  v_worker_call_pos integer;
   v_old_currentness text := $$select id into v_current from programacion.input_readiness_runs where version_id=v_version and pantalla_id=p_pantalla_id and status='COMPLETED' and invalidated_at is null and programacion.fn_input_readiness_run_is_current(id) order by id desc limit 1;$$;
   v_new_currentness text := $$if p_no_current_proven is not true then raise exception 'INPUT_GOVERNANCE_KNOWN_NO_CURRENT_PROOF_REQUIRED'; end if; v_current:=null;$$;
   v_decl_old text := $$v_stage jsonb; v_prop jsonb; v_internal_summary jsonb; v_eval jsonb; v_manifest jsonb; v_payload jsonb; v_worker jsonb; v_fresh jsonb; v_summary jsonb;$$;
@@ -76,11 +78,9 @@ BEGIN
 
   v_execute_def:=replace(v_execute_def,v_decl_old,v_decl_new);
   v_execute_def:=replace(v_execute_def,v_select_old,v_select_new);
-  v_execute_def:=regexp_replace(
-    v_execute_def,
-    'v_worker:=programacion\\.fn_input_governance_worker_spec_known_current_v1\\(p_pantalla_id,p_consumer,v_run\\);',
-    'v_worker:=programacion.fn_input_governance_worker_spec_known_no_current_v1(p_pantalla_id,p_consumer,true);'
-  );
+  v_worker_call_pos:=position(v_worker_call_old in v_execute_def);
+  IF v_worker_call_pos=0 THEN RAISE EXCEPTION 'INPUT_STALE_DISPATCH_WORKER_CALL_ANCHOR_MISSING'; END IF;
+  v_execute_def:=overlay(v_execute_def placing v_worker_call_new from v_worker_call_pos for length(v_worker_call_old));
   EXECUTE v_execute_def;
 
   SELECT pg_get_functiondef('programacion.fn_input_governance_worker_spec_known_no_current_v1(integer,text,boolean)'::regprocedure) INTO v_verify;
@@ -91,6 +91,9 @@ BEGIN
   IF position('v_dispatch_fresh:=programacion.fn_input_freshness_delta(v_latest_completed)' in v_verify)=0 THEN RAISE EXCEPTION 'STALE_DISPATCH_FRESHNESS_PREFLIGHT_MISSING'; END IF;
   IF position($needle$v_dispatch_fresh->>'run_state'='STALE'$needle$ in v_verify)=0 THEN RAISE EXCEPTION 'STALE_DISPATCH_STATE_GUARD_MISSING'; END IF;
   IF position('programacion.fn_input_readiness_run_is_current_cached_v1(r.id)' in v_verify)=0 THEN RAISE EXCEPTION 'ARC015_CURRENTNESS_FALLBACK_MISSING'; END IF;
-  IF position('fn_input_governance_worker_spec_known_no_current_v1(p_pantalla_id,p_consumer,true)' in v_verify)=0 THEN RAISE EXCEPTION 'KNOWN_NO_CURRENT_WORKER_NOT_BOUND'; END IF;
+  IF position(v_worker_call_new in v_verify)=0 THEN RAISE EXCEPTION 'KNOWN_NO_CURRENT_WORKER_NOT_BOUND'; END IF;
+  IF (length(v_verify)-length(replace(v_verify,'programacion.fn_input_governance_worker_spec_known_current_v1(p_pantalla_id,p_consumer,v_run)','')))/length('programacion.fn_input_governance_worker_spec_known_current_v1(p_pantalla_id,p_consumer,v_run)') <> 1 THEN
+    RAISE EXCEPTION 'CURRENT_BRANCH_KNOWN_CURRENT_WORKER_COUNT_INVALID';
+  END IF;
 END;
 $migration$;
