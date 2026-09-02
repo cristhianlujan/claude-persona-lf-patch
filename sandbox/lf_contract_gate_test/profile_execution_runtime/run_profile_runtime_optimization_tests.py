@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""55 deterministic regression cases for profile runtime optimization and fail-closed output."""
+"""56 deterministic regression cases for profile runtime optimization and fail-closed output."""
 from __future__ import annotations
 
 import ast
@@ -114,7 +114,6 @@ check("G", "parallelism_recorded", metrics["parallelism"] == 2)
 check("G", "per_profile_inference_independent", metrics["per_profile_inference_ms"] == 2000 and metrics["batch_total_ms"] == 2500)
 
 # H — Quality Pack post-model fail-closed contract (6)
-# Execute the exact enforcement functions from the queue-worker source without importing psycopg.
 worker_path = Path(__file__).with_name("github_actions_queue_worker.py")
 worker_tree = ast.parse(worker_path.read_text(encoding="utf-8"), filename=str(worker_path))
 selected_names = {
@@ -191,25 +190,39 @@ invalid_pass["routing"] = {
 }
 blocked = namespace["_enforce_profile_output_contract"](qp_result(json.dumps(invalid_pass)))
 check("H", "empty_evidence_pass_blocked", blocked.get("status") == "BLOCKED" and blocked.get("error_code") == "QUALITY_PACK_OUTPUT_CONTRACT_INVALID" and "PASS_EVIDENCE_MAP_EMPTY" in blocked.get("error_detail", ""))
-
 contradictory_pass = dict(invalid_pass)
 contradictory_pass["evidence_map"] = [{"evidence_type": "SHA-256", "evidence_value": "a" * 64}]
 contradictory_pass["blocking_codes"] = ["BLOCK_PIPELINE"]
 contradictory_pass["repair_actions"] = []
 blocked = namespace["_enforce_profile_output_contract"](qp_result(json.dumps(contradictory_pass)))
 check("H", "pass_with_blocker_blocked", blocked.get("status") == "BLOCKED" and "PASS_BLOCKING_CODES_NONEMPTY" in blocked.get("error_detail", ""))
-
 pass_with_repair = dict(contradictory_pass)
 pass_with_repair["blocking_codes"] = []
 pass_with_repair["repair_actions"] = [{"required_fix": "repair before continuation"}]
 blocked = namespace["_enforce_profile_output_contract"](qp_result(json.dumps(pass_with_repair)))
 check("H", "pass_to_composer_with_repair_blocked", blocked.get("status") == "BLOCKED" and "PASS_TO_COMPOSER_REPAIR_ACTIONS_NONEMPTY" in blocked.get("error_detail", ""))
-
 nonpass_without_blocker = dict(valid_return)
 nonpass_without_blocker["blocking_codes"] = []
 blocked = namespace["_enforce_profile_output_contract"](qp_result(json.dumps(nonpass_without_blocker)))
 check("H", "nonpass_without_blocker_blocked", blocked.get("status") == "BLOCKED" and "NONPASS_BLOCKING_CODES_EMPTY" in blocked.get("error_detail", ""))
 
-assert TOTAL == 55, TOTAL
-assert PASS == 55, PASS
+# I — Single/batch semantic-gate parity (1)
+batch_path = Path(__file__).with_name("github_actions_batch_queue_worker.py")
+batch_tree = ast.parse(batch_path.read_text(encoding="utf-8"), filename=str(batch_path))
+run_one = next(node for node in batch_tree.body if isinstance(node, ast.FunctionDef) and node.name == "_run_one")
+call_names = [
+    node.func.id
+    for node in ast.walk(run_one)
+    if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+]
+check(
+    "I",
+    "batch_applies_profile_contract_after_nonempty_gate",
+    "_enforce_nonempty_completion" in call_names
+    and "_enforce_profile_output_contract" in call_names
+    and call_names.index("_enforce_nonempty_completion") < call_names.index("_enforce_profile_output_contract"),
+)
+
+assert TOTAL == 56, TOTAL
+assert PASS == 56, PASS
 print(f"PROFILE_RUNTIME_OPTIMIZATION_CASES={PASS}/{TOTAL}")
