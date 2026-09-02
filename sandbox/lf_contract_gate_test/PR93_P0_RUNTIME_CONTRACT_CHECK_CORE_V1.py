@@ -3,10 +3,10 @@
 
 Only pinned governed Edge source sets, platform function configuration, and the
 versioned Story Creator P0 sandbox candidate are admitted beyond the base LF
-contract scope. The historical PR93 branch remains supported. The Story Agent
-evidence-verifier branch is admitted only with exact pinned blobs. A push on
-main is accepted only when GitHub proves the exact workflow SHA came from an
-allowed merged pull request.
+contract scope. The historical PR93 branch remains supported. Story Agent
+verifier branches and the exact governed Profile Creator source-parity branch
+are admitted only with exact pinned blobs. A push on main is accepted only when
+GitHub proves the exact workflow SHA came from an allowed merged pull request.
 """
 from __future__ import annotations
 
@@ -27,6 +27,7 @@ TARGET_PR_NUMBER = 93
 PR_BRANCH = "lf/architecture-v7-hardening"
 MAIN_BRANCH = "main"
 STORY_AGENT_VERIFIER_BRANCH_PREFIX = "lf/story-agent-evidence-verifier-"
+PROFILE_CREATOR_SOURCE_PARITY_BRANCH = "lf/profile-creator-runtime-source-parity-20260902"
 RUNTIME_ALERT_PATH = "supabase/functions/lf-architecture-alert-sink-v4/index.ts"
 RUNTIME_ALERT_CONFIG_PATH = "supabase/functions/lf-architecture-alert-sink-v4/deno.json"
 RUNTIME_PLATFORM_CONFIG_PATH = "supabase/config.toml"
@@ -49,8 +50,9 @@ EXPECTED_RUNTIME_BLOBS = {
     "supabase/functions/run-github-write-perfil-lf/deno.json": "762e9b22bb21b951e9ddc5a171fe1be106d7cc31",
     "supabase/functions/run-github-readback-perfil-lf/index.ts": "0f3de697b0806ea5cb775a40a4e0d1cc58ac3dc4",
     "supabase/functions/run-github-readback-perfil-lf/deno.json": "762e9b22bb21b951e9ddc5a171fe1be106d7cc31",
-    "supabase/functions/run-creacion-perfil-lf/index.ts": "a4246b3bcc7a4584b165d749d63989e01a11e701",
+    "supabase/functions/run-creacion-perfil-lf/index.ts": "fbee40f328effef1cf9dd47b7966c415c6bbf908",
     "supabase/functions/run-creacion-perfil-lf/deno.json": "762e9b22bb21b951e9ddc5a171fe1be106d7cc31",
+    "supabase/functions/lf-profiles-governance-caller-v1/index.ts": "915631aa97653f6ef5209361cb3ffa1e9cd0e9d6",
     "supabase/functions/run-formalizacion-perfil-lf/index.ts": "5fc0953c08307af25703c9e4be2339a0c3d66d4d",
     "supabase/functions/run-formalizacion-perfil-lf/deno.json": "762e9b22bb21b951e9ddc5a171fe1be106d7cc31",
     "supabase/functions/get-perfil-lf-runtime-protocol/index.ts": "c87779d11f64f0284e7a69ef63b72e12210cbb30",
@@ -89,7 +91,15 @@ def _validate_path(path: str) -> None:
 
 
 def _allowed_runtime_branch(branch: str) -> bool:
-    return branch == PR_BRANCH or branch.startswith(STORY_AGENT_VERIFIER_BRANCH_PREFIX)
+    return (
+        branch == PR_BRANCH
+        or branch.startswith(STORY_AGENT_VERIFIER_BRANCH_PREFIX)
+        or branch == PROFILE_CREATOR_SOURCE_PARITY_BRANCH
+    )
+
+
+def _allowed_merged_head_branch(branch: str) -> bool:
+    return branch.startswith(STORY_AGENT_VERIFIER_BRANCH_PREFIX) or branch == PROFILE_CREATOR_SOURCE_PARITY_BRANCH
 
 
 def evaluate_controlled_runtime_scope(
@@ -224,7 +234,7 @@ def verify_main_merge_via_github() -> bool:
         payload = _github_json(
             f"https://api.github.com/repos/{TARGET_REPOSITORY}/commits/{head_sha}/pulls",
             token,
-            "story-agent-runtime-gate-v1",
+            "runtime-gate-v2",
         )
     except (urllib.error.URLError, TimeoutError, UnicodeDecodeError, json.JSONDecodeError):
         return False
@@ -235,7 +245,7 @@ def verify_main_merge_via_github() -> bool:
         and pr.get("merged_at")
         and pr.get("merge_commit_sha") == head_sha
         and (pr.get("base") or {}).get("ref") == MAIN_BRANCH
-        and str((pr.get("head") or {}).get("ref", "")).startswith(STORY_AGENT_VERIFIER_BRANCH_PREFIX)
+        and _allowed_merged_head_branch(str((pr.get("head") or {}).get("ref", "")))
         for pr in payload
     )
 
