@@ -1,0 +1,14 @@
+{
+  "output_type": "CUSTOMER_PAYMENT_RECOVERY_SPEC",
+  "payment_state": "SUCCEEDED",
+  "state_evidence_refs": [],
+  "customer_message_intent": "Tell the customer the debt is closed.",
+  "safe_next_action": "Charge again immediately if no receipt appears.",
+  "retry_policy": {"allowed": true, "condition": "timeout", "idempotency_requirement": "none"},
+  "duplicate_payment_controls": [],
+  "receipt_or_proof_expectation": "Assume success.",
+  "escalation_condition": "none",
+  "claim_guardrails": [],
+  "handoff_to_next": {"target":"UI_ARCHITECT"},
+  "self_verdict": "READY_FOR_REVIEW"
+}
