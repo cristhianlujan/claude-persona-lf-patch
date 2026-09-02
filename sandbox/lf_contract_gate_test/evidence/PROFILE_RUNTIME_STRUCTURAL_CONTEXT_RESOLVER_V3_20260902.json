@@ -1,0 +1,68 @@
+{
+  "schema": "lf-profile-runtime-structural-context-resolver-v3-evidence/v1",
+  "campaign": "PROFILE_RUNTIME_P0_V3_20260902",
+  "artifact": {
+    "artifact_id": 85,
+    "screen_code": "B2B-CARGA-001",
+    "filename": "B2B_CARGA_001_HISTORIAL_DESKTOP_LIGHT_v0.1_CANDIDATO.png",
+    "sha256": "ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+    "width_px": 1600,
+    "height_px": 1000,
+    "bytes": 142727
+  },
+  "source_evidence": {
+    "mode": "FALLBACK_OCR_REGENERATED",
+    "reason": "The handoff references the historical 334 observation+bbox baseline, but no accessible observation payload was found in the queried durable P0 artifact store by screen/hash/count. OCR was rerun once explicitly as fallback; therefore V3 token counts are not directly comparable to V2 334-observation counts.",
+    "ocr_engine": "Tesseract 5.5.0",
+    "ocr_lang": "eng+spa",
+    "ocr_psm": 3,
+    "ocr_observation_count": 199,
+    "ocr_elapsed_ms_approx": 1318,
+    "ocr_observations_sha256": "2483a0270d26bfdc9023b12cad2cd0c3385367b41a30ea5f601682a231fd49ef"
+  },
+  "resolver": {
+    "script_sha256": "a219eb892ee2bbdf8ba73399fe71ac110ecf5826ee310a0af28ea90a0e0e76ae",
+    "test_sha256": "504420403bae4e4b28e9445ad8c4da5cad736482bd78e2f9f8b8b47d9fa90e43",
+    "tests": "7/7 PASS",
+    "median_ms": 1.421,
+    "p95_ms": 1.705,
+    "input_count": 199,
+    "counts": {
+      "SHELL_TOPBAR": 16,
+      "BREADCRUMB": 6,
+      "SHELL_SIDEBAR": 14,
+      "PAGE_HEADER": 15,
+      "PAGE_ACTIONS": 3,
+      "FILTER_BAR": 33,
+      "TABLE_SUMMARY": 5,
+      "TABLE_HEADER": 11,
+      "DYNAMIC_DATA": 59,
+      "STATE_BADGE": 11,
+      "ROW_ACTION": 23,
+      "PAGINATION": 3
+    },
+    "residual_count": 18,
+    "reread_reduction_pct": 90.95
+  },
+  "critical_semantics": {
+    "horizontal_overflow_observed": true,
+    "not_currently_visible_is_material_omission": false,
+    "context_may_fabricate_visual_evidence": false
+  },
+  "gates": {
+    "runtime_completion": "PASS",
+    "profile_contract_valid": "NOT_EVALUATED",
+    "semantic_utility": "PARTIAL_STRUCTURE_ONLY",
+    "p02_p03_parity": "NOT_PROVEN_ON_HISTORICAL_334_OBSERVATIONS",
+    "targeted_reread_executed": "NO"
+  },
+  "target_assessment": {
+    "resolver_cost_near_instant": "PASS",
+    "normalized_residual_le_25_35": "PASS_ON_FALLBACK_199_TOKEN_RUN",
+    "normalized_reread_reduction_ge_75_pct": "PASS_ON_FALLBACK_199_TOKEN_RUN",
+    "zero_context_fabrication": "PASS",
+    "final_vps_classification": "WITHHELD_PENDING_SAME_EVIDENCE_PARITY_AND_TARGETED_REREAD_QUALITY"
+  },
+  "risk": "Main remaining uncertainty is evidence comparability: the historical 334+bbox artifact must be recovered or durably persisted, then V3 must be rerun and targeted reread + P-02/P-03 quality parity proven before VPS classification.",
+  "confidence": "HIGH for structural algorithm behavior and resolver latency on this exact PNG; MEDIUM for residual target generalization until historical observation parity is restored."
+}
