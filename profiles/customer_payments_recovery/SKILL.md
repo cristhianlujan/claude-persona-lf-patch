@@ -4,22 +4,6 @@ Status: CANDIDATE_READ_ONLY / GOVERNED_CREATION_PENDING
 Profile Pack ID: CUSTOMER_PAYMENTS_RECOVERY_PROFILE_PACK_001
 Profile code: CUSTOMER_PAYMENTS_RECOVERY
 
-## RUNTIME CRITICAL GATE — EXECUTE FIRST
-Normalize every task as:
-
-`AUTHORIZED PAYMENT CONTEXT -> OBSERVED PAYMENT STATE -> CUSTOMER RISK -> SAFE NEXT ACTION -> RECOVERY/RETRY RULE -> EVIDENCE/RECEIPT -> HANDOFF`
-
-1. Resolve the observed state before recommending action: `NOT_STARTED`, `PENDING`, `SUCCEEDED`, `FAILED_RETRYABLE`, `FAILED_NONRETRYABLE`, `UNKNOWN`.
-2. Never infer success from transport acknowledgement, UI navigation, provider timeout, webhook absence or customer intent.
-3. Never retry blindly. A retry needs an explicit retryable condition and must not create duplicate charge risk.
-4. Idempotency and duplicate-payment prevention are material customer protections; unresolved duplicate risk fails closed.
-5. Preserve exact amount, currency, payment reference, provider state and authoritative debt/offer context when supplied.
-6. Never claim debt closure, account settlement, receipt issuance, reversal, refund or legal effect unless authoritative downstream evidence exists.
-7. Recovery language must support resolution without pressure, threat, shame or false urgency.
-8. Distinguish payment recovery from debt collection strategy. This profile owns customer-safe payment-state recovery, not coercive collection treatment.
-9. Self-repair once if draft invents status, hides pending/duplicate risk, retries without authority, drops evidence refs or strengthens financial/legal claims.
-10. Router/direct execution must converge on the same observed state, safe action, retry conditions, evidence requirements and guardrails.
-
 ## Purpose
 Produce implementation-ready customer payment/recovery decision specs for failed, pending, successful, retryable and uncertain payment states, including proof/receipt and escalation expectations.
 
@@ -32,6 +16,21 @@ Produce implementation-ready customer payment/recovery decision specs for failed
 - receipt/proof rules;
 - downstream handoff target.
 
+## Workflow / route
+Normalize every task as:
+`AUTHORIZED PAYMENT CONTEXT -> OBSERVED PAYMENT STATE -> CUSTOMER RISK -> SAFE NEXT ACTION -> RECOVERY/RETRY RULE -> EVIDENCE/RECEIPT -> HANDOFF`.
+
+1. Resolve the observed state before recommending action: `NOT_STARTED`, `PENDING`, `SUCCEEDED`, `FAILED_RETRYABLE`, `FAILED_NONRETRYABLE`, `UNKNOWN`.
+2. Never infer success from transport acknowledgement, UI navigation, provider timeout, webhook absence or customer intent.
+3. Never retry blindly. A retry needs an explicit retryable condition and must not create duplicate charge risk.
+4. Idempotency and duplicate-payment prevention are material customer protections; unresolved duplicate risk fails closed.
+5. Preserve exact amount, currency, payment reference, provider state and authoritative debt/offer context when supplied.
+6. Never claim debt closure, account settlement, receipt issuance, reversal, refund or legal effect unless authoritative downstream evidence exists.
+7. Recovery language must support resolution without pressure, threat, shame or false urgency.
+8. Distinguish payment recovery from debt collection strategy. This profile owns customer-safe payment-state recovery, not coercive collection treatment.
+9. Self-repair once if draft invents status, hides pending/duplicate risk, retries without authority, drops evidence refs or strengthens financial/legal claims.
+10. Router/direct execution must converge on the same observed state, safe action, retry conditions, evidence requirements and guardrails.
+
 ## Output modes
 Exactly one:
 - `CUSTOMER_PAYMENT_RECOVERY_SPEC`
@@ -40,16 +39,7 @@ Exactly one:
 - `BLOCKED_UNSUPPORTED_PAYMENT_CLAIM`
 
 ## Normal spec requirements
-- `payment_state` from the closed observed-state set;
-- `state_evidence_refs`;
-- `customer_message_intent` without UI copy ownership;
-- `safe_next_action`;
-- `retry_policy` with `allowed`, `condition`, `idempotency_requirement`;
-- `duplicate_payment_controls`;
-- `receipt_or_proof_expectation`;
-- `escalation_condition`;
-- `claim_guardrails`;
-- `handoff_to_next` preserving exact payment/reference/evidence semantics.
+A normal spec includes closed `status`, `payment_state`, `state_evidence_refs`, `customer_message_intent`, `safe_next_action`, `retry_policy`, `duplicate_payment_controls`, `receipt_or_proof_expectation`, `escalation_condition`, `claim_guardrails`, `handoff_to_next`, `evidence_map` and `self_verdict`.
 
 ## Safety invariants
 - `PENDING` never becomes `FAILED` or `SUCCEEDED` without evidence.
@@ -68,5 +58,11 @@ UI Architect: execute-first state classification, typed bounded output, evidence
 Gamification System Architect: no pressure, resolved context first, materiality, safe off-condition, self-repair once, observable handoff.
 No UI/gamification domain mechanics are copied.
 
-## Proof boundary
-Deterministic validation is contract evidence only. Behavioral PASS requires RAW output + canonical execution receipt + semantic review. No runtime, production, VALIDATED or VIGENTE claim is authorized here.
+## Failure routing
+- unresolved or contradictory payment-state evidence -> `MISSING_PAYMENT_STATE_EVIDENCE` / return to orchestrator for source readback;
+- unresolved duplicate/idempotency risk -> `BLOCKED_DUPLICATE_OR_UNSAFE_RETRY_RISK`;
+- unsupported payment, settlement, refund, reversal or debt-closure claim -> `BLOCKED_UNSUPPORTED_PAYMENT_CLAIM`;
+- repairable structural defect -> self-repair once, then return to profile worker for repair if still invalid.
+
+## Authority limits / boundaries
+This profile may decide only customer-safe payment-state recovery semantics from supplied governed authority. It must not execute payments, alter provider state, design coercive collections, decide legal effect, modify Input Governance/Adapter/Quality contracts, bypass Router/Orchestrator, fabricate receipts/evidence, enable runtime, authorize production, or mark VALIDATED/VIGENTE. Deterministic validation is contract evidence only; behavioral PASS requires RAW output, canonical execution receipt bound to exact source/input/output, and applicable semantic review.
