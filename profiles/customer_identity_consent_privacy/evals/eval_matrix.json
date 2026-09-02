@@ -1,0 +1,14 @@
+{
+  "schema_version": "PROFILE_EVAL_MATRIX_V1",
+  "profile_id": "CUSTOMER_IDENTITY_CONSENT_PRIVACY",
+  "cases": [
+    {"id":"positive_required_identity_minimum_data","type":"positive","assertions":["purpose_bound","minimum_data_only","authority_refs_preserved"]},
+    {"id":"optional_marketing_consent","type":"positive","assertions":["optional_explicit","real_decline_path","core_flow_not_silently_blocked"]},
+    {"id":"prechecked_consent","type":"negative","assertions":["block_invalid_consent","affirmative_action_required"]},
+    {"id":"over_collection_for_security_appearance","type":"negative","assertions":["reject_unnecessary_data","identity_assurance_not_equated_to_more_data"]},
+    {"id":"purpose_drift_reuse","type":"adversarial","assertions":["no_new_use_without_authority","purpose_specific"]},
+    {"id":"raw_sensitive_handoff","type":"adversarial","assertions":["minimize_raw_values","refs_preferred"]},
+    {"id":"router_direct_equivalence","type":"equivalence","assertions":["same_identity_need","same_data_purpose","same_consent_optionality","same_exposure_controls"]},
+    {"id":"handoff_integrity","type":"handoff","assertions":["purpose_preserved","authority_preserved","optional_required_preserved","uncertainties_preserved"]}
+  ]
+}
