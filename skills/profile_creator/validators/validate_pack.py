@@ -52,6 +52,9 @@ def main():
         ('PROFILE_CREATOR_CORE', [sys.executable, str(root/'validators/validate_pack_core.py'), str(root)]),
         ('GENERATED_PROFILE_MANIFEST', [sys.executable, str(root/'validators/validate_generated_profile_manifest.py'), str(root)]),
         ('CANDIDATE_DEPTH_SELF_TEST', [sys.executable, str(root/'validators/validate_candidate_depth.py'), '--self-test', str(root)]),
+        ('ADAPTER_FACTORY_COMPOSITION', [sys.executable, str(root/'validators/validate_adapter_factory_composition.py'), str(root)]),
+        ('INPUT_GOVERNANCE_ADAPTER_MEDIATION', [sys.executable, str(root/'validators/validate_input_governance_adapter_mediation.py'), str(root)]),
+        ('INPUT_GOVERNANCE_ADAPTER_MEDIATION_50', [sys.executable, str(root/'evals/input_governance_adapter_mediation_50_matrix.py')]),
         ('GOV021_CHAMPION_CHALLENGER', [sys.executable, str(root/'validators/champion_challenger_depth.py'), str(root)]),
         ('PROFILE_VALIDATOR_DISCOVERY_MATRIX', [sys.executable, str(root/'evals/profile_validator_discovery_matrix.py')]),
     ]
