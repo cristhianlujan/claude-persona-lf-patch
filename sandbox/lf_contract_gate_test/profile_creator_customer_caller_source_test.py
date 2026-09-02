@@ -15,15 +15,19 @@ checks = {
     "no_input_governance_actions": 'input_readiness_' not in caller and 'input-governance-agent-v1' not in caller,
     "no_adapter_actions": 'adapter' not in caller.lower(),
     "customer_allowlist": all(code in caller for code in [
-        'CUSTOMER_FINANCIAL_UX_DECISIONING',
-        'CUSTOMER_TRUST_CLARITY_VULNERABILITY',
-        'CUSTOMER_PAYMENTS_RECOVERY',
-        'CUSTOMER_IDENTITY_CONSENT_PRIVACY',
+        'PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING',
+        'PERFIL-CUSTOMER-TRUST-CLARITY-VULNERABILITY',
+        'PERFIL-CUSTOMER-PAYMENTS-RECOVERY',
+        'PERFIL-CUSTOMER-IDENTITY-CONSENT-PRIVACY',
     ]),
     "runtime_delegate_only": 'run-creacion-perfil-lf' in caller and 'lf_record_creacion_perfil_step_v1' not in caller,
     "no_manual_db_step_write": 'lf_operation_execution_steps' not in caller and '.from(' not in caller,
     "source_only_dispatch": 'source_canary_only' in workflow and 'NON_CANARY_PROFILE_CREATION_EXECUTED=false' in workflow,
     "no_customer_receipt_fabrication": 'LF_OPERATION_CONTRACT_RECEIPT' not in caller and 'LF_OPERATION_CONTRACT_RECEIPT' not in workflow,
+    "project_identity": 'AGENTE_PROFILE_CREATOR' in caller,
+    "lane_identity": 'CUSTOMER_PROFILES' in caller and 'LF-CUSTOMER-PROFILES' not in caller,
+    "origin_identity": 'AUTOMATION_AGENTE_PROFILE_CREATOR_CUSTOMER' in caller and 'AUTOMATION_PROFILES_CUSTOMER_V2' not in caller,
+    "workstream_identity": 'PROFILE_CREATOR_INFRA' in caller,
 }
 
 failed = [name for name, ok in checks.items() if not ok]
