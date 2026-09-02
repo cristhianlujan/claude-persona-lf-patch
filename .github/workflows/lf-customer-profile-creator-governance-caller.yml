@@ -16,17 +16,23 @@ on:
         type: choice
         options:
           - source_canary_only
+          - initialize_customer_profile
       target_code:
-        description: "Reserved for a future separately-authorized non-canary execution"
+        description: "Exact allowlisted Customer profile code"
         required: false
-        type: string
+        type: choice
+        options:
+          - PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING
+          - PERFIL-CUSTOMER-TRUST-CLARITY-VULNERABILITY
+          - PERFIL-CUSTOMER-PAYMENTS-RECOVERY
+          - PERFIL-CUSTOMER-IDENTITY-CONSENT-PRIVACY
 
 permissions:
   contents: read
   id-token: write
 
 jobs:
-  customer-profile-creator-source-canary:
+  customer-profile-creator-governed-caller:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -39,12 +45,12 @@ jobs:
           code=$(curl --silent --show-error -o negative.json -w '%{http_code}' \
             -H 'Authorization: Bearer not-a-github-oidc-token' \
             -H 'Content-Type: application/json' \
-            -d '{"action":"profile_creator_init_v1","caller_request_id":"negative","target_code":"CUSTOMER_FINANCIAL_UX_DECISIONING","profile_slug":"customer_financial_ux_decisioning"}' \
+            -d '{"action":"profile_creator_init_v1","caller_request_id":"negative","target_code":"PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING","profile_slug":"customer_financial_ux_decisioning"}' \
             'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1')
           cat negative.json
           test "$code" = "401" || test "$code" = "404"
       - name: Obtain exact GitHub OIDC identity
-        if: github.event_name == 'workflow_dispatch' && inputs.action == 'source_canary_only'
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/lf/profiles/profile-creator-customer-caller-20260902' && contains(github.event.head_commit.message, '[INIT_CUSTOMER_FINANCIAL_UX]'))
         id: oidc
         uses: actions/github-script@v7
         with:
@@ -57,5 +63,51 @@ jobs:
         run: |
           echo 'SOURCE_CANARY_ONLY=true'
           echo 'NON_CANARY_PROFILE_CREATION_EXECUTED=false'
+          echo 'RUNTIME_DEPLOYMENT_EXECUTED=false'
+          echo 'PRODUCTION_AUTHORIZED=false'
+      - name: Initialize allowlisted Customer profile through governed caller
+        if: (github.event_name == 'workflow_dispatch' && inputs.action == 'initialize_customer_profile') || (github.event_name == 'push' && github.ref == 'refs/heads/lf/profiles/profile-creator-customer-caller-20260902' && contains(github.event.head_commit.message, '[INIT_CUSTOMER_FINANCIAL_UX]'))
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          INPUT_TARGET_CODE: ${{ inputs.target_code }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "push" ]; then
+            TARGET_CODE=PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING
+          else
+            TARGET_CODE="$INPUT_TARGET_CODE"
+          fi
+          case "$TARGET_CODE" in
+            PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING) PROFILE_SLUG=customer_financial_ux_decisioning ;;
+            PERFIL-CUSTOMER-TRUST-CLARITY-VULNERABILITY) PROFILE_SLUG=customer_trust_clarity_vulnerability ;;
+            PERFIL-CUSTOMER-PAYMENTS-RECOVERY) PROFILE_SLUG=customer_payments_recovery ;;
+            PERFIL-CUSTOMER-IDENTITY-CONSENT-PRIVACY) PROFILE_SLUG=customer_identity_consent_privacy ;;
+            *) echo 'CUSTOMER_PROFILE_TARGET_NOT_ALLOWED'; exit 1 ;;
+          esac
+          CALLER_REQUEST_ID=$(python3 - <<'PY'
+          import uuid
+          print(uuid.uuid4())
+          PY
+          )
+          code=$(curl --silent --show-error -o governed-init.json -w '%{http_code}' \
+            -H "Authorization: Bearer $OIDC_TOKEN" \
+            -H 'Content-Type: application/json' \
+            -d "{\"action\":\"profile_creator_init_v1\",\"caller_request_id\":\"$CALLER_REQUEST_ID\",\"target_code\":\"$TARGET_CODE\",\"profile_slug\":\"$PROFILE_SLUG\"}" \
+            'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1')
+          cat governed-init.json
+          test "$code" = "201"
+          python3 - <<'PY'
+          import json
+          data=json.load(open('governed-init.json'))
+          assert data.get('outcome') == 'INITIALIZED', data
+          result=data.get('result') or {}
+          assert result.get('outcome') == 'INITIALIZED', data
+          execution=(result.get('execution') or {})
+          assert execution.get('operation_code') == 'CREACION_PERFIL_LF', data
+          assert execution.get('status') == 'IN_PROGRESS', data
+          print('GOVERNED_CUSTOMER_PROFILE_INITIALIZATION=PASS')
+          print('EXECUTION_ID='+str(execution.get('execution_id')))
+          PY
           echo 'RUNTIME_DEPLOYMENT_EXECUTED=false'
           echo 'PRODUCTION_AUTHORIZED=false'
