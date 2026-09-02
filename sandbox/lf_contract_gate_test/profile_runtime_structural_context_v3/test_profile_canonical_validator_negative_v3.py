@@ -7,7 +7,6 @@ when canonical validators reject the material output shape.
 from __future__ import annotations
 
 import importlib.util
-import json
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[3]
@@ -36,8 +35,6 @@ def main() -> int:
     product_label_only = "PRODUCT_DIRECTION_SPEC"
     ui_score_only = {"self_verdict": "PASS", "total": 25, "evidence_by_criterion": {}}
 
-    # Raw label is not even a JSON object, so the canonical Product validator receives
-    # the parsed semantic equivalent as a non-object and must fail closed.
     product_result = product.validate(product_label_only)
     ui_errors = ui.validate(ui_score_only)
 
@@ -45,7 +42,9 @@ def main() -> int:
     assert "NOT_OBJECT" in set(product_result.get("blocking_codes") or []), product_result
     assert ui_errors, "UI canonical validator unexpectedly accepted score-only output"
     ui_codes = {e.get("code") for e in ui_errors if isinstance(e, dict)}
-    assert "OUTPUT_TYPE_INVALID" in ui_codes or "DELIVERABLE_MISSING" in ui_codes, ui_errors
+    # Bind to the canonical validator's actual failure contract, not guessed aliases.
+    assert "OUTPUT_MODE_INVALID" in ui_codes, ui_errors
+    assert "DELIVERABLE_NOT_OBJECT" in ui_codes, ui_errors
 
     print(
         "PROFILE_CANONICAL_VALIDATOR_NEGATIVE_V3_PASS "
