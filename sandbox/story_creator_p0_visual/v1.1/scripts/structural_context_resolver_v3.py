@@ -6,7 +6,7 @@ screen structure without rerunning OCR. It never turns canonical context into
 visual evidence: context is used only to reconcile already-visible tokens.
 """
 from __future__ import annotations
-import argparse, json, math, re, unicodedata
+import argparse, json, re, unicodedata
 from collections import Counter
 from pathlib import Path
 
@@ -73,6 +73,10 @@ def phrase_hits(lines, phrases, min_x=0):
                 hits.append((p,ln))
     return hits
 
+def _hint_match(text, hints):
+    n=norm(text)
+    return any(n == norm(h) or norm(h) in n for h in hints)
+
 def infer_geometry(obs, width, height):
     lines=cluster_lines(obs)
     content_x=max(220, width*0.16)
@@ -92,6 +96,26 @@ def infer_geometry(obs, width, height):
     else:
         table_header_cy=height*0.42
     table_header_top=table_header_cy-22; table_header_bottom=table_header_cy+22
+
+    # Resolve semantic column anchors from visible header tokens instead of
+    # assuming fixed viewport percentages. This remains evidence-bound: only
+    # OCR tokens inside the detected header band can become anchors.
+    header_columns={}
+    for o in obs:
+        if not (table_header_top <= o["cy"] <= table_header_bottom):
+            continue
+        for header in TABLE_HEADERS:
+            hn=norm(header)
+            if o["norm"] == hn or (len(hn) > 4 and hn in o["norm"]):
+                header_columns.setdefault(header,[]).append(o["cx"])
+    header_columns={k:sum(v)/len(v) for k,v in header_columns.items()}
+    ordered_columns=sorted((x,k) for k,x in header_columns.items())
+    column_bounds={}
+    for i,(x,k) in enumerate(ordered_columns):
+        left=(ordered_columns[i-1][0]+x)/2 if i else -float("inf")
+        right=(x+ordered_columns[i+1][0])/2 if i+1<len(ordered_columns) else float("inf")
+        column_bounds[k]=(left,right)
+
     row_lines=[ln for ln in lines if ln["cy"]>table_header_bottom+8 and ln["cy"]<height*0.82 and ln["x1"]>content_x]
     row_centers=[]
     for ln in row_lines:
@@ -107,7 +131,8 @@ def infer_geometry(obs, width, height):
       "table_rows_bottom":(max(row_centers)+28 if row_centers else height*0.80),
       "pagination_top":height*0.82,
       "line_count":len(lines),"row_centers":row_centers,
-      "anchors":{"filter":len(filter_hits),"table_header":len(header_hits)}
+      "anchors":{"filter":len(filter_hits),"table_header":len(header_hits)},
+      "header_columns":header_columns,"column_bounds":column_bounds
     }, lines
 
 def classify(observations,width,height,context=None):
@@ -132,9 +157,15 @@ def classify(observations,width,height,context=None):
         elif g["table_header_top"] <= cy <= g["table_header_bottom"]:
             role="TABLE_HEADER"; reread=False
         elif g["table_rows_top"] <= cy <= g["table_rows_bottom"]:
-            if cx >= width*0.79:
+            state_bounds=g["column_bounds"].get("estado")
+            action_bounds=g["column_bounds"].get("acciones")
+            if _hint_match(o["text"], ROW_ACTION_HINTS):
                 role="ROW_ACTION"; reread=False
-            elif cx >= width*0.69:
+            elif _hint_match(o["text"], STATE_HINTS):
+                role="STATE_BADGE"; reread=False
+            elif action_bounds and action_bounds[0] <= cx <= action_bounds[1]:
+                role="ROW_ACTION"; reread=False
+            elif state_bounds and state_bounds[0] <= cx <= state_bounds[1]:
                 role="STATE_BADGE"; reread=False
             else:
                 role="DYNAMIC_DATA"; reread=False
