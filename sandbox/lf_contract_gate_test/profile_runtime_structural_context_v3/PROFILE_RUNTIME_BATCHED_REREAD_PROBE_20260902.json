@@ -1,74 +1,14 @@
 {
   "schema": "lf-profile-runtime-batched-reread-probe/v1",
   "campaign": "PROFILE_RUNTIME_P0_V3_20260902",
-  "artifact": {
-    "screen_id": "B2B-CARGA-001",
-    "sha256": "ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
-    "dimensions": [1600, 1000]
-  },
+  "artifact": {"screen_id":"B2B-CARGA-001","sha256":"ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287","dimensions":[1600,1000]},
   "evidence_scope": "SAME_ARTIFACT_PERFORMANCE_AND_BATCHING_QUALITY_PROBE_NOT_HISTORICAL_334_PARITY",
-  "historical_exact_v3_reread": {
-    "residual_regions": 18,
-    "ocr_invocations": 72,
-    "wall_ms": 15725.76,
-    "source": "EKB PROFILE-RUNTIME-TARGETED-REREAD-REGRESSION-001",
-    "note": "Historical exact run used the current non-destructive role-fit floor but the raw historical 334-observation payload is not durable/addressable."
-  },
-  "local_process_fanout_ab": {
-    "runtime": "Python 3.13.5 / Tesseract 5.5.0 eng+spa",
-    "probe": "same representative crop repeated 18 times; 4 PSMs 6,7,11,13",
-    "isolated_invocations": 72,
-    "isolated_wall_ms": 12494.1,
-    "isolated_median_call_ms": 173.5,
-    "isolated_p95_call_ms": 190.8,
-    "grouped_invocations": 4,
-    "grouped_wall_ms": 1041.1,
-    "speedup_x": 12.0,
-    "wall_reduction_pct": 91.67,
-    "root_cause_status": "PROVEN",
-    "first_slow_hop": "TARGETED_REREAD_OCR_PROCESS_FANOUT",
-    "interpretation": "Most targeted-reread time is process/invocation fan-out rather than reconciler compute."
-  },
-  "same_artifact_low_confidence_ab": {
-    "selection": "18 automatically selected low-confidence visible OCR regions from the exact PNG; not the historical 334 residual set",
-    "isolated_invocations": 72,
-    "isolated_wall_ms": 11348.3,
-    "grouped_invocations": 4,
-    "grouped_wall_ms": 856.0,
-    "speedup_x": 13.26,
-    "decision_policy": "non-destructive role-fit >=0.70 + min gain 0.03 + literal visible-span scoring",
-    "decision_equivalence": "18/18",
-    "worse_decisions": 0,
-    "grouped_empty_regions": 0
-  },
-  "integrated_batch_candidate_probe": {
-    "residual_regions": 18,
-    "ocr_invocations": 4,
-    "ocr_ms": 867.052,
-    "psms": [6,7,11,13],
-    "montage_size": [166,1328],
-    "adopted": 5,
-    "stage_metrics_ms": {
-      "psm6": 272.347,
-      "psm7": 157.1,
-      "psm11": 249.861,
-      "psm13": 187.19
-    }
-  },
-  "quality_guards": {
-    "visible_span_negative_tests": "11/11 PASS locally",
-    "batch_mapping_tests": "6/6 PASS locally",
-    "cross_region_word_box_policy": "strict containment; boxes crossing source spans are discarded",
-    "canonical_context_can_emit_text": false,
-    "timeout_increased": false,
-    "quality_gate_relaxed": false
-  },
-  "gates": {
-    "runtime_completion": "PASS_PROBE",
-    "profile_contract_valid": "NOT_EVALUATED",
-    "semantic_utility": "PASS_FOR_18_REGION_PROBE_ONLY",
-    "historical_334_parity": "NOT_PROVEN",
-    "p02_p03_historical_parity": "NOT_PROVEN"
-  },
+  "historical_exact_v3_reread": {"residual_regions":18,"ocr_invocations":72,"wall_ms":15725.76,"source":"EKB PROFILE-RUNTIME-TARGETED-REREAD-REGRESSION-001","note":"Historical exact run used the current non-destructive role-fit floor but the raw historical 334-observation payload is not durable/addressable."},
+  "local_process_fanout_ab": {"runtime":"Python 3.13.5 / Tesseract 5.5.0 eng+spa","probe":"same representative crop repeated 18 times; 4 PSMs 6,7,11,13","isolated_invocations":72,"isolated_wall_ms":12494.1,"isolated_median_call_ms":173.5,"isolated_p95_call_ms":190.8,"grouped_invocations":4,"grouped_wall_ms":1041.1,"speedup_x":12.0,"wall_reduction_pct":91.67,"root_cause_status":"PROVEN","first_slow_hop":"TARGETED_REREAD_OCR_PROCESS_FANOUT","interpretation":"Most targeted-reread time is process/invocation fan-out rather than reconciler compute."},
+  "same_artifact_low_confidence_ab": {"selection":"18 automatically selected low-confidence visible OCR regions from the exact PNG; not the historical 334 residual set","isolated_invocations":72,"isolated_wall_ms":11348.3,"grouped_invocations":4,"grouped_wall_ms":856.0,"speedup_x":13.26,"decision_policy":"non-destructive role-fit >=0.70 + min gain 0.03 + literal visible-span scoring","decision_equivalence":"18/18","worse_decisions":0,"grouped_empty_regions":0},
+  "integrated_batch_candidate_probe": {"residual_regions":18,"ocr_invocations":4,"ocr_ms":867.052,"psms":[6,7,11,13],"montage_size":[166,1328],"adopted":5,"stage_metrics_ms":{"psm6":272.347,"psm7":157.1,"psm11":249.861,"psm13":187.19}},
+  "repeatability_same_artifact_existing_observations": {"runs":8,"full_image_ocr_repeated":false,"batch_invocations_per_run":4,"p50_ms":901.233,"p95_ms":938.117,"min_ms":881.899,"max_ms":941.985,"per_psm":{"6":{"median_ms":282.18,"p95_ms":293.43},"7":{"median_ms":152.79,"p95_ms":165.98},"11":{"median_ms":281.85,"p95_ms":310.64},"13":{"median_ms":180.21,"p95_ms":189.7}},"interpretation":"~0.9s batch latency is repeatable and the initial 0.867s observation was not an isolated favorable outlier."},
+  "quality_guards": {"visible_span_negative_tests":"11/11 PASS locally","batch_mapping_tests":"6/6 PASS locally","reread_overlay_tests":"8/8 PASS locally","cross_region_word_box_policy":"strict containment; boxes crossing source spans are discarded","canonical_context_can_emit_text":false,"timeout_increased":false,"quality_gate_relaxed":false},
+  "gates": {"runtime_completion":"PASS_PROBE","profile_contract_valid":"NOT_EVALUATED","semantic_utility":"PASS_FOR_18_REGION_PROBE_ONLY","historical_334_parity":"NOT_PROVEN","p02_p03_historical_parity":"NOT_PROVEN"},
   "next_gate": "Recover/persist exact historical observation baseline if available; otherwise create a new immutable baseline explicitly versioned as new evidence and rerun V2/V3 same-input before VPS final classification."
 }
