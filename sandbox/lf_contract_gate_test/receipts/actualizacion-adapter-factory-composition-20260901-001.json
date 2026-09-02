@@ -1,0 +1,38 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_ADAPTER_LF",
+  "execution_id": "EXEC-ACTUALIZACION-ADAPTER-FACTORY-COMPOSITION-20260901-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "5508e21d1611054ec3fc50f3e3687badbc9545f772ab0083abca9f27532ed4e0",
+  "judge_sha": "abd6a881df9643f01955ceb6d1aa627b3b7745ad3d9928b9bb4e47cec69d028f",
+  "source_sha_list": [
+    "3abb265f919935e878768fd68e093924c5c218b8",
+    "8f2328c7a73ce2ea5c75400fce6085fb23de646c",
+    "f2648ab3a07f8265abab9b803f462c1cadb33316",
+    "0e261b78159d4f0dc74b17b2434533379e43c46d"
+  ],
+  "target_paths": [
+    "gobernanza/contratos/contrato_adapter_lf.yaml",
+    "gobernanza/procedimientos/creacion_adapter_lf_specialization.yaml"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-02T03:10:43Z",
+  "contract_sha_source": "canonical stored contract_sha from public.lf_operation_contracts",
+  "judge_sha_source": "deterministic SHA-256 aggregate fingerprint of all 14 ACTIVE_ENFORCEMENT ACTUALIZACION_ADAPTER_LF mini-judges; no standalone operation-level judge row is materialized",
+  "operation_judge_readback": {
+    "required_steps": 14,
+    "required_steps_pass": 14,
+    "fail_count": 0,
+    "blocked_count": 0,
+    "judge_result": "PASS"
+  },
+  "canary_execution": "EXEC-ADAPTER-LF-SHELL-DEPTH-CANARY-20260829-005",
+  "canary_required_steps_pass": 17,
+  "canary_required_steps": 17,
+  "runtime_authorized": false,
+  "production_authorized": false,
+  "automatic_promotion": false
+}
