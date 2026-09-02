@@ -33,4 +33,20 @@ for k in ['Observados','Rechazados','Aprobado por']:
 r2=v3.classify(obs,1600,1000,{'horizontal_overflow_observed':False,'canonical_table_fields':['Aprobado por']})
 assert r2['canonical_visibility'][0]['status']=='UNKNOWN_VISIBILITY'
 assert r2['canonical_visibility'][0]['material_omission'] is None
-print('STRUCTURAL_CONTEXT_RESOLVER_V3_TESTS_PASS 7/7')
+
+# Holdout: compact/shifted table. Estado/Acciones are intentionally left of the
+# old 69%/79% viewport thresholds. Classification must follow detected headers.
+shift=[]
+shift += [o('Buscar',260,220,100),o('Estado',420,220,100),o('6 cargas',260,382,90)]
+shift_headers=['Lote','Nombre','Archivo','Tipo','Cargado por','Fecha','Total','Válidos','Estado','Acciones']
+shift_xs=[260,340,440,540,620,730,805,865,950,1080]
+for t,x in zip(shift_headers,shift_xs): shift.append(o(t,x,414,80))
+shift += [o('#9',260,475),o('Demo',340,475),o('x.csv',440,475),o('Carga',540,475),o('Juan',620,475),o('01/09',730,475),o('10',805,475),o('9',865,475),o('Procesado',950,475,90),o('Ver detalle',1080,475,100)]
+r3=v3.classify(shift,1600,1000,{})
+roles={(x['text'],x['role']) for x in r3['observations']}
+assert ('Procesado','STATE_BADGE') in roles, roles
+assert ('Ver detalle','ROW_ACTION') in roles, roles
+assert abs(r3['geometry']['header_columns']['estado']-990) < 1, r3['geometry']['header_columns']
+assert abs(r3['geometry']['header_columns']['acciones']-1120) < 1, r3['geometry']['header_columns']
+
+print('STRUCTURAL_CONTEXT_RESOLVER_V3_TESTS_PASS 11/11')
