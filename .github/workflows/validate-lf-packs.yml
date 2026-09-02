@@ -26,6 +26,15 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install Profile Runtime API test dependencies
+        run: python -m pip install --disable-pip-version-check -r services/profile_runtime_api/requirements-dev.in
+
+      - name: Test persistent Profile Runtime API
+        env:
+          PYTHONPATH: services/profile_runtime_api
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: python -m pytest services/profile_runtime_api/tests
+
       - name: Validate profile template pack
         run: python profiles/_template/validators/validate_pack.py profiles/_template
 
