@@ -10,6 +10,10 @@ const WORKFLOW_REF = `${REPOSITORY}/.github/workflows/lf-customer-profile-creato
 const AUDIENCE = "lf-profile-creator-governance-caller-v1";
 const ISSUER = "https://token.actions.githubusercontent.com";
 const CALLER_METHOD = "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_CREATOR_CUSTOMER_V1";
+const PROJECT_ID = "AGENTE_PROFILE_CREATOR";
+const OWNER_LANE = "CUSTOMER_PROFILES";
+const EXECUTION_ORIGIN = "AUTOMATION_AGENTE_PROFILE_CREATOR_CUSTOMER";
+const WORKSTREAM_ID = "PROFILE_CREATOR_INFRA";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")?.trim() ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.trim() ?? "";
 const JWKS = createRemoteJWKSet(new URL(`${ISSUER}/.well-known/jwks`));
@@ -88,8 +92,10 @@ Deno.serve(async (req: Request) => {
       workflow_ref: WORKFLOW_REF,
       run_id: String(claims.run_id),
       workflow_sha: String(claims.workflow_sha),
-      owner_lane: "LF-CUSTOMER-PROFILES",
-      execution_origin: "AUTOMATION_PROFILES_CUSTOMER_V2",
+      project_id: PROJECT_ID,
+      owner_lane: OWNER_LANE,
+      execution_origin: EXECUTION_ORIGIN,
+      workstream_id: WORKSTREAM_ID,
     };
 
     if (body.action === "profile_creator_init_v1") {
