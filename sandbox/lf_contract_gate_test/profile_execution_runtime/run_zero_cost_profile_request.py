@@ -150,7 +150,7 @@ def _materialize_image(request: dict[str, Any], work_dir: Path) -> tuple[Path | 
     return image_path, actual_sha
 
 
-def _read_runtime_schema_candidate(path: Path, schema_root: Path) -> dict[str, Any]:
+def _read_runtime_schema_candidate(path: Path, schema_root: Path) -> tuple[dict[str, Any], bytes]:
     resolved = path.resolve()
     try:
         resolved.relative_to(schema_root)
@@ -159,12 +159,13 @@ def _read_runtime_schema_candidate(path: Path, schema_root: Path) -> dict[str, A
     if not resolved.is_file():
         raise RuntimeExecutionBlocked("QUEUE_RUNTIME_SCHEMA_INVALID", path.name)
     try:
-        payload = json.loads(resolved.read_text(encoding="utf-8"))
+        raw = resolved.read_bytes()
+        payload = json.loads(raw.decode("utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise RuntimeExecutionBlocked("QUEUE_RUNTIME_SCHEMA_INVALID_JSON", path.name) from exc
     if not isinstance(payload, dict):
         raise RuntimeExecutionBlocked("QUEUE_RUNTIME_SCHEMA_INVALID", path.name)
-    return payload
+    return payload, raw
 
 
 def _materialize_runtime_output_schema(profile_slug: str, repo_root: Path, work_dir: Path) -> Path | None:
@@ -188,7 +189,7 @@ def _materialize_runtime_output_schema(profile_slug: str, repo_root: Path, work_
 
     explicit = schema_root / "runtime_output.schema.json"
     if explicit.exists() or explicit.is_symlink():
-        payload = _read_runtime_schema_candidate(explicit, schema_root)
+        _payload, raw = _read_runtime_schema_candidate(explicit, schema_root)
     else:
         candidates = sorted(
             path for path in schema_root.glob("*.schema.json")
@@ -196,14 +197,14 @@ def _materialize_runtime_output_schema(profile_slug: str, repo_root: Path, work_
         )
         if not candidates:
             return None
-        payloads = [_read_runtime_schema_candidate(path, schema_root) for path in candidates]
-        payload = payloads[0] if len(payloads) == 1 else {
+        parsed = [_read_runtime_schema_candidate(path, schema_root)[0] for path in candidates]
+        payload = parsed[0] if len(parsed) == 1 else {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
-            "anyOf": payloads,
+            "anyOf": parsed,
             "x-lf-runtime-schema-source": [path.name for path in candidates],
         }
+        raw = (json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
 
-    raw = (json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
     destination = work_dir / "profiles" / profile_slug / "schemas" / "runtime_output.schema.json"
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_bytes(raw)
