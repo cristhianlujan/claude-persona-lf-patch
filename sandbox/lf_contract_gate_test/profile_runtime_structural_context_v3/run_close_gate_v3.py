@@ -2,11 +2,13 @@
 """Executable close gate for PROFILE_RUNTIME P0 V3.
 
 A report cannot become final merely because it narrates the anti-close question.
-Closing is allowed only after telemetry + EKB final readback + global remaining-work
-scan prove that no safe batch remains and the anti-close answer is NO.
+Closing is allowed only after work/report timing telemetry + next-execution readback +
+EKB final readback + global remaining-work scan prove that no safe batch remains and
+the anti-close answer is NO.
 """
 from __future__ import annotations
 from dataclasses import dataclass, asdict
+from datetime import datetime
 from typing import Any
 
 ALLOWED_STOP_REASONS={
@@ -25,12 +27,32 @@ class CloseDecision:
 def _nonempty(value: Any) -> bool:
     return value is not None and str(value).strip() not in {'','NOT_OBSERVED','UNKNOWN'}
 
+def _clock(value: Any):
+    if not _nonempty(value): return None
+    try: return datetime.strptime(str(value).strip(), '%H:%M:%S')
+    except ValueError: return None
+
 def evaluate_close_gate(report: dict) -> CloseDecision:
     reasons=[]
-    for field in ('inicio_lima','fin_lima','duracion_real','trabajo_activo','espera_neta','asked_at_lima'):
+    telemetry=(
+        'inicio_lima','work_end_at_lima','report_started_at_lima','fin_lima',
+        'duracion_real','trabajo_activo','espera_neta','report_duration','asked_at_lima',
+    )
+    for field in telemetry:
         if not _nonempty(report.get(field)):
             reasons.append(f'MISSING_TELEMETRY:{field}')
 
+    work_end=_clock(report.get('work_end_at_lima'))
+    report_started=_clock(report.get('report_started_at_lima'))
+    if work_end is None and _nonempty(report.get('work_end_at_lima')):
+        reasons.append('INVALID_CLOCK:work_end_at_lima')
+    if report_started is None and _nonempty(report.get('report_started_at_lima')):
+        reasons.append('INVALID_CLOCK:report_started_at_lima')
+    if work_end is not None and report_started is not None and report_started < work_end:
+        reasons.append('REPORT_STARTED_BEFORE_WORK_END')
+
+    if report.get('next_execution_readback_verified') is not True:
+        reasons.append('NEXT_EXECUTION_READBACK_NOT_VERIFIED')
     if report.get('ekb_final_enrichment') != 'PASS':
         reasons.append('EKB_FINAL_ENRICHMENT_NOT_PASS')
     if report.get('ekb_readback_verified') is not True:
