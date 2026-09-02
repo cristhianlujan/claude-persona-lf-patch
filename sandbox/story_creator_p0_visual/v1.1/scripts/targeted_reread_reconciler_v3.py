@@ -27,10 +27,13 @@ def role_fit(text,role):
     c=ROLE_CANDIDATES.get(role,())
     return max((similarity(text,x) for x in c),default=0.0) if text else 0.0
 
-def reconcile(original_text,reread_text,role,min_gain=0.03):
+def reconcile(original_text,reread_text,role,min_gain=0.03,min_absolute_fit=0.70):
     old_fit=role_fit(original_text,role); new_fit=role_fit(reread_text,role)
-    adopt=bool(str(reread_text).strip()) and new_fit >= old_fit + min_gain
+    adopt=(bool(str(reread_text).strip()) and
+           new_fit >= min_absolute_fit and
+           new_fit >= old_fit + min_gain)
     return {'text':reread_text if adopt else original_text,
             'source':'TARGETED_REREAD' if adopt else 'ORIGINAL_OCR',
             'original_role_fit':round(old_fit,4),'reread_role_fit':round(new_fit,4),
+            'minimum_absolute_fit':min_absolute_fit,
             'adopted':adopt}
