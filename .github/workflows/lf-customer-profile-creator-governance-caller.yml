@@ -26,13 +26,10 @@ jobs:
       - name: Reject non-OIDC caller
         run: |
           set -euo pipefail
-          code=$(curl --silent --show-error -o negative.json -w '%{http_code}' \
-            -H 'Authorization: Bearer not-a-github-oidc-token' -H 'Content-Type: application/json' \
-            -d '{"action":"profile_creator_init_v1","caller_request_id":"negative","target_code":"PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING","profile_slug":"customer_financial_ux_decisioning"}' \
-            'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1')
+          code=$(curl --silent --show-error -o negative.json -w '%{http_code}' -H 'Authorization: Bearer not-a-github-oidc-token' -H 'Content-Type: application/json' -d '{"action":"profile_creator_init_v1","caller_request_id":"negative","target_code":"PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING","profile_slug":"customer_financial_ux_decisioning"}' 'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1')
           cat negative.json; test "$code" = "401" || test "$code" = "404"
       - name: Obtain exact GitHub OIDC identity
-        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[CONTINUE_CUSTOMER_FINANCIAL_UX_CORE_7_6]')
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[CONTINUE_CUSTOMER_FINANCIAL_UX_8_16]')
         id: oidc
         uses: actions/github-script@v7
         with:
@@ -46,32 +43,35 @@ jobs:
           echo 'NON_CANARY_PROFILE_CREATION_EXECUTED=false'
           echo 'RUNTIME_DEPLOYMENT_EXECUTED=false'
           echo 'PRODUCTION_AUTHORIZED=false'
-      - name: Continue canonical Customer Financial UX gates
-        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[CONTINUE_CUSTOMER_FINANCIAL_UX_CORE_7_6]')
+      - name: Continue canonical Customer Financial UX design gates
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[CONTINUE_CUSTOMER_FINANCIAL_UX_8_16]')
         env:
           OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
           import json, os, subprocess, sys
-          execution='EXEC-CREACION-PERFIL-LF-OIDC-5f133751-fd18-4176-af31-936d4324d338'
-          endpoint='https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1'
-          token=os.environ['OIDC_TOKEN']
+          execution='EXEC-CREACION-PERFIL-LF-OIDC-5f133751-fd18-4176-af31-936d4324d338'; endpoint='https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1'; token=os.environ['OIDC_TOKEN']
           generic=["generic_payload_rejected","pass_condition_met","required_evidence_keys_present","step_contract_present"]
           def base(**extra):
               p={"step_result":"STEP_CLEAN_PASS","blocking_codes":[],"assertions_checked":generic,"hard_fails_checked":[],"blocking_findings":[],"return_to_worker_reasons":[]}; p.update(extra); return p
+          skill='github://cristhianlujan/claude-persona-lf-patch/profiles/customer_financial_ux_decisioning/SKILL.md@d9ac5789d24585a3be5c106dbb33f7424bde119a'
+          manifest='github://cristhianlujan/claude-persona-lf-patch/profiles/customer_financial_ux_decisioning/manifest.json@3ad0ec97da4bfe1b222243494ca6f0e902abb47f'
           steps=[
-            ("creator_asset","supabase://public/v_lf_fuente_operativa/ACT-0045/2026-09-02T23:34Z",base(act0045_checked={"codigo_activo":"ACT-0045","nombre_canonico":"SKILL_CREADORA_PERFILES_Y_CARDS_LF_v0.1_CANDIDATO","estado_documental":"APROBADO","estado_operativo":"APROBADO","nivel_control":"PRODUCCION_CONTROLADA","runtime_estado":"APROBADO_PRODUCCION_CONTROLADA_READ_ONLY","impacto_automatico":"BLOQUEADO","version":"v0.1"})),
-            ("repo_matrix_read","supabase://public/v_lf_artifact_destination_registry/DEST_CREACION_PERFIL_LF_PROFILE_PACK_DEFAULT",base(matriz_repos_lf_yaml_read={"source":"public.v_lf_artifact_destination_registry","destination_code":"DEST_CREACION_PERFIL_LF_PROFILE_PACK_DEFAULT","artifact_type":"PROFILE_PACK","repo":"cristhianlujan/claude-persona-lf-patch","branch":"main","base_folder":"profiles","package_mode":"MULTI_FILE_PACK","template_code":"TPL_PROFILE_PACK_STANDARD_DEFAULT","status":"ACTIVE"})),
-            ("contract_read","github://cristhianlujan/claude-persona-lf-patch/gobernanza/procedimientos/creacion_perfil_lf_steps_core.yaml@d77cc8ce53fab3dd1a5c5a19650740a217b5db93",base(contrato_perfil_lf_yaml_read={"path":"gobernanza/procedimientos/creacion_perfil_lf_steps_core.yaml","blob_sha":"d77cc8ce53fab3dd1a5c5a19650740a217b5db93","version":"v0.3","operation":"CREACION_PERFIL_LF","status":"CANDIDATO_READ_ONLY","source_model":"GIT_FIRST_YAML"})),
-            ("repo_inventory_full","github://cristhianlujan/claude-persona-lf-patch/profiles/customer_financial_ux_decisioning@3f5d3eeea979c16a4bf1841e22cd5d7cc25a6277",base(repo_inventory_operational_report={"repo":"cristhianlujan/claude-persona-lf-patch","candidate_head":"3f5d3eeea979c16a4bf1841e22cd5d7cc25a6277","package_root":"profiles/customer_financial_ux_decisioning","observed_entries":["README.md","SKILL.md","contracts/","evals/","examples/","handoffs/","judges/","manifest.json","schemas/"],"skill_blob_sha":"d9ac5789d24585a3be5c106dbb33f7424bde119a","manifest_blob_sha":"3ad0ec97da4bfe1b222243494ca6f0e902abb47f"})),
-            ("destination_validate","supabase://public/v_lf_artifact_destination_registry/DEST_CREACION_PERFIL_LF_PROFILE_PACK_DEFAULT",{"repo":"cristhianlujan/claude-persona-lf-patch","branch":"main","base_folder":"profiles","package_root":"profiles/customer_financial_ux_decisioning","artifact_type":"PERFIL","destination_source":"public.v_lf_artifact_destination_registry:DEST_CREACION_PERFIL_LF_PROFILE_PACK_DEFAULT","step_result":"STEP_CLEAN_PASS","blocking_codes":[],"assertions_checked":[],"hard_fails_checked":[],"blocking_findings":[],"return_to_worker_reasons":[]})
+            ('intake',skill,base(intake_minimo={"profile_code":"CUSTOMER_FINANCIAL_UX_DECISIONING","profile_slug":"customer_financial_ux_decisioning","purpose":"customer financial decision semantics","input_contract":["customer decision objective","authoritative financial terms and source refs","available options and eligibility constraints","amounts dates frequencies currencies when applicable","current debt/payment state when applicable","customer-facing claim boundaries","downstream handoff target"],"status":"CANDIDATE_READ_ONLY"})),
+            ('duplicate_check','github+supabase://duplicate-check/2026-09-02T23:39Z',base(duplicate_checked={"github_main_profile_path":"NOT_FOUND_404","supabase_operational_asset_matches":0,"current_candidate_pr":459,"candidate_head":"3f5d3eeea979c16a4bf1841e22cd5d7cc25a6277","result":"NO_EXISTING_CANONICAL_PROFILE_ON_MAIN"})),
+            ('classification',skill,base(perfil_lf_classified={"type":"CUSTOMER_PROFILE","domain":"CUSTOMER_FINANCIAL_DECISIONING","scope":["offer comprehension","installment choices","discount/settlement semantics","payment timing","debt-resolution choices"],"excluded_ownership":["UI layout","payment execution","legal conclusions","privacy consent","gamification mechanics"],"runtime":"NO_HABILITADO"})),
+            ('generic_vs_specific',skill,base(naming_validated={"name":"Customer Financial UX & Decisioning","slug":"customer_financial_ux_decisioning","specificity":"BOUNDED_DOMAIN_PROFILE","generic":False,"over_specific":False,"reason":"bounded to customer financial decision semantics with explicit excluded ownership"})),
+            ('research_pack','github+supabase://customer-financial-ux/research-pack/2026-09-02',base(internal_public_trusted_sources=[{"source":"ACT-0001 Router","type":"SUPABASE_OPERATIONAL_AUTHORITY"},{"source":"CREACION_PERFIL_LF live operation contracts and judges","type":"SUPABASE_CONTRACT_AUTHORITY"},{"source":"profiles/ui_architect/SKILL.md","git_blob":"0e9105bf37171f28bafe6602d3012f59002cbe88","use":"architecture/depth patterns only"},{"source":"profiles/gamification_system_architect/SKILL.md","git_blob":"5e805cb355da421a76c917e965f2971675e80a9e","use":"architecture/depth patterns only"},{"source":"candidate SKILL/main_contract/manifest","candidate_head":"3f5d3eeea979c16a4bf1841e22cd5d7cc25a6277","use":"challenger source"}],external_domain_authority_required=False,authority_gap="NONE_FOR_CANDIDATE_STRUCTURE; runtime behavioral proof remains pending")),
+            ('research_to_rules_matrix',skill,base(research_to_rules_matrix_present={"matrix":[{"source":"authoritative financial terms/source refs","rule":"never invent or strengthen material financial claim"},{"source":"materiality principle","rule":"block only unresolved facts changing money timing eligibility payment/debt state obligation or protected claim"},{"source":"champion architecture pattern","rule":"bounded typed output and one self-repair"},{"source":"ownership boundary","rule":"financial semantics only; UI/payment/legal/privacy/gamification remain external"}],"trace_source":"SKILL.md Workflow + Financial safety invariants + Authority limits"})),
+            ('decision_matrix',skill,base(decision_matrix_present={"decisions":[{"condition":"governed material inputs sufficient","output":"CUSTOMER_FINANCIAL_DECISION_SPEC"},{"condition":"unresolved material financial truth changes money/timing/eligibility/debt/payment/obligation","output":"MISSING_MATERIAL_FINANCIAL_INPUT"},{"condition":"proceeding would invent or strengthen material claim","output":"BLOCKED_UNSUPPORTED_FINANCIAL_CLAIM"},{"condition":"repairable structural clarity defect","action":"self-repair once then return for repair if still invalid"}],"source":"SKILL.md Output modes + Failure routing"})),
+            ('canonical_design',manifest,base(design_complete={"profile_pack_id":"CUSTOMER_FINANCIAL_UX_DECISIONING_PROFILE_PACK_001","document_status":"CANDIDATO","operational_status":"READ_ONLY","runtime":"NO_HABILITADO","automatic_impact":"BLOQUEADO","required_files_count":14,"candidate_head":"3f5d3eeea979c16a4bf1841e22cd5d7cc25a6277","champions":["profiles/ui_architect","profiles/gamification_system_architect"],"behavioral_proof_status":"NOT_EXECUTED"})),
+            ('operational_evidence_pack_check',manifest,{"required_files":["SKILL.md","README.md","contracts/main_contract.md","schemas/output.schema.json","judges/mini_judge.md","evals/eval_matrix.json","manifest.json"],"selected_optional_files":["contracts/input_governance_binding.json","judges/score_rubric.md","examples/good_output.json","examples/bad_output.json","evals/champion_challenger_structural_20260902.json","validators/validate_pack.py","handoffs/to_quality_pack.handoff.json"],"optional_files_skipped":[{"file":"fixtures/*","reason":"not selected by candidate manifest; deterministic eval matrix and examples selected"},{"file":"adapters/*","reason":"manifest adapter_required=false"},{"file":"missing_input policy/schema","reason":"missing-input behavior is carried by main contract/output modes in this candidate"}],"examples_status":"PRESENT_GOOD_AND_BAD","fixtures_status":"NOT_SELECTED_OPTIONAL","evals_status":"PRESENT_10_CASES_PLUS_STRUCTURAL_CHALLENGER","judges_status":"PRESENT_MINI_JUDGE_PLUS_RUBRIC","schemas_status":"PRESENT_OUTPUT_SCHEMA","validation_evidence":{"validate_lf_packs_run":33668349402,"conclusion":"success","bootstrap_run":33668349382,"conclusion_bootstrap":"success"},"step_result":"STEP_CLEAN_PASS","blocking_codes":[],"assertions_checked":[],"hard_fails_checked":[],"blocking_findings":[],"return_to_worker_reasons":[]})
           ]
           for step_id,ref,payload in steps:
               body=json.dumps({"action":"profile_creator_record_step_v1","execution_id":execution,"step_id":step_id,"evidence_ref":ref,"evidence_payload":payload})
               r=subprocess.run(['curl','--silent','--show-error','-w','\n%{http_code}','-H',f'Authorization: Bearer {token}','-H','Content-Type: application/json','-d',body,endpoint],capture_output=True,text=True,check=True)
-              text,code=r.stdout.rsplit('\n',1); print(step_id,text); d=json.loads(text)
-              nested=((d.get('result') or {}).get('result') or {})
+              text,code=r.stdout.rsplit('\n',1); print(step_id,text); d=json.loads(text); nested=((d.get('result') or {}).get('result') or {})
               if code!='200' or d.get('outcome')!='STEP_RECORDED' or nested.get('status')!='STEP_CLEAN_PASS': sys.exit(f'FAILED_{step_id}:{code}:{text}')
               print(f'GOVERNED_STEP_{step_id}=RECORDED')
           PY
