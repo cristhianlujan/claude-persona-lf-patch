@@ -51,6 +51,9 @@ jobs:
         run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
 
       - name: Validate PROFILE_RUNTIME V3 quality and lineage gates
+        env:
+          LF_PERSISTENT_RUNTIME_SCOPE: ISOLATED_CANDIDATE
+          LF_LLAMA_SOURCE_COMMIT: 925e1179947ea0c0ebfb0032df18af3a729822be
         shell: bash
         run: |
           set -uo pipefail
