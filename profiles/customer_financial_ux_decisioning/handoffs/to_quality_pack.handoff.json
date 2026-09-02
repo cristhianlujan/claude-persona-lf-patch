@@ -18,7 +18,7 @@
   "failure_routing": {
     "artifact_or_schema_failure": "RETURN_TO_PROFILE_WORKER_FOR_REPAIR",
     "missing_authority_or_receipt": "RETURN_TO_ORCHESTRATOR_FOR_AUTHORITY",
-    "semantic_quality_failure": "RETURN_TO_PROFILE_WORKER_FOR_REPAIR"
+    "incomplete_evidence_or_semantic_quality": "RETURN_TO_PROFILE_WORKER_FOR_REPAIR"
   },
   "next_gate": "SEMANTIC_QUALITY_REVIEW",
   "behavioral_proof_status": "NOT_EXECUTED",
