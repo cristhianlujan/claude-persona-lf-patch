@@ -12,9 +12,12 @@ with tempfile.TemporaryDirectory() as td:
  cli.write_text('#!/bin/sh\nexit 0\n'); cli.chmod(0o755); model.write_bytes(b'model'); mm.write_bytes(b'mmproj'); image.write_bytes(b'png')
  schema=w/'profiles/p/schemas/runtime_output.schema.json'; schema.parent.mkdir(parents=True); schema.write_text('{"type":"object"}')
  assets={'LF_LLAMA_CLI_PATH':cli,'LF_MODEL_PATH':model,'LF_MMPROJ_PATH':mm}
- old_required=m.base._required_asset; old_model=m.base.MODEL_SHA256; old_mm=m.base.MMPROJ_SHA256; old_env=os.environ.get('LF_PERSISTENT_RUNTIME_ID')
+ old_required=m.base._required_asset; old_model=m.base.MODEL_SHA256; old_mm=m.base.MMPROJ_SHA256
+ old_env={key:os.environ.get(key) for key in ('LF_PERSISTENT_RUNTIME_ID','LF_PERSISTENT_RUNTIME_SCOPE','LF_LLAMA_SOURCE_COMMIT')}
  m.base.MODEL_SHA256=m.base._sha256_file(model); m.base.MMPROJ_SHA256=m.base._sha256_file(mm); m.base._required_asset=lambda name,expected_sha=None: assets[name]
  os.environ['LF_PERSISTENT_RUNTIME_ID']='sandbox-persistent-cpu-01'
+ os.environ['LF_PERSISTENT_RUNTIME_SCOPE']=m.ALLOWED_SCOPE
+ os.environ['LF_LLAMA_SOURCE_COMMIT']=m.base.LLAMA_SOURCE_COMMIT
  observed={}
  def fake_run(command,**kwargs):
   observed['command']=list(command); out=Path(command[command.index('-o')+1]); out.write_text('{"decision":"ok"}\n'); return SimpleNamespace(returncode=0,stdout='',stderr='')
@@ -25,6 +28,7 @@ with tempfile.TemporaryDirectory() as td:
   package=execute_profile_runtime(execution_id='PERSISTENT_TEST_1',profile_code='P',profile_slug='p',profile_sources=[{'ref':'profiles/p/profile.md','content':'Return governed JSON.'}],input_literal='Review exact artifact.',adapter=adapter,attestation_verifier=verifier)
   receipt=package['receipt']; att=receipt['runtime_attestation']
   assert att['provider']==m.PROVIDER and att['runtime_id']=='sandbox-persistent-cpu-01'
+  assert att['runtime_scope']==m.ALLOWED_SCOPE and att['llama_source_commit']==m.base.LLAMA_SOURCE_COMMIT
   assert att['model_sha256']==m.base.MODEL_SHA256 and att['mmproj_sha256']==m.base.MMPROJ_SHA256
   assert att['input_image_sha256']==m.base._sha256_file(image)
   assert att['structured_output_schema_ref']=='profiles/p/schemas/runtime_output.schema.json'
@@ -37,6 +41,7 @@ with tempfile.TemporaryDirectory() as td:
   except RuntimeExecutionBlocked as exc: assert exc.code=='PERSISTENT_RUNTIME_ID_MISSING'
  finally:
   m.subprocess.run=old_run; m.base._required_asset=old_required; m.base.MODEL_SHA256=old_model; m.base.MMPROJ_SHA256=old_mm
-  if old_env is None: os.environ.pop('LF_PERSISTENT_RUNTIME_ID',None)
-  else: os.environ['LF_PERSISTENT_RUNTIME_ID']=old_env
-print('PERSISTENT_CPU_LOCAL_RUNTIME_V3_PASS 10/10')
+  for key,value in old_env.items():
+   if value is None: os.environ.pop(key,None)
+   else: os.environ[key]=value
+print('PERSISTENT_CPU_LOCAL_RUNTIME_V3_PASS 12/12')
