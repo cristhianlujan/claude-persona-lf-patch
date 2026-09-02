@@ -1,0 +1,39 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_SKILL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-SKILL-PROFILE-CREATOR-ADAPTER-COMPOSITION-20260901-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "54297801f5e6b4ea769eeaed3289bbbbbc085da64e5e2168f812860c77bfe2cd",
+  "judge_sha": "a82bb21db4e04bbb0ac1b4d6a5bd47b41ef9c28bf63d2e0b920eddf6524d85a4",
+  "source_sha_list": [
+    "3abb265f919935e878768fd68e093924c5c218b8",
+    "8f2328c7a73ce2ea5c75400fce6085fb23de646c",
+    "c329bb747424b5aa191eed0e179c90c1f953e17f",
+    "48e6f25022ced518b3868ff5a8b7b6ba38a368b4",
+    "897046333a82cb2e6d22fde8413cd654df017427",
+    "4589438b2f16ca1d29eb7056292851cf96b689e5",
+    "76e6549536816164796b86ba946a76e8e1733161",
+    "57da0dce966bead03156a995587900ffea0b7240",
+    "0dbbb272be50f7d791e7880f425d97b6ea92d49a"
+  ],
+  "target_paths": [
+    "skills/profile_creator/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-02T03:10:43Z",
+  "contract_sha_source": "deterministic SHA-256 fingerprint of canonical public.lf_operation_contracts row; stored contract_sha is null",
+  "judge_sha_source": "deterministic SHA-256 fingerprint of canonical JUDGE-ACTUALIZACION-SKILL-LF-v0.1 row; stored judge_sha is null",
+  "operation_judge_readback": {
+    "required_steps": 14,
+    "required_steps_pass": 14,
+    "fail_count": 0,
+    "blocked_count": 0,
+    "judge_result": "PASS"
+  },
+  "runtime_authorized": false,
+  "production_authorized": false,
+  "automatic_promotion": false
+}
