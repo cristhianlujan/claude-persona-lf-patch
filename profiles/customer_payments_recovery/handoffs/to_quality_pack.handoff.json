@@ -1,0 +1,16 @@
+{
+  "schema_version": "PROFILE_TO_QUALITY_PACK_HANDOFF_V1",
+  "from_profile": "CUSTOMER_PAYMENTS_RECOVERY",
+  "artifact_ref": "profiles/customer_payments_recovery",
+  "source_authority_status": "GOVERNED_CREATION_PENDING_RUNTIME_CONTINUATION",
+  "main_contract_ref": "profiles/customer_payments_recovery/contracts/main_contract.md",
+  "output_schema_ref": "profiles/customer_payments_recovery/schemas/output.schema.json",
+  "rubric_ref": "profiles/customer_payments_recovery/judges/score_rubric.md",
+  "mini_judge_ref": "profiles/customer_payments_recovery/judges/mini_judge.md",
+  "deterministic_validator_ref": "profiles/customer_payments_recovery/validators/validate_pack.py",
+  "behavioral_proof_status": "NOT_EXECUTED",
+  "runtime_enabled": false,
+  "automatic_promotion": false,
+  "blocking_codes": ["PROFILE_CREATOR_RUNTIME_INIT_ONLY_002", "GOVERNED_CREATION_RECEIPT_PENDING"],
+  "review_focus": ["state_evidence_fidelity","duplicate_payment_safety","recovery_action_quality","claim_integrity","handoff_integrity"]
+}

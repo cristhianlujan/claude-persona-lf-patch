@@ -1,0 +1,29 @@
+{
+  "schema_version": "INPUT_GOVERNANCE_PROFILE_BINDING_V1",
+  "profile_id": "CUSTOMER_PAYMENTS_RECOVERY",
+  "capability": "INPUT_GOVERNANCE_AGENT",
+  "mode": "selective",
+  "entrypoint": "router_only",
+  "adapter_receipt_precedence": true,
+  "duplicate_checks_forbidden": true,
+  "allowed_triggers": [
+    "input_not_governed_by_adapter",
+    "cross_adapter_conflict",
+    "profile_specific_constraint",
+    "authority_or_policy_uncertainty",
+    "critical_input_validation"
+  ],
+  "context_policy": {
+    "default_max_level": "L2_COMPACT",
+    "l3_exception_only": true,
+    "full_policy_injection_forbidden": true,
+    "default_second_llm_call_forbidden": true,
+    "cache_key": "input_hash+governance_version+profile_id"
+  },
+  "outcomes": {
+    "PASS": "profile_may_continue",
+    "REPAIR": "preserve_original_and_governed_input_lineage",
+    "BLOCK": "fail_closed"
+  },
+  "receipt_required": true
+}
