@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-"""49 deterministic regression cases for profile runtime optimization."""
+"""52 deterministic regression cases for profile runtime optimization and fail-closed output."""
 from __future__ import annotations
 
+import ast
+import json
 from datetime import datetime, timezone
+from pathlib import Path
 
 from runtime_optimization_contract import (
     artifact_verification_decision,
@@ -110,6 +113,84 @@ check("G", "batch_size_recorded", metrics["batch_size"] == 3)
 check("G", "parallelism_recorded", metrics["parallelism"] == 2)
 check("G", "per_profile_inference_independent", metrics["per_profile_inference_ms"] == 2000 and metrics["batch_total_ms"] == 2500)
 
-assert TOTAL == 49, TOTAL
-assert PASS == 49, PASS
+# H — Quality Pack post-model fail-closed contract (3)
+# Execute the exact enforcement functions from the queue-worker source without importing psycopg.
+worker_path = Path(__file__).with_name("github_actions_queue_worker.py")
+worker_tree = ast.parse(worker_path.read_text(encoding="utf-8"), filename=str(worker_path))
+selected_names = {
+    "_assistant_completion",
+    "_blocked_result",
+    "_quality_pack_profile_code",
+    "_validate_quality_pack_completion",
+    "_enforce_profile_output_contract",
+}
+selected_constants = {
+    "QUALITY_PACK_PROFILE_CODE",
+    "QUALITY_PACK_VERDICTS",
+    "QUALITY_PACK_PASS_VERDICTS",
+    "QUALITY_PACK_REQUIRED_KEYS",
+    "QUALITY_PACK_SCORE_KEYS",
+    "QUALITY_PACK_ROUTE_BY_VERDICT",
+}
+selected_nodes = []
+for node in worker_tree.body:
+    if isinstance(node, (ast.Assign, ast.AnnAssign)):
+        targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+        names = {target.id for target in targets if isinstance(target, ast.Name)}
+        if names & selected_constants:
+            selected_nodes.append(node)
+    elif isinstance(node, ast.FunctionDef) and node.name in selected_names:
+        selected_nodes.append(node)
+namespace = {"json": json}
+exec(compile(ast.Module(body=selected_nodes, type_ignores=[]), str(worker_path), "exec"), namespace)
+
+def qp_result(completion: str) -> dict:
+    return {
+        "status": "SUCCEEDED",
+        "raw_output": f"User:\nnegative\n\nAssistant:\n{completion}",
+        "package": {"request": {"profile_code": "PERFIL-QUALITY-PACK"}},
+    }
+
+bare = namespace["_enforce_profile_output_contract"](qp_result("PASS_TO_COMPOSER"))
+check("H", "bare_pass_blocked", bare.get("status") == "BLOCKED" and bare.get("error_code") == "QUALITY_PACK_OUTPUT_NOT_JSON")
+valid_return = {
+    "review_id": "QP-NEG-001",
+    "reviewed_artifact": "B2B-CARGA-001",
+    "verdict": "RETURN_TO_ORCHESTRATOR",
+    "score_breakdown": {
+        "contract_schema_compliance": 5,
+        "evidence_integrity": 0,
+        "lf_safety_governance": 5,
+        "handoff_readiness": 0,
+        "leakage_scope_control": 5,
+        "total": 15,
+    },
+    "evidence_map": [],
+    "blocking_codes": ["VISUAL_BYTES_NOT_OBSERVED"],
+    "repair_actions": [],
+    "remaining_risks": ["visual evidence missing"],
+    "next_gate": "AUTHORITY_OR_CONTEXT_RESOLUTION",
+    "routing": {
+        "activation_path": "ROUTER",
+        "via": "ORCHESTRATOR",
+        "pipeline_action": "RETURN_TO_ORCHESTRATOR",
+        "resolution_target": "AUTHORITY_OR_CONTEXT_RESOLUTION",
+    },
+}
+accepted = namespace["_enforce_profile_output_contract"](qp_result(json.dumps(valid_return)))
+check("H", "valid_failclosed_return_accepted", accepted.get("status") == "SUCCEEDED" and accepted.get("normalized_profile_output",{}).get("verdict") == "RETURN_TO_ORCHESTRATOR")
+invalid_pass = dict(valid_return)
+invalid_pass["verdict"] = "PASS_TO_COMPOSER"
+invalid_pass["blocking_codes"] = []
+invalid_pass["routing"] = {
+    "activation_path": "ROUTER",
+    "via": "ORCHESTRATOR",
+    "pipeline_action": "CONTINUE",
+    "resolution_target": "COMPOSER",
+}
+blocked = namespace["_enforce_profile_output_contract"](qp_result(json.dumps(invalid_pass)))
+check("H", "empty_evidence_pass_blocked", blocked.get("status") == "BLOCKED" and blocked.get("error_code") == "QUALITY_PACK_OUTPUT_CONTRACT_INVALID" and "PASS_EVIDENCE_MAP_EMPTY" in blocked.get("error_detail", ""))
+
+assert TOTAL == 52, TOTAL
+assert PASS == 52, PASS
 print(f"PROFILE_RUNTIME_OPTIMIZATION_CASES={PASS}/{TOTAL}")
