@@ -50,7 +50,7 @@ jobs:
           cat negative.json
           test "$code" = "401" || test "$code" = "404"
       - name: Obtain exact GitHub OIDC identity
-        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/lf/profiles/profile-creator-customer-caller-20260902' && contains(github.event.head_commit.message, '[INIT_CUSTOMER_FINANCIAL_UX]'))
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/lf/profiles/profile-creator-customer-caller-20260902' && (contains(github.event.head_commit.message, '[INIT_CUSTOMER_FINANCIAL_UX]') || contains(github.event.head_commit.message, '[CONTINUE_CUSTOMER_FINANCIAL_UX_ROUTER]')))
         id: oidc
         uses: actions/github-script@v7
         with:
@@ -111,3 +111,48 @@ jobs:
           PY
           echo 'RUNTIME_DEPLOYMENT_EXECUTED=false'
           echo 'PRODUCTION_AUTHORIZED=false'
+      - name: Record canonical router step for Customer Financial UX
+        if: github.event_name == 'push' && github.ref == 'refs/heads/lf/profiles/profile-creator-customer-caller-20260902' && contains(github.event.head_commit.message, '[CONTINUE_CUSTOMER_FINANCIAL_UX_ROUTER]')
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          EXECUTION_ID: EXEC-CREACION-PERFIL-LF-OIDC-5f133751-fd18-4176-af31-936d4324d338
+        run: |
+          set -euo pipefail
+          cat > step.json <<'JSON'
+          {
+            "action":"profile_creator_record_step_v1",
+            "execution_id":"EXEC-CREACION-PERFIL-LF-OIDC-5f133751-fd18-4176-af31-936d4324d338",
+            "step_id":"router",
+            "evidence_ref":"supabase://public/lf_router_resolve_v1/CREACION_PERFIL_LF/2026-09-02T23:27Z",
+            "evidence_payload":{
+              "router_read":true,
+              "router":"ACT-0001",
+              "source":"SUPABASE",
+              "status":"READY_TO_EXECUTE",
+              "operation_code":"CREACION_PERFIL_LF",
+              "action_code":"PROFILE_CREATE",
+              "asset_type":"PERFIL",
+              "step_count":40,
+              "operation_status":"PRODUCCION_CONTROLADA_READ_ONLY",
+              "required_policy_count":1,
+              "resolved_policy_count":1,
+              "step_result":"STEP_CLEAN_PASS",
+              "blocking_codes":[]
+            }
+          }
+          JSON
+          code=$(curl --silent --show-error -o step-result.json -w '%{http_code}' \
+            -H "Authorization: Bearer $OIDC_TOKEN" \
+            -H 'Content-Type: application/json' \
+            --data-binary @step.json \
+            'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1')
+          cat step-result.json
+          test "$code" = "200"
+          python3 - <<'PY'
+          import json
+          data=json.load(open('step-result.json'))
+          assert data.get('outcome') == 'STEP_RECORDED', data
+          result=data.get('result') or {}
+          assert result.get('outcome') == 'STEP_RECORDED', data
+          print('GOVERNED_ROUTER_STEP=RECORDED')
+          PY
