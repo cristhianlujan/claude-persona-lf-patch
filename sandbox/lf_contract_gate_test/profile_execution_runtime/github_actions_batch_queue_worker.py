@@ -14,7 +14,13 @@ from typing import Any
 
 from psycopg.types.json import Jsonb
 
-from github_actions_queue_worker import _claim, _connect, _enforce_nonempty_completion, _persist
+from github_actions_queue_worker import (
+    _claim,
+    _connect,
+    _enforce_nonempty_completion,
+    _enforce_profile_output_contract,
+    _persist,
+)
 from profile_runtime_runner import RuntimeExecutionBlocked
 from run_zero_cost_profile_request import execute_request
 from runtime_optimization_contract import (
@@ -129,6 +135,7 @@ def _run_one(payload: dict[str, Any], repo_root: Path) -> tuple[dict[str, Any], 
         with tempfile.TemporaryDirectory(prefix="lf-profile-batch-") as td:
             result = execute_request(payload, repo_root=repo_root, work_dir=Path(td))
         result = _enforce_nonempty_completion(result)
+        result = _enforce_profile_output_contract(result)
     except RuntimeExecutionBlocked as exc:
         result = {
             "schema": "LF_PROFILE_RUNTIME_QUEUE_RESULT_V1",
