@@ -19,6 +19,7 @@ from PR93_P0_RUNTIME_CONTRACT_CHECK_CORE_BASE_V1 import *  # noqa: F401,F403
 CUSTOMER_PROFILE_CREATOR_BRANCH = "lf/profiles/profile-creator-customer-caller-20260902"
 CUSTOMER_PROFILE_CREATOR_PR_NUMBER = 470
 CUSTOMER_PROFILE_CREATOR_BLOBS = {
+    ".github/workflows/lf-customer-profile-creator-governance-caller.yml": "3a0842729dc695bb478f1a5989b3bfa4e660f123",
     "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts": "2a5e975518d001ae4618f9e1459b2f652602c883",
     "supabase/functions/run-creacion-perfil-lf/index.ts": "6902090913c7d393737d5dc83bbed919e11ddcbf",
 }
@@ -159,10 +160,18 @@ def _customer_scope_self_test() -> None:
         mode_by_path=modes,
     ):
         raise SystemExit("FAIL_CUSTOMER_PROFILE_CREATOR_SCOPE_POSITIVE")
+    workflow_path = ".github/workflows/lf-customer-profile-creator-governance-caller.yml"
+    workflow_lookalike = ".github/workflows/lf-customer-profile-creator-governance-caller-copy.yml"
     negative_cases = [
         ("branch", "feature/arbitrary", exact, paths),
-        ("blob", CUSTOMER_PROFILE_CREATOR_BRANCH, {**exact, paths[0]: "0" * 40}, paths),
-        ("path", CUSTOMER_PROFILE_CREATOR_BRANCH, exact, [*paths, "supabase/functions/arbitrary/index.ts"]),
+        ("blob", CUSTOMER_PROFILE_CREATOR_BRANCH, {**exact, workflow_path: "0" * 40}, paths),
+        ("edge_path", CUSTOMER_PROFILE_CREATOR_BRANCH, exact, [*paths, "supabase/functions/arbitrary/index.ts"]),
+        (
+            "workflow_path",
+            CUSTOMER_PROFILE_CREATOR_BRANCH,
+            {**{k: v for k, v in exact.items() if k != workflow_path}, workflow_lookalike: exact[workflow_path]},
+            [workflow_lookalike, *[path for path in paths if path != workflow_path]],
+        ),
     ]
     for label, test_branch, blobs, test_paths in negative_cases:
         try:
@@ -175,7 +184,7 @@ def _customer_scope_self_test() -> None:
         except RuntimeScopeError:
             continue
         raise SystemExit(f"FAIL_CUSTOMER_PROFILE_CREATOR_SCOPE_NEGATIVE_{label.upper()}")
-    print("PASS_CUSTOMER_PROFILE_CREATOR_EXACT_RUNTIME_SCOPE=4/4")
+    print("PASS_CUSTOMER_PROFILE_CREATOR_EXACT_RUNTIME_SCOPE=5/5")
 
 
 def main() -> int:
