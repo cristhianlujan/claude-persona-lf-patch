@@ -9,7 +9,11 @@ import tempfile
 from pathlib import Path
 
 import github_actions_local_runtime as local
-from github_actions_queue_worker import _assistant_completion, _enforce_nonempty_completion
+from github_actions_queue_worker import (
+    _assistant_completion,
+    _enforce_nonempty_completion,
+    _enforce_profile_output_contract,
+)
 from profile_runtime_runner import RuntimeExecutionBlocked
 from run_zero_cost_profile_request import _materialize_image, _materialize_runtime_output_schema, _safe_source_paths
 
@@ -42,6 +46,15 @@ def restore_env(prior: dict[str, str | None]) -> None:
             os.environ.pop(key, None)
         else:
             os.environ[key] = value
+
+
+def quality_pack_result(completion: str) -> dict:
+    return {
+        "schema": "LF_PROFILE_RUNTIME_QUEUE_RESULT_V1",
+        "status": "SUCCEEDED",
+        "raw_output": f"User:\nnegative\n\nAssistant:\n{completion}",
+        "package": {"request": {"profile_code": "PERFIL-QUALITY-PACK"}},
+    }
 
 
 def main() -> int:
@@ -112,11 +125,61 @@ def main() -> int:
         assert empty["status"] == "BLOCKED"
         assert empty["error_code"] == "LOCAL_RUNTIME_ASSISTANT_COMPLETION_EMPTY"
         passed += 1
+
+        bare_pass = _enforce_profile_output_contract(quality_pack_result("PASS_TO_COMPOSER"))
+        assert bare_pass["status"] == "BLOCKED"
+        assert bare_pass["error_code"] == "QUALITY_PACK_OUTPUT_NOT_JSON"
+        passed += 1
+
+        valid_return = {
+            "review_id": "QP-NEG-001",
+            "reviewed_artifact": "B2B-CARGA-001",
+            "verdict": "RETURN_TO_ORCHESTRATOR",
+            "score_breakdown": {
+                "contract_schema_compliance": 5,
+                "evidence_integrity": 0,
+                "lf_safety_governance": 5,
+                "handoff_readiness": 0,
+                "leakage_scope_control": 5,
+                "total": 15,
+            },
+            "evidence_map": [],
+            "blocking_codes": ["VISUAL_BYTES_NOT_OBSERVED"],
+            "repair_actions": [],
+            "remaining_risks": ["visual evidence missing"],
+            "next_gate": "AUTHORITY_OR_CONTEXT_RESOLUTION",
+            "routing": {
+                "activation_path": "ROUTER",
+                "via": "ORCHESTRATOR",
+                "pipeline_action": "RETURN_TO_ORCHESTRATOR",
+                "resolution_target": "AUTHORITY_OR_CONTEXT_RESOLUTION",
+            },
+        }
+        import json
+        accepted = _enforce_profile_output_contract(quality_pack_result(json.dumps(valid_return)))
+        assert accepted["status"] == "SUCCEEDED"
+        assert accepted["normalized_profile_output"]["verdict"] == "RETURN_TO_ORCHESTRATOR"
+        passed += 1
+
+        invalid_pass = dict(valid_return)
+        invalid_pass["verdict"] = "PASS_TO_COMPOSER"
+        invalid_pass["routing"] = {
+            "activation_path": "ROUTER",
+            "via": "ORCHESTRATOR",
+            "pipeline_action": "CONTINUE",
+            "resolution_target": "COMPOSER",
+        }
+        invalid_pass["blocking_codes"] = []
+        blocked = _enforce_profile_output_contract(quality_pack_result(json.dumps(invalid_pass)))
+        assert blocked["status"] == "BLOCKED"
+        assert blocked["error_code"] == "QUALITY_PACK_OUTPUT_CONTRACT_INVALID"
+        assert "PASS_EVIDENCE_MAP_EMPTY" in blocked["error_detail"]
+        passed += 1
     finally:
         restore_env(prior)
-    if passed != 13:
-        raise SystemExit(f"ZERO_COST_PROFILE_RUNTIME_TESTS_FAIL {passed}/13")
-    print("ZERO_COST_PROFILE_RUNTIME_TESTS_PASS 13/13")
+    if passed != 16:
+        raise SystemExit(f"ZERO_COST_PROFILE_RUNTIME_TESTS_FAIL {passed}/16")
+    print("ZERO_COST_PROFILE_RUNTIME_TESTS_PASS 16/16")
     return 0
 
 
