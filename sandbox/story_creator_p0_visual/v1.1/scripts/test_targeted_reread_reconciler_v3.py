@@ -8,4 +8,9 @@ b=r.reconcile('Mas','=','FILTER_BAR'); assert not b['adopted'] and b['text']=='M
 c=r.reconcile('Rechazaco','@ Rechazado','STATE_BADGE'); assert c['adopted']
 d=r.reconcile('Original','e y Original','ROW_ACTION'); assert not d['adopted']
 assert r.reconcile('','', 'ROW_ACTION')['text']==''
-print('TARGETED_REREAD_RECONCILER_V3_TESTS_PASS 5/5')
+# Relative gain alone is insufficient: a weak TABLE_SUMMARY fragment must not
+# replace another fragment simply because 0.27 is slightly better than 0.22.
+e=r.reconcile('pla','esplázat','TABLE_SUMMARY'); assert not e['adopted'] and e['text']=='pla'
+# A materially grounded reread above the absolute floor remains adoptable.
+f=r.reconcile('timpiarfitros','Limpiar filtros','FILTER_BAR'); assert f['adopted'] and f['text']=='Limpiar filtros'
+print('TARGETED_REREAD_RECONCILER_V3_TESTS_PASS 7/7')
