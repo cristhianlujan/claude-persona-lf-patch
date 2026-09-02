@@ -1,5 +1,6 @@
 -- P0 performance hardening: reuse source-stale/no-current proof inside one governed execution request.
 -- Safety: ARC-015 remains authoritative whenever freshness is CURRENT or inconclusive.
+-- Applied to LF sandbox under canonical ledger 20260902014816; canonical migration is source-controlled alongside this evidence copy.
 
 DO $migration$
 DECLARE
