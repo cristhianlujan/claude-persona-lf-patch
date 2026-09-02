@@ -15,6 +15,42 @@ from psycopg.types.json import Jsonb
 
 TABLE = "private.lf_profile_runtime_queue_v1"
 MAX_LF_ADAPTERS = 4
+QUALITY_PACK_PROFILE_CODE = "PERFIL-QUALITY-PACK"
+QUALITY_PACK_VERDICTS = {
+    "PASS_TO_COMPOSER",
+    "PASS_WITH_RESTRICTIONS",
+    "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+    "RETURN_TO_ORCHESTRATOR",
+    "BLOCK_PIPELINE",
+}
+QUALITY_PACK_PASS_VERDICTS = {"PASS_TO_COMPOSER", "PASS_WITH_RESTRICTIONS"}
+QUALITY_PACK_REQUIRED_KEYS = {
+    "review_id",
+    "reviewed_artifact",
+    "verdict",
+    "score_breakdown",
+    "evidence_map",
+    "blocking_codes",
+    "repair_actions",
+    "remaining_risks",
+    "next_gate",
+    "routing",
+}
+QUALITY_PACK_SCORE_KEYS = {
+    "contract_schema_compliance",
+    "evidence_integrity",
+    "lf_safety_governance",
+    "handoff_readiness",
+    "leakage_scope_control",
+    "total",
+}
+QUALITY_PACK_ROUTE_BY_VERDICT = {
+    "PASS_TO_COMPOSER": ("CONTINUE", "COMPOSER"),
+    "PASS_WITH_RESTRICTIONS": ("CONTINUE_WITH_RESTRICTIONS", "COMPOSER"),
+    "RETURN_TO_WORKER_FOR_SELF_REPAIR": ("RETURN_TO_ORCHESTRATOR", "PRODUCER_REPAIR"),
+    "RETURN_TO_ORCHESTRATOR": ("RETURN_TO_ORCHESTRATOR", "AUTHORITY_OR_CONTEXT_RESOLUTION"),
+    "BLOCK_PIPELINE": ("BLOCK_PIPELINE", "NONE"),
+}
 
 
 def _assistant_completion(raw_output: object) -> str:
@@ -28,16 +64,117 @@ def _assistant_completion(raw_output: object) -> str:
     return text
 
 
+def _blocked_result(result: dict, code: str, detail: str) -> dict:
+    blocked = dict(result)
+    blocked["status"] = "BLOCKED"
+    blocked["error_code"] = code
+    blocked["error_detail"] = detail
+    return blocked
+
+
 def _enforce_nonempty_completion(result: dict) -> dict:
     if result.get("status") != "SUCCEEDED":
         return result
     if _assistant_completion(result.get("raw_output")):
         return result
-    result = dict(result)
-    result["status"] = "BLOCKED"
-    result["error_code"] = "LOCAL_RUNTIME_ASSISTANT_COMPLETION_EMPTY"
-    result["error_detail"] = "llama.cpp returned success but no assistant completion after the rendered prompt"
-    return result
+    return _blocked_result(
+        result,
+        "LOCAL_RUNTIME_ASSISTANT_COMPLETION_EMPTY",
+        "llama.cpp returned success but no assistant completion after the rendered prompt",
+    )
+
+
+def _quality_pack_profile_code(result: dict) -> str | None:
+    package = result.get("package")
+    if not isinstance(package, dict):
+        return None
+    request = package.get("request")
+    if not isinstance(request, dict):
+        return None
+    profile_code = request.get("profile_code")
+    return profile_code if isinstance(profile_code, str) else None
+
+
+def _validate_quality_pack_completion(payload: object) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(payload, dict):
+        return ["OUTPUT_NOT_OBJECT"]
+    missing = sorted(QUALITY_PACK_REQUIRED_KEYS - set(payload))
+    if missing:
+        errors.append("MISSING_KEYS=" + ",".join(missing))
+    verdict = payload.get("verdict")
+    if verdict not in QUALITY_PACK_VERDICTS:
+        errors.append("VERDICT_INVALID")
+
+    score = payload.get("score_breakdown")
+    if not isinstance(score, dict):
+        errors.append("SCORE_BREAKDOWN_INVALID")
+    else:
+        score_missing = sorted(QUALITY_PACK_SCORE_KEYS - set(score))
+        if score_missing:
+            errors.append("SCORE_KEYS_MISSING=" + ",".join(score_missing))
+        component_keys = sorted(QUALITY_PACK_SCORE_KEYS - {"total"})
+        values: list[int] = []
+        for key in component_keys:
+            value = score.get(key)
+            if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value <= 5:
+                errors.append(f"SCORE_{key.upper()}_INVALID")
+            else:
+                values.append(value)
+        total = score.get("total")
+        if not isinstance(total, int) or isinstance(total, bool) or not 0 <= total <= 25:
+            errors.append("SCORE_TOTAL_INVALID")
+        elif len(values) == len(component_keys) and total != sum(values):
+            errors.append("SCORE_TOTAL_MISMATCH")
+
+    for key in ("evidence_map", "blocking_codes", "repair_actions", "remaining_risks"):
+        if not isinstance(payload.get(key), list):
+            errors.append(f"{key.upper()}_NOT_ARRAY")
+
+    if verdict in QUALITY_PACK_PASS_VERDICTS and isinstance(payload.get("evidence_map"), list) and not payload["evidence_map"]:
+        errors.append("PASS_EVIDENCE_MAP_EMPTY")
+
+    routing = payload.get("routing")
+    if not isinstance(routing, dict):
+        errors.append("ROUTING_INVALID")
+    else:
+        if routing.get("via") != "ORCHESTRATOR":
+            errors.append("ROUTING_VIA_INVALID")
+        if routing.get("activation_path") not in {"DIRECT", "ROUTER"}:
+            errors.append("ROUTING_ACTIVATION_PATH_INVALID")
+        expected = QUALITY_PACK_ROUTE_BY_VERDICT.get(verdict)
+        if expected is not None:
+            if routing.get("pipeline_action") != expected[0]:
+                errors.append("ROUTING_PIPELINE_ACTION_MISMATCH")
+            if routing.get("resolution_target") != expected[1]:
+                errors.append("ROUTING_RESOLUTION_TARGET_MISMATCH")
+    return sorted(set(errors))
+
+
+def _enforce_profile_output_contract(result: dict) -> dict:
+    if result.get("status") != "SUCCEEDED":
+        return result
+    if _quality_pack_profile_code(result) != QUALITY_PACK_PROFILE_CODE:
+        return result
+    completion = _assistant_completion(result.get("raw_output"))
+    try:
+        payload = json.loads(completion)
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return _blocked_result(
+            result,
+            "QUALITY_PACK_OUTPUT_NOT_JSON",
+            "Quality Pack runtime output must be one JSON object matching the governed quality review contract",
+        )
+    errors = _validate_quality_pack_completion(payload)
+    if errors:
+        return _blocked_result(
+            result,
+            "QUALITY_PACK_OUTPUT_CONTRACT_INVALID",
+            ";".join(errors),
+        )
+    normalized = dict(result)
+    normalized["normalized_profile_output"] = payload
+    return normalized
 
 
 def _connect() -> psycopg.Connection:
@@ -182,6 +319,7 @@ def main() -> int:
                     "error_detail": f"executor_rc={completed.returncode}",
                 }
             result = _enforce_nonempty_completion(result)
+            result = _enforce_profile_output_contract(result)
             _persist(conn, args.request_id, result)
             print(f"LF_PROFILE_RUNTIME_REQUEST_ID={args.request_id}")
             print(f"LF_PROFILE_RUNTIME_FINAL_STATUS={result.get('status')}")
