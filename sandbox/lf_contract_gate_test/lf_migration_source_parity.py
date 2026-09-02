@@ -41,6 +41,7 @@ MANAGED_EXACT_NAMES = {
     "revoke_internal_pipeline_public_grants",
     "programacion_private_rls_hardening_v1",
     "fix_profile_creator_init_no_close_compat_v1",
+    "profile_creator_step_recorder_v1",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
@@ -125,7 +126,9 @@ def main() -> int:
     if not managed("programacion_private_rls_hardening_v1"):
         fail("FAIL_CI009_SELFTEST_PROGRAMACION_PRIVATE_RLS")
     if not managed("fix_profile_creator_init_no_close_compat_v1"):
-        fail("FAIL_CI009_SELFTEST_PROFILE_CREATOR_INIT_NO_CLOSE_COMPAT")
+        fail("FAIL_CI009_SELFTEST_PROFILE_CREATOR_INIT_COMPAT")
+    if not managed("profile_creator_step_recorder_v1"):
+        fail("FAIL_CI009_SELFTEST_PROFILE_CREATOR_STEP_RECORDER")
     if managed("create_lf_unreviewed_future_change"):
         fail("FAIL_CI009_SELFTEST_MANAGED_PREFIX_TOO_BROAD")
     if not classified("programacion_worker_spec_probe"):
@@ -202,7 +205,7 @@ def main() -> int:
         f"legacy={legacy_count} sha256={legacy_sha} grandfathered={grandfathered_count}/{grandfathered_sha} "
         f"classification_baseline_end={classification_baseline_end}"
     )
-    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=17/17")
+    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=18/18")
     return 0
 
 
