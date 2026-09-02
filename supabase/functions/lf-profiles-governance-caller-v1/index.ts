@@ -165,6 +165,27 @@ Deno.serve(async (req: Request) => {
       return json({ outcome: result.outcome ?? "BLOCKED", caller, result }, result.outcome === "INITIALIZED" ? 201 : 409);
     }
 
+    if (body.action === "profile_creator_record_step_v1") {
+      const executionId = typeof body.execution_id === "string" ? body.execution_id : "";
+      const stepId = typeof body.step_id === "string" ? body.step_id : "";
+      const evidenceRef = typeof body.evidence_ref === "string" ? body.evidence_ref : "";
+      const evidencePayload = body.evidence_payload && typeof body.evidence_payload === "object"
+        ? body.evidence_payload as Record<string, unknown>
+        : null;
+      if (!executionId || !stepId || !evidenceRef || !evidencePayload) {
+        return json({ outcome: "BLOCKED", code: "PROFILE_CREATOR_STEP_INPUT_INVALID", caller }, 400);
+      }
+      const result = await callRuntime("run-creacion-perfil-lf", {
+        action: "record_profile_creation_step_v1",
+        execution_id: executionId,
+        step_id: stepId,
+        evidence_ref: evidenceRef,
+        evidence_payload: evidencePayload,
+        caller,
+      });
+      return json({ outcome: result.outcome ?? "BLOCKED", caller, result }, result.outcome === "STEP_RECORDED" ? 200 : 409);
+    }
+
     return json({ outcome: "BLOCKED", code: "ACTION_NOT_ALLOWED" }, 400);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
