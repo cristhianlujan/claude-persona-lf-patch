@@ -51,6 +51,23 @@ When returning `PROFILE_PACK_CREATED`, the output must deliver the created candi
 
 When `exposes_user_facing_output=true`, the generated profile must separate user-facing content from orchestration metadata through an explicit contract boundary such as `user_payload` / `internal_envelope`. When false, the candidate must not invent that boundary merely to satisfy a template.
 
+## Adapter factory composition
+
+`ACT-0045` also provides the reusable factory core when the resolved target capability is an Adapter. This is composition, not permission to make Profile Creator a second Adapter authority.
+
+For an Adapter request:
+
+1. reuse the common factory concerns already owned here: authority/context resolution, duplicate check, research when applicable, generic-vs-specific boundary, candidate design, evidence, sandbox/reviewability and governed handoff;
+2. resolve `CREACION_ADAPTER_LF` as the Adapter specialization through Router;
+3. apply `skills/profile_creator/adapters/adapter_factory_binding.md` plus the canonical Adapter contract/procedure;
+4. keep the resulting Adapter Router-bound and explicitly mapped to its consumer(s);
+5. never create an Adapter as an alternate worker, never let it choose workers independently, and never require a second Adapter-specific LLM call;
+6. do not copy the common factory lifecycle into another parallel creation pipeline.
+
+`ACT-0045` is the factory core, not the owner/parent authority of the resulting Adapter. Adapter invocation authority remains the Router and its explicit binding.
+
+Input Governance is not called directly by the Profile because an Adapter exists. When governance is needed, the Profile declares the need; the governed Adapter mediation contract decides applicability, selects only required governance sections and returns the governed receipt. Direct Profile → `INPUT_GOVERNANCE_AGENT` invocation is forbidden.
+
 ## Deterministic depth gate
 
 Before returning `PROFILE_PACK_CREATED`, execute:
@@ -115,6 +132,8 @@ Block or return when:
 - Producer depth or deterministic intake is presented as semantic Quality Pack approval.
 - A full handoff outcome is claimed while a required receiver layer remains unexecuted.
 - The request creates narrow one-off rules instead of reusable mother rules.
+- Adapter creation bypasses `CREACION_ADAPTER_LF` specialization or duplicates the common factory lifecycle.
+- A Profile directly invokes `INPUT_GOVERNANCE_AGENT` instead of declaring governance need for Adapter mediation.
 
 ## Expected statuses
 
