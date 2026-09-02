@@ -18,8 +18,9 @@ from PR93_P0_RUNTIME_CONTRACT_CHECK_CORE_BASE_V1 import *  # noqa: F401,F403
 
 CUSTOMER_PROFILE_CREATOR_BRANCH = "lf/profiles/profile-creator-customer-caller-20260902"
 CUSTOMER_PROFILE_CREATOR_PR_NUMBER = 470
+CUSTOMER_PROFILE_CREATOR_WORKFLOW = ".github/workflows/lf-customer-profile-creator-governance-caller.yml"
 CUSTOMER_PROFILE_CREATOR_BLOBS = {
-    ".github/workflows/lf-customer-profile-creator-governance-caller.yml": "3a0842729dc695bb478f1a5989b3bfa4e660f123",
+    CUSTOMER_PROFILE_CREATOR_WORKFLOW: "3a0842729dc695bb478f1a5989b3bfa4e660f123",
     "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts": "d840f2964b886f9c1daa0e5ac2a344c3e3f2cd7b",
     "supabase/functions/run-creacion-perfil-lf/index.ts": "6902090913c7d393737d5dc83bbed919e11ddcbf",
 }
@@ -160,17 +161,16 @@ def _customer_scope_self_test() -> None:
         mode_by_path=modes,
     ):
         raise SystemExit("FAIL_CUSTOMER_PROFILE_CREATOR_SCOPE_POSITIVE")
-    workflow_path = ".github/workflows/lf-customer-profile-creator-governance-caller.yml"
     workflow_lookalike = ".github/workflows/lf-customer-profile-creator-governance-caller-copy.yml"
     negative_cases = [
         ("branch", "feature/arbitrary", exact, paths),
-        ("blob", CUSTOMER_PROFILE_CREATOR_BRANCH, {**exact, workflow_path: "0" * 40}, paths),
+        ("blob", CUSTOMER_PROFILE_CREATOR_BRANCH, {**exact, CUSTOMER_PROFILE_CREATOR_WORKFLOW: "0" * 40}, paths),
         ("edge_path", CUSTOMER_PROFILE_CREATOR_BRANCH, exact, [*paths, "supabase/functions/arbitrary/index.ts"]),
         (
             "workflow_path",
             CUSTOMER_PROFILE_CREATOR_BRANCH,
-            {**{k: v for k, v in exact.items() if k != workflow_path}, workflow_lookalike: exact[workflow_path]},
-            [workflow_lookalike, *[path for path in paths if path != workflow_path]],
+            {**{k: v for k, v in exact.items() if k != CUSTOMER_PROFILE_CREATOR_WORKFLOW}, workflow_lookalike: exact[CUSTOMER_PROFILE_CREATOR_WORKFLOW]},
+            [workflow_lookalike, *[path for path in paths if path != CUSTOMER_PROFILE_CREATOR_WORKFLOW]],
         ),
     ]
     for label, test_branch, blobs, test_paths in negative_cases:
@@ -187,9 +187,33 @@ def _customer_scope_self_test() -> None:
     print("PASS_CUSTOMER_PROFILE_CREATOR_EXACT_RUNTIME_SCOPE=5/5")
 
 
+_original_base_get_changed_files = _base.get_changed_files
+
+
+def _customer_get_changed_files() -> list[str]:
+    """Admit the exact workflow to the historical .github scanner only after scope proof.
+
+    The base validator keeps broad .github default-denied. The single exact workflow
+    becomes visible to its historical ALLOWED_GITHUB_EXACT check only after the
+    branch/path/blob/mode gate above has already passed for the changed-file set.
+    """
+    changed_files = _original_base_get_changed_files()
+    changed = set(changed_files)
+    if CUSTOMER_PROFILE_CREATOR_WORKFLOW in changed:
+        branch = current_event_branch()
+        if branch != CUSTOMER_PROFILE_CREATOR_BRANCH:
+            raise RuntimeScopeError(
+                "FAIL_RUNTIME_BRANCH_MISMATCH",
+                f"Customer workflow admission requires {CUSTOMER_PROFILE_CREATOR_BRANCH!r}; got {branch!r}",
+            )
+        _base.e16.base.ALLOWED_GITHUB_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW)
+    return changed_files
+
+
 def main() -> int:
     _sync_base_extensions()
     _base.evaluate_controlled_runtime_scope = evaluate_controlled_runtime_scope
+    _base.get_changed_files = _customer_get_changed_files
     return _base.main()
 
 
