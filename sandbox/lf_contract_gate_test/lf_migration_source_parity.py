@@ -40,6 +40,7 @@ MANAGED_EXACT_NAMES = {
     "programacion_f05_public_rpc_bridge_v1",
     "revoke_internal_pipeline_public_grants",
     "programacion_private_rls_hardening_v1",
+    "fix_profile_creator_init_no_close_compat_v1",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
@@ -123,6 +124,8 @@ def main() -> int:
         fail("FAIL_CI009_SELFTEST_RLS_INTERNAL_GRANTS")
     if not managed("programacion_private_rls_hardening_v1"):
         fail("FAIL_CI009_SELFTEST_PROGRAMACION_PRIVATE_RLS")
+    if not managed("fix_profile_creator_init_no_close_compat_v1"):
+        fail("FAIL_CI009_SELFTEST_PROFILE_CREATOR_INIT_NO_CLOSE_COMPAT")
     if managed("create_lf_unreviewed_future_change"):
         fail("FAIL_CI009_SELFTEST_MANAGED_PREFIX_TOO_BROAD")
     if not classified("programacion_worker_spec_probe"):
@@ -199,7 +202,7 @@ def main() -> int:
         f"legacy={legacy_count} sha256={legacy_sha} grandfathered={grandfathered_count}/{grandfathered_sha} "
         f"classification_baseline_end={classification_baseline_end}"
     )
-    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=16/16")
+    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=17/17")
     return 0
 
 
