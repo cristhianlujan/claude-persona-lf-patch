@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Customer Payments Recovery Output",
+  "type": "object",
+  "required": ["output_type", "self_verdict"],
+  "properties": {
+    "output_type": {
+      "enum": [
+        "CUSTOMER_PAYMENT_RECOVERY_SPEC",
+        "MISSING_PAYMENT_STATE_EVIDENCE",
+        "BLOCKED_DUPLICATE_OR_UNSAFE_RETRY_RISK",
+        "BLOCKED_UNSUPPORTED_PAYMENT_CLAIM"
+      ]
+    },
+    "payment_state": {
+      "enum": ["NOT_STARTED", "PENDING", "SUCCEEDED", "FAILED_RETRYABLE", "FAILED_NONRETRYABLE", "UNKNOWN"]
+    },
+    "state_evidence_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "customer_message_intent": {"type": "string"},
+    "safe_next_action": {"type": "string"},
+    "retry_policy": {
+      "type": "object",
+      "properties": {
+        "allowed": {"type": "boolean"},
+        "condition": {"type": "string"},
+        "idempotency_requirement": {"type": "string"}
+      },
+      "required": ["allowed", "condition", "idempotency_requirement"],
+      "additionalProperties": false
+    },
+    "duplicate_payment_controls": {"type": "array", "items": {"type": "string"}},
+    "receipt_or_proof_expectation": {"type": "string"},
+    "escalation_condition": {"type": "string"},
+    "claim_guardrails": {"type": "array", "items": {"type": "string"}},
+    "handoff_to_next": {"type": "object"},
+    "blocked": {"type": "boolean"},
+    "missing_inputs": {"type": "array", "items": {"type": "string"}},
+    "blocking_reason": {"type": "string"},
+    "self_verdict": {"enum": ["READY_FOR_REVIEW", "NEEDS_INPUT", "BLOCKED", "NEEDS_REPAIR"]}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"output_type": {"const": "CUSTOMER_PAYMENT_RECOVERY_SPEC"}}},
+      "then": {"required": ["payment_state", "state_evidence_refs", "safe_next_action", "retry_policy", "duplicate_payment_controls", "receipt_or_proof_expectation", "escalation_condition", "claim_guardrails", "handoff_to_next"]}
+    },
+    {
+      "if": {"properties": {"output_type": {"const": "MISSING_PAYMENT_STATE_EVIDENCE"}}},
+      "then": {"required": ["blocked", "missing_inputs"]}
+    },
+    {
+      "if": {"properties": {"output_type": {"enum": ["BLOCKED_DUPLICATE_OR_UNSAFE_RETRY_RISK", "BLOCKED_UNSUPPORTED_PAYMENT_CLAIM"]}}},
+      "then": {"required": ["blocked", "blocking_reason"]}
+    }
+  ],
+  "additionalProperties": false
+}
