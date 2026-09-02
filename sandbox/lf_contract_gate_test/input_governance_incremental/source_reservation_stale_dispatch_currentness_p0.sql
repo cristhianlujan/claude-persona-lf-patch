@@ -89,7 +89,7 @@ BEGIN
 
   SELECT pg_get_functiondef('programacion.fn_input_governance_execute(integer,text)'::regprocedure) INTO v_verify;
   IF position('v_dispatch_fresh:=programacion.fn_input_freshness_delta(v_latest_completed)' in v_verify)=0 THEN RAISE EXCEPTION 'STALE_DISPATCH_FRESHNESS_PREFLIGHT_MISSING'; END IF;
-  IF position("v_dispatch_fresh->>'run_state'='STALE'" in v_verify)=0 THEN RAISE EXCEPTION 'STALE_DISPATCH_STATE_GUARD_MISSING'; END IF;
+  IF position($needle$v_dispatch_fresh->>'run_state'='STALE'$needle$ in v_verify)=0 THEN RAISE EXCEPTION 'STALE_DISPATCH_STATE_GUARD_MISSING'; END IF;
   IF position('programacion.fn_input_readiness_run_is_current_cached_v1(r.id)' in v_verify)=0 THEN RAISE EXCEPTION 'ARC015_CURRENTNESS_FALLBACK_MISSING'; END IF;
   IF position('fn_input_governance_worker_spec_known_no_current_v1(p_pantalla_id,p_consumer,true)' in v_verify)=0 THEN RAISE EXCEPTION 'KNOWN_NO_CURRENT_WORKER_NOT_BOUND'; END IF;
 END;
