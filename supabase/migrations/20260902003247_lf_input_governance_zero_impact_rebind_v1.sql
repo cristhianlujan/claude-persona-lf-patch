@@ -1,13 +1,3 @@
--- DEC-INPUT-GOV-RUNTIME-001 + INPUT_FRESHNESS_DELTA_CONTRACT
---
--- A completed run may be stale because a pinned source digest changed while the
--- dependency graph proves that zero readiness families are affected. In that case
--- the governed safe path is assertion rebind + independent Validator, not a full
--- semantic recuration. Any affected family, terminal successor or resolution error
--- continues through the existing recuration/fail-closed path.
---
--- Scope: Curator routing only. No Story/Implementation/QA/Production gate is relaxed.
-
 create or replace function programacion.fn_input_governance_curator_materialize_v1(
   p_pantalla_id integer,
   p_consumer text,
