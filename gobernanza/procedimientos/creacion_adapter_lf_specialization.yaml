@@ -1,0 +1,101 @@
+version: v1.0
+status: CANDIDATO_READ_ONLY
+operation: CREACION_ADAPTER_LF
+kind: ADAPTER_SPECIALIZATION
+
+architecture:
+  parent_authority: ACT-0040
+  factory_core: ACT-0045
+  composition: IN_PROCESS
+  separate_factory: FORBIDDEN
+  separate_factory_llm_call: FORBIDDEN
+  runtime_enablement: FORBIDDEN
+  production_enablement: FORBIDDEN
+
+factory_core_contract:
+  consumes:
+    - skills/profile_creator/SKILL.md
+    - skills/profile_creator/contracts/main_contract.md
+  responsibilities:
+    - classify_if_new_asset_is_needed
+    - compare_simpler_existing_alternatives
+    - research_and_source_quality
+    - intake_and_known_unknown_assumptions
+    - duplicate_check
+    - generic_vs_specific_boundary
+    - canonical_candidate_design
+    - operational_evidence_pack
+    - sandbox_and_baseline_comparison
+    - manifest_traceability
+    - pre_write_authorization
+    - github_write_readback
+    - final_quality_and_close
+  receipt_required:
+    - factory_core_code
+    - parent_authority_code
+    - factory_sources_consumed
+    - no_parallel_factory
+    - candidate_type
+    - candidate_needed
+
+adapter_specific_gates:
+  - id: router_binding_authority
+    require:
+      - invocation_policy == ROUTER_BOUND_ONLY
+      - activation_source == ROUTER
+      - adapter_does_not_self_invoke
+  - id: consumer_mapping
+    require:
+      - at_least_one_explicit_consumer_or_router_target
+      - no_implicit_parent_skill
+  - id: contamination_boundary
+    require:
+      - reusable_profile_or_skill_semantics_remain_generic
+      - project_or_channel_specific_context_lives_in_adapter
+      - adapter_does_not_duplicate_business_policy_authority
+  - id: execution_model
+    require:
+      - adapter_is_binding_not_alternate_worker
+      - adapter_does_not_select_workers
+      - no_second_llm_call
+  - id: runtime_contract
+    when: runtime_capsule_present
+    require:
+      - bounded_runtime_capsule
+      - invocation_schema_closed
+      - context_budget_declared
+      - exactly_one_invocation_receipt
+  - id: assurance_v2
+    require:
+      - adapter_examples_testable
+      - adapter_evals_executable
+      - adapter_judge_has_fail_conditions
+      - negative_and_bypass_cases_present
+      - canary_or_sandbox_evidence
+  - id: input_governance
+    when: functional_input_governance_applicable
+    require:
+      - INPUT_READINESS_CONTRACT_resolved_live
+      - only_required_sections_consumed
+      - governance_receipt_complete
+      - continuation_only_on_PASS
+
+hard_fail:
+  - PARALLEL_FACTORY_DUPLICATION
+  - ACT0040_ACT0045_FACTORY_BYPASS
+  - ADAPTER_WITHOUT_EXPLICIT_CONSUMER_MAPPING
+  - ADAPTER_AS_ALTERNATE_WORKER
+  - ADAPTER_SELECTS_WORKERS
+  - SECOND_LLM_CALL_REQUIRED_BY_ADAPTER
+  - DIRECT_PROFILE_INPUT_GOVERNANCE_INVOCATION
+  - DIRECT_SELF_INVOCATION
+  - UNBOUND_ADAPTER_INVOCATION
+  - CONTEXT_BUDGET_EXCEEDED
+  - INPUT_GOVERNANCE_REQUIRED_BUT_NOT_GOVERNED
+
+output:
+  mode: FACTORY_CANDIDATE_PLUS_ADAPTER_SPECIALIZATION
+  state_ceiling: CANDIDATO_READ_ONLY
+  runtime_change: false
+  production_change: false
+  automatic_impact_change: false
