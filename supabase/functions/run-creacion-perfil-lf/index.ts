@@ -1,15 +1,18 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
-const ENDPOINT_VERSION = "v15-quarantined-pending-secure-redesign";
+const ENDPOINT_VERSION = "v16-governed-init-only";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")?.trim() ?? "";
+const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.trim() ?? "";
+const REPOSITORY = "cristhianlujan/claude-persona-lf-patch";
+const CALLER_METHOD = "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_GOV_V1";
+const CALLER_WORKFLOW_REF = `${REPOSITORY}/.github/workflows/lf-profiles-governance-caller.yml@refs/heads/governance/profiles-unblock-secure-caller-20260901`;
 
 function responseHeaders(): HeadersInit {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    "Cache-Control": "no-store",
+  return {
+    "content-type": "application/json; charset=utf-8",
+    "cache-control": "no-store",
+    "x-content-type-options": "nosniff",
   };
-  const allowedOrigin = Deno.env.get("LF_EDGE_ALLOWED_ORIGIN")?.trim();
-  if (allowedOrigin) headers["Access-Control-Allow-Origin"] = allowedOrigin;
-  return headers;
 }
 
 function jsonResponse(body: unknown, status: number): Response {
@@ -28,57 +31,221 @@ function constantTimeEqual(left: string, right: string): boolean {
 }
 
 function requireServiceRole(req: Request): Response | null {
-  const expected = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.trim() ?? "";
-  if (!expected) {
-    return jsonResponse({
-      outcome: "BLOCKED",
-      endpoint_version: ENDPOINT_VERSION,
-      code: "SERVICE_ROLE_SECRET_UNAVAILABLE",
-    }, 500);
-  }
-
-  const authorization = req.headers.get("authorization") ?? "";
-  const match = authorization.match(/^Bearer\s+(.+)$/i);
+  if (!SERVICE_ROLE_KEY) return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "SERVICE_ROLE_SECRET_UNAVAILABLE" }, 500);
+  const match = (req.headers.get("authorization") ?? "").match(/^Bearer\s+(.+)$/i);
   const received = match?.[1]?.trim() ?? "";
-  if (!received || !constantTimeEqual(received, expected)) {
-    return jsonResponse({
-      outcome: "BLOCKED",
-      endpoint_version: ENDPOINT_VERSION,
-      code: "SERVICE_ROLE_REQUIRED",
-    }, 403);
+  if (!received || !constantTimeEqual(received, SERVICE_ROLE_KEY)) {
+    return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "SERVICE_ROLE_REQUIRED" }, 403);
   }
   return null;
 }
 
+type Caller = {
+  method?: unknown;
+  repository?: unknown;
+  workflow_ref?: unknown;
+  run_id?: unknown;
+  workflow_sha?: unknown;
+};
+
+function validateCaller(value: unknown): { ok: true; caller: Required<Caller> } | { ok: false; code: string } {
+  if (!value || typeof value !== "object") return { ok: false, code: "GOVERNED_CALLER_MISSING" };
+  const caller = value as Caller;
+  if (caller.method !== CALLER_METHOD) return { ok: false, code: "GOVERNED_CALLER_METHOD_INVALID" };
+  if (caller.repository !== REPOSITORY) return { ok: false, code: "GOVERNED_CALLER_REPOSITORY_INVALID" };
+  if (caller.workflow_ref !== CALLER_WORKFLOW_REF) return { ok: false, code: "GOVERNED_CALLER_WORKFLOW_INVALID" };
+  if (typeof caller.run_id !== "string" || !/^\d+$/.test(caller.run_id)) return { ok: false, code: "GOVERNED_CALLER_RUN_ID_INVALID" };
+  if (typeof caller.workflow_sha !== "string" || !/^[0-9a-f]{40}$/.test(caller.workflow_sha)) return { ok: false, code: "GOVERNED_CALLER_SHA_INVALID" };
+  return { ok: true, caller: caller as Required<Caller> };
+}
+
+async function request(path: string, init: RequestInit): Promise<{ status: number; payload: any }> {
+  const response = await fetch(`${SUPABASE_URL}${path}`, {
+    ...init,
+    headers: {
+      authorization: `Bearer ${SERVICE_ROLE_KEY}`,
+      apikey: SERVICE_ROLE_KEY,
+      "content-type": "application/json",
+      ...(init.headers ?? {}),
+    },
+    signal: AbortSignal.timeout(30000),
+  });
+  const text = await response.text();
+  let payload: any;
+  try { payload = text ? JSON.parse(text) : null; }
+  catch { payload = { raw: text.slice(0, 1000) }; }
+  return { status: response.status, payload };
+}
+
+async function rpc(name: string, args: Record<string, unknown>): Promise<any> {
+  const result = await request(`/rest/v1/rpc/${name}`, { method: "POST", body: JSON.stringify(args) });
+  if (result.status < 200 || result.status >= 300) throw new Error(`RPC_${name}_${result.status}:${JSON.stringify(result.payload).slice(0, 1000)}`);
+  return result.payload;
+}
+
+async function selectExecution(executionId: string): Promise<any | null> {
+  const result = await request(`/rest/v1/lf_operation_execution?execution_id=eq.${encodeURIComponent(executionId)}&select=execution_id,operation_code,target_type,target_code,target_repo,target_path,status,manifest`, { method: "GET" });
+  if (result.status !== 200) throw new Error(`EXECUTION_READ_${result.status}:${JSON.stringify(result.payload).slice(0, 1000)}`);
+  return Array.isArray(result.payload) && result.payload.length ? result.payload[0] : null;
+}
+
+async function selectInitStep(executionId: string): Promise<any | null> {
+  const result = await request(`/rest/v1/lf_operation_execution_steps?execution_id=eq.${encodeURIComponent(executionId)}&step_order=eq.0&step_id=eq.init_execution&select=execution_id,step_order,step_id,status,evidence_ref,evidence_payload`, { method: "GET" });
+  if (result.status !== 200) throw new Error(`STEP_READ_${result.status}:${JSON.stringify(result.payload).slice(0, 1000)}`);
+  return Array.isArray(result.payload) && result.payload.length ? result.payload[0] : null;
+}
+
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        ...responseHeaders(),
-        "Access-Control-Allow-Headers": "authorization, content-type",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-      },
-    });
-  }
-
-  if (req.method !== "POST") {
-    return jsonResponse({
-      outcome: "BLOCKED",
-      endpoint_version: ENDPOINT_VERSION,
-      code: "METHOD_NOT_ALLOWED",
-    }, 405);
-  }
-
+  if (req.method !== "POST") return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "METHOD_NOT_ALLOWED" }, 405);
+  if (!SUPABASE_URL || !SERVICE_ROLE_KEY) return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "RUNTIME_CONFIG_MISSING" }, 500);
   const authFailure = requireServiceRole(req);
   if (authFailure) return authFailure;
 
-  return jsonResponse({
-    outcome: "BLOCKED",
-    endpoint_version: ENDPOINT_VERSION,
-    code: "TEMPORARILY_DISABLED_PENDING_SECURE_REDESIGN",
-    data_accessed: false,
-    write_executed: false,
-    next_gate: "DEFINE_GOVERNED_CALLER_AND_MINIMUM_DATA_CONTRACT",
-  }, 503);
+  try {
+    let body: Record<string, unknown>;
+    try { body = await req.json(); }
+    catch { return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "INVALID_JSON" }, 400); }
+
+    if (body.action !== "initialize_profile_creation_v1") {
+      return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "ACTION_NOT_ALLOWED" }, 400);
+    }
+
+    const callerValidation = validateCaller(body.caller);
+    if (!callerValidation.ok) return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: callerValidation.code }, 403);
+    const caller = callerValidation.caller;
+
+    const callerRequestId = typeof body.caller_request_id === "string" ? body.caller_request_id.toLowerCase() : "";
+    const targetCode = typeof body.target_code === "string" ? body.target_code.trim().toUpperCase() : "";
+    const profileSlug = typeof body.profile_slug === "string" ? body.profile_slug.trim().toLowerCase() : "";
+    const targetRepo = typeof body.target_repo === "string" ? body.target_repo.trim() : "";
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(callerRequestId)) {
+      return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "CALLER_REQUEST_ID_INVALID" }, 400);
+    }
+    if (!/^PERFIL-[A-Z0-9][A-Z0-9-]{2,120}$/.test(targetCode)) {
+      return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "TARGET_CODE_INVALID" }, 400);
+    }
+    if (!/^[a-z0-9][a-z0-9_]{2,80}$/.test(profileSlug)) {
+      return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "PROFILE_SLUG_INVALID" }, 400);
+    }
+    if (targetRepo !== REPOSITORY) return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "TARGET_REPOSITORY_INVALID" }, 400);
+
+    const executionId = `EXEC-CREACION-PERFIL-LF-OIDC-${callerRequestId}`;
+    const existing = await selectExecution(executionId);
+    if (existing) {
+      const step = await selectInitStep(executionId);
+      const identityMatches = existing.operation_code === "CREACION_PERFIL_LF" && existing.target_type === "PERFIL" && existing.target_code === targetCode && existing.target_repo === REPOSITORY;
+      if (!identityMatches || !step || step.status !== "STEP_CLEAN_PASS") {
+        return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "IDEMPOTENCY_IDENTITY_MISMATCH", execution: existing, init_step: step }, 409);
+      }
+      return jsonResponse({ outcome: "INITIALIZED", endpoint_version: ENDPOINT_VERSION, replay: true, execution: existing, init_step: step, write_executed: false, github_write_executed: false, next_gate: "router" }, 200);
+    }
+
+    const router = await rpc("lf_router_resolve_v1", {
+      p_request_text: `Crear perfil ${targetCode}`,
+      p_target_hint: targetCode,
+      p_action_hint: "PROFILE_CREATE",
+      p_asset_type_hint: "PERFIL",
+      p_distribution_mode: "ROUTER",
+    });
+    if (router?.status !== "READY_TO_EXECUTE" || router?.operation_code !== "CREACION_PERFIL_LF" || router?.action_code !== "PROFILE_CREATE") {
+      return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "ROUTER_CREATION_NOT_AUTHORIZED", router, write_executed: false }, 409);
+    }
+    if (router?.next_step?.step_id !== "init_execution") {
+      return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "ROUTER_INIT_STEP_MISMATCH", router, write_executed: false }, 409);
+    }
+
+    const manifest = {
+      schema_version: 1,
+      router: "ACT-0001",
+      creator_asset: "ACT-0045",
+      governed_caller_method: CALLER_METHOD,
+      caller_request_id: callerRequestId,
+      caller_repository: caller.repository,
+      caller_workflow_ref: caller.workflow_ref,
+      caller_run_id: caller.run_id,
+      caller_workflow_sha: caller.workflow_sha,
+      scope: "INIT_EXECUTION_ONLY",
+      profile_slug: profileSlug,
+      github_write_allowed: false,
+      github_write_executed: false,
+      runtime_enabled: false,
+      automatic_impact_enabled: false,
+      closure_allowed: false,
+      blocked_from_closure: true,
+      next_gate: "router",
+    };
+
+    const executionInsert = await request("/rest/v1/lf_operation_execution", {
+      method: "POST",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({
+        execution_id: executionId,
+        operation_code: "CREACION_PERFIL_LF",
+        target_type: "PERFIL",
+        target_code: targetCode,
+        target_repo: REPOSITORY,
+        target_path: `profiles/${profileSlug}/SKILL.md`,
+        status: "IN_PROGRESS",
+        manifest,
+        created_by_execution_id: executionId,
+      }),
+    });
+    if (executionInsert.status !== 201) throw new Error(`EXECUTION_INSERT_${executionInsert.status}:${JSON.stringify(executionInsert.payload).slice(0, 1000)}`);
+
+    const evidenceRef = `github-actions://run/${caller.run_id}/profile-creator/init_execution`;
+    const evidencePayload = {
+      execution_row_created: true,
+      execution_id: executionId,
+      operation_code: "CREACION_PERFIL_LF",
+      target_type: "PERFIL",
+      status: "IN_PROGRESS",
+      step_result: "STEP_CLEAN_PASS",
+      blocking_codes: [],
+      assertions_checked: ["execution_row_created", "operation_code_exact", "target_type_perfil", "status_in_progress"],
+      hard_fails_checked: [],
+      blocking_findings: [],
+      return_to_worker_reasons: [],
+      governed_caller_method: CALLER_METHOD,
+      caller_workflow_ref: caller.workflow_ref,
+      caller_run_id: caller.run_id,
+      caller_workflow_sha: caller.workflow_sha,
+    };
+    const stepInsert = await request("/rest/v1/lf_operation_execution_steps", {
+      method: "POST",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({
+        execution_id: executionId,
+        step_order: 0,
+        step_id: "init_execution",
+        status: "STEP_CLEAN_PASS",
+        evidence_ref: evidenceRef,
+        evidence_payload: evidencePayload,
+        notes: "Governed OIDC caller initialized canonical CREACION_PERFIL_LF execution; no GitHub write performed.",
+        created_by_execution_id: executionId,
+      }),
+    });
+    if (stepInsert.status !== 201) throw new Error(`INIT_STEP_INSERT_${stepInsert.status}:${JSON.stringify(stepInsert.payload).slice(0, 1200)}`);
+
+    const execution = await selectExecution(executionId);
+    const initStep = await selectInitStep(executionId);
+    if (!execution || !initStep || execution.status !== "IN_PROGRESS" || initStep.status !== "STEP_CLEAN_PASS") {
+      throw new Error("INIT_EXECUTION_READBACK_FAILED");
+    }
+
+    return jsonResponse({
+      outcome: "INITIALIZED",
+      endpoint_version: ENDPOINT_VERSION,
+      replay: false,
+      execution,
+      init_step: initStep,
+      router: { status: router.status, operation_code: router.operation_code, action_code: router.action_code, next_step: router.next_step },
+      write_executed: false,
+      github_write_executed: false,
+      next_gate: "router",
+    }, 201);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(message.replace(/Bearer\s+\S+/g, "Bearer [REDACTED]"));
+    return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "PROFILE_CREATOR_INIT_FAILED", detail: message.slice(0, 1500), write_executed: false }, 409);
+  }
 });
