@@ -54,6 +54,7 @@ def main():
         ('CANDIDATE_DEPTH_SELF_TEST', [sys.executable, str(root/'validators/validate_candidate_depth.py'), '--self-test', str(root)]),
         ('GOV021_CHAMPION_CHALLENGER', [sys.executable, str(root/'validators/champion_challenger_depth.py'), str(root)]),
         ('PROFILE_VALIDATOR_DISCOVERY_MATRIX', [sys.executable, str(root/'evals/profile_validator_discovery_matrix.py')]),
+        ('PROFILE_CREATOR_CONTINUATION_SOURCE_MATRIX', [sys.executable, str(root/'evals/profile_creator_continuation_source_matrix.py')]),
     ]
 
     discovered, discovery_errors = discover_profile_validators(repo_root)
