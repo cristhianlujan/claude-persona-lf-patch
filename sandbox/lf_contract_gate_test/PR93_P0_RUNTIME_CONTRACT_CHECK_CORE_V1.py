@@ -24,8 +24,6 @@ CUSTOMER_PROFILE_CREATOR_BLOBS = {
 }
 CUSTOMER_PROFILE_CREATOR_PATHS = frozenset(CUSTOMER_PROFILE_CREATOR_BLOBS)
 
-# Keep the wrapper's exported sets current so the higher-level entrypoint can
-# extend them without widening the preserved historical base by default.
 EXPECTED_RUNTIME_BLOBS = dict(_base.EXPECTED_RUNTIME_BLOBS)
 EXPECTED_RUNTIME_BLOBS.update(CUSTOMER_PROFILE_CREATOR_BLOBS)
 EXPECTED_EDGE_PATHS = frozenset(
@@ -118,8 +116,6 @@ def _evaluate_customer_profile_creator_scope(
 
 
 def _sync_base_extensions() -> None:
-    # PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT extends these exported sets at
-    # runtime. Mirror those additions into the preserved base before delegation.
     _base.EXPECTED_RUNTIME_BLOBS = EXPECTED_RUNTIME_BLOBS
     _base.EXPECTED_EDGE_PATHS = EXPECTED_EDGE_PATHS
     _base.CONTROLLED_RUNTIME_PATHS = CONTROLLED_RUNTIME_PATHS
@@ -182,4 +178,13 @@ def _customer_scope_self_test() -> None:
     print("PASS_CUSTOMER_PROFILE_CREATOR_EXACT_RUNTIME_SCOPE=4/4")
 
 
+def main() -> int:
+    _sync_base_extensions()
+    _base.evaluate_controlled_runtime_scope = evaluate_controlled_runtime_scope
+    return _base.main()
+
+
 _customer_scope_self_test()
+
+if __name__ == "__main__":
+    raise SystemExit(main())
