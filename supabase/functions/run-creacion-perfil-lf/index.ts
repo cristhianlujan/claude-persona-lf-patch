@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
-const ENDPOINT_VERSION = "v16-governed-init-only";
+const ENDPOINT_VERSION = "v17-governed-step-recorder";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")?.trim() ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.trim() ?? "";
 const REPOSITORY = "cristhianlujan/claude-persona-lf-patch";
@@ -106,13 +106,55 @@ Deno.serve(async (req: Request) => {
     try { body = await req.json(); }
     catch { return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "INVALID_JSON" }, 400); }
 
-    if (body.action !== "initialize_profile_creation_v1") {
-      return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "ACTION_NOT_ALLOWED" }, 400);
-    }
-
     const callerValidation = validateCaller(body.caller);
     if (!callerValidation.ok) return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: callerValidation.code }, 403);
     const caller = callerValidation.caller;
+
+    if (body.action === "record_profile_creation_step_v1") {
+      const executionId = typeof body.execution_id === "string" ? body.execution_id.trim() : "";
+      const stepId = typeof body.step_id === "string" ? body.step_id.trim() : "";
+      const evidenceRef = typeof body.evidence_ref === "string" ? body.evidence_ref.trim() : "";
+      const evidencePayload = body.evidence_payload && typeof body.evidence_payload === "object" && !Array.isArray(body.evidence_payload)
+        ? body.evidence_payload as Record<string, unknown>
+        : null;
+      if (!/^EXEC-CREACION-PERFIL-LF-OIDC-[0-9a-f-]{36}$/.test(executionId)) {
+        return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "EXECUTION_ID_INVALID" }, 400);
+      }
+      if (!/^[a-z0-9_]{2,80}$/.test(stepId) || !evidenceRef || !evidencePayload) {
+        return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "STEP_EVIDENCE_INPUT_INVALID" }, 400);
+      }
+      const execution = await selectExecution(executionId);
+      const identityMatches = execution
+        && execution.operation_code === "CREACION_PERFIL_LF"
+        && execution.target_type === "PERFIL"
+        && execution.target_repo === REPOSITORY
+        && execution.status === "IN_PROGRESS"
+        && execution.manifest?.governed_caller_method === CALLER_METHOD
+        && execution.manifest?.caller_repository === caller.repository
+        && execution.manifest?.caller_workflow_ref === caller.workflow_ref;
+      if (!identityMatches) {
+        return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "STEP_EXECUTION_IDENTITY_MISMATCH" }, 409);
+      }
+      const result = await rpc("lf_record_creacion_perfil_step_v1", {
+        p_execution_id: executionId,
+        p_step_id: stepId,
+        p_evidence_ref: evidenceRef,
+        p_evidence_payload: evidencePayload,
+        p_actor_execution_id: executionId,
+      });
+      return jsonResponse({
+        outcome: result?.outcome ?? "BLOCKED",
+        endpoint_version: ENDPOINT_VERSION,
+        execution_id: executionId,
+        step_id: stepId,
+        result,
+        github_write_executed: false,
+      }, result?.outcome === "STEP_RECORDED" ? 200 : 409);
+    }
+
+    if (body.action !== "initialize_profile_creation_v1") {
+      return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "ACTION_NOT_ALLOWED" }, 400);
+    }
 
     const callerRequestId = typeof body.caller_request_id === "string" ? body.caller_request_id.toLowerCase() : "";
     const targetCode = typeof body.target_code === "string" ? body.target_code.trim().toUpperCase() : "";
@@ -246,6 +288,6 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(message.replace(/Bearer\s+\S+/g, "Bearer [REDACTED]"));
-    return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "PROFILE_CREATOR_INIT_FAILED", detail: message.slice(0, 1500), write_executed: false }, 409);
+    return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "PROFILE_CREATOR_RUNTIME_FAILED", detail: message.slice(0, 1500), write_executed: false }, 409);
   }
 });
