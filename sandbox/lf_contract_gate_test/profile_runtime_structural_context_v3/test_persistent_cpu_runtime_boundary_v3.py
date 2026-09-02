@@ -21,12 +21,17 @@ assert contract['real_host_readiness']=='NOT_EXECUTED'
 assert contract['real_model_inference']=='NOT_EXECUTED'
 assert contract['semantic_after_status']=='NOT_EXECUTED'
 assert contract['implementation']['adapter_verifier_gate']=='10/10 PASS'
-assert contract['implementation']['request_wiring_gate']=='8/8 PASS'
+assert contract['implementation']['request_wiring_gate']=='11/11 PASS'
+assert contract['implementation']['request_scope']=='ISOLATED_CANDIDATE_ONLY'
+assert contract['implementation']['persistent_scratch_cleanup']=='REQUIRED_AND_TESTED'
 req=contract['required_persistent_cpu_contract']
+assert req['isolated_candidate_scope_required'] is True
+assert req['persistent_scratch_must_be_removed_after_success_or_failure'] is True
 assert req['same_pinned_llama_source_commit']==m.LLAMA_SOURCE_COMMIT
 assert req['same_model_sha256']==m.MODEL_SHA256
 assert req['same_mmproj_sha256']==m.MMPROJ_SHA256
 assert req['timeout_increase_forbidden'] is True
+assert req['production_authority'] is False
 keys=['GITHUB_ACTIONS','RUNNER_OS','RUNNER_ARCH','GITHUB_REPOSITORY','LF_REPOSITORY_VISIBILITY','LF_RUNNER_LABEL','LF_LLAMA_SOURCE_COMMIT']
 old={k:os.environ.get(k) for k in keys}
 for k in keys: os.environ.pop(k,None)
@@ -40,4 +45,4 @@ finally:
  for k,v in old.items():
   if v is None: os.environ.pop(k,None)
   else: os.environ[k]=v
-print('PERSISTENT_CPU_RUNTIME_BOUNDARY_V3_PASS 13/13')
+print('PERSISTENT_CPU_RUNTIME_BOUNDARY_V3_PASS 18/18')
