@@ -84,6 +84,7 @@ ALLOWED_GITHUB_EXACT = {
     ".github/workflows/lf-github-reconcile-v3.yml",
     ".github/workflows/story-agent-evidence-verifier.yml",
     ".github/workflows/profile-driven-screen-generation.yml",
+    ".github/workflows/input-governance-pr418-holdout-replay.yml",
 }
 OPERATIONAL_PROTOCOL_ALLOWED_EXACT = {
     "CLAUDE.md",
