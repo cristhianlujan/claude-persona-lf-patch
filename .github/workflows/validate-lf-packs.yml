@@ -44,7 +44,7 @@ jobs:
       - name: Validate PROFILE_RUNTIME V3 quality and lineage gates
         shell: bash
         run: |
-          set -euo pipefail
+          set -uo pipefail
           shopt -s nullglob
           tests=(sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_*.py)
           if (( ${#tests[@]} == 0 )); then
@@ -52,7 +52,18 @@ jobs:
             exit 1
           fi
           printf 'PROFILE_RUNTIME_V3_TEST_COUNT=%s\n' "${#tests[@]}"
+          failures=0
           for test_file in "${tests[@]}"; do
             echo "RUNNING=${test_file}"
-            python "${test_file}"
+            if python "${test_file}"; then
+              echo "RESULT=PASS TEST=${test_file}"
+            else
+              rc=$?
+              echo "RESULT=FAIL RC=${rc} TEST=${test_file}"
+              failures=$((failures+1))
+            fi
           done
+          echo "PROFILE_RUNTIME_V3_FAILURE_COUNT=${failures}"
+          if (( failures > 0 )); then
+            exit 1
+          fi
