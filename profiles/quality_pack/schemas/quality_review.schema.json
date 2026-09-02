@@ -72,23 +72,23 @@
   "allOf": [
     {
       "if": {"properties": {"verdict": {"const": "PASS_TO_COMPOSER"}}, "required": ["verdict"]},
-      "then": {"properties": {"routing": {"properties": {"pipeline_action": {"const": "CONTINUE"}, "resolution_target": {"const": "COMPOSER"}}}}}
+      "then": {"properties": {"blocking_codes": {"maxItems": 0}, "repair_actions": {"maxItems": 0}, "routing": {"properties": {"pipeline_action": {"const": "CONTINUE"}, "resolution_target": {"const": "COMPOSER"}}}}}
     },
     {
       "if": {"properties": {"verdict": {"const": "PASS_WITH_RESTRICTIONS"}}, "required": ["verdict"]},
-      "then": {"properties": {"routing": {"properties": {"pipeline_action": {"const": "CONTINUE_WITH_RESTRICTIONS"}, "resolution_target": {"const": "COMPOSER"}}}}}
+      "then": {"properties": {"blocking_codes": {"maxItems": 0}, "routing": {"properties": {"pipeline_action": {"const": "CONTINUE_WITH_RESTRICTIONS"}, "resolution_target": {"const": "COMPOSER"}}}}}
     },
     {
       "if": {"properties": {"verdict": {"const": "RETURN_TO_WORKER_FOR_SELF_REPAIR"}}, "required": ["verdict"]},
-      "then": {"properties": {"routing": {"properties": {"pipeline_action": {"const": "RETURN_TO_ORCHESTRATOR"}, "resolution_target": {"const": "PRODUCER_REPAIR"}}}}}
+      "then": {"properties": {"blocking_codes": {"minItems": 1}, "routing": {"properties": {"pipeline_action": {"const": "RETURN_TO_ORCHESTRATOR"}, "resolution_target": {"const": "PRODUCER_REPAIR"}}}}}
     },
     {
       "if": {"properties": {"verdict": {"const": "RETURN_TO_ORCHESTRATOR"}}, "required": ["verdict"]},
-      "then": {"properties": {"routing": {"properties": {"pipeline_action": {"const": "RETURN_TO_ORCHESTRATOR"}, "resolution_target": {"const": "AUTHORITY_OR_CONTEXT_RESOLUTION"}}}}}
+      "then": {"properties": {"blocking_codes": {"minItems": 1}, "routing": {"properties": {"pipeline_action": {"const": "RETURN_TO_ORCHESTRATOR"}, "resolution_target": {"const": "AUTHORITY_OR_CONTEXT_RESOLUTION"}}}}}
     },
     {
       "if": {"properties": {"verdict": {"const": "BLOCK_PIPELINE"}}, "required": ["verdict"]},
-      "then": {"properties": {"routing": {"properties": {"pipeline_action": {"const": "BLOCK_PIPELINE"}, "resolution_target": {"const": "NONE"}}}}}
+      "then": {"properties": {"blocking_codes": {"minItems": 1}, "routing": {"properties": {"pipeline_action": {"const": "BLOCK_PIPELINE"}, "resolution_target": {"const": "NONE"}}}}}
     }
   ]
 }
