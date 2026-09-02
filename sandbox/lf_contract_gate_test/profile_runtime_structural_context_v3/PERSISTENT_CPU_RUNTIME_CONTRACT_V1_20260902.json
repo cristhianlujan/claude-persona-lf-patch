@@ -1,0 +1,24 @@
+{
+  "schema":"lf-profile-runtime-persistent-cpu-contract/v1",
+  "campaign":"PROFILE_RUNTIME_P0_V3_20260902",
+  "artifact_sha256":"ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+  "status":"CONTRACT_DEFINED_NOT_IMPLEMENTED",
+  "current_github_adapter_reusable_on_persistent_host":false,
+  "current_blocker_code":"ZERO_COST_GITHUB_RUNNER_PRECONDITION_FAILED",
+  "reason":"github_actions_local_runtime.py requires GITHUB_ACTIONS=true, Linux/X64, exact public repository, ubuntu-latest label and pinned llama source commit before execution.",
+  "required_persistent_cpu_contract":{
+    "no_github_runner_identity_dependency":true,
+    "same_pinned_llama_source_commit":"925e1179947ea0c0ebfb0032df18af3a729822be",
+    "same_model_sha256":"d02fe9b69ad8cadbbd228e387667af66612c44bed29ffc8eb1e7caf9ac486c12",
+    "same_mmproj_sha256":"980c9b2f78c04e6cff93d277ada09e768394f112d75db3b4e9dea8a69f9fb904",
+    "assets_must_be_preinstalled_and_sha_verified":true,
+    "runtime_output_schema_must_be_bound_to_llama_jf":true,
+    "private_raster_must_not_be_persisted_beyond_execution_scope":true,
+    "model_output_receipt_must_bind_artifact_profile_sources_input_runtime_and_output_digest":true,
+    "semantic_after_gate_required":true,
+    "timeout_increase_forbidden":true,
+    "production_authority":false
+  },
+  "semantic_after_status":"NOT_EXECUTED",
+  "next_gate":"Implement and deterministically test a separate persistent-CPU adapter/verifier or an explicitly parameterized generic local adapter without weakening the existing GitHub zero-cost preconditions."
+}
