@@ -16,6 +16,7 @@ from validate_profile_execution import canonical_json_sha256, sha256_text
 ADAPTER_ID='persistent-cpu-llamacpp-qwen25vl-v1'
 VERIFIER_ID='persistent-cpu-llamacpp-readback-v1'
 PROVIDER='local_llama_cpp_persistent_cpu'
+ALLOWED_SCOPE='ISOLATED_CANDIDATE'
 
 
 def _runtime_id()->str:
@@ -25,6 +26,18 @@ def _runtime_id()->str:
  if len(value)>128:
   raise RuntimeExecutionBlocked('PERSISTENT_RUNTIME_ID_INVALID')
  return value
+
+def _require_isolated_scope()->str:
+ scope=os.getenv('LF_PERSISTENT_RUNTIME_SCOPE','').strip()
+ if scope!=ALLOWED_SCOPE:
+  raise RuntimeExecutionBlocked('PERSISTENT_RUNTIME_SCOPE_NOT_ISOLATED',scope or 'MISSING')
+ return scope
+
+def _require_pinned_llama_source()->str:
+ observed=os.getenv('LF_LLAMA_SOURCE_COMMIT','').strip()
+ if observed!=base.LLAMA_SOURCE_COMMIT:
+  raise RuntimeExecutionBlocked('PERSISTENT_LLAMA_SOURCE_COMMIT_MISMATCH',observed or 'MISSING')
+ return observed
 
 class PersistentCpuLlamaCppAdapter:
  adapter_id=ADAPTER_ID
@@ -40,13 +53,14 @@ class PersistentCpuLlamaCppAdapter:
    if not image_path.is_file() or image_path.stat().st_size>base.MAX_IMAGE_BYTES: raise RuntimeExecutionBlocked('LOCAL_RUNTIME_IMAGE_INVALID')
    if base._sha256_file(image_path)!=image_sha256: raise RuntimeExecutionBlocked('LOCAL_RUNTIME_IMAGE_SHA256_MISMATCH')
  def _assets(self):
+  _require_isolated_scope(); _require_pinned_llama_source()
   cli=base._required_asset('LF_LLAMA_CLI_PATH')
   model=base._required_asset('LF_MODEL_PATH',base.MODEL_SHA256)
   mmproj=base._required_asset('LF_MMPROJ_PATH',base.MMPROJ_SHA256)
   if not os.access(cli,os.X_OK): raise RuntimeExecutionBlocked('LOCAL_RUNTIME_CLI_NOT_EXECUTABLE')
   self.asset_paths={'llama_cli':cli,'model':model,'mmproj':mmproj}; return self.asset_paths
  def execute(self,request:dict[str,Any])->dict[str,Any]:
-  runtime_id=_runtime_id(); assets=self._assets()
+  runtime_id=_runtime_id(); assets=self._assets(); source_commit=_require_pinned_llama_source()
   self.structured_output_schema_path=base._resolve_runtime_output_schema(self.work_dir,request['profile_slug'])
   run_dir=Path(tempfile.mkdtemp(prefix='lf-persistent-profile-run-',dir=self.work_dir))
   system_file=run_dir/'system.txt'; input_file=run_dir/'input.txt'; output_file=run_dir/'raw-output.txt'
@@ -63,7 +77,7 @@ class PersistentCpuLlamaCppAdapter:
   raw=output_file.read_text(encoding='utf-8').strip()
   if not raw: raise RuntimeExecutionBlocked('LOCAL_RUNTIME_OUTPUT_EMPTY')
   self.execution_files={'system':system_file,'input':input_file,'output':output_file}
-  att={'provider':PROVIDER,'model_id':base.MODEL_ID,'run_id':f'persistent:{runtime_id}','attested_at':base._utc_now(),'adapter_id':self.adapter_id,'request_sha256':request['request_sha256'],'profile_source_sha256':request['profile_source_sha256'],'input_sha256':request['input_sha256'],'operation_code':request['operation_code'],'profile_code':request['profile_code'],'profile_slug':request['profile_slug'],'runtime_id':runtime_id,'llama_release':base.LLAMA_RELEASE,'llama_source_commit':base.LLAMA_SOURCE_COMMIT,'llama_cli_sha256':base._sha256_file(assets['llama_cli']),'model_sha256':base.MODEL_SHA256,'mmproj_sha256':base.MMPROJ_SHA256,'system_prompt_sha256':base._sha256_file(system_file),'literal_input_file_sha256':base._sha256_file(input_file),'raw_output_file_sha256':base._sha256_file(output_file),'context_tokens':str(self.context_tokens),'max_output_tokens':str(self.max_output_tokens),'network_access_required':'false'}
+  att={'provider':PROVIDER,'model_id':base.MODEL_ID,'run_id':f'persistent:{runtime_id}','attested_at':base._utc_now(),'adapter_id':self.adapter_id,'request_sha256':request['request_sha256'],'profile_source_sha256':request['profile_source_sha256'],'input_sha256':request['input_sha256'],'operation_code':request['operation_code'],'profile_code':request['profile_code'],'profile_slug':request['profile_slug'],'runtime_id':runtime_id,'runtime_scope':ALLOWED_SCOPE,'llama_release':base.LLAMA_RELEASE,'llama_source_commit':source_commit,'llama_cli_sha256':base._sha256_file(assets['llama_cli']),'model_sha256':base.MODEL_SHA256,'mmproj_sha256':base.MMPROJ_SHA256,'system_prompt_sha256':base._sha256_file(system_file),'literal_input_file_sha256':base._sha256_file(input_file),'raw_output_file_sha256':base._sha256_file(output_file),'context_tokens':str(self.context_tokens),'max_output_tokens':str(self.max_output_tokens),'network_access_required':'false'}
   if self.structured_output_schema_path is not None:
    att['structured_output_schema_ref']=str(self.structured_output_schema_path.relative_to(self.work_dir)); att['structured_output_schema_sha256']=base._sha256_file(self.structured_output_schema_path)
   if request.get('lf_adapter_source_sha256'): att['lf_adapter_source_sha256']=request['lf_adapter_source_sha256']
@@ -81,6 +95,8 @@ class PersistentCpuLlamaCppVerifier:
   att=response.get('runtime_attestation');
   if not isinstance(att,dict): raise RuntimeExecutionBlocked('LOCAL_VERIFIER_ATTESTATION_MISSING')
   if att.get('runtime_id')!=_runtime_id(): raise RuntimeExecutionBlocked('PERSISTENT_RUNTIME_ID_MISMATCH')
+  if att.get('runtime_scope')!=_require_isolated_scope(): raise RuntimeExecutionBlocked('PERSISTENT_RUNTIME_SCOPE_MISMATCH')
+  if att.get('llama_source_commit')!=_require_pinned_llama_source(): raise RuntimeExecutionBlocked('PERSISTENT_LLAMA_SOURCE_COMMIT_MISMATCH')
   assets=getattr(adapter,'asset_paths',{}); files=getattr(adapter,'execution_files',{})
   if set(assets)!={'llama_cli','model','mmproj'} or set(files)!={'system','input','output'}: raise RuntimeExecutionBlocked('LOCAL_VERIFIER_EVIDENCE_PATHS_MISSING')
   expected={'model_sha256':base.MODEL_SHA256,'mmproj_sha256':base.MMPROJ_SHA256,'llama_cli_sha256':att.get('llama_cli_sha256'),'system_prompt_sha256':att.get('system_prompt_sha256'),'raw_output_file_sha256':att.get('raw_output_file_sha256')}
@@ -92,5 +108,5 @@ class PersistentCpuLlamaCppVerifier:
    if not Path(self.expected_image_path).is_file() or base._sha256_file(Path(self.expected_image_path))!=self.expected_image_sha256: raise RuntimeExecutionBlocked('LOCAL_VERIFIER_IMAGE_MISMATCH')
    if att.get('input_image_sha256')!=self.expected_image_sha256: raise RuntimeExecutionBlocked('LOCAL_VERIFIER_IMAGE_ATTESTATION_MISMATCH')
   response_sha=canonical_json_sha256(response)
-  evidence_sha=sha256_text('|'.join([self.verifier_id,request['request_sha256'],response_sha,observed['system_prompt_sha256'],observed['raw_output_file_sha256'],att['runtime_id']]))
+  evidence_sha=sha256_text('|'.join([self.verifier_id,request['request_sha256'],response_sha,observed['system_prompt_sha256'],observed['raw_output_file_sha256'],att['runtime_id'],att['runtime_scope'],att['llama_source_commit']]))
   return {'verified':True,'verifier_id':self.verifier_id,'request_sha256':request['request_sha256'],'response_sha256':response_sha,'evidence_sha256':evidence_sha}
