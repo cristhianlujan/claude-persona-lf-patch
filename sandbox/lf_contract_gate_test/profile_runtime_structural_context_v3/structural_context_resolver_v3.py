@@ -11,9 +11,17 @@ from collections import Counter
 from pathlib import Path
 
 FILTER_ANCHORS = ("buscar","estado","tipo de carga","cargado por","aprobacion","desde","hasta","ordenar por","direccion")
+FILTER_VISIBLE = FILTER_ANCHORS + ("todos","todas","mas recientes","limpiar filtros","fecha de creacion")
 TABLE_HEADERS = ("lote","nombre","archivo","tipo","cargado por","fecha","total","validos","estado","acciones")
 STATE_HINTS = ("procesado","procesado con observaciones","pendiente de aprobacion","validando","rechazado","cancelado","aprobado","autoaprobado")
 ROW_ACTION_HINTS = ("ver detalle","original","observados","rechazados")
+ROLE_EXACT = {
+    "FILTER_BAR": FILTER_VISIBLE,
+    "TABLE_HEADER": TABLE_HEADERS,
+    "STATE_BADGE": STATE_HINTS,
+    "ROW_ACTION": ROW_ACTION_HINTS,
+    "TABLE_SUMMARY": ("cargas",),
+}
 
 def norm(s:str)->str:
     s=unicodedata.normalize("NFKD", str(s)).encode("ascii","ignore").decode().lower()
@@ -76,6 +84,33 @@ def phrase_hits(lines, phrases, min_x=0):
 def _hint_match(text, hints):
     n=norm(text)
     return any(n == norm(h) or norm(h) in n for h in hints)
+
+def _exact_visible_resolution(item, all_items):
+    candidates={norm(x) for x in ROLE_EXACT.get(item["role"],())}
+    if not candidates:
+        return None
+    if item["norm"] in candidates:
+        return item["text"]
+    neighbors=[]
+    for other in all_items:
+        if other is item or other["role"] != item["role"]:
+            continue
+        if abs(other["cy"]-item["cy"]) > max(5.0,0.45*max(item["h"],other["h"])):
+            continue
+        if other["r"] <= item["x"]:
+            gap=item["x"]-other["r"]
+        elif item["r"] <= other["x"]:
+            gap=other["x"]-item["r"]
+        else:
+            gap=0.0
+        if gap <= 14:
+            neighbors.append(other)
+    for other in neighbors:
+        pair=sorted((item,other),key=lambda x:x["x"])
+        visible=" ".join(x["text"] for x in pair)
+        if norm(visible) in candidates:
+            return visible
+    return None
 
 def infer_geometry(obs, width, height):
     lines=cluster_lines(obs)
@@ -171,6 +206,14 @@ def classify(observations,width,height,context=None):
         if role in {"PAGE_HEADER","PAGE_ACTIONS","FILTER_BAR","TABLE_SUMMARY","TABLE_HEADER","STATE_BADGE","ROW_ACTION"} and conf < 65 and len(n) > 2:
             reread=True
         out.append({**o,"role":role,"needs_reread":reread,"material":material})
+    for item in out:
+        if not item["needs_reread"]:
+            continue
+        visible_group=_exact_visible_resolution(item,out)
+        if visible_group is not None:
+            item["needs_reread"]=False
+            item["resolved_by_visible_group"]=True
+            item["visible_group_text"]=visible_group
     residual=[o for o in out if o["needs_reread"] and o["material"]]
     visible_header_text = " ".join(o["norm"] for o in out if o["role"]=="TABLE_HEADER")
     canonical_fields = context.get("canonical_table_fields") or []
@@ -191,6 +234,7 @@ def classify(observations,width,height,context=None):
       "input_count":len(out),
       "residual_count":len(residual),
       "reread_reduction_pct":round(100*(1-len(residual)/max(1,len(out))),2),
+      "visible_group_resolutions":sum(1 for o in out if o.get("resolved_by_visible_group")),
       "residual":[{"id":o["id"],"text":o["text"],"bbox":[o["x"],o["y"],o["w"],o["h"]],"conf":o["conf"],"role":o["role"]} for o in residual],
       "canonical_visibility":canonical_visibility,
       "observations":out
@@ -208,5 +252,5 @@ def main():
     context=json.loads(Path(a.context).read_text()) if a.context else {}
     result=classify(observations,a.width,a.height,context)
     Path(a.output).write_text(json.dumps(result,ensure_ascii=False,indent=2))
-    print(json.dumps({k:result[k] for k in ("schema","input_count","counts","residual_count","reread_reduction_pct")},ensure_ascii=False))
+    print(json.dumps({k:result[k] for k in ("schema","input_count","counts","residual_count","reread_reduction_pct","visible_group_resolutions")},ensure_ascii=False))
 if __name__=="__main__": main()
