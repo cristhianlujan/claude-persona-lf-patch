@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Quality Pack Review",
+  "type": "object",
+  "required": [
+    "review_id",
+    "reviewed_artifact",
+    "verdict",
+    "score_breakdown",
+    "evidence_map",
+    "blocking_codes",
+    "repair_actions",
+    "remaining_risks",
+    "next_gate",
+    "routing"
+  ],
+  "properties": {
+    "review_id": {"type": "string"},
+    "reviewed_artifact": {"type": "string"},
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "PASS_TO_COMPOSER",
+        "PASS_WITH_RESTRICTIONS",
+        "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+        "RETURN_TO_ORCHESTRATOR",
+        "BLOCK_PIPELINE"
+      ]
+    },
+    "score_breakdown": {
+      "type": "object",
+      "required": [
+        "contract_schema_compliance",
+        "evidence_integrity",
+        "lf_safety_governance",
+        "handoff_readiness",
+        "leakage_scope_control",
+        "total"
+      ],
+      "properties": {
+        "contract_schema_compliance": {"type": "integer", "minimum": 0, "maximum": 5},
+        "evidence_integrity": {"type": "integer", "minimum": 0, "maximum": 5},
+        "lf_safety_governance": {"type": "integer", "minimum": 0, "maximum": 5},
+        "handoff_readiness": {"type": "integer", "minimum": 0, "maximum": 5},
+        "leakage_scope_control": {"type": "integer", "minimum": 0, "maximum": 5},
+        "total": {"type": "integer", "minimum": 0, "maximum": 25}
+      }
+    },
+    "evidence_map": {"type": "array"},
+    "blocking_codes": {"type": "array"},
+    "repair_actions": {"type": "array"},
+    "remaining_risks": {"type": "array"},
+    "next_gate": {"type": "string"},
+    "routing": {
+      "type": "object",
+      "required": ["activation_path", "via", "pipeline_action", "resolution_target"],
+      "additionalProperties": false,
+      "properties": {
+        "activation_path": {"type": "string", "enum": ["DIRECT", "ROUTER"]},
+        "via": {"const": "ORCHESTRATOR"},
+        "pipeline_action": {
+          "type": "string",
+          "enum": ["CONTINUE", "CONTINUE_WITH_RESTRICTIONS", "RETURN_TO_ORCHESTRATOR", "BLOCK_PIPELINE"]
+        },
+        "resolution_target": {
+          "type": "string",
+          "enum": ["COMPOSER", "PRODUCER_REPAIR", "AUTHORITY_OR_CONTEXT_RESOLUTION", "NONE"]
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"verdict": {"const": "PASS_TO_COMPOSER"}}, "required": ["verdict"]},
+      "then": {"properties": {"routing": {"properties": {"pipeline_action": {"const": "CONTINUE"}, "resolution_target": {"const": "COMPOSER"}}}}}
+    },
+    {
+      "if": {"properties": {"verdict": {"const": "PASS_WITH_RESTRICTIONS"}}, "required": ["verdict"]},
+      "then": {"properties": {"routing": {"properties": {"pipeline_action": {"const": "CONTINUE_WITH_RESTRICTIONS"}, "resolution_target": {"const": "COMPOSER"}}}}}
+    },
+    {
+      "if": {"properties": {"verdict": {"const": "RETURN_TO_WORKER_FOR_SELF_REPAIR"}}, "required": ["verdict"]},
+      "then": {"properties": {"routing": {"properties": {"pipeline_action": {"const": "RETURN_TO_ORCHESTRATOR"}, "resolution_target": {"const": "PRODUCER_REPAIR"}}}}}
+    },
+    {
+      "if": {"properties": {"verdict": {"const": "RETURN_TO_ORCHESTRATOR"}}, "required": ["verdict"]},
+      "then": {"properties": {"routing": {"properties": {"pipeline_action": {"const": "RETURN_TO_ORCHESTRATOR"}, "resolution_target": {"const": "AUTHORITY_OR_CONTEXT_RESOLUTION"}}}}}
+    },
+    {
+      "if": {"properties": {"verdict": {"const": "BLOCK_PIPELINE"}}, "required": ["verdict"]},
+      "then": {"properties": {"routing": {"properties": {"pipeline_action": {"const": "BLOCK_PIPELINE"}, "resolution_target": {"const": "NONE"}}}}}
+    }
+  ]
+}
