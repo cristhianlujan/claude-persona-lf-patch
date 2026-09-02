@@ -137,7 +137,11 @@ jobs:
               "required_policy_count":1,
               "resolved_policy_count":1,
               "step_result":"STEP_CLEAN_PASS",
-              "blocking_codes":[]
+              "blocking_codes":[],
+              "assertions_checked":["generic_payload_rejected","pass_condition_met","required_evidence_keys_present","step_contract_present"],
+              "hard_fails_checked":[],
+              "blocking_findings":[],
+              "return_to_worker_reasons":[]
             }
           }
           JSON
@@ -154,5 +158,6 @@ jobs:
           assert data.get('outcome') == 'STEP_RECORDED', data
           result=data.get('result') or {}
           assert result.get('outcome') == 'STEP_RECORDED', data
+          assert result.get('status') == 'STEP_CLEAN_PASS', data
           print('GOVERNED_ROUTER_STEP=RECORDED')
           PY
