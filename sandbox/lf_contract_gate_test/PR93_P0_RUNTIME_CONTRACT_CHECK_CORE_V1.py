@@ -17,6 +17,7 @@ import sys
 import urllib.error
 import urllib.request
 from collections.abc import Mapping, Sequence
+from pathlib import Path
 
 import PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT as e16
 
@@ -250,6 +251,46 @@ def verify_main_merge_via_github() -> bool:
     )
 
 
+def _profile_creator_continuation_source_self_test() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+    sources = {
+        "caller": (repo_root / "supabase/functions/lf-profiles-governance-caller-v1/index.ts").read_text(encoding="utf-8"),
+        "runtime": (repo_root / "supabase/functions/run-creacion-perfil-lf/index.ts").read_text(encoding="utf-8"),
+        "recorder": (repo_root / "supabase/migrations/20260902133319_profile_creator_step_recorder_v1.sql").read_text(encoding="utf-8"),
+    }
+    checks = (
+        ("caller", 'body.action === "profile_creator_record_step_v1"', "POS_CALLER_ACTION"),
+        ("caller", 'action: "record_profile_creation_step_v1"', "POS_DELEGATION"),
+        ("caller", 'result.outcome === "STEP_RECORDED"', "POS_CALLER_RESULT"),
+        ("runtime", 'body.action === "record_profile_creation_step_v1"', "POS_RUNTIME_ACTION"),
+        ("runtime", 'rpc("lf_record_creacion_perfil_step_v1"', "POS_CANONICAL_RPC"),
+        ("caller", "OIDC_TOKEN_INVALID", "NEG_OIDC_TOKEN"),
+        ("caller", "OIDC_REPOSITORY_MISMATCH", "NEG_OIDC_REPOSITORY"),
+        ("caller", "OIDC_WORKFLOW_MISMATCH", "NEG_OIDC_WORKFLOW"),
+        ("caller", "PROFILE_CREATOR_STEP_INPUT_INVALID", "NEG_CALLER_INPUT"),
+        ("runtime", "GOVERNED_CALLER_MISSING", "NEG_CALLER_MISSING"),
+        ("runtime", "GOVERNED_CALLER_METHOD_INVALID", "NEG_CALLER_METHOD"),
+        ("runtime", "GOVERNED_CALLER_REPOSITORY_INVALID", "NEG_CALLER_REPOSITORY"),
+        ("runtime", "GOVERNED_CALLER_WORKFLOW_INVALID", "NEG_CALLER_WORKFLOW"),
+        ("runtime", "EXECUTION_ID_INVALID", "NEG_EXECUTION_ID"),
+        ("runtime", "STEP_EXECUTION_IDENTITY_MISMATCH", "NEG_EXECUTION_IDENTITY"),
+        ("runtime", "STEP_EVIDENCE_INPUT_INVALID", "NEG_EVIDENCE_INPUT"),
+        ("recorder", "INIT_STEP_IMMUTABLE", "NEG_INIT_IMMUTABLE"),
+        ("recorder", "PRIOR_REQUIRED_STEP_NOT_CLEAN", "NEG_PRIOR_STEP"),
+        ("recorder", "REQUIRED_EVIDENCE_MISSING", "NEG_REQUIRED_EVIDENCE"),
+        ("recorder", "BLOCKING_CODES_INVALID", "NEG_BLOCKING_CODES"),
+        ("recorder", "STEP_ALREADY_RECORDED_DIFFERENT_EVIDENCE", "NEG_REPLAY_MISMATCH"),
+        ("recorder", "PROFILE_CLOSE_GATE_FAILED", "NEG_CLOSE_GATE"),
+    )
+    missing = [code for source, token, code in checks if token not in sources[source]]
+    if missing:
+        e16.fail(
+            "FAIL_PROFILE_CREATOR_CONTINUATION_SOURCE_TEST",
+            f"Profile Creator continuation source matrix failed: {missing!r}",
+        )
+    print(f"PASS_PROFILE_CREATOR_CONTINUATION_SOURCE_MATRIX:{len(checks)}/{len(checks)}")
+
+
 _runtime_scope_enabled = False
 _original_is_allowed_path = e16.base.is_allowed_path
 
@@ -294,6 +335,8 @@ def is_allowed_path(path: str) -> bool:
 
 
 def main() -> None:
+    if current_event_branch() == PROFILE_CREATOR_SOURCE_PARITY_BRANCH:
+        _profile_creator_continuation_source_self_test()
     e16.base.get_changed_files = get_changed_files
     e16.base.is_allowed_path = is_allowed_path
     e16.base.main()
