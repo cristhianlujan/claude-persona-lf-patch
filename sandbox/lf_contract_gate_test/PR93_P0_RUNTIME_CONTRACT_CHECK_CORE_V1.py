@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import urllib.error
 import urllib.request
 from collections.abc import Mapping, Sequence
@@ -190,14 +191,58 @@ def _customer_scope_self_test() -> None:
 _original_base_get_changed_files = _base.get_changed_files
 
 
-def _customer_get_changed_files() -> list[str]:
-    """Admit the exact workflow to the historical .github scanner only after scope proof.
+def _customer_branch_scope_for_push() -> list[str]:
+    """Normalize Customer-branch push checks to the same branch scope as PR checks.
 
-    The base validator keeps broad .github default-denied. The single exact workflow
-    becomes visible to its historical ALLOWED_GITHUB_EXACT check only after the
-    branch/path/blob/mode gate above has already passed for the changed-file set.
+    A push event normally contains only the latest commit delta, while the required
+    PR check evaluates the full branch-to-main diff. For this exclusive lane that
+    can produce contradictory required check contexts on the same HEAD. Recompute
+    the complete branch scope from the merge-base, then apply the same exact
+    path/blob/mode gate used by the PR event. This is stricter than accepting the
+    single-commit delta and keeps arbitrary paths fail-closed.
     """
-    changed_files = _original_base_get_changed_files()
+    subprocess.run(
+        ["git", "fetch", "--no-tags", "origin", MAIN_BRANCH],
+        check=True,
+        stdout=subprocess.DEVNULL,
+    )
+    merge_base = _base.e16.run_git(["merge-base", f"origin/{MAIN_BRANCH}", "HEAD"]).strip()
+    if BLOB_RE.fullmatch(merge_base) is None:
+        raise RuntimeScopeError(
+            "FAIL_RUNTIME_CUSTOMER_PUSH_BASE_UNRESOLVED",
+            "Customer Profile Creator push could not resolve a valid merge-base with main",
+        )
+    changed_files = _base.e16.git_changed_files(merge_base, "HEAD")
+    blobs: dict[str, str] = {}
+    modes: dict[str, str] = {}
+    for path in CUSTOMER_PROFILE_CREATOR_BLOBS:
+        try:
+            blobs[path] = git_blob_for_path(path)
+            modes[path] = git_mode_for_path(path)
+        except Exception as exc:
+            raise RuntimeScopeError(
+                "FAIL_RUNTIME_BLOB_UNRESOLVED",
+                f"could not read Customer Profile Creator pinned path {path}: {exc}",
+            ) from exc
+    _base._runtime_scope_enabled = _evaluate_customer_profile_creator_scope(
+        changed_files,
+        branch=CUSTOMER_PROFILE_CREATOR_BRANCH,
+        blob_by_path=blobs,
+        mode_by_path=modes,
+    )
+    print(f"PASS_CUSTOMER_PROFILE_CREATOR_PUSH_PR_SCOPE_PARITY={len(changed_files)}")
+    return changed_files
+
+
+def _customer_get_changed_files() -> list[str]:
+    """Admit the exact workflow to the historical .github scanner only after scope proof."""
+    if (
+        os.environ.get("GITHUB_EVENT_NAME") == "push"
+        and current_event_branch() == CUSTOMER_PROFILE_CREATOR_BRANCH
+    ):
+        changed_files = _customer_branch_scope_for_push()
+    else:
+        changed_files = _original_base_get_changed_files()
     changed = set(changed_files)
     if CUSTOMER_PROFILE_CREATOR_WORKFLOW in changed:
         branch = current_event_branch()
