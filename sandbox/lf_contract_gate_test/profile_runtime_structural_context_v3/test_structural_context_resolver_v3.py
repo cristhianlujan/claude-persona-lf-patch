@@ -25,7 +25,8 @@ r=v3.classify(obs,1600,1000,ctx)
 assert r['counts']['DYNAMIC_DATA'] >= 16, r['counts']
 assert r['counts']['STATE_BADGE'] == 2, r['counts']
 assert r['counts']['ROW_ACTION'] == 2, r['counts']
-assert r['residual_count'] == 4, r['residual']
+assert r['residual_count'] == 0, r['residual']
+assert r['visible_group_resolutions'] == 4, r['visible_group_resolutions']
 vis={x['field']:x for x in r['canonical_visibility']}
 assert vis['Lote']['status']=='VISIBLE'
 for k in ['Observados','Rechazados','Aprobado por']:
@@ -47,4 +48,11 @@ assert ('Ver detalle','ROW_ACTION') in roles, roles
 assert abs(r3['geometry']['header_columns']['estado']-990) < 1, r3['geometry']['header_columns']
 assert abs(r3['geometry']['header_columns']['acciones']-1120) < 1, r3['geometry']['header_columns']
 
-print('STRUCTURAL_CONTEXT_RESOLVER_V3_TESTS_PASS 11/11')
+# Low-confidence split label is fully resolved by adjacent visible evidence.
+pair=[o('Ordenar',300,220,55,16,40),o('por',360,220,25,16,95)]
+r4=v3.classify(pair,800,500,{})
+ordenar=next(x for x in r4['observations'] if x['text']=='Ordenar')
+assert ordenar['role']=='FILTER_BAR' and not ordenar['needs_reread']
+assert ordenar['resolved_by_visible_group'] and ordenar['visible_group_text']=='Ordenar por'
+
+print('STRUCTURAL_CONTEXT_RESOLVER_V3_TESTS_PASS 14/14')
