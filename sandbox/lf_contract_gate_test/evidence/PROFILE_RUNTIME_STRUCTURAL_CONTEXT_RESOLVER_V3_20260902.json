@@ -1,5 +1,5 @@
 {
-  "schema": "lf-profile-runtime-structural-context-resolver-v3-evidence/v1",
+  "schema": "lf-profile-runtime-structural-context-resolver-v3-evidence/v2",
   "campaign": "PROFILE_RUNTIME_P0_V3_20260902",
   "artifact": {
     "artifact_id": 85,
@@ -12,7 +12,8 @@
   },
   "source_evidence": {
     "mode": "FALLBACK_OCR_REGENERATED",
-    "reason": "The handoff references the historical 334 observation+bbox baseline, but no accessible observation payload was found in the queried durable P0 artifact store by screen/hash/count. OCR was rerun once explicitly as fallback; therefore V3 token counts are not directly comparable to V2 334-observation counts.",
+    "historical_334_bbox_baseline": "NOT_PROVEN",
+    "reason": "The historical 334 observation+bbox payload is not durably recovered. The current durable exact-artifact evidence is the fallback OCR run and subsequent same-artifact reread/quality evidence; therefore V3 token counts are not claimed comparable to the historical 334 baseline.",
     "ocr_engine": "Tesseract 5.5.0",
     "ocr_lang": "eng+spa",
     "ocr_psm": 3,
@@ -21,12 +22,9 @@
     "ocr_observations_sha256": "2483a0270d26bfdc9023b12cad2cd0c3385367b41a30ea5f601682a231fd49ef"
   },
   "resolver": {
-    "script_sha256": "a219eb892ee2bbdf8ba73399fe71ac110ecf5826ee310a0af28ea90a0e0e76ae",
-    "test_sha256": "504420403bae4e4b28e9445ad8c4da5cad736482bd78e2f9f8b8b47d9fa90e43",
-    "tests": "7/7 PASS",
-    "median_ms": 1.421,
-    "p95_ms": 1.705,
     "input_count": 199,
+    "residual_count": 18,
+    "reread_reduction_pct": 90.95,
     "counts": {
       "SHELL_TOPBAR": 16,
       "BREADCRUMB": 6,
@@ -40,29 +38,80 @@
       "STATE_BADGE": 11,
       "ROW_ACTION": 23,
       "PAGINATION": 3
-    },
-    "residual_count": 18,
-    "reread_reduction_pct": 90.95
+    }
+  },
+  "targeted_reread": {
+    "executed": true,
+    "regions": 18,
+    "prior_invocations": 72,
+    "batched_invocations": 4,
+    "integrated_candidate_ms": 867.052,
+    "repeatability_runs": 8,
+    "repeatability_p50_ms": 901.233,
+    "repeatability_p95_ms": 938.117,
+    "decision_equivalent_regions": "18/18",
+    "worse_regions": 0,
+    "adopted_regions_with_absolute_fit_floor": 6,
+    "preserved_regions": 12,
+    "full_image_ocr_repeated_in_repeatability_probe": false,
+    "source_refs": [
+      "github://cristhianlujan/claude-persona-lf-patch/commit/33d1df28fca9e6308185b10be82173c4422be70c",
+      "github://cristhianlujan/claude-persona-lf-patch/commit/6ec096ae229ee26abc8529292e5242e0ad1567ef",
+      "supabase://public.lf_error_knowledge/PROFILE-RUNTIME-TARGETED-REREAD-REGRESSION-001",
+      "supabase://public.lf_error_knowledge/PROFILE-RUNTIME-TARGETED-REREAD-PROCESS-FANOUT-001"
+    ]
+  },
+  "quality_non_regression": {
+    "visible_span_gate": "11/11",
+    "batch_mapping_gate": "6/6",
+    "overlay_gate": "8/8",
+    "critical_regressions_count": 0,
+    "historical_334_p02_p03_parity": "NOT_PROVEN"
   },
   "critical_semantics": {
     "horizontal_overflow_observed": true,
     "not_currently_visible_is_material_omission": false,
-    "context_may_fabricate_visual_evidence": false
+    "context_may_fabricate_visual_evidence": false,
+    "dynamic_data_may_be_canonicalized": false
+  },
+  "semantic_utility": {
+    "baseline_transport_succeeded": "3/3",
+    "baseline_consumable_outputs": "0/3",
+    "candidate_after": "NOT_EXECUTED",
+    "reason": "The safe candidate bundle is prepared, but no local reusable llama-cli + pinned model + mmproj assets were observed in the current sandbox; the existing issue_comment runtime checks out main and uses a Supabase secret, so it is not used for the isolated candidate AFTER."
+  },
+  "execution_transport": {
+    "candidate_head_before_this_evidence_update": "a906a66da38a0f33552a4d064fda9683eef0e444",
+    "branch": "lf/profile-runtime-structural-context-resolver-v3-20260902",
+    "pr": 472,
+    "pr_draft": true,
+    "commit_remote_present": true,
+    "branch_points_to_head": true,
+    "workflow_trigger_matches_branch_event": true,
+    "dispatch_or_event_observed": true,
+    "workflow_run_created": true,
+    "job_created": true,
+    "runner_started": true,
+    "checkout_completed": true,
+    "checked_out_head_matches_expected": true,
+    "v3_validator_status_published": true,
+    "v3_validator_check": "Run LF pack validators",
+    "v3_validator_conclusion": "SUCCESS",
+    "global_contract_check": "FAILURE_AT_MIGRATION_SOURCE_PARITY",
+    "global_first_failed_hop": "Enforce LF migration source parity after checkpoint",
+    "global_visual_runtime_provision": "SKIPPED_AFTER_UPSTREAM_FAILURE",
+    "source_refs": [
+      "github://cristhianlujan/claude-persona-lf-patch/actions/runs/33659996674",
+      "github://cristhianlujan/claude-persona-lf-patch/check-runs/100347912166"
+    ]
   },
   "gates": {
-    "runtime_completion": "PASS",
-    "profile_contract_valid": "NOT_EVALUATED",
-    "semantic_utility": "PARTIAL_STRUCTURE_ONLY",
-    "p02_p03_parity": "NOT_PROVEN_ON_HISTORICAL_334_OBSERVATIONS",
-    "targeted_reread_executed": "NO"
+    "structural_resolver": "PASS_ON_FALLBACK_199_TOKEN_EVIDENCE",
+    "targeted_reread_quality": "PASS_ON_CURRENT_EXACT_ARTIFACT_EVIDENCE",
+    "profile_contract_valid": "PARTIAL_DETERMINISTIC_SCHEMA_GUARD_ONLY",
+    "semantic_utility_after": "NOT_EXECUTED",
+    "p02_p03_historical_334_parity": "NOT_PROVEN"
   },
-  "target_assessment": {
-    "resolver_cost_near_instant": "PASS",
-    "normalized_residual_le_25_35": "PASS_ON_FALLBACK_199_TOKEN_RUN",
-    "normalized_reread_reduction_ge_75_pct": "PASS_ON_FALLBACK_199_TOKEN_RUN",
-    "zero_context_fabrication": "PASS",
-    "final_vps_classification": "WITHHELD_PENDING_SAME_EVIDENCE_PARITY_AND_TARGETED_REREAD_QUALITY"
-  },
-  "risk": "Main remaining uncertainty is evidence comparability: the historical 334+bbox artifact must be recovered or durably persisted, then V3 must be rerun and targeted reread + P-02/P-03 quality parity proven before VPS classification.",
-  "confidence": "HIGH for structural algorithm behavior and resolver latency on this exact PNG; MEDIUM for residual target generalization until historical observation parity is restored."
+  "risk": "Main remaining uncertainties are semantic AFTER on the isolated candidate and historical 334+bbox parity. Neither is converted into PASS by transport success or fallback OCR evidence.",
+  "confidence": "HIGH for current exact-artifact structural/reread behavior and transport trace; MEDIUM for semantic utility until AFTER executes; historical 334+bbox parity remains unproven."
 }
