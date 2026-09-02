@@ -1,0 +1,18 @@
+{
+  "output_type": "CUSTOMER_PAYMENT_RECOVERY_SPEC",
+  "payment_state": "PENDING",
+  "state_evidence_refs": ["source://payment/provider-status/1"],
+  "customer_message_intent": "Explain that final status is still pending and avoid implying success or failure.",
+  "safe_next_action": "Wait for authoritative status reconciliation before another charge attempt.",
+  "retry_policy": {
+    "allowed": false,
+    "condition": "Prior attempt state must be resolved and retryability explicitly confirmed.",
+    "idempotency_requirement": "Reuse or resolve the authoritative payment/idempotency reference before retry."
+  },
+  "duplicate_payment_controls": ["Do not create a second charge while prior-attempt state is unresolved."],
+  "receipt_or_proof_expectation": "Receipt/final proof only after authoritative success evidence.",
+  "escalation_condition": "Escalate when pending state exceeds the governed reconciliation window or evidence conflicts.",
+  "claim_guardrails": ["Do not claim debt closure or payment finality from transport acknowledgement."],
+  "handoff_to_next": {"target":"UI_ARCHITECT","preserve":["payment_state","state_evidence_refs","retry_policy","claim_guardrails"]},
+  "self_verdict": "READY_FOR_REVIEW"
+}
