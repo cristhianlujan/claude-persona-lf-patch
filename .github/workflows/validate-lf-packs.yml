@@ -40,3 +40,19 @@ jobs:
 
       - name: Validate learning engine pack
         run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
+
+      - name: Validate PROFILE_RUNTIME V3 quality and lineage gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          tests=(sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_*.py)
+          if (( ${#tests[@]} == 0 )); then
+            echo "PROFILE_RUNTIME_V3_TESTS_MISSING"
+            exit 1
+          fi
+          printf 'PROFILE_RUNTIME_V3_TEST_COUNT=%s\n' "${#tests[@]}"
+          for test_file in "${tests[@]}"; do
+            echo "RUNNING=${test_file}"
+            python "${test_file}"
+          done
