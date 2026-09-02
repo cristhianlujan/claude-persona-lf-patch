@@ -27,13 +27,36 @@ def role_fit(text,role):
     c=ROLE_CANDIDATES.get(role,())
     return max((similarity(text,x) for x in c),default=0.0) if text else 0.0
 
+def best_visible_span(text, role, max_tokens=5):
+    """Select only a contiguous token span already present in reread OCR.
+
+    Canonical role candidates influence scoring only. No candidate token is
+    emitted unless it already occurs in the visible reread string.
+    """
+    raw=str(text or '').strip()
+    tokens=re.findall(r'\S+', raw)
+    if not tokens:
+        return raw, 0.0
+    best_text=raw
+    best_fit=role_fit(raw,role)
+    limit=min(max_tokens,len(tokens))
+    for n in range(1,limit+1):
+        for i in range(0,len(tokens)-n+1):
+            span=' '.join(tokens[i:i+n])
+            score=role_fit(span,role)
+            if score > best_fit:
+                best_text,best_fit=span,score
+    return best_text,best_fit
+
 def reconcile(original_text,reread_text,role,min_gain=0.03,min_absolute_fit=0.70):
-    old_fit=role_fit(original_text,role); new_fit=role_fit(reread_text,role)
-    adopt=(bool(str(reread_text).strip()) and
+    old_fit=role_fit(original_text,role)
+    visible_candidate,new_fit=best_visible_span(reread_text,role)
+    adopt=(bool(str(visible_candidate).strip()) and
            new_fit >= min_absolute_fit and
            new_fit >= old_fit + min_gain)
-    return {'text':reread_text if adopt else original_text,
+    return {'text':visible_candidate if adopt else original_text,
             'source':'TARGETED_REREAD' if adopt else 'ORIGINAL_OCR',
             'original_role_fit':round(old_fit,4),'reread_role_fit':round(new_fit,4),
             'minimum_absolute_fit':min_absolute_fit,
+            'visible_span_selected':visible_candidate != str(reread_text or '').strip(),
             'adopted':adopt}
