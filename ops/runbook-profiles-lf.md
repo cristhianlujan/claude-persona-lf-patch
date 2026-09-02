@@ -6,6 +6,16 @@ Operate Profiles LF in this repository and the authorized LF Supabase sandbox. N
 ## Evidence
 Evidence is tool output produced during the current run. Report unqueried fields as `NO_EJECUTADO`. Record identifiers, receipts, SHAs, CI states and query results only when observed in current-run tool output.
 
+## Canonical execution-transport process
+This runbook MUST apply `ops/runbook-execution-transport.md` whenever a code/runtime/profile/adapter change is expected to reach CI, a dispatcher, queue, worker or runner.
+
+`NO_RUN`, `NO_STATUS`, `PENDING`, `NO_EVIDENCE` or a missing workflow run MUST NOT be classified as an evidence-only problem until the execution-transport trace has isolated the first failed or missing hop.
+
+Keep these layers separate in every applicable run:
+`TRANSPORT -> DISPATCH -> EXECUTION -> QUALITY -> SEMANTIC_UTILITY`.
+
+A success in an earlier layer never proves a later one.
+
 ## 1. Connectivity
 First operation: run `SELECT now(), current_database(), current_user;` against the configured LF Supabase sandbox.
 
@@ -40,7 +50,14 @@ Work differentially from the durable cursor and freshness delta. Reuse stable sn
 Inspect the live run/closure contract. Use its canonical checkpoint mechanism when it supports backlog and cursor persistence. Otherwise persist the identified gap and continue safe work.
 
 ### P3 — Runtime dispatch
-When higher priorities have no immediately executable unit, advance `PROFILE-RUNTIME-DISPATCH-001` through its canonical lifecycle and observe queue-to-comment, comment-to-workflow, runner preparation and execution timing when available. Primary outcome is SUCCEEDED. Compute distribution metrics only with a real denominator. Reopen prior regressions only with new reproducible evidence.
+When higher priorities have no immediately executable unit, advance `PROFILE-RUNTIME-DISPATCH-001` through its canonical lifecycle and apply the canonical execution-transport trace from `ops/runbook-execution-transport.md`.
+
+Trace at minimum:
+`source/commit -> branch/ref -> trigger eligibility -> event/dispatch -> workflow run -> job -> runner -> checkout exact-head -> artifact/input -> test discovery -> test execution -> gate -> published status`.
+
+If the HEAD exists but no run is created, classify the first failed hop as an execution-transport/dispatch problem until proven otherwise; do not report it merely as missing evidence. If the run exists but no job/runner/checkout/test occurs, isolate that hop. Only after tests actually execute may runtime/gate/quality results be interpreted.
+
+Compute distribution metrics only with a real denominator. Reopen prior regressions only with new reproducible evidence.
 
 ### P4 — New-profile inventory and active deferred work
 Reconstruct the canonical inventory of required/new profiles from Supabase and GitHub rather than from conversation context.
@@ -69,9 +86,10 @@ While a safe material unit is executable:
 1. select the highest-priority unit;
 2. execute it;
 3. verify/read back;
-4. update durable cursor/state when supported;
-5. scan remaining work;
-6. select the next unit.
+4. when the unit should cause downstream execution, run the execution-transport trace and isolate the first failed/missing hop;
+5. update durable cursor/state when supported;
+6. scan remaining work;
+7. select the next unit.
 
 A wait blocks only its own unit. Measure progress by verifiable artifact IDs and durable state changes, not by an arbitrary batch count. Continue while a safe material unit remains executable in the current run.
 
@@ -79,7 +97,7 @@ A wait blocks only its own unit. Measure progress by verifiable artifact IDs and
 Preserve the benchmark split and do not use the holdout/hard-repeat sets before the stable set is ready. Report `160 x/160 | 40 x/40 | 20 x/20` only from current evidence. Merge only when applicable reproducible gates are green for the exact head, applicable High/Critical findings are clear, and the expected head SHA has been verified. Non-production only.
 
 ## 7. Closure
-Before ending, scan P0, P0b, P1, P2, P3, every P4 profile/deferred item, waits, CI, EKB and backlog. If a safe material unit remains executable, execute it and repeat the scan.
+Before ending, scan P0, P0b, P1, P2, P3, every P4 profile/deferred item, waits, CI, execution transport, EKB and backlog. If a safe material unit remains executable, execute it and repeat the scan.
 
 Allowed stop classifications:
 - `NO_SAFE_WORK_REMAINING`
@@ -94,6 +112,8 @@ Persist and show:
 `FIN — <hora Lima> — duración real — SUPABASE=<OK|SQL_ERROR|CONNECTOR_DENIED|PROVIDER_BLOCKED>`
 
 Report `NO_EJECUTADO` for fields without a current-run tool call. Include priority, pilot CURRENT x/4, profiles/adapters used, P0/P0b/P1/P2/P3/P4 state, completed artifact IDs, benchmark, WAITING/RESUMED, EKB reads/writes, observed errors and recovery, PR/HEAD/CI, safe backlog, remaining safe-work count when observable, cursor, next subtask, and stop classification. Include execution-limit evidence only when an actual limit signal was observed.
+
+When execution transport applies, report a separate table for `TRANSPORT | DISPATCH | EXECUTION | QUALITY | SEMANTIC_UTILITY`, plus `first_failed_or_missing_hop`. Missing downstream evidence caused by an upstream failed hop must be reported as a consequence, not as the root problem.
 
 Mandatory `PERFILES NUEVOS` section: one line per discovered profile:
 `<profile_code> — <estado> — adapter=<estado> — pruebas=<x/y o NO_EJECUTADO> — siguiente=<unidad>`
