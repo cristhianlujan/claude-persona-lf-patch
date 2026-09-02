@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 import importlib.util
+import sys
 from pathlib import Path
 p=Path(__file__).with_name('run_close_gate_v3.py')
-s=importlib.util.spec_from_file_location('g',p); g=importlib.util.module_from_spec(s); s.loader.exec_module(g)
+s=importlib.util.spec_from_file_location('profile_runtime_close_gate_v3',p)
+g=importlib.util.module_from_spec(s)
+sys.modules[s.name]=g
+s.loader.exec_module(g)
 
 def base():
  return {'inicio_lima':'06:42:49','fin_lima':'07:20:00','duracion_real':'00:37:11','trabajo_activo':'00:37:11','espera_neta':'00:00:00','asked_at_lima':'07:19:59','ekb_final_enrichment':'PASS','ekb_readback_verified':True,'global_remaining_work_scan':'PASS','anti_close_answer':'NO','safe_work_remaining_count':0,'next_safe_batch':'NONE','why_run_stopped':'NO_SAFE_WORK_REMAINING'}
