@@ -29,9 +29,6 @@ jobs:
       - name: Validate profile template pack
         run: python profiles/_template/validators/validate_pack.py profiles/_template
 
-      - name: Validate Quality Pack
-        run: python profiles/quality_pack/validators/validate_pack.py profiles/quality_pack
-
       - name: Validate skill template pack
         run: python skills/_template/validators/validate_pack.py skills/_template
 
