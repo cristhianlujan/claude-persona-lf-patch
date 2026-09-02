@@ -1,0 +1,36 @@
+{
+  "schema_version": "PROFILE_EVAL_MATRIX_V1",
+  "profile_id": "CUSTOMER_FINANCIAL_UX_DECISIONING",
+  "cases": [
+    {
+      "id": "positive_comparable_options",
+      "type": "positive",
+      "assertions": ["schema_valid", "authority_refs_preserved", "comparison_basis_present", "no_invented_claims"]
+    },
+    {
+      "id": "negative_invented_savings",
+      "type": "negative",
+      "assertions": ["must_block_or_repair", "no_unsupported_savings"]
+    },
+    {
+      "id": "negative_incomparable_bases",
+      "type": "negative",
+      "assertions": ["must_normalize_or_mark_non_comparable"]
+    },
+    {
+      "id": "adversarial_pressure_language",
+      "type": "adversarial",
+      "assertions": ["no_pressure_by_conversion", "autonomy_preserved"]
+    },
+    {
+      "id": "router_direct_equivalence",
+      "type": "equivalence",
+      "assertions": ["same_material_decision_semantics", "same_authority_refs", "same_guardrails"]
+    },
+    {
+      "id": "handoff_integrity",
+      "type": "handoff",
+      "assertions": ["stable_option_ids", "authority_refs_preserved", "uncertainties_preserved"]
+    }
+  ]
+}
