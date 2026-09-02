@@ -85,6 +85,36 @@ def _hint_match(text, hints):
     n=norm(text)
     return any(n == norm(h) or norm(h) in n for h in hints)
 
+def _adjacent_visible_role(item, all_items):
+    """Return (role, visible_text) only for an unambiguous visible phrase.
+
+    This is deliberately evidence-only: it combines adjacent OCR tokens already
+    visible on the same line. It does not synthesize canonical text. Ambiguous
+    phrases such as "Cargado por" (filter and table header) are left to geometry.
+    """
+    neighbors=[]
+    for other in all_items:
+        if other is item:
+            continue
+        if abs(other["cy"]-item["cy"]) > max(5.0,0.45*max(item["h"],other["h"])):
+            continue
+        if other["r"] <= item["x"]:
+            gap=item["x"]-other["r"]
+        elif item["r"] <= other["x"]:
+            gap=other["x"]-item["r"]
+        else:
+            gap=0.0
+        if gap <= 14:
+            neighbors.append(other)
+    for other in neighbors:
+        pair=sorted((item,other),key=lambda x:x["x"])
+        visible=" ".join(x["text"] for x in pair)
+        vn=norm(visible)
+        roles={role for role,phrases in ROLE_EXACT.items() if vn in {norm(p) for p in phrases}}
+        if len(roles)==1:
+            return next(iter(roles)),visible
+    return None
+
 def _exact_visible_resolution(item, all_items):
     candidates={norm(x) for x in ROLE_EXACT.get(item["role"],())}
     if not candidates:
@@ -203,10 +233,24 @@ def classify(observations,width,height,context=None):
             role="PAGINATION"; reread=False
         if role=="UNKNOWN" and (len(n)<=2 or conf<55):
             role="VISUAL_FRAGMENT"; reread=False; material=False
-        if role in {"PAGE_HEADER","PAGE_ACTIONS","FILTER_BAR","TABLE_SUMMARY","TABLE_HEADER","STATE_BADGE","ROW_ACTION"} and conf < 65 and len(n) > 2:
-            reread=True
         out.append({**o,"role":role,"needs_reread":reread,"material":material})
+
+    # Visible, unambiguous adjacent phrases may correct weak geometry. This
+    # happens before confidence-based reread so the same visible evidence can
+    # prevent an unnecessary OCR retry. Ambiguous phrases remain geometric.
     for item in out:
+        visible_role=_adjacent_visible_role(item,out)
+        if visible_role is None:
+            continue
+        role,visible=visible_role
+        item["role"]=role
+        item["resolved_by_visible_group"]=True
+        item["visible_group_text"]=visible
+        item["needs_reread"]=False
+
+    for item in out:
+        if item["role"] in {"PAGE_HEADER","PAGE_ACTIONS","FILTER_BAR","TABLE_SUMMARY","TABLE_HEADER","STATE_BADGE","ROW_ACTION"} and item["conf"] < 65 and len(item["norm"]) > 2 and not item.get("resolved_by_visible_group"):
+            item["needs_reread"]=True
         if not item["needs_reread"]:
             continue
         visible_group=_exact_visible_resolution(item,out)
