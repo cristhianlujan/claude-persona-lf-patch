@@ -68,6 +68,8 @@ checks = {
     "batch_duplicate_fails": 'PROFILE_OPERATION_BATCH_DUPLICATE_STEP' in batch,
     "batch_empty_fails": 'PROFILE_OPERATION_BATCH_EMPTY' in batch,
     "batch_transport_limit_is_not_business_step_count": 'MAX_SAFE_TRANSPORT_STEPS = 64' in batch and 'MAX_BATCH_STEPS = 40' not in batch,
+    "workflow_transport_limit_matches_generic_bound": '1 <= len(steps) <= 64' in workflow and '1 <= len(steps) <= 40' not in workflow,
+    "workflow_execution_id_is_operation_neutral": "EXEC-[A-Z0-9][A-Z0-9_-]{7,172}" in workflow and 'EXEC-CREACION-PERFIL-LF-OIDC-[0-9a-f-]+' not in workflow,
     "workflow_source_only_dispatch": 'source_canary_only' in workflow and 'NON_CANARY_PROFILE_CREATION_EXECUTED=false' in workflow,
     "workflow_router_source_gate": 'ROUTER_REQUIRES_SUPABASE_EVIDENCE_REF' in workflow and 'ROUTER_READ_REQUIRED' in workflow,
     "workflow_step_envelope_gate": 'MISSING_STEP_RESULT' in workflow and 'MISSING_BLOCKING_CODES' in workflow,
