@@ -1,5 +1,5 @@
 -- PROFILE_OPERATION_COMMON_RECORDER_V1
--- SOURCE_ONLY / NOT_DEPLOYED / NO_RUNTIME_ENABLEMENT
+-- SOURCE_CANONICAL / LIVE_V1_MATERIALIZED / UPDATE_WRITE_STILL_DISABLED
 -- Generalizes the existing CREACION_PERFIL_LF recorder without creating a parallel UPDATE RPC.
 -- Post-binding failures are durable and retryable on the same execution+step row.
 
@@ -69,7 +69,10 @@ begin
   from public.lf_operation_step_contracts
   where operation_code = v_execution.operation_code
     and step_id = p_step_id
-    and status = 'ACTIVE';
+    and status = case
+      when v_execution.operation_code = 'ACTUALIZACION_PERFIL_LF' then 'ACTIVE_ENFORCEMENT'
+      else 'ACTIVE'
+    end;
   if not found then return jsonb_build_object('outcome','BLOCKED','code','STEP_CONTRACT_MISSING','durable',false); end if;
 
   select * into v_binding
@@ -252,8 +255,7 @@ begin
 end;
 $function$;
 
--- Compatibility strategy when later materialized:
--- CREACION_PERFIL_LF keeps its existing public.lf_record_creacion_perfil_step_v1 entrypoint
--- until a separately tested thin wrapper can delegate to this common recorder.
--- ACTUALIZACION_PERFIL_LF runtime remains fail-closed until server-derived trusted context exists,
--- this source is deployed, and live rollback tests prove blocked persistence + clean retry + exact currentness.
+-- Compatibility strategy:
+-- CREACION_PERFIL_LF keeps its existing public.lf_record_creacion_perfil_step_v1 entrypoint.
+-- ACTUALIZACION_PERFIL_LF runtime remains fail-closed until server-derived trusted context exists.
+-- Live v1 is materialized service-role only; UPDATE write is still disabled.
