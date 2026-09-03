@@ -56,6 +56,7 @@ checks = {
     "no_input_governance_actions": 'input_readiness_' not in caller and 'input-governance-agent-v1' not in caller,
     "no_adapter_actions": 'adapter' not in caller.lower(),
     "no_receipt_fabrication": 'LF_OPERATION_CONTRACT_RECEIPT' not in caller and 'LF_OPERATION_CONTRACT_RECEIPT' not in workflow,
+    "currentness_before_single_write": 'PROFILE_OPERATION_STEP_NOT_CURRENT' in caller and 'expectedStepId !== stepId' in caller,
     "currentness_before_batch_write": 'PROFILE_OPERATION_BATCH_STEP_NOT_CURRENT' in caller and 'expectedStepId !== step.step_id' in caller,
     "currentness_inside_runtime": 'PROFILE_OPERATION_STEP_NOT_CURRENT' in runtime,
     "update_fail_closed_without_recorder": 'UPDATE_OPERATION_CANONICAL_RECORDER_REQUIRED' in runtime,
@@ -73,6 +74,17 @@ checks = {
     "workflow_source_only_dispatch": 'source_canary_only' in workflow and 'NON_CANARY_PROFILE_CREATION_EXECUTED=false' in workflow,
     "workflow_router_source_gate": 'ROUTER_REQUIRES_SUPABASE_EVIDENCE_REF' in workflow and 'ROUTER_READ_REQUIRED' in workflow,
     "workflow_step_envelope_gate": 'MISSING_STEP_RESULT' in workflow and 'MISSING_BLOCKING_CODES' in workflow,
+
+    # Deterministic UPDATE currentness is derived by the exact OIDC caller, not declared by the worker.
+    "update_currentness_only_prewrite": 'snapshot.operation_code !== UPDATE_OPERATION || stepId !== PREWRITE_STEP' in caller,
+    "trusted_currentness_reads_main_commit": '/repos/${REPOSITORY}/commits/${UPDATE_BASE_REF}' in caller and 'const UPDATE_BASE_REF = "main"' in caller,
+    "trusted_currentness_reads_exact_target_blob": '/contents/${encodedPath}?ref=${revisionSha}' in caller and 'target_blob_sha' in caller,
+    "trusted_currentness_target_from_runtime_snapshot": 'safeRepoPath(snapshot.target_path)' in caller,
+    "trusted_currentness_declared_flag_rejected": 'declared_currentness_accepted: false' in caller and 'declared_current_revision_ignored: true' in caller,
+    "trusted_currentness_bound_revision_structured": 'PROFILE_UPDATE_BOUND_REVISION_STRUCTURED_REQUIRED' in caller and 'boundRevisionSha(evidencePayload.bound_revision)' in caller,
+    "trusted_currentness_mismatch_blocks_rebind": 'PROFILE_UPDATE_BOUND_REVISION_STALE_REBIND_REQUIRED' in caller and 'boundSha !== observedSha' in caller,
+    "trusted_currentness_persisted_in_evidence": all(token in caller for token in ['current_resolved_revision: observedSha','trusted_current_revision: trusted','current_revision_resolved_by_caller: true']),
+    "trusted_currentness_no_request_target_path": 'resolveTrustedCurrentRevision(body.target_path)' not in caller,
 
     # Exact-target binding is a seam repair in the existing UPDATE pre-write gate.
     "exact_target_update_scope": exact_target.get('operation_code') == 'ACTUALIZACION_PERFIL_LF',
