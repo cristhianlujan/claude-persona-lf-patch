@@ -150,6 +150,24 @@ def _materialize_image(request: dict[str, Any], work_dir: Path) -> tuple[Path | 
     return image_path, actual_sha
 
 
+def _read_runtime_schema_candidate(path: Path, schema_root: Path) -> tuple[dict[str, Any], bytes]:
+    resolved = path.resolve()
+    try:
+        resolved.relative_to(schema_root)
+    except ValueError as exc:
+        raise RuntimeExecutionBlocked("QUEUE_RUNTIME_SCHEMA_PATH_ESCAPE") from exc
+    if not resolved.is_file():
+        raise RuntimeExecutionBlocked("QUEUE_RUNTIME_SCHEMA_INVALID", path.name)
+    try:
+        raw = resolved.read_bytes()
+        payload = json.loads(raw.decode("utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise RuntimeExecutionBlocked("QUEUE_RUNTIME_SCHEMA_INVALID_JSON", path.name) from exc
+    if not isinstance(payload, dict):
+        raise RuntimeExecutionBlocked("QUEUE_RUNTIME_SCHEMA_INVALID", path.name)
+    return payload, raw
+
+
 def _materialize_runtime_output_schema(profile_slug: str, repo_root: Path, work_dir: Path) -> Path | None:
     if not profile_slug or "/" in profile_slug or "\\" in profile_slug or profile_slug in {".", ".."}:
         raise RuntimeExecutionBlocked("QUEUE_RUNTIME_SCHEMA_PROFILE_SLUG_INVALID")
@@ -159,22 +177,34 @@ def _materialize_runtime_output_schema(profile_slug: str, repo_root: Path, work_
         profile_root.relative_to(profiles_root)
     except ValueError as exc:
         raise RuntimeExecutionBlocked("QUEUE_RUNTIME_SCHEMA_PATH_ESCAPE") from exc
-    source = (profile_root / "schemas" / "runtime_output.schema.json").resolve()
+    schema_root = (profile_root / "schemas").resolve()
+    if not schema_root.exists():
+        return None
     try:
-        source.relative_to(profile_root / "schemas")
+        schema_root.relative_to(profile_root)
     except ValueError as exc:
         raise RuntimeExecutionBlocked("QUEUE_RUNTIME_SCHEMA_PATH_ESCAPE") from exc
-    if not source.exists():
-        return None
-    if not source.is_file():
+    if not schema_root.is_dir():
         raise RuntimeExecutionBlocked("QUEUE_RUNTIME_SCHEMA_INVALID")
-    try:
-        raw = source.read_bytes()
-        payload = json.loads(raw.decode("utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise RuntimeExecutionBlocked("QUEUE_RUNTIME_SCHEMA_INVALID_JSON") from exc
-    if not isinstance(payload, dict):
-        raise RuntimeExecutionBlocked("QUEUE_RUNTIME_SCHEMA_INVALID")
+
+    explicit = schema_root / "runtime_output.schema.json"
+    if explicit.exists() or explicit.is_symlink():
+        _payload, raw = _read_runtime_schema_candidate(explicit, schema_root)
+    else:
+        candidates = sorted(
+            path for path in schema_root.glob("*.schema.json")
+            if path.name != "runtime_output.schema.json"
+        )
+        if not candidates:
+            return None
+        parsed = [_read_runtime_schema_candidate(path, schema_root)[0] for path in candidates]
+        payload = parsed[0] if len(parsed) == 1 else {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "anyOf": parsed,
+            "x-lf-runtime-schema-source": [path.name for path in candidates],
+        }
+        raw = (json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+
     destination = work_dir / "profiles" / profile_slug / "schemas" / "runtime_output.schema.json"
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_bytes(raw)
