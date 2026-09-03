@@ -18,6 +18,9 @@ CUSTOMER_PROFILE_CREATOR_WORKFLOW = ".github/workflows/lf-customer-profile-creat
 CUSTOMER_PROFILE_CREATOR_BLOBS = {
     CUSTOMER_PROFILE_CREATOR_WORKFLOW: "b4a2b342a58bd26f63c88a18a11ed8ca28354be8",
     "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts": "d8ddbaf384913117ccf2bbf015548054f44f4083",
+    "supabase/functions/lf-profile-creator-governance-caller-v1/batch.ts": "604b2934cf12dbd4d9ddc40453d77816c6a17ade",
+    "supabase/functions/lf-profile-creator-governance-caller-v1/.trigger-customer-identity-privacy-20260902": "a07d7887f09b4d1a1cc267c74efc79a3e0383c09",
+    "supabase/functions/lf-profile-creator-governance-caller-v1/.trigger-customer-payments-recovery-20260902": "a07d7887f09b4d1a1cc267c74efc79a3e0383c09",
     "supabase/functions/run-creacion-perfil-lf/index.ts": "a95a95f79d13a9f9360d5433b418c3f0a4b86354",
 }
 CUSTOMER_PROFILE_CREATOR_PATHS = frozenset(CUSTOMER_PROFILE_CREATOR_BLOBS)
