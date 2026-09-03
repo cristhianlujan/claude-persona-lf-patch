@@ -1,67 +1,13 @@
 {
-  "contract_code": "PROFILE_OPERATION_BLOCKED_EVIDENCE_V1",
-  "scope": ["CREACION_PERFIL_LF", "ACTUALIZACION_PERFIL_LF"],
-  "architecture": {
-    "new_table": false,
-    "new_layer": false,
-    "new_operation": false,
-    "persistence": "lf_operation_execution_steps",
-    "recorder": "lf_record_profile_operation_step_v1"
-  },
-  "identity_boundary": {
-    "durable_only_after": ["execution_resolved", "canonical_step_resolved", "active_contract_resolved", "active_binding_resolved"],
-    "pre_identity_failures_are_durable_step_evidence": false,
-    "reason": "A row in lf_operation_execution_steps cannot truthfully identify a step before execution/step/binding identity is valid."
-  },
-  "contract_status_resolution": {
-    "CREACION_PERFIL_LF": "ACTIVE",
-    "ACTUALIZACION_PERFIL_LF": "ACTIVE_ENFORCEMENT",
-    "fail_closed_on_mismatch": true
-  },
-  "durable_blocked_path": {
-    "status": "binding.blocked_result_value",
-    "required_payload_extensions": ["blocking_findings", "blocking_codes", "blocked_by_recorder", "blocked_reason_code", "attempt_history"],
-    "trigger_compatibility": "The existing trigger derives blocked_result_value when blocking_findings is non-empty. Required evidence keys must exist in the persisted payload; missing caller keys may be represented as null only in the blocked snapshot and may never satisfy a later clean retry.",
-    "caller_status_is_authority": false
-  },
-  "audit_semantics": {
-    "key_presence_alone_is_proof": false,
-    "required_query_rule": "Evidence audits must require key presence AND JSON non-null; blocked snapshots may intentionally carry required keys with null values.",
-    "forbidden_shortcut_example": "evidence_payload ? 'bound_revision'",
-    "minimum_non_null_predicate": "evidence_payload ? 'bound_revision' AND evidence_payload->'bound_revision' IS NOT NULL AND evidence_payload->'bound_revision' <> 'null'::jsonb"
-  },
-  "retry_semantics": {
-    "same_execution_step_row": true,
-    "blocked_row_is_terminal": false,
-    "retry_updates_existing_row": true,
-    "previous_attempt_preserved_in_attempt_history": true,
-    "clean_retry_requires_all_required_evidence_non_null": true,
-    "clean_retry_rederives_status_through_trigger": true,
-    "no_delete_of_blocked_history": true
-  },
-  "durable_block_codes": ["PRIOR_REQUIRED_STEP_NOT_CLEAN", "REQUIRED_EVIDENCE_MISSING", "BLOCKING_CODES_INVALID", "STEP_BLOCKED", "PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED"],
-  "non_durable_pre_identity_codes": ["STEP_IDENTITY_MISSING", "INIT_STEP_IMMUTABLE", "EVIDENCE_PAYLOAD_INVALID", "EXECUTION_IDENTITY_INVALID", "EXECUTION_NOT_IN_PROGRESS", "STEP_NOT_ACTIVE", "STEP_CONTRACT_MISSING", "STEP_JUDGE_BINDING_MISSING"],
-  "activation": {
-    "source_contract_only": false,
-    "recorder_source_implemented": true,
-    "live_materialized": true,
-    "live_execute_roles": ["service_role"],
-    "anon_execute": false,
-    "authenticated_execute": false,
-    "update_write_enabled": false,
-    "runtime_update_path_enabled": false,
-    "merge_authorized": false
-  },
-  "required_tests": [
-    "negative_missing_required_evidence_creates_blocked_snapshot_after_binding_resolution",
-    "negative_server_trust_missing_creates_blocked_snapshot",
-    "retry_preserves_first_blocked_attempt",
-    "retry_with_same_invalid_evidence_remains_blocked",
-    "retry_with_complete_clean_evidence_can_transition_only_if_trigger_derives_clean",
-    "pre_identity_failure_does_not_fabricate_step_row",
-    "audit_query_requires_non_null_evidence",
-    "operation_aware_contract_status_is_enforced",
-    "service_role_only_execute_is_verified",
-    "no_new_table_or_parallel_recorder"
-  ]
+  "contract_code":"PROFILE_OPERATION_BLOCKED_EVIDENCE_V1","scope":["CREACION_PERFIL_LF","ACTUALIZACION_PERFIL_LF"],
+  "architecture":{"new_table":false,"new_layer":false,"new_operation":false,"persistence":"lf_operation_execution_steps","recorder":"lf_record_profile_operation_step_v1"},
+  "identity_boundary":{"durable_only_after":["execution_resolved","canonical_step_resolved","active_contract_resolved","active_binding_resolved"],"pre_identity_failures_are_durable_step_evidence":false,"reason":"No durable step row before execution/step/binding identity is valid."},
+  "contract_status_resolution":{"CREACION_PERFIL_LF":"ACTIVE","ACTUALIZACION_PERFIL_LF":"ACTIVE_ENFORCEMENT","fail_closed_on_mismatch":true},
+  "durable_blocked_path":{"status":"binding.blocked_result_value","required_payload_extensions":["blocking_findings","blocking_codes","blocked_by_recorder","blocked_reason_code","attempt_history"],"trigger_compatibility":"Blocked snapshots may carry null required keys and never satisfy a later clean retry until complete.","caller_status_is_authority":false},
+  "audit_semantics":{"key_presence_alone_is_proof":false,"required_query_rule":"Evidence audits require key presence AND JSON non-null.","forbidden_shortcut_example":"evidence_payload ? 'bound_revision'","minimum_non_null_predicate":"evidence_payload ? 'bound_revision' AND evidence_payload->'bound_revision' IS NOT NULL AND evidence_payload->'bound_revision' <> 'null'::jsonb"},
+  "retry_semantics":{"same_execution_step_row":true,"blocked_row_is_terminal":false,"retry_updates_existing_row":true,"previous_attempt_preserved_in_attempt_history":true,"clean_retry_requires_all_required_evidence_non_null":true,"clean_retry_rederives_status_through_trigger":true,"no_delete_of_blocked_history":true},
+  "durable_block_codes":["PRIOR_REQUIRED_STEP_NOT_CLEAN","REQUIRED_EVIDENCE_MISSING","BLOCKING_CODES_INVALID","STEP_BLOCKED","PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED"],
+  "non_durable_pre_identity_codes":["STEP_IDENTITY_MISSING","INIT_STEP_IMMUTABLE","EVIDENCE_PAYLOAD_INVALID","EXECUTION_IDENTITY_INVALID","EXECUTION_NOT_IN_PROGRESS","STEP_NOT_ACTIVE","STEP_CONTRACT_MISSING","STEP_JUDGE_BINDING_MISSING"],
+  "activation":{"source_contract_only":false,"recorder_source_implemented":true,"live_materialized":true,"live_execute_roles":["service_role"],"anon_execute":false,"authenticated_execute":false,"update_write_enabled":true,"runtime_update_path_enabled":true,"merge_authorized":false},
+  "required_tests":["negative_missing_required_evidence_creates_blocked_snapshot_after_binding_resolution","negative_server_trust_missing_creates_blocked_snapshot","retry_preserves_first_blocked_attempt","retry_with_same_invalid_evidence_remains_blocked","retry_with_complete_clean_evidence_can_transition_only_if_trigger_derives_clean","pre_identity_failure_does_not_fabricate_step_row","audit_query_requires_non_null_evidence","operation_aware_contract_status_is_enforced","service_role_only_execute_is_verified","no_new_table_or_parallel_recorder","positive_server_trust_context_records_step60","caller_trust_override_cannot_bypass_server_derivation"]
 }
