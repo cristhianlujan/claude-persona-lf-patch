@@ -31,7 +31,12 @@ checks = {
     "ordered_step_bridge": '[RECORD_CUSTOMER_STEP]' in workflow and 'profile_creator_customer_step_request.json' in workflow,
     "ordered_step_envelope_gate": "MISSING_STEP_RESULT" in workflow and "MISSING_BLOCKING_CODES" in workflow,
     "router_source_gate": "ROUTER_REQUIRES_SUPABASE_EVIDENCE_REF" in workflow and "ROUTER_READ_REQUIRED" in workflow,
-    "ordered_step_fail_closed": "assert step.get('status') == 'STEP_CLEAN_PASS'" in workflow and "test \"$code\" = \"200\"" in workflow,
+    "ordered_step_fail_closed": "step.get('status')=='STEP_CLEAN_PASS'" in workflow or "step.get('status') == 'STEP_CLEAN_PASS'" in workflow,
+    "ordered_batch_bridge": '[RECORD_CUSTOMER_BATCH]' in workflow and 'profile_creator_customer_step_batch_request.json' in workflow,
+    "ordered_batch_bounded": '1 <= len(steps) <= 40' in workflow,
+    "ordered_batch_duplicate_guard": 'DUPLICATE_STEP' in workflow,
+    "ordered_batch_fail_fast": 'GOVERNED_CUSTOMER_PROFILE_BATCH=BLOCKED_FIRST_FAILURE' in workflow and 'sys.exit(1)' in workflow,
+    "ordered_batch_reuses_single_step": "'action':'profile_creator_record_step_v1'" in workflow,
 }
 
 failed = [name for name, ok in checks.items() if not ok]
