@@ -5,14 +5,16 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = ROOT / "contracts/update_revision_continuity_contract.json"
 CALLER = ROOT.parents[1] / "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts"
 RUNTIME = ROOT.parents[1] / "supabase/functions/run-creacion-perfil-lf/index.ts"
+RECORDER = ROOT / "contracts/profile_operation_common_recorder_v1.sql"
 contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
 caller = CALLER.read_text(encoding="utf-8")
 runtime = RUNTIME.read_text(encoding="utf-8")
+recorder = RECORDER.read_text(encoding="utf-8")
 clean = contract["deterministic_decision"]["clean_path"]
 stale = contract["deterministic_decision"]["stale_path"]
 forbidden = contract["deterministic_decision"]["forbidden"]
 blocking = set(contract["blocking_codes"])
-required_blocking = {"PROFILE_UPDATE_BASELINE_OBSERVATION_REQUIRED","PROFILE_UPDATE_BASELINE_REVISION_INVALID","PROFILE_UPDATE_BOUND_REVISION_STRUCTURED_REQUIRED","PROFILE_UPDATE_CURRENT_REVISION_UNRESOLVED","PROFILE_UPDATE_CURRENT_TARGET_BLOB_UNRESOLVED","PROFILE_UPDATE_STALE_REREAD_REQUIRED","PROFILE_UPDATE_STALE_REBIND_REQUIRED","PROFILE_UPDATE_REBOUND_FROM_REVISION_MISMATCH","PROFILE_UPDATE_BOUND_REVISION_CURRENT_MISMATCH"}
+required_blocking = {"PROFILE_UPDATE_BASELINE_OBSERVATION_REQUIRED","PROFILE_UPDATE_BASELINE_REVISION_INVALID","PROFILE_UPDATE_BOUND_REVISION_STRUCTURED_REQUIRED","PROFILE_UPDATE_EXECUTION_BINDING_REQUIRED","PROFILE_UPDATE_CURRENT_REVISION_UNRESOLVED","PROFILE_UPDATE_CURRENT_TARGET_BLOB_UNRESOLVED","PROFILE_UPDATE_STALE_REREAD_REQUIRED","PROFILE_UPDATE_STALE_REBIND_REQUIRED","PROFILE_UPDATE_REBOUND_FROM_REVISION_MISMATCH","PROFILE_UPDATE_BOUND_REVISION_CURRENT_MISMATCH","PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED"}
 checks = {
  "update_scope": contract.get("operation_code") == "ACTUALIZACION_PERFIL_LF",
  "prewrite_reused": contract.get("step_id") == "pre_write_execution_binding_gate",
@@ -22,11 +24,15 @@ checks = {
  "baseline_not_caller_authority": contract.get("trusted_inputs", {}).get("baseline", {}).get("caller_declaration_is_authority") is False,
  "github_current_source": contract.get("trusted_inputs", {}).get("current", {}).get("source") == "GITHUB_PUBLIC_API_EXACT_REF_V1",
  "current_not_caller_authority": contract.get("trusted_inputs", {}).get("current", {}).get("caller_declaration_is_authority") is False,
+ "recorder_flags_not_server_authority": contract.get("trusted_inputs", {}).get("current", {}).get("recorder_must_not_treat_caller_flags_as_server_authority") is True,
  "clean_requires_three_way_continuity": len(clean) == 3 and any("baseline_revision == trusted_current_revision.revision_sha" in x for x in clean) and any("bound_revision.revision_sha == trusted_current_revision.revision_sha" in x for x in clean),
- "stale_requires_reread_rebind": all(any(token in x for x in stale) for token in ["reread_performed == true","rebind_performed == true","rebound_from_revision == baseline_revision"]),
+ "stale_requires_reread_rebind_and_binding": all(any(token in x for x in stale) for token in ["reread_performed == true","rebind_performed == true","rebound_from_revision == baseline_revision","execution_bound_to_target_before_change == true"]),
  "free_text_forbidden": any("free_text_write_plan" in x for x in forbidden),
  "semantic_override_forbidden": any("semantic_pass_overrides_revision_mismatch" in x for x in forbidden),
+ "caller_flags_forbidden_as_server_authority": all(any(token in x for x in forbidden) for token in ["current_revision_resolved_by_caller","declared_current_revision_ignored"]),
  "blocking_complete": blocking == required_blocking,
+ "server_authority_not_materialized": contract.get("server_authority_gate", {}).get("state") == "NOT_MATERIALIZED",
+ "server_authority_fail_closed": contract.get("server_authority_gate", {}).get("recorder_behavior") == "FAIL_CLOSED" and contract.get("server_authority_gate", {}).get("blocking_code") == "PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED",
  "snapshot_extension_source_bound": contract.get("required_runtime_snapshot_extension", {}).get("derived_from_persisted_step") == "baseline_read",
  "snapshot_override_forbidden": contract.get("required_runtime_snapshot_extension", {}).get("must_not_accept_request_payload_override") is True,
  "runtime_reads_persisted_payload": "select=step_order,step_id,status,evidence_ref,evidence_payload,observed_at" in runtime,
@@ -40,6 +46,8 @@ checks = {
  "caller_stale_requires_reread_rebind": all(token in caller for token in ["PROFILE_UPDATE_STALE_REREAD_REQUIRED","PROFILE_UPDATE_STALE_REBIND_REQUIRED","PROFILE_UPDATE_REBOUND_FROM_REVISION_MISMATCH"]),
  "caller_bound_must_equal_current": "PROFILE_UPDATE_BOUND_REVISION_CURRENT_MISMATCH" in caller,
  "caller_emits_continuity_state": "STALE_REBOUND_CURRENT" in caller and "CURRENT_BOUND" in caller,
+ "recorder_prewrite_fail_closed_until_server_context": "PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED" in recorder,
+ "recorder_does_not_accept_trust_flags": "current_revision_resolved_by_caller" not in recorder and "declared_current_revision_ignored" not in recorder,
  "update_runtime_still_fail_closed": "UPDATE_OPERATION_CANONICAL_RECORDER_REQUIRED" in runtime,
  "contract_does_not_authorize_runtime": contract.get("activation", {}).get("update_recorder_enabled") is False and contract.get("activation", {}).get("runtime_deployment_authorized") is False,
 }
@@ -47,5 +55,6 @@ failed=[name for name,ok in checks.items() if not ok]
 if failed: raise SystemExit("FAIL_UPDATE_REVISION_CONTINUITY_CONTRACT:"+",".join(failed))
 print(f"PASS_UPDATE_REVISION_CONTINUITY_CONTRACT={sum(checks.values())}/{len(checks)}")
 print("RUNTIME_BASELINE_OBSERVATION_MATERIALIZED=true")
-print("THREE_WAY_CONTINUITY_ENFORCEMENT_SOURCE=true")
+print("CALLER_CURRENT_RESOLVER_SOURCE=true")
+print("RECORDER_SERVER_AUTHORITY_MATERIALIZED=false")
 print("UPDATE_WRITE_ENABLED=false")
