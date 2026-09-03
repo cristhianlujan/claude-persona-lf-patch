@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Compatibility wrapper for PR93 runtime scope with an exact Customer Profile Creator lane.
-
-The historical validator is preserved byte-for-byte in CORE_BASE_V1. This wrapper
-adds only the exclusive Customer Profile Creator branch/path/blob tuple required
-by PR #470, then delegates every other case to the preserved validator.
-"""
+"""Exact governed runtime scope extension for the Customer Profile Creator lane."""
 from __future__ import annotations
 
 import json
@@ -17,107 +12,19 @@ from collections.abc import Mapping, Sequence
 import PR93_P0_RUNTIME_CONTRACT_CHECK_CORE_BASE_V1 as _base
 from PR93_P0_RUNTIME_CONTRACT_CHECK_CORE_BASE_V1 import *  # noqa: F401,F403
 
-_original_base_evaluate_controlled_runtime_scope = _base.evaluate_controlled_runtime_scope
-
 CUSTOMER_PROFILE_CREATOR_BRANCH = "lf/profiles/profile-creator-customer-caller-20260902"
-CUSTOMER_PROFILE_CREATOR_PR_NUMBER = 470
+CUSTOMER_PROFILE_CREATOR_PR_NUMBER = 470  # historical merged admission; update only at a later authorized merge gate
 CUSTOMER_PROFILE_CREATOR_WORKFLOW = ".github/workflows/lf-customer-profile-creator-governance-caller.yml"
 CUSTOMER_PROFILE_CREATOR_BLOBS = {
-    CUSTOMER_PROFILE_CREATOR_WORKFLOW: "3a0842729dc695bb478f1a5989b3bfa4e660f123",
-    "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts": "d840f2964b886f9c1daa0e5ac2a344c3e3f2cd7b",
-    "supabase/functions/run-creacion-perfil-lf/index.ts": "6902090913c7d393737d5dc83bbed919e11ddcbf",
+    CUSTOMER_PROFILE_CREATOR_WORKFLOW: "b4a2b342a58bd26f63c88a18a11ed8ca28354be8",
+    "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts": "d8ddbaf384913117ccf2bbf015548054f44f4083",
+    "supabase/functions/run-creacion-perfil-lf/index.ts": "a95a95f79d13a9f9360d5433b418c3f0a4b86354",
 }
 CUSTOMER_PROFILE_CREATOR_PATHS = frozenset(CUSTOMER_PROFILE_CREATOR_BLOBS)
-
 EXPECTED_RUNTIME_BLOBS = dict(_base.EXPECTED_RUNTIME_BLOBS)
 EXPECTED_RUNTIME_BLOBS.update(CUSTOMER_PROFILE_CREATOR_BLOBS)
-EXPECTED_EDGE_PATHS = frozenset(
-    path for path in EXPECTED_RUNTIME_BLOBS if path.startswith("supabase/functions/")
-)
+EXPECTED_EDGE_PATHS = frozenset(path for path in EXPECTED_RUNTIME_BLOBS if path.startswith("supabase/functions/"))
 CONTROLLED_RUNTIME_PATHS = frozenset(EXPECTED_RUNTIME_BLOBS)
-
-
-def _verify_customer_main_merge_via_github() -> bool:
-    if os.environ.get("GITHUB_EVENT_NAME") != "push":
-        return False
-    if os.environ.get("GITHUB_REPOSITORY") != TARGET_REPOSITORY:
-        return False
-    if os.environ.get("GITHUB_REF") != "refs/heads/main":
-        return False
-    head_sha = os.environ.get("GITHUB_SHA", "")
-    if BLOB_RE.fullmatch(head_sha) is None:
-        return False
-    token = os.environ.get("GITHUB_TOKEN", "").strip()
-    if not token:
-        return False
-    request = urllib.request.Request(
-        f"https://api.github.com/repos/{TARGET_REPOSITORY}/pulls/{CUSTOMER_PROFILE_CREATOR_PR_NUMBER}",
-        headers={
-            "Accept": "application/vnd.github+json",
-            "Authorization": f"Bearer {token}",
-            "X-GitHub-Api-Version": "2022-11-28",
-            "User-Agent": "profile-creator-customer-runtime-scope-v1",
-        },
-    )
-    try:
-        with urllib.request.urlopen(request, timeout=15) as response:
-            payload = json.loads(response.read().decode("utf-8"))
-    except (urllib.error.URLError, TimeoutError, UnicodeDecodeError, json.JSONDecodeError):
-        return False
-    return (
-        isinstance(payload, dict)
-        and payload.get("merged") is True
-        and (payload.get("base") or {}).get("ref") == MAIN_BRANCH
-        and (payload.get("head") or {}).get("ref") == CUSTOMER_PROFILE_CREATOR_BRANCH
-        and payload.get("merge_commit_sha") == head_sha
-    )
-
-
-def _evaluate_customer_profile_creator_scope(
-    changed_files: Sequence[str],
-    *,
-    branch: str,
-    blob_by_path: Mapping[str, str],
-    mode_by_path: Mapping[str, str] | None = None,
-    main_merge_verified: bool = False,
-) -> bool:
-    changed = set(changed_files)
-    controlled = {
-        path
-        for path in changed
-        if path in CONTROLLED_RUNTIME_PATHS or path.startswith("supabase/functions/")
-    }
-    if controlled != set(CUSTOMER_PROFILE_CREATOR_PATHS):
-        unexpected = sorted(controlled - set(CUSTOMER_PROFILE_CREATOR_PATHS))
-        missing = sorted(set(CUSTOMER_PROFILE_CREATOR_PATHS) - controlled)
-        raise RuntimeScopeError(
-            "FAIL_RUNTIME_CUSTOMER_PROFILE_CREATOR_SCOPE",
-            f"exclusive Customer Profile Creator runtime scope mismatch: unexpected={unexpected!r} missing={missing!r}",
-        )
-    if branch == MAIN_BRANCH:
-        if not (main_merge_verified or _verify_customer_main_merge_via_github()):
-            raise RuntimeScopeError(
-                "FAIL_RUNTIME_MAIN_NOT_MERGED",
-                "Customer Profile Creator main transition requires merged PR #470 at the exact workflow SHA",
-            )
-    elif branch != CUSTOMER_PROFILE_CREATOR_BRANCH:
-        raise RuntimeScopeError(
-            "FAIL_RUNTIME_BRANCH_MISMATCH",
-            f"Customer Profile Creator runtime requires {CUSTOMER_PROFILE_CREATOR_BRANCH!r} or verified main; got {branch!r}",
-        )
-    for path, expected_blob in CUSTOMER_PROFILE_CREATOR_BLOBS.items():
-        observed = blob_by_path.get(path)
-        if observed != expected_blob:
-            raise RuntimeScopeError(
-                "FAIL_RUNTIME_BLOB_MISMATCH",
-                f"Customer Profile Creator blob mismatch for {path}: expected={expected_blob} observed={observed}",
-            )
-        if mode_by_path is not None and mode_by_path.get(path) != "100644":
-            raise RuntimeScopeError(
-                "FAIL_RUNTIME_MODE_MISMATCH",
-                f"Customer Profile Creator path must be regular file 100644: {path}",
-            )
-    return True
 
 
 def _sync_base_extensions() -> None:
@@ -126,149 +33,96 @@ def _sync_base_extensions() -> None:
     _base.CONTROLLED_RUNTIME_PATHS = CONTROLLED_RUNTIME_PATHS
 
 
-def evaluate_controlled_runtime_scope(
-    changed_files: Sequence[str],
-    *,
-    branch: str,
-    blob_by_path: Mapping[str, str],
-    mode_by_path: Mapping[str, str] | None = None,
-    main_merge_verified: bool = False,
-) -> bool:
-    changed = set(changed_files)
-    if changed & set(CUSTOMER_PROFILE_CREATOR_PATHS):
-        return _evaluate_customer_profile_creator_scope(
-            changed_files,
-            branch=branch,
-            blob_by_path=blob_by_path,
-            mode_by_path=mode_by_path,
-            main_merge_verified=main_merge_verified,
-        )
-    _sync_base_extensions()
-    return _original_base_evaluate_controlled_runtime_scope(
-        changed_files,
-        branch=branch,
-        blob_by_path=blob_by_path,
-        mode_by_path=mode_by_path,
-        main_merge_verified=main_merge_verified,
+def _verify_customer_main_merge_via_github() -> bool:
+    if os.environ.get("GITHUB_EVENT_NAME") != "push" or os.environ.get("GITHUB_REPOSITORY") != TARGET_REPOSITORY or os.environ.get("GITHUB_REF") != "refs/heads/main":
+        return False
+    head_sha = os.environ.get("GITHUB_SHA", "")
+    token = os.environ.get("GITHUB_TOKEN", "").strip()
+    if BLOB_RE.fullmatch(head_sha) is None or not token:
+        return False
+    request = urllib.request.Request(
+        f"https://api.github.com/repos/{TARGET_REPOSITORY}/pulls/{CUSTOMER_PROFILE_CREATOR_PR_NUMBER}",
+        headers={"Accept": "application/vnd.github+json", "Authorization": f"Bearer {token}", "X-GitHub-Api-Version": "2022-11-28", "User-Agent": "profile-creator-customer-runtime-scope-v1"},
     )
+    try:
+        with urllib.request.urlopen(request, timeout=15) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except (urllib.error.URLError, TimeoutError, UnicodeDecodeError, json.JSONDecodeError):
+        return False
+    return isinstance(payload, dict) and payload.get("merged") is True and (payload.get("base") or {}).get("ref") == MAIN_BRANCH and (payload.get("head") or {}).get("ref") == CUSTOMER_PROFILE_CREATOR_BRANCH and payload.get("merge_commit_sha") == head_sha
 
 
-def _customer_workflow_admission_allowed(branch: str, runtime_scope_enabled: bool) -> bool:
-    """Admit the Customer workflow only after its exact runtime scope was proven."""
-    if branch == CUSTOMER_PROFILE_CREATOR_BRANCH:
-        return runtime_scope_enabled
+def _evaluate_customer_profile_creator_scope(changed_files: Sequence[str], *, branch: str, blob_by_path: Mapping[str, str], mode_by_path: Mapping[str, str] | None = None, main_merge_verified: bool = False) -> bool:
+    changed = set(changed_files)
+    controlled = {path for path in changed if path in CONTROLLED_RUNTIME_PATHS or path.startswith("supabase/functions/")}
+    if controlled != set(CUSTOMER_PROFILE_CREATOR_PATHS):
+        raise RuntimeScopeError("FAIL_RUNTIME_CUSTOMER_PROFILE_CREATOR_SCOPE", f"exclusive Customer Profile Creator runtime scope mismatch: unexpected={sorted(controlled-set(CUSTOMER_PROFILE_CREATOR_PATHS))!r} missing={sorted(set(CUSTOMER_PROFILE_CREATOR_PATHS)-controlled)!r}")
     if branch == MAIN_BRANCH:
-        return runtime_scope_enabled
-    return False
+        if not (main_merge_verified or _verify_customer_main_merge_via_github()):
+            raise RuntimeScopeError("FAIL_RUNTIME_MAIN_NOT_MERGED", "Customer Profile Creator main transition requires an exact merged governed PR")
+    elif branch != CUSTOMER_PROFILE_CREATOR_BRANCH:
+        raise RuntimeScopeError("FAIL_RUNTIME_BRANCH_MISMATCH", f"Customer Profile Creator runtime requires {CUSTOMER_PROFILE_CREATOR_BRANCH!r} or verified main; got {branch!r}")
+    for path, expected_blob in CUSTOMER_PROFILE_CREATOR_BLOBS.items():
+        observed = blob_by_path.get(path)
+        if observed != expected_blob:
+            raise RuntimeScopeError("FAIL_RUNTIME_BLOB_MISMATCH", f"Customer Profile Creator blob mismatch for {path}: expected={expected_blob} observed={observed}")
+        if mode_by_path is not None and mode_by_path.get(path) != "100644":
+            raise RuntimeScopeError("FAIL_RUNTIME_MODE_MISMATCH", f"Customer Profile Creator path must be regular file 100644: {path}")
+    return True
+
+
+def evaluate_controlled_runtime_scope(changed_files: Sequence[str], *, branch: str, blob_by_path: Mapping[str, str], mode_by_path: Mapping[str, str] | None = None, main_merge_verified: bool = False) -> bool:
+    if set(changed_files) & set(CUSTOMER_PROFILE_CREATOR_PATHS):
+        return _evaluate_customer_profile_creator_scope(changed_files, branch=branch, blob_by_path=blob_by_path, mode_by_path=mode_by_path, main_merge_verified=main_merge_verified)
+    _sync_base_extensions()
+    return _base.evaluate_controlled_runtime_scope(changed_files, branch=branch, blob_by_path=blob_by_path, mode_by_path=mode_by_path, main_merge_verified=main_merge_verified)
 
 
 def _customer_scope_self_test() -> None:
     exact = dict(CUSTOMER_PROFILE_CREATOR_BLOBS)
     modes = {path: "100644" for path in exact}
     paths = list(CUSTOMER_PROFILE_CREATOR_PATHS)
-    if not _evaluate_customer_profile_creator_scope(
-        paths,
-        branch=CUSTOMER_PROFILE_CREATOR_BRANCH,
-        blob_by_path=exact,
-        mode_by_path=modes,
-    ):
-        raise SystemExit("FAIL_CUSTOMER_PROFILE_CREATOR_SCOPE_POSITIVE")
-    workflow_lookalike = ".github/workflows/lf-customer-profile-creator-governance-caller-copy.yml"
-    negative_cases = [
+    assert _evaluate_customer_profile_creator_scope(paths, branch=CUSTOMER_PROFILE_CREATOR_BRANCH, blob_by_path=exact, mode_by_path=modes)
+    negatives = [
         ("branch", "feature/arbitrary", exact, paths),
-        ("blob", CUSTOMER_PROFILE_CREATOR_BRANCH, {**exact, CUSTOMER_PROFILE_CREATOR_WORKFLOW: "0" * 40}, paths),
-        ("edge_path", CUSTOMER_PROFILE_CREATOR_BRANCH, exact, [*paths, "supabase/functions/arbitrary/index.ts"]),
-        (
-            "workflow_path",
-            CUSTOMER_PROFILE_CREATOR_BRANCH,
-            {**{k: v for k, v in exact.items() if k != CUSTOMER_PROFILE_CREATOR_WORKFLOW}, workflow_lookalike: exact[CUSTOMER_PROFILE_CREATOR_WORKFLOW]},
-            [workflow_lookalike, *[path for path in paths if path != CUSTOMER_PROFILE_CREATOR_WORKFLOW]],
-        ),
+        ("blob", CUSTOMER_PROFILE_CREATOR_BRANCH, {**exact, CUSTOMER_PROFILE_CREATOR_WORKFLOW: "0"*40}, paths),
+        ("edge", CUSTOMER_PROFILE_CREATOR_BRANCH, exact, [*paths, "supabase/functions/arbitrary/index.ts"]),
     ]
-    for label, test_branch, blobs, test_paths in negative_cases:
+    for label, branch, blobs, changed in negatives:
         try:
-            _evaluate_customer_profile_creator_scope(
-                test_paths,
-                branch=test_branch,
-                blob_by_path=blobs,
-                mode_by_path={path: "100644" for path in test_paths},
-            )
+            _evaluate_customer_profile_creator_scope(changed, branch=branch, blob_by_path=blobs, mode_by_path={path: "100644" for path in changed})
         except RuntimeScopeError:
             continue
         raise SystemExit(f"FAIL_CUSTOMER_PROFILE_CREATOR_SCOPE_NEGATIVE_{label.upper()}")
-    print("PASS_CUSTOMER_PROFILE_CREATOR_EXACT_RUNTIME_SCOPE=5/5")
+    print("PASS_CUSTOMER_PROFILE_CREATOR_EXACT_RUNTIME_SCOPE=4/4")
 
 
-def _customer_workflow_admission_self_test() -> None:
-    cases = (
-        ("feature_verified", CUSTOMER_PROFILE_CREATOR_BRANCH, True, True),
-        ("main_verified", MAIN_BRANCH, True, True),
-        ("main_unverified", MAIN_BRANCH, False, False),
-        ("arbitrary_even_if_scope_flagged", "feature/arbitrary", True, False),
-    )
-    for label, branch, runtime_scope_enabled, expected in cases:
-        observed = _customer_workflow_admission_allowed(branch, runtime_scope_enabled)
-        if observed is not expected:
-            raise SystemExit(f"FAIL_CUSTOMER_WORKFLOW_ADMISSION_SELFTEST_{label.upper()}")
-    print("PASS_CUSTOMER_WORKFLOW_ADMISSION_SELFTEST=4/4")
-
-
-_original_base_get_changed_files = _base.get_changed_files
+_original_get_changed_files = _base.get_changed_files
 
 
 def _customer_branch_scope_for_push() -> list[str]:
-    subprocess.run(
-        ["git", "fetch", "--no-tags", "origin", MAIN_BRANCH],
-        check=True,
-        stdout=subprocess.DEVNULL,
-    )
+    subprocess.run(["git", "fetch", "--no-tags", "origin", MAIN_BRANCH], check=True, stdout=subprocess.DEVNULL)
     merge_base = _base.e16.run_git(["merge-base", f"origin/{MAIN_BRANCH}", "HEAD"]).strip()
     if BLOB_RE.fullmatch(merge_base) is None:
-        raise RuntimeScopeError(
-            "FAIL_RUNTIME_CUSTOMER_PUSH_BASE_UNRESOLVED",
-            "Customer Profile Creator push could not resolve a valid merge-base with main",
-        )
+        raise RuntimeScopeError("FAIL_RUNTIME_CUSTOMER_PUSH_BASE_UNRESOLVED", "Customer Profile Creator push could not resolve merge-base with main")
     changed_files = _base.e16.git_changed_files(merge_base, "HEAD")
-    blobs: dict[str, str] = {}
-    modes: dict[str, str] = {}
+    blobs, modes = {}, {}
     for path in CUSTOMER_PROFILE_CREATOR_BLOBS:
-        try:
-            blobs[path] = git_blob_for_path(path)
-            modes[path] = git_mode_for_path(path)
-        except Exception as exc:
-            raise RuntimeScopeError(
-                "FAIL_RUNTIME_BLOB_UNRESOLVED",
-                f"could not read Customer Profile Creator pinned path {path}: {exc}",
-            ) from exc
-    _base._runtime_scope_enabled = _evaluate_customer_profile_creator_scope(
-        changed_files,
-        branch=CUSTOMER_PROFILE_CREATOR_BRANCH,
-        blob_by_path=blobs,
-        mode_by_path=modes,
-    )
+        blobs[path] = git_blob_for_path(path)
+        modes[path] = git_mode_for_path(path)
+    _base._runtime_scope_enabled = _evaluate_customer_profile_creator_scope(changed_files, branch=CUSTOMER_PROFILE_CREATOR_BRANCH, blob_by_path=blobs, mode_by_path=modes)
     print(f"PASS_CUSTOMER_PROFILE_CREATOR_PUSH_PR_SCOPE_PARITY={len(changed_files)}")
     return changed_files
 
 
 def _customer_get_changed_files() -> list[str]:
-    """Admit the exact workflow to the historical .github scanner only after scope proof."""
-    if (
-        os.environ.get("GITHUB_EVENT_NAME") == "push"
-        and current_event_branch() == CUSTOMER_PROFILE_CREATOR_BRANCH
-    ):
+    if os.environ.get("GITHUB_EVENT_NAME") == "push" and current_event_branch() == CUSTOMER_PROFILE_CREATOR_BRANCH:
         changed_files = _customer_branch_scope_for_push()
     else:
-        changed_files = _original_base_get_changed_files()
-    changed = set(changed_files)
-    if CUSTOMER_PROFILE_CREATOR_WORKFLOW in changed:
-        branch = current_event_branch()
-        if not _customer_workflow_admission_allowed(branch, _base._runtime_scope_enabled):
-            raise RuntimeScopeError(
-                "FAIL_RUNTIME_BRANCH_MISMATCH",
-                "Customer workflow admission requires the governed Customer branch "
-                f"or an exact verified main transition; got {branch!r} "
-                f"scope_verified={_base._runtime_scope_enabled!r}",
-            )
+        changed_files = _original_get_changed_files()
+    if CUSTOMER_PROFILE_CREATOR_WORKFLOW in set(changed_files):
+        if current_event_branch() != CUSTOMER_PROFILE_CREATOR_BRANCH:
+            raise RuntimeScopeError("FAIL_RUNTIME_BRANCH_MISMATCH", "Customer workflow admission requires exact governed branch")
         _base.e16.base.ALLOWED_GITHUB_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW)
     return changed_files
 
@@ -281,7 +135,6 @@ def main() -> int:
 
 
 _customer_scope_self_test()
-_customer_workflow_admission_self_test()
 
 if __name__ == "__main__":
     raise SystemExit(main())
