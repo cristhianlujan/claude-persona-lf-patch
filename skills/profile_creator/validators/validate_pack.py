@@ -36,14 +36,16 @@ def main():
         ('PROFILE_RESOLVER_DISPATCH_CONTRACT',[sys.executable,str(root/'evals/resolver_dispatch_contract.py')]),
         ('UPDATE_RECORDER_READINESS',[sys.executable,str(root/'evals/update_recorder_readiness_contract.py')]),
         ('PROFILE_OPERATION_COMMON_RECORDER',[sys.executable,str(root/'evals/profile_operation_common_recorder_contract.py')]),
-        ('EXISTING_ARTIFACT_REMEDIATION_GATE',[sys.executable,str(root/'evals/existing_artifact_remediation_contract.py')]),
         ('UPDATE_REVISION_CONTINUITY',[sys.executable,str(root/'evals/update_revision_continuity_contract.py')]),
-        ('UPDATE_REVISION_CONTINUITY_MATRIX',[sys.executable,str(root/'evals/update_revision_continuity_matrix.py')]),
         ('UPDATE_SERVER_TRUST_CONTEXT',[sys.executable,str(root/'evals/update_server_trust_context_contract.py')]),
-        ('UPDATE_SERVER_TRUST_BEHAVIOR',[sys.executable,str(root/'evals/update_server_trust_context_behavior.py')]),
         ('UPDATE_STEP60_JUDGE_REBASELINE',[sys.executable,str(root/'evals/update_step60_judge_rebaseline_contract.py')]),
         ('PROFILE_OPERATION_BLOCKED_EVIDENCE',[sys.executable,str(root/'evals/profile_operation_blocked_evidence_contract.py')]),
         ('RUNTIME_UPDATE_OPERATION_DISPOSITION',[sys.executable,str(root/'evals/runtime_update_operation_disposition_contract.py')]),
+    ]
+    specification_only=[
+        'evals/existing_artifact_remediation_contract.py',
+        'evals/update_revision_continuity_matrix.py',
+        'evals/update_server_trust_context_behavior.py',
     ]
     discovered,discovery_errors=discover_profile_validators(repo_root)
     for slug,validator,profile_dir in discovered: checks.append((f'PROFILE_PACK::{slug}',[sys.executable,str(validator),str(profile_dir)]))
@@ -51,6 +53,16 @@ def main():
     if not discovered: failed.append('NO_GOVERNED_PROFILE_VALIDATORS_DISCOVERED')
     for name,command in checks:
         if run(command)!=0: failed.append(name)
-    result={'status':'PASS' if not failed else 'FAIL','checks_executed':[name for name,_ in checks],'discovered_profile_validators':[slug for slug,_,_ in discovered],'failed_checks':failed,'runtime_authorized':False,'automatic_impact_authorized':False,'semantic_quality_review_authorized':False}
+    result={
+        'status':'PASS' if not failed else 'FAIL',
+        'checks_executed':[name for name,_ in checks],
+        'specification_only_not_validation':specification_only,
+        'evidence_ladder_note':'Self-referential models are specification/rung-1 only and cannot satisfy validation or runtime proof.',
+        'discovered_profile_validators':[slug for slug,_,_ in discovered],
+        'failed_checks':failed,
+        'runtime_authorized':False,
+        'automatic_impact_authorized':False,
+        'semantic_quality_review_authorized':False
+    }
     print(json.dumps(result,indent=2)); return 0 if not failed else 1
 if __name__=='__main__': raise SystemExit(main())
