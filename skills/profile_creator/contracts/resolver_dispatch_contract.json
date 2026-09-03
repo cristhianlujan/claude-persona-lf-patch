@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "scope": "CREACION_PERFIL_LF|ACTUALIZACION_PERFIL_LF",
+  "default_mode": "BLOCK_UNMAPPED_RESOLVER",
+  "principles": {
+    "router_owns_operation_code": true,
+    "judge_is_executor": false,
+    "declared_evidence_is_observed_evidence": false,
+    "missing_observed_evidence_fails_closed": true,
+    "write_requires_currentness_and_prewrite_gate": true
+  },
+  "resolvers": {
+    "public.lf_operation_execution": {
+      "mode": "SUPABASE_READ",
+      "side_effect": false,
+      "evidence_provenance": "DIRECT_READBACK"
+    },
+    "public.v_lf_fuente_operativa": {
+      "mode": "SUPABASE_READ",
+      "side_effect": false,
+      "evidence_provenance": "DIRECT_READBACK"
+    },
+    "public.v_lf_fuente_operativa.ACT-0001 + public.lf_operation_registry": {
+      "mode": "SUPABASE_READ",
+      "side_effect": false,
+      "evidence_provenance": "DIRECT_READBACK"
+    },
+    "public.v_lf_fuente_operativa.ACT-0001 + public.lf_operation_step_contracts/CREACION_PERFIL_LF/router": {
+      "mode": "SUPABASE_READ",
+      "side_effect": false,
+      "evidence_provenance": "DIRECT_READBACK"
+    },
+    "public.v_lf_fuente_operativa.ACT-0045": {
+      "mode": "SUPABASE_READ",
+      "side_effect": false,
+      "evidence_provenance": "DIRECT_READBACK"
+    },
+    "v_lf_fuente_operativa + lf_activos": {
+      "mode": "SUPABASE_READ",
+      "side_effect": false,
+      "evidence_provenance": "DIRECT_READBACK"
+    },
+    "public.v_lf_artifact_destination_registry": {
+      "mode": "SUPABASE_READ",
+      "side_effect": false,
+      "evidence_provenance": "DIRECT_READBACK"
+    },
+    "public.v_lf_artifact_destination_registry + public.v_lf_artifact_pack_template_registry": {
+      "mode": "SUPABASE_READ",
+      "side_effect": false,
+      "evidence_provenance": "DIRECT_READBACK"
+    },
+    "public.v_lf_artifact_pack_template_registry": {
+      "mode": "SUPABASE_READ",
+      "side_effect": false,
+      "evidence_provenance": "DIRECT_READBACK"
+    },
+    "public.lf_operation_step_judge_bindings + public.lf_operation_judges": {
+      "mode": "JUDGE_CONTRACT_READ_ONLY",
+      "side_effect": false,
+      "evidence_provenance": "DIRECT_READBACK",
+      "must_not_execute_judge_as_resolver": true
+    },
+    "GITHUB_API_LF_READER": {
+      "mode": "GITHUB_READ",
+      "side_effect": false,
+      "evidence_provenance": "EXACT_SHA_READBACK"
+    },
+    "run-github-readback-perfil-lf": {
+      "mode": "GITHUB_READBACK",
+      "side_effect": false,
+      "evidence_provenance": "EXACT_SHA_READBACK"
+    },
+    "run-github-write-perfil-lf": {
+      "mode": "GITHUB_WRITE_GOVERNED",
+      "side_effect": true,
+      "evidence_provenance": "EXACT_SHA_READBACK",
+      "requires": [
+        "CURRENT_EXECUTION_AND_STEP",
+        "PRE_WRITE_EXECUTION_BINDING_GATE_CLEAN",
+        "EXCLUSIVE_BRANCH_SCOPE",
+        "AUTHORIZED_WRITE_PLAN"
+      ]
+    },
+    "GPT_RUNTIME_WITH_SUPABASE_CONTEXT": {
+      "mode": "EXTERNAL_RUNTIME_EVIDENCE_REQUIRED",
+      "side_effect": "STEP_DEPENDENT",
+      "evidence_provenance": "OBSERVED_SOURCE_REF_REQUIRED",
+      "must_not_treat_declared_payload_as_observed": true,
+      "must_not_fabricate_receipt": true
+    }
+  }
+}

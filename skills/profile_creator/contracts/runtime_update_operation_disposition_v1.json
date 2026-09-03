@@ -1,0 +1,38 @@
+{
+  "contract_code": "RUNTIME_UPDATE_OPERATION_DISPOSITION_V1",
+  "operation_code": "ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
+  "observed_live_state": {
+    "registry_status": "PRODUCCION_CONTROLADA",
+    "active_steps": 14,
+    "active_step_contracts": 14,
+    "active_bindings": 0,
+    "executions": 4,
+    "in_progress_executions": 2,
+    "historical_prewrite_steps": 4,
+    "historical_github_write_steps": 3
+  },
+  "decision": {
+    "classification": "FAIL_CLOSED_REQUIRED_BEFORE_FURTHER_EXECUTION",
+    "retain_as_distinct_operation": true,
+    "reason": "This operation has a distinct runtime-maintenance purpose and should not be folded into ACTUALIZACION_PERFIL_LF, but PRODUCCION_CONTROLADA with zero ACTIVE_ENFORCEMENT bindings is inconsistent with governed writes.",
+    "preferred_live_disposition": "READ_ONLY_OR_INACTIVE_UNTIL_BINDINGS_EXIST",
+    "create_14_bindings_now": false,
+    "reason_not_to_clone_profile_bindings": "Its step set includes runtime_resolve and runtime-specific evidence. Reusing the shared profile judge would reproduce the one-judge-for-N-steps defect and step-60 semantic leakage."
+  },
+  "preconditions_before_reenable": [
+    "define runtime-specific per-step judge topology or justified structural judge topology",
+    "materialize ACTIVE_ENFORCEMENT bindings for every active required step",
+    "step60 requires bound_revision and execution_bound_to_target_before_change",
+    "negative missing-binding test fails closed",
+    "positive governed runtime-update execution reaches github_readback without bypass",
+    "dispose or explicitly supersede the two IN_PROGRESS executions",
+    "exact-head CI green"
+  ],
+  "activation": {
+    "source_only": true,
+    "live_registry_status_change_authorized": false,
+    "live_binding_creation_authorized": false,
+    "runtime_deployment_authorized": false,
+    "merge_authorized": false
+  }
+}
