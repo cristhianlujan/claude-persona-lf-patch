@@ -7,6 +7,7 @@ on:
       - ".github/workflows/lf-customer-profile-creator-governance-caller.yml"
       - "supabase/functions/lf-profile-creator-governance-caller-v1/**"
       - "sandbox/lf_contract_gate_test/profile_creator_customer_caller_source_test.py"
+      - "sandbox/lf_contract_gate_test/profile_creator_customer_step_request.json"
   workflow_dispatch:
     inputs:
       action:
@@ -51,27 +52,40 @@ jobs:
             *'[INIT_CUSTOMER_IDENTITY_PRIVACY]'*) echo 'code=PERFIL-CUSTOMER-IDENTITY-CONSENT-PRIVACY' >> "$GITHUB_OUTPUT"; echo 'slug=customer_identity_consent_privacy' >> "$GITHUB_OUTPUT" ;;
             *) echo 'code=' >> "$GITHUB_OUTPUT"; echo 'slug=' >> "$GITHUB_OUTPUT" ;;
           esac
-      - name: Resolve governed ordered-step continuation
+      - name: Resolve governed ordered-step request
         if: github.event_name == 'push'
         id: record
         shell: bash
         run: |
           set -euo pipefail
           msg='${{ github.event.head_commit.message }}'
-          case "$msg" in
-            *'[RECORD_CUSTOMER_ROUTER]'*)
-              execution_id=$(printf '%s' "$msg" | sed -n 's/.*EXECUTION_ID=\([^ ]*\).*/\1/p')
-              test -n "$execution_id"
-              echo "execution_id=$execution_id" >> "$GITHUB_OUTPUT"
-              echo 'step_id=router' >> "$GITHUB_OUTPUT"
-              ;;
-            *)
-              echo 'execution_id=' >> "$GITHUB_OUTPUT"
-              echo 'step_id=' >> "$GITHUB_OUTPUT"
-              ;;
-          esac
+          if [[ "$msg" == *'[RECORD_CUSTOMER_STEP]'* ]]; then
+            echo 'enabled=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'enabled=false' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Validate governed ordered-step request
+        if: github.event_name == 'push' && steps.record.outputs.enabled == 'true'
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,re
+          p='sandbox/lf_contract_gate_test/profile_creator_customer_step_request.json'
+          d=json.load(open(p,encoding='utf-8'))
+          required=['execution_id','step_id','evidence_ref','evidence_payload']
+          missing=[k for k in required if not d.get(k)]
+          assert not missing, f'MISSING_REQUEST_KEYS:{missing}'
+          assert re.fullmatch(r'EXEC-CREACION-PERFIL-LF-OIDC-[0-9a-f-]+',d['execution_id']), 'INVALID_EXECUTION_ID'
+          assert isinstance(d['evidence_payload'],dict), 'INVALID_EVIDENCE_PAYLOAD'
+          assert 'step_result' in d['evidence_payload'], 'MISSING_STEP_RESULT'
+          assert 'blocking_codes' in d['evidence_payload'], 'MISSING_BLOCKING_CODES'
+          if d['step_id']=='router':
+              assert d['evidence_ref'].startswith('supabase://'), 'ROUTER_REQUIRES_SUPABASE_EVIDENCE_REF'
+              assert isinstance(d['evidence_payload'].get('router_read'),dict), 'ROUTER_READ_REQUIRED'
+          print('GOVERNED_STEP_REQUEST_PREFLIGHT=PASS')
+          PY
       - name: Obtain exact GitHub OIDC identity
-        if: github.event_name == 'push' && (steps.target.outputs.code != '' || steps.record.outputs.step_id != '')
+        if: github.event_name == 'push' && (steps.target.outputs.code != '' || steps.record.outputs.enabled == 'true')
         id: oidc
         uses: actions/github-script@v7
         with:
@@ -120,39 +134,17 @@ jobs:
           PY
           echo 'RUNTIME_DEPLOYMENT_EXECUTED=false'
           echo 'PRODUCTION_AUTHORIZED=false'
-      - name: Record canonical router gate through governed caller
-        if: github.event_name == 'push' && steps.record.outputs.step_id == 'router'
+      - name: Record canonical ordered step through governed caller
+        if: github.event_name == 'push' && steps.record.outputs.enabled == 'true'
         env:
           OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
-          EXECUTION_ID: ${{ steps.record.outputs.execution_id }}
         run: |
           set -euo pipefail
           python3 - <<'PY' > governed-step-request.json
-          import json, os
-          payload={
-            "action":"profile_creator_record_step_v1",
-            "execution_id":os.environ["EXECUTION_ID"],
-            "step_id":"router",
-            "evidence_ref":f"github-actions://run/{os.environ.get('GITHUB_RUN_ID','unknown')}/profile-creator/router",
-            "evidence_payload":{
-              "step_result":"STEP_CLEAN_PASS",
-              "blocking_codes":[],
-              "router_read":{
-                "router":"ACT-0001",
-                "source":"SUPABASE",
-                "status":"READY_TO_EXECUTE",
-                "asset_type":"PERFIL",
-                "step_count":40,
-                "action_code":"PROFILE_CREATE",
-                "operation_code":"CREACION_PERFIL_LF",
-                "required_policy_count":1,
-                "resolved_policy_count":1
-              },
-              "evidence_origin":"GITHUB_OIDC_CANONICAL_CONTINUATION",
-              "behavioral_claim":"NOT_MADE"
-            }
-          }
-          print(json.dumps(payload,separators=(',',':')))
+          import json
+          d=json.load(open('sandbox/lf_contract_gate_test/profile_creator_customer_step_request.json',encoding='utf-8'))
+          d={'action':'profile_creator_record_step_v1',**d}
+          print(json.dumps(d,separators=(',',':')))
           PY
           code=$(curl --silent --show-error -o governed-step.json -w '%{http_code}' \
             -H "Authorization: Bearer $OIDC_TOKEN" \
@@ -168,9 +160,9 @@ jobs:
           result=data.get('result') or {}
           assert result.get('outcome') == 'STEP_RECORDED', data
           step=(result.get('step') or {})
-          assert step.get('step_id') == 'router', data
           assert step.get('status') == 'STEP_CLEAN_PASS', data
-          print('GOVERNED_CUSTOMER_PROFILE_ROUTER_STEP=PASS')
+          print('GOVERNED_CUSTOMER_PROFILE_ORDERED_STEP=PASS')
+          print('STEP_ID='+str(step.get('step_id') or ''))
           print('EXECUTION_ID='+str(result.get('execution_id') or ''))
           PY
           echo 'RUNTIME_DEPLOYMENT_EXECUTED=false'
