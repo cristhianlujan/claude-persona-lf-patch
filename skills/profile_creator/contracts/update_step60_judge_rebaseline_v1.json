@@ -1,0 +1,44 @@
+{
+  "contract_code": "UPDATE_STEP60_JUDGE_REBASELINE_V1",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "step_order": 60,
+  "step_id": "pre_write_execution_binding_gate",
+  "problem": "The live shared judge JUDGE-ACTUALIZACION-PERFIL-LF-v0.1 is bound to all 14 UPDATE steps but currently carries step-60-only exact-target semantics (8 pass_if / 9 fail_if). This makes unrelated steps depend on assertions they cannot legitimately emit.",
+  "target_topology": {
+    "shared_judge_keeps_step60_semantics": false,
+    "step60_has_dedicated_judge": true,
+    "dedicated_judge_code": "JUDGE-ACTUALIZACION-PERFIL-LF-PREWRITE-BINDING-v1",
+    "dedicated_binding_count": 1,
+    "other_update_steps_keep_shared_structural_judge": true
+  },
+  "step60_required_evidence_keys": [
+    "execution_id",
+    "target_code",
+    "target_path",
+    "write_plan",
+    "pre_write_gate_passed",
+    "bound_revision",
+    "execution_bound_to_target_before_change"
+  ],
+  "semantic_source_ref": "skills/profile_creator/contracts/update_judge_semantics_source_v1.json",
+  "deterministic_authority": "SERVER_DERIVED_TRUST_CONTEXT_REQUIRED",
+  "caller_assertions_are_authority": false,
+  "activation": {
+    "source_only": true,
+    "live_judge_mutation_authorized": false,
+    "live_binding_mutation_authorized": false,
+    "update_write_enabled": false,
+    "runtime_deployment_authorized": false,
+    "merge_authorized": false
+  },
+  "required_tests_before_live_materialization": [
+    "shared_judge_has_no_step60_pass_fail_semantics",
+    "dedicated_step60_judge_is_bound_to_exactly_one_step",
+    "step60_binding_requires_bound_revision",
+    "step60_binding_requires_execution_bound_to_target_before_change",
+    "missing_bound_revision_blocks",
+    "missing_execution_binding_blocks",
+    "caller_assertions_cannot_replace_server_derived_currentness",
+    "all_other_13_update_steps_remain_recordable_under_their_own_required_evidence"
+  ]
+}
