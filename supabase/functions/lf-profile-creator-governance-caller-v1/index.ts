@@ -92,37 +92,53 @@ async function resolveTrustedCurrentRevision(targetPathValue: unknown): Promise<
   const content = await githubJson(`/repos/${REPOSITORY}/contents/${encodedPath}?ref=${revisionSha}`);
   const blobSha = typeof content.sha === "string" ? content.sha : "";
   if (!/^[0-9a-f]{40}$/.test(blobSha) || content.type !== "file") throw new Error("PROFILE_UPDATE_CURRENT_TARGET_BLOB_UNRESOLVED");
-  return {
-    resolver: "GITHUB_PUBLIC_API_EXACT_REF_V1",
-    repository: REPOSITORY,
-    ref: UPDATE_BASE_REF,
-    revision_sha: revisionSha,
-    target_path: targetPath,
-    target_blob_sha: blobSha,
-    observed_at: new Date().toISOString(),
-    declared_currentness_accepted: false,
-  };
+  return { resolver: "GITHUB_PUBLIC_API_EXACT_REF_V1", repository: REPOSITORY, ref: UPDATE_BASE_REF, revision_sha: revisionSha, target_path: targetPath, target_blob_sha: blobSha, observed_at: new Date().toISOString(), declared_currentness_accepted: false };
 }
 
-function boundRevisionSha(value: unknown): string {
+function revisionSha(value: unknown): string {
   if (!value || typeof value !== "object" || Array.isArray(value)) return "";
-  const revisionSha = typeof (value as Record<string, unknown>).revision_sha === "string" ? String((value as Record<string, unknown>).revision_sha) : "";
-  return /^[0-9a-f]{40}$/.test(revisionSha) ? revisionSha : "";
+  const sha = typeof (value as Record<string, unknown>).revision_sha === "string" ? String((value as Record<string, unknown>).revision_sha).trim() : "";
+  return /^[0-9a-f]{40}$/.test(sha) ? sha : "";
+}
+
+function baselineRevisionSha(snapshot: Record<string, any>): string {
+  const baseline = snapshot?.baseline_observation;
+  if (!baseline || typeof baseline !== "object" || Array.isArray(baseline)) throw new Error("PROFILE_UPDATE_BASELINE_OBSERVATION_REQUIRED");
+  const sha = typeof baseline.baseline_revision === "string" ? baseline.baseline_revision.trim() : "";
+  if (!/^[0-9a-f]{40}$/.test(sha)) throw new Error("PROFILE_UPDATE_BASELINE_REVISION_INVALID");
+  return sha;
+}
+
+function requiredTrue(value: unknown, code: string): void {
+  if (value !== true) throw new Error(code);
 }
 
 async function enrichUpdatePrewriteEvidence(current: Record<string, any>, stepId: string, evidencePayload: Record<string, unknown>): Promise<Record<string, unknown>> {
   const snapshot = current?.snapshot ?? {};
   if (snapshot.operation_code !== UPDATE_OPERATION || stepId !== PREWRITE_STEP) return evidencePayload;
+  const baselineSha = baselineRevisionSha(snapshot);
   const targetPath = safeRepoPath(snapshot.target_path);
   const trusted = await resolveTrustedCurrentRevision(targetPath);
   const observedSha = String(trusted.revision_sha ?? "");
-  const boundSha = boundRevisionSha(evidencePayload.bound_revision);
+  const boundSha = revisionSha(evidencePayload.bound_revision);
   if (!boundSha) throw new Error("PROFILE_UPDATE_BOUND_REVISION_STRUCTURED_REQUIRED");
-  if (boundSha !== observedSha) throw new Error("PROFILE_UPDATE_BOUND_REVISION_STALE_REBIND_REQUIRED");
+  requiredTrue(evidencePayload.execution_bound_to_target_before_change, "PROFILE_UPDATE_EXECUTION_BINDING_REQUIRED");
+
+  const stale = baselineSha !== observedSha;
+  if (stale) {
+    requiredTrue(evidencePayload.reread_performed, "PROFILE_UPDATE_STALE_REREAD_REQUIRED");
+    requiredTrue(evidencePayload.rebind_performed, "PROFILE_UPDATE_STALE_REBIND_REQUIRED");
+    const reboundFrom = typeof evidencePayload.rebound_from_revision === "string" ? evidencePayload.rebound_from_revision.trim() : "";
+    if (reboundFrom !== baselineSha) throw new Error("PROFILE_UPDATE_REBOUND_FROM_REVISION_MISMATCH");
+  }
+  if (boundSha !== observedSha) throw new Error("PROFILE_UPDATE_BOUND_REVISION_CURRENT_MISMATCH");
+
   return {
     ...evidencePayload,
+    baseline_revision_observed: baselineSha,
     current_resolved_revision: observedSha,
     trusted_current_revision: trusted,
+    revision_continuity_state: stale ? "STALE_REBOUND_CURRENT" : "CURRENT_BOUND",
     current_revision_resolved_by_caller: true,
     declared_current_revision_ignored: true,
   };
@@ -135,18 +151,7 @@ Deno.serve(async (req: Request) => {
     const claims = await requireOidc(req);
     let body: Record<string, unknown>;
     try { body = await req.json(); } catch { return json({ outcome: "BLOCKED", code: "INVALID_JSON" }, 400); }
-
-    const caller = {
-      method: CALLER_METHOD,
-      repository: REPOSITORY,
-      workflow_ref: WORKFLOW_REF,
-      run_id: String(claims.run_id),
-      workflow_sha: String(claims.workflow_sha),
-      project_id: PROJECT_ID,
-      owner_lane: OWNER_LANE,
-      execution_origin: EXECUTION_ORIGIN,
-      workstream_id: WORKSTREAM_ID,
-    };
+    const caller = { method: CALLER_METHOD, repository: REPOSITORY, workflow_ref: WORKFLOW_REF, run_id: String(claims.run_id), workflow_sha: String(claims.workflow_sha), project_id: PROJECT_ID, owner_lane: OWNER_LANE, execution_origin: EXECUTION_ORIGIN, workstream_id: WORKSTREAM_ID };
 
     if (body.action === "profile_creator_init_v1") {
       const callerRequestId = typeof body.caller_request_id === "string" ? body.caller_request_id.trim() : "";
@@ -183,27 +188,15 @@ Deno.serve(async (req: Request) => {
       const validation = validateProfileOperationBatch(body.steps);
       if (!executionId) return json({ outcome: "BLOCKED", code: "PROFILE_OPERATION_BATCH_EXECUTION_ID_INVALID", caller }, 400);
       if (!validation.ok) return json({ outcome: "BLOCKED", code: validation.code, caller }, 400);
-
       const receipts: Record<string, unknown>[] = [];
       for (const step of validation.steps) {
         const current = await callRuntime({ action: "next_profile_operation_step_v1", execution_id: executionId, caller });
         const expectedStepId = current?.snapshot?.next_step?.step_id ?? null;
-        if (expectedStepId !== step.step_id) {
-          return json({ ...batchOutcome(receipts.length, validation.steps.length, step.step_id), code: "PROFILE_OPERATION_BATCH_STEP_NOT_CURRENT", expected_step_id: expectedStepId, caller, execution_id: executionId, receipts }, 409);
-        }
+        if (expectedStepId !== step.step_id) return json({ ...batchOutcome(receipts.length, validation.steps.length, step.step_id), code: "PROFILE_OPERATION_BATCH_STEP_NOT_CURRENT", expected_step_id: expectedStepId, caller, execution_id: executionId, receipts }, 409);
         const governedEvidence = await enrichUpdatePrewriteEvidence(current, step.step_id, step.evidence_payload);
-        const result = await callRuntime({
-          action: "record_profile_operation_step_v1",
-          execution_id: executionId,
-          step_id: step.step_id,
-          evidence_ref: step.evidence_ref,
-          evidence_payload: governedEvidence,
-          caller,
-        });
+        const result = await callRuntime({ action: "record_profile_operation_step_v1", execution_id: executionId, step_id: step.step_id, evidence_ref: step.evidence_ref, evidence_payload: governedEvidence, caller });
         receipts.push({ step_id: step.step_id, outcome: result.outcome ?? "BLOCKED", operation_code: result.operation_code ?? current?.snapshot?.operation_code ?? null, result });
-        if (result.outcome !== "STEP_RECORDED") {
-          return json({ ...batchOutcome(receipts.length - 1, validation.steps.length, step.step_id), caller, execution_id: executionId, receipts }, 409);
-        }
+        if (result.outcome !== "STEP_RECORDED") return json({ ...batchOutcome(receipts.length - 1, validation.steps.length, step.step_id), caller, execution_id: executionId, receipts }, 409);
       }
       return json({ ...batchOutcome(receipts.length, validation.steps.length), caller, execution_id: executionId, receipts }, 200);
     }
