@@ -51,8 +51,27 @@ jobs:
             *'[INIT_CUSTOMER_IDENTITY_PRIVACY]'*) echo 'code=PERFIL-CUSTOMER-IDENTITY-CONSENT-PRIVACY' >> "$GITHUB_OUTPUT"; echo 'slug=customer_identity_consent_privacy' >> "$GITHUB_OUTPUT" ;;
             *) echo 'code=' >> "$GITHUB_OUTPUT"; echo 'slug=' >> "$GITHUB_OUTPUT" ;;
           esac
+      - name: Resolve governed ordered-step continuation
+        if: github.event_name == 'push'
+        id: record
+        shell: bash
+        run: |
+          set -euo pipefail
+          msg='${{ github.event.head_commit.message }}'
+          case "$msg" in
+            *'[RECORD_CUSTOMER_ROUTER]'*)
+              execution_id=$(printf '%s' "$msg" | sed -n 's/.*EXECUTION_ID=\([^ ]*\).*/\1/p')
+              test -n "$execution_id"
+              echo "execution_id=$execution_id" >> "$GITHUB_OUTPUT"
+              echo 'step_id=router' >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo 'execution_id=' >> "$GITHUB_OUTPUT"
+              echo 'step_id=' >> "$GITHUB_OUTPUT"
+              ;;
+          esac
       - name: Obtain exact GitHub OIDC identity
-        if: github.event_name == 'push' && steps.target.outputs.code != ''
+        if: github.event_name == 'push' && (steps.target.outputs.code != '' || steps.record.outputs.step_id != '')
         id: oidc
         uses: actions/github-script@v7
         with:
@@ -98,6 +117,59 @@ jobs:
           assert execution.get('status') == 'IN_PROGRESS', data
           print('GOVERNED_CUSTOMER_PROFILE_INITIALIZATION=PASS')
           print('EXECUTION_ID='+str(execution.get('execution_id')))
+          PY
+          echo 'RUNTIME_DEPLOYMENT_EXECUTED=false'
+          echo 'PRODUCTION_AUTHORIZED=false'
+      - name: Record canonical router gate through governed caller
+        if: github.event_name == 'push' && steps.record.outputs.step_id == 'router'
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          EXECUTION_ID: ${{ steps.record.outputs.execution_id }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' > governed-step-request.json
+          import json, os
+          payload={
+            "action":"profile_creator_record_step_v1",
+            "execution_id":os.environ["EXECUTION_ID"],
+            "step_id":"router",
+            "evidence_ref":f"github-actions://run/{os.environ.get('GITHUB_RUN_ID','unknown')}/profile-creator/router",
+            "evidence_payload":{
+              "router_read":{
+                "router":"ACT-0001",
+                "source":"SUPABASE",
+                "status":"READY_TO_EXECUTE",
+                "asset_type":"PERFIL",
+                "step_count":40,
+                "action_code":"PROFILE_CREATE",
+                "operation_code":"CREACION_PERFIL_LF",
+                "required_policy_count":1,
+                "resolved_policy_count":1
+              },
+              "evidence_origin":"GITHUB_OIDC_CANONICAL_CONTINUATION",
+              "behavioral_claim":"NOT_MADE"
+            }
+          }
+          print(json.dumps(payload,separators=(',',':')))
+          PY
+          code=$(curl --silent --show-error -o governed-step.json -w '%{http_code}' \
+            -H "Authorization: Bearer $OIDC_TOKEN" \
+            -H 'Content-Type: application/json' \
+            --data-binary @governed-step-request.json \
+            'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1')
+          cat governed-step.json
+          test "$code" = "200"
+          python3 - <<'PY'
+          import json
+          data=json.load(open('governed-step.json'))
+          assert data.get('outcome') == 'STEP_RECORDED', data
+          result=data.get('result') or {}
+          assert result.get('outcome') == 'STEP_RECORDED', data
+          step=(result.get('step') or {})
+          assert step.get('step_id') == 'router', data
+          assert step.get('status') == 'STEP_CLEAN_PASS', data
+          print('GOVERNED_CUSTOMER_PROFILE_ROUTER_STEP=PASS')
+          print('EXECUTION_ID='+str(result.get('execution_id') or ''))
           PY
           echo 'RUNTIME_DEPLOYMENT_EXECUTED=false'
           echo 'PRODUCTION_AUTHORIZED=false'
