@@ -15,6 +15,8 @@ checks = {
     "operation_aware_contract_status": "when v_execution.operation_code = 'ACTUALIZACION_PERFIL_LF' then 'ACTIVE_ENFORCEMENT'" in SQL and "else 'ACTIVE'" in SQL,
     "active_binding_required": "and status = 'ACTIVE_ENFORCEMENT'" in SQL,
     "prior_step_order_enforced": "PRIOR_REQUIRED_STEP_NOT_CLEAN" in SQL,
+    "prior_clean_is_binding_driven": "pb.clean_result_value is null or es.status <> pb.clean_result_value" in SQL,
+    "no_init_clean_status_hardcode": "s.step_id='init_execution' and es.status <> 'STEP_CLEAN_PASS'" not in SQL,
     "required_evidence_enforced": "REQUIRED_EVIDENCE_MISSING" in SQL,
     "blocking_codes_enforced": "BLOCKING_CODES_INVALID" in SQL and "jsonb_array_length(v_blocking_codes) > 0" in SQL,
     "update_prewrite_server_trust_blocks": "PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED" in SQL,
@@ -31,6 +33,8 @@ checks = {
 matrix = {
     "POS_CREATE_CONTRACT_STATUS_ACTIVE": checks["operation_aware_contract_status"],
     "POS_UPDATE_CONTRACT_STATUS_ACTIVE_ENFORCEMENT": checks["operation_aware_contract_status"],
+    "POS_CREATE_INIT_USES_BINDING_CLEAN_RESULT": checks["prior_clean_is_binding_driven"] and checks["no_init_clean_status_hardcode"],
+    "POS_UPDATE_INIT_USES_BINDING_CLEAN_RESULT": checks["prior_clean_is_binding_driven"] and checks["no_init_clean_status_hardcode"],
     "POS_UPDATE_NON_PREWRITE_COMMON_SCOPE": checks["create_update_exact_scope"] and checks["active_binding_required"],
     "NEG_WRONG_OPERATION": "EXECUTION_IDENTITY_INVALID" in SQL,
     "NEG_WRONG_TARGET_TYPE": checks["target_profile_required"],
@@ -48,6 +52,7 @@ if failed:
     raise SystemExit("FAIL_PROFILE_OPERATION_COMMON_RECORDER:" + ",".join(failed))
 print(f"PASS_PROFILE_OPERATION_COMMON_RECORDER_CHECKS={sum(checks.values())}/{len(checks)}")
 print(f"PASS_PROFILE_OPERATION_COMMON_RECORDER_MATRIX={sum(matrix.values())}/{len(matrix)}")
+print("PRIOR_CLEAN_STATUS=ACTIVE_BINDING_DERIVED")
 print("UPDATE_CONTRACT_STATUS=ACTIVE_ENFORCEMENT")
 print("CREATE_CONTRACT_STATUS=ACTIVE")
 print("COMMON_RECORDER_LIVE_SERVICE_ROLE_ONLY=true")
