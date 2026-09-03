@@ -6,7 +6,7 @@ from collections.abc import Mapping, Sequence
 import PR93_P0_RUNTIME_CONTRACT_CHECK_CORE_BASE_V1 as _base
 from PR93_P0_RUNTIME_CONTRACT_CHECK_CORE_BASE_V1 import *  # noqa: F401,F403
 CUSTOMER_PROFILE_CREATOR_BRANCH="lf/profiles/profile-creator-customer-caller-20260902"
-CUSTOMER_PROFILE_CREATOR_PR_NUMBER=470
+CUSTOMER_PROFILE_CREATOR_PR_NUMBER=492
 CUSTOMER_PROFILE_CREATOR_WORKFLOW=".github/workflows/lf-customer-profile-creator-governance-caller.yml"
 CUSTOMER_PROFILE_CREATOR_BLOBS={
  CUSTOMER_PROFILE_CREATOR_WORKFLOW:"346fe830af781a304a74f10240c3e19f7a48eb23",
@@ -43,7 +43,7 @@ def _evaluate_customer_profile_creator_scope(changed_files:Sequence[str],*,branc
  return True
 def evaluate_controlled_runtime_scope(changed_files:Sequence[str],*,branch:str,blob_by_path:Mapping[str,str],mode_by_path:Mapping[str,str]|None=None,main_merge_verified:bool=False)->bool:
  if set(changed_files)&set(CUSTOMER_PROFILE_CREATOR_PATHS): return _evaluate_customer_profile_creator_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path,main_merge_verified=main_merge_verified)
- _sync_base_extensions(); return _base.evaluate_controlled_runtime_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=modes,main_merge_verified=main_merge_verified)
+ _sync_base_extensions(); return _base.evaluate_controlled_runtime_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path,main_merge_verified=main_merge_verified)
 def _customer_scope_self_test():
  exact=dict(CUSTOMER_PROFILE_CREATOR_BLOBS); modes={path:"100644" for path in exact}; paths=list(CUSTOMER_PROFILE_CREATOR_PATHS); assert _evaluate_customer_profile_creator_scope(paths,branch=CUSTOMER_PROFILE_CREATOR_BRANCH,blob_by_path=exact,mode_by_path=modes)
  for label,branch,blobs,changed in [("branch","feature/arbitrary",exact,paths),("blob",CUSTOMER_PROFILE_CREATOR_BRANCH,{**exact,CUSTOMER_PROFILE_CREATOR_WORKFLOW:"0"*40},paths),("edge",CUSTOMER_PROFILE_CREATOR_BRANCH,exact,[*paths,"supabase/functions/arbitrary/index.ts"])]:
