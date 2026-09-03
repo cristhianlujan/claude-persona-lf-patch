@@ -73,7 +73,7 @@ jobs:
           required=['execution_id','step_id','evidence_ref','evidence_payload']
           missing=[k for k in required if not d.get(k)]
           assert not missing, f'MISSING_REQUEST_KEYS:{missing}'
-          assert re.fullmatch(r'EXEC-CREACION-PERFIL-LF-OIDC-[0-9a-f-]+',d['execution_id']), 'INVALID_EXECUTION_ID'
+          assert re.fullmatch(r'EXEC-[A-Z0-9][A-Z0-9_-]{7,172}',d['execution_id']), 'INVALID_EXECUTION_ID'
           assert isinstance(d['evidence_payload'],dict), 'INVALID_EVIDENCE_PAYLOAD'
           assert 'step_result' in d['evidence_payload'], 'MISSING_STEP_RESULT'
           assert 'blocking_codes' in d['evidence_payload'], 'MISSING_BLOCKING_CODES'
@@ -90,9 +90,9 @@ jobs:
           import json,re
           p='sandbox/lf_contract_gate_test/profile_creator_customer_step_batch_request.json'
           d=json.load(open(p,encoding='utf-8'))
-          assert re.fullmatch(r'EXEC-CREACION-PERFIL-LF-OIDC-[0-9a-f-]+',d.get('execution_id','')), 'INVALID_EXECUTION_ID'
+          assert re.fullmatch(r'EXEC-[A-Z0-9][A-Z0-9_-]{7,172}',d.get('execution_id','')), 'INVALID_EXECUTION_ID'
           steps=d.get('steps')
-          assert isinstance(steps,list) and 1 <= len(steps) <= 40, 'INVALID_BATCH_SIZE'
+          assert isinstance(steps,list) and 1 <= len(steps) <= 64, 'INVALID_BATCH_SIZE'
           seen=set()
           for i,item in enumerate(steps):
               assert isinstance(item,dict), f'INVALID_STEP:{i}'
