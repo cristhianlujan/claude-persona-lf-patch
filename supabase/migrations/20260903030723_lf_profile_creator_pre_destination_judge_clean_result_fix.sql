@@ -32,7 +32,7 @@ begin
   update public.lf_operation_judges
   set result_values = jsonb_set(result_values, '{pass}', to_jsonb('STEP_CLEAN_PASS'::text), false),
       updated_at = now(),
-      updated_by_execution_id = 'AUTO-APC-CUST-20260902T215700'
+      updated_by_execution_id = 'EXEC-CREACION-PERFIL-LF-OIDC-5f133751-fd18-4176-af31-936d4324d338'
   where operation_code = 'CREACION_PERFIL_LF'
     and judge_code = 'MINI_JUDGE_CREACION_PERFIL_LF_PRE_DESTINATION_RESOLUTION_GATE_V1'
     and status = 'ACTIVE_ENFORCEMENT';
