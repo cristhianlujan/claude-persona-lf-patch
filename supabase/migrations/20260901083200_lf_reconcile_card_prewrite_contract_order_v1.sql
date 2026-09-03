@@ -4,6 +4,8 @@
 -- this migration deliberately does NOT fabricate judge authority.
 -- No runtime enablement, production promotion, automatic impact, or retroactive receipt.
 
+-- Governed execution provenance is created first, with the required active policy snapshot
+-- captured before any later execution status transition.
 insert into public.lf_operation_execution (
   execution_id,
   operation_code,
