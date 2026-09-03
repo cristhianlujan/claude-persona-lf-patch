@@ -130,7 +130,7 @@ def _validate_envelope(request_id: str, envelope: Any) -> dict[str, Any]:
 
 
 def _wait_job(job_id: str) -> dict[str, Any]:
-    deadline = time.monotonic() + float(_env("PROFILE_RUNTIME_WORKER_JOB_TIMEOUT_SECONDS", "1200"))
+    deadline = time.monotonic() + float(_env("PROFILE_RUNTIME_WORKER_JOB_TIMEOUT_SECONDS", "900"))
     poll = max(0.5, float(_env("PROFILE_RUNTIME_WORKER_POLL_SECONDS", "2")))
     while True:
         record = _api_json("GET", f"/v1/jobs/{job_id}")
