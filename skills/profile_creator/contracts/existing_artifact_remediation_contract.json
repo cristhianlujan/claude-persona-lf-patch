@@ -1,0 +1,68 @@
+{
+  "contract_code": "EXISTING_ARTIFACT_REMEDIATION_GATE_V1",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "step_id": "existing_artifact_binding_gate",
+  "applies_when": ["EVALUATE_EXISTING", "REMEDIATE_EXISTING"],
+  "purpose": "Bind existing-screen evaluation/remediation to the exact source artifact before executable remediation guidance or writes.",
+  "source_authority": "SUPABASE_OPERATION_POLICY_SNAPSHOT",
+  "policy_resolution": {
+    "source_binding_policy": "POL-LF-SOURCE-RESOLUTION",
+    "shell_binding_policy": "POL-LF-ACTIVATION-ROUTING",
+    "policy_snapshot_view": "public.v_lf_operation_policy_snapshot",
+    "do_not_copy_into_profile": true
+  },
+  "required_for_all_existing": [
+    "source_ref",
+    "source_image_sha256",
+    "source_dimensions",
+    "visual_evidence",
+    "target_component_id",
+    "concrete_operation",
+    "canonical_component_or_token",
+    "observable_acceptance_criteria"
+  ],
+  "required_for_remediate_existing": [
+    "authorized_delta",
+    "editable_zones",
+    "shell_locked_zones"
+  ],
+  "shell_receipt_rule": {
+    "required_when_shell_applies": true,
+    "must_bind_same_source_ref": true,
+    "must_bind_same_source_sha256": true,
+    "adapter_invocations_count_is_sufficient": false
+  },
+  "fail_closed": {
+    "downstream_authorized": false,
+    "executable_instructions_allowed": false,
+    "blocking_conditions": [
+      "MISSING_SOURCE_REF",
+      "MISSING_SOURCE_SHA256",
+      "MISSING_SOURCE_DIMENSIONS",
+      "SOURCE_SHA_MISMATCH",
+      "MISSING_VISUAL_EVIDENCE",
+      "MISSING_AUTHORIZED_DELTA_FOR_REMEDIATE_EXISTING",
+      "SHELL_RECEIPT_MISSING_WHEN_APPLICABLE",
+      "SHELL_RECEIPT_SOURCE_MISMATCH",
+      "SHELL_RECEIPT_SHA_MISMATCH",
+      "ADAPTER_INVOCATION_WITHOUT_EXACT_BINDING",
+      "OPERATION_OUTSIDE_AUTHORIZED_DELTA",
+      "SHELL_LOCKED_MUTATION",
+      "OUTSIDE_DELTA_MUTATION",
+      "PROFILE_SELF_AUTHORIZES_DOWNSTREAM"
+    ]
+  },
+  "quality_pack_postconditions": {
+    "source_sha_match": true,
+    "outside_authorized_delta_changes": 0,
+    "shell_locked_mutations": 0,
+    "target_change_within_delta": true,
+    "observable_acceptance_met": true
+  },
+  "lifecycle": {
+    "candidate_only": true,
+    "runtime_promotion_authorized": false,
+    "production_authorized": false,
+    "validated_authorized": false
+  }
+}
