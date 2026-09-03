@@ -12,22 +12,30 @@ from fastapi.responses import JSONResponse
 from .engine import ProfileRuntimeEngine
 from .hashing import canonical_json_sha256
 from .jobs import JobStore
-from .models import BatchRequest, ExecuteRequest, JobAccepted
+from .models import BatchRequest, ExecuteRequest, JobAccepted, QueueExecuteRequest
 from .settings import Settings, SettingsError
 
 
-def _job_meta(kind: str, payload: ExecuteRequest | BatchRequest) -> dict[str, Any]:
+def _job_meta(kind: str, payload: ExecuteRequest | QueueExecuteRequest | BatchRequest) -> dict[str, Any]:
     rendered = payload.model_dump(mode="json")
-    artifact = payload.artifact
     meta: dict[str, Any] = {
         "kind": kind,
         "request_sha256": canonical_json_sha256(rendered),
-        "artifact_sha256": artifact.image_sha256,
-        "screen_code": artifact.screen_code,
     }
     if isinstance(payload, ExecuteRequest):
         meta.update(
             {
+                "artifact_sha256": payload.artifact.image_sha256,
+                "screen_code": payload.artifact.screen_code,
+                "request_id": payload.profile.request_id,
+                "profiles": [payload.profile.profile_code],
+            }
+        )
+    elif isinstance(payload, QueueExecuteRequest):
+        meta.update(
+            {
+                "artifact_sha256": None,
+                "screen_code": None,
                 "request_id": payload.profile.request_id,
                 "profiles": [payload.profile.profile_code],
             }
@@ -35,6 +43,8 @@ def _job_meta(kind: str, payload: ExecuteRequest | BatchRequest) -> dict[str, An
     else:
         meta.update(
             {
+                "artifact_sha256": payload.artifact.image_sha256,
+                "screen_code": payload.artifact.screen_code,
                 "batch_id": payload.batch_id,
                 "profiles": [item.profile_code for item in payload.profiles],
             }
@@ -130,7 +140,7 @@ def create_app(
         *,
         kind: str,
         external_id: str,
-        payload: ExecuteRequest | BatchRequest,
+        payload: ExecuteRequest | QueueExecuteRequest | BatchRequest,
         request: Request,
     ) -> JobAccepted:
         meta = _job_meta(kind, payload)
@@ -146,11 +156,12 @@ def create_app(
             def worker() -> None:
                 store.start(job["job_id"])
                 try:
-                    result = (
-                        engine.run_execute(payload)
-                        if isinstance(payload, ExecuteRequest)
-                        else engine.run_batch(payload)
-                    )
+                    if isinstance(payload, ExecuteRequest):
+                        result = engine.run_execute(payload)
+                    elif isinstance(payload, QueueExecuteRequest):
+                        result = engine.run_queue_execute(payload)
+                    else:
+                        result = engine.run_batch(payload)
                     store.complete(job["job_id"], result)
                 except Exception as exc:
                     store.fail(
@@ -197,6 +208,20 @@ def create_app(
         )
 
     @app.post(
+        "/v1/profile/queue-execute",
+        response_model=JobAccepted,
+        status_code=status.HTTP_202_ACCEPTED,
+        dependencies=[Depends(authorize)],
+    )
+    def queue_execute(payload: QueueExecuteRequest, request: Request) -> JobAccepted:
+        return submit_job(
+            kind="queue_execute",
+            external_id=payload.profile.request_id,
+            payload=payload,
+            request=request,
+        )
+
+    @app.post(
         "/v1/profile/batch",
         response_model=JobAccepted,
         status_code=status.HTTP_202_ACCEPTED,
@@ -220,7 +245,6 @@ def create_app(
 try:
     app = create_app()
 except SettingsError:
-    # Import remains safe for diagnostics; process startup through __main__ still fails closed.
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
     @app.get("/health")
