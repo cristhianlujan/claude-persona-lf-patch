@@ -13,15 +13,14 @@
     "pre_identity_failures_are_durable_step_evidence": false,
     "reason": "A row in lf_operation_execution_steps cannot truthfully identify a step before execution/step/binding identity is valid."
   },
+  "contract_status_resolution": {
+    "CREACION_PERFIL_LF": "ACTIVE",
+    "ACTUALIZACION_PERFIL_LF": "ACTIVE_ENFORCEMENT",
+    "fail_closed_on_mismatch": true
+  },
   "durable_blocked_path": {
     "status": "binding.blocked_result_value",
-    "required_payload_extensions": [
-      "blocking_findings",
-      "blocking_codes",
-      "blocked_by_recorder",
-      "blocked_reason_code",
-      "attempt_history"
-    ],
+    "required_payload_extensions": ["blocking_findings", "blocking_codes", "blocked_by_recorder", "blocked_reason_code", "attempt_history"],
     "trigger_compatibility": "The existing trigger derives blocked_result_value when blocking_findings is non-empty. Required evidence keys must exist in the persisted payload; missing caller keys may be represented as null only in the blocked snapshot and may never satisfy a later clean retry.",
     "caller_status_is_authority": false
   },
@@ -40,29 +39,17 @@
     "clean_retry_rederives_status_through_trigger": true,
     "no_delete_of_blocked_history": true
   },
-  "durable_block_codes": [
-    "PRIOR_REQUIRED_STEP_NOT_CLEAN",
-    "REQUIRED_EVIDENCE_MISSING",
-    "BLOCKING_CODES_INVALID",
-    "STEP_BLOCKED",
-    "PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED"
-  ],
-  "non_durable_pre_identity_codes": [
-    "STEP_IDENTITY_MISSING",
-    "INIT_STEP_IMMUTABLE",
-    "EVIDENCE_PAYLOAD_INVALID",
-    "EXECUTION_IDENTITY_INVALID",
-    "EXECUTION_NOT_IN_PROGRESS",
-    "STEP_NOT_ACTIVE",
-    "STEP_CONTRACT_MISSING",
-    "STEP_JUDGE_BINDING_MISSING"
-  ],
+  "durable_block_codes": ["PRIOR_REQUIRED_STEP_NOT_CLEAN", "REQUIRED_EVIDENCE_MISSING", "BLOCKING_CODES_INVALID", "STEP_BLOCKED", "PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED"],
+  "non_durable_pre_identity_codes": ["STEP_IDENTITY_MISSING", "INIT_STEP_IMMUTABLE", "EVIDENCE_PAYLOAD_INVALID", "EXECUTION_IDENTITY_INVALID", "EXECUTION_NOT_IN_PROGRESS", "STEP_NOT_ACTIVE", "STEP_CONTRACT_MISSING", "STEP_JUDGE_BINDING_MISSING"],
   "activation": {
-    "source_contract_only": true,
+    "source_contract_only": false,
     "recorder_source_implemented": true,
-    "live_materialized": false,
+    "live_materialized": true,
+    "live_execute_roles": ["service_role"],
+    "anon_execute": false,
+    "authenticated_execute": false,
     "update_write_enabled": false,
-    "runtime_deployment_authorized": false,
+    "runtime_update_path_enabled": false,
     "merge_authorized": false
   },
   "required_tests": [
@@ -73,6 +60,8 @@
     "retry_with_complete_clean_evidence_can_transition_only_if_trigger_derives_clean",
     "pre_identity_failure_does_not_fabricate_step_row",
     "audit_query_requires_non_null_evidence",
+    "operation_aware_contract_status_is_enforced",
+    "service_role_only_execute_is_verified",
     "no_new_table_or_parallel_recorder"
   ]
 }
