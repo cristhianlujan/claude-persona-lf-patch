@@ -54,6 +54,7 @@ def main():
         ('PROFILE_OPERATION_GENERIC_RESUMER', [sys.executable, str(root/'evals/batch_resume_contract.py')]),
         ('PROFILE_RESOLVER_DISPATCH_CONTRACT', [sys.executable, str(root/'evals/resolver_dispatch_contract.py')]),
         ('UPDATE_RECORDER_READINESS', [sys.executable, str(root/'evals/update_recorder_readiness_contract.py')]),
+        ('EXISTING_ARTIFACT_REMEDIATION_GATE', [sys.executable, str(root/'evals/existing_artifact_remediation_contract.py')]),
     ]
     discovered, discovery_errors = discover_profile_validators(repo_root)
     for slug, validator, profile_dir in discovered:
