@@ -2,31 +2,27 @@ name: LF Customer Profile Creator Governance Caller
 
 on:
   push:
-    branches:
-      - lf/profiles/profile-creator-customer-caller-20260902
+    branches: [lf/profiles/profile-creator-customer-caller-20260902]
     paths:
       - ".github/workflows/lf-customer-profile-creator-governance-caller.yml"
       - "supabase/functions/lf-profile-creator-governance-caller-v1/**"
       - "sandbox/lf_contract_gate_test/profile_creator_customer_caller_source_test.py"
+      - "sandbox/lf_contract_gate_test/profile_creator_customer_step_request.json"
+      - "sandbox/lf_contract_gate_test/profile_creator_customer_step_batch_request.json"
   workflow_dispatch:
     inputs:
       action:
         description: "Governed Profile Creator action"
         required: true
         type: choice
-        options:
-          - source_canary_only
-      target_code:
-        description: "Reserved for a future separately-authorized non-canary execution"
-        required: false
-        type: string
+        options: [source_canary_only]
 
 permissions:
   contents: read
   id-token: write
 
 jobs:
-  customer-profile-creator-source-canary:
+  customer-profile-creator-governed-caller:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -39,12 +35,79 @@ jobs:
           code=$(curl --silent --show-error -o negative.json -w '%{http_code}' \
             -H 'Authorization: Bearer not-a-github-oidc-token' \
             -H 'Content-Type: application/json' \
-            -d '{"action":"profile_creator_init_v1","caller_request_id":"negative","target_code":"CUSTOMER_FINANCIAL_UX_DECISIONING","profile_slug":"customer_financial_ux_decisioning"}' \
+            -d '{"action":"profile_creator_init_v1","caller_request_id":"negative","target_code":"PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING","profile_slug":"customer_financial_ux_decisioning"}' \
             'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1')
           cat negative.json
           test "$code" = "401" || test "$code" = "404"
+      - name: Resolve exact governed Customer target
+        if: github.event_name == 'push'
+        id: target
+        shell: bash
+        run: |
+          set -euo pipefail
+          msg='${{ github.event.head_commit.message }}'
+          case "$msg" in
+            *'[INIT_CUSTOMER_FINANCIAL_UX]'*) echo 'code=PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING' >> "$GITHUB_OUTPUT"; echo 'slug=customer_financial_ux_decisioning' >> "$GITHUB_OUTPUT" ;;
+            *'[INIT_CUSTOMER_TRUST_CLARITY]'*) echo 'code=PERFIL-CUSTOMER-TRUST-CLARITY-VULNERABILITY' >> "$GITHUB_OUTPUT"; echo 'slug=customer_trust_clarity_vulnerability' >> "$GITHUB_OUTPUT" ;;
+            *'[INIT_CUSTOMER_PAYMENTS_RECOVERY]'*) echo 'code=PERFIL-CUSTOMER-PAYMENTS-RECOVERY' >> "$GITHUB_OUTPUT"; echo 'slug=customer_payments_recovery' >> "$GITHUB_OUTPUT" ;;
+            *'[INIT_CUSTOMER_IDENTITY_PRIVACY]'*) echo 'code=PERFIL-CUSTOMER-IDENTITY-CONSENT-PRIVACY' >> "$GITHUB_OUTPUT"; echo 'slug=customer_identity_consent_privacy' >> "$GITHUB_OUTPUT" ;;
+            *) echo 'code=' >> "$GITHUB_OUTPUT"; echo 'slug=' >> "$GITHUB_OUTPUT" ;;
+          esac
+      - name: Resolve governed ordered-step request
+        if: github.event_name == 'push'
+        id: record
+        shell: bash
+        run: |
+          set -euo pipefail
+          msg='${{ github.event.head_commit.message }}'
+          [[ "$msg" == *'[RECORD_CUSTOMER_STEP]'* ]] && echo 'single=true' >> "$GITHUB_OUTPUT" || echo 'single=false' >> "$GITHUB_OUTPUT"
+          [[ "$msg" == *'[RECORD_CUSTOMER_BATCH]'* ]] && echo 'batch=true' >> "$GITHUB_OUTPUT" || echo 'batch=false' >> "$GITHUB_OUTPUT"
+      - name: Validate governed ordered-step request
+        if: github.event_name == 'push' && steps.record.outputs.single == 'true'
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,re
+          p='sandbox/lf_contract_gate_test/profile_creator_customer_step_request.json'
+          d=json.load(open(p,encoding='utf-8'))
+          required=['execution_id','step_id','evidence_ref','evidence_payload']
+          missing=[k for k in required if not d.get(k)]
+          assert not missing, f'MISSING_REQUEST_KEYS:{missing}'
+          assert re.fullmatch(r'EXEC-[A-Z0-9][A-Z0-9_-]{7,172}',d['execution_id']), 'INVALID_EXECUTION_ID'
+          assert isinstance(d['evidence_payload'],dict), 'INVALID_EVIDENCE_PAYLOAD'
+          assert 'step_result' in d['evidence_payload'], 'MISSING_STEP_RESULT'
+          assert 'blocking_codes' in d['evidence_payload'], 'MISSING_BLOCKING_CODES'
+          if d['step_id']=='router':
+              assert d['evidence_ref'].startswith('supabase://'), 'ROUTER_REQUIRES_SUPABASE_EVIDENCE_REF'
+              assert isinstance(d['evidence_payload'].get('router_read'),dict), 'ROUTER_READ_REQUIRED'
+          print('GOVERNED_STEP_REQUEST_PREFLIGHT=PASS')
+          PY
+      - name: Validate governed ordered batch request
+        if: github.event_name == 'push' && steps.record.outputs.batch == 'true'
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,re
+          p='sandbox/lf_contract_gate_test/profile_creator_customer_step_batch_request.json'
+          d=json.load(open(p,encoding='utf-8'))
+          assert re.fullmatch(r'EXEC-[A-Z0-9][A-Z0-9_-]{7,172}',d.get('execution_id','')), 'INVALID_EXECUTION_ID'
+          steps=d.get('steps')
+          assert isinstance(steps,list) and 1 <= len(steps) <= 64, 'INVALID_BATCH_SIZE'
+          seen=set()
+          for i,item in enumerate(steps):
+              assert isinstance(item,dict), f'INVALID_STEP:{i}'
+              assert re.fullmatch(r'[a-z0-9_]{2,80}',item.get('step_id','')), f'INVALID_STEP_ID:{i}'
+              assert item['step_id'] not in seen, f'DUPLICATE_STEP:{item["step_id"]}'
+              seen.add(item['step_id'])
+              assert item.get('evidence_ref'), f'MISSING_EVIDENCE_REF:{i}'
+              payload=item.get('evidence_payload')
+              assert isinstance(payload,dict), f'INVALID_EVIDENCE_PAYLOAD:{i}'
+              assert 'step_result' in payload, f'MISSING_STEP_RESULT:{i}'
+              assert 'blocking_codes' in payload, f'MISSING_BLOCKING_CODES:{i}'
+          print(f'GOVERNED_BATCH_REQUEST_PREFLIGHT=PASS:{len(steps)}')
+          PY
       - name: Obtain exact GitHub OIDC identity
-        if: github.event_name == 'workflow_dispatch' && inputs.action == 'source_canary_only'
+        if: github.event_name == 'push' && (steps.target.outputs.code != '' || steps.record.outputs.single == 'true' || steps.record.outputs.batch == 'true')
         id: oidc
         uses: actions/github-script@v7
         with:
@@ -59,3 +122,89 @@ jobs:
           echo 'NON_CANARY_PROFILE_CREATION_EXECUTED=false'
           echo 'RUNTIME_DEPLOYMENT_EXECUTED=false'
           echo 'PRODUCTION_AUTHORIZED=false'
+      - name: Initialize exact allowlisted Customer profile through governed caller
+        if: github.event_name == 'push' && steps.target.outputs.code != ''
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          TARGET_CODE: ${{ steps.target.outputs.code }}
+          PROFILE_SLUG: ${{ steps.target.outputs.slug }}
+        run: |
+          set -euo pipefail
+          CALLER_REQUEST_ID=$(python3 - <<'PY'
+          import uuid
+          print(uuid.uuid4())
+          PY
+          )
+          code=$(curl --silent --show-error -o governed-init.json -w '%{http_code}' \
+            -H "Authorization: Bearer $OIDC_TOKEN" -H 'Content-Type: application/json' \
+            -d "{\"action\":\"profile_creator_init_v1\",\"caller_request_id\":\"$CALLER_REQUEST_ID\",\"target_code\":\"$TARGET_CODE\",\"profile_slug\":\"$PROFILE_SLUG\"}" \
+            'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1')
+          cat governed-init.json
+          test "$code" = "201"
+          python3 - <<'PY'
+          import json
+          data=json.load(open('governed-init.json'))
+          assert data.get('outcome') == 'INITIALIZED', data
+          result=data.get('result') or {}
+          execution=(result.get('execution') or {})
+          assert result.get('outcome') == 'INITIALIZED' and execution.get('operation_code') == 'CREACION_PERFIL_LF' and execution.get('status') == 'IN_PROGRESS', data
+          print('GOVERNED_CUSTOMER_PROFILE_INITIALIZATION=PASS')
+          print('EXECUTION_ID='+str(execution.get('execution_id')))
+          PY
+          echo 'RUNTIME_DEPLOYMENT_EXECUTED=false'
+          echo 'PRODUCTION_AUTHORIZED=false'
+      - name: Record canonical ordered step through governed caller
+        if: github.event_name == 'push' && steps.record.outputs.single == 'true'
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' > governed-step-request.json
+          import json
+          d=json.load(open('sandbox/lf_contract_gate_test/profile_creator_customer_step_request.json',encoding='utf-8'))
+          print(json.dumps({'action':'profile_creator_record_step_v1',**d},separators=(',',':')))
+          PY
+          code=$(curl --silent --show-error -o governed-step.json -w '%{http_code}' -H "Authorization: Bearer $OIDC_TOKEN" -H 'Content-Type: application/json' --data-binary @governed-step-request.json 'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1')
+          cat governed-step.json
+          test "$code" = "200"
+          python3 - <<'PY'
+          import json
+          data=json.load(open('governed-step.json'))
+          result=data.get('result') or {}; step=(result.get('step') or {})
+          assert data.get('outcome') == 'STEP_RECORDED' and result.get('outcome') == 'STEP_RECORDED' and step.get('status') == 'STEP_CLEAN_PASS', data
+          print('GOVERNED_CUSTOMER_PROFILE_ORDERED_STEP=PASS')
+          PY
+      - name: Record canonical ordered batch through governed caller
+        if: github.event_name == 'push' && steps.record.outputs.batch == 'true'
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,subprocess,sys
+          d=json.load(open('sandbox/lf_contract_gate_test/profile_creator_customer_step_batch_request.json',encoding='utf-8'))
+          execution_id=d['execution_id']; receipts=[]
+          for item in d['steps']:
+              body={'action':'profile_creator_record_step_v1','execution_id':execution_id,**item}
+              open('governed-step-request.json','w',encoding='utf-8').write(json.dumps(body,separators=(',',':')))
+              p=subprocess.run(['curl','--silent','--show-error','-o','governed-step.json','-w','%{http_code}','-H',f'Authorization: Bearer {__import__("os").environ["OIDC_TOKEN"]}','-H','Content-Type: application/json','--data-binary','@governed-step-request.json','https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1'],capture_output=True,text=True)
+              code=p.stdout.strip(); data=json.load(open('governed-step.json'))
+              result=data.get('result') or {}; step=(result.get('step') or {})
+              ok=code=='200' and data.get('outcome')=='STEP_RECORDED' and result.get('outcome')=='STEP_RECORDED' and step.get('status')=='STEP_CLEAN_PASS'
+              receipts.append({'step_id':item['step_id'],'ok':ok,'http':code})
+              print(json.dumps({'step_id':item['step_id'],'ok':ok,'http':code,'outcome':data.get('outcome')}))
+              if not ok:
+                  print('GOVERNED_CUSTOMER_PROFILE_BATCH=BLOCKED_FIRST_FAILURE')
+                  print(json.dumps(receipts))
+                  sys.exit(1)
+          print(f'GOVERNED_CUSTOMER_PROFILE_BATCH=PASS:{len(receipts)}')
+          print(json.dumps(receipts))
+          PY
+          echo 'RUNTIME_DEPLOYMENT_EXECUTED=false'
+          echo 'PRODUCTION_AUTHORIZED=false'
+
+# Exact Customer allowlist retained by caller source:
+# PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING
+# PERFIL-CUSTOMER-TRUST-CLARITY-VULNERABILITY
+# PERFIL-CUSTOMER-PAYMENTS-RECOVERY
+# PERFIL-CUSTOMER-IDENTITY-CONSENT-PRIVACY

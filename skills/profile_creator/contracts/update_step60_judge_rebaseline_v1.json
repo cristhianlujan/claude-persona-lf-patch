@@ -1,0 +1,59 @@
+{
+  "contract_code": "UPDATE_STEP60_JUDGE_REBASELINE_V1",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "step_order": 60,
+  "step_id": "pre_write_execution_binding_gate",
+  "problem": "The shared UPDATE judge must remain structural for the 13 non-prewrite steps; exact-target step-60 semantics belong only to a dedicated prewrite judge.",
+  "target_topology": {
+    "shared_judge_keeps_step60_semantics": false,
+    "step60_has_dedicated_judge": true,
+    "dedicated_judge_code": "JUDGE-ACTUALIZACION-PERFIL-LF-PREWRITE-BINDING-v1",
+    "dedicated_binding_count": 1,
+    "other_update_steps_keep_shared_structural_judge": true
+  },
+  "step60_required_evidence_keys": ["execution_id","target_code","target_path","write_plan","pre_write_gate_passed","bound_revision","execution_bound_to_target_before_change"],
+  "semantic_source_ref": "skills/profile_creator/contracts/update_judge_semantics_source_v1.json",
+  "authority_model": {
+    "judge_pass_if_fail_if_role": "CALLER_ATTESTATION_ONLY",
+    "assertions_checked_and_hard_fails_checked_are_caller_supplied": true,
+    "judge_is_deterministic_currentness_authority": false,
+    "deterministic_authority": "SERVER_DERIVED_TRUST_CONTEXT_REQUIRED",
+    "rule": "A dedicated judge may classify attested semantic assertions, but it MUST NOT authorize currentness, target identity, revision continuity, or execution binding. Those facts must be derived and supplied by trusted server context."
+  },
+  "caller_assertions_are_authority": false,
+  "activation": {
+    "source_only": false,
+    "live_judge_materialized": true,
+    "live_binding_materialized": true,
+    "materialization_execution_id": "EXEC-ACTUALIZACION-PERFIL-Q9-JUDGE-MATERIALIZATION-20260903-001",
+    "materialization_execution_final_status": "COMPLETED",
+    "live_judge_status": "ACTIVE_ENFORCEMENT",
+    "live_judge_sha": "bef12f5dd3c08db63b92faf64f77703acf9172288dc0547e0de56241d1521557",
+    "update_write_enabled": false,
+    "runtime_deployment_authorized": false,
+    "merge_authorized": false
+  },
+  "live_test_readback": {
+    "tests_passed": 8,
+    "tests_total": 8,
+    "shared_judge_structural_0_0": true,
+    "single_dedicated_binding": true,
+    "bound_revision_required": true,
+    "execution_binding_required": true,
+    "missing_bound_revision_observed_block": true,
+    "missing_execution_binding_observed_block": true,
+    "server_trust_required_runtime": true,
+    "other_13_bindings_preserved_on_shared_judge": true,
+    "note": "T5/T6 reuse the earlier real rung-4 missing-evidence canary under the same seven-key binding; T7 reuses the Q3 durable runtime block. Topology/current live state was read back after Q9 materialization."
+  },
+  "required_tests_before_live_materialization": [
+    "shared_judge_has_no_step60_pass_fail_semantics",
+    "dedicated_step60_judge_is_bound_to_exactly_one_step",
+    "step60_binding_requires_bound_revision",
+    "step60_binding_requires_execution_bound_to_target_before_change",
+    "missing_bound_revision_blocks",
+    "missing_execution_binding_blocks",
+    "caller_assertions_cannot_replace_server_derived_currentness",
+    "all_other_13_update_steps_remain_on_shared_structural_binding"
+  ]
+}
