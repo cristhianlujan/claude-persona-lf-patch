@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from "npm:jose@6.0.11";
-import { batchOutcome, validateProfileCreationBatch } from "./batch.ts";
+import { batchOutcome, validateProfileOperationBatch } from "./batch.ts";
 
 const REPOSITORY = "cristhianlujan/claude-persona-lf-patch";
 const REPOSITORY_ID = "1244397752";
@@ -13,7 +13,7 @@ const ISSUER = "https://token.actions.githubusercontent.com";
 const CALLER_METHOD = "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_CREATOR_CUSTOMER_V1";
 const PROJECT_ID = "AGENTE_PROFILE_CREATOR";
 const OWNER_LANE = "CUSTOMER_PROFILES";
-const EXECUTION_ORIGIN = "AUTOMATION_AGENTE_PROFILE_CREATOR_CUSTOMER_CONTINUACION";
+const EXECUTION_ORIGIN = "AUTOMATION_PROFILE_CREATOR_DUAL_EXECUTOR";
 const WORKSTREAM_ID = "PROFILE_CREATOR_INFRA";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")?.trim() ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.trim() ?? "";
@@ -56,7 +56,7 @@ async function callRuntime(body: Record<string, unknown>): Promise<Record<string
   const text = await response.text();
   let payload: Record<string, any>;
   try { payload = text ? JSON.parse(text) : {}; } catch { payload = { raw: text.slice(0, 1000) }; }
-  if (!response.ok) throw new Error(`RUN_CREACION_PERFIL_LF_${response.status}:${JSON.stringify(payload).slice(0, 1500)}`);
+  if (!response.ok) throw new Error(`PROFILE_OPERATION_RUNTIME_${response.status}:${JSON.stringify(payload).slice(0, 1500)}`);
   return payload;
 }
 
@@ -89,33 +89,45 @@ Deno.serve(async (req: Request) => {
       return json({ outcome: result.outcome ?? "BLOCKED", caller, result }, result.outcome === "INITIALIZED" ? 201 : 409);
     }
 
-    if (body.action === "profile_creator_record_step_v1") {
+    if (body.action === "profile_operation_next_step_v1") {
+      const executionId = typeof body.execution_id === "string" ? body.execution_id.trim() : "";
+      if (!executionId) return json({ outcome: "BLOCKED", code: "PROFILE_OPERATION_EXECUTION_ID_INVALID", caller }, 400);
+      const result = await callRuntime({ action: "next_profile_operation_step_v1", execution_id: executionId, caller });
+      return json({ outcome: result.outcome ?? "BLOCKED", caller, result }, 200);
+    }
+
+    if (body.action === "profile_creator_record_step_v1" || body.action === "profile_operation_record_step_v1") {
       const executionId = typeof body.execution_id === "string" ? body.execution_id.trim() : "";
       const stepId = typeof body.step_id === "string" ? body.step_id.trim() : "";
       const evidenceRef = typeof body.evidence_ref === "string" ? body.evidence_ref.trim() : "";
       const evidencePayload = body.evidence_payload && typeof body.evidence_payload === "object" && !Array.isArray(body.evidence_payload) ? body.evidence_payload as Record<string, unknown> : null;
-      if (!executionId || !stepId || !evidenceRef || !evidencePayload) return json({ outcome: "BLOCKED", code: "PROFILE_CREATOR_STEP_INPUT_INVALID", caller }, 400);
-      const result = await callRuntime({ action: "record_profile_creation_step_v1", execution_id: executionId, step_id: stepId, evidence_ref: evidenceRef, evidence_payload: evidencePayload, caller });
+      if (!executionId || !stepId || !evidenceRef || !evidencePayload) return json({ outcome: "BLOCKED", code: "PROFILE_OPERATION_STEP_INPUT_INVALID", caller }, 400);
+      const result = await callRuntime({ action: "record_profile_operation_step_v1", execution_id: executionId, step_id: stepId, evidence_ref: evidenceRef, evidence_payload: evidencePayload, caller });
       return json({ outcome: result.outcome ?? "BLOCKED", caller, result }, result.outcome === "STEP_RECORDED" ? 200 : 409);
     }
 
-    if (body.action === "profile_creator_record_batch_v1") {
+    if (body.action === "profile_creator_record_batch_v1" || body.action === "profile_operation_record_batch_v1") {
       const executionId = typeof body.execution_id === "string" ? body.execution_id.trim() : "";
-      const validation = validateProfileCreationBatch(body.steps);
-      if (!executionId) return json({ outcome: "BLOCKED", code: "PROFILE_CREATOR_BATCH_EXECUTION_ID_INVALID", caller }, 400);
+      const validation = validateProfileOperationBatch(body.steps);
+      if (!executionId) return json({ outcome: "BLOCKED", code: "PROFILE_OPERATION_BATCH_EXECUTION_ID_INVALID", caller }, 400);
       if (!validation.ok) return json({ outcome: "BLOCKED", code: validation.code, caller }, 400);
 
       const receipts: Record<string, unknown>[] = [];
       for (const step of validation.steps) {
+        const current = await callRuntime({ action: "next_profile_operation_step_v1", execution_id: executionId, caller });
+        const expectedStepId = current?.snapshot?.next_step?.step_id ?? null;
+        if (expectedStepId !== step.step_id) {
+          return json({ ...batchOutcome(receipts.length, validation.steps.length, step.step_id), code: "PROFILE_OPERATION_BATCH_STEP_NOT_CURRENT", expected_step_id: expectedStepId, caller, execution_id: executionId, receipts }, 409);
+        }
         const result = await callRuntime({
-          action: "record_profile_creation_step_v1",
+          action: "record_profile_operation_step_v1",
           execution_id: executionId,
           step_id: step.step_id,
           evidence_ref: step.evidence_ref,
           evidence_payload: step.evidence_payload,
           caller,
         });
-        receipts.push({ step_id: step.step_id, outcome: result.outcome ?? "BLOCKED", result });
+        receipts.push({ step_id: step.step_id, outcome: result.outcome ?? "BLOCKED", operation_code: result.operation_code ?? current?.snapshot?.operation_code ?? null, result });
         if (result.outcome !== "STEP_RECORDED") {
           return json({ ...batchOutcome(receipts.length - 1, validation.steps.length, step.step_id), caller, execution_id: executionId, receipts }, 409);
         }
