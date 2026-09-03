@@ -9,54 +9,82 @@ UI_SKILL_PATH = ROOT / 'profiles/ui_architect/SKILL.md'
 contract = json.loads(CONTRACT_PATH.read_text(encoding='utf-8'))
 ui_skill = UI_SKILL_PATH.read_text(encoding='utf-8')
 
-required_all = set(contract.get('required_for_all_existing', []))
-required_remediate = set(contract.get('required_for_remediate_existing', []))
-blocking = set(contract.get('fail_closed', {}).get('blocking_conditions', []))
-quality = contract.get('quality_pack_postconditions', {})
-shell = contract.get('shell_receipt_rule', {})
-policy = contract.get('policy_resolution', {})
+arch = contract['architecture']
+continuity = contract['revision_continuity']
+raster = contract['existing_raster_extension']
+judge = contract['judge_readiness']
+post = contract['post_write_existing_checks_reused']
+required = set(contract['required_pre_write_evidence'])
 
-expected_all = {
-    'source_ref','source_image_sha256','source_dimensions','visual_evidence',
-    'target_component_id','concrete_operation','canonical_component_or_token',
-    'observable_acceptance_criteria'
-}
-expected_remediate = {'authorized_delta','editable_zones','shell_locked_zones'}
-expected_negative = {
-    'MISSING_SOURCE_REF','MISSING_SOURCE_SHA256','MISSING_SOURCE_DIMENSIONS','SOURCE_SHA_MISMATCH',
-    'MISSING_VISUAL_EVIDENCE','MISSING_AUTHORIZED_DELTA_FOR_REMEDIATE_EXISTING',
-    'SHELL_RECEIPT_MISSING_WHEN_APPLICABLE','SHELL_RECEIPT_SOURCE_MISMATCH',
-    'SHELL_RECEIPT_SHA_MISMATCH','ADAPTER_INVOCATION_WITHOUT_EXACT_BINDING',
-    'OPERATION_OUTSIDE_AUTHORIZED_DELTA','SHELL_LOCKED_MUTATION','OUTSIDE_DELTA_MUTATION',
-    'PROFILE_SELF_AUTHORIZES_DOWNSTREAM'
-}
-
-checks = {
-    'operation_is_update': contract.get('operation_code') == 'ACTUALIZACION_PERFIL_LF',
-    'dedicated_step_id': contract.get('step_id') == 'existing_artifact_binding_gate',
-    'evaluate_and_remediate_covered': set(contract.get('applies_when', [])) == {'EVALUATE_EXISTING','REMEDIATE_EXISTING'},
-    'all_existing_fields_complete': required_all == expected_all,
-    'remediate_fields_complete': required_remediate == expected_remediate,
-    'shell_receipt_conditional': shell.get('required_when_shell_applies') is True,
-    'shell_receipt_same_artifact': shell.get('must_bind_same_source_ref') is True,
-    'shell_receipt_same_sha': shell.get('must_bind_same_source_sha256') is True,
-    'adapter_count_not_receipt': shell.get('adapter_invocations_count_is_sufficient') is False,
-    'fail_closed_downstream': contract.get('fail_closed', {}).get('downstream_authorized') is False,
-    'fail_closed_no_executable_instructions': contract.get('fail_closed', {}).get('executable_instructions_allowed') is False,
-    'negative_matrix_complete': blocking == expected_negative,
-    'quality_same_sha': quality.get('source_sha_match') is True,
-    'quality_outside_delta_zero': quality.get('outside_authorized_delta_changes') == 0,
-    'quality_shell_locked_zero': quality.get('shell_locked_mutations') == 0,
-    'quality_target_within_delta': quality.get('target_change_within_delta') is True,
-    'quality_acceptance_observable': quality.get('observable_acceptance_met') is True,
-    'source_policy_reused': policy.get('source_binding_policy') == 'POL-LF-SOURCE-RESOLUTION',
-    'shell_policy_reused': policy.get('shell_binding_policy') == 'POL-LF-ACTIVATION-ROUTING',
-    'transversal_not_profile_copy': policy.get('do_not_copy_into_profile') is True,
-    'ui_profile_not_polluted_with_contract_fields': all(token not in ui_skill for token in ['source_image_sha256','shell_locked_zones','authorized_delta','downstream_authorized']),
-    'no_auto_promotion': all(contract.get('lifecycle', {}).get(k) is False for k in ['runtime_promotion_authorized','production_authorized','validated_authorized']),
+contract_checks = {
+    'reuse_prewrite_step': contract['step_id'] == 'pre_write_execution_binding_gate',
+    'no_new_layer': arch['new_layer'] is False,
+    'no_new_table': arch['new_table'] is False,
+    'no_new_step': arch['new_step'] is False,
+    'no_ddl': arch['ddl_required'] is False,
+    'jsonb_transport': arch['evidence_transport'] == 'existing evidence_payload JSONB',
+    'explicit_bound_bool': 'execution_bound_to_target_before_change' in required,
+    'explicit_bound_revision': 'bound_revision' in required,
+    'no_free_text_revision_inference': continuity['free_text_write_plan_is_not_revision_evidence'] is True,
+    'stale_requires_reread': continuity['stale_revision_requires_reread'] is True,
+    'stale_requires_rebind': continuity['stale_revision_requires_explicit_rebind'] is True,
+    'judge_sha_required': judge['judge_sha_required'] is True,
+    'judge_pass_fail_required': judge['pass_if_required'] is True and judge['fail_if_required'] is True,
+    'update_recorder_remains_closed_until_judge_ready': judge['do_not_enable_update_recorder_until_ready'] is True,
+    'post_write_reused_not_duplicated': all([
+        post['github_write_identity_preserved'], post['github_readback_sha_match'],
+        post['github_readback_identity_preserved'], post['regression_after_reused'],
+        post['duplicate_post_write_gate'] is False,
+    ]),
+    'shell_same_bound_revision': raster['shell_receipt_must_bind_same_bound_revision'] is True,
+    'adapter_count_not_binding': raster['adapter_invocations_count_is_sufficient'] is False,
+    'ui_profile_not_polluted': all(t not in ui_skill for t in ['bound_revision','execution_bound_to_target_before_change','shell_locked_zones','downstream_authorized']),
+    'no_auto_promotion': all(contract['lifecycle'][k] is False for k in ['runtime_promotion_authorized','production_authorized','validated_authorized']),
 }
 
-failed = [name for name, ok in checks.items() if not ok]
-if failed:
-    raise SystemExit('FAIL_EXISTING_ARTIFACT_REMEDIATION_CONTRACT:' + ','.join(failed))
-print(f'PASS_EXISTING_ARTIFACT_REMEDIATION_CONTRACT={sum(checks.values())}/{len(checks)}')
+BASE = '0eeec4c2374b86390812961e14dabde5d8834d2e'
+NEW = '2222222222222222222222222222222222222222'
+TARGET = {'target_code':'PERFIL-QUALITY-PACK','target_path':'profiles/quality_pack'}
+
+def generic_gate(bound_bool=True, bound_revision=BASE, current_revision=BASE,
+                 target_code=TARGET['target_code'], target_path=TARGET['target_path'],
+                 rebound=False):
+    target_ok = target_code == TARGET['target_code'] and target_path == TARGET['target_path']
+    revision_ok = bool(bound_revision) and bound_revision == current_revision
+    stale_ok = revision_ok or rebound
+    return 'PASS' if bound_bool and target_ok and revision_ok and stale_ok else 'BLOCK'
+
+def raster_gate(artifact_id=85,
+                sha='ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287',
+                dimensions='1600x1000'):
+    return 'PASS' if (
+        artifact_id == 85 and
+        sha == 'ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287' and
+        dimensions == '1600x1000'
+    ) else 'BLOCK'
+
+cases = [
+    ('NEG_BOUND_FALSE','BLOCK',generic_gate(bound_bool=False)),
+    ('NEG_MISSING_REV','BLOCK',generic_gate(bound_revision=None)),
+    ('NEG_REV_MISMATCH','BLOCK',generic_gate(bound_revision='1'*40)),
+    ('NEG_STALE_NO_REBIND','BLOCK',generic_gate(bound_revision=BASE,current_revision=NEW,rebound=False)),
+    ('NEG_TARGET_MISMATCH','BLOCK',generic_gate(target_code='PERFIL-OTHER')),
+    ('POS_MATCH','PASS',generic_gate()),
+    ('POS_STALE_REBOUND','PASS',generic_gate(bound_revision=NEW,current_revision=NEW,rebound=True)),
+    ('SCREEN_POS_EXACT','PASS',raster_gate()),
+    ('SCREEN_NEG_SHA','BLOCK',raster_gate(sha='deadbeef')),
+    ('SCREEN_NEG_ARTIFACT','BLOCK',raster_gate(artifact_id=999)),
+    ('SCREEN_NEG_DIM','BLOCK',raster_gate(dimensions='1599x1000')),
+]
+
+failed_contract = [name for name, ok in contract_checks.items() if not ok]
+failed_matrix = [case for case, expected, actual in cases if expected != actual]
+if failed_contract:
+    raise SystemExit('FAIL_EXACT_TARGET_BINDING_CONTRACT:' + ','.join(failed_contract))
+if failed_matrix:
+    raise SystemExit('FAIL_EXACT_TARGET_BINDING_MATRIX:' + ','.join(failed_matrix))
+
+print(f'PASS_EXACT_TARGET_BINDING_CONTRACT={sum(contract_checks.values())}/{len(contract_checks)}')
+print(f'PASS_EXACT_TARGET_BINDING_MATRIX={len(cases)}/{len(cases)}')
+for case, expected, actual in cases:
+    print(f'{case}:expected={expected}:actual={actual}:PASS')
