@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
-const ENDPOINT_VERSION = "v18-governed-dual-profile-caller";
+const ENDPOINT_VERSION = "v20-generic-profile-operation-resumer-source";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")?.trim() ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.trim() ?? "";
 const REPOSITORY = "cristhianlujan/claude-persona-lf-patch";
@@ -8,6 +8,7 @@ const LEGACY_CALLER_METHOD = "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_GOV_V1";
 const LEGACY_CALLER_WORKFLOW_REF = `${REPOSITORY}/.github/workflows/lf-profiles-governance-caller.yml@refs/heads/governance/profiles-unblock-secure-caller-20260901`;
 const CUSTOMER_CALLER_METHOD = "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_CREATOR_CUSTOMER_V1";
 const CUSTOMER_CALLER_WORKFLOW_REF = `${REPOSITORY}/.github/workflows/lf-customer-profile-creator-governance-caller.yml@refs/heads/lf/profiles/profile-creator-customer-caller-20260902`;
+const SUPPORTED_PROFILE_OPERATIONS = new Set(["CREACION_PERFIL_LF", "ACTUALIZACION_PERFIL_LF"]);
 
 function responseHeaders(): HeadersInit {
   return { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" };
@@ -52,7 +53,7 @@ async function rpc(name: string, args: Record<string, unknown>): Promise<any> {
   return result.payload;
 }
 async function selectExecution(executionId: string): Promise<any | null> {
-  const result = await request(`/rest/v1/lf_operation_execution?execution_id=eq.${encodeURIComponent(executionId)}&select=execution_id,operation_code,target_type,target_code,target_repo,target_path,status,manifest`, { method: "GET" });
+  const result = await request(`/rest/v1/lf_operation_execution?execution_id=eq.${encodeURIComponent(executionId)}&select=execution_id,operation_code,target_type,target_code,target_repo,target_path,status,manifest,updated_at`, { method: "GET" });
   if (result.status !== 200) throw new Error(`EXECUTION_READ_${result.status}:${JSON.stringify(result.payload).slice(0, 1000)}`);
   return Array.isArray(result.payload) && result.payload.length ? result.payload[0] : null;
 }
@@ -60,6 +61,63 @@ async function selectInitStep(executionId: string): Promise<any | null> {
   const result = await request(`/rest/v1/lf_operation_execution_steps?execution_id=eq.${encodeURIComponent(executionId)}&step_order=eq.0&step_id=eq.init_execution&select=execution_id,step_order,step_id,status,evidence_ref,evidence_payload`, { method: "GET" });
   if (result.status !== 200) throw new Error(`STEP_READ_${result.status}:${JSON.stringify(result.payload).slice(0, 1000)}`);
   return Array.isArray(result.payload) && result.payload.length ? result.payload[0] : null;
+}
+async function selectProfileOperationSnapshot(execution: any): Promise<any> {
+  const operationCode = String(execution.operation_code ?? "");
+  if (!SUPPORTED_PROFILE_OPERATIONS.has(operationCode) || execution.target_type !== "PERFIL") throw new Error("PROFILE_OPERATION_NOT_SUPPORTED");
+
+  const [stepsResult, recordedResult, contractsResult, bindingsResult, policyResult] = await Promise.all([
+    request(`/rest/v1/lf_operation_steps?operation_code=eq.${encodeURIComponent(operationCode)}&active=eq.true&select=step_order,execution_order,step_id,required,evidence_required,source_path,source_sha&order=execution_order.asc`, { method: "GET" }),
+    request(`/rest/v1/lf_operation_execution_steps?execution_id=eq.${encodeURIComponent(execution.execution_id)}&select=step_order,step_id,status,evidence_ref,observed_at&order=step_order.asc`, { method: "GET" }),
+    request(`/rest/v1/lf_operation_step_contracts?operation_code=eq.${encodeURIComponent(operationCode)}&select=step_id,step_order,execution_order,status,resolver_ref,required_evidence_keys,next_if_pass,next_if_blocked,blocking_code`, { method: "GET" }),
+    request(`/rest/v1/lf_operation_step_judge_bindings?operation_code=eq.${encodeURIComponent(operationCode)}&status=eq.ACTIVE_ENFORCEMENT&select=step_id,step_order,judge_code,clean_result_value,blocked_result_value,return_result_value,required_evidence_keys`, { method: "GET" }),
+    request(`/rest/v1/v_lf_operation_policy_snapshot?operation_code=eq.${encodeURIComponent(operationCode)}&select=*`, { method: "GET" }),
+  ]);
+  for (const [name, result] of [["steps", stepsResult], ["recorded", recordedResult], ["contracts", contractsResult], ["bindings", bindingsResult], ["policies", policyResult]] as const) {
+    if (result.status !== 200) throw new Error(`PROFILE_OPERATION_${name.toUpperCase()}_READ_${result.status}:${JSON.stringify(result.payload).slice(0, 800)}`);
+  }
+  const steps = Array.isArray(stepsResult.payload) ? stepsResult.payload : [];
+  const recorded = Array.isArray(recordedResult.payload) ? recordedResult.payload : [];
+  const contracts = Array.isArray(contractsResult.payload) ? contractsResult.payload : [];
+  const bindings = Array.isArray(bindingsResult.payload) ? bindingsResult.payload : [];
+  const policies = Array.isArray(policyResult.payload) ? policyResult.payload : [];
+  const recordedById = new Map(recorded.map((row: any) => [row.step_id, row]));
+  const contractById = new Map(contracts.map((row: any) => [row.step_id, row]));
+  const bindingById = new Map(bindings.map((row: any) => [row.step_id, row]));
+
+  let nextStep: any = null;
+  for (const step of steps) {
+    if (!step.required || recordedById.has(step.step_id)) continue;
+    const contract = contractById.get(step.step_id);
+    const binding = bindingById.get(step.step_id);
+    if (!contract || !binding) throw new Error(`PROFILE_OPERATION_STEP_CONTRACT_OR_JUDGE_MISSING:${step.step_id}`);
+    nextStep = {
+      step_id: step.step_id,
+      step_order: step.step_order,
+      execution_order: step.execution_order,
+      resolver_ref: contract.resolver_ref,
+      required_evidence_keys: binding.required_evidence_keys ?? contract.required_evidence_keys ?? [],
+      judge_code: binding.judge_code,
+      clean_result_value: binding.clean_result_value,
+      blocked_result_value: binding.blocked_result_value,
+      return_result_value: binding.return_result_value,
+      next_if_pass: contract.next_if_pass,
+      next_if_blocked: contract.next_if_blocked,
+    };
+    break;
+  }
+  return {
+    operation_code: operationCode,
+    target_code: execution.target_code,
+    target_path: execution.target_path,
+    execution_status: execution.status,
+    execution_updated_at: execution.updated_at,
+    declared_step_count: steps.length,
+    recorded_step_count: recorded.length,
+    remaining_required_count: steps.filter((step: any) => step.required && !recordedById.has(step.step_id)).length,
+    next_step: nextStep,
+    policies,
+  };
 }
 
 Deno.serve(async (req: Request) => {
@@ -71,18 +129,41 @@ Deno.serve(async (req: Request) => {
     const callerValidation = validateCaller(body.caller); if (!callerValidation.ok) return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: callerValidation.code }, 403);
     const caller = callerValidation.caller;
 
-    if (body.action === "record_profile_creation_step_v1") {
+    if (body.action === "next_profile_operation_step_v1") {
+      const executionId = typeof body.execution_id === "string" ? body.execution_id.trim() : "";
+      if (!executionId || executionId.length > 180) return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "EXECUTION_ID_INVALID" }, 400);
+      const execution = await selectExecution(executionId);
+      if (!execution || execution.target_type !== "PERFIL" || execution.target_repo !== REPOSITORY || !SUPPORTED_PROFILE_OPERATIONS.has(execution.operation_code)) {
+        return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "PROFILE_OPERATION_EXECUTION_IDENTITY_MISMATCH" }, 409);
+      }
+      const snapshot = await selectProfileOperationSnapshot(execution);
+      return jsonResponse({ outcome: snapshot.next_step ? "NEXT_STEP_RESOLVED" : "NO_REQUIRED_STEP_REMAINING", endpoint_version: ENDPOINT_VERSION, execution_id: executionId, snapshot, write_executed: false }, 200);
+    }
+
+    if (body.action === "record_profile_operation_step_v1" || body.action === "record_profile_creation_step_v1") {
       const executionId = typeof body.execution_id === "string" ? body.execution_id.trim() : "";
       const stepId = typeof body.step_id === "string" ? body.step_id.trim() : "";
       const evidenceRef = typeof body.evidence_ref === "string" ? body.evidence_ref.trim() : "";
       const evidencePayload = body.evidence_payload && typeof body.evidence_payload === "object" && !Array.isArray(body.evidence_payload) ? body.evidence_payload as Record<string, unknown> : null;
-      if (!/^EXEC-CREACION-PERFIL-LF-OIDC-[0-9a-f-]{36}$/.test(executionId)) return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "EXECUTION_ID_INVALID" }, 400);
+      if (!executionId || executionId.length > 180) return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "EXECUTION_ID_INVALID" }, 400);
       if (!/^[a-z0-9_]{2,80}$/.test(stepId) || !evidenceRef || !evidencePayload) return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "STEP_EVIDENCE_INPUT_INVALID" }, 400);
       const execution = await selectExecution(executionId);
-      const identityMatches = execution && execution.operation_code === "CREACION_PERFIL_LF" && execution.target_type === "PERFIL" && execution.target_repo === REPOSITORY && execution.status === "IN_PROGRESS" && execution.manifest?.governed_caller_method === caller.method && execution.manifest?.caller_repository === caller.repository && execution.manifest?.caller_workflow_ref === caller.workflow_ref;
+      if (!execution || execution.target_type !== "PERFIL" || execution.target_repo !== REPOSITORY || !SUPPORTED_PROFILE_OPERATIONS.has(execution.operation_code)) {
+        return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "PROFILE_OPERATION_EXECUTION_IDENTITY_MISMATCH" }, 409);
+      }
+      const snapshotBefore = await selectProfileOperationSnapshot(execution);
+      if (!snapshotBefore.next_step || snapshotBefore.next_step.step_id !== stepId) {
+        return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "PROFILE_OPERATION_STEP_NOT_CURRENT", expected_step: snapshotBefore.next_step?.step_id ?? null, requested_step: stepId }, 409);
+      }
+      if (execution.operation_code === "ACTUALIZACION_PERFIL_LF") {
+        return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "UPDATE_OPERATION_CANONICAL_RECORDER_REQUIRED", operation_code: execution.operation_code, next_step: snapshotBefore.next_step, write_executed: false }, 409);
+      }
+      const identityMatches = execution.operation_code === "CREACION_PERFIL_LF" && execution.status === "IN_PROGRESS" && execution.manifest?.governed_caller_method === caller.method && execution.manifest?.caller_repository === caller.repository && execution.manifest?.caller_workflow_ref === caller.workflow_ref;
       if (!identityMatches) return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "STEP_EXECUTION_IDENTITY_MISMATCH" }, 409);
       const result = await rpc("lf_record_creacion_perfil_step_v1", { p_execution_id: executionId, p_step_id: stepId, p_evidence_ref: evidenceRef, p_evidence_payload: evidencePayload, p_actor_execution_id: executionId });
-      return jsonResponse({ outcome: result?.outcome ?? "BLOCKED", endpoint_version: ENDPOINT_VERSION, execution_id: executionId, step_id: stepId, result, github_write_executed: false }, result?.outcome === "STEP_RECORDED" ? 200 : 409);
+      const executionAfter = await selectExecution(executionId);
+      const snapshotAfter = executionAfter ? await selectProfileOperationSnapshot(executionAfter) : null;
+      return jsonResponse({ outcome: result?.outcome ?? "BLOCKED", endpoint_version: ENDPOINT_VERSION, execution_id: executionId, operation_code: execution.operation_code, step_id: stepId, result, snapshot_after: snapshotAfter, github_write_executed: false }, result?.outcome === "STEP_RECORDED" ? 200 : 409);
     }
 
     if (body.action !== "initialize_profile_creation_v1") return jsonResponse({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "ACTION_NOT_ALLOWED" }, 400);
