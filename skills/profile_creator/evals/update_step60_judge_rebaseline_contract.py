@@ -6,6 +6,7 @@ C = json.loads((ROOT / "contracts/update_step60_judge_rebaseline_v1.json").read_
 S = json.loads((ROOT / "contracts/update_judge_semantics_source_v1.json").read_text(encoding="utf-8"))
 
 keys = set(C["step60_required_evidence_keys"])
+authority = C["authority_model"]
 checks = {
     "exact_operation": C["operation_code"] == "ACTUALIZACION_PERFIL_LF",
     "exact_step_order": C["step_order"] == 60,
@@ -20,7 +21,10 @@ checks = {
     "semantic_source_has_pass": len(S["pass_if"]) == 8,
     "semantic_source_has_fail": len(S["fail_if"]) == 9,
     "caller_not_authority": C["caller_assertions_are_authority"] is False,
-    "server_context_required": C["deterministic_authority"] == "SERVER_DERIVED_TRUST_CONTEXT_REQUIRED",
+    "judge_attestation_only": authority["judge_pass_if_fail_if_role"] == "CALLER_ATTESTATION_ONLY",
+    "caller_arrays_explicit": authority["assertions_checked_and_hard_fails_checked_are_caller_supplied"] is True,
+    "judge_not_currentness_authority": authority["judge_is_deterministic_currentness_authority"] is False,
+    "server_context_required": authority["deterministic_authority"] == "SERVER_DERIVED_TRUST_CONTEXT_REQUIRED",
     "source_only": C["activation"]["source_only"] is True,
     "no_live_judge_mutation": C["activation"]["live_judge_mutation_authorized"] is False,
     "no_live_binding_mutation": C["activation"]["live_binding_mutation_authorized"] is False,
@@ -32,6 +36,7 @@ failed = [k for k,v in checks.items() if not v]
 if failed:
     raise SystemExit("FAIL_UPDATE_STEP60_JUDGE_REBASELINE:" + ",".join(failed))
 print(f"PASS_UPDATE_STEP60_JUDGE_REBASELINE={sum(checks.values())}/{len(checks)}")
-print("LIVE_SHARED_JUDGE_FIXED=false")
-print("LIVE_STEP60_BINDING_FIXED=false")
+print("JUDGE_PASS_FAIL_ROLE=CALLER_ATTESTATION_ONLY")
+print("DETERMINISTIC_AUTHORITY=SERVER_DERIVED_TRUST_CONTEXT_REQUIRED")
+print("LIVE_STEP60_DEDICATED_JUDGE_MATERIALIZED=false")
 print("UPDATE_WRITE_ENABLED=false")
