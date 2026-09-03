@@ -37,6 +37,7 @@
   "durable_block_codes": [
     "PRIOR_REQUIRED_STEP_NOT_CLEAN",
     "REQUIRED_EVIDENCE_MISSING",
+    "BLOCKING_CODES_INVALID",
     "STEP_BLOCKED",
     "PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED"
   ],
@@ -52,7 +53,7 @@
   ],
   "activation": {
     "source_contract_only": true,
-    "recorder_source_implemented": false,
+    "recorder_source_implemented": true,
     "live_materialized": false,
     "update_write_enabled": false,
     "runtime_deployment_authorized": false,
