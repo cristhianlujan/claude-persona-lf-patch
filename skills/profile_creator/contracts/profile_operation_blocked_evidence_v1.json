@@ -25,6 +25,12 @@
     "trigger_compatibility": "The existing trigger derives blocked_result_value when blocking_findings is non-empty. Required evidence keys must exist in the persisted payload; missing caller keys may be represented as null only in the blocked snapshot and may never satisfy a later clean retry.",
     "caller_status_is_authority": false
   },
+  "audit_semantics": {
+    "key_presence_alone_is_proof": false,
+    "required_query_rule": "Evidence audits must require key presence AND JSON non-null; blocked snapshots may intentionally carry required keys with null values.",
+    "forbidden_shortcut_example": "evidence_payload ? 'bound_revision'",
+    "minimum_non_null_predicate": "evidence_payload ? 'bound_revision' AND evidence_payload->'bound_revision' IS NOT NULL AND evidence_payload->'bound_revision' <> 'null'::jsonb"
+  },
   "retry_semantics": {
     "same_execution_step_row": true,
     "blocked_row_is_terminal": false,
@@ -66,6 +72,7 @@
     "retry_with_same_invalid_evidence_remains_blocked",
     "retry_with_complete_clean_evidence_can_transition_only_if_trigger_derives_clean",
     "pre_identity_failure_does_not_fabricate_step_row",
+    "audit_query_requires_non_null_evidence",
     "no_new_table_or_parallel_recorder"
   ]
 }
