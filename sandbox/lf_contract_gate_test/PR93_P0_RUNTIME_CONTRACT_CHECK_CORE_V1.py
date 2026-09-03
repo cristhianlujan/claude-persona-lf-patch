@@ -151,6 +151,23 @@ def evaluate_controlled_runtime_scope(
     )
 
 
+def _customer_workflow_admission_allowed(branch: str, runtime_scope_enabled: bool) -> bool:
+    """Admit the Customer workflow only after its exact runtime scope was proven.
+
+    The Customer feature branch is the pre-merge admission identity.  On a push to
+    main, the base runtime gate has already checked the exact changed path set,
+    pinned blobs/modes, and immutable GitHub merge provenance before setting
+    ``_runtime_scope_enabled``.  Requiring that proven bit here keeps main
+    fail-closed while allowing the exact post-merge transition to reach the
+    historical .github scanner.
+    """
+    if branch == CUSTOMER_PROFILE_CREATOR_BRANCH:
+        return runtime_scope_enabled
+    if branch == MAIN_BRANCH:
+        return runtime_scope_enabled
+    return False
+
+
 def _customer_scope_self_test() -> None:
     exact = dict(CUSTOMER_PROFILE_CREATOR_BLOBS)
     modes = {path: "100644" for path in exact}
@@ -186,6 +203,20 @@ def _customer_scope_self_test() -> None:
             continue
         raise SystemExit(f"FAIL_CUSTOMER_PROFILE_CREATOR_SCOPE_NEGATIVE_{label.upper()}")
     print("PASS_CUSTOMER_PROFILE_CREATOR_EXACT_RUNTIME_SCOPE=5/5")
+
+
+def _customer_workflow_admission_self_test() -> None:
+    cases = (
+        ("feature_verified", CUSTOMER_PROFILE_CREATOR_BRANCH, True, True),
+        ("main_verified", MAIN_BRANCH, True, True),
+        ("main_unverified", MAIN_BRANCH, False, False),
+        ("arbitrary_even_if_scope_flagged", "feature/arbitrary", True, False),
+    )
+    for label, branch, runtime_scope_enabled, expected in cases:
+        observed = _customer_workflow_admission_allowed(branch, runtime_scope_enabled)
+        if observed is not expected:
+            raise SystemExit(f"FAIL_CUSTOMER_WORKFLOW_ADMISSION_SELFTEST_{label.upper()}")
+    print("PASS_CUSTOMER_WORKFLOW_ADMISSION_SELFTEST=4/4")
 
 
 _original_base_get_changed_files = _base.get_changed_files
@@ -246,10 +277,12 @@ def _customer_get_changed_files() -> list[str]:
     changed = set(changed_files)
     if CUSTOMER_PROFILE_CREATOR_WORKFLOW in changed:
         branch = current_event_branch()
-        if branch != CUSTOMER_PROFILE_CREATOR_BRANCH:
+        if not _customer_workflow_admission_allowed(branch, _base._runtime_scope_enabled):
             raise RuntimeScopeError(
                 "FAIL_RUNTIME_BRANCH_MISMATCH",
-                f"Customer workflow admission requires {CUSTOMER_PROFILE_CREATOR_BRANCH!r}; got {branch!r}",
+                "Customer workflow admission requires the governed Customer branch "
+                f"or an exact verified main transition; got {branch!r} "
+                f"scope_verified={_base._runtime_scope_enabled!r}",
             )
         _base.e16.base.ALLOWED_GITHUB_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW)
     return changed_files
@@ -263,6 +296,7 @@ def main() -> int:
 
 
 _customer_scope_self_test()
+_customer_workflow_admission_self_test()
 
 if __name__ == "__main__":
     raise SystemExit(main())
