@@ -1,15 +1,30 @@
 from pathlib import Path
+import json
 
 ROOT = Path(__file__).resolve().parents[2]
 CALLER = ROOT / "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts"
 BATCH = ROOT / "supabase/functions/lf-profile-creator-governance-caller-v1/batch.ts"
 RUNTIME = ROOT / "supabase/functions/run-creacion-perfil-lf/index.ts"
 WORKFLOW = ROOT / ".github/workflows/lf-customer-profile-creator-governance-caller.yml"
+EXISTING_ARTIFACT = ROOT / "skills/profile_creator/contracts/existing_artifact_remediation_contract.json"
+UI_SKILL = ROOT / "profiles/ui_architect/SKILL.md"
 
 caller = CALLER.read_text(encoding="utf-8")
 batch = BATCH.read_text(encoding="utf-8")
 runtime = RUNTIME.read_text(encoding="utf-8")
 workflow = WORKFLOW.read_text(encoding="utf-8")
+existing_artifact = json.loads(EXISTING_ARTIFACT.read_text(encoding="utf-8"))
+ui_skill = UI_SKILL.read_text(encoding="utf-8")
+
+blocking = set(existing_artifact.get('fail_closed', {}).get('blocking_conditions', []))
+required_negative = {
+    'MISSING_SOURCE_REF','MISSING_SOURCE_SHA256','MISSING_SOURCE_DIMENSIONS','SOURCE_SHA_MISMATCH',
+    'MISSING_VISUAL_EVIDENCE','MISSING_AUTHORIZED_DELTA_FOR_REMEDIATE_EXISTING',
+    'SHELL_RECEIPT_MISSING_WHEN_APPLICABLE','SHELL_RECEIPT_SOURCE_MISMATCH',
+    'SHELL_RECEIPT_SHA_MISMATCH','ADAPTER_INVOCATION_WITHOUT_EXACT_BINDING',
+    'OPERATION_OUTSIDE_AUTHORIZED_DELTA','SHELL_LOCKED_MUTATION','OUTSIDE_DELTA_MUTATION',
+    'PROFILE_SELF_AUTHORIZES_DOWNSTREAM'
+}
 
 checks = {
     "exclusive_branch": 'lf/profiles/profile-creator-customer-caller-20260902' in caller and 'lf/profiles/profile-creator-customer-caller-20260902' in workflow,
@@ -49,6 +64,16 @@ checks = {
     "workflow_source_only_dispatch": 'source_canary_only' in workflow and 'NON_CANARY_PROFILE_CREATION_EXECUTED=false' in workflow,
     "workflow_router_source_gate": 'ROUTER_REQUIRES_SUPABASE_EVIDENCE_REF' in workflow and 'ROUTER_READ_REQUIRED' in workflow,
     "workflow_step_envelope_gate": 'MISSING_STEP_RESULT' in workflow and 'MISSING_BLOCKING_CODES' in workflow,
+    "existing_artifact_update_scope": existing_artifact.get('operation_code') == 'ACTUALIZACION_PERFIL_LF' and existing_artifact.get('step_id') == 'existing_artifact_binding_gate',
+    "existing_artifact_modes": set(existing_artifact.get('applies_when', [])) == {'EVALUATE_EXISTING','REMEDIATE_EXISTING'},
+    "existing_artifact_fail_closed": existing_artifact.get('fail_closed', {}).get('downstream_authorized') is False and existing_artifact.get('fail_closed', {}).get('executable_instructions_allowed') is False,
+    "existing_artifact_negatives_complete": blocking == required_negative,
+    "existing_artifact_same_sha_quality": existing_artifact.get('quality_pack_postconditions', {}).get('source_sha_match') is True,
+    "existing_artifact_zero_outside_delta": existing_artifact.get('quality_pack_postconditions', {}).get('outside_authorized_delta_changes') == 0,
+    "existing_artifact_zero_shell_locked": existing_artifact.get('quality_pack_postconditions', {}).get('shell_locked_mutations') == 0,
+    "existing_artifact_shell_receipt_exact": existing_artifact.get('shell_receipt_rule', {}).get('must_bind_same_source_ref') is True and existing_artifact.get('shell_receipt_rule', {}).get('must_bind_same_source_sha256') is True,
+    "existing_artifact_adapter_count_insufficient": existing_artifact.get('shell_receipt_rule', {}).get('adapter_invocations_count_is_sufficient') is False,
+    "existing_artifact_transversal_not_ui_copy": existing_artifact.get('policy_resolution', {}).get('do_not_copy_into_profile') is True and all(token not in ui_skill for token in ['source_image_sha256','shell_locked_zones','authorized_delta','downstream_authorized']),
     # Branch-local fail-closed surface. Canonical creation-recorder negatives are
     # validated separately against live Supabase/main; this exclusive PR must not
     # import/copy a migration solely to make the source test pass.
