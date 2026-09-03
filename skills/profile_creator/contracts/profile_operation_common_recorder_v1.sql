@@ -32,8 +32,6 @@ declare
   v_block_code text;
   v_block_details jsonb := '{}'::jsonb;
 begin
-  -- These failures occur before a truthful execution+step+binding identity exists;
-  -- they cannot be represented as lf_operation_execution_steps rows without fabricating identity.
   if p_execution_id is null or btrim(p_execution_id) = '' or p_step_id is null or btrim(p_step_id) = '' then
     return jsonb_build_object('outcome','BLOCKED','code','STEP_IDENTITY_MISSING','durable',false);
   end if;
@@ -120,8 +118,7 @@ begin
   where s.operation_code = v_execution.operation_code
     and s.required is true and s.active is true
     and coalesce(s.execution_order,0) < coalesce(v_step.execution_order,0)
-    and ((s.step_id='init_execution' and es.status <> 'STEP_CLEAN_PASS')
-      or (s.step_id <> 'init_execution' and (pb.clean_result_value is null or es.status <> pb.clean_result_value)));
+    and (pb.clean_result_value is null or es.status <> pb.clean_result_value);
   if v_prior_missing > 0 or v_prior_bad > 0 then
     v_block_code := 'PRIOR_REQUIRED_STEP_NOT_CLEAN';
     v_block_details := jsonb_build_object('prior_missing',v_prior_missing,'prior_bad',v_prior_bad);
@@ -154,8 +151,6 @@ begin
     end if;
   end if;
 
-  -- UPDATE pre-write MUST NOT turn caller-supplied booleans or resolver-shaped JSON into authority.
-  -- Until server-derived trusted context exists, this becomes a durable blocked attempt after identity resolution.
   if v_block_code is null
      and v_execution.operation_code = 'ACTUALIZACION_PERFIL_LF'
      and p_step_id = 'pre_write_execution_binding_gate' then
@@ -165,8 +160,6 @@ begin
 
   if v_block_code is not null then
     v_payload := p_evidence_payload;
-    -- The live enforcement trigger requires key presence. A blocked snapshot may carry null placeholders
-    -- only to preserve what was missing; a later clean retry below still requires non-null values.
     for v_key in select jsonb_array_elements_text(v_binding.required_evidence_keys) loop
       if not (v_payload ? v_key) then v_payload := v_payload || jsonb_build_object(v_key,null); end if;
     end loop;
