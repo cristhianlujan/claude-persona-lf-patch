@@ -2,58 +2,20 @@
   "contract_code": "UPDATE_SERVER_TRUST_CONTEXT_V1",
   "operation_code": "ACTUALIZACION_PERFIL_LF",
   "step_id": "pre_write_execution_binding_gate",
-  "status": "SOURCE_CANDIDATE_FAIL_CLOSED",
-  "purpose": "Define the minimum server-derived authority required before the common recorder can persist UPDATE pre-write evidence.",
-  "architecture": {
-    "new_layer": false,
-    "new_table": false,
-    "new_operation": false,
-    "new_step": false,
-    "authority_location": "existing run-creacion-perfil-lf runtime",
-    "persistence_location": "existing lf_operation_execution_steps.evidence_payload",
-    "parallel_update_recorder": false
-  },
+  "status": "SOURCE_IMPLEMENTED_AWAITING_EXACT_HEAD_CI_AND_DEPLOY",
+  "purpose": "Require server-derived exact GitHub currentness before the common recorder can accept UPDATE pre-write evidence.",
+  "architecture": {"new_layer":false,"new_table":false,"new_operation":false,"new_step":false,"authority_location":"existing run-creacion-perfil-lf runtime","persistence_location":"existing lf_operation_execution_steps.evidence_payload","parallel_update_recorder":false},
   "trust_boundary": {
-    "caller_role": "REQUEST_AND_EVIDENCE_INPUT_ONLY",
-    "runtime_role": "SERVER_DERIVED_CURRENTNESS_AUTHORITY",
-    "recorder_role": "TRANSACTIONAL_STRUCTURAL_PERSISTENCE",
-    "caller_must_not_authorize": [
-      "trusted_current_revision",
-      "current_revision_resolved_by_caller",
-      "declared_current_revision_ignored",
-      "server_trust_context_valid",
-      "server_trust_context_source"
-    ],
-    "runtime_must_derive": [
-      "persisted_baseline_revision",
-      "execution_target_path",
-      "github_main_revision_sha",
-      "github_target_blob_sha",
-      "bound_revision_match",
-      "stale_state",
-      "reread_rebind_requirements",
-      "continuity_result"
-    ]
+    "caller_role":"REQUEST_AND_EVIDENCE_INPUT_ONLY",
+    "runtime_role":"SERVER_DERIVED_CURRENTNESS_AUTHORITY",
+    "recorder_role":"TRANSACTIONAL_STRUCTURAL_PERSISTENCE",
+    "caller_must_not_authorize":["trusted_current_revision","current_revision_resolved_by_caller","declared_current_revision_ignored","server_trust_context_valid","server_trust_context_source","server_trust_context"],
+    "runtime_must_derive":["persisted_baseline_revision","execution_target_path","github_main_revision_sha","github_target_blob_sha","bound_revision_match","stale_state","reread_rebind_requirements","continuity_result"]
   },
   "server_context": {
-    "source": "run-creacion-perfil-lf",
-    "required_fields": [
-      "resolver",
-      "repository",
-      "ref",
-      "revision_sha",
-      "target_path",
-      "target_blob_sha",
-      "baseline_revision",
-      "bound_revision",
-      "continuity_state",
-      "observed_at"
-    ],
-    "resolver": "GITHUB_PUBLIC_API_EXACT_REF_V1",
-    "base_ref": "main",
-    "must_be_computed_after_current_step_check": true,
-    "must_be_computed_before_recorder_call": true,
-    "must_not_be_taken_from_request_payload": true
+    "source":"run-creacion-perfil-lf",
+    "required_fields":["resolver","repository","ref","revision_sha","target_path","target_blob_sha","baseline_revision","bound_revision","continuity_state","observed_at"],
+    "resolver":"GITHUB_PUBLIC_API_EXACT_REF_V1","base_ref":"main","must_be_computed_after_current_step_check":true,"must_be_computed_before_recorder_call":true,"must_not_be_taken_from_request_payload":true
   },
   "decision_matrix": [
     {"case":"POS_CURRENT_BOUND","baseline":"A","current":"A","bound":"A","execution_bound":true,"result":"CURRENT_BOUND"},
@@ -69,12 +31,5 @@
     {"case":"NEG_BOUND_NOT_CURRENT","baseline":"A","current":"B","bound":"A","result":"PROFILE_UPDATE_BOUND_REVISION_CURRENT_MISMATCH"},
     {"case":"NEG_CALLER_TRUST_FLAGS_CANNOT_OVERRIDE","baseline":"A","current":"B","bound":"A","caller_claims_trusted":true,"result":"PROFILE_UPDATE_BOUND_REVISION_CURRENT_MISMATCH"}
   ],
-  "activation_gate": {
-    "runtime_source_implemented": false,
-    "common_recorder_materialized": false,
-    "update_write_enabled": false,
-    "ddl_authorized": false,
-    "runtime_deployment_authorized": false,
-    "merge_authorized": false
-  }
+  "activation_gate": {"runtime_source_implemented":true,"common_recorder_materialized":true,"update_prewrite_source_enabled":true,"runtime_deployment_authorized":true,"runtime_deployed":false,"merge_authorized":false}
 }
