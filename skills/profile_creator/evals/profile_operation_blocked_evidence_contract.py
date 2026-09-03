@@ -4,6 +4,7 @@ import json
 ROOT = Path(__file__).resolve().parents[1]
 C = json.loads((ROOT / "contracts/profile_operation_blocked_evidence_v1.json").read_text(encoding="utf-8"))
 SQL = (ROOT / "contracts/profile_operation_common_recorder_v1.sql").read_text(encoding="utf-8")
+MIGRATION = (ROOT.parents[1] / "supabase/migrations/20260903205327_lf_profile_operation_common_recorder_v1.sql").read_text(encoding="utf-8")
 checks = {
     "no_new_table": C["architecture"]["new_table"] is False,
     "no_new_layer": C["architecture"]["new_layer"] is False,
@@ -11,6 +12,9 @@ checks = {
     "common_recorder_only": C["architecture"]["recorder"] == "lf_record_profile_operation_step_v1",
     "durable_after_binding": C["identity_boundary"]["durable_only_after"][-1] == "active_binding_resolved",
     "no_fake_preidentity_step": C["identity_boundary"]["pre_identity_failures_are_durable_step_evidence"] is False,
+    "create_contract_active": C["contract_status_resolution"]["CREACION_PERFIL_LF"] == "ACTIVE",
+    "update_contract_active_enforcement": C["contract_status_resolution"]["ACTUALIZACION_PERFIL_LF"] == "ACTIVE_ENFORCEMENT",
+    "contract_status_fail_closed": C["contract_status_resolution"]["fail_closed_on_mismatch"] is True,
     "blocked_status_derived": C["durable_blocked_path"]["status"] == "binding.blocked_result_value",
     "blocking_findings_present": "blocking_findings" in C["durable_blocked_path"]["required_payload_extensions"],
     "attempt_history_present": "attempt_history" in C["durable_blocked_path"]["required_payload_extensions"],
@@ -30,10 +34,9 @@ checks = {
     "missing_evidence_block_durable": "REQUIRED_EVIDENCE_MISSING" in C["durable_block_codes"],
     "identity_missing_not_durable": "STEP_IDENTITY_MISSING" in C["non_durable_pre_identity_codes"],
     "binding_missing_not_durable": "STEP_JUDGE_BINDING_MISSING" in C["non_durable_pre_identity_codes"],
-    "source_only": C["activation"]["source_contract_only"] is True,
-    "recorder_source_implemented": C["activation"]["recorder_source_implemented"] is True,
-    "live_not_materialized": C["activation"]["live_materialized"] is False,
-    "update_off": C["activation"]["update_write_enabled"] is False,
+    "live_materialized": C["activation"]["live_materialized"] is True,
+    "service_role_only_declared": C["activation"]["live_execute_roles"] == ["service_role"] and C["activation"]["anon_execute"] is False and C["activation"]["authenticated_execute"] is False,
+    "update_off": C["activation"]["update_write_enabled"] is False and C["activation"]["runtime_update_path_enabled"] is False,
     "retry_tests_present": all(x in C["required_tests"] for x in ["retry_preserves_first_blocked_attempt","retry_with_same_invalid_evidence_remains_blocked","retry_with_complete_clean_evidence_can_transition_only_if_trigger_derives_clean"]),
     "sql_has_retryable_existing": "v_existing_retryable" in SQL and "v_existing.status in (v_binding.blocked_result_value,v_binding.return_result_value)" in SQL,
     "sql_persists_blocked_result": "status=v_binding.blocked_result_value" in SQL and "blocking_findings" in SQL,
@@ -41,7 +44,10 @@ checks = {
     "sql_clean_retry_updates_same_row": "Clean retry accepted transactionally" in SQL and "status=v_binding.clean_result_value" in SQL,
     "sql_preidentity_marked_nondurable": "'durable',false" in SQL,
     "sql_server_trust_block_is_durable_candidate": "PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED" in SQL and "v_block_code := 'PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED'" in SQL,
-    "sql_still_source_only": "SOURCE_ONLY / NOT_DEPLOYED / NO_RUNTIME_ENABLEMENT" in SQL,
+    "sql_operation_aware_contract_status": "when v_execution.operation_code = 'ACTUALIZACION_PERFIL_LF' then 'ACTIVE_ENFORCEMENT'" in SQL and "else 'ACTIVE'" in SQL,
+    "migration_revokes_anon": "from anon;" in MIGRATION,
+    "migration_revokes_authenticated": "from authenticated;" in MIGRATION,
+    "migration_grants_service_role": "to service_role;" in MIGRATION,
 }
 failed=[k for k,v in checks.items() if not v]
 if failed:
@@ -50,5 +56,6 @@ print(f"PASS_PROFILE_OPERATION_BLOCKED_EVIDENCE={sum(checks.values())}/{len(chec
 print("RECORDER_SOURCE_IMPLEMENTED=true")
 print("ARTIFACT_BOUND_SOURCE_CHECKS=true")
 print("AUDIT_NON_NULL_RULE_ENFORCED=true")
-print("LIVE_MATERIALIZED=false")
+print("LIVE_MATERIALIZED=true")
+print("LIVE_EXECUTE_SCOPE=service_role_only")
 print("UPDATE_WRITE_ENABLED=false")
