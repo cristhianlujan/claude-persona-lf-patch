@@ -28,6 +28,10 @@ checks = {
     "lane_identity": 'CUSTOMER_PROFILES' in caller and 'LF-CUSTOMER-PROFILES' not in caller,
     "origin_identity": 'AUTOMATION_AGENTE_PROFILE_CREATOR_CUSTOMER' in caller and 'AUTOMATION_PROFILES_CUSTOMER_V2' not in caller,
     "workstream_identity": 'PROFILE_CREATOR_INFRA' in caller,
+    "ordered_step_bridge": '[RECORD_CUSTOMER_STEP]' in workflow and 'profile_creator_customer_step_request.json' in workflow,
+    "ordered_step_envelope_gate": "MISSING_STEP_RESULT" in workflow and "MISSING_BLOCKING_CODES" in workflow,
+    "router_source_gate": "ROUTER_REQUIRES_SUPABASE_EVIDENCE_REF" in workflow and "ROUTER_READ_REQUIRED" in workflow,
+    "ordered_step_fail_closed": "assert step.get('status') == 'STEP_CLEAN_PASS'" in workflow and "test \"$code\" = \"200\"" in workflow,
 }
 
 failed = [name for name, ok in checks.items() if not ok]
