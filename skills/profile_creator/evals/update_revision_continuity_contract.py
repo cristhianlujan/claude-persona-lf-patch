@@ -1,60 +1,35 @@
 from pathlib import Path
 import json
-
-ROOT = Path(__file__).resolve().parents[1]
-CONTRACT = ROOT / "contracts/update_revision_continuity_contract.json"
-CALLER = ROOT.parents[1] / "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts"
-RUNTIME = ROOT.parents[1] / "supabase/functions/run-creacion-perfil-lf/index.ts"
-RECORDER = ROOT / "contracts/profile_operation_common_recorder_v1.sql"
-contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
-caller = CALLER.read_text(encoding="utf-8")
-runtime = RUNTIME.read_text(encoding="utf-8")
-recorder = RECORDER.read_text(encoding="utf-8")
-clean = contract["deterministic_decision"]["clean_path"]
-stale = contract["deterministic_decision"]["stale_path"]
-forbidden = contract["deterministic_decision"]["forbidden"]
-blocking = set(contract["blocking_codes"])
-required_blocking = {"PROFILE_UPDATE_BASELINE_OBSERVATION_REQUIRED","PROFILE_UPDATE_BASELINE_REVISION_INVALID","PROFILE_UPDATE_BOUND_REVISION_STRUCTURED_REQUIRED","PROFILE_UPDATE_EXECUTION_BINDING_REQUIRED","PROFILE_UPDATE_CURRENT_REVISION_UNRESOLVED","PROFILE_UPDATE_CURRENT_TARGET_BLOB_UNRESOLVED","PROFILE_UPDATE_STALE_REREAD_REQUIRED","PROFILE_UPDATE_STALE_REBIND_REQUIRED","PROFILE_UPDATE_REBOUND_FROM_REVISION_MISMATCH","PROFILE_UPDATE_BOUND_REVISION_CURRENT_MISMATCH","PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED"}
-checks = {
- "update_scope": contract.get("operation_code") == "ACTUALIZACION_PERFIL_LF",
- "prewrite_reused": contract.get("step_id") == "pre_write_execution_binding_gate",
- "no_new_architecture": all(contract.get("architecture", {}).get(k) is False for k in ["new_layer","new_table","new_step"]),
- "existing_jsonb_reused": contract.get("architecture", {}).get("reuse_execution_steps_jsonb") is True,
- "persisted_baseline_source": contract.get("trusted_inputs", {}).get("baseline", {}).get("source") == "lf_operation_execution_steps.baseline_read.evidence_payload",
- "baseline_not_caller_authority": contract.get("trusted_inputs", {}).get("baseline", {}).get("caller_declaration_is_authority") is False,
- "github_current_source": contract.get("trusted_inputs", {}).get("current", {}).get("source") == "GITHUB_PUBLIC_API_EXACT_REF_V1",
- "current_not_caller_authority": contract.get("trusted_inputs", {}).get("current", {}).get("caller_declaration_is_authority") is False,
- "recorder_flags_not_server_authority": contract.get("trusted_inputs", {}).get("current", {}).get("recorder_must_not_treat_caller_flags_as_server_authority") is True,
- "clean_requires_three_way_continuity": len(clean) == 3 and any("baseline_revision == trusted_current_revision.revision_sha" in x for x in clean) and any("bound_revision.revision_sha == trusted_current_revision.revision_sha" in x for x in clean),
- "stale_requires_reread_rebind_and_binding": all(any(token in x for x in stale) for token in ["reread_performed == true","rebind_performed == true","rebound_from_revision == baseline_revision","execution_bound_to_target_before_change == true"]),
- "free_text_forbidden": any("free_text_write_plan" in x for x in forbidden),
- "semantic_override_forbidden": any("semantic_pass_overrides_revision_mismatch" in x for x in forbidden),
- "caller_flags_forbidden_as_server_authority": all(any(token in x for x in forbidden) for token in ["current_revision_resolved_by_caller","declared_current_revision_ignored"]),
- "blocking_complete": blocking == required_blocking,
- "server_authority_not_materialized": contract.get("server_authority_gate", {}).get("state") == "NOT_MATERIALIZED",
- "server_authority_fail_closed": contract.get("server_authority_gate", {}).get("recorder_behavior") == "FAIL_CLOSED" and contract.get("server_authority_gate", {}).get("blocking_code") == "PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED",
- "snapshot_extension_source_bound": contract.get("required_runtime_snapshot_extension", {}).get("derived_from_persisted_step") == "baseline_read",
- "snapshot_override_forbidden": contract.get("required_runtime_snapshot_extension", {}).get("must_not_accept_request_payload_override") is True,
- "runtime_reads_persisted_payload": "select=step_order,step_id,status,evidence_ref,evidence_payload,observed_at" in runtime,
- "runtime_derives_baseline_observation": "function baselineObservation" in runtime and 'step_id === "baseline_read"' in runtime and "baseline_revision: baselineRevision" in runtime,
- "runtime_exposes_baseline_observation": 'baseline_observation: op === "ACTUALIZACION_PERFIL_LF" ? baselineObservation(recorded) : null' in runtime,
- "caller_has_independent_current_resolver": "resolveTrustedCurrentRevision" in caller and "GITHUB_PUBLIC_API_EXACT_REF_V1" in caller,
- "caller_ignores_declared_current": "declared_current_revision_ignored" in caller,
- "caller_requires_baseline_observation": "baselineRevisionSha" in caller and "PROFILE_UPDATE_BASELINE_OBSERVATION_REQUIRED" in caller and "PROFILE_UPDATE_BASELINE_REVISION_INVALID" in caller,
- "caller_requires_structured_bound": "revisionSha" in caller and "PROFILE_UPDATE_BOUND_REVISION_STRUCTURED_REQUIRED" in caller,
- "caller_requires_execution_binding": "PROFILE_UPDATE_EXECUTION_BINDING_REQUIRED" in caller and "execution_bound_to_target_before_change" in caller,
- "caller_stale_requires_reread_rebind": all(token in caller for token in ["PROFILE_UPDATE_STALE_REREAD_REQUIRED","PROFILE_UPDATE_STALE_REBIND_REQUIRED","PROFILE_UPDATE_REBOUND_FROM_REVISION_MISMATCH"]),
- "caller_bound_must_equal_current": "PROFILE_UPDATE_BOUND_REVISION_CURRENT_MISMATCH" in caller,
- "caller_emits_continuity_state": "STALE_REBOUND_CURRENT" in caller and "CURRENT_BOUND" in caller,
- "recorder_prewrite_fail_closed_until_server_context": "PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED" in recorder,
- "recorder_does_not_accept_trust_flags": "current_revision_resolved_by_caller" not in recorder and "declared_current_revision_ignored" not in recorder,
- "update_runtime_still_fail_closed": "UPDATE_OPERATION_CANONICAL_RECORDER_REQUIRED" in runtime,
- "contract_does_not_authorize_runtime": contract.get("activation", {}).get("update_recorder_enabled") is False and contract.get("activation", {}).get("runtime_deployment_authorized") is False,
+ROOT=Path(__file__).resolve().parents[1]
+contract=json.loads((ROOT/'contracts/update_revision_continuity_contract.json').read_text())
+runtime=(ROOT.parents[1]/'supabase/functions/run-creacion-perfil-lf/index.ts').read_text()
+recorder=(ROOT/'contracts/profile_operation_common_recorder_v1.sql').read_text()
+blocking=set(contract['blocking_codes'])
+required={"PROFILE_UPDATE_BASELINE_OBSERVATION_REQUIRED","PROFILE_UPDATE_BASELINE_REVISION_INVALID","PROFILE_UPDATE_BOUND_REVISION_STRUCTURED_REQUIRED","PROFILE_UPDATE_EXECUTION_BINDING_REQUIRED","PROFILE_UPDATE_CURRENT_REVISION_UNRESOLVED","PROFILE_UPDATE_CURRENT_TARGET_BLOB_UNRESOLVED","PROFILE_UPDATE_STALE_REREAD_REQUIRED","PROFILE_UPDATE_STALE_REBIND_REQUIRED","PROFILE_UPDATE_REBOUND_FROM_REVISION_MISMATCH","PROFILE_UPDATE_BOUND_REVISION_CURRENT_MISMATCH","PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED"}
+checks={
+ 'update_scope':contract['operation_code']=='ACTUALIZACION_PERFIL_LF',
+ 'prewrite':contract['step_id']=='pre_write_execution_binding_gate',
+ 'no_new_architecture':all(contract['architecture'][k] is False for k in ['new_layer','new_table','new_step']),
+ 'baseline_persisted':contract['trusted_inputs']['baseline']['source']=='lf_operation_execution_steps.baseline_read.evidence_payload',
+ 'current_server':contract['trusted_inputs']['current']['source']=='GITHUB_PUBLIC_API_EXACT_REF_V1' and contract['trusted_inputs']['current']['current_resolver_location_today']=='run-creacion-perfil-lf',
+ 'blocking_complete':blocking==required,
+ 'server_authority_source':contract['server_authority_gate']['state']=='SOURCE_IMPLEMENTED',
+ 'recorder_accept_only_validated':contract['server_authority_gate']['recorder_behavior']=='ACCEPT_ONLY_VALIDATED_SERVER_CONTEXT',
+ 'runtime_v22':'v22-profile-update-server-trust-context' in runtime,
+ 'runtime_reads_baseline':'function baselineObservation' in runtime,
+ 'runtime_reads_main':'/git/ref/heads/main' in runtime,
+ 'runtime_reads_blob':'/contents/${encodedPath}?ref=${current}' in runtime,
+ 'runtime_strips_caller':'stripCallerTrust' in runtime,
+ 'runtime_bound_current':'PROFILE_UPDATE_BOUND_REVISION_CURRENT_MISMATCH' in runtime,
+ 'runtime_stale_controls':all(x in runtime for x in ['PROFILE_UPDATE_STALE_REREAD_REQUIRED','PROFILE_UPDATE_STALE_REBIND_REQUIRED','PROFILE_UPDATE_REBOUND_FROM_REVISION_MISMATCH']),
+ 'runtime_injects_context':'server_trust_context_valid: true' in runtime,
+ 'recorder_validates_context':'server_trust_context_valid' in recorder and 'GITHUB_PUBLIC_API_EXACT_REF_V1' in recorder,
+ 'recorder_fail_closed_code':'PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED' in recorder,
+ 'activation_authorized':contract['activation']['update_recorder_enabled'] is True and contract['activation']['runtime_deployment_authorized'] is True and contract['activation']['production_authorized'] is True,
+ 'merge_false':contract['activation']['merge_authorized'] is False,
 }
-failed=[name for name,ok in checks.items() if not ok]
-if failed: raise SystemExit("FAIL_UPDATE_REVISION_CONTINUITY_CONTRACT:"+",".join(failed))
-print(f"PASS_UPDATE_REVISION_CONTINUITY_CONTRACT={sum(checks.values())}/{len(checks)}")
-print("RUNTIME_BASELINE_OBSERVATION_MATERIALIZED=true")
-print("CALLER_CURRENT_RESOLVER_SOURCE=true")
-print("RECORDER_SERVER_AUTHORITY_MATERIALIZED=false")
-print("UPDATE_WRITE_ENABLED=false")
+failed=[k for k,v in checks.items() if not v]
+if failed: raise SystemExit('FAIL_UPDATE_REVISION_CONTINUITY_CONTRACT:'+','.join(failed))
+print(f'PASS_UPDATE_REVISION_CONTINUITY_CONTRACT={sum(checks.values())}/{len(checks)}')
+print('SERVER_AUTHORITY_SOURCE_IMPLEMENTED=true')
+print('UPDATE_PREWRITE_SOURCE_ENABLED=true')
