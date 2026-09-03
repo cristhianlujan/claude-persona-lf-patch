@@ -19,10 +19,8 @@ def discover_profile_validators(repo_root: Path):
     discovered = []
     errors = []
     seen = set()
-
     if not profiles_root.is_dir():
         return discovered, ['PROFILES_ROOT_MISSING']
-
     for profile_dir in sorted(profiles_root.iterdir(), key=lambda p: p.name):
         if not profile_dir.is_dir() or profile_dir.name.startswith('_'):
             continue
@@ -41,7 +39,6 @@ def discover_profile_validators(repo_root: Path):
             continue
         seen.add(resolved)
         discovered.append((profile_dir.name, resolved, profile_dir.resolve()))
-
     return discovered, errors
 
 
@@ -54,21 +51,17 @@ def main():
         ('CANDIDATE_DEPTH_SELF_TEST', [sys.executable, str(root/'validators/validate_candidate_depth.py'), '--self-test', str(root)]),
         ('GOV021_CHAMPION_CHALLENGER', [sys.executable, str(root/'validators/champion_challenger_depth.py'), str(root)]),
         ('PROFILE_VALIDATOR_DISCOVERY_MATRIX', [sys.executable, str(root/'evals/profile_validator_discovery_matrix.py')]),
+        ('PROFILE_OPERATION_GENERIC_RESUMER', [sys.executable, str(root/'evals/batch_resume_contract.py')]),
     ]
-
     discovered, discovery_errors = discover_profile_validators(repo_root)
     for slug, validator, profile_dir in discovered:
         checks.append((f'PROFILE_PACK::{slug}', [sys.executable, str(validator), str(profile_dir)]))
-
     failed = list(discovery_errors)
     if not discovered:
         failed.append('NO_GOVERNED_PROFILE_VALIDATORS_DISCOVERED')
-
     for name, command in checks:
-        rc = run(command)
-        if rc != 0:
+        if run(command) != 0:
             failed.append(name)
-
     result = {
         'status': 'PASS' if not failed else 'FAIL',
         'checks_executed': [name for name, _ in checks],
