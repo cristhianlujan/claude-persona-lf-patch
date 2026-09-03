@@ -42,6 +42,7 @@ def main():
         ('UPDATE_SERVER_TRUST_CONTEXT',[sys.executable,str(root/'evals/update_server_trust_context_contract.py')]),
         ('UPDATE_SERVER_TRUST_BEHAVIOR',[sys.executable,str(root/'evals/update_server_trust_context_behavior.py')]),
         ('UPDATE_STEP60_JUDGE_REBASELINE',[sys.executable,str(root/'evals/update_step60_judge_rebaseline_contract.py')]),
+        ('PROFILE_OPERATION_BLOCKED_EVIDENCE',[sys.executable,str(root/'evals/profile_operation_blocked_evidence_contract.py')]),
     ]
     discovered,discovery_errors=discover_profile_validators(repo_root)
     for slug,validator,profile_dir in discovered: checks.append((f'PROFILE_PACK::{slug}',[sys.executable,str(validator),str(profile_dir)]))
