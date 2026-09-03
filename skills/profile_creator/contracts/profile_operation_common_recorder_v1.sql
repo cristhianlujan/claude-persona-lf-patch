@@ -131,18 +131,14 @@ begin
     end if;
   end if;
 
-  -- UPDATE pre-write continuity is deliberately NOT self-attested here.
-  -- The governed caller resolves persisted baseline + trusted GitHub current + structured bound revision
-  -- before this recorder can ever receive the step.
+  -- UPDATE pre-write MUST NOT turn caller-supplied booleans or resolver-shaped JSON into authority.
+  -- Until a server-derived trusted context is materialized and independently testable, this seam stays closed.
   if v_execution.operation_code = 'ACTUALIZACION_PERFIL_LF' and p_step_id = 'pre_write_execution_binding_gate' then
-    if coalesce((p_evidence_payload->>'pre_write_gate_passed')::boolean,false) is not true
-       or coalesce((p_evidence_payload->>'execution_bound_to_target_before_change')::boolean,false) is not true
-       or jsonb_typeof(p_evidence_payload->'bound_revision') <> 'object'
-       or coalesce(p_evidence_payload->'trusted_current_revision'->>'resolver','') <> 'GITHUB_PUBLIC_API_EXACT_REF_V1'
-       or coalesce((p_evidence_payload->>'current_revision_resolved_by_caller')::boolean,false) is not true
-       or coalesce((p_evidence_payload->>'declared_current_revision_ignored')::boolean,false) is not true then
-      return jsonb_build_object('outcome','BLOCKED','code','PROFILE_UPDATE_PREWRITE_TRUST_CHAIN_REQUIRED');
-    end if;
+    return jsonb_build_object(
+      'outcome','BLOCKED',
+      'code','PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED',
+      'reason','Caller evidence cannot authorize deterministic currentness or binding'
+    );
   end if;
 
   v_payload := p_evidence_payload || jsonb_build_object(
@@ -173,4 +169,5 @@ $function$;
 -- Compatibility strategy when later materialized:
 -- CREACION_PERFIL_LF keeps its existing public.lf_record_creacion_perfil_step_v1 entrypoint
 -- until a separately tested thin wrapper can delegate to this common recorder.
--- ACTUALIZACION_PERFIL_LF runtime remains fail-closed until this source is deployed and live rollback-tested.
+-- ACTUALIZACION_PERFIL_LF runtime remains fail-closed until server-derived trusted context exists,
+-- this source is deployed, and live rollback tests prove both negative and positive paths.
