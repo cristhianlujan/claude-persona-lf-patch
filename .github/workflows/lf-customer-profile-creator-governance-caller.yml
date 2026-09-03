@@ -135,6 +135,8 @@ jobs:
             "step_id":"router",
             "evidence_ref":f"github-actions://run/{os.environ.get('GITHUB_RUN_ID','unknown')}/profile-creator/router",
             "evidence_payload":{
+              "step_result":"STEP_CLEAN_PASS",
+              "blocking_codes":[],
               "router_read":{
                 "router":"ACT-0001",
                 "source":"SUPABASE",
