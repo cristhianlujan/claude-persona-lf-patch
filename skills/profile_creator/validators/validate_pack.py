@@ -52,6 +52,7 @@ def main():
         ('GOV021_CHAMPION_CHALLENGER', [sys.executable, str(root/'validators/champion_challenger_depth.py'), str(root)]),
         ('PROFILE_VALIDATOR_DISCOVERY_MATRIX', [sys.executable, str(root/'evals/profile_validator_discovery_matrix.py')]),
         ('PROFILE_OPERATION_GENERIC_RESUMER', [sys.executable, str(root/'evals/batch_resume_contract.py')]),
+        ('PROFILE_RESOLVER_DISPATCH_CONTRACT', [sys.executable, str(root/'evals/resolver_dispatch_contract.py')]),
     ]
     discovered, discovery_errors = discover_profile_validators(repo_root)
     for slug, validator, profile_dir in discovered:
