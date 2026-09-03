@@ -6,15 +6,30 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 RUNTIME = (ROOT / 'supabase/functions/run-creacion-perfil-lf/index.ts').read_text(encoding='utf-8')
 SEMANTICS = ROOT / 'skills/profile_creator/contracts/update_judge_semantics_contract.json'
+RECORDER = ROOT / 'supabase/migrations/20260903173500_actualizacion_perfil_canonical_step_recorder_v1.sql'
 
-# UPDATE writes stay fail-closed even after a candidate source-bound judge
-# semantics contract is materialized. Contract readiness is not recorder/runtime
-# activation authority.
+# Source materialization and runtime activation are intentionally separate gates.
+# This test allows a recorder candidate to exist while UPDATE runtime writes remain
+# fail-closed until exact-head validation and controlled DB materialization/readback.
 checks = {
-    'update_write_fails_closed': 'UPDATE_OPERATION_CANONICAL_RECORDER_REQUIRED' in RUNTIME,
-    'no_update_specific_rpc_call': 'lf_record_actualizacion_perfil_step_v1' not in RUNTIME,
+    'recorder_source_present': RECORDER.is_file(),
+    'update_runtime_still_fails_closed': 'UPDATE_OPERATION_CANONICAL_RECORDER_REQUIRED' in RUNTIME,
+    'runtime_not_yet_calling_update_rpc': 'rpc("lf_record_actualizacion_perfil_step_v1"' not in RUNTIME,
     'no_runtime_activation_claim': 'UPDATE_JUDGE_SEMANTICS_CONTRACT_READY' not in RUNTIME,
 }
+
+if RECORDER.exists():
+    recorder = RECORDER.read_text(encoding='utf-8')
+    checks.update({
+        'canonical_update_rpc_declared': 'lf_record_actualizacion_perfil_step_v1' in recorder,
+        'recorder_operation_exact': "operation_code <> 'ACTUALIZACION_PERFIL_LF'" in recorder,
+        'recorder_source_bound_judge_gate': 'SOURCE_BOUND_JUDGE_NOT_READY' in recorder,
+        'recorder_exact_target_binding_gate': 'EXECUTION_NOT_BOUND_TO_TARGET' in recorder and 'REVISION_MISMATCH' in recorder,
+        'recorder_stale_rebind_gate': 'STALE_REVISION_WITHOUT_REREAD' in recorder and 'STALE_REVISION_WITHOUT_REBIND' in recorder,
+        'recorder_shell_same_revision_gate': 'SHELL_RECEIPT_BOUND_REVISION_MISMATCH' in recorder,
+        'recorder_authorized_delta_gate': 'MISSING_AUTHORIZED_DELTA_FOR_REMEDIATE_EXISTING' in recorder,
+        'recorder_no_fixed_rule_cardinality': 'pass_if)<>8' not in recorder and 'fail_if)<>9' not in recorder,
+    })
 
 if SEMANTICS.exists():
     data = json.loads(SEMANTICS.read_text(encoding='utf-8'))
@@ -46,10 +61,12 @@ if SEMANTICS.exists():
         ]),
         'declared_not_observed': data.get('declared_evidence_is_observed_evidence') is False,
         'runtime_not_authorized': data.get('runtime_activation_authorized') is False,
-        'recorder_not_authorized': data.get('canonical_update_recorder_authorized') is False,
+        'recorder_contract_not_self_authorized': data.get('canonical_update_recorder_authorized') is False,
     })
 
 failed = [name for name, ok in checks.items() if not ok]
 if failed:
     raise SystemExit('FAIL_UPDATE_RECORDER_READINESS:' + ','.join(failed))
 print(f'PASS_UPDATE_RECORDER_READINESS={sum(checks.values())}/{len(checks)}')
+print('RECORDER_SOURCE_READY=true')
+print('RUNTIME_UPDATE_WRITE_ENABLED=false')
