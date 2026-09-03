@@ -127,6 +127,17 @@ class ExecuteRequest(StrictModel):
     profile: ProfileTask
 
 
+class QueueExecuteRequest(StrictModel):
+    """Queue-native profile execution without screen/artifact requirements.
+
+    This preserves the legacy queue contract used by normal profile invocations while
+    moving inference transport to the persistent Hetzner API. Screen-bound requests
+    continue to use ExecuteRequest with explicit Input Governance + artifact lineage.
+    """
+
+    profile: ProfileTask
+
+
 class BatchRequest(StrictModel):
     batch_id: str = Field(min_length=1, max_length=200)
     artifact: Artifact
