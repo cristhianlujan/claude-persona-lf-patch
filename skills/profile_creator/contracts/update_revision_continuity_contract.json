@@ -1,0 +1,77 @@
+{
+  "contract_code": "UPDATE_REVISION_CONTINUITY_V1",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "step_id": "pre_write_execution_binding_gate",
+  "status": "SOURCE_CANDIDATE_FAIL_CLOSED",
+  "purpose": "Bind an UPDATE decision to persisted baseline evidence and an independently observed current GitHub revision before any write can be enabled.",
+  "architecture": {
+    "new_layer": false,
+    "new_table": false,
+    "new_step": false,
+    "reuse_execution_steps_jsonb": true,
+    "runtime_write_activation_authorized": false
+  },
+  "trusted_inputs": {
+    "baseline": {
+      "source": "lf_operation_execution_steps.baseline_read.evidence_payload",
+      "required_fields": ["baseline_revision"],
+      "revision_format": "40_HEX_GIT_COMMIT",
+      "caller_declaration_is_authority": false
+    },
+    "current": {
+      "source": "GITHUB_PUBLIC_API_EXACT_REF_V1",
+      "base_ref": "main",
+      "target_path_source": "lf_operation_execution.target_path",
+      "required_fields": ["revision_sha", "target_path", "target_blob_sha", "observed_at"],
+      "caller_declaration_is_authority": false
+    },
+    "binding": {
+      "source": "pre_write_execution_binding_gate.evidence_payload.bound_revision",
+      "revision_format": "STRUCTURED_40_HEX_GIT_COMMIT"
+    }
+  },
+  "deterministic_decision": {
+    "clean_path": [
+      "baseline_revision == trusted_current_revision.revision_sha",
+      "bound_revision.revision_sha == trusted_current_revision.revision_sha",
+      "execution_bound_to_target_before_change == true"
+    ],
+    "stale_path": [
+      "baseline_revision != trusted_current_revision.revision_sha",
+      "reread_performed == true",
+      "rebind_performed == true",
+      "rebound_from_revision == baseline_revision",
+      "bound_revision.revision_sha == trusted_current_revision.revision_sha"
+    ],
+    "forbidden": [
+      "free_text_write_plan_used_as_revision_evidence",
+      "declared_current_revision_used_as_authority",
+      "semantic_pass_overrides_revision_mismatch",
+      "write_before_successful_rebind"
+    ]
+  },
+  "required_runtime_snapshot_extension": {
+    "field": "baseline_observation",
+    "derived_from_persisted_step": "baseline_read",
+    "minimum_fields": ["step_id", "status", "evidence_ref", "observed_at", "baseline_revision"],
+    "must_not_accept_request_payload_override": true
+  },
+  "blocking_codes": [
+    "PROFILE_UPDATE_BASELINE_OBSERVATION_REQUIRED",
+    "PROFILE_UPDATE_BASELINE_REVISION_INVALID",
+    "PROFILE_UPDATE_BOUND_REVISION_STRUCTURED_REQUIRED",
+    "PROFILE_UPDATE_CURRENT_REVISION_UNRESOLVED",
+    "PROFILE_UPDATE_CURRENT_TARGET_BLOB_UNRESOLVED",
+    "PROFILE_UPDATE_STALE_REREAD_REQUIRED",
+    "PROFILE_UPDATE_STALE_REBIND_REQUIRED",
+    "PROFILE_UPDATE_REBOUND_FROM_REVISION_MISMATCH",
+    "PROFILE_UPDATE_BOUND_REVISION_CURRENT_MISMATCH"
+  ],
+  "activation": {
+    "source_contract_only": true,
+    "update_recorder_enabled": false,
+    "runtime_deployment_authorized": false,
+    "production_authorized": false,
+    "merge_authorized": false
+  }
+}
