@@ -17,6 +17,8 @@ from collections.abc import Mapping, Sequence
 import PR93_P0_RUNTIME_CONTRACT_CHECK_CORE_BASE_V1 as _base
 from PR93_P0_RUNTIME_CONTRACT_CHECK_CORE_BASE_V1 import *  # noqa: F401,F403
 
+_original_base_evaluate_controlled_runtime_scope = _base.evaluate_controlled_runtime_scope
+
 CUSTOMER_PROFILE_CREATOR_BRANCH = "lf/profiles/profile-creator-customer-caller-20260902"
 CUSTOMER_PROFILE_CREATOR_PR_NUMBER = 470
 CUSTOMER_PROFILE_CREATOR_WORKFLOW = ".github/workflows/lf-customer-profile-creator-governance-caller.yml"
@@ -142,7 +144,7 @@ def evaluate_controlled_runtime_scope(
             main_merge_verified=main_merge_verified,
         )
     _sync_base_extensions()
-    return _base.evaluate_controlled_runtime_scope(
+    return _original_base_evaluate_controlled_runtime_scope(
         changed_files,
         branch=branch,
         blob_by_path=blob_by_path,
@@ -152,15 +154,7 @@ def evaluate_controlled_runtime_scope(
 
 
 def _customer_workflow_admission_allowed(branch: str, runtime_scope_enabled: bool) -> bool:
-    """Admit the Customer workflow only after its exact runtime scope was proven.
-
-    The Customer feature branch is the pre-merge admission identity.  On a push to
-    main, the base runtime gate has already checked the exact changed path set,
-    pinned blobs/modes, and immutable GitHub merge provenance before setting
-    ``_runtime_scope_enabled``.  Requiring that proven bit here keeps main
-    fail-closed while allowing the exact post-merge transition to reach the
-    historical .github scanner.
-    """
+    """Admit the Customer workflow only after its exact runtime scope was proven."""
     if branch == CUSTOMER_PROFILE_CREATOR_BRANCH:
         return runtime_scope_enabled
     if branch == MAIN_BRANCH:
@@ -223,15 +217,6 @@ _original_base_get_changed_files = _base.get_changed_files
 
 
 def _customer_branch_scope_for_push() -> list[str]:
-    """Normalize Customer-branch push checks to the same branch scope as PR checks.
-
-    A push event normally contains only the latest commit delta, while the required
-    PR check evaluates the full branch-to-main diff. For this exclusive lane that
-    can produce contradictory required check contexts on the same HEAD. Recompute
-    the complete branch scope from the merge-base, then apply the same exact
-    path/blob/mode gate used by the PR event. This is stricter than accepting the
-    single-commit delta and keeps arbitrary paths fail-closed.
-    """
     subprocess.run(
         ["git", "fetch", "--no-tags", "origin", MAIN_BRANCH],
         check=True,
