@@ -35,6 +35,7 @@ def main():
         ('PROFILE_OPERATION_GENERIC_RESUMER',[sys.executable,str(root/'evals/batch_resume_contract.py')]),
         ('PROFILE_RESOLVER_DISPATCH_CONTRACT',[sys.executable,str(root/'evals/resolver_dispatch_contract.py')]),
         ('UPDATE_RECORDER_READINESS',[sys.executable,str(root/'evals/update_recorder_readiness_contract.py')]),
+        ('PROFILE_OPERATION_COMMON_RECORDER',[sys.executable,str(root/'evals/profile_operation_common_recorder_contract.py')]),
         ('EXISTING_ARTIFACT_REMEDIATION_GATE',[sys.executable,str(root/'evals/existing_artifact_remediation_contract.py')]),
         ('UPDATE_REVISION_CONTINUITY',[sys.executable,str(root/'evals/update_revision_continuity_contract.py')]),
         ('UPDATE_REVISION_CONTINUITY_MATRIX',[sys.executable,str(root/'evals/update_revision_continuity_matrix.py')]),
