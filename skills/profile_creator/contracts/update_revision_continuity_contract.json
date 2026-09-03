@@ -23,11 +23,14 @@
       "base_ref": "main",
       "target_path_source": "lf_operation_execution.target_path",
       "required_fields": ["revision_sha", "target_path", "target_blob_sha", "observed_at"],
-      "caller_declaration_is_authority": false
+      "caller_declaration_is_authority": false,
+      "current_resolver_location_today": "governed OIDC caller",
+      "recorder_must_not_treat_caller_flags_as_server_authority": true
     },
     "binding": {
       "source": "pre_write_execution_binding_gate.evidence_payload.bound_revision",
-      "revision_format": "STRUCTURED_40_HEX_GIT_COMMIT"
+      "revision_format": "STRUCTURED_40_HEX_GIT_COMMIT",
+      "execution_binding_required": true
     }
   },
   "deterministic_decision": {
@@ -41,13 +44,16 @@
       "reread_performed == true",
       "rebind_performed == true",
       "rebound_from_revision == baseline_revision",
-      "bound_revision.revision_sha == trusted_current_revision.revision_sha"
+      "bound_revision.revision_sha == trusted_current_revision.revision_sha",
+      "execution_bound_to_target_before_change == true"
     ],
     "forbidden": [
       "free_text_write_plan_used_as_revision_evidence",
       "declared_current_revision_used_as_authority",
       "semantic_pass_overrides_revision_mismatch",
-      "write_before_successful_rebind"
+      "write_before_successful_rebind",
+      "recorder_accepts_current_revision_resolved_by_caller_as_server_authority",
+      "recorder_accepts_declared_current_revision_ignored_as_server_authority"
     ]
   },
   "required_runtime_snapshot_extension": {
@@ -60,13 +66,26 @@
     "PROFILE_UPDATE_BASELINE_OBSERVATION_REQUIRED",
     "PROFILE_UPDATE_BASELINE_REVISION_INVALID",
     "PROFILE_UPDATE_BOUND_REVISION_STRUCTURED_REQUIRED",
+    "PROFILE_UPDATE_EXECUTION_BINDING_REQUIRED",
     "PROFILE_UPDATE_CURRENT_REVISION_UNRESOLVED",
     "PROFILE_UPDATE_CURRENT_TARGET_BLOB_UNRESOLVED",
     "PROFILE_UPDATE_STALE_REREAD_REQUIRED",
     "PROFILE_UPDATE_STALE_REBIND_REQUIRED",
     "PROFILE_UPDATE_REBOUND_FROM_REVISION_MISMATCH",
-    "PROFILE_UPDATE_BOUND_REVISION_CURRENT_MISMATCH"
+    "PROFILE_UPDATE_BOUND_REVISION_CURRENT_MISMATCH",
+    "PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED"
   ],
+  "server_authority_gate": {
+    "state": "NOT_MATERIALIZED",
+    "recorder_behavior": "FAIL_CLOSED",
+    "blocking_code": "PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED",
+    "required_before_update_write": [
+      "persisted baseline is read by trusted runtime path",
+      "current GitHub revision is independently resolved on trusted server path",
+      "bound revision is compared to that server-derived current revision",
+      "caller-provided trust flags cannot satisfy the recorder gate"
+    ]
+  },
   "activation": {
     "source_contract_only": true,
     "update_recorder_enabled": false,
