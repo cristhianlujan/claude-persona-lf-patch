@@ -3,6 +3,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SQL = (ROOT / "contracts/profile_operation_common_recorder_v1.sql").read_text(encoding="utf-8")
 RUNTIME = (ROOT.parents[1] / "supabase/functions/run-creacion-perfil-lf/index.ts").read_text(encoding="utf-8")
+MIGRATION = (ROOT.parents[1] / "supabase/migrations/20260903205327_lf_profile_operation_common_recorder_v1.sql").read_text(encoding="utf-8")
 
 checks = {
     "common_rpc_only": "lf_record_profile_operation_step_v1" in SQL,
@@ -11,7 +12,7 @@ checks = {
     "target_profile_required": "v_execution.target_type <> 'PERFIL'" in SQL,
     "execution_lock": "for update;" in SQL.lower(),
     "active_step_required": "and active is true" in SQL,
-    "active_contract_required": "and status = 'ACTIVE'" in SQL,
+    "operation_aware_contract_status": "when v_execution.operation_code = 'ACTUALIZACION_PERFIL_LF' then 'ACTIVE_ENFORCEMENT'" in SQL and "else 'ACTIVE'" in SQL,
     "active_binding_required": "and status = 'ACTIVE_ENFORCEMENT'" in SQL,
     "prior_step_order_enforced": "PRIOR_REQUIRED_STEP_NOT_CLEAN" in SQL,
     "required_evidence_enforced": "REQUIRED_EVIDENCE_MISSING" in SQL,
@@ -21,13 +22,15 @@ checks = {
     "caller_resolver_shape_not_authority": "GITHUB_PUBLIC_API_EXACT_REF_V1" not in SQL,
     "caller_bound_revision_shape_not_authority": "jsonb_typeof(p_evidence_payload->'bound_revision')" not in SQL,
     "transactional_insert": "insert into public.lf_operation_execution_steps" in SQL.lower(),
-    "source_only_marker": "SOURCE_ONLY / NOT_DEPLOYED / NO_RUNTIME_ENABLEMENT" in SQL,
+    "live_source_marker": "SOURCE_CANONICAL / LIVE_V1_MATERIALIZED / UPDATE_WRITE_STILL_DISABLED" in SQL,
+    "migration_service_role_only": "revoke all on function public.lf_record_profile_operation_step_v1(text,text,text,jsonb,text) from anon;" in MIGRATION and "revoke all on function public.lf_record_profile_operation_step_v1(text,text,text,jsonb,text) from authenticated;" in MIGRATION and "grant execute on function public.lf_record_profile_operation_step_v1(text,text,text,jsonb,text) to service_role;" in MIGRATION,
     "create_compatibility_preserved": "lf_record_creacion_perfil_step_v1 entrypoint" in SQL,
     "runtime_update_still_disabled": "UPDATE_OPERATION_CANONICAL_RECORDER_REQUIRED" in RUNTIME,
 }
 
 matrix = {
-    "POS_CREATE_COMMON_SCOPE": checks["create_update_exact_scope"] and checks["create_compatibility_preserved"],
+    "POS_CREATE_CONTRACT_STATUS_ACTIVE": checks["operation_aware_contract_status"],
+    "POS_UPDATE_CONTRACT_STATUS_ACTIVE_ENFORCEMENT": checks["operation_aware_contract_status"],
     "POS_UPDATE_NON_PREWRITE_COMMON_SCOPE": checks["create_update_exact_scope"] and checks["active_binding_required"],
     "NEG_WRONG_OPERATION": "EXECUTION_IDENTITY_INVALID" in SQL,
     "NEG_WRONG_TARGET_TYPE": checks["target_profile_required"],
@@ -45,7 +48,9 @@ if failed:
     raise SystemExit("FAIL_PROFILE_OPERATION_COMMON_RECORDER:" + ",".join(failed))
 print(f"PASS_PROFILE_OPERATION_COMMON_RECORDER_CHECKS={sum(checks.values())}/{len(checks)}")
 print(f"PASS_PROFILE_OPERATION_COMMON_RECORDER_MATRIX={sum(matrix.values())}/{len(matrix)}")
+print("UPDATE_CONTRACT_STATUS=ACTIVE_ENFORCEMENT")
+print("CREATE_CONTRACT_STATUS=ACTIVE")
+print("COMMON_RECORDER_LIVE_SERVICE_ROLE_ONLY=true")
 print("UPDATE_PREWRITE_SERVER_TRUST_CONTEXT_REQUIRED=true")
 print("CALLER_SELF_ATTESTATION_AUTHORITY=false")
-print("COMMON_RECORDER_SOURCE_ONLY=true")
 print("UPDATE_WRITE_ENABLED=false")
