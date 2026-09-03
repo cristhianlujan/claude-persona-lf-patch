@@ -21,7 +21,7 @@ CUSTOMER_PROFILE_CREATOR_BLOBS = {
     "supabase/functions/lf-profile-creator-governance-caller-v1/batch.ts": "604b2934cf12dbd4d9ddc40453d77816c6a17ade",
     "supabase/functions/lf-profile-creator-governance-caller-v1/.trigger-customer-identity-privacy-20260902": "a157de04967fd3222aa161e0e74f45500e49e768",
     "supabase/functions/lf-profile-creator-governance-caller-v1/.trigger-customer-payments-recovery-20260902": "61a0379d2686b1b388449a0939fc5e720c98b8df",
-    "supabase/functions/run-creacion-perfil-lf/index.ts": "04a472ffbc46e867e00e953f2c9ae1d3c29ebc67",
+    "supabase/functions/run-creacion-perfil-lf/index.ts": "c4d51807cb5157c92e2bbfd7ae4bd411ef781d07",
 }
 CUSTOMER_PROFILE_CREATOR_PATHS = frozenset(CUSTOMER_PROFILE_CREATOR_BLOBS)
 EXPECTED_RUNTIME_BLOBS = dict(_base.EXPECTED_RUNTIME_BLOBS); EXPECTED_RUNTIME_BLOBS.update(CUSTOMER_PROFILE_CREATOR_BLOBS)
