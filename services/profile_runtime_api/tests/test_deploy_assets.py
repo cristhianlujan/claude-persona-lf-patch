@@ -31,6 +31,13 @@ class DeployAssetTest(unittest.TestCase):
         self.assertIn("PROFILE_RUNTIME_MAX_WORKERS=1", env)
         self.assertIn("PROFILE_RUNTIME_ALLOW_MODEL_IMAGE=false", env)
 
+    def test_worker_timeout_ceiling_is_900_seconds(self) -> None:
+        worker = (self.root / "scripts/hetzner_queue_worker.py").read_text(encoding="utf-8")
+        env = (self.root / "deploy/profile-runtime-worker.env.example").read_text(encoding="utf-8")
+        self.assertIn('PROFILE_RUNTIME_WORKER_JOB_TIMEOUT_SECONDS", "900"', worker)
+        self.assertNotIn('PROFILE_RUNTIME_WORKER_JOB_TIMEOUT_SECONDS", "1200"', worker)
+        self.assertIn("PROFILE_RUNTIME_WORKER_JOB_TIMEOUT_SECONDS=900", env)
+
     def test_benchmark_is_pinned_to_fixed_artifact(self) -> None:
         harness = (self.root / "scripts/run_benchmark.py").read_text(encoding="utf-8")
         self.assertIn("ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287", harness)
