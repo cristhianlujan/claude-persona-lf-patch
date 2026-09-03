@@ -28,6 +28,13 @@ checks = {
     'requires_evidence_ref': '!evidenceRef' in BATCH,
     'requires_evidence_payload': '!evidencePayload' in BATCH,
     'exclusive_execution_origin': 'AUTOMATION_PROFILE_CREATOR_DUAL_EXECUTOR' in CALLER,
+    # Resume/replay is fail-closed. The caller must re-read the live next step for
+    # every item; a stale/already-recorded prefix cannot be silently skipped.
+    're_resolves_cursor_per_batch_item': 'for (const step of validation.steps)' in CALLER and 'action: "next_profile_operation_step_v1"' in CALLER,
+    'stale_replay_fails_closed': 'PROFILE_OPERATION_BATCH_STEP_NOT_CURRENT' in CALLER and 'expected_step_id: expectedStepId' in CALLER,
+    'partial_batch_reports_blocked_cursor': 'blocked_step_id' in BATCH and 'recorded_count' in BATCH and 'requested_count' in BATCH,
+    'failed_step_stops_batch': 'if (result.outcome !== "STEP_RECORDED")' in CALLER and 'return json({ ...batchOutcome' in CALLER,
+    'no_auto_skip_of_stale_prefix': 'expectedStepId !== step.step_id' in CALLER and 'continue;' not in CALLER,
 }
 failed = [name for name, ok in checks.items() if not ok]
 if failed:
