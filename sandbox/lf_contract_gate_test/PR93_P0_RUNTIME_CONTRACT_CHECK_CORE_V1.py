@@ -17,6 +17,8 @@ from collections.abc import Mapping, Sequence
 import PR93_P0_RUNTIME_CONTRACT_CHECK_CORE_BASE_V1 as _base
 from PR93_P0_RUNTIME_CONTRACT_CHECK_CORE_BASE_V1 import *  # noqa: F401,F403
 
+_original_base_evaluate_controlled_runtime_scope = _base.evaluate_controlled_runtime_scope
+
 CUSTOMER_PROFILE_CREATOR_BRANCH = "lf/profiles/profile-creator-customer-caller-20260902"
 CUSTOMER_PROFILE_CREATOR_PR_NUMBER = 470
 CUSTOMER_PROFILE_CREATOR_WORKFLOW = ".github/workflows/lf-customer-profile-creator-governance-caller.yml"
@@ -142,13 +144,22 @@ def evaluate_controlled_runtime_scope(
             main_merge_verified=main_merge_verified,
         )
     _sync_base_extensions()
-    return _base.evaluate_controlled_runtime_scope(
+    return _original_base_evaluate_controlled_runtime_scope(
         changed_files,
         branch=branch,
         blob_by_path=blob_by_path,
         mode_by_path=mode_by_path,
         main_merge_verified=main_merge_verified,
     )
+
+
+def _customer_workflow_admission_allowed(branch: str, runtime_scope_enabled: bool) -> bool:
+    """Admit the Customer workflow only after its exact runtime scope was proven."""
+    if branch == CUSTOMER_PROFILE_CREATOR_BRANCH:
+        return runtime_scope_enabled
+    if branch == MAIN_BRANCH:
+        return runtime_scope_enabled
+    return False
 
 
 def _customer_scope_self_test() -> None:
@@ -188,19 +199,24 @@ def _customer_scope_self_test() -> None:
     print("PASS_CUSTOMER_PROFILE_CREATOR_EXACT_RUNTIME_SCOPE=5/5")
 
 
+def _customer_workflow_admission_self_test() -> None:
+    cases = (
+        ("feature_verified", CUSTOMER_PROFILE_CREATOR_BRANCH, True, True),
+        ("main_verified", MAIN_BRANCH, True, True),
+        ("main_unverified", MAIN_BRANCH, False, False),
+        ("arbitrary_even_if_scope_flagged", "feature/arbitrary", True, False),
+    )
+    for label, branch, runtime_scope_enabled, expected in cases:
+        observed = _customer_workflow_admission_allowed(branch, runtime_scope_enabled)
+        if observed is not expected:
+            raise SystemExit(f"FAIL_CUSTOMER_WORKFLOW_ADMISSION_SELFTEST_{label.upper()}")
+    print("PASS_CUSTOMER_WORKFLOW_ADMISSION_SELFTEST=4/4")
+
+
 _original_base_get_changed_files = _base.get_changed_files
 
 
 def _customer_branch_scope_for_push() -> list[str]:
-    """Normalize Customer-branch push checks to the same branch scope as PR checks.
-
-    A push event normally contains only the latest commit delta, while the required
-    PR check evaluates the full branch-to-main diff. For this exclusive lane that
-    can produce contradictory required check contexts on the same HEAD. Recompute
-    the complete branch scope from the merge-base, then apply the same exact
-    path/blob/mode gate used by the PR event. This is stricter than accepting the
-    single-commit delta and keeps arbitrary paths fail-closed.
-    """
     subprocess.run(
         ["git", "fetch", "--no-tags", "origin", MAIN_BRANCH],
         check=True,
@@ -246,10 +262,12 @@ def _customer_get_changed_files() -> list[str]:
     changed = set(changed_files)
     if CUSTOMER_PROFILE_CREATOR_WORKFLOW in changed:
         branch = current_event_branch()
-        if branch != CUSTOMER_PROFILE_CREATOR_BRANCH:
+        if not _customer_workflow_admission_allowed(branch, _base._runtime_scope_enabled):
             raise RuntimeScopeError(
                 "FAIL_RUNTIME_BRANCH_MISMATCH",
-                f"Customer workflow admission requires {CUSTOMER_PROFILE_CREATOR_BRANCH!r}; got {branch!r}",
+                "Customer workflow admission requires the governed Customer branch "
+                f"or an exact verified main transition; got {branch!r} "
+                f"scope_verified={_base._runtime_scope_enabled!r}",
             )
         _base.e16.base.ALLOWED_GITHUB_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW)
     return changed_files
@@ -263,6 +281,7 @@ def main() -> int:
 
 
 _customer_scope_self_test()
+_customer_workflow_admission_self_test()
 
 if __name__ == "__main__":
     raise SystemExit(main())
