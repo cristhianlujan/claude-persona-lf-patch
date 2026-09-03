@@ -5,7 +5,6 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = ROOT / "contracts/update_revision_continuity_contract.json"
 CALLER = ROOT.parents[1] / "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts"
 RUNTIME = ROOT.parents[1] / "supabase/functions/run-creacion-perfil-lf/index.ts"
-
 contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
 caller = CALLER.read_text(encoding="utf-8")
 runtime = RUNTIME.read_text(encoding="utf-8")
@@ -35,7 +34,12 @@ checks = {
  "runtime_exposes_baseline_observation": 'baseline_observation: op === "ACTUALIZACION_PERFIL_LF" ? baselineObservation(recorded) : null' in runtime,
  "caller_has_independent_current_resolver": "resolveTrustedCurrentRevision" in caller and "GITHUB_PUBLIC_API_EXACT_REF_V1" in caller,
  "caller_ignores_declared_current": "declared_current_revision_ignored" in caller,
- "caller_structured_bound_revision": "boundRevisionSha" in caller and "PROFILE_UPDATE_BOUND_REVISION_STRUCTURED_REQUIRED" in caller,
+ "caller_requires_baseline_observation": "baselineRevisionSha" in caller and "PROFILE_UPDATE_BASELINE_OBSERVATION_REQUIRED" in caller and "PROFILE_UPDATE_BASELINE_REVISION_INVALID" in caller,
+ "caller_requires_structured_bound": "revisionSha" in caller and "PROFILE_UPDATE_BOUND_REVISION_STRUCTURED_REQUIRED" in caller,
+ "caller_requires_execution_binding": "PROFILE_UPDATE_EXECUTION_BINDING_REQUIRED" in caller and "execution_bound_to_target_before_change" in caller,
+ "caller_stale_requires_reread_rebind": all(token in caller for token in ["PROFILE_UPDATE_STALE_REREAD_REQUIRED","PROFILE_UPDATE_STALE_REBIND_REQUIRED","PROFILE_UPDATE_REBOUND_FROM_REVISION_MISMATCH"]),
+ "caller_bound_must_equal_current": "PROFILE_UPDATE_BOUND_REVISION_CURRENT_MISMATCH" in caller,
+ "caller_emits_continuity_state": "STALE_REBOUND_CURRENT" in caller and "CURRENT_BOUND" in caller,
  "update_runtime_still_fail_closed": "UPDATE_OPERATION_CANONICAL_RECORDER_REQUIRED" in runtime,
  "contract_does_not_authorize_runtime": contract.get("activation", {}).get("update_recorder_enabled") is False and contract.get("activation", {}).get("runtime_deployment_authorized") is False,
 }
@@ -43,4 +47,5 @@ failed=[name for name,ok in checks.items() if not ok]
 if failed: raise SystemExit("FAIL_UPDATE_REVISION_CONTINUITY_CONTRACT:"+",".join(failed))
 print(f"PASS_UPDATE_REVISION_CONTINUITY_CONTRACT={sum(checks.values())}/{len(checks)}")
 print("RUNTIME_BASELINE_OBSERVATION_MATERIALIZED=true")
+print("THREE_WAY_CONTINUITY_ENFORCEMENT_SOURCE=true")
 print("UPDATE_WRITE_ENABLED=false")
