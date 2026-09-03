@@ -1,56 +1,98 @@
 {
-  "contract_code": "EXISTING_ARTIFACT_REMEDIATION_GATE_V1",
+  "contract_code": "EXACT_TARGET_BINDING_UPDATE_V1",
   "operation_code": "ACTUALIZACION_PERFIL_LF",
-  "step_id": "existing_artifact_binding_gate",
-  "applies_when": ["EVALUATE_EXISTING", "REMEDIATE_EXISTING"],
-  "purpose": "Bind existing-screen evaluation/remediation to the exact source artifact before executable remediation guidance or writes.",
-  "source_authority": "SUPABASE_OPERATION_POLICY_SNAPSHOT",
+  "step_id": "pre_write_execution_binding_gate",
+  "applies_when": [
+    "UPDATE_EXISTING",
+    "EVALUATE_EXISTING",
+    "REMEDIATE_EXISTING",
+    "TRANSFORM_EXISTING",
+    "VALIDATE_EXISTING"
+  ],
+  "purpose": "Strengthen the existing pre-write binding gate so an existing-object decision and any mutation remain bound to the exact current target revision, or to an explicitly re-read and rebound successor revision.",
+  "architecture": {
+    "new_layer": false,
+    "new_table": false,
+    "new_step": false,
+    "ddl_required": false,
+    "evidence_transport": "existing evidence_payload JSONB",
+    "reuse_existing_step": "pre_write_execution_binding_gate"
+  },
+  "required_pre_write_evidence": [
+    "execution_id",
+    "target_code",
+    "target_path",
+    "write_plan",
+    "pre_write_gate_passed",
+    "execution_bound_to_target_before_change",
+    "bound_revision"
+  ],
+  "revision_continuity": {
+    "bound_revision_must_be_structured": true,
+    "must_match_current_resolved_revision": true,
+    "free_text_write_plan_is_not_revision_evidence": true,
+    "stale_revision_requires_reread": true,
+    "stale_revision_requires_explicit_rebind": true,
+    "write_before_successful_rebind_allowed": false
+  },
+  "target_identity_by_type": {
+    "RASTER": ["artifact_id", "source_ref", "sha256", "dimensions"],
+    "GITHUB_FILE": ["repo", "path", "revision_sha"],
+    "PROFILE": ["code", "path", "version_or_sha"],
+    "POLICY": ["policy_code", "version", "policy_sha"],
+    "ADAPTER": ["adapter_code", "version_or_sha"],
+    "DB_RECORD": ["primary_key", "version_or_timestamp"]
+  },
   "policy_resolution": {
     "source_binding_policy": "POL-LF-SOURCE-RESOLUTION",
     "shell_binding_policy": "POL-LF-ACTIVATION-ROUTING",
     "policy_snapshot_view": "public.v_lf_operation_policy_snapshot",
     "do_not_copy_into_profile": true
   },
-  "required_for_all_existing": [
-    "source_ref",
-    "source_image_sha256",
-    "source_dimensions",
-    "visual_evidence",
-    "target_component_id",
-    "concrete_operation",
-    "canonical_component_or_token",
-    "observable_acceptance_criteria"
-  ],
-  "required_for_remediate_existing": [
-    "authorized_delta",
-    "editable_zones",
-    "shell_locked_zones"
-  ],
-  "shell_receipt_rule": {
-    "required_when_shell_applies": true,
-    "must_bind_same_source_ref": true,
-    "must_bind_same_source_sha256": true,
+  "existing_raster_extension": {
+    "required_when_target_type_is_raster": ["artifact_id", "source_ref", "sha256", "dimensions"],
+    "required_for_remediate_existing": ["authorized_delta", "editable_zones", "shell_locked_zones"],
+    "shell_receipt_required_when_applicable": true,
+    "shell_receipt_must_bind_same_bound_revision": true,
     "adapter_invocations_count_is_sufficient": false
+  },
+  "judge_readiness": {
+    "judge_code": "JUDGE-ACTUALIZACION-PERFIL-LF-v0.1",
+    "must_be_source_bound_before_enforcement": true,
+    "judge_sha_required": true,
+    "pass_if_required": true,
+    "fail_if_required": true,
+    "do_not_enable_update_recorder_until_ready": true
   },
   "fail_closed": {
     "downstream_authorized": false,
-    "executable_instructions_allowed": false,
+    "executable_write_allowed": false,
     "blocking_conditions": [
-      "MISSING_SOURCE_REF",
-      "MISSING_SOURCE_SHA256",
-      "MISSING_SOURCE_DIMENSIONS",
-      "SOURCE_SHA_MISMATCH",
-      "MISSING_VISUAL_EVIDENCE",
+      "EXECUTION_NOT_BOUND_TO_TARGET",
+      "MISSING_BOUND_REVISION",
+      "BOUND_REVISION_NOT_STRUCTURED",
+      "TARGET_IDENTITY_MISMATCH",
+      "REVISION_MISMATCH",
+      "STALE_REVISION_WITHOUT_REREAD",
+      "STALE_REVISION_WITHOUT_REBIND",
+      "RASTER_ARTIFACT_MISMATCH",
+      "RASTER_SHA_MISMATCH",
+      "RASTER_DIMENSIONS_MISMATCH",
       "MISSING_AUTHORIZED_DELTA_FOR_REMEDIATE_EXISTING",
       "SHELL_RECEIPT_MISSING_WHEN_APPLICABLE",
-      "SHELL_RECEIPT_SOURCE_MISMATCH",
-      "SHELL_RECEIPT_SHA_MISMATCH",
-      "ADAPTER_INVOCATION_WITHOUT_EXACT_BINDING",
+      "SHELL_RECEIPT_BOUND_REVISION_MISMATCH",
       "OPERATION_OUTSIDE_AUTHORIZED_DELTA",
       "SHELL_LOCKED_MUTATION",
       "OUTSIDE_DELTA_MUTATION",
       "PROFILE_SELF_AUTHORIZES_DOWNSTREAM"
     ]
+  },
+  "post_write_existing_checks_reused": {
+    "github_write_identity_preserved": true,
+    "github_readback_sha_match": true,
+    "github_readback_identity_preserved": true,
+    "regression_after_reused": true,
+    "duplicate_post_write_gate": false
   },
   "quality_pack_postconditions": {
     "source_sha_match": true,
