@@ -3,10 +3,14 @@ name: LF Customer Profile Creator Governance Caller
 on:
   push:
     branches: [lf/profiles/profile-creator-customer-caller-20260902]
-    paths: [.github/workflows/lf-customer-profile-creator-governance-caller.yml]
+    paths:
+      - ".github/workflows/lf-customer-profile-creator-governance-caller.yml"
+      - "supabase/functions/lf-profile-creator-governance-caller-v1/**"
+      - "sandbox/lf_contract_gate_test/profile_creator_customer_caller_source_test.py"
   workflow_dispatch:
     inputs:
       action:
+        description: "Governed Profile Creator action"
         required: true
         type: choice
         options: [source_canary_only]
@@ -26,16 +30,36 @@ jobs:
       - name: Reject non-OIDC caller
         run: |
           set -euo pipefail
-          code=$(curl --silent --show-error -o negative.json -w '%{http_code}' -H 'Authorization: Bearer not-a-github-oidc-token' -H 'Content-Type: application/json' -d '{"action":"profile_creator_init_v1","caller_request_id":"negative","target_code":"PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING","profile_slug":"customer_financial_ux_decisioning"}' 'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1')
-          cat negative.json; test "$code" = "401" || test "$code" = "404"
+          code=$(curl --silent --show-error -o negative.json -w '%{http_code}' \
+            -H 'Authorization: Bearer not-a-github-oidc-token' \
+            -H 'Content-Type: application/json' \
+            -d '{"action":"profile_creator_init_v1","caller_request_id":"negative","target_code":"PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING","profile_slug":"customer_financial_ux_decisioning"}' \
+            'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1')
+          cat negative.json
+          test "$code" = "401" || test "$code" = "404"
+      - name: Resolve exact governed Customer target
+        if: github.event_name == 'push'
+        id: target
+        shell: bash
+        run: |
+          set -euo pipefail
+          msg='${{ github.event.head_commit.message }}'
+          case "$msg" in
+            *'[INIT_CUSTOMER_FINANCIAL_UX]'*) echo 'code=PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING' >> "$GITHUB_OUTPUT"; echo 'slug=customer_financial_ux_decisioning' >> "$GITHUB_OUTPUT" ;;
+            *'[INIT_CUSTOMER_TRUST_CLARITY]'*) echo 'code=PERFIL-CUSTOMER-TRUST-CLARITY-VULNERABILITY' >> "$GITHUB_OUTPUT"; echo 'slug=customer_trust_clarity_vulnerability' >> "$GITHUB_OUTPUT" ;;
+            *'[INIT_CUSTOMER_PAYMENTS_RECOVERY]'*) echo 'code=PERFIL-CUSTOMER-PAYMENTS-RECOVERY' >> "$GITHUB_OUTPUT"; echo 'slug=customer_payments_recovery' >> "$GITHUB_OUTPUT" ;;
+            *'[INIT_CUSTOMER_IDENTITY_PRIVACY]'*) echo 'code=PERFIL-CUSTOMER-IDENTITY-CONSENT-PRIVACY' >> "$GITHUB_OUTPUT"; echo 'slug=customer_identity_consent_privacy' >> "$GITHUB_OUTPUT" ;;
+            *) echo 'code=' >> "$GITHUB_OUTPUT"; echo 'slug=' >> "$GITHUB_OUTPUT" ;;
+          esac
       - name: Obtain exact GitHub OIDC identity
-        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[CONTINUE_CUSTOMER_FINANCIAL_UX_17_23]')
+        if: github.event_name == 'push' && steps.target.outputs.code != ''
         id: oidc
         uses: actions/github-script@v7
         with:
           script: |
             const token = await core.getIDToken('lf-profile-creator-governance-caller-v1');
-            core.setSecret(token); core.setOutput('token', token);
+            core.setSecret(token);
+            core.setOutput('token', token);
       - name: Confirm source-only authority boundary
         if: github.event_name == 'workflow_dispatch' && inputs.action == 'source_canary_only'
         run: |
@@ -43,35 +67,39 @@ jobs:
           echo 'NON_CANARY_PROFILE_CREATION_EXECUTED=false'
           echo 'RUNTIME_DEPLOYMENT_EXECUTED=false'
           echo 'PRODUCTION_AUTHORIZED=false'
-      - name: Continue canonical Customer Financial UX closure preparation gates
-        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[CONTINUE_CUSTOMER_FINANCIAL_UX_17_23]')
+      - name: Initialize exact allowlisted Customer profile through governed caller
+        if: github.event_name == 'push' && steps.target.outputs.code != ''
         env:
           OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          TARGET_CODE: ${{ steps.target.outputs.code }}
+          PROFILE_SLUG: ${{ steps.target.outputs.slug }}
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          import json, os, subprocess, sys
-          execution='EXEC-CREACION-PERFIL-LF-OIDC-5f133751-fd18-4176-af31-936d4324d338'; endpoint='https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1'; token=os.environ['OIDC_TOKEN']; candidate='3f5d3eeea979c16a4bf1841e22cd5d7cc25a6277'
-          generic=["generic_payload_rejected","pass_condition_met","required_evidence_keys_present","step_contract_present"]
-          def base(**extra):
-              p={"step_result":"STEP_CLEAN_PASS","blocking_codes":[],"assertions_checked":generic,"hard_fails_checked":[],"blocking_findings":[],"return_to_worker_reasons":[]}; p.update(extra); return p
-          steps=[
-            ('completeness','github://customer-financial-ux/manifest@'+candidate,base(output_completeness={"candidate_head":candidate,"required_manifest_files":14,"canonical_required_files":["README.md","SKILL.md","contracts/main_contract.md","schemas/output.schema.json","judges/mini_judge.md","evals/eval_matrix.json","manifest.json"],"candidate_additional_selected_files":["contracts/input_governance_binding.json","judges/score_rubric.md","examples/good_output.json","examples/bad_output.json","evals/champion_challenger_structural_20260902.json","validators/validate_pack.py","handoffs/to_quality_pack.handoff.json"],"validate_lf_packs_run":33668349402,"validate_result":"success","bootstrap_run":33668349382,"bootstrap_result":"success"})),
-            ('compatibility','github+supabase://customer-financial-ux/compatibility',base(compatibility_checked={"router":"ACT-0001 READY_TO_EXECUTE for CREACION_PERFIL_LF","creator_asset":"ACT-0045 APROBADO_PRODUCCION_CONTROLADA_READ_ONLY","destination_registry":"DEST_CREACION_PERFIL_LF_PROFILE_PACK_DEFAULT ACTIVE","repo":"cristhianlujan/claude-persona-lf-patch","base_folder":"profiles","candidate_status":"CANDIDATE_READ_ONLY","runtime_enabled":False,"production_enabled":False,"automatic_impact":"BLOQUEADO"})),
-            ('rubric','github://customer-financial-ux/judges/score_rubric.md@1637dee15aec2f68dd4df4751ea12e78a416fa64',base(rubric_result={"rubric_present":True,"criteria_count":5,"semantic_threshold":">=22/25 and no criterion below 4 and validator PASS and zero blocking safety defects","structural_readiness":"PASS","semantic_behavioral_verdict":"NOT_EXECUTED","latency":"NOT_OBSERVED","hard_blocks_present":True})),
-            ('sandbox','github-actions://runs/33668349402+33668349382',base(sandbox_result={"mode":"DETERMINISTIC_READ_ONLY_CANDIDATE_VALIDATION","validate_lf_packs":{"run_id":33668349402,"conclusion":"success"},"bootstrap":{"run_id":33668349382,"conclusion":"success"},"behavioral_execution":"NOT_EXECUTED","production":False,"runtime_enabled":False,"semantic_pass_claimed":False})),
-            ('manifest','github://customer-financial-ux/manifest.json@3ad0ec97da4bfe1b222243494ca6f0e902abb47f',base(manifest_present={"schema_version":"lf-profile-pack-manifest/v1","profile_pack_id":"CUSTOMER_FINANCIAL_UX_DECISIONING_PROFILE_PACK_001","operation":"CREACION_PERFIL_LF","document_status":"CANDIDATO","operational_status":"READ_ONLY","runtime":"NO_HABILITADO","automatic_impact":"BLOQUEADO","behavioral_proof_status":"NOT_EXECUTED","governed_creation_receipt_status":"PENDING_CANONICAL_EXECUTION","candidate_head":candidate})),
-            ('rule_trace','github://customer-financial-ux/rule-trace@'+candidate,base(trace_present={"rules":[{"rule":"no invented material financial claims","source":"SKILL.md financial safety invariants + main_contract evidence contract"},{"rule":"closed output modes","source":"SKILL.md output modes + output.schema.json"},{"rule":"missing material truth fails closed","source":"SKILL.md materiality + main_contract failure routing"},{"rule":"cross-domain ownership prohibited","source":"SKILL.md authority limits + main_contract boundaries"},{"rule":"deterministic validity not semantic PASS","source":"mini_judge.md + score_rubric.md"}],"candidate_head":candidate})),
-            ('partial_scope_guard','github+supabase://customer-financial-ux/partial-scope-guard',base(no_partial_scope_bypass_or_blocked_scope_bypass_attempt={"candidate_scope":"CUSTOMER_FINANCIAL_UX only","cross_lane_writes":"FORBIDDEN","runtime":False,"production":False,"validated_vigente":False,"behavioral_pass_claimed":False,"receipt_fabricated":False,"remaining_required_steps_will_not_be_skipped":True}))
-          ]
-          for step_id,ref,payload in steps:
-              body=json.dumps({"action":"profile_creator_record_step_v1","execution_id":execution,"step_id":step_id,"evidence_ref":ref,"evidence_payload":payload})
-              r=subprocess.run(['curl','--silent','--show-error','-w','\n%{http_code}','-H',f'Authorization: Bearer {token}','-H','Content-Type: application/json','-d',body,endpoint],capture_output=True,text=True,check=True)
-              text,code=r.stdout.rsplit('\n',1); print(step_id,text); d=json.loads(text); nested=((d.get('result') or {}).get('result') or {})
-              if code!='200' or d.get('outcome')!='STEP_RECORDED' or nested.get('status')!='STEP_CLEAN_PASS': sys.exit(f'FAILED_{step_id}:{code}:{text}')
-              print(f'GOVERNED_STEP_{step_id}=RECORDED')
+          CALLER_REQUEST_ID=$(python3 - <<'PY'
+          import uuid
+          print(uuid.uuid4())
           PY
-          echo 'SEMANTIC_BEHAVIORAL_PASS_CLAIMED=false'
+          )
+          code=$(curl --silent --show-error -o governed-init.json -w '%{http_code}' \
+            -H "Authorization: Bearer $OIDC_TOKEN" \
+            -H 'Content-Type: application/json' \
+            -d "{\"action\":\"profile_creator_init_v1\",\"caller_request_id\":\"$CALLER_REQUEST_ID\",\"target_code\":\"$TARGET_CODE\",\"profile_slug\":\"$PROFILE_SLUG\"}" \
+            'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1')
+          cat governed-init.json
+          test "$code" = "201"
+          python3 - <<'PY'
+          import json
+          data=json.load(open('governed-init.json'))
+          assert data.get('outcome') == 'INITIALIZED', data
+          result=data.get('result') or {}
+          assert result.get('outcome') == 'INITIALIZED', data
+          execution=(result.get('execution') or {})
+          assert execution.get('operation_code') == 'CREACION_PERFIL_LF', data
+          assert execution.get('status') == 'IN_PROGRESS', data
+          print('GOVERNED_CUSTOMER_PROFILE_INITIALIZATION=PASS')
+          print('EXECUTION_ID='+str(execution.get('execution_id')))
+          PY
+          echo 'RUNTIME_DEPLOYMENT_EXECUTED=false'
           echo 'PRODUCTION_AUTHORIZED=false'
 
 # Exact Customer allowlist retained by caller source:
@@ -79,4 +107,3 @@ jobs:
 # PERFIL-CUSTOMER-TRUST-CLARITY-VULNERABILITY
 # PERFIL-CUSTOMER-PAYMENTS-RECOVERY
 # PERFIL-CUSTOMER-IDENTITY-CONSENT-PRIVACY
-# profile_creator_record_step_v1 delegates only to run-creacion-perfil-lf in the caller implementation.
