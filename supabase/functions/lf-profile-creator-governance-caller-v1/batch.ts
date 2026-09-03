@@ -1,29 +1,30 @@
-export type ProfileCreationStepEvidence = {
+export type ProfileOperationStepEvidence = {
   step_id: string;
   evidence_ref: string;
   evidence_payload: Record<string, unknown>;
 };
 
 export type BatchValidation =
-  | { ok: true; steps: ProfileCreationStepEvidence[] }
+  | { ok: true; steps: ProfileOperationStepEvidence[] }
   | { ok: false; code: string };
 
 const STEP_ID_RE = /^[a-z0-9_]{2,80}$/;
-const MAX_BATCH_STEPS = 40;
+// Transport safety bound only. Business step counts come from live operation contracts.
+const MAX_SAFE_TRANSPORT_STEPS = 64;
 
-export function validateProfileCreationBatch(value: unknown): BatchValidation {
+export function validateProfileOperationBatch(value: unknown): BatchValidation {
   if (!Array.isArray(value) || value.length === 0) {
-    return { ok: false, code: "PROFILE_CREATOR_BATCH_EMPTY" };
+    return { ok: false, code: "PROFILE_OPERATION_BATCH_EMPTY" };
   }
-  if (value.length > MAX_BATCH_STEPS) {
-    return { ok: false, code: "PROFILE_CREATOR_BATCH_TOO_LARGE" };
+  if (value.length > MAX_SAFE_TRANSPORT_STEPS) {
+    return { ok: false, code: "PROFILE_OPERATION_BATCH_TRANSPORT_LIMIT" };
   }
 
   const seen = new Set<string>();
-  const steps: ProfileCreationStepEvidence[] = [];
+  const steps: ProfileOperationStepEvidence[] = [];
   for (const raw of value) {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
-      return { ok: false, code: "PROFILE_CREATOR_BATCH_STEP_INVALID" };
+      return { ok: false, code: "PROFILE_OPERATION_BATCH_STEP_INVALID" };
     }
     const item = raw as Record<string, unknown>;
     const stepId = typeof item.step_id === "string" ? item.step_id.trim() : "";
@@ -32,10 +33,10 @@ export function validateProfileCreationBatch(value: unknown): BatchValidation {
       ? item.evidence_payload as Record<string, unknown>
       : null;
     if (!STEP_ID_RE.test(stepId) || !evidenceRef || !evidencePayload) {
-      return { ok: false, code: "PROFILE_CREATOR_BATCH_STEP_INVALID" };
+      return { ok: false, code: "PROFILE_OPERATION_BATCH_STEP_INVALID" };
     }
     if (seen.has(stepId)) {
-      return { ok: false, code: "PROFILE_CREATOR_BATCH_DUPLICATE_STEP" };
+      return { ok: false, code: "PROFILE_OPERATION_BATCH_DUPLICATE_STEP" };
     }
     seen.add(stepId);
     steps.push({ step_id: stepId, evidence_ref: evidenceRef, evidence_payload: evidencePayload });
