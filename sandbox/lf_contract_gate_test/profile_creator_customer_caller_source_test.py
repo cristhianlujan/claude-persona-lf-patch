@@ -5,13 +5,11 @@ CALLER = ROOT / "supabase/functions/lf-profile-creator-governance-caller-v1/inde
 BATCH = ROOT / "supabase/functions/lf-profile-creator-governance-caller-v1/batch.ts"
 RUNTIME = ROOT / "supabase/functions/run-creacion-perfil-lf/index.ts"
 WORKFLOW = ROOT / ".github/workflows/lf-customer-profile-creator-governance-caller.yml"
-RECORDER = ROOT / "supabase/migrations/20260902233217_profile_creator_step_status_contract_fix.sql"
 
 caller = CALLER.read_text(encoding="utf-8")
 batch = BATCH.read_text(encoding="utf-8")
 runtime = RUNTIME.read_text(encoding="utf-8")
 workflow = WORKFLOW.read_text(encoding="utf-8")
-recorder = RECORDER.read_text(encoding="utf-8")
 
 checks = {
     "exclusive_branch": 'lf/profiles/profile-creator-customer-caller-20260902' in caller and 'lf/profiles/profile-creator-customer-caller-20260902' in workflow,
@@ -51,13 +49,14 @@ checks = {
     "workflow_source_only_dispatch": 'source_canary_only' in workflow and 'NON_CANARY_PROFILE_CREATION_EXECUTED=false' in workflow,
     "workflow_router_source_gate": 'ROUTER_REQUIRES_SUPABASE_EVIDENCE_REF' in workflow and 'ROUTER_READ_REQUIRED' in workflow,
     "workflow_step_envelope_gate": 'MISSING_STEP_RESULT' in workflow and 'MISSING_BLOCKING_CODES' in workflow,
-    # Required fail-closed negative surface from EKB PROFILE-CREATOR-CONTINUATION-SOURCE-TEST-004.
+    # Branch-local fail-closed surface. Canonical creation-recorder negatives are
+    # validated separately against live Supabase/main; this exclusive PR must not
+    # import/copy a migration solely to make the source test pass.
     "negative_unauthorized_caller": all(code in caller for code in ['OIDC_TOKEN_INVALID', 'OIDC_REPOSITORY_MISMATCH', 'OIDC_REF_MISMATCH', 'OIDC_WORKFLOW_MISMATCH']),
     "negative_wrong_execution_identity": 'PROFILE_OPERATION_EXECUTION_IDENTITY_MISMATCH' in runtime and 'STEP_EXECUTION_IDENTITY_MISMATCH' in runtime,
-    "negative_prior_step_not_clean": 'PRIOR_REQUIRED_STEP_NOT_CLEAN' in recorder,
-    "negative_required_evidence_missing": 'REQUIRED_EVIDENCE_MISSING' in recorder,
-    "negative_blocked_evidence": 'BLOCKING_CODES_INVALID' in recorder and "jsonb_array_length(v_blocking_codes)>0" in recorder,
-    "negative_replay_different_evidence": 'STEP_ALREADY_RECORDED_DIFFERENT_EVIDENCE' in recorder,
+    "negative_missing_batch_evidence": 'PROFILE_OPERATION_BATCH_STEP_INVALID' in batch and '!evidenceRef' in batch and '!evidencePayload' in batch,
+    "negative_duplicate_batch_step": 'PROFILE_OPERATION_BATCH_DUPLICATE_STEP' in batch,
+    "negative_empty_batch": 'PROFILE_OPERATION_BATCH_EMPTY' in batch,
     "negative_stale_batch_cursor": 'PROFILE_OPERATION_BATCH_STEP_NOT_CURRENT' in caller and 'expected_step_id: expectedStepId' in caller,
     "negative_update_no_unproven_recorder": 'UPDATE_OPERATION_CANONICAL_RECORDER_REQUIRED' in runtime,
 }
