@@ -10,7 +10,7 @@ from .llama import (
     PersistentLlamaServerAdapter,
     PersistentLlamaServerVerifier,
 )
-from .models import BatchRequest, ExecuteRequest, ProfileTask
+from .models import BatchRequest, ExecuteRequest, ProfileTask, QueueExecuteRequest
 from .repository import RepositoryBindings
 from .settings import Settings
 from .structural import PreparedContext, StructuralContextPipeline
@@ -20,8 +20,6 @@ RESULT_SCHEMA = "lf-profile-runtime-api-result/v1"
 
 
 def _failure(exc: BaseException) -> tuple[str, str | None]:
-    """Return the most specific governed error code without leaking prompts or bytes."""
-
     current: BaseException | None = exc
     seen: set[int] = set()
     fallback = type(exc).__name__.upper()
@@ -102,6 +100,32 @@ class ProfileRuntimeEngine:
             "downstream_authorized": False,
         }
 
+    def run_queue_execute(self, request: QueueExecuteRequest) -> dict[str, Any]:
+        """Run a normal queue profile on Hetzner without inventing screen governance.
+
+        Screen/image-bound work must continue through ExecuteRequest, where artifact and
+        Input Governance are explicit. This path mirrors the pre-existing queue contract
+        for text/profile requests while moving only inference transport off GitHub Actions.
+        """
+        started = time.perf_counter()
+        task = request.profile
+        context_pack = {
+            "schema": "lf-profile-runtime-queue-context/v1",
+            "source": "QUEUE_NATIVE_TEXT_PROFILE",
+            "screen_governance_applicable": False,
+            "downstream_authorized": False,
+        }
+        result = self._execute_queue_profile(task=task, context_pack=context_pack)
+        return {
+            "schema": RESULT_SCHEMA,
+            "kind": "queue_execute",
+            "request_id": task.request_id,
+            "artifact_sha256": None,
+            "result": result,
+            "total_ms": round((time.perf_counter() - started) * 1000, 3),
+            "downstream_authorized": False,
+        }
+
     def run_batch(self, request: BatchRequest) -> dict[str, Any]:
         started = time.perf_counter()
         if len(request.profiles) > self.settings.max_batch_size:
@@ -117,7 +141,6 @@ class ProfileRuntimeEngine:
             ]
             return self._batch_result(request, failures, started, context=None)
         try:
-            # The structural resolver and residual-only reread execute exactly once per batch.
             prepared = self.structural.prepare(request.artifact, request.input_governance)
         except Exception as exc:
             code, detail = _failure(exc)
@@ -159,6 +182,88 @@ class ProfileRuntimeEngine:
             "full_image_model_enabled": self.settings.allow_model_image,
             "deployment_classification": "INSTALLED_NOT_INTEGRATED_PENDING_LIVE_REVERIFY",
             "operational_ready": False,
+            "downstream_authorized": False,
+        }
+
+    def _execute_queue_profile(
+        self, *, task: ProfileTask, context_pack: dict[str, Any]
+    ) -> dict[str, Any]:
+        started = time.perf_counter()
+        context = {
+            "queue_native": True,
+            "screen_governance_applicable": False,
+            "cache_hit": False,
+        }
+        try:
+            if task.send_image_to_model:
+                raise LlamaTransportError("QUEUE_NATIVE_IMAGE_REQUIRES_GOVERNED_ENVELOPE")
+            sources = self.repository.profile_sources(task.profile_slug, task.profile_source_paths)
+            schema = self.repository.runtime_schema(task.profile_slug)
+            adapter = PersistentLlamaServerAdapter(
+                settings=self.settings,
+                client=self.llama_client,
+                schema=schema,
+                structural_context=context_pack,
+                image_bytes=None,
+                image_media_type=None,
+            )
+            verifier = PersistentLlamaServerVerifier(
+                settings=self.settings,
+                schema=schema,
+                structural_context=context_pack,
+            )
+            runtime_package = self.runner.execute_profile_runtime(
+                execution_id=f"EJECUCION_PERFIL_LF:{task.request_id}",
+                profile_code=task.profile_code,
+                profile_slug=task.profile_slug,
+                profile_sources=sources,
+                input_literal=task.input_literal,
+                adapter=adapter,
+                attestation_verifier=verifier,
+                allow_test_doubles=False,
+                lf_adapter_sources=[
+                    item.model_dump(mode="python") for item in task.lf_adapter_sources
+                ],
+            )
+        except Exception as exc:
+            code, detail = _failure(exc)
+            return self._profile_failure(
+                task=task,
+                code=code,
+                detail=detail,
+                stage="RUNTIME_COMPLETION",
+                started=started,
+                context=context,
+            )
+
+        contract, payload = self.gates.contract(
+            profile_slug=task.profile_slug,
+            raw_output=runtime_package.get("raw_output"),
+            schema=schema,
+        )
+        semantic = self.gates.semantic_utility(
+            profile_slug=task.profile_slug,
+            payload=payload,
+            contract_gate=contract,
+        )
+        completion = {
+            "status": "PASS",
+            "blocking_codes": [],
+            "receipt": runtime_package.get("receipt"),
+            "attestation_verification": runtime_package.get("runtime_attestation_verification"),
+            "llama_usage": adapter.last_completion.get("usage", {}),
+            "llama_timings": adapter.last_completion.get("timings", {}),
+        }
+        return {
+            "request_id": task.request_id,
+            "profile_code": task.profile_code,
+            "profile_slug": task.profile_slug,
+            "context": context,
+            "runtime_completion": completion,
+            "profile_contract_valid": contract,
+            "semantic_utility": semantic,
+            "raw_output": runtime_package.get("raw_output"),
+            "elapsed_ms": round((time.perf_counter() - started) * 1000, 3),
             "downstream_authorized": False,
         }
 
