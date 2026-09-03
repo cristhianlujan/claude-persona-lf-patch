@@ -45,6 +45,8 @@ checks = {
     "sql_preidentity_marked_nondurable": "'durable',false" in SQL,
     "sql_server_trust_block_is_durable_candidate": "PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED" in SQL and "v_block_code := 'PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED'" in SQL,
     "sql_operation_aware_contract_status": "when v_execution.operation_code = 'ACTUALIZACION_PERFIL_LF' then 'ACTIVE_ENFORCEMENT'" in SQL and "else 'ACTIVE'" in SQL,
+    "sql_prior_clean_binding_driven": "pb.clean_result_value is null or es.status <> pb.clean_result_value" in SQL,
+    "sql_no_init_clean_hardcode": "s.step_id='init_execution' and es.status <> 'STEP_CLEAN_PASS'" not in SQL,
     "migration_revokes_anon": "from anon;" in MIGRATION,
     "migration_revokes_authenticated": "from authenticated;" in MIGRATION,
     "migration_grants_service_role": "to service_role;" in MIGRATION,
@@ -54,6 +56,7 @@ if failed:
     raise SystemExit("FAIL_PROFILE_OPERATION_BLOCKED_EVIDENCE:"+",".join(failed))
 print(f"PASS_PROFILE_OPERATION_BLOCKED_EVIDENCE={sum(checks.values())}/{len(checks)}")
 print("RECORDER_SOURCE_IMPLEMENTED=true")
+print("PRIOR_CLEAN_STATUS=ACTIVE_BINDING_DERIVED")
 print("ARTIFACT_BOUND_SOURCE_CHECKS=true")
 print("AUDIT_NON_NULL_RULE_ENFORCED=true")
 print("LIVE_MATERIALIZED=true")
