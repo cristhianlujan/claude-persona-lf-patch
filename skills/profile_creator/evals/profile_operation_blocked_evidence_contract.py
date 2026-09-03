@@ -15,6 +15,11 @@ checks = {
     "blocking_findings_present": "blocking_findings" in C["durable_blocked_path"]["required_payload_extensions"],
     "attempt_history_present": "attempt_history" in C["durable_blocked_path"]["required_payload_extensions"],
     "caller_not_authority": C["durable_blocked_path"]["caller_status_is_authority"] is False,
+    "audit_presence_not_proof": C["audit_semantics"]["key_presence_alone_is_proof"] is False,
+    "audit_requires_json_non_null": "JSON non-null" in C["audit_semantics"]["required_query_rule"],
+    "audit_forbids_presence_shortcut": C["audit_semantics"]["forbidden_shortcut_example"] == "evidence_payload ? 'bound_revision'",
+    "audit_non_null_predicate": "<> 'null'::jsonb" in C["audit_semantics"]["minimum_non_null_predicate"],
+    "audit_test_present": "audit_query_requires_non_null_evidence" in C["required_tests"],
     "retry_same_row": C["retry_semantics"]["same_execution_step_row"] is True,
     "blocked_not_terminal": C["retry_semantics"]["blocked_row_is_terminal"] is False,
     "preserve_history": C["retry_semantics"]["previous_attempt_preserved_in_attempt_history"] is True,
@@ -44,5 +49,6 @@ if failed:
 print(f"PASS_PROFILE_OPERATION_BLOCKED_EVIDENCE={sum(checks.values())}/{len(checks)}")
 print("RECORDER_SOURCE_IMPLEMENTED=true")
 print("ARTIFACT_BOUND_SOURCE_CHECKS=true")
+print("AUDIT_NON_NULL_RULE_ENFORCED=true")
 print("LIVE_MATERIALIZED=false")
 print("UPDATE_WRITE_ENABLED=false")
