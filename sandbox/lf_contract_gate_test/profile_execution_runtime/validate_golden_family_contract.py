@@ -68,18 +68,9 @@ def validate_contract(data: dict[str, Any], root: Path = ROOT) -> str:
         "INPUT_GOVERNANCE",
         input_gov,
         {
-            "run_id",
-            "governance_agent_used",
-            "governance_version",
-            "consumer",
-            "sections_consumed",
-            "source_refs",
-            "snapshot_hash",
-            "contract_snapshot_sha256",
-            "currentness",
-            "decision",
-            "gap_or_na",
-            "timestamp",
+            "run_id", "governance_agent_used", "governance_version", "consumer",
+            "sections_consumed", "source_refs", "snapshot_hash", "contract_snapshot_sha256",
+            "currentness", "decision", "gap_or_na", "timestamp",
         },
     )
 
@@ -93,8 +84,7 @@ def validate_contract(data: dict[str, Any], root: Path = ROOT) -> str:
     if card.get("runtime_materialization_required") is not True:
         fail("GOLDEN_FAMILY_CARD_RUNTIME_MATERIALIZATION_GATE_MISSING")
     require_receipt_fields(
-        "CARD",
-        card,
+        "CARD", card,
         {"request_id", "card_ref", "card_version_or_hash", "sections_consumed", "budget", "decision"},
     )
     if card.get("runtime_binding_observed_at_research_cut") is False and data.get("status") != "E2E_BLOCKED":
@@ -106,8 +96,7 @@ def validate_contract(data: dict[str, Any], root: Path = ROOT) -> str:
     if adapter.get("binding_authority") != "public.v_lf_router_adapter_bindings":
         fail("GOLDEN_FAMILY_ADAPTER_BINDING_AUTHORITY_INVALID")
     require_receipt_fields(
-        "ADAPTER",
-        adapter,
+        "ADAPTER", adapter,
         {"adapter_code", "adapter_version", "activation_source", "binding_ref", "target_asset_code", "decision"},
     )
 
@@ -123,16 +112,9 @@ def validate_contract(data: dict[str, Any], root: Path = ROOT) -> str:
     require_file(runtime.get("transport_contract_validator", ""), root)
 
     required_runtime_proof_fields = {
-        "request_id",
-        "queue_ref",
-        "runtime_target",
-        "runtime_provider",
-        "deployed_worker_revision",
-        "persisted_result_ref",
-        "same_request_readback_ref",
-        "profile_contract_valid",
-        "semantic_utility",
-        "critical_regressions_count",
+        "request_id", "queue_ref", "runtime_target", "runtime_provider",
+        "deployed_worker_revision", "persisted_result_ref", "same_request_readback_ref",
+        "profile_contract_valid", "semantic_utility", "critical_regressions_count",
         "fenced_output_forbidden",
     }
     configured_runtime_proof_fields = set(runtime.get("e2e_runtime_proof_required_fields", []))
@@ -150,39 +132,22 @@ def validate_contract(data: dict[str, Any], root: Path = ROOT) -> str:
 
     required_evidence = set(data.get("required_e2e_evidence", []))
     must_have = {
-        "router_receipt",
-        "input_governance_receipt_or_governed_na",
-        "profile_source_ref_and_hash",
-        "card_receipt_or_governed_na",
-        "adapter_resolution_and_receipt_or_governed_na",
-        "runtime_target_hetzner",
-        "runtime_provider_and_model",
-        "model_outcome",
-        "deterministic_validator_results",
-        "semantic_judge_results",
-        "durable_persistence",
-        "readback_same_request_id",
-        "quality_and_depth_metrics",
-        "stage_and_total_latency",
-        "input_output_cache_tokens_when_available",
-        "source_provenance_snapshot",
+        "router_receipt", "input_governance_receipt_or_governed_na", "profile_source_ref_and_hash",
+        "card_receipt_or_governed_na", "adapter_resolution_and_receipt_or_governed_na",
+        "runtime_target_hetzner", "runtime_provider_and_model", "model_outcome",
+        "deterministic_validator_results", "semantic_judge_results", "durable_persistence",
+        "readback_same_request_id", "quality_and_depth_metrics", "stage_and_total_latency",
+        "input_output_cache_tokens_when_available", "source_provenance_snapshot",
     }
     missing = sorted(must_have - required_evidence)
     if missing:
         fail("GOLDEN_FAMILY_E2E_EVIDENCE_MISSING:" + ",".join(missing))
 
     required_ekb = {
-        "PROFILES-EKB-PREFLIGHT-OMISSION-001",
-        "DB-SCHEMA-FIRST-COLUMN-ASSUMPTION-001",
-        "DB-EKB-CONCURRENCY-001",
-        "ARC-011",
-        "PROFILE-CARD-RUNTIME-MATERIALIZATION-GAP-001",
-        "PROFILE-RUNTIME-TRANSPORT-SUCCESS-QUALITY-001",
-        "INPUT-GOV-CONSUMER-BINDING-001",
-        "GOV-037",
-        "BENCH-TAUTOLOGY-001",
-        "GOV-024",
-        "GOV-ADAPTER-POST-CLOSURE-REGRESSION-001",
+        "PROFILES-EKB-PREFLIGHT-OMISSION-001", "DB-SCHEMA-FIRST-COLUMN-ASSUMPTION-001",
+        "DB-EKB-CONCURRENCY-001", "ARC-011", "PROFILE-CARD-RUNTIME-MATERIALIZATION-GAP-001",
+        "PROFILE-RUNTIME-TRANSPORT-SUCCESS-QUALITY-001", "INPUT-GOV-CONSUMER-BINDING-001",
+        "GOV-037", "BENCH-TAUTOLOGY-001", "GOV-024", "GOV-ADAPTER-POST-CLOSURE-REGRESSION-001",
     }
     missing_ekb = sorted(required_ekb - set(data.get("ekb_preflight_required_codes", [])))
     if missing_ekb:
@@ -190,13 +155,8 @@ def validate_contract(data: dict[str, Any], root: Path = ROOT) -> str:
 
     main_contract = require_file("skills/profile_creator/contracts/main_contract.md", root).read_text(encoding="utf-8")
     for token in (
-        "Full family E2E success contract",
-        "Input Governance",
-        "Cards are referenced",
-        "Adapters are resolved",
-        "runtime_target=HETZNER",
-        "GITHUB_ACTIONS",
-        "request_id",
+        "Full family E2E success contract", "Input Governance", "Cards are referenced",
+        "Adapters are resolved", "runtime_target=HETZNER", "GITHUB_ACTIONS", "request_id",
     ):
         if token not in main_contract:
             fail(f"GOLDEN_FAMILY_TRANSVERSAL_CONTRACT_TOKEN_MISSING:{token}")
@@ -214,8 +174,16 @@ def validate_contract(data: dict[str, Any], root: Path = ROOT) -> str:
             fail("GOLDEN_FAMILY_E2E_PROVEN_RUNTIME_PROOF_FIELDS_MISSING:" + ",".join(missing_proof))
         if runtime_proof.get("runtime_target") != "HETZNER":
             fail("GOLDEN_FAMILY_E2E_PROVEN_PRIMARY_RUNTIME_NOT_HETZNER")
+        if runtime_proof.get("queue_ref") != runtime.get("queue"):
+            fail("GOLDEN_FAMILY_E2E_PROVEN_QUEUE_REF_INVALID")
+        if runtime_proof.get("runtime_provider") != "hetzner_profile_runtime_api":
+            fail("GOLDEN_FAMILY_E2E_PROVEN_RUNTIME_PROVIDER_INVALID")
         if not runtime_proof.get("request_id"):
             fail("GOLDEN_FAMILY_E2E_PROVEN_REQUEST_ID_REQUIRED")
+        if not runtime_proof.get("deployed_worker_revision"):
+            fail("GOLDEN_FAMILY_E2E_PROVEN_DEPLOYED_WORKER_REVISION_REQUIRED")
+        if not runtime_proof.get("persisted_result_ref"):
+            fail("GOLDEN_FAMILY_E2E_PROVEN_PERSISTED_RESULT_REF_REQUIRED")
         if not runtime_proof.get("same_request_readback_ref"):
             fail("GOLDEN_FAMILY_E2E_PROVEN_SAME_REQUEST_READBACK_REQUIRED")
         if runtime_proof.get("profile_contract_valid") is not True:
@@ -232,16 +200,10 @@ def validate_contract(data: dict[str, Any], root: Path = ROOT) -> str:
         fail("GOLDEN_FAMILY_AUTOMATIC_IMPACT_MUST_REMAIN_BLOCKED")
     if data.get("promotion_authorized") is not False:
         fail("GOLDEN_FAMILY_PROMOTION_MUST_REMAIN_BLOCKED")
-
     return result
 
 
-def expect_negative(
-    base: dict[str, Any],
-    name: str,
-    mutate: Callable[[dict[str, Any]], None],
-    expected_prefix: str,
-) -> None:
+def expect_negative(base: dict[str, Any], name: str, mutate: Callable[[dict[str, Any]], None], expected_prefix: str) -> None:
     data = copy.deepcopy(base)
     mutate(data)
     try:
@@ -278,136 +240,47 @@ def set_e2e_proven(d: dict[str, Any], proof: dict[str, Any]) -> None:
 
 def run_negative_selftests(base: dict[str, Any]) -> int:
     cases: list[tuple[str, Callable[[dict[str, Any]], None], str]] = [
-        (
-            "inputgov_missing_run_id",
-            lambda d: d["input_governance"]["required_receipt_fields"].remove("run_id"),
-            "GOLDEN_FAMILY_INPUT_GOVERNANCE_RECEIPT_FIELDS_MISSING:run_id",
-        ),
-        (
-            "inputgov_wrong_consumer",
-            lambda d: d["input_governance"].__setitem__("consumer", "STORY_CREATOR"),
-            "GOLDEN_FAMILY_INPUT_GOVERNANCE_CONSUMER_INVALID",
-        ),
-        (
-            "card_missing_budget",
-            lambda d: d["card"]["required_receipt_fields"].remove("budget"),
-            "GOLDEN_FAMILY_CARD_RECEIPT_FIELDS_MISSING:budget",
-        ),
-        (
-            "card_missing_request_id",
-            lambda d: d["card"]["required_receipt_fields"].remove("request_id"),
-            "GOLDEN_FAMILY_CARD_RECEIPT_FIELDS_MISSING:request_id",
-        ),
-        (
-            "card_registry_inferred",
-            lambda d: d["card"].__setitem__("expected_registry", "public.lf_cards"),
-            "GOLDEN_FAMILY_CARD_RUNTIME_REGISTRY_MUST_NOT_BE_INFERRED",
-        ),
-        (
-            "card_gap_not_blocking",
-            lambda d: d.__setitem__("status", "CONTRACT_DEFINED_E2E_NOT_PROVEN"),
-            "GOLDEN_FAMILY_CARD_BINDING_GAP_MUST_BLOCK_E2E",
-        ),
-        (
-            "adapter_missing_version",
-            lambda d: d["adapter"]["required_receipt_fields"].remove("adapter_version"),
-            "GOLDEN_FAMILY_ADAPTER_RECEIPT_FIELDS_MISSING:adapter_version",
-        ),
-        (
-            "adapter_missing_target",
-            lambda d: d["adapter"]["required_receipt_fields"].remove("target_asset_code"),
-            "GOLDEN_FAMILY_ADAPTER_RECEIPT_FIELDS_MISSING:target_asset_code",
-        ),
+        ("inputgov_missing_run_id", lambda d: d["input_governance"]["required_receipt_fields"].remove("run_id"), "GOLDEN_FAMILY_INPUT_GOVERNANCE_RECEIPT_FIELDS_MISSING:run_id"),
+        ("inputgov_wrong_consumer", lambda d: d["input_governance"].__setitem__("consumer", "STORY_CREATOR"), "GOLDEN_FAMILY_INPUT_GOVERNANCE_CONSUMER_INVALID"),
+        ("card_missing_budget", lambda d: d["card"]["required_receipt_fields"].remove("budget"), "GOLDEN_FAMILY_CARD_RECEIPT_FIELDS_MISSING:budget"),
+        ("card_missing_request_id", lambda d: d["card"]["required_receipt_fields"].remove("request_id"), "GOLDEN_FAMILY_CARD_RECEIPT_FIELDS_MISSING:request_id"),
+        ("card_registry_inferred", lambda d: d["card"].__setitem__("expected_registry", "public.lf_cards"), "GOLDEN_FAMILY_CARD_RUNTIME_REGISTRY_MUST_NOT_BE_INFERRED"),
+        ("card_gap_not_blocking", lambda d: d.__setitem__("status", "CONTRACT_DEFINED_E2E_NOT_PROVEN"), "GOLDEN_FAMILY_CARD_BINDING_GAP_MUST_BLOCK_E2E"),
+        ("adapter_missing_version", lambda d: d["adapter"]["required_receipt_fields"].remove("adapter_version"), "GOLDEN_FAMILY_ADAPTER_RECEIPT_FIELDS_MISSING:adapter_version"),
+        ("adapter_missing_target", lambda d: d["adapter"]["required_receipt_fields"].remove("target_asset_code"), "GOLDEN_FAMILY_ADAPTER_RECEIPT_FIELDS_MISSING:target_asset_code"),
     ]
-
     for name, mutate, expected_prefix in cases:
         expect_negative(base, name, mutate, expected_prefix)
+
+    def proof_case(name: str, field: str, value: Any, expected: str) -> None:
+        def mutate(d: dict[str, Any]) -> None:
+            proof = valid_runtime_proof()
+            proof[field] = value
+            set_e2e_proven(d, proof)
+        expect_negative(base, name, mutate, expected)
 
     def string_proof(d: dict[str, Any]) -> None:
         d["status"] = "E2E_PROVEN"
         d["card"]["runtime_binding_observed_at_research_cut"] = True
         d["runtime_proof"] = "CLAIMED_PASS"
-
-    expect_negative(
-        base,
-        "e2e_string_self_attestation",
-        string_proof,
-        "GOLDEN_FAMILY_E2E_PROVEN_RUNTIME_PROOF_OBJECT_REQUIRED",
-    )
+    expect_negative(base, "e2e_string_self_attestation", string_proof, "GOLDEN_FAMILY_E2E_PROVEN_RUNTIME_PROOF_OBJECT_REQUIRED")
 
     def missing_request(d: dict[str, Any]) -> None:
         proof = valid_runtime_proof()
         proof.pop("request_id")
         set_e2e_proven(d, proof)
+    expect_negative(base, "e2e_missing_request_id", missing_request, "GOLDEN_FAMILY_E2E_PROVEN_RUNTIME_PROOF_FIELDS_MISSING:request_id")
 
-    expect_negative(
-        base,
-        "e2e_missing_request_id",
-        missing_request,
-        "GOLDEN_FAMILY_E2E_PROVEN_RUNTIME_PROOF_FIELDS_MISSING:request_id",
-    )
-
-    def backup_runtime(d: dict[str, Any]) -> None:
-        proof = valid_runtime_proof()
-        proof["runtime_target"] = "GITHUB_ACTIONS"
-        proof["runtime_provider"] = "github_actions"
-        set_e2e_proven(d, proof)
-
-    expect_negative(
-        base,
-        "e2e_backup_cannot_satisfy_primary",
-        backup_runtime,
-        "GOLDEN_FAMILY_E2E_PROVEN_PRIMARY_RUNTIME_NOT_HETZNER",
-    )
-
-    def invalid_profile_contract(d: dict[str, Any]) -> None:
-        proof = valid_runtime_proof()
-        proof["profile_contract_valid"] = False
-        set_e2e_proven(d, proof)
-
-    expect_negative(
-        base,
-        "e2e_profile_contract_invalid",
-        invalid_profile_contract,
-        "GOLDEN_FAMILY_E2E_PROVEN_PROFILE_CONTRACT_NOT_VALID",
-    )
-
-    def semantic_utility_fail(d: dict[str, Any]) -> None:
-        proof = valid_runtime_proof()
-        proof["semantic_utility"] = False
-        set_e2e_proven(d, proof)
-
-    expect_negative(
-        base,
-        "e2e_semantic_utility_fail",
-        semantic_utility_fail,
-        "GOLDEN_FAMILY_E2E_PROVEN_SEMANTIC_UTILITY_NOT_PASS",
-    )
-
-    def critical_regression(d: dict[str, Any]) -> None:
-        proof = valid_runtime_proof()
-        proof["critical_regressions_count"] = 1
-        set_e2e_proven(d, proof)
-
-    expect_negative(
-        base,
-        "e2e_critical_regression",
-        critical_regression,
-        "GOLDEN_FAMILY_E2E_PROVEN_CRITICAL_REGRESSIONS_PRESENT",
-    )
-
-    def fenced_output_allowed(d: dict[str, Any]) -> None:
-        proof = valid_runtime_proof()
-        proof["fenced_output_forbidden"] = False
-        set_e2e_proven(d, proof)
-
-    expect_negative(
-        base,
-        "e2e_fenced_output_allowed",
-        fenced_output_allowed,
-        "GOLDEN_FAMILY_E2E_PROVEN_FENCED_OUTPUT_GUARD_NOT_PASS",
-    )
-    return 15
+    proof_case("e2e_backup_cannot_satisfy_primary", "runtime_target", "GITHUB_ACTIONS", "GOLDEN_FAMILY_E2E_PROVEN_PRIMARY_RUNTIME_NOT_HETZNER")
+    proof_case("e2e_wrong_queue_ref", "queue_ref", "private.other_queue", "GOLDEN_FAMILY_E2E_PROVEN_QUEUE_REF_INVALID")
+    proof_case("e2e_wrong_runtime_provider", "runtime_provider", "github_actions", "GOLDEN_FAMILY_E2E_PROVEN_RUNTIME_PROVIDER_INVALID")
+    proof_case("e2e_missing_worker_revision", "deployed_worker_revision", "", "GOLDEN_FAMILY_E2E_PROVEN_DEPLOYED_WORKER_REVISION_REQUIRED")
+    proof_case("e2e_missing_persisted_result", "persisted_result_ref", "", "GOLDEN_FAMILY_E2E_PROVEN_PERSISTED_RESULT_REF_REQUIRED")
+    proof_case("e2e_profile_contract_invalid", "profile_contract_valid", False, "GOLDEN_FAMILY_E2E_PROVEN_PROFILE_CONTRACT_NOT_VALID")
+    proof_case("e2e_semantic_utility_fail", "semantic_utility", False, "GOLDEN_FAMILY_E2E_PROVEN_SEMANTIC_UTILITY_NOT_PASS")
+    proof_case("e2e_critical_regression", "critical_regressions_count", 1, "GOLDEN_FAMILY_E2E_PROVEN_CRITICAL_REGRESSIONS_PRESENT")
+    proof_case("e2e_fenced_output_allowed", "fenced_output_forbidden", False, "GOLDEN_FAMILY_E2E_PROVEN_FENCED_OUTPUT_GUARD_NOT_PASS")
+    return 19
 
 
 def main() -> int:
