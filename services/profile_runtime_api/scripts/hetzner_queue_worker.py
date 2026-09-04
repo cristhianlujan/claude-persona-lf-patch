@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Consume opt-in HETZNER profile-runtime rows and relay them to the local API.
+"""Consume HETZNER profile-runtime rows and relay them to the local persistent API.
 
-This worker is deliberately fail-closed:
-- only rows explicitly targeted to HETZNER are claimed;
-- the queue must already contain the exact governed API request envelope;
-- it never fabricates Input Governance receipts, OCR evidence, or profile bindings;
-- it records transport completion separately from contract/semantic gates returned by the API.
+Routing modes:
+- governed screen requests: exact runtime_request_envelope -> /v1/profile/execute;
+- normal text/profile queue requests: queue-native payload -> /v1/profile/queue-execute.
+
+The worker never fabricates screen Input Governance or image evidence. Image-bound work without
+an explicit governed envelope remains ineligible for the queue-native route.
 """
 from __future__ import annotations
 
@@ -15,6 +16,7 @@ import os
 import time
 import urllib.error
 import urllib.request
+from pathlib import Path
 from typing import Any
 
 import psycopg
@@ -22,6 +24,8 @@ from psycopg.types.json import Jsonb
 
 TABLE = "private.lf_profile_runtime_queue_v1"
 PROVIDER = "hetzner_profile_runtime_api"
+MAX_LF_ADAPTERS = 4
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 def _env(name: str, default: str = "") -> str:
@@ -45,6 +49,59 @@ def _connect() -> psycopg.Connection:
     )
 
 
+def _adapter_sources(cur: psycopg.Cursor, profile_code: str) -> list[dict[str, Any]]:
+    cur.execute(
+        """
+        select adapter_code,
+               adapter_metadata->>'canonical_adapter_id' as canonical_adapter_id,
+               adapter_metadata->>'runtime_capsule_path' as runtime_capsule_path,
+               coalesce(adapter_metadata->>'assurance_revision', adapter_version) as assurance_revision
+          from public.v_lf_router_adapter_bindings
+         where target_asset_code=%s
+           and lower(coalesce(adapter_metadata->>'router_discoverable','false'))='true'
+           and lower(coalesce(adapter_metadata->>'runtime_enabled','false'))='true'
+         order by adapter_code
+        """,
+        (profile_code,),
+    )
+    rows = cur.fetchall()
+    if len(rows) > MAX_LF_ADAPTERS:
+        raise RuntimeError(f"HETZNER_ADAPTER_BINDING_COUNT_EXCEEDED:{len(rows)}")
+    result: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for asset_code, canonical_id, capsule_path, assurance_revision in rows:
+        if not all(isinstance(v, str) and v.strip() for v in (asset_code, canonical_id, capsule_path, assurance_revision)):
+            raise RuntimeError("HETZNER_ADAPTER_BINDING_INCOMPLETE")
+        if canonical_id in seen:
+            raise RuntimeError(f"HETZNER_ADAPTER_BINDING_DUPLICATE:{canonical_id}")
+        seen.add(canonical_id)
+        relative = Path(capsule_path)
+        if relative.is_absolute() or ".." in relative.parts:
+            raise RuntimeError("HETZNER_ADAPTER_CAPSULE_PATH_INVALID")
+        path = (REPO_ROOT / relative).resolve()
+        try:
+            path.relative_to(REPO_ROOT.resolve())
+        except ValueError as exc:
+            raise RuntimeError("HETZNER_ADAPTER_CAPSULE_PATH_ESCAPE") from exc
+        if not path.is_file():
+            raise RuntimeError(f"HETZNER_ADAPTER_CAPSULE_MISSING:{capsule_path}")
+        content = path.read_text(encoding="utf-8").strip()
+        if not content or len(content) > 2000:
+            raise RuntimeError(f"HETZNER_ADAPTER_CAPSULE_BUDGET_INVALID:{len(content)}")
+        result.append(
+            {
+                "adapter_code": canonical_id,
+                "assurance_revision": assurance_revision,
+                "activation_source": "ROUTER",
+                "binding_ref": f"public.v_lf_router_adapter_bindings:{asset_code}:{profile_code}",
+                "target_ref": profile_code,
+                "ref": capsule_path,
+                "content": content,
+            }
+        )
+    return result
+
+
 def _claim(conn: psycopg.Connection) -> dict[str, Any] | None:
     with conn.cursor() as cur:
         cur.execute(
@@ -54,7 +111,6 @@ def _claim(conn: psycopg.Connection) -> dict[str, Any] | None:
                 from {TABLE}
                where status='PENDING'
                  and runtime_target='HETZNER'
-                 and runtime_request_envelope is not null
                order by created_at, request_id
                for update skip locked
                limit 1
@@ -73,8 +129,14 @@ def _claim(conn: psycopg.Connection) -> dict[str, Any] | None:
               from candidate c
              where q.request_id=c.request_id
          returning q.request_id::text,
+                   q.operation_code,
                    q.profile_code,
                    q.profile_slug,
+                   q.profile_source_paths,
+                   q.input_literal,
+                   q.input_image_base64,
+                   q.input_image_media_type,
+                   q.input_image_sha256,
                    q.runtime_request_envelope
             """,
             (PROVIDER,),
@@ -85,6 +147,8 @@ def _claim(conn: psycopg.Connection) -> dict[str, Any] | None:
             return None
         cols = [d.name for d in cur.description]
         payload = dict(zip(cols, row))
+        if payload["runtime_request_envelope"] is None:
+            payload["lf_adapter_sources"] = _adapter_sources(cur, payload["profile_code"])
         conn.commit()
         return payload
 
@@ -129,6 +193,23 @@ def _validate_envelope(request_id: str, envelope: Any) -> dict[str, Any]:
     return envelope
 
 
+def _queue_native_payload(claimed: dict[str, Any]) -> dict[str, Any]:
+    if claimed.get("input_image_base64") or claimed.get("input_image_sha256") or claimed.get("input_image_media_type"):
+        raise RuntimeError("HETZNER_QUEUE_NATIVE_IMAGE_REQUIRES_GOVERNED_ENVELOPE")
+    return {
+        "profile": {
+            "request_id": claimed["request_id"],
+            "operation_code": claimed["operation_code"],
+            "profile_code": claimed["profile_code"],
+            "profile_slug": claimed["profile_slug"],
+            "profile_source_paths": claimed["profile_source_paths"],
+            "input_literal": claimed["input_literal"],
+            "lf_adapter_sources": claimed.get("lf_adapter_sources") or [],
+            "send_image_to_model": False,
+        }
+    }
+
+
 def _wait_job(job_id: str) -> dict[str, Any]:
     deadline = time.monotonic() + float(_env("PROFILE_RUNTIME_WORKER_JOB_TIMEOUT_SECONDS", "900"))
     poll = max(0.5, float(_env("PROFILE_RUNTIME_WORKER_POLL_SECONDS", "2")))
@@ -163,9 +244,7 @@ def _persist_success(conn: psycopg.Connection, request_id: str, job: dict[str, A
     attestation = None
     if receipt and isinstance(receipt.get("runtime_attestation"), dict):
         attestation = receipt["runtime_attestation"]
-    model_id = None
-    if attestation:
-        model_id = attestation.get("model_id")
+    model_id = attestation.get("model_id") if attestation else None
 
     with conn.cursor() as cur:
         cur.execute(
@@ -234,14 +313,23 @@ def run_once() -> bool:
         if claimed is None:
             return False
         request_id = claimed["request_id"]
-        envelope = _validate_envelope(request_id, claimed["runtime_request_envelope"])
-        accepted = _api_json("POST", "/v1/profile/execute", envelope)
+        envelope = claimed.get("runtime_request_envelope")
+        if envelope is not None:
+            payload = _validate_envelope(request_id, envelope)
+            endpoint = "/v1/profile/execute"
+            route = "GOVERNED_ENVELOPE"
+        else:
+            payload = _queue_native_payload(claimed)
+            endpoint = "/v1/profile/queue-execute"
+            route = "QUEUE_NATIVE"
+        accepted = _api_json("POST", endpoint, payload)
         job_id = accepted.get("job_id")
         if not isinstance(job_id, str) or not job_id:
             raise RuntimeError("HETZNER_API_JOB_ID_MISSING")
         job = _wait_job(job_id)
         _persist_success(conn, request_id, job)
         print(f"HETZNER_QUEUE_REQUEST_ID={request_id}")
+        print(f"HETZNER_QUEUE_ROUTE={route}")
         print(f"HETZNER_QUEUE_JOB_ID={job_id}")
         print(f"HETZNER_QUEUE_STATUS={job.get('status')}")
         return True
