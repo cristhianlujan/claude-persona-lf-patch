@@ -5,6 +5,11 @@ This helper does not validate artifacts and does not replace any existing gate.
 It only decides whether iterative feedback may use the FAST tier or must retain
 DEEP assurance. Unknown/mixed/high-impact surfaces and final evidence always
 route DEEP.
+
+Trust boundary: profile FAST eligibility additionally requires a server-derived
+assurance context. Caller claims must never be treated as authority. Any
+server-derived risk signal forces DEEP. The sandbox helper models this contract;
+production materialization remains a separate governed integration step.
 """
 from __future__ import annotations
 
@@ -58,14 +63,28 @@ def _normalize(path: str) -> str:
     return normalized
 
 
-def classify(paths: Iterable[str], *, final_evidence: bool = False) -> Decision:
+def _normalize_risks(signals: Iterable[str]) -> tuple[str, ...]:
+    return tuple(sorted({str(signal).strip() for signal in signals if str(signal).strip()}))
+
+
+def classify(
+    paths: Iterable[str],
+    *,
+    final_evidence: bool = False,
+    server_context_resolved: bool = False,
+    server_risk_signals: Iterable[str] = (),
+) -> Decision:
     try:
         normalized = tuple(sorted({_normalize(path) for path in paths}))
     except ValueError as exc:
         return Decision("DEEP", str(exc), "INVALID_PATH", True, tuple())
 
+    risks = _normalize_risks(server_risk_signals)
+
     if final_evidence:
         return Decision("DEEP", "FINAL_EVIDENCE_REQUIRES_DEEP", "FINAL_GATE", True, normalized)
+    if risks:
+        return Decision("DEEP", "SERVER_DERIVED_RISK_REQUIRES_DEEP:" + ",".join(risks), "ASSURANCE_CONTEXT", True, normalized)
     if not normalized:
         return Decision("DEEP", "NO_CHANGED_PATHS_FAIL_CLOSED", "UNKNOWN", True, normalized)
 
@@ -78,6 +97,9 @@ def classify(paths: Iterable[str], *, final_evidence: bool = False) -> Decision:
         return Decision("DEEP", "UNKNOWN_OR_UNMAPPED_SURFACE", "UNKNOWN", True, normalized)
 
     surfaces = {path.split("/", 1)[0] for path in normalized}
+    if "profiles" in surfaces and not server_context_resolved:
+        return Decision("DEEP", "SERVER_CURRENTNESS_CONTEXT_REQUIRED", "+".join(sorted(surfaces)), True, normalized)
+
     return Decision(
         "FAST",
         "EXPLICIT_LOW_IMPACT_ITERATIVE_SURFACE",
@@ -89,16 +111,23 @@ def classify(paths: Iterable[str], *, final_evidence: bool = False) -> Decision:
 
 def _self_test() -> None:
     cases = [
-        (("profiles/ui_architect/profile.yaml",), False, "FAST", "EXPLICIT_LOW_IMPACT_ITERATIVE_SURFACE"),
-        (("docs/audits/example.md",), False, "FAST", "EXPLICIT_LOW_IMPACT_ITERATIVE_SURFACE"),
-        (("supabase/migrations/20260904000000_probe.sql",), False, "DEEP", "HIGH_IMPACT_OR_CONTROL_SURFACE"),
-        (("profiles/ui_architect/profile.yaml", "supabase/migrations/x.sql"), False, "DEEP", "HIGH_IMPACT_OR_CONTROL_SURFACE"),
-        (("profiles/ui_architect/profile.yaml",), True, "DEEP", "FINAL_EVIDENCE_REQUIRES_DEEP"),
-        (("unmapped/new-runtime.txt",), False, "DEEP", "UNKNOWN_OR_UNMAPPED_SURFACE"),
-        (tuple(), False, "DEEP", "NO_CHANGED_PATHS_FAIL_CLOSED"),
+        (("profiles/ui_architect/profile.yaml",), False, True, tuple(), "FAST", "EXPLICIT_LOW_IMPACT_ITERATIVE_SURFACE"),
+        (("profiles/ui_architect/profile.yaml",), False, False, tuple(), "DEEP", "SERVER_CURRENTNESS_CONTEXT_REQUIRED"),
+        (("profiles/ui_architect/profile.yaml",), False, True, ("SOURCE_RUNTIME_MISMATCH",), "DEEP", "SERVER_DERIVED_RISK_REQUIRES_DEEP:SOURCE_RUNTIME_MISMATCH"),
+        (("docs/audits/example.md",), False, False, tuple(), "FAST", "EXPLICIT_LOW_IMPACT_ITERATIVE_SURFACE"),
+        (("supabase/migrations/20260904000000_probe.sql",), False, False, tuple(), "DEEP", "HIGH_IMPACT_OR_CONTROL_SURFACE"),
+        (("profiles/ui_architect/profile.yaml", "supabase/migrations/x.sql"), False, True, tuple(), "DEEP", "HIGH_IMPACT_OR_CONTROL_SURFACE"),
+        (("profiles/ui_architect/profile.yaml",), True, True, tuple(), "DEEP", "FINAL_EVIDENCE_REQUIRES_DEEP"),
+        (("unmapped/new-runtime.txt",), False, False, tuple(), "DEEP", "UNKNOWN_OR_UNMAPPED_SURFACE"),
+        (tuple(), False, False, tuple(), "DEEP", "NO_CHANGED_PATHS_FAIL_CLOSED"),
     ]
-    for paths, final_evidence, tier, reason in cases:
-        decision = classify(paths, final_evidence=final_evidence)
+    for paths, final_evidence, resolved, risks, tier, reason in cases:
+        decision = classify(
+            paths,
+            final_evidence=final_evidence,
+            server_context_resolved=resolved,
+            server_risk_signals=risks,
+        )
         assert decision.tier == tier, (paths, decision)
         assert decision.reason == reason, (paths, decision)
     print(f"PASS_S28_ROUTING_SELF_TEST={len(cases)}/{len(cases)}")
@@ -109,13 +138,22 @@ def main() -> int:
     parser.add_argument("paths", nargs="*")
     parser.add_argument("--final-evidence", action="store_true")
     parser.add_argument("--self-test", action="store_true")
+    # Sandbox-only contract modeling flags. They are not caller-authority in a
+    # production integration; a trusted server-side resolver must materialize them.
+    parser.add_argument("--server-context-resolved", action="store_true")
+    parser.add_argument("--server-risk", action="append", default=[])
     args = parser.parse_args()
 
     if args.self_test:
         _self_test()
         return 0
 
-    print(json.dumps(classify(args.paths, final_evidence=args.final_evidence).as_dict(), sort_keys=True))
+    print(json.dumps(classify(
+        args.paths,
+        final_evidence=args.final_evidence,
+        server_context_resolved=args.server_context_resolved,
+        server_risk_signals=args.server_risk,
+    ).as_dict(), sort_keys=True))
     return 0
 
 
