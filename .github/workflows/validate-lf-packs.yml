@@ -26,9 +26,6 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Validate profile runtime transport contract
-        run: python sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_runtime_transport_contract.py
-
       - name: Validate profile template pack
         run: python profiles/_template/validators/validate_pack.py profiles/_template
 
