@@ -39,6 +39,9 @@ jobs:
       - name: Prove fail-closed routing contract
         run: python3 sandbox/lf_contract_gate_test/s28_ci_feedback_tier.py --self-test
 
+      - name: Run 24-case fire-test Lot A
+        run: python3 sandbox/lf_contract_gate_test/s28_ci_feedback_fire_test.py --lot A
+
       - name: Classify exact pushed surface
         id: route
         shell: bash
