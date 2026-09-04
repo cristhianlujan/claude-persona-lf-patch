@@ -1,0 +1,94 @@
+{
+  "schema": "LF_PROFILE_GOLDEN_FAMILY_CONTRACT_V1",
+  "family_id": "GOLDEN-FAMILY-UI-ARCHITECT-MARKETPLACE-LF-V1",
+  "status": "CONTRACT_DEFINED_E2E_NOT_PROVEN",
+  "authority": {
+    "router_asset": "ACT-0001",
+    "operational_source": "public.v_lf_fuente_operativa",
+    "creator_asset": "ACT-0045",
+    "profile_creator_contract": "skills/profile_creator/contracts/main_contract.md"
+  },
+  "profile": {
+    "code": "PERFIL-UI-ARCHITECT",
+    "path": "profiles/ui_architect",
+    "source_ref": "profiles/ui_architect/SKILL.md"
+  },
+  "input_governance": {
+    "agent_code": "INPUT_GOVERNANCE_AGENT",
+    "contract_code": "INPUT_READINESS_CONTRACT",
+    "observed_revision_at_research_cut": "5.12",
+    "binding_ref": "gobernanza/contratos/ADAPTER_INPUT_GOVERNANCE_BINDING_v1.md",
+    "required_when_applicable": true,
+    "required_receipt_fields": [
+      "governance_agent_used",
+      "governance_version",
+      "sections_consumed",
+      "source_refs",
+      "snapshot_hash",
+      "decision",
+      "gap_or_na",
+      "timestamp"
+    ]
+  },
+  "card": {
+    "path": "cards/marketplace_lf/decision_product_experience",
+    "source_ref": "cards/marketplace_lf/decision_product_experience/CARD.md",
+    "expected_registry": "public.lf_cards",
+    "required_when_applicable": true,
+    "runtime_binding_observed_at_research_cut": false,
+    "required_receipt_fields": [
+      "card_ref",
+      "card_version_or_hash",
+      "sections_consumed",
+      "decision"
+    ]
+  },
+  "adapter": {
+    "code": "ADAPTER-LF-SHELL-PROFILE-20260827",
+    "path": "adapters/lf_shell_profile_adapter",
+    "binding_authority": "public.v_lf_router_adapter_bindings",
+    "required_when_router_resolves": true,
+    "required_receipt_fields": [
+      "adapter_code",
+      "activation_source",
+      "binding_ref",
+      "decision"
+    ]
+  },
+  "runtime": {
+    "primary_target": "HETZNER",
+    "backup_target": "GITHUB_ACTIONS",
+    "implicit_fallback_allowed": false,
+    "queue": "private.lf_profile_runtime_queue_v1",
+    "envelope_column": "runtime_request_envelope",
+    "correlation_key": "request_id",
+    "transport_contract_validator": "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_runtime_transport_contract.py"
+  },
+  "required_e2e_evidence": [
+    "router_receipt",
+    "input_governance_receipt_or_governed_na",
+    "profile_source_ref_and_hash",
+    "card_receipt_or_governed_na",
+    "adapter_resolution_and_receipt_or_governed_na",
+    "runtime_target_hetzner",
+    "runtime_provider_and_model",
+    "model_outcome",
+    "deterministic_validator_results",
+    "semantic_judge_results",
+    "durable_persistence",
+    "readback_same_request_id",
+    "quality_and_depth_metrics",
+    "stage_and_total_latency",
+    "input_output_cache_tokens_when_available",
+    "source_provenance_snapshot"
+  ],
+  "success_rule": {
+    "primary_runtime_required_for_family_pass": true,
+    "github_actions_backup_can_satisfy_primary_gate": false,
+    "isolated_component_pass_can_satisfy_family_gate": false,
+    "merge_can_satisfy_family_gate": false
+  },
+  "runtime_proof": "NOT_EXECUTED",
+  "automatic_impact_authorized": false,
+  "promotion_authorized": false
+}
