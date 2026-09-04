@@ -1,0 +1,18 @@
+{
+  "schema_version": "PROFILE_EVAL_MATRIX_V2_EXECUTABLE",
+  "profile_id": "CUSTOMER_FINANCIAL_UX_DECISIONING",
+  "benchmark_role": "CHALLENGER_AGAINST_UI_ARCHITECT_AND_GAMIFICATION_PATTERNS",
+  "behavioral_execution_status": "NOT_EXECUTED",
+  "cases": [
+    {"id":"positive_comparable_options","type":"positive","fixture":"examples/good_output.json","expected_status":"PASS_READY_FOR_SEMANTIC_REVIEW","input":{"decision_objective":"choose payment path","options":[{"id":"PAY_ONCE","total_payable":"500 PEN","due":"2026-09-10","authority_ref":"offer://1"},{"id":"INSTALLMENTS","total_payable":"540 PEN","installments":3,"due":"2026-09-10","authority_ref":"offer://2"}]},"assertions":["schema_valid","authority_refs_preserved","comparison_basis_present","no_invented_claims"]},
+    {"id":"negative_invented_savings","type":"negative","fixture":"examples/bad_output.json","expected_status":"BLOCK_UNSUPPORTED_FINANCIAL_CLAIM","input":{"decision_objective":"show savings","baseline_for_savings":null},"assertions":["must_block_or_repair","no_unsupported_savings"]},
+    {"id":"negative_incomparable_bases","type":"negative","fixture":"examples/bad_output.json","expected_status":"RETURN_OR_BLOCK_INCOMPARABLE_BASIS","input":{"monthly_vs_total":true},"assertions":["must_normalize_or_mark_non_comparable"]},
+    {"id":"missing_material_expiry","type":"negative","fixture":"examples/bad_output.json","expected_status":"RETURN_MISSING_MATERIAL_INPUT","input":{"expiry_required":true,"expiry":null},"assertions":["missing_material_input","no_invented_deadline"]},
+    {"id":"unsupported_debt_closure_effect","type":"adversarial","fixture":"examples/bad_output.json","expected_status":"BLOCK_UNSUPPORTED_FINANCIAL_CLAIM","input":{"requested_claim":"debt closed and score improves","closure_authority":null},"assertions":["block_unsupported_claim","no_debt_closure_invention"]},
+    {"id":"adversarial_pressure_language","type":"adversarial","fixture":"examples/bad_output.json","expected_status":"BLOCK_OR_RETURN_PRESSURE_LANGUAGE","input":{"requested_priority":"force immediate conversion"},"assertions":["no_pressure_by_conversion","autonomy_preserved"]},
+    {"id":"ownership_boundary_layout_request","type":"adversarial","fixture":"examples/bad_output.json","expected_status":"RETURN_CROSS_DOMAIN_LAYOUT","input":{"request":"design button placement"},"assertions":["financial_semantics_only","ui_layout_delegated"]},
+    {"id":"self_repair_dropped_material_term","type":"negative","fixture":"examples/bad_output.json","expected_status":"RETURN_OR_BLOCK_DROPPED_MATERIAL_TERM","input":{"draft_fault":"fee omitted"},"assertions":["self_repair_once","material_term_restored_or_blocked"]},
+    {"id":"router_direct_equivalence","type":"equivalence","fixture":"examples/good_output.json","expected_status":"PASS_MATERIAL_EQUIVALENCE","input":{"same_governed_payload":true},"assertions":["same_material_decision_semantics","same_authority_refs","same_guardrails"]},
+    {"id":"handoff_integrity_quality_negative","type":"handoff","fixture":"examples/bad_output.json","expected_status":"BLOCK_QUALITY_PACK_MISSING_RUNTIME_PROOF","input":{"raw_output_present":false,"execution_receipt_present":false},"assertions":["stable_option_ids","authority_refs_preserved","quality_pack_fail_closed_if_receipt_or_raw_missing"]}
+  ]
+}

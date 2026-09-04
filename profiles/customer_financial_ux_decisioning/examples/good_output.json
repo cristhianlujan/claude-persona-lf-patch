@@ -1,0 +1,32 @@
+{
+  "output_type": "CUSTOMER_FINANCIAL_DECISION_SPEC",
+  "decision_id": "DECISION-EXAMPLE-001",
+  "decision_question": "Choose between the authorized single-payment and installment options.",
+  "comparison_basis": "Compare total payable and payment timing using the same currency and authoritative terms.",
+  "options": [
+    {
+      "option_id": "PAY_ONCE",
+      "terms": {"total_payable": "AUTHORITY_VALUE"},
+      "customer_consequence": "One authorized payment under the supplied offer terms.",
+      "timing": "As defined by the authoritative offer.",
+      "monetary_basis": "total_payable",
+      "key_tradeoff": "Higher immediate cash requirement; no installment schedule.",
+      "authority_refs": ["source://offer/1"]
+    },
+    {
+      "option_id": "INSTALLMENTS",
+      "terms": {"installment_schedule": "AUTHORITY_VALUE"},
+      "customer_consequence": "Payments are distributed according to the supplied schedule.",
+      "timing": "As defined by the authoritative schedule.",
+      "monetary_basis": "total_payable",
+      "key_tradeoff": "Lower immediate cash requirement; multiple scheduled payments.",
+      "authority_refs": ["source://offer/2"]
+    }
+  ],
+  "must_understand": ["The exact authoritative terms must be preserved before customer action."],
+  "uncertainties": [],
+  "claim_guardrails": ["Do not imply debt closure or credit improvement unless separately authorized."],
+  "recommended_presentation_priority": ["total payable", "timing", "key tradeoff"],
+  "handoff_to_next": {"target": "UI_ARCHITECT", "preserve": ["option_ids", "authority_refs", "claim_guardrails"]},
+  "self_verdict": "READY_FOR_REVIEW"
+}
