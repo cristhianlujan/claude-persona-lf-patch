@@ -20,6 +20,7 @@ CUSTOMER_PROFILE_CREATOR_PATHS=frozenset(CUSTOMER_PROFILE_CREATOR_BLOBS)
 EXPECTED_RUNTIME_BLOBS=dict(_base.EXPECTED_RUNTIME_BLOBS); EXPECTED_RUNTIME_BLOBS.update(CUSTOMER_PROFILE_CREATOR_BLOBS)
 EXPECTED_EDGE_PATHS=frozenset(path for path in EXPECTED_RUNTIME_BLOBS if path.startswith("supabase/functions/"))
 CONTROLLED_RUNTIME_PATHS=frozenset(EXPECTED_RUNTIME_BLOBS)
+_BASE_EVALUATE_CONTROLLED_RUNTIME_SCOPE=_base.evaluate_controlled_runtime_scope
 def _sync_base_extensions(): _base.EXPECTED_RUNTIME_BLOBS=EXPECTED_RUNTIME_BLOBS; _base.EXPECTED_EDGE_PATHS=EXPECTED_EDGE_PATHS; _base.CONTROLLED_RUNTIME_PATHS=CONTROLLED_RUNTIME_PATHS
 def _verify_customer_main_merge_via_github():
  if os.environ.get("GITHUB_EVENT_NAME")!="push" or os.environ.get("GITHUB_REPOSITORY")!=TARGET_REPOSITORY or os.environ.get("GITHUB_REF")!="refs/heads/main": return False
@@ -43,7 +44,7 @@ def _evaluate_customer_profile_creator_scope(changed_files:Sequence[str],*,branc
  return True
 def evaluate_controlled_runtime_scope(changed_files:Sequence[str],*,branch:str,blob_by_path:Mapping[str,str],mode_by_path:Mapping[str,str]|None=None,main_merge_verified:bool=False)->bool:
  if set(changed_files)&set(CUSTOMER_PROFILE_CREATOR_PATHS): return _evaluate_customer_profile_creator_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path,main_merge_verified=main_merge_verified)
- _sync_base_extensions(); return _base.evaluate_controlled_runtime_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path,main_merge_verified=main_merge_verified)
+ _sync_base_extensions(); return _BASE_EVALUATE_CONTROLLED_RUNTIME_SCOPE(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path,main_merge_verified=main_merge_verified)
 def _customer_scope_self_test():
  exact=dict(CUSTOMER_PROFILE_CREATOR_BLOBS); modes={path:"100644" for path in exact}; paths=list(CUSTOMER_PROFILE_CREATOR_PATHS); assert _evaluate_customer_profile_creator_scope(paths,branch=CUSTOMER_PROFILE_CREATOR_BRANCH,blob_by_path=exact,mode_by_path=modes)
  for label,branch,blobs,changed in [("branch","feature/arbitrary",exact,paths),("blob",CUSTOMER_PROFILE_CREATOR_BRANCH,{**exact,CUSTOMER_PROFILE_CREATOR_WORKFLOW:"0"*40},paths),("edge",CUSTOMER_PROFILE_CREATOR_BRANCH,exact,[*paths,"supabase/functions/arbitrary/index.ts"])]:
