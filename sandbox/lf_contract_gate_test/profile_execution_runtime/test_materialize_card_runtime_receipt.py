@@ -51,3 +51,10 @@ def test_missing_request_id_fails_closed():
         assert str(exc) == "CARD_RECEIPT_REQUEST_ID_REQUIRED"
     else:
         raise AssertionError("missing request id must fail closed")
+
+
+if __name__ == "__main__":
+    test_materializes_same_request_source_bound_receipt()
+    test_unknown_section_fails_closed()
+    test_missing_request_id_fails_closed()
+    print("CARD_RUNTIME_RECEIPT_TESTS_PASS")
