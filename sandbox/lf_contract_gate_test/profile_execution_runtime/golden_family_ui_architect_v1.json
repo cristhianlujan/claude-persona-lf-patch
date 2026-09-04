@@ -81,6 +81,7 @@
       "queue_ref",
       "runtime_target",
       "runtime_provider",
+      "governed_source_revision",
       "deployed_worker_revision",
       "persisted_result_ref",
       "same_request_readback_ref",
