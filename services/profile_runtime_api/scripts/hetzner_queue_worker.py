@@ -5,12 +5,13 @@ Routing modes:
 - governed screen requests: exact runtime_request_envelope -> /v1/profile/execute;
 - normal text/profile queue requests: queue-native payload -> /v1/profile/queue-execute.
 
-The worker never fabricates screen Input Governance or image evidence. Image-bound work without
-an explicit governed envelope remains ineligible for the queue-native route.
+The worker never fabricates screen Input Governance, Card or image evidence. Image-bound work
+without an explicit governed envelope remains ineligible for the queue-native route.
 """
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import time
@@ -55,7 +56,8 @@ def _adapter_sources(cur: psycopg.Cursor, profile_code: str) -> list[dict[str, A
         select adapter_code,
                adapter_metadata->>'canonical_adapter_id' as canonical_adapter_id,
                adapter_metadata->>'runtime_capsule_path' as runtime_capsule_path,
-               coalesce(adapter_metadata->>'assurance_revision', adapter_version) as assurance_revision
+               coalesce(adapter_metadata->>'assurance_revision', adapter_version) as assurance_revision,
+               adapter_version
           from public.v_lf_router_adapter_bindings
          where target_asset_code=%s
            and lower(coalesce(adapter_metadata->>'router_discoverable','false'))='true'
@@ -69,8 +71,11 @@ def _adapter_sources(cur: psycopg.Cursor, profile_code: str) -> list[dict[str, A
         raise RuntimeError(f"HETZNER_ADAPTER_BINDING_COUNT_EXCEEDED:{len(rows)}")
     result: list[dict[str, Any]] = []
     seen: set[str] = set()
-    for asset_code, canonical_id, capsule_path, assurance_revision in rows:
-        if not all(isinstance(v, str) and v.strip() for v in (asset_code, canonical_id, capsule_path, assurance_revision)):
+    for asset_code, canonical_id, capsule_path, assurance_revision, adapter_version in rows:
+        if not all(
+            isinstance(v, str) and v.strip()
+            for v in (asset_code, canonical_id, capsule_path, assurance_revision)
+        ):
             raise RuntimeError("HETZNER_ADAPTER_BINDING_INCOMPLETE")
         if canonical_id in seen:
             raise RuntimeError(f"HETZNER_ADAPTER_BINDING_DUPLICATE:{canonical_id}")
@@ -91,6 +96,7 @@ def _adapter_sources(cur: psycopg.Cursor, profile_code: str) -> list[dict[str, A
         result.append(
             {
                 "adapter_code": canonical_id,
+                "adapter_version": adapter_version,
                 "assurance_revision": assurance_revision,
                 "activation_source": "ROUTER",
                 "binding_ref": f"public.v_lf_router_adapter_bindings:{asset_code}:{profile_code}",
@@ -158,14 +164,20 @@ def _api_json(method: str, path: str, payload: dict[str, Any] | None = None) -> 
     token = _env("PROFILE_RUNTIME_API_TOKEN")
     if not token:
         raise RuntimeError("PROFILE_RUNTIME_API_TOKEN_MISSING")
-    body = None if payload is None else json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    body = (
+        None
+        if payload is None
+        else json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    )
     headers = {"Authorization": f"Bearer {token}"}
     if body is not None:
         headers["Content-Type"] = "application/json"
         headers["Content-Length"] = str(len(body))
     request = urllib.request.Request(base + path, data=body, headers=headers, method=method)
     try:
-        with urllib.request.urlopen(request, timeout=float(_env("PROFILE_RUNTIME_WORKER_HTTP_TIMEOUT", "30"))) as response:
+        with urllib.request.urlopen(
+            request, timeout=float(_env("PROFILE_RUNTIME_WORKER_HTTP_TIMEOUT", "30"))
+        ) as response:
             raw = response.read().decode("utf-8")
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="replace")[:1000]
@@ -178,23 +190,119 @@ def _api_json(method: str, path: str, payload: dict[str, Any] | None = None) -> 
     return data
 
 
+def _sha256_text(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
 def _validate_envelope(request_id: str, envelope: Any) -> dict[str, Any]:
     if not isinstance(envelope, dict):
         raise RuntimeError("HETZNER_REQUEST_ENVELOPE_NOT_OBJECT")
     profile = envelope.get("profile")
     if not isinstance(profile, dict) or profile.get("request_id") != request_id:
         raise RuntimeError("HETZNER_REQUEST_ID_ENVELOPE_MISMATCH")
+    profile_code = profile.get("profile_code")
+    if not isinstance(profile_code, str) or not profile_code:
+        raise RuntimeError("HETZNER_PROFILE_CODE_MISSING")
+
     governance = envelope.get("input_governance")
-    if not isinstance(governance, dict) or governance.get("current") is not True or governance.get("ready") is not True:
+    if (
+        not isinstance(governance, dict)
+        or governance.get("current") is not True
+        or governance.get("ready") is not True
+    ):
         raise RuntimeError("HETZNER_INPUT_GOVERNANCE_NOT_READY")
+    canonical = governance.get("canonical_receipt")
+    if not isinstance(canonical, dict):
+        raise RuntimeError("HETZNER_INPUT_GOVERNANCE_CANONICAL_RECEIPT_MISSING")
+    required_governance = (
+        "run_id",
+        "governance_agent_used",
+        "governance_version",
+        "consumer",
+        "sections_consumed",
+        "source_refs",
+        "source_snapshot_sha256",
+        "contract_snapshot_sha256",
+        "currentness",
+        "decision",
+    )
+    for key in required_governance:
+        if canonical.get(key) in (None, "", [], {}):
+            raise RuntimeError(f"HETZNER_INPUT_GOVERNANCE_CANONICAL_FIELD_MISSING:{key}")
+    if canonical.get("governance_agent_used") != "INPUT_GOVERNANCE_AGENT":
+        raise RuntimeError("HETZNER_INPUT_GOVERNANCE_AGENT_MISMATCH")
+    if canonical.get("consumer") != "CONTEXT_PACK":
+        raise RuntimeError("HETZNER_INPUT_GOVERNANCE_CONSUMER_MISMATCH")
+    if canonical.get("currentness") != "LIVE_CURRENT" or canonical.get("decision") != "PASS":
+        raise RuntimeError("HETZNER_INPUT_GOVERNANCE_CANONICAL_NOT_CURRENT_PASS")
+
     artifact = envelope.get("artifact")
     if not isinstance(artifact, dict) or not artifact.get("image_sha256"):
         raise RuntimeError("HETZNER_ARTIFACT_BINDING_MISSING")
+
+    adapter_sources = profile.get("lf_adapter_sources")
+    if not isinstance(adapter_sources, list):
+        raise RuntimeError("HETZNER_ADAPTER_SOURCES_NOT_ARRAY")
+    adapter_by_code: dict[str, dict[str, Any]] = {}
+    for item in adapter_sources:
+        if not isinstance(item, dict):
+            raise RuntimeError("HETZNER_ADAPTER_SOURCE_INVALID")
+        code = item.get("adapter_code")
+        if not isinstance(code, str) or not code:
+            raise RuntimeError("HETZNER_ADAPTER_CODE_MISSING")
+        if code in adapter_by_code:
+            raise RuntimeError(f"HETZNER_ADAPTER_DUPLICATE:{code}")
+        if item.get("target_ref") != profile_code:
+            raise RuntimeError(f"HETZNER_ADAPTER_TARGET_MISMATCH:{code}")
+        adapter_by_code[code] = item
+    required_adapters = profile.get("required_adapter_codes") or []
+    if not isinstance(required_adapters, list):
+        raise RuntimeError("HETZNER_REQUIRED_ADAPTER_CODES_NOT_ARRAY")
+    for code in required_adapters:
+        source = adapter_by_code.get(code)
+        if source is None:
+            raise RuntimeError(f"HETZNER_REQUIRED_ADAPTER_MISSING:{code}")
+        if not source.get("adapter_version") or not source.get("binding_ref"):
+            raise RuntimeError(f"HETZNER_REQUIRED_ADAPTER_BINDING_INCOMPLETE:{code}")
+
+    card_sources = profile.get("lf_card_sources")
+    if not isinstance(card_sources, list):
+        raise RuntimeError("HETZNER_CARD_SOURCES_NOT_ARRAY")
+    card_by_ref: dict[str, dict[str, Any]] = {}
+    for item in card_sources:
+        if not isinstance(item, dict):
+            raise RuntimeError("HETZNER_CARD_SOURCE_INVALID")
+        card_ref = item.get("card_ref")
+        if not isinstance(card_ref, str) or not card_ref:
+            raise RuntimeError("HETZNER_CARD_REF_MISSING")
+        if card_ref in card_by_ref:
+            raise RuntimeError(f"HETZNER_CARD_DUPLICATE:{card_ref}")
+        content = item.get("content")
+        if not isinstance(content, str) or not content:
+            raise RuntimeError(f"HETZNER_CARD_CONTENT_MISSING:{card_ref}")
+        if _sha256_text(content) != item.get("content_sha256"):
+            raise RuntimeError(f"HETZNER_CARD_CONTENT_SHA256_MISMATCH:{card_ref}")
+        budget = item.get("budget_chars")
+        if not isinstance(budget, int) or budget <= 0 or len(content) > budget:
+            raise RuntimeError(f"HETZNER_CARD_CONTENT_BUDGET_INVALID:{card_ref}")
+        if not item.get("selected_sections") or not item.get("card_version"):
+            raise RuntimeError(f"HETZNER_CARD_BINDING_INCOMPLETE:{card_ref}")
+        card_by_ref[card_ref] = item
+    required_cards = profile.get("required_card_refs") or []
+    if not isinstance(required_cards, list):
+        raise RuntimeError("HETZNER_REQUIRED_CARD_REFS_NOT_ARRAY")
+    for card_ref in required_cards:
+        if card_ref not in card_by_ref:
+            raise RuntimeError(f"HETZNER_REQUIRED_CARD_MISSING:{card_ref}")
     return envelope
 
 
 def _queue_native_payload(claimed: dict[str, Any]) -> dict[str, Any]:
-    if claimed.get("input_image_base64") or claimed.get("input_image_sha256") or claimed.get("input_image_media_type"):
+    if (
+        claimed.get("input_image_base64")
+        or claimed.get("input_image_sha256")
+        or claimed.get("input_image_media_type")
+    ):
         raise RuntimeError("HETZNER_QUEUE_NATIVE_IMAGE_REQUIRES_GOVERNED_ENVELOPE")
     return {
         "profile": {
@@ -211,7 +319,9 @@ def _queue_native_payload(claimed: dict[str, Any]) -> dict[str, Any]:
 
 
 def _wait_job(job_id: str) -> dict[str, Any]:
-    deadline = time.monotonic() + float(_env("PROFILE_RUNTIME_WORKER_JOB_TIMEOUT_SECONDS", "900"))
+    deadline = time.monotonic() + float(
+        _env("PROFILE_RUNTIME_WORKER_JOB_TIMEOUT_SECONDS", "900")
+    )
     poll = max(0.5, float(_env("PROFILE_RUNTIME_WORKER_POLL_SECONDS", "2")))
     while True:
         record = _api_json("GET", f"/v1/jobs/{job_id}")
@@ -239,7 +349,11 @@ def _persist_success(conn: psycopg.Connection, request_id: str, job: dict[str, A
     transport_pass = completion.get("status") == "PASS"
     status = "SUCCEEDED" if transport_pass else "BLOCKED"
     codes = completion.get("blocking_codes") or []
-    error_code = None if transport_pass else (str(codes[0]) if codes else "HETZNER_RUNTIME_COMPLETION_FAILED")
+    error_code = (
+        None
+        if transport_pass
+        else (str(codes[0]) if codes else "HETZNER_RUNTIME_COMPLETION_FAILED")
+    )
     receipt = completion.get("receipt") if isinstance(completion.get("receipt"), dict) else None
     attestation = None
     if receipt and isinstance(receipt.get("runtime_attestation"), dict):
