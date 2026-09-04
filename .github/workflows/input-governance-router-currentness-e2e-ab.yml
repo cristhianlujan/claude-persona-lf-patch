@@ -1,0 +1,87 @@
+name: Input Governance Router Currentness E2E A-B
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - ".github/workflows/input-governance-router-currentness-e2e-ab.yml"
+      - "sandbox/lf_contract_gate_test/input_governance_router_currentness_reuse/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: input-governance-router-currentness-e2e-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  full-chain-ab:
+    if: github.head_ref == 'lf/input-governance-router-currentness-reuse-p0-20260904'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      LLAMA_COMMIT: 925e1179947ea0c0ebfb0032df18af3a729822be
+      MODEL_COMMIT: 5037fcf163dd95d1e41d1974465f0898ed108ca2
+      MODEL_SHA256: d02fe9b69ad8cadbbd228e387667af66612c44bed29ffc8eb1e7caf9ac486c12
+      MMPROJ_SHA256: 980c9b2f78c04e6cff93d277ada09e768394f112d75db3b4e9dea8a69f9fb904
+    steps:
+      - name: Checkout candidate branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install DB client
+        run: python3 -m pip install --disable-pip-version-check 'psycopg[binary]==3.2.9'
+
+      - name: Build pinned llama.cpp CLI
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/ggml-org/llama.cpp.git "$RUNNER_TEMP/llama.cpp"
+          cd "$RUNNER_TEMP/llama.cpp"
+          git checkout --detach "$LLAMA_COMMIT"
+          test "$(git rev-parse HEAD)" = "$LLAMA_COMMIT"
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=OFF
+          cmake --build build --config Release -j 4 --target llama-cli
+          test -x build/bin/llama-cli
+          echo "LF_LLAMA_CLI_PATH=$RUNNER_TEMP/llama.cpp/build/bin/llama-cli" >> "$GITHUB_ENV"
+
+      - name: Download and verify pinned multimodal model
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/lf-model"
+          curl -L --fail --retry 3 --retry-delay 2 \
+            "https://huggingface.co/ggml-org/Qwen2.5-VL-3B-Instruct-GGUF/resolve/${MODEL_COMMIT}/Qwen2.5-VL-3B-Instruct-Q4_K_M.gguf?download=true" \
+            -o "$RUNNER_TEMP/lf-model/model.gguf"
+          curl -L --fail --retry 3 --retry-delay 2 \
+            "https://huggingface.co/ggml-org/Qwen2.5-VL-3B-Instruct-GGUF/resolve/${MODEL_COMMIT}/mmproj-Qwen2.5-VL-3B-Instruct-Q8_0.gguf?download=true" \
+            -o "$RUNNER_TEMP/lf-model/mmproj.gguf"
+          echo "${MODEL_SHA256}  $RUNNER_TEMP/lf-model/model.gguf" | sha256sum -c -
+          echo "${MMPROJ_SHA256}  $RUNNER_TEMP/lf-model/mmproj.gguf" | sha256sum -c -
+          echo "LF_MODEL_PATH=$RUNNER_TEMP/lf-model/model.gguf" >> "$GITHUB_ENV"
+          echo "LF_MMPROJ_PATH=$RUNNER_TEMP/lf-model/mmproj.gguf" >> "$GITHUB_ENV"
+
+      - name: Run local runtime invariants
+        env:
+          LF_REPOSITORY_VISIBILITY: public
+          LF_RUNNER_LABEL: ubuntu-latest
+          LF_LLAMA_SOURCE_COMMIT: ${{ env.LLAMA_COMMIT }}
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_zero_cost_runtime_tests.py
+
+      - name: Run full-chain A-B canary
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+          LF_REPOSITORY_VISIBILITY: public
+          LF_RUNNER_LABEL: ubuntu-latest
+          LF_LLAMA_SOURCE_COMMIT: ${{ env.LLAMA_COMMIT }}
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance_router_currentness_reuse/run_router_currentness_reuse_e2e_ab.py
