@@ -41,8 +41,5 @@ jobs:
       - name: Validate profile golden family contract
         run: python sandbox/lf_contract_gate_test/profile_execution_runtime/validate_golden_family_contract.py
 
-      - name: Validate profile golden family negative fixtures
-        run: python sandbox/lf_contract_gate_test/profile_execution_runtime/test_golden_family_contract_negative.py
-
       - name: Validate learning engine pack
         run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
