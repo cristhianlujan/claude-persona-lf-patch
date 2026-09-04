@@ -130,6 +130,10 @@ def validate_contract(data: dict[str, Any], root: Path = ROOT) -> str:
         "deployed_worker_revision",
         "persisted_result_ref",
         "same_request_readback_ref",
+        "profile_contract_valid",
+        "semantic_utility",
+        "critical_regressions_count",
+        "fenced_output_forbidden",
     }
     configured_runtime_proof_fields = set(runtime.get("e2e_runtime_proof_required_fields", []))
     missing_runtime_contract = sorted(required_runtime_proof_fields - configured_runtime_proof_fields)
@@ -214,6 +218,14 @@ def validate_contract(data: dict[str, Any], root: Path = ROOT) -> str:
             fail("GOLDEN_FAMILY_E2E_PROVEN_REQUEST_ID_REQUIRED")
         if not runtime_proof.get("same_request_readback_ref"):
             fail("GOLDEN_FAMILY_E2E_PROVEN_SAME_REQUEST_READBACK_REQUIRED")
+        if runtime_proof.get("profile_contract_valid") is not True:
+            fail("GOLDEN_FAMILY_E2E_PROVEN_PROFILE_CONTRACT_NOT_VALID")
+        if runtime_proof.get("semantic_utility") is not True:
+            fail("GOLDEN_FAMILY_E2E_PROVEN_SEMANTIC_UTILITY_NOT_PASS")
+        if runtime_proof.get("critical_regressions_count") != 0:
+            fail("GOLDEN_FAMILY_E2E_PROVEN_CRITICAL_REGRESSIONS_PRESENT")
+        if runtime_proof.get("fenced_output_forbidden") is not True:
+            fail("GOLDEN_FAMILY_E2E_PROVEN_FENCED_OUTPUT_GUARD_NOT_PASS")
         result = f"GOLDEN_FAMILY_CONTRACT_PASS runtime_proof_request_id={runtime_proof.get('request_id')}"
 
     if data.get("automatic_impact_authorized") is not False:
@@ -240,6 +252,28 @@ def expect_negative(
             raise AssertionError(f"{name}: expected {expected_prefix}, got {message}") from exc
         return
     raise AssertionError(f"{name}: validator unexpectedly accepted invalid contract")
+
+
+def valid_runtime_proof() -> dict[str, Any]:
+    return {
+        "request_id": "req-1",
+        "queue_ref": "private.lf_profile_runtime_queue_v1",
+        "runtime_target": "HETZNER",
+        "runtime_provider": "hetzner_profile_runtime_api",
+        "deployed_worker_revision": "worker-sha",
+        "persisted_result_ref": "queue-row",
+        "same_request_readback_ref": "queue-row-readback",
+        "profile_contract_valid": True,
+        "semantic_utility": True,
+        "critical_regressions_count": 0,
+        "fenced_output_forbidden": True,
+    }
+
+
+def set_e2e_proven(d: dict[str, Any], proof: dict[str, Any]) -> None:
+    d["status"] = "E2E_PROVEN"
+    d["card"]["runtime_binding_observed_at_research_cut"] = True
+    d["runtime_proof"] = proof
 
 
 def run_negative_selftests(base: dict[str, Any]) -> int:
@@ -302,16 +336,9 @@ def run_negative_selftests(base: dict[str, Any]) -> int:
     )
 
     def missing_request(d: dict[str, Any]) -> None:
-        d["status"] = "E2E_PROVEN"
-        d["card"]["runtime_binding_observed_at_research_cut"] = True
-        d["runtime_proof"] = {
-            "queue_ref": "private.lf_profile_runtime_queue_v1",
-            "runtime_target": "HETZNER",
-            "runtime_provider": "hetzner_profile_runtime_api",
-            "deployed_worker_revision": "worker-sha",
-            "persisted_result_ref": "queue-row",
-            "same_request_readback_ref": "queue-row-readback",
-        }
+        proof = valid_runtime_proof()
+        proof.pop("request_id")
+        set_e2e_proven(d, proof)
 
     expect_negative(
         base,
@@ -321,17 +348,10 @@ def run_negative_selftests(base: dict[str, Any]) -> int:
     )
 
     def backup_runtime(d: dict[str, Any]) -> None:
-        d["status"] = "E2E_PROVEN"
-        d["card"]["runtime_binding_observed_at_research_cut"] = True
-        d["runtime_proof"] = {
-            "request_id": "req-1",
-            "queue_ref": "private.lf_profile_runtime_queue_v1",
-            "runtime_target": "GITHUB_ACTIONS",
-            "runtime_provider": "github_actions",
-            "deployed_worker_revision": "gha",
-            "persisted_result_ref": "queue-row",
-            "same_request_readback_ref": "queue-row-readback",
-        }
+        proof = valid_runtime_proof()
+        proof["runtime_target"] = "GITHUB_ACTIONS"
+        proof["runtime_provider"] = "github_actions"
+        set_e2e_proven(d, proof)
 
     expect_negative(
         base,
@@ -339,7 +359,55 @@ def run_negative_selftests(base: dict[str, Any]) -> int:
         backup_runtime,
         "GOLDEN_FAMILY_E2E_PROVEN_PRIMARY_RUNTIME_NOT_HETZNER",
     )
-    return 11
+
+    def invalid_profile_contract(d: dict[str, Any]) -> None:
+        proof = valid_runtime_proof()
+        proof["profile_contract_valid"] = False
+        set_e2e_proven(d, proof)
+
+    expect_negative(
+        base,
+        "e2e_profile_contract_invalid",
+        invalid_profile_contract,
+        "GOLDEN_FAMILY_E2E_PROVEN_PROFILE_CONTRACT_NOT_VALID",
+    )
+
+    def semantic_utility_fail(d: dict[str, Any]) -> None:
+        proof = valid_runtime_proof()
+        proof["semantic_utility"] = False
+        set_e2e_proven(d, proof)
+
+    expect_negative(
+        base,
+        "e2e_semantic_utility_fail",
+        semantic_utility_fail,
+        "GOLDEN_FAMILY_E2E_PROVEN_SEMANTIC_UTILITY_NOT_PASS",
+    )
+
+    def critical_regression(d: dict[str, Any]) -> None:
+        proof = valid_runtime_proof()
+        proof["critical_regressions_count"] = 1
+        set_e2e_proven(d, proof)
+
+    expect_negative(
+        base,
+        "e2e_critical_regression",
+        critical_regression,
+        "GOLDEN_FAMILY_E2E_PROVEN_CRITICAL_REGRESSIONS_PRESENT",
+    )
+
+    def fenced_output_allowed(d: dict[str, Any]) -> None:
+        proof = valid_runtime_proof()
+        proof["fenced_output_forbidden"] = False
+        set_e2e_proven(d, proof)
+
+    expect_negative(
+        base,
+        "e2e_fenced_output_allowed",
+        fenced_output_allowed,
+        "GOLDEN_FAMILY_E2E_PROVEN_FENCED_OUTPUT_GUARD_NOT_PASS",
+    )
+    return 15
 
 
 def main() -> int:
