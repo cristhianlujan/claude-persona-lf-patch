@@ -51,6 +51,9 @@ jobs:
       - name: Run residual fire-test Lot D
         run: python3 sandbox/lf_contract_gate_test/s28_lot_d_residual_fire_test.py
 
+      - name: Run 12-case adversarial fire-test Lot E
+        run: python3 sandbox/lf_contract_gate_test/s28_adversarial_fire_test.py
+
       - name: Classify exact pushed surface
         id: route
         shell: bash
