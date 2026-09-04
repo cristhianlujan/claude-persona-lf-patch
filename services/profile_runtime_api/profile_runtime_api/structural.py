@@ -148,6 +148,17 @@ class StructuralContextPipeline:
             raise StructuralContextError("DECOMPOSER_CONTEXT_PACK_BLOCKED", str(exc)) from exc
         decomposer.pop("profile_contract_valid", None)
         decomposer.pop("semantic_utility", None)
+        input_governance = {
+            "receipt_ref": governance.receipt_ref,
+            "context_sha256": governance.context_sha256,
+            "status": governance.status,
+            "current": True,
+            "ready": True,
+        }
+        if governance.canonical_receipt is not None:
+            input_governance["canonical_receipt"] = governance.canonical_receipt.model_dump(
+                mode="python"
+            )
         pack = {
             "schema": "lf-profile-runtime-structural-cache-payload/v1",
             "artifact": {
@@ -157,13 +168,7 @@ class StructuralContextPipeline:
                 "width_px": artifact.width_px,
                 "height_px": artifact.height_px,
             },
-            "input_governance": {
-                "receipt_ref": governance.receipt_ref,
-                "context_sha256": governance.context_sha256,
-                "status": governance.status,
-                "current": True,
-                "ready": True,
-            },
+            "input_governance": input_governance,
             "decomposer_context": decomposer,
             "visible_ui_evidence": self._visible_evidence(result),
             "dynamic_data": {
