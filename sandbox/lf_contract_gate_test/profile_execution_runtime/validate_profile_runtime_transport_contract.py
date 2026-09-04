@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 MIGRATIONS = ROOT / "supabase" / "migrations"
-HARDENING = MIGRATIONS / "20260904053000_lf_profile_runtime_no_implicit_github_fallback_v1.sql"
+HARDENING = MIGRATIONS / "20260904055116_lf_profile_runtime_no_implicit_github_fallback_v1.sql"
 DEFAULT_ROUTING = MIGRATIONS / "20260903211416_lf_profile_runtime_hetzner_default_routing_v1.sql"
 
 
