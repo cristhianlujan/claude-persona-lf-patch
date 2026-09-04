@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "source_id": "UPDATE_JUDGE_STRUCTURAL_SOURCE_V1",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "judge_code": "JUDGE-ACTUALIZACION-PERFIL-LF-v0.1",
+  "role": "STRUCTURAL_ONLY",
+  "semantic_pass_rules": [],
+  "semantic_fail_rules": [],
+  "semantic_enforcement": false,
+  "description": "Structural shared judge metadata only. Semantic prewrite enforcement is owned by JUDGE-ACTUALIZACION-PERFIL-LF-PREWRITE-BINDING-v1."
+}
