@@ -41,5 +41,8 @@ jobs:
       - name: Validate profile golden family contract
         run: python sandbox/lf_contract_gate_test/profile_execution_runtime/validate_golden_family_contract.py
 
+      - name: Validate Golden Family card runtime receipt
+        run: python sandbox/lf_contract_gate_test/profile_execution_runtime/test_materialize_card_runtime_receipt.py
+
       - name: Validate learning engine pack
         run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
