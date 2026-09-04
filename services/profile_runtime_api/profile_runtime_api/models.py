@@ -146,6 +146,7 @@ class ProfileTask(StrictModel):
     profile_source_paths: list[str] = Field(min_length=1, max_length=20)
     input_literal: str = Field(min_length=1, max_length=100_000)
     lf_adapter_sources: list[RouterAdapterSource] = Field(default_factory=list, max_length=4)
+    required_adapter_codes: list[str] = Field(default_factory=list, max_length=4)
     lf_card_sources: list[CardSource] = Field(default_factory=list, max_length=4)
     required_card_refs: list[str] = Field(default_factory=list, max_length=4)
     send_image_to_model: bool = False
@@ -155,13 +156,26 @@ class ProfileTask(StrictModel):
         expected_code = KNOWN_PROFILE_BINDINGS.get(self.profile_slug)
         if expected_code is not None and self.profile_code != expected_code:
             raise ValueError("PROFILE_SLUG_CODE_BINDING_MISMATCH")
+
         seen_adapters: set[str] = set()
+        adapter_versions: dict[str, str | None] = {}
         for item in self.lf_adapter_sources:
             if item.target_ref != self.profile_code:
                 raise ValueError("LF_ADAPTER_TARGET_MISMATCH")
             if item.adapter_code in seen_adapters:
                 raise ValueError("LF_ADAPTER_DUPLICATE")
             seen_adapters.add(item.adapter_code)
+            adapter_versions[item.adapter_code] = item.adapter_version
+        if len(self.required_adapter_codes) != len(set(self.required_adapter_codes)):
+            raise ValueError("LF_ADAPTER_REQUIRED_CODES_DUPLICATE")
+        missing_adapters = sorted(set(self.required_adapter_codes) - seen_adapters)
+        if missing_adapters:
+            raise ValueError("LF_ADAPTER_REQUIRED_SOURCE_MISSING:" + ",".join(missing_adapters))
+        missing_versions = sorted(
+            code for code in self.required_adapter_codes if not adapter_versions.get(code)
+        )
+        if missing_versions:
+            raise ValueError("LF_ADAPTER_REQUIRED_VERSION_MISSING:" + ",".join(missing_versions))
 
         seen_cards: set[str] = set()
         for item in self.lf_card_sources:
@@ -170,9 +184,9 @@ class ProfileTask(StrictModel):
             seen_cards.add(item.card_ref)
         if len(self.required_card_refs) != len(set(self.required_card_refs)):
             raise ValueError("LF_CARD_REQUIRED_REFS_DUPLICATE")
-        missing = sorted(set(self.required_card_refs) - seen_cards)
-        if missing:
-            raise ValueError("LF_CARD_REQUIRED_SOURCE_MISSING:" + ",".join(missing))
+        missing_cards = sorted(set(self.required_card_refs) - seen_cards)
+        if missing_cards:
+            raise ValueError("LF_CARD_REQUIRED_SOURCE_MISSING:" + ",".join(missing_cards))
         return self
 
 
