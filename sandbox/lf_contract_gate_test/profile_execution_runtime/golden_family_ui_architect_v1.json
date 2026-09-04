@@ -1,7 +1,7 @@
 {
   "schema": "LF_PROFILE_GOLDEN_FAMILY_CONTRACT_V1",
   "family_id": "GOLDEN-FAMILY-UI-ARCHITECT-MARKETPLACE-LF-V1",
-  "status": "CONTRACT_DEFINED_E2E_NOT_PROVEN",
+  "status": "E2E_BLOCKED",
   "authority": {
     "router_asset": "ACT-0001",
     "operational_source": "public.v_lf_fuente_operativa",
@@ -11,20 +11,26 @@
   "profile": {
     "code": "PERFIL-UI-ARCHITECT",
     "path": "profiles/ui_architect",
-    "source_ref": "profiles/ui_architect/SKILL.md"
+    "source_ref": "profiles/ui_architect/SKILL.md",
+    "runtime_enablement_must_be_live_verified_before_canary": true
   },
   "input_governance": {
     "agent_code": "INPUT_GOVERNANCE_AGENT",
     "contract_code": "INPUT_READINESS_CONTRACT",
     "observed_revision_at_research_cut": "5.12",
     "binding_ref": "gobernanza/contratos/ADAPTER_INPUT_GOVERNANCE_BINDING_v1.md",
+    "consumer": "CONTEXT_PACK",
     "required_when_applicable": true,
     "required_receipt_fields": [
+      "run_id",
       "governance_agent_used",
       "governance_version",
+      "consumer",
       "sections_consumed",
       "source_refs",
       "snapshot_hash",
+      "contract_snapshot_sha256",
+      "currentness",
       "decision",
       "gap_or_na",
       "timestamp"
@@ -33,13 +39,18 @@
   "card": {
     "path": "cards/marketplace_lf/decision_product_experience",
     "source_ref": "cards/marketplace_lf/decision_product_experience/CARD.md",
-    "expected_registry": "public.lf_cards",
+    "expected_registry": null,
+    "registry_status": "NO_COMPATIBLE_RUNTIME_REGISTRY_OBSERVED",
+    "observed_incompatible_table": "public.lf_cards",
+    "runtime_materialization_required": true,
     "required_when_applicable": true,
     "runtime_binding_observed_at_research_cut": false,
     "required_receipt_fields": [
+      "request_id",
       "card_ref",
       "card_version_or_hash",
       "sections_consumed",
+      "budget",
       "decision"
     ]
   },
@@ -50,8 +61,10 @@
     "required_when_router_resolves": true,
     "required_receipt_fields": [
       "adapter_code",
+      "adapter_version",
       "activation_source",
       "binding_ref",
+      "target_asset_code",
       "decision"
     ]
   },
@@ -62,8 +75,30 @@
     "queue": "private.lf_profile_runtime_queue_v1",
     "envelope_column": "runtime_request_envelope",
     "correlation_key": "request_id",
-    "transport_contract_validator": "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_runtime_transport_contract.py"
+    "transport_contract_validator": "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_runtime_transport_contract.py",
+    "e2e_runtime_proof_required_fields": [
+      "request_id",
+      "queue_ref",
+      "runtime_target",
+      "runtime_provider",
+      "deployed_worker_revision",
+      "persisted_result_ref",
+      "same_request_readback_ref"
+    ]
   },
+  "ekb_preflight_required_codes": [
+    "PROFILES-EKB-PREFLIGHT-OMISSION-001",
+    "DB-SCHEMA-FIRST-COLUMN-ASSUMPTION-001",
+    "DB-EKB-CONCURRENCY-001",
+    "ARC-011",
+    "PROFILE-CARD-RUNTIME-MATERIALIZATION-GAP-001",
+    "PROFILE-RUNTIME-TRANSPORT-SUCCESS-QUALITY-001",
+    "INPUT-GOV-CONSUMER-BINDING-001",
+    "GOV-037",
+    "BENCH-TAUTOLOGY-001",
+    "GOV-024",
+    "GOV-ADAPTER-POST-CLOSURE-REGRESSION-001"
+  ],
   "required_e2e_evidence": [
     "router_receipt",
     "input_governance_receipt_or_governed_na",
