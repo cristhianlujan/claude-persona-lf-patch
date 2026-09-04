@@ -83,7 +83,11 @@
       "runtime_provider",
       "deployed_worker_revision",
       "persisted_result_ref",
-      "same_request_readback_ref"
+      "same_request_readback_ref",
+      "profile_contract_valid",
+      "semantic_utility",
+      "critical_regressions_count",
+      "fenced_output_forbidden"
     ]
   },
   "ekb_preflight_required_codes": [
