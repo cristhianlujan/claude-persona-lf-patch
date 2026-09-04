@@ -1,0 +1,108 @@
+name: S28 CI Feedback Tier Sandbox
+
+on:
+  push:
+    branches:
+      - "sandbox/s28-ci-fast-deep-routing-20260904"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  routing-contract:
+    name: s28-routing-contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      tier: ${{ steps.route.outputs.tier }}
+      reason: ${{ steps.route.outputs.reason }}
+      deep_required: ${{ steps.route.outputs.deep_required }}
+      affected_surface: ${{ steps.route.outputs.affected_surface }}
+      feedback_seconds: ${{ steps.timing.outputs.feedback_seconds }}
+
+    steps:
+      - name: Mark feedback start
+        shell: bash
+        run: echo "S28_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Checkout sandbox source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Prove fail-closed routing contract
+        run: python3 sandbox/lf_contract_gate_test/s28_ci_feedback_tier.py --self-test
+
+      - name: Classify exact pushed surface
+        id: route
+        shell: bash
+        run: |
+          set -euo pipefail
+          before="${{ github.event.before }}"
+          if [ -z "$before" ] || [ "$before" = "0000000000000000000000000000000000000000" ]; then
+            before="HEAD^"
+          fi
+          mapfile -t changed < <(git diff --name-only "$before" "$GITHUB_SHA")
+          decision="$(python3 sandbox/lf_contract_gate_test/s28_ci_feedback_tier.py "${changed[@]}")"
+          echo "$decision"
+          DECISION="$decision" python3 - <<'PY'
+          import json, os
+          d = json.loads(os.environ["DECISION"])
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              for key in ("tier", "reason", "affected_surface", "deep_required"):
+                  value = d[key]
+                  if isinstance(value, bool):
+                      value = str(value).lower()
+                  out.write(f"{key}={value}\n")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+              summary.write("### Strategy 28 routing readback\n")
+              summary.write(f"- tier: `{d['tier']}`\n")
+              summary.write(f"- reason: `{d['reason']}`\n")
+              summary.write(f"- surface: `{d['affected_surface']}`\n")
+              summary.write(f"- deep required: `{d['deep_required']}`\n")
+              summary.write(f"- changed paths: `{len(d['paths'])}`\n")
+          PY
+
+      - name: Reuse existing deterministic path validator
+        run: |
+          python3 -m pip install --disable-pip-version-check PyYAML==6.0.2
+          python3 scripts/validate_declared_paths.py --repo-root .
+
+      - name: Prove final-evidence override
+        run: |
+          decision="$(python3 sandbox/lf_contract_gate_test/s28_ci_feedback_tier.py --final-evidence profiles/example/profile.yaml)"
+          DECISION="$decision" python3 - <<'PY'
+          import json, os
+          d = json.loads(os.environ["DECISION"])
+          assert d["tier"] == "DEEP"
+          assert d["deep_required"] is True
+          assert d["reason"] == "FINAL_EVIDENCE_REQUIRES_DEEP"
+          print("PASS_S28_FINAL_EVIDENCE_FORCE_DEEP")
+          PY
+
+      - name: Measure fast feedback path
+        id: timing
+        shell: bash
+        run: |
+          set -euo pipefail
+          elapsed=$(( $(date +%s) - S28_START_EPOCH ))
+          echo "feedback_seconds=$elapsed" >> "$GITHUB_OUTPUT"
+          echo "- feedback seconds: \`$elapsed\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Emit deep requirement without replacing Bootstrap
+        if: steps.route.outputs.deep_required == 'true'
+        run: |
+          echo "DEEP_REQUIRED=true"
+          echo "Existing Bootstrap/deep assurance remains mandatory for this surface; sandbox router does not execute or replace it."
+
+      - name: Emit iterative fast eligibility
+        if: steps.route.outputs.deep_required == 'false'
+        run: |
+          echo "FAST_ELIGIBLE=true"
+          echo "FAST is iterative feedback only. It is not merge, promotion, closure, or final evidence."
