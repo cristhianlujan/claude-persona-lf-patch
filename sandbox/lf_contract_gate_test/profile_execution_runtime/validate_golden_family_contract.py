@@ -113,7 +113,8 @@ def validate_contract(data: dict[str, Any], root: Path = ROOT) -> str:
 
     required_runtime_proof_fields = {
         "request_id", "queue_ref", "runtime_target", "runtime_provider",
-        "deployed_worker_revision", "persisted_result_ref", "same_request_readback_ref",
+        "governed_source_revision", "deployed_worker_revision",
+        "persisted_result_ref", "same_request_readback_ref",
         "profile_contract_valid", "semantic_utility", "critical_regressions_count",
         "fenced_output_forbidden",
     }
@@ -180,8 +181,12 @@ def validate_contract(data: dict[str, Any], root: Path = ROOT) -> str:
             fail("GOLDEN_FAMILY_E2E_PROVEN_RUNTIME_PROVIDER_INVALID")
         if not runtime_proof.get("request_id"):
             fail("GOLDEN_FAMILY_E2E_PROVEN_REQUEST_ID_REQUIRED")
+        if not runtime_proof.get("governed_source_revision"):
+            fail("GOLDEN_FAMILY_E2E_PROVEN_GOVERNED_SOURCE_REVISION_REQUIRED")
         if not runtime_proof.get("deployed_worker_revision"):
             fail("GOLDEN_FAMILY_E2E_PROVEN_DEPLOYED_WORKER_REVISION_REQUIRED")
+        if runtime_proof.get("deployed_worker_revision") != runtime_proof.get("governed_source_revision"):
+            fail("GOLDEN_FAMILY_E2E_PROVEN_SOURCE_RUNTIME_REVISION_MISMATCH")
         if not runtime_proof.get("persisted_result_ref"):
             fail("GOLDEN_FAMILY_E2E_PROVEN_PERSISTED_RESULT_REF_REQUIRED")
         if not runtime_proof.get("same_request_readback_ref"):
@@ -222,6 +227,7 @@ def valid_runtime_proof() -> dict[str, Any]:
         "queue_ref": "private.lf_profile_runtime_queue_v1",
         "runtime_target": "HETZNER",
         "runtime_provider": "hetzner_profile_runtime_api",
+        "governed_source_revision": "worker-sha",
         "deployed_worker_revision": "worker-sha",
         "persisted_result_ref": "queue-row",
         "same_request_readback_ref": "queue-row-readback",
@@ -274,7 +280,7 @@ def run_negative_selftests(base: dict[str, Any]) -> int:
     proof_case("e2e_backup_cannot_satisfy_primary", "runtime_target", "GITHUB_ACTIONS", "GOLDEN_FAMILY_E2E_PROVEN_PRIMARY_RUNTIME_NOT_HETZNER")
     proof_case("e2e_wrong_queue_ref", "queue_ref", "private.other_queue", "GOLDEN_FAMILY_E2E_PROVEN_QUEUE_REF_INVALID")
     proof_case("e2e_wrong_runtime_provider", "runtime_provider", "github_actions", "GOLDEN_FAMILY_E2E_PROVEN_RUNTIME_PROVIDER_INVALID")
-    proof_case("e2e_missing_worker_revision", "deployed_worker_revision", "", "GOLDEN_FAMILY_E2E_PROVEN_DEPLOYED_WORKER_REVISION_REQUIRED")
+    proof_case("e2e_source_runtime_revision_mismatch", "deployed_worker_revision", "stale-worker-sha", "GOLDEN_FAMILY_E2E_PROVEN_SOURCE_RUNTIME_REVISION_MISMATCH")
     proof_case("e2e_missing_persisted_result", "persisted_result_ref", "", "GOLDEN_FAMILY_E2E_PROVEN_PERSISTED_RESULT_REF_REQUIRED")
     proof_case("e2e_profile_contract_invalid", "profile_contract_valid", False, "GOLDEN_FAMILY_E2E_PROVEN_PROFILE_CONTRACT_NOT_VALID")
     proof_case("e2e_semantic_utility_fail", "semantic_utility", False, "GOLDEN_FAMILY_E2E_PROVEN_SEMANTIC_UTILITY_NOT_PASS")
