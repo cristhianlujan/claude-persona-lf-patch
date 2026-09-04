@@ -56,36 +56,60 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
     def tearDown(self) -> None:
         self.temp.cleanup()
 
-    def test_llamacpp_json_object_grammar_keeps_governed_schema(self) -> None:
-        client = RecordingClient(self.settings, '{"ok":true}')
-        result = client.chat(
+    def call(self, content: str, *, profile_slug: str = "ui_architect") -> RecordingClient:
+        client = RecordingClient(self.settings, content)
+        client.chat(
             system_prompt="system",
             user_prompt="user",
             schema=self.schema,
+            profile_slug=profile_slug,
         )
-        self.assertEqual(result["content"], '{"ok":true}')
+        return client
+
+    def test_ui_architect_preserves_proven_unconstrained_v27_fallback(self) -> None:
+        client = self.call('{"ok":true}', profile_slug="ui_architect")
+        assert client.last_payload is not None
+        self.assertNotIn("response_format", client.last_payload)
+
+    def test_other_profiles_keep_existing_schema_constrained_generation(self) -> None:
+        client = self.call('{"ok":true}', profile_slug="quality_pack")
         assert client.last_payload is not None
         self.assertEqual(
             client.last_payload["response_format"],
-            {"type": "json_object", "schema": self.schema},
+            {"type": "json_schema", "schema": self.schema},
         )
 
     def test_fenced_json_fails_closed_without_normalization(self) -> None:
         client = RecordingClient(self.settings, '```json\n{"ok":true}\n```')
         with self.assertRaises(LlamaTransportError) as ctx:
-            client.chat(system_prompt="system", user_prompt="user", schema=self.schema)
+            client.chat(
+                system_prompt="system",
+                user_prompt="user",
+                schema=self.schema,
+                profile_slug="ui_architect",
+            )
         self.assertEqual(ctx.exception.code, "LLAMA_STRUCTURED_OUTPUT_FENCED")
 
     def test_invalid_json_fails_closed(self) -> None:
         client = RecordingClient(self.settings, '{"ok":')
         with self.assertRaises(LlamaTransportError) as ctx:
-            client.chat(system_prompt="system", user_prompt="user", schema=self.schema)
+            client.chat(
+                system_prompt="system",
+                user_prompt="user",
+                schema=self.schema,
+                profile_slug="ui_architect",
+            )
         self.assertEqual(ctx.exception.code, "LLAMA_STRUCTURED_OUTPUT_JSON_INVALID")
 
     def test_json_array_fails_closed(self) -> None:
         client = RecordingClient(self.settings, '[{"ok":true}]')
         with self.assertRaises(LlamaTransportError) as ctx:
-            client.chat(system_prompt="system", user_prompt="user", schema=self.schema)
+            client.chat(
+                system_prompt="system",
+                user_prompt="user",
+                schema=self.schema,
+                profile_slug="ui_architect",
+            )
         self.assertEqual(ctx.exception.code, "LLAMA_STRUCTURED_OUTPUT_ROOT_NOT_OBJECT")
 
     def test_queue_context_flags_do_not_imply_missing_input(self) -> None:

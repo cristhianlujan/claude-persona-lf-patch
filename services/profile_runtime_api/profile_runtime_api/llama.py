@@ -13,6 +13,7 @@ from .repository import SchemaBinding
 from .settings import Settings
 
 RESPONSE_TYPE = "PROFILE_RUNTIME_RESPONSE_V1"
+UI_ARCHITECT_PROFILE_SLUG = "ui_architect"
 
 
 def utc_now() -> str:
@@ -72,6 +73,7 @@ class LlamaHTTPClient:
         system_prompt: str,
         user_prompt: str,
         schema: dict[str, Any],
+        profile_slug: str,
         image_bytes: bytes | None = None,
         image_media_type: str | None = None,
     ) -> dict[str, Any]:
@@ -91,16 +93,12 @@ class LlamaHTTPClient:
                     },
                 },
             ]
-        payload = {
+        payload: dict[str, Any] = {
             "model": self.settings.llama_model,
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_content},
             ],
-            # llama.cpp's JSON-object mode applies a generation grammar. Keep the
-            # exact governed schema attached so constrained generation and the
-            # downstream canonical validator enforce the same contract.
-            "response_format": {"type": "json_object", "schema": schema},
             "stream": False,
             "temperature": 0.2,
             "top_p": 0.9,
@@ -108,6 +106,13 @@ class LlamaHTTPClient:
             "max_tokens": self.settings.max_output_tokens,
             "cache_prompt": True,
         }
+        # UI Architect has prior runtime evidence that llama.cpp constrained decoding
+        # against its aggregate schema can terminate with an empty assistant response.
+        # Preserve the proven V27 fallback: generate unconstrained, then apply the same
+        # canonical schema/profile validator and the strict JSON boundary below.
+        if profile_slug != UI_ARCHITECT_PROFILE_SLUG:
+            payload["response_format"] = {"type": "json_schema", "schema": schema}
+
         response = self._request(
             "POST", "/v1/chat/completions", payload, self.settings.llama_timeout_seconds
         )
@@ -127,9 +132,8 @@ class LlamaHTTPClient:
             raise LlamaTransportError("LLAMA_RESPONSE_CONTENT_EMPTY")
 
         normalized = content.strip()
-        # Do not repair or strip invalid model output. A fenced or non-object
-        # completion must fail at the runtime boundary so transport success can
-        # never be mistaken for behavioral success.
+        # Never strip/repair bad output into a PASS. The model must produce a naked
+        # JSON object; otherwise runtime_completion fails before persistence as success.
         if normalized.startswith("```") or normalized.endswith("```"):
             raise LlamaTransportError("LLAMA_STRUCTURED_OUTPUT_FENCED")
         try:
@@ -219,6 +223,7 @@ class PersistentLlamaServerAdapter:
             system_prompt=system_prompt,
             user_prompt=request["input_literal"],
             schema=self.schema.payload,
+            profile_slug=request["profile_slug"],
             image_bytes=self.image_bytes,
             image_media_type=self.image_media_type,
         )
