@@ -43,6 +43,7 @@ MANAGED_EXACT_NAMES = {
     "fix_profile_creator_init_no_close_compat_v1",
     "profile_creator_step_recorder_v1",
     "profile_creator_step_status_contract_fix",
+    "router_profile_execution_noncanonical_advisory_readonly",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
@@ -132,6 +133,8 @@ def main() -> int:
         fail("FAIL_CI009_SELFTEST_PROFILE_CREATOR_STEP_RECORDER")
     if not managed("profile_creator_step_status_contract_fix"):
         fail("FAIL_CI009_SELFTEST_PROFILE_CREATOR_STEP_STATUS_CONTRACT")
+    if not managed("router_profile_execution_noncanonical_advisory_readonly"):
+        fail("FAIL_CI009_SELFTEST_PROFILE_EXECUTION_NONCANONICAL_ADVISORY")
     if managed("create_lf_unreviewed_future_change"):
         fail("FAIL_CI009_SELFTEST_MANAGED_PREFIX_TOO_BROAD")
     if not classified("programacion_worker_spec_probe"):
@@ -208,7 +211,7 @@ def main() -> int:
         f"legacy={legacy_count} sha256={legacy_sha} grandfathered={grandfathered_count}/{grandfathered_sha} "
         f"classification_baseline_end={classification_baseline_end}"
     )
-    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=19/19")
+    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=20/20")
     return 0
 
 
