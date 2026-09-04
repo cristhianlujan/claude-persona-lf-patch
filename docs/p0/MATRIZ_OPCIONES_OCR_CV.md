@@ -27,3 +27,5 @@ Un candidato solo reemplaza baseline si, sobre el mismo corpus y configuración 
 - pasa holdout no usado para ajustar reglas.
 
 Si hay empate funcional, se conserva baseline y costo/latencia decide únicamente después.
+
+<!-- S28_DOCS_VALID_E2E_TIMING_CANARY_20260904: temporal, no merge -->
