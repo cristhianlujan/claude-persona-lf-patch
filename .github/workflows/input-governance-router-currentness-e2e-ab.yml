@@ -84,4 +84,5 @@ jobs:
           LF_LLAMA_SOURCE_COMMIT: ${{ env.LLAMA_COMMIT }}
         run: |
           set -euo pipefail
+          export PYTHONPATH="$PWD/sandbox/lf_contract_gate_test/profile_execution_runtime${PYTHONPATH:+:$PYTHONPATH}"
           python3 sandbox/lf_contract_gate_test/input_governance_router_currentness_reuse/run_router_currentness_reuse_e2e_ab.py
