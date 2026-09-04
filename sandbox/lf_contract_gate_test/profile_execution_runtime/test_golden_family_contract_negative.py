@@ -13,8 +13,8 @@ def main() -> int:
     if "status=E2E_BLOCKED" not in result:
         raise AssertionError(f"canonical contract must remain blocked, got: {result}")
     cases = validator.run_negative_selftests(data)
-    if cases != 11:
-        raise AssertionError(f"expected 11 negative cases, got {cases}")
+    if cases != 15:
+        raise AssertionError(f"expected 15 negative cases, got {cases}")
     print(f"GOLDEN_FAMILY_NEGATIVE_FIXTURES_PASS cases={cases}")
     return 0
 
