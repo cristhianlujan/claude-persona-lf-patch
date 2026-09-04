@@ -1,7 +1,7 @@
 {
   "contract_code": "UPDATE_JUDGE_SEMANTICS_CONTRACT_V1",
   "operation_code": "ACTUALIZACION_PERFIL_LF",
-  "judge_code": "JUDGE-ACTUALIZACION-PERFIL-LF-v0.1",
+  "judge_code": "JUDGE-ACTUALIZACION-PERFIL-LF-PREWRITE-BINDING-v1",
   "step_id": "pre_write_execution_binding_gate",
   "source_ref": "skills/profile_creator/contracts/update_judge_semantics_source_v1.json",
   "source_digest_algorithm": "SHA-256",
