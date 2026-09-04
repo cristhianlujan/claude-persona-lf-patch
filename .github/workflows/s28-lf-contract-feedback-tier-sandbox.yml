@@ -1,0 +1,32 @@
+name: S28 LF Contract Feedback Tier Sandbox
+
+on:
+  push:
+    branches:
+      - sandbox/s28-lf-contract-fast-deep-split-20260904
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  feedback-tier-sandbox:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run canonical tier self-test
+        run: |
+          python3 sandbox/lf_contract_gate_test/s28_lf_contract_feedback_tier.py --self-test
+
+      - name: Benchmark tier overhead
+        run: |
+          python3 sandbox/lf_contract_gate_test/s28_lf_contract_feedback_tier.py --benchmark 1000
