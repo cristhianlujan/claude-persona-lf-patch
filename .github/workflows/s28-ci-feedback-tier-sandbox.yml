@@ -42,6 +42,9 @@ jobs:
       - name: Run 24-case fire-test Lot A
         run: python3 sandbox/lf_contract_gate_test/s28_ci_feedback_fire_test.py --lot A
 
+      - name: Run 18-case fire-test Lot B
+        run: python3 sandbox/lf_contract_gate_test/s28_migration_fire_test.py
+
       - name: Classify exact pushed surface
         id: route
         shell: bash
