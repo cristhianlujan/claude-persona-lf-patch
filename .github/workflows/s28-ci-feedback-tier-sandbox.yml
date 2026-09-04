@@ -48,6 +48,9 @@ jobs:
       - name: Run routing portion of fire-test Lot C
         run: python3 sandbox/lf_contract_gate_test/s28_runtime_residual_fire_test.py
 
+      - name: Run residual fire-test Lot D
+        run: python3 sandbox/lf_contract_gate_test/s28_lot_d_residual_fire_test.py
+
       - name: Classify exact pushed surface
         id: route
         shell: bash
