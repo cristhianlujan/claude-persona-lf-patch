@@ -114,7 +114,8 @@ def main() -> int:
         passed += 1
         with tempfile.TemporaryDirectory() as td:
             copied = _materialize_runtime_output_schema("ui_architect", Path.cwd(), Path(td))
-            assert copied is None
+            assert copied is not None and copied.is_file()
+            assert copied.name == "runtime_output.schema.json"
         passed += 1
         assert _assistant_completion("User:\nrequest\n\nAssistant:\n{\"ok\":true}") == '{"ok":true}'
         empty = _enforce_nonempty_completion({
