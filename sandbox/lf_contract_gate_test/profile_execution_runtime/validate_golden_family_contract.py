@@ -2,9 +2,10 @@
 """Validate the LF Profiles Golden Family contract without claiming runtime proof."""
 from __future__ import annotations
 
+import copy
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 ROOT = Path(__file__).resolve().parents[3]
 CONTRACT = Path(__file__).with_name("golden_family_ui_architect_v1.json")
@@ -223,15 +224,135 @@ def validate_contract(data: dict[str, Any], root: Path = ROOT) -> str:
     return result
 
 
+def expect_negative(
+    base: dict[str, Any],
+    name: str,
+    mutate: Callable[[dict[str, Any]], None],
+    expected_prefix: str,
+) -> None:
+    data = copy.deepcopy(base)
+    mutate(data)
+    try:
+        validate_contract(data)
+    except ContractError as exc:
+        message = str(exc)
+        if not message.startswith(expected_prefix):
+            raise AssertionError(f"{name}: expected {expected_prefix}, got {message}") from exc
+        return
+    raise AssertionError(f"{name}: validator unexpectedly accepted invalid contract")
+
+
+def run_negative_selftests(base: dict[str, Any]) -> int:
+    cases: list[tuple[str, Callable[[dict[str, Any]], None], str]] = [
+        (
+            "inputgov_missing_run_id",
+            lambda d: d["input_governance"]["required_receipt_fields"].remove("run_id"),
+            "GOLDEN_FAMILY_INPUT_GOVERNANCE_RECEIPT_FIELDS_MISSING:run_id",
+        ),
+        (
+            "inputgov_wrong_consumer",
+            lambda d: d["input_governance"].__setitem__("consumer", "STORY_CREATOR"),
+            "GOLDEN_FAMILY_INPUT_GOVERNANCE_CONSUMER_INVALID",
+        ),
+        (
+            "card_missing_budget",
+            lambda d: d["card"]["required_receipt_fields"].remove("budget"),
+            "GOLDEN_FAMILY_CARD_RECEIPT_FIELDS_MISSING:budget",
+        ),
+        (
+            "card_missing_request_id",
+            lambda d: d["card"]["required_receipt_fields"].remove("request_id"),
+            "GOLDEN_FAMILY_CARD_RECEIPT_FIELDS_MISSING:request_id",
+        ),
+        (
+            "card_registry_inferred",
+            lambda d: d["card"].__setitem__("expected_registry", "public.lf_cards"),
+            "GOLDEN_FAMILY_CARD_RUNTIME_REGISTRY_MUST_NOT_BE_INFERRED",
+        ),
+        (
+            "card_gap_not_blocking",
+            lambda d: d.__setitem__("status", "CONTRACT_DEFINED_E2E_NOT_PROVEN"),
+            "GOLDEN_FAMILY_CARD_BINDING_GAP_MUST_BLOCK_E2E",
+        ),
+        (
+            "adapter_missing_version",
+            lambda d: d["adapter"]["required_receipt_fields"].remove("adapter_version"),
+            "GOLDEN_FAMILY_ADAPTER_RECEIPT_FIELDS_MISSING:adapter_version",
+        ),
+        (
+            "adapter_missing_target",
+            lambda d: d["adapter"]["required_receipt_fields"].remove("target_asset_code"),
+            "GOLDEN_FAMILY_ADAPTER_RECEIPT_FIELDS_MISSING:target_asset_code",
+        ),
+    ]
+
+    for name, mutate, expected_prefix in cases:
+        expect_negative(base, name, mutate, expected_prefix)
+
+    def string_proof(d: dict[str, Any]) -> None:
+        d["status"] = "E2E_PROVEN"
+        d["card"]["runtime_binding_observed_at_research_cut"] = True
+        d["runtime_proof"] = "CLAIMED_PASS"
+
+    expect_negative(
+        base,
+        "e2e_string_self_attestation",
+        string_proof,
+        "GOLDEN_FAMILY_E2E_PROVEN_RUNTIME_PROOF_OBJECT_REQUIRED",
+    )
+
+    def missing_request(d: dict[str, Any]) -> None:
+        d["status"] = "E2E_PROVEN"
+        d["card"]["runtime_binding_observed_at_research_cut"] = True
+        d["runtime_proof"] = {
+            "queue_ref": "private.lf_profile_runtime_queue_v1",
+            "runtime_target": "HETZNER",
+            "runtime_provider": "hetzner_profile_runtime_api",
+            "deployed_worker_revision": "worker-sha",
+            "persisted_result_ref": "queue-row",
+            "same_request_readback_ref": "queue-row-readback",
+        }
+
+    expect_negative(
+        base,
+        "e2e_missing_request_id",
+        missing_request,
+        "GOLDEN_FAMILY_E2E_PROVEN_RUNTIME_PROOF_FIELDS_MISSING:request_id",
+    )
+
+    def backup_runtime(d: dict[str, Any]) -> None:
+        d["status"] = "E2E_PROVEN"
+        d["card"]["runtime_binding_observed_at_research_cut"] = True
+        d["runtime_proof"] = {
+            "request_id": "req-1",
+            "queue_ref": "private.lf_profile_runtime_queue_v1",
+            "runtime_target": "GITHUB_ACTIONS",
+            "runtime_provider": "github_actions",
+            "deployed_worker_revision": "gha",
+            "persisted_result_ref": "queue-row",
+            "same_request_readback_ref": "queue-row-readback",
+        }
+
+    expect_negative(
+        base,
+        "e2e_backup_cannot_satisfy_primary",
+        backup_runtime,
+        "GOLDEN_FAMILY_E2E_PROVEN_PRIMARY_RUNTIME_NOT_HETZNER",
+    )
+    return 11
+
+
 def main() -> int:
     if not CONTRACT.is_file():
         raise SystemExit("GOLDEN_FAMILY_CONTRACT_MISSING")
     data = json.loads(CONTRACT.read_text(encoding="utf-8"))
     try:
         result = validate_contract(data)
-    except ContractError as exc:
+        negative_cases = run_negative_selftests(data)
+    except (ContractError, AssertionError) as exc:
         raise SystemExit(str(exc)) from exc
     print(result)
+    print(f"GOLDEN_FAMILY_NEGATIVE_SELFTESTS_PASS cases={negative_cases}")
     return 0
 
 
