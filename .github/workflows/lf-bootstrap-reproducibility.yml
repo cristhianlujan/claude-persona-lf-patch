@@ -14,8 +14,73 @@ permissions:
   contents: read
 
 jobs:
+  feedback-tier-router:
+    name: feedback-tier-router
+    runs-on: ubuntu-latest
+    outputs:
+      tier: ${{ steps.classify.outputs.tier }}
+      reason: ${{ steps.classify.outputs.reason }}
+      deep_required: ${{ steps.classify.outputs.deep_required }}
+    steps:
+      - name: Checkout exact PR head for classification
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+
+      - name: Classify approved production slice
+        id: classify
+        shell: bash
+        run: |
+          set -euo pipefail
+          tier="DEEP"
+          reason="NON_PR_OR_UNKNOWN_FAIL_CLOSED"
+          deep_required="true"
+
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            base="${{ github.event.pull_request.base.sha }}"
+            head="${{ github.event.pull_request.head.sha }}"
+            git fetch --no-tags --depth=1 origin "$base"
+            mapfile -t changed < <(git diff --name-only "$base" "$head")
+
+            if [ "${#changed[@]}" -eq 0 ]; then
+              reason="NO_CHANGED_PATHS_FAIL_CLOSED"
+            else
+              docs_only="true"
+              for path in "${changed[@]}"; do
+                case "$path" in
+                  docs/*) ;;
+                  *) docs_only="false"; break ;;
+                esac
+              done
+
+              if [ "$docs_only" = "true" ]; then
+                tier="FAST"
+                reason="DOCS_EKB_ONLY_PRODUCTION_SLICE"
+                deep_required="false"
+              else
+                reason="NON_DOCS_OR_MIXED_SURFACE_REQUIRES_DEEP"
+              fi
+            fi
+          fi
+
+          echo "tier=$tier" >> "$GITHUB_OUTPUT"
+          echo "reason=$reason" >> "$GITHUB_OUTPUT"
+          echo "deep_required=$deep_required" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Strategy 28 production feedback tier"
+            echo "- tier: \`$tier\`"
+            echo "- reason: \`$reason\`"
+            echo "- deep required: \`$deep_required\`"
+            echo "- approved FAST scope: \`docs/** only\`"
+            echo "- profile/card/skill/adapter/runtime/schema/CI/unknown/final remain DEEP"
+          } >> "$GITHUB_STEP_SUMMARY"
+
   schema-bootstrap-probe:
     name: schema-bootstrap-probe
+    needs: feedback-tier-router
+    if: needs.feedback-tier-router.outputs.deep_required == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -176,6 +241,8 @@ jobs:
 
   v7-runtime-apply-rollback:
     name: v7-runtime-apply-rollback
+    needs: feedback-tier-router
+    if: needs.feedback-tier-router.outputs.deep_required == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
