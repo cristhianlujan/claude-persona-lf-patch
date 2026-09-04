@@ -13,6 +13,7 @@ SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9_]{0,79}$")
 CODE_RE = re.compile(r"^[A-Z0-9][A-Z0-9_-]{0,119}$")
 MAX_IMAGE_BYTES = 12 * 1024 * 1024
+MAX_CARD_CHARS = 8_000
 KNOWN_PROFILE_BINDINGS = {
     "product_director_lf": "PERFIL-PRODUCT-DIRECTOR-LF",
     "ui_architect": "PERFIL-UI-ARCHITECT",
@@ -67,6 +68,22 @@ class Artifact(StrictModel):
         return base64.b64decode(self.image_base64, validate=True) if self.image_base64 else None
 
 
+class CanonicalInputGovernanceEvidence(StrictModel):
+    """Source-bound LF Input Governance receipt fields preserved by the runtime envelope."""
+
+    run_id: int = Field(gt=0)
+    governance_agent_used: Literal["INPUT_GOVERNANCE_AGENT"] = "INPUT_GOVERNANCE_AGENT"
+    governance_version: str = Field(min_length=1, max_length=80)
+    consumer: Literal["CONTEXT_PACK"]
+    sections_consumed: list[str] = Field(min_length=1, max_length=40)
+    source_refs: list[str] = Field(min_length=1, max_length=40)
+    source_snapshot_sha256: str = Field(pattern=SHA256_RE.pattern)
+    contract_snapshot_sha256: str = Field(pattern=SHA256_RE.pattern)
+    currentness: Literal["LIVE_CURRENT"]
+    decision: Literal["PASS"]
+    agent_output_sha256: str | None = Field(default=None, pattern=SHA256_RE.pattern)
+
+
 class InputGovernanceReceipt(StrictModel):
     receipt_ref: str = Field(min_length=1, max_length=500)
     current: bool
@@ -74,6 +91,7 @@ class InputGovernanceReceipt(StrictModel):
     context_sha256: str = Field(pattern=SHA256_RE.pattern)
     context: dict[str, Any]
     status: str = Field(min_length=1, max_length=120)
+    canonical_receipt: CanonicalInputGovernanceEvidence | None = None
 
     @model_validator(mode="after")
     def validate_current_context(self) -> "InputGovernanceReceipt":
@@ -88,12 +106,36 @@ class InputGovernanceReceipt(StrictModel):
 
 class RouterAdapterSource(StrictModel):
     adapter_code: str = Field(pattern=CODE_RE.pattern)
+    adapter_version: str | None = Field(default=None, min_length=1, max_length=120)
     assurance_revision: str = Field(min_length=1, max_length=120)
     activation_source: Literal["ROUTER"]
     binding_ref: str = Field(min_length=1, max_length=500)
     target_ref: str = Field(pattern=CODE_RE.pattern)
     ref: str = Field(min_length=1, max_length=500)
     content: str = Field(min_length=1, max_length=2000)
+
+
+class CardSource(StrictModel):
+    """Bounded JIT Card capsule; content is data/context, not a new runtime authority."""
+
+    card_ref: str = Field(min_length=1, max_length=500)
+    card_version: str = Field(min_length=1, max_length=120)
+    source_ref: str = Field(min_length=1, max_length=500)
+    content_sha256: str = Field(pattern=SHA256_RE.pattern)
+    selected_sections: list[str] = Field(min_length=1, max_length=20)
+    budget_chars: int = Field(gt=0, le=MAX_CARD_CHARS)
+    content: str = Field(min_length=1, max_length=MAX_CARD_CHARS)
+
+    @model_validator(mode="after")
+    def validate_content_binding(self) -> "CardSource":
+        raw = self.content.encode("utf-8")
+        if len(self.content) > self.budget_chars:
+            raise ValueError("LF_CARD_CONTENT_BUDGET_EXCEEDED")
+        if sha256_bytes(raw) != self.content_sha256:
+            raise ValueError("LF_CARD_CONTENT_SHA256_MISMATCH")
+        if len(self.selected_sections) != len(set(self.selected_sections)):
+            raise ValueError("LF_CARD_SELECTED_SECTIONS_DUPLICATE")
+        return self
 
 
 class ProfileTask(StrictModel):
@@ -104,20 +146,33 @@ class ProfileTask(StrictModel):
     profile_source_paths: list[str] = Field(min_length=1, max_length=20)
     input_literal: str = Field(min_length=1, max_length=100_000)
     lf_adapter_sources: list[RouterAdapterSource] = Field(default_factory=list, max_length=4)
+    lf_card_sources: list[CardSource] = Field(default_factory=list, max_length=4)
+    required_card_refs: list[str] = Field(default_factory=list, max_length=4)
     send_image_to_model: bool = False
 
     @model_validator(mode="after")
-    def validate_adapter_targets(self) -> "ProfileTask":
+    def validate_bound_sources(self) -> "ProfileTask":
         expected_code = KNOWN_PROFILE_BINDINGS.get(self.profile_slug)
         if expected_code is not None and self.profile_code != expected_code:
             raise ValueError("PROFILE_SLUG_CODE_BINDING_MISMATCH")
-        seen: set[str] = set()
+        seen_adapters: set[str] = set()
         for item in self.lf_adapter_sources:
             if item.target_ref != self.profile_code:
                 raise ValueError("LF_ADAPTER_TARGET_MISMATCH")
-            if item.adapter_code in seen:
+            if item.adapter_code in seen_adapters:
                 raise ValueError("LF_ADAPTER_DUPLICATE")
-            seen.add(item.adapter_code)
+            seen_adapters.add(item.adapter_code)
+
+        seen_cards: set[str] = set()
+        for item in self.lf_card_sources:
+            if item.card_ref in seen_cards:
+                raise ValueError("LF_CARD_DUPLICATE")
+            seen_cards.add(item.card_ref)
+        if len(self.required_card_refs) != len(set(self.required_card_refs)):
+            raise ValueError("LF_CARD_REQUIRED_REFS_DUPLICATE")
+        missing = sorted(set(self.required_card_refs) - seen_cards)
+        if missing:
+            raise ValueError("LF_CARD_REQUIRED_SOURCE_MISSING:" + ",".join(missing))
         return self
 
 
