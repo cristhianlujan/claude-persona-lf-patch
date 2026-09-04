@@ -16,7 +16,7 @@ jobs:
       - name: Checkout exact source
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 2
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -26,6 +26,39 @@ jobs:
       - name: Run canonical tier self-test
         run: |
           python3 sandbox/lf_contract_gate_test/s28_lf_contract_feedback_tier.py --self-test
+
+      - name: Classify actual pushed surface
+        if: github.event_name == 'push'
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          sys.path.insert(0, str(Path('sandbox/lf_contract_gate_test').resolve()))
+          from s28_lf_contract_feedback_tier import classify
+
+          payload = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text(encoding='utf-8'))
+          before = payload.get('before', '')
+          after = payload.get('after') or os.environ['GITHUB_SHA']
+          if not before or set(before) == {'0'}:
+              raise SystemExit('FAIL_S28_ACTUAL_PUSH_BEFORE_MISSING')
+          probe = subprocess.run(
+              ['git', 'cat-file', '-e', f'{before}^{{commit}}'],
+              stdout=subprocess.DEVNULL,
+              stderr=subprocess.DEVNULL,
+          )
+          if probe.returncode != 0:
+              subprocess.run(['git', 'fetch', '--no-tags', 'origin', before], check=True)
+          raw = subprocess.check_output(['git', 'diff', '--name-only', '-z', before, after, '--'])
+          paths = [item.decode('utf-8', 'strict') for item in raw.split(b'\0') if item]
+          tier, reason = classify(paths)
+          print(f'S28_ACTUAL_PUSH tier={tier} reason={reason} paths={paths}')
+          if tier == 'BLOCK_EARLY':
+              raise SystemExit(f'BLOCK_S28_ACTUAL_PUSH:{reason}')
+          PY
 
       - name: Benchmark tier overhead
         run: |
