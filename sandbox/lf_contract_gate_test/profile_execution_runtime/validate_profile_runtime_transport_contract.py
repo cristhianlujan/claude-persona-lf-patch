@@ -25,6 +25,7 @@ def main() -> int:
 
     required_hardening = (
         "HETZNER_REQUEST_ENVELOPE_REQUIRED_NO_IMPLICIT_GITHUB_FALLBACK",
+        "raise exception using",
         "Default HETZNER",
         "GITHUB_ACTIONS is explicit backup/fallback only",
     )
