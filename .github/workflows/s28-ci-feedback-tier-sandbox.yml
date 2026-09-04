@@ -36,6 +36,135 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Materialize server-derived assurance context for pushed surface
+        id: assurance
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          before="${{ github.event.before }}"
+          if [ -z "$before" ] || [ "$before" = "0000000000000000000000000000000000000000" ]; then
+            before="HEAD^"
+          fi
+          mapfile -t changed < <(git diff --name-only "$before" "$GITHUB_SHA")
+          mapfile -t profiles < <(printf '%s\n' "${changed[@]}" | grep '^profiles/' || true)
+
+          resolved=false
+          main_sha=""
+          risks=()
+
+          if [ "${#profiles[@]}" -gt 0 ]; then
+            if main_json="$(curl -fsS \
+              -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/main")"; then
+              main_sha="$(printf '%s' "$main_json" | jq -r '.sha // empty')"
+            fi
+
+            if [[ ! "$main_sha" =~ ^[0-9a-f]{40}$ ]]; then
+              risks+=("GITHUB_MAIN_REVISION_UNRESOLVED")
+            else
+              targets_ok=true
+              for path in "${profiles[@]}"; do
+                encoded="$(python3 -c 'import sys,urllib.parse; print(urllib.parse.quote(sys.argv[1], safe="/"))' "$path")"
+                if content_json="$(curl -fsS \
+                  -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+                  -H "Accept: application/vnd.github+json" \
+                  "https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/${encoded}?ref=${main_sha}")"; then
+                  blob_sha="$(printf '%s' "$content_json" | jq -r '.sha // empty')"
+                else
+                  blob_sha=""
+                fi
+                if [[ ! "$blob_sha" =~ ^[0-9a-f]{40}$ ]]; then
+                  targets_ok=false
+                  risks+=("GITHUB_CURRENT_TARGET_BLOB_UNRESOLVED:${path}")
+                fi
+              done
+              if [ "$targets_ok" = true ]; then
+                resolved=true
+              fi
+            fi
+
+            # CI currently has no trusted runtime-bound revision source. Fail closed.
+            risks+=("RUNTIME_BOUND_REVISION_UNAVAILABLE")
+          fi
+
+          risks_json="$(printf '%s\n' "${risks[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')"
+          echo "resolved=${resolved}" >> "$GITHUB_OUTPUT"
+          echo "risks_json=${risks_json}" >> "$GITHUB_OUTPUT"
+          echo "main_sha=${main_sha}" >> "$GITHUB_OUTPUT"
+          echo "profile_count=${#profiles[@]}" >> "$GITHUB_OUTPUT"
+          echo "- assurance resolver: \`GITHUB_PUBLIC_API_EXACT_REF_V1\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- assurance profile paths: \`${#profiles[@]}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- assurance context resolved: \`${resolved}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- assurance risks: \`${risks_json}\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Run server-derived currentness canaries
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          target="profiles/quality_pack/SKILL.md"
+          docs_target="docs/standards/LF_PROFILE_PACK_STANDARD_v0.1_CANDIDATO.md"
+
+          main_json="$(curl -fsS \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/main")"
+          main_sha="$(printf '%s' "$main_json" | jq -r '.sha')"
+          [[ "$main_sha" =~ ^[0-9a-f]{40}$ ]]
+
+          encoded="$(python3 -c 'import sys,urllib.parse; print(urllib.parse.quote(sys.argv[1], safe="/"))' "$target")"
+          content_json="$(curl -fsS \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/${encoded}?ref=${main_sha}")"
+          blob_sha="$(printf '%s' "$content_json" | jq -r '.sha')"
+          [[ "$blob_sha" =~ ^[0-9a-f]{40}$ ]]
+
+          clean="$(python3 sandbox/lf_contract_gate_test/s28_ci_feedback_tier.py --server-context-resolved "$target")"
+          CLEAN="$clean" python3 - <<'PY'
+          import json, os
+          d=json.loads(os.environ['CLEAN'])
+          assert d['tier']=='FAST', d
+          assert d['deep_required'] is False, d
+          print('PASS_S28_CANARY_PROFILE_CURRENT_FAST')
+          PY
+
+          commit_json="$(curl -fsS \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/${main_sha}")"
+          stale_bound="$(printf '%s' "$commit_json" | jq -r '.parents[0].sha // empty')"
+          [[ "$stale_bound" =~ ^[0-9a-f]{40}$ ]]
+          [ "$stale_bound" != "$main_sha" ]
+
+          mismatch="$(python3 sandbox/lf_contract_gate_test/s28_ci_feedback_tier.py --server-context-resolved --server-risk SOURCE_RUNTIME_MISMATCH "$target")"
+          MISMATCH="$mismatch" python3 - <<'PY'
+          import json, os
+          d=json.loads(os.environ['MISMATCH'])
+          assert d['tier']=='DEEP', d
+          assert d['reason']=='SERVER_DERIVED_RISK_REQUIRES_DEEP:SOURCE_RUNTIME_MISMATCH', d
+          print('PASS_S28_CANARY_PROFILE_STALE_MISMATCH_DEEP')
+          PY
+
+          docs="$(python3 sandbox/lf_contract_gate_test/s28_ci_feedback_tier.py "$docs_target")"
+          DOCS="$docs" python3 - <<'PY'
+          import json, os
+          d=json.loads(os.environ['DOCS'])
+          assert d['tier']=='FAST', d
+          assert d['deep_required'] is False, d
+          print('PASS_S28_CANARY_DOCS_FAST')
+          PY
+
+          echo "- canary current main: \`${main_sha}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- canary current target blob: \`${blob_sha}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- canary stale bound: \`${stale_bound}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- canaries: profile-current FAST / profile-mismatch DEEP / docs FAST" >> "$GITHUB_STEP_SUMMARY"
+          echo "- note: the stale bound is derived inside the trusted CI step from the exact main parent; it models runtime-stale behavior but is not a production runtime receipt." >> "$GITHUB_STEP_SUMMARY"
+
       - name: Prove fail-closed routing contract
         run: python3 sandbox/lf_contract_gate_test/s28_ci_feedback_tier.py --self-test
 
@@ -57,6 +186,9 @@ jobs:
       - name: Classify exact pushed surface
         id: route
         shell: bash
+        env:
+          SERVER_CONTEXT_RESOLVED: ${{ steps.assurance.outputs.resolved }}
+          SERVER_RISKS_JSON: ${{ steps.assurance.outputs.risks_json }}
         run: |
           set -euo pipefail
           before="${{ github.event.before }}"
@@ -64,7 +196,14 @@ jobs:
             before="HEAD^"
           fi
           mapfile -t changed < <(git diff --name-only "$before" "$GITHUB_SHA")
-          decision="$(python3 sandbox/lf_contract_gate_test/s28_ci_feedback_tier.py "${changed[@]}")"
+          args=()
+          if [ "$SERVER_CONTEXT_RESOLVED" = "true" ]; then
+            args+=(--server-context-resolved)
+          fi
+          while IFS= read -r risk; do
+            [ -n "$risk" ] && args+=(--server-risk "$risk")
+          done < <(printf '%s' "$SERVER_RISKS_JSON" | jq -r '.[]')
+          decision="$(python3 sandbox/lf_contract_gate_test/s28_ci_feedback_tier.py "${args[@]}" "${changed[@]}")"
           echo "$decision"
           DECISION="$decision" python3 - <<'PY'
           import json, os
