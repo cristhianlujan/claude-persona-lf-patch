@@ -233,6 +233,56 @@ class RuntimeOutputModeTest(unittest.TestCase):
         )
         self.assertEqual(utility["status"], "PASS", utility)
 
+    def test_focused_utility_accepts_compact_design_tokens_and_css_values(self) -> None:
+        payload = self.focused_payload()
+        payload.update(
+            {
+                "decision_subject": "search field selection treatment",
+                "selected_visual_type": "check icon",
+                "base_color_or_surface": "primary-600",
+                "size_or_coverage": "button bounds",
+                "density_limits": "1 icon",
+                "depth_style": "0 1px 2px rgba(0,0,0,.08)",
+                "visual_weight": "font-weight 600",
+                "relationship_to_main_element": "beside the search input",
+                "implementation_format": "Tailwind overflow-x-auto utility",
+            }
+        )
+        binding = self.repository.runtime_schema("ui_architect", "UI_FOCUSED_DECISION")
+        gate, parsed = self.gates.contract(
+            profile_slug="ui_architect", raw_output=json.dumps(payload), schema=binding
+        )
+        self.assertEqual(gate["status"], "PASS", gate)
+        utility = self.gates.semantic_utility(
+            profile_slug="ui_architect", payload=parsed, contract_gate=gate
+        )
+        self.assertEqual(utility["status"], "PASS", utility)
+
+    def test_focused_utility_accepts_compact_spanish_design_tokens(self) -> None:
+        payload = self.focused_payload()
+        payload.update(
+            {
+                "decision_subject": "estado del buscador activo",
+                "selected_visual_type": "borde de acento con ícono",
+                "base_color_or_surface": "primario-600",
+                "size_or_coverage": "solo límites del botón",
+                "density_limits": "1 ícono",
+                "depth_style": "sombra 0 1px 2px rgba(0,0,0,.08)",
+                "visual_weight": "peso tipográfico 600",
+                "relationship_to_main_element": "junto al buscador",
+                "implementation_format": "clase CSS .seleccionado en botón",
+            }
+        )
+        binding = self.repository.runtime_schema("ui_architect", "UI_FOCUSED_DECISION")
+        gate, parsed = self.gates.contract(
+            profile_slug="ui_architect", raw_output=json.dumps(payload, ensure_ascii=False), schema=binding
+        )
+        self.assertEqual(gate["status"], "PASS", gate)
+        utility = self.gates.semantic_utility(
+            profile_slug="ui_architect", payload=parsed, contract_gate=gate
+        )
+        self.assertEqual(utility["status"], "PASS", utility)
+
     def test_auto_mode_does_not_weaken_existing_production_validator(self) -> None:
         binding = self.repository.runtime_schema("ui_architect", "AUTO")
         gate, _ = self.gates.contract(
