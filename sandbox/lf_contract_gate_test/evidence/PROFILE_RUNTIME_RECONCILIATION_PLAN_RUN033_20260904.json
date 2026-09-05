@@ -1,0 +1,75 @@
+{
+  "schema_version": "profile-runtime-reconciliation-plan/v1",
+  "execution_id": "GPT-STRATEGY26-AUTO-RUN-20260904-033",
+  "causal_chain_id": "RUN033-CHAIN-RUNTIME-RECON",
+  "current_main_sha": "7b5059fa733016b821a3b0e3112e62c9a9c5e7ca",
+  "source_pr": 478,
+  "source_pr_head": "7b2928c4164a2ace0898a7931d114c2c087ee35c",
+  "reconciliation_branch": "lf/profile-runtime-reconciliation-prep-20260904-run033",
+  "ported_service_commit": "66e4696764c59dce5b4ce86f1068259b500e7edd",
+  "decisions": [
+    {
+      "path": "services/profile_runtime_api/**",
+      "disposition": "PORT_FROM_PR478",
+      "basis": "absent from current main; exact service tree 0710fc288994c39ccfa3b8ac7d07afd009a0f6f7 ported without merge"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/lf_migration_source_parity.py",
+      "disposition": "KEEP_CURRENT_MAIN",
+      "basis": "current main contains newer migration classifications/self-test coverage; branch readback preserves main blob 262514923d1c20ea282fcd8f01b6f8df43f45421"
+    },
+    {
+      "path": "profiles/quality_pack/schemas/runtime_output.schema.json",
+      "disposition": "KEEP_CURRENT_MAIN",
+      "basis": "current main contains stricter blocking_codes outcome constraints; reconciliation branch preserves main lineage"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/profile_execution_runtime/run_zero_cost_profile_request.py",
+      "disposition": "NO_ACTION_IDENTICAL",
+      "basis": "same blob observed in current main and PR478"
+    }
+  ],
+  "source_readback": {
+    "service_engine_blob_on_reconciliation_branch": "5db14f53b8539dab755cb2414cf4fc54ec6f4f86",
+    "service_tree_sha": "0710fc288994c39ccfa3b8ac7d07afd009a0f6f7",
+    "service_tree_contains_tests": true,
+    "service_tree_test_files": [
+      "tests/test_api.py",
+      "tests/test_cache.py",
+      "tests/test_deploy_assets.py",
+      "tests/test_engine.py",
+      "tests/test_llama_structured_output.py",
+      "tests/test_models.py"
+    ]
+  },
+  "test_disposition": {
+    "status": "BLOCKED_CAUSAL",
+    "failure_layer": "CURRENT_EXECUTOR_RUNTIME",
+    "route_a_original": "NO_EXACT_HEAD_CI_RUN_FOR_RECONCILIATION_COMMIT",
+    "route_b_focal_minimal": "SOURCE_AND_BLOB_READBACK_COMPLETED",
+    "route_c_canonical_equivalent": "LOCAL_FOCAL_TEST_ATTEMPT_BLOCKED_BY_NO_DNS_IN_CONTAINER",
+    "route_d_independent_authorized": "NO_OTHER_AUTHORIZED_ZERO_COST_EXECUTION_CHANNEL_OBSERVED",
+    "literal_error": "curl: (6) Could not resolve host: raw.githubusercontent.com",
+    "exhaustion_proof": "exact-head CI absent; current local runtime cannot fetch the source subtree for execution; no merge/deploy/external runner was authorized",
+    "not_claimed": ["TEST_PASS","CI_PASS","DEPLOY_READY"]
+  },
+  "merge_preconditions": [
+    "execute services/profile_runtime_api focal tests against this reconciliation head",
+    "verify no regression against current main contract/migration gates",
+    "review exact branch delta from current main",
+    "obtain explicit merge authorization"
+  ],
+  "deploy_preconditions": [
+    "merge authorization and accepted source lineage",
+    "exact-head focal test evidence",
+    "Hetzner deploy/restart authorization",
+    "rollback/readback plan"
+  ],
+  "safety": {
+    "merge_performed": false,
+    "deploy_performed": false,
+    "restart_performed": false,
+    "ddl_performed": false,
+    "production_modified": false
+  }
+}
