@@ -37,8 +37,19 @@ def attest_p0_visual_test_dependencies(repo_root:Path)->None:
 
 def run_p0_quality_regressions(repo_root:Path)->None:
  attest_p0_visual_test_dependencies(repo_root);p0=repo_root/'sandbox/story_creator_p0_visual/v1.1'
- # Nine historical outer commands are exact children of the unchanged integration
- # verifier. Execute every unique validation once and assert its 23/23 child matrix.
+ delegated_child_gates=(
+  'evals/p0_machine_visual_quality_negative_suite.py',
+  'scripts/validate_p0_human_binding.py',
+  'evals/p0_machine_visual_quality_negative_suite_v2.py',
+  'evals/p0_visual_quality_runtime_regression_suite.py',
+  'evals/p0_blind_forward_adversarial_test.py',
+  'scripts/validate_p0_v3_schemas.py',
+  'evals/p0_visual_fidelity_v3_suite.py',
+  'evals/p0_visual_fidelity_forward_adversarial_v3.py',
+  'scripts/verify_p0_v3_manifest.py',
+ )
+ # The unchanged integration verifier executes the nine gates above as part of its
+ # 23-gate matrix. Assert their exact successful presence instead of executing them twice.
  commands:list[tuple[str,list[str]]]=[
   ('legacy-integration-verifier',[sys.executable,str(p0/'scripts/verify_p0_integration_candidate.py')]),
   ('v3-premerge-compliance',[sys.executable,str(p0/'scripts/audit_p0_handoff_v3_compliance.py'),'--phase','premerge']),
@@ -69,7 +80,10 @@ def run_p0_quality_regressions(repo_root:Path)->None:
     except json.JSONDecodeError:pass
    gates=report.get('gate_results') if isinstance(report,dict) else None
    if report is None or report.get('result')!='PASS_WITH_EVIDENCE' or not isinstance(gates,list) or len(gates)!=23 or any(not isinstance(row,dict) or row.get('exit_code')!=0 for row in gates):raise SystemExit('FAIL_P0_INTEGRATION_GATE_MATRIX')
-   print('PASS_P0_INTEGRATION_GATE_MATRIX=23/23')
+   passed_gate_names={str(row.get('gate')) for row in gates if isinstance(row,dict) and row.get('exit_code')==0}
+   missing_delegated=sorted(set(delegated_child_gates)-passed_gate_names)
+   if missing_delegated:raise SystemExit('FAIL_P0_DELEGATED_GATE_COVERAGE='+json.dumps(missing_delegated))
+   print('PASS_P0_INTEGRATION_GATE_MATRIX=23/23');print('PASS_P0_DELEGATED_DUPLICATE_GATES=9/9')
  snapshot_dir=evidence_dir/'runtime-snapshot';snapshot_dir.mkdir(parents=True,exist_ok=True)
  for rel in ('scripts/p0_visual_fidelity_v3.py','scripts/run_p0_visual_fidelity_v3_private.py','evals/p0-visual-fidelity-runtime-config-v3.json','manifest.visual-fidelity-v3.json'):shutil.copy2(p0/rel,snapshot_dir/Path(rel).name)
  print('PASS_P0_V3_RUNTIME_SNAPSHOT=4_PUBLIC_REPO_FILES');print(f'PASS_P0_VISUAL_QUALITY_ORCHESTRATION={len(commands)}/{len(commands)}');print('PASS_P0_VISUAL_QUALITY_VALIDATION_UNITS=36/36')
@@ -98,16 +112,15 @@ def main()->int:
  print('PASS_P0_SIBLING_DEFAULT_DENY')
  if candidate.is_allowed_path('sandbox/story_creator_p0_visual_evil/v1.1/file.json'):raise SystemExit('P0_PREFIX_BOUNDARY: lookalike P0 prefix was allowed')
  print('PASS_P0_PREFIX_BOUNDARY')
- if candidate.evaluate_controlled_runtime_scope([edge],branch=candidate.PR_BRANCH,blob_by_path=exact_blobs,mode_by_path=exact_modes) is not True:raise SystemExit('FAIL_PR_BRANCH_EXACT');print('PASS_PR_BRANCH_EXACT')
- if candidate.evaluate_controlled_runtime_scope([config],branch=candidate.PR_BRANCH,blob_by_path=exact_blobs,mode_by_path=exact_modes) is not True:raise SystemExit('FAIL_PLATFORM_CONFIG_EXACT');print('PASS_PLATFORM_CONFIG_EXACT')
- if candidate.evaluate_controlled_runtime_scope([reconcile],branch=candidate.PR_BRANCH,blob_by_path=exact_blobs,mode_by_path=exact_modes) is not True:raise SystemExit('FAIL_RECONCILE_RUNTIME_EXACT')
+ assert candidate.evaluate_controlled_runtime_scope([edge],branch=candidate.PR_BRANCH,blob_by_path=exact_blobs,mode_by_path=exact_modes) is True;print('PASS_PR_BRANCH_EXACT')
+ assert candidate.evaluate_controlled_runtime_scope([config],branch=candidate.PR_BRANCH,blob_by_path=exact_blobs,mode_by_path=exact_modes) is True;print('PASS_PLATFORM_CONFIG_EXACT')
+ assert candidate.evaluate_controlled_runtime_scope([reconcile],branch=candidate.PR_BRANCH,blob_by_path=exact_blobs,mode_by_path=exact_modes) is True
  repo_root=Path(__file__).resolve().parents[2];reconcile_source=(repo_root/reconcile).read_text(encoding='utf-8');reconcile_workflow=(repo_root/'.github/workflows/lf-github-reconcile-v3.yml').read_text(encoding='utf-8');required_solo_builder_terms=('c.solo_builder_review_policy === true','solo_builder_review_policy: soloBuilderReviewPolicy','required_approving_review_count: 0');combined_reconcile_contract=reconcile_source+'\n'+reconcile_workflow;missing_solo_builder_terms=[term for term in required_solo_builder_terms if term not in combined_reconcile_contract]
  if missing_solo_builder_terms:raise SystemExit(f'RECONCILE_CANONICAL_EXACT: solo-builder contract incomplete: {missing_solo_builder_terms}')
  if 'c.approving_reviews === true' in reconcile_source:raise SystemExit('RECONCILE_CANONICAL_EXACT: legacy human-review gate is still active')
  print('PASS_RECONCILE_CANONICAL_EXACT')
- if candidate.evaluate_controlled_runtime_scope([edge],branch=candidate.MAIN_BRANCH,blob_by_path=exact_blobs,mode_by_path=exact_modes,main_merge_verified=True) is not True:raise SystemExit('FAIL_MAIN_VERIFIED');print('PASS_MAIN_VERIFIED')
+ assert candidate.evaluate_controlled_runtime_scope([edge],branch=candidate.MAIN_BRANCH,blob_by_path=exact_blobs,mode_by_path=exact_modes,main_merge_verified=True) is True;print('PASS_MAIN_VERIFIED')
  expect_error('MAIN_NOT_MERGED','FAIL_RUNTIME_MAIN_NOT_MERGED',[edge],branch=candidate.MAIN_BRANCH,blobs=exact_blobs,modes=exact_modes);expect_error('ARBITRARY_BRANCH','FAIL_RUNTIME_BRANCH_MISMATCH',[edge],branch='feature/arbitrary',blobs=exact_blobs,modes=exact_modes);expect_error('MISSING_MIGRATION','FAIL_RUNTIME_MIGRATION_PAIR_MISSING',[alert],branch=candidate.PR_BRANCH,blobs=exact_blobs,modes=exact_modes);expect_error('EXTRA_EDGE','FAIL_RUNTIME_EDGE_SCOPE',[edge,'supabase/functions/other/index.ts'],branch=candidate.PR_BRANCH,blobs=exact_blobs,modes=exact_modes)
  wrong_blob=dict(exact_blobs);wrong_blob[edge]='0'*40;expect_error('WRONG_BLOB','FAIL_RUNTIME_BLOB_MISMATCH',[edge],branch=candidate.PR_BRANCH,blobs=wrong_blob,modes=exact_modes);wrong_config_blob=dict(exact_blobs);wrong_config_blob[config]='0'*40;expect_error('WRONG_PLATFORM_CONFIG','FAIL_RUNTIME_BLOB_MISMATCH',[config],branch=candidate.PR_BRANCH,blobs=wrong_config_blob,modes=exact_modes);missing_blob=dict(exact_blobs);del missing_blob[edge];expect_error('MISSING_BLOB','FAIL_RUNTIME_BLOB_UNRESOLVED',[edge],branch=candidate.PR_BRANCH,blobs=missing_blob,modes=exact_modes);symlink_modes=dict(exact_modes);symlink_modes[edge]='120000';expect_error('SYMLINK','FAIL_RUNTIME_FILE_MODE',[edge],branch=candidate.PR_BRANCH,blobs=exact_blobs,modes=symlink_modes);expect_error('TRAVERSAL','FAIL_RUNTIME_PATH_INVALID',['supabase/functions/../other/index.ts'],branch=candidate.PR_BRANCH,blobs=exact_blobs,modes=exact_modes);expect_error('UNICODE','FAIL_RUNTIME_PATH_INVALID',['supabase/functions/run-github-write-perfil-lf/índex.ts'],branch=candidate.PR_BRANCH,blobs=exact_blobs,modes=exact_modes);expect_error('RENAME','FAIL_RUNTIME_EDGE_SCOPE',['supabase/functions/run-github-write-perfil-lf/renamed.ts'],branch=candidate.PR_BRANCH,blobs=exact_blobs,modes=exact_modes)
- if candidate.evaluate_controlled_runtime_scope([alert,migration],branch=candidate.PR_BRANCH,blob_by_path=exact_blobs,mode_by_path=exact_modes) is not True:raise SystemExit('FAIL_ALERT_PAIR')
- print('PASS_ALERT_PAIR');print('PASS_PR93_P0_RUNTIME_SCOPE_MATRIX=20/20');run_p0_quality_regressions(repo_root);run_functional_red_team_regression(repo_root);return 0
+ assert candidate.evaluate_controlled_runtime_scope([alert,migration],branch=candidate.PR_BRANCH,blob_by_path=exact_blobs,mode_by_path=exact_modes) is True;print('PASS_ALERT_PAIR');print('PASS_PR93_P0_RUNTIME_SCOPE_MATRIX=20/20');run_p0_quality_regressions(repo_root);run_functional_red_team_regression(repo_root);return 0
 if __name__=='__main__':raise SystemExit(main())
