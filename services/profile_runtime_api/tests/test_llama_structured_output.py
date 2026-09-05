@@ -98,6 +98,13 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
             "required": ["decision_subject", "hard_exclusions", "status"],
             "properties": {
                 "decision_subject": {"type": "string", "minLength": 3},
+                "selected_visual_type": {"type": "string", "minLength": 3},
+                "size_or_coverage": {"type": "string", "minLength": 3},
+                "density_limits": {"type": "string", "minLength": 3},
+                "depth_style": {"type": "string", "minLength": 3},
+                "visual_weight": {"type": "string", "minLength": 3},
+                "relationship_to_main_element": {"type": "string", "minLength": 3},
+                "implementation_format": {"type": "string", "minLength": 3},
                 "short_generator_prompt": {"type": "string", "minLength": 3},
                 "hard_exclusions": {
                     "type": "array",
@@ -123,6 +130,15 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         generated = client.last_payload["response_format"]["schema"]
         self.assertEqual(generated["properties"]["decision_subject"]["maxLength"], 160)
         self.assertEqual(generated["properties"]["short_generator_prompt"]["maxLength"], 240)
+        self.assertEqual(generated["properties"]["selected_visual_type"]["minLength"], 18)
+        self.assertEqual(generated["properties"]["size_or_coverage"]["minLength"], 12)
+        self.assertEqual(generated["properties"]["density_limits"]["minLength"], 12)
+        self.assertEqual(generated["properties"]["depth_style"]["minLength"], 12)
+        self.assertEqual(generated["properties"]["visual_weight"]["minLength"], 16)
+        self.assertEqual(
+            generated["properties"]["relationship_to_main_element"]["minLength"], 20
+        )
+        self.assertEqual(generated["properties"]["implementation_format"]["minLength"], 16)
         self.assertEqual(generated["properties"]["hard_exclusions"]["maxItems"], 4)
         self.assertEqual(
             generated["properties"]["hard_exclusions"]["items"]["maxLength"], 120
