@@ -1,0 +1,121 @@
+{
+  "schema": "LF_PROFILE_RUNTIME_STATE_TRANSITION_CONTRACT_V1_1",
+  "operation_code": "TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF",
+  "status": "CONTROLLED_ONE_SHOT_CANDIDATE",
+  "authority": {
+    "router": "ACT-0001",
+    "operational_source": "public.v_lf_fuente_operativa",
+    "state_catalog": "public.cat_estado_normalizacion_lf",
+    "lifecycle_policy": "POL-LF-OPERATION-LIFECYCLE",
+    "state_model_policy": "POL-LF-STATE-MODEL"
+  },
+  "transition": {
+    "from": {
+      "estado_original": "CANDIDATE_READ_ONLY",
+      "estado_documental": "CANDIDATO",
+      "estado_operativo": "READ_ONLY",
+      "nivel_control": "PROFILE_REGISTRY",
+      "runtime_estado": "NO_HABILITADO",
+      "impacto_automatico": "BLOQUEADO"
+    },
+    "to": {
+      "estado_original": "CANDIDATO_CONTROLADO_READ_ONLY",
+      "estado_documental": "CANDIDATO",
+      "estado_operativo": "READ_ONLY",
+      "nivel_control": "CONTROLADO",
+      "runtime_estado": "CANDIDATE_READ_ONLY",
+      "impacto_automatico": "BLOQUEADO"
+    },
+    "authorized_changed_fields": [
+      "estado_original",
+      "nivel_control",
+      "runtime_estado"
+    ],
+    "preserved_fields": [
+      "estado_documental",
+      "estado_operativo",
+      "impacto_automatico"
+    ],
+    "single_target_only": true,
+    "reversible": true
+  },
+  "authorization": {
+    "mode": "EXPLICIT_OWNER_ONE_SHOT_REQUIRED",
+    "persistent_write_executor": false,
+    "automatic_reuse_authorized": false
+  },
+  "prohibitions": [
+    "DIRECT_PROFILE_STATE_UPDATE_OUTSIDE_OPERATION",
+    "MASS_TRANSITION",
+    "UNDECLARED_STATE_FIELD_CHANGE",
+    "AUTOMATIC_IMPACT_CHANGE",
+    "PRODUCTION_ENABLEMENT",
+    "RUNTIME_OPERATIVO_TARGET",
+    "GITHUB_WRITE",
+    "AUTOMATIC_PROMOTION",
+    "R4_SELF_ATTESTATION"
+  ],
+  "steps": [
+    {
+      "step_order": 10,
+      "step_id": "router",
+      "required_evidence": ["router_read", "profile_code"],
+      "pass_if": {"router": "ACT-0001", "single_profile_resolved": true},
+      "fail_if": ["AMBIGUOUS_PROFILE", "MISSING_PROFILE", "ROUTER_NOT_ACT0001"]
+    },
+    {
+      "step_order": 20,
+      "step_id": "source_state_read",
+      "required_evidence": ["source_state"],
+      "pass_if": {"source_state_equals_contract_from": true},
+      "fail_if": ["SOURCE_STATE_DRIFT", "UNKNOWN_STATE_DIMENSION"]
+    },
+    {
+      "step_order": 30,
+      "step_id": "target_state_validate",
+      "required_evidence": ["target_state_catalog_match"],
+      "pass_if": {"target_state_equals_contract_to": true, "catalog_row_exactly_one": true},
+      "fail_if": ["TARGET_STATE_UNREGISTERED", "TARGET_STATE_AMBIGUOUS", "IMPACT_CHANGE"]
+    },
+    {
+      "step_order": 40,
+      "step_id": "controlled_write",
+      "required_evidence": ["transition_receipt", "before_state", "after_state", "changed_fields"],
+      "pass_if": {
+        "single_target": true,
+        "only_authorized_state_tuple_delta": true,
+        "changed_fields_exact": ["estado_original", "nivel_control", "runtime_estado"],
+        "preserved_fields_exact": ["estado_documental", "estado_operativo", "impacto_automatico"],
+        "runtime_estado": "CANDIDATE_READ_ONLY",
+        "impacto_automatico": "BLOQUEADO"
+      },
+      "fail_if": ["MASS_TRANSITION", "UNDECLARED_STATE_FIELD_CHANGE", "IMPACT_CHANGE", "PRODUCTION_ENABLEMENT", "RUNTIME_OPERATIVO_TARGET", "UNBOUND_TARGET"]
+    },
+    {
+      "step_order": 50,
+      "step_id": "readback",
+      "required_evidence": ["exact_state_readback", "router_post_transition_readback", "automatic_impact_still_blocked"],
+      "pass_if": {
+        "same_target": true,
+        "estado_original": "CANDIDATO_CONTROLADO_READ_ONLY",
+        "nivel_control": "CONTROLADO",
+        "runtime_estado": "CANDIDATE_READ_ONLY",
+        "impacto_automatico": "BLOQUEADO"
+      },
+      "fail_if": ["READBACK_MISMATCH", "AUTOMATIC_IMPACT_ENABLED", "PRODUCTION_PROMOTION"]
+    }
+  ],
+  "negative_cases": [
+    "WRONG_SOURCE_STATE",
+    "UNREGISTERED_TARGET_STATE",
+    "MASS_TRANSITION",
+    "UNDECLARED_STATE_FIELD_CHANGE",
+    "IMPACT_CHANGE",
+    "PRODUCTION_READ_ONLY_TARGET",
+    "RUNTIME_OPERATIVO_TARGET"
+  ],
+  "persistent_write_executor": "ABSENT",
+  "automatic_impact_authorized": false,
+  "production_authorized": false,
+  "r4_authorized": false
+}
