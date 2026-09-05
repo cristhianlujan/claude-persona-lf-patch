@@ -6,6 +6,7 @@ belongs to the workflow environment and must happen before this script runs.
 """
 from __future__ import annotations
 import importlib.metadata as md,json,os,shutil,subprocess,sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT as candidate
 sys.dont_write_bytecode=True
@@ -63,12 +64,17 @@ def run_p0_quality_regressions(repo_root:Path)->None:
  ]
  evidence_dir=repo_root/'.audit-output/creating-integral-user-stories/p0-v3';evidence_dir.mkdir(parents=True,exist_ok=True);env=os.environ.copy()
  if env.get('P0_CI_ENGINEERING_REGRESSION') is not None:raise SystemExit('FAIL_P0_CI_ENGINEERING_REGRESSION_OVERRIDE_FORBIDDEN')
- for label,command in commands:
-  completed=subprocess.run(command,cwd=repo_root,text=True,capture_output=True,check=False,env=env);output=(completed.stdout or '')+(('\nSTDERR:\n'+completed.stderr) if completed.stderr else '');(evidence_dir/f'{label}.log').write_text(output,encoding='utf-8')
+ def run_one(item:tuple[str,list[str]]):
+  label,command=item;completed=subprocess.run(command,cwd=repo_root,text=True,capture_output=True,check=False,env=env);output=(completed.stdout or '')+(("\nSTDERR:\n"+completed.stderr) if completed.stderr else '');return label,command,completed,output
+ with ThreadPoolExecutor(max_workers=2,thread_name_prefix='p0-quality') as pool:
+  results=list(pool.map(run_one,commands))
+ for label,command,completed,output in results:
+  (evidence_dir/f'{label}.log').write_text(output,encoding='utf-8')
   if completed.stdout:print(completed.stdout.rstrip())
   if completed.returncode!=0:
    if completed.stderr:print(completed.stderr.rstrip(),file=sys.stderr)
    raise SystemExit(f"P0_VISUAL_QUALITY_REGRESSION_FAILED[{label}]: {' '.join(command)}")
+ print('PASS_P0_VISUAL_QUALITY_BOUNDED_PARALLELISM=2')
  snapshot_dir=evidence_dir/'runtime-snapshot';snapshot_dir.mkdir(parents=True,exist_ok=True)
  for rel in ('scripts/p0_visual_fidelity_v3.py','scripts/run_p0_visual_fidelity_v3_private.py','evals/p0-visual-fidelity-runtime-config-v3.json','manifest.visual-fidelity-v3.json'):shutil.copy2(p0/rel,snapshot_dir/Path(rel).name)
  print('PASS_P0_V3_RUNTIME_SNAPSHOT=4_PUBLIC_REPO_FILES');print(f'PASS_P0_VISUAL_QUALITY_REGRESSIONS={len(commands)}/{len(commands)}')
