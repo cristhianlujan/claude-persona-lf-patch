@@ -1,0 +1,109 @@
+version: v4
+status: CANDIDATE_READ_ONLY
+operation_code: ORQUESTACION_PIPELINE_LF
+source_main: 17903f544c5e53e1d94b08664a4fb6704c0dc087
+canonical_skill:
+  path: skills/orquestador_pipeline_lf/SKILL.md
+  blob_sha: 3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495
+  state: PROD_CONTROLADA_READ_ONLY
+principles:
+  deterministic_first: true
+  llm_required: false
+  automatic_impact: false
+  production_authorized: false
+  exact_contract_binding_required: true
+  contradictory_contract_fail_closed: true
+  material_runtime_evidence_only: true
+  synthetic_next_action_forbidden: true
+  source_precedence: CANONICAL_SKILL_PLUS_LIVE_STEP_CONTRACT
+ready_to_bind:
+  - step_order: 5
+    step_id: init_execution
+    judge_code: MINI_JUDGE_ACT0058_INIT_EXECUTION
+    required_evidence_keys: []
+    pass_if: [operation_execution_exists, operation_code_matches, status_in_progress]
+    fail_if: [execution_missing, operation_code_mismatch, status_not_in_progress]
+    result_values: [EXECUTION_INITIALIZED, BLOCKED]
+  - step_order: 20
+    step_id: init_run
+    judge_code: MINI_JUDGE_ACT0058_INIT
+    required_evidence_keys: [pipeline_run_id, source_url, dedup_check]
+    pass_if: [pipeline_run_created, source_url_nonempty, dedup_24h_clear, stage_current_captura]
+    fail_if: [source_url_empty, completed_duplicate_within_24h, pipeline_run_missing]
+    result_values: [RUN_INITIALIZED, DEDUP_BLOCKED, BLOCKED]
+  - step_order: 30
+    step_id: scope_filter
+    judge_code: MINI_JUDGE_ACT0058_SCOPE
+    required_evidence_keys: [source_url, domain_matched]
+    pass_if: [source_domain_allowed]
+    fail_if: [source_domain_out_of_scope]
+    result_values: [SCOPE_ALLOWED, OUT_OF_SCOPE]
+  - step_order: 50
+    step_id: stage_captura
+    judge_code: MINI_JUDGE_ACT0058_CAPTURA
+    required_evidence_keys: [capture_run_id, capture_status_completed]
+    pass_if: [capture_run_id_present, capture_status_completed]
+    fail_if: [capture_run_id_missing, capture_status_not_completed]
+    result_values: [CAPTURE_COMPLETED, CAPTURE_BLOCKED]
+  - step_order: 60
+    step_id: stage_homolog
+    judge_code: MINI_JUDGE_ACT0058_HOMOLOG
+    required_evidence_keys: [homolog_record_id, homolog_status_aprobado]
+    pass_if: [homolog_record_id_present, homolog_status_aprobado]
+    fail_if: [homolog_record_id_missing, homolog_status_rejected_or_null]
+    result_values: [HOMOLOG_APPROVED, HOMOLOG_BLOCKED]
+  - step_order: 70
+    step_id: stage_analisis
+    judge_code: MINI_JUDGE_ACT0058_ANALISIS
+    required_evidence_keys: [decision_id, risk_level, consumer_gate_passed]
+    pass_if: [decision_id_present, consumer_gate_passed_true]
+    fail_if: [decision_id_missing, consumer_gate_not_passed]
+    result_values: [ANALYSIS_ALLOWED, ANALYSIS_BLOCKED]
+  - step_order: 90
+    step_id: stage_kb_write
+    judge_code: MINI_JUDGE_ACT0058_KB_WRITE
+    required_evidence_keys: [kb_id, consumer_gate_passed, hitl_triggered]
+    pass_if: [kb_id_present, consumer_gate_passed_true, hitl_triggered_false]
+    fail_if: [consumer_gate_not_passed, hitl_triggered_true, kb_id_missing]
+    result_values: [KB_WRITE_CONFIRMED, KB_WRITE_BLOCKED]
+  - step_order: 100
+    step_id: completed
+    judge_code: MINI_JUDGE_ACT0058_COMPLETED
+    required_evidence_keys: [stage_completed, evento_id]
+    pass_if: [stage_completed, closing_event_present]
+    fail_if: [pipeline_update_failed, closing_event_missing]
+    result_values: [COMPLETED_CONFIRMED, COMPLETION_BLOCKED]
+  - step_order: 105
+    step_id: restock_queue
+    judge_code: MINI_JUDGE_ACT0058_RESTOCK
+    required_evidence_keys: [urls_insertadas, urls_duplicadas, source_queries]
+    source_resolution:
+      live_contract_conflict: pass_condition_urls_insertadas_gte_1_vs_NO_NEW_URLS_SKIP_RESTOCK
+      canonical_skill_rule: if_fewer_than_5_new_urls_register_WARN_without_failing_batch
+    pass_if: [restock_attempt_recorded, dedup_performed, urls_insertadas_gte_1]
+    no_op_if: [restock_attempt_recorded, dedup_performed, urls_insertadas_eq_0, warn_event_recorded]
+    fail_if: [restock_attempt_missing, dedup_not_performed]
+    result_values: [RESTOCK_COMPLETED, RESTOCK_NOOP_WARN, RESTOCK_BLOCKED]
+  - step_order: 110
+    step_id: failed_retry
+    judge_code: MINI_JUDGE_ACT0058_RETRY
+    required_evidence_keys: [retry_count, error_detail, stage_status]
+    source_resolution:
+      live_contract_conflict: block_condition_retry_gt_3_vs_execution_sql_gte_3
+      canonical_skill_rule: retry_count_reaches_3_marks_FAILED_and_continues_next_url
+      runtime_evidence_contract: update_returns_retry_count_stage_status_error_detail
+    pass_if: [retry_count_after_update_lt_3, stage_status_pending]
+    terminal_if: [retry_count_after_update_gte_3, stage_status_failed]
+    fail_if: [retry_count_after_update_gte_3, stage_status_not_failed]
+    result_values: [RETRY_ALLOWED, RETRY_TERMINAL_FAILED, RETRY_BLOCKED]
+source_reconciliation_required:
+  step_orders: [105, 110]
+  action: reconcile_live_step_contract_text_with_canonical_skill_before_active_binding
+  scope: SOURCE_FIRST_NO_DB_WRITE
+summary:
+  live_active_steps: 14
+  existing_active_bindings: 4
+  missing_bindings: 10
+  required_missing_bindings: 9
+  ready_to_bind: 10
+  source_reconciliation_required: 2
