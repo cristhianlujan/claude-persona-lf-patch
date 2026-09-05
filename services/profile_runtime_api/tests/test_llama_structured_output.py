@@ -71,10 +71,14 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         assert client.last_payload is not None
         self.assertNotIn("response_format", client.last_payload)
 
-    def test_other_profiles_keep_existing_schema_constrained_generation(self) -> None:
+    def test_other_profiles_use_pinned_llama_schema_constrained_shape(self) -> None:
         client = self.call('{"ok":true}', profile_slug="quality_pack")
         assert client.last_payload is not None
         self.assertEqual(
+            client.last_payload["response_format"],
+            {"type": "json_object", "schema": self.schema},
+        )
+        self.assertNotEqual(
             client.last_payload["response_format"],
             {"type": "json_schema", "schema": self.schema},
         )
