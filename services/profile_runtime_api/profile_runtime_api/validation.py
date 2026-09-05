@@ -29,6 +29,167 @@ def strict_json_object(raw_output: Any) -> tuple[dict[str, Any] | None, list[str
     return payload, []
 
 
+def _ui_focused_semantic_v3_errors(values: dict[str, str]) -> list[str]:
+    """General field-semantic hardening for Focused UI Decision.
+
+    Strategy 26: deterministic, bilingual, and independent from one concrete UI defect.
+    The canonical schema remains unchanged; this only rejects semantically weak PASSes.
+    """
+    import re
+
+    errors: list[str] = []
+
+    def has_any(value: str, markers: tuple[str, ...]) -> bool:
+        return any(marker in value for marker in markers)
+
+    def tokens(value: str) -> list[str]:
+        return re.findall(r"[a-záéíóúüñ0-9#%+_-]+", value.lower())
+
+    subject = values.get("decision_subject", "")
+    selected = values.get("selected_visual_type", "")
+    generic_subjects = {
+        "ui decision", "visual decision", "design decision", "interface decision",
+        "ui treatment", "decisión ui", "decision ui", "decisión visual",
+        "decision visual", "decisión de diseño", "decision de diseño",
+        "tratamiento ui",
+    }
+    treatment_markers = (
+        "affordance", "indicator", "cue", "icon", "outline", "border",
+        "gradient", "fade", "shadow", "sticky", "divider", "badge",
+        "highlight", "label", "tooltip", "scrollbar", "scroll bar",
+        "handle", "rail", "tab", "chip", "card", "button", "link",
+        "spacing", "layout", "alignment", "animation", "transition",
+        "indicador", "señal", "icono", "ícono", "contorno", "borde",
+        "gradiente", "sombra", "fijo", "divisor", "etiqueta", "resaltado",
+        "barra", "desplazamiento", "tarjeta", "botón", "boton", "enlace",
+        "espaciado", "alineación", "alineacion", "animación", "animacion",
+        "transición", "transicion",
+    )
+    if subject in generic_subjects:
+        errors.append("UI_FOCUSED_DECISION_SUBJECT_NON_CONCRETE")
+    if selected and subject and (selected == subject or selected in subject):
+        errors.append("UI_FOCUSED_SELECTED_TREATMENT_RESTATES_SUBJECT")
+    if selected and len(tokens(selected)) < 3 and not has_any(selected, treatment_markers):
+        errors.append("UI_FOCUSED_SELECTED_TREATMENT_NON_CONCRETE")
+
+    surface = values.get("base_color_or_surface", "")
+    surface_markers = (
+        "#", "rgb", "hsl", "var(", "token", "surface", "background",
+        "transparent", "white", "black", "neutral", "gray", "grey",
+        "card", "panel", "canvas", "existing", "color", "superficie",
+        "fondo", "transparente", "blanco", "negro", "neutro", "gris",
+        "tarjeta", "existente",
+    )
+    if surface and not has_any(surface, surface_markers):
+        errors.append("UI_FOCUSED_BASE_SURFACE_NON_CONCRETE")
+
+    coverage = values.get("size_or_coverage", "")
+    coverage_markers = (
+        "only", "edge", "viewport", "region", "area", "component", "screen",
+        "card", "table", "row", "column", "header", "footer", "panel",
+        "section", "container", "boundary", "width", "height", "full", "%",
+        "px", "solo", "borde", "región", "área", "componente", "pantalla",
+        "tarjeta", "tabla", "fila", "columna", "encabezado", "pie", "sección",
+        "seccion", "contenedor", "límite", "limite", "ancho", "alto", "completo",
+    )
+    if coverage and not has_any(coverage, coverage_markers):
+        errors.append("UI_FOCUSED_SIZE_OR_COVERAGE_SCOPE_MISSING")
+
+    density = values.get("density_limits", "")
+    density_markers = (
+        "one", "single", "two", "three", " per ", "max", "maximum", "only",
+        "no more", "at most", "limit", "count", "layer", "line", "element",
+        "cue", "viewport", "item", "%", "px", "uno", "una", "dos", "tres",
+        " por ", "máximo", "maximo", "solo", "sola", "no más", "no mas",
+        "como máximo", "como maximo", "límite", "limite", "cantidad", "capa",
+        "línea", "linea", "elemento", "señal", "indicador",
+    )
+    if density:
+        if re.fullmatch(r"\d+(?:\.\d+)?", density):
+            errors.append("UI_FOCUSED_DENSITY_LIMITS_NUMERIC_ONLY")
+        elif not has_any(f" {density} ", density_markers):
+            errors.append("UI_FOCUSED_DENSITY_LIMITS_NON_CONCRETE_V3")
+
+    depth = values.get("depth_style", "")
+    depth_markers = (
+        "elevation", "shadow", "flat", "depth", "layer", "raised", "inset",
+        "border", "z-", "no added", "none", "elevación", "elevacion", "sombra",
+        "plano", "profundidad", "capa", "elevado", "borde", "sin elevación",
+        "sin elevacion", "sin sombra",
+    )
+    if depth and (
+        not has_any(depth, depth_markers)
+        or (len(tokens(depth)) < 2 and depth not in {"flat", "none", "plano"})
+    ):
+        errors.append("UI_FOCUSED_DEPTH_STYLE_NON_CONCRETE")
+
+    weight = values.get("visual_weight", "")
+    weight_markers = (
+        "primary", "secondary", "tertiary", "hierarchy", "prominence", "opacity",
+        "contrast", "relative", "subordinate", "dominant", "less than", "more than",
+        "%", "primario", "secundario", "terciario", "jerarquía", "jerarquia",
+        "prominencia", "opacidad", "contraste", "relativo", "subordinado",
+        "dominante", "menos que", "más que", "mas que",
+    )
+    if weight and (not has_any(weight, weight_markers) or len(tokens(weight)) < 2):
+        errors.append("UI_FOCUSED_VISUAL_WEIGHT_NON_CONCRETE")
+
+    relationship = values.get("relationship_to_main_element", "")
+    relation_markers = (
+        "support", "without", "relative", "adjacent", "inside", "within", "before",
+        "after", "below", "above", "next to", "around", "aligned", "anchored",
+        "attached", "preserve", "competing", "replacing", "does not", "soporta",
+        "apoya", "sin", "relativo", "adyacente", "dentro", "antes", "después",
+        "despues", "debajo", "encima", "junto", "alrededor", "alineado",
+        "anclado", "adjunto", "preserva", "compite", "reemplaza", "no ",
+    )
+    ui_targets = (
+        "table", "content", "action", "cta", "control", "card", "component",
+        "element", "navigation", "header", "row", "button", "field", "primary",
+        "main", "selector", "tab", "panel", "tabla", "contenido", "acción",
+        "accion", "tarjeta", "componente", "elemento", "navegación", "navegacion",
+        "encabezado", "fila", "botón", "boton", "campo", "primario", "principal",
+    )
+    if relationship and not (has_any(relationship, relation_markers) and has_any(relationship, ui_targets)):
+        errors.append("UI_FOCUSED_RELATIONSHIP_NON_CONCRETE")
+
+    implementation = values.get("implementation_format", "")
+    implementation_markers = (
+        "css", "svg", "token", "component", "asset", "layout", "html",
+        "javascript", "typescript", "tailwind", "class", "pseudo-element", "style",
+        "gradient", "border", "shadow", "icon", "componente", "recurso", "clase",
+        "pseudo-elemento", "estilo", "gradiente", "borde", "sombra", "icono", "ícono",
+    )
+    implementation_targets = (
+        "card", "table", "component", "token", "icon", "viewport", "header",
+        "row", "field", "button", "tab", "panel", "container", "selector", "cue",
+        "edge", "rule", "tarjeta", "tabla", "componente", "icono", "ícono",
+        "encabezado", "fila", "campo", "botón", "boton", "contenedor", "señal",
+        "borde", "regla",
+    )
+    if implementation and not (
+        has_any(implementation, implementation_markers)
+        and has_any(implementation, implementation_targets)
+        and len(tokens(implementation)) >= 3
+    ):
+        errors.append("UI_FOCUSED_IMPLEMENTATION_FORMAT_NON_CONCRETE_V3")
+
+    seen: dict[str, str] = {}
+    for key in (
+        "selected_visual_type", "size_or_coverage", "density_limits", "depth_style",
+        "visual_weight", "relationship_to_main_element", "implementation_format",
+    ):
+        value = values.get(key, "")
+        if not value:
+            continue
+        if value in seen:
+            errors.append("UI_FOCUSED_CROSS_FIELD_DUPLICATION")
+            break
+        seen[value] = key
+
+    return sorted(set(errors))
+
+
 class OutputGates:
     def __init__(self, repository: RepositoryBindings) -> None:
         self.repository = repository
@@ -171,12 +332,17 @@ class OutputGates:
                 density_markers = (
                     "one", "single", "two", "three", "per ", "max", "maximum",
                     "only", "no more", "at most", "level", "layer", "line", "element",
-                    "cue", "viewport", "%", "px",
+                    "cue", "viewport", "%", "px", "uno", "una", "dos", "tres", "por ",
+                    "máximo", "maximo", "solo", "sola", "no más", "no mas", "como máximo",
+                    "como maximo", "límite", "limite", "cantidad", "capa", "línea", "linea",
+                    "elemento", "señal", "indicador",
                 )
                 if density and not any(char.isdigit() for char in density) and not any(
                     marker in density for marker in density_markers
                 ):
                     errors.append("UI_FOCUSED_DENSITY_LIMITS_NON_CONCRETE")
+
+                errors.extend(_ui_focused_semantic_v3_errors(values))
             elif mode == "UI_MISSING_INPUT":
                 verdict = payload.get("self_verdict")
                 missing = payload.get("missing_inputs")
