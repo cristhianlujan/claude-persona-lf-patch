@@ -5,7 +5,8 @@ Scope: sandbox only. No Supabase write. No production/runtime enablement.
 Run: python sandbox/lf_contract_gate_test/lf_validation_engine_v0_10_2_selftest.py
 """
 from __future__ import annotations
-import copy, hashlib, json
+import copy, hashlib, json, subprocess, sys
+from pathlib import Path
 from typing import Any, Dict
 
 ALLOWED_OPERATION_TYPES={"CREACION_ACTIVO_LF","REPARACION_ACTIVO_LF","ACTUALIZACION_CAPACIDAD_ACTIVO_LF","PROMOCION_ACTIVO_READ_ONLY_LF","AUDITORIA_READ_ONLY_LF","SANDBOX_SIMULATION_LF","VALIDATION_ENGINE_TEST_LF"}
@@ -82,6 +83,49 @@ def base_proof():
 
 def with_hash(p): p["verification"]["verification_hash"]=compute_hash(p); return p
 
+def validate_learning_behavioral_readiness_manifest(root:Path)->None:
+    path=root/"learning_behavioral_readiness_v1.json"
+    if not path.exists(): return
+    d=json.loads(path.read_text())
+    assert d["schema"]=="LF_LEARNING_BEHAVIORAL_READINESS_V1"
+    assert d["mode"]=="READ_ONLY"
+    assert d["rule"]=="UNRELATED_SCREEN_READINESS_RUNS_MUST_NOT_BE_REUSED_AS_CONSUMER_AUTHORITY"
+    assert d["automatic_promotion"] is False and d["production_authorized"] is False
+    assert {r["consumer_id"] for r in d["consumer_targets"]}=={"PERFIL-PRODUCT-DIRECTOR-LF","PERFIL-UI-ARCHITECT"}
+    assert all(r["exact_target_bound_readiness_receipt_observed"] is False and r["behavioral_ab_status"]=="INSUFFICIENT_EVIDENCE" for r in d["consumer_targets"])
+    print("LEARNING_BEHAVIORAL_READINESS=PASS consumers=2/2 behavioral_ab=INSUFFICIENT_EVIDENCE")
+
+def run_optional_learning_suites()->None:
+    root=Path(__file__).resolve().parent
+    scripts=[
+        "validate_product_director_learning_suite_v1.py",
+        "validate_ui_architect_learning_suite_v1.py",
+        "validate_learning_cluster_consumer_coverage_v1.py",
+        "validate_learning_next_consumer_applicability_v1.py",
+        "validate_learning_additional_consumer_applicability_v1.py",
+        "validate_learning_competitive_source_backlog_readback_v1.py",
+        "validate_learning_unbound_cluster_card_readback_v1.py",
+        "validate_learning_card_source_boundary_readback_v1.py",
+        "validate_learning_exact_nonbinding_guard_v1.py",
+        "validate_learning_additional_consumer_binding_candidates_v1.py",
+        "validate_learning_additional_consumer_context_pack_candidates_v1.py",
+        "validate_learning_specialized_consumer_authority_guard_v1.py",
+        "validate_learning_specialized_consumer_authority_negative_cases_v1.py",
+        "validate_learning_readonly_technical_closure_v1.py",
+    ]
+    executed=0
+    for script in scripts:
+        path=root/script
+        if not path.exists(): continue
+        result=subprocess.run([sys.executable,str(path)],capture_output=True,text=True)
+        if result.stdout: print(result.stdout.strip())
+        if result.returncode:
+            if result.stderr: sys.stderr.write(result.stderr)
+            raise SystemExit(result.returncode)
+        executed+=1
+    validate_learning_behavioral_readiness_manifest(root)
+    print(f"PASS_OPTIONAL_LEARNING_READ_ONLY_SUITES={executed}/{executed} production_authorized=false")
+
 def main():
     cases={"valid_pass":"PASS"}; proofs={"valid_pass":base_proof()}
     def add(name, expected, mut):
@@ -94,10 +138,17 @@ def main():
     add("invalid_empty_hard_fails","RETURN_TO_WORKER",lambda p:p.update({"hard_fails_checked":[]}))
     add("invalid_empty_source_refs","RETURN_TO_WORKER",lambda p:p.update({"source_refs":[]}))
     add("invalid_weak_evidence_ref","RETURN_TO_WORKER",lambda p:p["assertions_checked"][0].update({"evidence_ref":{"id":"EV-WEAK"}}))
+    add("valid_na_control","PASS",lambda p:p.update({"na_controls":[{"control_id":"NA-OK","na_reason":"READ_ONLY_AUDIT_ONLY","judge_na_result":"VALID_NA","is_critical_control":False}]}))
+    add("invalid_na_reason","RETURN_TO_WORKER",lambda p:p.update({"na_controls":[{"control_id":"NA-BAD-REASON","na_reason":"CONVENIENCE","judge_na_result":"VALID_NA","is_critical_control":False}]}))
+    add("invalid_na_review","RETURN_TO_WORKER",lambda p:p.update({"na_controls":[{"control_id":"NA-BAD-REVIEW","na_reason":"READ_ONLY_AUDIT_ONLY","judge_na_result":"NOT_REVIEWED","is_critical_control":False}]}))
+    add("invalid_critical_na","RETURN_TO_WORKER",lambda p:p.update({"na_controls":[{"control_id":"NA-CRITICAL","na_reason":"READ_ONLY_AUDIT_ONLY","judge_na_result":"VALID_NA","is_critical_control":True}]}))
     results=[]; ok_all=True
     for name,exp in cases.items():
         out=validate(proofs[name]); ok=out["status"]==exp; ok_all=ok_all and ok
         results.append({"case":name,"expected":exp,"actual":out["status"],"ok":ok,"fail_codes":out["fail_codes"]})
     report={"suite":"LF_VALIDATION_ENGINE_PYTHON_LOCAL_v0_10_2_SELFTEST","overall_status":"PASS" if ok_all else "FAIL","results":results}
-    print(json.dumps(report,indent=2,ensure_ascii=False)); raise SystemExit(0 if ok_all else 1)
+    print(json.dumps(report,indent=2,ensure_ascii=False))
+    if not ok_all: raise SystemExit(1)
+    run_optional_learning_suites()
+
 if __name__=="__main__": main()

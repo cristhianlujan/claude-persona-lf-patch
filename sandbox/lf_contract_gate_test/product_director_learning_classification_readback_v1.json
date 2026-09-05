@@ -1,0 +1,23 @@
+{
+  "schema":"LF_PRODUCT_DIRECTOR_CLASSIFICATION_READBACK_V1",
+  "source":"public.lf_eventos",
+  "taxonomy_version":"LF_LEARNING_CLUSTER_V1",
+  "observed_live_at_utc":"2026-09-01T19:04:00Z",
+  "receipts":[
+    {"event_id":9720,"kb_id":"8b744f07-75f6-4332-9df5-12e7c6914bf1","cluster_code":"NEGOCIACION_DEUDA","lifecycle":"CARD_CREADA","eligibility":"CANONICAL_PASS"},
+    {"event_id":9801,"kb_id":"02bcfdd4-6859-4d56-9fbc-02af0ddf65b5","cluster_code":"CAMPANAS_Y_OFERTAS|NEGOCIACION_DEUDA","lifecycle":"ANALIZADO","eligibility":"PASS"},
+    {"event_id":9805,"kb_id":"a789f419-b05f-4eba-af99-015bd56d24d5","cluster_code":"NEGOCIACION_DEUDA","lifecycle":"ANALIZADO","eligibility":"PASS"},
+    {"event_id":9708,"kb_id":"5500178a-d503-476c-be77-c99223b4d90c","cluster_code":"NEGOCIACION_DEUDA","lifecycle":"ANALIZADO","eligibility":"CANONICAL_PASS"},
+    {"event_id":9707,"kb_id":"33e6970d-d19c-4300-8ed7-1784dd162d9d","cluster_code":"ALTERNATIVAS_FINANCIERAS","lifecycle":"ANALIZADO","eligibility":"CANONICAL_PASS"},
+    {"event_id":9705,"kb_id":"a19d068a-f67c-4b5b-a6a1-09e84233f463","cluster_code":"ALTERNATIVAS_FINANCIERAS","lifecycle":"ANALIZADO","eligibility":"CANONICAL_PASS"},
+    {"event_id":9714,"kb_id":"55f1b6c0-e019-4744-ae60-64861863d5b5","cluster_code":"ALTERNATIVAS_FINANCIERAS","lifecycle":"ANALIZADO","eligibility":"CANONICAL_PASS_STALE_NOTE_FLAGGED"},
+    {"event_id":9721,"kb_id":"7ffa83ea-c4ea-41a1-aaed-a76329c5c730","cluster_code":"EDUCACION_CREDITICIA","lifecycle":"ANALIZADO","eligibility":"CANONICAL_PASS"},
+    {"event_id":9713,"kb_id":"7ebe6b67-9463-4753-82eb-f3fedfc2f72c","cluster_code":"EDUCACION_CREDITICIA","lifecycle":"ANALIZADO","eligibility":"CANONICAL_PASS_STALE_NOTE_FLAGGED"},
+    {"event_id":9719,"kb_id":"35cfab0c-1d91-4aa4-9761-f8af91181e17","cluster_code":"AUTOGESTION_DIGITAL","lifecycle":"CARD_CREADA","eligibility":"CANONICAL_PASS"},
+    {"event_id":9803,"kb_id":"7d55562e-9266-478b-b071-dca7ba1ade1a","cluster_code":"AUTOGESTION_DIGITAL","lifecycle":"ANALIZADO","eligibility":"PASS"},
+    {"event_id":9716,"kb_id":"bd2a3a05-b53b-400c-846d-3634e422a500","cluster_code":"PAGOS_Y_NO_ADEUDO","lifecycle":"CARD_CREADA","eligibility":"CANONICAL_PASS"},
+    {"event_id":9704,"kb_id":"92fc4ad2-1581-4aa1-b01b-e986bb3cc71c","cluster_code":"PAGOS_Y_NO_ADEUDO|AUTOGESTION_DIGITAL","lifecycle":"ANALIZADO","eligibility":"CANONICAL_PASS"}
+  ],
+  "selected_receipts":13,
+  "production_authorized":false
+}

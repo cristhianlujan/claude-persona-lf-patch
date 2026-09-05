@@ -1,0 +1,36 @@
+{
+  "schema": "LF_LEARNING_SPECIALIZED_CONSUMER_FAILCLOSED_BENCHMARK_50_V1",
+  "mode": "READ_ONLY_DETERMINISTIC",
+  "purpose": "Prove that any missing or contradictory activation prerequisite keeps specialized CX/UX learning context fail-closed.",
+  "families": {
+    "MISSING_EXACT_BINDING": "exact_binding_current=false",
+    "MISSING_GROUNDED_EVIDENCE": "selected_evidence_current=false",
+    "MISSING_CONSUMER_READY_LEARNING": "source_learning_current=false",
+    "ZERO_CONTEXT_BUDGET": "context_budget_positive=false",
+    "RUNTIME_DISABLED": "specialized_adapter_runtime_enabled=false",
+    "PRODUCT_DIRECTION_MISSING": "product_direction_authorized_current=false",
+    "RECEIPT_MISSING": "canonical_receipt_current=false",
+    "CONFLICTING_AUTHORITY": "authority_conflict_free=false",
+    "DIRECT_INVOCATION": "router_resolved=false",
+    "PRODUCTION_CLAIM": "production_authorized=true"
+  },
+  "consumer_capability_pairs": [
+    ["PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531", "DIGITAL_SELF_SERVICE"],
+    ["PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531", "PAYMENT_NO_ADEUDO"],
+    ["PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531", "DIGITAL_SELF_SERVICE"],
+    ["PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531", "PAYMENT_NO_ADEUDO"]
+  ],
+  "generation": {
+    "cases_per_family": 5,
+    "pair_rotation": [0,1,2,3,0],
+    "all_other_prerequisites": true,
+    "expected_outcome": "NO_COMPETITIVE_CONTEXT",
+    "expected_delivery_enabled": false,
+    "selector_llm_calls": 0,
+    "reader_writes": 0
+  },
+  "case_count": 50,
+  "family_count": 10,
+  "automatic_promotion": false,
+  "production_authorized": false
+}
