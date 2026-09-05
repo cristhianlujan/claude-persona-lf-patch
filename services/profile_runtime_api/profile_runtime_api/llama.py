@@ -56,22 +56,6 @@ def governed_generation_schema(
         if prop.get("type") == "string" and "enum" not in prop:
             cap = 240 if name == "short_generator_prompt" else 160
             prop["maxLength"] = _bounded_positive_int(prop.get("maxLength"), cap)
-            focused_min_lengths = {
-                "selected_visual_type": 18,
-                "size_or_coverage": 12,
-                "density_limits": 12,
-                "depth_style": 12,
-                "visual_weight": 16,
-                "relationship_to_main_element": 20,
-                "implementation_format": 16,
-            }
-            minimum = focused_min_lengths.get(name)
-            if minimum is not None:
-                current = prop.get("minLength")
-                prop["minLength"] = max(
-                    current if isinstance(current, int) and not isinstance(current, bool) else 0,
-                    minimum,
-                )
         if name == "hard_exclusions" and prop.get("type") == "array":
             prop["maxItems"] = _bounded_positive_int(prop.get("maxItems"), 4)
             items = prop.get("items")
@@ -361,8 +345,6 @@ class PersistentLlamaServerAdapter:
                     "- hard_exclusions must never prohibit the selected_visual_type or its selected corrective treatment.",
                     "- size_or_coverage, density_limits, depth_style, visual_weight, relationship_to_main_element, and implementation_format must be concrete and implementation-usable; bare generic labels such as medium, thin, above, or css are invalid.",
                     "- density_limits must express an observable bound, quantity, per-element rule, or equivalent concrete limit.",
-                    "- Avoid placeholder-only values. Shape fields as implementation statements: coverage names the affected UI region; density states a bound such as one cue per region; depth states an elevation/shadow rule; visual weight states hierarchy relative to primary content; relationship states how the treatment supports the main element; implementation_format names both mechanism and target.",
-                    "- hard_exclusions describe forbidden side effects or variants (for example, no hidden actions or no extra primary emphasis); never list the diagnosed defect or the chosen treatment itself as an exclusion.",
                     "",
                 ]
             )
