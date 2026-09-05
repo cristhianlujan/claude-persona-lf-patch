@@ -1,0 +1,88 @@
+version: v0.1
+source_verified_at: 2026-08-11
+supabase_project_ref: mhwmirqcgxxukpctffuv
+
+projects:
+  LF_BACKOFFICE:
+    schema: lf_ops
+    mappings:
+      APP_SHELL: app_shells
+      MODULE: modulos
+      SCREEN: pantallas
+      SCREEN_ARTIFACT: pantalla_artefactos
+      SCREEN_VARIANT: pantalla_variantes
+      RULE: reglas
+      RULE_SCREEN: reglas_pantallas
+      FIELD: campos
+      FIELD_SCREEN: campos_pantallas
+      VALIDATION: campos_validaciones
+      STATE: estados_catalogo
+      TRANSITION: estados_transiciones
+      PROFILE: perfiles
+      PERMISSION: permisos
+      PROFILE_PERMISSION: perfiles_permisos
+      SCREEN_PROFILE: pantallas_perfiles
+      SCREEN_PERMISSION: pantallas_permisos
+      SECURITY_POLICY: politicas_seguridad
+      SESSION_POLICY: politicas_sesion
+      TIMEOUT_POLICY: politicas_timeout
+      RATE_LIMIT_POLICY: politicas_rate_limit
+      OTP_POLICY: otp_politicas
+      APPROVAL_POLICY: politicas_aprobacion
+      SYSTEM_ERROR: errores_catalogo
+      SYSTEM_ERROR_SCREEN: errores_pantallas
+      SYSTEM_ERROR_OCCURRENCE: errores_ocurrencias
+    cross_project_knowledge:
+      schema: public
+      mappings:
+        LEARNED_ERROR: lf_error_knowledge
+        PREVENTION: lf_prevention_rules
+        BEST_PRACTICE: lf_best_practices
+        DECISION: lf_decision_log
+
+  OVERALL:
+    schema: overall_design
+    mappings:
+      PROJECT: projects
+      FLOW: app_flows
+      SCREEN: app_screens
+      COMPONENT: screen_components
+      VISUAL_SPEC: screen_visual_specs
+      MOCKUP: mockup_assets
+      RULE: business_rules
+      VALIDATION: validation_rules_catalog
+      POLICY: policy_registry
+      RUNTIME_STATE_REQUIREMENT: runtime_state_requirements
+      DECISION: design_decisions
+      EVIDENCE: evidence_links
+
+  SALY:
+    schema: saly
+    mappings:
+      PROJECT: proyecto
+      DECISION: decisiones
+      EVIDENCE: evidencias
+      DOCUMENT: documentos
+      SCENARIO: escenarios
+      COST: costos
+      FINANCIAL_ASSUMPTION: supuestos_financieros
+    blocked_types:
+      SCREEN: BLOCKED_NO_DESTINATION
+      RULE: BLOCKED_NO_DESTINATION
+      FIELD: BLOCKED_NO_DESTINATION
+      VALIDATION: BLOCKED_NO_DESTINATION
+      PROFILE: BLOCKED_NO_DESTINATION
+      PERMISSION: BLOCKED_NO_DESTINATION
+      STATE: BLOCKED_NO_DESTINATION
+      TRANSITION: BLOCKED_NO_DESTINATION
+      POLICY: BLOCKED_NO_DESTINATION
+
+rules:
+  unknown_project: BLOCKED_NO_PROJECT_MAPPING
+  unknown_data_type: BLOCKED_NO_DESTINATION
+  missing_table: BLOCKED_TABLE_NOT_FOUND
+  missing_column: BLOCKED_COLUMN_NOT_FOUND
+  invalid_catalog_value: BLOCKED_INVALID_VALUE
+  duplicate_found: REUSE_OR_RELATE
+  never_create_table_automatically: true
+  never_fallback_to_public: true
