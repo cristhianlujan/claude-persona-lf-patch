@@ -1,0 +1,51 @@
+{
+  "schema_version": "profile-runtime-reconciliation-evidence/v1",
+  "execution_id": "GPT-STRATEGY26-AUTO-RUN-20260904-033",
+  "strategy_code": "LF_PROFILE_GOVERNANCE_GOLDEN_FAMILY_20260904",
+  "pr_number": 478,
+  "pr_state": "OPEN_DRAFT",
+  "pr_mergeable": false,
+  "pr_head_sha": "7b2928c4164a2ace0898a7931d114c2c087ee35c",
+  "main_sha": "7b5059fa733016b821a3b0e3112e62c9a9c5e7ca",
+  "merge_base_sha": "0eeec4c2374b86390812961e14dabde5d8834d2e",
+  "divergence": {
+    "main_ahead_from_merge_base": 217,
+    "pr478_ahead_from_merge_base": 119
+  },
+  "classification": {
+    "shared_or_drifted_family": [
+      "profiles/quality_pack/schemas/runtime_output.schema.json",
+      "sandbox/lf_contract_gate_test/lf_migration_source_parity.py",
+      "sandbox/lf_contract_gate_test/profile_execution_runtime/persistent_cpu_local_runtime.py",
+      "sandbox/lf_contract_gate_test/profile_execution_runtime/run_persistent_cpu_profile_request.py",
+      "sandbox/lf_contract_gate_test/profile_execution_runtime/run_zero_cost_profile_request.py",
+      "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/**",
+      "supabase/migrations/20260902133115_fix_profile_creator_init_no_close_compat_v1.sql",
+      "supabase/migrations/20260902133319_profile_creator_step_recorder_v1.sql",
+      "supabase/migrations/20260902203158_lf_profile_runtime_hetzner_target_v1.sql"
+    ],
+    "pr478_only_critical_family": [
+      "services/profile_runtime_api/**",
+      "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/product_director_compact_context_v1.py",
+      "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/profile_context_budget_v1.py",
+      "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_product_director_compact_context_v1.py",
+      "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_profile_context_budget_v1.py"
+    ]
+  },
+  "critical_readback": {
+    "main_services_profile_runtime_api_engine": "NOT_FOUND_404",
+    "pr478_services_profile_runtime_api_engine_blob": "5db14f53b8539dab755cb2414cf4fc54ec6f4f86"
+  },
+  "safety": {
+    "merge_performed": false,
+    "deploy_performed": false,
+    "restart_performed": false,
+    "ddl_performed": false,
+    "branch_preparation_only": true
+  },
+  "next_safe_units": [
+    "FOCAL_SHARED_PATH_CONTENT_DRIFT_MAP",
+    "PR478_ONLY_RUNTIME_SERVICE_SOURCE_TEST_READBACK",
+    "RECONCILIATION_PATCH_PLAN_FROM_CURRENT_MAIN"
+  ]
+}
