@@ -14,10 +14,55 @@ from .settings import Settings
 
 RESPONSE_TYPE = "PROFILE_RUNTIME_RESPONSE_V1"
 UI_ARCHITECT_PROFILE_SLUG = "ui_architect"
+UI_FOCUSED_SCHEMA_MODE = "UI_FOCUSED_DECISION"
+UI_FOCUSED_GENERATION_POLICY = "UI_FOCUSED_BOUNDED_GENERATION_V1"
+CANONICAL_GENERATION_POLICY = "CANONICAL_SCHEMA_UNCHANGED"
 
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _bounded_positive_int(value: Any, cap: int) -> int:
+    if isinstance(value, int) and not isinstance(value, bool) and value > 0:
+        return min(value, cap)
+    return cap
+
+
+def governed_generation_schema(
+    schema: dict[str, Any], *, profile_slug: str, schema_mode: str
+) -> tuple[dict[str, Any], str]:
+    """Return the schema sent to llama.cpp without weakening canonical validation.
+
+    Strategy 26 observed that the canonical Focused UI schema has unbounded free strings.
+    On the full governed Golden Family prompt the small local model continued generation
+    until the 900s transport timeout. A sandbox-only copy with bounded strings stopped
+    normally while still satisfying the unchanged canonical schema. Keep that boundary
+    in the runtime transport, not in the profile artifact: generation may be stricter,
+    while OutputGates continues to validate against the canonical SchemaBinding payload.
+    """
+
+    if profile_slug != UI_ARCHITECT_PROFILE_SLUG or schema_mode != UI_FOCUSED_SCHEMA_MODE:
+        return schema, CANONICAL_GENERATION_POLICY
+
+    bounded = json.loads(json.dumps(schema, ensure_ascii=False))
+    properties = bounded.get("properties")
+    if not isinstance(properties, dict):
+        raise LlamaTransportError("LLAMA_GENERATION_SCHEMA_PROPERTIES_MISSING")
+
+    for name, prop in properties.items():
+        if not isinstance(prop, dict):
+            continue
+        if prop.get("type") == "string" and "enum" not in prop:
+            cap = 240 if name == "short_generator_prompt" else 160
+            prop["maxLength"] = _bounded_positive_int(prop.get("maxLength"), cap)
+        if name == "hard_exclusions" and prop.get("type") == "array":
+            prop["maxItems"] = _bounded_positive_int(prop.get("maxItems"), 4)
+            items = prop.get("items")
+            if isinstance(items, dict) and items.get("type") == "string":
+                items["maxLength"] = _bounded_positive_int(items.get("maxLength"), 120)
+
+    return bounded, UI_FOCUSED_GENERATION_POLICY
 
 
 class LlamaTransportError(RuntimeError):
@@ -94,6 +139,12 @@ class LlamaHTTPClient:
                     },
                 },
             ]
+
+        generation_schema, generation_schema_policy = governed_generation_schema(
+            schema, profile_slug=profile_slug, schema_mode=schema_mode
+        )
+        generation_schema_sha256 = canonical_json_sha256(generation_schema)
+
         payload: dict[str, Any] = {
             "model": self.settings.llama_model,
             "messages": [
@@ -116,7 +167,10 @@ class LlamaHTTPClient:
             # response_format.type=json_schema expects json_schema.schema; a direct
             # sibling `schema` is ignored. type=json_object + schema is the pinned,
             # schema-constrained path and keeps the canonical validator after it.
-            payload["response_format"] = {"type": "json_object", "schema": schema}
+            payload["response_format"] = {
+                "type": "json_object",
+                "schema": generation_schema,
+            }
 
         response = self._request(
             "POST", "/v1/chat/completions", payload, self.settings.llama_timeout_seconds
@@ -159,6 +213,8 @@ class LlamaHTTPClient:
                 response.get("timings") if isinstance(response.get("timings"), dict) else {}
             ),
             "finish_reason": str(choices[0].get("finish_reason") or ""),
+            "generation_schema_sha256": generation_schema_sha256,
+            "generation_schema_policy": generation_schema_policy,
         }
 
     def _request(
@@ -251,6 +307,12 @@ class PersistentLlamaServerAdapter:
             "structured_output_schema_sha256": self.schema.sha256,
             "structured_output_schema_mode": self.schema.mode,
             "structured_output_schema_refs": list(self.schema.source_refs),
+            "generation_schema_sha256": self.last_completion.get(
+                "generation_schema_sha256"
+            ),
+            "generation_schema_policy": self.last_completion.get(
+                "generation_schema_policy"
+            ),
             "structural_context_sha256": canonical_json_sha256(self.structural_context),
             "llama_response_id": self.last_completion.get("id") or "UNAVAILABLE",
             "finish_reason": self.last_completion.get("finish_reason") or "UNAVAILABLE",
@@ -338,6 +400,18 @@ class PersistentLlamaServerVerifier:
             raise LlamaTransportError("LLAMA_VERIFIER_SCHEMA_MISMATCH")
         if attestation.get("structured_output_schema_mode") != self.schema.mode:
             raise LlamaTransportError("LLAMA_VERIFIER_SCHEMA_MODE_MISMATCH")
+
+        expected_generation_schema, expected_generation_policy = governed_generation_schema(
+            self.schema.payload,
+            profile_slug=request["profile_slug"],
+            schema_mode=self.schema.mode,
+        )
+        expected_generation_sha = canonical_json_sha256(expected_generation_schema)
+        if attestation.get("generation_schema_sha256") != expected_generation_sha:
+            raise LlamaTransportError("LLAMA_VERIFIER_GENERATION_SCHEMA_MISMATCH")
+        if attestation.get("generation_schema_policy") != expected_generation_policy:
+            raise LlamaTransportError("LLAMA_VERIFIER_GENERATION_POLICY_MISMATCH")
+
         context_sha = canonical_json_sha256(self.structural_context)
         if attestation.get("structural_context_sha256") != context_sha:
             raise LlamaTransportError("LLAMA_VERIFIER_CONTEXT_MISMATCH")
@@ -353,6 +427,8 @@ class PersistentLlamaServerVerifier:
                     response_sha,
                     self.schema.sha256,
                     self.schema.mode,
+                    expected_generation_sha,
+                    expected_generation_policy,
                     context_sha,
                     str(attestation.get("llama_response_id")),
                 ]
