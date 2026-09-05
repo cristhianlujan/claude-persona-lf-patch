@@ -9,6 +9,7 @@ from .repository import RepositoryBindings, SchemaBinding
 
 PASS_QUALITY_VERDICTS = {"PASS_TO_COMPOSER", "PASS_WITH_RESTRICTIONS"}
 NOMINAL_EVIDENCE = {"ok", "pass", "passed", "valid", "done", "complete", "yes"}
+UI_SCHEMA_ONLY_MODES = {"UI_FOCUSED_DECISION", "UI_MISSING_INPUT"}
 
 
 def strict_json_object(raw_output: Any) -> tuple[dict[str, Any] | None, list[str]]:
@@ -66,14 +67,21 @@ class OutputGates:
                         "message": str(exc)[:500],
                     }
                 )
-            errors.extend(self._canonical_errors(profile_slug, payload))
+            # The canonical UI Python validator is explicitly the Production UI Spec
+            # validator. Focused Decision and Missing Input already have exact canonical
+            # schemas and must not be falsely rejected by production-only fields.
+            if not (
+                profile_slug == "ui_architect" and schema.mode in UI_SCHEMA_ONLY_MODES
+            ):
+                errors.extend(self._canonical_errors(profile_slug, payload))
         blocking = sorted({str(item.get("code")) for item in errors})
         return (
             {
                 "status": "PASS" if not errors else "FAIL",
-                "validator_scope": "CANONICAL_SCHEMA_PLUS_PROFILE_VALIDATOR",
+                "validator_scope": "CANONICAL_SCHEMA_PLUS_APPLICABLE_PROFILE_VALIDATOR",
                 "schema_sha256": schema.sha256,
                 "schema_source_refs": list(schema.source_refs),
+                "schema_mode": schema.mode,
                 "blocking_codes": blocking,
                 "errors": errors,
             },
@@ -107,11 +115,38 @@ class OutputGates:
                 if not isinstance(deliverable.get("decision_lineage"), dict):
                     errors.append("PRODUCT_DECISION_LINEAGE_MISSING")
         elif profile_slug == "ui_architect":
-            deliverable = payload.get("deliverable_created")
-            if not isinstance(deliverable, dict):
-                errors.append("UI_DELIVERABLE_MISSING")
-            elif not deliverable.get("component_tree"):
-                errors.append("UI_COMPONENT_TREE_EMPTY")
+            mode = str(contract_gate.get("schema_mode") or "AUTO")
+            if mode == "UI_FOCUSED_DECISION":
+                for key in (
+                    "decision_subject",
+                    "selected_visual_type",
+                    "relationship_to_main_element",
+                    "implementation_format",
+                ):
+                    value = payload.get(key)
+                    if not isinstance(value, str) or len(value.strip()) < 3:
+                        errors.append(f"UI_FOCUSED_{key.upper()}_WEAK")
+                exclusions = payload.get("hard_exclusions")
+                if not isinstance(exclusions, list) or not exclusions:
+                    errors.append("UI_FOCUSED_HARD_EXCLUSIONS_EMPTY")
+            elif mode == "UI_MISSING_INPUT":
+                verdict = payload.get("self_verdict")
+                missing = payload.get("missing_inputs")
+                if verdict in {"NEEDS_INPUT", "BLOCKED"} and (
+                    not isinstance(missing, list) or not missing
+                ):
+                    errors.append("UI_MISSING_INPUT_LIST_EMPTY")
+                if payload.get("blocked") is True and payload.get("pipeline_action") not in {
+                    "RETURN_TO_ORCHESTRATOR",
+                    "BLOCK_PIPELINE",
+                }:
+                    errors.append("UI_MISSING_INPUT_PIPELINE_ACTION_INVALID")
+            else:
+                deliverable = payload.get("deliverable_created")
+                if not isinstance(deliverable, dict):
+                    errors.append("UI_DELIVERABLE_MISSING")
+                elif not deliverable.get("component_tree"):
+                    errors.append("UI_COMPONENT_TREE_EMPTY")
         elif profile_slug == "quality_pack":
             evidence = payload.get("evidence_map")
             if not isinstance(evidence, list) or not evidence:
