@@ -85,6 +85,7 @@ ALLOWED_GITHUB_EXACT = {
     ".github/workflows/story-agent-evidence-verifier.yml",
     ".github/workflows/profile-driven-screen-generation.yml",
     ".github/workflows/input-governance-pr418-holdout-replay.yml",
+    ".github/workflows/validate-lf-packs.yml",
 }
 OPERATIONAL_PROTOCOL_ALLOWED_EXACT = {
     "CLAUDE.md",
@@ -156,6 +157,7 @@ ALLOWED_PREFIXES = [
     "sandbox/lf_contract_gate_test/",
     "sandbox/no_bypass_judge_profile_card_skill/",
     "supabase/migrations/",
+    "services/profile_runtime_api/",
 ]
 GOVERNED_PREFIXES = [
     "profiles/",
