@@ -1,0 +1,41 @@
+{
+  "strategy": "LF_PROFILE_GOVERNANCE_GOLDEN_FAMILY_20260904",
+  "execution_id": "EXEC-S26-AUTOMATION-20260904-003",
+  "evidence_kind": "CURRENTNESS_AND_LINEAGE_CONFLICT_MAP",
+  "strategy_head_before_evidence_commit": "e54fc5b6985e234e773814a3885e660ce60e3f69",
+  "main_head_observed": "b5bbe28a60aff2f188d0fe6fbbc465649a638e49",
+  "merge_base": "7d1a3bebc3bb9b13115e7e0a1e7626ec98fce129",
+  "compare_status": "diverged",
+  "main_side_ahead_by": 22,
+  "strategy_side_behind_by": 36,
+  "new_main_source_parity": {
+    "20260905013230": "lf_policy_transversal_inheritance_rootfix_v1",
+    "20260905030213": "lf_security_advisor_remediation_v1"
+  },
+  "supabase_versions_observed": [
+    "20260905013230",
+    "20260905030213"
+  ],
+  "strategy_head_missing_files_observed": [
+    "supabase/migrations/20260905013230_lf_policy_transversal_inheritance_rootfix_v1.sql",
+    "supabase/migrations/20260905030213_lf_security_advisor_remediation_v1.sql"
+  ],
+  "main_delta_files_relevant_to_lineage": [
+    ".github/workflows/lf-bootstrap-reproducibility.yml",
+    ".github/workflows/lf-contract-check.yml",
+    "supabase/migrations/20260905013230_lf_policy_transversal_inheritance_rootfix_v1.sql",
+    "supabase/migrations/20260905030213_lf_security_advisor_remediation_v1.sql"
+  ],
+  "runtime_pr_478": {
+    "head": "7b2928c4164a2ace0898a7931d114c2c087ee35c",
+    "state": "OPEN_DRAFT",
+    "main_runtime_api_path_observed": "ABSENT_404"
+  },
+  "reconciliation_rules": [
+    "Do not copy isolated migrations to simulate lineage reconciliation.",
+    "Preserve current main workflow and Quality Pack guards.",
+    "Treat PR478 as stale/diverged source requiring selective reconciliation, not wholesale adoption.",
+    "No merge, deploy, restart, production, DDL, or authority-bearing action from this evidence artifact."
+  ],
+  "next_required_authority": "CURRENT_MAIN_LINEAGE_SYNC_AND_CANONICAL_RUNTIME_LANE_WRITE"
+}

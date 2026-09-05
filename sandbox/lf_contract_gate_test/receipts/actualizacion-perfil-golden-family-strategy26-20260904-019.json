@@ -1,0 +1,38 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "GPT-STRATEGY26-AUTO-RUN-20260904-019",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "8e45c898d8e1a20ce4f93b13bb22bb25c8b7ec7f28a8a1e96ad92f7c2d7c9902",
+  "source_sha_list": [
+    "cf913c9d04d61ceb7e5c0435db09d234b2d31032"
+  ],
+  "target_paths": [
+    "profiles/_template/README.md",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/golden_family_ui_architect_v1.json",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/materialize_card_runtime_receipt.py",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_golden_family_contract_negative.py",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_materialize_card_runtime_receipt.py",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_golden_family_contract.py",
+    "skills/profile_creator/contracts/main_contract.md"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-04T17:51:34Z",
+  "target_type": "PROFILE_GOVERNANCE",
+  "target_code": "LF_PROFILE_GOVERNANCE_GOLDEN_FAMILY_20260904",
+  "branch": "lf/profiles-governance-golden-family-20260904",
+  "pr_number": 505,
+  "validated_substantive_head": "cf913c9d04d61ceb7e5c0435db09d234b2d31032",
+  "deterministic_matrix": "19/19_PASS",
+  "deterministic_run_id": 33901375414,
+  "bootstrap_run_id": 33901374920,
+  "pre_receipt_contract_run_id": 33901372987,
+  "runtime_unchanged": true,
+  "automatic_promotion": false,
+  "merge_authorized": false,
+  "notes": "PASS_SANDBOX receipt for Strategy26 PR505 after exact-head reconciliation to main. Supabase-first readback confirmed ACTUALIZACION_PERFIL_LF ACTIVE_ENFORCEMENT and current shared judge sha 8e45c898d8e1a20ce4f93b13bb22bb25c8b7ec7f28a8a1e96ad92f7c2d7c9902. Fresh candidate evidence on substantive head cf913c9d04d61ceb7e5c0435db09d234b2d31032: Validate LF Packs run 33901375414 SUCCESS; Bootstrap run 33901374920 SUCCESS; pre-receipt lf-contract-check run 33901372987 passed LF migration parity, Input Governance migration parity, and PROFILE_RUNTIME_GATE_TESTS 23/23, then failed only with FAIL_RECEIPT_MISSING for the seven governed paths listed here. This receipt authorizes exact-head candidate CI only. It does not authorize merge, runtime activation, Hetzner deploy/restart, production, promotion, or FAMILY_E2E closure."
+}
