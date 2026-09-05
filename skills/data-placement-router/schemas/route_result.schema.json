@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DataPlacementRouteResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["project_code", "schema", "data_type", "table", "action", "reason"],
+  "properties": {
+    "project_code": {"type": "string", "minLength": 1},
+    "schema": {"type": ["string", "null"]},
+    "data_type": {"type": "string", "minLength": 1},
+    "table": {"type": ["string", "null"]},
+    "action": {
+      "enum": ["REUSE", "RELATE", "UPDATE", "INSERT", "BLOCKED_NO_DESTINATION", "BLOCKED_NO_PROJECT_MAPPING", "BLOCKED_TABLE_NOT_FOUND", "BLOCKED_COLUMN_NOT_FOUND", "BLOCKED_INVALID_VALUE"]
+    },
+    "reason": {"type": "string", "minLength": 1}
+  }
+}

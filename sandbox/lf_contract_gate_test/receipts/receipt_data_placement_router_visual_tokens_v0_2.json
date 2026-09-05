@@ -1,0 +1,23 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "CREACION_SKILL_LF",
+  "execution_id": "DATA-PLACEMENT-ROUTER-VISUAL-TOKENS-20260811-004",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "a172c77c1727ac401d91f3ef1a93ed2ebe8fa9db",
+  "judge_sha": "cc0783b351b89478bea6c87418d9dae94371ac55",
+  "source_sha_list": [
+    "c1de9d14f313ae7b3fc24180e630acae1464eccd",
+    "711bbd0fb26d6888217ffeba99fa5a0f496d8d46",
+    "10b8594c5f781bd2c4d902f04ceb89bd1a663a0d",
+    "91b8f14066381363e56cc858bfa3cbd7ec90104c"
+  ],
+  "target_paths": [
+    "skills/data-placement-router/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-11T19:19:00Z",
+  "notes": "Extiende data-placement-router v0.2 y registra dentro del pack las instrucciones canónicas de LF Backoffice. Aislamiento: lf_ops funcional, lf_design visual, public solo EKB explícito. LF_DS_V1 y tablas existentes de tokens quedan obligatorias. Sin DDL ni cambios Supabase."
+}
