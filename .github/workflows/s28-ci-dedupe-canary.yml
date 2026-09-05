@@ -110,3 +110,5 @@ jobs:
             exit 1
           fi
           echo "PASS_S28_DEDUPE_SAFETY_CONTRACT"
+
+# s28-canary-sync: open-pr duplicate exercise
