@@ -15,8 +15,112 @@ permissions:
   actions: read
 
 jobs:
+  dedupe-router:
+    name: lf-contract-dedupe-router
+    runs-on: ubuntu-latest
+    outputs:
+      run_deep: ${{ steps.classify.outputs.run_deep }}
+      decision: ${{ steps.classify.outputs.decision }}
+      reason: ${{ steps.classify.outputs.reason }}
+      pr_number: ${{ steps.classify.outputs.pr_number }}
+      exact_count: ${{ steps.classify.outputs.exact_count }}
+      router_overhead_ms: ${{ steps.classify.outputs.router_overhead_ms }}
+    steps:
+      - name: Classify same-SHA PR coverage
+        id: classify
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -uo pipefail
+          started_ms="$(date +%s%3N)"
+          run_deep="true"
+          decision="RUN_DEEP"
+          reason="NOT_APPLICABLE"
+          pr_number=""
+          exact_count="0"
+
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            reason="PR_EVENT_AUTHORITATIVE"
+          elif [[ "$EVENT_NAME" == "push" && "$REF_NAME" == lf/* ]]; then
+            reason="NO_EXACT_OPEN_PR_FAIL_DEEP"
+            set +e
+            response="$(gh api -X GET \
+              "repos/${GH_REPO}/pulls" \
+              -f state=open \
+              -f base=main \
+              -f head="${REPO_OWNER}:${REF_NAME}" \
+              -f per_page=100 2>"$RUNNER_TEMP/lf-contract-dedupe-gh.err")"
+            api_rc=$?
+            set -e
+
+            if [[ "$api_rc" -eq 0 ]] && jq -e 'type == "array"' <<<"$response" >/dev/null; then
+              matches="$(jq -c --arg sha "$HEAD_SHA" '[.[] | select(.head.sha == $sha)]' <<<"$response")"
+              exact_count="$(jq -r 'length' <<<"$matches")"
+              if [[ "$exact_count" == "1" ]]; then
+                run_deep="false"
+                decision="SKIP_DUPLICATE_PUSH"
+                reason="EXACT_OPEN_PR_COVERS_SHA"
+                pr_number="$(jq -r '.[0].number' <<<"$matches")"
+              elif [[ "$exact_count" -gt 1 ]]; then
+                reason="AMBIGUOUS_EXACT_OPEN_PR_FAIL_DEEP"
+              fi
+            else
+              reason="PR_LOOKUP_FAILED_FAIL_DEEP"
+            fi
+          elif [[ "$EVENT_NAME" == "push" ]]; then
+            reason="NON_LF_PUSH_FAIL_DEEP"
+          elif [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            reason="MANUAL_RUN_DEEP"
+          fi
+
+          if [[ "$EVENT_NAME" == "pull_request" && "$run_deep" != "true" ]]; then
+            echo "FAIL_S28_PR_EVENT_MUST_RUN_DEEP"
+            exit 1
+          fi
+          if [[ "$decision" == "SKIP_DUPLICATE_PUSH" && "$exact_count" != "1" ]]; then
+            echo "FAIL_S28_SKIP_WITHOUT_EXACT_PR_PROOF"
+            exit 1
+          fi
+
+          ended_ms="$(date +%s%3N)"
+          router_overhead_ms="$((ended_ms - started_ms))"
+
+          {
+            echo "run_deep=$run_deep"
+            echo "decision=$decision"
+            echo "reason=$reason"
+            echo "pr_number=$pr_number"
+            echo "exact_count=$exact_count"
+            echo "router_overhead_ms=$router_overhead_ms"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "### Strategy 28 — LF contract dedupe router"
+            echo "- event: \`$EVENT_NAME\`"
+            echo "- ref: \`$REF_NAME\`"
+            echo "- sha: \`$HEAD_SHA\`"
+            echo "- decision: \`$decision\`"
+            echo "- reason: \`$reason\`"
+            echo "- exact open PR matches: \`$exact_count\`"
+            if [[ -n "$pr_number" ]]; then
+              echo "- covering PR: \`#$pr_number\`"
+            fi
+            echo "- router overhead: \`${router_overhead_ms} ms\`"
+            echo "- safety: PR/main/manual/lookup uncertainty => DEEP"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "PASS_S28_DEDUPE_ROUTER decision=$decision reason=$reason exact_count=$exact_count pr=${pr_number:-none} overhead_ms=$router_overhead_ms"
+
   lf-contract-check:
     name: lf-contract-check
+    needs: dedupe-router
+    if: needs.dedupe-router.outputs.run_deep == 'true'
     runs-on: ubuntu-latest
 
     steps:
