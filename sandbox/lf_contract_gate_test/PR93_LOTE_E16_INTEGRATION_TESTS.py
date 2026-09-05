@@ -144,6 +144,7 @@ def main() -> int:
     required_workflow_terms = (
         "actions: read",
         "if: github.event_name == 'pull_request'",
+        'PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}',
         'E16_HEAD_SHA: ${{ github.event.pull_request.head.sha }}',
         '--head-sha "$E16_HEAD_SHA"',
         "PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py",
@@ -163,9 +164,13 @@ def main() -> int:
     present_forbidden = [term for term in forbidden_workflow_terms if term in workflow]
     if present_forbidden:
         raise SystemExit(f"workflow binding contains forbidden legacy forms: {present_forbidden}")
-    if workflow.count('${{ github.event.pull_request.head.sha }}') != 1:
-        raise SystemExit("workflow must bind pull_request.head.sha exactly once via env")
-    print("PASS_E16_WORKFLOW_BINDING=13/13")
+    if workflow.count('${{ github.event.pull_request.head.sha }}') != 2:
+        raise SystemExit("workflow must bind pull_request.head.sha exactly twice: router and E.16 inventory")
+    if workflow.count('PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}') != 1:
+        raise SystemExit("router must bind exact pull_request.head.sha exactly once")
+    if workflow.count('E16_HEAD_SHA: ${{ github.event.pull_request.head.sha }}') != 1:
+        raise SystemExit("E.16 inventory must bind exact pull_request.head.sha exactly once")
+    print("PASS_E16_WORKFLOW_BINDING=15/15")
 
     with tempfile.TemporaryDirectory(prefix="pr93-e16-integration-") as temp:
         root = Path(temp)
@@ -273,4 +278,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
