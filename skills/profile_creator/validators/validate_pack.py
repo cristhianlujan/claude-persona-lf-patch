@@ -34,6 +34,7 @@ def main():
         ('PROFILE_VALIDATOR_DISCOVERY_MATRIX',[sys.executable,str(root/'evals/profile_validator_discovery_matrix.py')]),
         ('PROFILE_OPERATION_GENERIC_RESUMER',[sys.executable,str(root/'evals/batch_resume_contract.py')]),
         ('GOLDEN_PROFILE_PROPAGATION',[sys.executable,str(root/'evals/golden_profile_propagation_contract.py')]),
+        ('UPDATE_PROFILE_PACK_CURRENTNESS',[sys.executable,str(root/'evals/update_profile_pack_currentness_contract.py')]),
         ('PROFILE_RESOLVER_DISPATCH_CONTRACT',[sys.executable,str(root/'evals/resolver_dispatch_contract.py')]),
         ('UPDATE_RECORDER_READINESS',[sys.executable,str(root/'evals/update_recorder_readiness_contract.py')]),
         ('PROFILE_OPERATION_COMMON_RECORDER',[sys.executable,str(root/'evals/profile_operation_common_recorder_contract.py')]),
