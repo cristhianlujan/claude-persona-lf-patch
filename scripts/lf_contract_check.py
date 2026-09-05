@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.14
+LF Contract Check v0.15
 
 Sandbox validator for controlled LF governance gates.
+
+v0.15 changes:
+- Allows only the exact LF GitHub reconciler Edge Function source path.
+- Keeps the broad supabase/functions/ prefix and all sibling Edge Functions denied.
 
 v0.14 changes:
 - Allows only the exact Profile Driven Screen Generation workflow path for issue #402.
@@ -146,12 +150,16 @@ P0_PERSISTENCE_TEST_DENIED_LOOKALIKES = {
     "supabase/tests/p0_execution_persistence_v3_contract.sql",
     "supabase/tests/subdir/p0_execution_persistence_v2_contract.sql",
 }
+RECONCILER_EDGE_ALLOWED_EXACT = {
+    "supabase/functions/lf-github-reconcile-v3/index.ts",
+}
 ALLOWED_EXACT = {
     *ALLOWED_GITHUB_EXACT,
     VALIDATOR_SELF_PATH,
     *OPERATIONAL_PROTOCOL_ALLOWED_EXACT,
     *P0_CLOSURE_EVIDENCE_ALLOWED_EXACT,
     *P0_PERSISTENCE_TEST_ALLOWED_EXACT,
+    *RECONCILER_EDGE_ALLOWED_EXACT,
 }
 ALLOWED_PREFIXES = [
     "sandbox/lf_contract_gate_test/",
