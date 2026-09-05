@@ -9,6 +9,12 @@ from typing import Any
 
 from .hashing import sha256_bytes
 
+UI_RUNTIME_SCHEMA_BY_MODE = {
+    "UI_FOCUSED_DECISION": "ui_focused_decision.schema.json",
+    "UI_PRODUCTION_SPEC": "ui_production_spec.schema.json",
+    "UI_MISSING_INPUT": "ui_missing_input.schema.json",
+}
+
 
 class RepositoryError(ValueError):
     def __init__(self, code: str, detail: str | None = None) -> None:
@@ -23,6 +29,7 @@ class SchemaBinding:
     raw: bytes
     sha256: str
     source_refs: tuple[str, ...]
+    mode: str = "AUTO"
 
 
 class RepositoryBindings:
@@ -86,7 +93,7 @@ class RepositoryBindings:
             sources.append({"ref": normalized, "content": content})
         return sorted(sources, key=lambda item: item["ref"])
 
-    def runtime_schema(self, profile_slug: str) -> SchemaBinding:
+    def runtime_schema(self, profile_slug: str, output_mode: str = "AUTO") -> SchemaBinding:
         profile_root = (self.profiles_root / profile_slug).resolve()
         self._within(profile_root, self.profiles_root, "PROFILE_ROOT_PATH_ESCAPE")
         schema_root = (profile_root / "schemas").resolve()
@@ -94,38 +101,49 @@ class RepositoryBindings:
         if not schema_root.is_dir():
             raise RepositoryError("PROFILE_RUNTIME_SCHEMA_MISSING", profile_slug)
 
-        explicit = schema_root / "runtime_output.schema.json"
-        if explicit.exists() or explicit.is_symlink():
-            payload, raw = self._read_schema(explicit, schema_root)
-            refs = (str(explicit.relative_to(self.repo_root)),)
+        if output_mode != "AUTO":
+            if profile_slug != "ui_architect":
+                raise RepositoryError("RUNTIME_OUTPUT_MODE_PROFILE_MISMATCH", profile_slug)
+            filename = UI_RUNTIME_SCHEMA_BY_MODE.get(output_mode)
+            if filename is None:
+                raise RepositoryError("RUNTIME_OUTPUT_MODE_UNSUPPORTED", output_mode)
+            selected = schema_root / filename
+            payload, raw = self._read_schema(selected, schema_root)
+            refs = (str(selected.relative_to(self.repo_root)),)
         else:
-            candidates = sorted(
-                path for path in schema_root.glob("*.schema.json")
-                if path.name != "runtime_output.schema.json"
-            )
-            if not candidates:
-                raise RepositoryError("PROFILE_RUNTIME_SCHEMA_MISSING", profile_slug)
-            parsed = [self._read_schema(path, schema_root)[0] for path in candidates]
-            payload = parsed[0] if len(parsed) == 1 else {
-                "$schema": "https://json-schema.org/draft/2020-12/schema",
-                "anyOf": parsed,
-                "x-lf-runtime-schema-source": [path.name for path in candidates],
-            }
-            raw = (
-                json.dumps(
-                    payload,
-                    ensure_ascii=False,
-                    sort_keys=True,
-                    separators=(",", ":"),
+            explicit = schema_root / "runtime_output.schema.json"
+            if explicit.exists() or explicit.is_symlink():
+                payload, raw = self._read_schema(explicit, schema_root)
+                refs = (str(explicit.relative_to(self.repo_root)),)
+            else:
+                candidates = sorted(
+                    path for path in schema_root.glob("*.schema.json")
+                    if path.name != "runtime_output.schema.json"
                 )
-                + "\n"
-            ).encode("utf-8")
-            refs = tuple(str(path.relative_to(self.repo_root)) for path in candidates)
+                if not candidates:
+                    raise RepositoryError("PROFILE_RUNTIME_SCHEMA_MISSING", profile_slug)
+                parsed = [self._read_schema(path, schema_root)[0] for path in candidates]
+                payload = parsed[0] if len(parsed) == 1 else {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "anyOf": parsed,
+                    "x-lf-runtime-schema-source": [path.name for path in candidates],
+                }
+                raw = (
+                    json.dumps(
+                        payload,
+                        ensure_ascii=False,
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    )
+                    + "\n"
+                ).encode("utf-8")
+                refs = tuple(str(path.relative_to(self.repo_root)) for path in candidates)
         return SchemaBinding(
             payload=payload,
             raw=raw,
             sha256=sha256_bytes(raw),
             source_refs=refs,
+            mode=output_mode,
         )
 
     def load_runtime_runner(self) -> ModuleType:

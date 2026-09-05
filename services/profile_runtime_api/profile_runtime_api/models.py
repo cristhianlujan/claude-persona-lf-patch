@@ -19,6 +19,12 @@ KNOWN_PROFILE_BINDINGS = {
     "ui_architect": "PERFIL-UI-ARCHITECT",
     "quality_pack": "PERFIL-QUALITY-PACK",
 }
+RuntimeOutputMode = Literal[
+    "AUTO",
+    "UI_FOCUSED_DECISION",
+    "UI_PRODUCTION_SPEC",
+    "UI_MISSING_INPUT",
+]
 
 
 class StrictModel(BaseModel):
@@ -145,6 +151,7 @@ class ProfileTask(StrictModel):
     profile_slug: str = Field(pattern=SLUG_RE.pattern)
     profile_source_paths: list[str] = Field(min_length=1, max_length=20)
     input_literal: str = Field(min_length=1, max_length=100_000)
+    runtime_output_mode: RuntimeOutputMode = "AUTO"
     lf_adapter_sources: list[RouterAdapterSource] = Field(default_factory=list, max_length=4)
     required_adapter_codes: list[str] = Field(default_factory=list, max_length=4)
     lf_card_sources: list[CardSource] = Field(default_factory=list, max_length=4)
@@ -156,6 +163,8 @@ class ProfileTask(StrictModel):
         expected_code = KNOWN_PROFILE_BINDINGS.get(self.profile_slug)
         if expected_code is not None and self.profile_code != expected_code:
             raise ValueError("PROFILE_SLUG_CODE_BINDING_MISMATCH")
+        if self.runtime_output_mode != "AUTO" and self.profile_slug != "ui_architect":
+            raise ValueError("RUNTIME_OUTPUT_MODE_PROFILE_MISMATCH")
 
         seen_adapters: set[str] = set()
         adapter_versions: dict[str, str | None] = {}
