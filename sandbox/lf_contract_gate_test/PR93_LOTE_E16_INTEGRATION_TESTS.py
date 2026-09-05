@@ -190,6 +190,7 @@ def main() -> int:
             ".github/workflows/lf-contract-check.yml",
             "docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md",
             "claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md",
+            "ops/runbook-profiles-lf.md",
             "scripts/lf_contract_check.py",
             "sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_runner.py",
             "sandbox/lf_contract_gate_test/profile_execution_runtime/run_lf_adapter_binding_tests.py",
@@ -273,4 +274,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
