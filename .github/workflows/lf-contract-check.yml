@@ -24,9 +24,10 @@ jobs:
       reason: ${{ steps.classify.outputs.reason }}
       pr_number: ${{ steps.classify.outputs.pr_number }}
       exact_count: ${{ steps.classify.outputs.exact_count }}
+      reused_run_id: ${{ steps.classify.outputs.reused_run_id }}
       router_overhead_ms: ${{ steps.classify.outputs.router_overhead_ms }}
     steps:
-      - name: Classify same-SHA PR coverage
+      - name: Classify same-context coverage
         id: classify
         shell: bash
         env:
@@ -34,8 +35,13 @@ jobs:
           GH_REPO: ${{ github.repository }}
           REPO_OWNER: ${{ github.repository_owner }}
           EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
           REF_NAME: ${{ github.ref_name }}
           HEAD_SHA: ${{ github.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          CURRENT_RUN_ID: ${{ github.run_id }}
         run: |
           set -uo pipefail
           started_ms="$(date +%s%3N)"
@@ -44,9 +50,95 @@ jobs:
           reason="NOT_APPLICABLE"
           pr_number=""
           exact_count="0"
+          reused_run_id=""
 
           if [[ "$EVENT_NAME" == "pull_request" ]]; then
-            reason="PR_EVENT_AUTHORITATIVE"
+            pr_number="${PR_NUMBER:-}"
+            if [[ "$EVENT_ACTION" != "ready_for_review" ]]; then
+              reason="PR_EVENT_AUTHORITATIVE"
+            elif [[ -z "${PR_NUMBER:-}" || -z "${PR_HEAD_SHA:-}" || -z "${EVENT_BASE_SHA:-}" ]]; then
+              reason="READY_CONTEXT_MISSING_FAIL_DEEP"
+            else
+              set +e
+              current_main_sha="$(gh api "repos/${GH_REPO}/git/ref/heads/main" --jq '.object.sha' 2>"$RUNNER_TEMP/lf-ready-main.err")"
+              main_rc=$?
+              set -e
+
+              if [[ "$main_rc" -ne 0 || -z "$current_main_sha" ]]; then
+                reason="CURRENT_MAIN_LOOKUP_FAILED_FAIL_DEEP"
+              elif [[ "$current_main_sha" != "$EVENT_BASE_SHA" ]]; then
+                reason="CURRENT_MAIN_DIFFERS_EVENT_BASE_FAIL_DEEP"
+              else
+                set +e
+                runs_response="$(gh api -X GET \
+                  "repos/${GH_REPO}/actions/workflows/lf-contract-check.yml/runs" \
+                  -f event=pull_request \
+                  -f status=completed \
+                  -f head_sha="$PR_HEAD_SHA" \
+                  -f per_page=100 2>"$RUNNER_TEMP/lf-ready-runs.err")"
+                runs_rc=$?
+                set -e
+
+                if [[ "$runs_rc" -ne 0 ]] || ! jq -e '.workflow_runs | type == "array"' <<<"$runs_response" >/dev/null 2>&1; then
+                  reason="PRIOR_RUN_LOOKUP_FAILED_FAIL_DEEP"
+                else
+                  exact_runs="$(jq -c \
+                    --argjson pr "$PR_NUMBER" \
+                    --arg head "$PR_HEAD_SHA" \
+                    --arg base "$EVENT_BASE_SHA" \
+                    --argjson current "$CURRENT_RUN_ID" \
+                    '[.workflow_runs[]
+                      | select(.id != $current)
+                      | select(.head_sha == $head)
+                      | select(any(.pull_requests[]?; .number == $pr and .head.sha == $head and .base.sha == $base))
+                    ] | sort_by([.updated_at, .id])' <<<"$runs_response")"
+                  exact_count="$(jq -r 'length' <<<"$exact_runs")"
+
+                  if [[ "$exact_count" -eq 0 ]]; then
+                    reason="NO_EXACT_PRIOR_CONTEXT_FAIL_DEEP"
+                  else
+                    latest_run_id="$(jq -r '.[-1].id' <<<"$exact_runs")"
+                    latest_conclusion="$(jq -r '.[-1].conclusion // ""' <<<"$exact_runs")"
+
+                    if [[ -z "$latest_run_id" || "$latest_conclusion" != "success" ]]; then
+                      reason="LATEST_EXACT_CONTEXT_NOT_SUCCESS_FAIL_DEEP"
+                    else
+                      set +e
+                      jobs_response="$(gh api -X GET \
+                        "repos/${GH_REPO}/actions/runs/${latest_run_id}/jobs" \
+                        -f filter=latest \
+                        -f per_page=100 2>"$RUNNER_TEMP/lf-ready-jobs.err")"
+                      jobs_rc=$?
+                      artifacts_response="$(gh api -X GET \
+                        "repos/${GH_REPO}/actions/runs/${latest_run_id}/artifacts" \
+                        -f per_page=100 2>"$RUNNER_TEMP/lf-ready-artifacts.err")"
+                      artifacts_rc=$?
+                      set -e
+
+                      if [[ "$jobs_rc" -ne 0 ]] || ! jq -e '.jobs | type == "array"' <<<"$jobs_response" >/dev/null 2>&1; then
+                        reason="PRIOR_DEEP_JOB_LOOKUP_FAILED_FAIL_DEEP"
+                      elif [[ "$artifacts_rc" -ne 0 ]] || ! jq -e '.artifacts | type == "array"' <<<"$artifacts_response" >/dev/null 2>&1; then
+                        reason="PRIOR_MANIFEST_ARTIFACT_LOOKUP_FAILED_FAIL_DEEP"
+                      else
+                        deep_success_count="$(jq -r '[.jobs[] | select(.name == "lf-contract-check" and .conclusion == "success")] | length' <<<"$jobs_response")"
+                        manifest_count="$(jq -r --arg name "r8-continuous-audit-${latest_run_id}" '[.artifacts[] | select(.name == $name and (.expired == false))] | length' <<<"$artifacts_response")"
+
+                        if [[ "$deep_success_count" -ne 1 ]]; then
+                          reason="LATEST_EXACT_CONTEXT_NOT_REAL_DEEP_SUCCESS_FAIL_DEEP"
+                        elif [[ "$manifest_count" -ne 1 ]]; then
+                          reason="LATEST_EXACT_CONTEXT_MANIFEST_NOT_PROVABLE_FAIL_DEEP"
+                        else
+                          run_deep="false"
+                          decision="SKIP_READY_REUSE_EXACT_DEEP"
+                          reason="EXACT_PR_HEAD_BASE_CURRENT_MAIN_AND_REAL_DEEP_SUCCESS"
+                          reused_run_id="$latest_run_id"
+                        fi
+                      fi
+                    fi
+                  fi
+                fi
+              fi
+            fi
           elif [[ "$EVENT_NAME" == "push" && "$REF_NAME" == lf/* ]]; then
             reason="NO_EXACT_OPEN_PR_FAIL_DEEP"
             set +e
@@ -79,9 +171,15 @@ jobs:
             reason="MANUAL_RUN_DEEP"
           fi
 
-          if [[ "$EVENT_NAME" == "pull_request" && "$run_deep" != "true" ]]; then
-            echo "FAIL_S28_PR_EVENT_MUST_RUN_DEEP"
+          if [[ "$EVENT_NAME" == "pull_request" && "$run_deep" != "true" && "$decision" != "SKIP_READY_REUSE_EXACT_DEEP" ]]; then
+            echo "FAIL_S28_PR_SKIP_OUTSIDE_READY_EXACT_DEEP_REUSE"
             exit 1
+          fi
+          if [[ "$decision" == "SKIP_READY_REUSE_EXACT_DEEP" ]]; then
+            if [[ "$EVENT_ACTION" != "ready_for_review" || -z "$reused_run_id" || "$exact_count" -lt 1 ]]; then
+              echo "FAIL_S28_READY_SKIP_WITHOUT_EXACT_DEEP_PROOF"
+              exit 1
+            fi
           fi
           if [[ "$decision" == "SKIP_DUPLICATE_PUSH" && "$exact_count" != "1" ]]; then
             echo "FAIL_S28_SKIP_WITHOUT_EXACT_PR_PROOF"
@@ -90,6 +188,10 @@ jobs:
 
           ended_ms="$(date +%s%3N)"
           router_overhead_ms="$((ended_ms - started_ms))"
+          effective_sha="$HEAD_SHA"
+          if [[ "$EVENT_NAME" == "pull_request" && -n "${PR_HEAD_SHA:-}" ]]; then
+            effective_sha="$PR_HEAD_SHA"
+          fi
 
           {
             echo "run_deep=$run_deep"
@@ -97,25 +199,30 @@ jobs:
             echo "reason=$reason"
             echo "pr_number=$pr_number"
             echo "exact_count=$exact_count"
+            echo "reused_run_id=$reused_run_id"
             echo "router_overhead_ms=$router_overhead_ms"
           } >> "$GITHUB_OUTPUT"
 
           {
             echo "### Strategy 28 — LF contract dedupe router"
             echo "- event: \`$EVENT_NAME\`"
+            echo "- action: \`${EVENT_ACTION:-none}\`"
             echo "- ref: \`$REF_NAME\`"
-            echo "- sha: \`$HEAD_SHA\`"
+            echo "- candidate sha: \`$effective_sha\`"
             echo "- decision: \`$decision\`"
             echo "- reason: \`$reason\`"
-            echo "- exact open PR matches: \`$exact_count\`"
+            echo "- exact evidence count: \`$exact_count\`"
             if [[ -n "$pr_number" ]]; then
-              echo "- covering PR: \`#$pr_number\`"
+              echo "- PR: \`#$pr_number\`"
+            fi
+            if [[ -n "$reused_run_id" ]]; then
+              echo "- reused real DEEP run: \`$reused_run_id\`"
             fi
             echo "- router overhead: \`${router_overhead_ms} ms\`"
-            echo "- safety: PR/main/manual/lookup uncertainty => DEEP"
+            echo "- safety: ready_for_review reuse requires exact PR+head+base+current-main, latest real DEEP job SUCCESS and manifest artifact; all uncertainty => DEEP"
           } >> "$GITHUB_STEP_SUMMARY"
 
-          echo "PASS_S28_DEDUPE_ROUTER decision=$decision reason=$reason exact_count=$exact_count pr=${pr_number:-none} overhead_ms=$router_overhead_ms"
+          echo "PASS_S28_DEDUPE_ROUTER decision=$decision reason=$reason exact_count=$exact_count pr=${pr_number:-none} reused_run=${reused_run_id:-none} overhead_ms=$router_overhead_ms"
 
   lf-contract-check:
     name: lf-contract-check
