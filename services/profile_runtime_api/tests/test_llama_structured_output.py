@@ -56,20 +56,39 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
     def tearDown(self) -> None:
         self.temp.cleanup()
 
-    def call(self, content: str, *, profile_slug: str = "ui_architect") -> RecordingClient:
+    def call(
+        self,
+        content: str,
+        *,
+        profile_slug: str = "ui_architect",
+        schema_mode: str = "AUTO",
+    ) -> RecordingClient:
         client = RecordingClient(self.settings, content)
         client.chat(
             system_prompt="system",
             user_prompt="user",
             schema=self.schema,
             profile_slug=profile_slug,
+            schema_mode=schema_mode,
         )
         return client
 
-    def test_ui_architect_preserves_proven_unconstrained_v27_fallback(self) -> None:
-        client = self.call('{"ok":true}', profile_slug="ui_architect")
+    def test_ui_architect_auto_preserves_proven_unconstrained_v27_fallback(self) -> None:
+        client = self.call('{"ok":true}', profile_slug="ui_architect", schema_mode="AUTO")
         assert client.last_payload is not None
         self.assertNotIn("response_format", client.last_payload)
+
+    def test_ui_architect_explicit_mode_uses_exact_schema_constraint(self) -> None:
+        client = self.call(
+            '{"ok":true}',
+            profile_slug="ui_architect",
+            schema_mode="UI_FOCUSED_DECISION",
+        )
+        assert client.last_payload is not None
+        self.assertEqual(
+            client.last_payload["response_format"],
+            {"type": "json_object", "schema": self.schema},
+        )
 
     def test_other_profiles_use_pinned_llama_schema_constrained_shape(self) -> None:
         client = self.call('{"ok":true}', profile_slug="quality_pack")

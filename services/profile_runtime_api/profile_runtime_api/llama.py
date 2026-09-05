@@ -74,6 +74,7 @@ class LlamaHTTPClient:
         user_prompt: str,
         schema: dict[str, Any],
         profile_slug: str,
+        schema_mode: str = "AUTO",
         image_bytes: bytes | None = None,
         image_media_type: str | None = None,
     ) -> dict[str, Any]:
@@ -106,15 +107,15 @@ class LlamaHTTPClient:
             "max_tokens": self.settings.max_output_tokens,
             "cache_prompt": True,
         }
-        # UI Architect has prior runtime evidence that llama.cpp constrained decoding
-        # against its aggregate schema can terminate with an empty assistant response.
-        # Preserve the proven V27 fallback: generate unconstrained, then apply the same
-        # canonical schema/profile validator and the strict JSON boundary below.
-        if profile_slug != UI_ARCHITECT_PROFILE_SLUG:
+        # UI Architect AUTO preserves the proven V27 fallback because its aggregate
+        # anyOf schema previously produced empty constrained output. A typed, exact
+        # UI mode binds one canonical schema and may use the pinned llama.cpp schema
+        # constraint safely. Non-UI profiles remain schema constrained as before.
+        if profile_slug != UI_ARCHITECT_PROFILE_SLUG or schema_mode != "AUTO":
             # The deployed llama.cpp is pinned at 925e1179. In that parser,
             # response_format.type=json_schema expects json_schema.schema; a direct
             # sibling `schema` is ignored. type=json_object + schema is the pinned,
-            # schema-constrained path and keeps the existing canonical validator after it.
+            # schema-constrained path and keeps the canonical validator after it.
             payload["response_format"] = {"type": "json_object", "schema": schema}
 
         response = self._request(
@@ -228,6 +229,7 @@ class PersistentLlamaServerAdapter:
             user_prompt=request["input_literal"],
             schema=self.schema.payload,
             profile_slug=request["profile_slug"],
+            schema_mode=self.schema.mode,
             image_bytes=self.image_bytes,
             image_media_type=self.image_media_type,
         )
@@ -247,6 +249,8 @@ class PersistentLlamaServerAdapter:
             "source_sha": self.settings.source_sha,
             "endpoint_scope": "LOOPBACK_ONLY",
             "structured_output_schema_sha256": self.schema.sha256,
+            "structured_output_schema_mode": self.schema.mode,
+            "structured_output_schema_refs": list(self.schema.source_refs),
             "structural_context_sha256": canonical_json_sha256(self.structural_context),
             "llama_response_id": self.last_completion.get("id") or "UNAVAILABLE",
             "finish_reason": self.last_completion.get("finish_reason") or "UNAVAILABLE",
@@ -332,6 +336,8 @@ class PersistentLlamaServerVerifier:
             raise LlamaTransportError("LLAMA_VERIFIER_ENDPOINT_NOT_LOOPBACK")
         if attestation.get("structured_output_schema_sha256") != self.schema.sha256:
             raise LlamaTransportError("LLAMA_VERIFIER_SCHEMA_MISMATCH")
+        if attestation.get("structured_output_schema_mode") != self.schema.mode:
+            raise LlamaTransportError("LLAMA_VERIFIER_SCHEMA_MODE_MISMATCH")
         context_sha = canonical_json_sha256(self.structural_context)
         if attestation.get("structural_context_sha256") != context_sha:
             raise LlamaTransportError("LLAMA_VERIFIER_CONTEXT_MISMATCH")
@@ -346,6 +352,7 @@ class PersistentLlamaServerVerifier:
                     request["request_sha256"],
                     response_sha,
                     self.schema.sha256,
+                    self.schema.mode,
                     context_sha,
                     str(attestation.get("llama_response_id")),
                 ]
