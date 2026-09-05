@@ -110,7 +110,7 @@ jobs:
         if: steps.credentials.outputs.ready == 'true'
         uses: supabase/setup-cli@v1
         with:
-          version: 2.112.0
+          version: 2.116.0
 
       - name: Export sandbox schema without data or roles
         if: steps.credentials.outputs.ready == 'true'
@@ -224,7 +224,7 @@ jobs:
           cp "$RUNNER_TEMP/lf-roles.sql" supabase/roles.sql
           cp "$RUNNER_TEMP/lf-remote-schema.sql" \
             supabase/migrations/20260807000000_remote_schema_probe.sql
-          supabase start
+          supabase db start
           trap 'supabase stop --no-backup || true' EXIT
           supabase db reset
 
