@@ -139,6 +139,150 @@ class RuntimeOutputModeTest(unittest.TestCase):
         self.assertIn("UI_FOCUSED_DENSITY_LIMITS_NON_CONCRETE", utility["blocking_codes"])
         self.assertIn("UI_FOCUSED_IMPLEMENTATION_FORMAT_NON_CONCRETE", utility["blocking_codes"])
 
+    def test_focused_utility_rejects_observed_enum_false_positive(self) -> None:
+        payload = self.focused_payload()
+        payload.update(
+            {
+                "decision_subject": "UI decision",
+                "selected_visual_type": "horizontal overflow",
+                "base_color_or_surface": "wide operational table",
+                "size_or_coverage": "horizontal overflow",
+                "density_limits": "no more than one treatment per affected component",
+                "depth_style": "subtle",
+                "visual_weight": "discovery without hiding row actions",
+                "relationship_to_main_element": "without adding business rules",
+                "implementation_format": "JSON object",
+            }
+        )
+        binding = self.repository.runtime_schema("ui_architect", "UI_FOCUSED_DECISION")
+        gate, parsed = self.gates.contract(
+            profile_slug="ui_architect", raw_output=json.dumps(payload), schema=binding
+        )
+        self.assertEqual(gate["status"], "PASS", gate)
+        utility = self.gates.semantic_utility(
+            profile_slug="ui_architect", payload=parsed, contract_gate=gate
+        )
+        self.assertEqual(utility["status"], "FAIL", utility)
+        self.assertIn("UI_FOCUSED_DECISION_SUBJECT_NON_CONCRETE", utility["blocking_codes"])
+        self.assertIn("UI_FOCUSED_IMPLEMENTATION_FORMAT_NON_CONCRETE_V3", utility["blocking_codes"])
+
+    def test_focused_utility_rejects_observed_cross_field_copy(self) -> None:
+        payload = self.focused_payload()
+        repeated = "1px accent border on the table header"
+        payload.update(
+            {
+                "decision_subject": "horizontal overflow in operational table",
+                "selected_visual_type": repeated,
+                "size_or_coverage": repeated,
+                "density_limits": repeated,
+                "base_color_or_surface": "existing white table surface",
+                "depth_style": "no added elevation; preserve existing table shadow token",
+                "visual_weight": "secondary to table data and primary actions",
+                "relationship_to_main_element": "supports table navigation without hiding row actions",
+                "implementation_format": "CSS border token on the table header",
+            }
+        )
+        binding = self.repository.runtime_schema("ui_architect", "UI_FOCUSED_DECISION")
+        gate, parsed = self.gates.contract(
+            profile_slug="ui_architect", raw_output=json.dumps(payload), schema=binding
+        )
+        self.assertEqual(gate["status"], "PASS", gate)
+        utility = self.gates.semantic_utility(
+            profile_slug="ui_architect", payload=parsed, contract_gate=gate
+        )
+        self.assertEqual(utility["status"], "FAIL", utility)
+        self.assertIn("UI_FOCUSED_CROSS_FIELD_DUPLICATION", utility["blocking_codes"])
+
+    def test_focused_utility_rejects_numeric_only_density(self) -> None:
+        payload = self.focused_payload()
+        payload["density_limits"] = "100"
+        binding = self.repository.runtime_schema("ui_architect", "UI_FOCUSED_DECISION")
+        gate, parsed = self.gates.contract(
+            profile_slug="ui_architect", raw_output=json.dumps(payload), schema=binding
+        )
+        self.assertEqual(gate["status"], "PASS", gate)
+        utility = self.gates.semantic_utility(
+            profile_slug="ui_architect", payload=parsed, contract_gate=gate
+        )
+        self.assertEqual(utility["status"], "FAIL", utility)
+        self.assertIn("UI_FOCUSED_DENSITY_LIMITS_NUMERIC_ONLY", utility["blocking_codes"])
+
+    def test_focused_utility_accepts_concrete_spanish_fields(self) -> None:
+        payload = self.focused_payload()
+        payload.update(
+            {
+                "decision_subject": "estado del método de pago seleccionado",
+                "selected_visual_type": "borde de acento de 2px con ícono de check en la tarjeta seleccionada",
+                "base_color_or_surface": "superficie blanca existente con token de color de acento",
+                "size_or_coverage": "solo el borde de la tarjeta seleccionada y el área del ícono",
+                "density_limits": "un borde y un ícono por tarjeta de pago seleccionada",
+                "depth_style": "sin sombra ni elevación adicional",
+                "visual_weight": "secundario frente al monto y al CTA primario",
+                "relationship_to_main_element": "apoya el estado de la tarjeta sin competir con el CTA primario",
+                "implementation_format": "token CSS de borde más componente de ícono existente en la tarjeta",
+                "hard_exclusions": ["no nuevo CTA primario", "no cambios fuera del selector"],
+            }
+        )
+        binding = self.repository.runtime_schema("ui_architect", "UI_FOCUSED_DECISION")
+        gate, parsed = self.gates.contract(
+            profile_slug="ui_architect", raw_output=json.dumps(payload), schema=binding
+        )
+        self.assertEqual(gate["status"], "PASS", gate)
+        utility = self.gates.semantic_utility(
+            profile_slug="ui_architect", payload=parsed, contract_gate=gate
+        )
+        self.assertEqual(utility["status"], "PASS", utility)
+
+    def test_focused_utility_accepts_compact_design_tokens_and_css_values(self) -> None:
+        payload = self.focused_payload()
+        payload.update(
+            {
+                "decision_subject": "search field selection treatment",
+                "selected_visual_type": "check icon",
+                "base_color_or_surface": "primary-600",
+                "size_or_coverage": "button bounds",
+                "density_limits": "1 icon",
+                "depth_style": "0 1px 2px rgba(0,0,0,.08)",
+                "visual_weight": "font-weight 600",
+                "relationship_to_main_element": "beside the search input",
+                "implementation_format": "Tailwind overflow-x-auto utility",
+            }
+        )
+        binding = self.repository.runtime_schema("ui_architect", "UI_FOCUSED_DECISION")
+        gate, parsed = self.gates.contract(
+            profile_slug="ui_architect", raw_output=json.dumps(payload), schema=binding
+        )
+        self.assertEqual(gate["status"], "PASS", gate)
+        utility = self.gates.semantic_utility(
+            profile_slug="ui_architect", payload=parsed, contract_gate=gate
+        )
+        self.assertEqual(utility["status"], "PASS", utility)
+
+    def test_focused_utility_accepts_compact_spanish_design_tokens(self) -> None:
+        payload = self.focused_payload()
+        payload.update(
+            {
+                "decision_subject": "estado del buscador activo",
+                "selected_visual_type": "borde de acento con ícono",
+                "base_color_or_surface": "primario-600",
+                "size_or_coverage": "solo límites del botón",
+                "density_limits": "1 ícono",
+                "depth_style": "sombra 0 1px 2px rgba(0,0,0,.08)",
+                "visual_weight": "peso tipográfico 600",
+                "relationship_to_main_element": "junto al buscador",
+                "implementation_format": "clase CSS .seleccionado en botón",
+            }
+        )
+        binding = self.repository.runtime_schema("ui_architect", "UI_FOCUSED_DECISION")
+        gate, parsed = self.gates.contract(
+            profile_slug="ui_architect", raw_output=json.dumps(payload, ensure_ascii=False), schema=binding
+        )
+        self.assertEqual(gate["status"], "PASS", gate)
+        utility = self.gates.semantic_utility(
+            profile_slug="ui_architect", payload=parsed, contract_gate=gate
+        )
+        self.assertEqual(utility["status"], "PASS", utility)
+
     def test_auto_mode_does_not_weaken_existing_production_validator(self) -> None:
         binding = self.repository.runtime_schema("ui_architect", "AUTO")
         gate, _ = self.gates.contract(
