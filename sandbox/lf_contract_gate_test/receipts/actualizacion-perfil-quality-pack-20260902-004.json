@@ -1,0 +1,35 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-QUALITY-PACK-20260902-004",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "f795fedc426412127eab65075a4568911c1c0370",
+    "444cfc56e0368b15ca70df221384b11b41aa00b5",
+    "ba0779ca6e511acc9620b135f053c6e1cc7cacc1",
+    "ffec66f63ab5eb515d069a5d59925ba0b02c901caeab1a3568b93b79293524ed"
+  ],
+  "target_paths": [
+    "profiles/quality_pack/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-02T04:57:45Z",
+  "target_type": "PROFILE",
+  "target_code": "PERFIL-QUALITY-PACK",
+  "branch": "lf/quality-pack-runtime-schema-profile-20260902",
+  "pr_number": 451,
+  "validated_substantive_head": "ba0779ca6e511acc9620b135f053c6e1cc7cacc1",
+  "deterministic_matrix": "21/21_PASS",
+  "deterministic_run_id": 33592345539,
+  "bootstrap_run_id": 33592345424,
+  "pre_receipt_contract_run_id": 33592345492,
+  "runtime_unchanged": true,
+  "automatic_promotion": false,
+  "merge_authorized": false,
+  "notes": "PASS_SANDBOX pre-merge receipt for the governed Quality Pack profile-only contract tightening. Canonical ACTUALIZACION_PERFIL_LF steps 0-110 are STEP_PASS_WITH_EVIDENCE. The active contract/judge fingerprints are the same v0.1 fingerprints already used by the canonical Quality Pack and Product Director profile-update receipts; current Supabase contract/judge codes remain unchanged. Fresh candidate evidence: Validate LF Packs 33592345539 SUCCESS with Quality Pack adversarial 21/21 PASS and digest bb3c9d59025ebe9abf78fb6a0cae8ded48c913e1957087944cde530b0d835c6d; Bootstrap 33592345424 SUCCESS; pre-receipt lf-contract-check 33592345492 reached only FAIL_RECEIPT_MISSING after profile runtime 23/23 PASS. This receipt authorizes only the candidate profile source package for exact-head CI. It does not authorize merge, runtime activation, production, VIGENTE/VALIDATED, automatic promotion, or live behavioral closure."
+}

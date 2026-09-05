@@ -1,0 +1,23 @@
+{
+  "output_type": "CUSTOMER_FINANCIAL_DECISION_SPEC",
+  "decision_id": "BAD-EXAMPLE-001",
+  "decision_question": "Pick the best option.",
+  "comparison_basis": "conversion",
+  "options": [
+    {
+      "option_id": "PAY_NOW",
+      "terms": {"discount": "50%"},
+      "customer_consequence": "Your debt will be fully cleared and your credit score will improve.",
+      "timing": "today",
+      "monetary_basis": "monthly_payment",
+      "key_tradeoff": "Best option",
+      "authority_refs": []
+    }
+  ],
+  "must_understand": [],
+  "uncertainties": [],
+  "claim_guardrails": [],
+  "recommended_presentation_priority": ["PAY NOW NOW"],
+  "handoff_to_next": {"target": "UI_ARCHITECT"},
+  "self_verdict": "READY_FOR_REVIEW"
+}

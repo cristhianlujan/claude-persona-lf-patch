@@ -1,0 +1,11 @@
+{
+  "execution_id": "",
+  "step_id": "",
+  "evidence_ref": "",
+  "evidence_payload": {
+    "step_result": "",
+    "blocking_codes": []
+  },
+  "template_only": true,
+  "note": "Populate only from current authoritative evidence. Router requires a real supabase:// evidence_ref and router_read payload."
+}

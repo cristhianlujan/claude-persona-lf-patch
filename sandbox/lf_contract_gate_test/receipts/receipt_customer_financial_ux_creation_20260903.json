@@ -1,0 +1,32 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "CREACION_PERFIL_LF",
+  "execution_id": "EXEC-CREACION-PERFIL-LF-OIDC-5f133751-fd18-4176-af31-936d4324d338",
+  "result": "PASS",
+  "all_required_steps_pass": true,
+  "contract_sha": "ea3ef218725f0e6df5067f16862a677b80c61c5e",
+  "judge_sha": "f1ca87619ca3ba8375ef73ef219fdef95cd8a8fd",
+  "source_sha_list": [
+    "735c36ab17c75b01093bbf8e75fe84113f05d8ee",
+    "d9ac5789d24585a3be5c106dbb33f7424bde119a",
+    "ec2ad7f23120820c9129f726ecc4738c1a83e541",
+    "f1864f86e3a3c164da80ad56d0a328a3ca5af265",
+    "e2c283e3c7559ba050a150aca604ef7b2b75714c",
+    "1637dee15aec2f68dd4df4751ea12e78a416fa64",
+    "bc9c39b25e59b338ef17dd592ce02586862fa08f",
+    "11e5720a14182eb23848391b8850eb0717eb327c",
+    "f05fa1095a600337f71ee4aebb1854c272536859",
+    "59e7f3e5d2d1a952191881f436d7e2c39b1d4e0c",
+    "4facfcbca2acb6f17eb1dc47c4272f50cdc301b2",
+    "4af83957377e0219dc78ed518f72a4baa3afe0b7",
+    "33a5ab2ce9944a102daedbcde1b13ce9278ee56d",
+    "3ad0ec97da4bfe1b222243494ca6f0e902abb47f"
+  ],
+  "target_paths": [
+    "profiles/customer_financial_ux_decisioning/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-03T03:22:24.767097Z"
+}

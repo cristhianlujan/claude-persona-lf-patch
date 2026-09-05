@@ -41,7 +41,6 @@ POSITIVE = [
     run_item("Validate LF Packs", "pull_request", 104),
 ]
 
-
 REQUEST_COUNTS: dict[str, int] = {}
 
 
@@ -119,7 +118,7 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps({"total_count": len(items), "workflow_runs": items}).encode())
 
 
-def invoke(script: Path, base: str, output: Path, *, token: str | None = "synthetic-token", wait: float = 0.0) -> subprocess.CompletedProcess[str]:
+def invoke(script: Path, base: str, output: Path, *, token: str | None = "synthetic-token", wait: float = 0.0, required_event: str = "both") -> subprocess.CompletedProcess[str]:
     env = os.environ.copy()
     env.pop("GITHUB_TOKEN", None)
     if token is not None:
@@ -132,6 +131,7 @@ def invoke(script: Path, base: str, output: Path, *, token: str | None = "synthe
             "--head-sha", HEAD,
             "--output", str(output),
             "--api-base", base,
+            "--required-event", required_event,
             "--matrix-wait-seconds", str(wait),
             "--poll-interval-seconds", "0.01",
         ],
@@ -175,13 +175,11 @@ def main() -> int:
                     wait=1.0 if scenario == "eventual" else 0.0,
                 )
                 if result.returncode != expected_exit or marker not in result.stdout:
-                    raise SystemExit(
-                        f"{scenario}: exit={result.returncode} expected={expected_exit}; output={result.stdout}"
-                    )
+                    raise SystemExit(f"{scenario}: exit={result.returncode} expected={expected_exit}; output={result.stdout}")
                 if scenario in {"positive", "eventual"}:
                     record = json.loads((root / f"{scenario}.json").read_text(encoding="utf-8"))
-                    if record.get("matrix_complete") is not True:
-                        raise SystemExit("positive record is not complete")
+                    if record.get("matrix_complete") is not True or record.get("required_event") != "both":
+                        raise SystemExit("legacy both-event record is not complete")
                     expected_pages = 2 if scenario == "positive" else 1
                     if record.get("api", {}).get("pages_fetched") != expected_pages:
                         raise SystemExit("pagination was not recorded")
@@ -209,9 +207,23 @@ def main() -> int:
             passed += 1
             print(f"PASS_E16_CA_N93_{passed:02d}=missing-token")
 
-            if passed != 10:
+            push_result = invoke(
+                args.inventory.resolve(),
+                f"http://127.0.0.1:{port}/positive",
+                root / "push.json",
+                required_event="push",
+            )
+            if push_result.returncode != 0 or "PASS_E16_CANONICAL_ACTIONS_INVENTORY=2/2" not in push_result.stdout:
+                raise SystemExit(f"event-bound push case failed: {push_result.stdout}")
+            push_record = json.loads((root / "push.json").read_text(encoding="utf-8"))
+            if push_record.get("required_event") != "push" or len(push_record.get("selected_runs", [])) != 2:
+                raise SystemExit("event-bound push selection is incorrect")
+            passed += 1
+            print(f"PASS_E16_CA_N93_{passed:02d}=event-bound-push")
+
+            if passed != 11:
                 raise SystemExit(f"CA-N93 test count mismatch: {passed}")
-            print("PASS_E16_CA_N93_INVENTORY_TESTS=10/10")
+            print("PASS_E16_CA_N93_INVENTORY_TESTS=11/11")
             return 0
     finally:
         server.shutdown()

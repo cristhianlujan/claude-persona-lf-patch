@@ -30,12 +30,91 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Canonical preflight and feedback tier
+        id: feedback_tier
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import importlib.util
+          import os
+          import subprocess
+          from pathlib import Path
+
+          validator_path = Path("scripts/lf_contract_check.py")
+          spec = importlib.util.spec_from_file_location("lf_contract_check_feedback_tier", validator_path)
+          if spec is None or spec.loader is None:
+              raise SystemExit("FAIL_LF_FEEDBACK_TIER_VALIDATOR_LOAD")
+          validator = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(validator)
+
+          validator.validate_p0_closure_evidence_scope()
+          changed = validator.get_changed_files()
+          print("Feedback-tier changed files:")
+          for path in changed:
+              print(f"- {path}")
+
+          tier = "DEEP"
+          reason = "NO_PATHS_FAIL_CLOSED"
+          if changed:
+              governed = validator.validate_changed_files(changed)
+              validator.validate_governed_receipt(changed, governed)
+              validator.validate_forbidden_terms(changed)
+              reason = "NON_P0_DOC_OR_MIXED_SURFACE"
+
+              p0_docs = validator.P0_CLOSURE_EVIDENCE_ALLOWED_EXACT
+              if all(path in p0_docs for path in changed):
+                  raw = subprocess.check_output(
+                      ["git", "ls-files", "-s", "-z", "--", *changed]
+                  )
+                  regular = set()
+                  for record in raw.split(b"\0"):
+                      if not record:
+                          continue
+                      metadata, sep, raw_path = record.partition(b"\t")
+                      if not sep:
+                          continue
+                      mode = metadata.split(b" ", 1)[0]
+                      if mode in {b"100644", b"100755"}:
+                          regular.add(raw_path.decode("utf-8", "strict"))
+
+                  if all(path in regular for path in changed):
+                      tier = "FAST_P0_DOCS"
+                      reason = "CANONICAL_P0_CLOSURE_EVIDENCE_ONLY"
+                  else:
+                      reason = "P0_DOC_NONREGULAR_OR_DELETED_FORCE_DEEP"
+
+          output = Path(os.environ["GITHUB_OUTPUT"])
+          with output.open("a", encoding="utf-8") as handle:
+              handle.write(f"tier={tier}\n")
+              handle.write(f"reason={reason}\n")
+
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a", encoding="utf-8") as handle:
+                  handle.write("### Strategy 28 LF contract feedback tier\n")
+                  handle.write(f"- tier: `{tier}`\n")
+                  handle.write(f"- reason: `{reason}`\n")
+                  handle.write("- FAST scope: exact canonical P0 closure-evidence docs only\n")
+                  handle.write("- delete/non-regular/mixed/unknown/governed-without-receipt remain fail-closed\n")
+
+          print(f"PASS_LF_FEEDBACK_TIER tier={tier} reason={reason}")
+          PY
+
+      - name: Complete FAST P0 docs lane
+        if: steps.feedback_tier.outputs.tier == 'FAST_P0_DOCS'
+        run: |
+          echo "PASS_LF_CONTRACT_FAST_P0_DOCS"
+          echo "Deep migration/runtime/visual/E.16 work skipped because the canonical preflight proved an exact regular P0-doc-only delta."
+
       - name: Validate declared governance paths
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         run: |
           pip install pyyaml
           python3 scripts/validate_declared_paths.py --repo-root .
 
       - name: Verify hosted Supabase Data API excludes net schema
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
@@ -102,6 +181,7 @@ jobs:
           PY
 
       - name: Enforce LF migration source parity after checkpoint
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         env:
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
@@ -135,6 +215,7 @@ jobs:
             "$RUNNER_TEMP/lf-legacy-checkpoint.csv"
 
       - name: Enforce Input Governance migration source parity
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         env:
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
@@ -160,12 +241,14 @@ jobs:
             --cutover "$INPUT_GOVERNANCE_CUTOVER"
 
       - name: Install deterministic audit dependencies
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         run: |
           python3 -m pip install --disable-pip-version-check \
             PyYAML==6.0.2 \
             jsonschema==4.23.0
 
       - name: Provision governed P0 visual runtime
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         run: |
           set -euo pipefail
           if [ -n "${P0_CI_ENGINEERING_REGRESSION:-}" ]; then
@@ -178,6 +261,7 @@ jobs:
           sudo apt-get install -y -qq tesseract-ocr tesseract-ocr-spa
 
       - name: Validate LF contract
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -295,6 +379,7 @@ jobs:
           PY
 
       - name: Run E.16 governance regression matrices
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         run: |
           python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_REGRESSION_TESTS.py \
             --validator sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py
@@ -307,14 +392,17 @@ jobs:
           python3 sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_SCOPE_TESTS.py
 
       - name: Run LF validation engine self-test
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         run: |
           python3 sandbox/lf_contract_gate_test/lf_validation_engine_v0_10_2_selftest.py
 
       - name: Run NO BYPASS judge profile-card-skill self-test
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         run: |
           python3 sandbox/no_bypass_judge_profile_card_skill/no_bypass_judge_selftest.py
 
       - name: Enforce merge and CI evidence for PASS candidates
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -324,6 +412,7 @@ jobs:
             --repository "$GITHUB_REPOSITORY"
 
       - name: Audit creating-integral-user-stories A01-A62
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         run: |
           python3 sandbox/lf_contract_gate_test/r8_continuous_audit.py \
             skills/creating-integral-user-stories \
@@ -335,13 +424,20 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           E16_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          LF_FEEDBACK_TIER: ${{ steps.feedback_tier.outputs.tier }}
         run: |
+          set -euo pipefail
+          if [ "$LF_FEEDBACK_TIER" = "FAST_P0_DOCS" ]; then
+            echo "PASS_E16_INVENTORY_SKIPPED_FAST_P0_DOCS"
+            exit 0
+          fi
           python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py \
             --repository "$GITHUB_REPOSITORY" \
             --head-sha "$E16_HEAD_SHA" \
             --output .audit-output/creating-integral-user-stories/github-actions-inventory-e16.json
 
       - name: Build authoritative reconciliation manifest
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         env:
           LF_WORKFLOW_EVENT: ${{ github.event_name }}
         run: |
@@ -405,7 +501,7 @@ jobs:
           PY
 
       - name: Upload per-artifact audit evidence and canonical source snapshot
-        if: always()
+        if: always() && steps.feedback_tier.outcome == 'success' && steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         uses: actions/upload-artifact@v4
         with:
           name: r8-continuous-audit-${{ github.run_id }}

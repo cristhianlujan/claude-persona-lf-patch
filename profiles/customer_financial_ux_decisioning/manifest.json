@@ -1,0 +1,49 @@
+{
+  "schema_version": "lf-profile-pack-manifest/v1",
+  "operation": "CREACION_PERFIL_LF",
+  "artifact_type": "PROFILE_PACK_CANDIDATE",
+  "profile_pack_id": "CUSTOMER_FINANCIAL_UX_DECISIONING_PROFILE_PACK_001",
+  "profile_code": "CUSTOMER_FINANCIAL_UX_DECISIONING",
+  "profile_slug": "customer_financial_ux_decisioning",
+  "document_status": "CANDIDATO",
+  "operational_status": "READ_ONLY",
+  "runtime": "NO_HABILITADO",
+  "automatic_impact": "BLOQUEADO",
+  "status": "CANDIDATE_READ_ONLY",
+  "source_authority": [
+    "ACT-0001 Router",
+    "CREACION_PERFIL_LF live operation contract"
+  ],
+  "profile_creator_continuation_source": {
+    "pr": 467,
+    "merged": true,
+    "merge_commit_sha": "249f3913b31de0d6cbcddc095acc5e6c9ca02f1a",
+    "scope": "governed post-init step continuation source",
+    "receipt_claimed": false
+  },
+  "champion_patterns": ["profiles/ui_architect", "profiles/gamification_system_architect"],
+  "required_files": [
+    "README.md",
+    "SKILL.md",
+    "contracts/main_contract.md",
+    "contracts/input_governance_binding.json",
+    "schemas/output.schema.json",
+    "judges/score_rubric.md",
+    "judges/mini_judge.md",
+    "examples/good_output.json",
+    "examples/bad_output.json",
+    "evals/eval_matrix.json",
+    "evals/champion_challenger_structural_20260902.json",
+    "validators/validate_pack.py",
+    "handoffs/to_quality_pack.handoff.json",
+    "manifest.json"
+  ],
+  "exposes_user_facing_output": false,
+  "runtime_enabled": false,
+  "automatic_promotion": false,
+  "production_enabled": false,
+  "validated_or_vigente": false,
+  "adapter_required": false,
+  "behavioral_proof_status": "NOT_EXECUTED",
+  "governed_creation_receipt_status": "PENDING_CANONICAL_EXECUTION"
+}
