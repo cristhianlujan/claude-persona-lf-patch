@@ -1,0 +1,29 @@
+{
+  "schema_version": "customer-profile-champion-challenger/v1",
+  "profile_code": "CUSTOMER_IDENTITY_CONSENT_PRIVACY",
+  "comparison_type": "SOURCE_BOUND_STRUCTURAL_ONLY",
+  "champions": [
+    {"profile":"UI_ARCHITECT","source_path":"profiles/ui_architect/SKILL.md","git_blob":"0e9105bf37171f28bafe6602d3012f59002cbe88"},
+    {"profile":"GAMIFICATION_SYSTEM_ARCHITECT","source_path":"profiles/gamification_system_architect/SKILL.md","git_blob":"5e805cb355da421a76c917e965f2971675e80a9e"}
+  ],
+  "challenger": {
+    "skill_path":"profiles/customer_identity_consent_privacy/SKILL.md",
+    "skill_git_blob":"93bf4b9d588db03685b8c4cad312eecf4c29b22b",
+    "eval_path":"profiles/customer_identity_consent_privacy/evals/eval_matrix.json",
+    "eval_git_blob":"d143a9133adc4e051647f8a248559a4a28abea9c",
+    "eval_cases":10,
+    "behavioral_execution_status":"NOT_EXECUTED"
+  },
+  "dimensions": {
+    "architecture":{"observed":"EXECUTE_FIRST_IDENTITY_PURPOSE_CONSENT_MINIMUM_DATA_ROUTE","source_status":"OBSERVED"},
+    "depth":{"observed":"CONTRACT_SCHEMA_JUDGE_VALIDATOR_EVAL_HANDOFF_PACK","source_status":"OBSERVED"},
+    "grounding":{"observed":"IDENTITY_PURPOSE_CONSENT_AND_DATA_REQUESTS_BIND_AUTHORITY_REFS","source_status":"OBSERVED"},
+    "negative_handling":{"observed":"PRECHECKED_CONSENT_MISSING_AUTHORITY_OVERCOLLECTION_PURPOSE_DRIFT_RAW_HANDOFF_NEGATIVES_PRESENT","source_status":"OBSERVED"},
+    "handoff":{"observed":"PURPOSE_AUTHORITY_OPTIONALITY_AND_EXPOSURE_BOUNDARIES_PRESERVED","source_status":"OBSERVED"},
+    "quality":{"observed":"STRUCTURAL_GATES_PRESENT_BEHAVIORAL_QUALITY_NOT_PROVEN","source_status":"PARTIAL"},
+    "latency":{"observed":"NO_OBSERVADO","source_status":"NOT_OBSERVED"},
+    "consistency":{"observed":"ROUTER_DIRECT_EQUIVALENCE_REQUIRED_BUT_NOT_BEHAVIORALLY_EXECUTED","source_status":"PARTIAL"}
+  },
+  "domain_rule_copying":"NOT_OBSERVED_IN_SOURCE_REVIEW",
+  "verdict":"READY_FOR_BEHAVIORAL_EXECUTION_NOT_BEHAVIORAL_PASS"
+}

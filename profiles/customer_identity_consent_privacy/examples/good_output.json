@@ -1,0 +1,21 @@
+{
+  "output_type": "CUSTOMER_IDENTITY_CONSENT_PRIVACY_SPEC",
+  "identity_assurance": {
+    "required": true,
+    "purpose": "Verify the authorized account-access action.",
+    "assurance_requirement": "Use only the authoritative assurance requirement supplied upstream.",
+    "authority_refs": ["source://identity/policy/1"]
+  },
+  "data_requests": [
+    {"data_id":"contact_phone","purpose":"Deliver the authorized verification step.","required":true,"authority_refs":["source://identity/policy/1"]}
+  ],
+  "consent_items": [
+    {"consent_id":"marketing_optional","purpose":"Optional marketing communications.","required":false,"affirmative_action":"Explicit opt-in action.","decline_consequence":"No effect on the unrelated core account action.","authority_refs":["source://consent/policy/2"]}
+  ],
+  "data_minimization_checks": ["No additional identity document is requested without a demonstrated need."],
+  "exposure_controls": ["Pass reference IDs downstream instead of unnecessary raw sensitive values."],
+  "prohibited_inferences": ["Do not infer identity verification success from data submission.", "Do not infer optional consent from continuation."],
+  "uncertainties": [],
+  "handoff_to_next": {"target":"UI_ARCHITECT","preserve":["purpose","required_vs_optional","authority_refs","exposure_controls"]},
+  "self_verdict": "READY_FOR_REVIEW"
+}
