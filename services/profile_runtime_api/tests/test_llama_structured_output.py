@@ -190,6 +190,33 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
             )
         self.assertEqual(ctx.exception.code, "LLAMA_STRUCTURED_OUTPUT_ROOT_NOT_OBJECT")
 
+    def test_focused_prompt_requires_noncontradictory_concrete_treatment(self) -> None:
+        binding = SchemaBinding(
+            payload=self.schema,
+            raw=b'{}',
+            sha256="a" * 64,
+            source_refs=("test.schema.json",),
+            mode="UI_FOCUSED_DECISION",
+        )
+        adapter = PersistentLlamaServerAdapter(
+            settings=self.settings,
+            client=RecordingClient(self.settings, '{"ok":true}'),
+            schema=binding,
+            structural_context={},
+            image_bytes=None,
+            image_media_type=None,
+        )
+        prompt = adapter._system_prompt(
+            {
+                "runtime_output_mode": "UI_FOCUSED_DECISION",
+                "profile_sources": [{"ref": "profiles/x/SKILL.md", "content": "TASK: REMEDIATE_EXISTING"}],
+                "lf_adapter_sources": [],
+            }
+        )
+        self.assertIn("corrective visual/interaction treatment", prompt)
+        self.assertIn("hard_exclusions must never prohibit", prompt)
+        self.assertIn("bare generic labels", prompt)
+
     def test_queue_context_flags_do_not_imply_missing_input(self) -> None:
         binding = SchemaBinding(
             payload=self.schema,

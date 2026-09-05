@@ -117,18 +117,66 @@ class OutputGates:
         elif profile_slug == "ui_architect":
             mode = str(contract_gate.get("schema_mode") or "AUTO")
             if mode == "UI_FOCUSED_DECISION":
-                for key in (
+                required_text = (
                     "decision_subject",
                     "selected_visual_type",
+                    "base_color_or_surface",
+                    "size_or_coverage",
+                    "density_limits",
+                    "depth_style",
+                    "visual_weight",
                     "relationship_to_main_element",
                     "implementation_format",
-                ):
+                )
+                values: dict[str, str] = {}
+                for key in required_text:
                     value = payload.get(key)
                     if not isinstance(value, str) or len(value.strip()) < 3:
                         errors.append(f"UI_FOCUSED_{key.upper()}_WEAK")
+                    else:
+                        values[key] = " ".join(value.lower().strip().split())
+
                 exclusions = payload.get("hard_exclusions")
                 if not isinstance(exclusions, list) or not exclusions:
                     errors.append("UI_FOCUSED_HARD_EXCLUSIONS_EMPTY")
+                else:
+                    selected = values.get("selected_visual_type", "")
+                    for exclusion in exclusions:
+                        if not isinstance(exclusion, str):
+                            continue
+                        normalized = " ".join(exclusion.lower().strip().split())
+                        if selected and normalized and (selected == normalized or selected in normalized):
+                            errors.append("UI_FOCUSED_SELECTED_TREATMENT_EXCLUDED")
+                            break
+
+                generic_only = {
+                    "small", "medium", "large", "thin", "thick", "light", "dark",
+                    "above", "below", "left", "right", "center", "standard", "default",
+                    "normal", "css", "svg", "component", "visual", "ui",
+                }
+                specificity_fields = (
+                    "size_or_coverage",
+                    "density_limits",
+                    "depth_style",
+                    "visual_weight",
+                    "relationship_to_main_element",
+                    "implementation_format",
+                )
+                for key in specificity_fields:
+                    normalized = values.get(key, "")
+                    if normalized in generic_only:
+                        errors.append(f"UI_FOCUSED_{key.upper()}_NON_CONCRETE")
+
+                density = values.get("density_limits", "")
+                density_markers = (
+                    "one", "single", "two", "three", "per ", "max", "maximum",
+                    "only", "no more", "at most", "level", "layer", "line", "element",
+                    "cue", "viewport", "%", "px",
+                )
+                if density and not any(char.isdigit() for char in density) and not any(
+                    marker in density for marker in density_markers
+                ):
+                    errors.append("UI_FOCUSED_DENSITY_LIMITS_NON_CONCRETE")
             elif mode == "UI_MISSING_INPUT":
                 verdict = payload.get("self_verdict")
                 missing = payload.get("missing_inputs")
