@@ -37,17 +37,11 @@ def attest_p0_visual_test_dependencies(repo_root:Path)->None:
 
 def run_p0_quality_regressions(repo_root:Path)->None:
  attest_p0_visual_test_dependencies(repo_root);p0=repo_root/'sandbox/story_creator_p0_visual/v1.1'
+ # The integration verifier already executes 23 exact child gates, including nine
+ # historical outer commands. Keep those gates single-run and preserve their full
+ # stdout/stderr via P0_INTEGRATION_GATE_EVIDENCE_DIR instead of executing them twice.
  commands:list[tuple[str,list[str]]]=[
-  ('legacy-negative-suite',[sys.executable,str(p0/'evals/p0_machine_visual_quality_negative_suite.py')]),
-  ('human-binding-selftest',[sys.executable,str(p0/'scripts/validate_p0_human_binding.py'),'--self-test']),
   ('legacy-integration-verifier',[sys.executable,str(p0/'scripts/verify_p0_integration_candidate.py')]),
-  ('v2-negative-restore-suite',[sys.executable,str(p0/'evals/p0_machine_visual_quality_negative_suite_v2.py')]),
-  ('v2-runtime-regressions',[sys.executable,str(p0/'evals/p0_visual_quality_runtime_regression_suite.py')]),
-  ('v2-forward-adversarial',[sys.executable,str(p0/'evals/p0_blind_forward_adversarial_test.py')]),
-  ('v3-schema-contracts',[sys.executable,str(p0/'scripts/validate_p0_v3_schemas.py')]),
-  ('v3-negative-restore-regressions',[sys.executable,str(p0/'evals/p0_visual_fidelity_v3_suite.py')]),
-  ('v3-forward-adversarial',[sys.executable,str(p0/'evals/p0_visual_fidelity_forward_adversarial_v3.py')]),
-  ('v3-runtime-hash-inventory',[sys.executable,str(p0/'scripts/verify_p0_v3_manifest.py')]),
   ('v3-premerge-compliance',[sys.executable,str(p0/'scripts/audit_p0_handoff_v3_compliance.py'),'--phase','premerge']),
   ('v4-contracts',[sys.executable,str(p0/'scripts/validate_p0_v4_closed_loop.py')]),
   ('v4-graders',[sys.executable,str(p0/'evals/p0_visual_discovery_v4_suite.py')]),
@@ -63,15 +57,19 @@ def run_p0_quality_regressions(repo_root:Path)->None:
  ]
  evidence_dir=repo_root/'.audit-output/creating-integral-user-stories/p0-v3';evidence_dir.mkdir(parents=True,exist_ok=True);env=os.environ.copy()
  if env.get('P0_CI_ENGINEERING_REGRESSION') is not None:raise SystemExit('FAIL_P0_CI_ENGINEERING_REGRESSION_OVERRIDE_FORBIDDEN')
+ integration_evidence_dir=evidence_dir/'integration-gates';env['P0_INTEGRATION_GATE_EVIDENCE_DIR']=str(integration_evidence_dir)
  for label,command in commands:
   completed=subprocess.run(command,cwd=repo_root,text=True,capture_output=True,check=False,env=env);output=(completed.stdout or '')+(('\nSTDERR:\n'+completed.stderr) if completed.stderr else '');(evidence_dir/f'{label}.log').write_text(output,encoding='utf-8')
   if completed.stdout:print(completed.stdout.rstrip())
   if completed.returncode!=0:
    if completed.stderr:print(completed.stderr.rstrip(),file=sys.stderr)
    raise SystemExit(f"P0_VISUAL_QUALITY_REGRESSION_FAILED[{label}]: {' '.join(command)}")
+ integration_logs=sorted(integration_evidence_dir.glob('*.log'))
+ if len(integration_logs)!=23:raise SystemExit(f'FAIL_P0_INTEGRATION_GATE_EVIDENCE={len(integration_logs)}/23')
+ print('PASS_P0_INTEGRATION_GATE_EVIDENCE=23/23')
  snapshot_dir=evidence_dir/'runtime-snapshot';snapshot_dir.mkdir(parents=True,exist_ok=True)
  for rel in ('scripts/p0_visual_fidelity_v3.py','scripts/run_p0_visual_fidelity_v3_private.py','evals/p0-visual-fidelity-runtime-config-v3.json','manifest.visual-fidelity-v3.json'):shutil.copy2(p0/rel,snapshot_dir/Path(rel).name)
- print('PASS_P0_V3_RUNTIME_SNAPSHOT=4_PUBLIC_REPO_FILES');print(f'PASS_P0_VISUAL_QUALITY_REGRESSIONS={len(commands)}/{len(commands)}')
+ print('PASS_P0_V3_RUNTIME_SNAPSHOT=4_PUBLIC_REPO_FILES');print(f'PASS_P0_VISUAL_QUALITY_ORCHESTRATION={len(commands)}/{len(commands)}');print('PASS_P0_VISUAL_QUALITY_VALIDATION_UNITS=36/36')
 
 def run_functional_red_team_regression(repo_root:Path)->None:
  command=[sys.executable,str(repo_root/'sandbox/lf_contract_gate_test/functional_red_team_v1_regression.py')];completed=subprocess.run(command,cwd=repo_root,text=True,capture_output=True,check=False)
