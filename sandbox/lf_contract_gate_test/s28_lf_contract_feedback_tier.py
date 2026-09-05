@@ -13,6 +13,7 @@ import contextlib
 import importlib.util
 import io
 import statistics
+import subprocess
 import time
 from pathlib import Path
 
@@ -39,7 +40,29 @@ def _failure_code(output: str) -> str:
     return "FAIL_UNKNOWN_CANONICAL_PREFLIGHT"
 
 
-def classify(paths: list[str], *, final_evidence: bool = False) -> tuple[str, str]:
+def _regular_tracked_files(paths: list[str]) -> set[str]:
+    if not paths:
+        return set()
+    raw = subprocess.check_output(["git", "ls-files", "-s", "-z", "--", *paths])
+    regular: set[str] = set()
+    for record in raw.split(b"\0"):
+        if not record:
+            continue
+        metadata, sep, raw_path = record.partition(b"\t")
+        if not sep:
+            continue
+        mode = metadata.split(b" ", 1)[0]
+        if mode in {b"100644", b"100755"}:
+            regular.add(raw_path.decode("utf-8", "strict"))
+    return regular
+
+
+def classify(
+    paths: list[str],
+    *,
+    final_evidence: bool = False,
+    regular_paths: set[str] | None = None,
+) -> tuple[str, str]:
     if not paths:
         return "DEEP", "NO_PATHS_FAIL_CLOSED"
 
@@ -57,6 +80,9 @@ def classify(paths: list[str], *, final_evidence: bool = False) -> tuple[str, st
 
     p0_docs = VALIDATOR.P0_CLOSURE_EVIDENCE_ALLOWED_EXACT
     if all(path in p0_docs for path in paths):
+        tracked_regular = _regular_tracked_files(paths) if regular_paths is None else regular_paths
+        if any(path not in tracked_regular for path in paths):
+            return "DEEP", "P0_DOC_NONREGULAR_OR_DELETED_FORCE_DEEP"
         return "FAST_P0_DOCS", "CANONICAL_P0_CLOSURE_EVIDENCE_ONLY"
 
     return "DEEP", "NON_P0_DOC_OR_MIXED_SURFACE"
@@ -64,28 +90,33 @@ def classify(paths: list[str], *, final_evidence: bool = False) -> tuple[str, st
 
 def self_test() -> None:
     allowed = sorted(VALIDATOR.P0_CLOSURE_EVIDENCE_ALLOWED_EXACT)
-    cases: list[tuple[str, list[str], bool, str, str | None]] = []
+    cases: list[tuple[str, list[str], bool, str, str | None, set[str] | None]] = []
     for index, path in enumerate(allowed, start=1):
-        cases.append((f"P0_{index:02d}", [path], False, "FAST_P0_DOCS", None))
+        cases.append((f"P0_{index:02d}", [path], False, "FAST_P0_DOCS", None, None))
 
     cases.extend(
         [
-            ("INVALID_DOC_PR509", ["docs/audits/s28_prod_docs_fast_canary_20260904.md"], False, "BLOCK_EARLY", "FAIL_SCOPE_INVALID"),
-            ("UNSCOPED_P0_LOOKALIKE", ["docs/p0/UNSCOPED.md"], False, "BLOCK_EARLY", "FAIL_SCOPE_INVALID"),
-            ("COMPACT_PROTOCOL_DOC", ["docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md"], False, "DEEP", None),
-            ("MIGRATION", ["supabase/migrations/20990101000000_lf_future_probe.sql"], False, "DEEP", None),
-            ("AUTHORIZED_WORKFLOW", [".github/workflows/lf-contract-check.yml"], False, "DEEP", None),
-            ("MIXED_P0_MIGRATION", [allowed[0], "supabase/migrations/20990101000000_lf_future_probe.sql"], False, "DEEP", None),
-            ("PRODUCTION_BLOCKED", ["production/unexpected.txt"], False, "BLOCK_EARLY", "FAIL_BLOCKED_SCOPE_RISK"),
-            ("NO_PATHS", [], False, "DEEP", None),
-            ("FINAL_EVIDENCE_P0", [allowed[0]], True, "DEEP", None),
-            ("PROFILE_NO_RECEIPT", ["profiles/quality_pack/SKILL.md"], False, "BLOCK_EARLY", "FAIL_RECEIPT_MISSING"),
+            ("P0_DELETE_OR_NONREGULAR", [allowed[0]], False, "DEEP", "P0_DOC_NONREGULAR_OR_DELETED_FORCE_DEEP", set()),
+            ("INVALID_DOC_PR509", ["docs/audits/s28_prod_docs_fast_canary_20260904.md"], False, "BLOCK_EARLY", "FAIL_SCOPE_INVALID", None),
+            ("UNSCOPED_P0_LOOKALIKE", ["docs/p0/UNSCOPED.md"], False, "BLOCK_EARLY", "FAIL_SCOPE_INVALID", None),
+            ("COMPACT_PROTOCOL_DOC", ["docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md"], False, "DEEP", None, None),
+            ("MIGRATION", ["supabase/migrations/20990101000000_lf_future_probe.sql"], False, "DEEP", None, None),
+            ("AUTHORIZED_WORKFLOW", [".github/workflows/lf-contract-check.yml"], False, "DEEP", None, None),
+            ("MIXED_P0_MIGRATION", [allowed[0], "supabase/migrations/20990101000000_lf_future_probe.sql"], False, "DEEP", None, None),
+            ("PRODUCTION_BLOCKED", ["production/unexpected.txt"], False, "BLOCK_EARLY", "FAIL_BLOCKED_SCOPE_RISK", None),
+            ("NO_PATHS", [], False, "DEEP", None, None),
+            ("FINAL_EVIDENCE_P0", [allowed[0]], True, "DEEP", None, None),
+            ("PROFILE_NO_RECEIPT", ["profiles/quality_pack/SKILL.md"], False, "BLOCK_EARLY", "FAIL_RECEIPT_MISSING", None),
         ]
     )
 
     false_fast = 0
-    for case_id, paths, final_evidence, expected_tier, expected_reason in cases:
-        tier, reason = classify(paths, final_evidence=final_evidence)
+    for case_id, paths, final_evidence, expected_tier, expected_reason, regular_paths in cases:
+        tier, reason = classify(
+            paths,
+            final_evidence=final_evidence,
+            regular_paths=regular_paths,
+        )
         if tier == "FAST_P0_DOCS" and expected_tier != "FAST_P0_DOCS":
             false_fast += 1
         if tier != expected_tier:
@@ -110,11 +141,12 @@ def benchmark(samples: int) -> None:
         "deep_migration": ["supabase/migrations/20990101000000_lf_future_probe.sql"],
     }
     for name, paths in probes.items():
+        regular_paths = _regular_tracked_files(paths)
         timings = []
         observed = None
         for _ in range(samples):
             start = time.perf_counter_ns()
-            observed = classify(paths)[0]
+            observed = classify(paths, regular_paths=regular_paths)[0]
             timings.append((time.perf_counter_ns() - start) / 1000.0)
         ordered = sorted(timings)
         p95 = ordered[max(0, int(len(ordered) * 0.95) - 1)]
