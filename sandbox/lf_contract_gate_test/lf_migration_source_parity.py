@@ -45,6 +45,7 @@ MANAGED_EXACT_NAMES = {
     "profile_creator_step_status_contract_fix",
     "router_profile_execution_noncanonical_advisory_readonly",
     "isolate_authenticated_security_definer_rpcs",
+    "s28_architecture_alert_dispatcher_fast_exit_v1",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
@@ -138,6 +139,8 @@ def main() -> int:
         fail("FAIL_CI009_SELFTEST_PROFILE_EXECUTION_NONCANONICAL_ADVISORY")
     if not managed("isolate_authenticated_security_definer_rpcs"):
         fail("FAIL_CI009_SELFTEST_RPC_ISOLATION")
+    if not managed("s28_architecture_alert_dispatcher_fast_exit_v1"):
+        fail("FAIL_CI009_SELFTEST_S28_DISPATCHER_FAST_EXIT")
     if managed("create_lf_unreviewed_future_change"):
         fail("FAIL_CI009_SELFTEST_MANAGED_PREFIX_TOO_BROAD")
     if not classified("programacion_worker_spec_probe"):
@@ -214,7 +217,7 @@ def main() -> int:
         f"legacy={legacy_count} sha256={legacy_sha} grandfathered={grandfathered_count}/{grandfathered_sha} "
         f"classification_baseline_end={classification_baseline_end}"
     )
-    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=21/21")
+    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=22/22")
     return 0
 
 
