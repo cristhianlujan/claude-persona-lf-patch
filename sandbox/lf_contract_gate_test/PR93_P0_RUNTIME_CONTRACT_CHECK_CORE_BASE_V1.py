@@ -4,9 +4,10 @@
 Only pinned governed Edge source sets, platform function configuration, and the
 versioned Story Creator P0 sandbox candidate are admitted beyond the base LF
 contract scope. The historical PR93 branch remains supported. Story Agent
-verifier branches and the exact governed Profile Creator source-parity branch
-are admitted only with exact pinned blobs. A push on main is accepted only when
-GitHub proves the exact workflow SHA came from an allowed merged pull request.
+verifier branches, the exact governed Profile Creator source-parity branch, and
+the exact Strategy 28 reconciler retry-idempotency branch are admitted only with
+exact pinned blobs. A push on main is accepted only when GitHub proves the exact
+workflow SHA came from an allowed merged pull request.
 """
 from __future__ import annotations
 
@@ -29,6 +30,7 @@ PR_BRANCH = "lf/architecture-v7-hardening"
 MAIN_BRANCH = "main"
 STORY_AGENT_VERIFIER_BRANCH_PREFIX = "lf/story-agent-evidence-verifier-"
 PROFILE_CREATOR_SOURCE_PARITY_BRANCH = "lf/profile-creator-runtime-source-parity-20260902"
+S28_RECONCILER_BRANCH = "lf/s28-reconciler-retry-idempotency-20260905"
 RUNTIME_ALERT_PATH = "supabase/functions/lf-architecture-alert-sink-v4/index.ts"
 RUNTIME_ALERT_CONFIG_PATH = "supabase/functions/lf-architecture-alert-sink-v4/deno.json"
 RUNTIME_PLATFORM_CONFIG_PATH = "supabase/config.toml"
@@ -43,7 +45,7 @@ EXPECTED_RUNTIME_BLOBS = {
     RUNTIME_ALERT_PATH: "74b0a2123ceb5a66008231599bf3a5fb0ec3d66b",
     RUNTIME_ALERT_CONFIG_PATH: "762e9b22bb21b951e9ddc5a171fe1be106d7cc31",
     RUNTIME_PLATFORM_CONFIG_PATH: "71c6530d72f81f4e787dd1a261b9cb08c73f80fd",
-    RUNTIME_RECONCILE_PATH: "b001a62a6d1ce8fb662a864eb5a29d3e2a996725",
+    RUNTIME_RECONCILE_PATH: "ef75a67a90dfb049c0a40dff2c09611f73e26a24",
     RUNTIME_RECONCILE_CANONICAL_PATH: "2eb32d646fae7d36a50b2bf0087924a8bc5ff9d4",
     RUNTIME_RECONCILE_CONFIG_PATH: "26f214064a9165492dfd8a2cf6dc143dd8b29c63",
     RUNTIME_MIGRATION_PATH: "93510429231fd95a1c5ef3b2400ee38fabba4258",
@@ -96,11 +98,16 @@ def _allowed_runtime_branch(branch: str) -> bool:
         branch == PR_BRANCH
         or branch.startswith(STORY_AGENT_VERIFIER_BRANCH_PREFIX)
         or branch == PROFILE_CREATOR_SOURCE_PARITY_BRANCH
+        or branch == S28_RECONCILER_BRANCH
     )
 
 
 def _allowed_merged_head_branch(branch: str) -> bool:
-    return branch.startswith(STORY_AGENT_VERIFIER_BRANCH_PREFIX) or branch == PROFILE_CREATOR_SOURCE_PARITY_BRANCH
+    return (
+        branch.startswith(STORY_AGENT_VERIFIER_BRANCH_PREFIX)
+        or branch == PROFILE_CREATOR_SOURCE_PARITY_BRANCH
+        or branch == S28_RECONCILER_BRANCH
+    )
 
 
 def evaluate_controlled_runtime_scope(

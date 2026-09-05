@@ -540,7 +540,7 @@ Deno.serve(async (req: Request) => {
         runner_identity: WORKFLOW_REF,
         source_workflow_run_id: Number(verified.source.id),
         source_commit_sha: verified.source.head_sha,
-        executed_at: new Date().toISOString(),
+        executed_at: verified.source.updated_at,
         producer: "github-actions-oidc-reconciler-hmac-v7",
         purpose: "Record reproducible post-merge evidence using OIDC, keyed HMAC and a single-use nonce",
       };
