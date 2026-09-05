@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Any
 
 from profile_runtime_api.llama import (
+    CANONICAL_GENERATION_POLICY,
+    UI_FOCUSED_GENERATION_POLICY,
     LlamaHTTPClient,
     LlamaTransportError,
     PersistentLlamaServerAdapter,
@@ -89,6 +91,59 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
             client.last_payload["response_format"],
             {"type": "json_object", "schema": self.schema},
         )
+
+    def test_ui_focused_generation_schema_is_bounded_without_mutating_canonical(self) -> None:
+        canonical = {
+            "type": "object",
+            "required": ["decision_subject", "hard_exclusions", "status"],
+            "properties": {
+                "decision_subject": {"type": "string", "minLength": 3},
+                "short_generator_prompt": {"type": "string", "minLength": 3},
+                "hard_exclusions": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {"type": "string", "minLength": 2},
+                },
+                "status": {"type": "string", "enum": ["CANDIDATE_READ_ONLY"]},
+            },
+            "additionalProperties": False,
+        }
+        client = RecordingClient(
+            self.settings,
+            '{"decision_subject":"overflow","hard_exclusions":["none"],"status":"CANDIDATE_READ_ONLY"}',
+        )
+        completion = client.chat(
+            system_prompt="system",
+            user_prompt="user",
+            schema=canonical,
+            profile_slug="ui_architect",
+            schema_mode="UI_FOCUSED_DECISION",
+        )
+        assert client.last_payload is not None
+        generated = client.last_payload["response_format"]["schema"]
+        self.assertEqual(generated["properties"]["decision_subject"]["maxLength"], 160)
+        self.assertEqual(generated["properties"]["short_generator_prompt"]["maxLength"], 240)
+        self.assertEqual(generated["properties"]["hard_exclusions"]["maxItems"], 4)
+        self.assertEqual(
+            generated["properties"]["hard_exclusions"]["items"]["maxLength"], 120
+        )
+        self.assertNotIn("maxLength", canonical["properties"]["decision_subject"])
+        self.assertNotIn("maxItems", canonical["properties"]["hard_exclusions"])
+        self.assertEqual(completion["generation_schema_policy"], UI_FOCUSED_GENERATION_POLICY)
+        self.assertTrue(completion["generation_schema_sha256"])
+
+    def test_other_profiles_keep_canonical_generation_schema(self) -> None:
+        client = RecordingClient(self.settings, '{"ok":true}')
+        completion = client.chat(
+            system_prompt="system",
+            user_prompt="user",
+            schema=self.schema,
+            profile_slug="quality_pack",
+            schema_mode="AUTO",
+        )
+        assert client.last_payload is not None
+        self.assertEqual(client.last_payload["response_format"]["schema"], self.schema)
+        self.assertEqual(completion["generation_schema_policy"], CANONICAL_GENERATION_POLICY)
 
     def test_other_profiles_use_pinned_llama_schema_constrained_shape(self) -> None:
         client = self.call('{"ok":true}', profile_slug="quality_pack")

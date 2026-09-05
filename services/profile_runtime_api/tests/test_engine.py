@@ -35,6 +35,7 @@ if importlib.util.find_spec("jsonschema") is None:
 from profile_runtime_api.cache import StructuralCache
 from profile_runtime_api.engine import ProfileRuntimeEngine
 from profile_runtime_api.hashing import canonical_json_sha256
+from profile_runtime_api.llama import governed_generation_schema
 from profile_runtime_api.models import (
     Artifact,
     BatchRequest,
@@ -89,8 +90,13 @@ class FakeLlamaClient:
     def health(self) -> dict[str, Any]:
         return {"ready": True, "status": "READY", "model_ids": ["fake-local-model"]}
 
-    def chat(self, **_kwargs: Any) -> dict[str, Any]:
+    def chat(self, **kwargs: Any) -> dict[str, Any]:
         self.chat_calls += 1
+        generation_schema, generation_policy = governed_generation_schema(
+            kwargs["schema"],
+            profile_slug=kwargs["profile_slug"],
+            schema_mode=kwargs.get("schema_mode", "AUTO"),
+        )
         return {
             "content": self.output,
             "id": f"completion-{self.chat_calls}",
@@ -98,6 +104,8 @@ class FakeLlamaClient:
             "usage": {"prompt_tokens": 10, "completion_tokens": 10},
             "timings": {"predicted_ms": 1.0},
             "finish_reason": "stop",
+            "generation_schema_sha256": canonical_json_sha256(generation_schema),
+            "generation_schema_policy": generation_policy,
         }
 
 
