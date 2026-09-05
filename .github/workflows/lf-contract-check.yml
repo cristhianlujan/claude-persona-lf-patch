@@ -413,7 +413,45 @@ jobs:
           export PGDATABASE=postgres
           export PGSSLMODE=require
 
-          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,''),encode(convert_to(array_to_string(statements,E'\n'),'UTF8'),'hex') from supabase_migrations.schema_migrations where version > '${LF_MIGRATION_CUTOVER}' order by version" > "$RUNNER_TEMP/lf-post-cutover-migrations-full.csv"
+          LF_MANAGED_VERSIONS="$(python3 - <<'PY'
+          import importlib.util
+          import os
+          from pathlib import Path
+
+          module_path = Path("sandbox/lf_contract_gate_test/lf_migration_source_parity.py")
+          spec = importlib.util.spec_from_file_location("lf_migration_source_parity_canary", module_path)
+          if spec is None or spec.loader is None:
+              raise SystemExit("FAIL_S28_MIGRATION_MANAGED_CLASSIFIER_LOAD")
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+
+          cutover = os.environ["LF_MIGRATION_CUTOVER"]
+          versions = []
+          for path in sorted(Path("supabase/migrations").glob("*.sql")):
+              match = module.FILENAME_RE.fullmatch(path.name)
+              if not match:
+                  continue
+              version, name = match.groups()
+              if version > cutover and module.managed(name):
+                  versions.append(version)
+          if not versions or len(versions) != len(set(versions)):
+              raise SystemExit("FAIL_S28_MIGRATION_MANAGED_VERSION_SET")
+          print("{" + ",".join(versions) + "}")
+          PY
+          )"
+          if ! [[ "$LF_MANAGED_VERSIONS" =~ ^\{[0-9]{14}(,[0-9]{14})*\}$ ]]; then
+            echo "FAIL_S28_MIGRATION_MANAGED_VERSION_LITERAL"
+            exit 1
+          fi
+          export LF_MANAGED_VERSIONS
+
+          query_started_ms="$(date +%s%3N)"
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,''),case when version = any('${LF_MANAGED_VERSIONS}'::text[]) then encode(convert_to(array_to_string(statements,E'\n'),'UTF8'),'hex') else '' end from supabase_migrations.schema_migrations where version > '${LF_MIGRATION_CUTOVER}' order by version" > "$RUNNER_TEMP/lf-post-cutover-migrations-full.csv"
+          query_ended_ms="$(date +%s%3N)"
+          migration_rows="$(wc -l < "$RUNNER_TEMP/lf-post-cutover-migrations-full.csv" | tr -d ' ')"
+          migration_bytes="$(wc -c < "$RUNNER_TEMP/lf-post-cutover-migrations-full.csv" | tr -d ' ')"
+          managed_count="$(python3 -c 'import os; s=os.environ["LF_MANAGED_VERSIONS"]; print(0 if s=="{}" else s.count(",")+1)')"
+          echo "PASS_S28_MIGRATION_LEDGER_FOCAL_READ rows=${migration_rows} managed=${managed_count} csv_bytes=${migration_bytes} query_wall_ms=$((query_ended_ms-query_started_ms))"
 
           docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "with x as (select version,coalesce(name,'') as name,array_to_string(statements,E'\n') as sql_text from supabase_migrations.schema_migrations where version > '${LF_MIGRATION_CUTOVER}' and version <= '${LF_MIGRATION_CLASSIFICATION_BASELINE_END}' and not (coalesce(name,'') like 'pr93\_%' escape '\' or coalesce(name,'') like 'lf\_%' escape '\' or coalesce(name,'') like 'programacion\_story\_agent\_task\_%' escape '\' or coalesce(name,'') like 'programacion\_task\_sizing\_%' escape '\' or coalesce(name,'') like 'programacion\_task\_dependency\_%' escape '\' or coalesce(name,'') like 'programacion\_agent\_task\_%' escape '\' or coalesce(name,'') like 'programacion\_dependency\_context\_%' escape '\' or coalesce(name,'') like 'programacion\_propagate\_execution\_%' escape '\' or coalesce(name,'') like 'programacion\_deprecate\_declared\_independence\_%' escape '\' or coalesce(name,'') like 'programacion\_revoke\_security\_definer\_%' escape '\' or coalesce(name,'') like 'programacion\_worker\_spec\_%' escape '\' or coalesce(name,'') like 'programacion\_prog017\_%' escape '\')) select count(*)::text,encode(extensions.digest(convert_to(coalesce(string_agg(version||E'\n'||name||E'\n'||sql_text,E'\n--MIGRATION--\n' order by version),''),'UTF8'),'sha256'),'hex') from x" > "$RUNNER_TEMP/lf-grandfathered-migrations.csv"
 
