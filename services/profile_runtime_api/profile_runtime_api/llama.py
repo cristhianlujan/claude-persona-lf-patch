@@ -111,7 +111,11 @@ class LlamaHTTPClient:
         # Preserve the proven V27 fallback: generate unconstrained, then apply the same
         # canonical schema/profile validator and the strict JSON boundary below.
         if profile_slug != UI_ARCHITECT_PROFILE_SLUG:
-            payload["response_format"] = {"type": "json_schema", "schema": schema}
+            # The deployed llama.cpp is pinned at 925e1179. In that parser,
+            # response_format.type=json_schema expects json_schema.schema; a direct
+            # sibling `schema` is ignored. type=json_object + schema is the pinned,
+            # schema-constrained path and keeps the existing canonical validator after it.
+            payload["response_format"] = {"type": "json_object", "schema": schema}
 
         response = self._request(
             "POST", "/v1/chat/completions", payload, self.settings.llama_timeout_seconds
