@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.14
+LF Contract Check v0.15
 
 Sandbox validator for controlled LF governance gates.
+
+v0.15 changes:
+- Enforces ERROR_RECOVERY_AND_EVIDENCE_LADDER_V1 markers in the exact Profiles LF runbook.
+- Fails closed if the four recovery routes, canonical-target check, exhaustion proof, literal evidence tuple, or closure guard disappear.
 
 v0.14 changes:
 - Allows only the exact Profile Driven Screen Generation workflow path for issue #402.
@@ -65,6 +69,23 @@ RECEIPT_DIR = Path("sandbox/lf_contract_gate_test/receipts")
 PROFILE_RUNTIME_TEST_PATH = Path("sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py")
 PROFILE_RUNTIME_PASS_MARKER = "PROFILE_RUNTIME_GATE_TESTS_PASS 23/23"
 VALIDATOR_SELF_PATH = "scripts/lf_contract_check.py"
+PROFILES_RUNBOOK_PATH = Path("ops/runbook-profiles-lf.md")
+ERROR_RECOVERY_LADDER_REQUIRED_MARKERS = [
+    "ERROR_RECOVERY_AND_EVIDENCE_LADDER_V1",
+    "ONE_ROUTE_FAILURE != BLOCKER",
+    "CANONICAL_TARGET_CHECK",
+    "Route A — ORIGINAL",
+    "Route B — FOCAL_MINIMAL",
+    "Route C — CANONICAL_EQUIVALENT",
+    "Route D — INDEPENDENT_AUTHORIZED",
+    "BLOCKED_CAUSAL",
+    "raw_request",
+    "raw_response",
+    "failure_layer",
+    "recovery_route",
+    "exhaustion evidence",
+    "closure is forbidden",
+]
 COMPACT_PROTOCOL_PATH = Path("docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md")
 COMPACT_PROTOCOL_LOCATOR_PATH = Path("claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md")
 COMPACT_PROTOCOL_TOP_LEVEL_FIELDS = [
@@ -321,6 +342,29 @@ def validate_operational_protocol_scope() -> None:
     )
 
 
+def validate_error_recovery_ladder_contract() -> None:
+    if not PROFILES_RUNBOOK_PATH.exists():
+        fail("FAIL_ERROR_RECOVERY_LADDER_RUNBOOK_MISSING", str(PROFILES_RUNBOOK_PATH))
+    runbook = PROFILES_RUNBOOK_PATH.read_text(encoding="utf-8")
+    missing = [marker for marker in ERROR_RECOVERY_LADDER_REQUIRED_MARKERS if marker not in runbook]
+    if missing:
+        fail("FAIL_ERROR_RECOVERY_LADDER_INVARIANT", ",".join(missing))
+    route_positions = [
+        runbook.index("Route A — ORIGINAL"),
+        runbook.index("Route B — FOCAL_MINIMAL"),
+        runbook.index("Route C — CANONICAL_EQUIVALENT"),
+        runbook.index("Route D — INDEPENDENT_AUTHORIZED"),
+    ]
+    if route_positions != sorted(route_positions) or len(set(route_positions)) != 4:
+        fail("FAIL_ERROR_RECOVERY_LADDER_ROUTE_ORDER", str(route_positions))
+    if "ONE_ROUTE_FAILURE" not in runbook or "never stop conditions" not in runbook:
+        fail("FAIL_ERROR_RECOVERY_LADDER_CLOSURE_GUARD", "missing one-route closure invariant")
+    print(
+        "PASS_ERROR_RECOVERY_LADDER_INVARIANT: "
+        f"markers={len(ERROR_RECOVERY_LADDER_REQUIRED_MARKERS)} routes=4 order=A>B>C>D"
+    )
+
+
 def validate_compact_protocol_contract() -> None:
     if not COMPACT_PROTOCOL_PATH.exists():
         fail("FAIL_COMPACT_PROTOCOL_MISSING", str(COMPACT_PROTOCOL_PATH))
@@ -542,6 +586,7 @@ def validate_forbidden_terms(changed_files: list[str]) -> None:
 def main() -> None:
     validate_contract()
     validate_operational_protocol_scope()
+    validate_error_recovery_ladder_contract()
     validate_compact_protocol_contract()
     validate_p0_closure_evidence_scope()
     validate_p0_persistence_test_scope()
