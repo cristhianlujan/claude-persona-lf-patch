@@ -337,6 +337,17 @@ class PersistentLlamaServerAdapter:
             "Do not invent facts absent from profile sources, literal input, Router capsules, or observed structural evidence.",
             "",
         ]
+        if request.get("runtime_output_mode") == UI_FOCUSED_SCHEMA_MODE:
+            parts.extend(
+                [
+                    "Focused UI Decision quality constraints:",
+                    "- selected_visual_type must name the corrective visual/interaction treatment, not merely restate the defect or subject.",
+                    "- hard_exclusions must never prohibit the selected_visual_type or its selected corrective treatment.",
+                    "- size_or_coverage, density_limits, depth_style, visual_weight, relationship_to_main_element, and implementation_format must be concrete and implementation-usable; bare generic labels such as medium, thin, above, or css are invalid.",
+                    "- density_limits must express an observable bound, quantity, per-element rule, or equivalent concrete limit.",
+                    "",
+                ]
+            )
         for source in request["profile_sources"]:
             parts.extend(
                 [

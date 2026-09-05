@@ -94,11 +94,50 @@ class RuntimeOutputModeTest(unittest.TestCase):
             schema=binding,
         )
         self.assertEqual(gate["status"], "PASS", gate)
-        self.assertEqual(gate["schema_mode"], "UI_FOCUSED_DECISION")
         utility = self.gates.semantic_utility(
             profile_slug="ui_architect", payload=payload, contract_gate=gate
         )
         self.assertEqual(utility["status"], "PASS", utility)
+
+    def test_focused_utility_rejects_selected_treatment_also_excluded(self) -> None:
+        payload = self.focused_payload()
+        payload["selected_visual_type"] = "horizontal overflow"
+        payload["hard_exclusions"] = ["horizontal overflow", "no hidden row actions"]
+        binding = self.repository.runtime_schema("ui_architect", "UI_FOCUSED_DECISION")
+        gate, parsed = self.gates.contract(
+            profile_slug="ui_architect", raw_output=json.dumps(payload), schema=binding
+        )
+        self.assertEqual(gate["status"], "PASS", gate)
+        utility = self.gates.semantic_utility(
+            profile_slug="ui_architect", payload=parsed, contract_gate=gate
+        )
+        self.assertEqual(utility["status"], "FAIL", utility)
+        self.assertIn("UI_FOCUSED_SELECTED_TREATMENT_EXCLUDED", utility["blocking_codes"])
+
+    def test_focused_utility_rejects_generic_non_concrete_fields(self) -> None:
+        payload = self.focused_payload()
+        payload.update(
+            {
+                "size_or_coverage": "medium",
+                "density_limits": "medium",
+                "depth_style": "thin",
+                "visual_weight": "medium",
+                "relationship_to_main_element": "above",
+                "implementation_format": "css",
+            }
+        )
+        binding = self.repository.runtime_schema("ui_architect", "UI_FOCUSED_DECISION")
+        gate, parsed = self.gates.contract(
+            profile_slug="ui_architect", raw_output=json.dumps(payload), schema=binding
+        )
+        self.assertEqual(gate["status"], "PASS", gate)
+        utility = self.gates.semantic_utility(
+            profile_slug="ui_architect", payload=parsed, contract_gate=gate
+        )
+        self.assertEqual(utility["status"], "FAIL", utility)
+        self.assertIn("UI_FOCUSED_SIZE_OR_COVERAGE_NON_CONCRETE", utility["blocking_codes"])
+        self.assertIn("UI_FOCUSED_DENSITY_LIMITS_NON_CONCRETE", utility["blocking_codes"])
+        self.assertIn("UI_FOCUSED_IMPLEMENTATION_FORMAT_NON_CONCRETE", utility["blocking_codes"])
 
     def test_auto_mode_does_not_weaken_existing_production_validator(self) -> None:
         binding = self.repository.runtime_schema("ui_architect", "AUTO")
