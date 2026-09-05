@@ -26,6 +26,15 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install Profile Runtime API test dependencies
+        run: python -m pip install --disable-pip-version-check -r services/profile_runtime_api/requirements-dev.in
+
+      - name: Test persistent Profile Runtime API
+        env:
+          PYTHONPATH: services/profile_runtime_api
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: python -m pytest services/profile_runtime_api/tests
+
       - name: Validate profile template pack
         run: python profiles/_template/validators/validate_pack.py profiles/_template
 
@@ -40,3 +49,33 @@ jobs:
 
       - name: Validate learning engine pack
         run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
+
+      - name: Validate PROFILE_RUNTIME V3 quality and lineage gates
+        env:
+          LF_PERSISTENT_RUNTIME_SCOPE: ISOLATED_CANDIDATE
+          LF_LLAMA_SOURCE_COMMIT: 925e1179947ea0c0ebfb0032df18af3a729822be
+        shell: bash
+        run: |
+          set -uo pipefail
+          shopt -s nullglob
+          tests=(sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_*.py)
+          if (( ${#tests[@]} == 0 )); then
+            echo "PROFILE_RUNTIME_V3_TESTS_MISSING"
+            exit 1
+          fi
+          printf 'PROFILE_RUNTIME_V3_TEST_COUNT=%s\n' "${#tests[@]}"
+          failures=0
+          for test_file in "${tests[@]}"; do
+            echo "RUNNING=${test_file}"
+            if python "${test_file}"; then
+              echo "RESULT=PASS TEST=${test_file}"
+            else
+              rc=$?
+              echo "RESULT=FAIL RC=${rc} TEST=${test_file}"
+              failures=$((failures+1))
+            fi
+          done
+          echo "PROFILE_RUNTIME_V3_FAILURE_COUNT=${failures}"
+          if (( failures > 0 )); then
+            exit 1
+          fi
