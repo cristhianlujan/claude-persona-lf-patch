@@ -420,11 +420,17 @@ jobs:
             --commit-sha "$GITHUB_SHA"
 
       - name: Capture authenticated E.16 Actions inventory
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS' && github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           E16_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          LF_FEEDBACK_TIER: ${{ steps.feedback_tier.outputs.tier }}
         run: |
+          set -euo pipefail
+          if [ "$LF_FEEDBACK_TIER" = "FAST_P0_DOCS" ]; then
+            echo "PASS_E16_INVENTORY_SKIPPED_FAST_P0_DOCS"
+            exit 0
+          fi
           python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py \
             --repository "$GITHUB_REPOSITORY" \
             --head-sha "$E16_HEAD_SHA" \
