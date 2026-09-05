@@ -426,7 +426,7 @@ begin
   v_db := public.lf_router_resolve_v1('Actualizar DB governed','','UPDATE','DB','ROUTER');
   v_profile := public.lf_router_resolve_v1('Actualizar perfil quality pack','PERFIL-QUALITY-PACK','PROFILE_UPDATE','PERFIL','ROUTER');
   v_profile_exec := public.lf_router_resolve_v1('Ejecutar perfil quality pack','PERFIL-QUALITY-PACK','PROFILE_EXECUTION','PERFIL','ROUTER');
-  v_card := public.lf_router_resolve_v1('Crear card canary transversal','','CARD_CREATE','CARD','ROUTER');
+  v_card := public.lf_router_resolve_v1('Crear card de prueba transversal','CARD-GOV-TRANSVERSAL-PROMOTION-CANARY-20260905','CARD_CREATE','CARD','ROUTER');
 
   if v_db->>'status'<>'READY_TO_EXECUTE' or (v_db->>'required_policy_count')::int<>4 or (v_db->>'resolved_policy_count')::int<>4 then
     raise exception 'ROUTER_DB_POLICY_ASSERTION_FAILED %',v_db;
