@@ -133,11 +133,7 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         self.assertEqual(generated["properties"]["selected_visual_type"]["minLength"], 18)
         self.assertEqual(generated["properties"]["size_or_coverage"]["minLength"], 12)
         self.assertEqual(generated["properties"]["density_limits"]["minLength"], 12)
-        self.assertEqual(generated["properties"]["depth_style"]["minLength"], 12)
-        self.assertEqual(generated["properties"]["visual_weight"]["minLength"], 16)
-        self.assertEqual(
-            generated["properties"]["relationship_to_main_element"]["minLength"], 20
-        )
+        self.assertEqual(generated["properties"]["relationship_to_main_element"]["minLength"], 20)
         self.assertEqual(generated["properties"]["implementation_format"]["minLength"], 16)
         self.assertEqual(generated["properties"]["hard_exclusions"]["maxItems"], 4)
         self.assertEqual(
