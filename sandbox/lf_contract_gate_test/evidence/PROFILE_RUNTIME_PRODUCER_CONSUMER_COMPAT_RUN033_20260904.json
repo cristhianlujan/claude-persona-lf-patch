@@ -1,0 +1,32 @@
+{
+  "schema_version": "profile-runtime-producer-consumer-compat/v1",
+  "execution_id": "GPT-STRATEGY26-AUTO-RUN-20260904-033",
+  "producer_source": {
+    "main_commit": "7d1a3bebc3bb9b13115e7e0a1e7626ec98fce129",
+    "migration": "supabase/migrations/20260904091702_lf_profile_runtime_queue_native_hetzner_producer_v1.sql",
+    "function": "programacion.fn_lf_profile_runtime_enqueue_text_v1",
+    "default_runtime_target": "HETZNER",
+    "emitted_fields": ["request_id","operation_code","profile_code","profile_slug","profile_source_paths","input_literal","status","requested_by","runtime_target","runtime_request_envelope","runtime_backup_reason"]
+  },
+  "consumer_source": {
+    "reconciliation_commit": "66e4696764c59dce5b4ce86f1068259b500e7edd",
+    "worker": "services/profile_runtime_api/scripts/hetzner_queue_worker.py",
+    "worker_blob": "4f09fc75b121ebd78fd012da5e781bf0ca4ce5ea",
+    "claim_filter": "status=PENDING AND runtime_target=HETZNER",
+    "queue_native_endpoint": "/v1/profile/queue-execute",
+    "claimed_fields": ["request_id","operation_code","profile_code","profile_slug","profile_source_paths","input_literal","input_image_base64","input_image_media_type","input_image_sha256","runtime_request_envelope"]
+  },
+  "compatibility": {
+    "producer_required_consumer_fields_present": true,
+    "text_only_null_envelope_supported": true,
+    "github_backup_rows_excluded_by_consumer_filter": true,
+    "image_without_governed_envelope_fail_closed": true,
+    "result": "PASS_SOURCE_CONTRACT"
+  },
+  "limitations": [
+    "source-contract compatibility only",
+    "no live worker execution performed",
+    "no exact-head focal test pass claimed"
+  ],
+  "safety": {"merge":false,"deploy":false,"restart":false,"ddl":false}
+}
