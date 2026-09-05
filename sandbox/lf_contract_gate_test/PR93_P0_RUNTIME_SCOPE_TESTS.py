@@ -5,7 +5,7 @@ Governed-runtime attestation is intentionally read-only. Dependency provisioning
 belongs to the workflow environment and must happen before this script runs.
 """
 from __future__ import annotations
-import importlib.metadata as md,json,os,shutil,subprocess,sys
+import importlib.metadata as md,json,os,shutil,subprocess,sys,time
 from pathlib import Path
 import PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT as candidate
 sys.dont_write_bytecode=True
@@ -64,7 +64,8 @@ def run_p0_quality_regressions(repo_root:Path)->None:
  evidence_dir=repo_root/'.audit-output/creating-integral-user-stories/p0-v3';evidence_dir.mkdir(parents=True,exist_ok=True);env=os.environ.copy()
  if env.get('P0_CI_ENGINEERING_REGRESSION') is not None:raise SystemExit('FAIL_P0_CI_ENGINEERING_REGRESSION_OVERRIDE_FORBIDDEN')
  for label,command in commands:
-  completed=subprocess.run(command,cwd=repo_root,text=True,capture_output=True,check=False,env=env);output=(completed.stdout or '')+(('\nSTDERR:\n'+completed.stderr) if completed.stderr else '');(evidence_dir/f'{label}.log').write_text(output,encoding='utf-8')
+  started=time.perf_counter();completed=subprocess.run(command,cwd=repo_root,text=True,capture_output=True,check=False,env=env);elapsed=time.perf_counter()-started;output=(completed.stdout or '')+(("\nSTDERR:\n"+completed.stderr) if completed.stderr else '');(evidence_dir/f'{label}.log').write_text(output,encoding='utf-8')
+  print(f'P0_QUALITY_TIMING[{label}]={elapsed:.6f}s')
   if completed.stdout:print(completed.stdout.rstrip())
   if completed.returncode!=0:
    if completed.stderr:print(completed.stderr.rstrip(),file=sys.stderr)
