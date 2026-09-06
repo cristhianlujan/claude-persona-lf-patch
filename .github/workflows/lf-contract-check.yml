@@ -446,12 +446,16 @@ jobs:
           export LF_MANAGED_VERSIONS
 
           query_started_ms="$(date +%s%3N)"
-          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,''),case when version = any('${LF_MANAGED_VERSIONS}'::text[]) then encode(convert_to(array_to_string(statements,E'\n'),'UTF8'),'hex') else '' end from supabase_migrations.schema_migrations where version > '${LF_MIGRATION_CUTOVER}' order by version" > "$RUNNER_TEMP/lf-post-cutover-migrations-full.csv"
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,''),case when version = any('${LF_MANAGED_VERSIONS}'::text[]) then 'sha256:' || (select encode(extensions.digest(convert_to(regexp_replace(coalesce(string_agg(line,E'\n' order by ord),''),E'\n+$',''),'UTF8'),'sha256'),'hex') from regexp_split_to_table(replace(replace(coalesce(array_to_string(sm.statements,E'\n'),''),E'\r\n',E'\n'),E'\r',E'\n'),E'\n') with ordinality as x(line,ord) where line !~ '^[[:space:]]*--') else '' end from supabase_migrations.schema_migrations sm where version > '${LF_MIGRATION_CUTOVER}' order by version" > "$RUNNER_TEMP/lf-post-cutover-migrations-compact.csv"
           query_ended_ms="$(date +%s%3N)"
-          migration_rows="$(wc -l < "$RUNNER_TEMP/lf-post-cutover-migrations-full.csv" | tr -d ' ')"
-          migration_bytes="$(wc -c < "$RUNNER_TEMP/lf-post-cutover-migrations-full.csv" | tr -d ' ')"
+          migration_rows="$(wc -l < "$RUNNER_TEMP/lf-post-cutover-migrations-compact.csv" | tr -d ' ')"
+          migration_bytes="$(wc -c < "$RUNNER_TEMP/lf-post-cutover-migrations-compact.csv" | tr -d ' ')"
+          if [ "$migration_bytes" -gt 524288 ]; then
+            echo "FAIL_S28_MIGRATION_LEDGER_PAYLOAD_BUDGET bytes=${migration_bytes} max=524288"
+            exit 1
+          fi
           managed_count="$(python3 -c 'import os; s=os.environ["LF_MANAGED_VERSIONS"]; print(0 if s=="{}" else s.count(",")+1)')"
-          echo "PASS_S28_MIGRATION_LEDGER_FOCAL_READ rows=${migration_rows} managed=${managed_count} csv_bytes=${migration_bytes} query_wall_ms=$((query_ended_ms-query_started_ms))"
+          echo "PASS_S28_MIGRATION_LEDGER_COMPACT_READ rows=${migration_rows} managed=${managed_count} csv_bytes=${migration_bytes} query_wall_ms=$((query_ended_ms-query_started_ms))"
 
           docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "with x as (select version,coalesce(name,'') as name,array_to_string(statements,E'\n') as sql_text from supabase_migrations.schema_migrations where version > '${LF_MIGRATION_CUTOVER}' and version <= '${LF_MIGRATION_CLASSIFICATION_BASELINE_END}' and not (coalesce(name,'') like 'pr93\_%' escape '\' or coalesce(name,'') like 'lf\_%' escape '\' or coalesce(name,'') like 'programacion\_story\_agent\_task\_%' escape '\' or coalesce(name,'') like 'programacion\_task\_sizing\_%' escape '\' or coalesce(name,'') like 'programacion\_task\_dependency\_%' escape '\' or coalesce(name,'') like 'programacion\_agent\_task\_%' escape '\' or coalesce(name,'') like 'programacion\_dependency\_context\_%' escape '\' or coalesce(name,'') like 'programacion\_propagate\_execution\_%' escape '\' or coalesce(name,'') like 'programacion\_deprecate\_declared\_independence\_%' escape '\' or coalesce(name,'') like 'programacion\_revoke\_security\_definer\_%' escape '\' or coalesce(name,'') like 'programacion\_worker\_spec\_%' escape '\' or coalesce(name,'') like 'programacion\_prog017\_%' escape '\')) select count(*)::text,encode(extensions.digest(convert_to(coalesce(string_agg(version||E'\n'||name||E'\n'||sql_text,E'\n--MIGRATION--\n' order by version),''),'UTF8'),'sha256'),'hex') from x" > "$RUNNER_TEMP/lf-grandfathered-migrations.csv"
 
@@ -459,7 +463,7 @@ jobs:
 
           python3 sandbox/lf_contract_gate_test/lf_migration_source_parity.py \
             supabase/migrations \
-            "$RUNNER_TEMP/lf-post-cutover-migrations-full.csv" \
+            "$RUNNER_TEMP/lf-post-cutover-migrations-compact.csv" \
             "$RUNNER_TEMP/lf-grandfathered-migrations.csv" \
             "$RUNNER_TEMP/lf-legacy-checkpoint.csv"
 
@@ -482,11 +486,17 @@ jobs:
           export PGDATABASE=postgres
           export PGSSLMODE=require
 
-          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,''),encode(convert_to(array_to_string(statements,E'\n'),'UTF8'),'hex') from supabase_migrations.schema_migrations where version >= '${INPUT_GOVERNANCE_CUTOVER}' and (name like 'input\_governance\_%' escape '\' or name like 'programacion\_input\_governance\_%' escape '\' or name = 'retire_b2b_auth005_legacy_totp_screen') order by version" > "$RUNNER_TEMP/input-governance-migrations.csv"
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,''),'sha256:' || (select encode(extensions.digest(convert_to(regexp_replace(coalesce(string_agg(line,E'\n' order by ord),''),E'\n+$',''),'UTF8'),'sha256'),'hex') from regexp_split_to_table(replace(replace(coalesce(array_to_string(sm.statements,E'\n'),''),E'\r\n',E'\n'),E'\r',E'\n'),E'\n') with ordinality as x(line,ord) where line !~ '^[[:space:]]*--') from supabase_migrations.schema_migrations sm where version >= '${INPUT_GOVERNANCE_CUTOVER}' and (name like 'input\_governance\_%' escape '\' or name like 'programacion\_input\_governance\_%' escape '\' or name = 'retire_b2b_auth005_legacy_totp_screen') order by version" > "$RUNNER_TEMP/input-governance-migrations-compact.csv"
+          input_migration_bytes="$(wc -c < "$RUNNER_TEMP/input-governance-migrations-compact.csv" | tr -d ' ')"
+          if [ "$input_migration_bytes" -gt 262144 ]; then
+            echo "FAIL_INPUT_GOVERNANCE_MIGRATION_PAYLOAD_BUDGET bytes=${input_migration_bytes} max=262144"
+            exit 1
+          fi
+          echo "PASS_INPUT_GOVERNANCE_MIGRATION_COMPACT_READ csv_bytes=${input_migration_bytes}"
 
           python3 scripts/input_governance_migration_parity.py \
             --migrations supabase/migrations \
-            --remote "$RUNNER_TEMP/input-governance-migrations.csv" \
+            --remote "$RUNNER_TEMP/input-governance-migrations-compact.csv" \
             --cutover "$INPUT_GOVERNANCE_CUTOVER"
 
       - name: Install deterministic audit dependencies
