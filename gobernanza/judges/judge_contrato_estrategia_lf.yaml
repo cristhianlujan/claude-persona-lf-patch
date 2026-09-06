@@ -1,0 +1,58 @@
+version: v0.1
+status: CANDIDATO_READ_ONLY
+judge: JUDGE_CONTRATO_ESTRATEGIA_LF
+operation: CREACION_ESTRATEGIA_LF
+pass_if:
+  - router_read
+  - operational_source_read
+  - ekb_preflight_done
+  - policy_resolution_done
+  - policy_set_fingerprint_present
+  - contract_read
+  - repo_destination_validated
+  - current_strategy_inventory_read
+  - duplicate_and_lineage_resolved
+  - exact_dependency_versions_resolved
+  - all_required_strategy_blocks_present
+  - stages_and_exit_gates_present
+  - qdp_tests_metrics_evidence_ceiling_present
+  - rollback_or_recovery_present
+  - invalidation_triggers_present
+  - strategy_contract_lint_pass
+  - no_unresolved_policy_conflicts
+  - semantic_consistency_pass
+  - github_write_done
+  - github_readback_done
+  - source_blob_sha_present
+  - supabase_registration_readback_done
+  - candidate_status_readback
+  - runtime_plan_only_readback
+  - automatic_impact_bloqueado_readback
+  - no_blocking_observations
+fail_if:
+  - write_without_router
+  - write_without_ekb_preflight
+  - write_without_policy_resolution
+  - missing_policy_set_fingerprint
+  - write_without_contract
+  - unresolved_authority
+  - unresolved_material_dependency
+  - missing_required_strategy_block
+  - missing_qdp_gate
+  - missing_recovery
+  - missing_invalidation_trigger
+  - unresolved_policy_conflict
+  - assistant_freeform_decision
+  - overwrite_strategy_history
+  - auto_migrate_existing_strategy
+  - enable_runtime
+  - enable_automatic_impact
+  - no_github_readback
+  - no_supabase_readback
+  - close_without_operation_execution
+  - blocking_observations
+result_values:
+  - PASS
+  - FAIL
+  - BLOCKED
+  - RETURN_TO_WORKER
