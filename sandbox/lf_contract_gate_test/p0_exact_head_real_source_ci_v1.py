@@ -21,6 +21,14 @@ SOURCE_BYTES = 1_384_686
 REPOSITORY = "cristhianlujan/claude-persona-lf-patch"
 EXPECTED_REF = "refs/heads/lf/p0-persistence-ocr-completion-20260812"
 BROKER_URL = "https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-p0-exact-head-evidence-broker-v1"
+COMPACT_SUCCESS_MAX_BYTES = 131_072
+TRACE_KEYS = (
+    "reader_outputs",
+    "omission_sweeps",
+    "grader_runs",
+    "remediation_plans",
+    "targeted_rereads",
+)
 
 
 def die(code: str, detail: str = "") -> "NoReturn":
@@ -38,6 +46,49 @@ def require_env(name: str) -> str:
 
 def sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
+
+
+def canonical_json_bytes(value: object) -> bytes:
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+
+
+def trace_index(receipt: dict) -> dict:
+    indexed: dict[str, dict] = {}
+    for key in TRACE_KEYS:
+        value = receipt.get(key)
+        payload = canonical_json_bytes(value)
+        indexed[key] = {
+            "count": len(value) if isinstance(value, list) else 0,
+            "bytes": len(payload),
+            "sha256": sha256_bytes(payload),
+        }
+    return indexed
+
+
+def compact_success_receipt(receipt: dict, full_receipt_bytes: bytes) -> dict:
+    mutation = receipt.get("mutation_campaign") if isinstance(receipt.get("mutation_campaign"), dict) else {}
+    residual = receipt.get("visual_residual_gate") if isinstance(receipt.get("visual_residual_gate"), dict) else {}
+    technical = receipt.get("result") if isinstance(receipt.get("result"), dict) else {}
+    return {
+        "schema_version": "p0-v4-real-rerun-trace/v7-compact-success",
+        "source_sha256": receipt.get("source_sha256"),
+        "code_head_sha": receipt.get("code_head_sha"),
+        "configuration_sha256": receipt.get("configuration_sha256"),
+        "loop_version": receipt.get("loop_version"),
+        "terminal_result": receipt.get("terminal_result"),
+        "technical_result": technical.get("result"),
+        "remediation_cycles": technical.get("remediation_cycles"),
+        "convergence_receipt_binding": receipt.get("convergence_receipt_binding"),
+        "gate_preflight": receipt.get("gate_preflight"),
+        "passes": receipt.get("passes") if isinstance(receipt.get("passes"), list) else [],
+        "mutation_campaign": {k: v for k, v in mutation.items() if k != "mutations"},
+        "visual_residual_gate": {k: v for k, v in residual.items() if k not in {"findings", "justifications"}},
+        "human_review_packet": receipt.get("human_review_packet"),
+        "trace_index": trace_index(receipt),
+        "full_trace_bytes": len(full_receipt_bytes),
+        "full_trace_sha256": sha256_bytes(full_receipt_bytes),
+        "detail_retention": "HASH_INDEX_ONLY_ON_SUCCESS",
+    }
 
 
 def broker(token: str, payload: dict) -> dict:
@@ -142,10 +193,10 @@ def main() -> int:
         source_path.unlink(missing_ok=True)
         die("FAIL_P0_EXACT_HEAD_RECEIPT_MISSING", f"runner_exit={runner.returncode}")
 
-    receipt_bytes = receipt_path.read_bytes()
-    receipt_sha = sha256_bytes(receipt_bytes)
+    full_receipt_bytes = receipt_path.read_bytes()
+    full_receipt_sha = sha256_bytes(full_receipt_bytes)
     try:
-        receipt = json.loads(receipt_bytes)
+        receipt = json.loads(full_receipt_bytes)
     except json.JSONDecodeError as exc:
         source_path.unlink(missing_ok=True)
         die("FAIL_P0_EXACT_HEAD_RECEIPT_JSON", str(exc))
@@ -156,29 +207,40 @@ def main() -> int:
     if receipt.get("configuration_sha256") != config_sha:
         die("FAIL_P0_EXACT_HEAD_RECEIPT_CONFIG_BINDING")
 
+    terminal = receipt.get("terminal_result")
+    compact_success = runner.returncode == 0 and terminal == "READY_FOR_HUMAN_REVIEW_RECHECK"
+    persisted_receipt = compact_success_receipt(receipt, full_receipt_bytes) if compact_success else receipt
+    persisted_receipt_bytes = canonical_json_bytes(persisted_receipt)
+    persisted_receipt_sha = sha256_bytes(persisted_receipt_bytes)
+    receipt_mode = "COMPACT_SUCCESS" if compact_success else "FULL_FAILURE_OR_BLOCKED"
+    if compact_success and len(persisted_receipt_bytes) > COMPACT_SUCCESS_MAX_BYTES:
+        die(
+            "FAIL_P0_COMPACT_RECEIPT_SIZE_BUDGET",
+            f"bytes={len(persisted_receipt_bytes)} max={COMPACT_SUCCESS_MAX_BYTES}",
+        )
+
     persisted = broker(
         github_token,
         {
             **identity,
             "action": "store_receipt",
-            "receipt_base64": base64.b64encode(receipt_bytes).decode("ascii"),
-            "receipt_bytes": len(receipt_bytes),
-            "receipt_sha256": receipt_sha,
+            "receipt_base64": base64.b64encode(persisted_receipt_bytes).decode("ascii"),
+            "receipt_bytes": len(persisted_receipt_bytes),
+            "receipt_sha256": persisted_receipt_sha,
             "configuration_sha256": config_sha,
             "runner_exit_code": runner.returncode,
         },
     )
     if persisted.get("outcome") != "RECEIPT_PERSISTED_WITH_CRYPTOGRAPHIC_AND_SEMANTIC_BINDING":
         die("FAIL_P0_RECEIPT_PERSISTENCE_OUTCOME", str(persisted.get("outcome")))
-    if persisted.get("receipt_sha256") != receipt_sha or int(persisted.get("receipt_bytes", -1)) != len(receipt_bytes):
+    if persisted.get("receipt_sha256") != persisted_receipt_sha or int(persisted.get("receipt_bytes", -1)) != len(persisted_receipt_bytes):
         die("FAIL_P0_RECEIPT_PERSISTENCE_READBACK")
 
     mutation = receipt.get("mutation_campaign") if isinstance(receipt.get("mutation_campaign"), dict) else {}
     residual = receipt.get("visual_residual_gate") if isinstance(receipt.get("visual_residual_gate"), dict) else {}
     technical = receipt.get("result") if isinstance(receipt.get("result"), dict) else {}
-    terminal = receipt.get("terminal_result")
     summary = {
-        "schema_version": "p0-exact-head-ci-summary/v2",
+        "schema_version": "p0-exact-head-ci-summary/v3",
         "github_event_name": event_name,
         "github_ref": github_ref,
         "github_sha": github_sha,
@@ -188,8 +250,11 @@ def main() -> int:
         "source_evidence_object_id": SOURCE_EVIDENCE_OBJECT_ID,
         "configuration_sha256": config_sha,
         "receipt_evidence_object_id": persisted.get("evidence_object_id"),
-        "receipt_sha256": receipt_sha,
-        "receipt_bytes": len(receipt_bytes),
+        "receipt_sha256": persisted_receipt_sha,
+        "receipt_bytes": len(persisted_receipt_bytes),
+        "receipt_mode": receipt_mode,
+        "full_trace_sha256": full_receipt_sha,
+        "full_trace_bytes": len(full_receipt_bytes),
         "runner_exit_code": runner.returncode,
         "technical_result": technical.get("result"),
         "terminal_result": terminal,
