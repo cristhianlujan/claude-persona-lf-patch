@@ -10,8 +10,10 @@ from profile_runtime_api.llama import (
     SCHEMA_CONSTRAINED_TRANSPORT_POLICY,
     UI_FOCUSED_GENERATION_POLICY,
     UI_FOCUSED_MAX_OUTPUT_TOKENS,
+    UI_FOCUSED_TEMPERATURE,
     UI_FOCUSED_TRANSPORT_POLICY,
     governed_max_output_tokens,
+    governed_temperature,
     LlamaHTTPClient,
     governed_generation_schema,
     LlamaTransportError,
@@ -103,10 +105,10 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         )
         self.assertEqual(completion["generation_transport_policy"], UI_FOCUSED_TRANSPORT_POLICY)
         self.assertEqual(completion["generation_max_output_tokens"], UI_FOCUSED_MAX_OUTPUT_TOKENS)
-        self.assertEqual(
-            completion["generation_output_budget_policy"],
-            "UI_FOCUSED_MAX_OUTPUT_TOKENS_256",
-        )
+        self.assertEqual(completion["generation_output_budget_policy"], "UI_FOCUSED_MAX_OUTPUT_TOKENS_256")
+        self.assertEqual(client.last_payload["temperature"], UI_FOCUSED_TEMPERATURE)
+        self.assertEqual(completion["generation_temperature"], UI_FOCUSED_TEMPERATURE)
+        self.assertEqual(completion["generation_temperature_policy"], "UI_FOCUSED_DETERMINISTIC_TEMPERATURE_0")
 
     def test_ui_focused_generation_schema_is_bounded_without_mutating_canonical(self) -> None:
         canonical = {
@@ -161,6 +163,10 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
             ),
             (UI_FOCUSED_MAX_OUTPUT_TOKENS, "UI_FOCUSED_MAX_OUTPUT_TOKENS_256"),
         )
+        self.assertEqual(
+            governed_temperature(profile_slug="ui_architect", schema_mode="UI_FOCUSED_DECISION"),
+            (UI_FOCUSED_TEMPERATURE, "UI_FOCUSED_DETERMINISTIC_TEMPERATURE_0"),
+        )
         self.assertNotIn("response_format", client.last_payload)
         self.assertTrue(completion["generation_schema_sha256"])
 
@@ -178,10 +184,9 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         self.assertEqual(completion["generation_schema_policy"], CANONICAL_GENERATION_POLICY)
         self.assertEqual(completion["generation_transport_policy"], SCHEMA_CONSTRAINED_TRANSPORT_POLICY)
         self.assertEqual(completion["generation_max_output_tokens"], self.settings.max_output_tokens)
-        self.assertEqual(
-            completion["generation_output_budget_policy"],
-            "CONFIGURED_MAX_OUTPUT_TOKENS",
-        )
+        self.assertEqual(completion["generation_output_budget_policy"], "CONFIGURED_MAX_OUTPUT_TOKENS")
+        self.assertEqual(completion["generation_temperature"], 0.2)
+        self.assertEqual(completion["generation_temperature_policy"], "DEFAULT_TEMPERATURE_0_2")
 
     def test_other_profiles_use_pinned_llama_schema_constrained_shape(self) -> None:
         client = self.call('{"ok":true}', profile_slug="quality_pack")
@@ -254,6 +259,7 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         self.assertIn("corrective visual/interaction treatment", prompt)
         self.assertIn("hard_exclusions must never prohibit", prompt)
         self.assertIn("bare generic labels", prompt)
+        self.assertIn("never wrap the object in code formatting", prompt)
 
     def test_queue_context_flags_do_not_imply_missing_input(self) -> None:
         binding = SchemaBinding(
