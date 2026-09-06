@@ -1,53 +1,66 @@
-version: v0.1
+version: v0.2
 status: CANDIDATO_READ_ONLY
 operation: CREACION_ESTRATEGIA_LF
 source_model: GIT_FIRST_YAML
+ekb_hardening: S30_EKB_HARDENING_V1
 steps:
-  - order: 21
+  - order: 24
     id: strategy_lint
     evidence: strategy_contract_lint_pass
-  - order: 22
+  - order: 25
     id: policy_conflict_check
     evidence: no_unresolved_policy_conflicts
-  - order: 23
+  - order: 26
     id: semantic_consistency
     evidence: problem_objective_scope_stage_consistency_pass
-  - order: 24
+  - order: 27
     id: compatibility_check
     evidence: existing_strategy_compatibility_assessed
-  - order: 25
+  - order: 28
     id: stage_conclusion_contract
     evidence: append_only_stage_conclusion_template_present
-  - order: 26
+  - order: 29
     id: evidence_index
     evidence: exact_evidence_refs_and_currentness_rules_present
-  - order: 27
+  - order: 30
     id: change_log_and_lineage
     evidence: change_log_and_supersession_lineage_present
-  - order: 28
+  - order: 31
+    id: dynamic_reliability_plan
+    evidence: concurrency_atomicity_idempotency_retry_partial_failure_tests_present_or_explicit_na
+  - order: 32
+    id: timeout_budget_plan
+    evidence: phase_budget_and_first_bad_phase_rule_present_or_explicit_na
+  - order: 33
+    id: scheduler_scope_guard
+    evidence: scheduler_entry_state_and_authorized_mutation_rule_present_or_explicit_na
+  - order: 34
+    id: recovery_routes
+    evidence: four_route_recovery_attempt_trace_and_exhaustion_rule_present
+  - order: 35
     id: candidate_payload_freeze
     evidence: candidate_payload_hash_computed
-  - order: 29
+  - order: 36
     id: github_write
     evidence: source_file_commit_sha
-  - order: 30
+  - order: 37
     id: github_readback
     evidence: source_file_blob_sha
-  - order: 31
+  - order: 38
     id: supabase_register_candidate
-    evidence: strategy_snapshot_id
-  - order: 32
-    id: supabase_readback
-    evidence: exact_snapshot_version_status_runtime_impact_readback
-  - order: 33
+    evidence: strategy_snapshot_receipt
+  - order: 39
+    id: independent_supabase_readback
+    evidence: exact_snapshot_version_status_runtime_impact_observed_in_second_statement
+  - order: 40
     id: policy_fingerprint_readback
     evidence: policy_set_fingerprint_matches_candidate
-  - order: 34
+  - order: 41
     id: contract_judge
     evidence: judge_pass
-  - order: 35
+  - order: 42
     id: close
-    evidence: no_blocking_observations
-  - order: 36
+    evidence: no_blocking_observations_and_no_unexhausted_recovery
+  - order: 43
     id: report_output
-    evidence: execution_summary_with_claim_ceiling_and_pending_gates
+    evidence: execution_summary_with_claim_ceiling_pending_gates_and_first_bad_hop
