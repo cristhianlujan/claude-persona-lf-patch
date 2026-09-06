@@ -1,12 +1,15 @@
-version: v0.1
+version: v0.2
 status: CANDIDATO_READ_ONLY
 judge: JUDGE_CONTRATO_ESTRATEGIA_LF
 operation: CREACION_ESTRATEGIA_LF
+ekb_hardening: S30_EKB_HARDENING_V1
 pass_if:
   - router_read
   - operational_source_read
+  - durable_start_if_automated_or_explicit_na
   - ekb_preflight_done
   - policy_resolution_done
+  - no_implicit_policy_inheritance
   - policy_set_fingerprint_present
   - contract_read
   - repo_destination_validated
@@ -18,21 +21,25 @@ pass_if:
   - qdp_tests_metrics_evidence_ceiling_present
   - rollback_or_recovery_present
   - invalidation_triggers_present
+  - operability_controls_present_or_explicit_na
   - strategy_contract_lint_pass
   - no_unresolved_policy_conflicts
   - semantic_consistency_pass
   - github_write_done
   - github_readback_done
   - source_blob_sha_present
-  - supabase_registration_readback_done
+  - supabase_registration_receipt_present
+  - independent_supabase_registration_readback_done
   - candidate_status_readback
   - runtime_plan_only_readback
   - automatic_impact_bloqueado_readback
+  - no_unexhausted_recovery_route
   - no_blocking_observations
 fail_if:
   - write_without_router
   - write_without_ekb_preflight
   - write_without_policy_resolution
+  - implicit_policy_inheritance
   - missing_policy_set_fingerprint
   - write_without_contract
   - unresolved_authority
@@ -41,14 +48,21 @@ fail_if:
   - missing_qdp_gate
   - missing_recovery
   - missing_invalidation_trigger
+  - missing_operability_control_without_explicit_na
   - unresolved_policy_conflict
+  - returning_only_used_as_readback
+  - same_statement_readback_used_as_closure
+  - blind_timeout_extension_as_first_response
+  - untraced_retry_without_attempt_id
+  - blocked_without_recovery_exhaustion_proof
+  - unauthorized_scheduler_mutation
   - assistant_freeform_decision
   - overwrite_strategy_history
   - auto_migrate_existing_strategy
   - enable_runtime
   - enable_automatic_impact
   - no_github_readback
-  - no_supabase_readback
+  - no_independent_supabase_readback
   - close_without_operation_execution
   - blocking_observations
 result_values:
