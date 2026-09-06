@@ -7,8 +7,11 @@ from typing import Any
 
 from profile_runtime_api.llama import (
     CANONICAL_GENERATION_POLICY,
+    SCHEMA_CONSTRAINED_TRANSPORT_POLICY,
     UI_FOCUSED_GENERATION_POLICY,
+    UI_FOCUSED_TRANSPORT_POLICY,
     LlamaHTTPClient,
+    governed_generation_schema,
     LlamaTransportError,
     PersistentLlamaServerAdapter,
 )
@@ -80,17 +83,22 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         assert client.last_payload is not None
         self.assertNotIn("response_format", client.last_payload)
 
-    def test_ui_architect_explicit_mode_uses_exact_schema_constraint(self) -> None:
+    def test_ui_architect_explicit_mode_preserves_unconstrained_v27_fallback(self) -> None:
         client = self.call(
             '{"ok":true}',
             profile_slug="ui_architect",
             schema_mode="UI_FOCUSED_DECISION",
         )
         assert client.last_payload is not None
-        self.assertEqual(
-            client.last_payload["response_format"],
-            {"type": "json_object", "schema": self.schema},
+        self.assertNotIn("response_format", client.last_payload)
+        completion = client.chat(
+            system_prompt="system",
+            user_prompt="user",
+            schema=self.schema,
+            profile_slug="ui_architect",
+            schema_mode="UI_FOCUSED_DECISION",
         )
+        self.assertEqual(completion["generation_transport_policy"], UI_FOCUSED_TRANSPORT_POLICY)
 
     def test_ui_focused_generation_schema_is_bounded_without_mutating_canonical(self) -> None:
         canonical = {
@@ -120,7 +128,11 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
             schema_mode="UI_FOCUSED_DECISION",
         )
         assert client.last_payload is not None
-        generated = client.last_payload["response_format"]["schema"]
+        generated, generated_policy = governed_generation_schema(
+            canonical,
+            profile_slug="ui_architect",
+            schema_mode="UI_FOCUSED_DECISION",
+        )
         self.assertEqual(generated["properties"]["decision_subject"]["maxLength"], 160)
         self.assertEqual(generated["properties"]["short_generator_prompt"]["maxLength"], 240)
         self.assertEqual(generated["properties"]["hard_exclusions"]["maxItems"], 4)
@@ -129,7 +141,10 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         )
         self.assertNotIn("maxLength", canonical["properties"]["decision_subject"])
         self.assertNotIn("maxItems", canonical["properties"]["hard_exclusions"])
+        self.assertEqual(generated_policy, UI_FOCUSED_GENERATION_POLICY)
         self.assertEqual(completion["generation_schema_policy"], UI_FOCUSED_GENERATION_POLICY)
+        self.assertEqual(completion["generation_transport_policy"], UI_FOCUSED_TRANSPORT_POLICY)
+        self.assertNotIn("response_format", client.last_payload)
         self.assertTrue(completion["generation_schema_sha256"])
 
     def test_other_profiles_keep_canonical_generation_schema(self) -> None:
@@ -144,6 +159,7 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         assert client.last_payload is not None
         self.assertEqual(client.last_payload["response_format"]["schema"], self.schema)
         self.assertEqual(completion["generation_schema_policy"], CANONICAL_GENERATION_POLICY)
+        self.assertEqual(completion["generation_transport_policy"], SCHEMA_CONSTRAINED_TRANSPORT_POLICY)
 
     def test_other_profiles_use_pinned_llama_schema_constrained_shape(self) -> None:
         client = self.call('{"ok":true}', profile_slug="quality_pack")
