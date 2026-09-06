@@ -57,3 +57,4 @@ begin
   raise notice 'S28_CACHED_V2_SANDBOX_ROLLBACK_PASS';
 end;
 $rollback$;
+-- Trigger exact-version canary after workflow hardening; semantic SQL unchanged.
