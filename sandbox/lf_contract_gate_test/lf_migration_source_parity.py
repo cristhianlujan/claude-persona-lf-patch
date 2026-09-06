@@ -64,6 +64,7 @@ MARKER_RE = re.compile(
     r"cutover=(\d{14}) legacy_start=(\d{14}) legacy_end=(\d{14}) "
     r"legacy_count=(\d+) legacy_sha256=([0-9a-f]{64})$"
 )
+SHA_PROOF_RE = re.compile(r"^sha256:([0-9a-f]{64})$")
 
 
 def managed(name: str) -> bool:
@@ -85,6 +86,19 @@ def fail(code: str, detail: str = "") -> None:
     raise SystemExit(f"{code}{suffix}")
 
 
+def remote_content_sha256(field: str, version: str) -> str:
+    proof = SHA_PROOF_RE.fullmatch(field)
+    if proof:
+        return proof.group(1)
+    if field.startswith("sha256:"):
+        fail("FAIL_LF_MIGRATION_LEDGER_SHA_PROOF", f"version={version}")
+    try:
+        sql = bytes.fromhex(field).decode("utf-8")
+    except (ValueError, UnicodeDecodeError) as exc:
+        fail("FAIL_LF_MIGRATION_LEDGER_SQL", f"version={version} error={type(exc).__name__}")
+    return hashlib.sha256(canonical(sql)).hexdigest()
+
+
 def read_single_row(path: pathlib.Path, expected_columns: int, code: str) -> list[str]:
     with path.open(newline="", encoding="utf-8") as handle:
         rows = list(csv.reader(handle))
@@ -104,6 +118,13 @@ def main() -> int:
     classification_baseline_end = os.environ["LF_MIGRATION_CLASSIFICATION_BASELINE_END"]
     grandfathered_count = os.environ["LF_MIGRATION_GRANDFATHERED_COUNT"]
     grandfathered_sha = os.environ["LF_MIGRATION_GRANDFATHERED_SHA256"]
+
+    parser_probe_sql = "select 1;\n"
+    parser_probe_sha = hashlib.sha256(canonical(parser_probe_sql)).hexdigest()
+    if remote_content_sha256("sha256:" + parser_probe_sha, "SELFTEST") != parser_probe_sha:
+        fail("FAIL_CI009_COMPACT_SHA_PARSER_SELFTEST")
+    if remote_content_sha256(parser_probe_sql.encode("utf-8").hex(), "SELFTEST") != parser_probe_sha:
+        fail("FAIL_CI009_LEGACY_HEX_PARSER_SELFTEST")
 
     if not managed("promote_router_compact_jit_v1"):
         fail("FAIL_CI009_SELFTEST_MANAGED_EXACT")
@@ -180,10 +201,10 @@ def main() -> int:
         for row in csv.reader(handle):
             if len(row) != 3:
                 fail("FAIL_LF_MIGRATION_LEDGER_ROW", repr(row))
-            version, name, sql_hex = row
+            version, name, content_proof = row
             if version > classification_baseline_end and not classified(name):
                 fail("FAIL_UNCLASSIFIED_POST_CUTOVER_MIGRATION", f"remote={version}_{name}")
-            remote_all[version] = (name, sql_hex)
+            remote_all[version] = (name, content_proof)
 
     local: dict[str, tuple[str, str]] = {}
     for path in sorted(migrations.glob("*.sql")):
@@ -200,11 +221,10 @@ def main() -> int:
         local[version] = (name, hashlib.sha256(canonical(path.read_text(encoding="utf-8"))).hexdigest())
 
     remote: dict[str, tuple[str, str]] = {}
-    for version, (name, sql_hex) in remote_all.items():
+    for version, (name, content_proof) in remote_all.items():
         if not managed(name):
             continue
-        sql = bytes.fromhex(sql_hex).decode("utf-8")
-        remote[version] = (name, hashlib.sha256(canonical(sql)).hexdigest())
+        remote[version] = (name, remote_content_sha256(content_proof, version))
 
     if set(local) != set(remote):
         fail("FAIL_LF_MIGRATION_VERSION_PARITY", f"git={sorted(local)} remote={sorted(remote)}")
