@@ -16,6 +16,8 @@ RESPONSE_TYPE = "PROFILE_RUNTIME_RESPONSE_V1"
 UI_ARCHITECT_PROFILE_SLUG = "ui_architect"
 UI_FOCUSED_SCHEMA_MODE = "UI_FOCUSED_DECISION"
 UI_FOCUSED_GENERATION_POLICY = "UI_FOCUSED_BOUNDED_GENERATION_V1"
+UI_FOCUSED_TRANSPORT_POLICY = "UI_FOCUSED_UNCONSTRAINED_JSON_V27_FALLBACK"
+SCHEMA_CONSTRAINED_TRANSPORT_POLICY = "SCHEMA_CONSTRAINED_JSON"
 CANONICAL_GENERATION_POLICY = "CANONICAL_SCHEMA_UNCHANGED"
 
 
@@ -144,6 +146,11 @@ class LlamaHTTPClient:
             schema, profile_slug=profile_slug, schema_mode=schema_mode
         )
         generation_schema_sha256 = canonical_json_sha256(generation_schema)
+        generation_transport_policy = (
+            UI_FOCUSED_TRANSPORT_POLICY
+            if profile_slug == UI_ARCHITECT_PROFILE_SLUG
+            else SCHEMA_CONSTRAINED_TRANSPORT_POLICY
+        )
 
         payload: dict[str, Any] = {
             "model": self.settings.llama_model,
@@ -158,11 +165,11 @@ class LlamaHTTPClient:
             "max_tokens": self.settings.max_output_tokens,
             "cache_prompt": True,
         }
-        # UI Architect AUTO preserves the proven V27 fallback because its aggregate
-        # anyOf schema previously produced empty constrained output. A typed, exact
-        # UI mode binds one canonical schema and may use the pinned llama.cpp schema
-        # constraint safely. Non-UI profiles remain schema constrained as before.
-        if profile_slug != UI_ARCHITECT_PROFILE_SLUG or schema_mode != "AUTO":
+        # UI Architect keeps the proven V27 fallback: llama.cpp constrained
+        # decoding against the aggregate UI schema is not used. The canonical
+        # schema and v3b semantic validators still run after strict JSON parsing.
+        # Other profiles keep the current schema-constrained transport.
+        if profile_slug != UI_ARCHITECT_PROFILE_SLUG:
             # The deployed llama.cpp is pinned at 925e1179. In that parser,
             # response_format.type=json_schema expects json_schema.schema; a direct
             # sibling `schema` is ignored. type=json_object + schema is the pinned,
@@ -215,6 +222,7 @@ class LlamaHTTPClient:
             "finish_reason": str(choices[0].get("finish_reason") or ""),
             "generation_schema_sha256": generation_schema_sha256,
             "generation_schema_policy": generation_schema_policy,
+            "generation_transport_policy": generation_transport_policy,
         }
 
     def _request(
@@ -312,6 +320,9 @@ class PersistentLlamaServerAdapter:
             ),
             "generation_schema_policy": self.last_completion.get(
                 "generation_schema_policy"
+            ),
+            "generation_transport_policy": self.last_completion.get(
+                "generation_transport_policy"
             ),
             "structural_context_sha256": canonical_json_sha256(self.structural_context),
             "llama_response_id": self.last_completion.get("id") or "UNAVAILABLE",
@@ -418,10 +429,17 @@ class PersistentLlamaServerVerifier:
             schema_mode=self.schema.mode,
         )
         expected_generation_sha = canonical_json_sha256(expected_generation_schema)
+        expected_transport_policy = (
+            UI_FOCUSED_TRANSPORT_POLICY
+            if request["profile_slug"] == UI_ARCHITECT_PROFILE_SLUG
+            else SCHEMA_CONSTRAINED_TRANSPORT_POLICY
+        )
         if attestation.get("generation_schema_sha256") != expected_generation_sha:
             raise LlamaTransportError("LLAMA_VERIFIER_GENERATION_SCHEMA_MISMATCH")
         if attestation.get("generation_schema_policy") != expected_generation_policy:
             raise LlamaTransportError("LLAMA_VERIFIER_GENERATION_POLICY_MISMATCH")
+        if attestation.get("generation_transport_policy") != expected_transport_policy:
+            raise LlamaTransportError("LLAMA_VERIFIER_TRANSPORT_POLICY_MISMATCH")
 
         context_sha = canonical_json_sha256(self.structural_context)
         if attestation.get("structural_context_sha256") != context_sha:
@@ -440,6 +458,7 @@ class PersistentLlamaServerVerifier:
                     self.schema.mode,
                     expected_generation_sha,
                     expected_generation_policy,
+                    expected_transport_policy,
                     context_sha,
                     str(attestation.get("llama_response_id")),
                 ]
