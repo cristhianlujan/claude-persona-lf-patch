@@ -1,0 +1,83 @@
+version: v0.1
+status: CANDIDATO_READ_ONLY
+operation: CREACION_ESTRATEGIA_LF
+source_model: GIT_FIRST_YAML
+strategy_contract: STRATEGY-CONTRACT-V1-CANDIDATE
+policy_contract: POL-STRATEGY-CREATION-001-CANDIDATE
+required_before_write:
+  - read_router
+  - read_operational_source
+  - targeted_ekb_preflight
+  - resolve_applicable_policies
+  - policy_set_fingerprint_present
+  - read_repo_matrix
+  - read_contract
+  - validate_repo
+  - validate_path
+  - declared_paths_exist_in_tree
+  - classify_strategy_type
+  - current_strategy_inventory_read
+  - dependency_currentness_resolved
+  - strategy_contract_materialized
+  - qdp_and_evidence_ceiling_attached
+  - lint_pass
+  - conflict_check_pass
+allowed:
+  repository: cristhianlujan/claude-persona-lf-patch
+  path_prefixes:
+    - /gobernanza/
+    - /strategies/
+  strategy_status: CANDIDATO_READ_ONLY
+  runtime_state: PLAN_ONLY
+  automatic_impact: BLOQUEADO
+  supabase_snapshot_store: public.lf_strategy_snapshots
+blocked:
+  - write_without_router
+  - write_without_ekb_preflight
+  - write_without_policy_resolution
+  - write_without_policy_set_fingerprint
+  - write_without_contract
+  - write_without_dependency_currentness
+  - write_without_qdp_gates
+  - write_without_invalidation_triggers
+  - write_without_stage_conclusions_contract
+  - assistant_freeform_decision
+  - overwrite_strategy_history
+  - auto_migrate_existing_strategies
+  - enable_runtime
+  - automatic_production_promotion
+  - close_without_readback
+required_strategy_blocks:
+  - problem_statement
+  - objective
+  - scope
+  - non_goals
+  - baseline
+  - authorities
+  - dependencies
+  - applicable_policies
+  - stages
+  - gates
+  - tests
+  - metrics
+  - risks
+  - evidence_contract
+  - rollback_or_recovery
+  - execution_frontier
+  - stage_conclusions
+  - invalidation_triggers
+  - change_log
+  - closure_criteria
+required_after_write:
+  - github_readback
+  - commit_sha
+  - source_blob_sha
+  - supabase_registration_readback
+  - strategy_snapshot_id
+  - exact_strategy_version
+  - policy_set_fingerprint_readback
+  - all_required_steps_pass
+  - contract_sha_present
+  - judge_sha_present
+  - no_blocking_observations
+  - report_output
