@@ -176,7 +176,7 @@ class LlamaHTTPClient:
         )
         generation_transport_policy = (
             UI_FOCUSED_TRANSPORT_POLICY
-            if profile_slug == UI_ARCHITECT_PROFILE_SLUG
+            if profile_slug == UI_ARCHITECT_PROFILE_SLUG and schema_mode == "AUTO"
             else SCHEMA_CONSTRAINED_TRANSPORT_POLICY
         )
 
@@ -193,11 +193,11 @@ class LlamaHTTPClient:
             "max_tokens": generation_max_output_tokens,
             "cache_prompt": True,
         }
-        # UI Architect keeps the proven V27 fallback: llama.cpp constrained
-        # decoding against the aggregate UI schema is not used. The canonical
-        # schema and v3b semantic validators still run after strict JSON parsing.
-        # Other profiles keep the current schema-constrained transport.
-        if profile_slug != UI_ARCHITECT_PROFILE_SLUG:
+        # UI Architect AUTO keeps the proven V27 fallback because its aggregate
+        # schema previously produced empty constrained output. Explicit typed UI
+        # modes bind one exact schema and keep the pinned schema-constrained path.
+        # Other profiles remain schema constrained.
+        if profile_slug != UI_ARCHITECT_PROFILE_SLUG or schema_mode != "AUTO":
             # The deployed llama.cpp is pinned at 925e1179. In that parser,
             # response_format.type=json_schema expects json_schema.schema; a direct
             # sibling `schema` is ignored. type=json_object + schema is the pinned,
@@ -483,7 +483,7 @@ class PersistentLlamaServerVerifier:
         )
         expected_transport_policy = (
             UI_FOCUSED_TRANSPORT_POLICY
-            if request["profile_slug"] == UI_ARCHITECT_PROFILE_SLUG
+            if request["profile_slug"] == UI_ARCHITECT_PROFILE_SLUG and self.schema.mode == "AUTO"
             else SCHEMA_CONSTRAINED_TRANSPORT_POLICY
         )
         if attestation.get("generation_schema_sha256") != expected_generation_sha:
