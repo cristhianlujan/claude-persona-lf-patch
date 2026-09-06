@@ -9,7 +9,9 @@ from profile_runtime_api.llama import (
     CANONICAL_GENERATION_POLICY,
     SCHEMA_CONSTRAINED_TRANSPORT_POLICY,
     UI_FOCUSED_GENERATION_POLICY,
+    UI_FOCUSED_MAX_OUTPUT_TOKENS,
     UI_FOCUSED_TRANSPORT_POLICY,
+    governed_max_output_tokens,
     LlamaHTTPClient,
     governed_generation_schema,
     LlamaTransportError,
@@ -91,6 +93,7 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         )
         assert client.last_payload is not None
         self.assertNotIn("response_format", client.last_payload)
+        self.assertEqual(client.last_payload["max_tokens"], UI_FOCUSED_MAX_OUTPUT_TOKENS)
         completion = client.chat(
             system_prompt="system",
             user_prompt="user",
@@ -99,6 +102,11 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
             schema_mode="UI_FOCUSED_DECISION",
         )
         self.assertEqual(completion["generation_transport_policy"], UI_FOCUSED_TRANSPORT_POLICY)
+        self.assertEqual(completion["generation_max_output_tokens"], UI_FOCUSED_MAX_OUTPUT_TOKENS)
+        self.assertEqual(
+            completion["generation_output_budget_policy"],
+            "UI_FOCUSED_MAX_OUTPUT_TOKENS_192",
+        )
 
     def test_ui_focused_generation_schema_is_bounded_without_mutating_canonical(self) -> None:
         canonical = {
@@ -144,6 +152,15 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         self.assertEqual(generated_policy, UI_FOCUSED_GENERATION_POLICY)
         self.assertEqual(completion["generation_schema_policy"], UI_FOCUSED_GENERATION_POLICY)
         self.assertEqual(completion["generation_transport_policy"], UI_FOCUSED_TRANSPORT_POLICY)
+        self.assertEqual(completion["generation_max_output_tokens"], UI_FOCUSED_MAX_OUTPUT_TOKENS)
+        self.assertEqual(
+            governed_max_output_tokens(
+                self.settings,
+                profile_slug="ui_architect",
+                schema_mode="UI_FOCUSED_DECISION",
+            ),
+            (UI_FOCUSED_MAX_OUTPUT_TOKENS, "UI_FOCUSED_MAX_OUTPUT_TOKENS_192"),
+        )
         self.assertNotIn("response_format", client.last_payload)
         self.assertTrue(completion["generation_schema_sha256"])
 
@@ -160,6 +177,11 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         self.assertEqual(client.last_payload["response_format"]["schema"], self.schema)
         self.assertEqual(completion["generation_schema_policy"], CANONICAL_GENERATION_POLICY)
         self.assertEqual(completion["generation_transport_policy"], SCHEMA_CONSTRAINED_TRANSPORT_POLICY)
+        self.assertEqual(completion["generation_max_output_tokens"], self.settings.max_output_tokens)
+        self.assertEqual(
+            completion["generation_output_budget_policy"],
+            "CONFIGURED_MAX_OUTPUT_TOKENS",
+        )
 
     def test_other_profiles_use_pinned_llama_schema_constrained_shape(self) -> None:
         client = self.call('{"ok":true}', profile_slug="quality_pack")
