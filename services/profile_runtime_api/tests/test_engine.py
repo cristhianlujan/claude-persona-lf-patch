@@ -35,7 +35,11 @@ if importlib.util.find_spec("jsonschema") is None:
 from profile_runtime_api.cache import StructuralCache
 from profile_runtime_api.engine import ProfileRuntimeEngine
 from profile_runtime_api.hashing import canonical_json_sha256
-from profile_runtime_api.llama import SCHEMA_CONSTRAINED_TRANSPORT_POLICY, governed_generation_schema
+from profile_runtime_api.llama import (
+    SCHEMA_CONSTRAINED_TRANSPORT_POLICY,
+    governed_generation_schema,
+    governed_max_output_tokens,
+)
 from profile_runtime_api.models import (
     Artifact,
     BatchRequest,
@@ -97,6 +101,13 @@ class FakeLlamaClient:
             profile_slug=kwargs["profile_slug"],
             schema_mode=kwargs.get("schema_mode", "AUTO"),
         )
+        generation_max_output_tokens, generation_output_budget_policy = (
+            governed_max_output_tokens(
+                Settings(repo_root=Path("."), state_dir=Path("."), api_token="test-token"),
+                profile_slug=kwargs["profile_slug"],
+                schema_mode=kwargs.get("schema_mode", "AUTO"),
+            )
+        )
         return {
             "content": self.output,
             "id": f"completion-{self.chat_calls}",
@@ -107,6 +118,8 @@ class FakeLlamaClient:
             "generation_schema_sha256": canonical_json_sha256(generation_schema),
             "generation_schema_policy": generation_policy,
             "generation_transport_policy": SCHEMA_CONSTRAINED_TRANSPORT_POLICY,
+            "generation_max_output_tokens": generation_max_output_tokens,
+            "generation_output_budget_policy": generation_output_budget_policy,
         }
 
 
