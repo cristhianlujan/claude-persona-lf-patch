@@ -237,7 +237,7 @@ def main() -> int:
         f"legacy={legacy_count} sha256={legacy_sha} grandfathered={grandfathered_count}/{grandfathered_sha} "
         f"classification_baseline_end={classification_baseline_end}"
     )
-    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=24/24")
+    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=22/22")
     return 0
 
 
