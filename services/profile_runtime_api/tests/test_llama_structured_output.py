@@ -87,14 +87,14 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         assert client.last_payload is not None
         self.assertNotIn("response_format", client.last_payload)
 
-    def test_ui_architect_explicit_mode_preserves_unconstrained_v27_fallback(self) -> None:
+    def test_ui_architect_explicit_mode_uses_schema_constrained_path(self) -> None:
         client = self.call(
             '{"ok":true}',
             profile_slug="ui_architect",
             schema_mode="UI_FOCUSED_DECISION",
         )
         assert client.last_payload is not None
-        self.assertNotIn("response_format", client.last_payload)
+        self.assertEqual(client.last_payload["response_format"]["schema"], governed_generation_schema(self.schema, profile_slug="ui_architect", schema_mode="UI_FOCUSED_DECISION")[0])
         self.assertEqual(client.last_payload["max_tokens"], UI_FOCUSED_MAX_OUTPUT_TOKENS)
         completion = client.chat(
             system_prompt="system",
@@ -103,7 +103,7 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
             profile_slug="ui_architect",
             schema_mode="UI_FOCUSED_DECISION",
         )
-        self.assertEqual(completion["generation_transport_policy"], UI_FOCUSED_TRANSPORT_POLICY)
+        self.assertEqual(completion["generation_transport_policy"], SCHEMA_CONSTRAINED_TRANSPORT_POLICY)
         self.assertEqual(completion["generation_max_output_tokens"], UI_FOCUSED_MAX_OUTPUT_TOKENS)
         self.assertEqual(completion["generation_output_budget_policy"], "UI_FOCUSED_MAX_OUTPUT_TOKENS_256")
         self.assertEqual(client.last_payload["temperature"], UI_FOCUSED_TEMPERATURE)
@@ -153,7 +153,7 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         self.assertNotIn("maxItems", canonical["properties"]["hard_exclusions"])
         self.assertEqual(generated_policy, UI_FOCUSED_GENERATION_POLICY)
         self.assertEqual(completion["generation_schema_policy"], UI_FOCUSED_GENERATION_POLICY)
-        self.assertEqual(completion["generation_transport_policy"], UI_FOCUSED_TRANSPORT_POLICY)
+        self.assertEqual(completion["generation_transport_policy"], SCHEMA_CONSTRAINED_TRANSPORT_POLICY)
         self.assertEqual(completion["generation_max_output_tokens"], UI_FOCUSED_MAX_OUTPUT_TOKENS)
         self.assertEqual(
             governed_max_output_tokens(
@@ -167,7 +167,7 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
             governed_temperature(profile_slug="ui_architect", schema_mode="UI_FOCUSED_DECISION"),
             (UI_FOCUSED_TEMPERATURE, "UI_FOCUSED_DETERMINISTIC_TEMPERATURE_0"),
         )
-        self.assertNotIn("response_format", client.last_payload)
+        self.assertEqual(client.last_payload["response_format"]["schema"], generated)
         self.assertTrue(completion["generation_schema_sha256"])
 
     def test_other_profiles_keep_canonical_generation_schema(self) -> None:
