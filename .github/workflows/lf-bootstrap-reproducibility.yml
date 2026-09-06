@@ -13,6 +13,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: lf-bootstrap-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   feedback-tier-router:
     name: feedback-tier-router
@@ -21,6 +25,8 @@ jobs:
       tier: ${{ steps.classify.outputs.tier }}
       reason: ${{ steps.classify.outputs.reason }}
       deep_required: ${{ steps.classify.outputs.deep_required }}
+      remote_schema_required: ${{ steps.classify.outputs.remote_schema_required }}
+      remote_schema_reason: ${{ steps.classify.outputs.remote_schema_reason }}
     steps:
       - name: Checkout exact PR head for classification
         if: github.event_name == 'pull_request'
@@ -37,6 +43,8 @@ jobs:
           tier="DEEP"
           reason="NON_PR_OR_UNKNOWN_FAIL_CLOSED"
           deep_required="true"
+          remote_schema_required="true"
+          remote_schema_reason="NON_PR_OR_UNKNOWN_FAIL_CLOSED"
 
           if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
             base="${{ github.event.pull_request.base.sha }}"
@@ -46,12 +54,20 @@ jobs:
 
             if [ "${#changed[@]}" -eq 0 ]; then
               reason="NO_CHANGED_PATHS_FAIL_CLOSED"
+              remote_schema_required="true"
+              remote_schema_reason="NO_CHANGED_PATHS_FAIL_CLOSED"
             else
               docs_only="true"
+              schema_sensitive="false"
               for path in "${changed[@]}"; do
                 case "$path" in
                   docs/*) ;;
-                  *) docs_only="false"; break ;;
+                  *) docs_only="false" ;;
+                esac
+                case "$path" in
+                  supabase/migrations/*|supabase/roles.sql|supabase/config.toml|.github/workflows/lf-bootstrap-reproducibility.yml)
+                    schema_sensitive="true"
+                    ;;
                 esac
               done
 
@@ -59,8 +75,17 @@ jobs:
                 tier="FAST"
                 reason="DOCS_EKB_ONLY_PRODUCTION_SLICE"
                 deep_required="false"
+                remote_schema_required="false"
+                remote_schema_reason="DOCS_ONLY_NO_REMOTE_SCHEMA_CHANGE"
               else
-                reason="NON_DOCS_OR_MIXED_SURFACE_REQUIRES_DEEP"
+                reason="NON_DOCS_OR_MIXED_SURFACE_REQUIRES_LOCAL_DEEP"
+                if [ "$schema_sensitive" = "true" ]; then
+                  remote_schema_required="true"
+                  remote_schema_reason="SCHEMA_SENSITIVE_PATH_CHANGED"
+                else
+                  remote_schema_required="false"
+                  remote_schema_reason="NO_SCHEMA_SENSITIVE_PATH_CHANGED"
+                fi
               fi
             fi
           fi
@@ -68,19 +93,24 @@ jobs:
           echo "tier=$tier" >> "$GITHUB_OUTPUT"
           echo "reason=$reason" >> "$GITHUB_OUTPUT"
           echo "deep_required=$deep_required" >> "$GITHUB_OUTPUT"
+          echo "remote_schema_required=$remote_schema_required" >> "$GITHUB_OUTPUT"
+          echo "remote_schema_reason=$remote_schema_reason" >> "$GITHUB_OUTPUT"
           {
             echo "### Strategy 28 production feedback tier"
             echo "- tier: \`$tier\`"
             echo "- reason: \`$reason\`"
-            echo "- deep required: \`$deep_required\`"
+            echo "- local deep required: \`$deep_required\`"
+            echo "- remote schema bootstrap required: \`$remote_schema_required\`"
+            echo "- remote schema reason: \`$remote_schema_reason\`"
             echo "- approved FAST scope: \`docs/** only\`"
-            echo "- profile/card/skill/adapter/runtime/schema/CI/unknown/final remain DEEP"
+            echo "- remote pg_dump scope: migrations/roles/config/bootstrap-workflow changes, manual/unknown fail-closed"
+            echo "- non-schema profile/card/skill/adapter/runtime changes keep local DEEP validation without remote pg_dump"
           } >> "$GITHUB_STEP_SUMMARY"
 
   schema-bootstrap-probe:
     name: schema-bootstrap-probe
     needs: feedback-tier-router
-    if: needs.feedback-tier-router.outputs.deep_required == 'true'
+    if: needs.feedback-tier-router.outputs.remote_schema_required == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
