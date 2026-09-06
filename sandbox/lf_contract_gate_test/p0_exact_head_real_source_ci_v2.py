@@ -7,6 +7,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -68,6 +69,18 @@ def run_broker_policy_test() -> None:
     print(completed.stdout.strip())
 
 
+def _emit_probe_timing(name: str, duration_ms: float, http_status: int | None, observed: dict | None) -> None:
+    payload = {
+        "telemetry": "P0_EXACT_HEAD_BROKER_PROBE_TIMING_V1",
+        "probe": name,
+        "duration_ms": duration_ms,
+        "http_status": http_status,
+        "observed_outcome": observed.get("outcome") if isinstance(observed, dict) else None,
+        "observed_code": observed.get("code") if isinstance(observed, dict) else None,
+    }
+    print(json.dumps(payload, sort_keys=True, separators=(",", ":")))
+
+
 def live_broker_negative_probes(broker_url: str) -> None:
     token = legacy.require_env("GITHUB_TOKEN")
     base = {
@@ -91,15 +104,22 @@ def live_broker_negative_probes(broker_url: str) -> None:
             method="POST",
             headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json", "Accept": "application/json"},
         )
+        started_ns = time.perf_counter_ns()
         try:
             with urllib.request.urlopen(request, timeout=30) as response:
                 observed = json.loads(response.read().decode("utf-8"))
+                status = getattr(response, "status", None)
+            duration_ms = round((time.perf_counter_ns() - started_ns) / 1_000_000, 3)
+            _emit_probe_timing(name, duration_ms, status, observed)
             legacy.die("FAIL_P0_EXACT_HEAD_NEGATIVE_PROBE_ALLOWED", f"{name}:{observed}")
         except urllib.error.HTTPError as exc:
+            duration_ms = round((time.perf_counter_ns() - started_ns) / 1_000_000, 3)
             try:
                 observed = json.loads(exc.read().decode("utf-8"))
             except (UnicodeDecodeError, json.JSONDecodeError):
+                _emit_probe_timing(name, duration_ms, exc.code, None)
                 legacy.die("FAIL_P0_EXACT_HEAD_NEGATIVE_PROBE_RESPONSE", name)
+            _emit_probe_timing(name, duration_ms, exc.code, observed)
             if observed.get("outcome") != "BLOCKED" or observed.get("code") != expected:
                 legacy.die("FAIL_P0_EXACT_HEAD_NEGATIVE_PROBE_MISMATCH", f"{name}:expected={expected}:observed={observed}")
             print(f"PASS_P0_EXACT_HEAD_NEGATIVE_PROBE:{name}:{expected}")
