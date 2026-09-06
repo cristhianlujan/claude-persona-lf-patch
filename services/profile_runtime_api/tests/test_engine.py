@@ -35,7 +35,7 @@ if importlib.util.find_spec("jsonschema") is None:
 from profile_runtime_api.cache import StructuralCache
 from profile_runtime_api.engine import ProfileRuntimeEngine
 from profile_runtime_api.hashing import canonical_json_sha256
-from profile_runtime_api.llama import governed_generation_schema
+from profile_runtime_api.llama import SCHEMA_CONSTRAINED_TRANSPORT_POLICY, governed_generation_schema
 from profile_runtime_api.models import (
     Artifact,
     BatchRequest,
@@ -106,6 +106,7 @@ class FakeLlamaClient:
             "finish_reason": "stop",
             "generation_schema_sha256": canonical_json_sha256(generation_schema),
             "generation_schema_policy": generation_policy,
+            "generation_transport_policy": SCHEMA_CONSTRAINED_TRANSPORT_POLICY,
         }
 
 
