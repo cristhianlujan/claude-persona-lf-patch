@@ -1,0 +1,81 @@
+name: S28 Local Static Probe
+
+on:
+  push:
+    branches:
+      - s28-evidence-retention-20260906
+
+permissions:
+  contents: read
+
+jobs:
+  static-probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python syntax
+        run: |
+          python3 -m py_compile \
+            sandbox/lf_contract_gate_test/p0_exact_head_real_source_ci_v1.py \
+            sandbox/lf_contract_gate_test/lf_migration_source_parity.py \
+            scripts/input_governance_migration_parity.py
+      - name: Workflow source hashes
+        run: |
+          echo "LF_CONTRACT_SHA256=$(sha256sum .github/workflows/lf-contract-check.yml | cut -d' ' -f1)"
+          echo "LF_CONTRACT_GIT_BLOB=$(git hash-object .github/workflows/lf-contract-check.yml)"
+      - name: Compact evidence compatibility self-test
+        run: |
+          python3 - <<'PY'
+          import importlib.util
+          from pathlib import Path
+
+          path = Path('sandbox/lf_contract_gate_test/p0_exact_head_real_source_ci_v1.py')
+          spec = importlib.util.spec_from_file_location('p0_compact_probe', path)
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+
+          source = 'a' * 64
+          receipt = {
+              'schema_version': 'p0-v4-real-rerun-trace/v6',
+              'source_sha256': source,
+              'code_head_sha': 'b' * 40,
+              'configuration_sha256': 'c' * 64,
+              'result': {'result': 'PASS_P0_V4_CLOSED_LOOP', 'human_review_ready': True},
+              'terminal_result': 'READY_FOR_HUMAN_REVIEW_RECHECK',
+              'passes': [{'pass_id': 'P2', 'reader_execution_id': 'R2'}],
+              'reader_outputs': [
+                  {'reader_execution_id': 'R1', 'source_sha256': source, 'elements': []},
+                  {'reader_execution_id': 'R2', 'source_sha256': source, 'elements': [{'element_id': 'E1'}], 'reader_uncertainties': [], 'width': 100, 'height': 200},
+              ],
+              'omission_sweeps': [{'id': 1}],
+              'grader_runs': [{'id': 2}],
+              'remediation_plans': [{'id': 3}],
+              'targeted_rereads': [{'id': 4}],
+              'mutation_campaign': {'status': 'PASS', 'mutations': [{'id': 5}]},
+              'visual_residual_gate': {'status': 'PASS', 'findings': [{'id': 6}], 'justifications': [{'id': 7}]},
+              'human_review_packet': {'production_authorized': False},
+          }
+          full = module.canonical_json_bytes(receipt)
+          compact, reason = module.compact_human_review_ready_receipt(receipt, full)
+          assert reason is None
+          assert compact['schema_version'] == receipt['schema_version']
+          assert compact['result'] == receipt['result']
+          assert len(compact['reader_outputs']) == 1
+          assert compact['reader_outputs'][0]['reader_execution_id'] == 'R2'
+          assert compact['reader_outputs'][0]['elements'][0]['element_id'] == 'E1'
+          assert 'omission_sweeps' not in compact
+          assert 'grader_runs' not in compact
+          assert 'remediation_plans' not in compact
+          assert 'targeted_rereads' not in compact
+          assert 'mutations' not in compact['mutation_campaign']
+          assert 'findings' not in compact['visual_residual_gate']
+          assert compact['storage_representation'] == 'COMPACT_HUMAN_REVIEW_READY_V1'
+          assert compact['detail_retention'] == 'FINAL_READER_PLUS_HASH_INDEX'
+          assert compact['trace_index']['reader_outputs']['count'] == 2
+
+          broken = dict(receipt)
+          broken['passes'] = [{'reader_execution_id': 'MISSING'}]
+          fallback, fallback_reason = module.compact_human_review_ready_receipt(broken, module.canonical_json_bytes(broken))
+          assert fallback is None and fallback_reason == 'FINAL_READER_BINDING_COUNT_0'
+          print('PASS_S28_COMPACT_EVIDENCE_COMPATIBILITY_SELFTEST')
+          PY
