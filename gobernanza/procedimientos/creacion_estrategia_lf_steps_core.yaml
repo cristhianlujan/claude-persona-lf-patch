@@ -1,7 +1,8 @@
-version: v0.1
+version: v0.2
 status: CANDIDATO_READ_ONLY
 operation: CREACION_ESTRATEGIA_LF
 source_model: GIT_FIRST_YAML
+ekb_hardening: S30_EKB_HARDENING_V1
 steps:
   - order: 1
     id: router
@@ -10,56 +11,65 @@ steps:
     id: operational_source
     evidence: operational_source_read
   - order: 3
+    id: durable_start_if_automated
+    evidence: execution_id_session_start_executor_entered_with_independent_readbacks_or_explicit_na
+  - order: 4
     id: ekb_preflight
     evidence: applicable_ekb_rules_read
-  - order: 4
-    id: policy_resolution
-    evidence: effective_policy_set_and_fingerprint
   - order: 5
+    id: policy_resolution
+    evidence: explicit_transversal_and_operation_policy_set_with_fingerprint
+  - order: 6
+    id: policy_inheritance_check
+    evidence: no_implicit_policy_inheritance_and_non_applicable_reasons_resolved
+  - order: 7
     id: repo_matrix_read
     evidence: matriz_repos_lf_yaml_read
-  - order: 6
+  - order: 8
     id: contract_read
     evidence: contrato_estrategia_lf_yaml_read
-  - order: 7
+  - order: 9
     id: repo_inventory
     evidence: repo_destination_inventory
-  - order: 8
+  - order: 10
     id: strategy_inventory
     evidence: current_strategy_snapshots_read
-  - order: 9
+  - order: 11
     id: duplicate_and_supersession_check
     evidence: duplicate_and_lineage_resolved
-  - order: 10
+  - order: 12
     id: strategy_classification
     evidence: strategy_type_and_scope_classified
-  - order: 11
+  - order: 13
     id: authority_resolution
     evidence: authorities_resolved
-  - order: 12
+  - order: 14
     id: dependency_resolution
     evidence: exact_dependency_versions_and_currentness
-  - order: 13
+  - order: 15
     id: policy_applicability
     evidence: applicable_and_non_applicable_policies_with_reason
-  - order: 14
+  - order: 16
     id: problem_objective_scope
     evidence: problem_objective_scope_non_goals_materialized
-  - order: 15
+  - order: 17
     id: baseline
     evidence: baseline_and_claim_ceiling_materialized
-  - order: 16
+  - order: 18
     id: strategy_contract_materialization
     evidence: all_required_strategy_blocks_present
-  - order: 17
+  - order: 19
     id: stages_and_gates
     evidence: stages_exit_gates_and_stop_conditions_present
-  - order: 18
+  - order: 20
     id: qdp_evidence_contract
     evidence: qdp_tests_metrics_evidence_ceiling_present
-  - order: 19
+  - order: 21
+    id: operability_controls
+    evidence: durable_readback_recovery_timeout_scheduler_and_reliability_controls_present_or_explicit_na
+  - order: 22
     id: recovery_and_invalidation
     evidence: rollback_recovery_and_invalidation_present
-  - order: 20
+  - order: 23
     id: execution_frontier
     evidence: ordered_safe_work_and_blockers_present
