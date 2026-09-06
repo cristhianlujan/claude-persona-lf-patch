@@ -39,6 +39,7 @@ from profile_runtime_api.llama import (
     SCHEMA_CONSTRAINED_TRANSPORT_POLICY,
     governed_generation_schema,
     governed_max_output_tokens,
+    governed_temperature,
 )
 from profile_runtime_api.models import (
     Artifact,
@@ -108,6 +109,9 @@ class FakeLlamaClient:
                 schema_mode=kwargs.get("schema_mode", "AUTO"),
             )
         )
+        generation_temperature, generation_temperature_policy = governed_temperature(
+            profile_slug=kwargs["profile_slug"], schema_mode=kwargs.get("schema_mode", "AUTO")
+        )
         return {
             "content": self.output,
             "id": f"completion-{self.chat_calls}",
@@ -120,6 +124,8 @@ class FakeLlamaClient:
             "generation_transport_policy": SCHEMA_CONSTRAINED_TRANSPORT_POLICY,
             "generation_max_output_tokens": generation_max_output_tokens,
             "generation_output_budget_policy": generation_output_budget_policy,
+            "generation_temperature": generation_temperature,
+            "generation_temperature_policy": generation_temperature_policy,
         }
 
 
