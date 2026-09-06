@@ -1,0 +1,65 @@
+version: v0.1
+status: CANDIDATO_READ_ONLY
+operation: CREACION_ESTRATEGIA_LF
+source_model: GIT_FIRST_YAML
+steps:
+  - order: 1
+    id: router
+    evidence: router_read
+  - order: 2
+    id: operational_source
+    evidence: operational_source_read
+  - order: 3
+    id: ekb_preflight
+    evidence: applicable_ekb_rules_read
+  - order: 4
+    id: policy_resolution
+    evidence: effective_policy_set_and_fingerprint
+  - order: 5
+    id: repo_matrix_read
+    evidence: matriz_repos_lf_yaml_read
+  - order: 6
+    id: contract_read
+    evidence: contrato_estrategia_lf_yaml_read
+  - order: 7
+    id: repo_inventory
+    evidence: repo_destination_inventory
+  - order: 8
+    id: strategy_inventory
+    evidence: current_strategy_snapshots_read
+  - order: 9
+    id: duplicate_and_supersession_check
+    evidence: duplicate_and_lineage_resolved
+  - order: 10
+    id: strategy_classification
+    evidence: strategy_type_and_scope_classified
+  - order: 11
+    id: authority_resolution
+    evidence: authorities_resolved
+  - order: 12
+    id: dependency_resolution
+    evidence: exact_dependency_versions_and_currentness
+  - order: 13
+    id: policy_applicability
+    evidence: applicable_and_non_applicable_policies_with_reason
+  - order: 14
+    id: problem_objective_scope
+    evidence: problem_objective_scope_non_goals_materialized
+  - order: 15
+    id: baseline
+    evidence: baseline_and_claim_ceiling_materialized
+  - order: 16
+    id: strategy_contract_materialization
+    evidence: all_required_strategy_blocks_present
+  - order: 17
+    id: stages_and_gates
+    evidence: stages_exit_gates_and_stop_conditions_present
+  - order: 18
+    id: qdp_evidence_contract
+    evidence: qdp_tests_metrics_evidence_ceiling_present
+  - order: 19
+    id: recovery_and_invalidation
+    evidence: rollback_recovery_and_invalidation_present
+  - order: 20
+    id: execution_frontier
+    evidence: ordered_safe_work_and_blockers_present
