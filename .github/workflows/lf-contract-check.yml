@@ -494,7 +494,7 @@ jobs:
           fi
           echo "PASS_INPUT_GOVERNANCE_MIGRATION_COMPACT_READ csv_bytes=${input_migration_bytes}"
 
-          python3 scripts/input_governance_migration_parity.py \
+          python3 sandbox/lf_contract_gate_test/input_governance_migration_parity_compact.py \
             --migrations supabase/migrations \
             --remote "$RUNNER_TEMP/input-governance-migrations-compact.csv" \
             --cutover "$INPUT_GOVERNANCE_CUTOVER"
