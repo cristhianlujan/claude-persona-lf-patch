@@ -1,0 +1,20 @@
+{
+  "decision_subject": "desbordamiento horizontal de la tabla Historial de cargas",
+  "selected_visual_type": "viewport de tabla con desplazamiento horizontal nativo y señal pasiva de borde derecho degradado mientras exista contenido fuera de vista",
+  "base_color_or_surface": "superficie existente card_surface con borde border_soft; la señal de borde deriva de esos tokens sin crear un token nuevo",
+  "size_or_coverage": "solo el viewport de la tabla desde su encabezado hasta la última fila visible; filtros y paginación quedan fuera del tratamiento",
+  "density_limits": "una sola señal pasiva por viewport con overflow; cero indicadores por fila y ningún control adicional",
+  "depth_style": "sin elevación ni sombra nueva; conservar la profundidad actual del componente data_table_default",
+  "visual_weight": "señal secundaria de baja prominencia, visualmente menor que datos, estados y acciones de fila",
+  "position_behavior": "el viewport conserva el ancho disponible y desplaza únicamente el contenido tabular en el eje horizontal; la señal permanece anclada al borde con contenido oculto",
+  "relationship_to_main_element": "envuelve únicamente la tabla y facilita descubrir columnas fuera de vista sin ocultar, reemplazar ni reordenar contenido o acciones",
+  "implementation_format": "CSS overflow-x: auto en el wrapper existente de data_table_default más pseudo-elemento de borde pasivo usando card_surface y border_soft; sin componente interactivo nuevo",
+  "hard_exclusions": [
+    "no nuevo botón, flecha o chevron para desplazar",
+    "no ocultar ni reordenar columnas o acciones de fila",
+    "no modificar filtros, paginación ni reglas de negocio",
+    "no crear tokens visuales nuevos"
+  ],
+  "short_generator_prompt": "Aplicar scroll horizontal nativo al viewport de Historial de cargas y una señal pasiva de borde, preservando tabla, filtros y acciones.",
+  "status": "SANDBOX_READY"
+}
