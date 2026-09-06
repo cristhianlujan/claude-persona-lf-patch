@@ -8,7 +8,6 @@ import re
 FILENAME_RE = re.compile(r"^(\d{14})_(.+)\.sql$")
 SCOPED_PREFIXES = ("input_governance_", "programacion_input_governance_")
 SCOPED_EXACT = {"retire_b2b_auth005_legacy_totp_screen"}
-SHA_PROOF_RE = re.compile(r"^sha256:([0-9a-f]{64})$")
 
 
 def is_scoped(name: str) -> bool:
@@ -25,23 +24,6 @@ def add_unique(target, version, value, source):
     if version in target:
         raise SystemExit(f"FAIL_INPUT_GOVERNANCE_MIGRATION_DUPLICATE_VERSION: version={version} source={source}")
     target[version] = value
-
-
-def content_sha256(field: str, version: str) -> str:
-    proof = SHA_PROOF_RE.fullmatch(field)
-    if proof:
-        return proof.group(1)
-    if field.startswith("sha256:"):
-        raise SystemExit(
-            f"FAIL_INPUT_GOVERNANCE_MIGRATION_SHA_PROOF: version={version}"
-        )
-    try:
-        sql = bytes.fromhex(field).decode("utf-8")
-    except (ValueError, UnicodeDecodeError) as exc:
-        raise SystemExit(
-            f"FAIL_INPUT_GOVERNANCE_MIGRATION_LEDGER_SQL: version={version}"
-        ) from exc
-    return hashlib.sha256(canonical(sql)).hexdigest()
 
 
 def load_local(migrations: pathlib.Path, cutover: str):
@@ -69,7 +51,7 @@ def load_remote(remote_csv: pathlib.Path, cutover: str):
     for row in rows:
         if len(row) != 3:
             raise SystemExit(f"FAIL_INPUT_GOVERNANCE_MIGRATION_LEDGER_ROW: {row!r}")
-        version, name, content_proof = row
+        version, name, sql_hex = row
         if version < cutover:
             raise SystemExit(
                 f"FAIL_INPUT_GOVERNANCE_MIGRATION_REMOTE_BEFORE_CUTOVER: version={version}"
@@ -78,22 +60,19 @@ def load_remote(remote_csv: pathlib.Path, cutover: str):
             raise SystemExit(
                 f"FAIL_INPUT_GOVERNANCE_MIGRATION_REMOTE_SCOPE: version={version} name={name}"
             )
+        try:
+            sql = bytes.fromhex(sql_hex).decode("utf-8")
+        except (ValueError, UnicodeDecodeError) as exc:
+            raise SystemExit(
+                f"FAIL_INPUT_GOVERNANCE_MIGRATION_LEDGER_SQL: version={version}"
+            ) from exc
         add_unique(
             remote,
             version,
-            (name, content_sha256(content_proof, version)),
+            (name, hashlib.sha256(canonical(sql)).hexdigest()),
             f"ledger:{name}",
         )
     return remote
-
-
-def self_test():
-    sql = "select 1;\n"
-    expected = hashlib.sha256(canonical(sql)).hexdigest()
-    if content_sha256("sha256:" + expected, "SELFTEST") != expected:
-        raise SystemExit("FAIL_INPUT_GOVERNANCE_COMPACT_SHA_PARSER_SELFTEST")
-    if content_sha256(sql.encode("utf-8").hex(), "SELFTEST") != expected:
-        raise SystemExit("FAIL_INPUT_GOVERNANCE_LEGACY_HEX_PARSER_SELFTEST")
 
 
 def main():
@@ -106,7 +85,6 @@ def main():
     if not re.fullmatch(r"\d{14}", args.cutover):
         raise SystemExit("FAIL_INPUT_GOVERNANCE_MIGRATION_CUTOVER_FORMAT")
 
-    self_test()
     local = load_local(pathlib.Path(args.migrations), args.cutover)
     remote = load_remote(pathlib.Path(args.remote), args.cutover)
 
