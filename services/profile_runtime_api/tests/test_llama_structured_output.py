@@ -105,7 +105,7 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         self.assertEqual(completion["generation_max_output_tokens"], UI_FOCUSED_MAX_OUTPUT_TOKENS)
         self.assertEqual(
             completion["generation_output_budget_policy"],
-            "UI_FOCUSED_MAX_OUTPUT_TOKENS_192",
+            "UI_FOCUSED_MAX_OUTPUT_TOKENS_256",
         )
 
     def test_ui_focused_generation_schema_is_bounded_without_mutating_canonical(self) -> None:
@@ -159,7 +159,7 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
                 profile_slug="ui_architect",
                 schema_mode="UI_FOCUSED_DECISION",
             ),
-            (UI_FOCUSED_MAX_OUTPUT_TOKENS, "UI_FOCUSED_MAX_OUTPUT_TOKENS_192"),
+            (UI_FOCUSED_MAX_OUTPUT_TOKENS, "UI_FOCUSED_MAX_OUTPUT_TOKENS_256"),
         )
         self.assertNotIn("response_format", client.last_payload)
         self.assertTrue(completion["generation_schema_sha256"])
