@@ -17,6 +17,7 @@ UI_ARCHITECT_PROFILE_SLUG = "ui_architect"
 UI_FOCUSED_SCHEMA_MODE = "UI_FOCUSED_DECISION"
 UI_FOCUSED_GENERATION_POLICY = "UI_FOCUSED_BOUNDED_GENERATION_V1"
 UI_FOCUSED_TRANSPORT_POLICY = "UI_FOCUSED_UNCONSTRAINED_JSON_V27_FALLBACK"
+UI_FOCUSED_MAX_OUTPUT_TOKENS = 192
 SCHEMA_CONSTRAINED_TRANSPORT_POLICY = "SCHEMA_CONSTRAINED_JSON"
 CANONICAL_GENERATION_POLICY = "CANONICAL_SCHEMA_UNCHANGED"
 
@@ -29,6 +30,18 @@ def _bounded_positive_int(value: Any, cap: int) -> int:
     if isinstance(value, int) and not isinstance(value, bool) and value > 0:
         return min(value, cap)
     return cap
+
+
+def governed_max_output_tokens(
+    settings: Settings, *, profile_slug: str, schema_mode: str
+) -> tuple[int, str]:
+    """Bound UI focused generation without changing the canonical output contract."""
+
+    if profile_slug == UI_ARCHITECT_PROFILE_SLUG and schema_mode == UI_FOCUSED_SCHEMA_MODE:
+        return min(settings.max_output_tokens, UI_FOCUSED_MAX_OUTPUT_TOKENS), (
+            "UI_FOCUSED_MAX_OUTPUT_TOKENS_192"
+        )
+    return settings.max_output_tokens, "CONFIGURED_MAX_OUTPUT_TOKENS"
 
 
 def governed_generation_schema(
@@ -146,6 +159,11 @@ class LlamaHTTPClient:
             schema, profile_slug=profile_slug, schema_mode=schema_mode
         )
         generation_schema_sha256 = canonical_json_sha256(generation_schema)
+        generation_max_output_tokens, generation_output_budget_policy = (
+            governed_max_output_tokens(
+                self.settings, profile_slug=profile_slug, schema_mode=schema_mode
+            )
+        )
         generation_transport_policy = (
             UI_FOCUSED_TRANSPORT_POLICY
             if profile_slug == UI_ARCHITECT_PROFILE_SLUG
@@ -162,7 +180,7 @@ class LlamaHTTPClient:
             "temperature": 0.2,
             "top_p": 0.9,
             "seed": 42,
-            "max_tokens": self.settings.max_output_tokens,
+            "max_tokens": generation_max_output_tokens,
             "cache_prompt": True,
         }
         # UI Architect keeps the proven V27 fallback: llama.cpp constrained
@@ -223,6 +241,8 @@ class LlamaHTTPClient:
             "generation_schema_sha256": generation_schema_sha256,
             "generation_schema_policy": generation_schema_policy,
             "generation_transport_policy": generation_transport_policy,
+            "generation_max_output_tokens": generation_max_output_tokens,
+            "generation_output_budget_policy": generation_output_budget_policy,
         }
 
     def _request(
@@ -323,6 +343,12 @@ class PersistentLlamaServerAdapter:
             ),
             "generation_transport_policy": self.last_completion.get(
                 "generation_transport_policy"
+            ),
+            "generation_max_output_tokens": self.last_completion.get(
+                "generation_max_output_tokens"
+            ),
+            "generation_output_budget_policy": self.last_completion.get(
+                "generation_output_budget_policy"
             ),
             "structural_context_sha256": canonical_json_sha256(self.structural_context),
             "llama_response_id": self.last_completion.get("id") or "UNAVAILABLE",
@@ -429,6 +455,13 @@ class PersistentLlamaServerVerifier:
             schema_mode=self.schema.mode,
         )
         expected_generation_sha = canonical_json_sha256(expected_generation_schema)
+        expected_max_output_tokens, expected_output_budget_policy = (
+            governed_max_output_tokens(
+                self.settings,
+                profile_slug=request["profile_slug"],
+                schema_mode=self.schema.mode,
+            )
+        )
         expected_transport_policy = (
             UI_FOCUSED_TRANSPORT_POLICY
             if request["profile_slug"] == UI_ARCHITECT_PROFILE_SLUG
@@ -440,6 +473,10 @@ class PersistentLlamaServerVerifier:
             raise LlamaTransportError("LLAMA_VERIFIER_GENERATION_POLICY_MISMATCH")
         if attestation.get("generation_transport_policy") != expected_transport_policy:
             raise LlamaTransportError("LLAMA_VERIFIER_TRANSPORT_POLICY_MISMATCH")
+        if attestation.get("generation_max_output_tokens") != expected_max_output_tokens:
+            raise LlamaTransportError("LLAMA_VERIFIER_OUTPUT_BUDGET_MISMATCH")
+        if attestation.get("generation_output_budget_policy") != expected_output_budget_policy:
+            raise LlamaTransportError("LLAMA_VERIFIER_OUTPUT_BUDGET_POLICY_MISMATCH")
 
         context_sha = canonical_json_sha256(self.structural_context)
         if attestation.get("structural_context_sha256") != context_sha:
@@ -459,6 +496,8 @@ class PersistentLlamaServerVerifier:
                     expected_generation_sha,
                     expected_generation_policy,
                     expected_transport_policy,
+                    str(expected_max_output_tokens),
+                    expected_output_budget_policy,
                     context_sha,
                     str(attestation.get("llama_response_id")),
                 ]
