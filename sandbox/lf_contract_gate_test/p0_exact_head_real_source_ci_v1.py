@@ -21,7 +21,7 @@ SOURCE_BYTES = 1_384_686
 REPOSITORY = "cristhianlujan/claude-persona-lf-patch"
 EXPECTED_REF = "refs/heads/lf/p0-persistence-ocr-completion-20260812"
 BROKER_URL = "https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-p0-exact-head-evidence-broker-v1"
-COMPACT_SUCCESS_MAX_BYTES = 131_072
+COMPACT_SUCCESS_MAX_BYTES = 524_288
 TRACE_KEYS = (
     "reader_outputs",
     "omission_sweeps",
@@ -65,30 +65,49 @@ def trace_index(receipt: dict) -> dict:
     return indexed
 
 
-def compact_success_receipt(receipt: dict, full_receipt_bytes: bytes) -> dict:
-    mutation = receipt.get("mutation_campaign") if isinstance(receipt.get("mutation_campaign"), dict) else {}
-    residual = receipt.get("visual_residual_gate") if isinstance(receipt.get("visual_residual_gate"), dict) else {}
-    technical = receipt.get("result") if isinstance(receipt.get("result"), dict) else {}
-    return {
-        "schema_version": "p0-v4-real-rerun-trace/v7-compact-success",
-        "source_sha256": receipt.get("source_sha256"),
-        "code_head_sha": receipt.get("code_head_sha"),
-        "configuration_sha256": receipt.get("configuration_sha256"),
-        "loop_version": receipt.get("loop_version"),
-        "terminal_result": receipt.get("terminal_result"),
-        "technical_result": technical.get("result"),
-        "remediation_cycles": technical.get("remediation_cycles"),
-        "convergence_receipt_binding": receipt.get("convergence_receipt_binding"),
-        "gate_preflight": receipt.get("gate_preflight"),
-        "passes": receipt.get("passes") if isinstance(receipt.get("passes"), list) else [],
-        "mutation_campaign": {k: v for k, v in mutation.items() if k != "mutations"},
-        "visual_residual_gate": {k: v for k, v in residual.items() if k not in {"findings", "justifications"}},
-        "human_review_packet": receipt.get("human_review_packet"),
-        "trace_index": trace_index(receipt),
-        "full_trace_bytes": len(full_receipt_bytes),
-        "full_trace_sha256": sha256_bytes(full_receipt_bytes),
-        "detail_retention": "HASH_INDEX_ONLY_ON_SUCCESS",
-    }
+def compact_human_review_ready_receipt(receipt: dict, full_receipt_bytes: bytes) -> tuple[dict | None, str | None]:
+    """Compact only non-final traces while preserving the exact final reader required by human review."""
+    passes = receipt.get("passes") if isinstance(receipt.get("passes"), list) else []
+    readers = receipt.get("reader_outputs") if isinstance(receipt.get("reader_outputs"), list) else []
+    if not passes:
+        return None, "PASSES_MISSING"
+    final_pass = passes[-1] if isinstance(passes[-1], dict) else {}
+    final_reader_id = final_pass.get("reader_execution_id")
+    if not isinstance(final_reader_id, str) or not final_reader_id:
+        return None, "FINAL_READER_ID_MISSING"
+    matches = [
+        reader for reader in readers
+        if isinstance(reader, dict) and reader.get("reader_execution_id") == final_reader_id
+    ]
+    if len(matches) != 1:
+        return None, f"FINAL_READER_BINDING_COUNT_{len(matches)}"
+    final_reader = matches[0]
+    if final_reader.get("source_sha256") != receipt.get("source_sha256"):
+        return None, "FINAL_READER_SOURCE_BINDING_MISMATCH"
+    if not isinstance(final_reader.get("elements"), list):
+        return None, "FINAL_READER_ELEMENTS_MISSING"
+
+    compact = dict(receipt)
+    for key in TRACE_KEYS:
+        compact.pop(key, None)
+    compact["reader_outputs"] = [final_reader]
+
+    mutation = receipt.get("mutation_campaign")
+    if isinstance(mutation, dict):
+        compact["mutation_campaign"] = {k: v for k, v in mutation.items() if k != "mutations"}
+    residual = receipt.get("visual_residual_gate")
+    if isinstance(residual, dict):
+        compact["visual_residual_gate"] = {
+            k: v for k, v in residual.items() if k not in {"findings", "justifications"}
+        }
+
+    # Preserve the original schema_version and result object for downstream compatibility.
+    compact["storage_representation"] = "COMPACT_HUMAN_REVIEW_READY_V1"
+    compact["trace_index"] = trace_index(receipt)
+    compact["full_trace_bytes"] = len(full_receipt_bytes)
+    compact["full_trace_sha256"] = sha256_bytes(full_receipt_bytes)
+    compact["detail_retention"] = "FINAL_READER_PLUS_HASH_INDEX"
+    return compact, None
 
 
 def broker(token: str, payload: dict) -> dict:
@@ -208,16 +227,25 @@ def main() -> int:
         die("FAIL_P0_EXACT_HEAD_RECEIPT_CONFIG_BINDING")
 
     terminal = receipt.get("terminal_result")
-    compact_success = runner.returncode == 0 and terminal == "READY_FOR_HUMAN_REVIEW_RECHECK"
-    persisted_receipt = compact_success_receipt(receipt, full_receipt_bytes) if compact_success else receipt
+    compact_eligible = runner.returncode == 0 and terminal == "READY_FOR_HUMAN_REVIEW_RECHECK"
+    compact_reason = None
+    persisted_receipt = receipt
+    receipt_mode = "FULL_FAILURE_OR_BLOCKED"
+    if compact_eligible:
+        compact_receipt, compact_reason = compact_human_review_ready_receipt(receipt, full_receipt_bytes)
+        if compact_receipt is not None:
+            compact_bytes = canonical_json_bytes(compact_receipt)
+            if len(compact_bytes) <= COMPACT_SUCCESS_MAX_BYTES:
+                persisted_receipt = compact_receipt
+                receipt_mode = "COMPACT_HUMAN_REVIEW_READY"
+            else:
+                compact_reason = f"SIZE_BUDGET_EXCEEDED_{len(compact_bytes)}"
+                receipt_mode = "FULL_SUCCESS_COMPACTION_FALLBACK"
+        else:
+            receipt_mode = "FULL_SUCCESS_COMPACTION_FALLBACK"
+
     persisted_receipt_bytes = canonical_json_bytes(persisted_receipt)
     persisted_receipt_sha = sha256_bytes(persisted_receipt_bytes)
-    receipt_mode = "COMPACT_SUCCESS" if compact_success else "FULL_FAILURE_OR_BLOCKED"
-    if compact_success and len(persisted_receipt_bytes) > COMPACT_SUCCESS_MAX_BYTES:
-        die(
-            "FAIL_P0_COMPACT_RECEIPT_SIZE_BUDGET",
-            f"bytes={len(persisted_receipt_bytes)} max={COMPACT_SUCCESS_MAX_BYTES}",
-        )
 
     persisted = broker(
         github_token,
@@ -253,6 +281,7 @@ def main() -> int:
         "receipt_sha256": persisted_receipt_sha,
         "receipt_bytes": len(persisted_receipt_bytes),
         "receipt_mode": receipt_mode,
+        "compaction_fallback_reason": compact_reason,
         "full_trace_sha256": full_receipt_sha,
         "full_trace_bytes": len(full_receipt_bytes),
         "runner_exit_code": runner.returncode,
