@@ -1,0 +1,53 @@
+version: v0.1
+status: CANDIDATO_READ_ONLY
+operation: CREACION_ESTRATEGIA_LF
+source_model: GIT_FIRST_YAML
+steps:
+  - order: 21
+    id: strategy_lint
+    evidence: strategy_contract_lint_pass
+  - order: 22
+    id: policy_conflict_check
+    evidence: no_unresolved_policy_conflicts
+  - order: 23
+    id: semantic_consistency
+    evidence: problem_objective_scope_stage_consistency_pass
+  - order: 24
+    id: compatibility_check
+    evidence: existing_strategy_compatibility_assessed
+  - order: 25
+    id: stage_conclusion_contract
+    evidence: append_only_stage_conclusion_template_present
+  - order: 26
+    id: evidence_index
+    evidence: exact_evidence_refs_and_currentness_rules_present
+  - order: 27
+    id: change_log_and_lineage
+    evidence: change_log_and_supersession_lineage_present
+  - order: 28
+    id: candidate_payload_freeze
+    evidence: candidate_payload_hash_computed
+  - order: 29
+    id: github_write
+    evidence: source_file_commit_sha
+  - order: 30
+    id: github_readback
+    evidence: source_file_blob_sha
+  - order: 31
+    id: supabase_register_candidate
+    evidence: strategy_snapshot_id
+  - order: 32
+    id: supabase_readback
+    evidence: exact_snapshot_version_status_runtime_impact_readback
+  - order: 33
+    id: policy_fingerprint_readback
+    evidence: policy_set_fingerprint_matches_candidate
+  - order: 34
+    id: contract_judge
+    evidence: judge_pass
+  - order: 35
+    id: close
+    evidence: no_blocking_observations
+  - order: 36
+    id: report_output
+    evidence: execution_summary_with_claim_ceiling_and_pending_gates
