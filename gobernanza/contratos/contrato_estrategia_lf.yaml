@@ -1,14 +1,17 @@
-version: v0.1
+version: v0.2
 status: CANDIDATO_READ_ONLY
 operation: CREACION_ESTRATEGIA_LF
 source_model: GIT_FIRST_YAML
 strategy_contract: STRATEGY-CONTRACT-V1-CANDIDATE
 policy_contract: POL-STRATEGY-CREATION-001-CANDIDATE
+ekb_hardening: S30_EKB_HARDENING_V1
 required_before_write:
   - read_router
   - read_operational_source
   - targeted_ekb_preflight
+  - durable_execution_start_if_automated
   - resolve_applicable_policies
+  - explicit_policy_inheritance_resolution
   - policy_set_fingerprint_present
   - read_repo_matrix
   - read_contract
@@ -20,6 +23,7 @@ required_before_write:
   - dependency_currentness_resolved
   - strategy_contract_materialized
   - qdp_and_evidence_ceiling_attached
+  - operability_controls_attached_when_applicable
   - lint_pass
   - conflict_check_pass
 allowed:
@@ -35,18 +39,21 @@ blocked:
   - write_without_router
   - write_without_ekb_preflight
   - write_without_policy_resolution
+  - assume_policy_inheritance
   - write_without_policy_set_fingerprint
   - write_without_contract
   - write_without_dependency_currentness
   - write_without_qdp_gates
   - write_without_invalidation_triggers
   - write_without_stage_conclusions_contract
+  - same_statement_readback_as_closure_evidence
+  - returning_only_as_contractual_readback
   - assistant_freeform_decision
   - overwrite_strategy_history
   - auto_migrate_existing_strategies
   - enable_runtime
   - automatic_production_promotion
-  - close_without_readback
+  - close_without_independent_readback
 required_strategy_blocks:
   - problem_statement
   - objective
@@ -68,11 +75,46 @@ required_strategy_blocks:
   - invalidation_triggers
   - change_log
   - closure_criteria
+required_operability_controls_when_applicable:
+  - durable_start_contract
+  - independent_post_write_readback
+  - four_route_error_recovery_with_exhaustion
+  - timeout_phase_budget
+  - scheduler_scope_guard
+  - dynamic_concurrency_atomicity_idempotency_retry_partial_failure_tests
+  - one_mutating_target_per_child_execution_for_fanout
+policy_resolution:
+  inheritance: EXPLICIT_NOT_ASSUMED
+  missing_required_policy: FAIL_CLOSED
+  non_applicable_requires_reason: true
+bootstrap:
+  route: GOVERNED_PROVENANCE_BOOTSTRAP_ONLY
+  precedent_operation: VULNERABILITY_COVERAGE_REPAIR_LF
+  production_bootstrap_forbidden: true
+readback:
+  returning_is_receipt_only: true
+  independent_post_write_readback_required: true
+timeout_policy:
+  blind_timeout_extension_forbidden: true
+  phases:
+    - queue_wait
+    - claim
+    - prefill_or_input_prepare
+    - generation_or_inference
+    - persist
+    - readback
+    - caller_or_job
+recovery_routes:
+  - A_ORIGINAL
+  - B_FOCAL_MINIMAL
+  - C_CANONICAL_EQUIVALENT
+  - D_INDEPENDENT_AUTHORIZED
 required_after_write:
   - github_readback
   - commit_sha
   - source_blob_sha
-  - supabase_registration_readback
+  - supabase_registration_receipt
+  - independent_supabase_registration_readback
   - strategy_snapshot_id
   - exact_strategy_version
   - policy_set_fingerprint_readback
