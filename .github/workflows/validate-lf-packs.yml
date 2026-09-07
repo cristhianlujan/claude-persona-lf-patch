@@ -157,6 +157,7 @@ jobs:
         if: always()
         shell: bash
         env:
+          GENERIC_OUTCOME: ${{ steps.generic_runner.outcome }}
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           PGHOST: aws-1-us-east-1.pooler.supabase.com
           PGPORT: '5432'
@@ -181,17 +182,23 @@ jobs:
           import json, os
           p=os.path.join(os.environ['RUNNER_TEMP'],'final-readback.json')
           d=json.load(open(p,encoding='utf-8'))
-          expected={
-            'forward':1,
-            'rollback':1,
+          outcome=os.environ.get('GENERIC_OUTCOME','').strip()
+          baseline={
             'candidate_count':0,
             'test_residue':0,
             'guard_sha':'d000493dce8f7d25139c20c75025a0a0c6dd5041547f6469aecf6d373acad574',
             'execute_sha':'3290e752c27a46a089ed93d9a15769b7b9ca416f00d389c681431fde977da588',
           }
-          if d != expected:
-            raise SystemExit('FAIL_FINAL_READBACK:'+json.dumps(d,sort_keys=True))
-          print('FINAL_LEDGER_RUNTIME_ZERO_RESIDUE_PASS')
+          for key,value in baseline.items():
+            if d.get(key) != value:
+              raise SystemExit('FAIL_FINAL_BASELINE_READBACK:'+json.dumps(d,sort_keys=True))
+          pair=(d.get('forward'),d.get('rollback'))
+          if outcome == 'success':
+            if pair != (1,1):
+              raise SystemExit('FAIL_FINAL_SUCCESS_LEDGER_NOT_CLOSED:'+json.dumps(d,sort_keys=True))
+          elif pair not in {(0,0),(1,1)}:
+            raise SystemExit('FAIL_FINAL_FAILED_RUN_PARTIAL_LEDGER:'+json.dumps(d,sort_keys=True))
+          print(f'FINAL_LEDGER_RUNTIME_ZERO_RESIDUE_PASS pair={pair[0]}/{pair[1]} generic_outcome={outcome}')
           PY
 
       - name: Publish sanitized canary evidence

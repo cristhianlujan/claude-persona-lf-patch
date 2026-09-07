@@ -34,7 +34,6 @@ base.ROLLBACK_NAME = ROLLBACK_NAME
 base.FORWARD_PATH = FORWARD_PATH
 base.ROLLBACK_PATH = ROLLBACK_PATH
 
-_original_cli = base.cli
 _original_tests = base.phase_tests
 _original_post = base.phase_post_readback
 
@@ -43,7 +42,11 @@ def cli(args: list[str], *, timeout: int = 180) -> str:
     patched = list(args)
     if "db" in patched and "push" in patched and "--include-all" not in patched:
         patched.append("--include-all")
-    return _original_cli(patched, timeout=timeout)
+    proc = base.run([base.require_cli(), *patched], timeout=timeout)
+    # Supabase CLI emits dry-run planning text across stdout/stderr. Inspect the
+    # combined in-memory stream, matching the previously proven exact-version
+    # workflow. The generic runner still persists only hashes, never raw output.
+    return (proc.stdout + "\n" + proc.stderr).strip()
 
 
 base.cli = cli
@@ -144,7 +147,6 @@ base.phase_post_readback = phase_post_readback
 
 def build_manifest(work: Path) -> Path:
     adapter = Path(__file__).resolve()
-    runner = adapter.with_name("lf_governed_canary_runner.py")
     steps = {}
     for phase, timeout, token in (
         ("preflight", 90, "PREFLIGHT_EXACT_PASS"),
