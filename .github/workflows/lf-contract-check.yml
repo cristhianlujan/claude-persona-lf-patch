@@ -352,6 +352,11 @@ jobs:
           try:
               with urllib.request.urlopen(request, timeout=20) as response:
                   config = json.loads(response.read().decode("utf-8"))
+          except urllib.error.HTTPError as exc:
+              reason = str(getattr(exc, "reason", "unknown")).replace("\n", " ").replace("\r", " ")[:80]
+              raise SystemExit(
+                  f"FAIL_SUPABASE_POSTGREST_CONFIG_READBACK: HTTPError status={exc.code} reason={reason}"
+              ) from None
           except (urllib.error.URLError, TimeoutError, UnicodeDecodeError, json.JSONDecodeError) as exc:
               raise SystemExit(f"FAIL_SUPABASE_POSTGREST_CONFIG_READBACK: {type(exc).__name__}") from exc
 
