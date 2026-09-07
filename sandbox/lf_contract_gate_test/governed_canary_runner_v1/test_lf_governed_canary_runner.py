@@ -7,6 +7,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 RUNNER_PATH = Path(__file__).with_name("lf_governed_canary_runner.py")
 spec = importlib.util.spec_from_file_location("lf_governed_canary_runner", RUNNER_PATH)
@@ -51,6 +52,22 @@ def manifest(tmp: Path):
     }
 
 
+def migration_manifest(tmp: Path):
+    m = manifest(tmp)
+    m["change_mode"] = "MIGRATION_EXACT_VERSION"
+    m["exact_versions"] = {"forward": "20260907215800", "rollback": "20260907215900"}
+    m["source_first"] = {
+        "main_ref": "origin/main",
+        "paths": [
+            "supabase/migrations/20260907215800_forward.sql",
+            "supabase/migrations/20260907215900_rollback.sql",
+        ],
+        "require_identical_git_blob": True,
+        "fetch_main": True,
+    }
+    return m
+
+
 class RunnerTests(unittest.TestCase):
     def test_success(self):
         with tempfile.TemporaryDirectory() as d:
@@ -84,6 +101,39 @@ class RunnerTests(unittest.TestCase):
             m = manifest(Path(d)); m["change_mode"] = "MIGRATION_EXACT_VERSION"; m["exact_versions"] = {"forward":"20260907023000","rollback":"20260907023000"}
             with self.assertRaisesRegex(runner.ContractError, "FORWARD_ROLLBACK_VERSION_COLLISION"):
                 runner.validate_manifest(m)
+
+    def test_exact_version_source_first_required(self):
+        with tempfile.TemporaryDirectory() as d:
+            m = manifest(Path(d))
+            m["change_mode"] = "MIGRATION_EXACT_VERSION"
+            m["exact_versions"] = {"forward": "20260907215800", "rollback": "20260907215900"}
+            with self.assertRaisesRegex(runner.ContractError, "SOURCE_FIRST_REQUIRED"):
+                runner.validate_manifest(m)
+
+    def test_exact_version_source_first_contract_passes(self):
+        with tempfile.TemporaryDirectory() as d:
+            m = migration_manifest(Path(d))
+            self.assertIs(runner.validate_manifest(m), m)
+
+    def test_exact_version_source_first_path_binding_rejected(self):
+        with tempfile.TemporaryDirectory() as d:
+            m = migration_manifest(Path(d))
+            m["source_first"]["paths"][0] = "supabase/migrations/20260907023000_wrong.sql"
+            with self.assertRaisesRegex(runner.ContractError, "SOURCE_FIRST_FORWARD_PATH_VERSION_MISMATCH"):
+                runner.validate_manifest(m)
+
+    def test_source_first_failure_happens_before_any_phase(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            m = migration_manifest(root)
+            error = runner.source_first.SourceFirstParityError("SOURCE_FIRST_MAIN_SOURCE_MISSING:forward")
+            with mock.patch.object(runner.source_first, "verify_paths", side_effect=error):
+                packet = runner.execute_manifest(m)
+            self.assertEqual(packet["result"], "FAIL_SOURCE_FIRST_PARITY")
+            self.assertFalse(packet["forward_started"])
+            self.assertFalse(packet["rollback_attempted"])
+            self.assertEqual(packet["steps"], [])
+            self.assertTrue(Path(m["evidence"]["output_path"]).exists())
 
     def test_zero_residue_must_be_executable_not_declarative(self):
         with tempfile.TemporaryDirectory() as d:
