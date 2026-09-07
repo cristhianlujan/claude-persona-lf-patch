@@ -56,9 +56,14 @@ begin
   v_def:=replace(v_def,
     E'  v_payload jsonb;\nbegin',
     E'  v_payload jsonb;\n  v_graph jsonb;\n  v_expected_classifier jsonb;\nbegin');
+
+  -- A forced self-test explicitly requests a new successor. Do not spend a full
+  -- currentness pass proving a run is current only to ignore that result. Normal
+  -- calls retain fail-closed currentness, using the already-governed cached_v2 path.
   v_def:=replace(v_def,
-    'programacion.fn_input_readiness_run_is_current(id)',
-    'programacion.fn_input_readiness_run_is_current_cached_v2(id)');
+    E'  select id into v_current from programacion.input_readiness_runs\n  where version_id=v_version and pantalla_id=p_pantalla_id and status=''COMPLETED'' and invalidated_at is null\n    and programacion.fn_input_readiness_run_is_current(id)\n  order by id desc limit 1;\n  if v_current is not null and not p_force_selftest then\n    return jsonb_build_object(''status'',''NOOP_CURRENT'',''run_id'',v_current,''required_role'',''NONE'',''promotion_authorized'',false,''production_authorized'',false);\n  end if;',
+    E'  if not p_force_selftest then\n    select id into v_current from programacion.input_readiness_runs\n    where version_id=v_version and pantalla_id=p_pantalla_id and status=''COMPLETED'' and invalidated_at is null\n      and programacion.fn_input_readiness_run_is_current_cached_v2(id)\n    order by id desc limit 1;\n    if v_current is not null then\n      return jsonb_build_object(''status'',''NOOP_CURRENT'',''run_id'',v_current,''required_role'',''NONE'',''promotion_authorized'',false,''production_authorized'',false);\n    end if;\n  end if;');
+
   v_def:=replace(v_def,
     E'  returning id into v_new;\n\n  for a in',
     E'  returning id into v_new;\n\n  v_graph:=programacion.fn_input_screen_canonical_graph(p_pantalla_id,v_version);\n\n  for a in');
@@ -101,7 +106,8 @@ begin
   if position('fn_input_v58_build_assertions_cached_v1' in v_candidate)=0
      or position('fn_input_governance_bootstrap_classify_v2_cached_v2' in v_candidate)=0
      or position('bootstrap_classifier_sha256' in v_candidate)=0
-     or position('fn_input_readiness_run_is_current_cached_v2' in v_candidate)=0 then
+     or position('fn_input_readiness_run_is_current_cached_v2' in v_candidate)=0
+     or position('if not p_force_selftest then' in v_candidate)=0 then
     raise exception 'S28_IG006_CANDIDATE_STRUCTURE_INCOMPLETE';
   end if;
   if position('fn_input_governance_curator_rebind_candidate_v1' in v_live)>0 then
