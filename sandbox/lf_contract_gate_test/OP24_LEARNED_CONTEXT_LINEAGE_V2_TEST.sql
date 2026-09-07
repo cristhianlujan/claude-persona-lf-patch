@@ -18,13 +18,11 @@ begin
     raise exception 'LINEAGE_FIXTURE_SOURCE_MISSING';
   end if;
 
-  -- Positive one-to-one.
   insert into private.sbx_lf_learned_context_lineage_v2(
     transformation_group_id,source_type,source_ref,target_type,target_ref,relation_type,
     disposition_reason,evidence_ref,authority_ref,reversible,created_by_execution_id
   ) values(gen_random_uuid(),'KB',kb1,'CARD',card1,'TRANSFORMED_TO','fixture','evidence://1','authority://1',true,exec_id);
 
-  -- Positive split.
   insert into private.sbx_lf_learned_context_lineage_v2(
     transformation_group_id,source_type,source_ref,target_type,target_ref,relation_type,
     disposition_reason,evidence_ref,authority_ref,reversible,created_by_execution_id
@@ -32,7 +30,6 @@ begin
   ('10000000-0000-4000-8000-000000000001','KB',kb1,'CARD',card1,'SPLIT_INTO','fixture','evidence://2','authority://1',true,exec_id),
   ('10000000-0000-4000-8000-000000000001','KB',kb1,'CARD',card2,'SPLIT_INTO','fixture','evidence://2','authority://1',true,exec_id);
 
-  -- Positive merge.
   insert into private.sbx_lf_learned_context_lineage_v2(
     transformation_group_id,source_type,source_ref,target_type,target_ref,relation_type,
     disposition_reason,evidence_ref,authority_ref,reversible,created_by_execution_id
@@ -40,13 +37,11 @@ begin
   ('20000000-0000-4000-8000-000000000001','KB',kb1,'CARD',card1,'MERGED_INTO','fixture','evidence://3','authority://1',true,exec_id),
   ('20000000-0000-4000-8000-000000000001','KB',kb2,'CARD',card1,'MERGED_INTO','fixture','evidence://3','authority://1',true,exec_id);
 
-  -- Positive EKB canonical codigo -> Card.
   insert into private.sbx_lf_learned_context_lineage_v2(
     transformation_group_id,source_type,source_ref,target_type,target_ref,relation_type,
     disposition_reason,evidence_ref,authority_ref,reversible,created_by_execution_id
   ) values(gen_random_uuid(),'EKB',ekb1,'CARD',card1,'DERIVED_FROM','fixture','evidence://4','authority://1',true,exec_id);
 
-  -- Missing source must reject.
   failed:=false;
   begin
     insert into private.sbx_lf_learned_context_lineage_v2(
@@ -56,7 +51,6 @@ begin
   exception when others then failed:=sqlerrm like 'LINEAGE_SOURCE_REF_NOT_RESOLVED:%'; end;
   if failed is not true then raise exception 'MISSING_SOURCE_MUST_REJECT'; end if;
 
-  -- Missing target must reject.
   failed:=false;
   begin
     insert into private.sbx_lf_learned_context_lineage_v2(
@@ -66,7 +60,6 @@ begin
   exception when others then failed:=sqlerrm like 'LINEAGE_TARGET_REF_NOT_RESOLVED:%'; end;
   if failed is not true then raise exception 'MISSING_TARGET_MUST_REJECT'; end if;
 
-  -- Orphan execution provenance must reject.
   failed:=false;
   begin
     insert into private.sbx_lf_learned_context_lineage_v2(
@@ -76,17 +69,15 @@ begin
   exception when others then failed:=sqlerrm like 'LINEAGE_EXECUTION_PROVENANCE_NOT_RESOLVED:%'; end;
   if failed is not true then raise exception 'ORPHAN_EXECUTION_MUST_REJECT'; end if;
 
-  -- Self-loop must reject.
   failed:=false;
   begin
     insert into private.sbx_lf_learned_context_lineage_v2(
       transformation_group_id,source_type,source_ref,target_type,target_ref,relation_type,
       disposition_reason,evidence_ref,authority_ref,reversible,created_by_execution_id
     ) values(gen_random_uuid(),'KB',kb1,'KB',kb1,'SUPERSEDES','fixture','evidence://8','authority://1',true,exec_id);
-  exception when check_violation then failed:=true; end;
+  exception when others then failed:=sqlerrm='LINEAGE_SELF_LOOP_FORBIDDEN'; end;
   if failed is not true then raise exception 'SELF_LOOP_MUST_REJECT'; end if;
 
-  -- First supersession edge is valid; reverse edge must be blocked BEFORE persistence.
   insert into private.sbx_lf_learned_context_lineage_v2(
     transformation_group_id,source_type,source_ref,target_type,target_ref,relation_type,
     disposition_reason,evidence_ref,authority_ref,reversible,created_by_execution_id
@@ -101,7 +92,6 @@ begin
   exception when others then failed:=sqlerrm='LINEAGE_SUPERSESSION_CYCLE_FORBIDDEN'; end;
   if failed is not true then raise exception 'SUPERSESSION_CYCLE_MUST_REJECT'; end if;
 
-  -- Durable lineage edges are append-only.
   failed:=false;
   begin
     update private.sbx_lf_learned_context_lineage_v2 set disposition_reason='mutated' where relation_type='TRANSFORMED_TO';
