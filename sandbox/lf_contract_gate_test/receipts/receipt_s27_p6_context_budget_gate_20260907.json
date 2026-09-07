@@ -1,0 +1,106 @@
+{
+  "all_required_steps_pass": true,
+  "blocking_codes": [],
+  "contract_sha": "30b30ec82f24372e0dba39ea122e3556fdd5a0c8154d4f9592d16b215d8a8fed",
+  "evidence": {
+    "b1_f07_closed": false,
+    "j03_scope_preserved": "A_B_ONLY",
+    "j11_scope": "A_Q_COMPLETE",
+    "merge_authorized": false,
+    "phase": "P6_B1_CONTROLLED_27",
+    "policy_ref": "supabase://public.lf_eventos/795",
+    "prevention_code": "PRV-STORY-B1-CONTEXT-BUDGET-EXECUTION-GAP-001",
+    "production_authorized": false,
+    "qualified_change_head_before_receipt": "5fb132bf2e1079a92def7dfa8dbb5069f3e050ae",
+    "qualified_parent_head": "124e0fa13bca461cc95d779d049b1dc1c556cd1b",
+    "results": {
+      "E21_ACTIVE_OVER_LIMIT": {
+        "assertions_passed": 10,
+        "assertions_total": 11,
+        "blocking_assertions": [],
+        "evidence_sha256": "53038e2e30960c4b4ce06fe40a0fec7a4e1681379b83871d6d551ef371a33e34",
+        "failed_assertions": ["active_context_over_15000_tokens"],
+        "input_sha256": "000600bd9ee9eec46cdf6dc22458c8f6abae97e355d29576777b8b374276ec57",
+        "judge_version": "v1.4",
+        "output_sha256": "863f1d058af6e5ed16882a4e020f4122c74ae2afa0d90794bc8ccc22df7e60cf",
+        "rc": 1,
+        "result": "RETURN_TO_WORKER"
+      },
+      "E21_STORY_CORE_POSITIVE": {
+        "assertions_passed": 11,
+        "assertions_total": 11,
+        "blocking_assertions": [],
+        "evidence_sha256": "fefaf8046d5eb53d729d2fd82bd783a99673c38f4c190cb38d8e070784f7b297",
+        "failed_assertions": [],
+        "input_sha256": "a52654810871440cd80dc10b54cd3933ce21035d3fec1194e83e4f2e341157cf",
+        "judge_version": "v1.4",
+        "output_sha256": "8c7713fa991834cf888bb3e8b477d3e007c6b541e24541a5947f8751e9a669ed",
+        "rc": 0,
+        "result": "PASS_WITH_EVIDENCE"
+      },
+      "E22_STORY_CORE_NEGATIVE": {
+        "assertions_passed": 7,
+        "assertions_total": 11,
+        "blocking_assertions": [],
+        "evidence_sha256": "ae8481e8cd54faf35f46460a8f4f57dfd5a888f7235e6a88f2be6a69ce1861af",
+        "failed_assertions": ["direct_load_over_12000_tokens", "measurement_method_missing_or_invalid", "oversized_story_without_atomicity_review", "specialized_view_requirement_missing"],
+        "input_sha256": "c74de607e4bcce7f42c620ebd91e2787e131c3b428a3cb7247a89be3d186cc85",
+        "judge_version": "v1.4",
+        "output_sha256": "4b14298a4e18acc293dc4072ff798b5d5378aabab5accd1e453a6960aea27938",
+        "rc": 1,
+        "result": "RETURN_TO_WORKER"
+      },
+      "diff_check": {"pass": true, "rc": 0},
+      "j03_regression": {
+        "assertions_passed": 20,
+        "assertions_total": 20,
+        "evidence_sha256": "ae5c4d2d2d9a346f68adee2c25900fd81600ff1eab563fd72b855249e5f8e8ec",
+        "failed_assertions": [],
+        "output_sha256": "a4a95948ffef3298263af79236273bd33565aa720cf3fd9a7460568e51b1d8c3",
+        "rc": 0,
+        "result": "PASS_WITH_EVIDENCE"
+      },
+      "j10_regression": {
+        "extended_positive_pass": true,
+        "negative_passed": 27,
+        "negative_total": 27,
+        "output_sha256": "fcbc06161893fa4534cdf635db7378831e161c4fcf2270260fa3cf9d24f72bde",
+        "positive_pass": true,
+        "rc": 0
+      },
+      "j11_selftest": {
+        "output_sha256": "9326a1a50204722685230a3351451aabe0b37b4ea7d4ac30b746939dd5ce3a35",
+        "rc": 0,
+        "summary": {
+          "context_budget_controls": {
+            "cases": {
+              "E21_STORY_CORE_POSITIVE": {"actual_result": "PASS_WITH_EVIDENCE", "expected_result": "PASS_WITH_EVIDENCE", "failed_assertions": [], "matched": true},
+              "E22_STORY_CORE_NEGATIVE": {"actual_result": "RETURN_TO_WORKER", "expected_result": "RETURN_TO_WORKER", "failed_assertions": ["direct_load_over_12000_tokens", "measurement_method_missing_or_invalid", "oversized_story_without_atomicity_review", "specialized_view_requirement_missing"], "matched": true}
+            },
+            "passed": true
+          },
+          "quality_gate_version": "v1.4",
+          "real_visual_e2e_pass": true,
+          "self_test_pass": true
+        }
+      },
+      "missing_executor": {"blocking_assertions": ["executor_identity_missing"], "output_sha256": "cd298587f7b31c87213913c184c6cd658c1a26797516dd54a3b738e152f3fea8", "rc": 2, "result": "BLOCKED"}
+    },
+    "root_cause_code": "STORY-B1-CONTEXT-BUDGET-EXECUTION-GAP-001",
+    "runtime_enable_authorized": false,
+    "scope": "F07_CONTEXT_BUDGET_HARNESS_REMEDIATION_ONLY",
+    "story_creator_runtime_observed": false,
+    "strategy": "S27",
+    "thresholds_lowered": false
+  },
+  "execution_id": "EXEC-S27-P6-F07-J11-CONTEXT-BUDGET-20260907-001",
+  "issued_at": "2026-09-07T05:20:00Z",
+  "issued_by": "operation_judge",
+  "judge_sha": "b663d4fcc805fdf738a4679014b111d75ac42689beb882be3d41e3b4aa93a32e",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "result": "PASS_SANDBOX",
+  "source_sha_list": ["b663d4fcc805fdf738a4679014b111d75ac42689beb882be3d41e3b4aa93a32e", "30b30ec82f24372e0dba39ea122e3556fdd5a0c8154d4f9592d16b215d8a8fed", "af5a705f877196c6279dd071a5405f3befb59ab4676c8778bd269345850798b8", "0de75a0e2a70037ae1fd0b7d6fa4103321ff284d848551b9daae0fb2cbbd89d9"],
+  "target_paths": ["skills/creating-integral-user-stories/scripts/validate_package_v13.py", "skills/creating-integral-user-stories/judges/skill-package.yaml"]
+}
