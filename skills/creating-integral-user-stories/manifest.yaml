@@ -45,7 +45,7 @@ github_contract:
   readback_required: true
 package_contract:
   canonical_file_count: 62
-  operational_inventory_file_count: 87
+  operational_inventory_file_count: 89
   maturity_candidate_file_count: 17
   encoding: UTF-8
   line_endings: LF
@@ -57,7 +57,7 @@ package_contract:
   readback_required: true
   denominator_semantics:
     canonical_closure: 62
-    operational_package_integrity: 87
+    operational_package_integrity: 89
     maturity_candidate_cohort: 17
     raw_current_store_rows_are_not_canonical_denominator: true
     closure_domains_are_non_substitutable: true
@@ -369,6 +369,8 @@ files:
   - scripts/validate_real_visual_runtime_v02.py
   - scripts/validate_package_v13.py
   - scripts/validate_visual_evidence_bridge.py
+  - scripts/validate_trigger_activation_results.py
+  - scripts/validate_trigger_activation_results_selftest.py
   judges:
   - judges/analytics-observability.yaml
   - judges/audit-traceability.yaml
