@@ -1,6 +1,10 @@
 name: S26 Cloudflare Workers AI read-only preflight
 
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/s26-cloudflare-workers-ai-readonly-preflight.yml"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_workers_ai_benchmark.py"
   workflow_dispatch:
     inputs:
       execute_canary:
@@ -28,7 +32,7 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_AI_CANARY_TOKEN: ${{ secrets.CLOUDFLARE_AI_CANARY_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      TARGET_MODEL: '@cf/qwen/qwen3-30b-a3b-fp8'
+      TARGET_MODEL: '@cf/mistralai/mistral-small-3.1-24b-instruct'
       S26_AUTHORITY_REF: 'fcc2b0d57e36a31c26f38acc2510b193aac988c8'
     steps:
       - name: Checkout benchmark branch
@@ -63,21 +67,24 @@ jobs:
           jq -e '.success == true and .result.status == "active"' <<<"${token_json}" >/dev/null
           echo 'Cloudflare API token: ACTIVE'
 
-      - name: Verify Qwen model availability without inference
+      - name: Verify target model availability without inference
         shell: bash
         run: |
           set -euo pipefail
           models_json="$(curl --silent --show-error --fail-with-body --get \
             "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/models/search" \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-            --data-urlencode 'search=qwen3-30b-a3b-fp8' \
+            --data-urlencode 'search=mistral-small-3.1-24b-instruct' \
             --data-urlencode 'hide_experimental=true' \
             --data-urlencode 'include_deprecated=false')"
           jq -e '.success == true and (.result | length > 0)' <<<"${models_json}" >/dev/null
           echo "Workers AI model search: PASS ($(jq '.result | length' <<<"${models_json}") result(s))"
+          echo "Target: ${TARGET_MODEL}"
 
       - name: Validate benchmark harness before inference
-        if: github.event_name == 'workflow_dispatch' && inputs.execute_benchmark == 'RUN_GOVERNED_BENCHMARK'
+        if: >-
+          (github.event_name == 'pull_request' && github.head_ref == 'agent/s26-cloudflare-readonly-preflight-20260907') ||
+          (github.event_name == 'workflow_dispatch' && inputs.execute_benchmark == 'RUN_GOVERNED_BENCHMARK')
         shell: bash
         run: |
           set -euo pipefail
@@ -87,7 +94,7 @@ jobs:
             s26-authority/sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_zero_cost_primary_candidate.py
           python3 s26-authority/sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py
 
-      - name: Execute exactly one bounded Qwen canary
+      - name: Execute exactly one bounded Mistral canary
         if: github.event_name == 'workflow_dispatch' && inputs.execute_canary == 'RUN_ONE_CANARY'
         shell: bash
         run: |
@@ -96,17 +103,19 @@ jobs:
           canary_json="$(curl --silent --show-error --fail-with-body \
             --connect-timeout 10 --max-time 90 \
             -X POST \
-            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/qwen/qwen3-30b-a3b-fp8" \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/mistralai/mistral-small-3.1-24b-instruct" \
             -H "Authorization: Bearer ${CLOUDFLARE_AI_CANARY_TOKEN}" \
             -H 'Content-Type: application/json' \
             --data '{"prompt":"Return exactly CLOUDFLARE_S26_CANARY_PASS","max_tokens":64,"temperature":0}')"
           jq -e '.success == true and .result != null' <<<"${canary_json}" >/dev/null
-          response_chars="$(jq -r '(.result.response // .result.output_text // "") | length' <<<"${canary_json}")"
+          response_chars="$(jq -r '(.result.response // "") | length' <<<"${canary_json}")"
           test "${response_chars}" -gt 0 || { echo 'Canary returned no text'; exit 1; }
-          echo "Cloudflare Workers AI canary: PASS (${response_chars} response chars)"
+          echo "Cloudflare Workers AI Mistral canary: PASS (${response_chars} response chars)"
 
       - name: Execute one governed S26 Cloudflare benchmark
-        if: github.event_name == 'workflow_dispatch' && inputs.execute_benchmark == 'RUN_GOVERNED_BENCHMARK'
+        if: >-
+          (github.event_name == 'pull_request' && github.head_ref == 'agent/s26-cloudflare-readonly-preflight-20260907') ||
+          (github.event_name == 'workflow_dispatch' && inputs.execute_benchmark == 'RUN_GOVERNED_BENCHMARK')
         shell: bash
         env:
           S26_AUTHORITY_ROOT: ${{ github.workspace }}/s26-authority
@@ -135,7 +144,7 @@ jobs:
           {
             echo '## S26 Cloudflare Workers AI governed preflight'
             echo ''
-            echo '- Target: `@cf/qwen/qwen3-30b-a3b-fp8`'
+            echo '- Target: `@cf/mistralai/mistral-small-3.1-24b-instruct`'
             echo '- Worker deployed: NO'
             echo '- Routing changed: NO'
             echo '- Paid fallback: NO'
