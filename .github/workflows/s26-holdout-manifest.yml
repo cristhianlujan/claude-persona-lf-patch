@@ -1,0 +1,86 @@
+name: S26 Holdout Manifest Qualification
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/s26-holdout-manifest.yml"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_primary_candidate_holdout_plan_v1.json"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_ui_architect_semantic_obligation_manifest_v1.json"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_primary_candidate_holdout_manifest.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_zero_cost_primary_candidate.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_semantic_judge.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py"
+
+permissions:
+  contents: read
+
+jobs:
+  s26-holdout-manifest-qualification:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 160
+    env:
+      LLAMA_COMMIT: 925e1179947ea0c0ebfb0032df18af3a729822be
+      LF_S26_PRIMARY_CANDIDATE_CODE: QWEN3_5_4B_Q4_K_M_CONTRACT_ALIGNED
+      LF_S26_PRIMARY_CANDIDATE_REPO: unsloth/Qwen3.5-4B-GGUF
+      LF_S26_PRIMARY_CANDIDATE_COMMIT: 720bb031aae5488eae5d6a78768e6d826662b2ae
+      LF_S26_PRIMARY_CANDIDATE_FILENAME: Qwen3.5-4B-Q4_K_M.gguf
+      LF_S26_PRIMARY_CANDIDATE_SHA256: 00fe7986ff5f6b463e62455821146049db6f9313603938a70800d1fb69ef11a4
+      LF_S26_PRIMARY_CANDIDATE_PROMPT_POLICY: S26_QWEN3_5_4B_SOURCE_BOUNDED_TWO_PASS_V3
+      LF_S26_PRIMARY_CANDIDATE_DISABLE_THINKING: '1'
+      LF_S26_PRIMARY_CANDIDATE_RELEASE_AFTER_RUN: '1'
+    steps:
+      - name: Checkout exact PR merge ref
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate frozen harness syntax and deterministic judge regressions
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_zero_cost_primary_candidate.py \
+            sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_primary_candidate_holdout_manifest.py
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py
+
+      - name: Build pinned llama.cpp server from source
+        timeout-minutes: 10
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/ggml-org/llama.cpp.git "$RUNNER_TEMP/llama.cpp"
+          cd "$RUNNER_TEMP/llama.cpp"
+          git checkout --detach "$LLAMA_COMMIT"
+          test "$(git rev-parse HEAD)" = "$LLAMA_COMMIT"
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=OFF
+          cmake --build build --config Release -j 4 --target llama-server
+          test -x build/bin/llama-server
+
+      - name: Execute frozen three-case holdout and semantic obligation manifest
+        timeout-minutes: 145
+        env:
+          LF_REPOSITORY_VISIBILITY: public
+          LF_RUNNER_LABEL: ubuntu-latest
+          LF_LLAMA_SOURCE_COMMIT: ${{ env.LLAMA_COMMIT }}
+          LF_LLAMA_SERVER_PATH: ${{ runner.temp }}/llama.cpp/build/bin/llama-server
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check 'jsonschema==4.26.0'
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_primary_candidate_holdout_manifest.py \
+            --result-path "$GITHUB_WORKSPACE/s26-primary-candidate-holdout-manifest-result.json" \
+            | tee "$RUNNER_TEMP/s26-primary-candidate-holdout-manifest.log"
+
+      - name: Upload durable S26 holdout manifest evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: s26-holdout-manifest-${{ github.run_id }}
+          path: |
+            s26-primary-candidate-holdout-manifest-result.json
+            ${{ runner.temp }}/s26-primary-candidate-holdout-manifest.log
+          if-no-files-found: error
+          retention-days: 30
