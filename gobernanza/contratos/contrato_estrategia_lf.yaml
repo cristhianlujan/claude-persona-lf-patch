@@ -1,4 +1,4 @@
-version: v0.3
+version: v0.3.1
 status: CANDIDATO_READ_ONLY
 operation: CREACION_ESTRATEGIA_LF
 source_model: GIT_FIRST_YAML
@@ -8,15 +8,9 @@ ekb_hardening: S30_EKB_HARDENING_V1
 review_hardening: S30_PRODUCT_QUALITY_REVIEW_V1
 deterministic_validator:
   path: gobernanza/validators/validate_strategy_contract.py
-  modes:
-    - prewrite
-    - close
-  required_evidence:
-    - validator_blob_sha
-    - input_sha256
-    - results_sha256
-    - valid
-    - blocking_codes
+  blob_sha: d7d18985b0246703d73cbe51eb69bb9162ba034a
+  modes: [prewrite, close]
+  required_evidence: [validator_blob_sha, input_sha256, results_sha256, valid, blocking_codes]
   self_assertion_without_validator: BLOCKED
 required_before_write:
   - read_router
@@ -47,9 +41,7 @@ required_before_write:
   - conflict_check_pass
 allowed:
   repository: cristhianlujan/claude-persona-lf-patch
-  path_prefixes:
-    - /gobernanza/
-    - /strategies/
+  path_prefixes: [/gobernanza/, /strategies/]
   strategy_status: CANDIDATO_READ_ONLY
   runtime_state: PLAN_ONLY
   automatic_impact: BLOQUEADO
@@ -106,27 +98,14 @@ required_strategy_blocks:
   - change_log
   - closure_criteria
 stage_schema:
-  required_fields:
-    - stage_code
-    - objective_or_purpose
-    - status
-    - entry_conditions
-    - actions_or_scope
-    - tests
-    - evidence_required
-    - exit_gate
-    - conclusion_ref
+  required_fields: [stage_code, objective_or_purpose, status, entry_conditions, actions_or_scope, tests, evidence_required, exit_gate, conclusion_ref]
   prewrite_conclusion_rule: CONCLUSION_REF_RESERVED_ZERO_OR_ONE_CURRENT_CONCLUSION_PER_STAGE
   close_conclusion_rule: EXACTLY_ONE_CURRENT_CONCLUSION_PER_STAGE
   history_rule: APPEND_ONLY_PRIOR_CONCLUSIONS_MAY_BE_STALE_OR_SUPERSEDED
-  conclusion_ref_rule: WHEN_CURRENT_CONCLUSION_EXISTS_REF_MUST_MATCH; AT_CLOSE_EVERY_REF_MUST_RESOLVE
+  conclusion_ref_rule: WHEN_CURRENT_CONCLUSION_EXISTS_REF_MUST_MATCH_AT_CLOSE_EVERY_REF_MUST_RESOLVE
 execution_frontier_contract:
   during_execution:
-    required_fields:
-      - current_stage
-      - current_action
-      - safe_parallel_work
-      - blockers
+    required_fields: [current_stage, current_action, safe_parallel_work, blockers]
   at_close:
     state: CLOSED
     current_stage: TERMINAL_OR_LAST_COMPLETED_STAGE
