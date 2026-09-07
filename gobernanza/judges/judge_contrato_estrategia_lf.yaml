@@ -4,6 +4,7 @@ judge: JUDGE_CONTRATO_ESTRATEGIA_LF
 operation: CREACION_ESTRATEGIA_LF
 ekb_hardening: S30_EKB_HARDENING_V1
 review_hardening: S30_PRODUCT_QUALITY_REVIEW_V1
+validator_path: gobernanza/validators/validate_strategy_contract.py
 pass_if:
   - router_read
   - operational_source_read
@@ -20,6 +21,9 @@ pass_if:
   - strategy_type_extension_complete
   - exact_dependency_versions_resolved
   - all_required_strategy_blocks_present
+  - deterministic_prewrite_validator_pass
+  - validator_prewrite_input_sha_matches_candidate
+  - validator_prewrite_results_sha_present
   - every_stage_schema_complete
   - every_stage_has_exactly_one_current_conclusion
   - every_stage_conclusion_ref_resolves_same_stage
@@ -42,6 +46,9 @@ pass_if:
   - candidate_status_readback
   - runtime_plan_only_readback
   - automatic_impact_bloqueado_readback
+  - deterministic_close_validator_pass
+  - validator_close_input_sha_matches_canonical_snapshot
+  - validator_close_results_sha_present
   - terminal_execution_frontier_at_close
   - no_unexhausted_recovery_route
   - no_blocking_observations
@@ -57,6 +64,9 @@ fail_if:
   - unknown_strategy_type_without_extension
   - missing_required_type_extension_field
   - missing_required_strategy_block
+  - deterministic_prewrite_validator_missing
+  - deterministic_prewrite_validator_failed
+  - validator_prewrite_input_sha_mismatch
   - incomplete_stage_schema
   - missing_stage_conclusion
   - duplicate_current_stage_conclusion
@@ -69,6 +79,9 @@ fail_if:
   - contradictory_current_state_projection
   - missing_next_gate_or_handoff
   - unresolved_policy_conflict
+  - deterministic_close_validator_missing
+  - deterministic_close_validator_failed
+  - validator_close_input_sha_mismatch
   - returning_only_used_as_readback
   - same_statement_readback_used_as_closure
   - blind_timeout_extension_as_first_response
