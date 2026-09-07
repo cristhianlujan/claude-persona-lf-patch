@@ -19,6 +19,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import resource
 import subprocess
 import sys
 import tempfile
@@ -48,24 +49,26 @@ DECLARED_REVIEW_CODES = (
     "S26_NO_INVENTED_LIMITS_REVIEW_REQUIRED",
 )
 
-CANDIDATE_CODE = os.getenv("LF_S26_PRIMARY_CANDIDATE_CODE", "QWEN3_5_9B_Q4_K_M").strip()
+CANDIDATE_CODE = os.getenv(
+    "LF_S26_PRIMARY_CANDIDATE_CODE", "QWEN3_5_4B_Q4_K_M_CONTRACT_ALIGNED"
+).strip()
 MODEL_REPO = os.getenv(
-    "LF_S26_PRIMARY_CANDIDATE_REPO", "unsloth/Qwen3.5-9B-GGUF"
+    "LF_S26_PRIMARY_CANDIDATE_REPO", "unsloth/Qwen3.5-4B-GGUF"
 ).strip()
 MODEL_COMMIT = os.getenv(
     "LF_S26_PRIMARY_CANDIDATE_COMMIT",
-    "3885219b6810b007914f3a7950a8d1b469d598a5",
+    "720bb031aae5488eae5d6a78768e6d826662b2ae",
 ).strip()
 MODEL_FILENAME = os.getenv(
-    "LF_S26_PRIMARY_CANDIDATE_FILENAME", "Qwen3.5-9B-Q4_K_M.gguf"
+    "LF_S26_PRIMARY_CANDIDATE_FILENAME", "Qwen3.5-4B-Q4_K_M.gguf"
 ).strip()
 MODEL_SHA256 = os.getenv(
     "LF_S26_PRIMARY_CANDIDATE_SHA256",
-    "03b74727a860a56338e042c4420bb3f04b2fec5734175f4cb9fa853daf52b7e8",
+    "00fe7986ff5f6b463e62455821146049db6f9313603938a70800d1fb69ef11a4",
 ).strip()
 PROMPT_POLICY = os.getenv(
     "LF_S26_PRIMARY_CANDIDATE_PROMPT_POLICY",
-    "S26_QWEN3_5_9B_SOURCE_BOUNDED_TWO_PASS_V3",
+    "S26_QWEN3_5_4B_SOURCE_BOUNDED_TWO_PASS_V3",
 ).strip()
 DISABLE_THINKING = os.getenv(
     "LF_S26_PRIMARY_CANDIDATE_DISABLE_THINKING", "1"
@@ -143,6 +146,21 @@ def sha256_file(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def _linux_meminfo_kib() -> dict[str, int]:
+    """Read a bounded runner memory snapshot without changing host state."""
+    wanted = {"MemTotal", "MemAvailable", "SwapTotal", "SwapFree"}
+    result: dict[str, int] = {}
+    try:
+        for line in Path("/proc/meminfo").read_text(encoding="utf-8").splitlines():
+            key, separator, remainder = line.partition(":")
+            if separator and key in wanted:
+                value = remainder.strip().split()[0]
+                result[f"{key.lower()}_kib"] = int(value)
+    except (OSError, ValueError, IndexError):
+        return {}
+    return result
 
 
 def required_path(name: str) -> Path:
@@ -367,6 +385,7 @@ def main() -> int:
     system_prompt = build_system_prompt()
     source_evidence = source_hashes()
     candidate_head = exact_candidate_head()
+    runner_meminfo_before = _linux_meminfo_kib()
     print(
         "S26_PRIMARY_CANDIDATE_PREFLIGHT="
         + json.dumps(
@@ -391,6 +410,9 @@ def main() -> int:
     )
 
     base_url = f"http://127.0.0.1:{PORT}"
+    server_ready_elapsed_s: float | None = None
+    server_started = time.monotonic()
+    child_usage: dict[str, float | int] = {}
     with tempfile.TemporaryDirectory(prefix="s26-zero-cost-primary-candidate-") as td:
         work = Path(td)
         stdout_path = work / "llama.stdout.log"
@@ -415,6 +437,7 @@ def main() -> int:
                         print("BLOCK S26_PRIMARY_CANDIDATE_SERVER_START_FAILED detail=" + detail.replace("\n", " "))
                         return 3
                     if health_ready(base_url):
+                        server_ready_elapsed_s = round(time.monotonic() - server_started, 3)
                         break
                     time.sleep(0.5)
                 else:
@@ -482,6 +505,12 @@ def main() -> int:
                     except subprocess.TimeoutExpired:
                         process.kill()
                         process.wait(timeout=5)
+                usage_snapshot = resource.getrusage(resource.RUSAGE_CHILDREN)
+                child_usage = {
+                    "max_rss_kib": int(usage_snapshot.ru_maxrss),
+                    "user_cpu_s": round(float(usage_snapshot.ru_utime), 3),
+                    "system_cpu_s": round(float(usage_snapshot.ru_stime), 3),
+                }
 
     contract_gate, parsed = gates.contract(
         profile_slug="ui_architect",
@@ -499,7 +528,9 @@ def main() -> int:
         if isinstance(initial_envelope.get("usage"), dict)
         else {}
     )
+    model_bytes = model.stat().st_size
     candidate_model_released_after_run = _release_candidate_model_after_run(model)
+    runner_meminfo_after = _linux_meminfo_kib()
     result = {
         "scope": "SANDBOX_PRIMARY_WORKER_CAPABILITY_ONLY_NOT_OPERATIONAL_PARITY",
         "candidate_code": CANDIDATE_CODE,
@@ -512,6 +543,7 @@ def main() -> int:
         "model_commit": MODEL_COMMIT,
         "model_filename": MODEL_FILENAME,
         "model_sha256": observed_model_sha,
+        "model_bytes": model_bytes,
         "candidate_model_released_after_run": candidate_model_released_after_run,
         "llama_source_commit": LLAMA_COMMIT,
         "github_run_id": os.getenv("GITHUB_RUN_ID", ""),
@@ -532,6 +564,10 @@ def main() -> int:
         "timeout_increased": False,
         "thinking_disabled": DISABLE_THINKING,
         "elapsed_s": elapsed_s,
+        "server_ready_elapsed_s": server_ready_elapsed_s,
+        "child_process_resource_usage": child_usage,
+        "runner_meminfo_before": runner_meminfo_before,
+        "runner_meminfo_after": runner_meminfo_after,
         "finish_reason": finish_reason,
         "usage": usage,
         "inference_stages": {
