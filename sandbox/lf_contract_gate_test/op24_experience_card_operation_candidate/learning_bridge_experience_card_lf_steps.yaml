@@ -1,0 +1,79 @@
+version: v0.1
+status: CANDIDATO_READ_ONLY
+operation_code: LEARNING_BRIDGE_EXPERIENCE_CARD_LF
+steps:
+  - order: 1
+    id: router
+    evidence_required: router_read
+  - order: 2
+    id: operational_source
+    evidence_required: operational_source_read
+  - order: 3
+    id: ekb_precheck
+    evidence_required: applicable_ekb_read
+  - order: 4
+    id: factory_dependency_check
+    evidence_required: creacion_operacion_lf_and_operation_create_route_state
+  - order: 5
+    id: select_experiential_candidate
+    evidence_required: error_knowledge_source_readback
+  - order: 6
+    id: required_signal_gate
+    evidence_required: codigo_titulo_descripcion_validacion_lifecycle_consumer_source_ref
+  - order: 7
+    id: contradiction_gate
+    evidence_required: contradiction_result_before_dedup
+  - order: 8
+    id: deterministic_dedup
+    evidence_required: duplicate_learning_and_existing_card_check
+  - order: 9
+    id: lifecycle_detectado
+    evidence_required: detectado_transition_receipt
+  - order: 10
+    id: semantic_analysis
+    evidence_required: analysis_pack_with_provenance_and_applicability
+  - order: 11
+    id: lifecycle_analizado
+    evidence_required: analizado_transition_receipt
+  - order: 12
+    id: independent_evidence_gate
+    evidence_required: independent_evidence_or_promotion_block
+  - order: 13
+    id: decision_matrix
+    evidence_required: decision_matrix_present
+  - order: 14
+    id: card_factory_contract_gate
+    evidence_required: creacion_card_lf_v0_4_contract_read
+  - order: 15
+    id: card_candidate_dossier
+    evidence_required: dossier_only_no_direct_card_write
+  - order: 16
+    id: lifecycle_card_creada
+    evidence_required: receiver_factory_receipt_if_authorized
+  - order: 17
+    id: lifecycle_en_revision
+    evidence_required: en_revision_transition_receipt
+  - order: 18
+    id: sandbox_gate
+    evidence_required: sandbox_test_receipt
+  - order: 19
+    id: quality_gate
+    evidence_required: quality_gate_result
+  - order: 20
+    id: performance_gate
+    evidence_required: performance_gate_result
+  - order: 21
+    id: governance_gate
+    evidence_required: governance_gate_result
+  - order: 22
+    id: approval_boundary
+    evidence_required: explicit_approval_or_blocked_state
+  - order: 23
+    id: impact_if_authorized
+    evidence_required: authorized_executor_receipt_only
+  - order: 24
+    id: verify
+    evidence_required: independent_readback
+  - order: 25
+    id: close
+    evidence_required: closure_receipt
