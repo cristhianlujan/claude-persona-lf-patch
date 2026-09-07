@@ -15,6 +15,7 @@ on:
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_semantic_judge.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_live_smoke.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_live_smoke_change_router.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/github_backup_transport_preflight.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_profile_strategy_ab.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/runtime_optimization_contract.py"
@@ -93,19 +94,11 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          changed="$RUNNER_TEMP/semantic-changed-files.txt"
-          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | sort -u > "$changed"
-          cat "$changed"
-          live_smoke=false
-          while IFS= read -r path; do
-            case "$path" in
-              sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_mini_judge.py|sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_semantic_judge.py|sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_live_smoke.py)
-                live_smoke=true
-                ;;
-            esac
-          done < "$changed"
-          echo "live_smoke=$live_smoke" >> "$GITHUB_OUTPUT"
-          echo "SEMANTIC_LIVE_SMOKE_REQUIRED=$live_smoke"
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_live_smoke_change_router.py --self-test
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_live_smoke_change_router.py \
+            --base-sha "$BASE_SHA" \
+            --head-sha "$HEAD_SHA" \
+            --github-output "$GITHUB_OUTPUT"
 
       - name: Run deterministic mini-judge regressions
         run: |
