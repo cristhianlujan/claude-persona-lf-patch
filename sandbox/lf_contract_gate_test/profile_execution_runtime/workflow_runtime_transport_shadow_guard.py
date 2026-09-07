@@ -10,7 +10,12 @@ never downloads a model. It reuses existing governance:
 
 The guard is deliberately job-level and exact-asset-aware. Presence of a live
 llama-server is not enough: a job may require a different pinned model/mmproj or
-multiple mutually exclusive model assets. In SHADOW mode findings never block.
+multiple mutually exclusive model assets. It also distinguishes the existing
+GitHub backup queue workers from ordinary hosted model execution: the DB claim
+guard may protect HETZNER requests, but expensive provisioning must not happen
+before the cheap target/backup-reason preflight.
+
+SHADOW mode never blocks.
 """
 
 from __future__ import annotations
@@ -32,6 +37,20 @@ RUNTIME_PATTERNS = {
     "semantic_model_path": re.compile(r"\bLF_SEMANTIC_MODEL_PATH\b"),
     "llama_server_path": re.compile(r"\bLF_LLAMA_SERVER_PATH\b"),
 }
+
+HEAVY_PREP_PATTERN = re.compile(
+    r"https://huggingface\.co/|cmake\s+--build|git\s+clone[^\n]*llama\.cpp|actions/cache@",
+    re.I,
+)
+BACKUP_WORKER_PATTERN = re.compile(
+    r"\bgithub_actions_(?:batch_)?queue_worker\.py\b",
+    re.I,
+)
+EARLY_TRANSPORT_PREFLIGHT_PATTERN = re.compile(
+    r"\b(?:runtime_target|runtime_backup_reason)\b.{0,300}\bGITHUB_ACTIONS\b|"
+    r"\bpreflight[^\n]*(?:runtime|transport|queue)\b",
+    re.I | re.S,
+)
 
 HOSTED_RUNNER_PATTERN = re.compile(
     r"runs-on\s*:\s*(?:['\"])?ubuntu(?:-[A-Za-z0-9_.-]+)?", re.I
@@ -88,7 +107,6 @@ def _split_jobs(text: str) -> list[tuple[str, str]]:
     found: list[tuple[str, str]] = []
     job_key = re.compile(r"^  ([A-Za-z0-9_.-]+):\s*$")
     top_level = re.compile(r"^[A-Za-z0-9_.-]+:\s*")
-
     for line in lines:
         if not in_jobs:
             if re.fullmatch(r"jobs:\s*", line):
@@ -127,19 +145,31 @@ def _capability_match(requirements: dict, capability: dict | None) -> tuple[bool
     models = requirements["model_sha256"]
     mmprojs = requirements["mmproj_sha256"]
     llamas = requirements["llama_commits"]
-
     if not models:
         reasons.append("MODEL_SHA_UNRESOLVED")
     elif len(models) > 1:
         reasons.append("MULTI_MODEL_JOB_REQUIRES_MORE_THAN_RESIDENT_MODEL")
     elif models[0] != resident_model:
         reasons.append("MODEL_SHA_MISMATCH")
-
     if mmprojs and (len(mmprojs) > 1 or mmprojs[0] != resident_mmproj):
         reasons.append("MMPROJ_SHA_MISMATCH")
     if llamas and (len(llamas) > 1 or resident_llama not in llamas):
         reasons.append("LLAMA_COMMIT_MISMATCH")
     return not reasons, reasons
+
+
+def _backup_worker_state(text: str) -> dict:
+    worker = BACKUP_WORKER_PATTERN.search(text)
+    if not worker:
+        return {"is_backup_queue_worker": False, "early_transport_preflight": False, "late_preflight_risk": False}
+    heavy = HEAVY_PREP_PATTERN.search(text)
+    preflight = EARLY_TRANSPORT_PREFLIGHT_PATTERN.search(text)
+    early = bool(preflight and (not heavy or preflight.start() < heavy.start()))
+    return {
+        "is_backup_queue_worker": True,
+        "early_transport_preflight": early,
+        "late_preflight_risk": bool(heavy and not early),
+    }
 
 
 def classify_job(workflow: str, job: str, text: str, capability: dict | None) -> dict:
@@ -149,9 +179,14 @@ def classify_job(workflow: str, job: str, text: str, capability: dict | None) ->
     hetzner_route = any(pattern.search(text) for pattern in HETZNER_ROUTE_PATTERNS)
     requirements = _requirements(text)
     exact_assets, gap_reasons = _capability_match(requirements, capability) if indicators else (False, [])
+    backup_worker = _backup_worker_state(text)
 
     if not indicators:
         classification = "CI_GOVERNANCE_NO_MODEL_RUNTIME"
+    elif backup_worker["is_backup_queue_worker"] and backup_worker["late_preflight_risk"]:
+        classification = "GITHUB_BACKUP_WORKER_LATE_TRANSPORT_PREFLIGHT"
+    elif backup_worker["is_backup_queue_worker"] and backup_worker["early_transport_preflight"]:
+        classification = "GITHUB_BACKUP_WORKER_EARLY_PREFLIGHT_PRESENT"
     elif hetzner_route and not hosted:
         classification = "HETZNER_ROUTE_OR_RUNTIME_COMPONENT"
     elif hosted and exact_assets:
@@ -181,6 +216,7 @@ def classify_job(workflow: str, job: str, text: str, capability: dict | None) ->
         "requirements": requirements,
         "hetzner_exact_asset_match": exact_assets,
         "capability_gap_reasons": gap_reasons,
+        **backup_worker,
     }
 
 
@@ -205,6 +241,7 @@ def summarize(results) -> dict:
     exact_duplicates: list[str] = []
     gaps: list[str] = []
     explicit_backups: list[str] = []
+    late_preflight: list[str] = []
     for item in results:
         cls = item["classification"]
         counts[cls] = counts.get(cls, 0) + 1
@@ -215,15 +252,19 @@ def summarize(results) -> dict:
             gaps.append(label)
         if cls.startswith("GITHUB_MODEL_RUNTIME_EXPLICIT_BACKUP"):
             explicit_backups.append(label)
+        if cls == "GITHUB_BACKUP_WORKER_LATE_TRANSPORT_PREFLIGHT":
+            late_preflight.append(label)
     return {
         "job_count": len(results),
         "counts": dict(sorted(counts.items())),
         "exact_asset_duplicates": sorted(exact_duplicates),
         "capability_gap_jobs": sorted(gaps),
+        "backup_workers_late_transport_preflight": sorted(late_preflight),
         "explicit_backup_jobs": sorted(explicit_backups),
         "policy": {
             "primary_runtime": "HETZNER_WHEN_EXACT_CAPABILITY_MATCHES",
             "github_actions_runtime": "EXPLICIT_BACKUP_ONLY",
+            "backup_worker_rule": "CHECK_TARGET_AND_BACKUP_REASON_BEFORE_HEAVY_PROVISIONING",
             "capability_match_requires": "MODEL_SHA_AND_OPTIONAL_MMPROJ_AND_LLAMA_COMMIT",
             "default_mode": "SHADOW",
         },
@@ -270,16 +311,26 @@ def self_test() -> None:
             steps:
               - run: ./llama-server -m model.gguf
         """)
-        _write_fixture(root, "backup.yml", f"""
+        _write_fixture(root, "backup-late.yml", f"""
         jobs:
           run:
             runs-on: ubuntu-latest
             env:
-              LF_RUNTIME_TARGET: GITHUB_ACTIONS
-              LF_RUNTIME_BACKUP_REASON: EXACT_HETZNER_MODEL_UNAVAILABLE
-              MODEL_SHA256: {other}
+              MODEL_SHA256: {model}
             steps:
-              - run: ./llama-server -m model.gguf
+              - run: curl -L https://huggingface.co/org/model/model.gguf -o model.gguf
+              - run: python3 github_actions_queue_worker.py --request-id x
+        """)
+        _write_fixture(root, "backup-early.yml", f"""
+        jobs:
+          run:
+            runs-on: ubuntu-latest
+            env:
+              MODEL_SHA256: {model}
+            steps:
+              - run: echo preflight runtime_target GITHUB_ACTIONS runtime_backup_reason required
+              - run: curl -L https://huggingface.co/org/model/model.gguf -o model.gguf
+              - run: python3 github_actions_queue_worker.py --request-id x
         """)
         _write_fixture(root, "multi.yml", f"""
         jobs:
@@ -295,9 +346,10 @@ def self_test() -> None:
         assert by_label[("ci.yml", "test")]["classification"] == "CI_GOVERNANCE_NO_MODEL_RUNTIME"
         assert by_label[("duplicate.yml", "run")]["classification"] == "GITHUB_MODEL_RUNTIME_DUPLICATES_HETZNER_EXACT_ASSETS"
         assert by_label[("gap.yml", "run")]["classification"] == "HETZNER_CAPABILITY_GAP_GITHUB_MODEL_RUNTIME"
-        assert by_label[("backup.yml", "run")]["classification"] == "GITHUB_MODEL_RUNTIME_EXPLICIT_BACKUP_CAPABILITY_GAP"
+        assert by_label[("backup-late.yml", "run")]["classification"] == "GITHUB_BACKUP_WORKER_LATE_TRANSPORT_PREFLIGHT"
+        assert by_label[("backup-early.yml", "run")]["classification"] == "GITHUB_BACKUP_WORKER_EARLY_PREFLIGHT_PRESENT"
         assert "MULTI_MODEL_JOB_REQUIRES_MORE_THAN_RESIDENT_MODEL" in by_label[("multi.yml", "run")]["capability_gap_reasons"]
-    print("WORKFLOW_RUNTIME_TRANSPORT_GUARD_SELF_TEST_PASS 5/5")
+    print("WORKFLOW_RUNTIME_TRANSPORT_GUARD_SELF_TEST_PASS 6/6")
 
 
 def _load_capability(path: str | None) -> dict | None:
@@ -325,7 +377,7 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(f"WORKFLOWS_DIR_MISSING:{workflows_dir}")
     results = scan(workflows_dir, capability)
     payload = {
-        "schema": "LF_WORKFLOW_RUNTIME_TRANSPORT_SHADOW_V2",
+        "schema": "LF_WORKFLOW_RUNTIME_TRANSPORT_SHADOW_V3",
         "mode": "ENFORCE" if args.enforce else "SHADOW",
         "hetzner_capability": capability,
         "summary": summarize(results),
@@ -335,7 +387,11 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(payload, sort_keys=True, indent=2))
     else:
         print("LF_WORKFLOW_RUNTIME_TRANSPORT_SHADOW=" + json.dumps(payload, sort_keys=True))
-    blockers = payload["summary"]["exact_asset_duplicates"] + payload["summary"]["capability_gap_jobs"]
+    blockers = (
+        payload["summary"]["exact_asset_duplicates"]
+        + payload["summary"]["capability_gap_jobs"]
+        + payload["summary"]["backup_workers_late_transport_preflight"]
+    )
     if args.enforce and blockers:
         print("BLOCK_RUNTIME_TRANSPORT_REVIEW=" + ",".join(blockers), file=sys.stderr)
         return 2
