@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
@@ -14,6 +15,13 @@ if spec is None or spec.loader is None:
     raise SystemExit("FAIL_S32_VALIDATOR_V032_MODULE_LOAD")
 validator = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(validator)
+
+raw_bytes = CANDIDATE_PATH.read_bytes()
+raw_text = raw_bytes.decode("utf-8")
+raw_sha256 = hashlib.sha256(raw_bytes).hexdigest()
+strategy_archetype_key_count = sum(1 for line in raw_text.splitlines() if line.startswith("strategy_archetype:"))
+if strategy_archetype_key_count != 1:
+    raise SystemExit(f"FAIL_S32_DUPLICATE_TOP_LEVEL_ARCHETYPE_KEY count={strategy_archetype_key_count}")
 
 candidate = validator.load_document(CANDIDATE_PATH)
 results = []
@@ -79,6 +87,8 @@ summary = {
     "validator_version": validator.VERSION,
     "validator_path": str(VALIDATOR_PATH),
     "candidate_path": str(CANDIDATE_PATH),
+    "candidate_raw_sha256": raw_sha256,
+    "strategy_archetype_key_count": strategy_archetype_key_count,
     "total_cases": len(results),
     "passed": sum(1 for item in results if item["ok"]),
     "failed": sum(1 for item in results if not item["ok"]),
