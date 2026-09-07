@@ -15,6 +15,7 @@ on:
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_semantic_judge.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_live_smoke.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/github_backup_transport_preflight.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_profile_strategy_ab.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/runtime_optimization_contract.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_batch_queue_worker.py"
@@ -78,12 +79,33 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
+      - name: Classify live semantic smoke necessity
+        id: route
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          changed="$RUNNER_TEMP/semantic-changed-files.txt"
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | sort -u > "$changed"
+          cat "$changed"
+          live_smoke=false
+          while IFS= read -r path; do
+            case "$path" in
+              sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_mini_judge.py|sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_semantic_judge.py|sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_live_smoke.py)
+                live_smoke=true
+                ;;
+            esac
+          done < "$changed"
+          echo "live_smoke=$live_smoke" >> "$GITHUB_OUTPUT"
+          echo "SEMANTIC_LIVE_SMOKE_REQUIRED=$live_smoke"
 
       - name: Run deterministic mini-judge regressions
         run: |
@@ -91,6 +113,7 @@ jobs:
           python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py
 
       - name: Build pinned llama.cpp server from source
+        if: steps.route.outputs.live_smoke == 'true'
         env:
           LLAMA_COMMIT: 925e1179947ea0c0ebfb0032df18af3a729822be
         run: |
@@ -104,6 +127,7 @@ jobs:
           test -x build/bin/llama-server
 
       - name: Download and verify pinned semantic judge model
+        if: steps.route.outputs.live_smoke == 'true'
         env:
           MODEL_COMMIT: 508edd0afaa66bb9e9f40587acc2184f02daf1f6
           MODEL_SHA256: 9258bf05b12686d097ff3b6b18d968ab393649780aa2b3cd67fec43d50554392
@@ -116,6 +140,7 @@ jobs:
           echo "${MODEL_SHA256}  $RUNNER_TEMP/lf-semantic-model/model.gguf" | sha256sum -c -
 
       - name: Run real zero-cost semantic smoke
+        if: steps.route.outputs.live_smoke == 'true'
         env:
           LF_REPOSITORY_VISIBILITY: public
           LF_RUNNER_LABEL: ubuntu-latest
@@ -180,6 +205,18 @@ jobs:
           with open(os.environ['GITHUB_OUTPUT'],'a',encoding='utf-8') as f:
               f.write('request_id='+match.group(1).lower()+'\n')
           PY
+
+      - name: Preflight explicit GitHub backup transport before provisioning
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+          REQUEST_IDS: ${{ steps.request.outputs.request_id }}
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check 'psycopg[binary]==3.2.9'
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/github_backup_transport_preflight.py \
+            --request-ids "$REQUEST_IDS" --json
 
       - name: Build pinned llama.cpp from source
         env:
@@ -279,6 +316,18 @@ jobs:
           with open(os.environ['GITHUB_OUTPUT'],'a',encoding='utf-8') as f:
               f.write('request_ids='+','.join(ids)+'\n')
           PY
+
+      - name: Preflight explicit GitHub backup transport before provisioning
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+          REQUEST_IDS: ${{ steps.request.outputs.request_ids }}
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check 'psycopg[binary]==3.2.9'
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/github_backup_transport_preflight.py \
+            --request-ids "$REQUEST_IDS" --json
 
       - name: Record preparation start and toolchain fingerprint
         id: toolchain
