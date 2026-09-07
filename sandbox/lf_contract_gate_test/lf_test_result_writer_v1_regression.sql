@@ -100,6 +100,51 @@ do $$ declare r jsonb; r0 jsonb; o jsonb; begin
   if o->>'code' <> 'TEST_RUN_IDEMPOTENCY_CONFLICT' then raise exception 'IDEMPOTENCY_CONFLICT_NEGATIVE_FAILED %',o; end if;
 end $$;
 
+-- Cross-envelope coherence negatives: a sealed receipt cannot contradict its normalized children.
+do $$ declare r jsonb; r0 jsonb; o jsonb; begin
+  r0 := pg_temp.make_receipt('CASE-HASH') - 'receipt_sha256';
+  r0 := jsonb_set(r0,'{channels,assertions,items,0,status}',to_jsonb('FAIL'::text));
+  r0 := r0 || jsonb_build_object('receipt_sha256',private.fn_payload_sha256_v7(r0));
+  o := public.lf_test_result_writer_v1(r0,'EXEC-WRITER-REGRESSION');
+  if o->>'code' <> 'STATUS_CHILD_EVIDENCE_CONFLICT' then raise exception 'PASS_ASSERT_FAIL_COHERENCE_NEGATIVE_FAILED %',o; end if;
+  if exists(select 1 from public.lf_test_runs where test_code='CASE-HASH') then raise exception 'PASS_ASSERT_FAIL_PERSISTED'; end if;
+end $$;
+
+do $$ declare r jsonb; r0 jsonb; o jsonb; begin
+  r0 := pg_temp.make_receipt('CASE-HEAD') - 'receipt_sha256';
+  r0 := jsonb_set(r0,'{channels,judges,items,0,verdict}',to_jsonb('FAIL'::text));
+  r0 := r0 || jsonb_build_object('receipt_sha256',private.fn_payload_sha256_v7(r0));
+  o := public.lf_test_result_writer_v1(r0,'EXEC-WRITER-REGRESSION');
+  if o->>'code' <> 'STATUS_CHILD_EVIDENCE_CONFLICT' then raise exception 'PASS_JUDGE_FAIL_COHERENCE_NEGATIVE_FAILED %',o; end if;
+end $$;
+
+do $$ declare r jsonb; r0 jsonb; o jsonb; begin
+  r0 := pg_temp.make_receipt('CASE-JUDGE') - 'receipt_sha256';
+  r0 := jsonb_set(r0,'{outcome,status}',to_jsonb('FAILED'::text));
+  r0 := jsonb_set(r0,'{exit_code}','1'::jsonb);
+  r0 := r0 || jsonb_build_object('receipt_sha256',private.fn_payload_sha256_v7(r0));
+  o := public.lf_test_result_writer_v1(r0,'EXEC-WRITER-REGRESSION');
+  if o->>'code' <> 'STATUS_CHILD_EVIDENCE_CONFLICT' then raise exception 'FAILED_WITHOUT_FAILURE_EVIDENCE_NEGATIVE_FAILED %',o; end if;
+end $$;
+
+do $$ declare r jsonb; r0 jsonb; o jsonb; begin
+  r0 := pg_temp.make_receipt('CASE-CHANNEL') - 'receipt_sha256';
+  r0 := jsonb_set(r0,'{outcome,status}',to_jsonb('REVIEW_REQUIRED'::text));
+  r0 := jsonb_set(r0,'{exit_code}','1'::jsonb);
+  r0 := r0 || jsonb_build_object('receipt_sha256',private.fn_payload_sha256_v7(r0));
+  o := public.lf_test_result_writer_v1(r0,'EXEC-WRITER-REGRESSION');
+  if o->>'code' <> 'STATUS_CHILD_EVIDENCE_CONFLICT' then raise exception 'REVIEW_WITHOUT_REVIEW_EVIDENCE_NEGATIVE_FAILED %',o; end if;
+end $$;
+
+do $$ declare r jsonb; r0 jsonb; o jsonb; begin
+  r0 := pg_temp.make_receipt('CASE-ORIGIN') - 'receipt_sha256';
+  r0 := jsonb_set(r0,'{outcome,status}',to_jsonb('BLOCKED'::text));
+  r0 := jsonb_set(r0,'{exit_code}','2'::jsonb);
+  r0 := r0 || jsonb_build_object('receipt_sha256',private.fn_payload_sha256_v7(r0));
+  o := public.lf_test_result_writer_v1(r0,'EXEC-WRITER-REGRESSION');
+  if o->>'code' <> 'STATUS_CHILD_EVIDENCE_CONFLICT' then raise exception 'BLOCKED_WITHOUT_CAUSE_NEGATIVE_FAILED %',o; end if;
+end $$;
+
 create or replace function pg_temp.make_suite_receipt(p_expected integer)
 returns jsonb language plpgsql as $$
 declare r jsonb;
@@ -120,6 +165,15 @@ do $$ declare o jsonb; begin
   if (select status from public.lf_test_suite_runs where suite_run_id='11111111-1111-4111-8111-111111111111') <> 'RUNNING' then
     raise exception 'SUITE_NEGATIVE_MUTATED_STATE';
   end if;
+end $$;
+
+-- Defense in depth: finalizer rechecks normalized child coherence even after out-of-band drift.
+do $$ declare tr uuid; o jsonb; begin
+  select test_run_id into tr from public.lf_test_runs where test_code='CASE-POS';
+  update public.lf_test_assertion_results set status='FAIL' where test_run_id=tr and assertion_code='A01';
+  o := public.lf_test_suite_finalize_writer_v1(pg_temp.make_suite_receipt(1),'EXEC-WRITER-REGRESSION');
+  if o->>'code' <> 'SUITE_CHILD_STATUS_CONFLICT' then raise exception 'SUITE_CHILD_COHERENCE_NEGATIVE_FAILED %',o; end if;
+  update public.lf_test_assertion_results set status='PASS' where test_run_id=tr and assertion_code='A01';
 end $$;
 
 do $$ declare r jsonb; o jsonb; replay jsonb; begin
@@ -151,7 +205,7 @@ end $$;
 
 select jsonb_build_object(
  'schema_version','s27-p9-writer-regression/v1','executed',true,'positive_materialized',1,'idempotent_replay',1,
- 'negative_controls',7,'suite_finalize_materialized',1,'suite_finalize_replay',1,'test_runs',(select count(*) from public.lf_test_runs),
+ 'negative_controls',13,'suite_finalize_materialized',1,'suite_finalize_replay',1,'test_runs',(select count(*) from public.lf_test_runs),
  'assertions',(select count(*) from public.lf_test_assertion_results),
  'judges',(select count(*) from public.lf_test_judge_results),
  'artifacts',(select count(*) from public.lf_test_artifacts)

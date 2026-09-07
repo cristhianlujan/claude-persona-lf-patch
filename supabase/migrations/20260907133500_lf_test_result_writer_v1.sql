@@ -56,6 +56,10 @@ declare
   v_existing_count integer;
   v_existing_id uuid;
   v_existing_sha text;
+  v_assertion_fail_count integer;
+  v_judge_fail_count integer;
+  v_judge_review_count integer;
+  v_outcome_error_code text;
   v_test_run_id uuid;
   v_item jsonb;
   v_suite public.lf_test_suite_runs%rowtype;
@@ -244,6 +248,28 @@ begin
   if (select count(*) from jsonb_array_elements(v_judges))
      <> (select count(distinct x->>'judge_code') from jsonb_array_elements(v_judges) x) then
     return jsonb_build_object('outcome','BLOCKED','code','JUDGE_IDENTITY_DUPLICATE');
+  end if;
+
+  select count(*) filter (where x->>'status'='FAIL')::integer
+  into v_assertion_fail_count
+  from jsonb_array_elements(v_assertions) x;
+  select
+    count(*) filter (where x->>'verdict'='FAIL')::integer,
+    count(*) filter (where x->>'verdict'='REVIEW')::integer
+  into v_judge_fail_count,v_judge_review_count
+  from jsonb_array_elements(v_judges) x;
+  v_outcome_error_code := btrim(coalesce(p_receipt#>>'{outcome,error_code}',''));
+
+  if (v_status='PASSED' and (v_assertion_fail_count>0 or v_judge_fail_count>0 or v_judge_review_count>0))
+     or (v_status='FAILED' and v_assertion_fail_count=0 and v_judge_fail_count=0 and v_outcome_error_code='')
+     or (v_status='REVIEW_REQUIRED' and v_judge_review_count=0 and v_outcome_error_code='')
+     or (v_status='BLOCKED' and v_outcome_error_code='') then
+    return jsonb_build_object(
+      'outcome','BLOCKED','code','STATUS_CHILD_EVIDENCE_CONFLICT',
+      'status',v_status,'assertion_fail_count',v_assertion_fail_count,
+      'judge_fail_count',v_judge_fail_count,'judge_review_count',v_judge_review_count,
+      'execution_error_present',(v_outcome_error_code<>'')
+    );
   end if;
 
   if exists (
@@ -439,6 +465,7 @@ declare
   v_review integer;
   v_uncontrolled integer;
   v_missing_timing integer;
+  v_child_status_conflicts integer;
   v_min_started timestamptz;
   v_max_completed timestamptz;
   v_max_duration bigint;
@@ -555,6 +582,26 @@ begin
   if v_missing_timing <> 0 then
     return jsonb_build_object('outcome','BLOCKED','code','TEST_TIMING_NOT_MATERIALIZED','count',v_missing_timing);
   end if;
+
+  select count(*)::integer into v_child_status_conflicts
+  from public.lf_test_runs tr
+  where tr.suite_run_id=v_suite_run_id
+    and (
+      (tr.status='PASSED' and (
+        exists(select 1 from public.lf_test_assertion_results a where a.test_run_id=tr.test_run_id and a.status='FAIL')
+        or exists(select 1 from public.lf_test_judge_results j where j.test_run_id=tr.test_run_id and j.verdict in ('FAIL','REVIEW'))
+      ))
+      or (tr.status='FAILED' and nullif(btrim(coalesce(tr.error_code,'')),'') is null
+          and not exists(select 1 from public.lf_test_assertion_results a where a.test_run_id=tr.test_run_id and a.status='FAIL')
+          and not exists(select 1 from public.lf_test_judge_results j where j.test_run_id=tr.test_run_id and j.verdict='FAIL'))
+      or (tr.status='REVIEW_REQUIRED' and nullif(btrim(coalesce(tr.error_code,'')),'') is null
+          and not exists(select 1 from public.lf_test_judge_results j where j.test_run_id=tr.test_run_id and j.verdict='REVIEW'))
+      or (tr.status='BLOCKED' and nullif(btrim(coalesce(tr.error_code,'')),'') is null)
+    );
+  if v_child_status_conflicts <> 0 then
+    return jsonb_build_object('outcome','BLOCKED','code','SUITE_CHILD_STATUS_CONFLICT','count',v_child_status_conflicts);
+  end if;
+
   if v_started_at > v_min_started or v_completed_at < v_max_completed or v_duration_ms < coalesce(v_max_duration,0) then
     return jsonb_build_object('outcome','BLOCKED','code','SUITE_TIMING_DOES_NOT_ENCLOSE_TESTS');
   end if;
