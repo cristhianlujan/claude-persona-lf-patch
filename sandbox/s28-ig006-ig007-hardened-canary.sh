@@ -76,10 +76,10 @@ test -f "$MIRROR/supabase/migrations/20260906185100_lf_input_governance_graph_re
 echo "PASS_REMOTE_MIRROR count=$remote_count"
 
 cp "$FF" "$MIRROR/supabase/migrations/$(basename "$FF")"
-supabase --workdir "$MIRROR" db push --db-url "$DB_URL" --dry-run 2>&1 | tee "${RUNNER_TEMP:-/tmp}/ig006-forward-dry.log"
+supabase --workdir "$MIRROR" db push --include-all --db-url "$DB_URL" --dry-run 2>&1 | tee "${RUNNER_TEMP:-/tmp}/ig006-forward-dry.log"
 grep -q "$F" "${RUNNER_TEMP:-/tmp}/ig006-forward-dry.log"
 ! grep -q "$R" "${RUNNER_TEMP:-/tmp}/ig006-forward-dry.log"
-supabase --workdir "$MIRROR" --yes db push --db-url "$DB_URL"
+supabase --workdir "$MIRROR" --yes db push --include-all --db-url "$DB_URL"
 
 psql_do "do \$v\$
 declare f int; r int; n int; g text; bk text;
