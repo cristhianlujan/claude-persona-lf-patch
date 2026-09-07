@@ -92,7 +92,7 @@ jobs:
     timeout-minutes: 25
     env:
       LF_CANARY_DIR: sandbox/lf_contract_gate_test/governed_canary_runner_v1
-      LF_CANARY_WORK: ${{ runner.temp }}/lf-governed-canary-ig006-ig007-v2
+      LF_CANARY_WORK: /tmp/lf-governed-canary-ig006-ig007-v2
 
     steps:
       - name: Checkout exact PR head
@@ -202,7 +202,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
           path: |
-            ${{ runner.temp }}/lf-governed-canary-ig006-ig007-v2/runner_evidence.json
-            ${{ runner.temp }}/lf-governed-canary-ig006-ig007-v2/metrics.json
-            ${{ runner.temp }}/lf-governed-canary-ig006-ig007-v2/post_readback.json
+            /tmp/lf-governed-canary-ig006-ig007-v2/runner_evidence.json
+            /tmp/lf-governed-canary-ig006-ig007-v2/metrics.json
+            /tmp/lf-governed-canary-ig006-ig007-v2/post_readback.json
             ${{ runner.temp }}/final-readback.json
