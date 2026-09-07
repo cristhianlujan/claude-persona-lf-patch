@@ -6,6 +6,18 @@ strategy_contract: STRATEGY-CONTRACT-V1-CANDIDATE
 policy_contract: POL-STRATEGY-CREATION-001-CANDIDATE
 ekb_hardening: S30_EKB_HARDENING_V1
 review_hardening: S30_PRODUCT_QUALITY_REVIEW_V1
+deterministic_validator:
+  path: gobernanza/validators/validate_strategy_contract.py
+  modes:
+    - prewrite
+    - close
+  required_evidence:
+    - validator_blob_sha
+    - input_sha256
+    - results_sha256
+    - valid
+    - blocking_codes
+  self_assertion_without_validator: BLOCKED
 required_before_write:
   - read_router
   - read_operational_source
@@ -29,6 +41,7 @@ required_before_write:
   - qdp_and_evidence_ceiling_attached
   - operability_controls_attached_when_applicable
   - execution_frontier_current
+  - deterministic_strategy_validator_prewrite_pass
   - lint_pass
   - conflict_check_pass
 allowed:
@@ -59,6 +72,9 @@ blocked:
   - stale_execution_frontier
   - contradictory_current_state_projection
   - missing_next_gate_or_handoff
+  - self_asserted_stage_or_extension_completeness_without_deterministic_validator
+  - validator_input_sha_mismatch
+  - validator_result_invalid
   - same_statement_readback_as_closure_evidence
   - returning_only_as_contractual_readback
   - assistant_freeform_decision
@@ -218,6 +234,7 @@ required_after_write:
   - all_stage_conclusions_current_and_bound
   - execution_frontier_terminal
   - strategy_type_extension_complete
+  - deterministic_strategy_validator_close_pass
   - contract_sha_present
   - judge_sha_present
   - no_blocking_observations
