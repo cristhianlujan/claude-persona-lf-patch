@@ -16,7 +16,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-MODEL = "@cf/mistralai/mistral-small-3.1-24b-instruct"
+MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
 MAX_OUTPUT_TOKENS = 512
 REQUEST_TIMEOUT_SECONDS = 120
 EXPECTED_AUTHORITY_REF = "fcc2b0d57e36a31c26f38acc2510b193aac988c8"
@@ -62,7 +62,7 @@ def extract_content(envelope: dict[str, Any]) -> tuple[str, str, dict[str, Any]]
 def write_failure_evidence(out_path: Path, *, reason: str, elapsed_s: float, envelope: Any) -> None:
     payload = {
         "scope": "S26_CLOUDFLARE_SANDBOX_CAPABILITY_ONLY_NOT_PROMOTION",
-        "provider": "cloudflare_workers_ai_native_rest_guided_json",
+        "provider": "cloudflare_workers_ai_native_rest_json_mode",
         "model": MODEL,
         "inference_requests": 1,
         "retries": 0,
@@ -104,16 +104,12 @@ def main() -> int:
         schema_binding.payload, profile_slug="ui_architect", schema_mode="UI_FOCUSED_DECISION"
     )
 
-    transport_rule = (
-        "\n\nOUTPUT TRANSPORT REQUIREMENT: Return exactly one raw JSON object matching "
-        "the provided schema. Do not use Markdown, code fences, prose before JSON, or prose after JSON."
-    )
     payload = {
         "messages": [
-            {"role": "system", "content": authority.build_system_prompt() + transport_rule},
+            {"role": "system", "content": authority.build_system_prompt()},
             {"role": "user", "content": authority.TASK},
         ],
-        "guided_json": generation_schema,
+        "response_format": {"type": "json_schema", "json_schema": generation_schema},
         "stream": False,
         "temperature": 0,
         "top_p": 1,
@@ -160,11 +156,11 @@ def main() -> int:
     semantic_gate = gates.semantic_utility(profile_slug="ui_architect", payload=parsed, contract_gate=contract_gate)
     result = {
         "scope": "S26_CLOUDFLARE_SANDBOX_CAPABILITY_ONLY_NOT_PROMOTION",
-        "provider": "cloudflare_workers_ai_native_rest_guided_json",
+        "provider": "cloudflare_workers_ai_native_rest_json_mode",
         "model": MODEL,
         "authority_ref": authority_ref,
         "authority_source_hashes": authority.source_hashes(),
-        "prompt_policy": "S26_PINNED_FOCUSED_UI_SINGLE_SHOT_CF_MISTRAL_GUIDED_JSON_V2_RAW_JSON",
+        "prompt_policy": "S26_PINNED_FOCUSED_UI_SINGLE_SHOT_CF_LLAMA33_JSON_MODE_V1",
         "generation_schema_policy": generation_policy,
         "max_output_tokens": MAX_OUTPUT_TOKENS,
         "request_timeout_seconds": REQUEST_TIMEOUT_SECONDS,
