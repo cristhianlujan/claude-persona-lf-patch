@@ -4,7 +4,7 @@ operation: CREACION_ESTRATEGIA_LF
 source_model: GIT_FIRST_YAML
 ekb_hardening: S30_EKB_HARDENING_V1
 review_hardening: S30_PRODUCT_QUALITY_REVIEW_V1
-validator_path: gobernanza/validators/validate_strategy_contract.py
+validator_path: gobernanza/judges/validate_strategy_contract.py
 steps:
   - order: 24
     id: strategy_lint
