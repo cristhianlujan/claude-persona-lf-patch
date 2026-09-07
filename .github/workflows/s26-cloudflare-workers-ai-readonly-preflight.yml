@@ -1,10 +1,18 @@
 name: S26 Cloudflare Workers AI read-only preflight
 
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/s26-cloudflare-workers-ai-readonly-preflight.yml"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_workers_ai_benchmark.py"
   workflow_dispatch:
     inputs:
       execute_canary:
         description: 'Type RUN_ONE_CANARY to execute one bounded inference'
+        required: false
+        default: ''
+      execute_benchmark:
+        description: 'Type RUN_GOVERNED_BENCHMARK to execute one governed S26 inference'
         required: false
         default: ''
 
@@ -17,15 +25,31 @@ concurrency:
 
 jobs:
   preflight:
-    name: Verify token and Qwen model availability
+    name: Verify token, model and bounded S26 capability
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_AI_CANARY_TOKEN: ${{ secrets.CLOUDFLARE_AI_CANARY_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       TARGET_MODEL: '@cf/qwen/qwen3-30b-a3b-fp8'
+      S26_AUTHORITY_REF: 'fcc2b0d57e36a31c26f38acc2510b193aac988c8'
     steps:
+      - name: Checkout benchmark branch
+        uses: actions/checkout@v4
+
+      - name: Checkout pinned S26 authority read-only
+        uses: actions/checkout@v4
+        with:
+          repository: cristhianlujan/claude-persona-lf-patch
+          ref: ${{ env.S26_AUTHORITY_REF }}
+          path: s26-authority
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
       - name: Validate required secrets
         shell: bash
         run: |
@@ -58,8 +82,23 @@ jobs:
           echo "Workers AI model search: PASS (${model_count} result(s))"
           echo "Target: ${TARGET_MODEL}"
 
+      - name: Validate benchmark harness before inference
+        if: >-
+          (github.event_name == 'pull_request' &&
+           github.head_ref == 'agent/s26-cloudflare-readonly-preflight-20260907') ||
+          (github.event_name == 'workflow_dispatch' &&
+           inputs.execute_benchmark == 'RUN_GOVERNED_BENCHMARK')
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check 'jsonschema==4.26.0'
+          python3 -m py_compile \
+            sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_workers_ai_benchmark.py \
+            s26-authority/sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_zero_cost_primary_candidate.py
+          python3 s26-authority/sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py
+
       - name: Execute exactly one bounded Qwen canary
-        if: inputs.execute_canary == 'RUN_ONE_CANARY'
+        if: github.event_name == 'workflow_dispatch' && inputs.execute_canary == 'RUN_ONE_CANARY'
         shell: bash
         run: |
           set -euo pipefail
@@ -75,20 +114,54 @@ jobs:
           response_chars="$(jq -r '(.result.response // .result.output_text // "") | length' <<<"${canary_json}")"
           test "${response_chars}" -gt 0 || { echo 'Canary returned no text'; exit 1; }
           echo "Cloudflare Workers AI canary: PASS (${response_chars} response chars)"
+
+      - name: Execute one governed S26 Cloudflare benchmark
+        if: >-
+          (github.event_name == 'pull_request' &&
+           github.head_ref == 'agent/s26-cloudflare-readonly-preflight-20260907') ||
+          (github.event_name == 'workflow_dispatch' &&
+           inputs.execute_benchmark == 'RUN_GOVERNED_BENCHMARK')
+        shell: bash
+        env:
+          S26_AUTHORITY_ROOT: ${{ github.workspace }}/s26-authority
+          S26_CLOUDFLARE_RESULT_PATH: ${{ github.workspace }}/s26-cloudflare-benchmark-result.json
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_AI_CANARY_TOKEN}" || { echo 'Missing CLOUDFLARE_AI_CANARY_TOKEN'; exit 1; }
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_workers_ai_benchmark.py \
+            | tee "${RUNNER_TEMP}/s26-cloudflare-benchmark.log"
+
+      - name: Upload durable governed benchmark evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: s26-cloudflare-benchmark-${{ github.run_id }}
+          path: |
+            s26-cloudflare-benchmark-result.json
+            ${{ runner.temp }}/s26-cloudflare-benchmark.log
+          if-no-files-found: ignore
+          retention-days: 30
+
       - name: Write governed evidence summary
+        if: always()
         shell: bash
         run: |
           {
-            echo '## S26 Cloudflare Workers AI read-only preflight'
+            echo '## S26 Cloudflare Workers AI governed preflight'
             echo ''
-            echo '- Token status: PASS'
-            echo '- Model search: PASS'
             echo '- Target: `@cf/qwen/qwen3-30b-a3b-fp8`'
-            if [[ "${{ inputs.execute_canary }}" == 'RUN_ONE_CANARY' ]]; then
-              echo '- Inference executed: YES — exactly one bounded request (64 max tokens)'
-            else
-              echo '- Inference executed: NO'
-            fi
             echo '- Worker deployed: NO'
-            echo '- Cloudflare resources modified: NO'
+            echo '- Routing changed: NO'
+            echo '- Paid fallback: NO'
+            if [[ -f s26-cloudflare-benchmark-result.json ]]; then
+              echo "- Governed inference requests: $(jq -r '.inference_requests' s26-cloudflare-benchmark-result.json)"
+              echo "- Latency: $(jq -r '.elapsed_s' s26-cloudflare-benchmark-result.json)s"
+              echo "- Contract gate: $(jq -r '.contract_gate.status' s26-cloudflare-benchmark-result.json)"
+              echo "- Semantic utility: $(jq -r '.semantic_gate.status' s26-cloudflare-benchmark-result.json)"
+              echo "- Finish reason: $(jq -r '.finish_reason' s26-cloudflare-benchmark-result.json)"
+            elif [[ "${{ github.event_name }}" == 'workflow_dispatch' && "${{ inputs.execute_canary }}" == 'RUN_ONE_CANARY' ]]; then
+              echo '- Inference executed: YES — one canary only'
+            else
+              echo '- Governed benchmark result: NOT_PRODUCED'
+            fi
           } >> "${GITHUB_STEP_SUMMARY}"
