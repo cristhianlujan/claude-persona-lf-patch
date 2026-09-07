@@ -1,8 +1,9 @@
-version: v0.2
+version: v0.3
 status: CANDIDATO_READ_ONLY
 judge: JUDGE_CONTRATO_ESTRATEGIA_LF
 operation: CREACION_ESTRATEGIA_LF
 ekb_hardening: S30_EKB_HARDENING_V1
+review_hardening: S30_PRODUCT_QUALITY_REVIEW_V1
 pass_if:
   - router_read
   - operational_source_read
@@ -15,16 +16,24 @@ pass_if:
   - repo_destination_validated
   - current_strategy_inventory_read
   - duplicate_and_lineage_resolved
+  - strategy_archetype_resolved
+  - strategy_type_extension_complete
   - exact_dependency_versions_resolved
   - all_required_strategy_blocks_present
+  - every_stage_schema_complete
+  - every_stage_has_exactly_one_current_conclusion
+  - every_stage_conclusion_ref_resolves_same_stage
   - stages_and_exit_gates_present
   - qdp_tests_metrics_evidence_ceiling_present
   - rollback_or_recovery_present
   - invalidation_triggers_present
   - operability_controls_present_or_explicit_na
+  - execution_frontier_current
+  - next_gate_or_handoff_present
   - strategy_contract_lint_pass
   - no_unresolved_policy_conflicts
   - semantic_consistency_pass
+  - no_contradictory_current_state_projection
   - github_write_done
   - github_readback_done
   - source_blob_sha_present
@@ -33,6 +42,7 @@ pass_if:
   - candidate_status_readback
   - runtime_plan_only_readback
   - automatic_impact_bloqueado_readback
+  - terminal_execution_frontier_at_close
   - no_unexhausted_recovery_route
   - no_blocking_observations
 fail_if:
@@ -44,11 +54,20 @@ fail_if:
   - write_without_contract
   - unresolved_authority
   - unresolved_material_dependency
+  - unknown_strategy_type_without_extension
+  - missing_required_type_extension_field
   - missing_required_strategy_block
+  - incomplete_stage_schema
+  - missing_stage_conclusion
+  - duplicate_current_stage_conclusion
+  - stage_conclusion_ref_mismatch
   - missing_qdp_gate
   - missing_recovery
   - missing_invalidation_trigger
   - missing_operability_control_without_explicit_na
+  - stale_execution_frontier
+  - contradictory_current_state_projection
+  - missing_next_gate_or_handoff
   - unresolved_policy_conflict
   - returning_only_used_as_readback
   - same_statement_readback_used_as_closure
