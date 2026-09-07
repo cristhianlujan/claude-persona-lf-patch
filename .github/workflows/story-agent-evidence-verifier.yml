@@ -179,7 +179,7 @@ jobs:
           test "$observed" = "$LF_S26_PRIMARY_CANDIDATE_SHA256"
           bytes=$(stat -c%s "$model")
           elapsed_ms=$(( $(date +%s%3N) - started_ms ))
-          echo "S26_PRIMARY_ARTIFACT_ACQUIRE candidate=$LF_S26_PRIMARY_CANDIDATE_CODE bytes=$bytes elapsed_ms=$elapsed_ms sha256=$observed" 
+          echo "S26_PRIMARY_ARTIFACT_ACQUIRE candidate=$LF_S26_PRIMARY_CANDIDATE_CODE bytes=$bytes elapsed_ms=$elapsed_ms sha256=$observed"
 
       - name: Run bounded Qwen3-14B capability benchmark
         timeout-minutes: 10
@@ -191,7 +191,59 @@ jobs:
         run: |
           set -euo pipefail
           python3 -m pip install --disable-pip-version-check 'jsonschema==4.26.0'
-          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_zero_cost_primary_candidate.py
+          result_log="$RUNNER_TEMP/s26-primary-candidate.log"
+          result_json="$GITHUB_WORKSPACE/s26-primary-candidate-result.json"
+          set +e
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_zero_cost_primary_candidate.py | tee "$result_log"
+          status=${PIPESTATUS[0]}
+          set -e
+          python3 - "$result_log" "$result_json" "$status" <<'PY'
+          import json
+          import pathlib
+          import sys
+
+          log_path=pathlib.Path(sys.argv[1])
+          result_path=pathlib.Path(sys.argv[2])
+          exit_code=int(sys.argv[3])
+          marker='S26_ZERO_COST_PRIMARY_CANDIDATE='
+          result=None
+          parse_error=None
+          for line in log_path.read_text(encoding='utf-8',errors='replace').splitlines():
+              if line.startswith(marker):
+                  try:
+                      result=json.loads(line[len(marker):])
+                  except Exception as exc:
+                      parse_error=f'{type(exc).__name__}: {exc}'
+          capture={
+              'capture_schema':'S26_PRIMARY_CANDIDATE_CAPTURE_V1',
+              'benchmark_process_exit_code':exit_code,
+              'marker_found':result is not None,
+              'result':result,
+          }
+          if result is None:
+              capture['capture_assessment']='INDETERMINATE'
+              capture['capture_blockers']=['RESULT_MARKER_INVALID_JSON' if parse_error else 'NO_RESULT_MARKER']
+              if parse_error:
+                  capture['parse_error']=parse_error
+          result_path.write_text(json.dumps(capture,sort_keys=True,indent=2)+'\n',encoding='utf-8')
+          print('S26_PRIMARY_CANDIDATE_CAPTURE='+json.dumps({
+              'benchmark_process_exit_code':exit_code,
+              'marker_found':result is not None,
+              'result_path':str(result_path),
+          },sort_keys=True))
+          PY
+          exit "$status"
+
+      - name: Upload S26 primary candidate durable result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: s26-primary-candidate-result-${{ github.run_id }}
+          path: |
+            s26-primary-candidate-result.json
+            ${{ runner.temp }}/s26-primary-candidate.log
+          if-no-files-found: error
+          retention-days: 30
 
   runtime-optimization-contract:
     if: github.event_name == 'pull_request'
