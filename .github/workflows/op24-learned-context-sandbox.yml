@@ -1,0 +1,92 @@
+name: OP24 Learned Context Sandbox
+
+on:
+  pull_request:
+    paths:
+      - 'sandbox/lf_contract_gate_test/OP24_LEARNED_CONTEXT_LINEAGE_V1.sql'
+      - 'sandbox/lf_contract_gate_test/OP24_LEARNED_CONTEXT_LINEAGE_V1_TEST.sql'
+      - 'sandbox/lf_contract_gate_test/OP24_LEARNING_EFFICIENCY_VERIFIER_V1.sql'
+      - 'sandbox/lf_contract_gate_test/OP24_LEARNING_EFFICIENCY_VERIFIER_V1_TEST.sql'
+      - '.github/workflows/op24-learned-context-sandbox.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sandbox-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure psql client
+        shell: bash
+        run: |
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y postgresql-client
+          fi
+          psql --version
+
+      - name: Bootstrap sandbox roles and schema
+        shell: bash
+        run: |
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          create schema if not exists private;
+          do $roles$
+          begin
+            if not exists(select 1 from pg_roles where rolname='anon') then create role anon nologin; end if;
+            if not exists(select 1 from pg_roles where rolname='authenticated') then create role authenticated nologin; end if;
+            if not exists(select 1 from pg_roles where rolname='service_role') then create role service_role nologin; end if;
+          end
+          $roles$;
+          SQL
+
+      - name: Test lineage source and rollback
+        working-directory: sandbox/lf_contract_gate_test
+        shell: bash
+        run: psql -v ON_ERROR_STOP=1 -f OP24_LEARNED_CONTEXT_LINEAGE_V1_TEST.sql
+
+      - name: Test learning-efficiency verifier and rollback
+        working-directory: sandbox/lf_contract_gate_test
+        shell: bash
+        run: psql -v ON_ERROR_STOP=1 -f OP24_LEARNING_EFFICIENCY_VERIFIER_V1_TEST.sql
+
+      - name: Verify no sandbox residue
+        shell: bash
+        run: |
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          do $verify$
+          begin
+            if to_regclass('private.sbx_lf_learned_context_lineage_v1') is not null then
+              raise exception 'LINEAGE_SANDBOX_RESIDUE';
+            end if;
+            if to_regprocedure('private.sbx_fn_lf_learned_context_lineage_cycle_v1(text)') is not null then
+              raise exception 'LINEAGE_FUNCTION_RESIDUE';
+            end if;
+            if to_regprocedure('private.sbx_fn_lf_learning_efficiency_metrics_v1(jsonb)') is not null then
+              raise exception 'METRICS_FUNCTION_RESIDUE';
+            end if;
+          end
+          $verify$;
+          SQL
