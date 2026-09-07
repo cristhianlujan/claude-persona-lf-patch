@@ -220,4 +220,8 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    rc = main()
+    if rc != 0:
+        raise SystemExit(rc)
+    from run_s26_qwen7b_primary_candidate import main as run_s26_qwen7b_primary_candidate
+    raise SystemExit(run_s26_qwen7b_primary_candidate())
