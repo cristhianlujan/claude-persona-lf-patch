@@ -1,9 +1,6 @@
 name: S26 Cloudflare Workers AI read-only preflight
 
 on:
-  pull_request:
-    paths:
-      - ".github/workflows/s26-cloudflare-workers-ai-readonly-preflight.yml"
   workflow_dispatch:
     inputs:
       execute_canary:
@@ -80,9 +77,7 @@ jobs:
           echo "Workers AI model search: PASS ($(jq '.result | length' <<<"${models_json}") result(s))"
 
       - name: Validate benchmark harness before inference
-        if: >-
-          (github.event_name == 'pull_request' && github.head_ref == 'agent/s26-cloudflare-readonly-preflight-20260907') ||
-          (github.event_name == 'workflow_dispatch' && inputs.execute_benchmark == 'RUN_GOVERNED_BENCHMARK')
+        if: github.event_name == 'workflow_dispatch' && inputs.execute_benchmark == 'RUN_GOVERNED_BENCHMARK'
         shell: bash
         run: |
           set -euo pipefail
@@ -111,9 +106,7 @@ jobs:
           echo "Cloudflare Workers AI canary: PASS (${response_chars} response chars)"
 
       - name: Execute one governed S26 Cloudflare benchmark
-        if: >-
-          (github.event_name == 'pull_request' && github.head_ref == 'agent/s26-cloudflare-readonly-preflight-20260907') ||
-          (github.event_name == 'workflow_dispatch' && inputs.execute_benchmark == 'RUN_GOVERNED_BENCHMARK')
+        if: github.event_name == 'workflow_dispatch' && inputs.execute_benchmark == 'RUN_GOVERNED_BENCHMARK'
         shell: bash
         env:
           S26_AUTHORITY_ROOT: ${{ github.workspace }}/s26-authority
