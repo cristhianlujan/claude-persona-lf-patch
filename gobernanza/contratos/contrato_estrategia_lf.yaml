@@ -37,7 +37,8 @@ required_before_write:
   - dependency_currentness_resolved
   - strategy_contract_materialized
   - stage_schema_complete
-  - one_current_stage_conclusion_per_stage
+  - stage_conclusion_refs_reserved
+  - no_duplicate_current_stage_conclusion
   - qdp_and_evidence_ceiling_attached
   - operability_controls_attached_when_applicable
   - execution_frontier_current
@@ -66,9 +67,9 @@ blocked:
   - write_without_qdp_gates
   - write_without_invalidation_triggers
   - incomplete_stage_schema
-  - missing_stage_conclusion
   - duplicate_current_stage_conclusion
   - stage_conclusion_ref_mismatch
+  - missing_stage_conclusion_at_close
   - stale_execution_frontier
   - contradictory_current_state_projection
   - missing_next_gate_or_handoff
@@ -115,9 +116,10 @@ stage_schema:
     - evidence_required
     - exit_gate
     - conclusion_ref
-  conclusion_cardinality: EXACTLY_ONE_CURRENT_CONCLUSION_PER_STAGE_AT_CLOSE
+  prewrite_conclusion_rule: CONCLUSION_REF_RESERVED_ZERO_OR_ONE_CURRENT_CONCLUSION_PER_STAGE
+  close_conclusion_rule: EXACTLY_ONE_CURRENT_CONCLUSION_PER_STAGE
   history_rule: APPEND_ONLY_PRIOR_CONCLUSIONS_MAY_BE_STALE_OR_SUPERSEDED
-  conclusion_ref_rule: EACH_STAGE_CONCLUSION_REF_MUST_RESOLVE_TO_CURRENT_CONCLUSION_ID_FOR_SAME_STAGE
+  conclusion_ref_rule: WHEN_CURRENT_CONCLUSION_EXISTS_REF_MUST_MATCH; AT_CLOSE_EVERY_REF_MUST_RESOLVE
 execution_frontier_contract:
   during_execution:
     required_fields:
@@ -138,54 +140,17 @@ strategy_type_extensions:
   custom_requires_extension_schema_ref: true
   archetypes:
     GOVERNANCE:
-      required_fields:
-        - authority_model
-        - ownership_boundaries
-        - lifecycle_or_policy_impact
-        - conflict_and_waiver_handling
-        - next_gate_or_handoff
+      required_fields: [authority_model, ownership_boundaries, lifecycle_or_policy_impact, conflict_and_waiver_handling, next_gate_or_handoff]
     TECHNICAL_OPERATIONAL:
-      required_fields:
-        - runtime_or_system_boundary
-        - failure_modes_and_first_bad_hop
-        - reliability_test_plan
-        - performance_or_resource_metrics_or_explicit_na
-        - rollback_or_recovery
-        - next_gate_or_handoff
+      required_fields: [runtime_or_system_boundary, failure_modes_and_first_bad_hop, reliability_test_plan, performance_or_resource_metrics_or_explicit_na, rollback_or_recovery, next_gate_or_handoff]
     PRODUCT:
-      required_fields:
-        - target_user_or_state
-        - selected_decision
-        - rejected_alternatives
-        - tradeoffs
-        - value_metric_or_success_proxy
-        - observable_acceptance_criteria
-        - next_gate_or_handoff
+      required_fields: [target_user_or_state, selected_decision, rejected_alternatives, tradeoffs, value_metric_or_success_proxy, observable_acceptance_criteria, next_gate_or_handoff]
     RESEARCH_BENCHMARK:
-      required_fields:
-        - research_questions_or_hypotheses
-        - methodology
-        - sample_dataset_or_case_families
-        - evaluation_criteria
-        - leakage_and_bias_controls
-        - next_gate_or_handoff
+      required_fields: [research_questions_or_hypotheses, methodology, sample_dataset_or_case_families, evaluation_criteria, leakage_and_bias_controls, next_gate_or_handoff]
     MIGRATION_DEPLOYMENT:
-      required_fields:
-        - source_target_versions
-        - parity_contract
-        - rollout_or_cutover_plan
-        - rollback_plan
-        - smoke_ci_and_readback
-        - production_boundary
-        - next_gate_or_handoff
+      required_fields: [source_target_versions, parity_contract, rollout_or_cutover_plan, rollback_plan, smoke_ci_and_readback, production_boundary, next_gate_or_handoff]
     CANARY_VALIDATION:
-      required_fields:
-        - proof_target
-        - positive_case
-        - negative_cases
-        - exact_evidence_boundary
-        - cleanup_or_demotion_plan
-        - next_gate_or_handoff
+      required_fields: [proof_target, positive_case, negative_cases, exact_evidence_boundary, cleanup_or_demotion_plan, next_gate_or_handoff]
 required_operability_controls_when_applicable:
   - durable_start_contract
   - independent_post_write_readback
@@ -207,19 +172,8 @@ readback:
   independent_post_write_readback_required: true
 timeout_policy:
   blind_timeout_extension_forbidden: true
-  phases:
-    - queue_wait
-    - claim
-    - prefill_or_input_prepare
-    - generation_or_inference
-    - persist
-    - readback
-    - caller_or_job
-recovery_routes:
-  - A_ORIGINAL
-  - B_FOCAL_MINIMAL
-  - C_CANONICAL_EQUIVALENT
-  - D_INDEPENDENT_AUTHORIZED
+  phases: [queue_wait, claim, prefill_or_input_prepare, generation_or_inference, persist, readback, caller_or_job]
+recovery_routes: [A_ORIGINAL, B_FOCAL_MINIMAL, C_CANONICAL_EQUIVALENT, D_INDEPENDENT_AUTHORIZED]
 required_after_write:
   - github_readback
   - commit_sha
