@@ -1,10 +1,12 @@
-version: v0.3.1
+version: v0.3.2
 status: CANDIDATO_READ_ONLY
 judge: JUDGE_CONTRATO_ESTRATEGIA_LF
 operation: CREACION_ESTRATEGIA_LF
 ekb_hardening: S30_EKB_HARDENING_V1
 review_hardening: S30_PRODUCT_QUALITY_REVIEW_V1
-validator_path: gobernanza/judges/validate_strategy_contract.py
+validator_path: gobernanza/judges/validate_strategy_contract_v032.py
+validator_version: v0.3.2
+validator_blob_sha: 4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765
 pass_if:
   - router_read
   - operational_source_read
@@ -52,7 +54,7 @@ pass_if:
   - validator_close_results_sha_present
   - every_stage_has_exactly_one_current_conclusion_at_close
   - every_stage_conclusion_ref_resolves_same_stage_at_close
-  - terminal_execution_frontier_at_close
+  - terminal_or_last_declared_execution_frontier_at_close
   - no_unexhausted_recovery_route
   - no_blocking_observations
 fail_if:
@@ -78,6 +80,7 @@ fail_if:
   - missing_invalidation_trigger
   - missing_operability_control_without_explicit_na
   - stale_execution_frontier
+  - close_frontier_not_terminal_or_last_declared_stage
   - contradictory_current_state_projection
   - missing_next_gate_or_handoff
   - unresolved_policy_conflict

@@ -1,9 +1,11 @@
-version: v0.3.1
+version: v0.3.2
 status: CANDIDATO_READ_ONLY
 operation: CREACION_ESTRATEGIA_LF
 source_model: GIT_FIRST_YAML
 ekb_hardening: S30_EKB_HARDENING_V1
 review_hardening: S30_PRODUCT_QUALITY_REVIEW_V1
+validator_version: v0.3.2
+validator_path: gobernanza/judges/validate_strategy_contract_v032.py
 steps:
   - order: 1
     id: router
@@ -73,4 +75,4 @@ steps:
     evidence: rollback_recovery_and_invalidation_present
   - order: 23
     id: execution_frontier
-    evidence: execution_frontier_current_ordered_safe_work_blockers_and_terminal_rule_present
+    evidence: execution_frontier_current_ordered_safe_work_blockers_and_terminal_or_last_declared_close_rule_present

@@ -1,10 +1,12 @@
-version: v0.3.1
+version: v0.3.2
 status: CANDIDATO_READ_ONLY
 operation: CREACION_ESTRATEGIA_LF
 source_model: GIT_FIRST_YAML
 ekb_hardening: S30_EKB_HARDENING_V1
 review_hardening: S30_PRODUCT_QUALITY_REVIEW_V1
-validator_path: gobernanza/judges/validate_strategy_contract.py
+validator_path: gobernanza/judges/validate_strategy_contract_v032.py
+validator_version: v0.3.2
+validator_blob_sha: 4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765
 steps:
   - order: 24
     id: strategy_lint
@@ -59,10 +61,10 @@ steps:
     evidence: policy_set_fingerprint_matches_candidate
   - order: 41
     id: contract_judge
-    evidence: deterministic_validator_close_pass_plus_aggregate_judge_pass_including_archetype_stage_cardinality_frontier_and_state_consistency
+    evidence: deterministic_validator_close_pass_plus_aggregate_judge_pass_including_archetype_stage_cardinality_frontier_terminal_or_last_declared_and_state_consistency
   - order: 42
     id: close
-    evidence: no_blocking_observations_no_unexhausted_recovery_terminal_frontier_and_close_validator_pass
+    evidence: no_blocking_observations_no_unexhausted_recovery_terminal_or_last_declared_frontier_and_close_validator_pass
   - order: 43
     id: report_output
     evidence: execution_summary_with_claim_ceiling_pending_gates_first_bad_hop_next_handoff_and_validator_receipts
