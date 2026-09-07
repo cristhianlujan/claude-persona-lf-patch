@@ -1,6 +1,9 @@
 name: S26 Cloudflare Workers AI read-only preflight
 
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/s26-cloudflare-workers-ai-readonly-preflight.yml"
   workflow_dispatch:
     inputs:
       execute_canary:
@@ -74,12 +77,12 @@ jobs:
             --data-urlencode 'hide_experimental=true' \
             --data-urlencode 'include_deprecated=false')"
           jq -e '.success == true and (.result | length > 0)' <<<"${models_json}" >/dev/null
-          model_count="$(jq '.result | length' <<<"${models_json}")"
-          echo "Workers AI model search: PASS (${model_count} result(s))"
-          echo "Target: ${TARGET_MODEL}"
+          echo "Workers AI model search: PASS ($(jq '.result | length' <<<"${models_json}") result(s))"
 
       - name: Validate benchmark harness before inference
-        if: github.event_name == 'workflow_dispatch' && inputs.execute_benchmark == 'RUN_GOVERNED_BENCHMARK'
+        if: >-
+          (github.event_name == 'pull_request' && github.head_ref == 'agent/s26-cloudflare-readonly-preflight-20260907') ||
+          (github.event_name == 'workflow_dispatch' && inputs.execute_benchmark == 'RUN_GOVERNED_BENCHMARK')
         shell: bash
         run: |
           set -euo pipefail
@@ -108,7 +111,9 @@ jobs:
           echo "Cloudflare Workers AI canary: PASS (${response_chars} response chars)"
 
       - name: Execute one governed S26 Cloudflare benchmark
-        if: github.event_name == 'workflow_dispatch' && inputs.execute_benchmark == 'RUN_GOVERNED_BENCHMARK'
+        if: >-
+          (github.event_name == 'pull_request' && github.head_ref == 'agent/s26-cloudflare-readonly-preflight-20260907') ||
+          (github.event_name == 'workflow_dispatch' && inputs.execute_benchmark == 'RUN_GOVERNED_BENCHMARK')
         shell: bash
         env:
           S26_AUTHORITY_ROOT: ${{ github.workspace }}/s26-authority
@@ -142,13 +147,12 @@ jobs:
             echo '- Routing changed: NO'
             echo '- Paid fallback: NO'
             if [[ -f s26-cloudflare-benchmark-result.json ]]; then
-              echo "- Governed inference requests: $(jq -r '.inference_requests' s26-cloudflare-benchmark-result.json)"
+              echo "- Inference requests: $(jq -r '.inference_requests' s26-cloudflare-benchmark-result.json)"
               echo "- Latency: $(jq -r '.elapsed_s' s26-cloudflare-benchmark-result.json)s"
-              echo "- Contract gate: $(jq -r '.contract_gate.status' s26-cloudflare-benchmark-result.json)"
-              echo "- Semantic utility: $(jq -r '.semantic_gate.status' s26-cloudflare-benchmark-result.json)"
-              echo "- Finish reason: $(jq -r '.finish_reason' s26-cloudflare-benchmark-result.json)"
-            elif [[ "${{ inputs.execute_canary }}" == 'RUN_ONE_CANARY' ]]; then
-              echo '- Inference executed: YES — one canary only'
+              echo "- Status: $(jq -r '.status // "RESULT"' s26-cloudflare-benchmark-result.json)"
+              echo "- Contract gate: $(jq -r '.contract_gate.status // "N/A"' s26-cloudflare-benchmark-result.json)"
+              echo "- Semantic utility: $(jq -r '.semantic_gate.status // "N/A"' s26-cloudflare-benchmark-result.json)"
+              echo "- Finish reason: $(jq -r '.finish_reason // "N/A"' s26-cloudflare-benchmark-result.json)"
             else
               echo '- Governed benchmark result: NOT_PRODUCED'
             fi
