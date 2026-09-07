@@ -10,6 +10,10 @@ import re
 import subprocess
 import sys
 
+_MODULE_DIR = pathlib.Path(__file__).resolve().parent
+if str(_MODULE_DIR) not in sys.path:
+    sys.path.insert(0, str(_MODULE_DIR))
+
 import migration_transport_normalization as transport
 
 MANAGED_PREFIXES = (
