@@ -1,0 +1,44 @@
+version: v0.1
+status: CANDIDATO_READ_ONLY
+operation_code: LEARNING_BRIDGE_EXPERIENCE_CARD_LF
+judge_code: JUDGE_LEARNING_BRIDGE_EXPERIENCE_CARD_LF_V01_CANDIDATE
+verdicts: [PASS, FAIL, BLOCKED]
+pass_if:
+  - router_read
+  - operational_source_read
+  - applicable_ekb_read
+  - candidate_source_has_required_signals
+  - contradiction_checked_before_dedup
+  - duplicate_checks_pass
+  - no_competitor_requirement_enforced
+  - independent_evidence_gate_observed
+  - creacion_card_lf_v0_4_contract_read
+  - dossier_has_no_direct_card_write
+  - lifecycle_order_preserved
+  - sandbox_quality_performance_governance_gates_present
+  - approval_boundary_present
+  - no_direct_official_rule_write
+  - no_auto_impact
+  - no_runtime_activation
+fail_if:
+  - missing_source_ref
+  - missing_validation
+  - dedup_before_contradiction
+  - duplicate_card_candidate
+  - competitor_required_for_experience
+  - self_confirming_evidence_promotes_candidate
+  - direct_card_write
+  - direct_official_rule_write
+  - runtime_enablement
+  - production_promotion
+blocked_if:
+  - creacion_operacion_lf_not_approved
+  - operation_create_router_binding_missing
+  - creacion_card_lf_contract_missing
+  - independent_evidence_missing_for_promotion
+  - explicit_approval_missing_for_impact
+claim_ceiling: >-
+  PASS validates the candidate source package only. BLOCKED is the expected
+  execution state while the generic operation factory or OPERATION_CREATE route
+  is unavailable. Neither PASS nor BLOCKED authorizes Card creation, runtime,
+  production, automatic impact, or Strategy 23 execution.
