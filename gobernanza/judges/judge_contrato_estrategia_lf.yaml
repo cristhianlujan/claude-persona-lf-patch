@@ -1,4 +1,4 @@
-version: v0.3
+version: v0.3.1
 status: CANDIDATO_READ_ONLY
 judge: JUDGE_CONTRATO_ESTRATEGIA_LF
 operation: CREACION_ESTRATEGIA_LF
@@ -25,8 +25,9 @@ pass_if:
   - validator_prewrite_input_sha_matches_candidate
   - validator_prewrite_results_sha_present
   - every_stage_schema_complete
-  - every_stage_has_exactly_one_current_conclusion
-  - every_stage_conclusion_ref_resolves_same_stage
+  - stage_conclusion_refs_reserved
+  - no_duplicate_current_stage_conclusion_prewrite
+  - existing_current_stage_conclusion_refs_match
   - stages_and_exit_gates_present
   - qdp_tests_metrics_evidence_ceiling_present
   - rollback_or_recovery_present
@@ -49,6 +50,8 @@ pass_if:
   - deterministic_close_validator_pass
   - validator_close_input_sha_matches_canonical_snapshot
   - validator_close_results_sha_present
+  - every_stage_has_exactly_one_current_conclusion_at_close
+  - every_stage_conclusion_ref_resolves_same_stage_at_close
   - terminal_execution_frontier_at_close
   - no_unexhausted_recovery_route
   - no_blocking_observations
@@ -68,7 +71,6 @@ fail_if:
   - deterministic_prewrite_validator_failed
   - validator_prewrite_input_sha_mismatch
   - incomplete_stage_schema
-  - missing_stage_conclusion
   - duplicate_current_stage_conclusion
   - stage_conclusion_ref_mismatch
   - missing_qdp_gate
@@ -82,6 +84,7 @@ fail_if:
   - deterministic_close_validator_missing
   - deterministic_close_validator_failed
   - validator_close_input_sha_mismatch
+  - missing_stage_conclusion_at_close
   - returning_only_used_as_readback
   - same_statement_readback_used_as_closure
   - blind_timeout_extension_as_first_response
