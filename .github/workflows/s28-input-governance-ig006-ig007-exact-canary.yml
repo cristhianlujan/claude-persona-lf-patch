@@ -1,0 +1,224 @@
+name: S28 Input Governance IG006 IG007 exact-version canary
+
+on:
+  pull_request:
+    branches: [main]
+    types: [synchronize, reopened]
+    paths:
+      - "supabase/migrations/20260906185000_lf_input_governance_downstream_graph_reuse_candidate_v1.sql"
+      - "supabase/migrations/20260906185100_lf_input_governance_graph_reuse_regression_v1.sql"
+      - "supabase/migrations/20260907023000_lf_input_governance_ig006_ig007_exact_canary_forward_v1.sql"
+      - "supabase/migrations/20260907023100_lf_input_governance_ig006_ig007_exact_canary_rollback_v1.sql"
+      - ".github/workflows/s28-input-governance-ig006-ig007-exact-canary.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: s28-ig006-ig007-exact-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  exact-version-canary:
+    if: >-
+      github.event.pull_request.head.ref == 'lf/s28-ig006-ig007-exact-canary-20260907' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+      SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+      FORWARD_VERSION: "20260907023000"
+      ROLLBACK_VERSION: "20260907023100"
+      FORWARD_FILE: "supabase/migrations/20260907023000_lf_input_governance_ig006_ig007_exact_canary_forward_v1.sql"
+      ROLLBACK_FILE: "supabase/migrations/20260907023100_lf_input_governance_ig006_ig007_exact_canary_rollback_v1.sql"
+      CLI_MIRROR: "${{ runner.temp }}/s28-ig006-cli-mirror"
+      BASELINE_REBIND_SHA: "1bbf57bb5f51fff22e540664a3fe4e07a547a5e62b855c69abb2f981e5d92c79"
+      BASELINE_ASSERTIONS_SHA: "d02e3d07523debdb2acf38f46a7ebfd4c0b7d8d5238ed4b5d13de3581e9d4822"
+      BASELINE_REBIND_ASSERTION_SHA: "b3ab572553e592fa8e8c64b9031ec741936995be67c2c469c2a0834ce11d6f9e"
+      BASELINE_GUARD_SHA: "d000493dce8f7d25139c20c75025a0a0c6dd5041547f6469aecf6d373acad574"
+
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Set up pinned Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.116.0
+
+      - name: Preflight exact source and remote absence
+        id: preflight
+        shell: bash
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_DB_PASSWORD:-}"
+          test -f "$FORWARD_FILE"
+          test -f "$ROLLBACK_FILE"
+          export PGHOST="$SUPABASE_POOLER_HOST" PGPORT=5432 PGUSER="postgres.${SUPABASE_PROJECT_ID}" PGPASSWORD="$SUPABASE_DB_PASSWORD" PGDATABASE=postgres PGSSLMODE=require
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 -c "
+          do \$p\$
+          declare v_f int; v_r int; v_n int; v_exec text;
+          begin
+            select count(*) filter(where version='${FORWARD_VERSION}'),count(*) filter(where version='${ROLLBACK_VERSION}') into v_f,v_r
+            from supabase_migrations.schema_migrations where version in ('${FORWARD_VERSION}','${ROLLBACK_VERSION}');
+            if v_f<>0 or v_r<>0 then raise exception 'S28_EXACT_TARGET_VERSION_ALREADY_PRESENT:f=% r=%',v_f,v_r; end if;
+            select count(*) into v_n from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+            where n.nspname='programacion' and p.proname in ('fn_guard_input_family_assessment_insert_baseline_ig007_v1','fn_input_rebind_assertion_cached_v1','fn_input_v58_build_assertions_cached_v1','fn_input_governance_curator_rebind_candidate_v1');
+            if v_n<>0 then raise exception 'S28_EXACT_PREEXISTING_CANDIDATE_RESIDUE:%',v_n; end if;
+            select pg_get_functiondef('programacion.fn_input_governance_execute(integer,text)'::regprocedure) into v_exec;
+            if position('fn_input_governance_curator_rebind_candidate_v1' in v_exec)>0 then raise exception 'S28_EXACT_LIVE_ENTRYPOINT_ALREADY_CANDIDATE'; end if;
+          end; \$p\$;"
+          echo "forward_sha256=$(sha256sum "$FORWARD_FILE" | awk '{print $1}')"
+          echo "rollback_sha256=$(sha256sum "$ROLLBACK_FILE" | awk '{print $1}')"
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+
+      - name: Build read-only remote migration mirror
+        id: mirror
+        if: steps.preflight.outputs.ready == 'true'
+        shell: bash
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          DB_URL="$(python3 - <<'PY'
+          import os
+          from urllib.parse import quote
+          print(f"postgresql://postgres.{os.environ['SUPABASE_PROJECT_ID']}:{quote(os.environ['SUPABASE_DB_PASSWORD'],safe='')}@{os.environ['SUPABASE_POOLER_HOST']}:5432/postgres?sslmode=require")
+          PY
+          )"
+          rm -rf "$CLI_MIRROR"
+          mkdir -p "$CLI_MIRROR/supabase"
+          cp supabase/config.toml "$CLI_MIRROR/supabase/config.toml"
+          supabase --workdir "$CLI_MIRROR" --yes migration fetch --db-url "$DB_URL"
+          remote_count="$(find "$CLI_MIRROR/supabase/migrations" -maxdepth 1 -type f -name '20????????????_*.sql' | wc -l | tr -d ' ')"
+          test "$remote_count" -ge 100
+          test -f "$CLI_MIRROR/supabase/migrations/20260906185000_lf_input_governance_downstream_graph_reuse_candidate_v1.sql"
+          test -f "$CLI_MIRROR/supabase/migrations/20260906185100_lf_input_governance_graph_reuse_regression_v1.sql"
+          ! find "$CLI_MIRROR/supabase/migrations" -maxdepth 1 -type f -name "${FORWARD_VERSION}_*.sql" | grep -q .
+          ! find "$CLI_MIRROR/supabase/migrations" -maxdepth 1 -type f -name "${ROLLBACK_VERSION}_*.sql" | grep -q .
+          echo "PASS_REMOTE_MIRROR count=$remote_count"
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+
+      - name: Apply exact forward migration
+        id: forward
+        if: steps.mirror.outputs.ready == 'true'
+        shell: bash
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          DB_URL="$(python3 - <<'PY'
+          import os
+          from urllib.parse import quote
+          print(f"postgresql://postgres.{os.environ['SUPABASE_PROJECT_ID']}:{quote(os.environ['SUPABASE_DB_PASSWORD'],safe='')}@{os.environ['SUPABASE_POOLER_HOST']}:5432/postgres?sslmode=require")
+          PY
+          )"
+          cp "$FORWARD_FILE" "$CLI_MIRROR/supabase/migrations/$(basename "$FORWARD_FILE")"
+          supabase --workdir "$CLI_MIRROR" db push --db-url "$DB_URL" --dry-run 2>&1 | tee "$RUNNER_TEMP/forward-dry-run.log"
+          grep -q "$FORWARD_VERSION" "$RUNNER_TEMP/forward-dry-run.log"
+          ! grep -q "$ROLLBACK_VERSION" "$RUNNER_TEMP/forward-dry-run.log"
+          supabase --workdir "$CLI_MIRROR" --yes db push --db-url "$DB_URL"
+          echo "applied=true" >> "$GITHUB_OUTPUT"
+          export PGHOST="$SUPABASE_POOLER_HOST" PGPORT=5432 PGUSER="postgres.${SUPABASE_PROJECT_ID}" PGPASSWORD="$SUPABASE_DB_PASSWORD" PGDATABASE=postgres PGSSLMODE=require
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 -c "
+          do \$r\$
+          declare v_f int; v_r int; v_n int;
+          begin
+            select count(*) filter(where version='${FORWARD_VERSION}'),count(*) filter(where version='${ROLLBACK_VERSION}') into v_f,v_r
+            from supabase_migrations.schema_migrations where version in ('${FORWARD_VERSION}','${ROLLBACK_VERSION}');
+            if v_f<>1 or v_r<>0 then raise exception 'S28_FORWARD_LEDGER_READBACK:f=% r=%',v_f,v_r; end if;
+            select count(*) into v_n from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+            where n.nspname='programacion' and p.proname in ('fn_guard_input_family_assessment_insert_baseline_ig007_v1','fn_input_rebind_assertion_cached_v1','fn_input_v58_build_assertions_cached_v1','fn_input_governance_curator_rebind_candidate_v1');
+            if v_n<>4 then raise exception 'S28_FORWARD_OBJECT_COUNT:%',v_n; end if;
+          end; \$r\$;"
+
+      - name: Run IG006 IG007 plus IG-A behavioral canary
+        id: canary
+        if: steps.forward.outputs.applied == 'true'
+        shell: bash
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          git show 5b9ff7f7c870e21b1daf53e21e62bdbb31266cbe:sandbox/s28-input-governance-ig006-ig007-exact-canary-20260907.sql > "$RUNNER_TEMP/runner.sql"
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path(__import__('os').environ['RUNNER_TEMP'])/'runner.sql'
+          s=p.read_text()
+          anchor='-- Durable readback: all test identities must have rolled back.\n'
+          extra="""-- IG-A current controls beyond GOLD.\nbegin;\nset local statement_timeout='120s';\nselect pg_temp.s28_ig_exact_case(57,'ONB_004') as s28_ig_exact_result;\nrollback;\nbegin;\nset local statement_timeout='120s';\nselect pg_temp.s28_ig_exact_case(3,'ONB_003') as s28_ig_exact_result;\nrollback;\nbegin;\nset local statement_timeout='120s';\nselect pg_temp.s28_ig_exact_case(2,'ONB_002') as s28_ig_exact_result;\nrollback;\ndo $stale$\ndeclare x bigint; v boolean;\nbegin\n  foreach x in array array[218::bigint,210::bigint,186::bigint,191::bigint] loop\n    v:=programacion.fn_input_readiness_run_is_current_cached_v2(x);\n    if v is distinct from false then raise exception 'S28_IGA_STALE_FALSE_CLOSE:run=% current=%',x,v; end if;\n  end loop;\n  raise notice 'S28_IGA_STALE_CONTROLS_PASS runs=218,210,186,191 false_close=0';\nend;\n$stale$;\n\n"""
+          if anchor not in s: raise SystemExit('runner anchor missing')
+          p.write_text(s.replace(anchor,extra+anchor,1))
+          PY
+          echo "runner_sha256=$(sha256sum "$RUNNER_TEMP/runner.sql" | awk '{print $1}')"
+          export PGHOST="$SUPABASE_POOLER_HOST" PGPORT=5432 PGUSER="postgres.${SUPABASE_PROJECT_ID}" PGPASSWORD="$SUPABASE_DB_PASSWORD" PGDATABASE=postgres PGSSLMODE=require
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE -v "$RUNNER_TEMP/runner.sql:/runner.sql:ro" postgres:17.6 psql -X -A -t -v ON_ERROR_STOP=1 -f /runner.sql 2>&1 | tee "$RUNNER_TEMP/canary.log"
+          grep -q 'S28_IGA_STALE_CONTROLS_PASS' "$RUNNER_TEMP/canary.log"
+          grep -q 'S28_IG_EXACT_CANARY_PASS' "$RUNNER_TEMP/canary.log"
+          python3 - <<'PY'
+          import json, math, os
+          from pathlib import Path
+          rows=[]
+          for line in (Path(os.environ['RUNNER_TEMP'])/'canary.log').read_text().splitlines():
+              line=line.strip()
+              if line.startswith('{') and 'screen_code' in line:
+                  rows.append(json.loads(line))
+          if len(rows)!=5: raise SystemExit(f'FAIL_IGA_RESULT_CARDINALITY:{len(rows)}')
+          if any(r.get('result')!='PASS' for r in rows): raise SystemExit('FAIL_IGA_NONPASS_RESULT')
+          def pct(values,p):
+              xs=sorted(float(x) for x in values); k=(len(xs)-1)*p; a=math.floor(k); b=math.ceil(k)
+              return xs[a] if a==b else xs[a]+(xs[b]-xs[a])*(k-a)
+          cur=[r['curator_ms'] for r in rows]; val=[r['validator_total_ms'] for r in rows]
+          print('IGA_CURRENT_SCREENS_PASS=5/5')
+          print('IGA_CURATOR_P50_MS=%.3f'%pct(cur,.50))
+          print('IGA_CURATOR_P95_MS=%.3f'%pct(cur,.95))
+          print('IGA_VALIDATOR_TOTAL_P50_MS=%.3f'%pct(val,.50))
+          print('IGA_VALIDATOR_TOTAL_P95_MS=%.3f'%pct(val,.95))
+          for r in sorted(rows,key=lambda x:x['screen_code']): print('IGA_CASE='+json.dumps(r,sort_keys=True,separators=(',',':')))
+          PY
+
+      - name: Apply mandatory exact rollback and verify zero residue
+        id: rollback
+        if: always() && steps.forward.outputs.applied == 'true'
+        shell: bash
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          DB_URL="$(python3 - <<'PY'
+          import os
+          from urllib.parse import quote
+          print(f"postgresql://postgres.{os.environ['SUPABASE_PROJECT_ID']}:{quote(os.environ['SUPABASE_DB_PASSWORD'],safe='')}@{os.environ['SUPABASE_POOLER_HOST']}:5432/postgres?sslmode=require")
+          PY
+          )"
+          cp "$ROLLBACK_FILE" "$CLI_MIRROR/supabase/migrations/$(basename "$ROLLBACK_FILE")"
+          supabase --workdir "$CLI_MIRROR" db push --db-url "$DB_URL" --dry-run 2>&1 | tee "$RUNNER_TEMP/rollback-dry-run.log"
+          grep -q "$ROLLBACK_VERSION" "$RUNNER_TEMP/rollback-dry-run.log"
+          supabase --workdir "$CLI_MIRROR" --yes db push --db-url "$DB_URL"
+          export PGHOST="$SUPABASE_POOLER_HOST" PGPORT=5432 PGUSER="postgres.${SUPABASE_PROJECT_ID}" PGPASSWORD="$SUPABASE_DB_PASSWORD" PGDATABASE=postgres PGSSLMODE=require
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 -c "
+          do \$v\$
+          declare v_f int; v_r int; v_n int; a text; b text; c text; d text; e text; v_tests int;
+          begin
+            select count(*) filter(where version='${FORWARD_VERSION}'),count(*) filter(where version='${ROLLBACK_VERSION}') into v_f,v_r
+            from supabase_migrations.schema_migrations where version in ('${FORWARD_VERSION}','${ROLLBACK_VERSION}');
+            if v_f<>1 or v_r<>1 then raise exception 'S28_ROLLBACK_LEDGER_READBACK:f=% r=%',v_f,v_r; end if;
+            select count(*) into v_n from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+            where n.nspname='programacion' and p.proname in ('fn_guard_input_family_assessment_insert_baseline_ig007_v1','fn_input_rebind_assertion_cached_v1','fn_input_v58_build_assertions_cached_v1','fn_input_governance_curator_rebind_candidate_v1');
+            if v_n<>0 then raise exception 'S28_ROLLBACK_FUNCTION_RESIDUE:%',v_n; end if;
+            select pg_get_functiondef('programacion.fn_input_governance_curator_rebind_v1(integer,text,text,boolean)'::regprocedure),pg_get_functiondef('programacion.fn_input_v58_build_assertions(bigint,bigint,text)'::regprocedure),pg_get_functiondef('programacion.fn_input_rebind_assertion(bigint,text,jsonb)'::regprocedure),pg_get_functiondef('programacion.fn_guard_input_family_assessment_insert()'::regprocedure),pg_get_functiondef('programacion.fn_input_governance_execute(integer,text)'::regprocedure) into a,b,c,d,e;
+            if encode(extensions.digest(convert_to(a,'UTF8'),'sha256'),'hex')<>'${BASELINE_REBIND_SHA}' then raise exception 'S28_ROLLBACK_REBIND_SHA'; end if;
+            if encode(extensions.digest(convert_to(b,'UTF8'),'sha256'),'hex')<>'${BASELINE_ASSERTIONS_SHA}' then raise exception 'S28_ROLLBACK_ASSERTIONS_SHA'; end if;
+            if encode(extensions.digest(convert_to(c,'UTF8'),'sha256'),'hex')<>'${BASELINE_REBIND_ASSERTION_SHA}' then raise exception 'S28_ROLLBACK_REBIND_ASSERTION_SHA'; end if;
+            if encode(extensions.digest(convert_to(d,'UTF8'),'sha256'),'hex')<>'${BASELINE_GUARD_SHA}' then raise exception 'S28_ROLLBACK_GUARD_SHA'; end if;
+            if position('fn_input_governance_curator_rebind_candidate_v1' in e)>0 then raise exception 'S28_ROLLBACK_EXECUTE_CONTAMINATED'; end if;
+            select count(*) into v_tests from programacion.input_readiness_runs where curator_identity like 'INPUT_CURATOR:EDGE:input-governance-curator-v1:S28IGEXACT_%' or validator_identity like 'INPUT_VALIDATOR:EDGE:input-governance-validator-v1:S28IGEXACT_%';
+            if v_tests<>0 then raise exception 'S28_ROLLBACK_TEST_RUN_RESIDUE:%',v_tests; end if;
+          end; \$v\$;"
+          echo "PASS_MANDATORY_ROLLBACK_ZERO_RESIDUE"
