@@ -220,37 +220,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    rc = main()
-    if rc != 0:
-        raise SystemExit(rc)
-
-    # The independent mini-judge has completed and its authority is unchanged.
-    # Install only the canonical schema validator needed by the separate primary-
-    # worker capability benchmark; do not couple primary-worker success to the
-    # mini-judge process or replace the judge model in-place.
-    import os
-    import subprocess
-    import sys
-
-    subprocess.check_call([
-        sys.executable,
-        "-m",
-        "pip",
-        "install",
-        "--disable-pip-version-check",
-        "jsonschema==4.26.0",
-    ])
-
-    # Next stronger zero-cost candidate. These values only parameterize the
-    # generic sandbox benchmark; they do not alter model authority or runtime.
-    os.environ["LF_S26_PRIMARY_CANDIDATE_CODE"] = "QWEN3_14B_Q4_K_M"
-    os.environ["LF_S26_PRIMARY_CANDIDATE_REPO"] = "ggml-org/Qwen3-14B-GGUF"
-    os.environ["LF_S26_PRIMARY_CANDIDATE_COMMIT"] = "af3732ec4e23a1dfff21a0479cd3545ace763e38"
-    os.environ["LF_S26_PRIMARY_CANDIDATE_FILENAME"] = "Qwen3-14B-Q4_K_M.gguf"
-    os.environ["LF_S26_PRIMARY_CANDIDATE_SHA256"] = "5ff1fe7a07aebc8d090682d01b17cf268a1b4680c6477050ce75a600aecb9efb"
-    os.environ["LF_S26_PRIMARY_CANDIDATE_PROMPT_POLICY"] = "S26_QWEN3_14B_COMPACT_AUTHORITY_CAPSULE_V1"
-    os.environ["LF_S26_PRIMARY_CANDIDATE_DISABLE_THINKING"] = "1"
-
-    from run_s26_zero_cost_primary_candidate import main as run_primary_candidate
-
-    raise SystemExit(run_primary_candidate())
+    raise SystemExit(main())
