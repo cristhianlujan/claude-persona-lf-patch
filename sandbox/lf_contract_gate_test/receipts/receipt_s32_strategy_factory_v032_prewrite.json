@@ -1,0 +1,24 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "GITHUB_CONTRACT_GATE_LF",
+  "execution_id": "EXEC-S32-GITHUB-GATE-PREWRITE-20260907-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "MIGRATION_20260531_GITHUB_CONTRACT_GATE_LF_PROTOCOL",
+  "judge_sha": "MIGRATION_20260531_GITHUB_CONTRACT_GATE_LF_PROTOCOL",
+  "source_sha_list": [
+    "290a238bf9552f0efdb4a5b1c8d4c0c97ccb037e",
+    "56ab98e51133178378113ad5a1a9f2b8fa0abef7",
+    "2c469e3cd2ae7bb7171ca4e52fc6da84b58af3a3",
+    "4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765",
+    "5e83da80ff14bc4a7f72e737690fdbded90622bf"
+  ],
+  "target_paths": [
+    "strategies/LF_STRATEGY_FACTORY_SELF_HOSTED_CANARY_V032_20260907.yaml"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-07T04:48:04Z",
+  "notes": "Pre-write controlled read-only certification for fresh S32. GITHUB_CONTRACT_GATE_LF execution has 9/9 required steps PASS_CLEAN and aggregate judge PASS; the Strategy Factory execution independently has 35/35 pre-write steps STEP_CLEAN_PASS. Exact candidate raw SHA-256 ceac48c97d324e0700946991fae99f6f5210756b822509059308f63ac65ee67e passed validator v0.3.2 on run 34082596239. Receipt authorizes only the CANARY branch artifact write. No main, runtime, production, automatic impact or promotion is authorized."
+}
