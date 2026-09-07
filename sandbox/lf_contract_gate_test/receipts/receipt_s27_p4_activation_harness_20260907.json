@@ -1,0 +1,64 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-S27-P4-ACTIVATION-HARNESS-20260907-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "6c7b4f31b657f02a470213821be8c3b859107dbe1d8d1a6271a0a6db96b0e4b5",
+  "judge_sha": "0c17af4ad68406c2046db21a97b97dae176c220a43f8bf09bda26e8383f5b1e8",
+  "source_sha_list": [
+    "195cde1aac2c8a6ce7f4182ca0f33056ba1113cdfb1270a76d61621dd40ac2a9",
+    "6c7b4f31b657f02a470213821be8c3b859107dbe1d8d1a6271a0a6db96b0e4b5",
+    "100a0daf0750db9d9e4dacd39b48cbc32b76a9f08fdd5cf1748959067fe0c27c",
+    "48e101f0867804448c8d3609cef6962a33934d975757256a05daf9f947c0e67b",
+    "0c17af4ad68406c2046db21a97b97dae176c220a43f8bf09bda26e8383f5b1e8",
+    "c7c929d270a9d0b8bd4dbdfbcfd5ebb6796419cebf53e2d16cc24f1f335e3cd1",
+    "6b0374a4d54e8b3677b6be006ec70742ccd89a0bf79f9b130252f0ee4f9f29ad",
+    "d91290f4850daa236a8fddf8ed99d573e65e936c585285d4fe1fc80d934779cf",
+    "b24ce351fc9b90af9076bce245d40e31a5a3552feb60434fc92e6b00e6716421"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/manifest.yaml",
+    "skills/creating-integral-user-stories/scripts/validate_trigger_activation_results.py",
+    "skills/creating-integral-user-stories/scripts/validate_trigger_activation_results_selftest.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-07T02:49:17Z",
+  "evidence": {
+    "strategy": "S27",
+    "phase": "P4_USAGE_AND_ACTIVATION",
+    "scope": "ACTIVATION_HARNESS_AND_JUDGE_ONLY",
+    "qualified_change_head_before_receipt": "80579baff06a23629c612c6af41d3a3f7a262677",
+    "activation_contract": "skills/creating-integral-user-stories/evals/trigger-evals.json",
+    "activation_contract_sha256": "6c7b4f31b657f02a470213821be8c3b859107dbe1d8d1a6271a0a6db96b0e4b5",
+    "activation_judge": "skills/creating-integral-user-stories/scripts/validate_trigger_activation_results.py",
+    "activation_judge_sha256": "0c17af4ad68406c2046db21a97b97dae176c220a43f8bf09bda26e8383f5b1e8",
+    "selftest_sha256": "c7c929d270a9d0b8bd4dbdfbcfd5ebb6796419cebf53e2d16cc24f1f335e3cd1",
+    "selftest": {
+      "positive_synthetic": 1,
+      "negative": 8,
+      "ast_guard": true,
+      "result": "PASS",
+      "executor_identity": "SELFTEST_SYNTHETIC_ORACLE",
+      "runtime_identity": "HARNESS_META_TEST_ONLY"
+    },
+    "j11_package": {
+      "result": "PASS_WITH_EVIDENCE",
+      "files": "89/89",
+      "failed_assertions": 0,
+      "blocking_assertions": 0,
+      "judge_contract_sha256": "6b0374a4d54e8b3677b6be006ec70742ccd89a0bf79f9b130252f0ee4f9f29ad",
+      "validator_sha256": "d91290f4850daa236a8fddf8ed99d573e65e936c585285d4fe1fc80d934779cf",
+      "evidence_sha256": "b24ce351fc9b90af9076bce245d40e31a5a3552feb60434fc92e6b00e6716421"
+    },
+    "runtime_activation_observed": false,
+    "story_creator_behavior_authorized": false,
+    "readiness_authority": "NON_AUTHORIZING_UNLESS_OBSERVATION_COMES_FROM_GOVERNED_RUNTIME",
+    "production_authorized": false,
+    "runtime_enable_authorized": false,
+    "merge_authorized": false,
+    "thresholds_lowered": false
+  }
+}
