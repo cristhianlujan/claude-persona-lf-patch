@@ -1,4 +1,4 @@
-version: v0.3.2
+version: v0.3.3
 status: CANDIDATO_READ_ONLY
 operation: CREACION_ESTRATEGIA_LF
 source_model: GIT_FIRST_YAML
@@ -7,28 +7,33 @@ review_hardening: S30_PRODUCT_QUALITY_REVIEW_V1
 validator_path: gobernanza/judges/validate_strategy_contract_v032.py
 validator_version: v0.3.2
 validator_blob_sha: 4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765
+progress_contract: STRATEGY_PROGRESS_CONTRACT_V1
+progress_contract_blob_sha: 4454678211b6b9e73c68c3bec02711e73429ad18
+progress_validator_path: gobernanza/judges/validate_strategy_progress.py
+progress_validator_version: v1.0
+progress_validator_blob_sha: 72fb1444ab1cc45303dead4235826866c9399853
 steps:
   - order: 24
     id: strategy_lint
-    evidence: deterministic_validator_prewrite_pass_with_validator_blob_input_sha_results_sha_and_zero_blocking_codes
+    evidence: deterministic_strategy_validator_prewrite_pass_plus_strategy_progress_projection_validator_pass_with_exact_validator_blobs_and_zero_blocking_codes
   - order: 25
     id: policy_conflict_check
     evidence: no_unresolved_policy_conflicts
   - order: 26
     id: semantic_consistency
-    evidence: problem_objective_scope_stage_archetype_and_next_gate_consistency_pass
+    evidence: problem_objective_scope_stage_archetype_next_gate_and_progress_projection_consistency_pass
   - order: 27
     id: compatibility_check
-    evidence: existing_strategy_compatibility_assessed
+    evidence: existing_strategy_compatibility_assessed_without_auto_rewrite_of_legacy_progress_carriers
   - order: 28
     id: stage_conclusion_contract
     evidence: prewrite_validator_confirms_conclusion_refs_reserved_no_duplicate_current_and_existing_refs_match
   - order: 29
     id: evidence_index
-    evidence: exact_evidence_refs_and_currentness_rules_present
+    evidence: exact_evidence_refs_currentness_rules_and_progress_payload_sha_rule_present
   - order: 30
     id: change_log_and_lineage
-    evidence: change_log_and_supersession_lineage_present
+    evidence: change_log_supersession_lineage_and_legacy_progress_preservation_present
   - order: 31
     id: dynamic_reliability_plan
     evidence: concurrency_atomicity_idempotency_retry_partial_failure_tests_present_or_explicit_na
@@ -37,13 +42,13 @@ steps:
     evidence: phase_budget_and_first_bad_phase_rule_present_or_explicit_na
   - order: 33
     id: scheduler_scope_guard
-    evidence: scheduler_entry_state_and_authorized_mutation_rule_present_or_explicit_na
+    evidence: scheduler_entry_state_authorized_mutation_rule_and_before_reprogram_progress_refresh_present_or_explicit_na
   - order: 34
     id: recovery_routes
     evidence: four_route_recovery_attempt_trace_and_exhaustion_rule_present
   - order: 35
     id: candidate_payload_freeze
-    evidence: candidate_payload_hash_computed_after_deterministic_prewrite_validator_pass
+    evidence: candidate_payload_hash_and_progress_projection_hash_computed_after_deterministic_prewrite_validators_pass
   - order: 36
     id: github_write
     evidence: source_file_commit_sha
@@ -52,19 +57,19 @@ steps:
     evidence: source_file_blob_sha
   - order: 38
     id: supabase_register_candidate
-    evidence: strategy_snapshot_receipt
+    evidence: strategy_snapshot_receipt_with_metadata_progress_strategy_progress_contract_v1
   - order: 39
     id: independent_supabase_readback
-    evidence: exact_snapshot_version_status_runtime_impact_observed_in_second_statement
+    evidence: exact_snapshot_version_status_runtime_impact_and_26_key_progress_carrier_observed_in_second_statement
   - order: 40
     id: policy_fingerprint_readback
-    evidence: policy_set_fingerprint_matches_candidate
+    evidence: policy_set_fingerprint_matches_candidate_and_progress_parent_currentness_is_not_assumed
   - order: 41
     id: contract_judge
-    evidence: deterministic_validator_close_pass_plus_aggregate_judge_pass_including_archetype_stage_cardinality_frontier_terminal_or_last_declared_and_state_consistency
+    evidence: deterministic_strategy_close_validator_pass_plus_progress_readback_validator_pass_plus_aggregate_judge_pass_including_archetype_stage_cardinality_frontier_terminal_or_last_declared_state_consistency_row_alignment_payload_sha_and_material_this_run_rules
   - order: 42
     id: close
-    evidence: no_blocking_observations_no_unexhausted_recovery_terminal_or_last_declared_frontier_and_close_validator_pass
+    evidence: no_blocking_observations_no_unexhausted_recovery_terminal_or_last_declared_frontier_close_validator_pass_and_fresh_progress_readback
   - order: 43
     id: report_output
-    evidence: execution_summary_with_claim_ceiling_pending_gates_first_bad_hop_next_handoff_and_validator_receipts
+    evidence: execution_summary_with_claim_ceiling_pending_gates_first_bad_hop_next_handoff_validator_receipts_and_canonical_progress_projection
