@@ -20,7 +20,7 @@ steps:
     evidence: existing_strategy_compatibility_assessed
   - order: 28
     id: stage_conclusion_contract
-    evidence: validator_confirmed_exactly_one_current_append_only_conclusion_per_stage_with_resolved_conclusion_ref
+    evidence: prewrite_validator_confirms_conclusion_refs_reserved_no_duplicate_current_and_existing_refs_match
   - order: 29
     id: evidence_index
     evidence: exact_evidence_refs_and_currentness_rules_present
