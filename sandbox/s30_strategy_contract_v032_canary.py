@@ -9,6 +9,8 @@ from pathlib import Path
 
 VALIDATOR_PATH = Path("gobernanza/judges/validate_strategy_contract_v032.py")
 CANDIDATE_PATH = Path("sandbox/lf_contract_gate_test/s32_strategy_factory_v032_candidate.yaml")
+SNAPSHOT_ID = 45
+SUPABASE_READBACK_REF = "supabase://public/lf_strategy_snapshots/45#independent-second-statement"
 
 spec = importlib.util.spec_from_file_location("validate_strategy_contract_v032", VALIDATOR_PATH)
 if spec is None or spec.loader is None:
@@ -35,20 +37,31 @@ results.append({
     "results_sha256": prewrite.get("results_sha256"),
 })
 
+close_conclusion = {
+    "conclusion_id": "S32-CONCLUSION-02-001",
+    "stage_code": "S32-02",
+    "status": "CLOSE_CANDIDATE",
+    "conclusion": (
+        "Git write/readback and Supabase candidate registration/readback are complete; "
+        "the bounded canary is eligible for deterministic close validation and aggregate judging."
+    ),
+    "claim_ceiling": "R3_SELF_HOSTED_CANARY_NOT_PRODUCTION",
+    "open_risks": [
+        "Independent Product + Quality review remains post-canary.",
+        "Global exact-head/control-plane gates remain separate from this canary claim.",
+    ],
+    "carry_forward": ["aggregate judge", "factory demotion", "final readback"],
+    "invalidation_triggers": [
+        "source head changes",
+        "snapshot 45 identity changes",
+        "policy or contract fingerprint changes",
+    ],
+}
+
 stale = copy.deepcopy(candidate)
-stale["stage_conclusions"] = [
-    candidate["stage_conclusions"][0],
-    {
-        "conclusion_id": "S32-CONCLUSION-02-001",
-        "stage_code": "S32-02",
-        "status": "PASS",
-        "conclusion": "synthetic close conclusion for deterministic negative",
-        "claim_ceiling": "R3_SELF_HOSTED_CANARY_NOT_PRODUCTION",
-        "open_risks": [],
-        "carry_forward": [],
-        "invalidation_triggers": ["source head changes"],
-    },
-]
+stale["baseline"]["supabase_snapshot_id"] = SNAPSHOT_ID
+stale["baseline"]["supabase_readback_ref"] = SUPABASE_READBACK_REF
+stale["stage_conclusions"] = [candidate["stage_conclusions"][0], close_conclusion]
 stale["execution_frontier"] = {
     "state": "CLOSED",
     "current_stage": "S32-01",
@@ -66,7 +79,11 @@ results.append({
 })
 
 closed = copy.deepcopy(candidate)
-closed["stage_conclusions"] = stale["stage_conclusions"]
+closed["baseline"]["supabase_snapshot_id"] = SNAPSHOT_ID
+closed["baseline"]["supabase_readback_ref"] = SUPABASE_READBACK_REF
+closed["stages"][0]["status"] = "COMPLETED"
+closed["stages"][1]["status"] = "COMPLETED"
+closed["stage_conclusions"] = [candidate["stage_conclusions"][0], close_conclusion]
 closed["execution_frontier"] = {
     "state": "CLOSED",
     "current_stage": "TERMINAL",
@@ -74,6 +91,10 @@ closed["execution_frontier"] = {
     "safe_parallel_work": [],
     "blockers": [],
 }
+closed_projection_bytes = json.dumps(
+    closed, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+).encode("utf-8")
+close_projection_sha256 = hashlib.sha256(closed_projection_bytes).hexdigest()
 closed_result = validator.validate(closed, "close")
 results.append({
     "name": "s32_terminal_frontier_positive_close",
@@ -81,6 +102,9 @@ results.append({
     "valid": closed_result.get("valid"),
     "blocking_codes": closed_result.get("blocking_codes"),
     "results_sha256": closed_result.get("results_sha256"),
+    "close_projection_sha256": close_projection_sha256,
+    "snapshot_id": SNAPSHOT_ID,
+    "supabase_readback_ref": SUPABASE_READBACK_REF,
 })
 
 summary = {
@@ -88,6 +112,9 @@ summary = {
     "validator_path": str(VALIDATOR_PATH),
     "candidate_path": str(CANDIDATE_PATH),
     "candidate_raw_sha256": raw_sha256,
+    "close_projection_sha256": close_projection_sha256,
+    "close_projection_snapshot_id": SNAPSHOT_ID,
+    "close_projection_supabase_readback_ref": SUPABASE_READBACK_REF,
     "strategy_archetype_key_count": strategy_archetype_key_count,
     "total_cases": len(results),
     "passed": sum(1 for item in results if item["ok"]),
