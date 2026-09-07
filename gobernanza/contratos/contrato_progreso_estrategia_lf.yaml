@@ -1,0 +1,124 @@
+version: v1.0
+status: CANDIDATO_READ_ONLY
+contract_code: STRATEGY_PROGRESS_CONTRACT_V1
+scope: NUMBERED_LF_STRATEGIES
+carrier:
+  table: public.lf_strategy_snapshots
+  path: metadata.progress
+  authority_rule: PROGRESS_IS_A_CURRENT_PROJECTION_NOT_A_REPLACEMENT_FOR_STRATEGY_HISTORY
+legacy_preservation:
+  preserve_existing_content_payload: true
+  preserve_existing_metadata_keys: true
+  overwrite_legacy_progress_carriers: false
+  note: legacy gpt_progress_*, phase_*, execution_frontier and stage-specific blocks remain evidence/lineage
+required_keys:
+  - contract_version
+  - strategy_number
+  - strategy_id
+  - strategy_code
+  - strategy_version
+  - snapshot_status
+  - runtime_state
+  - impact_policy
+  - progress_state
+  - completion
+  - current_stage
+  - current_action
+  - next_gate
+  - blockers
+  - safe_parallel_work
+  - material_this_run
+  - terminal_currentness
+  - claim_ceiling
+  - parent_currentness
+  - payload_sha256
+  - source_updated_at
+  - source_updated_by_execution_id
+  - last_material_execution_id
+  - last_material_at
+  - updated_by_execution_id
+  - updated_at
+completion_contract:
+  required_keys: [percent, basis, numerator, denominator, confidence]
+  percent_range: [0, 100]
+  deterministic_rule: >
+    percent MUST be null unless numerator and denominator are both observed and the denominator
+    represents the same closure universe. Historical evidence, design coverage or a local lint score
+    cannot be silently converted into strategy completion percentage.
+  null_basis: NOT_DETERMINISTICALLY_MATERIALIZED
+  terminal_rule: >
+    percent=100 is allowed only when a terminal/closed state is independently read back and the
+    declared denominator is fully satisfied.
+material_this_run_contract:
+  required_keys: [state, units_completed, execution_id]
+  allowed_states:
+    - NO_NEW_MATERIAL
+    - MATERIAL_PROGRESS
+    - PROGRESS_CONTRACT_NORMALIZATION_ONLY
+  prior_evidence_rule: >
+    prior evidence may sustain terminal_currentness but MUST NOT increment units_completed for the
+    current run. PROGRESS_CONTRACT_NORMALIZATION_ONLY always has units_completed=0.
+currentness_contract:
+  payload_sha256: EXACT_SHA256_OF_CONTENT_PAYLOAD
+  row_alignment_required:
+    - strategy_id
+    - strategy_code
+    - strategy_version
+    - snapshot_status
+    - runtime_state
+    - impact_policy
+  parent_currentness:
+    required_keys: [state, checked_at]
+    allowed_states:
+      - CURRENT
+      - CURRENT_AT_CLOSE
+      - RECHECK_REQUIRED_BEFORE_DEPENDENT_WRITE
+      - STALE_PARENT
+      - NOT_APPLICABLE_WITH_REASON
+  parent_refresh_rule: >
+    any dependent phase/write/close MUST recompute parent fingerprint immediately before the
+    dependent persistence. Prior parent PASS is not transferable across a material parent change.
+refresh_contract:
+  mandatory_events:
+    - EXECUTION_START_CURRENTNESS_READ
+    - AFTER_MATERIAL_MUTATION
+    - AFTER_STAGE_CONCLUSION
+    - BEFORE_RUN_CLOSE
+    - BEFORE_SCHEDULER_REPROGRAM
+  update_rule: >
+    every refresh must explicitly write updated_by_execution_id and updated_at and independently
+    read back the carrier before a closure claim.
+  scheduler_rule: >
+    scheduler reprogramming is downstream of progress/evidence/report persistence and cannot be
+    used as the progress authority.
+blocked:
+  - heterogeneous_progress_keyset_for_numbered_strategy
+  - missing_progress_contract_version
+  - row_state_mismatch
+  - payload_sha_mismatch
+  - stale_parent_used_for_dependent_close
+  - prior_evidence_counted_as_current_material_work
+  - percent_without_deterministic_denominator
+  - percent_100_without_terminal_readback
+  - close_without_progress_refresh
+  - overwrite_legacy_history_to_simulate_homogeneity
+validator:
+  path: gobernanza/judges/validate_strategy_progress.py
+  input_contract:
+    row_required: [id, snapshot_code, version, status, runtime_state, impact_policy, payload_sha256]
+    progress_required: true
+  modes: [prewrite_projection, readback]
+  fail_closed: true
+factory_binding:
+  operation: CREACION_ESTRATEGIA_LF
+  rule: >
+    strategy source keeps the canonical 20 strategy blocks; this contract is projected into
+    public.lf_strategy_snapshots.metadata.progress during candidate registration and validated by
+    independent readback.
+autonomous_execution_binding:
+  parent_operation_candidate: ORQUESTACION_ESTRATEGIAS_LF
+  child_operation_candidate: EJECUCION_ESTRATEGIA_LF
+  rule: >
+    every macrobatch refreshes the same carrier at entry/currentness, after material progress and
+    before close; child execution owns material_this_run while the portfolio parent owns selection
+    and supervision only.
