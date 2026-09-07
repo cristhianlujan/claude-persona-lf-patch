@@ -1,0 +1,235 @@
+strategy_id: S31
+snapshot_code: LF_STRATEGY_FACTORY_SELF_HOSTED_CANARY_20260906
+version: v0.1
+title: "Estrategia 31 — Canario self-hosted de CREACION_ESTRATEGIA_LF"
+status: CANDIDATO_READ_ONLY
+runtime_state: PLAN_ONLY
+impact_policy: BLOQUEADO
+strategy_type: SELF_HOSTED_FACTORY_CANARY
+problem_statement: >
+  La creación de estrategias LF ya tiene política, contrato, Router, steps y judges candidatos,
+  pero aún debe demostrar que el flujo gobernado puede producir una estrategia completa sin
+  depender de formato libre del chat.
+objective: >
+  Probar de extremo a extremo CREACION_ESTRATEGIA_LF creando esta S31 como candidato,
+  con durable-start, policy snapshot, destino Git registrado, readback Git y Supabase,
+  judges fail-closed y cierre sin runtime, producción ni escritura en main.
+scope:
+  - CREACION_ESTRATEGIA_LF
+  - POL-STRATEGY-CREATION-001
+  - CONTRACT-CREACION-ESTRATEGIA-LF-v0.2
+  - 43 operation steps and 43 judge bindings
+  - Git branch lf/s30-strategy-factory-c03-20260906
+  - Supabase public.lf_strategy_snapshots
+non_goals:
+  - activate production
+  - enable runtime
+  - write to main
+  - promote S31 beyond CANDIDATO_READ_ONLY
+  - prove product-domain semantic quality beyond the canary scope
+baseline:
+  router: ACT-0001
+  parent_strategy: S30:id35/v0.1
+  parent_strategy_status: CANDIDATO_READ_ONLY
+  factory_operation: CREACION_ESTRATEGIA_LF
+  factory_operation_status: CANDIDATO_READ_ONLY
+  factory_contract_code: CONTRACT-CREACION-ESTRATEGIA-LF-v0.2
+  factory_contract_sha: e04dab1a82ec1b8ed8519b1749e32e8e03482cec
+  aggregate_judge_sha: 388025c28bb15b15e16b414be74fb1d05983b8dc
+  policy_set_fingerprint: c54a37be270a2faf1f045aafd89b0cb9d8390c741a2c7f513c065c142ae4cde8
+  branch_prewrite_head: b8710557da5b834bb57847d08ae3193bac9e7e6b
+  destination_code: DEST_CREACION_ESTRATEGIA_LF_CANARY
+  claim_ceiling: STRUCTURAL_CONTRACTUAL_SELF_HOSTED_CANARY
+authorities:
+  - ACT-0001
+  - public.v_lf_fuente_operativa
+  - public.lf_strategy_snapshots
+  - public.v_lf_operation_policy_snapshot
+  - public.lf_operation_contracts
+  - public.lf_operation_steps
+  - public.lf_operation_step_contracts
+  - public.lf_operation_judges
+  - public.lf_operation_step_judge_bindings
+  - GitHub:cristhianlujan/claude-persona-lf-patch
+dependencies:
+  - id: S30
+    ref: public.lf_strategy_snapshots/35
+    version: v0.1
+    required: true
+  - id: STRATEGY_FACTORY_CONTRACT
+    ref: CONTRACT-CREACION-ESTRATEGIA-LF-v0.2
+    sha: e04dab1a82ec1b8ed8519b1749e32e8e03482cec
+    required: true
+  - id: STRATEGY_FACTORY_JUDGE
+    ref: JUDGE_CONTRATO_ESTRATEGIA_LF
+    sha: 388025c28bb15b15e16b414be74fb1d05983b8dc
+    required: true
+applicable_policies:
+  - code: POL-LF-OPERATION-LIFECYCLE
+    role: GOVERNANCE_LIFECYCLE
+    version: v1.0
+    sha: 973b5a0ad26433095066ff06b53c3043f38fef51d04e9482c458e178f20920e8
+  - code: POL-LF-POLICY-CONSUMPTION
+    role: POLICY_CONSUMPTION
+    version: v1.1-transversal-candidate
+    sha: e5eb786e14a4b735e271a81b702a0a775e0bf39ba174d333531a82a0858b5553
+  - code: POL-LF-SOURCE-RESOLUTION
+    role: SOURCE_RESOLUTION
+    version: v1.2-transversal-candidate
+    sha: 459d9ec975d5955d63619876e13abf2f0975a978e38cfff0aa5eed2d68295ae0
+  - code: POL-LF-STATE-MODEL
+    role: STATE_MODEL
+    version: v1.1-transversal-candidate
+    sha: f451bb4d2b17cdac48c4dddb250108b2874a9d036edcfb9d2f7fa540416332aa
+  - code: POL-STRATEGY-CREATION-001
+    role: STRATEGY_CREATION
+    version: v0.1-candidate
+    sha: 563b91a1e5405c1e1f8806c1f8d12b8ab2dfbd901638f7b432a3e601cc2558fc
+stages:
+  - code: S31-00
+    name: DURABLE_PREFLIGHT
+    objective: "Probar inicio durable, Router, EKB, policy resolution y destino gobernado."
+    exit_gate: "Router READY_TO_EXECUTE; 5/5 policies; destination CANARY resolved."
+  - code: S31-01
+    name: CONTRACT_MATERIALIZATION
+    objective: "Materializar los 20 bloques obligatorios, gates, QDP, recovery e invalidation."
+    exit_gate: "STRATEGY-CONTRACT-V1 lint and consistency PASS at canary claim ceiling."
+  - code: S31-02
+    name: GIT_AND_SUPABASE_WRITE_READBACK
+    objective: "Escribir fuente Git canary, leer SHA y registrar snapshot candidato en Supabase."
+    exit_gate: "Git blob SHA and independent Supabase readback exact."
+  - code: S31-03
+    name: JUDGE_CLOSE_DEMOTE
+    objective: "Pasar judge agregado, cerrar ejecución y devolver factory metadata a candidato."
+    exit_gate: "43/43 steps terminal clean, no residue outside canary, factory demoted."
+gates:
+  - ROUTER_READY
+  - POLICY_SET_5_OF_5
+  - DESTINATION_REGISTERED
+  - STRATEGY_CONTRACT_20_BLOCKS
+  - QDP_PRESENT
+  - EVIDENCE_CEILING_EXPLICIT
+  - GITHUB_WRITE_READBACK
+  - SUPABASE_WRITE_INDEPENDENT_READBACK
+  - JUDGE_FAIL_CLOSED
+  - NO_MAIN_WRITE
+  - NO_RUNTIME
+  - NO_PRODUCTION
+tests:
+  - id: S31-T01
+    type: NEGATIVE
+    case: "router STEP_CLEAN_PASS con evidencia incompleta"
+    expected: "LF_PROD_ENFORCEMENT_BLOCK"
+    status: PASS_BEFORE_S31_WRITE
+  - id: S31-T02
+    type: NEGATIVE
+    case: "policy específica no activa"
+    expected: "required policy unresolved / Router blocked"
+    status: PASS_BEFORE_S31_WRITE
+  - id: S31-T03
+    type: NEGATIVE
+    case: "destino STRATEGY ausente"
+    expected: "destination gate blocks before Git write"
+    status: PASS_BEFORE_DESTINATION_REPAIR
+  - id: S31-T04
+    type: POSITIVE
+    case: "self-hosted candidate create with exact readbacks"
+    expected: "S31 candidate created; factory demoted after canary"
+    status: IN_PROGRESS
+metrics:
+  required_operation_steps: 43
+  judge_bindings_required: 43
+  policies_required: 5
+  contracts_required: 1
+  allowed_main_writes: 0
+  allowed_runtime_changes: 0
+  allowed_production_changes: 0
+  false_close_target: 0
+  required_readbacks:
+    - GitHub
+    - Supabase
+risks:
+  - id: R1
+    risk: "Autoevidencia del canario se confunda con auditoría semántica independiente."
+    mitigation: "Mantener claim_ceiling STRUCTURAL_CONTRACTUAL_SELF_HOSTED_CANARY."
+  - id: R2
+    risk: "Factory quede activa después del canario."
+    mitigation: "Demotion readback obligatorio antes de cierre."
+  - id: R3
+    risk: "Git write escape a main."
+    mitigation: "Destino CANARY fija rama S30 y main_write_allowed=false."
+  - id: R4
+    risk: "Policy/contract SHA cambie durante ejecución."
+    mitigation: "Fingerprint congelado e invalidation trigger."
+  - id: R5
+    risk: "Retry duplique snapshot."
+    mitigation: "snapshot_code/version uniqueness check and idempotent duplicate guard."
+evidence_contract:
+  levels:
+    - R1_SOURCE_CONTRACT
+    - R2_BOUND_ARTIFACT
+    - R3_DURABLE_EXECUTION_AND_READBACK
+  current_ceiling: R3_SELF_HOSTED_CANARY_NOT_PRODUCTION
+  rules:
+    - RETURNING_IS_RECEIPT_NOT_READBACK
+    - INDEPENDENT_POST_WRITE_READBACK_REQUIRED
+    - EXACT_SHA_BINDING_REQUIRED
+    - NO_GOLDEN_OR_PRODUCTION_CLAIM
+rollback_or_recovery:
+  routes:
+    - A_ORIGINAL
+    - B_FOCAL_MINIMAL
+    - C_CANONICAL_EQUIVALENT
+    - D_INDEPENDENT_AUTHORIZED
+  on_git_failure: "Do not register S31 snapshot; keep execution blocked with evidence."
+  on_supabase_failure: "Keep Git canary artifact as evidence, do not claim S31 registered."
+  on_judge_failure: "Do not close; demote factory enforcement metadata and preserve failure evidence."
+  on_canary_invalid: "Mark S31 SUPERSEDED or archive under governed follow-up; never rewrite history."
+execution_frontier:
+  current_stage: S31-01
+  current_action: "freeze candidate payload then Git canary write"
+  safe_parallel_work: []
+  blockers: []
+  stop_rule: "No stop while an eligible safe canary step remains; no production escalation."
+stage_conclusions:
+  - conclusion_id: S31-CONCLUSION-00-001
+    stage_code: S31-00
+    status: PASS
+    conclusion: "Durable execution exists; Router READY_TO_EXECUTE; 5/5 policies resolved; CANARY destination registered."
+    claim_ceiling: STRUCTURAL_CONTRACTUAL_SELF_HOSTED_CANARY
+    open_risks:
+      - "Semantic independent audit not yet performed."
+    carry_forward:
+      - "Git write/readback"
+      - "Supabase snapshot/readback"
+      - "aggregate judge"
+      - "factory demotion"
+    invalidation_triggers:
+      - "policy fingerprint changes"
+      - "contract SHA changes"
+      - "Router stops resolving READY_TO_EXECUTE"
+invalidation_triggers:
+  - policy_set_fingerprint_change
+  - factory_contract_sha_change
+  - aggregate_judge_sha_change
+  - S30_superseded_or_materially_changed
+  - branch_head_changes_after_candidate_freeze
+  - destination_registry_change
+  - Router_not_READY_TO_EXECUTE
+  - new_EKB_high_or_critical_rule
+change_log:
+  - version: v0.1
+    change: "Initial self-hosted canary strategy produced by CREACION_ESTRATEGIA_LF."
+    execution_id: EXEC-S31-SELFHOSTED-CANARY-20260906-001
+closure_criteria:
+  - 43_required_steps_clean_or_explicitly_validated
+  - Git_source_created_on_CANARY_branch
+  - Git_blob_SHA_readback_exact
+  - Supabase_snapshot_registered_CANDIDATO_READ_ONLY
+  - Supabase_independent_readback_exact
+  - policy_set_fingerprint_readback_exact
+  - aggregate_contract_judge_PASS
+  - factory_policy_contract_step_contracts_judges_bindings_demoted_to_candidate
+  - main_unchanged
+  - runtime_unchanged
+  - production_unchanged
