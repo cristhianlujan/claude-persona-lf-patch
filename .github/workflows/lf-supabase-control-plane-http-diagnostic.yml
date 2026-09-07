@@ -15,6 +15,7 @@ jobs:
     env:
       SUPABASE_URL: https://mhwmirqcgxxukpctffuv.supabase.co
       SUPABASE_PUBLISHABLE_KEY: sb_publishable_QuQYjjAzceKzg4JpFJ434A_RlX3PdQ6
+      SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
     steps:
       - name: Verify actual Data API rejects net schema
         shell: bash
@@ -63,7 +64,7 @@ jobs:
           public_status, public_code, public_message, _ = probe("public")
           print(f"DIAG_PUBLIC_SCHEMA status={public_status} code={public_code} message={public_message}")
           if public_status == 402:
-              raise SystemExit(f"FAIL_SUPABASE_DATA_API_GATEWAY_402 message={public_message}")
+              raise SystemExit("FAIL_SUPABASE_DATA_API_GATEWAY_402_EGRESS_QUOTA_RESTRICTED")
           if public_code == "PGRST106":
               raise SystemExit("FAIL_SUPABASE_PUBLIC_SCHEMA_NOT_SELECTABLE")
 
@@ -75,4 +76,54 @@ jobs:
               )
 
           print("PASS_SUPABASE_NET_SCHEMA_NOT_EXPOSED_BEHAVIORAL")
+          PY
+
+      - name: Diagnose management PostgREST readback status safely
+        if: always()
+        shell: bash
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.error
+          import urllib.request
+
+          token = os.environ.get("SUPABASE_ACCESS_TOKEN", "").strip()
+          project = os.environ["SUPABASE_PROJECT_ID"]
+          if not token:
+              print("DIAG_MANAGEMENT_POSTGREST status=NO_TOKEN classification=TOKEN_MISSING")
+              raise SystemExit(0)
+
+          request = urllib.request.Request(
+              f"https://api.supabase.com/v1/projects/{project}/postgrest",
+              headers={
+                  "Accept": "application/json",
+                  "Authorization": f"Bearer {token}",
+                  "User-Agent": "lf-control-plane-http-diagnostic",
+              },
+          )
+          try:
+              with urllib.request.urlopen(request, timeout=20) as response:
+                  raw = response.read().decode("utf-8")
+                  payload = json.loads(raw)
+                  keys = sorted(str(key) for key in payload) if isinstance(payload, dict) else []
+                  print(f"DIAG_MANAGEMENT_POSTGREST status={response.status} classification=READBACK_OK keys={','.join(keys)}")
+          except urllib.error.HTTPError as exc:
+              status = int(exc.code)
+              classification = {
+                  401: "UNAUTHORIZED_OR_TOKEN_EXPIRED",
+                  403: "FORBIDDEN_OR_DATA_API_CONFIG_READ_MISSING",
+                  429: "RATE_LIMITED",
+                  500: "MANAGEMENT_INTERNAL_ERROR",
+              }.get(status, "UNEXPECTED_HTTP_STATUS")
+              print(f"DIAG_MANAGEMENT_POSTGREST status={status} classification={classification}")
+          except urllib.error.URLError as exc:
+              print(f"DIAG_MANAGEMENT_POSTGREST status=URL_ERROR classification={type(exc.reason).__name__}")
+          except TimeoutError:
+              print("DIAG_MANAGEMENT_POSTGREST status=TIMEOUT classification=NETWORK_TIMEOUT")
+          except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+              print(f"DIAG_MANAGEMENT_POSTGREST status=DECODE_ERROR classification={type(exc).__name__}")
           PY
