@@ -25,13 +25,7 @@ EXPECTED_AUTHORITY_REF = "fcc2b0d57e36a31c26f38acc2510b193aac988c8"
 
 
 def load_authority_module(authority_root: Path):
-    path = (
-        authority_root
-        / "sandbox"
-        / "lf_contract_gate_test"
-        / "profile_execution_runtime"
-        / "run_s26_zero_cost_primary_candidate.py"
-    )
+    path = authority_root / "sandbox" / "lf_contract_gate_test" / "profile_execution_runtime" / "run_s26_zero_cost_primary_candidate.py"
     if not path.is_file():
         raise RuntimeError(f"S26_AUTHORITY_MODULE_MISSING:{path}")
     spec = importlib.util.spec_from_file_location("s26_authority_benchmark", path)
@@ -56,46 +50,29 @@ def diagnostic_shape(value: Any) -> Any:
                 }
         return result
     if isinstance(value, list):
-        return {
-            "type": "list",
-            "length": len(value),
-            "first": diagnostic_shape(value[0]) if value else None,
-        }
+        return {"type": "list", "length": len(value), "first": diagnostic_shape(value[0]) if value else None}
     return {"type": type(value).__name__, "nonempty": bool(value)}
 
 
 def extract_content(envelope: dict[str, Any]) -> tuple[str, str, dict[str, Any], dict[str, Any]]:
     root: Any = envelope.get("result") if isinstance(envelope.get("result"), dict) else envelope
-    diagnostics = {
-        "envelope": diagnostic_shape(envelope),
-        "root": diagnostic_shape(root),
-    }
-
+    diagnostics = {"envelope": diagnostic_shape(envelope), "root": diagnostic_shape(root)}
     if not isinstance(root, dict):
         raise RuntimeError("CLOUDFLARE_RESULT_INVALID:" + json.dumps(diagnostics, sort_keys=True))
 
     direct_response = root.get("response")
     if isinstance(direct_response, dict) and direct_response:
         usage = root.get("usage")
-        return (
-            json.dumps(direct_response, ensure_ascii=False, sort_keys=True),
-            str(root.get("finish_reason") or "stop"),
-            usage if isinstance(usage, dict) else {},
-            diagnostics,
-        )
+        return json.dumps(direct_response, ensure_ascii=False, sort_keys=True), str(root.get("finish_reason") or "stop"), usage if isinstance(usage, dict) else {}, diagnostics
     if isinstance(direct_response, str) and direct_response.strip():
         usage = root.get("usage")
-        return (
-            direct_response.strip(),
-            str(root.get("finish_reason") or "stop"),
-            usage if isinstance(usage, dict) else {},
-            diagnostics,
-        )
+        return direct_response.strip(), str(root.get("finish_reason") or "stop"), usage if isinstance(usage, dict) else {}, diagnostics
 
     choices = root.get("choices")
     if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
         raise RuntimeError("CLOUDFLARE_CHOICES_MISSING:" + json.dumps(diagnostics, sort_keys=True))
     choice = choices[0]
+    diagnostics["finish_reason"] = str(choice.get("finish_reason") or "")
     message = choice.get("message")
     if not isinstance(message, dict):
         raise RuntimeError("CLOUDFLARE_MESSAGE_MISSING:" + json.dumps(diagnostics, sort_keys=True))
@@ -107,21 +84,13 @@ def extract_content(envelope: dict[str, Any]) -> tuple[str, str, dict[str, Any],
     else:
         content = message.get("content")
         if isinstance(content, list):
-            content = "".join(
-                part.get("text", "") for part in content if isinstance(part, dict)
-            )
+            content = "".join(part.get("text", "") for part in content if isinstance(part, dict))
         raw = content.strip() if isinstance(content, str) else ""
-
     if not raw:
         raise RuntimeError("CLOUDFLARE_CONTENT_EMPTY:" + json.dumps(diagnostics, sort_keys=True))
 
     usage = root.get("usage")
-    return (
-        raw,
-        str(choice.get("finish_reason") or ""),
-        usage if isinstance(usage, dict) else {},
-        diagnostics,
-    )
+    return raw, str(choice.get("finish_reason") or ""), usage if isinstance(usage, dict) else {}, diagnostics
 
 
 def write_failure_evidence(out_path: Path, *, reason: str, elapsed_s: float, envelope: Any) -> None:
@@ -158,28 +127,25 @@ def main() -> int:
         print("BLOCK S26_AUTHORITY_ROOT_MISSING")
         return 2
     if authority_ref != EXPECTED_AUTHORITY_REF:
-        print(
-            "BLOCK S26_AUTHORITY_REF_MISMATCH "
-            f"expected={EXPECTED_AUTHORITY_REF} observed={authority_ref}"
-        )
+        print(f"BLOCK S26_AUTHORITY_REF_MISMATCH expected={EXPECTED_AUTHORITY_REF} observed={authority_ref}")
         return 2
 
     authority_root = Path(authority_root_raw).resolve()
     authority = load_authority_module(authority_root)
-
     repository = authority.RepositoryBindings(authority.REPO_ROOT, max_prompt_chars=120_000)
     gates = authority.OutputGates(repository)
     schema_binding = repository.runtime_schema("ui_architect", "UI_FOCUSED_DECISION")
     generation_schema, generation_policy = authority.governed_generation_schema(
-        schema_binding.payload,
-        profile_slug="ui_architect",
-        schema_mode="UI_FOCUSED_DECISION",
+        schema_binding.payload, profile_slug="ui_architect", schema_mode="UI_FOCUSED_DECISION"
     )
 
+    # Qwen3's documented soft switch is transport control, not a task change.
+    # It prevents the bounded output budget from being consumed by hidden reasoning.
+    governed_task = authority.TASK + "\n/no_think"
     payload = {
         "messages": [
             {"role": "system", "content": authority.build_system_prompt()},
-            {"role": "user", "content": authority.TASK},
+            {"role": "user", "content": governed_task},
         ],
         "stream": False,
         "temperature": 0,
@@ -187,25 +153,14 @@ def main() -> int:
         "seed": 42,
         "max_tokens": MAX_OUTPUT_TOKENS,
         "chat_template_kwargs": {"enable_thinking": False},
-        "response_format": {
-            "type": "json_schema",
-            "json_schema": generation_schema,
-        },
+        "response_format": {"type": "json_schema", "json_schema": generation_schema},
     }
 
-    url = (
-        "https://api.cloudflare.com/client/v4/accounts/"
-        + account_id
-        + "/ai/run/@cf/qwen/qwen3-30b-a3b-fp8"
-    )
+    url = "https://api.cloudflare.com/client/v4/accounts/" + account_id + "/ai/run/@cf/qwen/qwen3-30b-a3b-fp8"
     request = urllib.request.Request(
         url,
         data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
-        headers={
-            "Authorization": f"Bearer {api_token}",
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        },
+        headers={"Authorization": f"Bearer {api_token}", "Content-Type": "application/json", "Accept": "application/json"},
         method="POST",
     )
 
@@ -237,16 +192,8 @@ def main() -> int:
         print("BLOCK " + reason)
         return 4
 
-    contract_gate, parsed = gates.contract(
-        profile_slug="ui_architect",
-        raw_output=raw,
-        schema=schema_binding,
-    )
-    semantic_gate = gates.semantic_utility(
-        profile_slug="ui_architect",
-        payload=parsed,
-        contract_gate=contract_gate,
-    )
+    contract_gate, parsed = gates.contract(profile_slug="ui_architect", raw_output=raw, schema=schema_binding)
+    semantic_gate = gates.semantic_utility(profile_slug="ui_architect", payload=parsed, contract_gate=contract_gate)
 
     result = {
         "scope": "S26_CLOUDFLARE_SANDBOX_CAPABILITY_ONLY_NOT_PROMOTION",
@@ -254,14 +201,14 @@ def main() -> int:
         "model": MODEL,
         "authority_ref": authority_ref,
         "authority_source_hashes": authority.source_hashes(),
-        "prompt_policy": "S26_PINNED_FOCUSED_UI_SINGLE_SHOT_CF_V2",
+        "prompt_policy": "S26_PINNED_FOCUSED_UI_SINGLE_SHOT_CF_V3_NO_THINK",
         "generation_schema_policy": generation_policy,
+        "thinking_control": "QWEN3_SOFT_SWITCH_NO_THINK_PLUS_HARD_SWITCH_HINT",
         "max_output_tokens": MAX_OUTPUT_TOKENS,
         "request_timeout_seconds": REQUEST_TIMEOUT_SECONDS,
         "temperature": 0,
         "top_p": 1,
         "seed": 42,
-        "thinking_disabled": True,
         "inference_requests": 1,
         "retries": 0,
         "elapsed_s": elapsed_s,
@@ -279,17 +226,8 @@ def main() -> int:
         "promotion_authorized": False,
         "paid_fallback_used": False,
     }
-
-    out_path.write_text(
-        json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
-    print(
-        "S26_CLOUDFLARE_BENCHMARK="
-        + json.dumps(result, ensure_ascii=False, sort_keys=True),
-        flush=True,
-    )
-
+    out_path.write_text(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print("S26_CLOUDFLARE_BENCHMARK=" + json.dumps(result, ensure_ascii=False, sort_keys=True), flush=True)
     if contract_gate.get("status") == "PASS" and semantic_gate.get("status") == "PASS":
         print("S26_CLOUDFLARE_CAPABILITY_PASS_NO_PROMOTION", flush=True)
     else:
