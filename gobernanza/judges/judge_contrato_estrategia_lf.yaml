@@ -4,7 +4,7 @@ judge: JUDGE_CONTRATO_ESTRATEGIA_LF
 operation: CREACION_ESTRATEGIA_LF
 ekb_hardening: S30_EKB_HARDENING_V1
 review_hardening: S30_PRODUCT_QUALITY_REVIEW_V1
-validator_path: gobernanza/validators/validate_strategy_contract.py
+validator_path: gobernanza/judges/validate_strategy_contract.py
 pass_if:
   - router_read
   - operational_source_read
@@ -100,8 +100,4 @@ fail_if:
   - no_independent_supabase_readback
   - close_without_operation_execution
   - blocking_observations
-result_values:
-  - PASS
-  - FAIL
-  - BLOCKED
-  - RETURN_TO_WORKER
+result_values: [PASS, FAIL, BLOCKED, RETURN_TO_WORKER]
