@@ -32,6 +32,20 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install and preflight canonical runtime dependency
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check jsonschema==4.26.0
+          python3 - <<'PY'
+          import importlib.metadata
+          import jsonschema
+          observed = importlib.metadata.version("jsonschema")
+          if observed != "4.26.0":
+              raise SystemExit(f"S26_JSONSCHEMA_VERSION_MISMATCH:{observed}")
+          from jsonschema import Draft202012Validator, SchemaError
+          print(f"S26_JSONSCHEMA_PREFLIGHT_PASS version={observed}")
+          PY
+
       - name: Validate manifest continuation harness syntax
         run: |
           set -euo pipefail
