@@ -37,7 +37,7 @@ baseline:
   parent_strategy: S30:id35/v0.1
   previous_canary: S31:id36/v0.1
   clean_factory_branch: lf/s30-strategy-factory-v032-governed-20260907
-  clean_factory_head: 1b80bc28b1cb4c2f4f54fe35be5faf535b3f73b6
+  clean_factory_head: c3323def3cdd582edc54380c53c0b85c52f4d658
   factory_contract_code: CONTRACT-CREACION-ESTRATEGIA-LF-v0.3.2
   factory_contract_sha: 2c469e3cd2ae7bb7171ca4e52fc6da84b58af3a3
   aggregate_judge_sha: 5e83da80ff14bc4a7f72e737690fdbded90622bf
@@ -45,6 +45,10 @@ baseline:
   validator_blob_sha: 4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765
   validator_regression_run: 34075791887
   validator_regression_result: PASS_22_OF_22
+  repo_matrix_version: v0.4
+  repo_matrix_blob_sha: 56ab98e51133178378113ad5a1a9f2b8fa0abef7
+  contract_check_version: v0.17
+  contract_check_blob_sha: e6ee7f588699695554dd1cbbf98232b24ba93ffc
   policy_set_fingerprint: c54a37be270a2faf1f045aafd89b0cb9d8390c741a2c7f513c065c142ae4cde8
   durable_execution_id: EXEC-S32-SELFHOSTED-CANARY-V032-20260907-001
   policy_snapshot_count: 5
@@ -60,11 +64,17 @@ authorities:
   - public.lf_operation_judges
   - public.lf_operation_step_judge_bindings
   - public.lf_strategy_snapshots
+  - gobernanza/repositorios/matriz_repos_lf.yaml@v0.4
   - GitHub:cristhianlujan/claude-persona-lf-patch
 dependencies:
   - id: S30
     ref: public.lf_strategy_snapshots/35
     version: v0.1
+    required: true
+  - id: REPO_MATRIX
+    ref: gobernanza/repositorios/matriz_repos_lf.yaml
+    version: v0.4
+    sha: 56ab98e51133178378113ad5a1a9f2b8fa0abef7
     required: true
   - id: STRATEGY_FACTORY_CONTRACT_V032
     ref: CONTRACT-CREACION-ESTRATEGIA-LF-v0.3.2
@@ -102,8 +112,8 @@ applicable_policies:
 stages:
   - stage_code: S32-01
     objective_or_purpose: >
-      Completar durable preflight, policy snapshot, contrato v0.3.2, exact candidate freeze
-      y validación determinista prewrite antes de cualquier Git/Supabase artifact write.
+      Completar durable preflight, policy snapshot, contrato v0.3.2, repository governance,
+      exact candidate freeze y validación determinista prewrite antes de cualquier artifact write.
     status: COMPLETED_PREWRITE
     entry_conditions:
       - repair window is bounded and active
@@ -111,6 +121,7 @@ stages:
       - Router ACT-0001 is reachable
     actions_or_scope:
       - resolve 5/5 policy snapshots
+      - bind repository matrix v0.4 and CANARY destination
       - bind contract/judge/validator v0.3.2
       - build exact S32 candidate
       - execute exact prewrite validator
@@ -120,6 +131,7 @@ stages:
     evidence_required:
       - EXEC-S32-SELFHOSTED-CANARY-V032-20260907-001 durable readback
       - policy snapshot 5/5
+      - repository matrix v0.4 exact blob
       - validator blob 4f95e3d9 and results SHA
     exit_gate: PREWRITE_VALIDATOR_PASS_ZERO_BLOCKING_CODES
     conclusion_ref: S32-CONCLUSION-01-001
@@ -155,6 +167,7 @@ gates:
   - DURABLE_START_BEFORE_MATERIAL_WORK
   - ROUTER_ACT0001_PREFLIGHT
   - POLICY_SET_5_OF_5
+  - REPO_MATRIX_V04_STRATEGY_PATH
   - CONTRACT_V032_EXACT_SHA
   - VALIDATOR_V032_PREWRITE_PASS
   - CANARY_DESTINATION_EXACT_BRANCH
@@ -264,8 +277,8 @@ stage_conclusions:
     status: PASS
     conclusion: >
       Durable execution exists before material work, Router/EKB preflight reached the backend,
-      the execution captured five policy snapshots, v0.3.2 source is cleanly governed and the
-      exact candidate is ready for deterministic prewrite validation.
+      the execution captured five policy snapshots, repository matrix v0.4 and the CANARY destination
+      now agree on /strategies/, and the exact candidate is ready for deterministic prewrite validation.
     claim_ceiling: R3_SELF_HOSTED_CANARY_NOT_PRODUCTION
     open_risks:
       - stage S32-02 is not yet complete
@@ -279,10 +292,12 @@ stage_conclusions:
     invalidation_triggers:
       - factory source head changes
       - policy snapshot changes
+      - repository matrix changes
       - contract validator or judge SHA changes
 invalidation_triggers:
   - S30 parent materially changes or is superseded
   - clean factory head changes after candidate freeze
+  - repository matrix version or SHA changes
   - policy set SHA changes
   - contract SHA changes
   - validator SHA changes
@@ -292,7 +307,7 @@ invalidation_triggers:
   - new applicable HIGH or CRITICAL EKB control appears
 change_log:
   - version: v0.1
-    change: fresh v0.3.2 self-hosted canary created after S31 Product/Quality repair
+    change: fresh v0.3.2 self-hosted canary created after S31 Product/Quality repair and repository-path governance alignment
     execution_id: EXEC-S32-SELFHOSTED-CANARY-V032-20260907-001
 closure_criteria:
   - exact prewrite validator v0.3.2 PASS with zero blocking codes
