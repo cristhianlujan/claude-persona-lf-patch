@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 """S26 Cloudflare Workers AI bounded capability benchmark.
 
-Uses the exact S26 focused UI task/prompt/schema/gates from a pinned authority
-checkout. Produces sandbox evidence only; no Worker deployment, routing,
-promotion, or production mutation is performed.
+Uses the exact pinned S26 focused UI task/schema/gates. Sandbox evidence only:
+no Worker deployment, routing, promotion, production mutation, retry or paid fallback.
 """
-
 from __future__ import annotations
 
 import hashlib
@@ -18,7 +16,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-MODEL = "@cf/qwen/qwen3-30b-a3b-fp8"
+MODEL = "@cf/mistralai/mistral-small-3.1-24b-instruct"
 MAX_OUTPUT_TOKENS = 256
 REQUEST_TIMEOUT_SECONDS = 120
 EXPECTED_AUTHORITY_REF = "fcc2b0d57e36a31c26f38acc2510b193aac988c8"
@@ -37,66 +35,34 @@ def load_authority_module(authority_root: Path):
 
 
 def diagnostic_shape(value: Any) -> Any:
-    """Return structural diagnostics without persisting reasoning text."""
     if isinstance(value, dict):
-        result: dict[str, Any] = {"keys": sorted(value.keys())}
-        for key in ("content", "parsed", "response", "reasoning", "reasoning_content"):
-            if key in value:
-                item = value[key]
-                result[key] = {
-                    "type": type(item).__name__,
-                    "length": len(item) if isinstance(item, (str, list, dict)) else None,
-                    "nonempty": bool(item),
-                }
-        return result
+        return {"keys": sorted(value.keys())}
     if isinstance(value, list):
-        return {"type": "list", "length": len(value), "first": diagnostic_shape(value[0]) if value else None}
+        return {"type": "list", "length": len(value)}
+    if isinstance(value, str):
+        return {"type": "str", "length": len(value), "nonempty": bool(value)}
     return {"type": type(value).__name__, "nonempty": bool(value)}
 
 
-def extract_content(envelope: dict[str, Any]) -> tuple[str, str, dict[str, Any], dict[str, Any]]:
+def extract_content(envelope: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:
     root: Any = envelope.get("result") if isinstance(envelope.get("result"), dict) else envelope
-    diagnostics = {"envelope": diagnostic_shape(envelope), "root": diagnostic_shape(root)}
     if not isinstance(root, dict):
-        raise RuntimeError("CLOUDFLARE_RESULT_INVALID:" + json.dumps(diagnostics, sort_keys=True))
-
-    direct_response = root.get("response")
-    if isinstance(direct_response, dict) and direct_response:
-        usage = root.get("usage")
-        return json.dumps(direct_response, ensure_ascii=False, sort_keys=True), str(root.get("finish_reason") or "stop"), usage if isinstance(usage, dict) else {}, diagnostics
-    if isinstance(direct_response, str) and direct_response.strip():
-        usage = root.get("usage")
-        return direct_response.strip(), str(root.get("finish_reason") or "stop"), usage if isinstance(usage, dict) else {}, diagnostics
-
-    choices = root.get("choices")
-    if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
-        raise RuntimeError("CLOUDFLARE_CHOICES_MISSING:" + json.dumps(diagnostics, sort_keys=True))
-    choice = choices[0]
-    diagnostics["finish_reason"] = str(choice.get("finish_reason") or "")
-    message = choice.get("message")
-    if not isinstance(message, dict):
-        raise RuntimeError("CLOUDFLARE_MESSAGE_MISSING:" + json.dumps(diagnostics, sort_keys=True))
-    diagnostics["message"] = diagnostic_shape(message)
-
-    parsed = message.get("parsed")
-    if isinstance(parsed, dict) and parsed:
-        raw = json.dumps(parsed, ensure_ascii=False, sort_keys=True)
+        raise RuntimeError("CLOUDFLARE_RESULT_INVALID")
+    response = root.get("response")
+    if isinstance(response, dict) and response:
+        raw = json.dumps(response, ensure_ascii=False, sort_keys=True)
+    elif isinstance(response, str) and response.strip():
+        raw = response.strip()
     else:
-        content = message.get("content")
-        if isinstance(content, list):
-            content = "".join(part.get("text", "") for part in content if isinstance(part, dict))
-        raw = content.strip() if isinstance(content, str) else ""
-    if not raw:
-        raise RuntimeError("CLOUDFLARE_CONTENT_EMPTY:" + json.dumps(diagnostics, sort_keys=True))
-
+        raise RuntimeError("CLOUDFLARE_RESPONSE_EMPTY:" + json.dumps({"envelope": diagnostic_shape(envelope), "result": diagnostic_shape(root)}, sort_keys=True))
     usage = root.get("usage")
-    return raw, str(choice.get("finish_reason") or ""), usage if isinstance(usage, dict) else {}, diagnostics
+    return raw, str(root.get("finish_reason") or "stop"), usage if isinstance(usage, dict) else {}
 
 
 def write_failure_evidence(out_path: Path, *, reason: str, elapsed_s: float, envelope: Any) -> None:
     payload = {
         "scope": "S26_CLOUDFLARE_SANDBOX_CAPABILITY_ONLY_NOT_PROMOTION",
-        "provider": "cloudflare_workers_ai_direct_rest",
+        "provider": "cloudflare_workers_ai_native_rest_guided_json",
         "model": MODEL,
         "inference_requests": 1,
         "retries": 0,
@@ -130,8 +96,7 @@ def main() -> int:
         print(f"BLOCK S26_AUTHORITY_REF_MISMATCH expected={EXPECTED_AUTHORITY_REF} observed={authority_ref}")
         return 2
 
-    authority_root = Path(authority_root_raw).resolve()
-    authority = load_authority_module(authority_root)
+    authority = load_authority_module(Path(authority_root_raw).resolve())
     repository = authority.RepositoryBindings(authority.REPO_ROOT, max_prompt_chars=120_000)
     gates = authority.OutputGates(repository)
     schema_binding = repository.runtime_schema("ui_architect", "UI_FOCUSED_DECISION")
@@ -139,24 +104,19 @@ def main() -> int:
         schema_binding.payload, profile_slug="ui_architect", schema_mode="UI_FOCUSED_DECISION"
     )
 
-    # Qwen3's documented soft switch is transport control, not a task change.
-    # It prevents the bounded output budget from being consumed by hidden reasoning.
-    governed_task = authority.TASK + "\n/no_think"
     payload = {
         "messages": [
             {"role": "system", "content": authority.build_system_prompt()},
-            {"role": "user", "content": governed_task},
+            {"role": "user", "content": authority.TASK},
         ],
+        "guided_json": generation_schema,
         "stream": False,
         "temperature": 0,
         "top_p": 1,
         "seed": 42,
         "max_tokens": MAX_OUTPUT_TOKENS,
-        "chat_template_kwargs": {"enable_thinking": False},
-        "response_format": {"type": "json_schema", "json_schema": generation_schema},
     }
-
-    url = "https://api.cloudflare.com/client/v4/accounts/" + account_id + "/ai/run/@cf/qwen/qwen3-30b-a3b-fp8"
+    url = "https://api.cloudflare.com/client/v4/accounts/" + account_id + "/ai/run/" + MODEL
     request = urllib.request.Request(
         url,
         data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
@@ -185,7 +145,7 @@ def main() -> int:
 
     elapsed_s = round(time.monotonic() - started, 3)
     try:
-        raw, finish_reason, usage, response_diagnostics = extract_content(envelope)
+        raw, finish_reason, usage = extract_content(envelope)
     except RuntimeError as exc:
         reason = "S26_" + str(exc)
         write_failure_evidence(out_path, reason=reason, elapsed_s=elapsed_s, envelope=envelope)
@@ -194,16 +154,14 @@ def main() -> int:
 
     contract_gate, parsed = gates.contract(profile_slug="ui_architect", raw_output=raw, schema=schema_binding)
     semantic_gate = gates.semantic_utility(profile_slug="ui_architect", payload=parsed, contract_gate=contract_gate)
-
     result = {
         "scope": "S26_CLOUDFLARE_SANDBOX_CAPABILITY_ONLY_NOT_PROMOTION",
-        "provider": "cloudflare_workers_ai_direct_rest",
+        "provider": "cloudflare_workers_ai_native_rest_guided_json",
         "model": MODEL,
         "authority_ref": authority_ref,
         "authority_source_hashes": authority.source_hashes(),
-        "prompt_policy": "S26_PINNED_FOCUSED_UI_SINGLE_SHOT_CF_V3_NO_THINK",
+        "prompt_policy": "S26_PINNED_FOCUSED_UI_SINGLE_SHOT_CF_MISTRAL_GUIDED_JSON_V1",
         "generation_schema_policy": generation_policy,
-        "thinking_control": "QWEN3_SOFT_SWITCH_NO_THINK_PLUS_HARD_SWITCH_HINT",
         "max_output_tokens": MAX_OUTPUT_TOKENS,
         "request_timeout_seconds": REQUEST_TIMEOUT_SECONDS,
         "temperature": 0,
@@ -214,7 +172,6 @@ def main() -> int:
         "elapsed_s": elapsed_s,
         "finish_reason": finish_reason,
         "usage": usage,
-        "response_diagnostics": response_diagnostics,
         "raw_output_sha256": hashlib.sha256(raw.encode("utf-8")).hexdigest(),
         "raw_output": raw,
         "output": parsed if isinstance(parsed, dict) else None,
