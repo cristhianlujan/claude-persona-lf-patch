@@ -32,7 +32,7 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_AI_CANARY_TOKEN: ${{ secrets.CLOUDFLARE_AI_CANARY_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      TARGET_MODEL: '@cf/mistralai/mistral-small-3.1-24b-instruct'
+      TARGET_MODEL: '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
       S26_AUTHORITY_REF: 'fcc2b0d57e36a31c26f38acc2510b193aac988c8'
     steps:
       - name: Checkout benchmark branch
@@ -74,7 +74,7 @@ jobs:
           models_json="$(curl --silent --show-error --fail-with-body --get \
             "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/models/search" \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-            --data-urlencode 'search=mistral-small-3.1-24b-instruct' \
+            --data-urlencode 'search=llama-3.3-70b-instruct-fp8-fast' \
             --data-urlencode 'hide_experimental=true' \
             --data-urlencode 'include_deprecated=false')"
           jq -e '.success == true and (.result | length > 0)' <<<"${models_json}" >/dev/null
@@ -94,7 +94,7 @@ jobs:
             s26-authority/sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_zero_cost_primary_candidate.py
           python3 s26-authority/sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py
 
-      - name: Execute exactly one bounded Mistral canary
+      - name: Execute exactly one bounded Llama canary
         if: github.event_name == 'workflow_dispatch' && inputs.execute_canary == 'RUN_ONE_CANARY'
         shell: bash
         run: |
@@ -103,14 +103,14 @@ jobs:
           canary_json="$(curl --silent --show-error --fail-with-body \
             --connect-timeout 10 --max-time 90 \
             -X POST \
-            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/mistralai/mistral-small-3.1-24b-instruct" \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/meta/llama-3.3-70b-instruct-fp8-fast" \
             -H "Authorization: Bearer ${CLOUDFLARE_AI_CANARY_TOKEN}" \
             -H 'Content-Type: application/json' \
             --data '{"prompt":"Return exactly CLOUDFLARE_S26_CANARY_PASS","max_tokens":64,"temperature":0}')"
           jq -e '.success == true and .result != null' <<<"${canary_json}" >/dev/null
           response_chars="$(jq -r '(.result.response // "") | length' <<<"${canary_json}")"
           test "${response_chars}" -gt 0 || { echo 'Canary returned no text'; exit 1; }
-          echo "Cloudflare Workers AI Mistral canary: PASS (${response_chars} response chars)"
+          echo "Cloudflare Workers AI Llama canary: PASS (${response_chars} response chars)"
 
       - name: Execute one governed S26 Cloudflare benchmark
         if: >-
@@ -144,7 +144,7 @@ jobs:
           {
             echo '## S26 Cloudflare Workers AI governed preflight'
             echo ''
-            echo '- Target: `@cf/mistralai/mistral-small-3.1-24b-instruct`'
+            echo '- Target: `@cf/meta/llama-3.3-70b-instruct-fp8-fast`'
             echo '- Worker deployed: NO'
             echo '- Routing changed: NO'
             echo '- Paid fallback: NO'
