@@ -1,4 +1,4 @@
-version: v0.3.2
+version: v0.3.3
 status: CANDIDATO_READ_ONLY
 operation: CREACION_ESTRATEGIA_LF
 source_model: GIT_FIRST_YAML
@@ -6,6 +6,10 @@ ekb_hardening: S30_EKB_HARDENING_V1
 review_hardening: S30_PRODUCT_QUALITY_REVIEW_V1
 validator_version: v0.3.2
 validator_path: gobernanza/judges/validate_strategy_contract_v032.py
+progress_contract: STRATEGY_PROGRESS_CONTRACT_V1
+progress_contract_path: gobernanza/contratos/contrato_progreso_estrategia_lf.yaml
+progress_validator_path: gobernanza/judges/validate_strategy_progress.py
+progress_validator_version: v1.0
 steps:
   - order: 1
     id: router
@@ -18,7 +22,7 @@ steps:
     evidence: execution_id_session_start_executor_entered_with_independent_readbacks_or_explicit_na
   - order: 4
     id: ekb_preflight
-    evidence: applicable_ekb_rules_read
+    evidence: applicable_ekb_rules_read_including_strategy_progress_currentness_and_prior_evidence_rules
   - order: 5
     id: policy_resolution
     evidence: explicit_transversal_and_operation_policy_set_with_fingerprint
@@ -30,13 +34,13 @@ steps:
     evidence: matriz_repos_lf_yaml_read
   - order: 8
     id: contract_read
-    evidence: contrato_estrategia_lf_yaml_read
+    evidence: contrato_estrategia_lf_yaml_and_contrato_progreso_estrategia_lf_yaml_read_with_exact_blob_sha
   - order: 9
     id: repo_inventory
     evidence: repo_destination_inventory
   - order: 10
     id: strategy_inventory
-    evidence: current_strategy_snapshots_read
+    evidence: current_strategy_snapshots_read_with_existing_metadata_progress_inventory
   - order: 11
     id: duplicate_and_supersession_check
     evidence: duplicate_and_lineage_resolved
@@ -48,7 +52,7 @@ steps:
     evidence: authorities_resolved
   - order: 14
     id: dependency_resolution
-    evidence: exact_dependency_versions_and_currentness
+    evidence: exact_dependency_versions_and_currentness_recomputed_before_dependent_write
   - order: 15
     id: policy_applicability
     evidence: applicable_and_non_applicable_policies_with_reason
@@ -60,7 +64,7 @@ steps:
     evidence: baseline_and_claim_ceiling_materialized
   - order: 18
     id: strategy_contract_materialization
-    evidence: all_required_strategy_blocks_stage_schema_and_type_extension_present
+    evidence: all_required_strategy_blocks_stage_schema_type_extension_and_strategy_progress_projection_present
   - order: 19
     id: stages_and_gates
     evidence: complete_stage_schema_exit_gates_stop_conditions_and_conclusion_refs_present
@@ -72,7 +76,7 @@ steps:
     evidence: durable_readback_recovery_timeout_scheduler_and_reliability_controls_present_or_explicit_na
   - order: 22
     id: recovery_and_invalidation
-    evidence: rollback_recovery_and_invalidation_present
+    evidence: rollback_recovery_invalidation_and_parent_freshness_rules_present
   - order: 23
     id: execution_frontier
-    evidence: execution_frontier_current_ordered_safe_work_blockers_and_terminal_or_last_declared_close_rule_present
+    evidence: execution_frontier_current_ordered_safe_work_blockers_terminal_or_last_declared_close_rule_and_progress_current_state_projection_aligned
