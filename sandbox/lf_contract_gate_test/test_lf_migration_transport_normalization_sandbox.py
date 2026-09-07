@@ -16,6 +16,7 @@ class TransportNormalizationTests(unittest.TestCase):
             source_sql=sql,
             remote_name="lf_direct_v1",
             remote_sha256=remote,
+            remote_statement_count=1,
         )
         self.assertEqual(out.representation, "DIRECT_SOURCE")
 
@@ -29,9 +30,10 @@ class TransportNormalizationTests(unittest.TestCase):
             source_sql=sql,
             remote_name="lf_cli_single_v1",
             remote_sha256=remote,
+            remote_statement_count=1,
         )
         self.assertEqual(out.representation, "CLI_STATEMENT_STORAGE")
-        self.assertEqual(out.statement_count, 1)
+        self.assertEqual(out.source_statement_count, 1)
 
     def test_cli_multi_statement_with_dollar_quote(self):
         sql = """-- header
@@ -54,9 +56,37 @@ revoke all on function public.f() from public;
             source_sql=sql,
             remote_name="lf_cli_multi_v1",
             remote_sha256=remote,
+            remote_statement_count=2,
         )
         self.assertEqual(out.representation, "CLI_STATEMENT_STORAGE")
-        self.assertEqual(out.statement_count, 2)
+        self.assertEqual(out.source_statement_count, 2)
+
+    def test_statement_boundary_collision_rejected_by_remote_count(self):
+        valid = "select 1;\nselect 2;"
+        missing_delimiter = "select 1\nselect 2;"
+        remote = subject.cli_statement_storage_hash(valid)
+        self.assertEqual(remote, subject.cli_statement_storage_hash(missing_delimiter))
+        with self.assertRaisesRegex(subject.TransportNormalizationError, "CLI_STORAGE_STATEMENT_COUNT_MISMATCH"):
+            subject.compare_exact_source(
+                version="20260907010106",
+                source_name="lf_boundary_v1",
+                source_sql=missing_delimiter,
+                remote_name="lf_boundary_v1",
+                remote_sha256=remote,
+                remote_statement_count=2,
+            )
+
+    def test_direct_hash_requires_single_ledger_statement(self):
+        sql = "select 1;\nselect 2;"
+        with self.assertRaisesRegex(subject.TransportNormalizationError, "DIRECT_STORAGE_STATEMENT_COUNT_MISMATCH"):
+            subject.compare_exact_source(
+                version="20260907010107",
+                source_name="lf_direct_count_v1",
+                source_sql=sql,
+                remote_name="lf_direct_count_v1",
+                remote_sha256=subject.direct_source_hash(sql),
+                remote_statement_count=2,
+            )
 
     def test_semicolon_in_standard_string_does_not_split(self):
         sql = "select 'a;b;c'::text;\nselect 2;"
@@ -83,6 +113,7 @@ revoke all on function public.f() from public;
                 source_sql=sql,
                 remote_name="lf_b",
                 remote_sha256=subject.direct_source_hash(sql),
+                remote_statement_count=1,
             )
 
     def test_content_mutation_fails_closed(self):
@@ -95,6 +126,7 @@ revoke all on function public.f() from public;
                 source_sql=source,
                 remote_name="lf_mutation_v1",
                 remote_sha256=remote,
+                remote_statement_count=1,
             )
 
     def test_unterminated_dollar_quote_fails_closed(self):
@@ -113,6 +145,18 @@ revoke all on function public.f() from public;
                 source_sql="select 1;",
                 remote_name="lf_bad_v1",
                 remote_sha256=subject.direct_source_hash("select 1;"),
+                remote_statement_count=1,
+            )
+
+    def test_remote_statement_count_shape_fails_closed(self):
+        with self.assertRaisesRegex(subject.TransportNormalizationError, "REMOTE_STATEMENT_COUNT_INVALID"):
+            subject.compare_exact_source(
+                version="20260907010108",
+                source_name="lf_bad_count_v1",
+                source_sql="select 1;",
+                remote_name="lf_bad_count_v1",
+                remote_sha256=subject.direct_source_hash("select 1;"),
+                remote_statement_count=0,
             )
 
 
