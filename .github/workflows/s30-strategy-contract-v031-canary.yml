@@ -1,0 +1,29 @@
+name: S30 Strategy Contract v0.3.1 Canary
+
+on:
+  push:
+    branches:
+      - diagnostic/s30-strategy-contract-v031-canary-20260907
+
+permissions:
+  contents: read
+
+concurrency:
+  group: s30-strategy-contract-v031-canary
+  cancel-in-progress: true
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact diagnostic head
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install deterministic dependency
+        run: pip install pyyaml
+      - name: Run S30 strategy contract v0.3.1 canary
+        run: python3 sandbox/s30_strategy_contract_v031_canary.py
