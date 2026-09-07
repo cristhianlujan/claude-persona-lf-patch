@@ -14,6 +14,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import source_first_main_parity_guard as source_first
+
 VERSION = "LF_GOVERNED_CANARY_RUNNER_V1"
 ALLOWED_ENVIRONMENTS = {"sandbox", "ephemeral", "test"}
 ALLOWED_CHANGE_MODES = {"MIGRATION_EXACT_VERSION", "RUNTIME_CANDIDATE", "REPOSITORY_ONLY", "GENERIC_SANDBOX"}
@@ -89,6 +91,31 @@ def _require_steps(manifest: dict[str, Any], phase: str) -> list[dict[str, Any]]
     return steps
 
 
+def _validate_source_first(manifest: dict[str, Any], forward: str, rollback: str) -> None:
+    source_first_contract = manifest.get("source_first")
+    if not isinstance(source_first_contract, dict):
+        raise ContractError("SOURCE_FIRST_REQUIRED")
+    if source_first_contract.get("main_ref") != "origin/main":
+        raise ContractError("SOURCE_FIRST_MAIN_REF_INVALID")
+    if source_first_contract.get("require_identical_git_blob") is not True:
+        raise ContractError("SOURCE_FIRST_IDENTICAL_BLOB_REQUIRED")
+    if source_first_contract.get("fetch_main") is not True:
+        raise ContractError("SOURCE_FIRST_FETCH_MAIN_REQUIRED")
+    paths = source_first_contract.get("paths")
+    if not isinstance(paths, list) or len(paths) != 2 or not all(isinstance(path, str) and path for path in paths):
+        raise ContractError("SOURCE_FIRST_PATHS_INVALID")
+    if len(set(paths)) != 2:
+        raise ContractError("SOURCE_FIRST_PATHS_DUPLICATE")
+    for path in paths:
+        p = Path(path)
+        if p.is_absolute() or ".." in p.parts or not path.startswith("supabase/migrations/"):
+            raise ContractError("SOURCE_FIRST_PATH_NOT_GOVERNED_MIGRATION")
+    if not Path(paths[0]).name.startswith(forward + "_"):
+        raise ContractError("SOURCE_FIRST_FORWARD_PATH_VERSION_MISMATCH")
+    if not Path(paths[1]).name.startswith(rollback + "_"):
+        raise ContractError("SOURCE_FIRST_ROLLBACK_PATH_VERSION_MISMATCH")
+
+
 def validate_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
     if manifest.get("contract_version") != VERSION:
         raise ContractError("CONTRACT_VERSION_MISMATCH")
@@ -120,6 +147,7 @@ def validate_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
             raise ContractError("ROLLBACK_VERSION_INVALID")
         if forward == rollback:
             raise ContractError("FORWARD_ROLLBACK_VERSION_COLLISION")
+        _validate_source_first(manifest, forward, rollback)
 
     all_ids: set[str] = set()
     for phase in PHASES:
@@ -264,6 +292,22 @@ def execute_manifest(manifest: dict[str, Any], *, dry_run: bool = False) -> dict
     if dry_run:
         packet["finished_at_epoch_ms"] = int(time.time() * 1000)
         return packet
+
+    if manifest["change_mode"] == "MIGRATION_EXACT_VERSION":
+        source_contract = manifest["source_first"]
+        try:
+            receipt = source_first.verify_paths(
+                source_contract["paths"],
+                main_ref=source_contract["main_ref"],
+                fetch_main=source_contract["fetch_main"],
+            )
+        except (source_first.SourceFirstParityError, subprocess.TimeoutExpired, OSError) as exc:
+            packet["source_first_parity"] = {"result": "FAIL", "reason": str(exc)}
+            packet["result"] = "FAIL_SOURCE_FIRST_PARITY"
+            packet["finished_at_epoch_ms"] = int(time.time() * 1000)
+            _write_evidence(Path(manifest["evidence"]["output_path"]), packet)
+            return packet
+        packet["source_first_parity"] = receipt
 
     steps: list[dict[str, Any]] = packet["steps"]
     if not _run_phase(manifest, "preflight", steps):
