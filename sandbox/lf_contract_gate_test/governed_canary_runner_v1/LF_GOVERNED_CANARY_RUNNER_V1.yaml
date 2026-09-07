@@ -1,0 +1,54 @@
+contract_code: LF_GOVERNED_CANARY_RUNNER_V1
+status: CANDIDATE_SANDBOX
+owner_strategy: S28
+purpose: >-
+  Provide one reusable fail-closed execution envelope for reversible LF canaries
+  without granting production, merge, or automatic-promotion authority.
+claim_ceiling: SANDBOX_CANARY_EVIDENCE_ONLY_NO_PRODUCTION_OR_GOLDEN_CLAIM
+supported_change_modes:
+  - MIGRATION_EXACT_VERSION
+  - RUNTIME_CANDIDATE
+  - REPOSITORY_ONLY
+  - GENERIC_SANDBOX
+required_target_controls:
+  environment: [sandbox, ephemeral, test]
+  production: false
+  merge_authorized: false
+  automatic_promotion: false
+required_phases:
+  - preflight
+  - forward
+  - tests
+  - rollback
+  - post_readback
+invariants:
+  - rollback is mandatory and runs after every attempted forward, including test failure
+  - post_readback is mandatory after rollback and must prove the declared zero-residue condition
+  - raw stdout/stderr are never persisted in the evidence packet; only SHA-256 digests and bounded failure metadata
+  - secret values are never embedded into the manifest; only explicit environment-variable names may be inherited
+  - subprocess execution uses argv arrays and shell interpreters fail closed unless explicitly declared by the canary manifest
+  - MIGRATION_EXACT_VERSION requires distinct 14-digit forward and rollback versions
+  - changing production, main, merge authority, or automatic promotion is outside this contract
+  - a PASS under this contract cannot be promoted above SANDBOX_CANARY_EVIDENCE without a separate governed gate
+minimum_evidence:
+  - canary_id
+  - manifest_sha256
+  - exact source/runtime fingerprint supplied by the canary steps
+  - per-step elapsed_ms
+  - per-step return code or timeout
+  - stdout_sha256
+  - stderr_sha256
+  - rollback_attempted
+  - post_readback_attempted
+  - final result
+  - claim_ceiling
+applicable_ekb:
+  - PRV-RTE-002
+  - PRV-RTE-003
+  - PRV-CI-008
+  - PRV-CI-009
+  - PRV-ARC-015
+  - PR-AUD-026
+  - PR-AUD-027
+  - PR-AUD-029
+  - PR-GOV-011
