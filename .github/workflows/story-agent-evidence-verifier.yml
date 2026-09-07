@@ -16,6 +16,7 @@ on:
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_live_smoke.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_zero_cost_primary_candidate.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_primary_candidate_independent_judge.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_profile_strategy_ab.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/runtime_optimization_contract.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_batch_queue_worker.py"
@@ -131,16 +132,17 @@ jobs:
     if: github.event_name == 'pull_request'
     needs: semantic-mini-judge-smoke
     runs-on: ubuntu-latest
-    timeout-minutes: 135
+    timeout-minutes: 160
     env:
       LLAMA_COMMIT: 925e1179947ea0c0ebfb0032df18af3a729822be
-      LF_S26_PRIMARY_CANDIDATE_CODE: QWEN3_14B_Q4_K_M
-      LF_S26_PRIMARY_CANDIDATE_REPO: ggml-org/Qwen3-14B-GGUF
-      LF_S26_PRIMARY_CANDIDATE_COMMIT: af3732ec4e23a1dfff21a0479cd3545ace763e38
-      LF_S26_PRIMARY_CANDIDATE_FILENAME: Qwen3-14B-Q4_K_M.gguf
-      LF_S26_PRIMARY_CANDIDATE_SHA256: 5ff1fe7a07aebc8d090682d01b17cf268a1b4680c6477050ce75a600aecb9efb
-      LF_S26_PRIMARY_CANDIDATE_PROMPT_POLICY: S26_QWEN3_14B_COMPACT_AUTHORITY_CAPSULE_V1
+      LF_S26_PRIMARY_CANDIDATE_CODE: QWEN3_5_9B_Q4_K_M_CONTRACT_ALIGNED
+      LF_S26_PRIMARY_CANDIDATE_REPO: unsloth/Qwen3.5-9B-GGUF
+      LF_S26_PRIMARY_CANDIDATE_COMMIT: 3885219b6810b007914f3a7950a8d1b469d598a5
+      LF_S26_PRIMARY_CANDIDATE_FILENAME: Qwen3.5-9B-Q4_K_M.gguf
+      LF_S26_PRIMARY_CANDIDATE_SHA256: 03b74727a860a56338e042c4420bb3f04b2fec5734175f4cb9fa853daf52b7e8
+      LF_S26_PRIMARY_CANDIDATE_PROMPT_POLICY: S26_QWEN3_5_9B_SOURCE_BOUNDED_TWO_PASS_V3
       LF_S26_PRIMARY_CANDIDATE_DISABLE_THINKING: '1'
+      LF_S26_PRIMARY_CANDIDATE_RELEASE_AFTER_RUN: '1'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -151,6 +153,13 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
+      - name: Validate S26 candidate harness syntax
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_zero_cost_primary_candidate.py \
+            sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_primary_candidate_independent_judge.py
 
       - name: Build pinned llama.cpp server from source
         timeout-minutes: 10
@@ -164,11 +173,11 @@ jobs:
           cmake --build build --config Release -j 4 --target llama-server
           test -x build/bin/llama-server
 
-      - name: Acquire and verify pinned Qwen3-14B artifact
-        timeout-minutes: 110
+      - name: Acquire and verify pinned primary candidate artifact
+        timeout-minutes: 95
         run: |
           set -euo pipefail
-          candidate_dir="$RUNNER_TEMP/lf-s26-primary-candidate/qwen3_14b_q4_k_m"
+          candidate_dir="$RUNNER_TEMP/lf-s26-primary-candidate/${LF_S26_PRIMARY_CANDIDATE_CODE,,}"
           mkdir -p "$candidate_dir"
           model="$candidate_dir/model.gguf"
           started_ms=$(date +%s%3N)
@@ -181,8 +190,8 @@ jobs:
           elapsed_ms=$(( $(date +%s%3N) - started_ms ))
           echo "S26_PRIMARY_ARTIFACT_ACQUIRE candidate=$LF_S26_PRIMARY_CANDIDATE_CODE bytes=$bytes elapsed_ms=$elapsed_ms sha256=$observed"
 
-      - name: Run bounded Qwen3-14B capability benchmark
-        timeout-minutes: 10
+      - name: Run bounded source-grounded two-pass capability benchmark
+        timeout-minutes: 15
         env:
           LF_REPOSITORY_VISIBILITY: public
           LF_RUNNER_LABEL: ubuntu-latest
@@ -234,6 +243,36 @@ jobs:
           PY
           exit "$status"
 
+      - name: Acquire and verify pinned independent judge artifact
+        timeout-minutes: 20
+        env:
+          JUDGE_COMMIT: 508edd0afaa66bb9e9f40587acc2184f02daf1f6
+          JUDGE_SHA256: 9258bf05b12686d097ff3b6b18d968ab393649780aa2b3cd67fec43d50554392
+        run: |
+          set -euo pipefail
+          candidate_model="$RUNNER_TEMP/lf-s26-primary-candidate/${LF_S26_PRIMARY_CANDIDATE_CODE,,}/model.gguf"
+          test ! -e "$candidate_model"
+          mkdir -p "$RUNNER_TEMP/lf-semantic-model"
+          curl -L --fail --retry 3 --retry-delay 2 \
+            "https://huggingface.co/ggml-org/Qwen2.5-VL-7B-Instruct-GGUF/resolve/${JUDGE_COMMIT}/Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf?download=true" \
+            -o "$RUNNER_TEMP/lf-semantic-model/model.gguf"
+          echo "${JUDGE_SHA256}  $RUNNER_TEMP/lf-semantic-model/model.gguf" | sha256sum -c -
+
+      - name: Judge captured candidate with seven atomic semantic relations
+        timeout-minutes: 15
+        env:
+          LF_REPOSITORY_VISIBILITY: public
+          LF_RUNNER_LABEL: ubuntu-latest
+          LF_LLAMA_SOURCE_COMMIT: ${{ env.LLAMA_COMMIT }}
+          LF_LLAMA_SERVER_PATH: ${{ runner.temp }}/llama.cpp/build/bin/llama-server
+          LF_SEMANTIC_MODEL_PATH: ${{ runner.temp }}/lf-semantic-model/model.gguf
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_primary_candidate_independent_judge.py \
+            --candidate-capture "$GITHUB_WORKSPACE/s26-primary-candidate-result.json" \
+            --result-path "$GITHUB_WORKSPACE/s26-primary-candidate-judge-result.json" \
+            | tee "$RUNNER_TEMP/s26-primary-candidate-judge.log"
+
       - name: Upload S26 primary candidate durable result
         if: always()
         uses: actions/upload-artifact@v4
@@ -241,7 +280,9 @@ jobs:
           name: s26-primary-candidate-result-${{ github.run_id }}
           path: |
             s26-primary-candidate-result.json
+            s26-primary-candidate-judge-result.json
             ${{ runner.temp }}/s26-primary-candidate.log
+            ${{ runner.temp }}/s26-primary-candidate-judge.log
           if-no-files-found: error
           retention-days: 30
 

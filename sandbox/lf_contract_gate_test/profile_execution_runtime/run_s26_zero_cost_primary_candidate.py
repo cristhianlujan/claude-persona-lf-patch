@@ -5,11 +5,13 @@ Runs one explicitly pinned local GGUF candidate after the independent semantic
 mini-judge smoke. This is sandbox capability evidence only: it cannot change
 model authority, production routing, profile sources, or promotion state.
 
-The benchmark intentionally keeps the same bounded Focused UI capability
-capsule used after the full-source Qwen2.5-VL-7B attempt hit the existing 240s
-ceiling. Per LF API/job policy, timeout is not increased first. Candidate
-identity, exact source hashes, timing, usage, contract and semantic gates are
-emitted for durable readback.
+The benchmark keeps the bounded Focused UI capability capsule used after the
+full-source Qwen2.5-VL-7B attempt hit the existing 240s ceiling. Per LF
+API/job policy, timeout is not increased first. It performs one initial pass
+and one explicitly declared contract-review pass over the exact initial RAW.
+Both stages remain in evidence; there is no silent repair, validator change,
+or automatic promotion. Candidate identity, exact source hashes, timing,
+usage, contract and semantic gates are emitted for durable readback.
 """
 
 from __future__ import annotations
@@ -36,25 +38,34 @@ from profile_runtime_api.validation import OutputGates
 LLAMA_COMMIT = "925e1179947ea0c0ebfb0032df18af3a729822be"
 PORT = 18081
 CONTEXT_TOKENS = 2048
-MAX_OUTPUT_TOKENS = 256
+MAX_OUTPUT_TOKENS = 384
 REQUEST_TIMEOUT_SECONDS = 240
+REVISION_ARCHITECTURE = "DECLARED_TWO_PASS_CONTRACT_REVIEW_WITH_RAW_BINDING_V2"
+DECLARED_REVIEW_CODES = (
+    "S26_PRESERVATION_EXPLICITNESS_REVIEW_REQUIRED",
+    "S26_DUAL_IMPLEMENTATION_DETAIL_REVIEW_REQUIRED",
+    "S26_EXCLUSION_CONSISTENCY_REVIEW_REQUIRED",
+    "S26_NO_INVENTED_LIMITS_REVIEW_REQUIRED",
+)
 
-CANDIDATE_CODE = os.getenv("LF_S26_PRIMARY_CANDIDATE_CODE", "QWEN3_8B_Q4_K_M").strip()
-MODEL_REPO = os.getenv("LF_S26_PRIMARY_CANDIDATE_REPO", "Qwen/Qwen3-8B-GGUF").strip()
+CANDIDATE_CODE = os.getenv("LF_S26_PRIMARY_CANDIDATE_CODE", "QWEN3_5_9B_Q4_K_M").strip()
+MODEL_REPO = os.getenv(
+    "LF_S26_PRIMARY_CANDIDATE_REPO", "unsloth/Qwen3.5-9B-GGUF"
+).strip()
 MODEL_COMMIT = os.getenv(
     "LF_S26_PRIMARY_CANDIDATE_COMMIT",
-    "6a569868d07d3bd59e8b97fb001bf8c0b254bb20",
+    "3885219b6810b007914f3a7950a8d1b469d598a5",
 ).strip()
 MODEL_FILENAME = os.getenv(
-    "LF_S26_PRIMARY_CANDIDATE_FILENAME", "Qwen3-8B-Q4_K_M.gguf"
+    "LF_S26_PRIMARY_CANDIDATE_FILENAME", "Qwen3.5-9B-Q4_K_M.gguf"
 ).strip()
 MODEL_SHA256 = os.getenv(
     "LF_S26_PRIMARY_CANDIDATE_SHA256",
-    "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+    "03b74727a860a56338e042c4420bb3f04b2fec5734175f4cb9fa853daf52b7e8",
 ).strip()
 PROMPT_POLICY = os.getenv(
     "LF_S26_PRIMARY_CANDIDATE_PROMPT_POLICY",
-    "S26_QWEN3_8B_COMPACT_AUTHORITY_CAPSULE_V1",
+    "S26_QWEN3_5_9B_SOURCE_BOUNDED_TWO_PASS_V3",
 ).strip()
 DISABLE_THINKING = os.getenv(
     "LF_S26_PRIMARY_CANDIDATE_DISABLE_THINKING", "1"
@@ -68,8 +79,9 @@ ADAPTER_PATH = REPO_ROOT / "adapters/lf_shell_profile_adapter/runtime/runtime_ca
 TASK = (
     "B2B-CARGA-001. TASK: REMEDIATE_EXISTING. Focused UI decision only: decide the visual "
     "treatment and interaction cue for horizontal table overflow in the existing Historial de cargas "
-    "screen. Use only governed current facts below; preserve existing filters, actions and table "
-    "semantics. Return the Focused UI Decision Spec only."
+    "screen. Use only governed current facts below. Preserve explicitly: existing filters, every "
+    "table column, row actions, pagination, table semantics and business rules. Return the Focused "
+    "UI Decision Spec only."
 )
 
 GOVERNED_FACTS = """
@@ -90,13 +102,38 @@ Sandbox capability capsule distilled from the current governed UI focused-decisi
 3. selected_visual_type must name a concrete corrective visual/interaction treatment, not merely the defect or subject.
 4. base_color_or_surface must reference a concrete existing token/surface/value when used.
 5. size_or_coverage must state where and how much of the table/screen the treatment covers.
-6. density_limits must contain an observable quantity/bound/per-element rule.
-7. depth_style and visual_weight must be concrete, not labels such as subtle, medium, thin or standard.
-8. relationship_to_main_element must explain how the cue/mechanic relates to table content/actions.
-9. implementation_format must name a concrete implementation target plus behavior/property/value; bare css/svg/component is invalid.
+6. For this task, density_limits has exactly two grounded bounds: one passive cue per overflowing table viewport and zero added controls per row. Do not assert any pixel, percentage, row-count, pagination or breakpoint limit.
+7. depth_style and visual_weight must be concrete. Preserve the existing flat surface without a new elevation or shadow. State visual_weight only as an explicit lower hierarchy relative to table data, statuses and row actions; do not invent a numeric value. Standalone labels primary, secondary, tertiary, medium, light, dark, standard, default or subtle (and Spanish equivalents) are invalid.
+8. relationship_to_main_element must explain how the cue/mechanic relates to table content/actions and explicitly preserve existing filters, every column, row actions, pagination, table semantics and business rules.
+9. implementation_format must name the implementation target, behavior and usable property/value for both the physical overflow mechanic and its passive discoverability cue; bare css/svg/component or a mechanic without its cue is invalid. If selecting the native scrollbar, state that CSS overflow-x: auto is applied to the existing table wrapper and the browser shows its native scrollbar while overflow exists; do not style its thumb or invent dimensions.
 10. hard_exclusions must contain rejected alternatives only and must not repeat or prohibit the selected treatment.
 11. Do not invent facts, controls, business rules, tokens or an already-authorized canonical pattern.
 12. status must remain read-only/sandbox appropriate; this benchmark never authorizes production or promotion.
+13. Outside the explicitly grounded counts one cue and zero added row controls, do not invent any quantitative value.
+14. Complete every field as a self-contained statement; do not end a string mid-list, mid-condition or mid-clause. Keep each scalar field concise (at most 30 words), use at most four concise exclusions, and refer to all columns as “Lote through Acciones” instead of enumerating them.
+""".strip()
+
+REVISION_CAPSULE = """
+One and only one declared revision is required for this sandbox capability test.
+Re-evaluate the prior RAW decision against every governed fact and all fourteen
+quality rules. Correct the underlying decision, not only a named gate label.
+The final treatment must contain an implementable physical horizontal-overflow
+mechanic plus a passive discoverability cue. Its implementation field must give
+a target, behavior and usable property/value for both. Explicitly preserve
+filters, every column, row actions, pagination, table semantics and business
+rules. Avoid unsupported controls or tokens and keep every exclusion consistent
+with the selected treatment. Use exactly one passive cue per overflowing
+viewport and zero added controls per row; do not assert any other number, pixel,
+percentage, row-count, pagination trigger or breakpoint. Express visual_weight
+only as lower hierarchy relative to table data, statuses and actions, without a
+number. If native scroll is selected, fully specify overflow-x: auto on the
+existing table wrapper and a browser-native scrollbar visible while overflow
+exists, with no thumb styling or invented dimension. Complete every field
+without ending mid-list, mid-condition or mid-clause; keep scalar fields under
+30 words and refer to all columns compactly as Lote through Acciones.
+Do not claim that the treatment is already authorized. Return one new naked
+JSON object only. The prior RAW and both evaluations remain preserved as
+evidence; this revision cannot authorize production or promotion.
 """.strip()
 
 
@@ -142,6 +179,55 @@ def output_content(envelope: dict[str, Any]) -> tuple[str, str]:
     return content.strip(), str(choices[0].get("finish_reason") or "")
 
 
+def request_completion(
+    *,
+    base_url: str,
+    messages: list[dict[str, str]],
+    generation_schema: dict[str, Any],
+) -> tuple[dict[str, Any], str, str, float]:
+    payload: dict[str, Any] = {
+        "model": MODEL_ID,
+        "messages": messages,
+        "stream": False,
+        "temperature": 0,
+        "top_p": 1,
+        "seed": 42,
+        "max_tokens": MAX_OUTPUT_TOKENS,
+        "cache_prompt": True,
+        "response_format": {"type": "json_object", "schema": generation_schema},
+    }
+    if DISABLE_THINKING:
+        payload["chat_template_kwargs"] = {"enable_thinking": False}
+    request = urllib.request.Request(
+        base_url + "/v1/chat/completions",
+        data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+        headers={"Content-Type": "application/json", "Accept": "application/json"},
+        method="POST",
+    )
+    started = time.monotonic()
+    try:
+        with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT_SECONDS) as response:
+            envelope = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")[-1000:]
+        raise RuntimeError(
+            f"PRIMARY_CANDIDATE_HTTP_ERROR status={exc.code} "
+            + detail.replace("\n", " ")
+        ) from exc
+    except TimeoutError as exc:
+        raise RuntimeError(
+            "PRIMARY_CANDIDATE_TRANSPORT type=TimeoutError "
+            f"timeout={REQUEST_TIMEOUT_SECONDS} prompt_policy={PROMPT_POLICY}"
+        ) from exc
+    except Exception as exc:
+        raise RuntimeError(
+            f"PRIMARY_CANDIDATE_TRANSPORT type={type(exc).__name__}"
+        ) from exc
+    elapsed_s = round(time.monotonic() - started, 3)
+    raw, finish_reason = output_content(envelope)
+    return envelope, raw, finish_reason, elapsed_s
+
+
 def source_hashes() -> dict[str, str]:
     return {
         "ui_architect_skill_sha256": sha256_file(PROFILE_PATH),
@@ -185,6 +271,23 @@ def _safe_release_semantic_model(runner_temp: Path) -> None:
         size = judge_path.stat().st_size
         judge_path.unlink()
         print(f"S26_PRIMARY_CANDIDATE_RELEASE_JUDGE_MODEL bytes={size}", flush=True)
+
+
+def _release_candidate_model_after_run(model_path: Path) -> bool:
+    if os.getenv("LF_S26_PRIMARY_CANDIDATE_RELEASE_AFTER_RUN", "0").strip() != "1":
+        return False
+    runner_temp = Path(os.getenv("RUNNER_TEMP") or tempfile.gettempdir()).resolve()
+    resolved = model_path.resolve()
+    try:
+        resolved.relative_to(runner_temp)
+    except ValueError as exc:
+        raise RuntimeError("PRIMARY_CANDIDATE_RELEASE_PATH_OUTSIDE_RUNNER_TEMP") from exc
+    if sha256_file(resolved) != MODEL_SHA256:
+        raise RuntimeError("PRIMARY_CANDIDATE_RELEASE_SHA_MISMATCH")
+    size = resolved.stat().st_size
+    resolved.unlink()
+    print(f"S26_PRIMARY_CANDIDATE_RELEASE_MODEL bytes={size}", flush=True)
+    return True
 
 
 def prepare_candidate_model() -> Path:
@@ -318,50 +421,59 @@ def main() -> int:
                     print("BLOCK S26_PRIMARY_CANDIDATE_SERVER_START_TIMEOUT")
                     return 3
 
-                payload: dict[str, Any] = {
-                    "model": MODEL_ID,
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": TASK},
-                    ],
-                    "stream": False,
-                    "temperature": 0,
-                    "top_p": 1,
-                    "seed": 42,
-                    "max_tokens": MAX_OUTPUT_TOKENS,
-                    "cache_prompt": True,
-                    "response_format": {"type": "json_object", "schema": generation_schema},
-                }
-                if DISABLE_THINKING:
-                    payload["chat_template_kwargs"] = {"enable_thinking": False}
-                request = urllib.request.Request(
-                    base_url + "/v1/chat/completions",
-                    data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
-                    headers={"Content-Type": "application/json", "Accept": "application/json"},
-                    method="POST",
-                )
-                started = time.monotonic()
                 try:
-                    with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT_SECONDS) as response:
-                        envelope = json.loads(response.read().decode("utf-8"))
-                except urllib.error.HTTPError as exc:
-                    detail = exc.read().decode("utf-8", errors="replace")[-1000:]
-                    print(
-                        f"BLOCK S26_PRIMARY_CANDIDATE_HTTP_ERROR status={exc.code} "
-                        + detail.replace("\n", " ")
+                    initial_envelope, initial_raw, initial_finish_reason, initial_elapsed_s = request_completion(
+                        base_url=base_url,
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": TASK},
+                        ],
+                        generation_schema=generation_schema,
                     )
+                except RuntimeError as exc:
+                    print("BLOCK S26_" + str(exc))
                     return 4
-                except TimeoutError:
-                    print(
-                        "BLOCK S26_PRIMARY_CANDIDATE_TRANSPORT type=TimeoutError "
-                        f"timeout={REQUEST_TIMEOUT_SECONDS} prompt_policy={PROMPT_POLICY}"
+
+                initial_contract_gate, initial_parsed = gates.contract(
+                    profile_slug="ui_architect",
+                    raw_output=initial_raw,
+                    schema=schema_binding,
+                )
+                initial_semantic_gate = gates.semantic_utility(
+                    profile_slug="ui_architect",
+                    payload=initial_parsed,
+                    contract_gate=initial_contract_gate,
+                )
+                gate_trigger_codes = sorted(set(
+                    list(initial_contract_gate.get("blocking_codes") or [])
+                    + list(initial_semantic_gate.get("blocking_codes") or [])
+                ))
+                revision_trigger_codes = sorted(
+                    set(gate_trigger_codes + list(DECLARED_REVIEW_CODES))
+                )
+                revision_applied = True
+                revision_request = "\n\n".join([
+                    REVISION_CAPSULE,
+                    "MACHINE GATE CODES FROM PRIOR RAW:\n"
+                    + json.dumps(gate_trigger_codes, ensure_ascii=False),
+                    "DECLARED CONTRACT REVIEW CODES:\n"
+                    + json.dumps(list(DECLARED_REVIEW_CODES), ensure_ascii=False),
+                ])
+                try:
+                    envelope, raw, finish_reason, revision_elapsed_s = request_completion(
+                        base_url=base_url,
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": TASK},
+                            {"role": "assistant", "content": initial_raw},
+                            {"role": "user", "content": revision_request},
+                        ],
+                        generation_schema=generation_schema,
                     )
+                except RuntimeError as exc:
+                    print("BLOCK S26_PRIMARY_CANDIDATE_REVISION_" + str(exc))
                     return 4
-                except Exception as exc:
-                    print(f"BLOCK S26_PRIMARY_CANDIDATE_TRANSPORT type={type(exc).__name__}")
-                    return 4
-                elapsed_s = round(time.monotonic() - started, 3)
-                raw, finish_reason = output_content(envelope)
+                elapsed_s = round(initial_elapsed_s + revision_elapsed_s, 3)
             finally:
                 if process.poll() is None:
                     process.terminate()
@@ -382,6 +494,12 @@ def main() -> int:
         contract_gate=contract_gate,
     )
     usage = envelope.get("usage") if isinstance(envelope.get("usage"), dict) else {}
+    initial_usage = (
+        initial_envelope.get("usage")
+        if isinstance(initial_envelope.get("usage"), dict)
+        else {}
+    )
+    candidate_model_released_after_run = _release_candidate_model_after_run(model)
     result = {
         "scope": "SANDBOX_PRIMARY_WORKER_CAPABILITY_ONLY_NOT_OPERATIONAL_PARITY",
         "candidate_code": CANDIDATE_CODE,
@@ -394,10 +512,18 @@ def main() -> int:
         "model_commit": MODEL_COMMIT,
         "model_filename": MODEL_FILENAME,
         "model_sha256": observed_model_sha,
+        "candidate_model_released_after_run": candidate_model_released_after_run,
         "llama_source_commit": LLAMA_COMMIT,
         "github_run_id": os.getenv("GITHUB_RUN_ID", ""),
         "github_sha": os.getenv("GITHUB_SHA", ""),
         "prompt_policy": PROMPT_POLICY,
+        "revision_architecture": REVISION_ARCHITECTURE,
+        "revision_applied": revision_applied,
+        "revision_trigger_codes": revision_trigger_codes,
+        "initial_gate_trigger_codes": gate_trigger_codes,
+        "declared_review_codes": list(DECLARED_REVIEW_CODES),
+        "max_revision_passes": 1,
+        "silent_repair": False,
         "source_hashes": source_evidence,
         "generation_schema_policy": generation_policy,
         "context_tokens": CONTEXT_TOKENS,
@@ -408,9 +534,28 @@ def main() -> int:
         "elapsed_s": elapsed_s,
         "finish_reason": finish_reason,
         "usage": usage,
+        "inference_stages": {
+            "initial": {
+                "elapsed_s": initial_elapsed_s,
+                "finish_reason": initial_finish_reason,
+                "usage": initial_usage,
+                "raw_output": initial_raw,
+                "raw_output_sha256": hashlib.sha256(initial_raw.encode("utf-8")).hexdigest(),
+                "contract_gate": initial_contract_gate,
+                "semantic_gate": initial_semantic_gate,
+                "output": initial_parsed if isinstance(initial_parsed, dict) else None,
+            },
+            "revision": {
+                "executed": revision_applied,
+                "elapsed_s": revision_elapsed_s,
+                "raw_output": raw,
+                "raw_output_sha256": hashlib.sha256(raw.encode("utf-8")).hexdigest(),
+            },
+        },
         "contract_gate": contract_gate,
         "semantic_gate": semantic_gate,
         "output": parsed if isinstance(parsed, dict) else None,
+        "raw_output": raw,
         "production_mutation": False,
         "promotion_authorized": False,
         "paid_provider_call_executed": False,
