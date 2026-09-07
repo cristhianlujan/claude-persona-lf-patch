@@ -38,9 +38,9 @@ PY
     test -f "$MIRROR/supabase/migrations/${F}_lf_input_governance_ig006_ig007_exact_canary_forward_v1.sql"
     ! find "$MIRROR/supabase/migrations" -maxdepth 1 -type f -name "${R}_*.sql" | grep -q .
     cp "$RF" "$MIRROR/supabase/migrations/$(basename "$RF")"
-    supabase --workdir "$MIRROR" db push --db-url "$DB_URL" --dry-run 2>&1 | tee "${RUNNER_TEMP:-/tmp}/ig006-rollback-dry.log"
+    supabase --workdir "$MIRROR" db push --include-all --db-url "$DB_URL" --dry-run 2>&1 | tee "${RUNNER_TEMP:-/tmp}/ig006-rollback-dry.log"
     grep -q "$R" "${RUNNER_TEMP:-/tmp}/ig006-rollback-dry.log"
-    supabase --workdir "$MIRROR" --yes db push --db-url "$DB_URL"
+    supabase --workdir "$MIRROR" --yes db push --include-all --db-url "$DB_URL"
     echo S28_EXACT_ROLLBACK_APPLIED
     ;;
   *)
