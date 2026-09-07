@@ -15,6 +15,7 @@ on:
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_semantic_judge.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_live_smoke.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_zero_cost_primary_candidate.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_profile_strategy_ab.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/runtime_optimization_contract.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_batch_queue_worker.py"
@@ -125,6 +126,72 @@ jobs:
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_live_smoke.py
+
+  s26-primary-candidate-capability:
+    if: github.event_name == 'pull_request'
+    needs: semantic-mini-judge-smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 135
+    env:
+      LLAMA_COMMIT: 925e1179947ea0c0ebfb0032df18af3a729822be
+      LF_S26_PRIMARY_CANDIDATE_CODE: QWEN3_14B_Q4_K_M
+      LF_S26_PRIMARY_CANDIDATE_REPO: ggml-org/Qwen3-14B-GGUF
+      LF_S26_PRIMARY_CANDIDATE_COMMIT: af3732ec4e23a1dfff21a0479cd3545ace763e38
+      LF_S26_PRIMARY_CANDIDATE_FILENAME: Qwen3-14B-Q4_K_M.gguf
+      LF_S26_PRIMARY_CANDIDATE_SHA256: 5ff1fe7a07aebc8d090682d01b17cf268a1b4680c6477050ce75a600aecb9efb
+      LF_S26_PRIMARY_CANDIDATE_PROMPT_POLICY: S26_QWEN3_14B_COMPACT_AUTHORITY_CAPSULE_V1
+      LF_S26_PRIMARY_CANDIDATE_DISABLE_THINKING: '1'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build pinned llama.cpp server from source
+        timeout-minutes: 10
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/ggml-org/llama.cpp.git "$RUNNER_TEMP/llama.cpp"
+          cd "$RUNNER_TEMP/llama.cpp"
+          git checkout --detach "$LLAMA_COMMIT"
+          test "$(git rev-parse HEAD)" = "$LLAMA_COMMIT"
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=OFF
+          cmake --build build --config Release -j 4 --target llama-server
+          test -x build/bin/llama-server
+
+      - name: Acquire and verify pinned Qwen3-14B artifact
+        timeout-minutes: 110
+        run: |
+          set -euo pipefail
+          candidate_dir="$RUNNER_TEMP/lf-s26-primary-candidate/qwen3_14b_q4_k_m"
+          mkdir -p "$candidate_dir"
+          model="$candidate_dir/model.gguf"
+          started_ms=$(date +%s%3N)
+          curl -L --fail --retry 5 --retry-all-errors --retry-delay 5 \
+            "https://huggingface.co/${LF_S26_PRIMARY_CANDIDATE_REPO}/resolve/${LF_S26_PRIMARY_CANDIDATE_COMMIT}/${LF_S26_PRIMARY_CANDIDATE_FILENAME}?download=true" \
+            -o "$model"
+          observed=$(sha256sum "$model" | awk '{print $1}')
+          test "$observed" = "$LF_S26_PRIMARY_CANDIDATE_SHA256"
+          bytes=$(stat -c%s "$model")
+          elapsed_ms=$(( $(date +%s%3N) - started_ms ))
+          echo "S26_PRIMARY_ARTIFACT_ACQUIRE candidate=$LF_S26_PRIMARY_CANDIDATE_CODE bytes=$bytes elapsed_ms=$elapsed_ms sha256=$observed" 
+
+      - name: Run bounded Qwen3-14B capability benchmark
+        timeout-minutes: 10
+        env:
+          LF_REPOSITORY_VISIBILITY: public
+          LF_RUNNER_LABEL: ubuntu-latest
+          LF_LLAMA_SOURCE_COMMIT: ${{ env.LLAMA_COMMIT }}
+          LF_LLAMA_SERVER_PATH: ${{ runner.temp }}/llama.cpp/build/bin/llama-server
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check 'jsonschema==4.26.0'
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_zero_cost_primary_candidate.py
 
   runtime-optimization-contract:
     if: github.event_name == 'pull_request'
