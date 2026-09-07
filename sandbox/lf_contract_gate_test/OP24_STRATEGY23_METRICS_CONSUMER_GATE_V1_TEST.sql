@@ -20,34 +20,76 @@ declare
   );
   r jsonb;
   bad jsonb;
+  s26_fp text;
+  n integer;
 begin
-  r := private.sbx_fn_lf_strategy23_metrics_consumer_gate_v1(m,o,'v0.3','v0.3','S26-FAMILY-E2E-FP-TEST','FIXTURE-FP-TEST');
+  -- Caller cannot manufacture S26 authority with an arbitrary non-empty string.
+  bad := private.sbx_fn_lf_strategy23_metrics_consumer_gate_v1(m,o,'v0.3','v0.3','FORGED-NONEMPTY-FINGERPRINT','FIXTURE-FP-TEST');
+  if coalesce((bad->>'consumer_gate_pass')::boolean,true) is not false
+     or not (bad->'errors' ? 'STRATEGY26_FAMILY_E2E_FINGERPRINT_MISMATCH') then
+    raise exception 'EXPECTED_FORGED_S26_FINGERPRINT_BLOCK:%',bad;
+  end if;
+
+  -- Positive authority path is exercised only inside this rollback transaction.
+  update public.lf_strategy_snapshots
+     set metadata=jsonb_set(metadata,'{family_e2e_status}','"FAMILY_E2E_PASS"'::jsonb,true)
+   where id=(select id from public.lf_strategy_snapshots where snapshot_code='LF_PROFILE_GOVERNANCE_GOLDEN_FAMILY_20260904' order by id desc limit 1);
+  get diagnostics n=row_count;
+  if n <> 1 then raise exception 'EXPECTED_ONE_S26_SANDBOX_ROW observed=%',n; end if;
+
+  select encode(
+    extensions.digest(
+      convert_to(
+        jsonb_build_object(
+          'snapshot_id',s.id,
+          'version',s.version,
+          'status',s.status,
+          'runtime_state',s.runtime_state,
+          'updated_at',s.updated_at,
+          'family_e2e_status',s.metadata->>'family_e2e_status',
+          'source_sha',s.metadata->'runtime_reconciliation'->>'source_sha'
+        )::text,
+        'UTF8'
+      ),
+      'sha256'
+    ),
+    'hex'
+  ) into s26_fp
+  from public.lf_strategy_snapshots s
+  where s.snapshot_code='LF_PROFILE_GOVERNANCE_GOLDEN_FAMILY_20260904'
+  order by s.id desc limit 1;
+
+  r := private.sbx_fn_lf_strategy23_metrics_consumer_gate_v1(m,o,'v0.3','v0.3',s26_fp,'FIXTURE-FP-TEST');
   if coalesce((r->>'consumer_gate_pass')::boolean,false) is not true then
-    raise exception 'EXPECTED_CONSUMER_GATE_PASS:%',r;
+    raise exception 'EXPECTED_AUTHORITY_BOUND_CONSUMER_GATE_PASS:%',r;
   end if;
   if coalesce((r->>'strategy23_execution_authorized')::boolean,true) is not false
      or coalesce((r->>'experiment_result_persistence_authorized')::boolean,true) is not false then
     raise exception 'SANDBOX_GATE_MUST_NOT_AUTHORIZE_EXECUTION_OR_PERSISTENCE:%',r;
   end if;
 
-  bad := private.sbx_fn_lf_strategy23_metrics_consumer_gate_v1(m,o,'v0.2','v0.3','S26-FAMILY-E2E-FP-TEST','FIXTURE-FP-TEST');
-  if coalesce((bad->>'consumer_gate_pass')::boolean,true) is not false or not (bad->'errors' ? 'PARENT_STRATEGY_VERSION_NOT_V03') then
-    raise exception 'EXPECTED_PARENT_VERSION_BLOCK:%',bad;
+  bad := private.sbx_fn_lf_strategy23_metrics_consumer_gate_v1(m,o,'v0.2','v0.3',s26_fp,'FIXTURE-FP-TEST');
+  if coalesce((bad->>'consumer_gate_pass')::boolean,true) is not false
+     or not (bad->'errors' ? 'PARENT_STRATEGY_CALLER_VERSION_MISMATCH') then
+    raise exception 'EXPECTED_CALLER_PARENT_MISMATCH_BLOCK:%',bad;
   end if;
 
-  bad := private.sbx_fn_lf_strategy23_metrics_consumer_gate_v1(m,o,'v0.3','v0.3','','FIXTURE-FP-TEST');
-  if coalesce((bad->>'consumer_gate_pass')::boolean,true) is not false or not (bad->'errors' ? 'STRATEGY26_FAMILY_E2E_FINGERPRINT_REQUIRED') then
-    raise exception 'EXPECTED_S26_FINGERPRINT_BLOCK:%',bad;
+  bad := private.sbx_fn_lf_strategy23_metrics_consumer_gate_v1(m,o,'v0.3','v0.3','FORGED', 'FIXTURE-FP-TEST');
+  if coalesce((bad->>'consumer_gate_pass')::boolean,true) is not false
+     or not (bad->'errors' ? 'STRATEGY26_FAMILY_E2E_FINGERPRINT_MISMATCH') then
+    raise exception 'EXPECTED_FORGED_FINGERPRINT_BLOCK_AFTER_LIVE_PASS_STATE:%',bad;
   end if;
 
-  bad := private.sbx_fn_lf_strategy23_metrics_consumer_gate_v1(m,o,'v0.3','v0.3','S26-FAMILY-E2E-FP-TEST','');
-  if coalesce((bad->>'consumer_gate_pass')::boolean,true) is not false or not (bad->'errors' ? 'FROZEN_FIXTURE_FINGERPRINT_REQUIRED') then
+  bad := private.sbx_fn_lf_strategy23_metrics_consumer_gate_v1(m,o,'v0.3','v0.3',s26_fp,'');
+  if coalesce((bad->>'consumer_gate_pass')::boolean,true) is not false
+     or not (bad->'errors' ? 'FROZEN_FIXTURE_FINGERPRINT_REQUIRED') then
     raise exception 'EXPECTED_FIXTURE_FINGERPRINT_BLOCK:%',bad;
   end if;
 
   m := jsonb_set(m,'{retrieval_precision}','0.5'::jsonb);
-  bad := private.sbx_fn_lf_strategy23_metrics_consumer_gate_v1(m,o,'v0.3','v0.3','S26-FAMILY-E2E-FP-TEST','FIXTURE-FP-TEST');
-  if coalesce((bad->>'consumer_gate_pass')::boolean,true) is not false or not (bad->'errors' ? 'LEARNING_EFFICIENCY_METRICS_INVALID') then
+  bad := private.sbx_fn_lf_strategy23_metrics_consumer_gate_v1(m,o,'v0.3','v0.3',s26_fp,'FIXTURE-FP-TEST');
+  if coalesce((bad->>'consumer_gate_pass')::boolean,true) is not false
+     or not (bad->'errors' ? 'LEARNING_EFFICIENCY_METRICS_INVALID') then
     raise exception 'EXPECTED_METRICS_VERIFIER_BLOCK:%',bad;
   end if;
 end
