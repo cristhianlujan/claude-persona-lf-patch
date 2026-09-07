@@ -15,11 +15,15 @@ spec.loader.exec_module(scope)
 
 CASES = [
     ("story_only", "pull_request", ["skills/creating-integral-user-stories/scripts/validate_test_coverage.py"], False),
-    ("story_plus_ci_router", "pull_request", ["skills/creating-integral-user-stories/judges/test-coverage.yaml", ".github/workflows/lf-contract-check.yml", "sandbox/lf_contract_gate_test/supabase_control_plane_scope.py"], False),
+    ("unrelated_contract_sandbox", "pull_request", ["sandbox/lf_contract_gate_test/input_governance_s28/example.sql"], False),
+    ("scope_selftest_only", "pull_request", ["sandbox/lf_contract_gate_test/supabase_control_plane_scope_selftest.py"], False),
+    ("workflow_self_change", "pull_request", [".github/workflows/lf-contract-check.yml"], True),
+    ("classifier_self_change", "pull_request", ["sandbox/lf_contract_gate_test/supabase_control_plane_scope.py"], True),
     ("supabase_config", "pull_request", ["supabase/config.toml"], True),
     ("versioned_migration", "pull_request", ["supabase/migrations/20260907010101_security_v9.sql"], True),
     ("nested_migration_family", "pull_request", ["supabase/migrations/archive/20260907010101_security_v9.sql"], True),
     ("mixed_story_migration", "pull_request", ["skills/creating-integral-user-stories/SKILL.md", "supabase/migrations/20260907010102_x.sql"], True),
+    ("mixed_story_classifier", "pull_request", ["skills/creating-integral-user-stories/SKILL.md", "sandbox/lf_contract_gate_test/supabase_control_plane_scope.py"], True),
     ("lookalike_not_family", "pull_request", ["supabase/migrationz/20260907010103_x.sql"], False),
     ("edge_function_not_postgrest_schema_config", "pull_request", ["supabase/functions/example/index.ts"], False),
     ("manual_audit", "workflow_dispatch", [], True),
