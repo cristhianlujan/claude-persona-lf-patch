@@ -3,10 +3,14 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import io
 import os
 import pathlib
 import re
+import subprocess
 import sys
+
+import migration_transport_normalization as transport
 
 MANAGED_PREFIXES = (
     "pr93_",
@@ -65,6 +69,8 @@ MARKER_RE = re.compile(
     r"legacy_count=(\d+) legacy_sha256=([0-9a-f]{64})$"
 )
 SHA_PROOF_RE = re.compile(r"^sha256:([0-9a-f]{64})$")
+PG_ENV_NAMES = ("PGHOST", "PGPORT", "PGUSER", "PGPASSWORD", "PGDATABASE", "PGSSLMODE")
+POSTGRES_IMAGE = "postgres:17.6"
 
 
 def managed(name: str) -> bool:
@@ -76,9 +82,7 @@ def classified(name: str) -> bool:
 
 
 def canonical(sql: str) -> bytes:
-    sql = sql.replace("\r\n", "\n").replace("\r", "\n")
-    lines = [line for line in sql.split("\n") if not line.lstrip().startswith("--")]
-    return "\n".join(lines).rstrip("\n").encode("utf-8")
+    return transport.canonical(sql)
 
 
 def fail(code: str, detail: str = "") -> None:
@@ -107,6 +111,175 @@ def read_single_row(path: pathlib.Path, expected_columns: int, code: str) -> lis
     return rows[0]
 
 
+def _parse_statement_count_rows(text: str, *, source: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in csv.reader(io.StringIO(text)):
+        if not row:
+            continue
+        if len(row) != 2:
+            fail("FAIL_LF_MIGRATION_STATEMENT_COUNT_ROW", f"source={source} row={row!r}")
+        version, raw_count = row
+        if not re.fullmatch(r"20\d{12}", version):
+            fail("FAIL_LF_MIGRATION_STATEMENT_COUNT_VERSION", f"source={source} version={version}")
+        try:
+            count = int(raw_count)
+        except ValueError as exc:
+            fail("FAIL_LF_MIGRATION_STATEMENT_COUNT_VALUE", f"source={source} version={version} value={raw_count!r}")
+            raise AssertionError from exc
+        if count < 1:
+            fail("FAIL_LF_MIGRATION_STATEMENT_COUNT_VALUE", f"source={source} version={version} value={count}")
+        if version in counts:
+            fail("FAIL_LF_MIGRATION_STATEMENT_COUNT_DUPLICATE", f"source={source} version={version}")
+        counts[version] = count
+    return counts
+
+
+def query_remote_statement_counts(versions: list[str]) -> dict[str, int]:
+    if not versions:
+        return {}
+    if any(not re.fullmatch(r"20\d{12}", version) for version in versions):
+        fail("FAIL_LF_MIGRATION_STATEMENT_COUNT_VERSION_SET")
+    missing = [name for name in PG_ENV_NAMES if not os.environ.get(name)]
+    if missing:
+        fail("FAIL_LF_MIGRATION_STATEMENT_COUNT_ENV_MISSING", ",".join(missing))
+
+    pg_array = "{" + ",".join(versions) + "}"
+    sql = (
+        "select version,coalesce(cardinality(statements),0)::text "
+        "from supabase_migrations.schema_migrations "
+        f"where version=any('{pg_array}'::text[]) order by version"
+    )
+    command = ["docker", "run", "--rm"]
+    for name in PG_ENV_NAMES:
+        command.extend(["-e", name])
+    command.extend(
+        [
+            POSTGRES_IMAGE,
+            "psql",
+            "-X",
+            "-v",
+            "ON_ERROR_STOP=1",
+            "--csv",
+            "-t",
+            "-c",
+            sql,
+        ]
+    )
+    try:
+        proc = subprocess.run(
+            command,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            timeout=120,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        fail("FAIL_LF_MIGRATION_STATEMENT_COUNT_QUERY", type(exc).__name__)
+        raise AssertionError from exc
+    if proc.returncode != 0:
+        stderr_sha = hashlib.sha256(proc.stderr.encode("utf-8", "replace")).hexdigest()
+        fail(
+            "FAIL_LF_MIGRATION_STATEMENT_COUNT_QUERY",
+            f"exit={proc.returncode} stderr_sha256={stderr_sha}",
+        )
+    return _parse_statement_count_rows(proc.stdout, source="remote-ledger")
+
+
+def evaluate_managed_transport(
+    local: dict[str, tuple[str, str, str]],
+    remote: dict[str, tuple[str, str]],
+    statement_counts: dict[str, int],
+) -> tuple[int, int, dict[str, transport.Comparison]]:
+    if set(statement_counts) != set(remote):
+        fail(
+            "FAIL_LF_MIGRATION_STATEMENT_COUNT_SET",
+            f"missing={sorted(set(remote)-set(statement_counts))} extra={sorted(set(statement_counts)-set(remote))}",
+        )
+
+    name_mismatches = [
+        version
+        for version in sorted(local)
+        if local[version][0] != remote[version][0]
+    ]
+    if name_mismatches:
+        fail("FAIL_LF_MIGRATION_NAME_PARITY", repr(name_mismatches))
+
+    comparisons: dict[str, transport.Comparison] = {}
+    failures: list[tuple[str, str]] = []
+    for version in sorted(local):
+        name, source_sha, source_sql = local[version]
+        remote_name, remote_sha = remote[version]
+        try:
+            comparisons[version] = transport.compare_exact_source(
+                version=version,
+                source_name=name,
+                source_sql=source_sql,
+                remote_name=remote_name,
+                remote_sha256=remote_sha,
+                remote_statement_count=statement_counts[version],
+            )
+        except transport.TransportNormalizationError as exc:
+            failures.append((version, str(exc)))
+            continue
+        if comparisons[version].direct_sha256 != source_sha:
+            failures.append((version, "LOCAL_DIRECT_SHA_INTERNAL_MISMATCH"))
+    if failures:
+        fail("FAIL_LF_MIGRATION_CONTENT_PARITY", repr(failures))
+
+    direct_count = sum(
+        item.representation == "DIRECT_SOURCE" for item in comparisons.values()
+    )
+    cli_count = sum(
+        item.representation == "CLI_STATEMENT_STORAGE"
+        for item in comparisons.values()
+    )
+    return direct_count, cli_count, comparisons
+
+
+def transport_self_test() -> None:
+    direct_sql = "select 1;\n"
+    direct = transport.compare_exact_source(
+        version="20260907010101",
+        source_name="lf_transport_selftest_direct",
+        source_sql=direct_sql,
+        remote_name="lf_transport_selftest_direct",
+        remote_sha256=transport.direct_source_hash(direct_sql),
+        remote_statement_count=1,
+    )
+    if direct.representation != "DIRECT_SOURCE":
+        fail("FAIL_LF_MIGRATION_TRANSPORT_DIRECT_SELFTEST")
+
+    cli_sql = "-- header\n\nselect 1;\n"
+    cli = transport.compare_exact_source(
+        version="20260907010102",
+        source_name="lf_transport_selftest_cli",
+        source_sql=cli_sql,
+        remote_name="lf_transport_selftest_cli",
+        remote_sha256=transport.cli_statement_storage_hash(cli_sql),
+        remote_statement_count=1,
+    )
+    if cli.representation != "CLI_STATEMENT_STORAGE":
+        fail("FAIL_LF_MIGRATION_TRANSPORT_CLI_SELFTEST")
+
+    valid = "select 1;\nselect 2;"
+    mutated = "select 1\nselect 2;"
+    if transport.cli_statement_storage_hash(valid) != transport.cli_statement_storage_hash(mutated):
+        fail("FAIL_LF_MIGRATION_TRANSPORT_COLLISION_FIXTURE")
+    try:
+        transport.compare_exact_source(
+            version="20260907010103",
+            source_name="lf_transport_selftest_boundary",
+            source_sql=mutated,
+            remote_name="lf_transport_selftest_boundary",
+            remote_sha256=transport.cli_statement_storage_hash(valid),
+            remote_statement_count=2,
+        )
+    except transport.TransportNormalizationError:
+        return
+    fail("FAIL_LF_MIGRATION_TRANSPORT_BOUNDARY_SELFTEST")
+
+
 def main() -> int:
     if len(sys.argv) != 5:
         fail("FAIL_LF_MIGRATION_PARITY_USAGE", "expected migrations remote_csv grandfather_csv legacy_csv")
@@ -125,6 +298,7 @@ def main() -> int:
         fail("FAIL_CI009_COMPACT_SHA_PARSER_SELFTEST")
     if remote_content_sha256(parser_probe_sql.encode("utf-8").hex(), "SELFTEST") != parser_probe_sha:
         fail("FAIL_CI009_LEGACY_HEX_PARSER_SELFTEST")
+    transport_self_test()
 
     if not managed("promote_router_compact_jit_v1"):
         fail("FAIL_CI009_SELFTEST_MANAGED_EXACT")
@@ -197,16 +371,25 @@ def main() -> int:
         )
 
     remote_all: dict[str, tuple[str, str]] = {}
+    inline_counts: dict[str, int] = {}
     with remote_file.open(newline="", encoding="utf-8") as handle:
         for row in csv.reader(handle):
-            if len(row) != 3:
+            if len(row) not in (3, 4):
                 fail("FAIL_LF_MIGRATION_LEDGER_ROW", repr(row))
-            version, name, content_proof = row
+            version, name, content_proof = row[:3]
             if version > classification_baseline_end and not classified(name):
                 fail("FAIL_UNCLASSIFIED_POST_CUTOVER_MIGRATION", f"remote={version}_{name}")
             remote_all[version] = (name, content_proof)
+            if len(row) == 4 and managed(name):
+                try:
+                    count = int(row[3])
+                except ValueError:
+                    fail("FAIL_LF_MIGRATION_STATEMENT_COUNT_VALUE", f"version={version} value={row[3]!r}")
+                if count < 1:
+                    fail("FAIL_LF_MIGRATION_STATEMENT_COUNT_VALUE", f"version={version} value={count}")
+                inline_counts[version] = count
 
-    local: dict[str, tuple[str, str]] = {}
+    local: dict[str, tuple[str, str, str]] = {}
     for path in sorted(migrations.glob("*.sql")):
         match = FILENAME_RE.fullmatch(path.name)
         if not match:
@@ -218,7 +401,12 @@ def main() -> int:
             if version > classification_baseline_end and not classified(name):
                 fail("FAIL_UNCLASSIFIED_POST_CUTOVER_MIGRATION", f"git={path.name}")
             continue
-        local[version] = (name, hashlib.sha256(canonical(path.read_text(encoding="utf-8"))).hexdigest())
+        source_sql = path.read_text(encoding="utf-8")
+        local[version] = (
+            name,
+            hashlib.sha256(canonical(source_sql)).hexdigest(),
+            source_sql,
+        )
 
     remote: dict[str, tuple[str, str]] = {}
     for version, (name, content_proof) in remote_all.items():
@@ -228,15 +416,35 @@ def main() -> int:
 
     if set(local) != set(remote):
         fail("FAIL_LF_MIGRATION_VERSION_PARITY", f"git={sorted(local)} remote={sorted(remote)}")
-    mismatches = [version for version in sorted(local) if local[version] != remote[version]]
-    if mismatches:
-        fail("FAIL_LF_MIGRATION_CONTENT_PARITY", repr(mismatches))
+
+    if inline_counts:
+        if set(inline_counts) != set(remote):
+            fail(
+                "FAIL_LF_MIGRATION_STATEMENT_COUNT_SET",
+                f"inline_missing={sorted(set(remote)-set(inline_counts))} inline_extra={sorted(set(inline_counts)-set(remote))}",
+            )
+        statement_counts = inline_counts
+    else:
+        counts_file = os.environ.get("LF_MIGRATION_STATEMENT_COUNTS_CSV", "").strip()
+        if counts_file:
+            statement_counts = _parse_statement_count_rows(
+                pathlib.Path(counts_file).read_text(encoding="utf-8"),
+                source=counts_file,
+            )
+        else:
+            statement_counts = query_remote_statement_counts(sorted(remote))
+
+    direct_count, cli_count, _comparisons = evaluate_managed_transport(
+        local, remote, statement_counts
+    )
 
     print(
         f"PASS_LF_MIGRATION_SOURCE_PARITY: checkpoint={checkpoint_path.name} post_cutover={len(local)} "
         f"legacy={legacy_count} sha256={legacy_sha} grandfathered={grandfathered_count}/{grandfathered_sha} "
-        f"classification_baseline_end={classification_baseline_end}"
+        f"classification_baseline_end={classification_baseline_end} direct={direct_count} "
+        f"cli_statement_storage={cli_count}"
     )
+    print("PASS_LF_MIGRATION_TRANSPORT_SELFTEST=3/3")
     print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=22/22")
     return 0
 
