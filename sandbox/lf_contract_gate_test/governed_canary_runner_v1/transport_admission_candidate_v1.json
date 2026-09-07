@@ -7,13 +7,14 @@
   "secret_name": "LF_SUPABASE_DB_PASSWORD",
   "secret_value_readback": false,
   "allowed_workflow_paths": [
-    ".github/workflows/lf-contract-check.yml"
+    ".github/workflows/lf-bootstrap-reproducibility.yml"
   ],
   "same_repository_pull_request_required": true,
   "production": false,
   "merge_authorized": false,
   "automatic_promotion": false,
-  "cancel_in_progress": false,
+  "workflow_level_cancel_in_progress_must_not_interrupt_active_forward": true,
+  "activation_rule": "FINAL_COMMIT_ONLY_NO_SUBSEQUENT_COMMIT_UNTIL_LEDGER_CLOSED",
   "required_sequence": [
     "static_preflight",
     "generic_runner_preflight",
