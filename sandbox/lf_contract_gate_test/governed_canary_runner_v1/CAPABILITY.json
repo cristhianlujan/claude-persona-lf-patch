@@ -1,0 +1,79 @@
+{
+  "schema_version": "LF_CAPABILITY_LOCATOR_V1",
+  "capability_code": "LF_GOVERNED_CANARY_RUNNER_V1",
+  "aliases": [
+    "CANARY_RUNNER_LF",
+    "GOVERNED_CANARY_RUNNER",
+    "ROLLBACK_CANARY_RUNNER"
+  ],
+  "component_type": "OPERATIONAL_TEST_INFRASTRUCTURE",
+  "owner_strategy": "S28",
+  "lifecycle_status": "AVAILABLE_WITH_RESTRICTIONS",
+  "usage_authorized": true,
+  "discovery": {
+    "keywords": [
+      "canary",
+      "rollback",
+      "sandbox",
+      "exact-version",
+      "zero-residue",
+      "post-readback",
+      "reversible test"
+    ],
+    "strategy_snapshot_id": 31,
+    "strategy_payload_key": "lf_governed_canary_runner_v1",
+    "github_directory": "sandbox/lf_contract_gate_test/governed_canary_runner_v1"
+  },
+  "entrypoint": "sandbox/lf_contract_gate_test/governed_canary_runner_v1/lf_governed_canary_runner.py",
+  "contract": "sandbox/lf_contract_gate_test/governed_canary_runner_v1/LF_GOVERNED_CANARY_RUNNER_V1.yaml",
+  "consumption_card": "sandbox/lf_contract_gate_test/governed_canary_runner_v1/CONSUME.md",
+  "resolver": "sandbox/lf_contract_gate_test/governed_canary_runner_v1/resolve_capability.py",
+  "mode_availability": {
+    "GENERIC_SANDBOX": {
+      "status": "AVAILABLE",
+      "evidence": "generic E2E 5/5 with rollback and new-session zero-residue readback"
+    },
+    "REPOSITORY_ONLY": {
+      "status": "AVAILABLE",
+      "evidence": "repository-only reference consumer required before final availability readback"
+    },
+    "MIGRATION_EXACT_VERSION": {
+      "status": "BLOCKED",
+      "blocking_code": "SECURE_EXACT_VERSION_TRANSPORT_NOT_YET_PROVEN_THROUGH_GENERIC_RUNNER",
+      "note": "Runner contract supports the mode, but LF usage is not authorized until the protected transport consumer passes end-to-end."
+    },
+    "RUNTIME_CANDIDATE": {
+      "status": "BLOCKED",
+      "blocking_code": "RUNTIME_CANDIDATE_CONSUMER_NOT_YET_PROVEN",
+      "note": "A domain-specific runtime adapter and independent readback are required."
+    }
+  },
+  "hard_invariants": [
+    "production=false",
+    "merge_authorized=false",
+    "automatic_promotion=false",
+    "rollback after every attempted forward",
+    "post_readback mandatory",
+    "zero_residue must be proven by executable post-readback assertion",
+    "raw stdout/stderr not persisted",
+    "secret values not persisted",
+    "lower evidence ceiling cannot self-promote"
+  ],
+  "claim_ceiling": "SANDBOX_CANARY_EVIDENCE_ONLY_NO_PRODUCTION_OR_GOLDEN_CLAIM",
+  "consumer_protocol": [
+    "resolve capability and requested mode",
+    "read contract and consumption card",
+    "supply a domain adapter/manifest without modifying the generic runner",
+    "execute preflight -> forward -> tests -> rollback -> post_readback",
+    "persist sanitized evidence and exact fingerprints",
+    "append stage conclusion in owning strategy",
+    "request any higher promotion through a separate governed gate"
+  ],
+  "stale_when": [
+    "contract or runner source changes without revalidation",
+    "rollback or post-readback regression fails",
+    "new EKB rule contradicts the contract",
+    "a previously AVAILABLE mode produces an unresolved residue or bypass",
+    "strategy explicitly invalidates the capability"
+  ]
+}
