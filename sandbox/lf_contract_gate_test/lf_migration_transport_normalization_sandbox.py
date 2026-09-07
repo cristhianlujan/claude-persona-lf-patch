@@ -11,8 +11,9 @@ of two observed storage representations:
    delimiters and trims inter-statement boundary whitespace before persisting the
    statement array.
 
-Version and name remain exact. Content mismatches fail closed. Any future use in
-a canonical gate requires separate governed review and adversarial validation.
+Version, name and ledger statement cardinality remain exact. Content mismatches
+fail closed. Any future use in a canonical gate requires separate governed review
+and adversarial validation.
 """
 from __future__ import annotations
 
@@ -189,7 +190,8 @@ class Comparison:
     remote_sha256: str
     direct_sha256: str
     cli_storage_sha256: str
-    statement_count: int
+    source_statement_count: int
+    remote_statement_count: int
 
     def as_dict(self) -> dict[str, object]:
         return {
@@ -199,7 +201,8 @@ class Comparison:
             "remote_sha256": self.remote_sha256,
             "direct_sha256": self.direct_sha256,
             "cli_storage_sha256": self.cli_storage_sha256,
-            "statement_count": self.statement_count,
+            "source_statement_count": self.source_statement_count,
+            "remote_statement_count": self.remote_statement_count,
         }
 
 
@@ -210,6 +213,7 @@ def compare_exact_source(
     source_sql: str,
     remote_name: str,
     remote_sha256: str,
+    remote_statement_count: int,
 ) -> Comparison:
     if not VERSION_RE.fullmatch(version):
         raise TransportNormalizationError("VERSION_INVALID")
@@ -217,14 +221,26 @@ def compare_exact_source(
         raise TransportNormalizationError("NAME_MISMATCH")
     if not SHA256_RE.fullmatch(remote_sha256):
         raise TransportNormalizationError("REMOTE_SHA256_INVALID")
+    if not isinstance(remote_statement_count, int) or remote_statement_count < 1:
+        raise TransportNormalizationError("REMOTE_STATEMENT_COUNT_INVALID")
 
+    parts = split_postgres_statements(source_sql)
+    source_statement_count = len(parts)
     direct = direct_source_hash(source_sql)
-    cli_storage = cli_statement_storage_hash(source_sql)
-    statement_count = len(split_postgres_statements(source_sql))
+    cli_storage = sha256(canonical("\n".join(parts)))
 
     if remote_sha256 == direct:
+        if remote_statement_count != 1:
+            raise TransportNormalizationError(
+                f"DIRECT_STORAGE_STATEMENT_COUNT_MISMATCH:remote={remote_statement_count}:expected=1"
+            )
         representation = "DIRECT_SOURCE"
     elif remote_sha256 == cli_storage:
+        if remote_statement_count != source_statement_count:
+            raise TransportNormalizationError(
+                "CLI_STORAGE_STATEMENT_COUNT_MISMATCH:"
+                f"remote={remote_statement_count}:source={source_statement_count}"
+            )
         representation = "CLI_STATEMENT_STORAGE"
     else:
         raise TransportNormalizationError(
@@ -238,5 +254,6 @@ def compare_exact_source(
         remote_sha256=remote_sha256,
         direct_sha256=direct,
         cli_storage_sha256=cli_storage,
-        statement_count=statement_count,
+        source_statement_count=source_statement_count,
+        remote_statement_count=remote_statement_count,
     )
