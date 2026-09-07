@@ -1,0 +1,34 @@
+{
+  "schema_version": "LF_GOVERNED_CANARY_CI_ADMISSION_V1",
+  "capability_code": "LF_GOVERNED_CANARY_RUNNER_V1",
+  "mode": "MIGRATION_EXACT_VERSION",
+  "status": "CANDIDATE_NOT_YET_PROVEN",
+  "allowed_secret_transport": "GITHUB_ACTIONS_PROTECTED_SECRET",
+  "secret_name": "LF_SUPABASE_DB_PASSWORD",
+  "secret_value_readback": false,
+  "allowed_workflow_paths": [
+    ".github/workflows/lf-contract-check.yml"
+  ],
+  "same_repository_pull_request_required": true,
+  "production": false,
+  "merge_authorized": false,
+  "automatic_promotion": false,
+  "cancel_in_progress": false,
+  "required_sequence": [
+    "static_preflight",
+    "generic_runner_preflight",
+    "generic_runner_forward",
+    "generic_runner_tests",
+    "generic_runner_rollback",
+    "generic_runner_post_readback",
+    "independent_safety_finalizer",
+    "independent_final_readback"
+  ],
+  "failure_semantics": {
+    "test_failure_does_not_suppress_rollback": true,
+    "safety_finalizer_does_not_convert_failure_to_pass": true,
+    "partial_ledger_state": "FAIL_CLOSED",
+    "zero_residue_required": true
+  },
+  "claim_ceiling": "CANDIDATE_SECURE_TRANSPORT_ONLY_NO_PRODUCTION_OR_MERGE"
+}
