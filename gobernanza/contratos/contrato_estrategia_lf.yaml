@@ -1,4 +1,4 @@
-version: v0.3.1
+version: v0.3.2
 status: CANDIDATO_READ_ONLY
 operation: CREACION_ESTRATEGIA_LF
 source_model: GIT_FIRST_YAML
@@ -6,12 +6,25 @@ strategy_contract: STRATEGY-CONTRACT-V1-CANDIDATE
 policy_contract: POL-STRATEGY-CREATION-001-CANDIDATE
 ekb_hardening: S30_EKB_HARDENING_V1
 review_hardening: S30_PRODUCT_QUALITY_REVIEW_V1
+lineage:
+  supersedes_contract_version: v0.3.1
+  prior_validator_path: gobernanza/judges/validate_strategy_contract.py
+  prior_validator_blob_sha: d7d18985b0246703d73cbe51eb69bb9162ba034a
+  reason: QA-03_PRD-03_CLOSE_FRONTIER_REGRESSION
+  evidence:
+    failing_canary_run: 34075629778
+    failing_case: close_frontier_points_to_nonterminal_stage
+    repaired_canary_run: 34075791887
+    repaired_result: 22_OF_22_PASS
+  history_preserved: true
 deterministic_validator:
-  path: gobernanza/judges/validate_strategy_contract.py
-  blob_sha: d7d18985b0246703d73cbe51eb69bb9162ba034a
+  path: gobernanza/judges/validate_strategy_contract_v032.py
+  blob_sha: 4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765
+  version: v0.3.2
   modes: [prewrite, close]
   required_evidence: [validator_blob_sha, input_sha256, results_sha256, valid, blocking_codes]
   self_assertion_without_validator: BLOCKED
+  close_frontier_rule: TERMINAL_OR_LAST_DECLARED_STAGE
 required_before_write:
   - read_router
   - read_operational_source
@@ -63,6 +76,7 @@ blocked:
   - stage_conclusion_ref_mismatch
   - missing_stage_conclusion_at_close
   - stale_execution_frontier
+  - close_frontier_not_terminal_or_last_declared_stage
   - contradictory_current_state_projection
   - missing_next_gate_or_handoff
   - self_asserted_stage_or_extension_completeness_without_deterministic_validator
@@ -108,7 +122,7 @@ execution_frontier_contract:
     required_fields: [current_stage, current_action, safe_parallel_work, blockers]
   at_close:
     state: CLOSED
-    current_stage: TERMINAL_OR_LAST_COMPLETED_STAGE
+    current_stage: TERMINAL_OR_LAST_DECLARED_STAGE
     current_action: NONE
     safe_parallel_work: []
     blockers: []
