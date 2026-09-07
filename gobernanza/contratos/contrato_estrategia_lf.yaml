@@ -7,7 +7,7 @@ policy_contract: POL-STRATEGY-CREATION-001-CANDIDATE
 ekb_hardening: S30_EKB_HARDENING_V1
 review_hardening: S30_PRODUCT_QUALITY_REVIEW_V1
 deterministic_validator:
-  path: gobernanza/validators/validate_strategy_contract.py
+  path: gobernanza/judges/validate_strategy_contract.py
   blob_sha: d7d18985b0246703d73cbe51eb69bb9162ba034a
   modes: [prewrite, close]
   required_evidence: [validator_blob_sha, input_sha256, results_sha256, valid, blocking_codes]
