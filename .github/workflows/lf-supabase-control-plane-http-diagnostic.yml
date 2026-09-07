@@ -24,7 +24,6 @@ jobs:
           import json
           import os
           import urllib.error
-          import urllib.parse
           import urllib.request
 
           base = os.environ["SUPABASE_URL"].rstrip("/")
@@ -47,26 +46,32 @@ jobs:
               try:
                   with urllib.request.urlopen(request, timeout=20) as response:
                       body = response.read().decode("utf-8")
-                      return response.status, None, body
+                      return response.status, None, None, body
               except urllib.error.HTTPError as exc:
                   body = exc.read().decode("utf-8", errors="replace")
+                  code = None
+                  message = None
                   try:
                       payload = json.loads(body)
-                      code = payload.get("code") if isinstance(payload, dict) else None
+                      if isinstance(payload, dict):
+                          code = payload.get("code")
+                          message = payload.get("message") or payload.get("msg") or payload.get("error")
                   except json.JSONDecodeError:
-                      code = None
-                  return exc.code, code, body
+                      message = body[:160].replace("\n", " ")
+                  return exc.code, code, message, body
 
-          public_status, public_code, _ = probe("public")
-          print(f"DIAG_PUBLIC_SCHEMA status={public_status} code={public_code}")
+          public_status, public_code, public_message, _ = probe("public")
+          print(f"DIAG_PUBLIC_SCHEMA status={public_status} code={public_code} message={public_message}")
+          if public_status == 402:
+              raise SystemExit(f"FAIL_SUPABASE_DATA_API_GATEWAY_402 message={public_message}")
           if public_code == "PGRST106":
               raise SystemExit("FAIL_SUPABASE_PUBLIC_SCHEMA_NOT_SELECTABLE")
 
-          net_status, net_code, _ = probe("net")
-          print(f"DIAG_NET_SCHEMA status={net_status} code={net_code}")
+          net_status, net_code, net_message, _ = probe("net")
+          print(f"DIAG_NET_SCHEMA status={net_status} code={net_code} message={net_message}")
           if net_status != 406 or net_code != "PGRST106":
               raise SystemExit(
-                  f"FAIL_SUPABASE_NET_SCHEMA_EXPOSURE_GUARD status={net_status} code={net_code}"
+                  f"FAIL_SUPABASE_NET_SCHEMA_EXPOSURE_GUARD status={net_status} code={net_code} message={net_message}"
               )
 
           print("PASS_SUPABASE_NET_SCHEMA_NOT_EXPOSED_BEHAVIORAL")
