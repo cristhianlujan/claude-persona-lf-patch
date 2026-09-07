@@ -11,15 +11,7 @@
   "lifecycle_status": "AVAILABLE_WITH_RESTRICTIONS",
   "usage_authorized": true,
   "discovery": {
-    "keywords": [
-      "canary",
-      "rollback",
-      "sandbox",
-      "exact-version",
-      "zero-residue",
-      "post-readback",
-      "reversible test"
-    ],
+    "keywords": ["canary", "rollback", "sandbox", "exact-version", "zero-residue", "post-readback", "reversible test"],
     "strategy_snapshot_id": 31,
     "strategy_payload_key": "lf_governed_canary_runner_v1",
     "github_directory": "sandbox/lf_contract_gate_test/governed_canary_runner_v1"
@@ -35,7 +27,7 @@
     },
     "REPOSITORY_ONLY": {
       "status": "AVAILABLE",
-      "evidence": "repository-only reference consumer required before final availability readback"
+      "evidence": "clean-clone discovery + resolver + reference consumer PASS; evidence_sha256=a729eab183fb4a15a0ede0e7ede7529aa68927dd244cc1c18f812bd9c675230c; independent new-session zero-residue PASS"
     },
     "MIGRATION_EXACT_VERSION": {
       "status": "BLOCKED",
@@ -47,6 +39,14 @@
       "blocking_code": "RUNTIME_CANDIDATE_CONSUMER_NOT_YET_PROVEN",
       "note": "A domain-specific runtime adapter and independent readback are required."
     }
+  },
+  "health": {
+    "runner_unit_negative_suite": "PASS_9_OF_9",
+    "generic_e2e": "PASS_5_OF_5",
+    "repository_only_discovery_and_consumption": "PASS",
+    "repository_only_new_session_zero_residue": "PASS",
+    "migration_exact_version_consumer": "BLOCKED_NOT_EXECUTED",
+    "runtime_candidate_consumer": "BLOCKED_NOT_EXECUTED"
   },
   "hard_invariants": [
     "production=false",
