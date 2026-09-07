@@ -7,11 +7,6 @@ on:
         description: 'Type RUN_ONE_CANARY to execute one bounded inference'
         required: false
         default: ''
-  pull_request:
-    branches:
-      - main
-    paths:
-      - '.github/workflows/s26-cloudflare-workers-ai-readonly-preflight.yml'
 
 permissions:
   contents: read
@@ -64,7 +59,7 @@ jobs:
           echo "Target: ${TARGET_MODEL}"
 
       - name: Execute exactly one bounded Qwen canary
-        if: github.event_name == 'pull_request' || inputs.execute_canary == 'RUN_ONE_CANARY'
+        if: inputs.execute_canary == 'RUN_ONE_CANARY'
         shell: bash
         run: |
           set -euo pipefail
@@ -89,7 +84,11 @@ jobs:
             echo '- Token status: PASS'
             echo '- Model search: PASS'
             echo '- Target: `@cf/qwen/qwen3-30b-a3b-fp8`'
-            echo '- Inference executed: YES — exactly one bounded request (64 max tokens)'
+            if [[ "${{ inputs.execute_canary }}" == 'RUN_ONE_CANARY' ]]; then
+              echo '- Inference executed: YES — exactly one bounded request (64 max tokens)'
+            else
+              echo '- Inference executed: NO'
+            fi
             echo '- Worker deployed: NO'
             echo '- Cloudflare resources modified: NO'
           } >> "${GITHUB_STEP_SUMMARY}"
