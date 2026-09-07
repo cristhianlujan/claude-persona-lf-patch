@@ -104,7 +104,7 @@ end $$;
 do $$ declare r jsonb; r0 jsonb; o jsonb; begin
   r0 := pg_temp.make_receipt('CASE-HASH') - 'receipt_sha256';
   r0 := jsonb_set(r0,'{source_sha256}',to_jsonb(repeat('9',64)));
-  r := r0 || jsonb_build_object('receipt_sha256,private.fn_payload_sha256_v7(r0));
+  r := r0 || jsonb_build_object('receipt_sha256',private.fn_payload_sha256_v7(r0));
   o := public.lf_test_result_writer_v1(r,'EXEC-WRITER-REGRESSION');
   if o->>'code' <> 'SOURCE_SHA256_MISMATCH' then raise exception 'SOURCE_BINDING_NEGATIVE_FAILED %',o; end if;
   if exists(select 1 from public.lf_test_runs where test_code='CASE-HASH') then raise exception 'SOURCE_BINDING_NEGATIVE_PERSISTED'; end if;
@@ -125,3 +125,181 @@ do $$ declare r jsonb; o jsonb; begin
   if o->>'code' <> 'SOURCE_BINDING_MISSING_OR_INVALID' then raise exception 'MISSING_BINDING_NEGATIVE_FAILED %',o; end if;
   if exists(select 1 from public.lf_test_runs where test_code='CASE-NO-BINDING') then raise exception 'MISSING_BINDING_NEGATIVE_PERSISTED'; end if;
 end $$;
+
+-- Cross-envelope coherence negatives: a sealed receipt cannot contradict its normalized children.
+do $$ declare r jsonb; r0 jsonb; o jsonb; begin
+  r0 := pg_temp.make_receipt('CASE-HASH') - 'receipt_sha256';
+  r0 := jsonb_set(r0,'{channels,assertions,items,0,status}',to_jsonb('FAIL'::text));
+  r0 := r0 || jsonb_build_object('receipt_sha256',private.fn_payload_sha256_v7(r0));
+  o := public.lf_test_result_writer_v1(r0,'EXEC-WRITER-REGRESSION');
+  if o->>'code' <> 'STATUS_CHILD_EVIDENCE_CONFLICT' then raise exception 'PASS_ASSERT_FAIL_COHERENCE_NEGATIVE_FAILED %',o; end if;
+  if exists(select 1 from public.lf_test_runs where test_code='CASE-HASH') then raise exception 'PASS_ASSERT_FAIL_PERSISTED'; end if;
+end $$;
+
+do $$ declare r jsonb; r0 jsonb; o jsonb; begin
+  r0 := pg_temp.make_receipt('CASE-HEAD') - 'receipt_sha256';
+  r0 := jsonb_set(r0,'{channels,judges,items,0,verdict}',to_jsonb('FAIL'::text));
+  r0 := r0 || jsonb_build_object('receipt_sha256',private.fn_payload_sha256_v7(r0));
+  o := public.lf_test_result_writer_v1(r0,'EXEC-WRITER-REGRESSION');
+  if o->>'code' <> 'STATUS_CHILD_EVIDENCE_CONFLICT' then raise exception 'PASS_JUDGE_FAIL_COHERENCE_NEGATIVE_FAILED %',o; end if;
+end $$;
+
+do $$ declare r jsonb; r0 jsonb; o jsonb; begin
+  r0 := pg_temp.make_receipt('CASE-JUDGE') - 'receipt_sha256';
+  r0 := jsonb_set(r0,'{outcome,status}',to_jsonb('FAILED'::text));
+  r0 := jsonb_set(r0,'{exit_code}','1'::jsonb);
+  r0 := r0 || jsonb_build_object('receipt_sha256',private.fn_payload_sha256_v7(r0));
+  o := public.lf_test_result_writer_v1(r0,'EXEC-WRITER-REGRESSION');
+  if o->>'code' <> 'STATUS_CHILD_EVIDENCE_CONFLICT' then raise exception 'FAILED_WITHOUT_FAILURE_EVIDENCE_NEGATIVE_FAILED %',o; end if;
+end $$;
+
+do $$ declare r jsonb; r0 jsonb; o jsonb; begin
+  r0 := pg_temp.make_receipt('CASE-CHANNEL') - 'receipt_sha256';
+  r0 := jsonb_set(r0,'{outcome,status}',to_jsonb('REVIEW_REQUIRED'::text));
+  r0 := jsonb_set(r0,'{exit_code}','1'::jsonb);
+  r0 := r0 || jsonb_build_object('receipt_sha256',private.fn_payload_sha256_v7(r0));
+  o := public.lf_test_result_writer_v1(r0,'EXEC-WRITER-REGRESSION');
+  if o->>'code' <> 'STATUS_CHILD_EVIDENCE_CONFLICT' then raise exception 'REVIEW_WITHOUT_REVIEW_EVIDENCE_NEGATIVE_FAILED %',o; end if;
+end $$;
+
+do $$ declare r jsonb; r0 jsonb; o jsonb; begin
+  r0 := pg_temp.make_receipt('CASE-ORIGIN') - 'receipt_sha256';
+  r0 := jsonb_set(r0,'{outcome,status}',to_jsonb('BLOCKED'::text));
+  r0 := jsonb_set(r0,'{exit_code}','2'::jsonb);
+  r0 := r0 || jsonb_build_object('receipt_sha256',private.fn_payload_sha256_v7(r0));
+  o := public.lf_test_result_writer_v1(r0,'EXEC-WRITER-REGRESSION');
+  if o->>'code' <> 'STATUS_CHILD_EVIDENCE_CONFLICT' then raise exception 'BLOCKED_WITHOUT_CAUSE_NEGATIVE_FAILED %',o; end if;
+end $$;
+
+create or replace function pg_temp.make_suite_receipt(p_expected integer)
+returns jsonb language plpgsql as $$
+declare r jsonb;
+begin
+  r := jsonb_build_object(
+    'schema_version','lf-test-suite-finalize-writer/v1','executed',true,
+    'suite_run_id','11111111-1111-4111-8111-111111111111','suite_code','TS-S27-WRITER-V1',
+    'code_head_sha',repeat('a',40),'source_sha256',repeat('b',64),'configuration_sha256',repeat('c',64),
+    'evidence_origin','LIVE_EXECUTOR_RECEIPT','expected_tests_total',p_expected,
+    'timing',jsonb_build_object('started_at','2026-09-07T13:29:59.900+00:00','completed_at','2026-09-07T13:30:00.100+00:00','duration_ms',200,'measurement_source','MONOTONIC_PRODUCER')
+  );
+  return r || jsonb_build_object('receipt_sha256',private.fn_payload_sha256_v7(r));
+end $$;
+
+do $$ declare o jsonb; begin
+  o := public.lf_test_suite_finalize_writer_v1(pg_temp.make_suite_receipt(2),'EXEC-WRITER-REGRESSION');
+  if o->>'code' <> 'SUITE_TEST_COUNT_MISMATCH' then raise exception 'SUITE_COUNT_NEGATIVE_FAILED %',o; end if;
+  if (select status from public.lf_test_suite_runs where suite_run_id='11111111-1111-4111-8111-111111111111') <> 'RUNNING' then
+    raise exception 'SUITE_NEGATIVE_MUTATED_STATE';
+  end if;
+end $$;
+
+-- Suite-level AUD-018 binding negatives.
+do $$ declare r jsonb; r0 jsonb; o jsonb; begin
+  r0 := pg_temp.make_suite_receipt(1) - 'receipt_sha256';
+  r0 := jsonb_set(r0,'{source_sha256}',to_jsonb(repeat('9',64)));
+  r := r0 || jsonb_build_object('receipt_sha256',private.fn_payload_sha256_v7(r0));
+  o := public.lf_test_suite_finalize_writer_v1(r,'EXEC-WRITER-REGRESSION');
+  if o->>'code' <> 'SUITE_SOURCE_SHA256_MISMATCH' then raise exception 'SUITE_SOURCE_BINDING_NEGATIVE_FAILED %',o; end if;
+end $$;
+
+do $$ declare r jsonb; r0 jsonb; o jsonb; begin
+  r0 := pg_temp.make_suite_receipt(1) - 'receipt_sha256';
+  r0 := jsonb_set(r0,'{configuration_sha256}',to_jsonb(repeat('9',64)));
+  r := r0 || jsonb_build_object('receipt_sha256',private.fn_payload_sha256_v7(r0));
+  o := public.lf_test_suite_finalize_writer_v1(r,'EXEC-WRITER-REGRESSION');
+  if o->>'code' <> 'SUITE_CONFIGURATION_SHA256_MISMATCH' then raise exception 'SUITE_CONFIG_BINDING_NEGATIVE_FAILED %',o; end if;
+end $$;
+
+do $$ declare saved jsonb; o jsonb; begin
+  select manifest into saved from public.lf_test_suite_runs where suite_run_id='11111111-1111-4111-8111-111111111111';
+  update public.lf_test_suite_runs set manifest='{}'::jsonb where suite_run_id='11111111-1111-4111-8111-111111111111';
+  o := public.lf_test_suite_finalize_writer_v1(pg_temp.make_suite_receipt(1),'EXEC-WRITER-REGRESSION');
+  if o->>'code' <> 'SUITE_SOURCE_BINDING_MISSING_OR_INVALID' then raise exception 'SUITE_MISSING_BINDING_NEGATIVE_FAILED %',o; end if;
+  update public.lf_test_suite_runs set manifest=saved where suite_run_id='11111111-1111-4111-8111-111111111111';
+end $$;
+
+-- Defense in depth: finalizer rechecks normalized child coherence even after out-of-band drift.
+do $$ declare tr uuid; o jsonb; begin
+  select test_run_id into tr from public.lf_test_runs where test_code='CASE-POS';
+  update public.lf_test_assertion_results set status='FAIL' where test_run_id=tr and assertion_code='A01';
+  o := public.lf_test_suite_finalize_writer_v1(pg_temp.make_suite_receipt(1),'EXEC-WRITER-REGRESSION');
+  if o->>'code' <> 'SUITE_CHILD_STATUS_CONFLICT' then raise exception 'SUITE_CHILD_COHERENCE_NEGATIVE_FAILED %',o; end if;
+  update public.lf_test_assertion_results set status='PASS' where test_run_id=tr and assertion_code='A01';
+end $$;
+
+-- Defense in depth: child source/config provenance cannot drift after materialization.
+do $$ declare tr uuid; saved jsonb; o jsonb; begin
+  select test_run_id,evidence_payload into tr,saved from public.lf_test_runs where test_code='CASE-POS';
+  update public.lf_test_runs
+  set evidence_payload=jsonb_set(evidence_payload,'{source_sha256}',to_jsonb(repeat('9',64)))
+  where test_run_id=tr;
+  o := public.lf_test_suite_finalize_writer_v1(pg_temp.make_suite_receipt(1),'EXEC-WRITER-REGRESSION');
+  if o->>'code' <> 'SUITE_CHILD_SOURCE_CONFIG_BINDING_CONFLICT' then raise exception 'SUITE_CHILD_BINDING_DRIFT_NEGATIVE_FAILED %',o; end if;
+  update public.lf_test_runs set evidence_payload=saved where test_run_id=tr;
+end $$;
+
+do $$ declare r jsonb; o jsonb; replay jsonb; begin
+  r := pg_temp.make_suite_receipt(1);
+  o := public.lf_test_suite_finalize_writer_v1(r,'EXEC-WRITER-REGRESSION');
+  if o->>'outcome' <> 'MATERIALIZED' or o->>'status' <> 'PASSED' or (o->>'duration_ms')::int <> 200 then
+    raise exception 'SUITE_FINALIZE_FAILED %',o;
+  end if;
+  if (select tests_total from public.lf_test_suite_runs where suite_run_id='11111111-1111-4111-8111-111111111111') <> 1
+     or (select tests_passed from public.lf_test_suite_runs where suite_run_id='11111111-1111-4111-8111-111111111111') <> 1 then
+    raise exception 'SUITE_COUNTERS_NOT_MATERIALIZED';
+  end if;
+  replay := public.lf_test_suite_finalize_writer_v1(r,'EXEC-WRITER-REGRESSION');
+  if replay->>'outcome' <> 'REPLAY' then raise exception 'SUITE_REPLAY_FAILED %',replay; end if;
+end $$;
+
+-- Post-finalization replay must revalidate normalized evidence rather than short-circuit on receipt hash.
+do $$ declare tr uuid; saved jsonb; o jsonb; begin
+  select test_run_id,evidence_payload into tr,saved from public.lf_test_runs where test_code='CASE-POS';
+  update public.lf_test_runs
+  set evidence_payload=jsonb_set(evidence_payload,'{source_sha256}',to_jsonb(repeat('9',64)))
+  where test_run_id=tr;
+  o := public.lf_test_suite_finalize_writer_v1(pg_temp.make_suite_receipt(1),'EXEC-WRITER-REGRESSION');
+  if o->>'code' <> 'SUITE_CHILD_SOURCE_CONFIG_BINDING_CONFLICT' then raise exception 'POST_FINALIZE_SOURCE_DRIFT_NEGATIVE_FAILED %',o; end if;
+  update public.lf_test_runs set evidence_payload=saved where test_run_id=tr;
+end $$;
+
+do $$ declare tr uuid; o jsonb; begin
+  select test_run_id into tr from public.lf_test_runs where test_code='CASE-POS';
+  update public.lf_test_assertion_results set status='FAIL' where test_run_id=tr and assertion_code='A01';
+  o := public.lf_test_suite_finalize_writer_v1(pg_temp.make_suite_receipt(1),'EXEC-WRITER-REGRESSION');
+  if o->>'code' <> 'SUITE_CHILD_STATUS_CONFLICT' then raise exception 'POST_FINALIZE_STATUS_DRIFT_NEGATIVE_FAILED %',o; end if;
+  update public.lf_test_assertion_results set status='PASS' where test_run_id=tr and assertion_code='A01';
+end $$;
+
+do $$ declare tr uuid; o jsonb; begin
+  select test_run_id into tr from public.lf_test_runs where test_code='CASE-POS';
+  update public.lf_test_runs set status='FAILED',error_code='POST_FINALIZE_TEST_FAILURE' where test_run_id=tr;
+  update public.lf_test_assertion_results set status='FAIL' where test_run_id=tr and assertion_code='A01';
+  o := public.lf_test_suite_finalize_writer_v1(pg_temp.make_suite_receipt(1),'EXEC-WRITER-REGRESSION');
+  if o->>'code' <> 'SUITE_REPLAY_MATERIALIZED_STATE_DRIFT' then raise exception 'POST_FINALIZE_AGGREGATE_DRIFT_NEGATIVE_FAILED %',o; end if;
+  update public.lf_test_runs set status='PASSED',error_code=null where test_run_id=tr;
+  update public.lf_test_assertion_results set status='PASS' where test_run_id=tr and assertion_code='A01';
+  o := public.lf_test_suite_finalize_writer_v1(pg_temp.make_suite_receipt(1),'EXEC-WRITER-REGRESSION');
+  if o->>'outcome' <> 'REPLAY' then raise exception 'POST_FINALIZE_CLEAN_REPLAY_FAILED %',o; end if;
+end $$;
+
+do $$ begin
+  if has_function_privilege('anon','public.lf_test_result_writer_v1(jsonb,text)','EXECUTE')
+     or has_function_privilege('authenticated','public.lf_test_result_writer_v1(jsonb,text)','EXECUTE')
+     or not has_function_privilege('service_role','public.lf_test_result_writer_v1(jsonb,text)','EXECUTE') then
+    raise exception 'RESULT_WRITER_GRANT_CONTRACT_FAILED';
+  end if;
+  if has_function_privilege('anon','public.lf_test_suite_finalize_writer_v1(jsonb,text)','EXECUTE')
+     or has_function_privilege('authenticated','public.lf_test_suite_finalize_writer_v1(jsonb,text)','EXECUTE')
+     or not has_function_privilege('service_role','public.lf_test_suite_finalize_writer_v1(jsonb,text)','EXECUTE') then
+    raise exception 'SUITE_FINALIZER_GRANT_CONTRACT_FAILED';
+  end if;
+end $$;
+
+select jsonb_build_object(
+ 'schema_version','s27-p9-writer-regression/v1','executed',true,'positive_materialized',1,'idempotent_replay',1,
+ 'negative_controls',23,'suite_finalize_materialized',1,'suite_finalize_replay',1,'test_runs',(select count(*) from public.lf_test_runs),
+ 'assertions',(select count(*) from public.lf_test_assertion_results),
+ 'judges',(select count(*) from public.lf_test_judge_results),
+ 'artifacts',(select count(*) from public.lf_test_artifacts)
+) as regression_receipt;
