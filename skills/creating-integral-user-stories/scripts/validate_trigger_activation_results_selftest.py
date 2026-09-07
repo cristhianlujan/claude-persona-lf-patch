@@ -5,7 +5,6 @@ from __future__ import annotations
 import ast
 import copy
 import json
-import os
 import subprocess
 import sys
 import tempfile
@@ -51,8 +50,6 @@ def invoke(observation: dict, *, source_head: str = HEAD) -> tuple[int, dict]:
     with tempfile.TemporaryDirectory(prefix="trigger-activation-selftest-") as tmp:
         path = Path(tmp) / "observation.json"
         path.write_text(json.dumps(observation, ensure_ascii=False), encoding="utf-8")
-        env = os.environ.copy()
-        env["PYTHONDONTWRITEBYTECODE"] = "1"
         proc = subprocess.run(
             [
                 sys.executable, str(RUNNER),
@@ -63,7 +60,6 @@ def invoke(observation: dict, *, source_head: str = HEAD) -> tuple[int, dict]:
                 "--skill", str(SKILL),
                 "--source-head", source_head,
             ],
-            env=env,
             text=True,
             capture_output=True,
         )
