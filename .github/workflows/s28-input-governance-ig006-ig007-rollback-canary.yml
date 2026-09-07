@@ -29,6 +29,7 @@ jobs:
       BASELINE_REBIND_SHA: "1bbf57bb5f51fff22e540664a3fe4e07a547a5e62b855c69abb2f981e5d92c79"
       BASELINE_ASSERTIONS_SHA: "d02e3d07523debdb2acf38f46a7ebfd4c0b7d8d5238ed4b5d13de3581e9d4822"
       BASELINE_REBIND_ASSERTION_SHA: "b3ab572553e592fa8e8c64b9031ec741936995be67c2c469c2a0834ce11d6f9e"
+      BASELINE_INSERT_GUARD_SHA: "d000493dce8f7d25139c20c75025a0a0c6dd5041547f6469aecf6d373acad574"
 
     steps:
       - name: Checkout exact PR head
@@ -62,6 +63,7 @@ jobs:
             v_rebind text;
             v_assertions text;
             v_rebind_assertion text;
+            v_guard text;
             v_exec text;
             v_candidates integer;
             v_test_runs integer;
@@ -69,11 +71,13 @@ jobs:
             select pg_get_functiondef('programacion.fn_input_governance_curator_rebind_v1(integer,text,text,boolean)'::regprocedure),
                    pg_get_functiondef('programacion.fn_input_v58_build_assertions(bigint,bigint,text)'::regprocedure),
                    pg_get_functiondef('programacion.fn_input_rebind_assertion(bigint,text,jsonb)'::regprocedure),
+                   pg_get_functiondef('programacion.fn_guard_input_family_assessment_insert()'::regprocedure),
                    pg_get_functiondef('programacion.fn_input_governance_execute(integer,text)'::regprocedure)
-              into v_rebind,v_assertions,v_rebind_assertion,v_exec;
+              into v_rebind,v_assertions,v_rebind_assertion,v_guard,v_exec;
             if encode(extensions.digest(convert_to(v_rebind,'UTF8'),'sha256'),'hex') <> '${BASELINE_REBIND_SHA}' then raise exception 'S28_IG006_REBIND_BASELINE_SHA_DRIFT'; end if;
             if encode(extensions.digest(convert_to(v_assertions,'UTF8'),'sha256'),'hex') <> '${BASELINE_ASSERTIONS_SHA}' then raise exception 'S28_IG006_ASSERTIONS_BASELINE_SHA_DRIFT'; end if;
             if encode(extensions.digest(convert_to(v_rebind_assertion,'UTF8'),'sha256'),'hex') <> '${BASELINE_REBIND_ASSERTION_SHA}' then raise exception 'S28_IG006_REBIND_ASSERTION_BASELINE_SHA_DRIFT'; end if;
+            if encode(extensions.digest(convert_to(v_guard,'UTF8'),'sha256'),'hex') <> '${BASELINE_INSERT_GUARD_SHA}' then raise exception 'S28_IG007_INSERT_GUARD_BASELINE_SHA_DRIFT'; end if;
             if position('fn_input_governance_curator_rebind_candidate_v1' in v_exec)>0 then raise exception 'S28_IG006_LIVE_EXECUTE_ALREADY_CANDIDATE'; end if;
 
             perform 'programacion.fn_input_governance_bootstrap_classify_v2_cached_v2(integer,text,bigint,jsonb)'::regprocedure;
@@ -139,6 +143,7 @@ jobs:
             v_rebind text;
             v_assertions text;
             v_rebind_assertion text;
+            v_guard text;
             v_exec text;
           begin
             select count(*) into v_candidates from pg_proc p join pg_namespace n on n.oid=p.pronamespace
@@ -153,11 +158,13 @@ jobs:
             select pg_get_functiondef('programacion.fn_input_governance_curator_rebind_v1(integer,text,text,boolean)'::regprocedure),
                    pg_get_functiondef('programacion.fn_input_v58_build_assertions(bigint,bigint,text)'::regprocedure),
                    pg_get_functiondef('programacion.fn_input_rebind_assertion(bigint,text,jsonb)'::regprocedure),
+                   pg_get_functiondef('programacion.fn_guard_input_family_assessment_insert()'::regprocedure),
                    pg_get_functiondef('programacion.fn_input_governance_execute(integer,text)'::regprocedure)
-              into v_rebind,v_assertions,v_rebind_assertion,v_exec;
+              into v_rebind,v_assertions,v_rebind_assertion,v_guard,v_exec;
             if encode(extensions.digest(convert_to(v_rebind,'UTF8'),'sha256'),'hex') <> '${BASELINE_REBIND_SHA}' then raise exception 'S28_IG006_POST_REBIND_SHA_DRIFT'; end if;
             if encode(extensions.digest(convert_to(v_assertions,'UTF8'),'sha256'),'hex') <> '${BASELINE_ASSERTIONS_SHA}' then raise exception 'S28_IG006_POST_ASSERTIONS_SHA_DRIFT'; end if;
             if encode(extensions.digest(convert_to(v_rebind_assertion,'UTF8'),'sha256'),'hex') <> '${BASELINE_REBIND_ASSERTION_SHA}' then raise exception 'S28_IG006_POST_REBIND_ASSERTION_SHA_DRIFT'; end if;
+            if encode(extensions.digest(convert_to(v_guard,'UTF8'),'sha256'),'hex') <> '${BASELINE_INSERT_GUARD_SHA}' then raise exception 'S28_IG007_POST_INSERT_GUARD_SHA_DRIFT'; end if;
             if position('fn_input_governance_curator_rebind_candidate_v1' in v_exec)>0 then raise exception 'S28_IG006_POST_LIVE_EXECUTE_CONTAMINATED'; end if;
           end;
           \$verify\$;
