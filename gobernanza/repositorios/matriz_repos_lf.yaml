@@ -1,11 +1,15 @@
-version: v0.3
+version: v0.4
 status: CANDIDATO_READ_ONLY
 project: 00_GOBERNANZA_PORTAFOLIO_OPERATIVO_LF
 rule: CTRL_NO_ASSUME_WHEN_READ_ACCESS_EXISTS
+change_log:
+  - version: v0.4
+    change: authorize governed strategy artifacts under /strategies/ only through operation-specific contract, registered destination and LF_OPERATION_CONTRACT_RECEIPT
+    source_strategy: S30
 repositories:
   - id: lf_artifacts
     repo: cristhianlujan/claude-persona-lf-patch
-    use: profiles_skills_cards_lf
+    use: profiles_skills_cards_strategies_lf
     path_language: en
     path_language_note: structural identifiers are not translated across handoffs
     allowed_paths:
@@ -14,10 +18,22 @@ repositories:
       - /skills/
       - /skills/_template/
       - /cards/
+      - /strategies/
       - /gobernanza/contratos/
       - /gobernanza/procedimientos/
       - /gobernanza/repositorios/
       - /gobernanza/judges/
+    governed_path_policies:
+      - path: /strategies/
+        status: AUTHORIZED_GOVERNED
+        required_operation: CREACION_ESTRATEGIA_LF
+        required_destination_registry: public.lf_artifact_destination_registry
+        required_receipt: LF_OPERATION_CONTRACT_RECEIPT
+        status_ceiling: CANDIDATO_READ_ONLY
+        runtime_state_ceiling: PLAN_ONLY
+        impact_policy_ceiling: BLOQUEADO
+        automatic_main_or_production_promotion: false
+        note: repository authorization does not activate runtime or production; operation contract and destination registry remain mandatory
     legacy_exceptions:
       - path: /skills/creating-integral-user-stories/perfiles/
         status: FROZEN
@@ -31,4 +47,4 @@ repositories:
     use: marketplace_ssot
     allowed_paths: []
     status: FROZEN_FOR_LF_ARTIFACTS
-    note: no crear perfiles, skills ni cards LF aqui sin decision explicita
+    note: no crear perfiles, skills, cards ni strategies LF aqui sin decision explicita

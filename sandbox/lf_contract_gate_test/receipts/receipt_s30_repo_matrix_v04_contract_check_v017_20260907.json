@@ -1,0 +1,21 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "GITHUB_CONTRACT_GATE_LF",
+  "execution_id": "EXEC-S30-GITHUB-GATE-REPO-MATRIX-V017-20260907-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "MIGRATION_20260531_GITHUB_CONTRACT_GATE_LF_PROTOCOL",
+  "judge_sha": "JUDGE-GITHUB-CONTRACT-GATE-LF-READONLY-PROTOCOL-v0.1",
+  "source_sha_list": [
+    "e6ee7f588699695554dd1cbbf98232b24ba93ffc",
+    "56ab98e51133178378113ad5a1a9f2b8fa0abef7"
+  ],
+  "target_paths": [
+    "gobernanza/repositorios/matriz_repos_lf.yaml"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-07T04:16:30Z",
+  "notes": "S30 repository-governance coherence. Contract-check v0.17 makes gobernanza/repositorios receipt-required, never direct-allowed. Matrix v0.4 authorizes /strategies/ only for governed Strategy Factory flow. No main/runtime/production authority."
+}
