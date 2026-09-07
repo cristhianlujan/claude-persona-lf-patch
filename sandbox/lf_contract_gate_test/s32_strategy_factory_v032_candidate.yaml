@@ -306,7 +306,6 @@ closure_criteria:
   - aggregate judge PASS
   - factory policy contract step-contract judges and bindings demoted to candidate
   - main runtime production unchanged
-strategy_archetype: CANARY_VALIDATION
 type_extension:
   proof_target: Strategy Factory v0.3.2 self-hosted creation and close-frontier correctness
   positive_case: fresh two-stage S32 candidate passes prewrite and close only with complete stage/conclusion/frontier semantics
