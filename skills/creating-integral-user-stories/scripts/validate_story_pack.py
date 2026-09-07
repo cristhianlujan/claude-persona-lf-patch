@@ -31,7 +31,8 @@ def result_schema_errors(v):
     try: import jsonschema
     except ImportError as e: raise ValidationInputError("jsonschema_not_available") from e
     s=obj(load_json(jr_schema()),"judge_result_schema"); jsonschema.Draft7Validator.check_schema(s)
-    return sorted(f"{'/'.join(map(str,e.absolute_path)) or '$'}:{e.message}" for e in jsonschema.Draft7Validator(s).iter_errors(v))
+    local=copy.deepcopy(s); local.pop("$id",None)
+    return sorted(f"{'/'.join(map(str,e.absolute_path)) or '$'}:{e.message}" for e in jsonschema.Draft7Validator(local).iter_errors(v))
 def missing_s(v,n=1): return 0 if isinstance(v,str) and len(v.strip())>=n else 1
 def missing_a(v): return 0 if isinstance(v,list) and v else 1
 
