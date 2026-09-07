@@ -1,5 +1,5 @@
 judge_code: J11_SKILL_PACKAGE
-version: v0.5
+version: v0.6
 status: CANDIDATO_READ_ONLY
 scope: Verifica inventario exacto, calidad por tier, referencias, consistencia contrato-schema, scripts y evaluaciones.
 independence: worker_must_not_execute_own_judge
@@ -25,6 +25,8 @@ pass_if:
   - contract_schema_consistency_errors = 0
   - script_compilation_errors = 0
   - required_negative_evals_accepted = 0
+  - context_budget_positive_control = PASS_WITH_EVIDENCE
+  - context_budget_negative_control = RETURN_TO_WORKER
 fail_if:
   - schema_validation_error = true
   - threshold_weakening_detected = true
@@ -43,6 +45,7 @@ required_evidence:
   - contract_schema_consistency
   - positive_eval_results
   - negative_eval_results
+  - context_budget_control_results
 repair_matrix:
   - assertion_id: artifacts_below_threshold
     instruction: Reparar cada artefacto bajo su umbral; no cambiar el tier ni reducir la rúbrica.
@@ -50,7 +53,11 @@ repair_matrix:
   - assertion_id: contract_schema_consistency_errors
     instruction: Alinear campos declarados en contrato y schema y repetir el fixture negativo.
     prohibited_shortcuts: [ignore_field, weaken_schema, delete_contract_requirement, self_approve]
+  - assertion_id: context_budget_policy_violation
+    instruction: Reparar el Story Pack contra la política LF de presupuesto de contexto sin relajar umbrales ni trasladar la validación a J03.
+    prohibited_shortcuts: [lower_threshold, bypass_context_gate, move_context_budget_to_J03, self_approve]
 validator_ref: scripts/validate_package_v13.py
+context_budget_policy_ref: supabase://public.lf_eventos/795
 output:
   schema_ref: schemas/judge-result.schema.json
   required_fields: [judge_code, result, compliance_bit, failed_assertions, blocking_assertions, evidence_refs, evidence, repair_instructions, retry_count, judged_at]

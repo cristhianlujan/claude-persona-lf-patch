@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
-"""J11 v1.3 package gate with semantic runtime evidence and real M7 chain proof.
+"""J11 v1.4 package gate with semantic runtime evidence and real M7 chain proof.
 
 The legacy v1.2 package gate remains untouched. JSON evidence declaring
 `evidence_kind=REAL_SCREEN_RUN` is audited as RUNTIME_EVIDENCE (1-50 KB,
-NUCLEO); synthetic fixtures retain the original fixture band. The v1.3
+NUCLEO); synthetic fixtures retain the original fixture band. The v1.4
 self-test also executes the current locked real-screen v0.2 chain through
 J01/J00/visual adjudication/J02/visual bridge/J08/J10 before J11 passes.
 """
 from __future__ import annotations
+import argparse
 import ast
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -18,7 +20,7 @@ from pathlib import Path
 from typing import Any
 
 import validate_package as legacy
-from lf_common import ValidationInputError, failure
+from lf_common import ValidationInputError, emit, failure, result_object, sha256_file
 import validate_real_visual_runtime_v02 as visual_runtime
 import validate_screen_decomposition_visual as j02
 import validate_screen_ingestion_v02 as j00
@@ -26,9 +28,23 @@ import validate_source_integrity as j01
 import validate_test_coverage as j10
 import validate_visual_evidence_bridge as bridge
 
-VERSION="v1.3"
+VERSION="v1.4"
 RUNTIME_FIXTURE="evals/fixtures/real_screen_onboarding_step1_blind_run.json"
 REFERENCE_FIXTURE="evals/fixtures/real_screen_onboarding_step1_reference.json"
+CONTEXT_BUDGET_POLICY_REF="supabase://public.lf_eventos/795"
+CONTEXT_BUDGET_ASSERTIONS=(
+    "context_budget_missing",
+    "measurement_method_missing_or_invalid",
+    "canonical_story_tokens_invalid",
+    "implementation_view_tokens_invalid",
+    "active_context_tokens_invalid",
+    "direct_load_over_12000_tokens",
+    "specialized_view_requirement_missing",
+    "oversized_story_without_atomicity_review",
+    "active_context_over_15000_tokens",
+    "implementation_view_tokens_unmeasured_when_required",
+    "tokens_messages_confused_with_context_budget",
+)
 TOKEN_TYPES={"CONTROL","ICON","COLOR_APPEARANCE","TYPOGRAPHY_APPEARANCE","SPACING_APPEARANCE","SIZE_RADIUS_APPEARANCE","VISUAL_STATE","PROGRESS"}
 MESSAGE_TYPES={"COPY","PLACEHOLDER","LINK","CONSENT","SECURITY_TRUST"}
 RESP_TYPES={"RESPONSIVE","ACCESSIBILITY"}
@@ -254,12 +270,111 @@ def real_chain(root:Path)->dict[str,Any]:
       "j11":"THIS_SELF_TEST","j12_j13":"EXACT_HEAD_CI_REQUIRED",
     }
 
+def context_budget_checks(pack:dict[str,Any])->dict[str,int]:
+    dependencies=pack.get("dependencies_risks") if isinstance(pack,dict) else None
+    budget=dependencies.get("context_budget") if isinstance(dependencies,dict) else None
+    checks={name:0 for name in CONTEXT_BUDGET_ASSERTIONS}
+    if not isinstance(budget,dict):
+        checks["context_budget_missing"]=1
+        return checks
+
+    methods={"ANTHROPIC_COUNT_TOKENS","TOKENIZER","ESTIMATE"}
+    if budget.get("measurement_method") not in methods:
+        checks["measurement_method_missing_or_invalid"]=1
+
+    numeric={}
+    for key in ("canonical_story_tokens","implementation_view_tokens","active_context_tokens"):
+        value=budget.get(key)
+        valid=isinstance(value,int) and not isinstance(value,bool) and value>=0
+        numeric[key]=value if valid else None
+        if not valid:
+            checks[f"{key}_invalid"]=1
+
+    canonical=numeric["canonical_story_tokens"]
+    active=numeric["active_context_tokens"]
+    implementation=numeric["implementation_view_tokens"]
+    over_canonical=canonical is not None and canonical>12000
+    over_active=active is not None and active>15000
+
+    if over_canonical and budget.get("direct_load_allowed") is not False:
+        checks["direct_load_over_12000_tokens"]=1
+    if over_canonical and budget.get("specialized_views_required") is not True:
+        checks["specialized_view_requirement_missing"]=1
+    if over_canonical and (
+        budget.get("atomicity_review_required") is not True
+        or budget.get("atomicity_review_result") not in {"ATOMIC","SPLIT_REQUIRED"}
+    ):
+        checks["oversized_story_without_atomicity_review"]=1
+    if over_active and budget.get("direct_load_allowed") is not False:
+        checks["active_context_over_15000_tokens"]=1
+    if budget.get("specialized_views_required") is True and not (
+        isinstance(implementation,int) and implementation>0
+    ):
+        checks["implementation_view_tokens_unmeasured_when_required"]=1
+
+    tokens_messages=pack.get("tokens_messages") if isinstance(pack,dict) else None
+    if isinstance(tokens_messages,dict) and "context_budget" in tokens_messages:
+        checks["tokens_messages_confused_with_context_budget"]=1
+    return checks
+
+
+def context_budget_result(
+    pack:dict[str,Any], *, input_ref:str, input_sha256:str, evidence_refs:list[str],
+    executor_identity:str|None, command:str,
+)->dict[str,Any]:
+    checks=context_budget_checks(pack)
+    failed=[name for name in CONTEXT_BUDGET_ASSERTIONS if checks[name]]
+    repairs=[
+        failure(name,"dependencies_risks.context_budget",f"Repair LF context-budget policy assertion: {name}")
+        for name in failed
+    ]
+    blockers=[] if str(executor_identity or "").strip() else ["executor_identity_missing"]
+    schema_path=Path(__file__).resolve().parent.parent/"schemas/story-pack.schema.json"
+    evidence={
+        "checks":checks,
+        "policy_ref":CONTEXT_BUDGET_POLICY_REF,
+        "input_ref":input_ref,
+        "input_sha256":input_sha256,
+        "story_pack_schema_sha256":sha256_file(schema_path),
+        "context_budget":(
+            pack.get("dependencies_risks",{}).get("context_budget")
+            if isinstance(pack.get("dependencies_risks"),dict) else None
+        ),
+    }
+    return result_object(
+        legacy.JUDGE,failed,evidence,evidence_refs or [input_ref],repairs,blockers,
+        retry_count=0,judge_version=VERSION,executor_identity=executor_identity,command=command,
+    )
+
+
+def _context_budget_controls(root:Path)->dict[str,Any]:
+    registry=_load(root/"evals/evals.json")
+    cases={str(x.get("id")):x for x in registry.get("executable_cases",[]) if isinstance(x,dict)}
+    expected={"E21_STORY_CORE_POSITIVE":"PASS_WITH_EVIDENCE","E22_STORY_CORE_NEGATIVE":"RETURN_TO_WORKER"}
+    results={}
+    for case_id,expected_result in expected.items():
+        case=cases.get(case_id) or {}
+        pack=case.get("candidate_story_pack") if isinstance(case.get("candidate_story_pack"),dict) else {}
+        out=context_budget_result(
+            pack,input_ref=f"evals/evals.json#{case_id}",input_sha256=_sha(pack),
+            evidence_refs=[f"self-test://context-budget/{case_id}"],
+            executor_identity="J11_CONTEXT_BUDGET_SELF_TEST",command=f"self-test:context-budget:{case_id}",
+        )
+        results[case_id]={
+            "expected_result":expected_result,"actual_result":out.get("result"),
+            "failed_assertions":out.get("failed_assertions",[]),
+            "matched":out.get("result")==expected_result,
+        }
+    return {"cases":results,"passed":all(item["matched"] for item in results.values())}
+
+
 def self_test():
     root=Path(__file__).resolve().parent.parent
     base=_orig_self_test()
     semantic=is_runtime(root,RUNTIME_FIXTURE)
     synthetic=not is_runtime(root,"evals/fixtures/screen_ingestion_dense.json")
     chain=real_chain(root)
+    context_budget=_context_budget_controls(root)
     wrapper_path=root/"scripts"/"validate_screen_decomposition_visual.py"
     wrapper_body=wrapper_path.read_text(encoding="utf-8")
     wrapper_dims=structured_dimensions(wrapper_path.name,"SCRIPT",wrapper_body,ast.parse(wrapper_body))
@@ -275,10 +390,23 @@ def self_test():
     look_dims=structured_dimensions("lookalike.py","SCRIPT",lookalike,ast.parse(lookalike))
     look_map={d.name:d.passed for d in look_dims}
     wrapper_rubric=wrapper_map.get("output_contract") is True and wrapper_map.get("negative_behavior") is True and look_map.get("negative_behavior") is False
-    ok=base==0 and semantic and synthetic and chain["local_chain_pass"] is True and wrapper_rubric
-    print(json.dumps({"judge_code":legacy.JUDGE,"quality_gate_version":VERSION,"runtime_evidence_semantic_classification":semantic,"synthetic_fixture_preserved":synthetic,"delegated_wrapper_rubric":wrapper_rubric,"real_visual_e2e":chain,"self_test_pass":ok},ensure_ascii=False,sort_keys=True))
+    ok=base==0 and semantic and synthetic and chain["local_chain_pass"] is True and wrapper_rubric and context_budget["passed"] is True
+    print(json.dumps({"judge_code":legacy.JUDGE,"quality_gate_version":VERSION,"runtime_evidence_semantic_classification":semantic,"synthetic_fixture_preserved":synthetic,"delegated_wrapper_rubric":wrapper_rubric,"real_visual_e2e":chain,"context_budget_controls":context_budget,"self_test_pass":ok},ensure_ascii=False,sort_keys=True))
     return 0 if ok else 1
 legacy.self_test=self_test
 
-def main(): return legacy.main()
+def main():
+    if "--context-budget-input" not in sys.argv[1:]:
+        return legacy.main()
+    parser=argparse.ArgumentParser(description="J11 context-budget story-pack gate")
+    parser.add_argument("--context-budget-input",required=True,type=Path)
+    parser.add_argument("--evidence-ref",action="append",default=[])
+    parser.add_argument("--executor-identity",default=os.getenv("LF_EXECUTOR_IDENTITY"))
+    args=parser.parse_args()
+    pack=_load(args.context_budget_input)
+    out=context_budget_result(
+        pack,input_ref=f"file:{args.context_budget_input}",input_sha256=sha256_file(args.context_budget_input),
+        evidence_refs=args.evidence_ref,executor_identity=args.executor_identity,command=" ".join(sys.argv),
+    )
+    return emit(out)
 if __name__=="__main__": raise SystemExit(legacy.main_guard(legacy.JUDGE,main))
