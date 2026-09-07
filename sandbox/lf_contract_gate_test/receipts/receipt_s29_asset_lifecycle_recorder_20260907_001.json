@@ -1,0 +1,25 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "GITHUB_CONTRACT_GATE_LF",
+  "execution_id": "EXEC-S29-GITHUB-GATE-LIFECYCLE-RECORDER-20260907-001",
+  "result": "PASS",
+  "all_required_steps_pass": true,
+  "contract_sha": "MIGRATION_20260531_GITHUB_CONTRACT_GATE_LF_PROTOCOL",
+  "judge_sha": "MIGRATION_20260531_GITHUB_CONTRACT_GATE_LF_PROTOCOL",
+  "source_sha_list": [
+    "9675786b675ee5dcc4d8403ad40ee57244fb244e",
+    "46ac138b41c6c733a7186a0ba4aef58f5dbdea11",
+    "2b644bb6cb967e2afe041d0c00451512f432f1dc",
+    "4beee0816662e30b97a2cc99355882299f2f0e9750ea490771de0f5f67ee0d44"
+  ],
+  "target_paths": [
+    "gobernanza/procedimientos/lf_asset_lifecycle_operation_recorder_v1.sql",
+    "supabase/migrations/20260907194340_lf_asset_lifecycle_operation_recorder_v1.sql",
+    "sandbox/lf_contract_gate_test/s29_asset_lifecycle_recorder_contract_test.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-07T19:50:31Z",
+  "notes": "Controlled read-only certification of the S29 lifecycle recorder source bundle. GITHUB_CONTRACT_GATE_LF required steps 9/9 PASS, fail=0, blocked=0. Candidate branch only; no main merge, runtime enablement, production authorization, or Supabase DDL deployment."
+}
