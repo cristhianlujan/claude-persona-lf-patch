@@ -1,21 +1,27 @@
-version: v0.3.2
+version: v0.3.3
 status: CANDIDATO_READ_ONLY
 operation: CREACION_ESTRATEGIA_LF
 source_model: GIT_FIRST_YAML
 strategy_contract: STRATEGY-CONTRACT-V1-CANDIDATE
 policy_contract: POL-STRATEGY-CREATION-001-CANDIDATE
+progress_contract: STRATEGY_PROGRESS_CONTRACT_V1
+progress_contract_path: gobernanza/contratos/contrato_progreso_estrategia_lf.yaml
+progress_contract_blob_sha: 4454678211b6b9e73c68c3bec02711e73429ad18
+progress_validator_path: gobernanza/judges/validate_strategy_progress.py
+progress_validator_blob_sha: 72fb1444ab1cc45303dead4235826866c9399853
 ekb_hardening: S30_EKB_HARDENING_V1
 review_hardening: S30_PRODUCT_QUALITY_REVIEW_V1
 lineage:
-  supersedes_contract_version: v0.3.1
-  prior_validator_path: gobernanza/judges/validate_strategy_contract.py
-  prior_validator_blob_sha: d7d18985b0246703d73cbe51eb69bb9162ba034a
-  reason: QA-03_PRD-03_CLOSE_FRONTIER_REGRESSION
+  supersedes_contract_version: v0.3.2
+  prior_validator_path: gobernanza/judges/validate_strategy_contract_v032.py
+  prior_validator_blob_sha: 4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765
+  reason: STRATEGY_PROGRESS_HETEROGENEOUS_CARRIER_REPAIR
   evidence:
-    failing_canary_run: 34075629778
-    failing_case: close_frontier_points_to_nonterminal_stage
-    repaired_canary_run: 34075791887
-    repaired_result: 22_OF_22_PASS
+    ekb_rule: STRATEGY-PROGRESS-CANONICAL-CONTRACT-001
+    normalized_strategies: 9
+    normalized_keyset_count: 1
+    normalized_key_count: 26
+    payload_sha_preserved: 9_OF_9
   history_preserved: true
 deterministic_validator:
   path: gobernanza/judges/validate_strategy_contract_v032.py
@@ -25,6 +31,13 @@ deterministic_validator:
   required_evidence: [validator_blob_sha, input_sha256, results_sha256, valid, blocking_codes]
   self_assertion_without_validator: BLOCKED
   close_frontier_rule: TERMINAL_OR_LAST_DECLARED_STAGE
+progress_validator:
+  path: gobernanza/judges/validate_strategy_progress.py
+  blob_sha: 72fb1444ab1cc45303dead4235826866c9399853
+  version: v1.0
+  modes: [prewrite_projection, readback]
+  required_evidence: [validator_blob_sha, row_context, progress_projection_or_readback, results_sha256, valid, blocking_codes]
+  self_assertion_without_validator: BLOCKED
 required_before_write:
   - read_router
   - read_operational_source
@@ -35,6 +48,7 @@ required_before_write:
   - policy_set_fingerprint_present
   - read_repo_matrix
   - read_contract
+  - read_progress_contract
   - validate_repo
   - validate_path
   - declared_paths_exist_in_tree
@@ -49,6 +63,8 @@ required_before_write:
   - qdp_and_evidence_ceiling_attached
   - operability_controls_attached_when_applicable
   - execution_frontier_current
+  - strategy_progress_projection_materialized
+  - deterministic_strategy_progress_validator_prewrite_pass
   - deterministic_strategy_validator_prewrite_pass
   - lint_pass
   - conflict_check_pass
@@ -59,6 +75,7 @@ allowed:
   runtime_state: PLAN_ONLY
   automatic_impact: BLOQUEADO
   supabase_snapshot_store: public.lf_strategy_snapshots
+  progress_carrier: public.lf_strategy_snapshots.metadata.progress
 blocked:
   - write_without_router
   - write_without_ekb_preflight
@@ -66,6 +83,7 @@ blocked:
   - assume_policy_inheritance
   - write_without_policy_set_fingerprint
   - write_without_contract
+  - write_without_progress_contract
   - write_without_dependency_currentness
   - unknown_strategy_type_without_extension
   - missing_required_type_extension_field
@@ -76,10 +94,16 @@ blocked:
   - stage_conclusion_ref_mismatch
   - missing_stage_conclusion_at_close
   - stale_execution_frontier
+  - stale_strategy_progress
+  - progress_row_state_mismatch
+  - progress_payload_sha_mismatch
+  - progress_percent_without_deterministic_denominator
+  - prior_evidence_counted_as_current_material_work
   - close_frontier_not_terminal_or_last_declared_stage
   - contradictory_current_state_projection
   - missing_next_gate_or_handoff
   - self_asserted_stage_or_extension_completeness_without_deterministic_validator
+  - self_asserted_progress_without_deterministic_validator
   - validator_input_sha_mismatch
   - validator_result_invalid
   - same_statement_readback_as_closure_evidence
@@ -90,6 +114,7 @@ blocked:
   - enable_runtime
   - automatic_production_promotion
   - close_without_independent_readback
+  - close_without_progress_refresh_readback
 required_strategy_blocks:
   - problem_statement
   - objective
@@ -126,8 +151,21 @@ execution_frontier_contract:
     current_action: NONE
     safe_parallel_work: []
     blockers: []
+  progress_alignment:
+    required: true
+    fields: [current_stage, current_action, next_gate, blockers, safe_parallel_work]
+    rule: execution_frontier and metadata.progress cannot project contradictory current state
   stale_frontier_blocks_close: true
   contradictory_current_state_blocks_close: true
+strategy_progress_contract:
+  contract_code: STRATEGY_PROGRESS_CONTRACT_V1
+  carrier: public.lf_strategy_snapshots.metadata.progress
+  exact_keyset_required: true
+  legacy_payload_preserved: true
+  completion_percent_requires_deterministic_denominator: true
+  historical_evidence_does_not_increment_current_run_material_units: true
+  refresh_events: [EXECUTION_START_CURRENTNESS_READ, AFTER_MATERIAL_MUTATION, AFTER_STAGE_CONCLUSION, BEFORE_RUN_CLOSE, BEFORE_SCHEDULER_REPROGRAM]
+  close_requires_independent_progress_readback: true
 strategy_type_extensions:
   resolution_required: true
   custom_requires_extension_schema_ref: true
@@ -163,6 +201,8 @@ bootstrap:
 readback:
   returning_is_receipt_only: true
   independent_post_write_readback_required: true
+  strategy_progress_readback_required: true
+  progress_validator_required_on_readback: true
 timeout_policy:
   blind_timeout_extension_forbidden: true
   phases: [queue_wait, claim, prefill_or_input_prepare, generation_or_inference, persist, readback, caller_or_job]
@@ -176,6 +216,10 @@ required_after_write:
   - strategy_snapshot_id
   - exact_strategy_version
   - policy_set_fingerprint_readback
+  - strategy_progress_exact_keyset_readback
+  - strategy_progress_row_state_alignment_readback
+  - strategy_progress_payload_sha_readback
+  - deterministic_strategy_progress_validator_readback_pass
   - all_required_steps_pass
   - all_stage_schemas_complete
   - all_stage_conclusions_current_and_bound
