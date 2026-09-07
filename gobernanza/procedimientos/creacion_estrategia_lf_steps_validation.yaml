@@ -1,24 +1,25 @@
-version: v0.2
+version: v0.3
 status: CANDIDATO_READ_ONLY
 operation: CREACION_ESTRATEGIA_LF
 source_model: GIT_FIRST_YAML
 ekb_hardening: S30_EKB_HARDENING_V1
+review_hardening: S30_PRODUCT_QUALITY_REVIEW_V1
 steps:
   - order: 24
     id: strategy_lint
-    evidence: strategy_contract_lint_pass
+    evidence: strategy_contract_lint_pass_including_archetype_stage_schema_and_frontier
   - order: 25
     id: policy_conflict_check
     evidence: no_unresolved_policy_conflicts
   - order: 26
     id: semantic_consistency
-    evidence: problem_objective_scope_stage_consistency_pass
+    evidence: problem_objective_scope_stage_archetype_and_next_gate_consistency_pass
   - order: 27
     id: compatibility_check
     evidence: existing_strategy_compatibility_assessed
   - order: 28
     id: stage_conclusion_contract
-    evidence: append_only_stage_conclusion_template_present
+    evidence: exactly_one_current_append_only_conclusion_per_stage_with_resolved_conclusion_ref
   - order: 29
     id: evidence_index
     evidence: exact_evidence_refs_and_currentness_rules_present
@@ -39,7 +40,7 @@ steps:
     evidence: four_route_recovery_attempt_trace_and_exhaustion_rule_present
   - order: 35
     id: candidate_payload_freeze
-    evidence: candidate_payload_hash_computed
+    evidence: candidate_payload_hash_computed_after_all_contract_and_type_extension_gates
   - order: 36
     id: github_write
     evidence: source_file_commit_sha
@@ -57,10 +58,10 @@ steps:
     evidence: policy_set_fingerprint_matches_candidate
   - order: 41
     id: contract_judge
-    evidence: judge_pass
+    evidence: aggregate_judge_pass_including_archetype_stage_cardinality_frontier_and_state_consistency
   - order: 42
     id: close
-    evidence: no_blocking_observations_and_no_unexhausted_recovery
+    evidence: no_blocking_observations_no_unexhausted_recovery_and_terminal_frontier
   - order: 43
     id: report_output
-    evidence: execution_summary_with_claim_ceiling_pending_gates_and_first_bad_hop
+    evidence: execution_summary_with_claim_ceiling_pending_gates_first_bad_hop_and_next_handoff
