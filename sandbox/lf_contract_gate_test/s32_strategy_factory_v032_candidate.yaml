@@ -1,0 +1,321 @@
+strategy_id: S32
+snapshot_code: LF_STRATEGY_FACTORY_SELF_HOSTED_CANARY_V032_20260907
+version: v0.1
+title: "Estrategia 32 — Canario fresco self-hosted de Strategy Factory v0.3.2"
+status: CANDIDATO_READ_ONLY
+runtime_state: PLAN_ONLY
+impact_policy: BLOQUEADO
+strategy_type: SELF_HOSTED_FACTORY_CANARY
+strategy_archetype: CANARY_VALIDATION
+problem_statement: >
+  El primer canario S31 demostró la cadena self-hosted, pero Product y Quality detectaron
+  un falso cierre: etapas incompletas, conclusiones insuficientes y execution_frontier stale.
+  Strategy Factory v0.3.2 corrige específicamente el cierre para exigir TERMINAL o la última
+  etapa declarada y debe demostrarlo sobre un canario nuevo, no sobre S31 reescrita.
+objective: >
+  Probar CREACION_ESTRATEGIA_LF v0.3.2 de extremo a extremo con un candidato nuevo S32,
+  durable-start, cinco policies, contrato/validator v0.3.2, Git y Supabase readback independientes,
+  exactamente una conclusión vigente por etapa al cierre, frontier terminal y democión posterior,
+  sin escribir main ni habilitar runtime o producción.
+scope:
+  - CREACION_ESTRATEGIA_LF v0.3.2 candidate
+  - POL-STRATEGY-CREATION-001
+  - CONTRACT-CREACION-ESTRATEGIA-LF-v0.3.2
+  - deterministic validator v0.3.2
+  - 43 canonical factory steps and their mini-judges
+  - CANARY destination on lf/s30-strategy-factory-v032-governed-20260907
+  - public.lf_strategy_snapshots candidate registration
+non_goals:
+  - merge to main
+  - enable runtime
+  - authorize production
+  - promote S30 or S32 beyond candidate/read-only ceilings
+  - resolve the external Supabase Management API 401 or Data API 402 quota blocker
+  - claim independent product-domain semantic quality
+baseline:
+  router: ACT-0001
+  parent_strategy: S30:id35/v0.1
+  previous_canary: S31:id36/v0.1
+  clean_factory_branch: lf/s30-strategy-factory-v032-governed-20260907
+  clean_factory_head: 1b80bc28b1cb4c2f4f54fe35be5faf535b3f73b6
+  factory_contract_code: CONTRACT-CREACION-ESTRATEGIA-LF-v0.3.2
+  factory_contract_sha: 2c469e3cd2ae7bb7171ca4e52fc6da84b58af3a3
+  aggregate_judge_sha: 5e83da80ff14bc4a7f72e737690fdbded90622bf
+  validator_version: v0.3.2
+  validator_blob_sha: 4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765
+  validator_regression_run: 34075791887
+  validator_regression_result: PASS_22_OF_22
+  policy_set_fingerprint: c54a37be270a2faf1f045aafd89b0cb9d8390c741a2c7f513c065c142ae4cde8
+  durable_execution_id: EXEC-S32-SELFHOSTED-CANARY-V032-20260907-001
+  policy_snapshot_count: 5
+  destination_code: DEST_CREACION_ESTRATEGIA_LF_CANARY
+  claim_ceiling: R3_SELF_HOSTED_CANARY_NOT_PRODUCTION
+authorities:
+  - ACT-0001
+  - public.v_lf_fuente_operativa
+  - public.v_lf_operation_policy_snapshot
+  - public.lf_operation_contracts
+  - public.lf_operation_steps
+  - public.lf_operation_step_contracts
+  - public.lf_operation_judges
+  - public.lf_operation_step_judge_bindings
+  - public.lf_strategy_snapshots
+  - GitHub:cristhianlujan/claude-persona-lf-patch
+dependencies:
+  - id: S30
+    ref: public.lf_strategy_snapshots/35
+    version: v0.1
+    required: true
+  - id: STRATEGY_FACTORY_CONTRACT_V032
+    ref: CONTRACT-CREACION-ESTRATEGIA-LF-v0.3.2
+    sha: 2c469e3cd2ae7bb7171ca4e52fc6da84b58af3a3
+    required: true
+  - id: STRATEGY_FACTORY_VALIDATOR_V032
+    ref: gobernanza/judges/validate_strategy_contract_v032.py
+    sha: 4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765
+    required: true
+  - id: STRATEGY_FACTORY_JUDGE_V032
+    ref: JUDGE_CONTRATO_ESTRATEGIA_LF
+    sha: 5e83da80ff14bc4a7f72e737690fdbded90622bf
+    required: true
+applicable_policies:
+  - code: POL-LF-OPERATION-LIFECYCLE
+    role: GOVERNANCE_LIFECYCLE
+    version: v1.0
+    sha: 973b5a0ad26433095066ff06b53c3043f38fef51d04e9482c458e178f20920e8
+  - code: POL-LF-POLICY-CONSUMPTION
+    role: POLICY_CONSUMPTION
+    version: v1.1-transversal-candidate
+    sha: e5eb786e14a4b735e271a81b702a0a775e0bf39ba174d333531a82a0858b5553
+  - code: POL-LF-SOURCE-RESOLUTION
+    role: SOURCE_RESOLUTION
+    version: v1.2-transversal-candidate
+    sha: 459d9ec975d5955d63619876e13abf2f0975a978e38cfff0aa5eed2d68295ae0
+  - code: POL-LF-STATE-MODEL
+    role: STATE_MODEL
+    version: v1.1-transversal-candidate
+    sha: f451bb4d2b17cdac48c4dddb250108b2874a9d036edcfb9d2f7fa540416332aa
+  - code: POL-STRATEGY-CREATION-001
+    role: STRATEGY_CREATION
+    version: v0.1-candidate
+    sha: 563b91a1e5405c1e1f8806c1f8d12b8ab2dfbd901638f7b432a3e601cc2558fc
+stages:
+  - stage_code: S32-01
+    objective_or_purpose: >
+      Completar durable preflight, policy snapshot, contrato v0.3.2, exact candidate freeze
+      y validación determinista prewrite antes de cualquier Git/Supabase artifact write.
+    status: COMPLETED_PREWRITE
+    entry_conditions:
+      - repair window is bounded and active
+      - execution exists before material work
+      - Router ACT-0001 is reachable
+    actions_or_scope:
+      - resolve 5/5 policy snapshots
+      - bind contract/judge/validator v0.3.2
+      - build exact S32 candidate
+      - execute exact prewrite validator
+    tests:
+      - S32-T01-exact-prewrite-validator
+      - S32-T02-stale-frontier-negative-regression
+    evidence_required:
+      - EXEC-S32-SELFHOSTED-CANARY-V032-20260907-001 durable readback
+      - policy snapshot 5/5
+      - validator blob 4f95e3d9 and results SHA
+    exit_gate: PREWRITE_VALIDATOR_PASS_ZERO_BLOCKING_CODES
+    conclusion_ref: S32-CONCLUSION-01-001
+  - stage_code: S32-02
+    objective_or_purpose: >
+      Ejecutar el self-hosted write/readback/register/judge/close, añadir la conclusión final,
+      terminar con frontier TERMINAL y demover todo enforcement temporal a candidato.
+    status: CURRENT
+    entry_conditions:
+      - S32-01 conclusion exists and matches its conclusion_ref
+      - exact prewrite validator is PASS
+      - CANARY destination resolves to the clean v0.3.2 branch
+    actions_or_scope:
+      - Git write with governed receipt and blob readback
+      - Supabase candidate register plus second-statement readback
+      - exact close validator over canonical final snapshot
+      - aggregate judge and 43-step close
+      - demote policy contract step-contract judges and bindings
+    tests:
+      - S32-T03-git-readback
+      - S32-T04-supabase-independent-readback
+      - S32-T05-close-frontier-terminal
+      - S32-T06-demotion-readback
+    evidence_required:
+      - Git commit and blob SHA
+      - Supabase strategy snapshot id and exact version/status
+      - close validator input/results SHA
+      - aggregate judge result
+      - demotion counts and policy status
+    exit_gate: CLOSED_WITH_TERMINAL_FRONTIER_AND_FACTORY_DEMOTED
+    conclusion_ref: S32-CONCLUSION-02-001
+gates:
+  - DURABLE_START_BEFORE_MATERIAL_WORK
+  - ROUTER_ACT0001_PREFLIGHT
+  - POLICY_SET_5_OF_5
+  - CONTRACT_V032_EXACT_SHA
+  - VALIDATOR_V032_PREWRITE_PASS
+  - CANARY_DESTINATION_EXACT_BRANCH
+  - GITHUB_GOVERNED_RECEIPT_AND_READBACK
+  - SUPABASE_INDEPENDENT_READBACK
+  - VALIDATOR_V032_CLOSE_PASS
+  - EXACTLY_ONE_CURRENT_CONCLUSION_PER_STAGE_AT_CLOSE
+  - FRONTIER_TERMINAL_OR_LAST_DECLARED_STAGE_AT_CLOSE
+  - AGGREGATE_JUDGE_PASS
+  - FACTORY_DEMOTION_READBACK
+  - NO_MAIN_WRITE
+  - NO_RUNTIME
+  - NO_PRODUCTION
+tests:
+  - id: S32-T01
+    type: POSITIVE
+    case: exact S32 candidate prewrite through validator v0.3.2
+    expected: valid=true and blocking_codes=[]
+    status: PENDING_EXACT_RUN
+  - id: S32-T02
+    type: NEGATIVE_REGRESSION
+    case: same two-stage candidate closed while current_stage points to S32-01
+    expected: STALE_EXECUTION_FRONTIER
+    status: COVERED_BY_V032_REGRESSION_RUN_34075791887
+  - id: S32-T03
+    type: POSITIVE
+    case: Git canary source write plus exact blob readback
+    expected: blob SHA equals frozen candidate blob
+    status: PENDING
+  - id: S32-T04
+    type: POSITIVE
+    case: Supabase registration then second-statement readback
+    expected: CANDIDATO_READ_ONLY / PLAN_ONLY / BLOQUEADO exactly
+    status: PENDING
+  - id: S32-T05
+    type: POSITIVE_AND_NEGATIVE
+    case: final snapshot validates only with TERMINAL or last declared stage
+    expected: valid close passes; stale earlier-stage close blocks
+    status: PENDING
+  - id: S32-T06
+    type: POSITIVE
+    case: bounded factory window is demoted after canary
+    expected: policy CANDIDATE and 43/43 contract/judge bindings candidate
+    status: PENDING
+metrics:
+  required_operation_steps: 43
+  required_policy_snapshots: 5
+  required_step_contracts: 43
+  required_judge_bindings: 43
+  required_stage_count: 2
+  required_current_conclusions_at_close: 2
+  prewrite_validator_blocking_codes_target: 0
+  close_validator_blocking_codes_target: 0
+  false_close_target: 0
+  main_writes_allowed: 0
+  runtime_changes_allowed: 0
+  production_changes_allowed: 0
+risks:
+  - id: S32-R1
+    risk: self-hosted evidence is mistaken for independent semantic audit
+    mitigation: keep claim ceiling at R3 self-hosted canary and require later independent review for promotion
+  - id: S32-R2
+    risk: factory remains active after bounded canary
+    mitigation: demotion is an explicit required stage-2 gate with independent readback
+  - id: S32-R3
+    risk: receipt/write order becomes retroactive
+    mitigation: all governed receipts must pre-exist the covered Git write and travel in the same commit
+  - id: S32-R4
+    risk: close repeats S31 stale-frontier false pass
+    mitigation: validator v0.3.2 enforces TERMINAL or last declared stage and exact close validator is mandatory
+  - id: S32-R5
+    risk: external Supabase 401/402 is conflated with S32 semantic quality
+    mitigation: keep external control-plane blocker separate; no promotion while global gate remains red
+evidence_contract:
+  levels:
+    - R1_SOURCE_CONTRACT
+    - R2_EXACT_ARTIFACT_BOUND
+    - R3_DURABLE_SELF_HOSTED_EXECUTION_AND_INDEPENDENT_READBACK
+  current_ceiling: R3_SELF_HOSTED_CANARY_NOT_PRODUCTION
+  rules:
+    - no self-asserted validator PASS
+    - exact validator blob plus input SHA plus results SHA required
+    - RETURNING is receipt only
+    - second-statement Supabase readback required
+    - exact Git blob readback required
+    - no production or Golden claim
+rollback_or_recovery:
+  routes:
+    - A_ORIGINAL
+    - B_FOCAL_MINIMAL
+    - C_CANONICAL_EQUIVALENT
+    - D_INDEPENDENT_AUTHORIZED
+  on_prewrite_validator_failure: do not write S32 artifact; repair candidate and rerun exact validator
+  on_git_failure: do not register S32 snapshot; preserve execution and failure evidence
+  on_supabase_failure: preserve Git canary artifact but do not claim registration
+  on_close_validator_failure: do not close S32; demote factory window and preserve blocked evidence
+  on_demote_failure: keep repair execution open and fail closed until candidate-state readback is restored
+execution_frontier:
+  state: IN_PROGRESS
+  current_stage: S32-02
+  current_action: execute governed Git and Supabase registration then close-validator and demotion
+  safe_parallel_work: []
+  blockers: []
+stage_conclusions:
+  - conclusion_id: S32-CONCLUSION-01-001
+    stage_code: S32-01
+    status: PASS
+    conclusion: >
+      Durable execution exists before material work, Router/EKB preflight reached the backend,
+      the execution captured five policy snapshots, v0.3.2 source is cleanly governed and the
+      exact candidate is ready for deterministic prewrite validation.
+    claim_ceiling: R3_SELF_HOSTED_CANARY_NOT_PRODUCTION
+    open_risks:
+      - stage S32-02 is not yet complete
+      - external global CI remains separately blocked by Supabase control-plane/quota and S28 source parity
+    carry_forward:
+      - exact prewrite validator result
+      - Git write/readback
+      - Supabase register/readback
+      - exact close validator
+      - aggregate judge and demotion
+    invalidation_triggers:
+      - factory source head changes
+      - policy snapshot changes
+      - contract validator or judge SHA changes
+invalidation_triggers:
+  - S30 parent materially changes or is superseded
+  - clean factory head changes after candidate freeze
+  - policy set SHA changes
+  - contract SHA changes
+  - validator SHA changes
+  - aggregate judge SHA changes
+  - CANARY destination branch changes
+  - Router ACT-0001 stops resolving the operation
+  - new applicable HIGH or CRITICAL EKB control appears
+change_log:
+  - version: v0.1
+    change: fresh v0.3.2 self-hosted canary created after S31 Product/Quality repair
+    execution_id: EXEC-S32-SELFHOSTED-CANARY-V032-20260907-001
+closure_criteria:
+  - exact prewrite validator v0.3.2 PASS with zero blocking codes
+  - 43/43 required operation steps clean
+  - Git source exists only on CANARY branch with exact readback
+  - Supabase snapshot is CANDIDATO_READ_ONLY / PLAN_ONLY / BLOQUEADO
+  - independent Supabase readback matches exact candidate identity
+  - exact close validator v0.3.2 PASS
+  - exactly one current conclusion resolves each of the two stages at close
+  - execution_frontier state CLOSED and current_stage TERMINAL or S32-02
+  - aggregate judge PASS
+  - factory policy contract step-contract judges and bindings demoted to candidate
+  - main runtime production unchanged
+strategy_archetype: CANARY_VALIDATION
+type_extension:
+  proof_target: Strategy Factory v0.3.2 self-hosted creation and close-frontier correctness
+  positive_case: fresh two-stage S32 candidate passes prewrite and close only with complete stage/conclusion/frontier semantics
+  negative_cases:
+    - close while current_stage references S32-01 must return STALE_EXECUTION_FRONTIER
+    - missing stage field must return INCOMPLETE_STAGE_SCHEMA
+    - missing current conclusion at close must block
+    - missing CANARY_VALIDATION extension field must block
+  exact_evidence_boundary: R3_SELF_HOSTED_CANARY_NOT_PRODUCTION
+  cleanup_or_demotion_plan: complete S32 execution while 5/5 policies remain resolvable, then demote all temporary factory enforcement and read back candidate states
+  next_gate_or_handoff: Product + Quality independent review after fresh canary; promotion remains blocked by global exact-head CI and external Supabase control-plane gates
+next_gate_or_handoff: Product + Quality independent review after S32; no promotion until global exact-head CI is current and clean
