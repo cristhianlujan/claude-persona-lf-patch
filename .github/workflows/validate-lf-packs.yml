@@ -122,8 +122,9 @@ jobs:
             "$LF_CANARY_DIR/input_governance_ig006_ig007_exact_v2_adapter.py" \
             "$LF_CANARY_DIR/input_governance_ig006_ig007_exact_v2_recovery.py"
           python3 "$LF_CANARY_DIR/test_lf_governed_canary_runner.py"
-          test "$(git hash-object supabase/migrations/20260907193711_lf_input_governance_ig006_ig007_generic_runner_forward_v1.sql)" = "d806d88176e21bcee1de7545c65e776a6e051899"
-          test "$(git hash-object supabase/migrations/20260907193712_lf_input_governance_ig006_ig007_generic_runner_rollback_v1.sql)" = "290ff2e1c50ca7d0bf2167a9f424380450de0c93"
+          test "$(git hash-object supabase/migrations/20260907210811_lf_input_governance_ig006_ig007_generic_runner_forward_v2.sql)" = "d806d88176e21bcee1de7545c65e776a6e051899"
+          test "$(git hash-object supabase/migrations/20260907210812_lf_input_governance_ig006_ig007_generic_runner_rollback_v2.sql)" = "290ff2e1c50ca7d0bf2167a9f424380450de0c93"
+          grep -q "TEST_TEMPLATE_EXACT_PAIR_BIND_PASS" "$LF_CANARY_DIR/input_governance_ig006_ig007_exact_v2_adapter.py"
           grep -q "ROLLBACK_PRESTATE_INVALID" "$LF_CANARY_DIR/input_governance_ig006_ig007_exact_v2_adapter.py"
           grep -q "RECOVERY_UNSUPPORTED_STATE" "$LF_CANARY_DIR/input_governance_ig006_ig007_exact_v2_recovery.py"
           grep -q "safety_restore" "$LF_CANARY_DIR/input_governance_ig006_ig007_exact_v2_recovery.py"
@@ -137,6 +138,7 @@ jobs:
         run: |
           set -euo pipefail
           test -n "${LF_SUPABASE_DB_PASSWORD:-}"
+          rm -rf "$LF_CANARY_WORK"
           mkdir -p "$LF_CANARY_WORK"
           python3 "$LF_CANARY_DIR/input_governance_ig006_ig007_exact_v2_adapter.py" \
             --phase run --workdir "$LF_CANARY_WORK"
@@ -171,8 +173,8 @@ jobs:
             -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
             postgres:17.6 psql -X -qAt -v ON_ERROR_STOP=1 -c "
               select json_build_object(
-                'forward',(select count(*) from supabase_migrations.schema_migrations where version='20260907193711'),
-                'rollback',(select count(*) from supabase_migrations.schema_migrations where version='20260907193712'),
+                'forward',(select count(*) from supabase_migrations.schema_migrations where version='20260907210811'),
+                'rollback',(select count(*) from supabase_migrations.schema_migrations where version='20260907210812'),
                 'candidate_count',(select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='programacion' and p.proname in ('fn_guard_input_family_assessment_insert_baseline_ig007_v1','fn_input_rebind_assertion_cached_v1','fn_input_v58_build_assertions_cached_v1','fn_input_governance_curator_rebind_candidate_v1')),
                 'test_residue',(select count(*) from programacion.input_readiness_runs where curator_identity like 'INPUT_CURATOR:EDGE:input-governance-curator-v1:S28IGEXACT_%' or validator_identity like 'INPUT_VALIDATOR:EDGE:input-governance-validator-v1:S28IGEXACT_%'),
                 'guard_sha',encode(extensions.digest(convert_to(pg_get_functiondef('programacion.fn_guard_input_family_assessment_insert()'::regprocedure),'UTF8'),'sha256'),'hex'),

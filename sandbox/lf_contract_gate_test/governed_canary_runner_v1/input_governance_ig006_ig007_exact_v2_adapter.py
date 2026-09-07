@@ -2,13 +2,13 @@
 """Fresh exact-version IG006/IG007 adapter for LF_GOVERNED_CANARY_RUNNER_V1.
 
 Candidate transport only. No production, merge, runtime switch, or automatic promotion.
-Uses reviewed SQL blobs pinned in commit 029bfb274ff7dbb0478d2946f7210feacefa0cf0.
+The executable SQL is read from the exact checked-out PR head and guarded by
+Git blob identity in the CI admission workflow.
 """
 from __future__ import annotations
 
 import argparse
 import json
-import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -16,17 +16,18 @@ import sys
 
 import input_governance_ig006_ig007_adapter as base
 
-SOURCE_SHA = "029bfb274ff7dbb0478d2946f7210feacefa0cf0"
-FORWARD_VERSION = "20260907193711"
-ROLLBACK_VERSION = "20260907193712"
-FORWARD_NAME = "lf_input_governance_ig006_ig007_generic_runner_forward_v1"
-ROLLBACK_NAME = "lf_input_governance_ig006_ig007_generic_runner_rollback_v1"
+FORWARD_VERSION = "20260907210811"
+ROLLBACK_VERSION = "20260907210812"
+FORWARD_NAME = "lf_input_governance_ig006_ig007_generic_runner_forward_v2"
+ROLLBACK_NAME = "lf_input_governance_ig006_ig007_generic_runner_rollback_v2"
 FORWARD_PATH = f"supabase/migrations/{FORWARD_VERSION}_{FORWARD_NAME}.sql"
 ROLLBACK_PATH = f"supabase/migrations/{ROLLBACK_VERSION}_{ROLLBACK_NAME}.sql"
 EXECUTE_SHA = "3290e752c27a46a089ed93d9a15769b7b9ca416f00d389c681431fde977da588"
+BASE_TEST_FORWARD_VERSION = "20260907023000"
+BASE_TEST_ROLLBACK_VERSION = "20260907023100"
+BASE_TEST_FORWARD_NAME = "lf_input_governance_ig006_ig007_exact_canary_forward_v1"
 
-# Pin the existing domain adapter to the fresh exact-version source pair.
-base.IG_SOURCE_SHA = SOURCE_SHA
+# Pin the existing domain adapter to the fresh exact-version pair.
 base.FORWARD_VERSION = FORWARD_VERSION
 base.ROLLBACK_VERSION = ROLLBACK_VERSION
 base.FORWARD_NAME = FORWARD_NAME
@@ -36,6 +37,28 @@ base.ROLLBACK_PATH = ROLLBACK_PATH
 
 _original_tests = base.phase_tests
 _original_post = base.phase_post_readback
+_original_ensure_sources = base.ensure_sources
+
+
+def ensure_sources(work: Path) -> None:
+    """Bind SQL to the exact checked-out head; keep historical test source pinned."""
+    work.mkdir(parents=True, exist_ok=True)
+    root = base.repo_root()
+    for source_path, target_name in (
+        (FORWARD_PATH, "forward.sql"),
+        (ROLLBACK_PATH, "rollback.sql"),
+        (base.CONFIG_PATH, "config.toml"),
+    ):
+        source = root / source_path
+        if not source.is_file():
+            raise base.AdapterError(f"EXACT_HEAD_SOURCE_MISSING:{source_path}")
+        shutil.copy2(source, work / target_name)
+    base_test = work / "base_test.sql"
+    if not base_test.exists():
+        base.git_show(base.BASE_TEST_SHA, base.BASE_TEST_PATH, base_test)
+
+
+base.ensure_sources = ensure_sources
 
 
 def cli(args: list[str], *, timeout: int = 180) -> str:
@@ -119,7 +142,28 @@ def phase_rollback(work: Path) -> None:
 base.phase_rollback = phase_rollback
 
 
+def _bind_test_template(work: Path) -> None:
+    base.ensure_sources(work)
+    path = work / "base_test.sql"
+    source = path.read_text(encoding="utf-8")
+    required = (BASE_TEST_FORWARD_VERSION, BASE_TEST_ROLLBACK_VERSION, BASE_TEST_FORWARD_NAME)
+    missing = [token for token in required if token not in source]
+    if missing:
+        raise base.AdapterError("TEST_TEMPLATE_BINDING_ANCHOR_MISSING:" + ",".join(missing))
+    source = source.replace(BASE_TEST_FORWARD_VERSION, FORWARD_VERSION)
+    source = source.replace(BASE_TEST_ROLLBACK_VERSION, ROLLBACK_VERSION)
+    source = source.replace(BASE_TEST_FORWARD_NAME, FORWARD_NAME)
+    stale = [token for token in required if token in source]
+    if stale:
+        raise base.AdapterError("TEST_TEMPLATE_BINDING_STALE_TOKEN:" + ",".join(stale))
+    if FORWARD_VERSION not in source or ROLLBACK_VERSION not in source or FORWARD_NAME not in source:
+        raise base.AdapterError("TEST_TEMPLATE_BINDING_TARGET_MISSING")
+    path.write_text(source, encoding="utf-8")
+    print("TEST_TEMPLATE_EXACT_PAIR_BIND_PASS")
+
+
 def phase_tests(work: Path) -> None:
+    _bind_test_template(work)
     _original_tests(work)
     metrics_path = work / "metrics.json"
     metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
@@ -164,7 +208,7 @@ def build_manifest(work: Path) -> Path:
         }]
     manifest = {
         "contract_version": base.RUNNER_VERSION,
-        "canary_id": "S28:IG006-IG007-GENERIC-RUNNER-002",
+        "canary_id": "S28:IG006-IG007-GENERIC-RUNNER-003",
         "change_mode": "MIGRATION_EXACT_VERSION",
         "exact_versions": {"forward": FORWARD_VERSION, "rollback": ROLLBACK_VERSION},
         "target": {"environment": "sandbox", "production": False, "merge_authorized": False, "automatic_promotion": False},
