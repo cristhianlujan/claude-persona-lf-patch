@@ -10,6 +10,8 @@ from typing import Any
 
 import yaml
 
+VERSION = "v0.3.1"
+
 REQUIRED_BLOCKS = [
     "problem_statement", "objective", "scope", "non_goals", "baseline",
     "authorities", "dependencies", "applicable_policies", "stages", "gates",
@@ -84,7 +86,10 @@ def validate(data: dict[str, Any], mode: str = "prewrite") -> dict[str, Any]:
     errors: list[dict[str, str]] = []
 
     for key in REQUIRED_BLOCKS:
-        if not present(data.get(key)):
+        if key == "stage_conclusions" and mode == "prewrite":
+            if key not in data or not isinstance(data.get(key), list):
+                add(errors, "MISSING_REQUIRED_STRATEGY_BLOCK", key, "prewrite requires declared stage_conclusions array; it may be empty")
+        elif not present(data.get(key)):
             add(errors, "MISSING_REQUIRED_STRATEGY_BLOCK", key, "required block missing or empty")
 
     archetype = data.get("strategy_archetype")
@@ -127,28 +132,32 @@ def validate(data: dict[str, Any], mode: str = "prewrite") -> dict[str, Any]:
 
     conclusions = data.get("stage_conclusions")
     current_by_stage: dict[str, list[dict[str, Any]]] = {code: [] for code in stage_codes}
-    if not isinstance(conclusions, list) or not conclusions:
-        add(errors, "STAGE_CONCLUSIONS_INVALID", "stage_conclusions", "non-empty array required")
-    else:
-        for index, conclusion in enumerate(conclusions):
-            path = f"stage_conclusions[{index}]"
-            if not isinstance(conclusion, dict):
-                add(errors, "STAGE_CONCLUSION_NOT_OBJECT", path, "conclusion must be mapping")
-                continue
-            for field in ["conclusion_id", "stage_code", "status", "conclusion", "claim_ceiling", "open_risks", "carry_forward", "invalidation_triggers"]:
-                if not present(conclusion.get(field)) and field not in {"open_risks", "carry_forward"}:
-                    add(errors, "STAGE_CONCLUSION_FIELD_MISSING", f"{path}.{field}", "required conclusion field missing")
-            code = conclusion.get("stage_code")
-            status = str(conclusion.get("status", "")).upper()
-            if code in current_by_stage and status not in STALE_CONCLUSION_STATUSES:
-                current_by_stage[code].append(conclusion)
+    if not isinstance(conclusions, list):
+        add(errors, "STAGE_CONCLUSIONS_INVALID", "stage_conclusions", "array required")
+        conclusions = []
+    elif mode == "close" and not conclusions:
+        add(errors, "STAGE_CONCLUSIONS_INVALID", "stage_conclusions", "close mode requires current conclusions")
+
+    for index, conclusion in enumerate(conclusions):
+        path = f"stage_conclusions[{index}]"
+        if not isinstance(conclusion, dict):
+            add(errors, "STAGE_CONCLUSION_NOT_OBJECT", path, "conclusion must be mapping")
+            continue
+        for field in ["conclusion_id", "stage_code", "status", "conclusion", "claim_ceiling", "open_risks", "carry_forward", "invalidation_triggers"]:
+            if not present(conclusion.get(field)) and field not in {"open_risks", "carry_forward"}:
+                add(errors, "STAGE_CONCLUSION_FIELD_MISSING", f"{path}.{field}", "required conclusion field missing")
+        code = conclusion.get("stage_code")
+        status = str(conclusion.get("status", "")).upper()
+        if code in current_by_stage and status not in STALE_CONCLUSION_STATUSES:
+            current_by_stage[code].append(conclusion)
 
     for code in stage_codes:
         current = current_by_stage.get(code, [])
-        if len(current) == 0:
-            add(errors, "MISSING_STAGE_CONCLUSION", f"stage_conclusions[{code}]", "exactly one current conclusion required")
-        elif len(current) > 1:
+        if len(current) > 1:
             add(errors, "DUPLICATE_CURRENT_STAGE_CONCLUSION", f"stage_conclusions[{code}]", "more than one current conclusion")
+        elif len(current) == 0:
+            if mode == "close":
+                add(errors, "MISSING_STAGE_CONCLUSION_AT_CLOSE", f"stage_conclusions[{code}]", "close requires exactly one current conclusion")
         else:
             expected_ref = stage_conclusion_refs.get(code)
             actual_ref = current[0].get("conclusion_id")
@@ -184,6 +193,7 @@ def validate(data: dict[str, Any], mode: str = "prewrite") -> dict[str, Any]:
             add(errors, "MISSING_NEXT_GATE_OR_HANDOFF", "next_gate_or_handoff", "required at strategy or type-extension level")
 
     result = {
+        "validator_version": VERSION,
         "valid": not errors,
         "mode": mode,
         "strategy_archetype": archetype,
@@ -217,23 +227,28 @@ def self_test() -> dict[str, Any]:
             "entry_conditions": ["ready"], "actions_or_scope": ["run"], "tests": ["T"],
             "evidence_required": ["E"], "exit_gate": "PASS", "conclusion_ref": "C0",
         }],
-        "stage_conclusions": [{
-            "conclusion_id": "C0", "stage_code": "S0", "status": "PASS", "conclusion": "ok",
-            "claim_ceiling": "R3", "open_risks": [], "carry_forward": [],
-            "invalidation_triggers": ["x"],
-        }],
+        "stage_conclusions": [],
         "execution_frontier": {"current_stage": "S0", "current_action": "run", "safe_parallel_work": [], "blockers": []},
         "next_gate_or_handoff": "quality",
     }
     cases: list[tuple[str, dict[str, Any], str, bool, str | None]] = []
-    cases.append(("positive_prewrite", json.loads(json.dumps(base)), "prewrite", True, None))
+    cases.append(("positive_prewrite_no_conclusion_yet", json.loads(json.dumps(base)), "prewrite", True, None))
     missing_stage = json.loads(json.dumps(base)); del missing_stage["stages"][0]["tests"]
     cases.append(("missing_stage_field", missing_stage, "prewrite", False, "INCOMPLETE_STAGE_SCHEMA"))
-    missing_conclusion = json.loads(json.dumps(base)); missing_conclusion["stage_conclusions"] = []
-    cases.append(("missing_conclusion", missing_conclusion, "prewrite", False, "STAGE_CONCLUSIONS_INVALID"))
     missing_extension = json.loads(json.dumps(base)); del missing_extension["type_extension"]["proof_target"]
     cases.append(("missing_type_extension", missing_extension, "prewrite", False, "MISSING_REQUIRED_TYPE_EXTENSION_FIELD"))
-    stale_close = json.loads(json.dumps(base)); stale_close["execution_frontier"]["state"] = "OPEN"
+    duplicate = json.loads(json.dumps(base)); duplicate["stage_conclusions"] = [
+        {"conclusion_id": "C0", "stage_code": "S0", "status": "PASS", "conclusion": "a", "claim_ceiling": "R3", "open_risks": [], "carry_forward": [], "invalidation_triggers": ["x"]},
+        {"conclusion_id": "C0B", "stage_code": "S0", "status": "PASS", "conclusion": "b", "claim_ceiling": "R3", "open_risks": [], "carry_forward": [], "invalidation_triggers": ["x"]},
+    ]
+    cases.append(("duplicate_current_conclusion_prewrite", duplicate, "prewrite", False, "DUPLICATE_CURRENT_STAGE_CONCLUSION"))
+    missing_close = json.loads(json.dumps(base)); missing_close["execution_frontier"] = {"state": "CLOSED", "current_stage": "S0", "current_action": "NONE", "safe_parallel_work": [], "blockers": []}
+    cases.append(("missing_conclusion_at_close", missing_close, "close", False, "MISSING_STAGE_CONCLUSION_AT_CLOSE"))
+    positive_close = json.loads(json.dumps(missing_close)); positive_close["stage_conclusions"] = [
+        {"conclusion_id": "C0", "stage_code": "S0", "status": "PASS", "conclusion": "ok", "claim_ceiling": "R3", "open_risks": [], "carry_forward": [], "invalidation_triggers": ["x"]}
+    ]
+    cases.append(("positive_close", positive_close, "close", True, None))
+    stale_close = json.loads(json.dumps(positive_close)); stale_close["execution_frontier"]["state"] = "OPEN"
     cases.append(("stale_close_frontier", stale_close, "close", False, "STALE_EXECUTION_FRONTIER"))
 
     results = []
@@ -243,7 +258,7 @@ def self_test() -> dict[str, Any]:
         ok = actual["valid"] == expected_valid and (expected_code is None or expected_code in actual["blocking_codes"])
         all_pass = all_pass and ok
         results.append({"name": name, "ok": ok, "expected_valid": expected_valid, "blocking_codes": actual["blocking_codes"]})
-    return {"all_pass": all_pass, "case_count": len(results), "results": results}
+    return {"validator_version": VERSION, "all_pass": all_pass, "case_count": len(results), "results": results}
 
 
 def main() -> int:
@@ -262,7 +277,7 @@ def main() -> int:
     try:
         result = validate(load_document(args.path), args.mode)
     except Exception as exc:
-        result = {"valid": False, "errors": [{"code": "MALFORMED_INPUT", "path": "$", "message": str(exc)}], "blocking_codes": ["MALFORMED_INPUT"]}
+        result = {"validator_version": VERSION, "valid": False, "errors": [{"code": "MALFORMED_INPUT", "path": "$", "message": str(exc)}], "blocking_codes": ["MALFORMED_INPUT"]}
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     return 0 if result.get("valid") else 1
 
