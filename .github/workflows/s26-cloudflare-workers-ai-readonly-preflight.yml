@@ -1,10 +1,6 @@
 name: S26 Cloudflare Workers AI read-only preflight
 
 on:
-  pull_request:
-    paths:
-      - ".github/workflows/s26-cloudflare-workers-ai-readonly-preflight.yml"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_workers_ai_benchmark.py"
   workflow_dispatch:
     inputs:
       execute_canary:
@@ -83,11 +79,7 @@ jobs:
           echo "Target: ${TARGET_MODEL}"
 
       - name: Validate benchmark harness before inference
-        if: >-
-          (github.event_name == 'pull_request' &&
-           github.head_ref == 'agent/s26-cloudflare-readonly-preflight-20260907') ||
-          (github.event_name == 'workflow_dispatch' &&
-           inputs.execute_benchmark == 'RUN_GOVERNED_BENCHMARK')
+        if: github.event_name == 'workflow_dispatch' && inputs.execute_benchmark == 'RUN_GOVERNED_BENCHMARK'
         shell: bash
         run: |
           set -euo pipefail
@@ -116,11 +108,7 @@ jobs:
           echo "Cloudflare Workers AI canary: PASS (${response_chars} response chars)"
 
       - name: Execute one governed S26 Cloudflare benchmark
-        if: >-
-          (github.event_name == 'pull_request' &&
-           github.head_ref == 'agent/s26-cloudflare-readonly-preflight-20260907') ||
-          (github.event_name == 'workflow_dispatch' &&
-           inputs.execute_benchmark == 'RUN_GOVERNED_BENCHMARK')
+        if: github.event_name == 'workflow_dispatch' && inputs.execute_benchmark == 'RUN_GOVERNED_BENCHMARK'
         shell: bash
         env:
           S26_AUTHORITY_ROOT: ${{ github.workspace }}/s26-authority
@@ -159,7 +147,7 @@ jobs:
               echo "- Contract gate: $(jq -r '.contract_gate.status' s26-cloudflare-benchmark-result.json)"
               echo "- Semantic utility: $(jq -r '.semantic_gate.status' s26-cloudflare-benchmark-result.json)"
               echo "- Finish reason: $(jq -r '.finish_reason' s26-cloudflare-benchmark-result.json)"
-            elif [[ "${{ github.event_name }}" == 'workflow_dispatch' && "${{ inputs.execute_canary }}" == 'RUN_ONE_CANARY' ]]; then
+            elif [[ "${{ inputs.execute_canary }}" == 'RUN_ONE_CANARY' ]]; then
               echo '- Inference executed: YES — one canary only'
             else
               echo '- Governed benchmark result: NOT_PRODUCED'
