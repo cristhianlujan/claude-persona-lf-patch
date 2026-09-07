@@ -32,7 +32,7 @@ jobs:
       ROLLBACK_FILE: "supabase/migrations/20260906211600_lf_input_governance_cached_v2_sandbox_canary_rollback_v1.sql"
       BASELINE_EXEC_SHA: "3290e752c27a46a089ed93d9a15769b7b9ca416f00d389c681431fde977da588"
       CANDIDATE_CURRENTNESS_SHA: "4a1c9f5446c321dac97b5a0bfe5c5e4d5c359b3317d228a67fd17b619bc3899a"
-      CLI_MIRROR: "${{ runner.temp }}/s28-cli-mirror"
+      CLI_MIRROR: "/tmp/s28-cli-mirror"
 
     steps:
       - name: Checkout exact PR head
@@ -411,7 +411,7 @@ jobs:
             exit 1
           fi
           test -f "$CLI_MIRROR/supabase/migrations/$(basename "$FORWARD_FILE")"
-          cp "$ROLLBACK_FILE" "$CLI_MIRROR/supabase/migrations/$(basename "$ROLLBACK_FILE")"
+          cp "$ROLLBACK_FILE" "$CLI_MIRROB/supabase/migrations/$(basename "$ROLLBACK_FILE")"
 
           DB_URL="$(python3 - <<'PY'
           import os
@@ -443,7 +443,7 @@ jobs:
           export PGSSLMODE=require
 
           docker run --rm \
-            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMMODE \
             postgres:17.6 \
             psql -X -v ON_ERROR_STOP=1 -c "
           do \$final\$
