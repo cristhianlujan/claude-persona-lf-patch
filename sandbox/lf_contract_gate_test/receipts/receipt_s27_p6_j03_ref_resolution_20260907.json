@@ -1,0 +1,63 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-S27-P6-J03-REF-RESOLUTION-20260907-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "41f9a94beeb749fdf00d2822b379a6bd8acdeecfedaf865a01d3c37f80089997",
+  "judge_sha": "7970fa59b4d39aaeb2d26059e6e2c107a4cfb010f4646bdb8a03e7819699c01c",
+  "source_sha_list": [
+    "7970fa59b4d39aaeb2d26059e6e2c107a4cfb010f4646bdb8a03e7819699c01c",
+    "41f9a94beeb749fdf00d2822b379a6bd8acdeecfedaf865a01d3c37f80089997",
+    "e572b69f3ddf7ee4b16312eb2cf17a9bdc502e17625e5d6101235736dcbc2890",
+    "af5a705f877196c6279dd071a5405f3befb59ab4676c8778bd269345850798b8",
+    "0de75a0e2a70037ae1fd0b7d6fa4103321ff284d848551b9daae0fb2cbbd89d9",
+    "93d2e44eee6c2955a3628dbe0ca27fe277101051efb9fe217bb2af6a03d0eb9e",
+    "482c82b79db640bfa14c78862c69c301b466c531eb51023958292a7580fb4978",
+    "d91290f4850daa236a8fddf8ed99d573e65e936c585285d4fe1fc80d934779cf",
+    "0c17af4ad68406c2046db21a97b97dae176c220a43f8bf09bda26e8383f5b1e8"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/scripts/validate_story_pack.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-07T03:47:23Z",
+  "evidence": {
+    "strategy": "S27",
+    "phase": "P6_B1_CONTROLLED_27",
+    "scope": "J03_HARNESS_REF_RESOLUTION_ONLY",
+    "qualified_parent_head": "f1f56bacc7c7a479d1a8d414266587533e6a26b6",
+    "qualified_change_head_before_receipt": "d7ce8a12824b397db85b4ddfeb02b0e9a0442dad",
+    "root_cause_code": "STORY-J03-JSONSCHEMA-RELATIVE-ID-REF-001",
+    "prevention_code": "PRV-STORY-J03-JSONSCHEMA-RELATIVE-ID-REF-001",
+    "red": {
+      "result": "HARNESS_ABORTED_BEFORE_BEHAVIOR_EVALUATION",
+      "error": "jsonschema.exceptions.RefResolutionError: unknown url type",
+      "cause": "relative judge-result $id used as local resolver base for internal refs"
+    },
+    "green": {
+      "canonical_schema_modified": false,
+      "j03_positive": "20/20 PASS_WITH_EVIDENCE",
+      "j03_negative_cases": "16/16 matched",
+      "e21_legacy": "PASS_WITH_EVIDENCE",
+      "e22_legacy": "RETURN_TO_WORKER",
+      "malformed_judge_result": "REJECTED_WITH_20_SCHEMA_ERRORS",
+      "j10_regression": "17/17 positive + 27/27 negative",
+      "j02_regression": "23/23 positive; source omission RETURN_TO_WORKER",
+      "j11_regression": "PASS_WITH_EVIDENCE; self_test_pass=true",
+      "p4_activation_regression": "1 positive + 8 negative; AST guard=true",
+      "diff_check": "PASS"
+    },
+    "b1_bank_state": "FROZEN_NOT_EXECUTED",
+    "profile_runtime_owner": "S26",
+    "profile_runtime_modified": false,
+    "s28_migrations_copied": false,
+    "story_creator_runtime_observed": false,
+    "production_authorized": false,
+    "runtime_enable_authorized": false,
+    "merge_authorized": false,
+    "thresholds_lowered": false
+  }
+}
