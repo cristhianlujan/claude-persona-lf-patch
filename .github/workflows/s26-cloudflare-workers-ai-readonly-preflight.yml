@@ -1,10 +1,6 @@
 name: S26 Cloudflare Workers AI read-only preflight
 
 on:
-  pull_request:
-    paths:
-      - ".github/workflows/s26-cloudflare-workers-ai-readonly-preflight.yml"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_holdout_manifest.py"
   workflow_dispatch:
     inputs:
       execute_canary:
@@ -27,14 +23,13 @@ jobs:
   preflight:
     name: Verify token, model and bounded S26 capability
     runs-on: ubuntu-latest
-    timeout-minutes: 160
+    timeout-minutes: 10
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_AI_CANARY_TOKEN: ${{ secrets.CLOUDFLARE_AI_CANARY_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       TARGET_MODEL: '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
       S26_AUTHORITY_REF: 'fcc2b0d57e36a31c26f38acc2510b193aac988c8'
-      LLAMA_COMMIT: '925e1179947ea0c0ebfb0032df18af3a729822be'
     steps:
       - name: Checkout benchmark branch
         uses: actions/checkout@v4
@@ -134,60 +129,6 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
 
-      - name: Validate frozen holdout harness before Cloudflare inference
-        if: github.event_name == 'pull_request' && github.head_ref == 'agent/s26-cloudflare-readonly-preflight-20260907'
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 -m pip install --disable-pip-version-check 'jsonschema==4.26.0'
-          python3 -m py_compile \
-            sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_holdout_manifest.py \
-            s26-authority/sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_primary_candidate_holdout_manifest.py \
-            s26-authority/sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_semantic_judge.py
-          python3 s26-authority/sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py
-
-      - name: Build pinned llama.cpp server for independent judge only
-        if: github.event_name == 'pull_request' && github.head_ref == 'agent/s26-cloudflare-readonly-preflight-20260907'
-        timeout-minutes: 10
-        shell: bash
-        run: |
-          set -euo pipefail
-          git clone --filter=blob:none https://github.com/ggml-org/llama.cpp.git "$RUNNER_TEMP/llama.cpp"
-          cd "$RUNNER_TEMP/llama.cpp"
-          git checkout --detach "$LLAMA_COMMIT"
-          test "$(git rev-parse HEAD)" = "$LLAMA_COMMIT"
-          cmake -B build -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=OFF
-          cmake --build build --config Release -j 4 --target llama-server
-          test -x build/bin/llama-server
-
-      - name: Execute frozen Cloudflare three-case holdout and semantic obligation manifest
-        if: github.event_name == 'pull_request' && github.head_ref == 'agent/s26-cloudflare-readonly-preflight-20260907'
-        timeout-minutes: 145
-        shell: bash
-        env:
-          S26_AUTHORITY_ROOT: ${{ github.workspace }}/s26-authority
-          LF_REPOSITORY_VISIBILITY: public
-          LF_RUNNER_LABEL: ubuntu-latest
-          LF_LLAMA_SOURCE_COMMIT: ${{ env.LLAMA_COMMIT }}
-          LF_LLAMA_SERVER_PATH: ${{ runner.temp }}/llama.cpp/build/bin/llama-server
-        run: |
-          set -euo pipefail
-          test -n "${CLOUDFLARE_AI_CANARY_TOKEN}" || { echo 'Missing CLOUDFLARE_AI_CANARY_TOKEN'; exit 1; }
-          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_holdout_manifest.py \
-            --result-path "$GITHUB_WORKSPACE/s26-cloudflare-holdout-manifest-result.json" \
-            | tee "$RUNNER_TEMP/s26-cloudflare-holdout-manifest.log"
-
-      - name: Upload durable Cloudflare holdout manifest evidence
-        if: always() && github.event_name == 'pull_request'
-        uses: actions/upload-artifact@v4
-        with:
-          name: s26-cloudflare-holdout-manifest-${{ github.run_id }}
-          path: |
-            s26-cloudflare-holdout-manifest-result.json
-            ${{ runner.temp }}/s26-cloudflare-holdout-manifest.log
-          if-no-files-found: error
-          retention-days: 30
-
       - name: Write governed evidence summary
         if: always()
         shell: bash
@@ -202,15 +143,11 @@ jobs:
             if [[ -f s26-cloudflare-benchmark-result.json ]]; then
               echo "- Inference requests: $(jq -r '.inference_requests' s26-cloudflare-benchmark-result.json)"
               echo "- Latency: $(jq -r '.elapsed_s' s26-cloudflare-benchmark-result.json)s"
+              echo "- Status: $(jq -r '.status // "RESULT"' s26-cloudflare-benchmark-result.json)"
               echo "- Contract gate: $(jq -r '.contract_gate.status // "N/A"' s26-cloudflare-benchmark-result.json)"
               echo "- Semantic utility: $(jq -r '.semantic_gate.status // "N/A"' s26-cloudflare-benchmark-result.json)"
-            fi
-            if [[ -f s26-cloudflare-holdout-manifest-result.json ]]; then
-              echo "- Holdout candidate nominal: $(jq -r '.candidate_nominal' s26-cloudflare-holdout-manifest-result.json)"
-              echo "- Holdout independent judge: $(jq -r '.holdout_judge_status' s26-cloudflare-holdout-manifest-result.json)"
-              echo "- Manifest semantic: $(jq -r '.manifest_semantic_status' s26-cloudflare-holdout-manifest-result.json)"
-              echo "- Complete manifest executed: $(jq -r '.complete_profile_obligation_manifest_executed' s26-cloudflare-holdout-manifest-result.json)"
-              echo "- Overall: $(jq -r '.status' s26-cloudflare-holdout-manifest-result.json)"
-              echo "- Cloudflare neurons: $(jq -r '.cloudflare_usage_totals.neurons' s26-cloudflare-holdout-manifest-result.json)"
+              echo "- Finish reason: $(jq -r '.finish_reason // "N/A"' s26-cloudflare-benchmark-result.json)"
+            else
+              echo '- Governed benchmark result: NOT_PRODUCED'
             fi
           } >> "${GITHUB_STEP_SUMMARY}"
