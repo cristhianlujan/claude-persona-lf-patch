@@ -1,0 +1,15 @@
+{
+  "forward_version": "20260907193711",
+  "rollback_version": "20260907193712",
+  "selection_readback": {
+    "remote_max_version": "20260907151600",
+    "forward_present": false,
+    "rollback_present": false
+  },
+  "source_policy": "BYTE_IDENTICAL_TO_PREVIOUSLY_REVIEWED_BEHAVIOR",
+  "forward_source_blob": "d806d88176e21bcee1de7545c65e776a6e051899",
+  "rollback_source_blob": "290ff2e1c50ca7d0bf2167a9f424380450de0c93",
+  "production": false,
+  "merge_authorized": false,
+  "automatic_promotion": false
+}
