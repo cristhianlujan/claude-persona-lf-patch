@@ -5,8 +5,8 @@ on:
     branches: [main]
     types: [synchronize]
     paths:
-      - "supabase/migrations/20260906211500_lf_input_governance_cached_v2_sandbox_canary_switch_v1.sql"
-      - "supabase/migrations/20260906211600_lf_input_governance_cached_v2_sandbox_canary_rollback_v1.sql"
+      - "supabase/migrations/20260907151500_lf_input_governance_cached_v2_sandbox_canary_retry_switch_v1.sql"
+      - "supabase/migrations/20260907151600_lf_input_governance_cached_v2_sandbox_canary_retry_rollback_v1.sql"
       - ".github/workflows/s28-input-governance-cached-v2-sandbox-canary.yml"
 
 permissions:
@@ -26,10 +26,10 @@ jobs:
     env:
       SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
       SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
-      FORWARD_VERSION: "20260906211500"
-      ROLLBACK_VERSION: "20260906211600"
-      FORWARD_FILE: "supabase/migrations/20260906211500_lf_input_governance_cached_v2_sandbox_canary_switch_v1.sql"
-      ROLLBACK_FILE: "supabase/migrations/20260906211600_lf_input_governance_cached_v2_sandbox_canary_rollback_v1.sql"
+      FORWARD_VERSION: "20260907151500"
+      ROLLBACK_VERSION: "20260907151600"
+      FORWARD_FILE: "supabase/migrations/20260907151500_lf_input_governance_cached_v2_sandbox_canary_retry_switch_v1.sql"
+      ROLLBACK_FILE: "supabase/migrations/20260907151600_lf_input_governance_cached_v2_sandbox_canary_retry_rollback_v1.sql"
       BASELINE_EXEC_SHA: "3290e752c27a46a089ed93d9a15769b7b9ca416f00d389c681431fde977da588"
       CANDIDATE_CURRENTNESS_SHA: "4a1c9f5446c321dac97b5a0bfe5c5e4d5c359b3317d228a67fd17b619bc3899a"
       CLI_MIRROR: "/tmp/s28-cli-mirror"
@@ -45,6 +45,26 @@ jobs:
         uses: supabase/setup-cli@v1
         with:
           version: 2.116.0
+
+      - name: Static rollback and summary transport guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('.github/workflows/s28-input-governance-cached-v2-sandbox-canary.yml').read_text()
+          bad=['CLI_'+'MIRROB','PGSSL'+'MMODE','CLI_MIRROR: "'+'${{ runner.temp }}']
+          hits=[x for x in bad if x in s]
+          if hits:
+              raise SystemExit('FAIL_S28_WORKFLOW_STATIC_HIGH_RISK_TOKEN:'+','.join(hits))
+          rollback_copy='cp "$ROLLBACK_FILE" "$CLI_'+'MIRROR/supabase/migrations/$(basename "$ROLLBACK_FILE")"'
+          if rollback_copy not in s:
+              raise SystemExit('FAIL_S28_WORKFLOW_ROLLBACK_COPY_PATH')
+          qat='psql -X -q'+'At -v ON_ERROR_STOP=1 -c'
+          if s.count(qat) != 2:
+              raise SystemExit(f'FAIL_S28_WORKFLOW_JSON_PSQL_QUIET_COUNT:{s.count(qat)}')
+          print('PASS_S28_WORKFLOW_STATIC_ROLLBACK_SUMMARY_GUARD')
+          PY
 
       - name: Preflight exact source and sandbox authority
         id: preflight
@@ -120,7 +140,7 @@ jobs:
           docker run --rm \
             -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
             postgres:17.6 \
-            psql -X -v ON_ERROR_STOP=1 -At -c "
+            psql -X -qAt -v ON_ERROR_STOP=1 -c "
               set statement_timeout='120s';
               with x as materialized (
                 select programacion.fn_input_governance_execute(43,'MANUAL') as j
@@ -136,6 +156,8 @@ jobs:
               )::text
               from x;
             " > "$RUNNER_TEMP/s28-baseline-summary.json"
+          test -s "$RUNNER_TEMP/s28-baseline-summary.json"
+          python3 -m json.tool "$RUNNER_TEMP/s28-baseline-summary.json" >/dev/null
           cat "$RUNNER_TEMP/s28-baseline-summary.json"
           echo "ready=true" >> "$GITHUB_OUTPUT"
 
@@ -332,7 +354,7 @@ jobs:
           docker run --rm \
             -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
             postgres:17.6 \
-            psql -X -v ON_ERROR_STOP=1 -At -c "
+            psql -X -qAt -v ON_ERROR_STOP=1 -c "
               set statement_timeout='120s';
               with x as materialized (
                 select programacion.fn_input_governance_execute(43,'MANUAL') as j
@@ -348,8 +370,10 @@ jobs:
               )::text
               from x;
             " > "$RUNNER_TEMP/s28-candidate-summary.json"
+          test -s "$RUNNER_TEMP/s28-candidate-summary.json"
+          python3 -m json.tool "$RUNNER_TEMP/s28-candidate-summary.json" >/dev/null
 
-          python3 - <<'PY'
+          python3 - <<'PY' 
           import json, os, pathlib, sys
           root=pathlib.Path(os.environ['RUNNER_TEMP'])
           base=json.loads((root/'s28-baseline-summary.json').read_text().strip())
@@ -411,7 +435,7 @@ jobs:
             exit 1
           fi
           test -f "$CLI_MIRROR/supabase/migrations/$(basename "$FORWARD_FILE")"
-          cp "$ROLLBACK_FILE" "$CLI_MIRROB/supabase/migrations/$(basename "$ROLLBACK_FILE")"
+          cp "$ROLLBACK_FILE" "$CLI_MIRROR/supabase/migrations/$(basename "$ROLLBACK_FILE")"
 
           DB_URL="$(python3 - <<'PY'
           import os
@@ -428,6 +452,64 @@ jobs:
           supabase --workdir "$CLI_MIRROR" --yes db push --db-url "$DB_URL"
           echo "rolled_back=true" >> "$GITHUB_OUTPUT"
 
+      - name: Emergency runtime baseline safety restore
+        if: always()
+        shell: bash
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGPASSWORD="$SUPABASE_DB_PASSWORD"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+
+          docker run --rm \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            postgres:17.6 \
+            psql -X -v ON_ERROR_STOP=1 -c "
+          do \$safety\$
+          declare
+            v_def text;
+            v_back text;
+            v_sha text;
+            v_v1 integer;
+            v_v2 integer;
+          begin
+            select pg_get_functiondef('programacion.fn_input_governance_execute(integer,text)'::regprocedure)
+              into v_def;
+            v_sha := encode(extensions.digest(convert_to(v_def,'UTF8'),'sha256'),'hex');
+
+            if v_sha <> '${BASELINE_EXEC_SHA}' then
+              v_v1 := (length(v_def)-length(replace(v_def,'fn_input_readiness_run_is_current_cached_v1','')))
+                      / length('fn_input_readiness_run_is_current_cached_v1');
+              v_v2 := (length(v_def)-length(replace(v_def,'fn_input_readiness_run_is_current_cached_v2','')))
+                      / length('fn_input_readiness_run_is_current_cached_v2');
+              if v_v1<>0 or v_v2<>1 then
+                raise exception 'S28_SAFETY_RESTORE_UNEXPECTED_BINDING:v1=% v2=% sha=%',v_v1,v_v2,v_sha;
+              end if;
+
+              v_back := replace(v_def,'fn_input_readiness_run_is_current_cached_v2','fn_input_readiness_run_is_current_cached_v1');
+              if encode(extensions.digest(convert_to(v_back,'UTF8'),'sha256'),'hex') <> '${BASELINE_EXEC_SHA}' then
+                raise exception 'S28_SAFETY_RESTORE_SOURCE_GUARD_FAILED';
+              end if;
+              execute v_back;
+
+              select pg_get_functiondef('programacion.fn_input_governance_execute(integer,text)'::regprocedure)
+                into v_def;
+              if encode(extensions.digest(convert_to(v_def,'UTF8'),'sha256'),'hex') <> '${BASELINE_EXEC_SHA}' then
+                raise exception 'S28_SAFETY_RESTORE_POSTCONDITION_FAILED';
+              end if;
+              raise notice 'S28_SAFETY_RESTORE_APPLIED_BASELINE';
+            else
+              raise notice 'S28_SAFETY_RESTORE_NOT_REQUIRED';
+            end if;
+          end;
+          \$safety\$;
+          "
+
       - name: Final rollback and exact-version readback
         if: always()
         shell: bash
@@ -443,7 +525,7 @@ jobs:
           export PGSSLMODE=require
 
           docker run --rm \
-            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMMODE \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
             postgres:17.6 \
             psql -X -v ON_ERROR_STOP=1 -c "
           do \$final\$

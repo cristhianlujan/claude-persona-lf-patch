@@ -1,5 +1,5 @@
 -- Strategy 28 / P3 sandbox-only automatic rollback.
--- Exact-version source-first rollback paired with 20260906211500.
+-- Exact-version source-first rollback paired with 20260907151500.
 -- Restores fn_input_governance_execute to the exact pre-canary cached_v1 source.
 do $rollback$
 declare
@@ -57,4 +57,3 @@ begin
   raise notice 'S28_CACHED_V2_SANDBOX_ROLLBACK_PASS';
 end;
 $rollback$;
--- Trigger exact-version canary after workflow hardening; semantic SQL unchanged.
