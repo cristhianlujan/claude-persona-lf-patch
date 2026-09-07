@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 MODEL = "@cf/mistralai/mistral-small-3.1-24b-instruct"
-MAX_OUTPUT_TOKENS = 256
+MAX_OUTPUT_TOKENS = 512
 REQUEST_TIMEOUT_SECONDS = 120
 EXPECTED_AUTHORITY_REF = "fcc2b0d57e36a31c26f38acc2510b193aac988c8"
 
@@ -104,9 +104,13 @@ def main() -> int:
         schema_binding.payload, profile_slug="ui_architect", schema_mode="UI_FOCUSED_DECISION"
     )
 
+    transport_rule = (
+        "\n\nOUTPUT TRANSPORT REQUIREMENT: Return exactly one raw JSON object matching "
+        "the provided schema. Do not use Markdown, code fences, prose before JSON, or prose after JSON."
+    )
     payload = {
         "messages": [
-            {"role": "system", "content": authority.build_system_prompt()},
+            {"role": "system", "content": authority.build_system_prompt() + transport_rule},
             {"role": "user", "content": authority.TASK},
         ],
         "guided_json": generation_schema,
@@ -160,7 +164,7 @@ def main() -> int:
         "model": MODEL,
         "authority_ref": authority_ref,
         "authority_source_hashes": authority.source_hashes(),
-        "prompt_policy": "S26_PINNED_FOCUSED_UI_SINGLE_SHOT_CF_MISTRAL_GUIDED_JSON_V1",
+        "prompt_policy": "S26_PINNED_FOCUSED_UI_SINGLE_SHOT_CF_MISTRAL_GUIDED_JSON_V2_RAW_JSON",
         "generation_schema_policy": generation_policy,
         "max_output_tokens": MAX_OUTPUT_TOKENS,
         "request_timeout_seconds": REQUEST_TIMEOUT_SECONDS,
