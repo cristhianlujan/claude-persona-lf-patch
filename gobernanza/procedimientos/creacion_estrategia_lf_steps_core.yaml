@@ -1,8 +1,9 @@
-version: v0.2
+version: v0.3
 status: CANDIDATO_READ_ONLY
 operation: CREACION_ESTRATEGIA_LF
 source_model: GIT_FIRST_YAML
 ekb_hardening: S30_EKB_HARDENING_V1
+review_hardening: S30_PRODUCT_QUALITY_REVIEW_V1
 steps:
   - order: 1
     id: router
@@ -39,7 +40,7 @@ steps:
     evidence: duplicate_and_lineage_resolved
   - order: 12
     id: strategy_classification
-    evidence: strategy_type_and_scope_classified
+    evidence: strategy_archetype_and_extension_contract_resolved
   - order: 13
     id: authority_resolution
     evidence: authorities_resolved
@@ -57,10 +58,10 @@ steps:
     evidence: baseline_and_claim_ceiling_materialized
   - order: 18
     id: strategy_contract_materialization
-    evidence: all_required_strategy_blocks_present
+    evidence: all_required_strategy_blocks_stage_schema_and_type_extension_present
   - order: 19
     id: stages_and_gates
-    evidence: stages_exit_gates_and_stop_conditions_present
+    evidence: complete_stage_schema_exit_gates_stop_conditions_and_conclusion_refs_present
   - order: 20
     id: qdp_evidence_contract
     evidence: qdp_tests_metrics_evidence_ceiling_present
@@ -72,4 +73,4 @@ steps:
     evidence: rollback_recovery_and_invalidation_present
   - order: 23
     id: execution_frontier
-    evidence: ordered_safe_work_and_blockers_present
+    evidence: execution_frontier_current_ordered_safe_work_blockers_and_terminal_rule_present
