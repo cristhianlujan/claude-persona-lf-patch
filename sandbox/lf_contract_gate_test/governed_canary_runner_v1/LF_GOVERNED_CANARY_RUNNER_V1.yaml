@@ -23,7 +23,8 @@ required_phases:
   - post_readback
 invariants:
   - rollback is mandatory and runs after every attempted forward, including test failure
-  - post_readback is mandatory after rollback and must prove the declared zero-residue condition
+  - post_readback is mandatory after rollback
+  - zero residue is executable evidence, not a declaration; evidence.zero_residue_token must be asserted by a post_readback stdout expectation
   - raw stdout/stderr are never persisted in the evidence packet; only SHA-256 digests and bounded failure metadata
   - secret values are never embedded into the manifest; only explicit environment-variable names may be inherited
   - subprocess execution uses argv arrays and shell interpreters fail closed unless explicitly declared by the canary manifest
@@ -40,6 +41,7 @@ minimum_evidence:
   - stderr_sha256
   - rollback_attempted
   - post_readback_attempted
+  - zero_residue_token
   - final result
   - claim_ceiling
 applicable_ekb:
