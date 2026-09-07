@@ -2,9 +2,10 @@
 """Classify whether lf-contract-check must read Supabase Management API state.
 
 The hosted PostgREST exposed-schema readback is a remote security control. It is
-required when the candidate can change that control surface, on explicit manual
-audits, or when changed-file scope cannot be established safely. It is not a
-functional dependency of unrelated Story Creator / judge changes.
+required when the candidate can change that control surface, when it can change
+the classifier/gate itself, on explicit manual audits, or when changed-file
+scope cannot be established safely. It is not a functional dependency of
+unrelated semantic or sandbox evidence changes.
 """
 from __future__ import annotations
 
@@ -14,7 +15,13 @@ import subprocess
 from pathlib import Path
 from typing import Iterable, Mapping
 
-CONTROL_PLANE_EXACT = frozenset({"supabase/config.toml"})
+CONTROL_PLANE_EXACT = frozenset(
+    {
+        "supabase/config.toml",
+        ".github/workflows/lf-contract-check.yml",
+        "sandbox/lf_contract_gate_test/supabase_control_plane_scope.py",
+    }
+)
 CONTROL_PLANE_PREFIXES = ("supabase/migrations/",)
 
 
