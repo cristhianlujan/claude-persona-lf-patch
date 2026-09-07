@@ -103,7 +103,7 @@ begin
         if v_retrieval.status <> 'PASS' then
           v_errors := v_errors || jsonb_build_array('RETRIEVAL_NOT_PASS');
         end if;
-        if jsonb_typeof(v_retrieval.selected_payload) <> 'array' then
+        if coalesce(jsonb_typeof(v_retrieval.selected_payload),'null') <> 'array' then
           v_errors := v_errors || jsonb_build_array('RETRIEVAL_SELECTED_PAYLOAD_REQUIRED');
         else
           select coalesce(jsonb_agg(jsonb_build_object(
