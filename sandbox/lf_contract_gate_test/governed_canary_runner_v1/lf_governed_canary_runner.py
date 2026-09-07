@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Governed, fail-closed, sandbox-only canary orchestrator for LF.
-
-The runner intentionally does not know product semantics. It enforces a safe
-execution envelope around externally-defined preflight/forward/test/rollback/
-post-readback steps and emits an auditable evidence packet.
-"""
+"""Governed, fail-closed, sandbox-only canary orchestrator for LF."""
 from __future__ import annotations
 
 import argparse
@@ -21,16 +16,14 @@ from typing import Any
 
 VERSION = "LF_GOVERNED_CANARY_RUNNER_V1"
 ALLOWED_ENVIRONMENTS = {"sandbox", "ephemeral", "test"}
-ALLOWED_CHANGE_MODES = {
-    "MIGRATION_EXACT_VERSION",
-    "RUNTIME_CANDIDATE",
-    "REPOSITORY_ONLY",
-    "GENERIC_SANDBOX",
-}
+ALLOWED_CHANGE_MODES = {"MIGRATION_EXACT_VERSION", "RUNTIME_CANDIDATE", "REPOSITORY_ONLY", "GENERIC_SANDBOX"}
 PHASES = ("preflight", "forward", "tests", "rollback", "post_readback")
 VERSION_RE = re.compile(r"^20\d{12}$")
 ID_RE = re.compile(r"^[A-Z0-9][A-Z0-9_.:-]{2,127}$")
+TOKEN_RE = re.compile(r"^[A-Z0-9][A-Z0-9_.:-]{2,127}$")
 SAFE_BASE_ENV = ("PATH", "HOME", "LANG", "LC_ALL", "TMPDIR", "TEMP", "TMP")
+SHELL_INTERPRETERS = {"sh", "bash", "zsh", "cmd", "powershell", "pwsh"}
+CLAIM_CEILING = "SANDBOX_CANARY_EVIDENCE_ONLY_NO_PRODUCTION_OR_GOLDEN_CLAIM"
 
 
 class ContractError(ValueError):
@@ -87,13 +80,12 @@ def _require_object(parent: dict[str, Any], key: str) -> dict[str, Any]:
     return value
 
 
-def _require_steps(manifest: dict[str, Any], phase: str, *, nonempty: bool) -> list[dict[str, Any]]:
+def _require_steps(manifest: dict[str, Any], phase: str) -> list[dict[str, Any]]:
     steps = _require_object(manifest, "steps").get(phase)
-    if not isinstance(steps, list) or (nonempty and not steps):
+    if not isinstance(steps, list) or not steps:
         raise ContractError(f"{phase.upper()}_STEPS_INVALID")
-    for index, step in enumerate(steps):
-        if not isinstance(step, dict):
-            raise ContractError(f"{phase.upper()}_STEP_{index}_NOT_OBJECT")
+    if not all(isinstance(step, dict) for step in steps):
+        raise ContractError(f"{phase.upper()}_STEP_NOT_OBJECT")
     return steps
 
 
@@ -117,12 +109,11 @@ def validate_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
     mode = manifest.get("change_mode")
     if mode not in ALLOWED_CHANGE_MODES:
         raise ContractError("CHANGE_MODE_INVALID")
-    exact = manifest.get("exact_versions")
     if mode == "MIGRATION_EXACT_VERSION":
+        exact = manifest.get("exact_versions")
         if not isinstance(exact, dict):
             raise ContractError("EXACT_VERSIONS_REQUIRED")
-        forward = exact.get("forward")
-        rollback = exact.get("rollback")
+        forward, rollback = exact.get("forward"), exact.get("rollback")
         if not isinstance(forward, str) or not VERSION_RE.fullmatch(forward):
             raise ContractError("FORWARD_VERSION_INVALID")
         if not isinstance(rollback, str) or not VERSION_RE.fullmatch(rollback):
@@ -132,8 +123,7 @@ def validate_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
 
     all_ids: set[str] = set()
     for phase in PHASES:
-        steps = _require_steps(manifest, phase, nonempty=True)
-        for index, step in enumerate(steps):
+        for index, step in enumerate(_require_steps(manifest, phase)):
             step_id = step.get("id")
             if not isinstance(step_id, str) or not ID_RE.fullmatch(step_id):
                 raise ContractError(f"{phase.upper()}_STEP_ID_INVALID:{index}")
@@ -143,7 +133,7 @@ def validate_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
             argv = step.get("argv")
             if not isinstance(argv, list) or not argv or not all(isinstance(x, str) and x and "\x00" not in x for x in argv):
                 raise ContractError(f"ARGV_INVALID:{step_id}")
-            if argv[0] in {"sh", "bash", "zsh", "cmd", "powershell", "pwsh"} and step.get("allow_shell_interpreter") is not True:
+            if argv[0] in SHELL_INTERPRETERS and step.get("allow_shell_interpreter") is not True:
                 raise ContractError(f"SHELL_INTERPRETER_FORBIDDEN:{step_id}")
             timeout = step.get("timeout_seconds")
             if not isinstance(timeout, int) or timeout < 1 or timeout > 1800:
@@ -172,7 +162,16 @@ def validate_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
         raise ContractError("POST_READBACK_MUST_BE_REQUIRED")
     if evidence.get("require_zero_residue") is not True:
         raise ContractError("ZERO_RESIDUE_MUST_BE_REQUIRED")
-
+    zero_token = evidence.get("zero_residue_token")
+    if not isinstance(zero_token, str) or not TOKEN_RE.fullmatch(zero_token):
+        raise ContractError("ZERO_RESIDUE_TOKEN_INVALID")
+    post_assertions = [
+        token
+        for step in manifest["steps"]["post_readback"]
+        for token in step.get("expect", {}).get("stdout_contains", [])
+    ]
+    if zero_token not in post_assertions:
+        raise ContractError("ZERO_RESIDUE_TOKEN_NOT_ASSERTED")
     return manifest
 
 
@@ -190,30 +189,23 @@ def _step_env(step: dict[str, Any]) -> dict[str, str]:
     return env
 
 
-def _run_step(phase: str, step: dict[str, Any]) -> tuple[StepOutcome, bytes, bytes]:
+def _run_step(phase: str, step: dict[str, Any]) -> StepOutcome:
     started = time.monotonic()
     stdout = b""
     stderr = b""
     try:
         proc = subprocess.run(
-            step["argv"],
-            cwd=step.get("cwd") or None,
-            env=_step_env(step),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
+            step["argv"], cwd=step.get("cwd") or None, env=_step_env(step),
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
             timeout=step["timeout_seconds"],
         )
-        stdout = proc.stdout or b""
-        stderr = proc.stderr or b""
+        stdout, stderr = proc.stdout or b"", proc.stderr or b""
         expect = step.get("expect", {})
-        allowed = expect.get("exit_codes", [0])
         failure = None
-        if proc.returncode not in allowed:
+        if proc.returncode not in expect.get("exit_codes", [0]):
             failure = f"EXIT_CODE:{proc.returncode}"
         else:
-            text_out = stdout.decode("utf-8", "replace")
-            text_err = stderr.decode("utf-8", "replace")
+            text_out, text_err = stdout.decode("utf-8", "replace"), stderr.decode("utf-8", "replace")
             for token in expect.get("stdout_contains", []):
                 if token not in text_out:
                     failure = f"STDOUT_TOKEN_MISSING:{token}"
@@ -223,47 +215,21 @@ def _run_step(phase: str, step: dict[str, Any]) -> tuple[StepOutcome, bytes, byt
                     if token not in text_err:
                         failure = f"STDERR_TOKEN_MISSING:{token}"
                         break
-        status = "PASS" if failure is None else "FAIL"
-        return StepOutcome(
-            phase=phase,
-            step_id=step["id"],
-            status=status,
-            returncode=proc.returncode,
-            elapsed_ms=(time.monotonic() - started) * 1000,
-            stdout_sha256=_sha256_bytes(stdout),
-            stderr_sha256=_sha256_bytes(stderr),
-            failure=failure,
-        ), stdout, stderr
+        return StepOutcome(phase, step["id"], "PASS" if failure is None else "FAIL", proc.returncode,
+                           (time.monotonic() - started) * 1000, _sha256_bytes(stdout), _sha256_bytes(stderr), failure)
     except subprocess.TimeoutExpired as exc:
-        stdout = exc.stdout or b""
-        stderr = exc.stderr or b""
-        return StepOutcome(
-            phase=phase,
-            step_id=step["id"],
-            status="FAIL",
-            returncode=None,
-            elapsed_ms=(time.monotonic() - started) * 1000,
-            stdout_sha256=_sha256_bytes(stdout),
-            stderr_sha256=_sha256_bytes(stderr),
-            failure="TIMEOUT",
-        ), stdout, stderr
+        stdout, stderr = exc.stdout or b"", exc.stderr or b""
+        return StepOutcome(phase, step["id"], "FAIL", None, (time.monotonic() - started) * 1000,
+                           _sha256_bytes(stdout), _sha256_bytes(stderr), "TIMEOUT")
     except (OSError, ContractError) as exc:
-        return StepOutcome(
-            phase=phase,
-            step_id=step["id"],
-            status="FAIL",
-            returncode=None,
-            elapsed_ms=(time.monotonic() - started) * 1000,
-            stdout_sha256=None,
-            stderr_sha256=None,
-            failure=f"EXECUTION_ERROR:{type(exc).__name__}:{exc}",
-        ), b"", b""
+        return StepOutcome(phase, step["id"], "FAIL", None, (time.monotonic() - started) * 1000,
+                           None, None, f"EXECUTION_ERROR:{type(exc).__name__}:{exc}")
 
 
 def _run_phase(manifest: dict[str, Any], phase: str, evidence_steps: list[dict[str, Any]], *, stop_on_failure: bool = True) -> bool:
     ok = True
     for step in manifest["steps"][phase]:
-        outcome, _stdout, _stderr = _run_step(phase, step)
+        outcome = _run_step(phase, step)
         evidence_steps.append(outcome.as_dict())
         if outcome.status != "PASS":
             ok = False
@@ -281,11 +247,10 @@ def _write_evidence(path: Path, packet: dict[str, Any]) -> None:
 
 def execute_manifest(manifest: dict[str, Any], *, dry_run: bool = False) -> dict[str, Any]:
     validate_manifest(manifest)
-    manifest_hash = _sha256_json(manifest)
     packet: dict[str, Any] = {
         "evidence_version": VERSION,
         "canary_id": manifest["canary_id"],
-        "manifest_sha256": manifest_hash,
+        "manifest_sha256": _sha256_json(manifest),
         "change_mode": manifest["change_mode"],
         "target": manifest["target"],
         "started_at_epoch_ms": int(time.time() * 1000),
@@ -294,15 +259,14 @@ def execute_manifest(manifest: dict[str, Any], *, dry_run: bool = False) -> dict
         "post_readback_attempted": False,
         "forward_started": False,
         "result": "DRY_RUN" if dry_run else "IN_PROGRESS",
-        "claim_ceiling": "SANDBOX_CANARY_EVIDENCE_ONLY_NO_PRODUCTION_OR_GOLDEN_CLAIM",
+        "claim_ceiling": CLAIM_CEILING,
     }
     if dry_run:
         packet["finished_at_epoch_ms"] = int(time.time() * 1000)
         return packet
 
     steps: list[dict[str, Any]] = packet["steps"]
-    preflight_ok = _run_phase(manifest, "preflight", steps)
-    if not preflight_ok:
+    if not _run_phase(manifest, "preflight", steps):
         packet["result"] = "FAIL_PREFLIGHT"
         packet["finished_at_epoch_ms"] = int(time.time() * 1000)
         _write_evidence(Path(manifest["evidence"]["output_path"]), packet)
@@ -337,7 +301,7 @@ def execute_manifest(manifest: dict[str, Any], *, dry_run: bool = False) -> dict
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", required=True, type=Path)
-    parser.add_argument("--plan", action="store_true", help="Validate and emit a non-executing plan packet")
+    parser.add_argument("--plan", action="store_true")
     args = parser.parse_args(argv)
     try:
         manifest = validate_manifest(_load_manifest(args.manifest))
