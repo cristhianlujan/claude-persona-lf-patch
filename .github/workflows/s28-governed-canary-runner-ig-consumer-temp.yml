@@ -105,3 +105,5 @@ jobs:
             ${{ runner.temp }}/s28-ig-generic-runner/post_readback.json
           if-no-files-found: warn
           retention-days: 7
+
+# trigger: second push after workflow creation; no SQL/content change
