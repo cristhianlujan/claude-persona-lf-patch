@@ -5,7 +5,7 @@ begin;
 
 insert into private.lf_context_budget_events_v2(
   id, execution_id, estimated_tokens, context_status, source, recommendation, recorded_at, evidence_event_id
-) values
+) overriding system value values
 (99024001,'OP24-WC-GREEN',800,'GREEN','OP24_SANDBOX_CANARY',null,clock_timestamp(),null),
 (99024002,'OP24-WC-RED',100,'RED','OP24_SANDBOX_CANARY',null,clock_timestamp(),null),
 (99024003,'OP24-WC-YELLOW',100,'YELLOW','OP24_SANDBOX_CANARY',null,clock_timestamp(),null),
