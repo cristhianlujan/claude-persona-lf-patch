@@ -22,8 +22,16 @@ create table public.lf_test_suite_runs(
   updated_at timestamptz not null default now(), created_by_execution_id text not null default 'UNKNOWN', updated_by_execution_id text
 );
 create table public.lf_test_suite_cases(
-  suite_code text not null, test_code text not null, primary key(suite_code,test_code)
+  suite_code text not null, test_code text not null,
+  input_payload jsonb not null default '{}', metadata jsonb not null default '{}',
+  primary key(suite_code,test_code)
 );
+do $$ begin
+  if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='lf_test_suite_cases' and column_name='input_payload' and data_type='jsonb')
+     or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='lf_test_suite_cases' and column_name='metadata' and data_type='jsonb') then
+    raise exception 'BOOTSTRAP_CASE_BINDING_SCHEMA_INVALID';
+  end if;
+end $$;
 create table public.lf_test_runs(
   test_run_id uuid primary key default gen_random_uuid(), suite_run_id uuid not null references public.lf_test_suite_runs(suite_run_id) on delete cascade,
   suite_code text not null, test_code text not null, execution_id text, operation_code text, rule_codes text[] not null default '{}', story_code text,
@@ -59,10 +67,17 @@ create table public.lf_test_artifacts(
   created_at timestamptz not null default now(), created_by_execution_id text not null default 'UNKNOWN', updated_by_execution_id text, updated_at timestamptz
 );
 insert into public.lf_test_suite_runs(
- suite_run_id,suite_code,environment,commit_sha,executor_type,executor_name,status,created_by_execution_id
+ suite_run_id,suite_code,environment,commit_sha,executor_type,executor_name,status,manifest,created_by_execution_id
 ) values (
- '11111111-1111-4111-8111-111111111111','TS-S27-WRITER-V1','SANDBOX','aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa','HARNESS','P9_WRITER_TEST','RUNNING','BOOTSTRAP'
+ '11111111-1111-4111-8111-111111111111','TS-S27-WRITER-V1','SANDBOX','aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa','HARNESS','P9_WRITER_TEST','RUNNING',
+ jsonb_build_object('evidence_binding',jsonb_build_object('source_sha256',repeat('b',64),'configuration_sha256',repeat('c',64))),
+ 'BOOTSTRAP'
 );
-insert into public.lf_test_suite_cases(suite_code,test_code) values
- ('TS-S27-WRITER-V1','CASE-POS'),('TS-S27-WRITER-V1','CASE-HASH'),('TS-S27-WRITER-V1','CASE-HEAD'),
- ('TS-S27-WRITER-V1','CASE-CHANNEL'),('TS-S27-WRITER-V1','CASE-JUDGE'),('TS-S27-WRITER-V1','CASE-ORIGIN');
+insert into public.lf_test_suite_cases(suite_code,test_code,input_payload,metadata) values
+ ('TS-S27-WRITER-V1','CASE-POS',jsonb_build_object('source_sha256',repeat('b',64)),jsonb_build_object('qa_identity_sha256',repeat('c',64))),
+ ('TS-S27-WRITER-V1','CASE-HASH',jsonb_build_object('source_sha256',repeat('b',64)),jsonb_build_object('qa_identity_sha256',repeat('c',64))),
+ ('TS-S27-WRITER-V1','CASE-HEAD',jsonb_build_object('source_sha256',repeat('b',64)),jsonb_build_object('qa_identity_sha256',repeat('c',64))),
+ ('TS-S27-WRITER-V1','CASE-CHANNEL',jsonb_build_object('source_sha256',repeat('b',64)),jsonb_build_object('qa_identity_sha256',repeat('c',64))),
+ ('TS-S27-WRITER-V1','CASE-JUDGE',jsonb_build_object('source_sha256',repeat('b',64)),jsonb_build_object('qa_identity_sha256',repeat('c',64))),
+ ('TS-S27-WRITER-V1','CASE-ORIGIN',jsonb_build_object('source_sha256',repeat('b',64)),jsonb_build_object('qa_identity_sha256',repeat('c',64))),
+ ('TS-S27-WRITER-V1','CASE-NO-BINDING','{}'::jsonb,'{}'::jsonb);

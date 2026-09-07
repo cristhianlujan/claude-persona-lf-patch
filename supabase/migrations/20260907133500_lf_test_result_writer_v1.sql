@@ -60,6 +60,10 @@ declare
   v_judge_fail_count integer;
   v_judge_review_count integer;
   v_outcome_error_code text;
+  v_expected_source_sha256 text;
+  v_expected_configuration_sha256 text;
+  v_case_input_payload jsonb;
+  v_case_metadata jsonb;
   v_test_run_id uuid;
   v_item jsonb;
   v_suite public.lf_test_suite_runs%rowtype;
@@ -300,11 +304,40 @@ begin
   if v_suite.environment is distinct from v_environment then
     return jsonb_build_object('outcome','BLOCKED','code','ENVIRONMENT_MISMATCH');
   end if;
-  if not exists (
-    select 1 from public.lf_test_suite_cases
-    where suite_code = v_suite_code and test_code = v_test_code
-  ) then
+  select input_payload,metadata
+  into v_case_input_payload,v_case_metadata
+  from public.lf_test_suite_cases
+  where suite_code = v_suite_code and test_code = v_test_code;
+  if not found then
     return jsonb_build_object('outcome','BLOCKED','code','TEST_CASE_NOT_REGISTERED');
+  end if;
+
+  v_expected_source_sha256 := lower(btrim(coalesce(
+    v_case_metadata#>>'{evidence_binding,source_sha256}',
+    v_case_input_payload->>'source_sha256',''
+  )));
+  v_expected_configuration_sha256 := lower(btrim(coalesce(
+    v_case_metadata#>>'{evidence_binding,configuration_sha256}',
+    v_case_metadata->>'qa_identity_sha256',''
+  )));
+  if v_expected_source_sha256 !~ '^[0-9a-f]{64}$' then
+    return jsonb_build_object('outcome','BLOCKED','code','SOURCE_BINDING_MISSING_OR_INVALID');
+  end if;
+  if v_expected_configuration_sha256 !~ '^[0-9a-f]{64}$' then
+    return jsonb_build_object('outcome','BLOCKED','code','CONFIGURATION_BINDING_MISSING_OR_INVALID');
+  end if;
+  if v_source_sha256 is distinct from v_expected_source_sha256 then
+    return jsonb_build_object(
+      'outcome','BLOCKED','code','SOURCE_SHA256_MISMATCH',
+      'expected_source_sha256',v_expected_source_sha256,'provided_source_sha256',v_source_sha256
+    );
+  end if;
+  if v_configuration_sha256 is distinct from v_expected_configuration_sha256 then
+    return jsonb_build_object(
+      'outcome','BLOCKED','code','CONFIGURATION_SHA256_MISMATCH',
+      'expected_configuration_sha256',v_expected_configuration_sha256,
+      'provided_configuration_sha256',v_configuration_sha256
+    );
   end if;
 
   v_lock_key := v_suite_run_id::text || '|' || v_test_code || '|' || v_attempt_no::text || '|LF_TEST_RESULT_WRITER_V1';
@@ -466,6 +499,10 @@ declare
   v_uncontrolled integer;
   v_missing_timing integer;
   v_child_status_conflicts integer;
+  v_child_binding_conflicts integer;
+  v_expected_source_sha256 text;
+  v_expected_configuration_sha256 text;
+  v_is_replay boolean := false;
   v_min_started timestamptz;
   v_max_completed timestamptz;
   v_max_duration bigint;
@@ -547,13 +584,43 @@ begin
   if v_suite.commit_sha is null or lower(v_suite.commit_sha) is distinct from v_code_head_sha then
     return jsonb_build_object('outcome','BLOCKED','code','CODE_HEAD_MISMATCH');
   end if;
-  if v_suite.metadata->>'finalizer_contract' = 'LF_TEST_SUITE_FINALIZER_V1' then
-    if v_suite.metadata->>'finalizer_receipt_sha256' = v_receipt_sha256 then
-      return jsonb_build_object('outcome','REPLAY','replay',true,'suite_run_id',v_suite_run_id,'receipt_sha256',v_receipt_sha256);
-    end if;
-    return jsonb_build_object('outcome','BLOCKED','code','SUITE_FINALIZE_IDEMPOTENCY_CONFLICT');
+
+  v_expected_source_sha256 := lower(btrim(coalesce(
+    v_suite.manifest#>>'{evidence_binding,source_sha256}',
+    v_suite.manifest->>'source_fingerprint_sha256',
+    v_suite.manifest->>'bank_source_fingerprint_sha256',''
+  )));
+  v_expected_configuration_sha256 := lower(btrim(coalesce(
+    v_suite.manifest#>>'{evidence_binding,configuration_sha256}',
+    v_suite.manifest->>'qa_identity_sha256',''
+  )));
+  if v_expected_source_sha256 !~ '^[0-9a-f]{64}$' then
+    return jsonb_build_object('outcome','BLOCKED','code','SUITE_SOURCE_BINDING_MISSING_OR_INVALID');
   end if;
-  if v_suite.status not in ('QUEUED','RUNNING','IN_PROGRESS') then
+  if v_expected_configuration_sha256 !~ '^[0-9a-f]{64}$' then
+    return jsonb_build_object('outcome','BLOCKED','code','SUITE_CONFIGURATION_BINDING_MISSING_OR_INVALID');
+  end if;
+  if v_source_sha256 is distinct from v_expected_source_sha256 then
+    return jsonb_build_object(
+      'outcome','BLOCKED','code','SUITE_SOURCE_SHA256_MISMATCH',
+      'expected_source_sha256',v_expected_source_sha256,'provided_source_sha256',v_source_sha256
+    );
+  end if;
+  if v_configuration_sha256 is distinct from v_expected_configuration_sha256 then
+    return jsonb_build_object(
+      'outcome','BLOCKED','code','SUITE_CONFIGURATION_SHA256_MISMATCH',
+      'expected_configuration_sha256',v_expected_configuration_sha256,
+      'provided_configuration_sha256',v_configuration_sha256
+    );
+  end if;
+
+  if v_suite.metadata->>'finalizer_contract' = 'LF_TEST_SUITE_FINALIZER_V1' then
+    if v_suite.metadata->>'finalizer_receipt_sha256' <> v_receipt_sha256 then
+      return jsonb_build_object('outcome','BLOCKED','code','SUITE_FINALIZE_IDEMPOTENCY_CONFLICT');
+    end if;
+    v_is_replay := true;
+  end if;
+  if not v_is_replay and v_suite.status not in ('QUEUED','RUNNING','IN_PROGRESS') then
     return jsonb_build_object('outcome','BLOCKED','code','SUITE_NOT_FINALIZABLE','status',v_suite.status);
   end if;
 
@@ -581,6 +648,27 @@ begin
   end if;
   if v_missing_timing <> 0 then
     return jsonb_build_object('outcome','BLOCKED','code','TEST_TIMING_NOT_MATERIALIZED','count',v_missing_timing);
+  end if;
+
+  select count(*)::integer into v_child_binding_conflicts
+  from public.lf_test_runs tr
+  join public.lf_test_suite_cases tc
+    on tc.suite_code=tr.suite_code and tc.test_code=tr.test_code
+  where tr.suite_run_id=v_suite_run_id
+    and (
+      lower(coalesce(tr.evidence_payload->>'source_sha256',''))
+        is distinct from lower(coalesce(
+          tc.metadata#>>'{evidence_binding,source_sha256}',tc.input_payload->>'source_sha256',''
+        ))
+      or lower(coalesce(tr.evidence_payload->>'configuration_sha256',''))
+        is distinct from lower(coalesce(
+          tc.metadata#>>'{evidence_binding,configuration_sha256}',tc.metadata->>'qa_identity_sha256',''
+        ))
+      or lower(coalesce(tc.metadata#>>'{evidence_binding,source_sha256}',tc.input_payload->>'source_sha256','')) !~ '^[0-9a-f]{64}$'
+      or lower(coalesce(tc.metadata#>>'{evidence_binding,configuration_sha256}',tc.metadata->>'qa_identity_sha256','')) !~ '^[0-9a-f]{64}$'
+    );
+  if v_child_binding_conflicts <> 0 then
+    return jsonb_build_object('outcome','BLOCKED','code','SUITE_CHILD_SOURCE_CONFIG_BINDING_CONFLICT','count',v_child_binding_conflicts);
   end if;
 
   select count(*)::integer into v_child_status_conflicts
@@ -612,6 +700,23 @@ begin
     when v_review > 0 then 'REVIEW_REQUIRED'
     else 'PASSED'
   end;
+
+  if v_is_replay then
+    if v_suite.status is distinct from v_derived_status
+       or v_suite.tests_total is distinct from v_total
+       or v_suite.tests_passed is distinct from v_passed
+       or v_suite.tests_failed is distinct from v_failed
+       or v_suite.tests_blocked is distinct from v_blocked
+       or v_suite.tests_review_required is distinct from v_review
+       or v_suite.started_at is distinct from v_started_at
+       or v_suite.completed_at is distinct from v_completed_at
+       or v_suite.duration_ms is distinct from v_duration_ms then
+      return jsonb_build_object('outcome','BLOCKED','code','SUITE_REPLAY_MATERIALIZED_STATE_DRIFT');
+    end if;
+    return jsonb_build_object(
+      'outcome','REPLAY','replay',true,'suite_run_id',v_suite_run_id,'receipt_sha256',v_receipt_sha256
+    );
+  end if;
 
   update public.lf_test_suite_runs
   set status=v_derived_status,
