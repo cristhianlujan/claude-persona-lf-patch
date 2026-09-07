@@ -223,8 +223,14 @@ if __name__ == "__main__":
     rc = main()
     if rc != 0:
         raise SystemExit(rc)
+
+    # The independent mini-judge has completed and its authority is unchanged.
+    # Install only the canonical schema validator needed by the separate primary-
+    # worker capability benchmark; do not couple primary-worker success to the
+    # mini-judge process or replace the judge model in-place.
     import subprocess
     import sys
+
     subprocess.check_call([
         sys.executable,
         "-m",
@@ -233,5 +239,6 @@ if __name__ == "__main__":
         "--disable-pip-version-check",
         "jsonschema==4.26.0",
     ])
-    from run_s26_qwen7b_primary_candidate import main as run_s26_qwen7b_primary_candidate
-    raise SystemExit(run_s26_qwen7b_primary_candidate())
+    from run_s26_zero_cost_primary_candidate import main as run_primary_candidate
+
+    raise SystemExit(run_primary_candidate())

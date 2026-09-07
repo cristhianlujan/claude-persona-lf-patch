@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
-"""S26 zero-cost sandbox benchmark of the already-pinned Qwen2.5-VL-7B model.
+"""S26 zero-cost primary-worker capability benchmark.
 
-This is capability evidence only. The model remains authorized as the semantic
-mini-judge, not as the primary profile worker. A PASS here cannot promote or
-change authority; it only decides whether a governed authority-change proposal
-is worth opening.
+Runs one explicitly pinned local GGUF candidate after the independent semantic
+mini-judge smoke. This is sandbox capability evidence only: it cannot change
+model authority, production routing, profile sources, or promotion state.
 
-The first exact-source attempt intentionally used the complete UI profile/card/
-adapter prompt and exceeded the existing 240s request timeout. Per LF API/job
-policy, this benchmark does not increase timeout first. It instead uses a bounded
-capability capsule plus exact source hashes, a smaller context, and the already-
-governed focused output budget. This isolates model capability from prompt-load
-cost without claiming operational-profile parity.
+The benchmark intentionally keeps the same bounded Focused UI capability
+capsule used after the full-source Qwen2.5-VL-7B attempt hit the existing 240s
+ceiling. Per LF API/job policy, timeout is not increased first. Candidate
+identity, exact source hashes, timing, usage, contract and semantic gates are
+emitted for durable readback.
 """
 
 from __future__ import annotations
@@ -35,18 +33,33 @@ from profile_runtime_api.llama import governed_generation_schema
 from profile_runtime_api.repository import RepositoryBindings
 from profile_runtime_api.validation import OutputGates
 
-MODEL_ID = (
-    "ggml-org/Qwen2.5-VL-7B-Instruct-GGUF@"
-    "508edd0afaa66bb9e9f40587acc2184f02daf1f6:"
-    "Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf"
-)
-MODEL_SHA256 = "9258bf05b12686d097ff3b6b18d968ab393649780aa2b3cd67fec43d50554392"
 LLAMA_COMMIT = "925e1179947ea0c0ebfb0032df18af3a729822be"
 PORT = 18081
 CONTEXT_TOKENS = 2048
 MAX_OUTPUT_TOKENS = 256
 REQUEST_TIMEOUT_SECONDS = 240
-PROMPT_POLICY = "S26_QWEN7B_COMPACT_AUTHORITY_CAPSULE_V1"
+
+CANDIDATE_CODE = os.getenv("LF_S26_PRIMARY_CANDIDATE_CODE", "QWEN3_8B_Q4_K_M").strip()
+MODEL_REPO = os.getenv("LF_S26_PRIMARY_CANDIDATE_REPO", "Qwen/Qwen3-8B-GGUF").strip()
+MODEL_COMMIT = os.getenv(
+    "LF_S26_PRIMARY_CANDIDATE_COMMIT",
+    "6a569868d07d3bd59e8b97fb001bf8c0b254bb20",
+).strip()
+MODEL_FILENAME = os.getenv(
+    "LF_S26_PRIMARY_CANDIDATE_FILENAME", "Qwen3-8B-Q4_K_M.gguf"
+).strip()
+MODEL_SHA256 = os.getenv(
+    "LF_S26_PRIMARY_CANDIDATE_SHA256",
+    "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+).strip()
+PROMPT_POLICY = os.getenv(
+    "LF_S26_PRIMARY_CANDIDATE_PROMPT_POLICY",
+    "S26_QWEN3_8B_COMPACT_AUTHORITY_CAPSULE_V1",
+).strip()
+DISABLE_THINKING = os.getenv(
+    "LF_S26_PRIMARY_CANDIDATE_DISABLE_THINKING", "1"
+).strip().lower() in {"1", "true", "yes", "on"}
+MODEL_ID = f"{MODEL_REPO}@{MODEL_COMMIT}:{MODEL_FILENAME}"
 
 PROFILE_PATH = REPO_ROOT / "profiles/ui_architect/SKILL.md"
 CARD_PATH = REPO_ROOT / "cards/marketplace_lf/decision_product_experience/CARD.md"
@@ -117,15 +130,15 @@ def health_ready(base_url: str) -> bool:
 def output_content(envelope: dict[str, Any]) -> tuple[str, str]:
     choices = envelope.get("choices")
     if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
-        raise RuntimeError("QWEN7B_CHOICES_MISSING")
+        raise RuntimeError("PRIMARY_CANDIDATE_CHOICES_MISSING")
     message = choices[0].get("message")
     if not isinstance(message, dict):
-        raise RuntimeError("QWEN7B_MESSAGE_MISSING")
+        raise RuntimeError("PRIMARY_CANDIDATE_MESSAGE_MISSING")
     content = message.get("content")
     if isinstance(content, list):
         content = "".join(part.get("text", "") for part in content if isinstance(part, dict))
     if not isinstance(content, str) or not content.strip():
-        raise RuntimeError("QWEN7B_CONTENT_EMPTY")
+        raise RuntimeError("PRIMARY_CANDIDATE_CONTENT_EMPTY")
     return content.strip(), str(choices[0].get("finish_reason") or "")
 
 
@@ -148,25 +161,96 @@ def build_system_prompt() -> str:
     )
 
 
+def exact_candidate_head() -> str:
+    try:
+        target = "HEAD^2" if os.getenv("GITHUB_EVENT_NAME") == "pull_request" else "HEAD"
+        return subprocess.check_output(
+            ["git", "rev-parse", target], cwd=REPO_ROOT, text=True
+        ).strip()
+    except Exception:
+        return os.getenv("GITHUB_SHA", "")
+
+
+def _safe_release_semantic_model(runner_temp: Path) -> None:
+    raw = os.getenv("LF_SEMANTIC_MODEL_PATH", "").strip()
+    if not raw:
+        return
+    judge_path = Path(raw).resolve()
+    try:
+        judge_path.relative_to(runner_temp)
+    except ValueError:
+        print("S26_PRIMARY_CANDIDATE_KEEP_JUDGE_MODEL reason=OUTSIDE_RUNNER_TEMP", flush=True)
+        return
+    if judge_path.is_file():
+        size = judge_path.stat().st_size
+        judge_path.unlink()
+        print(f"S26_PRIMARY_CANDIDATE_RELEASE_JUDGE_MODEL bytes={size}", flush=True)
+
+
+def prepare_candidate_model() -> Path:
+    runner_temp = Path(os.getenv("RUNNER_TEMP") or tempfile.gettempdir()).resolve()
+    _safe_release_semantic_model(runner_temp)
+    candidate_dir = runner_temp / "lf-s26-primary-candidate" / CANDIDATE_CODE.lower()
+    candidate_dir.mkdir(parents=True, exist_ok=True)
+    candidate_path = candidate_dir / "model.gguf"
+    if candidate_path.is_file() and sha256_file(candidate_path) == MODEL_SHA256:
+        print("S26_PRIMARY_CANDIDATE_MODEL_CACHE_HIT", flush=True)
+        return candidate_path
+    if candidate_path.exists():
+        candidate_path.unlink()
+    url = (
+        f"https://huggingface.co/{MODEL_REPO}/resolve/{MODEL_COMMIT}/"
+        f"{MODEL_FILENAME}?download=true"
+    )
+    print(
+        "S26_PRIMARY_CANDIDATE_DOWNLOAD="
+        + json.dumps(
+            {
+                "candidate_code": CANDIDATE_CODE,
+                "model_repo": MODEL_REPO,
+                "model_commit": MODEL_COMMIT,
+                "model_filename": MODEL_FILENAME,
+                "model_sha256": MODEL_SHA256,
+            },
+            sort_keys=True,
+        ),
+        flush=True,
+    )
+    subprocess.run(
+        [
+            "curl", "-L", "--fail", "--retry", "3", "--retry-delay", "2",
+            url, "-o", str(candidate_path),
+        ],
+        check=True,
+    )
+    observed = sha256_file(candidate_path)
+    if observed != MODEL_SHA256:
+        candidate_path.unlink(missing_ok=True)
+        raise RuntimeError(
+            f"PRIMARY_CANDIDATE_MODEL_SHA_MISMATCH expected={MODEL_SHA256} observed={observed}"
+        )
+    return candidate_path
+
+
 def main() -> int:
     if os.getenv("LF_REPOSITORY_VISIBILITY", "").strip() != "public":
-        print("BLOCK S26_QWEN7B_ZERO_COST_VISIBILITY")
+        print("BLOCK S26_PRIMARY_CANDIDATE_ZERO_COST_VISIBILITY")
         return 2
     if os.getenv("LF_RUNNER_LABEL", "").strip() != "ubuntu-latest":
-        print("BLOCK S26_QWEN7B_ZERO_COST_RUNNER")
+        print("BLOCK S26_PRIMARY_CANDIDATE_ZERO_COST_RUNNER")
         return 2
     if os.getenv("LF_LLAMA_SOURCE_COMMIT", "").strip() != LLAMA_COMMIT:
-        print("BLOCK S26_QWEN7B_LLAMA_COMMIT_MISMATCH")
+        print("BLOCK S26_PRIMARY_CANDIDATE_LLAMA_COMMIT_MISMATCH")
         return 2
 
     server = required_path("LF_LLAMA_SERVER_PATH")
-    model = required_path("LF_SEMANTIC_MODEL_PATH")
+    model = prepare_candidate_model()
     if not os.access(server, os.X_OK):
-        print("BLOCK S26_QWEN7B_SERVER_NOT_EXECUTABLE")
+        print("BLOCK S26_PRIMARY_CANDIDATE_SERVER_NOT_EXECUTABLE")
         return 2
     observed_model_sha = sha256_file(model)
     if observed_model_sha != MODEL_SHA256:
-        print("BLOCK S26_QWEN7B_MODEL_SHA_MISMATCH")
+        print("BLOCK S26_PRIMARY_CANDIDATE_MODEL_SHA_MISMATCH")
         return 2
 
     repository = RepositoryBindings(REPO_ROOT, max_prompt_chars=120_000)
@@ -179,10 +263,15 @@ def main() -> int:
     )
     system_prompt = build_system_prompt()
     source_evidence = source_hashes()
+    candidate_head = exact_candidate_head()
     print(
-        "S26_QWEN7B_CAPSULE_PREFLIGHT="
+        "S26_PRIMARY_CANDIDATE_PREFLIGHT="
         + json.dumps(
             {
+                "candidate_code": CANDIDATE_CODE,
+                "candidate_head": candidate_head,
+                "model_id": MODEL_ID,
+                "model_sha256": observed_model_sha,
                 "prompt_policy": PROMPT_POLICY,
                 "system_prompt_chars": len(system_prompt),
                 "task_chars": len(TASK),
@@ -190,6 +279,7 @@ def main() -> int:
                 "max_output_tokens": MAX_OUTPUT_TOKENS,
                 "request_timeout_seconds": REQUEST_TIMEOUT_SECONDS,
                 "timeout_increased": False,
+                "thinking_disabled": DISABLE_THINKING,
                 "source_hashes": source_evidence,
             },
             sort_keys=True,
@@ -198,7 +288,7 @@ def main() -> int:
     )
 
     base_url = f"http://127.0.0.1:{PORT}"
-    with tempfile.TemporaryDirectory(prefix="s26-qwen7b-primary-candidate-") as td:
+    with tempfile.TemporaryDirectory(prefix="s26-zero-cost-primary-candidate-") as td:
         work = Path(td)
         stdout_path = work / "llama.stdout.log"
         stderr_path = work / "llama.stderr.log"
@@ -218,16 +308,17 @@ def main() -> int:
                 deadline = time.monotonic() + 120
                 while time.monotonic() < deadline:
                     if process.poll() is not None:
-                        print("BLOCK S26_QWEN7B_SERVER_START_FAILED")
+                        detail = stderr_path.read_text(encoding="utf-8", errors="replace")[-1200:]
+                        print("BLOCK S26_PRIMARY_CANDIDATE_SERVER_START_FAILED detail=" + detail.replace("\n", " "))
                         return 3
                     if health_ready(base_url):
                         break
                     time.sleep(0.5)
                 else:
-                    print("BLOCK S26_QWEN7B_SERVER_START_TIMEOUT")
+                    print("BLOCK S26_PRIMARY_CANDIDATE_SERVER_START_TIMEOUT")
                     return 3
 
-                payload = {
+                payload: dict[str, Any] = {
                     "model": MODEL_ID,
                     "messages": [
                         {"role": "system", "content": system_prompt},
@@ -241,6 +332,8 @@ def main() -> int:
                     "cache_prompt": True,
                     "response_format": {"type": "json_object", "schema": generation_schema},
                 }
+                if DISABLE_THINKING:
+                    payload["chat_template_kwargs"] = {"enable_thinking": False}
                 request = urllib.request.Request(
                     base_url + "/v1/chat/completions",
                     data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
@@ -252,16 +345,20 @@ def main() -> int:
                     with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT_SECONDS) as response:
                         envelope = json.loads(response.read().decode("utf-8"))
                 except urllib.error.HTTPError as exc:
-                    print(f"BLOCK S26_QWEN7B_HTTP_ERROR status={exc.code}")
+                    detail = exc.read().decode("utf-8", errors="replace")[-1000:]
+                    print(
+                        f"BLOCK S26_PRIMARY_CANDIDATE_HTTP_ERROR status={exc.code} "
+                        + detail.replace("\n", " ")
+                    )
                     return 4
                 except TimeoutError:
                     print(
-                        "BLOCK S26_QWEN7B_TRANSPORT type=TimeoutError "
+                        "BLOCK S26_PRIMARY_CANDIDATE_TRANSPORT type=TimeoutError "
                         f"timeout={REQUEST_TIMEOUT_SECONDS} prompt_policy={PROMPT_POLICY}"
                     )
                     return 4
                 except Exception as exc:
-                    print(f"BLOCK S26_QWEN7B_TRANSPORT type={type(exc).__name__}")
+                    print(f"BLOCK S26_PRIMARY_CANDIDATE_TRANSPORT type={type(exc).__name__}")
                     return 4
                 elapsed_s = round(time.monotonic() - started, 3)
                 raw, finish_reason = output_content(envelope)
@@ -287,10 +384,15 @@ def main() -> int:
     usage = envelope.get("usage") if isinstance(envelope.get("usage"), dict) else {}
     result = {
         "scope": "SANDBOX_PRIMARY_WORKER_CAPABILITY_ONLY_NOT_OPERATIONAL_PARITY",
+        "candidate_code": CANDIDATE_CODE,
+        "candidate_head": candidate_head,
         "authority_changed": False,
-        "current_authority": "SEMANTIC_MINI_JUDGE_ONLY",
+        "current_semantic_judge_authority": "QWEN2_5_VL_7B_SEMANTIC_MINI_JUDGE_ONLY",
         "provider": "local_llama_cpp_github_standard_public",
         "model_id": MODEL_ID,
+        "model_repo": MODEL_REPO,
+        "model_commit": MODEL_COMMIT,
+        "model_filename": MODEL_FILENAME,
         "model_sha256": observed_model_sha,
         "llama_source_commit": LLAMA_COMMIT,
         "github_run_id": os.getenv("GITHUB_RUN_ID", ""),
@@ -302,6 +404,7 @@ def main() -> int:
         "max_output_tokens": MAX_OUTPUT_TOKENS,
         "request_timeout_seconds": REQUEST_TIMEOUT_SECONDS,
         "timeout_increased": False,
+        "thinking_disabled": DISABLE_THINKING,
         "elapsed_s": elapsed_s,
         "finish_reason": finish_reason,
         "usage": usage,
@@ -310,12 +413,14 @@ def main() -> int:
         "output": parsed if isinstance(parsed, dict) else None,
         "production_mutation": False,
         "promotion_authorized": False,
+        "paid_provider_call_executed": False,
+        "api_cost_incurred": False,
     }
-    print("S26_QWEN7B_PRIMARY_CANDIDATE=" + json.dumps(result, ensure_ascii=False, sort_keys=True), flush=True)
+    print("S26_ZERO_COST_PRIMARY_CANDIDATE=" + json.dumps(result, ensure_ascii=False, sort_keys=True), flush=True)
     if contract_gate.get("status") == "PASS" and semantic_gate.get("status") == "PASS":
-        print("S26_QWEN7B_PRIMARY_CANDIDATE_PASS", flush=True)
+        print("S26_ZERO_COST_PRIMARY_CANDIDATE_CAPABILITY_PASS_NO_PROMOTION", flush=True)
     else:
-        print("S26_QWEN7B_PRIMARY_CANDIDATE_FAIL_CLOSED", flush=True)
+        print("S26_ZERO_COST_PRIMARY_CANDIDATE_FAIL_CLOSED", flush=True)
     return 0
 
 
