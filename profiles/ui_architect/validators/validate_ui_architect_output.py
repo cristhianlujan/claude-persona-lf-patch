@@ -106,6 +106,11 @@ def is_nonempty_dict(v):
 def normalize_text(value):
     return " ".join(re.sub(r"[^a-z0-9áéíóúñ_ ]+", " ", str(value).lower()).split())
 
+def normalize_binding_value(value):
+    if isinstance(value, (dict, list)):
+        return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return normalize_text(value)
+
 def target_tokens(component_id):
     return {
         t for t in re.split(r"[_\-\s]+", str(component_id).lower())
@@ -320,6 +325,8 @@ def validate_action(action, index, component_ids, errors):
                 fail("PRECISION_BASIS_STATUS_INVALID", f"action[{index}] canonical/upstream value requires NOT_APPLICABLE", errors)
             if mode in {"EXPLORATORY_PROPOSAL", "RELATIVE_GUIDANCE"} and proposal_status != "PROPOSED_NOT_CANONICAL":
                 fail("PRECISION_BASIS_STATUS_INVALID", f"action[{index}] proposal/relative guidance requires PROPOSED_NOT_CANONICAL", errors)
+            if mode == "UPSTREAM_VALUE" and normalize_binding_value(execution.get("desired_value")) != normalize_binding_value(value_or_rule):
+                fail("UPSTREAM_VALUE_EXECUTION_BINDING_MISMATCH", f"action[{index}] execution.desired_value must match precision_basis.value_or_rule; semantic judge still verifies source truth", errors)
 
 def validate(data):
     errors = []
