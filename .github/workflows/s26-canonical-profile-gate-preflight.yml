@@ -8,6 +8,7 @@ on:
       - ".github/workflows/s26-canonical-profile-gate-preflight.yml"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/cloudflare_workers_ai_profile_runtime.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_canonical_profile_gate.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_judge_challenger_calibration.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_canonical_profile_gate_plan_v2.json"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_runtime_route_v1.json"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_ui_architect_semantic_obligation_manifest_v1.json"
@@ -45,7 +46,9 @@ jobs:
           LF_S26_PRIMARY_RUNTIME: CLOUDFLARE_WORKERS_AI
         run: python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_canonical_profile_gate.py --offline-preflight
 
-      - name: Validate diagnostic harnesses offline
+      - name: Validate challenger and diagnostic harnesses offline
         run: |
+          python3 -m py_compile sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_judge_challenger_calibration.py
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_judge_challenger_calibration.py --help >/dev/null
           python3 -m py_compile sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_nemotron_large_payload_diagnostic.py
           python3 -m py_compile sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_nemotron_reasoning_effort_diagnostic.py
