@@ -18,9 +18,9 @@ from typing import Any
 
 MODEL = "@cf/openai/gpt-oss-20b"
 PRIMARY_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
-PROTOCOL = "OPENAI_CHAT_COMPLETIONS"
+PROTOCOL = "WORKERS_AI_RUN_MESSAGES"
 TIMEOUT_SECONDS = 90
-MAX_TOKENS = 96
+MAX_TOKENS = 512
 SYSTEM_TEXT = """You are a narrow semantic compliance classifier, not a task solver.
 Judge only whether EVIDENCE complies with RULE.
 Do not rewrite, repair, propose, or expand the evidence.
@@ -41,7 +41,8 @@ VERDICT_SCHEMA = {
     "required": ["verdict", "reason_code"],
 }
 
-# Frozen labels are committed before the first challenger output is observed.
+# Frozen labels committed before the first challenger output was observed.
+# Do not tune these cases from challenger results.
 CALIBRATION = (
     {
         "id": "CAL_POS_PRESERVE_TABLE",
@@ -92,12 +93,23 @@ def sha_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
-def parse_chat_completion(envelope: dict[str, Any]) -> tuple[dict[str, str], str]:
-    try:
-        value = envelope["choices"][0]["message"]["content"]
-    except (KeyError, IndexError, TypeError) as exc:
-        keys = ",".join(sorted(str(key) for key in envelope.keys())) if isinstance(envelope, dict) else "NOT_OBJECT"
-        raise RuntimeError("CHALLENGER_CHAT_COMPLETION_SHAPE_INVALID:" + keys) from exc
+def _shape_summary(result: dict[str, Any]) -> str:
+    summary: list[str] = []
+    for key in sorted(result):
+        value = result[key]
+        if isinstance(value, str):
+            summary.append(f"{key}:str:{len(value)}")
+        elif isinstance(value, dict):
+            summary.append(f"{key}:object:{','.join(sorted(str(k) for k in value.keys()))}")
+        elif isinstance(value, list):
+            summary.append(f"{key}:array:{len(value)}")
+        else:
+            summary.append(f"{key}:{type(value).__name__}")
+    return "|".join(summary)[:1200]
+
+
+def parse_run_result(result: dict[str, Any]) -> tuple[dict[str, str], str]:
+    value = result.get("response")
     if isinstance(value, dict):
         raw = json.dumps(value, ensure_ascii=False, sort_keys=True)
         parsed = value
@@ -105,7 +117,7 @@ def parse_chat_completion(envelope: dict[str, Any]) -> tuple[dict[str, str], str
         raw = value.strip()
         parsed = json.loads(raw)
     else:
-        raise RuntimeError("CHALLENGER_CHAT_COMPLETION_CONTENT_EMPTY")
+        raise RuntimeError("CHALLENGER_RESPONSE_EMPTY:" + _shape_summary(result))
     if not isinstance(parsed, dict) or set(parsed) != {"verdict", "reason_code"}:
         raise RuntimeError("CHALLENGER_RESPONSE_SHAPE_INVALID")
     verdict = parsed.get("verdict")
@@ -119,7 +131,6 @@ def parse_chat_completion(envelope: dict[str, Any]) -> tuple[dict[str, str], str
 
 def call_cloudflare(account: str, token: str, case: dict[str, str]) -> tuple[dict[str, str], str, dict[str, Any], float]:
     payload = {
-        "model": MODEL,
         "messages": [
             {"role": "system", "content": SYSTEM_TEXT},
             {
@@ -139,7 +150,7 @@ def call_cloudflare(account: str, token: str, case: dict[str, str]) -> tuple[dic
         "max_tokens": MAX_TOKENS,
     }
     req = urllib.request.Request(
-        f"https://api.cloudflare.com/client/v4/accounts/{account}/ai/v1/chat/completions",
+        f"https://api.cloudflare.com/client/v4/accounts/{account}/ai/run/{MODEL}",
         data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
         headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json", "Accept": "application/json"},
         method="POST",
@@ -154,10 +165,13 @@ def call_cloudflare(account: str, token: str, case: dict[str, str]) -> tuple[dic
     except Exception as exc:
         raise RuntimeError("CLOUDFLARE_TRANSPORT_" + type(exc).__name__) from exc
     elapsed = round(time.monotonic() - started, 3)
-    if not isinstance(envelope, dict):
-        raise RuntimeError("CHALLENGER_CHAT_COMPLETION_NOT_OBJECT")
-    parsed, raw = parse_chat_completion(envelope)
-    usage = envelope.get("usage") if isinstance(envelope.get("usage"), dict) else {}
+    if not isinstance(envelope, dict) or envelope.get("success") is not True:
+        raise RuntimeError("CLOUDFLARE_ENVELOPE_FAILURE")
+    result = envelope.get("result")
+    if not isinstance(result, dict):
+        raise RuntimeError("CLOUDFLARE_RESULT_INVALID")
+    parsed, raw = parse_run_result(result)
+    usage = result.get("usage") if isinstance(result.get("usage"), dict) else {}
     return parsed, raw, usage, elapsed
 
 
@@ -178,7 +192,9 @@ def main() -> int:
     total_neurons = 0.0
     total_prompt = 0
     total_completion = 0
-    for case in CALIBRATION:
+    diagnostic_blocked = False
+
+    for index, case in enumerate(CALIBRATION):
         item: dict[str, Any] = {
             "case_id": case["id"],
             "expected": case["expected"],
@@ -203,12 +219,17 @@ def main() -> int:
         except Exception as exc:
             item["transport_status"] = "FAIL"
             item["matches_expected"] = False
-            item["error"] = f"{type(exc).__name__}:{str(exc)[:700]}"
+            item["error"] = f"{type(exc).__name__}:{str(exc)[:1200]}"
+            if index == 0:
+                diagnostic_blocked = True
         results.append(item)
+        # Do not fan out five more calls when the first frozen case cannot emit a parseable final response.
+        if diagnostic_blocked:
+            break
 
     matched = sum(1 for item in results if item.get("matches_expected") is True)
     transport_passed = sum(1 for item in results if item.get("transport_status") == "PASS")
-    passed = matched == len(CALIBRATION) and transport_passed == len(CALIBRATION)
+    passed = len(results) == len(CALIBRATION) and matched == len(CALIBRATION) and transport_passed == len(CALIBRATION)
     payload = {
         "schema": "S26_REMOTE_SEMANTIC_JUDGE_CHALLENGER_CALIBRATION_V1",
         "strategy": "S26",
@@ -223,9 +244,12 @@ def main() -> int:
         "calibration_frozen_before_output": True,
         "calibration_sha256": calibration_sha,
         "case_count": len(CALIBRATION),
+        "executed_case_count": len(results),
+        "diagnostic_first_case_fail_closed": diagnostic_blocked,
         "transport_passed": transport_passed,
         "matched_expected": matched,
         "retries": 0,
+        "max_tokens": MAX_TOKENS,
         "neurons": round(total_neurons, 6),
         "prompt_tokens": total_prompt,
         "completion_tokens": total_completion,
