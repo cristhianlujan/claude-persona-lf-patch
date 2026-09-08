@@ -12,6 +12,7 @@ on:
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_semantic_quality.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_semantic_quality_tests.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_b.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_s26_native_golden_b.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_001/**"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/**"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/guard_no_model_weight_acquisition.py"
@@ -64,7 +65,24 @@ jobs:
           python3 sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_b.py \
             --output /tmp/s26-native-golden-b-preflight.json
 
-      - name: Validate first GPT native Golden candidate with UI Architect validator
+      - name: Evaluate pre-bound GPT Native Golden B and prove fail-closed review boundary
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_s26_native_golden_b.py \
+            > /tmp/s26-native-golden-b-evaluation.json
+          cat /tmp/s26-native-golden-b-evaluation.json
+          python3 - <<'PY'
+          import json
+          path='/tmp/s26-native-golden-b-evaluation.json'
+          data=json.load(open(path,encoding='utf-8'))
+          assert data['status']=='PASS_PRE_INDEPENDENT_REVIEW', data
+          assert data['golden_declared'] is False, data
+          assert data['fail_closed_proven'] is True, data
+          assert sorted(data['semantic_checks_pending'])==['OVERFLOW-DIRECTION','PAGINATION-DIRECTION'], data
+          print('PASS_S26_NATIVE_GOLDEN_B_PRE_INDEPENDENT_REVIEW')
+          PY
+
+      - name: Keep first GPT native candidate as structural regression evidence
         run: |
           set -euo pipefail
           python3 profiles/ui_architect/validators/validate_ui_architect_output.py \
