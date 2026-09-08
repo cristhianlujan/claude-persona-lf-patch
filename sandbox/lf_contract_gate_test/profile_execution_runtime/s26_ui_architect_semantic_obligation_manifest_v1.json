@@ -1,0 +1,114 @@
+{
+  "schema": "S26_UI_ARCHITECT_SEMANTIC_OBLIGATION_MANIFEST_V1",
+  "strategy": "S26",
+  "profile": "ui_architect",
+  "output_mode": "UI_FOCUSED_DECISION",
+  "frozen_before_manifest_execution": true,
+  "automatic_promotion_authorized": false,
+  "source_head_at_freeze": "0807e179cc5ebf96460dfd603f646e5131d0bd3f",
+  "authoritative_sources": [
+    {"path":"profiles/ui_architect/SKILL.md","blob_sha":"0e9105bf37171f28bafe6602d3012f59002cbe88"},
+    {"path":"profiles/ui_architect/schemas/ui_focused_decision.schema.json","blob_sha":"0253be3cab4d4dbc148f7ac706cacf3811df4ec9"},
+    {"path":"profiles/ui_architect/judges/ui_architect_mini_judge.md","blob_sha":"4961e959b484035ca91156bfcfeae63463546b02"},
+    {"path":"profiles/ui_architect/judges/ui_architect_semantic_judge.md","blob_sha":"53965a271fa98f397eec3dcfc2535d10f6f4ed43"}
+  ],
+  "coverage_rule": "Every required obligation has exactly one prebound check_id. Conditional obligations remain enumerated and may resolve NOT_APPLICABLE only with explicit source-bound evidence.",
+  "obligations": [
+    {
+      "obligation_id":"UIA_FOCUSED_SELECTED_EXECUTABLE_VALUE",
+      "check_id":"S26_MANIFEST_SELECTED_EXECUTABLE_VALUE",
+      "source":"ui_architect_mini_judge.md#Focused UI Decision Spec",
+      "applicability":"ALWAYS_FOR_UI_FOCUSED_DECISION",
+      "rule":"The output must be one selected executable UI value, not prose, a concept name, an ingredient list, rationale-only text, or a vague recommendation.",
+      "question":"Is the complete focused decision a concrete selected executable value rather than a vague or rationale-only recommendation?"
+    },
+    {
+      "obligation_id":"UIA_SEM_EVIDENCE_SUPPORTED",
+      "check_id":"S26_MANIFEST_EVIDENCE_SUPPORTED",
+      "source":"ui_architect_semantic_judge.md#Per-action checks:1",
+      "applicability":"ALWAYS_FOR_EXISTING_SCREEN_REMEDIATION",
+      "rule":"The decision may rely only on component, relationship, state and token facts present in the supplied source-bound evidence.",
+      "question":"Is every material assertion in the decision supported by the supplied source-bound facts?"
+    },
+    {
+      "obligation_id":"UIA_SEM_DEFECT_DIRECTION_PRESERVED",
+      "check_id":"S26_MANIFEST_DEFECT_DIRECTION",
+      "source":"ui_architect_semantic_judge.md#Per-action checks:2",
+      "applicability":"ALWAYS_FOR_REMEDIATION",
+      "rule":"The selected transformation must reduce or eliminate the diagnosed defect rather than reproduce, invert or amplify it.",
+      "question":"Does the selected treatment move monotonically from the diagnosed defect toward the required postcondition?"
+    },
+    {
+      "obligation_id":"UIA_SEM_DECISION_RESOLVES_ISSUE",
+      "check_id":"S26_MANIFEST_RESOLVES_ISSUE",
+      "source":"ui_architect_semantic_judge.md#Per-action checks:3",
+      "applicability":"ALWAYS_FOR_REMEDIATION",
+      "rule":"The selected transformation must actually resolve the diagnosed issue rather than merely touch the same component.",
+      "question":"Does the decision directly resolve the requested UI problem?"
+    },
+    {
+      "obligation_id":"UIA_SEM_ADJACENT_CONSTRAINTS_PRESERVED",
+      "check_id":"S26_MANIFEST_ADJACENT_CONSTRAINTS",
+      "source":"ui_architect_semantic_judge.md#Per-action checks:4",
+      "applicability":"ALWAYS_WHEN_ADJACENT_CONSTRAINTS_ARE_SUPPLIED",
+      "rule":"All supplied adjacent product, UX, table, action, pagination, semantic and business constraints must remain preserved.",
+      "question":"Does the decision preserve every supplied adjacent authoritative constraint?"
+    },
+    {
+      "obligation_id":"UIA_SEM_SEMANTIC_AUTHORITY_PRESERVED",
+      "check_id":"S26_MANIFEST_SEMANTIC_AUTHORITY",
+      "source":"ui_architect_semantic_judge.md#Per-action checks:5",
+      "applicability":"ALWAYS; STRICTER_FOR_COPY_STATE_RISK",
+      "rule":"The decision must not create stronger copy, state, risk or business meaning than the supplied authority and must not represent a novel treatment as already canonical.",
+      "question":"Does the decision preserve semantic authority without inventing stronger meaning or false canonical status?"
+    },
+    {
+      "obligation_id":"UIA_SEM_IMPLEMENTATION_READY",
+      "check_id":"S26_MANIFEST_IMPLEMENTATION_READY",
+      "source":"ui_architect_semantic_judge.md#Per-action checks:6",
+      "applicability":"ALWAYS_FOR_EXECUTABLE_DECISION",
+      "rule":"Implementation must identify the target, behavior and usable property/value needed to implement the selected decision without hidden invention.",
+      "question":"Is the decision implementation-ready from the supplied facts without hidden invention?"
+    },
+    {
+      "obligation_id":"UIA_SEM_CONTEXT_SOURCE_USED",
+      "check_id":"S26_MANIFEST_CONTEXT_SOURCE_USED",
+      "source":"ui_architect_semantic_judge.md#Per-action checks:7",
+      "applicability":"ALWAYS_WHEN_SOURCE_CONTEXT_IS_SUPPLIED",
+      "rule":"Material supplied tokens, surfaces, states and upstream values must be used explicitly rather than degraded to vague wording or replaced with invented values.",
+      "question":"Does the decision use the strongest supplied implementation context wherever it materially applies?"
+    },
+    {
+      "obligation_id":"UIA_SEM_PRECISION_HONEST",
+      "check_id":"S26_MANIFEST_PRECISION_HONEST",
+      "source":"ui_architect_semantic_judge.md#Per-action checks:8",
+      "applicability":"ALWAYS",
+      "rule":"Canonical or upstream values must be represented as such; novel or relative choices must not masquerade as canonical authority and unsupported numeric precision is forbidden.",
+      "question":"Is every implementation value and level of precision honest about its authority basis?"
+    },
+    {
+      "obligation_id":"UIA_SEM_MATERIALITY_ROUTED_CORRECTLY",
+      "check_id":"S26_MANIFEST_MATERIALITY_ROUTING",
+      "source":"ui_architect_semantic_judge.md#Per-action checks:9",
+      "applicability":"ALWAYS",
+      "rule":"Material unresolved interaction or business-state ambiguity must not be silently invented; low-risk exploratory choices must not be unnecessarily blocked.",
+      "question":"Does the decision handle materiality correctly without silent invention or unnecessary blocking?"
+    },
+    {
+      "obligation_id":"UIA_SEM_LF_SAFETY",
+      "check_id":"S26_MANIFEST_LF_SAFETY",
+      "source":"ui_architect_semantic_judge.md#Per-action checks:10",
+      "applicability":"ALWAYS",
+      "rule":"The decision must not introduce pressure, fake urgency, aggressive debt cues, unsupported guarantees or dark patterns.",
+      "question":"Is the complete decision clean under the LF safety rule?"
+    },
+    {
+      "obligation_id":"UIA_SEM_ROUTER_DIRECT_CONSISTENCY",
+      "check_id":"S26_MANIFEST_ROUTER_DIRECT_CONSISTENCY",
+      "source":"ui_architect_semantic_judge.md#Per-action checks:11",
+      "applicability":"CONDITIONAL_WHEN_ROUTER_DIRECT_COUNTERPART_OR_CONSISTENCY_CLAIM_EXISTS",
+      "rule":"Same material input must yield materially equivalent Router and direct decisions unless different context is evidenced; when no counterpart or consistency claim exists, the check must resolve explicit NOT_APPLICABLE rather than fabricate evidence.",
+      "question":"Is Router/direct consistency satisfied, or explicitly and correctly not applicable because no counterpart or consistency claim exists?"
+    }
+  ]
+}

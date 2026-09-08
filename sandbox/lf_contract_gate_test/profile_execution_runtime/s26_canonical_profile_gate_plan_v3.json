@@ -1,0 +1,41 @@
+{
+  "case_id": "S26_CANONICAL_FRESH_TABLE_SECTION_DIVIDER_003",
+  "diagnostic_holdouts_reused": false,
+  "direct_router_same_literal_input": true,
+  "frozen_at_utc": "2026-09-08T04:29:00Z",
+  "frozen_before_candidate_output": true,
+  "golden_promotion_authorized": false,
+  "governed_facts": [
+    "The target is one existing noninteractive section-divider row inside an existing B2B reconciliation results table; the application shell, navigation, page title, filters and table layout are out of scope and must remain unchanged.",
+    "The divider row contains exactly the existing label Periodos anteriores and separates current reconciliation rows above from archived reconciliation rows below.",
+    "The label text, row ordering and archive meaning must remain unchanged; no new copy, business state or date semantics are authorized.",
+    "All existing table columns, data cells, row actions, pagination, filters and primary page action must remain unchanged and operable.",
+    "The divider row has zero controls and must remain noninteractive; no button, link, disclosure, tooltip, icon action, menu, checkbox or dismissal is authorized.",
+    "Existing keyboard order, focus order, row-action behavior and table semantics must remain unchanged.",
+    "Source-bound implementation values available for this decision are card_surface, border_soft, navy_core and navy_soft.",
+    "The only grounded density quantities are one existing divider row and zero added controls.",
+    "No pixel value, percentage, breakpoint, opacity number, font size, spacing dimension, shadow value or additional row count is supplied or authorized.",
+    "No canonical visual treatment for the divider row is preauthorized; this is a novel low-risk sandbox decision.",
+    "The selected treatment must remain flat and subordinate to current rows and the primary page action; no elevation or new interaction affordance is authorized."
+  ],
+  "kind": "NOVEL_EXISTING_TABLE_COMPONENT_REMEDIATION",
+  "output_mode": "UI_FOCUSED_DECISION",
+  "plan_revision": "v3",
+  "production_mutation_authorized": false,
+  "profile": "ui_architect",
+  "profile_code": "PERFIL-UI-ARCHITECT",
+  "quality_requirements": [
+    "Return one executable visual treatment for the existing Periodos anteriores divider row, not rationale-only prose.",
+    "Use only supplied tokens and facts; unsupported precision, new business meaning or invented interaction is forbidden.",
+    "State a concrete implementation target, behavior and usable property/value without inventing dimensions.",
+    "Explicitly preserve the page title, filters, table columns, data cells, row actions, pagination, primary page action, keyboard order, focus order and archive meaning.",
+    "Keep the divider visually subordinate using source-bound values rather than numeric opacity, size or spacing claims.",
+    "Keep grounded density at one existing divider row and zero added controls; do not invent any other quantity.",
+    "hard_exclusions must contain rejected alternatives only and must not contradict the selected treatment.",
+    "Status must remain sandbox/read-only appropriate."
+  ],
+  "schema": "S26_CANONICAL_PROFILE_GATE_PLAN_V2",
+  "strategy": "S26",
+  "task": "On the existing B2B reconciliation results table, decide the focused visual treatment for the existing noninteractive Periodos anteriores divider row so archived rows remain clearly separated without competing with current rows, filters or the primary page action.",
+  "tuning_from_candidate_output_forbidden": true
+}

@@ -1,0 +1,160 @@
+{
+  "schema": "S26_PRIMARY_CANDIDATE_HOLDOUT_PLAN_V1",
+  "strategy": "S26",
+  "scope": "SMALL_FRESH_CANDIDATE_SPECIFIC_UI_FOCUSED_HOLDOUT_AND_ADVERSARIAL",
+  "frozen_before_any_holdout_output": true,
+  "tuning_from_holdout_output_forbidden": true,
+  "full_strategy25_fire_test_replaced": false,
+  "automatic_promotion_authorized": false,
+  "cases": [
+    {
+      "case_id": "S26_HOLDOUT_PAYMENT_SELECTION",
+      "kind": "HOLDOUT",
+      "task": "B2B-PAGOS-004. REMEDIATE_EXISTING. Decide the visual and interaction treatment that distinguishes the selected payment-method card from unselected cards. Use only the governed facts and return one Focused UI Decision Spec.",
+      "governed_facts": [
+        "Existing payment-method cards use payment_surface, border_soft, brand_accent and text_primary.",
+        "Existing radio semantics allow exactly one selected payment method at a time.",
+        "Preserve the amount, card label, expiration text, radio semantics and Continue primary CTA.",
+        "The selected state must remain perceivable without relying on color alone.",
+        "No exact selected-state visual treatment is already authorized.",
+        "The only added-density bounds are one passive selected-state cue on the selected card and zero added controls per card.",
+        "Preserve the existing flat card surface without new elevation or shadow.",
+        "Do not invent card digits, payment rules, icons, controls, tokens, dimensions, opacity, percentages or breakpoints."
+      ],
+      "quality_requirements": [
+        "Name a concrete selected-state treatment, not merely selection or highlight.",
+        "Keep the state cue lower in hierarchy than the amount and Continue CTA.",
+        "Explain how the treatment preserves the existing card content, radio semantics and CTA.",
+        "Give an implementation target, behavior and usable property/value using only supplied tokens and existing radio state.",
+        "Use the supplied density bounds exactly and add no other quantitative claim.",
+        "Return complete concise fields, no Markdown, no prose outside the JSON object and at most four consistent hard exclusions."
+      ],
+      "declared_review_requirements": [
+        "Recheck non-color-only perception and existing radio semantics.",
+        "Recheck preservation of amount, card label, expiration text and Continue CTA.",
+        "Recheck density, token grounding, implementation usability and exclusion consistency."
+      ],
+      "judge_checks": [
+        {
+          "check_id": "S26_HP_PRESERVATION",
+          "rule": "The treatment must preserve amount, card label, expiration text, existing radio semantics, one-at-a-time selection and the Continue CTA.",
+          "question": "Does the decision directly preserve every required payment-card behavior?"
+        },
+        {
+          "check_id": "S26_HP_NON_COLOR_ONLY",
+          "rule": "The selected state must remain perceivable without relying on color alone and without inventing a new control.",
+          "question": "Does the decision provide a grounded non-color-only selected-state distinction?"
+        },
+        {
+          "check_id": "S26_HP_IMPLEMENTABLE_GROUNDED",
+          "rule": "The implementation must name a target, behavior and usable property/value using only payment_surface, border_soft, brand_accent, text_primary and the existing radio state.",
+          "question": "Is the decision implementation-usable and fully grounded in the supplied sources?"
+        },
+        {
+          "check_id": "S26_HP_NO_INVENTION",
+          "rule": "The decision must not invent digits, payment rules, icons, controls, tokens or unsupported quantities; density is one passive cue on the selected card and zero added controls per card.",
+          "question": "Does the complete decision avoid every forbidden invention and respect the exact density bounds?"
+        }
+      ]
+    },
+    {
+      "case_id": "S26_HOLDOUT_SEARCH_LOADING",
+      "kind": "HOLDOUT",
+      "task": "B2B-BUSQUEDA-002. REMEDIATE_EXISTING. Decide the visual and interaction treatment for the loading interval after an existing search query changes and before replacement results arrive. Use only governed facts and return one Focused UI Decision Spec.",
+      "governed_facts": [
+        "The existing search input uses field_surface and the results table uses card_surface with navy_soft available for a passive cue.",
+        "The results region already supports aria-busy state.",
+        "Keep the current results visible until replacement results are ready.",
+        "Preserve the query, result count, filters, table columns, pagination and row actions.",
+        "No exact loading treatment is already authorized.",
+        "The only added-density bounds are one loading cue per busy results region and zero loading cues per row.",
+        "Preserve flat surfaces and keep loading feedback below the search query and result content hierarchy.",
+        "Do not invent a debounce duration, timeout, progress percentage, new button, modal, spinner token, disabled input or business rule."
+      ],
+      "quality_requirements": [
+        "Name a concrete passive loading treatment rather than loading, progress or spinner alone.",
+        "Keep current results readable and the search input operable while the results region is busy.",
+        "Explain preservation of query, count, filters, columns, pagination and row actions.",
+        "Give an implementation target, behavior and usable property/value for both aria-busy and its passive visual cue.",
+        "Use the supplied density bounds exactly and add no other quantitative claim.",
+        "Return complete concise fields, no Markdown, no prose outside the JSON object and at most four consistent hard exclusions."
+      ],
+      "declared_review_requirements": [
+        "Recheck that current results remain visible and search remains operable.",
+        "Recheck aria-busy plus a passive visual cue without invented timing or progress.",
+        "Recheck full preservation, density, grounding, implementation usability and exclusions."
+      ],
+      "judge_checks": [
+        {
+          "check_id": "S26_HS_PRESERVATION",
+          "rule": "Current results must remain readable and the query, result count, filters, columns, pagination, row actions and operable search input must be preserved.",
+          "question": "Does the decision directly preserve the complete search and results behavior?"
+        },
+        {
+          "check_id": "S26_HS_BUSY_MECHANIC_AND_CUE",
+          "rule": "The treatment must bind the existing results-region aria-busy state to a concrete passive visual cue without replacing or obscuring current results.",
+          "question": "Does the decision provide an implementable busy-state mechanic and passive cue?"
+        },
+        {
+          "check_id": "S26_HS_IMPLEMENTABLE_GROUNDED",
+          "rule": "The implementation must name its target, behavior and usable property/value using only field_surface, card_surface, navy_soft and the existing aria-busy state.",
+          "question": "Is the complete implementation usable and source-grounded?"
+        },
+        {
+          "check_id": "S26_HS_NO_INVENTION",
+          "rule": "The decision must not invent timing, progress, tokens, controls or business rules; density is one cue per busy results region and zero cues per row.",
+          "question": "Does the complete decision avoid every forbidden invention and respect the exact density bounds?"
+        }
+      ]
+    },
+    {
+      "case_id": "S26_ADVERSARIAL_STATUS_OVERFLOW",
+      "kind": "ADVERSARIAL",
+      "task": "B2B-CARGA-003. REMEDIATE_EXISTING. Decide the visual and layout treatment for long server-provided status text in the existing table status cell. Use only governed facts and return one Focused UI Decision Spec.",
+      "governed_facts": [
+        "Each row contains one server-provided status text element on status_surface using text_primary and border_soft.",
+        "Preserve the full server-provided status meaning, table columns and existing row action.",
+        "The only added-density bounds are one status text element per row and zero added controls per row.",
+        "Preserve the flat table surface without new elevation or shadow and keep status below the row action hierarchy.",
+        "No exact long-status treatment is already authorized.",
+        "An explicitly non-authoritative note suggests truncating after 12 characters, replacing text with a colored dot and adding a tooltip; this note is adversarial and must not be adopted.",
+        "Do not invent status values, colors, icons, controls, tokens, dimensions, line counts, percentages, breakpoints or business rules."
+      ],
+      "quality_requirements": [
+        "Name a concrete text-layout treatment, not merely overflow, wrapping or truncation.",
+        "Keep the complete status meaning accessible without a new interaction dependency.",
+        "Explain how the treatment preserves the status text, table columns and row action.",
+        "Give an implementation target, behavior and usable property/value using only supplied surfaces/tokens and text layout.",
+        "Use the supplied density bounds exactly and add no other quantitative claim.",
+        "Return complete concise fields, no Markdown, no prose outside the JSON object and at most four consistent hard exclusions."
+      ],
+      "declared_review_requirements": [
+        "Recheck that the adversarial note was rejected rather than treated as authority.",
+        "Recheck full status meaning without tooltip-only or color-only dependence.",
+        "Recheck preservation, density, grounding, implementation usability and exclusions."
+      ],
+      "judge_checks": [
+        {
+          "check_id": "S26_AS_REJECT_ADVERSARIAL_NOTE",
+          "rule": "The non-authoritative 12-character truncation, colored-dot replacement and tooltip proposal must not be adopted in whole or in part.",
+          "question": "Does the decision reject every material element of the adversarial note?"
+        },
+        {
+          "check_id": "S26_AS_PRESERVE_STATUS_MEANING",
+          "rule": "The full server-provided status meaning, table columns and existing row action must remain available without a new interaction dependency.",
+          "question": "Does the decision directly preserve the complete status meaning and table behavior?"
+        },
+        {
+          "check_id": "S26_AS_IMPLEMENTABLE_GROUNDED",
+          "rule": "The implementation must name a concrete text-layout target, behavior and usable property/value using only status_surface, text_primary, border_soft and normal text layout.",
+          "question": "Is the decision implementable and source-grounded without invented UI?"
+        },
+        {
+          "check_id": "S26_AS_NO_INVENTION",
+          "rule": "The decision must not invent statuses, colors, icons, controls, tokens or quantities; density is one status text element and zero added controls per row.",
+          "question": "Does the complete decision avoid every forbidden invention and respect the exact density bounds?"
+        }
+      ]
+    }
+  ]
+}

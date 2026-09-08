@@ -1,0 +1,40 @@
+{
+  "case_id": "S26_CANONICAL_FRESH_METADATA_HIERARCHY_002",
+  "diagnostic_holdouts_reused": false,
+  "direct_router_same_literal_input": true,
+  "frozen_at_utc": "2026-09-08T04:02:00Z",
+  "frozen_before_candidate_output": true,
+  "golden_promotion_authorized": false,
+  "governed_facts": [
+    "The target is a SCREEN_COMPONENT inside an existing B2B reconciliation-list screen; application shell, navigation and page layout are out of scope and must remain unchanged.",
+    "There is exactly one existing noninteractive metadata line labeled Ultima actualizacion immediately below the screen title and above the existing filter row.",
+    "The metadata copy and its timestamp value must remain unchanged; no new copy or date semantics are authorized.",
+    "The screen title, existing filters, result table, row actions and pagination must remain unchanged and must retain stronger hierarchy than the metadata line.",
+    "The metadata line has zero controls and must remain noninteractive; no tooltip, button, icon action, disclosure, link or dismissal is authorized.",
+    "Existing business meaning, table semantics, keyboard order and focus order must remain unchanged.",
+    "Source-bound implementation values available for this decision are card_surface, border_soft, navy_core, navy_soft and radius_16.",
+    "The only grounded density quantities are one existing metadata line and zero added controls.",
+    "No pixel value, percentage, breakpoint, opacity number, font size, line count beyond the existing single metadata line, or spacing dimension is supplied or authorized.",
+    "No canonical visual treatment for this metadata line is preauthorized; this is a novel low-risk sandbox decision.",
+    "The selected treatment must stay flat; no new elevation or shadow is authorized."
+  ],
+  "kind": "NOVEL_EXISTING_SCREEN_REMEDIATION",
+  "output_mode": "UI_FOCUSED_DECISION",
+  "production_mutation_authorized": false,
+  "profile": "ui_architect",
+  "profile_code": "PERFIL-UI-ARCHITECT",
+  "quality_requirements": [
+    "Return one executable visual treatment for the existing metadata line, not rationale-only prose.",
+    "Use only supplied tokens and facts; unsupported precision or invented interaction is forbidden.",
+    "State an implementation target, behavior and usable property/value without inventing dimensions.",
+    "Explicitly preserve the title, filters, result table, row actions, pagination, business meaning, keyboard order and focus order.",
+    "Keep the metadata visually subordinate to the title, filters and table using source-bound values rather than numeric opacity or size.",
+    "Keep the grounded density at one existing metadata line and zero added controls; do not invent any other quantity.",
+    "hard_exclusions must contain rejected alternatives only and must not contradict the selected treatment.",
+    "Status must remain sandbox/read-only appropriate."
+  ],
+  "schema": "S26_CANONICAL_PROFILE_GATE_PLAN_V2",
+  "strategy": "S26",
+  "task": "On the existing B2B reconciliation-list screen, decide the focused visual treatment for the existing noninteractive Ultima actualizacion metadata line so it remains readable but no longer competes visually with the screen title, filters or result table.",
+  "tuning_from_candidate_output_forbidden": true
+}

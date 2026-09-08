@@ -26,6 +26,22 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Enforce S26 Cloudflare no-download guard
+        env:
+          LF_S26_PRIMARY_RUNTIME: CLOUDFLARE_WORKERS_AI
+        shell: bash
+        run: |
+          set -euo pipefail
+          route="sandbox/lf_contract_gate_test/profile_execution_runtime/s26_runtime_route_v1.json"
+          guard="sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_model_download_guard.py"
+          if [[ -e "$route" || -e "$guard" ]]; then
+            test -f "$route"
+            test -f "$guard"
+            python3 "$guard" --repo-root .
+          else
+            echo "S26_CLOUDFLARE_GUARD=SKIP_ROUTE_NOT_PRESENT"
+          fi
+
       - name: Install Profile Runtime API test dependencies
         run: python -m pip install --disable-pip-version-check -r services/profile_runtime_api/requirements-dev.in
 
@@ -67,7 +83,7 @@ jobs:
           failures=0
           for test_file in "${tests[@]}"; do
             echo "RUNNING=${test_file}"
-            if python "${test_file}"; then
+            if python "$test_file"; then
               echo "RESULT=PASS TEST=${test_file}"
             else
               rc=$?
