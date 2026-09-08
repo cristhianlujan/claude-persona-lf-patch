@@ -1,4 +1,4 @@
-name: S26 Nemotron Reasoning Effort Diagnostic One Shot
+name: S26 Nemotron Reasoning Effort Diagnostic One Shot V2
 
 on:
   pull_request:
