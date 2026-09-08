@@ -1,10 +1,6 @@
 name: S26 Cloudflare fresh canonical preflight
 
 on:
-  pull_request:
-    paths:
-      - ".github/workflows/s26-cloudflare-fresh-canonical-preflight.yml"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_cloudflare_fresh_canonical_plan_v1.json"
   workflow_dispatch:
 
 permissions:
@@ -82,7 +78,6 @@ jobs:
               text=' '.join([public,ident,*sets])
               if state in {'paid','provisioned','trial','awaitingpayment'} and 'worker' in text:
                   active.append({'state':state,'rate_plan_id':ident,'public_name':public,'sets':sets})
-          # Safe inference is allowed only when Billing Read proves there is no active Workers paid subscription.
           safe=not active
           with open(out,'a',encoding='utf-8') as f:
               f.write('zero_cost_guaranteed='+('true' if safe else 'false')+'\n')
