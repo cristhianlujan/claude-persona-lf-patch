@@ -1,4 +1,4 @@
-name: S26 Canonical Profile Gate One Shot V2
+name: S26 Nemotron Large Payload Diagnostic One Shot
 
 on:
   pull_request:
@@ -11,9 +11,9 @@ permissions:
   contents: read
 
 jobs:
-  canonical-live-v2:
+  nemotron-large-payload-diagnostic:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -23,33 +23,25 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install canonical runtime test dependencies
-        run: python -m pip install --disable-pip-version-check -r services/profile_runtime_api/requirements-dev.in
-
       - name: Enforce S26 zero-download guard
         env:
           LF_S26_PRIMARY_RUNTIME: CLOUDFLARE_WORKERS_AI
         run: python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_model_download_guard.py --repo-root .
 
-      - name: Revalidate fresh v2 gate offline before inference
-        env:
-          LF_S26_PRIMARY_RUNTIME: CLOUDFLARE_WORKERS_AI
-        run: python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_canonical_profile_gate.py --offline-preflight
+      - name: Validate diagnostic harness offline
+        run: python3 -m py_compile sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_nemotron_large_payload_diagnostic.py
 
-      - name: Execute one-shot canonical S26 v2 gate
+      - name: Execute one-call Nemotron large-payload diagnostic
         env:
-          LF_REPOSITORY_VISIBILITY: public
-          LF_RUNNER_LABEL: ubuntu-latest
-          LF_S26_PRIMARY_RUNTIME: CLOUDFLARE_WORKERS_AI
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_AI_CANARY_TOKEN: ${{ secrets.CLOUDFLARE_AI_CANARY_TOKEN }}
-        run: python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_canonical_profile_gate.py --result-dir "$RUNNER_TEMP/s26-canonical-profile-gate-v2"
+        run: python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_nemotron_large_payload_diagnostic.py --result-path "$RUNNER_TEMP/s26-nemotron-large-payload-diagnostic/result.json"
 
-      - name: Upload durable canonical v2 evidence
+      - name: Upload sanitized diagnostic evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: s26-canonical-profile-gate-v2-${{ github.run_id }}
-          path: ${{ runner.temp }}/s26-canonical-profile-gate-v2
+          name: s26-nemotron-large-payload-diagnostic-${{ github.run_id }}
+          path: ${{ runner.temp }}/s26-nemotron-large-payload-diagnostic
           if-no-files-found: error
           retention-days: 30
