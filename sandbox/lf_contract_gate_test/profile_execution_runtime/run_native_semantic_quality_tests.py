@@ -120,8 +120,9 @@ def make_execution_receipt(manifest):
 
 def make_independent_receipt(execution_receipt, manifest, bundle):
     source_bundle = {
-        "artifact_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/test/raw_output.json",
-        "artifact_sha_or_digest": execution_receipt["raw_output_sha256"],
+        "artifact_ref": "github://cristhianlujan/claude-persona-lf-patch@" + ("a" * 40) + "/sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/test/raw_output.json",
+        "artifact_byte_sha256": "d" * 64,
+        "semantic_raw_output_sha256": execution_receipt["raw_output_sha256"],
         "upstream_worker_contract_ref": "profiles/ui_architect/SKILL.md",
         "quality_gate_contract_ref": "profiles/quality_pack/contracts/quality_gate_contract.md",
         "lf_quality_controls_ref": "profiles/quality_pack/contracts/lf_quality_controls.md",
@@ -262,18 +263,18 @@ def main():
     assert "NATIVE_SEMANTIC_REVIEW_NOT_INDEPENDENT" in errors
     passed += 1
 
-    wrong_artifact = deepcopy(independent)
-    wrong_artifact["source_bundle"]["artifact_sha_or_digest"] = "f" * 64
-    wrong_artifact["semantic_binding"]["source_bundle_sha256"] = canonical_json_sha256(wrong_artifact["source_bundle"])
-    rehash_binding_and_receipt(wrong_artifact)
+    wrong_semantic_sha = deepcopy(independent)
+    wrong_semantic_sha["source_bundle"]["semantic_raw_output_sha256"] = "f" * 64
+    wrong_semantic_sha["semantic_binding"]["source_bundle_sha256"] = canonical_json_sha256(wrong_semantic_sha["source_bundle"])
+    rehash_binding_and_receipt(wrong_semantic_sha)
     errors = validate_semantic_quality_receipt(
-        wrong_artifact,
+        wrong_semantic_sha,
         expected_bundle=bundle,
         expected_obligation_manifest=manifest,
         expected_raw_output=RAW,
         execution_receipt=execution_receipt,
     )
-    assert "INDEPENDENT_QUALITY_ARTIFACT_SHA_MISMATCH" in errors
+    assert "INDEPENDENT_QUALITY_SEMANTIC_RAW_SHA_MISMATCH" in errors
     passed += 1
 
     incomplete = deepcopy(independent)
