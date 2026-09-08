@@ -104,6 +104,12 @@ def make_pending_quality_receipt(
             "repair_actions": [],
             "remaining_risks": [],
             "next_gate": "INDEPENDENT_CHAT_CONTEXT",
+            "routing": {
+                "activation_path": "ROUTER",
+                "via": "ORCHESTRATOR",
+                "pipeline_action": "BLOCK_PIPELINE",
+                "resolution_target": "NONE"
+            }
         },
         "execution_blockers": ["INDEPENDENT_REVIEW_NOT_EXECUTED"],
         "semantic_binding": binding,
