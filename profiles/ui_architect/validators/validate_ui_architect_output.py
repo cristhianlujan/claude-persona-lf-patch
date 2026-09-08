@@ -34,6 +34,14 @@ OPERATIONS = {
     "CHANGE_TOKEN"
 }
 HISTORICAL_TARGET_OPERATIONS = {"REMOVE", "HIDE"}
+STATE_AUTHORITY_OPERATIONS = {"SET_STATE", "HIDE", "SHOW"}
+PRECISION_REQUIRED_OPERATIONS = {
+    "MOVE", "ALIGN", "RESIZE", "REORDER", "SET_STATE", "SET_SPACING",
+    "HIDE", "SHOW", "CHANGE_TOKEN"
+}
+PRECISION_MODES = {
+    "CANONICAL_TOKEN", "UPSTREAM_VALUE", "EXPLORATORY_PROPOSAL", "RELATIVE_GUIDANCE"
+}
 CHECK_TYPES = {
     "ABSENT", "PRESENT", "ALIGNED", "STATE", "COPY_EQUALS", "COUNT_EQUALS",
     "SPACING", "ORDER", "TOKEN", "RELATIONSHIP"
@@ -273,16 +281,45 @@ def validate_action(action, index, component_ids, errors):
         fail("ACTION_TEXT_OPERATION_NOT_EXPLICIT", f"action[{index}] text does not express {operation}", errors)
 
     authority = action.get("semantic_authority")
-    if category in {"COPY", "RISK"} or operation in {"REPLACE_COPY", "SET_STATE"}:
+    authority_required = category in {"COPY", "RISK"} or operation in ({"REPLACE_COPY"} | STATE_AUTHORITY_OPERATIONS)
+    if authority_required:
         if not isinstance(authority, dict):
-            fail("SEMANTIC_AUTHORITY_MISSING", f"action[{index}] meaning-changing action requires semantic_authority", errors)
+            fail("SEMANTIC_AUTHORITY_MISSING", f"action[{index}] copy/risk/state action requires semantic_authority", errors)
         else:
             refs = authority.get("source_refs")
-            scope = authority.get("claim_scope")
+            authority_type = authority.get("authority_type")
+            claim_boundary = authority.get("claim_boundary")
             if not isinstance(refs, list) or not refs or any(not isinstance(r, str) or not r.strip() for r in refs):
                 fail("SEMANTIC_AUTHORITY_REFS_INVALID", f"action[{index}]", errors)
-            if scope not in {"INPUT_SUPPORTED", "CONSERVATIVE_REDUCTION", "PRESENTATION_ONLY"}:
-                fail("SEMANTIC_AUTHORITY_SCOPE_INVALID", f"action[{index}]", errors)
+            if not isinstance(authority_type, str) or not authority_type.strip():
+                fail("SEMANTIC_AUTHORITY_TYPE_INVALID", f"action[{index}]", errors)
+            if not isinstance(claim_boundary, str) or len(claim_boundary.strip()) < 12:
+                fail("SEMANTIC_AUTHORITY_BOUNDARY_INVALID", f"action[{index}]", errors)
+            if "claim_scope" in authority:
+                fail("SEMANTIC_AUTHORITY_LEGACY_SCOPE_FORBIDDEN", f"action[{index}] claim_scope is not the V5 contract field", errors)
+
+    if operation in PRECISION_REQUIRED_OPERATIONS:
+        precision = action.get("precision_basis")
+        if not isinstance(precision, dict):
+            fail("PRECISION_BASIS_MISSING", f"action[{index}] material {operation} action requires precision_basis", errors)
+        else:
+            mode = precision.get("mode")
+            refs = precision.get("source_refs")
+            value_or_rule = precision.get("value_or_rule")
+            proposal_status = precision.get("proposal_status")
+            if mode not in PRECISION_MODES:
+                fail("PRECISION_BASIS_MODE_INVALID", f"action[{index}]", errors)
+            if not isinstance(refs, list) or any(not isinstance(r, str) or not r.strip() for r in refs):
+                fail("PRECISION_BASIS_REFS_INVALID", f"action[{index}]", errors)
+                refs = []
+            if mode in {"CANONICAL_TOKEN", "UPSTREAM_VALUE"} and not refs:
+                fail("PRECISION_BASIS_REFS_REQUIRED", f"action[{index}] {mode} requires source_refs", errors)
+            if value_or_rule in (None, "", [], {}):
+                fail("PRECISION_BASIS_VALUE_INVALID", f"action[{index}]", errors)
+            if mode in {"CANONICAL_TOKEN", "UPSTREAM_VALUE"} and proposal_status != "NOT_APPLICABLE":
+                fail("PRECISION_BASIS_STATUS_INVALID", f"action[{index}] canonical/upstream value requires NOT_APPLICABLE", errors)
+            if mode in {"EXPLORATORY_PROPOSAL", "RELATIVE_GUIDANCE"} and proposal_status != "PROPOSED_NOT_CANONICAL":
+                fail("PRECISION_BASIS_STATUS_INVALID", f"action[{index}] proposal/relative guidance requires PROPOSED_NOT_CANONICAL", errors)
 
 def validate(data):
     errors = []
