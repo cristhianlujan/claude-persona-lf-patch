@@ -14,6 +14,7 @@ on:
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_b.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_s26_native_golden_b.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_c.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_s26_native_golden_c.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_001/**"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/**"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/**"
@@ -184,6 +185,39 @@ jobs:
           assert data['card_jit_chars'] <= 4000, data
           assert data['adapter_capsule_chars'] <= 1800, data
           print('PASS_S26_NATIVE_GOLDEN_C_PREFLIGHT')
+          PY
+
+      - name: Validate fresh GPT Native Golden C UI output
+        run: |
+          set -euo pipefail
+          python3 profiles/ui_architect/validators/validate_ui_architect_output.py \
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/raw_output.json
+
+      - name: Evaluate fresh GPT Native Golden C through independent-review boundary
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_s26_native_golden_c.py \
+            > /tmp/s26-native-golden-c-evaluation.json
+          cat /tmp/s26-native-golden-c-evaluation.json
+          python3 - <<'PY'
+          import json
+          data=json.load(open('/tmp/s26-native-golden-c-evaluation.json',encoding='utf-8'))
+          assert data['status']=='PASS_PRE_INDEPENDENT_REVIEW', data
+          assert data['golden_eligible'] is False, data
+          assert data['golden_declared'] is False, data
+          assert data['depth_gate']['score_total'] >= data['depth_gate']['minimum_score'], data
+          assert data['depth_gate']['ui_validator_pass'] is True, data
+          assert data['latency_observable']['status']=='PASS', data
+          assert data['latency_observable']['value_ms'] >= 0, data
+          assert data['token_usage']['status']=='NOT_OBSERVED', data
+          assert data['token_usage']['estimated'] is False, data
+          assert data['traceability']['status']=='PASS', data
+          assert data['traceability']['card_receipt_count']==1, data
+          assert data['traceability']['adapter_receipt_count']==1, data
+          assert data['traceability']['adapter_invocation_count']==1, data
+          assert sorted(data['semantic_checks_pending'])==['OVERFLOW-DIRECTION','PAGINATION-DIRECTION'], data
+          assert data['blocking_codes']==['INDEPENDENT_QUALITY_REVIEW_NOT_EXECUTED'], data
+          print('PASS_S26_NATIVE_GOLDEN_C_PRE_INDEPENDENT_REVIEW')
           PY
 
       - name: Keep first GPT native candidate as structural regression evidence
