@@ -1,4 +1,4 @@
-name: S26 Llama4 Scout Judge Preflight One Shot
+name: S26 Llama4 Scout Judge Calibration One Shot
 
 on:
   pull_request:
@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  llama4-scout-judge-preflight:
+  llama4-scout-judge-calibration:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -33,22 +33,21 @@ jobs:
           python3 -m py_compile sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_judge_challenger_calibration.py
           python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_judge_challenger_calibration.py --help >/dev/null
 
-      - name: Execute one-call Llama4 Scout challenger preflight
+      - name: Execute frozen six-case Llama4 Scout calibration
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_AI_CANARY_TOKEN: ${{ secrets.CLOUDFLARE_AI_CANARY_TOKEN }}
         run: |
           python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_judge_challenger_calibration.py \
-            --preflight-only \
             --model '@cf/meta/llama-4-scout-17b-16e-instruct' \
             --protocol OPENAI_CHAT_COMPLETIONS \
-            --result-path "$RUNNER_TEMP/s26-llama4-scout-judge-preflight/result.json"
+            --result-path "$RUNNER_TEMP/s26-llama4-scout-judge-calibration/result.json"
 
       - name: Upload challenger evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: s26-llama4-scout-judge-preflight-${{ github.run_id }}
-          path: ${{ runner.temp }}/s26-llama4-scout-judge-preflight
+          name: s26-llama4-scout-judge-calibration-${{ github.run_id }}
+          path: ${{ runner.temp }}/s26-llama4-scout-judge-calibration
           if-no-files-found: error
           retention-days: 30
