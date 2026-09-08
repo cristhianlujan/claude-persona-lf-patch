@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import json
 import subprocess
@@ -50,11 +51,17 @@ def resolve_preflight() -> dict[str, Any]:
 
 def make_pending_quality_receipt(
     *, execution_receipt: dict[str, Any], check_bundle: dict[str, Any], manifest: dict[str, Any], raw_sha: str,
+    artifact_byte_sha: str,
 ) -> dict[str, Any]:
-    artifact_ref = "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/raw_output.json"
+    artifact_ref = (
+        "github://cristhianlujan/claude-persona-lf-patch@"
+        + MATERIALIZATION_COMMIT
+        + "/sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/raw_output.json"
+    )
     source_bundle = {
         "artifact_ref": artifact_ref,
-        "artifact_sha_or_digest": raw_sha,
+        "artifact_byte_sha256": artifact_byte_sha,
+        "semantic_raw_output_sha256": raw_sha,
         "upstream_worker_contract_ref": "profiles/ui_architect/SKILL.md",
         "quality_gate_contract_ref": "profiles/quality_pack/contracts/quality_gate_contract.md",
         "lf_quality_controls_ref": "profiles/quality_pack/contracts/lf_quality_controls.md",
@@ -126,6 +133,7 @@ def main() -> int:
     raw_output = load_json(RAW_PATH)
     input_literal = INPUT_PATH.read_text(encoding="utf-8")
     raw_sha = canonical_json_sha256(raw_output)
+    artifact_byte_sha = hashlib.sha256(RAW_PATH.read_bytes()).hexdigest()
 
     ui_errors = load_ui_validator()(raw_output)
     if ui_errors:
@@ -162,6 +170,7 @@ def main() -> int:
         "materialization_commit_sha": MATERIALIZATION_COMMIT,
         "artifact_ref": RAW_PATH.relative_to(ROOT).as_posix(),
         "raw_output_sha256": raw_sha,
+        "artifact_byte_sha256": artifact_byte_sha,
     }
     response_sha = canonical_json_sha256(response_readback)
     attestation_evidence = canonical_json_sha256({
@@ -190,6 +199,7 @@ def main() -> int:
             "execution_contract_sha256": preflight["execution_contract_sha256"],
             "materialization_commit_sha": MATERIALIZATION_COMMIT,
             "materialization_path": RAW_PATH.relative_to(ROOT).as_posix(),
+            "artifact_byte_sha256": artifact_byte_sha,
             "attestation_boundary": "Model identity/execution is the native ChatGPT producer claim; GitHub readback verifies persisted output bytes and their contract bindings, not model internals."
         },
         obligation_manifest_sha256=preflight["obligation_manifest_sha256"],
@@ -210,6 +220,7 @@ def main() -> int:
         check_bundle=bundle,
         manifest=manifest,
         raw_sha=raw_sha,
+        artifact_byte_sha=artifact_byte_sha,
     )
     pending_errors = validate_independent_quality_receipt(
         pending_quality,
@@ -230,6 +241,7 @@ def main() -> int:
         "execution_id": preflight["execution_id"],
         "materialization_commit_sha": MATERIALIZATION_COMMIT,
         "raw_output_sha256": raw_sha,
+        "artifact_byte_sha256": artifact_byte_sha,
         "ui_architect_validator": {"valid": True, "errors": []},
         "deterministic_checks": [result.as_dict() for result in deterministic],
         "semantic_checks_pending": semantic_ids,
