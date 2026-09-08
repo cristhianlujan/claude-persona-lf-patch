@@ -1,4 +1,4 @@
-name: S26 Canonical Profile Gate Preflight
+name: S26 Nemotron Reasoning Effort Diagnostic One Shot
 
 on:
   pull_request:
@@ -6,20 +6,12 @@ on:
       - main
     paths:
       - ".github/workflows/s26-canonical-profile-gate-preflight.yml"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/cloudflare_workers_ai_profile_runtime.py"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_canonical_profile_gate.py"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_canonical_profile_gate_plan_v2.json"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_runtime_route_v1.json"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_ui_architect_semantic_obligation_manifest_v1.json"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_semantic_judge.py"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_nemotron_large_payload_diagnostic.py"
-      - "adapters/lf_shell_profile_adapter/runtime/runtime_capsule.yaml"
 
 permissions:
   contents: read
 
 jobs:
-  preflight:
+  nemotron-reasoning-effort-diagnostic:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -31,18 +23,25 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install canonical runtime test dependencies
-        run: python -m pip install --disable-pip-version-check -r services/profile_runtime_api/requirements-dev.in
-
       - name: Enforce S26 zero-download guard
         env:
           LF_S26_PRIMARY_RUNTIME: CLOUDFLARE_WORKERS_AI
         run: python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_model_download_guard.py --repo-root .
 
-      - name: Validate canonical manifest receipt parity path offline
-        env:
-          LF_S26_PRIMARY_RUNTIME: CLOUDFLARE_WORKERS_AI
-        run: python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_canonical_profile_gate.py --offline-preflight
+      - name: Validate reasoning diagnostic harness offline
+        run: python3 -m py_compile sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_nemotron_reasoning_effort_diagnostic.py
 
-      - name: Validate sanitized diagnostic harness offline
-        run: python3 -m py_compile sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_nemotron_large_payload_diagnostic.py
+      - name: Execute two-call Nemotron reasoning-effort diagnostic
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_AI_CANARY_TOKEN: ${{ secrets.CLOUDFLARE_AI_CANARY_TOKEN }}
+        run: python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_nemotron_reasoning_effort_diagnostic.py --result-path "$RUNNER_TEMP/s26-nemotron-reasoning-effort-diagnostic/result.json"
+
+      - name: Upload sanitized diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: s26-nemotron-reasoning-effort-diagnostic-${{ github.run_id }}
+          path: ${{ runner.temp }}/s26-nemotron-reasoning-effort-diagnostic
+          if-no-files-found: error
+          retention-days: 30
