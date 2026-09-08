@@ -1,10 +1,6 @@
 name: S26 Cloudflare JSON-mode diagnostic
 
 on:
-  pull_request:
-    paths:
-      - ".github/workflows/s26-cloudflare-jsonmode-diagnostic.yml"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_jsonmode_diagnostic.py"
   workflow_dispatch:
 
 permissions:
