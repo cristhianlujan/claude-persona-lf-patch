@@ -1,0 +1,69 @@
+name: S26 Cloudflare canonical offline tests
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/s26-cloudflare-canonical-offline-tests.yml"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/cloudflare_workers_ai_runtime.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_canonical_adapter_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_fresh_canonical_static_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_cloudflare_fresh_canonical_plan_v1.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      S26_AUTHORITY_REF: fcc2b0d57e36a31c26f38acc2510b193aac988c8
+    steps:
+      - name: Checkout benchmark branch
+        uses: actions/checkout@v4
+
+      - name: Checkout pinned S26 authority read-only
+        uses: actions/checkout@v4
+        with:
+          repository: cristhianlujan/claude-persona-lf-patch
+          ref: ${{ env.S26_AUTHORITY_REF }}
+          path: s26-authority
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Compile adapter and offline tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            sandbox/lf_contract_gate_test/profile_execution_runtime/cloudflare_workers_ai_runtime.py \
+            sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_canonical_adapter_tests.py \
+            sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_fresh_canonical_static_tests.py
+
+      - name: Run canonical adapter regressions without provider calls
+        shell: bash
+        env:
+          S26_AUTHORITY_ROOT: ${{ github.workspace }}/s26-authority
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_canonical_adapter_tests.py
+
+      - name: Run fresh canonical manifest binding without inference
+        shell: bash
+        env:
+          S26_AUTHORITY_ROOT: ${{ github.workspace }}/s26-authority
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_fresh_canonical_static_tests.py
+
+      - name: Confirm no Cloudflare inference credentials were available to this job
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "${CLOUDFLARE_AI_CANARY_TOKEN:-}"
+          test -z "${CLOUDFLARE_ACCOUNT_ID:-}"
+          echo 'OFFLINE_CREDENTIAL_ISOLATION=PASS'
