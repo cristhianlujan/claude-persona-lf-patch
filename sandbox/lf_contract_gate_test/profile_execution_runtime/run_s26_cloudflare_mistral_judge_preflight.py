@@ -46,6 +46,16 @@ def sha(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
+def response_shape(value: Any) -> str:
+    if isinstance(value, dict):
+        return "object:" + ",".join(sorted(str(k) for k in value.keys()))
+    if isinstance(value, str):
+        return f"string:{len(value)}"
+    if isinstance(value, list):
+        return f"array:{len(value)}"
+    return type(value).__name__
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--result-path", type=Path, required=True)
@@ -105,13 +115,21 @@ def main() -> int:
         model_result = envelope.get("result")
         if not isinstance(model_result, dict):
             raise RuntimeError("CLOUDFLARE_RESULT_INVALID")
-        raw = model_result.get("response")
-        if not isinstance(raw, str) or not raw.strip():
-            raise RuntimeError("FINAL_CONTENT_EMPTY")
-        raw = raw.strip()
+        response_value = model_result.get("response")
+        result["provider_response_shape"] = response_shape(response_value)
+        if isinstance(response_value, dict) and response_value:
+            parsed = response_value
+            raw = json.dumps(response_value, ensure_ascii=False, sort_keys=True)
+            result["structured_object_response"] = True
+            result["fenced_output"] = False
+        elif isinstance(response_value, str) and response_value.strip():
+            raw = response_value.strip()
+            result["structured_object_response"] = False
+            result["fenced_output"] = raw.startswith("```")
+            parsed = json.loads(raw)
+        else:
+            raise RuntimeError("FINAL_CONTENT_EMPTY:" + response_shape(response_value))
         result["raw_output_sha256"] = sha(raw)
-        result["fenced_output"] = raw.startswith("```")
-        parsed = json.loads(raw)
         if not isinstance(parsed, dict) or set(parsed) != {"verdict", "reason_code"}:
             raise RuntimeError("FINAL_JSON_SHAPE_INVALID")
         verdict = parsed.get("verdict")
