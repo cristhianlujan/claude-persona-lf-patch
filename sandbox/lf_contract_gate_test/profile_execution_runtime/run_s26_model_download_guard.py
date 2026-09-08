@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Fail-closed guard: active S26 workflows may not acquire or reactivate local model weights."""
+"""Fail-closed guard: active S26 paths may not acquire or reactivate local model weights."""
 from __future__ import annotations
 
 import argparse
 import json
 import re
-import subprocess
 from pathlib import Path
 
 ROUTE_REL = Path("sandbox/lf_contract_gate_test/profile_execution_runtime/s26_runtime_route_v1.json")
@@ -65,19 +64,6 @@ def _scan_text(label: str, text: str, violations: list[str]) -> None:
             violations.append(f"{code}:{label}")
 
 
-def _pr_changed_files(root: Path) -> set[str]:
-    try:
-        raw = subprocess.check_output(
-            ["git", "diff", "--name-only", "HEAD^1", "HEAD"],
-            cwd=root,
-            text=True,
-            stderr=subprocess.DEVNULL,
-        )
-    except Exception:
-        return set()
-    return {line.strip() for line in raw.splitlines() if line.strip()}
-
-
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
@@ -110,7 +96,7 @@ def main() -> int:
     if not cloudflare_route_seen:
         violations.append("CLOUDFLARE_ROUTE_MISSING:active_s26_workflows")
 
-    # Always scan the active semantic authority adapter even if a workflow reaches it indirectly.
+    # Always scan the active semantic authority adapter even if reached indirectly.
     referenced_scripts.add(CANONICAL_JUDGE_ADAPTER)
 
     guard_rel = Path(__file__).resolve().relative_to(root)
@@ -128,15 +114,14 @@ def main() -> int:
             continue
         _scan_text(str(relative), path.read_text(encoding="utf-8"), violations)
 
+    # The historical Story Agent carrier previously contained local S26/runtime model
+    # acquisition jobs. It remains an active workflow, so any reintroduction of a
+    # forbidden local-model acquisition marker is a blocking regression, regardless of trigger.
     legacy_path = root / LEGACY_STORY_WORKFLOW
-    changed = _pr_changed_files(root)
     if legacy_path.is_file():
-        legacy_text = legacy_path.read_text(encoding="utf-8")
-        legacy_download_capable = any(pattern.search(legacy_text) for pattern in FORBIDDEN.values())
-        if legacy_download_capable:
-            for changed_path in sorted(changed):
-                if f'"{changed_path}"' in legacy_text or f"'{changed_path}'" in legacy_text:
-                    violations.append("LEGACY_LOCAL_MODEL_WORKFLOW_REACTIVATED_BY_DIFF:" + changed_path)
+        _scan_text(str(LEGACY_STORY_WORKFLOW), legacy_path.read_text(encoding="utf-8"), violations)
+    else:
+        violations.append("LEGACY_STORY_WORKFLOW_MISSING")
 
     if violations:
         print("S26_MODEL_DOWNLOAD_GUARD=FAIL")
@@ -152,6 +137,7 @@ def main() -> int:
     print("MODEL_DOWNLOAD_DISABLED=PASS")
     print("LOCAL_GGUF_FALLBACK_DISABLED=PASS")
     print("PAID_FALLBACK_DISABLED=PASS")
+    print("LEGACY_STORY_LOCAL_MODEL_PATHS=0")
     print("S26_ACTIVE_WORKFLOW_COUNT=" + str(len(in_scope)))
     print("S26_PRIMARY_RUNTIME=" + str(route["primary_runtime"]))
     print("S26_SEMANTIC_AUTHORITY=NEMOTRON_REMOTE")
