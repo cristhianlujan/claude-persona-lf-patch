@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
-"""Fail-closed guard: active S26 workflows may not acquire or run local model weights."""
+"""Fail-closed guard: active S26 workflows may not acquire or reactivate local model weights."""
 from __future__ import annotations
 
 import argparse
 import json
 import re
+import subprocess
 from pathlib import Path
 
 ROUTE_REL = Path("sandbox/lf_contract_gate_test/profile_execution_runtime/s26_runtime_route_v1.json")
 WORKFLOW_ROOT = Path(".github/workflows")
+LEGACY_STORY_WORKFLOW = Path(".github/workflows/story-agent-evidence-verifier.yml")
 FORBIDDEN = {
     "HUGGINGFACE_MODEL_DOWNLOAD": re.compile(r"huggingface\.co", re.I),
     "GGUF_WEIGHT_REFERENCE": re.compile(r"\.gguf(?:\b|\?)", re.I),
@@ -51,6 +53,16 @@ def _scan_text(label: str, text: str, violations: list[str]) -> None:
     for code, pattern in FORBIDDEN.items():
         if pattern.search(text):
             violations.append(f"{code}:{label}")
+
+
+def _pr_changed_files(root: Path) -> set[str]:
+    try:
+        raw = subprocess.check_output(
+            ["git", "diff", "--name-only", "HEAD^1", "HEAD"], cwd=root, text=True, stderr=subprocess.DEVNULL
+        )
+    except Exception:
+        return set()
+    return {line.strip() for line in raw.splitlines() if line.strip()}
 
 
 def main() -> int:
@@ -100,9 +112,19 @@ def main() -> int:
             continue
         _scan_text(str(relative), path.read_text(encoding="utf-8"), violations)
 
+    legacy_path = root / LEGACY_STORY_WORKFLOW
+    changed = _pr_changed_files(root)
+    if legacy_path.is_file():
+        legacy_text = legacy_path.read_text(encoding="utf-8")
+        legacy_download_capable = any(pattern.search(legacy_text) for pattern in FORBIDDEN.values())
+        if legacy_download_capable:
+            for changed_path in sorted(changed):
+                if f'"{changed_path}"' in legacy_text or f"'{changed_path}'" in legacy_text:
+                    violations.append("LEGACY_LOCAL_MODEL_WORKFLOW_REACTIVATED_BY_DIFF:" + changed_path)
+
     if violations:
         print("S26_MODEL_DOWNLOAD_GUARD=FAIL")
-        print("ACTIVE_S26_GGUF_DOWNLOAD_PATHS=" + str(len(violations)))
+        print("ACTIVE_S26_GGUF_DOWNLOAD_PATHS=" + str(len(set(violations))))
         for violation in sorted(set(violations)):
             print("S26_MODEL_DOWNLOAD_VIOLATION=" + violation)
         return 2
