@@ -42,12 +42,12 @@ jobs:
             echo "S26_CLOUDFLARE_GUARD=SKIP_ROUTE_NOT_PRESENT"
           fi
 
-      - name: Preflight S26 GLM-4.7 judge challenger code
+      - name: Preflight S26 Mistral judge challenger code
         if: github.event_name == 'pull_request' && github.event.pull_request.number == 559
-        run: python3 -m py_compile sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_glm47_judge_preflight.py
+        run: python3 -m py_compile sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_mistral_judge_preflight.py
 
-      - name: Execute one-call S26 GLM-4.7 judge challenger preflight
-        id: glm47_preflight
+      - name: Execute one-call S26 Mistral judge challenger preflight
+        id: mistral_judge_preflight
         if: github.event_name == 'pull_request' && github.event.pull_request.number == 559
         continue-on-error: true
         env:
@@ -55,22 +55,22 @@ jobs:
           CLOUDFLARE_AI_CANARY_TOKEN: ${{ secrets.CLOUDFLARE_AI_CANARY_TOKEN }}
         run: |
           set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_glm47_judge_preflight.py \
-            --result-path s26-glm47-judge-preflight.json
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_mistral_judge_preflight.py \
+            --result-path s26-mistral-judge-preflight.json
 
-      - name: Upload S26 GLM-4.7 judge challenger evidence
+      - name: Upload S26 Mistral judge challenger evidence
         if: always() && github.event_name == 'pull_request' && github.event.pull_request.number == 559
         uses: actions/upload-artifact@v4
         with:
-          name: s26-glm47-judge-preflight-${{ github.run_id }}
-          path: s26-glm47-judge-preflight.json
+          name: s26-mistral-judge-preflight-${{ github.run_id }}
+          path: s26-mistral-judge-preflight.json
           if-no-files-found: error
           retention-days: 30
 
-      - name: Enforce S26 GLM-4.7 judge challenger preflight result
-        if: github.event_name == 'pull_request' && github.event.pull_request.number == 559 && steps.glm47_preflight.outcome != 'success'
+      - name: Enforce S26 Mistral judge challenger preflight result
+        if: github.event_name == 'pull_request' && github.event.pull_request.number == 559 && steps.mistral_judge_preflight.outcome != 'success'
         run: |
-          echo "S26_GLM47_JUDGE_PREFLIGHT=FAIL_CLOSED"
+          echo "S26_MISTRAL_JUDGE_PREFLIGHT=FAIL_CLOSED"
           exit 1
 
       - name: Install Profile Runtime API test dependencies
