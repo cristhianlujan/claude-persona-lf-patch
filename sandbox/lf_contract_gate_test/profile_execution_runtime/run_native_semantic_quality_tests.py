@@ -176,6 +176,12 @@ def make_independent_receipt(execution_receipt, manifest, bundle):
             "repair_actions": [],
             "remaining_risks": [],
             "next_gate": "GOLDEN_ELIGIBILITY",
+            "routing": {
+                "activation_path": "ROUTER",
+                "via": "ORCHESTRATOR",
+                "pipeline_action": "CONTINUE",
+                "resolution_target": "COMPOSER"
+            }
         },
         "execution_blockers": [],
         "semantic_binding": binding,
@@ -226,6 +232,21 @@ def main():
         semantic_obligation_manifest=manifest,
     )
     assert downstream["status"] == "PASS_PROFILE_EXECUTION_AND_SEMANTIC_QUALITY"
+    passed += 1
+
+    missing_routing = deepcopy(independent)
+    missing_routing["quality_review"].pop("routing")
+    missing_routing["receipt_sha256"] = canonical_json_sha256(
+        {k: v for k, v in missing_routing.items() if k != "receipt_sha256"}
+    )
+    errors = validate_semantic_quality_receipt(
+        missing_routing,
+        expected_bundle=bundle,
+        expected_obligation_manifest=manifest,
+        expected_raw_output=RAW,
+        execution_receipt=execution_receipt,
+    )
+    assert "QUALITY_PACK_ROUTING_INVALID:ROUTING_OBJECT_REQUIRED" in errors
     passed += 1
 
     self_review = deepcopy(independent)
@@ -283,6 +304,12 @@ def main():
         "total": 22,
     }
     restricted["quality_review"]["remaining_risks"] = ["One non-blocking risk remains."]
+    restricted["quality_review"]["routing"] = {
+        "activation_path": "ROUTER",
+        "via": "ORCHESTRATOR",
+        "pipeline_action": "CONTINUE_WITH_RESTRICTIONS",
+        "resolution_target": "COMPOSER"
+    }
     restricted["receipt_sha256"] = canonical_json_sha256(
         {k: v for k, v in restricted.items() if k != "receipt_sha256"}
     )
@@ -330,9 +357,9 @@ def main():
     )
     passed += 1
 
-    if passed != 8:
-        raise SystemExit(f"NATIVE_SEMANTIC_QUALITY_TESTS_FAIL {passed}/8")
-    print("NATIVE_SEMANTIC_QUALITY_TESTS_PASS 8/8")
+    if passed != 9:
+        raise SystemExit(f"NATIVE_SEMANTIC_QUALITY_TESTS_FAIL {passed}/9")
+    print("NATIVE_SEMANTIC_QUALITY_TESTS_PASS 9/9")
 
 
 if __name__ == "__main__":
