@@ -16,11 +16,12 @@ from pathlib import Path
 
 from run_s26_cloudflare_judge_challenger_calibration import (
     CALIBRATION,
-    MAX_TOKENS,
     MODEL,
     SYSTEM_TEXT,
     VERDICT_SCHEMA,
 )
+
+PROBE_MAX_TOKENS = 256
 
 
 def shape(value):
@@ -56,7 +57,7 @@ def main() -> int:
         "temperature": 0,
         "top_p": 1,
         "seed": 42,
-        "max_tokens": MAX_TOKENS,
+        "max_tokens": PROBE_MAX_TOKENS,
     }
     req = urllib.request.Request(
         f"https://api.cloudflare.com/client/v4/accounts/{account}/ai/v1/chat/completions",
@@ -86,7 +87,7 @@ def main() -> int:
         "model": MODEL,
         "protocol": "OPENAI_CHAT_COMPLETIONS",
         "case_id": case["id"],
-        "max_tokens": MAX_TOKENS,
+        "max_tokens": PROBE_MAX_TOKENS,
         "response_format_type": "json_schema",
         "elapsed_s": elapsed,
         "top_level_keys": sorted(str(k) for k in envelope.keys()),
