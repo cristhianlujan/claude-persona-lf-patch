@@ -1,0 +1,136 @@
+name: S26 Cloudflare fresh canonical preflight
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/s26-cloudflare-fresh-canonical-preflight.yml"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_cloudflare_fresh_canonical_plan_v1.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      S26_AUTHORITY_REF: fcc2b0d57e36a31c26f38acc2510b193aac988c8
+      TARGET_MODEL: '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
+    steps:
+      - name: Checkout benchmark branch
+        uses: actions/checkout@v4
+
+      - name: Checkout pinned S26 authority read-only
+        uses: actions/checkout@v4
+        with:
+          repository: cristhianlujan/claude-persona-lf-patch
+          ref: ${{ env.S26_AUTHORITY_REF }}
+          path: s26-authority
+
+      - name: Validate token and target model without inference
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN}" || { echo 'BLOCK CLOUDFLARE_API_TOKEN_MISSING'; exit 1; }
+          test -n "${CLOUDFLARE_ACCOUNT_ID}" || { echo 'BLOCK CLOUDFLARE_ACCOUNT_ID_MISSING'; exit 1; }
+          token_json="$(curl --silent --show-error --fail-with-body \
+            'https://api.cloudflare.com/client/v4/user/tokens/verify' \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")"
+          jq -e '.success == true and .result.status == "active"' <<<"${token_json}" >/dev/null
+          models_json="$(curl --silent --show-error --fail-with-body --get \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/models/search" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            --data-urlencode 'search=llama-3.3-70b-instruct-fp8-fast' \
+            --data-urlencode 'hide_experimental=true' \
+            --data-urlencode 'include_deprecated=false')"
+          jq -e '.success == true and (.result | length > 0)' <<<"${models_json}" >/dev/null
+          echo 'TOKEN_MODEL_READONLY_PREFLIGHT=PASS'
+
+      - name: Determine whether zero-cost inference can be guaranteed
+        id: billing
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$RUNNER_TEMP/account-subscriptions.json"
+          code="$(curl --silent --show-error \
+            -o "$tmp" -w '%{http_code}' \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/subscriptions" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")"
+          echo "http_code=$code" >> "$GITHUB_OUTPUT"
+          if [[ "$code" != "200" ]]; then
+            echo 'zero_cost_guaranteed=false' >> "$GITHUB_OUTPUT"
+            echo "ZERO_COST_GUARD=BLOCK_BILLING_READ_UNAVAILABLE_HTTP_${code}"
+            exit 0
+          fi
+          jq -e '.success == true and (.result | type == "array")' "$tmp" >/dev/null
+          python3 - "$tmp" "$GITHUB_OUTPUT" <<'PY'
+          import json,sys
+          path,out=sys.argv[1:]
+          data=json.load(open(path,encoding='utf-8'))
+          active=[]
+          for item in data.get('result') or []:
+              if not isinstance(item,dict):
+                  continue
+              state=str(item.get('state') or '').lower()
+              rate=item.get('rate_plan') if isinstance(item.get('rate_plan'),dict) else {}
+              public=str(rate.get('public_name') or '').lower()
+              sets=[str(x).lower() for x in (rate.get('sets') or [])]
+              ident=str(rate.get('id') or '').lower()
+              text=' '.join([public,ident,*sets])
+              if state in {'paid','provisioned','trial','awaitingpayment'} and 'worker' in text:
+                  active.append({'state':state,'rate_plan_id':ident,'public_name':public,'sets':sets})
+          # Safe inference is allowed only when Billing Read proves there is no active Workers paid subscription.
+          safe=not active
+          with open(out,'a',encoding='utf-8') as f:
+              f.write('zero_cost_guaranteed='+('true' if safe else 'false')+'\n')
+              f.write('active_workers_paid_detected='+('true' if active else 'false')+'\n')
+          print('ZERO_COST_GUARD='+('PASS_NO_ACTIVE_WORKERS_PAID_SUBSCRIPTION' if safe else 'BLOCK_ACTIVE_WORKERS_PAID_SUBSCRIPTION'))
+          print('ACCOUNT_SUBSCRIPTIONS_ACTIVE_WORKERS_COUNT='+str(len(active)))
+          PY
+
+      - name: Validate fresh frozen plan and canonical authority assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib,json,pathlib
+          p=pathlib.Path('sandbox/lf_contract_gate_test/profile_execution_runtime/s26_cloudflare_fresh_canonical_plan_v1.json')
+          plan=json.loads(p.read_text(encoding='utf-8'))
+          assert plan['schema']=='S26_CLOUDFLARE_FRESH_CANONICAL_PLAN_V1'
+          assert plan['frozen_before_any_candidate_output'] is True
+          assert plan['tuning_from_candidate_output_forbidden'] is True
+          assert plan['diagnostic_holdouts_reused'] is False
+          cases=plan['cases']
+          assert len(cases)==3
+          ids=[x['case_id'] for x in cases]
+          assert len(set(ids))==3
+          forbidden=set(plan['prior_holdout_case_ids_forbidden'])
+          assert not (set(ids)&forbidden)
+          obligations=[]
+          for case in cases:
+              assert len(case['obligations'])==4
+              obligations += [x['obligation_id'] for x in case['obligations']]
+          assert len(obligations)==len(set(obligations))==12
+          print('FRESH_PLAN_STATIC_VALIDATION=PASS')
+          print('FRESH_PLAN_SHA256='+hashlib.sha256(p.read_bytes()).hexdigest())
+          print('FRESH_CASE_IDS='+','.join(ids))
+          PY
+          test -f s26-authority/sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_runner.py
+          test -f s26-authority/sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_obligation_manifest.py
+          test -f s26-authority/sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_mini_judge.py
+          test -f s26-authority/sandbox/lf_contract_gate_test/profile_execution_runtime/validate_semantic_judge.py
+          test -f s26-authority/sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py
+          echo 'CANONICAL_AUTHORITY_ASSETS=PASS'
+
+      - name: Final fail-closed zero-cost decision
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ steps.billing.outputs.zero_cost_guaranteed }}" != "true" ]]; then
+            echo 'S26_FRESH_CANONICAL_PREFLIGHT=BLOCK_ZERO_COST_NOT_PROVEN'
+            exit 2
+          fi
+          echo 'S26_FRESH_CANONICAL_PREFLIGHT=PASS_ZERO_COST_PROVEN_NO_INFERENCE_EXECUTED'
