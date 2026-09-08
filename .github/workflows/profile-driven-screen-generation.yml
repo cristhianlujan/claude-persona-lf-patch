@@ -68,6 +68,31 @@ jobs:
           set -euo pipefail
           python3 profiles/ui_architect/evals/contract_validator_alignment_20260908/run_cases.py
 
+      - name: Prove UI Architect malformed-input fail-closed
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import importlib.util
+          from pathlib import Path
+
+          path = Path('profiles/ui_architect/validators/validate_ui_architect_output.py')
+          spec = importlib.util.spec_from_file_location('ui_validator_totality', path)
+          assert spec is not None and spec.loader is not None
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+
+          cases = [
+              ([], 'ROOT_NOT_OBJECT'),
+              ({'output_type': 'PRODUCTION_UI_SPEC', 'deliverable_created': []}, 'DELIVERABLE_NOT_OBJECT'),
+              ({'output_type': 'PRODUCTION_UI_SPEC', 'deliverable_created': {'screen_definition': {}, 'component_tree': 'not-a-list'}}, 'COMPONENT_TREE_MISSING'),
+          ]
+          for payload, expected in cases:
+              errors = module.validate(payload)
+              codes = {item.get('code') for item in errors if isinstance(item, dict)}
+              assert expected in codes, (expected, errors)
+          print('UI_ARCHITECT_MALFORMED_INPUT_FAIL_CLOSED_PASS 3/3')
+          PY
+
       - name: Preserve historical S26 candidates without requalification
         run: |
           set -euo pipefail
