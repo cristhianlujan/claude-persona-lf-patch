@@ -42,43 +42,6 @@ jobs:
             echo "S26_CLOUDFLARE_GUARD=SKIP_ROUTE_NOT_PRESENT"
           fi
 
-      - name: Preflight S26 Nemotron judge calibration code
-        if: github.event_name == 'pull_request' && github.event.pull_request.number == 559
-        run: python3 -m py_compile sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_nemotron_judge_calibration.py
-
-      - name: Execute frozen S26 Nemotron judge calibration
-        id: nemotron_judge_calibration
-        if: github.event_name == 'pull_request' && github.event.pull_request.number == 559
-        continue-on-error: true
-        env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_AI_CANARY_TOKEN: ${{ secrets.CLOUDFLARE_AI_CANARY_TOKEN }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_nemotron_judge_calibration.py \
-            --result-path s26-nemotron-judge-calibration.json
-
-      - name: Upload S26 Nemotron judge calibration evidence
-        if: always() && github.event_name == 'pull_request' && github.event.pull_request.number == 559
-        uses: actions/upload-artifact@v4
-        with:
-          name: s26-nemotron-judge-calibration-${{ github.run_id }}
-          path: s26-nemotron-judge-calibration.json
-          if-no-files-found: error
-          retention-days: 30
-
-      - name: Report S26 Nemotron calibration disposition
-        if: always() && github.event_name == 'pull_request' && github.event.pull_request.number == 559
-        shell: bash
-        run: |
-          if [[ "${{ steps.nemotron_judge_calibration.outcome }}" == "success" ]]; then
-            echo "S26_NEMOTRON_JUDGE_CALIBRATION=PASS_CHALLENGER_ONLY"
-          else
-            echo "S26_NEMOTRON_JUDGE_CALIBRATION=FAIL_CLOSED_CHALLENGER_ONLY"
-          fi
-          echo "S26_CANONICAL_JUDGE_AUTHORITY=UNCHANGED"
-
       - name: Install Profile Runtime API test dependencies
         run: python -m pip install --disable-pip-version-check -r services/profile_runtime_api/requirements-dev.in
 
