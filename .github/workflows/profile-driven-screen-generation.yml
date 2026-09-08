@@ -8,6 +8,10 @@ on:
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_execution_contract_tests.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/contract_bound_profile_runtime.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_contract_bound_runtime_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_semantic_quality.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_semantic_quality_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_001/**"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/guard_no_model_weight_acquisition.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_model_weight_guard_tests.py"
       - ".github/workflows/profile-driven-screen-generation.yml"
@@ -32,6 +36,11 @@ jobs:
           cd sandbox/lf_contract_gate_test/profile_driven_screen_generation
           python3 run_tests.py
 
+      - name: Run existing profile execution runtime regressions
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py
+
       - name: Run native profile execution contract regressions
         run: |
           set -euo pipefail
@@ -41,6 +50,17 @@ jobs:
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_contract_bound_runtime_tests.py
+
+      - name: Run provider-agnostic native semantic quality regressions
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_semantic_quality_tests.py
+
+      - name: Validate first GPT native Golden candidate with UI Architect validator
+        run: |
+          set -euo pipefail
+          python3 profiles/ui_architect/validators/validate_ui_architect_output.py \
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_001/raw_output.json
 
       - name: Run model-weight guard regressions
         run: |
