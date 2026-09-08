@@ -1,0 +1,39 @@
+{
+  "case_id": "S26_CANONICAL_FRESH_PASSIVE_GUIDANCE_HIERARCHY_001",
+  "diagnostic_holdouts_reused": false,
+  "direct_router_same_literal_input": true,
+  "frozen_at_utc": "2026-09-08T03:35:00Z",
+  "frozen_before_candidate_output": true,
+  "golden_promotion_authorized": false,
+  "governed_facts": [
+    "The target is a SCREEN_COMPONENT inside the existing application shell; shell chrome and navigation are out of scope and must remain unchanged.",
+    "There is exactly one existing passive processing-guidance block immediately below the upload control.",
+    "The existing guidance copy must remain unchanged; no new explanatory copy is authorized.",
+    "The existing upload control and the existing Procesar archivo primary CTA must remain unchanged and must retain stronger hierarchy than the passive guidance.",
+    "Existing validation success/error meaning, business rules, keyboard order and focus order must remain unchanged.",
+    "No new control, tooltip, collapse, dismissal, icon action or interaction is authorized for this guidance.",
+    "Source-bound implementation values available for this decision are card_surface, border_soft, navy_core, navy_soft and radius_16.",
+    "The only grounded density quantities are one existing passive guidance block and zero added controls.",
+    "No pixel value, percentage, breakpoint, opacity number, font size, line count or spacing dimension is supplied or authorized.",
+    "No canonical visual treatment for this guidance is preauthorized; this is a novel low-risk sandbox decision.",
+    "The selected treatment must stay flat and subordinate; no new elevation or shadow is authorized."
+  ],
+  "kind": "NOVEL_EXISTING_SCREEN_REMEDIATION",
+  "output_mode": "UI_FOCUSED_DECISION",
+  "production_mutation_authorized": false,
+  "profile": "ui_architect",
+  "profile_code": "PERFIL-UI-ARCHITECT",
+  "quality_requirements": [
+    "Return one executable visual treatment, not a rationale-only recommendation.",
+    "Use only supplied tokens and facts; unsupported precision or invented interaction is forbidden.",
+    "State implementation target, behavior and usable property/value without inventing dimensions.",
+    "Explicitly preserve the upload control, Procesar archivo CTA, validation semantics, business rules, keyboard order and focus order.",
+    "Keep visual weight lower than the upload control and primary CTA using source-bound values rather than numeric opacity or size.",
+    "hard_exclusions must contain rejected alternatives only and must not contradict the selected treatment.",
+    "Status must remain sandbox/read-only appropriate."
+  ],
+  "schema": "S26_CANONICAL_PROFILE_GATE_PLAN_V1",
+  "strategy": "S26",
+  "task": "On an existing B2B file-upload screen, decide the focused visual treatment for the existing passive processing-guidance block immediately below the upload control so it no longer competes visually with the primary upload control and the Procesar archivo CTA.",
+  "tuning_from_candidate_output_forbidden": true
+}
