@@ -4,7 +4,12 @@ on:
   pull_request:
     paths:
       - "sandbox/lf_contract_gate_test/profile_driven_screen_generation/**"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/profile_execution_contract.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_execution_contract_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/guard_no_model_weight_acquisition.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_model_weight_guard_tests.py"
       - ".github/workflows/profile-driven-screen-generation.yml"
+      - ".github/workflows/story-agent-evidence-verifier.yml"
 
 permissions:
   contents: read
@@ -12,14 +17,30 @@ permissions:
 jobs:
   deterministic-contract-gate:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
       - name: Run profile-driven screen generation contract regressions
         run: |
           set -euo pipefail
           cd sandbox/lf_contract_gate_test/profile_driven_screen_generation
           python3 run_tests.py
+
+      - name: Run native profile execution contract regressions
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_execution_contract_tests.py
+
+      - name: Run model-weight guard regressions
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_model_weight_guard_tests.py
+
+      - name: Enforce no model-weight acquisition in active S26 profile workflows
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/guard_no_model_weight_acquisition.py --workflow-dir .github/workflows
