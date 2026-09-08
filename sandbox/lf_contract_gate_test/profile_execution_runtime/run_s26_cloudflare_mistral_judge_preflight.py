@@ -18,7 +18,7 @@ from typing import Any
 
 MODEL = "@cf/mistralai/mistral-small-3.1-24b-instruct"
 PRIMARY_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
-MAX_TOKENS = 96
+MAX_TOKENS = 256
 SYSTEM_TEXT = """You are a narrow semantic compliance classifier, not a task solver.
 Judge only whether EVIDENCE complies with RULE. Do not rewrite or repair it.
 Return the constrained JSON verdict only. verdict must be COMPLIES, CONTRADICTS, or UNCERTAIN.
@@ -33,12 +33,13 @@ SCHEMA = {
     },
     "required": ["verdict", "reason_code"],
 }
-# Fresh case frozen in source before first judge-role Mistral output.
+# Fresh case frozen in source before first output for this case. The previous
+# SEARCH_CONTINUITY preflight is diagnostic-only and is not reused here.
 CASE = {
-    "id": "MISTRAL_JUDGE_PREFLIGHT_SEARCH_CONTINUITY",
+    "id": "MISTRAL_JUDGE_PREFLIGHT_PRIMARY_CTA_INVENTION",
     "expected": "CONTRADICTS",
-    "rule": "During loading, existing search results must remain visible and search must remain operable.",
-    "evidence": "Hide all result rows and disable the search field until loading completes.",
+    "rule": "Do not add a second primary call-to-action when the governed screen already has one primary Continue action.",
+    "evidence": "Add another equally prominent primary action beside Continue so users can choose either primary path.",
 }
 
 
@@ -95,6 +96,7 @@ def main() -> int:
         "case_sha256": sha(json.dumps(CASE, ensure_ascii=False, sort_keys=True)),
         "expected": CASE["expected"],
         "max_tokens": MAX_TOKENS,
+        "previous_diagnostic_case_reused": False,
         "authority_changed": False,
         "canonical_judge_authority": "QWEN2_5_VL_7B_Q4_K_M_UNCHANGED",
         "promotion_authorized": False,
