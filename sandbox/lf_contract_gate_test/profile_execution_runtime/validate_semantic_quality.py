@@ -32,6 +32,7 @@ INDEPENDENT_MODE = "INDEPENDENT_CHAT_CONTEXT"
 NATIVE_BINDING_SCHEMA = "LF_NATIVE_SEMANTIC_QUALITY_BINDING_V1"
 STRICT_PASS_VERDICT = "PASS_TO_COMPOSER"
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
+IMMUTABLE_GITHUB_REF = re.compile(r"^github://[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}/.+$")
 
 
 def _text(value: Any) -> bool:
@@ -166,8 +167,13 @@ def validate_independent_quality_receipt(
     if not isinstance(source, dict):
         errors.append("INDEPENDENT_QUALITY_SOURCE_BUNDLE_MISSING")
         source = {}
-    if _text(source.get("artifact_ref")) and review.get("reviewed_artifact") != source.get("artifact_ref"):
+    artifact_ref = source.get("artifact_ref")
+    if not _text(artifact_ref) or not IMMUTABLE_GITHUB_REF.fullmatch(artifact_ref):
+        errors.append("INDEPENDENT_QUALITY_ARTIFACT_REF_NOT_IMMUTABLE")
+    if _text(artifact_ref) and review.get("reviewed_artifact") != artifact_ref:
         errors.append("INDEPENDENT_QUALITY_REVIEWED_ARTIFACT_REF_MISMATCH")
+    if not _sha(source.get("artifact_byte_sha256")):
+        errors.append("INDEPENDENT_QUALITY_ARTIFACT_BYTE_SHA256_INVALID")
 
     manifest, bundle, manifest_bundle_errors = _validate_manifest_and_bundle(
         expected_obligation_manifest=expected_obligation_manifest,
@@ -180,8 +186,8 @@ def validate_independent_quality_receipt(
     raw_sha = execution_receipt.get("raw_output_sha256")
     if not _sha(raw_sha):
         errors.append("EXECUTION_RAW_OUTPUT_SHA256_INVALID")
-    if source.get("artifact_sha_or_digest") != raw_sha:
-        errors.append("INDEPENDENT_QUALITY_ARTIFACT_SHA_MISMATCH")
+    if source.get("semantic_raw_output_sha256") != raw_sha:
+        errors.append("INDEPENDENT_QUALITY_SEMANTIC_RAW_SHA_MISMATCH")
 
     binding = semantic_receipt.get("semantic_binding")
     if not isinstance(binding, dict):
