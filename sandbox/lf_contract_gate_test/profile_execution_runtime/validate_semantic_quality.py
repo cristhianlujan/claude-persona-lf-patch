@@ -42,15 +42,31 @@ def _sha(value: Any) -> bool:
     return isinstance(value, str) and bool(HEX64.fullmatch(value))
 
 
-def _quality_pack_validator() -> Callable[[Any], list[str]]:
-    repo_root = Path(__file__).resolve().parents[3]
-    path = repo_root / "profiles" / "quality_pack" / "validators" / "validate_independent_semantic_review.py"
-    spec = importlib.util.spec_from_file_location("lf_quality_pack_independent_validator", path)
+def _load_validator(path: Path, module_name: str, function_name: str) -> Callable[..., list[str]]:
+    spec = importlib.util.spec_from_file_location(module_name, path)
     if spec is None or spec.loader is None:
-        raise RuntimeError("QUALITY_PACK_VALIDATOR_LOAD_FAILED")
+        raise RuntimeError(f"{module_name.upper()}_LOAD_FAILED")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    return module.validate_receipt
+    return getattr(module, function_name)
+
+
+def _quality_pack_validator() -> Callable[[Any], list[str]]:
+    repo_root = Path(__file__).resolve().parents[3]
+    return _load_validator(
+        repo_root / "profiles" / "quality_pack" / "validators" / "validate_independent_semantic_review.py",
+        "lf_quality_pack_independent_validator",
+        "validate_receipt",
+    )
+
+
+def _quality_pack_routing_validator() -> Callable[[Any, Any], list[str]]:
+    repo_root = Path(__file__).resolve().parents[3]
+    return _load_validator(
+        repo_root / "profiles" / "quality_pack" / "validators" / "validate_routing.py",
+        "lf_quality_pack_routing_validator",
+        "validate_routing",
+    )
 
 
 def _validate_manifest_and_bundle(
@@ -138,6 +154,13 @@ def validate_independent_quality_receipt(
         review = {}
     if review.get("verdict") != STRICT_PASS_VERDICT:
         errors.append("INDEPENDENT_QUALITY_VERDICT_NOT_STRICT_PASS")
+
+    try:
+        routing_errors = _quality_pack_routing_validator()(review.get("verdict"), review.get("routing"))
+    except Exception as exc:
+        errors.append(f"QUALITY_PACK_ROUTING_VALIDATOR_EXECUTION_FAILED:{type(exc).__name__}")
+        routing_errors = []
+    errors.extend(f"QUALITY_PACK_ROUTING_INVALID:{item}" for item in routing_errors)
 
     source = semantic_receipt.get("source_bundle")
     if not isinstance(source, dict):
