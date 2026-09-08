@@ -1,4 +1,4 @@
-name: S26 Canonical Profile Gate One Shot
+name: S26 Canonical Profile Gate Preflight
 
 on:
   pull_request:
@@ -6,14 +6,21 @@ on:
       - main
     paths:
       - ".github/workflows/s26-canonical-profile-gate-preflight.yml"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/cloudflare_workers_ai_profile_runtime.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_canonical_profile_gate.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_canonical_profile_gate_plan_v1.json"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_runtime_route_v1.json"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_ui_architect_semantic_obligation_manifest_v1.json"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_semantic_judge.py"
+      - "adapters/lf_shell_profile_adapter/runtime/runtime_capsule.yaml"
 
 permissions:
   contents: read
 
 jobs:
-  canonical-live:
+  preflight:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -31,25 +38,7 @@ jobs:
           LF_S26_PRIMARY_RUNTIME: CLOUDFLARE_WORKERS_AI
         run: python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_model_download_guard.py --repo-root .
 
-      - name: Revalidate canonical gate offline before inference
+      - name: Validate canonical manifest receipt parity path offline
         env:
           LF_S26_PRIMARY_RUNTIME: CLOUDFLARE_WORKERS_AI
         run: python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_canonical_profile_gate.py --offline-preflight
-
-      - name: Execute one-shot canonical S26 gate
-        env:
-          LF_REPOSITORY_VISIBILITY: public
-          LF_RUNNER_LABEL: ubuntu-latest
-          LF_S26_PRIMARY_RUNTIME: CLOUDFLARE_WORKERS_AI
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_AI_CANARY_TOKEN: ${{ secrets.CLOUDFLARE_AI_CANARY_TOKEN }}
-        run: python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_canonical_profile_gate.py --result-dir "$RUNNER_TEMP/s26-canonical-profile-gate"
-
-      - name: Upload durable canonical gate evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: s26-canonical-profile-gate-${{ github.run_id }}
-          path: ${{ runner.temp }}/s26-canonical-profile-gate
-          if-no-files-found: error
-          retention-days: 30
