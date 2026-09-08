@@ -13,9 +13,12 @@ on:
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_semantic_quality.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_semantic_quality_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_d.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_s26_native_golden_d.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_001/**"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/**"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/**"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/**"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/guard_no_model_weight_acquisition.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_model_weight_guard_tests.py"
       - ".github/workflows/profile-driven-screen-generation.yml"
@@ -32,90 +35,81 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
       - name: Run profile-driven screen generation contract regressions
         run: |
           set -euo pipefail
           cd sandbox/lf_contract_gate_test/profile_driven_screen_generation
           python3 run_tests.py
-
       - name: Run existing profile execution runtime regressions
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py
-
       - name: Run native profile execution contract regressions
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_execution_contract_tests.py
-
       - name: Run contract-bound GPT and Claude native runtime regressions
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_contract_bound_runtime_tests.py
-
       - name: Run provider-agnostic native semantic quality regressions
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_semantic_quality_tests.py
-
       - name: Enforce UI Architect written-contract parity
         run: |
           set -euo pipefail
           python3 profiles/ui_architect/evals/contract_validator_alignment_20260908/run_cases.py
-
       - name: Prove UI Architect malformed-input fail-closed
         run: |
           set -euo pipefail
           python3 - <<'PY'
           import importlib.util
           from pathlib import Path
-
           path = Path('profiles/ui_architect/validators/validate_ui_architect_output.py')
           spec = importlib.util.spec_from_file_location('ui_validator_totality', path)
           assert spec is not None and spec.loader is not None
-          module = importlib.util.module_from_spec(spec)
-          spec.loader.exec_module(module)
-
-          cases = [
-              ([], 'ROOT_NOT_OBJECT'),
-              ({'output_type': 'PRODUCTION_UI_SPEC', 'deliverable_created': []}, 'DELIVERABLE_NOT_OBJECT'),
-              ({'output_type': 'PRODUCTION_UI_SPEC', 'deliverable_created': {'screen_definition': {}, 'component_tree': 'not-a-list'}}, 'COMPONENT_TREE_MISSING'),
-          ]
+          module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+          cases = [([], 'ROOT_NOT_OBJECT'), ({'output_type': 'PRODUCTION_UI_SPEC', 'deliverable_created': []}, 'DELIVERABLE_NOT_OBJECT'), ({'output_type': 'PRODUCTION_UI_SPEC', 'deliverable_created': {'screen_definition': {}, 'component_tree': 'not-a-list'}}, 'COMPONENT_TREE_MISSING')]
           for payload, expected in cases:
-              errors = module.validate(payload)
-              codes = {item.get('code') for item in errors if isinstance(item, dict)}
-              assert expected in codes, (expected, errors)
+              errors = module.validate(payload); codes = {item.get('code') for item in errors if isinstance(item, dict)}; assert expected in codes, (expected, errors)
           print('UI_ARCHITECT_MALFORMED_INPUT_FAIL_CLOSED_PASS 3/3')
           PY
-
+      - name: Evaluate fresh S26 Native Golden Run D producer candidate
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_s26_native_golden_d.py
+      - name: Upload Run D producer evidence for independent review
+        uses: actions/upload-artifact@v4
+        with:
+          name: s26-native-golden-run-d-producer-evidence
+          path: |
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/preflight_binding.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/governed_context_receipt.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/obligation_manifest.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/evaluation.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/execution_receipt.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/semantic_check_bundle.json
+          retention-days: 30
       - name: Preserve historical S26 candidates without requalification
         run: |
           set -euo pipefail
           python3 - <<'PY'
           import json
           from pathlib import Path
-
           root = Path('sandbox/lf_contract_gate_test/profile_execution_runtime/evidence')
           for run_dir in ('s26_native_golden_002', 's26_native_golden_003'):
-              evidence = root / run_dir
-              raw = json.load(open(evidence / 'raw_output.json', encoding='utf-8'))
-              producer = json.load(open(evidence / 'execution_receipt.json', encoding='utf-8'))
-              assert raw['worker'] == 'ui_architect', (run_dir, raw.get('worker'))
-              assert producer['downstream_authorized'] is False, (run_dir, producer)
-              assert producer['profile_code'] == 'PERFIL-UI-ARCHITECT', (run_dir, producer)
+              evidence = root / run_dir; raw = json.load(open(evidence / 'raw_output.json', encoding='utf-8')); producer = json.load(open(evidence / 'execution_receipt.json', encoding='utf-8'))
+              assert raw['worker'] == 'ui_architect', (run_dir, raw.get('worker')); assert producer['downstream_authorized'] is False, (run_dir, producer); assert producer['profile_code'] == 'PERFIL-UI-ARCHITECT', (run_dir, producer)
           print('PASS_S26_HISTORICAL_CANDIDATES_PRESERVED_NO_REQUALIFICATION')
           PY
-
       - name: Run model-weight guard regressions
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_model_weight_guard_tests.py
-
       - name: Enforce no model-weight acquisition in active S26 profile workflows
         run: |
           set -euo pipefail
