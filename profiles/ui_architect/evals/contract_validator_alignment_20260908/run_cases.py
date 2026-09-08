@@ -69,6 +69,24 @@ def repaired_run_c(run_c):
     return repaired
 
 
+def upstream_bound_run_c(run_c):
+    candidate = repaired_run_c(run_c)
+    action = candidate["deliverable_created"]["remediation_actions"][0]
+    rule = "page_count=max(1,ceil(total_records/page_size)); next_enabled=current_page<page_count"
+    refs = [
+        "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/input.txt",
+        "visual-artifact:ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+    ]
+    action["execution"]["desired_value"] = rule
+    action["precision_basis"] = {
+        "mode": "UPSTREAM_VALUE",
+        "source_refs": refs,
+        "value_or_rule": rule,
+        "proposal_status": "NOT_APPLICABLE",
+    }
+    return candidate
+
+
 def main():
     validate = load_validator()
     run_c = json.loads(RUN_C_PATH.read_text(encoding="utf-8"))
@@ -124,7 +142,18 @@ def main():
     assert "PRECISION_BASIS_MODE_INVALID" in error_codes(validate(bad_mode))
     passed += 1
 
-    print(f"UI_CONTRACT_VALIDATOR_ALIGNMENT_TESTS_PASS {passed}/6")
+    # Positive: UPSTREAM_VALUE executable value is bound exactly to its precision value/rule.
+    upstream_bound = upstream_bound_run_c(run_c)
+    assert validate(upstream_bound) == []
+    passed += 1
+
+    # Negative: source refs alone cannot disguise a hard-coded executable value that diverges from the bound upstream rule.
+    hardcoded = upstream_bound_run_c(run_c)
+    hardcoded["deliverable_created"]["remediation_actions"][0]["execution"]["desired_value"] = "page_count=3"
+    assert "UPSTREAM_VALUE_EXECUTION_BINDING_MISMATCH" in error_codes(validate(hardcoded))
+    passed += 1
+
+    print(f"UI_CONTRACT_VALIDATOR_ALIGNMENT_TESTS_PASS {passed}/8")
 
 
 if __name__ == "__main__":
