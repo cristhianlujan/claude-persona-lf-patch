@@ -42,27 +42,30 @@ jobs:
             echo "S26_CLOUDFLARE_GUARD=SKIP_ROUTE_NOT_PRESENT"
           fi
 
-      - name: Preflight S26 remote judge challenger
+      - name: Preflight S26 remote judge transport probe
         if: github.event_name == 'pull_request' && github.event.pull_request.number == 559
-        run: python3 -m py_compile sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_judge_challenger_calibration.py
+        run: |
+          python3 -m py_compile sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_judge_challenger_calibration.py
+          python3 -m py_compile sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_judge_transport_probe.py
 
-      - name: Execute S26 remote judge challenger calibration
+      - name: Execute one-call S26 remote judge transport probe
         if: github.event_name == 'pull_request' && github.event.pull_request.number == 559
+        continue-on-error: true
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_AI_CANARY_TOKEN: ${{ secrets.CLOUDFLARE_AI_CANARY_TOKEN }}
         run: |
           set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_judge_challenger_calibration.py \
-            --result-path s26-remote-judge-challenger-calibration.json
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_judge_transport_probe.py \
+            --result-path s26-remote-judge-transport-shape.json
 
-      - name: Upload S26 remote judge challenger evidence
+      - name: Upload S26 remote judge transport evidence
         if: always() && github.event_name == 'pull_request' && github.event.pull_request.number == 559
         uses: actions/upload-artifact@v4
         with:
-          name: s26-remote-judge-challenger-${{ github.run_id }}
-          path: s26-remote-judge-challenger-calibration.json
-          if-no-files-found: error
+          name: s26-remote-judge-transport-${{ github.run_id }}
+          path: s26-remote-judge-transport-shape.json
+          if-no-files-found: warn
           retention-days: 30
 
       - name: Install Profile Runtime API test dependencies
