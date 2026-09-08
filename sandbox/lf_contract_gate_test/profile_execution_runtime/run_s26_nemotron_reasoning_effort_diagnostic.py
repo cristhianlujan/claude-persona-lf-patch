@@ -96,6 +96,18 @@ def frozen_case() -> dict[str, str]:
         "The candidate may change presentation only; it may not change labels, business meaning or interaction semantics.",
         "The candidate must distinguish source-bound values from relative design choices.",
         "The diagnostic is synthetic and has no authority over S26 production or Golden state.",
+        "The header hierarchy is already valid and must not be visually demoted by the metadata treatment.",
+        "The data region has an existing empty-state treatment that is outside the diagnostic change scope.",
+        "The filter strip contains three existing controls and no fourth control is authorized.",
+        "The synthetic metadata line may use only the supplied neutral surface token and existing typography scale.",
+        "No new icon, badge, chip, tooltip, modal or disclosure interaction is authorized by the synthetic facts.",
+        "The candidate must not claim that the neutral surface token is canonical elevation because no such authority is supplied.",
+        "The candidate must keep the existing screen title wording exactly unchanged.",
+        "The candidate must keep the existing data-region pagination behavior unchanged.",
+        "The candidate must not imply refresh recency beyond the literal metadata already shown by the synthetic screen.",
+        "The candidate must not convert informational metadata into a success, warning, error or urgency state.",
+        "The candidate must preserve the current primary-action label and cannot introduce a competing call to action.",
+        "Any unsupported accessibility preservation claim must remain unknown rather than being asserted as fact.",
     ]
     candidate = {
         "target": "synthetic metadata line",
