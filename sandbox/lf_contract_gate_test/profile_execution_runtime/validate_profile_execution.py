@@ -10,7 +10,7 @@ import re
 from pathlib import Path
 from typing import Any, Iterable
 
-from validate_semantic_judge import validate_semantic_judge_receipt
+from validate_semantic_quality import validate_semantic_quality_receipt
 
 RECEIPT_TYPE = "PROFILE_EXECUTION_RECEIPT_V1"
 OPERATION_CODE = "EJECUCION_PERFIL_LF"
@@ -200,7 +200,7 @@ def authorize_downstream(
         return {"status": "BLOCK_PIPELINE", "blocking_codes": errors}
     if recipient in PROVENANCE_ONLY_RECIPIENTS:
         return {"status": "PASS_PROFILE_EXECUTION_PROVENANCE", "blocking_codes": [], "receipt_sha256": receipt["receipt_sha256"], "authorized_recipient": recipient}
-    semantic_errors = validate_semantic_judge_receipt(
+    semantic_errors = validate_semantic_quality_receipt(
         semantic_receipt, expected_bundle=semantic_check_bundle,
         expected_obligation_manifest=semantic_obligation_manifest,
         expected_raw_output=expected_raw_output, execution_receipt=receipt,
