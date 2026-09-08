@@ -3,11 +3,8 @@ name: S26 Cloudflare Active Route Qualification
 on:
   pull_request:
     paths:
-      - ".github/workflows/s26-holdout-manifest.yml"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_model_download_guard.py"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_fresh_qualification.py"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_cloudflare_fresh_canonical_plan_v1.json"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_runtime_route_v1.json"
+      - ".github/workflows/**"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/**"
 
 permissions:
   contents: read
@@ -41,7 +38,28 @@ jobs:
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_model_download_guard.py --repo-root .
 
+      - name: Determine whether fresh Cloudflare qualification is required
+        id: scope
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, subprocess
+          changed=set(subprocess.check_output(['git','diff','--name-only','HEAD^1','HEAD'],text=True).splitlines())
+          exact={
+              '.github/workflows/s26-holdout-manifest.yml',
+              'sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_fresh_qualification.py',
+              'sandbox/lf_contract_gate_test/profile_execution_runtime/s26_cloudflare_fresh_canonical_plan_v1.json',
+              'sandbox/lf_contract_gate_test/profile_execution_runtime/s26_runtime_route_v1.json',
+          }
+          required=bool(changed & exact) or any(path.startswith('.github/workflows/s26-') for path in changed)
+          with open(os.environ['GITHUB_OUTPUT'],'a',encoding='utf-8') as handle:
+              handle.write('qualification_required='+('true' if required else 'false')+'\n')
+          print('S26_QUALIFICATION_REQUIRED='+('true' if required else 'false'))
+          print('S26_CURRENT_COMMIT_CHANGED_FILES='+','.join(sorted(changed)))
+          PY
+
       - name: Checkout frozen S26 authority
+        if: steps.scope.outputs.qualification_required == 'true'
         uses: actions/checkout@v4
         with:
           ref: ${{ env.S26_AUTHORITY_REF }}
@@ -49,6 +67,7 @@ jobs:
           fetch-depth: 1
 
       - name: Preflight canonical dependency
+        if: steps.scope.outputs.qualification_required == 'true'
         run: |
           set -euo pipefail
           python3 -m pip install --disable-pip-version-check 'jsonschema==4.26.0'
@@ -62,6 +81,7 @@ jobs:
           PY
 
       - name: Execute fresh one-shot Cloudflare qualification
+        if: steps.scope.outputs.qualification_required == 'true'
         env:
           S26_AUTHORITY_ROOT: ${{ github.workspace }}/s26-authority
         run: |
@@ -70,6 +90,7 @@ jobs:
             --result-path "$GITHUB_WORKSPACE/s26-cloudflare-fresh-result.json"
 
       - name: Verify active-route safety markers
+        if: steps.scope.outputs.qualification_required == 'true'
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -93,7 +114,7 @@ jobs:
           PY
 
       - name: Upload durable Cloudflare qualification evidence
-        if: always()
+        if: always() && steps.scope.outputs.qualification_required == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: s26-cloudflare-active-route-${{ github.run_id }}
