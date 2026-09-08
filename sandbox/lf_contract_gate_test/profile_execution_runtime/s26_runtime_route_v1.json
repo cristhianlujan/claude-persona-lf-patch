@@ -1,0 +1,17 @@
+{
+  "schema": "S26_RUNTIME_ROUTE_V1",
+  "strategy": "S26",
+  "status": "ACTIVE_SANDBOX_PRIMARY",
+  "environment_scope": "NON_PRODUCTION",
+  "primary_runtime": "CLOUDFLARE_WORKERS_AI",
+  "provider": "cloudflare_workers_ai",
+  "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+  "authority_ref": "fcc2b0d57e36a31c26f38acc2510b193aac988c8",
+  "cloudflare_plan": "WORKERS_FREE_ZERO_COST_ONLY",
+  "paid_fallback": "DISABLED",
+  "local_gguf_fallback": "DISABLED",
+  "model_download": "DISABLED",
+  "limit_behavior": "FAIL_CLOSED",
+  "production_promotion": "NOT_AUTHORIZED",
+  "semantic_disposition": "UNDER_INVESTIGATION_NO_DISCARD_NO_PROMOTE"
+}

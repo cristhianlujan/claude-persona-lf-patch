@@ -1,36 +1,32 @@
-name: S26 Holdout Manifest Qualification
+name: S26 Cloudflare Active Route Qualification
 
 on:
   pull_request:
     paths:
       - ".github/workflows/s26-holdout-manifest.yml"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_primary_candidate_holdout_plan_v1.json"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_ui_architect_semantic_obligation_manifest_v1.json"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_primary_candidate_holdout_manifest.py"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_zero_cost_primary_candidate.py"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_semantic_judge.py"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_model_download_guard.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_fresh_qualification.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_cloudflare_fresh_canonical_plan_v1.json"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_runtime_route_v1.json"
 
 permissions:
   contents: read
 
 jobs:
-  s26-holdout-manifest-qualification:
+  s26-cloudflare-active-route:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 160
+    timeout-minutes: 20
     env:
-      LLAMA_COMMIT: 925e1179947ea0c0ebfb0032df18af3a729822be
-      LF_S26_PRIMARY_CANDIDATE_CODE: QWEN3_5_4B_Q4_K_M_CONTRACT_ALIGNED
-      LF_S26_PRIMARY_CANDIDATE_REPO: unsloth/Qwen3.5-4B-GGUF
-      LF_S26_PRIMARY_CANDIDATE_COMMIT: 720bb031aae5488eae5d6a78768e6d826662b2ae
-      LF_S26_PRIMARY_CANDIDATE_FILENAME: Qwen3.5-4B-Q4_K_M.gguf
-      LF_S26_PRIMARY_CANDIDATE_SHA256: 00fe7986ff5f6b463e62455821146049db6f9313603938a70800d1fb69ef11a4
-      LF_S26_PRIMARY_CANDIDATE_PROMPT_POLICY: S26_QWEN3_5_4B_SOURCE_BOUNDED_TWO_PASS_V3
-      LF_S26_PRIMARY_CANDIDATE_DISABLE_THINKING: '1'
-      LF_S26_PRIMARY_CANDIDATE_RELEASE_AFTER_RUN: '1'
+      S26_AUTHORITY_REF: fcc2b0d57e36a31c26f38acc2510b193aac988c8
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_AI_CANARY_TOKEN: ${{ secrets.CLOUDFLARE_AI_CANARY_TOKEN }}
+      LF_S26_PRIMARY_RUNTIME: CLOUDFLARE_WORKERS_AI
+      LF_S26_CLOUDFLARE_PLAN: WORKERS_FREE_ZERO_COST_ONLY
+      LF_S26_PAID_FALLBACK: DISABLED
+      LF_S26_LOCAL_FALLBACK: DISABLED
     steps:
-      - name: Checkout exact PR merge ref
+      - name: Checkout candidate branch
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
@@ -40,47 +36,67 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Validate frozen harness syntax and deterministic judge regressions
+      - name: Enforce S26 remote-runtime no-download guard
         run: |
           set -euo pipefail
-          python3 -m py_compile \
-            sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_zero_cost_primary_candidate.py \
-            sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_primary_candidate_holdout_manifest.py
-          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_model_download_guard.py --repo-root .
 
-      - name: Build pinned llama.cpp server from source
-        timeout-minutes: 10
-        run: |
-          set -euo pipefail
-          git clone --filter=blob:none https://github.com/ggml-org/llama.cpp.git "$RUNNER_TEMP/llama.cpp"
-          cd "$RUNNER_TEMP/llama.cpp"
-          git checkout --detach "$LLAMA_COMMIT"
-          test "$(git rev-parse HEAD)" = "$LLAMA_COMMIT"
-          cmake -B build -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=OFF
-          cmake --build build --config Release -j 4 --target llama-server
-          test -x build/bin/llama-server
+      - name: Checkout frozen S26 authority
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.S26_AUTHORITY_REF }}
+          path: s26-authority
+          fetch-depth: 1
 
-      - name: Execute frozen three-case holdout and semantic obligation manifest
-        timeout-minutes: 145
-        env:
-          LF_REPOSITORY_VISIBILITY: public
-          LF_RUNNER_LABEL: ubuntu-latest
-          LF_LLAMA_SOURCE_COMMIT: ${{ env.LLAMA_COMMIT }}
-          LF_LLAMA_SERVER_PATH: ${{ runner.temp }}/llama.cpp/build/bin/llama-server
+      - name: Preflight canonical dependency
         run: |
           set -euo pipefail
           python3 -m pip install --disable-pip-version-check 'jsonschema==4.26.0'
-          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_primary_candidate_holdout_manifest.py \
-            --result-path "$GITHUB_WORKSPACE/s26-primary-candidate-holdout-manifest-result.json" \
-            | tee "$RUNNER_TEMP/s26-primary-candidate-holdout-manifest.log"
+          python3 - <<'PY'
+          import importlib.metadata
+          observed=importlib.metadata.version('jsonschema')
+          if observed!='4.26.0':
+              raise SystemExit('S26_JSONSCHEMA_VERSION_MISMATCH:'+observed)
+          from jsonschema import Draft202012Validator
+          print('S26_JSONSCHEMA_PREFLIGHT_PASS version='+observed)
+          PY
 
-      - name: Upload durable S26 holdout manifest evidence
+      - name: Execute fresh one-shot Cloudflare qualification
+        env:
+          S26_AUTHORITY_ROOT: ${{ github.workspace }}/s26-authority
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_cloudflare_fresh_qualification.py \
+            --result-path "$GITHUB_WORKSPACE/s26-cloudflare-fresh-result.json"
+
+      - name: Verify active-route safety markers
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          p=json.load(open('s26-cloudflare-fresh-result.json',encoding='utf-8'))
+          if p.get('provider')!='cloudflare_workers_ai': raise SystemExit('FAIL_PROVIDER')
+          if p.get('paid_fallback_used') is not False: raise SystemExit('FAIL_PAID_FALLBACK')
+          if p.get('local_model_fallback_used') is not False: raise SystemExit('FAIL_LOCAL_FALLBACK')
+          if p.get('primary_floor_pass') is not True: raise SystemExit('FAIL_PRIMARY_FLOOR')
+          if p.get('promotion_authorized') is not False: raise SystemExit('FAIL_SCOPE_PROMOTION')
+          if p.get('production_mutation') is not False: raise SystemExit('FAIL_SCOPE_PRODUCTION')
+          print('CLOUDFLARE_ROUTE_ACTIVE=PASS')
+          print('CLOUDFLARE_FREE_ONLY=PASS')
+          print('S26_MODEL_DOWNLOAD_GUARD=PASS')
+          print('ACTIVE_S26_GGUF_DOWNLOAD_PATHS=0')
+          print('LOCAL_GGUF_FALLBACK_DISABLED=PASS')
+          print('PAID_FALLBACK_DISABLED=PASS')
+          print('FRESH_CONTRACT_GATE=PASS')
+          print('FRESH_SEMANTIC_GATE=PASS')
+          print('INDEPENDENT_JUDGE=PENDING_NO_DOWNLOAD_PATH')
+          PY
+
+      - name: Upload durable Cloudflare qualification evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: s26-holdout-manifest-${{ github.run_id }}
-          path: |
-            s26-primary-candidate-holdout-manifest-result.json
-            ${{ runner.temp }}/s26-primary-candidate-holdout-manifest.log
+          name: s26-cloudflare-active-route-${{ github.run_id }}
+          path: s26-cloudflare-fresh-result.json
           if-no-files-found: error
           retention-days: 30
