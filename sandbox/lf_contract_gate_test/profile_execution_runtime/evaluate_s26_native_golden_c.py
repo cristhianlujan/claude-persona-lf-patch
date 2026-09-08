@@ -148,7 +148,7 @@ def main() -> int:
     if bad_deterministic:
         print(json.dumps({"status": "BLOCK_DETERMINISTIC_OBLIGATION", "checks": bad_deterministic}, indent=2))
         return 1
-    semantic_ids = sorted(item.check_id for item in semantic)
+    semantic_ids = sorted(item["check_id"] for item in semantic)
     if semantic_ids != ["OVERFLOW-DIRECTION", "PAGINATION-DIRECTION"]:
         raise SystemExit("BLOCK_SEMANTIC_COVERAGE")
 
