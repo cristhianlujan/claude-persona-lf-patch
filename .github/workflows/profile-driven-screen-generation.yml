@@ -13,8 +13,10 @@ on:
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_semantic_quality_tests.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_b.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_s26_native_golden_b.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_c.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_001/**"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/**"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/**"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/guard_no_model_weight_acquisition.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_model_weight_guard_tests.py"
       - ".github/workflows/profile-driven-screen-generation.yml"
@@ -153,6 +155,35 @@ jobs:
               'gov037_resolved_evidence_count': len(resolved),
               'source_artifact_sha256': source_observed['sha256'],
           }, indent=2))
+          PY
+
+      - name: Resolve governed-context GPT Native Golden C preflight
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_c.py \
+            --output /tmp/s26-native-golden-c-preflight.json
+          cat /tmp/s26-native-golden-c-preflight.json
+          python3 - <<'PY'
+          import json
+          data=json.load(open('/tmp/s26-native-golden-c-preflight.json',encoding='utf-8'))
+          assert data['verdict']=='PASS', data
+          assert data['execution_id']=='EXEC-S26-N08C-GPT-NATIVE-GOLDEN-C-001', data
+          receipt=data['governed_context_receipt']
+          assert receipt['schema']=='lf-governed-context-receipt/v1', receipt
+          assert receipt['request_id']==data['execution_id'], receipt
+          assert len(receipt['card_receipts'])==1, receipt
+          assert len(receipt['adapter_receipts'])==1, receipt
+          card=receipt['card_receipts'][0]
+          adapter=receipt['adapter_receipts'][0]
+          assert card['selected_sections']==['Role','Decision lenses','Hard blockers'], card
+          assert card['request_id']==data['execution_id'], card
+          assert adapter['adapter_code']=='ADAPTER-LF-SHELL-PROFILE-20260827', adapter
+          assert adapter['assurance_revision']=='v2', adapter
+          assert adapter['request_id']==data['execution_id'], adapter
+          assert data['native_metrics_prebound']['token_usage_default']=='NOT_OBSERVED', data
+          assert data['card_jit_chars'] <= 4000, data
+          assert data['adapter_capsule_chars'] <= 1800, data
+          print('PASS_S26_NATIVE_GOLDEN_C_PREFLIGHT')
           PY
 
       - name: Keep first GPT native candidate as structural regression evidence
