@@ -29,6 +29,8 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -80,6 +82,77 @@ jobs:
           assert data['fail_closed_proven'] is True, data
           assert sorted(data['semantic_checks_pending'])==['OVERFLOW-DIRECTION','PAGINATION-DIRECTION'], data
           print('PASS_S26_NATIVE_GOLDEN_B_PRE_INDEPENDENT_REVIEW')
+          PY
+
+      - name: Validate materialized independent Quality Pack receipt
+        run: |
+          set -euo pipefail
+          RECEIPT=sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/independent_semantic_review_receipt.json
+          python3 profiles/quality_pack/validators/validate_independent_semantic_review.py "$RECEIPT"
+          python3 - <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          runtime = Path('sandbox/lf_contract_gate_test/profile_execution_runtime').resolve()
+          sys.path.insert(0, str(runtime))
+          from validate_profile_execution import authorize_downstream
+          from validate_semantic_quality import validate_semantic_quality_receipt
+
+          validators = Path('profiles/quality_pack/validators').resolve()
+          sys.path.insert(0, str(validators))
+          from trusted_ref_resolver import TrustedRefResolver
+
+          evidence = runtime / 'evidence' / 's26_native_golden_002'
+          receipt = json.load(open(evidence / 'independent_semantic_review_receipt.json', encoding='utf-8'))
+          producer = json.load(open(evidence / 'execution_receipt.json', encoding='utf-8'))
+          raw = json.load(open(evidence / 'raw_output.json', encoding='utf-8'))
+          input_literal = (evidence / 'input.txt').read_text(encoding='utf-8')
+          preflight = json.load(open('/tmp/s26-native-golden-b-preflight.json', encoding='utf-8'))
+          evaluation = json.load(open('/tmp/s26-native-golden-b-evaluation.json', encoding='utf-8'))
+
+          assert producer == evaluation['execution_receipt'], 'PRODUCER_RECEIPT_READBACK_MISMATCH'
+          errors = validate_semantic_quality_receipt(
+              receipt,
+              expected_bundle=evaluation['check_bundle'],
+              expected_obligation_manifest=preflight['obligation_manifest'],
+              expected_raw_output=raw,
+              execution_receipt=producer,
+          )
+          assert errors == [], errors
+
+          downstream = authorize_downstream(
+              profile_execution_required=True,
+              recipient='INTERNAL_AGENT',
+              receipt=producer,
+              expected_profile_code='PERFIL-UI-ARCHITECT',
+              expected_input_literal=input_literal,
+              expected_raw_output=raw,
+              expected_profile_source_sha256=preflight['profile_source_sha256'],
+              semantic_receipt=receipt,
+              semantic_check_bundle=evaluation['check_bundle'],
+              semantic_obligation_manifest=preflight['obligation_manifest'],
+          )
+          assert downstream['status'] == 'PASS_PROFILE_EXECUTION_AND_SEMANTIC_QUALITY', downstream
+          assert producer['downstream_authorized'] is False, producer
+
+          resolver = TrustedRefResolver(Path.cwd())
+          resolved = []
+          for item in receipt['quality_review']['evidence_map']:
+              observed = resolver.resolve(item['evidence_ref'])
+              assert observed['sha256'] == item['evidence_sha256'], (item, observed['sha256'])
+              resolved.append({'criterion': item['criterion'], 'sha256': observed['sha256']})
+          source_observed = resolver.resolve(receipt['source_bundle']['artifact_ref'])
+          assert source_observed['sha256'] == receipt['source_bundle']['artifact_byte_sha256'], source_observed
+
+          print(json.dumps({
+              'status': 'PASS_S26_NATIVE_GOLDEN_B_INDEPENDENT_QUALITY',
+              'semantic_errors': errors,
+              'downstream_status': downstream['status'],
+              'receipt_sha256': receipt['receipt_sha256'],
+              'gov037_resolved_evidence_count': len(resolved),
+              'source_artifact_sha256': source_observed['sha256'],
+          }, indent=2))
           PY
 
       - name: Keep first GPT native candidate as structural regression evidence
