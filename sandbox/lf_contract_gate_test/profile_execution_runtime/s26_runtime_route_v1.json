@@ -12,6 +12,21 @@
   "local_gguf_fallback": "DISABLED",
   "model_download": "DISABLED",
   "limit_behavior": "FAIL_CLOSED",
+  "semantic_judge_status": "ACTIVE_SANDBOX_SEMANTIC_AUTHORITY",
+  "semantic_judge_runtime": "CLOUDFLARE_WORKERS_AI",
+  "semantic_judge_provider": "cloudflare_workers_ai",
+  "semantic_judge_model": "@cf/nvidia/nemotron-3-120b-a12b",
+  "semantic_judge_model_binding_sha256": "345f068350a56ea809ea7de5e7a711a8f06dc0af881d555a50b42ccb9419ab39",
+  "semantic_judge_calibration_sha256": "ce96a3594aaba21629cdc54ac248dcf019068a52b095ffcef80d9b71379af5cf",
+  "semantic_judge_calibration_artifact_digest": "sha256:ee0a74a18406c323a5428700e8d7810038ff554a07898da11b112e8e6aea8621",
+  "semantic_judge_authority_decision_ref": "S26-REMOTE-JUDGE-CHALLENGER-20260908",
+  "semantic_judge_provider_shared_with_primary": true,
+  "semantic_judge_shared_provider_owner_approved": true,
+  "semantic_judge_model_download": "DISABLED",
+  "semantic_judge_local_fallback": "DISABLED",
+  "semantic_judge_paid_fallback": "DISABLED",
+  "semantic_judge_limit_behavior": "FAIL_CLOSED",
+  "semantic_previous_authority": "QWEN2_5_VL_7B_Q4_K_M_HISTORICAL_SUPERSEDED_FOR_ACTIVE_S26_ROUTE",
   "production_promotion": "NOT_AUTHORIZED",
-  "semantic_disposition": "UNDER_INVESTIGATION_NO_DISCARD_NO_PROMOTE"
+  "semantic_disposition": "REMOTE_AUTHORITY_ACTIVE_SANDBOX_GOLDEN_PENDING"
 }

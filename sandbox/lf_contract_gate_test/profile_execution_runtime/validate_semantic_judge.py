@@ -21,18 +21,15 @@ from semantic_obligation_manifest import (
 )
 
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
-ALLOWED_DECIDERS = {"PYTHON_DETERMINISTIC", "LOCAL_SEMANTIC_MODEL"}
-SEMANTIC_DECIDER = "LOCAL_SEMANTIC_MODEL"
+ALLOWED_DECIDERS = {"PYTHON_DETERMINISTIC", "LOCAL_SEMANTIC_MODEL", "REMOTE_SEMANTIC_MODEL"}
+SEMANTIC_DECIDERS = {"LOCAL_SEMANTIC_MODEL", "REMOTE_SEMANTIC_MODEL"}
 DETERMINISTIC_DECIDER = "PYTHON_DETERMINISTIC"
-ALLOWED_SEMANTIC_ADAPTER_ID = "github-standard-qwen25vl7b-semantic-minijudge-server-v3"
-ALLOWED_SEMANTIC_VERIFIER_ID = "github-standard-qwen25vl7b-semantic-minijudge-readback-v3"
-ALLOWED_SEMANTIC_MODEL_ID = (
-    "ggml-org/Qwen2.5-VL-7B-Instruct-GGUF@"
-    "508edd0afaa66bb9e9f40587acc2184f02daf1f6:"
-    "Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf"
-)
-ALLOWED_SEMANTIC_MODEL_SHA256 = "9258bf05b12686d097ff3b6b18d968ab393649780aa2b3cd67fec43d50554392"
-ALLOWED_LLAMA_SOURCE_COMMIT = "925e1179947ea0c0ebfb0032df18af3a729822be"
+ALLOWED_SEMANTIC_ADAPTER_ID = "cloudflare-workers-ai-nemotron3-120b-semantic-minijudge-v1"
+ALLOWED_SEMANTIC_VERIFIER_ID = "cloudflare-workers-ai-nemotron3-120b-semantic-minijudge-readback-v1"
+ALLOWED_SEMANTIC_MODEL_ID = "@cf/nvidia/nemotron-3-120b-a12b"
+ALLOWED_SEMANTIC_MODEL_BINDING_SHA256 = "345f068350a56ea809ea7de5e7a711a8f06dc0af881d555a50b42ccb9419ab39"
+ALLOWED_SEMANTIC_CALIBRATION_SHA256 = "ce96a3594aaba21629cdc54ac248dcf019068a52b095ffcef80d9b71379af5cf"
+ALLOWED_AUTHORITY_DECISION_REF = "S26-REMOTE-JUDGE-CHALLENGER-20260908"
 
 
 def _text(value: Any) -> bool:
@@ -80,13 +77,7 @@ def validate_semantic_judge_receipt(
     expected_raw_output: Any,
     execution_receipt: dict[str, Any],
 ) -> list[str]:
-    """Validate semantic receipt plus complete pre-bound obligation coverage.
-
-    The obligation manifest is created before model execution and its digest is bound into
-    the execution request/receipt. The check bundle is then reconstructed deterministically
-    from that manifest and the exact RAW output. A caller cannot obtain PASS by supplying a
-    manual subset of checks, changing a rule, or dropping an enumerated obligation.
-    """
+    """Validate semantic receipt plus complete pre-bound obligation coverage."""
 
     errors: list[str] = []
     bundle, bundle_errors = _bundle_or_errors(expected_bundle)
@@ -125,7 +116,10 @@ def validate_semantic_judge_receipt(
     except ObligationManifestError as exc:
         errors.append(f"SEMANTIC_BUNDLE_DERIVATION_FAILED:{exc}")
         expected_derived_bundle = None
-    if expected_derived_bundle is not None and canonical_json_sha256(bundle) != canonical_json_sha256(expected_derived_bundle):
+    if (
+        expected_derived_bundle is not None
+        and canonical_json_sha256(bundle) != canonical_json_sha256(expected_derived_bundle)
+    ):
         errors.append("SEMANTIC_CHECK_BUNDLE_NOT_DERIVED_FROM_MANIFEST")
 
     for field in (
@@ -231,7 +225,7 @@ def validate_semantic_judge_receipt(
         if decided_by not in ALLOWED_DECIDERS:
             errors.append(f"SEMANTIC_CHECK_{check_id}_DECIDER_INVALID")
         expected_type = expected_checks[check_id]["check_type"]
-        if expected_type == "SEMANTIC_RELATION" and decided_by != SEMANTIC_DECIDER:
+        if expected_type == "SEMANTIC_RELATION" and decided_by not in SEMANTIC_DECIDERS:
             errors.append(f"SEMANTIC_CHECK_{check_id}_MODEL_DECIDER_REQUIRED")
         if expected_type != "SEMANTIC_RELATION" and decided_by != DETERMINISTIC_DECIDER:
             errors.append(f"SEMANTIC_CHECK_{check_id}_DETERMINISTIC_DECIDER_REQUIRED")
@@ -274,14 +268,34 @@ def validate_semantic_judge_receipt(
             errors.append(f"SEMANTIC_RUNTIME_{check_id}_ADAPTER_NOT_ALLOWED")
         if adapter.get("model_id") != ALLOWED_SEMANTIC_MODEL_ID:
             errors.append(f"SEMANTIC_RUNTIME_{check_id}_MODEL_NOT_ALLOWED")
-        if adapter.get("model_sha256") != ALLOWED_SEMANTIC_MODEL_SHA256:
-            errors.append(f"SEMANTIC_RUNTIME_{check_id}_MODEL_SHA256_MISMATCH")
-        if adapter.get("llama_source_commit") != ALLOWED_LLAMA_SOURCE_COMMIT:
-            errors.append(f"SEMANTIC_RUNTIME_{check_id}_LLAMA_COMMIT_MISMATCH")
-        if adapter.get("provider") != "local_llama_cpp_github_standard_public":
+        if adapter.get("model_binding_sha256") != ALLOWED_SEMANTIC_MODEL_BINDING_SHA256:
+            errors.append(f"SEMANTIC_RUNTIME_{check_id}_MODEL_BINDING_SHA256_MISMATCH")
+        if adapter.get("calibration_sha256") != ALLOWED_SEMANTIC_CALIBRATION_SHA256:
+            errors.append(f"SEMANTIC_RUNTIME_{check_id}_CALIBRATION_SHA256_MISMATCH")
+        if adapter.get("authority_decision_ref") != ALLOWED_AUTHORITY_DECISION_REF:
+            errors.append(f"SEMANTIC_RUNTIME_{check_id}_AUTHORITY_DECISION_MISMATCH")
+        if adapter.get("authority_status") != "ACTIVE_SANDBOX_SEMANTIC_AUTHORITY":
+            errors.append(f"SEMANTIC_RUNTIME_{check_id}_AUTHORITY_STATUS_INVALID")
+        if adapter.get("provider") != "cloudflare_workers_ai":
             errors.append(f"SEMANTIC_RUNTIME_{check_id}_PROVIDER_INVALID")
-        if adapter.get("transport") != "LOCALHOST_LLAMA_SERVER":
+        if adapter.get("transport") != "CLOUDFLARE_WORKERS_AI_REST":
             errors.append(f"SEMANTIC_RUNTIME_{check_id}_TRANSPORT_INVALID")
+        if adapter.get("cloudflare_plan") != "WORKERS_FREE_ZERO_COST_ONLY":
+            errors.append(f"SEMANTIC_RUNTIME_{check_id}_FREE_ONLY_INVALID")
+        if adapter.get("limit_behavior") != "FAIL_CLOSED":
+            errors.append(f"SEMANTIC_RUNTIME_{check_id}_LIMIT_BEHAVIOR_INVALID")
+        if adapter.get("provider_infrastructure_shared_with_primary") is not True:
+            errors.append(f"SEMANTIC_RUNTIME_{check_id}_SHARED_PROVIDER_FLAG_MISSING")
+        if adapter.get("shared_provider_owner_approved") is not True:
+            errors.append(f"SEMANTIC_RUNTIME_{check_id}_SHARED_PROVIDER_APPROVAL_MISSING")
+        if adapter.get("provider_managed_model_weights") is not True:
+            errors.append(f"SEMANTIC_RUNTIME_{check_id}_PROVIDER_MANAGED_MODEL_REQUIRED")
+        if adapter.get("model_weights_downloaded") is not False:
+            errors.append(f"SEMANTIC_RUNTIME_{check_id}_MODEL_DOWNLOAD_FORBIDDEN")
+        if adapter.get("local_model_fallback_used") is not False:
+            errors.append(f"SEMANTIC_RUNTIME_{check_id}_LOCAL_FALLBACK_FORBIDDEN")
+        if adapter.get("paid_fallback_used") is not False:
+            errors.append(f"SEMANTIC_RUNTIME_{check_id}_PAID_FALLBACK_FORBIDDEN")
         if adapter.get("repository_visibility") != "public":
             errors.append(f"SEMANTIC_RUNTIME_{check_id}_VISIBILITY_INVALID")
         if adapter.get("runner_label") != "ubuntu-latest":

@@ -42,6 +42,46 @@ jobs:
             echo "S26_CLOUDFLARE_GUARD=SKIP_ROUTE_NOT_PRESENT"
           fi
 
+      - name: Preflight S26 Nemotron semantic authority code
+        if: github.event_name == 'pull_request' && github.event.pull_request.number == 559
+        run: |
+          python3 -m py_compile \
+            sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_semantic_judge.py \
+            sandbox/lf_contract_gate_test/profile_execution_runtime/validate_semantic_judge.py \
+            sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_model_download_guard.py \
+            sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_semantic_authority_acceptance.py
+
+      - name: Execute one-call S26 Nemotron semantic authority acceptance
+        id: nemotron_authority_acceptance
+        if: github.event_name == 'pull_request' && github.event.pull_request.number == 559
+        continue-on-error: true
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_AI_CANARY_TOKEN: ${{ secrets.CLOUDFLARE_AI_CANARY_TOKEN }}
+          LF_REPOSITORY_VISIBILITY: public
+          LF_RUNNER_LABEL: ubuntu-latest
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONPATH=sandbox/lf_contract_gate_test/profile_execution_runtime \
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_semantic_authority_acceptance.py \
+            --result-path s26-nemotron-authority-acceptance.json
+
+      - name: Upload S26 Nemotron semantic authority evidence
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.number == 559
+        uses: actions/upload-artifact@v4
+        with:
+          name: s26-nemotron-authority-acceptance-${{ github.run_id }}
+          path: s26-nemotron-authority-acceptance.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Enforce S26 Nemotron semantic authority acceptance
+        if: github.event_name == 'pull_request' && github.event.pull_request.number == 559 && steps.nemotron_authority_acceptance.outcome != 'success'
+        run: |
+          echo "S26_NEMOTRON_AUTHORITY_ACCEPTANCE=FAIL_CLOSED"
+          exit 1
+
       - name: Install Profile Runtime API test dependencies
         run: python -m pip install --disable-pip-version-check -r services/profile_runtime_api/requirements-dev.in
 
@@ -83,7 +123,7 @@ jobs:
           failures=0
           for test_file in "${tests[@]}"; do
             echo "RUNNING=${test_file}"
-            if python "${test_file}"; then
+            if python "$test_file"; then
               echo "RESULT=PASS TEST=${test_file}"
             else
               rc=$?

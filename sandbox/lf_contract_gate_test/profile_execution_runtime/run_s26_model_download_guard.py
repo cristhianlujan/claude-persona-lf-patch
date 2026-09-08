@@ -11,6 +11,7 @@ from pathlib import Path
 ROUTE_REL = Path("sandbox/lf_contract_gate_test/profile_execution_runtime/s26_runtime_route_v1.json")
 WORKFLOW_ROOT = Path(".github/workflows")
 LEGACY_STORY_WORKFLOW = Path(".github/workflows/story-agent-evidence-verifier.yml")
+CANONICAL_JUDGE_ADAPTER = Path("sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_semantic_judge.py")
 FORBIDDEN = {
     "HUGGINGFACE_MODEL_DOWNLOAD": re.compile(r"huggingface\.co", re.I),
     "GGUF_WEIGHT_REFERENCE": re.compile(r"\.gguf(?:\b|\?)", re.I),
@@ -37,6 +38,15 @@ def _load_route(root: Path) -> dict:
         "local_gguf_fallback": "DISABLED",
         "model_download": "DISABLED",
         "limit_behavior": "FAIL_CLOSED",
+        "semantic_judge_status": "ACTIVE_SANDBOX_SEMANTIC_AUTHORITY",
+        "semantic_judge_runtime": "CLOUDFLARE_WORKERS_AI",
+        "semantic_judge_provider": "cloudflare_workers_ai",
+        "semantic_judge_model": "@cf/nvidia/nemotron-3-120b-a12b",
+        "semantic_judge_model_download": "DISABLED",
+        "semantic_judge_local_fallback": "DISABLED",
+        "semantic_judge_paid_fallback": "DISABLED",
+        "semantic_judge_limit_behavior": "FAIL_CLOSED",
+        "semantic_judge_shared_provider_owner_approved": True,
     }
     bad = {key: payload.get(key) for key, expected in required.items() if payload.get(key) != expected}
     if bad:
@@ -58,7 +68,10 @@ def _scan_text(label: str, text: str, violations: list[str]) -> None:
 def _pr_changed_files(root: Path) -> set[str]:
     try:
         raw = subprocess.check_output(
-            ["git", "diff", "--name-only", "HEAD^1", "HEAD"], cwd=root, text=True, stderr=subprocess.DEVNULL
+            ["git", "diff", "--name-only", "HEAD^1", "HEAD"],
+            cwd=root,
+            text=True,
+            stderr=subprocess.DEVNULL,
         )
     except Exception:
         return set()
@@ -96,6 +109,9 @@ def main() -> int:
         raise SystemExit("S26_MODEL_DOWNLOAD_GUARD_FAIL no_active_s26_workflow")
     if not cloudflare_route_seen:
         violations.append("CLOUDFLARE_ROUTE_MISSING:active_s26_workflows")
+
+    # Always scan the active semantic authority adapter even if a workflow reaches it indirectly.
+    referenced_scripts.add(CANONICAL_JUDGE_ADAPTER)
 
     guard_rel = Path(__file__).resolve().relative_to(root)
     for relative in sorted(referenced_scripts):
@@ -138,6 +154,11 @@ def main() -> int:
     print("PAID_FALLBACK_DISABLED=PASS")
     print("S26_ACTIVE_WORKFLOW_COUNT=" + str(len(in_scope)))
     print("S26_PRIMARY_RUNTIME=" + str(route["primary_runtime"]))
+    print("S26_SEMANTIC_AUTHORITY=NEMOTRON_REMOTE")
+    print("S26_SEMANTIC_JUDGE_MODEL=" + str(route["semantic_judge_model"]))
+    print("S26_SEMANTIC_JUDGE_DOWNLOAD_DISABLED=PASS")
+    print("S26_SEMANTIC_JUDGE_PAID_FALLBACK_DISABLED=PASS")
+    print("S26_SHARED_PROVIDER_OWNER_APPROVAL=PASS")
     return 0
 
 
