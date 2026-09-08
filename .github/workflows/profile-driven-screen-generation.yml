@@ -6,6 +6,8 @@ on:
       - "sandbox/lf_contract_gate_test/profile_driven_screen_generation/**"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/profile_execution_contract.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_execution_contract_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/contract_bound_profile_runtime.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_contract_bound_runtime_tests.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/guard_no_model_weight_acquisition.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_model_weight_guard_tests.py"
       - ".github/workflows/profile-driven-screen-generation.yml"
@@ -34,6 +36,11 @@ jobs:
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_execution_contract_tests.py
+
+      - name: Run contract-bound GPT and Claude native runtime regressions
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_contract_bound_runtime_tests.py
 
       - name: Run model-weight guard regressions
         run: |
