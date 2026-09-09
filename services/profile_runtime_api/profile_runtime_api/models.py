@@ -129,6 +129,7 @@ class CardSource(StrictModel):
     source_ref: str = Field(min_length=1, max_length=500)
     content_sha256: str = Field(pattern=SHA256_RE.pattern)
     selected_sections: list[str] = Field(min_length=1, max_length=20)
+    required_input_fields: list[str] = Field(default_factory=list, max_length=20)
     budget_chars: int = Field(gt=0, le=MAX_CARD_CHARS)
     content: str = Field(min_length=1, max_length=MAX_CARD_CHARS)
 
@@ -141,6 +142,10 @@ class CardSource(StrictModel):
             raise ValueError("LF_CARD_CONTENT_SHA256_MISMATCH")
         if len(self.selected_sections) != len(set(self.selected_sections)):
             raise ValueError("LF_CARD_SELECTED_SECTIONS_DUPLICATE")
+        if len(self.required_input_fields) != len(set(self.required_input_fields)):
+            raise ValueError("LF_CARD_REQUIRED_INPUT_FIELDS_DUPLICATE")
+        if any(not isinstance(value, str) or not value.strip() for value in self.required_input_fields):
+            raise ValueError("LF_CARD_REQUIRED_INPUT_FIELD_INVALID")
         return self
 
 
@@ -151,6 +156,7 @@ class ProfileTask(StrictModel):
     profile_slug: str = Field(pattern=SLUG_RE.pattern)
     profile_source_paths: list[str] = Field(min_length=1, max_length=20)
     input_literal: str = Field(min_length=1, max_length=100_000)
+    input_fields: dict[str, Any] = Field(default_factory=dict, max_length=100)
     runtime_output_mode: RuntimeOutputMode = "AUTO"
     lf_adapter_sources: list[RouterAdapterSource] = Field(default_factory=list, max_length=4)
     required_adapter_codes: list[str] = Field(default_factory=list, max_length=4)
@@ -165,6 +171,8 @@ class ProfileTask(StrictModel):
             raise ValueError("PROFILE_SLUG_CODE_BINDING_MISMATCH")
         if self.runtime_output_mode != "AUTO" and self.profile_slug != "ui_architect":
             raise ValueError("RUNTIME_OUTPUT_MODE_PROFILE_MISMATCH")
+        if any(not isinstance(key, str) or not key.strip() for key in self.input_fields):
+            raise ValueError("PROFILE_INPUT_FIELD_NAME_INVALID")
 
         seen_adapters: set[str] = set()
         adapter_versions: dict[str, str | None] = {}
