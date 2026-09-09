@@ -1,0 +1,30 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "S26_E_GOVERNANCE_EKB_CARD_FALLBACK",
+  "execution_id": "S26-E-20260909-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "c99e9674104fc42d460fafe1ae7f3476dcb7991b",
+  "judge_sha": "a326c963d91d7d0f0aa9ff382f0a5a31cecd4ce5",
+  "source_sha_list": [
+    "d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
+    "f3a7d236f644ccb6c643f2081e4ee934c6171be0",
+    "b9041b03d9fdd15e20029939ed2e226ff3320b21"
+  ],
+  "target_paths": [
+    "gobernanza/contratos/s26_e_governed_applicability_card_fallback_v1.json",
+    "gobernanza/judges/validate_s26_e_governance.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-09T17:53:00-05:00",
+  "evidence": {
+    "pre_existing_pre_ekb_gate_reused": "CONTRACT-PRE-EKB-GATE-LF-v0.1",
+    "regression_matrix": "sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_cases.json",
+    "case_count": 15,
+    "manual_avoided_case": "S26E-03-NO-CARD-GENERIC",
+    "manual_required_case": "S26E-05-MANUAL-LAST-RESORT",
+    "critical_ambiguity_case": "S26E-11-CARD-AMBIGUOUS-FAIL-CLOSED"
+  }
+}
