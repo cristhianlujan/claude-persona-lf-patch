@@ -17,6 +17,14 @@ class RuntimeAuthorityError(RuntimeError):
         super().__init__(f"{code}: {detail}" if detail else code)
 
 
+def _is_sha256(value: Any) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(ch in "0123456789abcdef" for ch in value.lower())
+    )
+
+
 def _profile_authority(profile_sources: list[dict[str, str]], task: ProfileTask) -> dict[str, Any]:
     if not isinstance(profile_sources, list) or not profile_sources:
         raise RuntimeAuthorityError("RUNTIME_AUTHORITY_MISSING", "PROFILE_SOURCE")
@@ -116,9 +124,12 @@ def _resolve_adapters(task: ProfileTask) -> list[dict[str, Any]]:
         {
             "adapter_code": item["adapter_code"],
             "adapter_version": item["adapter_version"],
+            "assurance_revision": item["assurance_revision"],
+            "activation_source": item["activation_source"],
             "binding_ref": item["binding_ref"],
             "target_ref": item["target_ref"],
             "ref": item["ref"],
+            "content_sha256": sha256_text(item["content"]),
         }
         for item in sorted(sources, key=lambda value: value["adapter_code"])
     ]
@@ -139,7 +150,7 @@ def _resolve_authorities(
             raise RuntimeAuthorityError("RUNTIME_INPUT_GOVERNANCE_AUTHORITY_NOT_READY")
         context_sha = input_governance.get("context_sha256")
         receipt_ref = input_governance.get("receipt_ref")
-        if not isinstance(context_sha, str) or len(context_sha) != 64 or not isinstance(receipt_ref, str) or not receipt_ref:
+        if not _is_sha256(context_sha) or not isinstance(receipt_ref, str) or not receipt_ref:
             raise RuntimeAuthorityError("RUNTIME_INPUT_GOVERNANCE_PROVENANCE_MISSING")
         authorities.append(
             {
@@ -175,9 +186,9 @@ def _resolve_authorities(
         source_ref = source.get("source_ref")
         source_sha = source.get("source_sha256")
         run_id = source.get("run_id", current_run_id)
-        if not all(isinstance(v, str) and v for v in (authority_type, authority_id, source_ref, source_sha, run_id)):
+        if not all(isinstance(v, str) and v for v in (authority_type, authority_id, source_ref, run_id)):
             raise RuntimeAuthorityError("RUNTIME_AUTHORITY_SOURCE_INCOMPLETE")
-        if len(source_sha) != 64:
+        if not _is_sha256(source_sha):
             raise RuntimeAuthorityError("RUNTIME_AUTHORITY_PROVENANCE_INVALID", authority_id)
         if run_id != current_run_id and source.get("cross_run_declared") is not True:
             raise RuntimeAuthorityError("RUNTIME_CROSS_RUN_REFERENCE_UNDECLARED", authority_id)
@@ -205,6 +216,40 @@ def _resolve_authorities(
     return sorted(authorities, key=lambda item: (item["authority_type"], item["authority_id"]))
 
 
+def _assert_provenance_reconstructible(
+    *,
+    card_resolution: dict[str, Any],
+    authority_resolution: list[dict[str, Any]],
+    adapter_binding: list[dict[str, Any]],
+    schema: SchemaBinding,
+) -> None:
+    if not _is_sha256(schema.sha256) or len(schema.source_refs) != 1 or not schema.source_refs[0]:
+        raise RuntimeAuthorityError("RUNTIME_PROVENANCE_NOT_RECONSTRUCTIBLE", "RUNTIME_SCHEMA")
+
+    if card_resolution.get("status") == "RESOLVED":
+        for card in card_resolution.get("cards", []):
+            if not card.get("source_ref") or not _is_sha256(card.get("content_sha256")):
+                raise RuntimeAuthorityError("RUNTIME_PROVENANCE_NOT_RECONSTRUCTIBLE", "CARD")
+
+    for authority in authority_resolution:
+        refs = authority.get("source_refs")
+        if (
+            not isinstance(refs, list)
+            or not refs
+            or any(not isinstance(ref, str) or not ref for ref in refs)
+            or not _is_sha256(authority.get("source_sha256"))
+        ):
+            raise RuntimeAuthorityError("RUNTIME_PROVENANCE_NOT_RECONSTRUCTIBLE", "AUTHORITY")
+
+    for adapter in adapter_binding:
+        if (
+            not adapter.get("ref")
+            or not adapter.get("binding_ref")
+            or not _is_sha256(adapter.get("content_sha256"))
+        ):
+            raise RuntimeAuthorityError("RUNTIME_PROVENANCE_NOT_RECONSTRUCTIBLE", "ADAPTER")
+
+
 def resolve_typed_runtime_context(
     task: ProfileTask,
     *,
@@ -214,21 +259,30 @@ def resolve_typed_runtime_context(
 ) -> dict[str, Any]:
     if len(schema.source_refs) != 1:
         raise RuntimeAuthorityError("RUNTIME_SCHEMA_AMBIGUOUS", ",".join(schema.source_refs))
+
+    artifact = context_pack.get("artifact")
+    screen_code = artifact.get("screen_code") if isinstance(artifact, dict) else None
+    classification = {
+        "surface_code": screen_code or f"PROFILE:{task.profile_slug}",
+        "task_code": f"{task.operation_code}:{task.runtime_output_mode}",
+    }
+
     card_resolution = _resolve_cards(task)
     authority_resolution = _resolve_authorities(
         task, profile_sources=profile_sources, context_pack=context_pack
     )
     adapter_binding = _resolve_adapters(task)
-    artifact = context_pack.get("artifact")
-    screen_code = artifact.get("screen_code") if isinstance(artifact, dict) else None
-    surface_code = screen_code or f"PROFILE:{task.profile_slug}"
+    _assert_provenance_reconstructible(
+        card_resolution=card_resolution,
+        authority_resolution=authority_resolution,
+        adapter_binding=adapter_binding,
+        schema=schema,
+    )
+
     typed = {
         "schema": TYPED_CONTEXT_SCHEMA,
         "current_run_id": task.request_id,
-        "classification": {
-            "surface_code": surface_code,
-            "task_code": f"{task.operation_code}:{task.runtime_output_mode}",
-        },
+        "classification": classification,
         "input": {
             "input_literal_sha256": sha256_text(task.input_literal),
             "input_fields": task.input_fields,
