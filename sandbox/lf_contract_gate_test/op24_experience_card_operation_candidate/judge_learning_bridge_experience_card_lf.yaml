@@ -15,6 +15,10 @@ pass_if:
   - independent_evidence_gate_observed
   - creacion_card_lf_v0_4_contract_read
   - dossier_has_no_direct_card_write
+  - lineage_contract_is_origin_to_destination
+  - card_creada_requires_receiver_id_card
+  - card_creada_requires_exact_ekb_to_card_transformed_to_lineage
+  - lineage_direct_table_write_forbidden
   - lifecycle_order_preserved
   - sandbox_quality_performance_governance_gates_present
   - approval_boundary_present
@@ -30,6 +34,12 @@ fail_if:
   - self_confirming_evidence_promotes_candidate
   - experience_route_shape_mismatch
   - experience_route_write_enabled
+  - card_creada_without_receiver_id_card
+  - card_creada_without_lineage
+  - lineage_source_not_ekb_codigo
+  - lineage_target_not_receiver_card_id
+  - lineage_relation_not_transformed_to
+  - direct_lineage_table_write
   - direct_card_write
   - direct_official_rule_write
   - runtime_enablement
@@ -39,11 +49,14 @@ blocked_if:
   - operation_create_router_binding_missing
   - experience_learning_bridge_route_missing
   - creacion_card_lf_contract_missing
+  - lineage_carrier_not_materialized
+  - lineage_recorder_not_available
   - independent_evidence_missing_for_promotion
   - explicit_approval_missing_for_impact
 claim_ceiling: >-
-  PASS validates the candidate source package and its read-only candidate Experience
-  invocation route only. BLOCKED is the expected execution state while the generic
-  operation factory, OPERATION_CREATE route, or Experience invocation route is
-  unavailable. Neither PASS nor BLOCKED authorizes Card creation, runtime,
-  production, automatic impact, Router activation, or Strategy 23 execution.
+  PASS validates the candidate source package, its read-only Experience invocation route
+  and the required future EKB-to-Card lineage handoff. BLOCKED is expected while the
+  generic operation factory, OPERATION_CREATE route, Experience invocation route or
+  durable lineage carrier is unavailable. Neither PASS nor BLOCKED authorizes Card
+  creation, lineage DDL, recomposition, runtime, production, automatic impact,
+  Router activation, or Strategy 23 execution.
