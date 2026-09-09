@@ -1,0 +1,66 @@
+{
+  "receipt_version": "v0.1",
+  "lane": "S30-A",
+  "owner": "S30",
+  "base_main_sha": "9ce8f87646b44e04df609b1993447f918063fdb4",
+  "intended_material_action": "GIT_WRITE",
+  "sequence_resolution": {
+    "ROUTER": {"status": "PROVEN", "evidence": "ACT-0001:v0.3 VIGENTE/ACTIVO/RECTOR; strategy UPDATE route candidate read-only"},
+    "EKB_APPLICABLE": {"status": "PROVEN", "evidence": "S30 operational_reliability_preexecution_assurance_v1 + DB-001/GOV-010 references"},
+    "DATA_ACCESS_BINDINGS": {"status": "NOT_REQUIRED_WITH_REASON", "evidence": "S30-A does not implement S30-B typed readers; Git files resolved by exact repository paths and Supabase reads were schema-introspected first"},
+    "SCHEMA_CONTRACT": {"status": "PROVEN", "evidence": "information_schema readback for lf_strategy_snapshots, lf_error_knowledge, lf_operation_* and lf_router_action_registry"},
+    "OPERATION_CONTRACTS": {"status": "PROVEN", "evidence": "ACTUALIZACION_ESTRATEGIA_LF v0.1 contract readback; route remains CANDIDATO_READ_ONLY so canonical snapshot write is scoped blocked"},
+    "ALL_INTENDED_STEPS": {"status": "PROVEN", "evidence": "read canonical -> build local gate -> selftest -> isolated branch -> CI -> exact-head readback; Supabase reconciliation only after governed update route"},
+    "JUDGES_AND_RESULT_VOCABULARY": {"status": "PROVEN", "evidence": "S30_SELF_GOVERNANCE_GATE result vocabulary fixed in contract"},
+    "DEPENDENCIES_AND_IMPORT_CLOSURE": {"status": "PROVEN", "evidence": "validator uses Python 3.11 standard library only"},
+    "CI_PATHS_AND_RUNNER_WIRING": {"status": "PROVEN", "evidence": ".github/workflows/validate-lf-packs.yml pull_request main + push lf/**, ubuntu-latest, Python 3.11"},
+    "PERMISSIONS_SECRETS_AND_READBACK": {"status": "PROVEN", "evidence": "GitHub connector exposes branch/file/workflow writes; no secret required by S30-A validator; readback via GitHub content/PR/run APIs"},
+    "EVIDENCE_PROVIDER_AND_RESOLVER": {"status": "PROVEN", "evidence": "GitHub exact commit/PR/workflow run + Supabase direct readback available"},
+    "EXPECTED_OUTPUT_CONTRACT": {"status": "PROVEN", "evidence": "consumer_interface and output_required frozen in contract v0.1-candidate"}
+  },
+  "preflight_checks": {
+    "IMPORT_CLOSURE": {"status": "PASS", "evidence": "stdlib-only validator"},
+    "REQUIRED_FILES_EXIST": {"status": "PASS", "evidence": "validate-lf-packs.yml and governance directories read from frozen main"},
+    "SCHEMA_AND_CONSTRAINTS_RESOLVED": {"status": "PASS", "evidence": "Git content paths + Supabase information_schema resolved before dependent queries"},
+    "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED": {"status": "PASS", "evidence": "GitHub create_branch/create_file/update_file/create_pull_request schemas loaded"},
+    "PERMISSIONS_AND_SECRET_READBACK": {"status": "PASS", "evidence": "no secrets required; connector write capability available; readback planned"},
+    "EVIDENCE_PROVIDER_RESOLVABLE": {"status": "PASS", "evidence": "GitHub and Supabase readback providers reachable"},
+    "CI_RUNNER_WIRING_CONFIRMED": {"status": "PASS", "evidence": "Validate LF Packs triggers PR->main and push lf/**"},
+    "EXPECTED_OUTPUT_SCHEMA_COMPLETE": {"status": "PASS", "evidence": "contract consumer_interface output_required complete"},
+    "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED": {"status": "PASS", "evidence": "selftest missing-check and text-only-EKB negatives block before material_work_allowed"}
+  },
+  "frontier": {
+    "current_stage": "S30-A_SELF_GOVERNANCE_PREEXECUTION_ASSURANCE",
+    "next_gate": "CI_EXACT_HEAD_SELF_GOVERNANCE_WIRING",
+    "blockers": [
+      {
+        "code": "STRATEGY_INSTANCE_UPDATE_ROUTER_CANDIDATE_ONLY",
+        "affected_scope": "SUPABASE_CANONICAL_S30_FRONTIER_RECONCILIATION",
+        "causal_gate": "ACTUALIZACION_ESTRATEGIA_LF_ROUTER_GOVERNED_EXECUTABLE",
+        "owner": "S30_STRATEGY_GOVERNANCE",
+        "independent_safe_work": ["GITHUB_SELF_GOVERNANCE_GATE", "CI_SELFTEST_AND_WIRING", "RECEIPT_READBACK"],
+        "invalidation_condition": "ACTUALIZACION_ESTRATEGIA_LF is executable through ACT-0001 under its own contract with pre-write binding and independent readback"
+      }
+    ],
+    "safe_parallel_work": ["GITHUB_SELF_GOVERNANCE_GATE", "CI_SELFTEST_AND_WIRING", "RECEIPT_READBACK"]
+  },
+  "hard_guard_candidates": [],
+  "safety_readback": {
+    "runtime_changed": false,
+    "production_changed": false,
+    "main_merged": false,
+    "scheduler_changed": false,
+    "s26_mutated": false
+  },
+  "evidence": {
+    "canonical_snapshot_id": 35,
+    "observed_contradictions": [
+      "metadata.progress.current_stage=S30-C05-EXECUTOR-ORCHESTRATOR-BLUEPRINTS while content_payload.execution_frontier.current_stage=S30-C04-STRATEGY-INSTANCE-UPDATE-CANDIDATE",
+      "metadata.progress.next_gate=C05_DYNAMIC_IDEMPOTENCY_LEASE_FIRE_TEST_BEFORE_OPERATION_BOOTSTRAP while content_payload.execution_frontier.next_gate=STRATEGY_INSTANCE_UPDATE_ROUTER_CANARY_PLUS_FACTORY_SOURCE_UPDATE_BOOTSTRAP",
+      "backlog C01/C02/C03/C04/C06 states lag later materialized evidence; R01/R05/R08 still READY despite P0 adoption only being declarative",
+      "historical GitHub head/PR references remain in payload and cannot be treated as current frontier authority"
+    ],
+    "canonical_persistence": "BLOCKED_CAUSAL_UNTIL_GOVERNED_STRATEGY_UPDATE_ROUTE",
+    "pending_hard_guard_promotions": ["DB-001", "GOV-010"]
+  }
+}
