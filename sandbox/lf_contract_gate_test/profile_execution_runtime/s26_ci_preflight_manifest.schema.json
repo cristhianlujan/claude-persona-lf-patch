@@ -4,12 +4,13 @@
   "title": "S26 CI Cheap Preflight Manifest",
   "type": "object",
   "required": [
-    "schema", "run_scope", "required_files", "required_scripts", "required_validators",
-    "schemas", "authority_sources", "bindings", "inputs", "workflow_guards"
+    "schema", "run_scope", "execution_scope_id", "required_files", "required_scripts", "required_validators",
+    "schemas", "authority_sources", "bindings", "inputs", "workflow_guards", "integrity_pins"
   ],
   "properties": {
     "schema": {"const": "S26_CI_PREFLIGHT_MANIFEST_V1"},
     "run_scope": {"const": "S26"},
+    "execution_scope_id": {"const": "S26-CI-PREFLIGHT-V1"},
     "required_files": {
       "type": "array", "minItems": 1,
       "items": {"type": "string", "minLength": 1}
@@ -30,7 +31,7 @@
         "properties": {
           "path": {"type": "string", "minLength": 1},
           "schema_role": {"const": "PREFLIGHT_MANIFEST"},
-          "run_id": {"const": "S26"}
+          "run_id": {"const": "S26-CI-PREFLIGHT-V1"}
         },
         "additionalProperties": false
       }
@@ -43,7 +44,7 @@
         "properties": {
           "authority_type": {"enum": ["CI_CONTRACT", "RUNTIME_CONTRACT"]},
           "source_ref": {"type": "string", "minLength": 1},
-          "run_id": {"const": "S26"}
+          "run_id": {"const": "S26-CI-PREFLIGHT-V1"}
         },
         "additionalProperties": false
       }
@@ -59,7 +60,7 @@
           "callable": {"type": "string", "minLength": 1},
           "probe_mode": {"enum": ["RETURNS_NONEMPTY_ERROR_LIST", "RAISES_EXPECTED_ERROR"]},
           "expected_error": {"type": "string", "minLength": 1},
-          "run_id": {"const": "S26"}
+          "run_id": {"const": "S26-CI-PREFLIGHT-V1"}
         },
         "additionalProperties": false
       }
@@ -72,7 +73,7 @@
         "properties": {
           "input_id": {"const": "CANONICAL_PREFLIGHT_MANIFEST"},
           "path": {"type": "string", "minLength": 1},
-          "run_id": {"const": "S26"}
+          "run_id": {"const": "S26-CI-PREFLIGHT-V1"}
         },
         "additionalProperties": false
       }
@@ -90,7 +91,20 @@
             "type": "array", "minItems": 1,
             "items": {"type": "string", "minLength": 1}
           },
-          "run_id": {"const": "S26"}
+          "run_id": {"const": "S26-CI-PREFLIGHT-V1"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "integrity_pins": {
+      "type": "array", "minItems": 11,
+      "items": {
+        "type": "object",
+        "required": ["path", "git_blob_sha1", "run_id"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "git_blob_sha1": {"type": "string", "minLength": 40},
+          "run_id": {"const": "S26-CI-PREFLIGHT-V1"}
         },
         "additionalProperties": false
       }
