@@ -12,8 +12,8 @@ steps:
     id: ekb_precheck
     evidence_required: applicable_ekb_read
   - order: 4
-    id: factory_dependency_check
-    evidence_required: creacion_operacion_lf_and_operation_create_route_state
+    id: factory_and_invocation_route_check
+    evidence_required: creacion_operacion_lf_operation_create_and_experience_route_candidate_state
   - order: 5
     id: select_experiential_candidate
     evidence_required: error_knowledge_source_readback
