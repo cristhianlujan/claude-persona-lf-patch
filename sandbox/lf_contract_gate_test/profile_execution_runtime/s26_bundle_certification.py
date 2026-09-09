@@ -14,6 +14,7 @@ from pathlib import Path, PurePosixPath
 SPEC_SCHEMA = "S26_REVIEW_BUNDLE_SPEC_V1"
 MANIFEST_SCHEMA = "S26_REVIEW_BUNDLE_MANIFEST_V1"
 REPLAY_SCHEMA = "S26_REVIEW_BUNDLE_REPLAY_V1"
+DEPENDENCY_MAP_SCHEMA = "S26_REVIEW_BUNDLE_DEPENDENCY_MAP_V1"
 REQUIRED_CATEGORIES = {
     "artifact",
     "input",
@@ -93,7 +94,11 @@ def _iter_string_refs(value, jpath="$"):
     elif isinstance(value, list):
         for idx, item in enumerate(value):
             yield from _iter_string_refs(item, f"{jpath}[{idx}]")
-    elif isinstance(value, str) and (value.startswith("bundle://") or value.startswith("run://")):
+    elif isinstance(value, str) and (
+        value.startswith("bundle://")
+        or value.startswith("run://")
+        or value.startswith("github://")
+    ):
         yield jpath, value
 
 
@@ -106,15 +111,37 @@ def _manifest_entries(bundle_root: Path, provenance: dict[str, dict]) -> list[di
         prov = provenance.get(rel)
         if prov is None:
             raise BundleError(f"UNTRACKED_BUILDER_OUTPUT:{rel}")
-        entries.append({
+        item = {
             "path": rel,
             "category": prov["category"],
             "source": prov["source"],
             "source_run_id": prov["source_run_id"],
             "bytes": path.stat().st_size,
             "sha256": sha256_file(path),
-        })
+        }
+        if prov.get("source_revision"):
+            item["source_revision"] = prov["source_revision"]
+        entries.append(item)
     return entries
+
+
+def _normalize_replay_command(validator: dict) -> tuple[str, list[str]]:
+    validator_rel = safe_rel(validator.get("bundle_path"), "UNSAFE_VALIDATOR_PATH")
+    argv = validator.get("argv")
+    if not isinstance(argv, list) or not argv or not all(isinstance(x, str) and x for x in argv):
+        raise BundleError(f"VALIDATOR_ARGV_INVALID:{validator_rel}")
+    if argv[0] not in ALLOWED_REPLAY_EXECUTABLES:
+        raise BundleError(f"REPLAY_EXECUTABLE_FORBIDDEN:{argv[0]}")
+    safe_argv = [argv[0]]
+    for arg in argv[1:]:
+        if arg.startswith("-"):
+            safe_argv.append(arg)
+        else:
+            safe_argv.append(safe_rel(arg, "UNSAFE_REPLAY_ARG"))
+    if len(safe_argv) < 2 or safe_argv[1] != validator_rel:
+        actual = safe_argv[1] if len(safe_argv) > 1 else "<missing>"
+        raise BundleError(f"VALIDATOR_ARGV_MISMATCH:{validator_rel}!={actual}")
+    return validator_rel, safe_argv
 
 
 def build_bundle(spec_path: Path, repo_root: Path, out_dir: Path, zip_path: Path | None = None) -> dict:
@@ -137,8 +164,9 @@ def build_bundle(spec_path: Path, repo_root: Path, out_dir: Path, zip_path: Path
     if not isinstance(artifact, dict):
         raise BundleError("ARTIFACT_SPEC_MISSING")
     items = [{**artifact, "category": "artifact"}] + list(spec.get("items") or [])
-    receipts = spec.get("receipts") or []
-    validators = spec.get("validators") or []
+    receipts = list(spec.get("receipts") or [])
+    generated_receipts = list(spec.get("generated_receipts") or [])
+    validators = list(spec.get("validators") or [])
     for item in receipts:
         items.append({**item, "category": "receipt"})
     for item in validators:
@@ -165,10 +193,15 @@ def build_bundle(spec_path: Path, repo_root: Path, out_dir: Path, zip_path: Path
             "category": category,
             "source": safe_rel(item.get("source"), "UNSAFE_SOURCE_PATH"),
             "source_run_id": source_run_id,
+            "source_revision": item.get("source_revision"),
         }
 
     dump_json(out_dir / "run_metadata.json", metadata)
-    provenance["run_metadata.json"] = {"category": "run_metadata", "source": "generated://run_metadata", "source_run_id": run_id}
+    provenance["run_metadata.json"] = {
+        "category": "run_metadata",
+        "source": "generated://run_metadata",
+        "source_run_id": run_id,
+    }
 
     artifact_rel = safe_rel(artifact.get("bundle_path"))
     artifact_sha = sha256_file(out_dir / artifact_rel)
@@ -182,25 +215,61 @@ def build_bundle(spec_path: Path, repo_root: Path, out_dir: Path, zip_path: Path
         if isinstance(bound_sha, str):
             bound_sha = bound_sha.replace("sha256:", "")
         if bound_sha != artifact_sha:
-            raise BundleError(f"RECEIPT_ARTIFACT_MISMATCH:{receipt.get('bundle_path')}:{bound_sha}!={artifact_sha}")
+            raise BundleError(
+                f"RECEIPT_ARTIFACT_MISMATCH:{receipt.get('bundle_path')}:{bound_sha}!={artifact_sha}"
+            )
+
+    for receipt in generated_receipts:
+        if not isinstance(receipt, dict):
+            raise BundleError("GENERATED_RECEIPT_NOT_OBJECT")
+        rel = safe_rel(receipt.get("bundle_path"), "UNSAFE_GENERATED_RECEIPT_PATH")
+        if (out_dir / rel).exists():
+            raise BundleError(f"DUPLICATE_BUNDLE_PATH:{rel}")
+        payload = {
+            "schema": receipt.get("schema", "S26_GENERATED_ARTIFACT_BINDING_RECEIPT_V1"),
+            "run_id": run_id,
+            "artifact_path": artifact_rel,
+            "artifact_sha256": artifact_sha,
+        }
+        if isinstance(receipt.get("metadata"), dict):
+            payload["metadata"] = receipt["metadata"]
+        dump_json(out_dir / rel, payload)
+        provenance[rel] = {
+            "category": "receipt",
+            "source": "generated://artifact_binding_receipt",
+            "source_run_id": run_id,
+        }
+
+    external_ref_map = spec.get("external_ref_map") or {}
+    if not isinstance(external_ref_map, dict):
+        raise BundleError("EXTERNAL_REF_MAP_INVALID")
+    normalized_map: dict[str, str] = {}
+    for ref, target in external_ref_map.items():
+        if not isinstance(ref, str) or not ref.startswith("github://"):
+            raise BundleError(f"EXTERNAL_REF_INVALID:{ref}")
+        normalized_map[ref] = safe_rel(target, "UNSAFE_EXTERNAL_REF_TARGET")
+    if normalized_map:
+        dump_json(
+            out_dir / "dependency_map.json",
+            {"schema": DEPENDENCY_MAP_SCHEMA, "run_id": run_id, "dependencies": normalized_map},
+        )
+        provenance["dependency_map.json"] = {
+            "category": "evidence",
+            "source": "generated://dependency_map",
+            "source_run_id": run_id,
+        }
 
     replay_commands = []
     for validator in validators:
-        argv = validator.get("argv")
-        if not isinstance(argv, list) or not argv or not all(isinstance(x, str) and x for x in argv):
-            raise BundleError(f"VALIDATOR_ARGV_INVALID:{validator.get('bundle_path')}")
-        if argv[0] not in ALLOWED_REPLAY_EXECUTABLES:
-            raise BundleError(f"REPLAY_EXECUTABLE_FORBIDDEN:{argv[0]}")
-        safe_argv = [argv[0]]
-        for arg in argv[1:]:
-            if arg.startswith("-"):
-                safe_argv.append(arg)
-            else:
-                safe_argv.append(safe_rel(arg, "UNSAFE_REPLAY_ARG"))
-        replay_commands.append({"validator": safe_rel(validator.get("bundle_path")), "argv": safe_argv})
+        validator_rel, safe_argv = _normalize_replay_command(validator)
+        replay_commands.append({"validator": validator_rel, "argv": safe_argv})
     replay_plan = {"schema": REPLAY_SCHEMA, "run_id": run_id, "commands": replay_commands}
     dump_json(out_dir / "replay_plan.json", replay_plan)
-    provenance["replay_plan.json"] = {"category": "replay_plan", "source": "generated://replay_plan", "source_run_id": run_id}
+    provenance["replay_plan.json"] = {
+        "category": "replay_plan",
+        "source": "generated://replay_plan",
+        "source_run_id": run_id,
+    }
 
     categories = {meta["category"] for meta in provenance.values()}
     missing_categories = sorted(REQUIRED_CATEGORIES - categories)
@@ -224,6 +293,35 @@ def build_bundle(spec_path: Path, repo_root: Path, out_dir: Path, zip_path: Path
     if zip_path is not None:
         write_deterministic_zip(out_dir, zip_path)
     return manifest
+
+
+def _load_dependency_map(bundle_root: Path, run_id: str, errors: list[str]) -> dict[str, str]:
+    path = bundle_root / "dependency_map.json"
+    if not path.is_file():
+        return {}
+    try:
+        obj = load_json(path)
+    except Exception as exc:
+        errors.append(f"DEPENDENCY_MAP_PARSE_FAIL:{type(exc).__name__}")
+        return {}
+    if obj.get("schema") != DEPENDENCY_MAP_SCHEMA:
+        errors.append(f"DEPENDENCY_MAP_SCHEMA_INVALID:{obj.get('schema')}")
+    if obj.get("run_id") != run_id:
+        errors.append(f"DEPENDENCY_MAP_RUN_MISMATCH:{obj.get('run_id')}!={run_id}")
+    deps = obj.get("dependencies")
+    if not isinstance(deps, dict):
+        errors.append("DEPENDENCY_MAP_INVALID")
+        return {}
+    clean = {}
+    for ref, target in deps.items():
+        if not isinstance(ref, str) or not ref.startswith("github://"):
+            errors.append(f"DEPENDENCY_REF_INVALID:{ref}")
+            continue
+        try:
+            clean[ref] = safe_rel(target, "UNSAFE_EXTERNAL_REF_TARGET")
+        except BundleError as exc:
+            errors.append(str(exc))
+    return clean
 
 
 def validate_bundle(bundle_root: Path) -> list[str]:
@@ -308,9 +406,14 @@ def validate_bundle(bundle_root: Path) -> list[str]:
         except Exception as exc:
             errors.append(f"RUN_METADATA_PARSE_FAIL:{type(exc).__name__}")
 
+    dependency_map = _load_dependency_map(bundle_root, run_id, errors)
+    for ref, target in dependency_map.items():
+        if not (bundle_root / target).is_file():
+            errors.append(f"EXTERNAL_REF_TARGET_MISSING:{ref}:{target}")
+
     for rel in sorted(actual):
         path = bundle_root / rel
-        if path.suffix.lower() != ".json":
+        if path.suffix.lower() != ".json" or path.name == "dependency_map.json":
             continue
         try:
             refs = list(_iter_string_refs(load_json(path)))
@@ -326,7 +429,7 @@ def validate_bundle(bundle_root: Path) -> list[str]:
                     continue
                 if not (bundle_root / target).is_file():
                     errors.append(f"BUNDLE_REF_UNRESOLVED:{rel}:{jpath}:{ref}")
-            else:
+            elif ref.startswith("run://"):
                 rest = ref[len("run://"):]
                 ref_run, sep, target = rest.partition("/")
                 if not sep or ref_run != run_id:
@@ -339,6 +442,12 @@ def validate_bundle(bundle_root: Path) -> list[str]:
                     continue
                 if not (bundle_root / target).is_file():
                     errors.append(f"RUN_REF_UNRESOLVED:{rel}:{jpath}:{ref}")
+            else:
+                target = dependency_map.get(ref)
+                if target is None:
+                    errors.append(f"EXTERNAL_REF_UNMAPPED:{rel}:{jpath}:{ref}")
+                elif not (bundle_root / target).is_file():
+                    errors.append(f"EXTERNAL_REF_TARGET_MISSING:{rel}:{jpath}:{ref}:{target}")
 
     if artifact_sha:
         for rel, item in listed.items():
@@ -384,15 +493,27 @@ def validate_bundle(bundle_root: Path) -> list[str]:
                     validator = cmd.get("validator") if isinstance(cmd, dict) else None
                     if not isinstance(argv, list) or not argv or argv[0] not in ALLOWED_REPLAY_EXECUTABLES:
                         errors.append(f"REPLAY_COMMAND_INVALID:{idx}")
+                        continue
                     try:
-                        validator = safe_rel(validator, "UNSAFE_VALIDATOR_PATH")
-                        if not (bundle_root / validator).is_file():
-                            errors.append(f"VALIDATOR_MISSING:{validator}")
+                        validator_rel = safe_rel(validator, "UNSAFE_VALIDATOR_PATH")
                     except BundleError as exc:
                         errors.append(str(exc))
+                        continue
+                    if not (bundle_root / validator_rel).is_file():
+                        errors.append(f"VALIDATOR_MISSING:{validator_rel}")
+                    if len(argv) < 2:
+                        errors.append(f"VALIDATOR_ARGV_MISMATCH:{validator_rel}=><missing>")
+                    else:
+                        try:
+                            argv_validator = safe_rel(argv[1], "UNSAFE_REPLAY_ARG")
+                        except BundleError as exc:
+                            errors.append(str(exc))
+                            continue
+                        if argv_validator != validator_rel:
+                            errors.append(f"VALIDATOR_ARGV_MISMATCH:{validator_rel}!={argv_validator}")
         except Exception as exc:
             errors.append(f"REPLAY_PLAN_PARSE_FAIL:{type(exc).__name__}")
-    return errors
+    return sorted(set(errors))
 
 
 def replay_validators(bundle_root: Path) -> list[str]:
@@ -446,7 +567,10 @@ def certify_zip(zip_path: Path, replay: bool = True) -> dict:
             "bundle_zip_sha256": zip_sha,
             "manifest_reconciled": not any(e.startswith(("MANIFEST_", "REQUIRED_CATEGORY_")) for e in validation_errors),
             "hashes_verified": not any("SHA_MISMATCH" in e or "BYTES_MISMATCH" in e for e in validation_errors),
-            "cross_run_refs_blocked": not any(e.startswith(("CROSS_RUN_REF", "CROSS_RUN_MANIFEST_ENTRY")) for e in validation_errors),
+            "cross_run_refs_blocked": not any(
+                e.startswith(("CROSS_RUN_REF", "CROSS_RUN_MANIFEST_ENTRY", "EXTERNAL_REF_UNMAPPED"))
+                for e in validation_errors
+            ),
             "fresh_unpack_pass": not validation_errors,
             "replay_pass": replay and not validation_errors and not replay_errors,
             "errors": validation_errors + replay_errors,
