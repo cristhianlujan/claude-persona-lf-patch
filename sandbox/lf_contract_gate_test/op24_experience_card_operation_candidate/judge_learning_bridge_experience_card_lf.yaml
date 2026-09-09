@@ -7,6 +7,7 @@ pass_if:
   - router_read
   - operational_source_read
   - applicable_ekb_read
+  - experience_invocation_route_contract_valid
   - candidate_source_has_required_signals
   - contradiction_checked_before_dedup
   - duplicate_checks_pass
@@ -27,6 +28,8 @@ fail_if:
   - duplicate_card_candidate
   - competitor_required_for_experience
   - self_confirming_evidence_promotes_candidate
+  - experience_route_shape_mismatch
+  - experience_route_write_enabled
   - direct_card_write
   - direct_official_rule_write
   - runtime_enablement
@@ -34,11 +37,13 @@ fail_if:
 blocked_if:
   - creacion_operacion_lf_not_approved
   - operation_create_router_binding_missing
+  - experience_learning_bridge_route_missing
   - creacion_card_lf_contract_missing
   - independent_evidence_missing_for_promotion
   - explicit_approval_missing_for_impact
 claim_ceiling: >-
-  PASS validates the candidate source package only. BLOCKED is the expected
-  execution state while the generic operation factory or OPERATION_CREATE route
-  is unavailable. Neither PASS nor BLOCKED authorizes Card creation, runtime,
-  production, automatic impact, or Strategy 23 execution.
+  PASS validates the candidate source package and its read-only candidate Experience
+  invocation route only. BLOCKED is the expected execution state while the generic
+  operation factory, OPERATION_CREATE route, or Experience invocation route is
+  unavailable. Neither PASS nor BLOCKED authorizes Card creation, runtime,
+  production, automatic impact, Router activation, or Strategy 23 execution.
