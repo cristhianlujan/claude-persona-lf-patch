@@ -21,6 +21,7 @@
   "schemas": [
     {
       "path": "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_ci_preflight_manifest.schema.json",
+      "schema_role": "PREFLIGHT_MANIFEST",
       "run_id": "S26"
     }
   ],
@@ -40,11 +41,16 @@
     {
       "binding_id": "PROFILE_EXECUTION_VALIDATOR",
       "target_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py",
+      "callable": "validate_receipt",
+      "probe_mode": "RETURNS_NONEMPTY_ERROR_LIST",
       "run_id": "S26"
     },
     {
       "binding_id": "SEMANTIC_MANIFEST_VALIDATOR",
       "target_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_obligation_manifest.py",
+      "callable": "validate_obligation_manifest",
+      "probe_mode": "RAISES_EXPECTED_ERROR",
+      "expected_error": "MANIFEST_SCHEMA_INVALID",
       "run_id": "S26"
     }
   ],
