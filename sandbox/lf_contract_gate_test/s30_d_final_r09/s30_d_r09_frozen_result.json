@@ -1,0 +1,65 @@
+{
+  "receipt_version": "S30-D-R09-FROZEN-RESULT-v1",
+  "result": "S30_P0_SELF_GOVERNANCE_R09_PASS",
+  "lane": "S30-D",
+  "r09": {
+    "source_branch": "lf/s30-d-r09-20260909",
+    "source_commit_sha": "e3607db04dc5e6589ef5764e8a4666c5ae7bd905",
+    "source_tree_sha": "9edbfb334c916fab27f3a2b49ab680b302a634f8",
+    "workflow_run_id": 34415172598,
+    "job_id": 102678344050,
+    "workflow_conclusion": "SUCCESS",
+    "r09_step_conclusion": "SUCCESS",
+    "corpus_id": "S30-D-R09-FINAL-HISTORICAL-REPLAY-v1",
+    "corpus_sha256": "1a515ab6b11e441f7c21451061e391e7f86be16c39393c3a2049bd33546348fa",
+    "campaign_mode": "ONE_FROZEN_CAMPAIGN_ACCUMULATE_ALL_CASES"
+  },
+  "metrics": {
+    "TOTAL_REPLAY_CASES": 46,
+    "PREVENTABLE_FIRST_HOP_ESCAPE_COUNT": 0,
+    "AVOIDABLE_RETRY_COUNT": 0,
+    "SCHEMA_INTROSPECTION_AFTER_ERROR_COUNT": 0,
+    "UNBOUND_FIELD_OR_ARGUMENT_ATTEMPTS": 0,
+    "GATE_CROSS_MUTATION_COUNT": 0,
+    "FALSE_NOT_APPLICABLE_COUNT": 0,
+    "FALSE_PASS_COUNT": 0,
+    "MISSING_READBACK_COUNT": 0,
+    "STALE_EVIDENCE_ACCEPTED_COUNT": 0
+  },
+  "expected_not_applicable": {
+    "count": 2,
+    "correct": true,
+    "cases": ["E03", "E04"]
+  },
+  "self_application": {
+    "case_count": 7,
+    "all_blocked_at_expected_first_bad_hop": true
+  },
+  "interfaces": {
+    "PREEXECUTION_ASSURANCE_RESULT": "PASS",
+    "PREEXECUTION_DATA_ACCESS_RESULT": "PASS",
+    "S30_C_FROZEN_EVIDENCE": "VALID"
+  },
+  "lane_currentness": {
+    "A": "CURRENT",
+    "B": "CURRENT",
+    "C": "CURRENT"
+  },
+  "current_main_sha": "d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
+  "snapshot_reconciliation": {
+    "snapshot_id": 35,
+    "operation_code": "ACTUALIZACION_ESTRATEGIA_LF",
+    "route_result": "GOVERNED_RECONCILIATION_PATH_AVAILABLE",
+    "write_executed": false
+  },
+  "open_blockers": [],
+  "scope_readback": {
+    "main_modified": false,
+    "runtime_modified": false,
+    "production_modified": false,
+    "scheduler_modified": false,
+    "s26_modified": false,
+    "snapshot_35_modified": false
+  },
+  "next_gate": "C05_DYNAMIC_IDEMPOTENCY_LEASE_FIRE_TEST_BEFORE_OPERATION_BOOTSTRAP"
+}

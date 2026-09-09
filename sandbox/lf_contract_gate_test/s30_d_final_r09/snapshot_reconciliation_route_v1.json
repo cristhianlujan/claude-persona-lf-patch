@@ -1,0 +1,56 @@
+{
+  "receipt_version": "S30-D-SNAPSHOT-RECONCILIATION-ROUTE-v1",
+  "snapshot": {
+    "id": 35,
+    "snapshot_code": "LF_OPERATING_CONSTITUTION_POLICY_AUTONOMOUS_OPERATIONS_20260906",
+    "status": "CANDIDATO_READ_ONLY",
+    "runtime_state": "PLAN_ONLY",
+    "impact_policy": "BLOQUEADO",
+    "current_stage": "S30-C05-EXECUTOR-ORCHESTRATOR-BLUEPRINTS",
+    "next_gate": "C05_DYNAMIC_IDEMPOTENCY_LEASE_FIRE_TEST_BEFORE_OPERATION_BOOTSTRAP"
+  },
+  "governed_operation": {
+    "operation_code": "ACTUALIZACION_ESTRATEGIA_LF",
+    "status": "CANDIDATO_READ_ONLY",
+    "operation_type": "UPDATE_PROTOCOL",
+    "operation_domain": "STRATEGY_LIFECYCLE",
+    "contract_code": "CONTRACT-ACTUALIZACION-ESTRATEGIA-LF-v0.1",
+    "allowed": {
+      "supabase_snapshot_write": true,
+      "existing_snapshot_update": true,
+      "append_only_history": true,
+      "runtime_change": false,
+      "production_change": false,
+      "github_write_default": false,
+      "candidate_read_only_only": true,
+      "progress_contract": "STRATEGY_PROGRESS_CONTRACT_V1"
+    },
+    "required_before_write": [
+      "router_read",
+      "ekb_read",
+      "exact_existing_strategy_resolved",
+      "baseline_payload_sha_bound",
+      "parent_currentness_refreshed",
+      "progress_contract_read",
+      "execution_created_before_write",
+      "pre_write_execution_binding_gate_pass"
+    ],
+    "required_after_write": [
+      "independent_snapshot_readback",
+      "payload_sha_readback",
+      "progress_keyset_readback",
+      "state_runtime_impact_alignment",
+      "append_only_history_readback",
+      "deterministic_validation",
+      "semantic_judge",
+      "regression_after",
+      "progress_refresh",
+      "report_output"
+    ],
+    "prewrite_judge": "JUDGE-ACTUALIZACION-ESTRATEGIA-LF-PREWRITE-CURRENTNESS-v1"
+  },
+  "route_result": "GOVERNED_RECONCILIATION_PATH_AVAILABLE",
+  "write_executed": false,
+  "reason_no_write": "S30-D exit gate requires proving a governed reconciliation path, not mutating snapshot #35. Runtime/production changes remain forbidden and snapshot impact_policy remains BLOQUEADO.",
+  "source": "live Supabase structured-operation readback on 2026-09-09"
+}

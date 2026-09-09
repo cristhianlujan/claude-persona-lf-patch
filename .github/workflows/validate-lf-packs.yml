@@ -39,7 +39,12 @@ jobs:
         run: python sandbox/lf_contract_gate_test/s30_d_final_r09/s30d_integration_gate.py
 
       - name: Execute S30-D final R09 historical replay
+        if: github.ref == 'refs/heads/lf/s30-d-r09-20260909'
         run: python sandbox/lf_contract_gate_test/s30_d_final_r09/s30d_r09.py
+
+      - name: Independent verify frozen S30-D R09 result
+        if: github.ref == 'refs/heads/lf/s30-d-final-freeze-20260909'
+        run: python sandbox/lf_contract_gate_test/s30_d_final_r09/s30d_independent_verify.py
 
       - name: Install Profile Runtime API test dependencies
         run: python -m pip install --disable-pip-version-check -r services/profile_runtime_api/requirements-dev.in
