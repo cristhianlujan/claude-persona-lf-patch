@@ -46,6 +46,7 @@ def base_fixture(root: Path):
             {
                 "canonical_adapter_id": "DEMO_ADAPTER",
                 "current_path": adapter_doc["ref"],
+                "sha256": adapter_doc["sha256"],
                 "binding_ref": "router://demo-adapter-binding",
             }
         ],
@@ -90,6 +91,8 @@ def main() -> int:
         assert resolved["card_resolution"]["schema_invention_allowed"] is False
         assert resolved["authority_resolution"][0]["authority_id"] == "AUTH-DEMO-001"
         assert resolved["adapter_binding"][0]["adapter_code"] == "DEMO_ADAPTER"
+        assert resolved["adapter_binding"][0]["sha256"] == request["lf_adapter_bindings"][0]["sha256"]
+        assert resolved["provenance"]["adapters"][0]["sha256"] == request["lf_adapter_bindings"][0]["sha256"]
         assert len(resolved["typed_context_sha256"]) == 64
 
         no_card = deepcopy(context)
@@ -140,6 +143,20 @@ def main() -> int:
             lambda: resolve_runtime_context(missing_adapter_context, request=request, repo_root=root),
         )
 
+        missing_adapter_sha = deepcopy(request)
+        missing_adapter_sha["lf_adapter_bindings"][0].pop("sha256")
+        expect_block(
+            "RUNTIME_ADAPTER_SHA_MISSING",
+            lambda: resolve_runtime_context(context, request=missing_adapter_sha, repo_root=root),
+        )
+
+        bad_adapter_sha = deepcopy(request)
+        bad_adapter_sha["lf_adapter_bindings"][0]["sha256"] = "0" * 64
+        expect_block(
+            "RUNTIME_CONTEXT_PROVENANCE_SHA_MISMATCH",
+            lambda: resolve_runtime_context(context, request=bad_adapter_sha, repo_root=root),
+        )
+
         incompatible_input = deepcopy(context)
         incompatible_input["input_fields"] = {}
         expect_block(
@@ -152,6 +169,57 @@ def main() -> int:
         expect_block(
             "RUNTIME_CROSS_RUN_REFERENCE_UNDECLARED",
             lambda: resolve_runtime_context(cross_run, request=request, repo_root=root),
+        )
+
+        declared_only = deepcopy(cross_run)
+        declared_only["authority_sources"][0]["cross_run_declared"] = True
+        expect_block(
+            "RUNTIME_CROSS_RUN_AUTHORIZATION_MISSING",
+            lambda: resolve_runtime_context(declared_only, request=request, repo_root=root),
+        )
+
+        permit = write(
+            root,
+            "gobernanza/demo/cross_run_auth.json",
+            json.dumps(
+                {
+                    "schema": "LF_CROSS_RUN_AUTHORIZATION_V1",
+                    "authority_id": "AUTH-DEMO-001",
+                    "source_run_id": "RUN-OTHER-001",
+                    "target_run_id": "RUN-S26-B-001",
+                    "authorized": True,
+                },
+                sort_keys=True,
+            ),
+        )
+        permitted_cross_run = deepcopy(declared_only)
+        permitted_cross_run["authority_sources"][0]["cross_run_authorization_ref"] = permit["ref"]
+        permitted_cross_run["authority_sources"][0]["cross_run_authorization_sha256"] = permit["sha256"]
+        permitted = resolve_runtime_context(permitted_cross_run, request=request, repo_root=root)
+        auth_row = permitted["authority_resolution"][0]
+        assert auth_row["run_id"] == "RUN-OTHER-001"
+        assert auth_row["cross_run_authorization"]["sha256"] == permit["sha256"]
+
+        wrong_permit = write(
+            root,
+            "gobernanza/demo/cross_run_auth_wrong.json",
+            json.dumps(
+                {
+                    "schema": "LF_CROSS_RUN_AUTHORIZATION_V1",
+                    "authority_id": "AUTH-DEMO-001",
+                    "source_run_id": "RUN-OTHER-001",
+                    "target_run_id": "RUN-WRONG-999",
+                    "authorized": True,
+                },
+                sort_keys=True,
+            ),
+        )
+        invalid_cross_run = deepcopy(declared_only)
+        invalid_cross_run["authority_sources"][0]["cross_run_authorization_ref"] = wrong_permit["ref"]
+        invalid_cross_run["authority_sources"][0]["cross_run_authorization_sha256"] = wrong_permit["sha256"]
+        expect_block(
+            "RUNTIME_CROSS_RUN_AUTHORIZATION_INVALID",
+            lambda: resolve_runtime_context(invalid_cross_run, request=request, repo_root=root),
         )
 
         missing_typed_context = lambda: resolve_runtime_context(None, request=request, repo_root=root)
@@ -178,7 +246,7 @@ def main() -> int:
 
     print(
         "RUNTIME_AUTHORITY_RESOLVER_V1_PASS "
-        "card_found=1 no_card=1 negative_blocks=8 compatible_authority_alias=1"
+        "card_found=1 no_card=1 negative_blocks=11 compatible_authority_alias=1 valid_cross_run_permit=1"
     )
     return 0
 
