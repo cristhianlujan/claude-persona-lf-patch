@@ -1,0 +1,15 @@
+{
+  "manifest_version": "S30-D-R09-MANIFEST-v1",
+  "corpus_id": "S30-D-R09-FINAL-HISTORICAL-REPLAY-v1",
+  "corpus_sha256": "1a515ab6b11e441f7c21451061e391e7f86be16c39393c3a2049bd33546348fa",
+  "case_count": 46,
+  "self_application_case_count": 7,
+  "integration_base_sha": "f1f9581ee88facc50ac79d784e26d981e1d14a23",
+  "integration_exact_head_ci": {"run_id":34414760330,"job_id":102677057808,"conclusion":"SUCCESS"},
+  "main_sha": "d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
+  "a_identity": "main@d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
+  "b_identity": "lf/s30-b-rematerialized-d75b7c15-20260909@8dcb2a5f8a22aba94d7ab1b4b33b97496d41a980",
+  "c_identity": "lf/s30-c-receipt-reconcile-20260909@b8e059e42c30082ea7156d3bfdb442e614214044",
+  "campaign_policy": "ONE_FROZEN_CAMPAIGN_ACCUMULATE_ALL_INDEPENDENT_CASES",
+  "failure_policy": "FREEZE_FAILURE_THEN_REPAIR_CAUSAL_OWNER_ONLY_IN_NEW_BOUNDED_RUN"
+}

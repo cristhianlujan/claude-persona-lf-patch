@@ -38,6 +38,9 @@ jobs:
       - name: Validate S30-D A-B-C interface compatibility
         run: python sandbox/lf_contract_gate_test/s30_d_final_r09/s30d_integration_gate.py
 
+      - name: Execute S30-D final R09 historical replay
+        run: python sandbox/lf_contract_gate_test/s30_d_final_r09/s30d_r09.py
+
       - name: Install Profile Runtime API test dependencies
         run: python -m pip install --disable-pip-version-check -r services/profile_runtime_api/requirements-dev.in
 
