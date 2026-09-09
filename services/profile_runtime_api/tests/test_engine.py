@@ -42,6 +42,7 @@ from profile_runtime_api.models import (
     ExecuteRequest,
     InputGovernanceReceipt,
     ProfileTask,
+    QueueExecuteRequest,
 )
 from profile_runtime_api.settings import Settings
 from profile_runtime_api.structural import PreparedContext
@@ -230,6 +231,7 @@ class EngineGateTest(unittest.TestCase):
         engine, pipeline = self.engine(valid_quality_output())
 
         def fail_prepare(_artifact: Any, _governance: Any) -> PreparedContext:
+            pipeline.calls += 1
             error = RuntimeError("structural failure")
             error.code = "STRUCTURAL_CONTEXT_TEST_FAILURE"  # type: ignore[attr-defined]
             raise error
