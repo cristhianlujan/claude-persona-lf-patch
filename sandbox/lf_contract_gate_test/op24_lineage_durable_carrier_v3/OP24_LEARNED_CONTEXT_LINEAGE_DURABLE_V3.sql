@@ -1,7 +1,7 @@
 -- OP24 / Strategy24 — durable Learned Context lineage carrier V3 candidate.
 -- SOURCE_ONLY / NOT_DEPLOYED / CANDIDATO_READ_ONLY.
 -- No migration is generated or applied by this source file.
--- Parent authority: LF_LEARNED_CONTEXT_MEMORY_MODEL_20260904.
+-- Parent authority is frozen to LF_LEARNED_CONTEXT_MEMORY_MODEL_20260904:v0.3.
 -- Strategy24 requires origin -> destination lineage with disposition, reason and evidence.
 -- Only relations with an unambiguous origin -> destination orientation are admitted here.
 -- DERIVED_FROM and RETIRES remain intentionally excluded until a separate semantic contract exists.
@@ -20,16 +20,21 @@ create table programacion.learned_context_lineage (
   ),
   disposition_reason text not null check (length(btrim(disposition_reason)) > 0),
   reversible boolean not null,
-  evidence_execution_id text not null check (length(btrim(evidence_execution_id)) > 0),
+  evidence_step_order integer not null,
   evidence_step_id text not null check (length(btrim(evidence_step_id)) > 0),
   evidence_ref text not null check (length(btrim(evidence_ref)) > 0),
   authority_snapshot_id bigint not null,
-  authority_snapshot_code text not null,
-  authority_snapshot_version text not null,
   created_by_execution_id text not null check (length(btrim(created_by_execution_id)) > 0),
   created_at timestamptz not null default clock_timestamp(),
-  constraint learned_context_lineage_same_execution
-    check (created_by_execution_id = evidence_execution_id),
+  constraint learned_context_lineage_execution_fk
+    foreign key (created_by_execution_id)
+    references public.lf_operation_execution(execution_id),
+  constraint learned_context_lineage_evidence_step_fk
+    foreign key (created_by_execution_id,evidence_step_order)
+    references public.lf_operation_execution_steps(execution_id,step_order),
+  constraint learned_context_lineage_authority_fk
+    foreign key (authority_snapshot_id)
+    references public.lf_strategy_snapshots(id),
   constraint learned_context_lineage_no_self_loop
     check (not (source_type = target_type and source_ref = target_ref)),
   constraint learned_context_lineage_unique_edge
@@ -179,10 +184,11 @@ begin
   from public.lf_strategy_snapshots
   where id=p_authority_snapshot_id
     and snapshot_code='LF_LEARNED_CONTEXT_MEMORY_MODEL_20260904'
+    and version='v0.3'
     and archived_at is null
-    and status <> 'SUPERSEDED';
+    and status='CANDIDATO_READ_ONLY';
   if not found then
-    return jsonb_build_object('outcome','BLOCKED','code','LINEAGE_PARENT_AUTHORITY_NOT_CURRENT','durable',false);
+    return jsonb_build_object('outcome','BLOCKED','code','LINEAGE_PARENT_AUTHORITY_NOT_CURRENT_V03','durable',false);
   end if;
   if exists (
     select 1 from public.lf_strategy_snapshots newer
@@ -214,18 +220,18 @@ begin
 
   insert into programacion.learned_context_lineage(
     transformation_group_id,source_type,source_ref,target_type,target_ref,relation_type,
-    disposition_reason,reversible,evidence_execution_id,evidence_step_id,evidence_ref,
-    authority_snapshot_id,authority_snapshot_code,authority_snapshot_version,created_by_execution_id
+    disposition_reason,reversible,evidence_step_order,evidence_step_id,evidence_ref,
+    authority_snapshot_id,created_by_execution_id
   ) values (
     p_transformation_group_id,p_source_type,p_source_ref,p_target_type,p_target_ref,p_relation_type,
-    p_disposition_reason,p_reversible,p_execution_id,p_evidence_step_id,v_step.evidence_ref,
-    v_authority.id,v_authority.snapshot_code,v_authority.version,p_execution_id
+    p_disposition_reason,p_reversible,v_step.step_order,p_evidence_step_id,v_step.evidence_ref,
+    v_authority.id,p_execution_id
   ) returning lineage_id into v_id;
 
   return jsonb_build_object(
     'outcome','LINEAGE_RECORDED','durable',true,'lineage_id',v_id,
     'execution_id',p_execution_id,'evidence_step_id',p_evidence_step_id,
-    'authority_snapshot_id',v_authority.id,
+    'evidence_step_order',v_step.step_order,'authority_snapshot_id',v_authority.id,
     'authority_snapshot_version',v_authority.version
   );
 exception
@@ -259,4 +265,4 @@ before update or delete on programacion.learned_context_lineage
 for each row execute function programacion.block_learned_context_lineage_mutation_v1();
 
 comment on table programacion.learned_context_lineage is
-  'Strategy24 durable lineage carrier candidate. Append-only origin->destination edges across KB/EKB/CARD. Writes only through a recorder bound to an explicitly lineage-required clean operation step and current Strategy24 authority. SOURCE_ONLY until governed migration approval.';
+  'Strategy24 v0.3 durable lineage carrier candidate. Append-only origin->destination edges across KB/EKB/CARD. Writes only through a recorder bound to an explicitly lineage-required clean operation step and the frozen current Strategy24 v0.3 authority. SOURCE_ONLY until governed migration approval.';
