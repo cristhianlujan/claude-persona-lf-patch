@@ -15,7 +15,22 @@ REQUIRED_NEGATIVES = {
     "direct_official_rule_write_blocked",
     "production_impact_without_approval_blocked",
     "factory_dependency_missing_blocks_registration",
+    "missing_experience_route_blocks_execution",
+    "experience_route_write_enabled_blocks",
     "router_bypass_blocked",
+}
+
+EXPECTED_INVOCATION_ROUTE = {
+    "asset_type": "EXPERIENCE",
+    "action_code": "EXPERIENCE_LEARNING_BRIDGE",
+    "operation_code": "LEARNING_BRIDGE_EXPERIENCE_CARD_LF",
+    "operation_resolution": "STATIC",
+    "requires_existing_target": False,
+    "requires_missing_target": False,
+    "write_allowed": False,
+    "status": "CANDIDATE_SANDBOX",
+    "activation_allowed_in_candidate": False,
+    "required_for_execution": True,
 }
 
 
@@ -60,6 +75,14 @@ def validate(contract, steps_doc, judge):
     if dependency.get("required_before_registration") is not True or dependency.get("active_router_binding_required_before_registration") is not True:
         errors.append("FACTORY_DEPENDENCY_NOT_FAIL_CLOSED")
 
+    invocation = contract.get("invocation_route")
+    if not isinstance(invocation, dict):
+        errors.append("INVOCATION_ROUTE_MISSING")
+    else:
+        for key, expected in EXPECTED_INVOCATION_ROUTE.items():
+            if invocation.get(key) != expected:
+                errors.append(f"INVOCATION_ROUTE_MISMATCH:{key}")
+
     ceiling = contract.get("state_ceiling") or {}
     expected_ceiling = {
         "operation_status":"CANDIDATO_READ_ONLY",
@@ -84,6 +107,10 @@ def validate(contract, steps_doc, judge):
         errors.append("CONTRADICTION_BEFORE_DEDUP_REQUIRED")
     if eligibility.get("independent_evidence_required_for_promotion") is not True:
         errors.append("INDEPENDENT_EVIDENCE_GATE_REQUIRED")
+
+    required_gates = set(contract.get("required_gates") or [])
+    if "experience_router_contract_gate" not in required_gates:
+        errors.append("EXPERIENCE_ROUTER_GATE_REQUIRED")
 
     output = contract.get("output_contract") or {}
     if output.get("kind") != "CARD_CANDIDATE_DOSSIER":
@@ -119,6 +146,7 @@ def validate(contract, steps_doc, judge):
             errors.append("STEP_IDS_NOT_UNIQUE")
 
     required_step_order = [
+        "factory_and_invocation_route_check",
         "required_signal_gate",
         "contradiction_gate",
         "deterministic_dedup",
@@ -153,8 +181,21 @@ def validate(contract, steps_doc, judge):
     if judge.get("verdicts") != ["PASS","FAIL","BLOCKED"]:
         errors.append("JUDGE_VERDICTS_MISMATCH")
 
+    pass_if = set(judge.get("pass_if") or [])
+    if "experience_invocation_route_contract_valid" not in pass_if:
+        errors.append("JUDGE_PASS_CONDITION_MISSING:experience_invocation_route_contract_valid")
+    fail_if = set(judge.get("fail_if") or [])
+    for needed in {"experience_route_shape_mismatch", "experience_route_write_enabled"}:
+        if needed not in fail_if:
+            errors.append(f"JUDGE_FAIL_CONDITION_MISSING:{needed}")
     blocked_if = set(judge.get("blocked_if") or [])
-    for needed in {"creacion_operacion_lf_not_approved","operation_create_router_binding_missing","independent_evidence_missing_for_promotion","explicit_approval_missing_for_impact"}:
+    for needed in {
+        "creacion_operacion_lf_not_approved",
+        "operation_create_router_binding_missing",
+        "experience_learning_bridge_route_missing",
+        "independent_evidence_missing_for_promotion",
+        "explicit_approval_missing_for_impact",
+    }:
         if needed not in blocked_if:
             errors.append(f"JUDGE_BLOCKED_CONDITION_MISSING:{needed}")
 
