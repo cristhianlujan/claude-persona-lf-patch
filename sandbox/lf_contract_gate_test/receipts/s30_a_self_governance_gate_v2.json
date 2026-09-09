@@ -1,32 +1,36 @@
 {
   "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
-  "receipt_version": "v0.1",
+  "receipt_version": "v0.2",
   "issued_by": "contract_judge",
   "operation_code": "S30_SELF_GOVERNANCE_GATE",
-  "execution_id": "S30-A-SELF-GOVERNANCE-V2-20260909-001",
-  "result": "PASS_SANDBOX",
-  "all_required_steps_pass": true,
-  "contract_sha": "4b0aff8104f4b3a066d568310d1b92dd291f3fc6",
-  "judge_sha": "beeb80445e37efcf8e668877be693f21b86562f2",
+  "execution_id": "S30-A-SELF-GOVERNANCE-V02-20260909-001",
+  "result": "BLOCKED",
+  "all_required_steps_pass": false,
+  "contract_sha": "f811d4b566ee562750bdc459d3265ca0cc2df5aa",
+  "judge_sha": "410e524c76bd6abb060ec129f336a5a1317d5948",
   "source_sha_list": [
     "9ce8f87646b44e04df609b1993447f918063fdb4",
-    "4b0aff8104f4b3a066d568310d1b92dd291f3fc6",
-    "beeb80445e37efcf8e668877be693f21b86562f2",
-    "ab6324604c1b34fff0b54e67993c7018ae52bf76"
+    "f811d4b566ee562750bdc459d3265ca0cc2df5aa",
+    "410e524c76bd6abb060ec129f336a5a1317d5948",
+    "6b2dee4fdf515a52b8addd48121e56cc6b1853c0"
   ],
   "target_paths": [
     "gobernanza/contratos/s30_self_governance_gate_v1.json",
     "gobernanza/judges/validate_s30_self_governance_gate.py"
   ],
-  "blocking_codes": [],
-  "issued_at": "2026-09-09T21:26:11Z",
+  "blocking_codes": ["DB001_SELF_CONSUMPTION_RECURRENCE_NOT_PERSISTED"],
+  "issued_at": "2026-09-09T21:54:00Z",
   "evidence": {
     "frozen_base_main_sha": "9ce8f87646b44e04df609b1993447f918063fdb4",
-    "prior_identical_blob_ci_head": "ab6324604c1b34fff0b54e67993c7018ae52bf76",
-    "prior_ci_run": 34406873475,
-    "prior_ci_step": "S30 self-governance cheap preflight",
-    "prior_ci_step_result": "SUCCESS",
-    "repair_reason": "v1 prewrite receipt path was outside existing lf-contract-check sandbox allowlist; v2 preserves v1 history and uses canonical carrier",
-    "claim_ceiling": "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CANDIDATE_PASS"
+    "v02_fail_closed_head": "6b2dee4fdf515a52b8addd48121e56cc6b1853c0",
+    "v02_validate_lf_run": 34409347159,
+    "v02_validate_lf_job": 102659865208,
+    "self_test": "PASS",
+    "positive_equivalent": "PASS_TO_MATERIAL_WORK",
+    "negative_unresolved_sql_function_signature": "FAIL_CLOSED_BEFORE_MATERIAL_WORK",
+    "observed_first_bad_hop": "HARD_GUARD:0:DB-001:EKB_UPDATED",
+    "material_work_allowed": false,
+    "claim_ceiling": "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_BLOCKED",
+    "repair_reason": "S30-A consumed its own gate and exposed an unguarded dependent-SQL function-signature assumption; v0.2 adds the detector and invalidates the prior PASS receipt until EKB recurrence + exact-head rerun close the hard guard"
   }
 }
