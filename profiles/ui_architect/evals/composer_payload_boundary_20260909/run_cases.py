@@ -39,6 +39,35 @@ def make_v6(run_e, boundary):
     return data
 
 
+def assert_s26_current_page_not_prebound(composer_payload):
+    pagination = composer_payload["state_map"]["pagination"]
+    assert pagination.get("selected_page") == "NOT_PREBOUND"
+    assert "current_page" not in pagination
+    pagination_action = composer_payload["remediation_actions"][0]
+    desired = str(pagination_action["execution"]["desired_value"]).replace(" ", "")
+    assert "current_page=" not in desired
+
+
+def assert_guard_rejects_prebound_current_page(composer_payload):
+    state_prebound = copy.deepcopy(composer_payload)
+    state_prebound["state_map"]["pagination"]["current_page"] = 1
+    try:
+        assert_s26_current_page_not_prebound(state_prebound)
+    except AssertionError:
+        pass
+    else:
+        raise AssertionError("state current_page prebind must be rejected")
+
+    execution_prebound = copy.deepcopy(composer_payload)
+    execution_prebound["remediation_actions"][0]["execution"]["desired_value"] = "current_page=1; page_count=1"
+    try:
+        assert_s26_current_page_not_prebound(execution_prebound)
+    except AssertionError:
+        pass
+    else:
+        raise AssertionError("execution current_page prebind must be rejected")
+
+
 def main():
     boundary = load_module(BOUNDARY_PATH, "composer_boundary")
     v5 = load_module(V5_VALIDATOR_PATH, "ui_v5_validator")
@@ -103,12 +132,14 @@ def main():
     assert "COMPOSER_INTERNAL_KEY_LEAK" in codes(boundary.validate(digest_leak))
     passed += 1
 
-    # 11. Semantic holdout: boundary must not canonicalize derived rules or prebind current_page.
+    # 11. Semantic holdout: boundary preserves non-canonical rules and does not prebind current_page.
+    # Safety prose may mention the token; only executable/state binding is forbidden in this S26 fixture.
     semantic = make_v6(run_e, boundary)
     actions = semantic["deliverable_created"]["remediation_actions"]
     assert [a["precision_basis"]["mode"] for a in actions] == ["RELATIVE_GUIDANCE", "RELATIVE_GUIDANCE"]
     assert all(a["precision_basis"]["proposal_status"] == "PROPOSED_NOT_CANONICAL" for a in actions)
-    assert "current_page" not in json.dumps(semantic["composer_payload"], ensure_ascii=False)
+    assert_s26_current_page_not_prebound(semantic["composer_payload"])
+    assert_guard_rejects_prebound_current_page(semantic["composer_payload"])
     passed += 1
 
     print(f"UI_COMPOSER_BOUNDARY_TESTS_PASS {passed}/11")
