@@ -25,6 +25,7 @@ def main():
     s30 = "sandbox/lf_contract_gate_test/s30_policy_operations_candidate/policy_operations_contract.yaml"
     s30_self = "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json"
     s30_self_receipt = "sandbox/lf_contract_gate_test/receipts/s30_a_self_governance_gate_v2.json"
+    op24 = "sandbox/lf_contract_gate_test/op24_lineage_durable_candidate/OP24_LEARNED_CONTEXT_LINEAGE_DURABLE_CANDIDATE_V1.sql"
     migration = "supabase/migrations/20260909010101_lf_example.sql"
     input_migration = "supabase/migrations/20260909010102_input_governance_example.sql"
     workflow = ".github/workflows/lf-contract-check.yml"
@@ -39,6 +40,7 @@ def main():
     check("s30_only", [s30], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=False, mode="S30_POLICY_ISOLATED")
     check("s30_self_governance_only", [s30_self], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=False, mode="S30_SELF_GOVERNANCE_ISOLATED")
     check("s30_self_governance_receipt_only", [s30_self_receipt], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=False, mode="S30_SELF_GOVERNANCE_ISOLATED")
+    check("op24_source_only", [op24], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=False, mode="DEEP_SHARED_KNOWN")
     check("migration_only", [migration], migration=True, input_gov=False, selftest=False, p0_external=False, deep_shared=False)
     check("input_governance_migration", [input_migration], migration=True, input_gov=True, selftest=False, p0_external=False, deep_shared=False)
     check("migration_validator", ["sandbox/lf_contract_gate_test/lf_migration_source_parity.py"], migration=True, input_gov=False, selftest=False, p0_external=False, deep_shared=False)
@@ -71,7 +73,7 @@ def main():
     check("unknown_s30_receipt_sibling_fail_closed", ["sandbox/lf_contract_gate_test/receipts/s30_b_unbound.json"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
     check("unknown_fail_closed", ["mystery/new_surface.xyz"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
     check("empty_fail_closed", [], migration=True, input_gov=True, selftest=True, p0_external=True, deep_shared=True, mode="DEEP_SHARED_EMPTY_FAIL_CLOSED")
-    print("CI_LANE_ROUTER_REGRESSIONS_PASS=26/26")
+    print("CI_LANE_ROUTER_REGRESSIONS_PASS=27/27")
 
 
 if __name__ == "__main__":

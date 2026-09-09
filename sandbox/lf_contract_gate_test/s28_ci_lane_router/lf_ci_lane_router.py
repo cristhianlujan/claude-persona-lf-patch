@@ -14,6 +14,7 @@ from typing import Iterable
 S30_POLICY_PREFIX = "sandbox/lf_contract_gate_test/s30_policy_operations_candidate/"
 S30_SELF_GOVERNANCE_PREFIX = "sandbox/lf_contract_gate_test/s30_self_governance/"
 S30_SELF_GOVERNANCE_RECEIPT_PREFIX = "sandbox/lf_contract_gate_test/receipts/s30_a_self_governance_gate_"
+OP24_LINEAGE_SOURCE_PREFIX = "sandbox/lf_contract_gate_test/op24_lineage_durable_candidate/"
 MIGRATION_PREFIX = "supabase/migrations/"
 MIGRATION_VALIDATOR = "sandbox/lf_contract_gate_test/lf_migration_source_parity.py"
 INPUT_GOV_VALIDATOR = "sandbox/lf_contract_gate_test/input_governance_migration_parity_compact.py"
@@ -124,7 +125,7 @@ def _is_s30_isolated(path: str) -> bool:
 def _is_known_shared(path: str) -> bool:
     if path in {CI_WORKFLOW, VALIDATE_LF_PACKS_WORKFLOW, P0_RUNTIME_ENTRYPOINT}:
         return True
-    if path.startswith(CI_ROUTER_PREFIX) or _is_s30_isolated(path):
+    if path.startswith(CI_ROUTER_PREFIX) or _is_s30_isolated(path) or path.startswith(OP24_LINEAGE_SOURCE_PREFIX):
         return True
     if path in {MIGRATION_VALIDATOR, INPUT_GOV_VALIDATOR}:
         return True
