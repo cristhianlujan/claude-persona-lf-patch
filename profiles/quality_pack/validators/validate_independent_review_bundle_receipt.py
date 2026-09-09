@@ -5,7 +5,7 @@ Closes the gap between a structurally valid generic receipt and the exact review
 case/artifact/bundle it is supposed to certify.
 """
 from __future__ import annotations
-import argparse, json, sys
+import argparse, hashlib, json, sys
 from pathlib import Path
 from typing import Any
 from jsonschema import Draft202012Validator
@@ -38,6 +38,12 @@ def _load(p: Path) -> Any:
     return json.loads(p.read_text(encoding="utf-8"))
 
 
+def _canonical_json_sha256(p: Path) -> str:
+    payload = _load(p)
+    canonical = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 def _bundle_path(root: Path, ref: str) -> Path | None:
     if not isinstance(ref, str) or not ref.startswith("bundle://"):
         return None
@@ -59,6 +65,18 @@ def validate(receipt: Any, root: Path) -> list[str]:
     case=_load(root/'review_case.json')
     indep_schema=_load(root/'independent_semantic_review_receipt.schema.json')
     quality_schema=_load(root/'quality_review.schema.json')
+
+    artifact_path=_bundle_path(root,case.get('artifact_ref'))
+    if artifact_path is None:
+        errors.append('ARTIFACT_REF_UNRESOLVED')
+    else:
+        try:
+            actual_artifact_sha=_canonical_json_sha256(artifact_path)
+        except (OSError,ValueError,json.JSONDecodeError):
+            errors.append('ARTIFACT_CANONICALIZATION_FAILED')
+        else:
+            if actual_artifact_sha!=case.get('artifact_canonical_sha256'):
+                errors.append('REVIEW_CASE_ARTIFACT_CANONICAL_SHA_MISMATCH')
 
     for name,schema,obj in [('INDEPENDENT_SCHEMA',indep_schema,receipt),('QUALITY_SCHEMA',quality_schema,receipt.get('quality_review'))]:
         try:
