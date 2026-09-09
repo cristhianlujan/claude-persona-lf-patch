@@ -1,0 +1,36 @@
+{
+  "receipt_version": "S30-D-PHASE2-FAILURE-FREEZE-v1",
+  "phase": "PHASE_2_INTERFACE_COMPATIBILITY",
+  "failed_run_commit": "dab4cde99d572da6082e2b4e73f981df1bbceb1d",
+  "failed_tree_sha": "998ef05a78abefa9082febb699906b329a387446",
+  "ci_run_id": 34414580479,
+  "ci_job_id": 102676479047,
+  "ci_conclusion": "FAILURE",
+  "first_failing_step": "Validate S30-C frozen reliability harness",
+  "preceding_steps": {
+    "S30-A self-governance cheap preflight": "SUCCESS",
+    "S30-B data access safety candidate": "SUCCESS"
+  },
+  "causal_owner": "S30-D",
+  "causal_classification": "INTEGRATION_WIRING_MISAPPLICATION",
+  "cause": "S30-D re-executed S30-C branch-static wiring regression on an s30-d branch. The frozen C harness intentionally requires C-specific CI wiring including startsWith(github.ref, 'refs/heads/lf/s30-c-').",
+  "s30_c_status": "NOT_INVALIDATED_BY_THIS_FAILURE",
+  "s30_c_independent_exact_head_evidence": {
+    "commit": "b8e059e42c30082ea7156d3bfdb442e614214044",
+    "validate_lf_packs_run_id": 34414337799,
+    "job_id": 102675701704,
+    "conclusion": "SUCCESS"
+  },
+  "repair_rule": "DO_NOT_MUTATE_C; D_CONSUMES_FROZEN_C_RECEIPT_AND_HASHES_INSTEAD_OF_REQUIRING_C_BRANCH_STATIC_TEST_ON_D_BRANCH",
+  "r09_started": false,
+  "same_run_patch_and_continue": false,
+  "result": "BLOCKED_BEFORE_FINAL_R09",
+  "safety_readback": {
+    "main_modified": false,
+    "s30_c_modified": false,
+    "runtime_modified": false,
+    "production_modified": false,
+    "scheduler_modified": false,
+    "s26_modified": false
+  }
+}
