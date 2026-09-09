@@ -1,6 +1,6 @@
 -- OP24 protected RETRIEVAL_PASS issuer candidate test.
 -- Run only after the candidate issuer SQL is installed in an isolated/sandbox DB.
--- The test is rollback-only and must leave zero durable receipt/retrieval/budget residue.
+-- The test is rollback-only and must leave zero durable receipt/retrieval residue.
 
 begin;
 
@@ -18,8 +18,6 @@ declare
   v_retrieval_id bigint;
   v_bad boolean;
 begin
-  -- Reuse a current COMPLETE context-pack execution only as a deterministic
-  -- carrier anchor. No production row is mutated.
   select cp.execution_id, e.head_sha, e.request_ref
     into v_execution_id, v_head_sha, v_request_ref
     from programacion.context_packs cp
@@ -77,7 +75,7 @@ begin
       v_request_ref,
       v_context_sha256,
       'OP24_INDEPENDENT_ROLLBACK_CANARY',
-      'rollback://op24/source-verifier-positive',
+      'rollback://op24/source-verifier-positive/evidence',
       jsonb_build_object(
         'kind','RETRIEVAL_PASS',
         'verdict','PASS',
@@ -116,12 +114,12 @@ begin
     raise exception 'POSITIVE_RETRIEVAL_NOT_BOUND_TO_RECEIPT';
   end if;
 
-  -- Negative: request_ref mismatch must fail closed.
+  -- Negative 1: request_ref mismatch.
   v_bad := false;
   begin
     perform * from programacion.issue_retrieval_pass_provenance_receipt_v1(
       v_execution_id,v_head_sha,v_request_ref||'-WRONG',v_context_sha256,
-      'OP24_INDEPENDENT_ROLLBACK_CANARY','rollback://negative-request',
+      'OP24_INDEPENDENT_ROLLBACK_CANARY','rollback://negative-request/evidence',
       jsonb_build_object(
         'kind','RETRIEVAL_PASS','verdict','PASS','independent',true,
         'execution_id',v_execution_id::text,'head_sha',v_head_sha,
@@ -135,12 +133,12 @@ begin
   end;
   if not v_bad then raise exception 'NEGATIVE_REQUEST_REF_MISMATCH_ACCEPTED'; end if;
 
-  -- Negative: self-declared/non-independent payload must fail closed.
+  -- Negative 2: non-independent verdict.
   v_bad := false;
   begin
     perform * from programacion.issue_retrieval_pass_provenance_receipt_v1(
       v_execution_id,v_head_sha,v_request_ref,v_context_sha256,
-      'OP24_INDEPENDENT_ROLLBACK_CANARY','rollback://negative-independence',
+      'OP24_INDEPENDENT_ROLLBACK_CANARY','rollback://negative-independence/evidence',
       jsonb_build_object(
         'kind','RETRIEVAL_PASS','verdict','PASS','independent',false,
         'execution_id',v_execution_id::text,'head_sha',v_head_sha,
@@ -153,14 +151,49 @@ begin
   exception when others then v_bad := true;
   end;
   if not v_bad then raise exception 'NEGATIVE_NON_INDEPENDENT_ACCEPTED'; end if;
+
+  -- Negative 3: payload verifier identity must bind the RPC identity.
+  v_bad := false;
+  begin
+    perform * from programacion.issue_retrieval_pass_provenance_receipt_v1(
+      v_execution_id,v_head_sha,v_request_ref,v_context_sha256,
+      'OP24_INDEPENDENT_ROLLBACK_CANARY','rollback://negative-identity/evidence',
+      jsonb_build_object(
+        'kind','RETRIEVAL_PASS','verdict','PASS','independent',true,
+        'execution_id',v_execution_id::text,'head_sha',v_head_sha,
+        'request_ref',v_request_ref,'context_sha256',v_context_sha256,
+        'verifier_identity','DIFFERENT_VERIFIER',
+        'evidence_ref','rollback://negative-identity/evidence',
+        'evidence_sha256',repeat('e',64)
+      )
+    );
+  exception when others then v_bad := true;
+  end;
+  if not v_bad then raise exception 'NEGATIVE_VERIFIER_IDENTITY_MISMATCH_ACCEPTED'; end if;
+
+  -- Negative 4: verification_ref must bind the payload evidence_ref.
+  v_bad := false;
+  begin
+    perform * from programacion.issue_retrieval_pass_provenance_receipt_v1(
+      v_execution_id,v_head_sha,v_request_ref,v_context_sha256,
+      'OP24_INDEPENDENT_ROLLBACK_CANARY','rollback://negative-ref/rpc',
+      jsonb_build_object(
+        'kind','RETRIEVAL_PASS','verdict','PASS','independent',true,
+        'execution_id',v_execution_id::text,'head_sha',v_head_sha,
+        'request_ref',v_request_ref,'context_sha256',v_context_sha256,
+        'verifier_identity','OP24_INDEPENDENT_ROLLBACK_CANARY',
+        'evidence_ref','rollback://negative-ref/payload',
+        'evidence_sha256',repeat('f',64)
+      )
+    );
+  exception when others then v_bad := true;
+  end;
+  if not v_bad then raise exception 'NEGATIVE_VERIFICATION_REF_MISMATCH_ACCEPTED'; end if;
 end;
 $test$;
 
--- Test transaction intentionally ends with rollback.
 rollback;
 
--- Required independent post-run readback (run after this file):
--- select
---   count(*) filter (where issuer_channel='SOURCE_VERIFIER_PROTECTED_V1') as protected_receipts
--- from programacion.provenance_receipts;
--- Expected delta versus pre-test baseline: 0.
+-- Required independent post-run readback after executing this file:
+-- compare the pre/post count for issuer_channel='SOURCE_VERIFIER_PROTECTED_V1'.
+-- Expected delta: 0.
