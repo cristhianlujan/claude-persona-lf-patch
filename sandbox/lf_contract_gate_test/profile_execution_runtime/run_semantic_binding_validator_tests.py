@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import copy
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -55,3 +56,17 @@ if proc.stderr:
 assert proc.returncode==0,('S26_INDEPENDENT_BUNDLE_PREFLIGHT_TESTS_FAILED',proc.returncode)
 assert 'S26_INDEPENDENT_BUNDLE_PREFLIGHT_TESTS_PASS=7/7' in proc.stdout,'S26_INDEPENDENT_BUNDLE_PREFLIGHT_MARKER_MISSING'
 print('S26_INDEPENDENT_BUNDLE_PREFLIGHT_GATE_PASS=7/7')
+
+repo_root=Path(__file__).resolve().parents[3]
+quality_adversarial=repo_root/'profiles/quality_pack/evals/quality_gate_adversarial.py'
+assert quality_adversarial.is_file(),('QUALITY_GATE_ADVERSARIAL_MISSING',quality_adversarial)
+qproc=subprocess.run([sys.executable,str(quality_adversarial)],cwd=repo_root,capture_output=True,text=True,check=False)
+if qproc.stdout:
+    print(qproc.stdout,end='' if qproc.stdout.endswith('\n') else '\n')
+if qproc.stderr:
+    print(qproc.stderr,file=sys.stderr,end='' if qproc.stderr.endswith('\n') else '\n')
+assert qproc.returncode==0,('QUALITY_GATE_ADVERSARIAL_FAILED',qproc.returncode)
+qresult=json.loads(qproc.stdout)
+assert qresult.get('passed') is True,('QUALITY_GATE_ADVERSARIAL_NOT_PASS',qresult)
+assert int(qresult.get('case_count',0))>=20,('QUALITY_GATE_ADVERSARIAL_CASE_COVERAGE_LOW',qresult.get('case_count'))
+print('S26_CANONICAL_QUALITY_GATE_ADVERSARIAL_PASS='+str(qresult['case_count'])+'/'+str(qresult['case_count']))
