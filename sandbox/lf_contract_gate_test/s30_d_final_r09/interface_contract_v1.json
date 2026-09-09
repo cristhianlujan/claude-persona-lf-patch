@@ -1,0 +1,21 @@
+{
+  "contract_version": "S30-D-INTERFACE-COMPATIBILITY-v1",
+  "phase": "PHASE_2_BEFORE_FINAL_R09",
+  "a_source_semantics": "S30_SELF_GOVERNANCE_GATE_v0.2",
+  "a_normalized_interface": "PREEXECUTION_ASSURANCE_RESULT",
+  "b_required_interface": "PREEXECUTION_DATA_ACCESS_RESULT",
+  "b_allowed_vocabulary": ["PASS", "BLOCKED"],
+  "c_required_output": "READY_FOR_FINAL_R09_INTEGRATION",
+  "material_work_rule": "ALLOW_ONLY_IF_A_PASS_AND_B_PASS_AND_C_FROZEN_EVIDENCE_VALID",
+  "combined_order": [
+    "S30-A_SELF_GOVERNANCE_GATE",
+    "S30-B_PREEXECUTION_DATA_ACCESS_RESULT",
+    "S30-C_FROZEN_EVIDENCE_CONSUMPTION",
+    "ONLY_THEN_MATERIAL_WORK"
+  ],
+  "negative_requirements": [
+    "B_BLOCKED_PREVENTS_MATERIAL_WORK",
+    "C_FROZEN_HASH_MISMATCH_PREVENTS_MATERIAL_WORK"
+  ],
+  "scope_ceiling": "INTEGRATION_ONLY_NO_MAIN_MERGE_NO_RUNTIME_NO_PRODUCTION"
+}

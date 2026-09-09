@@ -1,0 +1,43 @@
+{
+  "matrix_version": "S30-D-ABC-RECEIPT-MATRIX-v1",
+  "current_main_sha": "d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
+  "lanes": {
+    "A": {
+      "source_identity": "main@d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921 / PR#617",
+      "frozen_sha": "00620aecb5da7423e720747039743d0edb9ed64f",
+      "receipt_identity": "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json#c90a882b51002968b6379390428479f98dd3d755",
+      "contract_version": "S30_SELF_GOVERNANCE_GATE v0.2-candidate",
+      "expected_interface": "PREEXECUTION_ASSURANCE_RESULT normalized from A evaluator",
+      "currentness": "CURRENT_MAIN_EXACT_MERGE",
+      "invalidation_triggers": ["main changes materially", "A contract/judge/receipt blob changes"],
+      "ci_evidence": "A exact-head evidence preserved in its receipt; current main still exact PR#617 merge",
+      "readback_evidence": "GitHub main readback confirms d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
+      "status": "CURRENT"
+    },
+    "B": {
+      "source_identity": "lf/s30-b-rematerialized-d75b7c15-20260909@8dcb2a5f8a22aba94d7ab1b4b33b97496d41a980",
+      "frozen_sha": "fa8a3fa1e31b5d0c709db3b3e85cde24acdcead4",
+      "receipt_identity": "sandbox/lf_contract_gate_test/s30_data_access_candidate/s30_b_currentness_receipt.json",
+      "contract_version": "LF_DATA_ACCESS_REGISTRY_V1",
+      "expected_interface": "PREEXECUTION_DATA_ACCESS_RESULT=PASS|BLOCKED",
+      "currentness": "REMATERIALIZED_FROM_CURRENT_MAIN_WITH_15_OF_15_STRUCTURAL_SCHEMA_PARITY",
+      "invalidation_triggers": ["main changes materially", "registered object kind changes", "registered field disappears", "schema receipt fingerprint mismatch", "B CI wiring removed"],
+      "ci_evidence": "Validate LF Packs run 34414287900 SUCCESS exact head 8dcb2a5f8a22aba94d7ab1b4b33b97496d41a980",
+      "readback_evidence": "job 102675540934 ran A step 4 then B step 5 before dependency install step 6",
+      "status": "CURRENT"
+    },
+    "C": {
+      "source_identity": "lf/s30-c-receipt-reconcile-20260909@b8e059e42c30082ea7156d3bfdb442e614214044",
+      "frozen_sha": "408ca4d9512ca808c2262cf0e9266723a06558dc",
+      "receipt_identity": "sandbox/lf_contract_gate_test/s30_c_reliability_harness/s30_c_frozen_receipt_r02.json#8c79007de5ff5b4f8bd2ae553b6454d90d0d01cc",
+      "contract_version": "S30-R07-GATE-FREEZE-v1 / HARNESS_AND_GUARDS-R02",
+      "expected_interface": "READY_FOR_FINAL_R09_INTEGRATION",
+      "currentness": "FROZEN_MATERIAL_PRESERVED_RECEIPT_DURABLE",
+      "invalidation_triggers": ["any frozen C blob changes", "freeze phase mutated instead of versioned", "stale A/B accepted"],
+      "ci_evidence": "Validate LF Packs run 34414337799 SUCCESS exact head b8e059e42c30082ea7156d3bfdb442e614214044",
+      "readback_evidence": "job 102675701704 executed S30-C regression suite and machine CI readback",
+      "status": "CURRENT"
+    }
+  },
+  "independence_rule": "NO_LANE_EVIDENCE_IS_USED_AS_PROOF_OF_ANOTHER_LANE"
+}

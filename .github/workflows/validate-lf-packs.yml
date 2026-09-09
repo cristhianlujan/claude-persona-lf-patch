@@ -35,6 +35,12 @@ jobs:
       - name: Validate S30-B data access safety candidate
         run: python sandbox/lf_contract_gate_test/s30_data_access_candidate/test_s30_data_access.py
 
+      - name: Validate S30-C frozen reliability harness
+        run: python sandbox/lf_contract_gate_test/s30_c_reliability_harness/test_s30c_harness.py
+
+      - name: Validate S30-D A-B-C interface compatibility
+        run: python sandbox/lf_contract_gate_test/s30_d_final_r09/s30d_integration_gate.py
+
       - name: Install Profile Runtime API test dependencies
         run: python -m pip install --disable-pip-version-check -r services/profile_runtime_api/requirements-dev.in
 
