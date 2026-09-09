@@ -50,6 +50,13 @@ jobs:
       - name: Validate learning engine pack
         run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
 
+      - name: Validate S30 policy operations candidate
+        run: |
+          python -m pip install --disable-pip-version-check PyYAML==6.0.2
+          python sandbox/lf_contract_gate_test/s30_policy_operations_candidate/validate_policy_operations_candidate.py \
+            sandbox/lf_contract_gate_test/s30_policy_operations_candidate/policy_operations_contract.yaml
+          python sandbox/lf_contract_gate_test/s30_policy_operations_candidate/test_policy_operations_candidate.py
+
       - name: Validate PROFILE_RUNTIME V3 quality and lineage gates
         env:
           LF_PERSISTENT_RUNTIME_SCOPE: ISOLATED_CANDIDATE
