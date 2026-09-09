@@ -5,6 +5,10 @@ on:
     paths:
       - "profiles/ui_architect/validators/validate_ui_architect_output.py"
       - "profiles/ui_architect/evals/contract_validator_alignment_20260908/**"
+      - "profiles/quality_pack/validators/validate_gate_bundle.py"
+      - "profiles/quality_pack/validators/validate_routing.py"
+      - "profiles/quality_pack/validators/trusted_ref_resolver.py"
+      - "profiles/quality_pack/evals/quality_gate_adversarial.py"
       - "sandbox/lf_contract_gate_test/profile_driven_screen_generation/**"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/profile_execution_contract.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_execution_contract_tests.py"
@@ -14,6 +18,8 @@ on:
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_source_first_runtime_tests.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_source_first_prebind.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_source_first_prebind_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_independent_bundle_preflight.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_independent_bundle_preflight_tests.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_semantic_quality.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_semantic_quality_tests.py"
@@ -67,6 +73,16 @@ jobs:
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_semantic_quality_tests.py
+      - name: Upload canonical Quality Pack reconciliation machinery
+        uses: actions/upload-artifact@v4
+        with:
+          name: s26-quality-pack-reconciliation-machinery
+          path: |
+            profiles/quality_pack/validators/validate_gate_bundle.py
+            profiles/quality_pack/validators/validate_routing.py
+            profiles/quality_pack/validators/trusted_ref_resolver.py
+            profiles/quality_pack/evals/quality_gate_adversarial.py
+          retention-days: 30
       - name: Enforce UI Architect written-contract parity
         run: |
           set -euo pipefail
