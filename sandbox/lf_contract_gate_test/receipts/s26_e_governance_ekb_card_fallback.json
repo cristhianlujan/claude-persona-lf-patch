@@ -1,26 +1,31 @@
 {
   "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
-  "receipt_version": "v0.1",
+  "receipt_version": "v0.2",
   "issued_by": "contract_judge",
   "operation_code": "S26_E_GOVERNANCE_EKB_CARD_FALLBACK",
-  "execution_id": "S26-E-20260909-001",
+  "execution_id": "S26-E-20260909-002",
   "result": "PASS_SANDBOX",
   "all_required_steps_pass": true,
   "contract_sha": "c99e9674104fc42d460fafe1ae7f3476dcb7991b",
-  "judge_sha": "a326c963d91d7d0f0aa9ff382f0a5a31cecd4ce5",
+  "judge_sha": "295d5d8749a3fa5c8aa76e991e8b7eb4007d170e",
   "source_sha_list": [
     "d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
     "f3a7d236f644ccb6c643f2081e4ee934c6171be0",
-    "b9041b03d9fdd15e20029939ed2e226ff3320b21"
+    "b9041b03d9fdd15e20029939ed2e226ff3320b21",
+    "c4819910b85ae7dfaa36e3d3c311da19a3faed8d",
+    "b11a9acd965b6e71f40fbd4a1fd3fc472fd7c465"
   ],
   "target_paths": [
     "gobernanza/contratos/s26_e_governed_applicability_card_fallback_v1.json",
-    "gobernanza/judges/validate_s26_e_governance.py"
+    "gobernanza/judges/validate_s26_e_governance.py",
+    "gobernanza/contratos/contrato_card_lf.yaml",
+    "gobernanza/judges/judge_contrato_card_lf.yaml"
   ],
   "blocking_codes": [],
-  "issued_at": "2026-09-09T17:53:00-05:00",
+  "issued_at": "2026-09-09T18:01:31-05:00",
   "evidence": {
     "pre_existing_pre_ekb_gate_reused": "CONTRACT-PRE-EKB-GATE-LF-v0.1",
+    "card_creation_pre_execution_binding": "CREACION_CARD_LF requires S26-E gate before write",
     "regression_matrix": "sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_cases.json",
     "case_count": 15,
     "manual_avoided_case": "S26E-03-NO-CARD-GENERIC",
