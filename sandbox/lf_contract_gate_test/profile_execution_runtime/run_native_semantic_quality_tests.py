@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from pathlib import Path
+import subprocess
+import sys
 
 from semantic_mini_judge import (
     build_receipt as build_legacy_semantic_receipt,
@@ -201,6 +204,28 @@ def rehash_binding_and_receipt(receipt):
     return receipt
 
 
+def run_semantic_binding_gate():
+    test_path = Path(__file__).with_name("run_semantic_binding_validator_tests.py")
+    if not test_path.is_file():
+        raise SystemExit("SEMANTIC_BINDING_GATE_TEST_MISSING")
+    completed = subprocess.run(
+        [sys.executable, str(test_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.stdout:
+        print(completed.stdout, end="" if completed.stdout.endswith("\n") else "\n")
+    if completed.stderr:
+        print(completed.stderr, file=sys.stderr, end="" if completed.stderr.endswith("\n") else "\n")
+    marker = "SEMANTIC_BINDING_REGRESSIONS_PASS=7/7"
+    if completed.returncode != 0:
+        raise SystemExit(f"SEMANTIC_BINDING_GATE_FAIL exit={completed.returncode}")
+    if marker not in completed.stdout:
+        raise SystemExit("SEMANTIC_BINDING_GATE_MARKER_MISSING")
+    print("NATIVE_SEMANTIC_BINDING_GATE_PASS 7/7")
+
+
 def main():
     passed = 0
 
@@ -337,7 +362,6 @@ def main():
     assert "NATIVE_SEMANTIC_BINDING_CHECK_BUNDLE_SHA256_MISMATCH" in errors
     passed += 1
 
-    # Legacy deterministic receipts remain verifiable for historical evidence.
     legacy_manifest = make_manifest(semantic=False)
     legacy_execution = make_execution_receipt(legacy_manifest)
     legacy_bundle = validate_bundle(
@@ -360,6 +384,8 @@ def main():
 
     if passed != 9:
         raise SystemExit(f"NATIVE_SEMANTIC_QUALITY_TESTS_FAIL {passed}/9")
+
+    run_semantic_binding_gate()
     print("NATIVE_SEMANTIC_QUALITY_TESTS_PASS 9/9")
 
 
