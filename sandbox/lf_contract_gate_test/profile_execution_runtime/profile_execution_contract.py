@@ -11,6 +11,9 @@ from typing import Any
 SCHEMA = "LF_PROFILE_EXECUTION_CONTRACT_V1"
 CONTROL_RECEIPT_TYPE = "PROFILE_EXECUTION_CONTROL_RECEIPT_V1"
 EXECUTOR_MODES = {"GPT_NATIVE", "CLAUDE_NATIVE", "REMOTE_API"}
+CARD_RESOLUTION_MODES = {"EXACT", "COMPOSED", "GENERIC_SAFE"}
+SOURCE_FIDELITY_SCHEMA = "LF_SOURCE_FIDELITY_CONTRACT_V1"
+SOURCE_AUTHORITY_KINDS = {"STRUCTURED_SOURCE", "DOM", "API_SCHEMA", "DATABASE_SCHEMA", "VISUAL_ONLY"}
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
@@ -46,11 +49,16 @@ def _validate_unique_string_list(errors: list[str], name: str, value: Any, *, al
     return list(value)
 
 
-def _validate_cards(errors: list[str], value: Any) -> None:
-    if not isinstance(value, list) or not value:
+def _validate_cards(errors: list[str], value: Any, *, allow_empty: bool = False) -> list[dict[str, Any]]:
+    if not isinstance(value, list):
         errors.append("CARD_REFS_AND_HASHES_INVALID")
-        return
+        return []
+    if not value:
+        if not allow_empty:
+            errors.append("CARD_REFS_AND_HASHES_INVALID")
+        return []
     seen: set[str] = set()
+    valid: list[dict[str, Any]] = []
     for index, item in enumerate(value):
         prefix = f"CARD_{index}"
         if not isinstance(item, dict):
@@ -66,6 +74,44 @@ def _validate_cards(errors: list[str], value: Any) -> None:
             if ref in seen:
                 errors.append("CARD_REF_DUPLICATE")
             seen.add(ref)
+        valid.append(item)
+    return valid
+
+
+def _validate_card_resolution(errors: list[str], cards: list[dict[str, Any]], value: Any) -> None:
+    if value is None:
+        if not cards:
+            errors.append("CARD_RESOLUTION_REQUIRED_WHEN_NO_CARD")
+        return
+    if not isinstance(value, dict):
+        errors.append("CARD_RESOLUTION_NOT_OBJECT")
+        return
+
+    mode = value.get("mode")
+    if mode not in CARD_RESOLUTION_MODES:
+        errors.append("CARD_RESOLUTION_MODE_INVALID")
+        return
+
+    critical_missing = value.get("critical_authority_missing")
+    if not isinstance(critical_missing, bool):
+        errors.append("CRITICAL_AUTHORITY_MISSING_NOT_BOOLEAN")
+    elif critical_missing:
+        errors.append("CRITICAL_AUTHORITY_MISSING")
+
+    unresolved = value.get("unresolved_capabilities", [])
+    _validate_unique_string_list(errors, "unresolved_capabilities", unresolved, allow_empty=True)
+
+    if mode in {"EXACT", "COMPOSED"} and not cards:
+        errors.append("CARD_RESOLUTION_MODE_REQUIRES_CARD")
+    if mode == "GENERIC_SAFE":
+        if cards:
+            errors.append("GENERIC_SAFE_WITH_CARD_REFS")
+        if not _nonempty_string(value.get("core_policy_ref")):
+            errors.append("GENERIC_SAFE_CORE_POLICY_REF_INVALID")
+        if not _is_sha256(value.get("core_policy_sha256")):
+            errors.append("GENERIC_SAFE_CORE_POLICY_SHA256_INVALID")
+        if not _nonempty_string(value.get("fallback_reason")):
+            errors.append("GENERIC_SAFE_FALLBACK_REASON_INVALID")
 
 
 def validate_execution_contract(
@@ -100,8 +146,8 @@ def validate_execution_contract(
     authorized_scope = _validate_unique_string_list(errors, "authorized_scope", contract.get("authorized_scope"))
     allowed_actions = _validate_unique_string_list(errors, "allowed_actions", contract.get("allowed_actions"))
     forbidden_actions = _validate_unique_string_list(errors, "forbidden_actions", contract.get("forbidden_actions"))
-    _validate_unique_string_list(errors, "required_checks", contract.get("required_checks"))
-    _validate_unique_string_list(errors, "required_evidence", contract.get("required_evidence"))
+    required_checks = _validate_unique_string_list(errors, "required_checks", contract.get("required_checks"))
+    required_evidence = _validate_unique_string_list(errors, "required_evidence", contract.get("required_evidence"))
     _validate_unique_string_list(errors, "closure_conditions", contract.get("closure_conditions"))
     _validate_unique_string_list(errors, "tool_permissions", contract.get("tool_permissions"))
 
@@ -111,7 +157,20 @@ def validate_execution_contract(
     if overlap:
         errors.append("ACTION_POLICY_OVERLAP:" + ",".join(overlap))
 
-    _validate_cards(errors, contract.get("card_refs_and_hashes"))
+    cards = _validate_cards(errors, contract.get("card_refs_and_hashes"), allow_empty=True)
+    _validate_card_resolution(errors, cards, contract.get("card_resolution"))
+
+    fidelity_ref = contract.get("source_fidelity_contract_ref")
+    fidelity_sha = contract.get("source_fidelity_contract_sha256")
+    if fidelity_ref is not None or fidelity_sha is not None:
+        if not _nonempty_string(fidelity_ref):
+            errors.append("SOURCE_FIDELITY_CONTRACT_REF_INVALID")
+        if not _is_sha256(fidelity_sha):
+            errors.append("SOURCE_FIDELITY_CONTRACT_SHA256_INVALID")
+        if "SOURCE_FIDELITY" not in required_checks:
+            errors.append("SOURCE_FIDELITY_REQUIRED_CHECK_MISSING")
+        if "source_fidelity" not in required_evidence:
+            errors.append("SOURCE_FIDELITY_REQUIRED_EVIDENCE_MISSING")
 
     claimed_sha = contract.get("contract_sha256")
     if _nonempty_string(claimed_sha):
@@ -132,6 +191,9 @@ def build_execution_contract(
     closure_conditions: list[str], input_governance_ref: str,
     card_refs_and_hashes: list[dict[str, str]], adapter_ref: str,
     context_fingerprint: str, tool_permissions: list[str], executor_mode: str,
+    card_resolution: dict[str, Any] | None = None,
+    source_fidelity_contract_ref: str | None = None,
+    source_fidelity_contract_sha256: str | None = None,
 ) -> dict[str, Any]:
     contract: dict[str, Any] = {
         "schema": SCHEMA,
@@ -153,6 +215,11 @@ def build_execution_contract(
         "tool_permissions": tool_permissions,
         "executor_mode": executor_mode,
     }
+    if card_resolution is not None:
+        contract["card_resolution"] = card_resolution
+    if source_fidelity_contract_ref is not None or source_fidelity_contract_sha256 is not None:
+        contract["source_fidelity_contract_ref"] = source_fidelity_contract_ref
+        contract["source_fidelity_contract_sha256"] = source_fidelity_contract_sha256
     contract["contract_sha256"] = canonical_json_sha256(contract)
     errors = validate_execution_contract(contract)
     if errors:
@@ -246,3 +313,114 @@ def build_control_receipt(
     }
     receipt["receipt_sha256"] = canonical_json_sha256(receipt)
     return receipt
+
+
+def validate_source_fidelity_contract(contract: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(contract, dict):
+        return ["SOURCE_FIDELITY_CONTRACT_NOT_OBJECT"]
+    if contract.get("schema") != SOURCE_FIDELITY_SCHEMA:
+        errors.append("SOURCE_FIDELITY_SCHEMA_INVALID")
+    if not _nonempty_string(contract.get("source_ref")):
+        errors.append("SOURCE_REF_INVALID")
+    if not _is_sha256(contract.get("source_sha256")):
+        errors.append("SOURCE_SHA256_INVALID")
+    if contract.get("authority_kind") not in SOURCE_AUTHORITY_KINDS:
+        errors.append("AUTHORITY_KIND_INVALID")
+    confidence = contract.get("extraction_confidence")
+    if (not isinstance(confidence, (int, float)) or isinstance(confidence, bool)
+            or not 0 <= float(confidence) <= 1):
+        errors.append("EXTRACTION_CONFIDENCE_INVALID")
+    if contract.get("critical_ambiguity") is not False:
+        errors.append("CRITICAL_AMBIGUITY_PRESENT")
+
+    entities = contract.get("immutable_entities")
+    seen: set[str] = set()
+    if not isinstance(entities, list) or not entities:
+        errors.append("IMMUTABLE_ENTITIES_INVALID")
+    else:
+        for index, item in enumerate(entities):
+            prefix = f"ENTITY_{index}"
+            if not isinstance(item, dict):
+                errors.append(f"{prefix}_NOT_OBJECT")
+                continue
+            entity_id = item.get("entity_id")
+            if not _nonempty_string(entity_id):
+                errors.append(f"{prefix}_ID_INVALID")
+            elif entity_id in seen:
+                errors.append("ENTITY_ID_DUPLICATE")
+            else:
+                seen.add(entity_id)
+            if not _nonempty_string(item.get("kind")):
+                errors.append(f"{prefix}_KIND_INVALID")
+            if "semantic_signature" not in item:
+                errors.append(f"{prefix}_SIGNATURE_MISSING")
+
+    mutable_dimensions = contract.get("mutable_dimensions")
+    if (not isinstance(mutable_dimensions, list)
+            or any(not _nonempty_string(item) for item in mutable_dimensions)):
+        errors.append("MUTABLE_DIMENSIONS_INVALID")
+
+    claimed_sha = contract.get("contract_sha256")
+    if not _is_sha256(claimed_sha):
+        errors.append("SOURCE_FIDELITY_CONTRACT_SHA256_INVALID")
+    else:
+        expected_sha = canonical_json_sha256({k: v for k, v in contract.items() if k != "contract_sha256"})
+        if claimed_sha != expected_sha:
+            errors.append("SOURCE_FIDELITY_CONTRACT_SHA256_MISMATCH")
+    return sorted(set(errors))
+
+
+def build_source_fidelity_contract(
+    *, source_ref: str, source_sha256: str, authority_kind: str, extraction_confidence: float,
+    critical_ambiguity: bool, immutable_entities: list[dict[str, Any]], mutable_dimensions: list[str],
+) -> dict[str, Any]:
+    contract: dict[str, Any] = {
+        "schema": SOURCE_FIDELITY_SCHEMA,
+        "source_ref": source_ref,
+        "source_sha256": source_sha256,
+        "authority_kind": authority_kind,
+        "extraction_confidence": extraction_confidence,
+        "critical_ambiguity": critical_ambiguity,
+        "immutable_entities": immutable_entities,
+        "mutable_dimensions": mutable_dimensions,
+    }
+    contract["contract_sha256"] = canonical_json_sha256(contract)
+    errors = validate_source_fidelity_contract(contract)
+    if errors:
+        raise ExecutionContractError(";".join(errors))
+    return contract
+
+
+def validate_downstream_semantics(
+    source_contract: dict[str, Any], downstream_entities: Any,
+) -> list[str]:
+    errors = validate_source_fidelity_contract(source_contract)
+    if errors:
+        return ["SOURCE_FIDELITY_CONTRACT_INVALID"] + errors
+    if not isinstance(downstream_entities, list):
+        return ["DOWNSTREAM_ENTITIES_NOT_ARRAY"]
+
+    source_by_id = {item["entity_id"]: item for item in source_contract["immutable_entities"]}
+    downstream_by_id: dict[str, dict[str, Any]] = {}
+    for index, item in enumerate(downstream_entities):
+        if not isinstance(item, dict) or not _nonempty_string(item.get("entity_id")):
+            errors.append(f"DOWNSTREAM_ENTITY_{index}_INVALID")
+            continue
+        entity_id = item["entity_id"]
+        if entity_id in downstream_by_id:
+            errors.append("DOWNSTREAM_ENTITY_ID_DUPLICATE")
+        downstream_by_id[entity_id] = item
+
+    for entity_id in sorted(source_by_id.keys() - downstream_by_id.keys()):
+        errors.append("SEMANTIC_ENTITY_MISSING:" + entity_id)
+    for entity_id in sorted(downstream_by_id.keys() - source_by_id.keys()):
+        errors.append("SEMANTIC_ENTITY_INVENTED:" + entity_id)
+    for entity_id in sorted(source_by_id.keys() & downstream_by_id.keys()):
+        source = source_by_id[entity_id]
+        downstream = downstream_by_id[entity_id]
+        if (source.get("kind") != downstream.get("kind")
+                or canonical_json_sha256(source.get("semantic_signature"))
+                != canonical_json_sha256(downstream.get("semantic_signature"))):
+            errors.append("SEMANTIC_ENTITY_MUTATED:" + entity_id)
+    return sorted(set(errors))
