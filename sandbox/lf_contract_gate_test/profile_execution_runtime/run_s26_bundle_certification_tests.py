@@ -15,7 +15,13 @@ def write(path: Path, text: str):
     path.write_text(text, encoding="utf-8")
 
 
-def fixture(root: Path, validator_body: str | None = None, wrong_receipt: bool = False, omit: str | None = None):
+def fixture(
+    root: Path,
+    validator_body: str | None = None,
+    wrong_receipt: bool = False,
+    omit: str | None = None,
+    validator_argv: list[str] | None = None,
+):
     repo = root / "repo"
     artifact = repo / "producer/artifact.json"
     dump_json(artifact, {"screen": "Historial de lotes", "rows": 2})
@@ -34,6 +40,7 @@ assert Path(sys.argv[2]).read_text(encoding='utf-8').strip()=='source input'
 print('VALIDATOR_PASS')
 """
     write(repo / "validators/check.py", body)
+    write(repo / "validators/noop.py", "print('NOOP')\n")
     items = [
         {"category": "input", "source": "producer/input.txt", "bundle_path": "inputs/input.txt"},
         {"category": "authority", "source": "governance/authority.json", "bundle_path": "authorities/authority.json"},
@@ -42,8 +49,16 @@ print('VALIDATOR_PASS')
     ]
     if omit:
         items = [x for x in items if x["category"] != omit]
-    validators = [] if omit == "validator" else [{"source": "validators/check.py", "bundle_path": "validators/check.py", "argv": ["python3", "validators/check.py", "artifact/artifact.json", "inputs/input.txt"]}]
-    receipts = [] if omit == "receipt" else [{"source": "producer/receipt.json", "bundle_path": "receipts/producer.json", "artifact_sha256_field": "artifact_sha256"}]
+    validators = [] if omit == "validator" else [{
+        "source": "validators/check.py",
+        "bundle_path": "validators/check.py",
+        "argv": validator_argv or ["python3", "validators/check.py", "artifact/artifact.json", "inputs/input.txt"],
+    }]
+    receipts = [] if omit == "receipt" else [{
+        "source": "producer/receipt.json",
+        "bundle_path": "receipts/producer.json",
+        "artifact_sha256_field": "artifact_sha256",
+    }]
     spec = {
         "schema": "S26_REVIEW_BUNDLE_SPEC_V1",
         "run_id": RUN,
@@ -80,6 +95,7 @@ def expect_error(name: str, fn, prefix: str):
 
 with tempfile.TemporaryDirectory(prefix="s26_bundle_tests_") as td:
     root = Path(td)
+
     repo, spec = fixture(root / "positive")
     out = root / "positive/bundle"; zip_path = root / "positive/bundle.zip"
     build_bundle(spec, repo, out, zip_path)
@@ -101,6 +117,9 @@ with tempfile.TemporaryDirectory(prefix="s26_bundle_tests_") as td:
     repo, spec = fixture(root / "receiptbad", wrong_receipt=True)
     expect_error("receipt_same_artifact", lambda: build_bundle(spec, repo, root / "receiptbad/bundle"), "RECEIPT_ARTIFACT_MISMATCH")
 
+    repo, spec = fixture(root / "argv_mismatch", validator_argv=["python3", "validators/noop.py"])
+    expect_error("validator_argv_binding", lambda: build_bundle(spec, repo, root / "argv_mismatch/bundle"), "VALIDATOR_ARGV_MISMATCH")
+
     repo, spec = fixture(root / "tamper")
     out = root / "tamper/bundle"; build_bundle(spec, repo, out)
     write(out / "inputs/input.txt", "tampered\n")
@@ -121,6 +140,12 @@ with tempfile.TemporaryDirectory(prefix="s26_bundle_tests_") as td:
     dump_json(out / "evidence/evidence.json", {"bad": "run://S26-RUN-OTHER/inputs/input.txt"})
     rehash_manifest(out)
     expect_error("cross_run_reference", lambda: validate_bundle(out), "CROSS_RUN_REF")
+
+    repo, spec = fixture(root / "external")
+    out = root / "external/bundle"; build_bundle(spec, repo, out)
+    dump_json(out / "evidence/evidence.json", {"bad": "github://example/repo@" + "c"*40 + "/missing.json"})
+    rehash_manifest(out)
+    expect_error("external_reference_unmapped", lambda: validate_bundle(out), "EXTERNAL_REF_UNMAPPED")
 
     repo, spec = fixture(root / "manifestgap")
     out = root / "manifestgap/bundle"; build_bundle(spec, repo, out)
@@ -144,4 +169,4 @@ assert Path('../producer/secret.txt').read_text() == 'secret'
     assert any(e.startswith("REPLAY_FAILED") for e in receipt["errors"]), receipt
     print("PASS local_working_tree_dependency_blocked")
 
-print("S26_BUNDLE_CERTIFICATION_TESTS_PASS=10_NEGATIVE_PLUS_1_POSITIVE")
+print("S26_BUNDLE_CERTIFICATION_TESTS_PASS=12_NEGATIVE_PLUS_1_POSITIVE")
