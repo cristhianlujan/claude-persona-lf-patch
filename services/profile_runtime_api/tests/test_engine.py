@@ -251,6 +251,24 @@ class EngineGateTest(unittest.TestCase):
             self.assertEqual(profile_result["profile_contract_valid"]["status"], "NOT_EVALUATED")
             self.assertEqual(profile_result["semantic_utility"]["status"], "NOT_EVALUATED")
 
+    def test_full_image_model_path_is_disabled_by_default(self) -> None:
+        engine, _pipeline = self.engine(valid_quality_output())
+        task = self.quality_task("quality-full-image-blocked-1").model_copy(
+            update={"send_image_to_model": True}
+        )
+        result = engine.run_execute(
+            ExecuteRequest(
+                artifact=self.artifact,
+                input_governance=self.governance,
+                profile=task,
+            )
+        )["result"]
+        self.assertEqual(result["runtime_completion"]["status"], "FAIL")
+        self.assertEqual(
+            result["runtime_completion"]["blocking_codes"],
+            ["FULL_IMAGE_MODEL_PATH_DISABLED"],
+        )
+
     def test_queue_native_path_reuses_profile_source_and_schema_bindings(self) -> None:
         engine, _pipeline = self.engine(valid_quality_output())
         task = self.quality_task("quality-queue-1")
