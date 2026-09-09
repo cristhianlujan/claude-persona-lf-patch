@@ -1,0 +1,37 @@
+{
+  "manifest_version": "S30-C-SOURCES-v1",
+  "frozen_main": {
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "branch": "main",
+    "sha": "9ce8f87646b44e04df609b1993447f918063fdb4",
+    "tree_sha": "0148cc6971a6d5a61b7cea1b3d9b75ba77203627"
+  },
+  "handoff": {
+    "name": "HANDOFF S30-C — Evidence Path, Freeze Gates y Historical Replay Harness.md",
+    "sha256": "6076f1af1bca284748c521acb870c03786fcb8a7da2cce389b587e9c6643d456",
+    "bytes": 5219
+  },
+  "supabase": {
+    "project_id": "mhwmirqcgxxukpctffuv",
+    "strategy_snapshot": {
+      "table": "public.lf_strategy_snapshots",
+      "id": 35,
+      "sha256": "6eaff0a66e230e4619f5e55f6e244ebd7f9404f621def1c99050ee3792eac81f"
+    },
+    "ekb_rows": {
+      "DB-001": "151244a32f3c06d06e5f6f10e67adead8cd0ff80424466e916f177d5bcb69d30",
+      "GOV-010": "eacedbf167ec15ea7debba7b8edeb6a37c5b1b6f89d2b5d0b7b9f0e29ce0c528",
+      "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001": "ad7b0d841de6da5f388ce6eee585be6b7fe1ea0643e6d4ac3281a998b712e463",
+      "CI-003": "ca2995cd1096b60d6b50c4144294d0f44b1eea4d152d9f9dd9b34bfe29909404",
+      "DB-SCHEMA-FIRST-COLUMN-ASSUMPTION-001": "fa12ef74dce75e0407d7fcc8d2462bfaa6fdcceb3d355a7cbac32b87bc8fff1c"
+    },
+    "db_row_hash_canonicalization": "sha256(UTF8(to_jsonb(row)::text)) via pgcrypto digest"
+  },
+  "scope_guards": {
+    "touch_s26": false,
+    "modify_s30_a_or_b": false,
+    "activate_autonomy": false,
+    "merge_or_promote": false,
+    "final_r09_acceptance_before_a_b_receipts": false
+  }
+}
