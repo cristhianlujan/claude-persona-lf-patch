@@ -1,0 +1,32 @@
+name: S26 Bundle Certification Gate
+
+on:
+  push:
+    paths:
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_bundle_certification.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_bundle_certification_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_binding_validator_tests.py"
+      - ".github/workflows/s26-bundle-certification.yml"
+  pull_request:
+    paths:
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_bundle_certification.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_bundle_certification_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_binding_validator_tests.py"
+      - ".github/workflows/s26-bundle-certification.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-frozen-bundle-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run S26 frozen bundle certification regression matrix
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_bundle_certification_tests.py
