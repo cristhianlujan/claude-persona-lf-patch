@@ -2,8 +2,11 @@
 -- SOURCE_ONLY / NOT_DEPLOYED / CANDIDATO_READ_ONLY.
 -- No migration is generated or applied by this source file.
 -- Parent authority: LF_LEARNED_CONTEXT_MEMORY_MODEL_20260904.
+-- Strategy24 requires origin -> destination lineage with disposition, reason and evidence.
+-- Only relations with an unambiguous origin -> destination orientation are admitted here.
+-- DERIVED_FROM and RETIRES remain intentionally excluded until a separate semantic contract exists.
 -- Reuses the common recorder pattern: the operation that performs a transformation
--- must already have a clean evidence step describing the exact lineage edge.
+-- must already have a clean evidence step whose active judge binding explicitly requires `lineage`.
 
 create table programacion.learned_context_lineage (
   lineage_id bigint generated always as identity primary key,
@@ -13,7 +16,7 @@ create table programacion.learned_context_lineage (
   target_type text not null check (target_type in ('KB','EKB','CARD')),
   target_ref text not null check (length(btrim(target_ref)) > 0),
   relation_type text not null check (
-    relation_type in ('DERIVED_FROM','TRANSFORMED_TO','MOVED_TO','MERGED_INTO','SPLIT_INTO','SUPERSEDES','RETIRES')
+    relation_type in ('TRANSFORMED_TO','MOVED_TO','MERGED_INTO','SPLIT_INTO','SUPERSEDES')
   ),
   disposition_reason text not null check (length(btrim(disposition_reason)) > 0),
   reversible boolean not null,
@@ -109,8 +112,8 @@ begin
   if p_source_type not in ('KB','EKB','CARD') or p_target_type not in ('KB','EKB','CARD') then
     return jsonb_build_object('outcome','BLOCKED','code','LINEAGE_TYPE_INVALID','durable',false);
   end if;
-  if p_relation_type not in ('DERIVED_FROM','TRANSFORMED_TO','MOVED_TO','MERGED_INTO','SPLIT_INTO','SUPERSEDES','RETIRES') then
-    return jsonb_build_object('outcome','BLOCKED','code','LINEAGE_RELATION_INVALID','durable',false);
+  if p_relation_type not in ('TRANSFORMED_TO','MOVED_TO','MERGED_INTO','SPLIT_INTO','SUPERSEDES') then
+    return jsonb_build_object('outcome','BLOCKED','code','LINEAGE_RELATION_INVALID_OR_AMBIGUOUS','durable',false);
   end if;
   if p_source_type=p_target_type and p_source_ref=p_target_ref then
     return jsonb_build_object('outcome','BLOCKED','code','LINEAGE_SELF_LOOP_FORBIDDEN','durable',false);
@@ -141,6 +144,9 @@ begin
   if not found then
     return jsonb_build_object('outcome','BLOCKED','code','LINEAGE_EVIDENCE_BINDING_NOT_ACTIVE','durable',false);
   end if;
+  if not (coalesce(v_binding.required_evidence_keys,'[]'::jsonb) @> '["lineage"]'::jsonb) then
+    return jsonb_build_object('outcome','BLOCKED','code','LINEAGE_NOT_REQUIRED_BY_PRODUCER_CONTRACT','durable',false);
+  end if;
   if v_step.status <> v_binding.clean_result_value then
     return jsonb_build_object('outcome','BLOCKED','code','LINEAGE_EVIDENCE_STEP_NOT_CLEAN','observed_status',v_step.status,'durable',false);
   end if;
@@ -150,6 +156,7 @@ begin
 
   v_lineage := v_step.evidence_payload->'lineage';
   if jsonb_typeof(v_lineage) <> 'object'
+     or jsonb_typeof(v_lineage->'reversible') <> 'boolean'
      or v_lineage->>'transformation_group_id' <> p_transformation_group_id::text
      or v_lineage->>'source_type' <> p_source_type
      or v_lineage->>'source_ref' <> p_source_ref
@@ -157,7 +164,7 @@ begin
      or v_lineage->>'target_ref' <> p_target_ref
      or v_lineage->>'relation_type' <> p_relation_type
      or v_lineage->>'disposition_reason' <> p_disposition_reason
-     or coalesce((v_lineage->>'reversible')::boolean,not p_reversible) <> p_reversible then
+     or (v_lineage->>'reversible')::boolean <> p_reversible then
     return jsonb_build_object('outcome','BLOCKED','code','LINEAGE_EVIDENCE_EDGE_MISMATCH','durable',false);
   end if;
 
@@ -188,6 +195,7 @@ begin
   end if;
 
   if p_relation_type='SUPERSEDES' then
+    -- Orientation: source is the newer/current entity; target is the older entity it supersedes.
     with recursive reach(node_type,node_ref) as (
       select p_target_type,p_target_ref
       union
@@ -251,4 +259,4 @@ before update or delete on programacion.learned_context_lineage
 for each row execute function programacion.block_learned_context_lineage_mutation_v1();
 
 comment on table programacion.learned_context_lineage is
-  'Strategy24 durable lineage carrier candidate. Append-only edges across KB/EKB/CARD. Writes only through a recorder bound to a clean operation step and current Strategy24 authority. SOURCE_ONLY until governed migration approval.';
+  'Strategy24 durable lineage carrier candidate. Append-only origin->destination edges across KB/EKB/CARD. Writes only through a recorder bound to an explicitly lineage-required clean operation step and current Strategy24 authority. SOURCE_ONLY until governed migration approval.';
