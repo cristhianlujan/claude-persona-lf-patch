@@ -11,11 +11,14 @@ from __future__ import annotations
 from pathlib import PurePosixPath
 from typing import Iterable
 
-S30_PREFIX = "sandbox/lf_contract_gate_test/s30_policy_operations_candidate/"
+S30_POLICY_PREFIX = "sandbox/lf_contract_gate_test/s30_policy_operations_candidate/"
+S30_SELF_GOVERNANCE_PREFIX = "sandbox/lf_contract_gate_test/s30_self_governance/"
+S30_SELF_GOVERNANCE_RECEIPT_PREFIX = "sandbox/lf_contract_gate_test/receipts/s30_a_self_governance_gate_"
 MIGRATION_PREFIX = "supabase/migrations/"
 MIGRATION_VALIDATOR = "sandbox/lf_contract_gate_test/lf_migration_source_parity.py"
 INPUT_GOV_VALIDATOR = "sandbox/lf_contract_gate_test/input_governance_migration_parity_compact.py"
 CI_WORKFLOW = ".github/workflows/lf-contract-check.yml"
+VALIDATE_LF_PACKS_WORKFLOW = ".github/workflows/validate-lf-packs.yml"
 CI_ROUTER_PREFIX = "sandbox/lf_contract_gate_test/s28_ci_lane_router/"
 P0_RUNTIME_ENTRYPOINT = "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py"
 P0_EXACT_HEAD_EXTERNAL_PREFIX = "supabase/functions/lf-p0-exact-head-evidence-broker-v2/"
@@ -106,10 +109,22 @@ def _is_p0_exact_head_external_owner(path: str) -> bool:
     return path.startswith(P0_EXACT_HEAD_EXTERNAL_PREFIX) or path in P0_EXACT_HEAD_EXTERNAL_EXACT
 
 
+def _is_s30_policy(path: str) -> bool:
+    return path.startswith(S30_POLICY_PREFIX)
+
+
+def _is_s30_self_governance(path: str) -> bool:
+    return path.startswith(S30_SELF_GOVERNANCE_PREFIX) or path.startswith(S30_SELF_GOVERNANCE_RECEIPT_PREFIX)
+
+
+def _is_s30_isolated(path: str) -> bool:
+    return _is_s30_policy(path) or _is_s30_self_governance(path)
+
+
 def _is_known_shared(path: str) -> bool:
-    if path == CI_WORKFLOW or path == P0_RUNTIME_ENTRYPOINT:
+    if path in {CI_WORKFLOW, VALIDATE_LF_PACKS_WORKFLOW, P0_RUNTIME_ENTRYPOINT}:
         return True
-    if path.startswith(CI_ROUTER_PREFIX) or path.startswith(S30_PREFIX):
+    if path.startswith(CI_ROUTER_PREFIX) or _is_s30_isolated(path):
         return True
     if path in {MIGRATION_VALIDATOR, INPUT_GOV_VALIDATOR}:
         return True
@@ -136,7 +151,8 @@ def classify(paths: Iterable[str]) -> LaneDecision:
     selftest = False
     p0_external = False
     unknown = False
-    s30 = False
+    s30_policy = False
+    s30_self_governance = False
     reasons: list[str] = []
 
     for path in changed:
@@ -146,15 +162,18 @@ def classify(paths: Iterable[str]) -> LaneDecision:
         if _is_input_governance_migration(path) or path == INPUT_GOV_VALIDATOR:
             input_gov = True
             reasons.append(f"INPUT_GOV:{path}")
-        if path == CI_WORKFLOW or path == P0_RUNTIME_ENTRYPOINT or path.startswith(CI_ROUTER_PREFIX):
+        if path in {CI_WORKFLOW, VALIDATE_LF_PACKS_WORKFLOW, P0_RUNTIME_ENTRYPOINT} or path.startswith(CI_ROUTER_PREFIX):
             selftest = True
             reasons.append(f"CI_ROUTER_SELFTEST:{path}")
         if _is_p0_exact_head_external_owner(path):
             p0_external = True
             reasons.append(f"P0_EXACT_HEAD_EXTERNAL:{path}")
-        if path.startswith(S30_PREFIX):
-            s30 = True
+        if _is_s30_policy(path):
+            s30_policy = True
             reasons.append(f"S30_POLICY:{path}")
+        if _is_s30_self_governance(path):
+            s30_self_governance = True
+            reasons.append(f"S30_SELF_GOVERNANCE:{path}")
         if not _is_known_shared(path) and not path.startswith(MIGRATION_PREFIX):
             unknown = True
             reasons.append(f"UNKNOWN:{path}")
@@ -172,7 +191,9 @@ def classify(paths: Iterable[str]) -> LaneDecision:
         mode = "SPECIALIZED_REQUIRED"
     elif selftest:
         mode = "CI_ROUTER_SELFTEST_ONLY"
-    elif s30:
+    elif s30_self_governance:
+        mode = "S30_SELF_GOVERNANCE_ISOLATED"
+    elif s30_policy:
         mode = "S30_POLICY_ISOLATED"
     else:
         mode = "DEEP_SHARED_KNOWN"
