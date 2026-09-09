@@ -26,6 +26,20 @@ invocation_route:
   status: CANDIDATE_SANDBOX
   activation_allowed_in_candidate: false
   required_for_execution: true
+lineage_dependency:
+  parent_strategy: LF_LEARNED_CONTEXT_MEMORY_MODEL_20260904
+  carrier: programacion.learned_context_lineage
+  recorder: programacion.record_learned_context_lineage_v1
+  required_before_card_creada_transition: true
+  source_type: EKB
+  source_ref_field: codigo
+  target_type: CARD
+  target_ref_field: receiver_factory_receipt.id_card
+  relation_type: TRANSFORMED_TO
+  transformation_group_required: true
+  exact_clean_step_lineage_required: true
+  direct_lineage_table_write: false
+  carrier_source_candidate_only: true
 authority:
   router: ACT-0001
   operational_source: public.v_lf_fuente_operativa
@@ -58,6 +72,8 @@ output_contract:
   direct_official_rule_write: false
   direct_impact: false
   exact_receiver_only: CREACION_CARD_LF:v0.4
+  card_created_transition_requires_receiver_id_card: true
+  card_created_transition_requires_lineage_record: true
 lifecycle:
   - DETECTADO
   - ANALIZADO
@@ -75,6 +91,7 @@ required_gates:
   - deterministic_dedup
   - independent_evidence_gate
   - card_factory_contract_gate
+  - lineage_contract_gate
   - sandbox_gate
   - quality_gate
   - performance_gate
@@ -93,10 +110,18 @@ negative_controls:
   - factory_dependency_missing_blocks_registration
   - missing_experience_route_blocks_execution
   - experience_route_write_enabled_blocks
+  - missing_receiver_id_card_blocks_card_creada
+  - missing_lineage_carrier_blocks_card_creada
+  - missing_exact_lineage_payload_blocks_card_creada
+  - wrong_lineage_source_code_blocks
+  - wrong_lineage_target_card_blocks
+  - wrong_lineage_relation_blocks
+  - direct_lineage_table_write_blocked
   - router_bypass_blocked
 blocked:
   - direct_operation_registry_write
   - direct_card_table_write
+  - direct_lineage_table_write
   - direct_official_document_write
   - auto_promote_card
   - auto_impact
@@ -105,6 +130,8 @@ blocked:
   - production_promotion
   - experience_router_bypass
   - experience_route_write_enablement
+  - card_creada_without_receiver_id_card
+  - card_creada_without_exact_lineage
   - strategy23_execution
 registration_rule: >-
   This source package can be validated and sandbox-tested before the generic
@@ -113,8 +140,12 @@ registration_rule: >-
   is independently approved and an OPERATION_CREATE Router binding exists. Any
   execution of the Experience bridge additionally requires the explicit
   EXPERIENCE / EXPERIENCE_LEARNING_BRIDGE Router binding; candidate validation
-  never authorizes that route to become ACTIVE or write-enabled.
+  never authorizes that route to become ACTIVE or write-enabled. The CARD_CREADA
+  transition is separate: it is blocked until the receiver factory returns an
+  exact CARD id and the same Experience execution records EKB(codigo) -> CARD(id_card)
+  lineage as TRANSFORMED_TO through the governed common recorder.
 claim_ceiling: >-
-  PASS means only that Experience-to-Card semantics, invocation routing and evidence
-  gates are coherent as a candidate source package. It does not authorize operation
-  registration, Card creation, approval, impact, runtime activation or production.
+  PASS means only that Experience-to-Card semantics, invocation routing, evidence
+  gates and future lineage handoff are coherent as a candidate source package.
+  It does not authorize operation registration, Card creation, lineage DDL,
+  recomposition, approval, impact, runtime activation or production.
