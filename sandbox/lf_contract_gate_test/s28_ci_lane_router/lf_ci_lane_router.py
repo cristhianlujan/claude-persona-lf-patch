@@ -8,7 +8,6 @@ apply to the current changed-file set.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 from pathlib import PurePosixPath
 from typing import Iterable
 
@@ -36,19 +35,51 @@ KNOWN_SHARED_PREFIXES = (
 )
 
 
-@dataclass(frozen=True)
 class LaneDecision:
-    mode: str
-    migration_parity_required: bool
-    input_governance_parity_required: bool
-    ci_router_selftest_required: bool
-    deep_shared: bool
-    reasons: tuple[str, ...]
+    __slots__ = (
+        "mode",
+        "migration_parity_required",
+        "input_governance_parity_required",
+        "ci_router_selftest_required",
+        "deep_shared",
+        "reasons",
+    )
+
+    def __init__(
+        self,
+        *,
+        mode: str,
+        migration_parity_required: bool,
+        input_governance_parity_required: bool,
+        ci_router_selftest_required: bool,
+        deep_shared: bool,
+        reasons: tuple[str, ...],
+    ) -> None:
+        self.mode = mode
+        self.migration_parity_required = migration_parity_required
+        self.input_governance_parity_required = input_governance_parity_required
+        self.ci_router_selftest_required = ci_router_selftest_required
+        self.deep_shared = deep_shared
+        self.reasons = reasons
+
+    def __repr__(self) -> str:
+        return (
+            "LaneDecision("
+            f"mode={self.mode!r}, migration_parity_required={self.migration_parity_required!r}, "
+            f"input_governance_parity_required={self.input_governance_parity_required!r}, "
+            f"ci_router_selftest_required={self.ci_router_selftest_required!r}, "
+            f"deep_shared={self.deep_shared!r}, reasons={self.reasons!r})"
+        )
 
     def to_dict(self) -> dict:
-        payload = asdict(self)
-        payload["reasons"] = list(self.reasons)
-        return payload
+        return {
+            "mode": self.mode,
+            "migration_parity_required": self.migration_parity_required,
+            "input_governance_parity_required": self.input_governance_parity_required,
+            "ci_router_selftest_required": self.ci_router_selftest_required,
+            "deep_shared": self.deep_shared,
+            "reasons": list(self.reasons),
+        }
 
 
 def _is_input_governance_migration(path: str) -> bool:
