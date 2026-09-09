@@ -9,6 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[4]
 VALIDATOR_PATH = ROOT / "profiles/ui_architect/validators/validate_ui_architect_output.py"
 RUN_C_PATH = ROOT / "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/raw_output.json"
+BOUNDARY_RUNNER_PATH = ROOT / "profiles/ui_architect/evals/composer_payload_boundary_20260909/run_cases.py"
 
 
 def load_validator():
@@ -87,6 +88,15 @@ def upstream_bound_run_c(run_c):
     return candidate
 
 
+def run_boundary_regressions():
+    spec = importlib.util.spec_from_file_location("ui_composer_boundary_cases", BOUNDARY_RUNNER_PATH)
+    if spec is None or spec.loader is None:
+        raise RuntimeError("composer boundary regression runner load failed")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module.main()
+
+
 def main():
     validate = load_validator()
     run_c = json.loads(RUN_C_PATH.read_text(encoding="utf-8"))
@@ -154,6 +164,7 @@ def main():
     passed += 1
 
     print(f"UI_CONTRACT_VALIDATOR_ALIGNMENT_TESTS_PASS {passed}/8")
+    run_boundary_regressions()
 
 
 if __name__ == "__main__":
