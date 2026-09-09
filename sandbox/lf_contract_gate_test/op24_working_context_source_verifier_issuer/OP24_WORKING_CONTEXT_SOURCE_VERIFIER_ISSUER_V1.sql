@@ -25,28 +25,30 @@ declare
   v_secret_name constant text := 'op24_source_verifier_protected_token_v1';
   v_channel_token text;
   v_channel_token_sha256 text;
+  v_existing_channel_sha256 text;
 begin
-  if exists (
+  select pc.secret_sha256
+    into v_existing_channel_sha256
+    from programacion.provenance_channels pc
+   where pc.channel_code = v_channel_code;
+
+  if v_existing_channel_sha256 is not null and not exists (
     select 1
       from programacion.provenance_channels pc
      where pc.channel_code = v_channel_code
-       and not ('RETRIEVAL_PASS' = any(pc.allowed_kinds))
+       and 'RETRIEVAL_PASS' = any(pc.allowed_kinds)
   ) then
     raise exception 'SOURCE_VERIFIER_PROTECTED_CHANNEL_KIND_MISMATCH';
   end if;
 
-  if not exists (
-    select 1
-      from programacion.provenance_channels pc
-     where pc.channel_code = v_channel_code
-  ) then
-    select ds.decrypted_secret
-      into v_channel_token
-      from vault.decrypted_secrets ds
-     where ds.name = v_secret_name
-     order by ds.created_at desc
-     limit 1;
+  select ds.decrypted_secret
+    into v_channel_token
+    from vault.decrypted_secrets ds
+   where ds.name = v_secret_name
+   order by ds.created_at desc
+   limit 1;
 
+  if v_existing_channel_sha256 is null then
     if v_channel_token is null then
       v_channel_token := encode(extensions.gen_random_bytes(32), 'base64');
       perform vault.create_secret(
@@ -72,6 +74,19 @@ begin
       array['RETRIEVAL_PASS']::text[],
       'Protected issuer transport for independently verified Strategy 24 retrieval-context receipts.'
     );
+  else
+    if v_channel_token is null then
+      raise exception 'SOURCE_VERIFIER_PROTECTED_TOKEN_MISSING_FOR_EXISTING_CHANNEL';
+    end if;
+
+    v_channel_token_sha256 := encode(
+      extensions.digest(convert_to(v_channel_token, 'UTF8'), 'sha256'),
+      'hex'
+    );
+
+    if v_channel_token_sha256 is distinct from v_existing_channel_sha256 then
+      raise exception 'SOURCE_VERIFIER_PROTECTED_TOKEN_HASH_MISMATCH';
+    end if;
   end if;
 end;
 $op24_source_verifier_channel$;
@@ -142,8 +157,8 @@ begin
      or p_payload->>'head_sha' is distinct from p_head_sha
      or p_payload->>'request_ref' is distinct from p_request_ref
      or p_payload->>'context_sha256' is distinct from p_context_sha256
-     or length(btrim(coalesce(p_payload->>'verifier_identity',''))) = 0
-     or length(btrim(coalesce(p_payload->>'evidence_ref',''))) = 0
+     or p_payload->>'verifier_identity' is distinct from p_issuer_identity
+     or p_payload->>'evidence_ref' is distinct from p_verification_ref
      or coalesce(p_payload->>'evidence_sha256','') !~ '^[0-9a-f]{64}$' then
     raise exception 'RETRIEVAL_PROVENANCE_PAYLOAD_CONTRACT_MISMATCH';
   end if;
