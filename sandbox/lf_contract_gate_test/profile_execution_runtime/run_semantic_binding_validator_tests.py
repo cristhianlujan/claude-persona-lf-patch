@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 import copy
+import subprocess
+import sys
+from pathlib import Path
 from semantic_binding_validator import SCHEMA, canonical_sha, validate
 
 source={"schema":"LF_SOURCE_FIDELITY_CONTRACT_V1","contract_sha256":"a"*64,"immutable_entities":[
@@ -42,3 +45,13 @@ run('dynamic_base',source2,artifact2,binding2,True)
 a=copy.deepcopy(artifact2);a['composer_payload']['state']['record_count']=6;b=copy.deepcopy(binding2);b['artifact_canonical_sha256']=canonical_sha(a);b['binding_sha256']=canonical_sha({k:v for k,v in b.items() if k!='binding_sha256'});run('dynamic_literal_record_count',source2,a,b,False)
 a=copy.deepcopy(artifact2);a['composer_payload']['state']['record_count_binding']='STATIC_6';b=copy.deepcopy(binding2);b['artifact_canonical_sha256']=canonical_sha(a);b['binding_sha256']=canonical_sha({k:v for k,v in b.items() if k!='binding_sha256'});run('dynamic_wrong_binding',source2,a,b,False)
 print('SEMANTIC_BINDING_REGRESSIONS_PASS=7/7')
+
+bundle_tests=Path(__file__).with_name('run_s26_independent_bundle_preflight_tests.py')
+proc=subprocess.run([sys.executable,str(bundle_tests)],capture_output=True,text=True,check=False)
+if proc.stdout:
+    print(proc.stdout,end='' if proc.stdout.endswith('\n') else '\n')
+if proc.stderr:
+    print(proc.stderr,file=sys.stderr,end='' if proc.stderr.endswith('\n') else '\n')
+assert proc.returncode==0,('S26_INDEPENDENT_BUNDLE_PREFLIGHT_TESTS_FAILED',proc.returncode)
+assert 'S26_INDEPENDENT_BUNDLE_PREFLIGHT_TESTS_PASS=7/7' in proc.stdout,'S26_INDEPENDENT_BUNDLE_PREFLIGHT_MARKER_MISSING'
+print('S26_INDEPENDENT_BUNDLE_PREFLIGHT_GATE_PASS=7/7')
