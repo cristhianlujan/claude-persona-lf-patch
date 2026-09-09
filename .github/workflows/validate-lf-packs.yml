@@ -79,3 +79,13 @@ jobs:
           if (( failures > 0 )); then
             exit 1
           fi
+
+      - name: Execute S30-C regression suite
+        if: startsWith(github.ref, 'refs/heads/lf/s30-c-') || startsWith(github.head_ref, 'lf/s30-c-')
+        run: python sandbox/lf_contract_gate_test/s30_c_reliability_harness/test_s30c_harness.py
+
+      - name: Emit S30-C machine CI readback
+        if: startsWith(github.ref, 'refs/heads/lf/s30-c-') || startsWith(github.head_ref, 'lf/s30-c-')
+        env:
+          S30C_CI_ACTUAL: "1"
+        run: python sandbox/lf_contract_gate_test/s30_c_reliability_harness/s30c_harness.py ci-receipt
