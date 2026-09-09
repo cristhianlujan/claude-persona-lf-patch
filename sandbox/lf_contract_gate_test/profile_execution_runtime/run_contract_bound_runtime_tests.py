@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 from copy import deepcopy
+from pathlib import Path
+import subprocess
+import sys
 
 from contract_bound_profile_runtime import execute_contract_bound_profile_runtime
 from profile_execution_contract import build_execution_contract
@@ -160,6 +163,9 @@ def main():
     passed += 1
 
     print(f"CONTRACT_BOUND_PROFILE_RUNTIME_TESTS_PASS {passed}/5")
+
+    source_first_test = Path(__file__).with_name("run_s26_source_first_runtime_tests.py")
+    subprocess.run([sys.executable, str(source_first_test)], check=True)
 
 
 if __name__ == "__main__":
