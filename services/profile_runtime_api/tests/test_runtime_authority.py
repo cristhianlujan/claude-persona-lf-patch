@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import unittest
 
+from profile_runtime_api.hashing import sha256_text
 from profile_runtime_api.models import CardSource, ProfileTask, RouterAdapterSource
 from profile_runtime_api.repository import SchemaBinding
 from profile_runtime_api.runtime_authority import (
@@ -14,8 +15,6 @@ class RuntimeAuthorityTest(unittest.TestCase):
     @staticmethod
     def card(ref: str = "CARD-DEMO-001", required_input_fields: list[str] | None = None) -> CardSource:
         content = "bounded card context"
-        from profile_runtime_api.hashing import sha256_text
-
         return CardSource(
             card_ref=ref,
             card_version="v1",
@@ -66,11 +65,11 @@ class RuntimeAuthorityTest(unittest.TestCase):
         return [{"ref": "profiles/quality_pack/SKILL.md", "content": "quality authority"}]
 
     @staticmethod
-    def schema(*refs: str) -> SchemaBinding:
+    def schema(*refs: str, sha256: str = "f" * 64) -> SchemaBinding:
         return SchemaBinding(
             payload={"type": "object"},
             raw=b'{"type":"object"}\n',
-            sha256="f" * 64,
+            sha256=sha256,
             source_refs=refs or ("profiles/quality_pack/schemas/runtime_output.schema.json",),
             mode="AUTO",
         )
@@ -92,10 +91,16 @@ class RuntimeAuthorityTest(unittest.TestCase):
     def test_card_found_is_explicit_and_traceable(self) -> None:
         task = self.task(cards=[self.card()], required_cards=["CARD-DEMO-001"])
         typed = self.resolve(task)
+        self.assertEqual(typed["classification"]["surface_code"], "PROFILE:quality_pack")
+        self.assertEqual(typed["classification"]["task_code"], "EJECUCION_PERFIL_LF:AUTO")
         self.assertEqual(typed["card_resolution"]["status"], "RESOLVED")
         self.assertEqual(typed["card_resolution"]["selected_card_refs"], ["CARD-DEMO-001"])
         self.assertEqual(typed["authority_resolution"][0]["authority_type"], "PROFILE_SOURCE")
         self.assertEqual(typed["adapter_binding"][0]["adapter_code"], "DEMO_ADAPTER")
+        self.assertEqual(
+            typed["adapter_binding"][0]["content_sha256"], sha256_text("adapter capsule")
+        )
+        self.assertEqual(typed["adapter_binding"][0]["activation_source"], "ROUTER")
         self.assertFalse(typed["runtime_schema"]["schema_invention_allowed"])
         self.assertTrue(typed["provenance_reconstructible"])
         self.assertEqual(len(typed["typed_context_sha256"]), 64)
@@ -181,6 +186,24 @@ class RuntimeAuthorityTest(unittest.TestCase):
         }
         self.expect_code("RUNTIME_AUTHORITY_INCOMPATIBLE", lambda: self.resolve(self.task(), context))
 
+    def test_invalid_authority_digest_blocks_before_claiming_reconstructible(self) -> None:
+        context = {
+            "runtime_authority_contract": {
+                "current_run_id": "RUN-S26-B-001",
+                "required_authority_types": ["PRODUCT_AUTHORITY"],
+                "authority_sources": [
+                    {
+                        "authority_type": "PRODUCT_AUTHORITY",
+                        "authority_id": "AUTH-BAD-SHA",
+                        "source_ref": "supabase://authority/bad",
+                        "source_sha256": "z" * 64,
+                        "run_id": "RUN-S26-B-001",
+                    }
+                ],
+            }
+        }
+        self.expect_code("RUNTIME_AUTHORITY_PROVENANCE_INVALID", lambda: self.resolve(self.task(), context))
+
     def test_cross_run_reference_requires_explicit_declaration(self) -> None:
         context = {
             "runtime_authority_contract": {
@@ -207,6 +230,13 @@ class RuntimeAuthorityTest(unittest.TestCase):
         schema = self.schema("profiles/p/schemas/a.schema.json", "profiles/p/schemas/b.schema.json")
         self.expect_code("RUNTIME_SCHEMA_AMBIGUOUS", lambda: self.resolve(self.task(), schema=schema))
 
+    def test_invalid_runtime_schema_digest_blocks_provenance(self) -> None:
+        schema = self.schema(sha256="z" * 64)
+        self.expect_code(
+            "RUNTIME_PROVENANCE_NOT_RECONSTRUCTIBLE",
+            lambda: self.resolve(self.task(), schema=schema),
+        )
+
     def test_input_governance_authority_readback_is_bound(self) -> None:
         context = {
             "input_governance": {
@@ -220,6 +250,21 @@ class RuntimeAuthorityTest(unittest.TestCase):
         typed = self.resolve(self.task(), context)
         types = [item["authority_type"] for item in typed["authority_resolution"]]
         self.assertEqual(types, ["INPUT_GOVERNANCE", "PROFILE_SOURCE"])
+
+    def test_invalid_input_governance_digest_blocks(self) -> None:
+        context = {
+            "input_governance": {
+                "receipt_ref": "supabase://input-governance/run-bad",
+                "context_sha256": "z" * 64,
+                "current": True,
+                "ready": True,
+                "status": "PASS",
+            }
+        }
+        self.expect_code(
+            "RUNTIME_INPUT_GOVERNANCE_PROVENANCE_MISSING",
+            lambda: self.resolve(self.task(), context),
+        )
 
 
 if __name__ == "__main__":
