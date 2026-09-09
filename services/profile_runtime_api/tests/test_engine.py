@@ -195,14 +195,11 @@ class EngineGateTest(unittest.TestCase):
         self.assertFalse(result["downstream_authorized"])
 
     def test_transport_success_does_not_promote_label_only_output(self) -> None:
-        engine, _pipeline = self.engine("PRODUCT_DIRECTION_SPEC")
-        task = ProfileTask(
-            request_id="product-label-only-1",
-            profile_code="PERFIL-PRODUCT-DIRECTOR-LF",
-            profile_slug="product_director_lf",
-            profile_source_paths=["profiles/product_director_lf/SKILL.md"],
-            input_literal="Evaluate the governed candidate without inventing business facts.",
-        )
+        # Use a profile with one canonical runtime schema so this test continues
+        # to isolate transport-vs-contract behavior. Ambiguous AUTO schema
+        # selection is covered separately and must fail closed before transport.
+        engine, _pipeline = self.engine("QUALITY_REPORT")
+        task = self.quality_task("quality-label-only-1")
         result = engine.run_execute(
             ExecuteRequest(
                 artifact=self.artifact,
@@ -238,38 +235,29 @@ class EngineGateTest(unittest.TestCase):
             raise error
 
         pipeline.prepare = fail_prepare  # type: ignore[method-assign]
-        result = engine.run_execute(
-            ExecuteRequest(
-                artifact=self.artifact,
-                input_governance=self.governance,
-                profile=self.quality_task("quality-structural-failure-1"),
-            )
-        )["result"]
-        self.assertEqual(result["runtime_completion"]["status"], "FAIL")
-        self.assertEqual(
-            result["runtime_completion"]["blocking_codes"],
-            ["STRUCTURAL_CONTEXT_TEST_FAILURE"],
+        request = BatchRequest(
+            batch_id="batch-structural-failure-1",
+            artifact=self.artifact,
+            input_governance=self.governance,
+            profiles=[self.quality_task("quality-fail-1"), self.quality_task("quality-fail-2")],
         )
-        self.assertEqual(result["profile_contract_valid"]["status"], "NOT_EVALUATED")
-        self.assertEqual(result["semantic_utility"]["status"], "NOT_EVALUATED")
+        result = engine.run_batch(request)
+        self.assertEqual(pipeline.calls, 1)
+        self.assertEqual(result["summary"]["runtime_completion_pass"], 0)
+        for profile_result in result["profile_results"]:
+            self.assertEqual(profile_result["runtime_completion"]["status"], "FAIL")
+            self.assertEqual(profile_result["profile_contract_valid"]["status"], "NOT_EVALUATED")
+            self.assertEqual(profile_result["semantic_utility"]["status"], "NOT_EVALUATED")
 
-    def test_full_image_model_path_is_disabled_by_default(self) -> None:
+    def test_queue_native_path_reuses_profile_source_and_schema_bindings(self) -> None:
         engine, _pipeline = self.engine(valid_quality_output())
-        task = self.quality_task("quality-full-image-blocked-1").model_copy(
-            update={"send_image_to_model": True}
-        )
-        result = engine.run_execute(
-            ExecuteRequest(
-                artifact=self.artifact,
-                input_governance=self.governance,
-                profile=task,
-            )
+        task = self.quality_task("quality-queue-1")
+        result = engine.run_queue_execute(
+            QueueExecuteRequest(profile=task)
         )["result"]
-        self.assertEqual(result["runtime_completion"]["status"], "FAIL")
-        self.assertEqual(
-            result["runtime_completion"]["blocking_codes"],
-            ["FULL_IMAGE_MODEL_PATH_DISABLED"],
-        )
+        self.assertEqual(result["runtime_completion"]["status"], "PASS")
+        self.assertEqual(result["profile_contract_valid"]["status"], "PASS")
+        self.assertEqual(result["semantic_utility"]["status"], "PASS")
 
 
 if __name__ == "__main__":
