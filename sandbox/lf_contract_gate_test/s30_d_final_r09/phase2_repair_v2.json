@@ -1,0 +1,16 @@
+{
+  "receipt_version": "S30-D-PHASE2-REPAIR-v2",
+  "parent_failure_freeze": "b50fecd0eb4e626528b7d57efeace3b9039a96c0",
+  "causal_owner": "S30-D",
+  "repair_scope": [".github/workflows/validate-lf-packs.yml"],
+  "repair": "Remove C branch-static regression execution from D branch; retain immutable C receipt/blob verification inside S30-D integration gate.",
+  "unchanged_lanes": ["S30-A", "S30-B", "S30-C"],
+  "required_sequence": [
+    "S30-A cheap preflight",
+    "S30-B data access regression",
+    "S30-D A-B-C integration gate including C frozen hash/receipt verification",
+    "only then heavy baseline work"
+  ],
+  "r09_started": false,
+  "expected_result": "PHASE2_INTERFACE_COMPATIBILITY_PASS_BEFORE_R09"
+}
