@@ -1,0 +1,145 @@
+{
+  "contract_version": "LF_DATA_ACCESS_REGISTRY_V1",
+  "base_main_sha": "9ce8f87646b44e04df609b1993447f918063fdb4",
+  "fingerprint_method": "S30B_SCHEMA_RECEIPT_V1_SHA256",
+  "free_sql_policy": "FORBIDDEN_FOR_REGISTERED_SOURCE_KEYS",
+  "stale_policy": "BLOCK_AND_RERESOLVE",
+  "unknown_source_policy": "SCHEMA_CONTRACT_RESOLVER_FIRST",
+  "sources": {
+    "ROUTER_SOURCE": {
+      "object_identity": "public.v_lf_fuente_operativa",
+      "object_type": "VIEW",
+      "reader": "read_router_source",
+      "fields": ["codigo_activo", "nombre_canonico", "tipo_activo", "subtipo_activo", "estado_documental", "estado_operativo", "nivel_control", "runtime_estado", "impacto_automatico", "version_normalizada", "updated_at"],
+      "key_fields": ["codigo_activo"],
+      "allowed_filters": ["codigo_activo", "tipo_activo", "estado_documental", "estado_operativo"],
+      "schema_fingerprint": "8b737b8f6f46145fddffd074e7b1dd164100433ab95a9d6d0fc8453f9b7e823d"
+    },
+    "EKB": {
+      "object_identity": "public.lf_error_knowledge",
+      "object_type": "VIEW",
+      "reader": "read_ekb",
+      "fields": ["codigo", "categoria", "titulo", "descripcion", "causa_raiz", "patron", "prevencion", "validacion", "severidad", "frecuencia", "estado", "lifecycle_phase", "consumer_role", "root_cause_family", "detectability", "source_context", "source_ref"],
+      "key_fields": ["codigo"],
+      "allowed_filters": ["codigo", "categoria", "severidad", "estado"],
+      "schema_fingerprint": "f3ad83d6d76af890afc7b0b58cad5ccb49d734112e9955f01caa173369f3900c"
+    },
+    "OPERATION_REGISTRY": {
+      "object_identity": "public.lf_operation_registry",
+      "object_type": "TABLE",
+      "reader": "read_operation_registry",
+      "fields": ["operation_code", "version", "status", "source_model", "source_repo", "source_paths", "operation_family", "operation_domain", "operation_type", "applies_to_asset_type"],
+      "key_fields": ["operation_code"],
+      "allowed_filters": ["operation_code", "status", "operation_family", "operation_domain", "operation_type", "applies_to_asset_type"],
+      "schema_fingerprint": "20c26621c8ff344f8b95be7e7dd0ac7f05cdb8445550862aa1297641341090d7"
+    },
+    "OPERATION_CONTRACTS": {
+      "object_identity": "public.lf_operation_contracts",
+      "object_type": "TABLE",
+      "reader": "read_operation_contracts",
+      "fields": ["operation_code", "contract_code", "contract_path", "contract_sha", "required_before_write", "allowed", "blocked", "required_after_write", "status"],
+      "key_fields": ["operation_code", "contract_code"],
+      "allowed_filters": ["operation_code", "contract_code", "status"],
+      "schema_fingerprint": "37be3a0b94a2ca621d6d9e2cd9e776aa72e20fbb53a1356c9d6a0fdcb0e3e593"
+    },
+    "OPERATION_STEPS": {
+      "object_identity": "public.lf_operation_steps",
+      "object_type": "TABLE",
+      "reader": "read_operation_steps",
+      "fields": ["operation_code", "step_order", "step_id", "required", "evidence_required", "source_path", "source_sha", "active", "execution_order"],
+      "key_fields": ["operation_code", "step_order"],
+      "allowed_filters": ["operation_code", "step_order", "step_id", "active"],
+      "schema_fingerprint": "395396e2c654ca99cfb0fedb5e456af6e1bd56699580c957a21f104f5140c262"
+    },
+    "OPERATION_STEP_CONTRACTS": {
+      "object_identity": "public.lf_operation_step_contracts",
+      "object_type": "TABLE",
+      "reader": "read_operation_step_contracts",
+      "fields": ["operation_code", "step_id", "step_order", "execution_order", "contract_code", "purpose", "input_required", "resolver_ref", "output_payload", "pass_condition", "block_condition", "blocking_code", "mini_judge_code", "required_evidence_keys", "next_if_pass", "next_if_blocked", "status", "execution_sql", "fail_condition"],
+      "key_fields": ["operation_code", "step_id"],
+      "allowed_filters": ["operation_code", "step_id", "step_order", "contract_code", "status"],
+      "schema_fingerprint": "28677286a07b76d06e063ec732b256fc778f275db0fe9318fa2d9fee07350ebc"
+    },
+    "OPERATION_JUDGES": {
+      "object_identity": "public.lf_operation_judges",
+      "object_type": "TABLE",
+      "reader": "read_operation_judges",
+      "fields": ["operation_code", "judge_code", "judge_path", "judge_sha", "pass_if", "fail_if", "result_values", "status"],
+      "key_fields": ["operation_code", "judge_code"],
+      "allowed_filters": ["operation_code", "judge_code", "status"],
+      "schema_fingerprint": "ccb0ae72510a6f42a30f992df2b990d1a078b8fe649cb028c9b6c68d337c61ec"
+    },
+    "OPERATION_STEP_JUDGE_BINDINGS": {
+      "object_identity": "public.lf_operation_step_judge_bindings",
+      "object_type": "TABLE",
+      "reader": "read_operation_step_judge_bindings",
+      "fields": ["operation_code", "step_order", "step_id", "judge_code", "clean_result_value", "blocked_result_value", "return_result_value", "required_evidence_keys", "status"],
+      "key_fields": ["operation_code", "step_order", "judge_code"],
+      "allowed_filters": ["operation_code", "step_order", "step_id", "judge_code", "status"],
+      "schema_fingerprint": "297aaa02d062fca12404d29dc7f5c8436eb123f0d2fd0a104dc2b49f39bd3c72"
+    },
+    "OPERATION_POLICY_BINDINGS": {
+      "object_identity": "public.lf_operation_policy_bindings",
+      "object_type": "TABLE",
+      "reader": "read_operation_policy_bindings",
+      "fields": ["operation_code", "policy_code", "policy_role", "required", "distribution_modes", "binding_status"],
+      "key_fields": ["operation_code", "policy_code"],
+      "allowed_filters": ["operation_code", "policy_code", "policy_role", "binding_status"],
+      "schema_fingerprint": "ac1e537406bc4c7835867602d7b372c7dcb18a90f8232400e2ee4c459ee83b22"
+    },
+    "STRATEGY_SNAPSHOTS": {
+      "object_identity": "public.lf_strategy_snapshots",
+      "object_type": "TABLE",
+      "reader": "read_strategy_snapshots",
+      "fields": ["id", "snapshot_code", "canonical_name", "version", "status", "project_code", "front_code", "source_kind", "runtime_state", "impact_policy", "metadata", "content_payload", "sections", "decisions", "backlog", "risks", "evidence_refs", "updated_at"],
+      "key_fields": ["id", "snapshot_code"],
+      "allowed_filters": ["id", "snapshot_code", "status", "project_code", "front_code", "runtime_state", "impact_policy"],
+      "schema_fingerprint": "8a44da09b23037c612e51fec98a828bae91121776aceedca93a4711e4632c4b9"
+    },
+    "ASSETS_PROFILES": {
+      "object_identity": "public.lf_activos",
+      "object_type": "TABLE",
+      "reader": "read_assets_profiles",
+      "fields": ["id", "codigo_activo", "nombre_canonico", "tipo_activo", "subtipo_activo", "estado_documental", "estado_operativo", "nivel_control", "runtime_estado", "impacto_automatico", "version", "ruta_esperada", "url", "owner_name", "metadata", "updated_at"],
+      "key_fields": ["id", "codigo_activo"],
+      "allowed_filters": ["id", "codigo_activo", "tipo_activo", "subtipo_activo", "estado_documental", "estado_operativo", "runtime_estado"],
+      "schema_fingerprint": "c24eec35a6cc93c0d175d7bdc60fff3f4fb5f410b750baf2d8afae3181c10a20"
+    },
+    "EVENTS": {
+      "object_identity": "public.lf_eventos",
+      "object_type": "TABLE",
+      "reader": "read_events",
+      "fields": ["id", "evento_tipo", "entidad_tipo", "entidad_codigo", "descripcion", "severidad", "payload", "origen", "migration_batch_id", "created_at", "created_by_execution_id", "updated_by_execution_id", "updated_at"],
+      "key_fields": ["id"],
+      "allowed_filters": ["id", "evento_tipo", "entidad_tipo", "entidad_codigo", "severidad", "origen", "created_by_execution_id"],
+      "schema_fingerprint": "24dbfd096323cb49c5ff3ddf2905d368939e628e21406f2d90dc8b91383992ec"
+    },
+    "INPUT_GOVERNANCE": {
+      "object_identity": "programacion.input_readiness_runs",
+      "object_type": "TABLE",
+      "reader": "read_input_governance",
+      "fields": ["id", "version_id", "pantalla_id", "universe_rule_id", "supersedes_run_id", "scope", "source_snapshot_sha256", "universe_snapshot_sha256", "family_count", "status", "curator_identity", "curator_completed_at", "validator_identity", "validator_completed_at", "blocked_reason", "created_at", "contract_version", "source_manifest", "source_observed_at", "contract_revision", "contract_snapshot_sha256", "invalidated_at", "invalidated_reason", "invalidated_by_run_id"],
+      "key_fields": ["id"],
+      "allowed_filters": ["id", "version_id", "pantalla_id", "status", "contract_version", "contract_revision"],
+      "schema_fingerprint": "ef506810c8e4e30fdaaf2407207d94fba3dfa38d14b060ba5e940fb0fd2ba2c4"
+    },
+    "ADAPTER_BINDINGS": {
+      "object_identity": "public.v_lf_router_adapter_bindings",
+      "object_type": "VIEW",
+      "reader": "read_adapter_bindings",
+      "fields": ["adapter_code", "adapter_name", "adapter_subtype", "adapter_document_status", "adapter_operational_status", "adapter_version", "adapter_metadata", "target_asset_code", "target_asset_name", "target_asset_type", "relacion_tipo", "valor_original", "fuente", "created_at", "updated_at"],
+      "key_fields": ["adapter_code", "target_asset_code"],
+      "allowed_filters": ["adapter_code", "adapter_subtype", "adapter_document_status", "adapter_operational_status", "target_asset_code", "target_asset_type"],
+      "schema_fingerprint": "f0ecfbd4ea092893ffe1f895199d5db3cec98694073e568f3dbc54c01363babe"
+    },
+    "MIGRATION_LEDGER": {
+      "object_identity": "supabase_migrations.schema_migrations",
+      "object_type": "TABLE",
+      "reader": "read_migration_ledger",
+      "fields": ["version", "statements", "name", "created_by", "idempotency_key", "rollback"],
+      "key_fields": ["version"],
+      "allowed_filters": ["version", "name", "created_by", "idempotency_key"],
+      "schema_fingerprint": "f0b47999b44b85bc766f26e5b128db4689e61b5d9cf398bf45695ad3be0ea384"
+    }
+  }
+}

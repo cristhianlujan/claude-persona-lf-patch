@@ -1,0 +1,40 @@
+{
+  "receipt_version": "S30-B-CURRENTNESS-v1",
+  "lane": "S30-B",
+  "source_candidate_sha": "fa8a3fa1e31b5d0c709db3b3e85cde24acdcead4",
+  "source_base_main_sha": "9ce8f87646b44e04df609b1993447f918063fdb4",
+  "rematerialized_base_main_sha": "d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
+  "scope_policy": "PRESERVE_FUNCTIONAL_ARTIFACTS_BYTE_IDENTICAL_AND_REWIRE_ONLY_ON_CURRENT_MAIN",
+  "functional_blobs": {
+    "data_access_registry_v1.json": "db24678f5eca2b6df5ee323b340ca575c358f957",
+    "lf_data_access.py": "d68ad71e2fff2c1432a83568b6ec8f5e410e11da",
+    "test_s30_data_access.py": "6b2b398b39e62e880186ebff2f4134d73c2464fd"
+  },
+  "live_schema_currentness": {
+    "registered_source_count": 15,
+    "object_kind_match_count": 15,
+    "registered_sources_with_missing_fields": 0,
+    "registered_field_compatibility": "PASS",
+    "fingerprint_values": "PRESERVED_FROM_FROZEN_CANDIDATE",
+    "fingerprint_method_contract": "S30B_SCHEMA_RECEIPT_V1_SHA256",
+    "fingerprint_recompute_claim": "NOT_CLAIMED_WITHOUT_EXTERNAL_SCHEMA_RECEIPT_PROVIDER",
+    "stale_runtime_receipt_policy": "BLOCK_AND_RERESOLVE"
+  },
+  "interface": "PREEXECUTION_DATA_ACCESS_RESULT",
+  "interface_vocabulary": ["PASS", "BLOCKED"],
+  "ci_requirement": "EXACT_HEAD_VALIDATE_LF_PACKS_REQUIRED_AFTER_REMATERIALIZATION",
+  "invalidation_triggers": [
+    "main head changes materially before final R09",
+    "registered object kind changes",
+    "registered field disappears",
+    "schema receipt fingerprint differs from frozen binding",
+    "Validate LF Packs no longer executes the S30-B regression"
+  ],
+  "safety_readback": {
+    "main_modified": false,
+    "runtime_modified": false,
+    "production_modified": false,
+    "scheduler_modified": false,
+    "s26_modified": false
+  }
+}
