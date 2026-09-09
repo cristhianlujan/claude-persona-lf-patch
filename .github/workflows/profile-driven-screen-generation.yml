@@ -12,6 +12,8 @@ on:
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_contract_bound_runtime_tests.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_source_first_runtime.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_source_first_runtime_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_source_first_prebind.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_source_first_prebind_tests.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_semantic_quality.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_semantic_quality_tests.py"
