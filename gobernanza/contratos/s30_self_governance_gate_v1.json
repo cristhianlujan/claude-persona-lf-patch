@@ -1,6 +1,6 @@
 {
   "contract_code": "S30_SELF_GOVERNANCE_GATE",
-  "version": "v0.1-candidate",
+  "version": "v0.2-candidate",
   "status": "CANDIDATO_READ_ONLY",
   "lane": "S30-A",
   "owner": "S30",
@@ -43,7 +43,22 @@
       "CI_RUNNER_WIRING_CONFIRMED",
       "EXPECTED_OUTPUT_SCHEMA_COMPLETE",
       "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED"
-    ]
+    ],
+    "check_requirements": {
+      "SCHEMA_AND_CONSTRAINTS_RESOLVED": {
+        "required_subproofs": [
+          "RELATION_COLUMNS",
+          "CONSTRAINTS",
+          "DEPENDENT_SQL_FUNCTION_SIGNATURES"
+        ]
+      }
+    }
+  },
+  "sql_dependency_guard": {
+    "dependent_sql_requires_signature_resolution": true,
+    "signature_source": "pg_proc_or_information_schema_before_dependent_sql",
+    "unknown_or_unresolved_function": "FAIL_CLOSED_BEFORE_MATERIAL_WORK",
+    "function_kind_must_be_resolved_when_definition_introspection_depends_on_kind": true
   },
   "hard_guard_promotion": {
     "trigger_any": [
