@@ -25,6 +25,9 @@ def main():
     s30 = "sandbox/lf_contract_gate_test/s30_policy_operations_candidate/policy_operations_contract.yaml"
     s30_self = "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json"
     s30_self_receipt = "sandbox/lf_contract_gate_test/receipts/s30_a_self_governance_gate_v2.json"
+    s26_preflight = "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_ci_preflight.py"
+    s26_runtime = "sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_mini_judge.py"
+    s26_workflow = ".github/workflows/story-agent-evidence-verifier.yml"
     migration = "supabase/migrations/20260909010101_lf_example.sql"
     input_migration = "supabase/migrations/20260909010102_input_governance_example.sql"
     workflow = ".github/workflows/lf-contract-check.yml"
@@ -57,6 +60,8 @@ def main():
     check("workflow_plus_migration", [workflow, migration], migration=True, input_gov=False, selftest=True, p0_external=False, deep_shared=False)
     check("workflow_plus_input_migration", [workflow, input_migration], migration=True, input_gov=True, selftest=True, p0_external=False, deep_shared=False)
     check("known_shared_non_specialized", ["skills/learning_engine/validators/validate_pack.py"], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=False, mode="DEEP_SHARED_KNOWN")
+    check("s26_runtime_known_shared", [s26_runtime], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=False, mode="DEEP_SHARED_KNOWN")
+    check("s26_workflow_known_shared", [s26_workflow], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=False, mode="DEEP_SHARED_KNOWN")
 
     real_s30a_delta = [
         validate_workflow,
@@ -67,11 +72,22 @@ def main():
     ]
     check("s30a_real_delta_isolated", real_s30a_delta, migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
 
+    real_s26a_delta = [
+        s26_workflow,
+        s26_preflight,
+        "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_ci_preflight_tests.py",
+        "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_ci_preflight_manifest_v1.json",
+        "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_ci_preflight_manifest.schema.json",
+        router,
+        router_test,
+    ]
+    check("s26a_real_delta_known", real_s26a_delta, migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
+
     check("unknown_contract_gate_sandbox_fail_closed", ["sandbox/lf_contract_gate_test/new_unbound_validator.py"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
     check("unknown_s30_receipt_sibling_fail_closed", ["sandbox/lf_contract_gate_test/receipts/s30_b_unbound.json"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
     check("unknown_fail_closed", ["mystery/new_surface.xyz"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
     check("empty_fail_closed", [], migration=True, input_gov=True, selftest=True, p0_external=True, deep_shared=True, mode="DEEP_SHARED_EMPTY_FAIL_CLOSED")
-    print("CI_LANE_ROUTER_REGRESSIONS_PASS=26/26")
+    print("CI_LANE_ROUTER_REGRESSIONS_PASS=29/29")
 
 
 if __name__ == "__main__":
