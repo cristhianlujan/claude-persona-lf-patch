@@ -44,9 +44,35 @@ c = copy.deepcopy(contract)
 c["factory_dependency"]["active_router_binding_required_before_registration"] = False
 cases.append(("factory_bypass", c, steps, judge, "FACTORY_DEPENDENCY_NOT_FAIL_CLOSED"))
 
+c = copy.deepcopy(contract)
+del c["invocation_route"]
+cases.append(("missing_experience_route", c, steps, judge, "INVOCATION_ROUTE_MISSING"))
+
+c = copy.deepcopy(contract)
+c["invocation_route"]["write_allowed"] = True
+cases.append(("experience_route_write_enabled", c, steps, judge, "INVOCATION_ROUTE_MISMATCH:write_allowed"))
+
+c = copy.deepcopy(contract)
+c["invocation_route"]["action_code"] = "KNOWLEDGE_LEARNING_BRIDGE"
+cases.append(("experience_route_wrong_action", c, steps, judge, "INVOCATION_ROUTE_MISMATCH:action_code"))
+
+s = copy.deepcopy(steps)
+s["steps"] = [x for x in s["steps"] if x["id"] != "factory_and_invocation_route_check"]
+for i, item in enumerate(s["steps"], start=1):
+    item["order"] = i
+cases.append(("missing_factory_and_route_step", contract, s, judge, "STEP_MISSING:factory_and_invocation_route_check"))
+
 j = copy.deepcopy(judge)
 j["blocked_if"].remove("independent_evidence_missing_for_promotion")
 cases.append(("self_confirmation_guard_removed", contract, steps, j, "JUDGE_BLOCKED_CONDITION_MISSING:independent_evidence_missing_for_promotion"))
+
+j = copy.deepcopy(judge)
+j["blocked_if"].remove("experience_learning_bridge_route_missing")
+cases.append(("route_missing_not_fail_closed", contract, steps, j, "JUDGE_BLOCKED_CONDITION_MISSING:experience_learning_bridge_route_missing"))
+
+j = copy.deepcopy(judge)
+j["fail_if"].remove("experience_route_write_enabled")
+cases.append(("route_write_guard_removed", contract, steps, j, "JUDGE_FAIL_CONDITION_MISSING:experience_route_write_enabled"))
 
 for name, c_doc, s_doc, j_doc, expected in cases:
     errors = validator.validate(c_doc, s_doc, j_doc)
