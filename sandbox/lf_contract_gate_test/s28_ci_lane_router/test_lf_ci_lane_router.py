@@ -36,10 +36,11 @@ def main():
     check("s30_plus_migration", [s30, migration], migration=True, input_gov=False, selftest=False, deep_shared=False)
     check("workflow_plus_migration", [workflow, migration], migration=True, input_gov=False, selftest=True, deep_shared=False)
     check("workflow_plus_input_migration", [workflow, input_migration], migration=True, input_gov=True, selftest=True, deep_shared=False)
-    check("known_shared_non_specialized", ["sandbox/lf_contract_gate_test/pass_evidence_gate.py"], migration=False, input_gov=False, selftest=False, deep_shared=False, mode="DEEP_SHARED_KNOWN")
+    check("known_shared_non_specialized", ["skills/learning_engine/validators/validate_pack.py"], migration=False, input_gov=False, selftest=False, deep_shared=False, mode="DEEP_SHARED_KNOWN")
+    check("unknown_contract_gate_sandbox_fail_closed", ["sandbox/lf_contract_gate_test/new_unbound_validator.py"], migration=True, input_gov=True, selftest=False, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
     check("unknown_fail_closed", ["mystery/new_surface.xyz"], migration=True, input_gov=True, selftest=False, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
     check("empty_fail_closed", [], migration=True, input_gov=True, selftest=True, deep_shared=True, mode="DEEP_SHARED_EMPTY_FAIL_CLOSED")
-    print("CI_LANE_ROUTER_REGRESSIONS_PASS=14/14")
+    print("CI_LANE_ROUTER_REGRESSIONS_PASS=15/15")
 
 
 if __name__ == "__main__":
