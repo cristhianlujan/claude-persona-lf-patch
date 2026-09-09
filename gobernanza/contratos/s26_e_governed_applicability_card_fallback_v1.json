@@ -1,0 +1,89 @@
+{
+  "contract_code": "S26-E-GOVERNED-APPLICABILITY-CARD-FALLBACK-v0.1",
+  "version": "v0.1-candidate",
+  "status": "CANDIDATO_READ_ONLY",
+  "lane": "S26-E",
+  "base_main_sha": "d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
+  "purpose": "Enforce applicable EKB consumption and governed Card/no-Card resolution before material execution without inventing schema or defaulting to manual.",
+  "source_authority": [
+    "ACT-0001/public.lf_router_resolve_v1",
+    "public.v_lf_fuente_operativa_busqueda",
+    "public.lf_operation_contracts",
+    "CONTRACT-PRE-EKB-GATE-LF-v0.1",
+    "gobernanza/contratos/contrato_card_lf.yaml",
+    "public.lf_registrar_evento"
+  ],
+  "mandatory_sequence": [
+    "ROUTER_RESOLVED",
+    "EKB_READBACK",
+    "EKB_APPLICABILITY",
+    "CARD_RESOLUTION",
+    "GOVERNED_FALLBACK_IF_NEEDED",
+    "PRE_EXECUTION_GATE",
+    "EXECUTE_OR_MANUAL",
+    "EVIDENCE",
+    "LEARNING_ELIGIBILITY"
+  ],
+  "ekb": {
+    "readback_required": true,
+    "applicable_rule_required_fields": ["rule_id", "severity", "control_mapped"],
+    "high_critical_without_control": "BLOCKED_UNMAPPED_HIGH_CRITICAL_RULE",
+    "contradictory_applicable_rules": "BLOCKED_CONTRADICTORY_APPLICABLE_RULES",
+    "non_applicable_rules_must_not_be_enforced": true
+  },
+  "card_resolution": {
+    "states": ["EXACT", "COMPATIBLE", "NONE", "AMBIGUOUS"],
+    "exact_precedes_compatible": true,
+    "multiple_exact": "AMBIGUOUS",
+    "multiple_compatible_without_exact": "AMBIGUOUS",
+    "critical_ambiguity_action": "FAIL_CLOSED"
+  },
+  "fallback_order": [
+    "EXISTING_CONTRACT_SCHEMA",
+    "REUSABLE_GENERIC_CAPABILITY",
+    "SAFE_COMPOSITION",
+    "MANUAL"
+  ],
+  "fallback_rules": {
+    "no_card_does_not_mean_manual": true,
+    "first_safe_structural_alternative_wins": true,
+    "manual_requires_all_structural_alternatives_evaluated": true,
+    "manual_requires_reason": true,
+    "schema_invention_forbidden": true,
+    "data_model_mutation_for_ui_forbidden": true
+  },
+  "learning_persistence": {
+    "required_fields": ["cause", "evidence_refs", "applicability", "prevention", "provenance"],
+    "provenance_required_fields": ["source_ref", "observed_at"],
+    "verified_required": true,
+    "insufficient_provenance_action": "DO_NOT_PERSIST"
+  },
+  "decision_vocabulary": [
+    "READY_TO_EXECUTE",
+    "MANUAL_REQUIRED",
+    "BLOCKED_ROUTER",
+    "BLOCKED_EKB_READBACK_MISSING",
+    "BLOCKED_UNMAPPED_HIGH_CRITICAL_RULE",
+    "BLOCKED_CONTRADICTORY_APPLICABLE_RULES",
+    "BLOCKED_CARD_AMBIGUOUS",
+    "BLOCKED_UNSAFE_FALLBACK",
+    "BLOCKED_SCHEMA_INVENTION",
+    "BLOCKED_DATA_MODEL_MUTATION"
+  ],
+  "required_evidence": [
+    "router_readback",
+    "ekb_applicability_readback",
+    "card_resolution_readback",
+    "fallback_readback_when_no_card",
+    "pre_execution_decision",
+    "learning_eligibility_readback"
+  ],
+  "manual_last_resort": {
+    "structural_checks_required": [
+      "EXISTING_CONTRACT_SCHEMA",
+      "REUSABLE_GENERIC_CAPABILITY",
+      "SAFE_COMPOSITION"
+    ],
+    "manual_is_valid_only_when_all_three_are_unsafe_or_absent": true
+  }
+}
