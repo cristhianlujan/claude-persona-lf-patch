@@ -1,5 +1,6 @@
 {
   "manifest_version": "S30-C-SOURCES-v1",
+  "build_run_version": "HARNESS_AND_GUARDS-R02",
   "frozen_main": {
     "repository": "cristhianlujan/claude-persona-lf-patch",
     "branch": "main",
@@ -26,6 +27,12 @@
       "DB-SCHEMA-FIRST-COLUMN-ASSUMPTION-001": "fa12ef74dce75e0407d7fcc8d2462bfaa6fdcceb3d355a7cbac32b87bc8fff1c"
     },
     "db_row_hash_canonicalization": "sha256(UTF8(to_jsonb(row)::text)) via pgcrypto digest"
+  },
+  "ci_wiring": {
+    "authorized_workflow": ".github/workflows/validate-lf-packs.yml",
+    "removed_unauthorized_workflow": ".github/workflows/s30-c-reliability-harness.yml",
+    "standalone_workflow_present_at_final_net_tree": false,
+    "repair_version": "HARNESS_AND_GUARDS-R02"
   },
   "scope_guards": {
     "touch_s26": false,
