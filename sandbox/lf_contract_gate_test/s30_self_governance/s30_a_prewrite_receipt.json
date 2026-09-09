@@ -1,0 +1,85 @@
+{
+  "receipt_version": "v0.2",
+  "lane": "S30-A",
+  "owner": "S30",
+  "base_main_sha": "f1ee63d3fd48ab7869e989dc6b4265823740c9e9",
+  "intended_material_action": "GIT_WRITE",
+  "sequence_resolution": {
+    "ROUTER": {"status": "PROVEN", "evidence": "ACT-0001:v0.3 resolved; S28 lane isolation merged in base main f1ee63d3"},
+    "EKB_APPLICABLE": {"status": "PROVEN", "evidence": "DB-001 recurrence persisted; frequency readback 227"},
+    "DATA_ACCESS_BINDINGS": {"status": "NOT_REQUIRED_WITH_REASON", "evidence": "S30-A does not implement S30-B typed readers"},
+    "SCHEMA_CONTRACT": {"status": "PROVEN", "evidence": "relation columns, constraints and dependent SQL function signatures resolved before dependent SQL"},
+    "OPERATION_CONTRACTS": {"status": "PROVEN", "evidence": "ACTUALIZACION_ESTRATEGIA_LF topology readback: 14 required steps, judges and policy bindings"},
+    "ALL_INTENDED_STEPS": {"status": "PROVEN", "evidence": "freeze base -> rematerialize -> CI exact-head -> merge -> governed strategy reconciliation -> independent readback"},
+    "JUDGES_AND_RESULT_VOCABULARY": {"status": "PROVEN", "evidence": "S30_SELF_GOVERNANCE_GATE v0.2 validator and fixed result vocabulary"},
+    "DEPENDENCIES_AND_IMPORT_CLOSURE": {"status": "PROVEN", "evidence": "Python 3.11 standard library only"},
+    "CI_PATHS_AND_RUNNER_WIRING": {"status": "PROVEN", "evidence": "Validate LF Packs pull_request/main and push main/lf/** on ubuntu-latest"},
+    "PERMISSIONS_SECRETS_AND_READBACK": {"status": "PROVEN", "evidence": "contents read; no validator secret dependency; GitHub/Supabase readback available"},
+    "EVIDENCE_PROVIDER_AND_RESOLVER": {"status": "PROVEN", "evidence": "GitHub exact-head workflow/job readback plus Supabase canonical readback"},
+    "EXPECTED_OUTPUT_CONTRACT": {"status": "PROVEN", "evidence": "consumer_interface frozen in v0.2 contract"}
+  },
+  "preflight_checks": {
+    "IMPORT_CLOSURE": {"status": "PASS", "evidence": "stdlib-only validator"},
+    "REQUIRED_FILES_EXIST": {"status": "PASS", "evidence": "contract, judge, workflow and canonical sandbox carriers resolved"},
+    "SCHEMA_AND_CONSTRAINTS_RESOLVED": {
+      "status": "PASS",
+      "resolved": ["RELATION_COLUMNS", "CONSTRAINTS", "DEPENDENT_SQL_FUNCTION_SIGNATURES"],
+      "evidence": [
+        "information_schema.columns readback for lf_error_knowledge and operation execution surfaces",
+        "pg_constraint readback before dependent mutations",
+        "pg_proc function-kind/signature resolution before pg_get_functiondef",
+        "jsonb_object_keys(jsonb) observed and used instead of unverified jsonb_object_length"
+      ]
+    },
+    "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED": {"status": "PASS", "evidence": "GitHub branch/file/PR/workflow schemas and Supabase execute_sql schema loaded before writes"},
+    "PERMISSIONS_AND_SECRET_READBACK": {"status": "PASS", "evidence": "no secret dependency for S30-A validator; post-write readback required"},
+    "EVIDENCE_PROVIDER_RESOLVABLE": {"status": "PASS", "evidence": "GitHub and Supabase providers reachable"},
+    "CI_RUNNER_WIRING_CONFIRMED": {"status": "PASS", "evidence": "workflow trigger/order resolved from new base main"},
+    "EXPECTED_OUTPUT_SCHEMA_COMPLETE": {"status": "PASS", "evidence": "result, first_bad_hop, material_work_allowed, failure sets and claim ceiling defined"},
+    "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED": {"status": "PASS", "evidence": "missing preflight, unresolved SQL function signature and text-only EKB negatives fail closed"}
+  },
+  "frontier": {
+    "current_stage": "S30-A_V02_REMATERIALIZED_FROM_F1EE63D3",
+    "next_gate": "EXACT_HEAD_CI_THEN_GOVERNED_STRATEGY_FRONTIER_RECONCILIATION",
+    "blockers": [
+      {
+        "code": "STRATEGY_INSTANCE_UPDATE_ROUTER_CANDIDATE_ONLY",
+        "affected_scope": "SUPABASE_CANONICAL_S30_FRONTIER_RECONCILIATION",
+        "causal_gate": "BOUNDED_ACTUALIZACION_ESTRATEGIA_LF_ACTIVATION_WINDOW",
+        "owner": "S30_STRATEGY_GOVERNANCE",
+        "independent_safe_work": ["GITHUB_EXACT_HEAD_CI", "RECEIPT_READBACK"],
+        "invalidation_condition": "ACTUALIZACION_ESTRATEGIA_LF executes all 14 governed steps, bounded snapshot delta reads back independently, and activation window is demoted"
+      }
+    ],
+    "safe_parallel_work": ["GITHUB_EXACT_HEAD_CI", "RECEIPT_READBACK"]
+  },
+  "hard_guard_candidates": [
+    {
+      "ekb_code": "DB-001",
+      "triggers": ["RECURRENT", "MACHINE_DETECTABLE", "AVOIDABLE_MATERIAL_WORK"],
+      "closure": {
+        "EKB_UPDATED": {"status": "PASS", "evidence": "public.lf_error_knowledge DB-001 frequency 225->227; ultima_vez 2026-09-09T22:00:31.520074Z; validation/evidence tails independently read back"},
+        "DETECTOR_IMPLEMENTED": {"status": "PASS", "evidence": "S30_SELF_GOVERNANCE_GATE v0.2 requires DEPENDENT_SQL_FUNCTION_SIGNATURES"},
+        "NEGATIVE_REGRESSION": {"status": "PASS", "evidence": "run 34409347159 negative_unresolved_sql_function_signature=FAIL_CLOSED_BEFORE_MATERIAL_WORK"},
+        "POSITIVE_REGRESSION": {"status": "PASS", "evidence": "run 34409347159 positive_equivalent=PASS_TO_MATERIAL_WORK"},
+        "EXECUTED_PATH_WIRING_PROVEN": {"status": "PASS", "evidence": "run 34409347159 executed S30 gate before dependency installation"},
+        "READBACK": {"status": "PASS", "evidence": "job 102659865208 showed first_bad_hop DB-001 before heavy steps; DB-001 closure then independently read back at frequency 227"}
+      }
+    }
+  ],
+  "safety_readback": {
+    "runtime_changed": false,
+    "production_changed": false,
+    "main_merged": false,
+    "scheduler_changed": false,
+    "s26_mutated": false
+  },
+  "evidence": {
+    "frozen_base_main_sha": "f1ee63d3fd48ab7869e989dc6b4265823740c9e9",
+    "db001_frequency": 227,
+    "s28_pr615_merge_sha": "f1ee63d3fd48ab7869e989dc6b4265823740c9e9",
+    "canonical_snapshot_id": 35,
+    "canonical_contradiction": "metadata.progress=C05 while content_payload.execution_frontier=C04; reconciliation intentionally deferred to governed strategy-update window",
+    "repair_lineage": "PR613 preserved as historical evidence; this candidate is rematerialized from the new official main after PR615"
+  }
+}
