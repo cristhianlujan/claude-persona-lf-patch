@@ -11,6 +11,8 @@
 -- * Plaintext token never leaves SECURITY DEFINER execution.
 -- * RPC can issue only RETRIEVAL_PASS and requires an independently-produced
 --   verification envelope bound to the exact execution/head/request/context digest.
+-- * Canonical subject envelope fields are constructed inside the RPC, so the caller
+--   cannot spoof subject_type / subject_ref / subject_sha256.
 -- * Existing canonical programacion.issue_provenance_receipt and immutable receipt
 --   guards remain authoritative.
 
@@ -111,6 +113,7 @@ declare
   v_channel_token text;
   v_execution_request_ref text;
   v_subject_ref text;
+  v_receipt_payload jsonb;
 begin
   if p_execution_id is null then
     raise exception 'RETRIEVAL_PROVENANCE_EXECUTION_REQUIRED';
@@ -170,6 +173,13 @@ begin
   end if;
 
   v_subject_ref := 'retrieval:' || p_execution_id::text;
+  v_receipt_payload := p_payload || jsonb_build_object(
+    'execution_id',p_execution_id::text,
+    'head_sha',p_head_sha,
+    'subject_type','retrieval_context',
+    'subject_ref',v_subject_ref,
+    'subject_sha256',p_context_sha256
+  );
 
   return query
   select r.id, r.receipt_sha256
@@ -184,7 +194,7 @@ begin
       p_context_sha256,
       p_issuer_identity,
       p_verification_ref,
-      p_payload
+      v_receipt_payload
     ) r;
 end;
 $function$;
