@@ -75,11 +75,10 @@ class RuntimeOutputModeTest(unittest.TestCase):
         self.assertEqual(binding.payload.get("title"), "UI Architect Focused Decision Spec")
         self.assertNotIn("anyOf", binding.payload)
 
-    def test_ui_auto_preserves_aggregate_fallback(self) -> None:
-        binding = self.repository.runtime_schema("ui_architect", "AUTO")
-        self.assertEqual(binding.mode, "AUTO")
-        self.assertEqual(len(binding.payload.get("anyOf", [])), 3)
-        self.assertEqual(len(binding.source_refs), 3)
+    def test_ui_auto_ambiguity_fails_closed_without_aggregate_schema(self) -> None:
+        with self.assertRaises(RepositoryError) as ctx:
+            self.repository.runtime_schema("ui_architect", "AUTO")
+        self.assertEqual(ctx.exception.code, "PROFILE_RUNTIME_SCHEMA_AMBIGUOUS")
 
     def test_unsupported_repository_mode_fails_closed(self) -> None:
         with self.assertRaises(RepositoryError) as ctx:
@@ -225,7 +224,7 @@ class RuntimeOutputModeTest(unittest.TestCase):
         )
         binding = self.repository.runtime_schema("ui_architect", "UI_FOCUSED_DECISION")
         gate, parsed = self.gates.contract(
-            profile_slug="ui_architect", raw_output=json.dumps(payload), schema=binding
+            profile_slug="ui_architect", raw_output=json.dumps(payload, ensure_ascii=False), schema=binding
         )
         self.assertEqual(gate["status"], "PASS", gate)
         utility = self.gates.semantic_utility(
@@ -283,8 +282,8 @@ class RuntimeOutputModeTest(unittest.TestCase):
         )
         self.assertEqual(utility["status"], "PASS", utility)
 
-    def test_auto_mode_does_not_weaken_existing_production_validator(self) -> None:
-        binding = self.repository.runtime_schema("ui_architect", "AUTO")
+    def test_explicit_production_mode_does_not_weaken_existing_production_validator(self) -> None:
+        binding = self.repository.runtime_schema("ui_architect", "UI_PRODUCTION_SPEC")
         gate, _ = self.gates.contract(
             profile_slug="ui_architect",
             raw_output=json.dumps(self.focused_payload()),
