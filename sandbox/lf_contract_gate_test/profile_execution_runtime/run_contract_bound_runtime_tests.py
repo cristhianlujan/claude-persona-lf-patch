@@ -167,6 +167,9 @@ def main():
     source_first_test = Path(__file__).with_name("run_s26_source_first_runtime_tests.py")
     subprocess.run([sys.executable, str(source_first_test)], check=True)
 
+    source_first_prebind_test = Path(__file__).with_name("run_s26_source_first_prebind_tests.py")
+    subprocess.run([sys.executable, str(source_first_prebind_test)], check=True)
+
 
 if __name__ == "__main__":
     main()
