@@ -1,0 +1,32 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "contract_judge",
+  "operation_code": "S30_SELF_GOVERNANCE_GATE",
+  "execution_id": "S30-A-SELF-GOVERNANCE-V02-REMATERIALIZED-20260909-001",
+  "result": "BLOCKED",
+  "all_required_steps_pass": false,
+  "contract_sha": "b7d8c960bb62acba39bf6f6142c150c9ac189896",
+  "judge_sha": "410e524c76bd6abb060ec129f336a5a1317d5948",
+  "source_sha_list": [
+    "f1ee63d3fd48ab7869e989dc6b4265823740c9e9",
+    "b7d8c960bb62acba39bf6f6142c150c9ac189896",
+    "410e524c76bd6abb060ec129f336a5a1317d5948",
+    "66b3fb860de291fac54afc1298f53e6c6c3b3869"
+  ],
+  "target_paths": [
+    "gobernanza/contratos/s30_self_governance_gate_v1.json",
+    "gobernanza/judges/validate_s30_self_governance_gate.py"
+  ],
+  "blocking_codes": ["EXACT_HEAD_CI_PENDING"],
+  "issued_at": "2026-09-09T22:03:00Z",
+  "evidence": {
+    "frozen_base_main_sha": "f1ee63d3fd48ab7869e989dc6b4265823740c9e9",
+    "db001_frequency_readback": 227,
+    "s28_lane_isolation_merge": "f1ee63d3fd48ab7869e989dc6b4265823740c9e9",
+    "material_work_allowed_by_prewrite_receipt": true,
+    "exact_head_ci": "PENDING",
+    "claim_ceiling": "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_BLOCKED_UNTIL_EXACT_HEAD_CI",
+    "repair_lineage": "Rematerialized from official main after PR615; PR613 remains historical only"
+  }
+}
