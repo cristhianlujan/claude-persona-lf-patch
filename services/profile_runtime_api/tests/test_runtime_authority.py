@@ -12,7 +12,7 @@ from profile_runtime_api.runtime_authority import (
 
 class RuntimeAuthorityTest(unittest.TestCase):
     @staticmethod
-    def card(ref: str = "CARD-DEMO-001") -> CardSource:
+    def card(ref: str = "CARD-DEMO-001", required_input_fields: list[str] | None = None) -> CardSource:
         content = "bounded card context"
         from profile_runtime_api.hashing import sha256_text
 
@@ -22,6 +22,7 @@ class RuntimeAuthorityTest(unittest.TestCase):
             source_ref=f"supabase://cards/{ref}",
             content_sha256=sha256_text(content),
             selected_sections=["rules"],
+            required_input_fields=required_input_fields or [],
             budget_chars=200,
             content=content,
         )
@@ -40,13 +41,20 @@ class RuntimeAuthorityTest(unittest.TestCase):
         )
 
     @classmethod
-    def task(cls, *, cards: list[CardSource] | None = None, required_cards: list[str] | None = None) -> ProfileTask:
+    def task(
+        cls,
+        *,
+        cards: list[CardSource] | None = None,
+        required_cards: list[str] | None = None,
+        input_fields: dict | None = None,
+    ) -> ProfileTask:
         return ProfileTask(
             request_id="RUN-S26-B-001",
             profile_code="PERFIL-QUALITY-PACK",
             profile_slug="quality_pack",
             profile_source_paths=["profiles/quality_pack/SKILL.md"],
             input_literal="Evaluate governed evidence.",
+            input_fields=input_fields or {},
             lf_card_sources=cards or [],
             required_card_refs=required_cards or [],
             lf_adapter_sources=[cls.adapter()],
@@ -91,6 +99,27 @@ class RuntimeAuthorityTest(unittest.TestCase):
         self.assertFalse(typed["runtime_schema"]["schema_invention_allowed"])
         self.assertTrue(typed["provenance_reconstructible"])
         self.assertEqual(len(typed["typed_context_sha256"]), 64)
+        self.assertEqual(len(typed["input"]["input_fields_sha256"]), 64)
+
+    def test_card_required_input_present_is_bound(self) -> None:
+        task = self.task(
+            cards=[self.card(required_input_fields=["decision"])],
+            required_cards=["CARD-DEMO-001"],
+            input_fields={"decision": "CTA primario"},
+        )
+        typed = self.resolve(task)
+        self.assertEqual(typed["input"]["input_fields"], {"decision": "CTA primario"})
+        self.assertEqual(
+            typed["card_resolution"]["cards"][0]["required_input_fields"],
+            ["decision"],
+        )
+
+    def test_card_required_input_missing_blocks(self) -> None:
+        task = self.task(
+            cards=[self.card(required_input_fields=["decision"])],
+            required_cards=["CARD-DEMO-001"],
+        )
+        self.expect_code("RUNTIME_CARD_REQUIRED_INPUT_MISSING", lambda: self.resolve(task))
 
     def test_no_card_uses_governed_fallback_without_schema_invention(self) -> None:
         typed = self.resolve(self.task())
