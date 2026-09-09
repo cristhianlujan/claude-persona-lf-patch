@@ -19,8 +19,9 @@ INPUT_GOV_VALIDATOR = "sandbox/lf_contract_gate_test/input_governance_migration_
 CI_WORKFLOW = ".github/workflows/lf-contract-check.yml"
 CI_ROUTER_PREFIX = "sandbox/lf_contract_gate_test/s28_ci_lane_router/"
 
+# Deliberately excludes the broad sandbox/lf_contract_gate_test/ prefix. Unknown
+# validator surfaces in that tree must remain fail-closed unless explicitly bound.
 KNOWN_SHARED_PREFIXES = (
-    "sandbox/lf_contract_gate_test/",
     "sandbox/no_bypass_judge_profile_card_skill/",
     "skills/",
     "profiles/",
@@ -58,7 +59,9 @@ def _is_input_governance_migration(path: str) -> bool:
 
 
 def _is_known_shared(path: str) -> bool:
-    if path == CI_WORKFLOW:
+    if path == CI_WORKFLOW or path.startswith(CI_ROUTER_PREFIX) or path.startswith(S30_PREFIX):
+        return True
+    if path in {MIGRATION_VALIDATOR, INPUT_GOV_VALIDATOR}:
         return True
     return path.startswith(KNOWN_SHARED_PREFIXES)
 
@@ -100,8 +103,8 @@ def classify(paths: Iterable[str]) -> LaneDecision:
             reasons.append(f"UNKNOWN:{path}")
 
     if unknown:
-        # Unknown ownership never earns a specialized N/A. Run the expensive
-        # parity lanes rather than risking a false skip.
+        # Unknown ownership never earns a specialized N/A. Run both parity lanes
+        # rather than risking a false skip.
         migration = True
         input_gov = True
 
