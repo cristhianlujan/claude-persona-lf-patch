@@ -1,0 +1,47 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.3",
+  "issued_by": "contract_judge",
+  "operation_code": "S26_E_GOVERNANCE_EKB_CARD_FALLBACK",
+  "execution_id": "S26-E-AUDIT-20260909-003",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "83212649bc6b0be2f4b1350fcfa6214e15e06c55",
+  "judge_sha": "5ae7ac655e360d9eea97f61629c849e088c59ce4",
+  "source_sha_list": [
+    "d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
+    "f3a7d236f644ccb6c643f2081e4ee934c6171be0",
+    "5432687090220c62a6d08b1352df09a21242ad56",
+    "02a7e68afb78221ae8b9dfaa18a749b6ac4649dd",
+    "ea077b165d8aa7685eaa75f3a911d8e0252d8aab",
+    "7d2bedbeabda37e0cd429ae1a792c34592154970",
+    "084a054c8b97f10941adc3667f3cd05812b8a01a"
+  ],
+  "target_paths": [
+    "gobernanza/contratos/s26_e_governed_applicability_card_fallback_v1.json",
+    "gobernanza/judges/validate_s26_e_governance.py",
+    "gobernanza/contratos/contrato_card_lf.yaml",
+    "gobernanza/judges/judge_contrato_card_lf.yaml"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-09",
+  "evidence": {
+    "audit_readback": "sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_live_audit_readback_20260909.json",
+    "pre_existing_pre_ekb_gate_reused_as_source_pattern": "CONTRACT-PRE-EKB-GATE-LF-v0.1",
+    "pre_existing_gate_live_scope": "ACT-0052..ACT-0058 pipeline operations only; CREACION_CARD_LF not live-bound",
+    "candidate_card_creation_binding": "Git candidate CONTRATO_CARD_LF/JUDGE_CONTRATO_CARD_LF require S26-E before write",
+    "live_card_creation_binding": "NOT_ACTIVE_IN_SUPABASE",
+    "global_consumer_binding": "NOT_VERIFIED",
+    "claim_ceiling": "CANDIDATE_COMPONENT_NOT_ACTIVE_GLOBALLY",
+    "regression_matrix": "sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_cases.json",
+    "case_count": 26,
+    "manual_avoided_case": "S26E-03-NO-CARD-GENERIC",
+    "manual_required_case": "S26E-05-MANUAL-LAST-RESORT",
+    "critical_ambiguity_case": "S26E-11-CARD-AMBIGUOUS-FAIL-CLOSED",
+    "severity_alias_cases": ["S26E-17-SPANISH-CRITICAL-ALIAS-BLOCKED", "S26E-24-P0-SEVERITY-BLOCKED", "S26E-25-SPANISH-HIGH-MAPPED-PASS"],
+    "applicability_mismatch_case": "S26E-18-APPLICABILITY-MISMATCH-BLOCKED",
+    "card_provenance_case": "S26E-20-CARD-PROVENANCE-INCOMPLETE-BLOCKED",
+    "fallback_completeness_case": "S26E-21-FALLBACK-INCOMPLETE-NOT-MANUAL",
+    "cli_gate": "READY exit=0; MANUAL/BLOCKED exit=3"
+  }
+}
