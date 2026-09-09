@@ -1,0 +1,120 @@
+{
+  "contract_code": "S30_SELF_GOVERNANCE_GATE",
+  "version": "v0.1-candidate",
+  "status": "CANDIDATO_READ_ONLY",
+  "lane": "S30-A",
+  "owner": "S30",
+  "base_main_sha": "9ce8f87646b44e04df609b1993447f918063fdb4",
+  "claim_ceiling": "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CANDIDATE_PASS",
+  "mandatory_sequence": [
+    "ROUTER",
+    "EKB_APPLICABLE",
+    "DATA_ACCESS_BINDINGS",
+    "SCHEMA_CONTRACT",
+    "OPERATION_CONTRACTS",
+    "ALL_INTENDED_STEPS",
+    "JUDGES_AND_RESULT_VOCABULARY",
+    "DEPENDENCIES_AND_IMPORT_CLOSURE",
+    "CI_PATHS_AND_RUNNER_WIRING",
+    "PERMISSIONS_SECRETS_AND_READBACK",
+    "EVIDENCE_PROVIDER_AND_RESOLVER",
+    "EXPECTED_OUTPUT_CONTRACT",
+    "ONLY_THEN_MATERIAL_WORK"
+  ],
+  "cheap_preflight": {
+    "failure_action": "FAIL_CLOSED_BEFORE_MATERIAL_WORK",
+    "must_run_before": [
+      "GIT_WRITE",
+      "GITHUB_ACTIONS",
+      "SQL_DEPENDENT",
+      "MIGRATION",
+      "MODEL_OR_WEIGHT_DOWNLOAD",
+      "HEAVY_RUNTIME",
+      "LONG_BENCHMARK",
+      "INDEPENDENT_REVIEW_HANDOFF"
+    ],
+    "checks": [
+      "IMPORT_CLOSURE",
+      "REQUIRED_FILES_EXIST",
+      "SCHEMA_AND_CONSTRAINTS_RESOLVED",
+      "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED",
+      "PERMISSIONS_AND_SECRET_READBACK",
+      "EVIDENCE_PROVIDER_RESOLVABLE",
+      "CI_RUNNER_WIRING_CONFIRMED",
+      "EXPECTED_OUTPUT_SCHEMA_COMPLETE",
+      "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED"
+    ]
+  },
+  "hard_guard_promotion": {
+    "trigger_any": [
+      "RECURRENT",
+      "MACHINE_DETECTABLE",
+      "AVOIDABLE_MATERIAL_WORK"
+    ],
+    "required_closure": [
+      "EKB_UPDATED",
+      "DETECTOR_IMPLEMENTED",
+      "NEGATIVE_REGRESSION",
+      "POSITIVE_REGRESSION",
+      "EXECUTED_PATH_WIRING_PROVEN",
+      "READBACK"
+    ],
+    "text_only_learning_is_closure": false
+  },
+  "blocker_contract": {
+    "required_fields": [
+      "code",
+      "affected_scope",
+      "causal_gate",
+      "owner",
+      "independent_safe_work",
+      "invalidation_condition"
+    ]
+  },
+  "frontier_contract": {
+    "required_fields": [
+      "current_stage",
+      "next_gate",
+      "blockers",
+      "safe_parallel_work"
+    ],
+    "single_current_frontier_required": true
+  },
+  "safety_ceiling": {
+    "runtime_change_allowed": false,
+    "production_change_allowed": false,
+    "merge_main_allowed": false,
+    "scheduler_change_allowed": false,
+    "s26_mutation_allowed": false
+  },
+  "result_vocabulary": [
+    "PASS_TO_MATERIAL_WORK",
+    "FAIL_CLOSED_BEFORE_MATERIAL_WORK",
+    "BLOCKED_CAUSAL",
+    "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CANDIDATE_PASS"
+  ],
+  "consumer_interface": {
+    "input_required": [
+      "receipt_version",
+      "lane",
+      "owner",
+      "base_main_sha",
+      "intended_material_action",
+      "sequence_resolution",
+      "preflight_checks",
+      "frontier",
+      "hard_guard_candidates",
+      "safety_readback",
+      "evidence"
+    ],
+    "output_required": [
+      "result",
+      "first_bad_hop",
+      "material_work_allowed",
+      "failed_checks",
+      "hard_guard_failures",
+      "blocker_failures",
+      "claim_ceiling"
+    ]
+  }
+}
