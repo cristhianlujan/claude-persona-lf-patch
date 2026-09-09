@@ -1,0 +1,81 @@
+{
+  "suite": "S26-E governance/EKB/applicability/Card fallback",
+  "base_main_sha": "d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
+  "cases": [
+    {
+      "id": "S26E-01-CARD-EXACT",
+      "input": {"router_status":"READY_TO_EXECUTE","ekb_readback_present":true,"ekb_rules":[],"card_candidates":[{"card_code":"CARD-EXACT-001","match":"EXACT"}]},
+      "expected": {"decision":"READY_TO_EXECUTE","material_execution_allowed":true,"card_resolution":{"state":"EXACT","card_code":"CARD-EXACT-001"}}
+    },
+    {
+      "id": "S26E-02-CARD-COMPATIBLE",
+      "input": {"router_status":"READY_TO_EXECUTE","ekb_readback_present":true,"ekb_rules":[],"card_candidates":[{"card_code":"CARD-COMPAT-001","match":"COMPATIBLE"}]},
+      "expected": {"decision":"READY_TO_EXECUTE","material_execution_allowed":true,"card_resolution":{"state":"COMPATIBLE","card_code":"CARD-COMPAT-001"}}
+    },
+    {
+      "id": "S26E-03-NO-CARD-GENERIC",
+      "input": {"router_status":"READY_TO_EXECUTE","ekb_readback_present":true,"ekb_rules":[],"card_candidates":[],"fallback_checks":{"EXISTING_CONTRACT_SCHEMA":{"available":false,"safe":false},"REUSABLE_GENERIC_CAPABILITY":{"available":true,"safe":true},"SAFE_COMPOSITION":{"available":false,"safe":false}}},
+      "expected": {"decision":"READY_TO_EXECUTE","material_execution_allowed":true,"fallback_resolution":"REUSABLE_GENERIC_CAPABILITY"}
+    },
+    {
+      "id": "S26E-04-NO-CARD-SAFE-COMPOSITION",
+      "input": {"router_status":"READY_TO_EXECUTE","ekb_readback_present":true,"ekb_rules":[],"card_candidates":[],"fallback_checks":{"EXISTING_CONTRACT_SCHEMA":{"available":false,"safe":false},"REUSABLE_GENERIC_CAPABILITY":{"available":false,"safe":false},"SAFE_COMPOSITION":{"available":true,"safe":true}}},
+      "expected": {"decision":"READY_TO_EXECUTE","material_execution_allowed":true,"fallback_resolution":"SAFE_COMPOSITION"}
+    },
+    {
+      "id": "S26E-05-MANUAL-LAST-RESORT",
+      "input": {"router_status":"READY_TO_EXECUTE","ekb_readback_present":true,"ekb_rules":[],"card_candidates":[],"fallback_checks":{"EXISTING_CONTRACT_SCHEMA":{"available":false,"safe":false},"REUSABLE_GENERIC_CAPABILITY":{"available":false,"safe":false},"SAFE_COMPOSITION":{"available":false,"safe":false}},"manual_reason":"No safe structural alternative exists after complete fallback evaluation."},
+      "expected": {"decision":"MANUAL_REQUIRED","material_execution_allowed":false,"fallback_resolution":"MANUAL"}
+    },
+    {
+      "id": "S26E-06-EKB-APPLICABLE-MAPPED",
+      "input": {"router_status":"READY_TO_EXECUTE","ekb_readback_present":true,"ekb_rules":[{"rule_id":"GOV-TEST-001","severity":"HIGH","control_mapped":true,"applicable":true}],"card_candidates":[{"card_code":"CARD-EKB-001","match":"EXACT"}]},
+      "expected": {"decision":"READY_TO_EXECUTE","material_execution_allowed":true}
+    },
+    {
+      "id": "S26E-07-EKB-NOT-APPLICABLE-NOT-ENFORCED",
+      "input": {"router_status":"READY_TO_EXECUTE","ekb_readback_present":true,"ekb_rules":[{"rule_id":"GOV-IRRELEVANT-001","severity":"CRITICAL","control_mapped":false,"applicable":false}],"card_candidates":[{"card_code":"CARD-EKB-002","match":"EXACT"}]},
+      "expected": {"decision":"READY_TO_EXECUTE","material_execution_allowed":true}
+    },
+    {
+      "id": "S26E-08-EKB-CONTRADICTION-FAIL-CLOSED",
+      "input": {"router_status":"READY_TO_EXECUTE","ekb_readback_present":true,"ekb_rules":[{"rule_id":"RULE-A","severity":"LOW","control_mapped":true,"applicable":true,"conflicts_with":["RULE-B"]},{"rule_id":"RULE-B","severity":"LOW","control_mapped":true,"applicable":true}],"card_candidates":[{"card_code":"CARD-EKB-003","match":"EXACT"}]},
+      "expected": {"decision":"BLOCKED_CONTRADICTORY_APPLICABLE_RULES","material_execution_allowed":false}
+    },
+    {
+      "id": "S26E-09-LEARNING-NO-EVIDENCE-NO-PERSIST",
+      "input": {"router_status":"READY_TO_EXECUTE","ekb_readback_present":true,"ekb_rules":[],"card_candidates":[{"card_code":"CARD-LRN-001","match":"EXACT"}],"learning_candidate":{"verified":true,"cause":"Observed mismatch","evidence_refs":[],"applicability":"CARD_RESOLUTION","prevention":"Add deterministic check","provenance":{"source_ref":"run:test","observed_at":"2026-09-09T17:00:00-05:00"}}},
+      "expected": {"decision":"READY_TO_EXECUTE","learning_persistible":false}
+    },
+    {
+      "id": "S26E-10-LEARNING-VALID-PERSISTIBLE",
+      "input": {"router_status":"READY_TO_EXECUTE","ekb_readback_present":true,"ekb_rules":[],"card_candidates":[{"card_code":"CARD-LRN-002","match":"EXACT"}],"learning_candidate":{"verified":true,"cause":"No-card path attempted premature manual escalation","evidence_refs":["case:S26E-03"],"applicability":"NO_CARD","prevention":"Require structural fallback ladder before manual","provenance":{"source_ref":"S26-E-regression","observed_at":"2026-09-09T17:00:00-05:00"}}},
+      "expected": {"decision":"READY_TO_EXECUTE","learning_persistible":true}
+    },
+    {
+      "id": "S26E-11-CARD-AMBIGUOUS-FAIL-CLOSED",
+      "input": {"router_status":"READY_TO_EXECUTE","ekb_readback_present":true,"ekb_rules":[],"card_candidates":[{"card_code":"CARD-A","match":"EXACT"},{"card_code":"CARD-B","match":"EXACT"}]},
+      "expected": {"decision":"BLOCKED_CARD_AMBIGUOUS","material_execution_allowed":false}
+    },
+    {
+      "id": "S26E-12-SCHEMA-INVENTION-BLOCKED",
+      "input": {"router_status":"READY_TO_EXECUTE","ekb_readback_present":true,"ekb_rules":[],"card_candidates":[],"fallback_checks":{"EXISTING_CONTRACT_SCHEMA":{"available":true,"safe":false,"schema_invented":true},"REUSABLE_GENERIC_CAPABILITY":{"available":false,"safe":false},"SAFE_COMPOSITION":{"available":false,"safe":false}}},
+      "expected": {"decision":"BLOCKED_SCHEMA_INVENTION","material_execution_allowed":false}
+    },
+    {
+      "id": "S26E-13-DATA-MODEL-MUTATION-BLOCKED",
+      "input": {"router_status":"READY_TO_EXECUTE","ekb_readback_present":true,"ekb_rules":[],"card_candidates":[],"fallback_checks":{"EXISTING_CONTRACT_SCHEMA":{"available":false,"safe":false},"REUSABLE_GENERIC_CAPABILITY":{"available":true,"safe":false,"data_model_mutation":true},"SAFE_COMPOSITION":{"available":false,"safe":false}}},
+      "expected": {"decision":"BLOCKED_DATA_MODEL_MUTATION","material_execution_allowed":false}
+    },
+    {
+      "id": "S26E-14-HIGH-RULE-WITHOUT-CONTROL-BLOCKED",
+      "input": {"router_status":"READY_TO_EXECUTE","ekb_readback_present":true,"ekb_rules":[{"rule_id":"GOV-TEST-CRIT","severity":"CRITICAL","control_mapped":false,"applicable":true}],"card_candidates":[{"card_code":"CARD-X","match":"EXACT"}]},
+      "expected": {"decision":"BLOCKED_UNMAPPED_HIGH_CRITICAL_RULE","material_execution_allowed":false}
+    },
+    {
+      "id": "S26E-15-EKB-READBACK-MISSING-BLOCKED",
+      "input": {"router_status":"READY_TO_EXECUTE","ekb_readback_present":false,"ekb_rules":[],"card_candidates":[{"card_code":"CARD-Y","match":"EXACT"}]},
+      "expected": {"decision":"BLOCKED_EKB_READBACK_MISSING","material_execution_allowed":false}
+    }
+  ]
+}
