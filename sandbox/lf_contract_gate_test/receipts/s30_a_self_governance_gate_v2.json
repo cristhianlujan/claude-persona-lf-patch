@@ -1,0 +1,32 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "S30_SELF_GOVERNANCE_GATE",
+  "execution_id": "S30-A-SELF-GOVERNANCE-V2-20260909-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "4b0aff8104f4b3a066d568310d1b92dd291f3fc6",
+  "judge_sha": "beeb80445e37efcf8e668877be693f21b86562f2",
+  "source_sha_list": [
+    "9ce8f87646b44e04df609b1993447f918063fdb4",
+    "4b0aff8104f4b3a066d568310d1b92dd291f3fc6",
+    "beeb80445e37efcf8e668877be693f21b86562f2",
+    "ab6324604c1b34fff0b54e67993c7018ae52bf76"
+  ],
+  "target_paths": [
+    "gobernanza/contratos/s30_self_governance_gate_v1.json",
+    "gobernanza/judges/validate_s30_self_governance_gate.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-09T21:26:11Z",
+  "evidence": {
+    "frozen_base_main_sha": "9ce8f87646b44e04df609b1993447f918063fdb4",
+    "prior_identical_blob_ci_head": "ab6324604c1b34fff0b54e67993c7018ae52bf76",
+    "prior_ci_run": 34406873475,
+    "prior_ci_step": "S30 self-governance cheap preflight",
+    "prior_ci_step_result": "SUCCESS",
+    "repair_reason": "v1 prewrite receipt path was outside existing lf-contract-check sandbox allowlist; v2 preserves v1 history and uses canonical carrier",
+    "claim_ceiling": "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CANDIDATE_PASS"
+  }
+}
