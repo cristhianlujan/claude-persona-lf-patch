@@ -64,8 +64,8 @@ if cproc.stdout:
 if cproc.stderr:
     print(cproc.stderr,file=sys.stderr,end='' if cproc.stderr.endswith('\n') else '\n')
 assert cproc.returncode==0,('S26_BUNDLE_CERTIFICATION_TESTS_FAILED',cproc.returncode)
-assert 'S26_BUNDLE_CERTIFICATION_TESTS_PASS=10_NEGATIVE_PLUS_1_POSITIVE' in cproc.stdout,'S26_BUNDLE_CERTIFICATION_MARKER_MISSING'
-print('S26_BUNDLE_CERTIFICATION_GATE_PASS=11/11')
+assert 'S26_BUNDLE_CERTIFICATION_TESTS_PASS=12_NEGATIVE_PLUS_1_POSITIVE' in cproc.stdout,'S26_BUNDLE_CERTIFICATION_MARKER_MISSING'
+print('S26_BUNDLE_CERTIFICATION_GATE_PASS=13/13')
 
 repo_root=Path(__file__).resolve().parents[3]
 quality_adversarial=repo_root/'profiles/quality_pack/evals/quality_gate_adversarial.py'
