@@ -1,0 +1,119 @@
+version: v0.1
+status: CANDIDATO_READ_ONLY
+source_strategy:
+  snapshot_id: 35
+  snapshot_code: LF_OPERATING_CONSTITUTION_POLICY_AUTONOMOUS_OPERATIONS_20260906
+purpose: >-
+  Definir el contrato mínimo genérico de idempotencia, lease y checkpoint para
+  ejecuciones LF antes de cualquier DDL, activación Router, runtime o producción.
+authority:
+  router: ACT-0001
+  operation_execution_table: public.lf_operation_execution
+  operation_steps_table: public.lf_operation_execution_steps
+  strategy_snapshot: public.lf_strategy_snapshots
+  schema_authority_required_before_ddl: true
+  critical_authority_missing_blocks: true
+currentness:
+  generic_idempotency_present: false
+  generic_lease_present: false
+  generic_checkpoint_function_present: false
+  specialized_carrier_observed: public.lf_checkout_idempotency_reservations.idempotency_key
+  specialized_carrier_reuse_allowed: false
+  specialized_reuse_requires_domain_compatibility_proof: true
+minimal_extension_candidate:
+  target_table: public.lf_operation_execution
+  new_table_default: false
+  fields:
+    - name: idempotency_key
+      type: text
+      nullable_during_candidate: true
+      purpose: DURABLE_LOGICAL_EFFECT_IDENTITY
+    - name: lease_owner
+      type: text
+      nullable_during_candidate: true
+      purpose: EXCLUSIVE_EXECUTOR_OWNERSHIP
+    - name: lease_expires_at
+      type: timestamptz
+      nullable_during_candidate: true
+      purpose: CRASH_RECOVERY_SAFE_TAKEOVER_AFTER_EXPIRY
+  checkpoint:
+    storage: manifest
+    typed_column_required_now: false
+    reason: KEEP_MINIMAL_UNTIL_QUERY_OR_INTEGRITY_REQUIREMENT_PROVES_COLUMN_NEEDED
+idempotency_contract:
+  logical_identity_fields:
+    - operation_code
+    - target_type
+    - target_code
+    - idempotency_key
+  uniqueness_scope: NON_NULL_IDEMPOTENCY_KEY
+  same_key_same_logical_effect: true
+  same_key_duplicate_irreversible_effect_allowed: false
+  new_key_required_for_distinct_logical_effect: true
+lease_contract:
+  acquisition_requires_unowned_or_expired: true
+  active_unexpired_lease_single_owner: true
+  takeover_before_expiry_allowed: false
+  takeover_after_expiry_allowed: true
+  lease_owner_required_when_lease_active: true
+  lease_expires_at_required_when_lease_active: true
+checkpoint_contract:
+  durable_start_before_material_work: true
+  checkpoint_after_each_verified_child_or_macrobatch: true
+  checkpoint_must_precede_close: true
+  resume_from_last_verified_checkpoint: true
+  scheduler_is_not_state_authority: true
+retry_contract:
+  retry_only_classified_transient_failures: true
+  contract_or_semantic_failure_auto_retry: false
+  safe_replay_reuses_same_idempotency_key: true
+  response_loss_safe_replay_required: true
+  persist_failure_after_effect_requires_readback_before_replay: true
+preexecution_sequence:
+  - ROUTER
+  - EKB_APPLICABLE
+  - DATA_ACCESS_BINDINGS
+  - SCHEMA_CONTRACT
+  - OPERATION_CONTRACTS
+  - ALL_INTENDED_STEPS
+  - JUDGES_AND_RESULT_VOCABULARY
+  - DEPENDENCIES_AND_IMPORT_CLOSURE
+  - CI_PATHS_AND_RUNNER_WIRING
+  - PERMISSIONS_SECRETS_AND_READBACK
+  - EVIDENCE_PROVIDER_AND_RESOLVER
+  - EXPECTED_OUTPUT_CONTRACT
+  - ONLY_THEN_MATERIAL_WORK
+hard_guards:
+  - NO_DDL_BEFORE_SCHEMA_AUTHORITY
+  - NO_REUSE_SPECIALIZED_CHECKOUT_IDEMPOTENCY_WITHOUT_COMPATIBILITY_PROOF
+  - NO_DUPLICATE_IRREVERSIBLE_EFFECT_FOR_SAME_IDEMPOTENCY_KEY
+  - NO_LEASE_TAKEOVER_BEFORE_EXPIRY
+  - NO_MATERIAL_WORK_BEFORE_DURABLE_START_READBACK
+  - NO_CLOSE_BEFORE_CHECKPOINT_AND_EVIDENCE_PERSIST
+  - NO_SCHEDULER_AS_STATE_AUTHORITY
+  - NO_BLIND_RETRY_OF_CONTRACT_OR_SEMANTIC_FAILURE
+  - NO_SAME_STATEMENT_READBACK_AS_CLOSURE_EVIDENCE
+  - BLOCK_ON_CRITICAL_AUTHORITY_MISSING
+  - NO_AUTOMATIC_RUNTIME_ENABLE
+  - NO_AUTOMATIC_PRODUCTION_PROMOTION
+rollback_only_schema_canary_required:
+  - ADD_NULLABLE_IDEMPOTENCY_KEY
+  - ADD_NULLABLE_LEASE_OWNER
+  - ADD_NULLABLE_LEASE_EXPIRES_AT
+  - ADD_PARTIAL_UNIQUE_LOGICAL_EFFECT_GUARD
+  - SAME_KEY_DUPLICATE_NEGATIVE
+  - LEASE_CONTENTION_NEGATIVE
+  - EXPIRED_LEASE_TAKEOVER_POSITIVE
+  - ROLLBACK
+required_after_canary:
+  - independent_schema_readback
+  - zero_durable_schema_change
+  - zero_durable_execution_residue
+  - deterministic_positive_regressions
+  - deterministic_negative_regressions
+  - exact_head_ci_success
+claim_ceiling: CONTRACT_AND_REGRESSION_CANDIDATE_NO_DDL_NO_ROUTER_NO_RUNTIME_NO_PRODUCTION
+promotion_rule: >-
+  This contract cannot authorize DDL, Router activation, runtime, production or merge to main.
+  Any schema mutation requires a separate governed schema authority gate, rollback-only canary,
+  exact-head CI, independent evidence and explicit promotion authority.
