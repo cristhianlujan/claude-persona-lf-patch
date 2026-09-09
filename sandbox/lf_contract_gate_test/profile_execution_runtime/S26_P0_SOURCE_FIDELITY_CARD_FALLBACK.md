@@ -3,6 +3,23 @@
 Status: CANDIDATE_P0_IMPLEMENTED_ON_PR_BRANCH
 Scope: S26 profile execution runtime candidate only. No main/production promotion.
 
+## Mandatory S26 operating mode
+
+Before any new S26 material work, every fresh chat MUST read and apply:
+
+- `S26_OPERATING_MODE_SOURCE_FIRST.md`
+- `s26_operating_mode.json`
+
+This is a mandatory S26-local operating rule while the broader reusable source/IR entrypoint is developed independently. S26 does not wait for Strategy 28 to complete or switch its public entrypoint.
+
+Primary rule: **program correctly by construction from source authority first; validators are secondary regression/safety controls.**
+
+Mandatory phase order:
+
+`S26_READ -> AUTHORITY_RESOLVED -> SOURCE_MODEL_READY -> GOVERNED_BUILD_PLAN_READY -> MATERIAL_BUILD -> RUNTIME_READBACK -> QUALITY -> INDEPENDENT_REVIEW -> ORCHESTRATOR_RECONCILIATION -> GOLDEN_ELIGIBLE`
+
+A fresh chat must not perform material generation before the source model and governed build plan are ready. It must distinguish immutable semantics, observed samples, runtime bindings and presentation-only dimensions. Screenshot/sample values must never become runtime state without explicit runtime authority.
+
 ## Problem closed by this candidate
 
 Two independent gaps were observed:
@@ -100,7 +117,7 @@ Validated against current public documentation on 2026-09-09:
 Do not declare Golden from this code change alone.
 
 Required next evidence:
-1. CI/readback of the branch with the expanded 18-case regression suite.
-2. A fresh governed execution that binds a source-fidelity contract before UI Architect/Composer.
+1. CI/readback of the branch with the expanded regression suite and mandatory S26 operating mode.
+2. A fresh governed execution that follows the mandatory source-first phase order and binds a source-fidelity contract before UI Architect/Composer.
 3. Independent semantic/visual review on that fresh execution.
 4. Preserve Run F as historical negative evidence; do not mutate it to manufacture a pass.
