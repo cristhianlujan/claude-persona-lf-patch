@@ -15,10 +15,12 @@ on:
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_semantic_quality_tests.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_d.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_s26_native_golden_d.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_e.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_001/**"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/**"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/**"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/**"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/**"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/guard_no_model_weight_acquisition.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_model_weight_guard_tests.py"
       - ".github/workflows/profile-driven-screen-generation.yml"
@@ -93,6 +95,27 @@ jobs:
             sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/evaluation.json
             sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/execution_receipt.json
             sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/semantic_check_bundle.json
+          retention-days: 30
+      - name: Pre-bind fresh S26 Native Golden Run E without RAW
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_e.py
+          test ! -f sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/raw_output.json
+      - name: Upload Run E prebound evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: s26-native-golden-run-e-prebind
+          path: |
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/input.txt
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/input_governance_snapshot.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/router_adapter_binding_snapshot.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/visual_artifact_ref.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/visual_observation_packet.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/metrics_plan.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/obligation_template.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/preflight_binding.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/governed_context_receipt.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/obligation_manifest.json
           retention-days: 30
       - name: Preserve historical S26 candidates without requalification
         run: |
