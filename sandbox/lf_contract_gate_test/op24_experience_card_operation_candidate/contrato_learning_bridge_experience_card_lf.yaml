@@ -15,6 +15,17 @@ factory_dependency:
   candidate_pr: 570
   required_before_registration: true
   active_router_binding_required_before_registration: true
+invocation_route:
+  asset_type: EXPERIENCE
+  action_code: EXPERIENCE_LEARNING_BRIDGE
+  operation_code: LEARNING_BRIDGE_EXPERIENCE_CARD_LF
+  operation_resolution: STATIC
+  requires_existing_target: false
+  requires_missing_target: false
+  write_allowed: false
+  status: CANDIDATE_SANDBOX
+  activation_allowed_in_candidate: false
+  required_for_execution: true
 authority:
   router: ACT-0001
   operational_source: public.v_lf_fuente_operativa
@@ -58,6 +69,7 @@ lifecycle:
   - VERIFICADO
   - CERRADO
 required_gates:
+  - experience_router_contract_gate
   - required_signal_gate
   - contradiction_gate
   - deterministic_dedup
@@ -79,6 +91,8 @@ negative_controls:
   - direct_official_rule_write_blocked
   - production_impact_without_approval_blocked
   - factory_dependency_missing_blocks_registration
+  - missing_experience_route_blocks_execution
+  - experience_route_write_enabled_blocks
   - router_bypass_blocked
 blocked:
   - direct_operation_registry_write
@@ -89,13 +103,18 @@ blocked:
   - n8n_reasoning
   - runtime_enablement
   - production_promotion
+  - experience_router_bypass
+  - experience_route_write_enablement
   - strategy23_execution
 registration_rule: >-
   This source package can be validated and sandbox-tested before the generic
   operation factory is active, but durable registration of
   LEARNING_BRIDGE_EXPERIENCE_CARD_LF remains blocked until CREACION_OPERACION_LF
-  is independently approved and an OPERATION_CREATE Router binding exists.
+  is independently approved and an OPERATION_CREATE Router binding exists. Any
+  execution of the Experience bridge additionally requires the explicit
+  EXPERIENCE / EXPERIENCE_LEARNING_BRIDGE Router binding; candidate validation
+  never authorizes that route to become ACTIVE or write-enabled.
 claim_ceiling: >-
-  PASS means only that Experience-to-Card semantics and evidence gates are
-  coherent as a candidate source package. It does not authorize operation
+  PASS means only that Experience-to-Card semantics, invocation routing and evidence
+  gates are coherent as a candidate source package. It does not authorize operation
   registration, Card creation, approval, impact, runtime activation or production.
