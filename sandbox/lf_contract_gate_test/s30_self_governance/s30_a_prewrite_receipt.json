@@ -8,7 +8,7 @@
     "ROUTER": {"status": "PROVEN", "evidence": "ACT-0001:v0.3 VIGENTE/ACTIVO/RECTOR; STRATEGY UPDATE route remains candidate-only"},
     "EKB_APPLICABLE": {"status": "PROVEN", "evidence": "DB-001 recurrent/machine-detectable and GOV-010 applicable; new S30 self-consumption recurrence observed and not yet persisted"},
     "DATA_ACCESS_BINDINGS": {"status": "NOT_REQUIRED_WITH_REASON", "evidence": "S30-A does not implement S30-B typed readers; exact Git paths and schema-first Supabase reads only"},
-    "SCHEMA_CONTRACT": {"status": "PROVEN", "evidence": "v0.2 now requires relation columns + constraints + dependent SQL function signatures before dependent SQL"},
+    "SCHEMA_CONTRACT": {"status": "PROVEN", "evidence": "v0.2 requires relation columns + constraints + dependent SQL function signatures before dependent SQL"},
     "OPERATION_CONTRACTS": {"status": "PROVEN", "evidence": "ACTUALIZACION_ESTRATEGIA_LF contract/topology readback; historical full 14/14 canary proves governed executor path"},
     "ALL_INTENDED_STEPS": {"status": "PROVEN", "evidence": "freeze base -> reconcile/readback -> gate -> regressions -> isolated PR -> exact-head CI -> governed reconciliation -> independent readback"},
     "JUDGES_AND_RESULT_VOCABULARY": {"status": "PROVEN", "evidence": "validator + fixed result vocabulary in S30_SELF_GOVERNANCE_GATE v0.2"},
@@ -44,22 +44,22 @@
   },
   "frontier": {
     "current_stage": "S30-A_SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_V02_REPAIR",
-    "next_gate": "DB001_EKB_RECURRENCE_PERSIST_PLUS_EXACT_HEAD_V02_CI",
+    "next_gate": "DB001_EKB_RECURRENCE_PERSIST_THEN_V02_PASS_RERUN",
     "blockers": [
       {
         "code": "DB001_SELF_CONSUMPTION_RECURRENCE_NOT_PERSISTED",
         "affected_scope": "S30_A_HARD_GUARD_CLOSURE",
-        "causal_gate": "EKB_UPDATED_PLUS_V02_EXACT_HEAD_REGRESSION_WIRING_READBACK",
+        "causal_gate": "EKB_UPDATED",
         "owner": "S30-A",
-        "independent_safe_work": ["V02_CONTRACT_AND_JUDGE_REPAIR", "V02_FAIL_CLOSED_CI_PROBE", "S28_LANE_ISOLATION_READBACK"],
-        "invalidation_condition": "DB-001 recurrence is persisted with exact evidence and v0.2 detector negative/positive/wiring/readback are all proven"
+        "independent_safe_work": ["PR615_OWNER_GATE_PREP", "GOVERNED_RECONCILIATION_PLAN"],
+        "invalidation_condition": "DB-001 recurrence is persisted with exact S30-A self-consumption evidence; then current v0.2 HEAD is rerun and read back"
       },
       {
         "code": "S28_LANE_ISOLATION_PENDING_MAIN_MERGE",
         "affected_scope": "S30_A_GLOBAL_CI_APPLICABILITY",
         "causal_gate": "PR615_OWNER_MERGE_APPROVAL",
         "owner": "S28_CI_GOVERNANCE",
-        "independent_safe_work": ["S30_A_V02_FAIL_CLOSED_PROBE", "STRATEGY_UPDATE_ROLLBACK_CANARY_READBACK"],
+        "independent_safe_work": ["STRATEGY_UPDATE_ROLLBACK_CANARY_READBACK"],
         "invalidation_condition": "PR #615 is merged to main and S30-A exact-head CI confirms unrelated migration/input-governance/P0 lanes remain skipped"
       },
       {
@@ -67,11 +67,11 @@
         "affected_scope": "SUPABASE_CANONICAL_S30_FRONTIER_RECONCILIATION",
         "causal_gate": "BOUNDED_ACTUALIZACION_ESTRATEGIA_LF_ACTIVATION_WINDOW",
         "owner": "S30_STRATEGY_GOVERNANCE",
-        "independent_safe_work": ["GITHUB_SELF_GOVERNANCE_GATE", "CI_SELFTEST_AND_WIRING", "RECEIPT_READBACK"],
+        "independent_safe_work": ["GITHUB_SELF_GOVERNANCE_GATE", "RECEIPT_READBACK"],
         "invalidation_condition": "ACTUALIZACION_ESTRATEGIA_LF executes through ACT-0001 under its contract, writes bounded snapshot delta, independently reads back, then demotes the activation window"
       }
     ],
-    "safe_parallel_work": ["V02_FAIL_CLOSED_CI_PROBE", "PR615_READBACK", "GOVERNED_RECONCILIATION_PLAN"]
+    "safe_parallel_work": ["PR615_READBACK", "GOVERNED_RECONCILIATION_PLAN"]
   },
   "hard_guard_candidates": [
     {
@@ -79,11 +79,11 @@
       "triggers": ["RECURRENT", "MACHINE_DETECTABLE", "AVOIDABLE_MATERIAL_WORK"],
       "closure": {
         "EKB_UPDATED": {"status": "PENDING_OWNER_OFFICIAL_SOURCE_APPROVAL", "evidence": "two S30-A self-consumption SQL dependency errors observed after v0.1"},
-        "DETECTOR_IMPLEMENTED": {"status": "PASS", "evidence": "S30_SELF_GOVERNANCE_GATE v0.2 requires DEPENDENT_SQL_FUNCTION_SIGNATURES subproof"},
-        "NEGATIVE_REGRESSION": {"status": "PENDING_EXACT_HEAD_CI", "evidence": "negative_unresolved_sql_function_signature added to validator self-test"},
-        "POSITIVE_REGRESSION": {"status": "PENDING_EXACT_HEAD_CI", "evidence": "positive fixture includes all required schema subproofs"},
-        "EXECUTED_PATH_WIRING_PROVEN": {"status": "PENDING_EXACT_HEAD_CI", "evidence": "Validate LF Packs wiring already exists; v0.2 must execute on new HEAD"},
-        "READBACK": {"status": "PENDING_EXACT_HEAD_CI", "evidence": "new HEAD workflow/job readback required"}
+        "DETECTOR_IMPLEMENTED": {"status": "PASS", "evidence": "contract blob f811d4b566ee562750bdc459d3265ca0cc2df5aa + judge blob 410e524c76bd6abb060ec129f336a5a1317d5948"},
+        "NEGATIVE_REGRESSION": {"status": "PASS", "evidence": "Validate LF Packs run 34409347159: negative_unresolved_sql_function_signature=FAIL_CLOSED_BEFORE_MATERIAL_WORK"},
+        "POSITIVE_REGRESSION": {"status": "PASS", "evidence": "Validate LF Packs run 34409347159: positive_equivalent=PASS_TO_MATERIAL_WORK"},
+        "EXECUTED_PATH_WIRING_PROVEN": {"status": "PASS", "evidence": "Validate LF Packs run 34409347159 executed S30 self-governance cheap preflight as step 4 before dependency installation"},
+        "READBACK": {"status": "PASS", "evidence": "job 102659865208 exact log readback; first_bad_hop=HARD_GUARD:0:DB-001:EKB_UPDATED and heavy steps skipped"}
       }
     }
   ],
@@ -106,6 +106,14 @@
       "unverified jsonb_object_length(jsonb) assumption caused SQL error",
       "pg_get_functiondef invoked across pg_proc without prokind=f filter reached aggregate rows and caused SQL error"
     ],
+    "v02_fail_closed_probe": {
+      "head_before_receipt_readback_update": "6b2dee4fdf515a52b8addd48121e56cc6b1853c0",
+      "run": 34409347159,
+      "job": 102659865208,
+      "self_test_status": "PASS",
+      "material_work_allowed": false,
+      "first_bad_hop": "HARD_GUARD:0:DB-001:EKB_UPDATED"
+    },
     "canonical_persistence": "BLOCKED_CAUSAL_UNTIL_OFFICIAL_SOURCE_APPROVAL_AND_GOVERNED_STRATEGY_UPDATE_WINDOW",
     "repair_lineage": "v0.1 exact-head exposed SQL dependency resolution gap; v0.2 is a new bounded gate version, not silent mutation of prior evidence"
   }
