@@ -237,6 +237,32 @@ class EngineGateTest(unittest.TestCase):
             raise error
 
         pipeline.prepare = fail_prepare  # type: ignore[method-assign]
+        result = engine.run_execute(
+            ExecuteRequest(
+                artifact=self.artifact,
+                input_governance=self.governance,
+                profile=self.quality_task("quality-structural-failure-1"),
+            )
+        )["result"]
+        self.assertEqual(pipeline.calls, 1)
+        self.assertEqual(result["runtime_completion"]["status"], "FAIL")
+        self.assertEqual(
+            result["runtime_completion"]["blocking_codes"],
+            ["STRUCTURAL_CONTEXT_TEST_FAILURE"],
+        )
+        self.assertEqual(result["profile_contract_valid"]["status"], "NOT_EVALUATED")
+        self.assertEqual(result["semantic_utility"]["status"], "NOT_EVALUATED")
+
+    def test_batch_structural_failure_returns_all_three_gates_for_all_profiles(self) -> None:
+        engine, pipeline = self.engine(valid_quality_output())
+
+        def fail_prepare(_artifact: Any, _governance: Any) -> PreparedContext:
+            pipeline.calls += 1
+            error = RuntimeError("structural failure")
+            error.code = "STRUCTURAL_CONTEXT_TEST_FAILURE"  # type: ignore[attr-defined]
+            raise error
+
+        pipeline.prepare = fail_prepare  # type: ignore[method-assign]
         request = BatchRequest(
             batch_id="batch-structural-failure-1",
             artifact=self.artifact,
@@ -248,6 +274,10 @@ class EngineGateTest(unittest.TestCase):
         self.assertEqual(result["summary"]["runtime_completion_pass"], 0)
         for profile_result in result["profile_results"]:
             self.assertEqual(profile_result["runtime_completion"]["status"], "FAIL")
+            self.assertEqual(
+                profile_result["runtime_completion"]["blocking_codes"],
+                ["STRUCTURAL_CONTEXT_TEST_FAILURE"],
+            )
             self.assertEqual(profile_result["profile_contract_valid"]["status"], "NOT_EVALUATED")
             self.assertEqual(profile_result["semantic_utility"]["status"], "NOT_EVALUATED")
 
