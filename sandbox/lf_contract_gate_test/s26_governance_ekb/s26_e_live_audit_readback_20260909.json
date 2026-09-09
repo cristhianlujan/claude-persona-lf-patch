@@ -1,0 +1,115 @@
+{
+  "audit_id": "S26-E-INDEPENDENT-READBACK-20260909-001",
+  "observed_on": "2026-09-09",
+  "project_id": "mhwmirqcgxxukpctffuv",
+  "repository": "cristhianlujan/claude-persona-lf-patch",
+  "base_main_sha": "d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
+  "mode": "READ_ONLY_LIVE_AUDIT",
+  "router_readback": {
+    "codigo_activo": "ACT-0001",
+    "nombre_canonico": "DOC_ROUTER_OPERATIVO_GOBERNANZA_LF",
+    "estado_documental": "VIGENTE",
+    "estado_operativo": "ACTIVO",
+    "nivel_control": "RECTOR",
+    "runtime_estado": "RUNTIME_OPERATIVO",
+    "impacto_automatico": "BLOQUEADO",
+    "version_normalizada": "v0.3"
+  },
+  "schema_readback": {
+    "lf_error_knowledge_lifecycle_phase_type": "text",
+    "lf_error_knowledge_consumer_role_type": "ARRAY",
+    "lf_operation_contracts_primary_key": ["operation_code", "contract_code"],
+    "severity_values_observed_in_active_ekb": ["CRITICAL", "Critical", "CRITICA", "P0", "High", "HIGH", "ALTA"]
+  },
+  "relevant_ekb_readback": [
+    {
+      "codigo": "GOV-010",
+      "severity": "High",
+      "lifecycle_phase": "operation",
+      "source_ref": "supabase://public.fn_lf_router_preflight_v1|supabase://public.lf_router_resolve_v1|supabase://public.programming_agent_knowledge_v1|supabase://public.lf_error_knowledge#DB-001",
+      "control_intent": "Read applicable EKB before operational/code work and block applicable High/Critical rules without controls."
+    },
+    {
+      "codigo": "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001",
+      "severity": "High",
+      "lifecycle_phase": "construction",
+      "source_ref": "supabase://public.lf_router_resolve_v1|supabase://public.fn_lf_router_preflight_v1|supabase://public.programming_agent_knowledge_v1|supabase://public.lf_operation_step_contracts#resolver_ref|supabase://public.lf_error_knowledge#DB-001,GOV-010",
+      "control_intent": "Use typed/canonical bindings rather than reconstructing access ad hoc."
+    }
+  ],
+  "existing_pre_ekb_gate": {
+    "contract_code": "CONTRACT-PRE-EKB-GATE-LF-v0.1",
+    "status": "ACTIVE_ENFORCEMENT",
+    "bound_operations": [
+      "ANALISIS_RIESGO_CONTENIDO_LF",
+      "ESCRITURA_BASE_CONOCIMIENTO_LF",
+      "EXTRACCION_DOCUMENTOS_REGULATORIOS_LF",
+      "EXTRACCION_FUENTES_DIGITALES_LF",
+      "EXTRACCION_NOTICIAS_FINANCIERAS_LF",
+      "HOMOLOGACION_FUENTES_DIGITALES_LF",
+      "ORQUESTACION_PIPELINE_LF"
+    ],
+    "creacion_card_lf_bound": false
+  },
+  "creacion_card_lf_live_readback": {
+    "contract_code": "CONTRATO_CARD_LF",
+    "contract_sha": "c4819910b85ae7dfaa36e3d3c311da19a3faed8d",
+    "status": "CANDIDATO_READ_ONLY",
+    "s26_e_requirements_present": false,
+    "operation_step_count_observed": 39,
+    "pre_ekb_gate_step_present": false,
+    "first_gpt_runtime_steps": ["classification", "generic_vs_specific", "research_pack"]
+  },
+  "generic_router_preflight_readback": {
+    "source": "supabase/migrations/20260905053600_lf_fn_router_preflight_v1.sql",
+    "reads_act_0001": true,
+    "reads_active_high_critical_aliases": ["ALTA", "HIGH", "CRITICA", "CRITICAL", "P0"],
+    "computes_per_task_applicability": false,
+    "resolves_card_fallback": false
+  },
+  "audit_findings": [
+    {
+      "code": "S26E-AUD-001",
+      "severity": "CRITICAL",
+      "finding": "v0.1 trusted rule.applicable instead of computing/validating applicability from observed context.",
+      "correction": "v0.2 requires applicability_context and rejects declared/computed mismatch."
+    },
+    {
+      "code": "S26E-AUD-002",
+      "severity": "CRITICAL",
+      "finding": "v0.1 only treated HIGH/CRITICAL as blocking severities while live EKB also uses ALTA/CRITICA/P0.",
+      "correction": "v0.2 normalizes live severity aliases before enforcement."
+    },
+    {
+      "code": "S26E-AUD-003",
+      "severity": "HIGH",
+      "finding": "Missing/malformed Card candidates could collapse to no-Card and enter fallback/manual without proving Card readback.",
+      "correction": "v0.2 requires card_readback_present, candidate shape and provenance."
+    },
+    {
+      "code": "S26E-AUD-004",
+      "severity": "HIGH",
+      "finding": "Incomplete fallback checks could be interpreted as unavailable/unsafe and permit MANUAL_REQUIRED.",
+      "correction": "v0.2 requires explicit booleans and evidence_ref for all three structural alternatives."
+    },
+    {
+      "code": "S26E-AUD-005",
+      "severity": "CRITICAL",
+      "finding": "CLI --input returned process exit 0 even for blocked/manual decisions.",
+      "correction": "v0.2 returns exit 0 only for READY_TO_EXECUTE; blocked/manual return 3."
+    },
+    {
+      "code": "S26E-AUD-006",
+      "severity": "CRITICAL",
+      "finding": "Git candidate binding was previously described as operationally effective, but live Supabase CREACION_CARD_LF does not contain S26-E/PRE_EKB_GATE binding.",
+      "correction": "Claim ceiling reduced to candidate component; live/global activation remains unverified and must not be called PASS."
+    }
+  ],
+  "scope_boundaries": {
+    "supabase_mutated": false,
+    "main_mutated": false,
+    "production_mutated": false,
+    "golden_declared": false,
+    "global_consumer_binding_verified": false
+  }
+}
