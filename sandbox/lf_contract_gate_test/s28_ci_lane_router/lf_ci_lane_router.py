@@ -14,6 +14,8 @@ from typing import Iterable
 S30_POLICY_PREFIX = "sandbox/lf_contract_gate_test/s30_policy_operations_candidate/"
 S30_SELF_GOVERNANCE_PREFIX = "sandbox/lf_contract_gate_test/s30_self_governance/"
 S30_SELF_GOVERNANCE_RECEIPT_PREFIX = "sandbox/lf_contract_gate_test/receipts/s30_a_self_governance_gate_"
+S26_RUNTIME_PREFIX = "sandbox/lf_contract_gate_test/profile_execution_runtime/"
+S26_RUNTIME_WORKFLOW = ".github/workflows/story-agent-evidence-verifier.yml"
 MIGRATION_PREFIX = "supabase/migrations/"
 MIGRATION_VALIDATOR = "sandbox/lf_contract_gate_test/lf_migration_source_parity.py"
 INPUT_GOV_VALIDATOR = "sandbox/lf_contract_gate_test/input_governance_migration_parity_compact.py"
@@ -32,6 +34,7 @@ P0_EXACT_HEAD_EXTERNAL_EXACT = frozenset({
 # Deliberately excludes the broad sandbox/lf_contract_gate_test/ prefix. Unknown
 # validator surfaces in that tree must remain fail-closed unless explicitly bound.
 KNOWN_SHARED_PREFIXES = (
+    S26_RUNTIME_PREFIX,
     "sandbox/no_bypass_judge_profile_card_skill/",
     "skills/",
     "profiles/",
@@ -122,7 +125,7 @@ def _is_s30_isolated(path: str) -> bool:
 
 
 def _is_known_shared(path: str) -> bool:
-    if path in {CI_WORKFLOW, VALIDATE_LF_PACKS_WORKFLOW, P0_RUNTIME_ENTRYPOINT}:
+    if path in {CI_WORKFLOW, VALIDATE_LF_PACKS_WORKFLOW, P0_RUNTIME_ENTRYPOINT, S26_RUNTIME_WORKFLOW}:
         return True
     if path.startswith(CI_ROUTER_PREFIX) or _is_s30_isolated(path):
         return True
@@ -179,8 +182,6 @@ def classify(paths: Iterable[str]) -> LaneDecision:
             reasons.append(f"UNKNOWN:{path}")
 
     if unknown:
-        # Unknown ownership never earns a specialized N/A. Run all external/
-        # parity obligations rather than risking a false skip.
         migration = True
         input_gov = True
         p0_external = True
