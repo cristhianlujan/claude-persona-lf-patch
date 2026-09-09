@@ -214,11 +214,18 @@ def main():
     assert adapter.calls == 0
     passed += 1
 
+    # Freeze the original execution contract first; then mutate the supplied
+    # authority. This proves the runtime rejects authority drift before any
+    # adapter/model call instead of silently regenerating trust around it.
+    original_contract = make_contract(fidelity)
     wrong_fidelity = deepcopy(fidelity)
     wrong_fidelity["source_ref"] = "screens/OTHER"
     reseal(wrong_fidelity, "contract_sha256")
     adapter = NativeAdapter()
-    expect_block("SOURCE_FIRST_SOURCE_FIDELITY_SHA_MISMATCH", lambda: execute(wrong_fidelity, model, plan, adapter=adapter))
+    expect_block(
+        "SOURCE_FIRST_SOURCE_FIDELITY_SHA_MISMATCH",
+        lambda: execute(wrong_fidelity, model, plan, contract=original_contract, adapter=adapter),
+    )
     assert adapter.calls == 0
     passed += 1
 
