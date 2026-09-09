@@ -1,0 +1,42 @@
+name: S28 CI Lane Router Canary
+
+on:
+  pull_request:
+    paths:
+      - "scripts/lf_ci_lane_router.py"
+      - "sandbox/lf_contract_gate_test/s28_ci_lane_router/**"
+      - ".github/workflows/s28-ci-lane-router-canary.yml"
+  push:
+    branches:
+      - "lf/s28-ci-lane-isolation-*"
+    paths:
+      - "scripts/lf_ci_lane_router.py"
+      - "sandbox/lf_contract_gate_test/s28_ci_lane_router/**"
+      - ".github/workflows/s28-ci-lane-router-canary.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  lane-router-canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run fail-closed lane router regressions
+        run: python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_router.py
+      - name: Prove S30 does not require migration parity
+        run: |
+          set -euo pipefail
+          result="$(python3 scripts/lf_ci_lane_router.py --json sandbox/lf_contract_gate_test/s30_policy_operations_candidate/policy_operations_contract.yaml)"
+          python3 - "$result" <<'PY'
+          import json, sys
+          data=json.loads(sys.argv[1])
+          assert data["lanes"]["S30_POLICY"] is True
+          assert data["lanes"]["MIGRATION_PARITY"] is False
+          assert data["lanes"]["INPUT_GOVERNANCE_MIGRATION_PARITY"] is False
+          print("PASS_S28_S30_MIGRATION_PARITY_NOT_APPLICABLE")
+          PY
