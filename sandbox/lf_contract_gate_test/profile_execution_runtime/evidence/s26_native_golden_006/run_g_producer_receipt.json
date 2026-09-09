@@ -53,7 +53,7 @@
     "composer_boundary": "PASS"
   },
   "execution_contract": {
-    "contract_sha256": "9c492cd51977219734d8596ad1d08df162466d8783763761a9d51101c0c96db0",
+    "contract_sha256": "6ec1e72df33022496642d9e97e5b926025d721a76b291bfbf25276d79d404c00",
     "sha_derivation": "canonical JSON excluding only contract_sha256",
     "source_fidelity_required_check": true,
     "source_fidelity_required_evidence": true
