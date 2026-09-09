@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import re
@@ -11,6 +12,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 RUN_SCOPE = "S26"
+EXECUTION_SCOPE_ID = "S26-CI-PREFLIGHT-V1"
 MANIFEST_SCHEMA = "S26_CI_PREFLIGHT_MANIFEST_V1"
 BASE = "sandbox/lf_contract_gate_test/profile_execution_runtime"
 WORKFLOW_PATH = ".github/workflows/story-agent-evidence-verifier.yml"
@@ -18,10 +20,11 @@ MANIFEST_PATH = f"{BASE}/s26_ci_preflight_manifest_v1.json"
 MANIFEST_SCHEMA_PATH = f"{BASE}/s26_ci_preflight_manifest.schema.json"
 
 REQUIRED_TOP_LEVEL = {
-    "schema", "run_scope", "required_files", "required_scripts", "required_validators",
-    "schemas", "authority_sources", "bindings", "inputs", "workflow_guards",
+    "schema", "run_scope", "execution_scope_id", "required_files", "required_scripts", "required_validators",
+    "schemas", "authority_sources", "bindings", "inputs", "workflow_guards", "integrity_pins",
 }
-RUN_ID_RE = re.compile(r"^S\d+$")
+RUN_ID_RE = re.compile(r"^S\d+(?:-[A-Z0-9-]+)?$")
+GIT_BLOB_SHA1_RE = re.compile(r"^[0-9a-f]{40}$")
 PREFLIGHT_COMMAND = f"python3 {BASE}/s26_ci_preflight.py --repo-root ."
 
 CANONICAL_REQUIRED_FILES = frozenset({
@@ -41,6 +44,12 @@ CANONICAL_REQUIRED_VALIDATORS = frozenset({
     f"{BASE}/validate_profile_execution.py",
     f"{BASE}/semantic_obligation_manifest.py",
 })
+CANONICAL_INTEGRITY_PATHS = frozenset(
+    (CANONICAL_REQUIRED_FILES - {MANIFEST_PATH})
+    | CANONICAL_REQUIRED_SCRIPTS
+    | CANONICAL_REQUIRED_VALIDATORS
+    | {MANIFEST_SCHEMA_PATH}
+)
 CANONICAL_AUTHORITIES = {
     "CI_CONTRACT": "CLAUDE.md",
     "RUNTIME_CONTRACT": f"{BASE}/README.md",
@@ -120,6 +129,12 @@ def _require_file(repo_root: Path, raw: Any, code: str) -> Path:
     return path
 
 
+def _git_blob_sha1(path: Path) -> str:
+    raw = path.read_bytes()
+    header = f"blob {len(raw)}\0".encode("ascii")
+    return hashlib.sha1(header + raw).hexdigest()
+
+
 def _declared_strings(value: Any, code: str) -> set[str]:
     items = _list(value, code)
     if any(not isinstance(item, str) or not item.strip() for item in items):
@@ -137,9 +152,9 @@ def _require_declared_subset(value: Any, required: frozenset[str], code: str) ->
         raise PreflightError(code + ":" + ",".join(missing))
 
 
-def _validate_run_binding(item: dict[str, Any], run_scope: str, label: str) -> None:
+def _validate_run_binding(item: dict[str, Any], execution_scope_id: str, label: str) -> None:
     run_id = _text(item.get("run_id"), f"{label}_RUN_ID_MISSING")
-    if run_id != run_scope:
+    if run_id != execution_scope_id:
         raise PreflightError(f"CROSS_RUN_REFERENCE:{label}:{run_id}")
 
 
@@ -312,7 +327,44 @@ def _execute_validator_probe(path: Path, raw: dict[str, Any], binding_id: str) -
     raise PreflightError("VALIDATOR_PROBE_MODE_INVALID:" + binding_id + ":" + probe_mode)
 
 
-def _validate_canonical_authorities(repo_root: Path, manifest: dict[str, Any], run_scope: str, checked_paths: set[str]) -> None:
+def _validate_integrity_pins(
+    repo_root: Path,
+    manifest: dict[str, Any],
+    execution_scope_id: str,
+    checked_paths: set[str],
+) -> int:
+    rows = _list(manifest.get("integrity_pins"), "INTEGRITY_PINS_INVALID")
+    if len(rows) != len(CANONICAL_INTEGRITY_PATHS):
+        raise PreflightError("INTEGRITY_PIN_SET_INVALID")
+    seen: set[str] = set()
+    for index, raw in enumerate(rows):
+        if not isinstance(raw, dict):
+            raise PreflightError(f"INTEGRITY_PIN_{index}_NOT_OBJECT")
+        _validate_run_binding(raw, execution_scope_id, f"INTEGRITY_PIN_{index}")
+        ref = _text(raw.get("path"), f"INTEGRITY_PIN_{index}_PATH_MISSING")
+        if ref in seen:
+            raise PreflightError("INTEGRITY_PIN_DUPLICATE:" + ref)
+        seen.add(ref)
+        if ref not in CANONICAL_INTEGRITY_PATHS:
+            raise PreflightError("INTEGRITY_PIN_UNKNOWN_PATH:" + ref)
+        expected = _text(raw.get("git_blob_sha1"), f"INTEGRITY_PIN_{index}_SHA_MISSING")
+        if not GIT_BLOB_SHA1_RE.fullmatch(expected):
+            raise PreflightError("INTEGRITY_PIN_SHA_INVALID:" + ref)
+        path = _require_file(repo_root, ref, f"INTEGRITY_PIN_{index}_FILE_MISSING")
+        actual = _git_blob_sha1(path)
+        if actual != expected:
+            raise PreflightError("INTEGRITY_PIN_MISMATCH:" + ref)
+        checked_paths.add(str(path.relative_to(repo_root.resolve())))
+    missing = sorted(CANONICAL_INTEGRITY_PATHS - seen)
+    extra = sorted(seen - CANONICAL_INTEGRITY_PATHS)
+    if missing or extra:
+        raise PreflightError(
+            "INTEGRITY_PIN_SET_INVALID:missing=" + ",".join(missing) + ":extra=" + ",".join(extra)
+        )
+    return len(rows)
+
+
+def _validate_canonical_authorities(repo_root: Path, manifest: dict[str, Any], execution_scope_id: str, checked_paths: set[str]) -> None:
     seen: set[str] = set()
     rows = _list(manifest.get("authority_sources"), "AUTHORITY_SOURCES_INVALID")
     if len(rows) != len(CANONICAL_AUTHORITIES):
@@ -320,7 +372,7 @@ def _validate_canonical_authorities(repo_root: Path, manifest: dict[str, Any], r
     for index, raw in enumerate(rows):
         if not isinstance(raw, dict):
             raise PreflightError(f"AUTHORITY_{index}_NOT_OBJECT")
-        _validate_run_binding(raw, run_scope, f"AUTHORITY_{index}")
+        _validate_run_binding(raw, execution_scope_id, f"AUTHORITY_{index}")
         authority_type = _text(raw.get("authority_type"), f"AUTHORITY_{index}_TYPE_MISSING")
         if authority_type in seen:
             raise PreflightError("SOURCE_AUTHORITY_DUPLICATE:" + authority_type)
@@ -337,7 +389,7 @@ def _validate_canonical_authorities(repo_root: Path, manifest: dict[str, Any], r
         raise PreflightError("SOURCE_AUTHORITY_SET_INVALID")
 
 
-def _validate_canonical_bindings(repo_root: Path, manifest: dict[str, Any], run_scope: str, checked_paths: set[str]) -> None:
+def _validate_canonical_bindings(repo_root: Path, manifest: dict[str, Any], execution_scope_id: str, checked_paths: set[str]) -> None:
     seen: set[str] = set()
     rows = _list(manifest.get("bindings"), "BINDINGS_INVALID")
     if len(rows) != len(CANONICAL_BINDINGS):
@@ -345,7 +397,7 @@ def _validate_canonical_bindings(repo_root: Path, manifest: dict[str, Any], run_
     for index, raw in enumerate(rows):
         if not isinstance(raw, dict):
             raise PreflightError(f"BINDING_{index}_NOT_OBJECT")
-        _validate_run_binding(raw, run_scope, f"BINDING_{index}")
+        _validate_run_binding(raw, execution_scope_id, f"BINDING_{index}")
         binding_id = _text(raw.get("binding_id"), f"BINDING_{index}_ID_MISSING")
         if binding_id in seen:
             raise PreflightError("BINDING_DUPLICATE:" + binding_id)
@@ -368,7 +420,7 @@ def _validate_canonical_bindings(repo_root: Path, manifest: dict[str, Any], run_
         raise PreflightError("REQUIRED_BINDING_SET_INVALID")
 
 
-def _validate_canonical_inputs(repo_root: Path, manifest: dict[str, Any], run_scope: str, checked_paths: set[str]) -> None:
+def _validate_canonical_inputs(repo_root: Path, manifest: dict[str, Any], execution_scope_id: str, checked_paths: set[str]) -> None:
     rows = _list(manifest.get("inputs"), "INPUTS_INVALID")
     if len(rows) != len(CANONICAL_INPUTS):
         raise PreflightError("DECLARED_INPUT_SET_INVALID")
@@ -376,7 +428,7 @@ def _validate_canonical_inputs(repo_root: Path, manifest: dict[str, Any], run_sc
     for index, raw in enumerate(rows):
         if not isinstance(raw, dict):
             raise PreflightError(f"INPUT_{index}_NOT_OBJECT")
-        _validate_run_binding(raw, run_scope, f"INPUT_{index}")
+        _validate_run_binding(raw, execution_scope_id, f"INPUT_{index}")
         input_id = _text(raw.get("input_id"), f"INPUT_{index}_ID_MISSING")
         if input_id in seen:
             raise PreflightError("INPUT_DUPLICATE:" + input_id)
@@ -390,7 +442,7 @@ def _validate_canonical_inputs(repo_root: Path, manifest: dict[str, Any], run_sc
         raise PreflightError("DECLARED_INPUT_SET_INVALID")
 
 
-def _validate_workflow_guards(repo_root: Path, manifest: dict[str, Any], run_scope: str) -> None:
+def _validate_workflow_guards(repo_root: Path, manifest: dict[str, Any], execution_scope_id: str) -> None:
     rows = _list(manifest.get("workflow_guards"), "WORKFLOW_GUARDS_INVALID")
     if len(rows) != len(CANONICAL_WORKFLOW_GUARDS):
         raise PreflightError("WORKFLOW_GUARD_SET_INVALID")
@@ -398,7 +450,7 @@ def _validate_workflow_guards(repo_root: Path, manifest: dict[str, Any], run_sco
     for index, raw in enumerate(rows):
         if not isinstance(raw, dict):
             raise PreflightError(f"WORKFLOW_GUARD_{index}_NOT_OBJECT")
-        _validate_run_binding(raw, run_scope, f"WORKFLOW_GUARD_{index}")
+        _validate_run_binding(raw, execution_scope_id, f"WORKFLOW_GUARD_{index}")
         workflow_ref = _text(raw.get("workflow_path"), f"WORKFLOW_GUARD_{index}_PATH_MISSING")
         if workflow_ref != WORKFLOW_PATH:
             raise PreflightError("WORKFLOW_GUARD_PATH_MISMATCH")
@@ -445,6 +497,9 @@ def validate_manifest(repo_root: Path, manifest: Any) -> dict[str, Any]:
         raise PreflightError("RUN_SCOPE_INVALID")
     if run_scope != RUN_SCOPE:
         raise PreflightError("RUN_SCOPE_NOT_S26")
+    execution_scope_id = _text(manifest.get("execution_scope_id"), "EXECUTION_SCOPE_ID_MISSING")
+    if execution_scope_id != EXECUTION_SCOPE_ID:
+        raise PreflightError("EXECUTION_SCOPE_ID_INVALID:" + execution_scope_id)
 
     _require_declared_subset(manifest.get("required_files"), CANONICAL_REQUIRED_FILES, "REQUIRED_FILE_DECLARATION_MISSING")
     _require_declared_subset(manifest.get("required_scripts"), CANONICAL_REQUIRED_SCRIPTS, "REQUIRED_SCRIPT_DECLARATION_MISSING")
@@ -468,28 +523,32 @@ def validate_manifest(repo_root: Path, manifest: Any) -> dict[str, Any]:
     if len(rows) != 1 or not isinstance(rows[0], dict):
         raise PreflightError("PREFLIGHT_MANIFEST_SCHEMA_BINDING_INVALID")
     raw_schema = rows[0]
-    _validate_run_binding(raw_schema, run_scope, "SCHEMA_0")
+    _validate_run_binding(raw_schema, execution_scope_id, "SCHEMA_0")
     if raw_schema.get("path") != MANIFEST_SCHEMA_PATH or raw_schema.get("schema_role") != "PREFLIGHT_MANIFEST":
         raise PreflightError("PREFLIGHT_MANIFEST_SCHEMA_BINDING_INVALID")
     schema_path = _require_file(repo_root, raw_schema.get("path"), "SCHEMA_0_PATH_MISSING")
-    manifest_schema_payload = _load_schema(schema_path)
     checked_paths.add(str(schema_path.relative_to(repo_root.resolve())))
+
+    integrity_count = _validate_integrity_pins(repo_root, manifest, execution_scope_id, checked_paths)
+    manifest_schema_payload = _load_schema(schema_path)
     _apply_json_schema(manifest, manifest_schema_payload)
 
-    _validate_canonical_authorities(repo_root, manifest, run_scope, checked_paths)
-    _validate_canonical_bindings(repo_root, manifest, run_scope, checked_paths)
-    _validate_canonical_inputs(repo_root, manifest, run_scope, checked_paths)
-    _validate_workflow_guards(repo_root, manifest, run_scope)
+    _validate_canonical_authorities(repo_root, manifest, execution_scope_id, checked_paths)
+    _validate_canonical_bindings(repo_root, manifest, execution_scope_id, checked_paths)
+    _validate_canonical_inputs(repo_root, manifest, execution_scope_id, checked_paths)
+    _validate_workflow_guards(repo_root, manifest, execution_scope_id)
 
     return {
         "status": "PASS_S26_CHEAP_PREFLIGHT",
         "run_scope": run_scope,
+        "execution_scope_id": execution_scope_id,
         "checked_paths": sorted(checked_paths),
         "workflow_guards": len(manifest["workflow_guards"]),
         "manifest_schema_applied": True,
         "validator_bindings_executed": len(manifest["bindings"]),
         "canonical_authorities_pinned": True,
         "canonical_workflow_guard_set_pinned": True,
+        "integrity_pins_verified": integrity_count,
     }
 
 
