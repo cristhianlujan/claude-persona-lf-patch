@@ -1,0 +1,167 @@
+version: v0.2-isolated
+status: CANDIDATO_READ_ONLY
+source_strategy:
+  snapshot_id: 35
+  snapshot_code: LF_OPERATING_CONSTITUTION_POLICY_AUTONOMOUS_OPERATIONS_20260906
+source_model: GIT_FIRST_YAML
+purpose: >-
+  Materializar de forma gobernada las operaciones candidatas de creación y actualización
+  de políticas LF sin activar Router, runtime, producción ni promoción automática y sin
+  depender de una rama o PR de otro carril para continuar diseño, validación o canary.
+authority:
+  router: ACT-0001
+  operational_source: public.v_lf_fuente_operativa
+  policy_asset_table: public.lf_activos
+  policy_version_table: public.lf_policy_versions
+cross_lane_dependency_policy:
+  operation_factory_candidate: CREACION_OPERACION_LF
+  operation_factory_pr_ref: 570
+  dependency_mode: OPTIONAL_REUSE_NOT_BRANCH_BASE
+  blocking_scope: DURABLE_MATERIALIZATION_ONLY_IF_SELECTED
+  non_blocking_scope:
+    - contract_design
+    - deterministic_validation
+    - rollback_canary
+    - router_resolution_canary
+    - inference_canary
+  rule: >-
+    A dependency owned by another lane may be reused when ready, but MUST NOT be used as
+    this PR branch base and MUST NOT block independent S30 candidate validation. Any
+    durable materialization that chooses that factory is a later explicit integration gate.
+asset_contract:
+  asset_type: REGLA
+  required_subtype_prefix: POLICY_
+  action_decision_status: CANDIDATE_DERIVED_FROM_ROUTER_CONVENTION
+  create_action_code: POLICY_CREATE
+  update_action_code: POLICY_UPDATE
+operations:
+  create:
+    operation_code: CREACION_POLITICA_LF
+    operation_family: GOVERNANCE
+    operation_domain: POLICY_LIFECYCLE
+    operation_type: CREATION_PROTOCOL
+    applies_to_asset_type: REGLA
+    requires_existing_target: false
+    requires_missing_target: true
+    write_allowed: true
+  update:
+    operation_code: ACTUALIZACION_POLITICA_LF
+    operation_family: GOVERNANCE
+    operation_domain: POLICY_LIFECYCLE
+    operation_type: UPDATE_PROTOCOL
+    applies_to_asset_type: REGLA
+    requires_existing_target: true
+    requires_missing_target: false
+    write_allowed: true
+state_ceiling:
+  operation_registry_status: CANDIDATO_READ_ONLY
+  router_status: CANDIDATE_SANDBOX
+  policy_version_status: CANDIDATE
+  runtime_state: NO_HABILITADO
+  automatic_impact: BLOQUEADO
+  production_allowed: false
+  runtime_allowed: false
+  main_merge_allowed: false
+  automatic_promotion_allowed: false
+lifecycle_model:
+  phases:
+    - DRAFT
+    - REVIEWED
+    - SANDBOX
+    - CANARY
+    - VERIFIED
+    - ACTIVE
+    - SUPERSEDED
+    - RETIRED
+  persisted_status_mapping:
+    DRAFT: CANDIDATE
+    REVIEWED: CANDIDATE
+    SANDBOX: CANDIDATE
+    CANARY: CANDIDATE
+    VERIFIED: CANDIDATE
+    ACTIVE: ACTIVE
+    SUPERSEDED: SUPERSEDED
+    RETIRED: RETIRED
+  persistence_rule: >-
+    lifecycle_phase is distinct from lf_policy_versions.status; never write unsupported
+    lifecycle values into lf_policy_versions.status.
+create_contract:
+  required_before_write:
+    - router_read
+    - operational_source_read
+    - targeted_ekb_read
+    - schema_constraints_read
+    - exact_policy_code_missing
+    - exact_policy_version_missing
+    - exact_git_source_exists
+    - policy_payload_schema_valid
+    - policy_sha256_computed
+    - execution_binding_before_write
+    - deterministic_prewrite_validator_pass
+  asset_rules:
+    tipo_activo: REGLA
+    subtype_must_start_with: POLICY_
+    estado_documental_ceiling: CANDIDATO
+    estado_operativo_ceiling: READ_ONLY
+    runtime_estado: NO_HABILITADO
+    impacto_automatico: BLOQUEADO
+  first_version_rules:
+    status: CANDIDATE
+    sha256_required: true
+    unique_policy_code_version_required: true
+    unique_policy_code_sha_required: true
+update_contract:
+  required_before_write:
+    - router_read
+    - operational_source_read
+    - targeted_ekb_read
+    - schema_constraints_read
+    - exact_policy_code_resolved
+    - current_authoritative_version_resolved
+    - successor_version_missing
+    - source_version_not_overwritten
+    - exact_git_source_exists
+    - policy_payload_schema_valid
+    - policy_sha256_computed
+    - affected_consumers_identified
+    - execution_binding_before_write
+    - deterministic_prewrite_validator_pass
+  successor_rules:
+    create_new_row_only: true
+    candidate_status_on_creation: CANDIDATE
+    overwrite_prior_version: false
+    mutate_prior_payload: false
+    mutate_prior_sha: false
+    supersede_active_before_verified_promotion: false
+    activation_requires_separate_verified_gate: true
+hard_guards:
+  - NO_DIRECT_POLICY_WRITE_WITHOUT_ROUTER_OPERATION
+  - NO_POLICY_ASSET_TYPE_INVENTION
+  - NO_UNSUPPORTED_POLICY_VERSION_STATUS
+  - NO_DRAFT_TO_ACTIVE_SHORTCUT
+  - NO_PRIOR_VERSION_OVERWRITE
+  - NO_ACTIVE_VERSION_SUPERSEDE_BEFORE_VERIFIED_PROMOTION
+  - NO_SELF_PROMOTION_FROM_LEARNING
+  - NO_AUTOMATIC_RUNTIME_ENABLE
+  - NO_AUTOMATIC_PRODUCTION_PROMOTION
+  - NO_SAME_STATEMENT_READBACK_AS_CLOSURE_EVIDENCE
+  - FAIL_CLOSED_ON_UNKNOWN_OR_AMBIGUOUS_TARGET
+  - NO_CROSS_LANE_BRANCH_BASE
+  - NO_CROSS_LANE_BLOCK_FOR_INDEPENDENT_CANARY
+required_after_candidate_materialization:
+  - github_exact_head_readback
+  - exact_blob_sha_readback
+  - rollback_canary_pass
+  - duplicate_route_negative_pass
+  - contradictory_target_flags_negative_pass
+  - registry_candidate_readback
+  - router_candidate_readback
+  - no_durable_canary_residue
+  - no_runtime_change
+  - no_production_change
+  - no_main_change
+promotion_rule: >-
+  This candidate does not authorize Router ACTIVE, policy ACTIVE, production, runtime,
+  merge to main, or supersession of an authoritative active policy. Promotion requires
+  a separate governed gate with exact-head CI, independent evidence, consumer impact
+  resolution, canary/verified lifecycle evidence and explicit authorization.
