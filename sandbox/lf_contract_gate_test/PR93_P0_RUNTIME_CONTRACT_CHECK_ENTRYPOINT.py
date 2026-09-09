@@ -15,6 +15,7 @@ Input Governance extension:
 """
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import subprocess
@@ -57,7 +58,7 @@ P0_EXACT_HEAD_EXTENSION_PATHS = frozenset({RUNTIME_PLATFORM_CONFIG_PATH, *P0_EXA
 
 P0_CANONICAL_HUMAN_REVIEW_BLOBS = {
     "supabase/functions/lf-p0-human-review-v42-materialize-v1/index.ts": "9fdeb7dbd331a12e61d67c1cac386fb004c2e974",
-    "supabase/functions/lf-p0-human-review-web-v1/index.ts": "bf1e0ac69a2c171e28bf89df80f97ebd63b95222",
+    "supabase/functions/lf-p0-human-review-web-v1/index.ts": "bf1e0ac69a2c171e28bf89df80f97bd63b95222",
 }
 P0_CANONICAL_HUMAN_REVIEW_EXTENSION_PATHS = frozenset(P0_CANONICAL_HUMAN_REVIEW_BLOBS)
 
@@ -294,6 +295,7 @@ get_changed_files = core.get_changed_files
 is_allowed_path = core.is_allowed_path
 
 HELPER = Path(__file__).with_name("p0_exact_head_real_source_ci_v2.py")
+CI_LANE_ROUTER = Path(__file__).with_name("s28_ci_lane_router") / "lf_ci_lane_router.py"
 HUMAN_REVIEW_CONVERGENCE_HELPER = Path(__file__).with_name("P0_HUMAN_REVIEW_CONVERGENCE_V1.py")
 DUAL_OCR_RECONCILIATION_HELPER = Path(__file__).with_name("P0_DUAL_OCR_RECONCILIATION_CONTRACT_V1.py")
 ICON_STRUCTURAL_ROLE_HELPER = Path(__file__).with_name("P0_ICON_STRUCTURAL_ROLE_REGRESSION_V1.py")
@@ -523,10 +525,26 @@ def _run_multiscreen_structural_generalization_contract() -> None:
     print("PASS_P0_MULTISCREEN_STRUCTURAL_GENERALIZATION_GATE=1/1")
 
 
+def _p0_exact_head_external_required() -> bool:
+    spec = importlib.util.spec_from_file_location("lf_ci_lane_router_runtime", CI_LANE_ROUTER)
+    if spec is None or spec.loader is None:
+        raise SystemExit("FAIL_P0_EXACT_HEAD_APPLICABILITY_ROUTER_LOAD")
+    router = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(router)
+    changed = get_changed_files()
+    decision = router.classify(changed)
+    required = bool(decision.p0_exact_head_external_required)
+    state = "REQUIRED" if required else "NOT_APPLICABLE"
+    print(f"P0_EXACT_HEAD_EXTERNAL_APPLICABILITY={state}:mode={decision.mode}")
+    return required
+
+
 def _run_exact_head_real_source_if_required() -> None:
     event_name = os.environ.get("GITHUB_EVENT_NAME", "")
     github_ref = os.environ.get("GITHUB_REF", "")
     if event_name not in {"push", "workflow_dispatch"} or not governed_ref(github_ref):
+        return
+    if not _p0_exact_head_external_required():
         return
     completed = subprocess.run(
         [sys.executable, str(HELPER), "--evidence-capture"],
