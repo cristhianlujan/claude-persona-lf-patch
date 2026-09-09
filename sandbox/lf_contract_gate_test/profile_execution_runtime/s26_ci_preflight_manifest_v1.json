@@ -1,0 +1,90 @@
+{
+  "schema": "S26_CI_PREFLIGHT_MANIFEST_V1",
+  "run_scope": "S26",
+  "required_files": [
+    "CLAUDE.md",
+    ".github/workflows/story-agent-evidence-verifier.yml",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/README.md",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_ci_preflight_manifest_v1.json"
+  ],
+  "required_scripts": [
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_ci_preflight.py",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_ci_preflight_tests.py",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/run_profile_runtime_optimization_tests.py"
+  ],
+  "required_validators": [
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_obligation_manifest.py"
+  ],
+  "schemas": [
+    {
+      "path": "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_ci_preflight_manifest.schema.json",
+      "run_id": "S26"
+    }
+  ],
+  "authority_sources": [
+    {
+      "authority_type": "CI_CONTRACT",
+      "source_ref": "CLAUDE.md",
+      "run_id": "S26"
+    },
+    {
+      "authority_type": "RUNTIME_CONTRACT",
+      "source_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/README.md",
+      "run_id": "S26"
+    }
+  ],
+  "bindings": [
+    {
+      "binding_id": "PROFILE_EXECUTION_VALIDATOR",
+      "target_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py",
+      "run_id": "S26"
+    },
+    {
+      "binding_id": "SEMANTIC_MANIFEST_VALIDATOR",
+      "target_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_obligation_manifest.py",
+      "run_id": "S26"
+    }
+  ],
+  "inputs": [
+    {
+      "input_id": "CANONICAL_PREFLIGHT_MANIFEST",
+      "path": "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_ci_preflight_manifest_v1.json",
+      "run_id": "S26"
+    }
+  ],
+  "workflow_guards": [
+    {
+      "workflow_path": ".github/workflows/story-agent-evidence-verifier.yml",
+      "job": "semantic-mini-judge-smoke",
+      "preflight_marker": "S26 cheap deterministic preflight",
+      "heavy_markers": [
+        "Build pinned llama.cpp server from source",
+        "Download and verify pinned semantic judge model"
+      ],
+      "run_id": "S26"
+    },
+    {
+      "workflow_path": ".github/workflows/story-agent-evidence-verifier.yml",
+      "job": "run-zero-cost-profile-runtime",
+      "preflight_marker": "S26 cheap deterministic preflight",
+      "heavy_markers": [
+        "Build pinned llama.cpp from source",
+        "Download and verify pinned multimodal model"
+      ],
+      "run_id": "S26"
+    },
+    {
+      "workflow_path": ".github/workflows/story-agent-evidence-verifier.yml",
+      "job": "run-zero-cost-profile-batch",
+      "preflight_marker": "S26 cheap deterministic preflight",
+      "heavy_markers": [
+        "Build pinned llama.cpp runtime bundle on cache miss",
+        "Download pinned model on cache miss"
+      ],
+      "run_id": "S26"
+    }
+  ]
+}
