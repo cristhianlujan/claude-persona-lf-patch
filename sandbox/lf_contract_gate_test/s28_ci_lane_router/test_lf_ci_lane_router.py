@@ -23,6 +23,7 @@ def check(name, paths, *, migration, input_gov, selftest, p0_external, deep_shar
 
 def main():
     s30 = "sandbox/lf_contract_gate_test/s30_policy_operations_candidate/policy_operations_contract.yaml"
+    op24 = "sandbox/lf_contract_gate_test/op24_lineage_durable_candidate/OP24_LEARNED_CONTEXT_LINEAGE_DURABLE_CANDIDATE_V1.sql"
     migration = "supabase/migrations/20260909010101_lf_example.sql"
     input_migration = "supabase/migrations/20260909010102_input_governance_example.sql"
     workflow = ".github/workflows/lf-contract-check.yml"
@@ -34,6 +35,7 @@ def main():
     p0_broker = "supabase/functions/lf-p0-exact-head-evidence-broker-v2/index.ts"
 
     check("s30_only", [s30], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=False, mode="S30_POLICY_ISOLATED")
+    check("op24_source_only", [op24], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=False, mode="DEEP_SHARED_KNOWN")
     check("migration_only", [migration], migration=True, input_gov=False, selftest=False, p0_external=False, deep_shared=False)
     check("input_governance_migration", [input_migration], migration=True, input_gov=True, selftest=False, p0_external=False, deep_shared=False)
     check("migration_validator", ["sandbox/lf_contract_gate_test/lf_migration_source_parity.py"], migration=True, input_gov=False, selftest=False, p0_external=False, deep_shared=False)
@@ -54,7 +56,7 @@ def main():
     check("unknown_contract_gate_sandbox_fail_closed", ["sandbox/lf_contract_gate_test/new_unbound_validator.py"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
     check("unknown_fail_closed", ["mystery/new_surface.xyz"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
     check("empty_fail_closed", [], migration=True, input_gov=True, selftest=True, p0_external=True, deep_shared=True, mode="DEEP_SHARED_EMPTY_FAIL_CLOSED")
-    print("CI_LANE_ROUTER_REGRESSIONS_PASS=21/21")
+    print("CI_LANE_ROUTER_REGRESSIONS_PASS=22/22")
 
 
 if __name__ == "__main__":
