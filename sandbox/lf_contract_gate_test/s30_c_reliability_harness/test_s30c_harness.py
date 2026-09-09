@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import json
-import shutil
 import sys
 import tempfile
 import unittest
@@ -20,8 +19,8 @@ class S30CHarnessTests(unittest.TestCase):
         self.assertGreaterEqual(len(self.corpus["cases"]), 21)
         categories = {c["category"] for c in self.corpus["cases"]}
         self.assertEqual(categories, {
-            "DB/schema","EKB/process","Data-access","Imports/dependencies",
-            "CI/wiring","Evidence/handoff","Freeze/currentness","Tool/API arguments",
+            "DB/schema", "EKB/process", "Data-access", "Imports/dependencies",
+            "CI/wiring", "Evidence/handoff", "Freeze/currentness", "Tool/API arguments",
         })
         for case in self.corpus["cases"]:
             self.assertTrue(case["machine_detectable"])
@@ -45,37 +44,24 @@ class S30CHarnessTests(unittest.TestCase):
 
     def test_r06_tampered_payload_fails_hash_recompute(self):
         with tempfile.TemporaryDirectory(prefix="s30c_negative_tamper_") as td:
-            work = Path(td)
-            bundle, _ = h.create_frozen_bundle(work)
-            extracted = work / "x"
-            extracted.mkdir()
-            with zipfile.ZipFile(bundle, "r") as zf:
-                zf.extractall(extracted)
+            work = Path(td); bundle, _ = h.create_frozen_bundle(work); extracted = work / "x"; extracted.mkdir()
+            with zipfile.ZipFile(bundle, "r") as zf: zf.extractall(extracted)
             (extracted / "artifact_payload.json").write_text('{"tampered":true}\n', encoding="utf-8")
             tampered = work / "tampered.zip"
             with zipfile.ZipFile(tampered, "w") as zf:
-                for p in sorted(extracted.iterdir()):
-                    zf.write(p, arcname=p.name)
-            with self.assertRaises(h.HarnessFailure):
-                h.independent_review(tampered)
+                for p in sorted(extracted.iterdir()): zf.write(p, arcname=p.name)
+            with self.assertRaises(h.HarnessFailure): h.independent_review(tampered)
 
     def test_r06_missing_contract_fails_clean_reviewer(self):
         with tempfile.TemporaryDirectory(prefix="s30c_negative_missing_contract_") as td:
-            work = Path(td)
-            bundle, _ = h.create_frozen_bundle(work)
-            extracted = work / "x"
-            extracted.mkdir()
-            with zipfile.ZipFile(bundle, "r") as zf:
-                zf.extractall(extracted)
-            (extracted / "upstream_contract.json").unlink()
-            broken = work / "broken.zip"
+            work = Path(td); bundle, _ = h.create_frozen_bundle(work); extracted = work / "x"; extracted.mkdir()
+            with zipfile.ZipFile(bundle, "r") as zf: zf.extractall(extracted)
+            (extracted / "upstream_contract.json").unlink(); broken = work / "broken.zip"
             with zipfile.ZipFile(broken, "w") as zf:
-                for p in sorted(extracted.iterdir()):
-                    zf.write(p, arcname=p.name)
-            with self.assertRaises(h.HarnessFailure):
-                h.independent_review(broken)
+                for p in sorted(extracted.iterdir()): zf.write(p, arcname=p.name)
+            with self.assertRaises(h.HarnessFailure): h.independent_review(broken)
 
-    def _freeze(self, phase, run_id, hash_value="a"*64):
+    def _freeze(self, phase, run_id, hash_value="a" * 64):
         idx = h.PHASES.index(phase)
         return {
             "phase": phase,
@@ -85,7 +71,7 @@ class S30CHarnessTests(unittest.TestCase):
             "expected_output_contract": {"receipt": "v1"},
             "allowed_mutations": ["evidence_append_only"],
             "invalidation_triggers": ["input_hash_change"],
-            "next_phase": h.PHASES[idx+1] if idx+1 < len(h.PHASES) else None,
+            "next_phase": h.PHASES[idx + 1] if idx + 1 < len(h.PHASES) else None,
         }
 
     def test_r07_valid_transition_is_accepted(self):
@@ -96,13 +82,13 @@ class S30CHarnessTests(unittest.TestCase):
 
     def test_r07_cross_gate_mutation_is_rejected(self):
         prev = self._freeze("CONTRACT_AND_PREFLIGHT", "run-001")
-        cur = self._freeze("HARNESS_AND_GUARDS", "run-001", hash_value="b"*64)
+        cur = self._freeze("HARNESS_AND_GUARDS", "run-001", hash_value="b" * 64)
         cur["prior_freeze_sha256"] = h.freeze_record_sha(prev)
         with self.assertRaisesRegex(h.HarnessFailure, "GATE_CROSS_MUTATION_HASH"):
             h.validate_freeze_transition(prev, cur)
 
     def test_ci_wiring_static_contract(self):
-        result = h.workflow_wiring(ROOT / ".github/workflows/s30-c-reliability-harness.yml")
+        result = h.workflow_wiring(ROOT / ".github/workflows/validate-lf-packs.yml")
         self.assertTrue(result["wired"])
         self.assertEqual(result["missing"], [])
 
