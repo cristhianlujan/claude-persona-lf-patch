@@ -1,0 +1,142 @@
+version: v0.2
+status: CANDIDATO_READ_ONLY
+source_strategy:
+  snapshot_id: 35
+  snapshot_code: LF_OPERATING_CONSTITUTION_POLICY_AUTONOMOUS_OPERATIONS_20260906
+claim_ceiling: ROUTER_ROLLBACK_CANARY_ONLY_NO_DURABLE_ACTIVATION_NO_PRODUCTION
+shared:
+  asset_type: REGLA
+  subtype_prefix: POLICY_
+  router_status_for_durable_candidate: CANDIDATE_SANDBOX
+  router_status_for_rollback_probe: ACTIVE
+  operation_registry_status: CANDIDATO_READ_ONLY
+  contract_status: ACTIVE_ENFORCEMENT
+  step_contract_status: ACTIVE_ENFORCEMENT
+  judge_status: ACTIVE_ENFORCEMENT
+  judge_binding_status: ACTIVE_ENFORCEMENT
+  policy_resolution: TRANSVERSAL_INHERITANCE_VIA_V_LF_OPERATION_POLICY_SNAPSHOT
+  hard_guards:
+    - ROUTER_BEFORE_WRITE
+    - EKB_BEFORE_WRITE
+    - SCHEMA_CONTRACT_BEFORE_WRITE
+    - EXECUTION_BINDING_BEFORE_WRITE
+    - NO_UNSUPPORTED_POLICY_STATUS
+    - NO_PRIOR_VERSION_OVERWRITE
+    - NO_PREMATURE_SUPERSESSION
+    - READBACK_BEFORE_CLOSE
+    - NO_AUTOMATIC_PROMOTION
+    - NO_RUNTIME_OR_PRODUCTION_ENABLE
+operations:
+  CREACION_POLITICA_LF:
+    action_code: POLICY_CREATE
+    operation_type: CREATION_PROTOCOL
+    requires_existing_target: false
+    requires_missing_target: true
+    contract_code: CONTRACT-CREACION-POLITICA-LF-v0.1
+    judge_code: JUDGE-CREACION-POLITICA-LF-v0.1
+    steps:
+      - order: 10
+        id: preflight
+        purpose: Resolver Router, EKB, schema, source Git, target ausente y payload/hash antes del write.
+        input_required: [router_binding, ekb_refs, schema_contract, exact_policy_code, exact_policy_version, source_ref, payload_sha256]
+        output_payload: [preflight_pass]
+        required_evidence_keys: [router_binding, ekb_refs, schema_contract, target_missing_readback, source_ref, payload_sha256]
+        blocking_code: BLOCK_POLICY_CREATE_PREFLIGHT
+        next_if_pass: materialize_candidate
+      - order: 20
+        id: materialize_candidate
+        purpose: Crear REGLA/POLICY_* y primera version CANDIDATE solamente.
+        input_required: [preflight_pass, exact_policy_code, exact_policy_version, payload_sha256]
+        output_payload: [candidate_write_receipt]
+        required_evidence_keys: [asset_insert_receipt, candidate_version_insert_receipt]
+        blocking_code: BLOCK_POLICY_CREATE_MATERIALIZATION
+        next_if_pass: verify
+      - order: 30
+        id: verify
+        purpose: Readback independiente de identidad, payload, SHA, status y ausencia de promocion.
+        input_required: [candidate_write_receipt]
+        output_payload: [verified]
+        required_evidence_keys: [asset_readback, version_readback, sha_readback, no_runtime_change, no_production_change]
+        blocking_code: BLOCK_POLICY_CREATE_VERIFY
+        next_if_pass: close
+      - order: 40
+        id: close
+        purpose: Cerrar solo como candidato; ACTIVE requiere gate separado.
+        input_required: [verified]
+        output_payload: [candidate_closed]
+        required_evidence_keys: [claim_ceiling, next_gate, no_automatic_promotion]
+        blocking_code: BLOCK_POLICY_CREATE_CLOSE
+        next_if_pass: null
+  ACTUALIZACION_POLITICA_LF:
+    action_code: POLICY_UPDATE
+    operation_type: UPDATE_PROTOCOL
+    requires_existing_target: true
+    requires_missing_target: false
+    contract_code: CONTRACT-ACTUALIZACION-POLITICA-LF-v0.1
+    judge_code: JUDGE-ACTUALIZACION-POLITICA-LF-v0.1
+    steps:
+      - order: 10
+        id: preflight
+        purpose: Resolver policy existente, version autoritativa, consumidores afectados, source Git y successor ausente.
+        input_required: [router_binding, ekb_refs, schema_contract, exact_policy_code, current_version, successor_version, affected_consumers, source_ref, payload_sha256]
+        output_payload: [preflight_pass]
+        required_evidence_keys: [router_binding, ekb_refs, schema_contract, current_version_readback, successor_missing_readback, affected_consumers, source_ref, payload_sha256]
+        blocking_code: BLOCK_POLICY_UPDATE_PREFLIGHT
+        next_if_pass: materialize_successor
+      - order: 20
+        id: materialize_successor
+        purpose: Insertar nueva version CANDIDATE sin modificar payload/SHA/status de la version previa.
+        input_required: [preflight_pass, successor_version, payload_sha256]
+        output_payload: [successor_write_receipt]
+        required_evidence_keys: [successor_insert_receipt, prior_version_fingerprint_before]
+        blocking_code: BLOCK_POLICY_UPDATE_SUCCESSOR
+        next_if_pass: verify
+      - order: 30
+        id: verify
+        purpose: Readback independiente del successor y prueba de que la version previa permanece intacta.
+        input_required: [successor_write_receipt]
+        output_payload: [verified]
+        required_evidence_keys: [successor_readback, prior_version_fingerprint_after, prior_version_unchanged, no_supersession, no_runtime_change, no_production_change]
+        blocking_code: BLOCK_POLICY_UPDATE_VERIFY
+        next_if_pass: close
+      - order: 40
+        id: close
+        purpose: Cerrar successor como candidato; supersession/ACTIVE requieren gate separado con evidencia VERIFIED.
+        input_required: [verified]
+        output_payload: [candidate_closed]
+        required_evidence_keys: [claim_ceiling, next_gate, no_premature_supersession, no_automatic_promotion]
+        blocking_code: BLOCK_POLICY_UPDATE_CLOSE
+        next_if_pass: null
+judge_contract:
+  result_values: [PASS, FAIL, BLOCKED]
+  pass_if:
+    - all_required_evidence_present
+    - target_semantics_match_operation
+    - state_ceiling_preserved
+    - independent_readback_passes
+  fail_if:
+    - missing_required_evidence
+    - unsupported_policy_status
+    - prior_version_overwritten
+    - premature_supersession
+    - runtime_or_production_enabled
+    - automatic_promotion_attempted
+router_canary:
+  create:
+    request_text: Crear politica candidata LF
+    target_hint: POL-S30-CANARY-NONEXISTENT
+    asset_type_hint: REGLA
+    action_hint: POLICY_CREATE
+    expected_status: READY_TO_EXECUTE
+    expected_operation_code: CREACION_POLITICA_LF
+  update:
+    request_text: Actualizar politica existente LF
+    target_hint: POL-STRATEGY-CREATION-001
+    asset_type_hint: REGLA
+    action_hint: POLICY_UPDATE
+    expected_status: READY_TO_EXECUTE
+    expected_operation_code: ACTUALIZACION_POLITICA_LF
+  natural_language_without_action_hint:
+    expected_status: BLOCKED
+    expected_blocking_code: BLOCK_OPERATION_NOT_REGISTERED
+    reason: CURRENT_ROUTER_INFERENCE_MAPS_REGLA_CREATE_TO_GENERIC_CREATE_AND_REGLA_UPDATE_TO_RULE_UPDATE
