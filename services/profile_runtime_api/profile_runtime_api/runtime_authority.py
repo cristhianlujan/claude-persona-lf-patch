@@ -166,9 +166,16 @@ def _resolve_authorities(
     contract = context_pack.get("runtime_authority_contract") or {}
     if not isinstance(contract, dict):
         raise RuntimeAuthorityError("RUNTIME_AUTHORITY_CONTRACT_INVALID")
-    current_run_id = contract.get("current_run_id", task.request_id)
-    if not isinstance(current_run_id, str) or not current_run_id:
-        raise RuntimeAuthorityError("RUNTIME_AUTHORITY_CURRENT_RUN_INVALID")
+    declared_current_run_id = contract.get("current_run_id")
+    if declared_current_run_id is not None:
+        if not isinstance(declared_current_run_id, str) or not declared_current_run_id:
+            raise RuntimeAuthorityError("RUNTIME_AUTHORITY_CURRENT_RUN_INVALID")
+        if declared_current_run_id != task.request_id:
+            raise RuntimeAuthorityError(
+                "RUNTIME_AUTHORITY_CURRENT_RUN_MISMATCH",
+                f"declared={declared_current_run_id};expected={task.request_id}",
+            )
+    current_run_id = task.request_id
     required_types = contract.get("required_authority_types", [])
     extra_sources = contract.get("authority_sources", [])
     if not isinstance(required_types, list) or any(not isinstance(v, str) or not v for v in required_types):
