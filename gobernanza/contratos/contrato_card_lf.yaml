@@ -1,12 +1,18 @@
-version: v0.3
+version: v0.4
 status: CANDIDATO_READ_ONLY
 operation: CREACION_CARD_LF
 regularization: REGULARIZACION_STEP_GATE_L2L3_001
+governance_pre_execution_contract: S26-E-GOVERNED-APPLICABILITY-CARD-FALLBACK-v0.1
 required_before_write:
   - read_router
   - read_operational_source
   - read_repo_matrix
   - read_contract
+  - ekb_readback_present
+  - ekb_applicability_resolved
+  - card_resolution_readback_present
+  - governed_fallback_readback_if_no_card
+  - s26_e_pre_execution_gate_pass
   - validate_repo
   - validate_path
   - validate_file_name
@@ -27,6 +33,14 @@ blocked:
   - write_without_readback
   - direct_write_without_lf_operation_execution
   - write_to_marketplace_ssot_for_cards
+  - missing_ekb_readback
+  - unresolved_ekb_applicability
+  - missing_card_resolution_readback
+  - no_card_direct_manual_without_structural_fallback
+  - critical_card_ambiguity
+  - schema_invention
+  - data_model_mutation_for_ui
+  - missing_s26_e_pre_execution_gate
   - missing_research_pack
   - weak_research_pack_evidence
   - missing_research_to_rules_matrix
