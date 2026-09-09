@@ -3,7 +3,8 @@
 
 This judge is read-only. It does not resolve repository assets itself and does not
 persist EKB. It validates the structured readbacks that MUST exist before material
-execution and returns the governed decision.
+execution and returns the governed decision. It also verifies that the candidate
+Card creation contract/judge are explicitly bound to this pre-execution gate.
 """
 
 from __future__ import annotations
@@ -15,12 +16,27 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTRACT_PATH = ROOT / "gobernanza/contratos/s26_e_governed_applicability_card_fallback_v1.json"
+CARD_CONTRACT_PATH = ROOT / "gobernanza/contratos/contrato_card_lf.yaml"
+CARD_JUDGE_PATH = ROOT / "gobernanza/judges/judge_contrato_card_lf.yaml"
 DEFAULT_CASES = ROOT / "sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_cases.json"
 
 STRUCTURAL_FALLBACKS = (
     "EXISTING_CONTRACT_SCHEMA",
     "REUSABLE_GENERIC_CAPABILITY",
     "SAFE_COMPOSITION",
+)
+
+CARD_BINDING_REQUIRED = (
+    "governance_pre_execution_contract: S26-E-GOVERNED-APPLICABILITY-CARD-FALLBACK-v0.1",
+    "  - ekb_readback_present",
+    "  - ekb_applicability_resolved",
+    "  - card_resolution_readback_present",
+    "  - governed_fallback_readback_if_no_card",
+    "  - s26_e_pre_execution_gate_pass",
+    "  - no_card_direct_manual_without_structural_fallback",
+    "  - critical_card_ambiguity",
+    "  - schema_invention",
+    "  - data_model_mutation_for_ui",
 )
 
 
@@ -48,6 +64,21 @@ def _learning_eligible(candidate: Any, contract: dict[str, Any]) -> bool:
     if not isinstance(provenance, dict):
         return False
     return all(provenance.get(field) not in (None, "") for field in lp["provenance_required_fields"])
+
+
+def validate_card_pre_execution_binding() -> None:
+    failures: list[str] = []
+    for path, label in ((CARD_CONTRACT_PATH, "contract"), (CARD_JUDGE_PATH, "judge")):
+        if not path.exists():
+            failures.append(f"{label}:missing:{path}")
+            continue
+        text = path.read_text(encoding="utf-8")
+        for required in CARD_BINDING_REQUIRED:
+            if required not in text:
+                failures.append(f"{label}:missing_binding:{required.strip()}")
+    if failures:
+        raise AssertionError("S26_E_CARD_BINDING_INVALID=" + "|".join(failures))
+    print("S26_E_CARD_PRE_EXECUTION_BINDING=PASS")
 
 
 def evaluate(payload: dict[str, Any], contract: dict[str, Any]) -> dict[str, Any]:
@@ -138,6 +169,7 @@ def evaluate(payload: dict[str, Any], contract: dict[str, Any]) -> dict[str, Any
 
 
 def run_cases(path: Path, contract: dict[str, Any]) -> int:
+    validate_card_pre_execution_binding()
     data = json.loads(path.read_text(encoding="utf-8"))
     cases = data.get("cases", [])
     if not cases:
@@ -172,8 +204,29 @@ def main() -> int:
     if contract.get("contract_code") != "S26-E-GOVERNED-APPLICABILITY-CARD-FALLBACK-v0.1":
         raise AssertionError("S26_E_CONTRACT_CODE_INVALID")
 
+    validate_card_pre_execution_binding()
     if args.self_test:
-        return run_cases(args.cases, contract)
+        data = json.loads(args.cases.read_text(encoding="utf-8"))
+        cases = data.get("cases", [])
+        if not cases:
+            raise AssertionError("S26_E_CASES_MISSING")
+        failures: list[str] = []
+        for case in cases:
+            result = evaluate(case["input"], contract)
+            expected = case["expected"]
+            for key, expected_value in expected.items():
+                if result.get(key) != expected_value:
+                    failures.append(
+                        f"{case['id']}:{key}: expected={expected_value!r} actual={result.get(key)!r}"
+                    )
+        print(f"S26_E_CASE_COUNT={len(cases)}")
+        print(f"S26_E_FAILURE_COUNT={len(failures)}")
+        for failure in failures:
+            print(f"FAIL={failure}")
+        if failures:
+            return 1
+        print("S26_E_GOVERNANCE=PASS")
+        return 0
     if args.input:
         payload = json.loads(args.input.read_text(encoding="utf-8"))
         print(json.dumps(evaluate(payload, contract), sort_keys=True))
