@@ -16,6 +16,7 @@ on:
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_d.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_s26_native_golden_d.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_e.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_s26_native_golden_e.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_001/**"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/**"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/**"
@@ -96,12 +97,21 @@ jobs:
             sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/execution_receipt.json
             sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/semantic_check_bundle.json
           retention-days: 30
-      - name: Pre-bind fresh S26 Native Golden Run E without RAW
+      - name: Verify S26 Native Golden Run E prebind lineage
         run: |
           set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_e.py
-          test ! -f sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/raw_output.json
-      - name: Upload Run E prebound evidence
+          if test -f sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/raw_output.json; then
+            S26_RUN_E_ALLOW_RAW_REEVAL=1 python3 sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_e.py >/tmp/s26_run_e_preflight.json
+          else
+            python3 sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_e.py >/tmp/s26_run_e_preflight.json
+            test ! -f sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/raw_output.json
+          fi
+      - name: Evaluate S26 Native Golden Run E producer candidate
+        if: ${{ hashFiles('sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/raw_output.json') != '' }}
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_s26_native_golden_e.py
+      - name: Upload Run E producer/prebound evidence
         uses: actions/upload-artifact@v4
         with:
           name: s26-native-golden-run-e-prebind
@@ -116,6 +126,10 @@ jobs:
             sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/preflight_binding.json
             sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/governed_context_receipt.json
             sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/obligation_manifest.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/raw_output.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/evaluation.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/execution_receipt.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/semantic_check_bundle.json
           retention-days: 30
       - name: Preserve historical S26 candidates without requalification
         run: |

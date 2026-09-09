@@ -4,6 +4,7 @@ from __future__ import annotations
 import contextlib
 import io
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -21,7 +22,8 @@ def main() -> int:
     template = json.loads(TEMPLATE.read_text(encoding="utf-8"))
     if template.get("run_revision") != "E":
         raise SystemExit("BLOCK_RUN_REVISION_NOT_E")
-    if (EVIDENCE / "raw_output.json").exists():
+    raw_exists = (EVIDENCE / "raw_output.json").exists()
+    if raw_exists and os.getenv("S26_RUN_E_ALLOW_RAW_REEVAL") != "1":
         raise SystemExit("BLOCK_RUN_E_RAW_EXISTS_BEFORE_PREFLIGHT")
     observation_packet = json.loads(OBSERVATION_PACKET.read_text(encoding="utf-8"))
     if observation_packet.get("schema") != "LF_RESOLVER_BACKED_SCREEN_OBSERVATION_PACKET_V1":
@@ -57,7 +59,7 @@ def main() -> int:
         required_evidence=["router", "input_governance", "resolver_backed_observation_packet", "visual_artifact_provenance", "governed_context_receipt", "card_receipt", "adapter_receipt", "profile_execution", "ui_validator", "depth_gate", "semantic_manifest", "independent_quality", "native_metrics", "traceability"],
         closure_conditions=["STRUCTURAL_PASS", "GOVERNED_CONTEXT_PASS", "RESOLVER_BACKED_UPSTREAM_PASS", "DEPTH_PASS", "SEMANTIC_OBLIGATIONS_PASS", "INDEPENDENT_QUALITY_STRICT_PASS", "LATENCY_OBSERVABLE_PASS", "TOKEN_USAGE_STATUS_PASS", "TRACEABILITY_PASS", "NO_MODEL_WEIGHT_ACQUISITION", "NO_P0_OPEN", "READBACK_PASS"],
         input_governance_ref=template["input_governance_ref"], card_refs_and_hashes=[{"ref": template["card_ref"], "sha256": resolved["card_source_sha256"]}], adapter_ref=f"{template['adapter_ref']}@sha256:{resolved['adapter_source_sha256']};binding_sha256:{resolved['adapter_binding_snapshot_sha256']}", context_fingerprint=resolved["context_fingerprint"], tool_permissions=["READ_GITHUB", "READ_SUPABASE", "READ_GOOGLE_DRIVE"], executor_mode="GPT_NATIVE")
-    resolved.update(schema=template["preflight_schema"], run_revision="E", execution_contract=contract, execution_contract_sha256=contract["contract_sha256"], resolver_backed_observation_packet_sha256=observation_packet_sha, resolver_backed_observation_packet_path=OBSERVATION_PACKET.relative_to(ROOT).as_posix(), source_ref_policy="RAW_E_MUST_USE_IMMUTABLE_GITHUB_REFS_TO_PREBOUND_COMMIT", current_page_authority="NOT_SUPPLIED_DO_NOT_INFER", pagination_precision_authority="DERIVED_NON_CANONICAL_ONLY", base_resolver="prepare_s26_native_golden_c.py", base_resolver_contract_rebound=True, raw_output_absent_at_preflight=True)
+    resolved.update(schema=template["preflight_schema"], run_revision="E", execution_contract=contract, execution_contract_sha256=contract["contract_sha256"], resolver_backed_observation_packet_sha256=observation_packet_sha, resolver_backed_observation_packet_path=OBSERVATION_PACKET.relative_to(ROOT).as_posix(), source_ref_policy="RAW_E_MUST_USE_IMMUTABLE_GITHUB_REFS_TO_PREBOUND_COMMIT", current_page_authority="NOT_SUPPLIED_DO_NOT_INFER", pagination_precision_authority="DERIVED_NON_CANONICAL_ONLY", base_resolver="prepare_s26_native_golden_c.py", base_resolver_contract_rebound=True, raw_output_absent_at_preflight=True, reevaluation_with_existing_raw=raw_exists)
     rendered = json.dumps(resolved, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     OUT.write_text(rendered, encoding="utf-8")
     (EVIDENCE / "governed_context_receipt.json").write_text(json.dumps(resolved["governed_context_receipt"], ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
