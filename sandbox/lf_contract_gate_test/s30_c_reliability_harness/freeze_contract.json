@@ -1,0 +1,37 @@
+{
+  "contract_id": "S30-R07-GATE-FREEZE-v1",
+  "phases": [
+    "CONTRACT_AND_PREFLIGHT",
+    "HARNESS_AND_GUARDS",
+    "CANDIDATE_EXECUTION",
+    "INDEPENDENT_QUALITY",
+    "RECONCILIATION_AND_PROMOTION"
+  ],
+  "required_freeze_record_fields": [
+    "phase",
+    "version_run_id",
+    "input_identities",
+    "hashes",
+    "expected_output_contract",
+    "allowed_mutations",
+    "invalidation_triggers",
+    "next_phase"
+  ],
+  "rules": {
+    "later_phase_may_silently_mutate_frozen_inputs": false,
+    "repair_requires": "NEW_BOUNDED_RUN_OR_VERSION",
+    "prohibited": "PATCH_CONTRACT_HARNESS_CANDIDATE_AND_QUALITY_IN_ONE_UNFROZEN_STEP",
+    "prior_freeze_sha256_required_after_first_phase": true
+  },
+  "r09": {
+    "machine_detectable_expected_stage": "PRE-MATERIAL-WORK",
+    "primary_metric": "PREVENTABLE_FIRST_HOP_ESCAPE_COUNT",
+    "required_value": 0,
+    "final_acceptance_requires": [
+      "S30-A frozen receipt",
+      "S30-B frozen receipt"
+    ]
+  },
+  "build_exit_state": "READY_FOR_FINAL_R09_INTEGRATION",
+  "claim_ceiling": "EVIDENCE_FREEZE_AND_REPLAY_HARNESS_READY"
+}
