@@ -49,7 +49,7 @@ steps:
     evidence_required: dossier_only_no_direct_card_write
   - order: 16
     id: lifecycle_card_creada
-    evidence_required: receiver_factory_receipt_if_authorized
+    evidence_required: receiver_factory_receipt_id_card_and_exact_ekb_to_card_transformed_to_lineage
   - order: 17
     id: lifecycle_en_revision
     evidence_required: en_revision_transition_receipt
