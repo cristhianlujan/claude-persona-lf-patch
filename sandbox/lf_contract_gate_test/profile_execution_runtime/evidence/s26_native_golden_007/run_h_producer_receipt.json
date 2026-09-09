@@ -1,0 +1,64 @@
+{
+  "artifact": {
+    "canonical_sha256": "6b25e323d8505be14b95be711fc01625e71d23295567bd7fd40a7e0e06a926d2",
+    "composer_boundary": "PASS",
+    "current_page_prebound": false,
+    "headers_verified": "10_OF_10_EXACT",
+    "real_horizontal_overflow_acknowledged": true,
+    "ui_validator": "PASS"
+  },
+  "card_resolution": {
+    "card_refs": [],
+    "core_policy_ref": "bundle://ui_architect_skill_full.md",
+    "core_policy_sha256": "b099944839af79cb97eac76f12ecf8bd38c39ea331224ee335ced32491f411c0",
+    "critical_authority_missing": false,
+    "mode": "GENERIC_SAFE"
+  },
+  "execution_contract": {
+    "contract_sha256": "468f2979e40de7851fd27b50545d3bbd4ee2edffb9e1537cd509a1a010f52363",
+    "sha_derivation": "canonical JSON excluding only contract_sha256",
+    "source_fidelity_required_check": true,
+    "source_fidelity_required_evidence": true
+  },
+  "golden_declared": false,
+  "independent_quality_bundle": {
+    "deterministic_probe": "PASS_DETERMINISTIC_RUN_H_PREFLIGHT",
+    "file_count": 30,
+    "filename": "S26_Run_H_Independent_Quality_Bundle_v1.zip",
+    "sha256": "d8e7886c5ba833112c1434f32bf8ef3814c60a3c42ec75e0f45ade93743369a4"
+  },
+  "next_gate": "FRESH_GPT_AND_CLAUDE_INDEPENDENT_QUALITY",
+  "pagination": {
+    "current_page_prebound": false,
+    "frozen_count_role": "OBSERVED_SAMPLE_ONLY",
+    "observed_chrome_in_composer": false,
+    "record_count_authority": "LIVE_FILTERED_RESULT_COUNT"
+  },
+  "producer_downstream_authorized": false,
+  "review_case_id": "S26-N08H-QUALITY-001",
+  "run_id": "EXEC-S26-N08H-GPT-NATIVE-GOLDEN-H-001",
+  "schema": "S26_RUN_H_PRODUCER_RECEIPT_V1",
+  "source_fidelity": {
+    "contract_sha256": "f8434f9ba26b3edfa2cae547563d1f8448c05fdab1f3cb59d2ed842f7a817e88",
+    "critical_ambiguity": false,
+    "immutable_table_headers": [
+      "Lote",
+      "Nombre",
+      "Archivo",
+      "Tipo",
+      "Cargado por",
+      "Fecha",
+      "Total",
+      "Válidos",
+      "Estado",
+      "Acciones"
+    ],
+    "schema": "LF_SOURCE_FIDELITY_CONTRACT_V1"
+  },
+  "source_visual": {
+    "bytes": 142727,
+    "height": 1000,
+    "sha256": "ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+    "width": 1600
+  }
+}
