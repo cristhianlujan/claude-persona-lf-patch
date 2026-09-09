@@ -1,10 +1,16 @@
-version: v0.4
+version: v0.5
 judge: JUDGE_CONTRATO_CARD_LF
 operation: CREACION_CARD_LF
 regularization: REGULARIZACION_STEP_GATE_L2L3_001
+governance_pre_execution_contract: S26-E-GOVERNED-APPLICABILITY-CARD-FALLBACK-v0.1
 pass_if:
   - repo_matrix_read
   - contract_read
+  - ekb_readback_present
+  - ekb_applicability_resolved
+  - card_resolution_readback_present
+  - governed_fallback_readback_if_no_card
+  - s26_e_pre_execution_gate_pass
   - destination_validated
   - runtime_no_habilitado
   - automatic_impact_bloqueado
@@ -28,6 +34,14 @@ fail_if:
   - no_readback
   - missing_execution_id
   - missing_required_pre_judge_step
+  - missing_ekb_readback
+  - unresolved_ekb_applicability
+  - missing_card_resolution_readback
+  - no_card_direct_manual_without_structural_fallback
+  - critical_card_ambiguity
+  - schema_invention
+  - data_model_mutation_for_ui
+  - missing_s26_e_pre_execution_gate
   - missing_research_pack
   - weak_research_pack_evidence
   - missing_research_to_rules_matrix
