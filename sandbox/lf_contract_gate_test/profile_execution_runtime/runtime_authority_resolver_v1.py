@@ -7,6 +7,7 @@ from typing import Any
 
 TYPED_CONTEXT_SCHEMA = "LF_RUNTIME_TYPED_CONTEXT_V1"
 FALLBACK_MODE = "NO_CARD_GOVERNED"
+CROSS_RUN_AUTH_SCHEMA = "LF_CROSS_RUN_AUTHORIZATION_V1"
 
 
 class RuntimeContextBlocked(RuntimeError):
@@ -125,6 +126,41 @@ def _resolve_card(context: dict[str, Any], repo_root: Path, input_fields: dict[s
     }
 
 
+def _verify_cross_run_authorization(
+    repo_root: Path,
+    source: dict[str, Any],
+    *,
+    current_run_id: str,
+    authority_id: str,
+    source_run_id: str,
+) -> dict[str, str]:
+    if source.get("cross_run_declared") is not True:
+        raise RuntimeContextBlocked("RUNTIME_CROSS_RUN_REFERENCE_UNDECLARED", authority_id)
+    auth_ref = source.get("cross_run_authorization_ref")
+    auth_sha = source.get("cross_run_authorization_sha256")
+    if not _nonempty(auth_ref) or not _nonempty(auth_sha):
+        raise RuntimeContextBlocked("RUNTIME_CROSS_RUN_AUTHORIZATION_MISSING", authority_id)
+    provenance = _verify_ref(repo_root, {"ref": auth_ref, "sha256": auth_sha}, prefix="")
+    auth_path = _safe_repo_file(repo_root, provenance["ref"], prefix="")
+    try:
+        permit = json.loads(auth_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        raise RuntimeContextBlocked("RUNTIME_CROSS_RUN_AUTHORIZATION_INVALID", authority_id) from exc
+    if not isinstance(permit, dict):
+        raise RuntimeContextBlocked("RUNTIME_CROSS_RUN_AUTHORIZATION_INVALID", authority_id)
+    expected = {
+        "schema": CROSS_RUN_AUTH_SCHEMA,
+        "authority_id": authority_id,
+        "source_run_id": source_run_id,
+        "target_run_id": current_run_id,
+        "authorized": True,
+    }
+    for key, value in expected.items():
+        if permit.get(key) != value:
+            raise RuntimeContextBlocked("RUNTIME_CROSS_RUN_AUTHORIZATION_INVALID", f"{authority_id}:{key}")
+    return provenance
+
+
 def _resolve_authorities(context: dict[str, Any], repo_root: Path) -> list[dict[str, Any]]:
     required_types = _string_list(context.get("required_authority_types"), "RUNTIME_REQUIRED_AUTHORITY_TYPES_INVALID")
     sources = context.get("authority_sources")
@@ -140,14 +176,22 @@ def _resolve_authorities(context: dict[str, Any], repo_root: Path) -> list[dict[
         run_id = source.get("run_id", current_run_id)
         if not _nonempty(authority_type) or not _nonempty(authority_id) or not _nonempty(run_id):
             raise RuntimeContextBlocked("RUNTIME_AUTHORITY_SOURCE_INCOMPLETE")
-        if run_id != current_run_id and source.get("cross_run_declared") is not True:
-            raise RuntimeContextBlocked("RUNTIME_CROSS_RUN_REFERENCE_UNDECLARED", authority_id)
+        cross_run_authorization = None
+        if run_id != current_run_id:
+            cross_run_authorization = _verify_cross_run_authorization(
+                repo_root,
+                source,
+                current_run_id=current_run_id,
+                authority_id=authority_id,
+                source_run_id=run_id,
+            )
         provenance = _verify_ref(repo_root, source, prefix="")
         verified.append({
             "authority_type": authority_type,
             "authority_id": authority_id,
             "run_id": run_id,
             "cross_run_declared": bool(source.get("cross_run_declared", False)),
+            "cross_run_authorization": cross_run_authorization,
             **provenance,
         })
 
@@ -161,7 +205,9 @@ def _resolve_authorities(context: dict[str, Any], repo_root: Path) -> list[dict[
     return sorted(verified, key=lambda item: (item["authority_type"], item["authority_id"]))
 
 
-def _resolve_adapters(context: dict[str, Any], request: dict[str, Any]) -> list[dict[str, str]]:
+def _resolve_adapters(
+    context: dict[str, Any], request: dict[str, Any], repo_root: Path
+) -> list[dict[str, str]]:
     required_codes = _string_list(context.get("required_adapter_codes", []), "RUNTIME_REQUIRED_ADAPTER_CODES_INVALID")
     request_bindings = request.get("lf_adapter_bindings", [])
     if not isinstance(request_bindings, list):
@@ -173,18 +219,27 @@ def _resolve_adapters(context: dict[str, Any], request: dict[str, Any]) -> list[
         code = binding.get("canonical_adapter_id")
         current_path = binding.get("current_path")
         binding_ref = binding.get("binding_ref")
+        adapter_sha = binding.get("sha256")
         if not all(_nonempty(v) for v in (code, current_path, binding_ref)):
             raise RuntimeContextBlocked("RUNTIME_ADAPTER_BINDING_INCOMPLETE")
+        if not _nonempty(adapter_sha) or len(adapter_sha) != 64:
+            raise RuntimeContextBlocked("RUNTIME_ADAPTER_SHA_MISSING", str(code))
         if code in by_code:
             raise RuntimeContextBlocked("RUNTIME_ADAPTER_AMBIGUOUS", code)
-        by_code[code] = binding
+        provenance = _verify_ref(
+            repo_root,
+            {"ref": current_path, "sha256": adapter_sha},
+            prefix="adapters/",
+        )
+        by_code[code] = {**binding, **provenance}
     for code in required_codes:
         if code not in by_code:
             raise RuntimeContextBlocked("RUNTIME_ADAPTER_MISSING", code)
     return [
         {
             "adapter_code": code,
-            "current_path": str(Path(by_code[code]["current_path"]).as_posix()),
+            "current_path": by_code[code]["ref"],
+            "sha256": by_code[code]["sha256"],
             "binding_ref": by_code[code]["binding_ref"],
         }
         for code in sorted(by_code)
@@ -206,13 +261,28 @@ def resolve_runtime_context(runtime_context: Any, *, request: dict[str, Any], re
 
     card = _resolve_card(runtime_context, repo_root, input_fields)
     authorities = _resolve_authorities(runtime_context, repo_root)
-    adapters = _resolve_adapters(runtime_context, request)
+    adapters = _resolve_adapters(runtime_context, request, repo_root)
     provenance = {
         "card": None if card["status"] == "FALLBACK" else {
             "ref": card["card_ref"], "sha256": card["card_sha256"]
         },
-        "authorities": [{"ref": a["ref"], "sha256": a["sha256"]} for a in authorities],
-        "adapters": [{"adapter_code": a["adapter_code"], "binding_ref": a["binding_ref"]} for a in adapters],
+        "authorities": [
+            {
+                "ref": a["ref"],
+                "sha256": a["sha256"],
+                "cross_run_authorization": a["cross_run_authorization"],
+            }
+            for a in authorities
+        ],
+        "adapters": [
+            {
+                "adapter_code": a["adapter_code"],
+                "ref": a["current_path"],
+                "sha256": a["sha256"],
+                "binding_ref": a["binding_ref"],
+            }
+            for a in adapters
+        ],
     }
     if card["status"] == "FALLBACK" and card["schema_invention_allowed"]:
         raise RuntimeContextBlocked("RUNTIME_FALLBACK_SCHEMA_INVENTION_FORBIDDEN")
