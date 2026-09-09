@@ -22,6 +22,7 @@ on:
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/**"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/**"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/**"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_006/**"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/guard_no_model_weight_acquisition.py"
       - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_model_weight_guard_tests.py"
       - ".github/workflows/profile-driven-screen-generation.yml"
@@ -131,6 +132,38 @@ jobs:
             sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/execution_receipt.json
             sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/semantic_check_bundle.json
           retention-days: 30
+      - name: Verify fresh S26 Run G source-fidelity producer receipt
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_006/run_g_producer_receipt.json')
+          data = json.loads(path.read_text(encoding='utf-8'))
+          expected_headers = ['Lote','Nombre','Archivo','Tipo','Cargado por','Fecha','Total','Válidos','Estado','Acciones']
+          assert data['schema'] == 'S26_RUN_G_PRODUCER_RECEIPT_V1'
+          assert data['source_visual']['sha256'] == 'ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287'
+          assert data['source_fidelity']['schema'] == 'LF_SOURCE_FIDELITY_CONTRACT_V1'
+          assert data['source_fidelity']['critical_ambiguity'] is False
+          assert data['source_fidelity']['immutable_table_headers'] == expected_headers
+          assert data['card_resolution']['mode'] in {'EXACT','COMPOSED','GENERIC_SAFE'}
+          assert data['card_resolution']['critical_authority_missing'] is False
+          assert data['artifact']['headers_verified'] == '10_OF_10_EXACT'
+          assert data['artifact']['real_horizontal_overflow_acknowledged'] is True
+          assert data['artifact']['current_page_prebound'] is False
+          assert data['artifact']['ui_validator'] == 'PASS'
+          assert data['artifact']['composer_boundary'] == 'PASS'
+          assert data['execution_contract']['contract_sha256'] == '6ec1e72df33022496642d9e97e5b926025d721a76b291bfbf25276d79d404c00'
+          assert data['execution_contract']['sha_derivation'] == 'canonical JSON excluding only contract_sha256'
+          assert data['execution_contract']['source_fidelity_required_check'] is True
+          assert data['execution_contract']['source_fidelity_required_evidence'] is True
+          assert data['independent_quality_bundle']['sha256'] == '7b6288f67a992d21cab2d6640ffa2cef85a8b6d25fdc1f6a5a8a1986f4b67eee'
+          assert data['independent_quality_bundle']['deterministic_probe'] == 'PASS_DETERMINISTIC_RUN_G_PREFLIGHT'
+          assert data['producer_downstream_authorized'] is False
+          assert data['golden_declared'] is False
+          assert data['next_gate'] == 'FRESH_GPT_AND_CLAUDE_INDEPENDENT_QUALITY'
+          print('PASS_S26_RUN_G_SOURCE_FIDELITY_PRODUCER_RECEIPT')
+          PY
       - name: Preserve historical S26 candidates without requalification
         run: |
           set -euo pipefail
