@@ -1,0 +1,46 @@
+{
+  "receipt_version": "S30-C-FROZEN-RECEIPT-R02-v1",
+  "lane": "S30-C",
+  "owner": "S30",
+  "source_branch": "lf/s30-c-evidence-freeze-replay-20260909",
+  "source_commit_sha": "408ca4d9512ca808c2262cf0e9266723a06558dc",
+  "source_tree_sha": "4abe3be9ce7d54d4d79a5555fb928e5f0449fb8c",
+  "build_run_version": "HARNESS_AND_GUARDS-R02",
+  "freeze_contract_id": "S30-R07-GATE-FREEZE-v1",
+  "artifacts": {
+    "freeze_contract.json": "44fde3c5c59b304cf9b559b8daeb163bff023f2d",
+    "replay_corpus.json": "b9b609519913ec79153e93f0cdae9339bc629bc4",
+    "s30c_harness.py": "71d898b6af615821cdf2657a55f763ab07851410",
+    "source_manifest.json": "d5f66711582729218a01fe4bee72bb622b3c96dd",
+    "test_s30c_harness.py": "dbe233572fa17dbcb58b669a80107c700fa846b5"
+  },
+  "build_replay": {
+    "corpus_id": "S30-R09-HISTORICAL-REPLAY-v1",
+    "case_count": 21,
+    "role": "FROZEN_BUILD_CORPUS_NOT_FINAL_S30_D_ACCEPTANCE_CORPUS",
+    "deterministic_oracle": "s30c_harness.py::replay_case/replay_corpus"
+  },
+  "artifact_path_probe": "producer -> persisted output -> frozen bundle -> clean independent reviewer -> hash recompute -> quality receipt",
+  "ci_evidence": {
+    "workflow": "Validate LF Packs",
+    "source_exact_head_run_id": 34407323741,
+    "source_exact_head_conclusion": "SUCCESS",
+    "source_exact_head_sha": "408ca4d9512ca808c2262cf0e9266723a06558dc"
+  },
+  "expected_output": "READY_FOR_FINAL_R09_INTEGRATION",
+  "claim_ceiling": "EVIDENCE_FREEZE_AND_REPLAY_HARNESS_READY",
+  "currentness_note": "Frozen C material is preserved. Final S30-D must bind fresh A/B currentness and execute the expanded final R09 corpus without mutating this source phase.",
+  "invalidation_triggers": [
+    "any frozen artifact blob changes",
+    "freeze phase is mutated instead of versioned",
+    "CI no longer executes the S30-C regression",
+    "final integration accepts stale A or B evidence"
+  ],
+  "safety_readback": {
+    "s30_c_source_material_modified": false,
+    "main_modified": false,
+    "runtime_modified": false,
+    "production_modified": false,
+    "s26_modified": false
+  }
+}
