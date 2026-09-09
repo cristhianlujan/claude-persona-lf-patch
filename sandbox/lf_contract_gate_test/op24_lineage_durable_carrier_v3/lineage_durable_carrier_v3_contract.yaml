@@ -1,0 +1,88 @@
+version: v0.3
+status: CANDIDATO_READ_ONLY
+strategy: LF_LEARNED_CONTEXT_MEMORY_MODEL_20260904
+strategy_version: v0.3
+carrier: programacion.learned_context_lineage
+recorder: programacion.record_learned_context_lineage_v1
+purpose: >-
+  Preserve auditable origin-to-destination lineage for Learned Context recomposition
+  without allowing free-form provenance, direct table writes, or ambiguous relation semantics.
+orientation:
+  invariant: SOURCE_IS_ORIGIN__TARGET_IS_DESTINATION_OR_REPLACED_PREDECESSOR
+  strategy_basis: origin->destination with disposition, reason and evidence
+relations:
+  TRANSFORMED_TO:
+    source: original knowledge/experience/card representation
+    target: semantically transformed destination representation
+    cardinality: ONE_TO_ONE_OR_MANY_EXPLICIT_EDGES
+  MOVED_TO:
+    source: original carrier record
+    target: destination carrier record preserving the material meaning
+    cardinality: ONE_TO_ONE_OR_MANY_EXPLICIT_EDGES
+  MERGED_INTO:
+    source: one contributing origin
+    target: common merged destination
+    cardinality: MANY_SOURCES_TO_ONE_TARGET_WITH_SHARED_TRANSFORMATION_GROUP
+  SPLIT_INTO:
+    source: common origin
+    target: one split destination
+    cardinality: ONE_SOURCE_TO_MANY_TARGETS_WITH_SHARED_TRANSFORMATION_GROUP
+  SUPERSEDES:
+    source: newer/current entity
+    target: older entity replaced by source
+    cardinality: ONE_OR_MORE_EXPLICIT_EDGES
+    cycle_guard_required: true
+excluded_ambiguous_relations:
+  DERIVED_FROM: >-
+    Excluded from the durable V3 contract because source/target direction is ambiguous
+    without an additional semantic authority contract.
+  RETIRES: >-
+    Excluded because Strategy24 requires an origin->destination carrier and retirement
+    may be unary; it must not be forced into a binary edge until its destination semantics
+    are defined.
+canonical_refs:
+  KB: public.lf_knowledge_base.kb_id
+  EKB: public.lf_error_knowledge.codigo
+  CARD: public.lf_cards.id_card
+write_authority:
+  direct_table_write: false
+  common_recorder_only: true
+  caller_execution_status_required: IN_PROGRESS
+  evidence_step_required: true
+  active_judge_binding_required: true
+  clean_step_required: true
+  required_evidence_key: lineage
+  exact_edge_match_required: true
+  current_parent_strategy_required: true
+  source_target_resolution_required: true
+  append_only_required: true
+  self_loop_forbidden: true
+  duplicate_edge_forbidden: true
+  supersedes_cycle_forbidden: true
+producer_contract:
+  lineage_payload_required_keys:
+    - transformation_group_id
+    - source_type
+    - source_ref
+    - target_type
+    - target_ref
+    - relation_type
+    - disposition_reason
+    - reversible
+  rule: >-
+    A transformation operation is not an authorized lineage producer unless the active
+    step judge binding explicitly includes lineage in required_evidence_keys and that
+    clean step persists an exact lineage object matching the recorder call.
+security:
+  schema: programacion
+  force_rls: true
+  direct_table_acl_revoked: true
+  recorder_execute_roles:
+    - service_role
+    - programacion_builder
+    - programacion_human_authority
+  auditor_direct_write: false
+claim_ceiling: >-
+  This contract validates only a source candidate for the durable lineage carrier.
+  It does not authorize DDL, migration replay, production, runtime activation,
+  recomposition, Card mutation, or Strategy23 execution.
