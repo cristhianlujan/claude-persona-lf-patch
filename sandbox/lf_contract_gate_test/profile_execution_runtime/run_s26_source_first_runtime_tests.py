@@ -4,6 +4,7 @@ from copy import deepcopy
 from profile_execution_contract import build_execution_contract, build_source_fidelity_contract, canonical_json_sha256
 from profile_runtime_runner import RESPONSE_TYPE, RuntimeExecutionBlocked
 from s26_source_first_runtime import build_governed_build_plan, build_source_model, execute_s26_source_first_profile_runtime
+from semantic_binding_validator import SCHEMA as SEMANTIC_BINDING_SCHEMA, canonical_sha as semantic_canonical_sha, validate as validate_semantic_binding
 from validate_profile_execution import canonical_json_sha256 as receipt_json_sha256, sha256_text
 
 PROFILE_SOURCES = [
@@ -94,6 +95,44 @@ def make_package():
     return fidelity, model, plan
 
 
+def make_semantic_binding(fidelity, artifact):
+    binding = {
+        "schema": SEMANTIC_BINDING_SCHEMA,
+        "artifact_canonical_sha256": semantic_canonical_sha(artifact),
+        "source_fidelity_contract_sha256": fidelity["contract_sha256"],
+        "bindings": [
+            {
+                "entity_id": "table.header.lote",
+                "artifact_pointer": "/composer_payload/headers/0",
+                "signature_key": "label",
+                "comparison": "EXACT",
+            },
+            {
+                "entity_id": "table.header.nombre",
+                "artifact_pointer": "/composer_payload/headers/1",
+                "signature_key": "label",
+                "comparison": "EXACT",
+            },
+        ],
+        "dynamic_bindings": [
+            {
+                "binding_id": "record_count",
+                "artifact_pointer": "/composer_payload/state/record_count_binding",
+                "expected_binding": "LIVE_FILTERED_RESULT_COUNT",
+            }
+        ],
+        "forbidden_render_literals": [
+            {
+                "literal_id": "record_count_literal",
+                "artifact_pointer": "/composer_payload/state/record_count",
+                "must_be_absent": True,
+            }
+        ],
+    }
+    binding["binding_sha256"] = semantic_canonical_sha(binding)
+    return binding
+
+
 class NativeAdapter:
     adapter_id = "native-source-first-test-adapter"
     is_test_double = True
@@ -108,12 +147,20 @@ class NativeAdapter:
         assert "value" not in request["source_model"]["observed_samples"][0]
         assert len(request["governed_build_plan"]["semantic_bindings"]) == 2
         assert request["governed_build_plan"]["observed_sample_policy"] == "NON_BINDING_EVIDENCE_ONLY"
+        semantic_labels = [
+            item["semantic_signature"]["label"]
+            for item in request["source_fidelity_contract"]["immutable_entities"]
+        ]
         return {
             "response_type": RESPONSE_TYPE,
             "raw_output": {
                 "worker": "ui_architect",
                 "output_type": "PRODUCTION_UI_SPEC",
                 "deliverable_created": {"screen_definition": {"task_mode": "REMEDIATE_EXISTING"}},
+                "composer_payload": {
+                    "headers": semantic_labels,
+                    "state": {"record_count_binding": "LIVE_FILTERED_RESULT_COUNT"},
+                },
             },
             "runtime_attestation": {
                 "provider": "native-test-provider",
@@ -190,6 +237,27 @@ def main():
     assert result["request"]["governed_build_plan_sha256"] == plan["governed_build_plan_sha256"]
     passed += 1
 
+    # Integration proof: semantic authority must survive the complete source-first
+    # path into concrete render-facing artifact locations, not merely ride along as
+    # request metadata.
+    artifact = result["raw_output"]
+    semantic_binding = make_semantic_binding(fidelity, artifact)
+    assert validate_semantic_binding(fidelity, artifact, semantic_binding) == []
+    passed += 1
+
+    # A producer may recompute the artifact hash after mutating output, but it
+    # still cannot manufacture semantic fidelity: the entity binding must fail.
+    mutated_artifact = deepcopy(artifact)
+    mutated_artifact["composer_payload"]["headers"][0] = "Código"
+    mutated_binding = deepcopy(semantic_binding)
+    mutated_binding["artifact_canonical_sha256"] = semantic_canonical_sha(mutated_artifact)
+    mutated_binding["binding_sha256"] = semantic_canonical_sha(
+        {k: v for k, v in mutated_binding.items() if k != "binding_sha256"}
+    )
+    mutation_errors = validate_semantic_binding(fidelity, mutated_artifact, mutated_binding)
+    assert "SEMANTIC_BINDING_MISMATCH:table.header.lote" in mutation_errors, mutation_errors
+    passed += 1
+
     broken_model = deepcopy(model)
     broken_model["protected_semantics"] = broken_model["protected_semantics"][:-1]
     reseal(broken_model, "source_model_sha256")
@@ -237,7 +305,7 @@ def main():
     assert adapter.calls == 0
     passed += 1
 
-    print(f"S26_SOURCE_FIRST_RUNTIME_TESTS_PASS {passed}/6")
+    print(f"S26_SOURCE_FIRST_RUNTIME_TESTS_PASS {passed}/8")
 
 
 if __name__ == "__main__":
