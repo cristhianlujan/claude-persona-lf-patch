@@ -70,6 +70,18 @@ def _resolve_cards(task: ProfileTask) -> dict[str, Any]:
     if extras:
         raise RuntimeAuthorityError("RUNTIME_CARD_AMBIGUOUS", ",".join(extras))
 
+    for ref in sorted(required):
+        missing_fields = sorted(
+            field
+            for field in by_ref[ref].get("required_input_fields", [])
+            if field not in task.input_fields
+        )
+        if missing_fields:
+            raise RuntimeAuthorityError(
+                "RUNTIME_CARD_REQUIRED_INPUT_MISSING",
+                f"{ref}:" + ",".join(missing_fields),
+            )
+
     return {
         "status": "RESOLVED",
         "mode": "ROUTER_SELECTED",
@@ -81,6 +93,7 @@ def _resolve_cards(task: ProfileTask) -> dict[str, Any]:
                 "source_ref": by_ref[ref]["source_ref"],
                 "content_sha256": by_ref[ref]["content_sha256"],
                 "selected_sections": by_ref[ref]["selected_sections"],
+                "required_input_fields": by_ref[ref].get("required_input_fields", []),
             }
             for ref in sorted(required)
         ],
@@ -218,6 +231,8 @@ def resolve_typed_runtime_context(
         },
         "input": {
             "input_literal_sha256": sha256_text(task.input_literal),
+            "input_fields": task.input_fields,
+            "input_fields_sha256": canonical_json_sha256(task.input_fields),
             "profile_code": task.profile_code,
             "profile_slug": task.profile_slug,
         },
