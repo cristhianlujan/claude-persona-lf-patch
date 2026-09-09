@@ -12,6 +12,7 @@ from pathlib import PurePosixPath
 from typing import Iterable
 
 S30_PREFIX = "sandbox/lf_contract_gate_test/s30_policy_operations_candidate/"
+OP24_LINEAGE_SOURCE_PREFIX = "sandbox/lf_contract_gate_test/op24_lineage_durable_candidate/"
 MIGRATION_PREFIX = "supabase/migrations/"
 MIGRATION_VALIDATOR = "sandbox/lf_contract_gate_test/lf_migration_source_parity.py"
 INPUT_GOV_VALIDATOR = "sandbox/lf_contract_gate_test/input_governance_migration_parity_compact.py"
@@ -109,7 +110,7 @@ def _is_p0_exact_head_external_owner(path: str) -> bool:
 def _is_known_shared(path: str) -> bool:
     if path == CI_WORKFLOW or path == P0_RUNTIME_ENTRYPOINT:
         return True
-    if path.startswith(CI_ROUTER_PREFIX) or path.startswith(S30_PREFIX):
+    if path.startswith(CI_ROUTER_PREFIX) or path.startswith(S30_PREFIX) or path.startswith(OP24_LINEAGE_SOURCE_PREFIX):
         return True
     if path in {MIGRATION_VALIDATOR, INPUT_GOV_VALIDATOR}:
         return True
