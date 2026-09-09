@@ -10,15 +10,76 @@ import sys
 from pathlib import Path
 from typing import Any, Iterable
 
+RUN_SCOPE = "S26"
 MANIFEST_SCHEMA = "S26_CI_PREFLIGHT_MANIFEST_V1"
+BASE = "sandbox/lf_contract_gate_test/profile_execution_runtime"
+WORKFLOW_PATH = ".github/workflows/story-agent-evidence-verifier.yml"
+MANIFEST_PATH = f"{BASE}/s26_ci_preflight_manifest_v1.json"
+MANIFEST_SCHEMA_PATH = f"{BASE}/s26_ci_preflight_manifest.schema.json"
+
 REQUIRED_TOP_LEVEL = {
     "schema", "run_scope", "required_files", "required_scripts", "required_validators",
     "schemas", "authority_sources", "bindings", "inputs", "workflow_guards",
 }
 RUN_ID_RE = re.compile(r"^S\d+$")
-PREFLIGHT_COMMAND = (
-    "python3 sandbox/lf_contract_gate_test/profile_execution_runtime/"
-    "s26_ci_preflight.py --repo-root ."
+PREFLIGHT_COMMAND = f"python3 {BASE}/s26_ci_preflight.py --repo-root ."
+
+CANONICAL_REQUIRED_FILES = frozenset({
+    "CLAUDE.md",
+    WORKFLOW_PATH,
+    f"{BASE}/README.md",
+    MANIFEST_PATH,
+})
+CANONICAL_REQUIRED_SCRIPTS = frozenset({
+    f"{BASE}/s26_ci_preflight.py",
+    f"{BASE}/run_s26_ci_preflight_tests.py",
+    f"{BASE}/run_tests.py",
+    f"{BASE}/run_semantic_mini_judge_tests.py",
+    f"{BASE}/run_profile_runtime_optimization_tests.py",
+})
+CANONICAL_REQUIRED_VALIDATORS = frozenset({
+    f"{BASE}/validate_profile_execution.py",
+    f"{BASE}/semantic_obligation_manifest.py",
+})
+CANONICAL_AUTHORITIES = {
+    "CI_CONTRACT": "CLAUDE.md",
+    "RUNTIME_CONTRACT": f"{BASE}/README.md",
+}
+CANONICAL_BINDINGS = {
+    "PROFILE_EXECUTION_VALIDATOR": {
+        "target_ref": f"{BASE}/validate_profile_execution.py",
+        "callable": "validate_receipt",
+        "probe_mode": "RETURNS_NONEMPTY_ERROR_LIST",
+        "expected_error": None,
+    },
+    "SEMANTIC_MANIFEST_VALIDATOR": {
+        "target_ref": f"{BASE}/semantic_obligation_manifest.py",
+        "callable": "validate_obligation_manifest",
+        "probe_mode": "RAISES_EXPECTED_ERROR",
+        "expected_error": "MANIFEST_SCHEMA_INVALID",
+    },
+}
+CANONICAL_INPUTS = {
+    "CANONICAL_PREFLIGHT_MANIFEST": MANIFEST_PATH,
+}
+CANONICAL_WORKFLOW_GUARDS = {
+    "semantic-mini-judge-smoke": (
+        "Build pinned llama.cpp server from source",
+        "Download and verify pinned semantic judge model",
+    ),
+    "run-zero-cost-profile-runtime": (
+        "Build pinned llama.cpp from source",
+        "Download and verify pinned multimodal model",
+    ),
+    "run-zero-cost-profile-batch": (
+        "Build pinned llama.cpp runtime bundle on cache miss",
+        "Download pinned model on cache miss",
+    ),
+}
+HEAVY_BEFORE_PREFLIGHT_RE = re.compile(
+    r"(?i)(curl\s|wget\s|git\s+clone|cmake\s+--build|pip\s+install|"
+    r"huggingface|\.gguf\b|\.safetensors\b|llama-(?:cli|server)|"
+    r"live[_ -]smoke|model[_ -]download)"
 )
 
 
@@ -57,6 +118,23 @@ def _require_file(repo_root: Path, raw: Any, code: str) -> Path:
     if not path.is_file():
         raise PreflightError("REQUIRED_FILE_MISSING:" + str(raw))
     return path
+
+
+def _declared_strings(value: Any, code: str) -> set[str]:
+    items = _list(value, code)
+    if any(not isinstance(item, str) or not item.strip() for item in items):
+        raise PreflightError(code)
+    normalized = [item.strip() for item in items]
+    if len(set(normalized)) != len(normalized):
+        raise PreflightError(code + "_DUPLICATE")
+    return set(normalized)
+
+
+def _require_declared_subset(value: Any, required: frozenset[str], code: str) -> None:
+    declared = _declared_strings(value, code + "_INVALID")
+    missing = sorted(required - declared)
+    if missing:
+        raise PreflightError(code + ":" + ",".join(missing))
 
 
 def _validate_run_binding(item: dict[str, Any], run_scope: str, label: str) -> None:
@@ -178,6 +256,9 @@ def _validate_executable_preflight(segment: str, job_name: str, step_name: str) 
     command_match = re.search(rf"(?m)^          {re.escape(PREFLIGHT_COMMAND)}\s*$", block)
     if command_match is None or command_match.start() < run_match.end():
         raise PreflightError("PREFLIGHT_EXECUTABLE_COMMAND_MISSING:" + job_name)
+    prefix = segment[:position]
+    if HEAVY_BEFORE_PREFLIGHT_RE.search(prefix):
+        raise PreflightError("HEAVY_STAGE_BEFORE_PREFLIGHT:" + job_name)
     return position
 
 
@@ -231,6 +312,126 @@ def _execute_validator_probe(path: Path, raw: dict[str, Any], binding_id: str) -
     raise PreflightError("VALIDATOR_PROBE_MODE_INVALID:" + binding_id + ":" + probe_mode)
 
 
+def _validate_canonical_authorities(repo_root: Path, manifest: dict[str, Any], run_scope: str, checked_paths: set[str]) -> None:
+    seen: set[str] = set()
+    rows = _list(manifest.get("authority_sources"), "AUTHORITY_SOURCES_INVALID")
+    if len(rows) != len(CANONICAL_AUTHORITIES):
+        raise PreflightError("SOURCE_AUTHORITY_SET_INVALID")
+    for index, raw in enumerate(rows):
+        if not isinstance(raw, dict):
+            raise PreflightError(f"AUTHORITY_{index}_NOT_OBJECT")
+        _validate_run_binding(raw, run_scope, f"AUTHORITY_{index}")
+        authority_type = _text(raw.get("authority_type"), f"AUTHORITY_{index}_TYPE_MISSING")
+        if authority_type in seen:
+            raise PreflightError("SOURCE_AUTHORITY_DUPLICATE:" + authority_type)
+        seen.add(authority_type)
+        expected_ref = CANONICAL_AUTHORITIES.get(authority_type)
+        if expected_ref is None:
+            raise PreflightError("SOURCE_AUTHORITY_UNKNOWN:" + authority_type)
+        ref = _text(raw.get("source_ref"), f"AUTHORITY_{index}_SOURCE_REF_MISSING")
+        if ref != expected_ref:
+            raise PreflightError("SOURCE_AUTHORITY_REF_MISMATCH:" + authority_type)
+        path = _require_file(repo_root, ref, f"AUTHORITY_{index}_SOURCE_REF_INVALID")
+        checked_paths.add(str(path.relative_to(repo_root.resolve())))
+    if seen != set(CANONICAL_AUTHORITIES):
+        raise PreflightError("SOURCE_AUTHORITY_SET_INVALID")
+
+
+def _validate_canonical_bindings(repo_root: Path, manifest: dict[str, Any], run_scope: str, checked_paths: set[str]) -> None:
+    seen: set[str] = set()
+    rows = _list(manifest.get("bindings"), "BINDINGS_INVALID")
+    if len(rows) != len(CANONICAL_BINDINGS):
+        raise PreflightError("REQUIRED_BINDING_SET_INVALID")
+    for index, raw in enumerate(rows):
+        if not isinstance(raw, dict):
+            raise PreflightError(f"BINDING_{index}_NOT_OBJECT")
+        _validate_run_binding(raw, run_scope, f"BINDING_{index}")
+        binding_id = _text(raw.get("binding_id"), f"BINDING_{index}_ID_MISSING")
+        if binding_id in seen:
+            raise PreflightError("BINDING_DUPLICATE:" + binding_id)
+        seen.add(binding_id)
+        expected = CANONICAL_BINDINGS.get(binding_id)
+        if expected is None:
+            raise PreflightError("BINDING_UNKNOWN:" + binding_id)
+        for field in ("target_ref", "callable", "probe_mode"):
+            if raw.get(field) != expected[field]:
+                raise PreflightError(f"VALIDATOR_BINDING_MISMATCH:{binding_id}:{field}")
+        if expected["expected_error"] is None:
+            if raw.get("expected_error") not in (None, ""):
+                raise PreflightError(f"VALIDATOR_BINDING_MISMATCH:{binding_id}:expected_error")
+        elif raw.get("expected_error") != expected["expected_error"]:
+            raise PreflightError(f"VALIDATOR_BINDING_MISMATCH:{binding_id}:expected_error")
+        path = _require_file(repo_root, raw.get("target_ref"), f"BINDING_{index}_TARGET_MISSING")
+        _execute_validator_probe(path, raw, binding_id)
+        checked_paths.add(str(path.relative_to(repo_root.resolve())))
+    if seen != set(CANONICAL_BINDINGS):
+        raise PreflightError("REQUIRED_BINDING_SET_INVALID")
+
+
+def _validate_canonical_inputs(repo_root: Path, manifest: dict[str, Any], run_scope: str, checked_paths: set[str]) -> None:
+    rows = _list(manifest.get("inputs"), "INPUTS_INVALID")
+    if len(rows) != len(CANONICAL_INPUTS):
+        raise PreflightError("DECLARED_INPUT_SET_INVALID")
+    seen: set[str] = set()
+    for index, raw in enumerate(rows):
+        if not isinstance(raw, dict):
+            raise PreflightError(f"INPUT_{index}_NOT_OBJECT")
+        _validate_run_binding(raw, run_scope, f"INPUT_{index}")
+        input_id = _text(raw.get("input_id"), f"INPUT_{index}_ID_MISSING")
+        if input_id in seen:
+            raise PreflightError("INPUT_DUPLICATE:" + input_id)
+        seen.add(input_id)
+        expected_path = CANONICAL_INPUTS.get(input_id)
+        if expected_path is None or raw.get("path") != expected_path:
+            raise PreflightError("DECLARED_INPUT_REF_MISMATCH:" + input_id)
+        path = _require_file(repo_root, raw.get("path"), f"INPUT_{index}_PATH_MISSING")
+        checked_paths.add(str(path.relative_to(repo_root.resolve())))
+    if seen != set(CANONICAL_INPUTS):
+        raise PreflightError("DECLARED_INPUT_SET_INVALID")
+
+
+def _validate_workflow_guards(repo_root: Path, manifest: dict[str, Any], run_scope: str) -> None:
+    rows = _list(manifest.get("workflow_guards"), "WORKFLOW_GUARDS_INVALID")
+    if len(rows) != len(CANONICAL_WORKFLOW_GUARDS):
+        raise PreflightError("WORKFLOW_GUARD_SET_INVALID")
+    seen: set[str] = set()
+    for index, raw in enumerate(rows):
+        if not isinstance(raw, dict):
+            raise PreflightError(f"WORKFLOW_GUARD_{index}_NOT_OBJECT")
+        _validate_run_binding(raw, run_scope, f"WORKFLOW_GUARD_{index}")
+        workflow_ref = _text(raw.get("workflow_path"), f"WORKFLOW_GUARD_{index}_PATH_MISSING")
+        if workflow_ref != WORKFLOW_PATH:
+            raise PreflightError("WORKFLOW_GUARD_PATH_MISMATCH")
+        workflow_path = _require_file(repo_root, workflow_ref, f"WORKFLOW_GUARD_{index}_PATH_MISSING")
+        job_name = _text(raw.get("job"), f"WORKFLOW_GUARD_{index}_JOB_MISSING")
+        if job_name in seen:
+            raise PreflightError("WORKFLOW_GUARD_DUPLICATE:" + job_name)
+        seen.add(job_name)
+        expected_heavy = CANONICAL_WORKFLOW_GUARDS.get(job_name)
+        if expected_heavy is None:
+            raise PreflightError("WORKFLOW_GUARD_JOB_UNKNOWN:" + job_name)
+        preflight_marker = _text(raw.get("preflight_marker"), f"WORKFLOW_GUARD_{index}_PREFLIGHT_MARKER_MISSING")
+        if preflight_marker != "S26 cheap deterministic preflight":
+            raise PreflightError("WORKFLOW_GUARD_PREFLIGHT_MISMATCH:" + job_name)
+        heavy_markers = tuple(
+            _text(item, f"WORKFLOW_GUARD_{index}_HEAVY_MARKER_INVALID")
+            for item in _list(raw.get("heavy_markers"), f"WORKFLOW_GUARD_{index}_HEAVY_MARKERS_INVALID")
+        )
+        if heavy_markers != expected_heavy:
+            raise PreflightError("WORKFLOW_GUARD_HEAVY_SET_MISMATCH:" + job_name)
+        segment = _job_segment(workflow_path.read_text(encoding="utf-8"), job_name)
+        preflight_pos = _validate_executable_preflight(segment, job_name, preflight_marker)
+        for heavy_text in expected_heavy:
+            try:
+                heavy_pos, _ = _named_step(segment, heavy_text)
+            except PreflightError as exc:
+                raise PreflightError("HEAVY_STAGE_STEP_MISSING:" + job_name + ":" + heavy_text) from exc
+            if preflight_pos > heavy_pos:
+                raise PreflightError("PREFLIGHT_AFTER_HEAVY_STAGE:" + job_name + ":" + heavy_text)
+    if seen != set(CANONICAL_WORKFLOW_GUARDS):
+        raise PreflightError("WORKFLOW_GUARD_SET_INVALID")
+
+
 def validate_manifest(repo_root: Path, manifest: Any) -> dict[str, Any]:
     if not isinstance(manifest, dict):
         raise PreflightError("MANIFEST_NOT_OBJECT")
@@ -242,8 +443,12 @@ def validate_manifest(repo_root: Path, manifest: Any) -> dict[str, Any]:
     run_scope = _text(manifest.get("run_scope"), "RUN_SCOPE_MISSING")
     if not RUN_ID_RE.fullmatch(run_scope):
         raise PreflightError("RUN_SCOPE_INVALID")
-    if run_scope != "S26":
+    if run_scope != RUN_SCOPE:
         raise PreflightError("RUN_SCOPE_NOT_S26")
+
+    _require_declared_subset(manifest.get("required_files"), CANONICAL_REQUIRED_FILES, "REQUIRED_FILE_DECLARATION_MISSING")
+    _require_declared_subset(manifest.get("required_scripts"), CANONICAL_REQUIRED_SCRIPTS, "REQUIRED_SCRIPT_DECLARATION_MISSING")
+    _require_declared_subset(manifest.get("required_validators"), CANONICAL_REQUIRED_VALIDATORS, "REQUIRED_VALIDATOR_DECLARATION_MISSING")
 
     checked_paths: set[str] = set()
     for field in ("required_files", "required_scripts", "required_validators"):
@@ -259,85 +464,22 @@ def validate_manifest(repo_root: Path, manifest: Any) -> dict[str, Any]:
     if len(set(validators)) != len(validators):
         raise PreflightError("VALIDATOR_DUPLICATE")
 
-    manifest_schema_payload: dict[str, Any] | None = None
-    manifest_schema_count = 0
-    for index, raw in enumerate(_list(manifest.get("schemas"), "SCHEMAS_INVALID")):
-        if not isinstance(raw, dict):
-            raise PreflightError(f"SCHEMA_{index}_NOT_OBJECT")
-        _validate_run_binding(raw, run_scope, f"SCHEMA_{index}")
-        path = _require_file(repo_root, raw.get("path"), f"SCHEMA_{index}_PATH_MISSING")
-        schema_payload = _load_schema(path)
-        role = _text(raw.get("schema_role"), f"SCHEMA_{index}_ROLE_MISSING")
-        if role == "PREFLIGHT_MANIFEST":
-            manifest_schema_count += 1
-            manifest_schema_payload = schema_payload
-        checked_paths.add(str(path.relative_to(repo_root.resolve())))
-    if manifest_schema_count != 1 or manifest_schema_payload is None:
+    rows = _list(manifest.get("schemas"), "SCHEMAS_INVALID")
+    if len(rows) != 1 or not isinstance(rows[0], dict):
         raise PreflightError("PREFLIGHT_MANIFEST_SCHEMA_BINDING_INVALID")
+    raw_schema = rows[0]
+    _validate_run_binding(raw_schema, run_scope, "SCHEMA_0")
+    if raw_schema.get("path") != MANIFEST_SCHEMA_PATH or raw_schema.get("schema_role") != "PREFLIGHT_MANIFEST":
+        raise PreflightError("PREFLIGHT_MANIFEST_SCHEMA_BINDING_INVALID")
+    schema_path = _require_file(repo_root, raw_schema.get("path"), "SCHEMA_0_PATH_MISSING")
+    manifest_schema_payload = _load_schema(schema_path)
+    checked_paths.add(str(schema_path.relative_to(repo_root.resolve())))
     _apply_json_schema(manifest, manifest_schema_payload)
 
-    authority_types: set[str] = set()
-    for index, raw in enumerate(_list(manifest.get("authority_sources"), "AUTHORITY_SOURCES_INVALID")):
-        if not isinstance(raw, dict):
-            raise PreflightError(f"AUTHORITY_{index}_NOT_OBJECT")
-        _validate_run_binding(raw, run_scope, f"AUTHORITY_{index}")
-        authority_type = _text(raw.get("authority_type"), f"AUTHORITY_{index}_TYPE_MISSING")
-        authority_types.add(authority_type)
-        ref = _text(raw.get("source_ref"), f"AUTHORITY_{index}_SOURCE_REF_MISSING")
-        if not ref.startswith("input:"):
-            path = _require_file(repo_root, ref, f"AUTHORITY_{index}_SOURCE_REF_INVALID")
-            checked_paths.add(str(path.relative_to(repo_root.resolve())))
-    missing_authority = {"CI_CONTRACT", "RUNTIME_CONTRACT"} - authority_types
-    if missing_authority:
-        raise PreflightError("SOURCE_AUTHORITY_MISSING:" + ",".join(sorted(missing_authority)))
-
-    binding_ids: set[str] = set()
-    for index, raw in enumerate(_list(manifest.get("bindings"), "BINDINGS_INVALID")):
-        if not isinstance(raw, dict):
-            raise PreflightError(f"BINDING_{index}_NOT_OBJECT")
-        _validate_run_binding(raw, run_scope, f"BINDING_{index}")
-        binding_id = _text(raw.get("binding_id"), f"BINDING_{index}_ID_MISSING")
-        if binding_id in binding_ids:
-            raise PreflightError("BINDING_DUPLICATE:" + binding_id)
-        binding_ids.add(binding_id)
-        path = _require_file(repo_root, raw.get("target_ref"), f"BINDING_{index}_TARGET_MISSING")
-        _execute_validator_probe(path, raw, binding_id)
-        checked_paths.add(str(path.relative_to(repo_root.resolve())))
-    required_binding_ids = {"PROFILE_EXECUTION_VALIDATOR", "SEMANTIC_MANIFEST_VALIDATOR"}
-    missing_bindings = required_binding_ids - binding_ids
-    if missing_bindings:
-        raise PreflightError("REQUIRED_BINDING_MISSING:" + ",".join(sorted(missing_bindings)))
-
-    input_ids: set[str] = set()
-    for index, raw in enumerate(_list(manifest.get("inputs"), "INPUTS_INVALID")):
-        if not isinstance(raw, dict):
-            raise PreflightError(f"INPUT_{index}_NOT_OBJECT")
-        _validate_run_binding(raw, run_scope, f"INPUT_{index}")
-        input_id = _text(raw.get("input_id"), f"INPUT_{index}_ID_MISSING")
-        input_ids.add(input_id)
-        path = _require_file(repo_root, raw.get("path"), f"INPUT_{index}_PATH_MISSING")
-        checked_paths.add(str(path.relative_to(repo_root.resolve())))
-    if "CANONICAL_PREFLIGHT_MANIFEST" not in input_ids:
-        raise PreflightError("DECLARED_INPUT_MISSING:CANONICAL_PREFLIGHT_MANIFEST")
-
-    for index, raw in enumerate(_list(manifest.get("workflow_guards"), "WORKFLOW_GUARDS_INVALID")):
-        if not isinstance(raw, dict):
-            raise PreflightError(f"WORKFLOW_GUARD_{index}_NOT_OBJECT")
-        _validate_run_binding(raw, run_scope, f"WORKFLOW_GUARD_{index}")
-        workflow_path = _require_file(repo_root, raw.get("workflow_path"), f"WORKFLOW_GUARD_{index}_PATH_MISSING")
-        job_name = _text(raw.get("job"), f"WORKFLOW_GUARD_{index}_JOB_MISSING")
-        preflight_marker = _text(raw.get("preflight_marker"), f"WORKFLOW_GUARD_{index}_PREFLIGHT_MARKER_MISSING")
-        heavy_markers = _list(raw.get("heavy_markers"), f"WORKFLOW_GUARD_{index}_HEAVY_MARKERS_INVALID")
-        segment = _job_segment(workflow_path.read_text(encoding="utf-8"), job_name)
-        preflight_pos = _validate_executable_preflight(segment, job_name, preflight_marker)
-        for heavy in heavy_markers:
-            heavy_text = _text(heavy, f"WORKFLOW_GUARD_{index}_HEAVY_MARKER_INVALID")
-            try:
-                heavy_pos, _ = _named_step(segment, heavy_text)
-            except PreflightError as exc:
-                raise PreflightError("HEAVY_STAGE_STEP_MISSING:" + job_name + ":" + heavy_text) from exc
-            if preflight_pos > heavy_pos:
-                raise PreflightError("PREFLIGHT_AFTER_HEAVY_STAGE:" + job_name + ":" + heavy_text)
+    _validate_canonical_authorities(repo_root, manifest, run_scope, checked_paths)
+    _validate_canonical_bindings(repo_root, manifest, run_scope, checked_paths)
+    _validate_canonical_inputs(repo_root, manifest, run_scope, checked_paths)
+    _validate_workflow_guards(repo_root, manifest, run_scope)
 
     return {
         "status": "PASS_S26_CHEAP_PREFLIGHT",
@@ -346,6 +488,8 @@ def validate_manifest(repo_root: Path, manifest: Any) -> dict[str, Any]:
         "workflow_guards": len(manifest["workflow_guards"]),
         "manifest_schema_applied": True,
         "validator_bindings_executed": len(manifest["bindings"]),
+        "canonical_authorities_pinned": True,
+        "canonical_workflow_guard_set_pinned": True,
     }
 
 
@@ -355,10 +499,12 @@ def main(argv: Iterable[str] | None = None) -> int:
     parser.add_argument(
         "--manifest",
         type=Path,
-        default=Path("sandbox/lf_contract_gate_test/profile_execution_runtime/s26_ci_preflight_manifest_v1.json"),
+        default=Path(MANIFEST_PATH),
     )
     args = parser.parse_args(list(argv) if argv is not None else None)
     try:
+        if args.manifest.is_absolute() or ".." in args.manifest.parts:
+            raise PreflightError("MANIFEST_PATH_NOT_REPRODUCIBLE")
         payload = json.loads((args.repo_root / args.manifest).read_text(encoding="utf-8"))
         result = validate_manifest(args.repo_root, payload)
     except (OSError, json.JSONDecodeError, PreflightError) as exc:

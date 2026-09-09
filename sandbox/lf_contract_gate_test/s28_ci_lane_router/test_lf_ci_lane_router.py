@@ -60,8 +60,11 @@ def main():
     check("workflow_plus_migration", [workflow, migration], migration=True, input_gov=False, selftest=True, p0_external=False, deep_shared=False)
     check("workflow_plus_input_migration", [workflow, input_migration], migration=True, input_gov=True, selftest=True, p0_external=False, deep_shared=False)
     check("known_shared_non_specialized", ["skills/learning_engine/validators/validate_pack.py"], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=False, mode="DEEP_SHARED_KNOWN")
-    check("s26_runtime_known_shared", [s26_runtime], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=False, mode="DEEP_SHARED_KNOWN")
+    check("s26_preflight_known_shared", [s26_preflight], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=False, mode="DEEP_SHARED_KNOWN")
     check("s26_workflow_known_shared", [s26_workflow], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=False, mode="DEEP_SHARED_KNOWN")
+
+    # Future/unbound S26 runtime files must not inherit S26-A's N/A classification.
+    check("s26_unbound_runtime_fail_closed", [s26_runtime], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
 
     real_s30a_delta = [
         validate_workflow,
@@ -87,7 +90,7 @@ def main():
     check("unknown_s30_receipt_sibling_fail_closed", ["sandbox/lf_contract_gate_test/receipts/s30_b_unbound.json"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
     check("unknown_fail_closed", ["mystery/new_surface.xyz"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
     check("empty_fail_closed", [], migration=True, input_gov=True, selftest=True, p0_external=True, deep_shared=True, mode="DEEP_SHARED_EMPTY_FAIL_CLOSED")
-    print("CI_LANE_ROUTER_REGRESSIONS_PASS=29/29")
+    print("CI_LANE_ROUTER_REGRESSIONS_PASS=30/30")
 
 
 if __name__ == "__main__":
