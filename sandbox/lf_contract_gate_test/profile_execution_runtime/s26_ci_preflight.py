@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -14,6 +16,10 @@ REQUIRED_TOP_LEVEL = {
     "schemas", "authority_sources", "bindings", "inputs", "workflow_guards",
 }
 RUN_ID_RE = re.compile(r"^S\d+$")
+PREFLIGHT_COMMAND = (
+    "python3 sandbox/lf_contract_gate_test/profile_execution_runtime/"
+    "s26_ci_preflight.py --repo-root ."
+)
 
 
 class PreflightError(ValueError):
@@ -59,7 +65,7 @@ def _validate_run_binding(item: dict[str, Any], run_scope: str, label: str) -> N
         raise PreflightError(f"CROSS_RUN_REFERENCE:{label}:{run_id}")
 
 
-def _validate_schema_file(path: Path) -> None:
+def _load_schema(path: Path) -> dict[str, Any]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except Exception as exc:
@@ -71,6 +77,72 @@ def _validate_schema_file(path: Path) -> None:
         raise PreflightError("SCHEMA_META_INVALID:" + str(path))
     if payload.get("type") not in {"object", "array", "string", "number", "integer", "boolean", "null"}:
         raise PreflightError("SCHEMA_TYPE_INVALID:" + str(path))
+    return payload
+
+
+def _schema_type_matches(value: Any, expected: str) -> bool:
+    if expected == "object":
+        return isinstance(value, dict)
+    if expected == "array":
+        return isinstance(value, list)
+    if expected == "string":
+        return isinstance(value, str)
+    if expected == "number":
+        return isinstance(value, (int, float)) and not isinstance(value, bool)
+    if expected == "integer":
+        return isinstance(value, int) and not isinstance(value, bool)
+    if expected == "boolean":
+        return isinstance(value, bool)
+    if expected == "null":
+        return value is None
+    return False
+
+
+def _apply_json_schema(value: Any, schema: dict[str, Any], pointer: str = "$") -> None:
+    expected_type = schema.get("type")
+    if expected_type is not None:
+        if not isinstance(expected_type, str) or not _schema_type_matches(value, expected_type):
+            raise PreflightError(f"MANIFEST_SCHEMA_VALIDATION_FAILED:{pointer}:type")
+    if "const" in schema and value != schema["const"]:
+        raise PreflightError(f"MANIFEST_SCHEMA_VALIDATION_FAILED:{pointer}:const")
+    if "enum" in schema:
+        enum = schema["enum"]
+        if not isinstance(enum, list) or value not in enum:
+            raise PreflightError(f"MANIFEST_SCHEMA_VALIDATION_FAILED:{pointer}:enum")
+    if isinstance(value, str) and "minLength" in schema:
+        minimum = schema["minLength"]
+        if not isinstance(minimum, int) or len(value) < minimum:
+            raise PreflightError(f"MANIFEST_SCHEMA_VALIDATION_FAILED:{pointer}:minLength")
+    if isinstance(value, list):
+        if "minItems" in schema:
+            minimum = schema["minItems"]
+            if not isinstance(minimum, int) or len(value) < minimum:
+                raise PreflightError(f"MANIFEST_SCHEMA_VALIDATION_FAILED:{pointer}:minItems")
+        item_schema = schema.get("items")
+        if isinstance(item_schema, dict):
+            for index, item in enumerate(value):
+                _apply_json_schema(item, item_schema, f"{pointer}/{index}")
+    if isinstance(value, dict):
+        required = schema.get("required", [])
+        if not isinstance(required, list) or any(not isinstance(key, str) for key in required):
+            raise PreflightError(f"SCHEMA_DEFINITION_INVALID:{pointer}:required")
+        missing = [key for key in required if key not in value]
+        if missing:
+            raise PreflightError(
+                f"MANIFEST_SCHEMA_VALIDATION_FAILED:{pointer}:required:" + ",".join(sorted(missing))
+            )
+        properties = schema.get("properties", {})
+        if not isinstance(properties, dict):
+            raise PreflightError(f"SCHEMA_DEFINITION_INVALID:{pointer}:properties")
+        for key, child_schema in properties.items():
+            if key in value and isinstance(child_schema, dict):
+                _apply_json_schema(value[key], child_schema, f"{pointer}/{key}")
+        if schema.get("additionalProperties") is False:
+            extras = sorted(set(value) - set(properties))
+            if extras:
+                raise PreflightError(
+                    f"MANIFEST_SCHEMA_VALIDATION_FAILED:{pointer}:additionalProperties:" + ",".join(extras)
+                )
 
 
 def _job_segment(workflow_text: str, job_name: str) -> str:
@@ -81,6 +153,82 @@ def _job_segment(workflow_text: str, job_name: str) -> str:
     tail = workflow_text[start + len(marker):]
     next_job = re.search(r"(?m)^  [A-Za-z0-9_-]+:\s*$", tail)
     return workflow_text[start:] if next_job is None else workflow_text[start:start + len(marker) + next_job.start()]
+
+
+def _named_step(segment: str, step_name: str) -> tuple[int, str]:
+    pattern = re.compile(rf"(?m)^      - name: {re.escape(step_name)}\s*$")
+    matches = list(pattern.finditer(segment))
+    if len(matches) != 1:
+        raise PreflightError("WORKFLOW_STEP_COUNT_INVALID:" + step_name + f":{len(matches)}")
+    match = matches[0]
+    tail = segment[match.end():]
+    next_step = re.search(r"(?m)^      - name: ", tail)
+    end = len(segment) if next_step is None else match.end() + next_step.start()
+    return match.start(), segment[match.start():end]
+
+
+def _validate_executable_preflight(segment: str, job_name: str, step_name: str) -> int:
+    try:
+        position, block = _named_step(segment, step_name)
+    except PreflightError as exc:
+        raise PreflightError("PREFLIGHT_EXECUTABLE_STEP_MISSING:" + job_name) from exc
+    run_match = re.search(r"(?m)^        run:\s*\|\s*$", block)
+    if run_match is None:
+        raise PreflightError("PREFLIGHT_RUN_BLOCK_MISSING:" + job_name)
+    command_match = re.search(rf"(?m)^          {re.escape(PREFLIGHT_COMMAND)}\s*$", block)
+    if command_match is None or command_match.start() < run_match.end():
+        raise PreflightError("PREFLIGHT_EXECUTABLE_COMMAND_MISSING:" + job_name)
+    return position
+
+
+def _load_module(path: Path, binding_id: str):
+    module_name = "_s26_preflight_" + re.sub(r"[^A-Za-z0-9_]", "_", binding_id.lower())
+    spec = importlib.util.spec_from_file_location(module_name, path)
+    if spec is None or spec.loader is None:
+        raise PreflightError("VALIDATOR_IMPORT_SPEC_INVALID:" + binding_id)
+    module = importlib.util.module_from_spec(spec)
+    sys_path_added = False
+    parent = str(path.parent)
+    if parent not in sys.path:
+        sys.path.insert(0, parent)
+        sys_path_added = True
+    try:
+        spec.loader.exec_module(module)
+    except Exception as exc:
+        raise PreflightError("VALIDATOR_IMPORT_FAILED:" + binding_id + ":" + type(exc).__name__) from exc
+    finally:
+        if sys_path_added and sys.path and sys.path[0] == parent:
+            sys.path.pop(0)
+    return module
+
+
+def _execute_validator_probe(path: Path, raw: dict[str, Any], binding_id: str) -> None:
+    callable_name = _text(raw.get("callable"), "VALIDATOR_CALLABLE_MISSING:" + binding_id)
+    probe_mode = _text(raw.get("probe_mode"), "VALIDATOR_PROBE_MODE_MISSING:" + binding_id)
+    module = _load_module(path, binding_id)
+    function = getattr(module, callable_name, None)
+    if not callable(function):
+        raise PreflightError("VALIDATOR_CALLABLE_MISSING:" + binding_id + ":" + callable_name)
+    if probe_mode == "RETURNS_NONEMPTY_ERROR_LIST":
+        try:
+            result = function({})
+        except Exception as exc:
+            raise PreflightError("VALIDATOR_PROBE_UNEXPECTED_EXCEPTION:" + binding_id) from exc
+        if not isinstance(result, list) or not result or not all(isinstance(item, str) for item in result):
+            raise PreflightError("VALIDATOR_PROBE_CONTRACT_FAILED:" + binding_id)
+        return
+    if probe_mode == "RAISES_EXPECTED_ERROR":
+        expected = _text(raw.get("expected_error"), "VALIDATOR_EXPECTED_ERROR_MISSING:" + binding_id)
+        try:
+            function({})
+        except Exception as exc:
+            if expected not in str(exc):
+                raise PreflightError(
+                    "VALIDATOR_PROBE_WRONG_ERROR:" + binding_id + ":" + type(exc).__name__
+                ) from exc
+            return
+        raise PreflightError("VALIDATOR_PROBE_DID_NOT_FAIL:" + binding_id)
+    raise PreflightError("VALIDATOR_PROBE_MODE_INVALID:" + binding_id + ":" + probe_mode)
 
 
 def validate_manifest(repo_root: Path, manifest: Any) -> dict[str, Any]:
@@ -111,13 +259,22 @@ def validate_manifest(repo_root: Path, manifest: Any) -> dict[str, Any]:
     if len(set(validators)) != len(validators):
         raise PreflightError("VALIDATOR_DUPLICATE")
 
+    manifest_schema_payload: dict[str, Any] | None = None
+    manifest_schema_count = 0
     for index, raw in enumerate(_list(manifest.get("schemas"), "SCHEMAS_INVALID")):
         if not isinstance(raw, dict):
             raise PreflightError(f"SCHEMA_{index}_NOT_OBJECT")
         _validate_run_binding(raw, run_scope, f"SCHEMA_{index}")
         path = _require_file(repo_root, raw.get("path"), f"SCHEMA_{index}_PATH_MISSING")
-        _validate_schema_file(path)
+        schema_payload = _load_schema(path)
+        role = _text(raw.get("schema_role"), f"SCHEMA_{index}_ROLE_MISSING")
+        if role == "PREFLIGHT_MANIFEST":
+            manifest_schema_count += 1
+            manifest_schema_payload = schema_payload
         checked_paths.add(str(path.relative_to(repo_root.resolve())))
+    if manifest_schema_count != 1 or manifest_schema_payload is None:
+        raise PreflightError("PREFLIGHT_MANIFEST_SCHEMA_BINDING_INVALID")
+    _apply_json_schema(manifest, manifest_schema_payload)
 
     authority_types: set[str] = set()
     for index, raw in enumerate(_list(manifest.get("authority_sources"), "AUTHORITY_SOURCES_INVALID")):
@@ -144,6 +301,7 @@ def validate_manifest(repo_root: Path, manifest: Any) -> dict[str, Any]:
             raise PreflightError("BINDING_DUPLICATE:" + binding_id)
         binding_ids.add(binding_id)
         path = _require_file(repo_root, raw.get("target_ref"), f"BINDING_{index}_TARGET_MISSING")
+        _execute_validator_probe(path, raw, binding_id)
         checked_paths.add(str(path.relative_to(repo_root.resolve())))
     required_binding_ids = {"PROFILE_EXECUTION_VALIDATOR", "SEMANTIC_MANIFEST_VALIDATOR"}
     missing_bindings = required_binding_ids - binding_ids
@@ -171,14 +329,13 @@ def validate_manifest(repo_root: Path, manifest: Any) -> dict[str, Any]:
         preflight_marker = _text(raw.get("preflight_marker"), f"WORKFLOW_GUARD_{index}_PREFLIGHT_MARKER_MISSING")
         heavy_markers = _list(raw.get("heavy_markers"), f"WORKFLOW_GUARD_{index}_HEAVY_MARKERS_INVALID")
         segment = _job_segment(workflow_path.read_text(encoding="utf-8"), job_name)
-        preflight_pos = segment.find(preflight_marker)
-        if preflight_pos < 0:
-            raise PreflightError("PREFLIGHT_NOT_IN_JOB:" + job_name)
+        preflight_pos = _validate_executable_preflight(segment, job_name, preflight_marker)
         for heavy in heavy_markers:
             heavy_text = _text(heavy, f"WORKFLOW_GUARD_{index}_HEAVY_MARKER_INVALID")
-            heavy_pos = segment.find(heavy_text)
-            if heavy_pos < 0:
-                raise PreflightError("HEAVY_STAGE_MARKER_MISSING:" + job_name + ":" + heavy_text)
+            try:
+                heavy_pos, _ = _named_step(segment, heavy_text)
+            except PreflightError as exc:
+                raise PreflightError("HEAVY_STAGE_STEP_MISSING:" + job_name + ":" + heavy_text) from exc
             if preflight_pos > heavy_pos:
                 raise PreflightError("PREFLIGHT_AFTER_HEAVY_STAGE:" + job_name + ":" + heavy_text)
 
@@ -187,6 +344,8 @@ def validate_manifest(repo_root: Path, manifest: Any) -> dict[str, Any]:
         "run_scope": run_scope,
         "checked_paths": sorted(checked_paths),
         "workflow_guards": len(manifest["workflow_guards"]),
+        "manifest_schema_applied": True,
+        "validator_bindings_executed": len(manifest["bindings"]),
     }
 
 
