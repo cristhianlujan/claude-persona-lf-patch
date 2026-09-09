@@ -58,7 +58,7 @@ P0_EXACT_HEAD_EXTENSION_PATHS = frozenset({RUNTIME_PLATFORM_CONFIG_PATH, *P0_EXA
 
 P0_CANONICAL_HUMAN_REVIEW_BLOBS = {
     "supabase/functions/lf-p0-human-review-v42-materialize-v1/index.ts": "9fdeb7dbd331a12e61d67c1cac386fb004c2e974",
-    "supabase/functions/lf-p0-human-review-web-v1/index.ts": "bf1e0ac69a2c171e28bf89df80f97bd63b95222",
+    "supabase/functions/lf-p0-human-review-web-v1/index.ts": "bf1e0ac69a2c171e28bf89df80f97ebd63b95222",
 }
 P0_CANONICAL_HUMAN_REVIEW_EXTENSION_PATHS = frozenset(P0_CANONICAL_HUMAN_REVIEW_BLOBS)
 
