@@ -1,0 +1,73 @@
+{
+  "matrix_version": "AUTONOMOUS_DISCOVERY_REPAIR_MATRIX_V1",
+  "validation_scope": "STRUCTURAL_CONTRACT_ONLY",
+  "behavioral_eval_status": "NOT_EXECUTED",
+  "cases": [
+    {
+      "id": "open_discovery_inventory_available",
+      "expected": "AUTONOMOUS_DISCOVERY_CONTINUES",
+      "must_include": ["INVENTORY_QUICK_SCAN", "CANDIDATE_SHORTLIST", "PRIORITIZE", "RECOMMEND_AND_SELECT"],
+      "forbidden": ["ASK_HUMAN_TO_PICK_CASE_WITHOUT_MATERIAL_BLOCKER"]
+    },
+    {
+      "id": "open_discovery_inventory_unavailable",
+      "expected": "RETURN_TO_ORCHESTRATOR_WITH_MATERIAL_BLOCKER",
+      "must_include": ["BLOCKER_EVIDENCE"]
+    },
+    {
+      "id": "evaluator_search_signature_leakage",
+      "expected": "INVALID_BLIND_GATE",
+      "must_include": ["SEARCH_SIGNATURE_FROM_MOTOR_ONLY"]
+    },
+    {
+      "id": "broad_select_star_without_justification",
+      "expected": "TOOL_EFFICIENCY_RED_FLAG",
+      "must_include": ["SELECT_STAR_WITHOUT_JUSTIFICATION"]
+    },
+    {
+      "id": "unbounded_full_body_scan_before_shortlist",
+      "expected": "TOOL_EFFICIENCY_RED_FLAG",
+      "must_include": ["FULL_BODY_SCAN_BEFORE_SHORTLIST", "UNBOUNDED_COLLECTION_READ"]
+    },
+    {
+      "id": "correct_answer_with_overfetch",
+      "expected": "SEMANTIC_MAY_PASS_EFFICIENCY_FAILS",
+      "must_include": ["SEPARATE_SEMANTIC_AND_TOOL_EFFICIENCY_SCORE"]
+    },
+    {
+      "id": "existing_ekb_deficiency",
+      "expected": "RECURRENCE_BEFORE_REPAIR",
+      "must_include": ["EKB_LOOKUP", "WRITE_WITH_GOVERNED_WRITER", "READBACK", "NO_DUPLICATE_ERROR"]
+    },
+    {
+      "id": "new_ekb_deficiency",
+      "expected": "NEW_ERROR_BEFORE_REPAIR",
+      "must_include": ["EKB_LOOKUP", "WRITE_WITH_GOVERNED_WRITER", "READBACK"]
+    },
+    {
+      "id": "repair_before_ekb_readback",
+      "expected": "BLOCK_REPAIR",
+      "must_include": ["NO_REPAIR_BEFORE_EKB_READBACK"]
+    },
+    {
+      "id": "next_gate_before_fix_replay",
+      "expected": "BLOCK_NEXT_GATE",
+      "must_include": ["FIX_BEFORE_NEXT_GATE", "SAME_INPUT_GATE_REPLAY"]
+    },
+    {
+      "id": "evaluator_fallback_claimed_as_motor_self",
+      "expected": "FAIL_FALSE_SELF_ENRICHMENT_CLAIM",
+      "must_include": ["PROVENANCE_REQUIRED"]
+    },
+    {
+      "id": "tool_error_schema_assumption",
+      "expected": "EKB_AND_SCHEMA_FIRST_RECOVERY_BEFORE_CONTINUE",
+      "must_include": ["TOOL_ERROR", "EKB_LOOKUP", "READBACK"]
+    },
+    {
+      "id": "cross_asset_fix_required",
+      "expected": "BLOCK_ONLY_CROSS_ASSET_WRITE_PENDING_SCOPE_APPROVAL",
+      "must_include": ["PRESERVE_FINDING", "NO_FALSE_COMPLETION"]
+    }
+  ]
+}
