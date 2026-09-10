@@ -3,10 +3,6 @@
   "claim_ceiling": "EXACT_GATE_F_RUNTIME_EVIDENCE_NOT_GOLDEN",
   "execution_path": "DEPLOYED_HTTP_QUEUE_EXECUTE",
   "gate": "F_PROFILE_EXECUTION",
-  "job": {
-    "job_id": "71e129c7-18b7-48ce-8680-329637e45973",
-    "status": "COMPLETED"
-  },
   "outputs": {
     "composer_payload_sha256": "ec3779edd20ef37f90b43bda573e3e2a52154b129e9d35cff82e81e7542ebcf9",
     "deterministic_acceptance": {
@@ -17,4 +13,73 @@
       "visual_hierarchy": true
     },
     "materialization_mode": "UI_PRODUCTION_DETERMINISTIC_PROJECTION_V1",
-    "materialized_raw_output": "{\"composer_payload\":{\"component_tree\":[{\"allowed_variants\":[\"default\",\"header_search\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"text\",\"text\",\"text\"],\"component_id\":\"header_search\",\"component_type\":\"input\",\"content\":{\"binding\":\"USER_REQUIREMENT\"},\"role\":\"Present governed header search.\",\"spacing\":\"regular_spacing\",\"state\":\"header_search\",\"typography\":\"regular_spacing\",\"visual_priority\":\"LOW\",\"zone_id\":\"categories\"},{\"allowed_variants\":[\"default\",\"featured_service\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"text\",\"text\",\"text\"],\"component_id\":\"category_navigation\",\"component_type\":\"input\",\"content\":{\"items\":\"DATA_BOUND\"},\"role\":\"Present governed category navigation.\",\"spacing\":\"regular_spacing\",\"state\":\"featured_service\",\"typography\":\"regular_spacing\",\"visual_priority\":\"LOW\",\"zone_id\":\"featured_services\"},{\"allowed_variants\":[\"default\",\"service_title\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"text\",\"text\",\"text\"],\"component_id\":\"featured_services\",\"component_type\":\"input\",\"content\":{\"items\":\"DATA_BOUND\"},\"role\":\"Present governed featured services.\",\"spacing\":\"regular_spacing\",\"state\":\"service_title\",\"typography\":\"regular_spacing\",\"visual_priority\":\"LOW\",\"zone_id\":\"service_cards\"},{\"allowed_variants\":[\"default\",\"service_price\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"text\",\"text\",\"text\"],\"component_id\":\"service_cards\",\"component_type\":\"input\",\"content\":{\"items\":\"DATA_BOUND\"},\"role\":\"Present governed service cards.\",\"spacing\":\"regular_spacing\",\"state\":\"service_price\",\"typography\":\"regular_spacing\",\"visual_priority\":\"LOW\",\"zone_id\":\"service_cards\"},{\"allowed_variants\":[\"default\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"text\",\"text\",\"text\"],\"component_id\":\"service_card_template\",\"component_type\":\"input\",\"content\":{\"fields\":[\"title\",\"provider\",\"price\",\"call_to_action\"],\"values\":\"DATA_BOUND\"},\"role\":\"Present governed service card template.\",\"spacing\":\"regular_spacing\",\"state\":\"default\",\"typography\":\"regular_spacing\",\"visual_priority\":\"LOW\",\"zone_id\":\"service_cards\"},{\"allowed_variants\":[\"default\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"text\",\"text\",\"text\"],\"component_id\":\"service_title\",\"component_type\":\"input\",\"content\":{\"value\":\"DATA_BOUND:title\"},\"role\":\"Present governed service title.\",\"spacing\":\"regular_spacing\",\"state\":\"default\",\"typography\":\"regular_spacing\",\"visual_priority\":\"LOW\",\"zone_id\":\"service_cards\"},{\"allowed_variants\":[\"default\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"text\",\"text\",\"text\"],\"component_id\":\"service_provider\",\"component_type\":\"input\",\"content\":{\"value\":\"DATA_BOUND:provider\"},\"role\":\"Present governed service provider.\",\"spacing\":\"regular_spacing\",\"state\":\"default\",\"typography\":\"regular_spacing\",\"visual_priority\":\"LOW\",\"zone_id\":\"service_cards\"},{\"allowed_variants\":[\"default\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"text\",\"text\",\"text\"],\"component_id\":\"service_price\",\"component_type\":\"input\",\"content\":{\"format\":\"SOURCE_DEFINED\",\"value\":\"DATA_BOUND:price\"},\"role\":\"Present governed service price.\",\"spacing\":\"regular_spacing\",\"state\":\"default\",\"typography\":\"regular_spacing\",\"visual_priority\":\"LOW\",\"zone_id\":\"service_cards\"},{\"allowed_variants\":[\"default\",\"service_title\"],\"blocked_variants\":[\"invented_data\",\"invented_route\"],\"color_tokens\":[\"text\",\"text\",\"text\"],\"component_id\":\"service_cta\",\"component_type\":\"input\",\"content\":{\"destination\":\"UNRESOLVED_UNTIL_SOURCE\",\"label\":\"DATA_BOUND:call_to_action\"},\"role\":\"Present governed service cta.\",\"spacing\":\"regular_spacing\",\"state\":\"service_title\",\"typography\":\"regular_spacing\",\"visual_priority\":\"LOW\",\"zone_id\":\"service_cards\"}],\"density_rules\":[\"dense\",\"dense\",\"dense\"],\"layout_grid\":{\"desktop\":\"desktop\",\"flow\":[\"header_search\",\"category_navigation\",\"featured_services\",\"service_cards\",\"service_card_template\",\"service_title\",\"service_provider\",\"service_price\",\"service_cta\"],\"mobile\":\"mobile\"},\"risk_controls\":[\"Preserve service_cta.destination as UNRESOLVED_UNTIL_SOURCE; do not invent or strengthen its value.\",\"Preserve service_price.format as SOURCE_DEFINED; do not invent or strengthen its value.\",\"Preserve service_cta.label as DATA_BOUND:call_to_action; do not invent or strengthen its value.\",\"Preserve service_price.value as DATA_BOUND:price; do not invent or strengthen its value.\"],\"screen_definition\":{\"design_intent\":[\"clear\",\"professional\",\"easy_to_navigate\"],\"implementation_readiness\":\"STRUCTURED_SPEC_READY_FOR_NEXT_AGENT\",\"purpose\":\"Especificar pantalla para marketplace de servicios\",\"required_sections\":[\"header\",\"categories\",\"featured_services\",\"service_cards\"],\"screen_type\":\"GENERIC_SERVICE_MARKETPLACE\",\"task_mode\":\"CREATE_NEW\"},\"spacing_typography\":{\"precision_mode\":\"RELATIVE_GUIDANCE\",\"spacing\":\"compact=regular_spacing;regular=regular_spacing\",\"typography\":\"body=regular_spacing;heading=regular_spacing\"},\"state_map\":{\"category_navigation\":{\"featured_service\":\"service_cards\"},\"featured_services\":{\"service_title\":\"service_provider\"},\"header_search\":{\"header_search\":\"category_navigation\"},\"service_cards\":{\"service_price\":\"service_cta\"},\"service_cta\":{\"service_title\":\"service_provider\"}},\"token_map\":{\"action\":[\"text\"],\"border\":[\"text\"],\"precision_mode\":\"SEMANTIC_ROLE_ONLY_NO_CANONICAL_COLOR_VALUES_INVENTED\",\"surface\":[\"text\"],\"text\":[\"text\"]},\"visual_hierarchy\":[{\"child_ids\":[\"category_navigation\"],\"parent_id\":\"screen\"},{\"child_ids\":[\"featured_services\"],\"parent_id\":\"category_navigation\"},{\"child_ids\":[\"service_cards\"],\"parent_id\":\"featured_services\"}]},\"deliverable_created\":{\"component_tree\":[{\"allowed_variants\":[\"default\",\"header_search\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"text\",\"text\",\"text\"],\"component_id\":\"header_search\",\"component_type\":\"input\",\"content\":{\"binding\":\"USER_REQUIREMENT\"},\"role\":\"Present governed header search.\",\"spacing\":\"regular_spacing\",\"state\":\"header_search\",\"typography\":\"regular_spacing\",\"visual_priority\":\"LOW\",\"zone_id\":\"categories\"},{\"allowed_variants\":[\"default\",\"featured_service\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"text\",\"text\",\"text\"],\"component_id\":\"category_navigation\",\"component_type\":\"input\",\"content\":{\"items\":\"DATA_BOUND\"},\"role\":\"Present governed category navigation.\",\"spacing\":\"regular_spacing\",\"state\":\"featured_service\",\"typography\":\"regular_spacing\",\"visual_priority\":\"LOW\",\"zone_id\":\"featured_services\"},{\"allowed_variants\":[\"default\",\"service_title\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"text\",\"text\",\"text\"],\"component_id\":\"featured_services\",\"component_type\":\"input\",\"content\":{\"items\":\"DATA_BOUND\"},\"role\":\"Present governed featured services.\",\"spacing\":\"regular_spacing\",\"state\":\"service_title\",\"typography\":\"regular_spacing\",\"visual_priority\":\"LOW\",\"zone_id\":\"service_cards\"},{\"allowed_variants\":[\"default\",\"service_price\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"text\",\"text\",\"text\"],\"component_id\":\"service_cards\",\"component_type\":\"input\",\"content\":{\"items\":\"DATA_BOUND\"},\"role\":\"Present governed service cards.\",\"spacing\":\"regular_spacing\",\"state\":\"service_price\",\"typography\":\"regular_spacing\",\"visual_priority\":\"LOW\",\"zone_id\":\"service_cards\"},{\"allowed_variants\":[\"default\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"text\",\"text\",\"text\"],\"component_id\":\"service_card_template\",\"component_type\":\"input\",\"content\":{\"fields\":[\"title\",\"provider\",\"price\",\"call_to_action\"],\"values\":\"DATA_BOUND\"},\"role\":\"Present governed service card template.\",\"spacing\":\"regular_spacing\",\"state\":\"default\",\"typography\":\"regular_spacing\",\"visual_priority\":\"LOW\",\"zone_id\":\"service_cards\"},{\"allowed_variants\":[\"default\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"text\",\"text\",\"text\"],\"component_id\":\"service_title\",\"component_type\":\"input\",\"content\":{\"value\":\"DATA_BOUND:title\"},\"role\":\"Present governed service title.\",\"spacing\":\"regular_spacing\",\"state\":\"default\",\"typography\":\"regular_spacing\",\"visual_priority\":\"LOW\",\"zone_id\":\"service_cards\"},{\"allowed_variants\":[\"default\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"text\",\"text\",\"text\"],\"component_id\":\"service_provider\",\"component_type\":\"input\",\"content\":{\"value\":\"DATA_BOUN
+    "materialized_raw_output_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_exact_materialized_output.json",
+    "materialized_raw_output_sha256": "9f1c3c8bb90e6fc279998273d59d043273791c2e5b7793307db4be9d3e0ab5c2",
+    "model_raw_output_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_exact_model_output.json",
+    "model_raw_output_sha256": "8270b0ab381fed8ec3060c73bfe3cdb6ba645e184a64daa90eda22f7f75f8d1b",
+    "semantic_transport": "UICT2"
+  },
+  "performance": {
+    "completion_tokens": 339,
+    "model_generation_budget_ms": 120000.0,
+    "model_generation_elapsed_ms": 25999.708,
+    "profile_budget_ms": 120000.0,
+    "profile_elapsed_ms": 31318.137,
+    "prompt_elapsed_ms": 5277.238,
+    "prompt_tokens": 1518,
+    "runtime_total_ms": 31318.182,
+    "status": "PASS"
+  },
+  "project_id": "S26",
+  "receipt": {
+    "raw_output_captured": true,
+    "receipt_sha256": "62fc1d26a3028056d36ed4f9130a98abfa5cb4f805ccdf614afd6414a1dcd7d4",
+    "receipt_type": "PROFILE_EXECUTION_RECEIPT_V1",
+    "runtime_attestation_source_sha": "d5f27f129464163d915b08a26be08ca117385482"
+  },
+  "request": {
+    "gate_f_input_sha256": "e3f841d4a973b7383d44aef7bd6a276634d97ddf44c43c3e256d57999d1a58d9",
+    "input_sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1",
+    "outer_request_sha256": "1d016d17d0b7aca3240bb86a082c9e4406f6dfefa4b9d65cc6e8cb60d70c8f48",
+    "profile_source_sha256": "b65ab7beb8701ca95d1d9fdd51a82bd48f5382d87167cd0a148ae9fe7965f658",
+    "request_id": "S26-HP-001-F-EXACT-20260910T184414Z",
+    "runtime_request_sha256": "5d723e93f03dd6a5783240fd41c6b8bdda86608b196ec360a0930173b859e2e9"
+  },
+  "run_id": "S26-HP-001",
+  "runtime": {
+    "attestation_evidence_sha256": "fea3e8710f58248aaa70fe0b155f9919caa590f16fde4d2f3dc09c34b210fd42",
+    "attestation_verified": true,
+    "endpoint_scope": "LOOPBACK_ONLY",
+    "generation_schema_policy": "UI_PRODUCTION_SEMANTIC_TRANSPORT_UICT2",
+    "generation_schema_sha256": "8607064720af81f2f0d4739049b84d03871bf472cebadaa187c3a4b2192466ed",
+    "model_id": "/opt/profile-runtime-benchmark/model/model.gguf",
+    "provider": "local_llama_cpp_hetzner_persistent",
+    "runtime_version": "hetzner-profile-runtime-api/0.1.5-s26-explicit-schema-256",
+    "source_sha": "d5f27f129464163d915b08a26be08ca117385482",
+    "structured_output_schema_sha256": "7f10c952796b045b99069b446f8dd7582d641d3514c25253fd27782045547112"
+  },
+  "safety": {
+    "model_weight_acquisition_performed": false,
+    "paid_fallback_performed": false,
+    "production_effect": false,
+    "resident_runtime_reused": true
+  },
+  "schema": "S26_HP001_GATE_F_EXACT_RUNTIME_EVIDENCE_V2",
+  "validation": {
+    "canonical_ui_validator": true,
+    "composer_boundary": true,
+    "depth": "PASS",
+    "depth_component_count": 9,
+    "depth_hierarchy_edges": 3,
+    "depth_risk_control_count": 4,
+    "depth_state_map_coverage_ratio": 1.0,
+    "depth_variant_guard_coverage_ratio": 1.0,
+    "profile_contract": "PASS",
+    "qdp_contract_sha256": "70a5e984b547b3852fa8327701eadf03b7934cf54659aa2f9bdce045c75714d1",
+    "quality": "PASS",
+    "quality_requirement_coverage_ratio": 1.0,
+    "quality_source_bound_integrity_ratio": 1.0,
+    "runtime_completion": "PASS",
+    "semantic_utility": "PASS"
+  }
+}

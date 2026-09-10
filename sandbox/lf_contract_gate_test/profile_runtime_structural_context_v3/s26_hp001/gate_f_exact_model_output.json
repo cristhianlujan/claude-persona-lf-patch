@@ -1,0 +1,86 @@
+{
+  "d": {
+    "u": "Especificar pantalla para marketplace de servicios",
+    "z": [
+      1,
+      2,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+    ],
+    "t": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "p": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "h": [
+      1,
+      2,
+      3
+    ],
+    "m": [
+      [
+        "header_search",
+        "category_navigation"
+      ],
+      [
+        "featured_service",
+        "service_cards"
+      ],
+      [
+        "service_title",
+        "service_provider"
+      ],
+      [
+        "service_price",
+        "service_cta"
+      ],
+      [
+        "service_title",
+        "service_provider"
+      ]
+    ],
+    "l": [
+      "desktop",
+      "mobile"
+    ],
+    "k": [
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "a": [
+      "regular_spacing",
+      "regular_spacing",
+      "regular_spacing",
+      "regular_spacing"
+    ],
+    "y": [
+      "dense",
+      "dense",
+      "dense"
+    ]
+  }
+}
