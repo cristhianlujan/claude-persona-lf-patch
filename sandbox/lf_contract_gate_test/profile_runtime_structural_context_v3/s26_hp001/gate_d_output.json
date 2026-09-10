@@ -6,7 +6,17 @@
   "upstream": {
     "source_gate": "C_CARD_SELECTION",
     "source_output_sha256": "674fc72f02eeb055abd721b077acc2ad9eb7d71919a8699e3c3c093075f62cbb",
-    "input_sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1"
+    "input_sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1",
+    "committed_readback_binding": {
+      "schema": "S26_POST_COMMIT_READBACK_BINDING_V1",
+      "mode": "POST_COMMIT_PROVIDER_READBACK_BEFORE_DOWNSTREAM_BINDING",
+      "provider": "GITHUB",
+      "source_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_c_output.json",
+      "source_commit_sha": "3464523690a1f4a92d7499106733d0f3159a046d",
+      "source_git_blob_sha": "7ea59f8d3fdb33293bdb61bd74b9b1d4026ffd59",
+      "source_sha256": "674fc72f02eeb055abd721b077acc2ad9eb7d71919a8699e3c3c093075f62cbb",
+      "same_commit_source_and_binding_forbidden": true
+    }
   },
   "governance_preflight": {
     "source": "SUPABASE_CONTROL_PLANE",
