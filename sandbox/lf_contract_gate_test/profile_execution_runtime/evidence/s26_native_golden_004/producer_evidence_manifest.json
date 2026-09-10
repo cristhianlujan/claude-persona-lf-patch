@@ -1,0 +1,98 @@
+{
+  "schema": "S26_NATIVE_GOLDEN_D_PRODUCER_EVIDENCE_MANIFEST_V1",
+  "execution_id": "EXEC-S26-N08D-GPT-NATIVE-GOLDEN-D-001",
+  "producer_run_id": "CHATGPT-NATIVE-S26-N08D-GOLDEN-D-001",
+  "run_revision": "D",
+  "status": "PASS_PRE_INDEPENDENT_REVIEW",
+  "materialization_commit_sha": "563f0b2a93d577884eb5dab689b98f9fc732baa7",
+  "evaluated_exact_head_sha": "1c7868781b5d6acdface4a1e371ee02bc6bb74bf",
+  "focal_ci": {
+    "workflow": "Profile Driven Screen Generation Gate",
+    "run_id": 34285068100,
+    "result": "SUCCESS"
+  },
+  "exact_head_ci": {
+    "profile_driven_screen_generation": {"run_id": 34285068100, "result": "PASS"},
+    "story_agent_evidence_verifier": {"run_id": 34285068041, "result": "PASS"},
+    "validate_lf_packs": {"run_id": 34285068059, "result": "PASS"},
+    "bootstrap_reproducibility": {"run_id": 34285068026, "result": "PASS"},
+    "lf_contract_check": {
+      "run_id": 34285068046,
+      "result": "FAIL_EXTERNAL_CONTROL_PLANE",
+      "first_bad_hop": "Verify hosted Supabase Data API excludes net schema",
+      "literal_error": "FAIL_SUPABASE_POSTGREST_CONFIG_READBACK: HTTPError",
+      "classification": "EXTERNAL_SUPABASE_CONTROL_PLANE_NOT_CAUSAL_TO_RUN_D_PROFILE_QUALITY"
+    }
+  },
+  "artifact": {
+    "id": 10079120706,
+    "name": "s26-native-golden-run-d-producer-evidence",
+    "zip_sha256": "9598acdafc304e927cfd26a45192391026585e370f2684f665c2ea5530db30be",
+    "size_bytes": 15716,
+    "expires_at": "2026-10-08T22:16:51Z",
+    "files": {
+      "preflight_binding.json": "abf19ea8e92d1d3dc329aaf20d54598479c0b959fdecc891242babfbf6f6e855",
+      "governed_context_receipt.json": "ed89bc8d27b02088dc5d8fa879299cca1bca5a4595cbcf78fe3afea3423b836d",
+      "obligation_manifest.json": "58dd8439766dbdd33c40b7ae94a0c5acb07ff6d30cb5b0cb3264ef2cdf2d5b17",
+      "evaluation.json": "fbef355ec5bc47c30ac42a6f514026936f400c231a291c845f6a6265cc0030ad",
+      "execution_receipt.json": "004f1d954c14da56cffc46fbd64dd1519c24b5774374b0153bf143183d15507d",
+      "semantic_check_bundle.json": "7d3d3edfbd202a99b1bfb094dfb6cb4821066c9f3b87493bad892f1a28915c2d"
+    }
+  },
+  "canonical_hashes": {
+    "raw_output_sha256": "0c579ada86faef93581a34992626bc6a619d6113ef78531e4824ef6930a4cad0",
+    "artifact_byte_sha256": "1367bf18499ad4cf998ece8b0e9271b936edd4e31fdb5287545b9bd6e9c7f0c3",
+    "execution_receipt_sha256": "9b1b7981272c79f743c6e35d6a9577573005d599ab1f3f78e8bc896f1839f0a8",
+    "semantic_check_bundle_sha256": "8026fd1fc40a16d8390cb079f30f9ff6dc0c5139eb6fa03663f9acbf4f0d7f2b",
+    "governed_context_receipt_sha256": "969ecf0eb73b223f36cb1e34a03f288d4b481fc2770f3a3095be8af929c7d729",
+    "input_governance_snapshot_sha256": "795584bfd0f4cb747aee0fb1ff257e814b442af944935f2739921119f8e64990",
+    "execution_contract_sha256": "5d59de8950e3e1a7b11db7f598630453e85d4a50bc252b359f875f97eb522024",
+    "obligation_manifest_sha256": "e9f26e219868152c798fed0820d13d93441bcfce842318621f41c3c42b68a5f4",
+    "context_fingerprint": "3c2eecb9e0b1f4a265a401550079d5fc53fef7e79234f642d92d09e4fbc2a4c7",
+    "profile_source_sha256": "978aadc31103bd7c8d2aa709cd1b229934dc962d80709464ec706168878db4cf",
+    "card_source_sha256": "565b0091bc95844c82d69dbae107078c549f84a4d652ef3ded3ec69d8a4d070e",
+    "adapter_source_sha256": "ab409f21ebcf127da383ac12a345ad9d4abf72f139c53e84fc4f077f989ca855",
+    "adapter_binding_snapshot_sha256": "f807a433b88564dcc1588feefefbe2509c6c523d78c8bdfa795d8b421ce5cbce"
+  },
+  "producer_gates": {
+    "ui_architect_validator": "PASS",
+    "depth_score": 22,
+    "depth_minimum": 20,
+    "depth_status": "CANDIDATE_PASS_PRE_INDEPENDENT_REVIEW",
+    "criterion_evidence_count": 5,
+    "latency_observable": {
+      "status": "PASS",
+      "metric": "E2E_PERSISTENCE_WINDOW_MS",
+      "value_ms": 359876.65,
+      "claim_scope": "OBSERVABLE_E2E_PERSISTENCE_UPPER_BOUND_NOT_MODEL_INFERENCE_LATENCY"
+    },
+    "token_usage": {
+      "status": "NOT_OBSERVED",
+      "estimated": false,
+      "policy": "REQUIRED_IF_OBSERVABLE"
+    },
+    "traceability": "PASS",
+    "semantic_checks_pending": ["OVERFLOW-DIRECTION", "PAGINATION-DIRECTION"]
+  },
+  "independent_quality": {
+    "status": "NOT_EXECUTED",
+    "required_mode": "INDEPENDENT_CHAT_CONTEXT",
+    "required_profile": "PERFIL-QUALITY-PACK",
+    "strict_pass_required": "PASS_TO_COMPOSER"
+  },
+  "safety": {
+    "model_weights_downloaded": false,
+    "paid_inference_used": false,
+    "production_modified": false,
+    "main_modified": false,
+    "merge_executed": false,
+    "promotion_authorized": false,
+    "golden_declared": false
+  },
+  "replay": {
+    "command": "python3 sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_s26_native_golden_d.py",
+    "rule": "Derived producer evidence is reproducible from the frozen materialization commit and current governed source; no prior Run C verdict is authority.",
+    "historical_run_c_requalification_forbidden": true
+  },
+  "next_gate": "INDEPENDENT_CHAT_CONTEXT"
+}

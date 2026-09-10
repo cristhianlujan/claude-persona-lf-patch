@@ -1,85 +1,54 @@
 {
-  "receipt_version": "v0.2",
+  "receipt_version": "v0.3",
+  "receipt_mode": "REPAIR_PREWRITE",
   "lane": "S30-A",
   "owner": "S30",
-  "base_main_sha": "f1ee63d3fd48ab7869e989dc6b4265823740c9e9",
-  "intended_material_action": "GIT_WRITE",
+  "base_main_sha": "aeb1e3351b8677520e1b8dc104a5adb01ad0abb1",
+  "intended_material_action": "SELF_GOVERNANCE_GATE_REPAIR",
+  "owner_authorized_repair": true,
+  "repair_reason": "Cross-lane audit proved the shared validate-lf-packs workflow path caused S30 ci-auto to classify unrelated S26 step additions as S30 bounded-repair files. Scope freshness to the S30 named step while keeping the S30 self-test unconditional and fail-closed when the S30 block itself changes.",
+  "repair_target_ekb_codes": ["DB-001", "GOV-010", "AUD-025"],
   "sequence_resolution": {
-    "ROUTER": {"status": "PROVEN", "evidence": "ACT-0001:v0.3 resolved; S28 lane isolation merged in base main f1ee63d3"},
-    "EKB_APPLICABLE": {"status": "PROVEN", "evidence": "DB-001 recurrence persisted; frequency readback 227"},
-    "DATA_ACCESS_BINDINGS": {"status": "NOT_REQUIRED_WITH_REASON", "evidence": "S30-A does not implement S30-B typed readers"},
-    "SCHEMA_CONTRACT": {"status": "PROVEN", "evidence": "relation columns, constraints and dependent SQL function signatures resolved before dependent SQL"},
-    "OPERATION_CONTRACTS": {"status": "PROVEN", "evidence": "ACTUALIZACION_ESTRATEGIA_LF topology readback: 14 required steps, judges and policy bindings"},
-    "ALL_INTENDED_STEPS": {"status": "PROVEN", "evidence": "freeze base -> rematerialize -> CI exact-head -> merge -> governed strategy reconciliation -> independent readback"},
-    "JUDGES_AND_RESULT_VOCABULARY": {"status": "PROVEN", "evidence": "S30_SELF_GOVERNANCE_GATE v0.2 validator and fixed result vocabulary"},
-    "DEPENDENCIES_AND_IMPORT_CLOSURE": {"status": "PROVEN", "evidence": "Python 3.11 standard library only"},
-    "CI_PATHS_AND_RUNNER_WIRING": {"status": "PROVEN", "evidence": "Validate LF Packs pull_request/main and push main/lf/** on ubuntu-latest"},
-    "PERMISSIONS_SECRETS_AND_READBACK": {"status": "PROVEN", "evidence": "contents read; no validator secret dependency; GitHub/Supabase readback available"},
-    "EVIDENCE_PROVIDER_AND_RESOLVER": {"status": "PROVEN", "evidence": "GitHub exact-head workflow/job readback plus Supabase canonical readback"},
-    "EXPECTED_OUTPUT_CONTRACT": {"status": "PROVEN", "evidence": "consumer_interface frozen in v0.2 contract"}
+    "ROUTER": {"status": "PROVEN", "evidence": "S30 dependency is already integrated in main; this repair is isolated from S26 runtime/product semantics."},
+    "EKB_APPLICABLE": {"status": "PROVEN", "loaded_codes": ["DB-001", "GOV-010", "AUD-025"], "evidence": "Schema-first live EKB readback before repair: DB-001 active frequency 228, GOV-010 active frequency 3, AUD-025 active frequency 4."},
+    "DATA_ACCESS_BINDINGS": {"status": "PROVEN", "mode": "SCHEMA_CONTRACT_FALLBACK", "evidence": "No dependent SQL is executed by the workflow repair; schema-first readback was completed before the EKB query."},
+    "SCHEMA_CONTRACT": {"status": "PROVEN", "schema_bindings": [{"object_identity": "public.lf_error_knowledge", "object_type": "VIEW", "resolved_fields": ["codigo", "estado", "severidad", "categoria", "lifecycle_phase", "frecuencia", "source_ref", "ultima_vez", "prevencion", "validacion"], "evidence_ref": "supabase://information_schema.columns#public.lf_error_knowledge"}], "evidence": "Observed relation columns were used; no remembered aliases or invented schema."},
+    "OPERATION_CONTRACTS": {"status": "PROVEN", "evidence": "Existing S30_SELF_GOVERNANCE_GATE v0.3 repair mode and allowed paths are reused; no new operation contract."},
+    "ALL_INTENDED_STEPS": {"status": "PROVEN", "evidence": "Isolated branch -> shared-workflow scope guard -> exact PR CI -> merge only if green -> S26 candidate rebase/readback."},
+    "JUDGES_AND_RESULT_VOCABULARY": {"status": "PROVEN", "evidence": "Existing validator vocabulary and repair mode remain unchanged; only workflow invocation scoping changes."},
+    "DEPENDENCIES_AND_IMPORT_CLOSURE": {"status": "PROVEN", "evidence": "Scope guard uses only Python 3.11 standard library plus git already present on GitHub runner."},
+    "CI_PATHS_AND_RUNNER_WIRING": {"status": "PROVEN", "evidence": "S30 self-test remains unconditional; receipt ci-auto is invoked for S30 contract/judge/receipt changes or a changed S30 named workflow block."},
+    "PERMISSIONS_SECRETS_AND_READBACK": {"status": "PROVEN", "evidence": "contents:read and exact SHA git fetch are sufficient; no secrets or production credentials used."},
+    "EVIDENCE_PROVIDER_AND_RESOLVER": {"status": "PROVEN", "evidence": "GitHub PR event base/head SHAs and Supabase EKB readback are available."},
+    "EXPECTED_OUTPUT_CONTRACT": {"status": "PROVEN", "evidence": "Expected outcomes are RUN for S30-owned change and SKIP only for unrelated shared-workflow edits with an identical S30 step block."}
   },
   "preflight_checks": {
-    "IMPORT_CLOSURE": {"status": "PASS", "evidence": "stdlib-only validator"},
-    "REQUIRED_FILES_EXIST": {"status": "PASS", "evidence": "contract, judge, workflow and canonical sandbox carriers resolved"},
-    "SCHEMA_AND_CONSTRAINTS_RESOLVED": {
-      "status": "PASS",
-      "resolved": ["RELATION_COLUMNS", "CONSTRAINTS", "DEPENDENT_SQL_FUNCTION_SIGNATURES"],
-      "evidence": [
-        "information_schema.columns readback for lf_error_knowledge and operation execution surfaces",
-        "pg_constraint readback before dependent mutations",
-        "pg_proc function-kind/signature resolution before pg_get_functiondef",
-        "jsonb_object_keys(jsonb) observed and used instead of unverified jsonb_object_length"
-      ]
-    },
-    "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED": {"status": "PASS", "evidence": "GitHub branch/file/PR/workflow schemas and Supabase execute_sql schema loaded before writes"},
-    "PERMISSIONS_AND_SECRET_READBACK": {"status": "PASS", "evidence": "no secret dependency for S30-A validator; post-write readback required"},
-    "EVIDENCE_PROVIDER_RESOLVABLE": {"status": "PASS", "evidence": "GitHub and Supabase providers reachable"},
-    "CI_RUNNER_WIRING_CONFIRMED": {"status": "PASS", "evidence": "workflow trigger/order resolved from new base main"},
-    "EXPECTED_OUTPUT_SCHEMA_COMPLETE": {"status": "PASS", "evidence": "result, first_bad_hop, material_work_allowed, failure sets and claim ceiling defined"},
-    "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED": {"status": "PASS", "evidence": "missing preflight, unresolved SQL function signature and text-only EKB negatives fail closed"}
+    "IMPORT_CLOSURE": {"status": "PASS", "evidence": "stdlib-only Python snippet and existing validator."},
+    "REQUIRED_FILES_EXIST": {"status": "PASS", "evidence": "validate-lf-packs.yml, S30 contract, S30 judge and receipt read from main before write."},
+    "SCHEMA_AND_CONSTRAINTS_RESOLVED": {"status": "PASS", "resolved": ["RELATION_COLUMNS", "CONSTRAINTS", "DEPENDENT_SQL_FUNCTION_SIGNATURES"], "bindings": [{"object_identity": "public.lf_error_knowledge", "resolved_fields": ["codigo", "estado", "frecuencia", "ultima_vez", "validacion"], "evidence_ref": "supabase://information_schema.columns#public.lf_error_knowledge"}], "evidence": "No dependent SQL mutation; relation shape verified before readback."},
+    "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED": {"status": "PASS", "evidence": "GitHub update_file/create PR/merge and Supabase execute_sql schemas were loaded before use."},
+    "PERMISSIONS_AND_SECRET_READBACK": {"status": "PASS", "evidence": "No secrets required; GitHub token remains read-only inside Actions."},
+    "EVIDENCE_PROVIDER_RESOLVABLE": {"status": "PASS", "evidence": "GitHub workflow logs and Supabase live EKB are reachable."},
+    "CI_RUNNER_WIRING_CONFIRMED": {"status": "PASS", "evidence": "Validate LF Packs runs before dependency installation and exposes pull_request base/head through GITHUB_EVENT_PATH."},
+    "EXPECTED_OUTPUT_SCHEMA_COMPLETE": {"status": "PASS", "evidence": "Scope decision is RUN or SKIP; missing/mutated S30 block resolves to RUN and existing validator remains fail-closed."},
+    "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED": {"status": "PASS", "evidence": "Missing S30 block, changed S30 block, judge/contract/receipt change all force ci-auto rather than skip."}
   },
   "frontier": {
-    "current_stage": "S30-A_V02_REMATERIALIZED_FROM_F1EE63D3",
-    "next_gate": "EXACT_HEAD_CI_THEN_GOVERNED_STRATEGY_FRONTIER_RECONCILIATION",
-    "blockers": [
-      {
-        "code": "STRATEGY_INSTANCE_UPDATE_ROUTER_CANDIDATE_ONLY",
-        "affected_scope": "SUPABASE_CANONICAL_S30_FRONTIER_RECONCILIATION",
-        "causal_gate": "BOUNDED_ACTUALIZACION_ESTRATEGIA_LF_ACTIVATION_WINDOW",
-        "owner": "S30_STRATEGY_GOVERNANCE",
-        "independent_safe_work": ["GITHUB_EXACT_HEAD_CI", "RECEIPT_READBACK"],
-        "invalidation_condition": "ACTUALIZACION_ESTRATEGIA_LF executes all 14 governed steps, bounded snapshot delta reads back independently, and activation window is demoted"
-      }
-    ],
-    "safe_parallel_work": ["GITHUB_EXACT_HEAD_CI", "RECEIPT_READBACK"]
+    "current_stage": "S30_SHARED_WORKFLOW_SCOPE_REPAIR_FOR_S26_DEPENDENCY",
+    "next_gate": "EXACT_PR_EVENT_CI",
+    "blockers": [{"code": "S30_SHARED_WORKFLOW_FALSE_POSITIVE", "affected_scope": "S26 PRs adding unrelated steps to validate-lf-packs.yml", "causal_gate": "S30_CI_AUTO_SHARED_WORKFLOW_SCOPE", "owner": "S30-A dependency", "independent_safe_work": ["S26 lane inspection", "EKB readback"], "invalidation_condition": "Exact PR CI proves S30-owned change runs ci-auto and a subsequent S26 PR with unchanged S30 block skips only the stale receipt evaluation while retaining self-test."}],
+    "safe_parallel_work": ["S26 lane inspection", "EKB readback"]
   },
-  "hard_guard_candidates": [
-    {
-      "ekb_code": "DB-001",
-      "triggers": ["RECURRENT", "MACHINE_DETECTABLE", "AVOIDABLE_MATERIAL_WORK"],
-      "closure": {
-        "EKB_UPDATED": {"status": "PASS", "evidence": "public.lf_error_knowledge DB-001 frequency 225->227; ultima_vez 2026-09-09T22:00:31.520074Z; validation/evidence tails independently read back"},
-        "DETECTOR_IMPLEMENTED": {"status": "PASS", "evidence": "S30_SELF_GOVERNANCE_GATE v0.2 requires DEPENDENT_SQL_FUNCTION_SIGNATURES"},
-        "NEGATIVE_REGRESSION": {"status": "PASS", "evidence": "run 34409347159 negative_unresolved_sql_function_signature=FAIL_CLOSED_BEFORE_MATERIAL_WORK"},
-        "POSITIVE_REGRESSION": {"status": "PASS", "evidence": "run 34409347159 positive_equivalent=PASS_TO_MATERIAL_WORK"},
-        "EXECUTED_PATH_WIRING_PROVEN": {"status": "PASS", "evidence": "run 34409347159 executed S30 gate before dependency installation"},
-        "READBACK": {"status": "PASS", "evidence": "job 102659865208 showed first_bad_hop DB-001 before heavy steps; DB-001 closure then independently read back at frequency 227"}
-      }
-    }
+  "applicable_ekb": [
+    {"code": "DB-001", "triggers": ["RECURRENT", "MACHINE_DETECTABLE", "AVOIDABLE_MATERIAL_WORK"]},
+    {"code": "GOV-010", "triggers": ["RECURRENT", "AVOIDABLE_MATERIAL_WORK"]},
+    {"code": "AUD-025", "triggers": ["RECURRENT", "MACHINE_DETECTABLE", "AVOIDABLE_MATERIAL_WORK"]}
   ],
-  "safety_readback": {
-    "runtime_changed": false,
-    "production_changed": false,
-    "main_merged": false,
-    "scheduler_changed": false,
-    "s26_mutated": false
-  },
-  "evidence": {
-    "frozen_base_main_sha": "f1ee63d3fd48ab7869e989dc6b4265823740c9e9",
-    "db001_frequency": 227,
-    "s28_pr615_merge_sha": "f1ee63d3fd48ab7869e989dc6b4265823740c9e9",
-    "canonical_snapshot_id": 35,
-    "canonical_contradiction": "metadata.progress=C05 while content_payload.execution_frontier=C04; reconciliation intentionally deferred to governed strategy-update window",
-    "repair_lineage": "PR613 preserved as historical evidence; this candidate is rematerialized from the new official main after PR615"
-  }
+  "hard_guard_candidates": [
+    {"ekb_code": "DB-001", "closure": {"EKB_UPDATED": {"status": "PASS", "evidence": "Existing active DB-001 read back schema-first before this bounded repair."}}},
+    {"ekb_code": "GOV-010", "closure": {"EKB_UPDATED": {"status": "PASS", "evidence": "Existing active GOV-010 consumed before material work."}}},
+    {"ekb_code": "AUD-025", "closure": {"EKB_UPDATED": {"status": "PASS", "evidence": "Existing active AUD-025 consumed; exact event base/head identity remains enforced."}}}
+  ],
+  "safety_readback": {"runtime_changed": false, "production_changed": false, "main_merged": false, "scheduler_changed": false, "s26_mutated": false},
+  "evidence": {"base_main_sha": "aeb1e3351b8677520e1b8dc104a5adb01ad0abb1", "source_failure_run": 34427994092, "source_failure_job": 102717219131, "failure": "bounded repair touched disallowed S26 paths because a shared workflow path was treated as an S30 semantic change"}
 }

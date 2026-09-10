@@ -1,0 +1,77 @@
+{
+  "schema": "S26_RUN_H_PRODUCER_RECEIPT_V1",
+  "run_id": "EXEC-S26-N08H-GPT-NATIVE-GOLDEN-H-001",
+  "review_case_id": "S26-N08H-QUALITY-003",
+  "artifact": {
+    "canonical_sha256": "6b25e323d8505be14b95be711fc01625e71d23295567bd7fd40a7e0e06a926d2",
+    "headers_verified": "10_OF_10_EXACT",
+    "real_horizontal_overflow_acknowledged": true,
+    "current_page_prebound": false,
+    "ui_validator": "PASS",
+    "composer_boundary": "PASS"
+  },
+  "source_visual": {
+    "sha256": "ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+    "bytes": 142727,
+    "width": 1600,
+    "height": 1000
+  },
+  "source_fidelity": {
+    "schema": "LF_SOURCE_FIDELITY_CONTRACT_V1",
+    "contract_sha256": "f8434f9ba26b3edfa2cae547563d1f8448c05fdab1f3cb59d2ed842f7a817e88",
+    "critical_ambiguity": false,
+    "immutable_table_headers": [
+      "Lote",
+      "Nombre",
+      "Archivo",
+      "Tipo",
+      "Cargado por",
+      "Fecha",
+      "Total",
+      "Válidos",
+      "Estado",
+      "Acciones"
+    ]
+  },
+  "card_resolution": {
+    "mode": "GENERIC_SAFE",
+    "card_refs": [],
+    "core_policy_ref": "bundle://ui_architect_skill_full.md",
+    "core_policy_sha256": "b099944839af79cb97eac76f12ecf8bd38c39ea331224ee335ced32491f411c0",
+    "critical_authority_missing": false
+  },
+  "router_evidence": {
+    "ref": "bundle://router_readback.json",
+    "sha256": "35aea62e434b3ed5d8307a12bd611b3d558c48ad59459c67032f30301d3899c8",
+    "route": "PERFIL/PROFILE_EXECUTION",
+    "operation_code": "EJECUCION_PERFIL_LF",
+    "route_status": "ACTIVE",
+    "write_allowed": false
+  },
+  "deterministic_quality": {
+    "gate_reconciler": "PASS",
+    "gov037_adversarial_cases": 10,
+    "runtime_provenance_review_scope": "NOT_APPLICABLE_ARTIFACT_BOUND"
+  },
+  "execution_contract": {
+    "contract_sha256": "468f2979e40de7851fd27b50545d3bbd4ee2edffb9e1537cd509a1a010f52363",
+    "sha_derivation": "canonical JSON excluding only contract_sha256",
+    "source_fidelity_required_check": true,
+    "source_fidelity_required_evidence": true
+  },
+  "pagination": {
+    "current_page_prebound": false,
+    "observed_chrome_in_composer": false,
+    "record_count_authority": "LIVE_FILTERED_RESULT_COUNT",
+    "frozen_count_role": "OBSERVED_SAMPLE_ONLY"
+  },
+  "independent_quality_bundle": {
+    "filename": "S26_Run_H_Independent_Quality_Bundle_v3.zip",
+    "sha256": "488fbb43f708f83ed524fae451954eb7b8d944278e15e62a68c272561fb734ca",
+    "file_count": 36,
+    "deterministic_probe": "PASS_DETERMINISTIC_RUN_H_PREFLIGHT"
+  },
+  "producer_downstream_authorized": false,
+  "golden_declared": false,
+  "next_gate": "FRESH_GPT_AND_CLAUDE_INDEPENDENT_QUALITY_THEN_ORCHESTRATOR_RECONCILIATION"
+}

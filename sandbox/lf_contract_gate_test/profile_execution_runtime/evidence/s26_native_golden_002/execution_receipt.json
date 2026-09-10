@@ -1,0 +1,35 @@
+{
+  "downstream_authorized": false,
+  "execution_id": "EXEC-S26-N08-GPT-NATIVE-GOLDEN-B-001",
+  "execution_origin": "MODEL_RUNTIME",
+  "input_sha256": "bf3e0eb99d5d58f3e7190dbbb8ce6e386b1e64b8211781fdb0bbc6bb4e1dd823",
+  "obligation_manifest_sha256": "8283904fce66d72a90d96141c158994d59a8f741154d382f7f40a6a6e719d2f2",
+  "operation_code": "EJECUCION_PERFIL_LF",
+  "profile_code": "PERFIL-UI-ARCHITECT",
+  "profile_slug": "ui_architect",
+  "profile_source_refs": [
+    "profiles/ui_architect/SKILL.md",
+    "profiles/ui_architect/contracts/existing_screen_review.md"
+  ],
+  "profile_source_sha256": "978aadc31103bd7c8d2aa709cd1b229934dc962d80709464ec706168878db4cf",
+  "raw_output_captured": true,
+  "raw_output_sha256": "41ec44631a921f35dc77f0047a53fd7392fa2dc615aeec6637822fc9b591e028",
+  "receipt_sha256": "3e2330a57041870d71f225a82d86a3130ec177738032347c4060773718a75c97",
+  "receipt_type": "PROFILE_EXECUTION_RECEIPT_V1",
+  "runtime_attestation": {
+    "artifact_byte_sha256": "76c6c2b6fad2603e15eda60c7b5c3d10f54194759e125c7ce9627e99c2ee9dfc",
+    "attestation_boundary": "Model identity/execution is the native ChatGPT producer claim; GitHub readback verifies persisted output bytes and their contract bindings, not model internals.",
+    "attestation_evidence_sha256": "e7550769573ffdc21a176dd31aa903c6b835c475af94c4bd34ec1e42e912e60c",
+    "attestation_verifier": "GITHUB_MATERIALIZATION_READBACK_V1",
+    "attested_at": "2026-09-08T19:17:00+00:00",
+    "execution_contract_sha256": "113e9374a4074c51db35f0762447a21c9596aa22f363896e1c4a1253af0b6e96",
+    "execution_mode": "GPT_NATIVE",
+    "materialization_commit_sha": "103b85ba67de821708256496e80c1cac6dfc4f2b",
+    "materialization_path": "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/raw_output.json",
+    "model_id": "GPT-5.6 Sol",
+    "provider": "OPENAI_CHATGPT_NATIVE",
+    "run_id": "CHATGPT-NATIVE-S26-N08-GOLDEN-B-001",
+    "verified_request_sha256": "f0ace0aca2b68bfb6860dcfb18a5a5314a5fab44aa7c0328ec600ad49335886c",
+    "verified_response_sha256": "ded8658df3e3bc9748c4deeace144f55e641d25e8ec757643bbbe4ddeb63f238"
+  }
+}
