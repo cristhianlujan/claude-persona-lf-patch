@@ -1,6 +1,7 @@
 {
   "schema": "S26_CI_PREFLIGHT_MANIFEST_V1",
   "run_scope": "S26",
+  "execution_scope_id": "S26-CI-PREFLIGHT-V1",
   "required_files": [
     "CLAUDE.md",
     ".github/workflows/story-agent-evidence-verifier.yml",
@@ -22,19 +23,19 @@
     {
       "path": "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_ci_preflight_manifest.schema.json",
       "schema_role": "PREFLIGHT_MANIFEST",
-      "run_id": "S26"
+      "run_id": "S26-CI-PREFLIGHT-V1"
     }
   ],
   "authority_sources": [
     {
       "authority_type": "CI_CONTRACT",
       "source_ref": "CLAUDE.md",
-      "run_id": "S26"
+      "run_id": "S26-CI-PREFLIGHT-V1"
     },
     {
       "authority_type": "RUNTIME_CONTRACT",
       "source_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/README.md",
-      "run_id": "S26"
+      "run_id": "S26-CI-PREFLIGHT-V1"
     }
   ],
   "bindings": [
@@ -43,7 +44,7 @@
       "target_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py",
       "callable": "validate_receipt",
       "probe_mode": "RETURNS_NONEMPTY_ERROR_LIST",
-      "run_id": "S26"
+      "run_id": "S26-CI-PREFLIGHT-V1"
     },
     {
       "binding_id": "SEMANTIC_MANIFEST_VALIDATOR",
@@ -51,14 +52,14 @@
       "callable": "validate_obligation_manifest",
       "probe_mode": "RAISES_EXPECTED_ERROR",
       "expected_error": "MANIFEST_SCHEMA_INVALID",
-      "run_id": "S26"
+      "run_id": "S26-CI-PREFLIGHT-V1"
     }
   ],
   "inputs": [
     {
       "input_id": "CANONICAL_PREFLIGHT_MANIFEST",
       "path": "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_ci_preflight_manifest_v1.json",
-      "run_id": "S26"
+      "run_id": "S26-CI-PREFLIGHT-V1"
     }
   ],
   "workflow_guards": [
@@ -70,7 +71,7 @@
         "Build pinned llama.cpp server from source",
         "Download and verify pinned semantic judge model"
       ],
-      "run_id": "S26"
+      "run_id": "S26-CI-PREFLIGHT-V1"
     },
     {
       "workflow_path": ".github/workflows/story-agent-evidence-verifier.yml",
@@ -80,7 +81,7 @@
         "Build pinned llama.cpp from source",
         "Download and verify pinned multimodal model"
       ],
-      "run_id": "S26"
+      "run_id": "S26-CI-PREFLIGHT-V1"
     },
     {
       "workflow_path": ".github/workflows/story-agent-evidence-verifier.yml",
@@ -90,7 +91,64 @@
         "Build pinned llama.cpp runtime bundle on cache miss",
         "Download pinned model on cache miss"
       ],
-      "run_id": "S26"
+      "run_id": "S26-CI-PREFLIGHT-V1"
+    }
+  ],
+  "integrity_pins": [
+    {
+      "path": ".github/workflows/story-agent-evidence-verifier.yml",
+      "git_blob_sha1": "b36627ebbcf673d43bd14f9196b1ff8a66d1ad96",
+      "run_id": "S26-CI-PREFLIGHT-V1"
+    },
+    {
+      "path": "CLAUDE.md",
+      "git_blob_sha1": "5647cf40327a841b6a487c7427820aeb9f4e63fe",
+      "run_id": "S26-CI-PREFLIGHT-V1"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/profile_execution_runtime/README.md",
+      "git_blob_sha1": "d39277e7ae7fa95dc2f6b7bd1378ce55a1a1eace",
+      "run_id": "S26-CI-PREFLIGHT-V1"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/profile_execution_runtime/run_profile_runtime_optimization_tests.py",
+      "git_blob_sha1": "236935816c5cdc5e176c9f522c0d2e5525644807",
+      "run_id": "S26-CI-PREFLIGHT-V1"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_ci_preflight_tests.py",
+      "git_blob_sha1": "20787b53942e2967cd776b27a98519db4d92243b",
+      "run_id": "S26-CI-PREFLIGHT-V1"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py",
+      "git_blob_sha1": "2d0df7d9b659e1bba4a63c3f9acdb81493e5a376",
+      "run_id": "S26-CI-PREFLIGHT-V1"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py",
+      "git_blob_sha1": "935c7cf433d0aa7505672cd9d532e78bda120311",
+      "run_id": "S26-CI-PREFLIGHT-V1"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_ci_preflight.py",
+      "git_blob_sha1": "83160b8fc07432e3917c5450912423da69a9e239",
+      "run_id": "S26-CI-PREFLIGHT-V1"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_ci_preflight_manifest.schema.json",
+      "git_blob_sha1": "45a23412dacbbc4fcec33b2c670ef3491f993633",
+      "run_id": "S26-CI-PREFLIGHT-V1"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_obligation_manifest.py",
+      "git_blob_sha1": "bce4f11647ed66ea031641777435af543c4a8adb",
+      "run_id": "S26-CI-PREFLIGHT-V1"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py",
+      "git_blob_sha1": "2ae7d18cd7bdb11faa0f9d0c6bcbf479c5cf2f14",
+      "run_id": "S26-CI-PREFLIGHT-V1"
     }
   ]
 }
