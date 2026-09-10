@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import hashlib
 import json
 import tempfile
 from copy import deepcopy
@@ -8,6 +9,8 @@ from pathlib import Path
 
 from s26_ci_preflight import (
     BASE,
+    CANONICAL_INTEGRITY_PATHS,
+    EXECUTION_SCOPE_ID,
     MANIFEST_PATH,
     MANIFEST_SCHEMA_PATH,
     PREFLIGHT_COMMAND,
@@ -16,6 +19,7 @@ from s26_ci_preflight import (
 )
 
 R = "S26"
+E = EXECUTION_SCOPE_ID
 
 
 def write(root: Path, rel: str, content: str = "x") -> None:
@@ -24,17 +28,31 @@ def write(root: Path, rel: str, content: str = "x") -> None:
     path.write_text(content, encoding="utf-8")
 
 
+def git_blob_sha1(path: Path) -> str:
+    raw = path.read_bytes()
+    return hashlib.sha1(f"blob {len(raw)}\0".encode("ascii") + raw).hexdigest()
+
+
+def repin(manifest: dict, root: Path, rel: str) -> None:
+    for row in manifest["integrity_pins"]:
+        if row["path"] == rel:
+            row["git_blob_sha1"] = git_blob_sha1(root / rel)
+            return
+    raise AssertionError(f"pin not found: {rel}")
+
+
 def test_schema() -> dict:
     return {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
         "required": [
-            "schema", "run_scope", "required_files", "required_scripts", "required_validators",
-            "schemas", "authority_sources", "bindings", "inputs", "workflow_guards",
+            "schema", "run_scope", "execution_scope_id", "required_files", "required_scripts", "required_validators",
+            "schemas", "authority_sources", "bindings", "inputs", "workflow_guards", "integrity_pins",
         ],
         "properties": {
             "schema": {"const": "S26_CI_PREFLIGHT_MANIFEST_V1"},
             "run_scope": {"const": "S26"},
+            "execution_scope_id": {"const": E},
             "required_files": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
             "required_scripts": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
             "required_validators": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
@@ -43,6 +61,7 @@ def test_schema() -> dict:
             "bindings": {"type": "array", "minItems": 2},
             "inputs": {"type": "array", "minItems": 1},
             "workflow_guards": {"type": "array", "minItems": 1},
+            "integrity_pins": {"type": "array", "minItems": 11},
         },
         "additionalProperties": False,
     }
@@ -114,13 +133,14 @@ def fixture(root: Path) -> dict:
     manifest = {
         "schema": "S26_CI_PREFLIGHT_MANIFEST_V1",
         "run_scope": R,
+        "execution_scope_id": E,
         "required_files": ["CLAUDE.md", f"{BASE}/README.md", workflow, MANIFEST_PATH],
         "required_scripts": [preflight, tests, run_tests, mini_tests, opt_tests],
         "required_validators": [validator_a, validator_b],
-        "schemas": [{"path": MANIFEST_SCHEMA_PATH, "schema_role": "PREFLIGHT_MANIFEST", "run_id": R}],
+        "schemas": [{"path": MANIFEST_SCHEMA_PATH, "schema_role": "PREFLIGHT_MANIFEST", "run_id": E}],
         "authority_sources": [
-            {"authority_type": "CI_CONTRACT", "source_ref": "CLAUDE.md", "run_id": R},
-            {"authority_type": "RUNTIME_CONTRACT", "source_ref": f"{BASE}/README.md", "run_id": R},
+            {"authority_type": "CI_CONTRACT", "source_ref": "CLAUDE.md", "run_id": E},
+            {"authority_type": "RUNTIME_CONTRACT", "source_ref": f"{BASE}/README.md", "run_id": E},
         ],
         "bindings": [
             {
@@ -128,7 +148,7 @@ def fixture(root: Path) -> dict:
                 "target_ref": validator_a,
                 "callable": "validate_receipt",
                 "probe_mode": "RETURNS_NONEMPTY_ERROR_LIST",
-                "run_id": R,
+                "run_id": E,
             },
             {
                 "binding_id": "SEMANTIC_MANIFEST_VALIDATOR",
@@ -136,10 +156,10 @@ def fixture(root: Path) -> dict:
                 "callable": "validate_obligation_manifest",
                 "probe_mode": "RAISES_EXPECTED_ERROR",
                 "expected_error": "MANIFEST_SCHEMA_INVALID",
-                "run_id": R,
+                "run_id": E,
             },
         ],
-        "inputs": [{"input_id": "CANONICAL_PREFLIGHT_MANIFEST", "path": MANIFEST_PATH, "run_id": R}],
+        "inputs": [{"input_id": "CANONICAL_PREFLIGHT_MANIFEST", "path": MANIFEST_PATH, "run_id": E}],
         "workflow_guards": [
             {
                 "workflow_path": workflow,
@@ -149,7 +169,7 @@ def fixture(root: Path) -> dict:
                     "Build pinned llama.cpp server from source",
                     "Download and verify pinned semantic judge model",
                 ],
-                "run_id": R,
+                "run_id": E,
             },
             {
                 "workflow_path": workflow,
@@ -159,7 +179,7 @@ def fixture(root: Path) -> dict:
                     "Build pinned llama.cpp from source",
                     "Download and verify pinned multimodal model",
                 ],
-                "run_id": R,
+                "run_id": E,
             },
             {
                 "workflow_path": workflow,
@@ -169,8 +189,12 @@ def fixture(root: Path) -> dict:
                     "Build pinned llama.cpp runtime bundle on cache miss",
                     "Download pinned model on cache miss",
                 ],
-                "run_id": R,
+                "run_id": E,
             },
+        ],
+        "integrity_pins": [
+            {"path": rel, "git_blob_sha1": git_blob_sha1(root / rel), "run_id": E}
+            for rel in sorted(CANONICAL_INTEGRITY_PATHS)
         ],
     }
     write(root, MANIFEST_PATH, json.dumps(manifest))
@@ -194,13 +218,14 @@ def main() -> int:
         valid = fixture(root)
         result = validate_manifest(root, valid)
         assert result["status"] == "PASS_S26_CHEAP_PREFLIGHT"
+        assert result["execution_scope_id"] == E
         assert result["manifest_schema_applied"] is True
         assert result["validator_bindings_executed"] == 2
         assert result["canonical_authorities_pinned"] is True
         assert result["canonical_workflow_guard_set_pinned"] is True
-        print("PASS valid_manifest schema_applied=true bindings_executed=2 authorities_pinned=true guards_pinned=true")
+        assert result["integrity_pins_verified"] == len(CANONICAL_INTEGRITY_PATHS)
+        print("PASS valid_manifest exact_execution_scope=true integrity_pins=true")
 
-        # Required 8 handoff negatives.
         case = deepcopy(valid); case.pop("bindings")
         expect_block("manifest_incomplete", case, root, "MANIFEST_INCOMPLETE")
 
@@ -216,7 +241,8 @@ def main() -> int:
         schema_path = root / MANIFEST_SCHEMA_PATH
         good_schema = schema_path.read_text(encoding="utf-8")
         schema_path.write_text("{not-json", encoding="utf-8")
-        expect_block("schema_invalid", deepcopy(valid), root, "SCHEMA_INVALID_JSON")
+        case = deepcopy(valid); repin(case, root, MANIFEST_SCHEMA_PATH)
+        expect_block("schema_invalid_even_when_re_pinned", case, root, "SCHEMA_INVALID_JSON")
         schema_path.write_text(good_schema, encoding="utf-8")
 
         missing_script = f"{BASE}/run_tests.py"
@@ -227,7 +253,10 @@ def main() -> int:
         write(root, missing_script, script_text)
 
         case = deepcopy(valid); case["bindings"][0]["run_id"] = "S25"
-        expect_block("cross_run_reference", case, root, "CROSS_RUN_REFERENCE")
+        expect_block("cross_strategy_reference", case, root, "CROSS_RUN_REFERENCE")
+
+        case = deepcopy(valid); case["bindings"][0]["run_id"] = "S26-OTHER-RUN-001"
+        expect_block("same_strategy_other_run_reference", case, root, "CROSS_RUN_REFERENCE")
 
         manifest_file = root / MANIFEST_PATH
         manifest_text = manifest_file.read_text(encoding="utf-8")
@@ -235,7 +264,6 @@ def main() -> int:
         expect_block("declared_input_not_in_bundle", deepcopy(valid), root, "REQUIRED_FILE_MISSING")
         write(root, MANIFEST_PATH, manifest_text)
 
-        # Audit regressions: schema/use/bypass integrity.
         case = deepcopy(valid); case["unexpected"] = True
         expect_block("manifest_schema_actually_applied", case, root, "MANIFEST_SCHEMA_VALIDATION_FAILED")
 
@@ -250,7 +278,8 @@ def main() -> int:
             1,
         )
         workflow.write_text(spoofed, encoding="utf-8")
-        expect_block("workflow_text_spoof_not_executable", valid, root, "PREFLIGHT_EXECUTABLE_STEP_MISSING")
+        case = deepcopy(valid); repin(case, root, ".github/workflows/story-agent-evidence-verifier.yml")
+        expect_block("workflow_text_spoof_not_executable", case, root, "PREFLIGHT_EXECUTABLE_STEP_MISSING")
         workflow.write_text(original, encoding="utf-8")
 
         write(root, "fake-authority.md", "fake")
@@ -273,10 +302,32 @@ def main() -> int:
             1,
         )
         workflow.write_text(injected, encoding="utf-8")
-        expect_block("unlisted_heavy_step_before_preflight", valid, root, "HEAVY_STAGE_BEFORE_PREFLIGHT")
+        case = deepcopy(valid); repin(case, root, ".github/workflows/story-agent-evidence-verifier.yml")
+        expect_block("unlisted_heavy_step_before_preflight", case, root, "HEAVY_STAGE_BEFORE_PREFLIGHT")
         workflow.write_text(original, encoding="utf-8")
 
-        print("PASS_S26_CI_PREFLIGHT_TESTS required_negative_cases=8/8 audit_regressions=8/8 valid_cases=1/1")
+        authority_path = root / "CLAUDE.md"
+        original_authority = authority_path.read_text(encoding="utf-8")
+        authority_path.write_text("tampered authority", encoding="utf-8")
+        expect_block("authority_bytes_changed", deepcopy(valid), root, "INTEGRITY_PIN_MISMATCH:CLAUDE.md")
+        authority_path.write_text(original_authority, encoding="utf-8")
+
+        validator_path = root / f"{BASE}/validate_profile_execution.py"
+        original_validator = validator_path.read_text(encoding="utf-8")
+        validator_path.write_text("def validate_receipt(value):\n    return []\n", encoding="utf-8")
+        expect_block("validator_bytes_changed", deepcopy(valid), root, "INTEGRITY_PIN_MISMATCH")
+        validator_path.write_text(original_validator, encoding="utf-8")
+
+        case = deepcopy(valid); case["integrity_pins"] = case["integrity_pins"][:-1]
+        expect_block("integrity_pin_removed", case, root, "INTEGRITY_PIN_SET_INVALID")
+
+        case = deepcopy(valid); case["integrity_pins"][0]["run_id"] = "S26-OTHER-RUN-001"
+        expect_block("integrity_pin_cross_run", case, root, "CROSS_RUN_REFERENCE")
+
+        case = deepcopy(valid); case["execution_scope_id"] = "S26-OTHER-RUN-001"
+        expect_block("execution_scope_rebound", case, root, "EXECUTION_SCOPE_ID_INVALID")
+
+        print("PASS_S26_CI_PREFLIGHT_TESTS required_negative_cases=9/9 audit_regressions=13/13 valid_cases=1/1")
     return 0
 
 
