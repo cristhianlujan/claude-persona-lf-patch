@@ -32,6 +32,23 @@
     "promotion_authority": "NONE",
     "broker_secret_present": false,
     "fresh_exact_head_ci": "REQUIRED_AFTER_THIS_RECEIPT_COMMIT",
-    "reason_for_additive_receipt": "Canonical lf-contract-check requires a changed LF_OPERATION_CONTRACT_RECEIPT whenever governed contract/judge paths change."
+    "reason_for_additive_receipt": "Canonical lf-contract-check requires a changed LF_OPERATION_CONTRACT_RECEIPT whenever governed contract/judge paths change.",
+    "closeout": {
+      "status": "SUBSTANTIVE_PROMOTION_VERIFIED",
+      "owner_authorization_ref": "current-chat:2026-09-10T08:42-05:00",
+      "broker_dispatch_run_id": 34482499765,
+      "protected_branch_sha": "771415e247a5a1fc1cdd9feb72dc18294d72fbd4",
+      "promotion_pr": 657,
+      "merge_commit_sha": "079b4e0878cb3245c8eea2a72c9c07f8818dfeed",
+      "pr_validate_run_id": 34484468821,
+      "pr_contract_check_run_id": 34484468996,
+      "main_validate_run_id": 34484752829,
+      "main_contract_check_run_id": 34484752831,
+      "runtime_changed": false,
+      "production_changed": false,
+      "s26_mutated": false,
+      "scheduler_changed": false,
+      "closeout_receipt_mode": "CLOSEOUT"
+    }
   }
 }

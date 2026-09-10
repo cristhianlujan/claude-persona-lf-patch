@@ -16,16 +16,16 @@
       ]
     }
   ],
-  "base_main_sha": "18b5098ecd6ce0e2a5b3b551523456a75d712e6b",
+  "base_main_sha": "079b4e0878cb3245c8eea2a72c9c07f8818dfeed",
   "causal_lane_ownership": {
     "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
-    "evidence": "fresh GitHub open-PR inventory: stale S30-A #613 closed superseded; no open PR owns this exact causal key",
+    "evidence": "Owner-authorized S30-A writer retained through closeout; substantive promotion merged by PR #657 at 079b4e0878cb3245c8eea2a72c9c07f8818dfeed and both main CI gates passed.",
     "observed_active_writers": [
       {
         "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
         "owner": "S30-BROKER-BOOTSTRAP",
         "primary_gate": "DIRECT_GITHUB_EXECUTOR_BINDING",
-        "source_ref": "prewrite-reservation://EXEC-S30-GIT-BROKER-BOOTSTRAP-20260910-001",
+        "source_ref": "github:pull/657+main@079b4e0878cb3245c8eea2a72c9c07f8818dfeed",
         "state": "ACTIVE",
         "target_asset": "S30"
       }
@@ -41,36 +41,54 @@
   "evidence": {
     "deploy_key_id": 162872002,
     "durable_lease_claimed": false,
-    "execution_id": "EXEC-S30-GIT-BROKER-BOOTSTRAP-20260910-001",
+    "execution_id": "EXEC-S30-A-CLOSEOUT-20260910-001",
     "mode": "SANDBOX_NON_PRODUCTION",
     "production": false,
-    "ruleset_id": 22765627
+    "ruleset_id": 22765627,
+    "bootstrap_execution_id": "EXEC-S30-GIT-BROKER-BOOTSTRAP-20260910-001",
+    "owner_authorization_ref": "current-chat:2026-09-10T08:42-05:00",
+    "substantive_merge_pr": 657,
+    "substantive_merge_sha": "079b4e0878cb3245c8eea2a72c9c07f8818dfeed",
+    "broker_dispatch_run_id": 34482499765,
+    "protected_branch_sha": "771415e247a5a1fc1cdd9feb72dc18294d72fbd4",
+    "pr_validate_run_id": 34484468821,
+    "pr_contract_check_run_id": 34484468996,
+    "main_validate_run_id": 34484752829,
+    "main_contract_check_run_id": 34484752831,
+    "closeout_scope": "EVIDENCE_ONLY_NO_RUNTIME_PRODUCTION_S26_SCHEDULER_CHANGE"
   },
   "frontier": {
-    "blockers": [
-      {
-        "affected_scope": "S30 Git write boundary",
-        "causal_gate": "DIRECT_GITHUB_EXECUTOR_BINDING",
-        "code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
-        "independent_safe_work": [
-          "READ_ONLY_EVIDENCE_VERIFICATION"
-        ],
-        "invalidation_condition": "Candidate validator/workflow/receipt pass local and staging CI; then owner explicitly authorizes secret installation before any broker dispatch.",
-        "owner": "S30-BROKER-BOOTSTRAP"
-      }
-    ],
-    "current_stage": "S30-A_SELF_GOVERNANCE_PREEXECUTION_ASSURANCE",
-    "next_gate": "STAGING_VALIDATION_THEN_OWNER_AUTHORIZED_SECRET_INSTALL",
-    "safe_parallel_work": [
-      "READ_ONLY_EVIDENCE_VERIFICATION"
-    ]
+    "current_stage": "S30-A_SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CLOSEOUT",
+    "next_gate": "NONE_WITHIN_S30_A",
+    "blockers": [],
+    "safe_parallel_work": []
   },
   "hard_guard_candidates": [
     {
       "closure": {
         "EKB_UPDATED": {
-          "evidence": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001 active frequency=8; latest readback 2026-09-10T12:04:25Z.",
-          "status": "PASS"
+          "status": "PASS",
+          "evidence": "S30 broker-gap and GOV-010 EKB entries were consumed before repair; existing frequency/readback lineage retained in this receipt."
+        },
+        "DETECTOR_IMPLEMENTED": {
+          "status": "PASS",
+          "evidence": "validate_s30_self_governance_gate.py v0.5 enforces evidence-envelope hashes, broker binding, namespace, secret state, ownership and fail-closed paths."
+        },
+        "NEGATIVE_REGRESSION": {
+          "status": "PASS",
+          "evidence": "Self-test 21/21 includes missing envelope, hash mismatch, protected namespace and missing-secret negatives; dispatch 34481188393 additionally failed closed on non-operational binding before any protected write."
+        },
+        "POSITIVE_REGRESSION": {
+          "status": "PASS",
+          "evidence": "Broker dispatch 34482499765 succeeded; protected branch CI 34482558787/34482558833, PR #657 checks 34484468821/34484468996 and main CI 34484752829/34484752831 all succeeded."
+        },
+        "EXECUTED_PATH_WIRING_PROVEN": {
+          "status": "PASS",
+          "evidence": "Actions consumed masked S30_BROKER_DEPLOY_KEY and DeployKey 162872002 created protected lf/s30-git-broker-v05-20260910 at exact source SHA 771415e247a5a1fc1cdd9feb72dc18294d72fbd4."
+        },
+        "READBACK": {
+          "status": "PASS",
+          "evidence": "Ruleset 22765627 remains active; staging and protected target matched 771415e247a5a1fc1cdd9feb72dc18294d72fbd4; PR #657 merged as main 079b4e0878cb3245c8eea2a72c9c07f8818dfeed; post-merge CI passed."
         }
       },
       "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001"
@@ -78,18 +96,38 @@
     {
       "closure": {
         "EKB_UPDATED": {
-          "evidence": "GOV-010 active frequency=7 and consumed before this repair",
-          "status": "PASS"
+          "status": "PASS",
+          "evidence": "S30 broker-gap and GOV-010 EKB entries were consumed before repair; existing frequency/readback lineage retained in this receipt."
+        },
+        "DETECTOR_IMPLEMENTED": {
+          "status": "PASS",
+          "evidence": "validate_s30_self_governance_gate.py v0.5 enforces evidence-envelope hashes, broker binding, namespace, secret state, ownership and fail-closed paths."
+        },
+        "NEGATIVE_REGRESSION": {
+          "status": "PASS",
+          "evidence": "Self-test 21/21 includes missing envelope, hash mismatch, protected namespace and missing-secret negatives; dispatch 34481188393 additionally failed closed on non-operational binding before any protected write."
+        },
+        "POSITIVE_REGRESSION": {
+          "status": "PASS",
+          "evidence": "Broker dispatch 34482499765 succeeded; protected branch CI 34482558787/34482558833, PR #657 checks 34484468821/34484468996 and main CI 34484752829/34484752831 all succeeded."
+        },
+        "EXECUTED_PATH_WIRING_PROVEN": {
+          "status": "PASS",
+          "evidence": "Actions consumed masked S30_BROKER_DEPLOY_KEY and DeployKey 162872002 created protected lf/s30-git-broker-v05-20260910 at exact source SHA 771415e247a5a1fc1cdd9feb72dc18294d72fbd4."
+        },
+        "READBACK": {
+          "status": "PASS",
+          "evidence": "Ruleset 22765627 remains active; staging and protected target matched 771415e247a5a1fc1cdd9feb72dc18294d72fbd4; PR #657 merged as main 079b4e0878cb3245c8eea2a72c9c07f8818dfeed; post-merge CI passed."
         }
       },
       "ekb_code": "GOV-010"
     }
   ],
-  "intended_material_action": "SELF_GOVERNANCE_GATE_REPAIR",
+  "intended_material_action": "S30_A_CLOSEOUT_EVIDENCE_PROMOTION",
   "lane": "S30-A",
   "owner": "S30-BROKER-BOOTSTRAP",
-  "owner_authorized_merge": false,
-  "owner_authorized_repair": true,
+  "owner_authorized_merge": true,
+  "owner_authorized_repair": false,
   "preflight_checks": {
     "CI_RUNNER_WIRING_CONFIRMED": {
       "evidence": "Candidate validate-lf-packs workflow defines ordinary staging validation plus an isolated workflow_dispatch broker job gated by full validator success; broker job is not reachable from push/PR events.",
@@ -112,11 +150,11 @@
       "status": "PASS"
     },
     "PERMISSIONS_AND_SECRET_READBACK": {
-      "evidence": "GitHub identity has admin; ruleset 22765627 is active; sole configured bypass actor is DeployKey; S30_BROKER_DEPLOY_KEY is not present in Actions and dispatch must fail closed until explicitly installed.",
+      "evidence": "GitHub admin identity verified; ruleset 22765627 active; DeployKey 162872002 verified/write; S30_BROKER_DEPLOY_KEY present and consumed successfully by broker run 34482499765.",
       "status": "PASS"
     },
     "REQUIRED_FILES_EXIST": {
-      "evidence": "4/4 current S30 repair files exist at base 18b5098",
+      "evidence": "5/5 S30 v0.5 governance/evidence paths exist on merged main 079b4e0878cb3245c8eea2a72c9c07f8818dfeed.",
       "status": "PASS"
     },
     "SCHEMA_AND_CONSTRAINTS_RESOLVED": {
@@ -146,18 +184,15 @@
     },
     "GIT_WRITE_BROKER_BINDING_CONFIRMED": {
       "status": "PASS",
-      "evidence": "GitHub ruleset 22765627 ACTIVE on refs/heads/lf/s30-*; verified write DeployKey 162872002; broker probe e52aa009 reached GitHub; staging mode has no promotion authority and secret is intentionally absent."
+      "evidence": "Operational broker proven end-to-end: workflow_dispatch 34482499765 used masked S30_BROKER_DEPLOY_KEY, bypassed only ruleset 22765627 via DeployKey 162872002, wrote exact SHA 771415e247a5a1fc1cdd9feb72dc18294d72fbd4 to lf/s30-git-broker-v05-20260910, and readback matched."
     }
   },
-  "receipt_mode": "REPAIR_PREWRITE",
+  "receipt_mode": "CLOSEOUT",
   "receipt_version": "v0.5",
-  "repair_reason": "Bootstrap a non-skippable S30 Git-write boundary using the existing S30-A repair allowlist; no runtime/production/S26 mutation.",
-  "repair_target_ekb_codes": [
-    "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
-    "GOV-010"
-  ],
+  "repair_reason": null,
+  "repair_target_ekb_codes": [],
   "safety_readback": {
-    "main_merged": false,
+    "main_merged": true,
     "production_changed": false,
     "runtime_changed": false,
     "s26_mutated": false,
@@ -165,11 +200,11 @@
   },
   "sequence_resolution": {
     "ALL_INTENDED_STEPS": {
-      "evidence": "bounded sequence: receipt->protected branch->allowlisted repair files->CI->readback; context compiler implementation remains separate",
+      "evidence": "Receipt -> staging -> full CI -> governed workflow_dispatch broker -> protected lf/s30-* exact-SHA readback -> PR #657 -> protected main -> post-merge CI all executed; only additive closeout evidence promotion remains.",
       "status": "PROVEN"
     },
     "CI_PATHS_AND_RUNNER_WIRING": {
-      "evidence": "Candidate workflow keeps S30 self-test first, evaluates exact receipt on broker dispatch, blocks governed PRs outside lf/s30-*, and isolates the deploy-key push in a workflow_dispatch-only job.",
+      "evidence": "Staging, protected-branch, PR and main paths all executed. PR #657 checks passed and main runs 34484752829/34484752831 both succeeded.",
       "status": "PROVEN"
     },
     "DATA_ACCESS_BINDINGS": {
@@ -194,19 +229,19 @@
       "status": "PROVEN"
     },
     "EXPECTED_OUTPUT_CONTRACT": {
-      "evidence": "contract consumer_interface.output_required resolved; repair must return PASS_TO_BOUNDED_GUARD_REPAIR with bounded_repair_allowed=true",
+      "evidence": "CLOSEOUT mode resolves to SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CANDIDATE_PASS when owner authorization and full hard-guard closure are present.",
       "status": "PROVEN"
     },
     "JUDGES_AND_RESULT_VOCABULARY": {
-      "evidence": "github:main@gobernanza/judges/validate_s30_self_governance_gate.py; repair result PASS_TO_BOUNDED_GUARD_REPAIR",
+      "evidence": "Merged main judge v0.5 supports CLOSEOUT and self-test includes positive_closeout_owner_merge plus unauthorized-merge negative regression.",
       "status": "PROVEN"
     },
     "OPERATION_CONTRACTS": {
-      "evidence": "github:main@gobernanza/contratos/s30_self_governance_gate_v1.json v0.4-candidate",
+      "evidence": "Merged main contract gobernanza/contratos/s30_self_governance_gate_v1.json v0.5 candidate at blob e2fc64356d816a01e52f994728f3ae161635a826.",
       "status": "PROVEN"
     },
     "PERMISSIONS_SECRETS_AND_READBACK": {
-      "evidence": "GitHub admin identity verified from VPS; ruleset 22765627 active; DeployKey 162872002 verified/write; direct connector cannot bypass protected S30 refs; broker secret is intentionally absent, therefore no workflow_dispatch promotion is authorized.",
+      "evidence": "Owner explicitly authorized main promotion. Secret is present; ruleset 22765627 active; DeployKey 162872002 succeeded; protected target and main readbacks matched expected SHAs.",
       "status": "PROVEN"
     },
     "ROUTER": {
@@ -282,52 +317,52 @@
     "secret_name": "S30_BROKER_DEPLOY_KEY",
     "secret_present": true,
     "secret_required_before_dispatch": true,
-    "source_branch": "lf/staging-s30-git-broker-v05-20260910",
-    "target_branch": "lf/s30-git-broker-v05-20260910",
-    "base_main_sha": "18b5098ecd6ce0e2a5b3b551523456a75d712e6b",
+    "source_branch": "lf/staging-s30-a-closeout-20260910",
+    "target_branch": "lf/s30-a-closeout-20260910",
+    "base_main_sha": "079b4e0878cb3245c8eea2a72c9c07f8818dfeed",
     "promotion_authority": "BROKER_ONLY",
     "ruleset_readback_ref": "github:ruleset/22765627",
     "supabase_readback_ref": "supabase:public.lf_error_knowledge/S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001@frequency=8"
   },
   "gate_evidence_envelope": {
-    "run_id": "EXEC-S30-GIT-BROKER-BOOTSTRAP-20260910-001",
-    "gate_id": "S30_SELF_GOVERNANCE_GATE_V05_STAGING",
+    "run_id": "EXEC-S30-A-CLOSEOUT-20260910-001",
+    "gate_id": "S30_SELF_GOVERNANCE_GATE_V05_CLOSEOUT",
     "input_exact": {
       "request_schema": "s30-git-broker/v1",
-      "source_ref": "lf/staging-s30-git-broker-v05-20260910",
-      "target_branch": "lf/s30-git-broker-v05-20260910",
-      "base_main_sha": "18b5098ecd6ce0e2a5b3b551523456a75d712e6b",
+      "source_ref": "lf/staging-s30-a-closeout-20260910",
+      "target_branch": "lf/s30-a-closeout-20260910",
+      "base_main_sha": "079b4e0878cb3245c8eea2a72c9c07f8818dfeed",
       "receipt_path": "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json"
     },
-    "input_sha256": "7eaad3f17d8cb565dc5b73886c3b064fd658eda05e8e0eb9838ac8ca287fe878",
-    "input_source_ref": "owner-authorized-current-chat+github:main@18b5098",
-    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input <receipt> --expected-base-main-sha 18b5098ecd6ce0e2a5b3b551523456a75d712e6b",
+    "input_sha256": "cc29d2161f937d247219e199f4c01a73d029fda0a6b99133ae426535a22db13e",
+    "input_source_ref": "owner-authorized-current-chat+github:main@079b4e0878cb3245c8eea2a72c9c07f8818dfeed",
+    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input <receipt> --expected-base-main-sha 079b4e0878cb3245c8eea2a72c9c07f8818dfeed",
     "output_exact": {
-      "result": "PASS_TO_BOUNDED_GUARD_REPAIR",
+      "result": "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CANDIDATE_PASS",
       "material_work_allowed": false,
-      "bounded_repair_allowed": true,
+      "bounded_repair_allowed": false,
       "promotion_authority": "NONE"
     },
-    "output_sha256": "13aec3019f77551e664831c1ecb0230ec7e0a870ef89ae718d40a37e975e7192",
-    "output_ref": "local-prewrite:S30-v0.5-candidate",
+    "output_sha256": "af81e98b8302b08726cc82d22ed1fbe71c675cb50b0367bd99cbd7264f47ab74",
+    "output_ref": "github:pull/657+main-ci/34484752829+34484752831",
     "execution_mode": "SANDBOX",
     "environment": "NON_PRODUCTION",
     "promotion_authority": "NONE",
     "functional": {
       "status": "PASS",
-      "evidence": "Ruleset/deploy-key broker primitives and exact validator path are resolvable."
+      "evidence": "Substantive S30-A v0.5 promotion is present on main and both post-merge CI gates passed."
     },
     "quality": {
       "status": "PASS",
-      "evidence": "Fail-closed negative paths defined for missing envelope, hash mismatch, namespace bypass and invalid broker binding."
+      "evidence": "Fail-closed negative dispatch plus successful exact-SHA broker, protected branch, PR and main validations are evidenced."
     },
     "depth": {
       "status": "PASS",
-      "evidence": "Input/output hashes, causal lane, EKB closure, branch namespace and broker binding are all independently represented."
+      "evidence": "Ruleset, DeployKey, secret execution, source/target SHA, PR merge SHA and post-merge CI were independently read back."
     },
     "performance": {
       "status": "PASS_BASELINE",
-      "evidence": "Preflight uses local JSON/Python/Git checks before any Actions dispatch or heavy validation."
+      "evidence": "Cheap local/schema/permission guards precede CI and broker dispatch; no model downloads or unrelated heavy work were introduced."
     },
     "ekb_action": {
       "status": "CONSUMED",
@@ -339,6 +374,6 @@
       "gov010_frequency": 7
     },
     "first_bad_hop": null,
-    "repair_allowed": true
+    "repair_allowed": false
   }
 }
