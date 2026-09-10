@@ -1,0 +1,59 @@
+{
+  "bindings": {
+    "freeze_records": {
+      "path": "sandbox/lf_contract_gate_test/s30_c_reliability_harness/freeze_records.json",
+      "sha256": "c14a9c6d3805aad30ee3cbac33a681f4505627dfc459216f721bb63251d9818d"
+    },
+    "ready_receipt": {
+      "path": "sandbox/lf_contract_gate_test/s30_c_reliability_harness/s30_c_ready_receipt_v3.json",
+      "sha256": "cc7852cbb9c5c69ce73e3ef6da7b7cd8273c4bdd7a85033648c6f27837e2fc6a"
+    },
+    "terminal_candidate": {
+      "path": "sandbox/lf_contract_gate_test/s30_c_reliability_harness/s30_c_terminal_closeout_candidate_v1.json",
+      "sha256": "fd558df46e7f5264d0e5aca3cd93f260c91c09c12e326725950d88daeb76d210"
+    }
+  },
+  "claim_ceiling": "EVIDENCE_FREEZE_AND_REPLAY_HARNESS_READY",
+  "closeout_candidate_merge_sha": "bbce2cbbd8be2821db86c6feb31bb43a1826a989",
+  "contract": "S30_C_FINAL_CLOSEOUT_RECEIPT_V1",
+  "durable_persistence_state": "PENDING_THIS_GOVERNED_PROMOTION",
+  "evidence_base_main_sha": "bbce2cbbd8be2821db86c6feb31bb43a1826a989",
+  "exact_main_ci": {
+    "lf_contract_check": {
+      "conclusion": "SUCCESS",
+      "run_id": 34527668848
+    },
+    "validate_lf_packs": {
+      "conclusion": "SUCCESS",
+      "run_id": 34527668888
+    }
+  },
+  "main_merge_authorized": false,
+  "promotion_authority": "NONE",
+  "router_fix_merge_sha": "4cbb5d9785630b50f7d997369589e49e03a520cc",
+  "router_readback": {
+    "input_governance_parity_required": false,
+    "migration_parity_required": false,
+    "p0_exact_head_external_required": false,
+    "s30_c_mode": "S30_C_RELIABILITY_ISOLATED"
+  },
+  "s30_c_implementation_merge_sha": "52ffabd18c14e24c62e54f4cd5063b68f651e4c7",
+  "safety": {
+    "production_changed": false,
+    "runtime_changed": false,
+    "s26_changed": false,
+    "scheduler_changed": false,
+    "shared_workflow_changed": false,
+    "supabase_write": false
+  },
+  "semantic_terminal_state": "FINAL_CLOSED_VERIFIED",
+  "verification": {
+    "closeout_candidate_tests": "PASS_5_OF_5",
+    "false_pass_count": 0,
+    "freeze_chain": "PASS",
+    "model_calls": 0,
+    "preventable_escape_count": 0,
+    "s30_c_regression": "PASS_16_OF_16",
+    "upstream_bindings": "PASS"
+  }
+}
