@@ -24,6 +24,7 @@ QUALITY_PACK_VERDICTS = {
     "BLOCK_PIPELINE",
 }
 QUALITY_PACK_PASS_VERDICTS = {"PASS_TO_COMPOSER", "PASS_WITH_RESTRICTIONS"}
+QUALITY_PACK_NONPASS_VERDICTS = QUALITY_PACK_VERDICTS - QUALITY_PACK_PASS_VERDICTS
 QUALITY_PACK_REQUIRED_KEYS = {
     "review_id",
     "reviewed_artifact",
@@ -133,6 +134,12 @@ def _validate_quality_pack_completion(payload: object) -> list[str]:
 
     if verdict in QUALITY_PACK_PASS_VERDICTS and isinstance(payload.get("evidence_map"), list) and not payload["evidence_map"]:
         errors.append("PASS_EVIDENCE_MAP_EMPTY")
+    if verdict in QUALITY_PACK_PASS_VERDICTS and isinstance(payload.get("blocking_codes"), list) and payload["blocking_codes"]:
+        errors.append("PASS_BLOCKING_CODES_NONEMPTY")
+    if verdict == "PASS_TO_COMPOSER" and isinstance(payload.get("repair_actions"), list) and payload["repair_actions"]:
+        errors.append("PASS_TO_COMPOSER_REPAIR_ACTIONS_NONEMPTY")
+    if verdict in QUALITY_PACK_NONPASS_VERDICTS and isinstance(payload.get("blocking_codes"), list) and not payload["blocking_codes"]:
+        errors.append("NONPASS_BLOCKING_CODES_EMPTY")
 
     routing = payload.get("routing")
     if not isinstance(routing, dict):
