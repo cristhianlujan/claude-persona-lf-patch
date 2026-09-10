@@ -25,6 +25,10 @@ TRANSITIONS = [
         "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_d_output.json",
         "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_e_output.json",
     ),
+    (
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_e_output.json",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_input.json",
+    ),
 ]
 
 
