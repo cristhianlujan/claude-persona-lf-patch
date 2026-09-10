@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 """Fail-closed applicability router for specialized lf-contract-check lanes.
 
-This module does not decide whether the shared DEEP contract check runs. It only
-classifies whether specialized migration parity checks, CI-router self-tests,
-and the live P0 exact-head external broker probe apply to the changed-file set.
+S30 ownership is declarative. The router consumes a versioned registry and keeps
+unknown or invalid ownership fail-closed instead of granting specialized N/A.
 """
-
 from __future__ import annotations
 
 from pathlib import PurePosixPath
-from typing import Iterable
+from typing import Iterable, Mapping, Any
 
-S30_POLICY_PREFIX = "sandbox/lf_contract_gate_test/s30_policy_operations_candidate/"
-S30_SELF_GOVERNANCE_PREFIX = "sandbox/lf_contract_gate_test/s30_self_governance/"
-S30_SELF_GOVERNANCE_RECEIPT_PREFIX = "sandbox/lf_contract_gate_test/receipts/s30_a_self_governance_gate_"
-S30_DATA_ACCESS_PREFIX = "sandbox/lf_contract_gate_test/s30_data_access_candidate/"
-S30_DATA_ACCESS_RECEIPT_PREFIX = "sandbox/lf_contract_gate_test/receipts/s30_b_data_access_safety_"
+from s30_lane_ownership import (
+    CompiledRegistry,
+    RegistryValidationError,
+    compile_registry,
+    load_registry,
+)
+
 MIGRATION_PREFIX = "supabase/migrations/"
 MIGRATION_VALIDATOR = "sandbox/lf_contract_gate_test/lf_migration_source_parity.py"
 INPUT_GOV_VALIDATOR = "sandbox/lf_contract_gate_test/input_governance_migration_parity_compact.py"
@@ -100,6 +100,18 @@ class LaneDecision:
         }
 
 
+def _fail_closed(mode: str, reason: str) -> LaneDecision:
+    return LaneDecision(
+        mode=mode,
+        migration_parity_required=True,
+        input_governance_parity_required=True,
+        ci_router_selftest_required=True,
+        p0_exact_head_external_required=True,
+        deep_shared=True,
+        reasons=(reason,),
+    )
+
+
 def _is_input_governance_migration(path: str) -> bool:
     if not path.startswith(MIGRATION_PREFIX):
         return False
@@ -111,26 +123,12 @@ def _is_p0_exact_head_external_owner(path: str) -> bool:
     return path.startswith(P0_EXACT_HEAD_EXTERNAL_PREFIX) or path in P0_EXACT_HEAD_EXTERNAL_EXACT
 
 
-def _is_s30_policy(path: str) -> bool:
-    return path.startswith(S30_POLICY_PREFIX)
-
-
-def _is_s30_self_governance(path: str) -> bool:
-    return path.startswith(S30_SELF_GOVERNANCE_PREFIX) or path.startswith(S30_SELF_GOVERNANCE_RECEIPT_PREFIX)
-
-
-def _is_s30_data_access(path: str) -> bool:
-    return path.startswith(S30_DATA_ACCESS_PREFIX) or path.startswith(S30_DATA_ACCESS_RECEIPT_PREFIX)
-
-
-def _is_s30_isolated(path: str) -> bool:
-    return _is_s30_policy(path) or _is_s30_self_governance(path) or _is_s30_data_access(path)
-
-
-def _is_known_shared(path: str) -> bool:
+def _is_known_shared(path: str, s30_known: bool) -> bool:
+    if s30_known:
+        return True
     if path in {CI_WORKFLOW, VALIDATE_LF_PACKS_WORKFLOW, P0_RUNTIME_ENTRYPOINT}:
         return True
-    if path.startswith(CI_ROUTER_PREFIX) or _is_s30_isolated(path):
+    if path.startswith(CI_ROUTER_PREFIX):
         return True
     if path in {MIGRATION_VALIDATOR, INPUT_GOV_VALIDATOR}:
         return True
@@ -139,30 +137,35 @@ def _is_known_shared(path: str) -> bool:
     return path.startswith(KNOWN_SHARED_PREFIXES)
 
 
-def classify(paths: Iterable[str]) -> LaneDecision:
+def _registry_for(registry_data: Mapping[str, Any] | None) -> CompiledRegistry:
+    return compile_registry(registry_data) if registry_data is not None else load_registry()
+
+
+def classify(paths: Iterable[str], *, registry_data: Mapping[str, Any] | None = None) -> LaneDecision:
     changed = tuple(sorted({p.strip() for p in paths if p and p.strip()}))
     if not changed:
-        return LaneDecision(
-            mode="DEEP_SHARED_EMPTY_FAIL_CLOSED",
-            migration_parity_required=True,
-            input_governance_parity_required=True,
-            ci_router_selftest_required=True,
-            p0_exact_head_external_required=True,
-            deep_shared=True,
-            reasons=("NO_CHANGED_PATHS",),
-        )
+        return _fail_closed("DEEP_SHARED_EMPTY_FAIL_CLOSED", "NO_CHANGED_PATHS")
+
+    try:
+        registry = _registry_for(registry_data)
+    except RegistryValidationError as exc:
+        return _fail_closed("DEEP_SHARED_REGISTRY_INVALID", f"S30_REGISTRY_INVALID:{exc.code}")
 
     migration = False
     input_gov = False
     selftest = False
     p0_external = False
     unknown = False
-    s30_policy = False
-    s30_self_governance = False
-    s30_data_access = False
+    deep_shared = False
+    s30_modes: set[str] = set()
     reasons: list[str] = []
 
     for path in changed:
+        try:
+            s30_lane = registry.match(path)
+        except RegistryValidationError as exc:
+            return _fail_closed("DEEP_SHARED_REGISTRY_INVALID", f"S30_REGISTRY_INVALID:{exc.code}")
+
         if path.startswith(MIGRATION_PREFIX) or path == MIGRATION_VALIDATOR:
             migration = True
             reasons.append(f"MIGRATION:{path}")
@@ -175,25 +178,31 @@ def classify(paths: Iterable[str]) -> LaneDecision:
         if _is_p0_exact_head_external_owner(path):
             p0_external = True
             reasons.append(f"P0_EXACT_HEAD_EXTERNAL:{path}")
-        if _is_s30_policy(path):
-            s30_policy = True
-            reasons.append(f"S30_POLICY:{path}")
-        if _is_s30_self_governance(path):
-            s30_self_governance = True
-            reasons.append(f"S30_SELF_GOVERNANCE:{path}")
-        if _is_s30_data_access(path):
-            s30_data_access = True
-            reasons.append(f"S30_DATA_ACCESS:{path}")
-        if not _is_known_shared(path) and not path.startswith(MIGRATION_PREFIX):
+
+        if s30_lane is not None:
+            migration = migration or s30_lane.migration_parity_required
+            input_gov = input_gov or s30_lane.input_governance_parity_required
+            selftest = selftest or s30_lane.ci_router_selftest_required
+            p0_external = p0_external or s30_lane.p0_exact_head_external_required
+            deep_shared = deep_shared or s30_lane.deep_shared
+            reasons.append(f"S30_LANE:{s30_lane.lane_id}:{path}")
+            if s30_lane.known:
+                s30_modes.add(s30_lane.mode)
+            else:
+                unknown = True
+                reasons.append(f"UNKNOWN_S30_LANE:{s30_lane.lane_id}:{path}")
+
+        if not _is_known_shared(path, s30_lane is not None and s30_lane.known) and not path.startswith(MIGRATION_PREFIX):
             unknown = True
             reasons.append(f"UNKNOWN:{path}")
 
     if unknown:
-        # Unknown ownership never earns a specialized N/A. Run all external/
-        # parity obligations rather than risking a false skip.
+        # Unknown ownership never earns a specialized N/A. Preserve the current
+        # defensive parity/external gates and mark the decision deep-shared.
         migration = True
         input_gov = True
         p0_external = True
+        deep_shared = True
 
     if unknown:
         mode = "DEEP_SHARED_UNKNOWN"
@@ -201,12 +210,10 @@ def classify(paths: Iterable[str]) -> LaneDecision:
         mode = "SPECIALIZED_REQUIRED"
     elif selftest:
         mode = "CI_ROUTER_SELFTEST_ONLY"
-    elif s30_self_governance:
-        mode = "S30_SELF_GOVERNANCE_ISOLATED"
-    elif s30_data_access:
-        mode = "S30_DATA_ACCESS_ISOLATED"
-    elif s30_policy:
-        mode = "S30_POLICY_ISOLATED"
+    elif len(s30_modes) == 1:
+        mode = next(iter(s30_modes))
+    elif len(s30_modes) > 1:
+        mode = "S30_MULTI_LANE_KNOWN"
     else:
         mode = "DEEP_SHARED_KNOWN"
 
@@ -216,6 +223,6 @@ def classify(paths: Iterable[str]) -> LaneDecision:
         input_governance_parity_required=input_gov,
         ci_router_selftest_required=selftest,
         p0_exact_head_external_required=p0_external,
-        deep_shared=unknown,
+        deep_shared=deep_shared,
         reasons=tuple(reasons) or ("KNOWN_SHARED",),
     )
