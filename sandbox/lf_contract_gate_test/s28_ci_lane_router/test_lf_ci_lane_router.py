@@ -25,6 +25,8 @@ def main():
     s30 = "sandbox/lf_contract_gate_test/s30_policy_operations_candidate/policy_operations_contract.yaml"
     s30_self = "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json"
     s30_self_receipt = "sandbox/lf_contract_gate_test/receipts/s30_a_self_governance_gate_v2.json"
+    s30_data = "sandbox/lf_contract_gate_test/s30_data_access_candidate/data_access_registry_v2.json"
+    s30_data_receipt = "sandbox/lf_contract_gate_test/receipts/s30_b_data_access_safety_v3.json"
     migration = "supabase/migrations/20260909010101_lf_example.sql"
     input_migration = "supabase/migrations/20260909010102_input_governance_example.sql"
     workflow = ".github/workflows/lf-contract-check.yml"
@@ -39,6 +41,8 @@ def main():
     check("s30_only", [s30], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=False, mode="S30_POLICY_ISOLATED")
     check("s30_self_governance_only", [s30_self], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=False, mode="S30_SELF_GOVERNANCE_ISOLATED")
     check("s30_self_governance_receipt_only", [s30_self_receipt], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=False, mode="S30_SELF_GOVERNANCE_ISOLATED")
+    check("s30_data_access_only", [s30_data], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=False, mode="S30_DATA_ACCESS_ISOLATED")
+    check("s30_data_access_receipt_only", [s30_data_receipt], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=False, mode="S30_DATA_ACCESS_ISOLATED")
     check("migration_only", [migration], migration=True, input_gov=False, selftest=False, p0_external=False, deep_shared=False)
     check("input_governance_migration", [input_migration], migration=True, input_gov=True, selftest=False, p0_external=False, deep_shared=False)
     check("migration_validator", ["sandbox/lf_contract_gate_test/lf_migration_source_parity.py"], migration=True, input_gov=False, selftest=False, p0_external=False, deep_shared=False)
@@ -67,11 +71,21 @@ def main():
     ]
     check("s30a_real_delta_isolated", real_s30a_delta, migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
 
+    real_s30b_delta = [
+        validate_workflow,
+        s30_data_receipt,
+        s30_data,
+        "sandbox/lf_contract_gate_test/s30_data_access_candidate/lf_data_access.py",
+        "sandbox/lf_contract_gate_test/s30_data_access_candidate/test_s30_data_access_v2.py",
+    ]
+    check("s30b_real_delta_isolated", real_s30b_delta, migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
+
     check("unknown_contract_gate_sandbox_fail_closed", ["sandbox/lf_contract_gate_test/new_unbound_validator.py"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
     check("unknown_s30_receipt_sibling_fail_closed", ["sandbox/lf_contract_gate_test/receipts/s30_b_unbound.json"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
+    check("s30b_plus_unknown_fail_closed", [s30_data, "sandbox/lf_contract_gate_test/s30_data_access_other/unbound.py"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
     check("unknown_fail_closed", ["mystery/new_surface.xyz"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
     check("empty_fail_closed", [], migration=True, input_gov=True, selftest=True, p0_external=True, deep_shared=True, mode="DEEP_SHARED_EMPTY_FAIL_CLOSED")
-    print("CI_LANE_ROUTER_REGRESSIONS_PASS=26/26")
+    print("CI_LANE_ROUTER_REGRESSIONS_PASS=30/30")
 
 
 if __name__ == "__main__":
