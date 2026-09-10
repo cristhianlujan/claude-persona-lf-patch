@@ -34,7 +34,7 @@ jobs:
 
       - name: S26-E governance EKB applicability and card fallback gate
         run: |
-          python gobernanza/judges/validate_s26_governance_ekb_gate.py \
+          python gobernanza/judges/validate_s26_governance_ekb_gate_strict.py \
             --self-test \
             --input sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_receipt.json
 

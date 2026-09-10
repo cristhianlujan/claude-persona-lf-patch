@@ -1,25 +1,27 @@
 {
   "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
-  "receipt_version": "v0.2",
+  "receipt_version": "v0.3",
   "issued_by": "operation_judge",
   "operation_code": "S26_GOVERNANCE_EKB_APPLICABILITY_CARD_FALLBACK",
-  "execution_id": "S26-E-AUTOAUDIT-20260909-003",
+  "execution_id": "S26-E-AUTOAUDIT-20260909-004",
   "result": "PASS_SANDBOX",
   "all_required_steps_pass": true,
-  "contract_sha": "6ff65399235d6e3c4b3ed90683e83b3b79b38b8b",
-  "judge_sha": "b4a60ec68cdd4c7d67f82d98797cac3653f56320",
+  "contract_sha": "7f24fd9d539e1df27d2cebaaec6193325e842b38",
+  "judge_sha": "e4609f7c6c81ae0c0412a49b23c9ca749c25082a",
   "source_sha_list": [
     "d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
     "f3a7d236f644ccb6c643f2081e4ee934c6171be0",
     "8ceae814c9f82b30b2a57090dd79820a2999dc92",
     "6458bf67b2d59d91d63b04ca10df34a8a2758e28",
+    "b4a60ec68cdd4c7d67f82d98797cac3653f56320",
     "dbdde850c7a730ea378af13584ba9862b4a73e28",
     "f34e69bc334400a51cb940e03deed8f0f69088c4"
   ],
   "target_paths": [
     "gobernanza/contratos/s26_governance_ekb_card_fallback_v1.json",
-    "gobernanza/judges/validate_s26_governance_ekb_gate.py"
+    "gobernanza/judges/validate_s26_governance_ekb_gate.py",
+    "gobernanza/judges/validate_s26_governance_ekb_gate_strict.py"
   ],
   "blocking_codes": [],
-  "issued_at": "2026-09-09T20:39:00-05:00"
+  "issued_at": "2026-09-09T20:43:00-05:00"
 }

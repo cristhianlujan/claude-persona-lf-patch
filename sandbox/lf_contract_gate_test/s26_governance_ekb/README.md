@@ -41,10 +41,12 @@ The actual receipt selects the first governed fallback: `CONTRACT_SCHEMA`, becau
 | NONE + all three safe alternatives fail with evidence | Stop and route manual | Yes, last resort |
 | AMBIGUOUS | Fail closed | No automatic manual bypass |
 
-## Judge hardening
+## Canonical judge chain
 
-The validator fails closed for malformed receipt structures, invalid/non-canonical snapshot digests, missing minimum EKB rules, unknown/non-active rule codes, invalid Card candidate shapes, malformed fallback attempts, skipped fallback order and unresolved evidence references.
+The canonical entrypoint is `gobernanza/judges/validate_s26_governance_ekb_gate_strict.py`. It executes the base evaluator and adds integrity guards. Both layers are required by contract v0.3.
+
+The base evaluator validates EKB snapshot integrity, all minimum rule classifications, provenance, Card state, fallback order, schema non-invention and learning persistence eligibility. The strict layer additionally proves that EXACT/COMPATIBLE Card references resolve to real files under `cards/` and forces `manual_allowed=false` whenever any blocker exists.
 
 Top-level `NOT_APPLICABLE` is non-executable. Learning persistence remains independent from execution permission: incomplete or unverifiable provenance denies persistence without inventing evidence.
 
-The self-test covers 20 cases, including the ten handoff minimums plus critical ambiguity, missing PRE-EKB authority, skipped fallback order, invalid digest, missing minimum rule, malformed EKB/fallback shapes, invalid Card candidate shape, top-level non-applicability and malformed receipt shape.
+The canonical self-test covers 22 cases: the original 20 governance/fallback/provenance cases plus nonexistent Card rejection and manual-route rejection when exhaustion evidence is unresolved.
