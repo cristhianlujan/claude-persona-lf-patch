@@ -1,0 +1,86 @@
+{
+  "registry_contract": "INPUT_GOVERNANCE_CAPABILITY_REGISTRY_V1",
+  "strategy_id": "S33",
+  "stage": "S33-02",
+  "status": "CANDIDATE",
+  "source_inventory": {
+    "git_blob_sha": "9710e222223555d8088add6afff052d30d359356",
+    "stage_conclusion_blob_sha": "ee87574ff73630f99fc200963ee51c138eb4e675"
+  },
+  "selection_policy": {
+    "consumer_requests": "CAPABILITY_ID_ONLY",
+    "raw_function_name_selection": "DENY",
+    "zero_valid": "DISCOVERY_OR_SCHEMA_RESOLVER",
+    "one_valid": "EXECUTE",
+    "multiple_valid": "BLOCK_CAPABILITY_AMBIGUOUS",
+    "stale": "RERESOLVE",
+    "deprecated": "DENY_DIRECT_SELECTION",
+    "unknown_consumer": "BLOCK_CONSUMER_NOT_ALLOWED",
+    "model_selection_of_resource": "DENY"
+  },
+  "required_entry_fields": [
+    "capability_id","canonical_facade","implementation_ref","implementation_version","implementation_sha",
+    "execution_type","input_contract","output_contract","authority","permissions","read_write_mode",
+    "side_effect_class","currentness_rule","resource_budget","owner_lane","allowed_consumers",
+    "fallback_policy","deprecated"
+  ],
+  "entries": [
+    {
+      "capability_id":"INPUT_GOVERNANCE_ORCHESTRATE","canonical_facade":"EDGE:input-governance-agent-v1","implementation_ref":"supabase-edge://input-governance-agent-v1","implementation_version":"2","implementation_sha":"2b2091358cfae7d0685180bad02a2315b7e005c683ecfa3493858a25b7ba7982","execution_type":"EDGE_FUNCTION","input_contract":"INPUT_GOVERNANCE_EXECUTION_CONTRACT_1.5","output_contract":"INPUT_GOVERNANCE_DISPATCH_RESULT","authority":"GOVERNED_ORCHESTRATOR","permissions":["JWT","SERVICE_ROLE_CALLER"],"read_write_mode":"ORCHESTRATION","side_effect_class":"MAY_TRIGGER_GOVERNED_ROLE_RUNTIME","currentness_rule":"EDGE_RUNTIME_DIGEST_EXACT","resource_budget":{"state":"UNOBSERVED","performance_claim_allowed":false},"owner_lane":"INPUT_GOVERNANCE","allowed_consumers":["GOVERNED_SERVICE_CALLER"],"fallback_policy":"FAIL_CLOSED_NO_PARALLEL_ORCHESTRATOR","deprecated":false,"selectable":true
+    },
+    {
+      "capability_id":"INPUT_GOVERNANCE_DISPATCH","canonical_facade":"public.fn_input_governance_execute(integer,text)","implementation_ref":"programacion.fn_input_governance_execute(integer,text)","implementation_version":"contract-1.5-current","implementation_sha":"LIVE_FUNCTION_IDENTITY","execution_type":"SUPABASE_RPC","input_contract":"INPUT_GOVERNANCE_EXECUTION_CONTRACT_1.5","output_contract":"INPUT_GOVERNANCE_DISPATCH_RESULT","authority":"DETERMINISTIC_ORCHESTRATION","permissions":["service_role"],"read_write_mode":"READ_ORCHESTRATION_STATE","side_effect_class":"NO_DIRECT_CANONICAL_WRITE","currentness_rule":"LIVE_FUNCTION_IDENTITY_PLUS_CONTRACT_CURRENTNESS","resource_budget":{"state":"MEASURE_ON_EXECUTION","timeout_relaxation":false},"owner_lane":"INPUT_GOVERNANCE","allowed_consumers":["CONTRACT_ALLOWLIST_ONLY"],"fallback_policy":"FAIL_CLOSED_IF_CONTRACT_OR_FUNCTION_STALE","deprecated":false,"selectable":true
+    },
+    {
+      "capability_id":"INPUT_GOVERNANCE_CURATE","canonical_facade":"EDGE:input-governance-curator-v1","implementation_ref":"supabase-edge://input-governance-curator-v1","implementation_version":"1","implementation_sha":"0fa8d5bea9667e88133e22ce476f9a9fbba7b5fd9a1104c077097e4c544d1fa4","execution_type":"EDGE_FUNCTION","input_contract":"INPUT_CURATOR_ROLE_REQUEST","output_contract":"INPUT_CURATOR_MATERIALIZATION_RESULT","authority":"GOVERNED_ROLE_RUNTIME","permissions":["JWT","SERVICE_ROLE_CALLER"],"read_write_mode":"GOVERNED_MATERIALIZATION","side_effect_class":"CURATOR_STATE_MATERIALIZATION","currentness_rule":"EDGE_RUNTIME_DIGEST_EXACT","resource_budget":{"state":"UNOBSERVED","performance_claim_allowed":false},"owner_lane":"INPUT_GOVERNANCE","allowed_consumers":["INPUT_GOVERNANCE_ORCHESTRATOR"],"fallback_policy":"FAIL_CLOSED_NO_SELF_VALIDATION","deprecated":false,"selectable":true
+    },
+    {
+      "capability_id":"INPUT_GOVERNANCE_CURATE_RPC","canonical_facade":"public.fn_input_governance_curator_materialize_v1(integer,text,text)","implementation_ref":"programacion.fn_input_governance_curator_materialize_v1(integer,text,text,boolean)","implementation_version":"v1","implementation_sha":"LIVE_FUNCTION_IDENTITY","execution_type":"SUPABASE_RPC","input_contract":"INPUT_CURATOR_ROLE_REQUEST","output_contract":"INPUT_CURATOR_MATERIALIZATION_RESULT","authority":"ROLE_MATERIALIZER","permissions":["service_role"],"read_write_mode":"GOVERNED_MATERIALIZATION","side_effect_class":"CURATOR_STATE_MATERIALIZATION","currentness_rule":"LIVE_FUNCTION_IDENTITY_PLUS_CONTRACT_CURRENTNESS","resource_budget":{"state":"MEASURE_ON_EXECUTION"},"owner_lane":"INPUT_GOVERNANCE","allowed_consumers":["INPUT_CURATOR_RUNTIME"],"fallback_policy":"FAIL_CLOSED","deprecated":false,"selectable":true
+    },
+    {
+      "capability_id":"INPUT_GOVERNANCE_VALIDATE","canonical_facade":"EDGE:input-governance-validator-v1","implementation_ref":"supabase-edge://input-governance-validator-v1","implementation_version":"3","implementation_sha":"3d27b115631d504a1f35cdf146996bfc3207f0dd43f0b9c2ea507c26c70fedd8","execution_type":"EDGE_FUNCTION","input_contract":"INPUT_VALIDATOR_ROLE_REQUEST","output_contract":"INPUT_VALIDATION_RESULT","authority":"INDEPENDENT_VALIDATOR_RUNTIME","permissions":["JWT","SERVICE_ROLE_CALLER"],"read_write_mode":"VALIDATION_RECEIPT_MATERIALIZATION","side_effect_class":"VALIDATOR_STATE_MATERIALIZATION","currentness_rule":"EDGE_RUNTIME_DIGEST_EXACT","resource_budget":{"state":"UNOBSERVED","performance_claim_allowed":false},"owner_lane":"INPUT_GOVERNANCE","allowed_consumers":["INPUT_GOVERNANCE_ORCHESTRATOR"],"fallback_policy":"FAIL_CLOSED_NO_CURATOR_AS_VALIDATOR","deprecated":false,"selectable":true
+    },
+    {
+      "capability_id":"INPUT_GOVERNANCE_VALIDATE_RPC","canonical_facade":"public.fn_input_governance_validator_validate_v1(bigint,text)","implementation_ref":"programacion.fn_input_governance_validator_validate_v1(bigint,text)","implementation_version":"v1","implementation_sha":"LIVE_FUNCTION_IDENTITY","execution_type":"SUPABASE_RPC","input_contract":"INPUT_VALIDATOR_ROLE_REQUEST","output_contract":"INPUT_VALIDATION_RESULT","authority":"INDEPENDENT_VALIDATOR","permissions":["service_role"],"read_write_mode":"VALIDATION_RECEIPT_MATERIALIZATION","side_effect_class":"VALIDATOR_STATE_MATERIALIZATION","currentness_rule":"LIVE_FUNCTION_IDENTITY_PLUS_CONTRACT_CURRENTNESS","resource_budget":{"state":"MEASURE_ON_EXECUTION"},"owner_lane":"INPUT_GOVERNANCE","allowed_consumers":["INPUT_VALIDATOR_RUNTIME"],"fallback_policy":"FAIL_CLOSED","deprecated":false,"selectable":true
+    },
+    {
+      "capability_id":"INPUT_GOVERNANCE_SAFE_AUTOFIX","canonical_facade":"public.fn_input_governance_safe_autofix_v1(bigint)","implementation_ref":"programacion.fn_input_governance_safe_autofix_v1(bigint)","implementation_version":"v1","implementation_sha":"LIVE_FUNCTION_IDENTITY","execution_type":"SUPABASE_RPC","input_contract":"SAFE_AUTOFIX_ALLOWLIST_REQUEST","output_contract":"SAFE_AUTOFIX_RESULT","authority":"DETERMINISTIC_ALLOWLIST","permissions":["service_role"],"read_write_mode":"ALLOWLISTED_CANONICAL_WRITE","side_effect_class":"BOUNDED_SAFE_AUTOFIX_ONLY","currentness_rule":"LIVE_FUNCTION_IDENTITY_PLUS_ALLOWLIST_CURRENTNESS","resource_budget":{"state":"MEASURE_ON_EXECUTION"},"owner_lane":"INPUT_GOVERNANCE","allowed_consumers":["INPUT_GOVERNANCE_ORCHESTRATOR"],"fallback_policy":"NO_AUTOFIX_FAIL_CLOSED","deprecated":false,"selectable":true
+    },
+    {
+      "capability_id":"INPUT_VALIDATOR_RESUME_CONTEXT","canonical_facade":"public.fn_input_governance_validator_resume_context_v1(bigint)","implementation_ref":"public.fn_input_governance_validator_resume_context_v1(bigint)","implementation_version":"v1","implementation_sha":"LIVE_FUNCTION_IDENTITY","execution_type":"SUPABASE_RPC","input_contract":"RUN_ID","output_contract":"VALIDATOR_RESUME_CONTEXT","authority":"DETERMINISTIC_READ","permissions":["service_role"],"read_write_mode":"READ_ONLY","side_effect_class":"NONE","currentness_rule":"RUN_AND_CONTRACT_CURRENTNESS","resource_budget":{"state":"MEASURE_ON_EXECUTION"},"owner_lane":"INPUT_GOVERNANCE","allowed_consumers":["INPUT_VALIDATOR_RUNTIME"],"fallback_policy":"FAIL_CLOSED_IF_RESUME_NOT_ALLOWED","deprecated":false,"selectable":true
+    },
+    {
+      "capability_id":"LF_TYPED_DATA_ACCESS","canonical_facade":"S30-B:LFDataAccess/TypedReader","implementation_ref":"sandbox/lf_contract_gate_test/s30_data_access_candidate/lf_data_access.py","implementation_version":"LF_DATA_ACCESS_REGISTRY_V2","implementation_sha":"0fc3792e2f75fd5befc6fb22eb6d8e53ccd16965","execution_type":"PYTHON_LIBRARY","input_contract":"LF_DATA_ACCESS_REGISTRY_V2","output_contract":"PREEXECUTION_DATA_ACCESS_RESULT","authority":"DETERMINISTIC","permissions":["CALLER_BOUND_BACKEND"],"read_write_mode":"READ_PLAN_AND_EXECUTE","side_effect_class":"DEPENDENT_BACKEND_ONLY_AFTER_VALID_PLAN","currentness_rule":"EXACT_GIT_BLOB_PLUS_SCHEMA_FINGERPRINT","resource_budget":{"policy":"LF_DATA_ACCESS_BUDGET_V1"},"owner_lane":"S30-B","allowed_consumers":["S33_CAPABILITY_RESOLVER","INPUT_GOVERNANCE_PREEXECUTION"],"fallback_policy":"UNKNOWN_SOURCE_TO_SCHEMA_RESOLVER","deprecated":false,"selectable":true
+    },
+    {
+      "capability_id":"LF_SCHEMA_CONTRACT_RESOLUTION","canonical_facade":"S30-B:SchemaContractResolver","implementation_ref":"sandbox/lf_contract_gate_test/s30_data_access_candidate/lf_data_access.py","implementation_version":"LF_DATA_ACCESS_REGISTRY_V2","implementation_sha":"0fc3792e2f75fd5befc6fb22eb6d8e53ccd16965","execution_type":"PYTHON_LIBRARY","input_contract":"SCHEMA_CONTRACT_RESOLUTION","output_contract":"SCHEMA_RECEIPT","authority":"DETERMINISTIC","permissions":["SCHEMA_BACKEND_READ"],"read_write_mode":"READ_ONLY_SCHEMA","side_effect_class":"NONE_BEFORE_DEPENDENT_BACKEND","currentness_rule":"SEPARATE_SCHEMA_RECEIPT_CURRENT","resource_budget":{"policy":"SCHEMA_RESOLUTION_BOUNDED"},"owner_lane":"S30-B","allowed_consumers":["S33_CAPABILITY_RESOLVER","INPUT_GOVERNANCE_PREEXECUTION"],"fallback_policy":"FAIL_CLOSED_ON_INVALID_OR_STALE_SCHEMA_RECEIPT","deprecated":false,"selectable":true
+    },
+    {
+      "capability_id":"LF_BUDGETED_DATA_ACCESS","canonical_facade":"S30-B:BudgetedLFDataAccess","implementation_ref":"sandbox/lf_contract_gate_test/s30_data_access_candidate/lf_data_access_budgeted.py","implementation_version":"LF_DATA_ACCESS_BUDGET_V1","implementation_sha":"466751dc09990414c0e0aa6b5d1aaecf99c54ff3","execution_type":"PYTHON_LIBRARY","input_contract":"LF_DATA_ACCESS_BUDGET_V1","output_contract":"PREEXECUTION_DATA_ACCESS_RESULT","authority":"DETERMINISTIC","permissions":["CALLER_BOUND_BACKEND"],"read_write_mode":"BOUNDED_READ","side_effect_class":"DEPENDENT_BACKEND_ONLY_AFTER_BUDGETED_PLAN","currentness_rule":"EXACT_GIT_BLOB_PLUS_REGISTRY_BINDING","resource_budget":{"policy":"LF_DATA_ACCESS_BUDGET_V1"},"owner_lane":"S30-B","allowed_consumers":["S33_CAPABILITY_RESOLVER","INPUT_GOVERNANCE_PREEXECUTION"],"fallback_policy":"FAIL_CLOSED_ON_BUDGET_OR_PROFILE_VIOLATION","deprecated":false,"selectable":true
+    },
+    {
+      "capability_id":"LF_EXECUTION_AUTHORITY","canonical_facade":"S30-B:S30_EXECUTION_AUTHORITY_V1","implementation_ref":"sandbox/lf_contract_gate_test/s30_data_access_candidate/lf_execution_authority.py","implementation_version":"S30_EXECUTION_AUTHORITY_V1","implementation_sha":"933e6d597dcffc720854a23ed0ee6ae9002c8a14","execution_type":"PYTHON_LIBRARY","input_contract":"S30_EXECUTION_AUTHORITY_V1","output_contract":"EXECUTION_AUTHORITY_DECISION","authority":"DETERMINISTIC","permissions":["LOCAL_POLICY_READ"],"read_write_mode":"READ_ONLY_DECISION","side_effect_class":"MODEL_CALL_ONLY_AFTER_FULL_SEMANTIC_GAP","currentness_rule":"EXACT_CODE_AND_POLICY_BLOBS","resource_budget":{"known_source_model_calls":0},"owner_lane":"S30-B","allowed_consumers":["S33_CAPABILITY_RESOLVER","INPUT_GOVERNANCE_PREEXECUTION"],"fallback_policy":"BLOCK_UNKNOWN_OR_AMBIGUOUS","deprecated":false,"selectable":true,"policy_sha":"4107e31ad8eb145cb80474de0ba135a164715c00"
+    },
+    {
+      "capability_id":"LF_HISTORICAL_REPLAY","canonical_facade":"S30-C:HISTORICAL_REPLAY_CORPUS","implementation_ref":"sandbox/lf_contract_gate_test/s30_c_reliability_harness/replay_corpus.json","implementation_version":"S30-R09-HISTORICAL-REPLAY-v2","implementation_sha":"77369851dce6b0f6fdc0fb1167a43e721152ab57","execution_type":"FIXTURE_CORPUS","input_contract":"REPLAY_CASE","output_contract":"EXPECTED_FIRST_BAD_HOP","authority":"DETERMINISTIC_TEST_FIXTURE","permissions":["READ_ONLY"],"read_write_mode":"READ_ONLY","side_effect_class":"NONE","currentness_rule":"EXACT_GIT_BLOB","resource_budget":{"state":"NOT_APPLICABLE_READONLY_FIXTURE"},"owner_lane":"S30-C","allowed_consumers":["S33_TEST_HARNESS"],"fallback_policy":"NO_FALLBACK_EXACT_FIXTURE_REQUIRED","deprecated":false,"selectable":true
+    },
+    {
+      "capability_id":"INPUT_CURRENTNESS","canonical_facade":"INPUT_CURRENTNESS_RESOLVER","implementation_ref":"programacion.fn_input_readiness_run_is_current_cached_v1(bigint)","implementation_version":"cached-v1-current-reference","implementation_sha":"LIVE_FUNCTION_IDENTITY","execution_type":"INTERNAL_SQL","input_contract":"RUN_ID","output_contract":"BOOLEAN_CURRENTNESS","authority":"DETERMINISTIC","permissions":["INTERNAL_SERVICE_ROLE_PATH"],"read_write_mode":"READ_ONLY","side_effect_class":"NONE","currentness_rule":"REQUEST_LOCAL_REUSE_ONLY_PLUS_FRESHNESS_GUARD","resource_budget":{"timeout_relaxation":false,"request_local_reuse":true},"owner_lane":"INPUT_GOVERNANCE","allowed_consumers":["INPUT_GOVERNANCE_INTERNAL"],"fallback_policy":"RERESOLVE_NO_CROSS_REQUEST_CACHE","deprecated":false,"selectable":false
+    },
+    {
+      "capability_id":"INPUT_WORKER_SPEC","canonical_facade":"INPUT_WORKER_SPEC_RESOLVER","implementation_ref":"programacion.fn_input_governance_worker_spec(integer,text)","implementation_version":"current","implementation_sha":"LIVE_FUNCTION_IDENTITY","execution_type":"INTERNAL_SQL","input_contract":"PANTALLA_AND_CONSUMER","output_contract":"INPUT_GOVERNANCE_WORKER_SPEC","authority":"DETERMINISTIC","permissions":["INTERNAL_SERVICE_ROLE_PATH"],"read_write_mode":"READ_ONLY","side_effect_class":"NONE","currentness_rule":"LIVE_CONTRACT_AND_CURRENT_RUN","resource_budget":{"state":"MEASURE_ON_EXECUTION"},"owner_lane":"INPUT_GOVERNANCE","allowed_consumers":["INPUT_GOVERNANCE_ORCHESTRATOR"],"fallback_policy":"FAIL_CLOSED_ON_UNKNOWN_CONSUMER","deprecated":false,"selectable":false
+    },
+    {
+      "capability_id":"INPUT_CONTEXT_JIT","canonical_facade":"INPUT_CONTEXT_JIT_RESOLVER","implementation_ref":"programacion.fn_input_context_manifest(bigint)+programacion.fn_input_resolve_retrieval_handle(bigint,jsonb)","implementation_version":"V3_HANDLE_WITH_V4_IMPLEMENTATION_DRIFT","implementation_sha":"LIVE_FUNCTION_IDENTITY","execution_type":"INTERNAL_SQL","input_contract":"INPUT_CONTEXT_MANIFEST_CONTRACT_2.0","output_contract":"INPUT_RETRIEVAL_HANDLE_CONTRACT_2.0","authority":"DETERMINISTIC","permissions":["INTERNAL_SERVICE_ROLE_PATH"],"read_write_mode":"READ_ONLY","side_effect_class":"NONE","currentness_rule":"BLOCKED_UNTIL_V3_V4_RECONCILIATION","resource_budget":{"state":"NOT_PROMOTABLE"},"owner_lane":"INPUT_GOVERNANCE","allowed_consumers":["INPUT_GOVERNANCE_INTERNAL"],"fallback_policy":"BLOCK_NEW_CONSUMPTION_UNTIL_RECONCILED","deprecated":false,"selectable":false
+    },
+    {
+      "capability_id":"INPUT_DESIGN_BINDING_GRAPH","canonical_facade":"INPUT_DESIGN_GRAPH_INTERNAL","implementation_ref":"programacion.fn_input_design_binding_graph_v2(integer)","implementation_version":"function-name-v2-output-contract-v4","implementation_sha":"LIVE_FUNCTION_IDENTITY","execution_type":"INTERNAL_SQL","input_contract":"PANTALLA_ID","output_contract":"DESIGN_BINDING_GRAPH_V4","authority":"DETERMINISTIC","permissions":["INTERNAL_SERVICE_ROLE_PATH"],"read_write_mode":"READ_ONLY","side_effect_class":"NONE","currentness_rule":"CONTRACT_DRIFT_PRESENT","resource_budget":{"state":"NOT_PROMOTABLE"},"owner_lane":"INPUT_GOVERNANCE","allowed_consumers":["INPUT_GOVERNANCE_INTERNAL"],"fallback_policy":"DO_NOT_EXPOSE_DIRECTLY_RECONCILE_FIRST","deprecated":false,"selectable":false
+    }
+  ],
+  "safety": {
+    "production_authorized": false,
+    "runtime_change_authorized": false,
+    "supabase_mutation_authorized": false,
+    "foreign_lane_write_authorized": false
+  }
+}
