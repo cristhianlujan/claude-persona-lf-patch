@@ -117,27 +117,20 @@ class RepositoryBindings:
                 refs = (str(explicit.relative_to(self.repo_root)),)
             else:
                 candidates = sorted(
-                    path for path in schema_root.glob("*.schema.json")
+                    path
+                    for path in schema_root.glob("*.schema.json")
                     if path.name != "runtime_output.schema.json"
                 )
                 if not candidates:
                     raise RepositoryError("PROFILE_RUNTIME_SCHEMA_MISSING", profile_slug)
-                parsed = [self._read_schema(path, schema_root)[0] for path in candidates]
-                payload = parsed[0] if len(parsed) == 1 else {
-                    "$schema": "https://json-schema.org/draft/2020-12/schema",
-                    "anyOf": parsed,
-                    "x-lf-runtime-schema-source": [path.name for path in candidates],
-                }
-                raw = (
-                    json.dumps(
-                        payload,
-                        ensure_ascii=False,
-                        sort_keys=True,
-                        separators=(",", ":"),
+                if len(candidates) > 1:
+                    raise RepositoryError(
+                        "PROFILE_RUNTIME_SCHEMA_AMBIGUOUS",
+                        ",".join(str(path.relative_to(self.repo_root)) for path in candidates),
                     )
-                    + "\n"
-                ).encode("utf-8")
-                refs = tuple(str(path.relative_to(self.repo_root)) for path in candidates)
+                selected = candidates[0]
+                payload, raw = self._read_schema(selected, schema_root)
+                refs = (str(selected.relative_to(self.repo_root)),)
         return SchemaBinding(
             payload=payload,
             raw=raw,

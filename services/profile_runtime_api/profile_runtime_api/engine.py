@@ -13,6 +13,7 @@ from .llama import (
 )
 from .models import BatchRequest, ExecuteRequest, ProfileTask, QueueExecuteRequest
 from .repository import RepositoryBindings
+from .runtime_authority import resolve_typed_runtime_context
 from .settings import Settings
 from .structural import PreparedContext, StructuralContextPipeline
 from .validation import OutputGates
@@ -39,7 +40,13 @@ def _not_evaluated(code: str) -> dict[str, Any]:
     return {"status": "NOT_EVALUATED", "blocking_codes": [code], "downstream_authorized": False}
 
 
-def _governed_context(task: ProfileTask, prepared_pack: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+def _governed_context(
+    task: ProfileTask,
+    prepared_pack: dict[str, Any],
+    *,
+    profile_sources: list[dict[str, str]],
+    schema: Any,
+) -> tuple[dict[str, Any], dict[str, Any]]:
     cards = [item.model_dump(mode="python") for item in task.lf_card_sources]
     adapters = [item.model_dump(mode="python") for item in task.lf_adapter_sources]
     card_receipts = [
@@ -54,18 +61,37 @@ def _governed_context(task: ProfileTask, prepared_pack: dict[str, Any]) -> tuple
          "assurance_revision": item["assurance_revision"], "request_id": task.request_id}
         for item in adapters
     ]
+    typed_context = resolve_typed_runtime_context(
+        task,
+        profile_sources=profile_sources,
+        context_pack=prepared_pack,
+        schema=schema,
+    )
     pack = dict(prepared_pack)
     pack["lf_cards"] = [{k: v for k, v in item.items() if k != "content"} | {"content": item["content"]} for item in cards]
     pack["lf_card_receipts"] = card_receipts
     pack["lf_adapter_receipts"] = adapter_receipts
+    pack["runtime_typed_context"] = typed_context
     receipt = {
-        "schema": "lf-governed-context-receipt/v1",
+        "schema": "lf-governed-context-receipt/v2",
         "request_id": task.request_id,
         "profile_code": task.profile_code,
         "card_receipts": card_receipts,
         "adapter_receipts": adapter_receipts,
+        "runtime_typed_context": typed_context,
+        "runtime_typed_context_sha256": typed_context["typed_context_sha256"],
+        "card_resolution": typed_context["card_resolution"],
+        "authority_resolution": typed_context["authority_resolution"],
+        "adapter_binding": typed_context["adapter_binding"],
+        "runtime_schema": typed_context["runtime_schema"],
     }
-    receipt["context_fingerprint"] = canonical_json_sha256({"request_id": task.request_id, "cards": card_receipts, "adapters": adapter_receipts, "structural_pack_sha256": prepared_pack.get("pack_sha256")})
+    receipt["context_fingerprint"] = canonical_json_sha256({
+        "request_id": task.request_id,
+        "cards": card_receipts,
+        "adapters": adapter_receipts,
+        "typed_context_sha256": typed_context["typed_context_sha256"],
+        "structural_pack_sha256": prepared_pack.get("pack_sha256"),
+    })
     return pack, receipt
 
 
@@ -117,7 +143,7 @@ class ProfileRuntimeEngine:
         try:
             if task.send_image_to_model: raise LlamaTransportError("QUEUE_NATIVE_IMAGE_REQUIRES_GOVERNED_ENVELOPE")
             sources=self.repository.profile_sources(task.profile_slug,task.profile_source_paths); schema=self.repository.runtime_schema(task.profile_slug, task.runtime_output_mode)
-            governed_pack, governed_receipt = _governed_context(task, context_pack)
+            governed_pack, governed_receipt = _governed_context(task, context_pack, profile_sources=sources, schema=schema)
             adapter=PersistentLlamaServerAdapter(settings=self.settings,client=self.llama_client,schema=schema,structural_context=governed_pack,image_bytes=None,image_media_type=None)
             verifier=PersistentLlamaServerVerifier(settings=self.settings,schema=schema,structural_context=governed_pack)
             runtime_package=self.runner.execute_profile_runtime(execution_id=f"EJECUCION_PERFIL_LF:{task.request_id}",profile_code=task.profile_code,profile_slug=task.profile_slug,profile_sources=sources,input_literal=task.input_literal,adapter=adapter,attestation_verifier=verifier,allow_test_doubles=False,lf_adapter_sources=[i.model_dump(mode="python") for i in task.lf_adapter_sources])
@@ -133,7 +159,7 @@ class ProfileRuntimeEngine:
             sources=self.repository.profile_sources(task.profile_slug,task.profile_source_paths); schema=self.repository.runtime_schema(task.profile_slug, task.runtime_output_mode)
             if task.send_image_to_model and not self.settings.allow_model_image: raise LlamaTransportError("FULL_IMAGE_MODEL_PATH_DISABLED")
             image_bytes=artifact.image_bytes() if task.send_image_to_model else None
-            governed_pack, governed_receipt = _governed_context(task, prepared.pack)
+            governed_pack, governed_receipt = _governed_context(task, prepared.pack, profile_sources=sources, schema=schema)
             adapter=PersistentLlamaServerAdapter(settings=self.settings,client=self.llama_client,schema=schema,structural_context=governed_pack,image_bytes=image_bytes,image_media_type=artifact.image_media_type if image_bytes is not None else None)
             verifier=PersistentLlamaServerVerifier(settings=self.settings,schema=schema,structural_context=governed_pack)
             runtime_package=self.runner.execute_profile_runtime(execution_id=f"EJECUCION_PERFIL_LF:{task.request_id}",profile_code=task.profile_code,profile_slug=task.profile_slug,profile_sources=sources,input_literal=task.input_literal,adapter=adapter,attestation_verifier=verifier,allow_test_doubles=False,lf_adapter_sources=[i.model_dump(mode="python") for i in task.lf_adapter_sources])

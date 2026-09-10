@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import sys
 import tempfile
 from pathlib import Path
@@ -23,30 +22,23 @@ def load(path: Path, name: str):
     return module
 
 
+def expect_ambiguous(runtime, profile_slug: str, repo: Path, work: Path) -> None:
+    try:
+        runtime._materialize_runtime_output_schema(profile_slug, repo, work)
+    except runtime.RuntimeExecutionBlocked as exc:
+        assert exc.code == "QUEUE_RUNTIME_SCHEMA_AMBIGUOUS", (exc.code, exc.detail)
+        return
+    raise AssertionError(f"expected ambiguous schema block for {profile_slug}")
+
+
 def main() -> int:
     runtime = load(RUNTIME, "runtime_schema_autobind_v3")
 
     with tempfile.TemporaryDirectory() as td:
-        work = Path(td)
-        product = runtime._materialize_runtime_output_schema("product_director_lf", REPO, work)
-        assert product is not None and product.is_file()
-        product_payload = json.loads(product.read_text(encoding="utf-8"))
-        product_sources = product_payload.get("x-lf-runtime-schema-source")
-        assert product_sources == ["product_direction_spec.schema.json", "product_missing_input.schema.json"], product_sources
-        assert len(product_payload.get("anyOf", [])) == 2
+        expect_ambiguous(runtime, "product_director_lf", REPO, Path(td))
 
     with tempfile.TemporaryDirectory() as td:
-        work = Path(td)
-        ui = runtime._materialize_runtime_output_schema("ui_architect", REPO, work)
-        assert ui is not None and ui.is_file()
-        ui_payload = json.loads(ui.read_text(encoding="utf-8"))
-        ui_sources = ui_payload.get("x-lf-runtime-schema-source")
-        assert ui_sources == [
-            "ui_focused_decision.schema.json",
-            "ui_missing_input.schema.json",
-            "ui_production_spec.schema.json",
-        ], ui_sources
-        assert len(ui_payload.get("anyOf", [])) == 3
+        expect_ambiguous(runtime, "ui_architect", REPO, Path(td))
 
     with tempfile.TemporaryDirectory() as td:
         work = Path(td)
@@ -59,16 +51,25 @@ def main() -> int:
         fake_repo = Path(td) / "repo"
         schemas = fake_repo / "profiles" / "p" / "schemas"
         schemas.mkdir(parents=True)
+        single = schemas / "a.schema.json"
+        single.write_text('{"type":"object"}\n', encoding="utf-8")
+        work = Path(td) / "work"
+        materialized = runtime._materialize_runtime_output_schema("p", fake_repo, work)
+        assert materialized is not None
+        assert materialized.read_bytes() == single.read_bytes(), "single schema must be copied byte-for-byte"
+
+    with tempfile.TemporaryDirectory() as td:
+        fake_repo = Path(td) / "repo"
+        schemas = fake_repo / "profiles" / "p" / "schemas"
+        schemas.mkdir(parents=True)
         (schemas / "a.schema.json").write_text('{"type":"object"}', encoding="utf-8")
         (schemas / "b.schema.json").write_text('{"type":"object","required":["x"]}', encoding="utf-8")
-        work = Path(td) / "work"
-        synthesized = runtime._materialize_runtime_output_schema("p", fake_repo, work)
-        assert synthesized is not None
-        payload = json.loads(synthesized.read_text(encoding="utf-8"))
-        assert payload["x-lf-runtime-schema-source"] == ["a.schema.json", "b.schema.json"]
-        assert len(payload["anyOf"]) == 2
+        expect_ambiguous(runtime, "p", fake_repo, Path(td) / "work")
 
-    print("RUNTIME_SCHEMA_AUTOBIND_V3_PASS product=2 ui=3 explicit_quality_preserved=true")
+    print(
+        "RUNTIME_SCHEMA_AUTOBIND_V3_PASS "
+        "ambiguous_blocked=true single_preserved=true explicit_quality_preserved=true schema_synthesis=false"
+    )
     return 0
 
 
