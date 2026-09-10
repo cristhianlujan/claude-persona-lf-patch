@@ -5,8 +5,24 @@
   "run_id": "S26-HP-001",
   "upstream": {
     "source_gate": "C_CARD_SELECTION",
-    "source_output_sha256": "0651c36584139aa9ca9da878e88d35b7f25bbd2aeca5fe91526cfad0257dcf3d",
+    "source_output_sha256": "674fc72f02eeb055abd721b077acc2ad9eb7d71919a8699e3c3c093075f62cbb",
     "input_sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1"
+  },
+  "governance_preflight": {
+    "source": "SUPABASE_CONTROL_PLANE",
+    "table": "public.lf_error_knowledge",
+    "schema_first_verified": true,
+    "observed_at": "2026-09-10T05:19:45.635009+00:00",
+    "broad_high_critical_active_count": 303,
+    "broad_snapshot_sha256": "d8670bb5b715ee0b89275d7e153080e15364ded55b8e9e5e4a954475803f03cd",
+    "applicable_codes": [
+      "AUD-019",
+      "GOV-023",
+      "GOV-032",
+      "PROFILE-CARD-RUNTIME-MATERIALIZATION-GAP-001"
+    ],
+    "snapshot_reused_from_gate_b": false,
+    "prior_gate_outputs_mutated": false
   },
   "input": {
     "surface_code": "UI_SCREEN_DESIGN",

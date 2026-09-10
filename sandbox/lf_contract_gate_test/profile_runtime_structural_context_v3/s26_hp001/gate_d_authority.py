@@ -46,6 +46,22 @@ def validate_authority_output(payload: dict[str, Any], gate_c: dict[str, Any], c
     c_input = c.get("input") or {}
     if upstream.get("input_sha256") != c_input.get("input_literal_sha256"):
         raise GateDAuthorityBlocked("GATE_D_UPSTREAM_INPUT_SHA_MISMATCH")
+    preflight = payload.get("governance_preflight") or {}
+    if preflight.get("source") != "SUPABASE_CONTROL_PLANE" or preflight.get("table") != "public.lf_error_knowledge":
+        raise GateDAuthorityBlocked("GATE_D_EKB_SOURCE_INVALID")
+    if preflight.get("schema_first_verified") is not True:
+        raise GateDAuthorityBlocked("GATE_D_EKB_SCHEMA_FIRST_MISSING")
+    if not isinstance(preflight.get("broad_high_critical_active_count"), int) or preflight["broad_high_critical_active_count"] <= 0:
+        raise GateDAuthorityBlocked("GATE_D_EKB_BROAD_SNAPSHOT_EMPTY")
+    digest = preflight.get("broad_snapshot_sha256")
+    if not isinstance(digest, str) or len(digest) != 64:
+        raise GateDAuthorityBlocked("GATE_D_EKB_SNAPSHOT_DIGEST_INVALID")
+    codes = preflight.get("applicable_codes") or []
+    for code in ("AUD-019", "GOV-023", "GOV-032", "PROFILE-CARD-RUNTIME-MATERIALIZATION-GAP-001"):
+        if code not in codes:
+            raise GateDAuthorityBlocked(f"GATE_D_EKB_REQUIRED_CONTROL_MISSING:{code}")
+    if preflight.get("snapshot_reused_from_gate_b") is not False or preflight.get("prior_gate_outputs_mutated") is not False:
+        raise GateDAuthorityBlocked("GATE_D_EKB_PRIOR_GATE_IMMUTABILITY_INVALID")
     expected = contract.get("stage_d_authority") or {}
     incoming = payload.get("input") or {}
     for key in ("surface_code", "task_code", "current_run_id"):

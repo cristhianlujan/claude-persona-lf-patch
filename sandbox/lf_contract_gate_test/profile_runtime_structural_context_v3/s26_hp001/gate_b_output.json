@@ -19,10 +19,10 @@
     "project_ref": "mhwmirqcgxxukpctffuv",
     "table": "public.lf_error_knowledge",
     "read_mode": "LIVE_CONTROL_PLANE_READBACK_MATERIALIZED",
-    "observed_at": "2026-09-10T05:19:45.635009+00:00",
+    "observed_at": "2026-09-10T03:56:04.482860+00:00",
     "schema_first_verified": true,
-    "broad_high_critical_active_count": 303,
-    "broad_snapshot_sha256": "d8670bb5b715ee0b89275d7e153080e15364ded55b8e9e5e4a954475803f03cd",
+    "broad_high_critical_active_count": 297,
+    "broad_snapshot_sha256": "edac5705e7f33a679681a9aa4ae8a30d60e8f4c35aa8eecc3b24d9419783a584",
     "selection_basis": {
       "project": "S26",
       "scope": "HP001_GATE_PIPELINE",
@@ -31,8 +31,7 @@
         "EKB_READ",
         "GITHUB_ACTIONS",
         "PROFILE_RUNTIME",
-        "SANDBOX_CONTRACT_VALIDATION",
-        "AUTHORITY_RESOLUTION"
+        "SANDBOX_CONTRACT_VALIDATION"
       ],
       "selection_mode": "TASK_SIGNATURE_TARGETED_FROM_BROAD_ACTIVE_SNAPSHOT"
     },
@@ -47,24 +46,13 @@
       {"codigo":"PROFILE-RUNTIME-EKB-PREFLIGHT-BENCHMARK-001","severidad":"ALTA","rationale":"EKB targeted preflight obligatorio antes de trabajo runtime/benchmark.","source_ref":"sentinelx://scalora-vps/job_426f36af2c5e|github://cristhianlujan/claude-persona-lf-patch/main@e17f45fdfecbd540cf9bd641ef48929b3586c475"},
       {"codigo":"PROFILES-EKB-PREFLIGHT-OMISSION-001","severidad":"ALTA","rationale":"Toda corrida de profiles debe demostrar EKB preflight antes de mutar.","source_ref":"supabase://public/lf_error_knowledge"},
       {"codigo":"S26-MANIFEST-CANONICAL-CONTRACT-DIVERGENCE-001","severidad":"HIGH","rationale":"Reusar contratos canónicos S26 y no crear un schema paralelo de cierre.","source_ref":"github://cristhianlujan/claude-persona-lf-patch/commit/fcc2b0d57e36a31c26f38acc2510b193aac988c8|github-actions://34141818287/job/101805261727|github-actions-artifact://10026667187"},
-      {"codigo":"S26-CANONICAL-DIRECT-ROUTER-SEMANTIC-FLOOR-VARIANCE-001","severidad":"ALTA","rationale":"Validar significado/estructura y no coincidencia léxica exacta en el gate semántico downstream.","source_ref":"github-actions://34187681102/job/101939247020|github-actions-artifact://10041083508|github://cristhianlujan/claude-persona-lf-patch/commit/a536e113ac76e1cbf118100a094fb9f3f312d383"},
-      {"codigo":"S26-GATE-A-TRANSITION-OUTPUT-001","severidad":"High","rationale":"Cada gate debe materializar un output versionado y el siguiente gate debe consumir su digest exacto.","source_ref":"github://cristhianlujan/claude-persona-lf-patch/pull/637@ad19bfb2f81f98c72fe874072d1686a6f3a2c3a6"},
-      {"codigo":"S26-GATE-B-EKB-TARGETING-STALE-LIST-001","severidad":"High","rationale":"Cada nuevo run debe hacer schema-first + snapshot amplio + selección por firma; el snapshot no es reutilizable entre runs.","source_ref":"github://cristhianlujan/claude-persona-lf-patch/pull/638@152b93b9a35d9b661e8e1fdc38758593e131a689"},
-      {"codigo":"S26-GATE-C-CANDIDATE-EVIDENCE-DIVERGENCE-001","severidad":"High","rationale":"No declarar Card revisada si no aparece realmente entre los candidatos entregados al selector.","source_ref":"github://cristhianlujan/claude-persona-lf-patch@152b93b9a35d9b661e8e1fdc38758593e131a689/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/happy_path_preexecution.py"},
-      {"codigo":"S26-GATE-C-NO-CARD-VALID-FALLBACK-001","severidad":"High","rationale":"Cero Cards aplicables es PASS cuando la Card no es obligatoria; debe continuar sin permitir invención de schema.","source_ref":"current-chat://LF-S26/2026-09-09/gate-c-no-card-valid-fallback"},
-      {"codigo":"S26-GATE-C-TEST-FIXTURE-GOVERNED-PATH-001","severidad":"High","rationale":"Fixtures sintéticas deben permanecer fuera de namespaces gobernados reales y sólo inyectarse en tests explícitos.","source_ref":"github-actions://cristhianlujan/claude-persona-lf-patch/actions/runs/34439382545/job/102751046236"},
-      {"codigo":"S26-E16-ISOLATED-PR-TRIGGER-MISMATCH-001","severidad":"High","rationale":"La matriz E16 debe ser producible por los triggers reales del workflow y la estrategia de branches.","source_ref":"github://cristhianlujan/claude-persona-lf-patch/pull/638@152b93b9a35d9b661e8e1fdc38758593e131a689"},
-      {"codigo":"GOV-023","severidad":"ALTA","rationale":"La autoridad semántica y el contrato del perfil deben ser compatibles; estructura válida no autoriza inventar verdad de negocio.","source_ref":"supabase://private/lf_profile_runtime_queue_v1?request_id=7f97961a-3afd-4d8a-9a3c-d08fc4160103"},
-      {"codigo":"AUD-019","severidad":"Critical","rationale":"La trazabilidad nominal no basta: cada autoridad material debe resolverse contra una fuente verificable.","source_ref":"programacion.fn_guard_input_validator_semantic_coherence_v512"},
-      {"codigo":"GOV-032","severidad":"alta","rationale":"Provenance PASS y receipt auténtico no sustituyen el gate semántico de calidad downstream.","source_ref":"supabase://mhwmirqcgxxukpctffuv/public.lf_strategy_snapshots/31"},
-      {"codigo":"PROFILE-CARD-RUNTIME-MATERIALIZATION-GAP-001","severidad":"CRITICAL","rationale":"Presencia de una Card en repositorio no equivale a Card materializada en el mismo request.","source_ref":"GitHub PR505; sandbox/lf_contract_gate_test/profile_execution_runtime/materialize_card_runtime_receipt.py"}
+      {"codigo":"S26-CANONICAL-DIRECT-ROUTER-SEMANTIC-FLOOR-VARIANCE-001","severidad":"ALTA","rationale":"Validar significado/estructura y no coincidencia léxica exacta en el gate semántico downstream.","source_ref":"github-actions://34187681102/job/101939247020|github-actions-artifact://10041083508|github://cristhianlujan/claude-persona-lf-patch/commit/a536e113ac76e1cbf118100a094fb9f3f312d383"}
     ],
     "not_applicable_current_stage": [
-      {"codigo":"CI-MIG-001","reason":"NO_MIGRATION_PATH_CHANGED_IN_GATE_D_FIX"},
+      {"codigo":"CI-MIG-001","reason":"NO_MIGRATION_PATH_CHANGED_IN_GATE_B_FIX"},
       {"codigo":"CI-014","reason":"ISOLATED_CANDIDATE_NOT_PROMOTION_TO_MAIN; REEVALUATE_AT_PROMOTION"},
-      {"codigo":"S26-MIGRATION-PARITY-REMOTE-ONLY-001","reason":"NO_MIGRATION_PATH_CHANGED_IN_GATE_D_FIX"},
-      {"codigo":"S26-CLOUDFLARE-ZERO-COST-BILLING-READ-403-001","reason":"NO_REMOTE_MODEL_RUNTIME_EXECUTION_IN_GATE_D"},
-      {"codigo":"GOV-012","reason":"NO_NOT_APPLICABLE_AUTHORITY_DECISION_IN_HP001_GATE_D"}
+      {"codigo":"S26-MIGRATION-PARITY-REMOTE-ONLY-001","reason":"NO_MIGRATION_PATH_CHANGED_IN_GATE_B_FIX"},
+      {"codigo":"S26-CLOUDFLARE-ZERO-COST-BILLING-READ-403-001","reason":"NO_REMOTE_MODEL_RUNTIME_EXECUTION_IN_GATE_B"}
     ],
     "snapshot_scope": "S26-HP-001_ONLY",
     "reusable_for_new_run": false
