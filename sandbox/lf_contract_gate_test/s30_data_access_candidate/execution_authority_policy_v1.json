@@ -23,12 +23,108 @@
     "materialization": "DETERMINISTIC",
     "guards": "DETERMINISTIC",
     "final_structural_validation": "DETERMINISTIC",
-    "model_output_is_authority": false
+    "model_output_is_authority": false,
+    "semantic_delta_validation": "DETERMINISTIC",
+    "calculable_scoring": "DETERMINISTIC",
+    "handoff": "DETERMINISTIC",
+    "technical_verdict": "DETERMINISTIC",
+    "receipts": "DETERMINISTIC"
   },
   "fail_closed": {
     "unknown_category": "BLOCK_EXECUTION_AUTHORITY_UNKNOWN_CATEGORY",
     "ambiguous_semantic_gate": "BLOCK_EXECUTION_AUTHORITY_AMBIGUOUS",
     "model_reason_missing": "BLOCK_MODEL_REASON_MISSING",
-    "final_validation_failure": "BLOCK_FINAL_DETERMINISTIC_VALIDATION"
+    "final_validation_failure": "BLOCK_FINAL_DETERMINISTIC_VALIDATION",
+    "model_output_contract_invalid": "BLOCK_MODEL_SEMANTIC_DELTA_CONTRACT",
+    "model_system_owned_field": "BLOCK_MODEL_SYSTEM_OWNED_FIELD",
+    "model_input_policy_violation": "BLOCK_MODEL_INPUT_POLICY_VIOLATION"
+  },
+  "work_classification": {
+    "allowed": [
+      "DETERMINISTIC",
+      "SEMANTIC",
+      "HYBRID"
+    ],
+    "deterministic_if_fully_derivable": true,
+    "semantic_if_only_non_derivable_reasoning_remains": true,
+    "hybrid_if_deterministic_graph_plus_semantic_gap": true
+  },
+  "canonical_working_graph": {
+    "contract_version": "S30_CANONICAL_WORKING_GRAPH_V1",
+    "authority_sources": [
+      "AUTHORITY",
+      "CARDS",
+      "TYPED_CONTEXT",
+      "EKB",
+      "CONTRACTS"
+    ],
+    "constructed_by": "DETERMINISTIC",
+    "model_may_mutate": false,
+    "system_owned_dimensions": [
+      "ids",
+      "bindings",
+      "source_values",
+      "known_component_content",
+      "authority_states",
+      "canonical_tokens",
+      "routing",
+      "contracts",
+      "hashes"
+    ]
+  },
+  "model_input_policy": {
+    "mode": "COMPACT_SEMANTIC_GAP_ONLY",
+    "allowed_task_fields": [
+      "semantic_context",
+      "unresolved_semantic_gap",
+      "candidate_alternatives",
+      "semantic_constraints"
+    ],
+    "administrative_context_forwarded": false,
+    "canonical_working_graph_forwarded": false
+  },
+  "semantic_delta_contract": {
+    "contract_version": "S30_SEMANTIC_DELTA_V1",
+    "root_key": "semantic_delta",
+    "required_fields": [
+      "decisions",
+      "proposals",
+      "rationale",
+      "unresolved"
+    ],
+    "additional_properties": false,
+    "field_type": "array",
+    "system_owned_fields_forbidden": [
+      "worker",
+      "output_type",
+      "id",
+      "ids",
+      "bindings",
+      "source_values",
+      "known_component_content",
+      "authority_states",
+      "canonical_tokens",
+      "score",
+      "handoff_to_next",
+      "self_verdict",
+      "governance_envelope",
+      "composer_payload",
+      "hash",
+      "hashes",
+      "receipts",
+      "source_refs",
+      "execution_id"
+    ]
+  },
+  "scoring_policy": {
+    "calculable_score_authority": "DETERMINISTIC",
+    "model_may_emit_calculable_score": false,
+    "semantic_quality_may_use_independent_judge": true
+  },
+  "judge_policy": {
+    "producer_self_verdict_allowed": false,
+    "independent_semantic_judge_role": "EVALUATION_ONLY",
+    "independent_judge_may_replace_hard_guards": false,
+    "independent_judge_may_generate_system_owned_fields": false
   }
 }

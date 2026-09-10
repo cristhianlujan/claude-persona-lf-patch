@@ -12,13 +12,17 @@
     },
     "EKB_APPLICABLE": {
       "status": "PROVEN",
-      "evidence": "Fresh schema-first read of public.lf_error_knowledge before governed materialization.",
+      "evidence": "Fresh schema-first read of public.lf_error_knowledge before this refinement. Existing active patterns GOV-TRANSVERSAL-MATERIALIZATION-PATTERN-001 and AB-PROFILE-QUALITY-GATE-001 were consumed as read-only architecture references; no EKB mutation is claimed.",
       "loaded_codes": [
         "DB-001",
         "GOV-010",
         "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001",
         "SQL-007",
         "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001"
+      ],
+      "reference_patterns_consumed": [
+        "GOV-TRANSVERSAL-MATERIALIZATION-PATTERN-001",
+        "AB-PROFILE-QUALITY-GATE-001"
       ]
     },
     "DATA_ACCESS_BINDINGS": {
@@ -86,11 +90,11 @@
     },
     "ALL_INTENDED_STEPS": {
       "status": "PROVEN",
-      "evidence": "Intended steps frozen: rebind current registry fingerprint, rematerialize bounded read budgets, add deterministic-first execution-authority policy, tests, staging CI, governed broker readback."
+      "evidence": "Intended steps frozen: current registry binding, bounded read budgets, DETERMINISTIC/SEMANTIC/HYBRID classification, compact semantic-gap-only model request, semantic_delta-only model output contract, deterministic materialization/scoring/handoff/verdict/receipts, tests, staging CI and governed broker readback."
     },
     "JUDGES_AND_RESULT_VOCABULARY": {
       "status": "PROVEN",
-      "evidence": "Result vocabulary frozen to PREEXECUTION_DATA_ACCESS_RESULT PASS|BLOCKED plus execution authority DETERMINISTIC|MODEL_REQUIRED|BLOCKED."
+      "evidence": "Execution authority is DETERMINISTIC|MODEL_REQUIRED|BLOCKED; work classification is DETERMINISTIC|SEMANTIC|HYBRID. Producer self_verdict is forbidden; optional independent semantic judge is EVALUATION_ONLY and never replaces hard guards."
     },
     "DEPENDENCIES_AND_IMPORT_CLOSURE": {
       "status": "PROVEN",
@@ -110,7 +114,7 @@
     },
     "EXPECTED_OUTPUT_CONTRACT": {
       "status": "PROVEN",
-      "evidence": "Claim ceiling FIELD_LEVEL_DATA_ACCESS_AND_SCHEMA_SAFETY_CANDIDATE_PASS; no autonomy/runtime/production claim."
+      "evidence": "Claim remains bounded to S30-B candidate. Model may emit only S30_SEMANTIC_DELTA_V1 {decisions,proposals,rationale,unresolved}; system-owned fields remain deterministic; no autonomy/runtime/production claim."
     }
   },
   "preflight_checks": {
