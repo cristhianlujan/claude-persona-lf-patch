@@ -1,0 +1,171 @@
+name: S28 Input Governance IG006 IG007 rollback canary
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+    paths:
+      - "sandbox/s28-input-governance-ig006-ig007-candidate-20260906.sql"
+      - "sandbox/s28-input-governance-ig006-ig007-canary-20260906.sql"
+      - ".github/workflows/s28-input-governance-ig006-ig007-rollback-canary.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: s28-ig006-ig007-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  rollback-canary:
+    if: >-
+      github.event.pull_request.head.ref == 'lf/s28-ig006-ig007-rebind-graph-fingerprint-20260906' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+      SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+      BASELINE_REBIND_SHA: "1bbf57bb5f51fff22e540664a3fe4e07a547a5e62b855c69abb2f981e5d92c79"
+      BASELINE_ASSERTIONS_SHA: "d02e3d07523debdb2acf38f46a7ebfd4c0b7d8d5238ed4b5d13de3581e9d4822"
+      BASELINE_REBIND_ASSERTION_SHA: "b3ab572553e592fa8e8c64b9031ec741936995be67c2c469c2a0834ce11d6f9e"
+      BASELINE_INSERT_GUARD_SHA: "d000493dce8f7d25139c20c75025a0a0c6dd5041547f6469aecf6d373acad574"
+
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+
+      - name: Preflight baseline identity and zero candidate residue
+        shell: bash
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_DB_PASSWORD:-}"
+          test -f sandbox/s28-input-governance-ig006-ig007-candidate-20260906.sql
+          test -f sandbox/s28-input-governance-ig006-ig007-canary-20260906.sql
+
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGPASSWORD="$SUPABASE_DB_PASSWORD"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+
+          docker run --rm \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            postgres:17.6 psql -X -v ON_ERROR_STOP=1 -c "
+          do \$preflight\$
+          declare
+            v_rebind text;
+            v_assertions text;
+            v_rebind_assertion text;
+            v_guard text;
+            v_exec text;
+            v_candidates integer;
+            v_test_runs integer;
+          begin
+            select pg_get_functiondef('programacion.fn_input_governance_curator_rebind_v1(integer,text,text,boolean)'::regprocedure),
+                   pg_get_functiondef('programacion.fn_input_v58_build_assertions(bigint,bigint,text)'::regprocedure),
+                   pg_get_functiondef('programacion.fn_input_rebind_assertion(bigint,text,jsonb)'::regprocedure),
+                   pg_get_functiondef('programacion.fn_guard_input_family_assessment_insert()'::regprocedure),
+                   pg_get_functiondef('programacion.fn_input_governance_execute(integer,text)'::regprocedure)
+              into v_rebind,v_assertions,v_rebind_assertion,v_guard,v_exec;
+            if encode(extensions.digest(convert_to(v_rebind,'UTF8'),'sha256'),'hex') <> '${BASELINE_REBIND_SHA}' then raise exception 'S28_IG006_REBIND_BASELINE_SHA_DRIFT'; end if;
+            if encode(extensions.digest(convert_to(v_assertions,'UTF8'),'sha256'),'hex') <> '${BASELINE_ASSERTIONS_SHA}' then raise exception 'S28_IG006_ASSERTIONS_BASELINE_SHA_DRIFT'; end if;
+            if encode(extensions.digest(convert_to(v_rebind_assertion,'UTF8'),'sha256'),'hex') <> '${BASELINE_REBIND_ASSERTION_SHA}' then raise exception 'S28_IG006_REBIND_ASSERTION_BASELINE_SHA_DRIFT'; end if;
+            if encode(extensions.digest(convert_to(v_guard,'UTF8'),'sha256'),'hex') <> '${BASELINE_INSERT_GUARD_SHA}' then raise exception 'S28_IG007_INSERT_GUARD_BASELINE_SHA_DRIFT'; end if;
+            if position('fn_input_governance_curator_rebind_candidate_v1' in v_exec)>0 then raise exception 'S28_IG006_LIVE_EXECUTE_ALREADY_CANDIDATE'; end if;
+
+            perform 'programacion.fn_input_governance_bootstrap_classify_v2_cached_v2(integer,text,bigint,jsonb)'::regprocedure;
+            perform 'programacion.fn_input_readiness_run_is_current_cached_v2(bigint)'::regprocedure;
+
+            select count(*) into v_candidates from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+            where n.nspname='programacion' and p.proname in ('fn_input_rebind_assertion_cached_v1','fn_input_v58_build_assertions_cached_v1','fn_input_governance_curator_rebind_candidate_v1');
+            if v_candidates<>0 then raise exception 'S28_IG006_PREEXISTING_CANDIDATE_RESIDUE:%',v_candidates; end if;
+
+            select count(*) into v_test_runs from programacion.input_readiness_runs
+            where curator_identity like 'INPUT_CURATOR:EDGE:input-governance-curator-v1:S28IG006_%'
+               or validator_identity like 'INPUT_VALIDATOR:EDGE:input-governance-validator-v1:S28IG006_%';
+            if v_test_runs<>0 then raise exception 'S28_IG006_PREEXISTING_TEST_RUNS:%',v_test_runs; end if;
+          end;
+          \$preflight\$;
+          "
+
+      - name: Run transactional candidate and behavioral canary
+        shell: bash
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGPASSWORD="$SUPABASE_DB_PASSWORD"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+
+          docker run --rm \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            -v "$GITHUB_WORKSPACE:/workspace:ro" -w /workspace \
+            postgres:17.6 psql -X -v ON_ERROR_STOP=1 \
+            -f sandbox/s28-input-governance-ig006-ig007-candidate-20260906.sql \
+            -f sandbox/s28-input-governance-ig006-ig007-canary-20260906.sql \
+            | tee "$RUNNER_TEMP/s28-ig006-ig007-canary.log"
+
+          grep -q 'B2B-CARGA-001' "$RUNNER_TEMP/s28-ig006-ig007-canary.log"
+          grep -q 'HOME_002' "$RUNNER_TEMP/s28-ig006-ig007-canary.log"
+          grep -q 'PASS' "$RUNNER_TEMP/s28-ig006-ig007-canary.log"
+
+      - name: Post-rollback readback
+        shell: bash
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGPASSWORD="$SUPABASE_DB_PASSWORD"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+
+          docker run --rm \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            postgres:17.6 psql -X -v ON_ERROR_STOP=1 -c "
+          do \$verify\$
+          declare
+            v_candidates integer;
+            v_test_runs integer;
+            v_rebind text;
+            v_assertions text;
+            v_rebind_assertion text;
+            v_guard text;
+            v_exec text;
+          begin
+            select count(*) into v_candidates from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+            where n.nspname='programacion' and p.proname in ('fn_input_rebind_assertion_cached_v1','fn_input_v58_build_assertions_cached_v1','fn_input_governance_curator_rebind_candidate_v1');
+            if v_candidates<>0 then raise exception 'S28_IG006_POSTROLLBACK_FUNCTION_RESIDUE:%',v_candidates; end if;
+
+            select count(*) into v_test_runs from programacion.input_readiness_runs
+            where curator_identity like 'INPUT_CURATOR:EDGE:input-governance-curator-v1:S28IG006_%'
+               or validator_identity like 'INPUT_VALIDATOR:EDGE:input-governance-validator-v1:S28IG006_%';
+            if v_test_runs<>0 then raise exception 'S28_IG006_POSTROLLBACK_RUN_RESIDUE:%',v_test_runs; end if;
+
+            select pg_get_functiondef('programacion.fn_input_governance_curator_rebind_v1(integer,text,text,boolean)'::regprocedure),
+                   pg_get_functiondef('programacion.fn_input_v58_build_assertions(bigint,bigint,text)'::regprocedure),
+                   pg_get_functiondef('programacion.fn_input_rebind_assertion(bigint,text,jsonb)'::regprocedure),
+                   pg_get_functiondef('programacion.fn_guard_input_family_assessment_insert()'::regprocedure),
+                   pg_get_functiondef('programacion.fn_input_governance_execute(integer,text)'::regprocedure)
+              into v_rebind,v_assertions,v_rebind_assertion,v_guard,v_exec;
+            if encode(extensions.digest(convert_to(v_rebind,'UTF8'),'sha256'),'hex') <> '${BASELINE_REBIND_SHA}' then raise exception 'S28_IG006_POST_REBIND_SHA_DRIFT'; end if;
+            if encode(extensions.digest(convert_to(v_assertions,'UTF8'),'sha256'),'hex') <> '${BASELINE_ASSERTIONS_SHA}' then raise exception 'S28_IG006_POST_ASSERTIONS_SHA_DRIFT'; end if;
+            if encode(extensions.digest(convert_to(v_rebind_assertion,'UTF8'),'sha256'),'hex') <> '${BASELINE_REBIND_ASSERTION_SHA}' then raise exception 'S28_IG006_POST_REBIND_ASSERTION_SHA_DRIFT'; end if;
+            if encode(extensions.digest(convert_to(v_guard,'UTF8'),'sha256'),'hex') <> '${BASELINE_INSERT_GUARD_SHA}' then raise exception 'S28_IG007_POST_INSERT_GUARD_SHA_DRIFT'; end if;
+            if position('fn_input_governance_curator_rebind_candidate_v1' in v_exec)>0 then raise exception 'S28_IG006_POST_LIVE_EXECUTE_CONTAMINATED'; end if;
+          end;
+          \$verify\$;
+          "
