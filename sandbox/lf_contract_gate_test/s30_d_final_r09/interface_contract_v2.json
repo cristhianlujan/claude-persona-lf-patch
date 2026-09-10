@@ -1,0 +1,21 @@
+{
+  "calculable_scoring_authority": "DETERMINISTIC",
+  "contract": "S30_D_INTEGRATION_CONTRACT_V2",
+  "execution_authority_default": "DETERMINISTIC_FIRST",
+  "failure_action": "BLOCK_FINAL_ACCEPTANCE",
+  "final_acceptance_requires": [
+    "S30-A_CLOSEOUT_BOUND",
+    "S30-B_FINAL_CLOSED",
+    "S30-C_READY_RECEIPT_HASH_BOUND",
+    "S30-C_POST_MERGE_VALIDATE_LF_PACKS_SUCCESS",
+    "S30-C_POST_MERGE_LF_CONTRACT_CHECK_SUCCESS",
+    "R09_52_CASE_FROZEN_CAMPAIGN_ZERO_PREVENTABLE_ESCAPES",
+    "INDEPENDENT_READBACK_PASS"
+  ],
+  "independent_semantic_judge_role": "EVALUATION_ONLY",
+  "materialization_authority": "DETERMINISTIC",
+  "model_calls_for_machine_detectable_replay_must_equal": 0,
+  "model_output_contract": "S30_SEMANTIC_DELTA_V1",
+  "producer_self_verdict_allowed": false,
+  "scope": "SANDBOX_ONLY"
+}

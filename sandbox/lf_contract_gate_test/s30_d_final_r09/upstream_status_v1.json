@@ -1,0 +1,48 @@
+{
+  "base_main_sha": "52ffabd18c14e24c62e54f4cd5063b68f651e4c7",
+  "blocking_reason": "S30_C_POST_MERGE_LF_CONTRACT_CHECK_NOT_GREEN",
+  "contract": "S30_D_UPSTREAM_STATUS_V1",
+  "final_r09_acceptance_allowed": false,
+  "lane_states": {
+    "S30-A": "CLOSEOUT_BOUND",
+    "S30-B": "FINAL_CLOSED",
+    "S30-C": "MERGED_READY_FOR_FINAL_R09_INTEGRATION_WITH_EXTERNAL_POST_MERGE_BLOCKER"
+  },
+  "s30_c_post_merge_ci": {
+    "lf_contract_check": {
+      "blocking_code": "FAIL_P0_EXACT_HEAD_NEGATIVE_PROBE_MISMATCH",
+      "conclusion": "FAILURE",
+      "external_cause": "exceed_egress_quota",
+      "run_id": 34512385209
+    },
+    "validate_lf_packs": {
+      "conclusion": "SUCCESS",
+      "run_id": 34512385215
+    }
+  },
+  "safety": {
+    "production_changed": false,
+    "runtime_changed": false,
+    "s26_changed": false,
+    "scheduler_changed": false,
+    "snapshot_35_write": false
+  },
+  "upstream_bindings": {
+    "S30-A": {
+      "path": "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json",
+      "sha256": "69e3972c0b3677232a01f5c33fd0f77ccbbc28901ad477fcb96892257a00f9ff"
+    },
+    "S30-B": {
+      "path": "sandbox/lf_contract_gate_test/s30_data_access_candidate/s30_b_final_receipt_v1.json",
+      "sha256": "ab902a8519a822679916b1a5dd3a1a8ab48f872fe4b0865bbac49d884c29f7ab"
+    },
+    "S30-B-evidence": {
+      "path": "sandbox/lf_contract_gate_test/s30_data_access_candidate/s30_b_candidate_evidence_v4.json",
+      "sha256": "a7af3b49672ef3ad5d8c9e1193758f9e9366d5a0022f0697974c2917f5703527"
+    },
+    "S30-C": {
+      "path": "sandbox/lf_contract_gate_test/s30_c_reliability_harness/s30_c_ready_receipt_v3.json",
+      "sha256": "cc7852cbb9c5c69ce73e3ef6da7b7cd8273c4bdd7a85033648c6f27837e2fc6a"
+    }
+  }
+}

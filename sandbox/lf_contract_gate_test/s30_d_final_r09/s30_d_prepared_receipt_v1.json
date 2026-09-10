@@ -1,0 +1,17 @@
+{
+  "artifacts": {
+    "interface_contract_v2.json": "35bfe5b64dd571ba72cdcc5d3ffcbf3da7fdb192b66069654fdd2fd82dbd70cb",
+    "r09_corpus_v2.json": "0eabbda1741ec79aeb271bc0a8be3e6b9eca7ccb34e50cd4656f05d2d54278c3",
+    "s30d_integration_gate_v2.py": "9b985cfd385d7b5da52a75b601ca2dd57b69dae7c4c22084c47e49861f73b49d",
+    "s30d_r09_v2.py": "8378ba6e9c76ce0c15ee3724ce6546c13d0d3b2ad58f2fe1435fb14790de3c14",
+    "test_s30d_final_r09.py": "cf5dbe494858390468fbe95be31c0a1c43a6789463090e4f64ac05635b25a3af",
+    "upstream_status_v1.json": "67b59fd1c1b0492a3cc9b0a607f50b318cceac4a3feeb20706b5fbb22d1aea55"
+  },
+  "base_main_sha": "52ffabd18c14e24c62e54f4cd5063b68f651e4c7",
+  "contract": "S30_D_PREPARED_MANIFEST_V1",
+  "final_acceptance_allowed": false,
+  "model_calls": 0,
+  "next_gate": "S30_C_POST_MERGE_LF_CONTRACT_CHECK_SUCCESS_THEN_FINAL_R09",
+  "r09_case_count": 52,
+  "status": "PREPARED_BLOCKED_UPSTREAM_C_EXTERNAL_CI"
+}

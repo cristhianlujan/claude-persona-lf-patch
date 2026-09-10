@@ -1,0 +1,502 @@
+{
+  "base_main_sha": "52ffabd18c14e24c62e54f4cd5063b68f651e4c7",
+  "case_count": 52,
+  "cases": [
+    {
+      "case_id": "A01",
+      "category": "DB_SCHEMA",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "SCHEMA_AND_CONSTRAINTS_RESOLVED",
+      "fault_kind": "db_001_missing_column",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "A02",
+      "category": "DB_SCHEMA",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "SCHEMA_AND_CONSTRAINTS_RESOLVED",
+      "fault_kind": "column_nonexistent",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "A03",
+      "category": "DB_SCHEMA",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "SCHEMA_AND_CONSTRAINTS_RESOLVED",
+      "fault_kind": "wrong_table_view",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "A04",
+      "category": "DB_SCHEMA",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "SCHEMA_AND_CONSTRAINTS_RESOLVED",
+      "fault_kind": "generated_always_identity",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "A05",
+      "category": "DB_SCHEMA",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED",
+      "fault_kind": "wrong_function_schema",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "A06",
+      "category": "DB_SCHEMA",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED",
+      "fault_kind": "dependent_signature_absent",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "A07",
+      "category": "DB_SCHEMA",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "DATA_ACCESS_BINDINGS",
+      "fault_kind": "stale_schema_fingerprint",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "B01",
+      "category": "EKB_PROCESS",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "EKB_APPLICABLE",
+      "fault_kind": "gov_010",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "B02",
+      "category": "EKB_PROCESS",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "EKB_APPLICABLE",
+      "fault_kind": "ekb_not_loaded",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "B03",
+      "category": "EKB_PROCESS",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "EKB_APPLICABLE",
+      "fault_kind": "machine_detectable_closed_text_only",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "C01",
+      "category": "DATA_ACCESS",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "DATA_ACCESS_BINDINGS",
+      "fault_kind": "field_level_resolver_gap",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "C02",
+      "category": "DATA_ACCESS",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "DATA_ACCESS_BINDINGS",
+      "fault_kind": "registered_source_free_sql",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "C03",
+      "category": "DATA_ACCESS",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "SCHEMA_AND_CONSTRAINTS_RESOLVED",
+      "fault_kind": "unknown_source_no_schema_receipt",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "C04",
+      "category": "DATA_ACCESS",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "DATA_ACCESS_BINDINGS",
+      "fault_kind": "stale_binding",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "D01",
+      "category": "IMPORTS_DEPENDENCIES",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "IMPORT_CLOSURE",
+      "fault_kind": "module_topology_missing",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "D02",
+      "category": "IMPORTS_DEPENDENCIES",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "REQUIRED_FILES_EXIST",
+      "fault_kind": "required_file_missing",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "D03",
+      "category": "IMPORTS_DEPENDENCIES",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "IMPORT_CLOSURE",
+      "fault_kind": "importlib_direct_mismatch",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "D04",
+      "category": "IMPORTS_DEPENDENCIES",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "IMPORT_CLOSURE",
+      "fault_kind": "dependency_absent",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "E01",
+      "category": "CI_WIRING",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "CI_RUNNER_WIRING_CONFIRMED",
+      "fault_kind": "regression_not_executed",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "E02",
+      "category": "CI_WIRING",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "CI_RUNNER_WIRING_CONFIRMED",
+      "fault_kind": "wrong_workflow",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "E03",
+      "category": "CI_WIRING",
+      "expected_decision": "N/A",
+      "expected_first_bad_hop": "CI_OWNERSHIP",
+      "fault_kind": "unrelated_migration_parity",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "E04",
+      "category": "CI_WIRING",
+      "expected_decision": "N/A",
+      "expected_first_bad_hop": "CI_OWNERSHIP",
+      "fault_kind": "unrelated_external_broker",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "E05",
+      "category": "CI_WIRING",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "CI_OWNERSHIP",
+      "fault_kind": "unknown_path_false_na",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "E06",
+      "category": "CI_WIRING",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "CI_OWNERSHIP",
+      "fault_kind": "mixed_ownership_false_na",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "F01",
+      "category": "EVIDENCE_HANDOFF",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "EVIDENCE_RESOLUTION",
+      "fault_kind": "artifact_absent",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "F02",
+      "category": "EVIDENCE_HANDOFF",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "EVIDENCE_RESOLUTION",
+      "fault_kind": "bundle_incomplete",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "F03",
+      "category": "EVIDENCE_HANDOFF",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "EVIDENCE_RESOLUTION",
+      "fault_kind": "payload_hash_mismatch",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "F04",
+      "category": "EVIDENCE_HANDOFF",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "EVIDENCE_RESOLUTION",
+      "fault_kind": "upstream_contract_absent",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "F05",
+      "category": "EVIDENCE_HANDOFF",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "EVIDENCE_RESOLUTION",
+      "fault_kind": "reviewer_depends_on_producer_chat",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "F06",
+      "category": "EVIDENCE_HANDOFF",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "EVIDENCE_RESOLUTION",
+      "fault_kind": "network_off_insufficient",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "G01",
+      "category": "FREEZE_CURRENTNESS",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "FREEZE_CURRENTNESS",
+      "fault_kind": "contract_modified_after_freeze",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "G02",
+      "category": "FREEZE_CURRENTNESS",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "FREEZE_CURRENTNESS",
+      "fault_kind": "candidate_repaired_without_new_run",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "G03",
+      "category": "FREEZE_CURRENTNESS",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "FREEZE_CURRENTNESS",
+      "fault_kind": "old_head_evidence_on_new_head",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "G04",
+      "category": "FREEZE_CURRENTNESS",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "FREEZE_CURRENTNESS",
+      "fault_kind": "b_stale_without_revalidation",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "G05",
+      "category": "FREEZE_CURRENTNESS",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "FREEZE_CURRENTNESS",
+      "fault_kind": "lane_repair_mutates_other_lane",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "H01",
+      "category": "TOOL_API",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED",
+      "fault_kind": "nonexistent_argument",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "H02",
+      "category": "TOOL_API",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED",
+      "fault_kind": "wrong_function",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "H03",
+      "category": "TOOL_API",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "SCHEMA_AND_CONSTRAINTS_RESOLVED",
+      "fault_kind": "remembered_unresolved_field",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "H04",
+      "category": "TOOL_API",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED",
+      "fault_kind": "parameter_schema_not_read",
+      "machine_detectable": true,
+      "self_application": false
+    },
+    {
+      "case_id": "S01",
+      "category": "SELF_APPLICATION",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "EKB_APPLICABLE",
+      "fault_kind": "self_skip_ekb",
+      "machine_detectable": true,
+      "self_application": true
+    },
+    {
+      "case_id": "S02",
+      "category": "SELF_APPLICATION",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "SCHEMA_AND_CONSTRAINTS_RESOLVED",
+      "fault_kind": "self_unresolved_column",
+      "machine_detectable": true,
+      "self_application": true
+    },
+    {
+      "case_id": "S03",
+      "category": "SELF_APPLICATION",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "EXPECTED_OUTPUT_SCHEMA_COMPLETE",
+      "fault_kind": "self_omit_expected_output",
+      "machine_detectable": true,
+      "self_application": true
+    },
+    {
+      "case_id": "S04",
+      "category": "SELF_APPLICATION",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "FREEZE_CURRENTNESS",
+      "fault_kind": "self_mutate_frozen_hash",
+      "machine_detectable": true,
+      "self_application": true
+    },
+    {
+      "case_id": "S05",
+      "category": "SELF_APPLICATION",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "FREEZE_CURRENTNESS",
+      "fault_kind": "self_use_stale_receipt",
+      "machine_detectable": true,
+      "self_application": true
+    },
+    {
+      "case_id": "S06",
+      "category": "SELF_APPLICATION",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "CI_OWNERSHIP",
+      "fault_kind": "self_unknown_ci_ownership",
+      "machine_detectable": true,
+      "self_application": true
+    },
+    {
+      "case_id": "S07",
+      "category": "SELF_APPLICATION",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED",
+      "fault_kind": "self_omit_negative_path",
+      "machine_detectable": true,
+      "self_application": true
+    },
+    {
+      "case_id": "I01",
+      "category": "EXECUTION_AUTHORITY",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "EXECUTION_AUTHORITY_ROUTER",
+      "fault_kind": "derivable_work_sent_to_model",
+      "machine_detectable": true,
+      "self_application": false,
+      "source_ref": "S30-B:S30_EXECUTION_AUTHORITY_V1"
+    },
+    {
+      "case_id": "I02",
+      "category": "EXECUTION_AUTHORITY",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "SEMANTIC_DELTA_SCHEMA",
+      "fault_kind": "model_system_owned_field",
+      "machine_detectable": true,
+      "self_application": false,
+      "source_ref": "S30-B:S30_SEMANTIC_DELTA_V1"
+    },
+    {
+      "case_id": "I03",
+      "category": "EXECUTION_AUTHORITY",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "CALCULABLE_SCORING_AUTHORITY",
+      "fault_kind": "calculable_score_delegated_to_model",
+      "machine_detectable": true,
+      "self_application": false,
+      "source_ref": "S30-B:S30_EXECUTION_AUTHORITY_V1"
+    },
+    {
+      "case_id": "I04",
+      "category": "EXECUTION_AUTHORITY",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "PRODUCER_VERDICT_BOUNDARY",
+      "fault_kind": "producer_self_verdict",
+      "machine_detectable": true,
+      "self_application": false,
+      "source_ref": "S30-B:S30_EXECUTION_AUTHORITY_V1"
+    },
+    {
+      "case_id": "I05",
+      "category": "EXECUTION_AUTHORITY",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "DETERMINISTIC_MATERIALIZATION",
+      "fault_kind": "nondeterministic_materialization",
+      "machine_detectable": true,
+      "self_application": false,
+      "source_ref": "S30-B:S30_EXECUTION_AUTHORITY_V1"
+    },
+    {
+      "case_id": "I06",
+      "category": "EXECUTION_AUTHORITY",
+      "expected_decision": "BLOCK",
+      "expected_first_bad_hop": "JUDGE_ROLE_BOUNDARY",
+      "fault_kind": "semantic_judge_replaces_guard",
+      "machine_detectable": true,
+      "self_application": false,
+      "source_ref": "S30-B:S30_EXECUTION_AUTHORITY_V1"
+    }
+  ],
+  "corpus_id": "S30-D-R09-FINAL-HISTORICAL-REPLAY-v2",
+  "corpus_version": "v2-rematerialized-current-main",
+  "historical_source": {
+    "branch": "lf/s30-d-final-freeze-20260909",
+    "case_count": 46,
+    "corpus_id": "S30-D-R09-FINAL-HISTORICAL-REPLAY-v1",
+    "sha256": "1a515ab6b11e441f7c21451061e391e7f86be16c39393c3a2049bd33546348fa"
+  },
+  "new_rules_extension": {
+    "case_count": 6,
+    "case_ids": [
+      "I01",
+      "I02",
+      "I03",
+      "I04",
+      "I05",
+      "I06"
+    ],
+    "rule": "DETERMINISTIC_FIRST_MODEL_ONLY_ON_NON_DERIVABLE_SEMANTIC_GAP",
+    "source": "S30-C replay_corpus.json + S30-B S30_EXECUTION_AUTHORITY_V1"
+  },
+  "self_application_case_count": 7
+}
