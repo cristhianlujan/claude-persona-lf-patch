@@ -15,7 +15,7 @@
   },
   "claim_ceiling": "EVIDENCE_FREEZE_AND_REPLAY_HARNESS_READY",
   "closeout_candidate_merge_sha": "bbce2cbbd8be2821db86c6feb31bb43a1826a989",
-  "contract": "S30_C_FINAL_CLOSEOUT_RECEIPT_V1",
+  "contract": "S30_C_TERMINAL_CLOSEOUT_RECEIPT_V1",
   "durable_persistence_state": "PENDING_THIS_GOVERNED_PROMOTION",
   "evidence_base_main_sha": "bbce2cbbd8be2821db86c6feb31bb43a1826a989",
   "exact_main_ci": {
@@ -28,6 +28,7 @@
       "run_id": 34527668888
     }
   },
+  "final_closed_now": true,
   "main_merge_authorized": false,
   "promotion_authority": "NONE",
   "router_fix_merge_sha": "4cbb5d9785630b50f7d997369589e49e03a520cc",
@@ -47,6 +48,7 @@
     "supabase_write": false
   },
   "semantic_terminal_state": "FINAL_CLOSED_VERIFIED",
+  "terminal_state": "FINAL_CLOSED",
   "verification": {
     "closeout_candidate_tests": "PASS_5_OF_5",
     "false_pass_count": 0,

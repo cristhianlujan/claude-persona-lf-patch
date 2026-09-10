@@ -4,7 +4,7 @@ from pathlib import Path
 HERE=Path(__file__).resolve().parent; ROOT=HERE.parents[2]
 def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
 class T(unittest.TestCase):
- def setUp(self): self.r=json.loads((HERE/"s30_c_final_closeout_receipt_v1.json").read_text())
+ def setUp(self): self.r=json.loads((HERE/"s30_c_terminal_closeout_receipt_v1.json").read_text())
  def test_exact_main_evidence_green(self):
   self.assertEqual(self.r["evidence_base_main_sha"],"bbce2cbbd8be2821db86c6feb31bb43a1826a989")
   self.assertEqual(self.r["exact_main_ci"]["validate_lf_packs"]["conclusion"],"SUCCESS")
@@ -14,7 +14,7 @@ class T(unittest.TestCase):
  def test_bindings_current(self):
   for b in self.r["bindings"].values(): self.assertEqual(sha(ROOT/b["path"]),b["sha256"])
  def test_terminal_semantics_verified_but_persistence_pending(self):
-  self.assertEqual(self.r["semantic_terminal_state"],"FINAL_CLOSED_VERIFIED"); self.assertEqual(self.r["durable_persistence_state"],"PENDING_THIS_GOVERNED_PROMOTION")
+  self.assertEqual(self.r["terminal_state"],"FINAL_CLOSED"); self.assertTrue(self.r["final_closed_now"]); self.assertEqual(self.r["semantic_terminal_state"],"FINAL_CLOSED_VERIFIED"); self.assertEqual(self.r["durable_persistence_state"],"PENDING_THIS_GOVERNED_PROMOTION")
  def test_claim_ceiling_and_safety(self):
   self.assertEqual(self.r["claim_ceiling"],"EVIDENCE_FREEZE_AND_REPLAY_HARNESS_READY"); self.assertTrue(all(v is False for v in self.r["safety"].values())); self.assertFalse(self.r["main_merge_authorized"])
 if __name__=="__main__":
