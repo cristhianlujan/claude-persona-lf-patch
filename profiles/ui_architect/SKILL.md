@@ -140,3 +140,29 @@ Five integer criteria 0..5: `layout_precision`, `visual_hierarchy`, `lf_system_f
 Candidate remediation evidence lives under `profiles/ui_architect/evals/<remediation_lot>/`.
 Future profile writes require `ACTUALIZACION_PERFIL_LF` bound to `PERFIL-UI-ARCHITECT` before the first GitHub write.
 Runtime enablement, `VALIDATED`, production promotion, and automatic promotion remain blocked unless separately governed and authorized.
+
+## V6 Composer structural boundary — REQUIRED FOR NEW PRODUCTION RUNS
+This section supersedes the earlier V5 root-shape clauses for any new production run that is prebound after this boundary is adopted. Legacy V5 evidence remains replayable and must not be rewritten merely to satisfy V6.
+
+New production runs MUST declare `output_contract_version="UI_PRODUCTION_SPEC_V6"` and follow `contracts/composer_payload_boundary_v1.md`.
+
+The V6 root adds two structural fields:
+- `governance_envelope`: internal-only audit/provenance context with `schema="LF_UI_GOVERNANCE_ENVELOPE_V1"` and `render_policy="NON_RENDER"`;
+- `composer_payload`: the only payload Composer is authorized to consume.
+
+For V6:
+- root operational fields (`worker`, `score`, `handoff_to_next`, `self_verdict`, governance evidence) remain internal and are never Composer input;
+- move any global `deliverable_created.governance_context` to root `governance_envelope.context`;
+- retain evidence-bearing `source_refs` in the governed internal artifact when the V5 semantic/precision contract requires them;
+- `composer_payload` must equal the deterministic projection produced by `validators/validate_composer_payload_boundary.py`;
+- the projection strips audit-only source refs, artifact hashes and prompt/governance traces without changing UI decisions, state rules, precision modes or claim boundaries;
+- `handoff_to_next.payload_ref` MUST equal `composer_payload`;
+- never copy the full root object, `governance_envelope`, `score`, verdicts, hashes, repository refs or routing metadata into `composer_payload`;
+- V6 must pass both `validators/validate_ui_architect_output.py` and `validators/validate_composer_payload_boundary.py` before a PASS-like handoff.
+
+For S26/native Golden candidates, a producer-derived pagination or overflow rule remains `RELATIVE_GUIDANCE / PROPOSED_NOT_CANONICAL` unless separate canonical authority is supplied. The structural boundary must never infer `current_page` or promote a derived rule into canonical/upstream authority.
+
+Additional canonical validation assets for V6:
+- `contracts/composer_payload_boundary_v1.md`
+- `validators/validate_composer_payload_boundary.py`
+- `evals/composer_payload_boundary_20260909/run_cases.py`

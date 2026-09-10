@@ -56,6 +56,12 @@ jobs:
       - name: Validate learning engine pack
         run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
 
+      - name: Validate S26 semantic-to-render binding regressions
+        run: python sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_binding_validator_tests.py
+
+      - name: Validate strict independent receipt-to-bundle binding regressions
+        run: python profiles/quality_pack/evals/run_independent_review_bundle_binding_tests.py
+
       - name: Validate PROFILE_RUNTIME V3 quality and lineage gates
         env:
           LF_PERSISTENT_RUNTIME_SCOPE: ISOLATED_CANDIDATE
