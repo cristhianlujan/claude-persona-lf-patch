@@ -1,0 +1,56 @@
+{
+  "contract_id": "MOTOR_INDEPENDENT_TEST_BOUNDARY_V1",
+  "project": "MOTOR_DE_APRENDIZAJE",
+  "target_asset": "ACT-0046",
+  "mode": "SANDBOX_ONLY",
+  "operational_authority": "SUPABASE",
+  "router": "ACT-0001",
+  "operational_source": "public.v_lf_fuente_operativa",
+  "learning_sources": [
+    "transversal.error_knowledge",
+    "transversal.prevention_rules"
+  ],
+  "visual_support": {
+    "provider": "GOOGLE_DRIVE",
+    "allowed_asset_type": "IMAGE_ASSET",
+    "requires_supabase_binding": true,
+    "authority": false
+  },
+  "unit_scope": {
+    "start": "DETECTADO",
+    "completion": "PRUEBA_SANDBOX",
+    "stages": [
+      "DETECTADO",
+      "ANALIZADO",
+      "CARD_CREADA",
+      "EN_REVISION",
+      "PRUEBA_SANDBOX"
+    ]
+  },
+  "integration_scope": {
+    "owner": "S30_OR_GOVERNED_PROMOTION_LAYER",
+    "stages": [
+      "APROBADO",
+      "IMPACTADO",
+      "VERIFICADO",
+      "CERRADO"
+    ],
+    "replay_requirement": "REPLAY_EXACT_FROZEN_CASE"
+  },
+  "forbidden_unit_dependencies": [
+    "S26_IMPLEMENTATION",
+    "S28_IMPLEMENTATION",
+    "S30_IMPLEMENTATION",
+    "OPEN_PR_STACKING",
+    "CROSS_LANE_MIGRATION_COPY",
+    "DRIVE_OPERATIONAL_AUTHORITY",
+    "SHARED_DEEP_CI_AS_SEMANTIC_PROOF"
+  ],
+  "pr_policy": {
+    "base": "FRESH_MAIN",
+    "exclusive_paths": true,
+    "stacking": false,
+    "shared_deep_ci_required_before_merge": true,
+    "shared_deep_ci_required_to_continue_unit_iteration": false
+  }
+}
