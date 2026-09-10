@@ -1,0 +1,61 @@
+{
+  "receipt_version": "S33_03_FACADE_FOCAL_VALIDATION_RECEIPT_V1",
+  "strategy_id": "S33",
+  "stage": "S33-03",
+  "status": "PASS_FACADE_BINDING_PENDING_S30_BEHAVIORAL_COMPOSITION",
+  "executed": true,
+  "executor": "LOCAL_PYTHON_EXACT_CODE_RECONSTRUCTION_WITH_FOCAL_REGISTRY_SUBSET",
+  "exit_code": 0,
+  "exact_code": {
+    "resolver_git_blob_sha": "7f5ed0ee618aed2ac7c4b136db919032f09fa27a",
+    "resolver_recomputed_git_blob_sha": "7f5ed0ee618aed2ac7c4b136db919032f09fa27a",
+    "facade_commit_sha": "50daeb2440ebecdc561aebd9fb08445ba05ccd00",
+    "facade_git_blob_sha": "b8d94ca012aabe29d0aa3d7e34cdbbcd338e105a",
+    "facade_recomputed_git_blob_sha": "b8d94ca012aabe29d0aa3d7e34cdbbcd338e105a"
+  },
+  "registry_binding": {
+    "frozen_registry_git_blob_sha": "2cd314c8cc0323c4bba85c13564f7a28b8680122",
+    "prior_exact_registry_validation_receipt_blob_sha": "a2007bfa1ab7cabbc203efe192f741660556df06",
+    "fixture_scope": "FOUR_CAPABILITY_SUBSET_MIRRORED_FROM_FROZEN_REGISTRY",
+    "capabilities": ["LF_BUDGETED_DATA_ACCESS","LF_SCHEMA_CONTRACT_RESOLUTION","LF_EXECUTION_AUTHORITY","INPUT_GOVERNANCE_DISPATCH"]
+  },
+  "result": {
+    "tests_run": 13,
+    "tests_passed": 13,
+    "tests_failed": 0,
+    "result_sha256": "5d911e0938f793caa91019e060d334fa2ea79c76f73722d74bd9a62d97a3277f",
+    "cases": [
+      "registered_positive",
+      "registered_model_call_block",
+      "schema_positive",
+      "schema_missing_block",
+      "authority_positive",
+      "dispatch_positive",
+      "pre_provenance_block",
+      "post_provenance_block",
+      "missing_executor_block",
+      "stale_block",
+      "model_selector_block",
+      "invalid_payload_block",
+      "unknown_operation_block"
+    ]
+  },
+  "proven_limits": [
+    "capability resolution precedes backend execution",
+    "pre-executor ref/sha mismatch blocks before backend",
+    "post-executor attestation mismatch blocks after backend",
+    "known registered read blocks model_calls>0",
+    "unknown schema path requires schema_receipt",
+    "execution-authority path requires authority_decision",
+    "stale, model-selected, invalid payload and unknown operation fail closed"
+  ],
+  "not_yet_proven": [
+    "exact S30-B TypedReader/SchemaContractResolver behavioral execution inside S33 facade",
+    "exact S30-B ExecutionAuthority behavioral execution inside S33 facade",
+    "full frozen registry exercised by this focal wrapper run"
+  ],
+  "claim_ceiling": "FACADE_AND_PROVENANCE_WRAPPER_ONLY_NOT_S30_BEHAVIORAL_COMPOSITION",
+  "production_changed": false,
+  "runtime_changed": false,
+  "supabase_changed": false
+}
