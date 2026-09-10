@@ -1,0 +1,13 @@
+{
+  "pre_ekb_contract": {"contract_code": "CONTRACT-PRE-EKB-GATE-LF-v0.1", "status": "ACTIVE_ENFORCEMENT"},
+  "sequence": ["CLASSIFY_SURFACE", "APPLICABILITY_ROUTER", "EKB_APPLICABLE_RULES", "CARD_RESOLVER", "GOVERNED_FALLBACK_IF_NEEDED", "PRE_EXECUTION_GATE", "EXECUTE", "EVIDENCE", "LEARNING_ELIGIBILITY"],
+  "execution_started_before_gate": false,
+  "applicability": {"status": "APPLICABLE", "surface": "GENERIC_PRODUCT_DECISION", "critical_ambiguity": false},
+  "ekb_readback": {"performed": true, "source_refs": ["supabase://public.lf_error_knowledge", "github://supabase/migrations/20260824071146_lf_pre_ekb_gate_operation_contracts_v1.sql"], "snapshot_digest": "sha256:s26-e-static-contract-fixture"},
+  "ekb_rules": [{"rule_code": "GOV-010", "applicability": "APPLICABLE", "severity": "HIGH", "control_ref": "CONTRACT-PRE-EKB-GATE-LF-v0.1"}, {"rule_code": "UI-ONLY-EXAMPLE", "applicability": "NOT_APPLICABLE", "severity": "MEDIUM", "reason": "governance-only fixture"}],
+  "ekb_contradictions": [],
+  "schema_policy": {"schema_invented": false, "data_model_mutated_to_fit_surface": false},
+  "card_resolution": {"state": "NONE"},
+  "fallback": {"attempts": [{"kind": "CONTRACT_SCHEMA", "status": "FAIL", "reason": "no exact domain card/contract for fixture", "evidence_ref": "evidence://contract-search"}, {"kind": "GENERIC_CAPABILITY", "status": "PASS", "evidence_ref": "evidence://generic-capability"}], "selected": "GENERIC_CAPABILITY", "manual_required": false},
+  "learning": {"persist_requested": false, "eligible": false, "verified": false}
+}
