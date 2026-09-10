@@ -1,234 +1,254 @@
 #!/usr/bin/env python3
-import argparse
-import copy
-import json
+import argparse, copy, json, os, subprocess
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, Optional
 
 CONTRACT_DEFAULT = Path(__file__).resolve().parents[1] / "contratos" / "s30_self_governance_gate_v1.json"
-
+DEFAULT_RECEIPT = Path("sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json")
 
 def load_json(path: Path) -> Dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
+def nonempty(v: Any) -> bool:
+    if isinstance(v, str): return bool(v.strip())
+    if isinstance(v, (list, dict)): return bool(v)
+    return v is not None
 
-def _truthy_status(v: Any) -> bool:
-    if v is True:
-        return True
-    if isinstance(v, str):
-        return v.upper() in {"PASS", "PROVEN", "CONFIRMED", "RESOLVED", "NOT_REQUIRED_WITH_REASON"}
-    if isinstance(v, dict):
-        return _truthy_status(v.get("status"))
-    return False
+def proof_pass(c: Dict[str, Any], v: Any) -> bool:
+    return isinstance(v, dict) and str(v.get("status","")).upper() in set(c["proof_policy"]["pass_statuses"])
 
+def proof_evidence(v: Any) -> bool:
+    return isinstance(v, dict) and nonempty(v.get("evidence"))
 
-def evaluate(contract: Dict[str, Any], receipt: Dict[str, Any]) -> Dict[str, Any]:
-    failed_checks: List[str] = []
-    hard_guard_failures: List[str] = []
-    blocker_failures: List[str] = []
-    sequence_failures: List[str] = []
+def blocked(preflight, seq, checks, hard, blockers):
+    if seq: first=f"SEQUENCE:{seq[0]}"
+    elif checks: first=f"PREFLIGHT:{checks[0]}"
+    elif hard: first=f"HARD_GUARD:{hard[0]}"
+    else: first=f"BLOCKER_CONTRACT:{blockers[0]}"
+    return {"result":preflight["failure_action"],"first_bad_hop":first,"material_work_allowed":False,
+            "bounded_repair_allowed":False,"sequence_failures":seq,"failed_checks":checks,"hard_guard_failures":hard,
+            "blocker_failures":blockers,"claim_ceiling":"SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_BLOCKED"}
 
-    if receipt.get("base_main_sha") != contract.get("base_main_sha"):
-        failed_checks.append("BASE_MAIN_SHA_MISMATCH")
+def evaluate(c: Dict[str, Any], r: Dict[str, Any], expected_base: Optional[str]=None) -> Dict[str, Any]:
+    seqf=[]; checks=[]; hard=[]; blockf=[]
+    mode=r.get("receipt_mode")
+    if not expected_base: checks.append("EXPECTED_BASE_MAIN_SHA_ARGUMENT_MISSING")
+    elif r.get("base_main_sha") != expected_base: checks.append("BASE_MAIN_SHA_MISMATCH")
+    for f in c["consumer_interface"]["input_required"]:
+        if f not in r: checks.append(f"INPUT_FIELD_MISSING:{f}")
 
-    required_sequence = contract["mandatory_sequence"][:-1]
-    resolved_sequence = receipt.get("sequence_resolution") or {}
-    for step in required_sequence:
-        if not _truthy_status(resolved_sequence.get(step)):
-            sequence_failures.append(step)
+    seq=r.get("sequence_resolution") or {}
+    for step in c["mandatory_sequence"][:-1]:
+        p=seq.get(step)
+        if not proof_pass(c,p): seqf.append(step)
+        elif c["proof_policy"]["evidence_required_for_every_pass"] and not proof_evidence(p):
+            seqf.append(f"{step}:EVIDENCE_MISSING")
 
-    preflight = contract["cheap_preflight"]
-    required_checks = preflight["checks"]
-    observed_checks = receipt.get("preflight_checks") or {}
-    for check in required_checks:
-        observed = observed_checks.get(check)
-        if not _truthy_status(observed):
-            failed_checks.append(check)
-            continue
-        requirement = (preflight.get("check_requirements") or {}).get(check) or {}
-        required_subproofs = requirement.get("required_subproofs") or []
-        if required_subproofs:
-            resolved = observed.get("resolved") if isinstance(observed, dict) else None
-            resolved_set = set(resolved) if isinstance(resolved, list) else set()
-            for subproof in required_subproofs:
-                if subproof not in resolved_set:
-                    failed_checks.append(f"{check}:{subproof}")
+    ekb=seq.get("EKB_APPLICABLE") or {}
+    loaded=ekb.get("loaded_codes") if isinstance(ekb,dict) else None
+    if not isinstance(loaded,list) or not loaded: checks.append("EKB_APPLICABLE:LOADED_CODES_MISSING")
 
-    frontier = receipt.get("frontier")
-    if not isinstance(frontier, dict):
-        blocker_failures.append("FRONTIER_MISSING_OR_NOT_OBJECT")
+    da=seq.get("DATA_ACCESS_BINDINGS") or {}
+    da_mode=da.get("mode") if isinstance(da,dict) else None
+    if da_mode not in c["proof_policy"]["data_access_modes"]:
+        checks.append("DATA_ACCESS_BINDINGS:MODE_UNRESOLVED")
+    schema=seq.get("SCHEMA_CONTRACT") or {}
+    if da_mode=="SCHEMA_CONTRACT_FALLBACK":
+        bindings=schema.get("schema_bindings") if isinstance(schema,dict) else None
+        if not isinstance(bindings,list) or not bindings: checks.append("SCHEMA_CONTRACT:FALLBACK_BINDINGS_MISSING")
+
+    pf=c["cheap_preflight"]; obs=r.get("preflight_checks") or {}
+    for name in pf["checks"]:
+        p=obs.get(name)
+        if not proof_pass(c,p): checks.append(name); continue
+        if c["proof_policy"]["evidence_required_for_every_pass"] and not proof_evidence(p):
+            checks.append(f"{name}:EVIDENCE_MISSING"); continue
+        req=(pf.get("check_requirements") or {}).get(name) or {}
+        rs=set(p.get("resolved") or []) if isinstance(p,dict) else set()
+        for sub in req.get("required_subproofs") or []:
+            if sub not in rs: checks.append(f"{name}:{sub}")
+        if req.get("bindings_required") and not (isinstance(p.get("bindings"),list) and p["bindings"]):
+            checks.append(f"{name}:BINDINGS_MISSING")
+
+    frontier=r.get("frontier")
+    if not isinstance(frontier,dict): blockf.append("FRONTIER_MISSING_OR_NOT_OBJECT")
     else:
-        for field in contract["frontier_contract"]["required_fields"]:
-            if field not in frontier:
-                blocker_failures.append(f"FRONTIER_FIELD_MISSING:{field}")
-        blockers = frontier.get("blockers") or []
-        required_blocker_fields = contract["blocker_contract"]["required_fields"]
-        for idx, blocker in enumerate(blockers):
-            if not isinstance(blocker, dict):
-                blocker_failures.append(f"BLOCKER_NOT_OBJECT:{idx}")
-                continue
-            for field in required_blocker_fields:
-                if field not in blocker:
-                    blocker_failures.append(f"BLOCKER_FIELD_MISSING:{idx}:{field}")
+        for f in c["frontier_contract"]["required_fields"]:
+            if f not in frontier: blockf.append(f"FRONTIER_FIELD_MISSING:{f}")
+        blockers=frontier.get("blockers")
+        if not isinstance(blockers,list): blockf.append("FRONTIER_BLOCKERS_NOT_LIST"); blockers=[]
+        for i,b in enumerate(blockers):
+            if not isinstance(b,dict): blockf.append(f"BLOCKER_NOT_OBJECT:{i}"); continue
+            for f in c["blocker_contract"]["required_fields"]:
+                if f not in b or not nonempty(b.get(f)): blockf.append(f"BLOCKER_FIELD_MISSING_OR_EMPTY:{i}:{f}")
+            if "independent_safe_work" in b and not isinstance(b["independent_safe_work"],list):
+                blockf.append(f"BLOCKER_SAFE_WORK_NOT_LIST:{i}")
+        if not isinstance(frontier.get("safe_parallel_work"),list): blockf.append("FRONTIER_SAFE_PARALLEL_NOT_LIST")
 
-    for idx, candidate in enumerate(receipt.get("hard_guard_candidates") or []):
-        triggers = set(candidate.get("triggers") or [])
-        must_promote = bool(triggers.intersection(contract["hard_guard_promotion"]["trigger_any"]))
-        if not must_promote:
-            continue
-        closure = candidate.get("closure") or {}
-        for required in contract["hard_guard_promotion"]["required_closure"]:
-            if not _truthy_status(closure.get(required)):
-                hard_guard_failures.append(f"{idx}:{candidate.get('ekb_code','UNKNOWN')}:{required}")
+    applicable=r.get("applicable_ekb") or []
+    if not isinstance(applicable,list): checks.append("APPLICABLE_EKB_NOT_LIST"); applicable=[]
+    applicable_codes=[]; triggered=set(); trigger_any=set(c["hard_guard_promotion"]["trigger_any"])
+    for i,item in enumerate(applicable):
+        if not isinstance(item,dict) or not nonempty(item.get("code")):
+            checks.append(f"APPLICABLE_EKB_INVALID:{i}"); continue
+        code=item["code"]; applicable_codes.append(code)
+        if set(item.get("triggers") or []).intersection(trigger_any): triggered.add(code)
+    if isinstance(loaded,list):
+        for code in sorted(set(applicable_codes)-set(loaded)): checks.append(f"EKB_NOT_LOADED:{code}")
 
-    safety = receipt.get("safety_readback") or {}
-    for key in ("runtime_changed", "production_changed", "main_merged", "scheduler_changed", "s26_mutated"):
-        if safety.get(key) is not False:
-            failed_checks.append(f"SAFETY_READBACK:{key}")
-
-    all_failures = sequence_failures + failed_checks + hard_guard_failures + blocker_failures
-    if all_failures:
-        first_bad = (
-            f"SEQUENCE:{sequence_failures[0]}" if sequence_failures else
-            f"PREFLIGHT:{failed_checks[0]}" if failed_checks else
-            f"HARD_GUARD:{hard_guard_failures[0]}" if hard_guard_failures else
-            f"BLOCKER_CONTRACT:{blocker_failures[0]}"
+    candidates=r.get("hard_guard_candidates") or []
+    if not isinstance(candidates,list): hard.append("HARD_GUARD_CANDIDATES_NOT_LIST"); candidates=[]
+    by_code={x.get("ekb_code"):x for x in candidates if isinstance(x,dict) and nonempty(x.get("ekb_code"))}
+    repair_targets=set(r.get("repair_target_ekb_codes") or []) if mode=="REPAIR_PREWRITE" else set()
+    for code in sorted(triggered):
+        cand=by_code.get(code)
+        if cand is None: hard.append(f"{code}:CANDIDATE_MISSING"); continue
+        closure=cand.get("closure") or {}
+        required_closure = (
+            c["repair_mode"]["hard_guard_closure_required_before_repair"]
+            if mode=="REPAIR_PREWRITE" and code in repair_targets
+            else c["hard_guard_promotion"]["required_closure"]
         )
-        return {
-            "result": preflight["failure_action"],
-            "first_bad_hop": first_bad,
-            "material_work_allowed": False,
-            "sequence_failures": sequence_failures,
-            "failed_checks": failed_checks,
-            "hard_guard_failures": hard_guard_failures,
-            "blocker_failures": blocker_failures,
-            "claim_ceiling": "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_BLOCKED"
-        }
+        for req in required_closure:
+            p=closure.get(req)
+            if not proof_pass(c,p): hard.append(f"{code}:{req}")
+            elif c["proof_policy"]["evidence_required_for_every_pass"] and not proof_evidence(p):
+                hard.append(f"{code}:{req}:EVIDENCE_MISSING")
 
-    return {
-        "result": "PASS_TO_MATERIAL_WORK",
-        "first_bad_hop": None,
-        "material_work_allowed": True,
-        "sequence_failures": [],
-        "failed_checks": [],
-        "hard_guard_failures": [],
-        "blocker_failures": [],
-        "claim_ceiling": contract["claim_ceiling"]
-    }
+    safety=r.get("safety_readback") or {}
+    for k in ("runtime_changed","production_changed","scheduler_changed","s26_mutated"):
+        if safety.get(k) is not False: checks.append(f"SAFETY_READBACK:{k}")
+    if mode=="PREWRITE":
+        if safety.get("main_merged") is not False: checks.append("SAFETY_READBACK:PREWRITE_MAIN_ALREADY_MERGED")
+    elif mode=="REPAIR_PREWRITE":
+        if safety.get("main_merged") is not False: checks.append("SAFETY_READBACK:REPAIR_PREWRITE_MAIN_ALREADY_MERGED")
+        if r.get("owner_authorized_repair") is not True: checks.append("REPAIR_MODE:OWNER_AUTHORIZATION_MISSING")
+        if r.get("intended_material_action") != c["repair_mode"]["required_intended_material_action"]:
+            checks.append("REPAIR_MODE:INTENDED_ACTION_INVALID")
+        if not nonempty(r.get("repair_reason")): checks.append("REPAIR_MODE:REASON_MISSING")
+        if not isinstance(r.get("repair_target_ekb_codes"),list) or not r.get("repair_target_ekb_codes"):
+            checks.append("REPAIR_MODE:TARGET_EKB_CODES_MISSING")
+        elif not set(triggered).issubset(set(r["repair_target_ekb_codes"])):
+            checks.append("REPAIR_MODE:TRIGGERED_EKB_NOT_ALL_TARGETED")
+    elif mode=="CLOSEOUT":
+        if safety.get("main_merged") is True and r.get("owner_authorized_merge") is not True:
+            checks.append("SAFETY_READBACK:CLOSEOUT_MERGE_NOT_OWNER_AUTHORIZED")
+        elif safety.get("main_merged") not in (True,False):
+            checks.append("SAFETY_READBACK:CLOSEOUT_MAIN_MERGED_INVALID")
+    else: checks.append("RECEIPT_MODE_INVALID")
 
+    if seqf or checks or hard or blockf: return blocked(pf,seqf,checks,hard,blockf)
+    if mode=="PREWRITE":
+        result="PASS_TO_MATERIAL_WORK"; material=True; bounded=False
+    elif mode=="REPAIR_PREWRITE":
+        result=c["repair_mode"]["result"]; material=False; bounded=True
+    else:
+        result=c["claim_ceiling"]; material=False; bounded=False
+    return {"result":result,"first_bad_hop":None,"material_work_allowed":material,
+            "bounded_repair_allowed":bounded,"sequence_failures":[],"failed_checks":[],
+            "hard_guard_failures":[],"blocker_failures":[],"claim_ceiling":c["claim_ceiling"]}
 
-def _positive_fixture(contract: Dict[str, Any]) -> Dict[str, Any]:
-    seq = {
-        key: {"status": "PROVEN", "evidence": f"selftest:{key}"}
-        for key in contract["mandatory_sequence"][:-1]
-    }
-    requirements = contract["cheap_preflight"].get("check_requirements") or {}
-    checks: Dict[str, Any] = {}
-    for key in contract["cheap_preflight"]["checks"]:
-        check = {"status": "PASS", "evidence": f"selftest:{key}"}
-        required_subproofs = (requirements.get(key) or {}).get("required_subproofs") or []
-        if required_subproofs:
-            check["resolved"] = list(required_subproofs)
-        checks[key] = check
+def positive_fixture(c, mode="PREWRITE"):
+    seq={k:{"status":"PROVEN","evidence":f"selftest:{k}"} for k in c["mandatory_sequence"][:-1]}
+    seq["EKB_APPLICABLE"]["loaded_codes"]=["DB-001","GOV-010"]
+    seq["DATA_ACCESS_BINDINGS"]["mode"]="SCHEMA_CONTRACT_FALLBACK"
+    seq["SCHEMA_CONTRACT"]["schema_bindings"]=[{"object_identity":"public.example","object_type":"TABLE","resolved_fields":["id"],"evidence_ref":"selftest:schema"}]
+    checks={}
+    for k in c["cheap_preflight"]["checks"]:
+        p={"status":"PASS","evidence":f"selftest:{k}"}
+        req=(c["cheap_preflight"].get("check_requirements") or {}).get(k) or {}
+        if req.get("required_subproofs"): p["resolved"]=list(req["required_subproofs"])
+        if req.get("bindings_required"): p["bindings"]=[{"object_identity":"public.example","resolved_fields":["id"],"evidence_ref":"selftest:schema"}]
+        checks[k]=p
+    closure={k:{"status":"PASS","evidence":f"selftest:{k}"} for k in c["hard_guard_promotion"]["required_closure"]}
+    return {"receipt_version":"v0.3","receipt_mode":mode,"lane":"S30-A","owner":"S30","base_main_sha":"a"*40,
+            "intended_material_action":("SELF_GOVERNANCE_GATE_REPAIR" if mode=="REPAIR_PREWRITE" else "SELFTEST"),"sequence_resolution":seq,"preflight_checks":checks,
+            "frontier":{"current_stage":"S30-A_SELF_GOVERNANCE_PREEXECUTION_ASSURANCE","next_gate":"SELFTEST_NEXT",
+                        "blockers":[{"code":"SELFTEST_BLOCKER","affected_scope":"SELFTEST","causal_gate":"SELFTEST_GATE",
+                                     "owner":"S30","independent_safe_work":["SELFTEST"],"invalidation_condition":"selftest passes"}],
+                        "safe_parallel_work":["SELFTEST"]},
+            "applicable_ekb":[{"code":"DB-001","triggers":["RECURRENT","MACHINE_DETECTABLE"]},
+                              {"code":"GOV-010","triggers":["RECURRENT","AVOIDABLE_MATERIAL_WORK"]}],
+            "hard_guard_candidates":[{"ekb_code":"DB-001","closure":copy.deepcopy(closure)},
+                                     {"ekb_code":"GOV-010","closure":copy.deepcopy(closure)}],
+            "safety_readback":{"runtime_changed":False,"production_changed":False,"main_merged":mode=="CLOSEOUT",
+                               "scheduler_changed":False,"s26_mutated":False},
+            "owner_authorized_merge":mode=="CLOSEOUT",
+            "owner_authorized_repair":mode=="REPAIR_PREWRITE",
+            "repair_reason":"selftest repair" if mode=="REPAIR_PREWRITE" else None,
+            "repair_target_ekb_codes":["DB-001","GOV-010"] if mode=="REPAIR_PREWRITE" else [],
+            "evidence":{"mode":"SELFTEST"}}
 
-    return {
-        "receipt_version": "v0.2",
-        "lane": "S30-A",
-        "owner": "S30",
-        "base_main_sha": contract["base_main_sha"],
-        "intended_material_action": "GIT_WRITE",
-        "sequence_resolution": seq,
-        "preflight_checks": checks,
-        "frontier": {
-            "current_stage": "S30-A_SELF_GOVERNANCE_PREEXECUTION_ASSURANCE",
-            "next_gate": "CI_EXACT_HEAD_SELF_GOVERNANCE_WIRING",
-            "blockers": [{
-                "code": "EXAMPLE_CAUSAL_BLOCKER",
-                "affected_scope": "CANONICAL_SUPABASE_RECONCILIATION",
-                "causal_gate": "EXAMPLE_GATE",
-                "owner": "S30",
-                "independent_safe_work": ["GITHUB_SELF_GOVERNANCE_GATE"],
-                "invalidation_condition": "gate becomes proven"
-            }],
-            "safe_parallel_work": ["GITHUB_SELF_GOVERNANCE_GATE"]
-        },
-        "hard_guard_candidates": [{
-            "ekb_code": "DB-001",
-            "triggers": ["RECURRENT", "MACHINE_DETECTABLE"],
-            "closure": {
-                key: {"status": "PASS"}
-                for key in contract["hard_guard_promotion"]["required_closure"]
-            }
-        }],
-        "safety_readback": {
-            "runtime_changed": False,
-            "production_changed": False,
-            "main_merged": False,
-            "scheduler_changed": False,
-            "s26_mutated": False
-        },
-        "evidence": {"mode": "SELFTEST"}
-    }
+def self_test(c):
+    e="a"*40; p=positive_fixture(c); results={}
+    pos=evaluate(c,p,e); assert pos["result"]=="PASS_TO_MATERIAL_WORK"; results["positive_prewrite"]=pos["result"]
+    x=copy.deepcopy(p); x["preflight_checks"].pop("IMPORT_CLOSURE"); r=evaluate(c,x,e); assert r["result"].startswith("FAIL_"); results["negative_missing_preflight"]=r["result"]
+    x=copy.deepcopy(p); x["preflight_checks"]["SCHEMA_AND_CONSTRAINTS_RESOLVED"]["resolved"].remove("DEPENDENT_SQL_FUNCTION_SIGNATURES"); r=evaluate(c,x,e); assert "SCHEMA_AND_CONSTRAINTS_RESOLVED:DEPENDENT_SQL_FUNCTION_SIGNATURES" in r["failed_checks"]; results["negative_unresolved_sql_function_signature"]=r["result"]
+    x=copy.deepcopy(p); x["hard_guard_candidates"][0]["closure"]={"EKB_UPDATED":{"status":"PASS","evidence":"text only"}}; r=evaluate(c,x,e); assert any("DB-001:DETECTOR_IMPLEMENTED" in z for z in r["hard_guard_failures"]); results["negative_text_only_ekb"]=r["result"]
+    x=copy.deepcopy(p); r=evaluate(c,x,"b"*40); assert "BASE_MAIN_SHA_MISMATCH" in r["failed_checks"]; results["negative_stale_base"]=r["result"]
+    x=copy.deepcopy(p); x["frontier"]["blockers"]=["UNSCOPED"]; r=evaluate(c,x,e); assert "BLOCKER_NOT_OBJECT:0" in r["blocker_failures"]; results["negative_unscoped_blocker"]=r["result"]
+    x=copy.deepcopy(p); x["sequence_resolution"]["DATA_ACCESS_BINDINGS"]={"status":"NOT_REQUIRED_WITH_REASON","evidence":"bypass"}; r=evaluate(c,x,e); assert "DATA_ACCESS_BINDINGS" in r["sequence_failures"]; results["negative_not_required_data_access"]=r["result"]
+    x=copy.deepcopy(p); x["preflight_checks"]["REQUIRED_FILES_EXIST"].pop("evidence"); r=evaluate(c,x,e); assert "REQUIRED_FILES_EXIST:EVIDENCE_MISSING" in r["failed_checks"]; results["negative_missing_evidence"]=r["result"]
+    x=copy.deepcopy(p); x["hard_guard_candidates"]=[z for z in x["hard_guard_candidates"] if z["ekb_code"]!="GOV-010"]; r=evaluate(c,x,e); assert "GOV-010:CANDIDATE_MISSING" in r["hard_guard_failures"]; results["negative_missing_applicable_hard_guard"]=r["result"]
+    cclose=positive_fixture(c,"CLOSEOUT"); r=evaluate(c,cclose,e); assert r["result"]==c["claim_ceiling"]; results["positive_closeout_owner_merge"]=r["result"]
+    x=copy.deepcopy(cclose); x["owner_authorized_merge"]=False; r=evaluate(c,x,e); assert "SAFETY_READBACK:CLOSEOUT_MERGE_NOT_OWNER_AUTHORIZED" in r["failed_checks"]; results["negative_closeout_unauthorized_merge"]=r["result"]
+    repair=positive_fixture(c,"REPAIR_PREWRITE")
+    for cand in repair["hard_guard_candidates"]:
+        cand["closure"]={"EKB_UPDATED":{"status":"PASS","evidence":"selftest:EKB_UPDATED"}}
+    r=evaluate(c,repair,e); assert r["result"]=="PASS_TO_BOUNDED_GUARD_REPAIR" and r["bounded_repair_allowed"] is True; results["positive_bounded_guard_repair"]=r["result"]
+    x=copy.deepcopy(repair); x["owner_authorized_repair"]=False; r=evaluate(c,x,e); assert "REPAIR_MODE:OWNER_AUTHORIZATION_MISSING" in r["failed_checks"]; results["negative_repair_without_owner_auth"]=r["result"]
+    return {"status":"PASS","cases":results}
 
+def event_payload():
+    p=os.environ.get("GITHUB_EVENT_PATH")
+    return json.loads(Path(p).read_text()) if p and Path(p).exists() else {}
 
-def self_test(contract: Dict[str, Any]) -> Dict[str, Any]:
-    positive = _positive_fixture(contract)
-    pos = evaluate(contract, positive)
-    assert pos["result"] == "PASS_TO_MATERIAL_WORK" and pos["material_work_allowed"] is True
+def run_git(*args):
+    return subprocess.run(["git",*args],check=True,capture_output=True,text=True).stdout.strip()
 
-    missing = copy.deepcopy(positive)
-    missing["preflight_checks"].pop("IMPORT_CLOSURE")
-    neg_missing = evaluate(contract, missing)
-    assert neg_missing["result"] == "FAIL_CLOSED_BEFORE_MATERIAL_WORK"
-    assert neg_missing["material_work_allowed"] is False
-    assert "IMPORT_CLOSURE" in neg_missing["failed_checks"]
+def ci_changed_and_base():
+    event=os.environ.get("GITHUB_EVENT_NAME",""); payload=event_payload()
+    if event=="pull_request":
+        base_ref=os.environ.get("GITHUB_BASE_REF") or "main"
+        subprocess.run(["git","fetch","origin",base_ref,"--depth=1"],check=True)
+        expected=run_git("rev-parse",f"origin/{base_ref}")
+        changed=run_git("diff","--name-only",f"origin/{base_ref}...HEAD").splitlines()
+        return [x.strip() for x in changed if x.strip()], expected
+    if event=="push" and os.environ.get("GITHUB_REF")=="refs/heads/main":
+        before=payload.get("before"); after=payload.get("after") or os.environ.get("GITHUB_SHA","HEAD")
+        if not before or set(before)<=set("0"): return [],None
+        try: changed=run_git("diff","--name-only",before,after).splitlines()
+        except subprocess.CalledProcessError:
+            subprocess.run(["git","fetch","origin",before,"--depth=1"],check=True)
+            changed=run_git("diff","--name-only",before,after).splitlines()
+        return [x.strip() for x in changed if x.strip()], before
+    return [],None
 
-    sql_signature = copy.deepcopy(positive)
-    resolved = sql_signature["preflight_checks"]["SCHEMA_AND_CONSTRAINTS_RESOLVED"]["resolved"]
-    resolved.remove("DEPENDENT_SQL_FUNCTION_SIGNATURES")
-    neg_sql_signature = evaluate(contract, sql_signature)
-    assert neg_sql_signature["result"] == "FAIL_CLOSED_BEFORE_MATERIAL_WORK"
-    assert neg_sql_signature["material_work_allowed"] is False
-    assert "SCHEMA_AND_CONSTRAINTS_RESOLVED:DEPENDENT_SQL_FUNCTION_SIGNATURES" in neg_sql_signature["failed_checks"]
+def ci_auto(c, receipt_path):
+    changed,expected=ci_changed_and_base()
+    touched=sorted(set(c["ci_enforcement"]["fresh_receipt_trigger_paths"]).intersection(changed))
+    if not touched: return {"status":"PASS","fresh_receipt_evaluated":False,"reason":"NO_S30_GATE_TRIGGER_PATH_CHANGED","changed_file_count":len(changed)}
+    if expected is None: raise AssertionError("S30 gate paths changed but expected base unresolved")
+    receipt=load_json(receipt_path)
+    result=evaluate(c,receipt,expected)
+    accepted={"PASS_TO_MATERIAL_WORK",c["repair_mode"]["result"]}
+    if result["result"] not in accepted: raise AssertionError(json.dumps(result,sort_keys=True))
+    if result["result"]==c["repair_mode"]["result"]:
+        allowed=set(c["repair_mode"]["allowed_changed_paths"])
+        outside=sorted(set(changed)-allowed)
+        if outside: raise AssertionError("bounded repair touched disallowed paths: "+",".join(outside))
+    return {"status":"PASS","fresh_receipt_evaluated":True,"touched_trigger_paths":touched,
+            "expected_base_main_sha":expected,"result":result["result"]}
 
-    text_only = copy.deepcopy(positive)
-    text_only["hard_guard_candidates"][0]["closure"] = {"EKB_UPDATED": {"status": "PASS"}}
-    neg_text = evaluate(contract, text_only)
-    assert neg_text["result"] == "FAIL_CLOSED_BEFORE_MATERIAL_WORK"
-    assert neg_text["material_work_allowed"] is False
-    assert any("DETECTOR_IMPLEMENTED" in item for item in neg_text["hard_guard_failures"])
-
-    return {
-        "status": "PASS",
-        "cases": {
-            "positive_equivalent": pos["result"],
-            "negative_missing_preflight": neg_missing["result"],
-            "negative_unresolved_sql_function_signature": neg_sql_signature["result"],
-            "negative_text_only_ekb": neg_text["result"]
-        }
-    }
-
-
-def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--contract", default=str(CONTRACT_DEFAULT))
-    parser.add_argument("--input")
-    parser.add_argument("--self-test", action="store_true")
-    args = parser.parse_args()
-
-    contract = load_json(Path(args.contract))
-    outputs: Dict[str, Any] = {}
-    if args.self_test:
-        outputs["self_test"] = self_test(contract)
-    if args.input:
-        outputs["evaluation"] = evaluate(contract, load_json(Path(args.input)))
-    if not outputs:
-        parser.error("provide --self-test and/or --input")
-    print(json.dumps(outputs, indent=2, sort_keys=True))
-    if "evaluation" in outputs and outputs["evaluation"]["result"] != "PASS_TO_MATERIAL_WORK":
-        return 2
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+def main():
+    ap=argparse.ArgumentParser(); ap.add_argument("--contract",default=str(CONTRACT_DEFAULT)); ap.add_argument("--input")
+    ap.add_argument("--expected-base-main-sha"); ap.add_argument("--self-test",action="store_true"); ap.add_argument("--ci-auto",action="store_true")
+    ap.add_argument("--ci-receipt",default=str(DEFAULT_RECEIPT)); a=ap.parse_args()
+    c=load_json(Path(a.contract)); out={}
+    if a.self_test: out["self_test"]=self_test(c)
+    if a.input: out["evaluation"]=evaluate(c,load_json(Path(a.input)),a.expected_base_main_sha)
+    if a.ci_auto: out["ci_auto"]=ci_auto(c,Path(a.ci_receipt))
+    if not out: ap.error("provide --self-test, --input and/or --ci-auto")
+    print(json.dumps(out,indent=2,sort_keys=True))
+    return 2 if "evaluation" in out and out["evaluation"]["result"]=="FAIL_CLOSED_BEFORE_MATERIAL_WORK" else 0
+if __name__=="__main__": raise SystemExit(main())
