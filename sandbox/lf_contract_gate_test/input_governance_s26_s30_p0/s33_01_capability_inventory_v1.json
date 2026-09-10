@@ -1,0 +1,146 @@
+{
+  "inventory_contract": "S33_CAPABILITY_INVENTORY_V1",
+  "strategy_id": "S33",
+  "stage": "S33-01",
+  "status": "CANDIDATE_INVENTORY_COMPLETE",
+  "source_observation": {
+    "commit_sha": "7fab0a830b62700ba742d824362fb1acdac8b2b5",
+    "path": "sandbox/lf_contract_gate_test/input_governance_s26_s30_p0/s33_01_runtime_observation_v1.json",
+    "git_blob_sha": "9836aff1bccbc4bc97d4a54a40d55ff92e9db030"
+  },
+  "selection_principle": "CONSUMER_REQUESTS_CAPABILITY_ID_NEVER_RAW_FUNCTION_NAME",
+  "external_surfaces": [
+    {
+      "surface": "EDGE:input-governance-agent-v1",
+      "capability_id": "INPUT_GOVERNANCE_ORCHESTRATE",
+      "disposition": "CANONICAL_EXTERNAL_ORCHESTRATOR",
+      "allowed_consumers": ["GOVERNED_SERVICE_CALLER"],
+      "direct_model_selection": false,
+      "side_effect_class": "ORCHESTRATION_MAY_TRIGGER_GOVERNED_ROLE_RUNTIME",
+      "current_identity": "version=2;ezbr_sha256=2b2091358cfae7d0685180bad02a2315b7e005c683ecfa3493858a25b7ba7982"
+    },
+    {
+      "surface": "RPC:public.fn_input_governance_execute(integer,text)",
+      "capability_id": "INPUT_GOVERNANCE_DISPATCH",
+      "disposition": "CANONICAL_SERVICE_RPC_FACADE",
+      "allowed_consumers": ["CONTRACT_ALLOWLIST_ONLY"],
+      "direct_model_selection": false,
+      "side_effect_class": "READ_ORCHESTRATION_STATE",
+      "implementation": "programacion.fn_input_governance_execute(integer,text)"
+    },
+    {
+      "surface": "EDGE:input-governance-curator-v1",
+      "capability_id": "INPUT_GOVERNANCE_CURATE",
+      "disposition": "INTERNAL_ROLE_RUNTIME",
+      "allowed_consumers": ["INPUT_GOVERNANCE_ORCHESTRATOR"],
+      "direct_model_selection": false,
+      "side_effect_class": "GOVERNED_CURATOR_MATERIALIZATION",
+      "current_identity": "version=1;ezbr_sha256=0fa8d5bea9667e88133e22ce476f9a9fbba7b5fd9a1104c077097e4c544d1fa4"
+    },
+    {
+      "surface": "RPC:public.fn_input_governance_curator_materialize_v1(integer,text,text)",
+      "capability_id": "INPUT_GOVERNANCE_CURATE_RPC",
+      "disposition": "INTERNAL_ROLE_RPC_FACADE",
+      "allowed_consumers": ["INPUT_CURATOR_RUNTIME"],
+      "direct_model_selection": false,
+      "side_effect_class": "GOVERNED_CURATOR_MATERIALIZATION",
+      "implementation": "programacion.fn_input_governance_curator_materialize_v1"
+    },
+    {
+      "surface": "EDGE:input-governance-validator-v1",
+      "capability_id": "INPUT_GOVERNANCE_VALIDATE",
+      "disposition": "INTERNAL_INDEPENDENT_ROLE_RUNTIME",
+      "allowed_consumers": ["INPUT_GOVERNANCE_ORCHESTRATOR"],
+      "direct_model_selection": false,
+      "side_effect_class": "VALIDATOR_STATE_AND_RECEIPT_MATERIALIZATION",
+      "current_identity": "version=3;ezbr_sha256=3d27b115631d504a1f35cdf146996bfc3207f0dd43f0b9c2ea507c26c70fedd8"
+    },
+    {
+      "surface": "RPC:public.fn_input_governance_validator_validate_v1(bigint,text)",
+      "capability_id": "INPUT_GOVERNANCE_VALIDATE_RPC",
+      "disposition": "INTERNAL_VALIDATOR_RPC_FACADE",
+      "allowed_consumers": ["INPUT_VALIDATOR_RUNTIME"],
+      "direct_model_selection": false,
+      "side_effect_class": "VALIDATOR_STATE_AND_RECEIPT_MATERIALIZATION",
+      "implementation": "programacion.fn_input_governance_validator_validate_v1"
+    },
+    {
+      "surface": "RPC:public.fn_input_governance_safe_autofix_v1(bigint)",
+      "capability_id": "INPUT_GOVERNANCE_SAFE_AUTOFIX",
+      "disposition": "INTERNAL_GUARDED_AUTOFIX_FACADE",
+      "allowed_consumers": ["INPUT_GOVERNANCE_ORCHESTRATOR"],
+      "direct_model_selection": false,
+      "side_effect_class": "ALLOWLISTED_CANONICAL_WRITE_ONLY",
+      "implementation": "programacion.fn_input_governance_safe_autofix_v1"
+    },
+    {
+      "surface": "RPC:public.fn_input_governance_validator_resume_context_v1(bigint)",
+      "capability_id": "INPUT_VALIDATOR_RESUME_CONTEXT",
+      "disposition": "INTERNAL_VALIDATOR_SUPPORT_FACADE",
+      "allowed_consumers": ["INPUT_VALIDATOR_RUNTIME"],
+      "direct_model_selection": false,
+      "side_effect_class": "READ_ONLY_RESUME_DECISION"
+    }
+  ],
+  "internal_programacion_policy": {
+    "observed_function_count": 93,
+    "consumer_direct_selection": "DENY",
+    "versioned_or_cached_direct_selection": "DENY",
+    "current_implementation_binding_owner": "CAPABILITY_REGISTRY_RESOLVER",
+    "groups": {
+      "BOOTSTRAP_CLASSIFICATION": 10,
+      "DESIGN": 7,
+      "REMEDIATION_PROPOSALS": 6,
+      "SEMANTIC_PROBES": 6,
+      "SHADOW_EVALUATION": 6,
+      "SECURITY_DEPTH": 5,
+      "SOURCE_RESOLUTION": 5,
+      "STAGE_READINESS": 5,
+      "CURRENTNESS_FRESHNESS": 4,
+      "ORCHESTRATION": 4,
+      "VALIDATION": 4,
+      "CONTEXT_JIT": 3,
+      "CURATION": 3,
+      "OTHER_INTERNAL": 25
+    },
+    "legacy_classification_rule": "DO_NOT_LABEL_LEGACY_FROM_NAME_ONLY; prove superseded/unreachable or contract-obsolete before LEGACY",
+    "unclassified_external_count": 0
+  },
+  "resource_capabilities": [
+    {"capability_id":"LF_TYPED_DATA_ACCESS","resource":"S30-B LFDataAccess/TypedReader","disposition":"REUSE_EXACT_SHA","blob_sha":"0fc3792e2f75fd5befc6fb22eb6d8e53ccd16965"},
+    {"capability_id":"LF_SCHEMA_CONTRACT_RESOLUTION","resource":"S30-B SchemaContractResolver","disposition":"REUSE_EXACT_SHA","blob_sha":"0fc3792e2f75fd5befc6fb22eb6d8e53ccd16965"},
+    {"capability_id":"LF_BUDGETED_DATA_ACCESS","resource":"S30-B BudgetedLFDataAccess","disposition":"REUSE_EXACT_SHA","blob_sha":"466751dc09990414c0e0aa6b5d1aaecf99c54ff3"},
+    {"capability_id":"LF_EXECUTION_AUTHORITY","resource":"S30_EXECUTION_AUTHORITY_V1","disposition":"REUSE_EXACT_SHA","policy_blob_sha":"4107e31ad8eb145cb80474de0ba135a164715c00","code_blob_sha":"933e6d597dcffc720854a23ed0ee6ae9002c8a14"},
+    {"capability_id":"LF_HISTORICAL_REPLAY","resource":"S30-C replay corpus","disposition":"REUSE_EXACT_SHA","blob_sha":"77369851dce6b0f6fdc0fb1167a43e721152ab57"},
+    {"capability_id":"INPUT_CONTEXT_JIT","resource":"programacion.fn_input_context_manifest + fn_input_resolve_retrieval_handle","disposition":"BLOCK_NEW_CONSUMPTION_UNTIL_V3_V4_RECONCILIATION"},
+    {"capability_id":"INPUT_DESIGN_BINDING_GRAPH","resource":"programacion.fn_input_design_binding_graph_v2","disposition":"INTERNAL_CURRENT_IMPLEMENTATION_WITH_CONTRACT_DRIFT; DO_NOT_EXPOSE_DIRECTLY"},
+    {"capability_id":"INPUT_CURRENTNESS","resource":"programacion.fn_input_readiness_run_is_current_cached_v1","disposition":"INTERNAL_CURRENT_REFERENCED; REQUEST_LOCAL_REUSE_ONLY"},
+    {"capability_id":"INPUT_WORKER_SPEC","resource":"programacion.fn_input_governance_worker_spec","disposition":"INTERNAL_DISCOVERY_FACADE; CURRENT_OUTPUT_ANNOUNCES_DESIGN_BINDING_GRAPH_V4"}
+  ],
+  "current_worker_resource_plan": ["SCREEN","SCREEN_RULE_SET","SCREEN_STATE_SET","SCREEN_CANONICAL_GRAPH","DESIGN_BINDING_GRAPH_V4","API_CONTRACT_RESOLUTION_V1","EKB_DECISION_SET","EKB_PREVENTION_SET"],
+  "model_boundary": {
+    "planning_for_known_data_source": "DENY",
+    "allowed_only_if": ["requires_semantic_interpretation","non_derivable_from_authority","non_calculable","not_known_structure"],
+    "request_mode": "COMPACT_SEMANTIC_GAP_ONLY",
+    "output_contract": "S30_SEMANTIC_DELTA_V1",
+    "system_owned_fields": "DENY",
+    "post_model_materialization": "DETERMINISTIC"
+  },
+  "stage_exit_checks": {
+    "runtime_resources_observed": true,
+    "public_facades_observed": 5,
+    "input_edge_functions_observed": 3,
+    "programacion_functions_observed": 93,
+    "unclassified_external_count": 0,
+    "call_graph_evidence_bound_to_prior_commit": true,
+    "foreign_lane_mutations": 0,
+    "supabase_mutations": 0,
+    "runtime_mutations": 0
+  },
+  "remaining_before_s33_01_final_pass": [
+    "deterministically validate inventory structure",
+    "read back this inventory from its exact commit",
+    "freeze its blob SHA for S33-02 input"
+  ],
+  "claim_ceiling": "S33_01_CLASSIFIED_INVENTORY_CANDIDATE_NO_RUNTIME_OR_PRODUCTION"
+}
