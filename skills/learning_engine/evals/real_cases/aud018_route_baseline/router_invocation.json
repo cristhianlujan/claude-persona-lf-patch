@@ -1,0 +1,10 @@
+{
+  "arguments": {
+    "p_action_hint": "EXECUTE",
+    "p_asset_type_hint": "SKILL",
+    "p_distribution_mode": "DIRECT",
+    "p_request_text": "Ejecutar en read-only la skill ACT-0046 Motor de Aprendizaje sobre el caso real EKB AUD-018, mostrando input y output, sin impacto automático ni producción.",
+    "p_target_hint": "ACT-0046"
+  },
+  "function": "public.lf_router_resolve_v1"
+}

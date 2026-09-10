@@ -1,0 +1,20 @@
+{
+  "blocking_code": "BLOCK_OPERATION_NOT_REGISTERED",
+  "case_id": "MOTOR-AUD018-ROUTE-BASELINE-001",
+  "claim_ceiling": "ROUTER_BASELINE_ONLY_LEARNING_ENGINE_NOT_EXECUTED",
+  "code_head_sha": "5f33c4ce25fca201c109d31be5c2e1e1ec465afc",
+  "configuration_sha256": "992285aa15ee1bd1bbe7aaaf76deb0e3872e07352db2068a602c462e38b38ea1",
+  "evidence_sha256": "b959000dcc209c43aa7e57e3a0a6bfe031029e7a6bd33c9ba8f6f88e0fc02c63",
+  "executed": true,
+  "executor": "public.lf_router_resolve_v1",
+  "exit_code": 0,
+  "next_gate": "MATERIALIZE_GOVERNED_LEARNING_ENGINE_EXECUTION_ROUTE_CANDIDATE",
+  "no_s26_mutation": true,
+  "no_s30_mutation": true,
+  "no_write_performed_on_supabase": true,
+  "observed_at": "2026-09-10T04:00:14.409695+00:00",
+  "receipt_type": "LF_LEARNING_ENGINE_REAL_CASE_BASELINE_V1",
+  "result": "BLOCKED",
+  "router_invocation_sha256": "c2b65d41dbe3ba6048d3fa3973f34c61a16a9c8a96c5c130f00d6ac5abf21f54",
+  "source_sha256": "cb8626c81554fd86abaee8994d621a68562fd7dcfa90fd4fc356268fe889f054"
+}
