@@ -4,6 +4,9 @@
     "r09_corpus_v2.json": "69c12812e862c4d9b783799e4db7f5251e72734582383a97b86f7b8ef856cfc4",
     "r09_current_readback_v2.json": "18d5a25fa0c5c8ee057b6429a0e7c3bc68d86335e794e24094a77513f6a0c46b",
     "r09_execution_receipt_v2.json": "039d46b276f6f6b9dc7bd37f884c8bc4534d7dbc2e54baf71c79a8ab3fccaf7a",
+    "s30_d_r09_final_candidate_v2.json": "2c35f9ff90ff37845f8b800b36d159fd754e6a6121030425129ada45f3d798a6",
+    "s30_d_r09_frozen_result_v2.json": "482105595972599832ed5d39b03fe5c7d7b657fbca13868309686b27c3e27f2c",
+    "s30_d_r09_independent_readback_v2.json": "82eac8be9b299c1f8de3b1f0109984c890b20dd325cc1402b7611d163bd55b42",
     "s30d_integration_gate_v2.py": "efa75110e2bc7084d369437002f9a9afb1415d237f063c31b93b3cc7d4fb6807",
     "s30d_r09_v2.py": "b3cbc6b5c4f6b832936d30fcfa32339b880777313ad7a04f924b34ce1f25056d",
     "test_s30d_final_r09.py": "fe210070364f5183135e024f49e32a8e577663add71a37d6dc1069ebf17449fc",
@@ -13,7 +16,7 @@
   "contract": "S30_D_PREPARED_MANIFEST_V1",
   "final_acceptance_allowed": false,
   "model_calls": 0,
-  "next_gate": "GOVERNED_D_R09_BRANCH_CI_THEN_INDEPENDENT_FREEZE",
+  "next_gate": "GOVERNED_FINAL_FREEZE_TO_PROTECTED_BRANCH_THEN_PR",
   "r09_case_count": 52,
-  "status": "R09_LOCAL_EXECUTION_PASS_READY_FOR_GOVERNED_CANDIDATE"
+  "status": "R09_FROZEN_PASS_INDEPENDENT_READBACK_PASS_PENDING_PROTECTED_UPDATE"
 }
