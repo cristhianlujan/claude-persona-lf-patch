@@ -1,0 +1,36 @@
+{
+  "claim_ceiling": "S33_01_DETERMINISTIC_INVENTORY_STRUCTURE_PASS_NO_RUNTIME_OR_PRODUCTION",
+  "command": "python validate_s33_01_inventory.py s33_01_capability_inventory_v1.json",
+  "evidence_sha256": "432a48f24e51f417cad84bb86af22dc899cbda44a4b7df8a9e71ab08ce6133b8",
+  "executed": true,
+  "executor": "LOCAL_PYTHON_EXACT_GIT_BLOB_RECONSTRUCTION",
+  "exit_code": 0,
+  "input": {
+    "commit_sha": "c93d9e0f3e15dffd43f052265175e8d3c632ef7a",
+    "git_blob_recomputed": "9710e222223555d8088add6afff052d30d359356",
+    "git_blob_sha": "9710e222223555d8088add6afff052d30d359356",
+    "path": "sandbox/lf_contract_gate_test/input_governance_s26_s30_p0/s33_01_capability_inventory_v1.json"
+  },
+  "python_version": "3.13.5",
+  "receipt_version": "S33_01_INVENTORY_VALIDATION_RECEIPT_V1",
+  "result": {
+    "blocking_codes": [],
+    "error_count": 0,
+    "errors": [],
+    "observed_external_surface_count": 8,
+    "observed_internal_group_total": 93,
+    "observed_resource_capability_count": 9,
+    "results_sha256": "1777b086295ad7bdc6c51c23227da63f18d3040470d7f527164eba9079a1bd93",
+    "valid": true,
+    "validator_version": "S33_01_INVENTORY_VALIDATOR_V1"
+  },
+  "stage": "S33-01",
+  "strategy_id": "S33",
+  "validator": {
+    "commit_sha": "3e69aff5b71e1f3588e13a5927f0e9a56d3011ec",
+    "git_blob_recomputed": "55a8a9d6d0adffab9cf8cbeff1856f501c20c606",
+    "git_blob_sha": "55a8a9d6d0adffab9cf8cbeff1856f501c20c606",
+    "path": "sandbox/lf_contract_gate_test/input_governance_s26_s30_p0/validate_s33_01_inventory.py",
+    "version": "S33_01_INVENTORY_VALIDATOR_V1"
+  }
+}
