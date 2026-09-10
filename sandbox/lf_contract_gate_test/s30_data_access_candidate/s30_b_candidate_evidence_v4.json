@@ -1,0 +1,88 @@
+{
+  "evidence_version": "S30_B_CANDIDATE_EVIDENCE_V4",
+  "lane": "S30-B",
+  "base_main_sha": "0a55e3f92f36c84da7698eb97c4d2eae337a2c20",
+  "verification_state": "LOCAL_PASS_CI_PENDING",
+  "claim_ceiling": "FIELD_LEVEL_DATA_ACCESS_AND_SCHEMA_SAFETY_CANDIDATE_PASS",
+  "schema_currentness": {
+    "registered_source_count": 15,
+    "canonical_fingerprint_source_count": 13,
+    "canonical_match_count_before_rebind": 12,
+    "canonical_stale_count_before_rebind": 1,
+    "stale_source_key": "ASSETS_PROFILES",
+    "stale_object_identity": "public.lf_activos",
+    "previous_fingerprint": "d6660d21104f255b14e0b1bab2528e315642cbb5f58f5830edabbc783c284e9a",
+    "live_fingerprint": "575382ef470e0baa1b7886b83945792e5944ba8071be202bd091329aa8e6583f",
+    "rebound_in_candidate": true,
+    "fallback_source_count": 2,
+    "fallback_registered_fields_missing": 0,
+    "function_signature_resolution": {
+      "architecture_definition": "private.fn_architecture_object_definition_v3(p_object_type text, p_object_identity text) -> text",
+      "digest": "extensions.digest(text, text) -> bytea"
+    }
+  },
+  "live_positive_readback": {
+    "source_key": "STRATEGY_SNAPSHOTS",
+    "object_identity": "public.lf_strategy_snapshots",
+    "filter": {"id": 35},
+    "schema_resolved_in_prior_separate_call": true,
+    "row_count": 1,
+    "snapshot_code": "LF_OPERATING_CONSTITUTION_POLICY_AUTONOMOUS_OPERATIONS_20260906",
+    "status": "CANDIDATO_READ_ONLY",
+    "runtime_state": "PLAN_ONLY",
+    "impact_policy": "BLOQUEADO"
+  },
+  "deterministic_test_evidence": {
+    "core_data_access": {
+      "suite": "test_s30_data_access_v2.py",
+      "result": "PASS",
+      "negative_cases": 21,
+      "negative_backend_escape_count": 0,
+      "registered_source_count": 15
+    },
+    "bounded_data_access": {
+      "suite": "test_s30_data_access_budget_v1.py",
+      "result": "PASS",
+      "negative_cases": 12,
+      "backend_budget_escape_to_downstream": 0,
+      "registered_read_authority": "DETERMINISTIC",
+      "model_calls_for_registered_read_planning": 0
+    },
+    "execution_authority": {
+      "suite": "test_s30_execution_authority_v1.py",
+      "result": "PASS",
+      "contract": "S30_EXECUTION_AUTHORITY_V1",
+      "deterministic_categories": 5,
+      "model_calls_for_deterministic_cases": 0,
+      "model_only_on_non_derivable_semantic_gap": true,
+      "post_model_materialization_and_validation": "DETERMINISTIC"
+    },
+    "self_governance": {
+      "suite": "validate_s30_self_governance_gate.py --self-test",
+      "result": "PASS",
+      "case_count": 31
+    }
+  },
+  "optimization_policy": {
+    "default": "DETERMINISTIC_FIRST",
+    "model_gate": "MODEL_ONLY_ON_NON_DERIVABLE_SEMANTIC_GAP",
+    "deterministic_wins_equivalent_contract": true,
+    "known_source_model_planning_forbidden": true,
+    "materialization_guards_final_validation": "DETERMINISTIC"
+  },
+  "safety": {
+    "ddl_created": false,
+    "runtime_activation": false,
+    "production_activation": false,
+    "scheduler_modified": false,
+    "s26_modified": false
+  },
+  "remaining_gates": [
+    "EXACT_STAGING_CI",
+    "GOVERNED_BROKER_PROTECTED_SHA_READBACK",
+    "EXACT_PROTECTED_BRANCH_CI",
+    "PR_EVENT_CI",
+    "OWNER_AUTHORIZATION_BEFORE_MAIN_MERGE",
+    "POST_MERGE_MAIN_READBACK"
+  ]
+}

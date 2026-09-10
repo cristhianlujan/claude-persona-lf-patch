@@ -1,0 +1,34 @@
+{
+  "contract_version": "S30_EXECUTION_AUTHORITY_V1",
+  "scope": "S30_DATA_ACCESS_AND_PREEXECUTION_MATERIALIZATION",
+  "default_authority": "DETERMINISTIC",
+  "deterministic_wins_on_equivalent_contract": true,
+  "model_policy": "MODEL_ONLY_ON_NON_DERIVABLE_SEMANTIC_GAP",
+  "categories": {
+    "IDENTITY_HASH_ROUTING_CONTRACT_DEFAULTS": "DETERMINISTIC",
+    "TYPED_CONTEXT_DERIVATION": "DETERMINISTIC",
+    "CALCULABLE_VALIDATION_LIMITS_SCORING": "DETERMINISTIC",
+    "KNOWN_STRUCTURE_REPETITION_FORMATTING": "DETERMINISTIC",
+    "SEMANTIC_INTERPRETATION_SELECTION_REASONING": "CONDITIONAL_MODEL",
+    "MATERIALIZATION_GUARDS_FINAL_VALIDATION": "DETERMINISTIC"
+  },
+  "conditional_model_gate": {
+    "requires_semantic_interpretation": true,
+    "non_derivable_from_authority": true,
+    "non_calculable": true,
+    "not_known_structure": true,
+    "model_reason_required": true
+  },
+  "post_model_authority": {
+    "materialization": "DETERMINISTIC",
+    "guards": "DETERMINISTIC",
+    "final_structural_validation": "DETERMINISTIC",
+    "model_output_is_authority": false
+  },
+  "fail_closed": {
+    "unknown_category": "BLOCK_EXECUTION_AUTHORITY_UNKNOWN_CATEGORY",
+    "ambiguous_semantic_gate": "BLOCK_EXECUTION_AUTHORITY_AMBIGUOUS",
+    "model_reason_missing": "BLOCK_MODEL_REASON_MISSING",
+    "final_validation_failure": "BLOCK_FINAL_DETERMINISTIC_VALIDATION"
+  }
+}
