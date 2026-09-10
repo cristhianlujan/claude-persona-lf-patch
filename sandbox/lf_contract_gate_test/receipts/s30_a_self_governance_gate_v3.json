@@ -1,59 +1,37 @@
 {
   "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
-  "receipt_version": "v0.4",
+  "receipt_version": "v0.3",
   "issued_by": "contract_judge",
-  "operation_code": "S30_SELF_GOVERNANCE_GATE",
-  "execution_id": "S30-R10-CAUSAL-LANE-GUARD-REPAIR-20260910-001",
+  "operation_code": "S30_SELF_GOVERNANCE_GATE_V05_BROKER_BOOTSTRAP",
+  "execution_id": "S30-A-SELF-GOVERNANCE-V05-BROKER-BOOTSTRAP-20260910-001",
   "result": "PASS_SANDBOX",
   "all_required_steps_pass": true,
-  "contract_sha": "42f731932e086b8eb2bafc00e36a2fc71b93419c",
-  "judge_sha": "b7b6bda35b152570e529e9c1345ecbb9e1ac91f0",
+  "contract_sha": "e2fc64356d816a01e52f994728f3ae161635a826",
+  "judge_sha": "c7f0d1f542430ce6c9306b6e0193226ff94aa7b4",
   "source_sha_list": [
-    "5f33c4ce25fca201c109d31be5c2e1e1ec465afc",
-    "42f731932e086b8eb2bafc00e36a2fc71b93419c",
-    "b7b6bda35b152570e529e9c1345ecbb9e1ac91f0",
-    "ddf3a8f07db8a058bb189f83b1b296fe71d98e2c",
-    "0ef712b9d6253ea4f579e2b3d7bad7f73c2e3b2907d5b611629df4d639614048"
+    "18b5098ecd6ce0e2a5b3b551523456a75d712e6b",
+    "559f28b46bd3ffcdf8d80a96eb130d9b3518d4da",
+    "e2fc64356d816a01e52f994728f3ae161635a826",
+    "c7f0d1f542430ce6c9306b6e0193226ff94aa7b4",
+    "fcce1ebcd0cd2682a8d1d5a7d6b5bdfe1edd5d71",
+    "dc40dd6e90335c7a1805df2606d7387069f0e625"
   ],
   "target_paths": [
     "gobernanza/contratos/s30_self_governance_gate_v1.json",
     "gobernanza/judges/validate_s30_self_governance_gate.py"
   ],
   "blocking_codes": [],
-  "issued_at": "2026-09-10T06:02:00Z",
+  "issued_at": "2026-09-10T13:06:22Z",
   "evidence": {
-    "mode": "BOUNDED_S30_R10_CAUSAL_LANE_GUARD_REPAIR",
-    "frozen_base_main_sha": "5f33c4ce25fca201c109d31be5c2e1e1ec465afc",
-    "repair_prewrite_result": "PASS_TO_BOUNDED_GUARD_REPAIR",
-    "repair_scope_only": true,
-    "s30_snapshot_id": 35,
-    "s30_strategy_execution_id": "EXEC-S30-R10-CAUSAL-LANE-OWNERSHIP-20260910-001",
-    "s30_strategy_payload_sha256": "0ef712b9d6253ea4f579e2b3d7bad7f73c2e3b2907d5b611629df4d639614048",
-    "causal_lane_key": "GOV-010|S30|CAUSAL_LANE_EXCLUSIVITY",
-    "causal_lane_owner": "S30",
-    "causal_rule": "ONE_CAUSAL_CHAIN_ONE_ACTIVE_WRITER",
-    "blocking_code": "BLOCK_CAUSAL_LANE_ALREADY_OWNED",
-    "prewrite_regressions": {
-      "positive_single_writer_acquire": "PASS_TO_MATERIAL_WORK",
-      "negative_second_writer_same_key": "FAIL_CLOSED_BEFORE_MATERIAL_WORK",
-      "positive_parallel_read_only": "PASS_TO_READ_ONLY_PARALLEL_WITH_NO_MATERIAL_AUTHORITY",
-      "negative_stale_transfer": "FAIL_CLOSED_BEFORE_MATERIAL_WORK"
-    },
-    "first_pr_attempt": {
-      "pr": 647,
-      "head_sha": "e9a5e13800317920063f90b21be3f1461a368e68",
-      "run_id": 34442852439,
-      "job_id": 102761340172,
-      "first_bad_hop": "FAIL_RECEIPT_MISSING before S30 validator execution",
-      "material_work_started_after_bad_hop": false
-    },
-    "repair": "Refresh the already-authorized canonical LF_OPERATION_CONTRACT_RECEIPT carrier under the global receipt directory; do not weaken or bypass lf_contract_check.py.",
-    "fresh_exact_pr_event_ci": "REQUIRED_AFTER_THIS_RECEIPT_COMMIT",
-    "claim_ceiling": "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CANDIDATE_PASS",
-    "runtime_changed": false,
-    "production_changed": false,
-    "scheduler_changed": false,
-    "s26_mutated": false,
-    "motor_runtime_changed": false
+    "base_main_sha": "18b5098ecd6ce0e2a5b3b551523456a75d712e6b",
+    "candidate_head_before_receipt": "559f28b46bd3ffcdf8d80a96eb130d9b3518d4da",
+    "validate_lf_packs_run_id": 34480262996,
+    "validate_lf_packs_result": "SUCCESS",
+    "self_governance_self_test": "PASS_21_CASES",
+    "prewrite_result": "PASS_TO_BOUNDED_GUARD_REPAIR",
+    "promotion_authority": "NONE",
+    "broker_secret_present": false,
+    "fresh_exact_head_ci": "REQUIRED_AFTER_THIS_RECEIPT_COMMIT",
+    "reason_for_additive_receipt": "Canonical lf-contract-check requires a changed LF_OPERATION_CONTRACT_RECEIPT whenever governed contract/judge paths change."
   }
 }
