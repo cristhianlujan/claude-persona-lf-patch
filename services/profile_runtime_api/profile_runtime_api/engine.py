@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import json
 import time
 from typing import Any
 
 from .cache import StructuralCache
-from .hashing import canonical_json_sha256
+from .hashing import canonical_json_sha256, sha256_text
 from .llama import (
     LlamaHTTPClient,
     LlamaTransportError,
@@ -38,6 +39,18 @@ def _failure(exc: BaseException) -> tuple[str, str | None]:
 
 def _not_evaluated(code: str) -> dict[str, Any]:
     return {"status": "NOT_EVALUATED", "blocking_codes": [code], "downstream_authorized": False}
+
+
+def _runtime_diagnostics(exc: BaseException) -> dict[str, Any] | None:
+    current: BaseException | None = exc
+    seen: set[int] = set()
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        diagnostics = getattr(current, "diagnostics", None)
+        if isinstance(diagnostics, dict) and diagnostics:
+            return dict(diagnostics)
+        current = current.__cause__ or current.__context__
+    return None
 
 
 def _governed_context(
@@ -138,6 +151,72 @@ class ProfileRuntimeEngine:
     def runtime_snapshot(self) -> dict[str, Any]:
         llama=self.llama_client.health(); return {"schema":"lf-profile-runtime-api-snapshot/v1","runtime_version":self.settings.runtime_version,"resolver_version":self.settings.resolver_version,"source_sha":self.settings.source_sha,"bind":{"host":self.settings.api_host,"port":self.settings.api_port},"llama_server":llama,"cache":self.cache.stats(),"max_workers":self.settings.max_workers,"max_batch_size":self.settings.max_batch_size,"full_image_model_enabled":self.settings.allow_model_image,"deployment_classification":"INSTALLED_NOT_INTEGRATED_PENDING_LIVE_REVERIFY","operational_ready":False,"downstream_authorized":False}
 
+    def _materialize_runtime_output(
+        self, *, task: ProfileTask, model_raw_output: Any, governed_receipt: dict[str, Any]
+    ) -> tuple[Any, dict[str, Any]]:
+        if task.profile_slug != "ui_architect" or task.runtime_output_mode != "UI_PRODUCTION_SPEC":
+            return model_raw_output, {
+                "mode": "MODEL_RAW_UNCHANGED",
+                "model_raw_output_sha256": sha256_text(model_raw_output) if isinstance(model_raw_output, str) else None,
+                "materialized_output_sha256": sha256_text(model_raw_output) if isinstance(model_raw_output, str) else None,
+                "deterministic_fields_added": [],
+            }
+        if not isinstance(model_raw_output, str):
+            raise LlamaTransportError("UI_PRODUCTION_MODEL_RAW_NOT_STRING")
+        try:
+            payload = json.loads(model_raw_output)
+        except json.JSONDecodeError as exc:
+            raise LlamaTransportError("UI_PRODUCTION_MODEL_RAW_JSON_INVALID") from exc
+        if not isinstance(payload, dict):
+            raise LlamaTransportError("UI_PRODUCTION_MODEL_RAW_ROOT_NOT_OBJECT")
+
+        boundary = self.repository.load_ui_composer_boundary()
+        expected_version = task.input_fields.get("output_contract_version")
+        if expected_version != getattr(boundary, "VERSION", None):
+            raise LlamaTransportError(
+                "UI_PRODUCTION_OUTPUT_CONTRACT_VERSION_MISMATCH", str(expected_version)
+            )
+        deliverable = payload.get("deliverable_created")
+        composer_payload = boundary.build_composer_payload(deliverable)
+        governance_context = {
+            "request_id": task.request_id,
+            "runtime_source_sha": self.settings.source_sha,
+            "runtime_typed_context_sha256": governed_receipt.get("runtime_typed_context_sha256"),
+            "input_sha256": sha256_text(task.input_literal),
+        }
+        for key in ("execution_mode", "policy_snapshot_sha256", "bootstrap_context_sha256"):
+            value = task.input_fields.get(key)
+            if value not in (None, ""):
+                governance_context[key] = value
+        deterministic = {
+            "output_contract_version": expected_version,
+            "governance_envelope": {
+                "schema": getattr(boundary, "ENVELOPE_SCHEMA", "LF_UI_GOVERNANCE_ENVELOPE_V1"),
+                "render_policy": "NON_RENDER",
+                "context": governance_context,
+            },
+            "composer_payload": composer_payload,
+        }
+        for key, expected in deterministic.items():
+            if key in payload and payload[key] != expected:
+                raise LlamaTransportError("UI_PRODUCTION_DETERMINISTIC_FIELD_CONFLICT", key)
+            payload[key] = expected
+        errors = boundary.validate(payload)
+        if errors:
+            codes = ",".join(sorted({str(item.get("code")) for item in errors if isinstance(item, dict)}))
+            raise LlamaTransportError("UI_PRODUCTION_DETERMINISTIC_MATERIALIZATION_INVALID", codes)
+        materialized = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        return materialized, {
+            "mode": "UI_PRODUCTION_DETERMINISTIC_PROJECTION_V1",
+            "model_raw_output_sha256": sha256_text(model_raw_output),
+            "materialized_output_sha256": sha256_text(materialized),
+            "deterministic_fields_added": sorted(deterministic),
+            "composer_payload_sha256": canonical_json_sha256(composer_payload),
+            "governance_context_sha256": canonical_json_sha256(governance_context),
+            "model_generated_root_keys": sorted(key for key in payload if key not in deterministic),
+            "semantic_payload_mutated": False,
+        }
+
     def _execute_queue_profile(self, *, task: ProfileTask, context_pack: dict[str, Any]) -> dict[str, Any]:
         started=time.perf_counter(); context={"queue_native":True,"screen_governance_applicable":False,"cache_hit":False,"runtime_output_mode":task.runtime_output_mode}
         try:
@@ -148,10 +227,12 @@ class ProfileRuntimeEngine:
             verifier=PersistentLlamaServerVerifier(settings=self.settings,schema=schema,structural_context=governed_pack)
             runtime_package=self.runner.execute_profile_runtime(execution_id=f"EJECUCION_PERFIL_LF:{task.request_id}",profile_code=task.profile_code,profile_slug=task.profile_slug,profile_sources=sources,input_literal=task.input_literal,adapter=adapter,attestation_verifier=verifier,allow_test_doubles=False,lf_adapter_sources=[i.model_dump(mode="python") for i in task.lf_adapter_sources])
         except Exception as exc:
-            code,detail=_failure(exc); return self._profile_failure(task=task,code=code,detail=detail,stage="RUNTIME_COMPLETION",started=started,context=context)
-        contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=runtime_package.get("raw_output"),schema=schema); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract)
-        completion={"status":"PASS","blocking_codes":[],"receipt":runtime_package.get("receipt"),"governed_context_receipt":governed_receipt,"attestation_verification":runtime_package.get("runtime_attestation_verification"),"llama_usage":adapter.last_completion.get("usage",{}),"llama_timings":adapter.last_completion.get("timings",{})}
-        return {"request_id":task.request_id,"profile_code":task.profile_code,"profile_slug":task.profile_slug,"context":context,"runtime_completion":completion,"profile_contract_valid":contract,"semantic_utility":semantic,"raw_output":runtime_package.get("raw_output"),"elapsed_ms":round((time.perf_counter()-started)*1000,3),"downstream_authorized":False}
+            code,detail=_failure(exc); return self._profile_failure(task=task,code=code,detail=detail,stage="RUNTIME_COMPLETION",started=started,context=context,runtime_diagnostics=_runtime_diagnostics(exc))
+        model_raw_output=runtime_package.get("raw_output")
+        materialized_output,materialization=self._materialize_runtime_output(task=task,model_raw_output=model_raw_output,governed_receipt=governed_receipt)
+        contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=materialized_output,schema=schema); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract)
+        completion={"status":"PASS","blocking_codes":[],"receipt":runtime_package.get("receipt"),"governed_context_receipt":governed_receipt,"attestation_verification":runtime_package.get("runtime_attestation_verification"),"llama_usage":adapter.last_completion.get("usage",{}),"llama_timings":adapter.last_completion.get("timings",{}),"output_materialization":materialization}
+        return {"request_id":task.request_id,"profile_code":task.profile_code,"profile_slug":task.profile_slug,"context":context,"runtime_completion":completion,"profile_contract_valid":contract,"semantic_utility":semantic,"model_raw_output":model_raw_output,"raw_output":materialized_output,"elapsed_ms":round((time.perf_counter()-started)*1000,3),"downstream_authorized":False}
 
     def _execute_profile(self, *, task: ProfileTask, artifact: Any, prepared: PreparedContext, context_reused_within_batch: bool) -> dict[str, Any]:
         started=time.perf_counter(); context={"cache_key":prepared.cache_key,"cache_hit":prepared.cache_hit,"pack_sha256":prepared.pack.get("pack_sha256"),"prepare_ms":prepared.prepare_ms,"reused_within_batch":context_reused_within_batch,"runtime_output_mode":task.runtime_output_mode}
@@ -164,16 +245,19 @@ class ProfileRuntimeEngine:
             verifier=PersistentLlamaServerVerifier(settings=self.settings,schema=schema,structural_context=governed_pack)
             runtime_package=self.runner.execute_profile_runtime(execution_id=f"EJECUCION_PERFIL_LF:{task.request_id}",profile_code=task.profile_code,profile_slug=task.profile_slug,profile_sources=sources,input_literal=task.input_literal,adapter=adapter,attestation_verifier=verifier,allow_test_doubles=False,lf_adapter_sources=[i.model_dump(mode="python") for i in task.lf_adapter_sources])
         except Exception as exc:
-            code,detail=_failure(exc); return self._profile_failure(task=task,code=code,detail=detail,stage="RUNTIME_COMPLETION",started=started,context=context)
-        contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=runtime_package.get("raw_output"),schema=schema); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract)
-        completion={"status":"PASS","blocking_codes":[],"receipt":runtime_package.get("receipt"),"governed_context_receipt":governed_receipt,"attestation_verification":runtime_package.get("runtime_attestation_verification"),"llama_usage":adapter.last_completion.get("usage",{}),"llama_timings":adapter.last_completion.get("timings",{})}
-        return {"request_id":task.request_id,"profile_code":task.profile_code,"profile_slug":task.profile_slug,"context":context,"runtime_completion":completion,"profile_contract_valid":contract,"semantic_utility":semantic,"raw_output":runtime_package.get("raw_output"),"elapsed_ms":round((time.perf_counter()-started)*1000,3),"downstream_authorized":False}
+            code,detail=_failure(exc); return self._profile_failure(task=task,code=code,detail=detail,stage="RUNTIME_COMPLETION",started=started,context=context,runtime_diagnostics=_runtime_diagnostics(exc))
+        model_raw_output=runtime_package.get("raw_output")
+        materialized_output,materialization=self._materialize_runtime_output(task=task,model_raw_output=model_raw_output,governed_receipt=governed_receipt)
+        contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=materialized_output,schema=schema); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract)
+        completion={"status":"PASS","blocking_codes":[],"receipt":runtime_package.get("receipt"),"governed_context_receipt":governed_receipt,"attestation_verification":runtime_package.get("runtime_attestation_verification"),"llama_usage":adapter.last_completion.get("usage",{}),"llama_timings":adapter.last_completion.get("timings",{}),"output_materialization":materialization}
+        return {"request_id":task.request_id,"profile_code":task.profile_code,"profile_slug":task.profile_slug,"context":context,"runtime_completion":completion,"profile_contract_valid":contract,"semantic_utility":semantic,"model_raw_output":model_raw_output,"raw_output":materialized_output,"elapsed_ms":round((time.perf_counter()-started)*1000,3),"downstream_authorized":False}
 
     @staticmethod
-    def _profile_failure(*,task:ProfileTask,code:str,detail:str|None,stage:str,started:float,context:dict[str,Any]|None=None)->dict[str,Any]:
+    def _profile_failure(*,task:ProfileTask,code:str,detail:str|None,stage:str,started:float,context:dict[str,Any]|None=None,runtime_diagnostics:dict[str,Any]|None=None)->dict[str,Any]:
         completion={"status":"FAIL","blocking_codes":[code],"stage":stage};
         if detail: completion["detail"]=detail
-        return {"request_id":task.request_id,"profile_code":task.profile_code,"profile_slug":task.profile_slug,"context":context,"runtime_completion":completion,"profile_contract_valid":_not_evaluated("RUNTIME_COMPLETION_FAILED"),"semantic_utility":_not_evaluated("RUNTIME_COMPLETION_FAILED"),"raw_output":None,"elapsed_ms":round((time.perf_counter()-started)*1000,3),"downstream_authorized":False}
+        if runtime_diagnostics: completion["diagnostics"]=runtime_diagnostics
+        return {"request_id":task.request_id,"profile_code":task.profile_code,"profile_slug":task.profile_slug,"context":context,"runtime_completion":completion,"profile_contract_valid":_not_evaluated("RUNTIME_COMPLETION_FAILED"),"semantic_utility":_not_evaluated("RUNTIME_COMPLETION_FAILED"),"model_raw_output":(runtime_diagnostics or {}).get("model_raw_output"),"raw_output":None,"elapsed_ms":round((time.perf_counter()-started)*1000,3),"downstream_authorized":False}
 
     @staticmethod
     def _batch_result(request:BatchRequest,profile_results:list[dict[str,Any]],started:float,*,context:PreparedContext|None)->dict[str,Any]:

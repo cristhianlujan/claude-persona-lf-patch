@@ -8,6 +8,8 @@ from typing import Any
 from profile_runtime_api.llama import (
     CANONICAL_GENERATION_POLICY,
     UI_FOCUSED_GENERATION_POLICY,
+    UI_PRODUCTION_GENERATION_POLICY,
+    compact_model_context,
     LlamaHTTPClient,
     LlamaTransportError,
     PersistentLlamaServerAdapter,
@@ -178,6 +180,10 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
                 profile_slug="ui_architect",
             )
         self.assertEqual(ctx.exception.code, "LLAMA_STRUCTURED_OUTPUT_JSON_INVALID")
+        self.assertEqual(ctx.exception.diagnostics["model_raw_output"], '{"ok":')
+        self.assertEqual(ctx.exception.diagnostics["model_raw_output_chars"], 6)
+        self.assertEqual(len(ctx.exception.diagnostics["model_raw_output_sha256"]), 64)
+        self.assertEqual(ctx.exception.diagnostics["finish_reason"], "stop")
 
     def test_json_array_fails_closed(self) -> None:
         client = RecordingClient(self.settings, '[{"ok":true}]')
@@ -244,6 +250,100 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         self.assertIn("does not block profile analysis", prompt)
         self.assertIn("not by itself a reason to return NEEDS_INPUT or RETURN_TO_ORCHESTRATOR", prompt)
         self.assertIn("first non-whitespace response character MUST be {", prompt)
+
+    def test_ui_production_generation_is_bounded_and_uses_mode_budget(self) -> None:
+        canonical = {
+            "type": "object",
+            "required": ["worker", "deliverable_created"],
+            "properties": {
+                "worker": {"type": "string"},
+                "deliverable_created": {
+                    "type": "object",
+                    "properties": {
+                        "component_tree": {"type": "array", "items": {"type": "object"}},
+                        "density_rules": {"type": "array", "items": {"type": "string"}},
+                    },
+                },
+            },
+        }
+        client = RecordingClient(self.settings, '{"worker":"ui_architect","deliverable_created":{}}')
+        completion = client.chat(
+            system_prompt="system",
+            user_prompt="user",
+            schema=canonical,
+            profile_slug="ui_architect",
+            schema_mode="UI_PRODUCTION_SPEC",
+        )
+        assert client.last_payload is not None
+        generated = client.last_payload["response_format"]["schema"]
+        self.assertFalse(generated["additionalProperties"])
+        self.assertEqual(
+            generated["properties"]["deliverable_created"]["properties"]["component_tree"]["maxItems"],
+            12,
+        )
+        self.assertEqual(
+            generated["properties"]["deliverable_created"]["properties"]["density_rules"]["maxItems"],
+            6,
+        )
+        self.assertEqual(client.last_payload["max_tokens"], 2560)
+        self.assertEqual(completion["generation_schema_policy"], UI_PRODUCTION_GENERATION_POLICY)
+        self.assertNotIn("additionalProperties", canonical)
+
+    def test_ui_production_prompt_compacts_queue_context_and_reference_only_source(self) -> None:
+        binding = SchemaBinding(
+            payload=self.schema, raw=b'{}', sha256="a" * 64,
+            source_refs=("profiles/ui_architect/schemas/ui_production_spec.schema.json",),
+            mode="UI_PRODUCTION_SPEC",
+        )
+        full_context = {
+            "schema": "lf-profile-runtime-queue-context/v1",
+            "source": "QUEUE_NATIVE_TEXT_PROFILE",
+            "screen_governance_applicable": False,
+            "downstream_authorized": False,
+            "runtime_typed_context": {
+                "classification": {"surface_code": "UI_SCREEN_DESIGN", "task_code": "CREATE_NEW"},
+                "input": {"input_fields": {
+                    "task_mode": "CREATE_NEW",
+                    "domain_scope": "GENERIC_SERVICE_MARKETPLACE",
+                    "policy_snapshot_sha256": "b" * 64,
+                    "gate_f_input_ref": "sandbox/huge-ref",
+                }},
+                "card_resolution": {"mode": "NO_CARD_GOVERNED"},
+                "authority_resolution": [
+                    {"authority_type": "USER_REQUIREMENT", "authority_id": "verbose-id", "source_sha256": "c" * 64},
+                    {"authority_type": "PROFILE_CONTRACT", "authority_id": "verbose-profile", "source_sha256": "d" * 64},
+                ],
+                "adapter_binding": [],
+                "runtime_schema": {"mode": "UI_PRODUCTION_SPEC", "source_ref": "schema.json"},
+                "typed_context_sha256": "e" * 64,
+            },
+            "lf_cards": [],
+        }
+        compact = compact_model_context(full_context)
+        self.assertEqual(compact["schema"], "lf-profile-runtime-model-context/v1")
+        self.assertNotIn("policy_snapshot_sha256", compact["input_fields"])
+        self.assertNotIn("gate_f_input_ref", compact["input_fields"])
+        self.assertEqual(compact["authority_types"], ["PROFILE_CONTRACT", "USER_REQUIREMENT"])
+
+        adapter = PersistentLlamaServerAdapter(
+            settings=self.settings, client=RecordingClient(self.settings, '{"ok":true}'),
+            schema=binding, structural_context=full_context, image_bytes=None, image_media_type=None,
+        )
+        boundary_body = "BOUNDARY_BODY_MUST_NOT_ENTER_MODEL_CONTEXT"
+        prompt = adapter._system_prompt({
+            "runtime_output_mode": "UI_PRODUCTION_SPEC",
+            "profile_sources": [
+                {"ref": "profiles/ui_architect/SKILL.md", "content": "PROFILE_INSTRUCTIONS"},
+                {"ref": "profiles/ui_architect/contracts/composer_payload_boundary_v1.md", "content": boundary_body},
+            ],
+            "lf_adapter_sources": [],
+        })
+        self.assertIn("PROFILE_INSTRUCTIONS", prompt)
+        self.assertNotIn(boundary_body, prompt)
+        self.assertIn("CANONICAL SOURCE BOUND BY REFERENCE", prompt)
+        self.assertIn("lf-profile-runtime-model-context/v1", prompt)
+        self.assertNotIn("verbose-id", prompt)
+        self.assertIn("Do not emit output_contract_version, governance_envelope, or composer_payload", prompt)
 
 
 if __name__ == "__main__":

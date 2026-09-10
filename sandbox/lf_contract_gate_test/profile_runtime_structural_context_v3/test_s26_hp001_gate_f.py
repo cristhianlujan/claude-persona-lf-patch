@@ -51,6 +51,12 @@ def main() -> int:
         "performance_requirement_removed", x, "GATE_F_PERFORMANCE_REQUIREMENT_MISSING", f_sha, obs_sha
     )
 
+    x = copy.deepcopy(payload); x["execution_requirement"]["max_acceptable_model_generation_ms"] = 240000.0
+    negatives["performance_budget_weakened"] = expect_block(
+        "performance_budget_weakened", x,
+        "GATE_F_PERFORMANCE_BUDGET_INVALID:max_acceptable_model_generation_ms", f_sha, obs_sha
+    )
+
     print(json.dumps({
         "gate": "S26_HP001_GATE_F_RUNTIME_MATRIX_V1",
         "result": "PASS",

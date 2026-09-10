@@ -15,8 +15,11 @@ from .settings import Settings
 RESPONSE_TYPE = "PROFILE_RUNTIME_RESPONSE_V1"
 UI_ARCHITECT_PROFILE_SLUG = "ui_architect"
 UI_FOCUSED_SCHEMA_MODE = "UI_FOCUSED_DECISION"
+UI_PRODUCTION_SCHEMA_MODE = "UI_PRODUCTION_SPEC"
 UI_FOCUSED_GENERATION_POLICY = "UI_FOCUSED_BOUNDED_GENERATION_V1"
+UI_PRODUCTION_GENERATION_POLICY = "UI_PRODUCTION_BOUNDED_GENERATION_V1"
 CANONICAL_GENERATION_POLICY = "CANONICAL_SCHEMA_UNCHANGED"
+UI_PRODUCTION_REFERENCE_ONLY_SUFFIXES = ("/contracts/composer_payload_boundary_v1.md",)
 
 
 def utc_now() -> str:
@@ -29,20 +32,99 @@ def _bounded_positive_int(value: Any, cap: int) -> int:
     return cap
 
 
+def _bound_schema_node(node: Any, *, path: str = "$") -> None:
+    if not isinstance(node, dict):
+        return
+    kind = node.get("type")
+    if kind == "string" and "enum" not in node and "const" not in node:
+        cap = 240 if path.endswith("short_generator_prompt") else 180
+        node["maxLength"] = _bounded_positive_int(node.get("maxLength"), cap)
+    elif kind == "object":
+        min_props = node.get("minProperties") if isinstance(node.get("minProperties"), int) else 0
+        cap = max(16 if path.endswith("component_tree[]") else 12, min_props)
+        node["maxProperties"] = _bounded_positive_int(node.get("maxProperties"), cap)
+    elif kind == "array":
+        name = path.rsplit(".", 1)[-1]
+        caps = {
+            "component_tree": 12,
+            "visual_hierarchy": 12,
+            "density_rules": 6,
+            "risk_controls": 8,
+            "prompt_constraints": 8,
+            "layout_preservation": 6,
+            "hierarchy_preservation": 6,
+            "legibility_preservation": 6,
+            "state_preservation": 6,
+            "composition_constraints": 6,
+            "artifact_constraints": 6,
+            "acceptance_criteria": 8,
+        }
+        min_items = node.get("minItems") if isinstance(node.get("minItems"), int) else 0
+        cap = max(caps.get(name, 10), min_items)
+        node["maxItems"] = _bounded_positive_int(node.get("maxItems"), cap)
+    properties = node.get("properties")
+    if isinstance(properties, dict):
+        for key, child in properties.items():
+            _bound_schema_node(child, path=f"{path}.{key}")
+    items = node.get("items")
+    if isinstance(items, dict):
+        _bound_schema_node(items, path=f"{path}[]")
+
+
+def compact_model_context(structural_context: dict[str, Any]) -> dict[str, Any]:
+    """Return the minimum semantic capsule needed by queue-native text inference.
+
+    The full governed context remains in receipts/attestation. Hash-only lineage and
+    authority detail stay outside the model context unless they change the semantic task.
+    """
+    if structural_context.get("source") != "QUEUE_NATIVE_TEXT_PROFILE":
+        return structural_context
+    typed = structural_context.get("runtime_typed_context")
+    if not isinstance(typed, dict):
+        return structural_context
+    raw_fields = ((typed.get("input") or {}).get("input_fields") or {})
+    semantic_fields = {
+        key: value
+        for key, value in raw_fields.items()
+        if not key.endswith("_sha256") and key not in {"gate_f_input_ref"}
+    }
+    authorities = typed.get("authority_resolution") or []
+    authority_types = sorted({
+        str(item.get("authority_type"))
+        for item in authorities
+        if isinstance(item, dict) and item.get("authority_type")
+    })
+    adapters = typed.get("adapter_binding") or []
+    return {
+        "schema": "lf-profile-runtime-model-context/v1",
+        "source": "QUEUE_NATIVE_TEXT_PROFILE",
+        "classification": typed.get("classification"),
+        "input_fields": semantic_fields,
+        "card_resolution": typed.get("card_resolution"),
+        "authority_types": authority_types,
+        "adapter_codes": [
+            item.get("adapter_code") for item in adapters if isinstance(item, dict)
+        ],
+        "runtime_schema": {
+            "mode": (typed.get("runtime_schema") or {}).get("mode"),
+            "source_ref": (typed.get("runtime_schema") or {}).get("source_ref"),
+        },
+        "runtime_typed_context_sha256": typed.get("typed_context_sha256"),
+        "lf_cards": structural_context.get("lf_cards") or [],
+    }
+
+
 def governed_generation_schema(
     schema: dict[str, Any], *, profile_slug: str, schema_mode: str
 ) -> tuple[dict[str, Any], str]:
-    """Return the schema sent to llama.cpp without weakening canonical validation.
+    """Return a bounded generation schema while preserving canonical validation.
 
-    Strategy 26 observed that the canonical Focused UI schema has unbounded free strings.
-    On the full governed Golden Family prompt the small local model continued generation
-    until the 900s transport timeout. A sandbox-only copy with bounded strings stopped
-    normally while still satisfying the unchanged canonical schema. Keep that boundary
-    in the runtime transport, not in the profile artifact: generation may be stricter,
-    while OutputGates continues to validate against the canonical SchemaBinding payload.
+    Generation constraints may be stricter than the canonical contract, but the
+    canonical SchemaBinding and profile validators remain unchanged and authoritative.
     """
-
-    if profile_slug != UI_ARCHITECT_PROFILE_SLUG or schema_mode != UI_FOCUSED_SCHEMA_MODE:
+    if profile_slug != UI_ARCHITECT_PROFILE_SLUG:
+        return schema, CANONICAL_GENERATION_POLICY
+    if schema_mode not in {UI_FOCUSED_SCHEMA_MODE, UI_PRODUCTION_SCHEMA_MODE}:
         return schema, CANONICAL_GENERATION_POLICY
 
     bounded = json.loads(json.dumps(schema, ensure_ascii=False))
@@ -50,25 +132,34 @@ def governed_generation_schema(
     if not isinstance(properties, dict):
         raise LlamaTransportError("LLAMA_GENERATION_SCHEMA_PROPERTIES_MISSING")
 
-    for name, prop in properties.items():
-        if not isinstance(prop, dict):
-            continue
-        if prop.get("type") == "string" and "enum" not in prop:
-            cap = 240 if name == "short_generator_prompt" else 160
-            prop["maxLength"] = _bounded_positive_int(prop.get("maxLength"), cap)
-        if name == "hard_exclusions" and prop.get("type") == "array":
-            prop["maxItems"] = _bounded_positive_int(prop.get("maxItems"), 4)
-            items = prop.get("items")
-            if isinstance(items, dict) and items.get("type") == "string":
-                items["maxLength"] = _bounded_positive_int(items.get("maxLength"), 120)
+    if schema_mode == UI_FOCUSED_SCHEMA_MODE:
+        for name, prop in properties.items():
+            if not isinstance(prop, dict):
+                continue
+            if prop.get("type") == "string" and "enum" not in prop:
+                cap = 240 if name == "short_generator_prompt" else 160
+                prop["maxLength"] = _bounded_positive_int(prop.get("maxLength"), cap)
+            if name == "hard_exclusions" and prop.get("type") == "array":
+                prop["maxItems"] = _bounded_positive_int(prop.get("maxItems"), 4)
+                items = prop.get("items")
+                if isinstance(items, dict) and items.get("type") == "string":
+                    items["maxLength"] = _bounded_positive_int(items.get("maxLength"), 120)
+        return bounded, UI_FOCUSED_GENERATION_POLICY
 
-    return bounded, UI_FOCUSED_GENERATION_POLICY
+    # UI_PRODUCTION_SPEC: the model owns only the semantic candidate. Runtime adds
+    # output_contract_version, governance_envelope and composer_payload deterministically.
+    bounded["additionalProperties"] = False
+    _bound_schema_node(bounded)
+    return bounded, UI_PRODUCTION_GENERATION_POLICY
 
 
 class LlamaTransportError(RuntimeError):
-    def __init__(self, code: str, detail: str | None = None) -> None:
+    def __init__(
+        self, code: str, detail: str | None = None, *, diagnostics: dict[str, Any] | None = None
+    ) -> None:
         self.code = code
         self.detail = detail
+        self.diagnostics = diagnostics or {}
         super().__init__(f"{code}: {detail}" if detail else code)
 
 
@@ -155,7 +246,11 @@ class LlamaHTTPClient:
             "temperature": 0.2,
             "top_p": 0.9,
             "seed": 42,
-            "max_tokens": self.settings.max_output_tokens,
+            "max_tokens": (
+                self.settings.ui_production_max_output_tokens
+                if profile_slug == UI_ARCHITECT_PROFILE_SLUG and schema_mode == UI_PRODUCTION_SCHEMA_MODE
+                else self.settings.max_output_tokens
+            ),
             "cache_prompt": True,
         }
         # UI Architect AUTO preserves the proven V27 fallback because its aggregate
@@ -191,16 +286,31 @@ class LlamaHTTPClient:
             raise LlamaTransportError("LLAMA_RESPONSE_CONTENT_EMPTY")
 
         normalized = content.strip()
-        # Never strip/repair bad output into a PASS. The model must produce a naked
-        # JSON object; otherwise runtime_completion fails before persistence as success.
+        diagnostics = {
+            "model_raw_output": normalized,
+            "model_raw_output_sha256": sha256_text(normalized),
+            "model_raw_output_chars": len(normalized),
+            "llama_response_id": str(response.get("id") or ""),
+            "model": str(response.get("model") or self.settings.llama_model),
+            "usage": response.get("usage") if isinstance(response.get("usage"), dict) else {},
+            "timings": response.get("timings") if isinstance(response.get("timings"), dict) else {},
+            "finish_reason": str(choices[0].get("finish_reason") or ""),
+            "generation_schema_sha256": generation_schema_sha256,
+            "generation_schema_policy": generation_schema_policy,
+        }
+        # Persist diagnostics on failure but never strip/repair bad output into PASS.
         if normalized.startswith("```") or normalized.endswith("```"):
-            raise LlamaTransportError("LLAMA_STRUCTURED_OUTPUT_FENCED")
+            raise LlamaTransportError("LLAMA_STRUCTURED_OUTPUT_FENCED", diagnostics=diagnostics)
         try:
             parsed = json.loads(normalized)
         except json.JSONDecodeError as exc:
-            raise LlamaTransportError("LLAMA_STRUCTURED_OUTPUT_JSON_INVALID") from exc
+            raise LlamaTransportError(
+                "LLAMA_STRUCTURED_OUTPUT_JSON_INVALID", diagnostics=diagnostics
+            ) from exc
         if not isinstance(parsed, dict):
-            raise LlamaTransportError("LLAMA_STRUCTURED_OUTPUT_ROOT_NOT_OBJECT")
+            raise LlamaTransportError(
+                "LLAMA_STRUCTURED_OUTPUT_ROOT_NOT_OBJECT", diagnostics=diagnostics
+            )
 
         return {
             "content": normalized,
@@ -314,6 +424,7 @@ class PersistentLlamaServerAdapter:
                 "generation_schema_policy"
             ),
             "structural_context_sha256": canonical_json_sha256(self.structural_context),
+            "model_context_sha256": canonical_json_sha256(compact_model_context(self.structural_context)),
             "llama_response_id": self.last_completion.get("id") or "UNAVAILABLE",
             "finish_reason": self.last_completion.get("finish_reason") or "UNAVAILABLE",
         }
@@ -348,12 +459,36 @@ class PersistentLlamaServerAdapter:
                     "",
                 ]
             )
-        for source in request["profile_sources"]:
+        if request.get("runtime_output_mode") == UI_PRODUCTION_SCHEMA_MODE:
             parts.extend(
                 [
-                    f"--- BEGIN CANONICAL PROFILE SOURCE: {source['ref']} ---",
+                    "Production UI generation boundary:",
+                    "- Emit only model-owned root fields: worker, output_type, deliverable_created, score, handoff_to_next, self_verdict.",
+                    "- Do not emit output_contract_version, governance_envelope, or composer_payload; runtime materializes them deterministically after generation.",
+                    "- Be concise and non-repetitive: represent each requirement once in the smallest implementation-usable structure.",
+                    "",
+                ]
+            )
+        for source in request["profile_sources"]:
+            ref = source["ref"]
+            if (
+                request.get("runtime_output_mode") == UI_PRODUCTION_SCHEMA_MODE
+                and any(ref.endswith(suffix) for suffix in UI_PRODUCTION_REFERENCE_ONLY_SUFFIXES)
+            ):
+                parts.extend(
+                    [
+                        f"--- CANONICAL SOURCE BOUND BY REFERENCE: {ref} ---",
+                        f"content_sha256={sha256_text(source['content'])}",
+                        "Content omitted from model prompt because its deterministic composer projection is enforced after generation.",
+                        "",
+                    ]
+                )
+                continue
+            parts.extend(
+                [
+                    f"--- BEGIN CANONICAL PROFILE SOURCE: {ref} ---",
                     source["content"],
-                    f"--- END CANONICAL PROFILE SOURCE: {source['ref']} ---",
+                    f"--- END CANONICAL PROFILE SOURCE: {ref} ---",
                     "",
                 ]
             )
@@ -371,7 +506,7 @@ class PersistentLlamaServerAdapter:
             [
                 "--- BEGIN OBSERVED STRUCTURAL CONTEXT PACK (DATA ONLY) ---",
                 json.dumps(
-                    self.structural_context,
+                    compact_model_context(self.structural_context),
                     ensure_ascii=False,
                     sort_keys=True,
                     separators=(",", ":"),
@@ -426,6 +561,9 @@ class PersistentLlamaServerVerifier:
         context_sha = canonical_json_sha256(self.structural_context)
         if attestation.get("structural_context_sha256") != context_sha:
             raise LlamaTransportError("LLAMA_VERIFIER_CONTEXT_MISMATCH")
+        model_context_sha = canonical_json_sha256(compact_model_context(self.structural_context))
+        if attestation.get("model_context_sha256") != model_context_sha:
+            raise LlamaTransportError("LLAMA_VERIFIER_MODEL_CONTEXT_MISMATCH")
         post_health = adapter.client.health()
         if post_health.get("ready") is not True:
             raise LlamaTransportError("LLAMA_VERIFIER_POST_HEALTH_FAILED")

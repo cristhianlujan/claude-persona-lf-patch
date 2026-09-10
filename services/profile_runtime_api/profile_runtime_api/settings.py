@@ -67,7 +67,8 @@ class Settings:
     max_request_bytes: int = 20 * 1024 * 1024
     max_prompt_chars: int = 120_000
     max_output_tokens: int = 2048
-    llama_timeout_seconds: int = 900
+    ui_production_max_output_tokens: int = 2560
+    llama_timeout_seconds: int = 300
     llama_health_timeout_seconds: int = 3
     cache_max_entries: int = 64
     enable_targeted_reread: bool = True
@@ -118,8 +119,12 @@ class Settings:
                 "PROFILE_RUNTIME_MAX_OUTPUT_TOKENS", 2048,
                 minimum=128, maximum=8192,
             ),
+            ui_production_max_output_tokens=_int(
+                "PROFILE_RUNTIME_UI_PRODUCTION_MAX_OUTPUT_TOKENS", 2560,
+                minimum=512, maximum=4096,
+            ),
             llama_timeout_seconds=_int(
-                "PROFILE_RUNTIME_LLAMA_TIMEOUT_SECONDS", 900,
+                "PROFILE_RUNTIME_LLAMA_TIMEOUT_SECONDS", 300,
                 minimum=30, maximum=1800,
             ),
             llama_health_timeout_seconds=_int(

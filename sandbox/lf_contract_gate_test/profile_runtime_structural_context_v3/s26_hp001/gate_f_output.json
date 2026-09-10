@@ -24,9 +24,14 @@
     "depth_required": true,
     "deterministic_performance_required": true,
     "exact_head_runtime_required": true,
+    "hard_transport_timeout_ms": 300000.0,
     "machine_readable_runtime_timings_required": true,
+    "max_acceptable_model_generation_ms": 120000.0,
+    "max_acceptable_profile_elapsed_ms": 120000.0,
     "model_generation_performance_required": true,
-    "quality_required": true
+    "quality_required": true,
+    "target_model_generation_ms": 60000.0,
+    "worker_watchdog_ms": 900000.0
   },
   "gate": "F_PROFILE_EXECUTION",
   "historical_manual_candidate": {
@@ -47,7 +52,14 @@
     "exact_runtime_output_available": false,
     "model_generation_performance": "NOT_EVALUATED",
     "observational_runtime_latency_creditable": false,
-    "quality_on_exact_runtime_output": "NOT_EVALUATED"
+    "quality_on_exact_runtime_output": "NOT_EVALUATED",
+    "runtime_performance_budget": {
+      "acceptance_ceiling_ms": 120000.0,
+      "current_status": "NOT_EVALUATED",
+      "hard_transport_abort_ms": 300000.0,
+      "target_model_generation_ms": 60000.0,
+      "worker_watchdog_ms": 900000.0
+    }
   },
   "run_id": "S26-HP-001",
   "runtime_observation": {
