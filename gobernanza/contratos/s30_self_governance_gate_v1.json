@@ -1,6 +1,6 @@
 {
   "contract_code": "S30_SELF_GOVERNANCE_GATE",
-  "version": "v0.3-candidate",
+  "version": "v0.4-candidate",
   "status": "CANDIDATO_READ_ONLY",
   "lane": "S30-A",
   "owner": "S30",
@@ -83,6 +83,21 @@
     "text_only_learning_is_closure": false,
     "all_triggered_applicable_ekb_must_be_listed": true
   },
+  "causal_lane_ownership": {
+    "required_for_every_receipt": true,
+    "principle": "ONE_CAUSAL_CHAIN_ONE_ACTIVE_WRITER",
+    "key_fields": ["ekb_code", "target_asset", "primary_gate"],
+    "key_formula": "EKB_code + target_asset + primary_gate",
+    "writer_role": "WRITER",
+    "active_writer_states": ["ACTIVE", "IN_PROGRESS", "OPEN", "MATERIALIZING"],
+    "read_only_roles": ["RESEARCH", "READ_ONLY_AUDIT", "ADVERSARIAL_REVIEW", "SEMANTIC_REVIEW", "EVIDENCE_VERIFICATION"],
+    "blocking_code": "BLOCK_CAUSAL_LANE_ALREADY_OWNED",
+    "single_active_writer_required": true,
+    "writer_must_match_receipt_owner": true,
+    "read_only_role_can_run_parallel_without_writer_ownership": true,
+    "read_only_role_material_work_allowed": false,
+    "transfer_requires": ["UPSTREAM_CLOSED_OR_SUPERSEDED", "FRESH_CURRENTNESS", "STALE_RECEIPTS_INVALIDATED", "EVIDENCE_REVALIDATED"]
+  },
   "blocker_contract": {
     "required_fields": ["code", "affected_scope", "causal_gate", "owner", "independent_safe_work", "invalidation_condition"]
   },
@@ -106,6 +121,7 @@
   },
   "result_vocabulary": [
     "PASS_TO_MATERIAL_WORK",
+    "PASS_TO_READ_ONLY_PARALLEL",
     "FAIL_CLOSED_BEFORE_MATERIAL_WORK",
     "PASS_TO_BOUNDED_GUARD_REPAIR",
     "BLOCKED_CAUSAL",
@@ -133,6 +149,7 @@
       "sequence_resolution",
       "preflight_checks",
       "frontier",
+      "causal_lane_ownership",
       "applicable_ekb",
       "hard_guard_candidates",
       "safety_readback",
