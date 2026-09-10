@@ -157,7 +157,7 @@ def evaluate(contract: dict[str, Any], receipt: dict[str, Any]) -> dict[str, Any
     persist_requested = learning.get("persist_requested") is True
     learning_eligible = learning.get("eligible") is True
     required_learning = contract["learning_persistence"]["required_when_persisting"]
-    learning_missing = [key for key in required_learning if not _present(learning.get(key))]
+    learning_missing = [key for key in required_learning if not _present(learning.get(key))] if persist_requested else []
     learning_persist_allowed = bool(persist_requested and learning_eligible and not learning_missing and learning.get("verified") is True)
     if persist_requested and not learning_persist_allowed:
         warnings.append("LEARNING_PERSISTENCE_DENIED_INSUFFICIENT_PROVENANCE")
@@ -172,11 +172,13 @@ def evaluate(contract: dict[str, Any], receipt: dict[str, Any]) -> dict[str, Any
         result = "PASS_TO_EXECUTION"
         execution_allowed = True
 
+    manual_avoided = bool(result == "PASS_TO_EXECUTION" and card_state == "NONE" and selected_fallback in contract["fallback"]["ordered_alternatives"] and not manual_required)
+
     return {
         "result": result,
         "execution_allowed": execution_allowed,
         "manual_allowed": manual_allowed,
-        "manual_avoided": bool(card_state == "NONE" and selected_fallback in contract["fallback"]["ordered_alternatives"] and not manual_required),
+        "manual_avoided": manual_avoided,
         "applicable_controls": applicable_controls,
         "learning_persist_allowed": learning_persist_allowed,
         "learning_missing_fields": learning_missing,
@@ -265,6 +267,12 @@ def self_test(contract: dict[str, Any]) -> dict[str, Any]:
     pre_missing = _base_receipt(contract)
     pre_missing["pre_ekb_contract"]["status"] = "MISSING"
     cases.append(("12_pre_ekb_missing", pre_missing, "FAIL_CLOSED", None))
+
+    skipped = copy.deepcopy(generic)
+    skipped["fallback"] = {"attempts": [
+        {"kind": "GENERIC_CAPABILITY", "status": "PASS", "evidence_ref": "evidence://generic-capability"}
+    ], "selected": "GENERIC_CAPABILITY", "manual_required": False}
+    cases.append(("13_skip_fallback_order", skipped, "FAIL_CLOSED", False))
 
     results = []
     for name, fixture, expected_result, expected_manual_avoided in cases:
