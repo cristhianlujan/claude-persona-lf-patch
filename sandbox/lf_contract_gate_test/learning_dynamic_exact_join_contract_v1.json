@@ -1,0 +1,32 @@
+{
+  "schema":"LF_LEARNING_DYNAMIC_EXACT_JOIN_CONTRACT_V1",
+  "mode":"READ_ONLY",
+  "rule":"NEW_LEARNING_REQUIRES_EXACT_KB_CLASSIFICATION_RECEIPT_AND_EXACT_CONSUMER_CLUSTER_BINDING",
+  "join":[
+    "kb_row.kb_id = classification_event.payload.kb_id",
+    "classification_event.payload.taxonomy_version = catalog.taxonomy_version",
+    "classification_event.payload.lifecycle in catalog.eligibility.classification_lifecycle",
+    "classification_event.payload.eligibility in catalog.eligibility.classification_eligibility",
+    "classification_event.payload.cluster_code intersects exact consumer+capability cluster_codes",
+    "kb_row.kb_category = COMPETENCIA",
+    "kb_row.grounding_status = GROUNDED",
+    "kb_row.consumer_ready = true"
+  ],
+  "forbidden_shortcuts":[
+    "cluster_name_only",
+    "semantic_similarity_only",
+    "consumer_ready_without_classification_receipt",
+    "classification_receipt_without_exact_kb_id",
+    "wrong_taxonomy_version",
+    "stale_or_unapproved_classification_lifecycle",
+    "free_semantic_search"
+  ],
+  "selector_llm_calls":0,
+  "selector_round_trips":0,
+  "reader_writes":0,
+  "semantic_search":false,
+  "fallback":"NO_COMPETITIVE_CONTEXT",
+  "automatic_binding":false,
+  "automatic_impact":false,
+  "production_authorized":false
+}

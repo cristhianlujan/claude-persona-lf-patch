@@ -1,0 +1,20 @@
+{
+  "schema":"LF_UI_ARCHITECT_LEARNING_ADVERSARIAL_V1",
+  "consumer_id":"PERFIL-UI-ARCHITECT",
+  "cases":[
+    {"id":"ADV01","attempt":"missing_product_direction","expected":"NO_COMPETITIVE_CONTEXT"},
+    {"id":"ADV02","attempt":"stale_product_direction","expected":"NO_COMPETITIVE_CONTEXT"},
+    {"id":"ADV03","attempt":"unbound_kb_id","expected":"FAIL_CLOSED"},
+    {"id":"ADV04","attempt":"non_competencia_kb","expected":"FAIL_CLOSED"},
+    {"id":"ADV05","attempt":"ungrounded_kb","expected":"FAIL_CLOSED"},
+    {"id":"ADV06","attempt":"consumer_ready_false","expected":"FAIL_CLOSED"},
+    {"id":"ADV07","attempt":"semantic_search_authority_expansion","expected":"FAIL_CLOSED"},
+    {"id":"ADV08","attempt":"recursive_context_expansion","expected":"FAIL_CLOSED"},
+    {"id":"ADV09","attempt":"legal_truth_from_competitor","expected":"NO_COMPETITIVE_CONTEXT"},
+    {"id":"ADV10","attempt":"product_scope_decision_from_ui_consumer","expected":"NO_COMPETITIVE_CONTEXT"},
+    {"id":"ADV11","attempt":"context_over_5000_bytes","expected":"FAIL_CLOSED"},
+    {"id":"ADV12","attempt":"more_than_5_evidence_refs","expected":"FAIL_CLOSED"}
+  ],
+  "critical_false_positive_budget":0,
+  "production_authorized":false
+}

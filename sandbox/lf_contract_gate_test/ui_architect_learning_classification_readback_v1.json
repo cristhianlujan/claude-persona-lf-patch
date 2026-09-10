@@ -1,0 +1,14 @@
+{
+  "schema":"LF_UI_ARCHITECT_CLASSIFICATION_READBACK_V1",
+  "source":"public.lf_eventos",
+  "taxonomy_version":"LF_LEARNING_CLUSTER_V1",
+  "observed_live_at_utc":"2026-09-01T18:59:00Z",
+  "receipts":[
+    {"event_id":9719,"kb_id":"35cfab0c-1d91-4aa4-9761-f8af91181e17","cluster_code":"AUTOGESTION_DIGITAL","lifecycle":"CARD_CREADA","eligibility":"CANONICAL_PASS","automatic_impact":false},
+    {"event_id":9803,"kb_id":"7d55562e-9266-478b-b071-dca7ba1ade1a","cluster_code":"AUTOGESTION_DIGITAL","lifecycle":"ANALIZADO","eligibility":"PASS","automatic_impact":false},
+    {"event_id":9716,"kb_id":"bd2a3a05-b53b-400c-846d-3634e422a500","cluster_code":"PAGOS_Y_NO_ADEUDO","lifecycle":"CARD_CREADA","eligibility":"CANONICAL_PASS","automatic_impact":false},
+    {"event_id":9704,"kb_id":"92fc4ad2-1581-4aa1-b01b-e986bb3cc71c","cluster_code":"PAGOS_Y_NO_ADEUDO|AUTOGESTION_DIGITAL","lifecycle":"ANALIZADO","eligibility":"CANONICAL_PASS","automatic_impact":false}
+  ],
+  "eligible_receipts":4,
+  "production_authorized":false
+}

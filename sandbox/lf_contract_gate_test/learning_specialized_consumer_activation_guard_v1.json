@@ -1,0 +1,45 @@
+{
+  "schema": "LF_LEARNING_SPECIALIZED_CONSUMER_ACTIVATION_GUARD_V1",
+  "mode": "READ_ONLY",
+  "rule": "NO_EXACT_BINDING_OR_CURRENT_RUNTIME_AUTHORITY_MEANS_ZERO_CONTEXT",
+  "source_contracts": [
+    {
+      "consumer_id": "PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531",
+      "adapter_path": "adapters/marketplace_lf_cx_trust/ADAPTER.md",
+      "adapter_blob_sha": "a51ea5bc2a1a8c79b27f8ef0df26f9e15675f233",
+      "required_status_tokens": ["CANDIDATO", "READ_ONLY", "NO_HABILITADO"],
+      "required_runtime_boundary": "When not bound/enabled, adapter prompt payload is zero.",
+      "required_receipt_boundary": "Live invocation PASS requires a canonical `EJECUCION_PERFIL_LF` receipt"
+    },
+    {
+      "consumer_id": "PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531",
+      "adapter_path": "adapters/marketplace_lf_ux/ADAPTER.md",
+      "adapter_blob_sha": "90f77936ef01cff1b29db4eb188802f4d45c1a63",
+      "required_status_tokens": ["CANDIDATO", "READ_ONLY", "NO_HABILITADO"],
+      "required_runtime_boundary": "When not bound/enabled, adapter prompt payload is zero.",
+      "required_receipt_boundary": "Live invocation PASS requires a canonical `EJECUCION_PERFIL_LF` receipt"
+    }
+  ],
+  "candidate_contract": {
+    "required_binding_state": "READY_FOR_BINDING",
+    "required_fallback": "NO_COMPETITIVE_CONTEXT",
+    "exact_binding_created": false,
+    "selected_evidence_refs_must_be_empty": true,
+    "source_learning_ids_must_be_empty": true,
+    "learning_context_max_bytes": 0,
+    "context_delivery_enabled": false,
+    "automatic_binding": false,
+    "automatic_impact": false,
+    "production_authorized": false
+  },
+  "promotion_preconditions": [
+    "EXACT_CAPABILITY_BINDING_CURRENT",
+    "SELECTED_EVIDENCE_REFS_CURRENT_AND_GROUNDED",
+    "SOURCE_LEARNING_IDS_CURRENT_AND_CONSUMER_READY",
+    "PRODUCT_DIRECTION_AUTHORIZED_CURRENT",
+    "SPECIALIZED_ADAPTER_RUNTIME_ENABLED",
+    "CANONICAL_EJECUCION_PERFIL_LF_RECEIPT_CURRENT"
+  ],
+  "behavioral_promotion_authorized": false,
+  "production_authorized": false
+}

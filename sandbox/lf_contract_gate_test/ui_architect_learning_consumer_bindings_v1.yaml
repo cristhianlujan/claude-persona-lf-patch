@@ -1,0 +1,57 @@
+version: v1
+status: CANDIDATO_READ_ONLY
+consumer:
+  consumer_id: PERFIL-UI-ARCHITECT
+  consumer_type: PROFILE
+  consumer_source: profiles/ui_architect/SKILL.md
+  router_action: EJECUCION_PERFIL_LF
+  governance_consumer: CONTEXT_PACK
+  prerequisite: PRODUCT_DIRECTION_AUTHORIZED_CURRENT
+champion_id: CHAMPION-UI-ARCHITECT-LF-NO-COMPETITIVE-CONTEXT-v1
+challenger_id: CHALLENGER-UI-ARCHITECT-LF-SELECTED-COMPETITIVE-CONTEXT-v1
+bindings:
+  - binding_id: BIND-LF-UI-DIGITAL-SELF-SERVICE-v1
+    version: v1
+    consumer_id: PERFIL-UI-ARCHITECT
+    consumer_type: PROFILE
+    capability_id: DIGITAL_SELF_SERVICE
+    router_action: EJECUCION_PERFIL_LF
+    invoke_when: [product_direction_authorized_current, task_requires_ui_structure_for_authorized_self_service_journey]
+    must_not_invoke_when: [product_direction_missing_or_stale, product_scope_decision_required, legal_approval_only, technical_architecture_only, user_specific_financial_advice]
+    input_contract: {required: [task_intent, product_direction_ref, explicit_constraints, evidence_refs], authority: GROUNDED_COMPETITOR_OBSERVATION_AFTER_PRODUCT_DIRECTION_ONLY}
+    minimum_context: [authorized_product_direction, observed_self_service_pattern, source_ref, explicit_constraints]
+    selected_evidence_refs: [public.lf_knowledge_base/35cfab0c-1d91-4aa4-9761-f8af91181e17, public.lf_knowledge_base/7d55562e-9266-478b-b071-dca7ba1ade1a]
+    policy_capsule_ref: POL-LF-OPERATION-LIFECYCLE
+    output_schema_ref: profiles/ui_architect/SKILL.md
+    judges: [exact_binding_required, prerequisite_no_bypass, authority_preservation, no_invention, bounded_context, must_not_invoke]
+    fallback: NO_COMPETITIVE_CONTEXT
+    timeout_budget: 0
+    context_budget: {max_bytes: 5000, selection: DETERMINISTIC_FIRST}
+    lifecycle_state: READY_FOR_BINDING
+    source_learning_ids: [35cfab0c-1d91-4aa4-9761-f8af91181e17, 7d55562e-9266-478b-b071-dca7ba1ade1a]
+    champion_id: CHAMPION-UI-ARCHITECT-LF-NO-COMPETITIVE-CONTEXT-v1
+    challenger_id: CHALLENGER-UI-ARCHITECT-LF-SELECTED-COMPETITIVE-CONTEXT-v1
+    provenance: {source_table: public.lf_knowledge_base, kb_category: COMPETENCIA, prerequisite: PRODUCT_DIRECTION_AUTHORIZED_CURRENT, production_authorized: false}
+  - binding_id: BIND-LF-UI-PAYMENT-NO-ADEUDO-v1
+    version: v1
+    consumer_id: PERFIL-UI-ARCHITECT
+    consumer_type: PROFILE
+    capability_id: PAYMENT_NO_ADEUDO
+    router_action: EJECUCION_PERFIL_LF
+    invoke_when: [product_direction_authorized_current, task_requires_ui_structure_for_authorized_payment_to_no_adeudo_journey]
+    must_not_invoke_when: [product_direction_missing_or_stale, product_scope_decision_required, legal_certificate_truth_without_authority, payment_execution_only, marketing_only]
+    input_contract: {required: [task_intent, product_direction_ref, explicit_constraints, evidence_refs], authority: GROUNDED_COMPETITOR_OBSERVATION_AFTER_PRODUCT_DIRECTION_ONLY}
+    minimum_context: [authorized_product_direction, observed_payment_to_no_adeudo_sequence, source_ref, documentary_boundary]
+    selected_evidence_refs: [public.lf_knowledge_base/bd2a3a05-b53b-400c-846d-3634e422a500, public.lf_knowledge_base/92fc4ad2-1581-4aa1-b01b-e986bb3cc71c]
+    policy_capsule_ref: POL-LF-OPERATION-LIFECYCLE
+    output_schema_ref: profiles/ui_architect/SKILL.md
+    judges: [exact_binding_required, prerequisite_no_bypass, authority_preservation, no_invention, bounded_context, must_not_invoke]
+    fallback: NO_COMPETITIVE_CONTEXT
+    timeout_budget: 0
+    context_budget: {max_bytes: 5000, selection: DETERMINISTIC_FIRST}
+    lifecycle_state: READY_FOR_BINDING
+    source_learning_ids: [bd2a3a05-b53b-400c-846d-3634e422a500, 92fc4ad2-1581-4aa1-b01b-e986bb3cc71c]
+    champion_id: CHAMPION-UI-ARCHITECT-LF-NO-COMPETITIVE-CONTEXT-v1
+    challenger_id: CHALLENGER-UI-ARCHITECT-LF-SELECTED-COMPETITIVE-CONTEXT-v1
+    provenance: {source_table: public.lf_knowledge_base, kb_category: COMPETENCIA, prerequisite: PRODUCT_DIRECTION_AUTHORIZED_CURRENT, production_authorized: false}
+rollback: {action: remove_selected_competitive_context_and_use_champion, production_impact: false}

@@ -1,0 +1,31 @@
+{
+  "schema":"LF_UI_ARCHITECT_LEARNING_E2E_READONLY_V1",
+  "path":[
+    "ACT-0001_ROUTER",
+    "EXACT_CONSUMER_BINDING",
+    "PRODUCT_DIRECTION_AUTHORIZED_CURRENT",
+    "DETERMINISTIC_CONTEXT_PACK",
+    "PERFIL-UI-ARCHITECT_BOUNDARY",
+    "BOUNDED_OUTPUT_CONTRACT",
+    "DETERMINISTIC_JUDGES",
+    "LIFECYCLE_READBACK"
+  ],
+  "guards":{
+    "router_required":true,
+    "exact_binding_required":true,
+    "prerequisite_required":true,
+    "semantic_search_allowed":false,
+    "selector_llm_calls":0,
+    "selector_round_trips":0,
+    "reader_writes":0,
+    "max_context_bytes":5000,
+    "max_evidence_refs":5,
+    "fallback":"NO_COMPETITIVE_CONTEXT",
+    "production_authorized":false,
+    "automatic_impact":false
+  },
+  "judges":["routing_positive_negative","input_output_contract","authority_no_invention","fallback","conflict_resolution","context_budget","performance_proxy","ekb_regression","controlled_adversarial","no_bypass"],
+  "behavioral_readiness_ref":"learning_behavioral_readiness_v1.json",
+  "runtime_behavioral_evidence":"INSUFFICIENT_EVIDENCE_EXACT_TARGET_BOUND_RECEIPT_NOT_OBSERVED",
+  "promotion_decision":"INSUFFICIENT_EVIDENCE"
+}
