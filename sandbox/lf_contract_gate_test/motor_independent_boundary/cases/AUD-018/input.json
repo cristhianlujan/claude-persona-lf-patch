@@ -1,0 +1,28 @@
+{
+  "case_id": "MOTOR-AUD018-INDEPENDENT-001",
+  "project": "MOTOR_DE_APRENDIZAJE",
+  "target_asset": "ACT-0046",
+  "input_type": "EKB_REAL_CASE",
+  "source": {
+    "authority": "SUPABASE",
+    "object": "transversal.error_knowledge",
+    "code": "AUD-018",
+    "title": "Convergencia aceptaba PASS declarativo sin prueba ejecutada",
+    "severity": "Critical",
+    "frequency": 8,
+    "lifecycle_phase": "testing",
+    "root_cause_family": "R5_EROSION_PROCESO",
+    "detectability": "PROCESS_DEPENDENT",
+    "source_context": "STORY_AGENT_EKB_CROSS_AGENT_REMEDIATION_20260825",
+    "source_ref": "programacion.fn_agent_task_materialize_verified_machine_gates_v1",
+    "updated_at": "2026-08-26 03:55:08.131126+00"
+  },
+  "instruction": "Analiza este caso real y determina que capacidad LF debe mejorar, que patron reutilizable existe, que brechas siguen abiertas y que salida proporcional corresponde. No asumas que una prueba fue ejecutada si no existe evidencia observable.",
+  "constraints": {
+    "read_only": true,
+    "automatic_impact": false,
+    "production": false,
+    "do_not_seed_expected_capability": true,
+    "do_not_use_s26_s28_s30_implementation": true
+  }
+}
