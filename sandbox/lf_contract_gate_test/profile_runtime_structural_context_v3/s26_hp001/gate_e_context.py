@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from .bootstrap_context import evaluate_bootstrap
 from .gate_d_authority import evaluate_authority_resolution
 
 REPO = Path(__file__).resolve().parents[4]
@@ -71,7 +72,30 @@ def _card_source_from_d(gate_d_output: dict[str, Any]) -> dict[str, Any]:
     return payload
 
 
-def _validate_payload(payload: dict[str, Any], gate_d: dict[str, Any]) -> dict[str, Any]:
+def _validate_bootstrap_binding(payload: dict[str, Any], bootstrap: dict[str, Any]) -> None:
+    source = bootstrap["output"]
+    binding = payload.get("bootstrap_context") or {}
+    expected = {
+        "source_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/bootstrap_context.json",
+        "source_commit_sha": "e96b9a9512291ccc1fbed4584890c18e36d324ea",
+        "source_git_blob_sha": "fbbf4d127410989616b2e31cbf7937859afebf8b",
+        "source_sha256": bootstrap["output_sha256"],
+        "operation_code": bootstrap["operation_code"],
+        "execution_mode": bootstrap["execution_mode"],
+        "distribution_mode": bootstrap["distribution_mode"],
+        "active_policy_count": bootstrap["active_policy_count"],
+        "policy_snapshot_sha256": bootstrap["policy_snapshot_sha256"],
+    }
+    if binding != expected:
+        raise GateETypedContextBlocked("GATE_E_BOOTSTRAP_BINDING_MISMATCH")
+    if (source.get("decision") or {}).get("policy_capsule_loaded_before_gate_a") is not True:
+        raise GateETypedContextBlocked("GATE_E_BOOTSTRAP_NOT_LOADED_BEFORE_A")
+
+
+def _validate_payload(payload: dict[str, Any], gate_d: dict[str, Any], bootstrap: dict[str, Any] | None = None) -> dict[str, Any]:
+    bootstrap = bootstrap or evaluate_bootstrap()
+    _validate_bootstrap_binding(payload, bootstrap)
+
     d = gate_d["output"]
     if payload.get("schema") != "S26_HP001_GATE_E_OUTPUT_V1":
         raise GateETypedContextBlocked("GATE_E_SCHEMA_INVALID")
@@ -89,6 +113,14 @@ def _validate_payload(payload: dict[str, Any], gate_d: dict[str, Any]) -> dict[s
         raise GateETypedContextBlocked("GATE_E_UPSTREAM_OUTPUT_SHA_MISMATCH")
     if upstream.get("input_sha256") != gate_d.get("input_sha256"):
         raise GateETypedContextBlocked("GATE_E_UPSTREAM_INPUT_SHA_MISMATCH")
+
+    binding = upstream.get("committed_readback_binding") or {}
+    if binding.get("source_sha256") != gate_d.get("output_sha256"):
+        raise GateETypedContextBlocked("GATE_E_D_READBACK_SHA_MISMATCH")
+    if binding.get("source_git_blob_sha") != "40f287206429dd51c56b5e3d8f56f15c39eb21ac":
+        raise GateETypedContextBlocked("GATE_E_D_READBACK_BLOB_MISMATCH")
+    if binding.get("source_commit_sha") != "7c81237cf55a9dfd3fd7193f0811c84ebdd54085":
+        raise GateETypedContextBlocked("GATE_E_D_READBACK_COMMIT_MISMATCH")
 
     contract = _load_json(CONTRACT_PATH)
     stage = contract.get("stage_e_context") or {}
@@ -191,15 +223,21 @@ def _validate_payload(payload: dict[str, Any], gate_d: dict[str, Any]) -> dict[s
     return resolved
 
 
-def evaluate_typed_context(gate_d: dict[str, Any] | None = None) -> dict[str, Any]:
+def evaluate_typed_context(
+    gate_d: dict[str, Any] | None = None,
+    bootstrap: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     gate_d = gate_d or evaluate_authority_resolution()
+    bootstrap = bootstrap or evaluate_bootstrap()
     payload = _load_json(OUTPUT_PATH)
-    resolved = _validate_payload(payload, gate_d)
+    resolved = _validate_payload(payload, gate_d, bootstrap)
     return {
         "output": payload,
         "output_sha256": _sha256(OUTPUT_PATH.read_bytes()),
         "input_sha256": gate_d["input_sha256"],
         "typed_context_sha256": resolved["typed_context_sha256"],
+        "bootstrap_context_sha256": bootstrap["output_sha256"],
+        "policy_snapshot_sha256": bootstrap["policy_snapshot_sha256"],
         "adapter_binding_count": len(resolved.get("adapter_binding") or []),
         "authority_count": len(resolved.get("authority_resolution") or []),
     }
