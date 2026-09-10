@@ -6,6 +6,7 @@ import importlib.util
 import json
 from pathlib import Path
 
+from s26_hp001.gate_f_input import evaluate_f_input
 from s26_hp001.happy_path_preexecution import run_preexecution
 
 HERE = Path(__file__).resolve().parent
@@ -13,6 +14,7 @@ REPO = HERE.parents[2]
 FIXTURE = HERE / "s26_hp001"
 MANIFEST = FIXTURE / "replay_manifest.json"
 OUTPUT_TEST = HERE / "test_s26_hp001_output.py"
+QDP_TEST = HERE / "test_s26_quality_depth_performance.py"
 EXPECTED_POLICY_CODES = {
     "POL-LF-OPERATION-LIFECYCLE",
     "POL-LF-POLICY-CONSUMPTION",
@@ -100,12 +102,22 @@ def main() -> int:
         raise RuntimeError("REPLAY_PREEXECUTION_FAILED")
     boot = validate_bootstrap_trace(pre)
 
+    f_input = evaluate_f_input()
+    if f_input.get("f_compatibility_proven") is not True:
+        raise RuntimeError("REPLAY_E_TO_F_INPUT_COMPATIBILITY_FAILED")
+    if f_input.get("historical_f_consumption_proven") is not False:
+        raise RuntimeError("REPLAY_FALSE_HISTORICAL_F_CONSUMPTION")
+
     output_module = load_module(OUTPUT_TEST, "s26_hp001_output_replay")
     if output_module.main() != 0:
         raise RuntimeError("REPLAY_OUTPUT_VALIDATION_FAILED")
 
+    qdp_module = load_module(QDP_TEST, "s26_hp001_qdp_replay")
+    if qdp_module.main() != 0:
+        raise RuntimeError("REPLAY_QDP_VALIDATION_FAILED")
+
     print(json.dumps({
-        "gate": "S26_HP001_DETERMINISTIC_REPLAY_V2",
+        "gate": "S26_HP001_DETERMINISTIC_REPLAY_V3",
         "result": "PASS",
         "input_sha256": manifest["input_sha256"],
         "output_sha256": manifest["output_sha256"],
@@ -116,6 +128,12 @@ def main() -> int:
         "policy_snapshot_sha256": boot["policy_snapshot_sha256"],
         "bootstrap_context_sha256": boot["bootstrap_context_sha256"],
         "bootstrap_continuity_a_to_e": True,
+        "e_to_f_input_contract_replayed": True,
+        "gate_f_input_sha256": f_input["output_sha256"],
+        "quality_depth_performance_contract_sha256": f_input["quality_depth_performance_contract_sha256"],
+        "quality_depth_performance_replayed": True,
+        "model_generation_latency_measured": False,
+        "model_generation_latency_required_at_gate_f": True,
         "preexecution_replayed": True,
         "canonical_output_validation_replayed": True,
         "independent_semantic_review_performed": False,
