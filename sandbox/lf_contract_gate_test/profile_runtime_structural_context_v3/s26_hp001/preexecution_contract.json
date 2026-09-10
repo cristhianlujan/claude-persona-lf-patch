@@ -2,19 +2,24 @@
   "schema": "S26_HP001_PREEXECUTION_CONTRACT_V1",
   "test_id": "S26-HP-001",
   "stage_b_ekb": {
-    "evidence_mode": "CURRENT_CHAT_CONTROL_PLANE_READBACK",
-    "schema_first_verified": true,
-    "read_before_material_write": true,
+    "evidence_mode": "LIVE_CONTROL_PLANE_READBACK_MATERIALIZED",
+    "schema_first_required": true,
     "project_id": "mhwmirqcgxxukpctffuv",
     "table": "public.lf_error_knowledge",
-    "active_codes_used": [
+    "broad_selection_contract": "ACTIVE_HIGH_CRITICAL_SNAPSHOT_THEN_TASK_SIGNATURE_TARGETING",
+    "snapshot_reuse_for_new_run_allowed": false,
+    "minimum_applicable_codes": [
       "AUD-025",
       "CI-005",
       "CI-007",
       "CI-E16-001",
-      "CI-MIG-001",
+      "CI-SUPABASE-CONTROL-PLANE-READBACK-001",
       "DB-001",
-      "GOV-010"
+      "GOV-010",
+      "PROFILE-RUNTIME-EKB-PREFLIGHT-BENCHMARK-001",
+      "PROFILES-EKB-PREFLIGHT-OMISSION-001",
+      "S26-MANIFEST-CANONICAL-CONTRACT-DIVERGENCE-001",
+      "S26-CANONICAL-DIRECT-ROUTER-SEMANTIC-FLOOR-VARIANCE-001"
     ]
   },
   "stage_c_card": {

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from .gate_a_admission import admit_input
+from .gate_b_governance import evaluate_governance
 
 REPO = Path(__file__).resolve().parents[4]
 HERE = Path(__file__).resolve().parent
@@ -36,32 +37,39 @@ def _load_resolver():
 
 
 def run_preexecution() -> dict[str, Any]:
-    # Gate A is the only authorized source of the user literal for downstream stages.
     gate_a = admit_input()
     gate_a_output = gate_a["output"]
     if gate_a_output.get("next_gate") != "B_EKB_GOVERNANCE":
         raise RuntimeError("GATE_A_DID_NOT_AUTHORIZE_STAGE_B")
     if gate_a_output.get("run_id") != "S26-HP-001":
         raise RuntimeError("GATE_A_RUN_ID_MISMATCH")
-    input_literal = (gate_a_output.get("input") or {}).get("content")
-    input_literal_sha256 = (gate_a_output.get("input") or {}).get("sha256")
+
+    gate_b = evaluate_governance(gate_a)
+    gate_b_output = gate_b["output"]
+    if gate_b_output.get("next_gate") != "C_CARD_SELECTION":
+        raise RuntimeError("GATE_B_DID_NOT_AUTHORIZE_STAGE_C")
+    if gate_b_output.get("run_id") != gate_a_output.get("run_id"):
+        raise RuntimeError("GATE_B_RUN_ID_MISMATCH")
+
+    b_input = gate_b_output.get("input") or {}
+    input_literal = b_input.get("content")
+    input_literal_sha256 = b_input.get("sha256")
     if not isinstance(input_literal, str) or not input_literal:
-        raise RuntimeError("GATE_A_INPUT_LITERAL_MISSING")
+        raise RuntimeError("GATE_B_INPUT_LITERAL_MISSING")
     if not isinstance(input_literal_sha256, str) or len(input_literal_sha256) != 64:
-        raise RuntimeError("GATE_A_INPUT_SHA_INVALID")
+        raise RuntimeError("GATE_B_INPUT_SHA_INVALID")
 
     contract = _load_json(CONTRACT_PATH)
     if contract.get("schema") != "S26_HP001_PREEXECUTION_CONTRACT_V1":
         raise RuntimeError("PREEXECUTION_CONTRACT_SCHEMA_INVALID")
-    if contract.get("test_id") != gate_a_output.get("run_id"):
+    if contract.get("test_id") != gate_b_output.get("run_id"):
         raise RuntimeError("PREEXECUTION_TEST_ID_INVALID")
 
-    ekb = contract.get("stage_b_ekb") or {}
-    required_ekb_codes = {"AUD-025", "CI-005", "CI-007", "CI-E16-001", "CI-MIG-001", "DB-001", "GOV-010"}
-    if ekb.get("schema_first_verified") is not True or ekb.get("read_before_material_write") is not True:
-        raise RuntimeError("EKB_PREEXECUTION_ORDER_NOT_PROVEN")
-    if set(ekb.get("active_codes_used") or []) != required_ekb_codes:
-        raise RuntimeError("EKB_ACTIVE_CODE_SET_MISMATCH")
+    ekb_contract = contract.get("stage_b_ekb") or {}
+    if ekb_contract.get("evidence_mode") != "LIVE_CONTROL_PLANE_READBACK_MATERIALIZED":
+        raise RuntimeError("EKB_EVIDENCE_MODE_INVALID")
+    if ekb_contract.get("snapshot_reuse_for_new_run_allowed") is not False:
+        raise RuntimeError("EKB_SNAPSHOT_REUSE_POLICY_INVALID")
 
     card_contract = contract.get("stage_c_card") or {}
     card_text = MARKETPLACE_CARD_PATH.read_text(encoding="utf-8")
@@ -93,7 +101,7 @@ def run_preexecution() -> dict[str, Any]:
         sources.append({
             "authority_type": authority_type,
             "authority_id": f"S26_HP001_{authority_type}",
-            "run_id": gate_a_output["run_id"],
+            "run_id": gate_b_output["run_id"],
             "ref": ref,
             "sha256": _sha(path),
         })
@@ -129,7 +137,7 @@ def run_preexecution() -> dict[str, Any]:
     resolved = resolver.resolve_runtime_context(runtime_context, request=request, repo_root=REPO)
 
     if resolved.get("input_literal_sha256") != input_literal_sha256:
-        raise RuntimeError("GATE_A_TO_DOWNSTREAM_INPUT_SHA_DRIFT")
+        raise RuntimeError("GATE_B_TO_DOWNSTREAM_INPUT_SHA_DRIFT")
 
     card_resolution = resolved.get("card_resolution") or {}
     if card_resolution.get("status") != "FALLBACK" or card_resolution.get("mode") != "NO_CARD_GOVERNED":
@@ -147,26 +155,36 @@ def run_preexecution() -> dict[str, Any]:
         raise RuntimeError("TYPED_CONTEXT_SHA_INVALID")
 
     return {
-        "gate": "S26_HP001_PREEXECUTION_B_E_V1",
+        "gate": "S26_HP001_PREEXECUTION_B_E_V2",
         "result": "PASS",
         "upstream_gate_a": {
             "gate": gate_a_output["gate"],
             "status": gate_a_output["status"],
             "run_id": gate_a_output["run_id"],
-            "input_sha256": input_literal_sha256,
+            "input_sha256": (gate_a_output.get("input") or {}).get("sha256"),
             "output_sha256": gate_a["output_sha256"],
         },
-        "stage_b_input": {
-            "source_gate": "A_INPUT_ADMISSION",
-            "source_output_sha256": gate_a["output_sha256"],
-            "run_id": gate_a_output["run_id"],
+        "stage_b": {
+            "gate": gate_b_output["gate"],
+            "status": gate_b_output["status"],
+            "run_id": gate_b_output["run_id"],
+            "input_sha256": input_literal_sha256,
+            "output_sha256": gate_b["output_sha256"],
+            "broad_snapshot_count": gate_b["broad_snapshot_count"],
+            "applicable_control_count": gate_b["applicable_control_count"],
+        },
+        "stage_c_input": {
+            "source_gate": "B_EKB_GOVERNANCE",
+            "source_output_sha256": gate_b["output_sha256"],
+            "run_id": gate_b_output["run_id"],
             "input_literal_sha256": input_literal_sha256,
         },
         "stages": {
-            "B_EKB": "PASS_CONTROL_PLANE_READBACK",
+            "A_INPUT": "PASS",
+            "B_EKB": "PASS_LIVE_SNAPSHOT_MATERIALIZED_AND_REPLAYED",
             "C_CARD": "PASS_NO_CARD_GOVERNED",
             "D_AUTHORITY": "PASS_PROVENANCE_BOUND",
-            "E_TYPED_CONTEXT": "PASS",
+            "E_TYPED_CONTEXT": "PASS"
         },
         "card_resolution": card_resolution,
         "authority_types": sorted(required_types),
@@ -177,5 +195,5 @@ def run_preexecution() -> dict[str, Any]:
         "runtime_execution_performed": False,
         "model_weight_acquisition_performed": False,
         "paid_fallback_performed": False,
-        "claim_ceiling": contract.get("claim_ceiling"),
+        "claim_ceiling": contract.get("claim_ceiling")
     }
