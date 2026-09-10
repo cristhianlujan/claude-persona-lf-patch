@@ -5,7 +5,8 @@ Scope: sandbox only. No Supabase write. No production/runtime enablement.
 Run: python sandbox/lf_contract_gate_test/lf_validation_engine_v0_10_2_selftest.py
 """
 from __future__ import annotations
-import copy, hashlib, json
+import copy, hashlib, json, subprocess, sys
+from pathlib import Path
 from typing import Any, Dict
 
 ALLOWED_OPERATION_TYPES={"CREACION_ACTIVO_LF","REPARACION_ACTIVO_LF","ACTUALIZACION_CAPACIDAD_ACTIVO_LF","PROMOCION_ACTIVO_READ_ONLY_LF","AUDITORIA_READ_ONLY_LF","SANDBOX_SIMULATION_LF","VALIDATION_ENGINE_TEST_LF"}
@@ -13,6 +14,7 @@ ALLOWED_FINAL_RESULTS={"PASS","FAIL","BLOCKED_WITH_OBSERVATIONS","RETURN_TO_WORK
 ALLOWED_JUDGE_RESULTS={"PASS","FAIL","BLOCKED","PASS_WITH_RESTRICTIONS","NOT_RUN"}
 ALLOWED_NA_REASONS={"NOT_APPLICABLE_BY_OPERATION_TYPE","DEFERRED_BY_APPROVED_SCOPE","BLOCKED_BY_DEPENDENCY","READ_ONLY_AUDIT_ONLY"}
 HASH64=set("0123456789abcdef")
+ACT0058_CANDIDATE_VALIDATOR=Path("sandbox/lf_contract_gate_test/validate_act0058_missing_judges_v1.py")
 
 def canonical_json(data:Dict[str,Any])->str:
     return json.dumps(data,ensure_ascii=False,sort_keys=True,separators=(",",":"))
@@ -82,6 +84,19 @@ def base_proof():
 
 def with_hash(p): p["verification"]["verification_hash"]=compute_hash(p); return p
 
+def run_optional_act0058_candidate() -> dict[str,Any]:
+    if not ACT0058_CANDIDATE_VALIDATOR.exists():
+        return {"executed":False,"reason":"candidate_bundle_absent"}
+    result=subprocess.run([sys.executable,str(ACT0058_CANDIDATE_VALIDATOR)],capture_output=True,text=True,check=False)
+    if result.stdout: print(result.stdout,end="" if result.stdout.endswith("\n") else "\n")
+    if result.stderr: print(result.stderr,file=sys.stderr,end="" if result.stderr.endswith("\n") else "\n")
+    if result.returncode!=0:
+        raise SystemExit(f"FAIL_ACT0058_CANDIDATE_BUNDLE: exit={result.returncode}")
+    marker='ACT0058_MISSING_JUDGES_SPEC=PASS'
+    if marker not in result.stdout:
+        raise SystemExit('FAIL_ACT0058_CANDIDATE_BUNDLE_MARKER')
+    return {"executed":True,"result":"PASS","validator":str(ACT0058_CANDIDATE_VALIDATOR)}
+
 def main():
     cases={"valid_pass":"PASS"}; proofs={"valid_pass":base_proof()}
     def add(name, expected, mut):
@@ -98,6 +113,7 @@ def main():
     for name,exp in cases.items():
         out=validate(proofs[name]); ok=out["status"]==exp; ok_all=ok_all and ok
         results.append({"case":name,"expected":exp,"actual":out["status"],"ok":ok,"fail_codes":out["fail_codes"]})
-    report={"suite":"LF_VALIDATION_ENGINE_PYTHON_LOCAL_v0_10_2_SELFTEST","overall_status":"PASS" if ok_all else "FAIL","results":results}
+    extension=run_optional_act0058_candidate()
+    report={"suite":"LF_VALIDATION_ENGINE_PYTHON_LOCAL_v0_10_2_SELFTEST","overall_status":"PASS" if ok_all else "FAIL","results":results,"optional_act0058_candidate":extension}
     print(json.dumps(report,indent=2,ensure_ascii=False)); raise SystemExit(0 if ok_all else 1)
 if __name__=="__main__": main()
