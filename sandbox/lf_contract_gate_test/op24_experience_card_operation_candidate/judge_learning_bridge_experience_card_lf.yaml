@@ -1,0 +1,62 @@
+version: v0.1
+status: CANDIDATO_READ_ONLY
+operation_code: LEARNING_BRIDGE_EXPERIENCE_CARD_LF
+judge_code: JUDGE_LEARNING_BRIDGE_EXPERIENCE_CARD_LF_V01_CANDIDATE
+verdicts: [PASS, FAIL, BLOCKED]
+pass_if:
+  - router_read
+  - operational_source_read
+  - applicable_ekb_read
+  - experience_invocation_route_contract_valid
+  - candidate_source_has_required_signals
+  - contradiction_checked_before_dedup
+  - duplicate_checks_pass
+  - no_competitor_requirement_enforced
+  - independent_evidence_gate_observed
+  - creacion_card_lf_v0_4_contract_read
+  - dossier_has_no_direct_card_write
+  - lineage_contract_is_origin_to_destination
+  - card_creada_requires_receiver_id_card
+  - card_creada_requires_exact_ekb_to_card_transformed_to_lineage
+  - lineage_direct_table_write_forbidden
+  - lifecycle_order_preserved
+  - sandbox_quality_performance_governance_gates_present
+  - approval_boundary_present
+  - no_direct_official_rule_write
+  - no_auto_impact
+  - no_runtime_activation
+fail_if:
+  - missing_source_ref
+  - missing_validation
+  - dedup_before_contradiction
+  - duplicate_card_candidate
+  - competitor_required_for_experience
+  - self_confirming_evidence_promotes_candidate
+  - experience_route_shape_mismatch
+  - experience_route_write_enabled
+  - card_creada_without_receiver_id_card
+  - card_creada_without_lineage
+  - lineage_source_not_ekb_codigo
+  - lineage_target_not_receiver_card_id
+  - lineage_relation_not_transformed_to
+  - direct_lineage_table_write
+  - direct_card_write
+  - direct_official_rule_write
+  - runtime_enablement
+  - production_promotion
+blocked_if:
+  - creacion_operacion_lf_not_approved
+  - operation_create_router_binding_missing
+  - experience_learning_bridge_route_missing
+  - creacion_card_lf_contract_missing
+  - lineage_carrier_not_materialized
+  - lineage_recorder_not_available
+  - independent_evidence_missing_for_promotion
+  - explicit_approval_missing_for_impact
+claim_ceiling: >-
+  PASS validates the candidate source package, its read-only Experience invocation route
+  and the required future EKB-to-Card lineage handoff. BLOCKED is expected while the
+  generic operation factory, OPERATION_CREATE route, Experience invocation route or
+  durable lineage carrier is unavailable. Neither PASS nor BLOCKED authorizes Card
+  creation, lineage DDL, recomposition, runtime, production, automatic impact,
+  Router activation, or Strategy 23 execution.

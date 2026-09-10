@@ -1,0 +1,151 @@
+version: v0.1
+status: CANDIDATO_READ_ONLY
+operation_code: LEARNING_BRIDGE_EXPERIENCE_CARD_LF
+operation_family: LEARNING
+operation_domain: EXPERIENCE_TO_CARD
+operation_type: LEARNING_BRIDGE
+applies_to_asset_type: null
+source_model: GIT_FIRST_YAML
+source_family: EXPERIENTIAL_EPISODIC_MEMORY
+source_relation: transversal.error_knowledge
+receiver_operation: CREACION_CARD_LF
+receiver_version: v0.4
+factory_dependency:
+  operation_code: CREACION_OPERACION_LF
+  candidate_pr: 570
+  required_before_registration: true
+  active_router_binding_required_before_registration: true
+invocation_route:
+  asset_type: EXPERIENCE
+  action_code: EXPERIENCE_LEARNING_BRIDGE
+  operation_code: LEARNING_BRIDGE_EXPERIENCE_CARD_LF
+  operation_resolution: STATIC
+  requires_existing_target: false
+  requires_missing_target: false
+  write_allowed: false
+  status: CANDIDATE_SANDBOX
+  activation_allowed_in_candidate: false
+  required_for_execution: true
+lineage_dependency:
+  parent_strategy: LF_LEARNED_CONTEXT_MEMORY_MODEL_20260904
+  carrier: programacion.learned_context_lineage
+  recorder: programacion.record_learned_context_lineage_v1
+  required_before_card_creada_transition: true
+  source_type: EKB
+  source_ref_field: codigo
+  target_type: CARD
+  target_ref_field: receiver_factory_receipt.id_card
+  relation_type: TRANSFORMED_TO
+  transformation_group_required: true
+  exact_clean_step_lineage_required: true
+  direct_lineage_table_write: false
+  carrier_source_candidate_only: true
+authority:
+  router: ACT-0001
+  operational_source: public.v_lf_fuente_operativa
+  parent_strategy: LF_LEARNED_CONTEXT_MEMORY_MODEL_20260904
+  parent_strategy_version: v0.3
+state_ceiling:
+  operation_status: CANDIDATO_READ_ONLY
+  runtime_state: NO_HABILITADO
+  automatic_impact: BLOQUEADO
+  production_allowed: false
+  runtime_allowed: false
+  durable_registration_allowed: false
+eligibility:
+  required_fields:
+    - codigo
+    - titulo
+    - descripcion
+    - validacion
+    - lifecycle_phase
+    - consumer_role
+    - source_ref
+  no_competitor_requirement: true
+  contradiction_before_dedup: true
+  duplicate_rule: DO_NOT_CREATE_DUPLICATE_CARD
+  missing_required_signal: BLOCK_OR_REVIEW
+  independent_evidence_required_for_promotion: true
+output_contract:
+  kind: CARD_CANDIDATE_DOSSIER
+  direct_card_write: false
+  direct_official_rule_write: false
+  direct_impact: false
+  exact_receiver_only: CREACION_CARD_LF:v0.4
+  card_created_transition_requires_receiver_id_card: true
+  card_created_transition_requires_lineage_record: true
+lifecycle:
+  - DETECTADO
+  - ANALIZADO
+  - CARD_CREADA
+  - EN_REVISION
+  - PRUEBA_SANDBOX
+  - APROBADO
+  - IMPACTADO
+  - VERIFICADO
+  - CERRADO
+required_gates:
+  - experience_router_contract_gate
+  - required_signal_gate
+  - contradiction_gate
+  - deterministic_dedup
+  - independent_evidence_gate
+  - card_factory_contract_gate
+  - lineage_contract_gate
+  - sandbox_gate
+  - quality_gate
+  - performance_gate
+  - governance_gate
+  - approval_boundary
+negative_controls:
+  - missing_source_ref_blocks
+  - missing_validation_blocks
+  - contradiction_evaluated_before_dedup
+  - duplicate_blocks_second_card_candidate
+  - competitor_field_not_required
+  - self_confirming_evidence_does_not_authorize_promotion
+  - direct_card_write_blocked
+  - direct_official_rule_write_blocked
+  - production_impact_without_approval_blocked
+  - factory_dependency_missing_blocks_registration
+  - missing_experience_route_blocks_execution
+  - experience_route_write_enabled_blocks
+  - missing_receiver_id_card_blocks_card_creada
+  - missing_lineage_carrier_blocks_card_creada
+  - missing_exact_lineage_payload_blocks_card_creada
+  - wrong_lineage_source_code_blocks
+  - wrong_lineage_target_card_blocks
+  - wrong_lineage_relation_blocks
+  - direct_lineage_table_write_blocked
+  - router_bypass_blocked
+blocked:
+  - direct_operation_registry_write
+  - direct_card_table_write
+  - direct_lineage_table_write
+  - direct_official_document_write
+  - auto_promote_card
+  - auto_impact
+  - n8n_reasoning
+  - runtime_enablement
+  - production_promotion
+  - experience_router_bypass
+  - experience_route_write_enablement
+  - card_creada_without_receiver_id_card
+  - card_creada_without_exact_lineage
+  - strategy23_execution
+registration_rule: >-
+  This source package can be validated and sandbox-tested before the generic
+  operation factory is active, but durable registration of
+  LEARNING_BRIDGE_EXPERIENCE_CARD_LF remains blocked until CREACION_OPERACION_LF
+  is independently approved and an OPERATION_CREATE Router binding exists. Any
+  execution of the Experience bridge additionally requires the explicit
+  EXPERIENCE / EXPERIENCE_LEARNING_BRIDGE Router binding; candidate validation
+  never authorizes that route to become ACTIVE or write-enabled. The CARD_CREADA
+  transition is separate: it is blocked until the receiver factory returns an
+  exact CARD id and the same Experience execution records EKB(codigo) -> CARD(id_card)
+  lineage as TRANSFORMED_TO through the governed common recorder.
+claim_ceiling: >-
+  PASS means only that Experience-to-Card semantics, invocation routing, evidence
+  gates and future lineage handoff are coherent as a candidate source package.
+  It does not authorize operation registration, Card creation, lineage DDL,
+  recomposition, approval, impact, runtime activation or production.
