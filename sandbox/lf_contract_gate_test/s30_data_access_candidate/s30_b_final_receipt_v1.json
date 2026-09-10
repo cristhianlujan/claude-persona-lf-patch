@@ -1,13 +1,13 @@
 {
   "receipt_type": "S30_B_FINAL_LANE_RECEIPT",
-  "receipt_version": "S30_B_FINAL_RECEIPT_V1",
+  "receipt_version": "S30_B_FINAL_RECEIPT_V1_1",
   "lane": "S30-B",
   "result": "FIELD_LEVEL_DATA_ACCESS_AND_SCHEMA_SAFETY_CANDIDATE_PASS",
   "claim_ceiling": "FIELD_LEVEL_DATA_ACCESS_AND_SCHEMA_SAFETY_CANDIDATE_PASS",
   "substantive_candidate_head_sha": "5d442f2edea3418d27ef70122d526eed8bf7f00f",
   "substantive_pr": 662,
   "substantive_merge_sha": "4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3",
-  "post_merge_main_sha_verified": "4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3",
+  "post_merge_main_sha_verified": "ab9f0330a69f7404afc04faa01e93bfcd42fa3f0",
   "source_artifact_blobs": {
     "sandbox/lf_contract_gate_test/s30_data_access_candidate/data_access_registry_v2.json": "f9376af67530a4d7d1753d98f3ecfe9aec2f0ca0",
     "sandbox/lf_contract_gate_test/s30_data_access_candidate/lf_data_access.py": "0fc3792e2f75fd5befc6fb22eb6d8e53ccd16965",
@@ -123,5 +123,30 @@
   },
   "remaining_blockers": [],
   "next_consumer": "S30-C / S30-D historical replay integration",
-  "receipt_payload_sha256": "f719e2260e7d7e70b2187b5ee040561bd1ed30b67b23f54239863297b1b5cce0"
+  "closeout_persistence": {
+    "pr": 663,
+    "merge_sha": "ab9f0330a69f7404afc04faa01e93bfcd42fa3f0",
+    "staging_exact_head_sha": "a3c65c9be3e94c254e05e5371e9fac413b80f4ee",
+    "staging_runs": [
+      34505195329,
+      34505195299
+    ],
+    "broker_dispatch_run": 34505382156,
+    "protected_runs": [
+      34505449973,
+      34505450037
+    ],
+    "pr_runs": [
+      34505696577,
+      34505696657,
+      34505696553
+    ],
+    "main_runs": [
+      34505958907,
+      34505958976
+    ],
+    "result": "PASS"
+  },
+  "terminal_state": "FINAL_CLOSED",
+  "receipt_payload_sha256": "225371c996feba0a969e3f47b935fd458b37e9950ef0f872ee242df0b958549e"
 }

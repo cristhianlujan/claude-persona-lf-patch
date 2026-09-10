@@ -1,10 +1,10 @@
 {
-  "receipt_version": "S30_B_CLOSEOUT_PREWRITE_V1",
+  "receipt_version": "S30_B_TERMINAL_STATE_PREWRITE_V1",
   "receipt_mode": "PREWRITE",
   "lane": "S30-B",
   "owner": "S30-B-DATA-ACCESS-V3",
-  "base_main_sha": "4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3",
-  "intended_material_action": "S30_B_FINAL_RECEIPT_AND_READBACK_MATERIALIZATION",
+  "base_main_sha": "ab9f0330a69f7404afc04faa01e93bfcd42fa3f0",
+  "intended_material_action": "S30_B_TERMINAL_STATE_ALIGNMENT",
   "sequence_resolution": {
     "ROUTER": {
       "status": "PROVEN",
@@ -90,7 +90,7 @@
     },
     "ALL_INTENDED_STEPS": {
       "status": "PROVEN",
-      "evidence": "Only final S30-B receipt/readback persistence remains; no additional data-access behavior, runtime, scheduler, DDL or S26 change is intended."
+      "evidence": "Only terminal-state alignment of S30-B evidence/receipt remains; implementation is frozen and no behavior change is permitted."
     },
     "JUDGES_AND_RESULT_VOCABULARY": {
       "status": "PROVEN",
@@ -114,7 +114,7 @@
     },
     "EXPECTED_OUTPUT_CONTRACT": {
       "status": "PROVEN",
-      "evidence": "Final claim ceiling remains FIELD_LEVEL_DATA_ACCESS_AND_SCHEMA_SAFETY_CANDIDATE_PASS; closeout persists exact substantive merge, CI, live schema and safety readbacks."
+      "evidence": "Candidate evidence must end with verification_state FINAL_CLOSED and remaining_gates []; final receipt remains at the S30-B claim ceiling."
     }
   },
   "preflight_checks": {
@@ -195,11 +195,11 @@
     },
     "EVIDENCE_PROVIDER_RESOLVABLE": {
       "status": "PASS",
-      "evidence": "PR #662 merge metadata, exact GitHub Actions runs, Git refs, live Supabase fingerprints and strategy snapshot #35 are resolvable for final receipt."
+      "evidence": "PR #663 merged at ab9f0330a69f7404afc04faa01e93bfcd42fa3f0; exact closeout staging/broker/protected/PR/main run identities are available for terminal-state alignment."
     },
     "CI_RUNNER_WIRING_CONFIRMED": {
       "status": "PASS",
-      "evidence": "Post-merge main Validate LF Packs run 34504593415 and lf-contract-check run 34504593500 both passed on exact main 4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3."
+      "evidence": "Exact main runs 34505958907 and 34505958976 passed on ab9f0330a69f7404afc04faa01e93bfcd42fa3f0."
     },
     "EXPECTED_OUTPUT_SCHEMA_COMPLETE": {
       "status": "PASS",
@@ -215,12 +215,11 @@
     }
   },
   "frontier": {
-    "current_stage": "S30_B_POSTMERGE_CLOSEOUT_MATERIALIZATION",
-    "next_gate": "LOCAL_CLOSEOUT_VALIDATION_THEN_GOVERNED_STAGING",
+    "current_stage": "S30_B_TERMINAL_STATE_ALIGNMENT",
+    "next_gate": "LOCAL_STATE_CONSISTENCY_THEN_GOVERNED_STAGING",
     "blockers": [],
     "safe_parallel_work": [
-      "READ_ONLY_SCHEMA_CURRENTNESS",
-      "LOCAL_DETERMINISTIC_TESTS"
+      "READ_ONLY_FINAL_AUDIT"
     ]
   },
   "causal_lane_ownership": {
@@ -236,13 +235,13 @@
         "primary_gate": "DATA_ACCESS_SCHEMA_SAFETY",
         "owner": "S30-B-DATA-ACCESS-V3",
         "state": "ACTIVE",
-        "source_ref": "prewrite://S30-B-CLOSEOUT-V1-20260910"
+        "source_ref": "prewrite://S30-B-TERMINAL-V1-20260910"
       }
     ],
     "transfer": {
       "is_transfer": false
     },
-    "evidence": "Substantive S30-B candidate PR #662 is merged and exact post-merge main CI passed; this bounded follow-up persists final lane receipt/readback only."
+    "evidence": "Final evidence consistency repair only: PR #663 is merged and exact main CI passed; align candidate evidence terminal state with already durable final receipt."
   },
   "applicable_ekb": [
     {
@@ -442,19 +441,17 @@
   "repair_reason": null,
   "repair_target_ekb_codes": [],
   "evidence": {
-    "execution_id": "EXEC-S30-B-CLOSEOUT-V1-PREWRITE-20260910-001",
+    "execution_id": "EXEC-S30-B-TERMINAL-V1-PREWRITE-20260910-001",
     "mode": "SANDBOX_NON_PRODUCTION",
     "production": false,
-    "base_main_sha": "4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3",
-    "substantive_pr": 662,
-    "substantive_candidate_head": "5d442f2edea3418d27ef70122d526eed8bf7f00f",
-    "substantive_merge_sha": "4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3",
-    "post_merge_validate_run": 34504593415,
-    "post_merge_contract_run": 34504593500,
-    "optimization_policy": "DETERMINISTIC_FIRST_MODEL_ON_NON_DERIVABLE_SEMANTIC_GAP",
-    "ddl_planned": false,
-    "runtime_activation_planned": false,
-    "s26_change_planned": false
+    "base_main_sha": "ab9f0330a69f7404afc04faa01e93bfcd42fa3f0",
+    "closeout_pr": 663,
+    "closeout_merge_sha": "ab9f0330a69f7404afc04faa01e93bfcd42fa3f0",
+    "closeout_main_runs": [
+      34505958907,
+      34505958976
+    ],
+    "reason": "remove stale closeout-pending markers after verified persistence"
   },
   "git_write_binding": {
     "status": "OPERATIONAL",
@@ -481,26 +478,26 @@
     "secret_name": "S30_BROKER_DEPLOY_KEY",
     "secret_present": true,
     "secret_required_before_dispatch": true,
-    "source_branch": "lf/staging-s30-b-closeout-v1-20260910",
-    "target_branch": "lf/s30-b-closeout-v1-20260910",
-    "base_main_sha": "4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3",
+    "source_branch": "lf/staging-s30-b-terminal-v1-20260910",
+    "target_branch": "lf/s30-b-terminal-v1-20260910",
+    "base_main_sha": "ab9f0330a69f7404afc04faa01e93bfcd42fa3f0",
     "promotion_authority": "BROKER_ONLY",
     "ruleset_readback_ref": "github:ruleset/22765627",
     "supabase_readback_ref": "supabase:public.lf_error_knowledge@20260910"
   },
   "gate_evidence_envelope": {
-    "run_id": "EXEC-S30-B-CLOSEOUT-V1-PREWRITE-20260910-001",
-    "gate_id": "S30_B_POSTMERGE_CLOSEOUT_PREEXECUTION",
+    "run_id": "EXEC-S30-B-TERMINAL-V1-PREWRITE-20260910-001",
+    "gate_id": "S30_B_TERMINAL_STATE_PREEXECUTION",
     "input_exact": {
       "request_schema": "s30-git-broker/v1",
-      "source_ref": "lf/staging-s30-b-closeout-v1-20260910",
-      "target_branch": "lf/s30-b-closeout-v1-20260910",
-      "base_main_sha": "4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3",
+      "source_ref": "lf/staging-s30-b-terminal-v1-20260910",
+      "target_branch": "lf/s30-b-terminal-v1-20260910",
+      "base_main_sha": "ab9f0330a69f7404afc04faa01e93bfcd42fa3f0",
       "receipt_path": "sandbox/lf_contract_gate_test/s30_data_access_candidate/s30_b_prewrite_receipt.json"
     },
-    "input_sha256": "d5acfc950130c8b4dbede2374abf495f6c41ef761482acaa49cd52cf500b6426",
-    "input_source_ref": "github:main@4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3+github:pr/662+github-actions:34504593415,34504593500",
-    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_data_access_candidate/s30_b_prewrite_receipt.json --expected-base-main-sha 4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3",
+    "input_sha256": "6de26d4e3a4ebc95deef3ef166e4e82c9d1a76414dd2b8bdf47d39b2b6a92a96",
+    "input_source_ref": "github:main@ab9f0330a69f7404afc04faa01e93bfcd42fa3f0+github:pr/663+github-actions:34505958907,34505958976",
+    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_data_access_candidate/s30_b_prewrite_receipt.json --expected-base-main-sha ab9f0330a69f7404afc04faa01e93bfcd42fa3f0",
     "output_exact": {
       "result": "PASS_TO_MATERIAL_WORK",
       "material_work_allowed": true,
@@ -508,25 +505,25 @@
       "promotion_authority": "NONE"
     },
     "output_sha256": "ec67088d3a1ecf4514180d148fb18aee30023fad41c8c7380bba0e7292b0f5d9",
-    "output_ref": "local-prewrite:S30-B-CLOSEOUT-V1-20260910",
+    "output_ref": "local-prewrite:S30-B-TERMINAL-V1-20260910",
     "execution_mode": "SANDBOX",
     "environment": "NON_PRODUCTION",
     "promotion_authority": "NONE",
     "functional": {
       "status": "PASS",
-      "evidence": "Substantive S30-B implementation is already merged; post-merge deterministic suites and main CI pass."
+      "evidence": "Substantive implementation and final receipt are already on main; this step only reconciles stale evidence state."
     },
     "quality": {
       "status": "PASS",
-      "evidence": "Final receipt will freeze exact candidate head, merge SHA, CI/run IDs, schema currentness and no-impact readback."
+      "evidence": "Terminal state will remove contradictory pending gates while preserving exact historical run identities."
     },
     "depth": {
       "status": "PASS",
-      "evidence": "All ten S30-B exit-gate dimensions are mapped to explicit evidence before closeout persistence."
+      "evidence": "Candidate evidence and final receipt are the only artifacts requiring state alignment."
     },
     "performance": {
       "status": "PASS_BASELINE",
-      "evidence": "Deterministic-first authority is merged; model calls remain zero for derivable work."
+      "evidence": "No model/runtime work; deterministic JSON-only closeout alignment."
     },
     "ekb_action": {
       "status": "CONSUMED",
