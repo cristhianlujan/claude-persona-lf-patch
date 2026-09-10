@@ -1,0 +1,54 @@
+{
+  "candidate_source_sha": "6193207d299c3ed55e5f50d8ed78c28992ffce1d",
+  "gate": "F_PROFILE_EXECUTION",
+  "observation_role": "OBSERVATIONAL_ONLY_NOT_GATE_AUTHORITY",
+  "observed_runtime": {
+    "deployment_classification": "INSTALLED_NOT_INTEGRATED_PENDING_LIVE_REVERIFY",
+    "downstream_authorized": false,
+    "host_label": "scalora-vps",
+    "llama_server_status": "READY",
+    "max_workers": 1,
+    "model_id": "/opt/profile-runtime-benchmark/model/model.gguf",
+    "runtime_version": "hetzner-profile-runtime-api/0.1.5-s26-explicit-schema-256",
+    "service": "lf-profile-runtime-api",
+    "source_sha": "486bb60af46de22adf0404565c9a78e41e3281a4"
+  },
+  "project_id": "S26",
+  "request": {
+    "adapter_binding_count": 0,
+    "card_binding_count": 0,
+    "input_sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1",
+    "profile_code": "PERFIL-UI-ARCHITECT",
+    "profile_slug": "ui_architect",
+    "request_id": "S26-HP-001-F-OBS-20260910-0748Z",
+    "request_sha256": "ad3cd538eb46e2d53e9dfb5bf5ebfc61139f5ca35c252ef9e715f32229df67fa",
+    "runtime_output_mode": "UI_PRODUCTION_SPEC"
+  },
+  "result": {
+    "job_id": "6ba2ae6b-d7e6-4d7c-bee4-d475727b0054",
+    "job_status": "COMPLETED",
+    "llama_timings_observed": false,
+    "llama_usage_observed": false,
+    "model_generation_latency_measured": false,
+    "profile_contract_status": "NOT_EVALUATED",
+    "profile_elapsed_ms": 215125.691,
+    "raw_output_present": false,
+    "raw_output_sha256": null,
+    "runtime_completion_blocking_codes": [
+      "LLAMA_STRUCTURED_OUTPUT_JSON_INVALID"
+    ],
+    "runtime_completion_status": "FAIL",
+    "runtime_total_ms": 215126.303,
+    "semantic_utility_status": "NOT_EVALUATED"
+  },
+  "run_id": "S26-HP-001",
+  "safety": {
+    "deployment_performed": false,
+    "model_weight_acquisition_performed": false,
+    "paid_fallback_performed": false,
+    "production_effect": false,
+    "resident_runtime_reused": true
+  },
+  "schema": "S26_HP001_GATE_F_RUNTIME_OBSERVATION_V1",
+  "source_match": false
+}
