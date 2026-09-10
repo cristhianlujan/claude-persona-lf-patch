@@ -39,7 +39,7 @@
     "applicability_evidence_required": true,
     "high_critical_unhandled": "FAIL_CLOSED",
     "contradictory_applicable_rules_unresolved": "FAIL_CLOSED",
-    "self_test_snapshot_digest": "sha256:80250e6040def9944063e853759539c8ec4d5ca80020f52b1bb921ad22f9f793"
+    "self_test_snapshot_digest": "sha256:722ee9e921e57d9fb71378fa016b16f5557a13257d7ab1249ae8f1f13dd87e82"
   },
   "card_resolution": {
     "states": ["EXACT", "COMPATIBLE", "NONE", "AMBIGUOUS"],
