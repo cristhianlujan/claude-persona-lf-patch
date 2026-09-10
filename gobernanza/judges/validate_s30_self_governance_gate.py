@@ -206,21 +206,26 @@ def event_payload():
 def run_git(*args):
     return subprocess.run(["git",*args],check=True,capture_output=True,text=True).stdout.strip()
 
+def fetch_exact(*refs):
+    subprocess.run(["git","fetch","origin",*refs,"--depth=1"],check=True)
+
 def ci_changed_and_base():
     event=os.environ.get("GITHUB_EVENT_NAME",""); payload=event_payload()
     if event=="pull_request":
-        base_ref=os.environ.get("GITHUB_BASE_REF") or "main"
-        subprocess.run(["git","fetch","origin",base_ref,"--depth=1"],check=True)
-        expected=run_git("rev-parse",f"origin/{base_ref}")
-        changed=run_git("diff","--name-only",f"origin/{base_ref}...HEAD").splitlines()
-        return [x.strip() for x in changed if x.strip()], expected
+        pr=payload.get("pull_request") or {}
+        base_sha=((pr.get("base") or {}).get("sha") or "").strip()
+        head_sha=((pr.get("head") or {}).get("sha") or "").strip()
+        if len(base_sha)!=40 or len(head_sha)!=40:
+            raise AssertionError("pull_request event missing exact base/head SHA")
+        fetch_exact(base_sha,head_sha)
+        changed=run_git("diff","--name-only",base_sha,head_sha).splitlines()
+        return [x.strip() for x in changed if x.strip()], base_sha
     if event=="push" and os.environ.get("GITHUB_REF")=="refs/heads/main":
-        before=payload.get("before"); after=payload.get("after") or os.environ.get("GITHUB_SHA","HEAD")
-        if not before or set(before)<=set("0"): return [],None
-        try: changed=run_git("diff","--name-only",before,after).splitlines()
-        except subprocess.CalledProcessError:
-            subprocess.run(["git","fetch","origin",before,"--depth=1"],check=True)
-            changed=run_git("diff","--name-only",before,after).splitlines()
+        before=(payload.get("before") or "").strip(); after=(payload.get("after") or os.environ.get("GITHUB_SHA","")).strip()
+        if len(before)!=40 or set(before)<=set("0"): return [],None
+        if len(after)!=40: raise AssertionError("push event missing exact after SHA")
+        fetch_exact(before,after)
+        changed=run_git("diff","--name-only",before,after).splitlines()
         return [x.strip() for x in changed if x.strip()], before
     return [],None
 
@@ -238,7 +243,7 @@ def ci_auto(c, receipt_path):
         outside=sorted(set(changed)-allowed)
         if outside: raise AssertionError("bounded repair touched disallowed paths: "+",".join(outside))
     return {"status":"PASS","fresh_receipt_evaluated":True,"touched_trigger_paths":touched,
-            "expected_base_main_sha":expected,"result":result["result"]}
+            "changed_file_count":len(changed),"expected_base_main_sha":expected,"result":result["result"]}
 
 def main():
     ap=argparse.ArgumentParser(); ap.add_argument("--contract",default=str(CONTRACT_DEFAULT)); ap.add_argument("--input")
