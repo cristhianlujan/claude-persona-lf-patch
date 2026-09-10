@@ -83,7 +83,7 @@ def eval_bundle(b):
          'raw_receipt_errors':er,'compact_receipt_errors':ec,
          'raw_semantic_pass':rp==exp if rp else False,
          'compact_semantic_pass':cp==exp if cp else False,
-         'cross_arm_semantic_equal':rp==cp if rp and pc else False,
+         'cross_arm_semantic_equal':rp==cp if rp and cp else False,
          'expected_projection_sha256':sha(exp),'task_sha256':ts,
          'raw_context_sha256':rs,'compact_context_sha256':cs,
          'claim_ceiling':'SAME_MODEL_SEMANTIC_AB_PASS_NOT_INDEPENDENT_QUALITY_CERTIFICATION' if status=='PASS' else 'NO_SEMANTIC_EQUIVALENCE_CLAIM'}
