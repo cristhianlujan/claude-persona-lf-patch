@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - "lf/s26-ci-matrix-base-20260910"
   push:
     branches:
       - main
