@@ -1,0 +1,68 @@
+{
+  "schema": "S26_HP001_GATE_B_OUTPUT_V1",
+  "gate": "B_EKB_GOVERNANCE",
+  "project_id": "S26",
+  "run_id": "S26-HP-001",
+  "upstream": {
+    "source_gate": "A_INPUT_ADMISSION",
+    "source_output_sha256": "cc79c37058c27a9c3d1d4e4045e4beec000da5e50525f4e586a1937b7958e3f4",
+    "input_sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1"
+  },
+  "input": {
+    "source_type": "USER_TEXT",
+    "content": "Diseña una pantalla para un marketplace de servicios. Debe tener un encabezado con buscador, categorías principales, una sección de servicios destacados y tarjetas que muestren título, proveedor, precio y una llamada a la acción. El diseño debe ser claro, profesional y fácil de navegar. Entrega una especificación estructurada lista para que otro agente implemente la pantalla.",
+    "sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1",
+    "content_mutated": false
+  },
+  "governance": {
+    "source": "SUPABASE_CONTROL_PLANE",
+    "project_ref": "mhwmirqcgxxukpctffuv",
+    "table": "public.lf_error_knowledge",
+    "read_mode": "LIVE_CONTROL_PLANE_READBACK_MATERIALIZED",
+    "observed_at": "2026-09-10T03:56:04.482860+00:00",
+    "schema_first_verified": true,
+    "broad_high_critical_active_count": 297,
+    "broad_snapshot_sha256": "edac5705e7f33a679681a9aa4ae8a30d60e8f4c35aa8eecc3b24d9419783a584",
+    "selection_basis": {
+      "project": "S26",
+      "scope": "HP001_GATE_PIPELINE",
+      "repository": "cristhianlujan/claude-persona-lf-patch",
+      "operations": [
+        "EKB_READ",
+        "GITHUB_ACTIONS",
+        "PROFILE_RUNTIME",
+        "SANDBOX_CONTRACT_VALIDATION"
+      ],
+      "selection_mode": "TASK_SIGNATURE_TARGETED_FROM_BROAD_ACTIVE_SNAPSHOT"
+    },
+    "applicable_controls": [
+      {"codigo":"AUD-025","severidad":"High","rationale":"Separar branch/event HEAD de merge-ref y checkout ejecutado.","source_ref":"github-actions://cristhianlujan/claude-persona-lf-patch/run/31878313180/job/94997167249"},
+      {"codigo":"CI-005","severidad":"High","rationale":"La evidencia Actions debe estar ligada al mismo SHA sin commits vacíos.","source_ref":"github://cristhianlujan/claude-persona-lf-patch/pull/231@953873b63df2d85cd3e082f2d2638721f5eb6ea0"},
+      {"codigo":"CI-007","severidad":"High","rationale":"Separar evidencia push y pull_request para el mismo exact HEAD.","source_ref":"github-actions://cristhianlujan/claude-persona-lf-patch/actions/runs/33102419775"},
+      {"codigo":"CI-E16-001","severidad":"Medium","rationale":"No confundir una matriz E16 incompleta con fallo funcional del candidato.","source_ref":"run:33524992439/job:99913449886"},
+      {"codigo":"CI-SUPABASE-CONTROL-PLANE-READBACK-001","severidad":"HIGH","rationale":"El replay CI no puede fingir un readback vivo de Supabase; debe distinguir snapshot materializado de consulta remota.","source_ref":"github://cristhianlujan/claude-persona-lf-patch/pull/601@3b0913571902698e772f1472ebcbe85411138235|sentinelx://scalora-vps/tmp/pr580-content-scope"},
+      {"codigo":"DB-001","severidad":"Medium","rationale":"Resolver el esquema real de lf_error_knowledge antes de leer sus campos.","source_ref":"supabase://information_schema.columns#v_lf_fuente_operativa|supabase://information_schema.columns#lf_operation_registry|supabase://pg_proc#prokind"},
+      {"codigo":"GOV-010","severidad":"High","rationale":"Cargar EKB aplicable antes de trabajo material y convertirla en gates.","source_ref":"supabase://public.fn_lf_router_preflight_v1|supabase://public.lf_router_resolve_v1|supabase://public.programming_agent_knowledge_v1|supabase://public.lf_error_knowledge#DB-001"},
+      {"codigo":"PROFILE-RUNTIME-EKB-PREFLIGHT-BENCHMARK-001","severidad":"ALTA","rationale":"EKB targeted preflight obligatorio antes de trabajo runtime/benchmark.","source_ref":"sentinelx://scalora-vps/job_426f36af2c5e|github://cristhianlujan/claude-persona-lf-patch/main@e17f45fdfecbd540cf9bd641ef48929b3586c475"},
+      {"codigo":"PROFILES-EKB-PREFLIGHT-OMISSION-001","severidad":"ALTA","rationale":"Toda corrida de profiles debe demostrar EKB preflight antes de mutar.","source_ref":"supabase://public/lf_error_knowledge"},
+      {"codigo":"S26-MANIFEST-CANONICAL-CONTRACT-DIVERGENCE-001","severidad":"HIGH","rationale":"Reusar contratos canónicos S26 y no crear un schema paralelo de cierre.","source_ref":"github://cristhianlujan/claude-persona-lf-patch/commit/fcc2b0d57e36a31c26f38acc2510b193aac988c8|github-actions://34141818287/job/101805261727|github-actions-artifact://10026667187"},
+      {"codigo":"S26-CANONICAL-DIRECT-ROUTER-SEMANTIC-FLOOR-VARIANCE-001","severidad":"ALTA","rationale":"Validar significado/estructura y no coincidencia léxica exacta en el gate semántico downstream.","source_ref":"github-actions://34187681102/job/101939247020|github-actions-artifact://10041083508|github://cristhianlujan/claude-persona-lf-patch/commit/a536e113ac76e1cbf118100a094fb9f3f312d383"}
+    ],
+    "not_applicable_current_stage": [
+      {"codigo":"CI-MIG-001","reason":"NO_MIGRATION_PATH_CHANGED_IN_GATE_B_FIX"},
+      {"codigo":"CI-014","reason":"ISOLATED_CANDIDATE_NOT_PROMOTION_TO_MAIN; REEVALUATE_AT_PROMOTION"},
+      {"codigo":"S26-MIGRATION-PARITY-REMOTE-ONLY-001","reason":"NO_MIGRATION_PATH_CHANGED_IN_GATE_B_FIX"},
+      {"codigo":"S26-CLOUDFLARE-ZERO-COST-BILLING-READ-403-001","reason":"NO_REMOTE_MODEL_RUNTIME_EXECUTION_IN_GATE_B"}
+    ],
+    "snapshot_scope": "S26-HP-001_ONLY",
+    "reusable_for_new_run": false
+  },
+  "decision": {
+    "governance_context_ready": true,
+    "blocking_controls_missing": false,
+    "input_mutation_allowed": false,
+    "next_gate_authorized": true
+  },
+  "status": "PASS",
+  "next_gate": "C_CARD_SELECTION"
+}
