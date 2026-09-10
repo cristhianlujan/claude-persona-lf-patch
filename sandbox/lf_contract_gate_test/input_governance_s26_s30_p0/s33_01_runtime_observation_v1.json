@@ -1,0 +1,93 @@
+{
+  "receipt_version": "S33_RUNTIME_OBSERVATION_V1",
+  "strategy_id": "S33",
+  "stage": "S33-01",
+  "executed": true,
+  "mode": "READ_ONLY_OBSERVATION",
+  "frozen_base_sha": "4cbb5d9785630b50f7d997369589e49e03a520cc",
+  "predecessor_commit_sha": "c816b01dbe9cf8e115bd91a614c5ee28d5f07e5a",
+  "supabase_project": "mhwmirqcgxxukpctffuv",
+  "function_inventory": {
+    "fn_input_total_all_schemas": 98,
+    "programacion_fn_input": 93,
+    "public_facades": 5,
+    "programacion_definition_bytes": 592231,
+    "programacion_version_named": 59,
+    "programacion_cached_variants": 11,
+    "programacion_functions_ge_10kb": 15,
+    "all_service_role_executable": 31,
+    "all_security_definer": 92
+  },
+  "public_surfaces": [
+    {"name":"public.fn_input_governance_execute(integer,text)","delegates_to":"programacion.fn_input_governance_execute","disposition_observed":"EXTERNAL_DISPATCH_FACADE"},
+    {"name":"public.fn_input_governance_curator_materialize_v1(integer,text,text)","delegates_to":"programacion.fn_input_governance_curator_materialize_v1","disposition_observed":"ROLE_RUNTIME_FACADE"},
+    {"name":"public.fn_input_governance_validator_validate_v1(bigint,text)","delegates_to":"programacion.fn_input_governance_validator_validate_v1","disposition_observed":"ROLE_RUNTIME_FACADE"},
+    {"name":"public.fn_input_governance_safe_autofix_v1(bigint)","delegates_to":"programacion.fn_input_governance_safe_autofix_v1","disposition_observed":"CONTROLLED_AUTOFIX_FACADE"},
+    {"name":"public.fn_input_governance_validator_resume_context_v1(bigint)","delegates_to":"programacion.input_readiness_runs","disposition_observed":"VALIDATOR_RESUME_SUPPORT"}
+  ],
+  "internal_capability_groups": {
+    "BOOTSTRAP_CLASSIFICATION": 10,
+    "DESIGN": 7,
+    "REMEDIATION_PROPOSALS": 6,
+    "SEMANTIC_PROBES": 6,
+    "SHADOW_EVALUATION": 6,
+    "SECURITY_DEPTH": 5,
+    "SOURCE_RESOLUTION": 5,
+    "STAGE_READINESS": 5,
+    "CURRENTNESS_FRESHNESS": 4,
+    "ORCHESTRATION": 4,
+    "VALIDATION": 4,
+    "CONTEXT_JIT": 3,
+    "CURATION": 3,
+    "OTHER_INTERNAL": 25
+  },
+  "critical_call_graph": {
+    "programacion.fn_input_governance_execute": ["fn_input_context_manifest_known_current_v1","fn_input_evaluation_outcome_summary_known_current_v1","fn_input_freshness_delta","fn_input_governance_ekb_checkpoint","fn_input_governance_worker_spec_known_current_v1","fn_input_governance_worker_spec_known_no_current_v1","fn_input_internal_remediation_summary_known_current_v1","fn_input_proposal_summary","fn_input_readiness_run_is_current_cached_v1","fn_input_stage_gate_summary_known_current_v1"],
+    "programacion.fn_input_context_manifest": ["fn_input_api_contract_resolution","fn_input_design_binding_graph_v2","fn_input_readiness_run_is_current","fn_input_stage_gate_summary"],
+    "programacion.fn_input_resolve_retrieval_handle": ["fn_input_api_contract_resolution","fn_input_context_manifest","fn_input_design_binding_graph_v2","fn_input_freshness_delta","fn_input_resolve_source_ref","fn_input_screen_canonical_graph"],
+    "programacion.fn_input_readiness_run_is_current_cached_v1": ["fn_input_build_source_manifest","fn_input_governance_bootstrap_classify_v2_cached_v1","fn_input_screen_canonical_graph","fn_input_security_threat_expected","fn_input_subject_depth_expected"],
+    "programacion.fn_input_governance_curator_materialize_v1": ["fn_input_freshness_delta","fn_input_governance_bootstrap_materialize_v2","fn_input_governance_curator_rebind_v1","fn_input_governance_recurate_source_stale_v1","fn_input_governance_recurate_v2","fn_input_readiness_run_is_current_cached_v1"],
+    "programacion.fn_input_governance_validator_validate_v1": ["fn_input_governance_bootstrap_validate_v1","fn_input_governance_validate_v2","fn_input_governance_validator_rebind_v1"]
+  },
+  "edge_runtime": [
+    {"slug":"input-governance-agent-v1","version":2,"status":"ACTIVE","verify_jwt":true,"ezbr_sha256":"2b2091358cfae7d0685180bad02a2315b7e005c683ecfa3493858a25b7ba7982","observed_role":"ORCHESTRATOR"},
+    {"slug":"input-governance-curator-v1","version":1,"status":"ACTIVE","verify_jwt":true,"ezbr_sha256":"0fa8d5bea9667e88133e22ce476f9a9fbba7b5fd9a1104c077097e4c544d1fa4","observed_role":"CURATOR"},
+    {"slug":"input-governance-validator-v1","version":3,"status":"ACTIVE","verify_jwt":true,"ezbr_sha256":"3d27b115631d504a1f35cdf146996bfc3207f0dd43f0b9c2ea507c26c70fedd8","observed_role":"VALIDATOR"}
+  ],
+  "worker_spec_observation": {
+    "screen_code": "B2B-CARGA-001",
+    "pantalla_id": 43,
+    "consumer": "CONTEXT_PACK",
+    "version_id": 19,
+    "current_run_id": 221,
+    "latest_run_status": "COMPLETED",
+    "runtime_action": "REUSE_CURRENT_RUN",
+    "required_role": "NONE",
+    "runtime_binding_status": "NOT_REQUIRED_CURRENT_RUN",
+    "retrieval_plan": ["SCREEN","SCREEN_RULE_SET","SCREEN_STATE_SET","SCREEN_CANONICAL_GRAPH","DESIGN_BINDING_GRAPH_V4","API_CONTRACT_RESOLUTION_V1","EKB_DECISION_SET","EKB_PREVENTION_SET"],
+    "family_count": 47,
+    "readiness_revision": "5.12",
+    "promotion_authorized": false,
+    "production_authorized": false
+  },
+  "exact_read_only_dependencies": {
+    "s30_data_access_registry_blob": "f9376af67530a4d7d1753d98f3ecfe9aec2f0ca0",
+    "s30_lf_data_access_blob": "0fc3792e2f75fd5befc6fb22eb6d8e53ccd16965",
+    "s30_lf_data_access_budgeted_blob": "466751dc09990414c0e0aa6b5d1aaecf99c54ff3",
+    "s30_budget_profiles_blob": "8bc7d3f3b8198f5f157441c20beacc83af7ebc80",
+    "s30_execution_authority_policy_blob": "4107e31ad8eb145cb80474de0ba135a164715c00",
+    "s30_execution_authority_code_blob": "933e6d597dcffc720854a23ed0ee6ae9002c8a14",
+    "s30_final_receipt_blob": "30cb872a08f926a285f1d27ef752659de49974d8",
+    "s30_c_replay_corpus_blob": "77369851dce6b0f6fdc0fb1167a43e721152ab57"
+  },
+  "observed_defects_or_debt": [
+    "DESIGN_BINDING_GRAPH_V3 handle versus V4 implementation output mismatch is already reproducible",
+    "versioned/cached helpers are too numerous to expose as consumer-selectable capabilities",
+    "agent/curator/validator duplicate service-role authentication and RPC transport code",
+    "semantic runtime remains a separately governed binding concern; current-run reuse does not require it"
+  ],
+  "claim_ceiling": "OBSERVED_RUNTIME_INVENTORY_NOT_YET_CLASSIFIED_AS_FINAL_CAPABILITY_REGISTRY",
+  "production_changed": false,
+  "runtime_changed": false,
+  "supabase_changed": false
+}
