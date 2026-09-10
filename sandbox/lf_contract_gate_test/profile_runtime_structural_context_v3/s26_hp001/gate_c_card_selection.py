@@ -39,12 +39,17 @@ def _load_resolver():
     return module
 
 
-def resolve_card_policy(runtime_context: dict[str, Any], input_fields: dict[str, Any]) -> dict[str, Any]:
+def resolve_card_policy(
+    runtime_context: dict[str, Any],
+    input_fields: dict[str, Any],
+    *,
+    repo_root: Path | None = None,
+) -> dict[str, Any]:
     card_required = runtime_context.get("card_required", False)
     if not isinstance(card_required, bool):
         raise GateCCardSelectionBlocked("GATE_C_CARD_REQUIRED_NOT_BOOLEAN")
     resolver = _load_resolver()
-    resolved = resolver._resolve_card(runtime_context, REPO, input_fields)
+    resolved = resolver._resolve_card(runtime_context, repo_root or REPO, input_fields)
     if card_required and resolved.get("status") == "FALLBACK":
         raise GateCCardSelectionBlocked("GATE_C_REQUIRED_CARD_MISSING")
     return resolved

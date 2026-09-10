@@ -23,4 +23,4 @@ Exercise the S26 Gate C `CARD_BOUND` branch without granting product, business, 
 
 ## Safety
 
-This Card is valid only when a test explicitly injects its exact ref and SHA. It must never be selected by automatic discovery outside S26 validation.
+This Card source fixture is valid only for sandbox validation. The test copies these exact bytes into an ephemeral repository under a `cards/` path and explicitly injects its exact ref and SHA into the real resolver. It must never be selected by automatic discovery or persisted under the governed `cards/` namespace.

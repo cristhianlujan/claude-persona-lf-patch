@@ -2,8 +2,8 @@
   "schema": "S26_ISOLATED_PROJECT_GATE_V1",
   "project_id": "S26",
   "test_id": "S26-HP-001",
-  "integration_epoch": 4,
-  "previous_candidate_sha": "152b93b9a35d9b661e8e1fdc38758593e131a689",
+  "integration_epoch": 5,
+  "previous_candidate_sha": "a720b7559e9dc1cb1ed77c63726b95cb86f137ae",
   "source_base_sha": "db88d66dc2b79fb081748fb4a86d4057f30adb18",
   "frozen_base_branch": "lf/s26-hp001-base-db88d",
   "expected_head_branch": "lf/s26-hp001-gate-c-fix-20260909",
@@ -16,8 +16,7 @@
     "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_hp001_output.py",
     "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_hp001_replay.py",
     "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_gate_c_branches.py",
-    "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/",
-    "cards/_test_fixtures/s26_hp002/CARD.md"
+    "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/"
   ],
   "required_event_evidence": [
     "event_name",
