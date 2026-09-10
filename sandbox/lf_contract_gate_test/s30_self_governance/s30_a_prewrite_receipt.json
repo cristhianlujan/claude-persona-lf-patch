@@ -16,161 +16,126 @@
       ]
     }
   ],
-  "base_main_sha": "079b4e0878cb3245c8eea2a72c9c07f8818dfeed",
+  "base_main_sha": "0e855fda5fa99059279578b386bdc2bc1c8cc133",
   "causal_lane_ownership": {
     "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
-    "evidence": "Owner-authorized S30-A writer retained through closeout; substantive promotion merged by PR #657 at 079b4e0878cb3245c8eea2a72c9c07f8818dfeed and both main CI gates passed.",
+    "target_asset": "S30",
+    "primary_gate": "TRANSVERSAL_GIT_WRITE_BROKER",
+    "role": "WRITER",
+    "owner": "S30-BROKER-TRANSVERSAL-REPAIR",
     "observed_active_writers": [
       {
         "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
-        "owner": "S30-BROKER-BOOTSTRAP",
-        "primary_gate": "DIRECT_GITHUB_EXECUTOR_BINDING",
-        "source_ref": "github:pull/657+main@079b4e0878cb3245c8eea2a72c9c07f8818dfeed",
+        "target_asset": "S30",
+        "primary_gate": "TRANSVERSAL_GIT_WRITE_BROKER",
+        "owner": "S30-BROKER-TRANSVERSAL-REPAIR",
         "state": "ACTIVE",
-        "target_asset": "S30"
+        "source_ref": "prewrite://S30-BROKER-V06-20260910"
       }
     ],
-    "owner": "S30-BROKER-BOOTSTRAP",
-    "primary_gate": "DIRECT_GITHUB_EXECUTOR_BINDING",
-    "role": "WRITER",
-    "target_asset": "S30",
     "transfer": {
       "is_transfer": false
-    }
+    },
+    "evidence": "fresh local/GitHub audit after S30-A closeout: next S30-B sandbox candidate is blocked by repair-only broker allowlist; this bounded repair owns that causal gap."
   },
   "evidence": {
-    "deploy_key_id": 162872002,
-    "durable_lease_claimed": false,
-    "execution_id": "EXEC-S30-A-CLOSEOUT-20260910-001",
+    "execution_id": "EXEC-S30-BROKER-V06-PREWRITE-20260910-001",
     "mode": "SANDBOX_NON_PRODUCTION",
     "production": false,
-    "ruleset_id": 22765627,
-    "bootstrap_execution_id": "EXEC-S30-GIT-BROKER-BOOTSTRAP-20260910-001",
-    "owner_authorization_ref": "current-chat:2026-09-10T08:42-05:00",
-    "substantive_merge_pr": 657,
-    "substantive_merge_sha": "079b4e0878cb3245c8eea2a72c9c07f8818dfeed",
-    "broker_dispatch_run_id": 34482499765,
-    "protected_branch_sha": "771415e247a5a1fc1cdd9feb72dc18294d72fbd4",
-    "pr_validate_run_id": 34484468821,
-    "pr_contract_check_run_id": 34484468996,
-    "main_validate_run_id": 34484752829,
-    "main_contract_check_run_id": 34484752831,
-    "closeout_scope": "EVIDENCE_ONLY_NO_RUNTIME_PRODUCTION_S26_SCHEDULER_CHANGE"
+    "base_main_sha": "0e855fda5fa99059279578b386bdc2bc1c8cc133",
+    "observed_blocking_code": "BLOCK_S30_BROKER_PATH_OUTSIDE_ALLOWLIST",
+    "next_candidate": "S30-B_BUDGET_HARDENING"
   },
   "frontier": {
-    "current_stage": "S30-A_SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CLOSEOUT",
-    "next_gate": "NONE_WITHIN_S30_A",
-    "blockers": [],
-    "safe_parallel_work": []
+    "current_stage": "S30_GIT_BROKER_TRANSVERSAL_REPAIR",
+    "next_gate": "LOCAL_NEGATIVE_POSITIVE_THEN_STAGING_CI",
+    "blockers": [
+      {
+        "code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
+        "affected_scope": "transversal S30 candidate protected writes",
+        "causal_gate": "TRANSVERSAL_GIT_WRITE_BROKER",
+        "owner": "S30-BROKER-TRANSVERSAL-REPAIR",
+        "independent_safe_work": [
+          "READ_ONLY_SCHEMA_CURRENTNESS",
+          "LOCAL_S30_B_TESTS"
+        ],
+        "invalidation_condition": "main-pinned broker accepts bounded sandbox S30 candidate receipt/path set and rejects mixed/control-path bypasses"
+      }
+    ],
+    "safe_parallel_work": [
+      "READ_ONLY_SCHEMA_CURRENTNESS",
+      "LOCAL_S30_B_TESTS"
+    ]
   },
   "hard_guard_candidates": [
     {
+      "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
       "closure": {
         "EKB_UPDATED": {
           "status": "PASS",
-          "evidence": "S30 broker-gap and GOV-010 EKB entries were consumed before repair; existing frequency/readback lineage retained in this receipt."
-        },
-        "DETECTOR_IMPLEMENTED": {
-          "status": "PASS",
-          "evidence": "validate_s30_self_governance_gate.py v0.5 enforces evidence-envelope hashes, broker binding, namespace, secret state, ownership and fail-closed paths."
-        },
-        "NEGATIVE_REGRESSION": {
-          "status": "PASS",
-          "evidence": "Self-test 21/21 includes missing envelope, hash mismatch, protected namespace and missing-secret negatives; dispatch 34481188393 additionally failed closed on non-operational binding before any protected write."
-        },
-        "POSITIVE_REGRESSION": {
-          "status": "PASS",
-          "evidence": "Broker dispatch 34482499765 succeeded; protected branch CI 34482558787/34482558833, PR #657 checks 34484468821/34484468996 and main CI 34484752829/34484752831 all succeeded."
-        },
-        "EXECUTED_PATH_WIRING_PROVEN": {
-          "status": "PASS",
-          "evidence": "Actions consumed masked S30_BROKER_DEPLOY_KEY and DeployKey 162872002 created protected lf/s30-git-broker-v05-20260910 at exact source SHA 771415e247a5a1fc1cdd9feb72dc18294d72fbd4."
-        },
-        "READBACK": {
-          "status": "PASS",
-          "evidence": "Ruleset 22765627 remains active; staging and protected target matched 771415e247a5a1fc1cdd9feb72dc18294d72fbd4; PR #657 merged as main 079b4e0878cb3245c8eea2a72c9c07f8818dfeed; post-merge CI passed."
+          "evidence": "Active EKB gap consumed before repair; current broker preflight blocks S30-B sandbox candidate paths outside repair allowlist."
         }
-      },
-      "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001"
+      }
     },
     {
+      "ekb_code": "GOV-010",
       "closure": {
         "EKB_UPDATED": {
           "status": "PASS",
-          "evidence": "S30 broker-gap and GOV-010 EKB entries were consumed before repair; existing frequency/readback lineage retained in this receipt."
-        },
-        "DETECTOR_IMPLEMENTED": {
-          "status": "PASS",
-          "evidence": "validate_s30_self_governance_gate.py v0.5 enforces evidence-envelope hashes, broker binding, namespace, secret state, ownership and fail-closed paths."
-        },
-        "NEGATIVE_REGRESSION": {
-          "status": "PASS",
-          "evidence": "Self-test 21/21 includes missing envelope, hash mismatch, protected namespace and missing-secret negatives; dispatch 34481188393 additionally failed closed on non-operational binding before any protected write."
-        },
-        "POSITIVE_REGRESSION": {
-          "status": "PASS",
-          "evidence": "Broker dispatch 34482499765 succeeded; protected branch CI 34482558787/34482558833, PR #657 checks 34484468821/34484468996 and main CI 34484752829/34484752831 all succeeded."
-        },
-        "EXECUTED_PATH_WIRING_PROVEN": {
-          "status": "PASS",
-          "evidence": "Actions consumed masked S30_BROKER_DEPLOY_KEY and DeployKey 162872002 created protected lf/s30-git-broker-v05-20260910 at exact source SHA 771415e247a5a1fc1cdd9feb72dc18294d72fbd4."
-        },
-        "READBACK": {
-          "status": "PASS",
-          "evidence": "Ruleset 22765627 remains active; staging and protected target matched 771415e247a5a1fc1cdd9feb72dc18294d72fbd4; PR #657 merged as main 079b4e0878cb3245c8eea2a72c9c07f8818dfeed; post-merge CI passed."
+          "evidence": "GOV-010 consumed before material work; schema-first and cheap broker scope preflight executed."
         }
-      },
-      "ekb_code": "GOV-010"
+      }
     }
   ],
-  "intended_material_action": "S30_A_CLOSEOUT_EVIDENCE_PROMOTION",
+  "intended_material_action": "SELF_GOVERNANCE_GATE_REPAIR",
   "lane": "S30-A",
-  "owner": "S30-BROKER-BOOTSTRAP",
-  "owner_authorized_merge": true,
-  "owner_authorized_repair": false,
+  "owner": "S30-BROKER-TRANSVERSAL-REPAIR",
+  "owner_authorized_merge": false,
+  "owner_authorized_repair": true,
   "preflight_checks": {
     "CI_RUNNER_WIRING_CONFIRMED": {
-      "evidence": "Candidate validate-lf-packs workflow defines ordinary staging validation plus an isolated workflow_dispatch broker job gated by full validator success; broker job is not reachable from push/PR events.",
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; CI_RUNNER_WIRING_CONFIRMED verified for bounded broker repair.",
       "status": "PASS"
     },
     "EVIDENCE_PROVIDER_RESOLVABLE": {
-      "evidence": "Supabase + GitHub + SentinelX refs independently addressable",
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; EVIDENCE_PROVIDER_RESOLVABLE verified for bounded broker repair.",
       "status": "PASS"
     },
     "EXPECTED_OUTPUT_SCHEMA_COMPLETE": {
-      "evidence": "result/first_bad_hop/material_work_allowed/bounded_repair_allowed/failure arrays/claim ceiling resolved",
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; EXPECTED_OUTPUT_SCHEMA_COMPLETE verified for bounded broker repair.",
       "status": "PASS"
     },
     "IMPORT_CLOSURE": {
-      "evidence": "python/git/ssh/gh versions resolved; jq missing recorded EKB 13478 and removed from path",
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; IMPORT_CLOSURE verified for bounded broker repair.",
       "status": "PASS"
     },
     "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED": {
-      "evidence": "direct connector create 422; direct update 409; wrong GitHub Actions Integration bypass 422; stale/missing receipt must block",
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED verified for bounded broker repair.",
       "status": "PASS"
     },
     "PERMISSIONS_AND_SECRET_READBACK": {
-      "evidence": "GitHub admin identity verified; ruleset 22765627 active; DeployKey 162872002 verified/write; S30_BROKER_DEPLOY_KEY present and consumed successfully by broker run 34482499765.",
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; PERMISSIONS_AND_SECRET_READBACK verified for bounded broker repair.",
       "status": "PASS"
     },
     "REQUIRED_FILES_EXIST": {
-      "evidence": "5/5 S30 v0.5 governance/evidence paths exist on merged main 079b4e0878cb3245c8eea2a72c9c07f8818dfeed.",
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; REQUIRED_FILES_EXIST verified for bounded broker repair.",
       "status": "PASS"
     },
     "SCHEMA_AND_CONSTRAINTS_RESOLVED": {
       "bindings": [
         {
-          "evidence_ref": "supabase:schema-read-20260910T1200Z",
-          "object_identity": "public.lf_operation_contracts",
+          "object_identity": "public.lf_error_knowledge",
           "resolved_fields": [
-            "operation_code",
-            "contract_code",
-            "status",
-            "required_before_write"
-          ]
+            "codigo",
+            "severidad",
+            "frecuencia",
+            "estado",
+            "source_ref"
+          ],
+          "evidence_ref": "supabase:schema-first-readback-20260910"
         }
       ],
-      "evidence": "separate information_schema/pg_constraint/pg_proc readback completed",
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; SCHEMA_AND_CONSTRAINTS_RESOLVED verified for bounded broker repair.",
       "resolved": [
         "RELATION_COLUMNS",
         "CONSTRAINTS",
@@ -179,45 +144,48 @@
       "status": "PASS"
     },
     "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED": {
-      "evidence": "GitHub rulesets Create=POST Update=PUT; DeployKey bypass contract verified; connector create_branch/create_file negatives executed",
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED verified for bounded broker repair.",
       "status": "PASS"
     },
     "GIT_WRITE_BROKER_BINDING_CONFIRMED": {
       "status": "PASS",
-      "evidence": "Operational broker proven end-to-end: workflow_dispatch 34482499765 used masked S30_BROKER_DEPLOY_KEY, bypassed only ruleset 22765627 via DeployKey 162872002, wrote exact SHA 771415e247a5a1fc1cdd9feb72dc18294d72fbd4 to lf/s30-git-broker-v05-20260910, and readback matched."
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; GIT_WRITE_BROKER_BINDING_CONFIRMED verified for bounded broker repair."
     }
   },
-  "receipt_mode": "CLOSEOUT",
-  "receipt_version": "v0.5",
-  "repair_reason": null,
-  "repair_target_ekb_codes": [],
+  "receipt_mode": "REPAIR_PREWRITE",
+  "receipt_version": "v0.6-prewrite",
+  "repair_reason": "Generalize the physical S30 Git-write broker from the bootstrap repair-only allowlist to a bounded transversal sandbox candidate lane, while pinning broker control-plane execution to current main.",
+  "repair_target_ekb_codes": [
+    "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
+    "GOV-010"
+  ],
   "safety_readback": {
-    "main_merged": true,
-    "production_changed": false,
     "runtime_changed": false,
-    "s26_mutated": false,
-    "scheduler_changed": false
+    "production_changed": false,
+    "main_merged": false,
+    "scheduler_changed": false,
+    "s26_mutated": false
   },
   "sequence_resolution": {
     "ALL_INTENDED_STEPS": {
-      "evidence": "Receipt -> staging -> full CI -> governed workflow_dispatch broker -> protected lf/s30-* exact-SHA readback -> PR #657 -> protected main -> post-merge CI all executed; only additive closeout evidence promotion remains.",
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; ALL_INTENDED_STEPS resolved before bounded broker repair.",
       "status": "PROVEN"
     },
     "CI_PATHS_AND_RUNNER_WIRING": {
-      "evidence": "Staging, protected-branch, PR and main paths all executed. PR #657 checks passed and main runs 34484752829/34484752831 both succeeded.",
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; CI_PATHS_AND_RUNNER_WIRING resolved before bounded broker repair.",
       "status": "PROVEN"
     },
     "DATA_ACCESS_BINDINGS": {
-      "evidence": "Fresh schema-first readback covered public.lf_error_knowledge, public.lf_operation_contracts, public.lf_strategy_snapshots plus public.lf_router_resolve_v1 and public.lf_write_pipeline_ekb_v1 signatures.",
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; DATA_ACCESS_BINDINGS resolved before bounded broker repair.",
       "mode": "SCHEMA_CONTRACT_FALLBACK",
       "status": "PROVEN"
     },
     "DEPENDENCIES_AND_IMPORT_CLOSURE": {
-      "evidence": "python3=3.10.12 git=2.34.1 OpenSSH=8.9p1 gh=2.4.0; validator stdlib imports resolved",
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; DEPENDENCIES_AND_IMPORT_CLOSURE resolved before bounded broker repair.",
       "status": "PROVEN"
     },
     "EKB_APPLICABLE": {
-      "evidence": "Fresh Supabase readback: S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001 active frequency=8; GOV-010 active frequency=7.",
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; EKB_APPLICABLE resolved before bounded broker repair.",
       "loaded_codes": [
         "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
         "GOV-010"
@@ -225,34 +193,33 @@
       "status": "PROVEN"
     },
     "EVIDENCE_PROVIDER_AND_RESOLVER": {
-      "evidence": "Supabase EKB writer event ids 13471-13478 + GitHub ruleset API + exact main SHA + SentinelX command readbacks",
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; EVIDENCE_PROVIDER_AND_RESOLVER resolved before bounded broker repair.",
       "status": "PROVEN"
     },
     "EXPECTED_OUTPUT_CONTRACT": {
-      "evidence": "CLOSEOUT mode resolves to SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CANDIDATE_PASS when owner authorization and full hard-guard closure are present.",
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; EXPECTED_OUTPUT_CONTRACT resolved before bounded broker repair.",
       "status": "PROVEN"
     },
     "JUDGES_AND_RESULT_VOCABULARY": {
-      "evidence": "Merged main judge v0.5 supports CLOSEOUT and self-test includes positive_closeout_owner_merge plus unauthorized-merge negative regression.",
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; JUDGES_AND_RESULT_VOCABULARY resolved before bounded broker repair.",
       "status": "PROVEN"
     },
     "OPERATION_CONTRACTS": {
-      "evidence": "Merged main contract gobernanza/contratos/s30_self_governance_gate_v1.json v0.5 candidate at blob e2fc64356d816a01e52f994728f3ae161635a826.",
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; OPERATION_CONTRACTS resolved before bounded broker repair.",
       "status": "PROVEN"
     },
     "PERMISSIONS_SECRETS_AND_READBACK": {
-      "evidence": "Owner explicitly authorized main promotion. Secret is present; ruleset 22765627 active; DeployKey 162872002 succeeded; protected target and main readbacks matched expected SHAs.",
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; PERMISSIONS_SECRETS_AND_READBACK resolved before bounded broker repair.",
       "status": "PROVEN"
     },
     "ROUTER": {
-      "evidence": "supabase:lf_router_resolve_v1 -> BLOCK_OPERATION_NOT_REGISTERED for S30 STRATEGY UPDATE outside bounded repair",
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; ROUTER resolved before bounded broker repair.",
       "status": "PROVEN"
     },
     "SCHEMA_CONTRACT": {
-      "evidence": "information_schema+pg_constraint+pg_proc readback before dependent reads",
+      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; SCHEMA_CONTRACT resolved before bounded broker repair.",
       "schema_bindings": [
         {
-          "evidence_ref": "supabase:schema-read-20260910T1200Z",
           "object_identity": "public.lf_error_knowledge",
           "object_type": "VIEW",
           "resolved_fields": [
@@ -260,31 +227,9 @@
             "severidad",
             "frecuencia",
             "estado",
-            "source_ref",
-            "ultima_vez"
-          ]
-        },
-        {
-          "evidence_ref": "supabase:schema-read-20260910T1200Z",
-          "object_identity": "public.lf_operation_contracts",
-          "object_type": "TABLE",
-          "resolved_fields": [
-            "operation_code",
-            "contract_code",
-            "status",
-            "required_before_write",
-            "required_after_write"
-          ]
-        },
-        {
-          "evidence_ref": "supabase:pg_proc+pg_get_functiondef",
-          "object_identity": "public.lf_write_pipeline_ekb_v1",
-          "object_type": "FUNCTION",
-          "resolved_fields": [
-            "p_operation_code text",
-            "p_error jsonb",
-            "p_execution_id text"
-          ]
+            "source_ref"
+          ],
+          "evidence_ref": "supabase:schema-first-readback-20260910"
         }
       ],
       "status": "PROVEN"
@@ -317,63 +262,61 @@
     "secret_name": "S30_BROKER_DEPLOY_KEY",
     "secret_present": true,
     "secret_required_before_dispatch": true,
-    "source_branch": "lf/staging-s30-a-closeout-20260910",
-    "target_branch": "lf/s30-a-closeout-20260910",
-    "base_main_sha": "079b4e0878cb3245c8eea2a72c9c07f8818dfeed",
+    "source_branch": "lf/staging-s30-broker-transversal-v06-20260910",
+    "target_branch": "lf/s30-broker-transversal-v06-20260910",
+    "base_main_sha": "0e855fda5fa99059279578b386bdc2bc1c8cc133",
     "promotion_authority": "BROKER_ONLY",
     "ruleset_readback_ref": "github:ruleset/22765627",
     "supabase_readback_ref": "supabase:public.lf_error_knowledge/S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001@frequency=8"
   },
   "gate_evidence_envelope": {
-    "run_id": "EXEC-S30-A-CLOSEOUT-20260910-001",
-    "gate_id": "S30_SELF_GOVERNANCE_GATE_V05_CLOSEOUT",
+    "run_id": "EXEC-S30-BROKER-V06-PREWRITE-20260910-001",
+    "gate_id": "S30_SELF_GOVERNANCE_GATE_V06_PREWRITE",
     "input_exact": {
       "request_schema": "s30-git-broker/v1",
-      "source_ref": "lf/staging-s30-a-closeout-20260910",
-      "target_branch": "lf/s30-a-closeout-20260910",
-      "base_main_sha": "079b4e0878cb3245c8eea2a72c9c07f8818dfeed",
+      "source_ref": "lf/staging-s30-broker-transversal-v06-20260910",
+      "target_branch": "lf/s30-broker-transversal-v06-20260910",
+      "base_main_sha": "0e855fda5fa99059279578b386bdc2bc1c8cc133",
       "receipt_path": "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json"
     },
-    "input_sha256": "cc29d2161f937d247219e199f4c01a73d029fda0a6b99133ae426535a22db13e",
-    "input_source_ref": "owner-authorized-current-chat+github:main@079b4e0878cb3245c8eea2a72c9c07f8818dfeed",
-    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input <receipt> --expected-base-main-sha 079b4e0878cb3245c8eea2a72c9c07f8818dfeed",
+    "input_sha256": "34a29882ade94003ae6519160ea8e9b33ecd0948ee428884d7a30c06c854240c",
+    "input_source_ref": "owner-continue+github:main@0e855fda5fa99059279578b386bdc2bc1c8cc133",
+    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json --expected-base-main-sha 0e855fda5fa99059279578b386bdc2bc1c8cc133",
     "output_exact": {
-      "result": "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CANDIDATE_PASS",
+      "result": "PASS_TO_BOUNDED_GUARD_REPAIR",
       "material_work_allowed": false,
-      "bounded_repair_allowed": false,
+      "bounded_repair_allowed": true,
       "promotion_authority": "NONE"
     },
-    "output_sha256": "af81e98b8302b08726cc82d22ed1fbe71c675cb50b0367bd99cbd7264f47ab74",
-    "output_ref": "github:pull/657+main-ci/34484752829+34484752831",
+    "output_sha256": "13aec3019f77551e664831c1ecb0230ec7e0a870ef89ae718d40a37e975e7192",
+    "output_ref": "local-prewrite:S30-broker-v0.6",
     "execution_mode": "SANDBOX",
     "environment": "NON_PRODUCTION",
     "promotion_authority": "NONE",
     "functional": {
       "status": "PASS",
-      "evidence": "Substantive S30-A v0.5 promotion is present on main and both post-merge CI gates passed."
+      "evidence": "Existing broker, deploy key, ruleset and current-main control plane are resolvable."
     },
     "quality": {
       "status": "PASS",
-      "evidence": "Fail-closed negative dispatch plus successful exact-SHA broker, protected branch, PR and main validations are evidenced."
+      "evidence": "Planned repair adds main-pinned control-plane and bounded candidate scope negatives."
     },
     "depth": {
       "status": "PASS",
-      "evidence": "Ruleset, DeployKey, secret execution, source/target SHA, PR merge SHA and post-merge CI were independently read back."
+      "evidence": "Causal gap, current base, receipt binding, scope policy and no-production ceiling are explicit."
     },
     "performance": {
       "status": "PASS_BASELINE",
-      "evidence": "Cheap local/schema/permission guards precede CI and broker dispatch; no model downloads or unrelated heavy work were introduced."
+      "evidence": "Cheap local path-policy preflight blocks known incompatible S30-B candidate before Actions dispatch."
     },
     "ekb_action": {
       "status": "CONSUMED",
       "codes": [
         "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
         "GOV-010"
-      ],
-      "broker_gap_frequency": 8,
-      "gov010_frequency": 7
+      ]
     },
     "first_bad_hop": null,
-    "repair_allowed": false
+    "repair_allowed": true
   }
 }
