@@ -256,7 +256,7 @@
     }
   },
   "git_write_binding": {
-    "status": "STAGED_VALIDATION",
+    "status": "OPERATIONAL",
     "request_schema": "s30-git-broker/v1",
     "ruleset_id": 22765627,
     "ruleset_name": "s30-governed-write-boundary",
@@ -280,12 +280,12 @@
     "workflow_path": ".github/workflows/validate-lf-packs.yml",
     "workflow_dispatch_wired": true,
     "secret_name": "S30_BROKER_DEPLOY_KEY",
-    "secret_present": false,
+    "secret_present": true,
     "secret_required_before_dispatch": true,
     "source_branch": "lf/staging-s30-git-broker-v05-20260910",
     "target_branch": "lf/s30-git-broker-v05-20260910",
     "base_main_sha": "18b5098ecd6ce0e2a5b3b551523456a75d712e6b",
-    "promotion_authority": "NONE",
+    "promotion_authority": "BROKER_ONLY",
     "ruleset_readback_ref": "github:ruleset/22765627",
     "supabase_readback_ref": "supabase:public.lf_error_knowledge/S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001@frequency=8"
   },
