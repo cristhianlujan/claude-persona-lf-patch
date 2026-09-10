@@ -1,55 +1,111 @@
 {
-  "schema": "S26_HP001_EVIDENCE_INDEX_V1",
-  "project_id": "S26",
-  "test_id": "S26-HP-001",
-  "source_base_sha": "db88d66dc2b79fb081748fb4a86d4057f30adb18",
-  "source_base_branch": "lf/s26-hp001-base-db88d",
-  "candidate_branch": "lf/s26-hp001-isolated-20260909",
-  "candidate_sha_authority": "GITHUB_EVENT_HEAD_SHA",
-  "merge_ref_is_candidate": false,
-  "exact_input_sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1",
-  "exact_output_sha256": "712fcb036a4db6ded06615f0ec1c4dd7b9d475fa6208f5b9fc72c7688b9f01d6",
-  "pre_evidence_proof": {
-    "head_sha": "3c1e6528e7b405261aab07474cff6048819b94bf",
-    "validate_lf_packs_run_id": 34433140044,
-    "validate_lf_packs_result": "SUCCESS",
-    "lf_contract_push_run_id": 34433140001,
-    "lf_contract_pr_run_id": 34433143278,
-    "profile_runtime_v3_test_count": 32,
-    "profile_runtime_v3_failure_count": 0
+  "artifacts": {
+    "gate_f_evidence": {
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_exact_runtime_evidence.json",
+      "sha256": "73d8d2d3afff1d7dd78c9dbf0084cb46c22cdbc00a932debda28a33d1d27470b"
+    },
+    "gate_f_output": {
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_output.json",
+      "sha256": "87912fce0aa9b3851cd2c43d50ce1ed1c3bc327f3da4291995e5437226838baf"
+    },
+    "gate_g_h_test": {
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_g_h_exact.py",
+      "sha256": "2874fc73044dc01ef224491b481fe105939cfc50cda074fd751614951334d4ec"
+    },
+    "gate_g_output": {
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_g_output.json",
+      "sha256": "56639ed8529683e54ab51c41c2cad5daefd67a389c98604060a748846ad32069"
+    },
+    "gate_h_output": {
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_h_output.json",
+      "sha256": "4162be5a97fbee4ed96ccb0c2d5b24bbefbd914138f84def4e19e6c2e7825353"
+    },
+    "input": {
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/input.txt",
+      "sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1"
+    },
+    "materialized_output": {
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_exact_materialized_output.json",
+      "sha256": "9f1c3c8bb90e6fc279998273d59d043273791c2e5b7793307db4be9d3e0ab5c2"
+    },
+    "model_raw": {
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_exact_model_output.json",
+      "sha256": "8270b0ab381fed8ec3060c73bfe3cdb6ba645e184a64daa90eda22f7f75f8d1b"
+    },
+    "replay_manifest": {
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/exact_replay_manifest.json",
+      "sha256": "830964a27ef785aa4ee83854ca937aecbbb22a92dae783e65d39d1179a202ef3"
+    },
+    "replay_runner": {
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/replay_exact_runtime.py",
+      "sha256": "e1cd5addcd7d90b70ff9a63f62f6eaf502933378755dc61df1f7e7766af809fa"
+    },
+    "requirements": {
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/expected_requirements.json",
+      "sha256": "68259474ec80a385135fa9ae1ffc69e006a6aaa37ad807fe8bf9dd11c4f8a730"
+    }
   },
+  "claim_ceiling": "HP001_EXACT_RUNTIME_F_G_H_REPLAY_EVIDENCE_PASS_PENDING_INDEPENDENT_REVIEW_NOT_GOLDEN",
+  "evidence_snapshot": {
+    "branch": "lf/s26-hp001-evidence-final-20260910",
+    "commit_sha": "be3bc2227fc6cd3920fc0e7f9dc8dce7d1fb7652",
+    "github_readback_verified": true,
+    "role": "IMMUTABLE_EVIDENCE_READBACK",
+    "runtime_candidate_source_unchanged": true
+  },
+  "golden_status": "NOT_GOLDEN_PENDING_INDEPENDENT_REVIEW",
+  "independent_review": {
+    "execution_mode_required": "INDEPENDENT_CHAT_CONTEXT",
+    "status": "NOT_EXECUTED_SEPARATE_CHAT_REQUIRED"
+  },
+  "negative_controls": [
+    "missing_search_blocks",
+    "missing_price_blocks",
+    "missing_professional_intent_blocks",
+    "create_new_remediation_blocks",
+    "composer_metadata_leak_blocks",
+    "exact_runtime_false_pass_blocks",
+    "performance_budget_weakening_blocks"
+  ],
+  "project_id": "S26",
+  "quality_depth": {
+    "component_count": 9,
+    "hierarchy_depth_edges": 3,
+    "requirement_coverage_ratio": 1.0,
+    "risk_control_count": 4,
+    "source_bound_integrity_ratio": 1.0,
+    "status": "PASS_DETERMINISTIC"
+  },
+  "runtime_candidate": {
+    "branch": "lf/s26-hp001-gate-f-perf-parity-20260910",
+    "pr": 654,
+    "role": "EXECUTED_RUNTIME_AUTHORITY",
+    "source_sha": "d5f27f129464163d915b08a26be08ca117385482"
+  },
+  "runtime_performance": {
+    "max_acceptable_ms": 120000.0,
+    "model_generation_ms": 25999.708,
+    "profile_elapsed_ms": 31318.137,
+    "status": "PASS"
+  },
+  "safety": {
+    "model_weight_acquisition_performed": false,
+    "paid_fallback_performed": false,
+    "production_effect": false,
+    "zip_delivery_used": false
+  },
+  "schema": "S26_HP001_EVIDENCE_INDEX_V3",
   "stage_evidence": {
-    "GATE_0_ISOLATION": "PASS",
     "A_INPUT": "PASS",
     "B_EKB": "PASS_CONTROL_PLANE_READBACK",
     "C_CARD": "PASS_NO_CARD_GOVERNED",
     "D_AUTHORITY": "PASS_PROVENANCE_BOUND",
     "E_TYPED_CONTEXT": "PASS",
-    "F_PROFILE_EXECUTION": "PASS_CURRENT_CHAT_MANUAL_PROFILE_RUN",
-    "G_CONTRACT_SHAPE": "PASS_CANONICAL_VALIDATORS",
-    "H_MATERIAL_REQUIREMENTS": "PASS",
-    "I_EVIDENCE": "MATERIALIZED_BY_THIS_INDEX_AND_TABLES",
-    "J_REPLAY": "REQUIRED_ON_FINAL_EVENT_HEAD"
+    "F_PROFILE_EXECUTION": "PASS_EXACT_DEPLOYED_RUNTIME",
+    "G_CONTRACT_SHAPE": "PASS_EXACT_RUNTIME_OUTPUT",
+    "H_MATERIAL_REQUIREMENTS": "PASS_EXACT_RUNTIME_OUTPUT",
+    "I_EVIDENCE": "PASS_IMMUTABLE_GITHUB_READBACK",
+    "J_REPLAY": "PASS_FROM_IMMUTABLE_COMMIT"
   },
-  "negative_controls": [
-    "main_drift_does_not_change_identity",
-    "shared_workflow_path_not_allowed",
-    "shared_runtime_path_not_allowed",
-    "merge_ref_not_candidate_sha",
-    "missing_search_blocks",
-    "missing_price_blocks",
-    "missing_professional_intent_blocks",
-    "create_new_remediation_blocks",
-    "composer_metadata_leak_blocks"
-  ],
-  "safety": {
-    "production_effect": false,
-    "automatic_model_runtime_used": false,
-    "model_weight_acquisition_performed": false,
-    "paid_fallback_performed": false,
-    "zip_delivery_used": false
-  },
-  "independent_review_status": "NOT_EXECUTED_SEPARATE_REVIEW_REQUIRED",
-  "golden_status": "NOT_GOLDEN",
-  "claim_ceiling": "HP001_DETERMINISTIC_EVIDENCE_PENDING_FINAL_REPLAY_AND_INDEPENDENT_REVIEW"
+  "test_id": "S26-HP-001"
 }
