@@ -1,0 +1,440 @@
+strategy_id: S33
+snapshot_code: LF_INPUT_GOVERNANCE_CORE_REFACTOR_CAPABILITY_SELECTION_20260910
+version: v0.1
+title: "Estrategia 33 — Refactor Core Input Governance, capacidades y E2E 10x5"
+status: CANDIDATO_READ_ONLY
+runtime_state: PLAN_ONLY
+impact_policy: BLOQUEADO
+strategy_type: INPUT_GOVERNANCE_CORE_REFACTOR
+strategy_archetype: TECHNICAL_OPERATIONAL
+
+problem_statement: >
+  Input Governance 5.12 conserva 47 familias y reglas valiosas, pero la evolución por parches dejó
+  deuda de integración: 93 funciones fn_input_*, múltiples variantes versionadas/cached, contratos
+  superpuestos, runtime semántico UNBOUND y drift ejecutable entre Design Binding Graph V2/V3/V4.
+  El agente además necesita seleccionar recursos, funciones, facades, adapters y ejecutores por
+  capacidad canónica, no por nombres disponibles ni por heurística del modelo.
+
+objective: >
+  Consolidar el core sin reescribir la semántica 5.12: aislar el carril, inventariar capacidades y
+  recursos, crear Capability Registry y facades estables, reutilizar S30-B/S30-C, aplicar typed data
+  access y deterministic-first, reconciliar Context/JIT/Design Graph, reducir el prompt a semantic
+  delta gobernado, limpiar runtime y aprobar un E2E obligatorio de 10 familias x 5 casos = 50 casos.
+  Cada caso mide funcionalidad, calidad, profundidad, performance y selección correcta de recurso.
+
+scope:
+  - Input Governance version_id=19 candidate
+  - Resource and Capability Resolver
+  - canonical capability registry and stable facades
+  - S30-B typed data access, schema resolver, budgets and execution authority by exact SHA
+  - S30-C replay/failure corpus by exact SHA
+  - S26 executor_mode/adapter/provider/model provenance principles
+  - Context Manifest/JIT and Design Graph V2/V3/V4 reconciliation
+  - semantic prompt/delta boundary
+  - Edge agent/curator/validator shared runtime cleanup
+  - request-local currentness/performance reuse
+  - mandatory E2E campaign 10 families x 5 cases
+
+non_goals:
+  - change proven 47-family semantics without separate authority
+  - production or automatic promotion
+  - merge main without a separate governed gate
+  - mutate S26 or S30 owned paths
+  - rewrite historical migrations
+  - increase timeouts to hide duplicate work
+  - let GPT, Claude or any model choose arbitrary SQL, RPC or helper names
+
+baseline:
+  frozen_base_main_sha: 4cbb5d9785630b50f7d997369589e49e03a520cc
+  isolated_branch: lf/ig-s26-s30-p0-isolated-20260910
+  input_governance:
+    version_id: 19
+    version_code: v0.5-input-readiness-api-contract-sufficiency-r1-stage-gates-candidate
+    readiness_revision: "5.12"
+    canonical_family_count: 47
+    reference_run_id: 221
+    reference_run_must_reresolve_each_execution: true
+  function_inventory:
+    fn_input_total: 93
+    total_definition_bytes: 592231
+    versioned_variants: 59
+    cached_variants: 11
+    functions_ge_10kb: 15
+  proven_runtime_defect:
+    manifest_handle: DESIGN_BINDING_GRAPH_V3
+    implementation_function: programacion.fn_input_design_binding_graph_v2(integer)
+    implementation_output_contract: DESIGN_BINDING_GRAPH_V4
+    observed_failure: INPUT_RETRIEVAL_DESIGN_GRAPH_CONTRACT_MISMATCH
+  strategy_factory_contract: CONTRACT-CREACION-ESTRATEGIA-LF-v0.3.2
+  strategy_factory_contract_sha: 2c469e3cd2ae7bb7171ca4e52fc6da84b58af3a3
+  strategy_validator_blob_sha: 4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765
+  policy_set_fingerprint: 646ebe26ee3437648372235936af4a9c811bc11a0fbb27601a74eb6535f84316
+  policy_set_fingerprint_method: SHA256_CANONICAL_JSON_SORTED_BY_POLICY_CODE
+
+authorities:
+  - ACT-0001 Router
+  - public.lf_error_knowledge EKB
+  - INPUT_READINESS_CONTRACT 5.12
+  - INPUT_GOVERNANCE_EXECUTION_CONTRACT 1.5
+  - INPUT_CONTEXT_MANIFEST_CONTRACT 2.0
+  - INPUT_RETRIEVAL_HANDLE_CONTRACT 2.0
+  - public.v_lf_operation_policy_snapshot
+  - GitHub exact immutable refs
+
+dependencies:
+  - id: S30-B-DATA-ACCESS
+    required: true
+    mode: EXACT_SHA_READ_ONLY
+    refs:
+      lf_data_access.py: 0fc3792e2f75fd5befc6fb22eb6d8e53ccd16965
+      lf_data_access_budgeted.py: 466751dc09990414c0e0aa6b5d1aaecf99c54ff3
+      data_access_registry_v2.json: f9376af67530a4d7d1753d98f3ecfe9aec2f0ca0
+      data_access_budget_profiles_v1.json: 8bc7d3f3b8198f5f157441c20beacc83af7ebc80
+      lf_execution_authority.py: 933e6d597dcffc720854a23ed0ee6ae9002c8a14
+  - id: S30-C-REPLAY
+    required: true
+    mode: EXACT_SHA_READ_ONLY
+    ref: sandbox/lf_contract_gate_test/s30_c_reliability_harness/replay_corpus.json
+    blob_sha: 77369851dce6b0f6fdc0fb1167a43e721152ab57
+  - id: S26-PROVENANCE-GUARD
+    required: true
+    mode: EKB_CONTRACT_PRINCIPLE
+    ref: S26-EXECUTOR-MODE-ADAPTER-PROVENANCE-MISMATCH-001
+  - id: INPUT-GOVERNANCE-5.12
+    required: true
+    mode: LIVE_SUPABASE_CURRENTNESS
+    ref: programacion.versiones_agente/19
+
+applicable_policies:
+  - {code: POL-LF-OPERATION-LIFECYCLE, role: GOVERNANCE_LIFECYCLE, version: v1.0, sha: 973b5a0ad26433095066ff06b53c3043f38fef51d04e9482c458e178f20920e8}
+  - {code: POL-LF-POLICY-CONSUMPTION, role: POLICY_CONSUMPTION, version: v1.1-transversal-candidate, sha: e5eb786e14a4b735e271a81b702a0a775e0bf39ba174d333531a82a0858b5553}
+  - {code: POL-LF-SOURCE-RESOLUTION, role: SOURCE_RESOLUTION, version: v1.4-transversal-supabase-authority-visual-support, sha: 5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46}
+  - {code: POL-LF-STATE-MODEL, role: STATE_MODEL, version: v1.1-transversal-candidate, sha: f451bb4d2b17cdac48c4dddb250108b2874a9d036edcfb9d2f7fa540416332aa}
+  - {code: POL-STRATEGY-CREATION-001, role: STRATEGY_CREATION, version: v0.1-candidate, sha: 563b91a1e5405c1e1f8806c1f8d12b8ab2dfbd901638f7b432a3e601cc2558fc}
+
+type_extension:
+  runtime_or_system_boundary:
+    candidate_only: true
+    supabase_canonical_write: SEPARATE_INTEGRATION_STAGE
+    production: DENY
+    main_merge: SEPARATE_EXPLICIT_GATE
+    owned_paths:
+      - strategies/LF_INPUT_GOVERNANCE_CORE_REFACTOR_CAPABILITY_SELECTION_20260910.yaml
+      - sandbox/lf_contract_gate_test/input_governance_s26_s30_p0/
+    foreign_paths: READ_ONLY_EXACT_SHA
+  failure_modes_and_first_bad_hop:
+    - capability ambiguity -> CAPABILITY_RESOLVER
+    - unknown DB field/object -> SCHEMA_CONTRACT_RESOLVER
+    - stale EKB/policy/schema/Git/runtime -> COMPOSITE_CURRENTNESS
+    - wrong executor/adapter/provider/model -> EXECUTOR_PROVENANCE_GATE
+    - V2/V3/V4 drift -> CONTRACT_COMPATIBILITY_GATE
+    - derivable work sent to model -> EXECUTION_AUTHORITY_GATE
+    - declarative PASS without execution -> EVIDENCE_ACCEPTANCE_GATE
+  reliability_test_plan: >
+    Unit and negative tests per registry/facade, S30-C historical replay, affected 47-family regression,
+    and mandatory S33-E2E-10X5-V1 with 50/50 and 5/5 per family.
+  performance_or_resource_metrics_or_explicit_na:
+    metrics: [p50, p95, max, DB_calls, graph_materializations, model_calls, rows, bytes, active_context_bytes, retries]
+    rules:
+      - no blind timeout extension
+      - request-local reuse only
+      - known-source planning model_calls=0
+      - every performance PASS requires observed metrics
+      - stage budget is frozen from measured baseline, not invented
+  rollback_or_recovery: >
+    Use Strangler/Facade. On mismatch revert selector to last exact proven implementation. Never rewrite
+    historical migrations to make the candidate pass.
+  next_gate_or_handoff: S33-00 then S33-01
+
+mandatory_preexecution_rules:
+  - EKB_APPLICABLE_BEFORE_OPERATION
+  - EKB_FINDING_MUST_MAP_TO_EXECUTABLE_GUARD_OR_EXPLICIT_BLOCK
+  - CAPABILITY_RESOLVER_BEFORE_RESOURCE_SELECTION
+  - KNOWN_SOURCE_TYPED_READER_NO_FREE_SQL
+  - UNKNOWN_SOURCE_SCHEMA_RESOLVER_FIRST_SEPARATE_HOP
+  - DETERMINISTIC_FIRST_MODEL_ONLY_NON_DERIVABLE_SEMANTIC_GAP
+  - MODEL_CANNOT_SET_SYSTEM_OWNED_FIELDS
+  - FOREIGN_LANES_EXACT_SHA_READ_ONLY
+  - UPSTREAM_PERSIST_READBACK_HASH_BEFORE_DOWNSTREAM_BIND
+  - COMPOSITE_CURRENTNESS_EKB_POLICY_SCHEMA_GIT_RUNTIME
+  - NO_TIMEOUT_INCREASE_AS_ROOT_FIX
+
+capability_resource_selection_contract:
+  version: INPUT_GOVERNANCE_CAPABILITY_REGISTRY_V1
+  required_fields:
+    - capability_id
+    - canonical_facade
+    - implementation_ref
+    - implementation_version
+    - implementation_sha
+    - execution_type
+    - input_contract
+    - output_contract
+    - authority
+    - permissions
+    - read_write_mode
+    - side_effect_class
+    - currentness_rule
+    - resource_budget
+    - owner_lane
+    - allowed_consumers
+    - fallback_policy
+    - deprecated
+  decision_rules:
+    zero_valid_capabilities: DISCOVERY_OR_SCHEMA_RESOLVER
+    one_valid_capability: EXECUTE
+    multiple_valid_capabilities: BLOCK_CAPABILITY_AMBIGUOUS
+    stale_capability: RERESOLVE
+    deprecated_or_legacy: DENY_DIRECT_SELECTION
+  resource_classes:
+    - SUPABASE_TYPED_READ
+    - SUPABASE_RPC
+    - EDGE_FUNCTION
+    - GITHUB
+    - EKB
+    - CARD
+    - ADAPTER
+    - GPT_NATIVE
+    - CLAUDE_NATIVE
+    - REMOTE_API
+    - CONTEXT_JIT
+    - SCHEMA_RESOLVER
+    - VALIDATOR
+    - JUDGE
+    - CI
+  consumer_rule: Consumers request capability_id; deterministic registry owns implementation selection.
+
+stages:
+  - stage_code: S33-00
+    objective_or_purpose: Freeze isolation and authority baseline.
+    status: CURRENT
+    entry_conditions: [fresh main observed, unique branch confirmed, EKB preflight loaded]
+    actions_or_scope: [freeze base SHA, persist S33, persist owned-path isolation, exact readback]
+    tests: [S33-T00-ISOLATION, S33-T00-READBACK]
+    evidence_required: [branch head, strategy blob SHA, ownership manifest SHA]
+    exit_gate: ISOLATION_FREEZE_PASS
+    conclusion_ref: S33-00-CONCLUSION-001
+  - stage_code: S33-01
+    objective_or_purpose: Inventory executable resources and classify canonical/internal/legacy.
+    status: PENDING
+    entry_conditions: [S33-00 PASS]
+    actions_or_scope: [inventory SQL/RPC/Edge/helpers/adapters/validators, call graph, permissions and side effects]
+    tests: [S33-T01-INVENTORY-COMPLETE, S33-T01-NO-UNCLASSIFIED-EXTERNAL]
+    evidence_required: [capability inventory receipt, call graph digest]
+    exit_gate: CAPABILITY_INVENTORY_COMPLETE
+    conclusion_ref: S33-01-CONCLUSION-001
+  - stage_code: S33-02
+    objective_or_purpose: Build canonical capability registry and deterministic resolver.
+    status: PENDING
+    entry_conditions: [S33-01 PASS]
+    actions_or_scope: [define registry, map capability to facade and implementation, block ambiguous/deprecated]
+    tests: [S33-T02-POSITIVE, S33-T02-AMBIGUITY, S33-T02-LEGACY]
+    evidence_required: [registry digest, resolver receipts]
+    exit_gate: CAPABILITY_REGISTRY_PASS
+    conclusion_ref: S33-02-CONCLUSION-001
+  - stage_code: S33-03
+    objective_or_purpose: Introduce stable facades and typed/deterministic execution paths.
+    status: PENDING
+    entry_conditions: [S33-02 PASS]
+    actions_or_scope: [facade strangler, reuse S30-B data access and authority, preserve exact fallback implementation]
+    tests: [S33-T03-OUTPUT-PARITY, S33-T03-DATA-ACCESS, S33-T03-AUTHORITY]
+    evidence_required: [facade mapping digest, A/B receipts]
+    exit_gate: FACADE_AND_DATA_ACCESS_PASS
+    conclusion_ref: S33-03-CONCLUSION-001
+  - stage_code: S33-04
+    objective_or_purpose: Consolidate contracts, currentness and evidence envelope.
+    status: PENDING
+    entry_conditions: [S33-03 PASS]
+    actions_or_scope: [remove prospective conceptual duplication, composite currentness, frozen evidence envelope]
+    tests: [S33-T04-CURRENTNESS, S33-T04-ENVELOPE]
+    evidence_required: [contract digest, currentness receipts]
+    exit_gate: CONTRACT_CONSOLIDATION_PASS
+    conclusion_ref: S33-04-CONCLUSION-001
+  - stage_code: S33-05
+    objective_or_purpose: Reconcile Design Graph and Context/JIT contracts.
+    status: PENDING
+    entry_conditions: [S33-04 PASS]
+    actions_or_scope: [one public Design Graph contract, repair manifest/resolver/worker compatibility, prove JIT]
+    tests: [S33-T05-VERSION-DRIFT, S33-T05-HANDLE, S33-T05-CURRENT-STALE]
+    evidence_required: [old failing reproduction, new passing receipt, contract digests]
+    exit_gate: CONTEXT_JIT_DESIGN_PASS
+    conclusion_ref: S33-05-CONCLUSION-001
+  - stage_code: S33-06
+    objective_or_purpose: Refactor semantic prompt boundary.
+    status: PENDING
+    entry_conditions: [S33-05 PASS]
+    actions_or_scope: [minimal stable invariants, semantic-gap capsule only, strict semantic delta, provenance binding]
+    tests: [S33-T06-NO-MODEL-DETERMINISTIC, S33-T06-SYSTEM-FIELD, S33-T06-PROVENANCE]
+    evidence_required: [prompt contract SHA, semantic request/output receipts]
+    exit_gate: SEMANTIC_BOUNDARY_PASS
+    conclusion_ref: S33-06-CONCLUSION-001
+  - stage_code: S33-07
+    objective_or_purpose: Clean Edge/runtime wrappers while preserving role separation.
+    status: PENDING
+    entry_conditions: [S33-06 PASS]
+    actions_or_scope: [shared auth/RPC/error transport, explicit state transitions, preserve curator-validator separation]
+    tests: [S33-T07-WRAPPER, S33-T07-ROLE-SEPARATION, S33-T07-ERROR-PATH]
+    evidence_required: [runtime source SHA, role receipts]
+    exit_gate: EDGE_RUNTIME_REFACTOR_PASS
+    conclusion_ref: S33-07-CONCLUSION-001
+  - stage_code: S33-08
+    objective_or_purpose: Execute mandatory E2E campaign 10 families x 5 cases.
+    status: PENDING
+    entry_conditions: [S33-07 PASS]
+    actions_or_scope: [execute 50 cases, measure five axes, freeze receipts, rerun dependent regressions]
+    tests: [S33-E2E-10X5-V1]
+    evidence_required: [50 case receipts, 10 family summaries, functionality-quality-depth-performance-resource metrics]
+    exit_gate: E2E_50_OF_50_AND_5_OF_5_PER_FAMILY
+    conclusion_ref: S33-08-CONCLUSION-001
+  - stage_code: S33-09
+    objective_or_purpose: Prove integration readiness without promotion.
+    status: PENDING
+    entry_conditions: [S33-08 PASS]
+    actions_or_scope: [affected 47-family regression, compare live contract, prepare fresh-main integration plan, independent audit]
+    tests: [S33-T09-47-FAMILY, S33-T09-INDEPENDENT-AUDIT]
+    evidence_required: [integration diff plan, audit receipt, residual risks]
+    exit_gate: CANDIDATE_INTEGRATION_READY_NO_PROMOTION
+    conclusion_ref: S33-09-CONCLUSION-001
+
+gates:
+  - ISOLATED_LANE_EXACT_BASE
+  - OWNED_PATHS_ONLY
+  - CAPABILITY_INVENTORY_COMPLETE
+  - CAPABILITY_REGISTRY_NO_AMBIGUITY
+  - CANONICAL_FACADE_BINDING
+  - TYPED_DATA_ACCESS
+  - DETERMINISTIC_FIRST
+  - COMPOSITE_CURRENTNESS
+  - DESIGN_CONTEXT_CONTRACT_RECONCILED
+  - SEMANTIC_DELTA_SCHEMA
+  - EXECUTOR_MODE_ADAPTER_PROVIDER_MODEL_MATCH
+  - EVIDENCE_ENVELOPE_EXECUTED
+  - E2E_50_OF_50
+  - E2E_5_OF_5_EACH_FAMILY
+  - FUNCTIONALITY_QUALITY_DEPTH_PERFORMANCE_RESOURCE_SELECTION_EACH_CASE
+  - NO_PRODUCTION
+  - NO_MAIN_MERGE_WITHOUT_SEPARATE_GATE
+
+tests:
+  e2e_campaign:
+    campaign_id: S33-E2E-10X5-V1
+    family_count: 10
+    cases_per_family: 5
+    total_required_cases: 50
+    family_pass_rule: 5_OF_5
+    global_pass_rule: 50_OF_50
+    score_compensation_between_families: DENY
+    required_axes: [FUNCTIONALITY, QUALITY, DEPTH, PERFORMANCE, RESOURCE_SELECTION]
+    case_templates:
+      C1_CURRENT_HAPPY_PATH: exact current authority must produce expected governed result
+      C2_MISSING_OR_INCOMPLETE_AUTHORITY: must fail closed at first missing authority
+      C3_STALE_CURRENTNESS: stale or mismatched digest must re-resolve/block, never reuse silently
+      C4_CONFLICT_OR_ADVERSARIAL: conflicting or misleading evidence must not create false PASS
+      C5_CONTEXT_BOUNDARY: family-specific semantic/boundary case must preserve depth and correct resource choice
+    families:
+      - {family: SCREEN_IDENTITY, C5: same canonical identity through STORY_CREATOR and CONTEXT_PACK}
+      - {family: FIELDS, C5: canonical empty field collection is evidence, not inferred missing source}
+      - {family: VALIDATIONS, C5: regex/category discovery cannot substitute semantic applicability}
+      - {family: STATES, C5: NOT_APPLICABLE requires positive exclusion authority}
+      - {family: TRANSITIONS, C5: happy path cannot overwrite conditional branch or early exit}
+      - {family: DESIGN_SYSTEM, C5: reproduce and eliminate V2/V3/V4 contract mismatch}
+      - {family: SECURITY, C5: recovery OTP semantics and replay threat remain correct}
+      - {family: PERMISSIONS, C5: broad graph path cannot authorize undeclared permission}
+      - {family: API_DATA_CONTRACT, C5: N/A only with positive evidence of no API behavior}
+      - {family: PERFORMANCE, C5: timeout increase cannot substitute removal of duplicate recomputation}
+    execution_rule: EVERY_FAMILY_EXECUTES_C1_C2_C3_C4_C5
+  additional_suites:
+    - S30-C historical replay corpus
+    - capability ambiguity positives and negatives
+    - typed-reader and schema-resolver positives and negatives
+    - semantic delta system-owned-field negatives
+    - current/stale/superseded controls
+    - request-local graph reuse mutation tests
+    - direct-vs-facade exact-output regression
+    - executor provenance cross-matrix
+
+metrics:
+  canonical_family_total: 47
+  e2e_family_sample: 10
+  e2e_cases_per_family: 5
+  e2e_required_total: 50
+  e2e_required_pass: 50
+  false_pass_target: 0
+  false_block_target: 0
+  ambiguous_capability_execution_target: 0
+  legacy_direct_selection_target: 0
+  known_source_model_planning_calls_target: 0
+  system_owned_fields_from_model_target: 0
+  timeout_relaxations_target: 0
+  foreign_lane_writes_target: 0
+  performance_claim_without_observed_receipt_target: 0
+
+risks:
+  - {id: S33-R1, risk: refactor changes proven 5.12 semantics, mitigation: strangler plus exact-output regression}
+  - {id: S33-R2, risk: S33 duplicates S30 mechanisms, mitigation: reuse exact S30-B resources; S33 registry only maps capabilities}
+  - {id: S33-R3, risk: parallel PR/main movement contaminates lineage, mitigation: frozen base and exact refs; rematerialize integration later}
+  - {id: S33-R4, risk: 50 cases hide a weak family by averaging, mitigation: 5/5 each family plus 50/50 global}
+  - {id: S33-R5, risk: prompt tuning replaces deterministic guards, mitigation: semantic-gap only and system-owned fields forbidden}
+  - {id: S33-R6, risk: performance optimization weakens currentness/depth, mitigation: same-output A/B, mutation tests, request-local only}
+  - {id: S33-R7, risk: V2/V3/V4 aliases survive repair, mitigation: one public contract plus explicit temporary compatibility adapter}
+
+evidence_contract:
+  claim_ceiling: CANDIDATE_NO_PRODUCTION
+  required_per_material_gate: [source_ref, source_digest, implementation_sha, configuration_sha, executed, status, result, evidence_sha, currentness_receipt]
+  e2e_case_receipt: [case_id, family_code, fixture_sha, capability_selected, implementation_ref, execution_authority, resource_receipts, functionality, quality, depth, performance, resource_selection, final_result, evidence_sha]
+  rules:
+    - declarative PASS without execution does not count
+    - newer stale/failure invalidates historical PASS
+    - model self-verdict is never final authority
+    - performance requires observed timing/resource data
+    - downstream digest binds exact upstream readback bytes
+
+rollback_or_recovery:
+  routes: [A_ORIGINAL, B_FOCAL_MINIMAL, C_CANONICAL_EQUIVALENT, D_INDEPENDENT_AUTHORIZED]
+  refactor_pattern: STRANGLER_FACADE
+  on_case_failure: freeze evidence, locate first bad hop, repair earliest deterministic point, rerun affected dependency chain
+  on_main_movement: do not rebase frozen evidence lane; rematerialize later on fresh integration lane
+  on_foreign_lane_conflict: stop write and consume exact SHA read-only
+
+execution_frontier:
+  state: IN_PROGRESS
+  current_stage: S33-00
+  current_action: freeze strategy/isolation and inventory capabilities/resources
+  safe_parallel_work: [read-only executable inventory, owned-prefix test fixture preparation]
+  blockers: []
+
+stage_conclusions: []
+
+invalidation_triggers:
+  - Input Governance version or 5.12 contract changes
+  - reference run 221 is superseded or stale
+  - S30-B resource SHA changes
+  - S30 execution-authority contract changes
+  - S30-C replay corpus changes
+  - Design/Context contract changes
+  - new applicable HIGH or CRITICAL EKB finding
+  - isolated branch base or ownership boundary changes
+  - runtime executor/adapter/provider binding changes
+
+change_log:
+  - version: v0.1
+    date: 2026-09-10
+    change: Core refactor, capability/resource selection, deterministic-first reuse, prompt cleanup and mandatory E2E 10x5.
+    owner: INPUT_GOVERNANCE_P0
+
+closure_criteria:
+  - every externally selectable executable has a canonical/internal/legacy disposition
+  - consumers use capability/facade IDs and cannot directly select legacy/cached/versioned helpers
+  - typed data access and schema resolver precede backend reads
+  - applicable EKB rules are executable guards or explicit blocks
+  - Design Graph/Context/JIT drift is reconciled and the old V3/V4 failing reproduction becomes a passing regression
+  - semantic model is used only for a non-derivable gap with strict semantic delta
+  - Edge shared transport preserves curator/validator role separation
+  - 10 selected families pass 5/5 each and 50/50 total
+  - every E2E case passes functionality, quality, depth, performance and resource-selection axes
+  - affected 47-family regression remains semantically compatible
+  - no production, main merge or foreign-lane write occurs under this strategy
+
+next_gate_or_handoff: >
+  Execute S33-00 freeze/readback, then S33-01 resource and capability inventory. Continue without
+  micro-approval inside already authorized candidate scope; merge/promotion/production remain separate gates.
