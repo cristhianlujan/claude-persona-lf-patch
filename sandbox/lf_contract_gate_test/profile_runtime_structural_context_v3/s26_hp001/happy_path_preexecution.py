@@ -6,10 +6,11 @@ import json
 from pathlib import Path
 from typing import Any
 
+from .gate_a_admission import admit_input
+
 REPO = Path(__file__).resolve().parents[4]
 HERE = Path(__file__).resolve().parent
 CONTRACT_PATH = HERE / "preexecution_contract.json"
-INPUT_PATH = HERE / "input.txt"
 MARKETPLACE_CARD_PATH = REPO / "cards/marketplace_lf/decision_product_experience/CARD.md"
 RESOLVER_PATH = REPO / "sandbox/lf_contract_gate_test/profile_execution_runtime/runtime_authority_resolver_v1.py"
 
@@ -35,10 +36,24 @@ def _load_resolver():
 
 
 def run_preexecution() -> dict[str, Any]:
+    # Gate A is the only authorized source of the user literal for downstream stages.
+    gate_a = admit_input()
+    gate_a_output = gate_a["output"]
+    if gate_a_output.get("next_gate") != "B_EKB_GOVERNANCE":
+        raise RuntimeError("GATE_A_DID_NOT_AUTHORIZE_STAGE_B")
+    if gate_a_output.get("run_id") != "S26-HP-001":
+        raise RuntimeError("GATE_A_RUN_ID_MISMATCH")
+    input_literal = (gate_a_output.get("input") or {}).get("content")
+    input_literal_sha256 = (gate_a_output.get("input") or {}).get("sha256")
+    if not isinstance(input_literal, str) or not input_literal:
+        raise RuntimeError("GATE_A_INPUT_LITERAL_MISSING")
+    if not isinstance(input_literal_sha256, str) or len(input_literal_sha256) != 64:
+        raise RuntimeError("GATE_A_INPUT_SHA_INVALID")
+
     contract = _load_json(CONTRACT_PATH)
     if contract.get("schema") != "S26_HP001_PREEXECUTION_CONTRACT_V1":
         raise RuntimeError("PREEXECUTION_CONTRACT_SCHEMA_INVALID")
-    if contract.get("test_id") != "S26-HP-001":
+    if contract.get("test_id") != gate_a_output.get("run_id"):
         raise RuntimeError("PREEXECUTION_TEST_ID_INVALID")
 
     ekb = contract.get("stage_b_ekb") or {}
@@ -61,7 +76,6 @@ def run_preexecution() -> dict[str, Any]:
     if card_contract.get("schema_invention_allowed") is not False:
         raise RuntimeError("CARD_FALLBACK_SCHEMA_INVENTION_ALLOWED")
 
-    input_literal = INPUT_PATH.read_text(encoding="utf-8")
     if "Libertad Financiera" in input_literal or "MarketPlace LF" in input_literal:
         raise RuntimeError("HP001_INPUT_UNEXPECTED_LF_CONTEXT")
 
@@ -79,7 +93,7 @@ def run_preexecution() -> dict[str, Any]:
         sources.append({
             "authority_type": authority_type,
             "authority_id": f"S26_HP001_{authority_type}",
-            "run_id": "S26-HP-001",
+            "run_id": gate_a_output["run_id"],
             "ref": ref,
             "sha256": _sha(path),
         })
@@ -114,6 +128,9 @@ def run_preexecution() -> dict[str, Any]:
     resolver = _load_resolver()
     resolved = resolver.resolve_runtime_context(runtime_context, request=request, repo_root=REPO)
 
+    if resolved.get("input_literal_sha256") != input_literal_sha256:
+        raise RuntimeError("GATE_A_TO_DOWNSTREAM_INPUT_SHA_DRIFT")
+
     card_resolution = resolved.get("card_resolution") or {}
     if card_resolution.get("status") != "FALLBACK" or card_resolution.get("mode") != "NO_CARD_GOVERNED":
         raise RuntimeError("NO_CARD_GOVERNED_NOT_MATERIALIZED")
@@ -132,6 +149,19 @@ def run_preexecution() -> dict[str, Any]:
     return {
         "gate": "S26_HP001_PREEXECUTION_B_E_V1",
         "result": "PASS",
+        "upstream_gate_a": {
+            "gate": gate_a_output["gate"],
+            "status": gate_a_output["status"],
+            "run_id": gate_a_output["run_id"],
+            "input_sha256": input_literal_sha256,
+            "output_sha256": gate_a["output_sha256"],
+        },
+        "stage_b_input": {
+            "source_gate": "A_INPUT_ADMISSION",
+            "source_output_sha256": gate_a["output_sha256"],
+            "run_id": gate_a_output["run_id"],
+            "input_literal_sha256": input_literal_sha256,
+        },
         "stages": {
             "B_EKB": "PASS_CONTROL_PLANE_READBACK",
             "C_CARD": "PASS_NO_CARD_GOVERNED",
