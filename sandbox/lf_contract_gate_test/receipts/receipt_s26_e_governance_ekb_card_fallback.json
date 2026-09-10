@@ -1,0 +1,23 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "S26_GOVERNANCE_EKB_APPLICABILITY_CARD_FALLBACK",
+  "execution_id": "S26-E-20260909-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "0706cdada5eda768b047ca6dd3ca1ba1fea53994",
+  "judge_sha": "69a57cba4f538a6ac9127bd75cdb06a20b391105",
+  "source_sha_list": [
+    "d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
+    "f3a7d236f644ccb6c643f2081e4ee934c6171be0",
+    "b97c8b368632a111679557676bcb6c23669695fc",
+    "e81bf1ee4b944095a9c72d60a128a1feba25486c"
+  ],
+  "target_paths": [
+    "gobernanza/contratos/s26_governance_ekb_card_fallback_v1.json",
+    "gobernanza/judges/validate_s26_governance_ekb_gate.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-09T20:13:00-05:00"
+}
