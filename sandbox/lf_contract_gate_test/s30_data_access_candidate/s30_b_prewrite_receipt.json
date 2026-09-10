@@ -1,0 +1,553 @@
+{
+  "receipt_version": "S30_B_DATA_ACCESS_PREWRITE_V4",
+  "receipt_mode": "PREWRITE",
+  "lane": "S30-B",
+  "owner": "S30-B-DATA-ACCESS-V3",
+  "base_main_sha": "0a55e3f92f36c84da7698eb97c4d2eae337a2c20",
+  "intended_material_action": "S30_B_DATA_ACCESS_BUDGET_AND_EXECUTION_AUTHORITY_CANDIDATE",
+  "sequence_resolution": {
+    "ROUTER": {
+      "status": "PROVEN",
+      "evidence": "ACT-0001 authority consumed; S30-B handoff resolved from canonical file and current main frozen before governed materialization."
+    },
+    "EKB_APPLICABLE": {
+      "status": "PROVEN",
+      "evidence": "Fresh schema-first read of public.lf_error_knowledge before this refinement. Existing active patterns GOV-TRANSVERSAL-MATERIALIZATION-PATTERN-001 and AB-PROFILE-QUALITY-GATE-001 were consumed as read-only architecture references; no EKB mutation is claimed.",
+      "loaded_codes": [
+        "DB-001",
+        "GOV-010",
+        "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001",
+        "SQL-007",
+        "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001"
+      ],
+      "reference_patterns_consumed": [
+        "GOV-TRANSVERSAL-MATERIALIZATION-PATTERN-001",
+        "AB-PROFILE-QUALITY-GATE-001"
+      ]
+    },
+    "DATA_ACCESS_BINDINGS": {
+      "status": "PROVEN",
+      "evidence": "LF_DATA_ACCESS_REGISTRY_V2 on current main; 15 registered source bindings; canonical fingerprints revalidated live and ASSETS_PROFILES stale fingerprint isolated before mutation.",
+      "mode": "TYPED_READER"
+    },
+    "SCHEMA_CONTRACT": {
+      "status": "PROVEN",
+      "evidence": "Separate schema-first calls resolved lf_error_knowledge, lf_strategy_snapshots, lf_activos and helper signatures before dependent reads.",
+      "schema_bindings": [
+        {
+          "object_identity": "public.lf_error_knowledge",
+          "object_type": "VIEW",
+          "resolved_fields": [
+            "codigo",
+            "categoria",
+            "titulo",
+            "causa_raiz",
+            "prevencion",
+            "validacion",
+            "severidad",
+            "frecuencia",
+            "estado",
+            "source_ref"
+          ],
+          "evidence_ref": "supabase:schema-first-20260910"
+        },
+        {
+          "object_identity": "public.lf_strategy_snapshots",
+          "object_type": "TABLE",
+          "resolved_fields": [
+            "id",
+            "snapshot_code",
+            "canonical_name",
+            "status",
+            "runtime_state",
+            "impact_policy",
+            "updated_at"
+          ],
+          "evidence_ref": "supabase:schema-first-20260910"
+        },
+        {
+          "object_identity": "public.lf_activos",
+          "object_type": "TABLE",
+          "resolved_fields": [
+            "id",
+            "codigo_activo",
+            "nombre_canonico",
+            "tipo_activo",
+            "estado_documental",
+            "estado_operativo",
+            "runtime_estado",
+            "impacto_automatico",
+            "metadata",
+            "updated_at"
+          ],
+          "evidence_ref": "supabase:schema-first-20260910"
+        }
+      ]
+    },
+    "OPERATION_CONTRACTS": {
+      "status": "PROVEN",
+      "evidence": "S30-B handoff and current S30 self-governance contract constrain work to data-access/schema safety sandbox candidate; no scheduler/runtime/production/S26."
+    },
+    "ALL_INTENDED_STEPS": {
+      "status": "PROVEN",
+      "evidence": "Intended steps frozen: current registry binding, bounded read budgets, DETERMINISTIC/SEMANTIC/HYBRID classification, compact semantic-gap-only model request, semantic_delta-only model output contract, deterministic materialization/scoring/handoff/verdict/receipts, tests, staging CI and governed broker readback."
+    },
+    "JUDGES_AND_RESULT_VOCABULARY": {
+      "status": "PROVEN",
+      "evidence": "Execution authority is DETERMINISTIC|MODEL_REQUIRED|BLOCKED; work classification is DETERMINISTIC|SEMANTIC|HYBRID. Producer self_verdict is forbidden; optional independent semantic judge is EVALUATION_ONLY and never replaces hard guards."
+    },
+    "DEPENDENCIES_AND_IMPORT_CLOSURE": {
+      "status": "PROVEN",
+      "evidence": "Python stdlib-only candidate modules; no model SDK, model download, DDL, or new RPC dependency."
+    },
+    "CI_PATHS_AND_RUNNER_WIRING": {
+      "status": "PROVEN",
+      "evidence": "Current main Validate LF Packs discovers sandbox/lf_contract_gate_test/s30_*/test_*.py generically; no shared CI edit required."
+    },
+    "PERMISSIONS_SECRETS_AND_READBACK": {
+      "status": "PROVEN",
+      "evidence": "S30_GIT_WRITE_BROKER_V2 operational; ruleset 22765627, deploy key 162872002 and S30_BROKER_DEPLOY_KEY dispatch path proven by prior exact runs."
+    },
+    "EVIDENCE_PROVIDER_AND_RESOLVER": {
+      "status": "PROVEN",
+      "evidence": "Git exact SHAs, GitHub Actions run IDs, Supabase schema/fingerprint readbacks and deterministic JSON receipts are resolvable."
+    },
+    "EXPECTED_OUTPUT_CONTRACT": {
+      "status": "PROVEN",
+      "evidence": "Claim remains bounded to S30-B candidate. Model may emit only S30_SEMANTIC_DELTA_V1 {decisions,proposals,rationale,unresolved}; system-owned fields remain deterministic; no autonomy/runtime/production claim."
+    }
+  },
+  "preflight_checks": {
+    "IMPORT_CLOSURE": {
+      "status": "PASS",
+      "evidence": "Candidate uses Python stdlib and existing lf_data_access; py_compile/test entrypoints identified before copy into governed worktree."
+    },
+    "REQUIRED_FILES_EXIST": {
+      "status": "PASS",
+      "evidence": "Current main contains registry, base typed access implementation, test_s30_data_access_v2.py, self-governance contract/validator and broker workflow."
+    },
+    "SCHEMA_AND_CONSTRAINTS_RESOLVED": {
+      "status": "PASS",
+      "evidence": "S30-B governed prewrite 20260910: SCHEMA_AND_CONSTRAINTS_RESOLVED resolved before governed candidate materialization.",
+      "resolved": [
+        "RELATION_COLUMNS",
+        "CONSTRAINTS",
+        "DEPENDENT_SQL_FUNCTION_SIGNATURES"
+      ],
+      "bindings": [
+        {
+          "object_identity": "public.lf_error_knowledge",
+          "object_type": "VIEW",
+          "resolved_fields": [
+            "codigo",
+            "categoria",
+            "titulo",
+            "causa_raiz",
+            "prevencion",
+            "validacion",
+            "severidad",
+            "frecuencia",
+            "estado",
+            "source_ref"
+          ],
+          "evidence_ref": "supabase:schema-first-20260910"
+        },
+        {
+          "object_identity": "public.lf_strategy_snapshots",
+          "object_type": "TABLE",
+          "resolved_fields": [
+            "id",
+            "snapshot_code",
+            "canonical_name",
+            "status",
+            "runtime_state",
+            "impact_policy",
+            "updated_at"
+          ],
+          "evidence_ref": "supabase:schema-first-20260910"
+        },
+        {
+          "object_identity": "public.lf_activos",
+          "object_type": "TABLE",
+          "resolved_fields": [
+            "id",
+            "codigo_activo",
+            "nombre_canonico",
+            "tipo_activo",
+            "estado_documental",
+            "estado_operativo",
+            "runtime_estado",
+            "impacto_automatico",
+            "metadata",
+            "updated_at"
+          ],
+          "evidence_ref": "supabase:schema-first-20260910"
+        }
+      ]
+    },
+    "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED": {
+      "status": "PASS",
+      "evidence": "Resolved private.fn_architecture_object_definition_v3(p_object_type text,p_object_identity text)->text and extensions.digest(text,text)->bytea before fingerprint query."
+    },
+    "PERMISSIONS_AND_SECRET_READBACK": {
+      "status": "PASS",
+      "evidence": "Broker secret is not read; operational binding is evidenced by prior successful governed dispatch and protected SHA readback."
+    },
+    "EVIDENCE_PROVIDER_RESOLVABLE": {
+      "status": "PASS",
+      "evidence": "Supabase project mhwmirqcgxxukpctffuv, GitHub repo and exact CI/run refs available."
+    },
+    "CI_RUNNER_WIRING_CONFIRMED": {
+      "status": "PASS",
+      "evidence": "Generic S30 sandbox test discovery is present on current main and previous main run 34500765536 passed."
+    },
+    "EXPECTED_OUTPUT_SCHEMA_COMPLETE": {
+      "status": "PASS",
+      "evidence": "Receipt, typed-read plan, budget trace and execution-authority decision schemas are explicit; candidate claim ceiling fixed."
+    },
+    "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED": {
+      "status": "PASS",
+      "evidence": "Required negatives include nonexistent field/object/function arg, stale fingerprint, free SQL, unknown source without schema receipt, forged budget plan and model-route bypass."
+    },
+    "GIT_WRITE_BROKER_BINDING_CONFIRMED": {
+      "status": "PASS",
+      "evidence": "S30 broker v0.6.1 final closeout merged on current main; candidate mode restricted to bounded s30 sandbox prefix with required PREWRITE receipt."
+    }
+  },
+  "frontier": {
+    "current_stage": "S30_B_CURRENT_MAIN_REMATERIALIZATION",
+    "next_gate": "LOCAL_REGRESSION_AND_LIVE_READBACK_THEN_GOVERNED_STAGING",
+    "blockers": [],
+    "safe_parallel_work": [
+      "READ_ONLY_SCHEMA_CURRENTNESS",
+      "LOCAL_DETERMINISTIC_TESTS",
+      "INDEPENDENT_RECONCILIATION_402_TRIAGE"
+    ]
+  },
+  "causal_lane_ownership": {
+    "ekb_code": "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001",
+    "target_asset": "S30-B",
+    "primary_gate": "DATA_ACCESS_SCHEMA_SAFETY",
+    "role": "WRITER",
+    "owner": "S30-B-DATA-ACCESS-V3",
+    "observed_active_writers": [
+      {
+        "ekb_code": "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001",
+        "target_asset": "S30-B",
+        "primary_gate": "DATA_ACCESS_SCHEMA_SAFETY",
+        "owner": "S30-B-DATA-ACCESS-V3",
+        "state": "ACTIVE",
+        "source_ref": "prewrite://S30-B-V3-20260910"
+      }
+    ],
+    "transfer": {
+      "is_transfer": true,
+      "upstream_owner_state": "SUPERSEDED",
+      "fresh_currentness": true,
+      "stale_receipts_invalidated": true,
+      "evidence_revalidated": true
+    },
+    "evidence": "PR #656 closed as superseded; new lane starts from exact current main after v0.6.1 closeout and fresh live schema/EKB currentness."
+  },
+  "applicable_ekb": [
+    {
+      "code": "DB-001",
+      "triggers": [
+        "RECURRENT",
+        "MACHINE_DETECTABLE",
+        "AVOIDABLE_MATERIAL_WORK"
+      ]
+    },
+    {
+      "code": "GOV-010",
+      "triggers": [
+        "RECURRENT",
+        "AVOIDABLE_MATERIAL_WORK"
+      ]
+    },
+    {
+      "code": "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001",
+      "triggers": [
+        "MACHINE_DETECTABLE",
+        "AVOIDABLE_MATERIAL_WORK"
+      ]
+    },
+    {
+      "code": "SQL-007",
+      "triggers": [
+        "RECURRENT",
+        "MACHINE_DETECTABLE"
+      ]
+    },
+    {
+      "code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
+      "triggers": [
+        "RECURRENT",
+        "MACHINE_DETECTABLE",
+        "AVOIDABLE_MATERIAL_WORK"
+      ]
+    }
+  ],
+  "hard_guard_candidates": [
+    {
+      "ekb_code": "DB-001",
+      "closure": {
+        "EKB_UPDATED": {
+          "status": "PASS",
+          "evidence": "DB-001 loaded fresh before governed materialization."
+        },
+        "DETECTOR_IMPLEMENTED": {
+          "status": "PASS",
+          "evidence": "Current main contains schema/typed-reader or broker detector appropriate to this failure class."
+        },
+        "NEGATIVE_REGRESSION": {
+          "status": "PASS",
+          "evidence": "Current main S30-A/S30-B deterministic suites contain fail-closed negatives for the applicable failure class."
+        },
+        "POSITIVE_REGRESSION": {
+          "status": "PASS",
+          "evidence": "Current main S30-A/S30-B deterministic suites contain equivalent positive path."
+        },
+        "EXECUTED_PATH_WIRING_PROVEN": {
+          "status": "PASS",
+          "evidence": "Current main CI and prior governed broker dispatch executed the relevant validators before this prewrite."
+        },
+        "READBACK": {
+          "status": "PASS",
+          "evidence": "Fresh EKB/schema/Git main readbacks resolved before this governed candidate starts."
+        }
+      }
+    },
+    {
+      "ekb_code": "GOV-010",
+      "closure": {
+        "EKB_UPDATED": {
+          "status": "PASS",
+          "evidence": "GOV-010 loaded fresh before governed materialization."
+        },
+        "DETECTOR_IMPLEMENTED": {
+          "status": "PASS",
+          "evidence": "Current main contains schema/typed-reader or broker detector appropriate to this failure class."
+        },
+        "NEGATIVE_REGRESSION": {
+          "status": "PASS",
+          "evidence": "Current main S30-A/S30-B deterministic suites contain fail-closed negatives for the applicable failure class."
+        },
+        "POSITIVE_REGRESSION": {
+          "status": "PASS",
+          "evidence": "Current main S30-A/S30-B deterministic suites contain equivalent positive path."
+        },
+        "EXECUTED_PATH_WIRING_PROVEN": {
+          "status": "PASS",
+          "evidence": "Current main CI and prior governed broker dispatch executed the relevant validators before this prewrite."
+        },
+        "READBACK": {
+          "status": "PASS",
+          "evidence": "Fresh EKB/schema/Git main readbacks resolved before this governed candidate starts."
+        }
+      }
+    },
+    {
+      "ekb_code": "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001",
+      "closure": {
+        "EKB_UPDATED": {
+          "status": "PASS",
+          "evidence": "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001 loaded fresh before governed materialization."
+        },
+        "DETECTOR_IMPLEMENTED": {
+          "status": "PASS",
+          "evidence": "Current main contains schema/typed-reader or broker detector appropriate to this failure class."
+        },
+        "NEGATIVE_REGRESSION": {
+          "status": "PASS",
+          "evidence": "Current main S30-A/S30-B deterministic suites contain fail-closed negatives for the applicable failure class."
+        },
+        "POSITIVE_REGRESSION": {
+          "status": "PASS",
+          "evidence": "Current main S30-A/S30-B deterministic suites contain equivalent positive path."
+        },
+        "EXECUTED_PATH_WIRING_PROVEN": {
+          "status": "PASS",
+          "evidence": "Current main CI and prior governed broker dispatch executed the relevant validators before this prewrite."
+        },
+        "READBACK": {
+          "status": "PASS",
+          "evidence": "Fresh EKB/schema/Git main readbacks resolved before this governed candidate starts."
+        }
+      }
+    },
+    {
+      "ekb_code": "SQL-007",
+      "closure": {
+        "EKB_UPDATED": {
+          "status": "PASS",
+          "evidence": "SQL-007 loaded fresh before governed materialization."
+        },
+        "DETECTOR_IMPLEMENTED": {
+          "status": "PASS",
+          "evidence": "Current main contains schema/typed-reader or broker detector appropriate to this failure class."
+        },
+        "NEGATIVE_REGRESSION": {
+          "status": "PASS",
+          "evidence": "Current main S30-A/S30-B deterministic suites contain fail-closed negatives for the applicable failure class."
+        },
+        "POSITIVE_REGRESSION": {
+          "status": "PASS",
+          "evidence": "Current main S30-A/S30-B deterministic suites contain equivalent positive path."
+        },
+        "EXECUTED_PATH_WIRING_PROVEN": {
+          "status": "PASS",
+          "evidence": "Current main CI and prior governed broker dispatch executed the relevant validators before this prewrite."
+        },
+        "READBACK": {
+          "status": "PASS",
+          "evidence": "Fresh EKB/schema/Git main readbacks resolved before this governed candidate starts."
+        }
+      }
+    },
+    {
+      "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
+      "closure": {
+        "EKB_UPDATED": {
+          "status": "PASS",
+          "evidence": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001 loaded fresh before governed materialization."
+        },
+        "DETECTOR_IMPLEMENTED": {
+          "status": "PASS",
+          "evidence": "Current main contains schema/typed-reader or broker detector appropriate to this failure class."
+        },
+        "NEGATIVE_REGRESSION": {
+          "status": "PASS",
+          "evidence": "Current main S30-A/S30-B deterministic suites contain fail-closed negatives for the applicable failure class."
+        },
+        "POSITIVE_REGRESSION": {
+          "status": "PASS",
+          "evidence": "Current main S30-A/S30-B deterministic suites contain equivalent positive path."
+        },
+        "EXECUTED_PATH_WIRING_PROVEN": {
+          "status": "PASS",
+          "evidence": "Current main CI and prior governed broker dispatch executed the relevant validators before this prewrite."
+        },
+        "READBACK": {
+          "status": "PASS",
+          "evidence": "Fresh EKB/schema/Git main readbacks resolved before this governed candidate starts."
+        }
+      }
+    }
+  ],
+  "safety_readback": {
+    "runtime_changed": false,
+    "production_changed": false,
+    "main_merged": false,
+    "scheduler_changed": false,
+    "s26_mutated": false
+  },
+  "owner_authorized_merge": false,
+  "owner_authorized_repair": false,
+  "repair_reason": null,
+  "repair_target_ekb_codes": [],
+  "evidence": {
+    "execution_id": "EXEC-S30-B-V3-PREWRITE-20260910-001",
+    "mode": "SANDBOX_NON_PRODUCTION",
+    "production": false,
+    "base_main_sha": "0a55e3f92f36c84da7698eb97c4d2eae337a2c20",
+    "historical_pr_656": "CLOSED_SUPERSEDED",
+    "live_schema_currentness": {
+      "canonical_match_count": 12,
+      "canonical_stale_count": 1,
+      "stale_source": "ASSETS_PROFILES",
+      "observed_asset_fingerprint": "575382ef470e0baa1b7886b83945792e5944ba8071be202bd091329aa8e6583f",
+      "fallback_registered_fields_missing": 0
+    },
+    "optimization_policy": "DETERMINISTIC_FIRST_MODEL_ON_NON_DERIVABLE_SEMANTIC_GAP",
+    "model_calls_for_derivable_work_expected": 0,
+    "ddl_planned": false,
+    "runtime_activation_planned": false,
+    "s26_change_planned": false
+  },
+  "git_write_binding": {
+    "status": "OPERATIONAL",
+    "request_schema": "s30-git-broker/v1",
+    "ruleset_id": 22765627,
+    "ruleset_name": "s30-governed-write-boundary",
+    "ruleset_enforcement": "active",
+    "ruleset_ref_pattern": "refs/heads/lf/s30-*",
+    "bypass_actor_type": "DeployKey",
+    "deploy_key_id": 162872002,
+    "deploy_key_title": "s30-governed-git-broker",
+    "direct_user_can_bypass": false,
+    "direct_connector_negative": {
+      "create_blocked": true,
+      "update_blocked": true
+    },
+    "broker_probe": {
+      "status": "PASS",
+      "commit_sha": "e52aa00996ea7dfd416e5267aec0f03e226f3088",
+      "evidence_ref": "github:commit/e52aa00996ea7dfd416e5267aec0f03e226f3088"
+    },
+    "workflow_path": ".github/workflows/validate-lf-packs.yml",
+    "workflow_dispatch_wired": true,
+    "secret_name": "S30_BROKER_DEPLOY_KEY",
+    "secret_present": true,
+    "secret_required_before_dispatch": true,
+    "source_branch": "lf/staging-s30-b-data-access-v3-20260910",
+    "target_branch": "lf/s30-b-data-access-v3-20260910",
+    "base_main_sha": "0a55e3f92f36c84da7698eb97c4d2eae337a2c20",
+    "promotion_authority": "BROKER_ONLY",
+    "ruleset_readback_ref": "github:ruleset/22765627",
+    "supabase_readback_ref": "supabase:public.lf_error_knowledge@20260910"
+  },
+  "gate_evidence_envelope": {
+    "run_id": "EXEC-S30-B-V3-PREWRITE-20260910-001",
+    "gate_id": "S30_B_CURRENT_MAIN_PREEXECUTION",
+    "input_exact": {
+      "request_schema": "s30-git-broker/v1",
+      "source_ref": "lf/staging-s30-b-data-access-v3-20260910",
+      "target_branch": "lf/s30-b-data-access-v3-20260910",
+      "base_main_sha": "0a55e3f92f36c84da7698eb97c4d2eae337a2c20",
+      "receipt_path": "sandbox/lf_contract_gate_test/s30_data_access_candidate/s30_b_prewrite_receipt.json"
+    },
+    "input_sha256": "c749c900edbbf919199cb24cff1c65d29b84e793212b59ff84d5cd5425f4f767",
+    "input_source_ref": "github:main@0a55e3f92f36c84da7698eb97c4d2eae337a2c20+file:Handoff-S30-B+supabase:schema-first-20260910",
+    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_data_access_candidate/s30_b_prewrite_receipt.json --expected-base-main-sha 0a55e3f92f36c84da7698eb97c4d2eae337a2c20",
+    "output_exact": {
+      "result": "PASS_TO_MATERIAL_WORK",
+      "material_work_allowed": true,
+      "bounded_repair_allowed": false,
+      "promotion_authority": "NONE"
+    },
+    "output_sha256": "ec67088d3a1ecf4514180d148fb18aee30023fad41c8c7380bba0e7292b0f5d9",
+    "output_ref": "local-prewrite:S30-B-V3-20260910",
+    "execution_mode": "SANDBOX",
+    "environment": "NON_PRODUCTION",
+    "promotion_authority": "NONE",
+    "functional": {
+      "status": "PASS",
+      "evidence": "Existing S30-B core and fresh registry/schema authority are resolvable before candidate extension."
+    },
+    "quality": {
+      "status": "PASS",
+      "evidence": "Candidate will preserve free-SQL/stale-binding fail-closed rules and add budget/authority tamper negatives."
+    },
+    "depth": {
+      "status": "PASS",
+      "evidence": "Currentness, source fingerprints, model boundary, budget limits, execution revalidation and broker path are explicitly covered."
+    },
+    "performance": {
+      "status": "PASS_BASELINE",
+      "evidence": "Optimization contract makes deterministic execution default and forbids model calls for derivable registered-read planning."
+    },
+    "ekb_action": {
+      "status": "CONSUMED",
+      "codes": [
+        "DB-001",
+        "GOV-010",
+        "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001",
+        "SQL-007",
+        "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001"
+      ]
+    },
+    "first_bad_hop": null,
+    "repair_allowed": false
+  }
+}
