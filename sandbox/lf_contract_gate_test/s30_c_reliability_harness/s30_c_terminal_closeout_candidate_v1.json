@@ -1,0 +1,60 @@
+{
+  "base_main_sha": "4cbb5d9785630b50f7d997369589e49e03a520cc",
+  "bindings": {
+    "freeze_records": {
+      "path": "sandbox/lf_contract_gate_test/s30_c_reliability_harness/freeze_records.json",
+      "sha256": "c14a9c6d3805aad30ee3cbac33a681f4505627dfc459216f721bb63251d9818d"
+    },
+    "ready_receipt": {
+      "path": "sandbox/lf_contract_gate_test/s30_c_reliability_harness/s30_c_ready_receipt_v3.json",
+      "sha256": "cc7852cbb9c5c69ce73e3ef6da7b7cd8273c4bdd7a85033648c6f27837e2fc6a"
+    },
+    "source_manifest": {
+      "path": "sandbox/lf_contract_gate_test/s30_c_reliability_harness/source_manifest.json",
+      "sha256": "ecd12d27b6797f5d761ae3a42b45e677f272094c692967954f4c30121b89e69d"
+    }
+  },
+  "claim_ceiling": "EVIDENCE_FREEZE_AND_REPLAY_HARNESS_READY",
+  "contract": "S30_C_TERMINAL_CLOSEOUT_CANDIDATE_V1",
+  "current_exact_main_ci": {
+    "lf_contract_check": {
+      "conclusion": "SUCCESS",
+      "run_id": 34526128835
+    },
+    "validate_lf_packs": {
+      "conclusion": "SUCCESS",
+      "run_id": 34526128802
+    }
+  },
+  "final_closed_now": false,
+  "main_merge_authorized": false,
+  "promotion_authority": "NONE",
+  "receipt_mode": "CLOSEOUT_CANDIDATE",
+  "result": "S30_C_CLOSEOUT_READY_FOR_PROMOTION",
+  "router_fix": {
+    "input_governance_parity_required": false,
+    "merge_sha": "4cbb5d9785630b50f7d997369589e49e03a520cc",
+    "migration_parity_required": false,
+    "p0_exact_head_external_required": false,
+    "pr": 667,
+    "s30_c_mode": "S30_C_RELIABILITY_ISOLATED"
+  },
+  "s30_c_implementation_merge_sha": "52ffabd18c14e24c62e54f4cd5063b68f651e4c7",
+  "safety": {
+    "production_changed": false,
+    "runtime_changed": false,
+    "s26_changed": false,
+    "scheduler_changed": false,
+    "shared_workflow_changed": false,
+    "supabase_write": false
+  },
+  "terminal_state_after_merge_and_exact_main_readback": "FINAL_CLOSED",
+  "verification": {
+    "false_pass_count": 0,
+    "freeze_chain": "PASS",
+    "model_calls": 0,
+    "preventable_escape_count": 0,
+    "s30_c_regression": "PASS_16_OF_16",
+    "upstream_bindings": "PASS"
+  }
+}
