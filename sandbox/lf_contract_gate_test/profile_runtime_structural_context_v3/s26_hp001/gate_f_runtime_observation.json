@@ -1,5 +1,9 @@
 {
-  "candidate_source_sha": "6193207d299c3ed55e5f50d8ed78c28992ffce1d",
+  "candidate_source_sha": "d5f27f129464163d915b08a26be08ca117385482",
+  "exact_runtime_evidence": {
+    "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_exact_runtime_evidence.json",
+    "sha256": "999002c103942a615b3c7153c11e3651bac48b6e4203667787396d11fdfc8be2"
+  },
   "gate": "F_PROFILE_EXECUTION",
   "observation_role": "OBSERVATIONAL_ONLY_NOT_GATE_AUTHORITY",
   "observed_runtime": {
@@ -9,46 +13,57 @@
     "llama_server_status": "READY",
     "max_workers": 1,
     "model_id": "/opt/profile-runtime-benchmark/model/model.gguf",
+    "resolver_version": "structural-context-resolver/v3",
     "runtime_version": "hetzner-profile-runtime-api/0.1.5-s26-explicit-schema-256",
     "service": "lf-profile-runtime-api",
-    "source_sha": "486bb60af46de22adf0404565c9a78e41e3281a4"
+    "source_sha": "d5f27f129464163d915b08a26be08ca117385482"
   },
   "project_id": "S26",
   "request": {
     "adapter_binding_count": 0,
     "card_binding_count": 0,
     "input_sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1",
+    "outer_request_sha256": "1d016d17d0b7aca3240bb86a082c9e4406f6dfefa4b9d65cc6e8cb60d70c8f48",
     "profile_code": "PERFIL-UI-ARCHITECT",
     "profile_slug": "ui_architect",
-    "request_id": "S26-HP-001-F-OBS-20260910-0748Z",
-    "request_sha256": "ad3cd538eb46e2d53e9dfb5bf5ebfc61139f5ca35c252ef9e715f32229df67fa",
+    "request_id": "S26-HP-001-F-EXACT-20260910T184414Z",
+    "request_sha256": "5d723e93f03dd6a5783240fd41c6b8bdda86608b196ec360a0930173b859e2e9",
     "runtime_output_mode": "UI_PRODUCTION_SPEC"
   },
   "result": {
-    "job_id": "6ba2ae6b-d7e6-4d7c-bee4-d475727b0054",
+    "canonical_ui_validator_pass": true,
+    "completion_tokens": 339,
+    "composer_boundary_pass": true,
+    "depth_pass": true,
+    "job_id": "71e129c7-18b7-48ce-8680-329637e45973",
     "job_status": "COMPLETED",
-    "llama_timings_observed": false,
-    "llama_usage_observed": false,
-    "model_generation_latency_measured": false,
-    "profile_contract_status": "NOT_EVALUATED",
-    "profile_elapsed_ms": 215125.691,
-    "raw_output_present": false,
-    "raw_output_sha256": null,
-    "runtime_completion_blocking_codes": [
-      "LLAMA_STRUCTURED_OUTPUT_JSON_INVALID"
-    ],
-    "runtime_completion_status": "FAIL",
-    "runtime_total_ms": 215126.303,
-    "semantic_utility_status": "NOT_EVALUATED"
+    "llama_timings_observed": true,
+    "llama_usage_observed": true,
+    "model_generation_elapsed_ms": 25999.708,
+    "model_generation_latency_measured": true,
+    "model_raw_output_present": true,
+    "model_raw_output_sha256": "8270b0ab381fed8ec3060c73bfe3cdb6ba645e184a64daa90eda22f7f75f8d1b",
+    "profile_contract_status": "PASS",
+    "profile_elapsed_ms": 31318.137,
+    "prompt_elapsed_ms": 5277.238,
+    "prompt_tokens": 1518,
+    "quality_pass": true,
+    "raw_output_present": true,
+    "raw_output_sha256": "9f1c3c8bb90e6fc279998273d59d043273791c2e5b7793307db4be9d3e0ab5c2",
+    "runtime_completion_blocking_codes": [],
+    "runtime_completion_status": "PASS",
+    "runtime_total_ms": 31318.182,
+    "semantic_transport": "UICT2",
+    "semantic_utility_status": "PASS"
   },
   "run_id": "S26-HP-001",
   "safety": {
-    "deployment_performed": false,
+    "deployment_performed": true,
     "model_weight_acquisition_performed": false,
     "paid_fallback_performed": false,
     "production_effect": false,
     "resident_runtime_reused": true
   },
   "schema": "S26_HP001_GATE_F_RUNTIME_OBSERVATION_V1",
-  "source_match": false
+  "source_match": true
 }
