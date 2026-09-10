@@ -14,6 +14,8 @@ from typing import Iterable
 S30_POLICY_PREFIX = "sandbox/lf_contract_gate_test/s30_policy_operations_candidate/"
 S30_SELF_GOVERNANCE_PREFIX = "sandbox/lf_contract_gate_test/s30_self_governance/"
 S30_SELF_GOVERNANCE_RECEIPT_PREFIX = "sandbox/lf_contract_gate_test/receipts/s30_a_self_governance_gate_"
+S30_DATA_ACCESS_PREFIX = "sandbox/lf_contract_gate_test/s30_data_access_candidate/"
+S30_DATA_ACCESS_RECEIPT_PREFIX = "sandbox/lf_contract_gate_test/receipts/s30_b_data_access_safety_"
 MIGRATION_PREFIX = "supabase/migrations/"
 MIGRATION_VALIDATOR = "sandbox/lf_contract_gate_test/lf_migration_source_parity.py"
 INPUT_GOV_VALIDATOR = "sandbox/lf_contract_gate_test/input_governance_migration_parity_compact.py"
@@ -117,8 +119,12 @@ def _is_s30_self_governance(path: str) -> bool:
     return path.startswith(S30_SELF_GOVERNANCE_PREFIX) or path.startswith(S30_SELF_GOVERNANCE_RECEIPT_PREFIX)
 
 
+def _is_s30_data_access(path: str) -> bool:
+    return path.startswith(S30_DATA_ACCESS_PREFIX) or path.startswith(S30_DATA_ACCESS_RECEIPT_PREFIX)
+
+
 def _is_s30_isolated(path: str) -> bool:
-    return _is_s30_policy(path) or _is_s30_self_governance(path)
+    return _is_s30_policy(path) or _is_s30_self_governance(path) or _is_s30_data_access(path)
 
 
 def _is_known_shared(path: str) -> bool:
@@ -153,6 +159,7 @@ def classify(paths: Iterable[str]) -> LaneDecision:
     unknown = False
     s30_policy = False
     s30_self_governance = False
+    s30_data_access = False
     reasons: list[str] = []
 
     for path in changed:
@@ -174,6 +181,9 @@ def classify(paths: Iterable[str]) -> LaneDecision:
         if _is_s30_self_governance(path):
             s30_self_governance = True
             reasons.append(f"S30_SELF_GOVERNANCE:{path}")
+        if _is_s30_data_access(path):
+            s30_data_access = True
+            reasons.append(f"S30_DATA_ACCESS:{path}")
         if not _is_known_shared(path) and not path.startswith(MIGRATION_PREFIX):
             unknown = True
             reasons.append(f"UNKNOWN:{path}")
@@ -193,6 +203,8 @@ def classify(paths: Iterable[str]) -> LaneDecision:
         mode = "CI_ROUTER_SELFTEST_ONLY"
     elif s30_self_governance:
         mode = "S30_SELF_GOVERNANCE_ISOLATED"
+    elif s30_data_access:
+        mode = "S30_DATA_ACCESS_ISOLATED"
     elif s30_policy:
         mode = "S30_POLICY_ISOLATED"
     else:
