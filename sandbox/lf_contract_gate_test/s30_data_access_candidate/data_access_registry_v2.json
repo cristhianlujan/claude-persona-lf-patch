@@ -1,6 +1,6 @@
 {
   "contract_version": "LF_DATA_ACCESS_REGISTRY_V2",
-  "base_main_sha": "62b3e188bb91ebad1fbeec0c6e04b13eaf20026d",
+  "base_main_sha": "a1112f88a12b336ab9d44bc67edba1e97fd0a4ac",
   "canonical_fingerprint_provider": "private.fn_architecture_object_definition_v3",
   "fallback_fingerprint_method": "INFORMATION_SCHEMA_METADATA_V2_SHA256",
   "free_sql_policy": "FORBIDDEN_FOR_REGISTERED_SOURCE_KEYS",
