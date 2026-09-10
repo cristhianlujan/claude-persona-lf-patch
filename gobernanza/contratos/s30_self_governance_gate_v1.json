@@ -1,11 +1,16 @@
 {
   "contract_code": "S30_SELF_GOVERNANCE_GATE",
-  "version": "v0.2-candidate",
+  "version": "v0.3-candidate",
   "status": "CANDIDATO_READ_ONLY",
   "lane": "S30-A",
   "owner": "S30",
-  "base_main_sha": "f1ee63d3fd48ab7869e989dc6b4265823740c9e9",
   "claim_ceiling": "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CANDIDATE_PASS",
+  "base_binding": {
+    "mode": "RECEIPT_EXPECTED_BASE_ARGUMENT",
+    "static_receipt_reuse_for_current_run": false,
+    "mismatch_action": "FAIL_CLOSED_BEFORE_MATERIAL_WORK",
+    "ci_freshness_rule": "EVALUATE_RECEIPT_ONLY_WHEN_S30_GATE_PATHS_CHANGED_AND_BIND_TO_EVENT_BASE"
+  },
   "mandatory_sequence": [
     "ROUTER",
     "EKB_APPLICABLE",
@@ -21,6 +26,14 @@
     "EXPECTED_OUTPUT_CONTRACT",
     "ONLY_THEN_MATERIAL_WORK"
   ],
+  "proof_policy": {
+    "pass_statuses": ["PASS", "PROVEN", "CONFIRMED", "RESOLVED"],
+    "not_required_is_pass": false,
+    "evidence_required_for_every_pass": true,
+    "data_access_modes": ["TYPED_READER", "SCHEMA_CONTRACT_FALLBACK"],
+    "schema_fallback_requires_bindings": true,
+    "ekb_applicable_requires_loaded_codes": true
+  },
   "cheap_preflight": {
     "failure_action": "FAIL_CLOSED_BEFORE_MATERIAL_WORK",
     "must_run_before": [
@@ -46,11 +59,8 @@
     ],
     "check_requirements": {
       "SCHEMA_AND_CONSTRAINTS_RESOLVED": {
-        "required_subproofs": [
-          "RELATION_COLUMNS",
-          "CONSTRAINTS",
-          "DEPENDENT_SQL_FUNCTION_SIGNATURES"
-        ]
+        "required_subproofs": ["RELATION_COLUMNS", "CONSTRAINTS", "DEPENDENT_SQL_FUNCTION_SIGNATURES"],
+        "bindings_required": true
       }
     }
   },
@@ -61,11 +71,7 @@
     "function_kind_must_be_resolved_when_definition_introspection_depends_on_kind": true
   },
   "hard_guard_promotion": {
-    "trigger_any": [
-      "RECURRENT",
-      "MACHINE_DETECTABLE",
-      "AVOIDABLE_MATERIAL_WORK"
-    ],
+    "trigger_any": ["RECURRENT", "MACHINE_DETECTABLE", "AVOIDABLE_MATERIAL_WORK"],
     "required_closure": [
       "EKB_UPDATED",
       "DETECTOR_IMPLEMENTED",
@@ -74,43 +80,52 @@
       "EXECUTED_PATH_WIRING_PROVEN",
       "READBACK"
     ],
-    "text_only_learning_is_closure": false
+    "text_only_learning_is_closure": false,
+    "all_triggered_applicable_ekb_must_be_listed": true
   },
   "blocker_contract": {
-    "required_fields": [
-      "code",
-      "affected_scope",
-      "causal_gate",
-      "owner",
-      "independent_safe_work",
-      "invalidation_condition"
-    ]
+    "required_fields": ["code", "affected_scope", "causal_gate", "owner", "independent_safe_work", "invalidation_condition"]
   },
   "frontier_contract": {
-    "required_fields": [
-      "current_stage",
-      "next_gate",
-      "blockers",
-      "safe_parallel_work"
-    ],
-    "single_current_frontier_required": true
+    "required_fields": ["current_stage", "next_gate", "blockers", "safe_parallel_work"],
+    "single_current_frontier_required": true,
+    "blockers_must_be_structured_objects": true
   },
   "safety_ceiling": {
     "runtime_change_allowed": false,
     "production_change_allowed": false,
-    "merge_main_allowed": false,
+    "merge_main_allowed_by_gate": false,
+    "owner_authorized_merge_after_gate_allowed": true,
     "scheduler_change_allowed": false,
     "s26_mutation_allowed": false
+  },
+  "receipt_modes": {
+    "PREWRITE": {"main_merged_must_be_false": true},
+    "CLOSEOUT": {"main_merged_requires_owner_authorized_merge": true},
+    "REPAIR_PREWRITE": {"main_merged_must_be_false": true}
   },
   "result_vocabulary": [
     "PASS_TO_MATERIAL_WORK",
     "FAIL_CLOSED_BEFORE_MATERIAL_WORK",
+    "PASS_TO_BOUNDED_GUARD_REPAIR",
     "BLOCKED_CAUSAL",
     "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CANDIDATE_PASS"
   ],
+  "ci_enforcement": {
+    "always_run_self_test": true,
+    "fresh_receipt_trigger_paths": [
+      ".github/workflows/validate-lf-packs.yml",
+      "gobernanza/contratos/s30_self_governance_gate_v1.json",
+      "gobernanza/judges/validate_s30_self_governance_gate.py"
+    ],
+    "pull_request_expected_base": "origin/${GITHUB_BASE_REF}",
+    "main_push_expected_base": "${github.event.before}",
+    "unrelated_changes_must_not_reuse_historical_receipt": true
+  },
   "consumer_interface": {
     "input_required": [
       "receipt_version",
+      "receipt_mode",
       "lane",
       "owner",
       "base_main_sha",
@@ -118,6 +133,7 @@
       "sequence_resolution",
       "preflight_checks",
       "frontier",
+      "applicable_ekb",
       "hard_guard_candidates",
       "safety_readback",
       "evidence"
@@ -126,10 +142,36 @@
       "result",
       "first_bad_hop",
       "material_work_allowed",
+      "sequence_failures",
       "failed_checks",
       "hard_guard_failures",
       "blocker_failures",
-      "claim_ceiling"
+      "claim_ceiling",
+      "bounded_repair_allowed"
     ]
+  },
+  "repair_mode": {
+    "receipt_mode": "REPAIR_PREWRITE",
+    "result": "PASS_TO_BOUNDED_GUARD_REPAIR",
+    "required_intended_material_action": "SELF_GOVERNANCE_GATE_REPAIR",
+    "requires_owner_authorized_repair": true,
+    "requires_repair_reason": true,
+    "requires_repair_target_ekb_codes": true,
+    "hard_guard_closure_required_before_repair": ["EKB_UPDATED"],
+    "hard_guard_closure_may_be_pending_until_closeout": [
+      "DETECTOR_IMPLEMENTED",
+      "NEGATIVE_REGRESSION",
+      "POSITIVE_REGRESSION",
+      "EXECUTED_PATH_WIRING_PROVEN",
+      "READBACK"
+    ],
+    "allowed_changed_paths": [
+      ".github/workflows/validate-lf-packs.yml",
+      "gobernanza/contratos/s30_self_governance_gate_v1.json",
+      "gobernanza/judges/validate_s30_self_governance_gate.py",
+      "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json",
+      "sandbox/lf_contract_gate_test/receipts/s30_a_self_governance_gate_v3.json"
+    ],
+    "forbidden_runtime_or_production_effect": true
   }
 }
