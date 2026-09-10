@@ -8,6 +8,8 @@ import re
 import subprocess
 from pathlib import Path
 
+from s26_hp001.happy_path_preexecution import run_preexecution
+
 REPO = Path(__file__).resolve().parents[3]
 HERE = Path(__file__).resolve().parent
 FIXTURE = HERE / "s26_hp001"
@@ -83,7 +85,6 @@ def validate_static(manifest: dict, requirements: dict) -> None:
 
 
 def isolation_identity(manifest: dict, event_head_sha: str, observed_main_sha: str) -> tuple[str, str, str, str]:
-    # observed_main_sha is deliberately excluded from the identity. Main may move in parallel.
     _ = observed_main_sha
     return (
         manifest["project_id"],
@@ -110,7 +111,6 @@ def validate_negative_controls(manifest: dict) -> None:
         allowed,
     ):
         raise IsolationBlocked("OWN_FIXTURE_NOT_ALLOWED")
-    # Candidate identity is always event head, never the checkout merge-ref.
     event_head = "4" * 40
     synthetic_merge_ref = "5" * 40
     candidate = event_head
@@ -187,7 +187,6 @@ def validate_live(manifest: dict) -> dict[str, str | list[str]]:
     if not SHA40.fullmatch(event_head_sha):
         raise IsolationBlocked("BAD_EVENT_HEAD_SHA")
 
-    # Verify the dedicated frozen base ref still points to the immutable source SHA.
     subprocess.run(
         [
             "git", "fetch", "--no-tags", "origin",
@@ -250,6 +249,7 @@ def main() -> int:
     requirements = load_json(REQUIREMENTS_PATH)
     validate_static(manifest, requirements)
     validate_negative_controls(manifest)
+    preexecution = run_preexecution()
     live = validate_live(manifest)
     print(json.dumps({
         "gate": "S26_HP001_ISOLATION_GATE_V1",
@@ -258,6 +258,7 @@ def main() -> int:
         "source_base_sha": manifest["source_base_sha"],
         "claim_ceiling": manifest["claim_ceiling"],
         "live": live,
+        "preexecution": preexecution,
         "negative_controls": 5,
     }, ensure_ascii=False, sort_keys=True))
     return 0
