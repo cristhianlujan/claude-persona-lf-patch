@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import argparse, copy, json, os, subprocess
+import argparse, copy, hashlib, json, os, subprocess
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -19,6 +19,118 @@ def proof_pass(c: Dict[str, Any], v: Any) -> bool:
 
 def proof_evidence(v: Any) -> bool:
     return isinstance(v, dict) and nonempty(v.get("evidence"))
+
+def canonical_sha256(v: Any) -> str:
+    raw=json.dumps(v,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()
+
+def gate_evidence_failures(c: Dict[str, Any], r: Dict[str, Any]):
+    cfg=c.get("gate_evidence_envelope") or {}
+    prefix=cfg.get("missing_action","BLOCK_GATE_ENVELOPE_INCOMPLETE")
+    mismatch=cfg.get("hash_mismatch_action","BLOCK_GATE_ENVELOPE_HASH_MISMATCH")
+    env=r.get("gate_evidence_envelope")
+    failures=[]
+    if not isinstance(env,dict): return [f"{prefix}:MISSING_OR_NOT_OBJECT"]
+    for f in cfg.get("required_fields") or []:
+        if f not in env: failures.append(f"{prefix}:FIELD_MISSING:{f}")
+    for f in cfg.get("non_null_fields") or []:
+        if f in env and not nonempty(env.get(f)): failures.append(f"{prefix}:FIELD_NULL_OR_EMPTY:{f}")
+    if "input_exact" in env and nonempty(env.get("input_sha256")):
+        if env.get("input_sha256") != canonical_sha256(env.get("input_exact")):
+            failures.append(f"{mismatch}:input_sha256")
+    if "output_exact" in env and nonempty(env.get("output_sha256")):
+        if env.get("output_sha256") != canonical_sha256(env.get("output_exact")):
+            failures.append(f"{mismatch}:output_sha256")
+    if env.get("execution_mode") not in set(cfg.get("allowed_execution_modes") or []):
+        failures.append(f"{prefix}:EXECUTION_MODE_INVALID")
+    if env.get("environment") not in set(cfg.get("allowed_environments") or []):
+        failures.append(f"{prefix}:ENVIRONMENT_INVALID")
+    if env.get("promotion_authority") not in set(cfg.get("allowed_promotion_authorities") or []):
+        failures.append(f"{prefix}:PROMOTION_AUTHORITY_INVALID")
+    for dim,allowed in (cfg.get("required_dimension_statuses") or {}).items():
+        proof=env.get(dim)
+        if not isinstance(proof,dict):
+            failures.append(f"{prefix}:DIMENSION_INVALID:{dim}"); continue
+        if str(proof.get("status","")).upper() not in set(allowed or []):
+            failures.append(f"{prefix}:DIMENSION_STATUS_INVALID:{dim}")
+        if not nonempty(proof.get("evidence")):
+            failures.append(f"{prefix}:DIMENSION_EVIDENCE_MISSING:{dim}")
+    if not isinstance(env.get("ekb_action"),dict) or not env.get("ekb_action"):
+        failures.append(f"{prefix}:EKB_ACTION_INVALID")
+    if not isinstance(env.get("repair_allowed"),bool):
+        failures.append(f"{prefix}:REPAIR_ALLOWED_NOT_BOOL")
+    if r.get("receipt_mode")=="REPAIR_PREWRITE" and env.get("repair_allowed") is not True:
+        failures.append(f"{prefix}:REPAIR_NOT_ALLOWED")
+    return failures
+
+def git_write_binding_failures(c: Dict[str, Any], r: Dict[str, Any]):
+    cfg=c.get("git_write_broker") or {}; bc=cfg.get("binding_contract") or {}
+    prefix=cfg.get("binding_missing_action","BLOCK_GIT_WRITE_BINDING_INVALID")
+    b=r.get("git_write_binding"); failures=[]
+    if not isinstance(b,dict): return [f"{prefix}:MISSING_OR_NOT_OBJECT"]
+    for f in bc.get("required_fields") or []:
+        if f not in b or not nonempty(b.get(f)):
+            failures.append(f"{prefix}:FIELD_MISSING_OR_EMPTY:{f}")
+    exact={
+        "request_schema":cfg.get("request_schema"),
+        "ruleset_id":cfg.get("ruleset_id"),
+        "ruleset_name":cfg.get("ruleset_name"),
+        "ruleset_enforcement":cfg.get("enforcement"),
+        "ruleset_ref_pattern":cfg.get("ref_pattern"),
+        "bypass_actor_type":(cfg.get("bypass_actor") or {}).get("actor_type"),
+        "deploy_key_id":(cfg.get("bypass_actor") or {}).get("deploy_key_id"),
+        "deploy_key_title":(cfg.get("bypass_actor") or {}).get("deploy_key_title"),
+        "workflow_path":cfg.get("broker_workflow"),
+        "secret_name":cfg.get("broker_secret_name"),
+    }
+    for k,v in exact.items():
+        if b.get(k)!=v: failures.append(f"{prefix}:MISMATCH:{k}")
+    if b.get("direct_user_can_bypass") is not False:
+        failures.append(f"{prefix}:DIRECT_USER_BYPASS_NOT_FALSE")
+    neg=b.get("direct_connector_negative")
+    required_neg=bc.get("direct_connector_negative_required") or {}
+    if not isinstance(neg,dict): failures.append(f"{prefix}:DIRECT_CONNECTOR_NEGATIVE_INVALID")
+    else:
+        for k,v in required_neg.items():
+            if neg.get(k) is not v: failures.append(f"{prefix}:DIRECT_CONNECTOR_NEGATIVE:{k}")
+    probe=b.get("broker_probe")
+    if not isinstance(probe,dict) or probe.get("status")!=bc.get("broker_probe_status_required"):
+        failures.append(f"{prefix}:BROKER_PROBE_INVALID")
+    elif not isinstance(probe.get("commit_sha"),str) or len(probe.get("commit_sha"))!=40:
+        failures.append(f"{prefix}:BROKER_PROBE_SHA_INVALID")
+    if b.get("workflow_dispatch_wired") is not True:
+        failures.append(f"{prefix}:WORKFLOW_DISPATCH_NOT_WIRED")
+    if b.get("secret_required_before_dispatch") is not True:
+        failures.append(f"{prefix}:SECRET_NOT_REQUIRED_BEFORE_DISPATCH")
+    if not isinstance(b.get("secret_present"),bool):
+        failures.append(f"{prefix}:SECRET_PRESENT_NOT_BOOL")
+    staging=cfg.get("staging_prefix",""); protected=cfg.get("protected_branch_prefix","")
+    if not isinstance(b.get("source_branch"),str) or not b.get("source_branch","").startswith(staging):
+        failures.append(f"{prefix}:SOURCE_NOT_STAGING")
+    if not isinstance(b.get("target_branch"),str) or not b.get("target_branch","").startswith(protected):
+        failures.append(f"{prefix}:TARGET_NOT_PROTECTED_S30")
+    if b.get("source_branch")==b.get("target_branch"):
+        failures.append(f"{prefix}:SOURCE_EQUALS_TARGET")
+    if b.get("base_main_sha")!=r.get("base_main_sha"):
+        failures.append(f"{prefix}:BASE_MAIN_SHA_MISMATCH")
+    status=b.get("status")
+    if status not in set(bc.get("allowed_statuses") or []):
+        failures.append(f"{prefix}:STATUS_INVALID")
+    elif status=="STAGED_VALIDATION":
+        sc=bc.get("staged_validation") or {}
+        if b.get("promotion_authority")!=sc.get("promotion_authority"):
+            failures.append(f"{prefix}:STAGED_PROMOTION_AUTHORITY_INVALID")
+        if b.get("secret_present") not in sc.get("secret_present_allowed",[]):
+            failures.append(f"{prefix}:STAGED_SECRET_STATE_INVALID")
+    elif status=="OPERATIONAL":
+        oc=bc.get("operational") or {}
+        if oc.get("secret_present_required") and b.get("secret_present") is not True:
+            failures.append(f"{prefix}:OPERATIONAL_SECRET_MISSING")
+        if b.get("promotion_authority")!=oc.get("promotion_authority"):
+            failures.append(f"{prefix}:OPERATIONAL_PROMOTION_AUTHORITY_INVALID")
+    for ref_field in ("ruleset_readback_ref","supabase_readback_ref"):
+        if not nonempty(b.get(ref_field)): failures.append(f"{prefix}:{ref_field.upper()}_MISSING")
+    return failures
 
 def blocked(preflight, seq, checks, hard, blockers):
     if seq: first=f"SEQUENCE:{seq[0]}"
@@ -83,6 +195,8 @@ def evaluate(c: Dict[str, Any], r: Dict[str, Any], expected_base: Optional[str]=
     elif r.get("base_main_sha") != expected_base: checks.append("BASE_MAIN_SHA_MISMATCH")
     for f in c["consumer_interface"]["input_required"]:
         if f not in r: checks.append(f"INPUT_FIELD_MISSING:{f}")
+    checks.extend(gate_evidence_failures(c,r))
+    checks.extend(git_write_binding_failures(c,r))
 
     seq=r.get("sequence_resolution") or {}
     for step in c["mandatory_sequence"][:-1]:
@@ -206,17 +320,32 @@ def positive_fixture(c, mode="PREWRITE"):
     seq["SCHEMA_CONTRACT"]["schema_bindings"]=[{"object_identity":"public.example","object_type":"TABLE","resolved_fields":["id"],"evidence_ref":"selftest:schema"}]
     checks={}
     for k in c["cheap_preflight"]["checks"]:
-        p={"status":"PASS","evidence":f"selftest:{k}"}
+        proof={"status":"PASS","evidence":f"selftest:{k}"}
         req=(c["cheap_preflight"].get("check_requirements") or {}).get(k) or {}
-        if req.get("required_subproofs"): p["resolved"]=list(req["required_subproofs"])
-        if req.get("bindings_required"): p["bindings"]=[{"object_identity":"public.example","resolved_fields":["id"],"evidence_ref":"selftest:schema"}]
-        checks[k]=p
+        if req.get("required_subproofs"): proof["resolved"]=list(req["required_subproofs"])
+        if req.get("bindings_required"): proof["bindings"]=[{"object_identity":"public.example","resolved_fields":["id"],"evidence_ref":"selftest:schema"}]
+        checks[k]=proof
     closure={k:{"status":"PASS","evidence":f"selftest:{k}"} for k in c["hard_guard_promotion"]["required_closure"]}
     causal={"ekb_code":"GOV-010","target_asset":"S30","primary_gate":"SELFTEST_GATE","role":"WRITER","owner":"S30",
             "observed_active_writers":[{"ekb_code":"GOV-010","target_asset":"S30","primary_gate":"SELFTEST_GATE","owner":"S30","state":"ACTIVE","source_ref":"selftest:owner"}],
             "transfer":{"is_transfer":False},"evidence":"selftest:causal-lane"}
-    return {"receipt_version":"v0.4","receipt_mode":mode,"lane":"S30-A","owner":"S30","base_main_sha":"a"*40,
-            "intended_material_action":("SELF_GOVERNANCE_GATE_REPAIR" if mode=="REPAIR_PREWRITE" else "SELFTEST"),"sequence_resolution":seq,"preflight_checks":checks,
+    base="a"*40
+    broker=c["git_write_broker"]
+    binding={
+        "status":"STAGED_VALIDATION","request_schema":broker["request_schema"],"ruleset_id":broker["ruleset_id"],
+        "ruleset_name":broker["ruleset_name"],"ruleset_enforcement":broker["enforcement"],"ruleset_ref_pattern":broker["ref_pattern"],
+        "bypass_actor_type":broker["bypass_actor"]["actor_type"],"deploy_key_id":broker["bypass_actor"]["deploy_key_id"],
+        "deploy_key_title":broker["bypass_actor"]["deploy_key_title"],"direct_user_can_bypass":False,
+        "direct_connector_negative":{"create_blocked":True,"update_blocked":True},
+        "broker_probe":{"status":"PASS","commit_sha":"b"*40,"evidence_ref":"selftest:broker-probe"},
+        "workflow_path":broker["broker_workflow"],"workflow_dispatch_wired":True,"secret_name":broker["broker_secret_name"],
+        "secret_present":False,"secret_required_before_dispatch":True,"source_branch":broker["staging_prefix"]+"selftest",
+        "target_branch":broker["protected_branch_prefix"]+"selftest","base_main_sha":base,"promotion_authority":"NONE",
+        "ruleset_readback_ref":"selftest:ruleset","supabase_readback_ref":"selftest:supabase"
+    }
+    receipt={"receipt_version":"v0.5","receipt_mode":mode,"lane":"S30-A","owner":"S30","base_main_sha":base,
+            "intended_material_action":("SELF_GOVERNANCE_GATE_REPAIR" if mode=="REPAIR_PREWRITE" else "SELFTEST"),
+            "sequence_resolution":seq,"preflight_checks":checks,
             "frontier":{"current_stage":"S30-A_SELF_GOVERNANCE_PREEXECUTION_ASSURANCE","next_gate":"SELFTEST_NEXT",
                         "blockers":[{"code":"SELFTEST_BLOCKER","affected_scope":"SELFTEST","causal_gate":"SELFTEST_GATE",
                                      "owner":"S30","independent_safe_work":["SELFTEST"],"invalidation_condition":"selftest passes"}],
@@ -228,15 +357,26 @@ def positive_fixture(c, mode="PREWRITE"):
                                      {"ekb_code":"GOV-010","closure":copy.deepcopy(closure)}],
             "safety_readback":{"runtime_changed":False,"production_changed":False,"main_merged":mode=="CLOSEOUT",
                                "scheduler_changed":False,"s26_mutated":False},
-            "owner_authorized_merge":mode=="CLOSEOUT",
-            "owner_authorized_repair":mode=="REPAIR_PREWRITE",
+            "owner_authorized_merge":mode=="CLOSEOUT","owner_authorized_repair":mode=="REPAIR_PREWRITE",
             "repair_reason":"selftest repair" if mode=="REPAIR_PREWRITE" else None,
             "repair_target_ekb_codes":["DB-001","GOV-010"] if mode=="REPAIR_PREWRITE" else [],
-            "evidence":{"mode":"SELFTEST"}}
+            "evidence":{"mode":"SELFTEST"},"git_write_binding":binding}
+    input_exact={"case":"SELFTEST","mode":mode,"base_main_sha":base}
+    output_exact={"expected":"PASS","mode":mode}
+    receipt["gate_evidence_envelope"]={
+        "run_id":"SELFTEST-RUN","gate_id":"SELFTEST-GATE","input_exact":input_exact,"input_sha256":canonical_sha256(input_exact),
+        "input_source_ref":"selftest:input","validation_or_transformation_exact":"selftest:evaluate",
+        "output_exact":output_exact,"output_sha256":canonical_sha256(output_exact),"output_ref":"selftest:output",
+        "execution_mode":"SANDBOX","environment":"NON_PRODUCTION","promotion_authority":"NONE",
+        "functional":{"status":"PASS","evidence":"selftest:functional"},"quality":{"status":"PASS","evidence":"selftest:quality"},
+        "depth":{"status":"PASS","evidence":"selftest:depth"},"performance":{"status":"PASS_BASELINE","evidence":"selftest:performance"},
+        "ekb_action":{"status":"CONSUMED","codes":["DB-001","GOV-010"]},"first_bad_hop":None,"repair_allowed":True
+    }
+    return receipt
 
 def self_test(c):
     e="a"*40; p=positive_fixture(c); results={}
-    pos=evaluate(c,p,e); assert pos["result"]=="PASS_TO_MATERIAL_WORK"; results["positive_prewrite"]=pos["result"]
+    pos=evaluate(c,p,e); assert pos["result"]=="PASS_TO_MATERIAL_WORK",pos; results["positive_prewrite"]=pos["result"]
     x=copy.deepcopy(p); x["preflight_checks"].pop("IMPORT_CLOSURE"); r=evaluate(c,x,e); assert r["result"].startswith("FAIL_"); results["negative_missing_preflight"]=r["result"]
     x=copy.deepcopy(p); x["preflight_checks"]["SCHEMA_AND_CONSTRAINTS_RESOLVED"]["resolved"].remove("DEPENDENT_SQL_FUNCTION_SIGNATURES"); r=evaluate(c,x,e); assert "SCHEMA_AND_CONSTRAINTS_RESOLVED:DEPENDENT_SQL_FUNCTION_SIGNATURES" in r["failed_checks"]; results["negative_unresolved_sql_function_signature"]=r["result"]
     x=copy.deepcopy(p); x["hard_guard_candidates"][0]["closure"]={"EKB_UPDATED":{"status":"PASS","evidence":"text only"}}; r=evaluate(c,x,e); assert any("DB-001:DETECTOR_IMPLEMENTED" in z for z in r["hard_guard_failures"]); results["negative_text_only_ekb"]=r["result"]
@@ -245,18 +385,20 @@ def self_test(c):
     x=copy.deepcopy(p); x["sequence_resolution"]["DATA_ACCESS_BINDINGS"]={"status":"NOT_REQUIRED_WITH_REASON","evidence":"bypass"}; r=evaluate(c,x,e); assert "DATA_ACCESS_BINDINGS" in r["sequence_failures"]; results["negative_not_required_data_access"]=r["result"]
     x=copy.deepcopy(p); x["preflight_checks"]["REQUIRED_FILES_EXIST"].pop("evidence"); r=evaluate(c,x,e); assert "REQUIRED_FILES_EXIST:EVIDENCE_MISSING" in r["failed_checks"]; results["negative_missing_evidence"]=r["result"]
     x=copy.deepcopy(p); x["hard_guard_candidates"]=[z for z in x["hard_guard_candidates"] if z["ekb_code"]!="GOV-010"]; r=evaluate(c,x,e); assert "GOV-010:CANDIDATE_MISSING" in r["hard_guard_failures"]; results["negative_missing_applicable_hard_guard"]=r["result"]
-    cclose=positive_fixture(c,"CLOSEOUT"); r=evaluate(c,cclose,e); assert r["result"]==c["claim_ceiling"]; results["positive_closeout_owner_merge"]=r["result"]
+    cclose=positive_fixture(c,"CLOSEOUT"); r=evaluate(c,cclose,e); assert r["result"]==c["claim_ceiling"],r; results["positive_closeout_owner_merge"]=r["result"]
     x=copy.deepcopy(cclose); x["owner_authorized_merge"]=False; r=evaluate(c,x,e); assert "SAFETY_READBACK:CLOSEOUT_MERGE_NOT_OWNER_AUTHORIZED" in r["failed_checks"]; results["negative_closeout_unauthorized_merge"]=r["result"]
     repair=positive_fixture(c,"REPAIR_PREWRITE")
-    for cand in repair["hard_guard_candidates"]:
-        cand["closure"]={"EKB_UPDATED":{"status":"PASS","evidence":"selftest:EKB_UPDATED"}}
-    r=evaluate(c,repair,e); assert r["result"]=="PASS_TO_BOUNDED_GUARD_REPAIR" and r["bounded_repair_allowed"] is True; results["positive_bounded_guard_repair"]=r["result"]
+    for cand in repair["hard_guard_candidates"]: cand["closure"]={"EKB_UPDATED":{"status":"PASS","evidence":"selftest:EKB_UPDATED"}}
+    r=evaluate(c,repair,e); assert r["result"]=="PASS_TO_BOUNDED_GUARD_REPAIR" and r["bounded_repair_allowed"] is True,r; results["positive_bounded_guard_repair"]=r["result"]
     x=copy.deepcopy(repair); x["owner_authorized_repair"]=False; r=evaluate(c,x,e); assert "REPAIR_MODE:OWNER_AUTHORIZATION_MISSING" in r["failed_checks"]; results["negative_repair_without_owner_auth"]=r["result"]
-    # S30-R10 causal-lane regressions.
-    writer=positive_fixture(c); r=evaluate(c,writer,e); assert r["result"]=="PASS_TO_MATERIAL_WORK"; results["positive_single_writer_acquire"]=r["result"]
+    writer=positive_fixture(c); r=evaluate(c,writer,e); assert r["result"]=="PASS_TO_MATERIAL_WORK",r; results["positive_single_writer_acquire"]=r["result"]
     x=copy.deepcopy(writer); x["causal_lane_ownership"]["observed_active_writers"].append({"ekb_code":"GOV-010","target_asset":"S30","primary_gate":"SELFTEST_GATE","owner":"OTHER_WRITER","state":"IN_PROGRESS","source_ref":"selftest:collision"}); r=evaluate(c,x,e); assert any("BLOCK_CAUSAL_LANE_ALREADY_OWNED" in z for z in r["blocker_failures"]); results["negative_second_writer_same_key"]=r["result"]
-    audit=positive_fixture(c); audit["owner"]="S30-QUALITY-AUDITOR"; audit["causal_lane_ownership"]["role"]="READ_ONLY_AUDIT"; audit["causal_lane_ownership"]["owner"]="S30-QUALITY-AUDITOR"; r=evaluate(c,audit,e); assert r["result"]=="PASS_TO_READ_ONLY_PARALLEL" and r["material_work_allowed"] is False; results["positive_parallel_read_only"]=r["result"]
+    audit=positive_fixture(c); audit["owner"]="S30-QUALITY-AUDITOR"; audit["causal_lane_ownership"]["role"]="READ_ONLY_AUDIT"; audit["causal_lane_ownership"]["owner"]="S30-QUALITY-AUDITOR"; r=evaluate(c,audit,e); assert r["result"]=="PASS_TO_READ_ONLY_PARALLEL" and r["material_work_allowed"] is False,r; results["positive_parallel_read_only"]=r["result"]
     x=copy.deepcopy(writer); x["causal_lane_ownership"]["transfer"]={"is_transfer":True,"upstream_owner_state":"OPEN","fresh_currentness":False,"stale_receipts_invalidated":False,"evidence_revalidated":False}; r=evaluate(c,x,e); assert any("TRANSFER_FRESH_CURRENTNESS_MISSING" in z for z in r["blocker_failures"]); results["negative_stale_transfer"]=r["result"]
+    x=copy.deepcopy(p); del x["gate_evidence_envelope"]["input_source_ref"]; r=evaluate(c,x,e); assert any("BLOCK_GATE_ENVELOPE_INCOMPLETE:FIELD_MISSING:input_source_ref"==z for z in r["failed_checks"]); results["negative_gate_envelope_missing_field"]=r["result"]
+    x=copy.deepcopy(p); x["gate_evidence_envelope"]["input_sha256"]="0"*64; r=evaluate(c,x,e); assert any("BLOCK_GATE_ENVELOPE_HASH_MISMATCH:input_sha256"==z for z in r["failed_checks"]); results["negative_gate_envelope_hash_mismatch"]=r["result"]
+    x=copy.deepcopy(p); x["git_write_binding"]["target_branch"]="lf/not-s30-selftest"; r=evaluate(c,x,e); assert any("BLOCK_GIT_WRITE_BINDING_INVALID:TARGET_NOT_PROTECTED_S30"==z for z in r["failed_checks"]); results["negative_broker_target_namespace"]=r["result"]
+    x=copy.deepcopy(p); x["git_write_binding"]["status"]="OPERATIONAL"; x["git_write_binding"]["promotion_authority"]="BROKER_ONLY"; x["git_write_binding"]["secret_present"]=False; r=evaluate(c,x,e); assert any("BLOCK_GIT_WRITE_BINDING_INVALID:OPERATIONAL_SECRET_MISSING"==z for z in r["failed_checks"]); results["negative_operational_without_secret"]=r["result"]
     return {"status":"PASS","cases":results}
 
 def event_payload():
@@ -291,10 +433,19 @@ def ci_changed_and_base():
 
 def ci_auto(c, receipt_path):
     changed,expected=ci_changed_and_base()
+    ns=(c.get("ci_enforcement") or {}).get("s30_governed_path_namespace") or {}
+    governed=sorted(set(ns.get("governed_paths") or []).intersection(changed))
+    event=os.environ.get("GITHUB_EVENT_NAME","")
+    if event=="pull_request" and governed:
+        payload=event_payload(); pr=payload.get("pull_request") or {}; head_ref=((pr.get("head") or {}).get("ref") or "").strip()
+        if not head_ref.startswith(ns.get("protected_branch_prefix","") or "__missing_prefix__"):
+            raise AssertionError(f"{ns.get('on_mismatch','BLOCK_S30_GOVERNED_PATH_OUTSIDE_PROTECTED_NAMESPACE')}: head={head_ref}")
     touched=sorted(set(c["ci_enforcement"]["fresh_receipt_trigger_paths"]).intersection(changed))
     if not touched: return {"status":"PASS","fresh_receipt_evaluated":False,"reason":"NO_S30_GATE_TRIGGER_PATH_CHANGED","changed_file_count":len(changed)}
     if expected is None: raise AssertionError("S30 gate paths changed but expected base unresolved")
     receipt=load_json(receipt_path)
+    if event=="pull_request" and governed and (receipt.get("git_write_binding") or {}).get("status")!="OPERATIONAL":
+        raise AssertionError("BLOCK_S30_GOVERNED_PR_WITHOUT_OPERATIONAL_BROKER_BINDING")
     result=evaluate(c,receipt,expected)
     accepted={"PASS_TO_MATERIAL_WORK",c["repair_mode"]["result"]}
     if result["result"] not in accepted: raise AssertionError(json.dumps(result,sort_keys=True))

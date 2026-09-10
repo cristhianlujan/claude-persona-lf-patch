@@ -1,6 +1,6 @@
 {
   "contract_code": "S30_SELF_GOVERNANCE_GATE",
-  "version": "v0.4-candidate",
+  "version": "v0.5-candidate",
   "status": "CANDIDATO_READ_ONLY",
   "lane": "S30-A",
   "owner": "S30",
@@ -27,10 +27,18 @@
     "ONLY_THEN_MATERIAL_WORK"
   ],
   "proof_policy": {
-    "pass_statuses": ["PASS", "PROVEN", "CONFIRMED", "RESOLVED"],
+    "pass_statuses": [
+      "PASS",
+      "PROVEN",
+      "CONFIRMED",
+      "RESOLVED"
+    ],
     "not_required_is_pass": false,
     "evidence_required_for_every_pass": true,
-    "data_access_modes": ["TYPED_READER", "SCHEMA_CONTRACT_FALLBACK"],
+    "data_access_modes": [
+      "TYPED_READER",
+      "SCHEMA_CONTRACT_FALLBACK"
+    ],
     "schema_fallback_requires_bindings": true,
     "ekb_applicable_requires_loaded_codes": true
   },
@@ -55,11 +63,16 @@
       "EVIDENCE_PROVIDER_RESOLVABLE",
       "CI_RUNNER_WIRING_CONFIRMED",
       "EXPECTED_OUTPUT_SCHEMA_COMPLETE",
-      "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED"
+      "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED",
+      "GIT_WRITE_BROKER_BINDING_CONFIRMED"
     ],
     "check_requirements": {
       "SCHEMA_AND_CONSTRAINTS_RESOLVED": {
-        "required_subproofs": ["RELATION_COLUMNS", "CONSTRAINTS", "DEPENDENT_SQL_FUNCTION_SIGNATURES"],
+        "required_subproofs": [
+          "RELATION_COLUMNS",
+          "CONSTRAINTS",
+          "DEPENDENT_SQL_FUNCTION_SIGNATURES"
+        ],
         "bindings_required": true
       }
     }
@@ -71,7 +84,11 @@
     "function_kind_must_be_resolved_when_definition_introspection_depends_on_kind": true
   },
   "hard_guard_promotion": {
-    "trigger_any": ["RECURRENT", "MACHINE_DETECTABLE", "AVOIDABLE_MATERIAL_WORK"],
+    "trigger_any": [
+      "RECURRENT",
+      "MACHINE_DETECTABLE",
+      "AVOIDABLE_MATERIAL_WORK"
+    ],
     "required_closure": [
       "EKB_UPDATED",
       "DETECTOR_IMPLEMENTED",
@@ -86,23 +103,55 @@
   "causal_lane_ownership": {
     "required_for_every_receipt": true,
     "principle": "ONE_CAUSAL_CHAIN_ONE_ACTIVE_WRITER",
-    "key_fields": ["ekb_code", "target_asset", "primary_gate"],
+    "key_fields": [
+      "ekb_code",
+      "target_asset",
+      "primary_gate"
+    ],
     "key_formula": "EKB_code + target_asset + primary_gate",
     "writer_role": "WRITER",
-    "active_writer_states": ["ACTIVE", "IN_PROGRESS", "OPEN", "MATERIALIZING"],
-    "read_only_roles": ["RESEARCH", "READ_ONLY_AUDIT", "ADVERSARIAL_REVIEW", "SEMANTIC_REVIEW", "EVIDENCE_VERIFICATION"],
+    "active_writer_states": [
+      "ACTIVE",
+      "IN_PROGRESS",
+      "OPEN",
+      "MATERIALIZING"
+    ],
+    "read_only_roles": [
+      "RESEARCH",
+      "READ_ONLY_AUDIT",
+      "ADVERSARIAL_REVIEW",
+      "SEMANTIC_REVIEW",
+      "EVIDENCE_VERIFICATION"
+    ],
     "blocking_code": "BLOCK_CAUSAL_LANE_ALREADY_OWNED",
     "single_active_writer_required": true,
     "writer_must_match_receipt_owner": true,
     "read_only_role_can_run_parallel_without_writer_ownership": true,
     "read_only_role_material_work_allowed": false,
-    "transfer_requires": ["UPSTREAM_CLOSED_OR_SUPERSEDED", "FRESH_CURRENTNESS", "STALE_RECEIPTS_INVALIDATED", "EVIDENCE_REVALIDATED"]
+    "transfer_requires": [
+      "UPSTREAM_CLOSED_OR_SUPERSEDED",
+      "FRESH_CURRENTNESS",
+      "STALE_RECEIPTS_INVALIDATED",
+      "EVIDENCE_REVALIDATED"
+    ]
   },
   "blocker_contract": {
-    "required_fields": ["code", "affected_scope", "causal_gate", "owner", "independent_safe_work", "invalidation_condition"]
+    "required_fields": [
+      "code",
+      "affected_scope",
+      "causal_gate",
+      "owner",
+      "independent_safe_work",
+      "invalidation_condition"
+    ]
   },
   "frontier_contract": {
-    "required_fields": ["current_stage", "next_gate", "blockers", "safe_parallel_work"],
+    "required_fields": [
+      "current_stage",
+      "next_gate",
+      "blockers",
+      "safe_parallel_work"
+    ],
     "single_current_frontier_required": true,
     "blockers_must_be_structured_objects": true
   },
@@ -115,9 +164,15 @@
     "s26_mutation_allowed": false
   },
   "receipt_modes": {
-    "PREWRITE": {"main_merged_must_be_false": true},
-    "CLOSEOUT": {"main_merged_requires_owner_authorized_merge": true},
-    "REPAIR_PREWRITE": {"main_merged_must_be_false": true}
+    "PREWRITE": {
+      "main_merged_must_be_false": true
+    },
+    "CLOSEOUT": {
+      "main_merged_requires_owner_authorized_merge": true
+    },
+    "REPAIR_PREWRITE": {
+      "main_merged_must_be_false": true
+    }
   },
   "result_vocabulary": [
     "PASS_TO_MATERIAL_WORK",
@@ -136,7 +191,21 @@
     ],
     "pull_request_expected_base": "origin/${GITHUB_BASE_REF}",
     "main_push_expected_base": "${github.event.before}",
-    "unrelated_changes_must_not_reuse_historical_receipt": true
+    "unrelated_changes_must_not_reuse_historical_receipt": true,
+    "s30_governed_path_namespace": {
+      "protected_branch_prefix": "lf/s30-",
+      "governed_paths": [
+        ".github/workflows/validate-lf-packs.yml",
+        "gobernanza/contratos/s30_self_governance_gate_v1.json",
+        "gobernanza/judges/validate_s30_self_governance_gate.py",
+        "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json",
+        "sandbox/lf_contract_gate_test/receipts/s30_a_self_governance_gate_v3.json"
+      ],
+      "on_mismatch": "BLOCK_S30_GOVERNED_PATH_OUTSIDE_PROTECTED_NAMESPACE",
+      "staging_branch_prefix": "lf/staging-s30-",
+      "staging_validation_only": true,
+      "staging_must_not_be_used_as_pr_head_for_governed_paths": true
+    }
   },
   "consumer_interface": {
     "input_required": [
@@ -153,7 +222,9 @@
       "applicable_ekb",
       "hard_guard_candidates",
       "safety_readback",
-      "evidence"
+      "evidence",
+      "gate_evidence_envelope",
+      "git_write_binding"
     ],
     "output_required": [
       "result",
@@ -174,7 +245,9 @@
     "requires_owner_authorized_repair": true,
     "requires_repair_reason": true,
     "requires_repair_target_ekb_codes": true,
-    "hard_guard_closure_required_before_repair": ["EKB_UPDATED"],
+    "hard_guard_closure_required_before_repair": [
+      "EKB_UPDATED"
+    ],
     "hard_guard_closure_may_be_pending_until_closeout": [
       "DETECTOR_IMPLEMENTED",
       "NEGATIVE_REGRESSION",
@@ -190,5 +263,172 @@
       "sandbox/lf_contract_gate_test/receipts/s30_a_self_governance_gate_v3.json"
     ],
     "forbidden_runtime_or_production_effect": true
+  },
+  "gate_evidence_envelope": {
+    "contract_version": "HP01_GATE_EVIDENCE_ENVELOPE_V1",
+    "required_fields": [
+      "run_id",
+      "gate_id",
+      "input_exact",
+      "input_sha256",
+      "input_source_ref",
+      "validation_or_transformation_exact",
+      "output_exact",
+      "output_sha256",
+      "output_ref",
+      "execution_mode",
+      "environment",
+      "promotion_authority",
+      "functional",
+      "quality",
+      "depth",
+      "performance",
+      "ekb_action",
+      "first_bad_hop",
+      "repair_allowed"
+    ],
+    "non_null_fields": [
+      "run_id",
+      "gate_id",
+      "input_exact",
+      "input_sha256",
+      "input_source_ref",
+      "validation_or_transformation_exact",
+      "output_exact",
+      "output_sha256",
+      "output_ref",
+      "execution_mode",
+      "environment",
+      "promotion_authority",
+      "functional",
+      "quality",
+      "depth",
+      "performance",
+      "ekb_action",
+      "repair_allowed"
+    ],
+    "hash_algorithm": "SHA256_CANONICAL_JSON_SORTED_KEYS_UTF8",
+    "allowed_execution_modes": [
+      "SANDBOX"
+    ],
+    "allowed_environments": [
+      "NON_PRODUCTION"
+    ],
+    "allowed_promotion_authorities": [
+      "NONE"
+    ],
+    "required_dimension_statuses": {
+      "functional": [
+        "PASS"
+      ],
+      "quality": [
+        "PASS"
+      ],
+      "depth": [
+        "PASS"
+      ],
+      "performance": [
+        "PASS",
+        "PASS_BASELINE"
+      ]
+    },
+    "missing_action": "BLOCK_GATE_ENVELOPE_INCOMPLETE",
+    "hash_mismatch_action": "BLOCK_GATE_ENVELOPE_HASH_MISMATCH"
+  },
+  "git_write_broker": {
+    "contract_version": "S30_GIT_WRITE_BROKER_V1",
+    "ruleset_id": 22765627,
+    "ruleset_name": "s30-governed-write-boundary",
+    "target": "branch",
+    "enforcement": "active",
+    "ref_pattern": "refs/heads/lf/s30-*",
+    "required_rule_types": [
+      "creation",
+      "update",
+      "deletion",
+      "non_fast_forward"
+    ],
+    "bypass_actor": {
+      "actor_type": "DeployKey",
+      "actor_id": null,
+      "count": 1,
+      "deploy_key_id": 162872002,
+      "deploy_key_title": "s30-governed-git-broker"
+    },
+    "current_user_can_bypass": "never",
+    "broker_workflow": ".github/workflows/validate-lf-packs.yml",
+    "dispatch_event": "workflow_dispatch",
+    "request_schema": "s30-git-broker/v1",
+    "protected_branch_prefix": "lf/s30-",
+    "staging_prefix": "lf/staging-s30-",
+    "direct_connector_negative_required": true,
+    "supabase_readback_required": true,
+    "ruleset_readback_required": true,
+    "broker_secret_name": "S30_BROKER_DEPLOY_KEY",
+    "repair_allowed_paths": [
+      ".github/workflows/validate-lf-packs.yml",
+      "gobernanza/contratos/s30_self_governance_gate_v1.json",
+      "gobernanza/judges/validate_s30_self_governance_gate.py",
+      "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json",
+      "sandbox/lf_contract_gate_test/receipts/s30_a_self_governance_gate_v3.json"
+    ],
+    "non_s30_branch_governed_path_change_action": "BLOCK_S30_GOVERNED_PATH_OUTSIDE_PROTECTED_NAMESPACE",
+    "binding_missing_action": "BLOCK_GIT_WRITE_BINDING_INVALID",
+    "workflow_dispatch_inputs": [
+      "request_schema",
+      "source_ref",
+      "target_branch",
+      "base_main_sha",
+      "receipt_path"
+    ],
+    "binding_contract": {
+      "required_fields": [
+        "status",
+        "request_schema",
+        "ruleset_id",
+        "ruleset_name",
+        "ruleset_enforcement",
+        "ruleset_ref_pattern",
+        "bypass_actor_type",
+        "deploy_key_id",
+        "deploy_key_title",
+        "direct_user_can_bypass",
+        "direct_connector_negative",
+        "broker_probe",
+        "workflow_path",
+        "workflow_dispatch_wired",
+        "secret_name",
+        "secret_present",
+        "secret_required_before_dispatch",
+        "source_branch",
+        "target_branch",
+        "base_main_sha",
+        "promotion_authority",
+        "ruleset_readback_ref",
+        "supabase_readback_ref"
+      ],
+      "allowed_statuses": [
+        "STAGED_VALIDATION",
+        "OPERATIONAL"
+      ],
+      "staged_validation": {
+        "secret_present_allowed": [
+          false,
+          true
+        ],
+        "promotion_authority": "NONE",
+        "material_promotion_allowed": false
+      },
+      "operational": {
+        "secret_present_required": true,
+        "promotion_authority": "BROKER_ONLY",
+        "protected_target_required": true
+      },
+      "direct_connector_negative_required": {
+        "create_blocked": true,
+        "update_blocked": true
+      },
+      "broker_probe_status_required": "PASS"
+    }
   }
 }
