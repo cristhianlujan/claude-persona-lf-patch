@@ -1,0 +1,20 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "CREACION_CARD_LF",
+  "execution_id": "LF-CARD-FANOUT-PAGOS-20260831-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "c4819910b85ae7dfaa36e3d3c311da19a3faed8d",
+  "judge_sha": "b11a9acd965b6e71f40fbd4a1fd3fc472fd7c465",
+  "source_sha_list": [
+    "29e147df8640831f205df8ee69c84da9649ba5ff"
+  ],
+  "target_paths": [
+    "cards/learning_competitive/pagos_y_no_adeudo/CARD.md"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-31T15:27:08Z",
+  "notes": "PASS_SANDBOX receipt derived from the persisted CREACION_CARD_LF execution checklist. Required steps 1-38 are clean; sandbox passed 5/5; contract_judge=STEP_CLEAN_PASS; close=PASS_CLEAN. Candidate remains READ_ONLY with runtime disabled, automatic impact blocked and production impact false."
+}
