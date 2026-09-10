@@ -336,7 +336,7 @@
     "hash_mismatch_action": "BLOCK_GATE_ENVELOPE_HASH_MISMATCH"
   },
   "git_write_broker": {
-    "contract_version": "S30_GIT_WRITE_BROKER_V1",
+    "contract_version": "S30_GIT_WRITE_BROKER_V2",
     "ruleset_id": 22765627,
     "ruleset_name": "s30-governed-write-boundary",
     "target": "branch",
@@ -429,6 +429,42 @@
         "update_blocked": true
       },
       "broker_probe_status_required": "PASS"
-    }
-  }
+    },
+    "control_plane_ref_required": "refs/heads/main",
+    "control_plane_sha_must_equal_base_main": true,
+    "staging_trust": "UNTRUSTED_INPUT_ONLY",
+    "candidate_allowed_prefixes": [
+      "sandbox/lf_contract_gate_test/s30_"
+    ],
+    "candidate_denied_prefixes": [
+      "sandbox/lf_contract_gate_test/s30_self_governance/"
+    ],
+    "candidate_receipt_requirements": {
+      "receipt_must_be_changed": true,
+      "receipt_must_be_under_candidate_prefix": true,
+      "receipt_must_not_be_under_denied_prefix": true,
+      "receipt_mode_required": "PREWRITE"
+    },
+    "candidate_max_changed_files": 32,
+    "scope_modes": {
+      "REPAIR": {
+        "path_policy": "EXACT_REPAIR_ALLOWLIST",
+        "receipt_path": "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json"
+      },
+      "CANDIDATE": {
+        "path_policy": "BOUNDED_S30_SANDBOX_PREFIX",
+        "control_plane_source": "BASE_MAIN_ONLY"
+      }
+    },
+    "scope_failure_action": "BLOCK_S30_BROKER_PATH_OUTSIDE_ALLOWLIST",
+    "control_plane_failure_action": "BLOCK_S30_BROKER_CONTROL_PLANE_NOT_MAIN",
+    "candidate_receipt_failure_action": "BLOCK_S30_BROKER_CANDIDATE_RECEIPT_INVALID",
+    "require_regular_files": true,
+    "allowed_git_modes": [
+      "100644",
+      "100755"
+    ],
+    "candidate_receipt_git_mode": "100644"
+  },
+  "contract_version": "v0.6-candidate"
 }

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import argparse, copy, hashlib, json, os, subprocess
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Mapping, Optional
 
 CONTRACT_DEFAULT = Path(__file__).resolve().parents[1] / "contratos" / "s30_self_governance_gate_v1.json"
 DEFAULT_RECEIPT = Path("sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json")
@@ -131,6 +131,57 @@ def git_write_binding_failures(c: Dict[str, Any], r: Dict[str, Any]):
     for ref_field in ("ruleset_readback_ref","supabase_readback_ref"):
         if not nonempty(b.get(ref_field)): failures.append(f"{prefix}:{ref_field.upper()}_MISSING")
     return failures
+
+def broker_scope_decision(c: Dict[str, Any], changed_paths, receipt_path: str, receipt: Optional[Mapping[str, Any]] = None, path_modes: Optional[Mapping[str, str]] = None) -> Dict[str, Any]:
+    cfg=c.get("git_write_broker") or {}
+    scope_fail=cfg.get("scope_failure_action","BLOCK_S30_BROKER_PATH_OUTSIDE_ALLOWLIST")
+    receipt_fail=cfg.get("candidate_receipt_failure_action","BLOCK_S30_BROKER_CANDIDATE_RECEIPT_INVALID")
+    changed=sorted(set(str(x).strip() for x in (changed_paths or []) if str(x).strip()))
+    if not changed:
+        return {"status":"BLOCKED","mode":None,"blocking_code":"BLOCK_S30_BROKER_EMPTY_CHANGESET","changed_paths":[]}
+    for path in changed:
+        parts=path.split("/")
+        if path.startswith("/") or any(part in {"", ".", ".."} for part in parts):
+            return {"status":"BLOCKED","mode":None,"blocking_code":scope_fail,"changed_paths":changed,"detail":"PATH_NOT_CANONICAL"}
+    if cfg.get("require_regular_files") is True:
+        if not isinstance(path_modes,Mapping):
+            return {"status":"BLOCKED","mode":None,"blocking_code":"BLOCK_S30_BROKER_GIT_MODE_UNRESOLVED","changed_paths":changed}
+        allowed_modes=set(cfg.get("allowed_git_modes") or [])
+        bad_modes=sorted(path for path in changed if path_modes.get(path) not in allowed_modes)
+        if bad_modes:
+            return {"status":"BLOCKED","mode":None,"blocking_code":"BLOCK_S30_BROKER_NONREGULAR_PATH","changed_paths":changed,"detail":",".join(bad_modes)}
+
+    repair=set(cfg.get("repair_allowed_paths") or [])
+    repair_cfg=(cfg.get("scope_modes") or {}).get("REPAIR") or {}
+    canonical_repair_receipt=repair_cfg.get("receipt_path","sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json")
+    if set(changed).issubset(repair) and receipt_path==canonical_repair_receipt:
+        return {"status":"PASS","mode":"REPAIR","blocking_code":None,"changed_paths":changed}
+
+    prefixes=tuple(cfg.get("candidate_allowed_prefixes") or [])
+    denied=tuple(cfg.get("candidate_denied_prefixes") or [])
+    if not prefixes:
+        return {"status":"BLOCKED","mode":None,"blocking_code":scope_fail,"changed_paths":changed,"detail":"CANDIDATE_PREFIX_POLICY_MISSING"}
+    if len(changed)>int(cfg.get("candidate_max_changed_files",0) or 0):
+        return {"status":"BLOCKED","mode":None,"blocking_code":scope_fail,"changed_paths":changed,"detail":"CANDIDATE_CHANGESET_TOO_LARGE"}
+    if any(not path.startswith(prefixes) for path in changed):
+        return {"status":"BLOCKED","mode":None,"blocking_code":scope_fail,"changed_paths":changed,"detail":"PATH_OUTSIDE_CANDIDATE_PREFIX"}
+    if denied and any(path.startswith(denied) for path in changed):
+        return {"status":"BLOCKED","mode":None,"blocking_code":scope_fail,"changed_paths":changed,"detail":"CANDIDATE_CONTROL_PATH_DENIED"}
+
+    requirements=cfg.get("candidate_receipt_requirements") or {}
+    if requirements.get("receipt_must_be_changed") and receipt_path not in changed:
+        return {"status":"BLOCKED","mode":None,"blocking_code":receipt_fail,"changed_paths":changed,"detail":"RECEIPT_NOT_IN_CHANGESET"}
+    if requirements.get("receipt_must_be_under_candidate_prefix") and not receipt_path.startswith(prefixes):
+        return {"status":"BLOCKED","mode":None,"blocking_code":receipt_fail,"changed_paths":changed,"detail":"RECEIPT_OUTSIDE_CANDIDATE_PREFIX"}
+    if requirements.get("receipt_must_not_be_under_denied_prefix") and denied and receipt_path.startswith(denied):
+        return {"status":"BLOCKED","mode":None,"blocking_code":receipt_fail,"changed_paths":changed,"detail":"RECEIPT_IN_CONTROL_PREFIX"}
+    if cfg.get("require_regular_files") is True and path_modes.get(receipt_path) != cfg.get("candidate_receipt_git_mode"):
+        return {"status":"BLOCKED","mode":None,"blocking_code":receipt_fail,"changed_paths":changed,"detail":"RECEIPT_GIT_MODE_INVALID"}
+    required_mode=requirements.get("receipt_mode_required")
+    if receipt is not None and required_mode and receipt.get("receipt_mode")!=required_mode:
+        return {"status":"BLOCKED","mode":None,"blocking_code":receipt_fail,"changed_paths":changed,"detail":"RECEIPT_MODE_INVALID"}
+    return {"status":"PASS","mode":"CANDIDATE","blocking_code":None,"changed_paths":changed}
+
 
 def blocked(preflight, seq, checks, hard, blockers):
     if seq: first=f"SEQUENCE:{seq[0]}"
@@ -399,6 +450,29 @@ def self_test(c):
     x=copy.deepcopy(p); x["gate_evidence_envelope"]["input_sha256"]="0"*64; r=evaluate(c,x,e); assert any("BLOCK_GATE_ENVELOPE_HASH_MISMATCH:input_sha256"==z for z in r["failed_checks"]); results["negative_gate_envelope_hash_mismatch"]=r["result"]
     x=copy.deepcopy(p); x["git_write_binding"]["target_branch"]="lf/not-s30-selftest"; r=evaluate(c,x,e); assert any("BLOCK_GIT_WRITE_BINDING_INVALID:TARGET_NOT_PROTECTED_S30"==z for z in r["failed_checks"]); results["negative_broker_target_namespace"]=r["result"]
     x=copy.deepcopy(p); x["git_write_binding"]["status"]="OPERATIONAL"; x["git_write_binding"]["promotion_authority"]="BROKER_ONLY"; x["git_write_binding"]["secret_present"]=False; r=evaluate(c,x,e); assert any("BLOCK_GIT_WRITE_BINDING_INVALID:OPERATIONAL_SECRET_MISSING"==z for z in r["failed_checks"]); results["negative_operational_without_secret"]=r["result"]
+
+    # Physical broker scope regressions: repair is exact, candidate is bounded sandbox-only.
+    repair_receipt="sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json"
+    repair_paths=["gobernanza/contratos/s30_self_governance_gate_v1.json",repair_receipt]
+    repair_modes={path:"100644" for path in repair_paths}
+    bs=broker_scope_decision(c,repair_paths,repair_receipt,p,repair_modes); assert bs["status"]=="PASS" and bs["mode"]=="REPAIR",bs; results["positive_broker_repair_scope"]="PASS_REPAIR_SCOPE"
+    candidate_receipt="sandbox/lf_contract_gate_test/s30_data_access_candidate/s30_b_prewrite_receipt.json"
+    candidate_paths=["sandbox/lf_contract_gate_test/s30_data_access_candidate/lf_data_access_budgeted.py",candidate_receipt]
+    candidate=copy.deepcopy(p); candidate["receipt_mode"]="PREWRITE"
+    candidate_modes={path:"100644" for path in candidate_paths}
+    bs=broker_scope_decision(c,candidate_paths,candidate_receipt,candidate,candidate_modes); assert bs["status"]=="PASS" and bs["mode"]=="CANDIDATE",bs; results["positive_broker_candidate_scope"]="PASS_CANDIDATE_SCOPE"
+    bs=broker_scope_decision(c,[candidate_paths[0],".github/workflows/validate-lf-packs.yml"],candidate_receipt,candidate,{candidate_paths[0]:"100644",".github/workflows/validate-lf-packs.yml":"100644"}); assert bs["blocking_code"]==c["git_write_broker"]["scope_failure_action"],bs; results["negative_broker_mixed_control_candidate"]=bs["blocking_code"]
+    bs=broker_scope_decision(c,[candidate_paths[0],"sandbox/lf_contract_gate_test/s30_self_governance/rogue.json"],candidate_receipt,candidate,{candidate_paths[0]:"100644","sandbox/lf_contract_gate_test/s30_self_governance/rogue.json":"100644"}); assert bs["blocking_code"]==c["git_write_broker"]["scope_failure_action"],bs; results["negative_broker_candidate_control_prefix"]=bs["blocking_code"]
+    bs=broker_scope_decision(c,[candidate_paths[0]],candidate_receipt,candidate,{candidate_paths[0]:"100644"}); assert bs["blocking_code"]==c["git_write_broker"]["candidate_receipt_failure_action"],bs; results["negative_broker_candidate_receipt_missing"]=bs["blocking_code"]
+    wrong_mode=copy.deepcopy(candidate); wrong_mode["receipt_mode"]="REPAIR_PREWRITE"; bs=broker_scope_decision(c,candidate_paths,candidate_receipt,wrong_mode,candidate_modes); assert bs["blocking_code"]==c["git_write_broker"]["candidate_receipt_failure_action"],bs; results["negative_broker_candidate_receipt_mode"]=bs["blocking_code"]
+    too_many=[f"sandbox/lf_contract_gate_test/s30_data_access_candidate/f{i}.json" for i in range(c["git_write_broker"]["candidate_max_changed_files"]+1)]+[candidate_receipt]
+    bs=broker_scope_decision(c,too_many,candidate_receipt,candidate,{path:"100644" for path in too_many}); assert bs["blocking_code"]==c["git_write_broker"]["scope_failure_action"],bs; results["negative_broker_candidate_changeset_too_large"]=bs["blocking_code"]
+    bad_modes=dict(candidate_modes); bad_modes[candidate_paths[0]]="120000"
+    bs=broker_scope_decision(c,candidate_paths,candidate_receipt,candidate,bad_modes); assert bs["blocking_code"]=="BLOCK_S30_BROKER_NONREGULAR_PATH",bs; results["negative_broker_candidate_symlink"] = bs["blocking_code"]
+    assert c["git_write_broker"].get("control_plane_ref_required")=="refs/heads/main"
+    assert c["git_write_broker"].get("control_plane_sha_must_equal_base_main") is True
+    assert c["git_write_broker"].get("staging_trust")=="UNTRUSTED_INPUT_ONLY"
+    results["positive_broker_control_plane_contract"]="PASS_MAIN_PINNED_CONTROL_PLANE"
     return {"status":"PASS","cases":results}
 
 def event_payload():
