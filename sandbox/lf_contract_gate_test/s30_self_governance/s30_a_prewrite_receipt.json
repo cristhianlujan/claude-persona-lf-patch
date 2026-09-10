@@ -1,61 +1,344 @@
 {
-  "receipt_version": "v0.4",
-  "receipt_mode": "REPAIR_PREWRITE",
-  "lane": "S30-A",
-  "owner": "S30",
-  "base_main_sha": "5f33c4ce25fca201c109d31be5c2e1e1ec465afc",
-  "intended_material_action": "SELF_GOVERNANCE_GATE_REPAIR",
-  "owner_authorized_repair": true,
-  "repair_reason": "S30-R10 adopted the transversal rule ONE_CAUSAL_CHAIN_ONE_ACTIVE_WRITER after Motor AUD-018 showed that non-overlapping Git paths can still advance the same causal chain concurrently. Materialize that rule as a fail-closed self-governance guard without adding runtime, production, scheduler or S26 authority.",
-  "repair_target_ekb_codes": ["GOV-010"],
-  "sequence_resolution": {
-    "ROUTER": {"status": "PROVEN", "evidence": "ACT-0001 v0.3 was read fresh before material work. S30-R10 strategy update completed under ACTUALIZACION_ESTRATEGIA_LF and the STRATEGY/UPDATE route was demoted; post-write Router returned BLOCK_OPERATION_NOT_REGISTERED."},
-    "EKB_APPLICABLE": {"status": "PROVEN", "loaded_codes": ["GOV-010", "SRC-011"], "evidence": "Fresh schema-first EKB readback: GOV-010 active frequency 5; SRC-011 active frequency 3. GOV-010 is the recurrent self-consumption target; SRC-011 is an ownership precedent, not claimed as a new recurrence."},
-    "DATA_ACCESS_BINDINGS": {"status": "PROVEN", "mode": "SCHEMA_CONTRACT_FALLBACK", "evidence": "This bounded Git repair uses exact GitHub file identities. Supabase evidence used schema-first observed contracts for lf_activos, lf_error_knowledge, lf_strategy_snapshots and operation governance relations before dependent reads."},
-    "SCHEMA_CONTRACT": {"status": "PROVEN", "schema_bindings": [{"object_identity": "public.lf_error_knowledge", "object_type": "VIEW", "resolved_fields": ["codigo", "titulo", "severidad", "frecuencia", "estado", "prevencion", "validacion"], "evidence_ref": "supabase://information_schema.columns/public.lf_error_knowledge"}, {"object_identity": "public.lf_strategy_snapshots", "object_type": "TABLE", "resolved_fields": ["id", "metadata", "content_payload", "decisions", "backlog", "risks", "evidence_refs", "change_log", "status", "runtime_state", "impact_policy", "updated_by_execution_id"], "evidence_ref": "supabase://information_schema.columns/public.lf_strategy_snapshots"}], "evidence": "Relation columns, constraints and dependent SQL function signatures were resolved in separate preflight hops before S30-R10 materialization."},
-    "OPERATION_CONTRACTS": {"status": "PROVEN", "evidence": "Existing S30_SELF_GOVERNANCE_GATE v0.3 repair mode is the governing Git repair contract. S30-R10 is already canonically recorded in snapshot #35 and this change only extends that existing self-governance gate."},
-    "ALL_INTENDED_STEPS": {"status": "PROVEN", "evidence": "Fresh-main ownership check -> isolated branch -> contract/validator/receipt only -> deterministic self-test -> exact PR CI -> race-check -> merge only if authorized and green -> post-merge readback."},
-    "JUDGES_AND_RESULT_VOCABULARY": {"status": "PROVEN", "evidence": "Existing result vocabulary remains intact; candidate adds PASS_TO_READ_ONLY_PARALLEL while keeping writer repair fail-closed. Four S30-R10 causal ownership regressions are defined before Git write."},
-    "DEPENDENCIES_AND_IMPORT_CLOSURE": {"status": "PROVEN", "evidence": "Validator remains Python standard-library only; no new package, model, download, service or runtime dependency."},
-    "CI_PATHS_AND_RUNNER_WIRING": {"status": "PROVEN", "evidence": "Both contract and validator are existing fresh_receipt_trigger_paths in Validate LF Packs; changing either forces ci-auto receipt evaluation and unconditional self-test remains in the executed path."},
-    "PERMISSIONS_SECRETS_AND_READBACK": {"status": "PROVEN", "evidence": "GitHub repository write is limited to an isolated branch. CI requires contents read only; no new secret, billing, production credential or Supabase runtime permission."},
-    "EVIDENCE_PROVIDER_AND_RESOLVER": {"status": "PROVEN", "evidence": "Current main SHA 5f33c4ce25fca201c109d31be5c2e1e1ec465afc, exact GitHub file blobs, Supabase S30-R10 execution/readback and open-PR ownership search are resolvable."},
-    "EXPECTED_OUTPUT_CONTRACT": {"status": "PROVEN", "evidence": "Required cases: single writer PASS, second writer same causal key fail-closed with BLOCK_CAUSAL_LANE_ALREADY_OWNED, parallel read-only PASS without material authority, stale transfer fail-closed."}
+  "applicable_ekb": [
+    {
+      "code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
+      "triggers": [
+        "RECURRENT",
+        "MACHINE_DETECTABLE",
+        "AVOIDABLE_MATERIAL_WORK"
+      ]
+    },
+    {
+      "code": "GOV-010",
+      "triggers": [
+        "RECURRENT",
+        "AVOIDABLE_MATERIAL_WORK"
+      ]
+    }
+  ],
+  "base_main_sha": "18b5098ecd6ce0e2a5b3b551523456a75d712e6b",
+  "causal_lane_ownership": {
+    "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
+    "evidence": "fresh GitHub open-PR inventory: stale S30-A #613 closed superseded; no open PR owns this exact causal key",
+    "observed_active_writers": [
+      {
+        "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
+        "owner": "S30-BROKER-BOOTSTRAP",
+        "primary_gate": "DIRECT_GITHUB_EXECUTOR_BINDING",
+        "source_ref": "prewrite-reservation://EXEC-S30-GIT-BROKER-BOOTSTRAP-20260910-001",
+        "state": "ACTIVE",
+        "target_asset": "S30"
+      }
+    ],
+    "owner": "S30-BROKER-BOOTSTRAP",
+    "primary_gate": "DIRECT_GITHUB_EXECUTOR_BINDING",
+    "role": "WRITER",
+    "target_asset": "S30",
+    "transfer": {
+      "is_transfer": false
+    }
   },
-  "preflight_checks": {
-    "IMPORT_CLOSURE": {"status": "PASS", "evidence": "Python standard library only; py_compile and local self-test are defined before PR CI."},
-    "REQUIRED_FILES_EXIST": {"status": "PASS", "evidence": "Current main contract, validator and canonical prewrite receipt were fetched by exact path and SHA before branch creation."},
-    "SCHEMA_AND_CONSTRAINTS_RESOLVED": {"status": "PASS", "resolved": ["RELATION_COLUMNS", "CONSTRAINTS", "DEPENDENT_SQL_FUNCTION_SIGNATURES"], "bindings": [{"object_identity": "public.lf_strategy_snapshots", "resolved_fields": ["id", "metadata", "content_payload", "backlog", "status", "runtime_state", "impact_policy"], "evidence_ref": "supabase://schema-first/S30-R10"}, {"object_identity": "public.lf_error_knowledge", "resolved_fields": ["codigo", "frecuencia", "estado", "validacion"], "evidence_ref": "supabase://schema-first/EKB"}], "evidence": "Schema reads were terminal separate hops; constraints and digest/jsonb helper signatures were observed before dependent SQL."},
-    "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED": {"status": "PASS", "evidence": "GitHub create_branch/update_file/create_pull_request and Supabase execute_sql schemas were loaded before use."},
-    "PERMISSIONS_AND_SECRET_READBACK": {"status": "PASS", "evidence": "No secrets or production credentials are required; repository writes are branch-only until CI and owner merge gate."},
-    "EVIDENCE_PROVIDER_RESOLVABLE": {"status": "PASS", "evidence": "GitHub exact-main files and workflow runs plus Supabase S30 snapshot/EKB/operation readbacks are reachable."},
-    "CI_RUNNER_WIRING_CONFIRMED": {"status": "PASS", "evidence": "Current contract and judge paths are already wired as fresh-receipt triggers in Validate LF Packs before heavy dependency work."},
-    "EXPECTED_OUTPUT_SCHEMA_COMPLETE": {"status": "PASS", "evidence": "Causal lane receipt contains key, role, owner, observed active writers, transfer state and evidence; validator returns existing output contract plus causal failures through fail-closed blocker_failures."},
-    "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED": {"status": "PASS", "evidence": "Second same-key writer, missing ownership observation, invalid role and stale transfer block before material work; read-only parallel role cannot obtain material authority."}
+  "evidence": {
+    "deploy_key_id": 162872002,
+    "durable_lease_claimed": false,
+    "execution_id": "EXEC-S30-GIT-BROKER-BOOTSTRAP-20260910-001",
+    "mode": "SANDBOX_NON_PRODUCTION",
+    "production": false,
+    "ruleset_id": 22765627
   },
   "frontier": {
-    "current_stage": "S30-R10_CAUSAL_LANE_EXCLUSIVITY_GUARD",
-    "next_gate": "EXACT_PR_EVENT_CI_THEN_POSTMERGE_READBACK",
-    "blockers": [{"code": "S30_R10_HARD_GUARD_IMPLEMENTATION_PENDING", "affected_scope": "S30 self-governance pre-execution lane ownership", "causal_gate": "CAUSAL_LANE_EXCLUSIVITY", "owner": "S30-A", "independent_safe_work": ["READ_ONLY_AUDIT", "ADVERSARIAL_REVIEW", "EVIDENCE_VERIFICATION"], "invalidation_condition": "Exact executed-path CI proves single-writer positive, second-writer negative, parallel read-only positive, stale-transfer negative, followed by post-merge readback."}],
-    "safe_parallel_work": ["READ_ONLY_AUDIT", "ADVERSARIAL_REVIEW", "EVIDENCE_VERIFICATION"]
+    "blockers": [
+      {
+        "affected_scope": "S30 Git write boundary",
+        "causal_gate": "DIRECT_GITHUB_EXECUTOR_BINDING",
+        "code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
+        "independent_safe_work": [
+          "READ_ONLY_EVIDENCE_VERIFICATION"
+        ],
+        "invalidation_condition": "Candidate validator/workflow/receipt pass local and staging CI; then owner explicitly authorizes secret installation before any broker dispatch.",
+        "owner": "S30-BROKER-BOOTSTRAP"
+      }
+    ],
+    "current_stage": "S30-A_SELF_GOVERNANCE_PREEXECUTION_ASSURANCE",
+    "next_gate": "STAGING_VALIDATION_THEN_OWNER_AUTHORIZED_SECRET_INSTALL",
+    "safe_parallel_work": [
+      "READ_ONLY_EVIDENCE_VERIFICATION"
+    ]
   },
-  "causal_lane_ownership": {
-    "ekb_code": "GOV-010",
-    "target_asset": "S30",
-    "primary_gate": "CAUSAL_LANE_EXCLUSIVITY",
-    "role": "WRITER",
-    "owner": "S30",
-    "observed_active_writers": [{"ekb_code": "GOV-010", "target_asset": "S30", "primary_gate": "CAUSAL_LANE_EXCLUSIVITY", "owner": "S30", "state": "ACTIVE", "source_ref": "CURRENT_CHAT:S30-R10 owner acquisition + GitHub open-PR search returned no pre-existing S30-R10 owner"}],
-    "transfer": {"is_transfer": false},
-    "evidence": "S30-R10 is the only materializing lane for this causal key. Motor PR #640/#641 are evidence inputs only and are not writers on the S30-R10 key."
-  },
-  "applicable_ekb": [
-    {"code": "GOV-010", "triggers": ["RECURRENT", "AVOIDABLE_MATERIAL_WORK"]},
-    {"code": "SRC-011", "triggers": []}
-  ],
   "hard_guard_candidates": [
-    {"ekb_code": "GOV-010", "closure": {"EKB_UPDATED": {"status": "PASS", "evidence": "GOV-010 was physically updated in this session to frequency 5 with the latest schema-read ordering recurrence; this S30-R10 repair consumes that current EKB before Git material work."}}}
+    {
+      "closure": {
+        "EKB_UPDATED": {
+          "evidence": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001 active frequency=8; latest readback 2026-09-10T12:04:25Z.",
+          "status": "PASS"
+        }
+      },
+      "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001"
+    },
+    {
+      "closure": {
+        "EKB_UPDATED": {
+          "evidence": "GOV-010 active frequency=7 and consumed before this repair",
+          "status": "PASS"
+        }
+      },
+      "ekb_code": "GOV-010"
+    }
   ],
-  "safety_readback": {"runtime_changed": false, "production_changed": false, "main_merged": false, "scheduler_changed": false, "s26_mutated": false},
-  "evidence": {"base_main_sha": "5f33c4ce25fca201c109d31be5c2e1e1ec465afc", "s30_snapshot_id": 35, "s30_r10_execution_id": "EXEC-S30-R10-CAUSAL-LANE-OWNERSHIP-20260910-001", "s30_r10_payload_sha256": "0ef712b9d6253ea4f579e2b3d7bad7f73c2e3b2907d5b611629df4d639614048", "motor_baseline_owner": "PR#640", "motor_waiting_upstream": "PR#641", "new_ekb_code_claimed": false}
+  "intended_material_action": "SELF_GOVERNANCE_GATE_REPAIR",
+  "lane": "S30-A",
+  "owner": "S30-BROKER-BOOTSTRAP",
+  "owner_authorized_merge": false,
+  "owner_authorized_repair": true,
+  "preflight_checks": {
+    "CI_RUNNER_WIRING_CONFIRMED": {
+      "evidence": "Candidate validate-lf-packs workflow defines ordinary staging validation plus an isolated workflow_dispatch broker job gated by full validator success; broker job is not reachable from push/PR events.",
+      "status": "PASS"
+    },
+    "EVIDENCE_PROVIDER_RESOLVABLE": {
+      "evidence": "Supabase + GitHub + SentinelX refs independently addressable",
+      "status": "PASS"
+    },
+    "EXPECTED_OUTPUT_SCHEMA_COMPLETE": {
+      "evidence": "result/first_bad_hop/material_work_allowed/bounded_repair_allowed/failure arrays/claim ceiling resolved",
+      "status": "PASS"
+    },
+    "IMPORT_CLOSURE": {
+      "evidence": "python/git/ssh/gh versions resolved; jq missing recorded EKB 13478 and removed from path",
+      "status": "PASS"
+    },
+    "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED": {
+      "evidence": "direct connector create 422; direct update 409; wrong GitHub Actions Integration bypass 422; stale/missing receipt must block",
+      "status": "PASS"
+    },
+    "PERMISSIONS_AND_SECRET_READBACK": {
+      "evidence": "GitHub identity has admin; ruleset 22765627 is active; sole configured bypass actor is DeployKey; S30_BROKER_DEPLOY_KEY is not present in Actions and dispatch must fail closed until explicitly installed.",
+      "status": "PASS"
+    },
+    "REQUIRED_FILES_EXIST": {
+      "evidence": "4/4 current S30 repair files exist at base 18b5098",
+      "status": "PASS"
+    },
+    "SCHEMA_AND_CONSTRAINTS_RESOLVED": {
+      "bindings": [
+        {
+          "evidence_ref": "supabase:schema-read-20260910T1200Z",
+          "object_identity": "public.lf_operation_contracts",
+          "resolved_fields": [
+            "operation_code",
+            "contract_code",
+            "status",
+            "required_before_write"
+          ]
+        }
+      ],
+      "evidence": "separate information_schema/pg_constraint/pg_proc readback completed",
+      "resolved": [
+        "RELATION_COLUMNS",
+        "CONSTRAINTS",
+        "DEPENDENT_SQL_FUNCTION_SIGNATURES"
+      ],
+      "status": "PASS"
+    },
+    "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED": {
+      "evidence": "GitHub rulesets Create=POST Update=PUT; DeployKey bypass contract verified; connector create_branch/create_file negatives executed",
+      "status": "PASS"
+    },
+    "GIT_WRITE_BROKER_BINDING_CONFIRMED": {
+      "status": "PASS",
+      "evidence": "GitHub ruleset 22765627 ACTIVE on refs/heads/lf/s30-*; verified write DeployKey 162872002; broker probe e52aa009 reached GitHub; staging mode has no promotion authority and secret is intentionally absent."
+    }
+  },
+  "receipt_mode": "REPAIR_PREWRITE",
+  "receipt_version": "v0.5",
+  "repair_reason": "Bootstrap a non-skippable S30 Git-write boundary using the existing S30-A repair allowlist; no runtime/production/S26 mutation.",
+  "repair_target_ekb_codes": [
+    "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
+    "GOV-010"
+  ],
+  "safety_readback": {
+    "main_merged": false,
+    "production_changed": false,
+    "runtime_changed": false,
+    "s26_mutated": false,
+    "scheduler_changed": false
+  },
+  "sequence_resolution": {
+    "ALL_INTENDED_STEPS": {
+      "evidence": "bounded sequence: receipt->protected branch->allowlisted repair files->CI->readback; context compiler implementation remains separate",
+      "status": "PROVEN"
+    },
+    "CI_PATHS_AND_RUNNER_WIRING": {
+      "evidence": "Candidate workflow keeps S30 self-test first, evaluates exact receipt on broker dispatch, blocks governed PRs outside lf/s30-*, and isolates the deploy-key push in a workflow_dispatch-only job.",
+      "status": "PROVEN"
+    },
+    "DATA_ACCESS_BINDINGS": {
+      "evidence": "Fresh schema-first readback covered public.lf_error_knowledge, public.lf_operation_contracts, public.lf_strategy_snapshots plus public.lf_router_resolve_v1 and public.lf_write_pipeline_ekb_v1 signatures.",
+      "mode": "SCHEMA_CONTRACT_FALLBACK",
+      "status": "PROVEN"
+    },
+    "DEPENDENCIES_AND_IMPORT_CLOSURE": {
+      "evidence": "python3=3.10.12 git=2.34.1 OpenSSH=8.9p1 gh=2.4.0; validator stdlib imports resolved",
+      "status": "PROVEN"
+    },
+    "EKB_APPLICABLE": {
+      "evidence": "Fresh Supabase readback: S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001 active frequency=8; GOV-010 active frequency=7.",
+      "loaded_codes": [
+        "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
+        "GOV-010"
+      ],
+      "status": "PROVEN"
+    },
+    "EVIDENCE_PROVIDER_AND_RESOLVER": {
+      "evidence": "Supabase EKB writer event ids 13471-13478 + GitHub ruleset API + exact main SHA + SentinelX command readbacks",
+      "status": "PROVEN"
+    },
+    "EXPECTED_OUTPUT_CONTRACT": {
+      "evidence": "contract consumer_interface.output_required resolved; repair must return PASS_TO_BOUNDED_GUARD_REPAIR with bounded_repair_allowed=true",
+      "status": "PROVEN"
+    },
+    "JUDGES_AND_RESULT_VOCABULARY": {
+      "evidence": "github:main@gobernanza/judges/validate_s30_self_governance_gate.py; repair result PASS_TO_BOUNDED_GUARD_REPAIR",
+      "status": "PROVEN"
+    },
+    "OPERATION_CONTRACTS": {
+      "evidence": "github:main@gobernanza/contratos/s30_self_governance_gate_v1.json v0.4-candidate",
+      "status": "PROVEN"
+    },
+    "PERMISSIONS_SECRETS_AND_READBACK": {
+      "evidence": "GitHub admin identity verified from VPS; ruleset 22765627 active; DeployKey 162872002 verified/write; direct connector cannot bypass protected S30 refs; broker secret is intentionally absent, therefore no workflow_dispatch promotion is authorized.",
+      "status": "PROVEN"
+    },
+    "ROUTER": {
+      "evidence": "supabase:lf_router_resolve_v1 -> BLOCK_OPERATION_NOT_REGISTERED for S30 STRATEGY UPDATE outside bounded repair",
+      "status": "PROVEN"
+    },
+    "SCHEMA_CONTRACT": {
+      "evidence": "information_schema+pg_constraint+pg_proc readback before dependent reads",
+      "schema_bindings": [
+        {
+          "evidence_ref": "supabase:schema-read-20260910T1200Z",
+          "object_identity": "public.lf_error_knowledge",
+          "object_type": "VIEW",
+          "resolved_fields": [
+            "codigo",
+            "severidad",
+            "frecuencia",
+            "estado",
+            "source_ref",
+            "ultima_vez"
+          ]
+        },
+        {
+          "evidence_ref": "supabase:schema-read-20260910T1200Z",
+          "object_identity": "public.lf_operation_contracts",
+          "object_type": "TABLE",
+          "resolved_fields": [
+            "operation_code",
+            "contract_code",
+            "status",
+            "required_before_write",
+            "required_after_write"
+          ]
+        },
+        {
+          "evidence_ref": "supabase:pg_proc+pg_get_functiondef",
+          "object_identity": "public.lf_write_pipeline_ekb_v1",
+          "object_type": "FUNCTION",
+          "resolved_fields": [
+            "p_operation_code text",
+            "p_error jsonb",
+            "p_execution_id text"
+          ]
+        }
+      ],
+      "status": "PROVEN"
+    }
+  },
+  "git_write_binding": {
+    "status": "STAGED_VALIDATION",
+    "request_schema": "s30-git-broker/v1",
+    "ruleset_id": 22765627,
+    "ruleset_name": "s30-governed-write-boundary",
+    "ruleset_enforcement": "active",
+    "ruleset_ref_pattern": "refs/heads/lf/s30-*",
+    "bypass_actor_type": "DeployKey",
+    "deploy_key_id": 162872002,
+    "deploy_key_title": "s30-governed-git-broker",
+    "direct_user_can_bypass": false,
+    "direct_connector_negative": {
+      "create_blocked": true,
+      "create_observed_status": 422,
+      "update_blocked": true,
+      "update_observed_status": 409
+    },
+    "broker_probe": {
+      "status": "PASS",
+      "commit_sha": "e52aa00996ea7dfd416e5267aec0f03e226f3088",
+      "evidence_ref": "github:commit/e52aa00996ea7dfd416e5267aec0f03e226f3088"
+    },
+    "workflow_path": ".github/workflows/validate-lf-packs.yml",
+    "workflow_dispatch_wired": true,
+    "secret_name": "S30_BROKER_DEPLOY_KEY",
+    "secret_present": false,
+    "secret_required_before_dispatch": true,
+    "source_branch": "lf/staging-s30-git-broker-v05-20260910",
+    "target_branch": "lf/s30-git-broker-v05-20260910",
+    "base_main_sha": "18b5098ecd6ce0e2a5b3b551523456a75d712e6b",
+    "promotion_authority": "NONE",
+    "ruleset_readback_ref": "github:ruleset/22765627",
+    "supabase_readback_ref": "supabase:public.lf_error_knowledge/S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001@frequency=8"
+  },
+  "gate_evidence_envelope": {
+    "run_id": "EXEC-S30-GIT-BROKER-BOOTSTRAP-20260910-001",
+    "gate_id": "S30_SELF_GOVERNANCE_GATE_V05_STAGING",
+    "input_exact": {
+      "request_schema": "s30-git-broker/v1",
+      "source_ref": "lf/staging-s30-git-broker-v05-20260910",
+      "target_branch": "lf/s30-git-broker-v05-20260910",
+      "base_main_sha": "18b5098ecd6ce0e2a5b3b551523456a75d712e6b",
+      "receipt_path": "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json"
+    },
+    "input_sha256": "7eaad3f17d8cb565dc5b73886c3b064fd658eda05e8e0eb9838ac8ca287fe878",
+    "input_source_ref": "owner-authorized-current-chat+github:main@18b5098",
+    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input <receipt> --expected-base-main-sha 18b5098ecd6ce0e2a5b3b551523456a75d712e6b",
+    "output_exact": {
+      "result": "PASS_TO_BOUNDED_GUARD_REPAIR",
+      "material_work_allowed": false,
+      "bounded_repair_allowed": true,
+      "promotion_authority": "NONE"
+    },
+    "output_sha256": "13aec3019f77551e664831c1ecb0230ec7e0a870ef89ae718d40a37e975e7192",
+    "output_ref": "local-prewrite:S30-v0.5-candidate",
+    "execution_mode": "SANDBOX",
+    "environment": "NON_PRODUCTION",
+    "promotion_authority": "NONE",
+    "functional": {
+      "status": "PASS",
+      "evidence": "Ruleset/deploy-key broker primitives and exact validator path are resolvable."
+    },
+    "quality": {
+      "status": "PASS",
+      "evidence": "Fail-closed negative paths defined for missing envelope, hash mismatch, namespace bypass and invalid broker binding."
+    },
+    "depth": {
+      "status": "PASS",
+      "evidence": "Input/output hashes, causal lane, EKB closure, branch namespace and broker binding are all independently represented."
+    },
+    "performance": {
+      "status": "PASS_BASELINE",
+      "evidence": "Preflight uses local JSON/Python/Git checks before any Actions dispatch or heavy validation."
+    },
+    "ekb_action": {
+      "status": "CONSUMED",
+      "codes": [
+        "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
+        "GOV-010"
+      ],
+      "broker_gap_frequency": 8,
+      "gov010_frequency": 7
+    },
+    "first_bad_hop": null,
+    "repair_allowed": true
+  }
 }

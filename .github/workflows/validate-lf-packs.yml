@@ -8,6 +8,29 @@ on:
     branches:
       - main
       - "lf/**"
+  workflow_dispatch:
+    inputs:
+      request_schema:
+        description: "Governed S30 broker request schema"
+        required: true
+        type: string
+      source_ref:
+        description: "Validated staging branch (lf/staging-s30-*)"
+        required: true
+        type: string
+      target_branch:
+        description: "Protected broker target (lf/s30-*)"
+        required: true
+        type: string
+      base_main_sha:
+        description: "Exact main SHA used by the prewrite receipt"
+        required: true
+        type: string
+      receipt_path:
+        description: "Canonical S30 prewrite receipt path"
+        required: true
+        default: "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json"
+        type: string
 
 permissions:
   contents: read
@@ -20,6 +43,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.source_ref || github.sha }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -28,9 +54,24 @@ jobs:
 
       - name: S30 self-governance regression and fresh receipt gate
         shell: bash
+        env:
+          S30_REQUEST_SCHEMA: ${{ inputs.request_schema }}
+          S30_SOURCE_REF: ${{ inputs.source_ref }}
+          S30_TARGET_BRANCH: ${{ inputs.target_branch }}
+          S30_BASE_MAIN_SHA: ${{ inputs.base_main_sha }}
+          S30_RECEIPT_PATH: ${{ inputs.receipt_path }}
         run: |
           set -euo pipefail
           python gobernanza/judges/validate_s30_self_governance_gate.py --self-test
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            [[ "${S30_REQUEST_SCHEMA}" == "s30-git-broker/v1" ]] || { echo "BLOCK_S30_BROKER_REQUEST_SCHEMA" >&2; exit 1; }
+            [[ "${S30_RECEIPT_PATH}" == "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json" ]] || { echo "BLOCK_S30_BROKER_RECEIPT_PATH" >&2; exit 1; }
+            [[ "${S30_BASE_MAIN_SHA}" =~ ^[0-9a-f]{40}$ ]] || { echo "BLOCK_S30_BROKER_BASE_SHA" >&2; exit 1; }
+            python gobernanza/judges/validate_s30_self_governance_gate.py \
+              --input "${S30_RECEIPT_PATH}" \
+              --expected-base-main-sha "${S30_BASE_MAIN_SHA}"
+            exit 0
+          fi
           S30_CI_SCOPE="RUN"
           if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
             S30_CI_SCOPE="$(python - <<'PY'
@@ -148,3 +189,120 @@ jobs:
           if (( failures > 0 )); then
             exit 1
           fi
+
+  s30-governed-write-broker:
+    name: Governed S30 protected write broker
+    if: github.event_name == 'workflow_dispatch'
+    needs: validate-lf-packs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      S30_REQUEST_SCHEMA: ${{ inputs.request_schema }}
+      S30_SOURCE_REF: ${{ inputs.source_ref }}
+      S30_TARGET_BRANCH: ${{ inputs.target_branch }}
+      S30_BASE_MAIN_SHA: ${{ inputs.base_main_sha }}
+      S30_RECEIPT_PATH: ${{ inputs.receipt_path }}
+
+    steps:
+      - name: Checkout exact staging source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.source_ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Fail-closed broker request and source validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import os
+          import re
+          import subprocess
+          from pathlib import Path
+
+          schema=os.environ["S30_REQUEST_SCHEMA"]
+          source=os.environ["S30_SOURCE_REF"]
+          target=os.environ["S30_TARGET_BRANCH"]
+          base=os.environ["S30_BASE_MAIN_SHA"]
+          receipt_path=os.environ["S30_RECEIPT_PATH"]
+          canonical_receipt="sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json"
+
+          def fail(code, detail=""):
+              raise SystemExit(f"{code}{(': '+detail) if detail else ''}")
+          def run(*args):
+              return subprocess.run(args,check=True,capture_output=True,text=True).stdout.strip()
+
+          if schema!="s30-git-broker/v1": fail("BLOCK_S30_BROKER_REQUEST_SCHEMA")
+          if receipt_path!=canonical_receipt: fail("BLOCK_S30_BROKER_RECEIPT_PATH")
+          if not re.fullmatch(r"[0-9a-f]{40}",base): fail("BLOCK_S30_BROKER_BASE_SHA")
+          if not source.startswith("lf/staging-s30-"): fail("BLOCK_S30_BROKER_SOURCE_NAMESPACE")
+          if not target.startswith("lf/s30-"): fail("BLOCK_S30_BROKER_TARGET_NAMESPACE")
+          subprocess.run(["git","check-ref-format","--branch",source],check=True,capture_output=True,text=True)
+          subprocess.run(["git","check-ref-format","--branch",target],check=True,capture_output=True,text=True)
+
+          main_line=run("git","ls-remote","origin","refs/heads/main")
+          current_main=main_line.split()[0] if main_line else ""
+          if current_main!=base: fail("BLOCK_S30_BROKER_STALE_MAIN",f"expected={base} observed={current_main}")
+          subprocess.run(["git","fetch","origin","main",source,"--no-tags"],check=True,capture_output=True,text=True)
+          source_sha=run("git","rev-parse","HEAD")
+          if subprocess.run(["git","merge-base","--is-ancestor",base,source_sha]).returncode!=0:
+              fail("BLOCK_S30_BROKER_SOURCE_NOT_DESCENDANT_OF_BASE")
+
+          contract=json.loads(Path("gobernanza/contratos/s30_self_governance_gate_v1.json").read_text(encoding="utf-8"))
+          allowed=set(contract["git_write_broker"]["repair_allowed_paths"])
+          changed=set(filter(None,run("git","diff","--name-only",base,source_sha).splitlines()))
+          if not changed: fail("BLOCK_S30_BROKER_EMPTY_CHANGESET")
+          outside=sorted(changed-allowed)
+          if outside: fail("BLOCK_S30_BROKER_PATH_OUTSIDE_ALLOWLIST",",".join(outside))
+
+          receipt=json.loads(Path(receipt_path).read_text(encoding="utf-8"))
+          binding=receipt.get("git_write_binding") or {}
+          expected={"status":"OPERATIONAL","source_branch":source,"target_branch":target,"base_main_sha":base,
+                    "secret_present":True,"promotion_authority":"BROKER_ONLY"}
+          bad=[k for k,v in expected.items() if binding.get(k)!=v]
+          if bad: fail("BLOCK_S30_BROKER_OPERATIONAL_BINDING",",".join(bad))
+          print(json.dumps({"status":"PASS","base_main_sha":base,"source_sha":source_sha,"changed_paths":sorted(changed)},sort_keys=True))
+          PY
+          python gobernanza/judges/validate_s30_self_governance_gate.py \
+            --input "${S30_RECEIPT_PATH}" \
+            --expected-base-main-sha "${S30_BASE_MAIN_SHA}"
+
+      - name: Require broker deploy-key secret
+        shell: bash
+        env:
+          S30_BROKER_DEPLOY_KEY: ${{ secrets.S30_BROKER_DEPLOY_KEY }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${S30_BROKER_DEPLOY_KEY}" ]]; then
+            echo "BLOCK_S30_BROKER_SECRET_MISSING" >&2
+            exit 1
+          fi
+          umask 077
+          mkdir -p "${HOME}/.ssh"
+          printf '%s\n' "${S30_BROKER_DEPLOY_KEY}" > "${HOME}/.ssh/s30_broker_ed25519"
+          ssh-keyscan -t ed25519 github.com > "${HOME}/.ssh/known_hosts" 2>/dev/null
+
+      - name: Push exact validated SHA through governed DeployKey
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_sha="$(git rev-parse HEAD)"
+          git remote remove s30-broker 2>/dev/null || true
+          git remote add s30-broker "git@github.com:${GITHUB_REPOSITORY}.git"
+          export GIT_SSH_COMMAND="ssh -i ${HOME}/.ssh/s30_broker_ed25519 -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
+          git push s30-broker "${source_sha}:refs/heads/${S30_TARGET_BRANCH}"
+          remote_sha="$(git ls-remote s30-broker "refs/heads/${S30_TARGET_BRANCH}" | awk '{print $1}')"
+          [[ "${remote_sha}" == "${source_sha}" ]] || { echo "BLOCK_S30_BROKER_POST_PUSH_READBACK_MISMATCH" >&2; exit 1; }
+          printf 'S30_BROKER_PUSH_PASS target=%s sha=%s\n' "${S30_TARGET_BRANCH}" "${remote_sha}"
+
+      - name: Remove ephemeral broker key
+        if: always()
+        shell: bash
+        run: rm -f "${HOME}/.ssh/s30_broker_ed25519"
