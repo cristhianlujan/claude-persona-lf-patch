@@ -23,12 +23,15 @@
     ]
   },
   "stage_c_card": {
+    "selection_policy": "OPTIONAL_CARD_UNLESS_EXPLICITLY_REQUIRED",
+    "candidate_source": "RUNTIME_CONTEXT_CARD_CANDIDATES",
+    "card_required": false,
+    "expected_candidate_count": 0,
     "decision": "NO_CARD_GOVERNED",
-    "reason": "GENERIC_SERVICE_MARKETPLACE_WITHOUT_MARKETPLACE_LF_CONTEXT_PACK",
-    "candidate_reviewed": "cards/marketplace_lf/decision_product_experience/CARD.md",
-    "candidate_runtime_status": "DISABLED",
-    "required_but_missing_context": "MarketPlace LF context pack",
-    "schema_invention_allowed": false
+    "reason": "NO_APPLICABLE_CARD",
+    "schema_invention_allowed": false,
+    "no_card_is_valid": true,
+    "next_gate": "D_AUTHORITY_RESOLUTION"
   },
   "stage_d_authority": {
     "surface_code": "UI_SCREEN_DESIGN",
