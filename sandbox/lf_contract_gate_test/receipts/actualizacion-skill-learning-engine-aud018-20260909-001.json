@@ -1,0 +1,45 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "schema": "LF_GOVERNED_SKILL_UPDATE_RECEIPT_V1",
+  "operation_code": "ACTUALIZACION_SKILL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-SKILL-LEARNING-ENGINE-AUD018-20260909-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "e986cfa8b5be5aa0f7a5ab4d15c88327837eef1c454ba88d441e5af084dd0d39",
+  "judge_sha": "b737762803280145554fb6f110e9de512cb5334c14a7cf3b86c9399ce53b6537",
+  "source_sha_list": [
+    "5f33c4ce25fca201c109d31be5c2e1e1ec465afc",
+    "785565c693f66c84e800c8287ab73390b025755e",
+    "cb8626c81554fd86abaee8994d621a68562fd7dcfa90fd4fc356268fe889f054",
+    "b959000dcc209c43aa7e57e3a0a6bfe031029e7a6bd33c9ba8f6f88e0fc02c63"
+  ],
+  "target_paths": [
+    "skills/learning_engine/evals/real_cases/aud018_route_baseline/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-10T04:10:42Z",
+  "target_type": "SKILL",
+  "target_code": "ACT-0046",
+  "target_path": "skills/learning_engine",
+  "branch": "lf/motor-aud018-baseline-governed-20260909",
+  "user_authorization": "CURRENT_CHAT_20260909_EMPECEMOS_PR_AUTONOMOS_INPUT_OUTPUT",
+  "judge_clean_required_steps": "14/14",
+  "deterministic_validation": {
+    "positive": "MOTOR_AUD018_BASELINE_RECEIPT_PASS rc=0",
+    "negative": "mutated Router output rejected rc=1"
+  },
+  "semantic_judge": {
+    "result": "PASS_WITH_SCOPE_RESTRICTIONS",
+    "evidence_ceiling": "ROUTER_BASELINE_ONLY_LEARNING_ENGINE_NOT_EXECUTED",
+    "independent_evaluator_claim": false
+  },
+  "runtime_unchanged": true,
+  "automatic_promotion": false,
+  "s26_mutation": false,
+  "s30_mutation": false,
+  "merge_authorized": false,
+  "state_ceiling": "REAL_ROUTER_BASELINE_ONLY_NO_LEARNING_ENGINE_BEHAVIORAL_PASS",
+  "next_gate": "CREATE_SEPARATE_GOVERNED_EXECUTION_ROUTE_CANDIDATE_PR_FROM_FRESH_MAIN"
+}
