@@ -1,0 +1,83 @@
+{
+  "receipt_version": "S30_B_DATA_ACCESS_SAFETY_V3",
+  "lane": "S30-B",
+  "execution_id": "S30-B-LIVE-REPAIR-20260909-001",
+  "verification_state": "PR_EVENT_CI_PENDING",
+  "candidate_claim_ceiling": "FIELD_LEVEL_DATA_ACCESS_AND_SCHEMA_SAFETY_CANDIDATE_PASS",
+  "frozen_base_main_sha": "62b3e188bb91ebad1fbeec0c6e04b13eaf20026d",
+  "observed_at": "2026-09-10T02:37:06.749998+00:00",
+  "governance_bootstrap": {
+    "router": "ACT-0001:v0.3",
+    "ekb_loaded_before_material_work": true,
+    "ekb_codes": [
+      "DB-001",
+      "GOV-010",
+      "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001",
+      "ROUTER-UNREGISTERED-ASSET-TYPE-001"
+    ],
+    "policies_loaded": [
+      "POL-LF-OPERATION-LIFECYCLE",
+      "POL-LF-POLICY-CONSUMPTION"
+    ],
+    "new_ekb_code_created": false,
+    "new_ekb_recurrence_persisted": false,
+    "ekb_persistence_reason": "NO_NEW_FAILURE_CLASS_OR_RECURRENCE_OBSERVED_IN_THIS_REPAIR_BATCH"
+  },
+  "rematerialization": {
+    "source_pr": 623,
+    "source_head": "28ac1bc96fc0b25783007914db2fd17e956273e2",
+    "source_status": "STALE_AFTER_MAIN_ADVANCE",
+    "new_branch": "lf/s30-b-live-repair-20260909",
+    "logic_reused_byte_identical": [
+      "sandbox/lf_contract_gate_test/s30_data_access_candidate/lf_data_access.py",
+      "sandbox/lf_contract_gate_test/s30_data_access_candidate/test_s30_data_access_v2.py"
+    ],
+    "registry_rebound_to_current_main": true,
+    "shared_workflow_preserved_from_current_main": true
+  },
+  "schema_currentness": {
+    "registered_source_count": 15,
+    "canonical_fingerprint_source_count": 13,
+    "canonical_fingerprints_recomputed_live": 13,
+    "canonical_fingerprint_mismatch_count": 0,
+    "fallback_source_count": 2,
+    "fallback_physical_metadata_revalidated": 2,
+    "strategy_snapshot_schema_resolved_live": true,
+    "strategy_snapshot_constraints_resolved_live": true,
+    "strategy_snapshot_indexes_resolved_live": true,
+    "strategy_snapshot_fingerprint": "0a519ad2fb36cebafd574773a9b1e5ee70b7db87a6d80c1482f5cc4734c73c57"
+  },
+  "live_positive_case": {
+    "source_key": "STRATEGY_SNAPSHOTS",
+    "object_identity": "public.lf_strategy_snapshots",
+    "allowed_filter": "id=35",
+    "result": "PASS",
+    "row_count": 1,
+    "snapshot_code": "LF_OPERATING_CONSTITUTION_POLICY_AUTONOMOUS_OPERATIONS_20260906",
+    "status": "CANDIDATO_READ_ONLY",
+    "runtime_state": "PLAN_ONLY",
+    "impact_policy": "BLOQUEADO"
+  },
+  "negative_guard": {
+    "suite": "test_s30_data_access_v2.py",
+    "required_behavior": "UNREGISTERED_OR_NONEXISTENT_FIELD_BLOCKS_BEFORE_DEPENDENT_BACKEND",
+    "push_ci_run": 34430127737,
+    "guard_step": "Validate S30-B data access safety candidate v2",
+    "guard_step_result": "SUCCESS",
+    "guard_position": "BEFORE_HEAVY_DEPENDENCY_INSTALL",
+    "negative_backend_escape_count_expected": 0
+  },
+  "safety": {
+    "snapshot_35_mutated": false,
+    "supabase_ddl_created": false,
+    "runtime_activation": false,
+    "production_activation": false,
+    "scheduler_modified": false,
+    "s26_modified": false
+  },
+  "remaining_gates": [
+    "PR_EVENT_EXACT_HEAD_CI",
+    "GLOBAL_CONTRACT_CHECK",
+    "MAIN_RACE_RECHECK_BEFORE_MERGE"
+  ]
+}
