@@ -22,6 +22,6 @@
     "cross_run_authority_allowed": false,
     "next_gate": "E_ADAPTER_TYPED_CONTEXT"
   },
-  "stage_e_context": {"typed_context_schema":"LF_RUNTIME_TYPED_CONTEXT_V1","upstream_gate_required":"D_AUTHORITY_RESOLUTION","required_adapter_codes":[],"output_contract_version":"UI_PRODUCTION_SPEC_V6","profile_slug":"ui_architect","runtime_execution_allowed_in_this_stage":false,"model_weight_acquisition_allowed":false,"paid_fallback_allowed":false},
+  "stage_e_context": {"typed_context_schema":"LF_RUNTIME_TYPED_CONTEXT_V1","upstream_gate_required":"D_AUTHORITY_RESOLUTION","required_adapter_codes":[],"output_contract_version":"UI_PRODUCTION_SPEC_V6","profile_slug":"ui_architect","runtime_execution_allowed_in_this_stage":false,"model_weight_acquisition_allowed":false,"paid_fallback_allowed":false,"next_gate":"F_PROFILE_EXECUTION"},
   "claim_ceiling": "PREEXECUTION_TYPED_CONTEXT_ONLY_NOT_RUNTIME_NOT_GOLDEN"
 }
