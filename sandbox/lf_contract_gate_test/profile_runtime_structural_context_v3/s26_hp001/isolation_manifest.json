@@ -11,6 +11,7 @@
   "main_drift_invalidates_test": false,
   "allowed_changed_paths": [
     "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_hp001_isolation.py",
+    "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_hp001_output.py",
     "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/"
   ],
   "required_event_evidence": [
