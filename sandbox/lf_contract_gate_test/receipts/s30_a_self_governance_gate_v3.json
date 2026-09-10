@@ -1,9 +1,9 @@
 {
   "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
-  "receipt_version": "v0.4",
+  "receipt_version": "v0.5-closeout",
   "issued_by": "contract_judge",
-  "operation_code": "S30_SELF_GOVERNANCE_GATE_V061_CLOSEOUT_PROTOCOL_REPAIR",
-  "execution_id": "S30-A-BROKER-V061-PREWRITE-20260910-001",
+  "operation_code": "S30_SELF_GOVERNANCE_GATE_V061_TRANSVERSAL_BROKER_CLOSEOUT",
+  "execution_id": "S30-A-BROKER-V061-CLOSEOUT-20260910-001",
   "result": "PASS_SANDBOX",
   "all_required_steps_pass": true,
   "contract_sha": "b0b43c48a20dc22eeb4d030e7f7022dcf215f36b",
@@ -22,15 +22,47 @@
   "blocking_codes": [],
   "issued_at": "2026-09-10T15:28:26Z",
   "evidence": {
-    "base_main_sha": "780b20c15c2de85eed83b59ae1612fcfc91670e8",
+    "base_main_sha": "c14807ac7d4201425d771dff3ecf35c480334278",
+    "closeout_status": "TRANSVERSAL_BROKER_PROMOTION_VERIFIED",
+    "owner_authorization_ref": "current-chat:Autorizo promoción v0.6 a main",
+    "promotion_prs": [
+      659,
+      660
+    ],
+    "promotion_merge_shas": [
+      "780b20c15c2de85eed83b59ae1612fcfc91670e8",
+      "c14807ac7d4201425d771dff3ecf35c480334278"
+    ],
+    "broker_dispatch_runs": [
+      34494828643,
+      34496165399
+    ],
+    "protected_validate_runs": [
+      34494900405,
+      34496229001
+    ],
+    "protected_contract_runs": [
+      34494900558,
+      34496229013
+    ],
+    "pr_validate_runs": [
+      34495169607,
+      34496468530
+    ],
+    "pr_contract_runs": [
+      34495169557,
+      34496468505
+    ],
+    "main_validate_runs": [
+      34495460868,
+      34496740730
+    ],
+    "main_contract_runs": [
+      34495460885,
+      34496740478
+    ],
     "self_governance_self_test": "PASS_31_CASES",
-    "prewrite_result": "PASS_TO_BOUNDED_GUARD_REPAIR",
-    "repair_goal": "permit evidence-only CLOSEOUT on exact repair allowlist",
-    "prior_promotion_pr": 659,
-    "prior_main_validate_run_id": 34495460868,
-    "prior_main_contract_check_run_id": 34495460885,
-    "promotion_authority": "NONE",
-    "fresh_exact_head_ci": "REQUIRED_AFTER_THIS_RECEIPT_COMMIT",
+    "closeout_result": "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CANDIDATE_PASS",
     "runtime_changed": false,
     "production_changed": false,
     "s26_mutated": false,
