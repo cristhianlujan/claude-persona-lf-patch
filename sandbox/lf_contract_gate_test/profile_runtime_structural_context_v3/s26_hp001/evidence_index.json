@@ -1,0 +1,55 @@
+{
+  "schema": "S26_HP001_EVIDENCE_INDEX_V1",
+  "project_id": "S26",
+  "test_id": "S26-HP-001",
+  "source_base_sha": "db88d66dc2b79fb081748fb4a86d4057f30adb18",
+  "source_base_branch": "lf/s26-hp001-base-db88d",
+  "candidate_branch": "lf/s26-hp001-isolated-20260909",
+  "candidate_sha_authority": "GITHUB_EVENT_HEAD_SHA",
+  "merge_ref_is_candidate": false,
+  "exact_input_sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1",
+  "exact_output_sha256": "712fcb036a4db6ded06615f0ec1c4dd7b9d475fa6208f5b9fc72c7688b9f01d6",
+  "pre_evidence_proof": {
+    "head_sha": "3c1e6528e7b405261aab07474cff6048819b94bf",
+    "validate_lf_packs_run_id": 34433140044,
+    "validate_lf_packs_result": "SUCCESS",
+    "lf_contract_push_run_id": 34433140001,
+    "lf_contract_pr_run_id": 34433143278,
+    "profile_runtime_v3_test_count": 32,
+    "profile_runtime_v3_failure_count": 0
+  },
+  "stage_evidence": {
+    "GATE_0_ISOLATION": "PASS",
+    "A_INPUT": "PASS",
+    "B_EKB": "PASS_CONTROL_PLANE_READBACK",
+    "C_CARD": "PASS_NO_CARD_GOVERNED",
+    "D_AUTHORITY": "PASS_PROVENANCE_BOUND",
+    "E_TYPED_CONTEXT": "PASS",
+    "F_PROFILE_EXECUTION": "PASS_CURRENT_CHAT_MANUAL_PROFILE_RUN",
+    "G_CONTRACT_SHAPE": "PASS_CANONICAL_VALIDATORS",
+    "H_MATERIAL_REQUIREMENTS": "PASS",
+    "I_EVIDENCE": "MATERIALIZED_BY_THIS_INDEX_AND_TABLES",
+    "J_REPLAY": "REQUIRED_ON_FINAL_EVENT_HEAD"
+  },
+  "negative_controls": [
+    "main_drift_does_not_change_identity",
+    "shared_workflow_path_not_allowed",
+    "shared_runtime_path_not_allowed",
+    "merge_ref_not_candidate_sha",
+    "missing_search_blocks",
+    "missing_price_blocks",
+    "missing_professional_intent_blocks",
+    "create_new_remediation_blocks",
+    "composer_metadata_leak_blocks"
+  ],
+  "safety": {
+    "production_effect": false,
+    "automatic_model_runtime_used": false,
+    "model_weight_acquisition_performed": false,
+    "paid_fallback_performed": false,
+    "zip_delivery_used": false
+  },
+  "independent_review_status": "NOT_EXECUTED_SEPARATE_REVIEW_REQUIRED",
+  "golden_status": "NOT_GOLDEN",
+  "claim_ceiling": "HP001_DETERMINISTIC_EVIDENCE_PENDING_FINAL_REPLAY_AND_INDEPENDENT_REVIEW"
+}
