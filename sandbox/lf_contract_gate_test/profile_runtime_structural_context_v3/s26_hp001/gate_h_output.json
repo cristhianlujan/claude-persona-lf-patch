@@ -1,0 +1,44 @@
+{
+  "artifact": {
+    "mode": "EXACT_RUNTIME_MATERIALIZED_OUTPUT",
+    "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_exact_materialized_output.json",
+    "sha256": "9f1c3c8bb90e6fc279998273d59d043273791c2e5b7793307db4be9d3e0ab5c2"
+  },
+  "checks": {
+    "category_navigation": true,
+    "composer_handoff_bound": true,
+    "design_intent": true,
+    "featured_services": true,
+    "header_search": true,
+    "implementation_ready": true,
+    "service_card_fields": true,
+    "service_cards": true
+  },
+  "claim_ceiling": "H_MATERIAL_REQUIREMENTS_PASS_EXACT_RUNTIME_PENDING_EVIDENCE_READBACK_AND_INDEPENDENT_REVIEW_NOT_GOLDEN",
+  "gate": "H_MATERIAL_REQUIREMENTS",
+  "independent_semantic_review_performed": false,
+  "negative_controls": {
+    "composer_metadata_leak": "BLOCKS",
+    "create_new_remediation": "BLOCKS",
+    "missing_price": "BLOCKS",
+    "missing_professional_intent": "BLOCKS",
+    "missing_search": "BLOCKS"
+  },
+  "next_gate": "I_EVIDENCE",
+  "next_gate_authorized": true,
+  "production_effect": false,
+  "project_id": "S26",
+  "requirements": {
+    "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/expected_requirements.json",
+    "sha256": "68259474ec80a385135fa9ae1ffc69e006a6aaa37ad807fe8bf9dd11c4f8a730",
+    "validation_mode": "MATERIAL_REQUIREMENTS_NOT_LITERAL_REFERENCE_MATCH"
+  },
+  "run_id": "S26-HP-001",
+  "schema": "S26_HP001_GATE_H_OUTPUT_V1",
+  "status": "PASS",
+  "upstream": {
+    "source_gate": "G_CONTRACT_SHAPE",
+    "source_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_g_output.json",
+    "source_sha256": "56639ed8529683e54ab51c41c2cad5daefd67a389c98604060a748846ad32069"
+  }
+}

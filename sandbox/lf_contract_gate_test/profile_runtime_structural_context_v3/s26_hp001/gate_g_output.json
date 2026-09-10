@@ -1,0 +1,38 @@
+{
+  "artifact": {
+    "mode": "EXACT_RUNTIME_MATERIALIZED_OUTPUT",
+    "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_exact_materialized_output.json",
+    "sha256": "9f1c3c8bb90e6fc279998273d59d043273791c2e5b7793307db4be9d3e0ab5c2"
+  },
+  "claim_ceiling": "G_CONTRACT_SHAPE_PASS_EXACT_RUNTIME_NOT_INDEPENDENT_REVIEW_NOT_GOLDEN",
+  "gate": "G_CONTRACT_SHAPE",
+  "independent_semantic_review_performed": false,
+  "negative_controls": {
+    "composer_metadata_leak": "BLOCKS"
+  },
+  "next_gate": "H_MATERIAL_REQUIREMENTS",
+  "next_gate_authorized": true,
+  "production_effect": false,
+  "project_id": "S26",
+  "run_id": "S26-HP-001",
+  "schema": "S26_HP001_GATE_G_OUTPUT_V1",
+  "status": "PASS",
+  "upstream": {
+    "candidate_source_sha": "d5f27f129464163d915b08a26be08ca117385482",
+    "source_gate": "F_PROFILE_EXECUTION",
+    "source_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_output.json",
+    "source_sha256": "87912fce0aa9b3851cd2c43d50ce1ed1c3bc327f3da4291995e5437226838baf"
+  },
+  "validators": [
+    {
+      "ref": "profiles/ui_architect/validators/validate_ui_architect_output.py",
+      "sha256": "28961009f4308c2459be13cd413e250da8b5801a7c7b746105e8eafbc5ce53ed",
+      "status": "PASS"
+    },
+    {
+      "ref": "profiles/ui_architect/validators/validate_composer_payload_boundary.py",
+      "sha256": "d9300030b80c00ec2ca3a351a6126e6d19b8a82d748729b665920699f86718ff",
+      "status": "PASS"
+    }
+  ]
+}
