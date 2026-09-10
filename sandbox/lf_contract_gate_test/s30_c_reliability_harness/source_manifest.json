@@ -1,0 +1,76 @@
+{
+  "manifest_version": "S30-C-SOURCES-v3",
+  "build_run_version": "HARNESS_AND_GUARDS-R03",
+  "execution_policy": {
+    "default": "DETERMINISTIC_FIRST",
+    "model_allowed_only_for": "NON_DERIVABLE_SEMANTIC_GAP",
+    "model_output_contract": "S30_SEMANTIC_DELTA_V1",
+    "model_calls_expected_for_s30_c_build": 0,
+    "materialization": "DETERMINISTIC",
+    "guards_and_receipts": "DETERMINISTIC"
+  },
+  "frozen_main": {
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "branch": "main",
+    "sha": "2b6f2f918c4d6c3d66226cc1933728d61cbfe4cb",
+    "tree_sha": "552c014744a0f120891635fc180471553b180493"
+  },
+  "handoff": {
+    "name": "HANDOFF S30-C — Evidence Path, Freeze Gates y Historical Replay Harness.md",
+    "sha256": "6076f1af1bca284748c521acb870c03786fcb8a7da2cce389b587e9c6643d456",
+    "bytes": 5219,
+    "hash_provenance": "historical S30-C source manifest; handoff content re-read from File Library before rematerialization"
+  },
+  "upstream_frozen_receipts": {
+    "S30-A": {
+      "path": "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json",
+      "git_blob": "8b46a888aa7ae6af9fec79006369dcd233d11da2",
+      "sha256": "69e3972c0b3677232a01f5c33fd0f77ccbbc28901ad477fcb96892257a00f9ff",
+      "required_result": "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CANDIDATE_PASS"
+    },
+    "S30-B": {
+      "path": "sandbox/lf_contract_gate_test/s30_data_access_candidate/s30_b_final_receipt_v1.json",
+      "git_blob": "30cb872a08f926a285f1d27ef752659de49974d8",
+      "sha256": "ab902a8519a822679916b1a5dd3a1a8ab48f872fe4b0865bbac49d884c29f7ab",
+      "required_result": "FIELD_LEVEL_DATA_ACCESS_AND_SCHEMA_SAFETY_CANDIDATE_PASS"
+    },
+    "S30-B-evidence": {
+      "path": "sandbox/lf_contract_gate_test/s30_data_access_candidate/s30_b_candidate_evidence_v4.json",
+      "git_blob": "d91c41871c443ff888ed3dc910749d48482e8b28",
+      "sha256": "a7af3b49672ef3ad5d8c9e1193758f9e9366d5a0022f0697974c2917f5703527",
+      "required_state": "FINAL_CLOSED"
+    }
+  },
+  "supabase": {
+    "project_id": "mhwmirqcgxxukpctffuv",
+    "strategy_snapshot": {
+      "table": "public.lf_strategy_snapshots",
+      "id": 35,
+      "sha256": "60f73f0d09a97128a7e77e1118cbee0a1d3500e588b344ebddab0d786c9cbcf9"
+    },
+    "ekb_rows": {
+      "CI-003": "0bf15c1f7650437de4299abc1ae0609c3d456372f2257d92db952d71a10e9f29",
+      "DB-001": "537cc75d46b84d8eb5735600ee20c0a7608f9c38840de10ce8a644de1a28c230",
+      "DB-SCHEMA-FIRST-COLUMN-ASSUMPTION-001": "fa12ef74dce75e0407d7fcc8d2462bfaa6fdcceb3d355a7cbac32b87bc8fff1c",
+      "GOV-010": "10bf1729f15d7d30b3e3305d9dceaa794934bad9ca97e75e648be6b07a5a30df",
+      "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001": "ad7b0d841de6da5f388ce6eee585be6b7fe1ea0643e6d4ac3281a998b712e463"
+    },
+    "db_row_hash_canonicalization": "sha256(UTF8(to_jsonb(row)::text)) via extensions.digest"
+  },
+  "ci_wiring": {
+    "authorized_workflow": ".github/workflows/validate-lf-packs.yml",
+    "workflow_git_blob": "9c6d608d3b39faa64c5cce00a49ae0d3037aa2fa",
+    "workflow_sha256": "d607a3a98724b94722bdf3bf89583ef2b43b1c8ba32a048041d7244d9ddfbbf3",
+    "discovery_contract": "tests=(sandbox/lf_contract_gate_test/s30_*/test_*.py)",
+    "dedicated_s30c_workflow_required": false
+  },
+  "scope_guards": {
+    "touch_s26": false,
+    "modify_s30_a_or_b": false,
+    "activate_autonomy": false,
+    "scheduler": false,
+    "runtime_or_production": false,
+    "merge_or_promote": false,
+    "final_r09_acceptance_in_c": false
+  }
+}
