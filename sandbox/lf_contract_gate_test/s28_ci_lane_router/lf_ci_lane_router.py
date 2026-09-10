@@ -6,15 +6,22 @@ unknown or invalid ownership fail-closed instead of granting specialized N/A.
 """
 from __future__ import annotations
 
-from pathlib import PurePosixPath
+import importlib.util
+import sys
+from pathlib import Path, PurePosixPath
 from typing import Iterable, Mapping, Any
 
-from s30_lane_ownership import (
-    CompiledRegistry,
-    RegistryValidationError,
-    compile_registry,
-    load_registry,
-)
+_OWNERSHIP_PATH = Path(__file__).with_name("s30_lane_ownership.py")
+_OWNERSHIP_SPEC = importlib.util.spec_from_file_location("s30_lane_ownership", _OWNERSHIP_PATH)
+if _OWNERSHIP_SPEC is None or _OWNERSHIP_SPEC.loader is None:
+    raise ImportError(f"cannot load S30 ownership helper: {_OWNERSHIP_PATH}")
+_OWNERSHIP = importlib.util.module_from_spec(_OWNERSHIP_SPEC)
+sys.modules[_OWNERSHIP_SPEC.name] = _OWNERSHIP
+_OWNERSHIP_SPEC.loader.exec_module(_OWNERSHIP)
+CompiledRegistry = _OWNERSHIP.CompiledRegistry
+RegistryValidationError = _OWNERSHIP.RegistryValidationError
+compile_registry = _OWNERSHIP.compile_registry
+load_registry = _OWNERSHIP.load_registry
 
 MIGRATION_PREFIX = "supabase/migrations/"
 MIGRATION_VALIDATOR = "sandbox/lf_contract_gate_test/lf_migration_source_parity.py"
