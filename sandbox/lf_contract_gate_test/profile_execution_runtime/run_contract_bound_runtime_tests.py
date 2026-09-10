@@ -40,12 +40,31 @@ def make_contract(mode="GPT_NATIVE"):
 
 
 class NativeAdapter:
-    adapter_id = "native-test-adapter"
     is_test_double = True
+
+    def __init__(self, mode="GPT_NATIVE", *, provider=None, attested_mode=None, model_id=None):
+        ids = {
+            "GPT_NATIVE": "chatgpt-native-current-context-v1",
+            "CLAUDE_NATIVE": "claude-native-current-context-v1",
+            "REMOTE_API": "cloudflare-workers-ai-v1",
+        }
+        default_providers = {
+            "GPT_NATIVE": "OPENAI_CHATGPT_NATIVE",
+            "CLAUDE_NATIVE": "ANTHROPIC_CLAUDE_NATIVE",
+            "REMOTE_API": "CLOUDFLARE_WORKERS_AI",
+        }
+        default_models = {
+            "GPT_NATIVE": "gpt-native-test",
+            "CLAUDE_NATIVE": "claude-native-test",
+            "REMOTE_API": "@cf/test/model",
+        }
+        self.adapter_id = ids[mode]
+        self.provider = provider or default_providers[mode]
+        self.attested_mode = mode if attested_mode is None else attested_mode
+        self.model_id = model_id or default_models[mode]
 
     def execute(self, request):
         assert request["execution_contract"]["contract_sha256"] == request["execution_contract_sha256"]
-        assert request["executor_mode"] in {"GPT_NATIVE", "CLAUDE_NATIVE"}
         return {
             "response_type": RESPONSE_TYPE,
             "raw_output": {
@@ -54,11 +73,12 @@ class NativeAdapter:
                 "deliverable_created": {"screen_definition": {"task_mode": "REMEDIATE_EXISTING"}},
             },
             "runtime_attestation": {
-                "provider": "native-test-provider",
-                "model_id": "native-model-test",
+                "provider": self.provider,
+                "model_id": self.model_id,
                 "run_id": "native-run-001",
                 "attested_at": "2026-09-08T18:00:00+00:00",
                 "adapter_id": self.adapter_id,
+                "executor_mode": self.attested_mode,
                 "request_sha256": request["request_sha256"],
                 "profile_source_sha256": request["profile_source_sha256"],
                 "input_sha256": request["input_sha256"],
@@ -93,7 +113,7 @@ def run(mode):
         profile_slug="ui_architect",
         profile_sources=PROFILE_SOURCES,
         input_literal=INPUT,
-        adapter=NativeAdapter(),
+        adapter=NativeAdapter(mode),
         attestation_verifier=NativeVerifier(),
         allow_test_doubles=True,
     )
@@ -119,8 +139,113 @@ def main():
     assert claude["request"]["execution_contract"]["schema"] == "LF_PROFILE_EXECUTION_CONTRACT_V1"
     passed += 1
 
+    remote_contract, remote = run("REMOTE_API")
+    assert remote["executor_mode"] == "REMOTE_API"
+    passed += 1
+
     assert gpt["request"]["request_sha256"] != claude["request"]["request_sha256"]
     assert gpt_contract["contract_sha256"] != claude_contract["contract_sha256"]
+    assert remote_contract["contract_sha256"] not in {gpt_contract["contract_sha256"], claude_contract["contract_sha256"]}
+    passed += 1
+
+    # Cross-mode mismatch must fail before the adapter is invoked.
+    mismatch_contract = make_contract("GPT_NATIVE")
+    try:
+        execute_contract_bound_profile_runtime(
+            execution_contract=mismatch_contract,
+            execution_id=mismatch_contract["run_id"],
+            profile_code=mismatch_contract["profile_code"],
+            profile_slug="ui_architect",
+            profile_sources=PROFILE_SOURCES,
+            input_literal=INPUT,
+            adapter=NativeAdapter("REMOTE_API"),
+            attestation_verifier=NativeVerifier(),
+            allow_test_doubles=True,
+        )
+    except RuntimeExecutionBlocked as exc:
+        assert exc.code == "EXECUTOR_MODE_ADAPTER_MISMATCH"
+    else:
+        raise AssertionError("GPT_NATIVE with REMOTE_API adapter must block")
+    passed += 1
+
+    provider_contract = make_contract("GPT_NATIVE")
+    try:
+        execute_contract_bound_profile_runtime(
+            execution_contract=provider_contract,
+            execution_id=provider_contract["run_id"],
+            profile_code=provider_contract["profile_code"],
+            profile_slug="ui_architect",
+            profile_sources=PROFILE_SOURCES,
+            input_literal=INPUT,
+            adapter=NativeAdapter("GPT_NATIVE", provider="CLOUDFLARE_WORKERS_AI"),
+            attestation_verifier=NativeVerifier(),
+            allow_test_doubles=True,
+        )
+    except RuntimeExecutionBlocked as exc:
+        assert exc.code == "EXECUTOR_MODE_PROVIDER_MISMATCH"
+    else:
+        raise AssertionError("GPT_NATIVE with remote provider must block")
+    passed += 1
+
+    for contract_mode, adapter_mode in (
+        ("CLAUDE_NATIVE", "GPT_NATIVE"),
+        ("REMOTE_API", "GPT_NATIVE"),
+    ):
+        cross_contract = make_contract(contract_mode)
+        try:
+            execute_contract_bound_profile_runtime(
+                execution_contract=cross_contract,
+                execution_id=cross_contract["run_id"],
+                profile_code=cross_contract["profile_code"],
+                profile_slug="ui_architect",
+                profile_sources=PROFILE_SOURCES,
+                input_literal=INPUT,
+                adapter=NativeAdapter(adapter_mode),
+                attestation_verifier=NativeVerifier(),
+                allow_test_doubles=True,
+            )
+        except RuntimeExecutionBlocked as exc:
+            assert exc.code == "EXECUTOR_MODE_ADAPTER_MISMATCH"
+        else:
+            raise AssertionError(f"{contract_mode} with {adapter_mode} adapter must block")
+        passed += 1
+
+    model_contract = make_contract("CLAUDE_NATIVE")
+    try:
+        execute_contract_bound_profile_runtime(
+            execution_contract=model_contract,
+            execution_id=model_contract["run_id"],
+            profile_code=model_contract["profile_code"],
+            profile_slug="ui_architect",
+            profile_sources=PROFILE_SOURCES,
+            input_literal=INPUT,
+            adapter=NativeAdapter("CLAUDE_NATIVE", model_id="mistral-test"),
+            attestation_verifier=NativeVerifier(),
+            allow_test_doubles=True,
+        )
+    except RuntimeExecutionBlocked as exc:
+        assert exc.code == "EXECUTOR_MODE_MODEL_ID_MISMATCH"
+    else:
+        raise AssertionError("CLAUDE_NATIVE with non-Claude model must block")
+    passed += 1
+
+    attestation_contract = make_contract("CLAUDE_NATIVE")
+    try:
+        execute_contract_bound_profile_runtime(
+            execution_contract=attestation_contract,
+            execution_id=attestation_contract["run_id"],
+            profile_code=attestation_contract["profile_code"],
+            profile_slug="ui_architect",
+            profile_sources=PROFILE_SOURCES,
+            input_literal=INPUT,
+            adapter=NativeAdapter("CLAUDE_NATIVE", attested_mode="GPT_NATIVE"),
+            attestation_verifier=NativeVerifier(),
+            allow_test_doubles=True,
+        )
+    except RuntimeExecutionBlocked as exc:
+        assert exc.code == "EXECUTOR_MODE_ATTESTATION_MISMATCH"
+    else:
+        raise AssertionError("attested executor mode mismatch must block")
     passed += 1
 
     wrong_run = make_contract()
@@ -162,7 +287,7 @@ def main():
         raise AssertionError("tampered contract must block")
     passed += 1
 
-    print(f"CONTRACT_BOUND_PROFILE_RUNTIME_TESTS_PASS {passed}/5")
+    print(f"CONTRACT_BOUND_PROFILE_RUNTIME_TESTS_PASS {passed}/12")
 
     source_first_test = Path(__file__).with_name("run_s26_source_first_runtime_tests.py")
     subprocess.run([sys.executable, str(source_first_test)], check=True)
@@ -173,3 +298,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

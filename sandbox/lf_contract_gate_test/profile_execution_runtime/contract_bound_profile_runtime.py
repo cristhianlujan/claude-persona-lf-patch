@@ -21,6 +21,100 @@ from profile_runtime_runner import (
 from validate_profile_execution import build_receipt, canonical_json_sha256
 
 
+EXECUTOR_ADAPTER_IDENTITY = {
+    # Native chat executors. These IDs are deliberately distinct from API adapters.
+    "chatgpt-native-current-context-v1": {
+        "executor_mode": "GPT_NATIVE",
+        "providers": {"OPENAI_CHATGPT_NATIVE"},
+        "model_markers": ("gpt",),
+    },
+    "claude-native-current-context-v1": {
+        "executor_mode": "CLAUDE_NATIVE",
+        "providers": {"ANTHROPIC_CLAUDE_NATIVE"},
+        "model_markers": ("claude",),
+    },
+    # Remote/API executors. Availability never implies permission to use a different mode.
+    "cloudflare-workers-ai-v1": {
+        "executor_mode": "REMOTE_API",
+        "providers": {"CLOUDFLARE_WORKERS_AI"},
+        "model_markers": ("@cf/",),
+    },
+    "openai-responses-v1": {
+        "executor_mode": "REMOTE_API",
+        "providers": {"openai"},
+        "model_markers": ("gpt", "o1", "o3", "o4"),
+    },
+    "github-standard-llamacpp-qwen25vl-v1": {
+        "executor_mode": "REMOTE_API",
+        "providers": {"local_llama_cpp_github_standard_public"},
+        "model_markers": ("qwen",),
+    },
+    "persistent-cpu-llamacpp-qwen25vl-v1": {
+        "executor_mode": "REMOTE_API",
+        "providers": {"local_llama_cpp_persistent_cpu"},
+        "model_markers": ("qwen",),
+    },
+    "hetzner-local-llamacpp-http-v1": {
+        "executor_mode": "REMOTE_API",
+        "providers": {"local_llama_cpp_hetzner_persistent"},
+        "model_markers": ("qwen", "model.gguf"),
+    },
+}
+
+
+def _executor_identity(adapter: RuntimeAdapter) -> dict[str, Any]:
+    adapter_id = getattr(adapter, "adapter_id", None)
+    identity = EXECUTOR_ADAPTER_IDENTITY.get(adapter_id)
+    if identity is None:
+        raise RuntimeExecutionBlocked(
+            "EXECUTOR_ADAPTER_IDENTITY_UNREGISTERED",
+            str(adapter_id or "MISSING"),
+        )
+    return identity
+
+
+def _validate_executor_identity_pre_call(*, executor_mode: str, adapter: RuntimeAdapter) -> None:
+    identity = _executor_identity(adapter)
+    if identity["executor_mode"] != executor_mode:
+        raise RuntimeExecutionBlocked(
+            "EXECUTOR_MODE_ADAPTER_MISMATCH",
+            f"mode={executor_mode};adapter_id={adapter.adapter_id};expected_mode={identity['executor_mode']}",
+        )
+
+
+def _validate_executor_identity_post_call(
+    *, executor_mode: str, adapter: RuntimeAdapter, runtime_attestation: dict[str, Any]
+) -> None:
+    identity = _executor_identity(adapter)
+    provider = runtime_attestation.get("provider")
+    if provider not in identity["providers"]:
+        raise RuntimeExecutionBlocked(
+            "EXECUTOR_MODE_PROVIDER_MISMATCH",
+            f"mode={executor_mode};adapter_id={adapter.adapter_id};provider={provider}",
+        )
+    attested_mode = runtime_attestation.get("executor_mode")
+    if attested_mode != executor_mode:
+        code = (
+            "EXECUTOR_MODE_ATTESTATION_MISSING"
+            if attested_mode is None
+            else "EXECUTOR_MODE_ATTESTATION_MISMATCH"
+        )
+        raise RuntimeExecutionBlocked(
+            code,
+            f"mode={executor_mode};attested={attested_mode}",
+        )
+    model_id = str(runtime_attestation.get("model_id") or "").strip()
+    if not model_id:
+        raise RuntimeExecutionBlocked("EXECUTOR_MODE_MODEL_ID_MISSING")
+    model_id_lower = model_id.lower()
+    markers = tuple(str(item).lower() for item in identity.get("model_markers") or ())
+    if markers and not any(marker in model_id_lower for marker in markers):
+        raise RuntimeExecutionBlocked(
+            "EXECUTOR_MODE_MODEL_ID_MISMATCH",
+            f"mode={executor_mode};adapter_id={adapter.adapter_id};model_id={model_id}",
+        )
+
+
 def execute_contract_bound_profile_runtime(
     *,
     execution_contract: dict[str, Any],
@@ -48,6 +142,10 @@ def execute_contract_bound_profile_runtime(
 
     _validate_adapter(adapter, allow_test_doubles=allow_test_doubles)
     _validate_verifier(attestation_verifier, allow_test_doubles=allow_test_doubles)
+    _validate_executor_identity_pre_call(
+        executor_mode=execution_contract["executor_mode"],
+        adapter=adapter,
+    )
 
     request = build_runtime_request(
         execution_id=execution_id,
@@ -76,6 +174,11 @@ def execute_contract_bound_profile_runtime(
         request=request,
         response=response,
         adapter=adapter,
+    )
+    _validate_executor_identity_post_call(
+        executor_mode=execution_contract["executor_mode"],
+        adapter=adapter,
+        runtime_attestation=runtime_attestation,
     )
 
     try:

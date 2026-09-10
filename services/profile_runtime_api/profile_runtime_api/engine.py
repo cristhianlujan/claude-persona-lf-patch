@@ -11,6 +11,8 @@ from .llama import (
     LlamaTransportError,
     PersistentLlamaServerAdapter,
     PersistentLlamaServerVerifier,
+    UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION,
+    decode_ui_production_transport,
 )
 from .models import BatchRequest, ExecuteRequest, ProfileTask, QueueExecuteRequest
 from .repository import RepositoryBindings
@@ -51,6 +53,153 @@ def _runtime_diagnostics(exc: BaseException) -> dict[str, Any] | None:
             return dict(diagnostics)
         current = current.__cause__ or current.__context__
     return None
+
+
+def _post_generation_diagnostics(adapter: Any, model_raw_output: Any) -> dict[str, Any]:
+    diagnostics: dict[str, Any] = {
+        "usage": adapter.last_completion.get("usage", {}),
+        "timings": adapter.last_completion.get("timings", {}),
+        "finish_reason": adapter.last_completion.get("finish_reason") or "UNAVAILABLE",
+        "generation_schema_sha256": adapter.last_completion.get("generation_schema_sha256"),
+        "generation_schema_policy": adapter.last_completion.get("generation_schema_policy"),
+    }
+    if isinstance(model_raw_output, str):
+        diagnostics.update({
+            "model_raw_output": model_raw_output,
+            "model_raw_output_sha256": sha256_text(model_raw_output),
+            "model_raw_output_chars": len(model_raw_output),
+        })
+    return diagnostics
+
+
+def _ui_hierarchy_depth(relations: Any) -> int:
+    if not isinstance(relations, list):
+        return 0
+    graph: dict[str, list[str]] = {}
+    for relation in relations:
+        if not isinstance(relation, dict):
+            continue
+        parent = relation.get("parent_id")
+        children = relation.get("child_ids")
+        if isinstance(parent, str) and isinstance(children, list):
+            graph.setdefault(parent, []).extend(
+                child for child in children if isinstance(child, str) and child
+            )
+    best = 0
+    stack: list[tuple[str, int, frozenset[str]]] = [("screen", 0, frozenset({"screen"}))]
+    while stack:
+        node, depth, seen = stack.pop()
+        best = max(best, depth)
+        for child in graph.get(node, []):
+            if child not in seen:
+                stack.append((child, depth + 1, seen | {child}))
+    return best
+
+
+def _ui_source_bindings_match(deliverable: dict[str, Any], acceptance: dict[str, Any]) -> bool:
+    rows = deliverable.get("component_tree")
+    if not isinstance(rows, list):
+        return False
+    components = {
+        row.get("component_id"): row
+        for row in rows
+        if isinstance(row, dict) and isinstance(row.get("component_id"), str)
+    }
+    bindings = acceptance.get("required_source_bindings")
+    if not isinstance(bindings, dict):
+        return False
+    for binding, expected in bindings.items():
+        if not isinstance(binding, str) or "." not in binding:
+            return False
+        component_id, field = binding.split(".", 1)
+        content = (components.get(component_id) or {}).get("content")
+        if not isinstance(content, dict):
+            return False
+        observed = content.get(field)
+        if field == "fields" and isinstance(expected, str):
+            expected_value: Any = expected.split("|")
+        else:
+            expected_value = expected
+        if observed != expected_value:
+            return False
+    return True
+
+
+def _deterministic_ui_outcome(
+    *, deliverable: dict[str, Any], acceptance: dict[str, Any], composer_payload: dict[str, Any]
+) -> dict[str, Any]:
+    """Derive self-score/handoff from verifiable structure; model never self-certifies UICT2."""
+    components = deliverable.get("component_tree")
+    component_ids = {
+        row.get("component_id") for row in components or []
+        if isinstance(row, dict) and isinstance(row.get("component_id"), str)
+    }
+    required_ids = set(acceptance.get("required_component_ids") or [])
+    required_states = set(acceptance.get("required_state_component_ids") or [])
+    state_map = deliverable.get("state_map")
+    risk_controls = deliverable.get("risk_controls")
+    layout = deliverable.get("layout_grid")
+    responsive_ok = isinstance(layout, dict) and all(
+        isinstance(layout.get(mode), str) and bool(layout.get(mode).strip())
+        for mode in acceptance.get("required_responsive_modes") or []
+    )
+    component_count_ok = (
+        isinstance(components, list)
+        and len(components) >= int(acceptance.get("minimum_component_count") or 0)
+        and required_ids.issubset(component_ids)
+    )
+    variants_ok = isinstance(components, list) and all(
+        isinstance(row, dict)
+        and isinstance(row.get("allowed_variants"), list) and bool(row.get("allowed_variants"))
+        and isinstance(row.get("blocked_variants"), list) and bool(row.get("blocked_variants"))
+        for row in components
+    )
+    state_ok = isinstance(state_map, dict) and required_states.issubset(set(state_map))
+    risk_ok = (
+        isinstance(risk_controls, list)
+        and len(risk_controls) >= int(acceptance.get("minimum_risk_control_count") or 0)
+    )
+    checks = {
+        "layout_precision": responsive_ok and isinstance(deliverable.get("spacing_typography"), dict),
+        "visual_hierarchy": _ui_hierarchy_depth(deliverable.get("visual_hierarchy")) >= int(acceptance.get("minimum_hierarchy_depth_edges") or 0),
+        "lf_system_fidelity": isinstance(deliverable.get("token_map"), dict) and risk_ok,
+        "state_mapping": state_ok,
+        "handoff_quality": component_count_ok and variants_ok and _ui_source_bindings_match(deliverable, acceptance) and bool(composer_payload),
+    }
+    refs = {
+        "layout_precision": ["layout_grid", "spacing_typography"],
+        "visual_hierarchy": ["visual_hierarchy"],
+        "lf_system_fidelity": ["token_map", "risk_controls"],
+        "state_mapping": ["state_map"],
+        "handoff_quality": ["component_tree", "handoff_to_next"],
+    }
+    score = {key: 4 if checks[key] else 0 for key in checks}
+    score["total"] = sum(score.values())
+    score["evidence_by_criterion"] = {
+        key: {
+            "refs": refs[key],
+            "summary": (
+                f"Deterministic acceptance check passed for {key}."
+                if checks[key]
+                else f"Deterministic acceptance check failed for {key}."
+            ),
+        }
+        for key in checks
+    }
+    passed = all(checks.values())
+    return {
+        "score": score,
+        "handoff_to_next": {
+            "recipient": "frontend_or_composer_agent",
+            "payload_ref": "composer_payload",
+            "status": (
+                "READY_FOR_DETERMINISTIC_AND_SEMANTIC_VALIDATION"
+                if passed else "BLOCKED_PENDING_REPAIR"
+            ),
+        },
+        "self_verdict": "PASS_TO_QUALITY_PACK_CANDIDATE" if passed else "BLOCKED",
+        "deterministic_acceptance": checks,
+    }
 
 
 def _governed_context(
@@ -169,6 +318,22 @@ class ProfileRuntimeEngine:
             raise LlamaTransportError("UI_PRODUCTION_MODEL_RAW_JSON_INVALID") from exc
         if not isinstance(payload, dict):
             raise LlamaTransportError("UI_PRODUCTION_MODEL_RAW_ROOT_NOT_OBJECT")
+        model_transport_root_keys = sorted(payload)
+        model_semantic_delta_keys = (
+            sorted(payload["d"])
+            if set(payload) == {"d"} and isinstance(payload.get("d"), dict)
+            else []
+        )
+        acceptance = task.input_fields.get("gate_f_acceptance")
+        payload, transport_kind = decode_ui_production_transport(
+            payload,
+            acceptance if isinstance(acceptance, dict) else None,
+            domain_scope=(
+                task.input_fields.get("domain_scope")
+                if isinstance(task.input_fields.get("domain_scope"), str)
+                else None
+            ),
+        )
 
         boundary = self.repository.load_ui_composer_boundary()
         expected_version = task.input_fields.get("output_contract_version")
@@ -177,7 +342,18 @@ class ProfileRuntimeEngine:
                 "UI_PRODUCTION_OUTPUT_CONTRACT_VERSION_MISMATCH", str(expected_version)
             )
         deliverable = payload.get("deliverable_created")
+        if not isinstance(deliverable, dict):
+            raise LlamaTransportError("UI_PRODUCTION_DELIVERABLE_MISSING")
         composer_payload = boundary.build_composer_payload(deliverable)
+        deterministic_outcome: dict[str, Any] | None = None
+        if transport_kind == UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION:
+            if not isinstance(acceptance, dict):
+                raise LlamaTransportError("UI_PRODUCTION_SEMANTIC_TRANSPORT_ACCEPTANCE_MISSING")
+            deterministic_outcome = _deterministic_ui_outcome(
+                deliverable=deliverable,
+                acceptance=acceptance,
+                composer_payload=composer_payload,
+            )
         governance_context = {
             "request_id": task.request_id,
             "runtime_source_sha": self.settings.source_sha,
@@ -197,6 +373,10 @@ class ProfileRuntimeEngine:
             },
             "composer_payload": composer_payload,
         }
+        deterministic_acceptance = None
+        if deterministic_outcome is not None:
+            deterministic_acceptance = deterministic_outcome.pop("deterministic_acceptance")
+            deterministic.update(deterministic_outcome)
         for key, expected in deterministic.items():
             if key in payload and payload[key] != expected:
                 raise LlamaTransportError("UI_PRODUCTION_DETERMINISTIC_FIELD_CONFLICT", key)
@@ -206,15 +386,37 @@ class ProfileRuntimeEngine:
             codes = ",".join(sorted({str(item.get("code")) for item in errors if isinstance(item, dict)}))
             raise LlamaTransportError("UI_PRODUCTION_DETERMINISTIC_MATERIALIZATION_INVALID", codes)
         materialized = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        deterministic_derivations = sorted(deterministic)
+        if transport_kind == UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION:
+            deterministic_derivations = sorted(set(deterministic_derivations) | {
+                "worker", "output_type", "component_ids", "source_bindings",
+                "layout_base_order", "screen_task_mode", "required_sections",
+                "design_intent", "risk_controls", "prompt_constraints",
+                "token_map_projection", "variant_guards",
+            })
         return materialized, {
             "mode": "UI_PRODUCTION_DETERMINISTIC_PROJECTION_V1",
             "model_raw_output_sha256": sha256_text(model_raw_output),
             "materialized_output_sha256": sha256_text(materialized),
             "deterministic_fields_added": sorted(deterministic),
+            "deterministic_derivations": deterministic_derivations,
+            "deterministic_first_policy": (
+                "KNOWN_AUTHORITY_TO_GRAPH__MODEL_SEMANTIC_DELTA__DETERMINISTIC_MATERIALIZATION"
+                if transport_kind == UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION
+                else "LEGACY_COMPATIBLE_MATERIALIZATION"
+            ),
             "composer_payload_sha256": canonical_json_sha256(composer_payload),
             "governance_context_sha256": canonical_json_sha256(governance_context),
-            "model_generated_root_keys": sorted(key for key in payload if key not in deterministic),
+            "model_transport_root_keys": model_transport_root_keys,
+            "model_semantic_delta_keys": model_semantic_delta_keys,
+            "model_generated_root_keys": (
+                [] if transport_kind == UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION
+                else sorted(key for key in payload if key not in deterministic)
+            ),
             "semantic_payload_mutated": False,
+            "semantic_transport": transport_kind or "CANONICAL_MODEL_RAW",
+            "transport_decoded": transport_kind is not None,
+            "deterministic_acceptance": deterministic_acceptance,
         }
 
     def _execute_queue_profile(self, *, task: ProfileTask, context_pack: dict[str, Any]) -> dict[str, Any]:
@@ -229,8 +431,13 @@ class ProfileRuntimeEngine:
         except Exception as exc:
             code,detail=_failure(exc); return self._profile_failure(task=task,code=code,detail=detail,stage="RUNTIME_COMPLETION",started=started,context=context,runtime_diagnostics=_runtime_diagnostics(exc))
         model_raw_output=runtime_package.get("raw_output")
-        materialized_output,materialization=self._materialize_runtime_output(task=task,model_raw_output=model_raw_output,governed_receipt=governed_receipt)
-        contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=materialized_output,schema=schema); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract)
+        try:
+            materialized_output,materialization=self._materialize_runtime_output(task=task,model_raw_output=model_raw_output,governed_receipt=governed_receipt)
+            contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=materialized_output,schema=schema); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract)
+        except Exception as exc:
+            code,detail=_failure(exc)
+            diagnostics=_runtime_diagnostics(exc) or _post_generation_diagnostics(adapter, model_raw_output)
+            return self._profile_failure(task=task,code=code,detail=detail,stage="POST_GENERATION_VALIDATION",started=started,context=context,runtime_diagnostics=diagnostics)
         completion={"status":"PASS","blocking_codes":[],"receipt":runtime_package.get("receipt"),"governed_context_receipt":governed_receipt,"attestation_verification":runtime_package.get("runtime_attestation_verification"),"llama_usage":adapter.last_completion.get("usage",{}),"llama_timings":adapter.last_completion.get("timings",{}),"output_materialization":materialization}
         return {"request_id":task.request_id,"profile_code":task.profile_code,"profile_slug":task.profile_slug,"context":context,"runtime_completion":completion,"profile_contract_valid":contract,"semantic_utility":semantic,"model_raw_output":model_raw_output,"raw_output":materialized_output,"elapsed_ms":round((time.perf_counter()-started)*1000,3),"downstream_authorized":False}
 
@@ -247,8 +454,13 @@ class ProfileRuntimeEngine:
         except Exception as exc:
             code,detail=_failure(exc); return self._profile_failure(task=task,code=code,detail=detail,stage="RUNTIME_COMPLETION",started=started,context=context,runtime_diagnostics=_runtime_diagnostics(exc))
         model_raw_output=runtime_package.get("raw_output")
-        materialized_output,materialization=self._materialize_runtime_output(task=task,model_raw_output=model_raw_output,governed_receipt=governed_receipt)
-        contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=materialized_output,schema=schema); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract)
+        try:
+            materialized_output,materialization=self._materialize_runtime_output(task=task,model_raw_output=model_raw_output,governed_receipt=governed_receipt)
+            contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=materialized_output,schema=schema); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract)
+        except Exception as exc:
+            code,detail=_failure(exc)
+            diagnostics=_runtime_diagnostics(exc) or _post_generation_diagnostics(adapter, model_raw_output)
+            return self._profile_failure(task=task,code=code,detail=detail,stage="POST_GENERATION_VALIDATION",started=started,context=context,runtime_diagnostics=diagnostics)
         completion={"status":"PASS","blocking_codes":[],"receipt":runtime_package.get("receipt"),"governed_context_receipt":governed_receipt,"attestation_verification":runtime_package.get("runtime_attestation_verification"),"llama_usage":adapter.last_completion.get("usage",{}),"llama_timings":adapter.last_completion.get("timings",{}),"output_materialization":materialization}
         return {"request_id":task.request_id,"profile_code":task.profile_code,"profile_slug":task.profile_slug,"context":context,"runtime_completion":completion,"profile_contract_valid":contract,"semantic_utility":semantic,"model_raw_output":model_raw_output,"raw_output":materialized_output,"elapsed_ms":round((time.perf_counter()-started)*1000,3),"downstream_authorized":False}
 
