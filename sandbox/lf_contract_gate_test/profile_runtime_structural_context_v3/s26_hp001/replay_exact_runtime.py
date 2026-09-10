@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import hashlib, importlib.util, json, subprocess
+import hashlib, importlib.util, json, subprocess, sys
 from pathlib import Path
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parents[3]
+PKG_ROOT=ROOT/'sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3'
+if str(PKG_ROOT) not in sys.path: sys.path.insert(0, str(PKG_ROOT))
 MANIFEST=HERE/'exact_replay_manifest.json'
 QDP=ROOT/'sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_quality_depth_performance.py'
 GH=HERE/'gate_g_h_exact.py'

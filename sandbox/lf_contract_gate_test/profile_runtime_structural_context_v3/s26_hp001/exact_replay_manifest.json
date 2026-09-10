@@ -31,6 +31,10 @@
     "model_raw": {
       "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_exact_model_output.json",
       "sha256": "8270b0ab381fed8ec3060c73bfe3cdb6ba645e184a64daa90eda22f7f75f8d1b"
+    },
+    "replay_runner": {
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/replay_exact_runtime.py",
+      "sha256": "e1cd5addcd7d90b70ff9a63f62f6eaf502933378755dc61df1f7e7766af809fa"
     }
   },
   "claim_ceiling": "EXACT_RUNTIME_DETERMINISTIC_REPLAY_NOT_INDEPENDENT_REVIEW_NOT_GOLDEN",
