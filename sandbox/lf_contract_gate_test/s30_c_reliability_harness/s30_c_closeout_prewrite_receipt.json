@@ -31,7 +31,7 @@
       ]
     }
   ],
-  "base_main_sha": "4cbb5d9785630b50f7d997369589e49e03a520cc",
+  "base_main_sha": "bbce2cbbd8be2821db86c6feb31bb43a1826a989",
   "causal_lane_ownership": {
     "ekb_code": "GOV-010",
     "evidence": "Isolated S30-C candidate from current main; does not modify A/B and owns only C harness/freeze/replay materialization.",
@@ -40,7 +40,7 @@
         "ekb_code": "GOV-010",
         "owner": "S30-C-RELIABILITY-R03",
         "primary_gate": "EVIDENCE_FREEZE_REPLAY",
-        "source_ref": "prewrite://S30-C-CLOSEOUT-R04-20260910",
+        "source_ref": "prewrite://S30-C-FINAL-R05-20260910",
         "state": "ACTIVE",
         "target_asset": "S30-C"
       }
@@ -54,11 +54,11 @@
     }
   },
   "evidence": {
-    "base_main_sha": "4cbb5d9785630b50f7d997369589e49e03a520cc",
-    "execution_id": "EXEC-S30-C-CLOSEOUT-R04-PREWRITE-20260910-001",
+    "base_main_sha": "bbce2cbbd8be2821db86c6feb31bb43a1826a989",
+    "execution_id": "EXEC-S30-C-FINAL-R05-PREWRITE-20260910-001",
     "historical_baseline_failure": "CI wiring stale against generic S30 discovery",
     "mode": "SANDBOX_NON_PRODUCTION",
-    "next_candidate": "S30-C-CLOSEOUT-R04",
+    "next_candidate": "S30-C-FINAL-R05",
     "production": false
   },
   "frontier": {
@@ -90,23 +90,23 @@
       "evidence": "Historical C source and current A/B receipts are resolvable.",
       "status": "PASS"
     },
-    "gate_id": "S30_C_CLOSEOUT_PREEXECUTION_R04",
+    "gate_id": "S30_C_FINAL_PREEXECUTION_R05",
     "input_exact": {
-      "base_main_sha": "4cbb5d9785630b50f7d997369589e49e03a520cc",
+      "base_main_sha": "bbce2cbbd8be2821db86c6feb31bb43a1826a989",
       "receipt_path": "sandbox/lf_contract_gate_test/s30_c_reliability_harness/s30_c_closeout_prewrite_receipt.json",
       "request_schema": "s30-git-broker/v1",
-      "source_ref": "lf/staging-s30-c-closeout-r04-20260910",
-      "target_branch": "lf/s30-c-closeout-r04-20260910"
+      "source_ref": "lf/staging-s30-c-final-r05-20260910",
+      "target_branch": "lf/s30-c-final-r05-20260910"
     },
-    "input_sha256": "d73332e88feb9b1a5e374cc5c3203f4be5525aa22c2140810c0170e1e79bc1e6",
-    "input_source_ref": "owner-conforme+github:main@4cbb5d9785630b50f7d997369589e49e03a520cc",
+    "input_sha256": "25562ce8fa5cc9b2ea5bd6c9059d234e4b838ca9158b20f5db67f6433c1996dd",
+    "input_source_ref": "owner-authorized-continuation+github:main@bbce2cbbd8be2821db86c6feb31bb43a1826a989",
     "output_exact": {
       "bounded_repair_allowed": false,
       "material_work_allowed": true,
       "promotion_authority": "NONE",
       "result": "PASS_TO_MATERIAL_WORK"
     },
-    "output_ref": "local-prewrite:S30-C-CLOSEOUT-R04",
+    "output_ref": "local-prewrite:S30-C-FINAL-R05",
     "output_sha256": "ec67088d3a1ecf4514180d148fb18aee30023fad41c8c7380bba0e7292b0f5d9",
     "performance": {
       "evidence": "S30-C build expects zero model calls and stdlib-only local execution.",
@@ -118,11 +118,11 @@
       "status": "PASS"
     },
     "repair_allowed": false,
-    "run_id": "EXEC-S30-C-CLOSEOUT-R04-PREWRITE-20260910-001",
-    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_c_reliability_harness/s30_c_closeout_prewrite_receipt.json --expected-base-main-sha 4cbb5d9785630b50f7d997369589e49e03a520cc"
+    "run_id": "EXEC-S30-C-FINAL-R05-PREWRITE-20260910-001",
+    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_c_reliability_harness/s30_c_closeout_prewrite_receipt.json --expected-base-main-sha bbce2cbbd8be2821db86c6feb31bb43a1826a989"
   },
   "git_write_binding": {
-    "base_main_sha": "4cbb5d9785630b50f7d997369589e49e03a520cc",
+    "base_main_sha": "bbce2cbbd8be2821db86c6feb31bb43a1826a989",
     "broker_probe": {
       "commit_sha": "e52aa00996ea7dfd416e5267aec0f03e226f3088",
       "evidence_ref": "github:commit/e52aa00996ea7dfd416e5267aec0f03e226f3088",
@@ -146,10 +146,10 @@
     "secret_name": "S30_BROKER_DEPLOY_KEY",
     "secret_present": true,
     "secret_required_before_dispatch": true,
-    "source_branch": "lf/staging-s30-c-closeout-r04-20260910",
+    "source_branch": "lf/staging-s30-c-final-r05-20260910",
     "status": "OPERATIONAL",
     "supabase_readback_ref": "supabase:public.lf_error_knowledge@20260910",
-    "target_branch": "lf/s30-c-closeout-r04-20260910",
+    "target_branch": "lf/s30-c-final-r05-20260910",
     "workflow_dispatch_wired": true,
     "workflow_path": ".github/workflows/validate-lf-packs.yml"
   },
@@ -353,7 +353,7 @@
     }
   },
   "receipt_mode": "PREWRITE",
-  "receipt_version": "S30_C_CLOSEOUT_PREWRITE_R04_V1",
+  "receipt_version": "S30_C_FINAL_R05_PREWRITE_V1",
   "repair_reason": null,
   "repair_target_ekb_codes": [],
   "safety_readback": {
