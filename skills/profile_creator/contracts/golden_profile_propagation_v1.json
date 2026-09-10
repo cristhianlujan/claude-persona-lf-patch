@@ -1,0 +1,66 @@
+{
+  "contract_code": "GOLDEN_PROFILE_PROPAGATION_V1",
+  "status": "CANDIDATE_DRY_RUN_ONLY",
+  "purpose": "Planificar la propagacion controlada de capacidades estructurales comunes desde un Profile Golden hacia perfiles existentes sin clonar semantica especifica ni debilitar ACTUALIZACION_PERFIL_LF.",
+  "parent_scope": "STRATEGY_26_GOLDEN_FAMILY",
+  "golden_source": {
+    "exact_profile_required": true,
+    "fingerprint_required": true,
+    "dry_run_allowed_before_e2e_pass": true,
+    "apply_requires_e2e_status": "FAMILY_E2E_PASS"
+  },
+  "child_execution": {
+    "operation_code": "ACTUALIZACION_PERFIL_LF",
+    "one_target_per_execution": true,
+    "isolated_history_required": true,
+    "execution_binding_before_write": true,
+    "existing_update_contract_remains_authority": true,
+    "automatic_promotion": false,
+    "runtime_enable": false,
+    "merge_authorized": false
+  },
+  "allowed_shared_components": [
+    "governance_route_contract",
+    "execution_binding_contract",
+    "evidence_lineage_contract",
+    "runtime_envelope_contract",
+    "deterministic_validation_boundary",
+    "semantic_review_boundary",
+    "failure_routing_contract",
+    "currentness_readback_contract",
+    "automatic_impact_guard"
+  ],
+  "preserved_profile_specific_components": [
+    "identity",
+    "role_and_purpose",
+    "domain_capabilities",
+    "profile_specific_instructions",
+    "profile_specific_output_schema",
+    "profile_specific_judges",
+    "profile_specific_evals",
+    "profile_specific_adapters",
+    "profile_specific_examples"
+  ],
+  "planning_rules": {
+    "mode": "DRY_RUN",
+    "no_repository_write": true,
+    "no_supabase_profile_mutation": true,
+    "no_runtime_transition": true,
+    "no_merge": true,
+    "reject_duplicate_targets": true,
+    "reject_golden_as_target": true,
+    "reject_unknown_shared_component": true,
+    "reject_profile_specific_component_in_delta": true,
+    "stable_plan_fingerprint_required": true,
+    "stable_child_idempotency_key_required": true
+  },
+  "rollup": {
+    "required_states": [
+      "PLANNED",
+      "BLOCKED",
+      "READY_FOR_CHILD_CANARY"
+    ],
+    "family_pass_not_claimable_from_planner": true,
+    "family_pass_requires_child_runtime_evidence": true
+  }
+}
