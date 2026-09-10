@@ -31,7 +31,7 @@
       "input": {
         "lane_contract": {"ekb_code":"SRC-011","target_asset":"ACT-0046","primary_gate":"CAUSAL_LANE_EXCLUSIVITY","causal_lane_key":"SRC-011|ACT-0046|CAUSAL_LANE_EXCLUSIVITY","owner":"ADVERSARIAL_REVIEWER","role":"REVIEWER_READ_ONLY","execution_id":"REV-001","declared_lane_count":1,"declared_owner_count":1,"declared_primary_gate_count":1},
         "write_intent": false,
-        "active_writers": [{"causal_lane_key":"SRC-011","target_asset":"ACT-0046","primary_gate":"CAUSAL_LANE_EXCLUSIVITY","causal_lane_key":"SRC-011|ACT-0046|CAUSAL_LANE_EXCLUSIVITY","owner":"MOTOR_GOVERNANCE_INTEGRATOR","execution_id":"EXEC-001","role":"WRITER","active":true}]
+        "active_writers": [{"causal_lane_key":"SRC-011|ACT-0046|CAUSAL_LANE_EXCLUSIVITY","owner":"MOTOR_GOVERNANCE_INTEGRATOR","execution_id":"EXEC-001","role":"WRITER","active":true}]
       },
       "expected_status": "ALLOW_READ_ONLY_PARALLEL",
       "expected_blocking_code": null
