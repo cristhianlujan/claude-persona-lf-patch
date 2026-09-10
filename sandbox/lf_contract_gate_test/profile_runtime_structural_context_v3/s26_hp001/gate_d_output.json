@@ -67,7 +67,7 @@
       "cross_run_declared": false,
       "cross_run_authorization": null,
       "ref": "profiles/ui_architect/contracts/composer_payload_boundary_v1.md",
-      "sha256": "e7736ab5a2609c9765b16feee5e088eeab1e329ff28842deee2c7757e76ad881"
+      "sha256": "d2b55e3c29c45642ebe18084b23c1ae96064c8c0a6bd8ecb1f5910f2753bb617"
     },
     {
       "authority_type": "USER_REQUIREMENT",
