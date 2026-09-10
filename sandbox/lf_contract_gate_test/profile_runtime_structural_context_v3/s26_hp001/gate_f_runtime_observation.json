@@ -1,12 +1,12 @@
 {
   "candidate_source_sha": "d5f27f129464163d915b08a26be08ca117385482",
   "exact_runtime_evidence": {
-    "materialized_raw_output_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_exact_materialized_output.json",
+    "materialized_output_persistence": "EXACT_MODEL_RAW_PERSISTED__MATERIALIZED_SHA_BOUND__REPLAYABLE_FROM_CANDIDATE_SOURCE",
     "materialized_raw_output_sha256": "9f1c3c8bb90e6fc279998273d59d043273791c2e5b7793307db4be9d3e0ab5c2",
     "model_raw_output_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_exact_model_output.json",
     "model_raw_output_sha256": "8270b0ab381fed8ec3060c73bfe3cdb6ba645e184a64daa90eda22f7f75f8d1b",
     "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_exact_runtime_evidence.json",
-    "sha256": "6f53ce828c6b25f19389f36444edc3d72d37323494a4f35b9de40b96a79e6507"
+    "sha256": "73d8d2d3afff1d7dd78c9dbf0084cb46c22cdbc00a932debda28a33d1d27470b"
   },
   "gate": "F_PROFILE_EXECUTION",
   "observation_role": "OBSERVATIONAL_ONLY_NOT_GATE_AUTHORITY",
@@ -54,6 +54,7 @@
     "quality_pass": true,
     "raw_output_present": true,
     "raw_output_sha256": "9f1c3c8bb90e6fc279998273d59d043273791c2e5b7793307db4be9d3e0ab5c2",
+    "replay_verification_status": "PASS",
     "runtime_completion_blocking_codes": [],
     "runtime_completion_status": "PASS",
     "runtime_total_ms": 31318.182,
