@@ -1,0 +1,83 @@
+{
+  "registry_version": "S30_CI_LANE_OWNERSHIP_V1",
+  "namespace": "S30",
+  "lanes": [
+    {
+      "lane_id": "S30-POLICY",
+      "namespace": "S30",
+      "ownership_class": "S30_POLICY",
+      "mode": "S30_POLICY_ISOLATED",
+      "matchers": [
+        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/s30_policy_operations_candidate/"}
+      ],
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "p0_exact_head_external_required": false,
+      "ci_router_selftest_required": false,
+      "deep_shared": false,
+      "known": true
+    },
+    {
+      "lane_id": "S30-A",
+      "namespace": "S30",
+      "ownership_class": "S30_SELF_GOVERNANCE",
+      "mode": "S30_SELF_GOVERNANCE_ISOLATED",
+      "matchers": [
+        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/s30_self_governance/"},
+        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/receipts/s30_a_self_governance_gate_"}
+      ],
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "p0_exact_head_external_required": false,
+      "ci_router_selftest_required": false,
+      "deep_shared": false,
+      "known": true
+    },
+    {
+      "lane_id": "S30-B",
+      "namespace": "S30",
+      "ownership_class": "S30_DATA_ACCESS",
+      "mode": "S30_DATA_ACCESS_ISOLATED",
+      "matchers": [
+        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/s30_data_access_candidate/"},
+        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/receipts/s30_b_data_access_safety_"}
+      ],
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "p0_exact_head_external_required": false,
+      "ci_router_selftest_required": false,
+      "deep_shared": false,
+      "known": true
+    },
+    {
+      "lane_id": "S30-C",
+      "namespace": "S30",
+      "ownership_class": "S30_RELIABILITY_HARNESS",
+      "mode": "S30_C_RELIABILITY_ISOLATED",
+      "matchers": [
+        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/s30_c_reliability_harness/"}
+      ],
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "p0_exact_head_external_required": false,
+      "ci_router_selftest_required": false,
+      "deep_shared": false,
+      "known": true
+    },
+    {
+      "lane_id": "S30-D",
+      "namespace": "S30",
+      "ownership_class": "S30_FINAL_R09",
+      "mode": "S30_D_FINAL_R09_ISOLATED",
+      "matchers": [
+        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/s30_d_final_r09/"}
+      ],
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "p0_exact_head_external_required": false,
+      "ci_router_selftest_required": false,
+      "deep_shared": false,
+      "known": true
+    }
+  ]
+}
