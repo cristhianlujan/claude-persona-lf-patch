@@ -1,0 +1,21 @@
+{
+  "activation_status": "BLOCKED_UNTIL_CHILD_EXECUTOR_AND_C05_DYNAMIC_RELIABILITY_PASS",
+  "business_mutation_allowed": false,
+  "child_rule": "one EJECUCION_ESTRATEGIA_LF per strategy target with independent idempotency/lease/readback/failure disposition",
+  "close_rule": "zero executable safe scopes + report persisted before scheduler reprogram/readback",
+  "contract": "ORQUESTACION_ESTRATEGIAS_LF_DRAFT_V1",
+  "forbidden": [
+    "ORQUESTACION_PIPELINE_LF_IDENTITY_REUSE",
+    "LF_PIPELINE_RUNS_STATE_AUTHORITY",
+    "PARENT_MULTI_TARGET_IRREVERSIBLE_WRITE",
+    "SCHEDULER_AS_STATE_AUTHORITY"
+  ],
+  "operation_code": "ORQUESTACION_ESTRATEGIAS_LF",
+  "operation_domain": "STRATEGY_PORTFOLIO_CONTROL",
+  "operation_family": "ORCHESTRATION",
+  "operation_type": "SCHEDULER_SUPERVISED",
+  "parallel_rule": "blocked child does not stop unrelated safe children",
+  "role": "PORTFOLIO_SUPERVISOR_NOT_BUSINESS_STATE_AUTHORITY",
+  "scheduler_role": "TRIGGER_SUPERVISE_REPROGRAM_ONLY",
+  "status": "SOURCE_DRAFT_NOT_REGISTERED"
+}

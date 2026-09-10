@@ -1,0 +1,72 @@
+{
+  "conclusion": "GENERIC_DURABILITY_GAP_CONFIRMED_READ_ONLY",
+  "lf_operation_execution": {
+    "columns": [
+      "execution_id",
+      "operation_code",
+      "target_type",
+      "target_code",
+      "target_repo",
+      "target_path",
+      "status",
+      "started_at",
+      "completed_at",
+      "manifest",
+      "created_at",
+      "updated_at",
+      "created_by_execution_id",
+      "updated_by_execution_id"
+    ],
+    "generic_idempotency_or_lease_functions": [],
+    "missing_candidate_columns": [
+      "idempotency_key",
+      "request_sha256",
+      "lease_owner",
+      "lease_expires_at"
+    ],
+    "primary_key": [
+      "execution_id"
+    ],
+    "required_c05_columns_present": false
+  },
+  "lf_operation_execution_steps": {
+    "columns": [
+      "execution_id",
+      "step_order",
+      "step_id",
+      "status",
+      "evidence_ref",
+      "evidence_payload",
+      "observed_at",
+      "notes",
+      "created_by_execution_id",
+      "created_at",
+      "updated_by_execution_id",
+      "updated_at"
+    ],
+    "primary_key": [
+      "execution_id",
+      "step_order"
+    ],
+    "unique_execution_step": true
+  },
+  "observed_at": "2026-09-10T20:15:41.611328+00:00",
+  "operation_registry_readback": {
+    "expected_before_c05_dynamic_gate": 0,
+    "queried_codes": [
+      "EJECUCION_ESTRATEGIA_LF",
+      "ORQUESTACION_ESTRATEGIAS_LF"
+    ],
+    "rows_found": 0
+  },
+  "project_id": "mhwmirqcgxxukpctffuv",
+  "read_mode": "READ_ONLY_SCHEMA_FIRST",
+  "receipt_version": "S30_C05_LIVE_SCHEMA_READBACK_V1",
+  "strategy_snapshot": {
+    "id": 35,
+    "impact_policy": "BLOQUEADO",
+    "runtime_state": "PLAN_ONLY",
+    "status": "CANDIDATO_READ_ONLY"
+  },
+  "write_executed": false
+}

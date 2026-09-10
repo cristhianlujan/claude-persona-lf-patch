@@ -1,0 +1,81 @@
+{
+  "activation_status": "BLOCKED_UNTIL_C05_DYNAMIC_RELIABILITY_PASS",
+  "contract": "EJECUCION_ESTRATEGIA_LF_DRAFT_V1",
+  "forbidden": [
+    "MULTI_STRATEGY_BUSINESS_WRITE_IN_ONE_CHILD",
+    "EFFECT_BEFORE_IDEMPOTENCY_RESERVATION",
+    "BLIND_RETRY",
+    "CHAT_MEMORY_AS_STATE",
+    "SCHEDULER_AS_STATE_AUTHORITY",
+    "AUTO_PRODUCTION_PROMOTION"
+  ],
+  "operation_code": "EJECUCION_ESTRATEGIA_LF",
+  "operation_domain": "STRATEGY_EXECUTION",
+  "operation_family": "GOVERNANCE",
+  "operation_type": "CONTROLLED_EXECUTION",
+  "router_action_candidate": "STRATEGY/EXECUTE",
+  "status": "SOURCE_DRAFT_NOT_REGISTERED",
+  "steps": [
+    [
+      0,
+      "init_execution"
+    ],
+    [
+      10,
+      "router"
+    ],
+    [
+      20,
+      "strategy_resolve"
+    ],
+    [
+      30,
+      "currentness_and_parent_read"
+    ],
+    [
+      40,
+      "policy_resolve"
+    ],
+    [
+      50,
+      "reserve_idempotency_and_lease"
+    ],
+    [
+      60,
+      "safe_work_discovery"
+    ],
+    [
+      70,
+      "pre_write_execution_binding_gate"
+    ],
+    [
+      80,
+      "execute_safe_macrobatch"
+    ],
+    [
+      90,
+      "independent_readback"
+    ],
+    [
+      100,
+      "deterministic_and_semantic_judge"
+    ],
+    [
+      110,
+      "checkpoint_progress"
+    ],
+    [
+      120,
+      "recovery_and_parallel_continue"
+    ],
+    [
+      130,
+      "close_guard"
+    ],
+    [
+      140,
+      "report_output"
+    ]
+  ],
+  "target_cardinality": "ONE_STRATEGY_PER_CHILD_EXECUTION"
+}
