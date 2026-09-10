@@ -1,0 +1,37 @@
+{
+  "execution_authority": {
+    "allowed": "Use only these supplied observable facts to derive UI remediation directions.",
+    "forbidden": [
+      "Infer business record totals beyond the supplied summary count.",
+      "Infer current_page or hidden pagination state not explicitly supplied.",
+      "Treat a producer-derived pagination formula as an upstream/canonical rule.",
+      "Remove columns or row actions to avoid horizontal overflow.",
+      "Modify shell/sidebar/topbar/company selector.",
+      "Invent payment, approval, eligibility, legal, guarantee or urgency semantics."
+    ]
+  },
+  "observable_facts": [
+    {"fact": "Nine filter controls are visible plus the 'Limpiar filtros' control.", "fact_id": "OBS-FILTERS"},
+    {"fact": "The summary states 6 cargas encontradas.", "fact_id": "OBS-SUMMARY"},
+    {"fact": "Ten table headers are visible: Fecha de carga, Archivo, Tipo, Registros, Válidos, Con error, Estado, Usuario, Fecha de proceso, Acciones.", "fact_id": "OBS-HEADERS"},
+    {"fact": "Six data rows are visible.", "fact_id": "OBS-ROWS"},
+    {"fact": "The footer states 25 registros por página.", "fact_id": "OBS-PAGE-SIZE"},
+    {"fact": "Pagination chrome exposes pages 1, 2 and 3 plus a next control.", "fact_id": "OBS-PAGINATION"},
+    {"fact": "Horizontal scrollbar chrome is rendered while all ten headers including Acciones are visible within the 1600px viewport.", "fact_id": "OBS-OVERFLOW"}
+  ],
+  "provenance_boundary": "This GitHub-persisted packet is the resolver-backed execution authority for the listed observable facts. The original PNG remains provenance and digest evidence; Quality need not resolve the PNG provider to compare Run E decisions against these supplied facts.",
+  "schema": "LF_RESOLVER_BACKED_SCREEN_OBSERVATION_PACKET_V1",
+  "screen_code": "B2B-CARGA-001",
+  "screen_name": "Historial de cargas",
+  "source_visual": {
+    "byte_length": 142727,
+    "byte_parity_verified": true,
+    "file_id": "1_lvl3gYN76KfpjXtWMizgdcwOqliogqi",
+    "filename": "B2B_CARGA_001_HISTORIAL_DESKTOP_LIGHT_v0.1_CANDIDATO.png",
+    "height": 1000,
+    "provider": "GOOGLE_DRIVE",
+    "sha256": "ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+    "verification_origin": "CONNECTED_GOOGLE_DRIVE_READBACK_V1",
+    "width": 1600
+  }
+}

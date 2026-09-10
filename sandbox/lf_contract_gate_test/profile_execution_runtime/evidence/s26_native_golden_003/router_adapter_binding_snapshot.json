@@ -1,0 +1,23 @@
+{
+  "schema": "S26_ROUTER_ADAPTER_BINDING_SNAPSHOT_V1",
+  "source_ref": "public.v_lf_router_adapter_bindings:PERFIL-UI-ARCHITECT",
+  "adapter_code": "ADAPTER-LF-SHELL-PROFILE-20260827",
+  "adapter_name": "ADAPTER_LF_SHELL_PROFILE_v0.1_CANDIDATO",
+  "adapter_version": "v0.1",
+  "assurance_revision": "v2",
+  "target_asset_code": "PERFIL-UI-ARCHITECT",
+  "relation_type": "ADAPTER_APLICA_A",
+  "activation": "ROUTER_BOUND_ONLY",
+  "runtime_enabled": true,
+  "production_enabled": false,
+  "single_model_call": true,
+  "adapter_llm_call_policy": "NO_SECOND_LLM_CALL",
+  "runtime_capsule_path": "adapters/lf_shell_profile_adapter/runtime/runtime_capsule.yaml",
+  "runtime_capsule_max_chars": 1800,
+  "input_governance_receipt_required": true,
+  "input_governance_authority_contract": "INPUT_READINESS_CONTRACT",
+  "input_governance_continuation_policy": "PASS_ONLY",
+  "binding_source": "SUPABASE_CANONICAL_ROUTER_BINDING",
+  "binding_updated_at": "2026-08-27T23:59:24.922807+00:00",
+  "readback_observed_at": "2026-09-08T20:41:30.884049+00:00"
+}

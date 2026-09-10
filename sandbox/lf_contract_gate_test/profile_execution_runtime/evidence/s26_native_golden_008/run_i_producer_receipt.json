@@ -1,0 +1,90 @@
+{
+  "schema": "S26_RUN_I_PRODUCER_RECEIPT_V1",
+  "run_id": "EXEC-S26-N08I-GPT-SOURCE-FIRST-I-001",
+  "run_revision": "I",
+  "producer_source_head": "74f0c427cda7a4de458d432759d21820aa1c8299",
+  "source_first_mode": "S26_SOURCE_FIRST_V1",
+  "source_visual": {
+    "screen_id": "B2B-CARGA-001",
+    "sha256": "ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287"
+  },
+  "source_fidelity": {
+    "schema": "LF_SOURCE_FIDELITY_CONTRACT_V1",
+    "contract_sha256": "f8434f9ba26b3edfa2cae547563d1f8448c05fdab1f3cb59d2ed842f7a817e88",
+    "headers_verified": "10_OF_10_EXACT"
+  },
+  "core_authority": {
+    "ref": "profiles/ui_architect/SKILL.md",
+    "sha256": "b099944839af79cb97eac76f12ecf8bd38c39ea331224ee335ced32491f411c0",
+    "card_resolution": "GENERIC_SAFE",
+    "critical_authority_missing": false
+  },
+  "pre_material_authorities": {
+    "status": "PASS",
+    "material_output_absent_at_prebind": true,
+    "execution_contract_sha256": "188b17383f7a5f2a4a83392083f01eb1b2152e99b0cee5265b7e1dee5eb4ed52",
+    "source_fidelity_contract_sha256": "f8434f9ba26b3edfa2cae547563d1f8448c05fdab1f3cb59d2ed842f7a817e88",
+    "source_model_sha256": "58b4d162b739cb09bebf728e7120478af34884eb8ed745ba589c3ffcbe5b20cf",
+    "governed_build_plan_sha256": "f649ec4e71894722e64c9803f05cef5245a46ede00cfce563d32a3db733720a3",
+    "semantic_binding_plan_sha256": "9373fa7c97a2f91a720449ee732d82b0eec7c20f9026f8b65ce762ad45ab4670",
+    "authority_count": 5,
+    "next_phase_after_pass": "MATERIAL_BUILD"
+  },
+  "material_artifact": {
+    "artifact_canonical_sha256": "7d4d8c2bf4054d2a02b564b0bcd2f8ced4350954e8e10dec664e50524cf512fb",
+    "artifact_file_sha256": "19883d87830e2fb4f4e0fe4f23d409fdd27deaf2747fddf77b4f192d2af43bb7",
+    "headers_verified": "10_OF_10_EXACT",
+    "ui_validator": "PASS",
+    "composer_boundary": "PASS",
+    "semantic_binding": "PASS",
+    "semantic_binding_contract_sha256": "45a8ce19fd6be6b24bca4def63b46cc68e104a736f7dbae19f79e51bf693c2a1",
+    "real_horizontal_overflow_acknowledged": true,
+    "static_pagination_literals_absent": true
+  },
+  "runtime_state_authority": {
+    "record_count_binding": "LIVE_FILTERED_RESULT_COUNT",
+    "page_size_binding": "LIVE_PAGE_SIZE_STATE",
+    "current_page_binding": "LIVE_CURRENT_PAGE_OR_NOT_PREBOUND",
+    "observed_sample_policy": "NON_BINDING_EVIDENCE_ONLY",
+    "forbidden_static_runtime_fields": [
+      "record_count",
+      "page_size",
+      "current_page",
+      "selected_page",
+      "visible_rows"
+    ]
+  },
+  "adversarial_regressions": {
+    "status": "PASS",
+    "cases": "4/4",
+    "base_binding_pass": true,
+    "mutated_header_blocked": true,
+    "static_record_count_blocked": true,
+    "runtime_authority_drift_blocked": true
+  },
+  "producer_source_head_ci": {
+    "head_sha": "74f0c427cda7a4de458d432759d21820aa1c8299",
+    "status": "5_OF_5_TERMINAL_SUCCESS",
+    "workflow_runs": {
+      "story_agent_evidence_verifier": 34408509301,
+      "validate_lf_packs": 34408509243,
+      "profile_driven_screen_generation_gate": 34408509269,
+      "lf_contract_check": 34408509248,
+      "lf_bootstrap_reproducibility_probe": 34408509244
+    }
+  },
+  "independent_quality_bundle": {
+    "name": "S26_Run_I_Independent_Quality_Bundle_v1.zip",
+    "sha256": "a97408e32e003ac800c65e191aad61aedb80fff45c4537362db0b39498a4e7b9",
+    "review_case_id": "S26-N08I-QUALITY-001",
+    "deterministic_probe": "PASS_DETERMINISTIC_RUN_I_PREFLIGHT",
+    "manifest_sha256": "d85bbcefb515ab773ce0559a833f93bd3e83086e604c5830ca34c2e2908a94c8"
+  },
+  "producer_downstream_authorized": false,
+  "golden_declared": false,
+  "promotion_authorized": false,
+  "merge_authorized": false,
+  "production_authorized": false,
+  "next_gate": "FRESH_GPT_AND_CLAUDE_INDEPENDENT_QUALITY",
+  "note": "Run I is a fresh source-first producer candidate built only after five pre-material authorities passed. This receipt records producer evidence and frozen-bundle lineage only. It does not self-authorize downstream use, Golden, merge, promotion, or production. The 5/5 CI statement applies to producer_source_head 74f0c427cda7a4de458d432759d21820aa1c8299, before this additive receipt commit."
+}
