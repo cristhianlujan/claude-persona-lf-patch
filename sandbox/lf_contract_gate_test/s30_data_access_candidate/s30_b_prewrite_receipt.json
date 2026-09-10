@@ -1,14 +1,14 @@
 {
-  "receipt_version": "S30_B_DATA_ACCESS_PREWRITE_V4",
+  "receipt_version": "S30_B_CLOSEOUT_PREWRITE_V1",
   "receipt_mode": "PREWRITE",
   "lane": "S30-B",
   "owner": "S30-B-DATA-ACCESS-V3",
-  "base_main_sha": "0a55e3f92f36c84da7698eb97c4d2eae337a2c20",
-  "intended_material_action": "S30_B_DATA_ACCESS_BUDGET_AND_EXECUTION_AUTHORITY_CANDIDATE",
+  "base_main_sha": "4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3",
+  "intended_material_action": "S30_B_FINAL_RECEIPT_AND_READBACK_MATERIALIZATION",
   "sequence_resolution": {
     "ROUTER": {
       "status": "PROVEN",
-      "evidence": "ACT-0001 authority consumed; S30-B handoff resolved from canonical file and current main frozen before governed materialization."
+      "evidence": "ACT-0001 authority and S30-B handoff re-read for post-merge closeout; current main frozen at 4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3."
     },
     "EKB_APPLICABLE": {
       "status": "PROVEN",
@@ -90,7 +90,7 @@
     },
     "ALL_INTENDED_STEPS": {
       "status": "PROVEN",
-      "evidence": "Intended steps frozen: current registry binding, bounded read budgets, DETERMINISTIC/SEMANTIC/HYBRID classification, compact semantic-gap-only model request, semantic_delta-only model output contract, deterministic materialization/scoring/handoff/verdict/receipts, tests, staging CI and governed broker readback."
+      "evidence": "Only final S30-B receipt/readback persistence remains; no additional data-access behavior, runtime, scheduler, DDL or S26 change is intended."
     },
     "JUDGES_AND_RESULT_VOCABULARY": {
       "status": "PROVEN",
@@ -114,7 +114,7 @@
     },
     "EXPECTED_OUTPUT_CONTRACT": {
       "status": "PROVEN",
-      "evidence": "Claim remains bounded to S30-B candidate. Model may emit only S30_SEMANTIC_DELTA_V1 {decisions,proposals,rationale,unresolved}; system-owned fields remain deterministic; no autonomy/runtime/production claim."
+      "evidence": "Final claim ceiling remains FIELD_LEVEL_DATA_ACCESS_AND_SCHEMA_SAFETY_CANDIDATE_PASS; closeout persists exact substantive merge, CI, live schema and safety readbacks."
     }
   },
   "preflight_checks": {
@@ -124,7 +124,7 @@
     },
     "REQUIRED_FILES_EXIST": {
       "status": "PASS",
-      "evidence": "Current main contains registry, base typed access implementation, test_s30_data_access_v2.py, self-governance contract/validator and broker workflow."
+      "evidence": "Merged main contains registry/resolver/readers, bounded access, execution authority policy/engine and deterministic tests; final receipt path will be materialized in the same bounded S30-B candidate directory."
     },
     "SCHEMA_AND_CONSTRAINTS_RESOLVED": {
       "status": "PASS",
@@ -191,15 +191,15 @@
     },
     "PERMISSIONS_AND_SECRET_READBACK": {
       "status": "PASS",
-      "evidence": "Broker secret is not read; operational binding is evidenced by prior successful governed dispatch and protected SHA readback."
+      "evidence": "Ruleset 22765627 active; deploy key 162872002 verified write-enabled; S30_BROKER_DEPLOY_KEY existence read back without exposing value."
     },
     "EVIDENCE_PROVIDER_RESOLVABLE": {
       "status": "PASS",
-      "evidence": "Supabase project mhwmirqcgxxukpctffuv, GitHub repo and exact CI/run refs available."
+      "evidence": "PR #662 merge metadata, exact GitHub Actions runs, Git refs, live Supabase fingerprints and strategy snapshot #35 are resolvable for final receipt."
     },
     "CI_RUNNER_WIRING_CONFIRMED": {
       "status": "PASS",
-      "evidence": "Generic S30 sandbox test discovery is present on current main and previous main run 34500765536 passed."
+      "evidence": "Post-merge main Validate LF Packs run 34504593415 and lf-contract-check run 34504593500 both passed on exact main 4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3."
     },
     "EXPECTED_OUTPUT_SCHEMA_COMPLETE": {
       "status": "PASS",
@@ -215,13 +215,12 @@
     }
   },
   "frontier": {
-    "current_stage": "S30_B_CURRENT_MAIN_REMATERIALIZATION",
-    "next_gate": "LOCAL_REGRESSION_AND_LIVE_READBACK_THEN_GOVERNED_STAGING",
+    "current_stage": "S30_B_POSTMERGE_CLOSEOUT_MATERIALIZATION",
+    "next_gate": "LOCAL_CLOSEOUT_VALIDATION_THEN_GOVERNED_STAGING",
     "blockers": [],
     "safe_parallel_work": [
       "READ_ONLY_SCHEMA_CURRENTNESS",
-      "LOCAL_DETERMINISTIC_TESTS",
-      "INDEPENDENT_RECONCILIATION_402_TRIAGE"
+      "LOCAL_DETERMINISTIC_TESTS"
     ]
   },
   "causal_lane_ownership": {
@@ -237,17 +236,13 @@
         "primary_gate": "DATA_ACCESS_SCHEMA_SAFETY",
         "owner": "S30-B-DATA-ACCESS-V3",
         "state": "ACTIVE",
-        "source_ref": "prewrite://S30-B-V3-20260910"
+        "source_ref": "prewrite://S30-B-CLOSEOUT-V1-20260910"
       }
     ],
     "transfer": {
-      "is_transfer": true,
-      "upstream_owner_state": "SUPERSEDED",
-      "fresh_currentness": true,
-      "stale_receipts_invalidated": true,
-      "evidence_revalidated": true
+      "is_transfer": false
     },
-    "evidence": "PR #656 closed as superseded; new lane starts from exact current main after v0.6.1 closeout and fresh live schema/EKB currentness."
+    "evidence": "Substantive S30-B candidate PR #662 is merged and exact post-merge main CI passed; this bounded follow-up persists final lane receipt/readback only."
   },
   "applicable_ekb": [
     {
@@ -442,25 +437,21 @@
     "scheduler_changed": false,
     "s26_mutated": false
   },
-  "owner_authorized_merge": false,
+  "owner_authorized_merge": true,
   "owner_authorized_repair": false,
   "repair_reason": null,
   "repair_target_ekb_codes": [],
   "evidence": {
-    "execution_id": "EXEC-S30-B-V3-PREWRITE-20260910-001",
+    "execution_id": "EXEC-S30-B-CLOSEOUT-V1-PREWRITE-20260910-001",
     "mode": "SANDBOX_NON_PRODUCTION",
     "production": false,
-    "base_main_sha": "0a55e3f92f36c84da7698eb97c4d2eae337a2c20",
-    "historical_pr_656": "CLOSED_SUPERSEDED",
-    "live_schema_currentness": {
-      "canonical_match_count": 12,
-      "canonical_stale_count": 1,
-      "stale_source": "ASSETS_PROFILES",
-      "observed_asset_fingerprint": "575382ef470e0baa1b7886b83945792e5944ba8071be202bd091329aa8e6583f",
-      "fallback_registered_fields_missing": 0
-    },
+    "base_main_sha": "4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3",
+    "substantive_pr": 662,
+    "substantive_candidate_head": "5d442f2edea3418d27ef70122d526eed8bf7f00f",
+    "substantive_merge_sha": "4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3",
+    "post_merge_validate_run": 34504593415,
+    "post_merge_contract_run": 34504593500,
     "optimization_policy": "DETERMINISTIC_FIRST_MODEL_ON_NON_DERIVABLE_SEMANTIC_GAP",
-    "model_calls_for_derivable_work_expected": 0,
     "ddl_planned": false,
     "runtime_activation_planned": false,
     "s26_change_planned": false
@@ -490,26 +481,26 @@
     "secret_name": "S30_BROKER_DEPLOY_KEY",
     "secret_present": true,
     "secret_required_before_dispatch": true,
-    "source_branch": "lf/staging-s30-b-data-access-v3-20260910",
-    "target_branch": "lf/s30-b-data-access-v3-20260910",
-    "base_main_sha": "0a55e3f92f36c84da7698eb97c4d2eae337a2c20",
+    "source_branch": "lf/staging-s30-b-closeout-v1-20260910",
+    "target_branch": "lf/s30-b-closeout-v1-20260910",
+    "base_main_sha": "4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3",
     "promotion_authority": "BROKER_ONLY",
     "ruleset_readback_ref": "github:ruleset/22765627",
     "supabase_readback_ref": "supabase:public.lf_error_knowledge@20260910"
   },
   "gate_evidence_envelope": {
-    "run_id": "EXEC-S30-B-V3-PREWRITE-20260910-001",
-    "gate_id": "S30_B_CURRENT_MAIN_PREEXECUTION",
+    "run_id": "EXEC-S30-B-CLOSEOUT-V1-PREWRITE-20260910-001",
+    "gate_id": "S30_B_POSTMERGE_CLOSEOUT_PREEXECUTION",
     "input_exact": {
       "request_schema": "s30-git-broker/v1",
-      "source_ref": "lf/staging-s30-b-data-access-v3-20260910",
-      "target_branch": "lf/s30-b-data-access-v3-20260910",
-      "base_main_sha": "0a55e3f92f36c84da7698eb97c4d2eae337a2c20",
+      "source_ref": "lf/staging-s30-b-closeout-v1-20260910",
+      "target_branch": "lf/s30-b-closeout-v1-20260910",
+      "base_main_sha": "4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3",
       "receipt_path": "sandbox/lf_contract_gate_test/s30_data_access_candidate/s30_b_prewrite_receipt.json"
     },
-    "input_sha256": "c749c900edbbf919199cb24cff1c65d29b84e793212b59ff84d5cd5425f4f767",
-    "input_source_ref": "github:main@0a55e3f92f36c84da7698eb97c4d2eae337a2c20+file:Handoff-S30-B+supabase:schema-first-20260910",
-    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_data_access_candidate/s30_b_prewrite_receipt.json --expected-base-main-sha 0a55e3f92f36c84da7698eb97c4d2eae337a2c20",
+    "input_sha256": "d5acfc950130c8b4dbede2374abf495f6c41ef761482acaa49cd52cf500b6426",
+    "input_source_ref": "github:main@4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3+github:pr/662+github-actions:34504593415,34504593500",
+    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_data_access_candidate/s30_b_prewrite_receipt.json --expected-base-main-sha 4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3",
     "output_exact": {
       "result": "PASS_TO_MATERIAL_WORK",
       "material_work_allowed": true,
@@ -517,25 +508,25 @@
       "promotion_authority": "NONE"
     },
     "output_sha256": "ec67088d3a1ecf4514180d148fb18aee30023fad41c8c7380bba0e7292b0f5d9",
-    "output_ref": "local-prewrite:S30-B-V3-20260910",
+    "output_ref": "local-prewrite:S30-B-CLOSEOUT-V1-20260910",
     "execution_mode": "SANDBOX",
     "environment": "NON_PRODUCTION",
     "promotion_authority": "NONE",
     "functional": {
       "status": "PASS",
-      "evidence": "Existing S30-B core and fresh registry/schema authority are resolvable before candidate extension."
+      "evidence": "Substantive S30-B implementation is already merged; post-merge deterministic suites and main CI pass."
     },
     "quality": {
       "status": "PASS",
-      "evidence": "Candidate will preserve free-SQL/stale-binding fail-closed rules and add budget/authority tamper negatives."
+      "evidence": "Final receipt will freeze exact candidate head, merge SHA, CI/run IDs, schema currentness and no-impact readback."
     },
     "depth": {
       "status": "PASS",
-      "evidence": "Currentness, source fingerprints, model boundary, budget limits, execution revalidation and broker path are explicitly covered."
+      "evidence": "All ten S30-B exit-gate dimensions are mapped to explicit evidence before closeout persistence."
     },
     "performance": {
       "status": "PASS_BASELINE",
-      "evidence": "Optimization contract makes deterministic execution default and forbids model calls for derivable registered-read planning."
+      "evidence": "Deterministic-first authority is merged; model calls remain zero for derivable work."
     },
     "ekb_action": {
       "status": "CONSUMED",
