@@ -57,6 +57,16 @@ assert proc.returncode==0,('S26_INDEPENDENT_BUNDLE_PREFLIGHT_TESTS_FAILED',proc.
 assert 'S26_INDEPENDENT_BUNDLE_PREFLIGHT_TESTS_PASS=7/7' in proc.stdout,'S26_INDEPENDENT_BUNDLE_PREFLIGHT_MARKER_MISSING'
 print('S26_INDEPENDENT_BUNDLE_PREFLIGHT_GATE_PASS=7/7')
 
+cert_tests=Path(__file__).with_name('run_s26_bundle_certification_tests.py')
+cproc=subprocess.run([sys.executable,str(cert_tests)],capture_output=True,text=True,check=False)
+if cproc.stdout:
+    print(cproc.stdout,end='' if cproc.stdout.endswith('\n') else '\n')
+if cproc.stderr:
+    print(cproc.stderr,file=sys.stderr,end='' if cproc.stderr.endswith('\n') else '\n')
+assert cproc.returncode==0,('S26_BUNDLE_CERTIFICATION_TESTS_FAILED',cproc.returncode)
+assert 'S26_BUNDLE_CERTIFICATION_TESTS_PASS=12_NEGATIVE_PLUS_1_POSITIVE' in cproc.stdout,'S26_BUNDLE_CERTIFICATION_MARKER_MISSING'
+print('S26_BUNDLE_CERTIFICATION_GATE_PASS=13/13')
+
 repo_root=Path(__file__).resolve().parents[3]
 quality_adversarial=repo_root/'profiles/quality_pack/evals/quality_gate_adversarial.py'
 assert quality_adversarial.is_file(),('QUALITY_GATE_ADVERSARIAL_MISSING',quality_adversarial)

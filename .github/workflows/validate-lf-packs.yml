@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - "lf/**"
   push:
     branches:
       - main
@@ -20,6 +21,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -52,6 +56,50 @@ jobs:
 
       - name: Validate S26 semantic-to-render binding regressions
         run: python sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_binding_validator_tests.py
+
+      - name: Build and certify real S26 frozen review bundle
+        env:
+          S26_C_BASE_SHA: "9632cab4acde619ac7c5b68a3259e31acf5c557d"
+          S26_C_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/s26-real"
+          python sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_real_bundle_certification_ci.py \
+            --out-dir "${RUNNER_TEMP}/s26-real/unpacked" \
+            --zip "${RUNNER_TEMP}/s26-real/S26_Run_E_Certified_Review_Bundle.zip" \
+            --receipt-out "${RUNNER_TEMP}/s26-real/certification_receipt.json"
+          test -s "${RUNNER_TEMP}/s26-real/S26_Run_E_Certified_Review_Bundle.zip"
+          test -s "${RUNNER_TEMP}/s26-real/certification_receipt.json"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          root = Path(os.environ["RUNNER_TEMP"]) / "s26-real"
+          receipt = json.loads((root / "certification_receipt.json").read_text(encoding="utf-8"))
+          metadata = json.loads((root / "unpacked" / "run_metadata.json").read_text(encoding="utf-8"))
+          expected_head = os.environ["S26_C_HEAD_SHA"]
+          actual_head = metadata.get("head_sha")
+          assert actual_head == expected_head, (
+              f"FAIL_S26_C_REAL_BUNDLE_HEAD_SHA: expected={expected_head} actual={actual_head}"
+          )
+          assert receipt["status"] == "PASS", receipt
+          assert receipt["fresh_unpack_pass"] is True, receipt
+          assert receipt["replay_pass"] is True, receipt
+          assert receipt["manifest_reconciled"] is True, receipt
+          assert receipt["hashes_verified"] is True, receipt
+          assert receipt["cross_run_refs_blocked"] is True, receipt
+          print(f"S26_REAL_BUNDLE_CERTIFICATION_PASS head_sha={actual_head}")
+          PY
+
+      - name: Upload certified real S26 bundle evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: s26-c-certified-real-bundle
+          path: |
+            ${{ runner.temp }}/s26-real/S26_Run_E_Certified_Review_Bundle.zip
+            ${{ runner.temp }}/s26-real/certification_receipt.json
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Validate strict independent receipt-to-bundle binding regressions
         run: python profiles/quality_pack/evals/run_independent_review_bundle_binding_tests.py
