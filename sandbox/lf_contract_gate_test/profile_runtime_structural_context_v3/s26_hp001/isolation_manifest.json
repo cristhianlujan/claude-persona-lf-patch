@@ -1,0 +1,35 @@
+{
+  "schema": "S26_ISOLATED_PROJECT_GATE_V1",
+  "project_id": "S26",
+  "test_id": "S26-HP-001",
+  "source_base_sha": "db88d66dc2b79fb081748fb4a86d4057f30adb18",
+  "frozen_base_branch": "lf/s26-hp001-base-db88d",
+  "expected_head_branch": "lf/s26-hp001-isolated-20260909",
+  "candidate_sha_mode": "GITHUB_EVENT_HEAD_SHA",
+  "merge_ref_is_candidate_sha": false,
+  "main_is_observational_only": true,
+  "main_drift_invalidates_test": false,
+  "allowed_changed_paths": [
+    "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_hp001_isolation.py",
+    "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_hp001_output.py",
+    "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_hp001_replay.py",
+    "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/"
+  ],
+  "required_event_evidence": [
+    "event_name",
+    "event_base_branch",
+    "event_base_sha",
+    "event_head_branch",
+    "event_head_sha",
+    "executed_checkout_sha"
+  ],
+  "required_invariants": [
+    "EVENT_BASE_SHA_EQUALS_FROZEN_SOURCE_BASE",
+    "EVENT_BASE_BRANCH_EQUALS_FROZEN_BASE_BRANCH",
+    "EVENT_HEAD_BRANCH_EQUALS_EXPECTED_HEAD_BRANCH",
+    "ONLY_PROJECT_ALLOWED_PATHS_CHANGED",
+    "MERGE_REF_NEVER_RELABELED_AS_BRANCH_HEAD",
+    "MAIN_DRIFT_DOES_NOT_MUTATE_FROZEN_BASE"
+  ],
+  "claim_ceiling": "ISOLATION_GATE_ONLY_NOT_RUNTIME_NOT_GOLDEN"
+}

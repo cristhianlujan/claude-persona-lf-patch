@@ -1,0 +1,1 @@
+Diseña una pantalla para un marketplace de servicios. Debe tener un encabezado con buscador, categorías principales, una sección de servicios destacados y tarjetas que muestren título, proveedor, precio y una llamada a la acción. El diseño debe ser claro, profesional y fácil de navegar. Entrega una especificación estructurada lista para que otro agente implemente la pantalla.
