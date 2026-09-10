@@ -1,0 +1,113 @@
+{
+  "contract_version": "LF_DATA_ACCESS_BUDGET_V1",
+  "base_registry_contract": "LF_DATA_ACCESS_REGISTRY_V2",
+  "policy": {
+    "profile_required_for_registered_reads": true,
+    "max_rows_required_in_bound_plan": true,
+    "byte_budget_required_in_bound_plan": true,
+    "detail_requires_filter": true,
+    "post_read_budget_enforcement": true,
+    "unobserved_latency_value": "NOT_OBSERVED"
+  },
+  "sources": {
+    "ROUTER_SOURCE": {
+      "default_profile": "INDEX",
+      "profiles": {
+        "INDEX": {"fields": ["codigo_activo", "nombre_canonico", "tipo_activo", "estado_documental", "estado_operativo", "runtime_estado", "impacto_automatico", "version_normalizada", "updated_at"], "default_max_rows": 25, "max_rows_ceiling": 100, "byte_budget": 65536, "read_scope": "BOUNDED"}
+      }
+    },
+    "EKB": {
+      "default_profile": "INDEX",
+      "profiles": {
+        "INDEX": {"fields": ["codigo", "titulo", "severidad", "frecuencia", "estado", "root_cause_family", "detectability", "lifecycle_phase"], "default_max_rows": 50, "max_rows_ceiling": 100, "byte_budget": 65536, "read_scope": "BOUNDED"},
+        "SHORTLIST": {"fields": ["codigo", "categoria", "titulo", "severidad", "frecuencia", "root_cause_family", "detectability", "consumer_role"], "default_max_rows": 10, "max_rows_ceiling": 25, "byte_budget": 49152, "read_scope": "BOUNDED"},
+        "DETAIL": {"fields": ["codigo", "categoria", "titulo", "descripcion", "causa_raiz", "patron", "prevencion", "validacion", "severidad", "frecuencia", "estado", "lifecycle_phase", "consumer_role", "root_cause_family", "detectability", "source_context", "source_ref"], "default_max_rows": 3, "max_rows_ceiling": 5, "byte_budget": 131072, "read_scope": "FOCAL", "require_filter": true}
+      }
+    },
+    "OPERATION_REGISTRY": {
+      "default_profile": "INDEX",
+      "profiles": {
+        "INDEX": {"fields": ["operation_code", "version", "status", "operation_family", "operation_domain", "operation_type", "applies_to_asset_type"], "default_max_rows": 25, "max_rows_ceiling": 100, "byte_budget": 65536, "read_scope": "BOUNDED"},
+        "DETAIL": {"fields": ["operation_code", "version", "status", "source_model", "source_repo", "source_paths", "operation_family", "operation_domain", "operation_type", "applies_to_asset_type"], "default_max_rows": 5, "max_rows_ceiling": 10, "byte_budget": 98304, "read_scope": "FOCAL", "require_filter": true}
+      }
+    },
+    "OPERATION_CONTRACTS": {
+      "default_profile": "FOCAL",
+      "profiles": {
+        "FOCAL": {"fields": ["operation_code", "contract_code", "contract_path", "contract_sha", "required_before_write", "allowed", "blocked", "required_after_write", "status"], "default_max_rows": 10, "max_rows_ceiling": 25, "byte_budget": 65536, "read_scope": "FOCAL"}
+      }
+    },
+    "OPERATION_STEPS": {
+      "default_profile": "FOCAL",
+      "profiles": {
+        "FOCAL": {"fields": ["operation_code", "step_order", "step_id", "required", "evidence_required", "source_path", "source_sha", "active", "execution_order"], "default_max_rows": 50, "max_rows_ceiling": 100, "byte_budget": 98304, "read_scope": "BOUNDED"}
+      }
+    },
+    "OPERATION_STEP_CONTRACTS": {
+      "default_profile": "FOCAL",
+      "profiles": {
+        "FOCAL": {"fields": ["operation_code", "step_id", "step_order", "execution_order", "contract_code", "purpose", "input_required", "resolver_ref", "output_payload", "pass_condition", "block_condition", "blocking_code", "mini_judge_code", "required_evidence_keys", "next_if_pass", "next_if_blocked", "status", "execution_sql", "fail_condition"], "default_max_rows": 50, "max_rows_ceiling": 100, "byte_budget": 196608, "read_scope": "BOUNDED"}
+      }
+    },
+    "OPERATION_JUDGES": {
+      "default_profile": "FOCAL",
+      "profiles": {
+        "FOCAL": {"fields": ["operation_code", "judge_code", "judge_path", "judge_sha", "pass_if", "fail_if", "result_values", "status"], "default_max_rows": 25, "max_rows_ceiling": 50, "byte_budget": 98304, "read_scope": "BOUNDED"}
+      }
+    },
+    "OPERATION_STEP_JUDGE_BINDINGS": {
+      "default_profile": "FOCAL",
+      "profiles": {
+        "FOCAL": {"fields": ["operation_code", "step_order", "step_id", "judge_code", "clean_result_value", "blocked_result_value", "return_result_value", "required_evidence_keys", "status"], "default_max_rows": 50, "max_rows_ceiling": 100, "byte_budget": 98304, "read_scope": "BOUNDED"}
+      }
+    },
+    "OPERATION_POLICY_BINDINGS": {
+      "default_profile": "FOCAL",
+      "profiles": {
+        "FOCAL": {"fields": ["operation_code", "policy_code", "policy_role", "required", "distribution_modes", "binding_status"], "default_max_rows": 25, "max_rows_ceiling": 50, "byte_budget": 65536, "read_scope": "BOUNDED"}
+      }
+    },
+    "STRATEGY_SNAPSHOTS": {
+      "default_profile": "INDEX",
+      "profiles": {
+        "INDEX": {"fields": ["id", "snapshot_code", "canonical_name", "version", "status", "project_code", "front_code", "runtime_state", "impact_policy", "updated_at"], "default_max_rows": 25, "max_rows_ceiling": 50, "byte_budget": 65536, "read_scope": "BOUNDED"},
+        "DETAIL": {"fields": ["id", "snapshot_code", "canonical_name", "version", "status", "project_code", "front_code", "source_kind", "runtime_state", "impact_policy", "metadata", "content_payload", "sections", "decisions", "backlog", "risks", "evidence_refs", "updated_at"], "default_max_rows": 1, "max_rows_ceiling": 3, "byte_budget": 262144, "read_scope": "FOCAL", "require_filter": true}
+      }
+    },
+    "ASSETS_PROFILES": {
+      "default_profile": "INDEX",
+      "profiles": {
+        "INDEX": {"fields": ["id", "codigo_activo", "nombre_canonico", "tipo_activo", "subtipo_activo", "estado_documental", "estado_operativo", "runtime_estado", "impacto_automatico", "version", "updated_at"], "default_max_rows": 25, "max_rows_ceiling": 100, "byte_budget": 65536, "read_scope": "BOUNDED"},
+        "DETAIL": {"fields": ["id", "codigo_activo", "nombre_canonico", "tipo_activo", "subtipo_activo", "estado_documental", "estado_operativo", "nivel_control", "runtime_estado", "impacto_automatico", "version", "ruta_esperada", "url", "owner_name", "metadata", "updated_at"], "default_max_rows": 3, "max_rows_ceiling": 5, "byte_budget": 131072, "read_scope": "FOCAL", "require_filter": true}
+      }
+    },
+    "EVENTS": {
+      "default_profile": "INDEX",
+      "profiles": {
+        "INDEX": {"fields": ["id", "evento_tipo", "entidad_tipo", "entidad_codigo", "severidad", "origen", "created_at", "created_by_execution_id"], "default_max_rows": 50, "max_rows_ceiling": 100, "byte_budget": 65536, "read_scope": "BOUNDED"},
+        "DETAIL": {"fields": ["id", "evento_tipo", "entidad_tipo", "entidad_codigo", "descripcion", "severidad", "payload", "origen", "migration_batch_id", "created_at", "created_by_execution_id", "updated_by_execution_id", "updated_at"], "default_max_rows": 5, "max_rows_ceiling": 10, "byte_budget": 131072, "read_scope": "FOCAL", "require_filter": true}
+      }
+    },
+    "INPUT_GOVERNANCE": {
+      "default_profile": "INDEX",
+      "profiles": {
+        "INDEX": {"fields": ["id", "version_id", "pantalla_id", "status", "contract_version", "contract_revision", "created_at", "invalidated_at"], "default_max_rows": 25, "max_rows_ceiling": 50, "byte_budget": 65536, "read_scope": "BOUNDED"},
+        "DETAIL": {"fields": ["id", "version_id", "pantalla_id", "universe_rule_id", "supersedes_run_id", "scope", "source_snapshot_sha256", "universe_snapshot_sha256", "family_count", "status", "curator_identity", "curator_completed_at", "validator_identity", "validator_completed_at", "blocked_reason", "created_at", "contract_version", "source_manifest", "source_observed_at", "contract_revision", "contract_snapshot_sha256", "invalidated_at", "invalidated_reason", "invalidated_by_run_id"], "default_max_rows": 1, "max_rows_ceiling": 3, "byte_budget": 196608, "read_scope": "FOCAL", "require_filter": true}
+      }
+    },
+    "ADAPTER_BINDINGS": {
+      "default_profile": "INDEX",
+      "profiles": {
+        "INDEX": {"fields": ["adapter_code", "adapter_name", "adapter_subtype", "adapter_document_status", "adapter_operational_status", "adapter_version", "target_asset_code", "target_asset_type", "relacion_tipo", "updated_at"], "default_max_rows": 25, "max_rows_ceiling": 50, "byte_budget": 65536, "read_scope": "BOUNDED"},
+        "DETAIL": {"fields": ["adapter_code", "adapter_name", "adapter_subtype", "adapter_document_status", "adapter_operational_status", "adapter_version", "adapter_metadata", "target_asset_code", "target_asset_name", "target_asset_type", "relacion_tipo", "valor_original", "fuente", "created_at", "updated_at"], "default_max_rows": 5, "max_rows_ceiling": 10, "byte_budget": 131072, "read_scope": "FOCAL", "require_filter": true}
+      }
+    },
+    "MIGRATION_LEDGER": {
+      "default_profile": "INDEX",
+      "profiles": {
+        "INDEX": {"fields": ["version", "name", "created_by", "idempotency_key"], "default_max_rows": 25, "max_rows_ceiling": 100, "byte_budget": 65536, "read_scope": "BOUNDED"},
+        "DETAIL": {"fields": ["version", "statements", "name", "created_by", "idempotency_key", "rollback"], "default_max_rows": 5, "max_rows_ceiling": 10, "byte_budget": 131072, "read_scope": "FOCAL", "require_filter": true}
+      }
+    }
+  }
+}
