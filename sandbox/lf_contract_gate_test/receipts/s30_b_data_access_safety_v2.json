@@ -1,0 +1,81 @@
+{
+  "receipt_version": "S30_B_DATA_ACCESS_SAFETY_V2",
+  "lane": "S30-B",
+  "execution_id": "S30-B-DATA-ACCESS-V2-REMATERIALIZED-20260909-001",
+  "verification_state": "EXACT_HEAD_CI_REQUIRED",
+  "candidate_claim_ceiling": "FIELD_LEVEL_DATA_ACCESS_AND_SCHEMA_SAFETY_CANDIDATE_PASS",
+  "frozen_base_main_sha": "d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
+  "supersedes": {
+    "pull_request": 614,
+    "head_sha": "fa8a3fa1e31b5d0c709db3b3e85cde24acdcead4",
+    "status": "STALE_HISTORICAL_ONLY",
+    "invalidation_reasons": [
+      "base main advanced after S30-B v1",
+      "S30-A pre-execution assurance changed shared CI/preflight frontier",
+      "v1 accepted freshness field presence without enforcing CURRENT",
+      "v1 did not require is_identity alongside identity_generation",
+      "v1 did not mechanically enforce separate schema-resolution call before dependent backend",
+      "v1 function argument validation did not require per-argument type metadata",
+      "v1 used an S30-B-specific fingerprint method instead of reusing the canonical architecture definition provider where accessible"
+    ]
+  },
+  "repair_scope": {
+    "owner": "S30-B",
+    "ddl_created": false,
+    "runtime_activation": false,
+    "production_activation": false,
+    "s26_modified": false,
+    "scheduler_modified": false,
+    "idempotency_or_lease_modified": false
+  },
+  "materialized_components": {
+    "data_access_module_commit": "a7f8bdc4f39f2dfdb3c68d297ec80e6744d33d71",
+    "registry_v2_commit": "15fcdab351baf737b7a454ae49ecfff9f29b7d2b",
+    "adversarial_suite_v2_commit": "a48697638cb23ee9eef9fbc8ba8121b30f6ed257",
+    "registry_contract": "LF_DATA_ACCESS_REGISTRY_V2",
+    "interface": "PREEXECUTION_DATA_ACCESS_RESULT",
+    "result_values": ["PASS", "BLOCKED"]
+  },
+  "schema_authority": {
+    "registered_source_count": 15,
+    "live_registered_objects_matching_expected_type": 15,
+    "live_registered_missing_field_count": 0,
+    "canonical_fingerprint_provider": "ARCHITECTURE_OBJECT_DEFINITION_V3",
+    "canonical_provider_source": "private.fn_architecture_object_definition_v3",
+    "fallback_fingerprint_provider": "INFORMATION_SCHEMA_METADATA_V2_SHA256",
+    "canonical_provider_source_count": 13,
+    "fallback_provider_source_count": 2,
+    "fallback_reason": "canonical private architecture-definition helper is not permission-readable across programacion and supabase_migrations; fallback is deterministic metadata over information_schema constraints and pg_indexes",
+    "schema_resolution_call_policy": "SEPARATE_INFORMATION_SCHEMA_CALL_BEFORE_DEPENDENT_BACKEND"
+  },
+  "live_canary": {
+    "object_identity": "public.lf_prevention_rules",
+    "object_type": "TABLE",
+    "schema_fingerprint": "9677f2d45e07f7c4b9957df31e9371173603b4e8366e620ed68a2cb2b8f7e67a",
+    "fingerprint_provider": "ARCHITECTURE_OBJECT_DEFINITION_V3",
+    "schema_receipt_observed_at": "2026-09-10T01:37:58.710051+00:00",
+    "schema_call_was_separate": true,
+    "dependent_query_executed_after_receipt": true,
+    "dependent_readback_row_count": 3,
+    "dependent_readback_keys": ["KB-PROD-R001", "PR-AUD-023", "PR-GOV-011"]
+  },
+  "regression": {
+    "required_negative_cases_from_handoff": 7,
+    "implemented_negative_cases": 15,
+    "negative_backend_escape_count": 0,
+    "required_positive_readers": ["STRATEGY_SNAPSHOTS", "OPERATION_REGISTRY", "OPERATION_CONTRACTS", "EKB", "ROUTER_SOURCE"],
+    "required_positive_reader_count": 5,
+    "schema_before_dependent_enforced": true,
+    "freshness_current_enforced": true,
+    "identity_metadata_enforced": true,
+    "function_argument_types_resolved": true,
+    "forged_pass_without_bound_plan_blocked": true
+  },
+  "ci": {
+    "wiring_target": ".github/workflows/validate-lf-packs.yml",
+    "required_position": "AFTER_S30_SELF_GOVERNANCE_CHEAP_PREFLIGHT_BEFORE_HEAVY_DEPENDENCY_INSTALL",
+    "exact_head_run": null,
+    "exact_head_result": "PENDING"
+  },
+  "remaining_blockers": ["EXACT_HEAD_CI_PENDING", "NO_MAIN_MERGE_AUTHORITY_IN_S30_B_HANDOFF"]
+}
