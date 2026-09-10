@@ -119,7 +119,7 @@ def _validate_payload(payload: dict[str, Any], gate_d: dict[str, Any], bootstrap
         raise GateETypedContextBlocked("GATE_E_D_READBACK_SHA_MISMATCH")
     if binding.get("source_git_blob_sha") != "40f287206429dd51c56b5e3d8f56f15c39eb21ac":
         raise GateETypedContextBlocked("GATE_E_D_READBACK_BLOB_MISMATCH")
-    if binding.get("source_commit_sha") != "7c81237cf55a9dfd3fd7193f0811c84ebdd54085":
+    if binding.get("source_commit_sha") != "2f053332714e4c097ae6b29cc258c2069c76b0ed":
         raise GateETypedContextBlocked("GATE_E_D_READBACK_COMMIT_MISMATCH")
 
     contract = _load_json(CONTRACT_PATH)
