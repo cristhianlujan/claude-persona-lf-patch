@@ -71,7 +71,7 @@
   "upstream": {
     "input_sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1",
     "source_boundary_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_input.json",
-    "source_boundary_sha256": "006edf7cb5f5a35eea3707f6f6e1706ca23a9790ab042bf67fbc1ce98db803d6",
+    "source_boundary_sha256": "e3f841d4a973b7383d44aef7bd6a276634d97ddf44c43c3e256d57999d1a58d9",
     "source_gate": "E_ADAPTER_TYPED_CONTEXT",
     "typed_context_sha256": "513769b40125a61884a1061ff594421fbf0de43525e45a4476e32ee533e41600"
   }
