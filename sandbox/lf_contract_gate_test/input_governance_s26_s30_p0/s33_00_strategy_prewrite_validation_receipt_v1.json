@@ -1,0 +1,40 @@
+{
+  "claim_ceiling": "S33_00_ISOLATION_AND_STRATEGY_PREWRITE_PASS_NO_SUPABASE_REGISTRATION",
+  "command": "python validate_strategy_contract_v032.py s33_strategy.yaml --mode prewrite",
+  "evidence_sha256": "049eee9b41894b3b950e7713ccc54026b2d835130fdd0075e22c2cd777f8c825",
+  "executed": true,
+  "executor": "LOCAL_PYTHON_EXACT_GIT_BLOB_RECONSTRUCTION",
+  "exit_code": 0,
+  "frozen_base_sha": "4cbb5d9785630b50f7d997369589e49e03a520cc",
+  "input": {
+    "git_blob_recomputed": "7fa3b62817239a2615544f6b058d1285c2ffaa18",
+    "git_blob_sha": "7fa3b62817239a2615544f6b058d1285c2ffaa18",
+    "path": "strategies/LF_INPUT_GOVERNANCE_CORE_REFACTOR_CAPABILITY_SELECTION_20260910.yaml",
+    "readback_commit_sha": "98a9290a82b4a4586e8314265cd0922e90c1283f"
+  },
+  "isolation_manifest_blob_sha": "4cad56d540767ec2262806b4080e00edd97741e1",
+  "python_version": "3.13.5",
+  "receipt_version": "S33_00_STRATEGY_PREWRITE_VALIDATION_RECEIPT_V1",
+  "result": {
+    "blocking_codes": [],
+    "current_stage_conclusion_count": 0,
+    "errors": [],
+    "mode": "prewrite",
+    "results_sha256": "3ee5b7d9252c050c4302511bca5a37602e71a7885e0ad1c2ae706a9095a10e7f",
+    "stage_count": 10,
+    "strategy_archetype": "TECHNICAL_OPERATIONAL",
+    "valid": true,
+    "validator_version": "v0.3.2"
+  },
+  "stage": "S33-00",
+  "strategy_id": "S33",
+  "validator": {
+    "base_git_blob_recomputed": "d7d18985b0246703d73cbe51eb69bb9162ba034a",
+    "base_git_blob_sha": "d7d18985b0246703d73cbe51eb69bb9162ba034a",
+    "base_validator_path": "gobernanza/judges/validate_strategy_contract.py",
+    "git_blob_recomputed": "4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765",
+    "git_blob_sha": "4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765",
+    "path": "gobernanza/judges/validate_strategy_contract_v032.py",
+    "version": "v0.3.2"
+  }
+}
