@@ -1,5 +1,5 @@
 {
-  "base_main_sha": "52ffabd18c14e24c62e54f4cd5063b68f651e4c7",
+  "base_main_sha": "a8dc0f24e32ff713bcb02254ec85351ff252f85f",
   "case_count": 52,
   "cases": [
     {
@@ -479,12 +479,14 @@
   ],
   "corpus_id": "S30-D-R09-FINAL-HISTORICAL-REPLAY-v2",
   "corpus_version": "v2-rematerialized-current-main",
+  "current_main_sha": "a8dc0f24e32ff713bcb02254ec85351ff252f85f",
   "historical_source": {
     "branch": "lf/s30-d-final-freeze-20260909",
     "case_count": 46,
     "corpus_id": "S30-D-R09-FINAL-HISTORICAL-REPLAY-v1",
     "sha256": "1a515ab6b11e441f7c21451061e391e7f86be16c39393c3a2049bd33546348fa"
   },
+  "integration_base_sha": "a8dc0f24e32ff713bcb02254ec85351ff252f85f",
   "new_rules_extension": {
     "case_count": 6,
     "case_ids": [
