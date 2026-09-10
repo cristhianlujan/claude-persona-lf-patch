@@ -1,0 +1,78 @@
+{
+  "claim_ceiling": "GATE_F_BLOCKED_EXACT_HEAD_RUNTIME_NOT_EXECUTED_NOT_GOLDEN",
+  "decision": {
+    "blocking_codes": [
+      "GATE_F_RUNTIME_SOURCE_SHA_MISMATCH",
+      "GATE_F_EXACT_BOUNDARY_NOT_CONSUMED",
+      "GATE_F_RUNTIME_COMPLETION_FAILED",
+      "GATE_F_EXACT_OUTPUT_MISSING",
+      "GATE_F_MODEL_GENERATION_PERFORMANCE_NOT_MEASURED"
+    ],
+    "depth_pass": false,
+    "exact_head_runtime_observed": false,
+    "exact_runtime_output_available": false,
+    "gate_f_input_consumed_by_exact_head_runtime": false,
+    "model_generation_performance_pass": false,
+    "next_gate_authorized": false,
+    "quality_pass": false,
+    "runtime_completion_pass": false,
+    "runtime_source_current": false
+  },
+  "execution_requirement": {
+    "actual_consumption_of_gate_f_input_required": true,
+    "candidate_source_sha": "6193207d299c3ed55e5f50d8ed78c28992ffce1d",
+    "depth_required": true,
+    "deterministic_performance_required": true,
+    "exact_head_runtime_required": true,
+    "machine_readable_runtime_timings_required": true,
+    "model_generation_performance_required": true,
+    "quality_required": true
+  },
+  "gate": "F_PROFILE_EXECUTION",
+  "historical_manual_candidate": {
+    "candidate_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/manual_profile_output.json",
+    "candidate_sha256": "712fcb036a4db6ded06615f0ec1c4dd7b9d475fa6208f5b9fc72c7688b9f01d6",
+    "consumed_current_gate_f_boundary": false,
+    "execution_mode": "CURRENT_CHAT_MANUAL_PROFILE_RUN",
+    "receipt_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/manual_profile_execution_receipt.json",
+    "role": "HISTORICAL_COMPATIBILITY_ONLY",
+    "satisfies_exact_head_runtime_execution": false
+  },
+  "next_gate": null,
+  "project_id": "S26",
+  "quality_depth_performance": {
+    "depth_on_exact_runtime_output": "NOT_EVALUATED",
+    "deterministic_qdp_contract_sha256": "70a5e984b547b3852fa8327701eadf03b7934cf54659aa2f9bdce045c75714d1",
+    "deterministic_qdp_status": "PASS",
+    "exact_runtime_output_available": false,
+    "model_generation_performance": "NOT_EVALUATED",
+    "observational_runtime_latency_creditable": false,
+    "quality_on_exact_runtime_output": "NOT_EVALUATED"
+  },
+  "run_id": "S26-HP-001",
+  "runtime_observation": {
+    "blocking_codes": [
+      "LLAMA_STRUCTURED_OUTPUT_JSON_INVALID"
+    ],
+    "candidate_source_sha": "6193207d299c3ed55e5f50d8ed78c28992ffce1d",
+    "gate_authority": false,
+    "model_generation_latency_measured": false,
+    "observed_runtime_source_sha": "486bb60af46de22adf0404565c9a78e41e3281a4",
+    "profile_elapsed_ms": 215125.691,
+    "raw_output_present": false,
+    "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_runtime_observation.json",
+    "runtime_completion_status": "FAIL",
+    "runtime_total_ms": 215126.303,
+    "sha256": "863bc49012e48394dcd1e5a6cce4050d7500eb6ede8ef5bc77e812e87dda1bd7",
+    "source_match": false
+  },
+  "schema": "S26_HP001_GATE_F_OUTPUT_V1",
+  "status": "BLOCKED",
+  "upstream": {
+    "input_sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1",
+    "source_boundary_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_input.json",
+    "source_boundary_sha256": "006edf7cb5f5a35eea3707f6f6e1706ca23a9790ab042bf67fbc1ce98db803d6",
+    "source_gate": "E_ADAPTER_TYPED_CONTEXT",
+    "typed_context_sha256": "513769b40125a61884a1061ff594421fbf0de43525e45a4476e32ee533e41600"
+  }
+}
