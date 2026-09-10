@@ -1,0 +1,39 @@
+{
+  "claim_ceiling": "S33_02_CAPABILITY_REGISTRY_AND_RESOLVER_PASS_CANDIDATE_NO_RUNTIME_OR_PRODUCTION",
+  "command": "python test_s33_capability_resolver_v1.py",
+  "coverage": {
+    "ambiguous_multiple_current_denied": true,
+    "consumer_mismatch_fail_closed": true,
+    "contract_drift_denied": true,
+    "deprecated_denied": true,
+    "internal_nonselectable_denied": true,
+    "missing_currentness_denied": true,
+    "missing_registry_field_denied": true,
+    "model_resource_selection_denied": true,
+    "positive_external_edge": true,
+    "positive_live_rpc_identity": true,
+    "positive_s30_typed_data_access": true,
+    "raw_resource_name_denied": true,
+    "stale_reresolve": true,
+    "unknown_to_discovery": true
+  },
+  "evidence_sha256": "38d9d69a7bad101839fd20bef8d1efebdb931f78b3d50167bda78c25932f7d9d",
+  "executed": true,
+  "executor": "LOCAL_PYTHON_EXACT_GIT_BLOB_RECONSTRUCTION",
+  "exit_code": 0,
+  "inputs": {
+    "registry": {"commit_sha":"c4b96ea50243c068241e7acc578ec50aea48b2b2","git_blob_sha":"2cd314c8cc0323c4bba85c13564f7a28b8680122","recomputed":"2cd314c8cc0323c4bba85c13564f7a28b8680122"},
+    "resolver": {"commit_sha":"308d7f930e5c8834be22a1d512e593965efd5fe8","git_blob_sha":"7f5ed0ee618aed2ac7c4b136db919032f09fa27a","recomputed":"7f5ed0ee618aed2ac7c4b136db919032f09fa27a"},
+    "tests": {"commit_sha":"74aa6c529d93daa2af97dd7eda157a4fcbcf9fbb","git_blob_sha":"dba12fffd571c09379e3b1eb60b91cddfae67794","recomputed":"dba12fffd571c09379e3b1eb60b91cddfae67794"},
+    "upstream_inventory_blob_sha": "9710e222223555d8088add6afff052d30d359356",
+    "upstream_stage_conclusion_blob_sha": "ee87574ff73630f99fc200963ee51c138eb4e675"
+  },
+  "python_version": "3.13.5",
+  "receipt_version": "S33_02_CAPABILITY_RESOLVER_VALIDATION_RECEIPT_V1",
+  "result": "PASS",
+  "stage": "S33-02",
+  "strategy_id": "S33",
+  "tests_failed": 0,
+  "tests_passed": 15,
+  "tests_run": 15
+}
