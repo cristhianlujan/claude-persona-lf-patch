@@ -16,9 +16,16 @@
       "v1 did not require is_identity alongside identity_generation",
       "v1 did not mechanically enforce separate schema-resolution call before dependent backend",
       "v1 function argument validation did not require per-argument type metadata",
-      "v1 used an S30-B-specific fingerprint method instead of reusing the canonical architecture definition provider where accessible"
+      "v1 used an S30-B-specific fingerprint method instead of reusing canonical architecture authority where accessible"
     ]
   },
+  "second_pass_hardening": [
+    "CURRENT freshness now also requires an explicit observed_at",
+    "data_types and nullability metadata are validated for every exact column",
+    "exact function signature must agree with ordered structured argument names and types",
+    "wrong resolved object type blocks before dependent backend",
+    "missing required function arguments block before dependent backend"
+  ],
   "repair_scope": {
     "owner": "S30-B",
     "ddl_created": false,
@@ -29,9 +36,9 @@
     "idempotency_or_lease_modified": false
   },
   "materialized_components": {
-    "data_access_module_commit": "a7f8bdc4f39f2dfdb3c68d297ec80e6744d33d71",
+    "data_access_module_commit": "54792845fc954d68ae65500902c68a297081b3c5",
     "registry_v2_commit": "15fcdab351baf737b7a454ae49ecfff9f29b7d2b",
-    "adversarial_suite_v2_commit": "a48697638cb23ee9eef9fbc8ba8121b30f6ed257",
+    "adversarial_suite_v2_commit": "8f378aa24abf4caacbd38e69d783d1d8b0ba0482",
     "registry_contract": "LF_DATA_ACCESS_REGISTRY_V2",
     "interface": "PREEXECUTION_DATA_ACCESS_RESULT",
     "result_values": ["PASS", "BLOCKED"]
@@ -61,14 +68,20 @@
   },
   "regression": {
     "required_negative_cases_from_handoff": 7,
-    "implemented_negative_cases": 15,
+    "implemented_negative_cases": 21,
     "negative_backend_escape_count": 0,
     "required_positive_readers": ["STRATEGY_SNAPSHOTS", "OPERATION_REGISTRY", "OPERATION_CONTRACTS", "EKB", "ROUTER_SOURCE"],
     "required_positive_reader_count": 5,
     "schema_before_dependent_enforced": true,
     "freshness_current_enforced": true,
+    "freshness_observed_at_enforced": true,
     "identity_metadata_enforced": true,
+    "data_types_resolved": true,
+    "nullability_resolved": true,
     "function_argument_types_resolved": true,
+    "function_signature_matches_structured_arguments": true,
+    "wrong_object_type_blocks_prebackend": true,
+    "missing_required_function_arg_blocks_prebackend": true,
     "forged_pass_without_bound_plan_blocked": true
   },
   "ci": {
