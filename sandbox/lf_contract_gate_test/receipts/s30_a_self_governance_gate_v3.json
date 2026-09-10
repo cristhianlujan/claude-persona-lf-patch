@@ -1,0 +1,53 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.3",
+  "issued_by": "contract_judge",
+  "operation_code": "S30_SELF_GOVERNANCE_GATE",
+  "execution_id": "S30-A-STRICT-AUDIT-REPAIR-V03-20260909-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "fca73bed01ddac34a547255841d94d983a86ed5b",
+  "judge_sha": "6332d56197c41cc8ca6f2bcc946d429cf43f9c8d",
+  "source_sha_list": [
+    "d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
+    "fca73bed01ddac34a547255841d94d983a86ed5b",
+    "6332d56197c41cc8ca6f2bcc946d429cf43f9c8d",
+    "43fbfafd4978427a782092cc8f5196ac3cfb4091",
+    "288fa0fedf3a6708b0a7dfd832adcc951e415357"
+  ],
+  "target_paths": [
+    "gobernanza/contratos/s30_self_governance_gate_v1.json",
+    "gobernanza/judges/validate_s30_self_governance_gate.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-10T01:55:40.243653Z",
+  "evidence": {
+    "mode": "BOUNDED_SELF_GOVERNANCE_GATE_REPAIR",
+    "frozen_base_main_sha": "d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
+    "repair_prewrite_result": "PASS_TO_BOUNDED_GUARD_REPAIR",
+    "repair_scope_only": true,
+    "db001_frequency": 228,
+    "gov010_frequency": 3,
+    "aud025_frequency": 4,
+    "strict_audit_findings": [
+      "STATIC_STALE_RECEIPT_COULD_PASS",
+      "CANONICAL_BLOCKERS_UNSCOPED",
+      "BACKLOG_R01_R05_R08_STALE",
+      "SELF_CONSUMPTION_EKB_SCHEMA_FIRST_ESCAPE",
+      "PREVIOUS_CLOSEOUT_CLAIM_CEILING_DRIFT",
+      "PR_SYNTHETIC_MERGE_REF_SHALLOW_DIFF_FAILURE"
+    ],
+    "failed_pr_event": {
+      "run_id": 34427194431,
+      "job_id": 102714836065,
+      "branch_head_sha": "eee4a0c3d10942e97e8b227bf0529d5b4442dfe7",
+      "executed_merge_ref_sha": "8597bfce7b27726dbf61628b8bbf540d2be00d7f",
+      "first_bad_hop": "git diff origin/main...HEAD on shallow synthetic PR checkout",
+      "material_work_started": false
+    },
+    "repair": "derive exact pull_request base/head SHAs from event payload, fetch both exact commits, diff base_sha..head_sha",
+    "fresh_exact_pr_event_ci": "REQUIRED_AFTER_THIS_RECEIPT_COMMIT",
+    "claim_ceiling": "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CANDIDATE_PASS",
+    "previous_v02_closeout": "SUPERSEDED_ONLY_AFTER_V03_EXACT_PR_CI_MERGE_AND_CANONICAL_READBACK"
+  }
+}
