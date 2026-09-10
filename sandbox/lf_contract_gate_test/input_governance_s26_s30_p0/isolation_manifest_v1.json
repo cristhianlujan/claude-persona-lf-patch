@@ -1,0 +1,53 @@
+{
+  "manifest_version": "S33_ISOLATION_V1",
+  "lane_id": "IG-S26-S30-P0-ISOLATED-20260910",
+  "strategy_id": "S33",
+  "owner": "INPUT_GOVERNANCE_P0",
+  "frozen_base_sha": "4cbb5d9785630b50f7d997369589e49e03a520cc",
+  "branch": "lf/ig-s26-s30-p0-isolated-20260910",
+  "allowed_write_prefixes": [
+    "strategies/LF_INPUT_GOVERNANCE_CORE_REFACTOR_CAPABILITY_SELECTION_20260910.yaml",
+    "sandbox/lf_contract_gate_test/input_governance_s26_s30_p0/"
+  ],
+  "forbidden_write_prefixes": [
+    "supabase/migrations/",
+    "supabase/functions/",
+    ".github/workflows/",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/",
+    "sandbox/lf_contract_gate_test/s30_data_access_candidate/",
+    "sandbox/lf_contract_gate_test/s30_self_governance/",
+    "sandbox/lf_contract_gate_test/s30_c_reliability_harness/",
+    "sandbox/lf_contract_gate_test/s30_d_final_r09/"
+  ],
+  "external_dependency_policy": {
+    "mode": "EXACT_SHA_READ_ONLY",
+    "moving_branch_refs_as_authority": false,
+    "s30_namespace_write": false,
+    "s26_namespace_write": false
+  },
+  "history_policy": {
+    "merge_main_into_evidence_lane": false,
+    "rebase_evidence_lane": false,
+    "force_push": false,
+    "external_cherry_pick": false,
+    "integration_strategy": "REMATERIALIZE_ON_FRESH_MAIN_IN_SEPARATE_INTEGRATION_LANE"
+  },
+  "runtime_policy": {
+    "supabase_schema_or_data_mutation": false,
+    "edge_runtime_change": false,
+    "production_change": false,
+    "main_merge": false
+  },
+  "preexecution_required": [
+    "fresh_EKB_applicable",
+    "capability_resource_resolution",
+    "currentness_EKB_policy_schema_Git_runtime",
+    "owned_path_check",
+    "dependency_exact_SHA_check"
+  ],
+  "freeze_rule": "UPSTREAM_OUTPUT_PERSIST_THEN_READBACK_THEN_HASH_BEFORE_DOWNSTREAM_BIND",
+  "on_main_advance": "DO_NOT_MUTATE_FROZEN_EVIDENCE; continue safe isolated work and later rematerialize integration from fresh main",
+  "on_conflict": "FAIL_CLOSED_NO_FOREIGN_WRITE",
+  "production_authorized": false,
+  "promotion_authorized": false
+}
