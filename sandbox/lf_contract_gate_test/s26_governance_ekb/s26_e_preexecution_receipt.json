@@ -2,7 +2,7 @@
   "pre_ekb_contract": {
     "contract_code": "CONTRACT-PRE-EKB-GATE-LF-v0.1",
     "status": "ACTIVE_ENFORCEMENT",
-    "evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json#pre_ekb_contract"
+    "evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json"
   },
   "sequence": ["CLASSIFY_SURFACE", "APPLICABILITY_ROUTER", "EKB_APPLICABLE_RULES", "CARD_RESOLVER", "GOVERNED_FALLBACK_IF_NEEDED", "PRE_EXECUTION_GATE", "EXECUTE", "EVIDENCE", "LEARNING_ELIGIBILITY"],
   "execution_started_before_gate": false,
@@ -10,7 +10,7 @@
     "status": "APPLICABLE",
     "surface": "S26_GOVERNANCE_EKB_APPLICABILITY_CARD_FALLBACK",
     "critical_ambiguity": false,
-    "evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json#ekb_source"
+    "evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json"
   },
   "ekb_readback": {
     "performed": true,
@@ -19,19 +19,19 @@
     "snapshot_digest": "sha256:80250e6040def9944063e853759539c8ec4d5ca80020f52b1bb921ad22f9f793"
   },
   "ekb_rules": [
-    {"rule_code": "CI-E16-001", "applicability": "APPLICABLE", "control_ref": "github-actions://lf-contract-check#Capture authenticated E.16 Actions inventory", "evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json#rules/CI-E16-001"},
-    {"rule_code": "CI-MIG-001", "applicability": "NOT_APPLICABLE", "reason": "S26-E PR changes no supabase/migrations files; migration parity is not an owned obligation for this lane.", "evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json#rules/CI-MIG-001"},
-    {"rule_code": "DB-001", "applicability": "APPLICABLE", "control_ref": "supabase://information_schema.columns#public.lf_error_knowledge", "evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json#rules/DB-001"},
-    {"rule_code": "DB-EVT-001", "applicability": "NOT_APPLICABLE", "reason": "This lane performs no insert/update into lf_eventos or EKB; evidence is committed in Git only.", "evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json#rules/DB-EVT-001"},
-    {"rule_code": "GOV-010", "applicability": "APPLICABLE", "control_ref": "CONTRACT-PRE-EKB-GATE-LF-v0.1", "evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json#rules/GOV-010"},
-    {"rule_code": "KB-PROD-001", "applicability": "NOT_APPLICABLE", "reason": "This lane does not promote KB content or modify consumer_ready.", "evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json#rules/KB-PROD-001"},
-    {"rule_code": "OPS-002", "applicability": "NOT_APPLICABLE", "reason": "No bulk EKB write is performed; database activity is small read-only readback.", "evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json#rules/OPS-002"}
+    {"rule_code": "CI-E16-001", "applicability": "APPLICABLE", "control_ref": "github-actions://lf-contract-check#Capture authenticated E.16 Actions inventory", "evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json"},
+    {"rule_code": "CI-MIG-001", "applicability": "NOT_APPLICABLE", "reason": "S26-E PR changes no supabase/migrations files; migration parity is not an owned obligation for this lane.", "evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json"},
+    {"rule_code": "DB-001", "applicability": "APPLICABLE", "control_ref": "supabase://information_schema.columns#public.lf_error_knowledge", "evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json"},
+    {"rule_code": "DB-EVT-001", "applicability": "NOT_APPLICABLE", "reason": "This lane performs no insert/update into lf_eventos or EKB; evidence is committed in Git only.", "evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json"},
+    {"rule_code": "GOV-010", "applicability": "APPLICABLE", "control_ref": "CONTRACT-PRE-EKB-GATE-LF-v0.1", "evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json"},
+    {"rule_code": "KB-PROD-001", "applicability": "NOT_APPLICABLE", "reason": "This lane does not promote KB content or modify consumer_ready.", "evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json"},
+    {"rule_code": "OPS-002", "applicability": "NOT_APPLICABLE", "reason": "No bulk EKB write is performed; database activity is small read-only readback.", "evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json"}
   ],
   "ekb_contradictions": [],
   "schema_policy": {"schema_invented": false, "data_model_mutated_to_fit_surface": false},
-  "card_resolution": {"state": "NONE", "resolver_evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json#card_resolver"},
+  "card_resolution": {"state": "NONE", "resolver_evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json"},
   "fallback": {
-    "attempts": [{"kind": "CONTRACT_SCHEMA", "status": "PASS", "evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json#pre_ekb_contract"}],
+    "attempts": [{"kind": "CONTRACT_SCHEMA", "status": "PASS", "evidence_ref": "repo://sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_evidence_v2.json"}],
     "selected": "CONTRACT_SCHEMA",
     "manual_required": false
   },

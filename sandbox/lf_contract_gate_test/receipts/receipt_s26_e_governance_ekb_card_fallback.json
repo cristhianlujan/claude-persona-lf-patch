@@ -3,7 +3,7 @@
   "receipt_version": "v0.2",
   "issued_by": "operation_judge",
   "operation_code": "S26_GOVERNANCE_EKB_APPLICABILITY_CARD_FALLBACK",
-  "execution_id": "S26-E-AUTOAUDIT-20260909-002",
+  "execution_id": "S26-E-AUTOAUDIT-20260909-003",
   "result": "PASS_SANDBOX",
   "all_required_steps_pass": true,
   "contract_sha": "6ff65399235d6e3c4b3ed90683e83b3b79b38b8b",
@@ -12,7 +12,7 @@
     "d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
     "f3a7d236f644ccb6c643f2081e4ee934c6171be0",
     "8ceae814c9f82b30b2a57090dd79820a2999dc92",
-    "541c49d03fad708cbaec27f0f69a12ac8d2a449f",
+    "6458bf67b2d59d91d63b04ca10df34a8a2758e28",
     "dbdde850c7a730ea378af13584ba9862b4a73e28",
     "f34e69bc334400a51cb940e03deed8f0f69088c4"
   ],
@@ -21,5 +21,5 @@
     "gobernanza/judges/validate_s26_governance_ekb_gate.py"
   ],
   "blocking_codes": [],
-  "issued_at": "2026-09-09T20:29:14-05:00"
+  "issued_at": "2026-09-09T20:39:00-05:00"
 }
