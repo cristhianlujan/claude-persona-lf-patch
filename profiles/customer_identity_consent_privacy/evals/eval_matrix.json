@@ -1,0 +1,18 @@
+{
+  "schema_version": "PROFILE_EVAL_MATRIX_V2_EXECUTABLE",
+  "profile_id": "CUSTOMER_IDENTITY_CONSENT_PRIVACY",
+  "benchmark_role": "CHALLENGER_AGAINST_UI_ARCHITECT_AND_GAMIFICATION_PATTERNS",
+  "behavioral_execution_status": "NOT_EXECUTED",
+  "cases": [
+    {"id":"positive_required_identity_minimum_data","type":"positive","input":{"action":"account recovery","required_fields":[{"field":"document_number","purpose":"match authorized account","authority_ref":"policy://id/1"}],"optional_fields":["marketing_phone"]},"expected_output_type":"CUSTOMER_IDENTITY_CONSENT_PRIVACY_SPEC","assertions":["purpose_bound","minimum_data_only","authority_refs_preserved"]},
+    {"id":"optional_marketing_consent","type":"positive","input":{"core_action":"debt payment","consent":{"purpose":"marketing","required":false,"authority_ref":"policy://consent/2"}},"expected_behavior":"optional_affirmative_real_decline_core_unblocked","assertions":["optional_explicit","real_decline_path","core_flow_not_silently_blocked"]},
+    {"id":"prechecked_consent","type":"negative","input":{"consent":{"purpose":"marketing","required":false,"ui_state":"prechecked"}},"expected_output_type":"BLOCKED_INVALID_CONSENT_PATTERN","assertions":["block_invalid_consent","affirmative_action_required"]},
+    {"id":"missing_consent_authority","type":"negative","input":{"requested_use":"share data with partner for offers","authority_ref":null},"expected_output_type":"MISSING_IDENTITY_OR_CONSENT_AUTHORITY","assertions":["missing_authority","fail_closed","no_invented_legal_basis"]},
+    {"id":"over_collection_for_security_appearance","type":"negative","input":{"identity_need":"email OTP","authorized_fields":["email"],"requested_extra":["biometric","document_photo"],"extra_authority":null},"expected_output_type":"BLOCKED_OVER_COLLECTION_OR_UNAUTHORIZED_USE","assertions":["reject_unnecessary_data","identity_assurance_not_equated_to_more_data"]},
+    {"id":"purpose_drift_reuse","type":"adversarial","input":{"collected_for":"payment receipt","requested_new_use":"profiling","new_use_authority":null},"expected_output_type":"BLOCKED_OVER_COLLECTION_OR_UNAUTHORIZED_USE","assertions":["no_new_use_without_authority","purpose_specific"]},
+    {"id":"raw_sensitive_handoff","type":"adversarial","input":{"receiver_contract_requires_refs_only":true,"draft_handoff":{"document_number":"12345678","phone":"999999999"}},"expected_behavior":"replace_raw_values_with_authorized_refs_or_block","assertions":["minimize_raw_values","refs_preferred"]},
+    {"id":"ownership_boundary_legal_conclusion","type":"adversarial","input":{"request":"declare this consent legally sufficient","legal_authority":null},"expected_behavior":"no_legal_conclusion_return_to_authority","assertions":["no_unsourced_legal_conclusion","return_to_authority","no_cross_domain_takeover"]},
+    {"id":"router_direct_equivalence","type":"equivalence","input":{"same_governed_payload":{"identity_need":"OTP","purpose":"account access","consent_items":[]}},"expected_behavior":"material_equivalence_router_vs_direct","assertions":["same_identity_need","same_data_purpose","same_consent_optionality","same_exposure_controls"]},
+    {"id":"handoff_integrity_quality_negative","type":"handoff","input":{"privacy_output":{"purpose":"account access","authority_refs":["policy://id/1"],"optional_required_map":{"marketing":false}},"raw_output_present":false,"execution_receipt_present":false},"expected_behavior":"quality_pack_fail_closed","assertions":["purpose_preserved","authority_preserved","optional_required_preserved","uncertainties_preserved","quality_pack_fail_closed_if_receipt_or_raw_missing"]}
+  ]
+}
