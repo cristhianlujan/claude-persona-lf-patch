@@ -20,9 +20,29 @@ A status is a claim about observable state. If the engine says a candidate was c
 
 When `status = LEARNING_CARD_CANDIDATE_CREATED`, `candidate_artifact` is also required and its `artifact_id` must match `learning_candidate_id`.
 
+## Causal lane exclusivity
+
+Before any materializing work, apply `contracts/causal_lane_exclusivity.md`.
+
+The exclusion identity is:
+
+`causal_lane_key = EKB_code + target_asset + primary_gate`
+
+The Learning Engine must preserve these invariants:
+
+- `1 causal chain = 1 active writer`;
+- `1 PR = 1 lane + 1 owner + 1 primary gate`;
+- operational ownership is acquired and read back from Supabase before a writer advances;
+- a competing writer for the same key returns `BLOCK_CAUSAL_LANE_ALREADY_OWNED` and `WAITING_UPSTREAM`;
+- research, adversarial review, semantic review and evidence verification may run in parallel only as `REVIEWER_READ_ONLY`;
+- after an owner closes, a successor must resolve fresh `main`, invalidate stale/currentness receipts, revalidate evidence and acquire a new Supabase claim before continuing;
+- path/branch isolation alone never proves causal-lane independence.
+
 ## Acceptance criteria
 
 A valid output must show Router-first routing, Supabase source verification, ACT-0046 awareness, evidence sufficiency, duplicate/asset check, and blocked impact unless explicit approval exists.
+
+For materializing work, a valid output must additionally show the canonical causal-lane identity, one writer owner, one primary gate, fresh-main/currentness evidence and an exact active Supabase claim. A read-only reviewer must not have write intent.
 
 For cross-profile support/remediation, the candidate must additionally satisfy:
 
@@ -69,6 +89,11 @@ A candidate may preserve lower-layer PASS evidence while a higher layer remains 
 - Production general enablement.
 - One-off rule sprawl.
 - Learning without evidence.
+- Materializing work without an exact Supabase causal-lane ownership claim.
+- More than one active writer for the same `causal_lane_key`.
+- A PR that advances more than one causal lane/owner/primary gate.
+- A `REVIEWER_READ_ONLY` lane with write intent.
+- A successor that reuses stale/currentness receipts or advances before fresh-main/currentness and ownership reacquisition.
 - `LEARNING_CARD_CANDIDATE_CREATED` without a delivered candidate artifact.
 - A handoff whose declared receiver cannot perform the next gate without inventing missing content.
 - A producer output that claims completion and then asks the receiver to perform the same creation step.
