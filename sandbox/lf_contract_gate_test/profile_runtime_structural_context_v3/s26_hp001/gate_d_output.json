@@ -1,0 +1,78 @@
+{
+  "schema": "S26_HP001_GATE_D_OUTPUT_V1",
+  "gate": "D_AUTHORITY_RESOLUTION",
+  "project_id": "S26",
+  "run_id": "S26-HP-001",
+  "upstream": {
+    "source_gate": "C_CARD_SELECTION",
+    "source_output_sha256": "0651c36584139aa9ca9da878e88d35b7f25bbd2aeca5fe91526cfad0257dcf3d",
+    "input_sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1"
+  },
+  "input": {
+    "surface_code": "UI_SCREEN_DESIGN",
+    "task_code": "CREATE_NEW",
+    "current_run_id": "S26-HP-001",
+    "required_authority_types": [
+      "USER_REQUIREMENT",
+      "PROFILE_CONTRACT",
+      "OUTPUT_SCHEMA",
+      "RECIPIENT_BOUNDARY"
+    ],
+    "authority_paths": {
+      "USER_REQUIREMENT": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/input.txt",
+      "PROFILE_CONTRACT": "profiles/ui_architect/SKILL.md",
+      "OUTPUT_SCHEMA": "profiles/ui_architect/schemas/ui_production_spec.schema.json",
+      "RECIPIENT_BOUNDARY": "profiles/ui_architect/contracts/composer_payload_boundary_v1.md"
+    }
+  },
+  "authority_resolution": [
+    {
+      "authority_type": "OUTPUT_SCHEMA",
+      "authority_id": "S26_HP001_OUTPUT_SCHEMA",
+      "run_id": "S26-HP-001",
+      "cross_run_declared": false,
+      "cross_run_authorization": null,
+      "ref": "profiles/ui_architect/schemas/ui_production_spec.schema.json",
+      "sha256": "7f10c952796b045b99069b446f8dd7582d641d3514c25253fd27782045547112"
+    },
+    {
+      "authority_type": "PROFILE_CONTRACT",
+      "authority_id": "S26_HP001_PROFILE_CONTRACT",
+      "run_id": "S26-HP-001",
+      "cross_run_declared": false,
+      "cross_run_authorization": null,
+      "ref": "profiles/ui_architect/SKILL.md",
+      "sha256": "b099944839af79cb97eac76f12ecf8bd38c39ea331224ee335ced32491f411c0"
+    },
+    {
+      "authority_type": "RECIPIENT_BOUNDARY",
+      "authority_id": "S26_HP001_RECIPIENT_BOUNDARY",
+      "run_id": "S26-HP-001",
+      "cross_run_declared": false,
+      "cross_run_authorization": null,
+      "ref": "profiles/ui_architect/contracts/composer_payload_boundary_v1.md",
+      "sha256": "e7736ab5a2609c9765b16feee5e088eeab1e329ff28842deee2c7757e76ad881"
+    },
+    {
+      "authority_type": "USER_REQUIREMENT",
+      "authority_id": "S26_HP001_USER_REQUIREMENT",
+      "run_id": "S26-HP-001",
+      "cross_run_declared": false,
+      "cross_run_authorization": null,
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/input.txt",
+      "sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1"
+    }
+  ],
+  "decision": {
+    "authority_resolution_complete": true,
+    "required_authority_count": 4,
+    "resolved_authority_count": 4,
+    "incompatible_authorities_detected": false,
+    "cross_run_authority_used": false,
+    "candidate_derived_authority_used": false,
+    "semantic_authority_invention_allowed": false,
+    "next_gate_authorized": true
+  },
+  "status": "PASS",
+  "next_gate": "E_ADAPTER_TYPED_CONTEXT"
+}

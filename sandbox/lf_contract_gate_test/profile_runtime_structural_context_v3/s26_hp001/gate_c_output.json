@@ -5,7 +5,7 @@
   "run_id": "S26-HP-001",
   "upstream": {
     "source_gate": "B_EKB_GOVERNANCE",
-    "source_output_sha256": "283213c578640e3b06f42b52c6c8565a98a5e1b0414060d90d2b1b573dbdc81c",
+    "source_output_sha256": "d00308a28a05abfc4c356c72d74a73daa6ece5366cf9be9925b82946bffdb0fb",
     "input_sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1"
   },
   "input": {
