@@ -1,8 +1,8 @@
 {
   "evidence_version": "S30_B_CANDIDATE_EVIDENCE_V4",
   "lane": "S30-B",
-  "base_main_sha": "4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3",
-  "verification_state": "POST_MERGE_MAIN_VERIFIED_CLOSEOUT_PERSISTENCE_PENDING",
+  "base_main_sha": "ab9f0330a69f7404afc04faa01e93bfcd42fa3f0",
+  "verification_state": "FINAL_CLOSED",
   "claim_ceiling": "FIELD_LEVEL_DATA_ACCESS_AND_SCHEMA_SAFETY_CANDIDATE_PASS",
   "schema_currentness": {
     "registered_source_count": 15,
@@ -111,13 +111,7 @@
     "scheduler_modified": false,
     "s26_modified": false
   },
-  "remaining_gates": [
-    "CLOSEOUT_STAGING_CI",
-    "CLOSEOUT_BROKER_PROTECTED_SHA_READBACK",
-    "CLOSEOUT_PR_CI",
-    "CLOSEOUT_RECEIPT_MERGE_TO_MAIN",
-    "FINAL_MAIN_READBACK"
-  ],
+  "remaining_gates": [],
   "applicable_ekb_refinement": {
     "schema_first_read": true,
     "codes": [
@@ -138,6 +132,29 @@
     "merge_sha": "4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3",
     "validate_lf_packs_run": 34504593415,
     "lf_contract_check_run": 34504593500,
+    "result": "PASS"
+  },
+  "closeout_persistence": {
+    "pr": 663,
+    "merge_sha": "ab9f0330a69f7404afc04faa01e93bfcd42fa3f0",
+    "staging_runs": [
+      34505195329,
+      34505195299
+    ],
+    "broker_dispatch_run": 34505382156,
+    "protected_runs": [
+      34505449973,
+      34505450037
+    ],
+    "pr_runs": [
+      34505696577,
+      34505696657,
+      34505696553
+    ],
+    "main_runs": [
+      34505958907,
+      34505958976
+    ],
     "result": "PASS"
   }
 }
