@@ -1,0 +1,42 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.3",
+  "issued_by": "contract_judge",
+  "operation_code": "S30_SELF_GOVERNANCE_GATE",
+  "execution_id": "S30-A-STRICT-AUDIT-REPAIR-V03-20260909-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "fca73bed01ddac34a547255841d94d983a86ed5b",
+  "judge_sha": "bffffac168216d77f952d28c8d25efdf1ef44750",
+  "source_sha_list": [
+    "d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
+    "fca73bed01ddac34a547255841d94d983a86ed5b",
+    "bffffac168216d77f952d28c8d25efdf1ef44750",
+    "43fbfafd4978427a782092cc8f5196ac3cfb4091",
+    "2160c185f264186b8b4cfd27db80728325289545"
+  ],
+  "target_paths": [
+    "gobernanza/contratos/s30_self_governance_gate_v1.json",
+    "gobernanza/judges/validate_s30_self_governance_gate.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-10T01:49:57.842093Z",
+  "evidence": {
+    "mode": "BOUNDED_SELF_GOVERNANCE_GATE_REPAIR",
+    "frozen_base_main_sha": "d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
+    "repair_prewrite_result": "PASS_TO_BOUNDED_GUARD_REPAIR",
+    "repair_scope_only": true,
+    "db001_frequency": 228,
+    "gov010_frequency": 3,
+    "strict_audit_findings": [
+      "STATIC_STALE_RECEIPT_COULD_PASS",
+      "CANONICAL_BLOCKERS_UNSCOPED",
+      "BACKLOG_R01_R05_R08_STALE",
+      "SELF_CONSUMPTION_EKB_SCHEMA_FIRST_ESCAPE",
+      "PREVIOUS_CLOSEOUT_CLAIM_CEILING_DRIFT"
+    ],
+    "fresh_exact_head_ci": "REQUIRED_AFTER_THIS_RECEIPT_COMMIT",
+    "claim_ceiling": "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CANDIDATE_PASS",
+    "previous_v02_closeout": "SUPERSEDED_ONLY_AFTER_V03_EXACT_HEAD_CI_MERGE_AND_CANONICAL_READBACK"
+  }
+}
