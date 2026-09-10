@@ -6,11 +6,11 @@
   "base_main_sha": "d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
   "intended_material_action": "SELF_GOVERNANCE_GATE_REPAIR",
   "owner_authorized_repair": true,
-  "repair_reason": "Strict audit proved v0.2 could pass a stale static receipt and did not enforce EKB/schema-first before the agent's first dependent SQL; canonical blockers/backlog were also not fully reconciled.",
-  "repair_target_ekb_codes": ["DB-001", "GOV-010"],
+  "repair_reason": "Strict audit proved v0.2 could pass a stale static receipt, did not enforce EKB/schema-first before the agent's first dependent SQL, and v0.3 first PR-event exposed a shallow merge-ref/currentness defect before dependency install.",
+  "repair_target_ekb_codes": ["DB-001", "GOV-010", "AUD-025"],
   "sequence_resolution": {
     "ROUTER": {"status": "PROVEN", "evidence": "ACT-0001 live readback: VIGENTE/ACTIVO/RECTOR/RUNTIME_OPERATIVO, impacto_automatico=BLOQUEADO, v0.3"},
-    "EKB_APPLICABLE": {"status": "PROVEN", "loaded_codes": ["DB-001", "GOV-010"], "evidence": "Schema-first EKB readback after contained 42703; DB-001 frequency=228, GOV-010 frequency=3"},
+    "EKB_APPLICABLE": {"status": "PROVEN", "loaded_codes": ["DB-001", "GOV-010", "AUD-025"], "evidence": "Schema-first EKB readback: DB-001 frequency=228, GOV-010 frequency=3; PR624 failure matched existing AUD-025 and was persisted/read back at frequency=4"},
     "DATA_ACCESS_BINDINGS": {"status": "PROVEN", "mode": "SCHEMA_CONTRACT_FALLBACK", "evidence": "S30-B typed readers remain out of scope; v0.3 forbids NOT_REQUIRED bypass and requires schema bindings before free SQL fallback"},
     "SCHEMA_CONTRACT": {
       "status": "PROVEN",
@@ -22,17 +22,17 @@
       "evidence": "Exact object/field bindings observed before dependent repair DML and Router readback"
     },
     "OPERATION_CONTRACTS": {"status": "PROVEN", "evidence": "Current lf-contract-check receipt contract inspected; governed contract/judge changes require LF_OPERATION_CONTRACT_RECEIPT"},
-    "ALL_INTENDED_STEPS": {"status": "PROVEN", "evidence": "Bounded repair: v0.3 gate + workflow freshness -> exact-head CI -> merge if green -> governed snapshot repair -> independent readback -> bounded strategy window demotion -> closeout"},
-    "JUDGES_AND_RESULT_VOCABULARY": {"status": "PROVEN", "evidence": "v0.3 local candidate self-test PASS; includes stale base, unscoped blocker, NOT_REQUIRED data access, missing evidence, missing applicable hard guard, unauthorized merge negatives"},
+    "ALL_INTENDED_STEPS": {"status": "PROVEN", "evidence": "Bounded repair: v0.3 gate + event-SHA freshness -> exact-head PR CI -> merge if green -> governed snapshot repair -> independent readback -> bounded strategy window demotion -> closeout"},
+    "JUDGES_AND_RESULT_VOCABULARY": {"status": "PROVEN", "evidence": "v0.3 self-test includes stale base, unscoped blocker, NOT_REQUIRED data access, missing evidence, missing applicable hard guard, unauthorized merge negatives; PR624 first event additionally proved fail-closed before dependency install"},
     "DEPENDENCIES_AND_IMPORT_CLOSURE": {"status": "PROVEN", "evidence": "Validator uses Python 3.11 standard library only"},
-    "CI_PATHS_AND_RUNNER_WIRING": {"status": "PROVEN", "evidence": "validate-lf-packs.yml executes S30 gate before dependency installation; repair changes always-on path to self-test + ci-auto freshness"},
+    "CI_PATHS_AND_RUNNER_WIRING": {"status": "PROVEN", "evidence": "validate-lf-packs.yml executes S30 gate before dependency installation; PR event identity repair derives exact base/head from event payload rather than shallow synthetic merge HEAD"},
     "PERMISSIONS_SECRETS_AND_READBACK": {"status": "PROVEN", "evidence": "GitHub branch/file/PR writes available; no secret dependency for validator; Supabase read/write and independent readback available"},
-    "EVIDENCE_PROVIDER_AND_RESOLVER": {"status": "PROVEN", "evidence": "GitHub exact-head workflow/job readback and Supabase canonical readback both reachable"},
+    "EVIDENCE_PROVIDER_AND_RESOLVER": {"status": "PROVEN", "evidence": "GitHub exact event base/head SHA plus workflow/job logs and Supabase canonical readback are reachable"},
     "EXPECTED_OUTPUT_CONTRACT": {"status": "PROVEN", "evidence": "v0.3 consumer interface fixes input/output fields and adds bounded_repair_allowed"}
   },
   "preflight_checks": {
-    "IMPORT_CLOSURE": {"status": "PASS", "evidence": "local Python 3.11 self-test process exited 0; stdlib-only imports"},
-    "REQUIRED_FILES_EXIST": {"status": "PASS", "evidence": "current main contract, judge, workflow, static prewrite receipt and lf_contract_check.py fetched successfully"},
+    "IMPORT_CLOSURE": {"status": "PASS", "evidence": "branch-push Python 3.11 self-test exited 0; stdlib-only imports; PR event reached ci_changed_and_base before dependency installation"},
+    "REQUIRED_FILES_EXIST": {"status": "PASS", "evidence": "current main contract, judge, workflow, prewrite receipt and lf_contract_check.py fetched successfully"},
     "SCHEMA_AND_CONSTRAINTS_RESOLVED": {
       "status": "PASS",
       "resolved": ["RELATION_COLUMNS", "CONSTRAINTS", "DEPENDENT_SQL_FUNCTION_SIGNATURES"],
@@ -40,56 +40,69 @@
         {"object_identity": "public.lf_error_knowledge", "resolved_fields": ["codigo", "frecuencia", "validacion", "evidencia"], "evidence_ref": "information_schema + viewdef"},
         {"object_identity": "transversal.error_knowledge", "resolved_fields": ["codigo", "frecuencia", "validacion", "evidencia"], "evidence_ref": "pg_constraint"},
         {"object_identity": "public.v_lf_fuente_operativa", "resolved_fields": ["codigo_activo", "estado_documental", "estado_operativo", "nivel_control", "runtime_estado", "impacto_automatico"], "evidence_ref": "information_schema"},
-        {"object_identity": "dependent SQL functions used in prior S30 strategy route", "resolved_fields": ["pg_get_viewdef(regclass,boolean) and previously resolved digest/jsonb helpers"], "evidence_ref": "pg_proc/readback lineage"}
+        {"object_identity": "dependent SQL functions used in S30 strategy route", "resolved_fields": ["pg_get_viewdef(regclass,boolean)", "digest(text,text)", "jsonb_set(jsonb,text[],jsonb,boolean)"], "evidence_ref": "pg_proc/readback lineage"}
       ],
-      "evidence": "No dependent repair SQL will use an unobserved relation column or custom function signature"
+      "evidence": "No dependent repair SQL uses an unobserved relation column or custom function signature"
     },
-    "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED": {"status": "PASS", "evidence": "GitHub fetch_file/create_branch/update_file/PR schemas and Supabase execute_sql schema loaded before writes"},
-    "PERMISSIONS_AND_SECRET_READBACK": {"status": "PASS", "evidence": "No secrets required; connector permissions already exercised read-only and previous authorized writes; post-write readback mandatory"},
+    "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED": {"status": "PASS", "evidence": "GitHub file/branch/PR/workflow-job schemas and Supabase execute_sql schema loaded before writes"},
+    "PERMISSIONS_AND_SECRET_READBACK": {"status": "PASS", "evidence": "No secrets required; Actions token read-only is sufficient for event-SHA fetch; connector writes are owner-authorized and post-write readback is mandatory"},
     "EVIDENCE_PROVIDER_RESOLVABLE": {"status": "PASS", "evidence": "GitHub and Supabase providers reachable in this audit"},
-    "CI_RUNNER_WIRING_CONFIRMED": {"status": "PASS", "evidence": "Current workflow exact early position inspected; v0.3 ci-auto plan binds receipt only when gate paths change"},
+    "CI_RUNNER_WIRING_CONFIRMED": {"status": "PASS", "evidence": "PR624 run 34427194431/job 102714836065 proves S30 gate executes as step 4 before dependency install; shallow defect failed closed"},
     "EXPECTED_OUTPUT_SCHEMA_COMPLETE": {"status": "PASS", "evidence": "v0.3 outputs result, first_bad_hop, material_work_allowed, bounded_repair_allowed, failure sets, claim ceiling"},
-    "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED": {"status": "PASS", "evidence": "13-case local self-test includes stale receipt, unscoped blockers, data-access bypass, missing evidence, EKB omissions and unauthorized merge"}
+    "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED": {"status": "PASS", "evidence": "13-case self-test plus real PR624 shallow failure; both stop before material/dependency work"}
   },
   "frontier": {
     "current_stage": "S30-A_STRICT_AUDIT_REPAIR",
-    "next_gate": "V03_EXACT_HEAD_CI_THEN_CANONICAL_SNAPSHOT_REPAIR",
+    "next_gate": "V03_EXACT_PR_EVENT_CI_THEN_CANONICAL_SNAPSHOT_REPAIR",
     "blockers": [
-      {"code": "S30_A_STALE_STATIC_RECEIPT_ACCEPTANCE", "affected_scope": "S30_SELF_GOVERNANCE_CI_WIRING", "causal_gate": "FRESH_RECEIPT_EVENT_BASE_BINDING", "owner": "S30-A", "independent_safe_work": ["LOCAL_VALIDATOR_SELFTEST", "CANONICAL_READBACK"], "invalidation_condition": "exact-head CI proves v0.3 rejects stale base and no unrelated change reuses historical receipt"},
+      {"code": "S30_A_STALE_STATIC_RECEIPT_ACCEPTANCE", "affected_scope": "S30_SELF_GOVERNANCE_CI_WIRING", "causal_gate": "FRESH_RECEIPT_EVENT_BASE_BINDING", "owner": "S30-A", "independent_safe_work": ["VALIDATOR_SELFTEST", "CANONICAL_READBACK"], "invalidation_condition": "PR-event CI proves fresh_receipt_evaluated=true against exact event base SHA and stale base negative remains fail-closed"},
+      {"code": "S30_A_PR_SHALLOW_MERGE_REF_DIFF", "affected_scope": "S30_SELF_GOVERNANCE_PR_EVENT_FRESHNESS", "causal_gate": "EVENT_BASE_HEAD_SHA_DIFF", "owner": "S30-A", "independent_safe_work": ["VALIDATOR_SELFTEST"], "invalidation_condition": "PR-event CI fetches exact event base/head SHAs and evaluates changed gate paths without merge-base dependency"},
       {"code": "S30_A_CANONICAL_BLOCKERS_UNSCOPED", "affected_scope": "public.lf_strategy_snapshots.id=35 execution_frontier + metadata.progress", "causal_gate": "STRUCTURED_CAUSAL_BLOCKER_RECONCILIATION", "owner": "S30", "independent_safe_work": ["GITHUB_GATE_REPAIR"], "invalidation_condition": "both canonical frontier surfaces contain identical structured blockers with all six required fields"},
       {"code": "S30_A_BACKLOG_R01_R05_R08_STALE", "affected_scope": "public.lf_strategy_snapshots.id=35 backlog", "causal_gate": "BACKLOG_READBACK_RECONCILIATION", "owner": "S30", "independent_safe_work": ["GITHUB_GATE_REPAIR"], "invalidation_condition": "R01/R05/R08 states read back as candidate-complete with evidence; unrelated backlog entries preserved"},
-      {"code": "S30_A_SELF_CONSUMPTION_EKB_ESCAPE", "affected_scope": "S30 agent pre-execution path", "causal_gate": "EKB_APPLICABLE_PLUS_SCHEMA_CONTRACT_FALLBACK", "owner": "S30-A", "independent_safe_work": ["LOCAL_VALIDATOR_SELFTEST"], "invalidation_condition": "v0.3 negative tests reject NOT_REQUIRED data access, missing loaded EKB, missing schema bindings and missing evidence; exact-head wiring proven"}
+      {"code": "S30_A_SELF_CONSUMPTION_EKB_ESCAPE", "affected_scope": "S30 agent pre-execution path", "causal_gate": "EKB_APPLICABLE_PLUS_SCHEMA_CONTRACT_FALLBACK", "owner": "S30-A", "independent_safe_work": ["VALIDATOR_SELFTEST"], "invalidation_condition": "v0.3 negatives reject NOT_REQUIRED data access, missing loaded EKB, missing schema bindings and missing evidence; exact PR wiring proven"}
     ],
-    "safe_parallel_work": ["LOCAL_VALIDATOR_SELFTEST", "CANONICAL_READBACK"]
+    "safe_parallel_work": ["VALIDATOR_SELFTEST", "CANONICAL_READBACK"]
   },
   "applicable_ekb": [
     {"code": "DB-001", "triggers": ["RECURRENT", "MACHINE_DETECTABLE", "AVOIDABLE_MATERIAL_WORK"]},
-    {"code": "GOV-010", "triggers": ["RECURRENT", "AVOIDABLE_MATERIAL_WORK"]}
+    {"code": "GOV-010", "triggers": ["RECURRENT", "AVOIDABLE_MATERIAL_WORK"]},
+    {"code": "AUD-025", "triggers": ["RECURRENT", "MACHINE_DETECTABLE", "AVOIDABLE_MATERIAL_WORK"]}
   ],
   "hard_guard_candidates": [
     {"ekb_code": "DB-001", "closure": {
-      "EKB_UPDATED": {"status": "PASS", "evidence": "DB-001 227->228 and GOV-010 2->3 persisted with independent readback 2026-09-10T01:38:47Z"},
-      "DETECTOR_IMPLEMENTED": {"status": "PENDING", "evidence": "Target of this bounded repair: v0.3 candidate locally materialized"},
-      "NEGATIVE_REGRESSION": {"status": "PENDING", "evidence": "Target of this bounded repair exact-head CI"},
-      "POSITIVE_REGRESSION": {"status": "PENDING", "evidence": "Target of this bounded repair exact-head CI"},
-      "EXECUTED_PATH_WIRING_PROVEN": {"status": "PENDING", "evidence": "Must be proven on exact-head CI after branch write"},
-      "READBACK": {"status": "PENDING", "evidence": "Must be proven after exact-head CI and post-merge closeout"}
+      "EKB_UPDATED": {"status": "PASS", "evidence": "DB-001 227->228 and GOV-010 2->3 persisted/read back at 2026-09-10T01:38:47Z"},
+      "DETECTOR_IMPLEMENTED": {"status": "PENDING", "evidence": "Target of bounded repair: v0.3 candidate"},
+      "NEGATIVE_REGRESSION": {"status": "PENDING", "evidence": "Must close on exact PR-event CI"},
+      "POSITIVE_REGRESSION": {"status": "PENDING", "evidence": "Must close on exact PR-event CI"},
+      "EXECUTED_PATH_WIRING_PROVEN": {"status": "PENDING", "evidence": "Must close on exact PR-event CI"},
+      "READBACK": {"status": "PENDING", "evidence": "Must close after merge + canonical readback"}
     }},
     {"ekb_code": "GOV-010", "closure": {
-      "EKB_UPDATED": {"status": "PASS", "evidence": "DB-001 227->228 and GOV-010 2->3 persisted with independent readback 2026-09-10T01:38:47Z"},
-      "DETECTOR_IMPLEMENTED": {"status": "PENDING", "evidence": "Target of this bounded repair: v0.3 candidate locally materialized"},
-      "NEGATIVE_REGRESSION": {"status": "PENDING", "evidence": "Target of this bounded repair exact-head CI"},
-      "POSITIVE_REGRESSION": {"status": "PENDING", "evidence": "Target of this bounded repair exact-head CI"},
-      "EXECUTED_PATH_WIRING_PROVEN": {"status": "PENDING", "evidence": "Must be proven on exact-head CI after branch write"},
-      "READBACK": {"status": "PENDING", "evidence": "Must be proven after exact-head CI and post-merge closeout"}
+      "EKB_UPDATED": {"status": "PASS", "evidence": "GOV-010 2->3 persisted/read back with the self-consumption escape"},
+      "DETECTOR_IMPLEMENTED": {"status": "PENDING", "evidence": "Target of bounded repair: v0.3 candidate"},
+      "NEGATIVE_REGRESSION": {"status": "PENDING", "evidence": "Must close on exact PR-event CI"},
+      "POSITIVE_REGRESSION": {"status": "PENDING", "evidence": "Must close on exact PR-event CI"},
+      "EXECUTED_PATH_WIRING_PROVEN": {"status": "PENDING", "evidence": "Must close on exact PR-event CI"},
+      "READBACK": {"status": "PENDING", "evidence": "Must close after merge + canonical readback"}
+    }},
+    {"ekb_code": "AUD-025", "closure": {
+      "EKB_UPDATED": {"status": "PASS", "evidence": "AUD-025 3->4 persisted/read back after PR624 run 34427194431/job 102714836065 exposed synthetic merge-ref + shallow diff failure"},
+      "DETECTOR_IMPLEMENTED": {"status": "PENDING", "evidence": "Event payload exact base/head SHA resolver committed in v0.3 repair"},
+      "NEGATIVE_REGRESSION": {"status": "PENDING", "evidence": "Real first PR event failed closed; repaired exact event must pass before closure"},
+      "POSITIVE_REGRESSION": {"status": "PENDING", "evidence": "Must close on repaired PR-event CI"},
+      "EXECUTED_PATH_WIRING_PROVEN": {"status": "PENDING", "evidence": "Must close on repaired PR-event CI"},
+      "READBACK": {"status": "PENDING", "evidence": "Must close after repaired CI and merge"}
     }}
   ],
   "safety_readback": {"runtime_changed": false, "production_changed": false, "main_merged": false, "scheduler_changed": false, "s26_mutated": false},
   "evidence": {
-    "audit_time": "2026-09-10T01:38:47Z",
     "frozen_main_sha": "d75b7c15dac66ed9ae9f7b1cf78fb8ee3872d921",
     "current_snapshot_id": 35,
     "current_snapshot_payload_sha256": "a652dede73ef4fd68576755062eef0e6a630d535898df86519e8aae307d01ba8",
+    "failed_pr_event_run": 34427194431,
+    "failed_pr_event_job": 102714836065,
+    "failed_merge_ref_sha": "8597bfce7b27726dbf61628b8bbf540d2be00d7f",
+    "failed_branch_head_sha": "eee4a0c3d10942e97e8b227bf0529d5b4442dfe7",
     "previous_closeout_receipt_status": "SUPERSEDE_PENDING_STRICT_REPAIR"
   }
 }
