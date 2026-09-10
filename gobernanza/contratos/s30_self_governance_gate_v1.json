@@ -449,7 +449,15 @@
     "scope_modes": {
       "REPAIR": {
         "path_policy": "EXACT_REPAIR_ALLOWLIST",
-        "receipt_path": "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json"
+        "receipt_path": "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json",
+        "allowed_receipt_modes": [
+          "REPAIR_PREWRITE",
+          "CLOSEOUT"
+        ],
+        "expected_result_by_receipt_mode": {
+          "REPAIR_PREWRITE": "PASS_TO_BOUNDED_GUARD_REPAIR",
+          "CLOSEOUT": "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CANDIDATE_PASS"
+        }
       },
       "CANDIDATE": {
         "path_policy": "BOUNDED_S30_SANDBOX_PREFIX",
@@ -466,5 +474,5 @@
     ],
     "candidate_receipt_git_mode": "100644"
   },
-  "contract_version": "v0.6-candidate"
+  "contract_version": "v0.6.1-candidate"
 }

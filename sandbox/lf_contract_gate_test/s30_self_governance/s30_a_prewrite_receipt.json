@@ -16,55 +16,56 @@
       ]
     }
   ],
-  "base_main_sha": "0e855fda5fa99059279578b386bdc2bc1c8cc133",
+  "base_main_sha": "780b20c15c2de85eed83b59ae1612fcfc91670e8",
   "causal_lane_ownership": {
     "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
     "target_asset": "S30",
     "primary_gate": "TRANSVERSAL_GIT_WRITE_BROKER",
     "role": "WRITER",
-    "owner": "S30-BROKER-TRANSVERSAL-REPAIR",
+    "owner": "S30-BROKER-CLOSEOUT-REPAIR",
     "observed_active_writers": [
       {
         "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
         "target_asset": "S30",
         "primary_gate": "TRANSVERSAL_GIT_WRITE_BROKER",
-        "owner": "S30-BROKER-TRANSVERSAL-REPAIR",
+        "owner": "S30-BROKER-CLOSEOUT-REPAIR",
         "state": "ACTIVE",
-        "source_ref": "prewrite://S30-BROKER-V06-20260910"
+        "source_ref": "prewrite://S30-BROKER-V061-20260910"
       }
     ],
     "transfer": {
       "is_transfer": false
     },
-    "evidence": "fresh local/GitHub audit after S30-A closeout: next S30-B sandbox candidate is blocked by repair-only broker allowlist; this bounded repair owns that causal gap."
+    "evidence": "Fresh audit after PR #659: substantive v0.6 merged and main CI passed; current broker REPAIR mode lacks CLOSEOUT expected-result routing."
   },
   "evidence": {
-    "execution_id": "EXEC-S30-BROKER-V06-PREWRITE-20260910-001",
+    "execution_id": "EXEC-S30-BROKER-V061-PREWRITE-20260910-001",
     "mode": "SANDBOX_NON_PRODUCTION",
     "production": false,
-    "base_main_sha": "0e855fda5fa99059279578b386bdc2bc1c8cc133",
-    "observed_blocking_code": "BLOCK_S30_BROKER_PATH_OUTSIDE_ALLOWLIST",
-    "next_candidate": "S30-B_BUDGET_HARDENING"
+    "base_main_sha": "780b20c15c2de85eed83b59ae1612fcfc91670e8",
+    "prior_promotion_pr": 659,
+    "prior_merge_sha": "780b20c15c2de85eed83b59ae1612fcfc91670e8",
+    "prior_main_validate_run_id": 34495460868,
+    "prior_main_contract_check_run_id": 34495460885,
+    "observed_gap": "REPAIR scope expected-result routing did not admit CLOSEOUT"
   },
   "frontier": {
-    "current_stage": "S30_GIT_BROKER_TRANSVERSAL_REPAIR",
-    "next_gate": "LOCAL_NEGATIVE_POSITIVE_THEN_STAGING_CI",
+    "current_stage": "S30_BROKER_CLOSEOUT_PROTOCOL_REPAIR",
+    "next_gate": "PROMOTE_V061_THEN_CLOSEOUT",
     "blockers": [
       {
-        "code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
-        "affected_scope": "transversal S30 candidate protected writes",
+        "code": "S30-BROKER-CLOSEOUT-PROTOCOL-GAP-001",
+        "affected_scope": "post-merge S30 self-governance evidence closeout",
         "causal_gate": "TRANSVERSAL_GIT_WRITE_BROKER",
-        "owner": "S30-BROKER-TRANSVERSAL-REPAIR",
+        "owner": "S30-BROKER-CLOSEOUT-REPAIR",
         "independent_safe_work": [
-          "READ_ONLY_SCHEMA_CURRENTNESS",
-          "LOCAL_S30_B_TESTS"
+          "READ_ONLY_MAIN_CI_READBACK"
         ],
-        "invalidation_condition": "main-pinned broker accepts bounded sandbox S30 candidate receipt/path set and rejects mixed/control-path bypasses"
+        "invalidation_condition": "broker accepts CLOSEOUT receipt on exact repair allowlist using main-pinned control plane"
       }
     ],
     "safe_parallel_work": [
-      "READ_ONLY_SCHEMA_CURRENTNESS",
-      "LOCAL_S30_B_TESTS"
+      "READ_ONLY_MAIN_CI_READBACK"
     ]
   },
   "hard_guard_candidates": [
@@ -89,36 +90,36 @@
   ],
   "intended_material_action": "SELF_GOVERNANCE_GATE_REPAIR",
   "lane": "S30-A",
-  "owner": "S30-BROKER-TRANSVERSAL-REPAIR",
+  "owner": "S30-BROKER-CLOSEOUT-REPAIR",
   "owner_authorized_merge": false,
   "owner_authorized_repair": true,
   "preflight_checks": {
     "CI_RUNNER_WIRING_CONFIRMED": {
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; CI_RUNNER_WIRING_CONFIRMED verified for bounded broker repair.",
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; CI_RUNNER_WIRING_CONFIRMED verified before repair.",
       "status": "PASS"
     },
     "EVIDENCE_PROVIDER_RESOLVABLE": {
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; EVIDENCE_PROVIDER_RESOLVABLE verified for bounded broker repair.",
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; EVIDENCE_PROVIDER_RESOLVABLE verified before repair.",
       "status": "PASS"
     },
     "EXPECTED_OUTPUT_SCHEMA_COMPLETE": {
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; EXPECTED_OUTPUT_SCHEMA_COMPLETE verified for bounded broker repair.",
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; EXPECTED_OUTPUT_SCHEMA_COMPLETE verified before repair.",
       "status": "PASS"
     },
     "IMPORT_CLOSURE": {
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; IMPORT_CLOSURE verified for bounded broker repair.",
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; IMPORT_CLOSURE verified before repair.",
       "status": "PASS"
     },
     "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED": {
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED verified for bounded broker repair.",
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED verified before repair.",
       "status": "PASS"
     },
     "PERMISSIONS_AND_SECRET_READBACK": {
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; PERMISSIONS_AND_SECRET_READBACK verified for bounded broker repair.",
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; PERMISSIONS_AND_SECRET_READBACK verified before repair.",
       "status": "PASS"
     },
     "REQUIRED_FILES_EXIST": {
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; REQUIRED_FILES_EXIST verified for bounded broker repair.",
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; REQUIRED_FILES_EXIST verified before repair.",
       "status": "PASS"
     },
     "SCHEMA_AND_CONSTRAINTS_RESOLVED": {
@@ -135,7 +136,7 @@
           "evidence_ref": "supabase:schema-first-readback-20260910"
         }
       ],
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; SCHEMA_AND_CONSTRAINTS_RESOLVED verified for bounded broker repair.",
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; SCHEMA_AND_CONSTRAINTS_RESOLVED verified before repair.",
       "resolved": [
         "RELATION_COLUMNS",
         "CONSTRAINTS",
@@ -144,17 +145,17 @@
       "status": "PASS"
     },
     "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED": {
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED verified for bounded broker repair.",
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED verified before repair.",
       "status": "PASS"
     },
     "GIT_WRITE_BROKER_BINDING_CONFIRMED": {
       "status": "PASS",
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; GIT_WRITE_BROKER_BINDING_CONFIRMED verified for bounded broker repair."
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; GIT_WRITE_BROKER_BINDING_CONFIRMED verified before repair."
     }
   },
   "receipt_mode": "REPAIR_PREWRITE",
-  "receipt_version": "v0.6-prewrite",
-  "repair_reason": "Generalize the physical S30 Git-write broker from the bootstrap repair-only allowlist to a bounded transversal sandbox candidate lane, while pinning broker control-plane execution to current main.",
+  "receipt_version": "v0.6.1-prewrite",
+  "repair_reason": "Allow the governed repair lane to carry an evidence-only CLOSEOUT receipt after an already-authorized substantive broker promotion, without weakening protected branch, main-pinned control-plane, or candidate scope guards.",
   "repair_target_ekb_codes": [
     "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
     "GOV-010"
@@ -168,24 +169,24 @@
   },
   "sequence_resolution": {
     "ALL_INTENDED_STEPS": {
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; ALL_INTENDED_STEPS resolved before bounded broker repair.",
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; ALL_INTENDED_STEPS resolved before repair.",
       "status": "PROVEN"
     },
     "CI_PATHS_AND_RUNNER_WIRING": {
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; CI_PATHS_AND_RUNNER_WIRING resolved before bounded broker repair.",
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; CI_PATHS_AND_RUNNER_WIRING resolved before repair.",
       "status": "PROVEN"
     },
     "DATA_ACCESS_BINDINGS": {
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; DATA_ACCESS_BINDINGS resolved before bounded broker repair.",
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; DATA_ACCESS_BINDINGS resolved before repair.",
       "mode": "SCHEMA_CONTRACT_FALLBACK",
       "status": "PROVEN"
     },
     "DEPENDENCIES_AND_IMPORT_CLOSURE": {
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; DEPENDENCIES_AND_IMPORT_CLOSURE resolved before bounded broker repair.",
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; DEPENDENCIES_AND_IMPORT_CLOSURE resolved before repair.",
       "status": "PROVEN"
     },
     "EKB_APPLICABLE": {
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; EKB_APPLICABLE resolved before bounded broker repair.",
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; EKB_APPLICABLE resolved before repair.",
       "loaded_codes": [
         "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
         "GOV-010"
@@ -193,31 +194,31 @@
       "status": "PROVEN"
     },
     "EVIDENCE_PROVIDER_AND_RESOLVER": {
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; EVIDENCE_PROVIDER_AND_RESOLVER resolved before bounded broker repair.",
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; EVIDENCE_PROVIDER_AND_RESOLVER resolved before repair.",
       "status": "PROVEN"
     },
     "EXPECTED_OUTPUT_CONTRACT": {
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; EXPECTED_OUTPUT_CONTRACT resolved before bounded broker repair.",
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; EXPECTED_OUTPUT_CONTRACT resolved before repair.",
       "status": "PROVEN"
     },
     "JUDGES_AND_RESULT_VOCABULARY": {
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; JUDGES_AND_RESULT_VOCABULARY resolved before bounded broker repair.",
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; JUDGES_AND_RESULT_VOCABULARY resolved before repair.",
       "status": "PROVEN"
     },
     "OPERATION_CONTRACTS": {
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; OPERATION_CONTRACTS resolved before bounded broker repair.",
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; OPERATION_CONTRACTS resolved before repair.",
       "status": "PROVEN"
     },
     "PERMISSIONS_SECRETS_AND_READBACK": {
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; PERMISSIONS_SECRETS_AND_READBACK resolved before bounded broker repair.",
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; PERMISSIONS_SECRETS_AND_READBACK resolved before repair.",
       "status": "PROVEN"
     },
     "ROUTER": {
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; ROUTER resolved before bounded broker repair.",
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; ROUTER resolved before repair.",
       "status": "PROVEN"
     },
     "SCHEMA_CONTRACT": {
-      "evidence": "v0.6 prewrite current-main=0e855fda5fa99059279578b386bdc2bc1c8cc133; SCHEMA_CONTRACT resolved before bounded broker repair.",
+      "evidence": "v0.6.1 prewrite base=780b20c15c2de85eed83b59ae1612fcfc91670e8; SCHEMA_CONTRACT resolved before repair.",
       "schema_bindings": [
         {
           "object_identity": "public.lf_error_knowledge",
@@ -262,26 +263,26 @@
     "secret_name": "S30_BROKER_DEPLOY_KEY",
     "secret_present": true,
     "secret_required_before_dispatch": true,
-    "source_branch": "lf/staging-s30-broker-transversal-v06-20260910",
-    "target_branch": "lf/s30-broker-transversal-v06-20260910",
-    "base_main_sha": "0e855fda5fa99059279578b386bdc2bc1c8cc133",
+    "source_branch": "lf/staging-s30-broker-closeout-v061-20260910",
+    "target_branch": "lf/s30-broker-closeout-v061-20260910",
+    "base_main_sha": "780b20c15c2de85eed83b59ae1612fcfc91670e8",
     "promotion_authority": "BROKER_ONLY",
     "ruleset_readback_ref": "github:ruleset/22765627",
     "supabase_readback_ref": "supabase:public.lf_error_knowledge/S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001@frequency=8"
   },
   "gate_evidence_envelope": {
-    "run_id": "EXEC-S30-BROKER-V06-PREWRITE-20260910-001",
-    "gate_id": "S30_SELF_GOVERNANCE_GATE_V06_PREWRITE",
+    "run_id": "EXEC-S30-BROKER-V061-PREWRITE-20260910-001",
+    "gate_id": "S30_BROKER_CLOSEOUT_PROTOCOL_V061",
     "input_exact": {
       "request_schema": "s30-git-broker/v1",
-      "source_ref": "lf/staging-s30-broker-transversal-v06-20260910",
-      "target_branch": "lf/s30-broker-transversal-v06-20260910",
-      "base_main_sha": "0e855fda5fa99059279578b386bdc2bc1c8cc133",
+      "source_ref": "lf/staging-s30-broker-closeout-v061-20260910",
+      "target_branch": "lf/s30-broker-closeout-v061-20260910",
+      "base_main_sha": "780b20c15c2de85eed83b59ae1612fcfc91670e8",
       "receipt_path": "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json"
     },
-    "input_sha256": "34a29882ade94003ae6519160ea8e9b33ecd0948ee428884d7a30c06c854240c",
-    "input_source_ref": "owner-continue+github:main@0e855fda5fa99059279578b386bdc2bc1c8cc133",
-    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json --expected-base-main-sha 0e855fda5fa99059279578b386bdc2bc1c8cc133",
+    "input_sha256": "8e7ad0c6dd700167fd567ffccf0910850bc1dd729af70261e39ce9e4321169a8",
+    "input_source_ref": "owner-authorization+github:main@780b20c15c2de85eed83b59ae1612fcfc91670e8",
+    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json --expected-base-main-sha 780b20c15c2de85eed83b59ae1612fcfc91670e8",
     "output_exact": {
       "result": "PASS_TO_BOUNDED_GUARD_REPAIR",
       "material_work_allowed": false,
@@ -289,7 +290,7 @@
       "promotion_authority": "NONE"
     },
     "output_sha256": "13aec3019f77551e664831c1ecb0230ec7e0a870ef89ae718d40a37e975e7192",
-    "output_ref": "local-prewrite:S30-broker-v0.6",
+    "output_ref": "local-prewrite:S30-broker-v0.6.1",
     "execution_mode": "SANDBOX",
     "environment": "NON_PRODUCTION",
     "promotion_authority": "NONE",

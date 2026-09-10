@@ -469,6 +469,10 @@ def self_test(c):
     bs=broker_scope_decision(c,too_many,candidate_receipt,candidate,{path:"100644" for path in too_many}); assert bs["blocking_code"]==c["git_write_broker"]["scope_failure_action"],bs; results["negative_broker_candidate_changeset_too_large"]=bs["blocking_code"]
     bad_modes=dict(candidate_modes); bad_modes[candidate_paths[0]]="120000"
     bs=broker_scope_decision(c,candidate_paths,candidate_receipt,candidate,bad_modes); assert bs["blocking_code"]=="BLOCK_S30_BROKER_NONREGULAR_PATH",bs; results["negative_broker_candidate_symlink"] = bs["blocking_code"]
+    repair_mode_cfg=(c["git_write_broker"].get("scope_modes") or {}).get("REPAIR") or {}
+    assert set(repair_mode_cfg.get("allowed_receipt_modes") or [])=={"REPAIR_PREWRITE","CLOSEOUT"}
+    assert repair_mode_cfg.get("expected_result_by_receipt_mode",{}).get("CLOSEOUT")==c["claim_ceiling"]
+    results["positive_broker_closeout_contract"]="PASS_CLOSEOUT_SCOPE_CONTRACT"
     assert c["git_write_broker"].get("control_plane_ref_required")=="refs/heads/main"
     assert c["git_write_broker"].get("control_plane_sha_must_equal_base_main") is True
     assert c["git_write_broker"].get("staging_trust")=="UNTRUSTED_INPUT_ONLY"

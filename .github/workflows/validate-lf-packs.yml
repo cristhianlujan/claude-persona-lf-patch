@@ -111,7 +111,15 @@ jobs:
           if scope.get("status")!="PASS":
               fail(scope.get("blocking_code","BLOCK_S30_BROKER_SCOPE"),scope.get("detail",""))
           evaluation=validator.evaluate(contract,receipt,base)
-          expected="PASS_TO_BOUNDED_GUARD_REPAIR" if scope["mode"]=="REPAIR" else "PASS_TO_MATERIAL_WORK"
+          if scope["mode"]=="REPAIR":
+              repair_cfg=(contract.get("git_write_broker",{}).get("scope_modes",{}).get("REPAIR") or {})
+              receipt_mode=receipt.get("receipt_mode")
+              if receipt_mode not in set(repair_cfg.get("allowed_receipt_modes") or []):
+                  fail("BLOCK_S30_BROKER_REPAIR_RECEIPT_MODE",str(receipt_mode))
+              expected=(repair_cfg.get("expected_result_by_receipt_mode") or {}).get(receipt_mode)
+              if not expected: fail("BLOCK_S30_BROKER_REPAIR_EXPECTED_RESULT_MISSING",str(receipt_mode))
+          else:
+              expected="PASS_TO_MATERIAL_WORK"
           if evaluation.get("result")!=expected:
               fail("BLOCK_S30_BROKER_PREEXECUTION_RESULT",json.dumps(evaluation,sort_keys=True))
           binding=receipt.get("git_write_binding") or {}
@@ -338,7 +346,15 @@ jobs:
           scope=validator.broker_scope_decision(contract,changed,receipt_path,receipt,path_modes)
           if scope.get("status")!="PASS": fail(scope.get("blocking_code","BLOCK_S30_BROKER_SCOPE"),scope.get("detail",""))
           evaluation=validator.evaluate(contract,receipt,base)
-          expected="PASS_TO_BOUNDED_GUARD_REPAIR" if scope["mode"]=="REPAIR" else "PASS_TO_MATERIAL_WORK"
+          if scope["mode"]=="REPAIR":
+              repair_cfg=(contract.get("git_write_broker",{}).get("scope_modes",{}).get("REPAIR") or {})
+              receipt_mode=receipt.get("receipt_mode")
+              if receipt_mode not in set(repair_cfg.get("allowed_receipt_modes") or []):
+                  fail("BLOCK_S30_BROKER_REPAIR_RECEIPT_MODE",str(receipt_mode))
+              expected=(repair_cfg.get("expected_result_by_receipt_mode") or {}).get(receipt_mode)
+              if not expected: fail("BLOCK_S30_BROKER_REPAIR_EXPECTED_RESULT_MISSING",str(receipt_mode))
+          else:
+              expected="PASS_TO_MATERIAL_WORK"
           if evaluation.get("result")!=expected:
               fail("BLOCK_S30_BROKER_PREEXECUTION_RESULT",json.dumps(evaluation,sort_keys=True))
           binding=receipt.get("git_write_binding") or {}
