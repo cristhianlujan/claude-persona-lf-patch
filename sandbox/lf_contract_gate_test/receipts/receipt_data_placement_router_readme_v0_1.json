@@ -1,0 +1,20 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "CREACION_SKILL_LF",
+  "execution_id": "DATA-PLACEMENT-ROUTER-20260811-002",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "a172c77c1727ac401d91f3ef1a93ed2ebe8fa9db",
+  "judge_sha": "cc0783b351b89478bea6c87418d9dae94371ac55",
+  "source_sha_list": [
+    "e9f7d4f1900991aa9ab4c6552e4aa0c523ea5896"
+  ],
+  "target_paths": [
+    "skills/data-placement-router/README.md"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-11T06:11:00Z",
+  "notes": "Receipt complementario del README agregado al pack data-placement-router. No cambia lógica, Supabase, tablas, esquemas ni runtime productivo."
+}
