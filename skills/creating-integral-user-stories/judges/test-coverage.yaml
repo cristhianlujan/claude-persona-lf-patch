@@ -1,7 +1,7 @@
 judge_code: J10_TEST_COVERAGE
-judge_version: v0.6
+judge_version: v0.7
 status: CANDIDATO_READ_ONLY
-scope: Verifica envelope, independencia, trazabilidad, ambiente, cobertura positiva/negativa, límites, regresión, fixtures exactos, tenant, estados, idempotencia, concurrencia y errores.
+scope: Verifica envelope, independencia, trazabilidad, ambiente, oracles ligados a fuente, cobertura positiva/negativa, límites, regresión, fixtures exactos, tenant, estados, idempotencia, concurrencia y errores.
 independence: worker_must_not_execute_own_judge
 retry_limit: 2
 required_inputs:
@@ -28,7 +28,7 @@ preflight:
   - source_and_evidence_refs_are_resolvable
   - executor_identity_is_explicit
   - worker_identity_is_explicit
-  - judge_version_matches_v0_6
+  - judge_version_matches_v0_7
   - judge_is_not_executed_by_the_worker_under_review
   - input_sha256_is_present
   - semantic_validator_exists
@@ -42,7 +42,7 @@ runtime_status: AVAILABLE_AFTER_REGISTRATION
 runtime_command: >-
   LF_EXECUTOR_IDENTITY=<independent_executor>
   LF_WORKER_IDENTITY=<worker_identity>
-  LF_JUDGE_VERSION=v0.6
+  LF_JUDGE_VERSION=v0.7
   LF_VALIDATOR_REGISTERED_SHA256=<registered_sha256>
   LF_VALIDATOR_REGISTRATION=supabase://private.lf_skill_artifacts/ART_SCRIPT_VALIDATE_TEST_COVERAGE
   python scripts/validate_test_coverage.py <input.json> --evidence-ref <ref>
@@ -53,6 +53,8 @@ deterministic_procedure:
   - validate_traceability_matrix_and_test_environment
   - validate_worker_judge_independence
   - execute_semantic_coverage_checks
+  - bind_expected_results_to_source_oracles
+  - validate_structured_boundary_regression_retry_failure_and_concurrency_proof
   - record_actual_expected_for_each_assertion
   - reject_empty_or_missing_evidence
   - calculate_binary_compliance_bit
@@ -78,6 +80,8 @@ assertions:
 pass_if:
   - semantic_validator_exit_code = 0
   - all_17_assertions_pass = true
+  - all_required_source_oracles_resolve = true
+  - all_special_coverage_kinds_have_structured_fixture_proof = true
   - assertions_passed = 17
   - assertions_total = 17
   - compliance_bit = 1
@@ -103,7 +107,7 @@ block_if:
   - required_input_missing = true
 result_values: [PASS_WITH_EVIDENCE, RETURN_TO_WORKER, BLOCKED, FAIL]
 result_rules:
-  PASS_WITH_EVIDENCE: Solo con runtime registrado y ejecutado, 17/17 assertions, evidencia no vacía, identidad independiente y hashes íntegros.
+  PASS_WITH_EVIDENCE: Solo con runtime registrado y ejecutado, 17/17 assertions, evidencia no vacía, identidad independiente, hashes íntegros, oracles ligados a fuente y pruebas especiales con evidencia estructurada.
   RETURN_TO_WORKER: Una o más assertions semánticas reparables fallan; compliance_bit=0 y reparaciones accionables.
   BLOCKED: Falta fuente, input, runtime, registro, SHA, identidad, versión o independencia; compliance_bit=0.
   FAIL: La evidencia prueba una violación no reparable dentro de la ejecución; compliance_bit=0.
@@ -114,6 +118,8 @@ required_evidence:
   - negative_test_count
   - exact_fixture_count
   - families_covered
+  - coverage_kinds_covered
+  - semantic_quality_breakdown
   - traceability_matrix_summary
   - test_environment_summary
   - failed_assertions
@@ -135,7 +141,7 @@ required_evidence:
   - evidence_sha256
 positive_behavior:
   command: python scripts/validate_test_coverage.py --self-test
-  expected: positive_pass=true and assertions=17/17
+  expected: positive_pass=true, extended_positive_pass=true, assertions=17/17, negative_passed=27/27
 negative_cases:
   - {case: missing_traceability_matrix, expected_result: RETURN_TO_WORKER, assertion: input_envelope_valid}
   - {case: missing_test_environment, expected_result: RETURN_TO_WORKER, assertion: input_envelope_valid}
@@ -152,6 +158,18 @@ negative_cases:
   - {case: missing_worker_identity, expected_result: BLOCKED, assertion: worker_identity_missing}
   - {case: worker_self_executes, expected_result: BLOCKED, assertion: worker_judge_independence_broken}
   - {case: missing_judge_version, expected_result: BLOCKED, assertion: judge_version_missing}
+  - {case: AC_NEGATIVE_ONLY, expected_result: RETURN_TO_WORKER, assertion: acceptance_criteria_without_test}
+  - {case: CRITICAL_RULE_NEGATIVE_ONLY, expected_result: RETURN_TO_WORKER, assertion: critical_rule_without_test}
+  - {case: BOUNDARY_CASE_MISSING, expected_result: RETURN_TO_WORKER, assertion: vacuous_pass_count}
+  - {case: REGRESSION_CASE_MISSING, expected_result: RETURN_TO_WORKER, assertion: vacuous_pass_count}
+  - {case: TAUTOLOGICAL_EXPECTED_RESULT, expected_result: RETURN_TO_WORKER, assertion: tests_without_expected_result}
+  - {case: FIXTURE_EXPECTED_MISMATCH, expected_result: RETURN_TO_WORKER, assertion: tests_without_exact_fixture}
+  - {case: STATE_INVARIANT_WITHOUT_NEGATIVE, expected_result: RETURN_TO_WORKER, assertion: state_transition_without_state_test}
+  - {case: IDEMPOTENT_WITHOUT_RETRY_DUPLICATE, expected_result: RETURN_TO_WORKER, assertion: idempotent_action_without_duplicate_test}
+  - {case: CRITICAL_ERROR_WITHOUT_NEGATIVE, expected_result: RETURN_TO_WORKER, assertion: critical_error_without_test}
+  - {case: DEPENDENCY_FAILURE_PATH_MISSING, expected_result: RETURN_TO_WORKER, assertion: critical_error_without_test}
+  - {case: CONCURRENCY_WITH_SINGLE_THREAD_TEST, expected_result: RETURN_TO_WORKER, assertion: mutable_shared_resource_without_concurrency_test}
+  - {case: REAL_CANDIDATE_WRONG_ORACLE, expected_result: RETURN_TO_WORKER, assertion: tests_without_expected_result}
 repair_matrix:
   - assertion_id: input_envelope_valid
     target_path: input
@@ -186,6 +204,9 @@ prohibitions:
   - pass_without_evidence
   - pass_without_semantic_runtime
   - pass_without_runtime_registration
+  - pass_without_source_bound_oracle
+  - keyword_only_boundary_regression_retry_failure_or_concurrency
+  - fixture_oracle_mismatch
 benchmark_dual:
   verified_at: 2026-07-29
   claude:
@@ -199,4 +220,4 @@ benchmark_dual:
     reference: curriculum/schema/challenge-schema.js
     blob: 7db60817942625110525fd313bf80f1df067f006
     practice: conditional constraints, uniqueness and deterministic rejection
-  complement: exact fixtures, explicit environment, independent identity and vacuous-pass detection are mandatory runtime gates
+  complement: exact fixtures, source-bound oracles, structured special-test evidence, explicit environment, independent identity and vacuous-pass detection are mandatory runtime gates

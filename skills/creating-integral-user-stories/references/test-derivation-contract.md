@@ -1,8 +1,8 @@
 # Contrato de derivación de pruebas
 
-Versión operativa: `v0.6`.  
-Worker: `STORY_TEST_DERIVER_WORKER`.  
-Juez independiente: `J10_TEST_COVERAGE` v0.6.  
+Versión operativa: `v0.7`.
+Worker: `STORY_TEST_DERIVER_WORKER`.
+Juez independiente: `J10_TEST_COVERAGE` v0.7.
 Runtime reservado al juez: `scripts/validate_test_coverage.py`.
 
 ## 1. Propósito
@@ -52,7 +52,7 @@ Antes de derivar contenido, verificar en orden:
 10. el runtime J10 existe;
 11. el runtime J10 está registrado en la ubicación canónica;
 12. el SHA del runtime coincide entre archivo, `main`, registro y evidencia;
-13. `judge_version = v0.6`;
+13. `judge_version = v0.7`;
 14. ninguna condición exige modificar A–N, reglas, schemas o jueces.
 
 Bloquear si una condición falla. No degradar el umbral ni presentar el handoff
@@ -80,8 +80,8 @@ o jueces para obtener un resultado favorable.
 
 ## 5. Invariantes de derivación
 
-- Cada criterio tiene al menos una prueba positiva.
-- Cada regla crítica tiene prueba o no-aplicabilidad aprobada.
+- Cada criterio tiene al menos una prueba positiva cuyo `expected_result` coincide con el `then` canónico.
+- Cada regla crítica tiene cobertura positiva y negativa; cualquier excepción exige no-aplicabilidad aprobada fuera del worker.
 - Cada permiso aplicable tiene un caso `DENY`.
 - Cada regla tenant tiene un caso cross-tenant.
 - Cada transición aplicable tiene prueba de estado.
@@ -89,8 +89,8 @@ o jueces para obtener un resultado favorable.
 - Cada error crítico tiene prueba.
 - Cada recurso mutable compartido tiene prueba de concurrencia.
 - Cada prueba contiene `criterion_ref` o `rule_ref` resoluble.
-- Cada prueba contiene un resultado observable.
-- Cada `test_code` resuelve un fixture externo exacto.
+- Cada prueba contiene un resultado observable ligado a un oracle de fuente; para pruebas rule-only el oracle vive en `traceability_matrix.*.oracles`.
+- Cada `test_code` resuelve un fixture externo exacto y el fixture repite exactamente pasos, oracle esperado y `evidence_path` del test.
 - Los códigos son únicos.
 - Los datos son controlados y no contienen PII real.
 - Una lista de títulos, pasos genéricos o fixtures vacíos no es cobertura.
@@ -100,7 +100,7 @@ o jueces para obtener un resultado favorable.
 
 1. Congelar versión, SHA, criterios, reglas, errores y referencias.
 2. Crear positivos por criterio.
-3. Crear negativos, límites y regresión por regla aplicable.
+3. Crear negativos, límites y regresión por regla aplicable, marcando `coverage_kind`.
 4. Crear cobertura de permisos, tenant, estados, idempotencia, concurrencia,
    errores, seguridad y calidad transversal.
 5. Construir `story_pack.tests[]` con códigos y referencias resolubles.
@@ -116,6 +116,38 @@ o jueces para obtener un resultado favorable.
 
 El worker no ejecuta el runtime J10 en ningún paso.
 
+### 6.1 Semántica machine-checkable J10 v0.7
+
+`coverage_kind` usa uno de: `POSITIVE`, `NEGATIVE`, `BOUNDARY`, `REGRESSION`,
+`DUPLICATE_RETRY`, `CONCURRENCY_INTERLEAVING`, `FAILURE_PATH`. Los casos
+especiales no se infieren por palabras del título o de los pasos.
+
+La matriz de trazabilidad puede declarar por regla:
+
+```json
+{
+  "refs": ["SRC-001"],
+  "coverage_requirements": ["POSITIVE", "NEGATIVE", "BOUNDARY", "REGRESSION"],
+  "oracles": {
+    "POSITIVE": "resultado fuente exacto",
+    "NEGATIVE": "rechazo fuente exacto",
+    "BOUNDARY": "resultado exacto del límite",
+    "REGRESSION": "comportamiento previo que debe conservarse"
+  }
+}
+```
+
+Los oracles y requirements provienen del snapshot de autoridad; el worker no
+puede crearlos para autoautorizar su propia salida. J10 falla cerrado si una
+prueba no puede vincular su `expected_result` a un oracle resoluble. Para un
+criterio positivo, `core.acceptance_criteria[].then` es el oracle primario.
+
+Fixtures especiales deben aportar evidencia estructurada: boundary value para
+`BOUNDARY`; `regression_case_id` + baseline para `REGRESSION`; dos intentos o
+idempotency key para `DUPLICATE_RETRY`; dos solicitudes/actores intercalados
+para `CONCURRENCY_INTERLEAVING`; e inyección/estado de fallo para
+`FAILURE_PATH`.
+
 ## 7. Contrato de prueba canónica
 
 Cada prueba escrita en `story_pack.tests` cumple el schema canónico:
@@ -124,6 +156,7 @@ Cada prueba escrita en `story_pack.tests` cumple el schema canónico:
 {
   "test_code": "TEST-TENANT-001",
   "family": "TENANT",
+  "coverage_kind": "NEGATIVE",
   "criterion_ref": null,
   "rule_ref": "SEC-CROSS-TENANT-DENY",
   "preconditions": [
@@ -309,7 +342,7 @@ Solo un ejecutor independiente puede ejecutar:
 ```bash
 LF_EXECUTOR_IDENTITY=<independent_executor> \
 LF_WORKER_IDENTITY=STORY_TEST_DERIVER_WORKER \
-LF_JUDGE_VERSION=v0.6 \
+LF_JUDGE_VERSION=v0.7 \
 LF_VALIDATOR_REGISTERED_SHA256=<registered_sha256> \
 LF_VALIDATOR_REGISTRATION=supabase://private.lf_skill_artifacts/ART_SCRIPT_VALIDATE_TEST_COVERAGE \
 python scripts/validate_test_coverage.py j10-input.json \
