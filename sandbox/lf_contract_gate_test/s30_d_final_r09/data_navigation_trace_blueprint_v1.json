@@ -1,0 +1,76 @@
+{
+  "contract": "S30_ONE_BY_ONE_DATA_NAVIGATION_TRACE_V1",
+  "execution_prerequisite": "S30_INTEGRATED_E2E_50_PASS",
+  "minimum_traces": [
+    {
+      "model_expected": false,
+      "scenario": "fully deterministic happy path",
+      "trace_id": "NAV-01"
+    },
+    {
+      "model_expected": true,
+      "scenario": "true semantic gap then deterministic materialization",
+      "trace_id": "NAV-02"
+    },
+    {
+      "model_expected": false,
+      "scenario": "schema/field block before backend",
+      "trace_id": "NAV-03"
+    },
+    {
+      "model_expected": false,
+      "scenario": "stale evidence/currentness block",
+      "trace_id": "NAV-04"
+    },
+    {
+      "model_expected": false,
+      "scenario": "interruption resume from durable checkpoint",
+      "trace_id": "NAV-05"
+    }
+  ],
+  "per_hop_required": [
+    "hop",
+    "input_identity",
+    "source_authority",
+    "schema_or_contract",
+    "selected_fields",
+    "transform",
+    "output_identity",
+    "sha_or_fingerprint",
+    "elapsed_ms",
+    "backend_calls",
+    "model_calls",
+    "readback_or_evidence",
+    "decision"
+  ],
+  "purpose": "Observe exact data lineage and transformations hop by hop after integrated campaign is clean.",
+  "rules": [
+    "NO_HOP_SKIPPING",
+    "NO_UNBOUND_FIELD",
+    "NO_FREE_SQL_FOR_REGISTERED_SOURCE",
+    "DETERMINISTIC_FIRST",
+    "MODEL_ONLY_ON_NON_DERIVABLE_SEMANTIC_GAP",
+    "MODEL_OUTPUT_ONLY_S30_SEMANTIC_DELTA_V1",
+    "SYSTEM_OWNED_FIELDS_DETERMINISTIC",
+    "PERSISTENCE_REQUIRES_READBACK",
+    "FIRST_BAD_HOP_REQUIRED_ON_BLOCK",
+    "NO_CHAT_MEMORY_AS_STATE_AUTHORITY"
+  ],
+  "status": "BLUEPRINT_ONLY_RUN_AFTER_E2E_50",
+  "trace_order": [
+    "INPUT",
+    "ROUTER",
+    "PREEXECUTION_ASSURANCE",
+    "TYPED_DATA_ACCESS",
+    "AUTHORITY_EKB_CARD_CONTRACT",
+    "CANONICAL_WORKING_GRAPH",
+    "EXECUTION_AUTHORITY",
+    "SEMANTIC_GAP_OPTIONAL",
+    "DETERMINISTIC_MATERIALIZER",
+    "SCORING_GUARDS",
+    "PERSISTENCE",
+    "INDEPENDENT_READBACK",
+    "EVIDENCE_RECEIPT",
+    "NEXT_OPERATION_HANDOFF"
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "claim_scope": "R09_ONLY_NOT_S30_GOLDEN",
+  "current_main_sha": "a8dc0f24e32ff713bcb02254ec85351ff252f85f",
+  "expected_not_applicable": {
+    "cases": [
+      "E03",
+      "E04"
+    ],
+    "correct": true,
+    "count": 2
+  },
+  "future_operation_registry": {
+    "EJECUCION_ESTRATEGIA_LF": "NOT_REGISTERED",
+    "ORQUESTACION_ESTRATEGIAS_LF": "NOT_REGISTERED"
+  },
+  "interfaces": {
+    "PREEXECUTION_ASSURANCE_RESULT": "PASS",
+    "PREEXECUTION_DATA_ACCESS_RESULT": "PASS",
+    "S30_C_TERMINAL_CLOSEOUT": "FINAL_CLOSED",
+    "S30_D_ROUTER": "S30_D_FINAL_R09_ISOLATED"
+  },
+  "lane": "S30-D",
+  "lane_currentness": {
+    "A": "CURRENT",
+    "B": "CURRENT",
+    "C": "CURRENT"
+  },
+  "metrics": {
+    "AVOIDABLE_RETRY_COUNT": 0,
+    "FALSE_NOT_APPLICABLE_COUNT": 0,
+    "FALSE_PASS_COUNT": 0,
+    "GATE_CROSS_MUTATION_COUNT": 0,
+    "MISSING_READBACK_COUNT": 0,
+    "MODEL_CALLS_FOR_MACHINE_DETECTABLE_REPLAY": 0,
+    "PREVENTABLE_FIRST_HOP_ESCAPE_COUNT": 0,
+    "SCHEMA_INTROSPECTION_AFTER_ERROR_COUNT": 0,
+    "STALE_EVIDENCE_ACCEPTED_COUNT": 0,
+    "TOTAL_REPLAY_CASES": 52,
+    "UNBOUND_FIELD_OR_ARGUMENT_ATTEMPTS": 0
+  },
+  "next_gate": "C05_DYNAMIC_IDEMPOTENCY_LEASE_FIRE_TEST_BEFORE_OPERATION_BOOTSTRAP",
+  "open_blockers": [],
+  "r09": {
+    "campaign_mode": "ONE_FROZEN_CAMPAIGN_ACCUMULATE_ALL_CASES",
+    "corpus_id": "S30-D-R09-FINAL-HISTORICAL-REPLAY-v2",
+    "corpus_sha256": "69c12812e862c4d9b783799e4db7f5251e72734582383a97b86f7b8ef856cfc4",
+    "execution_authority": "DETERMINISTIC_FIRST",
+    "lf_contract_check": {
+      "conclusion": "SUCCESS",
+      "job_id": 103053970720,
+      "run_id": 34531767017
+    },
+    "model_calls": 0,
+    "source_branch": "lf/s30-d-r09-r12-20260910",
+    "source_commit_sha": "8a10684412d933d50836ff6b6649b83c5dfb233d",
+    "source_tree_sha": "6cf7168429633270f78118817a5e15557e7f50c7",
+    "validate_lf_packs": {
+      "conclusion": "SUCCESS",
+      "job_id": 103053931059,
+      "run_id": 34531766982
+    }
+  },
+  "receipt_version": "S30-D-R09-FROZEN-RESULT-v2",
+  "result": "S30_P0_SELF_GOVERNANCE_R09_PASS",
+  "scope_readback": {
+    "main_modified": false,
+    "production_modified": false,
+    "runtime_modified": false,
+    "s26_modified": false,
+    "scheduler_modified": false,
+    "snapshot_35_modified": false
+  },
+  "self_application": {
+    "all_blocked_at_expected_first_bad_hop": true,
+    "case_count": 7
+  },
+  "snapshot_readback": {
+    "id": 35,
+    "impact_policy": "BLOQUEADO",
+    "runtime_state": "PLAN_ONLY",
+    "status": "CANDIDATO_READ_ONLY",
+    "write_executed": false
+  }
+}

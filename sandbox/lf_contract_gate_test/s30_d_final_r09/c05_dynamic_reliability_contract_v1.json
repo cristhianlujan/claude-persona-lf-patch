@@ -1,0 +1,83 @@
+{
+  "activation_requires": [
+    "DYNAMIC_TWO_SESSION_SAME_KEY_SINGLE_RESERVATION_PASS",
+    "LEASE_CONTENTION_AND_EXPIRY_SAFE_TAKEOVER_PASS",
+    "EFFECT_RETRY_NO_DUPLICATE_PASS",
+    "CHECKPOINT_RESUME_PASS",
+    "CHILD_FAILURE_SAFE_PARALLEL_CONTINUE_PASS",
+    "ROUTER_CANARY_PASS"
+  ],
+  "authority_snapshot_id": 35,
+  "claim_ceiling": "STRUCTURAL_REFERENCE_MODEL_PASS_ONLY_NO_DYNAMIC_RUNTIME_AUTHORITY",
+  "contract": "S30_C05_DYNAMIC_RELIABILITY_CONTRACT_V1",
+  "current_blockers": [
+    "LIVE_TYPED_IDEMPOTENCY_CARRIER_ABSENT",
+    "LIVE_DURABLE_LEASE_CARRIER_ABSENT",
+    "STRATEGY_EXECUTE_OPERATION_UNREGISTERED_BY_DESIGN",
+    "ORCHESTRATOR_OPERATION_UNREGISTERED_BY_DESIGN"
+  ],
+  "dynamic_fire_tests_required": [
+    "CONCURRENT_SAME_IDEMPOTENCY_KEY_SINGLE_EFFECT",
+    "SAME_KEY_DIFFERENT_HASH_BLOCK_RUNTIME",
+    "LEASE_CONTENTION_TWO_SESSION",
+    "LEASE_EXPIRY_SAFE_TAKEOVER",
+    "EFFECT_SUCCESS_PERSIST_FAILURE_RETRY_NO_DUPLICATE",
+    "RESPONSE_LOSS_REPLAY_STABLE_REQUEST_HASH",
+    "SCHEDULER_FAILURE_RESUME_FROM_MANIFEST_CHECKPOINT",
+    "PARTIAL_CHILD_FAILURE_PARENT_CONTINUES_OTHER_SAFE_CHILDREN",
+    "CLOSE_REPROGRAM_ORDER_READBACK"
+  ],
+  "hard_targets": {
+    "duplicate_irreversible_effect_count": 0,
+    "false_close_count": 0,
+    "lost_progress_count": 0,
+    "missing_readback_count": 0,
+    "safe_independent_work_skipped_count": 0,
+    "unclassified_retry_count": 0
+  },
+  "idempotency": {
+    "key_format": "operation_code:strategy_identity:stage_code:effect_scope:logical_batch_id",
+    "max_length": 200,
+    "request_sha256": "canonical immutable effect/request plan SHA-256",
+    "same_key_different_hash": "BLOCK_IDEMPOTENCY_KEY_REUSED_WITH_DIFFERENT_REQUEST",
+    "same_key_same_hash": "REPLAY_EXISTING_EXECUTION",
+    "stable_across_retry": true,
+    "unique_scope": [
+      "operation_code",
+      "idempotency_key"
+    ]
+  },
+  "lease": {
+    "contention": "NO_TAKEOVER_WHILE_CURRENT_LEASE",
+    "expiry": "SAFE_TAKEOVER_AFTER_EXPIRY_WITH_CURRENTNESS_READBACK",
+    "lease_is_not_idempotency": true
+  },
+  "safety": {
+    "ddl": false,
+    "production": false,
+    "router_shared_files": false,
+    "runtime": false,
+    "s26": false,
+    "scheduler": false,
+    "supabase_write": false
+  },
+  "scope": "S30-C05 / S30-D continuation; sandbox source only",
+  "state_machine": [
+    "TRIGGER",
+    "RESERVE_IDEMPOTENCY",
+    "ACQUIRE_LEASE",
+    "DURABLE_START_READBACK",
+    "EKB_POLICY_CURRENTNESS",
+    "SELECT_SAFE_MACROBATCH",
+    "SPAWN_ONE_TARGET_CHILD",
+    "VERIFY_CHILD",
+    "PERSIST_CHECKPOINT",
+    "CONTINUE_OR_CLOSE",
+    "PERSIST_REPORT_STAGE_CONCLUSION",
+    "MARK_CLOSED",
+    "DERIVE_NEXT_ANCHOR_FROM_REAL_CLOSE",
+    "REPROGRAM_IF_AUTHORIZED",
+    "SCHEDULER_READBACK"
+  ],
+  "status": "PREPARED_NOT_EXECUTED"
+}

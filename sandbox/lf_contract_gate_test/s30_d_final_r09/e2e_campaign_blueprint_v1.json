@@ -1,0 +1,2181 @@
+{
+  "case_count": 50,
+  "cases": [
+    {
+      "case_id": "E2E-01-01",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "GOVERNANCE_PREEXECUTION",
+      "negative_or_recovery": false,
+      "variant": "happy_authorized"
+    },
+    {
+      "case_id": "E2E-01-02",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "GOVERNANCE_PREEXECUTION",
+      "negative_or_recovery": true,
+      "variant": "missing_authority"
+    },
+    {
+      "case_id": "E2E-01-03",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "GOVERNANCE_PREEXECUTION",
+      "negative_or_recovery": true,
+      "variant": "stale_authority"
+    },
+    {
+      "case_id": "E2E-01-04",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "GOVERNANCE_PREEXECUTION",
+      "negative_or_recovery": true,
+      "variant": "blocked_scope_with_safe_parallel"
+    },
+    {
+      "case_id": "E2E-01-05",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "GOVERNANCE_PREEXECUTION",
+      "negative_or_recovery": false,
+      "variant": "performance_baseline"
+    },
+    {
+      "case_id": "E2E-02-01",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "DB_SCHEMA",
+      "negative_or_recovery": false,
+      "variant": "typed_positive"
+    },
+    {
+      "case_id": "E2E-02-02",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "DB_SCHEMA",
+      "negative_or_recovery": true,
+      "variant": "missing_column"
+    },
+    {
+      "case_id": "E2E-02-03",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "DB_SCHEMA",
+      "negative_or_recovery": true,
+      "variant": "stale_fingerprint"
+    },
+    {
+      "case_id": "E2E-02-04",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "DB_SCHEMA",
+      "negative_or_recovery": false,
+      "variant": "function_signature_drift"
+    },
+    {
+      "case_id": "E2E-02-05",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "DB_SCHEMA",
+      "negative_or_recovery": false,
+      "variant": "performance_baseline"
+    },
+    {
+      "case_id": "E2E-03-01",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "DATA_ACCESS",
+      "negative_or_recovery": false,
+      "variant": "bounded_index"
+    },
+    {
+      "case_id": "E2E-03-02",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "DATA_ACCESS",
+      "negative_or_recovery": true,
+      "variant": "free_sql_block"
+    },
+    {
+      "case_id": "E2E-03-03",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "DATA_ACCESS",
+      "negative_or_recovery": true,
+      "variant": "row_budget_overflow"
+    },
+    {
+      "case_id": "E2E-03-04",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "DATA_ACCESS",
+      "negative_or_recovery": true,
+      "variant": "byte_budget_overflow"
+    },
+    {
+      "case_id": "E2E-03-05",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "DATA_ACCESS",
+      "negative_or_recovery": false,
+      "variant": "performance_baseline"
+    },
+    {
+      "case_id": "E2E-04-01",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "EVIDENCE_PROVENANCE",
+      "negative_or_recovery": false,
+      "variant": "persist_readback"
+    },
+    {
+      "case_id": "E2E-04-02",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "EVIDENCE_PROVENANCE",
+      "negative_or_recovery": true,
+      "variant": "missing_artifact"
+    },
+    {
+      "case_id": "E2E-04-03",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "EVIDENCE_PROVENANCE",
+      "negative_or_recovery": true,
+      "variant": "hash_mismatch"
+    },
+    {
+      "case_id": "E2E-04-04",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "EVIDENCE_PROVENANCE",
+      "negative_or_recovery": false,
+      "variant": "independent_reviewer"
+    },
+    {
+      "case_id": "E2E-04-05",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "EVIDENCE_PROVENANCE",
+      "negative_or_recovery": false,
+      "variant": "performance_baseline"
+    },
+    {
+      "case_id": "E2E-05-01",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "FREEZE_CURRENTNESS",
+      "negative_or_recovery": false,
+      "variant": "valid_chain"
+    },
+    {
+      "case_id": "E2E-05-02",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "FREEZE_CURRENTNESS",
+      "negative_or_recovery": true,
+      "variant": "cross_gate_mutation"
+    },
+    {
+      "case_id": "E2E-05-03",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "FREEZE_CURRENTNESS",
+      "negative_or_recovery": true,
+      "variant": "old_head_evidence"
+    },
+    {
+      "case_id": "E2E-05-04",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "FREEZE_CURRENTNESS",
+      "negative_or_recovery": false,
+      "variant": "new_run_after_repair"
+    },
+    {
+      "case_id": "E2E-05-05",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "FREEZE_CURRENTNESS",
+      "negative_or_recovery": false,
+      "variant": "performance_baseline"
+    },
+    {
+      "case_id": "E2E-06-01",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "TOOL_API",
+      "negative_or_recovery": false,
+      "variant": "typed_args"
+    },
+    {
+      "case_id": "E2E-06-02",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "TOOL_API",
+      "negative_or_recovery": true,
+      "variant": "invented_arg"
+    },
+    {
+      "case_id": "E2E-06-03",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "TOOL_API",
+      "negative_or_recovery": true,
+      "variant": "unresolved_schema"
+    },
+    {
+      "case_id": "E2E-06-04",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "TOOL_API",
+      "negative_or_recovery": true,
+      "variant": "dependent_signature_absent"
+    },
+    {
+      "case_id": "E2E-06-05",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "TOOL_API",
+      "negative_or_recovery": false,
+      "variant": "performance_baseline"
+    },
+    {
+      "case_id": "E2E-07-01",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "EXECUTION_AUTHORITY",
+      "negative_or_recovery": false,
+      "variant": "deterministic_work"
+    },
+    {
+      "case_id": "E2E-07-02",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "EXECUTION_AUTHORITY",
+      "negative_or_recovery": false,
+      "variant": "semantic_gap_delta"
+    },
+    {
+      "case_id": "E2E-07-03",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "EXECUTION_AUTHORITY",
+      "negative_or_recovery": true,
+      "variant": "system_owned_model_field"
+    },
+    {
+      "case_id": "E2E-07-04",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "EXECUTION_AUTHORITY",
+      "negative_or_recovery": true,
+      "variant": "calculable_score_model_attempt"
+    },
+    {
+      "case_id": "E2E-07-05",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "EXECUTION_AUTHORITY",
+      "negative_or_recovery": false,
+      "variant": "performance_baseline"
+    },
+    {
+      "case_id": "E2E-08-01",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "IDEMPOTENCY_LEASE",
+      "negative_or_recovery": false,
+      "variant": "same_key_same_hash"
+    },
+    {
+      "case_id": "E2E-08-02",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "IDEMPOTENCY_LEASE",
+      "negative_or_recovery": true,
+      "variant": "same_key_different_hash"
+    },
+    {
+      "case_id": "E2E-08-03",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "IDEMPOTENCY_LEASE",
+      "negative_or_recovery": true,
+      "variant": "lease_contention"
+    },
+    {
+      "case_id": "E2E-08-04",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "IDEMPOTENCY_LEASE",
+      "negative_or_recovery": false,
+      "variant": "lease_expiry_takeover"
+    },
+    {
+      "case_id": "E2E-08-05",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "IDEMPOTENCY_LEASE",
+      "negative_or_recovery": false,
+      "variant": "effect_retry_no_duplicate"
+    },
+    {
+      "case_id": "E2E-09-01",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "CONTINUITY_RECOVERY",
+      "negative_or_recovery": false,
+      "variant": "checkpoint_resume"
+    },
+    {
+      "case_id": "E2E-09-02",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "CONTINUITY_RECOVERY",
+      "negative_or_recovery": false,
+      "variant": "response_loss_replay"
+    },
+    {
+      "case_id": "E2E-09-03",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "CONTINUITY_RECOVERY",
+      "negative_or_recovery": true,
+      "variant": "scheduler_failure_resume"
+    },
+    {
+      "case_id": "E2E-09-04",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "CONTINUITY_RECOVERY",
+      "negative_or_recovery": true,
+      "variant": "partial_child_failure_continue"
+    },
+    {
+      "case_id": "E2E-09-05",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "CONTINUITY_RECOVERY",
+      "negative_or_recovery": false,
+      "variant": "performance_baseline"
+    },
+    {
+      "case_id": "E2E-10-01",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "ORCHESTRATION",
+      "negative_or_recovery": false,
+      "variant": "eligibility_priority"
+    },
+    {
+      "case_id": "E2E-10-02",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "ORCHESTRATION",
+      "negative_or_recovery": true,
+      "variant": "blocked_child_safe_sibling"
+    },
+    {
+      "case_id": "E2E-10-03",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "ORCHESTRATION",
+      "negative_or_recovery": false,
+      "variant": "multi_child_isolation"
+    },
+    {
+      "case_id": "E2E-10-04",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "ORCHESTRATION",
+      "negative_or_recovery": false,
+      "variant": "close_reprogram_order"
+    },
+    {
+      "case_id": "E2E-10-05",
+      "cross_metrics": {
+        "avoidable_work_target": 0,
+        "first_bad_hop": "REQUIRED_WHEN_BLOCKED",
+        "missing_readback_target": 0,
+        "preventable_escape_target": 0
+      },
+      "dimensions": {
+        "depth": {
+          "criterion": "all expected hops materially exercised; no shallow mock substitution for claimed E2E",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "functionality": {
+          "criterion": "expected business/control outcome and fail-closed semantics",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "performance": {
+          "first_campaign_rule": "BASELINE_WITH_HARD_AVOIDABLE_WORK_GUARDS",
+          "later_regression_rule": "P95_NO_WORSE_THAN_BASELINE_PLUS_20_PERCENT_UNLESS_EXPLAINED",
+          "metrics": [
+            "total_ms",
+            "per_hop_ms",
+            "backend_calls",
+            "model_calls",
+            "bytes_or_context",
+            "retries"
+          ],
+          "required": true,
+          "verdict": "TO_MEASURE"
+        },
+        "quality": {
+          "criterion": "correct evidence, traceability, no false PASS/N-A, deterministic/semantic authority respected",
+          "required": true,
+          "verdict": "TO_MEASURE"
+        }
+      },
+      "family": "ORCHESTRATION",
+      "negative_or_recovery": false,
+      "variant": "performance_baseline"
+    }
+  ],
+  "cases_per_family": 5,
+  "contract": "S30_INTEGRATED_E2E_50_V1",
+  "dimensions": [
+    "FUNCTIONALITY",
+    "DEPTH",
+    "PERFORMANCE",
+    "QUALITY"
+  ],
+  "execution_prerequisites": [
+    "CI_ROUTER_S30_DECLARATIVE_OWNERSHIP_MERGED_AND_VERIFIED",
+    "S30_C_FINAL_CLOSEOUT",
+    "S30_D_R09_FINAL_PASS",
+    "C05_DYNAMIC_RELIABILITY_PASS",
+    "EXECUTOR_ORCHESTRATOR_CANARY_READY"
+  ],
+  "families": 10,
+  "global_targets": {
+    "avoidable_work_count": 0,
+    "false_na_count": 0,
+    "false_pass_count": 0,
+    "machine_detectable_model_calls": 0,
+    "missing_readback_count": 0,
+    "preventable_first_hop_escape_count": 0
+  },
+  "next_after_campaign": "ONE_BY_ONE_DATA_NAVIGATION_TRACE",
+  "status": "BLUEPRINT_PREPARED_NOT_EXECUTED"
+}

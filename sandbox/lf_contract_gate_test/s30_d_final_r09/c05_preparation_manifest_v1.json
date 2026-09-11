@@ -1,0 +1,45 @@
+{
+  "artifacts": {
+    "c05_dynamic_reliability_contract_v1.json": "3e5986ca7140ef391ee71e07c84ddef853cb50b50af4279dce82751a79ad7178",
+    "c05_live_schema_readback_v1.json": "9cc10e3d4df3ceb5535aa7f11ab3d8cd6e6ae38bf346cda0033e5ee79879215c",
+    "c05_reference_model.py": "d9815744535e5dbaeb5030e965064d768233ba53c0998f48de546ab7c6bf2c56",
+    "data_navigation_trace_blueprint_v1.json": "fcdc9861fcae995a2f35d96a3ba353da7fc88f666ee4cdb686f1d8457df6b97d",
+    "e2e_campaign_blueprint_v1.json": "76b71385cd1b3af200a77d48941a82cd160ee04be74bb2bfc1819a65b53e21a4",
+    "e2e_result_contract_v1.json": "a15cfa5fc873435c2de74769d87b343ac9583ba6fc31ab0b031a412d2217d44f",
+    "orchestrator_contract_draft_v1.json": "0d78f7cf36303f4f3026c378029c1c451723dce2f2a3b51b8f248c368e8d286a",
+    "s30d_c05_preflight.py": "df848add4e067191e0835b41fc3022be10ceb48ee45c0d7b116ac9135689c4bf",
+    "s30d_e2e_blueprint_gate.py": "5d7fc0df692ec7d30023f85c84c155711f4e0383d6c80c55ef15313e7f946ebc",
+    "strategy_execute_contract_draft_v1.json": "83d06b2d949df508361105c1e5a03ba31a08d3044c5bddbbe518911ed43c8026",
+    "test_s30d_c05_preparation.py": "0579a98a329d003989e2645e09d4cf2ef67ba8358e3d7dbf85c029eef2815d43",
+    "test_s30d_e2e_blueprints.py": "f039abc0655be4db6e8ce16c01c78be3dbebe7fec20d2f1c72fe80575b17c4f3"
+  },
+  "base_commit": "7a0480205b0802842e26954774b02599913ca3f4",
+  "contract": "S30_D_C05_PREPARATION_MANIFEST_V1",
+  "e2e_blueprint": {
+    "cases": 50,
+    "cases_per_family": 5,
+    "dimensions": [
+      "FUNCTIONALITY",
+      "DEPTH",
+      "PERFORMANCE",
+      "QUALITY"
+    ],
+    "families": 10,
+    "live_execution": false
+  },
+  "navigation_blueprint": {
+    "minimum_traces": 5,
+    "status": "WAIT_UNTIL_E2E_PASS"
+  },
+  "next_gate": "CI_ROUTER_HANDOFF_RETURN_THEN_C_CLOSEOUT_D_R09_THEN_C05_DYNAMIC",
+  "safety": {
+    "ddl": false,
+    "production": false,
+    "router_shared_files": false,
+    "runtime": false,
+    "s26": false,
+    "scheduler": false,
+    "supabase_write": false
+  },
+  "status": "PREPARED_ONLY_NO_DYNAMIC_PROOF"
+}

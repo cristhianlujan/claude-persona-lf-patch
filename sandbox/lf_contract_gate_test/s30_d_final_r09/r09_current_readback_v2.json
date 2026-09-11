@@ -1,0 +1,80 @@
+{
+  "base_main_sha": "a8dc0f24e32ff713bcb02254ec85351ff252f85f",
+  "ekb": {
+    "codes": [
+      {
+        "codigo": "DB-001",
+        "estado": "activo",
+        "frecuencia": 231,
+        "severidad": "Medium",
+        "updated_at": "2026-09-10 09:49:04.376829+00"
+      },
+      {
+        "codigo": "GOV-010",
+        "estado": "activo",
+        "frecuencia": 7,
+        "severidad": "High",
+        "updated_at": "2026-09-10 07:18:16.028771+00"
+      },
+      {
+        "codigo": "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001",
+        "estado": "activo",
+        "frecuencia": 1,
+        "severidad": "High",
+        "updated_at": "2026-09-09 13:38:46.089795+00"
+      },
+      {
+        "codigo": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
+        "estado": "activo",
+        "frecuencia": 5,
+        "severidad": "High",
+        "updated_at": "2026-09-10 11:56:32.581975+00"
+      }
+    ],
+    "read_only": true,
+    "source": "public.lf_error_knowledge"
+  },
+  "exact_main_ci": {
+    "lf_contract_check": {
+      "conclusion": "SUCCESS",
+      "head_sha": "a8dc0f24e32ff713bcb02254ec85351ff252f85f",
+      "run_id": 34530787867
+    },
+    "validate_lf_packs": {
+      "conclusion": "SUCCESS",
+      "head_sha": "a8dc0f24e32ff713bcb02254ec85351ff252f85f",
+      "run_id": 34530787897
+    }
+  },
+  "future_operation_registry": {
+    "queried_codes": [
+      "EJECUCION_ESTRATEGIA_LF",
+      "ORQUESTACION_ESTRATEGIAS_LF"
+    ],
+    "rows_found": 0
+  },
+  "mode": "READ_ONLY_CURRENTNESS",
+  "observed_at": "2026-09-10T21:18:43.384356+00:00",
+  "production_changed": false,
+  "receipt_version": "S30_D_R09_CURRENT_READBACK_V2",
+  "router": {
+    "input_governance_parity_required": false,
+    "migration_parity_required": false,
+    "s30_c_mode": "S30_C_RELIABILITY_ISOLATED",
+    "s30_c_p0_exact_head_external_required": false,
+    "s30_d_mode": "S30_D_FINAL_R09_ISOLATED",
+    "s30_d_p0_exact_head_external_required": false
+  },
+  "runtime_changed": false,
+  "s26_changed": false,
+  "scheduler_changed": false,
+  "strategy_snapshot": {
+    "id": 35,
+    "impact_policy": "BLOQUEADO",
+    "runtime_state": "PLAN_ONLY",
+    "snapshot_code": "LF_OPERATING_CONSTITUTION_POLICY_AUTONOMOUS_OPERATIONS_20260906",
+    "status": "CANDIDATO_READ_ONLY",
+    "updated_at": "2026-09-10 08:50:55.19785+00"
+  },
+  "supabase_write": false
+}
