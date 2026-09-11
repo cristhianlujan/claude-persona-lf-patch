@@ -85,6 +85,47 @@ def _ensure_search_states(state_map: dict[str, Any], required_ids: list[str]) ->
         )
 
 
+def _ensure_component_states(
+    state_map: dict[str, Any], components: dict[str, dict[str, Any]]
+) -> None:
+    """Give every material component an explicit safe state contract."""
+    for cid, component in components.items():
+        if cid in state_map:
+            continue
+        current_state = component.get("state")
+        if not isinstance(current_state, str) or not current_state:
+            current_state = "default"
+            component["state"] = current_state
+        if cid == "service_card_template":
+            state_map[cid] = {
+                current_state: "apply_template_to_source_bound_fields",
+                "missing_required_field": "preserve_missing_field_without_inventing_value",
+            }
+        elif cid == "service_price":
+            state_map[cid] = {
+                current_state: "render_source_price_with_source_defined_format",
+                "missing_source_value": "omit_price_or_render_neutral_unavailable_state_without_inventing_amount",
+                "missing_source_format": "preserve_source_value_without_inventing_price_format",
+            }
+        elif cid in {"service_title", "service_provider"}:
+            field = cid.removeprefix("service_")
+            state_map[cid] = {
+                current_state: f"render_source_{field}",
+                "missing_source_value": f"omit_{field}_or_render_neutral_missing_state_without_invention",
+            }
+        else:
+            state_map[cid] = {
+                current_state: "preserve_source_bound_state_without_invention"
+            }
+
+
+def _apply_spacing_roles(components: dict[str, dict[str, Any]]) -> None:
+    """Ensure every declared spacing role has an observable component consumer."""
+    for cid in ("featured_services", "service_cards"):
+        if cid in components:
+            components[cid]["spacing"] = "section"
+
+
 def _enrich_known_marketplace_structure(components: dict[str, dict[str, Any]]) -> None:
     category = components.get("category_navigation")
     if category is not None:
@@ -98,6 +139,11 @@ def _enrich_known_marketplace_structure(components: dict[str, dict[str, Any]]) -
     if featured is not None:
         content = _require_dict(featured.get("content"), "UI_SEMANTIC_QUALITY_FEATURED_CONTENT_INVALID")
         content["selection_rule"] = "SOURCE_DESIGNATED_ONLY"
+        content["selection_binding"] = {
+            "membership_source": "featured_services.items",
+            "membership_mode": "SOURCE_DEFINED_ONLY",
+            "fallback_when_absent": "NO_FEATURED_INFERENCE",
+        }
         content["item_template_ref"] = "service_card_template"
         featured["role"] = (
             "Present only source-designated featured services as a visually distinct section; never infer featured status."
@@ -107,6 +153,8 @@ def _enrich_known_marketplace_structure(components: dict[str, dict[str, Any]]) -
     if cards is not None:
         content = _require_dict(cards.get("content"), "UI_SEMANTIC_QUALITY_SERVICE_CARDS_CONTENT_INVALID")
         content["item_template_ref"] = "service_card_template"
+        content["collection_binding"] = "service_cards.items"
+        content["featured_membership_rule"] = "DO_NOT_INFER_FROM_GENERAL_COLLECTION"
         cards["role"] = (
             "Present the source-bound service collection using service_card_template for every repeated item."
         )
@@ -132,6 +180,61 @@ def _prune_unused_tokens(deliverable: dict[str, Any], components: dict[str, dict
             kept = [token for token in values if isinstance(token, str) and token in used]
             if kept:
                 token_map[group] = kept
+
+
+def _validate_semantic_quality_output(
+    deliverable: dict[str, Any], components: dict[str, dict[str, Any]]
+) -> None:
+    state_map = _require_dict(
+        deliverable.get("state_map"), "UI_SEMANTIC_QUALITY_STATE_MAP_INVALID"
+    )
+    missing_state_components = [cid for cid in components if cid not in state_map]
+    if missing_state_components:
+        raise UISemanticQualityError(
+            "UI_SEMANTIC_QUALITY_COMPONENT_STATE_MISSING",
+            ",".join(missing_state_components),
+        )
+    required_state_keys = {
+        "service_card_template": {"default", "missing_required_field"},
+        "service_title": {"default", "missing_source_value"},
+        "service_provider": {"default", "missing_source_value"},
+        "service_price": {"default", "missing_source_value", "missing_source_format"},
+    }
+    for cid, required in required_state_keys.items():
+        if cid not in components:
+            continue
+        states = state_map.get(cid)
+        if not isinstance(states, dict) or not required.issubset(states):
+            raise UISemanticQualityError(
+                "UI_SEMANTIC_QUALITY_COMPONENT_STATE_INCOMPLETE", cid
+            )
+
+    spacing = _require_dict(
+        deliverable.get("spacing_typography"), "UI_SEMANTIC_QUALITY_SPACING_TYPOGRAPHY_INVALID"
+    )
+    spacing_rule = spacing.get("spacing")
+    if not isinstance(spacing_rule, str):
+        raise UISemanticQualityError("UI_SEMANTIC_QUALITY_SPACING_RULE_INVALID")
+    declared = {part.split("=", 1)[0].strip() for part in spacing_rule.split(";") if "=" in part}
+    used = {
+        component.get("spacing")
+        for component in components.values()
+        if isinstance(component.get("spacing"), str)
+    }
+    if declared and not declared.issubset(used):
+        raise UISemanticQualityError(
+            "UI_SEMANTIC_QUALITY_UNUSED_SPACING_ROLE",
+            ",".join(sorted(declared - used)),
+        )
+
+    featured = components.get("featured_services")
+    if featured is not None:
+        content = _require_dict(
+            featured.get("content"), "UI_SEMANTIC_QUALITY_FEATURED_CONTENT_INVALID"
+        )
+        binding = content.get("selection_binding")
+        if not isinstance(binding, dict) or binding.get("membership_mode") != "SOURCE_DEFINED_ONLY" or binding.get("fallback_when_absent") != "NO_FEATURED_INFERENCE":
+            raise UISemanticQualityError("UI_SEMANTIC_QUALITY_FEATURED_BINDING_INCOMPLETE")
 
 
 def _append_risk_controls(deliverable: dict[str, Any], components: dict[str, dict[str, Any]]) -> None:
@@ -179,7 +282,9 @@ def apply_ui_production_semantic_quality_v1(
 
     state_map = _require_dict(out.get("state_map"), "UI_SEMANTIC_QUALITY_STATE_MAP_INVALID")
     _ensure_search_states(state_map, required_ids)
+    _ensure_component_states(state_map, components)
     _enrich_known_marketplace_structure(components)
+    _apply_spacing_roles(components)
     _prune_unused_tokens(out, components)
 
     spacing = _require_dict(
@@ -191,4 +296,5 @@ def apply_ui_production_semantic_quality_v1(
     spacing["precision_mode"] = "RELATIVE_GUIDANCE"
 
     _append_risk_controls(out, components)
+    _validate_semantic_quality_output(out, components)
     return out
