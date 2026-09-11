@@ -32,14 +32,20 @@ jobs:
       - name: Verify exclusive source boundary
         run: python3 sandbox/lf_contract_gate_test/profile_creator_customer_caller_source_test.py
       - name: Reject non-OIDC caller
+        id: edge_probe
         run: |
           set -euo pipefail
-          code=$(curl --silent --show-error -o negative.json -w '%{http_code}' \
+          code=$(curl --silent --show-error --max-time 20 -o negative.json -w '%{http_code}' \
             -H 'Authorization: Bearer not-a-github-oidc-token' \
             -H 'Content-Type: application/json' \
             -d '{"action":"profile_creator_init_v1","caller_request_id":"negative","target_code":"PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING","profile_slug":"customer_financial_ux_decisioning"}' \
             'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1')
           cat negative.json
+          if grep -Eqi 'exceeded?_egress_quota|exceed_egress_quota|egress.{0,40}quota' negative.json; then
+            echo 'quota=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'quota=false' >> "$GITHUB_OUTPUT"
+          fi
           test "$code" = "401" || test "$code" = "404" || grep -Eqi 'exceeded?_egress_quota|egress.{0,40}quota' negative.json
       - name: Resolve exact governed Customer target
         if: github.event_name == 'push'
@@ -120,6 +126,8 @@ jobs:
       - name: Prepare quota-safe exact-runtime fallback
         if: github.event_name == 'push' && (steps.record.outputs.single == 'true' || steps.record.outputs.batch == 'true')
         shell: bash
+        env:
+          PROFILE_CREATOR_EDGE_QUOTA_PROVEN: ${{ steps.edge_probe.outputs.quota }}
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/profile_creator_local_pooler_bridge.py --self-test
@@ -139,7 +147,7 @@ jobs:
 
           wait_http() {
             local url="$1" label="$2"
-            for _ in $(seq 1 120); do
+            for _ in $(seq 1 30); do
               if curl --silent --output /dev/null --max-time 2 "$url"; then
                 return 0
               fi
@@ -147,6 +155,14 @@ jobs:
             done
             echo "BLOCK_LOCAL_RUNTIME_NOT_READY:${label}" >&2
             return 1
+          }
+
+          container_diag() {
+            local name="$1"
+            echo "CONTAINER_DIAG:${name}" >&2
+            docker ps -a --filter "name=^/${name}$" --format '{{.Names}}|{{.Status}}|{{.Image}}' >&2 || true
+            docker inspect "$name" --format '{{json .State}}' >&2 || true
+            docker logs "$name" >&2 || true
           }
 
           start_local() {
@@ -162,7 +178,7 @@ jobs:
             export SERVICE_ROLE_KEY="$key"
 
             docker rm -f s26-profile-caller s26-profile-runtime s26-profile-pg >/dev/null 2>&1 || true
-            docker run -d --rm --name s26-profile-pg \
+            docker run -d --name s26-profile-pg \
               -e PGHOST=aws-1-us-east-1.pooler.supabase.com \
               -e PGPORT=5432 \
               -e PGUSER=postgres.mhwmirqcgxxukpctffuv \
@@ -186,7 +202,7 @@ jobs:
             wait_http 'http://127.0.0.1:18080/health' bridge
             wait_http 'http://127.0.0.1:18083/health' compat
 
-            docker run -d --rm --name s26-profile-runtime \
+            docker run -d --name s26-profile-runtime \
               --add-host=host.docker.internal:host-gateway \
               -p 127.0.0.1:18082:8000 \
               -e SUPABASE_URL='http://host.docker.internal:18080' \
@@ -195,7 +211,14 @@ jobs:
               denoland/deno:2.4.5 \
               run --allow-net --allow-env supabase/functions/run-creacion-perfil-lf/index.ts >/dev/null
 
-            docker run -d --rm --name s26-profile-caller \
+            if ! wait_http 'http://127.0.0.1:18082' exact-runtime; then
+              container_diag s26-profile-runtime
+              cat "$RUNNER_TEMP/s26-bridge.log" >&2 || true
+              cat "$RUNNER_TEMP/s26-compat.log" >&2 || true
+              return 1
+            fi
+
+            docker run -d --name s26-profile-caller \
               --add-host=host.docker.internal:host-gateway \
               -p 127.0.0.1:18081:8000 \
               -e SUPABASE_URL='http://host.docker.internal:18080' \
@@ -204,15 +227,15 @@ jobs:
               denoland/deno:2.4.5 \
               run --allow-net --allow-env supabase/functions/lf-profile-creator-governance-caller-v1/index.ts >/dev/null
 
-            wait_http 'http://127.0.0.1:18082' exact-runtime || { docker logs s26-profile-runtime >&2 || true; return 1; }
-            wait_http 'http://127.0.0.1:18081' exact-caller || { docker logs s26-profile-caller >&2 || true; return 1; }
+            if ! wait_http 'http://127.0.0.1:18081' exact-caller; then
+              container_diag s26-profile-caller
+              return 1
+            fi
             touch "$ready"
             echo 'PROFILE_CREATOR_LOCAL_FALLBACK_READY=true' >&2
           }
 
           invoke_local() {
-            local key
-            key="$(cat "$key_file")"
             curl --silent --show-error -o "$output_file" -w '%{http_code}' \
               -H "Authorization: Bearer $OIDC_TOKEN" \
               -H 'Content-Type: application/json' \
@@ -225,7 +248,14 @@ jobs:
             exit 0
           fi
 
-          code=$(curl --silent --show-error -o "$output_file" -w '%{http_code}' \
+          if [[ "${PROFILE_CREATOR_EDGE_QUOTA_PROVEN:-false}" = "true" ]]; then
+            echo 'PROFILE_CREATOR_EDGE_QUOTA_FALLBACK=true edge_probe=proven' >&2
+            start_local
+            invoke_local
+            exit 0
+          fi
+
+          code=$(curl --silent --show-error --max-time 20 -o "$output_file" -w '%{http_code}' \
             -H "Authorization: Bearer $OIDC_TOKEN" \
             -H 'Content-Type: application/json' \
             --data-binary "@$request_file" \
@@ -319,7 +349,7 @@ jobs:
               open('governed-step-request.json','w',encoding='utf-8').write(json.dumps(body,separators=(',',':')))
               p=subprocess.run([os.path.join(os.environ['RUNNER_TEMP'],'invoke-profile-caller.sh'),'governed-step-request.json','governed-step.json'],capture_output=True,text=True,env=os.environ.copy())
               if p.stderr: print(p.stderr,file=sys.stderr,end='')
-              code=p.stdout.strip(); data=json.load(open('governed-step.json'))
+              code=p.stdout.strip(); data=json.load(open('governed-step.json')) if os.path.exists('governed-step.json') else {}
               result=data.get('result') or {}; step=(result.get('step') or {})
               ok=p.returncode==0 and code=='200' and data.get('outcome')=='STEP_RECORDED' and result.get('outcome')=='STEP_RECORDED' and step.get('status')=='STEP_CLEAN_PASS'
               receipts.append({'step_id':item['step_id'],'ok':ok,'http':code})
