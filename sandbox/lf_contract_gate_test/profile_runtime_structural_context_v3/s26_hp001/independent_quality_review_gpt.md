@@ -83,9 +83,24 @@ Block or return for repair when the artifact is materially generic, unsupported,
 
 Return one JSON object only, conforming to:
 
-- `github://cristhianlujan/claude-persona-lf-patch@d8c10954d5a6058ffdde7f4b520efcbabf50d180/profiles/quality_pack/schemas/quality_semantic_review_receipt.schema.json`
+- `github://cristhianlujan/claude-persona-lf-patch@d8c10954d5a6058ffdde7f4b520efcbabf50d180/profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json`
 
 Required execution metadata:
 
 - `receipt_version = v0.1`
 - `execution_mode = INDEPENDENT_CHAT_CONTEXT`
+- `semantic_status = EXECUTED_INDEPENDENT_CONTEXT` only if actually completed
+- `review_case_id = S26-HP001-COLD-GPT-QUALITY-001`
+- `reviewer_is_producer = false`
+- `producer_context_available = false`
+- `external_paid_model_used = false` only if factually true under this execution boundary
+- `automated_semantic_judge_implemented = false`
+- `review_completed = true` only after completing the review
+
+`source_bundle.artifact_ref` must be the immutable gzip artifact ref above and `artifact_sha_or_digest` must bind both the gzip SHA and decompressed SHA in a deterministic string or evidence-map entry. Include `quality_review.routing` when required by current validators.
+
+Validate the receipt with the immutable independent semantic review validator and routing validator. If you cannot execute a required validation, record that limitation rather than inventing success.
+
+## Claim boundary
+
+This handoff authorizes only independent semantic review of this frozen artifact. It does **not** authorize Golden, merge, main, deployment, production, or mutation of the artifact.
