@@ -2,48 +2,38 @@
   "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-S26-SEMANTIC-REPROJECTION-20260911-001",
   "steps": [
     {
-      "step_id": "regression_after",
-      "evidence_ref": "sentinelx://script_job_56eaa37e0c994e3888ac47ca9d797c21",
+      "step_id": "close",
+      "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@6b5a914bcd78fa44ab9df66867e2e21fcf7be482/sandbox/lf_contract_gate_test/receipts/actualizacion-perfil-ui-architect-s26-semantic-reprojection-20260911-001.json",
       "evidence_payload": {
-        "before_after_matrix": {
-          "result": "PASS",
-          "before_head": "e68b363f2acc139bde57b8bbe6ba80e338b9e990",
-          "semantic_source_head": "90345c679a2a6fab8a2f66f0a1feaa75bbd74530",
-          "governed_reprojection_head": "e7522af9ab56bad4657795a676dfa189aeba20c1",
-          "before_boundary_case_count": 11,
-          "after_boundary_case_count": 13,
-          "changes": [
-            "Added explicit component structural allowlist.",
-            "Added explicit screen-definition structural allowlist.",
-            "Added fail-closed detection for future internal metadata key families.",
-            "Added structural rejection of unknown component keys.",
-            "Added recursive rejection of internal metadata nested inside extensible content.",
-            "Retained deterministic top-level Composer projection allowlist.",
-            "Retained the S26 semantic holdout against current_page prebinding."
-          ],
-          "governed_profile_files_byte_identical_to_semantic_source": true
+        "all_required_steps_clean": true,
+        "open_blockers": [],
+        "runtime_unchanged": true,
+        "no_auto_promotion": true,
+        "canonical_prior_steps": "12/12_STEP_PASS_WITH_EVIDENCE",
+        "required_contract_obligations": "14/14_PASS",
+        "required_before_write": "7/7_PASS",
+        "required_after_write": "7/7_PASS",
+        "exact_head": "6b5a914bcd78fa44ab9df66867e2e21fcf7be482",
+        "substantive_profile_head": "e7522af9ab56bad4657795a676dfa189aeba20c1",
+        "profile_blobs_unchanged_after_receipt_commit": true,
+        "profile_blob_readback": {
+          "profiles/ui_architect/evals/composer_payload_boundary_20260909/run_cases.py": "3a173bf2ab8ed03e6340491278f6c433761a2c02",
+          "profiles/ui_architect/validators/validate_composer_payload_boundary.py": "51683d3a7ba3d4aca86d6667d8951e32205461c3"
         },
-        "adversarial_result": {
-          "result": "PASS",
-          "composer_boundary_cases": "13/13 PASS",
-          "future_unknown_component_key_fails_closed": true,
-          "nested_runtime_source_metadata_fails_closed": true,
-          "projection_mismatch_fails_closed": true,
-          "internal_repository_provider_metadata_fails_closed": true,
-          "malformed_json_fails_closed": true,
-          "malformed_json_error_code": "INPUT_PARSE_ERROR",
-          "malformed_json_exit_code": 1,
-          "focused_regression_suite": "57/57 PASS"
+        "receipt_blob_sha": "4b6e4ce2e9c18b271ac79afc967173b143f7450d",
+        "exact_head_ci": {
+          "validate_lf_packs": {
+            "run_id": 34622316121,
+            "conclusion": "success"
+          },
+          "lf_contract_check": {
+            "run_id": 34622316125,
+            "conclusion": "success"
+          }
         },
-        "holdout_result": {
-          "result": "PASS",
-          "noncanonical_guidance_mode_preserved": "RELATIVE_GUIDANCE",
-          "proposal_status_preserved": "PROPOSED_NOT_CANONICAL",
-          "current_page_not_prebound": true,
-          "negative_prebind_guard_passed": true,
-          "frozen_source_lineage_replay": "57/57 PASS",
-          "current_main_historical_validator_drift_excluded_from_frozen_artifact_verdict": true
-        },
+        "main_sha_at_close": "5a414bcb1f8e08492e064788f5ba49b820e1bf27",
+        "main_stable_since_prewrite_rebind": true,
+        "original_pr679_write_retroactively_authorized": false,
         "frozen_s26_lane_mutated": false,
         "merge_executed": false,
         "production_effect": false,
