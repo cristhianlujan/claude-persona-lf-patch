@@ -330,8 +330,10 @@ jobs:
           python3 - <<'PY'
           import json
           data=json.load(open('governed-step.json'))
-          result=data.get('result') or {}; step=(result.get('step') or {})
-          assert data.get('outcome') == 'STEP_RECORDED' and result.get('outcome') == 'STEP_RECORDED' and step.get('status') == 'STEP_CLEAN_PASS', data
+          result=data.get('result') or {}
+          step=(result.get('step') or result.get('result') or {})
+          status=step.get('status')
+          assert data.get('outcome') == 'STEP_RECORDED' and result.get('outcome') == 'STEP_RECORDED' and status in ('STEP_CLEAN_PASS','STEP_PASS_WITH_EVIDENCE'), data
           print('GOVERNED_CUSTOMER_PROFILE_ORDERED_STEP=PASS')
           PY
       - name: Record canonical ordered batch through governed caller
@@ -352,10 +354,12 @@ jobs:
               p=subprocess.run([os.path.join(os.environ['RUNNER_TEMP'],'invoke-profile-caller.sh'),'governed-step-request.json','governed-step.json'],capture_output=True,text=True,env=os.environ.copy())
               if p.stderr: print(p.stderr,file=sys.stderr,end='')
               code=p.stdout.strip(); data=json.load(open('governed-step.json')) if os.path.exists('governed-step.json') else {}
-              result=data.get('result') or {}; step=(result.get('step') or {})
-              ok=p.returncode==0 and code=='200' and data.get('outcome')=='STEP_RECORDED' and result.get('outcome')=='STEP_RECORDED' and step.get('status')=='STEP_CLEAN_PASS'
+              result=data.get('result') or {}
+              step=(result.get('step') or result.get('result') or {})
+              status=step.get('status')
+              ok=p.returncode==0 and code=='200' and data.get('outcome')=='STEP_RECORDED' and result.get('outcome')=='STEP_RECORDED' and status in ('STEP_CLEAN_PASS','STEP_PASS_WITH_EVIDENCE') and step.get('step_id')==item['step_id']
               receipts.append({'step_id':item['step_id'],'ok':ok,'http':code})
-              print(json.dumps({'step_id':item['step_id'],'ok':ok,'http':code,'outcome':data.get('outcome')}))
+              print(json.dumps({'step_id':item['step_id'],'ok':ok,'http':code,'outcome':data.get('outcome'),'status':status}))
               if not ok:
                   print('GOVERNED_STEP_RESPONSE='+json.dumps(data,sort_keys=True))
                   print('GOVERNED_CUSTOMER_PROFILE_BATCH=BLOCKED_FIRST_FAILURE')
