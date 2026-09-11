@@ -2,25 +2,25 @@
   "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-S26-SEMANTIC-REPROJECTION-20260911-001",
   "steps": [
     {
-      "step_id": "pre_write_execution_binding_gate",
-      "evidence_ref": "public.lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-S26-SEMANTIC-REPROJECTION-20260911-001#step60",
+      "step_id": "github_write",
+      "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@e7522af9ab56bad4657795a676dfa189aeba20c1",
       "evidence_payload": {
-        "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-S26-SEMANTIC-REPROJECTION-20260911-001",
-        "target_code": "PERFIL-UI-ARCHITECT",
-        "target_path": "profiles/ui_architect/SKILL.md",
-        "write_plan": [
-          "Create a separate governed reprojection branch from exact main 5a414bcb1f8e08492e064788f5ba49b820e1bf27.",
-          "Write only the two UI Architect profile files with bytes identical to source head 90345c679a2a6fab8a2f66f0a1feaa75bbd74530.",
-          "Read back exact blobs before any receipt is issued."
+        "branch": "lf/s26-hp001-semantic-reprojection-governed-20260911",
+        "written_files": [
+          "profiles/ui_architect/evals/composer_payload_boundary_20260909/run_cases.py",
+          "profiles/ui_architect/validators/validate_composer_payload_boundary.py"
         ],
-        "pre_write_gate_passed": true,
-        "bound_revision": {
-          "revision_sha": "5a414bcb1f8e08492e064788f5ba49b820e1bf27"
-        },
-        "execution_bound_to_target_before_change": true,
-        "reread_performed": true,
-        "rebind_performed": true,
-        "rebound_from_revision": "24fe594f3b1c7f9ae99e67a76aac45fad997b623",
+        "commit_sha": "e7522af9ab56bad4657795a676dfa189aeba20c1",
+        "identity_preserved": true,
+        "base_main_sha": "5a414bcb1f8e08492e064788f5ba49b820e1bf27",
+        "source_head_sha": "90345c679a2a6fab8a2f66f0a1feaa75bbd74530",
+        "governed_reprojection_only": true,
+        "original_write_retroactively_authorized": false,
+        "frozen_s26_lane_mutated": false,
+        "merge_executed": false,
+        "production_effect": false,
+        "gate_g_advanced": false,
+        "golden_declared": false,
         "step_result": "STEP_PASS_WITH_EVIDENCE",
         "blocking_codes": []
       }
