@@ -59,7 +59,7 @@ checks = {
     "currentness_before_single_write": 'PROFILE_OPERATION_STEP_NOT_CURRENT' in caller and 'expectedStepId !== stepId' in caller,
     "currentness_before_batch_write": 'PROFILE_OPERATION_BATCH_STEP_NOT_CURRENT' in caller and 'expectedStepId !== step.step_id' in caller,
     "currentness_inside_runtime": 'PROFILE_OPERATION_STEP_NOT_CURRENT' in runtime,
-    "update_fail_closed_without_recorder": 'UPDATE_OPERATION_CANONICAL_RECORDER_REQUIRED' in runtime,
+    "update_uses_canonical_common_recorder": 'record_profile_operation_step_v1' in runtime and 'lf_record_profile_operation_step_v1' in runtime and 'UPDATE_OPERATION_CANONICAL_RECORDER_REQUIRED' not in runtime,
     "creation_uses_canonical_recorder": 'lf_record_creacion_perfil_step_v1' in runtime,
     "router_owns_operation": 'String(ex.operation_code' in runtime and 'PROFILE_OPERATIONS' in runtime,
     "dynamic_contracts": 'lf_operation_step_contracts?operation_code=eq.' in runtime,
@@ -81,8 +81,8 @@ checks = {
     "trusted_currentness_reads_exact_target_blob": '/contents/${encodedPath}?ref=${revisionSha}' in caller and 'target_blob_sha' in caller,
     "trusted_currentness_target_from_runtime_snapshot": 'safeRepoPath(snapshot.target_path)' in caller,
     "trusted_currentness_declared_flag_rejected": 'declared_currentness_accepted: false' in caller and 'declared_current_revision_ignored: true' in caller,
-    "trusted_currentness_bound_revision_structured": 'PROFILE_UPDATE_BOUND_REVISION_STRUCTURED_REQUIRED' in caller and 'boundRevisionSha(evidencePayload.bound_revision)' in caller,
-    "trusted_currentness_mismatch_blocks_rebind": 'PROFILE_UPDATE_BOUND_REVISION_STALE_REBIND_REQUIRED' in caller and 'boundSha !== observedSha' in caller,
+    "trusted_currentness_bound_revision_structured": 'PROFILE_UPDATE_BOUND_REVISION_STRUCTURED_REQUIRED' in caller and 'revisionSha(evidencePayload.bound_revision)' in caller,
+    "trusted_currentness_mismatch_blocks_write": 'PROFILE_UPDATE_BOUND_REVISION_CURRENT_MISMATCH' in caller and 'boundSha !== observedSha' in caller,
     "trusted_currentness_persisted_in_evidence": all(token in caller for token in ['current_resolved_revision: observedSha','trusted_current_revision: trusted','current_revision_resolved_by_caller: true']),
     "trusted_currentness_no_request_target_path": 'resolveTrustedCurrentRevision(body.target_path)' not in caller,
 
@@ -113,7 +113,7 @@ checks = {
     "negative_duplicate_batch_step": 'PROFILE_OPERATION_BATCH_DUPLICATE_STEP' in batch,
     "negative_empty_batch": 'PROFILE_OPERATION_BATCH_EMPTY' in batch,
     "negative_stale_batch_cursor": 'PROFILE_OPERATION_BATCH_STEP_NOT_CURRENT' in caller and 'expected_step_id: expectedStepId' in caller,
-    "negative_update_no_unproven_recorder": 'UPDATE_OPERATION_CANONICAL_RECORDER_REQUIRED' in runtime,
+    "negative_update_binding_fail_closed": all(code in caller for code in ['PROFILE_UPDATE_BOUND_REVISION_STRUCTURED_REQUIRED','PROFILE_UPDATE_EXECUTION_BINDING_REQUIRED','PROFILE_UPDATE_STALE_REREAD_REQUIRED','PROFILE_UPDATE_STALE_REBIND_REQUIRED','PROFILE_UPDATE_BOUND_REVISION_CURRENT_MISMATCH']),
 }
 
 failed = [name for name, ok in checks.items() if not ok]
