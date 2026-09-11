@@ -1,0 +1,40 @@
+{
+  "receipt_version": "S30_C05_LIVE_SCHEMA_READBACK_V3",
+  "project_id": "mhwmirqcgxxukpctffuv",
+  "observed_migrations": [
+    {"version":"20260911025454","name":"s30_c05_generic_execution_reliability_v1"},
+    {"version":"20260911030211","name":"s30_c05_effect_guard_acl_hardening_v1"}
+  ],
+  "lf_operation_execution": {
+    "typed_columns": ["idempotency_key","request_sha256","lease_owner","lease_expires_at","lease_fence","checkpoint_seq","checkpoint_payload"],
+    "typed_columns_present": true,
+    "constraints_present": ["lf_operation_execution_idempotency_pair_ck","lf_operation_execution_lease_pair_ck","lf_operation_execution_nonnegative_control_ck"],
+    "partial_unique_index": "lf_operation_execution_idempotency_uq"
+  },
+  "lf_operation_effect_guard": {
+    "rls_enabled": true,
+    "service_role_privileges_after_repair": ["INSERT","SELECT","UPDATE"],
+    "service_role_delete_allowed": false,
+    "authenticated_privileges": [],
+    "anon_privileges": []
+  },
+  "functions": {
+    "count": 6,
+    "security_invoker": true,
+    "authenticated_execute": false,
+    "anon_execute": false,
+    "service_role_execute": true
+  },
+  "operation_registry_readback": {
+    "EJECUCION_ESTRATEGIA_LF": "ABSENT",
+    "ORQUESTACION_ESTRATEGIAS_LF": "ABSENT"
+  },
+  "acl_repair": {
+    "initial_overgrant_detected": true,
+    "initial_service_role_extra_privileges": ["DELETE","REFERENCES","TRIGGER","TRUNCATE"],
+    "repair_applied": true,
+    "delete_negative_sqlstate": "42501"
+  },
+  "runtime_activated": false,
+  "scheduler_changed": false
+}
