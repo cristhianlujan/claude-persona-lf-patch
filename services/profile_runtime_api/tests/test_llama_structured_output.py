@@ -319,7 +319,7 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
             "minimum_hierarchy_depth_edges": 2,
             "minimum_risk_control_count": 2,
         }
-        semantic = '{"d":{"u":"marketplace","z":[0,1,1],"t":[0,3,7],"p":[2,1,2],"h":[1,2],"m":[["default","ready"],["enabled","ready"]],"l":["responsive grid","single column"],"k":["surface","text","action","border"],"a":["body","heading","compact","regular"],"y":["compact hierarchy"]}}'
+        semantic = '{"v":5,"d":{"l":"STANDARD_GRID_STACK","h":["service_cards","service_cta"]}}'
         client = RecordingClient(self.settings, semantic)
         completion = client.chat(
             system_prompt="system", user_prompt="user", schema=canonical,
@@ -328,8 +328,12 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         )
         assert client.last_payload is not None
         generated = client.last_payload["response_format"]["schema"]
-        self.assertEqual(generated["required"], ["d"])
-        self.assertEqual(generated["properties"]["d"]["properties"]["z"]["maxItems"], 3)
+        self.assertEqual(generated["required"], ["v", "d"])
+        self.assertEqual(generated["properties"]["v"]["const"], 5)
+        self.assertNotIn("c", generated["properties"]["d"]["properties"])
+        self.assertEqual(generated["properties"]["d"]["properties"]["h"]["uniqueItems"], True)
+        self.assertNotIn("z", generated["properties"]["d"]["properties"])
+        self.assertNotIn("p", generated["properties"]["d"]["properties"])
         self.assertNotIn("o", generated["properties"]["d"]["properties"])
         self.assertNotIn("score", generated["properties"]["d"]["properties"])
         self.assertEqual(client.last_payload["max_tokens"], 600)

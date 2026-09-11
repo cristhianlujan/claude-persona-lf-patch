@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import json
+import re
 import secrets
 import urllib.error
 import urllib.request
@@ -18,7 +19,8 @@ UI_FOCUSED_SCHEMA_MODE = "UI_FOCUSED_DECISION"
 UI_PRODUCTION_SCHEMA_MODE = "UI_PRODUCTION_SPEC"
 UI_FOCUSED_GENERATION_POLICY = "UI_FOCUSED_BOUNDED_GENERATION_V1"
 UI_PRODUCTION_GENERATION_POLICY = "UI_PRODUCTION_COMPACT_TRANSPORT_UICT1"
-UI_PRODUCTION_SEMANTIC_GENERATION_POLICY = "UI_PRODUCTION_SEMANTIC_TRANSPORT_UICT2"
+UI_PRODUCTION_SEMANTIC_GENERATION_POLICY_V2 = "UI_PRODUCTION_SEMANTIC_TRANSPORT_UICT2"
+UI_PRODUCTION_SEMANTIC_GENERATION_POLICY = "UI_PRODUCTION_SEMANTIC_TRANSPORT_UICT5"
 CANONICAL_GENERATION_POLICY = "CANONICAL_SCHEMA_UNCHANGED"
 UI_PRODUCTION_REFERENCE_ONLY_SUFFIXES = ("/contracts/composer_payload_boundary_v1.md",)
 
@@ -172,7 +174,8 @@ def ui_production_semantic_context_view(model_context: dict[str, Any]) -> dict[s
         "component_ids": list(acceptance["required_component_ids"]),
         "state_component_ids": list(acceptance["required_state_component_ids"]),
         "sections": list(acceptance["required_sections"]),
-        "design_intents": list(acceptance["required_design_intents"]),
+        # UICT5 materializes design intents deterministically in screen_definition.
+        # Do not expose them as a competing text target for the remaining layout gap.
         "responsive_modes": list(acceptance.get("required_responsive_modes") or []),
         "hierarchy_depth": acceptance["minimum_hierarchy_depth_edges"],
     }
@@ -180,7 +183,8 @@ def ui_production_semantic_context_view(model_context: dict[str, Any]) -> dict[s
 
 
 UI_PRODUCTION_TRANSPORT_VERSION = "UICT1"
-UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION = "UICT2"
+UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION_V2 = "UICT2"
+UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION = "UICT5"
 _UI_SCORE_KEYS = (
     "layout_precision", "visual_hierarchy", "lf_system_fidelity",
     "state_mapping", "handoff_quality",
@@ -262,10 +266,10 @@ def _ui_production_acceptance_supports_semantic_transport(acceptance: Any) -> bo
     return True
 
 
-def _ui_production_semantic_transport_schema(
+def _ui_production_semantic_transport_schema_v2(
     canonical: dict[str, Any], acceptance: dict[str, Any]
 ) -> dict[str, Any]:
-    """UICT2: model emits only non-derivable UI choices; runtime owns known structure."""
+    """UICT2 compatibility schema for historical replay only."""
     if not _ui_production_acceptance_supports_semantic_transport(acceptance):
         raise LlamaTransportError("UI_PRODUCTION_SEMANTIC_TRANSPORT_ACCEPTANCE_INCOMPLETE")
     expected_roots = {
@@ -356,6 +360,335 @@ def _ui_production_semantic_transport_schema(
         },
     }
 
+
+def _ui_semantic_text_is_concrete(value: Any, *, min_distinct_words: int = 4) -> bool:
+    if not isinstance(value, str) or not value.strip():
+        return False
+    words = {item.casefold() for item in re.findall(r"\w+", value, flags=re.UNICODE) if len(item) > 1}
+    return len(words) >= min_distinct_words
+
+
+def _ui_deterministic_component_type(component_id: str) -> str | None:
+    """Resolve type only when the governed identifier states the UI function explicitly."""
+    cid = component_id.casefold()
+    checks = (
+        (("_template", "template_"), "template"),
+        (("_search", "search_", "_input", "input_", "_filter", "filter_"), "input"),
+        (("_navigation", "navigation_", "_nav", "nav_"), "navigation"),
+        (("_cta", "cta_", "_action", "action_", "_button", "button_"), "action"),
+        (("_collection", "collection_", "_cards", "cards_", "_list", "list_", "_grid", "grid_"), "collection"),
+        (("_section", "section_"), "section"),
+        (("_price", "price_", "_amount", "amount_", "_value", "value_"), "value"),
+        (("_title", "title_", "_provider", "provider_", "_label", "label_"), "text"),
+    )
+    for markers, result in checks:
+        if any(marker in cid for marker in markers):
+            return result
+    return None
+
+
+def _ui_component_type_v5(component_id: str, sections: list[str]) -> str | None:
+    """Derive component type only from governed identifiers/section identity."""
+    derived = _ui_deterministic_component_type(component_id)
+    if derived is not None:
+        return derived
+    if component_id in sections:
+        return "section"
+    cid = component_id.casefold()
+    if cid.startswith("featured_"):
+        return "section"
+    return None
+
+
+def _ui_component_zone_v5(component_id: str, sections: list[str]) -> str | None:
+    """Map a component to a governed section only when the identifier makes it explicit."""
+    if component_id in sections:
+        return component_id
+    cid = component_id.casefold()
+    section_set = set(sections)
+    if any(token in cid for token in ("search", "header")) and "header" in section_set:
+        return "header"
+    if any(token in cid for token in ("category", "navigation", "nav")) and "categories" in section_set:
+        return "categories"
+    if "featured" in cid and "featured_services" in section_set:
+        return "featured_services"
+    if cid.startswith("service_") or cid in {"service_cards", "service_card_template"}:
+        if "service_cards" in section_set:
+            return "service_cards"
+    # A component whose ID equals a singularized governed section is still explicit.
+    for section in sections:
+        singular = section[:-1] if section.endswith("s") else section
+        if cid == singular.casefold():
+            return section
+    return None
+
+
+def _ui_component_gaps_v5(acceptance: dict[str, Any]) -> dict[str, tuple[str | None, str | None]]:
+    sections = list(acceptance["required_sections"])
+    gaps: dict[str, tuple[str | None, str | None]] = {}
+    for cid in acceptance["required_component_ids"]:
+        zone = _ui_component_zone_v5(cid, sections)
+        component_type = _ui_component_type_v5(cid, sections)
+        if zone is None or component_type is None:
+            gaps[cid] = (zone, component_type)
+    return gaps
+
+
+def _ui_deterministic_hierarchy_v5(acceptance: dict[str, Any]) -> list[dict[str, Any]] | None:
+    """Build only relationships directly implied by governed sections/template/leaves."""
+    required_ids = list(acceptance["required_component_ids"])
+    required_set = set(required_ids)
+    sections = list(acceptance["required_sections"])
+    depth_required = int(acceptance["minimum_hierarchy_depth_edges"])
+    top_level: list[str] = []
+    for section in sections:
+        candidates = [cid for cid in required_ids if _ui_component_zone_v5(cid, sections) == section]
+        # Prefer section-level collection/control over leaf/template nodes.
+        preferred = [cid for cid in candidates if _ui_component_type_v5(cid, sections) in {"input", "navigation", "section", "collection"}]
+        if preferred:
+            top_level.append(preferred[0])
+    if not top_level:
+        return None
+    relations: list[dict[str, Any]] = [{"parent_id": "screen", "child_ids": list(dict.fromkeys(top_level))}]
+    depth = 1
+    if "service_cards" in required_set and "service_card_template" in required_set:
+        relations.append({"parent_id": "service_cards", "child_ids": ["service_card_template"]})
+        depth = 2
+        leaves = [cid for cid in acceptance.get("required_service_leaf_components") or [] if cid in required_set]
+        if leaves:
+            relations.append({"parent_id": "service_card_template", "child_ids": leaves})
+            depth = 3
+    if depth < depth_required:
+        return None
+    return relations
+
+
+def _ui_state_map_v5(acceptance: dict[str, Any]) -> dict[str, dict[str, str]]:
+    out: dict[str, dict[str, str]] = {}
+    for cid in acceptance["required_state_component_ids"]:
+        c = cid.casefold()
+        if "search" in c:
+            out[cid] = {"default": "enabled", "query_entered": "preserve_user_query"}
+        elif "navigation" in c or "category" in c:
+            out[cid] = {"default": "available", "selected": "preserve_source_selected_category"}
+        elif "featured" in c:
+            out[cid] = {"populated": "render_source_items", "empty": "render_no_invented_items"}
+        elif c.endswith("_cta") or "action" in c:
+            out[cid] = {"available": "enabled_when_source_action_exists", "missing_source_action": "disabled_or_omitted_without_inventing_destination"}
+        elif "cards" in c or "collection" in c:
+            out[cid] = {"populated": "render_source_items", "empty": "render_empty_state_without_invented_items"}
+        else:
+            out[cid] = {"default": "preserve_source_bound_state"}
+    return out
+
+
+_UI_LAYOUT_STRATEGIES_V5: dict[str, tuple[str, str]] = {
+    "STANDARD_GRID_STACK": (
+        "multi-column grid with aligned service cards and visible category navigation",
+        "single-column stack preserving search, categories, featured services, and card field order",
+    ),
+    "DENSE_GRID_STACK": (
+        "compact multi-column grid with wrapping service cards and persistent category navigation",
+        "single-column stack with compact spacing while preserving every required card field",
+    ),
+    "FEATURED_FIRST_GRID_STACK": (
+        "featured-services section leads into a multi-column service-card grid with visible navigation",
+        "featured services remain before a single-column service-card stack preserving information order",
+    ),
+    "NAVIGATION_FIRST_GRID_STACK": (
+        "search and category navigation stay prominent above a multi-column service-card grid",
+        "search and category navigation stay first above a single-column service-card stack",
+    ),
+    "MOBILE_PRIORITY_STACK": (
+        "responsive service-card grid keeps search and navigation visible while allowing column reflow",
+        "mobile-first single-column stack preserves required sections and card information order",
+    ),
+}
+
+
+def _ui_risk_controls_v5(acceptance: dict[str, Any]) -> list[str]:
+    bindings = dict(acceptance["required_source_bindings"])
+    risk_count = int(acceptance["minimum_risk_control_count"])
+    def rank(item: tuple[str, str]) -> tuple[int, str]:
+        binding, expected = item
+        upper = expected.upper()
+        if "UNRESOLVED" in upper: return (0, binding)
+        if "SOURCE_DEFINED" in upper: return (1, binding)
+        if binding.endswith(".value") or binding.endswith(".label"): return (2, binding)
+        return (3, binding)
+    rows = sorted(bindings.items(), key=rank)
+    if len(rows) < risk_count:
+        raise LlamaTransportError("UI_PRODUCTION_SEMANTIC_TRANSPORT_RISK_AUTHORITY_INSUFFICIENT")
+    return [f"Preserve {binding} as {expected}; do not invent or strengthen its value." for binding, expected in rows[:risk_count]]
+
+
+def _ui_production_semantic_transport_schema(
+    canonical: dict[str, Any], acceptance: dict[str, Any]
+) -> dict[str, Any]:
+    """UICT5: ask the model only for semantic gaps not derivable from governed authority."""
+    if not _ui_production_acceptance_supports_semantic_transport(acceptance):
+        raise LlamaTransportError("UI_PRODUCTION_SEMANTIC_TRANSPORT_ACCEPTANCE_INCOMPLETE")
+    expected_roots = {"worker", "output_type", "deliverable_created", "score", "handoff_to_next", "self_verdict"}
+    props = canonical.get("properties")
+    if not isinstance(props, dict) or set(canonical.get("required") or []) != expected_roots:
+        raise LlamaTransportError("UI_PRODUCTION_CANONICAL_ROOT_DRIFT")
+    deliverable = props.get("deliverable_created")
+    required_deliverable = {"screen_definition", "component_tree", "layout_grid", "visual_hierarchy", "state_map", "token_map", "spacing_typography", "density_rules", "risk_controls", "prompt_constraints"}
+    if not isinstance(deliverable, dict) or not required_deliverable.issubset(set(deliverable.get("required") or [])):
+        raise LlamaTransportError("UI_PRODUCTION_CANONICAL_DELIVERABLE_DRIFT")
+
+    sections = list(acceptance["required_sections"])
+    required_ids = list(acceptance["required_component_ids"])
+    gaps = _ui_component_gaps_v5(acceptance)
+    hierarchy = _ui_deterministic_hierarchy_v5(acceptance)
+    d_required = ["l"]
+    d_properties: dict[str, Any] = {
+        # The model selects among bounded semantic alternatives; runtime materializes
+        # the concrete desktop/mobile rules deterministically.
+        "l": {"type": "string", "enum": list(_UI_LAYOUT_STRATEGIES_V5)}
+    }
+    if gaps:
+        allowed_types = {"type": "string", "enum": ["input", "navigation", "section", "collection", "template", "text", "value", "action"]}
+        c_props: dict[str, Any] = {}
+        for cid, (zone, component_type) in gaps.items():
+            if zone is None and component_type is None:
+                c_props[cid] = _ui_transport_tuple({"type": "string", "enum": sections}, allowed_types)
+            elif zone is None:
+                c_props[cid] = {"type": "string", "enum": sections}
+            else:
+                c_props[cid] = allowed_types
+        d_required.append("c")
+        d_properties["c"] = {
+            "type": "object", "additionalProperties": False,
+            "required": list(gaps), "properties": c_props,
+        }
+    if hierarchy is None:
+        depth = int(acceptance["minimum_hierarchy_depth_edges"])
+        d_required.append("h")
+        d_properties["h"] = {
+            "type": "array", "items": {"type": "string", "enum": required_ids},
+            "minItems": depth, "maxItems": depth, "uniqueItems": True,
+        }
+    return {
+        "type": "object", "additionalProperties": False,
+        "required": ["v", "d"],
+        "properties": {
+            "v": {"type": "integer", "const": 5},
+            "d": {
+                "type": "object", "additionalProperties": False,
+                "required": d_required, "properties": d_properties,
+            },
+        },
+    }
+
+
+def _decode_ui_production_semantic_transport_v5(
+    payload: dict[str, Any], acceptance: dict[str, Any], *, domain_scope: str | None = None
+) -> dict[str, Any]:
+    if not _ui_production_acceptance_supports_semantic_transport(acceptance):
+        raise LlamaTransportError("UI_PRODUCTION_SEMANTIC_TRANSPORT_ACCEPTANCE_INCOMPLETE")
+    if set(payload) != {"v", "d"} or payload.get("v") != 5 or not isinstance(payload.get("d"), dict):
+        raise LlamaTransportError("UI_PRODUCTION_SEMANTIC_TRANSPORT_ROOT_INVALID")
+    d = payload["d"]
+    sections = list(acceptance["required_sections"])
+    required_ids = list(acceptance["required_component_ids"])
+    bindings = dict(acceptance["required_source_bindings"])
+    gaps = _ui_component_gaps_v5(acceptance)
+    deterministic_hierarchy = _ui_deterministic_hierarchy_v5(acceptance)
+    expected_keys = {"l"} | ({"c"} if gaps else set()) | ({"h"} if deterministic_hierarchy is None else set())
+    if set(d) != expected_keys:
+        raise LlamaTransportError("UI_PRODUCTION_SEMANTIC_TRANSPORT_DELIVERABLE_INVALID")
+
+    layout_strategy = d["l"]
+    if not isinstance(layout_strategy, str) or layout_strategy not in _UI_LAYOUT_STRATEGIES_V5:
+        raise LlamaTransportError("UI_PRODUCTION_SEMANTIC_TRANSPORT_LAYOUT_INVALID")
+    desktop, mobile = _UI_LAYOUT_STRATEGIES_V5[layout_strategy]
+
+    resolved: dict[str, tuple[str, str]] = {}
+    supplied = d.get("c") if gaps else None
+    if gaps:
+        if not isinstance(supplied, dict) or set(supplied) != set(gaps):
+            raise LlamaTransportError("UI_PRODUCTION_SEMANTIC_TRANSPORT_COMPONENT_VECTOR_INVALID")
+    for cid in required_ids:
+        zone = _ui_component_zone_v5(cid, sections)
+        component_type = _ui_component_type_v5(cid, sections)
+        if cid in gaps:
+            row = supplied[cid]
+            if zone is None and component_type is None:
+                if not isinstance(row, list) or len(row) != 2:
+                    raise LlamaTransportError("UI_PRODUCTION_SEMANTIC_TRANSPORT_COMPONENT_VECTOR_INVALID", cid)
+                zone, component_type = row
+            elif zone is None:
+                zone = row
+            else:
+                component_type = row
+        if not isinstance(zone, str) or zone not in sections:
+            raise LlamaTransportError("UI_PRODUCTION_SEMANTIC_TRANSPORT_ZONE_INVALID", cid)
+        if component_type not in {"input", "navigation", "section", "collection", "template", "text", "value", "action"}:
+            raise LlamaTransportError("UI_PRODUCTION_SEMANTIC_TRANSPORT_TYPE_INVALID", cid)
+        resolved[cid] = (zone, component_type)
+
+    if deterministic_hierarchy is None:
+        h = d["h"]
+        depth = int(acceptance["minimum_hierarchy_depth_edges"])
+        if not isinstance(h, list) or len(h) != depth or any(v not in required_ids for v in h) or len(set(h)) != len(h):
+            raise LlamaTransportError("UI_PRODUCTION_SEMANTIC_TRANSPORT_HIERARCHY_INVALID")
+        path = ["screen"] + h
+        visual_hierarchy = [{"parent_id": path[i], "child_ids": [path[i+1]]} for i in range(len(path)-1)]
+    else:
+        visual_hierarchy = deterministic_hierarchy
+
+    state_map = _ui_state_map_v5(acceptance)
+    components: list[dict[str, Any]] = []
+    priority = {"input":"HIGH","navigation":"HIGH","section":"HIGH","collection":"HIGH","template":"MEDIUM","text":"MEDIUM","value":"MEDIUM","action":"HIGH"}
+    for cid in required_ids:
+        zone, component_type = resolved[cid]
+        content: dict[str, Any] = {}
+        prefix = cid + "."
+        for full_key in sorted(bindings):
+            if full_key.startswith(prefix):
+                field = full_key[len(prefix):]
+                if field in _UI_COMPOSER_FORBIDDEN_KEYS or field.endswith("_sha256"):
+                    raise LlamaTransportError("UI_PRODUCTION_TRANSPORT_INTERNAL_KEY_FORBIDDEN", field)
+                raw = bindings[full_key]
+                content[field] = _ui_transport_split(raw) if field == "fields" else raw
+        if not content:
+            content = {"binding": "USER_REQUIREMENT"}
+        is_action = component_type == "action"
+        state_key = next(iter(state_map.get(cid, {"default":""})))
+        components.append({
+            "zone_id": zone, "component_id": cid, "component_type": component_type,
+            "role": f"Present governed {cid.replace('_', ' ')}.", "content": content,
+            "visual_priority": priority[component_type],
+            "color_tokens": ["surface_default", "text_primary", "border_subtle"] + (["action_primary"] if is_action else []),
+            "typography": "section_heading" if component_type in {"section", "navigation"} else "body",
+            "spacing": "compact" if component_type in {"input", "navigation", "text", "value", "action"} else "regular",
+            "state": state_key,
+            "allowed_variants": list(dict.fromkeys(["default", state_key])),
+            "blocked_variants": ["invented_data"] + (["invented_route"] if is_action else []),
+        })
+
+    purpose = f"Implement the governed {domain_scope or 'UI_SCREEN'} screen with source-bound required sections and responsive behavior."
+    return {
+        "worker": "ui_architect", "output_type": "PRODUCTION_UI_SPEC",
+        "deliverable_created": {
+            "screen_definition": {
+                "task_mode": acceptance["task_mode"], "screen_type": domain_scope or "UI_SCREEN",
+                "purpose": purpose, "required_sections": sections,
+                "implementation_readiness": acceptance["implementation_readiness"],
+                "design_intent": list(acceptance["required_design_intents"]),
+            },
+            "component_tree": components,
+            "layout_grid": {"flow": required_ids, "desktop": desktop, "mobile": mobile},
+            "visual_hierarchy": visual_hierarchy,
+            "state_map": state_map,
+            "token_map": {"surface":["surface_default"],"text":["text_primary","text_secondary"],"action":["action_primary"],"border":["border_subtle"],"precision_mode":"SEMANTIC_ROLE_ONLY_NO_CANONICAL_COLOR_VALUES_INVENTED"},
+            "spacing_typography": {"spacing":"compact=within_component;regular=between_related_components;section=between_major_sections","typography":"body=content_or_metadata;section_heading=section_emphasis","precision_mode":"RELATIVE_GUIDANCE"},
+            "density_rules": ["Keep search and navigation immediately discoverable.","Keep repeated content scannable without dropping required fields.","Prefer responsive reflow over reducing legibility."],
+            "risk_controls": _ui_risk_controls_v5(acceptance),
+            "prompt_constraints": ["Preserve every governed required component and source binding.","Keep desktop and mobile behavior explicit without inventing domain truth."],
+        },
+    }
 
 def _ui_production_transport_schema(
     canonical: dict[str, Any], acceptance: dict[str, Any] | None = None
@@ -588,10 +921,10 @@ def _ui_transport_content(rows: Any) -> dict[str, Any]:
     return out
 
 
-def _decode_ui_production_semantic_transport(
+def _decode_ui_production_semantic_transport_v2(
     payload: dict[str, Any], acceptance: dict[str, Any], *, domain_scope: str | None = None
 ) -> dict[str, Any]:
-    """Expand UICT2 using governed authority plus only the model-owned semantic delta."""
+    """Expand historical UICT2 using governed authority plus model-owned semantic delta."""
     if not _ui_production_acceptance_supports_semantic_transport(acceptance):
         raise LlamaTransportError("UI_PRODUCTION_SEMANTIC_TRANSPORT_ACCEPTANCE_INCOMPLETE")
     if set(payload) != {"d"} or not isinstance(payload.get("d"), dict):
@@ -776,17 +1109,23 @@ def _decode_ui_production_semantic_transport(
 def decode_ui_production_transport(
     payload: Any, acceptance: dict[str, Any] | None = None, *, domain_scope: str | None = None
 ) -> tuple[dict[str, Any], str | None]:
-    """Decode UICT1/UICT2 to canonical semantic fields without inventing domain truth."""
+    """Decode UICT1/UICT2/UICT5 to canonical semantic fields without inventing domain truth."""
     if not isinstance(payload, dict):
         raise LlamaTransportError("UI_PRODUCTION_MODEL_RAW_ROOT_NOT_OBJECT")
     if "deliverable_created" in payload:
         return payload, None
+    if set(payload) == {"v", "d"} and payload.get("v") == 5:
+        if not isinstance(acceptance, dict):
+            raise LlamaTransportError("UI_PRODUCTION_SEMANTIC_TRANSPORT_ACCEPTANCE_MISSING")
+        return _decode_ui_production_semantic_transport_v5(
+            payload, acceptance, domain_scope=domain_scope
+        ), UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION
     if set(payload) == {"d"}:
         if not isinstance(acceptance, dict):
             raise LlamaTransportError("UI_PRODUCTION_SEMANTIC_TRANSPORT_ACCEPTANCE_MISSING")
-        return _decode_ui_production_semantic_transport(
+        return _decode_ui_production_semantic_transport_v2(
             payload, acceptance, domain_scope=domain_scope
-        ), UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION
+        ), UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION_V2
     if set(payload) != {"w", "o", "d", "x", "n", "v"}:
         raise LlamaTransportError("UI_PRODUCTION_TRANSPORT_ROOT_INVALID")
     if payload.get("w") != "ui_architect" or payload.get("o") != "PRODUCTION_UI_SPEC":
@@ -1061,8 +1400,8 @@ class LlamaHTTPClient:
                 {"role": "user", "content": user_content},
             ],
             "stream": False,
-            "temperature": 0.2,
-            "top_p": 0.9,
+            "temperature": 0.0 if generation_schema_policy == UI_PRODUCTION_SEMANTIC_GENERATION_POLICY else 0.2,
+            "top_p": 1.0 if generation_schema_policy == UI_PRODUCTION_SEMANTIC_GENERATION_POLICY else 0.9,
             "seed": 42,
             "max_tokens": (
                 self.settings.ui_production_semantic_max_output_tokens
@@ -1314,15 +1653,16 @@ class PersistentLlamaServerAdapter:
             if semantic_transport:
                 parts.extend(
                     [
-                        "Production UI semantic delta UICT2:",
-                        "- Emit root key d only. Runtime owns known IDs, source bindings, task metadata, risk controls derived from authority, score, handoff and verdict; do not repeat them.",
-                        "- d.u=short screen purpose. Component indices follow gate_f_acceptance.component_ids; section indices follow gate_f_acceptance.sections.",
-                        "- d.z=section index per component; d.t=type code per component (0 input,1 navigation,2 section,3 collection,4 template,5 text,6 value,7 action); d.p=priority code per component (0 LOW,1 MEDIUM,2 HIGH).",
-                        "- Base layout order is already governed and deterministic. d.h=unique component indices for one primary hierarchy path after screen, at the required depth.",
-                        "- d.m has one [state_key,state_value] row per state_component_ids in exact governed order; d.l=[desktop_rule,mobile_rule].",
-                        "- d.k=[surface_role,text_role,action_role,border_role]; d.a=[body_type,heading_type,compact_spacing,regular_spacing]; d.y=density rules.",
+                        "Production UI semantic delta UICT5:",
+                        "- Emit only the semantic gaps permitted by the bound JSON schema: {v:5,d:{...}}. Runtime owns every derivable ID, type, zone, hierarchy, state safeguard, source binding, priority, token, density, risk, score, handoff and verdict.",
+                        "- d.l is a bounded semantic choice, not free text. Select exactly one governed layout strategy allowed by the JSON schema: STANDARD_GRID_STACK, DENSE_GRID_STACK, FEATURED_FIRST_GRID_STACK, NAVIGATION_FIRST_GRID_STACK, or MOBILE_PRIORITY_STACK.",
+                        "- Choose the strategy that best reflects the literal request: default marketplace -> STANDARD_GRID_STACK; many/dense cards -> DENSE_GRID_STACK; emphasis on featured -> FEATURED_FIRST_GRID_STACK; emphasis on search/categories/navigation -> NAVIGATION_FIRST_GRID_STACK; explicit mobile-first priority -> MOBILE_PRIORITY_STACK. Runtime materializes concrete desktop/mobile rules deterministically.",
+                        "- NEVER copy design intents such as clear, professional, easy_to_navigate as layout output.",
+                        "- d.c appears only when a component zone/type cannot be derived safely; fill exactly the unresolved keys and nothing else.",
+                        "- d.h appears only when hierarchy cannot be derived safely; use unique governed component IDs at the required depth.",
+                        "- Never emit meta-placeholders such as state_key, behavior, concrete_rule, desktop_rule, mobile_rule, TODO or placeholder; they are hard failures.",
                         "- Keep strings terse and implementation-usable. Preserve every explicit user requirement. Never invent domain values, prices, providers, routes, urgency, guarantees or business state.",
-                        "- The deterministic runtime materializes the canonical graph and independently validates Quality/Depth/Composer after generation.",
+                        "- The deterministic runtime materializes the canonical working graph around that delta and independently validates Quality/Depth/Composer after generation.",
                         "",
                     ]
                 )

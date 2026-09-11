@@ -12,6 +12,7 @@ from .llama import (
     PersistentLlamaServerAdapter,
     PersistentLlamaServerVerifier,
     UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION,
+    UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION_V2,
     decode_ui_production_transport,
 )
 from .models import BatchRequest, ExecuteRequest, ProfileTask, QueueExecuteRequest
@@ -346,7 +347,7 @@ class ProfileRuntimeEngine:
             raise LlamaTransportError("UI_PRODUCTION_DELIVERABLE_MISSING")
         composer_payload = boundary.build_composer_payload(deliverable)
         deterministic_outcome: dict[str, Any] | None = None
-        if transport_kind == UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION:
+        if transport_kind in {UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION_V2, UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION}:
             if not isinstance(acceptance, dict):
                 raise LlamaTransportError("UI_PRODUCTION_SEMANTIC_TRANSPORT_ACCEPTANCE_MISSING")
             deterministic_outcome = _deterministic_ui_outcome(
@@ -387,7 +388,7 @@ class ProfileRuntimeEngine:
             raise LlamaTransportError("UI_PRODUCTION_DETERMINISTIC_MATERIALIZATION_INVALID", codes)
         materialized = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
         deterministic_derivations = sorted(deterministic)
-        if transport_kind == UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION:
+        if transport_kind in {UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION_V2, UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION}:
             deterministic_derivations = sorted(set(deterministic_derivations) | {
                 "worker", "output_type", "component_ids", "source_bindings",
                 "layout_base_order", "screen_task_mode", "required_sections",
@@ -402,7 +403,7 @@ class ProfileRuntimeEngine:
             "deterministic_derivations": deterministic_derivations,
             "deterministic_first_policy": (
                 "KNOWN_AUTHORITY_TO_GRAPH__MODEL_SEMANTIC_DELTA__DETERMINISTIC_MATERIALIZATION"
-                if transport_kind == UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION
+                if transport_kind in {UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION_V2, UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION}
                 else "LEGACY_COMPATIBLE_MATERIALIZATION"
             ),
             "composer_payload_sha256": canonical_json_sha256(composer_payload),
@@ -410,7 +411,7 @@ class ProfileRuntimeEngine:
             "model_transport_root_keys": model_transport_root_keys,
             "model_semantic_delta_keys": model_semantic_delta_keys,
             "model_generated_root_keys": (
-                [] if transport_kind == UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION
+                [] if transport_kind in {UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION_V2, UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION}
                 else sorted(key for key in payload if key not in deterministic)
             ),
             "semantic_payload_mutated": False,
