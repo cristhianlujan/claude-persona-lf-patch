@@ -1,0 +1,44 @@
+{
+  "contract_version": "S30_QUALITY_OBLIGATION_INPUT_V1",
+  "owner": "S30",
+  "purpose": "Stable inbound projection from profile/card readiness into S30 without coupling S30 to S26 implementation paths.",
+  "producer_contract_family": "PROFILE_CARD_READINESS",
+  "required_fields": [
+    "execution_id",
+    "profile_code",
+    "readiness_receipt_sha256",
+    "readiness_status",
+    "card_coverage_status",
+    "coverage_reason",
+    "coverage_evidence_refs",
+    "quality_obligations"
+  ],
+  "required_values": {
+    "readiness_status": "EXECUTION_READY",
+    "card_coverage_status": "PASS"
+  },
+  "quality_obligation_fields": [
+    "obligation_id",
+    "statement",
+    "criticality",
+    "source_ref",
+    "verification_mode"
+  ],
+  "allowed_criticality": [
+    "CRITICAL",
+    "REQUIRED"
+  ],
+  "rules": {
+    "s30_does_not_select_cards": true,
+    "s30_does_not_infer_missing_profile_capabilities": true,
+    "missing_or_nonready_projection": "BLOCK",
+    "duplicate_obligation_id": "BLOCK",
+    "empty_quality_obligations": "ALLOWED_ONLY_IF_CANONICAL_GRAPH_STILL_GENERATES_PRESERVATION_OBLIGATIONS",
+    "nominal_coverage_without_reason_or_evidence": "BLOCK"
+  },
+  "allowed_verification_mode": [
+    "DETERMINISTIC_READBACK",
+    "SEMANTIC_DELTA",
+    "FINAL_SEMANTIC_EVALUATION"
+  ]
+}

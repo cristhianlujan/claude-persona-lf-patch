@@ -1,0 +1,59 @@
+{
+  "contract_version": "S30_E2E_QUALITY_PRESERVATION_EXTENSION_V1",
+  "base_campaign": "S30_INTEGRATED_E2E_50_V1",
+  "case_count_unchanged": 50,
+  "quality_gate_required_for": [
+    "SEMANTIC",
+    "HYBRID"
+  ],
+  "mandatory_subprobes": {
+    "E2E-07-02": [
+      "COMPLETE_SEMANTIC_OBLIGATION_COVERAGE_PASS",
+      "PARTIAL_SEMANTIC_PASS_BLOCK",
+      "UNKNOWN_OBLIGATION_INJECTION_BLOCK",
+      "UNRESOLVED_SEMANTIC_OBLIGATION_BLOCK",
+      "DETERMINISTIC_COMPONENT_CONSTRAINT_NOT_REQUIRED_TO_BE_REPEATED_BY_MODEL"
+    ],
+    "E2E-04-02": [
+      "MISSING_OBLIGATION_EVIDENCE_POINTER_BLOCK",
+      "MATERIALIZATION_READBACK_SELF_ATTESTATION_BLOCK"
+    ],
+    "E2E-10-01": [
+      "PROFILE_NOT_EXECUTION_READY_BLOCK_BEFORE_ORCHESTRATION",
+      "NOMINAL_CARD_COVERAGE_WITHOUT_EVIDENCE_BLOCK"
+    ],
+    "E2E-10-03": [
+      "ONE_CHILD_QUALITY_GAP_DOES_NOT_HIDE_SAFE_SIBLING",
+      "COMPONENT_LOSS_BLOCK",
+      "RELATION_FLATTENING_BLOCK",
+      "FINAL_SEMANTIC_UNCERTAIN_BLOCK"
+    ],
+    "E2E-07-05": [
+      "QUALITY_GATE_OVERHEAD_BASELINE_AND_AVOIDABLE_WORK_ZERO"
+    ]
+  },
+  "quality_metrics": [
+    "required_obligations",
+    "covered_obligations",
+    "missing_obligations",
+    "preserved_components",
+    "preserved_relations",
+    "cross_route_invariant_match",
+    "quality_gate_ms"
+  ],
+  "hard_targets": {
+    "missing_obligation_accept_count": 0,
+    "required_component_loss_accept_count": 0,
+    "required_relation_loss_accept_count": 0,
+    "cross_route_invariant_mismatch_accept_count": 0,
+    "partial_semantic_pass_count": 0,
+    "final_semantic_uncertain_accept_count": 0,
+    "nominal_card_coverage_accept_count": 0
+  },
+  "navigation_insertion": [
+    "PROFILE_CARD_READINESS_PROJECTION",
+    "S30_SEMANTIC_OBLIGATION_MANIFEST",
+    "SEMANTIC_DELTA_COVERAGE",
+    "MATERIALIZATION_PRESERVATION_READBACK"
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "contract_version": "S30_SEMANTIC_QUALITY_PRESERVATION_V1",
+  "claim_ceiling": "S30_SEMANTIC_QUALITY_PRESERVATION_CANDIDATE_PASS",
+  "scope": "POST_PROFILE_READINESS_PRE_MODEL_THROUGH_POST_MATERIALIZATION_READBACK",
+  "principle": "NO_SEMANTIC_PASS_WITH_PARTIAL_ENUMERABLE_OBLIGATION_COVERAGE",
+  "flow": [
+    "PROFILE_CARD_READINESS_PROJECTION",
+    "CANONICAL_WORKING_GRAPH",
+    "S30_SEMANTIC_OBLIGATION_MANIFEST_V1",
+    "MODEL_SEMANTIC_GAP_REQUEST_V2",
+    "S30_SEMANTIC_DELTA_V2",
+    "DETERMINISTIC_OBLIGATION_COVERAGE",
+    "DETERMINISTIC_MATERIALIZATION",
+    "MATERIALIZATION_PRESERVATION_READBACK",
+    "DOWNSTREAM_ELIGIBILITY"
+  ],
+  "manifest": {
+    "contract_version": "S30_SEMANTIC_OBLIGATION_MANIFEST_V1",
+    "constructed_by": "DETERMINISTIC",
+    "bound_before_model": true,
+    "sources": [
+      "PROFILE_CARD_READINESS_QUALITY_OBLIGATIONS",
+      "CANONICAL_WORKING_GRAPH_COMPONENTS",
+      "CANONICAL_WORKING_GRAPH_RELATIONS"
+    ],
+    "required_obligation_set_exact": true,
+    "model_may_mutate": false,
+    "obligation_check_modes": [
+      "DETERMINISTIC_READBACK",
+      "SEMANTIC_DELTA",
+      "FINAL_SEMANTIC_EVALUATION"
+    ],
+    "component_and_relation_preservation_mode": "DETERMINISTIC_READBACK"
+  },
+  "semantic_delta": {
+    "contract_version": "S30_SEMANTIC_DELTA_V2",
+    "required_fields": [
+      "decisions",
+      "proposals",
+      "rationale",
+      "unresolved",
+      "obligation_evidence"
+    ],
+    "unresolved_blocks_downstream": true,
+    "unknown_obligation_id": "BLOCK",
+    "missing_obligation_id": "BLOCK",
+    "duplicate_obligation_evidence": "BLOCK",
+    "evidence_pointer_must_resolve": true,
+    "critical_obligation_evidence_may_point_to_unresolved": false,
+    "coverage_scope": "ONLY_SEMANTIC_DELTA_OBLIGATIONS_NOT_SYSTEM_OWNED_GRAPH_PRESERVATION"
+  },
+  "materialization_readback": {
+    "required": true,
+    "component_set_exact_or_superset": "SUPERSET_ALLOWED_NO_REQUIRED_COMPONENT_MISSING",
+    "required_relation_ids_must_be_preserved": true,
+    "required_quality_obligation_ids_must_be_attested_by_consumer_specific_readback": true,
+    "self_attestation_only": "NOT_SUFFICIENT",
+    "deterministic_quality_obligations_required": true
+  },
+  "cross_route": {
+    "semantic_invariant_digest_required": true,
+    "same_profile_readiness_graph_requires_same_invariant_digest": true,
+    "router_component_or_obligation_loss": "BLOCK_CROSS_ROUTE_SEMANTIC_INVARIANT_MISMATCH"
+  },
+  "boundaries": {
+    "s26_mutation": false,
+    "card_selection_owned_by_s30": false,
+    "profile_capability_definition_owned_by_s30": false,
+    "model_is_authority": false,
+    "system_owned_fields_remain_deterministic": true
+  },
+  "final_semantic_evaluation": {
+    "role": "EVALUATION_ONLY",
+    "producer_may_self_evaluate": false,
+    "artifact_sha256_binding": true,
+    "required_exact_obligation_coverage": true,
+    "allowed_verdicts": [
+      "COMPLIES",
+      "CONTRADICTS",
+      "UNCERTAIN"
+    ],
+    "pass_requires": "ALL_COMPLIES",
+    "uncertain_blocks": true
+  }
+}
