@@ -1,0 +1,47 @@
+{
+  "artifact": {
+    "materialized_sha256": "5d938ada46cdaf809ad38791d3c9b59f8c9f6134d0577cbca2f56ac4bf71c3a7",
+    "mode": "EXACT_RUNTIME_MATERIALIZED_OUTPUT_SHA_BOUND_REPLAYABLE",
+    "model_raw_output_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_exact_model_output.json",
+    "model_raw_output_sha256": "45b130b396abb690095cb6b64c1bf23b4a046a49c904aee1436ff0a46b450b0b",
+    "replay_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/replay_cold_exact_runtime.py",
+    "replay_source_sha": "d8c10954d5a6058ffdde7f4b520efcbabf50d180"
+  },
+  "checks": {
+    "category_navigation": true,
+    "composer_handoff_bound": true,
+    "design_intent": true,
+    "featured_services": true,
+    "header_search": true,
+    "implementation_ready": true,
+    "service_card_fields": true,
+    "service_cards": true
+  },
+  "claim_ceiling": "H_MATERIAL_REQUIREMENTS_PASS_EXACT_RUNTIME_PENDING_EVIDENCE_READBACK_AND_INDEPENDENT_REVIEW_NOT_GOLDEN",
+  "gate": "H_MATERIAL_REQUIREMENTS",
+  "independent_semantic_review_performed": false,
+  "negative_controls": {
+    "composer_metadata_leak": "BLOCKS",
+    "create_new_remediation": "BLOCKS",
+    "missing_price": "BLOCKS",
+    "missing_professional_intent": "BLOCKS",
+    "missing_search": "BLOCKS"
+  },
+  "next_gate": "I_EVIDENCE",
+  "next_gate_authorized": true,
+  "production_effect": false,
+  "project_id": "S26",
+  "requirements": {
+    "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/expected_requirements.json",
+    "sha256": "68259474ec80a385135fa9ae1ffc69e006a6aaa37ad807fe8bf9dd11c4f8a730",
+    "validation_mode": "MATERIAL_REQUIREMENTS_NOT_LITERAL_REFERENCE_MATCH"
+  },
+  "run_id": "S26-HP-001",
+  "schema": "S26_HP001_GATE_H_OUTPUT_V1",
+  "status": "PASS",
+  "upstream": {
+    "source_gate": "G_CONTRACT_SHAPE",
+    "source_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_g_output.json",
+    "source_sha256": "55b7fcd229c0badcd1175a0d5ab76b67e4a20b90c070d981a16b383c68b86311"
+  }
+}

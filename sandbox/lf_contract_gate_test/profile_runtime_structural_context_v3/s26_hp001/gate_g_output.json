@@ -1,0 +1,41 @@
+{
+  "artifact": {
+    "materialized_sha256": "5d938ada46cdaf809ad38791d3c9b59f8c9f6134d0577cbca2f56ac4bf71c3a7",
+    "mode": "EXACT_RUNTIME_MATERIALIZED_OUTPUT_SHA_BOUND_REPLAYABLE",
+    "model_raw_output_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_exact_model_output.json",
+    "model_raw_output_sha256": "45b130b396abb690095cb6b64c1bf23b4a046a49c904aee1436ff0a46b450b0b",
+    "replay_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/replay_cold_exact_runtime.py",
+    "replay_source_sha": "d8c10954d5a6058ffdde7f4b520efcbabf50d180"
+  },
+  "claim_ceiling": "G_CONTRACT_SHAPE_PASS_EXACT_RUNTIME_NOT_INDEPENDENT_REVIEW_NOT_GOLDEN",
+  "gate": "G_CONTRACT_SHAPE",
+  "independent_semantic_review_performed": false,
+  "negative_controls": {
+    "composer_metadata_leak": "BLOCKS"
+  },
+  "next_gate": "H_MATERIAL_REQUIREMENTS",
+  "next_gate_authorized": true,
+  "production_effect": false,
+  "project_id": "S26",
+  "run_id": "S26-HP-001",
+  "schema": "S26_HP001_GATE_G_OUTPUT_V1",
+  "status": "PASS",
+  "upstream": {
+    "candidate_source_sha": "d8c10954d5a6058ffdde7f4b520efcbabf50d180",
+    "source_gate": "F_PROFILE_EXECUTION",
+    "source_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_output.json",
+    "source_sha256": "d027c2165cb78de9ed3d474e375010907c23d9bdbf375aee5b043473981158eb"
+  },
+  "validators": [
+    {
+      "ref": "profiles/ui_architect/validators/validate_ui_architect_output.py",
+      "sha256": "28961009f4308c2459be13cd413e250da8b5801a7c7b746105e8eafbc5ce53ed",
+      "status": "PASS"
+    },
+    {
+      "ref": "profiles/ui_architect/validators/validate_composer_payload_boundary.py",
+      "sha256": "d9300030b80c00ec2ca3a351a6126e6d19b8a82d748729b665920699f86718ff",
+      "status": "PASS"
+    }
+  ]
+}

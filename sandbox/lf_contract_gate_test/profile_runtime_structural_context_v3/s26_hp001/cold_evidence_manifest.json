@@ -1,0 +1,51 @@
+{
+  "artifacts": {
+    "gate_f_exact_model_output.json": {
+      "bytes": 57,
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_exact_model_output.json",
+      "sha256": "45b130b396abb690095cb6b64c1bf23b4a046a49c904aee1436ff0a46b450b0b"
+    },
+    "gate_f_exact_request.json": {
+      "bytes": 3060,
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_exact_request.json",
+      "sha256": "43e60ddde674dee78daba8953c82d38a5784950530a22dbb6afe4f142ea942b1"
+    },
+    "gate_f_exact_runtime_evidence.json": {
+      "bytes": 5278,
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_exact_runtime_evidence.json",
+      "sha256": "a764aecceb860c2b8b76c30e120284681ed265c832190163a7a87a6e1faf46a6"
+    },
+    "gate_f_output.json": {
+      "bytes": 5126,
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_output.json",
+      "sha256": "d027c2165cb78de9ed3d474e375010907c23d9bdbf375aee5b043473981158eb"
+    },
+    "gate_f_runtime_observation.json": {
+      "bytes": 3406,
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_runtime_observation.json",
+      "sha256": "837e904f1178cf2848542f0c1b15a49f2a430e5ad74a5e0f34f84f09e23f3d4f"
+    },
+    "gate_g_output.json": {
+      "bytes": 1851,
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_g_output.json",
+      "sha256": "55b7fcd229c0badcd1175a0d5ab76b67e4a20b90c070d981a16b383c68b86311"
+    },
+    "gate_h_output.json": {
+      "bytes": 2088,
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_h_output.json",
+      "sha256": "3594c946fa35c35f2b326e5ac3424cac50899ef19eaccf9b2d3d1e1767b2b6b3"
+    },
+    "replay_cold_exact_runtime.py": {
+      "bytes": 5145,
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/replay_cold_exact_runtime.py",
+      "sha256": "0be7a43cd6a07362d39c58b9520f241d2313e6fdd67ab8300b1138451b508dd7"
+    }
+  },
+  "candidate_source_sha": "d8c10954d5a6058ffdde7f4b520efcbabf50d180",
+  "claim_ceiling": "EVIDENCE_BUNDLE_READY_FOR_INDEPENDENT_REVIEW_NOT_GOLDEN",
+  "independent_semantic_review_performed": false,
+  "materialized_output_direct_file_persisted": false,
+  "materialized_output_sha256": "5d938ada46cdaf809ad38791d3c9b59f8c9f6134d0577cbca2f56ac4bf71c3a7",
+  "replay_required": true,
+  "schema": "S26_HP001_COLD_EVIDENCE_MANIFEST_V2"
+}
