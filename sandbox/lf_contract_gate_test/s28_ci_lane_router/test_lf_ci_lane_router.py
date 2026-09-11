@@ -18,6 +18,8 @@ def main():
     s30_data = "sandbox/lf_contract_gate_test/s30_data_access_candidate/data_access_registry_v2.json"
     s30_data_receipt = "sandbox/lf_contract_gate_test/receipts/s30_b_data_access_safety_v3.json"
     migration = "supabase/migrations/20260909010101_lf_example.sql"
+    migration_transport_test = "sandbox/lf_contract_gate_test/test_lf_migration_source_parity_transport.py"
+    s30d_c05 = "sandbox/lf_contract_gate_test/s30_d_final_r09/c05_source_persistence_closeout_v2.json"
     input_migration = "supabase/migrations/20260909010102_input_governance_example.sql"
     workflow = ".github/workflows/lf-contract-check.yml"
     validate_workflow = ".github/workflows/validate-lf-packs.yml"
@@ -35,6 +37,8 @@ def main():
     check("migration_only", [migration], migration=True, input_gov=False, selftest=False, p0_external=False, deep_shared=False)
     check("input_governance_migration", [input_migration], migration=True, input_gov=True, selftest=False, p0_external=False, deep_shared=False)
     check("migration_validator", ["sandbox/lf_contract_gate_test/lf_migration_source_parity.py"], migration=True, input_gov=False, selftest=False, p0_external=False, deep_shared=False)
+    check("migration_transport_test", [migration_transport_test], migration=True, input_gov=False, selftest=False, p0_external=False, deep_shared=False, mode="SPECIALIZED_REQUIRED")
+    check("c05_source_parity_bundle_no_p0", [s30d_c05, migration_transport_test, migration], migration=True, input_gov=False, selftest=False, p0_external=False, deep_shared=False, mode="SPECIALIZED_REQUIRED")
     check("input_governance_validator", ["sandbox/lf_contract_gate_test/input_governance_migration_parity_compact.py"], migration=False, input_gov=True, selftest=False, p0_external=False, deep_shared=False)
     check("workflow_self_change", [workflow], migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
     check("validate_lf_packs_workflow_self_change", [validate_workflow], migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
@@ -59,7 +63,7 @@ def main():
     check("s30b_plus_unknown_fail_closed", [s30_data, "sandbox/lf_contract_gate_test/s30_data_access_other/unbound.py"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
     check("unknown_fail_closed", ["mystery/new_surface.xyz"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
     check("empty_fail_closed", [], migration=True, input_gov=True, selftest=True, p0_external=True, deep_shared=True, mode="DEEP_SHARED_EMPTY_FAIL_CLOSED")
-    print("CI_LANE_ROUTER_REGRESSIONS_PASS=30/30")
+    print("CI_LANE_ROUTER_REGRESSIONS_PASS=32/32")
 
 
 import copy
