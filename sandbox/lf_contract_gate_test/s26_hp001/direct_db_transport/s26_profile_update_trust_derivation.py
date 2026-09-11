@@ -57,19 +57,43 @@ def derive(inp: DerivationInput) -> str:
     return "STALE_REBOUND_CURRENT" if stale else "CURRENT_BOUND"
 
 
-def _run(*args: str) -> str:
-    return subprocess.run(args, check=True, text=True, capture_output=True).stdout.strip()
+def _run(*args: str, env: dict[str, str] | None = None) -> str:
+    completed = subprocess.run(args, check=False, text=True, capture_output=True, env=env)
+    if completed.returncode != 0:
+        detail = (completed.stderr or completed.stdout).strip().replace("\n", " | ")[:1000]
+        raise Blocked(f"S26_DIRECT_TRANSPORT_COMMAND_FAILED:rc={completed.returncode}:{detail}")
+    return completed.stdout.strip()
+
+
+def _db_env() -> dict[str, str]:
+    env = os.environ.copy()
+    password = env.get("PGPASSWORD", "").strip()
+    if not password:
+        raise Blocked("S26_DIRECT_DB_PASSWORD_MISSING")
+    project = env.get("SUPABASE_PROJECT_ID", "mhwmirqcgxxukpctffuv").strip()
+    host = env.get("SUPABASE_POOLER_HOST", "aws-1-us-east-1.pooler.supabase.com").strip()
+    if not project or not host:
+        raise Blocked("S26_DIRECT_DB_CONNECTION_CONFIG_MISSING")
+    env.update(
+        {
+            "PGHOST": host,
+            "PGPORT": "5432",
+            "PGUSER": f"postgres.{project}",
+            "PGDATABASE": "postgres",
+            "PGSSLMODE": "require",
+            "PGCONNECT_TIMEOUT": "15",
+        }
+    )
+    return env
 
 
 def _psql_read(sql: str) -> str:
     command = ["psql", "-X", "-v", "ON_ERROR_STOP=1", "-Atq", "-c", f"BEGIN READ ONLY; {sql}; COMMIT;"]
-    text = _run(*command)
+    text = _run(*command, env=_db_env())
     return "\n".join(line for line in text.splitlines() if line not in {"BEGIN", "COMMIT"}).strip()
 
 
 def live_probe(repo_root: Path) -> dict:
-    if not os.environ.get("PGPASSWORD", "").strip():
-        raise Blocked("S26_DIRECT_DB_PASSWORD_MISSING")
     baseline = _psql_read(
         "select evidence_payload->>'baseline_revision' from public.lf_operation_execution_steps "
         f"where execution_id='{EXECUTION_ID}' and step_id='baseline_read'"
@@ -83,7 +107,8 @@ def live_probe(repo_root: Path) -> dict:
     if next_step != "pre_write_execution_binding_gate":
         raise Blocked(f"S26_DIRECT_DB_NEXT_STEP_MISMATCH:{next_step}")
 
-    current = _run("git", "ls-remote", "origin", "refs/heads/main").split()[0]
+    current_line = _run("git", "ls-remote", "origin", "refs/heads/main")
+    current = current_line.split()[0] if current_line.split() else ""
     if not SHA40.fullmatch(current):
         raise Blocked("PROFILE_UPDATE_CURRENT_REVISION_UNRESOLVED")
     _run("git", "fetch", "-q", "origin", current)
@@ -172,7 +197,11 @@ def main() -> int:
     if args.self_test:
         print(json.dumps(self_test(), sort_keys=True))
     if args.live_probe:
-        print(json.dumps(live_probe(args.repo_root), sort_keys=True))
+        try:
+            result = live_probe(args.repo_root)
+        except Blocked as exc:
+            raise SystemExit(f"BLOCK_S26_DIRECT_TRUST_PROBE:{exc}") from None
+        print(json.dumps(result, sort_keys=True))
     if not args.self_test and not args.live_probe:
         parser.error("choose --self-test and/or --live-probe")
     return 0
