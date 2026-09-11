@@ -1,0 +1,25 @@
+{
+  "artifact_bundle_commit_sha": "f80679e08ec21d7c6c33d24188e3cb86c0b37c6d",
+  "artifact_decompressed_sha256": "5d938ada46cdaf809ad38791d3c9b59f8c9f6134d0577cbca2f56ac4bf71c3a7",
+  "artifact_gzip_sha256": "45d32702a97a8d9141d1283cfa3065221434ae2cc9bc19f138bca61010999b2a",
+  "candidate_source_sha": "d8c10954d5a6058ffdde7f4b520efcbabf50d180",
+  "evidence_commit_sha": "465bcc958f7f0ff8f570bf2c3283b5e48da1b362",
+  "golden_authorized": false,
+  "next_stage": "FRESH_GPT_AND_CLAUDE_INDEPENDENT_QUALITY",
+  "producer_verdict_supplied": false,
+  "required_independent_reviews": [
+    "GPT",
+    "CLAUDE"
+  ],
+  "review_handoffs": {
+    "independent_quality_review_claude.md": {
+      "bytes": 10918,
+      "sha256": "d44eb2ad53e7bc56d80f316344fd6f92b9de07e72dc591771c5c906f3a0b39e7"
+    },
+    "independent_quality_review_gpt.md": {
+      "bytes": 10906,
+      "sha256": "32922be052bfa65675b9a6136d6275ad4aeffc1ddd81efaf2df2bcf5f5224fb3"
+    }
+  },
+  "schema": "S26_HP001_DUAL_INDEPENDENT_REVIEW_BUNDLE_V1"
+}
