@@ -17,6 +17,43 @@ class LfMigrationTransportParityTests(unittest.TestCase):
         self.assertFalse(subject.managed("input_governance_probe"))
         self.assertTrue(subject.classified("input_governance_probe"))
 
+
+    def test_strategy_family_names_are_managed_fail_closed_and_parity_bound(self):
+        positives = [
+            "s26_profile_runtime_readiness_v1",
+            "s30_c05_generic_execution_reliability_v1",
+            "s30_c05_effect_guard_acl_hardening_v1",
+            "s31_future_strategy_contract_v1",
+            "s100_long_horizon_strategy_v1",
+        ]
+        for name in positives:
+            with self.subTest(name=name):
+                self.assertTrue(subject.managed(name))
+                self.assertTrue(subject.classified(name))
+
+        negatives = [
+            "s0_invalid_strategy",
+            "s01_leading_zero_strategy",
+            "s30-invalid-strategy",
+            "S30_uppercase_strategy",
+            "strategy_s30_wrong_direction",
+            "s30_",
+        ]
+        for name in negatives:
+            with self.subTest(name=name):
+                self.assertFalse(subject.managed(name))
+
+        version = "20260911025454"
+        name = "s30_c05_generic_execution_reliability_v1"
+        sql = "select 30;\n"
+        local = {version: (name, hashlib.sha256(subject.canonical(sql)).hexdigest(), sql)}
+        remote = {version: (name, transport.direct_source_hash(sql))}
+        direct_count, cli_count, comparisons = subject.evaluate_managed_transport(
+            local, remote, {version: 1}
+        )
+        self.assertEqual((direct_count, cli_count), (1, 0))
+        self.assertEqual(comparisons[version].representation, "DIRECT_SOURCE")
+
     def test_direct_and_cli_representations_pass(self):
         v1 = "20260907010101"
         v2 = "20260907010102"

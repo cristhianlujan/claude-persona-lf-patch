@@ -66,6 +66,7 @@ CLASSIFIED_EXTERNAL_PREFIXES = (
     "router_generic_tie_break_",
 )
 CLASSIFIED_EXTERNAL_NAMES = {"retire_b2b_auth005_legacy_totp_screen"}
+STRATEGY_MIGRATION_RE = re.compile(r"^s[1-9][0-9]*_[a-z0-9][a-z0-9_]*$")
 FILENAME_RE = re.compile(r"^(\d{14})_(.+)\.sql$")
 MARKER_RE = re.compile(
     r"^-- LF_MIGRATION_SOURCE_CHECKPOINT_V1 "
@@ -78,7 +79,11 @@ POSTGRES_IMAGE = "postgres:17.6"
 
 
 def managed(name: str) -> bool:
-    return name.startswith(MANAGED_PREFIXES) or name in MANAGED_EXACT_NAMES
+    return (
+        name.startswith(MANAGED_PREFIXES)
+        or name in MANAGED_EXACT_NAMES
+        or STRATEGY_MIGRATION_RE.fullmatch(name) is not None
+    )
 
 
 def classified(name: str) -> bool:
@@ -340,6 +345,22 @@ def main() -> int:
         fail("FAIL_CI009_SELFTEST_RPC_ISOLATION")
     if not managed("s28_architecture_alert_dispatcher_fast_exit_v1"):
         fail("FAIL_CI009_SELFTEST_S28_DISPATCHER_FAST_EXIT")
+    if not managed("s26_profile_runtime_readiness_v1"):
+        fail("FAIL_CI009_SELFTEST_STRATEGY_S26_FAMILY")
+    if not managed("s30_c05_generic_execution_reliability_v1"):
+        fail("FAIL_CI009_SELFTEST_STRATEGY_S30_FAMILY")
+    if not managed("s31_future_strategy_contract_v1"):
+        fail("FAIL_CI009_SELFTEST_STRATEGY_FUTURE_FAMILY")
+    if not classified("s30_c05_effect_guard_acl_hardening_v1"):
+        fail("FAIL_CI009_SELFTEST_STRATEGY_FAMILY_CLASSIFIED")
+    if managed("s0_invalid_strategy"):
+        fail("FAIL_CI009_SELFTEST_STRATEGY_ZERO_ACCEPTED")
+    if managed("s01_leading_zero_strategy"):
+        fail("FAIL_CI009_SELFTEST_STRATEGY_LEADING_ZERO_ACCEPTED")
+    if managed("s30-invalid-strategy"):
+        fail("FAIL_CI009_SELFTEST_STRATEGY_HYPHEN_ACCEPTED")
+    if managed("S30_uppercase_strategy"):
+        fail("FAIL_CI009_SELFTEST_STRATEGY_UPPERCASE_ACCEPTED")
     if managed("create_lf_unreviewed_future_change"):
         fail("FAIL_CI009_SELFTEST_MANAGED_PREFIX_TOO_BROAD")
     if not classified("programacion_worker_spec_probe"):
@@ -449,7 +470,7 @@ def main() -> int:
         f"cli_statement_storage={cli_count}"
     )
     print("PASS_LF_MIGRATION_TRANSPORT_SELFTEST=3/3")
-    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=22/22")
+    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=30/30")
     return 0
 
 
