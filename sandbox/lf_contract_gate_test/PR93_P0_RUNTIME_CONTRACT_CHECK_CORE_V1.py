@@ -94,10 +94,11 @@ def _customer_get_changed_files():
   if branch!=CUSTOMER_PROFILE_CREATOR_BRANCH: raise RuntimeScopeError("FAIL_RUNTIME_BRANCH_MISMATCH","Customer workflow admission requires exact governed branch")
   _base.e16.base.ALLOWED_GITHUB_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); _base.e16.base.ALLOWED_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW)
  return changed_files
-_ORIGINAL_BASE_ALLOWED_PATH=_base._original_is_allowed_path
+_BASE_RUNTIME_IS_ALLOWED_PATH=_base.is_allowed_path
+_BASE_STATIC_IS_ALLOWED_PATH=_base._original_is_allowed_path
 def _customer_is_allowed_path(path:str)->bool:
- if path==CUSTOMER_PROFILE_CREATOR_WORKFLOW and _base.e16.base.is_allowed_path(path): return True
- return _ORIGINAL_BASE_ALLOWED_PATH(path)
+ if path==CUSTOMER_PROFILE_CREATOR_WORKFLOW and _BASE_STATIC_IS_ALLOWED_PATH(path): return True
+ return _BASE_RUNTIME_IS_ALLOWED_PATH(path)
 def main(): _sync_base_extensions(); _base.evaluate_controlled_runtime_scope=evaluate_controlled_runtime_scope; _base.get_changed_files=_customer_get_changed_files; _base.is_allowed_path=_customer_is_allowed_path; return _base.main()
 _customer_scope_self_test()
 if __name__=="__main__": raise SystemExit(main())
