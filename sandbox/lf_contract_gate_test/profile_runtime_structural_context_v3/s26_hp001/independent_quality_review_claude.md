@@ -51,9 +51,10 @@ Evidence objects above are lineage, not a semantic PASS. Independently resolve o
 - `github://cristhianlujan/claude-persona-lf-patch@d8c10954d5a6058ffdde7f4b520efcbabf50d180/profiles/quality_pack/contracts/lf_quality_controls.md` — SHA-256 `069962007fc1cc4320f3ead807973241c710f140e62d6869c2030c11552fe297`
 - `github://cristhianlujan/claude-persona-lf-patch@d8c10954d5a6058ffdde7f4b520efcbabf50d180/profiles/quality_pack/judges/quality_pack_score_rubric.md` — SHA-256 `cfb928f5e7d375bcf478666f704d617714be3c7369e8524fc387e78f290e0698`
 - `github://cristhianlujan/claude-persona-lf-patch@d8c10954d5a6058ffdde7f4b520efcbabf50d180/profiles/quality_pack/judges/quality_pack_mini_judge.md` — SHA-256 `b6191adfc3895398c5aa480998d130642fc0dd904208d86f884d998254b3e359`
+- `github://cristhianlujan/claude-persona-lf-patch@d8c10954d5a6058ffdde7f4b520efcbabf50d180/profiles/quality_pack/schemas/quality_review.schema.json` — SHA-256 `26eb79a876be9c7fb8aa699d7f7a549f361b0836d322995f4a5282c1b12443c3`
 - `github://cristhianlujan/claude-persona-lf-patch@d8c10954d5a6058ffdde7f4b520efcbabf50d180/profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json` — SHA-256 `8d126b2bf5dde42b88fc3fb334ab4d6ed25f6180497328159c501fcb80db808c`
 - `github://cristhianlujan/claude-persona-lf-patch@d8c10954d5a6058ffdde7f4b520efcbabf50d180/profiles/quality_pack/validators/validate_independent_semantic_review.py` — SHA-256 `8280788b32749887ca680a7f13a195aa2a5ec454f2dd1c8390b307bc60bf53ba`
-- `github://cristhianlujan/claude-persona-lf-patch@d8c10954d5a6058ffdde7f4b520efcbabf50d180/profiles/quality_pack/validators/validate_routing.py` — SHA-256 a9a03306077848d6cb9fb68a42078c26ad51d9d5a83f2ac73e823e479e1dea5c1
+- `github://cristhianlujan/claude-persona-lf-patch@d8c10954d5a6058ffdde7f4b520efcbabf50d180/profiles/quality_pack/validators/validate_routing.py` — SHA-256 `9a03306077848d6cb9fb68a42078c26ad51d9d5a83f2ac73e823e479e1dea5c1`
 
 Read the relevant authorities before assigning semantic credit. Apply the 25-point Quality Pack rubric exactly and apply hard LF safety/governance controls regardless of numeric score.
 
@@ -62,3 +63,44 @@ Read the relevant authorities before assigning semantic credit. Apply the 25-poi
 Judge from the exact decompressed artifact and frozen sources only:
 
 1. Does the final specification materially satisfy every explicit user requirement, rather than only naming required fields?
+2. Is the component hierarchy coherent and sufficiently precise for a downstream implementation agent to build the screen without inventing structure or business data?
+3. Are desktop/mobile layout, state behavior, variants, spacing/typography and visual hierarchy internally coherent and useful, not generic boilerplate?
+4. Are title/provider/price/CTA bindings preserved as source-bound values without fabricated prices, routes, categories, providers or business semantics?
+5. Is the result actually clear, professional and easy to navigate from a product/UI perspective?
+6. Does the deterministic-first projection preserve a legitimate boundary between derivable structure and semantic judgment, or does it manufacture semantic authority for decisions that should have required non-derivable model reasoning?
+7. Does any generated role text, risk control, design intent, state rule, score evidence, handoff claim or token guidance overstate what is supported by the request or governed sources?
+8. Are internal runtime/governance details properly excluded from the render/composer payload and user-facing implementation surface?
+9. Would a competent implementation agent receive enough meaningful design direction to implement a quality marketplace screen, rather than a merely schema-valid generic skeleton?
+10. If any material weakness exists, route it according to the current Quality Pack contract; do not soften a repair/block verdict to match producer expectations.
+
+## Acceptance / blocking criteria
+
+Acceptance requires independently evidenced contract/schema compliance, evidence integrity, safety/governance, handoff readiness and leakage/scope control under the current Quality Pack rubric. Schema validity alone is not semantic quality.
+
+Block or return for repair when the artifact is materially generic, unsupported, contradictory, invents source data/routes, leaks internal metadata, violates hard LF controls, or would force the next agent to invent required structure/semantics. Use the governed verdict bands and routing rules exactly.
+
+## Receipt requirements
+
+Return one JSON object only, conforming to:
+
+- `github://cristhianlujan/claude-persona-lf-patch@d8c10954d5a6058ffdde7f4b520efcbabf50d180/profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json`
+
+Required execution metadata:
+
+- `receipt_version = v0.1`
+- `execution_mode = INDEPENDENT_CHAT_CONTEXT`
+- `semantic_status = EXECUTED_INDEPENDENT_CONTEXT` only if actually completed
+- `review_case_id = S26-HP001-COLD-CLAUDE-QUALITY-001`
+- `reviewer_is_producer = false`
+- `producer_context_available = false`
+- `external_paid_model_used = false` only if factually true under this execution boundary
+- `automated_semantic_judge_implemented = false`
+- `review_completed = true` only after completing the review
+
+`source_bundle.artifact_ref` must be the immutable gzip artifact ref above and `artifact_sha_or_digest` must bind both the gzip SHA and decompressed SHA in a deterministic string or evidence-map entry. Include `quality_review.routing` when required by current validators.
+
+Validate the receipt with the immutable independent semantic review validator and routing validator. If you cannot execute a required validation, record that limitation rather than inventing success.
+
+## Claim boundary
+
+This handoff authorizes only independent semantic review of this frozen artifact. It does **not** authorize Golden, merge, main, deployment, production, or mutation of the artifact.
