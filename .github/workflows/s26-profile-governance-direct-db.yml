@@ -1,0 +1,52 @@
+name: S26 Profile Governance Direct DB Preflight
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - lf/s26-hp001-direct-db-transport-20260911
+    paths:
+      - ".github/workflows/s26-profile-governance-direct-db.yml"
+      - "sandbox/lf_contract_gate_test/s26_hp001/direct_db_transport/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: s26-profile-governance-direct-db-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  direct-db-readonly-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+      SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+      S26_BASE_MAIN_SHA: 5a414bcb1f8e08492e064788f5ba49b820e1bf27
+      S26_EXECUTION_ID: EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-S26-SEMANTIC-REPROJECTION-20260911-001
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Enforce exact S30-style control-plane base
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "${PGPASSWORD:-}" ]] || { echo "BLOCK_S26_DB_PASSWORD_MISSING" >&2; exit 1; }
+          current_main="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          [[ "$current_main" == "$S26_BASE_MAIN_SHA" ]] || {
+            echo "BLOCK_S26_DIRECT_DB_STALE_MAIN expected=$S26_BASE_MAIN_SHA observed=$current_main" >&2
+            exit 1
+          }
+          git merge-base --is-ancestor "$S26_BASE_MAIN_SHA" "$GITHUB_SHA" || {
+            echo "BLOCK_S26_DIRECT_DB_SOURCE_NOT_DESCENDANT_OF_BASE" >&2
+            exit 1
+          }
+          echo "S26_DIRECT_DB_CONTROL_PLANE_BASE_PASS=$S26_BASE_MAIN_SHA"
+
+      - name: Run read-only Postgres pooler preflight
+        shell: bash
+        run: bash sandbox/lf_contract_gate_test/s26_hp001/direct_db_transport/s26_profile_governance_db_preflight.sh
