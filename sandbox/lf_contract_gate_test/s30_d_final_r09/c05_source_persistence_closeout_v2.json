@@ -1,0 +1,108 @@
+{
+  "contract_version": "S30_C05_SOURCE_PERSISTENCE_CLOSEOUT_V2",
+  "status": "SOURCE_PERSISTENCE_CANDIDATE_READY_NOT_MERGED",
+  "base_main_sha": "b5f1c11cd37acd2c53bf63c66d9f96abf96c756e",
+  "live_evidence_origin_main_sha": "0d981a83d2624a29e1f13d5f6782bfe14b3d8109",
+  "s26_shared_classifier_dependency": {
+    "status": "STABLE_ENOUGH_TO_CONSUME_WITHOUT_WAITING_FOR_S26_GATE_F",
+    "observed_s26_shared_head": "d8c10954d5a6058ffdde7f4b520efcbabf50d180",
+    "main_parity_sha256_before_generic_extension": "41080f423db1c9740a6ce12052be6414663d23e14a53ca2e5fd175548a3bc1ed",
+    "s26_core_sha256": "41080f423db1c9740a6ce12052be6414663d23e14a53ca2e5fd175548a3bc1ed",
+    "byte_identical_core_baseline": true,
+    "later_s26_commits_after_classifier": [
+      "45d819892cb485272124e26a5e6a7e650a0a3b22",
+      "683cf4bea1d5e6b4bbac0ecceee5e90f2bfe3669",
+      "465bcc958f7f0ff8f570bf2c3283b5e48da1b362"
+    ],
+    "later_s26_changes_are_classifier_changes": false,
+    "s26_overall_gate_f_closed": false,
+    "s26_overall_blocker": "LATEST_VALIDATE_LF_PACKS_FAILS_GATE_F_CURRENT_BLOCK_EXPECTED",
+    "blocker_relevance_to_ci009_strategy_family": "UNRELATED"
+  },
+  "classifier": {
+    "path": "sandbox/lf_contract_gate_test/lf_migration_source_parity.py",
+    "strategy_family_rule": "^s[1-9][0-9]*_[a-z0-9][a-z0-9_]*$",
+    "managed_examples": [
+      "s26_profile_runtime_readiness_v1",
+      "s30_c05_generic_execution_reliability_v1",
+      "s31_future_strategy_contract_v1",
+      "s100_long_horizon_strategy_v1"
+    ],
+    "blocked_examples": [
+      "s0_invalid_strategy",
+      "s01_leading_zero_strategy",
+      "s30-invalid-strategy",
+      "S30_uppercase_strategy",
+      "strategy_s30_wrong_direction",
+      "s30_"
+    ],
+    "exact_source_parity_required": true,
+    "unknown_nonmatching_future_migration_still_fail_closed": true,
+    "sha256": "0ad29e659067ec4185432c86ff267621fba31010d9f39b2bf826eb43404d74c6"
+  },
+  "live_c05_evidence": {
+    "dynamic_closeout_manifest": {
+      "path": "sandbox/lf_contract_gate_test/s30_d_final_r09/c05_dynamic_closeout_manifest_v1.json",
+      "sha256": "0dacd2137e48b182ca07b388fff454f7ebcd6ee29a467c29d4de71d3899af06f"
+    },
+    "dynamic_fire_receipt": {
+      "path": "sandbox/lf_contract_gate_test/s30_d_final_r09/c05_dynamic_fire_test_receipt_v1.json",
+      "sha256": "a72108863b461f3c20cb16ff7dbf509d1aa72f68bf35263cf65b50c12454f754",
+      "cases_pass": "9/9"
+    },
+    "final_schema_readback": {
+      "path": "sandbox/lf_contract_gate_test/s30_d_final_r09/c05_live_schema_readback_v3.json",
+      "sha256": "bbea235bedab02436a99dfaae898e4d6c518ad3ca2112acd2208970971d899ff"
+    },
+    "temporal_overlap_empirically_proven": false,
+    "external_exactly_once_claimed": false,
+    "model_calls": 0
+  },
+  "canonical_migrations": [
+    {
+      "version": "20260911025454",
+      "name": "s30_c05_generic_execution_reliability_v1",
+      "path": "supabase/migrations/20260911025454_s30_c05_generic_execution_reliability_v1.sql",
+      "sha256": "176964bbad7a9794b48a2378ac05030e228704f1fe3923d1217ec7b96d60a64a",
+      "already_applied": true,
+      "ledger_readback": true
+    },
+    {
+      "version": "20260911030211",
+      "name": "s30_c05_effect_guard_acl_hardening_v1",
+      "path": "supabase/migrations/20260911030211_s30_c05_effect_guard_acl_hardening_v1.sql",
+      "sha256": "ac470648e2e910d54148eef2757fe2ac145c6b236febf2567b80aec4725d7800",
+      "already_applied": true,
+      "ledger_readback": true
+    }
+  ],
+  "current_candidate_actions": {
+    "supabase_write": false,
+    "ddl_replayed": false,
+    "runtime_activated": false,
+    "scheduler_changed": false,
+    "s26_mutated": false,
+    "operation_registry_changed": false,
+    "production_changed": false,
+    "main_merge_authorized": false
+  },
+  "next_gate_after_main_persistence": "EJECUCION_ESTRATEGIA_LF_BOOTSTRAP_THEN_ORQUESTACION_ESTRATEGIAS_LF",
+  "claim_ceiling": "C05_DYNAMIC_FIRE_TEST_PASS_PLUS_CURRENT_MAIN_SOURCE_PARITY_CANDIDATE_NOT_MERGED",
+  "fresh_ledger_readback": {
+    "project_id": "mhwmirqcgxxukpctffuv",
+    "read_mode": "READ_ONLY",
+    "observed": [
+      {
+        "version": "20260911025454",
+        "name": "s30_c05_generic_execution_reliability_v1",
+        "statement_count": 1
+      },
+      {
+        "version": "20260911030211",
+        "name": "s30_c05_effect_guard_acl_hardening_v1",
+        "statement_count": 1
+      }
+    ],
+    "status": "PASS"
+  }
+}

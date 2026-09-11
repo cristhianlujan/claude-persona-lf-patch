@@ -1,0 +1,40 @@
+{
+  "acl_overgrant_found_and_repaired": true,
+  "base_main_sha": "0d981a83d2624a29e1f13d5f6782bfe14b3d8109",
+  "contract": "S30_C05_DYNAMIC_CLOSEOUT_MANIFEST_V1",
+  "evidence": {
+    "dynamic_receipt_path": "sandbox/lf_contract_gate_test/s30_d_final_r09/c05_dynamic_fire_test_receipt_v1.json",
+    "dynamic_receipt_sha256": "a72108863b461f3c20cb16ff7dbf509d1aa72f68bf35263cf65b50c12454f754",
+    "live_schema_readback_path": "sandbox/lf_contract_gate_test/s30_d_final_r09/c05_live_schema_readback_v3.json",
+    "live_schema_readback_sha256": "bbea235bedab02436a99dfaae898e4d6c518ad3ca2112acd2208970971d899ff"
+  },
+  "external_exactly_once_claimed": false,
+  "fire_cases": 9,
+  "fire_cases_pass": 9,
+  "hard_targets_zero": true,
+  "main_merge_authorized": false,
+  "migrations": [
+    {
+      "name": "s30_c05_generic_execution_reliability_v1",
+      "path": "supabase/migrations/20260911025454_s30_c05_generic_execution_reliability_v1.sql",
+      "sha256": "176964bbad7a9794b48a2378ac05030e228704f1fe3923d1217ec7b96d60a64a",
+      "version": "20260911025454"
+    },
+    {
+      "name": "s30_c05_effect_guard_acl_hardening_v1",
+      "path": "supabase/migrations/20260911030211_s30_c05_effect_guard_acl_hardening_v1.sql",
+      "sha256": "ac470648e2e910d54148eef2757fe2ac145c6b236febf2567b80aec4725d7800",
+      "version": "20260911030211"
+    }
+  ],
+  "model_calls": 0,
+  "next_gate": "EJECUCION_ESTRATEGIA_LF_BOOTSTRAP_THEN_ORQUESTACION_ESTRATEGIAS_LF",
+  "operation_bootstrap_allowed_by_this_manifest": false,
+  "project_id": "mhwmirqcgxxukpctffuv",
+  "proof_ceiling": "C05_DYNAMIC_FIRE_TEST_PASS_WITH_SERIALIZED_TWO_SESSION_HARNESS_AND_ACL_REPAIR",
+  "protected_candidate_parent_sha": "d1d6e65e49b00ace2f7b378bb6eedb3540355e56",
+  "runtime_activated": false,
+  "s26_changed": false,
+  "scheduler_changed": false,
+  "temporal_overlap_empirically_proven": false
+}
