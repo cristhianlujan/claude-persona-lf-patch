@@ -8,9 +8,14 @@ from typing import Any
 from profile_runtime_api.llama import (
     CANONICAL_GENERATION_POLICY,
     UI_FOCUSED_GENERATION_POLICY,
+    UI_PRODUCTION_GENERATION_POLICY,
+    UI_PRODUCTION_SEMANTIC_GENERATION_POLICY,
+    compact_model_context,
     LlamaHTTPClient,
     LlamaTransportError,
     PersistentLlamaServerAdapter,
+    ui_production_profile_model_view,
+    ui_production_semantic_context_view,
 )
 from profile_runtime_api.repository import SchemaBinding
 from profile_runtime_api.settings import Settings
@@ -178,6 +183,10 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
                 profile_slug="ui_architect",
             )
         self.assertEqual(ctx.exception.code, "LLAMA_STRUCTURED_OUTPUT_JSON_INVALID")
+        self.assertEqual(ctx.exception.diagnostics["model_raw_output"], '{"ok":')
+        self.assertEqual(ctx.exception.diagnostics["model_raw_output_chars"], 6)
+        self.assertEqual(len(ctx.exception.diagnostics["model_raw_output_sha256"]), 64)
+        self.assertEqual(ctx.exception.diagnostics["finish_reason"], "stop")
 
     def test_json_array_fails_closed(self) -> None:
         client = RecordingClient(self.settings, '[{"ok":true}]')
@@ -208,7 +217,6 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         )
         prompt = adapter._system_prompt(
             {
-                "runtime_output_mode": "UI_FOCUSED_DECISION",
                 "profile_sources": [{"ref": "profiles/x/SKILL.md", "content": "TASK: REMEDIATE_EXISTING"}],
                 "lf_adapter_sources": [],
             }
@@ -244,6 +252,190 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         self.assertIn("does not block profile analysis", prompt)
         self.assertIn("not by itself a reason to return NEEDS_INPUT or RETURN_TO_ORCHESTRATOR", prompt)
         self.assertIn("first non-whitespace response character MUST be {", prompt)
+
+    def test_ui_production_generation_is_compact_transport_and_uses_mode_budget(self) -> None:
+        required_deliverable = [
+            "screen_definition", "component_tree", "layout_grid", "visual_hierarchy",
+            "state_map", "token_map", "spacing_typography", "density_rules",
+            "risk_controls", "prompt_constraints",
+        ]
+        canonical = {
+            "type": "object",
+            "required": ["worker", "output_type", "deliverable_created", "score", "handoff_to_next", "self_verdict"],
+            "properties": {
+                "worker": {"type": "string"}, "output_type": {"type": "string"},
+                "deliverable_created": {"type": "object", "required": required_deliverable, "properties": {}},
+                "score": {"type": "object"}, "handoff_to_next": {"type": "object"},
+                "self_verdict": {"type": "string"},
+            },
+        }
+        compact = '{"w":"ui_architect","o":"PRODUCTION_UI_SPEC","d":{"s":["CREATE_NEW","screen","purpose","header","READY","clear"],"c":[],"l":["header","desktop","mobile"],"h":[],"m":[],"t":["surface","text","action","border","relative"],"p":["space","type","relative"],"y":["dense"],"r":["safe"],"q":["keep"]},"x":[4,4,4,4,4],"n":["composer","READY"],"v":"PASS"}'
+        client = RecordingClient(self.settings, compact)
+        completion = client.chat(
+            system_prompt="system", user_prompt="user", schema=canonical,
+            profile_slug="ui_architect", schema_mode="UI_PRODUCTION_SPEC",
+        )
+        assert client.last_payload is not None
+        generated = client.last_payload["response_format"]["schema"]
+        self.assertFalse(generated["additionalProperties"])
+        self.assertEqual(generated["required"], ["w", "o", "d", "x", "n", "v"])
+        deliverable = generated["properties"]["d"]
+        self.assertFalse(deliverable["additionalProperties"])
+        self.assertEqual(deliverable["properties"]["c"]["maxItems"], 12)
+        self.assertEqual(deliverable["properties"]["x"]["maxItems"] if "x" in deliverable["properties"] else generated["properties"]["x"]["maxItems"], 5)
+        self.assertEqual(client.last_payload["max_tokens"], 1050)
+        self.assertEqual(completion["generation_schema_policy"], UI_PRODUCTION_GENERATION_POLICY)
+        self.assertNotIn("additionalProperties", canonical)
+
+    def test_ui_production_semantic_transport_uses_deterministic_acceptance_and_lower_budget(self) -> None:
+        required_deliverable = [
+            "screen_definition", "component_tree", "layout_grid", "visual_hierarchy",
+            "state_map", "token_map", "spacing_typography", "density_rules",
+            "risk_controls", "prompt_constraints",
+        ]
+        canonical = {
+            "type": "object",
+            "required": ["worker", "output_type", "deliverable_created", "score", "handoff_to_next", "self_verdict"],
+            "properties": {
+                "worker": {"type": "string"}, "output_type": {"type": "string"},
+                "deliverable_created": {"type": "object", "required": required_deliverable, "properties": {}},
+                "score": {"type": "object"}, "handoff_to_next": {"type": "object"},
+                "self_verdict": {"type": "string"},
+            },
+        }
+        acceptance = {
+            "task_mode": "CREATE_NEW",
+            "implementation_readiness": "READY",
+            "required_component_ids": ["header_search", "service_cards", "service_cta"],
+            "required_state_component_ids": ["header_search", "service_cta"],
+            "required_sections": ["header", "service_cards"],
+            "required_design_intents": ["clear", "easy_to_navigate"],
+            "required_source_bindings": {
+                "service_cards.items": "DATA_BOUND",
+                "service_cta.label": "DATA_BOUND:call_to_action",
+            },
+            "required_responsive_modes": ["desktop", "mobile"],
+            "minimum_component_count": 3,
+            "minimum_hierarchy_depth_edges": 2,
+            "minimum_risk_control_count": 2,
+        }
+        semantic = '{"v":5,"d":{"l":"STANDARD_GRID_STACK","h":["service_cards","service_cta"]}}'
+        client = RecordingClient(self.settings, semantic)
+        completion = client.chat(
+            system_prompt="system", user_prompt="user", schema=canonical,
+            profile_slug="ui_architect", schema_mode="UI_PRODUCTION_SPEC",
+            acceptance=acceptance,
+        )
+        assert client.last_payload is not None
+        generated = client.last_payload["response_format"]["schema"]
+        self.assertEqual(generated["required"], ["v", "d"])
+        self.assertEqual(generated["properties"]["v"]["const"], 5)
+        self.assertNotIn("c", generated["properties"]["d"]["properties"])
+        self.assertEqual(generated["properties"]["d"]["properties"]["h"]["uniqueItems"], True)
+        self.assertNotIn("z", generated["properties"]["d"]["properties"])
+        self.assertNotIn("p", generated["properties"]["d"]["properties"])
+        self.assertNotIn("o", generated["properties"]["d"]["properties"])
+        self.assertNotIn("score", generated["properties"]["d"]["properties"])
+        self.assertEqual(client.last_payload["max_tokens"], 600)
+        self.assertEqual(completion["generation_schema_policy"], UI_PRODUCTION_SEMANTIC_GENERATION_POLICY)
+
+    def test_ui_production_semantic_views_strip_deterministic_authority(self) -> None:
+        skill_path = self.settings.repo_root / "profiles/ui_architect/SKILL.md"
+        full_skill = skill_path.read_text(encoding="utf-8")
+        model_view = ui_production_profile_model_view(full_skill, task_mode="CREATE_NEW")
+        self.assertLess(len(model_view), len(full_skill))
+        self.assertIn("CREATE_NEW semantic rules", model_view)
+        self.assertNotIn("top_amount_strip", model_view)
+
+        acceptance = {
+            "task_mode": "CREATE_NEW",
+            "implementation_readiness": "READY",
+            "required_component_ids": ["header_search", "service_cards"],
+            "required_state_component_ids": ["header_search"],
+            "required_sections": ["header", "service_cards"],
+            "required_design_intents": ["clear"],
+            "required_responsive_modes": ["desktop", "mobile"],
+            "required_source_bindings": {
+                "header_search.value": "USER_INPUT",
+                "service_cards.items": "DATA_BOUND",
+            },
+            "minimum_component_count": 2,
+            "minimum_hierarchy_depth_edges": 1,
+            "minimum_risk_control_count": 1,
+        }
+        context = {
+            "schema": "lf-profile-runtime-model-context/v1",
+            "input_fields": {"gate_f_acceptance": acceptance, "domain_scope": "SERVICES"},
+        }
+        prompt_view = ui_production_semantic_context_view(context)
+        exposed = prompt_view["input_fields"]["gate_f_acceptance"]
+        self.assertNotIn("required_source_bindings", exposed)
+        self.assertEqual(exposed["component_ids"], acceptance["required_component_ids"])
+        self.assertEqual(exposed["hierarchy_depth"], 1)
+        self.assertEqual(context["input_fields"]["gate_f_acceptance"], acceptance)
+
+    def test_ui_production_generation_fails_closed_on_canonical_root_drift(self) -> None:
+        canonical = {"type": "object", "required": ["worker"], "properties": {"worker": {"type": "string"}}}
+        client = RecordingClient(self.settings, '{"worker":"ui_architect"}')
+        with self.assertRaises(LlamaTransportError) as ctx:
+            client.chat(system_prompt="system", user_prompt="user", schema=canonical, profile_slug="ui_architect", schema_mode="UI_PRODUCTION_SPEC")
+        self.assertEqual(ctx.exception.code, "UI_PRODUCTION_CANONICAL_ROOT_DRIFT")
+
+    def test_ui_production_prompt_compacts_queue_context_and_reference_only_source(self) -> None:
+        binding = SchemaBinding(
+            payload=self.schema, raw=b'{}', sha256="a" * 64,
+            source_refs=("profiles/ui_architect/schemas/ui_production_spec.schema.json",),
+            mode="UI_PRODUCTION_SPEC",
+        )
+        full_context = {
+            "schema": "lf-profile-runtime-queue-context/v1",
+            "source": "QUEUE_NATIVE_TEXT_PROFILE",
+            "screen_governance_applicable": False,
+            "downstream_authorized": False,
+            "runtime_typed_context": {
+                "classification": {"surface_code": "UI_SCREEN_DESIGN", "task_code": "CREATE_NEW"},
+                "input": {"input_fields": {
+                    "task_mode": "CREATE_NEW",
+                    "domain_scope": "GENERIC_SERVICE_MARKETPLACE",
+                    "policy_snapshot_sha256": "b" * 64,
+                    "gate_f_input_ref": "sandbox/huge-ref",
+                }},
+                "card_resolution": {"mode": "NO_CARD_GOVERNED"},
+                "authority_resolution": [
+                    {"authority_type": "USER_REQUIREMENT", "authority_id": "verbose-id", "source_sha256": "c" * 64},
+                    {"authority_type": "PROFILE_CONTRACT", "authority_id": "verbose-profile", "source_sha256": "d" * 64},
+                ],
+                "adapter_binding": [],
+                "runtime_schema": {"mode": "UI_PRODUCTION_SPEC", "source_ref": "schema.json"},
+                "typed_context_sha256": "e" * 64,
+            },
+            "lf_cards": [],
+        }
+        compact = compact_model_context(full_context)
+        self.assertEqual(compact["schema"], "lf-profile-runtime-model-context/v1")
+        self.assertNotIn("policy_snapshot_sha256", compact["input_fields"])
+        self.assertNotIn("gate_f_input_ref", compact["input_fields"])
+        self.assertEqual(compact["authority_types"], ["PROFILE_CONTRACT", "USER_REQUIREMENT"])
+
+        adapter = PersistentLlamaServerAdapter(
+            settings=self.settings, client=RecordingClient(self.settings, '{"ok":true}'),
+            schema=binding, structural_context=full_context, image_bytes=None, image_media_type=None,
+        )
+        boundary_body = "BOUNDARY_BODY_MUST_NOT_ENTER_MODEL_CONTEXT"
+        prompt = adapter._system_prompt({
+            "profile_sources": [
+                {"ref": "profiles/ui_architect/SKILL.md", "content": "PROFILE_INSTRUCTIONS"},
+                {"ref": "profiles/ui_architect/contracts/composer_payload_boundary_v1.md", "content": boundary_body},
+            ],
+            "lf_adapter_sources": [],
+        })
+        self.assertIn("PROFILE_INSTRUCTIONS", prompt)
+        self.assertNotIn(boundary_body, prompt)
+        self.assertIn("CANONICAL SOURCE BOUND BY REFERENCE", prompt)
+        self.assertIn("lf-profile-runtime-model-context/v1", prompt)
+        self.assertNotIn("verbose-id", prompt)
+        self.assertIn("compact semantic transport UICT1", prompt)
+        self.assertIn("Use | only as list separator", prompt)
 
 
 if __name__ == "__main__":

@@ -147,6 +147,12 @@ class RepositoryBindings:
             "lf_profile_runtime_runner",
         )
 
+    def load_ui_composer_boundary(self) -> ModuleType:
+        return self._load_file(
+            self.repo_root / "profiles/ui_architect/validators/validate_composer_payload_boundary.py",
+            "lf_ui_composer_payload_boundary",
+        )
+
     def load_validator(self, profile_slug: str) -> ModuleType | None:
         mapping = {
             "product_director_lf": (

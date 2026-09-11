@@ -134,7 +134,7 @@ def make_semantic_binding(fidelity, artifact):
 
 
 class NativeAdapter:
-    adapter_id = "native-source-first-test-adapter"
+    adapter_id = "chatgpt-native-current-context-v1"
     is_test_double = True
 
     def __init__(self):
@@ -163,11 +163,12 @@ class NativeAdapter:
                 },
             },
             "runtime_attestation": {
-                "provider": "native-test-provider",
-                "model_id": "native-model-test",
+                "provider": "OPENAI_CHATGPT_NATIVE",
+                "model_id": "gpt-native-source-first-test",
                 "run_id": "native-run-source-first-001",
                 "attested_at": "2026-09-09T20:00:00+00:00",
                 "adapter_id": self.adapter_id,
+                "executor_mode": request["executor_mode"],
                 "request_sha256": request["request_sha256"],
                 "profile_source_sha256": request["profile_source_sha256"],
                 "input_sha256": request["input_sha256"],

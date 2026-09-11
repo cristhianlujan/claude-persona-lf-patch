@@ -22,9 +22,10 @@ Router / orchestrator
 -> independent RuntimeAttestationVerifier
 -> PROFILE_EXECUTION_RECEIPT_V1
 -> Python derives PROFILE_SEMANTIC_CHECK_BUNDLE_V2 from manifest + exact RAW
--> deterministic checks
--> only unresolved atomic SEMANTIC_RELATION checks to local mini-judge
--> PROFILE_SEMANTIC_JUDGE_RECEIPT_V2
+-> deterministic checks resolve everything derivable without a model
+-> unresolved semantic quality only -> governed independent Quality Pack in INDEPENDENT_CHAT_CONTEXT
+-> GPT/Claude independent review is bound to the exact producer RAW and execution receipt
+-> historical provider-specific mini-judge remains compatibility-only for legacy evidence
 -> complete semantic PASS
 -> downstream recipient
 ```
@@ -67,20 +68,28 @@ Final downstream validation independently rebuilds the expected bundle and compa
 
 This closes GOV-034 at the bundle-coverage boundary: PASS is over the complete enumerable obligation set, not over a caller-selected subset.
 
-## Semantic mini-judge boundary
+## Deterministic-first execution invariant
 
-The local Qwen runtime is **not** authorized as the primary reasoning worker for profile quality. GPT-5.6 Sol / the stronger primary worker produces the candidate RAW output.
+Every execution must use the cheapest authoritative producer for each field. IDs, hashes, routing, contract/default values, Card/Authority/Typed Context projections, deterministic scoring, repetition/formatting and final guards/materialization belong to deterministic code. A model receives only interpretation, selection, reasoning or content that cannot be derived from resolved authority.
 
-Python must resolve exact checks (`REQUIRED_SUBSTRING`, `FORBIDDEN_SUBSTRING`, `EXACT_VALUE`) before invoking a model. Only `SEMANTIC_RELATION` checks are sent to Qwen, one compact rule/evidence/question tuple at a time.
+Sending a field to a model when the same value is already authoritatively derivable is redundant model work and must be treated as an optimization finding. Runtime reviews should expose deterministic coverage plus model input/output tokens and cold/warm/generation/total latency whenever the provider supplies those measurements. Reducing latency must not weaken Quality, Depth, authority binding or fail-closed validation.
 
-The authorized zero-cost semantic classifier is the pinned Qwen2.5-VL-7B Q4_K_M runtime on a public standard `ubuntu-latest` runner. It may only classify `COMPLIES`, `CONTRADICTS` or `UNCERTAIN`; it must not rewrite or repair the worker output. `UNCERTAIN` blocks.
+## Semantic quality boundary
 
-Known mandatory live regressions include:
+The primary execution mode and the final semantic review are independent concerns. `GPT_NATIVE`, `CLAUDE_NATIVE`, and `REMOTE_API` are explicit execution modes; none may silently substitute for another.
 
-- GOV-032 inversion: an already duplicated amount must not be duplicated again;
-- explicit context authority ignored;
-- correct duplicate removal (positive control);
-- unsupported invented card suffix (`4242`).
+Python resolves exact checks (`REQUIRED_SUBSTRING`, `FORBIDDEN_SUBSTRING`, `EXACT_VALUE`) and every other deterministically derivable field before any semantic reviewer is invoked. Native-first execution uses the already-governed Quality Pack in `INDEPENDENT_CHAT_CONTEXT`, with a fresh GPT/Claude independent review bound to the exact producer execution receipt, RAW output, obligation manifest and check bundle.
+
+The historical provider-specific semantic mini-judge remains supported only for legacy evidence compatibility. It is not a mandatory downstream dependency for new native-first runs and must never force a Qwen/model download or remote fallback when the execution contract selects a native mode.
+
+Executor provenance is fail-closed. Before execution and again after attestation, the runtime must prove:
+
+- `executor_mode` matches the registered `adapter_id`;
+- the runtime attestation declares the same `executor_mode`;
+- `runtime_attestation.provider` is allowed for that exact adapter;
+- `model_id` is present and compatible with the registered adapter/provider family.
+
+Any mismatch blocks before downstream quality, Composer or promotion.
 
 ## Downstream boundary
 
@@ -92,11 +101,11 @@ Known mandatory live regressions include:
 2. the pre-execution obligation manifest whose SHA is bound in that receipt;
 3. exact RAW output binding;
 4. deterministically derived check bundle covering all required obligation IDs;
-5. valid `PROFILE_SEMANTIC_JUDGE_RECEIPT_V2`;
-6. all checks `COMPLIES`;
-7. verified Qwen runtime evidence for semantic checks.
+5. a valid semantic-quality proof selected by the provider-agnostic gate: either a native `INDEPENDENT_CHAT_CONTEXT` Quality Pack binding for current native-first runs, or a legacy `PROFILE_SEMANTIC_JUDGE_RECEIPT_V2` only when validating historical provider-specific evidence;
+6. all applicable deterministic checks compliant and semantic review PASS;
+7. exact execution/quality provenance readback for the selected mode.
 
-Missing manifest, partial bundle, semantic FAIL or `UNCERTAIN` => `BLOCK_PIPELINE`.
+Missing manifest, partial bundle, executor provenance mismatch, semantic FAIL or unresolved uncertainty => `BLOCK_PIPELINE`.
 
 ## Zero-cost policy
 
