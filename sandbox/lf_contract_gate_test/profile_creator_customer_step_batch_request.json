@@ -2,60 +2,47 @@
   "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-S26-SEMANTIC-REPROJECTION-20260911-001",
   "steps": [
     {
-      "step_id": "semantic_judge",
-      "evidence_ref": "supabase://public.v_lf_operation_judge_definition/JUDGE-ACTUALIZACION-PERFIL-LF-v0.1",
+      "step_id": "regression_after",
+      "evidence_ref": "sentinelx://script_job_56eaa37e0c994e3888ac47ca9d797c21",
       "evidence_payload": {
-        "semantic_judge_result": {
+        "before_after_matrix": {
           "result": "PASS",
-          "judge_code": "JUDGE-ACTUALIZACION-PERFIL-LF-v0.1",
-          "judge_sha": "8e45c898d8e1a20ce4f93b13bb22bb25c8b7ec7f28a8a1e96ad92f7c2d7c9902",
-          "judge_mode": "GPT_CURRENT_OPERATOR_SEMANTIC_REVIEW",
-          "independent_review_claimed": false,
-          "external_paid_model_used": false,
-          "scope": [
-            "profiles/ui_architect/evals/composer_payload_boundary_20260909/run_cases.py",
-            "profiles/ui_architect/validators/validate_composer_payload_boundary.py"
+          "before_head": "e68b363f2acc139bde57b8bbe6ba80e338b9e990",
+          "semantic_source_head": "90345c679a2a6fab8a2f66f0a1feaa75bbd74530",
+          "governed_reprojection_head": "e7522af9ab56bad4657795a676dfa189aeba20c1",
+          "before_boundary_case_count": 11,
+          "after_boundary_case_count": 13,
+          "changes": [
+            "Added explicit component structural allowlist.",
+            "Added explicit screen-definition structural allowlist.",
+            "Added fail-closed detection for future internal metadata key families.",
+            "Added structural rejection of unknown component keys.",
+            "Added recursive rejection of internal metadata nested inside extensible content.",
+            "Retained deterministic top-level Composer projection allowlist.",
+            "Retained the S26 semantic holdout against current_page prebinding."
           ],
-          "findings": [
-            "Composer projection uses explicit top-level and structural allowlists instead of permissive copying.",
-            "Internal governance, repository/provider, receipt, routing, worker and digest metadata are rejected recursively from Composer payloads.",
-            "The S26 semantic holdout preserves non-canonical guidance status and rejects executable/state prebinding of current_page.",
-            "The governed reprojection is byte-identical to semantic source head 90345c679a2a6fab8a2f66f0a1feaa75bbd74530 and the frozen-lineage focused suite is 57/57 PASS."
-          ],
-          "blocking_semantic_findings": []
+          "governed_profile_files_byte_identical_to_semantic_source": true
         },
-        "authority_checks": {
+        "adversarial_result": {
           "result": "PASS",
-          "authority_system": "SUPABASE",
-          "router_asset": {
-            "code": "ACT-0001",
-            "estado_documental": "VIGENTE",
-            "estado_operativo": "ACTIVO",
-            "runtime_estado": "RUNTIME_OPERATIVO",
-            "impacto_automatico": "BLOQUEADO"
-          },
-          "profile_asset": {
-            "code": "PERFIL-UI-ARCHITECT",
-            "estado_documental": "CANDIDATO",
-            "estado_operativo": "READ_ONLY",
-            "runtime_estado": "CANDIDATE_READ_ONLY",
-            "impacto_automatico": "BLOQUEADO"
-          },
-          "automatic_runtime_promotion": false,
-          "production_authorized": false,
-          "github_treated_as_operational_authority": false
+          "composer_boundary_cases": "13/13 PASS",
+          "future_unknown_component_key_fails_closed": true,
+          "nested_runtime_source_metadata_fails_closed": true,
+          "projection_mismatch_fails_closed": true,
+          "internal_repository_provider_metadata_fails_closed": true,
+          "malformed_json_fails_closed": true,
+          "malformed_json_error_code": "INPUT_PARSE_ERROR",
+          "malformed_json_exit_code": 1,
+          "focused_regression_suite": "57/57 PASS"
         },
-        "router_direct_consistency": {
+        "holdout_result": {
           "result": "PASS",
-          "asset_type": "PERFIL",
-          "action_code": "PROFILE_UPDATE",
-          "router_operation_code": "ACTUALIZACION_PERFIL_LF",
-          "direct_execution_operation_code": "ACTUALIZACION_PERFIL_LF",
-          "operation_resolution": "STATIC",
-          "router_mapping_status": "ACTIVE",
-          "write_allowed_by_router_for_profile_update": true,
-          "same_operation_code": true,
-          "target_code": "PERFIL-UI-ARCHITECT"
+          "noncanonical_guidance_mode_preserved": "RELATIVE_GUIDANCE",
+          "proposal_status_preserved": "PROPOSED_NOT_CANONICAL",
+          "current_page_not_prebound": true,
+          "negative_prebind_guard_passed": true,
+          "frozen_source_lineage_replay": "57/57 PASS",
+          "current_main_historical_validator_drift_excluded_from_frozen_artifact_verdict": true
         },
         "frozen_s26_lane_mutated": false,
         "merge_executed": false,
