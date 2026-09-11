@@ -1,0 +1,15 @@
+{
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-S26-SEMANTIC-REPROJECTION-20260911-001",
+  "step_id": "pre_write_execution_binding_gate",
+  "status": "STEP_PASS_WITH_EVIDENCE",
+  "bound_main_sha": "5a414bcb1f8e08492e064788f5ba49b820e1bf27",
+  "server_trust_context_source": "run-creacion-perfil-lf",
+  "continuity_state": "STALE_REBOUND_CURRENT",
+  "workflow_run_id": 34618693581,
+  "workflow_transport_result": "CANONICAL_WRITE_SUCCEEDED_BUT_WRAPPER_EXPECTATION_FALSE_NEGATIVE",
+  "github_write_executed": false,
+  "merge_executed": false,
+  "gate_g_advanced": false,
+  "golden_declared": false,
+  "production_effect": false
+}
