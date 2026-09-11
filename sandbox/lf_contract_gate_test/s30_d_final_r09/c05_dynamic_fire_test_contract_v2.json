@@ -1,0 +1,89 @@
+{
+  "contract": "S30_C05_DYNAMIC_FIRE_TEST_CONTRACT_V2",
+  "base_main_sha": "0d981a83d2624a29e1f13d5f6782bfe14b3d8109",
+  "scope": "GENERIC_EXECUTION_RELIABILITY_ONLY_BEFORE_OPERATION_BOOTSTRAP",
+  "dynamic_proof_now": false,
+  "apply_authorized": false,
+  "production_write_authorized": false,
+  "operation_bootstrap_authorized": false,
+  "architecture": {
+    "idempotency_carrier": "public.lf_operation_execution additive typed columns",
+    "lease": "owner+expiry+monotonic fencing token",
+    "checkpoint": "monotonic typed seq + jsonb payload",
+    "irreversible_effect": "durable effect reservation; existing unresolved reservation blocks redispatch and requires reconciliation",
+    "external_exactly_once_claim": "NOT_CLAIMED_WITHOUT_EXTERNAL_IDEMPOTENCY_OR_READBACK"
+  },
+  "required_dynamic_cases": [
+    {
+      "id": "C05-01",
+      "sessions": 2,
+      "case": "same key + same hash concurrent reservation",
+      "expected": "ONE_RESERVED_NEW_ONE_REPLAY_SAME_EXECUTION"
+    },
+    {
+      "id": "C05-02",
+      "sessions": 2,
+      "case": "same key + different hash",
+      "expected": "BLOCK_IDEMPOTENCY_KEY_REUSED_WITH_DIFFERENT_REQUEST"
+    },
+    {
+      "id": "C05-03",
+      "sessions": 2,
+      "case": "same key + same hash but target mismatch",
+      "expected": "BLOCK_IDEMPOTENCY_REPLAY_TARGET_MISMATCH"
+    },
+    {
+      "id": "C05-04",
+      "sessions": 2,
+      "case": "current lease contention",
+      "expected": "ONE_OWNER_SECOND_BLOCKED_LEASE_HELD"
+    },
+    {
+      "id": "C05-05",
+      "sessions": 2,
+      "case": "expired lease takeover",
+      "expected": "NEW_OWNER_WITH_STRICTLY_GREATER_FENCE"
+    },
+    {
+      "id": "C05-06",
+      "sessions": 2,
+      "case": "old owner writes after takeover",
+      "expected": "BLOCK_STALE_OR_MISSING_LEASE_FENCE"
+    },
+    {
+      "id": "C05-07",
+      "sessions": 1,
+      "case": "checkpoint monotonic + replay",
+      "expected": "PERSIST_THEN_REPLAY_EQUAL_BLOCK_LOWER_OR_DIFFERENT"
+    },
+    {
+      "id": "C05-08",
+      "sessions": 2,
+      "case": "effect reservation response loss",
+      "expected": "SECOND_ATTEMPT_RECONCILIATION_REQUIRED_NO_REDISPATCH"
+    },
+    {
+      "id": "C05-09",
+      "sessions": 1,
+      "case": "effect success replay",
+      "expected": "SUCCEEDED_RECEIPT_REPLAY_NO_REDISPATCH"
+    }
+  ],
+  "hard_targets": {
+    "duplicate_dispatch_permitted_after_existing_effect_reservation": 0,
+    "stale_fence_write_count": 0,
+    "same_key_different_hash_accept_count": 0,
+    "same_key_target_mismatch_accept_count": 0,
+    "lost_checkpoint_count": 0,
+    "missing_readback_count": 0
+  },
+  "downstream_not_in_c05": [
+    "EJECUCION_ESTRATEGIA_LF_BOOTSTRAP",
+    "ORQUESTACION_ESTRATEGIAS_LF_BOOTSTRAP",
+    "SCHEDULER_REPROGRAMMING",
+    "MULTI_STRATEGY_FIRE_TEST",
+    "E2E_50_LIVE",
+    "DATA_NAVIGATION_TRACES"
+  ],
+  "next_on_pass": "EJECUCION_ESTRATEGIA_LF_THEN_ORQUESTACION_ESTRATEGIAS_LF"
+}
