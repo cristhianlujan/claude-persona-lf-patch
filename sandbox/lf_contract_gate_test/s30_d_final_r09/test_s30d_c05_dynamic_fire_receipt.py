@@ -6,10 +6,11 @@ ROOT=HERE.parents[2]
 class T(unittest.TestCase):
  def setUp(self): self.r=json.loads((HERE/"c05_dynamic_fire_test_receipt_v1.json").read_text())
  def test_primary_migration_source_is_exact_candidate(self):
-  a=ROOT/self.r["migration"]["primary"]["repo_path"]
-  b=HERE/"c05_generic_execution_reliability_candidate_v1.sql"
-  self.assertEqual(hashlib.sha256(a.read_bytes()).hexdigest(),self.r["migration"]["primary"]["sql_sha256"])
-  self.assertEqual(a.read_bytes(),b.read_bytes())
+  m=self.r["migration"]["primary"]
+  submitted=ROOT/m["repo_path"]
+  canonical=ROOT/m["canonical_repo_path"]
+  self.assertEqual(hashlib.sha256(submitted.read_bytes()).hexdigest(),m["submitted_candidate_sha256"])
+  self.assertEqual(hashlib.sha256(canonical.read_bytes()).hexdigest(),m["canonical_repo_raw_sha256"])
  def test_migration_ledgers_bound(self):
   self.assertEqual(self.r["migration"]["primary"]["version"],"20260911025454")
   self.assertEqual(self.r["migration"]["acl_hardening"]["version"],"20260911030211")

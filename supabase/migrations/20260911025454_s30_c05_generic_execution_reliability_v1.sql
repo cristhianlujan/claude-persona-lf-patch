@@ -1,7 +1,3 @@
--- S30 C05 generic execution reliability candidate v1.
--- CANDIDATE ONLY: this file is intentionally outside supabase/migrations and MUST NOT be applied
--- without a separate explicit production/schema authorization.
-
 alter table public.lf_operation_execution
   add column if not exists idempotency_key text,
   add column if not exists request_sha256 text,

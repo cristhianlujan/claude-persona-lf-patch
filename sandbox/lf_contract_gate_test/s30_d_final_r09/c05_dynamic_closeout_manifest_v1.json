@@ -4,7 +4,7 @@
   "contract": "S30_C05_DYNAMIC_CLOSEOUT_MANIFEST_V1",
   "evidence": {
     "dynamic_receipt_path": "sandbox/lf_contract_gate_test/s30_d_final_r09/c05_dynamic_fire_test_receipt_v1.json",
-    "dynamic_receipt_sha256": "a72108863b461f3c20cb16ff7dbf509d1aa72f68bf35263cf65b50c12454f754",
+    "dynamic_receipt_sha256": "c5a997644ea8721c824cbad30a09e94f63793c11bbe64d1b1bffbfc962b91658",
     "live_schema_readback_path": "sandbox/lf_contract_gate_test/s30_d_final_r09/c05_live_schema_readback_v3.json",
     "live_schema_readback_sha256": "bbea235bedab02436a99dfaae898e4d6c518ad3ca2112acd2208970971d899ff"
   },
@@ -16,15 +16,22 @@
   "migrations": [
     {
       "name": "s30_c05_generic_execution_reliability_v1",
-      "path": "supabase/migrations/20260911025454_s30_c05_generic_execution_reliability_v1.sql",
+      "path": "sandbox/lf_contract_gate_test/s30_d_final_r09/c05_generic_execution_reliability_candidate_v1.sql",
       "sha256": "176964bbad7a9794b48a2378ac05030e228704f1fe3923d1217ec7b96d60a64a",
-      "version": "20260911025454"
+      "version": "20260911025454",
+      "canonical_path": "supabase/migrations/20260911025454_s30_c05_generic_execution_reliability_v1.sql",
+      "canonical_raw_sha256": "99484d139f138daf9065f51a7c2b5943fe5dd343e3f053221589a0321d4c7b7d",
+      "remote_ledger_canonical_sha256": "23391567e93c866888755adb89505a50836f2b2f3d9f89144edd48fae876cd53",
+      "transport_reconciliation": "CANDIDATE_ONLY_HEADER_REMOVED_FOR_CANONICAL_LEDGER_PARITY"
     },
     {
       "name": "s30_c05_effect_guard_acl_hardening_v1",
       "path": "supabase/migrations/20260911030211_s30_c05_effect_guard_acl_hardening_v1.sql",
       "sha256": "ac470648e2e910d54148eef2757fe2ac145c6b236febf2567b80aec4725d7800",
-      "version": "20260911030211"
+      "version": "20260911030211",
+      "canonical_path": "supabase/migrations/20260911030211_s30_c05_effect_guard_acl_hardening_v1.sql",
+      "canonical_raw_sha256": "ac470648e2e910d54148eef2757fe2ac145c6b236febf2567b80aec4725d7800",
+      "remote_ledger_canonical_sha256": "17bdbff34517a9ad5f4aa786267ead0f7de2cfc54df9c2e2607f12ee643edae6"
     }
   ],
   "model_calls": 0,

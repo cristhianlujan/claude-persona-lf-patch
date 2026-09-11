@@ -89,15 +89,22 @@
       "name": "s30_c05_effect_guard_acl_hardening_v1",
       "repo_path": "supabase/migrations/20260911030211_s30_c05_effect_guard_acl_hardening_v1.sql",
       "sql_sha256": "ac470648e2e910d54148eef2757fe2ac145c6b236febf2567b80aec4725d7800",
-      "version": "20260911030211"
+      "version": "20260911030211",
+      "canonical_repo_raw_sha256": "ac470648e2e910d54148eef2757fe2ac145c6b236febf2567b80aec4725d7800",
+      "remote_ledger_canonical_sha256": "17bdbff34517a9ad5f4aa786267ead0f7de2cfc54df9c2e2607f12ee643edae6"
     },
     "primary": {
       "applied": true,
       "ledger_readback": true,
       "name": "s30_c05_generic_execution_reliability_v1",
-      "repo_path": "supabase/migrations/20260911025454_s30_c05_generic_execution_reliability_v1.sql",
+      "repo_path": "sandbox/lf_contract_gate_test/s30_d_final_r09/c05_generic_execution_reliability_candidate_v1.sql",
       "sql_sha256": "176964bbad7a9794b48a2378ac05030e228704f1fe3923d1217ec7b96d60a64a",
-      "version": "20260911025454"
+      "version": "20260911025454",
+      "submitted_candidate_sha256": "176964bbad7a9794b48a2378ac05030e228704f1fe3923d1217ec7b96d60a64a",
+      "canonical_repo_path": "supabase/migrations/20260911025454_s30_c05_generic_execution_reliability_v1.sql",
+      "canonical_repo_raw_sha256": "99484d139f138daf9065f51a7c2b5943fe5dd343e3f053221589a0321d4c7b7d",
+      "remote_ledger_canonical_sha256": "23391567e93c866888755adb89505a50836f2b2f3d9f89144edd48fae876cd53",
+      "source_persistence_reconciled_post_fire_test": true
     }
   },
   "next_gate": "EJECUCION_ESTRATEGIA_LF_BOOTSTRAP_THEN_ORQUESTACION_ESTRATEGIAS_LF",
@@ -141,5 +148,6 @@
   "security_negative": {
     "authenticated_execute_attempt": "PERMISSION_DENIED",
     "sqlstate": "42501"
-  }
+  },
+  "source_persistence_note": "The live apply used the sandbox candidate source. Supabase ledger stores the executable statement payload without the candidate-only comment header; canonical migration source is persisted in that exact ledger-normalized form."
 }

@@ -43,11 +43,11 @@
   "live_c05_evidence": {
     "dynamic_closeout_manifest": {
       "path": "sandbox/lf_contract_gate_test/s30_d_final_r09/c05_dynamic_closeout_manifest_v1.json",
-      "sha256": "0dacd2137e48b182ca07b388fff454f7ebcd6ee29a467c29d4de71d3899af06f"
+      "sha256": "8dc1ac9e93361828a553f77c99a48d1a91d0abbaa01f0fd02db138578bf51117"
     },
     "dynamic_fire_receipt": {
       "path": "sandbox/lf_contract_gate_test/s30_d_final_r09/c05_dynamic_fire_test_receipt_v1.json",
-      "sha256": "a72108863b461f3c20cb16ff7dbf509d1aa72f68bf35263cf65b50c12454f754",
+      "sha256": "c5a997644ea8721c824cbad30a09e94f63793c11bbe64d1b1bffbfc962b91658",
       "cases_pass": "9/9"
     },
     "final_schema_readback": {
@@ -63,9 +63,13 @@
       "version": "20260911025454",
       "name": "s30_c05_generic_execution_reliability_v1",
       "path": "supabase/migrations/20260911025454_s30_c05_generic_execution_reliability_v1.sql",
-      "sha256": "176964bbad7a9794b48a2378ac05030e228704f1fe3923d1217ec7b96d60a64a",
+      "sha256": "99484d139f138daf9065f51a7c2b5943fe5dd343e3f053221589a0321d4c7b7d",
       "already_applied": true,
-      "ledger_readback": true
+      "ledger_readback": true,
+      "direct_source_sha256": "23391567e93c866888755adb89505a50836f2b2f3d9f89144edd48fae876cd53",
+      "remote_ledger_canonical_sha256": "23391567e93c866888755adb89505a50836f2b2f3d9f89144edd48fae876cd53",
+      "submitted_candidate_sha256": "176964bbad7a9794b48a2378ac05030e228704f1fe3923d1217ec7b96d60a64a",
+      "transport_reconciliation": "REMOVE_CANDIDATE_ONLY_COMMENT_HEADER_NO_EXECUTABLE_SQL_CHANGE"
     },
     {
       "version": "20260911030211",
@@ -73,7 +77,9 @@
       "path": "supabase/migrations/20260911030211_s30_c05_effect_guard_acl_hardening_v1.sql",
       "sha256": "ac470648e2e910d54148eef2757fe2ac145c6b236febf2567b80aec4725d7800",
       "already_applied": true,
-      "ledger_readback": true
+      "ledger_readback": true,
+      "direct_source_sha256": "17bdbff34517a9ad5f4aa786267ead0f7de2cfc54df9c2e2607f12ee643edae6",
+      "remote_ledger_canonical_sha256": "17bdbff34517a9ad5f4aa786267ead0f7de2cfc54df9c2e2607f12ee643edae6"
     }
   ],
   "current_candidate_actions": {
@@ -104,5 +110,14 @@
       }
     ],
     "status": "PASS"
+  },
+  "source_parity_reconciliation": {
+    "first_failed_ci_run": 34566634045,
+    "failure_code": "FAIL_LF_MIGRATION_CONTENT_PARITY",
+    "primary_remote_hash": "23391567e93c866888755adb89505a50836f2b2f3d9f89144edd48fae876cd53",
+    "root_cause": "Candidate-only comment header left leading blank lines after repository canonicalization while Supabase ledger stored executable payload without that header.",
+    "repair": "Persist canonical migration file exactly as executable ledger payload; preserve submitted candidate source separately in sandbox.",
+    "ddl_replayed": false,
+    "supabase_write": false
   }
 }

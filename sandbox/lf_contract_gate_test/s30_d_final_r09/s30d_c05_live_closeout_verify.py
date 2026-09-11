@@ -15,7 +15,10 @@ def verify():
  assert rb["lf_operation_effect_guard"]["service_role_delete_allowed"] is False
  assert rb["operation_registry_readback"]["EJECUCION_ESTRATEGIA_LF"]=="ABSENT"
  assert rb["operation_registry_readback"]["ORQUESTACION_ESTRATEGIAS_LF"]=="ABSENT"
- for x in m["migrations"]: assert sha(ROOT/x["path"])==x["sha256"]
+ for x in m["migrations"]:
+  assert sha(ROOT/x["path"])==x["sha256"]
+  if x.get("canonical_path"):
+   assert sha(ROOT/x["canonical_path"])==x["canonical_raw_sha256"]
  assert sha(ROOT/m["evidence"]["dynamic_receipt_path"])==m["evidence"]["dynamic_receipt_sha256"]
  assert sha(ROOT/m["evidence"]["live_schema_readback_path"])==m["evidence"]["live_schema_readback_sha256"]
  assert m["operation_bootstrap_allowed_by_this_manifest"] is False
