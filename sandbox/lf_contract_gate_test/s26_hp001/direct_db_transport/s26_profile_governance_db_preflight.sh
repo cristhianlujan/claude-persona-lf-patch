@@ -37,8 +37,8 @@ record_fn="$(query "select coalesce(to_regprocedure('public.lf_record_profile_op
 router_fn="$(query "select coalesce(to_regprocedure('public.lf_router_resolve_v1(text,text,text,text,text)')::text,'')")"
 [[ -n "$router_fn" ]] || { echo 'BLOCK_S26_DB_PREFLIGHT_ROUTER_FUNCTION_MISSING' >&2; exit 6; }
 
-required_keys="$(query "select coalesce(array_to_string(required_evidence_keys,','),'') from public.lf_operation_step_judge_bindings where operation_code='ACTUALIZACION_PERFIL_LF' and step_id='${S26_EXPECTED_NEXT_STEP}' and status='ACTIVE_ENFORCEMENT' limit 1")"
-for key in execution_id target_code target_path write_plan pre_write_gate_passed; do
+required_keys="$(query "select coalesce((select string_agg(value,',' order by ord) from jsonb_array_elements_text(required_evidence_keys) with ordinality as x(value,ord)),'') from public.lf_operation_step_judge_bindings where operation_code='ACTUALIZACION_PERFIL_LF' and step_id='${S26_EXPECTED_NEXT_STEP}' and status='ACTIVE_ENFORCEMENT' limit 1")"
+for key in execution_id target_code target_path write_plan pre_write_gate_passed bound_revision execution_bound_to_target_before_change; do
   [[ ",${required_keys}," == *",${key},"* ]] || { echo "BLOCK_S26_DB_PREFLIGHT_REQUIRED_KEY_MISSING key=${key} observed=${required_keys}" >&2; exit 7; }
 done
 
