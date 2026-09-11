@@ -1,0 +1,92 @@
+{
+  "contract_version": "S30_INVARIANT_ASSURANCE_CATALOG_V1",
+  "principles": [
+    "NO_FINDING_QUOTAS",
+    "NO_UNVALIDATED_INVARIANTS",
+    "NO_HEURISTIC_AS_GATE",
+    "FIX_GENERATOR_BEFORE_GENERATED_ARTIFACT_FOR_SYSTEMATIC_DEFECTS"
+  ],
+  "invariants": [
+    {
+      "invariant_id": "R16-INV-001",
+      "class": "REVIEW_DISCIPLINE",
+      "gate_type": "CONTRACT_INVARIANT",
+      "blocking": true,
+      "source_ref": "S30-R16-OWNER-APPROVED-SCOPE-20260911",
+      "validator_id": "NO_FINDING_QUOTA",
+      "verification": {"positive_case": true, "negative_case": true, "mutation_case": true}
+    },
+    {
+      "invariant_id": "R16-INV-002",
+      "class": "SEMANTIC_BOUNDARY",
+      "gate_type": "CONTRACT_INVARIANT",
+      "blocking": true,
+      "source_ref": "S30_SEMANTIC_QUALITY_PRESERVATION_V1",
+      "validator_id": "SEMANTIC_ATOM_ALLOWLIST",
+      "verification": {"positive_case": true, "negative_case": true, "mutation_case": true}
+    },
+    {
+      "invariant_id": "R16-INV-003",
+      "class": "SEMANTIC_EVIDENCE",
+      "gate_type": "CONTRACT_INVARIANT",
+      "blocking": true,
+      "source_ref": "S30_SEMANTIC_QUALITY_PRESERVATION_V1",
+      "validator_id": "SEMANTIC_EVIDENCE_BINDING",
+      "verification": {"positive_case": true, "negative_case": true, "mutation_case": true}
+    },
+    {
+      "invariant_id": "R16-INV-004",
+      "class": "SEMANTIC_EVIDENCE",
+      "gate_type": "CONTRACT_INVARIANT",
+      "blocking": true,
+      "source_ref": "S30_SEMANTIC_QUALITY_PRESERVATION_V1",
+      "validator_id": "INDEPENDENT_SEMANTIC_SUBSTANCE",
+      "verification": {"positive_case": true, "negative_case": true, "mutation_case": true}
+    },
+    {
+      "invariant_id": "R16-INV-005",
+      "class": "HANDOFF_BOUNDARY",
+      "gate_type": "CONTRACT_INVARIANT",
+      "blocking": true,
+      "source_ref": "S30_EXECUTION_AUTHORITY_V1",
+      "validator_id": "HANDOFF_RECURSIVE_ALLOWLIST",
+      "verification": {"positive_case": true, "negative_case": true, "mutation_case": true}
+    },
+    {
+      "invariant_id": "R16-INV-006",
+      "class": "MATERIALIZATION_READBACK",
+      "gate_type": "CONTRACT_INVARIANT",
+      "blocking": true,
+      "source_ref": "S30_SEMANTIC_QUALITY_PRESERVATION_V1",
+      "validator_id": "MATERIALIZATION_RELATION_BINDING",
+      "verification": {"positive_case": true, "negative_case": true, "mutation_case": true}
+    },
+    {
+      "invariant_id": "R16-INV-007",
+      "class": "READBACK_INDEPENDENCE",
+      "gate_type": "CONTRACT_INVARIANT",
+      "blocking": true,
+      "source_ref": "S30_SEMANTIC_QUALITY_PRESERVATION_V1",
+      "validator_id": "READBACK_INDEPENDENCE",
+      "verification": {"positive_case": true, "negative_case": true, "mutation_case": true}
+    },
+    {
+      "invariant_id": "R16-INV-008",
+      "class": "REMEDIATION_OWNERSHIP",
+      "gate_type": "CONTRACT_INVARIANT",
+      "blocking": true,
+      "source_ref": "S30-R16-OWNER-APPROVED-SCOPE-20260911",
+      "validator_id": "GENERATOR_FIRST_REMEDIATION",
+      "verification": {"positive_case": true, "negative_case": true, "mutation_case": true}
+    },
+    {
+      "invariant_id": "R16-SIG-001",
+      "class": "EVIDENCE_HYGIENE",
+      "gate_type": "SIGNAL_ONLY",
+      "blocking": false,
+      "source_ref": "",
+      "validator_id": "DUPLICATE_EVIDENCE_SIGNAL",
+      "verification": {"positive_case": true, "negative_case": true, "mutation_case": true}
+    }
+  ]
+}

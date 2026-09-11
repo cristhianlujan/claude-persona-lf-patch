@@ -1,0 +1,45 @@
+{
+  "contract_version": "S30_E2E_QUALITY_PRESERVATION_EXTENSION_V2",
+  "base_campaign": "S30_INTEGRATED_E2E_50_V1",
+  "case_count_unchanged": 50,
+  "finding_quota": null,
+  "coverage_model": "PREDEFINED_RISK_CLASSES_AND_INVARIANTS_NOT_REQUIRED_FINDING_COUNT",
+  "mandatory_subprobes": {
+    "E2E-07-02": [
+      "SEMANTIC_DELTA_V3_EXACT_ALLOWLIST_PASS",
+      "UNKNOWN_NESTED_SEMANTIC_ATOM_KEY_BLOCK",
+      "SEMANTIC_EVIDENCE_ATOM_HASH_MISMATCH_BLOCK",
+      "SEMANTIC_EVIDENCE_OBLIGATION_HASH_MISMATCH_BLOCK",
+      "INDEPENDENT_SEMANTIC_SUBSTANCE_UNCERTAIN_BLOCK"
+    ],
+    "E2E-04-02": [
+      "NESTED_INTERNAL_METADATA_EXCLUDED_BY_HANDOFF_ALLOWLIST",
+      "READBACK_SELF_ATTESTATION_BLOCK",
+      "RELATION_MEMBER_DRIFT_BLOCK"
+    ],
+    "E2E-10-01": [
+      "INVARIANT_WITHOUT_POSITIVE_NEGATIVE_MUTATION_META_PROOF_BLOCK",
+      "SIGNAL_ONLY_CANNOT_BLOCK",
+      "FINDING_QUOTA_FIELD_BLOCK"
+    ],
+    "E2E-10-03": [
+      "SYSTEMATIC_DEFECT_WITH_PRODUCER_FIXES_PRODUCER_FIRST",
+      "SYSTEMATIC_DEFECT_WITHOUT_PRODUCER_BLOCK",
+      "LOCAL_ONE_OFF_ARTIFACT_FIX_ALLOWED"
+    ],
+    "E2E-07-05": [
+      "R16_DETERMINISTIC_GUARD_OVERHEAD_MEASURED",
+      "MODEL_CALLS_FOR_MACHINE_DETECTABLE_R16_CHECKS_ZERO"
+    ]
+  },
+  "hard_targets": {
+    "finding_quota_enforced_count": 0,
+    "unvalidated_blocking_invariant_accept_count": 0,
+    "signal_only_block_count": 0,
+    "unbound_semantic_evidence_accept_count": 0,
+    "semantic_substance_uncertain_accept_count": 0,
+    "nested_internal_metadata_handoff_leak_count": 0,
+    "relation_member_drift_accept_count": 0,
+    "systematic_artifact_only_repair_accept_count": 0
+  }
+}

@@ -1,0 +1,414 @@
+{
+  "applicable_ekb": [
+    {
+      "code": "GOV-010",
+      "triggers": [
+        "RECURRENT",
+        "AVOIDABLE_MATERIAL_WORK"
+      ]
+    },
+    {
+      "code": "DB-001",
+      "triggers": [
+        "MACHINE_DETECTABLE"
+      ]
+    },
+    {
+      "code": "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001",
+      "triggers": [
+        "MACHINE_DETECTABLE"
+      ]
+    },
+    {
+      "code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
+      "triggers": [
+        "RECURRENT"
+      ]
+    }
+  ],
+  "base_main_sha": "b5b0145ca63910d3bf1c3e95c4575b813e01c1c1",
+  "causal_lane_ownership": {
+    "ekb_code": "GOV-010",
+    "target_asset": "S30-D-INVARIANT-ASSURANCE",
+    "primary_gate": "R16_INVARIANT_DRIVEN_SEMANTIC_HANDOFF_ASSURANCE",
+    "owner": "S30-D-INVARIANT-ASSURANCE-R16",
+    "role": "WRITER",
+    "evidence": "Owner approved incorporating S26-derived architectural lessons into S30 before executor activation; scope is S30-only candidate with no S26 mutation.",
+    "observed_active_writers": [
+      {
+        "ekb_code": "GOV-010",
+        "target_asset": "S30-D-INVARIANT-ASSURANCE",
+        "primary_gate": "R16_INVARIANT_DRIVEN_SEMANTIC_HANDOFF_ASSURANCE",
+        "owner": "S30-D-INVARIANT-ASSURANCE-R16",
+        "state": "ACTIVE",
+        "source_ref": "prewrite://S30-R16-20260911"
+      }
+    ],
+    "transfer": {
+      "is_transfer": false
+    }
+  },
+  "evidence": {
+    "base_main_sha": "b5b0145ca63910d3bf1c3e95c4575b813e01c1c1",
+    "execution_id": "EXEC-S30-R16-PREWRITE-20260911-001",
+    "mode": "SANDBOX_NON_PRODUCTION",
+    "production": false,
+    "historical_baseline_failure": "R15 proves exact obligation coverage but V2 evidence pointers can still be non-empty without proving semantic substance; recursive handoff projection also lacked an explicit generic allowlist contract.",
+    "next_candidate": "S30-R16-INVARIANT-ASSURANCE"
+  },
+  "frontier": {
+    "current_stage": "S30_R16_INVARIANT_DRIVEN_SEMANTIC_HANDOFF_ASSURANCE",
+    "blockers": [],
+    "safe_parallel_work": [
+      "S26_INDEPENDENT_REPAIR_CONTINUES_SEPARATELY"
+    ],
+    "next_gate": "EJECUCION_ESTRATEGIA_LF_BOOTSTRAP_AFTER_R16_EXACT_HEAD_PROOF"
+  },
+  "gate_evidence_envelope": {
+    "depth": {
+      "status": "PASS",
+      "evidence": "R16 covers review discipline, invariant meta-validation, semantic evidence binding, recursive handoff allowlists, materialization relation binding, independent readback and generator-first remediation."
+    },
+    "ekb_action": {
+      "status": "CONSUMED",
+      "codes": [
+        "GOV-010",
+        "DB-001",
+        "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001",
+        "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001"
+      ]
+    },
+    "environment": "NON_PRODUCTION",
+    "execution_mode": "SANDBOX",
+    "first_bad_hop": null,
+    "functional": {
+      "status": "PASS",
+      "evidence": "Current-main R15 gap was reproduced structurally: a non-empty evidence pointer can exist without proving obligation substance. R16 adds exact atom/obligation hash binding plus independent substance evaluation."
+    },
+    "gate_id": "S30_R16_INVARIANT_ASSURANCE_PREEXECUTION",
+    "input_exact": {
+      "base_main_sha": "b5b0145ca63910d3bf1c3e95c4575b813e01c1c1",
+      "receipt_path": "sandbox/lf_contract_gate_test/s30_d_final_r09/s30_r16_prewrite_receipt_v1.json",
+      "request_schema": "s30-git-broker/v1",
+      "source_ref": "lf/staging-s30-r16-invariant-assurance-20260911",
+      "target_branch": "lf/s30-r16-invariant-assurance-20260911"
+    },
+    "input_sha256": "9120836c310b1f743921d978c50ed76d11314cf3fb715656191369324da12b67",
+    "input_source_ref": "owner-authorized-s30-r16-scope+github:main@b5b0145ca63910d3bf1c3e95c4575b813e01c1c1",
+    "output_exact": {
+      "bounded_repair_allowed": false,
+      "material_work_allowed": true,
+      "promotion_authority": "NONE",
+      "result": "PASS_TO_MATERIAL_WORK"
+    },
+    "output_ref": "local-prewrite:S30-R16-INVARIANT-ASSURANCE",
+    "output_sha256": "ec67088d3a1ecf4514180d148fb18aee30023fad41c8c7380bba0e7292b0f5d9",
+    "performance": {
+      "status": "PASS_BASELINE",
+      "evidence": "All machine-detectable R16 checks are deterministic stdlib operations with zero model calls; semantic evaluator is only for non-derivable substance and is measured later in E2E."
+    },
+    "promotion_authority": "NONE",
+    "quality": {
+      "status": "PASS",
+      "evidence": "No finding quotas, no heuristic-as-gate, and no unvalidated blocking invariant are permitted. The checker itself is mutation-tested."
+    },
+    "repair_allowed": false,
+    "run_id": "EXEC-S30-R16-PREWRITE-20260911-001",
+    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_d_final_r09/s30_r16_prewrite_receipt_v1.json --expected-base-main-sha b5b0145ca63910d3bf1c3e95c4575b813e01c1c1"
+  },
+  "git_write_binding": {
+    "base_main_sha": "b5b0145ca63910d3bf1c3e95c4575b813e01c1c1",
+    "broker_probe": {
+      "commit_sha": "e52aa00996ea7dfd416e5267aec0f03e226f3088",
+      "evidence_ref": "github:commit/e52aa00996ea7dfd416e5267aec0f03e226f3088",
+      "status": "PASS"
+    },
+    "bypass_actor_type": "DeployKey",
+    "deploy_key_id": 162872002,
+    "deploy_key_title": "s30-governed-git-broker",
+    "direct_connector_negative": {
+      "create_blocked": true,
+      "update_blocked": true
+    },
+    "direct_user_can_bypass": false,
+    "promotion_authority": "BROKER_ONLY",
+    "request_schema": "s30-git-broker/v1",
+    "ruleset_enforcement": "active",
+    "ruleset_id": 22765627,
+    "ruleset_name": "s30-governed-write-boundary",
+    "ruleset_readback_ref": "github:ruleset/22765627",
+    "ruleset_ref_pattern": "refs/heads/lf/s30-*",
+    "secret_name": "S30_BROKER_DEPLOY_KEY",
+    "secret_present": true,
+    "secret_required_before_dispatch": true,
+    "source_branch": "lf/staging-s30-r16-invariant-assurance-20260911",
+    "status": "OPERATIONAL",
+    "supabase_readback_ref": "supabase:prior-verified-broker-binding@20260910",
+    "target_branch": "lf/s30-r16-invariant-assurance-20260911",
+    "workflow_dispatch_wired": true,
+    "workflow_path": ".github/workflows/validate-lf-packs.yml"
+  },
+  "hard_guard_candidates": [
+    {
+      "closure": {
+        "DETECTOR_IMPLEMENTED": {
+          "evidence": "Current main contains previously verified closure evidence for DB-001; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        },
+        "EKB_UPDATED": {
+          "evidence": "Current main contains previously verified closure evidence for DB-001; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        },
+        "EXECUTED_PATH_WIRING_PROVEN": {
+          "evidence": "Current main contains previously verified closure evidence for DB-001; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        },
+        "NEGATIVE_REGRESSION": {
+          "evidence": "Current main contains previously verified closure evidence for DB-001; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        },
+        "POSITIVE_REGRESSION": {
+          "evidence": "Current main contains previously verified closure evidence for DB-001; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        },
+        "READBACK": {
+          "evidence": "Current main contains previously verified closure evidence for DB-001; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        }
+      },
+      "ekb_code": "DB-001"
+    },
+    {
+      "closure": {
+        "DETECTOR_IMPLEMENTED": {
+          "evidence": "Current main contains previously verified closure evidence for GOV-010; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        },
+        "EKB_UPDATED": {
+          "evidence": "Current main contains previously verified closure evidence for GOV-010; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        },
+        "EXECUTED_PATH_WIRING_PROVEN": {
+          "evidence": "Current main contains previously verified closure evidence for GOV-010; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        },
+        "NEGATIVE_REGRESSION": {
+          "evidence": "Current main contains previously verified closure evidence for GOV-010; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        },
+        "POSITIVE_REGRESSION": {
+          "evidence": "Current main contains previously verified closure evidence for GOV-010; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        },
+        "READBACK": {
+          "evidence": "Current main contains previously verified closure evidence for GOV-010; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        }
+      },
+      "ekb_code": "GOV-010"
+    },
+    {
+      "closure": {
+        "DETECTOR_IMPLEMENTED": {
+          "evidence": "Current main contains previously verified closure evidence for GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        },
+        "EKB_UPDATED": {
+          "evidence": "Current main contains previously verified closure evidence for GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        },
+        "EXECUTED_PATH_WIRING_PROVEN": {
+          "evidence": "Current main contains previously verified closure evidence for GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        },
+        "NEGATIVE_REGRESSION": {
+          "evidence": "Current main contains previously verified closure evidence for GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        },
+        "POSITIVE_REGRESSION": {
+          "evidence": "Current main contains previously verified closure evidence for GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        },
+        "READBACK": {
+          "evidence": "Current main contains previously verified closure evidence for GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        }
+      },
+      "ekb_code": "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001"
+    },
+    {
+      "closure": {
+        "DETECTOR_IMPLEMENTED": {
+          "evidence": "Current main contains previously verified closure evidence for S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        },
+        "EKB_UPDATED": {
+          "evidence": "Current main contains previously verified closure evidence for S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        },
+        "EXECUTED_PATH_WIRING_PROVEN": {
+          "evidence": "Current main contains previously verified closure evidence for S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        },
+        "NEGATIVE_REGRESSION": {
+          "evidence": "Current main contains previously verified closure evidence for S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        },
+        "POSITIVE_REGRESSION": {
+          "evidence": "Current main contains previously verified closure evidence for S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        },
+        "READBACK": {
+          "evidence": "Current main contains previously verified closure evidence for S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001; R16 adds no backend/schema mutation and does not depend on a live Supabase read.",
+          "status": "PASS"
+        }
+      },
+      "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001"
+    }
+  ],
+  "intended_material_action": "S30_R16_INVARIANT_DRIVEN_SEMANTIC_HANDOFF_ASSURANCE_CANDIDATE",
+  "lane": "S30-D",
+  "owner": "S30-D-INVARIANT-ASSURANCE-R16",
+  "owner_authorized_merge": false,
+  "owner_authorized_repair": false,
+  "preflight_checks": {
+    "CI_RUNNER_WIRING_CONFIRMED": {
+      "status": "PASS",
+      "evidence": "Validate LF Packs generically discovers sandbox/lf_contract_gate_test/s30_*/test_*.py; R16 uses the existing bounded S30-D namespace."
+    },
+    "EVIDENCE_PROVIDER_RESOLVABLE": {
+      "status": "PASS",
+      "evidence": "R16 evidence is local and deterministic for machine-detectable checks: exact atom hashes, obligation-statement hashes, recursive allowlist projection, relation-member readback, and invariant meta-validation."
+    },
+    "EXPECTED_OUTPUT_SCHEMA_COMPLETE": {
+      "status": "PASS",
+      "evidence": "S30_SEMANTIC_DELTA_V3, S30_SEMANTIC_EVIDENCE_SUBSTANCE_EVALUATION_V1, S30_MATERIALIZATION_PRESERVATION_READBACK_V2, invariant catalog V1, executor binding V2 and E2E extension V2 are explicit."
+    },
+    "GIT_WRITE_BROKER_BINDING_CONFIRMED": {
+      "status": "PASS",
+      "evidence": "All candidate files remain under sandbox/lf_contract_gate_test/s30_d_final_r09/** with a changed PREWRITE receipt and protected target through the existing S30 broker."
+    },
+    "IMPORT_CLOSURE": {
+      "status": "PASS",
+      "evidence": "R16 implementation and tests are Python stdlib-only and import only the already-main S30 quality module in the same directory."
+    },
+    "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED": {
+      "status": "PASS",
+      "evidence": "Negatives cover finding quotas, signal-as-gate, unvalidated invariant, nested semantic metadata, evidence hash mismatch, obligation hash mismatch, missing coverage, UNCERTAIN semantic substance, self-evaluation, nested handoff metadata, relation-member drift, self-readback and unresolved systematic producer."
+    },
+    "PERMISSIONS_AND_SECRET_READBACK": {
+      "status": "PASS",
+      "evidence": "Existing governed broker binding on main requires S30_BROKER_DEPLOY_KEY by name; secret value is not read or exposed."
+    },
+    "REQUIRED_FILES_EXIST": {
+      "status": "PASS",
+      "evidence": "Current main contains R15 semantic quality preservation and C05 closure; R16 adds six bounded S30-D candidate files only."
+    },
+    "SCHEMA_AND_CONSTRAINTS_RESOLVED": {
+      "status": "PASS",
+      "evidence": "R16 material work performs no Supabase/database call. Backend schema is therefore N/A for materialization; existing S30 broker contract still requires its prior binding reference.",
+      "resolved": [
+        "RELATION_COLUMNS",
+        "CONSTRAINTS",
+        "DEPENDENT_SQL_FUNCTION_SIGNATURES"
+      ],
+      "bindings": [
+        {
+          "object_identity": "NO_BACKEND_OBJECT_ACCESSED_BY_R16",
+          "object_type": "N/A",
+          "resolved_fields": [
+            "N/A"
+          ],
+          "evidence_ref": "current-main://S30-R16/no-backend-access"
+        }
+      ]
+    },
+    "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED": {
+      "status": "PASS",
+      "evidence": "R16 materialization uses local Python/Git only; broker dispatch uses the existing five workflow_dispatch inputs already defined on main."
+    }
+  },
+  "receipt_mode": "PREWRITE",
+  "receipt_version": "S30_R16_INVARIANT_ASSURANCE_PREWRITE_V1",
+  "repair_reason": null,
+  "repair_target_ekb_codes": [],
+  "safety_readback": {
+    "main_merged": false,
+    "production_changed": false,
+    "runtime_changed": false,
+    "s26_mutated": false,
+    "scheduler_changed": false
+  },
+  "sequence_resolution": {
+    "ALL_INTENDED_STEPS": {
+      "status": "PROVEN",
+      "evidence": "Define invariant catalog with no finding quotas; validate every blocking invariant with positive/negative/mutation proof; evolve semantic delta to exact atom allowlist and content hashes; require independent semantic substance evaluation; project handoffs recursively by allowlist; bind materialization readback to exact relation members; route systematic defects to producer-first remediation."
+    },
+    "CI_PATHS_AND_RUNNER_WIRING": {
+      "status": "PROVEN",
+      "evidence": "Existing S30 test discovery executes R16 test file without shared workflow mutation."
+    },
+    "DATA_ACCESS_BINDINGS": {
+      "status": "PROVEN",
+      "mode": "TYPED_READER",
+      "evidence": "R16 introduces no backend data access; it consumes already-bound in-memory manifest/artifact/readback structures."
+    },
+    "DEPENDENCIES_AND_IMPORT_CLOSURE": {
+      "status": "PROVEN",
+      "evidence": "Python stdlib plus same-directory S30 R15 module only; no model SDK, provider, network dependency or downloaded weights."
+    },
+    "EKB_APPLICABLE": {
+      "status": "PROVEN",
+      "evidence": "R16 consumes current-main S30 governance and quality patterns; no EKB mutation or live Supabase lookup is part of this candidate.",
+      "loaded_codes": [
+        "GOV-010",
+        "DB-001",
+        "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001",
+        "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001"
+      ],
+      "reference_patterns_consumed": [
+        "S30_SEMANTIC_QUALITY_PRESERVATION_V1",
+        "S30_EXECUTION_AUTHORITY_V1",
+        "S26_INVARIANT_REVIEW_LESSON_READ_ONLY"
+      ]
+    },
+    "EVIDENCE_PROVIDER_AND_RESOLVER": {
+      "status": "PROVEN",
+      "evidence": "Every deterministic R16 proof is machine-readable and hash-bound; semantic substance is explicitly delegated only to an independent evaluation-only receipt."
+    },
+    "EXPECTED_OUTPUT_CONTRACT": {
+      "status": "PROVEN",
+      "evidence": "Candidate ceiling is S30_R16_INVARIANT_ASSURANCE_CANDIDATE_PASS_ONLY; no runtime, scheduler, production, Golden or S26 claim."
+    },
+    "JUDGES_AND_RESULT_VOCABULARY": {
+      "status": "PROVEN",
+      "evidence": "CONTRACT_INVARIANT may block only with source_ref and positive/negative/mutation validation. SIGNAL_ONLY can never block. Semantic substance accepts only COMPLIES; UNCERTAIN blocks."
+    },
+    "OPERATION_CONTRACTS": {
+      "status": "PROVEN",
+      "evidence": "S30 preserves upstream obligations and hardens handoff/execution assurance without defining S26 profile/Card semantics."
+    },
+    "PERMISSIONS_SECRETS_AND_READBACK": {
+      "status": "PROVEN",
+      "evidence": "Protected candidate promotion remains broker-only; no direct protected-branch push or secret value access."
+    },
+    "ROUTER": {
+      "status": "PROVEN",
+      "evidence": "No Router mutation. R16 is post-readiness execution assurance inside S30."
+    },
+    "SCHEMA_CONTRACT": {
+      "status": "PROVEN",
+      "evidence": "No backend relation is read or written by R16 materialization. Existing broker metadata reference is infrastructure-only, not decision authority.",
+      "schema_bindings": [
+        {
+          "object_identity": "NO_BACKEND_OBJECT_ACCESSED_BY_R16",
+          "object_type": "N/A",
+          "resolved_fields": [
+            "N/A"
+          ],
+          "evidence_ref": "current-main://S30-R16/no-backend-access"
+        }
+      ]
+    }
+  }
+}
