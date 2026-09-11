@@ -1,0 +1,35 @@
+{
+  "schema": "LF_CAPABILITY_PLATFORM_PILOT_MANIFEST_V1",
+  "scope": "SANDBOX_ONLY",
+  "target_consumer": "ACT-0046",
+  "providers": [
+    "CAP-S30-SEMANTIC-QUALITY",
+    "CAP-S26-SOURCE-FIDELITY"
+  ],
+  "base_main_sha": "b5f1c11cd37acd2c53bf63c66d9f96abf96c756e",
+  "objective": "Prove versioned transversal capability reuse with deterministic PUSH/PULL resolution before any Supabase schema or production rollout.",
+  "required_scenarios": [
+    "PATCH_AUTO_AFTER_TEST",
+    "MINOR_AUTO_AFTER_TEST",
+    "MAJOR_OUTSIDE_RANGE_NOT_INSTALLED",
+    "CONTRACT_TEST_FAILURE_RETAINS_INSTALLED",
+    "CANARY_FAILURE_RETAINS_INSTALLED",
+    "PUSH_PULL_PARITY",
+    "PINNED_CONSUMER_STAYS_WITHIN_RANGE",
+    "RETIRED_INSTALLED_FAILS_CLOSED",
+    "INVALID_SEMVER_FAILS_CLOSED",
+    "OUT_OF_RANGE_INSTALLED_FAILS_CLOSED",
+    "ROLLBACK",
+    "SECOND_PROVIDER_RESOLUTION"
+  ],
+  "safety": {
+    "supabase_schema_change": false,
+    "supabase_dml": false,
+    "runtime_activation": false,
+    "production_change": false,
+    "automatic_promotion": false,
+    "main_merge_authorized": false,
+    "provider_versions_are_pilot_fixtures_not_official_release_numbers": true
+  },
+  "claim_ceiling": "CAPABILITY_VERSION_RESOLUTION_SANDBOX_PILOT_ONLY"
+}
