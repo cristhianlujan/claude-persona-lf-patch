@@ -26,42 +26,46 @@
       ]
     }
   ],
-  "base_main_sha": "24fe594f3b1c7f9ae99e67a76aac45fad997b623",
+  "base_main_sha": "5a414bcb1f8e08492e064788f5ba49b820e1bf27",
   "causal_lane_ownership": {
     "ekb_code": "GOV-010",
-    "target_asset": "S30-EJECUCION-ESTRATEGIA-LF-BOOTSTRAP",
-    "primary_gate": "STRATEGY_EXECUTOR_BOOTSTRAP_SOURCE",
-    "owner": "S30-D-STRATEGY-EXECUTOR-BOOTSTRAP-R17",
+    "target_asset": "S30-EJECUCION-ESTRATEGIA-LF-SANDBOX-ACTIVATION",
+    "primary_gate": "STRATEGY_EXECUTOR_SANDBOX_ACTIVATION_SOURCE",
+    "owner": "S30-D-STRATEGY-EXECUTOR-SANDBOX-ACTIVATION-R18",
     "role": "WRITER",
     "observed_active_writers": [
       {
         "ekb_code": "GOV-010",
-        "target_asset": "S30-EJECUCION-ESTRATEGIA-LF-BOOTSTRAP",
-        "primary_gate": "STRATEGY_EXECUTOR_BOOTSTRAP_SOURCE",
-        "owner": "S30-D-STRATEGY-EXECUTOR-BOOTSTRAP-R17",
+        "target_asset": "S30-EJECUCION-ESTRATEGIA-LF-SANDBOX-ACTIVATION",
+        "primary_gate": "STRATEGY_EXECUTOR_SANDBOX_ACTIVATION_SOURCE",
+        "owner": "S30-D-STRATEGY-EXECUTOR-SANDBOX-ACTIVATION-R18",
         "state": "ACTIVE",
-        "source_ref": "prewrite://S30-EXECUTOR-BOOTSTRAP-R17-20260911"
+        "source_ref": "prewrite://S30-EXECUTOR-SANDBOX-ACTIVATION-R18-20260911"
       }
     ],
     "transfer": {
       "is_transfer": false
     },
-    "evidence": "S30-only source/bootstrap candidate. No operation registry write, runtime activation, scheduler activation, production promotion, or S26 mutation."
+    "evidence": "R18 source-only generator repair after live route activation canary exposed bootstrap predicate projection gap. Live stack was fail-closed rolled back to CANDIDATO_READ_ONLY; no business execution was created."
   },
   "evidence": {
-    "base_main_sha": "24fe594f3b1c7f9ae99e67a76aac45fad997b623",
-    "execution_id": "EXEC-S30-EXECUTOR-BOOTSTRAP-R17-PREWRITE-20260911-001",
-    "mode": "SANDBOX_SOURCE_ONLY_NON_PRODUCTION",
+    "base_main_sha": "5a414bcb1f8e08492e064788f5ba49b820e1bf27",
+    "execution_id": "EXEC-S30-EXECUTOR-SANDBOX-ACTIVATION-R18-PREWRITE-20260911-001",
+    "mode": "SANDBOX_ACTIVATION_SOURCE_NON_PRODUCTION",
     "production": false,
-    "current_main_r16": "DURABLE_AT_24fe594f3b1c7f9ae99e67a76aac45fad997b623",
+    "current_main_r16": "DURABLE_AT_5a414bcb1f8e08492e064788f5ba49b820e1bf27",
     "c05": "LIVE_9_OF_9_AND_SOURCE_PARITY_DURABLE",
-    "next_candidate": "S30-STRATEGY-EXECUTOR-BOOTSTRAP-R17",
-    "registration_applied": false,
-    "runtime_activation": false
+    "registration_applied": true,
+    "live_activation_attempt": "ROUTE_PASS_FULL_CANARY_BLOCKED_BY_BOOTSTRAP_PREDICATE_PROJECTION",
+    "rollback": "COMPLETE_TO_CANDIDATO_READ_ONLY_ZERO_BUSINESS_EXECUTIONS_ZERO_ROUTER_ACTIONS",
+    "focused_activation_tests": "14_OF_14_PASS",
+    "s30_d_test_files": "13_OF_13_PASS",
+    "runtime_activation": false,
+    "next_candidate": "S30-STRATEGY-EXECUTOR-SANDBOX-ACTIVATION-R18"
   },
   "frontier": {
-    "current_stage": "S30_STRATEGY_EXECUTOR_BOOTSTRAP_SOURCE_R17",
-    "next_gate": "OFFICIAL_EJECUCION_ESTRATEGIA_LF_REGISTRATION_AUTHORIZATION",
+    "current_stage": "S30_STRATEGY_EXECUTOR_SANDBOX_ACTIVATION_SOURCE_R18",
+    "next_gate": "EXACT_HEAD_CI_THEN_OWNER_MERGE_AUTHORIZATION",
     "blockers": [],
     "safe_parallel_work": [
       "READ_ONLY_S26_LEARNING_CONSUMPTION",
@@ -71,7 +75,7 @@
   "gate_evidence_envelope": {
     "depth": {
       "status": "PASS",
-      "evidence": "Covers idempotency, leases/fencing, effect reconciliation, R16 quality/handoff, checkpoint recovery, safe-sibling continuation, close guard and state authority."
+      "evidence": "Covers source/live semantic separation, exact strategy source authority, no-write Router binding, 15-step live projection, fail-closed rollback, idempotency/lease/checkpoint/effect-zero canary and boundary invariants."
     },
     "ekb_action": {
       "status": "CONSUMED",
@@ -87,41 +91,41 @@
     "first_bad_hop": null,
     "functional": {
       "status": "PASS",
-      "evidence": "Source contract and 12-case deterministic canary define fail-closed executor behavior without registering or running the operation."
+      "evidence": "Adds a separate sandbox-activation authority and deterministic materialization projection; does not mutate inert bootstrap semantics. Projection explicitly rejects leakage of bootstrap runtime_activation=false predicates into live step contracts."
     },
-    "gate_id": "S30_STRATEGY_EXECUTOR_BOOTSTRAP_PREEXECUTION_R17",
+    "gate_id": "S30_STRATEGY_EXECUTOR_SANDBOX_ACTIVATION_PREEXECUTION_R18",
     "input_exact": {
-      "base_main_sha": "24fe594f3b1c7f9ae99e67a76aac45fad997b623",
+      "base_main_sha": "5a414bcb1f8e08492e064788f5ba49b820e1bf27",
       "receipt_path": "sandbox/lf_contract_gate_test/s30_d_final_r09/s30_strategy_executor_bootstrap_prewrite_receipt_v1.json",
       "request_schema": "s30-git-broker/v1",
-      "source_ref": "lf/staging-s30-r17-executor-bootstrap-20260911",
-      "target_branch": "lf/s30-r17-executor-bootstrap-20260911"
+      "source_ref": "lf/staging-s30-r18-executor-runtime-contract-20260911",
+      "target_branch": "lf/s30-r18-executor-runtime-contract-20260911"
     },
-    "input_sha256": "58e36b48cede00723d06882df891879efc81ce38a9e9eb7c36bd8bb4f510aedb",
-    "input_source_ref": "owner-conformed-s30-scope+github:main@24fe594f3b1c7f9ae99e67a76aac45fad997b623",
+    "input_sha256": "3d6a5198440da63c4c43e5235bef22e9d326ec1efd06ad527616751416c051e6",
+    "input_source_ref": "owner-conformed-s30-scope+github:main@5a414bcb1f8e08492e064788f5ba49b820e1bf27",
     "output_exact": {
       "bounded_repair_allowed": false,
       "material_work_allowed": true,
       "promotion_authority": "NONE",
       "result": "PASS_TO_MATERIAL_WORK"
     },
-    "output_ref": "local-prewrite:S30-STRATEGY-EXECUTOR-BOOTSTRAP-R17",
+    "output_ref": "local-prewrite:S30-STRATEGY-EXECUTOR-SANDBOX-ACTIVATION-R18",
     "output_sha256": "ec67088d3a1ecf4514180d148fb18aee30023fad41c8c7380bba0e7292b0f5d9",
     "performance": {
       "status": "PASS_BASELINE",
-      "evidence": "Dry-run validator/canary is deterministic, local, zero backend writes and zero model calls for machine-detectable cases."
+      "evidence": "Activation projection/canary validators are deterministic Python stdlib; 14/14 focused checks and 13/13 S30-D test files pass with zero model calls in source validation."
     },
     "promotion_authority": "NONE",
     "quality": {
       "status": "PASS",
-      "evidence": "R16 no-quota/no-heuristic/semantic-substance rules are mandatory executor bindings."
+      "evidence": "R16 no-finding-quota, no-heuristic-gate, substantive evidence and generator-first repair remain mandatory; new tests include positive and mutation negatives."
     },
     "repair_allowed": false,
-    "run_id": "EXEC-S30-EXECUTOR-BOOTSTRAP-R17-PREWRITE-20260911-001",
-    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_d_final_r09/s30_r16_prewrite_receipt_v1.json --expected-base-main-sha b5b0145ca63910d3bf1c3e95c4575b813e01c1c1"
+    "run_id": "EXEC-S30-EXECUTOR-SANDBOX-ACTIVATION-R18-PREWRITE-20260911-001",
+    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_d_final_r09/s30_strategy_executor_bootstrap_prewrite_receipt_v1.json --expected-base-main-sha 5a414bcb1f8e08492e064788f5ba49b820e1bf27"
   },
   "git_write_binding": {
-    "base_main_sha": "24fe594f3b1c7f9ae99e67a76aac45fad997b623",
+    "base_main_sha": "5a414bcb1f8e08492e064788f5ba49b820e1bf27",
     "broker_probe": {
       "status": "PASS",
       "commit_sha": "b01fd5b6d0d1d68b464a37337344157b867cb334",
@@ -145,10 +149,10 @@
     "secret_name": "S30_BROKER_DEPLOY_KEY",
     "secret_present": true,
     "secret_required_before_dispatch": true,
-    "source_branch": "lf/staging-s30-r17-executor-bootstrap-20260911",
+    "source_branch": "lf/staging-s30-r18-executor-runtime-contract-20260911",
     "status": "OPERATIONAL",
     "supabase_readback_ref": "github:main/sandbox/lf_contract_gate_test/s30_d_final_r09/c05_live_schema_readback_v3.json",
-    "target_branch": "lf/s30-r17-executor-bootstrap-20260911",
+    "target_branch": "lf/s30-r18-executor-runtime-contract-20260911",
     "workflow_dispatch_wired": true,
     "workflow_path": ".github/workflows/validate-lf-packs.yml"
   },
@@ -270,35 +274,35 @@
       "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001"
     }
   ],
-  "intended_material_action": "S30_STRATEGY_EXECUTOR_BOOTSTRAP_SOURCE_CANDIDATE",
+  "intended_material_action": "S30_STRATEGY_EXECUTOR_SANDBOX_ACTIVATION_SOURCE_CANDIDATE",
   "lane": "S30-D",
-  "owner": "S30-D-STRATEGY-EXECUTOR-BOOTSTRAP-R17",
+  "owner": "S30-D-STRATEGY-EXECUTOR-SANDBOX-ACTIVATION-R18",
   "owner_authorized_merge": false,
   "owner_authorized_repair": false,
   "preflight_checks": {
     "CI_RUNNER_WIRING_CONFIRMED": {
       "status": "PASS",
-      "evidence": "Existing generic S30 test discovery covers test_s30d_strategy_executor_bootstrap.py; no workflow mutation."
+      "evidence": "Existing generic S30 discovery covers both bootstrap and sandbox activation test modules; no workflow mutation."
     },
     "EVIDENCE_PROVIDER_RESOLVABLE": {
       "status": "PASS",
-      "evidence": "All R17 proof is deterministic/local and cites durable exact-main C05/R16 sources."
+      "evidence": "R18 uses exact-main source plus fresh live Supabase readback and deterministic local tests; live activation was rolled back fail-closed after the first source contradiction."
     },
     "EXPECTED_OUTPUT_SCHEMA_COMPLETE": {
       "status": "PASS",
-      "evidence": "Bootstrap contract, source-only registration manifest, 12-case dry-run canary and deterministic result vocabulary are explicit."
+      "evidence": "Sandbox activation contract, 15-step deterministic projection, 9-class no-business-effect live canary and explicit rollback semantics are complete."
     },
     "GIT_WRITE_BROKER_BINDING_CONFIRMED": {
       "status": "PASS",
-      "evidence": "All candidate paths are under bounded sandbox/lf_contract_gate_test/s30_* and include this PREWRITE receipt."
+      "evidence": "All candidate paths remain under sandbox/lf_contract_gate_test/s30_* and this existing PREWRITE receipt is modified in the candidate."
     },
     "IMPORT_CLOSURE": {
       "status": "PASS",
-      "evidence": "s30_strategy_executor_bootstrap.py uses Python stdlib/typing only and executes locally."
+      "evidence": "s30_strategy_executor_bootstrap.py remains stdlib/typing only; activation projection adds no external dependency."
     },
     "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED": {
       "status": "PASS",
-      "evidence": "Negatives cover multi-strategy targeting, request-hash conflict, lease contention, stale fence, unresolved effect, nominal quality, nested metadata, self-readback and premature close."
+      "evidence": "Negatives reject Router write enablement, wrong strategy authority, business-effect canary, scheduler activation, leaked bootstrap runtime predicates, finding quota and incomplete canary coverage."
     },
     "PERMISSIONS_AND_SECRET_READBACK": {
       "status": "PASS",
@@ -306,11 +310,11 @@
     },
     "REQUIRED_FILES_EXIST": {
       "status": "PASS",
-      "evidence": "Current main contains C05 durable source, R16, S30-B typed data access and broker governance; candidate adds four executor source/test artifacts plus this receipt."
+      "evidence": "Current main contains durable R16/C05/bootstrap source; R18 adds activation authority/canary source and generator projection tests while preserving the bootstrap source."
     },
     "SCHEMA_AND_CONSTRAINTS_RESOLVED": {
       "status": "PASS",
-      "evidence": "No database call occurs in R17; governed target object identities are resolved from LF_DATA_ACCESS_REGISTRY_V2 and live field/status/function resolution is explicitly mandatory before future official registration.",
+      "evidence": "Fresh Supabase readback confirmed registered stack, Router schema/function signature, strategy snapshot authority and provenance gates. Source candidate itself performs no live mutation.",
       "resolved": [
         "RELATION_COLUMNS",
         "CONSTRAINTS",
@@ -331,11 +335,11 @@
     },
     "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED": {
       "status": "PASS",
-      "evidence": "R17 invokes no external data mutation tool; governed Git broker request schema is already resolved and future Supabase registration is intentionally outside this candidate."
+      "evidence": "No external mutation tool is invoked by source materialization. Future live reactivation remains a separate governed step after merge/readback."
     }
   },
   "receipt_mode": "PREWRITE",
-  "receipt_version": "S30_STRATEGY_EXECUTOR_BOOTSTRAP_R17_PREWRITE_V1",
+  "receipt_version": "S30_STRATEGY_EXECUTOR_SANDBOX_ACTIVATION_R18_PREWRITE_V1",
   "repair_reason": null,
   "repair_target_ekb_codes": [],
   "safety_readback": {
@@ -348,20 +352,20 @@
   "sequence_resolution": {
     "ALL_INTENDED_STEPS": {
       "status": "PROVEN",
-      "evidence": "Materialize source-only executor bootstrap contract, registration intent, dry-run canary blueprint and deterministic validator; stop before official registry write or runtime activation."
+      "evidence": "Materialize separate sandbox activation contract, deterministic live-step projection and no-business-effect live canary blueprint; stop before merge or re-activation."
     },
     "CI_PATHS_AND_RUNNER_WIRING": {
       "status": "PROVEN",
-      "evidence": "Existing S30 generic test discovery executes sandbox/lf_contract_gate_test/s30_*/test_*.py; no workflow edit required."
+      "evidence": "Existing generic S30 test discovery covers the new test_s30d_strategy_executor_sandbox_activation.py without workflow mutation."
     },
     "DATA_ACCESS_BINDINGS": {
       "status": "PROVEN",
       "mode": "TYPED_READER",
-      "evidence": "No backend access is performed in this source-only candidate. Future registration must use S30-B typed registry/schema resolution before any write."
+      "evidence": "Live activation attempt used fresh Supabase schema/readback and was rolled back after canary exposed a source projection contradiction; R18 source candidate performs no backend mutation."
     },
     "DEPENDENCIES_AND_IMPORT_CLOSURE": {
       "status": "PROVEN",
-      "evidence": "Bootstrap validator is Python stdlib-only; no provider/model SDK, download, runtime service, or database client."
+      "evidence": "Activation validator/materializer remains Python stdlib-only with no provider/model SDK or downloaded model."
     },
     "EKB_APPLICABLE": {
       "status": "PROVEN",
@@ -375,31 +379,31 @@
     },
     "EVIDENCE_PROVIDER_AND_RESOLVER": {
       "status": "PROVEN",
-      "evidence": "Evidence is local deterministic contract/canary output plus durable C05/R16 source refs on exact current main."
+      "evidence": "Evidence combines exact-main source, live Supabase readback of registration/route attempt, deterministic rollback readback, and local projection tests."
     },
     "EXPECTED_OUTPUT_CONTRACT": {
       "status": "PROVEN",
-      "evidence": "Candidate ceiling is S30_STRATEGY_EXECUTOR_BOOTSTRAP_SOURCE_CANDIDATE; no registration, runtime, scheduler, production or Golden claim."
+      "evidence": "Candidate ceiling is S30_R18_SANDBOX_ACTIVATION_SOURCE_CANDIDATE_NOT_MERGED; runtime remains rolled back/inactive until source is merged and separately reapplied."
     },
     "JUDGES_AND_RESULT_VOCABULARY": {
       "status": "PROVEN",
-      "evidence": "Dry-run canary uses explicit deterministic result codes; R16 semantic substance remains independently evaluated and machine-detectable cases use zero model calls."
+      "evidence": "No finding quota. Live canary classes are explicit and deterministic; semantic judgment remains only for non-derivable semantic gaps."
     },
     "OPERATION_CONTRACTS": {
       "status": "PROVEN",
-      "evidence": "EJECUCION_ESTRATEGIA_LF remains source-only; one strategy per child, C05 reliability and R16 quality are mandatory bindings; registration/runtime require separate authorization."
+      "evidence": "Bootstrap contract remains inert. New activation contract is the sole authority for separately authorized SANDBOX_CONTROLLED projection and explicitly forbids orchestrator/scheduler/production/S26 changes."
     },
     "PERMISSIONS_SECRETS_AND_READBACK": {
       "status": "PROVEN",
-      "evidence": "Existing governed S30 broker path is used. No secret value is read or exposed; no Supabase write is requested."
+      "evidence": "Existing governed S30 broker path is used. No secret value is read or exposed. Live attempt/rollback used canonical provenance bootstrap executions."
     },
     "ROUTER": {
       "status": "PROVEN",
-      "evidence": "Router is not mutated or registered in R17; STRATEGY/EXECUTE remains a source candidate only."
+      "evidence": "Live route canary proved STRATEGY_EXECUTION can resolve to EJECUCION_ESTRATEGIA_LF with write_allowed=false; action was removed during fail-closed rollback and is only specified as source intent in R18."
     },
     "SCHEMA_CONTRACT": {
       "status": "PROVEN",
-      "evidence": "No SQL is executed in this candidate. The registration manifest enumerates governed operation objects and mandates fresh field/function/status-value resolution before official registration.",
+      "evidence": "Fresh live schema and function signatures were read before activation attempt; strategy identity authority is public.lf_strategy_snapshots.snapshot_code and Router target resolution is intentionally deferred to strategy_resolve.",
       "schema_bindings": [
         {
           "object_identity": "public.lf_operation_registry",

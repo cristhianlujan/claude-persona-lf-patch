@@ -1,0 +1,50 @@
+{
+  "receipt_version": "v0.1",
+  "receipt_type": "S30_R18_EXECUTOR_SANDBOX_ACTIVATION_SOURCE_PREWRITE",
+  "semantic_status": "PREPARED_NOT_APPLIED",
+  "base_main_sha": "5a414bcb1f8e08492e064788f5ba49b820e1bf27",
+  "trigger": "R18 live activation attempt fail-closed after route PASS because registered step predicates still encoded bootstrap-only runtime_activation=false semantics",
+  "root_cause_class": "GENERATOR_PROJECTION_GAP",
+  "repair_policy": [
+    "FIX_GENERATOR_BEFORE_LIVE_ARTIFACT",
+    "NO_FINDING_QUOTA",
+    "NO_HEURISTIC_AS_GATE"
+  ],
+  "source_additions": [
+    "strategy_executor_sandbox_activation_contract_v1.json",
+    "strategy_executor_live_canary_v1.json"
+  ],
+  "live_state_after_detection": "ROLLED_BACK_TO_CANDIDATO_READ_ONLY",
+  "safety": {
+    "supabase_write_in_source_batch": false,
+    "runtime_activation": false,
+    "scheduler_activation": false,
+    "orchestrator_activation": false,
+    "production_activation": false,
+    "s26_mutation": false
+  },
+  "next_gate": "EXACT_HEAD_CI_THEN_OWNER_MERGE_AUTHORIZATION",
+  "claim_ceiling": "S30_R18_SANDBOX_ACTIVATION_SOURCE_CANDIDATE_NOT_MERGED",
+  "live_canary_attempt": {
+    "activation_execution_id": "EXEC-S30-R18-ACTIVATE-EJECUCION-ESTRATEGIA-20260911-001",
+    "route_result": "PASS_POSITIVE_AND_UNKNOWN_ACTION_NEGATIVE",
+    "full_runtime_result": "BLOCKED_BY_SOURCE_BOOTSTRAP_PREDICATE_PROJECTION",
+    "business_execution_rows_created": 0,
+    "rollback_execution_id": "EXEC-S30-R18-ROLLBACK-EJECUCION-ESTRATEGIA-20260911-001",
+    "rollback_result": "FAIL_CLOSED_ROLLBACK_TO_CANDIDATE_COMPLETE",
+    "post_rollback": {
+      "registry_status": "CANDIDATO_READ_ONLY",
+      "active_steps": 0,
+      "active_step_contracts": 0,
+      "active_router_actions": 0,
+      "business_execution_rows": 0
+    }
+  },
+  "verification": {
+    "legacy_bootstrap_checks": "25/25 PASS",
+    "sandbox_activation_checks": "14/14 PASS",
+    "sandbox_activation_projected_steps": "15/15",
+    "s30_d_test_files": "13/13 PASS",
+    "git_diff_check": "PASS"
+  }
+}
