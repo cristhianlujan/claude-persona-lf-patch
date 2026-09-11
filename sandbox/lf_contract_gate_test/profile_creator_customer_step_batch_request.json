@@ -2,49 +2,66 @@
   "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-S26-SEMANTIC-REPROJECTION-20260911-001",
   "steps": [
     {
-      "step_id": "deterministic_validation",
-      "evidence_ref": "sentinelx://script_job_1fe320bd74134b7aa8841d743afea277",
+      "step_id": "semantic_judge",
+      "evidence_ref": "supabase://public.v_lf_operation_judge_definition/JUDGE-ACTUALIZACION-PERFIL-LF-v0.1",
       "evidence_payload": {
-        "validator_result": {
+        "semantic_judge_result": {
           "result": "PASS",
-          "governed_exact_head": "e7522af9ab56bad4657795a676dfa189aeba20c1",
-          "frozen_source_head": "90345c679a2a6fab8a2f66f0a1feaa75bbd74530",
-          "byte_identity_confirmed": true,
-          "composer_boundary": "13/13 PASS",
-          "focused_regression_suite": "44/44 PASS",
-          "total": "57/57 PASS",
-          "runner_evidence": "sentinelx://script_job_1fe320bd74134b7aa8841d743afea277"
-        },
-        "malformed_input_result": {
-          "result": "PASS_FAIL_CLOSED",
-          "input": "malformed JSON",
-          "exit_code": 1,
-          "error_code": "INPUT_PARSE_ERROR",
-          "validator_blob_sha": "51683d3a7ba3d4aca86d6667d8951e32205461c3",
-          "runner_evidence": "sentinelx://script_job_0b4417d1106a4e6e982a7a01ad0fb6dc"
-        },
-        "negative_regressions": {
-          "result": "PASS",
-          "boundary_suite": "13/13 PASS",
-          "covered_fail_closed_classes": [
-            "missing_composer_payload",
-            "projection_mismatch",
-            "provider_repository_ref_leak",
-            "source_ref_leak",
-            "nested_governance_metadata",
-            "invalid_handoff_payload_ref",
-            "worker_metadata_leak",
-            "artifact_digest_leak",
-            "unknown_component_structural_key",
-            "nested_runtime_source_metadata",
-            "current_page_prebind_guard"
+          "judge_code": "JUDGE-ACTUALIZACION-PERFIL-LF-v0.1",
+          "judge_sha": "8e45c898d8e1a20ce4f93b13bb22bb25c8b7ec7f28a8a1e96ad92f7c2d7c9902",
+          "judge_mode": "GPT_CURRENT_OPERATOR_SEMANTIC_REVIEW",
+          "independent_review_claimed": false,
+          "external_paid_model_used": false,
+          "scope": [
+            "profiles/ui_architect/evals/composer_payload_boundary_20260909/run_cases.py",
+            "profiles/ui_architect/validators/validate_composer_payload_boundary.py"
           ],
-          "run_cases_blob_sha": "3a173bf2ab8ed03e6340491278f6c433761a2c02"
+          "findings": [
+            "Composer projection uses explicit top-level and structural allowlists instead of permissive copying.",
+            "Internal governance, repository/provider, receipt, routing, worker and digest metadata are rejected recursively from Composer payloads.",
+            "The S26 semantic holdout preserves non-canonical guidance status and rejects executable/state prebinding of current_page.",
+            "The governed reprojection is byte-identical to semantic source head 90345c679a2a6fab8a2f66f0a1feaa75bbd74530 and the frozen-lineage focused suite is 57/57 PASS."
+          ],
+          "blocking_semantic_findings": []
         },
-        "lineage_note": "Validation replayed the byte-identical governed profile files in their frozen S26 source lineage. Current-main validator drift was not misclassified as a defect in the frozen S26 artifact.",
+        "authority_checks": {
+          "result": "PASS",
+          "authority_system": "SUPABASE",
+          "router_asset": {
+            "code": "ACT-0001",
+            "estado_documental": "VIGENTE",
+            "estado_operativo": "ACTIVO",
+            "runtime_estado": "RUNTIME_OPERATIVO",
+            "impacto_automatico": "BLOQUEADO"
+          },
+          "profile_asset": {
+            "code": "PERFIL-UI-ARCHITECT",
+            "estado_documental": "CANDIDATO",
+            "estado_operativo": "READ_ONLY",
+            "runtime_estado": "CANDIDATE_READ_ONLY",
+            "impacto_automatico": "BLOQUEADO"
+          },
+          "automatic_runtime_promotion": false,
+          "production_authorized": false,
+          "github_treated_as_operational_authority": false
+        },
+        "router_direct_consistency": {
+          "result": "PASS",
+          "asset_type": "PERFIL",
+          "action_code": "PROFILE_UPDATE",
+          "router_operation_code": "ACTUALIZACION_PERFIL_LF",
+          "direct_execution_operation_code": "ACTUALIZACION_PERFIL_LF",
+          "operation_resolution": "STATIC",
+          "router_mapping_status": "ACTIVE",
+          "write_allowed_by_router_for_profile_update": true,
+          "same_operation_code": true,
+          "target_code": "PERFIL-UI-ARCHITECT"
+        },
         "frozen_s26_lane_mutated": false,
         "merge_executed": false,
         "production_effect": false,
+        "gate_g_advanced": false,
+        "golden_declared": false,
         "step_result": "STEP_PASS_WITH_EVIDENCE",
         "blocking_codes": []
       }
