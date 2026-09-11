@@ -2,80 +2,25 @@
   "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-S26-SEMANTIC-REPROJECTION-20260911-001",
   "steps": [
     {
-      "step_id": "router",
-      "evidence_ref": "supabase://public.v_lf_fuente_operativa/ACT-0001",
-      "evidence_payload": {
-        "router_read": "ACT-0001:v0.3:VIGENTE:ACTIVO:RECTOR:RUNTIME_OPERATIVO:impacto_automatico=BLOQUEADO",
-        "action": "PROFILE_UPDATE",
-        "step_result": "STEP_PASS_WITH_EVIDENCE",
-        "blocking_codes": []
-      }
-    },
-    {
-      "step_id": "profile_resolve",
-      "evidence_ref": "supabase://public.v_lf_fuente_operativa/PERFIL-UI-ARCHITECT",
-      "evidence_payload": {
-        "codigo_activo": "PERFIL-UI-ARCHITECT",
-        "profile_slug": "ui_architect",
-        "repo_path": "profiles/ui_architect",
-        "exact_profile_resolved": true,
-        "step_result": "STEP_PASS_WITH_EVIDENCE",
-        "blocking_codes": []
-      }
-    },
-    {
-      "step_id": "baseline_read",
-      "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@24fe594f3b1c7f9ae99e67a76aac45fad997b623/profiles/ui_architect/SKILL.md",
-      "evidence_payload": {
-        "baseline_revision": "24fe594f3b1c7f9ae99e67a76aac45fad997b623",
-        "baseline_files": [{"path":"profiles/ui_architect/SKILL.md","blob_sha":"0e9105bf37171f28bafe6602d3012f59002cbe88"}],
-        "before_evidence": {
-          "source_pr": 679,
-          "source_head": "90345c679a2a6fab8a2f66f0a1feaa75bbd74530",
-          "source_pr_ci_blocker": "FAIL_RECEIPT_MISSING",
-          "source_profile_paths": ["profiles/ui_architect/evals/composer_payload_boundary_20260909/run_cases.py","profiles/ui_architect/validators/validate_composer_payload_boundary.py"],
-          "original_write_retroactively_authorized": false,
-          "governed_reprojection_required": true
-        },
-        "step_result": "STEP_PASS_WITH_EVIDENCE",
-        "blocking_codes": []
-      }
-    },
-    {
-      "step_id": "change_scope",
-      "evidence_ref": "S26-HP001-SEMANTIC-GOVERNED-REPROJECTION-001",
-      "evidence_payload": {
-        "defect": "PR #679 contains two governed UI Architect profile files without a pre-write ACTUALIZACION_PERFIL_LF execution; lf-contract-check correctly blocks on FAIL_RECEIPT_MISSING.",
-        "root_cause": "The semantic hardening was produced and validated on the frozen S26 Gate F lineage before canonical profile-update governance was bound. A retroactive receipt is forbidden.",
-        "minimal_patch_scope": ["profiles/ui_architect/evals/composer_payload_boundary_20260909/run_cases.py","profiles/ui_architect/validators/validate_composer_payload_boundary.py"],
-        "preserved_constraints": ["Reproject only byte-identical profile files on a separate branch from exact current main.","Do not mutate the frozen S26 Gate F branch or PR #679 source code during the governed write.","Do not merge main into the frozen S26 lineage.","No runtime switch, production, Gate G, Golden, automatic promotion, SQL migration, or Supabase schema change.","Original PR #679 write remains historical and is not retroactively declared governed."],
-        "step_result": "STEP_PASS_WITH_EVIDENCE",
-        "blocking_codes": []
-      }
-    },
-    {
-      "step_id": "regression_plan",
-      "evidence_ref": "S26-HP001-SEMANTIC-REPROJECTION-REGRESSION-PLAN-001",
-      "evidence_payload": {
-        "positive_cases": ["Byte identity of both governed profile files against PR #679 head.","Composer payload allowlist accepts canonical renderable payloads.","Public relative guidance remains accepted."],
-        "negative_cases": ["Unknown top-level Composer keys are rejected.","Internal governance metadata keys are rejected recursively.","Malformed payloads fail closed."],
-        "adversarial_cases": ["Nested blocking_codes/evidence_refs/internal diagnostic metadata are rejected.","Future unknown internal metadata in nested components is rejected.","Allowlisted renderable fields survive without internal leakage."],
-        "holdout": "Re-run focused Composer boundary suite after governed reprojection; preserve the previously validated S26 semantic repair suite as source evidence, but do not substitute it for exact governed-branch checks.",
-        "step_result": "STEP_PASS_WITH_EVIDENCE",
-        "blocking_codes": []
-      }
-    },
-    {
       "step_id": "pre_write_execution_binding_gate",
       "evidence_ref": "public.lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-S26-SEMANTIC-REPROJECTION-20260911-001#step60",
       "evidence_payload": {
         "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-S26-SEMANTIC-REPROJECTION-20260911-001",
         "target_code": "PERFIL-UI-ARCHITECT",
         "target_path": "profiles/ui_architect/SKILL.md",
-        "write_plan": ["Create a separate governed reprojection branch from exact main 24fe594f3b1c7f9ae99e67a76aac45fad997b623.","Write only the two UI Architect profile files with bytes identical to source head 90345c679a2a6fab8a2f66f0a1feaa75bbd74530.","Read back exact blobs before any receipt is issued."],
+        "write_plan": [
+          "Create a separate governed reprojection branch from exact main 5a414bcb1f8e08492e064788f5ba49b820e1bf27.",
+          "Write only the two UI Architect profile files with bytes identical to source head 90345c679a2a6fab8a2f66f0a1feaa75bbd74530.",
+          "Read back exact blobs before any receipt is issued."
+        ],
         "pre_write_gate_passed": true,
-        "bound_revision": "24fe594f3b1c7f9ae99e67a76aac45fad997b623",
+        "bound_revision": {
+          "revision_sha": "5a414bcb1f8e08492e064788f5ba49b820e1bf27"
+        },
         "execution_bound_to_target_before_change": true,
+        "reread_performed": true,
+        "rebind_performed": true,
+        "rebound_from_revision": "24fe594f3b1c7f9ae99e67a76aac45fad997b623",
         "step_result": "STEP_PASS_WITH_EVIDENCE",
         "blocking_codes": []
       }
