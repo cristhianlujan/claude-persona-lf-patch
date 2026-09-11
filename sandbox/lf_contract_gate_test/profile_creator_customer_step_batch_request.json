@@ -2,25 +2,30 @@
   "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-S26-SEMANTIC-REPROJECTION-20260911-001",
   "steps": [
     {
-      "step_id": "github_write",
+      "step_id": "github_readback",
       "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@e7522af9ab56bad4657795a676dfa189aeba20c1",
       "evidence_payload": {
-        "branch": "lf/s26-hp001-semantic-reprojection-governed-20260911",
-        "written_files": [
-          "profiles/ui_architect/evals/composer_payload_boundary_20260909/run_cases.py",
-          "profiles/ui_architect/validators/validate_composer_payload_boundary.py"
+        "exact_head": "e7522af9ab56bad4657795a676dfa189aeba20c1",
+        "readback_files": [
+          {
+            "path": "profiles/ui_architect/evals/composer_payload_boundary_20260909/run_cases.py",
+            "governed_blob_sha": "3a173bf2ab8ed03e6340491278f6c433761a2c02",
+            "source_blob_sha": "3a173bf2ab8ed03e6340491278f6c433761a2c02"
+          },
+          {
+            "path": "profiles/ui_architect/validators/validate_composer_payload_boundary.py",
+            "governed_blob_sha": "51683d3a7ba3d4aca86d6667d8951e32205461c3",
+            "source_blob_sha": "51683d3a7ba3d4aca86d6667d8951e32205461c3"
+          }
         ],
-        "commit_sha": "e7522af9ab56bad4657795a676dfa189aeba20c1",
+        "sha_match": true,
         "identity_preserved": true,
-        "base_main_sha": "5a414bcb1f8e08492e064788f5ba49b820e1bf27",
         "source_head_sha": "90345c679a2a6fab8a2f66f0a1feaa75bbd74530",
         "governed_reprojection_only": true,
         "original_write_retroactively_authorized": false,
         "frozen_s26_lane_mutated": false,
         "merge_executed": false,
         "production_effect": false,
-        "gate_g_advanced": false,
-        "golden_declared": false,
         "step_result": "STEP_PASS_WITH_EVIDENCE",
         "blocking_codes": []
       }
