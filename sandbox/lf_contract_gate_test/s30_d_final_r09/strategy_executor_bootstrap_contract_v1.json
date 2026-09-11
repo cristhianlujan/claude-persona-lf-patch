@@ -1,0 +1,157 @@
+{
+  "contract_version": "S30_STRATEGY_EXECUTOR_BOOTSTRAP_V1",
+  "operation_code": "EJECUCION_ESTRATEGIA_LF",
+  "status": "SOURCE_READY_NOT_REGISTERED",
+  "activation_status": "NOT_REGISTERED_NOT_ACTIVE",
+  "target_cardinality": "ONE_STRATEGY_PER_CHILD_EXECUTION",
+  "operation_role": "CONTROLLED_SINGLE_STRATEGY_EXECUTOR",
+  "authority_policy": "DETERMINISTIC_FIRST_MODEL_ONLY_ON_NON_DERIVABLE_SEMANTIC_GAP",
+  "state_authority": "PERSISTED_OPERATION_STATE_AND_CHECKPOINTS_ONLY",
+  "quality_binding": "S30_EXECUTOR_QUALITY_BINDING_V2",
+  "reliability_binding": "S30_C05_GENERIC_EXECUTION_RELIABILITY_V1",
+  "required_preconditions": [
+    "C05_DYNAMIC_FIRE_9_OF_9_PASS",
+    "C05_CANONICAL_SOURCE_PARITY_DURABLE_ON_MAIN",
+    "S30_R16_INVARIANT_ASSURANCE_DURABLE_ON_MAIN",
+    "S30_B_TYPED_DATA_ACCESS_AVAILABLE",
+    "FRESH_SCHEMA_AND_FUNCTION_SIGNATURE_READBACK_BEFORE_REGISTRATION",
+    "OPERATION_CODE_ABSENT_BEFORE_REGISTRATION",
+    "EXPLICIT_OWNER_AUTHORIZATION_BEFORE_OFFICIAL_REGISTRATION",
+    "SEPARATE_EXPLICIT_AUTHORIZATION_BEFORE_RUNTIME_ACTIVATION"
+  ],
+  "steps": [
+    {
+      "order": 0,
+      "step_id": "init_execution",
+      "effect_class": "NONE"
+    },
+    {
+      "order": 10,
+      "step_id": "router",
+      "effect_class": "NONE"
+    },
+    {
+      "order": 20,
+      "step_id": "strategy_resolve",
+      "effect_class": "READ_ONLY"
+    },
+    {
+      "order": 30,
+      "step_id": "currentness_and_parent_read",
+      "effect_class": "READ_ONLY"
+    },
+    {
+      "order": 40,
+      "step_id": "policy_and_quality_resolve",
+      "effect_class": "READ_ONLY"
+    },
+    {
+      "order": 50,
+      "step_id": "reserve_idempotency_and_lease",
+      "effect_class": "CONTROL_STATE_ONLY"
+    },
+    {
+      "order": 60,
+      "step_id": "safe_work_discovery",
+      "effect_class": "READ_ONLY"
+    },
+    {
+      "order": 70,
+      "step_id": "pre_write_execution_binding_gate",
+      "effect_class": "NONE"
+    },
+    {
+      "order": 80,
+      "step_id": "execute_safe_macrobatch",
+      "effect_class": "BOUNDED_BY_EFFECT_GUARD"
+    },
+    {
+      "order": 90,
+      "step_id": "independent_readback",
+      "effect_class": "READ_ONLY"
+    },
+    {
+      "order": 100,
+      "step_id": "deterministic_and_semantic_judge",
+      "effect_class": "NONE"
+    },
+    {
+      "order": 110,
+      "step_id": "checkpoint_progress",
+      "effect_class": "CONTROL_STATE_ONLY"
+    },
+    {
+      "order": 120,
+      "step_id": "recovery_and_parallel_continue",
+      "effect_class": "CONTROL_FLOW_ONLY"
+    },
+    {
+      "order": 130,
+      "step_id": "close_guard",
+      "effect_class": "NONE"
+    },
+    {
+      "order": 140,
+      "step_id": "report_output",
+      "effect_class": "EVIDENCE_ONLY"
+    }
+  ],
+  "mandatory_invariants": [
+    "ONE_STRATEGY_PER_EXECUTION",
+    "REQUEST_HASH_BOUND_TO_IDEMPOTENCY_KEY",
+    "LEASE_FENCE_REQUIRED_FOR_CHECKPOINT",
+    "NO_EFFECT_BEFORE_EFFECT_GUARD_RESERVATION",
+    "UNRESOLVED_EFFECT_REQUIRES_RECONCILIATION_NOT_REDISPATCH",
+    "CHECKPOINT_SEQUENCE_MONOTONIC",
+    "R16_QUALITY_BINDING_BEFORE_DOWNSTREAM_HANDOFF",
+    "RECURSIVE_HANDOFF_ALLOWLIST",
+    "INDEPENDENT_READBACK_NOT_PRODUCER_SELF_ATTESTATION",
+    "BLOCKED_SCOPE_DOES_NOT_HIDE_UNRELATED_SAFE_SCOPE",
+    "INTERRUPTION_RESUMES_FROM_PERSISTED_CHECKPOINT",
+    "NO_CHAT_MEMORY_AS_STATE_AUTHORITY",
+    "NO_SCHEDULER_AS_STATE_AUTHORITY",
+    "NO_AUTO_PRODUCTION_PROMOTION",
+    "NO_FINDING_QUOTA",
+    "NO_HEURISTIC_AS_BLOCKING_GATE"
+  ],
+  "effect_policy": {
+    "irreversible_effect_requires_effect_guard": true,
+    "same_dispatch_key_same_hash": "REPLAY_OR_EXISTING_RECEIPT",
+    "same_dispatch_key_different_hash": "BLOCK",
+    "reserved_without_receipt": "RECONCILIATION_REQUIRED",
+    "succeeded": "REPLAY_RECEIPT_NO_REDISPATCH"
+  },
+  "quality_policy": {
+    "semantic_delta_contract": "S30_SEMANTIC_DELTA_V3",
+    "semantic_evidence_substance": "INDEPENDENT_EVALUATION_REQUIRED_IF_SEMANTIC_GAP",
+    "materialization_readback": "S30_MATERIALIZATION_PRESERVATION_READBACK_V2",
+    "unknown_or_uncertain": "BLOCK",
+    "system_owned_fields_from_model": "FORBIDDEN"
+  },
+  "close_policy": {
+    "required": [
+      "ZERO_EXECUTABLE_SAFE_SCOPES_REMAINING_OR_ALL_TARGETED_SCOPES_TERMINALLY_DISPOSED",
+      "LATEST_CHECKPOINT_PERSISTED",
+      "INDEPENDENT_READBACK_COMPLETE",
+      "QUALITY_GATES_COMPLETE",
+      "REPORT_PERSISTED"
+    ],
+    "scheduler_reprogramming": "OUT_OF_SCOPE_CHILD_EXECUTOR"
+  },
+  "forbidden": [
+    "MULTI_STRATEGY_BUSINESS_WRITE_IN_ONE_CHILD",
+    "EFFECT_BEFORE_IDEMPOTENCY_AND_EFFECT_GUARD",
+    "BLIND_RETRY",
+    "CHAT_MEMORY_AS_STATE",
+    "SCHEDULER_AS_STATE_AUTHORITY",
+    "MODEL_AS_SYSTEM_FIELD_AUTHORITY",
+    "PRODUCER_SELF_VERDICT_AS_FINAL_READBACK",
+    "AUTO_PRODUCTION_PROMOTION",
+    "RUNTIME_ACTIVATION_FROM_SOURCE_BOOTSTRAP"
+  ],
+  "runtime_activation": false,
+  "scheduler_activation": false,
+  "production_activation": false,
+  "supabase_registration_applied": false,
+  "s26_mutation": false
+}
