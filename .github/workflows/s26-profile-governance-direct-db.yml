@@ -58,3 +58,7 @@ jobs:
       - name: Derive fresh trust context without recording step 60
         shell: bash
         run: python3 sandbox/lf_contract_gate_test/s26_hp001/direct_db_transport/s26_profile_update_trust_derivation.py --live-probe --repo-root .
+
+      - name: Validate source-only direct authority adapter candidate
+        shell: bash
+        run: python3 sandbox/lf_contract_gate_test/s26_hp001/direct_db_transport/test_direct_authority_adapter_candidate.py
