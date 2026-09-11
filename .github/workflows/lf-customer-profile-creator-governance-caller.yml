@@ -175,7 +175,7 @@ jobs:
             umask 077
             printf '%s' "$key" > "$key_file"
             export LOCAL_SERVICE_ROLE_KEY="$key"
-            export SERVICE_ROLE_KEY="$key"
+            export SUPABASE_SERVICE_ROLE_KEY="$key"
 
             docker rm -f s26-profile-caller s26-profile-runtime s26-profile-pg >/dev/null 2>&1 || true
             docker run -d --name s26-profile-pg \
@@ -206,7 +206,7 @@ jobs:
               --add-host=host.docker.internal:host-gateway \
               -p 127.0.0.1:18082:8000 \
               -e SUPABASE_URL='http://host.docker.internal:18080' \
-              -e SERVICE_ROLE_KEY \
+              -e SUPABASE_SERVICE_ROLE_KEY \
               -v "$GITHUB_WORKSPACE:/workspace:ro" -w /workspace \
               denoland/deno:2.4.5 \
               run --no-lock --allow-net --allow-env supabase/functions/run-creacion-perfil-lf/index.ts >/dev/null
@@ -222,7 +222,7 @@ jobs:
               --add-host=host.docker.internal:host-gateway \
               -p 127.0.0.1:18081:8000 \
               -e SUPABASE_URL='http://host.docker.internal:18080' \
-              -e SERVICE_ROLE_KEY \
+              -e SUPABASE_SERVICE_ROLE_KEY \
               -v "$GITHUB_WORKSPACE:/workspace:ro" -w /workspace \
               denoland/deno:2.4.5 \
               run --no-lock --allow-net --allow-env supabase/functions/lf-profile-creator-governance-caller-v1/index.ts >/dev/null
@@ -316,6 +316,7 @@ jobs:
         env:
           OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          PROFILE_CREATOR_EDGE_QUOTA_PROVEN: ${{ steps.edge_probe.outputs.quota }}
         run: |
           set -euo pipefail
           python3 - <<'PY' > governed-step-request.json
@@ -338,6 +339,7 @@ jobs:
         env:
           OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          PROFILE_CREATOR_EDGE_QUOTA_PROVEN: ${{ steps.edge_probe.outputs.quota }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -355,6 +357,7 @@ jobs:
               receipts.append({'step_id':item['step_id'],'ok':ok,'http':code})
               print(json.dumps({'step_id':item['step_id'],'ok':ok,'http':code,'outcome':data.get('outcome')}))
               if not ok:
+                  print('GOVERNED_STEP_RESPONSE='+json.dumps(data,sort_keys=True))
                   print('GOVERNED_CUSTOMER_PROFILE_BATCH=BLOCKED_FIRST_FAILURE')
                   print(json.dumps(receipts))
                   sys.exit(1)
