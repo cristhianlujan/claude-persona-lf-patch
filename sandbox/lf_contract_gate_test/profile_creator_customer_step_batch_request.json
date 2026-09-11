@@ -2,27 +2,46 @@
   "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-S26-SEMANTIC-REPROJECTION-20260911-001",
   "steps": [
     {
-      "step_id": "github_readback",
-      "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@e7522af9ab56bad4657795a676dfa189aeba20c1",
+      "step_id": "deterministic_validation",
+      "evidence_ref": "sentinelx://script_job_1fe320bd74134b7aa8841d743afea277",
       "evidence_payload": {
-        "exact_head": "e7522af9ab56bad4657795a676dfa189aeba20c1",
-        "readback_files": [
-          {
-            "path": "profiles/ui_architect/evals/composer_payload_boundary_20260909/run_cases.py",
-            "governed_blob_sha": "3a173bf2ab8ed03e6340491278f6c433761a2c02",
-            "source_blob_sha": "3a173bf2ab8ed03e6340491278f6c433761a2c02"
-          },
-          {
-            "path": "profiles/ui_architect/validators/validate_composer_payload_boundary.py",
-            "governed_blob_sha": "51683d3a7ba3d4aca86d6667d8951e32205461c3",
-            "source_blob_sha": "51683d3a7ba3d4aca86d6667d8951e32205461c3"
-          }
-        ],
-        "sha_match": true,
-        "identity_preserved": true,
-        "source_head_sha": "90345c679a2a6fab8a2f66f0a1feaa75bbd74530",
-        "governed_reprojection_only": true,
-        "original_write_retroactively_authorized": false,
+        "validator_result": {
+          "result": "PASS",
+          "governed_exact_head": "e7522af9ab56bad4657795a676dfa189aeba20c1",
+          "frozen_source_head": "90345c679a2a6fab8a2f66f0a1feaa75bbd74530",
+          "byte_identity_confirmed": true,
+          "composer_boundary": "13/13 PASS",
+          "focused_regression_suite": "44/44 PASS",
+          "total": "57/57 PASS",
+          "runner_evidence": "sentinelx://script_job_1fe320bd74134b7aa8841d743afea277"
+        },
+        "malformed_input_result": {
+          "result": "PASS_FAIL_CLOSED",
+          "input": "malformed JSON",
+          "exit_code": 1,
+          "error_code": "INPUT_PARSE_ERROR",
+          "validator_blob_sha": "51683d3a7ba3d4aca86d6667d8951e32205461c3",
+          "runner_evidence": "sentinelx://script_job_0b4417d1106a4e6e982a7a01ad0fb6dc"
+        },
+        "negative_regressions": {
+          "result": "PASS",
+          "boundary_suite": "13/13 PASS",
+          "covered_fail_closed_classes": [
+            "missing_composer_payload",
+            "projection_mismatch",
+            "provider_repository_ref_leak",
+            "source_ref_leak",
+            "nested_governance_metadata",
+            "invalid_handoff_payload_ref",
+            "worker_metadata_leak",
+            "artifact_digest_leak",
+            "unknown_component_structural_key",
+            "nested_runtime_source_metadata",
+            "current_page_prebind_guard"
+          ],
+          "run_cases_blob_sha": "3a173bf2ab8ed03e6340491278f6c433761a2c02"
+        },
+        "lineage_note": "Validation replayed the byte-identical governed profile files in their frozen S26 source lineage. Current-main validator drift was not misclassified as a defect in the frozen S26 artifact.",
         "frozen_s26_lane_mutated": false,
         "merge_executed": false,
         "production_effect": false,
