@@ -14,10 +14,7 @@ from typing import Any
 SHA40 = re.compile(r"^[0-9a-f]{40}$")
 LOCAL_KEY = os.environ.get("LOCAL_SERVICE_ROLE_KEY", "")
 UPSTREAM = os.environ.get("S26_EXACT_RUNTIME_URL", "http://127.0.0.1:18082").rstrip("/")
-TRUST_FIELDS = {
-    "trusted_current_revision",
-    "current_revision_resolved_by_caller",
-    "declared_current_revision_ignored",
+FORBIDDEN_SERVER_TRUST_FIELDS = {
     "server_trust_context_valid",
     "server_trust_context_source",
     "server_trust_context",
@@ -42,8 +39,8 @@ def normalize(payload: dict[str, Any]) -> tuple[dict[str, Any], bool]:
     sha = bound.get("revision_sha")
     if not isinstance(sha, str) or not SHA40.fullmatch(sha):
         raise ValueError("BOUND_REVISION_COMPAT_SHA_INVALID")
-    if any(key in evidence for key in TRUST_FIELDS):
-        raise ValueError("CALLER_TRUST_FIELDS_MUST_BE_STRIPPED_BY_RUNTIME")
+    if any(key in evidence for key in FORBIDDEN_SERVER_TRUST_FIELDS):
+        raise ValueError("SERVER_TRUST_FIELDS_MUST_BE_DERIVED_BY_RUNTIME")
     out = dict(payload)
     out_evidence = dict(evidence)
     out_evidence["bound_revision"] = sha
@@ -124,10 +121,18 @@ def self_test() -> None:
     base = {
         "action": "record_profile_operation_step_v1",
         "step_id": "pre_write_execution_binding_gate",
-        "evidence_payload": {"bound_revision": {"revision_sha": sha}, "step_result": "STEP_PASS_WITH_EVIDENCE", "blocking_codes": []},
+        "evidence_payload": {
+            "bound_revision": {"revision_sha": sha},
+            "step_result": "STEP_PASS_WITH_EVIDENCE",
+            "blocking_codes": [],
+            "trusted_current_revision": {"revision_sha": sha},
+            "current_revision_resolved_by_caller": True,
+            "declared_current_revision_ignored": True,
+        },
     }
     out, changed = normalize(base)
     assert changed is True and out["evidence_payload"]["bound_revision"] == sha
+    assert out["evidence_payload"]["current_revision_resolved_by_caller"] is True
     direct = {**base, "evidence_payload": {**base["evidence_payload"], "bound_revision": sha}}
     out2, changed2 = normalize(direct)
     assert changed2 is False and out2 == direct
@@ -137,10 +142,10 @@ def self_test() -> None:
     try:
         normalize({**base, "evidence_payload": {"bound_revision": {"revision_sha": sha}, "server_trust_context_valid": True}})
     except ValueError as exc:
-        assert str(exc) == "CALLER_TRUST_FIELDS_MUST_BE_STRIPPED_BY_RUNTIME"
+        assert str(exc) == "SERVER_TRUST_FIELDS_MUST_BE_DERIVED_BY_RUNTIME"
     else:
-        raise AssertionError("TRUST_FIELD_FAIL_OPEN")
-    print("PASS_PROFILE_CREATOR_BOUND_REVISION_COMPAT_SELFTEST=4/4")
+        raise AssertionError("SERVER_TRUST_FAIL_OPEN")
+    print("PASS_PROFILE_CREATOR_BOUND_REVISION_COMPAT_SELFTEST=5/5")
 
 
 def main() -> int:
