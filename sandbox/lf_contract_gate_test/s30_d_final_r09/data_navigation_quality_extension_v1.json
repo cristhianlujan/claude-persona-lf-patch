@@ -1,0 +1,45 @@
+{
+  "contract_version": "S30_DATA_NAVIGATION_QUALITY_EXTENSION_V1",
+  "base_navigation": "S30_ONE_BY_ONE_DATA_NAVIGATION_TRACE_V1",
+  "insert_after": "CANONICAL_WORKING_GRAPH",
+  "quality_hops": [
+    {
+      "hop": "PROFILE_CARD_READINESS_PROJECTION",
+      "owner": "UPSTREAM_PROFILE_READINESS",
+      "s30_action": "VALIDATE_PROJECTION_ONLY",
+      "failure": "BLOCK_PROFILE_NOT_EXECUTION_READY"
+    },
+    {
+      "hop": "SEMANTIC_OBLIGATION_MANIFEST",
+      "owner": "S30",
+      "s30_action": "DETERMINISTIC_BUILD_AND_HASH_BIND",
+      "failure": "BLOCK_SEMANTIC_MANIFEST_REQUIRED_BEFORE_MODEL"
+    },
+    {
+      "hop": "SEMANTIC_DELTA_COVERAGE",
+      "owner": "S30",
+      "s30_action": "DETERMINISTIC_EXACT_COVERAGE_FOR_SEMANTIC_DELTA_OBLIGATIONS",
+      "failure": "BLOCK_SEMANTIC_OBLIGATION_COVERAGE_MISSING"
+    },
+    {
+      "hop": "MATERIALIZATION_PRESERVATION_READBACK",
+      "owner": "S30",
+      "s30_action": "DETERMINISTIC_COMPONENT_RELATION_AND_DETERMINISTIC_QUALITY_READBACK",
+      "failure": "BLOCK_MATERIALIZATION_QUALITY_LOSS"
+    },
+    {
+      "hop": "FINAL_SEMANTIC_QUALITY_EVALUATION",
+      "owner": "S30",
+      "s30_action": "INDEPENDENT_EVALUATION_ONLY_IF_REQUIRED",
+      "failure": "BLOCK_FINAL_SEMANTIC_QUALITY_NOT_COMPLIANT"
+    },
+    {
+      "hop": "CROSS_ROUTE_SEMANTIC_INVARIANT",
+      "owner": "S30",
+      "s30_action": "COMPARE_DIRECT_ROUTER_INVARIANT_DIGEST",
+      "failure": "BLOCK_CROSS_ROUTE_SEMANTIC_INVARIANT_MISMATCH"
+    }
+  ],
+  "hard_rule": "NO_DOWNSTREAM_ELIGIBILITY_WHEN_ANY_REQUIRED_QUALITY_HOP_IS_UNPROVEN",
+  "s26_mutation": false
+}
