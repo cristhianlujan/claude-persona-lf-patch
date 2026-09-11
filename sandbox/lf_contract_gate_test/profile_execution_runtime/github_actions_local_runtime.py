@@ -229,6 +229,7 @@ class GitHubHostedLlamaCppAdapter:
             "model_id": MODEL_ID,
             "run_id": f"github-actions:{os.environ['GITHUB_RUN_ID']}:{os.getenv('GITHUB_RUN_ATTEMPT','1')}",
             "attested_at": _utc_now(), "adapter_id": self.adapter_id,
+            "executor_mode": request.get("executor_mode"),
             "request_sha256": request["request_sha256"],
             "profile_source_sha256": request["profile_source_sha256"],
             "input_sha256": request["input_sha256"],

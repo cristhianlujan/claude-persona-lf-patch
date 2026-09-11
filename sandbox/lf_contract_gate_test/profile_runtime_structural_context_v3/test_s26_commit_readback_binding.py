@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -61,12 +62,61 @@ def _fetch_commit(sha: str) -> None:
     )
 
 
+def _commit_parents(ref: str) -> list[str]:
+    body = _run("git", "cat-file", "-p", ref).stdout
+    return [line.split()[1] for line in body.splitlines() if line.startswith("parent ")]
+
+
 def _parent_sha(head: str) -> str:
-    body = _run("git", "cat-file", "-p", head).stdout
-    parents = [line.split()[1] for line in body.splitlines() if line.startswith("parent ")]
+    parents = _commit_parents(head)
     if len(parents) != 1:
         raise AssertionError(f"S26_SHA_BINDING_PARENT_COUNT_INVALID:{len(parents)}")
     return parents[0]
+
+
+def _valid_commit_sha(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 40
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
+def _resolve_candidate_head() -> tuple[str, str, str]:
+    checkout_head = _run("git", "rev-parse", "HEAD").stdout.strip()
+    if os.environ.get("GITHUB_EVENT_NAME", "").strip() != "pull_request":
+        return checkout_head, checkout_head, "CHECKOUT_HEAD"
+
+    event_path_raw = os.environ.get("GITHUB_EVENT_PATH", "").strip()
+    if not event_path_raw:
+        raise AssertionError("S26_SHA_BINDING_PR_EVENT_PATH_MISSING")
+    event_path = Path(event_path_raw)
+    if not event_path.is_file():
+        raise AssertionError("S26_SHA_BINDING_PR_EVENT_PATH_INVALID")
+
+    try:
+        payload = json.loads(event_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise AssertionError("S26_SHA_BINDING_PR_EVENT_INVALID") from exc
+
+    pull_request = payload.get("pull_request") or {}
+    candidate_head = ((pull_request.get("head") or {}).get("sha") or "").strip()
+    base_head = ((pull_request.get("base") or {}).get("sha") or "").strip()
+    if not _valid_commit_sha(candidate_head):
+        raise AssertionError("S26_SHA_BINDING_PR_HEAD_SHA_INVALID")
+    if not _valid_commit_sha(base_head):
+        raise AssertionError("S26_SHA_BINDING_PR_BASE_SHA_INVALID")
+
+    checkout_parents = _commit_parents(checkout_head)
+    if len(checkout_parents) != 2:
+        raise AssertionError(
+            f"S26_SHA_BINDING_PR_MERGE_PARENT_COUNT_INVALID:{len(checkout_parents)}"
+        )
+    if set(checkout_parents) != {base_head, candidate_head}:
+        raise AssertionError("S26_SHA_BINDING_PR_EVENT_MERGE_PARENT_MISMATCH")
+
+    _fetch_commit(candidate_head)
+    return candidate_head, checkout_head, "PULL_REQUEST_EVENT_HEAD_BOUND_TO_MERGE_PARENTS"
 
 
 def _git_bytes(ref: str, path: str) -> bytes:
@@ -80,7 +130,7 @@ def _git_bytes(ref: str, path: str) -> bytes:
 
 
 def main() -> None:
-    head = _run("git", "rev-parse", "HEAD").stdout.strip()
+    head, checkout_head, head_resolution = _resolve_candidate_head()
     parent = _parent_sha(head)
     _fetch_commit(parent)
     changed = set(_run("git", "diff", "--name-only", parent, head).stdout.splitlines())
@@ -164,6 +214,8 @@ def main() -> None:
                 "gate": "S26_POST_COMMIT_READBACK_BINDING_GUARD_V1",
                 "result": "PASS",
                 "head": head,
+                "checkout_head": checkout_head,
+                "head_resolution": head_resolution,
                 "parent": parent,
                 "checked_transition_count": len(checked),
                 "checked": checked,

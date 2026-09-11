@@ -7,6 +7,11 @@ from typing import Any
 
 HERE = Path(__file__).resolve().parent
 F_INPUT = HERE / "gate_f_input.json"
+TARGET_MODEL_GENERATION_MS = 60000.0
+MAX_ACCEPTABLE_MODEL_GENERATION_MS = 120000.0
+MAX_ACCEPTABLE_PROFILE_ELAPSED_MS = 120000.0
+HARD_TRANSPORT_TIMEOUT_MS = 300000.0
+WORKER_WATCHDOG_MS = 900000.0
 F_OUTPUT = HERE / "gate_f_output.json"
 OBSERVATION = HERE / "gate_f_runtime_observation.json"
 
@@ -48,6 +53,15 @@ def validate_gate_f_payload(payload: dict[str, Any], *, f_input_sha: str, observ
     decision = payload.get("decision") or {}
     qdp = payload.get("quality_depth_performance") or {}
 
+    performance_budget = (
+        isinstance(qdp.get("model_generation_elapsed_ms"), (int, float))
+        and not isinstance(qdp.get("model_generation_elapsed_ms"), bool)
+        and qdp.get("model_generation_elapsed_ms") <= MAX_ACCEPTABLE_MODEL_GENERATION_MS
+        and isinstance(obs.get("profile_elapsed_ms"), (int, float))
+        and not isinstance(obs.get("profile_elapsed_ms"), bool)
+        and obs.get("profile_elapsed_ms") <= MAX_ACCEPTABLE_PROFILE_ELAPSED_MS
+    )
+
     exact = (
         obs.get("source_match") is True
         and decision.get("exact_head_runtime_observed") is True
@@ -62,6 +76,7 @@ def validate_gate_f_payload(payload: dict[str, Any], *, f_input_sha: str, observ
         and qdp.get("quality_on_exact_runtime_output") == "PASS"
         and qdp.get("depth_on_exact_runtime_output") == "PASS"
         and qdp.get("model_generation_performance") == "PASS"
+        and performance_budget
     )
 
     if payload.get("status") == "PASS":
@@ -81,6 +96,18 @@ def validate_gate_f_payload(payload: dict[str, Any], *, f_input_sha: str, observ
 
     if req.get("machine_readable_runtime_timings_required") is not True or req.get("model_generation_performance_required") is not True:
         raise GateFBlocked("GATE_F_PERFORMANCE_REQUIREMENT_MISSING")
+    expected_budget = {
+        "target_model_generation_ms": TARGET_MODEL_GENERATION_MS,
+        "max_acceptable_model_generation_ms": MAX_ACCEPTABLE_MODEL_GENERATION_MS,
+        "max_acceptable_profile_elapsed_ms": MAX_ACCEPTABLE_PROFILE_ELAPSED_MS,
+        "hard_transport_timeout_ms": HARD_TRANSPORT_TIMEOUT_MS,
+        "worker_watchdog_ms": WORKER_WATCHDOG_MS,
+    }
+    for key, expected in expected_budget.items():
+        if req.get(key) != expected:
+            raise GateFBlocked(f"GATE_F_PERFORMANCE_BUDGET_INVALID:{key}")
+    if payload.get("status") == "PASS" and not performance_budget:
+        raise GateFBlocked("GATE_F_PERFORMANCE_BUDGET_EXCEEDED")
     return payload
 
 def evaluate_gate_f() -> dict[str, Any]:
