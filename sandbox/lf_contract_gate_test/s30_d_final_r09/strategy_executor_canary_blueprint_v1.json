@@ -1,0 +1,78 @@
+{
+  "contract_version": "S30_STRATEGY_EXECUTOR_CANARY_BLUEPRINT_V1",
+  "status": "DRY_RUN_ONLY_NOT_RUNTIME",
+  "operation_code": "EJECUCION_ESTRATEGIA_LF",
+  "case_count": 12,
+  "backend_writes": 0,
+  "model_calls_for_machine_detectable_cases": 0,
+  "cases": [
+    {
+      "case_id": "EX-01",
+      "fault": "NONE",
+      "expected": "CANARY_PASS_NO_EFFECT"
+    },
+    {
+      "case_id": "EX-02",
+      "fault": "MULTI_STRATEGY_TARGET",
+      "expected": "BLOCK_ONE_STRATEGY_PER_EXECUTION"
+    },
+    {
+      "case_id": "EX-03",
+      "fault": "IDEMPOTENCY_HASH_CONFLICT",
+      "expected": "BLOCK_IDEMPOTENCY_REQUEST_HASH_CONFLICT"
+    },
+    {
+      "case_id": "EX-04",
+      "fault": "LEASE_CONTENDED",
+      "expected": "BLOCK_LEASE_NOT_OWNED"
+    },
+    {
+      "case_id": "EX-05",
+      "fault": "STALE_FENCE",
+      "expected": "BLOCK_STALE_FENCE"
+    },
+    {
+      "case_id": "EX-06",
+      "fault": "EFFECT_RESERVED_NO_RECEIPT",
+      "expected": "RECONCILIATION_REQUIRED"
+    },
+    {
+      "case_id": "EX-07",
+      "fault": "QUALITY_NOMINAL_EVIDENCE",
+      "expected": "BLOCK_QUALITY_SUBSTANCE"
+    },
+    {
+      "case_id": "EX-08",
+      "fault": "NESTED_INTERNAL_HANDOFF_METADATA",
+      "expected": "BLOCK_HANDOFF_ALLOWLIST"
+    },
+    {
+      "case_id": "EX-09",
+      "fault": "PRODUCER_SELF_READBACK",
+      "expected": "BLOCK_READBACK_INDEPENDENCE"
+    },
+    {
+      "case_id": "EX-10",
+      "fault": "ONE_BLOCKED_ONE_SAFE_SCOPE",
+      "expected": "CONTINUE_SAFE_SCOPE_PERSIST_BLOCKED_SCOPE"
+    },
+    {
+      "case_id": "EX-11",
+      "fault": "INTERRUPTION_WITH_CHECKPOINT",
+      "expected": "RESUME_FROM_PERSISTED_CHECKPOINT"
+    },
+    {
+      "case_id": "EX-12",
+      "fault": "CLOSE_WITH_EXECUTABLE_SCOPE_REMAINING",
+      "expected": "BLOCK_CLOSE_GUARD"
+    }
+  ],
+  "success_criteria": {
+    "all_cases_match": true,
+    "preventable_first_hop_escape_count": 0,
+    "duplicate_irreversible_effect_count": 0,
+    "lost_progress_count": 0,
+    "nominal_quality_pass_count": 0,
+    "runtime_activation": false
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "contract_version": "S30_STRATEGY_EXECUTOR_REGISTRATION_MANIFEST_V1",
+  "operation_code": "EJECUCION_ESTRATEGIA_LF",
+  "status": "SOURCE_ONLY_NOT_APPLIED",
+  "registration_mode": "PREPARED_INTENT_REQUIRES_FRESH_SCHEMA_AND_OWNER_AUTHORIZATION",
+  "target_objects": [
+    {
+      "source_code": "OPERATION_REGISTRY",
+      "object_identity": "public.lf_operation_registry"
+    },
+    {
+      "source_code": "OPERATION_CONTRACTS",
+      "object_identity": "public.lf_operation_contracts"
+    },
+    {
+      "source_code": "OPERATION_STEPS",
+      "object_identity": "public.lf_operation_steps"
+    },
+    {
+      "source_code": "OPERATION_STEP_CONTRACTS",
+      "object_identity": "public.lf_operation_step_contracts"
+    },
+    {
+      "source_code": "OPERATION_JUDGES",
+      "object_identity": "public.lf_operation_judges"
+    },
+    {
+      "source_code": "OPERATION_STEP_JUDGE_BINDINGS",
+      "object_identity": "public.lf_operation_step_judge_bindings"
+    },
+    {
+      "source_code": "OPERATION_POLICY_BINDINGS",
+      "object_identity": "public.lf_operation_policy_bindings"
+    }
+  ],
+  "required_source_contracts": [
+    "sandbox/lf_contract_gate_test/s30_d_final_r09/strategy_executor_bootstrap_contract_v1.json",
+    "sandbox/lf_contract_gate_test/s30_d_final_r09/executor_quality_binding_v2.json",
+    "sandbox/lf_contract_gate_test/s30_d_final_r09/r16_invariant_assurance_contract_v1.json",
+    "sandbox/lf_contract_gate_test/s30_d_final_r09/c05_dynamic_fire_test_receipt_v1.json",
+    "sandbox/lf_contract_gate_test/s30_d_final_r09/c05_source_persistence_closeout_v2.json"
+  ],
+  "schema_binding_policy": {
+    "fresh_before_apply": true,
+    "field_level_registry": "LF_DATA_ACCESS_REGISTRY_V2",
+    "unknown_field_or_status_value": "FAIL_CLOSED",
+    "free_sql": "FORBIDDEN_FOR_REGISTERED_SOURCE",
+    "ddl_required": false
+  },
+  "registration_boundary": {
+    "official_source_write": true,
+    "owner_authorization_required": true,
+    "runtime_activation_separate_authorization_required": true,
+    "scheduler_activation_separate_authorization_required": true,
+    "production_activation_separate_authorization_required": true
+  },
+  "apply_actions": {
+    "supabase_write": false,
+    "ddl": false,
+    "operation_registry_write": false,
+    "runtime_activation": false,
+    "scheduler_activation": false,
+    "production_activation": false
+  }
+}
