@@ -25,6 +25,7 @@ load_registry = _OWNERSHIP.load_registry
 
 MIGRATION_PREFIX = "supabase/migrations/"
 MIGRATION_VALIDATOR = "sandbox/lf_contract_gate_test/lf_migration_source_parity.py"
+MIGRATION_TRANSPORT_TEST = "sandbox/lf_contract_gate_test/test_lf_migration_source_parity_transport.py"
 INPUT_GOV_VALIDATOR = "sandbox/lf_contract_gate_test/input_governance_migration_parity_compact.py"
 CI_WORKFLOW = ".github/workflows/lf-contract-check.yml"
 VALIDATE_LF_PACKS_WORKFLOW = ".github/workflows/validate-lf-packs.yml"
@@ -137,7 +138,7 @@ def _is_known_shared(path: str, s30_known: bool) -> bool:
         return True
     if path.startswith(CI_ROUTER_PREFIX):
         return True
-    if path in {MIGRATION_VALIDATOR, INPUT_GOV_VALIDATOR}:
+    if path in {MIGRATION_VALIDATOR, MIGRATION_TRANSPORT_TEST, INPUT_GOV_VALIDATOR}:
         return True
     if _is_p0_exact_head_external_owner(path):
         return True
@@ -173,7 +174,7 @@ def classify(paths: Iterable[str], *, registry_data: Mapping[str, Any] | None = 
         except RegistryValidationError as exc:
             return _fail_closed("DEEP_SHARED_REGISTRY_INVALID", f"S30_REGISTRY_INVALID:{exc.code}")
 
-        if path.startswith(MIGRATION_PREFIX) or path == MIGRATION_VALIDATOR:
+        if path.startswith(MIGRATION_PREFIX) or path in {MIGRATION_VALIDATOR, MIGRATION_TRANSPORT_TEST}:
             migration = True
             reasons.append(f"MIGRATION:{path}")
         if _is_input_governance_migration(path) or path == INPUT_GOV_VALIDATOR:
