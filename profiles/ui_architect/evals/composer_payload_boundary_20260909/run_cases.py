@@ -132,7 +132,23 @@ def main():
     assert "COMPOSER_INTERNAL_KEY_LEAK" in codes(boundary.validate(digest_leak))
     passed += 1
 
-    # 11. Semantic holdout: boundary preserves non-canonical rules and does not prebind current_page.
+    # 11. Future internal structural keys fail closed instead of passing by denylist omission.
+    unknown_component_key = make_v6(run_e, boundary)
+    unknown_component_key["deliverable_created"]["component_tree"][0]["internal_trace_context"] = {"opaque": "x"}
+    unknown_component_key["composer_payload"] = boundary.build_composer_payload(unknown_component_key["deliverable_created"])
+    result_codes = codes(boundary.validate(unknown_component_key))
+    assert "COMPOSER_COMPONENT_KEY_NOT_ALLOWED" in result_codes
+    assert "COMPOSER_INTERNAL_KEY_LEAK" in result_codes
+    passed += 1
+
+    # 12. Future internal metadata nested in extensible content is still rejected recursively.
+    unknown_content_metadata = make_v6(run_e, boundary)
+    unknown_content_metadata["deliverable_created"]["component_tree"][0]["content"]["runtime_source_context"] = "opaque"
+    unknown_content_metadata["composer_payload"] = boundary.build_composer_payload(unknown_content_metadata["deliverable_created"])
+    assert "COMPOSER_INTERNAL_KEY_LEAK" in codes(boundary.validate(unknown_content_metadata))
+    passed += 1
+
+    # 13. Semantic holdout: boundary preserves non-canonical rules and does not prebind current_page.
     # Safety prose may mention the token; only executable/state binding is forbidden in this S26 fixture.
     semantic = make_v6(run_e, boundary)
     actions = semantic["deliverable_created"]["remediation_actions"]
@@ -142,7 +158,7 @@ def main():
     assert_guard_rejects_prebound_current_page(semantic["composer_payload"])
     passed += 1
 
-    print(f"UI_COMPOSER_BOUNDARY_TESTS_PASS {passed}/11")
+    print(f"UI_COMPOSER_BOUNDARY_TESTS_PASS {passed}/13")
 
 
 if __name__ == "__main__":

@@ -49,6 +49,23 @@ FORBIDDEN_VALUE_FRAGMENTS = (
     "INDEPENDENT_CHAT_CONTEXT",
 )
 
+COMPOSER_COMPONENT_KEY_ALLOWLIST = {
+    "zone_id", "component_id", "component_type", "role", "content",
+    "visual_priority", "color_tokens", "typography", "spacing", "state",
+    "allowed_variants", "blocked_variants",
+}
+
+COMPOSER_SCREEN_KEY_ALLOWLIST = {
+    "task_mode", "screen_type", "purpose", "required_sections",
+    "implementation_readiness", "design_intent", "scope", "screen_code", "screen_name",
+}
+
+INTERNAL_METADATA_KEY_FRAGMENTS = (
+    "internal_metadata", "governance", "provenance", "receipt", "routing",
+    "verdict", "attestation", "prebound", "commit_sha", "runtime_source",
+    "execution_contract", "repository_ref", "provider_ref", "audit_trace", "model_id",
+)
+
 
 def _fail(code: str, detail: str, errors: list[dict[str, str]]) -> None:
     errors.append({"code": code, "detail": detail})
@@ -84,12 +101,37 @@ def build_composer_payload(deliverable: Any) -> dict[str, Any]:
     return projected
 
 
+def _looks_like_internal_metadata_key(key_text: str) -> bool:
+    lowered = key_text.casefold()
+    if lowered.startswith("internal_") or lowered.endswith("_internal") or lowered.startswith("__"):
+        return True
+    return any(fragment in lowered for fragment in INTERNAL_METADATA_KEY_FRAGMENTS)
+
+
+def _scan_structural_allowlists(value: Any, path: str, errors: list[dict[str, str]]) -> None:
+    if not isinstance(value, dict):
+        return
+    screen = value.get("screen_definition")
+    if isinstance(screen, dict):
+        for key in screen:
+            if key not in COMPOSER_SCREEN_KEY_ALLOWLIST:
+                _fail("COMPOSER_SCREEN_KEY_NOT_ALLOWED", f"{path}.screen_definition.{key}", errors)
+    components = value.get("component_tree")
+    if isinstance(components, list):
+        for idx, component in enumerate(components):
+            if not isinstance(component, dict):
+                continue
+            for key in component:
+                if key not in COMPOSER_COMPONENT_KEY_ALLOWLIST:
+                    _fail("COMPOSER_COMPONENT_KEY_NOT_ALLOWED", f"{path}.component_tree[{idx}].{key}", errors)
+
+
 def _scan_forbidden(value: Any, path: str, errors: list[dict[str, str]]) -> None:
     if isinstance(value, dict):
         for key, item in value.items():
             key_text = str(key)
             child = f"{path}.{key_text}" if path else key_text
-            if key_text in FORBIDDEN_KEYS or key_text.endswith("_sha256"):
+            if key_text in FORBIDDEN_KEYS or key_text.endswith("_sha256") or _looks_like_internal_metadata_key(key_text):
                 _fail("COMPOSER_INTERNAL_KEY_LEAK", child, errors)
             _scan_forbidden(item, child, errors)
     elif isinstance(value, list):
@@ -134,6 +176,7 @@ def validate(data: Any) -> list[dict[str, str]]:
     else:
         if composer != expected:
             _fail("COMPOSER_PAYLOAD_PROJECTION_MISMATCH", "composer_payload must equal deterministic projection of deliverable_created", errors)
+        _scan_structural_allowlists(composer, "composer_payload", errors)
         _scan_forbidden(composer, "composer_payload", errors)
 
     handoff = data.get("handoff_to_next")
