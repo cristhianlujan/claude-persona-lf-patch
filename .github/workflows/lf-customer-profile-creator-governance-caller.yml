@@ -209,7 +209,7 @@ jobs:
               -e SERVICE_ROLE_KEY \
               -v "$GITHUB_WORKSPACE:/workspace:ro" -w /workspace \
               denoland/deno:2.4.5 \
-              run --allow-net --allow-env supabase/functions/run-creacion-perfil-lf/index.ts >/dev/null
+              run --no-lock --allow-net --allow-env supabase/functions/run-creacion-perfil-lf/index.ts >/dev/null
 
             if ! wait_http 'http://127.0.0.1:18082' exact-runtime; then
               container_diag s26-profile-runtime
@@ -225,7 +225,7 @@ jobs:
               -e SERVICE_ROLE_KEY \
               -v "$GITHUB_WORKSPACE:/workspace:ro" -w /workspace \
               denoland/deno:2.4.5 \
-              run --allow-net --allow-env supabase/functions/lf-profile-creator-governance-caller-v1/index.ts >/dev/null
+              run --no-lock --allow-net --allow-env supabase/functions/lf-profile-creator-governance-caller-v1/index.ts >/dev/null
 
             if ! wait_http 'http://127.0.0.1:18081' exact-caller; then
               container_diag s26-profile-caller
