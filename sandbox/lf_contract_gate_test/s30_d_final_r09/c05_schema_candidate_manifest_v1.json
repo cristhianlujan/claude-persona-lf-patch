@@ -1,0 +1,26 @@
+{
+  "contract": "S30_C05_SCHEMA_CANDIDATE_MANIFEST_V1",
+  "base_main_sha": "0d981a83d2624a29e1f13d5f6782bfe14b3d8109",
+  "status": "PREPARED_LOCAL_NOT_APPLIED",
+  "dynamic_proof": false,
+  "apply_authorized": false,
+  "main_merge_authorized": false,
+  "artifacts": {
+    "c05_generic_execution_reliability_candidate_v1.sql": "176964bbad7a9794b48a2378ac05030e228704f1fe3923d1217ec7b96d60a64a",
+    "c05_reliability_oracle_v2.py": "95741e290166a0493cde01577bdc45def9483495f415c238a3da209c90e5afc7",
+    "c05_dynamic_fire_test_contract_v2.json": "499d81a5dd15c92b4a023495573a360295ca51f1b6fe6cf9efb12e32e0d7da66",
+    "c05_live_schema_readback_v2.json": "958fae8f58f19a4c66dc6cd2fd30fe0bb59de5a503652edb364c3b2d856743a2",
+    "test_s30d_c05_sql_candidate.py": "d0aff42e20d4d879a035c0c91acfe60c470d47ad79fd6c052e560892705818b3",
+    "test_s30d_c05_oracle_v2.py": "8bb2f6148ae70f9480d58095151db46c63b9cdc1e39e791e9f60aa1319d6d8f0"
+  },
+  "scope": "sandbox/lf_contract_gate_test/s30_d_final_r09/** only",
+  "safety": {
+    "supabase_write": false,
+    "ddl_applied": false,
+    "runtime_changed": false,
+    "scheduler_changed": false,
+    "operation_registry_changed": false,
+    "s26_changed": false
+  },
+  "next_boundary": "EXPLICIT_AUTHORIZATION_REQUIRED_BEFORE_SUPABASE_DDL_OR_DYNAMIC_PRODUCTION_WRITE"
+}
