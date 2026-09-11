@@ -1,5 +1,13 @@
 {
-  "candidate_source_sha": "6193207d299c3ed55e5f50d8ed78c28992ffce1d",
+  "candidate_source_sha": "d8c10954d5a6058ffdde7f4b520efcbabf50d180",
+  "exact_runtime_evidence": {
+    "materialized_output_persistence": "EXACT_MODEL_RAW_PERSISTED__MATERIALIZED_SHA_BOUND__REPLAYABLE_FROM_CANDIDATE_SOURCE",
+    "materialized_raw_output_sha256": "5d938ada46cdaf809ad38791d3c9b59f8c9f6134d0577cbca2f56ac4bf71c3a7",
+    "model_raw_output_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_exact_model_output.json",
+    "model_raw_output_sha256": "45b130b396abb690095cb6b64c1bf23b4a046a49c904aee1436ff0a46b450b0b",
+    "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_exact_runtime_evidence.json",
+    "sha256": "69578e6cd3e7c9e6509740a4fc60f02dccb4292a5e30c45a60aa34b32f436c18"
+  },
   "gate": "F_PROFILE_EXECUTION",
   "observation_role": "OBSERVATIONAL_ONLY_NOT_GATE_AUTHORITY",
   "observed_runtime": {
@@ -9,46 +17,59 @@
     "llama_server_status": "READY",
     "max_workers": 1,
     "model_id": "/opt/profile-runtime-benchmark/model/model.gguf",
+    "resolver_version": "structural-context-resolver/v3",
     "runtime_version": "hetzner-profile-runtime-api/0.1.5-s26-explicit-schema-256",
     "service": "lf-profile-runtime-api",
-    "source_sha": "486bb60af46de22adf0404565c9a78e41e3281a4"
+    "source_sha": "d8c10954d5a6058ffdde7f4b520efcbabf50d180"
   },
   "project_id": "S26",
   "request": {
     "adapter_binding_count": 0,
     "card_binding_count": 0,
     "input_sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1",
+    "outer_request_sha256": "43e60ddde674dee78daba8953c82d38a5784950530a22dbb6afe4f142ea942b1",
     "profile_code": "PERFIL-UI-ARCHITECT",
     "profile_slug": "ui_architect",
-    "request_id": "S26-HP-001-F-OBS-20260910-0748Z",
-    "request_sha256": "ad3cd538eb46e2d53e9dfb5bf5ebfc61139f5ca35c252ef9e715f32229df67fa",
+    "request_id": "S26-HP-001-F-COLD-D8C1095-20260911T044409Z",
+    "request_sha256": "2576c039a549ac851a9ab81cc1e689fab142ba4a72531a40e08c44719e113162",
     "runtime_output_mode": "UI_PRODUCTION_SPEC"
   },
   "result": {
-    "job_id": "6ba2ae6b-d7e6-4d7c-bee4-d475727b0054",
-    "job_status": "COMPLETED",
-    "llama_timings_observed": false,
-    "llama_usage_observed": false,
-    "model_generation_latency_measured": false,
-    "profile_contract_status": "NOT_EVALUATED",
-    "profile_elapsed_ms": 215125.691,
-    "raw_output_present": false,
-    "raw_output_sha256": null,
-    "runtime_completion_blocking_codes": [
-      "LLAMA_STRUCTURED_OUTPUT_JSON_INVALID"
-    ],
-    "runtime_completion_status": "FAIL",
-    "runtime_total_ms": 215126.303,
-    "semantic_utility_status": "NOT_EVALUATED"
+    "cached_prompt_tokens": 0,
+    "canonical_ui_validator_pass": true,
+    "completion_tokens": 27,
+    "composer_boundary_pass": true,
+    "depth_pass": true,
+    "job_status": "COMPLETED_DIRECT_ENGINE",
+    "llama_timings_observed": true,
+    "llama_usage_observed": true,
+    "model_generation_elapsed_ms": 1926.894,
+    "model_generation_latency_measured": true,
+    "model_raw_output_present": true,
+    "model_raw_output_sha256": "45b130b396abb690095cb6b64c1bf23b4a046a49c904aee1436ff0a46b450b0b",
+    "profile_contract_status": "PASS",
+    "profile_elapsed_ms": 43939.208,
+    "prompt_elapsed_ms": 41974.338,
+    "prompt_tokens": 1575,
+    "quality_pass": true,
+    "raw_output_present": true,
+    "raw_output_sha256": "5d938ada46cdaf809ad38791d3c9b59f8c9f6134d0577cbca2f56ac4bf71c3a7",
+    "replay_verification_status": "PASS",
+    "runtime_completion_blocking_codes": [],
+    "runtime_completion_status": "PASS",
+    "runtime_total_ms": 43939.262,
+    "semantic_transport": "UICT5",
+    "semantic_utility_status": "PASS"
   },
   "run_id": "S26-HP-001",
   "safety": {
-    "deployment_performed": false,
+    "deployment_performed": true,
+    "llama_restart_used_for_cold_cache": true,
     "model_weight_acquisition_performed": false,
     "paid_fallback_performed": false,
     "production_effect": false,
-    "resident_runtime_reused": true
+    "resident_runtime_reused": false
   },
   "schema": "S26_HP001_GATE_F_RUNTIME_OBSERVATION_V1",
-  "source_match": false
+  "source_match": true
 }
