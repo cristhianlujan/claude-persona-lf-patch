@@ -52,7 +52,13 @@ def _events(state: SpikeState, event: str) -> list[str]:
 
 
 def _preflight(state: SpikeState) -> SpikeState:
-    required = ("execution_id", "profile_code", "profile_slug", "profile_sources", "input_literal")
+    required = (
+        "execution_id",
+        "profile_code",
+        "profile_slug",
+        "profile_sources",
+        "input_literal",
+    )
     missing = [
         key
         for key in required
@@ -110,6 +116,11 @@ def _route_after_human(state: SpikeState) -> str:
     return "block" if state.get("status") == "BLOCKED" else "execute_runtime"
 
 
+def _route_after_runtime(state: SpikeState) -> str:
+    """Do not let a governed LF runtime block fall through into post-validation."""
+    return "block" if state.get("status") == "BLOCKED" else "post_validate"
+
+
 def _route_after_validation(state: SpikeState) -> str:
     return "block" if state.get("status") == "BLOCKED" else "close"
 
@@ -147,7 +158,9 @@ def build_spike_graph(
                 "status": "BLOCKED",
                 "blocking_code": exc.code,
                 "blocking_detail": exc.detail or "",
-                "orchestration_events": _events(state, f"RUNTIME_BLOCK:{exc.code}"),
+                "orchestration_events": _events(
+                    state, f"RUNTIME_BLOCK:{exc.code}"
+                ),
             }
         return {
             "status": "RUNTIME_PASS",
@@ -179,7 +192,9 @@ def build_spike_graph(
                 "blocking_code": "LANGGRAPH_SPIKE_POST_VALIDATION_FAILED",
                 "blocking_detail": ",".join(failed),
                 "post_checks": checks,
-                "orchestration_events": _events(state, "POST_VALIDATION_BLOCK"),
+                "orchestration_events": _events(
+                    state, "POST_VALIDATION_BLOCK"
+                ),
             }
         return {
             "status": "POST_VALIDATION_PASS",
@@ -233,7 +248,11 @@ def build_spike_graph(
         _route_after_human,
         {"execute_runtime": "execute_runtime", "block": "block"},
     )
-    builder.add_edge("execute_runtime", "post_validate")
+    builder.add_conditional_edges(
+        "execute_runtime",
+        _route_after_runtime,
+        {"post_validate": "post_validate", "block": "block"},
+    )
     builder.add_conditional_edges(
         "post_validate",
         _route_after_validation,
