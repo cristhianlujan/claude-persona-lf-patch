@@ -176,6 +176,7 @@ def classify(paths: Iterable[str], *, registry_data: Mapping[str, Any] | None = 
     unknown = False
     deep_shared = False
     product_modes: set[str] = set()
+    product_namespaces: set[str] = set()
     reasons: list[str] = []
 
     for path in changed:
@@ -206,6 +207,7 @@ def classify(paths: Iterable[str], *, registry_data: Mapping[str, Any] | None = 
             reasons.append(f"PRODUCT_LANE:{product_lane.lane_id}:{path}")
             if product_lane.known:
                 product_modes.add(product_lane.mode)
+                product_namespaces.add(product_lane.namespace)
             else:
                 unknown = True
                 reasons.append(f"UNKNOWN_PRODUCT_LANE:{product_lane.lane_id}:{path}")
@@ -215,8 +217,6 @@ def classify(paths: Iterable[str], *, registry_data: Mapping[str, Any] | None = 
             reasons.append(f"UNKNOWN:{path}")
 
     if unknown:
-        # Unknown ownership never earns a specialized N/A. Preserve the current
-        # defensive parity/external gates and mark the decision deep-shared.
         migration = True
         input_gov = True
         p0_external = True
@@ -228,10 +228,10 @@ def classify(paths: Iterable[str], *, registry_data: Mapping[str, Any] | None = 
         mode = "SPECIALIZED_REQUIRED"
     elif selftest:
         mode = "CI_ROUTER_SELFTEST_ONLY"
-    elif len(product_modes) == 1:
+    elif len(product_modes) == 1 and len(product_namespaces) == 1:
         mode = next(iter(product_modes))
-    elif len(product_modes) > 1:
-        mode = "MULTI_PRODUCT_LANE_KNOWN"
+    elif product_modes:
+        mode = "S30_MULTI_LANE_KNOWN" if product_namespaces == {"S30"} else "MULTI_PRODUCT_LANE_KNOWN"
     else:
         mode = "DEEP_SHARED_KNOWN"
 
