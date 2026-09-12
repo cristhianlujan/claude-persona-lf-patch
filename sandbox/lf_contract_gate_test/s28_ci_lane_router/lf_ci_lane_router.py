@@ -30,13 +30,22 @@ INPUT_GOV_VALIDATOR = "sandbox/lf_contract_gate_test/input_governance_migration_
 CI_WORKFLOW = ".github/workflows/lf-contract-check.yml"
 VALIDATE_LF_PACKS_WORKFLOW = ".github/workflows/validate-lf-packs.yml"
 CI_ROUTER_PREFIX = "sandbox/lf_contract_gate_test/s28_ci_lane_router/"
+LF_CONTRACT_CHECK_VALIDATOR = "scripts/lf_contract_check.py"
 P0_RUNTIME_ENTRYPOINT = "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py"
+P0_RUNTIME_CORE = "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_CORE_V1.py"
 P0_EXACT_HEAD_EXTERNAL_PREFIX = "supabase/functions/lf-p0-exact-head-evidence-broker-v2/"
 P0_EXACT_HEAD_EXTERNAL_EXACT = frozenset({
     "sandbox/lf_contract_gate_test/p0_exact_head_real_source_ci_v1.py",
     "sandbox/lf_contract_gate_test/p0_exact_head_real_source_ci_v2.py",
     "sandbox/lf_contract_gate_test/p0_exact_head_real_source_v2.json",
     "supabase/config.toml",
+})
+CI_SELFTEST_CONTROLS = frozenset({
+    CI_WORKFLOW,
+    VALIDATE_LF_PACKS_WORKFLOW,
+    LF_CONTRACT_CHECK_VALIDATOR,
+    P0_RUNTIME_ENTRYPOINT,
+    P0_RUNTIME_CORE,
 })
 
 # Deliberately excludes the broad sandbox/lf_contract_gate_test/ prefix. Unknown
@@ -134,7 +143,7 @@ def _is_p0_exact_head_external_owner(path: str) -> bool:
 def _is_known_shared(path: str, s30_known: bool) -> bool:
     if s30_known:
         return True
-    if path in {CI_WORKFLOW, VALIDATE_LF_PACKS_WORKFLOW, P0_RUNTIME_ENTRYPOINT}:
+    if path in CI_SELFTEST_CONTROLS:
         return True
     if path.startswith(CI_ROUTER_PREFIX):
         return True
@@ -180,7 +189,7 @@ def classify(paths: Iterable[str], *, registry_data: Mapping[str, Any] | None = 
         if _is_input_governance_migration(path) or path == INPUT_GOV_VALIDATOR:
             input_gov = True
             reasons.append(f"INPUT_GOV:{path}")
-        if path in {CI_WORKFLOW, VALIDATE_LF_PACKS_WORKFLOW, P0_RUNTIME_ENTRYPOINT} or path.startswith(CI_ROUTER_PREFIX):
+        if path in CI_SELFTEST_CONTROLS or path.startswith(CI_ROUTER_PREFIX):
             selftest = True
             reasons.append(f"CI_ROUTER_SELFTEST:{path}")
         if _is_p0_exact_head_external_owner(path):
