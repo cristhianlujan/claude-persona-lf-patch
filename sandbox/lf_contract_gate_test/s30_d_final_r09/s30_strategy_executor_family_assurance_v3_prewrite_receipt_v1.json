@@ -1,0 +1,145 @@
+{
+  "receipt_version": "v0.5",
+  "receipt_mode": "PREWRITE",
+  "lane": "S30-D",
+  "owner": "S30-D-STRATEGY-EXECUTOR-FAMILY-ASSURANCE-V3",
+  "base_main_sha": "b22eb1e1505b7ba80231dfe189ea96cfbb2cd560",
+  "intended_material_action": "S30_STRATEGY_EXECUTOR_FAMILY_ASSURANCE_V3_SOURCE_CANDIDATE",
+  "sequence_resolution": {
+    "ROUTER": {"status": "PROVEN", "evidence": "S30 Family Assurance v3 prewrite: ROUTER resolved against current-main governance and v3 source artifacts; no runtime or production activation."},
+    "EKB_APPLICABLE": {"status": "PROVEN", "evidence": "S30 Family Assurance v3 prewrite: EKB_APPLICABLE resolved against current-main governance and v3 source artifacts; no runtime or production activation.", "loaded_codes": ["GOV-010", "DB-001"]},
+    "DATA_ACCESS_BINDINGS": {"status": "PROVEN", "evidence": "S30 Family Assurance v3 prewrite: DATA_ACCESS_BINDINGS resolved against current-main governance and v3 source artifacts; no runtime or production activation.", "mode": "SCHEMA_CONTRACT_FALLBACK"},
+    "SCHEMA_CONTRACT": {"status": "PROVEN", "evidence": "S30 Family Assurance v3 prewrite: SCHEMA_CONTRACT resolved against current-main governance and v3 source artifacts; no runtime or production activation.", "schema_bindings": [
+      {"object_identity": "sandbox/lf_contract_gate_test/s30_d_final_r09/strategy_executor_family_objective_matrix_v3.json", "object_type": "JSON_CONTRACT", "resolved_fields": ["matrix_version", "base_matrix", "dimensions", "objective_dimension_profiles"], "evidence_ref": "github:staging-v3/matrix"},
+      {"object_identity": "sandbox/lf_contract_gate_test/s30_d_final_r09/strategy_executor_performance_policy_v1.json", "object_type": "JSON_CONTRACT", "resolved_fields": ["policy_version", "sample_policy", "metrics", "measurement_requirements"], "evidence_ref": "github:staging-v3/performance-policy"}
+    ]},
+    "OPERATION_CONTRACTS": {"status": "PROVEN", "evidence": "S30 Family Assurance v3 prewrite: OPERATION_CONTRACTS resolved against current-main governance and v3 source artifacts; no runtime or production activation."},
+    "ALL_INTENDED_STEPS": {"status": "PROVEN", "evidence": "S30 Family Assurance v3 prewrite: ALL_INTENDED_STEPS resolved against current-main governance and v3 source artifacts; no runtime or production activation."},
+    "JUDGES_AND_RESULT_VOCABULARY": {"status": "PROVEN", "evidence": "S30 Family Assurance v3 prewrite: JUDGES_AND_RESULT_VOCABULARY resolved against current-main governance and v3 source artifacts; no runtime or production activation."},
+    "DEPENDENCIES_AND_IMPORT_CLOSURE": {"status": "PROVEN", "evidence": "S30 Family Assurance v3 prewrite: DEPENDENCIES_AND_IMPORT_CLOSURE resolved against current-main governance and v3 source artifacts; no runtime or production activation."},
+    "CI_PATHS_AND_RUNNER_WIRING": {"status": "PROVEN", "evidence": "S30 Family Assurance v3 prewrite: CI_PATHS_AND_RUNNER_WIRING resolved against current-main governance and v3 source artifacts; no runtime or production activation."},
+    "PERMISSIONS_SECRETS_AND_READBACK": {"status": "PROVEN", "evidence": "S30 Family Assurance v3 prewrite: PERMISSIONS_SECRETS_AND_READBACK resolved against current-main governance and v3 source artifacts; no runtime or production activation."},
+    "EVIDENCE_PROVIDER_AND_RESOLVER": {"status": "PROVEN", "evidence": "S30 Family Assurance v3 prewrite: EVIDENCE_PROVIDER_AND_RESOLVER resolved against current-main governance and v3 source artifacts; no runtime or production activation."},
+    "EXPECTED_OUTPUT_CONTRACT": {"status": "PROVEN", "evidence": "S30 Family Assurance v3 prewrite: EXPECTED_OUTPUT_CONTRACT resolved against current-main governance and v3 source artifacts; no runtime or production activation."}
+  },
+  "preflight_checks": {
+    "IMPORT_CLOSURE": {"status": "PASS", "evidence": "Prewrite readback for v3 confirms IMPORT_CLOSURE before governed promotion; source-only candidate, no runtime effect."},
+    "REQUIRED_FILES_EXIST": {"status": "PASS", "evidence": "Prewrite readback for v3 confirms REQUIRED_FILES_EXIST before governed promotion; source-only candidate, no runtime effect."},
+    "SCHEMA_AND_CONSTRAINTS_RESOLVED": {"status": "PASS", "evidence": "Prewrite readback for v3 confirms SCHEMA_AND_CONSTRAINTS_RESOLVED before governed promotion; source-only candidate, no runtime effect.", "resolved": ["RELATION_COLUMNS", "CONSTRAINTS", "DEPENDENT_SQL_FUNCTION_SIGNATURES"], "bindings": [
+      {"object_identity": "S30_STRATEGY_EXECUTOR_FAMILY_OBJECTIVE_MATRIX_V3", "resolved_fields": ["objectives", "dimensions", "objective_dimension_profiles"], "evidence_ref": "strategy_executor_family_objective_matrix_v3.json"},
+      {"object_identity": "S30_STRATEGY_EXECUTOR_PERFORMANCE_POLICY_V1", "resolved_fields": ["metrics", "sample_policy", "measurement_requirements"], "evidence_ref": "strategy_executor_performance_policy_v1.json"}
+    ]},
+    "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED": {"status": "PASS", "evidence": "Prewrite readback for v3 confirms TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED before governed promotion; source-only candidate, no runtime effect."},
+    "PERMISSIONS_AND_SECRET_READBACK": {"status": "PASS", "evidence": "Prewrite readback for v3 confirms PERMISSIONS_AND_SECRET_READBACK before governed promotion; source-only candidate, no runtime effect."},
+    "EVIDENCE_PROVIDER_RESOLVABLE": {"status": "PASS", "evidence": "Prewrite readback for v3 confirms EVIDENCE_PROVIDER_RESOLVABLE before governed promotion; source-only candidate, no runtime effect."},
+    "CI_RUNNER_WIRING_CONFIRMED": {"status": "PASS", "evidence": "Prewrite readback for v3 confirms CI_RUNNER_WIRING_CONFIRMED before governed promotion; source-only candidate, no runtime effect."},
+    "EXPECTED_OUTPUT_SCHEMA_COMPLETE": {"status": "PASS", "evidence": "Prewrite readback for v3 confirms EXPECTED_OUTPUT_SCHEMA_COMPLETE before governed promotion; source-only candidate, no runtime effect."},
+    "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED": {"status": "PASS", "evidence": "Prewrite readback for v3 confirms NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED before governed promotion; source-only candidate, no runtime effect."},
+    "GIT_WRITE_BROKER_BINDING_CONFIRMED": {"status": "PASS", "evidence": "Prewrite readback for v3 confirms GIT_WRITE_BROKER_BINDING_CONFIRMED before governed promotion; source-only candidate, no runtime effect."}
+  },
+  "frontier": {
+    "current_stage": "S30_STRATEGY_EXECUTOR_FAMILY_ASSURANCE_V3_SOURCE",
+    "next_gate": "EXACT_HEAD_CI_THEN_GOVERNED_BROKER_PROMOTION_AND_READBACK",
+    "blockers": [],
+    "safe_parallel_work": ["READ_ONLY_ASSURANCE_REVIEW", "RUNTIME_CANARY_PREPARATION_WITHOUT_ACTIVATION"]
+  },
+  "causal_lane_ownership": {
+    "ekb_code": "GOV-010",
+    "target_asset": "S30-STRATEGY-EXECUTOR-FAMILY-ASSURANCE",
+    "primary_gate": "MULTIDIMENSIONAL_FAMILY_ASSURANCE_SOURCE",
+    "owner": "S30-D-STRATEGY-EXECUTOR-FAMILY-ASSURANCE-V3",
+    "role": "WRITER",
+    "observed_active_writers": [{"ekb_code": "GOV-010", "target_asset": "S30-STRATEGY-EXECUTOR-FAMILY-ASSURANCE", "primary_gate": "MULTIDIMENSIONAL_FAMILY_ASSURANCE_SOURCE", "owner": "S30-D-STRATEGY-EXECUTOR-FAMILY-ASSURANCE-V3", "state": "ACTIVE", "source_ref": "prewrite://S30-FAMILY-ASSURANCE-V3-20260912"}],
+    "transfer": {"is_transfer": false},
+    "evidence": "Single governed writer for v3 source promotion. Runtime canary activation remains outside this prewrite scope."
+  },
+  "applicable_ekb": [
+    {"code": "GOV-010", "triggers": ["RECURRENT", "AVOIDABLE_MATERIAL_WORK"]},
+    {"code": "DB-001", "triggers": ["MACHINE_DETECTABLE"]}
+  ],
+  "hard_guard_candidates": [
+    {"ekb_code": "DB-001", "closure": {
+      "EKB_UPDATED": {"status": "PASS", "evidence": "Applicable governance learning remains consumed from current main; this candidate adds no conflicting EKB mutation and preserves the existing hard-guard policy."},
+      "DETECTOR_IMPLEMENTED": {"status": "PASS", "evidence": "v3 deterministic validator enforces all four dimensions, performance policy completeness, zero-effect claims and v2 inheritance."},
+      "NEGATIVE_REGRESSION": {"status": "PASS", "evidence": "test_s30d_strategy_executor_family_objective_matrix_v3.py mutates dimension coverage, performance status, metric coverage, budgets, sample policy, runtime claim, dimension checks, zero-effect and performance scope and requires fail-closed codes."},
+      "POSITIVE_REGRESSION": {"status": "PASS", "evidence": "Canonical v3 matrix, canary v3, performance policy and inherited v2 contracts validate PASS with 14 objectives, 4 dimensions, 14 functional live checks, 4 dimension checks and 9 performance metrics."},
+      "EXECUTED_PATH_WIRING_PROVEN": {"status": "PASS", "evidence": "Exact-head staging CI at ed76fdf6cf8b4cbaafd7cead9c6064d2afa9d36c passed Run LF pack validators, lf-contract-check and lf-contract-dedupe-router; S30 test discovery includes s30_*/test_*.py."},
+      "READBACK": {"status": "PASS", "evidence": "GitHub branch/file readback confirms the v3 source artifacts at ed76fdf6cf8b4cbaafd7cead9c6064d2afa9d36c; runtime_execution_claimed, production_activation_claimed and authorization_claimed remain false."}
+    }},
+    {"ekb_code": "GOV-010", "closure": {
+      "EKB_UPDATED": {"status": "PASS", "evidence": "Applicable governance learning remains consumed from current main; this candidate adds no conflicting EKB mutation and preserves the existing hard-guard policy."},
+      "DETECTOR_IMPLEMENTED": {"status": "PASS", "evidence": "v3 deterministic validator enforces all four dimensions, performance policy completeness, zero-effect claims and v2 inheritance."},
+      "NEGATIVE_REGRESSION": {"status": "PASS", "evidence": "test_s30d_strategy_executor_family_objective_matrix_v3.py mutates dimension coverage, performance status, metric coverage, budgets, sample policy, runtime claim, dimension checks, zero-effect and performance scope and requires fail-closed codes."},
+      "POSITIVE_REGRESSION": {"status": "PASS", "evidence": "Canonical v3 matrix, canary v3, performance policy and inherited v2 contracts validate PASS with 14 objectives, 4 dimensions, 14 functional live checks, 4 dimension checks and 9 performance metrics."},
+      "EXECUTED_PATH_WIRING_PROVEN": {"status": "PASS", "evidence": "Exact-head staging CI at ed76fdf6cf8b4cbaafd7cead9c6064d2afa9d36c passed Run LF pack validators, lf-contract-check and lf-contract-dedupe-router; S30 test discovery includes s30_*/test_*.py."},
+      "READBACK": {"status": "PASS", "evidence": "GitHub branch/file readback confirms the v3 source artifacts at ed76fdf6cf8b4cbaafd7cead9c6064d2afa9d36c; runtime_execution_claimed, production_activation_claimed and authorization_claimed remain false."}
+    }}
+  ],
+  "safety_readback": {"runtime_changed": false, "production_changed": false, "main_merged": false, "scheduler_changed": false, "s26_mutated": false},
+  "owner_authorized_merge": false,
+  "owner_authorized_repair": false,
+  "repair_reason": null,
+  "repair_target_ekb_codes": [],
+  "evidence": {
+    "mode": "SOURCE_AND_PRECANARY_ASSURANCE_NON_PRODUCTION",
+    "source_head_before_receipt": "ed76fdf6cf8b4cbaafd7cead9c6064d2afa9d36c",
+    "source_ci": "RUN_LF_PACK_VALIDATORS_PASS;LF_CONTRACT_CHECK_PASS;LF_CONTRACT_DEDUPE_ROUTER_PASS",
+    "matrix_v2": "PRESERVED",
+    "matrix_v3": "14_OBJECTIVES_X_4_DIMENSIONS",
+    "functional_live_checks": 14,
+    "dimension_live_checks": 4,
+    "performance_metrics": 9,
+    "performance_scope": "SANDBOX_CANARY_ONLY_NOT_PRODUCTION_SLO",
+    "runtime_execution": false,
+    "production_activation": false,
+    "scheduler_activation": false,
+    "s26_mutation": false,
+    "next_candidate": "S30_STRATEGY_EXECUTOR_FAMILY_ASSURANCE_V3"
+  },
+  "gate_evidence_envelope": {
+    "run_id": "EXEC-S30-FAMILY-ASSURANCE-V3-PREWRITE-20260912-001",
+    "gate_id": "S30_STRATEGY_EXECUTOR_FAMILY_ASSURANCE_V3_PREEXECUTION",
+    "input_exact": {"base_main_sha": "b22eb1e1505b7ba80231dfe189ea96cfbb2cd560", "receipt_path": "sandbox/lf_contract_gate_test/s30_d_final_r09/s30_strategy_executor_family_assurance_v3_prewrite_receipt_v1.json", "request_schema": "s30-git-broker/v1", "source_ref": "lf/staging-s30-family-objective-matrix-v3-20260912", "target_branch": "lf/s30-family-objective-matrix-v3-20260912"},
+    "input_sha256": "23577ae1125d5b2bb590b6043446a43d4b93843eef2e37eb3627f6efaac8782d",
+    "input_source_ref": "owner-conformed-s30-scope+github:main@b22eb1e1505b7ba80231dfe189ea96cfbb2cd560",
+    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_d_final_r09/s30_strategy_executor_family_assurance_v3_prewrite_receipt_v1.json --expected-base-main-sha b22eb1e1505b7ba80231dfe189ea96cfbb2cd560",
+    "output_exact": {"bounded_repair_allowed": false, "material_work_allowed": true, "promotion_authority": "NONE", "result": "PASS_TO_MATERIAL_WORK"},
+    "output_sha256": "ec67088d3a1ecf4514180d148fb18aee30023fad41c8c7380bba0e7292b0f5d9",
+    "output_ref": "prewrite:S30-STRATEGY-EXECUTOR-FAMILY-ASSURANCE-V3",
+    "execution_mode": "SANDBOX",
+    "environment": "NON_PRODUCTION",
+    "promotion_authority": "NONE",
+    "functional": {"status": "PASS", "evidence": "v3 preserves F01-F14 and binds 14 functional live checks; canonical source validation passed before promotion."},
+    "quality": {"status": "PASS", "evidence": "Quality is first-class: non-nominal evidence, fail-closed mutations, independent-readback requirement and no compensation across dimensions."},
+    "depth": {"status": "PASS", "evidence": "Every F01-F14 objective has a four-dimension profile; v3 tests block missing objective profiles or missing dimension shape."},
+    "performance": {"status": "PASS_BASELINE", "evidence": "Source-level performance contract defines 9 mandatory sandbox-canary metrics, >=1 warm-up and >=5 measured samples, raw/P50/P95/MAX/total/retry/timeout evidence, missing metric fail-closed. No runtime benchmark is claimed yet."},
+    "ekb_action": {"status": "CONSUMED", "codes": ["GOV-010", "DB-001"]},
+    "first_bad_hop": null,
+    "repair_allowed": false
+  },
+  "git_write_binding": {
+    "status": "OPERATIONAL",
+    "request_schema": "s30-git-broker/v1",
+    "ruleset_id": 22765627,
+    "ruleset_name": "s30-governed-write-boundary",
+    "ruleset_enforcement": "active",
+    "ruleset_ref_pattern": "refs/heads/lf/s30-*",
+    "bypass_actor_type": "DeployKey",
+    "deploy_key_id": 162872002,
+    "deploy_key_title": "s30-governed-git-broker",
+    "direct_user_can_bypass": false,
+    "direct_connector_negative": {"create_blocked": true, "update_blocked": true},
+    "broker_probe": {"status": "PASS", "commit_sha": "b01fd5b6d0d1d68b464a37337344157b867cb334", "evidence_ref": "github:protected-candidate/b01fd5b6d0d1d68b464a37337344157b867cb334"},
+    "workflow_path": ".github/workflows/validate-lf-packs.yml",
+    "workflow_dispatch_wired": true,
+    "secret_name": "S30_BROKER_DEPLOY_KEY",
+    "secret_present": true,
+    "secret_required_before_dispatch": true,
+    "source_branch": "lf/staging-s30-family-objective-matrix-v3-20260912",
+    "target_branch": "lf/s30-family-objective-matrix-v3-20260912",
+    "base_main_sha": "b22eb1e1505b7ba80231dfe189ea96cfbb2cd560",
+    "promotion_authority": "BROKER_ONLY",
+    "ruleset_readback_ref": "github:ruleset/22765627",
+    "supabase_readback_ref": "github:main/sandbox/lf_contract_gate_test/s30_d_final_r09/c05_live_schema_readback_v3.json"
+  }
+}
