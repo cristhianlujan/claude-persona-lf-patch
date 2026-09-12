@@ -80,6 +80,39 @@ Neither producer depth nor deterministic intake may be promoted to `PASS_TO_COMP
 
 A substantive Quality Pack rejection is still a valid handoff execution if the relevant receiver layer actually received and reviewed the candidate; an inability to locate the candidate is a producer handoff failure.
 
+## Existing-profile S26 upgrade route
+
+`ACTUALIZACION_PERFIL_LF` is the governed maintenance path for an existing profile. The updater is differential, but structural compatibility alone never authorizes a write.
+
+Before any profile-source write, execute these gates in order:
+
+1. Materialize a fresh `S26_PROFILE_UPDATE_LEARNING_PREFLIGHT_V1` from the live EKB/control plane and the canonical `pre_write_execution_binding_gate`.
+2. Validate it with `validators/evaluate_s26_learning_preflight.py`.
+3. Evaluate the target against `contracts/s26_profile_baseline_v1.json` using `validators/evaluate_s26_profile_baseline.py`.
+4. Build the bounded write plan with `validators/plan_s26_profile_update.py <profile_slug> <preflight_json> [repo_root]`.
+
+Learning Preflight rules:
+
+- `EKB_PREFLIGHT_COMPLETED` must come from `public.lf_error_knowledge` for the current run; snapshots are not reusable across runs.
+- Every matched EKB code must record exactly one `matched_prevention_rule` and exactly one prevention check. A declarative PASS without `executed=true`, `exit_code=0`, a test ID, evidence SHA and source ref is not execution evidence.
+- The preflight must contain the active `ACTUALIZACION_PERFIL_LF` execution, exact target path, a PASS `pre_write_execution_binding_gate`, and a bound revision equal to the current repository HEAD.
+- If main advances, the preflight is stale: re-read/rebind before the next write.
+- Allowed write scope is only `profiles/<slug>/**`; runtime activation and production change remain false.
+- `write_allowed=true` can only be emitted when Learning Preflight passes and the structural baseline says `UPDATE_REQUIRED` without authority blockers.
+- The baseline evaluator is read-only by construction: callable discovery uses static AST and never imports or executes target profile validators or semantic utilities.
+
+Structural baseline rules:
+
+- `NO_UPDATE_REQUIRED` means the profile already satisfies all 10 S26 architectural dimensions; do not rewrite it merely to create activity.
+- `UPDATE_REQUIRED` means apply only the reported `repair_actions`, preserving the profile's domain semantics and authority.
+- `BLOCKED_AUTHORITY_REQUIRED` means a canonical choice cannot be derived safely (for example, multiple schemas exist and no exact runtime schema is bound). Resolve authority before writing; filename similarity is not authority.
+- A profile update cannot close until the baseline is rerun on the post-write exact head and returns 10/10, in addition to the existing operation contract, validator, evidence, readback and semantic gates.
+- The standard runtime integration surface is `profiles/<slug>/contracts/runtime_binding.json` (`LF_PROFILE_RUNTIME_BINDING_V1`). It binds exact profile identity, canonical runtime schema, canonical validator, profile-local deterministic semantic utility, source-first/no-invention, fail-closed, exact-head evidence and post-update baseline requirements.
+- Profile-local specializations belong behind this common interface. Do not add new slug-specific branches to the shared runtime when the behavior can be expressed by the runtime binding.
+- The update route never activates runtime, production, automatic promotion or business effects. Those remain separate governed operations.
+
+This flow is: live learnings -> executable prevention checks -> canonical binding -> measure -> repair only the demonstrated delta -> rerun -> close only at the common S26 compatibility floor.
+
 ## CI profile-validator discovery contract
 
 The repository's existing `Validate LF Packs` workflow invokes `skills/profile_creator/validators/validate_pack.py`. That validator is therefore the reusable discovery boundary for profile-local deterministic pack validation; no profile slug may be hardcoded as a privileged canary.
@@ -114,6 +147,9 @@ Block or return when:
 - `depth_gate.candidate_ref` differs from `deliverable_artifact_ref`.
 - Producer depth or deterministic intake is presented as semantic Quality Pack approval.
 - A full handoff outcome is claimed while a required receiver layer remains unexecuted.
+- A profile update lacks a fresh Learning Preflight or canonical pre-write execution binding.
+- A matched EKB prevention is unmapped, unexecuted, duplicated, stale or outside the exact target scope.
+- Read-only profile evaluation would require importing or executing target profile code.
 - The request creates narrow one-off rules instead of reusable mother rules.
 
 ## Expected statuses
