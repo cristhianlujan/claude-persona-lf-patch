@@ -1,0 +1,63 @@
+{
+  "receipt_version": "S31_A_GATE_STATUS_V0_1",
+  "strategy_id": "S31",
+  "lane_id": "S31-A",
+  "work_package_id": "WP-S31-A-001",
+  "frozen_candidate_sha": "d38f874e1cf6de6b8f8d6219b0d16b3211a3696d",
+  "current_branch_head_observed": "874c273eb46e8782d73615f58c7944d8f34b6a0f",
+  "status": "BLOCKED_PENDING_INDEPENDENT_REVIEW_AND_DETERMINISTIC_SELF_TEST_EXECUTION",
+  "frozen_candidate_ci": [
+    {
+      "name": "Validate LF Packs",
+      "run_id": 34725337019,
+      "conclusion": "success"
+    },
+    {
+      "name": "lf-contract-check",
+      "run_id": 34725337027,
+      "conclusion": "success"
+    },
+    {
+      "name": "LF Bootstrap Reproducibility Probe",
+      "run_id": 34725336954,
+      "conclusion": "cancelled"
+    }
+  ],
+  "current_head_ci": [
+    {
+      "name": "Validate LF Packs",
+      "run_id": 34725371885,
+      "conclusion": "success"
+    },
+    {
+      "name": "LF Bootstrap Reproducibility Probe",
+      "run_id": 34725371890,
+      "conclusion": "success"
+    },
+    {
+      "name": "lf-contract-check",
+      "run_id": 34725371969,
+      "conclusion": "success"
+    }
+  ],
+  "coverage_finding": {
+    "canonical_capability_self_test_ref": "sandbox/lf_contract_gate_test/s31_bootstrap/test_canonical_capability_model_v0_1.py",
+    "executed_by_observed_ci": false,
+    "reason": "Observed successful workflow jobs validate existing LF packs and bootstrap/runtime probes but do not include an explicit step executing test_canonical_capability_model_v0_1.py.",
+    "claim": "NO_DETERMINISTIC_EXECUTION_PASS_CLAIM_YET"
+  },
+  "independent_review": {
+    "handoff_ref": "sandbox/lf_contract_gate_test/s31_bootstrap/S31_A_INDEPENDENT_REVIEW_HANDOFF_V0_1.md",
+    "required": true,
+    "completed": false,
+    "self_review_forbidden": true
+  },
+  "safety": {
+    "cross_lane_mutation": false,
+    "main_merge_authorized": false,
+    "production_authorized": false,
+    "golden_authorized": false
+  },
+  "next_gate": "INDEPENDENT_SEMANTIC_REVIEW_PLUS_EXPLICIT_CANONICAL_MODEL_SELF_TEST",
+  "claim_ceiling": "STRUCTURAL_AND_PROVENANCE_STATUS_ONLY"
+}
