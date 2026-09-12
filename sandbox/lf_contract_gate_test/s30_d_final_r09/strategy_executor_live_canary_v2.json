@@ -1,0 +1,42 @@
+{
+  "contract_version": "S30_STRATEGY_EXECUTOR_LIVE_CANARY_V2",
+  "supersedes": "S30_STRATEGY_EXECUTOR_LIVE_CANARY_V1",
+  "operation_code": "EJECUCION_ESTRATEGIA_LF",
+  "activation_contract": "S30_STRATEGY_EXECUTOR_SANDBOX_ACTIVATION_V1",
+  "family_matrix_binding": "S30_STRATEGY_EXECUTOR_FAMILY_OBJECTIVE_MATRIX_V2",
+  "mode": "CONTROL_STATE_NO_EFFECT",
+  "runtime_execution_status": "NOT_EXECUTED_SOURCE_ONLY",
+  "activation_authority": "NONE",
+  "target_strategy": {
+    "snapshot_id": 35,
+    "snapshot_code": "LF_S30_SHELL_ADVANCED_EXECUTION_20260903"
+  },
+  "business_effect_dispatch_allowed": false,
+  "effect_guard_rows_allowed": false,
+  "model_calls_allowed": false,
+  "production_write_allowed": false,
+  "strategy_snapshot_mutation_allowed": false,
+  "scheduler_activation": false,
+  "orchestrator_activation": false,
+  "production_activation": false,
+  "s26_mutation": false,
+  "checks": [
+    {"id":"L01","class":"ROUTER","objective_id":"F02","expected":"READY_TO_EXECUTE"},
+    {"id":"L02","class":"ROUTER_NEGATIVE","objective_id":"F02","expected":"BLOCK_OPERATION_NOT_REGISTERED"},
+    {"id":"L03","class":"STRATEGY_RESOLVE","objective_id":"F03","expected":"EXACTLY_ONE_CANONICAL_SNAPSHOT"},
+    {"id":"L04","class":"IDEMPOTENCY","objective_id":"F06","expected":"RESERVED_NEW_THEN_REPLAY_EXISTING"},
+    {"id":"L05","class":"LEASE_CHECKPOINT","objective_id":"F07","expected":"LEASE_CHECKPOINT_RELEASE_PASS"},
+    {"id":"L06","class":"EFFECT_GUARD","objective_id":"F08","expected":"ZERO_EFFECT_ROWS"},
+    {"id":"L07","class":"STEP_EVIDENCE","objective_id":"F11","expected":"15_OF_15_REQUIRED_STEPS_EVIDENCED"},
+    {"id":"L08","class":"CLOSE_GUARD","objective_id":"F14","expected":"NO_EXECUTABLE_SAFE_SCOPE_REMAINS"},
+    {"id":"L09","class":"BOUNDARY","objective_id":"F10","expected":"NO_ORCHESTRATOR_SCHEDULER_PRODUCTION_S26_CHANGE"},
+    {"id":"L10","class":"STRATEGY_RESOLVE_ZERO_NEGATIVE","objective_id":"F03","expected":"BLOCK_STRATEGY_NOT_FOUND"},
+    {"id":"L11","class":"STRATEGY_RESOLVE_AMBIGUOUS_NEGATIVE","objective_id":"F03","expected":"BLOCK_STRATEGY_AMBIGUOUS"},
+    {"id":"L12","class":"IDEMPOTENCY_CONFLICT_NEGATIVE","objective_id":"F06","expected":"BLOCK_IDEMPOTENCY_REQUEST_HASH_CONFLICT"},
+    {"id":"L13","class":"LEASE_STALE_FENCE_NEGATIVE","objective_id":"F07","expected":"BLOCK_STALE_FENCE"},
+    {"id":"L14","class":"ROLLBACK_FAIL_CLOSED","objective_id":"F09","expected":"DEMOTE_TO_CANDIDATO_READ_ONLY_AND_REMOVE_ROUTER_ACTION"}
+  ],
+  "finding_quota": null,
+  "heuristic_as_gate": false,
+  "claim_ceiling": "S30_STRATEGY_EXECUTOR_SANDBOX_CANARY_NO_BUSINESS_EFFECT"
+}
