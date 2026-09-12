@@ -1,0 +1,68 @@
+{
+  "schema": "LF_PLATFORM_ADOPT_R03_FIT_GAP_V1",
+  "strategy": "LF_PLATFORM_ADOPT_FIRST_20260912",
+  "gate": "ADOPT-R03",
+  "base_main": "794a86fc8ea7fe3921a17bb31b9087c097a01cef",
+  "mode": "READ_ONLY_ARCHITECTURE_FIT_GAP",
+  "result": "ADOPT_OTEL_CORE_WRAP_PHOENIX_KEEP_LF_CERTIFICATION",
+  "runtime_mutated": false,
+  "production_effect": false,
+  "external_trace_export": false,
+  "decisions": {
+    "opentelemetry_traces": "ADOPT",
+    "opentelemetry_metrics": "ADOPT",
+    "opentelemetry_python_logs": "DEFER_AS_REQUIRED_CAPABILITY",
+    "phoenix_ai_observability": "WRAP_OPTIONAL_BACKEND",
+    "phoenix_experiments": "WRAP_CANDIDATE",
+    "phoenix_evals": "WRAP_LF_EVALUATORS_DO_NOT_REPLACE",
+    "lf_semantic_authority": "KEEP_LF",
+    "lf_pass_fail_certification": "KEEP_LF",
+    "lf_evidence_graph": "KEEP_LF",
+    "lf_receipts_hashes": "KEEP_LF",
+    "lf_certified_replay": "KEEP_LF"
+  },
+  "telemetry_default_policy": {
+    "content_capture": "OFF",
+    "allowed": [
+      "opaque_execution_correlation_id",
+      "profile_code",
+      "gate",
+      "status",
+      "block_code",
+      "model_provider",
+      "model_id",
+      "model_calls",
+      "retry_count",
+      "cache_flags",
+      "input_sha256",
+      "output_sha256",
+      "receipt_sha256",
+      "token_counts_or_context_proxy",
+      "timings"
+    ],
+    "forbidden_by_default": [
+      "raw_user_input",
+      "personal_or_financial_data",
+      "raw_typed_context",
+      "authority_source_contents",
+      "cards_or_ekb_bodies",
+      "secrets",
+      "raw_model_completion",
+      "full_receipts_or_evidence_payloads",
+      "file_or_image_bytes"
+    ]
+  },
+  "next_gate": {
+    "id": "ADOPT-R03-B",
+    "name": "ISOLATED_OTEL_PARITY_AND_PRIVACY_SPIKE",
+    "requirements": [
+      "same_lf_output_hash_with_telemetry_disabled_and_enabled",
+      "same_fail_closed_semantics",
+      "no_sensitive_raw_content_in_exported_spans",
+      "instrumentation_overhead_measured",
+      "local_or_in_memory_export_only",
+      "phoenix_adapter_only_after_otel_parity"
+    ]
+  },
+  "claim_ceiling": "FIT_GAP_ONLY_NO_DEPENDENCY_INSTALL_NO_RUNTIME_MIGRATION_NO_EXTERNAL_EXPORT_NO_PRODUCTION_AUTHORIZATION"
+}
