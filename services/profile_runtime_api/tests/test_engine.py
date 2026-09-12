@@ -260,6 +260,17 @@ class EngineGateTest(unittest.TestCase):
         self.assertEqual(result["result"]["runtime_completion"]["status"], "PASS")
         self.assertEqual(result["result"]["context"]["subject_mode"], "NON_CANONICAL_ARTIFACT")
         self.assertEqual(result["result"]["context"]["artifact_count"], 2)
+        governed_receipt = result["result"]["runtime_completion"]["governed_context_receipt"]
+        input_governance_authorities = [
+            item
+            for item in governed_receipt["authority_resolution"]
+            if item["authority_type"] == "INPUT_GOVERNANCE"
+        ]
+        self.assertEqual(len(input_governance_authorities), 1)
+        self.assertEqual(
+            input_governance_authorities[0]["source_refs"],
+            ["router://ACT-0001/noncanonical/test"],
+        )
         self.assertFalse(result["downstream_authorized"])
 
     def test_batch_prepares_context_once_and_continues_all_profiles(self) -> None:
