@@ -26,7 +26,7 @@
       ]
     }
   ],
-  "base_main_sha": "5a414bcb1f8e08492e064788f5ba49b820e1bf27",
+  "base_main_sha": "1e57c7b6300450ff37b28442635711980f31b4c6",
   "causal_lane_ownership": {
     "ekb_code": "GOV-010",
     "target_asset": "S30-EJECUCION-ESTRATEGIA-LF-SANDBOX-ACTIVATION",
@@ -49,8 +49,8 @@
     "evidence": "R18 source-only generator repair after live route activation canary exposed bootstrap predicate projection gap. Live stack was fail-closed rolled back to CANDIDATO_READ_ONLY; no business execution was created."
   },
   "evidence": {
-    "base_main_sha": "5a414bcb1f8e08492e064788f5ba49b820e1bf27",
-    "execution_id": "EXEC-S30-EXECUTOR-SANDBOX-ACTIVATION-R18-PREWRITE-20260911-001",
+    "base_main_sha": "1e57c7b6300450ff37b28442635711980f31b4c6",
+    "execution_id": "EXEC-S30-EXECUTOR-SANDBOX-ACTIVATION-R18-PREWRITE-20260911-002",
     "mode": "SANDBOX_ACTIVATION_SOURCE_NON_PRODUCTION",
     "production": false,
     "current_main_r16": "DURABLE_AT_5a414bcb1f8e08492e064788f5ba49b820e1bf27",
@@ -65,7 +65,7 @@
   },
   "frontier": {
     "current_stage": "S30_STRATEGY_EXECUTOR_SANDBOX_ACTIVATION_SOURCE_R18",
-    "next_gate": "EXACT_HEAD_CI_THEN_OWNER_MERGE_AUTHORIZATION",
+    "next_gate": "EXACT_HEAD_CI_THEN_GOVERNED_BROKER_DISPATCH",
     "blockers": [],
     "safe_parallel_work": [
       "READ_ONLY_S26_LEARNING_CONSUMPTION",
@@ -95,14 +95,14 @@
     },
     "gate_id": "S30_STRATEGY_EXECUTOR_SANDBOX_ACTIVATION_PREEXECUTION_R18",
     "input_exact": {
-      "base_main_sha": "5a414bcb1f8e08492e064788f5ba49b820e1bf27",
+      "base_main_sha": "1e57c7b6300450ff37b28442635711980f31b4c6",
       "receipt_path": "sandbox/lf_contract_gate_test/s30_d_final_r09/s30_strategy_executor_bootstrap_prewrite_receipt_v1.json",
       "request_schema": "s30-git-broker/v1",
       "source_ref": "lf/staging-s30-r18-executor-runtime-contract-20260911",
       "target_branch": "lf/s30-r18-executor-runtime-contract-20260911"
     },
-    "input_sha256": "3d6a5198440da63c4c43e5235bef22e9d326ec1efd06ad527616751416c051e6",
-    "input_source_ref": "owner-conformed-s30-scope+github:main@5a414bcb1f8e08492e064788f5ba49b820e1bf27",
+    "input_sha256": "33f39e7f69b40cc337aa80a6f82bbcb9b85f15e872fecd21f9b65866b158d421",
+    "input_source_ref": "owner-conformed-s30-scope+github:main@1e57c7b6300450ff37b28442635711980f31b4c6",
     "output_exact": {
       "bounded_repair_allowed": false,
       "material_work_allowed": true,
@@ -121,11 +121,11 @@
       "evidence": "R16 no-finding-quota, no-heuristic-gate, substantive evidence and generator-first repair remain mandatory; new tests include positive and mutation negatives."
     },
     "repair_allowed": false,
-    "run_id": "EXEC-S30-EXECUTOR-SANDBOX-ACTIVATION-R18-PREWRITE-20260911-001",
-    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_d_final_r09/s30_strategy_executor_bootstrap_prewrite_receipt_v1.json --expected-base-main-sha 5a414bcb1f8e08492e064788f5ba49b820e1bf27"
+    "run_id": "EXEC-S30-EXECUTOR-SANDBOX-ACTIVATION-R18-PREWRITE-20260911-002",
+    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_d_final_r09/s30_strategy_executor_bootstrap_prewrite_receipt_v1.json --expected-base-main-sha 1e57c7b6300450ff37b28442635711980f31b4c6"
   },
   "git_write_binding": {
-    "base_main_sha": "5a414bcb1f8e08492e064788f5ba49b820e1bf27",
+    "base_main_sha": "1e57c7b6300450ff37b28442635711980f31b4c6",
     "broker_probe": {
       "status": "PASS",
       "commit_sha": "b01fd5b6d0d1d68b464a37337344157b867cb334",
