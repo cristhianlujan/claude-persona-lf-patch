@@ -1,0 +1,109 @@
+{
+  "contract_version": "MOTOR_S30_DETERMINISTIC_FIRST_4D_V1",
+  "scope": "ACT-0046_SANDBOX_CONSUMER",
+  "authority": {
+    "source_path": "sandbox/lf_contract_gate_test/s30_data_access_candidate/execution_authority_policy_v1.json",
+    "module_path": "sandbox/lf_contract_gate_test/s30_data_access_candidate/lf_execution_authority.py",
+    "required_contract_version": "S30_EXECUTION_AUTHORITY_V1",
+    "required_model_policy": "MODEL_ONLY_ON_NON_DERIVABLE_SEMANTIC_GAP",
+    "required_semantic_delta_contract": "S30_SEMANTIC_DELTA_V1",
+    "deterministic_first_required": true
+  },
+  "work_split": {
+    "deterministic": [
+      "IDENTITY_HASH_ROUTING_CONTRACT_DEFAULTS",
+      "TYPED_CONTEXT_DERIVATION",
+      "CALCULABLE_VALIDATION_LIMITS_SCORING",
+      "KNOWN_STRUCTURE_REPETITION_FORMATTING",
+      "MATERIALIZATION_GUARDS_FINAL_VALIDATION"
+    ],
+    "conditional_model": [
+      "SEMANTIC_INTERPRETATION_SELECTION_REASONING"
+    ],
+    "model_may_run_only_when_non_derivable_semantic_gap": true,
+    "model_system_owned_fields_forbidden": true,
+    "post_model_materialization_deterministic": true
+  },
+  "ab_contract": {
+    "receipt_schema": "LF_4D_AB_RECEIPT_V1",
+    "arm_a": "BASELINE",
+    "arm_b": "DETERMINISTIC_FIRST_SEMANTIC_DELTA",
+    "same_input_sha256_required": true,
+    "same_model_and_parameters_required_for_semantic_case": true,
+    "minimum_repeated_runs_per_arm": 3,
+    "dimensions_required": [
+      "quality",
+      "functionality",
+      "depth",
+      "performance"
+    ],
+    "no_dimension_may_be_not_observed": true,
+    "evidence_required": true
+  },
+  "quality": {
+    "required_metrics": [
+      "semantic_checks_passed",
+      "semantic_checks_total",
+      "authority_checks_passed",
+      "authority_checks_total",
+      "unsupported_claims"
+    ],
+    "semantic_case_requires_independent_judge": true,
+    "candidate_must_not_degrade_baseline": true
+  },
+  "functionality": {
+    "required_metrics": [
+      "required_behaviors_passed",
+      "required_behaviors_total",
+      "positive_cases_passed",
+      "positive_cases_total",
+      "negative_cases_passed",
+      "negative_cases_total",
+      "guard_failures"
+    ],
+    "candidate_required_ratio": 1.0
+  },
+  "depth": {
+    "required_metrics": [
+      "obligations_preserved",
+      "obligations_total",
+      "relationships_preserved",
+      "relationships_total",
+      "exceptions_preserved",
+      "exceptions_total",
+      "causal_checks_passed",
+      "causal_checks_total"
+    ],
+    "candidate_must_not_degrade_baseline": true
+  },
+  "performance": {
+    "required_metrics": [
+      "elapsed_ms_samples",
+      "input_tokens",
+      "output_tokens",
+      "transport_bytes",
+      "model_calls",
+      "tool_calls"
+    ],
+    "elapsed_comparison": "MEDIAN",
+    "candidate_elapsed_must_not_regress": true,
+    "candidate_must_improve_at_least_one_resource_metric": true,
+    "null_token_metrics_allowed_only_if_transport_bytes_observed": true
+  },
+  "decision": {
+    "winner": "B_ONLY_IF_ALL_FOUR_DIMENSIONS_PASS",
+    "faster_with_quality_loss": "NO_GO",
+    "faster_with_functionality_loss": "NO_GO",
+    "faster_with_depth_loss": "NO_GO",
+    "missing_dimension": "INCOMPLETE",
+    "unobserved_semantic_judge_when_required": "INCOMPLETE",
+    "claim_ceiling_without_real_model_ab": "STRUCTURAL_CONTRACT_ONLY_NOT_SEMANTIC_AB_PROVEN"
+  },
+  "safety": {
+    "read_only_benchmark": true,
+    "no_auto_promotion": true,
+    "no_production": true,
+    "no_merge_authorized": true,
+    "pilot_gate_auto_advance": false
+  }
+}

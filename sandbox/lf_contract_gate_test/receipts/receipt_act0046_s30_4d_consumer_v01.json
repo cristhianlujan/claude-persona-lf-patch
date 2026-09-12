@@ -1,0 +1,23 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "ACT0046_S30_4D_CONSUMER_STRUCTURAL_SANDBOX",
+  "execution_id": "66460727-356f-4703-be22-c0f353b13c5e",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "fe8692bac8754d8710b2fd76c6d60dd0e411145d",
+  "judge_sha": "b2bf94b15655edd034d5540275942c6ff3b63a07",
+  "source_sha_list": [
+    "7d1448772354fe9d13b3df51689c5031fef1dd7f"
+  ],
+  "target_paths": [
+    "skills/learning_engine/adapters/s30_execution_authority_consumer.py",
+    "skills/learning_engine/contracts/s30_deterministic_first_4d_v1.json",
+    "skills/learning_engine/evals/s30_deterministic_first_4d_matrix.json",
+    "skills/learning_engine/validators/validate_4d_ab_receipt.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-11T04:13:38Z",
+  "notes": "Receipt limitado al contrato/harness estructural de sandbox de ACT-0046. Validate LF Packs run 34507589892 ejecuto el consumidor 4D con PASS estructural. behavioral_model_ab_status=NOT_EXECUTED; independent semantic judge=INCOMPLETE; repeated performance samples=INCOMPLETE. No prueba equivalencia semantica ni A/B real. No merge, runtime, produccion ni promocion automatica autorizados."
+}

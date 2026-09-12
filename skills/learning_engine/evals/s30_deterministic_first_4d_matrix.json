@@ -1,0 +1,38 @@
+{
+  "matrix_version": "MOTOR_S30_4D_MATRIX_V1",
+  "validation_scope": "CONTRACT_AND_HARNESS_MECHANICS",
+  "behavioral_model_ab_status": "NOT_EXECUTED",
+  "authority_contract": "S30_EXECUTION_AUTHORITY_V1",
+  "acceptance_contract": "MOTOR_S30_DETERMINISTIC_FIRST_4D_V1",
+  "dimensions": ["quality", "functionality", "depth", "performance"],
+  "cases": [
+    {
+      "id": "deterministic_known_structure",
+      "work_class": "DETERMINISTIC",
+      "semantic_case": false,
+      "expected_model_calls_b": 0,
+      "expected_decision": "SELECT_B_IF_4D_NON_REGRESSION_AND_PERF_IMPROVEMENT"
+    },
+    {
+      "id": "hybrid_non_derivable_semantic_gap",
+      "work_class": "HYBRID",
+      "semantic_case": true,
+      "same_model_and_parameters": true,
+      "independent_semantic_judge_required": true,
+      "expected_decision": "SELECT_B_IF_4D_NON_REGRESSION_AND_PERF_IMPROVEMENT"
+    },
+    {
+      "id": "faster_but_depth_loss",
+      "work_class": "HYBRID",
+      "semantic_case": true,
+      "expected_decision": "KEEP_A"
+    },
+    {
+      "id": "missing_dimension_or_unobserved_judge",
+      "work_class": "HYBRID",
+      "semantic_case": true,
+      "expected_decision": "NO_GO_INCOMPLETE"
+    }
+  ],
+  "claim_ceiling": "STRUCTURAL_CONTRACT_ONLY_NOT_SEMANTIC_AB_PROVEN"
+}
