@@ -1,0 +1,57 @@
+{
+  "schema": "LF_PLATFORM_ADOPT_R03D_PHOENIX_ADOPTION_DECISION_V1",
+  "strategy": "LF_PLATFORM_ADOPT_FIRST_20260912",
+  "gate": "ADOPT-R03-D",
+  "mode": "READ_ONLY_ARCHITECTURE_ASSESSMENT",
+  "status": "PASS_DECISION_COMPLETE",
+  "decision": "PHOENIX_DEV_EVAL_OPTIONAL_SEPARATE_SERVICE_NOT_LF_RUNTIME_DEPENDENCY",
+  "production_effect": false,
+  "runtime_mutated": false,
+  "s26_s30_mutated": false,
+  "inputs": {
+    "r03b_status": "PASS",
+    "r03c_status": "PASS_WITH_LICENSE_GATE",
+    "r03c_evidence_run": "34680744141",
+    "r03c_report_sha256": "739e08444287c107e808a420fc8c3ee0a18cd405946a11e29b04eafae377c4c7",
+    "phoenix_server_pin": "20.9.0",
+    "phoenix_client_pin": "3.5.0",
+    "opentelemetry_pin": "1.44.0"
+  },
+  "license_gate": {
+    "phoenix_server_license": "Elastic-2.0",
+    "phoenix_client_license": "Apache-2.0",
+    "internal_self_hosted_candidate": true,
+    "customer_facing_managed_service_authorized": false,
+    "legal_commercial_signoff_before_production": true,
+    "engineering_assessment_is_legal_advice": false
+  },
+  "dependency_gate": {
+    "full_server_in_lf_runtime": "FORBIDDEN_PENDING_EXPLICIT_EXCEPTION",
+    "phoenix_client_in_lf_core": "NO",
+    "phoenix_client_in_evaluator_admin_tooling": "OPTIONAL",
+    "observed_full_server_dependency_surface": "MATERIAL",
+    "isolate_server_dependencies": true
+  },
+  "target_architecture": {
+    "lf_runtime_telemetry": "OPENTELEMETRY",
+    "transport_contract": "OTLP",
+    "collector": "OTEL_COLLECTOR_TARGET",
+    "phoenix_role": "OPTIONAL_SEPARATE_DEV_EVAL_BACKEND",
+    "lf_certification_owner": "LF_ONLY",
+    "lf_evidence_owner": "LF_ONLY",
+    "content_capture_default": "OFF"
+  },
+  "placement": {
+    "opentelemetry_core": "ADOPT",
+    "otel_collector_boundary": "ADOPT_AS_TARGET_ARCHITECTURE",
+    "phoenix_local_technical_fit": "PASS",
+    "phoenix_server_in_lf_runtime": "NO",
+    "phoenix_separate_dev_eval_backend": "OPTIONAL_YES",
+    "phoenix_production_rollout": "NOT_AUTHORIZED"
+  },
+  "next": {
+    "r02e": "WAIT_FINAL_S26_FREEZE",
+    "r03e": "OPTIONAL_FUTURE_NON_PRODUCTION_COLLECTOR_BACKEND_OPERATIONAL_SPIKE"
+  },
+  "claim_ceiling": "ARCHITECTURE_PLACEMENT_DECISION_ONLY_NO_PRODUCTION_PHOENIX_OR_OTEL_ROLLOUT_AUTHORIZATION"
+}
