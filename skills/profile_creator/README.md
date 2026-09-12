@@ -38,3 +38,14 @@ Create profile packs that are reusable, auditable, and aligned with LF governanc
 6. Sandbox Test.
 7. Controlled PR.
 8. Post-merge verification.
+
+
+## S26 existing-profile baseline
+
+For `ACTUALIZACION_PERFIL_LF`, run:
+
+```bash
+python3 skills/profile_creator/validators/plan_s26_profile_update.py <profile_slug> <repo_root>
+```
+
+The planner is read-only. It reports `NO_UPDATE_REQUIRED`, `UPDATE_REQUIRED`, or `BLOCKED_AUTHORITY_REQUIRED` and a bounded repair plan. Post-write closure requires a fresh 10/10 baseline result on the exact candidate head.

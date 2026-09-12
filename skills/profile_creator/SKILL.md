@@ -80,6 +80,22 @@ Neither producer depth nor deterministic intake may be promoted to `PASS_TO_COMP
 
 A substantive Quality Pack rejection is still a valid handoff execution if the relevant receiver layer actually received and reviewed the candidate; an inability to locate the candidate is a producer handoff failure.
 
+## Existing-profile S26 upgrade route
+
+`ACTUALIZACION_PERFIL_LF` is the governed maintenance path for an existing profile. Before any profile-source write, the updater must evaluate the target against `contracts/s26_profile_baseline_v1.json` using `validators/evaluate_s26_profile_baseline.py` (or the planning wrapper `validators/plan_s26_profile_update.py`).
+
+Rules:
+
+- `NO_UPDATE_REQUIRED` means the profile already satisfies all 10 S26 architectural dimensions; do not rewrite it merely to create activity.
+- `UPDATE_REQUIRED` means apply only the reported `repair_actions`, preserving the profile's domain semantics and authority.
+- `BLOCKED_AUTHORITY_REQUIRED` means a canonical choice cannot be derived safely (for example, multiple schemas exist and no exact runtime schema is bound). Resolve authority before writing; filename similarity is not authority.
+- A profile update cannot close until the baseline is rerun on the post-write exact head and returns 10/10, in addition to the existing operation contract, validator, evidence, readback and semantic gates.
+- The standard runtime integration surface is `profiles/<slug>/contracts/runtime_binding.json` (`LF_PROFILE_RUNTIME_BINDING_V1`). It binds exact profile identity, canonical runtime schema, canonical validator, profile-local deterministic semantic utility, source-first/no-invention, fail-closed, exact-head evidence and post-update baseline requirements.
+- Profile-local specializations belong behind this common interface. Do not add new slug-specific branches to the shared runtime when the behavior can be expressed by the runtime binding.
+- The update route never activates runtime, production, automatic promotion or business effects. Those remain separate governed operations.
+
+This makes the updater differential: measure -> repair only the demonstrated delta -> rerun -> close only at the common S26 compatibility floor.
+
 ## CI profile-validator discovery contract
 
 The repository's existing `Validate LF Packs` workflow invokes `skills/profile_creator/validators/validate_pack.py`. That validator is therefore the reusable discovery boundary for profile-local deterministic pack validation; no profile slug may be hardcoded as a privileged canary.

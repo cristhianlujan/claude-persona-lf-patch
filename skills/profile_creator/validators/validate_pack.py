@@ -41,6 +41,7 @@ def main():
         ('UPDATE_STEP60_JUDGE_REBASELINE',[sys.executable,str(root/'evals/update_step60_judge_rebaseline_contract.py')]),
         ('PROFILE_OPERATION_BLOCKED_EVIDENCE',[sys.executable,str(root/'evals/profile_operation_blocked_evidence_contract.py')]),
         ('RUNTIME_UPDATE_OPERATION_DISPOSITION',[sys.executable,str(root/'evals/runtime_update_operation_disposition_contract.py')]),
+        ('S26_PROFILE_BASELINE_MATRIX',[sys.executable,str(root/'evals/s26_profile_baseline_matrix.py')]),
     ]
     specification_only=[
         'evals/existing_artifact_remediation_contract.py',
