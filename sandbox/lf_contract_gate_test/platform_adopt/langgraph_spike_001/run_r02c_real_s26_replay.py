@@ -27,6 +27,10 @@ EXPECTED_INPUT_SHA256 = "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb0
 EXPECTED_RAW_SHA256 = "45b130b396abb690095cb6b64c1bf23b4a046a49c904aee1436ff0a46b450b0b"
 EXPECTED_OUTPUT_SHA256 = "5d938ada46cdaf809ad38791d3c9b59f8c9f6134d0577cbca2f56ac4bf71c3a7"
 TYPED_CONTEXT_SHA256 = "24c3e3c60e609a2dc2d55703c624364c9438d4057da13185288a3f537c16ba72"
+PERSISTED_INPUT = HERE / "R02C_REAL_S26_INPUT.json"
+PERSISTED_REQUEST = HERE / "R02C_REAL_S26_REQUEST.json"
+PERSISTED_RAW = HERE / "R02C_REAL_MODEL_RAW.json"
+PERSISTED_DIRECT = HERE / "R02C_LF_DIRECT_OUTPUT.json"
 PERSISTED_LANGGRAPH = HERE / "R02C_LANGGRAPH_FUNCTIONAL_OUTPUT.json"
 PERSISTED_REPORT = HERE / "R02C_PARITY_REPORT.json"
 
@@ -76,6 +80,16 @@ def main() -> int:
     if input_bytes.decode("utf-8") != input_literal:
         raise RuntimeError("R02C_INPUT_LITERAL_MISMATCH")
 
+    persisted_input = json.loads(PERSISTED_INPUT.read_text(encoding="utf-8"))
+    persisted_request = PERSISTED_REQUEST.read_bytes()
+    persisted_raw = PERSISTED_RAW.read_bytes()
+    if persisted_input.get("input_literal") != input_literal:
+        raise RuntimeError("R02C_PERSISTED_INPUT_MISMATCH")
+    if json.loads(persisted_request.decode("utf-8")) != request:
+        raise RuntimeError("R02C_PERSISTED_REQUEST_MISMATCH")
+    if json.loads(persisted_raw.decode("utf-8")) != json.loads(raw_bytes.decode("utf-8")):
+        raise RuntimeError("R02C_PERSISTED_RAW_MISMATCH")
+
     settings = Settings(
         repo_root=ROOT,
         state_dir=Path("/tmp/lf-r02c-state"),
@@ -103,6 +117,7 @@ def main() -> int:
     functional_output = wrapped["output"]
     functional_bytes = functional_output.encode("utf-8")
 
+    persisted_direct = PERSISTED_DIRECT.read_bytes()
     persisted_functional = PERSISTED_LANGGRAPH.read_bytes()
 
     report = {
@@ -115,10 +130,12 @@ def main() -> int:
         "lf_direct_output_sha256": sha256_bytes(direct_bytes),
         "langgraph_functional_output_sha256": sha256_bytes(functional_bytes),
         "frozen_expected_output_sha256": sha256_bytes(expected_bytes),
+        "persisted_direct_output_sha256": sha256_bytes(persisted_direct),
         "persisted_langgraph_output_sha256": sha256_bytes(persisted_functional),
         "direct_equals_frozen": direct_bytes == expected_bytes,
         "functional_equals_frozen": functional_bytes == expected_bytes,
         "direct_equals_functional": direct_bytes == functional_bytes,
+        "persisted_direct_equals_executed": persisted_direct == direct_bytes,
         "persisted_functional_equals_executed": persisted_functional == functional_bytes,
         "model_called": False,
         "network_calls": 0,
@@ -132,6 +149,7 @@ def main() -> int:
             report["direct_equals_frozen"],
             report["functional_equals_frozen"],
             report["direct_equals_functional"],
+            report["persisted_direct_equals_executed"],
             report["persisted_functional_equals_executed"],
         ]
     ):
