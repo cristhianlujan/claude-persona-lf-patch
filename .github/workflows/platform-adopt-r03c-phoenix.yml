@@ -1,0 +1,46 @@
+name: Platform Adopt R03-C Phoenix Local Fit
+
+on:
+  push:
+    branches:
+      - lf/platform-adopt-otel-phoenix-fitgap-001
+
+jobs:
+  r03c-phoenix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PHOENIX_TELEMETRY_ENABLED: "false"
+      PHOENIX_PORT: "6006"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install LF runtime, Phoenix and OTel pins
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r services/profile_runtime_api/requirements.in
+          pip install arize-phoenix==20.9.0 arize-phoenix-client==3.5.0 \
+            opentelemetry-api==1.44.0 opentelemetry-sdk==1.44.0 \
+            opentelemetry-exporter-otlp-proto-http==1.44.0
+      - name: Start local Phoenix server with product telemetry disabled
+        run: |
+          nohup phoenix serve >/tmp/r03c-phoenix.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:6006/healthz >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/r03c-phoenix.log
+          exit 1
+      - name: Execute isolated Phoenix local fit
+        run: |
+          python sandbox/lf_contract_gate_test/platform_adopt/otel_phoenix_fitgap_001/run_r03c_phoenix_local_fit.py | tee R03C_PHOENIX_LOCAL_FIT_REPORT.json
+      - name: Upload R03-C report
+        uses: actions/upload-artifact@v4
+        with:
+          name: r03c-phoenix-local-fit-report
+          path: R03C_PHOENIX_LOCAL_FIT_REPORT.json
+          if-no-files-found: error
