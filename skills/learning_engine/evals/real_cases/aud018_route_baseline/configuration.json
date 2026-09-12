@@ -1,0 +1,23 @@
+{
+  "act0046_document_id": "1DoT3rYFPAIbCQlYXID7PChmCk149tI13MOCYhmBZf1E",
+  "act0046_revision_id": "ANLCKQncEv_OKZQB9C7sx2bT31soWvJQROT5ZhSXm_BcZChYHE29jk-0cRxsJZKLulDmZ1sVBWhKTi2d9AlKs8zYX2rAeTqVpQLgJzypPJQ",
+  "code_head_sha": "5f33c4ce25fca201c109d31be5c2e1e1ec465afc",
+  "learning_engine_skill_blob_sha": "46250c542c5335486429e0de49ee47db15569970",
+  "learning_engine_skill_path": "skills/learning_engine/SKILL.md",
+  "observed_at": "2026-09-10T04:00:14.409695+00:00",
+  "repository": "cristhianlujan/claude-persona-lf-patch",
+  "router_asset": {
+    "code": "ACT-0001",
+    "document_status": "VIGENTE",
+    "operational_status": "ACTIVO",
+    "version": "v0.3"
+  },
+  "target_asset": {
+    "automatic_impact": "BLOQUEADO",
+    "code": "ACT-0046",
+    "document_status": "CANDIDATO",
+    "operational_status": "READ_ONLY",
+    "runtime_state": "CANDIDATE_READ_ONLY",
+    "version": "v0.1"
+  }
+}
