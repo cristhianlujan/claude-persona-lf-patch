@@ -2,6 +2,7 @@
 import importlib.util
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 WORKFLOW = Path(".github/workflows/lf-contract-check.yml")
@@ -29,8 +30,7 @@ def load_reconciliation_helper():
     return module
 
 
-def assert_reconciliation_behavior() -> None:
-    helper = load_reconciliation_helper()
+def assert_reconciliation_behavior(helper) -> None:
     s30_policy = "sandbox/lf_contract_gate_test/s30_policy_operations_candidate/policy_operations_contract.yaml"
     s30_c = "sandbox/lf_contract_gate_test/s30_c_reliability_harness/freeze_contract.json"
     s30_d = "sandbox/lf_contract_gate_test/s30_d_final_r09/r09_manifest_v1.json"
@@ -97,6 +97,57 @@ def assert_reconciliation_behavior() -> None:
     print("PASS_GITHUB_RECONCILIATION_APPLICABILITY_BEHAVIOR=11/11")
 
 
+def _git(repo: Path, *args: str) -> str:
+    completed = subprocess.run(
+        ["git", "-C", str(repo), *args],
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    return completed.stdout.strip()
+
+
+def assert_merge_path_recovery(helper) -> None:
+    with tempfile.TemporaryDirectory(prefix="lf-reconcile-merge-") as td:
+        repo = Path(td)
+        _git(repo, "init", "-b", "main")
+        _git(repo, "config", "user.name", "LF CI Test")
+        _git(repo, "config", "user.email", "lf-ci@example.invalid")
+
+        (repo / "base.txt").write_text("base\n", encoding="utf-8")
+        _git(repo, "add", "base.txt")
+        _git(repo, "commit", "-m", "base")
+
+        _git(repo, "checkout", "-b", "feature")
+        (repo / "product.txt").write_text("product\n", encoding="utf-8")
+        _git(repo, "add", "product.txt")
+        _git(repo, "commit", "-m", "product")
+
+        _git(repo, "checkout", "main")
+        (repo / "main.txt").write_text("main\n", encoding="utf-8")
+        _git(repo, "add", "main.txt")
+        _git(repo, "commit", "-m", "main diverges")
+        _git(repo, "merge", "--no-ff", "feature", "-m", "merge feature")
+        merge_sha = _git(repo, "rev-parse", "HEAD")
+
+        recovered = helper.recover_changed_paths_from_exact_head(merge_sha, repo_root=repo)
+        assert recovered == ["product.txt"], recovered
+
+        empty = repo / "changed.txt"
+        empty.write_text("", encoding="utf-8")
+        resolved = helper.resolve_changed_paths(empty, source_head_sha=merge_sha, repo_root=repo)
+        assert resolved == ["product.txt"], resolved
+
+        supplied = repo / "supplied.txt"
+        supplied.write_text("explicit.txt\n", encoding="utf-8")
+        resolved = helper.resolve_changed_paths(supplied, source_head_sha=merge_sha, repo_root=repo)
+        assert resolved == ["explicit.txt"], resolved
+
+        assert helper.recover_changed_paths_from_exact_head("0" * 40, repo_root=repo) == []
+
+    print("PASS_GITHUB_RECONCILIATION_MERGE_PATH_RECOVERY=4/4")
+
+
 def main() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
     require(text, ROUTER, "FAIL_CI_LANE_ROUTER_NOT_WIRED")
@@ -120,7 +171,6 @@ def main() -> None:
         "steps.feedback_tier.outputs.ci_router_selftest_required == 'true'",
         "FAIL_SELFTEST_STEP_NOT_PATH_SCOPED",
     )
-    # The same required job name must remain intact; the ruleset must not be bypassed.
     require(text, "name: lf-contract-check", "FAIL_REQUIRED_CHECK_CONTEXT_CHANGED")
     require(text, "if: needs.dedupe-router.outputs.run_deep == 'true'", "FAIL_DEEP_JOB_GUARD_CHANGED")
 
@@ -148,8 +198,10 @@ def main() -> None:
     if completed.returncode != 0:
         raise SystemExit("FAIL_P0_EXTERNAL_APPLICABILITY_BEHAVIOR")
 
-    assert_reconciliation_behavior()
-    print("PASS_CI_LANE_WORKFLOW_INTEGRATION=21/21")
+    helper = load_reconciliation_helper()
+    assert_reconciliation_behavior(helper)
+    assert_merge_path_recovery(helper)
+    print("PASS_CI_LANE_WORKFLOW_INTEGRATION=25/25")
 
 
 if __name__ == "__main__":
