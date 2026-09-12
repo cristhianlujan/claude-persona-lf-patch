@@ -1,0 +1,1 @@
+This probe intentionally changes only S30-D-owned evidence paths so the live post-merge reconciliation applicability gate can be observed without touching runtime or production.
