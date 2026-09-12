@@ -1,0 +1,87 @@
+{
+  "artifact_version": "S30_STRATEGY_EXECUTOR_PRODUCTION_READINESS_V1",
+  "status": "BLOCKED_FAIL_CLOSED_EXTERNAL_DEPENDENCY",
+  "operation_code": "EJECUCION_ESTRATEGIA_LF",
+  "strategy_snapshot_code": "LF_OPERATING_CONSTITUTION_POLICY_AUTONOMOUS_OPERATIONS_20260906",
+  "assessment_scope": "PRE_PRODUCTION_READINESS_NO_ACTIVATION_NO_EFFECTS",
+  "official_main_sha": "cd822652c02ba56de613aebb455d0ae141f99ed3",
+  "official_main_tree_sha": "84cd4a7f0dc4e9f919365525b52cf693c456512b",
+  "readiness_gates": {
+    "official_source_currentness": "PASS",
+    "central_binding_currentness": "PASS",
+    "source_hash_parity_with_validated_canary": "PASS",
+    "main_required_ci": "PASS",
+    "controlled_runtime_canary": "PASS",
+    "fail_closed_rollback": "PASS",
+    "safe_terminal_database_state": "PASS",
+    "governed_github_reconciliation": "BLOCKED"
+  },
+  "source_hash_readback": {
+    "strategy_executor_sandbox_activation_contract_v3.json": "1772ec0ec3ffefb7c73a5b45fdba83626341e629",
+    "strategy_executor_contract_binding_v1.json": "6647efb2a5b8b8458d8d442d8b55375f0cebb3fd",
+    "strategy_executor_family_objective_matrix_v4.json": "a58c6c3d316f5c7e709a35de3121cb6fea11b730",
+    "strategy_executor_live_canary_v6.json": "a5c86f532d8e644cc3e2c820808a64f9db13d3d9",
+    "strategy_executor_performance_policy_v1.json": "14259571905d9716b2405d57c54fbc4495e318c5",
+    "s30_strategy_executor_precanary_currentness_v3.py": "6b3f1bae6bc041f547740a8e29e4888813358c32"
+  },
+  "database_readback": {
+    "observed_at": "2026-09-12T15:41:17.793008+00:00",
+    "exact_strategy_count": 1,
+    "strategy_id": 35,
+    "strategy_status": "CANDIDATO_READ_ONLY",
+    "runtime_state": "PLAN_ONLY",
+    "impact_policy": "BLOQUEADO",
+    "operation_status": "CANDIDATO_READ_ONLY",
+    "active_contracts": 0,
+    "candidate_contracts": 1,
+    "active_steps": 0,
+    "canonical_steps": 15,
+    "active_step_contracts": 0,
+    "candidate_step_contracts": 15,
+    "active_judge_bindings": 0,
+    "candidate_judge_bindings": 15,
+    "router_rows": 0,
+    "effect_rows": 0,
+    "in_progress_target_executions": 0,
+    "latest_canary_execution_id": "EXEC-S30-R19-CANARY-EJECUCION-ESTRATEGIA-20260912-001",
+    "latest_canary_result": "PASS_CONTROLLED_CANARY_ROLLBACK_VERIFIED"
+  },
+  "external_dependency_blocker": {
+    "blocking_code": "BLOCK_SUPABASE_EDGE_FUNCTION_SERVICE_RESTRICTED_402",
+    "component": "lf-github-reconcile-v3",
+    "github_workflow": "s30-dual-reconciliation-write",
+    "workflow_run_id": 34701742107,
+    "workflow_job_id": 103574604648,
+    "failing_step": "Invoke governed GitHub reconciliation",
+    "observed_error": "HTTP_402_FROM_EDGE_FUNCTION_INVOCATION",
+    "project_health_observed": "ACTIVE_HEALTHY",
+    "edge_function_observed": "ACTIVE",
+    "classification": "EXTERNAL_PLATFORM_GATE_BEFORE_PRODUCTION_READINESS",
+    "fail_closed_required": true
+  },
+  "read_only_production_gate_open": false,
+  "production_activation_authorized": false,
+  "business_effect_dispatch_allowed": false,
+  "scheduler_activation": false,
+  "orchestrator_activation": false,
+  "model_calls_allowed": false,
+  "s26_mutation": false,
+  "next_allowed_action": "RESOLVE_OR_EXPLAIN_EXTERNAL_402_WITHOUT_PRODUCTION_ACTIVATION_THEN_RERUN_GOVERNED_RECONCILIATION",
+  "approval_boundary": {
+    "non_destructive_diagnosis_and_revalidation": "WITHIN_CURRENT_SCOPE",
+    "billing_plan_upgrade_or_spend": "NEW_EXPLICIT_OWNER_APPROVAL_REQUIRED",
+    "production_activation": "NEW_EXPLICIT_OWNER_APPROVAL_REQUIRED",
+    "business_effects": "NEW_EXPLICIT_OWNER_APPROVAL_REQUIRED"
+  },
+  "scope_validates": [
+    "PRE_PRODUCTION_SOURCE_AND_RUNTIME_READINESS_UP_TO_EXTERNAL_RECONCILIATION_GATE",
+    "SAFE_FAIL_CLOSED_TERMINAL_STATE",
+    "PRODUCTION_REMAINS_OFF_WHILE_BLOCKED"
+  ],
+  "scope_does_not_validate": [
+    "PRODUCTION_ACTIVATION",
+    "BUSINESS_EFFECT_DISPATCH",
+    "BILLING_OR_PLAN_CHANGES",
+    "SUCCESSFUL_GOVERNED_GITHUB_RECONCILIATION_AFTER_HTTP_402"
+  ]
+}
