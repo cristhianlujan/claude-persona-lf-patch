@@ -113,3 +113,117 @@ def simulate_canary(case: Mapping[str, Any]) -> str:
         "CLOSE_WITH_EXECUTABLE_SCOPE_REMAINING":"BLOCK_CLOSE_GUARD",
     }
     return mapping.get(fault, "BLOCK_UNKNOWN_CANARY_FAULT")
+
+
+def validate_sandbox_activation_contract(activation: Mapping[str, Any], bootstrap: Mapping[str, Any]) -> dict:
+    if activation.get("contract_version") != "S30_STRATEGY_EXECUTOR_SANDBOX_ACTIVATION_V1":
+        return _block("BLOCK_EXECUTOR_SANDBOX_ACTIVATION_VERSION")
+    if activation.get("operation_code") != "EJECUCION_ESTRATEGIA_LF":
+        return _block("BLOCK_EXECUTOR_SANDBOX_ACTIVATION_OPERATION")
+    if activation.get("status") != "SOURCE_CANDIDATE_NOT_APPLIED":
+        return _block("BLOCK_EXECUTOR_SANDBOX_ACTIVATION_SOURCE_STATE")
+    if bootstrap.get("contract_version") != activation.get("source_bootstrap_contract"):
+        return _block("BLOCK_EXECUTOR_SANDBOX_ACTIVATION_BOOTSTRAP_BINDING")
+    if bootstrap.get("runtime_activation") is not False:
+        return _block("BLOCK_EXECUTOR_BOOTSTRAP_MUST_REMAIN_INERT")
+    policy = activation.get("materialization_policy") or {}
+    if policy.get("fix_generator_not_live_artifact") is not True or policy.get("bootstrap_side_effect_flags_are_not_live_step_predicates") is not True:
+        return _block("BLOCK_EXECUTOR_SANDBOX_GENERATOR_POLICY")
+    if policy.get("target_registry_status") != "SANDBOX_ACTIVE" or policy.get("target_step_contract_status") != "ACTIVE_ENFORCEMENT":
+        return _block("BLOCK_EXECUTOR_SANDBOX_TARGET_STATUS")
+    router = activation.get("router_binding") or {}
+    expected_router = {
+        "asset_type": "STRATEGY", "action_code": "STRATEGY_EXECUTION",
+        "operation_resolution": "STATIC", "requires_existing_target": False,
+        "requires_missing_target": False, "write_allowed": False, "status": "ACTIVE",
+    }
+    if any(router.get(k) != v for k, v in expected_router.items()):
+        return _block("BLOCK_EXECUTOR_SANDBOX_ROUTER_BINDING")
+    if router.get("router_target_resolution") != "DEFER_TO_OPERATION_STRATEGY_RESOLVE" or router.get("target_binding_required_before_execution") is not True:
+        return _block("BLOCK_EXECUTOR_SANDBOX_TARGET_BINDING")
+    strategy = activation.get("strategy_resolution") or {}
+    if strategy.get("authority") != "public.lf_strategy_snapshots" or strategy.get("identity_field") != "snapshot_code" or strategy.get("exactly_one_required") is not True:
+        return _block("BLOCK_EXECUTOR_SANDBOX_STRATEGY_AUTHORITY")
+    live = activation.get("live_step_projection") or {}
+    required_pass = live.get("pass_condition_required") or {}
+    if required_pass.get("runtime_mode") != "SANDBOX_CONTROLLED" or required_pass.get("runtime_activation_authorized") is not True:
+        return _block("BLOCK_EXECUTOR_SANDBOX_LIVE_STEP_RUNTIME_MODE")
+    forbidden = live.get("forbidden_copied_predicates") or []
+    if {x.get("path") for x in forbidden if isinstance(x, Mapping)} != {"pass_condition.runtime_activation", "block_condition.runtime_activation_attempt"}:
+        return _block("BLOCK_EXECUTOR_SANDBOX_FORBIDDEN_BOOTSTRAP_PREDICATES")
+    boundary = activation.get("canary_boundary") or {}
+    if boundary.get("mode") != "CONTROL_STATE_NO_EFFECT" or boundary.get("business_effect_dispatch_allowed") is not False or boundary.get("model_calls_allowed") is not False:
+        return _block("BLOCK_EXECUTOR_SANDBOX_CANARY_BOUNDARY")
+    if any(boundary.get(k) is not False for k in ("orchestrator_activation","scheduler_activation","production_activation","s26_mutation")):
+        return _block("BLOCK_EXECUTOR_SANDBOX_FORBIDDEN_ACTIVATION")
+    return {"status": PASS, "code": "PASS_EXECUTOR_SANDBOX_ACTIVATION_CONTRACT"}
+
+
+def build_sandbox_materialization_plan(bootstrap: Mapping[str, Any], activation: Mapping[str, Any]) -> dict:
+    valid = validate_sandbox_activation_contract(activation, bootstrap)
+    if valid.get("status") != PASS:
+        return valid
+    live = activation["live_step_projection"]
+    pass_required = dict(live["pass_condition_required"])
+    block_required = dict(live["block_condition_required"])
+    steps = []
+    for step in bootstrap.get("steps") or []:
+        if not isinstance(step, Mapping):
+            return _block("BLOCK_EXECUTOR_SANDBOX_STEP_SHAPE")
+        steps.append({
+            "order": step.get("order"),
+            "step_id": step.get("step_id"),
+            "effect_class": step.get("effect_class"),
+            "active": True,
+            "status": "ACTIVE_ENFORCEMENT",
+            "pass_condition": {"effect_class": step.get("effect_class"), "source_contract": bootstrap.get("contract_version"), **pass_required},
+            "block_condition": {"source_contract_mismatch": True, "missing_required_evidence": True, **block_required},
+        })
+    return {
+        "status": PASS,
+        "code": "PASS_EXECUTOR_SANDBOX_MATERIALIZATION_PLAN",
+        "registry_status": "SANDBOX_ACTIVE",
+        "contract_status": "ACTIVE_ENFORCEMENT",
+        "judge_status": "ACTIVE_ENFORCEMENT",
+        "judge_binding_status": "ACTIVE_ENFORCEMENT",
+        "policy_binding_status": "ACTIVE_UNCHANGED",
+        "router_binding": dict(activation["router_binding"]),
+        "steps": steps,
+    }
+
+
+def validate_sandbox_materialization_plan(plan: Mapping[str, Any], bootstrap: Mapping[str, Any]) -> dict:
+    if plan.get("status") != PASS or plan.get("registry_status") != "SANDBOX_ACTIVE":
+        return _block("BLOCK_EXECUTOR_SANDBOX_PLAN_STATE")
+    steps = plan.get("steps") or []
+    if len(steps) != len(bootstrap.get("steps") or []) or len(steps) != 15:
+        return _block("BLOCK_EXECUTOR_SANDBOX_PLAN_STEP_COUNT")
+    for step in steps:
+        pc = step.get("pass_condition") or {}
+        bc = step.get("block_condition") or {}
+        if "runtime_activation" in pc or "runtime_activation_attempt" in bc:
+            return _block("BLOCK_EXECUTOR_SANDBOX_BOOTSTRAP_PREDICATE_LEAK", step_id=step.get("step_id"))
+        if pc.get("runtime_mode") != "SANDBOX_CONTROLLED" or pc.get("runtime_activation_authorized") is not True:
+            return _block("BLOCK_EXECUTOR_SANDBOX_RUNTIME_AUTH_MISSING", step_id=step.get("step_id"))
+        if bc.get("runtime_mode_not_sandbox_controlled") is not True or bc.get("target_strategy_binding_missing") is not True:
+            return _block("BLOCK_EXECUTOR_SANDBOX_BLOCK_GUARD_MISSING", step_id=step.get("step_id"))
+    return {"status": PASS, "code": "PASS_EXECUTOR_SANDBOX_MATERIALIZATION_PLAN_READBACK", "step_count": len(steps)}
+
+
+def validate_live_canary_blueprint(canary: Mapping[str, Any], activation: Mapping[str, Any]) -> dict:
+    if canary.get("contract_version") != "S30_STRATEGY_EXECUTOR_LIVE_CANARY_V1":
+        return _block("BLOCK_EXECUTOR_LIVE_CANARY_VERSION")
+    if canary.get("activation_contract") != activation.get("contract_version"):
+        return _block("BLOCK_EXECUTOR_LIVE_CANARY_ACTIVATION_BINDING")
+    if canary.get("mode") != "CONTROL_STATE_NO_EFFECT" or canary.get("business_effect_dispatch_allowed") is not False or canary.get("model_calls_allowed") is not False:
+        return _block("BLOCK_EXECUTOR_LIVE_CANARY_EFFECT_BOUNDARY")
+    if any(canary.get(k) is not False for k in ("scheduler_activation","orchestrator_activation","production_activation","s26_mutation")):
+        return _block("BLOCK_EXECUTOR_LIVE_CANARY_SCOPE")
+    checks = canary.get("checks") or []
+    required = {"ROUTER","ROUTER_NEGATIVE","STRATEGY_RESOLVE","IDEMPOTENCY","LEASE_CHECKPOINT","EFFECT_GUARD","STEP_EVIDENCE","CLOSE_GUARD","BOUNDARY"}
+    observed = {x.get("class") for x in checks if isinstance(x, Mapping)}
+    if observed != required:
+        return _block("BLOCK_EXECUTOR_LIVE_CANARY_COVERAGE", missing=sorted(required-observed), extra=sorted(observed-required))
+    if canary.get("finding_quota") is not None or canary.get("heuristic_as_gate") is not False:
+        return _block("BLOCK_EXECUTOR_LIVE_CANARY_QUALITY_POLICY")
+    return {"status": PASS, "code": "PASS_EXECUTOR_LIVE_CANARY_BLUEPRINT", "check_count": len(checks)}

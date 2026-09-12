@@ -1,0 +1,66 @@
+{
+  "contract_version": "S30_STRATEGY_EXECUTOR_LIVE_CANARY_V1",
+  "operation_code": "EJECUCION_ESTRATEGIA_LF",
+  "activation_contract": "S30_STRATEGY_EXECUTOR_SANDBOX_ACTIVATION_V1",
+  "mode": "CONTROL_STATE_NO_EFFECT",
+  "target_strategy": {
+    "snapshot_id": 35,
+    "snapshot_code": "LF_S30_SHELL_ADVANCED_EXECUTION_20260903"
+  },
+  "business_effect_dispatch_allowed": false,
+  "model_calls_allowed": false,
+  "scheduler_activation": false,
+  "orchestrator_activation": false,
+  "production_activation": false,
+  "s26_mutation": false,
+  "checks": [
+    {
+      "id": "L01",
+      "class": "ROUTER",
+      "expected": "READY_TO_EXECUTE"
+    },
+    {
+      "id": "L02",
+      "class": "ROUTER_NEGATIVE",
+      "expected": "BLOCK_OPERATION_NOT_REGISTERED"
+    },
+    {
+      "id": "L03",
+      "class": "STRATEGY_RESOLVE",
+      "expected": "EXACTLY_ONE_CANONICAL_SNAPSHOT"
+    },
+    {
+      "id": "L04",
+      "class": "IDEMPOTENCY",
+      "expected": "RESERVED_NEW_THEN_REPLAY_EXISTING"
+    },
+    {
+      "id": "L05",
+      "class": "LEASE_CHECKPOINT",
+      "expected": "LEASE_CHECKPOINT_RELEASE_PASS"
+    },
+    {
+      "id": "L06",
+      "class": "EFFECT_GUARD",
+      "expected": "ZERO_EFFECT_ROWS"
+    },
+    {
+      "id": "L07",
+      "class": "STEP_EVIDENCE",
+      "expected": "15_OF_15_REQUIRED_STEPS_EVIDENCED"
+    },
+    {
+      "id": "L08",
+      "class": "CLOSE_GUARD",
+      "expected": "NO_EXECUTABLE_SAFE_SCOPE_REMAINS"
+    },
+    {
+      "id": "L09",
+      "class": "BOUNDARY",
+      "expected": "NO_ORCHESTRATOR_SCHEDULER_PRODUCTION_S26_CHANGE"
+    }
+  ],
+  "finding_quota": null,
+  "heuristic_as_gate": false,
+  "claim_ceiling": "S30_STRATEGY_EXECUTOR_SANDBOX_CANARY_NO_BUSINESS_EFFECT"
+}
