@@ -1,0 +1,162 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lf/s31/lf-work-package-bootstrap/v0.1",
+  "title": "LF Work Package Bootstrap v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "work_package_id",
+    "strategy_id",
+    "lane_id",
+    "capability_id",
+    "version",
+    "owner",
+    "worker",
+    "judge",
+    "currentness",
+    "ownership",
+    "scope",
+    "capability_binding",
+    "pre_execution_assurance",
+    "assertions",
+    "evidence",
+    "frontier",
+    "closure"
+  ],
+  "properties": {
+    "work_package_id": {"type": "string", "minLength": 6},
+    "strategy_id": {"const": "S31"},
+    "lane_id": {"type": "string", "pattern": "^S31-[A-H]$"},
+    "capability_id": {"type": "string", "minLength": 3},
+    "version": {"const": "v0.1-bootstrap"},
+    "owner": {"type": "string", "minLength": 2},
+    "worker": {"type": "string", "minLength": 2},
+    "judge": {"type": "string", "minLength": 2},
+    "currentness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["base_main_sha", "source_snapshot_refs", "currentness_policy", "stale_action"],
+      "properties": {
+        "base_main_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "source_snapshot_refs": {"type": "array", "items": {"type": "string", "minLength": 3}, "minItems": 1, "uniqueItems": true},
+        "source_snapshot_sha256": {"type": "array", "items": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "uniqueItems": true},
+        "authority_refs": {"type": "array", "items": {"type": "string", "minLength": 3}, "minItems": 1, "uniqueItems": true},
+        "currentness_policy": {"enum": ["EXACT_HEAD", "EXACT_SOURCE_REVISION", "FROZEN_SNAPSHOT"]},
+        "cross_run_references": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "stale_action": {"const": "FAIL_CLOSED_BEFORE_MATERIAL_WORK"}
+      }
+    },
+    "ownership": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["active_writer_scope", "read_only_sources", "forbidden_cross_lane_writes", "collision_checks", "principle"],
+      "properties": {
+        "active_writer_scope": {"type": "array", "items": {"type": "string", "minLength": 2}, "minItems": 1, "uniqueItems": true},
+        "read_only_sources": {"type": "array", "items": {"type": "string", "minLength": 2}, "uniqueItems": true},
+        "allowed_dependencies": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "forbidden_cross_lane_writes": {"type": "array", "items": {"type": "string", "minLength": 2}, "minItems": 1, "uniqueItems": true},
+        "collision_checks": {"type": "array", "items": {"type": "string", "minLength": 2}, "minItems": 1, "uniqueItems": true},
+        "principle": {"const": "ONE_CAUSAL_CHAIN_ONE_ACTIVE_WRITER"}
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowed_tools", "allowed_read_scope", "allowed_write_scope", "forbidden_actions"],
+      "properties": {
+        "allowed_tools": {"type": "array", "items": {"type": "string", "minLength": 2}, "uniqueItems": true},
+        "allowed_read_scope": {"type": "array", "items": {"type": "string", "minLength": 2}, "minItems": 1, "uniqueItems": true},
+        "allowed_write_scope": {"type": "array", "items": {"type": "string", "minLength": 2}, "minItems": 1, "uniqueItems": true},
+        "forbidden_actions": {"type": "array", "items": {"type": "string", "minLength": 3}, "minItems": 5, "uniqueItems": true}
+      }
+    },
+    "capability_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_capabilities", "capability_versions", "compatibility_requirements", "unresolved_capabilities"],
+      "properties": {
+        "required_capabilities": {"type": "array", "items": {"type": "string", "minLength": 2}, "minItems": 1, "uniqueItems": true},
+        "capability_versions": {"type": "object", "additionalProperties": {"type": "string", "minLength": 1}},
+        "compatibility_requirements": {"type": "array", "items": {"type": "string", "minLength": 2}, "uniqueItems": true},
+        "adapter_requirements": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "unresolved_capabilities": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    },
+    "pre_execution_assurance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checks", "material_work_allowed_only_if_all_pass", "failure_action"],
+      "properties": {
+        "checks": {
+          "type": "array",
+          "minItems": 8,
+          "uniqueItems": true,
+          "items": {"enum": [
+            "CURRENTNESS_RESOLVED",
+            "SOURCE_AUTHORITY_RESOLVED",
+            "EKB_APPLICABILITY_RESOLVED",
+            "OWNERSHIP_COLLISION_FREE",
+            "SCHEMAS_CONTRACTS_RESOLVED",
+            "TOOLS_FUNCTIONS_ADAPTERS_RESOLVED",
+            "EVIDENCE_READBACK_RESOLVED",
+            "ASSERTIONS_ENUMERATED",
+            "NEGATIVE_PATH_DEFINED",
+            "DEPENDENCIES_RESOLVED"
+          ]}
+        },
+        "material_work_allowed_only_if_all_pass": {"const": true},
+        "failure_action": {"const": "FAIL_CLOSED_BEFORE_MATERIAL_WORK"}
+      }
+    },
+    "assertions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["acceptance", "failure", "blocking", "invalidation_conditions"],
+      "properties": {
+        "acceptance": {"type": "array", "items": {"type": "string", "minLength": 3}, "minItems": 1, "uniqueItems": true},
+        "failure": {"type": "array", "items": {"type": "string", "minLength": 3}, "minItems": 1, "uniqueItems": true},
+        "blocking": {"type": "array", "items": {"type": "string", "minLength": 3}, "minItems": 1, "uniqueItems": true},
+        "invalidation_conditions": {"type": "array", "items": {"type": "string", "minLength": 3}, "minItems": 1, "uniqueItems": true}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_evidence", "claim_ceiling", "producer_receipt_required", "independent_judge_receipt_required", "readback_receipt_required"],
+      "properties": {
+        "required_evidence": {"type": "array", "items": {"type": "string", "minLength": 2}, "minItems": 1, "uniqueItems": true},
+        "evidence_refs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "evidence_digests": {"type": "array", "items": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "uniqueItems": true},
+        "claim_ceiling": {"enum": ["STRUCTURAL", "PROVENANCE", "SEMANTIC", "BEHAVIORAL"]},
+        "producer_receipt_required": {"const": true},
+        "independent_judge_receipt_required": {"const": true},
+        "readback_receipt_required": {"const": true}
+      }
+    },
+    "frontier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["current_stage", "next_gate", "blockers", "safe_parallel_work", "handoff_target", "handoff_contract"],
+      "properties": {
+        "current_stage": {"type": "string", "minLength": 2},
+        "next_gate": {"type": "string", "minLength": 2},
+        "blockers": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "safe_parallel_work": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "handoff_target": {"type": "string", "minLength": 2},
+        "handoff_contract": {"type": "string", "minLength": 2}
+      }
+    },
+    "closure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["binary_conditions", "recompute_from_ledger", "main_merge_allowed", "production_allowed", "golden_promotion_allowed"],
+      "properties": {
+        "binary_conditions": {"type": "array", "items": {"type": "string", "minLength": 3}, "minItems": 1, "uniqueItems": true},
+        "recompute_from_ledger": {"const": true},
+        "main_merge_allowed": {"const": false},
+        "production_allowed": {"const": false},
+        "golden_promotion_allowed": {"const": false}
+      }
+    }
+  }
+}
