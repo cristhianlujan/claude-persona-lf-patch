@@ -2,7 +2,8 @@
 """Consume HETZNER profile-runtime rows and relay them to the local persistent API.
 
 Routing modes:
-- governed screen requests: exact runtime_request_envelope -> /v1/profile/execute;
+- governed canonical screen requests: exact runtime_request_envelope -> /v1/profile/execute;
+- governed non-canonical artifact sets: advisory read-only envelope -> /v1/profile/artifact-set-execute;
 - normal text/profile queue requests: queue-native payload -> /v1/profile/queue-execute.
 
 The worker never fabricates screen Input Governance, Card or image evidence. Image-bound work
@@ -14,6 +15,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import time
 import urllib.error
 import urllib.request
@@ -211,34 +213,104 @@ def _validate_envelope(request_id: str, envelope: Any) -> dict[str, Any]:
         or governance.get("ready") is not True
     ):
         raise RuntimeError("HETZNER_INPUT_GOVERNANCE_NOT_READY")
-    canonical = governance.get("canonical_receipt")
-    if not isinstance(canonical, dict):
-        raise RuntimeError("HETZNER_INPUT_GOVERNANCE_CANONICAL_RECEIPT_MISSING")
-    required_governance = (
-        "run_id",
-        "governance_agent_used",
-        "governance_version",
-        "consumer",
-        "sections_consumed",
-        "source_refs",
-        "source_snapshot_sha256",
-        "contract_snapshot_sha256",
-        "currentness",
-        "decision",
-    )
-    for key in required_governance:
-        if canonical.get(key) in (None, "", [], {}):
-            raise RuntimeError(f"HETZNER_INPUT_GOVERNANCE_CANONICAL_FIELD_MISSING:{key}")
-    if canonical.get("governance_agent_used") != "INPUT_GOVERNANCE_AGENT":
-        raise RuntimeError("HETZNER_INPUT_GOVERNANCE_AGENT_MISMATCH")
-    if canonical.get("consumer") != "CONTEXT_PACK":
-        raise RuntimeError("HETZNER_INPUT_GOVERNANCE_CONSUMER_MISMATCH")
-    if canonical.get("currentness") != "LIVE_CURRENT" or canonical.get("decision") != "PASS":
-        raise RuntimeError("HETZNER_INPUT_GOVERNANCE_CANONICAL_NOT_CURRENT_PASS")
 
-    artifact = envelope.get("artifact")
-    if not isinstance(artifact, dict) or not artifact.get("image_sha256"):
-        raise RuntimeError("HETZNER_ARTIFACT_BINDING_MISSING")
+    has_artifact = "artifact" in envelope
+    has_artifact_set = "artifact_set" in envelope
+    if has_artifact == has_artifact_set:
+        raise RuntimeError("HETZNER_ARTIFACT_ENVELOPE_MODE_AMBIGUOUS")
+
+    if has_artifact_set:
+        if governance.get("subject_mode") != "NON_CANONICAL_ARTIFACT":
+            raise RuntimeError("HETZNER_NONCANONICAL_SUBJECT_MODE_MISMATCH")
+        if governance.get("status") != "ADVISORY_READ_ONLY" or governance.get("decision") != "ADVISORY":
+            raise RuntimeError("HETZNER_NONCANONICAL_GOVERNANCE_NOT_ADVISORY")
+        if governance.get("canonical_receipt") is not None:
+            raise RuntimeError("HETZNER_NONCANONICAL_CANONICAL_RECEIPT_FORBIDDEN")
+        required_artifact_binding = governance.get("required_artifact_binding") or []
+        if (
+            not isinstance(required_artifact_binding, list)
+            or len(required_artifact_binding) != 3
+            or set(required_artifact_binding)
+            != {"artifact_ref", "artifact_sha256", "dimensions"}
+        ):
+            raise RuntimeError("HETZNER_NONCANONICAL_ARTIFACT_BINDING_INCOMPLETE")
+        constraints = governance.get("constraints")
+        if not isinstance(constraints, dict):
+            raise RuntimeError("HETZNER_NONCANONICAL_CONSTRAINTS_MISSING")
+        required_constraints = {
+            "operation_must_equal": "EJECUCION_PERFIL_LF",
+            "read_only": True,
+            "no_write": True,
+            "no_promotion": True,
+            "canonical_registration_required": False,
+            "artifact_binding_required_before_profile_execution": True,
+        }
+        if any(constraints.get(key) != value for key, value in required_constraints.items()):
+            raise RuntimeError("HETZNER_NONCANONICAL_CONSTRAINTS_INVALID")
+
+        artifact_set = envelope["artifact_set"]
+        if not isinstance(artifact_set, dict):
+            raise RuntimeError("HETZNER_NONCANONICAL_ARTIFACT_SET_INVALID")
+        if (
+            artifact_set.get("schema") != "NON_CANONICAL_ARTIFACT_SET_V1"
+            or artifact_set.get("subject_mode") != "NON_CANONICAL_ARTIFACT"
+        ):
+            raise RuntimeError("HETZNER_NONCANONICAL_ARTIFACT_SET_CONTRACT_INVALID")
+        items = artifact_set.get("artifacts")
+        if not isinstance(items, list) or not 1 <= len(items) <= 8:
+            raise RuntimeError("HETZNER_NONCANONICAL_ARTIFACT_SET_SIZE_INVALID")
+        refs: set[str] = set()
+        shas: set[str] = set()
+        for item in items:
+            if not isinstance(item, dict):
+                raise RuntimeError("HETZNER_NONCANONICAL_ARTIFACT_ITEM_INVALID")
+            ref = item.get("artifact_ref")
+            artifact = item.get("artifact")
+            if not isinstance(ref, str) or not ref or not isinstance(artifact, dict):
+                raise RuntimeError("HETZNER_NONCANONICAL_ARTIFACT_BINDING_MISSING")
+            sha = artifact.get("image_sha256")
+            width = artifact.get("width_px")
+            height = artifact.get("height_px")
+            if not isinstance(sha, str) or re.fullmatch(r"[0-9a-f]{64}", sha) is None:
+                raise RuntimeError("HETZNER_NONCANONICAL_ARTIFACT_SHA256_MISSING")
+            if not isinstance(width, int) or width <= 0 or not isinstance(height, int) or height <= 0:
+                raise RuntimeError("HETZNER_NONCANONICAL_ARTIFACT_DIMENSIONS_INVALID")
+            if ref in refs:
+                raise RuntimeError(f"HETZNER_NONCANONICAL_ARTIFACT_REF_DUPLICATE:{ref}")
+            if sha in shas:
+                raise RuntimeError(f"HETZNER_NONCANONICAL_ARTIFACT_SHA256_DUPLICATE:{sha}")
+            refs.add(ref)
+            shas.add(sha)
+        if profile.get("send_image_to_model") is True:
+            raise RuntimeError("HETZNER_NONCANONICAL_ARTIFACT_SET_FULL_IMAGE_MODEL_UNSUPPORTED")
+    else:
+        canonical = governance.get("canonical_receipt")
+        if not isinstance(canonical, dict):
+            raise RuntimeError("HETZNER_INPUT_GOVERNANCE_CANONICAL_RECEIPT_MISSING")
+        required_governance = (
+            "run_id",
+            "governance_agent_used",
+            "governance_version",
+            "consumer",
+            "sections_consumed",
+            "source_refs",
+            "source_snapshot_sha256",
+            "contract_snapshot_sha256",
+            "currentness",
+            "decision",
+        )
+        for key in required_governance:
+            if canonical.get(key) in (None, "", [], {}):
+                raise RuntimeError(f"HETZNER_INPUT_GOVERNANCE_CANONICAL_FIELD_MISSING:{key}")
+        if canonical.get("governance_agent_used") != "INPUT_GOVERNANCE_AGENT":
+            raise RuntimeError("HETZNER_INPUT_GOVERNANCE_AGENT_MISMATCH")
+        if canonical.get("consumer") != "CONTEXT_PACK":
+            raise RuntimeError("HETZNER_INPUT_GOVERNANCE_CONSUMER_MISMATCH")
+        if canonical.get("currentness") != "LIVE_CURRENT" or canonical.get("decision") != "PASS":
+            raise RuntimeError("HETZNER_INPUT_GOVERNANCE_CANONICAL_NOT_CURRENT_PASS")
+        artifact = envelope["artifact"]
+        if not isinstance(artifact, dict) or not artifact.get("image_sha256"):
+            raise RuntimeError("HETZNER_ARTIFACT_BINDING_MISSING")
 
     adapter_sources = profile.get("lf_adapter_sources")
     if not isinstance(adapter_sources, list):
@@ -430,8 +502,12 @@ def run_once() -> bool:
         envelope = claimed.get("runtime_request_envelope")
         if envelope is not None:
             payload = _validate_envelope(request_id, envelope)
-            endpoint = "/v1/profile/execute"
-            route = "GOVERNED_ENVELOPE"
+            if "artifact_set" in payload:
+                endpoint = "/v1/profile/artifact-set-execute"
+                route = "GOVERNED_NONCANONICAL_ARTIFACT_SET"
+            else:
+                endpoint = "/v1/profile/execute"
+                route = "GOVERNED_ENVELOPE"
         else:
             payload = _queue_native_payload(claimed)
             endpoint = "/v1/profile/queue-execute"

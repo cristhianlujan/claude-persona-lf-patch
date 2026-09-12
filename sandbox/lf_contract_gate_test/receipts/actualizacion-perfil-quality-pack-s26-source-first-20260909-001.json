@@ -1,0 +1,49 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-QUALITY-PACK-S26-SOURCE-FIRST-20260909-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "6fc011564789ecc79825c61a0d26a695dcdcd017d44c6253785de6cdd1ea7451",
+  "judge_sha": "bef12f5dd3c08db63b92faf64f77703acf9172288dc0547e0de56241d1521557",
+  "source_sha_list": [
+    "c1af01bbf07c7774ac35352bf19e48e82b0d10ea",
+    "0ee1d1fc9577eb1525010e4d4fdae6051bbafd48",
+    "6fc011564789ecc79825c61a0d26a695dcdcd017d44c6253785de6cdd1ea7451",
+    "bef12f5dd3c08db63b92faf64f77703acf9172288dc0547e0de56241d1521557"
+  ],
+  "target_paths": [
+    "profiles/quality_pack/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-09T21:32:00.000Z",
+  "evidence": {
+    "scope": "S26_SOURCE_FIRST_QUALITY_PACK_ACTUAL_ARTIFACT_BINDING",
+    "canonical_execution_ref": "public.lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-QUALITY-PACK-S26-SOURCE-FIRST-20260909-001",
+    "contract_source": "Supabase structured ACTUALIZACION_PERFIL_LF contract + step contracts",
+    "contract_sha_derivation": "Current ACTUALIZACION_PERFIL_LF contract unchanged since 2026-08-27; canonical contract SHA reused from current governed v0.2 receipt pattern",
+    "candidate_head_before_receipt": "81b6ed03c6c17681bef287ca72e1f22b348eb023",
+    "focal_ci_run": 34407000658,
+    "focal_ci_job": 102652265627,
+    "prewrite_binding_pass": true,
+    "github_readback_pass": true,
+    "deterministic_validation_pass": true,
+    "semantic_alignment_pass": true,
+    "regression_after_pass": true,
+    "independent_review_binding_regressions": "8/8",
+    "artifact_mutation_fail_closed": true,
+    "validate_lf_packs": "SUCCESS",
+    "pre_receipt_lf_contract_check": "FAIL_RECEIPT_TARGET_MISMATCH_EXPECTED",
+    "runtime_enable": false,
+    "validated_mark": false,
+    "automatic_promotion": false,
+    "production_authorized": false,
+    "merge_authorized": false,
+    "golden_declared": false,
+    "operation_closed": false,
+    "global_ci_green": false,
+    "note": "Governed candidate-source receipt for the S26 Quality Pack evidence-binding repair. It proves Router/baseline/scope/regression/pre-write binding, exact GitHub write/readback, deterministic validation, semantic judge and regression-after. It does not close ACTUALIZACION_PERFIL_LF, does not authorize merge/runtime/production/Golden, and does not waive the new exact-head global CI or fresh source-first Run I."
+  }
+}

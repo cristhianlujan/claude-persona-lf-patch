@@ -1,0 +1,32 @@
+{
+  "schema": "S26_HP001_GATE_C_OUTPUT_V1",
+  "gate": "C_CARD_SELECTION",
+  "project_id": "S26",
+  "run_id": "S26-HP-001",
+  "upstream": {
+    "source_gate": "B_EKB_GOVERNANCE",
+    "source_output_sha256": "283213c578640e3b06f42b52c6c8565a98a5e1b0414060d90d2b1b573dbdc81c",
+    "input_sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1"
+  },
+  "input": {
+    "surface_code": "UI_SCREEN_DESIGN",
+    "task_code": "CREATE_NEW",
+    "card_required": false,
+    "card_candidates": [],
+    "input_literal": "Diseña una pantalla para un marketplace de servicios. Debe tener un encabezado con buscador, categorías principales, una sección de servicios destacados y tarjetas que muestren título, proveedor, precio y una llamada a la acción. El diseño debe ser claro, profesional y fácil de navegar. Entrega una especificación estructurada lista para que otro agente implemente la pantalla.",
+    "input_literal_sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1"
+  },
+  "selection": {
+    "candidate_count": 0,
+    "evaluated_candidates": [],
+    "status": "FALLBACK",
+    "mode": "NO_CARD_GOVERNED",
+    "card_id": null,
+    "card_ref": null,
+    "card_sha256": null,
+    "schema_invention_allowed": false,
+    "reason": "NO_APPLICABLE_CARD"
+  },
+  "status": "PASS",
+  "next_gate": "D_AUTHORITY_RESOLUTION"
+}

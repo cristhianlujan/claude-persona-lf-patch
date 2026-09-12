@@ -45,45 +45,52 @@ def product_output_types(schema: dict) -> set[str]:
     return result
 
 
+def expect_ambiguous(runtime, profile_slug: str, work: Path) -> None:
+    try:
+        runtime._materialize_runtime_output_schema(profile_slug, REPO, work)
+    except runtime.RuntimeExecutionBlocked as exc:
+        assert exc.code == "QUEUE_RUNTIME_SCHEMA_AMBIGUOUS", (exc.code, exc.detail)
+        return
+    raise AssertionError(f"expected fail-closed ambiguous schema block for {profile_slug}")
+
+
+def read_canonical(profile_slug: str, filename: str) -> dict:
+    path = REPO / "profiles" / profile_slug / "schemas" / filename
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def main() -> int:
     runtime = load(RUNTIME, "semantic_schema_guard_v3")
 
+    # Multiple canonical schemas remain individually substantive, but AUTO must
+    # never synthesize them into a new runtime contract. Selection must be explicit.
     with tempfile.TemporaryDirectory() as td:
-        work = Path(td)
-        product_path = runtime._materialize_runtime_output_schema("product_director_lf", REPO, work)
-        assert product_path is not None
-        product = json.loads(product_path.read_text(encoding="utf-8"))
-        assert product.get("x-lf-runtime-schema-source") == [
-            "product_direction_spec.schema.json",
-            "product_missing_input.schema.json",
-        ]
-        assert product_output_types(product) == {"PRODUCT_DIRECTION_SPEC", "PRODUCT_MISSING_INPUT_STATE"}
-        product_arms = product["anyOf"]
-        direction = next(
-            arm for arm in product_arms
-            if ((arm.get("properties") or {}).get("output_type") or {}).get("const") == "PRODUCT_DIRECTION_SPEC"
-        )
-        assert "deliverable_created" in direction.get("required", [])
-        deliverable = (direction.get("properties") or {}).get("deliverable_created") or {}
-        assert deliverable.get("type") == "object"
-        assert "product_decision" in deliverable.get("required", [])
-        assert "acceptance_criteria" in deliverable.get("required", [])
-        assert "decision_lineage" in deliverable.get("required", [])
+        expect_ambiguous(runtime, "product_director_lf", Path(td))
+    product_direction = read_canonical("product_director_lf", "product_direction_spec.schema.json")
+    product_missing = read_canonical("product_director_lf", "product_missing_input.schema.json")
+    assert product_output_types(product_direction) == {"PRODUCT_DIRECTION_SPEC"}
+    assert product_output_types(product_missing) == {"PRODUCT_MISSING_INPUT_STATE"}
+    direction = schema_arms(product_direction)[0]
+    assert "deliverable_created" in direction.get("required", [])
+    deliverable = (direction.get("properties") or {}).get("deliverable_created") or {}
+    assert deliverable.get("type") == "object"
+    assert "product_decision" in deliverable.get("required", [])
+    assert "acceptance_criteria" in deliverable.get("required", [])
+    assert "decision_lineage" in deliverable.get("required", [])
 
     with tempfile.TemporaryDirectory() as td:
-        work = Path(td)
-        ui_path = runtime._materialize_runtime_output_schema("ui_architect", REPO, work)
-        assert ui_path is not None
-        ui = json.loads(ui_path.read_text(encoding="utf-8"))
-        assert ui.get("x-lf-runtime-schema-source") == [
-            "ui_focused_decision.schema.json",
-            "ui_missing_input.schema.json",
-            "ui_production_spec.schema.json",
-        ]
-        ui_arms = schema_arms(ui)
-        assert len(ui_arms) == 3
-        assert all(len(arm.get("required", [])) >= 2 for arm in ui_arms)
-        assert max(len(arm.get("required", [])) for arm in ui_arms) >= 10
+        expect_ambiguous(runtime, "ui_architect", Path(td))
+    ui_files = [
+        "ui_focused_decision.schema.json",
+        "ui_missing_input.schema.json",
+        "ui_production_spec.schema.json",
+    ]
+    ui_arms = []
+    for filename in ui_files:
+        ui_arms.extend(schema_arms(read_canonical("ui_architect", filename)))
+    assert len(ui_arms) == 3
+    assert all(len(arm.get("required", [])) >= 2 for arm in ui_arms)
+    assert max(len(arm.get("required", [])) for arm in ui_arms) >= 10
 
     with tempfile.TemporaryDirectory() as td:
         work = Path(td)
@@ -95,7 +102,8 @@ def main() -> int:
 
     print(
         "SEMANTIC_SCHEMA_GUARD_V3_PASS "
-        "bare_scalar_forbidden=true product_substantive_required=true ui_substantive_union=true quality_object=true"
+        "bare_scalar_forbidden=true product_substantive_required=true "
+        "ui_substantive_schemas=true ambiguous_auto_blocked=true quality_object=true"
     )
     return 0
 

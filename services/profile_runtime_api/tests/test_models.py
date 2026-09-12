@@ -6,7 +6,13 @@ import unittest
 from pydantic import ValidationError
 
 from profile_runtime_api.hashing import canonical_json_sha256, sha256_bytes
-from profile_runtime_api.models import Artifact, InputGovernanceReceipt, ProfileTask
+from profile_runtime_api.models import (
+    Artifact,
+    ArtifactSetExecuteRequest,
+    InputGovernanceReceipt,
+    NonCanonicalArtifactSet,
+    ProfileTask,
+)
 
 
 class ModelGovernanceTest(unittest.TestCase):
@@ -126,6 +132,162 @@ class ModelGovernanceTest(unittest.TestCase):
                     "lf_adapter_sources": [
                         base["lf_adapter_sources"][0] | {"adapter_version": None}
                     ]
+                }
+            )
+
+    def test_noncanonical_artifact_set_requires_advisory_read_only_governance(self) -> None:
+        context = {"router": "ACT-0001", "scope": "visual_artifact_review_only"}
+        governance = InputGovernanceReceipt(
+            receipt_ref="router://ACT-0001/noncanonical/1",
+            current=True,
+            ready=True,
+            context_sha256=canonical_json_sha256(context),
+            context=context,
+            status="ADVISORY_READ_ONLY",
+            decision="ADVISORY",
+            subject_mode="NON_CANONICAL_ARTIFACT",
+            required_artifact_binding=["artifact_ref", "artifact_sha256", "dimensions"],
+            constraints={
+                "operation_must_equal": "EJECUCION_PERFIL_LF",
+                "read_only": True,
+                "no_write": True,
+                "no_promotion": True,
+                "canonical_registration_required": False,
+                "artifact_binding_required_before_profile_execution": True,
+            },
+        )
+        artifact_set = NonCanonicalArtifactSet(
+            artifacts=[
+                {
+                    "artifact_ref": "approved://payment-single",
+                    "artifact": {
+                        "screen_code": "PAYMENT-SINGLE-APPROVED",
+                        "filename": "single.png",
+                        "image_sha256": "1" * 64,
+                        "width_px": 1600,
+                        "height_px": 1000,
+                    },
+                },
+                {
+                    "artifact_ref": "approved://payment-installments",
+                    "artifact": {
+                        "screen_code": "PAYMENT-INSTALLMENTS-APPROVED",
+                        "filename": "installments.png",
+                        "image_sha256": "2" * 64,
+                        "width_px": 1600,
+                        "height_px": 1000,
+                    },
+                },
+            ]
+        )
+        request = ArtifactSetExecuteRequest(
+            artifact_set=artifact_set,
+            input_governance=governance,
+            profile=ProfileTask(
+                request_id="artifact-set-review-1",
+                profile_code="PERFIL-UI-ARCHITECT",
+                profile_slug="ui_architect",
+                profile_source_paths=["profiles/ui_architect/SKILL.md"],
+                input_literal="Identify SHELL_LOCKED and SCREEN_SLOT without changing canon.",
+                runtime_output_mode="UI_FOCUSED_DECISION",
+            ),
+        )
+        self.assertEqual(request.artifact_set.contract_schema, "NON_CANONICAL_ARTIFACT_SET_V1")
+        self.assertEqual(len(request.artifact_set.artifacts), 2)
+
+    def test_noncanonical_artifact_set_blocks_duplicate_binding_or_full_image_mode(self) -> None:
+        base_artifact = {
+            "screen_code": "APPROVED-A",
+            "filename": "a.png",
+            "image_sha256": "3" * 64,
+            "width_px": 1600,
+            "height_px": 1000,
+        }
+        with self.assertRaises(ValidationError):
+            NonCanonicalArtifactSet(
+                artifacts=[
+                    {"artifact_ref": "approved://same", "artifact": base_artifact},
+                    {
+                        "artifact_ref": "approved://same",
+                        "artifact": base_artifact | {"image_sha256": "4" * 64},
+                    },
+                ]
+            )
+        with self.assertRaises(ValidationError):
+            NonCanonicalArtifactSet(
+                artifacts=[
+                    {"artifact_ref": "approved://a", "artifact": base_artifact},
+                    {"artifact_ref": "approved://b", "artifact": base_artifact},
+                ]
+            )
+
+        context = {"router": "ACT-0001"}
+        governance = InputGovernanceReceipt(
+            receipt_ref="router://ACT-0001/noncanonical/full-image",
+            current=True,
+            ready=True,
+            context_sha256=canonical_json_sha256(context),
+            context=context,
+            status="ADVISORY_READ_ONLY",
+            decision="ADVISORY",
+            subject_mode="NON_CANONICAL_ARTIFACT",
+            required_artifact_binding=["artifact_ref", "artifact_sha256", "dimensions"],
+            constraints={
+                "operation_must_equal": "EJECUCION_PERFIL_LF",
+                "read_only": True,
+                "no_write": True,
+                "no_promotion": True,
+                "canonical_registration_required": False,
+                "artifact_binding_required_before_profile_execution": True,
+            },
+        )
+        artifact_set = NonCanonicalArtifactSet(
+            artifacts=[{"artifact_ref": "approved://a", "artifact": base_artifact}]
+        )
+        with self.assertRaises(ValidationError):
+            ArtifactSetExecuteRequest(
+                artifact_set=artifact_set,
+                input_governance=governance,
+                profile=ProfileTask(
+                    request_id="artifact-set-full-image-blocked",
+                    profile_code="PERFIL-UI-ARCHITECT",
+                    profile_slug="ui_architect",
+                    profile_source_paths=["profiles/ui_architect/SKILL.md"],
+                    input_literal="Compare the artifact.",
+                    send_image_to_model=True,
+                ),
+            )
+
+    def test_advisory_mode_cannot_masquerade_as_canonical_governance(self) -> None:
+        context = {"router": "ACT-0001"}
+        base = {
+            "receipt_ref": "router://ACT-0001/noncanonical/2",
+            "current": True,
+            "ready": True,
+            "context_sha256": canonical_json_sha256(context),
+            "context": context,
+            "status": "ADVISORY_READ_ONLY",
+            "decision": "ADVISORY",
+            "subject_mode": "NON_CANONICAL_ARTIFACT",
+            "required_artifact_binding": ["artifact_ref", "artifact_sha256", "dimensions"],
+            "constraints": {
+                "operation_must_equal": "EJECUCION_PERFIL_LF",
+                "read_only": True,
+                "no_write": True,
+                "no_promotion": True,
+                "canonical_registration_required": False,
+                "artifact_binding_required_before_profile_execution": True,
+            },
+        }
+        with self.assertRaises(ValidationError):
+            InputGovernanceReceipt.model_validate(
+                base | {"required_artifact_binding": ["artifact_ref", "artifact_sha256"]}
+            )
+        with self.assertRaises(ValidationError):
+            InputGovernanceReceipt.model_validate(
+                base
+                | {
+                    "constraints": base["constraints"] | {"no_write": False},
                 }
             )
 

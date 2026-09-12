@@ -1,0 +1,39 @@
+Existing governed screen: B2B-CARGA-001 — Historial de cargas.
+
+Execute a fresh UI Architect review for REMEDIATE_EXISTING under the pre-bound S26 native Golden C contract. Do not use run A, run B, prior Golden candidates, prior semantic verdicts or historical expected outputs as authority.
+
+Frozen visual artifact identity:
+- filename: B2B_CARGA_001_HISTORIAL_DESKTOP_LIGHT_v0.1_CANDIDATO.png
+- SHA-256: ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287
+- dimensions: 1600x1000
+- bytes: 142727
+
+Observable facts from the frozen artifact:
+- The content area is Historial de cargas inside the existing LF shell.
+- Nine visible filter criteria plus Limpiar filtros are present.
+- Results summary: 6 cargas encontradas.
+- Ten visible table headers: Lote, Nombre, Archivo, Tipo, Cargado por, Fecha, Total, Válidos, Estado, Acciones.
+- Six data rows are visible.
+- Rows-per-page visibly says 25 registros por página.
+- Pagination visibly exposes pages 1, 2 and 3 plus a next control.
+- Horizontal scrollbar chrome is visibly rendered below the table rows while all ten headers including Acciones are visible in the frozen 1600px viewport.
+
+Governed context that must be consumed in this same execution:
+- Input Governance: programacion.input_readiness_runs/221, status PASS and not invalidated.
+- Card: CARD_MARKETPLACE_LF_DECISIONES_PRODUCTO_EXPERIENCIA_v0.1_CANDIDATO, JIT sections Role, Decision lenses and Hard blockers.
+- Adapter: ADAPTER-LF-SHELL-PROFILE-20260827 v0.1, assurance v2, ROUTER_BOUND_ONLY, exactly one same-run adapter invocation and no second adapter-specific model call.
+
+Governed scope:
+- Screen-content remediation only.
+- Sidebar, topbar, company selector and shell structure are SHELL_LOCKED and must not be modified.
+- Preserve supplied functional filters, table columns and actions unless authoritative upstream context explicitly forbids one.
+- Do not invent financial, approval, payment, eligibility, legal, urgency, guarantee or canonical pixel-token semantics.
+- Any horizontal-overflow correction must preserve access to every column when real overflow exists.
+- Any pagination correction must derive availability from current total-record/page-size/current-page state rather than hard-code a business count.
+- Do not self-authorize Golden or production.
+
+Required output:
+- One executable UI Architect PRODUCTION_UI_SPEC.
+- Criterion-level score evidence under the existing UI Architect 25-point rubric.
+- Handoff to PERFIL-QUALITY-PACK using INDEPENDENT_CHAT_CONTEXT.
+- self_verdict must remain PASS_TO_QUALITY_PACK_CANDIDATE before independent review.

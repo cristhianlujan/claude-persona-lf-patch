@@ -1,0 +1,20 @@
+{
+  "schema": "S26_HP001_MANUAL_PROFILE_EXECUTION_RECEIPT_V1",
+  "test_id": "S26-HP-001",
+  "model": "GPT-5.6 Sol",
+  "execution_mode": "CURRENT_CHAT_MANUAL_PROFILE_RUN",
+  "profile_slug": "ui_architect",
+  "profile_source": "profiles/ui_architect/SKILL.md",
+  "frozen_source_sha": "db88d66dc2b79fb081748fb4a86d4057f30adb18",
+  "input_path": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/input.txt",
+  "input_sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1",
+  "card_resolution": "NO_CARD_GOVERNED",
+  "output_contract_version": "UI_PRODUCTION_SPEC_V6",
+  "candidate_path": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/manual_profile_output.json",
+  "candidate_sha256": "712fcb036a4db6ded06615f0ec1c4dd7b9d475fa6208f5b9fc72c7688b9f01d6",
+  "automatic_model_runtime_used": false,
+  "model_weight_acquisition_performed": false,
+  "paid_fallback_performed": false,
+  "production_effect": false,
+  "claim_ceiling": "CURRENT_CHAT_PROFILE_CANDIDATE_NOT_INDEPENDENT_REVIEW_NOT_GOLDEN"
+}

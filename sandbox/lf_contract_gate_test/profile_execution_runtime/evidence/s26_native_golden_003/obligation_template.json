@@ -1,0 +1,85 @@
+{
+  "schema": "S26_NATIVE_GOLDEN_C_TEMPLATE_V1",
+  "execution_id": "EXEC-S26-N08C-GPT-NATIVE-GOLDEN-C-001",
+  "profile_code": "PERFIL-UI-ARCHITECT",
+  "profile_slug": "ui_architect",
+  "profile_sources": [
+    "profiles/ui_architect/SKILL.md",
+    "profiles/ui_architect/contracts/existing_screen_review.md"
+  ],
+  "input_path": "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/input.txt",
+  "visual_artifact_ref_path": "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/visual_artifact_ref.json",
+  "input_governance_snapshot_path": "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/input_governance_snapshot.json",
+  "router_adapter_binding_snapshot_path": "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/router_adapter_binding_snapshot.json",
+  "metrics_plan_path": "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/metrics_plan.json",
+  "card_ref": "cards/marketplace_lf/decision_product_experience/CARD.md",
+  "card_version": "v0.1",
+  "card_selected_sections": ["Role", "Decision lenses", "Hard blockers"],
+  "card_budget_chars": 4000,
+  "adapter_ref": "adapters/lf_shell_profile_adapter/runtime/runtime_capsule.yaml",
+  "adapter_code": "ADAPTER-LF-SHELL-PROFILE-20260827",
+  "adapter_version": "v0.1",
+  "adapter_assurance_revision": "v2",
+  "adapter_target_ref": "PERFIL-UI-ARCHITECT",
+  "input_governance_ref": "programacion.input_readiness_runs/221",
+  "router_ref": "ACT-0001:v0.3",
+  "executor_mode": "GPT_NATIVE",
+  "obligations": [
+    {
+      "obligation_id": "TASK-MODE",
+      "authority": "PROFILE_CONTRACT",
+      "rule": "Existing-screen evaluation must remain REMEDIATE_EXISTING.",
+      "check_type": "EXACT_VALUE",
+      "evidence_pointer": "/deliverable_created/screen_definition/task_mode",
+      "expected_value": "REMEDIATE_EXISTING"
+    },
+    {
+      "obligation_id": "VISUAL-ARTIFACT",
+      "authority": "EXECUTION_INPUT",
+      "rule": "The output must remain bound to the exact frozen visual artifact digest.",
+      "check_type": "EXACT_VALUE",
+      "evidence_pointer": "/deliverable_created/screen_definition/artifact_sha256",
+      "expected_value": "ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287"
+    },
+    {
+      "obligation_id": "SHELL-LOCK",
+      "authority": "EXECUTION_INPUT",
+      "rule": "The remediation scope must keep the LF shell locked.",
+      "check_type": "REQUIRED_SUBSTRING",
+      "evidence_pointer": "/deliverable_created/screen_definition/scope",
+      "expected": ["shell", "locked"]
+    },
+    {
+      "obligation_id": "PAGINATION-DIRECTION",
+      "authority": "EXECUTION_INPUT",
+      "rule": "Any pagination change must reduce the visible inconsistency between total records, page size and available pages, and derive page count from current state instead of hard-coding a business count.",
+      "check_type": "SEMANTIC_RELATION",
+      "evidence_pointer": "/deliverable_created/remediation_actions/0",
+      "question": "Does this action reduce the pagination inconsistency using a state-derived rule without inventing business semantics?"
+    },
+    {
+      "obligation_id": "OVERFLOW-DIRECTION",
+      "authority": "EXECUTION_INPUT",
+      "rule": "Any horizontal-overflow change must remove unnecessary persistent scroll chrome without removing access to columns when real overflow exists.",
+      "check_type": "SEMANTIC_RELATION",
+      "evidence_pointer": "/deliverable_created/remediation_actions/1",
+      "question": "Does this action reduce unnecessary scroll chrome while preserving access to all columns under real overflow?"
+    },
+    {
+      "obligation_id": "QUALITY-HANDOFF",
+      "authority": "PROFILE_CONTRACT",
+      "rule": "The producer must hand off to independent Quality Pack review rather than self-authorize Golden.",
+      "check_type": "EXACT_VALUE",
+      "evidence_pointer": "/handoff_to_next/required_mode",
+      "expected_value": "INDEPENDENT_CHAT_CONTEXT"
+    },
+    {
+      "obligation_id": "SELF-VERDICT-BOUNDARY",
+      "authority": "PROFILE_CONTRACT",
+      "rule": "A producer output may only claim candidate passage to Quality Pack before independent semantic review.",
+      "check_type": "EXACT_VALUE",
+      "evidence_pointer": "/self_verdict",
+      "expected_value": "PASS_TO_QUALITY_PACK_CANDIDATE"
+    }
+  ]
+}
