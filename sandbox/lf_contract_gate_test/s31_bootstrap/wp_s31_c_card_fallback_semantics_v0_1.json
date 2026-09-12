@@ -1,0 +1,79 @@
+{
+  "work_package_id": "WP-S31-C-001",
+  "strategy_id": "S31",
+  "lane_id": "S31-C",
+  "capability_id": "CARD_RESOLUTION",
+  "version": "v0.1-bootstrap",
+  "owner": "S31",
+  "worker": "S31-C-CARD-SEMANTICS-WORKER",
+  "judge": "INDEPENDENT-S31-C-JUDGE",
+  "currentness": {
+    "base_main_sha": "ee7aca94c672fcc555db90962f09fe439eedf4f0",
+    "source_snapshot_refs": [
+      "gobernanza/contratos/s26_governance_ekb_card_fallback_v1.json",
+      "sandbox/lf_contract_gate_test/profile_execution_runtime/S26_OPERATING_MODE_SOURCE_FIRST.md",
+      "services/profile_runtime_api/profile_runtime_api/runtime_authority.py"
+    ],
+    "source_snapshot_sha256": [],
+    "authority_refs": ["main@ee7aca94c672fcc555db90962f09fe439eedf4f0", "LF_WORK_PACKAGE_BOOTSTRAP_V0_1"],
+    "currentness_policy": "EXACT_HEAD",
+    "cross_run_references": [],
+    "stale_action": "FAIL_CLOSED_BEFORE_MATERIAL_WORK"
+  },
+  "ownership": {
+    "active_writer_scope": ["sandbox/lf_contract_gate_test/s31_bootstrap/"],
+    "read_only_sources": ["gobernanza/contratos/", "sandbox/lf_contract_gate_test/profile_execution_runtime/", "services/profile_runtime_api/"],
+    "allowed_dependencies": ["S26_CARD_GATE", "S26_SOURCE_FIRST_POLICY", "S26_RUNTIME_AUTHORITY"],
+    "forbidden_cross_lane_writes": ["S26", "S30"],
+    "collision_checks": ["BASE_MAIN_CURRENT", "S31_ACTIVE_WRITER_UNIQUE", "NO_S26_DIRECT_WRITE"],
+    "principle": "ONE_CAUSAL_CHAIN_ONE_ACTIVE_WRITER"
+  },
+  "scope": {
+    "allowed_tools": ["GITHUB_READ", "GITHUB_WRITE_S31_BRANCH", "LOCAL_DETERMINISTIC_VALIDATION"],
+    "allowed_read_scope": ["gobernanza/contratos/", "sandbox/lf_contract_gate_test/profile_execution_runtime/", "services/profile_runtime_api/", "sandbox/lf_contract_gate_test/s31_bootstrap/"],
+    "allowed_write_scope": ["sandbox/lf_contract_gate_test/s31_bootstrap/"],
+    "forbidden_actions": ["MUTATE_S30_INTERNALS", "MUTATE_S26_INTERNALS", "ENABLE_PRODUCTION", "PROMOTE_GOLDEN", "MERGE_MAIN", "SILENT_SCOPE_EXPANSION"]
+  },
+  "capability_binding": {
+    "required_capabilities": ["LF_WORK_PACKAGE_BOOTSTRAP", "CURRENTNESS", "CARD_RESOLUTION", "EVIDENCE_DISCIPLINE"],
+    "capability_versions": {"LF_WORK_PACKAGE_BOOTSTRAP": "v0.1", "CURRENTNESS": "S30_CANDIDATE", "CARD_RESOLUTION": "S26_v0.3_PLUS_RUNTIME", "EVIDENCE_DISCIPLINE": "LF_EXISTING"},
+    "compatibility_requirements": ["NO_CARD_IS_GOVERNED", "AMBIGUITY_FAILS_CLOSED", "MANUAL_IS_LAST_RESORT", "SOURCE_AUTHORITY_WINS_OVER_CARD"],
+    "adapter_requirements": ["CURRENT_S26_TO_CANONICAL_MAPPING"],
+    "unresolved_capabilities": []
+  },
+  "pre_execution_assurance": {
+    "checks": ["CURRENTNESS_RESOLVED", "SOURCE_AUTHORITY_RESOLVED", "EKB_APPLICABILITY_RESOLVED", "OWNERSHIP_COLLISION_FREE", "SCHEMAS_CONTRACTS_RESOLVED", "TOOLS_FUNCTIONS_ADAPTERS_RESOLVED", "EVIDENCE_READBACK_RESOLVED", "ASSERTIONS_ENUMERATED", "NEGATIVE_PATH_DEFINED", "DEPENDENCIES_RESOLVED"],
+    "material_work_allowed_only_if_all_pass": true,
+    "failure_action": "FAIL_CLOSED_BEFORE_MATERIAL_WORK"
+  },
+  "assertions": {
+    "acceptance": ["ONE_CANONICAL_CARD_STATE_MACHINE_DEFINED", "CURRENT_S26_VOCABULARIES_HAVE_EXPLICIT_BOUNDARY_MAPPING", "NO_CARD_DOES_NOT_IMPLY_MANUAL", "AMBIGUITY_AND_CRITICAL_MISSING_AUTHORITY_FAIL_CLOSED", "SOURCE_AUTHORITY_CANNOT_BE_OVERRIDDEN_BY_CARD"],
+    "failure": ["RUNTIME_AND_POLICY_VOCABULARIES_REMAIN_SEMANTICALLY_CONFLICTING", "MANUAL_BECOMES_DEFAULT_NO_CARD_PATH", "CARD_OVERRIDES_SOURCE_AUTHORITY", "AMBIGUITY_CONTINUES_TO_EXECUTION"],
+    "blocking": ["BASE_MAIN_STALE", "SOURCE_VOCABULARY_UNRESOLVED", "OWNERSHIP_COLLISION"],
+    "invalidation_conditions": ["S26_CARD_CONTRACT_CHANGES", "S26_RUNTIME_RESOLVER_CHANGES", "MAIN_HEAD_CHANGES_MATERIALLY"]
+  },
+  "evidence": {
+    "required_evidence": ["VOCABULARY_INVENTORY", "STATE_TRANSITION_TABLE", "BOUNDARY_MAPPING", "POSITIVE_NEGATIVE_CASES", "PRODUCER_RECEIPT", "INDEPENDENT_JUDGE_RESULT", "GITHUB_READBACK"],
+    "evidence_refs": [],
+    "evidence_digests": [],
+    "claim_ceiling": "SEMANTIC",
+    "producer_receipt_required": true,
+    "independent_judge_receipt_required": true,
+    "readback_receipt_required": true
+  },
+  "frontier": {
+    "current_stage": "VOCABULARY_INVENTORY",
+    "next_gate": "CANONICAL_CARD_STATE_MACHINE_CANDIDATE",
+    "blockers": [],
+    "safe_parallel_work": ["S31_B_WORK_PACKAGE_EVOLUTION", "S31_A_INDEPENDENT_REVIEW"],
+    "handoff_target": "S31-C-CARD-SEMANTICS-WORKER",
+    "handoff_contract": "WP-S31-C-001"
+  },
+  "closure": {
+    "binary_conditions": ["ALL_ACCEPTANCE_ASSERTIONS_EVIDENCED", "ZERO_UNRESOLVED_BLOCKERS", "CURRENT_VOCABULARIES_MAPPED", "INDEPENDENT_JUDGE_PASS", "GITHUB_READBACK_MATCHES"],
+    "recompute_from_ledger": true,
+    "main_merge_allowed": false,
+    "production_allowed": false,
+    "golden_promotion_allowed": false
+  }
+}
