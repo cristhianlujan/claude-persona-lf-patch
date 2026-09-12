@@ -1,0 +1,157 @@
+{
+  "schema": "S26_FAMILY_OBJECTIVE_MATRIX_V3_COVERAGE_INVENTORY_V1",
+  "project": "S26",
+  "status": "PRE_CERTIFICATION_EVIDENCE_INVENTORY",
+  "purpose": "Map real frozen S26 Profile Runtime evidence to the v3 multidimensional certification matrix before creating or executing missing cases.",
+  "master_structure": ["OBJECTIVE", "FUNCTIONALITY", "QUALITY", "DEPTH", "PERFORMANCE", "EVIDENCE", "PASS_FAIL"],
+  "hierarchy": ["CASE", "OBJECTIVE", "FAMILY", "TRANSVERSAL", "SYSTEM"],
+  "source_authority": {
+    "frozen_candidate_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+    "root": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001",
+    "main_is_evidence_authority": false,
+    "merge_ref_is_evidence_authority": false,
+    "wrong_substrate_pr": 691,
+    "wrong_substrate_disposition": "CLOSED_UNMERGED_NOT_S26_EVIDENCE"
+  },
+  "status_vocabulary": {
+    "COVERED": "Frozen evidence materially demonstrates the objective.",
+    "PARTIAL": "Some dimensions are evidenced, but the objective is not independently complete.",
+    "NOT_DEMONSTRATED": "No sufficient frozen evidence found for the objective.",
+    "NEW_CASE_REQUIRED": "A genuinely new/unseen case is required by design; historical evidence cannot satisfy it."
+  },
+  "hard_rules": [
+    "NO_AGGREGATE_PERCENT_CAN_MASK_CRITICAL_FAILURE",
+    "NO_SEMANTIC_DUPLICATE_COUNTS_AS_INDEPENDENT_EVIDENCE",
+    "SOURCE_SUBSTRATE_PROVENANCE_REQUIRED_BEFORE_CASE_MAPPING",
+    "AT_LEAST_ONE_UNSEEN_HOLDOUT_PER_FAMILY",
+    "MUTATION_SENSITIVITY_REQUIRED_BEFORE_FINAL_CERTIFICATION",
+    "PERFORMANCE_CANNOT_COMPENSATE_CORRECTNESS_QUALITY_OR_DEPTH_FAILURE",
+    "NA_DIMENSION_REQUIRES_EXPLICIT_REASON"
+  ],
+  "families": [
+    {
+      "family_id": "F01_ROUTING_PROVENANCE",
+      "name": "Routing / Provenance",
+      "objectives": [
+        {"objective_id":"F01-O1","objective":"Exact candidate identity is bound to branch/event head, never merge-ref identity.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"N_A","evidence":"COVERED"},"evidence_refs":["S26_HP001_EVIDENCE_TABLES.md","evidence_index.json","isolation_manifest.json"],"learning":"Identity authority is explicit and replayable; merge-ref ambiguity is fail-closed."},
+        {"objective_id":"F01-O2","objective":"Parallel main drift cannot silently change frozen S26 test identity.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"N_A","evidence":"COVERED"},"evidence_refs":["S26_HP001_EVIDENCE_TABLES.md","evidence_index.json"],"learning":"The candidate is isolated from unrelated main movement."},
+        {"objective_id":"F01-O3","objective":"Cross-lane/shared workflow or runtime ownership violations are rejected.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"N_A","evidence":"COVERED"},"evidence_refs":["S26_HP001_EVIDENCE_TABLES.md","evidence_index.json"],"learning":"Shared S30 paths cannot be treated as valid S26 mutation authority."},
+        {"objective_id":"F01-O4","objective":"Committed provider readback is bound before downstream provenance consumption.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"N_A","evidence":"COVERED"},"evidence_refs":["gate_d_output.json","gate_e_output.json"],"learning":"Downstream authority/context consumes post-commit provider readback rather than same-write assumptions."},
+        {"objective_id":"F01-O5","objective":"A brand-new/unseen routing or provenance surface generalizes without route memorization.","status":"NEW_CASE_REQUIRED","dimensions":{"functionality":"PENDING","quality":"PENDING","depth":"PENDING","performance":"PENDING","evidence":"PENDING"},"evidence_refs":[],"learning":"Required holdout; historical HP001 cannot prove unseen-route generalization."}
+      ]
+    },
+    {
+      "family_id": "F02_SOURCE_FIRST_PREBIND",
+      "name": "Source-first / Prebind",
+      "objectives": [
+        {"objective_id":"F02-O1","objective":"Fresh schema-first EKB/control-plane readback precedes execution decisions.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"N_A","evidence":"COVERED"},"evidence_refs":["preexecution_contract.json","gate_d_output.json","S26_HP001_EVIDENCE_TABLES.md"],"learning":"Source discovery is materialized from the live control plane before authority/context binding."},
+        {"objective_id":"F02-O2","objective":"A new run does not reuse a prior-run governance snapshot as current authority.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"N_A","evidence":"COVERED"},"evidence_refs":["preexecution_contract.json","gate_d_output.json"],"learning":"Freshness is run-scoped; snapshot_reused_from_gate_b=false is explicitly recorded at authority resolution."},
+        {"objective_id":"F02-O3","objective":"Stale bound source is re-read and explicitly rebound before write/execution.","status":"PARTIAL","dimensions":{"functionality":"PARTIAL","quality":"COVERED","depth":"PARTIAL","performance":"N_A","evidence":"PARTIAL"},"evidence_refs":["gate_d_output.json"],"learning":"Post-commit readback is proven, but HP001 does not contain a deliberate stale-to-rebound transition case."},
+        {"objective_id":"F02-O4","objective":"Caller-declared/spoofed source currentness cannot replace server/provider-derived currentness.","status":"NOT_DEMONSTRATED","dimensions":{"functionality":"PENDING","quality":"PENDING","depth":"PENDING","performance":"N_A","evidence":"PENDING"},"evidence_refs":[],"learning":"Needs a dedicated negative case on the S26 Profile Runtime substrate."},
+        {"objective_id":"F02-O5","objective":"Missing or inaccessible canonical source fails closed instead of being synthesized.","status":"PARTIAL","dimensions":{"functionality":"PARTIAL","quality":"COVERED","depth":"PARTIAL","performance":"N_A","evidence":"PARTIAL"},"evidence_refs":["preexecution_contract.json","gate_d_output.json"],"learning":"Invention is forbidden by contract, but a frozen missing-source replay is not materialized."}
+      ]
+    },
+    {
+      "family_id": "F03_AUTHORITY_CARD",
+      "name": "Authority / Card",
+      "objectives": [
+        {"objective_id":"F03-O1","objective":"NO_CARD_GOVERNED is a valid governed outcome when no applicable Card exists.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"N_A","evidence":"COVERED"},"evidence_refs":["preexecution_contract.json","gate_c_output.json","gate_e_output.json"],"learning":"Card absence does not force manual handling or schema invention."},
+        {"objective_id":"F03-O2","objective":"An actually applicable Card is selected and bound correctly.","status":"NOT_DEMONSTRATED","dimensions":{"functionality":"PENDING","quality":"PENDING","depth":"PENDING","performance":"PENDING","evidence":"PENDING"},"evidence_refs":[],"learning":"HP001 has zero candidates; a positive Card-selection case is still required."},
+        {"objective_id":"F03-O3","objective":"All required authority types resolve exactly from canonical paths before typed context.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"N_A","evidence":"COVERED"},"evidence_refs":["preexecution_contract.json","gate_d_output.json","gate_e_output.json"],"learning":"USER_REQUIREMENT, PROFILE_CONTRACT, OUTPUT_SCHEMA and RECIPIENT_BOUNDARY are hash-bound and complete."},
+        {"objective_id":"F03-O4","objective":"Cross-run or candidate-derived authority is rejected rather than promoted to authority.","status":"PARTIAL","dimensions":{"functionality":"PARTIAL","quality":"COVERED","depth":"PARTIAL","performance":"N_A","evidence":"PARTIAL"},"evidence_refs":["preexecution_contract.json","gate_d_output.json"],"learning":"Forbidden modes are explicit and absent in the positive run, but a dedicated hostile mutation is not frozen."},
+        {"objective_id":"F03-O5","objective":"Unknown/new Card shape or Card-authority conflict generalizes fail-closed.","status":"NEW_CASE_REQUIRED","dimensions":{"functionality":"PENDING","quality":"PENDING","depth":"PENDING","performance":"PENDING","evidence":"PENDING"},"evidence_refs":[],"learning":"Required unseen holdout for Card generalization."}
+      ]
+    },
+    {
+      "family_id": "F04_TYPED_CONTEXT",
+      "name": "Typed Context",
+      "objectives": [
+        {"objective_id":"F04-O1","objective":"Complete LF_RUNTIME_TYPED_CONTEXT_V1 is materialized with exact provenance and zero adapters when none are required.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"PARTIAL","evidence":"COVERED"},"evidence_refs":["gate_e_output.json","gate_f_output.json"],"learning":"Typed context preserves input, authority, Card resolution and adapter provenance without schema synthesis."},
+        {"objective_id":"F04-O2","objective":"Missing material typed-context field is rejected before runtime execution.","status":"NOT_DEMONSTRATED","dimensions":{"functionality":"PENDING","quality":"PENDING","depth":"PENDING","performance":"N_A","evidence":"PENDING"},"evidence_refs":[],"learning":"A deliberate missing-field fixture is required."},
+        {"objective_id":"F04-O3","objective":"Incompatible typed-context field type/version fails closed.","status":"NOT_DEMONSTRATED","dimensions":{"functionality":"PENDING","quality":"PENDING","depth":"PENDING","performance":"N_A","evidence":"PENDING"},"evidence_refs":[],"learning":"No frozen incompatible-type/version case found."},
+        {"objective_id":"F04-O4","objective":"Prohibited/cross-run metadata contamination does not enter executable typed context.","status":"PARTIAL","dimensions":{"functionality":"PARTIAL","quality":"COVERED","depth":"PARTIAL","performance":"N_A","evidence":"PARTIAL"},"evidence_refs":["gate_e_output.json","gate_g_output.json"],"learning":"Typed provenance is bounded and Composer metadata leak blocks, but contamination at the typed-context ingress itself is not separately replayed."},
+        {"objective_id":"F04-O5","objective":"Minimum-sufficient typed context generalizes to an unseen adapter-required case without overfetch or invention.","status":"NEW_CASE_REQUIRED","dimensions":{"functionality":"PENDING","quality":"PENDING","depth":"PENDING","performance":"PENDING","evidence":"PENDING"},"evidence_refs":[],"learning":"HP001 has required_adapter_count=0; adapter-bearing holdout is needed."}
+      ]
+    },
+    {
+      "family_id": "F05_SCHEMA_TRANSPORT",
+      "name": "Schema / Transport",
+      "objectives": [
+        {"objective_id":"F05-O1","objective":"Profile output is bound to the canonical output schema/version.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"N_A","evidence":"COVERED"},"evidence_refs":["preexecution_contract.json","gate_d_output.json","gate_f_output.json","gate_g_output.json"],"learning":"UI_PRODUCTION_SPEC_V6 and its canonical validator are part of the authority chain."},
+        {"objective_id":"F05-O2","objective":"Recipient/Composer transport boundary is explicit and validated.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"N_A","evidence":"COVERED"},"evidence_refs":["gate_d_output.json","gate_g_output.json"],"learning":"Transport to Composer is constrained by a separately hash-bound boundary contract."},
+        {"objective_id":"F05-O3","objective":"Malformed output/transport envelope is rejected deterministically.","status":"PARTIAL","dimensions":{"functionality":"PARTIAL","quality":"COVERED","depth":"PARTIAL","performance":"N_A","evidence":"PARTIAL"},"evidence_refs":["gate_g_output.json","gate_h_output.json"],"learning":"Canonical validators and negative mutations exist, but no dedicated malformed-envelope artifact is indexed in HP001."},
+        {"objective_id":"F05-O4","objective":"Incompatible schema-version transition is detected and fails closed.","status":"NOT_DEMONSTRATED","dimensions":{"functionality":"PENDING","quality":"PENDING","depth":"PENDING","performance":"N_A","evidence":"PENDING"},"evidence_refs":[],"learning":"Only one output-contract version is exercised."},
+        {"objective_id":"F05-O5","objective":"Compatible schema evolution/new transport representation preserves semantics on an unseen case.","status":"NEW_CASE_REQUIRED","dimensions":{"functionality":"PENDING","quality":"PENDING","depth":"PENDING","performance":"PENDING","evidence":"PENDING"},"evidence_refs":[],"learning":"Required generalization holdout."}
+      ]
+    },
+    {
+      "family_id": "F06_UI_MATERIALIZATION",
+      "name": "UI Materialization",
+      "objectives": [
+        {"objective_id":"F06-O1","objective":"A valid screen materially satisfies every requested UI requirement and is implementation-ready.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"PARTIAL","evidence":"COVERED"},"evidence_refs":["S26_HP001_EVIDENCE_TABLES.md","gate_h_output.json","manual_profile_output.json"],"learning":"Material validation checks semantics, not literal-reference matching."},
+        {"objective_id":"F06-O2","objective":"Removing the search/header material requirement is detected and blocks.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"N_A","evidence":"COVERED"},"evidence_refs":["gate_h_output.json","evidence_index.json"],"learning":"Material omissions are caught by dedicated negative mutation."},
+        {"objective_id":"F06-O3","objective":"Removing price or professional design intent is detected and blocks.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"N_A","evidence":"COVERED"},"evidence_refs":["gate_h_output.json","evidence_index.json"],"learning":"Both content and design-intent requirements are machine-checkable blockers."},
+        {"objective_id":"F06-O4","objective":"Content/layout contradiction or hidden implementation metadata is prevented at materialization.","status":"PARTIAL","dimensions":{"functionality":"PARTIAL","quality":"COVERED","depth":"PARTIAL","performance":"N_A","evidence":"PARTIAL"},"evidence_refs":["gate_g_output.json","gate_h_output.json"],"learning":"Metadata leak is tested at Composer boundary; a direct content-vs-layout contradiction case is still missing."},
+        {"objective_id":"F06-O5","objective":"A distinct unseen UI composition with the same semantic contract materializes correctly.","status":"NEW_CASE_REQUIRED","dimensions":{"functionality":"PENDING","quality":"PENDING","depth":"PENDING","performance":"PENDING","evidence":"PENDING"},"evidence_refs":[],"learning":"Required UI generalization holdout; HP001 is a single marketplace composition."}
+      ]
+    },
+    {
+      "family_id": "F07_COMPOSER_SECURITY",
+      "name": "Composer / Security",
+      "objectives": [
+        {"objective_id":"F07-O1","objective":"Valid profile output passes the canonical Composer payload boundary.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"PARTIAL","evidence":"COVERED"},"evidence_refs":["gate_f_output.json","gate_g_output.json"],"learning":"Composer acceptance is independently validated from the profile output schema."},
+        {"objective_id":"F07-O2","objective":"Internal/profile metadata leak into Composer is rejected.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"N_A","evidence":"COVERED"},"evidence_refs":["gate_g_output.json","gate_h_output.json","evidence_index.json"],"learning":"Internal metadata is a hard boundary violation, not a quality warning."},
+        {"objective_id":"F07-O3","objective":"CREATE_NEW output cannot smuggle remediation actions reserved for another mode.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"N_A","evidence":"COVERED"},"evidence_refs":["gate_h_output.json","evidence_index.json"],"learning":"Mode-specific output constraints are fail-closed."},
+        {"objective_id":"F07-O4","objective":"Prompt/injection or prohibited internal-field contamination is rejected without semantic bypass.","status":"PARTIAL","dimensions":{"functionality":"PARTIAL","quality":"COVERED","depth":"PARTIAL","performance":"N_A","evidence":"PARTIAL"},"evidence_refs":["gate_g_output.json"],"learning":"Metadata leak is covered, but a dedicated adversarial injection/internal-field case is not frozen."},
+        {"objective_id":"F07-O5","objective":"A new allowed Composer structure generalizes without expanding the allowlist implicitly.","status":"NEW_CASE_REQUIRED","dimensions":{"functionality":"PENDING","quality":"PENDING","depth":"PENDING","performance":"PENDING","evidence":"PENDING"},"evidence_refs":[],"learning":"Required holdout for allowed-structure generalization."}
+      ]
+    },
+    {
+      "family_id": "F08_QUALITY_DEPTH",
+      "name": "Quality / Depth",
+      "objectives": [
+        {"objective_id":"F08-O1","objective":"Requirement coverage and source-bound integrity meet the hard 1.0 floor.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"N_A","evidence":"COVERED"},"evidence_refs":["quality_depth_performance_contract.json","gate_f_output.json"],"learning":"Quality is measured by material coverage/source integrity; profile self-score is explicitly non-authoritative."},
+        {"objective_id":"F08-O2","objective":"Depth floors for components, hierarchy, state/variant coverage, responsive modes and risk controls are satisfied.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"N_A","evidence":"COVERED"},"evidence_refs":["quality_depth_performance_contract.json","gate_f_output.json"],"learning":"Exact-runtime output reports component_count=9, hierarchy_depth_edges=3, risk_control_count=4 and full state/variant coverage."},
+        {"objective_id":"F08-O3","objective":"A superficially plausible but materially incomplete answer is rejected.","status":"PARTIAL","dimensions":{"functionality":"PARTIAL","quality":"COVERED","depth":"PARTIAL","performance":"N_A","evidence":"PARTIAL"},"evidence_refs":["gate_h_output.json"],"learning":"Several omission mutations block, but there is no dedicated holistic shallow-answer adversarial fixture."},
+        {"objective_id":"F08-O4","objective":"Conflicting alternatives or ambiguous requirements force an explicit reasoned decision rather than shallow completion.","status":"NOT_DEMONSTRATED","dimensions":{"functionality":"PENDING","quality":"PENDING","depth":"PENDING","performance":"N_A","evidence":"PENDING"},"evidence_refs":[],"learning":"HP001 input is comparatively unambiguous; conflict-resolution depth remains unproven."},
+        {"objective_id":"F08-O5","objective":"Independent substantive review passes on an unseen case without producer-context leakage.","status":"NEW_CASE_REQUIRED","dimensions":{"functionality":"PENDING","quality":"PENDING","depth":"PENDING","performance":"PENDING","evidence":"PENDING"},"evidence_refs":["cold_evidence_manifest.json"],"learning":"The frozen bundle explicitly records independent_semantic_review_performed=false; final v3 needs a new independent holdout review."}
+      ]
+    },
+    {
+      "family_id": "F09_PERFORMANCE_BUDGETS",
+      "name": "Performance / Budgets",
+      "objectives": [
+        {"objective_id":"F09-O1","objective":"Deterministic quality/depth pipeline satisfies its p95/single-run and output-size budgets.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"COVERED","evidence":"COVERED"},"evidence_refs":["quality_depth_performance_contract.json","gate_f_output.json"],"learning":"Deterministic QDP is a hard gate distinct from model-generation latency."},
+        {"objective_id":"F09-O2","objective":"Exact runtime exposes machine-readable model-generation latency and passes the bounded ceiling.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"COVERED","evidence":"COVERED"},"evidence_refs":["gate_f_output.json","gate_f_runtime_observation.json"],"learning":"Observed model generation 1926.894 ms passes the 120000 ms acceptance ceiling on the frozen candidate."},
+        {"objective_id":"F09-O3","objective":"End-to-end profile/prompt/runtime latency is measured and assessed on the final integrated candidate.","status":"PARTIAL","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"PARTIAL","performance":"PARTIAL","evidence":"COVERED"},"evidence_refs":["gate_f_output.json","gate_f_runtime_observation.json"],"learning":"Frozen candidate has profile_elapsed_ms=43939.208 and runtime_total_ms=43939.262, but this is not yet the final post-#682/#681 integrated certification candidate."},
+        {"objective_id":"F09-O4","objective":"High-complexity/token-pressure case stays correct while respecting resource budgets.","status":"NOT_DEMONSTRATED","dimensions":{"functionality":"PENDING","quality":"PENDING","depth":"PENDING","performance":"PENDING","evidence":"PENDING"},"evidence_refs":[],"learning":"Single HP001 workload does not establish an upper-complexity boundary."},
+        {"objective_id":"F09-O5","objective":"Repeated model-dependent executions quantify stochastic stability without treating correlated runs as independent cases.","status":"NEW_CASE_REQUIRED","dimensions":{"functionality":"PENDING","quality":"PENDING","depth":"PENDING","performance":"PENDING","evidence":"PENDING"},"evidence_refs":[],"learning":"Requires repeated runs; clustered/hierarchical statistics apply only here, not to deterministic correctness gates."}
+      ]
+    },
+    {
+      "family_id": "F10_E2E_REPLAY_LIVE_SEMANTIC",
+      "name": "E2E / Replay / Live Semantic",
+      "objectives": [
+        {"objective_id":"F10-O1","objective":"Full governed A→H path executes on exact frozen input/output with source identity preserved.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"COVERED","evidence":"COVERED"},"evidence_refs":["S26_HP001_EVIDENCE_TABLES.md","gate_f_output.json","gate_g_output.json","gate_h_output.json"],"learning":"The frozen happy path covers isolation, governance, Card, authority, typed context, runtime, contract and material requirements."},
+        {"objective_id":"F10-O2","objective":"Deterministic replay reproduces exact runtime materialization/validators without substituting independent review.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"PARTIAL","evidence":"COVERED"},"evidence_refs":["replay_manifest.json","gate_f_output.json","cold_evidence_manifest.json"],"learning":"Replay verification is PASS and explicitly does not satisfy independent semantic review."},
+        {"objective_id":"F10-O3","objective":"Replay under a differing compatible version/currentness transition preserves intended semantics.","status":"NOT_DEMONSTRATED","dimensions":{"functionality":"PENDING","quality":"PENDING","depth":"PENDING","performance":"PENDING","evidence":"PENDING"},"evidence_refs":[],"learning":"Current replay is exact-head/exact-source, not a controlled version-delta replay."},
+        {"objective_id":"F10-O4","objective":"Cross-run contamination and stale identity are prevented across replay/live execution.","status":"COVERED","dimensions":{"functionality":"COVERED","quality":"COVERED","depth":"COVERED","performance":"N_A","evidence":"COVERED"},"evidence_refs":["evidence_index.json","gate_d_output.json","replay_manifest.json"],"learning":"Main/merge-ref are non-authoritative, cross-run authority is absent, and replay identity is event-head bound."},
+        {"objective_id":"F10-O5","objective":"A brand-new real case traverses the complete governed pipeline and passes independent semantic review.","status":"NEW_CASE_REQUIRED","dimensions":{"functionality":"PENDING","quality":"PENDING","depth":"PENDING","performance":"PENDING","evidence":"PENDING"},"evidence_refs":[],"learning":"Required final holdout; reusing HP001 cannot prove generalization."}
+      ]
+    }
+  ],
+  "certification_sequence": [
+    "MAP_EXISTING_FROZEN_EVIDENCE",
+    "DETECT_TRUE_GAPS_AND_SEMANTIC_DUPLICATES",
+    "MERGE_PR_682_WHEN_EXPLICITLY_AUTHORIZED",
+    "MERGE_PR_681_AND_APPLY_MIGRATION_READBACK_WHEN_EXPLICITLY_AUTHORIZED",
+    "BIND_FINAL_STABLE_S26_CANDIDATE",
+    "EXECUTE_ONLY_MISSING_AND_UNSEEN_V3_CASES",
+    "RUN_MUTATION_METAMORPHIC_DIFFERENTIAL_HOLDOUT_GATES",
+    "FREEZE",
+    "INDEPENDENT_REVIEW",
+    "GATE_G_DECISION",
+    "GOLDEN_DECISION"
+  ],
+  "claim_ceiling": "EVIDENCE_INVENTORY_ONLY_NOT_CERTIFICATION_NOT_GATE_G_NOT_GOLDEN"
+}
