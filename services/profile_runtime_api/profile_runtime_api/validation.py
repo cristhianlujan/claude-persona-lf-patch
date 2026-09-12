@@ -222,6 +222,57 @@ class OutputGates:
                 "independent_semantic_judge": "NOT_EXECUTED",
             }
         errors: list[str] = []
+        local_utility = self.repository.load_semantic_utility(profile_slug)
+        if local_utility is not None:
+            module, callable_name = local_utility
+            evaluator = getattr(module, callable_name, None)
+            if not callable(evaluator):
+                return {
+                    "status": "FAIL",
+                    "evaluation_scope": "PROFILE_LOCAL_DETERMINISTIC_UTILITY_FLOOR",
+                    "blocking_codes": ["PROFILE_SEMANTIC_UTILITY_CALLABLE_MISSING"],
+                    "independent_semantic_judge": "NOT_EXECUTED",
+                    "downstream_authorized": False,
+                }
+            try:
+                result = evaluator(payload, contract_gate)
+            except Exception as exc:
+                return {
+                    "status": "FAIL",
+                    "evaluation_scope": "PROFILE_LOCAL_DETERMINISTIC_UTILITY_FLOOR",
+                    "blocking_codes": ["PROFILE_SEMANTIC_UTILITY_EXCEPTION"],
+                    "message": type(exc).__name__,
+                    "independent_semantic_judge": "NOT_EXECUTED",
+                    "downstream_authorized": False,
+                }
+            if isinstance(result, dict):
+                codes = result.get("blocking_codes", [])
+                if not isinstance(codes, list):
+                    codes = ["PROFILE_SEMANTIC_UTILITY_RESULT_INVALID"]
+                status = "PASS" if result.get("status") == "PASS" and not codes else "FAIL"
+                return {
+                    "status": status,
+                    "evaluation_scope": "PROFILE_LOCAL_DETERMINISTIC_UTILITY_FLOOR",
+                    "blocking_codes": sorted({str(code) for code in codes}),
+                    "independent_semantic_judge": "NOT_EXECUTED",
+                    "downstream_authorized": False,
+                }
+            if isinstance(result, list):
+                codes = sorted({str(code) for code in result})
+                return {
+                    "status": "PASS" if not codes else "FAIL",
+                    "evaluation_scope": "PROFILE_LOCAL_DETERMINISTIC_UTILITY_FLOOR",
+                    "blocking_codes": codes,
+                    "independent_semantic_judge": "NOT_EXECUTED",
+                    "downstream_authorized": False,
+                }
+            return {
+                "status": "FAIL",
+                "evaluation_scope": "PROFILE_LOCAL_DETERMINISTIC_UTILITY_FLOOR",
+                "blocking_codes": ["PROFILE_SEMANTIC_UTILITY_RESULT_INVALID"],
+                "independent_semantic_judge": "NOT_EXECUTED",
+                "downstream_authorized": False,
+            }
         if profile_slug == "product_director_lf":
             deliverable = payload.get("deliverable_created")
             if not isinstance(deliverable, dict):
@@ -364,7 +415,24 @@ class OutputGates:
         if module is None:
             return []
         try:
-            if profile_slug == "product_director_lf":
+            callable_name = self.repository.validator_callable_name(profile_slug)
+            if callable_name is not None:
+                validator = getattr(module, callable_name, None)
+                if not callable(validator):
+                    return [{"code": "CANONICAL_PROFILE_VALIDATOR_CALLABLE_MISSING", "path": "$"}]
+                result = validator(payload)
+                if isinstance(result, dict):
+                    raw_errors = result.get("errors")
+                    if raw_errors is None:
+                        raw_errors = result.get("blocking_codes")
+                    if raw_errors is None:
+                        explicitly_clean = result.get("status") == "PASS" or result.get("valid") is True
+                        raw_errors = [] if explicitly_clean else ["CANONICAL_PROFILE_VALIDATOR_RESULT_INVALID"]
+                elif isinstance(result, list):
+                    raw_errors = result
+                else:
+                    raw_errors = ["CANONICAL_PROFILE_VALIDATOR_RESULT_INVALID"]
+            elif profile_slug == "product_director_lf":
                 result = module.validate(payload)
                 raw_errors = result.get("errors", []) if isinstance(result, dict) else []
             elif profile_slug == "ui_architect":
@@ -394,3 +462,4 @@ class OutputGates:
             else:
                 normalized.append({"code": str(item), "path": "$"})
         return normalized
+
