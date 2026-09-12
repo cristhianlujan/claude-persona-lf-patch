@@ -1,0 +1,63 @@
+name: S26 Matrix v3 W1 Probe
+
+on:
+  push:
+    branches:
+      - "lf/s26-matrix-v3-w1-runner-20260912"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  w1-probe:
+    name: Exact candidate deterministic probe
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      S26_FINAL_CANDIDATE_SHA: 9823681a7174d68b826bcdaac91b038e7fb007a4
+      S26_MATRIX_OUT_DIR: .audit-output/s26-matrix-v3-w1
+    steps:
+      - name: Checkout runner branch with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Verify frozen candidate identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git cat-file -e "${S26_FINAL_CANDIDATE_SHA}^{commit}"
+          observed="$(git rev-parse "${S26_FINAL_CANDIDATE_SHA}^{commit}")"
+          test "$observed" = "$S26_FINAL_CANDIDATE_SHA"
+          echo "FINAL_CANDIDATE_SHA=$observed"
+
+      - name: Validate Matrix prebuild contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_family_objective_matrix_v3
+          python validate_matrix_contract.py
+          python validate_missing_objectives_plan.py
+          python validate_performance_applicability_addendum.py
+          python test_build_w0_execution_recipes.py
+
+      - name: Execute W1 exact-candidate probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          python sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_family_objective_matrix_v3/run_w1_candidate_probe.py
+
+      - name: Upload W1 probe evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: s26-matrix-v3-w1-probe-${{ github.run_id }}
+          path: .audit-output/s26-matrix-v3-w1/
+          if-no-files-found: error
+          retention-days: 14
