@@ -1,0 +1,37 @@
+{
+  "schema": "S26_FAMILY_OBJECTIVE_MATRIX_V3_PERFORMANCE_APPLICABILITY_ADDENDUM_V1",
+  "status": "PREBUILD_ONLY_FINAL_EVIDENCE_REQUIRES_STABLE_CANDIDATE",
+  "purpose": "Correct performance N_A declarations that conflict with the multidimensional contract without weakening the original gap plan. The base inventory and plan remain auditable; validators apply this addendum as a stricter effective projection.",
+  "projected_baseline_effective_counts": {
+    "COVERED": 17,
+    "PARTIAL": 16,
+    "NOT_DEMONSTRATED": 8,
+    "NEW_CASE_REQUIRED": 9
+  },
+  "projected_objectives_to_close": 33,
+  "augment_existing_cases": [
+    {"objective_id":"F04-O2","add_dimensions":["performance"]},
+    {"objective_id":"F04-O3","add_dimensions":["performance"]},
+    {"objective_id":"F04-O4","add_dimensions":["performance"]},
+    {"objective_id":"F06-O4","add_dimensions":["performance"]},
+    {"objective_id":"F08-O3","add_dimensions":["performance"]}
+  ],
+  "new_cases": [
+    {"case_id":"S26V3-F06-O2-FINAL-PERF-REBIND","objective_id":"F06-O2","family":"F06_UI_MATERIALIZATION","baseline":"PARTIAL","closure_mode":"FINAL_CANDIDATE_PERFORMANCE_REBIND","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"NO_NEW_SEMANTIC_FAILURE_MODE","expected":"Rerun the existing search/header omission mutation on the final candidate and bind deterministic reject/material-validation timing without changing its semantic oracle.","dimensions_to_close":["performance"],"learning":"Closes the performance dimension only; the semantic omission-detection evidence remains the frozen source."},
+    {"case_id":"S26V3-F06-O3-FINAL-PERF-REBIND","objective_id":"F06-O3","family":"F06_UI_MATERIALIZATION","baseline":"PARTIAL","closure_mode":"FINAL_CANDIDATE_PERFORMANCE_REBIND","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"NO_NEW_SEMANTIC_FAILURE_MODE","expected":"Rerun the existing price/design-intent omission mutation on the final candidate and bind deterministic reject/material-validation timing without changing its semantic oracle.","dimensions_to_close":["performance"],"learning":"Closes the performance dimension only; it is not a new independent semantic case."},
+    {"case_id":"S26V3-F10-O4-FINAL-PERF-REBIND","objective_id":"F10-O4","family":"F10_E2E_REPLAY_LIVE_SEMANTIC","baseline":"PARTIAL","closure_mode":"FINAL_CANDIDATE_PERFORMANCE_REBIND","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W3_FINAL_STABILITY_AND_INDEPENDENT","failure_mode":"NO_NEW_SEMANTIC_FAILURE_MODE","expected":"Re-exercise the frozen cross-run/replay identity protection on the final candidate and bind E2E protection/readback timing while preserving the existing fail-closed oracle.","dimensions_to_close":["performance"],"learning":"Adds final-candidate performance evidence to an already proven contamination/currentness control without counting it as a new semantic objective."}
+  ],
+  "execution_economy": {
+    "effectively_covered_preserved": 17,
+    "gap_objectives_planned": 33,
+    "rebind_labeled_cases": 8,
+    "performance_rebind_only": 7,
+    "semantic_gap_cases": 26,
+    "designated_unseen_holdouts": 10
+  },
+  "cross_bound_performance_evidence": [
+    {"objective_id":"F08-O1","effective_performance":"COVERED","evidence_refs":["quality_depth_performance_contract.json","gate_f_output.json"],"independent_case_credit":false},
+    {"objective_id":"F08-O2","effective_performance":"COVERED","evidence_refs":["quality_depth_performance_contract.json","gate_f_output.json"],"independent_case_credit":false}
+  ],
+  "claim_ceiling": "PLAN_CORRECTION_ONLY_NOT_EXECUTED_NOT_CERTIFIED_NOT_GATE_G_NOT_GOLDEN"
+}

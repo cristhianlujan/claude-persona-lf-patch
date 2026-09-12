@@ -1,0 +1,109 @@
+{
+  "schema": "S26_FAMILY_OBJECTIVE_MATRIX_V3_W0_PREBUILD_CONTRACT_V1",
+  "status": "PREBUILD_ONLY_FINAL_EXECUTION_DISABLED",
+  "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+  "projection_sources": [
+    "coverage_inventory.json",
+    "matrix_contract.json",
+    "missing_objectives_plan.json",
+    "performance_applicability_addendum.json"
+  ],
+  "expected_effective_projection": {
+    "covered": 17,
+    "gap_objectives": 33,
+    "performance_rebind_only": 7,
+    "semantic_gap_cases": 26,
+    "designated_unseen_holdouts": 10
+  },
+  "final_execution_prerequisites": [
+    "PR_682_INTEGRATED",
+    "PR_681_INTEGRATED_AND_MIGRATION_APPLIED_WITH_READBACK",
+    "FINAL_S26_RUNTIME_AFFECTING_CANDIDATE_STABLE"
+  ],
+  "execution_policy": {
+    "w0_may_execute_final_cases": false,
+    "w0_may_call_model": false,
+    "w0_may_call_independent_reviewer": false,
+    "w0_may_write_runtime_or_database": false,
+    "w0_may_promote_gate_g_or_golden": false,
+    "final_candidate_sha_required_for_w1_w2_w3": true,
+    "objective_receipt_required": true,
+    "shared_execution_does_not_create_independent_case_credit": true
+  },
+  "family_bindings": {
+    "F01_ROUTING_PROVENANCE": {
+      "target_component": "ROUTING_PROVENANCE",
+      "oracle": "DETERMINISTIC_ROUTE_AND_PROVENANCE_ORACLE"
+    },
+    "F02_SOURCE_FIRST_PREBIND": {
+      "target_component": "SOURCE_FIRST_CURRENTNESS_AND_PREBIND",
+      "oracle": "DETERMINISTIC_SOURCE_CURRENTNESS_ORACLE"
+    },
+    "F03_AUTHORITY_CARD": {
+      "target_component": "AUTHORITY_AND_CARD_SELECTION",
+      "oracle": "DETERMINISTIC_AUTHORITY_CARD_ORACLE"
+    },
+    "F04_TYPED_CONTEXT": {
+      "target_component": "TYPED_CONTEXT_COMPILER_AND_ADAPTER_RESOLUTION",
+      "oracle": "DETERMINISTIC_TYPED_CONTEXT_ORACLE"
+    },
+    "F05_SCHEMA_TRANSPORT": {
+      "target_component": "SCHEMA_AND_TRANSPORT_BOUNDARY",
+      "oracle": "DETERMINISTIC_SCHEMA_TRANSPORT_ORACLE"
+    },
+    "F06_UI_MATERIALIZATION": {
+      "target_component": "UI_MATERIALIZATION_AND_MATERIAL_VALIDATION",
+      "oracle": "MATERIALIZATION_CONTRACT_ORACLE"
+    },
+    "F07_COMPOSER_SECURITY": {
+      "target_component": "COMPOSER_ALLOWLIST_AND_SECURITY",
+      "oracle": "DETERMINISTIC_COMPOSER_SECURITY_ORACLE"
+    },
+    "F08_QUALITY_DEPTH": {
+      "target_component": "QUALITY_AND_DEPTH_EVALUATION",
+      "oracle": "INDEPENDENT_SEMANTIC_QUALITY_ORACLE"
+    },
+    "F09_PERFORMANCE_BUDGETS": {
+      "target_component": "PERFORMANCE_AND_RESOURCE_BUDGETS",
+      "oracle": "BUDGET_AND_STABILITY_ORACLE"
+    },
+    "F10_E2E_REPLAY_LIVE_SEMANTIC": {
+      "target_component": "FULL_E2E_REPLAY_AND_LIVE_SEMANTIC",
+      "oracle": "E2E_GOVERNED_PIPELINE_ORACLE"
+    }
+  },
+  "executor_rules": {
+    "performance_rebind_only": "PERFORMANCE_REPLAY_BINDER",
+    "w1_default": "DETERMINISTIC_CASE_HARNESS",
+    "w2_default": "MODEL_MATERIALIZATION_CASE_HARNESS",
+    "w3_independent_review": "INDEPENDENT_SEMANTIC_REVIEW_HARNESS",
+    "w3_repeated_stochastic": "REPEATED_STABILITY_HARNESS",
+    "w3_default": "E2E_HOLDOUT_HARNESS"
+  },
+  "required_receipt_fields": [
+    "case_id",
+    "objective_id",
+    "family",
+    "source_authority_commit",
+    "final_candidate_sha",
+    "final_wave",
+    "executor",
+    "target_component",
+    "oracle",
+    "failure_mode",
+    "expected",
+    "observed",
+    "dimensions_measured",
+    "evidence_refs",
+    "pass",
+    "unseen_holdout",
+    "independent_case_credit"
+  ],
+  "performance_receipt_fields_when_applicable": [
+    "latency_ms",
+    "model_calls",
+    "context_or_token_proxy",
+    "retries"
+  ],
+  "claim_ceiling": "W0_PREBUILD_READY_NOT_EXECUTED_NOT_CERTIFIED_NOT_GATE_G_NOT_GOLDEN"
+}
