@@ -1,0 +1,103 @@
+name: s30-strategy-binding-precanary-check
+
+on:
+  push:
+    branches:
+      - lf/staging-s30-strategy-binding-refactor-20260912
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exact-head-binding-precanary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact candidate head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Verify exact-head identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$GITHUB_SHA"
+          echo "S30_EXACT_HEAD=$actual"
+
+      - name: Run governed S30 binding and currentness regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          import sys
+
+          tests = [
+              (
+                  "sandbox/lf_contract_gate_test/s30_d_final_r09/test_s30d_strategy_executor_contract_binding_v1.py",
+                  "S30_STRATEGY_EXECUTOR_CONTRACT_BINDING_V1",
+                  7,
+              ),
+              (
+                  "sandbox/lf_contract_gate_test/s30_d_final_r09/test_s30d_strategy_executor_family_objective_matrix_v4.py",
+                  "S30_STRATEGY_EXECUTOR_FAMILY_OBJECTIVE_MATRIX_V4",
+                  6,
+              ),
+              (
+                  "sandbox/lf_contract_gate_test/s30_d_final_r09/test_s30d_strategy_executor_precanary_currentness_v3.py",
+                  "S30_STRATEGY_EXECUTOR_PRECANARY_CURRENTNESS_V3",
+                  6,
+              ),
+          ]
+
+          total = 0
+          receipts = []
+          for path, expected_contract, expected_checks in tests:
+              proc = subprocess.run(
+                  [sys.executable, path],
+                  text=True,
+                  capture_output=True,
+                  check=False,
+              )
+              if proc.stdout:
+                  print(proc.stdout, end="")
+              if proc.stderr:
+                  print(proc.stderr, end="", file=sys.stderr)
+              if proc.returncode != 0:
+                  raise SystemExit(f"FAIL_S30_EXACT_TEST:{path}:exit={proc.returncode}")
+              lines = [line for line in proc.stdout.splitlines() if line.strip()]
+              if not lines:
+                  raise SystemExit(f"FAIL_S30_EXACT_TEST_NO_RECEIPT:{path}")
+              receipt = json.loads(lines[-1])
+              if receipt.get("result") != "PASS":
+                  raise SystemExit(f"FAIL_S30_EXACT_TEST_RESULT:{path}:{receipt}")
+              if receipt.get("contract") != expected_contract:
+                  raise SystemExit(f"FAIL_S30_EXACT_TEST_CONTRACT:{path}:{receipt}")
+              if receipt.get("checks") != expected_checks:
+                  raise SystemExit(f"FAIL_S30_EXACT_TEST_COUNT:{path}:{receipt}")
+              total += expected_checks
+              receipts.append(receipt)
+
+          if total != 19:
+              raise SystemExit(f"FAIL_S30_EXACT_TOTAL:{total}")
+          pre_canary = receipts[-1]
+          if pre_canary.get("runtime_activation_authorized") is not False:
+              raise SystemExit("FAIL_S30_RUNTIME_AUTHORIZATION_BOUNDARY")
+          if receipts[0].get("duplicated_version_authority") is not False:
+              raise SystemExit("FAIL_S30_DUPLICATED_VERSION_AUTHORITY_BOUNDARY")
+
+          print(json.dumps({
+              "result": "PASS",
+              "suite": "S30_STRATEGY_BINDING_PRECANARY_EXACT_HEAD",
+              "head_sha": os.environ["GITHUB_SHA"],
+              "checks": total,
+              "runtime_activation_authorized": False,
+              "production_authorized": False,
+          }, sort_keys=True))
+          print(f"PASS_S30_STRATEGY_BINDING_PRECANARY_EXACT_HEAD checks={total} head={os.environ['GITHUB_SHA']}")
+          PY
