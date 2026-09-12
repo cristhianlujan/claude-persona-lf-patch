@@ -1,0 +1,5 @@
+SCOPE=S30-D isolated evidence-only
+MUTATES_RUNTIME=false
+MUTATES_PRODUCTION=false
+MUTATES_SUPABASE=false
+MUTATES_S26=false
