@@ -1,0 +1,488 @@
+{
+  "contract": "S31_CANONICAL_CAPABILITY_MODEL_TEST_VECTORS_V0_1",
+  "schema_ref": "canonical_capability_model_v0_1.schema.json",
+  "valid_examples": [
+    {
+      "capability_id": "PREEXECUTION_ASSURANCE",
+      "version": "v0.1-candidate",
+      "display_name": "LF Pre-Execution Assurance",
+      "description": "Fail-closed assurance before material work while preserving owner implementation boundaries.",
+      "owner": {
+        "strategy_or_domain": "S30",
+        "maintainer": "S30",
+        "change_authority": "S30_OWNER_HANDOFF"
+      },
+      "ownership_scope": {
+        "owned_paths": ["gobernanza/contratos/s30_self_governance_gate_v1.json"],
+        "read_dependencies": ["public.lf_error_knowledge"],
+        "forbidden_direct_writes": ["S31_TO_S30_INTERNALS"]
+      },
+      "kind": "GOVERNANCE",
+      "lifecycle": {
+        "state": "CANDIDATE",
+        "promotion_authority": "INDEPENDENT_LF_GOVERNANCE",
+        "self_certification_allowed": false,
+        "deprecation_replacement": null
+      },
+      "contracts": {
+        "input_contracts": ["S30_SELF_GOVERNANCE_GATE_V1"],
+        "output_contracts": ["PREEXECUTION_ASSURANCE_RESULT"],
+        "invariants": ["MATERIAL_WORK_REQUIRES_ALL_MANDATORY_PREFLIGHT_CHECKS"]
+      },
+      "authority": {
+        "required_authority_types": ["EKB", "SOURCE_AUTHORITY", "OWNERSHIP"],
+        "selection_mode": "SOURCE_FIRST_RESOLVED",
+        "model_may_decide_authority": false
+      },
+      "currentness": {
+        "policy": "EXACT_HEAD",
+        "stale_action": "FAIL_CLOSED",
+        "cross_run_requires_declaration": true
+      },
+      "dependencies": {
+        "required_capabilities": ["CURRENTNESS_AUTHORITY", "LANE_OWNERSHIP"],
+        "optional_capabilities": ["DATA_ACCESS_TYPED_READER"]
+      },
+      "compatibility": {
+        "compatible_versions": ["v0.x-candidate"],
+        "breaking_change_policy": "ADAPTER_REQUIRED"
+      },
+      "execution": {
+        "mode": "DETERMINISTIC",
+        "port": "PREEXECUTION_ASSURANCE_PORT",
+        "implementation_binding": "S30_SELF_GOVERNANCE_CANDIDATE",
+        "framework_is_kernel_dependency": false
+      },
+      "evidence": {
+        "required_layers": ["STRUCTURAL", "PROVENANCE"],
+        "claim_ceiling": "PROVENANCE",
+        "replay_requirement": "DETERMINISTIC_REPLAY"
+      },
+      "failure_policy": {
+        "critical_ambiguity": "FAIL_CLOSED",
+        "missing_dependency": "FAIL_CLOSED",
+        "incompatible_dependency": "FAIL_CLOSED"
+      },
+      "source_of_truth": {
+        "manifest_ref": "gobernanza/contratos/s30_self_governance_gate_v1.json",
+        "runtime_projection_allowed": true,
+        "runtime_projection_ref": null,
+        "proprietary_runtime_state_is_domain_truth": false
+      }
+    },
+    {
+      "capability_id": "CARD_RESOLUTION",
+      "version": "v0.1-candidate",
+      "display_name": "LF Card Resolution",
+      "description": "Governed capability selection with explicit no-card and safe-fallback semantics.",
+      "owner": {
+        "strategy_or_domain": "S26",
+        "maintainer": "S26",
+        "change_authority": "S26_OWNER_HANDOFF"
+      },
+      "ownership_scope": {
+        "owned_paths": ["gobernanza/contratos/s26_governance_ekb_card_fallback_v1.json"],
+        "read_dependencies": ["services/profile_runtime_api/profile_runtime_api/runtime_authority.py"],
+        "forbidden_direct_writes": ["S31_TO_S26_INTERNALS"]
+      },
+      "kind": "RESOLVER",
+      "lifecycle": {
+        "state": "CANDIDATE",
+        "promotion_authority": "INDEPENDENT_LF_GOVERNANCE",
+        "self_certification_allowed": false,
+        "deprecation_replacement": null
+      },
+      "contracts": {
+        "input_contracts": ["TASK_CLASSIFICATION", "CARD_CANDIDATES"],
+        "output_contracts": ["CANONICAL_CARD_RESOLUTION"],
+        "invariants": ["NO_CARD_IS_GOVERNED_AND_DOES_NOT_IMPLY_IMMEDIATE_MANUAL_FALLBACK"]
+      },
+      "authority": {
+        "required_authority_types": ["TASK_CLASSIFICATION", "CARD_CANDIDATES"],
+        "selection_mode": "REGISTRY_RESOLVED",
+        "model_may_decide_authority": false
+      },
+      "currentness": {
+        "policy": "EXACT_SOURCE_REVISION",
+        "stale_action": "FAIL_CLOSED",
+        "cross_run_requires_declaration": true
+      },
+      "dependencies": {
+        "required_capabilities": ["CURRENTNESS_AUTHORITY"],
+        "optional_capabilities": ["CAPABILITY_REGISTRY"]
+      },
+      "compatibility": {
+        "compatible_versions": ["S26_v0.3", "LF_RUNTIME_TYPED_CONTEXT_V1"],
+        "breaking_change_policy": "ADAPTER_REQUIRED"
+      },
+      "execution": {
+        "mode": "DETERMINISTIC",
+        "port": "CARD_RESOLUTION_PORT",
+        "implementation_binding": "S26_CARD_RESOLVER_EXISTING",
+        "framework_is_kernel_dependency": false
+      },
+      "evidence": {
+        "required_layers": ["STRUCTURAL", "PROVENANCE", "SEMANTIC"],
+        "claim_ceiling": "SEMANTIC",
+        "replay_requirement": "DETERMINISTIC_REPLAY"
+      },
+      "failure_policy": {
+        "critical_ambiguity": "FAIL_CLOSED",
+        "missing_dependency": "FAIL_CLOSED",
+        "incompatible_dependency": "FAIL_CLOSED"
+      },
+      "source_of_truth": {
+        "manifest_ref": "gobernanza/contratos/s26_governance_ekb_card_fallback_v1.json",
+        "runtime_projection_allowed": true,
+        "runtime_projection_ref": "services/profile_runtime_api/profile_runtime_api/runtime_authority.py",
+        "proprietary_runtime_state_is_domain_truth": false
+      }
+    },
+    {
+      "capability_id": "TYPED_RUNTIME_CONTEXT",
+      "version": "v0.1-candidate",
+      "display_name": "LF Typed Runtime Context",
+      "description": "Reconstructible typed runtime context bound to exact authorities, cards, adapters and schema provenance.",
+      "owner": {
+        "strategy_or_domain": "S26",
+        "maintainer": "S26_PROFILE_RUNTIME",
+        "change_authority": "S26_OWNER_HANDOFF"
+      },
+      "ownership_scope": {
+        "owned_paths": ["services/profile_runtime_api/profile_runtime_api/runtime_authority.py"],
+        "read_dependencies": ["profiles/", "adapters/"],
+        "forbidden_direct_writes": ["S31_TO_S26_RUNTIME_INTERNALS"]
+      },
+      "kind": "RESOLVER",
+      "lifecycle": {
+        "state": "CANDIDATE",
+        "promotion_authority": "INDEPENDENT_LF_GOVERNANCE",
+        "self_certification_allowed": false,
+        "deprecation_replacement": null
+      },
+      "contracts": {
+        "input_contracts": ["PROFILE_SOURCE", "CARD_RESOLUTION", "ADAPTER_BINDING", "RUNTIME_SCHEMA"],
+        "output_contracts": ["LF_RUNTIME_TYPED_CONTEXT_V1"],
+        "invariants": ["PROVENANCE_MUST_BE_RECONSTRUCTIBLE_AND_SCHEMA_INVENTION_IS_FORBIDDEN"]
+      },
+      "authority": {
+        "required_authority_types": ["PROFILE_SOURCE", "RUNTIME_SCHEMA"],
+        "selection_mode": "EXACT_PREBOUND",
+        "model_may_decide_authority": false
+      },
+      "currentness": {
+        "policy": "RUNTIME_CURRENT",
+        "stale_action": "FAIL_CLOSED",
+        "cross_run_requires_declaration": true
+      },
+      "dependencies": {
+        "required_capabilities": ["CURRENTNESS_AUTHORITY", "CARD_RESOLUTION"],
+        "optional_capabilities": ["RUNTIME_EXECUTION_PORT"]
+      },
+      "compatibility": {
+        "compatible_versions": ["LF_RUNTIME_TYPED_CONTEXT_V1"],
+        "breaking_change_policy": "MAJOR_VERSION_REQUIRED"
+      },
+      "execution": {
+        "mode": "DETERMINISTIC",
+        "port": "TYPED_CONTEXT_RESOLUTION_PORT",
+        "implementation_binding": "services/profile_runtime_api/profile_runtime_api/runtime_authority.py",
+        "framework_is_kernel_dependency": false
+      },
+      "evidence": {
+        "required_layers": ["STRUCTURAL", "PROVENANCE"],
+        "claim_ceiling": "PROVENANCE",
+        "replay_requirement": "DETERMINISTIC_REPLAY"
+      },
+      "failure_policy": {
+        "critical_ambiguity": "FAIL_CLOSED",
+        "missing_dependency": "FAIL_CLOSED",
+        "incompatible_dependency": "FAIL_CLOSED"
+      },
+      "source_of_truth": {
+        "manifest_ref": "services/profile_runtime_api/profile_runtime_api/runtime_authority.py",
+        "runtime_projection_allowed": true,
+        "runtime_projection_ref": "lf-runtime-typed-context/v1",
+        "proprietary_runtime_state_is_domain_truth": false
+      }
+    },
+    {
+      "capability_id": "LEARNING_GOVERNANCE",
+      "version": "v0.1-candidate",
+      "display_name": "LF Learning Governance",
+      "description": "Governance for trace-to-change, evidence ceilings, known-versus-new behavior and regression promotion.",
+      "owner": {
+        "strategy_or_domain": "LEARNING_ENGINE",
+        "maintainer": "LF_LEARNING_ENGINE",
+        "change_authority": "LEARNING_ENGINE_OWNER_HANDOFF"
+      },
+      "ownership_scope": {
+        "owned_paths": ["skills/learning_engine/"],
+        "read_dependencies": ["profiles/quality_pack/"],
+        "forbidden_direct_writes": ["S31_TO_LEARNING_ENGINE_INTERNALS"]
+      },
+      "kind": "GOVERNANCE",
+      "lifecycle": {
+        "state": "CANDIDATE",
+        "promotion_authority": "INDEPENDENT_LF_GOVERNANCE",
+        "self_certification_allowed": false,
+        "deprecation_replacement": null
+      },
+      "contracts": {
+        "input_contracts": ["LEARNING_SIGNAL", "EVIDENCE", "TARGET_EVAL_REF"],
+        "output_contracts": ["GOVERNED_LEARNING_RESULT"],
+        "invariants": ["NEW_UNPROVEN_CANNOT_BE_GENERALIZED_OR_PROMOTED_TO_REGRESSION_BEFORE_TARGET_OUTCOME_IS_PROVEN"]
+      },
+      "authority": {
+        "required_authority_types": ["SOURCE_CONTEXT", "EVIDENCE"],
+        "selection_mode": "SOURCE_FIRST_RESOLVED",
+        "model_may_decide_authority": false
+      },
+      "currentness": {
+        "policy": "EXACT_SOURCE_REVISION",
+        "stale_action": "FAIL_CLOSED",
+        "cross_run_requires_declaration": true
+      },
+      "dependencies": {
+        "required_capabilities": ["EVIDENCE_LEDGER", "CURRENTNESS_AUTHORITY"],
+        "optional_capabilities": ["EVAL_EXECUTION_PORT"]
+      },
+      "compatibility": {
+        "compatible_versions": ["LF_LEARNING_ENGINE_CURRENT"],
+        "breaking_change_policy": "ADAPTER_REQUIRED"
+      },
+      "execution": {
+        "mode": "MODEL_ASSISTED",
+        "port": "LEARNING_GOVERNANCE_PORT",
+        "implementation_binding": "skills/learning_engine/SKILL.md",
+        "framework_is_kernel_dependency": false
+      },
+      "evidence": {
+        "required_layers": ["STRUCTURAL", "PROVENANCE", "SEMANTIC", "BEHAVIORAL"],
+        "claim_ceiling": "BEHAVIORAL",
+        "replay_requirement": "HISTORICAL_REPLAY"
+      },
+      "failure_policy": {
+        "critical_ambiguity": "FAIL_CLOSED",
+        "missing_dependency": "FAIL_CLOSED",
+        "incompatible_dependency": "FAIL_CLOSED"
+      },
+      "source_of_truth": {
+        "manifest_ref": "skills/learning_engine/SKILL.md",
+        "runtime_projection_allowed": true,
+        "runtime_projection_ref": null,
+        "proprietary_runtime_state_is_domain_truth": false
+      }
+    },
+    {
+      "capability_id": "EVIDENCE_LEDGER",
+      "version": "v0.1-candidate",
+      "display_name": "LF Evidence Ledger",
+      "description": "Transversal evidence envelope preserving layer, provenance, replay and claim ceiling across owner receipts.",
+      "owner": {
+        "strategy_or_domain": "LF_CONTROL_PLANE",
+        "maintainer": "S31_CANDIDATE",
+        "change_authority": "INDEPENDENT_LF_GOVERNANCE"
+      },
+      "ownership_scope": {
+        "owned_paths": ["sandbox/lf_contract_gate_test/s31_bootstrap/"],
+        "read_dependencies": ["sandbox/lf_contract_gate_test/s30_", "services/profile_runtime_api/", "skills/creating-integral-user-stories/"],
+        "forbidden_direct_writes": ["S30", "S26", "CREATING_INTEGRAL_USER_STORIES"]
+      },
+      "kind": "EVIDENCE",
+      "lifecycle": {
+        "state": "CANDIDATE",
+        "promotion_authority": "INDEPENDENT_LF_GOVERNANCE",
+        "self_certification_allowed": false,
+        "deprecation_replacement": null
+      },
+      "contracts": {
+        "input_contracts": ["OWNER_RECEIPT", "EXECUTION_IDENTITY", "CLAIM"],
+        "output_contracts": ["LF_EVIDENCE_ENVELOPE"],
+        "invariants": ["CLAIM_LEVEL_MUST_NOT_EXCEED_STRONGEST_EXECUTED_EVIDENCE_LAYER"]
+      },
+      "authority": {
+        "required_authority_types": ["OWNER_RECEIPT", "EXECUTION_IDENTITY"],
+        "selection_mode": "EXACT_PREBOUND",
+        "model_may_decide_authority": false
+      },
+      "currentness": {
+        "policy": "FROZEN_SNAPSHOT",
+        "stale_action": "FAIL_CLOSED",
+        "cross_run_requires_declaration": true
+      },
+      "dependencies": {
+        "required_capabilities": ["CURRENTNESS_AUTHORITY"],
+        "optional_capabilities": ["GOLDEN_LIFECYCLE"]
+      },
+      "compatibility": {
+        "compatible_versions": ["S30_GATE_EVIDENCE_ENVELOPE_V1", "PROFILE_EXECUTION_RECEIPT_V1"],
+        "breaking_change_policy": "ADAPTER_REQUIRED"
+      },
+      "execution": {
+        "mode": "DETERMINISTIC",
+        "port": "EVIDENCE_LEDGER_PORT",
+        "implementation_binding": null,
+        "framework_is_kernel_dependency": false
+      },
+      "evidence": {
+        "required_layers": ["STRUCTURAL", "PROVENANCE"],
+        "claim_ceiling": "PROVENANCE",
+        "replay_requirement": "HISTORICAL_REPLAY"
+      },
+      "failure_policy": {
+        "critical_ambiguity": "FAIL_CLOSED",
+        "missing_dependency": "FAIL_CLOSED",
+        "incompatible_dependency": "FAIL_CLOSED"
+      },
+      "source_of_truth": {
+        "manifest_ref": "sandbox/lf_contract_gate_test/s31_bootstrap/canonical_capability_model_v0_1.schema.json",
+        "runtime_projection_allowed": true,
+        "runtime_projection_ref": null,
+        "proprietary_runtime_state_is_domain_truth": false
+      }
+    },
+    {
+      "capability_id": "WORK_PACKAGE",
+      "version": "v0.1-candidate",
+      "display_name": "LF Work Package",
+      "description": "Mother execution contract for governed work, ownership, scope, assertions, evidence, frontier and binary closure.",
+      "owner": {
+        "strategy_or_domain": "LF_CONTROL_PLANE",
+        "maintainer": "S31",
+        "change_authority": "INDEPENDENT_LF_GOVERNANCE"
+      },
+      "ownership_scope": {
+        "owned_paths": ["sandbox/lf_contract_gate_test/s31_bootstrap/LF_WORK_PACKAGE_BOOTSTRAP_V0_1.md"],
+        "read_dependencies": ["skills/creating-integral-user-stories/schemas/task-packet.schema.json", "gobernanza/contratos/s30_self_governance_gate_v1.json"],
+        "forbidden_direct_writes": ["CREATING_INTEGRAL_USER_STORIES", "S30"]
+      },
+      "kind": "CONTRACT",
+      "lifecycle": {
+        "state": "CANDIDATE",
+        "promotion_authority": "INDEPENDENT_LF_GOVERNANCE",
+        "self_certification_allowed": false,
+        "deprecation_replacement": null
+      },
+      "contracts": {
+        "input_contracts": ["SOURCE_SNAPSHOT", "OWNERSHIP", "SCOPE", "CAPABILITY_BINDING"],
+        "output_contracts": ["WORK_PACKAGE_EXECUTION_LEDGER", "CLOSURE_RECEIPT"],
+        "invariants": ["NO_MATERIAL_WORK_BEFORE_PREEXECUTION_ASSURANCE_AND_NO_BINARY_CLOSURE_WITH_MISSING_EVIDENCE"]
+      },
+      "authority": {
+        "required_authority_types": ["SOURCE_AUTHORITY", "OWNERSHIP", "CAPABILITY_BINDING"],
+        "selection_mode": "SOURCE_FIRST_RESOLVED",
+        "model_may_decide_authority": false
+      },
+      "currentness": {
+        "policy": "EXACT_HEAD",
+        "stale_action": "FAIL_CLOSED",
+        "cross_run_requires_declaration": true
+      },
+      "dependencies": {
+        "required_capabilities": ["PREEXECUTION_ASSURANCE", "CURRENTNESS_AUTHORITY", "EVIDENCE_LEDGER"],
+        "optional_capabilities": ["CAPABILITY_REGISTRY"]
+      },
+      "compatibility": {
+        "compatible_versions": ["TASK_PACKET_V0_3", "LF_WORK_PACKAGE_BOOTSTRAP_V0_1"],
+        "breaking_change_policy": "MAJOR_VERSION_REQUIRED"
+      },
+      "execution": {
+        "mode": "NO_RUNTIME",
+        "port": null,
+        "implementation_binding": "LF_WORK_PACKAGE_BOOTSTRAP_V0_1",
+        "framework_is_kernel_dependency": false
+      },
+      "evidence": {
+        "required_layers": ["STRUCTURAL", "PROVENANCE", "SEMANTIC"],
+        "claim_ceiling": "SEMANTIC",
+        "replay_requirement": "STRUCTURAL_REPLAY"
+      },
+      "failure_policy": {
+        "critical_ambiguity": "FAIL_CLOSED",
+        "missing_dependency": "FAIL_CLOSED",
+        "incompatible_dependency": "FAIL_CLOSED"
+      },
+      "source_of_truth": {
+        "manifest_ref": "sandbox/lf_contract_gate_test/s31_bootstrap/LF_WORK_PACKAGE_BOOTSTRAP_V0_1.md",
+        "runtime_projection_allowed": true,
+        "runtime_projection_ref": null,
+        "proprietary_runtime_state_is_domain_truth": false
+      }
+    }
+  ],
+  "invalid_examples": [
+    {
+      "case_id": "REJECT_FRAMEWORK_AS_KERNEL_AUTHORITY",
+      "expected": "FAIL",
+      "manifest": {
+        "capability_id": "TYPED_RUNTIME_CONTEXT",
+        "version": "v0.1-candidate",
+        "display_name": "Invalid Framework Locked Context",
+        "description": "Negative control that intentionally violates LF kernel and authority invariants.",
+        "owner": {
+          "strategy_or_domain": "LANGGRAPH",
+          "maintainer": "EXTERNAL_FRAMEWORK",
+          "change_authority": "EXTERNAL_FRAMEWORK"
+        },
+        "ownership_scope": {
+          "owned_paths": ["external/langgraph"],
+          "read_dependencies": [],
+          "forbidden_direct_writes": []
+        },
+        "kind": "RESOLVER",
+        "lifecycle": {
+          "state": "CANDIDATE",
+          "promotion_authority": "EXTERNAL_FRAMEWORK",
+          "self_certification_allowed": false,
+          "deprecation_replacement": null
+        },
+        "contracts": {
+          "input_contracts": ["MODEL_PROMPT"],
+          "output_contracts": ["CONTEXT"],
+          "invariants": ["NEGATIVE_CONTROL"]
+        },
+        "authority": {
+          "required_authority_types": ["MODEL_DECISION"],
+          "selection_mode": "REGISTRY_RESOLVED",
+          "model_may_decide_authority": true
+        },
+        "currentness": {
+          "policy": "RUNTIME_CURRENT",
+          "stale_action": "FAIL_CLOSED",
+          "cross_run_requires_declaration": true
+        },
+        "dependencies": {
+          "required_capabilities": [],
+          "optional_capabilities": []
+        },
+        "compatibility": {
+          "compatible_versions": ["framework-current"],
+          "breaking_change_policy": "ADAPTER_REQUIRED"
+        },
+        "execution": {
+          "mode": "MODEL_EXECUTOR",
+          "port": "LANGGRAPH",
+          "implementation_binding": "LANGGRAPH",
+          "framework_is_kernel_dependency": true
+        },
+        "evidence": {
+          "required_layers": ["STRUCTURAL"],
+          "claim_ceiling": "STRUCTURAL",
+          "replay_requirement": "NONE"
+        },
+        "failure_policy": {
+          "critical_ambiguity": "FAIL_CLOSED",
+          "missing_dependency": "FAIL_CLOSED",
+          "incompatible_dependency": "FAIL_CLOSED"
+        },
+        "source_of_truth": {
+          "manifest_ref": "langgraph-checkpoint-store",
+          "runtime_projection_allowed": true,
+          "runtime_projection_ref": "langgraph-checkpoint-store",
+          "proprietary_runtime_state_is_domain_truth": true
+        }
+      }
+    }
+  ]
+}
