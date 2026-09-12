@@ -679,7 +679,20 @@ def _decode_ui_production_semantic_transport_v5(
                 "design_intent": list(acceptance["required_design_intents"]),
             },
             "component_tree": components,
-            "layout_grid": {"flow": required_ids, "desktop": desktop, "mobile": mobile},
+            "layout_grid": {
+                "flow": [
+                    cid for cid in required_ids
+                    if cid not in {
+                        child
+                        for relation in visual_hierarchy
+                        if isinstance(relation, dict) and relation.get("parent_id") != "screen"
+                        for child in (relation.get("child_ids") or [])
+                        if isinstance(child, str)
+                    }
+                ],
+                "desktop": desktop,
+                "mobile": mobile,
+            },
             "visual_hierarchy": visual_hierarchy,
             "state_map": state_map,
             "token_map": {"surface":["surface_default"],"text":["text_primary","text_secondary"],"action":["action_primary"],"border":["border_subtle"],"precision_mode":"SEMANTIC_ROLE_ONLY_NO_CANONICAL_COLOR_VALUES_INVENTED"},
@@ -1541,6 +1554,17 @@ class PersistentLlamaServerAdapter:
         self.last_completion: dict[str, Any] = {}
 
     def execute(self, request: dict[str, Any]) -> dict[str, Any]:
+        # Fail closed before inference when the variable user literal alone would
+        # consume an unsafe share of the UI production context budget. This is a
+        # conservative proxy guard; governed fixed context remains unchanged.
+        if (
+            self.schema.mode == UI_PRODUCTION_SCHEMA_MODE
+            and len(request.get("input_literal") or "") / 4.0 > 2500.0
+        ):
+            raise LlamaTransportError(
+                "LLAMA_UI_INPUT_TOKEN_PROXY_BUDGET_EXCEEDED",
+                f"proxy_tokens={len(request.get('input_literal') or '') / 4.0:.1f};budget=2500",
+            )
         self.last_health = self.client.health()
         if self.last_health.get("ready") is not True:
             raise LlamaTransportError(

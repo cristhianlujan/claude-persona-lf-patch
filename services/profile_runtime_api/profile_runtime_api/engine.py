@@ -126,8 +126,44 @@ def _ui_source_bindings_match(deliverable: dict[str, Any], acceptance: dict[str,
     return True
 
 
+def _ui_layout_strategy_from_literal(value: str) -> str | None:
+    text = " ".join(value.casefold().replace("-", " ").split())
+    if any(k in text for k in ("mobile first", "mobile first priority", "prioridad mobile", "prioridad móvil")):
+        return "MOBILE_PRIORITY_STACK"
+    if any(k in text for k in ("three columns", "3 columns", "tres columnas", "dense cards", "tarjetas densas", "compact cards", "tarjetas compactas")):
+        return "DENSE_GRID_STACK"
+    if any(k in text for k in ("featured first", "featured emphasis", "destacados primero", "énfasis en destacados", "enfasis en destacados")):
+        return "FEATURED_FIRST_GRID_STACK"
+    if any(k in text for k in ("navigation first", "search first", "categories first", "buscador prioritario", "categorías prioritarias", "categorias prioritarias")):
+        return "NAVIGATION_FIRST_GRID_STACK"
+    return None
+
+
+def _ui_layout_flow_matches_hierarchy(deliverable: dict[str, Any], acceptance: dict[str, Any]) -> bool:
+    layout = deliverable.get("layout_grid")
+    relations = deliverable.get("visual_hierarchy")
+    if not isinstance(layout, dict) or not isinstance(layout.get("flow"), list) or not isinstance(relations, list):
+        return False
+    nested_children = {
+        child
+        for relation in relations
+        if isinstance(relation, dict) and relation.get("parent_id") != "screen"
+        for child in (relation.get("child_ids") or [])
+        if isinstance(child, str)
+    }
+    required_order = [
+        cid for cid in acceptance.get("required_component_ids") or []
+        if isinstance(cid, str) and cid not in nested_children
+    ]
+    return layout["flow"] == required_order
+
+
 def _deterministic_ui_outcome(
-    *, deliverable: dict[str, Any], acceptance: dict[str, Any], composer_payload: dict[str, Any]
+    *,
+    deliverable: dict[str, Any],
+    acceptance: dict[str, Any],
+    composer_payload: dict[str, Any],
+    strict_layout_coherence: bool = False,
 ) -> dict[str, Any]:
     """Derive self-score/handoff from verifiable structure; model never self-certifies UICT2."""
     components = deliverable.get("component_tree")
@@ -160,8 +196,12 @@ def _deterministic_ui_outcome(
         isinstance(risk_controls, list)
         and len(risk_controls) >= int(acceptance.get("minimum_risk_control_count") or 0)
     )
+    layout_flow_ok = (
+        _ui_layout_flow_matches_hierarchy(deliverable, acceptance)
+        if strict_layout_coherence else True
+    )
     checks = {
-        "layout_precision": responsive_ok and isinstance(deliverable.get("spacing_typography"), dict),
+        "layout_precision": responsive_ok and layout_flow_ok and isinstance(deliverable.get("spacing_typography"), dict),
         "visual_hierarchy": _ui_hierarchy_depth(deliverable.get("visual_hierarchy")) >= int(acceptance.get("minimum_hierarchy_depth_edges") or 0),
         "lf_system_fidelity": isinstance(deliverable.get("token_map"), dict) and risk_ok,
         "state_mapping": state_ok,
@@ -326,6 +366,14 @@ class ProfileRuntimeEngine:
             else []
         )
         acceptance = task.input_fields.get("gate_f_acceptance")
+        literal_layout = _ui_layout_strategy_from_literal(task.input_literal)
+        if (
+            literal_layout is not None
+            and payload.get("v") == 5
+            and isinstance(payload.get("d"), dict)
+            and "l" in payload["d"]
+        ):
+            payload["d"]["l"] = literal_layout
         payload, transport_kind = decode_ui_production_transport(
             payload,
             acceptance if isinstance(acceptance, dict) else None,
@@ -354,6 +402,7 @@ class ProfileRuntimeEngine:
                 deliverable=deliverable,
                 acceptance=acceptance,
                 composer_payload=composer_payload,
+                strict_layout_coherence=(transport_kind == UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION),
             )
         governance_context = {
             "request_id": task.request_id,
