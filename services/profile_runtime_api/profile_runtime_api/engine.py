@@ -15,7 +15,13 @@ from .llama import (
     UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION_V2,
     decode_ui_production_transport,
 )
-from .models import BatchRequest, ExecuteRequest, ProfileTask, QueueExecuteRequest
+from .models import (
+    ArtifactSetExecuteRequest,
+    BatchRequest,
+    ExecuteRequest,
+    ProfileTask,
+    QueueExecuteRequest,
+)
 from .repository import RepositoryBindings
 from .runtime_authority import resolve_typed_runtime_context
 from .settings import Settings
@@ -327,6 +333,128 @@ class ProfileRuntimeEngine:
         result=self._execute_queue_profile(task=task,context_pack=context_pack)
         return {"schema":RESULT_SCHEMA,"kind":"queue_execute","request_id":task.request_id,"artifact_sha256":None,"result":result,"total_ms":round((time.perf_counter()-started)*1000,3),"downstream_authorized":False}
 
+    def run_artifact_set_execute(self, request: ArtifactSetExecuteRequest) -> dict[str, Any]:
+        started = time.perf_counter()
+        task = request.profile
+        prepared_items: list[tuple[Any, PreparedContext]] = []
+        try:
+            for binding in request.artifact_set.artifacts:
+                prepared_items.append(
+                    (binding, self.structural.prepare(binding.artifact, request.input_governance))
+                )
+        except Exception as exc:
+            code, detail = _failure(exc)
+            result = self._profile_failure(
+                task=task,
+                code=code,
+                detail=detail,
+                stage="STRUCTURAL_CONTEXT",
+                started=started,
+            )
+            fingerprint = canonical_json_sha256(
+                {
+                    "schema": request.artifact_set.contract_schema,
+                    "subject_mode": request.artifact_set.subject_mode,
+                    "artifacts": [
+                        {
+                            "artifact_ref": item.artifact_ref,
+                            "artifact_sha256": item.artifact.image_sha256,
+                            "width_px": item.artifact.width_px,
+                            "height_px": item.artifact.height_px,
+                        }
+                        for item in request.artifact_set.artifacts
+                    ],
+                }
+            )
+        else:
+            artifact_entries = []
+            for binding, prepared in prepared_items:
+                artifact_entries.append(
+                    {
+                        "artifact_ref": binding.artifact_ref,
+                        "artifact_sha256": binding.artifact.image_sha256,
+                        "width_px": binding.artifact.width_px,
+                        "height_px": binding.artifact.height_px,
+                        "filename": binding.artifact.filename,
+                        "screen_code": binding.artifact.screen_code,
+                        "structural_context": prepared.pack,
+                    }
+                )
+            binding_summary = [
+                {
+                    "artifact_ref": item["artifact_ref"],
+                    "artifact_sha256": item["artifact_sha256"],
+                    "width_px": item["width_px"],
+                    "height_px": item["height_px"],
+                    "pack_sha256": item["structural_context"].get("pack_sha256"),
+                }
+                for item in artifact_entries
+            ]
+            fingerprint = canonical_json_sha256(
+                {
+                    "schema": request.artifact_set.contract_schema,
+                    "subject_mode": request.artifact_set.subject_mode,
+                    "artifacts": binding_summary,
+                }
+            )
+            context_pack = {
+                "schema": "lf-profile-runtime-artifact-set-context/v1",
+                "contract": request.artifact_set.contract_schema,
+                "subject_mode": request.artifact_set.subject_mode,
+                "artifact_set_fingerprint": fingerprint,
+                "artifact_count": len(artifact_entries),
+                "artifacts": artifact_entries,
+                "input_governance": {
+                    "receipt_ref": request.input_governance.receipt_ref,
+                    "current": request.input_governance.current,
+                    "ready": request.input_governance.ready,
+                    "status": request.input_governance.status,
+                    "decision": request.input_governance.decision,
+                    "subject_mode": request.input_governance.subject_mode,
+                    "context_sha256": request.input_governance.context_sha256,
+                    "required_artifact_binding": request.input_governance.required_artifact_binding,
+                    "constraints": (
+                        request.input_governance.constraints.model_dump(mode="python")
+                        if request.input_governance.constraints is not None
+                        else None
+                    ),
+                },
+                "downstream_authorized": False,
+            }
+            context_pack["pack_sha256"] = canonical_json_sha256(context_pack)
+            context = {
+                "artifact_set_schema": request.artifact_set.contract_schema,
+                "subject_mode": request.artifact_set.subject_mode,
+                "artifact_set_fingerprint": fingerprint,
+                "artifact_count": len(prepared_items),
+                "artifacts": [
+                    {
+                        "artifact_ref": binding.artifact_ref,
+                        "artifact_sha256": binding.artifact.image_sha256,
+                        "cache_hit": prepared.cache_hit,
+                        "prepare_ms": prepared.prepare_ms,
+                        "pack_sha256": prepared.pack.get("pack_sha256"),
+                    }
+                    for binding, prepared in prepared_items
+                ],
+                "runtime_output_mode": task.runtime_output_mode,
+            }
+            result = self._execute_queue_profile(
+                task=task,
+                context_pack=context_pack,
+                context_override=context,
+            )
+        return {
+            "schema": RESULT_SCHEMA,
+            "kind": "artifact_set_execute",
+            "request_id": task.request_id,
+            "artifact_set_fingerprint": fingerprint,
+            "artifact_count": len(request.artifact_set.artifacts),
+            "result": result,
+            "total_ms": round((time.perf_counter() - started) * 1000, 3),
+            "downstream_authorized": False,
+        }
+
     def run_batch(self, request: BatchRequest) -> dict[str, Any]:
         started=time.perf_counter()
         if len(request.profiles)>self.settings.max_batch_size:
@@ -469,8 +597,14 @@ class ProfileRuntimeEngine:
             "deterministic_acceptance": deterministic_acceptance,
         }
 
-    def _execute_queue_profile(self, *, task: ProfileTask, context_pack: dict[str, Any]) -> dict[str, Any]:
-        started=time.perf_counter(); context={"queue_native":True,"screen_governance_applicable":False,"cache_hit":False,"runtime_output_mode":task.runtime_output_mode}
+    def _execute_queue_profile(
+        self,
+        *,
+        task: ProfileTask,
+        context_pack: dict[str, Any],
+        context_override: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        started=time.perf_counter(); context=context_override or {"queue_native":True,"screen_governance_applicable":False,"cache_hit":False,"runtime_output_mode":task.runtime_output_mode}
         try:
             if task.send_image_to_model: raise LlamaTransportError("QUEUE_NATIVE_IMAGE_REQUIRES_GOVERNED_ENVELOPE")
             sources=self.repository.profile_sources(task.profile_slug,task.profile_source_paths); schema=self.repository.runtime_schema(task.profile_slug, task.runtime_output_mode)

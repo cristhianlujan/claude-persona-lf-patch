@@ -38,9 +38,11 @@ from profile_runtime_api.hashing import canonical_json_sha256
 from profile_runtime_api.llama import governed_generation_schema
 from profile_runtime_api.models import (
     Artifact,
+    ArtifactSetExecuteRequest,
     BatchRequest,
     ExecuteRequest,
     InputGovernanceReceipt,
+    NonCanonicalArtifactSet,
     ProfileTask,
     QueueExecuteRequest,
 )
@@ -211,6 +213,54 @@ class EngineGateTest(unittest.TestCase):
         self.assertEqual(result["runtime_completion"]["status"], "PASS")
         self.assertEqual(result["profile_contract_valid"]["status"], "FAIL")
         self.assertEqual(result["semantic_utility"]["status"], "NOT_EVALUATED")
+
+    def test_noncanonical_artifact_set_prepares_each_artifact_and_executes_one_profile(self) -> None:
+        engine, pipeline = self.engine(valid_quality_output())
+        advisory_context = {"router": "ACT-0001", "scope": "visual_artifact_review_only"}
+        advisory = InputGovernanceReceipt(
+            receipt_ref="router://ACT-0001/noncanonical/test",
+            current=True,
+            ready=True,
+            context_sha256=canonical_json_sha256(advisory_context),
+            context=advisory_context,
+            status="ADVISORY_READ_ONLY",
+            decision="ADVISORY",
+            subject_mode="NON_CANONICAL_ARTIFACT",
+            required_artifact_binding=["artifact_ref", "artifact_sha256", "dimensions"],
+            constraints={
+                "operation_must_equal": "EJECUCION_PERFIL_LF",
+                "read_only": True,
+                "no_write": True,
+                "no_promotion": True,
+                "canonical_registration_required": False,
+                "artifact_binding_required_before_profile_execution": True,
+            },
+        )
+        artifact_b = self.artifact.model_copy(
+            update={
+                "screen_code": "B2B-CARGA-ALT",
+                "filename": "candidate-b.png",
+                "image_sha256": "f" * 64,
+            }
+        )
+        request = ArtifactSetExecuteRequest(
+            artifact_set=NonCanonicalArtifactSet(
+                artifacts=[
+                    {"artifact_ref": "approved://a", "artifact": self.artifact},
+                    {"artifact_ref": "approved://b", "artifact": artifact_b},
+                ]
+            ),
+            input_governance=advisory,
+            profile=self.quality_task("quality-artifact-set-1"),
+        )
+        result = engine.run_artifact_set_execute(request)
+        self.assertEqual(pipeline.calls, 2)
+        self.assertEqual(result["kind"], "artifact_set_execute")
+        self.assertEqual(result["artifact_count"], 2)
+        self.assertEqual(result["result"]["runtime_completion"]["status"], "PASS")
+        self.assertEqual(result["result"]["context"]["subject_mode"], "NON_CANONICAL_ARTIFACT")
+        self.assertEqual(result["result"]["context"]["artifact_count"], 2)
+        self.assertFalse(result["downstream_authorized"])
 
     def test_batch_prepares_context_once_and_continues_all_profiles(self) -> None:
         engine, pipeline = self.engine(valid_quality_output())

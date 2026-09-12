@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import copy
 import hashlib
+import json
 import unittest
 
 from scripts.hetzner_queue_worker import _validate_envelope
@@ -79,10 +79,93 @@ def governed_envelope() -> dict:
     }
 
 
+def noncanonical_artifact_set_envelope() -> dict:
+    payload = governed_envelope()
+    payload.pop("artifact")
+    payload["artifact_set"] = {
+        "schema": "NON_CANONICAL_ARTIFACT_SET_V1",
+        "subject_mode": "NON_CANONICAL_ARTIFACT",
+        "artifacts": [
+            {
+                "artifact_ref": "approved://payment-single",
+                "artifact": {
+                    "screen_code": "PAYMENT-SINGLE-APPROVED",
+                    "filename": "single.png",
+                    "image_sha256": "1" * 64,
+                    "width_px": 1600,
+                    "height_px": 1000,
+                    "observations": [],
+                },
+            },
+            {
+                "artifact_ref": "approved://payment-installments",
+                "artifact": {
+                    "screen_code": "PAYMENT-INSTALLMENTS-APPROVED",
+                    "filename": "installments.png",
+                    "image_sha256": "2" * 64,
+                    "width_px": 1600,
+                    "height_px": 1000,
+                    "observations": [],
+                },
+            },
+        ],
+    }
+    context = {"router": "ACT-0001", "scope": "visual_artifact_review_only"}
+    payload["input_governance"] = {
+        "receipt_ref": "router://ACT-0001/noncanonical/worker",
+        "current": True,
+        "ready": True,
+        "context_sha256": hashlib.sha256(
+            json.dumps(context, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest(),
+        "context": context,
+        "status": "ADVISORY_READ_ONLY",
+        "decision": "ADVISORY",
+        "subject_mode": "NON_CANONICAL_ARTIFACT",
+        "required_artifact_binding": ["artifact_ref", "artifact_sha256", "dimensions"],
+        "constraints": {
+            "operation_must_equal": "EJECUCION_PERFIL_LF",
+            "read_only": True,
+            "no_write": True,
+            "no_promotion": True,
+            "canonical_registration_required": False,
+            "artifact_binding_required_before_profile_execution": True,
+        },
+    }
+    payload["profile"]["profile_code"] = "PERFIL-UI-ARCHITECT"
+    payload["profile"]["profile_slug"] = "ui_architect"
+    payload["profile"]["profile_source_paths"] = ["profiles/ui_architect/SKILL.md"]
+    payload["profile"]["lf_adapter_sources"][0]["target_ref"] = "PERFIL-UI-ARCHITECT"
+    payload["profile"]["input_literal"] = "Compare two approved visual artifacts read-only."
+    payload["profile"]["runtime_output_mode"] = "UI_FOCUSED_DECISION"
+    return payload
+
+
 class GovernedEnvelopeTest(unittest.TestCase):
     def test_valid_golden_family_envelope_passes_worker_preflight(self) -> None:
         payload = governed_envelope()
         self.assertIs(_validate_envelope(REQUEST_ID, payload), payload)
+
+    def test_noncanonical_artifact_set_advisory_envelope_passes(self) -> None:
+        payload = noncanonical_artifact_set_envelope()
+        self.assertIs(_validate_envelope(REQUEST_ID, payload), payload)
+
+    def test_noncanonical_artifact_set_blocks_canonical_receipt_or_duplicate_sha(self) -> None:
+        payload = noncanonical_artifact_set_envelope()
+        payload["input_governance"]["canonical_receipt"] = governed_envelope()["input_governance"]["canonical_receipt"]
+        with self.assertRaisesRegex(RuntimeError, "CANONICAL_RECEIPT_FORBIDDEN"):
+            _validate_envelope(REQUEST_ID, payload)
+
+        duplicate = noncanonical_artifact_set_envelope()
+        duplicate["artifact_set"]["artifacts"][1]["artifact"]["image_sha256"] = "1" * 64
+        with self.assertRaisesRegex(RuntimeError, "ARTIFACT_SHA256_DUPLICATE"):
+            _validate_envelope(REQUEST_ID, duplicate)
+
+    def test_noncanonical_artifact_set_blocks_write_capability(self) -> None:
+        payload = noncanonical_artifact_set_envelope()
+        payload["input_governance"]["constraints"]["no_write"] = False
+        with self.assertRaisesRegex(RuntimeError, "CONSTRAINTS_INVALID"):
+            _validate_envelope(REQUEST_ID, payload)
 
     def test_missing_canonical_input_governance_blocks(self) -> None:
         payload = governed_envelope()
