@@ -25,7 +25,9 @@ def main():
     validate_workflow = ".github/workflows/validate-lf-packs.yml"
     router = "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_lane_router.py"
     router_test = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_router.py"
+    contract_validator = "scripts/lf_contract_check.py"
     entrypoint = "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py"
+    p0_core = "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_CORE_V1.py"
     p0_helper = "sandbox/lf_contract_gate_test/p0_exact_head_real_source_ci_v2.py"
     p0_config = "sandbox/lf_contract_gate_test/p0_exact_head_real_source_v2.json"
     p0_broker = "supabase/functions/lf-p0-exact-head-evidence-broker-v2/index.ts"
@@ -43,7 +45,10 @@ def main():
     check("workflow_self_change", [workflow], migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
     check("validate_lf_packs_workflow_self_change", [validate_workflow], migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
     check("router_self_change", [router, router_test], migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
+    check("lf_contract_check_validator_control", [contract_validator], migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
     check("entrypoint_control_change", [entrypoint], migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
+    check("p0_runtime_core_control", [p0_core], migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
+    check("profile_creator_governance_control_bundle", [contract_validator, p0_core], migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
     check("p0_helper_requires_external", [p0_helper], migration=False, input_gov=False, selftest=False, p0_external=True, deep_shared=False, mode="SPECIALIZED_REQUIRED")
     check("p0_config_requires_external", [p0_config], migration=False, input_gov=False, selftest=False, p0_external=True, deep_shared=False, mode="SPECIALIZED_REQUIRED")
     check("p0_broker_requires_external", [p0_broker], migration=False, input_gov=False, selftest=False, p0_external=True, deep_shared=False, mode="SPECIALIZED_REQUIRED")
@@ -58,12 +63,14 @@ def main():
     check("s30a_real_delta_isolated", real_s30a_delta, migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
     real_s30b_delta = [validate_workflow, s30_data_receipt, s30_data, "sandbox/lf_contract_gate_test/s30_data_access_candidate/lf_data_access.py", "sandbox/lf_contract_gate_test/s30_data_access_candidate/test_s30_data_access_v2.py"]
     check("s30b_real_delta_isolated", real_s30b_delta, migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
+    check("lf_contract_check_lookalike_fail_closed", ["scripts/lf_contract_check_copy.py"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
+    check("p0_runtime_core_lookalike_fail_closed", [p0_core + ".bak"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
     check("unknown_contract_gate_sandbox_fail_closed", ["sandbox/lf_contract_gate_test/new_unbound_validator.py"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
     check("unknown_s30_receipt_sibling_fail_closed", ["sandbox/lf_contract_gate_test/receipts/s30_b_unbound.json"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
     check("s30b_plus_unknown_fail_closed", [s30_data, "sandbox/lf_contract_gate_test/s30_data_access_other/unbound.py"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
     check("unknown_fail_closed", ["mystery/new_surface.xyz"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
     check("empty_fail_closed", [], migration=True, input_gov=True, selftest=True, p0_external=True, deep_shared=True, mode="DEEP_SHARED_EMPTY_FAIL_CLOSED")
-    print("CI_LANE_ROUTER_REGRESSIONS_PASS=32/32")
+    print("CI_LANE_ROUTER_REGRESSIONS_PASS=37/37")
 
 
 import copy
