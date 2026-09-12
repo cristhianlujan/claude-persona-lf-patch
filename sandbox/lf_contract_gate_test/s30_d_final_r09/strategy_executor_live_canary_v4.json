@@ -1,0 +1,69 @@
+{
+  "contract_version": "S30_STRATEGY_EXECUTOR_LIVE_CANARY_V4",
+  "supersedes": "S30_STRATEGY_EXECUTOR_LIVE_CANARY_V3",
+  "operation_code": "EJECUCION_ESTRATEGIA_LF",
+  "activation_contract": "S30_STRATEGY_EXECUTOR_SANDBOX_ACTIVATION_V2",
+  "family_matrix_binding": "S30_STRATEGY_EXECUTOR_FAMILY_OBJECTIVE_MATRIX_V3",
+  "performance_policy_binding": "S30_STRATEGY_EXECUTOR_PERFORMANCE_POLICY_V1",
+  "mode": "CONTROL_STATE_NO_EFFECT",
+  "canary_status": "BLOCKED_AUTHORITY_NOT_MATERIALIZED",
+  "runtime_execution_status": "NOT_EXECUTED_SOURCE_ONLY",
+  "activation_authority": "NONE",
+  "target_strategy": {
+    "selector_kind": "EXACT_SNAPSHOT_CODE",
+    "snapshot_code": "LF_S30_SHELL_ADVANCED_EXECUTION_20260903",
+    "resolved_snapshot_id": null,
+    "resolution_status": "AUTHORITY_NOT_MATERIALIZED",
+    "id_resolution": "RESOLVE_FROM_EXACT_MATCH_AT_IMMEDIATE_PRE_RUNTIME"
+  },
+  "authority_readback_binding": "strategy_executor_authority_readback_20260912_v1.json",
+  "precanary_currentness_gate": {
+    "id": "A00",
+    "class": "AUTHORITY_CURRENTNESS",
+    "required_before_runtime_authorization_request": true,
+    "required_before_runtime_activation": true,
+    "fresh_readback_scope": "IMMEDIATE_PRE_RUNTIME",
+    "expected_when_source_authority_missing": "BLOCK_AUTHORITY_NOT_MATERIALIZED",
+    "expected_when_current": "READY_FOR_RUNTIME_AUTHORIZATION_REQUEST"
+  },
+  "business_effect_dispatch_allowed": false,
+  "effect_guard_rows_allowed": false,
+  "model_calls_allowed": false,
+  "production_write_allowed": false,
+  "strategy_snapshot_mutation_allowed": false,
+  "scheduler_activation": false,
+  "orchestrator_activation": false,
+  "production_activation": false,
+  "s26_mutation": false,
+  "checks": [
+    {"id":"L01","class":"ROUTER","objective_id":"F02","expected":"READY_TO_EXECUTE"},
+    {"id":"L02","class":"ROUTER_NEGATIVE","objective_id":"F02","expected":"BLOCK_OPERATION_NOT_REGISTERED"},
+    {"id":"L03","class":"STRATEGY_RESOLVE","objective_id":"F03","expected":"EXACTLY_ONE_CANONICAL_SNAPSHOT"},
+    {"id":"L04","class":"IDEMPOTENCY","objective_id":"F06","expected":"RESERVED_NEW_THEN_REPLAY_EXISTING"},
+    {"id":"L05","class":"LEASE_CHECKPOINT","objective_id":"F07","expected":"LEASE_CHECKPOINT_RELEASE_PASS"},
+    {"id":"L06","class":"EFFECT_GUARD","objective_id":"F08","expected":"ZERO_EFFECT_ROWS"},
+    {"id":"L07","class":"STEP_EVIDENCE","objective_id":"F11","expected":"15_OF_15_REQUIRED_STEPS_EVIDENCED"},
+    {"id":"L08","class":"CLOSE_GUARD","objective_id":"F14","expected":"NO_EXECUTABLE_SAFE_SCOPE_REMAINS"},
+    {"id":"L09","class":"BOUNDARY","objective_id":"F10","expected":"NO_ORCHESTRATOR_SCHEDULER_PRODUCTION_S26_CHANGE"},
+    {"id":"L10","class":"STRATEGY_RESOLVE_ZERO_NEGATIVE","objective_id":"F03","expected":"BLOCK_STRATEGY_NOT_FOUND"},
+    {"id":"L11","class":"STRATEGY_RESOLVE_AMBIGUOUS_NEGATIVE","objective_id":"F03","expected":"BLOCK_STRATEGY_AMBIGUOUS"},
+    {"id":"L12","class":"IDEMPOTENCY_CONFLICT_NEGATIVE","objective_id":"F06","expected":"BLOCK_IDEMPOTENCY_REQUEST_HASH_CONFLICT"},
+    {"id":"L13","class":"LEASE_STALE_FENCE_NEGATIVE","objective_id":"F07","expected":"BLOCK_STALE_FENCE"},
+    {"id":"L14","class":"ROLLBACK_FAIL_CLOSED","objective_id":"F09","expected":"DEMOTE_TO_CANDIDATO_READ_ONLY_AND_REMOVE_ROUTER_ACTION"}
+  ],
+  "dimension_checks": [
+    {"id":"Q01","dimension":"QUALITY","expected":"INDEPENDENT_NON_NOMINAL_EVIDENCE_AND_HASH_READBACK"},
+    {"id":"D01","dimension":"DEPTH","expected":"ALL_REQUIRED_OBJECTIVES_POSITIVE_NEGATIVE_EDGE_AND_FAIL_CLOSED_COVERED"},
+    {"id":"P01","dimension":"PERFORMANCE","expected":"ALL_REQUIRED_METRICS_CAPTURED_AND_WITHIN_BUDGET"},
+    {"id":"P02","dimension":"PERFORMANCE","expected":"NO_TIMEOUTS_AND_RETRY_COUNT_WITHIN_BUDGET"}
+  ],
+  "performance_measurement_plan": {
+    "policy_ref": "strategy_executor_performance_policy_v1.json",
+    "raw_sample_evidence_required": true,
+    "summary_statistics_required": ["P50", "P95", "MAX", "TOTAL"],
+    "missing_or_partial_measurement": "FAIL_CLOSED"
+  },
+  "finding_quota": null,
+  "heuristic_as_gate": false,
+  "claim_ceiling": "S30_STRATEGY_EXECUTOR_SOURCE_PRECANARY_BLOCKED_NO_RUNTIME_CLAIM"
+}
