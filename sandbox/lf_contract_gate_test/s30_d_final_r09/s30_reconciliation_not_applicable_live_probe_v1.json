@@ -9,6 +9,24 @@
     "external_reconciliation_required": false,
     "expected_supabase_reconciliation_calls": 0
   },
+  "observed_live_result": {
+    "main_sha": "b12cf7bd64b623089fae70dd4016ae2804f31793",
+    "source_lf_contract_check_run_id": 34719288160,
+    "source_lf_contract_check": "SUCCESS",
+    "reconciliation_workflow_run_id": 34719382459,
+    "reconciliation_job_id": 103622300589,
+    "state": "NOT_APPLICABLE",
+    "reason": "S30_KNOWN_ISOLATED_ONLY",
+    "lane_ids": ["S30-D"],
+    "external_reconciliation_required": false,
+    "record_not_applicable_step": "SUCCESS",
+    "oidc_step": "SKIPPED",
+    "supabase_inventory_step": "SKIPPED",
+    "build_request_step": "SKIPPED",
+    "persist_external_evidence_step": "SKIPPED",
+    "observed_supabase_reconciliation_calls": 0,
+    "workflow_conclusion": "SUCCESS"
+  },
   "safety_boundary": {
     "production_activation": false,
     "business_effects": false,
@@ -17,6 +35,6 @@
     "s26_mutation": false,
     "billing_or_plan_change": false
   },
-  "authorization": "User explicitly authorized the final live evidence-only test on 2026-09-12.",
-  "status": "PENDING_LIVE_POST_MERGE_VERIFICATION"
+  "authorization": "User explicitly authorized the final live evidence-only test on 2026-09-12 and subsequently authorized continuing all non-production project work without additional approval prompts.",
+  "status": "PASS_LIVE_POST_MERGE_VERIFIED"
 }
