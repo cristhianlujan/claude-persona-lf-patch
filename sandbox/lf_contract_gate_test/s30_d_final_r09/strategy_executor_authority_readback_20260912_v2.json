@@ -1,0 +1,49 @@
+{
+  "readback_version": "S30_STRATEGY_EXECUTOR_AUTHORITY_READBACK_V2",
+  "supersedes": "S30_STRATEGY_EXECUTOR_AUTHORITY_READBACK_V1",
+  "operation_code": "EJECUCION_ESTRATEGIA_LF",
+  "source_main_sha": "8ee0cd78b73a52935feb6e6029a587d2c758919e",
+  "observed_at": "2026-09-12T04:10:23.627268+00:00",
+  "authority": "public.lf_strategy_snapshots",
+  "identity_field": "snapshot_code",
+  "selector": {
+    "snapshot_code": "LF_OPERATING_CONSTITUTION_POLICY_AUTONOMOUS_OPERATIONS_20260906",
+    "matching": "EXACT"
+  },
+  "exact_match_count": 1,
+  "exact_matches": [
+    {
+      "id": 35,
+      "snapshot_code": "LF_OPERATING_CONSTITUTION_POLICY_AUTONOMOUS_OPERATIONS_20260906",
+      "canonical_name": "Estrategia 30 — Constitución operativa, sistema de políticas y operación autónoma continua LF",
+      "status": "CANDIDATO_READ_ONLY",
+      "runtime_state": "PLAN_ONLY",
+      "impact_policy": "BLOQUEADO",
+      "updated_at": "2026-09-10T08:50:55.197850+00:00"
+    }
+  ],
+  "canonical_identity_evidence": {
+    "canonical_name_identifies_strategy_30": true,
+    "metadata_mentions_s30": true,
+    "content_payload_mentions_s30": true,
+    "metadata_mentions_executor_operation": true,
+    "content_payload_mentions_executor_operation": true,
+    "prior_governed_readback_refs": [
+      "sandbox/lf_contract_gate_test/receipts/s30_b_data_access_safety_v3.json",
+      "sandbox/lf_contract_gate_test/s30_data_access_candidate/s30_b_candidate_evidence_v4.json",
+      "sandbox/lf_contract_gate_test/s30_d_final_r09/r09_current_readback_v2.json"
+    ],
+    "prior_governed_readbacks_observed_id": 35,
+    "prior_governed_readbacks_observed_snapshot_code": "LF_OPERATING_CONSTITUTION_POLICY_AUTONOMOUS_OPERATIONS_20260906",
+    "superseded_source_selector": "LF_S30_SHELL_ADVANCED_EXECUTION_20260903",
+    "superseded_source_selector_live_exact_match_count": 0,
+    "correction_basis": "LIVE_CANONICAL_NAME_PLUS_S30_AND_EXECUTOR_CONTENT_PLUS_PRIOR_GOVERNED_READBACKS"
+  },
+  "readback_current_for_execution": false,
+  "currentness_scope": "FROZEN_SOURCE_IDENTITY_EVIDENCE_NOT_EXECUTION_AUTHORITY",
+  "verdict": "PASS_CANONICAL_IDENTITY_SOURCE_ONLY_FRESH_RUNTIME_READBACK_REQUIRED",
+  "runtime_activation_allowed": false,
+  "strategy_snapshot_mutated": false,
+  "production_changed": false,
+  "notes": "Live evidence resolves the prior source-selector defect: id 35 is the existing S30 canonical strategy row and its current snapshot_code is LF_OPERATING_CONSTITUTION_POLICY_AUTONOMOUS_OPERATIONS_20260906. This frozen source readback does not authorize execution and cannot replace the mandatory fresh immediate-pre-runtime readback."
+}
