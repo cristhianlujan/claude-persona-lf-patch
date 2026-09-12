@@ -1,5 +1,5 @@
 {
-  "schema": "LF_PLATFORM_ADOPT_R03_FIT_GAP_V1",
+  "schema": "LF_PLATFORM_ADOPT_R03_FIT_GAP_V2",
   "strategy": "LF_PLATFORM_ADOPT_FIRST_20260912",
   "gate": "ADOPT-R03",
   "base_main": "794a86fc8ea7fe3921a17bb31b9087c097a01cef",
@@ -12,9 +12,10 @@
     "opentelemetry_traces": "ADOPT",
     "opentelemetry_metrics": "ADOPT",
     "opentelemetry_python_logs": "DEFER_AS_REQUIRED_CAPABILITY",
-    "phoenix_ai_observability": "WRAP_OPTIONAL_BACKEND",
+    "phoenix_ai_observability": "OPTIONAL_DEV_EVAL_PENDING_R03D_LICENSE_DEPENDENCY_REVIEW",
     "phoenix_experiments": "WRAP_CANDIDATE",
     "phoenix_evals": "WRAP_LF_EVALUATORS_DO_NOT_REPLACE",
+    "phoenix_server_production": "NOT_AUTHORIZED",
     "lf_semantic_authority": "KEEP_LF",
     "lf_pass_fail_certification": "KEEP_LF",
     "lf_evidence_graph": "KEEP_LF",
@@ -52,17 +53,48 @@
       "file_or_image_bytes"
     ]
   },
+  "r03b": {
+    "status": "PASS",
+    "evidence_run": "34680272022",
+    "opentelemetry_pin": "1.44.0",
+    "exact_pass_result_hash_parity": true,
+    "exact_fail_closed_result_hash_parity": true,
+    "raw_sensitive_content_exported": false,
+    "external_export": false,
+    "median_overhead_ms": 0.206467,
+    "claim_ceiling": "ISOLATED_OTEL_PARITY_PRIVACY_AND_SYNTHETIC_OVERHEAD_ONLY_NOT_PRODUCTION_INSTRUMENTATION"
+  },
+  "r03c": {
+    "status": "PASS_WITH_LICENSE_GATE",
+    "technical_fit": "PASS",
+    "evidence_run": "34680744141",
+    "tested_head": "65ccbf14d6d3d1c7d14d8fa89493bbc77fe4ccc4",
+    "report_sha256": "739e08444287c107e808a420fc8c3ee0a18cd405946a11e29b04eafae377c4c7",
+    "server_scope": "LOCAL_EPHEMERAL_SELF_HOSTED",
+    "exact_lf_result_parity": true,
+    "annotation_is_observational_copy_only": true,
+    "raw_sensitive_content_retrieved": false,
+    "external_saas_export": false,
+    "production_effect": false,
+    "phoenix_server_pin": "20.9.0",
+    "phoenix_server_license": "Elastic-2.0",
+    "phoenix_client_pin": "3.5.0",
+    "phoenix_client_license": "Apache-2.0",
+    "commercial_license_approval": "REQUIRED_SEPARATELY",
+    "production_authorized": false
+  },
   "next_gate": {
-    "id": "ADOPT-R03-B",
-    "name": "ISOLATED_OTEL_PARITY_AND_PRIVACY_SPIKE",
+    "id": "ADOPT-R03-D",
+    "name": "PHOENIX_LICENSE_DEPENDENCY_ADOPTION_COST",
+    "mode": "READ_ONLY",
     "requirements": [
-      "same_lf_output_hash_with_telemetry_disabled_and_enabled",
-      "same_fail_closed_semantics",
-      "no_sensitive_raw_content_in_exported_spans",
-      "instrumentation_overhead_measured",
-      "local_or_in_memory_export_only",
-      "phoenix_adapter_only_after_otel_parity"
+      "license_and_commercial_approval_gate_assessed",
+      "direct_and_transitive_dependency_footprint_measured",
+      "supply_chain_and_attack_surface_cost_assessed",
+      "operational_weight_assessed",
+      "full_server_vs_client_otlp_alternatives_compared",
+      "runtime_vs_dev_eval_placement_decided"
     ]
   },
-  "claim_ceiling": "FIT_GAP_ONLY_NO_DEPENDENCY_INSTALL_NO_RUNTIME_MIGRATION_NO_EXTERNAL_EXPORT_NO_PRODUCTION_AUTHORIZATION"
+  "claim_ceiling": "R03C_LOCAL_TECHNICAL_FIT_ONLY_NO_PHOENIX_PRODUCTION_OR_COMMERCIAL_ADOPTION_AUTHORIZATION"
 }
