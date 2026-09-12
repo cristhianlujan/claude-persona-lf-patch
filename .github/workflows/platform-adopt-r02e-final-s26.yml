@@ -1,0 +1,42 @@
+name: Platform Adopt R02-E Final S26 Compare
+
+on:
+  push:
+    branches:
+      - lf/platform-adopt-langgraph-spike-001
+
+jobs:
+  r02e-final-s26:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout R02-E harness
+        uses: actions/checkout@v4
+      - name: Checkout exact S26 Golden candidate
+        uses: actions/checkout@v4
+        with:
+          ref: 485f5c77ac568a056647f57b5f04be7698816902
+          path: s26_candidate
+      - name: Verify exact S26 candidate SHA
+        run: |
+          test "$(git -C s26_candidate rev-parse HEAD)" = "485f5c77ac568a056647f57b5f04be7698816902"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned LangGraph
+        run: pip install langgraph==1.2.11
+      - name: Run final S26 value comparison
+        shell: bash
+        env:
+          S26_CANDIDATE_ROOT: ${{ github.workspace }}/s26_candidate
+        run: |
+          set -o pipefail
+          python sandbox/lf_contract_gate_test/platform_adopt/langgraph_spike_001/run_r02e_final_s26_value_compare.py | tee R02E_FINAL_S26_VALUE_COMPARE.json
+      - name: Upload R02-E report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r02e-final-s26-value-compare
+          path: R02E_FINAL_S26_VALUE_COMPARE.json
+          if-no-files-found: warn
