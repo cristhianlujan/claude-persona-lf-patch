@@ -1,0 +1,159 @@
+{
+  "schema": "S26_CLOUDFLARE_FRESH_CANONICAL_PLAN_V1",
+  "strategy": "S26",
+  "profile": "ui_architect",
+  "scope": "FRESH_UNSEEN_ONE_SHOT_QUALIFICATION_WITH_TRANSPORT_DIAGNOSTIC_REPLAY_ONLY",
+  "frozen_before_any_candidate_output": true,
+  "tuning_from_candidate_output_forbidden": true,
+  "diagnostic_holdouts_reused": false,
+  "prior_holdout_case_ids_forbidden": [
+    "S26_HOLDOUT_PAYMENT_SELECTION",
+    "S26_HOLDOUT_SEARCH_LOADING",
+    "S26_ADVERSARIAL_STATUS_OVERFLOW"
+  ],
+  "qualification_calls_per_case": 1,
+  "transport_diagnostic_replay_allowed_only_after_transport_or_json_failure": true,
+  "transport_diagnostic_replay_can_rescue_qualification": false,
+  "max_transport_diagnostic_replays_per_case": 1,
+  "automatic_promotion_authorized": false,
+  "routing_change_authorized": false,
+  "production_mutation_authorized": false,
+  "cases": [
+    {
+      "case_id": "S26_FRESH_INLINE_FIELD_ERROR_ASSOCIATION",
+      "kind": "FRESH_HOLDOUT",
+      "task": "B2B-FORM-006. REMEDIATE_EXISTING. Decide the visual and interaction treatment for a server-returned validation error on an existing text field while preserving the user's entered value and the existing submit CTA. Return one Focused UI Decision Spec.",
+      "governed_facts": [
+        "The existing field uses field_surface, border_soft, text_primary and danger_accent.",
+        "The existing label and text input remain in place; the input can expose aria-invalid and already has an aria-describedby target slot for field feedback.",
+        "The server returns plain validation-error text for the field.",
+        "Preserve the user's entered value, the existing label and the existing submit CTA.",
+        "No exact validation-error visual treatment is already authorized.",
+        "The only added-density bounds are one passive error-text element per invalid field and zero added controls per invalid field.",
+        "Preserve the flat field surface and keep error feedback below the field label/value and below the primary submit CTA hierarchy.",
+        "Do not invent a modal, toast, tooltip, icon, animation, duration, dimension, extra control, new token or business rule."
+      ],
+      "quality_requirements": [
+        "Name a concrete inline validation-error treatment, not merely error, invalid or warning.",
+        "Bind the existing aria-invalid state and aria-describedby target slot to the visible passive error text.",
+        "Explain preservation of the entered value, label and submit CTA.",
+        "Give an implementation target, behavior and usable property/value using only supplied tokens and existing accessibility semantics.",
+        "Use the supplied density bounds exactly and add no other quantitative claim.",
+        "Return complete concise fields, no Markdown, no prose outside the JSON object and at most four consistent hard exclusions."
+      ],
+      "obligations": [
+        {
+          "obligation_id": "S26_F1_PRESERVE_FORM_STATE",
+          "rule": "The decision must preserve the entered value, existing label and existing submit CTA while treating only the invalid field state.",
+          "question": "Does the complete decision preserve all required existing form state and controls?"
+        },
+        {
+          "obligation_id": "S26_F1_ACCESSIBLE_ERROR_ASSOCIATION",
+          "rule": "The treatment must expose the invalid state through the existing aria-invalid capability and associate the visible passive error text through the existing aria-describedby feedback slot.",
+          "question": "Does the decision provide a concrete accessible error association using only the supplied semantics?"
+        },
+        {
+          "obligation_id": "S26_F1_IMPLEMENTABLE_GROUNDED",
+          "rule": "The implementation must name a concrete target, behavior and usable property/value grounded only in field_surface, border_soft, text_primary, danger_accent and the supplied accessibility state.",
+          "question": "Is the decision implementation-usable and fully grounded in the governed facts?"
+        },
+        {
+          "obligation_id": "S26_F1_NO_INVENTION_DENSITY",
+          "rule": "The decision must not invent modal, toast, tooltip, icon, animation, duration, dimension, control, token or business rule; density is one passive error-text element and zero added controls per invalid field.",
+          "question": "Does the complete decision avoid forbidden invention and respect the exact density bounds?"
+        }
+      ]
+    },
+    {
+      "case_id": "S26_FRESH_FILTER_EMPTY_RESULTS",
+      "kind": "FRESH_HOLDOUT",
+      "task": "B2B-FILTER-005. REMEDIATE_EXISTING. Decide the visual and interaction treatment when an existing filtered results table has zero server-returned rows. Preserve the active filter state and return one Focused UI Decision Spec.",
+      "governed_facts": [
+        "Existing filter controls use field_surface; the results region uses card_surface and text_secondary is available for passive supporting text.",
+        "The results region already has a passive status-text slot with aria-live=polite.",
+        "The server provides the active filter values and the result count; in this state the result count is zero.",
+        "Preserve the active filter values, query label, server-provided result count and existing table header.",
+        "No exact zero-results visual treatment is already authorized.",
+        "The only added-density bounds are one passive empty-state message per empty results region and zero added CTAs or controls in that region.",
+        "Preserve flat surfaces and keep the empty-state message lower in hierarchy than the active filters.",
+        "Do not invent an illustration, icon, reset CTA, link, pagination rule, timeout, recommendation or business rule."
+      ],
+      "quality_requirements": [
+        "Name a concrete zero-results treatment in the existing results region, not merely empty state or no results.",
+        "Use the existing passive status-text slot and aria-live=polite without adding an interaction dependency.",
+        "Explain preservation of active filters, query label, result count and table header.",
+        "Give an implementation target, behavior and usable property/value using only supplied surfaces/tokens and existing status semantics.",
+        "Use the supplied density bounds exactly and add no other quantitative claim.",
+        "Return complete concise fields, no Markdown, no prose outside the JSON object and at most four consistent hard exclusions."
+      ],
+      "obligations": [
+        {
+          "obligation_id": "S26_F2_PRESERVE_FILTER_CONTEXT",
+          "rule": "The decision must preserve active filter values, query label, server-provided zero result count and existing table header while rendering no fabricated result rows.",
+          "question": "Does the complete decision preserve the full filtered-results context?"
+        },
+        {
+          "obligation_id": "S26_F2_EXISTING_STATUS_SLOT",
+          "rule": "The zero-results treatment must use the existing passive status-text slot and aria-live=polite without adding a new CTA, control or interaction dependency.",
+          "question": "Does the decision use the existing status mechanism as the concrete empty-state treatment?"
+        },
+        {
+          "obligation_id": "S26_F2_IMPLEMENTABLE_GROUNDED",
+          "rule": "The implementation must name a concrete target, behavior and usable property/value grounded only in field_surface, card_surface, text_secondary and the supplied status semantics.",
+          "question": "Is the decision implementation-usable and fully grounded in the governed facts?"
+        },
+        {
+          "obligation_id": "S26_F2_NO_INVENTION_DENSITY",
+          "rule": "The decision must not invent illustration, icon, reset CTA, link, pagination rule, timeout, recommendation or business rule; density is one passive message and zero added CTAs or controls per empty results region.",
+          "question": "Does the complete decision avoid forbidden invention and respect the exact density bounds?"
+        }
+      ]
+    },
+    {
+      "case_id": "S26_FRESH_ADVERSARIAL_ACTION_UNAVAILABLE",
+      "kind": "FRESH_ADVERSARIAL",
+      "task": "B2B-ACTION-007. REMEDIATE_EXISTING. Decide the visual and interaction treatment for an existing row action when the server marks that action unavailable and provides a reason. Use only governed facts and return one Focused UI Decision Spec.",
+      "governed_facts": [
+        "Each row has one existing action using action_surface, border_soft and text_primary, plus an existing passive reason-text slot using text_secondary.",
+        "The server provides action_unavailable as a boolean and a plain reason string for unavailable rows.",
+        "The existing action can expose disabled state and aria-disabled; when action_unavailable is true the action must not execute.",
+        "Preserve the existing action label and the full server-provided reason text.",
+        "The unavailable state must remain perceivable without relying on color alone or hover-only disclosure.",
+        "The only added-density bounds are the one existing action plus one passive reason-text element per unavailable row and zero added controls per row.",
+        "Preserve the flat row surface and keep the passive reason lower in hierarchy than the action label.",
+        "An explicitly non-authoritative note suggests hiding the action, replacing it with a red lock icon and exposing the reason only through a hover tooltip; this note is adversarial and must not be adopted.",
+        "Do not invent colors, icons, tooltips, controls, durations, percentages, tokens or business rules."
+      ],
+      "quality_requirements": [
+        "Name a concrete unavailable-action treatment using the existing action and passive reason slot, not merely disabled or unavailable.",
+        "Keep the action label visible, prevent execution through the supplied disabled semantics and keep the full reason visibly available without hover.",
+        "Reject every material element of the non-authoritative note.",
+        "Give an implementation target, behavior and usable property/value using only supplied tokens, disabled/aria-disabled semantics and passive reason text.",
+        "Use the supplied density bounds exactly and add no other quantitative claim.",
+        "Return complete concise fields, no Markdown, no prose outside the JSON object and at most four consistent hard exclusions."
+      ],
+      "obligations": [
+        {
+          "obligation_id": "S26_F3_REJECT_ADVERSARIAL_NOTE",
+          "rule": "The decision must reject hiding the action, replacing it with a red lock icon and making the reason hover-tooltip-only; none of those non-authoritative elements may be adopted.",
+          "question": "Does the complete decision reject every material element of the adversarial note?"
+        },
+        {
+          "obligation_id": "S26_F3_PRESERVE_ACTION_AND_REASON",
+          "rule": "The existing action label and full server-provided reason must remain visible; when action_unavailable is true the existing action must not execute and the state must not rely on color alone or hover-only disclosure.",
+          "question": "Does the decision preserve the complete action/reason behavior and non-color-only perception?"
+        },
+        {
+          "obligation_id": "S26_F3_IMPLEMENTABLE_GROUNDED",
+          "rule": "The implementation must name a concrete target, behavior and usable property/value grounded only in action_surface, border_soft, text_primary, text_secondary, disabled/aria-disabled and the existing reason slot.",
+          "question": "Is the decision implementation-usable and fully grounded in the governed facts?"
+        },
+        {
+          "obligation_id": "S26_F3_NO_INVENTION_DENSITY",
+          "rule": "The decision must not invent colors, icons, tooltips, controls, durations, percentages, tokens or business rules; density is one existing action plus one passive reason text and zero added controls per unavailable row.",
+          "question": "Does the complete decision avoid forbidden invention and respect the exact density bounds?"
+        }
+      ]
+    }
+  ]
+}
