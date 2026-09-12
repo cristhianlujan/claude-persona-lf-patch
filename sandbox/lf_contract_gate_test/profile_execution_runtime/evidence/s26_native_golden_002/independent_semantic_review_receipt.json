@@ -1,0 +1,119 @@
+{
+  "automated_semantic_judge_implemented": false,
+  "execution_blockers": [],
+  "execution_mode": "INDEPENDENT_CHAT_CONTEXT",
+  "external_paid_model_used": false,
+  "producer_context_available": false,
+  "quality_review": {
+    "blocking_codes": [],
+    "evidence_map": [
+      {
+        "criterion": "contract_schema_compliance",
+        "decision_basis": "Quality review fields, strict PASS routing, empty blocking codes and empty repair actions match the canonical schema.",
+        "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@602682d06e37d6bfcb39d47e0deea0f5b3eaf164/profiles/quality_pack/schemas/quality_review.schema.json",
+        "evidence_sha256": "26eb79a876be9c7fb8aa699d7f7a549f361b0836d322995f4a5282c1b12443c3"
+      },
+      {
+        "criterion": "evidence_integrity",
+        "decision_basis": "The reviewed RAW is pinned to the immutable materialization commit and exact byte digest.",
+        "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@103b85ba67de821708256496e80c1cac6dfc4f2b/sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/raw_output.json",
+        "evidence_sha256": "76c6c2b6fad2603e15eda60c7b5c3d10f54194759e125c7ce9627e99c2ee9dfc"
+      },
+      {
+        "criterion": "producer_provenance",
+        "decision_basis": "The producer execution receipt is read back independently as immutable bytes; its embedded downstream_authorized remains false.",
+        "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@602682d06e37d6bfcb39d47e0deea0f5b3eaf164/sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/execution_receipt.json",
+        "evidence_sha256": "c85bb0c7d983e06468762a977c097c78fc1857047ef0555a6525f587c0c168d4"
+      },
+      {
+        "criterion": "input_integrity",
+        "decision_basis": "The exact run input is immutable and establishes the observed 6-record, 25-page-size, phantom-pagination and redundant-scroll conditions.",
+        "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@602682d06e37d6bfcb39d47e0deea0f5b3eaf164/sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/input.txt",
+        "evidence_sha256": "bf3e0eb99d5d58f3e7190dbbb8ce6e386b1e64b8211781fdb0bbc6bb4e1dd823"
+      },
+      {
+        "criterion": "lf_safety_governance",
+        "decision_basis": "The reviewed remediation adds no pressure, urgency, guarantee, debt alarm, financial semantics or destructive scope.",
+        "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@602682d06e37d6bfcb39d47e0deea0f5b3eaf164/profiles/quality_pack/contracts/lf_quality_controls.md",
+        "evidence_sha256": "069962007fc1cc4320f3ead807973241c710f140e62d6869c2030c11552fe297"
+      },
+      {
+        "criterion": "PAGINATION-DIRECTION",
+        "decision_basis": "The action derives available pages as ceil(total_records / page_size), makes only page 1 available for the observed 6/25 state, derives next state from current state, and allows later pages to appear automatically when data requires them.",
+        "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@103b85ba67de821708256496e80c1cac6dfc4f2b/sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/raw_output.json",
+        "evidence_sha256": "76c6c2b6fad2603e15eda60c7b5c3d10f54194759e125c7ce9627e99c2ee9dfc",
+        "semantic_verdict": "COMPLIES"
+      },
+      {
+        "criterion": "OVERFLOW-DIRECTION",
+        "decision_basis": "The action hides horizontal scroll chrome only when scrollWidth <= clientWidth and preserves overflow-auto access to every existing column/action when scrollWidth > clientWidth.",
+        "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@103b85ba67de821708256496e80c1cac6dfc4f2b/sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/raw_output.json",
+        "evidence_sha256": "76c6c2b6fad2603e15eda60c7b5c3d10f54194759e125c7ce9627e99c2ee9dfc",
+        "semantic_verdict": "COMPLIES"
+      },
+      {
+        "criterion": "handoff_readiness",
+        "decision_basis": "Both remediation actions contain executable operations, target properties, desired values and acceptance checks; Composer does not need to invent the correction.",
+        "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@103b85ba67de821708256496e80c1cac6dfc4f2b/sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/raw_output.json",
+        "evidence_sha256": "76c6c2b6fad2603e15eda60c7b5c3d10f54194759e125c7ce9627e99c2ee9dfc"
+      },
+      {
+        "criterion": "leakage_scope_control",
+        "decision_basis": "Internal execution metadata remains in the governed worker envelope/evidence fields; user-visible component content does not expose worker, PASS, GitHub, Supabase, logs or sandbox traces.",
+        "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@103b85ba67de821708256496e80c1cac6dfc4f2b/sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/raw_output.json",
+        "evidence_sha256": "76c6c2b6fad2603e15eda60c7b5c3d10f54194759e125c7ce9627e99c2ee9dfc"
+      }
+    ],
+    "next_gate": "GOLDEN_ELIGIBILITY",
+    "remaining_risks": [],
+    "repair_actions": [],
+    "review_id": "QUALITY-S26-N08-GPT-NATIVE-GOLDEN-B-001",
+    "reviewed_artifact": "github://cristhianlujan/claude-persona-lf-patch@103b85ba67de821708256496e80c1cac6dfc4f2b/sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/raw_output.json",
+    "routing": {
+      "activation_path": "ROUTER",
+      "pipeline_action": "CONTINUE",
+      "resolution_target": "COMPOSER",
+      "via": "ORCHESTRATOR"
+    },
+    "score_breakdown": {
+      "contract_schema_compliance": 5,
+      "evidence_integrity": 5,
+      "handoff_readiness": 5,
+      "leakage_scope_control": 5,
+      "lf_safety_governance": 5,
+      "total": 25
+    },
+    "verdict": "PASS_TO_COMPOSER"
+  },
+  "receipt_sha256": "c59ce868fd344591e053602ce7d66993987f3d787fa085d419acb46a7c1395da",
+  "receipt_version": "v0.1",
+  "review_case_id": "S26-N08-GPT-NATIVE-GOLDEN-B-001-INDEPENDENT",
+  "review_completed": true,
+  "reviewer_is_producer": false,
+  "semantic_binding": {
+    "binding_sha256": "40446dfa28102c335e9c233368b60efa3ac9b803c3512f2eb0e1820614e1f573",
+    "check_bundle_sha256": "95cad3ba5736eaa6fc2efa0142a60b23dcdf8c1c230798cd181dda68b0d6e633",
+    "execution_id": "EXEC-S26-N08-GPT-NATIVE-GOLDEN-B-001",
+    "execution_receipt_sha256": "3e2330a57041870d71f225a82d86a3130ec177738032347c4060773718a75c97",
+    "input_sha256": "bf3e0eb99d5d58f3e7190dbbb8ce6e386b1e64b8211781fdb0bbc6bb4e1dd823",
+    "obligation_manifest_sha256": "8283904fce66d72a90d96141c158994d59a8f741154d382f7f40a6a6e719d2f2",
+    "producer_run_id": "CHATGPT-NATIVE-S26-N08-GOLDEN-B-001",
+    "profile_code": "PERFIL-UI-ARCHITECT",
+    "raw_output_sha256": "41ec44631a921f35dc77f0047a53fd7392fa2dc615aeec6637822fc9b591e028",
+    "reviewer_run_id": "CHATGPT-NATIVE-S26-N08-QUALITY-REVIEW-20260908-001",
+    "schema": "LF_NATIVE_SEMANTIC_QUALITY_BINDING_V1",
+    "source_bundle_sha256": "5d916d36e87c29b9b9b931e1b81d52d0d2d0fdcb154ba3c0a462468c08a87ba0"
+  },
+  "semantic_status": "EXECUTED_INDEPENDENT_CONTEXT",
+  "source_bundle": {
+    "artifact_byte_sha256": "76c6c2b6fad2603e15eda60c7b5c3d10f54194759e125c7ce9627e99c2ee9dfc",
+    "artifact_ref": "github://cristhianlujan/claude-persona-lf-patch@103b85ba67de821708256496e80c1cac6dfc4f2b/sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/raw_output.json",
+    "lf_quality_controls_ref": "profiles/quality_pack/contracts/lf_quality_controls.md",
+    "mini_judge_ref": "profiles/quality_pack/judges/quality_pack_mini_judge.md",
+    "quality_gate_contract_ref": "profiles/quality_pack/contracts/quality_gate_contract.md",
+    "quality_review_schema_ref": "profiles/quality_pack/schemas/quality_review.schema.json",
+    "score_rubric_ref": "profiles/quality_pack/judges/quality_pack_score_rubric.md",
+    "semantic_raw_output_sha256": "41ec44631a921f35dc77f0047a53fd7392fa2dc615aeec6637822fc9b591e028",
+    "upstream_worker_contract_ref": "profiles/ui_architect/SKILL.md"
+  }
+}

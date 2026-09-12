@@ -1,0 +1,18 @@
+{
+  "schema": "S26_HP001_REPLAY_MANIFEST_V1",
+  "test_id": "S26-HP-001",
+  "input_path": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/input.txt",
+  "input_sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1",
+  "output_path": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/manual_profile_output.json",
+  "output_sha256": "712fcb036a4db6ded06615f0ec1c4dd7b9d475fa6208f5b9fc72c7688b9f01d6",
+  "required_replays": [
+    "PREEXECUTION_B_E",
+    "CANONICAL_OUTPUT_F_H",
+    "ISOLATION_IDENTITY"
+  ],
+  "candidate_sha_authority": "GITHUB_EVENT_HEAD_SHA",
+  "main_is_not_replay_authority": true,
+  "merge_ref_is_not_replay_authority": true,
+  "independent_review_satisfied_by_replay": false,
+  "claim_ceiling": "DETERMINISTIC_REPLAY_ONLY_NOT_INDEPENDENT_SEMANTIC_REVIEW_NOT_GOLDEN"
+}

@@ -1,0 +1,93 @@
+{
+  "schema": "S26_HP001_BOOTSTRAP_CONTEXT_V1",
+  "project_id": "S26",
+  "run_id": "S26-HP-001",
+  "operation_code": "EJECUCION_PERFIL_LF",
+  "execution_mode": "SANDBOX",
+  "execution_mode_source": "TEST_HARNESS_EXPLICIT_NON_PRODUCTION",
+  "distribution_mode": "DIRECT",
+  "router_execution_mode_resolved": false,
+  "policy_resolution": {
+    "source": "SUPABASE_CONTROL_PLANE",
+    "snapshot_view": "public.v_lf_operation_policy_snapshot",
+    "observed_at": "2026-09-10T06:55:22.426017+00:00",
+    "required_policy_count": 4,
+    "resolved_policy_count": 4,
+    "reusable_for_new_run": false,
+    "active_policy_refs": [
+      {
+        "policy_role": "GOVERNANCE_LIFECYCLE",
+        "required": true,
+        "distribution_modes": ["DIRECT", "ROUTER"],
+        "policy_code": "POL-LF-OPERATION-LIFECYCLE",
+        "policy_name": "POL_LF_OPERATION_LIFECYCLE",
+        "policy_version": "v1.0",
+        "policy_sha": "973b5a0ad26433095066ff06b53c3043f38fef51d04e9482c458e178f20920e8",
+        "effective_at": "2026-08-29T20:48:43.667538+00:00",
+        "source_ref": "GOV-LIFECYCLE-POLICY-20260829"
+      },
+      {
+        "policy_role": "POLICY_CONSUMPTION",
+        "required": true,
+        "distribution_modes": ["DIRECT", "ROUTER"],
+        "policy_code": "POL-LF-POLICY-CONSUMPTION",
+        "policy_name": "POL_LF_POLICY_CONSUMPTION",
+        "policy_version": "v1.1-transversal-candidate",
+        "policy_sha": "e5eb786e14a4b735e271a81b702a0a775e0bf39ba174d333531a82a0858b5553",
+        "effective_at": "2026-09-05T01:43:25.495495+00:00",
+        "source_ref": "supabase/migrations/20260905013230_lf_policy_transversal_inheritance_rootfix_v1.sql"
+      },
+      {
+        "policy_role": "SOURCE_RESOLUTION",
+        "required": true,
+        "distribution_modes": ["DIRECT", "ROUTER"],
+        "policy_code": "POL-LF-SOURCE-RESOLUTION",
+        "policy_name": "POL_LF_SOURCE_RESOLUTION",
+        "policy_version": "v1.4-transversal-supabase-authority-visual-support",
+        "policy_sha": "5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46",
+        "effective_at": "2026-09-10T05:12:03.869191+00:00",
+        "source_ref": "supabase://public/lf_policy_versions/POL-LF-SOURCE-RESOLUTION/v1.4-transversal-supabase-authority-visual-support"
+      },
+      {
+        "policy_role": "STATE_MODEL",
+        "required": true,
+        "distribution_modes": ["DIRECT", "ROUTER"],
+        "policy_code": "POL-LF-STATE-MODEL",
+        "policy_name": "POL_LF_STATE_MODEL",
+        "policy_version": "v1.1-transversal-candidate",
+        "policy_sha": "f451bb4d2b17cdac48c4dddb250108b2874a9d036edcfb9d2f7fa540416332aa",
+        "effective_at": "2026-09-05T01:43:25.495495+00:00",
+        "source_ref": "supabase/migrations/20260905013230_lf_policy_transversal_inheritance_rootfix_v1.sql"
+      }
+    ],
+    "active_policy_snapshot_sha256": "8e27d16328b84c16e8c8102ebc07dcc5b7d271e8a6bbffcc7cf15b185aeb40a7"
+  },
+  "development_assurance": {
+    "policy_code": "POL-LF-OPERATION-LIFECYCLE",
+    "policy_version": "v1.1-candidate",
+    "status": "CANDIDATE",
+    "policy_sha": "1677a6dc7078be9e2e851d055466093b9459a6008a05e73e82c0911f27088e6e",
+    "source_ref": "lf_audit_backlog:53",
+    "authority_mode": "SHADOW_ASSURANCE_ONLY_NOT_ACTIVE_POLICY",
+    "direct_development_exception": {
+      "allowed": true,
+      "allowed_modes": ["DEVELOPMENT", "SANDBOX", "TEST", "LOCAL_FIXTURE"],
+      "requirements": [
+        "MODE_EXPLICITLY_DECLARED_NON_PRODUCTION",
+        "NO_PRODUCTION_CLASS_PROMOTION_OR_AUTOMATIC_IMPACT",
+        "DIRECT_RESULT_LABELLED_NON_PRODUCTION_EVIDENCE",
+        "DIRECT_RESULT_CANNOT_SATISFY_ROUTER_PROTECTION_OR_LIVE_PROMOTION_GATE",
+        "PRODUCTION_CANDIDATE_MUST_BE_RETESTED_THROUGH_ROUTER_BEFORE_PROMOTION"
+      ]
+    }
+  },
+  "decision": {
+    "explicit_non_production_mode": true,
+    "all_required_active_policies_resolved": true,
+    "active_policy_authority_not_overridden_by_candidate": true,
+    "policy_capsule_loaded_before_gate_a": true,
+    "next_gate_authorized": true
+  },
+  "status": "PASS",
+  "next_gate": "A_INPUT_ADMISSION"
+}
