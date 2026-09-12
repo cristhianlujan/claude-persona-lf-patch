@@ -12,6 +12,8 @@ ROUTER_TEST = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_
 SELFTEST = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_workflow_integration.py"
 P0_EXTERNAL_TEST = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_p0_external_applicability_entrypoint.py"
 RECONCILE_APPLICABILITY = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_github_reconcile_applicability.py")
+PRODUCT_OWNERSHIP = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_product_lane_ownership.py")
+PRODUCT_REGISTRY = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_product_lane_ownership_registry_v1.json")
 ENTRYPOINT = Path("sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py")
 
 
@@ -28,6 +30,35 @@ def load_reconciliation_helper():
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
+
+
+def future_registry(*, allowed_root: str = "sandbox/future_product/") -> dict:
+    return {
+        "registry_version": "LF_PRODUCT_CI_LANE_OWNERSHIP_V1",
+        "namespaces": [
+            {
+                "namespace": "S42",
+                "allowed_roots": [allowed_root],
+            }
+        ],
+        "lanes": [
+            {
+                "lane_id": "S42-PRODUCT",
+                "namespace": "S42",
+                "ownership_class": "S42_PRODUCT",
+                "mode": "S42_PRODUCT_ISOLATED",
+                "matchers": [
+                    {"kind": "prefix", "value": allowed_root}
+                ],
+                "migration_parity_required": False,
+                "input_governance_parity_required": False,
+                "p0_exact_head_external_required": False,
+                "ci_router_selftest_required": False,
+                "deep_shared": False,
+                "known": True,
+            }
+        ],
+    }
 
 
 def assert_reconciliation_behavior(helper) -> None:
@@ -58,23 +89,27 @@ def assert_reconciliation_behavior(helper) -> None:
     assert got.reason == "UNBOUND_OR_SHARED_PATH_REQUIRES_RECONCILIATION", got
     assert got.router_mode == "DEEP_SHARED_REGISTRY_INVALID", got
 
-    # Future products inherit the quota-safe exit automatically from the
-    # canonical router contract; this helper must not need product-specific code.
+    # Real end-to-end future-product proof: the canonical router receives an
+    # S42 namespace and lane via registry data, without any S42 code branch.
     future_path = "sandbox/future_product/run.json"
-    future_isolated = helper.LaneDecision(
-        mode="S42_PRODUCT_ISOLATED",
-        migration_parity_required=False,
-        input_governance_parity_required=False,
-        ci_router_selftest_required=False,
-        p0_exact_head_external_required=False,
-        deep_shared=False,
-        reasons=(f"S42_LANE:S42-PRODUCT:{future_path}",),
+    got = helper.classify_reconciliation_applicability(
+        [future_path],
+        registry_data=future_registry(),
     )
-    got = helper.classify_router_decision([future_path], future_isolated)
     assert got.required is False, got
     assert got.reason == "KNOWN_ISOLATED_OWNER_ONLY", got
     assert got.lane_ids == ("S42-PRODUCT",), got
+    assert got.router_mode == "S42_PRODUCT_ISOLATED", got
 
+    # A product declaration cannot capture an LF shared surface to earn N/A.
+    got = helper.classify_reconciliation_applicability(
+        ["skills/shared.md"],
+        registry_data=future_registry(allowed_root="skills/"),
+    )
+    assert got.required is True, got
+    assert got.router_mode == "DEEP_SHARED_REGISTRY_INVALID", got
+
+    # Translator-level safety remains fail-closed for shared/specialized flags.
     future_shared_path = "sandbox/future_product/shared/run.json"
     future_shared = helper.LaneDecision(
         mode="S42_PRODUCT_SHARED",
@@ -83,18 +118,26 @@ def assert_reconciliation_behavior(helper) -> None:
         ci_router_selftest_required=False,
         p0_exact_head_external_required=False,
         deep_shared=True,
-        reasons=(f"S42_LANE:S42-PRODUCT:{future_shared_path}",),
+        reasons=(f"PRODUCT_LANE:S42-PRODUCT:{future_shared_path}",),
     )
     got = helper.classify_router_decision([future_shared_path], future_shared)
     assert got.required is True, got
     assert got.reason == "SHARED_OR_SPECIALIZED_GATE_REQUIRES_RECONCILIATION", got
 
-    # An isolated owned path must never mask an unowned sibling in the same run.
+    future_isolated = helper.LaneDecision(
+        mode="S42_PRODUCT_ISOLATED",
+        migration_parity_required=False,
+        input_governance_parity_required=False,
+        ci_router_selftest_required=False,
+        p0_exact_head_external_required=False,
+        deep_shared=False,
+        reasons=(f"PRODUCT_LANE:S42-PRODUCT:{future_path}",),
+    )
     got = helper.classify_router_decision([future_path, "skills/shared.md"], future_isolated)
     assert got.required is True, got
     assert got.reason == "UNBOUND_OR_SHARED_PATH_REQUIRES_RECONCILIATION", got
 
-    print("PASS_GITHUB_RECONCILIATION_APPLICABILITY_BEHAVIOR=11/11")
+    print("PASS_GITHUB_RECONCILIATION_APPLICABILITY_BEHAVIOR=12/12")
 
 
 def _git(repo: Path, *args: str) -> str:
@@ -174,6 +217,11 @@ def main() -> None:
     require(text, "name: lf-contract-check", "FAIL_REQUIRED_CHECK_CONTEXT_CHANGED")
     require(text, "if: needs.dedupe-router.outputs.run_deep == 'true'", "FAIL_DEEP_JOB_GUARD_CHANGED")
 
+    router_text = Path(ROUTER).read_text(encoding="utf-8")
+    require(router_text, PRODUCT_OWNERSHIP.name, "FAIL_GENERIC_PRODUCT_OWNERSHIP_NOT_WIRED")
+    ownership_text = PRODUCT_OWNERSHIP.read_text(encoding="utf-8")
+    require(ownership_text, PRODUCT_REGISTRY.name, "FAIL_GENERIC_PRODUCT_REGISTRY_NOT_AUTHORITY")
+
     entrypoint = ENTRYPOINT.read_text(encoding="utf-8")
     require(entrypoint, "p0_exact_head_external_required", "FAIL_P0_EXTERNAL_DECISION_NOT_WIRED")
     require(entrypoint, "P0_EXACT_HEAD_EXTERNAL_APPLICABILITY", "FAIL_P0_EXTERNAL_APPLICABILITY_READBACK_MISSING")
@@ -201,7 +249,7 @@ def main() -> None:
     helper = load_reconciliation_helper()
     assert_reconciliation_behavior(helper)
     assert_merge_path_recovery(helper)
-    print("PASS_CI_LANE_WORKFLOW_INTEGRATION=25/25")
+    print("PASS_CI_LANE_WORKFLOW_INTEGRATION=27/27")
 
 
 if __name__ == "__main__":

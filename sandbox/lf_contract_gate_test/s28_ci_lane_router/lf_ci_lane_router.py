@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Fail-closed applicability router for specialized lf-contract-check lanes.
+"""Fail-closed applicability router for specialized LF contract-check lanes.
 
-S30 ownership is declarative. The router consumes a versioned registry and keeps
-unknown or invalid ownership fail-closed instead of granting specialized N/A.
+Product ownership is declarative and product-agnostic. The router consumes a
+versioned ownership registry and keeps unknown or invalid ownership fail-closed
+instead of granting specialized N/A.
 """
 from __future__ import annotations
 
@@ -11,10 +12,10 @@ import sys
 from pathlib import Path, PurePosixPath
 from typing import Iterable, Mapping, Any
 
-_OWNERSHIP_PATH = Path(__file__).with_name("s30_lane_ownership.py")
-_OWNERSHIP_SPEC = importlib.util.spec_from_file_location("s30_lane_ownership", _OWNERSHIP_PATH)
+_OWNERSHIP_PATH = Path(__file__).with_name("lf_product_lane_ownership.py")
+_OWNERSHIP_SPEC = importlib.util.spec_from_file_location("lf_product_lane_ownership", _OWNERSHIP_PATH)
 if _OWNERSHIP_SPEC is None or _OWNERSHIP_SPEC.loader is None:
-    raise ImportError(f"cannot load S30 ownership helper: {_OWNERSHIP_PATH}")
+    raise ImportError(f"cannot load LF product ownership helper: {_OWNERSHIP_PATH}")
 _OWNERSHIP = importlib.util.module_from_spec(_OWNERSHIP_SPEC)
 sys.modules[_OWNERSHIP_SPEC.name] = _OWNERSHIP
 _OWNERSHIP_SPEC.loader.exec_module(_OWNERSHIP)
@@ -140,8 +141,8 @@ def _is_p0_exact_head_external_owner(path: str) -> bool:
     return path.startswith(P0_EXACT_HEAD_EXTERNAL_PREFIX) or path in P0_EXACT_HEAD_EXTERNAL_EXACT
 
 
-def _is_known_shared(path: str, s30_known: bool) -> bool:
-    if s30_known:
+def _is_known_shared(path: str, product_known: bool) -> bool:
+    if product_known:
         return True
     if path in CI_SELFTEST_CONTROLS:
         return True
@@ -166,7 +167,7 @@ def classify(paths: Iterable[str], *, registry_data: Mapping[str, Any] | None = 
     try:
         registry = _registry_for(registry_data)
     except RegistryValidationError as exc:
-        return _fail_closed("DEEP_SHARED_REGISTRY_INVALID", f"S30_REGISTRY_INVALID:{exc.code}")
+        return _fail_closed("DEEP_SHARED_REGISTRY_INVALID", f"PRODUCT_REGISTRY_INVALID:{exc.code}")
 
     migration = False
     input_gov = False
@@ -174,14 +175,15 @@ def classify(paths: Iterable[str], *, registry_data: Mapping[str, Any] | None = 
     p0_external = False
     unknown = False
     deep_shared = False
-    s30_modes: set[str] = set()
+    product_modes: set[str] = set()
+    product_namespaces: set[str] = set()
     reasons: list[str] = []
 
     for path in changed:
         try:
-            s30_lane = registry.match(path)
+            product_lane = registry.match(path)
         except RegistryValidationError as exc:
-            return _fail_closed("DEEP_SHARED_REGISTRY_INVALID", f"S30_REGISTRY_INVALID:{exc.code}")
+            return _fail_closed("DEEP_SHARED_REGISTRY_INVALID", f"PRODUCT_REGISTRY_INVALID:{exc.code}")
 
         if path.startswith(MIGRATION_PREFIX) or path in {MIGRATION_VALIDATOR, MIGRATION_TRANSPORT_TEST}:
             migration = True
@@ -196,26 +198,25 @@ def classify(paths: Iterable[str], *, registry_data: Mapping[str, Any] | None = 
             p0_external = True
             reasons.append(f"P0_EXACT_HEAD_EXTERNAL:{path}")
 
-        if s30_lane is not None:
-            migration = migration or s30_lane.migration_parity_required
-            input_gov = input_gov or s30_lane.input_governance_parity_required
-            selftest = selftest or s30_lane.ci_router_selftest_required
-            p0_external = p0_external or s30_lane.p0_exact_head_external_required
-            deep_shared = deep_shared or s30_lane.deep_shared
-            reasons.append(f"S30_LANE:{s30_lane.lane_id}:{path}")
-            if s30_lane.known:
-                s30_modes.add(s30_lane.mode)
+        if product_lane is not None:
+            migration = migration or product_lane.migration_parity_required
+            input_gov = input_gov or product_lane.input_governance_parity_required
+            selftest = selftest or product_lane.ci_router_selftest_required
+            p0_external = p0_external or product_lane.p0_exact_head_external_required
+            deep_shared = deep_shared or product_lane.deep_shared
+            reasons.append(f"PRODUCT_LANE:{product_lane.lane_id}:{path}")
+            if product_lane.known:
+                product_modes.add(product_lane.mode)
+                product_namespaces.add(product_lane.namespace)
             else:
                 unknown = True
-                reasons.append(f"UNKNOWN_S30_LANE:{s30_lane.lane_id}:{path}")
+                reasons.append(f"UNKNOWN_PRODUCT_LANE:{product_lane.lane_id}:{path}")
 
-        if not _is_known_shared(path, s30_lane is not None and s30_lane.known) and not path.startswith(MIGRATION_PREFIX):
+        if not _is_known_shared(path, product_lane is not None and product_lane.known) and not path.startswith(MIGRATION_PREFIX):
             unknown = True
             reasons.append(f"UNKNOWN:{path}")
 
     if unknown:
-        # Unknown ownership never earns a specialized N/A. Preserve the current
-        # defensive parity/external gates and mark the decision deep-shared.
         migration = True
         input_gov = True
         p0_external = True
@@ -227,10 +228,10 @@ def classify(paths: Iterable[str], *, registry_data: Mapping[str, Any] | None = 
         mode = "SPECIALIZED_REQUIRED"
     elif selftest:
         mode = "CI_ROUTER_SELFTEST_ONLY"
-    elif len(s30_modes) == 1:
-        mode = next(iter(s30_modes))
-    elif len(s30_modes) > 1:
-        mode = "S30_MULTI_LANE_KNOWN"
+    elif len(product_modes) == 1 and len(product_namespaces) == 1:
+        mode = next(iter(product_modes))
+    elif product_modes:
+        mode = "S30_MULTI_LANE_KNOWN" if product_namespaces == {"S30"} else "MULTI_PRODUCT_LANE_KNOWN"
     else:
         mode = "DEEP_SHARED_KNOWN"
 
