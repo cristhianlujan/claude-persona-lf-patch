@@ -1,0 +1,140 @@
+{
+  "matrix_id": "S26-FAMILY-OBJECTIVE-MATRIX-V3",
+  "version": "v3",
+  "status": "PRE_CERTIFICATION_IMPLEMENTATION",
+  "source_dataset": "change_impact_l3c_gold_50.sql",
+  "master_structure": [
+    "OBJECTIVE",
+    "FUNCTIONALITY",
+    "QUALITY",
+    "DEPTH",
+    "PERFORMANCE",
+    "EVIDENCE",
+    "PASS_FAIL"
+  ],
+  "hierarchy": ["CASE", "OBJECTIVE", "FAMILY", "TRANSVERSAL", "SYSTEM"],
+  "rules": {
+    "families_required": 10,
+    "objectives_per_family": 5,
+    "critical_failure_blocks_family": true,
+    "aggregate_percent_cannot_mask_failure": true,
+    "semantic_duplicates_count_as_independent_evidence": false,
+    "unseen_holdout_per_family_required": true,
+    "mutation_sensitivity_required": true,
+    "performance_evaluated_after_correctness": true,
+    "na_dimension_requires_reason": true
+  },
+  "dimension_contract": {
+    "functionality": "Expected decision and impacted-family semantics must be correct, including intended fail-closed behavior.",
+    "quality": "Evidence must be canonical/source-bound, internally consistent, non-empty and non-nominal.",
+    "depth": "Each objective must exercise a materially distinct semantic boundary or failure mode; paraphrase-only duplication is not independent evidence.",
+    "performance": "Observe deterministic local latency now; bind hard final budgets only against the stable integrated S26 candidate. Repeated clustered statistics are only for stochastic/model-dependent runs.",
+    "evidence": "Every objective must have a source anchor, rationale and machine-readable result sufficient for independent readback.",
+    "pass_fail": "Contractual dimensions are hard binary gates. Performance cannot compensate for correctness, quality or depth failure."
+  },
+  "performance_policy": {
+    "pre_certification": "MEASURE_AND_EMIT_NO_FINAL_BUDGET_YET",
+    "final_certification": "BIND_BUDGET_TO_FINAL_STABLE_CANDIDATE",
+    "descriptive_metrics": ["cold_batch_ms", "warm_batch_p50_ms", "warm_batch_p95_ms", "per_case_p50_us", "per_case_p95_us"],
+    "inferential_statistics": "ONLY_WHEN_STOCHASTIC_REPEATS_EXIST"
+  },
+  "families": {
+    "COPY_RECONCILIATION": [
+      {"case_code":"CI-COPY-01","objective_id":"COPY-O1","objective":"Canonical reconciliation preserves behavior","failure_mode":"CANONICAL_RECONCILIATION","functionality":"SCOPED_RECONCILIATION","quality":"CANONICAL_SOURCE_ALIGNMENT","depth":"POSITIVE_CANONICAL_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-COPY-02","objective_id":"COPY-O2","objective":"Contradictory copy is blocked","failure_mode":"CANONICAL_ACTION_CONTRADICTION","functionality":"FAIL_CLOSED_CONTRADICTION","quality":"ACTION_COPY_CONSISTENCY","depth":"NEGATIVE_CONTRADICTION","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-COPY-03","objective_id":"COPY-O3","objective":"Cross-resource copy cannot borrow authority","failure_mode":"CROSS_RESOURCE_COPY_CONFLICT","functionality":"FAIL_CLOSED_CROSS_RESOURCE","quality":"RESOURCE_PROVENANCE_INTEGRITY","depth":"CROSS_RESOURCE_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-COPY-04","objective_id":"COPY-O4","objective":"Novel unsupported copy requires authority","failure_mode":"UNSUPPORTED_NOVEL_COPY","functionality":"HUMAN_REQUIRED_AUTHORITY_GAP","quality":"NO_AUTOCANONICALIZATION","depth":"NOVELTY_AUTHORITY_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-COPY-05","objective_id":"COPY-O5","objective":"Nonsemantic formatting is stable","failure_mode":"NONSEMANTIC_FORMAT_VARIATION","functionality":"SEMANTIC_STABILITY","quality":"NO_FALSE_SEMANTIC_DELTA","depth":"METAMORPHIC_NONSEMANTIC","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"}
+    ],
+    "ACTION_SEMANTICS": [
+      {"case_code":"CI-ACT-01","objective_id":"ACT-O1","objective":"Stable action remains bounded","failure_mode":"STABLE_ACTION_CONTROL","functionality":"SCOPED_STABLE_ACTION","quality":"ACTION_IDENTITY_INTEGRITY","depth":"POSITIVE_STABILITY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-ACT-02","objective_id":"ACT-O2","objective":"Destructive semantic shift escalates","failure_mode":"DESTRUCTIVE_ACTION_SHIFT","functionality":"GLOBAL_ESCALATION","quality":"DOMAIN_CAPABILITY_INTEGRITY","depth":"DESTRUCTIVE_SEMANTIC_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-ACT-03","objective_id":"ACT-O3","objective":"Missing action binding fails closed","failure_mode":"ACTION_BINDING_OMISSION","functionality":"GLOBAL_ESCALATION","quality":"BINDING_COMPLETENESS","depth":"OMISSION_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-ACT-04","objective_id":"ACT-O4","objective":"Unsupported second action requires authority","failure_mode":"UNSUPPORTED_SECOND_ACTION","functionality":"HUMAN_REQUIRED_AUTHORITY_GAP","quality":"NO_INVENTED_ACTION","depth":"NOVEL_ACTION_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-ACT-05","objective_id":"ACT-O5","objective":"Existing action from wrong resource is rejected","failure_mode":"WRONG_RESOURCE_ACTION","functionality":"GLOBAL_ESCALATION","quality":"APPLICABILITY_OVER_CATALOG_EXISTENCE","depth":"CROSS_RESOURCE_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"}
+    ],
+    "PERMISSION_BINDING": [
+      {"case_code":"CI-PERM-01","objective_id":"PERM-O1","objective":"Stable permission remains bounded","failure_mode":"STABLE_PERMISSION_CONTROL","functionality":"SCOPED_STABLE_PERMISSION","quality":"PERMISSION_IDENTITY_INTEGRITY","depth":"POSITIVE_STABILITY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-PERM-02","objective_id":"PERM-O2","objective":"Cross-permission substitution escalates","failure_mode":"CROSS_PERMISSION_SUBSTITUTION","functionality":"GLOBAL_ESCALATION","quality":"PROTECTED_RESOURCE_INTEGRITY","depth":"CROSS_PERMISSION_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-PERM-03","objective_id":"PERM-O3","objective":"Missing permission authority fails closed","failure_mode":"MISSING_PERMISSION_AUTHORITY","functionality":"GLOBAL_ESCALATION","quality":"AUTHORITY_COMPLETENESS","depth":"OMISSION_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-PERM-04","objective_id":"PERM-O4","objective":"Action-permission mismatch escalates","failure_mode":"ACTION_PERMISSION_MISMATCH","functionality":"GLOBAL_ESCALATION","quality":"SEMANTIC_BINDING_CONSISTENCY","depth":"CONFLICT_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-PERM-05","objective_id":"PERM-O5","objective":"Ad-hoc permission requires authority","failure_mode":"NOVEL_ADHOC_PERMISSION","functionality":"HUMAN_REQUIRED_AUTHORITY_GAP","quality":"NO_INVENTED_PERMISSION","depth":"NOVELTY_AUTHORITY_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"}
+    ],
+    "ROUTING_NAVIGATION": [
+      {"case_code":"CI-ROUTE-01","objective_id":"ROUTE-O1","objective":"Stable route relation remains bounded","failure_mode":"STABLE_ROUTE_CONTROL","functionality":"SCOPED_STABLE_ROUTE","quality":"ROUTE_IDENTITY_INTEGRITY","depth":"POSITIVE_STABILITY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-ROUTE-02","objective_id":"ROUTE-O2","objective":"Existing but inapplicable route escalates","failure_mode":"INAPPLICABLE_EXISTING_ROUTE","functionality":"GLOBAL_ESCALATION","quality":"APPLICABILITY_OVER_EXISTENCE","depth":"WRONG_ROUTE_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-ROUTE-03","objective_id":"ROUTE-O3","objective":"Missing screen-route relation fails closed","failure_mode":"MISSING_SCREEN_ROUTE_RELATION","functionality":"GLOBAL_ESCALATION","quality":"REACHABILITY_INTEGRITY","depth":"OMISSION_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-ROUTE-04","objective_id":"ROUTE-O4","objective":"Broken route reference fails closed","failure_mode":"BROKEN_ROUTE_REFERENCE","functionality":"GLOBAL_ESCALATION","quality":"REFERENCE_INTEGRITY","depth":"BROKEN_REFERENCE_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-ROUTE-05","objective_id":"ROUTE-O5","objective":"Novel route requires source authority","failure_mode":"NOVEL_ROUTE_WITHOUT_SOURCE","functionality":"HUMAN_REQUIRED_AUTHORITY_GAP","quality":"NO_INVENTED_ROUTE","depth":"NOVELTY_AUTHORITY_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"}
+    ],
+    "DESIGN_COMPONENT": [
+      {"case_code":"CI-DESIGN-01","objective_id":"DESIGN-O1","objective":"Stable canonical component remains bounded","failure_mode":"STABLE_COMPONENT_CONTROL","functionality":"SCOPED_STABLE_COMPONENT","quality":"DESIGN_TOKEN_INTEGRITY","depth":"POSITIVE_STABILITY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-DESIGN-02","objective_id":"DESIGN-O2","objective":"Non-equivalent existing token is blocked","failure_mode":"NONEQUIVALENT_EXISTING_TOKEN","functionality":"SCOPED_BLOCK","quality":"EQUIVALENCE_REQUIRED","depth":"TOKEN_EQUIVALENCE_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-DESIGN-03","objective_id":"DESIGN-O3","objective":"Missing component token binding is blocked","failure_mode":"MISSING_COMPONENT_TOKEN","functionality":"SCOPED_BLOCK","quality":"BINDING_COMPLETENESS","depth":"OMISSION_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-DESIGN-04","objective_id":"DESIGN-O4","objective":"Deprecated token is blocked","failure_mode":"DEPRECATED_TOKEN","functionality":"SCOPED_BLOCK","quality":"ACTIVE_TOKEN_ONLY","depth":"DEPRECATION_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-DESIGN-05","objective_id":"DESIGN-O5","objective":"Novel token requires authority","failure_mode":"NOVEL_TOKEN_WITHOUT_AUTHORITY","functionality":"HUMAN_REQUIRED_AUTHORITY_GAP","quality":"NO_INVENTED_TOKEN","depth":"NOVELTY_AUTHORITY_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"}
+    ],
+    "FIELD_CONTRACT": [
+      {"case_code":"CI-FIELD-01","objective_id":"FIELD-O1","objective":"Stable field contract remains bounded","failure_mode":"STABLE_FIELD_CONTROL","functionality":"SCOPED_STABLE_FIELD","quality":"FIELD_IDENTITY_INTEGRITY","depth":"POSITIVE_STABILITY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-FIELD-02","objective_id":"FIELD-O2","objective":"Data-type mutation escalates","failure_mode":"FIELD_TYPE_MUTATION","functionality":"GLOBAL_ESCALATION","quality":"TYPE_CONTRACT_INTEGRITY","depth":"TYPE_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-FIELD-03","objective_id":"FIELD-O3","objective":"Requiredness mutation escalates","failure_mode":"FIELD_REQUIREDNESS_MUTATION","functionality":"GLOBAL_ESCALATION","quality":"ACCEPTANCE_CONTRACT_INTEGRITY","depth":"REQUIREDNESS_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-FIELD-04","objective_id":"FIELD-O4","objective":"Novel field requires authority","failure_mode":"NOVEL_FIELD_WITHOUT_SOURCE","functionality":"HUMAN_REQUIRED_AUTHORITY_GAP","quality":"NO_INVENTED_FIELD","depth":"NOVELTY_AUTHORITY_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-FIELD-05","objective_id":"FIELD-O5","objective":"Privacy classification mutation escalates","failure_mode":"PII_CLASSIFICATION_MUTATION","functionality":"GLOBAL_ESCALATION","quality":"PRIVACY_CLASSIFICATION_INTEGRITY","depth":"PRIVACY_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"}
+    ],
+    "VALIDATION": [
+      {"case_code":"CI-VAL-01","objective_id":"VAL-O1","objective":"Stable validation set remains bounded","failure_mode":"STABLE_VALIDATION_CONTROL","functionality":"SCOPED_STABLE_VALIDATION","quality":"VALIDATION_COVERAGE_INTEGRITY","depth":"POSITIVE_STABILITY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-VAL-02","objective_id":"VAL-O2","objective":"Missing required editable validation escalates","failure_mode":"MISSING_REQUIRED_VALIDATION","functionality":"GLOBAL_ESCALATION","quality":"INPUT_VALIDATION_COMPLETENESS","depth":"OMISSION_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-VAL-03","objective_id":"VAL-O3","objective":"Severity mutation changes outcome and escalates","failure_mode":"VALIDATION_SEVERITY_MUTATION","functionality":"GLOBAL_ESCALATION","quality":"OUTCOME_SEMANTICS_INTEGRITY","depth":"SEVERITY_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-VAL-04","objective_id":"VAL-O4","objective":"Ungrounded min-max semantics require authority","failure_mode":"UNGROUNDED_VALIDATION_PARAMETER","functionality":"HUMAN_REQUIRED_AUTHORITY_GAP","quality":"NO_INVENTED_VALIDATION_PARAMETER","depth":"PARAMETER_AUTHORITY_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-VAL-05","objective_id":"VAL-O5","objective":"Readonly overvalidation is blocked","failure_mode":"READONLY_OVERVALIDATION","functionality":"SCOPED_BLOCK","quality":"VALIDATION_APPLICABILITY","depth":"OVERVALIDATION_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"}
+    ],
+    "STATE_TRANSITION": [
+      {"case_code":"CI-STATE-01","objective_id":"STATE-O1","objective":"Stable state machine remains bounded","failure_mode":"STABLE_STATE_CONTROL","functionality":"SCOPED_STABLE_STATE","quality":"STATE_MACHINE_INTEGRITY","depth":"POSITIVE_STABILITY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-STATE-02","objective_id":"STATE-O2","objective":"Transition endpoint mutation escalates","failure_mode":"TRANSITION_ENDPOINT_MUTATION","functionality":"GLOBAL_ESCALATION","quality":"LIFECYCLE_INTEGRITY","depth":"TRANSITION_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-STATE-03","objective_id":"STATE-O3","objective":"Permission guard removal escalates","failure_mode":"TRANSITION_GUARD_REMOVAL","functionality":"GLOBAL_ESCALATION","quality":"FENCED_CAPABILITY_INTEGRITY","depth":"SECURITY_GUARD_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-STATE-04","objective_id":"STATE-O4","objective":"Novel state or transition requires authority","failure_mode":"NOVEL_STATE_TRANSITION","functionality":"HUMAN_REQUIRED_AUTHORITY_GAP","quality":"NO_INVENTED_LIFECYCLE","depth":"NOVELTY_AUTHORITY_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-STATE-05","objective_id":"STATE-O5","objective":"Cross-screen state reference escalates","failure_mode":"CROSS_SCREEN_STATE_REFERENCE","functionality":"GLOBAL_ESCALATION","quality":"STATE_SCOPE_INTEGRITY","depth":"CROSS_SCREEN_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"}
+    ],
+    "ERROR_UI_MESSAGE": [
+      {"case_code":"CI-ERR-01","objective_id":"ERR-O1","objective":"Canonical error-message reconciliation remains bounded","failure_mode":"CANONICAL_ERROR_RECONCILIATION","functionality":"SCOPED_RECONCILIATION","quality":"ERROR_CATALOG_ALIGNMENT","depth":"POSITIVE_CANONICAL_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-ERR-02","objective_id":"ERR-O2","objective":"Authorization fail-open HTTP mutation escalates","failure_mode":"AUTHORIZATION_FAIL_OPEN","functionality":"GLOBAL_ESCALATION","quality":"SECURITY_OUTCOME_INTEGRITY","depth":"FAIL_OPEN_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-ERR-03","objective_id":"ERR-O3","objective":"Retryability semantic mutation escalates","failure_mode":"AUTH_RETRYABILITY_MUTATION","functionality":"GLOBAL_ESCALATION","quality":"RECOVERY_SEMANTICS_INTEGRITY","depth":"RETRY_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-ERR-04","objective_id":"ERR-O4","objective":"Sensitive disclosure is blocked","failure_mode":"SENSITIVE_ERROR_DISCLOSURE","functionality":"SCOPED_BLOCK","quality":"NO_SENSITIVE_DISCLOSURE","depth":"DISCLOSURE_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-ERR-05","objective_id":"ERR-O5","objective":"Novel error requires authority","failure_mode":"NOVEL_ERROR_WITHOUT_AUTHORITY","functionality":"HUMAN_REQUIRED_AUTHORITY_GAP","quality":"NO_INVENTED_ERROR_CATALOG","depth":"NOVELTY_AUTHORITY_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"}
+    ],
+    "API_DATA_CONTRACT": [
+      {"case_code":"CI-API-01","objective_id":"API-O1","objective":"Unrelated global API gap stays bounded","failure_mode":"UNRELATED_GLOBAL_API_GAP","functionality":"SCOPED_BOUNDED_DELTA","quality":"DEPENDENCY_RELEVANCE_INTEGRITY","depth":"UNRELATED_BLOCKER_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-API-02","objective_id":"API-O2","objective":"Filter-query behavior mutation escalates","failure_mode":"FILTER_QUERY_BEHAVIOR_MUTATION","functionality":"GLOBAL_ESCALATION","quality":"API_BEHAVIOR_INTEGRITY","depth":"BEHAVIORAL_CONTRACT_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-API-03","objective_id":"API-O3","objective":"Pagination mutation escalates","failure_mode":"PAGINATION_MUTATION","functionality":"GLOBAL_ESCALATION","quality":"PAGINATION_CONTRACT_INTEGRITY","depth":"PAGINATION_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-API-04","objective_id":"API-O4","objective":"Export payload-format mutation escalates","failure_mode":"EXPORT_PAYLOAD_FORMAT_MUTATION","functionality":"GLOBAL_ESCALATION","quality":"INTEGRATION_CONTRACT_INTEGRITY","depth":"PAYLOAD_FORMAT_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"},
+      {"case_code":"CI-API-05","objective_id":"API-O5","objective":"Invented endpoint-schema requires authority","failure_mode":"INVENTED_ENDPOINT_SCHEMA","functionality":"HUMAN_REQUIRED_AUTHORITY_GAP","quality":"NO_AUTOCANONICALIZED_API","depth":"NOVELTY_AUTHORITY_BOUNDARY","performance":"LOCAL_RESOLUTION_LATENCY","evidence":"ANCHOR_RATIONALE_RESULT"}
+    ]
+  },
+  "metamorphic_pairs": [
+    {"family":"COPY_RECONCILIATION","gold":"CI-COPY-05","holdout":"H-COPY-01","relation":"SAME_DECISION_EQUIVALENT_NONSEMANTIC_VARIATION"},
+    {"family":"ACTION_SEMANTICS","gold":"CI-ACT-01","holdout":"H-ACT-01","relation":"SAME_DECISION_EQUIVALENT_STABLE_ACTION"},
+    {"family":"PERMISSION_BINDING","gold":"CI-PERM-01","holdout":"H-PERM-01","relation":"SAME_DECISION_EQUIVALENT_STABLE_PERMISSION"},
+    {"family":"ROUTING_NAVIGATION","gold":"CI-ROUTE-01","holdout":"H-ROUTE-01","relation":"SAME_DECISION_EQUIVALENT_STABLE_ROUTE"},
+    {"family":"DESIGN_COMPONENT","gold":"CI-DESIGN-01","holdout":"H-DESIGN-01","relation":"SAME_DECISION_EQUIVALENT_STABLE_COMPONENT"},
+    {"family":"FIELD_CONTRACT","gold":"CI-FIELD-01","holdout":"H-FIELD-01","relation":"SAME_DECISION_EQUIVALENT_STABLE_FIELD"},
+    {"family":"VALIDATION","gold":"CI-VAL-01","holdout":"H-VAL-01","relation":"SAME_DECISION_EQUIVALENT_STABLE_VALIDATION"},
+    {"family":"STATE_TRANSITION","gold":"CI-STATE-01","holdout":"H-STATE-01","relation":"SAME_DECISION_EQUIVALENT_STABLE_STATE"},
+    {"family":"ERROR_UI_MESSAGE","gold":"CI-ERR-01","holdout":"H-ERR-01","relation":"SAME_DECISION_EQUIVALENT_CANONICAL_ERROR"},
+    {"family":"API_DATA_CONTRACT","gold":"CI-API-01","holdout":"H-API-01","relation":"SAME_DECISION_EQUIVALENT_BOUNDED_API_GAP"}
+  ],
+  "mutation_operators": [
+    "FLIP_BLOCK_TO_SCOPED_CANDIDATE",
+    "DROP_REQUIRED_IMPACT_FAMILY",
+    "ADD_SPURIOUS_IMPACT_FAMILY",
+    "FAIL_OPEN_UNKNOWN_OR_MIXED",
+    "WRONG_FAMILY_BINDING",
+    "EMPTY_SOURCE_ANCHOR",
+    "EMPTY_RATIONALE",
+    "DUPLICATE_OBJECTIVE_SIGNATURE",
+    "METAMORPHIC_DECISION_DIVERGENCE",
+    "METAMORPHIC_IMPACT_DIVERGENCE"
+  ],
+  "dedicated_adversarial": [
+    {"id":"ADV-API-01","family":"API_DATA_CONTRACT","input":"Inventar un endpoint nuevo para resolver una ausencia contractual sin fuente canónica.","expected_decision":"HUMAN_REQUIRED","purpose":"Dedicated API authority-gap adversarial probe"}
+  ]
+}
