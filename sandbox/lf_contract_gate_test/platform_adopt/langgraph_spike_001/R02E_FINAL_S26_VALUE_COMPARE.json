@@ -1,0 +1,93 @@
+{
+  "schema": "LF_LANGGRAPH_R02E_FINAL_S26_VALUE_COMPARE_V1",
+  "gate": "ADOPT-R02-E",
+  "s26_candidate_sha": "485f5c77ac568a056647f57b5f04be7698816902",
+  "langgraph_pin": "1.2.11",
+  "comparison_scope": "FINAL_S26_CODE_LEVEL_RUNTIME_ORCHESTRATION_COMPARISON",
+  "model_called": false,
+  "external_model_network_calls": 0,
+  "production_effect": false,
+  "semantic_authority_owner": "LF",
+  "exact_result_parity": true,
+  "direct_result_sha256": "ad785cdd246575e24c2edfdf908a10c390bf53245017610c2c83e44e6c256c36",
+  "functional_result_sha256": "ad785cdd246575e24c2edfdf908a10c390bf53245017610c2c83e44e6c256c36",
+  "nontransient_fail_closed": {
+    "direct": {
+      "status": "BLOCKED",
+      "blocking_code": "RUNTIME_ADAPTER_EXCEPTION",
+      "blocking_detail": "ValueError"
+    },
+    "functional": {
+      "status": "BLOCKED",
+      "blocking_code": "RUNTIME_ADAPTER_EXCEPTION",
+      "blocking_detail": "ValueError"
+    },
+    "exact_parity": true,
+    "direct_attempts": 1,
+    "functional_attempts": 1
+  },
+  "transient_failure_comparison": {
+    "direct_first_call": {
+      "status": "BLOCKED",
+      "blocking_code": "RUNTIME_ADAPTER_EXCEPTION",
+      "blocking_detail": "TemporaryProviderError"
+    },
+    "direct_attempts": 1,
+    "functional_result_status": "PASS",
+    "functional_attempts": 2,
+    "automatic_recovery_gain": true
+  },
+  "hitl_comparison": {
+    "direct_runner_native_hitl_parameters": false,
+    "functional_paused_before_lf_execution": true,
+    "functional_resume_pass": true,
+    "functional_reject_fail_closed": true
+  },
+  "checkpoint_comparison": {
+    "direct_runner_checkpoint_history": "NONE_INSIDE_EXECUTE_PROFILE_RUNTIME",
+    "functional_checkpoint_history_count": 2,
+    "checkpointer_used": "InMemorySaver",
+    "durable_postgres_proven": false
+  },
+  "synthetic_latency_ms": {
+    "warmups": 10,
+    "measured_runs": 100,
+    "lf_direct_median": 0.063866,
+    "lf_direct_p95": 0.08037,
+    "langgraph_functional_median": 1.911856,
+    "langgraph_functional_p95": 2.063138,
+    "absolute_median_overhead": 1.847991,
+    "overhead_budget_ms": 5.0,
+    "overhead_within_budget": true,
+    "speed_winner": "LF_DIRECT"
+  },
+  "code_surface": {
+    "lf_execute_profile_runtime_nonblank_noncomment_lines": 41,
+    "r02e_functional_builder_nonblank_noncomment_lines": 48,
+    "interpretation": "Not a total-code replacement metric: LangGraph adds orchestration around LF; semantic runtime remains LF-owned."
+  },
+  "value_summary": {
+    "semantic_quality": "TIE_SAME_LF_RESULT",
+    "raw_speed": "LF_DIRECT",
+    "selective_retry": "LANGGRAPH_FUNCTIONAL",
+    "hitl_pause_resume": "LANGGRAPH_FUNCTIONAL",
+    "checkpoint_history": "LANGGRAPH_FUNCTIONAL",
+    "maintenance_savings": "NOT_PROVEN_BY_THIS_GATE",
+    "n8n_business_orchestration_replacement": false
+  },
+  "adoption_criteria": {
+    "checkpoint_history_present": true,
+    "exact_final_s26_result_parity": true,
+    "hitl_pause_resume_and_reject": true,
+    "nontransient_fail_closed_parity": true,
+    "selective_transient_auto_recovery": true,
+    "synthetic_overhead_within_5ms_budget": true
+  },
+  "decision": "ADOPT_LANGGRAPH_FUNCTIONAL_FOR_BOUNDED_CODE_LEVEL_STATEFUL_ORCHESTRATION",
+  "decision_scope": "NOT_SEMANTIC_AUTHORITY_NOT_N8N_REPLACEMENT_NOT_PRODUCTION_ACTIVATION",
+  "production_activation_ready": false,
+  "remaining_production_gate": "DURABLE_CHECKPOINTER_AND_OPERATIONAL_ROLLBACK_FIT",
+  "evidence_run_id": 34708739815,
+  "evidence_job_id": 103593484089,
+  "status": "PASS"
+}
