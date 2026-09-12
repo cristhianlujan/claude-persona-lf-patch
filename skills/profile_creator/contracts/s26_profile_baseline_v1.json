@@ -1,0 +1,99 @@
+{
+  "decisions": {
+    "all_dimensions_pass": "NO_UPDATE_REQUIRED",
+    "canonical_schema_or_authority_unresolved": "BLOCKED_AUTHORITY_REQUIRED",
+    "repairable_delta": "UPDATE_REQUIRED"
+  },
+  "dimensions": [
+    {
+      "evidence": "SKILL.md + exact profile_slug/profile_code runtime binding",
+      "id": "B01_PROFILE_IDENTITY",
+      "required": true
+    },
+    {
+      "evidence": "ACTUALIZACION_PERFIL_LF declared for profile maintenance",
+      "id": "B02_UPDATE_GOVERNANCE",
+      "required": true
+    },
+    {
+      "evidence": "contracts/runtime_binding.json schema LF_PROFILE_RUNTIME_BINDING_V1",
+      "id": "B03_RUNTIME_BINDING",
+      "required": true
+    },
+    {
+      "evidence": "explicit canonical default schema and optional governed output-mode map",
+      "id": "B04_RUNTIME_SCHEMA",
+      "required": true
+    },
+    {
+      "evidence": "profile-local validator callable bound by runtime descriptor",
+      "id": "B05_CANONICAL_VALIDATOR",
+      "required": true
+    },
+    {
+      "evidence": "profile-local deterministic semantic-utility callable",
+      "id": "B06_SEMANTIC_UTILITY_FLOOR",
+      "required": true
+    },
+    {
+      "evidence": "validators/validate_pack.py discoverable by Profile Creator",
+      "id": "B07_CI_PACK_VALIDATOR",
+      "required": true
+    },
+    {
+      "evidence": "source_first_required=true and schema_invention_allowed=false",
+      "id": "B08_SOURCE_FIRST_NO_INVENTION",
+      "required": true
+    },
+    {
+      "evidence": "fail_closed=true",
+      "id": "B09_FAIL_CLOSED",
+      "required": true
+    },
+    {
+      "evidence": "exact_head_evidence_required=true and post_update_baseline_required=true",
+      "id": "B10_EVIDENCE_CLOSURE",
+      "required": true
+    }
+  ],
+  "enforcement": "PROFILE_LOCAL_POST_UPDATE_REQUIRED",
+  "global_fleet_enforcement": "DEFERRED_UNTIL_GOVERNED_PROFILE_UPDATES_COMPLETE",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "purpose": "Bring existing governed profiles to one S26 architectural compatibility floor without making their domain semantics identical.",
+  "runtime_binding_contract": {
+    "callable_binding_required": [
+      "path",
+      "callable"
+    ],
+    "governance_required": {
+      "exact_head_evidence_required": true,
+      "fail_closed": true,
+      "post_update_baseline_required": true,
+      "schema_invention_allowed": false,
+      "source_first_required": true
+    },
+    "path": "contracts/runtime_binding.json",
+    "required_top_level": [
+      "schema",
+      "profile_slug",
+      "profile_code",
+      "runtime_schema",
+      "canonical_validator",
+      "semantic_utility",
+      "governance"
+    ],
+    "runtime_schema_required": [
+      "default",
+      "output_modes"
+    ],
+    "schema": "LF_PROFILE_RUNTIME_BINDING_V1"
+  },
+  "safety": {
+    "never_claim_semantic_parity_from_structural_pass": true,
+    "never_enable_runtime_or_production": true,
+    "never_invent_profile_code": true,
+    "never_select_schema_by_filename_guess": true,
+    "no_profile_domain_semantics_standardization": true
+  },
+  "schema": "S26_PROFILE_BASELINE_V1"
+}

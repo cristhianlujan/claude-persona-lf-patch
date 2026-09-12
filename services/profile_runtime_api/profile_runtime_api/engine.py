@@ -473,6 +473,7 @@ class ProfileRuntimeEngine:
         started=time.perf_counter(); context={"queue_native":True,"screen_governance_applicable":False,"cache_hit":False,"runtime_output_mode":task.runtime_output_mode}
         try:
             if task.send_image_to_model: raise LlamaTransportError("QUEUE_NATIVE_IMAGE_REQUIRES_GOVERNED_ENVELOPE")
+            self.repository.validate_profile_identity(task.profile_slug, task.profile_code)
             sources=self.repository.profile_sources(task.profile_slug,task.profile_source_paths); schema=self.repository.runtime_schema(task.profile_slug, task.runtime_output_mode)
             governed_pack, governed_receipt = _governed_context(task, context_pack, profile_sources=sources, schema=schema)
             adapter=PersistentLlamaServerAdapter(settings=self.settings,client=self.llama_client,schema=schema,structural_context=governed_pack,image_bytes=None,image_media_type=None)
@@ -494,6 +495,7 @@ class ProfileRuntimeEngine:
     def _execute_profile(self, *, task: ProfileTask, artifact: Any, prepared: PreparedContext, context_reused_within_batch: bool) -> dict[str, Any]:
         started=time.perf_counter(); context={"cache_key":prepared.cache_key,"cache_hit":prepared.cache_hit,"pack_sha256":prepared.pack.get("pack_sha256"),"prepare_ms":prepared.prepare_ms,"reused_within_batch":context_reused_within_batch,"runtime_output_mode":task.runtime_output_mode}
         try:
+            self.repository.validate_profile_identity(task.profile_slug, task.profile_code)
             sources=self.repository.profile_sources(task.profile_slug,task.profile_source_paths); schema=self.repository.runtime_schema(task.profile_slug, task.runtime_output_mode)
             if task.send_image_to_model and not self.settings.allow_model_image: raise LlamaTransportError("FULL_IMAGE_MODEL_PATH_DISABLED")
             image_bytes=artifact.image_bytes() if task.send_image_to_model else None
