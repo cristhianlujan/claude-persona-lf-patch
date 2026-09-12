@@ -1,0 +1,72 @@
+{
+  "schema": "S26_RUN_G_PRODUCER_RECEIPT_V1",
+  "execution_id": "EXEC-S26-N08G-GPT-NATIVE-GOLDEN-G-001",
+  "review_case_id": "S26-N08G-QUALITY-001",
+  "source_visual": {
+    "sha256": "ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+    "bytes": 142727,
+    "width": 1600,
+    "height": 1000
+  },
+  "source_fidelity": {
+    "schema": "LF_SOURCE_FIDELITY_CONTRACT_V1",
+    "contract_sha256": "f8434f9ba26b3edfa2cae547563d1f8448c05fdab1f3cb59d2ed842f7a817e88",
+    "authority_kind": "VISUAL_ONLY",
+    "critical_ambiguity": false,
+    "immutable_table_headers": [
+      "Lote",
+      "Nombre",
+      "Archivo",
+      "Tipo",
+      "Cargado por",
+      "Fecha",
+      "Total",
+      "Válidos",
+      "Estado",
+      "Acciones"
+    ],
+    "mutable_dimensions": [
+      "column_order",
+      "column_widths",
+      "density",
+      "layout",
+      "responsive_strategy",
+      "scroll_chrome",
+      "spacing",
+      "typography",
+      "visual_hierarchy"
+    ]
+  },
+  "card_resolution": {
+    "mode": "EXACT",
+    "critical_authority_missing": false,
+    "card_ref": "cards/learning_cards/ui_architect/LC-UIARCH-0001-priority-overflow-pagination-v0.1.yaml",
+    "card_sha256": "aa3e0c003562b067b20f547c04ef9df7c10690a70a4a40f40454748dd432b2e4"
+  },
+  "artifact": {
+    "canonical_sha256": "40ae63d505b4b85730c150fc6d40203f35df2a4a726d8717140fa28ff29394ca",
+    "output_contract_version": "UI_PRODUCTION_SPEC_V6",
+    "headers_verified": "10_OF_10_EXACT",
+    "real_horizontal_overflow_acknowledged": true,
+    "current_page_prebound": false,
+    "ui_validator": "PASS",
+    "composer_boundary": "PASS"
+  },
+  "execution_contract": {
+    "contract_sha256": "6ec1e72df33022496642d9e97e5b926025d721a76b291bfbf25276d79d404c00",
+    "sha_derivation": "canonical JSON excluding only contract_sha256",
+    "source_fidelity_required_check": true,
+    "source_fidelity_required_evidence": true
+  },
+  "independent_quality_bundle": {
+    "filename": "S26_Run_G_Independent_Quality_Bundle_v1.zip",
+    "sha256": "7b6288f67a992d21cab2d6640ffa2cef85a8b6d25fdc1f6a5a8a1986f4b67eee",
+    "bytes": 222805,
+    "contains_source_visual_png": true,
+    "deterministic_probe": "PASS_DETERMINISTIC_RUN_G_PREFLIGHT"
+  },
+  "producer_head_base": "bbd57ba4154a327bed63f932b646a9c4568c9c48",
+  "producer_downstream_authorized": false,
+  "golden_declared": false,
+  "next_gate": "FRESH_GPT_AND_CLAUDE_INDEPENDENT_QUALITY"
+}

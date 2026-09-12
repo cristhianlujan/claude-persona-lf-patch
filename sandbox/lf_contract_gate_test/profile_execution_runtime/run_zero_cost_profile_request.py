@@ -197,13 +197,12 @@ def _materialize_runtime_output_schema(profile_slug: str, repo_root: Path, work_
         )
         if not candidates:
             return None
-        parsed = [_read_runtime_schema_candidate(path, schema_root)[0] for path in candidates]
-        payload = parsed[0] if len(parsed) == 1 else {
-            "$schema": "https://json-schema.org/draft/2020-12/schema",
-            "anyOf": parsed,
-            "x-lf-runtime-schema-source": [path.name for path in candidates],
-        }
-        raw = (json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+        if len(candidates) > 1:
+            raise RuntimeExecutionBlocked(
+                "QUEUE_RUNTIME_SCHEMA_AMBIGUOUS",
+                ",".join(path.name for path in candidates),
+            )
+        _payload, raw = _read_runtime_schema_candidate(candidates[0], schema_root)
 
     destination = work_dir / "profiles" / profile_slug / "schemas" / "runtime_output.schema.json"
     destination.parent.mkdir(parents=True, exist_ok=True)

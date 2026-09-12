@@ -1,0 +1,39 @@
+{
+  "schema": "S26_HP001_QDP_CONTRACT_V1",
+  "scope": "DETERMINISTIC_PIPELINE_AND_ARTIFACT_ONLY",
+  "quality": {
+    "minimum_requirement_coverage_ratio": 1.0,
+    "minimum_source_bound_integrity_ratio": 1.0,
+    "canonical_ui_validator_required": true,
+    "composer_boundary_validator_required": true,
+    "self_score_is_authority": false
+  },
+  "depth": {
+    "minimum_component_count": 9,
+    "minimum_hierarchy_depth_edges": 3,
+    "minimum_state_map_coverage_ratio": 1.0,
+    "minimum_variant_guard_coverage_ratio": 1.0,
+    "minimum_risk_control_count": 4,
+    "required_responsive_modes": [
+      "desktop",
+      "mobile"
+    ],
+    "required_service_leaf_components": [
+      "service_title",
+      "service_provider",
+      "service_price",
+      "service_cta"
+    ]
+  },
+  "performance": {
+    "warmup_iterations": 2,
+    "sample_iterations": 9,
+    "max_p95_deterministic_pipeline_ms": 300.0,
+    "max_single_deterministic_pipeline_ms": 750.0,
+    "max_output_bytes": 25000,
+    "max_output_token_proxy_chars_div_4": 6250.0,
+    "model_generation_latency_measured": false,
+    "model_generation_latency_required_at_gate_f": true
+  },
+  "claim_ceiling": "DETERMINISTIC_QUALITY_DEPTH_PERFORMANCE_ASSURANCE_NOT_INDEPENDENT_SEMANTIC_REVIEW_NOT_MODEL_RUNTIME_PERF_NOT_GOLDEN"
+}

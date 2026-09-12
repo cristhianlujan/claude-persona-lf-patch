@@ -1,0 +1,27 @@
+{
+  "schema": "lf-governed-context-receipt/v1",
+  "request_id": "EXEC-S26-N08C-GPT-NATIVE-GOLDEN-C-001",
+  "profile_code": "PERFIL-UI-ARCHITECT",
+  "card_receipts": [
+    {
+      "card_ref": "cards/marketplace_lf/decision_product_experience/CARD.md",
+      "card_version": "v0.1",
+      "source_ref": "cards/marketplace_lf/decision_product_experience/CARD.md",
+      "content_sha256": "565b0091bc95844c82d69dbae107078c549f84a4d652ef3ded3ec69d8a4d070e",
+      "selected_sections": ["Role", "Decision lenses", "Hard blockers"],
+      "budget_chars": 4000,
+      "request_id": "EXEC-S26-N08C-GPT-NATIVE-GOLDEN-C-001"
+    }
+  ],
+  "adapter_receipts": [
+    {
+      "adapter_code": "ADAPTER-LF-SHELL-PROFILE-20260827",
+      "adapter_version": "v0.1",
+      "target_ref": "PERFIL-UI-ARCHITECT",
+      "binding_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/router_adapter_binding_snapshot.json",
+      "assurance_revision": "v2",
+      "request_id": "EXEC-S26-N08C-GPT-NATIVE-GOLDEN-C-001"
+    }
+  ],
+  "context_fingerprint": "2d29d3f689d9c91f53d0e2df9d7d36f710b87a11ebfcc597e3935aeccd96111c"
+}
