@@ -173,22 +173,60 @@ Use core OpenTelemetry primitives as the stable portability layer. For AI-specif
 4. **Semantic convention churn** — GenAI conventions evolve. Mitigation: adapter boundary and pinned dependencies during spikes.
 5. **Instrumentation side effects** — telemetry must not alter retry, exception or fail-closed semantics. Mitigation: deterministic parity tests with telemetry enabled/disabled.
 
-## R03 acceptance decision
+## R03-B result — isolated OpenTelemetry parity/privacy
 
-`FIT_GAP_RESULT = ADOPT_OTEL_CORE_WRAP_PHOENIX_KEEP_LF_CERTIFICATION`
+Status: **PASS**. Evidence run: `34680272022`.
 
-This is an architecture decision only. It does not install dependencies, instrument production services, send traces externally, create a Phoenix deployment, or authorize a runtime migration.
+- PASS LF direct SHA = OTel SHA: `52c1052d55b4547ae0c1a7c5679cbcd43e801ef5fb7cdab1b8c535ca1b588d5f`.
+- Fail-closed LF direct SHA = OTel SHA: `229beb9f8bc80110ea9d17ff3178e6306920600b58c9e70d8ad22816c1a6ef89`.
+- Blocking code preserved: `QUEUE_NATIVE_IMAGE_REQUIRES_GOVERNED_ENVELOPE`.
+- Sensitive content export: false; external export: false.
+- Synthetic median overhead: `+0.206467 ms` over 100 measured runs + 10 warmups, fake model and in-memory exporter only.
 
-## Next bounded gate — R03-B
+Claim ceiling: deterministic local parity/privacy only; not production exporter/live-model throughput.
 
-Build an isolated telemetry spike around one deterministic `profile_runtime_api` execution:
+## R03-C result — Phoenix local adapter fit
 
-1. instrumentation disabled baseline;
-2. OTel trace/metrics enabled with in-memory/local exporter;
-3. exact LF result/hash/error parity;
-4. verify no raw sensitive content appears in spans;
-5. measure instrumentation overhead;
-6. optional Phoenix local/export adapter only after OTel parity;
-7. no production endpoint and no external trace export.
+Status: **PASS_WITH_LICENSE_GATE**. Technical fit: **PASS**. Commercial/license approval: **REQUIRED_SEPARATELY**.
 
-R03-B passes only if LF outputs and fail-closed behavior remain unchanged.
+Evidence run: `34680744141`. Tested head: `65ccbf14d6d3d1c7d14d8fa89493bbc77fe4ccc4`. Persisted receipt: `R03C_PHOENIX_LOCAL_FIT_REPORT.json`, SHA-256 `739e08444287c107e808a420fc8c3ee0a18cd405946a11e29b04eafae377c4c7`.
+
+Phoenix ran only as an ephemeral self-hosted service on `127.0.0.1:6006` with product telemetry disabled. No external SaaS export, model network call or production effect occurred.
+
+The LF result was exact-hash identical before Phoenix, through OTel/Phoenix, and after writing a Phoenix annotation:
+
+`52c1052d55b4547ae0c1a7c5679cbcd43e801ef5fb7cdab1b8c535ca1b588d5f`
+
+Checks passed:
+- trace ingested/retrieved;
+- safe LF metadata/hashes retrieved;
+- raw sensitive content absent;
+- raw input/output attributes absent;
+- observational LF evaluator annotation written/retrieved;
+- annotation did not mutate LF result;
+- external SaaS export false.
+
+Local isolated round trips: LF execution + local export `29.357410 ms`; span retrieval `47.790945 ms`; annotation write/read `36.188432 ms`. These are not production throughput benchmarks.
+
+Pins used:
+- Phoenix Server `20.9.0`, recorded license `Elastic-2.0`;
+- Phoenix Client `3.5.0`, recorded license `Apache-2.0`;
+- OpenTelemetry `1.44.0`.
+
+The technical PASS does **not** authorize Phoenix Server for commercial or production use. R03-C also exposed a materially larger dependency surface than core OTel, so the full server must not be added to LF runtime requirements merely because local fit passed.
+
+## Current recommendation
+
+1. Adopt OTel traces/metrics behind `LF_TELEMETRY_PORT`.
+2. Keep LF certification/evidence canonical and independent.
+3. Treat Phoenix as optional DEV/EVAL observability only until further review.
+4. Keep full Phoenix Server out of LF runtime requirements until license/dependency review closes.
+5. Preserve OTLP portability so the backend remains replaceable.
+
+## Next bounded gate — R03-D
+
+`ADOPT-R03-D — PHOENIX_LICENSE_DEPENDENCY_ADOPTION_COST`
+
+Read-only evaluation of license/commercial approval, dependency/supply-chain footprint, operational weight, full-server vs client/OTLP alternatives, and whether Phoenix belongs only in development/evaluation tooling.
+
+No production adoption is authorized by R03-D analysis alone. Separately, LangGraph `R02-E` remains blocked until the final stable S26 freeze.
