@@ -1,0 +1,94 @@
+{
+  "checks": [
+    {
+      "check_id": "OVERFLOW-DIRECTION",
+      "check_type": "SEMANTIC_RELATION",
+      "evidence": "{\"acceptance_check\":{\"check_type\":\"STATE\",\"expected\":\"hidden without horizontal overflow and available when real horizontal overflow exists\",\"target_component_id\":\"table_horizontal_scroll\"},\"acceptance_criteria\":\"Table horizontal scroll QA verifies the chrome is hidden when all columns fit and becomes available under real overflow with every existing header and row action still reachable.\",\"category\":\"HIERARCHY\",\"decision\":\"Hide table horizontal scroll chrome when there is no horizontal overflow, while preserving automatic horizontal access whenever the table exceeds its container.\",\"evidence_anchor\":\"At the frozen 1600x1000 viewport all ten observed headers including Acciones are visible while horizontal scrollbar chrome remains rendered beneath the table.\",\"evidence_component_ids\":[\"history_table\",\"table_horizontal_scroll\"],\"execution\":{\"desired_value\":\"hidden when scrollWidth <= clientWidth; available through overflow auto when scrollWidth > clientWidth\",\"operation\":\"HIDE\",\"property\":\"visibility_when_no_overflow\",\"target_component_id\":\"table_horizontal_scroll\"},\"implementation_change\":\"Hide table_horizontal_scroll when scrollWidth <= clientWidth and retain overflow auto so the horizontal scroll control becomes available whenever scrollWidth > clientWidth without removing any column or action.\",\"issue_id\":\"B2B-CARGA-OVERFLOW-C-001\",\"priority\":\"P2\"}",
+      "obligation_id": "OVERFLOW-DIRECTION",
+      "question": "Does this action reduce unnecessary scroll chrome while preserving access to all columns under real overflow?",
+      "rule": "Any horizontal-overflow change must remove unnecessary persistent scroll chrome without removing access to columns when real overflow exists.",
+      "source_refs": [
+        "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/input.txt"
+      ]
+    },
+    {
+      "check_id": "PAGINATION-DIRECTION",
+      "check_type": "SEMANTIC_RELATION",
+      "evidence": "{\"acceptance_check\":{\"check_type\":\"STATE\",\"expected\":\"for total_records=6, page_size=25 and current_page=1: only page 1 available and next disabled\",\"target_component_id\":\"pagination\"},\"acceptance_criteria\":\"Pagination state QA verifies that 6 total records with page size 25 exposes only page 1 and disables next, while additional pages appear automatically when later data makes the derived page count greater than one.\",\"category\":\"INTERACTION\",\"decision\":\"Set pagination state from current total_records, page_size and current_page so unavailable phantom pages are not exposed.\",\"evidence_anchor\":\"The frozen state shows 6 cargas encontradas and 25 registros por página while pagination exposes pages 1, 2, 3 and a next control.\",\"evidence_component_ids\":[\"results_summary\",\"rows_per_page\",\"pagination\"],\"execution\":{\"desired_value\":\"derive pages from ceil(total_records/page_size) and next from current_page < page_count\",\"operation\":\"SET_STATE\",\"property\":\"available_pages_and_next_state\",\"target_component_id\":\"pagination\"},\"implementation_change\":\"Set pagination available pages to ceil(total_records / page_size) and disable the next state when current_page equals the derived page count; for the observed 6/25 state, only page 1 is available.\",\"issue_id\":\"B2B-CARGA-PAGINATION-C-001\",\"priority\":\"P1\",\"semantic_authority\":{\"claim_scope\":\"INPUT_SUPPORTED\",\"source_refs\":[\"sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/input.txt\",\"visual-artifact:ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287\"]}}",
+      "obligation_id": "PAGINATION-DIRECTION",
+      "question": "Does this action reduce the pagination inconsistency using a state-derived rule without inventing business semantics?",
+      "rule": "Any pagination change must reduce the visible inconsistency between total records, page size and available pages, and derive page count from current state instead of hard-coding a business count.",
+      "source_refs": [
+        "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/input.txt"
+      ]
+    },
+    {
+      "check_id": "QUALITY-HANDOFF",
+      "check_type": "EXACT_VALUE",
+      "evidence": "INDEPENDENT_CHAT_CONTEXT",
+      "expected_value": "INDEPENDENT_CHAT_CONTEXT",
+      "obligation_id": "QUALITY-HANDOFF",
+      "observed_value": "INDEPENDENT_CHAT_CONTEXT",
+      "rule": "The producer must hand off to independent Quality Pack review rather than self-authorize Golden.",
+      "source_refs": [
+        "profile-source-manifest:978aadc31103bd7c8d2aa709cd1b229934dc962d80709464ec706168878db4cf"
+      ]
+    },
+    {
+      "check_id": "SELF-VERDICT-BOUNDARY",
+      "check_type": "EXACT_VALUE",
+      "evidence": "PASS_TO_QUALITY_PACK_CANDIDATE",
+      "expected_value": "PASS_TO_QUALITY_PACK_CANDIDATE",
+      "obligation_id": "SELF-VERDICT-BOUNDARY",
+      "observed_value": "PASS_TO_QUALITY_PACK_CANDIDATE",
+      "rule": "A producer output may only claim candidate passage to Quality Pack before independent semantic review.",
+      "source_refs": [
+        "profile-source-manifest:978aadc31103bd7c8d2aa709cd1b229934dc962d80709464ec706168878db4cf"
+      ]
+    },
+    {
+      "check_id": "SHELL-LOCK",
+      "check_type": "REQUIRED_SUBSTRING",
+      "evidence": "screen content remediation only; LF shell, sidebar, topbar and company selector remain locked",
+      "expected": [
+        "shell",
+        "locked"
+      ],
+      "obligation_id": "SHELL-LOCK",
+      "rule": "The remediation scope must keep the LF shell locked.",
+      "source_refs": [
+        "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/input.txt"
+      ]
+    },
+    {
+      "check_id": "TASK-MODE",
+      "check_type": "EXACT_VALUE",
+      "evidence": "REMEDIATE_EXISTING",
+      "expected_value": "REMEDIATE_EXISTING",
+      "obligation_id": "TASK-MODE",
+      "observed_value": "REMEDIATE_EXISTING",
+      "rule": "Existing-screen evaluation must remain REMEDIATE_EXISTING.",
+      "source_refs": [
+        "profile-source-manifest:978aadc31103bd7c8d2aa709cd1b229934dc962d80709464ec706168878db4cf"
+      ]
+    },
+    {
+      "check_id": "VISUAL-ARTIFACT",
+      "check_type": "EXACT_VALUE",
+      "evidence": "ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+      "expected_value": "ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+      "obligation_id": "VISUAL-ARTIFACT",
+      "observed_value": "ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+      "rule": "The output must remain bound to the exact frozen visual artifact digest.",
+      "source_refs": [
+        "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/input.txt"
+      ]
+    }
+  ],
+  "execution_id": "EXEC-S26-N08C-GPT-NATIVE-GOLDEN-C-001",
+  "input_sha256": "e152e1a2df194b726d54db163ee71dead5f37d050c87475672dbda5cd2caba77",
+  "obligation_manifest_sha256": "4f19bb18baa1ea056878e46d45c908572ca9d3ea2bd4339aa1c8bb55299c837e",
+  "profile_code": "PERFIL-UI-ARCHITECT",
+  "raw_output_sha256": "e1408738ba2edf09f1213ac25e23e0da051e744cbd7df4ef80d5672b4af99ff8",
+  "schema": "PROFILE_SEMANTIC_CHECK_BUNDLE_V2"
+}

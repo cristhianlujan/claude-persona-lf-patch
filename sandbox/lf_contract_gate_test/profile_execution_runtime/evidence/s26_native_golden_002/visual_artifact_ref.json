@@ -1,0 +1,15 @@
+{
+  "schema": "LF_VISUAL_ARTIFACT_REF_V1",
+  "screen_code": "B2B-CARGA-001",
+  "artifact_id": 85,
+  "filename": "B2B_CARGA_001_HISTORIAL_DESKTOP_LIGHT_v0.1_CANDIDATO.png",
+  "sha256": "ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+  "byte_length": 142727,
+  "width": 1600,
+  "height": 1000,
+  "drive_file_id": "1_lvl3gYN76KfpjXtWMizgdcwOqliogqi",
+  "supabase_ref": "lf_ops.pantalla_artefactos/85",
+  "drive_byte_parity": true,
+  "observed_date": "2026-09-08",
+  "authority_boundary": "Supabase metadata + exact Google Drive bytes; digest equality required"
+}

@@ -1,0 +1,72 @@
+{
+  "contract_code": "S26_GOVERNANCE_EKB_APPLICABILITY_CARD_FALLBACK",
+  "version": "v0.3",
+  "status": "CANDIDATO_READ_ONLY",
+  "lane": "S26-E",
+  "judge": {
+    "entrypoint": "gobernanza/judges/validate_s26_governance_ekb_gate_strict.py",
+    "base_evaluator": "gobernanza/judges/validate_s26_governance_ekb_gate.py",
+    "both_layers_required": true
+  },
+  "existing_pre_ekb_contract": {
+    "contract_code": "CONTRACT-PRE-EKB-GATE-LF-v0.1",
+    "required_status": "ACTIVE_ENFORCEMENT",
+    "recreate_if_present": false
+  },
+  "mandatory_sequence": [
+    "CLASSIFY_SURFACE",
+    "APPLICABILITY_ROUTER",
+    "EKB_APPLICABLE_RULES",
+    "CARD_RESOLVER",
+    "GOVERNED_FALLBACK_IF_NEEDED",
+    "PRE_EXECUTION_GATE",
+    "EXECUTE",
+    "EVIDENCE",
+    "LEARNING_ELIGIBILITY"
+  ],
+  "applicability": {
+    "allowed": ["APPLICABLE", "NOT_APPLICABLE"],
+    "critical_ambiguity": "FAIL_CLOSED",
+    "not_applicable_reason_required": true,
+    "not_applicable_execution_allowed": false
+  },
+  "ekb": {
+    "readback_required_before_execute": true,
+    "snapshot_required": true,
+    "snapshot_digest_algorithm": "sha256",
+    "minimum_rule_codes": ["CI-E16-001", "CI-MIG-001", "DB-001", "DB-EVT-001", "GOV-010", "KB-PROD-001", "OPS-002"],
+    "applicable_rule_control_required": true,
+    "applicability_evidence_required": true,
+    "high_critical_unhandled": "FAIL_CLOSED",
+    "contradictory_applicable_rules_unresolved": "FAIL_CLOSED",
+    "self_test_snapshot_digest": "sha256:722ee9e921e57d9fb71378fa016b16f5557a13257d7ab1249ae8f1f13dd87e82"
+  },
+  "card_resolution": {
+    "states": ["EXACT", "COMPATIBLE", "NONE", "AMBIGUOUS"],
+    "candidate_refs_must_be_typed_list": true,
+    "candidate_refs_must_resolve_inside_cards": true,
+    "resolver_evidence_required": true,
+    "ambiguous": "FAIL_CLOSED",
+    "compatible_requires_evidence": true,
+    "none_is_not_manual": true
+  },
+  "fallback": {
+    "ordered_alternatives": ["CONTRACT_SCHEMA", "GENERIC_CAPABILITY", "SAFE_COMPOSITION"],
+    "typed_attempts_required": true,
+    "manual_allowed_only_after_all_safe_alternatives_fail": true,
+    "manual_allowed_false_when_any_blocker_exists": true,
+    "alternative_failure_requires_reason_and_evidence": true,
+    "selection_requires_evidence": true
+  },
+  "schema_policy": {
+    "invent_schema": false,
+    "mutate_data_model_to_fit_surface": false
+  },
+  "learning_persistence": {
+    "execution_permission_independent": true,
+    "required_when_persisting": ["cause", "evidence_ref", "evidence_digest", "applicability", "prevention", "provenance"],
+    "evidence_digest_algorithm": "sha256",
+    "unverified_or_incomplete": "DO_NOT_PERSIST"
+  },
+  "result_vocabulary": ["PASS_TO_EXECUTION", "NOT_APPLICABLE", "FAIL_CLOSED", "MANUAL_REQUIRED"]
+}

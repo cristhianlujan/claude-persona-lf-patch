@@ -1,0 +1,50 @@
+{
+  "schema": "LF_NATIVE_EXECUTION_METRICS_PLAN_V1",
+  "execution_id": "EXEC-S26-N08C-GPT-NATIVE-GOLDEN-C-001",
+  "quality": {
+    "required": true,
+    "pass_rule": "Independent Quality Pack strict PASS_TO_COMPOSER with no blocking codes and valid routing"
+  },
+  "depth": {
+    "required": true,
+    "authority_ref": "profiles/ui_architect/SKILL.md",
+    "rule": "UI Architect score total >= 20/25 with criterion-level evidence before pass-like handoff",
+    "minimum_score": 20,
+    "maximum_score": 25,
+    "requires_criterion_evidence": true,
+    "requires_ui_validator_pass": true,
+    "requires_independent_semantic_pass": true
+  },
+  "latency_observable": {
+    "required": true,
+    "metric": "E2E_PERSISTENCE_WINDOW_MS",
+    "definition": "Elapsed wall-clock window from frozen pre-execution start marker to persisted raw-output materialization readback; this is an observable end-to-end upper bound and is not claimed as model inference latency.",
+    "started_at_source": "this file / execution_started_at",
+    "completed_at_source": "raw-output materialization commit timestamp",
+    "must_be_nonnegative": true
+  },
+  "token_usage": {
+    "policy": "REQUIRED_IF_OBSERVABLE",
+    "allowed_status": ["OBSERVED", "NOT_OBSERVED"],
+    "default_for_chatgpt_native_without_exact_telemetry": "NOT_OBSERVED",
+    "forbid_estimation": true,
+    "forbid_inferred_token_counts": true
+  },
+  "traceability": {
+    "required": true,
+    "same_run_lineage": true,
+    "required_bindings": [
+      "execution_id",
+      "execution_contract_sha256",
+      "context_fingerprint",
+      "input_governance_snapshot_sha256",
+      "card_receipt",
+      "adapter_receipt",
+      "raw_output_sha256",
+      "profile_execution_receipt_sha256",
+      "semantic_check_bundle_sha256",
+      "independent_quality_receipt_sha256"
+    ]
+  },
+  "execution_started_at": "2026-09-08T20:41:30.884049+00:00"
+}

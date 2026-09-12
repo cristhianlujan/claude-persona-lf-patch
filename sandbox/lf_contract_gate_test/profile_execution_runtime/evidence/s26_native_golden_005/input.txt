@@ -1,0 +1,28 @@
+S26 Native Golden Run E — frozen execution input
+
+Screen: B2B-CARGA-001 — Historial de cargas.
+Task mode: REMEDIATE_EXISTING.
+Objective: produce a fresh UI Architect remediation candidate after Run D independent Quality returned to Orchestrator.
+
+Resolver-backed upstream evidence
+- Use `sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/visual_observation_packet.json` as the execution authority for observable screen facts.
+- The packet is derived from connected Google Drive readback of the frozen PNG and binds filename, byte length, dimensions and SHA-256.
+- Do not require the model or downstream Quality reviewer to infer additional facts from the PNG.
+- Do not infer `current_page`; it is intentionally absent from the execution authority.
+
+Required remediation directions
+1. Pagination: reduce the visible inconsistency between 6 found records / 25 per page and pagination chrome exposing pages 1, 2, 3 + next. The correction must be state-derived, but any formula chosen by the producer is a non-canonical derived rule. It MUST NOT be labeled UPSTREAM_VALUE or CANONICAL_TOKEN. Use RELATIVE_GUIDANCE or EXPLORATORY_PROPOSAL with proposal_status=PROPOSED_NOT_CANONICAL.
+2. Horizontal overflow: remove unnecessary persistent scrollbar chrome only when no real overflow exists; preserve access to all existing columns/actions when real overflow exists. This is also non-canonical derived guidance unless a canonical interaction rule is supplied.
+
+Same-run governed context
+- Input Governance: programacion.input_readiness_runs/221, fresh readback status PASS, not invalidated, screen B2B-CARGA-001.
+- Card: CARD_MARKETPLACE_LF_DECISIONES_PRODUCTO_EXPERIENCIA_v0.1_CANDIDATO; consume Role, Decision lenses, Hard blockers.
+- Adapter: ADAPTER-LF-SHELL-PROFILE-20260827 v0.1, assurance v2, ROUTER_BOUND_ONLY, exactly one same-run invocation, NO_SECOND_LLM_CALL.
+- Governed context receipts and normalized snapshots are mandatory evidence.
+
+Scope and safety
+- Shell/sidebar/topbar/company selector are locked and outside remediation scope.
+- Do not invent approval, payment, eligibility, legal, guarantee, urgency or other business semantics.
+- Governance hashes, refs, execution IDs, evidence metadata and review-routing metadata are non-render controls.
+- Producer may only emit PASS_TO_QUALITY_PACK_CANDIDATE.
+- Independent Quality Pack in INDEPENDENT_CHAT_CONTEXT is mandatory before any Golden claim.

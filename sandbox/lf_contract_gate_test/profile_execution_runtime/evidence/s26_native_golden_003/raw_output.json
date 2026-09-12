@@ -1,0 +1,247 @@
+{
+  "worker": "ui_architect",
+  "output_type": "PRODUCTION_UI_SPEC",
+  "deliverable_created": {
+    "screen_definition": {
+      "screen_code": "B2B-CARGA-001",
+      "screen_name": "Historial de cargas",
+      "task_mode": "REMEDIATE_EXISTING",
+      "artifact_sha256": "ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+      "viewport": "1600x1000",
+      "scope": "screen content remediation only; LF shell, sidebar, topbar and company selector remain locked"
+    },
+    "component_tree": [
+      {
+        "zone_id": "header",
+        "component_id": "page_heading",
+        "component_type": "HEADING",
+        "role": "identify the Historial de cargas surface",
+        "content": {"title": "Historial de cargas"},
+        "visual_priority": 5,
+        "color_tokens": {"mode": "PRESERVE_EXISTING"},
+        "typography": {"mode": "PRESERVE_EXISTING"},
+        "spacing": {"mode": "PRESERVE_EXISTING"},
+        "state": {"default": "visible"},
+        "allowed_variants": ["existing"],
+        "blocked_variants": ["shell_change"]
+      },
+      {
+        "zone_id": "filters",
+        "component_id": "filter_panel",
+        "component_type": "FILTER_GROUP",
+        "role": "preserve the nine observed filtering criteria and clear action",
+        "content": {"field_count": 9, "clear_action": "Limpiar filtros"},
+        "visual_priority": 3,
+        "color_tokens": {"mode": "PRESERVE_EXISTING"},
+        "typography": {"mode": "PRESERVE_EXISTING"},
+        "spacing": {"mode": "PRESERVE_EXISTING"},
+        "state": {"default": "visible"},
+        "allowed_variants": ["existing_fields"],
+        "blocked_variants": ["drop_filter", "invent_filter"]
+      },
+      {
+        "zone_id": "results",
+        "component_id": "results_summary",
+        "component_type": "SUMMARY",
+        "role": "report the observed result count",
+        "content": {"count": 6, "label": "cargas encontradas"},
+        "visual_priority": 3,
+        "color_tokens": {"mode": "PRESERVE_EXISTING"},
+        "typography": {"mode": "PRESERVE_EXISTING"},
+        "spacing": {"mode": "PRESERVE_EXISTING"},
+        "state": {"current": "6"},
+        "allowed_variants": ["derived_count"],
+        "blocked_variants": ["invent_count"]
+      },
+      {
+        "zone_id": "results",
+        "component_id": "history_table",
+        "component_type": "DATA_TABLE",
+        "role": "preserve all ten observed headers, six visible rows and row actions",
+        "content": {
+          "headers": ["Lote", "Nombre", "Archivo", "Tipo", "Cargado por", "Fecha", "Total", "Válidos", "Estado", "Acciones"],
+          "visible_rows": 6
+        },
+        "visual_priority": 5,
+        "color_tokens": {"mode": "PRESERVE_EXISTING"},
+        "typography": {"mode": "PRESERVE_EXISTING"},
+        "spacing": {"mode": "PRESERVE_EXISTING"},
+        "state": {"default": "all observed columns reachable"},
+        "allowed_variants": ["horizontal_overflow_when_required"],
+        "blocked_variants": ["drop_column", "drop_action"]
+      },
+      {
+        "zone_id": "results",
+        "component_id": "table_horizontal_scroll",
+        "component_type": "OVERFLOW_CONTROL",
+        "role": "provide horizontal access only when table content actually exceeds its container",
+        "content": {"observed": "scrollbar chrome is rendered while all ten headers fit in the frozen viewport"},
+        "visual_priority": 1,
+        "color_tokens": {"mode": "PRESERVE_EXISTING"},
+        "typography": {"mode": "NOT_APPLICABLE"},
+        "spacing": {"mode": "PRESERVE_EXISTING"},
+        "state": {"current": "visible", "desired": "conditional on real overflow"},
+        "allowed_variants": ["overflow_auto"],
+        "blocked_variants": ["permanently_hide_real_overflow"]
+      },
+      {
+        "zone_id": "pagination",
+        "component_id": "rows_per_page",
+        "component_type": "PAGE_SIZE_CONTROL",
+        "role": "represent the current visible page-size state",
+        "content": {"observed_value": 25, "label": "registros por página"},
+        "visual_priority": 2,
+        "color_tokens": {"mode": "PRESERVE_EXISTING"},
+        "typography": {"mode": "PRESERVE_EXISTING"},
+        "spacing": {"mode": "PRESERVE_EXISTING"},
+        "state": {"current": 25},
+        "allowed_variants": ["existing_options"],
+        "blocked_variants": ["invent_page_size"]
+      },
+      {
+        "zone_id": "pagination",
+        "component_id": "pagination",
+        "component_type": "PAGINATION",
+        "role": "expose only pages derived from current result count and page size",
+        "content": {"observed_pages": [1, 2, 3], "observed_next": "visible", "current_page": 1},
+        "visual_priority": 2,
+        "color_tokens": {"mode": "PRESERVE_EXISTING"},
+        "typography": {"mode": "PRESERVE_EXISTING"},
+        "spacing": {"mode": "PRESERVE_EXISTING"},
+        "state": {"total_records": 6, "page_size": 25, "derived_page_count": 1},
+        "allowed_variants": ["state_derived_pages"],
+        "blocked_variants": ["phantom_pages"]
+      }
+    ],
+    "layout_grid": {
+      "shell": "locked and excluded from remediation",
+      "content": "preserve the observed desktop content composition",
+      "table": "full available content width with conditional horizontal overflow"
+    },
+    "visual_hierarchy": [
+      {"parent_id": "page_heading", "child_ids": ["filter_panel"]},
+      {"parent_id": "filter_panel", "child_ids": ["results_summary"]},
+      {"parent_id": "results_summary", "child_ids": ["history_table"]},
+      {"parent_id": "history_table", "child_ids": ["table_horizontal_scroll", "rows_per_page", "pagination"]}
+    ],
+    "state_map": {
+      "results_summary": {"total_records": 6},
+      "rows_per_page": {"page_size": 25},
+      "pagination": {"page_count_rule": "ceil(total_records / page_size)", "observed_derived_page_count": 1, "current_page": 1},
+      "table_horizontal_scroll": {"visibility_rule": "visible only when scrollWidth > clientWidth"}
+    },
+    "token_map": {
+      "policy": "preserve existing LF presentation; do not infer new canonical tokens from the screenshot",
+      "surface": "preserve observed neutral content surfaces",
+      "actions": "preserve observed action hierarchy"
+    },
+    "spacing_typography": {
+      "precision_basis": "OBSERVED_RELATIVE_GUIDANCE",
+      "rule": "preserve current spacing and typography because this remediation is state-behavioral, not a visual-system redesign"
+    },
+    "density_rules": [
+      "Preserve the nine supplied filtering criteria and Limpiar filtros.",
+      "Preserve all ten observed table headers and existing row actions.",
+      "Do not trade information completeness for a narrower table."
+    ],
+    "risk_controls": [
+      "Keep the LF shell, sidebar, topbar and company selector locked.",
+      "Do not invent approval, payment, eligibility, legal, guarantee or urgency semantics.",
+      "Derive pagination only from current result-count, page-size and current-page state.",
+      "Retain horizontal access whenever real table overflow exists."
+    ],
+    "prompt_constraints": [
+      "Use the frozen B2B-CARGA-001 artifact and same-run governed Card/Adapter context.",
+      "Do not use prior run A/B outputs or prior semantic verdicts as authority.",
+      "Do not self-authorize Golden or production."
+    ],
+    "remediation_actions": [
+      {
+        "issue_id": "B2B-CARGA-PAGINATION-C-001",
+        "priority": "P1",
+        "category": "INTERACTION",
+        "evidence_anchor": "The frozen state shows 6 cargas encontradas and 25 registros por página while pagination exposes pages 1, 2, 3 and a next control.",
+        "evidence_component_ids": ["results_summary", "rows_per_page", "pagination"],
+        "decision": "Set pagination state from current total_records, page_size and current_page so unavailable phantom pages are not exposed.",
+        "implementation_change": "Set pagination available pages to ceil(total_records / page_size) and disable the next state when current_page equals the derived page count; for the observed 6/25 state, only page 1 is available.",
+        "acceptance_criteria": "Pagination state QA verifies that 6 total records with page size 25 exposes only page 1 and disables next, while additional pages appear automatically when later data makes the derived page count greater than one.",
+        "execution": {
+          "operation": "SET_STATE",
+          "target_component_id": "pagination",
+          "property": "available_pages_and_next_state",
+          "desired_value": "derive pages from ceil(total_records/page_size) and next from current_page < page_count"
+        },
+        "acceptance_check": {
+          "check_type": "STATE",
+          "target_component_id": "pagination",
+          "expected": "for total_records=6, page_size=25 and current_page=1: only page 1 available and next disabled"
+        },
+        "semantic_authority": {
+          "source_refs": [
+            "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/input.txt",
+            "visual-artifact:ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287"
+          ],
+          "claim_scope": "INPUT_SUPPORTED"
+        }
+      },
+      {
+        "issue_id": "B2B-CARGA-OVERFLOW-C-001",
+        "priority": "P2",
+        "category": "HIERARCHY",
+        "evidence_anchor": "At the frozen 1600x1000 viewport all ten observed headers including Acciones are visible while horizontal scrollbar chrome remains rendered beneath the table.",
+        "evidence_component_ids": ["history_table", "table_horizontal_scroll"],
+        "decision": "Hide table horizontal scroll chrome when there is no horizontal overflow, while preserving automatic horizontal access whenever the table exceeds its container.",
+        "implementation_change": "Hide table_horizontal_scroll when scrollWidth <= clientWidth and retain overflow auto so the horizontal scroll control becomes available whenever scrollWidth > clientWidth without removing any column or action.",
+        "acceptance_criteria": "Table horizontal scroll QA verifies the chrome is hidden when all columns fit and becomes available under real overflow with every existing header and row action still reachable.",
+        "execution": {
+          "operation": "HIDE",
+          "target_component_id": "table_horizontal_scroll",
+          "property": "visibility_when_no_overflow",
+          "desired_value": "hidden when scrollWidth <= clientWidth; available through overflow auto when scrollWidth > clientWidth"
+        },
+        "acceptance_check": {
+          "check_type": "STATE",
+          "target_component_id": "table_horizontal_scroll",
+          "expected": "hidden without horizontal overflow and available when real horizontal overflow exists"
+        }
+      }
+    ]
+  },
+  "score": {
+    "layout_precision": 4,
+    "visual_hierarchy": 4,
+    "lf_system_fidelity": 4,
+    "state_mapping": 5,
+    "handoff_quality": 4,
+    "total": 21,
+    "evidence_by_criterion": {
+      "layout_precision": {
+        "refs": ["layout_grid", "spacing_typography"],
+        "summary": "The specification preserves the observed desktop composition and confines layout change to conditional table overflow behavior."
+      },
+      "visual_hierarchy": {
+        "refs": ["visual_hierarchy", "history_table", "table_horizontal_scroll"],
+        "summary": "The result table remains the dominant content surface while scrollbar chrome is treated as subordinate conditional control."
+      },
+      "lf_system_fidelity": {
+        "refs": ["token_map", "risk_controls"],
+        "summary": "The proposal preserves existing LF presentation, locks the shell and blocks unsupported financial or urgency semantics."
+      },
+      "state_mapping": {
+        "refs": ["state_map", "pagination", "rows_per_page", "table_horizontal_scroll"],
+        "summary": "Both remediations are expressed as explicit observable state rules derived from result count, page size and real overflow conditions."
+      },
+      "handoff_quality": {
+        "refs": ["handoff_to_next", "self_verdict"],
+        "summary": "The candidate stops at independent Quality Pack review and does not claim Golden or downstream production authorization."
+      }
+    }
+  },
+  "handoff_to_next": {
+    "worker": "quality_pack",
+    "profile_code": "PERFIL-QUALITY-PACK",
+    "required_mode": "INDEPENDENT_CHAT_CONTEXT",
+    "instruction": "Independently validate the run C pagination and overflow directions against the frozen artifact, governed context receipt, execution contract and Quality Pack controls; do not inherit the producer verdict."
+  },
+  "self_verdict": "PASS_TO_QUALITY_PACK_CANDIDATE"
+}

@@ -1,0 +1,27 @@
+{
+  "schema": "S26_HP001_PREEXECUTION_CONTRACT_V1",
+  "test_id": "S26-HP-001",
+  "stage_b_ekb": {
+    "evidence_mode": "LIVE_CONTROL_PLANE_READBACK_MATERIALIZED",
+    "schema_first_required": true,
+    "project_id": "mhwmirqcgxxukpctffuv",
+    "table": "public.lf_error_knowledge",
+    "broad_selection_contract": "ACTIVE_HIGH_CRITICAL_SNAPSHOT_THEN_TASK_SIGNATURE_TARGETING",
+    "snapshot_reuse_for_new_run_allowed": false,
+    "minimum_applicable_codes": ["AUD-025","CI-005","CI-007","CI-E16-001","CI-SUPABASE-CONTROL-PLANE-READBACK-001","DB-001","GOV-010","PROFILE-RUNTIME-EKB-PREFLIGHT-BENCHMARK-001","PROFILES-EKB-PREFLIGHT-OMISSION-001","S26-MANIFEST-CANONICAL-CONTRACT-DIVERGENCE-001","S26-CANONICAL-DIRECT-ROUTER-SEMANTIC-FLOOR-VARIANCE-001"]
+  },
+  "stage_c_card": {"selection_policy":"OPTIONAL_CARD_UNLESS_EXPLICITLY_REQUIRED","candidate_source":"RUNTIME_CONTEXT_CARD_CANDIDATES","card_required":false,"expected_candidate_count":0,"decision":"NO_CARD_GOVERNED","reason":"NO_APPLICABLE_CARD","schema_invention_allowed":false,"no_card_is_valid":true,"next_gate":"D_AUTHORITY_RESOLUTION"},
+  "stage_d_authority": {
+    "surface_code": "UI_SCREEN_DESIGN",
+    "task_code": "CREATE_NEW",
+    "current_run_id": "S26-HP-001",
+    "required_authority_types": ["USER_REQUIREMENT","PROFILE_CONTRACT","OUTPUT_SCHEMA","RECIPIENT_BOUNDARY"],
+    "authority_paths": {"USER_REQUIREMENT":"sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/input.txt","PROFILE_CONTRACT":"profiles/ui_architect/SKILL.md","OUTPUT_SCHEMA":"profiles/ui_architect/schemas/ui_production_spec.schema.json","RECIPIENT_BOUNDARY":"profiles/ui_architect/contracts/composer_payload_boundary_v1.md"},
+    "authority_selection_mode": "EXACT_REQUIRED_TYPES_FROM_PREBOUND_CONTRACT",
+    "candidate_derived_authority_allowed": false,
+    "cross_run_authority_allowed": false,
+    "next_gate": "E_ADAPTER_TYPED_CONTEXT"
+  },
+  "stage_e_context": {"typed_context_schema":"LF_RUNTIME_TYPED_CONTEXT_V1","upstream_gate_required":"D_AUTHORITY_RESOLUTION","required_adapter_codes":[],"output_contract_version":"UI_PRODUCTION_SPEC_V6","profile_slug":"ui_architect","runtime_execution_allowed_in_this_stage":false,"model_weight_acquisition_allowed":false,"paid_fallback_allowed":false,"next_gate":"F_PROFILE_EXECUTION"},
+  "claim_ceiling": "PREEXECUTION_TYPED_CONTEXT_ONLY_NOT_RUNTIME_NOT_GOLDEN"
+}

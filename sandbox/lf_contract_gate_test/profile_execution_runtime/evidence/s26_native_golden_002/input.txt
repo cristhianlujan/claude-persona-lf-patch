@@ -1,0 +1,32 @@
+Existing governed screen: B2B-CARGA-001 — Historial de cargas.
+
+Evaluate the existing screen and return one executable UI Architect PRODUCTION_UI_SPEC for REMEDIATE_EXISTING. Do not use a previous candidate output or prior semantic verdict as authority.
+
+Frozen visual artifact identity:
+- filename: B2B_CARGA_001_HISTORIAL_DESKTOP_LIGHT_v0.1_CANDIDATO.png
+- SHA-256: ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287
+- dimensions: 1600x1000
+- bytes: 142727
+
+Observable facts from the frozen artifact:
+- The content area is the Historial de cargas screen inside the existing LF shell.
+- The screen shows nine visible filter criteria plus Limpiar filtros.
+- The results summary says 6 cargas encontradas.
+- The table exposes ten visible headers: Lote, Nombre, Archivo, Tipo, Cargado por, Fecha, Total, Válidos, Estado, Acciones.
+- Six data rows are visible.
+- The rows-per-page control visibly says 25 registros por página.
+- Pagination visibly exposes pages 1, 2 and 3 plus a next control.
+- A horizontal scrollbar is visibly rendered below the table rows while the ten headers including Acciones are visible in the frozen 1600px viewport.
+
+Governed scope:
+- Screen-content remediation only.
+- Sidebar, topbar, company selector and shell structure are SHELL_LOCKED and must not be modified.
+- Preserve all supplied functional filters, table columns and actions unless authoritative upstream context explicitly forbids one.
+- Do not invent financial, approval, payment, eligibility, legal, urgency or guarantee semantics.
+- Do not assert unobserved design-system pixel tokens as canonical.
+- Any horizontal-overflow correction must preserve access to all columns when real overflow exists.
+- Any pagination correction must remain derived from observable/current total-record and page-size state rather than hard-coding a business count.
+
+Required next gate:
+- Handoff to PERFIL-QUALITY-PACK using INDEPENDENT_CHAT_CONTEXT.
+- The producer must not self-authorize Golden or downstream production.
