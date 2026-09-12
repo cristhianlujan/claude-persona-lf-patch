@@ -95,7 +95,7 @@ Learning Preflight rules:
 
 - `EKB_PREFLIGHT_COMPLETED` must come from `public.lf_error_knowledge` for the current run; snapshots are not reusable across runs.
 - Every matched EKB code must record exactly one `matched_prevention_rule` and exactly one prevention check. A declarative PASS without `executed=true`, `exit_code=0`, a test ID, evidence SHA and source ref is not execution evidence.
-- The preflight must contain the active `ACTUALIZACION_PERFIL_LF` execution, exact target path, a PASS `pre_write_execution_binding_gate`, and a bound revision equal to the current repository HEAD.
+- The preflight must contain the active `ACTUALIZACION_PERFIL_LF` execution with canonical `target_type=PERFIL`, a target path inside `profiles/<slug>`, a PASS `pre_write_execution_binding_gate`, server-derived GitHub trust context, and a bound revision equal to the current repository HEAD.
 - If main advances, the preflight is stale: re-read/rebind before the next write.
 - Allowed write scope is only `profiles/<slug>/**`; runtime activation and production change remain false.
 - `write_allowed=true` can only be emitted when Learning Preflight passes and the structural baseline says `UPDATE_REQUIRED` without authority blockers.
