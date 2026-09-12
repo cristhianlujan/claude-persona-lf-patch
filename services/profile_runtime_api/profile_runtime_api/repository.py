@@ -32,6 +32,20 @@ class SchemaBinding:
     mode: str = "AUTO"
 
 
+@dataclass(frozen=True)
+class RuntimeProfileBinding:
+    profile_slug: str
+    profile_code: str
+    default_schema: str
+    output_modes: dict[str, str]
+    canonical_validator_path: str
+    canonical_validator_callable: str
+    semantic_utility_path: str
+    semantic_utility_callable: str
+    governance: dict[str, Any]
+    source_ref: str
+
+
 class RepositoryBindings:
     def __init__(self, repo_root: Path, *, max_prompt_chars: int) -> None:
         self.repo_root = repo_root.resolve()
@@ -93,6 +107,71 @@ class RepositoryBindings:
             sources.append({"ref": normalized, "content": content})
         return sorted(sources, key=lambda item: item["ref"])
 
+    def runtime_binding(self, profile_slug: str) -> RuntimeProfileBinding | None:
+        profile_root = (self.profiles_root / profile_slug).resolve()
+        self._within(profile_root, self.profiles_root, "PROFILE_ROOT_PATH_ESCAPE")
+        path = profile_root / "contracts/runtime_binding.json"
+        if not path.exists():
+            return None
+        self._within(path.resolve(), profile_root, "PROFILE_RUNTIME_BINDING_PATH_ESCAPE")
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise RepositoryError("PROFILE_RUNTIME_BINDING_INVALID_JSON", profile_slug) from exc
+        if not isinstance(payload, dict) or payload.get("schema") != "LF_PROFILE_RUNTIME_BINDING_V1":
+            raise RepositoryError("PROFILE_RUNTIME_BINDING_SCHEMA_INVALID", profile_slug)
+        if payload.get("profile_slug") != profile_slug:
+            raise RepositoryError("PROFILE_RUNTIME_BINDING_SLUG_MISMATCH", profile_slug)
+        profile_code = payload.get("profile_code")
+        runtime_schema = payload.get("runtime_schema")
+        canonical = payload.get("canonical_validator")
+        semantic = payload.get("semantic_utility")
+        governance = payload.get("governance")
+        if not isinstance(profile_code, str) or not profile_code:
+            raise RepositoryError("PROFILE_RUNTIME_BINDING_CODE_INVALID", profile_slug)
+        if not isinstance(runtime_schema, dict) or not isinstance(runtime_schema.get("default"), str) or not isinstance(runtime_schema.get("output_modes"), dict):
+            raise RepositoryError("PROFILE_RUNTIME_BINDING_SCHEMA_CONFIG_INVALID", profile_slug)
+        if not isinstance(canonical, dict) or not all(isinstance(canonical.get(k), str) and canonical.get(k) for k in ("path", "callable")):
+            raise RepositoryError("PROFILE_RUNTIME_BINDING_VALIDATOR_INVALID", profile_slug)
+        if not isinstance(semantic, dict) or not all(isinstance(semantic.get(k), str) and semantic.get(k) for k in ("path", "callable")):
+            raise RepositoryError("PROFILE_RUNTIME_BINDING_SEMANTIC_UTILITY_INVALID", profile_slug)
+        if not isinstance(governance, dict):
+            raise RepositoryError("PROFILE_RUNTIME_BINDING_GOVERNANCE_INVALID", profile_slug)
+        expected = {
+            "source_first_required": True,
+            "schema_invention_allowed": False,
+            "fail_closed": True,
+            "exact_head_evidence_required": True,
+            "post_update_baseline_required": True,
+        }
+        if any(governance.get(k) is not v for k, v in expected.items()):
+            raise RepositoryError("PROFILE_RUNTIME_BINDING_GOVERNANCE_WEAK", profile_slug)
+        refs = [runtime_schema["default"], *runtime_schema["output_modes"].values(), canonical["path"], semantic["path"]]
+        for rel in refs:
+            if not isinstance(rel, str) or not rel or rel.startswith("/") or ".." in PurePosixPath(rel).parts:
+                raise RepositoryError("PROFILE_RUNTIME_BINDING_REF_INVALID", str(rel))
+            resolved = (profile_root / rel).resolve()
+            self._within(resolved, profile_root, "PROFILE_RUNTIME_BINDING_REF_ESCAPE")
+            if not resolved.is_file():
+                raise RepositoryError("PROFILE_RUNTIME_BINDING_REF_MISSING", rel)
+        return RuntimeProfileBinding(
+            profile_slug=profile_slug,
+            profile_code=profile_code,
+            default_schema=runtime_schema["default"],
+            output_modes=dict(runtime_schema["output_modes"]),
+            canonical_validator_path=canonical["path"],
+            canonical_validator_callable=canonical["callable"],
+            semantic_utility_path=semantic["path"],
+            semantic_utility_callable=semantic["callable"],
+            governance=dict(governance),
+            source_ref=str(path.relative_to(self.repo_root)),
+        )
+
+    def validate_profile_identity(self, profile_slug: str, profile_code: str) -> None:
+        binding = self.runtime_binding(profile_slug)
+        if binding is not None and profile_code != binding.profile_code:
+            raise RepositoryError("PROFILE_RUNTIME_IDENTITY_BINDING_MISMATCH", profile_slug)
+
     def runtime_schema(self, profile_slug: str, output_mode: str = "AUTO") -> SchemaBinding:
         profile_root = (self.profiles_root / profile_slug).resolve()
         self._within(profile_root, self.profiles_root, "PROFILE_ROOT_PATH_ESCAPE")
@@ -101,7 +180,16 @@ class RepositoryBindings:
         if not schema_root.is_dir():
             raise RepositoryError("PROFILE_RUNTIME_SCHEMA_MISSING", profile_slug)
 
-        if output_mode != "AUTO":
+        binding = self.runtime_binding(profile_slug)
+        if binding is not None:
+            relative = binding.default_schema if output_mode == "AUTO" else binding.output_modes.get(output_mode)
+            if not relative:
+                raise RepositoryError("RUNTIME_OUTPUT_MODE_UNSUPPORTED", output_mode)
+            selected = (profile_root / relative).resolve()
+            self._within(selected, schema_root, "PROFILE_SCHEMA_PATH_ESCAPE")
+            payload, raw = self._read_schema(selected, schema_root)
+            refs = (str(selected.relative_to(self.repo_root)),)
+        elif output_mode != "AUTO":
             if profile_slug != "ui_architect":
                 raise RepositoryError("RUNTIME_OUTPUT_MODE_PROFILE_MISMATCH", profile_slug)
             filename = UI_RUNTIME_SCHEMA_BY_MODE.get(output_mode)
@@ -139,6 +227,7 @@ class RepositoryBindings:
             mode=output_mode,
         )
 
+
     def load_runtime_runner(self) -> ModuleType:
         runtime_dir = self.repo_root / "sandbox/lf_contract_gate_test/profile_execution_runtime"
         return self._load_with_siblings(
@@ -154,19 +243,35 @@ class RepositoryBindings:
         )
 
     def load_validator(self, profile_slug: str) -> ModuleType | None:
+        binding = self.runtime_binding(profile_slug)
+        if binding is not None:
+            return self._load_file(
+                self.profiles_root / profile_slug / binding.canonical_validator_path,
+                f"lf_profile_validator_{profile_slug}",
+            )
         mapping = {
-            "product_director_lf": (
-                "profiles/product_director_lf/validators/"
-                "validate_product_director_output.py"
-            ),
+            "product_director_lf": "profiles/product_director_lf/validators/validate_product_director_output.py",
             "ui_architect": "profiles/ui_architect/validators/validate_ui_architect_output.py",
             "quality_pack": "profiles/quality_pack/validators/validate_routing.py",
         }
         relative = mapping.get(profile_slug)
         if not relative:
             return None
-        path = self.repo_root / relative
-        return self._load_file(path, f"lf_profile_validator_{profile_slug}")
+        return self._load_file(self.repo_root / relative, f"lf_profile_validator_{profile_slug}")
+
+    def validator_callable_name(self, profile_slug: str) -> str | None:
+        binding = self.runtime_binding(profile_slug)
+        return binding.canonical_validator_callable if binding is not None else None
+
+    def load_semantic_utility(self, profile_slug: str) -> tuple[ModuleType, str] | None:
+        binding = self.runtime_binding(profile_slug)
+        if binding is None:
+            return None
+        module = self._load_file(
+            self.profiles_root / profile_slug / binding.semantic_utility_path,
+            f"lf_profile_semantic_utility_{profile_slug}",
+        )
+        return module, binding.semantic_utility_callable
 
     @staticmethod
     def _load_file(path: Path, module_name: str) -> ModuleType:
