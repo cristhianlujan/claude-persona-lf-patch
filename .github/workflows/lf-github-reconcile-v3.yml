@@ -30,7 +30,50 @@ jobs:
           ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 2
 
+      - name: Classify external reconciliation applicability
+        id: applicability
+        shell: bash
+        env:
+          SOURCE_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          changed_file="$RUNNER_TEMP/lf-github-reconcile-changed.txt"
+          git diff-tree --no-commit-id --name-only -r --first-parent "$SOURCE_HEAD_SHA" > "$changed_file"
+          decision="$(python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_github_reconcile_applicability.py --paths-file "$changed_file")"
+          echo "$decision"
+          required="$(jq -r '.required' <<<"$decision")"
+          state="$(jq -r '.state' <<<"$decision")"
+          reason="$(jq -r '.reason' <<<"$decision")"
+          changed_count="$(jq -r '.changed_count' <<<"$decision")"
+          lane_ids="$(jq -c '.lane_ids' <<<"$decision")"
+          if [[ "$required" != "true" && "$required" != "false" ]]; then
+            echo "FAIL_RECONCILIATION_APPLICABILITY_INVALID_REQUIRED=$required"
+            exit 1
+          fi
+          {
+            echo "required=$required"
+            echo "state=$state"
+            echo "reason=$reason"
+          } >> "$GITHUB_OUTPUT"
+          {
+            echo "### LF GitHub reconciliation applicability"
+            echo "- state: \`$state\`"
+            echo "- reason: \`$reason\`"
+            echo "- changed files: \`$changed_count\`"
+            echo "- S30 lanes: \`$lane_ids\`"
+            echo "- NOT_APPLICABLE invariant: \`S30_KNOWN_ISOLATED_ONLY\`"
+            echo "- safety: non-S30, mixed, unknown, empty or invalid ownership remains fail-closed REQUIRED"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Record external reconciliation not applicable
+        if: steps.applicability.outputs.required == 'false'
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "PASS_LF_GITHUB_RECONCILIATION_NOT_APPLICABLE state=${{ steps.applicability.outputs.state }} reason=${{ steps.applicability.outputs.reason }}"
+
       - name: Download authoritative audit artifact
+        if: steps.applicability.outputs.required == 'true'
         uses: actions/download-artifact@v4
         with:
           name: r8-continuous-audit-${{ github.event.workflow_run.id }}
@@ -39,6 +82,7 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
 
       - name: Capture source run, merged PR and branch protection
+        if: steps.applicability.outputs.required == 'true'
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.LF_RULESET_AUDIT_TOKEN }}
@@ -224,6 +268,7 @@ jobs:
             fs.writeFileSync('github-metadata.json', JSON.stringify(metadata));
 
       - name: Request GitHub OIDC token
+        if: steps.applicability.outputs.required == 'true'
         id: oidc
         uses: actions/github-script@v7
         with:
@@ -233,6 +278,7 @@ jobs:
             core.setOutput('token', token);
 
       - name: Fetch governed artifact inventory
+        if: steps.applicability.outputs.required == 'true'
         env:
           OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
@@ -246,6 +292,7 @@ jobs:
           jq '{repository, artifact_count: (.inventory | length)}' governed-inventory.json
 
       - name: Build reconciliation request
+        if: steps.applicability.outputs.required == 'true'
         env:
           RECONCILIATION_WORKFLOW_RUN_ID: ${{ github.run_id }}
           SOURCE_WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
@@ -344,6 +391,7 @@ jobs:
           PY
 
       - name: Persist reconciliation and test evidence
+        if: steps.applicability.outputs.required == 'true'
         env:
           OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
