@@ -28,6 +28,16 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Initialize evidence directory
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "${S26_MATRIX_OUT_DIR}"
+          printf '%s\n' \
+            'S26 Matrix v3 W1 deterministic probe' \
+            'Scope: evidence-only; no Gate G, Golden, production, Supabase write, model call, or paid fallback.' \
+            > "${S26_MATRIX_OUT_DIR}/harness_scope.txt"
+
       - name: Verify frozen candidate identity
         shell: bash
         run: |
@@ -35,17 +45,31 @@ jobs:
           git cat-file -e "${S26_FINAL_CANDIDATE_SHA}^{commit}"
           observed="$(git rev-parse "${S26_FINAL_CANDIDATE_SHA}^{commit}")"
           test "$observed" = "$S26_FINAL_CANDIDATE_SHA"
-          echo "FINAL_CANDIDATE_SHA=$observed"
+          echo "FINAL_CANDIDATE_SHA=$observed" | tee "${S26_MATRIX_OUT_DIR}/candidate_identity.txt"
 
       - name: Validate Matrix prebuild contracts
         shell: bash
         run: |
           set -euo pipefail
-          cd sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_family_objective_matrix_v3
-          python validate_matrix_contract.py
-          python validate_missing_objectives_plan.py
-          python validate_performance_applicability_addendum.py
-          python test_build_w0_execution_recipes.py
+          matrix_dir="sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_family_objective_matrix_v3"
+          (
+            cd "$matrix_dir"
+            python validate_coverage_inventory.py
+            python validate_missing_objectives_plan.py
+            python build_w0_execution_recipes.py > "$GITHUB_WORKSPACE/${S26_MATRIX_OUT_DIR}/w0_execution_recipes.json"
+          ) 2>&1 | tee "${S26_MATRIX_OUT_DIR}/prebuild_validation.log"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          path = Path(os.environ["S26_MATRIX_OUT_DIR"]) / "w0_execution_recipes.json"
+          doc = json.loads(path.read_text(encoding="utf-8"))
+          assert doc["status"] == "PREBUILD_READY_FINAL_EXECUTION_DISABLED"
+          assert doc["recipe_count"] > 0
+          assert doc["execution_enabled_count"] == 0
+          assert all(r["final_candidate_sha"] is None for r in doc["recipes"])
+          print(f"W0_PREBUILD_VALID recipe_count={doc['recipe_count']} execution_enabled_count={doc['execution_enabled_count']}")
+          PY
 
       - name: Execute W1 exact-candidate probe
         shell: bash
