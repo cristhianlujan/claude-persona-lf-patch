@@ -36,11 +36,14 @@ jobs:
           cat /tmp/r03c-phoenix.log
           exit 1
       - name: Execute isolated Phoenix local fit
+        shell: bash
         run: |
+          set -o pipefail
           python sandbox/lf_contract_gate_test/platform_adopt/otel_phoenix_fitgap_001/run_r03c_phoenix_local_fit.py | tee R03C_PHOENIX_LOCAL_FIT_REPORT.json
       - name: Upload R03-C report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: r03c-phoenix-local-fit-report
           path: R03C_PHOENIX_LOCAL_FIT_REPORT.json
-          if-no-files-found: error
+          if-no-files-found: warn
