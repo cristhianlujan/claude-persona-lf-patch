@@ -1,0 +1,197 @@
+{
+  "work_package_id": "WP-S31-A-001",
+  "strategy_id": "S31",
+  "lane_id": "S31-A",
+  "capability_id": "CANONICAL_CAPABILITY_MODEL",
+  "version": "v0.1-bootstrap",
+  "owner": "S31",
+  "worker": "S31-A-CAPABILITY-MODEL-WORKER",
+  "judge": "INDEPENDENT-S31-A-JUDGE",
+  "currentness": {
+    "base_main_sha": "ee7aca94c672fcc555db90962f09fe439eedf4f0",
+    "source_snapshot_refs": [
+      "gobernanza/contratos/s30_self_governance_gate_v1.json",
+      "gobernanza/contratos/s26_governance_ekb_card_fallback_v1.json",
+      "sandbox/lf_contract_gate_test/profile_execution_runtime/S26_OPERATING_MODE_SOURCE_FIRST.md",
+      "services/profile_runtime_api/profile_runtime_api/runtime_authority.py",
+      "skills/learning_engine/SKILL.md",
+      "skills/creating-integral-user-stories/schemas/task-packet.schema.json"
+    ],
+    "source_snapshot_sha256": [],
+    "authority_refs": [
+      "main@ee7aca94c672fcc555db90962f09fe439eedf4f0",
+      "LF_WORK_PACKAGE_BOOTSTRAP_V0_1"
+    ],
+    "currentness_policy": "EXACT_HEAD",
+    "cross_run_references": [],
+    "stale_action": "FAIL_CLOSED_BEFORE_MATERIAL_WORK"
+  },
+  "ownership": {
+    "active_writer_scope": [
+      "sandbox/lf_contract_gate_test/s31_bootstrap/"
+    ],
+    "read_only_sources": [
+      "gobernanza/",
+      "services/profile_runtime_api/",
+      "skills/learning_engine/",
+      "skills/creating-integral-user-stories/",
+      "sandbox/lf_contract_gate_test/s30_",
+      "sandbox/lf_contract_gate_test/profile_execution_runtime/"
+    ],
+    "allowed_dependencies": [
+      "S30_SELF_GOVERNANCE",
+      "S26_RUNTIME_AUTHORITY",
+      "LEARNING_ENGINE_GOVERNANCE",
+      "STORY_TASK_PACKET"
+    ],
+    "forbidden_cross_lane_writes": [
+      "S30",
+      "S26",
+      "LEARNING_ENGINE",
+      "CREATING_INTEGRAL_USER_STORIES"
+    ],
+    "collision_checks": [
+      "BASE_MAIN_CURRENT",
+      "S31_ACTIVE_WRITER_UNIQUE",
+      "NO_S30_S26_SHARED_WRITE",
+      "NO_UNRELATED_MIGRATION_WRITE"
+    ],
+    "principle": "ONE_CAUSAL_CHAIN_ONE_ACTIVE_WRITER"
+  },
+  "scope": {
+    "allowed_tools": [
+      "GITHUB_READ",
+      "GITHUB_WRITE_S31_BRANCH",
+      "LOCAL_DETERMINISTIC_VALIDATION"
+    ],
+    "allowed_read_scope": [
+      "gobernanza/",
+      "services/profile_runtime_api/",
+      "skills/learning_engine/",
+      "skills/creating-integral-user-stories/",
+      "sandbox/lf_contract_gate_test/s30_",
+      "sandbox/lf_contract_gate_test/profile_execution_runtime/"
+    ],
+    "allowed_write_scope": [
+      "sandbox/lf_contract_gate_test/s31_bootstrap/"
+    ],
+    "forbidden_actions": [
+      "MUTATE_S30_INTERNALS",
+      "MUTATE_S26_INTERNALS",
+      "MUTATE_LEARNING_ENGINE_INTERNALS",
+      "MUTATE_STORY_CREATOR_INTERNALS",
+      "ENABLE_PRODUCTION",
+      "ENABLE_RUNTIME_FLEET",
+      "PROMOTE_GOLDEN",
+      "MERGE_MAIN",
+      "REWRITE_UNRELATED_MIGRATIONS",
+      "SILENT_SCOPE_EXPANSION"
+    ]
+  },
+  "capability_binding": {
+    "required_capabilities": [
+      "LF_WORK_PACKAGE_BOOTSTRAP",
+      "SOURCE_FIRST_GOVERNANCE",
+      "CURRENTNESS",
+      "LANE_OWNERSHIP",
+      "EVIDENCE_DISCIPLINE"
+    ],
+    "capability_versions": {
+      "LF_WORK_PACKAGE_BOOTSTRAP": "v0.1",
+      "SOURCE_FIRST_GOVERNANCE": "S26_TEMPORARY_POLICY",
+      "CURRENTNESS": "S30_CANDIDATE",
+      "LANE_OWNERSHIP": "S30_CI_LANE_OWNERSHIP_V1",
+      "EVIDENCE_DISCIPLINE": "LF_EXISTING"
+    },
+    "compatibility_requirements": [
+      "READ_ONLY_CROSS_STRATEGY_INSPECTION",
+      "FAIL_CLOSED_ON_STALE_BASE",
+      "NO_OWNER_BYPASS"
+    ],
+    "adapter_requirements": [],
+    "unresolved_capabilities": []
+  },
+  "pre_execution_assurance": {
+    "checks": [
+      "CURRENTNESS_RESOLVED",
+      "SOURCE_AUTHORITY_RESOLVED",
+      "EKB_APPLICABILITY_RESOLVED",
+      "OWNERSHIP_COLLISION_FREE",
+      "SCHEMAS_CONTRACTS_RESOLVED",
+      "TOOLS_FUNCTIONS_ADAPTERS_RESOLVED",
+      "EVIDENCE_READBACK_RESOLVED",
+      "ASSERTIONS_ENUMERATED",
+      "NEGATIVE_PATH_DEFINED",
+      "DEPENDENCIES_RESOLVED"
+    ],
+    "material_work_allowed_only_if_all_pass": true,
+    "failure_action": "FAIL_CLOSED_BEFORE_MATERIAL_WORK"
+  },
+  "assertions": {
+    "acceptance": [
+      "CAPABILITY_MODEL_IDENTIFIES_TRANSVERSAL_AND_OWNER_LOCAL_CONCERNS",
+      "CAPABILITY_MODEL_HAS_VERSION_OWNER_LIFECYCLE_CONTRACT_DEPENDENCY_FIELDS",
+      "CAPABILITY_MODEL_PRESERVES_S30_S26_INTERNAL_OWNERSHIP",
+      "MODEL_SUPPORTS_PORT_ADAPTER_BOUNDARY_WITHOUT_FRAMEWORK_LOCK_IN",
+      "MODEL_CAN_REPRESENT_CARDS_AUTHORITY_TYPED_CONTEXT_EVIDENCE_AND_LEARNING"
+    ],
+    "failure": [
+      "MODEL_DUPLICATES_EXISTING_OWNER_IMPLEMENTATION",
+      "MODEL_ENCODES_EXTERNAL_FRAMEWORK_AS_KERNEL_REQUIREMENT",
+      "MODEL_CANNOT_EXPRESS_CURRENTNESS_OR_EVIDENCE",
+      "MODEL_REQUIRES_CROSS_STRATEGY_WRITES"
+    ],
+    "blocking": [
+      "BASE_MAIN_STALE",
+      "SOURCE_AUTHORITY_MISSING",
+      "OWNERSHIP_COLLISION",
+      "UNRESOLVED_CANONICAL_CONTRACT"
+    ],
+    "invalidation_conditions": [
+      "MAIN_HEAD_CHANGES_MATERIALLY_DURING_ANALYSIS",
+      "SOURCE_CONTRACT_REPLACED_OR_REJECTED",
+      "S31_WRITE_SCOPE_OVERLAPS_ACTIVE_EXTERNAL_LANE"
+    ]
+  },
+  "evidence": {
+    "required_evidence": [
+      "SOURCE_INVENTORY",
+      "CURRENT_TO_TARGET_MAPPING",
+      "FIELD_LEVEL_CAPABILITY_MODEL_RATIONALE",
+      "POSITIVE_EXAMPLE",
+      "NEGATIVE_EXAMPLE",
+      "INDEPENDENT_JUDGE_RESULT",
+      "GITHUB_READBACK"
+    ],
+    "evidence_refs": [],
+    "evidence_digests": [],
+    "claim_ceiling": "SEMANTIC",
+    "producer_receipt_required": true,
+    "independent_judge_receipt_required": true,
+    "readback_receipt_required": true
+  },
+  "frontier": {
+    "current_stage": "BOOTSTRAP_WORK_PACKAGE_CREATED",
+    "next_gate": "READ_ONLY_CAPABILITY_MODEL_ANALYSIS",
+    "blockers": [],
+    "safe_parallel_work": [
+      "READ_ONLY_CARD_VOCABULARY_INVENTORY",
+      "READ_ONLY_WORK_PACKAGE_FIELD_INVENTORY"
+    ],
+    "handoff_target": "S31-A-CAPABILITY-MODEL-WORKER",
+    "handoff_contract": "WP-S31-A-001"
+  },
+  "closure": {
+    "binary_conditions": [
+      "ALL_ACCEPTANCE_ASSERTIONS_EVIDENCED",
+      "ZERO_UNRESOLVED_BLOCKERS",
+      "POSITIVE_AND_NEGATIVE_EXAMPLES_PRESENT",
+      "INDEPENDENT_JUDGE_PASS_WITH_EVIDENCE",
+      "GITHUB_READBACK_MATCHES_PRODUCER_OUTPUT"
+    ],
+    "recompute_from_ledger": true,
+    "main_merge_allowed": false,
+    "production_allowed": false,
+    "golden_promotion_allowed": false
+  }
+}
