@@ -2,9 +2,12 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import subprocess
 import sys
+import tarfile
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -13,15 +16,8 @@ from langgraph.func import entrypoint, task
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[3]
-PKG = ROOT / "services" / "profile_runtime_api"
-if str(PKG) not in sys.path:
-    sys.path.insert(0, str(PKG))
-
-from profile_runtime_api.engine import ProfileRuntimeEngine
-from profile_runtime_api.models import ProfileTask
-from profile_runtime_api.settings import Settings
-
 SOURCE_REF = "48916fd36bcaff8eadd60944848e81adbea55c54"
+RUNTIME_SOURCE_SHA = "d8c10954d5a6058ffdde7f4b520efcbabf50d180"
 SOURCE_DIR = "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001"
 EXPECTED_INPUT_SHA256 = "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1"
 EXPECTED_RAW_SHA256 = "45b130b396abb690095cb6b64c1bf23b4a046a49c904aee1436ff0a46b450b0b"
@@ -50,9 +46,37 @@ def git_show(path: str) -> bytes:
     return proc.stdout
 
 
-def materialize(engine: ProfileRuntimeEngine, task: ProfileTask, raw_text: str) -> str:
+def load_frozen_runtime() -> tuple[type[Any], type[Any], type[Any], Path]:
+    """Load the exact LF runtime code and composer boundary from the frozen S26 ref."""
+    frozen_root = Path(tempfile.mkdtemp(prefix="lf-r02c-frozen-"))
+    proc = subprocess.run(
+        [
+            "git",
+            "archive",
+            SOURCE_REF,
+            "services/profile_runtime_api/profile_runtime_api",
+            "profiles/ui_architect/validators/validate_composer_payload_boundary.py",
+        ],
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=True,
+    )
+    with tarfile.open(fileobj=io.BytesIO(proc.stdout), mode="r:*") as archive:
+        archive.extractall(frozen_root)
+
+    frozen_pkg = frozen_root / "services" / "profile_runtime_api"
+    sys.path.insert(0, str(frozen_pkg))
+    from profile_runtime_api.engine import ProfileRuntimeEngine
+    from profile_runtime_api.models import ProfileTask
+    from profile_runtime_api.settings import Settings
+
+    return ProfileRuntimeEngine, ProfileTask, Settings, frozen_root
+
+
+def materialize(engine: Any, profile_task: Any, raw_text: str) -> str:
     result, _meta = engine._materialize_runtime_output(
-        task=task,
+        task=profile_task,
         model_raw_output=raw_text,
         governed_receipt={"runtime_typed_context_sha256": TYPED_CONTEXT_SHA256},
     )
@@ -68,7 +92,6 @@ def main() -> int:
     expected_bytes = git_show("gate_f_exact_materialized_output.review.json")
 
     request = json.loads(request_bytes.decode("utf-8"))
-    task = ProfileTask.model_validate(request["profile"])
     input_literal = request["profile"]["input_literal"]
 
     if sha256_bytes(input_literal.encode("utf-8")) != EXPECTED_INPUT_SHA256:
@@ -90,21 +113,23 @@ def main() -> int:
     if json.loads(persisted_raw.decode("utf-8")) != json.loads(raw_bytes.decode("utf-8")):
         raise RuntimeError("R02C_PERSISTED_RAW_MISMATCH")
 
+    ProfileRuntimeEngine, ProfileTask, Settings, frozen_root = load_frozen_runtime()
+    profile_task = ProfileTask.model_validate(request["profile"])
     settings = Settings(
-        repo_root=ROOT,
+        repo_root=frozen_root,
         state_dir=Path("/tmp/lf-r02c-state"),
         api_token="r02c-replay-only",
-        source_sha=SOURCE_REF,
+        source_sha=RUNTIME_SOURCE_SHA,
     )
     engine = ProfileRuntimeEngine(settings)
     raw_text = raw_bytes.decode("utf-8")
 
-    direct_output = materialize(engine, task, raw_text)
+    direct_output = materialize(engine, profile_task, raw_text)
     direct_bytes = direct_output.encode("utf-8")
 
     @task(name="lf_r02c_materialize_real_s26")
     def materialize_task(_: dict[str, Any]) -> str:
-        return materialize(engine, task, raw_text)
+        return materialize(engine, profile_task, raw_text)
 
     @entrypoint(checkpointer=InMemorySaver())
     def functional(_: dict[str, Any]) -> dict[str, Any]:
@@ -124,6 +149,7 @@ def main() -> int:
         "schema": "LF_LANGGRAPH_R02C_REAL_S26_ARTIFACT_PARITY_V1",
         "case_id": "S26-HP-001",
         "source_ref": SOURCE_REF,
+        "runtime_source_sha": RUNTIME_SOURCE_SHA,
         "profile": "ui_architect",
         "input_sha256": sha256_bytes(input_literal.encode("utf-8")),
         "model_raw_output_sha256": sha256_bytes(raw_bytes),
