@@ -1,0 +1,21 @@
+{
+  "base_main_sha": "c6e1dd5bfc47aa2eabf23de02a39c1aa0742fb8e",
+  "langgraph_pin": "1.2.11",
+  "schema": "lf-langgraph-spike-baseline/v1",
+  "scope_guards": {
+    "delete_existing_runtime": false,
+    "real_model_call": false,
+    "touch_production": false,
+    "touch_s26": false,
+    "touch_s30": false,
+    "touch_supabase_schema": false
+  },
+  "source_bindings": {
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_runner.py": "b0cce38d93b7dfa769b2593554420954bae9be4a",
+    "services/profile_runtime_api/profile_runtime_api/app.py": "f427855f2e714af5b8bf76408ca5bcbcd0fe3fb3",
+    "services/profile_runtime_api/profile_runtime_api/engine.py": "d2278d913c776f7704caee0923383da870a54c60",
+    "services/profile_runtime_api/profile_runtime_api/jobs.py": "8ce62ddf7b5275c3e5a25ff75d104239ecf6d9f2"
+  },
+  "spike_id": "LF_LANGGRAPH_SPIKE_001",
+  "strategy_code": "LF_PLATFORM_ADOPT_FIRST_20260912"
+}
