@@ -1,0 +1,35 @@
+{
+  "review_id": "QP_PROFILE_CREATOR_HANDOFF_GAP_001",
+  "reviewed_artifact": "PROFILE_UI_INTERFACE_ARCHITECT_LF_CANDIDATE",
+  "verdict": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+  "score_breakdown": {
+    "contract_schema_compliance": 5,
+    "evidence_integrity": 3,
+    "lf_safety_governance": 5,
+    "handoff_readiness": 0,
+    "leakage_scope_control": 5,
+    "total": 18
+  },
+  "evidence_map": [
+    "Profile Creator output is structurally complete and declares PROFILE_PACK_CREATED with deliverable_created=true.",
+    "The output only supplies a list of relative filenames; it does not include the created profile pack, an exact artifact path/ref, or the file contents.",
+    "Profile Creator handoff routes to quality_pack_review, whose contract requires an upstream artifact and asks whether the next worker can continue without inventing.",
+    "Quality Pack cannot inspect the claimed profile pack from the producer output alone, so proceeding would require inventing or guessing where the deliverable exists."
+  ],
+  "blocking_codes": [
+    "CREATED_ARTIFACT_NOT_DELIVERED"
+  ],
+  "repair_actions": [
+    {
+      "target_worker": "skills/profile_creator",
+      "missing_or_failed_item": "Consumable created profile pack artifact",
+      "why_it_fails": "The producer claims PROFILE_PACK_CREATED but provides only filenames without a concrete delivered artifact or exact retrievable reference.",
+      "required_fix": "When PROFILE_PACK_CREATED is emitted, deliver the profile pack artifact inline or provide an exact repository artifact reference that resolves the created files; then hand that artifact to Quality Pack.",
+      "blocking_code": "CREATED_ARTIFACT_NOT_DELIVERED"
+    }
+  ],
+  "remaining_risks": [
+    "Current producer schema can still pass while the receiver cannot inspect the claimed deliverable."
+  ],
+  "next_gate": "PROFILE_CREATOR_SELF_REPAIR"
+}

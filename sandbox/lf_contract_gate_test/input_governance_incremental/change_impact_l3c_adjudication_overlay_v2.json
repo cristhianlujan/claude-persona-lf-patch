@@ -1,0 +1,117 @@
+{
+  "schema": "INPUT_GOV_CHANGE_IMPACT_L3C_ADJUDICATION_OVERLAY_V2",
+  "base_gold": {
+    "benchmark": "INPUT_GOV_CHANGE_IMPACT_L3C_GOLD50_V1",
+    "path": "sandbox/lf_contract_gate_test/input_governance_incremental/change_impact_l3c_gold_50.sql",
+    "blob_sha": "cfe2731c872e334d95523a3c7f085c31f92a6f70",
+    "status": "CANDIDATE_RESEARCH"
+  },
+  "authority": {
+    "system_audit_run_id": 75,
+    "system_audit_work_id": 8,
+    "system_audit_message_id": 41,
+    "role": "GPT_VERIFIER_RETEST",
+    "verdict": "ADJUDICATED_WITH_CORRECTIONS",
+    "main_sha": "b6b7067e2fdbec9239556711dab2c96ef1a821e4",
+    "input_governance_run_id": 218,
+    "read_only": true
+  },
+  "decision_corrections": [
+    {
+      "case_id": "CI-API-04",
+      "from": "GLOBAL_ESCALATE",
+      "to": "HUMAN_REQUIRED",
+      "reason": "Behavioral export contract exists, but operation/request-response schema authority remains NOT_MATERIALIZED; changing export payload/format needs explicit authority."
+    }
+  ],
+  "impact_set_corrections": [
+    {"case_id": "CI-COPY-04", "add": ["SOURCE_AUTHORITY_PROVENANCE"]},
+    {"case_id": "CI-ACT-04", "add": ["SOURCE_AUTHORITY_PROVENANCE"]},
+    {"case_id": "CI-PERM-02", "add": ["API_DATA_CONTRACT"]},
+    {"case_id": "CI-PERM-03", "add": ["API_DATA_CONTRACT"]},
+    {"case_id": "CI-PERM-05", "add": ["SOURCE_AUTHORITY_PROVENANCE"]},
+    {"case_id": "CI-FIELD-04", "add": ["SOURCE_AUTHORITY_PROVENANCE"]},
+    {"case_id": "CI-STATE-04", "add": ["SOURCE_AUTHORITY_PROVENANCE"]},
+    {"case_id": "CI-API-04", "add": ["SOURCE_AUTHORITY_PROVENANCE"]}
+  ],
+  "stale_anchor_replacements": [
+    {"case_id": "CI-API-01", "anchor": "api:API_CONTRACT_RESOLUTION_V1:behavioral_contract_present|operation_schema_authority:NOT_MATERIALIZED"},
+    {"case_id": "CI-API-02", "anchor": "api:API_CONTRACT_RESOLUTION_V1:behavioral_contract_present|operation_schema_authority:NOT_MATERIALIZED"},
+    {"case_id": "CI-API-03", "anchor": "api:API_CONTRACT_RESOLUTION_V1:behavioral_contract_present|operation_schema_authority:NOT_MATERIALIZED"},
+    {"case_id": "CI-API-05", "anchor": "api:API_CONTRACT_RESOLUTION_V1:behavioral_contract_present|operation_schema_authority:NOT_MATERIALIZED"}
+  ],
+  "review_cases": [
+    {"case_id":"CI-COPY-01","review":"AGREE","decision":"SCOPED_CANDIDATE","shared_cross_family":true,"under_block":"NO_UNSAFE_UNDERBLOCK"},
+    {"case_id":"CI-COPY-02","review":"AGREE","decision":"SCOPED_BLOCK","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-COPY-03","review":"AGREE","decision":"SCOPED_BLOCK","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-COPY-04","review":"CORRECTED","decision":"HUMAN_REQUIRED","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-COPY-05","review":"AGREE","decision":"SCOPED_CANDIDATE","shared_cross_family":false,"under_block":"NO_UNSAFE_UNDERBLOCK"},
+    {"case_id":"CI-ACT-01","review":"AGREE","decision":"SCOPED_CANDIDATE","shared_cross_family":false,"under_block":"NO_UNSAFE_UNDERBLOCK"},
+    {"case_id":"CI-ACT-02","review":"AGREE","decision":"GLOBAL_ESCALATE","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-ACT-03","review":"AGREE","decision":"GLOBAL_ESCALATE","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-ACT-04","review":"CORRECTED","decision":"HUMAN_REQUIRED","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-ACT-05","review":"AGREE","decision":"GLOBAL_ESCALATE","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-PERM-01","review":"AGREE","decision":"SCOPED_CANDIDATE","shared_cross_family":false,"under_block":"NO_UNSAFE_UNDERBLOCK"},
+    {"case_id":"CI-PERM-02","review":"CORRECTED","decision":"GLOBAL_ESCALATE","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-PERM-03","review":"CORRECTED","decision":"GLOBAL_ESCALATE","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-PERM-04","review":"AGREE","decision":"GLOBAL_ESCALATE","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-PERM-05","review":"CORRECTED","decision":"HUMAN_REQUIRED","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-ROUTE-01","review":"AGREE","decision":"SCOPED_CANDIDATE","shared_cross_family":false,"under_block":"NO_UNSAFE_UNDERBLOCK"},
+    {"case_id":"CI-ROUTE-02","review":"AGREE","decision":"GLOBAL_ESCALATE","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-ROUTE-03","review":"AGREE","decision":"GLOBAL_ESCALATE","shared_cross_family":false,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-ROUTE-04","review":"AGREE","decision":"GLOBAL_ESCALATE","shared_cross_family":false,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-ROUTE-05","review":"AGREE","decision":"HUMAN_REQUIRED","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-DESIGN-01","review":"AGREE","decision":"SCOPED_CANDIDATE","shared_cross_family":true,"under_block":"NO_UNSAFE_UNDERBLOCK"},
+    {"case_id":"CI-DESIGN-02","review":"AGREE","decision":"SCOPED_BLOCK","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-DESIGN-03","review":"AGREE","decision":"SCOPED_BLOCK","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-DESIGN-04","review":"AGREE","decision":"SCOPED_BLOCK","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-DESIGN-05","review":"AGREE","decision":"HUMAN_REQUIRED","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-FIELD-01","review":"AGREE","decision":"SCOPED_CANDIDATE","shared_cross_family":false,"under_block":"NO_UNSAFE_UNDERBLOCK"},
+    {"case_id":"CI-FIELD-02","review":"AGREE","decision":"GLOBAL_ESCALATE","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-FIELD-03","review":"AGREE","decision":"GLOBAL_ESCALATE","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-FIELD-04","review":"CORRECTED","decision":"HUMAN_REQUIRED","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-FIELD-05","review":"AGREE","decision":"GLOBAL_ESCALATE","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-VAL-01","review":"AGREE","decision":"SCOPED_CANDIDATE","shared_cross_family":false,"under_block":"NO_UNSAFE_UNDERBLOCK"},
+    {"case_id":"CI-VAL-02","review":"AGREE","decision":"GLOBAL_ESCALATE","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-VAL-03","review":"AGREE","decision":"GLOBAL_ESCALATE","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-VAL-04","review":"AGREE","decision":"HUMAN_REQUIRED","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-VAL-05","review":"AGREE","decision":"SCOPED_BLOCK","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-STATE-01","review":"AGREE","decision":"SCOPED_CANDIDATE","shared_cross_family":true,"under_block":"NO_UNSAFE_UNDERBLOCK"},
+    {"case_id":"CI-STATE-02","review":"AGREE","decision":"GLOBAL_ESCALATE","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-STATE-03","review":"AGREE","decision":"GLOBAL_ESCALATE","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-STATE-04","review":"CORRECTED","decision":"HUMAN_REQUIRED","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-STATE-05","review":"AGREE","decision":"GLOBAL_ESCALATE","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-ERR-01","review":"AGREE","decision":"SCOPED_CANDIDATE","shared_cross_family":true,"under_block":"NO_UNSAFE_UNDERBLOCK"},
+    {"case_id":"CI-ERR-02","review":"AGREE","decision":"GLOBAL_ESCALATE","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-ERR-03","review":"AGREE","decision":"GLOBAL_ESCALATE","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-ERR-04","review":"AGREE","decision":"SCOPED_BLOCK","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-ERR-05","review":"AGREE","decision":"HUMAN_REQUIRED","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-API-01","review":"CORRECTED","decision":"SCOPED_CANDIDATE","shared_cross_family":true,"under_block":"NO_UNSAFE_UNDERBLOCK"},
+    {"case_id":"CI-API-02","review":"CORRECTED","decision":"GLOBAL_ESCALATE","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-API-03","review":"CORRECTED","decision":"GLOBAL_ESCALATE","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-API-04","review":"CORRECTED","decision":"HUMAN_REQUIRED","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"},
+    {"case_id":"CI-API-05","review":"CORRECTED","decision":"HUMAN_REQUIRED","shared_cross_family":true,"under_block":"SAFE_FAIL_CLOSED"}
+  ],
+  "effective_distribution": {
+    "SCOPED_CANDIDATE": 11,
+    "SCOPED_BLOCK": 7,
+    "GLOBAL_ESCALATE": 21,
+    "HUMAN_REQUIRED": 11
+  },
+  "summary": {
+    "adjudicated_cases": 50,
+    "decision_agreement": 49,
+    "decision_corrections": 1,
+    "impact_set_corrections": 8,
+    "stale_anchor_replacements": 4,
+    "shared_cross_family_cases": 42,
+    "single_family_cases": 8,
+    "unsafe_underblock_candidates": 0
+  },
+  "authorization": {
+    "scoped_pass_authorized": false,
+    "downstream_authorized": false,
+    "production_authorized": false,
+    "use_case": "READ_ONLY_RESOLVER_EVALUATION_ONLY"
+  }
+}

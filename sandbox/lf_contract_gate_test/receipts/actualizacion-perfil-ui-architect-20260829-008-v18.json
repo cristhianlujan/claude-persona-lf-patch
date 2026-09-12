@@ -1,0 +1,24 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260829-008",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "1f942e4bb95fd1fd6b5cfe5ba9a1e6be8971f222",
+    "39c7dd64426083b62cf5e2a3aec0b286a0b984ed",
+    "ffec66f63ab5eb515d069a5d59925ba0b02c901caeab1a3568b93b79293524ed",
+    "59e4b7f93b9f8da4fcd8f1f2e5510a07845f5d624786d055c3e42afb6a3186e8",
+    "fba2abb60b9e4abfbccf4333aa9ede9e5324f8cf0856bcbfff342ceee3b9398c"
+  ],
+  "target_paths": [
+    "profiles/ui_architect/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-29T07:31:00Z",
+  "notes": "PASS_SANDBOX candidate-source receipt for V18 under execution 008. V17 post-merge live behavior proved that task classification alone was insufficient: CREATE_NEW requests still imitated the full V16 byte-for-byte remediation exemplar, fabricated duplicate evidence, and destructively removed required retry/receipt/due-date/clearance or OTP elements. V18 removes the long concrete remediation exemplar from the runtime prompt and replaces it with compact semantic contracts, while keeping the unresolved duplicate fail-closed response and resolved survivor/removal semantics. CREATE_NEW now has an explicit no-remediation-actions/no-destructive-operations/root-depth contract. This receipt does not claim live behavioral PASS, VALIDATED, production, runtime enablement, automatic promotion, or closure; fresh exact-head CI and post-merge live canaries are still required."
+}

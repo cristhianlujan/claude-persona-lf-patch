@@ -1,0 +1,46 @@
+{
+  "case_id": "QP_INTAKE_READY_001",
+  "upstream_worker": "skills/profile_creator",
+  "upstream_output": {
+    "status": "PROFILE_PACK_CREATED",
+    "profile_pack_id": "PROFILE_EXAMPLE_CANDIDATE",
+    "deliverable_created": true,
+    "deliverable_artifact_ref": "embedded://PROFILE_EXAMPLE_CANDIDATE",
+    "files_created": [
+      "PROFILE.md",
+      "contracts/main_contract.md"
+    ],
+    "evidence_map": [
+      "The candidate artifact is included in the handoff envelope.",
+      "Every component claimed in files_created is present with developed content."
+    ],
+    "next_gate": "QUALITY_PACK_REVIEW"
+  },
+  "worker_contract_ref": "skills/profile_creator/contracts/main_contract.md",
+  "expected_output_format": "PROFILE_PACK",
+  "acceptance_criteria": [
+    "created artifact is observable and consumable",
+    "all claimed components are delivered"
+  ],
+  "blocking_criteria": [
+    "created artifact is missing",
+    "claimed component is absent or empty"
+  ],
+  "case_context": "Profile Creator handoff continuity eval",
+  "lf_governance_constraints": [
+    "runtime disabled",
+    "automatic impact blocked"
+  ],
+  "declared_worker_score": null,
+  "declared_worker_evidence": [
+    "The candidate artifact is included in the handoff envelope.",
+    "Every component claimed in files_created is present with developed content."
+  ],
+  "deliverable_artifact": {
+    "profile_pack_id": "PROFILE_EXAMPLE_CANDIDATE",
+    "files": {
+      "PROFILE.md": "# Example profile\n\nPurpose and operating boundaries are explicitly developed.\n",
+      "contracts/main_contract.md": "# Main Contract\n\nThe profile must preserve governance, evidence and handoff continuity.\n"
+    }
+  }
+}

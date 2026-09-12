@@ -1,0 +1,29 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-QUALITY-PACK-20260827-003",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "b19fc99d529787b0ba783c362b2a43fbb357453b",
+    "98c05c783e96dc76d13a81688c753942a5e0ce18"
+  ],
+  "target_paths": ["profiles/quality_pack/**"],
+  "blocking_codes": [],
+  "issued_at": "2026-08-28T04:38:41Z",
+  "target_type": "PROFILE",
+  "target_code": "QUALITY_PACK_GATE_001",
+  "branch": "lf/quality-pack-authority-sync-20260827",
+  "pr_number": 277,
+  "validated_substantive_head": "98c05c783e96dc76d13a81688c753942a5e0ce18",
+  "deterministic_matrix": "21/21_PASS",
+  "deterministic_run_id": 33142168968,
+  "runtime_unchanged": true,
+  "automatic_promotion": false,
+  "post_merge_steps_pending": [120, 130],
+  "notes": "Canonical ACTUALIZACION_PERFIL_LF steps 0-110 are STEP_PASS_WITH_EVIDENCE. The substantive change is a one-line authority declaration correction: ACT-0001 Router + Supabase operational registry/contracts are current operational authority; ACT-0045 remains historical/creation authority for new profiles only. Fresh Actions run 33142168968 executed Quality Pack and produced 21/21 PASS. all_required_steps_pass refers to proven pre-merge obligations; close/report 120/130 remain post-merge. No behavior, identity, runtime state, promotion, merge, or automatic-impact change is claimed."
+}

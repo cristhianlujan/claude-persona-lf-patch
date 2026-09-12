@@ -1,0 +1,389 @@
+name: Profile Driven Screen Generation Gate
+
+on:
+  pull_request:
+    paths:
+      - "profiles/ui_architect/validators/validate_ui_architect_output.py"
+      - "profiles/ui_architect/evals/contract_validator_alignment_20260908/**"
+      - "profiles/quality_pack/validators/validate_gate_bundle.py"
+      - "profiles/quality_pack/validators/validate_routing.py"
+      - "profiles/quality_pack/validators/trusted_ref_resolver.py"
+      - "profiles/quality_pack/evals/quality_gate_adversarial.py"
+      - "sandbox/lf_contract_gate_test/profile_driven_screen_generation/**"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/profile_execution_contract.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_execution_contract_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/contract_bound_profile_runtime.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_contract_bound_runtime_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_source_first_runtime.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_source_first_runtime_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_source_first_prebind.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_source_first_prebind_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_independent_bundle_preflight.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_independent_bundle_preflight_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_semantic_quality.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_semantic_quality_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_d.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_s26_native_golden_d.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_e.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_s26_native_golden_e.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_001/**"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/**"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/**"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/**"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/**"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_006/**"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/guard_no_model_weight_acquisition.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_model_weight_guard_tests.py"
+      - ".github/workflows/profile-driven-screen-generation.yml"
+      - ".github/workflows/story-agent-evidence-verifier.yml"
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  actions: read
+  checks: read
+
+jobs:
+  deterministic-contract-gate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run profile-driven screen generation contract regressions
+        run: |
+          set -euo pipefail
+          cd sandbox/lf_contract_gate_test/profile_driven_screen_generation
+          python3 run_tests.py
+      - name: Run existing profile execution runtime regressions
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py
+      - name: Run native profile execution contract regressions
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_execution_contract_tests.py
+      - name: Run contract-bound GPT and Claude native runtime regressions
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_contract_bound_runtime_tests.py
+      - name: Run provider-agnostic native semantic quality regressions
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_semantic_quality_tests.py
+      - name: Upload canonical Quality Pack reconciliation machinery
+        uses: actions/upload-artifact@v4
+        with:
+          name: s26-quality-pack-reconciliation-machinery
+          path: |
+            profiles/quality_pack/validators/validate_gate_bundle.py
+            profiles/quality_pack/validators/validate_routing.py
+            profiles/quality_pack/validators/trusted_ref_resolver.py
+            profiles/quality_pack/evals/quality_gate_adversarial.py
+          retention-days: 30
+      - name: Enforce UI Architect written-contract parity
+        run: |
+          set -euo pipefail
+          python3 profiles/ui_architect/evals/contract_validator_alignment_20260908/run_cases.py
+      - name: Prove UI Architect malformed-input fail-closed
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import importlib.util
+          from pathlib import Path
+          path = Path('profiles/ui_architect/validators/validate_ui_architect_output.py')
+          spec = importlib.util.spec_from_file_location('ui_validator_totality', path)
+          assert spec is not None and spec.loader is not None
+          module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+          cases = [([], 'ROOT_NOT_OBJECT'), ({'output_type': 'PRODUCTION_UI_SPEC', 'deliverable_created': []}, 'DELIVERABLE_NOT_OBJECT'), ({'output_type': 'PRODUCTION_UI_SPEC', 'deliverable_created': {'screen_definition': {}, 'component_tree': 'not-a-list'}}, 'COMPONENT_TREE_MISSING')]
+          for payload, expected in cases:
+              errors = module.validate(payload); codes = {item.get('code') for item in errors if isinstance(item, dict)}; assert expected in codes, (expected, errors)
+          print('UI_ARCHITECT_MALFORMED_INPUT_FAIL_CLOSED_PASS 3/3')
+          PY
+      - name: Evaluate fresh S26 Native Golden Run D producer candidate
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_s26_native_golden_d.py
+      - name: Upload Run D producer evidence for independent review
+        uses: actions/upload-artifact@v4
+        with:
+          name: s26-native-golden-run-d-producer-evidence
+          path: |
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/preflight_binding.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/governed_context_receipt.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/obligation_manifest.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/evaluation.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/execution_receipt.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/semantic_check_bundle.json
+          retention-days: 30
+      - name: Verify S26 Native Golden Run E prebind lineage
+        run: |
+          set -euo pipefail
+          if test -f sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/raw_output.json; then
+            S26_RUN_E_ALLOW_RAW_REEVAL=1 python3 sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_e.py >/tmp/s26_run_e_preflight.json
+          else
+            python3 sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_e.py >/tmp/s26_run_e_preflight.json
+            test ! -f sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/raw_output.json
+          fi
+      - name: Evaluate S26 Native Golden Run E producer candidate
+        if: ${{ hashFiles('sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/raw_output.json') != '' }}
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_s26_native_golden_e.py
+      - name: Upload Run E producer/prebound evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: s26-native-golden-run-e-prebind
+          path: |
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/input.txt
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/input_governance_snapshot.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/router_adapter_binding_snapshot.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/visual_artifact_ref.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/visual_observation_packet.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/metrics_plan.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/obligation_template.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/preflight_binding.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/governed_context_receipt.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/obligation_manifest.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/raw_output.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/evaluation.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/execution_receipt.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/semantic_check_bundle.json
+          retention-days: 30
+      - name: Verify fresh S26 Run G source-fidelity producer receipt
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_006/run_g_producer_receipt.json')
+          data = json.loads(path.read_text(encoding='utf-8'))
+          expected_headers = ['Lote','Nombre','Archivo','Tipo','Cargado por','Fecha','Total','Válidos','Estado','Acciones']
+          assert data['schema'] == 'S26_RUN_G_PRODUCER_RECEIPT_V1'
+          assert data['source_visual']['sha256'] == 'ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287'
+          assert data['source_fidelity']['schema'] == 'LF_SOURCE_FIDELITY_CONTRACT_V1'
+          assert data['source_fidelity']['critical_ambiguity'] is False
+          assert data['source_fidelity']['immutable_table_headers'] == expected_headers
+          assert data['card_resolution']['mode'] in {'EXACT','COMPOSED','GENERIC_SAFE'}
+          assert data['card_resolution']['critical_authority_missing'] is False
+          assert data['artifact']['headers_verified'] == '10_OF_10_EXACT'
+          assert data['artifact']['real_horizontal_overflow_acknowledged'] is True
+          assert data['artifact']['current_page_prebound'] is False
+          assert data['artifact']['ui_validator'] == 'PASS'
+          assert data['artifact']['composer_boundary'] == 'PASS'
+          assert data['execution_contract']['contract_sha256'] == '6ec1e72df33022496642d9e97e5b926025d721a76b291bfbf25276d79d404c00'
+          assert data['execution_contract']['sha_derivation'] == 'canonical JSON excluding only contract_sha256'
+          assert data['execution_contract']['source_fidelity_required_check'] is True
+          assert data['execution_contract']['source_fidelity_required_evidence'] is True
+          assert data['independent_quality_bundle']['sha256'] == '7b6288f67a992d21cab2d6640ffa2cef85a8b6d25fdc1f6a5a8a1986f4b67eee'
+          assert data['independent_quality_bundle']['deterministic_probe'] == 'PASS_DETERMINISTIC_RUN_G_PREFLIGHT'
+          assert data['producer_downstream_authorized'] is False
+          assert data['golden_declared'] is False
+          assert data['next_gate'] == 'FRESH_GPT_AND_CLAUDE_INDEPENDENT_QUALITY'
+          print('PASS_S26_RUN_G_SOURCE_FIDELITY_PRODUCER_RECEIPT')
+          PY
+      - name: Preserve historical S26 candidates without requalification
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path('sandbox/lf_contract_gate_test/profile_execution_runtime/evidence')
+          for run_dir in ('s26_native_golden_002', 's26_native_golden_003'):
+              evidence = root / run_dir; raw = json.load(open(evidence / 'raw_output.json', encoding='utf-8')); producer = json.load(open(evidence / 'execution_receipt.json', encoding='utf-8'))
+              assert raw['worker'] == 'ui_architect', (run_dir, raw.get('worker')); assert producer['downstream_authorized'] is False, (run_dir, producer); assert producer['profile_code'] == 'PERFIL-UI-ARCHITECT', (run_dir, producer)
+          print('PASS_S26_HISTORICAL_CANDIDATES_PRESERVED_NO_REQUALIFICATION')
+          PY
+      - name: Run model-weight guard regressions
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_model_weight_guard_tests.py
+      - name: Enforce no model-weight acquisition in active S26 profile workflows
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/guard_no_model_weight_acquisition.py --workflow-dir .github/workflows
+
+  s30-owner-chatops-broker:
+    name: Governed S30 owner ChatOps broker
+    if: >-
+      github.event_name == 'issue_comment' &&
+      github.actor == github.repository_owner &&
+      github.event.issue.number == 686 &&
+      startsWith(github.event.comment.body, '/s30-broker ')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact current main control plane
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Parse exact owner request
+        id: request
+        shell: bash
+        env:
+          S30_ACTOR: ${{ github.actor }}
+          S30_OWNER: ${{ github.repository_owner }}
+          S30_ISSUE: ${{ github.event.issue.number }}
+          S30_BODY: ${{ github.event.comment.body }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+
+          def fail(code, detail=""):
+              raise SystemExit(f"{code}{(': ' + detail) if detail else ''}")
+
+          actor=os.environ.get("S30_ACTOR","")
+          owner=os.environ.get("S30_OWNER","")
+          issue=os.environ.get("S30_ISSUE","")
+          body=os.environ.get("S30_BODY","")
+          prefix="/s30-broker "
+          if actor != owner or owner != "cristhianlujan": fail("BLOCK_S30_CHATOPS_ACTOR")
+          if issue != "686": fail("BLOCK_S30_CHATOPS_CONTROL_ISSUE")
+          if not body.startswith(prefix): fail("BLOCK_S30_CHATOPS_PREFIX")
+          try:
+              req=json.loads(body[len(prefix):])
+          except Exception as exc:
+              fail("BLOCK_S30_CHATOPS_JSON", str(exc))
+          required={"request_schema","source_ref","target_branch","base_main_sha","receipt_path"}
+          if set(req) != required: fail("BLOCK_S30_CHATOPS_REQUEST_KEYS")
+          if req["request_schema"] != "s30-git-broker/v1": fail("BLOCK_S30_BROKER_REQUEST_SCHEMA")
+          if not req["source_ref"].startswith("lf/staging-s30-"): fail("BLOCK_S30_BROKER_SOURCE_NAMESPACE")
+          if not req["target_branch"].startswith("lf/s30-"): fail("BLOCK_S30_BROKER_TARGET_NAMESPACE")
+          if re.fullmatch(r"[0-9a-f]{40}", req["base_main_sha"]) is None: fail("BLOCK_S30_BROKER_BASE_SHA")
+          if not req["receipt_path"].startswith("sandbox/lf_contract_gate_test/s30_"): fail("BLOCK_S30_BROKER_RECEIPT_PATH")
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a",encoding="utf-8") as fh:
+              for key in sorted(required):
+                  value=req[key]
+                  if not isinstance(value,str) or "\n" in value or "\r" in value: fail("BLOCK_S30_CHATOPS_INPUT", key)
+                  fh.write(f"{key}={value}\n")
+          print(json.dumps({"status":"PASS","actor":actor,"source_ref":req["source_ref"],"target_branch":req["target_branch"]},sort_keys=True))
+          PY
+
+      - name: Pin main authority and preserve validator
+        shell: bash
+        env:
+          S30_BASE_MAIN_SHA: ${{ steps.request.outputs.base_main_sha }}
+        run: |
+          set -euo pipefail
+          observed_main="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          checkout_main="$(git rev-parse HEAD)"
+          [[ "$observed_main" == "$S30_BASE_MAIN_SHA" ]] || { echo "BLOCK_S30_BROKER_STALE_MAIN expected=$S30_BASE_MAIN_SHA observed=$observed_main" >&2; exit 1; }
+          [[ "$checkout_main" == "$S30_BASE_MAIN_SHA" ]] || { echo "BLOCK_S30_CHATOPS_CONTROL_PLANE_SHA" >&2; exit 1; }
+          mkdir -p /tmp/s30-control
+          cp gobernanza/contratos/s30_self_governance_gate_v1.json /tmp/s30-control/contract.json
+          cp gobernanza/judges/validate_s30_self_governance_gate.py /tmp/s30-control/validator.py
+          python3 /tmp/s30-control/validator.py --contract /tmp/s30-control/contract.json --self-test
+
+      - name: Resolve source and require exact-head CI
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          S30_SOURCE_REF: ${{ steps.request.outputs.source_ref }}
+          S30_BASE_MAIN_SHA: ${{ steps.request.outputs.base_main_sha }}
+        run: |
+          set -euo pipefail
+          git fetch origin "$S30_SOURCE_REF" --no-tags
+          source_sha="$(git rev-parse FETCH_HEAD)"
+          remote_sha="$(git ls-remote origin "refs/heads/$S30_SOURCE_REF" | awk '{print $1}')"
+          [[ -n "$remote_sha" && "$source_sha" == "$remote_sha" ]] || { echo "BLOCK_S30_BROKER_SOURCE_SHA_MISMATCH" >&2; exit 1; }
+          git merge-base --is-ancestor "$S30_BASE_MAIN_SHA" "$source_sha" || { echo "BLOCK_S30_BROKER_SOURCE_NOT_DESCENDANT_OF_BASE" >&2; exit 1; }
+          gh api -H 'Accept: application/vnd.github+json' "repos/${GITHUB_REPOSITORY}/commits/${source_sha}/check-runs?per_page=100" > /tmp/s30-checks.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          runs=json.loads(Path('/tmp/s30-checks.json').read_text(encoding='utf-8')).get('check_runs') or []
+          required={'Run LF pack validators','lf-contract-check'}
+          passed={x.get('name') for x in runs if x.get('status')=='completed' and x.get('conclusion')=='success'}
+          missing=sorted(required-passed)
+          if missing:
+              raise SystemExit('BLOCK_S30_CHATOPS_EXACT_HEAD_CI_MISSING_OR_FAILED:'+','.join(missing))
+          print('PASS_S30_CHATOPS_EXACT_HEAD_CI=' + ','.join(sorted(required)))
+          PY
+          git checkout --detach "$source_sha"
+
+      - name: Reuse canonical S30 broker scope and preexecution validator
+        shell: bash
+        env:
+          S30_SOURCE_REF: ${{ steps.request.outputs.source_ref }}
+          S30_TARGET_BRANCH: ${{ steps.request.outputs.target_branch }}
+          S30_BASE_MAIN_SHA: ${{ steps.request.outputs.base_main_sha }}
+          S30_RECEIPT_PATH: ${{ steps.request.outputs.receipt_path }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import importlib.util, json, os, subprocess
+          from pathlib import Path
+
+          def fail(code, detail=""):
+              raise SystemExit(f"{code}{(': ' + detail) if detail else ''}")
+          def run(*args):
+              return subprocess.run(args,check=True,capture_output=True,text=True).stdout.strip()
+
+          source=os.environ['S30_SOURCE_REF']; target=os.environ['S30_TARGET_BRANCH']; base=os.environ['S30_BASE_MAIN_SHA']; receipt_path=os.environ['S30_RECEIPT_PATH']
+          contract=json.loads(Path('/tmp/s30-control/contract.json').read_text(encoding='utf-8'))
+          broker=contract.get('git_write_broker') or {}
+          if broker.get('request_schema') != 's30-git-broker/v1': fail('BLOCK_S30_BROKER_REQUEST_SCHEMA')
+          if not source.startswith(broker.get('staging_prefix','')): fail('BLOCK_S30_BROKER_SOURCE_NAMESPACE')
+          if not target.startswith(broker.get('protected_branch_prefix','')): fail('BLOCK_S30_BROKER_TARGET_NAMESPACE')
+          source_sha=run('git','rev-parse','HEAD')
+          changed=[x for x in run('git','diff','--name-only',base,source_sha).splitlines() if x]
+          modes={}
+          for path in changed:
+              row=run('git','ls-tree',source_sha,'--',path)
+              modes[path]=row.split(None,1)[0] if row else ''
+          receipt_file=Path(receipt_path)
+          if not receipt_file.is_file(): fail('BLOCK_S30_BROKER_RECEIPT_PATH')
+          receipt=json.loads(receipt_file.read_text(encoding='utf-8'))
+          spec=importlib.util.spec_from_file_location('s30_validator','/tmp/s30-control/validator.py')
+          validator=importlib.util.module_from_spec(spec); spec.loader.exec_module(validator)
+          scope=validator.broker_scope_decision(contract,changed,receipt_path,receipt,modes)
+          if scope.get('status') != 'PASS': fail(scope.get('blocking_code','BLOCK_S30_BROKER_SCOPE'),scope.get('detail',''))
+          result=validator.evaluate(contract,receipt,base)
+          expected='PASS_TO_MATERIAL_WORK'
+          if scope.get('mode') == 'REPAIR':
+              cfg=((broker.get('scope_modes') or {}).get('REPAIR') or {})
+              expected=(cfg.get('expected_result_by_receipt_mode') or {}).get(receipt.get('receipt_mode'))
+          if not expected or result.get('result') != expected: fail('BLOCK_S30_BROKER_PREEXECUTION_RESULT',json.dumps(result,sort_keys=True))
+          binding=receipt.get('git_write_binding') or {}
+          exact={'status':'OPERATIONAL','source_branch':source,'target_branch':target,'base_main_sha':base,'secret_present':True,'promotion_authority':'BROKER_ONLY'}
+          bad=[k for k,v in exact.items() if binding.get(k) != v]
+          if bad: fail('BLOCK_S30_BROKER_OPERATIONAL_BINDING',','.join(bad))
+          print(json.dumps({'status':'PASS','scope_mode':scope.get('mode'),'source_sha':source_sha,'changed_paths':changed},sort_keys=True))
+          PY
+
+      - name: Push exact validated source with governed DeployKey
+        shell: bash
+        env:
+          S30_BROKER_DEPLOY_KEY: ${{ secrets.S30_BROKER_DEPLOY_KEY }}
+          S30_TARGET_BRANCH: ${{ steps.request.outputs.target_branch }}
+        run: |
+          set -euo pipefail
+          [[ -n "${S30_BROKER_DEPLOY_KEY:-}" ]] || { echo "BLOCK_S30_BROKER_SECRET_MISSING" >&2; exit 1; }
+          umask 077
+          mkdir -p "$HOME/.ssh"
+          printf '%s\n' "$S30_BROKER_DEPLOY_KEY" > "$HOME/.ssh/s30_broker_ed25519"
+          ssh-keyscan -t ed25519 github.com > "$HOME/.ssh/known_hosts" 2>/dev/null
+          source_sha="$(git rev-parse HEAD)"
+          git remote add s30-broker "git@github.com:${GITHUB_REPOSITORY}.git"
+          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/s30_broker_ed25519 -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
+          git push s30-broker "$source_sha:refs/heads/$S30_TARGET_BRANCH"
+          remote_sha="$(git ls-remote s30-broker "refs/heads/$S30_TARGET_BRANCH" | awk '{print $1}')"
+          [[ "$remote_sha" == "$source_sha" ]] || { echo "BLOCK_S30_BROKER_POST_PUSH_READBACK_MISMATCH" >&2; exit 1; }
+          rm -f "$HOME/.ssh/s30_broker_ed25519"
+          echo "S30_CHATOPS_BROKER_PUSH_PASS target=$S30_TARGET_BRANCH sha=$remote_sha"

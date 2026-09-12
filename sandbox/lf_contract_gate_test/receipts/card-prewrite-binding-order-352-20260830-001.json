@@ -1,0 +1,23 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "CREACION_CARD_LF",
+  "execution_id": "LF-AUTOLEARN-CARD-PREWRITE-20260830-005",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "372c5812679b5d34835989047a16a3d337e3531e26bb95bd77875e7b7967c117",
+  "judge_sha": "61e55afa96086525e2031ec09aa67b3864c3d1acd88817c9be9fb17023fbe515",
+  "source_sha_list": [
+    "c4819910b85ae7dfaa36e3d3c311da19a3faed8d",
+    "08fee42ad073698f791241fede4ba840f72c37d6",
+    "c1fcba0705fe1429fa1d50be06811e6bc259946c"
+  ],
+  "target_paths": [
+    "gobernanza/contratos/contrato_card_lf.yaml",
+    "gobernanza/procedimientos/creacion_card_lf_steps_validation.yaml"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-30T23:15:00Z",
+  "notes": "Receipt source-bound de la reparación Issue #352. Prueba estática: required_before_write exige execution_bound_to_target_before_change; pre_write_execution_binding_gate order=24 y github_write order=25. Negativo: sin binding, write queda contractualmente bloqueado por direct_write_without_lf_operation_execution. Positivo: con binding previo, la secuencia permite write/readback. No materializa Supabase, no habilita runtime/producción, no autoriza impacto automático, merge ni receipt retroactivo para writes anteriores."
+}

@@ -1,0 +1,214 @@
+{
+  "example_id": "GOOD_COMPONENT_TREE_WEB_PRODUCT_SCREEN",
+  "status": "GENERIC_REUSABLE_EXAMPLE",
+  "worker": "UI_ARCHITECT",
+  "output_type": "PRODUCTION_UI_SPEC",
+  "use_when": [
+    "web product screen",
+    "guided product flow",
+    "fintech clarity/onboarding screen",
+    "component-level UI specification required"
+  ],
+  "deliverable_created": {
+    "screen_definition": {
+      "screen_type": "DESKTOP_WEB_PRODUCT_SCREEN",
+      "target_device": "DESKTOP_LIGHT",
+      "layout_density": "COMFORTABLE",
+      "primary_action_policy": "ONE_DOMINANT_CTA_ONLY",
+      "visual_goal": "clarity, guidance, trust, low cognitive load"
+    },
+    "layout_grid": {
+      "canvas_width": "1440px",
+      "max_content_width": "1240px",
+      "grid_columns": 12,
+      "grid_gap": "24px",
+      "page_padding": "48px",
+      "background_token": "warm_surface",
+      "background_hex": "#F7F5F0"
+    },
+    "component_tree": [
+      {
+        "zone_id": "header",
+        "component_id": "brand_header_minimal",
+        "component_type": "HEADER",
+        "role": "identify product context without adding navigation load",
+        "content": {
+          "brand_label": "Product / Brand name",
+          "support_link": "Optional help link"
+        },
+        "visual_priority": 3,
+        "color_tokens": {
+          "text": "navy_core",
+          "secondary_text": "slate_text",
+          "background": "transparent_or_warm_surface"
+        },
+        "typography": {
+          "brand": {"font_family": "Inter", "size": "15px", "weight": 700},
+          "support_link": {"font_family": "Inter", "size": "13px", "weight": 500}
+        },
+        "spacing": {
+          "height": "64px",
+          "padding_inline": "0px",
+          "gap": "16px"
+        },
+        "state": "informational",
+        "allowed_variants": ["minimal", "brand_plus_help"],
+        "blocked_variants": ["menu_extenso", "login_dominante", "secondary_cta"]
+      },
+      {
+        "zone_id": "left_orientation_panel",
+        "component_id": "orientation_intro_block",
+        "component_type": "CONTENT_PANEL",
+        "role": "explain user starting point and reduce anxiety",
+        "content": {
+          "label": "Guided experience label",
+          "headline": "Clear first-step headline",
+          "body": "Short explanation of what the user will understand or organize first",
+          "support_card": "Small reassurance card"
+        },
+        "visual_priority": 2,
+        "color_tokens": {
+          "surface": "warm_surface #F7F5F0",
+          "headline": "navy_core",
+          "body": "slate_text",
+          "support_accent": "green_action #00A32A"
+        },
+        "typography": {
+          "headline": {"font_family": "Inter", "size": "38px", "line_height": "1.1", "weight": 750},
+          "body": {"font_family": "Inter", "size": "16px", "line_height": "1.45", "weight": 400},
+          "support_title": {"font_family": "Inter", "size": "16px", "weight": 650}
+        },
+        "spacing": {
+          "width": "34%",
+          "padding": "24px",
+          "gap": "20px"
+        },
+        "state": "informational_support",
+        "allowed_variants": ["text_plus_small_support_card"],
+        "blocked_variants": ["testimonial", "sales_pitch", "human_avatar_if_not_validated"]
+      },
+      {
+        "zone_id": "main_route_panel",
+        "component_id": "guided_route_map",
+        "component_type": "ROUTE_MAP_PANEL",
+        "role": "show route structure and active step as functional product component",
+        "content": {
+          "panel_title": "Route or map title",
+          "progress_label": "Step 1 of N",
+          "path": "soft organic slightly serpentine connector",
+          "nodes": "active node + secondary nodes",
+          "active_card": "current step card",
+          "primary_cta": "single next action"
+        },
+        "visual_priority": 1,
+        "color_tokens": {
+          "panel_surface": "#FFFFFF",
+          "panel_background_detail": "warm_surface #F7F5F0 at low opacity",
+          "title": "navy_core",
+          "active_node": "green_action #00A32A",
+          "secondary_nodes": "slate_text",
+          "reward_accent": "gold_reward",
+          "cta_background": "green_action #00A32A",
+          "cta_text": "#FFFFFF"
+        },
+        "typography": {
+          "panel_title": {"font_family": "Inter", "size": "28px", "weight": 750},
+          "active_card_title": {"font_family": "Inter", "size": "20px", "weight": 700},
+          "active_card_body": {"font_family": "Inter", "size": "15px", "line_height": "1.45", "weight": 400},
+          "button": {"font_family": "Inter", "size": "15px", "weight": 700}
+        },
+        "spacing": {
+          "width": "66%",
+          "panel_padding": "32px",
+          "card_padding": "24px",
+          "route_gap": "24px",
+          "border_radius": "24px",
+          "box_shadow": "soft_level_1"
+        },
+        "state": {
+          "active_step": "enabled_high_contrast",
+          "secondary_steps": "low_contrast_informational",
+          "primary_cta": "enabled"
+        },
+        "allowed_variants": ["soft_path_nodes", "compact_stepper", "functional_map_component"],
+        "blocked_variants": ["rigid_timeline", "road", "landscape", "dashboard", "decorative_map_only", "multiple_ctas"]
+      },
+      {
+        "zone_id": "trust_strip",
+        "component_id": "support_principles_strip",
+        "component_type": "SUPPORT_STRIP",
+        "role": "reinforce trust without turning into marketing",
+        "content": {
+          "max_blocks": 3,
+          "block_type": "short trust principle",
+          "text_policy": "one short title plus one short body per block"
+        },
+        "visual_priority": 4,
+        "color_tokens": {
+          "surface": "#FFFFFF",
+          "title": "navy_core",
+          "body": "slate_text",
+          "icon_accent": "green_action #00A32A"
+        },
+        "typography": {
+          "title": {"font_family": "Inter", "size": "15px", "weight": 650},
+          "body": {"font_family": "Inter", "size": "13px", "line_height": "1.4", "weight": 400}
+        },
+        "spacing": {
+          "columns": 3,
+          "padding": "18px",
+          "gap": "16px",
+          "border_radius": "18px"
+        },
+        "state": "secondary_information",
+        "allowed_variants": ["three_blocks_max"],
+        "blocked_variants": ["catalog", "testimonials", "metrics", "extra_cta"]
+      }
+    ],
+    "visual_hierarchy": [
+      {"rank": 1, "component_id": "guided_route_map", "reason": "main product action and route context"},
+      {"rank": 2, "component_id": "orientation_intro_block", "reason": "emotional framing and clarity"},
+      {"rank": 3, "component_id": "brand_header_minimal", "reason": "context only"},
+      {"rank": 4, "component_id": "support_principles_strip", "reason": "secondary reassurance"}
+    ],
+    "state_map": {
+      "primary_cta": {"state": "enabled", "background_hex": "#00A32A", "text_hex": "#FFFFFF"},
+      "active_step": {"state": "active", "token": "green_action", "contrast": "high"},
+      "secondary_step": {"state": "inactive_informational", "token": "slate_text", "contrast": "low"},
+      "support_cards": {"state": "informational", "interactive": false}
+    },
+    "token_map": {
+      "warm_surface": {"hex": "#F7F5F0", "required_use": ["page_background", "calm_surface"]},
+      "green_action": {"hex": "#00A32A", "required_use": ["primary_cta", "active_step"]},
+      "navy_core": {"required_use": ["headlines", "structure", "trust"]},
+      "slate_text": {"required_use": ["secondary_copy", "inactive_labels", "borders"]},
+      "gold_reward": {"required_use": ["minimal_reward_accent_only"]}
+    },
+    "density_rules": [
+      "one dominant CTA only",
+      "maximum three trust blocks",
+      "only active step gets developed text",
+      "no charts, KPIs, testimonials or catalog blocks",
+      "no internal audit metadata in final artifact"
+    ],
+    "risk_controls": [
+      {"risk": "looks_like_landing_page", "control": "keep screen as internal product view with functional route panel"},
+      {"risk": "looks_like_dashboard", "control": "block charts, KPIs, debt amounts and financial widgets"},
+      {"risk": "generic_ui_advice", "control": "require component tree fields, tokens, typography and spacing"},
+      {"risk": "case_specific_leakage", "control": "no business case names in reusable example paths or IDs"}
+    ],
+    "prompt_constraints": [
+      "must be a product screen, not a landing page",
+      "must use warm_surface #F7F5F0 as base background",
+      "must use green_action #00A32A only for primary CTA and active progress",
+      "must not use red debt alarm cues",
+      "must not include bank logos, telecom logos or unapproved partner imagery",
+      "must not show internal workers, PASS, scores, GitHub, Supabase, logs or sandbox metadata"
+    ]
+  },
+  "expected_quality_gate": {
+    "verdict": "PASS_TO_COMPOSER_OR_PASS_WITH_RESTRICTIONS",
+    "minimum_score": 23,
+    "blocking_if_missing": ["component_tree", "token_map", "state_map", "risk_controls", "prompt_constraints"]
+  }
+}

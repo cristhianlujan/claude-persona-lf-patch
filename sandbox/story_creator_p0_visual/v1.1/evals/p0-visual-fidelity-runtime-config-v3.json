@@ -1,0 +1,56 @@
+{
+  "schema_version": "p0-visual-fidelity-runtime-config/v3",
+  "configuration_id": "P0-VISUAL-FIDELITY-V3-LOCAL-DETERMINISTIC",
+  "extends": "p0-visual-quality-runtime-config/v1",
+  "execution_lane": "GOVERNED_P0_SANDBOX",
+  "production_authorized": false,
+  "network_egress_required": false,
+  "structured_output_mode": "p0-consolidated-visual-reading/v2",
+  "geometry": {
+    "parent_containment_tolerance_px": 12,
+    "alignment_tolerance_px": 10,
+    "adjacency_distance_px": 36,
+    "panel_edge_min_confidence": 0.55
+  },
+  "text_grouping": {
+    "max_horizontal_gap_px": 28,
+    "baseline_tolerance_px": 11,
+    "text_height_ratio_tolerance": 0.45,
+    "same_parent_required": true,
+    "control_boundary_breaks_group": true
+  },
+  "style": {
+    "foreground_distance_threshold_min": 18,
+    "underline_row_coverage_threshold": 0.62,
+    "screenshot_exact_font_family_allowed": false,
+    "screenshot_exact_css_font_size_allowed": false,
+    "missing_property_policy": "EXPLICIT_STATUS_REQUIRED"
+  },
+  "reconciliation": {
+    "numeric_match_tolerance": 1.0,
+    "numeric_approx_tolerance": 3.0,
+    "critical_mismatch_policy": "BLOCKED_AUXILIARY_CONFLICT",
+    "blind_output_mutation_policy": "FAIL_CLOSED"
+  },
+  "quality": {
+    "max_remediation_cycles": 3,
+    "machine_fixable_before_human": true,
+    "semantic_completeness_required": true,
+    "visual_fidelity_completeness_required": true
+  },
+  "responsive": {
+    "single_viewport_breakpoint_claim": "NOT_OBSERVABLE",
+    "multi_viewport_observed_reflow_enabled": true
+  },
+  "human_review": {
+    "mode": "EXCEPTION_FIRST",
+    "resolved_elements_collapsed_by_default": true,
+    "technical_appendix_required": true,
+    "screen_level_summary_required": true
+  },
+  "privacy_security": {
+    "raw_source_private": true,
+    "publish_private_screenshot_to_git": false,
+    "auxiliary_source_requires_sha": true
+  }
+}

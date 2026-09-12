@@ -1,0 +1,3 @@
+-- owner: SKILL_EXTRACCION_FUENTES_DIGITALES_LF
+-- adapter: ADAPTER_WEB_ARTICLE_CAPTURE_LF
+-- reference only

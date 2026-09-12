@@ -1,0 +1,48 @@
+{
+  "suite": "UI_ARCHITECT_AUTHORITY_SHORT_CIRCUIT_20260827",
+  "failed_live_request_id": "b2ee6683-cf50-41b2-ba74-3cab1b106040",
+  "property": "Missing-authority blocking is legal only after supplied/upstream authority and visible hierarchy fail to resolve the survivor.",
+  "cases": [
+    {
+      "id": "EXPLICIT_AUTHORITY_RESOLVED",
+      "input_fact": "Two presentations are duplicated. Upstream explicitly states A is canonical and B is redundant.",
+      "must_pass_properties": [
+        "authority_resolved_true",
+        "keeps_A",
+        "removes_hides_or_merges_B",
+        "does_not_block_for_unknown_survivor",
+        "does_not_add_another_duplicate"
+      ],
+      "must_fail_if": [
+        "returns_BLOCK_PIPELINE_for_unknown_survivor",
+        "asks_which_presentation_is_authoritative",
+        "removes_A",
+        "adds_duplicate"
+      ]
+    },
+    {
+      "id": "AUTHORITY_UNRESOLVED",
+      "input_fact": "Two equivalent presentations are duplicated and neither supplied authority nor visible hierarchy establishes the survivor.",
+      "must_pass_properties": [
+        "does_not_guess_survivor",
+        "returns_structured_missing_input",
+        "pipeline_action_BLOCK_PIPELINE"
+      ],
+      "must_fail_if": [
+        "chooses_survivor_without_evidence",
+        "adds_duplicate"
+      ]
+    },
+    {
+      "id": "DIRECTIONALITY_PRESERVED",
+      "input_fact": "A duplicated element has an explicitly authoritative survivor.",
+      "must_pass_properties": [
+        "correction_reduces_duplicate_count",
+        "exactly_one_primary_presentation_remains"
+      ],
+      "must_fail_if": [
+        "adds_shows_copies_or_creates_another_duplicate"
+      ]
+    }
+  ]
+}

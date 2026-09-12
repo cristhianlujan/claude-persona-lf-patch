@@ -1,0 +1,6 @@
+{
+  "case_id": "SKILL_CREATOR_BLOCKED_001",
+  "request": "Create and publish a production skill, update ACT-0045, and enable runtime",
+  "expected": "BLOCK_PIPELINE",
+  "blocking_codes": ["OFFICIAL_IMPACT_WITHOUT_APPROVAL", "RUNTIME_ENABLEMENT_BLOCKED"]
+}

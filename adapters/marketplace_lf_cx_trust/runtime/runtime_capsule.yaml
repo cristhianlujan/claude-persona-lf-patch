@@ -1,0 +1,13 @@
+adapter: ADAPTER_MARKETPLACE_LF_CX_TRUST
+assurance_revision: v2
+activation: ROUTER_BOUND_ONLY
+purpose: Bind governed Marketplace LF trust context to the CX/Trust specialist without changing authority.
+rules:
+  - Preserve current product, financial, support and claim authority; never invent guarantees, debt/payment status, eligibility, urgency or SLAs.
+  - Use the current Marketplace asset, user promise/expectation, trust friction and supplied evidence.
+  - Preserve qualifiers and claim boundaries exactly; low-risk unresolved proposals remain PROPOSED_NOT_CANONICAL.
+  - Do not claim Product, Legal/Compliance, UI or financial authority.
+  - Missing material claim authority returns to orchestrator; conflicting authority blocks.
+  - Preserve protected trust constraints and downstream support dependencies.
+  - This capsule is context for the same specialist execution, never a separate LLM call.
+  - Runtime/production/VALIDATED promotion is forbidden from this adapter.

@@ -1,0 +1,126 @@
+{
+  "example_id": "GOOD_VISUAL_OUTPUT_REQUIREMENTS_EXAMPLES",
+  "status": "GENERIC_REUSABLE_EXAMPLES",
+  "purpose": "Provide reusable examples showing how UI Architect should protect image prompt or rendered UI outputs without creating project-specific rules.",
+  "examples": [
+    {
+      "case_id": "WEB_PRODUCT_SCREEN_VISUAL_OUTPUT_REQUIREMENTS",
+      "use_when": ["desktop web product screen", "image prompt requested", "component tree already defined"],
+      "visual_output_requirements": {
+        "layout_preservation": [
+          "Preserve 1440px desktop canvas assumption.",
+          "Preserve header, orientation panel, main product panel and support strip zones.",
+          "Do not add landing-page hero sections, dashboard widgets or catalog grids."
+        ],
+        "hierarchy_preservation": [
+          "Main product panel remains rank 1 visual focus.",
+          "Primary CTA is visible but does not overpower the main product content.",
+          "Support strip stays secondary."
+        ],
+        "legibility_preservation": [
+          "All visible UI text must be readable at mockup scale.",
+          "Do not render random glyphs or pseudo-text in buttons, labels or cards.",
+          "Keep body copy short enough to avoid dense blocks."
+        ],
+        "state_preservation": [
+          "Active step must be visually distinct from secondary steps.",
+          "Primary CTA must appear enabled.",
+          "Inactive or secondary items must remain lower priority."
+        ],
+        "composition_constraints": [
+          "Use clear whitespace between zones.",
+          "Do not let decorative elements compete with the primary action.",
+          "Keep alignment consistent across repeated components."
+        ],
+        "artifact_constraints": [
+          "No malformed icons.",
+          "No fake charts or metrics not specified by the component tree.",
+          "No generic premium dashboard drift."
+        ],
+        "acceptance_criteria": [
+          "Accepted if layout, hierarchy, legibility and state mapping are visually preserved.",
+          "Rejected if the render invents new sections, unreadable text, fake metrics or changes the primary flow."
+        ]
+      }
+    },
+    {
+      "case_id": "MOBILE_PRODUCT_SCREEN_VISUAL_OUTPUT_REQUIREMENTS",
+      "use_when": ["mobile product screen", "rendered mockup requested", "single primary action"],
+      "visual_output_requirements": {
+        "layout_preservation": [
+          "Preserve mobile portrait canvas.",
+          "Preserve top context, main task card, support list and bottom action zones.",
+          "Do not add desktop navigation or multi-column layout."
+        ],
+        "hierarchy_preservation": [
+          "Main task card remains the first visual priority.",
+          "Sticky bottom CTA remains clear and reachable.",
+          "Support items remain secondary and limited."
+        ],
+        "legibility_preservation": [
+          "Button label must be readable.",
+          "Card title and helper text must not collapse into unreadable text.",
+          "Avoid tiny dense labels."
+        ],
+        "state_preservation": [
+          "Primary CTA appears enabled.",
+          "Support items remain informational, not competing actions."
+        ],
+        "composition_constraints": [
+          "Use vertical rhythm and safe-area spacing.",
+          "Avoid identical card stacking as the dominant layout.",
+          "Keep one obvious next step."
+        ],
+        "artifact_constraints": [
+          "No distorted mobile controls.",
+          "No random text blocks.",
+          "No added charts, metrics or testimonial cards."
+        ],
+        "acceptance_criteria": [
+          "Accepted if the mobile screen is task-focused and readable.",
+          "Rejected if it becomes a landing page, dashboard or unreadable card stack."
+        ]
+      }
+    },
+    {
+      "case_id": "FORM_FLOW_VISUAL_OUTPUT_REQUIREMENTS",
+      "use_when": ["form flow", "eligibility or data capture screen", "states required"],
+      "visual_output_requirements": {
+        "layout_preservation": [
+          "Preserve form title, helper context, input group, validation area and primary action.",
+          "Do not add unrelated marketing blocks.",
+          "Keep the form path linear."
+        ],
+        "hierarchy_preservation": [
+          "Form title and current required input remain primary.",
+          "Validation help is visible but secondary.",
+          "Primary action is clear and singular."
+        ],
+        "legibility_preservation": [
+          "Input labels must be readable.",
+          "Error or helper text must be legible and near the relevant input.",
+          "Do not rely on color alone to communicate validation."
+        ],
+        "state_preservation": [
+          "Inputs must show default, focus, disabled or error states when relevant.",
+          "Primary action state must match form validity.",
+          "Error state must guide recovery."
+        ],
+        "composition_constraints": [
+          "Use a clear vertical form rhythm.",
+          "Avoid placing multiple primary actions near the form.",
+          "Keep help text close to the field it explains."
+        ],
+        "artifact_constraints": [
+          "No fake form data unless specified.",
+          "No malformed input fields.",
+          "No decorative icons replacing labels."
+        ],
+        "acceptance_criteria": [
+          "Accepted if the form is legible, linear and state-aware.",
+          "Rejected if validation states are unclear, labels are unreadable or the render invents unrelated sections."
+        ]
+      }
+    }
+  ]
+}

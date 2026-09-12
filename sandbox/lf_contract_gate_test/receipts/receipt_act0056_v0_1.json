@@ -1,0 +1,61 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "ANALISIS_RIESGO_CONTENIDO_LF",
+  "execution_id": "ACT-0056-DRY-RUN-2026-06-17",
+  "result": "PASS",
+  "all_required_steps_pass": true,
+  "objetivo": "Creacion completa ACT-0056 SKILL_ANALISIS_RIESGO_CONTENIDO_LF v0.1 — DDL, lf_activos, lf_operation_registry, 9 contratos, 13 archivos GitHub, DRY_RUN 2/2 PASS",
+  "asset_code": "ACT-0056",
+  "nombre_canonico": "SKILL_ANALISIS_RIESGO_CONTENIDO_LF",
+  "contract_sha": "f37e531e9b913c2026780313978a11f7e4337458",
+  "judge_sha": "049948f2d949a602aadb5dad536629876d29a3d7",
+  "source_sha_list": [
+    "360e97bebf1b2e2de4364cce4f504cee3acc91b4"
+  ],
+  "target_paths": [
+    "skills/analisis_riesgo_contenido_lf/SKILL.md",
+    "skills/analisis_riesgo_contenido_lf/README.md",
+    "skills/analisis_riesgo_contenido_lf/contracts/skill_run_contract.json",
+    "skills/analisis_riesgo_contenido_lf/schemas/decision_output.schema.json",
+    "skills/analisis_riesgo_contenido_lf/judges/mini_judges.md",
+    "skills/analisis_riesgo_contenido_lf/judges/final_skill_judge.md",
+    "skills/analisis_riesgo_contenido_lf/examples/good_bad_ambiguous.md",
+    "skills/analisis_riesgo_contenido_lf/evals/evals.json",
+    "skills/analisis_riesgo_contenido_lf/fixtures/corpus_eventos_198_201.json",
+    "skills/analisis_riesgo_contenido_lf/validators/validate_decision_output.py",
+    "skills/analisis_riesgo_contenido_lf/adapters/lf_content_decisions_adapter.md",
+    "skills/analisis_riesgo_contenido_lf/checklists/preflight.md",
+    "skills/analisis_riesgo_contenido_lf/handoffs/to_generacion_contenido_lf.md"
+  ],
+  "dry_run": {
+    "run_id": "bb9a08ec-7033-4fc0-a7f7-5d72bc134291",
+    "casos_total": 2,
+    "casos_pass": 2,
+    "steps_por_caso": 9,
+    "mini_judges_total": 18,
+    "mini_judges_pass": 18,
+    "decisiones": [
+      "BLOCK_OR_HITL",
+      "ALLOW_CANDIDATE_READ_ONLY"
+    ]
+  },
+  "auditoria_supabase": {
+    "lf_activos": "PASS — APROBADO/APROBADO_PCR/BLOQUEADO",
+    "lf_operation_registry": "PASS — APROBADO_PCR_READ_ONLY",
+    "lf_operation_step_contracts": "PASS — 9 contratos S1A-S9A",
+    "lf_content_decisions": "PASS — 2 decisiones DRY_RUN"
+  },
+  "blocking_codes": [],
+  "incidencias": [],
+  "eventos_supabase": [
+    310,
+    311,
+    312,
+    313
+  ],
+  "impacto_automatico": "BLOQUEADO",
+  "issued_at": "2026-06-17",
+  "notas": "Receipt ACT-0056 SKILL_ANALISIS_RIESGO_CONTENIDO_LF v0.1. DRY_RUN 2/2 PASS. 9 contratos. 13 archivos GitHub. Gate APROBADO formal registrado evento 311. impacto_automatico=BLOQUEADO vigente."
+}

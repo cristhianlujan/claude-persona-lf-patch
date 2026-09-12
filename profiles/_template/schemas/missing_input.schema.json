@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["status", "missing_fields", "next_gate"],
+  "properties": {
+    "status": {"enum": ["RETURN_TO_ORCHESTRATOR", "BLOCK_PIPELINE"]},
+    "missing_fields": {"type": "array", "items": {"type": "string"}},
+    "next_gate": {"type": "string"}
+  }
+}

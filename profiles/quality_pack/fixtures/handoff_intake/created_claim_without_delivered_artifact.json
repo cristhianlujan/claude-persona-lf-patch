@@ -1,0 +1,35 @@
+{
+  "case_id": "QP_INTAKE_MISSING_ARTIFACT_001",
+  "upstream_worker": "skills/profile_creator",
+  "upstream_output": {
+    "status": "PROFILE_PACK_CREATED",
+    "profile_pack_id": "PROFILE_EXAMPLE_CANDIDATE",
+    "deliverable_created": true,
+    "files_created": [
+      "PROFILE.md",
+      "contracts/main_contract.md"
+    ],
+    "evidence_map": [
+      "Profile creation was declared complete."
+    ],
+    "next_gate": "QUALITY_PACK_REVIEW"
+  },
+  "worker_contract_ref": "skills/profile_creator/contracts/main_contract.md",
+  "expected_output_format": "PROFILE_PACK",
+  "acceptance_criteria": [
+    "created artifact is observable and consumable"
+  ],
+  "blocking_criteria": [
+    "created artifact is missing"
+  ],
+  "case_context": "Profile Creator handoff continuity eval",
+  "lf_governance_constraints": [
+    "runtime disabled",
+    "automatic impact blocked"
+  ],
+  "declared_worker_score": null,
+  "declared_worker_evidence": [
+    "Profile creation was declared complete."
+  ],
+  "deliverable_artifact": null
+}

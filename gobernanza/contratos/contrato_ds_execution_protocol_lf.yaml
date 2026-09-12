@@ -1,0 +1,54 @@
+operation_code: DS_BUILD_PROTOCOL_LF
+contract_code: CONTRACT_DS_EXECUTION_PROTOCOL_LF
+version: v0.2
+status: CANDIDATO_READ_ONLY
+source_model: GIT_FIRST_YAML
+source_repo: cristhianlujan/claude-persona-lf-patch
+
+purpose: Contrato versionado para evitar PASS declarativo en DS_BUILD_PROTOCOL_LF.
+
+required_before_write:
+  - read_router
+  - read_operational_source
+  - read_act0047
+  - read_existing_ds_assets
+  - ds_research_pack_verified
+  - research_to_rules_matrix_present
+  - decision_matrix_present
+  - validate_channel_mode
+  - select_adapter
+  - color_tokens_semantic_roles_checked
+  - validate_output_mode_contract
+
+allowed:
+  runtime: NO_HABILITADO
+  document_status: CANDIDATO
+  operational_status: READ_ONLY
+  automatic_impact: BLOQUEADO
+  target: design_system_candidate
+
+blocked:
+  - skip_router
+  - skip_operational_source
+  - skip_existing_ds_check
+  - skip_ds_research_pack
+  - skip_research_to_rules_matrix
+  - skip_decision_matrix
+  - ds_research_payload_too_shallow
+  - source_type_mixed_without_classification
+  - user_input_not_declared
+  - assistant_freeform_decision
+  - evidence_payload_too_shallow
+  - enable_runtime
+  - mark_production
+  - mark_validated
+  - pass_with_blocking_observations
+
+required_after_write:
+  - execution_steps_recorded
+  - checklist_view_pass
+  - judge_view_pass
+  - source_sha_present
+  - contract_sha_present
+  - judge_sha_present
+  - no_blocking_observations

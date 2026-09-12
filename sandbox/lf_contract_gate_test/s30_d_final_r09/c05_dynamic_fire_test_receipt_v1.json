@@ -1,0 +1,153 @@
+{
+  "acl_repair": {
+    "delete_negative_sqlstate": "42501",
+    "initial_overgrant_detected": true,
+    "repair_migration_applied": true
+  },
+  "cases": {
+    "C05-01": {
+      "dispatch_permitted_count": 1,
+      "same_execution_id": "S30-C05-01-A-20260910",
+      "session_a": "RESERVED_NEW_EXECUTION",
+      "session_a_backend_pid": 557263,
+      "session_b": "REPLAY_EXISTING_EXECUTION",
+      "session_b_backend_pid": 557269,
+      "status": "PASS",
+      "temporal_overlap_empirically_proven": false
+    },
+    "C05-02": {
+      "observed": "IDEMPOTENCY_KEY_REUSED_WITH_DIFFERENT_REQUEST",
+      "status": "PASS"
+    },
+    "C05-03": {
+      "observed": "IDEMPOTENCY_REPLAY_TARGET_MISMATCH",
+      "status": "PASS"
+    },
+    "C05-04": {
+      "lease_fence": 1,
+      "owner_a": "LEASE_ACQUIRED",
+      "owner_b": "BLOCKED:LEASE_HELD",
+      "session_a_backend_pid": 557280,
+      "session_b_backend_pid": 557281,
+      "status": "PASS"
+    },
+    "C05-05": {
+      "new_fence": 2,
+      "old_fence": 1,
+      "status": "PASS",
+      "strictly_greater_fence": true,
+      "takeover_backend_pid": 557283
+    },
+    "C05-06": {
+      "observed": "STALE_OR_MISSING_LEASE_FENCE",
+      "stale_write_persisted": false,
+      "status": "PASS"
+    },
+    "C05-07": {
+      "final_checkpoint_seq": 2,
+      "lower_seq_after_2": "CHECKPOINT_NON_MONOTONIC",
+      "persist_seq_1": "CHECKPOINT_PERSISTED",
+      "persist_seq_2": "CHECKPOINT_PERSISTED",
+      "replay_seq_1": "REPLAY_CHECKPOINT",
+      "same_seq_different_payload": "CHECKPOINT_SEQ_REUSED_WITH_DIFFERENT_PAYLOAD",
+      "status": "PASS"
+    },
+    "C05-08": {
+      "first": "EFFECT_RESERVED_NEW",
+      "first_dispatch_permitted": true,
+      "second": "RECONCILIATION_REQUIRED",
+      "second_dispatch_permitted": false,
+      "session_a_backend_pid": 557305,
+      "session_b_backend_pid": 557306,
+      "status": "PASS"
+    },
+    "C05-09": {
+      "persist": "EFFECT_SUCCESS_PERSISTED",
+      "receipt_readback": "SIMULATED-READBACK-001",
+      "replay": "REPLAY_SUCCEEDED_EFFECT",
+      "replay_dispatch_permitted": false,
+      "status": "PASS"
+    }
+  },
+  "cleanup": {
+    "lease_c05_01_released": true,
+    "lease_c05_05_released": true,
+    "test_rows_retained_as_evidence": true
+  },
+  "hard_targets": {
+    "duplicate_dispatch_permitted_after_existing_effect_reservation": 0,
+    "lost_checkpoint_count": 0,
+    "missing_readback_count": 0,
+    "same_key_different_hash_accept_count": 0,
+    "same_key_target_mismatch_accept_count": 0,
+    "stale_fence_write_count": 0
+  },
+  "migration": {
+    "acl_hardening": {
+      "applied": true,
+      "ledger_readback": true,
+      "name": "s30_c05_effect_guard_acl_hardening_v1",
+      "repo_path": "supabase/migrations/20260911030211_s30_c05_effect_guard_acl_hardening_v1.sql",
+      "sql_sha256": "ac470648e2e910d54148eef2757fe2ac145c6b236febf2567b80aec4725d7800",
+      "version": "20260911030211",
+      "canonical_repo_raw_sha256": "ac470648e2e910d54148eef2757fe2ac145c6b236febf2567b80aec4725d7800",
+      "remote_ledger_canonical_sha256": "17bdbff34517a9ad5f4aa786267ead0f7de2cfc54df9c2e2607f12ee643edae6"
+    },
+    "primary": {
+      "applied": true,
+      "ledger_readback": true,
+      "name": "s30_c05_generic_execution_reliability_v1",
+      "repo_path": "sandbox/lf_contract_gate_test/s30_d_final_r09/c05_generic_execution_reliability_candidate_v1.sql",
+      "sql_sha256": "176964bbad7a9794b48a2378ac05030e228704f1fe3923d1217ec7b96d60a64a",
+      "version": "20260911025454",
+      "submitted_candidate_sha256": "176964bbad7a9794b48a2378ac05030e228704f1fe3923d1217ec7b96d60a64a",
+      "canonical_repo_path": "supabase/migrations/20260911025454_s30_c05_generic_execution_reliability_v1.sql",
+      "canonical_repo_raw_sha256": "99484d139f138daf9065f51a7c2b5943fe5dd343e3f053221589a0321d4c7b7d",
+      "remote_ledger_canonical_sha256": "23391567e93c866888755adb89505a50836f2b2f3d9f89144edd48fae876cd53",
+      "source_persistence_reconciled_post_fire_test": true
+    }
+  },
+  "next_gate": "EJECUCION_ESTRATEGIA_LF_BOOTSTRAP_THEN_ORQUESTACION_ESTRATEGIAS_LF",
+  "project_id": "mhwmirqcgxxukpctffuv",
+  "proof_limits": {
+    "connector_invocations_serialized": true,
+    "external_exactly_once_claimed": false,
+    "external_irreversible_effect_executed": false,
+    "note": "Atomic PostgreSQL uniqueness/ON CONFLICT and lease fencing were exercised across distinct backend sessions; the connector does not expose simultaneous session orchestration, so wall-clock overlap is not claimed.",
+    "temporal_overlap_empirically_proven": false,
+    "two_distinct_database_sessions_exercised": true
+  },
+  "receipt_version": "S30_C05_DYNAMIC_FIRE_TEST_RECEIPT_V1",
+  "result": "C05_DYNAMIC_FIRE_TEST_PASS_WITH_SERIALIZED_TWO_SESSION_HARNESS_AND_ACL_REPAIR",
+  "safety": {
+    "ddl_applied": true,
+    "orchestrator_bootstrapped": false,
+    "runtime_activated": false,
+    "s26_changed": false,
+    "scheduler_changed": false,
+    "strategy_execute_bootstrapped": false,
+    "supabase_write": true
+  },
+  "schema_readback": {
+    "anon_function_execute": false,
+    "authenticated_function_execute": false,
+    "constraints_present": 3,
+    "effect_guard_rls_enabled": true,
+    "effect_guard_service_role_delete_allowed": false,
+    "effect_guard_service_role_privileges": [
+      "INSERT",
+      "SELECT",
+      "UPDATE"
+    ],
+    "idempotency_unique_index_present": true,
+    "orchestrator_registered": false,
+    "service_role_function_execute": true,
+    "strategy_execute_registered": false,
+    "typed_columns_present": true
+  },
+  "security_negative": {
+    "authenticated_execute_attempt": "PERMISSION_DENIED",
+    "sqlstate": "42501"
+  },
+  "source_persistence_note": "The live apply used the sandbox candidate source. Supabase ledger stores the executable statement payload without the candidate-only comment header; canonical migration source is persisted in that exact ledger-normalized form."
+}

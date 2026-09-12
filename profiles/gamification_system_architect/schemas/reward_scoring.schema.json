@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Gamification Reward Scoring",
+  "type": "object",
+  "required": ["reward_id", "reward_type", "earned_by", "not_earned_by", "financial_value", "symbolic_value", "user_benefit", "business_benefit", "risk_limit", "abuse_case", "reset_or_recovery_rule", "blocked_reward_patterns", "traceability"],
+  "properties": {
+    "reward_id": {"type": "string"},
+    "reward_type": {"type": "string"},
+    "earned_by": {"type": "string"},
+    "not_earned_by": {"type": "string"},
+    "financial_value": {"type": "string"},
+    "symbolic_value": {"type": "string"},
+    "user_benefit": {"type": "string"},
+    "business_benefit": {"type": "string"},
+    "risk_limit": {"type": "string"},
+    "abuse_case": {"type": "string"},
+    "reset_or_recovery_rule": {"type": "string"},
+    "blocked_reward_patterns": {"type": "array", "items": {"type": "string"}},
+    "traceability": {"type": "object"}
+  },
+  "additionalProperties": false
+}

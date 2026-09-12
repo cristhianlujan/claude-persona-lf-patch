@@ -1,0 +1,15 @@
+{
+  "schema":"lf-profile-runtime-v3-optimization-status/v1",
+  "artifact_sha256":"ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+  "full_image_ocr_reuse":{"status":"PROVEN_IN_REPEATABILITY_PROBE","evidence":"8 targeted-reread repeatability runs reused existing observations; full_image_ocr_repeated=false"},
+  "targeted_reread_process_fanout":{"status":"PROVEN_OPTIMIZED","before_invocations":72,"after_invocations":4,"same_artifact_speedup_x":13.26,"decision_equivalence":"18/18","worse_decisions":0},
+  "cache_key":{"status":"IMPLEMENTED_AND_GUARDED","dimensions":["image_sha","context_sha","runtime_version","resolver_version"],"semantic_authority_fields_cacheable":false},
+  "cache_lookup_store_reuse":{"status":"NOT_PROVEN","reason":"cache_key_v3.py defines identity and cacheability policy; no source-bound lookup/store reuse execution was found in this V3 directory"},
+  "early_stop":{"status":"NOT_IMPLEMENTED","reason":"batched_targeted_reread_v3.py iterates every configured PSM before candidate selection"},
+  "recomputation_avoidance":{"status":"PARTIAL","proven":"full-image OCR is not repeated by the targeted reread repeatability probe","not_proven":"cross-run targeted-reread result reuse"},
+  "serialization":{"status":"NOT_BENCHMARKED_SEPARATELY","reason":"no isolated serialization timing receipt was found"},
+  "plateau":{"status":"BATCH_LATENCY_STABLE_NOT_SEMANTIC_PLATEAU","runs":8,"p50_ms":901.233,"p95_ms":938.117,"min_ms":881.899,"max_ms":941.985},
+  "parallelism3":{"status":"NOT_TESTED","theoretical_floor_ms":672969},
+  "timeout_increased":false,
+  "quality_gate_relaxed":false
+}

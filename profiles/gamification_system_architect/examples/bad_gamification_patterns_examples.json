@@ -1,0 +1,18 @@
+{
+  "example_id": "BAD_GAMIFICATION_PATTERNS_EXAMPLES",
+  "status": "GENERIC_REUSABLE_EXAMPLES",
+  "examples": [
+    {"case_id": "BAD_DECORATIVE_BADGES_ONLY", "problem": "badges without target behavior", "expected_verdict": "RETURN_TO_WORKER_FOR_SELF_REPAIR"},
+    {"case_id": "BAD_PAYMENT_PRESSURE_STREAK", "problem": "streak tied to unsafe action pressure", "expected_verdict": "BLOCK_PIPELINE"},
+    {"case_id": "BAD_FAKE_URGENCY_MISSION", "problem": "mission relies on artificial urgency", "expected_verdict": "BLOCK_PIPELINE"},
+    {"case_id": "BAD_POINTS_WITH_FINANCIAL_CONFUSION", "problem": "points have unclear financial meaning", "expected_verdict": "RETURN_TO_WORKER_FOR_SELF_REPAIR"}
+  ],
+  "traceability": {
+    "internal_lf": "ACT-0045 and ACT-0017",
+    "own_repo": "Quality Pack blocking examples pattern",
+    "external_comparable": "comparable gamification systems",
+    "critical_risk": "LF clarity and wellbeing controls",
+    "adapted_into": "examples/bad_gamification_patterns_examples.json",
+    "reason_for_location": "bad examples train repair and block behavior"
+  }
+}

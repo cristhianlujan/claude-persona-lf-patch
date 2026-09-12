@@ -1,0 +1,35 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.3",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-BISC-009-D1-D4-GOVERNANCE-RECONCILIATION",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "40969a55fc1eb86fe72dea56a7d3ba59ba977e176a7103a3fa9e88d67e5c94c6",
+  "judge_sha": "cc0e3ea658b476962317483a2856d0c503794385",
+  "source_sha_list": [
+    "0c20dbc4d5d2504e92ce1236677f92bef59b681f",
+    "96aaebbef056f9daa430d54091f3719c8e8e438c"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/SKILL.md",
+    "skills/creating-integral-user-stories/manifest.yaml"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-11T18:05:00Z",
+  "evidence": {
+    "purpose": "Reconcile D1-D4 governance contradictions without production, runtime, direct-main write, destructive schema retirement or self-approval.",
+    "owner_authorization": "USER_APPROVED_CHAT_20260811_CONTINUE_WITH_REPAIR_AND_NEXT_GATES",
+    "d1": "SKILL frontmatter version aligned to manifest v0.8.",
+    "d2": "SKILL persistence and operational branch aligned to manifest github_contract.target_branch agent/pr93-story-maturity-foundation.",
+    "d3": "Closure arithmetic separated into canonical 62, operational inventory 87 and maturity candidate 17 denominators; Supabase readback verified canonical A01-A62 = 62/62 PASS_WITH_EVIDENCE and raw current rows = 64 with two noncanonical current scripts.",
+    "d4": "Database readback found historical baseline tables/views v3-v16; policy declares v16 active and v3-v15 HISTORICAL_READ_ONLY, with no destructive DDL.",
+    "maintenance_transport_branch": "lf/p0-v4-closed-loop",
+    "direct_main_write": false,
+    "merge_performed": false,
+    "production_authorized": false,
+    "runtime_enabled": false,
+    "post_change_ci_required": true
+  }
+}

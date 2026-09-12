@@ -1,0 +1,8 @@
+{
+  "request_type": "create_final_profile_now",
+  "profile_purpose": "production profile",
+  "scope": "production general",
+  "runtime_enabled": true,
+  "automatic_impact": "ENABLED",
+  "expected_status": "BLOCK_PIPELINE"
+}

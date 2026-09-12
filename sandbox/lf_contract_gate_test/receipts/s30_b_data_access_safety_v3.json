@@ -1,0 +1,98 @@
+{
+  "receipt_version": "S30_B_DATA_ACCESS_SAFETY_V3",
+  "lane": "S30-B",
+  "execution_id": "S30-B-LIVE-REPAIR-20260909-002",
+  "verification_state": "PR_EVENT_CI_PENDING",
+  "candidate_claim_ceiling": "FIELD_LEVEL_DATA_ACCESS_AND_SCHEMA_SAFETY_CANDIDATE_PASS",
+  "frozen_base_main_sha": "a1112f88a12b336ab9d44bc67edba1e97fd0a4ac",
+  "governance_bootstrap": {
+    "router": "ACT-0001:v0.3",
+    "ekb_loaded_before_material_work": true,
+    "ekb_codes": [
+      "DB-001",
+      "GOV-010",
+      "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001",
+      "ROUTER-UNREGISTERED-ASSET-TYPE-001",
+      "CI-009",
+      "SRC-011"
+    ],
+    "policies_loaded": [
+      "POL-LF-OPERATION-LIFECYCLE",
+      "POL-LF-POLICY-CONSUMPTION"
+    ]
+  },
+  "causal_prerequisite": {
+    "problem": "BOUNDED_S30_B_DELTA_WAS_CLASSIFIED_DEEP_SHARED_UNKNOWN",
+    "first_failed_run": 34430202052,
+    "forbidden_workaround": "DO_NOT_COPY_UNRELATED_MIGRATIONS_INTO_CONSUMER_LANE",
+    "repair_pr": 631,
+    "repair_head": "ccac98280feeabc3382a081a4b369e39c2ae19c9",
+    "repair_merge_sha": "a1112f88a12b336ab9d44bc67edba1e97fd0a4ac",
+    "repair_exact_head_ci": {
+      "validate_lf_packs": 34430450358,
+      "bootstrap": 34430450388,
+      "lf_contract_check": 34430450393,
+      "all_success": true,
+      "migration_parity_skipped": true,
+      "input_governance_parity_skipped": true
+    },
+    "new_generalization_finding": "S30_B_BOUNDED_PATHS_NOT_GENERALIZED_IN_SHARED_CI_LANE_ROUTER",
+    "ekb_persistence": "PENDING_GOVERNED_EKB_WRITE_ROUTE_NO_DIRECT_DML_BYPASS"
+  },
+  "rematerialization": {
+    "source_historical_pr": 623,
+    "superseded_live_pr": 630,
+    "new_branch": "lf/s30-b-live-repair-v2-20260909",
+    "logic_reused_byte_identical": [
+      "sandbox/lf_contract_gate_test/s30_data_access_candidate/lf_data_access.py",
+      "sandbox/lf_contract_gate_test/s30_data_access_candidate/test_s30_data_access_v2.py"
+    ],
+    "registry_rebound_to_current_main": true,
+    "shared_workflow_preserved_from_current_main": true
+  },
+  "schema_currentness": {
+    "registered_source_count": 15,
+    "canonical_fingerprint_source_count": 13,
+    "canonical_fingerprints_recomputed_live": 13,
+    "canonical_fingerprint_mismatch_count": 0,
+    "fallback_source_count": 2,
+    "fallback_physical_metadata_revalidated": 2,
+    "strategy_snapshot_schema_resolved_live": true,
+    "strategy_snapshot_constraints_resolved_live": true,
+    "strategy_snapshot_indexes_resolved_live": true,
+    "strategy_snapshot_fingerprint": "0a519ad2fb36cebafd574773a9b1e5ee70b7db87a6d80c1482f5cc4734c73c57"
+  },
+  "live_positive_case": {
+    "source_key": "STRATEGY_SNAPSHOTS",
+    "object_identity": "public.lf_strategy_snapshots",
+    "allowed_filter": "id=35",
+    "result": "PASS",
+    "row_count": 1,
+    "snapshot_code": "LF_OPERATING_CONSTITUTION_POLICY_AUTONOMOUS_OPERATIONS_20260906",
+    "status": "CANDIDATO_READ_ONLY",
+    "runtime_state": "PLAN_ONLY",
+    "impact_policy": "BLOQUEADO"
+  },
+  "negative_guard": {
+    "suite": "test_s30_data_access_v2.py",
+    "required_behavior": "UNREGISTERED_OR_NONEXISTENT_FIELD_BLOCKS_BEFORE_DEPENDENT_BACKEND",
+    "historical_push_ci_run": 34430127737,
+    "negative_backend_escape_count_expected": 0,
+    "fresh_exact_head_pr_ci": "PENDING"
+  },
+  "safety": {
+    "snapshot_35_mutated": false,
+    "supabase_ddl_created": false,
+    "runtime_activation": false,
+    "production_activation": false,
+    "scheduler_modified": false,
+    "s26_modified": false
+  },
+  "remaining_gates": [
+    "PR_EVENT_EXACT_HEAD_VALIDATE_LF_PACKS",
+    "PR_EVENT_EXACT_HEAD_BOOTSTRAP",
+    "PR_EVENT_EXACT_HEAD_LF_CONTRACT_CHECK",
+    "MAIN_RACE_RECHECK_BEFORE_MERGE",
+    "POST_MERGE_MAIN_READBACK"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "schema":"lf-profile-runtime-historical-parity-status/v1",
+  "campaign":"PROFILE_RUNTIME_P0_V3_20260902",
+  "artifact_sha256":"ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+  "historical_334_bbox_baseline":{
+    "status":"NOT_PROVEN",
+    "recovery_status":"NOT_RECOVERED_FROM_DURABLE_REPO_EVIDENCE",
+    "current_199_may_substitute_for_historical_parity":false,
+    "allowed_use_of_current_199":"FORWARD_SAME_INPUT_BASELINE_ONLY"
+  },
+  "p02_p03":{
+    "profile_runtime_historical_definition_status":"NOT_RECOVERED",
+    "repository_label_hits_exist":true,
+    "label_hits_prove_profile_runtime_contract":false,
+    "historical_334_parity":"NOT_PROVEN"
+  },
+  "direct_current_behavior_evidence":{
+    "decomposer_context_pack_gate":"14/14 PASS",
+    "trace_data_e2e":"PASS_WITH_ALL_CRITICAL_COUNTERS_0",
+    "critical_regressions_count":0
+  },
+  "claim_policy":{
+    "forbid_historical_334_parity_claim":true,
+    "forbid_p02_p03_parity_claim_without_definition":true,
+    "allow_current_199_forward_comparison":true
+  }
+}

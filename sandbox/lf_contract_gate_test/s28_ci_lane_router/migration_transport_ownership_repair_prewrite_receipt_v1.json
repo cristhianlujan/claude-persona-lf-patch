@@ -1,0 +1,32 @@
+{
+  "receipt_version": "S30-CI-ROUTER-MIGRATION-TRANSPORT-OWNERSHIP-PREWRITE-v1",
+  "scope": "SHARED_CI_ROUTER_OWNERSHIP_ONLY",
+  "base_main_sha": "4796a87c2e9c0d08e9eabea9378bd46087c154c2",
+  "problem": "test_lf_migration_source_parity_transport.py was unbound and forced DEEP_SHARED_UNKNOWN, incorrectly requiring P0 exact-head external applicability for C05 source-parity changes",
+  "repair": {
+    "path": "sandbox/lf_contract_gate_test/test_lf_migration_source_parity_transport.py",
+    "ownership": "KNOWN_SHARED_MIGRATION_PARITY_CONTROL",
+    "migration_parity_required": true,
+    "input_governance_parity_required": false,
+    "p0_exact_head_external_required": false,
+    "deep_shared": false,
+    "unknown_paths_still_fail_closed": true
+  },
+  "verification": {
+    "ci_lane_router_regressions": "32/32 PASS",
+    "declarative_positive": "8/8 PASS",
+    "declarative_adversarial": "16/16 PASS",
+    "p0_external_applicability_entrypoint": "4/4 PASS",
+    "pr674_reclassification": "SPECIALIZED_REQUIRED_WITH_MIGRATION_PARITY_AND_WITHOUT_P0_EXTERNAL",
+    "git_diff_check": "PASS"
+  },
+  "boundaries": {
+    "supabase_write": false,
+    "billing_change": false,
+    "runtime_activation": false,
+    "scheduler_change": false,
+    "s26_mutation": false,
+    "main_merge_authorized": false
+  },
+  "status": "CANDIDATE_NOT_MERGED"
+}

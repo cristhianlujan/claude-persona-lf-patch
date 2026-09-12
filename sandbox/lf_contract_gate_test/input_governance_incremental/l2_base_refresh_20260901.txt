@@ -1,0 +1,7 @@
+BASE_REFRESH_ONLY
+main=876a63cc46c1d15d34b0e56d1180536d56d0b3c6
+parity_owner_pr=386
+scope_change=false
+migration_copied=false
+logic_changed=false
+reason=rerun exact-head CI after transversal source-parity reconciliation

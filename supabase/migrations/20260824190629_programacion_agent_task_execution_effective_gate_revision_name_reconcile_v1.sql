@@ -1,0 +1,4 @@
+update supabase_migrations.schema_migrations
+set name='programacion_agent_task_execution_effective_gate_revision_v1'
+where version='20260824190103'
+  and name='programacion_execution_effective_gate_revision_v1';

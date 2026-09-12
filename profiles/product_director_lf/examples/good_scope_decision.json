@@ -1,0 +1,38 @@
+{
+  "fixture_id": "GOOD_SCOPE_DECISION",
+  "status": "GENERIC_REUSABLE_FIXTURE",
+  "purpose": "Validate that Product Director LF can produce a clear product decision with included scope, excluded scope, testable acceptance criteria, risks and handoff without using a project-specific case.",
+  "input": {
+    "product_objective": "Define whether a new product block should act as an orientation step before a primary conversion flow.",
+    "target_user_state": "User needs clarity before deciding whether to continue.",
+    "problem_to_solve": "The current experience jumps too quickly to the next action without explaining why the action matters.",
+    "decision_required": "Decide if the block belongs in the current MVP and what it must include.",
+    "constraints": ["single primary action", "no sensitive data capture in the orientation block", "no promise of guaranteed benefit"],
+    "forbidden_scope": ["full dashboard", "multi-step form", "personalized offer promise", "visual design details"],
+    "expected_closure": "Product Direction Spec ready for UX/UI and Copy handoff"
+  },
+  "expected_output_summary": {
+    "output_type": "PRODUCT_DIRECTION_SPEC",
+    "verdict": "PASS_TO_QUALITY_PACK",
+    "must_include": [
+      "selected product decision",
+      "included_scope",
+      "excluded_scope",
+      "priority rationale",
+      "testable acceptance criteria",
+      "handoff_to_next",
+      "traceability"
+    ],
+    "must_not_include": [
+      "visual layout invention",
+      "legal approval claim",
+      "technical architecture",
+      "guaranteed financial promise"
+    ]
+  },
+  "judge_expectations": {
+    "minimum_score": 22,
+    "blocking_conditions": [],
+    "expected_verdict": "PASS_TO_QUALITY_PACK"
+  }
+}

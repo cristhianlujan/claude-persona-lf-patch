@@ -1,0 +1,31 @@
+{
+  "readback_version": "S30_STRATEGY_EXECUTOR_AUTHORITY_READBACK_V1",
+  "operation_code": "EJECUCION_ESTRATEGIA_LF",
+  "source_main_sha": "8727ea7f92e503b047b84c10279eb2e680400652",
+  "observed_at": "2026-09-12T03:39:02.117158+00:00",
+  "authority": "public.lf_strategy_snapshots",
+  "identity_field": "snapshot_code",
+  "selector": {
+    "snapshot_code": "LF_S30_SHELL_ADVANCED_EXECUTION_20260903",
+    "matching": "EXACT"
+  },
+  "exact_match_count": 0,
+  "exact_matches": [],
+  "historical_hardcoded_id_probe": [
+    {
+      "id": 35,
+      "snapshot_code": "LF_OPERATING_CONSTITUTION_POLICY_AUTONOMOUS_OPERATIONS_20260906",
+      "status": "CANDIDATO_READ_ONLY",
+      "runtime_state": "PLAN_ONLY",
+      "impact_policy": "BLOQUEADO",
+      "updated_at": "2026-09-10T08:50:55.197850+00:00"
+    }
+  ],
+  "readback_current_for_execution": false,
+  "currentness_scope": "OBSERVATION_ONLY_NOT_EXECUTION_AUTHORITY",
+  "verdict": "BLOCK_AUTHORITY_NOT_MATERIALIZED",
+  "runtime_activation_allowed": false,
+  "strategy_snapshot_mutated": false,
+  "production_changed": false,
+  "notes": "The source canary target code has zero exact live matches. Historical id 35 now identifies a different S30 strategy. This frozen readback proves the source/currentness defect only; every future runtime attempt must perform a fresh immediate pre-runtime readback."
+}

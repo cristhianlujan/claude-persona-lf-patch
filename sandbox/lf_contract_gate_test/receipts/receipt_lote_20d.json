@@ -1,0 +1,32 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "CREACION_SKILL_LF + CREACION_ADAPTER_LF",
+  "execution_id": "LOTE-20D-2026-06-13",
+  "result": "PASS_SUPABASE_AUDIT",
+  "all_required_steps_pass": true,
+  "objetivo": "Cierre total de contratos profundos en lf_operation_step_contracts",
+  "resultado_final": {
+    "CREACION_SKILL_LF": { "contratos": 37, "esperado": 37 },
+    "CREACION_ADAPTER_LF": { "contratos": 16, "esperado": 16 }
+  },
+  "sub_bloques": {
+    "A": { "pipeline": "CREACION_ADAPTER_LF", "pasos": "7-16", "evento_id": 271, "mini_judge": "PASS" },
+    "B": { "pipeline": "CREACION_SKILL_LF", "pasos": "25-37", "evento_id": 272, "mini_judge": "PASS" },
+    "C": { "pipeline": "CREACION_SKILL_LF", "pasos": "11-22", "evento_id": 273, "mini_judge": "PASS" }
+  },
+  "auditoria": {
+    "A8_1_cobertura": "PASS_0_filas",
+    "A8_2_integridad": "PASS_0_filas",
+    "A8_3_convencion": "PASS_0_filas",
+    "A8_4_orden": "PASS_0_filas"
+  },
+  "incidencias": [],
+  "correcciones": [],
+  "blocking_codes": [],
+  "eventos_supabase": [271, 272, 273],
+  "issued_at": "2026-06-13",
+  "lote": "20D",
+  "notas": "Receipt Lote 20D. 35 contratos profundos insertados (10 ADAPTER + 25 SKILL). Auditoria Supabase A8.1-A8.4 en PASS. Sin merge sin aprobacion explicita. Estado: PASS_SUPABASE_AUDIT, pendiente checkpoint merge."
+}

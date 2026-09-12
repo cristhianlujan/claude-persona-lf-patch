@@ -1,0 +1,18 @@
+{
+  "status": "BLOCK_PIPELINE",
+  "profile_pack_id": "",
+  "source_authority": "missing",
+  "deliverable_created": false,
+  "files_created": [],
+  "evidence_map": {
+    "router_applied": false,
+    "asset_verified": null,
+    "runtime_enabled": true
+  },
+  "blocking_codes": [
+    "BASIC_PROFILE_OUTPUT_NOT_ACCEPTABLE",
+    "SOURCE_AUTHORITY_MISSING",
+    "RUNTIME_ENABLEMENT_BLOCKED"
+  ],
+  "next_gate": "BLOCK_PIPELINE"
+}

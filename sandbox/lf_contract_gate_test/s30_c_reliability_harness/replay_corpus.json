@@ -1,0 +1,423 @@
+{
+  "corpus_id": "S30-R09-HISTORICAL-REPLAY-v2",
+  "acceptance_stage": "BUILD_ONLY",
+  "final_acceptance_blocked_until": [],
+  "cases": [
+    {
+      "case_id": "R09-A01",
+      "category": "DB/schema",
+      "source_ref": "EKB:DB-001",
+      "fault_kind": "db_missing_column",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "DB_SCHEMA_INTROSPECTION",
+      "stimulus": {
+        "introspected_columns": [
+          "id",
+          "codigo",
+          "titulo"
+        ],
+        "requested_column": "handoff_contract_field"
+      }
+    },
+    {
+      "case_id": "R09-A02",
+      "category": "DB/schema",
+      "source_ref": "HANDOFF:R09-A",
+      "fault_kind": "wrong_relation",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "DB_OBJECT_RESOLUTION",
+      "stimulus": {
+        "available_relations": [
+          "public.lf_error_knowledge"
+        ],
+        "requested_relation": "public.error_knowledge"
+      }
+    },
+    {
+      "case_id": "R09-A03",
+      "category": "DB/schema",
+      "source_ref": "HANDOFF:R09-A",
+      "fault_kind": "identity_generated_always",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "DB_IDENTITY_MODE_PREFLIGHT",
+      "stimulus": {
+        "identity_mode": "GENERATED ALWAYS",
+        "write_includes_identity": true,
+        "overriding_system_value": false
+      }
+    },
+    {
+      "case_id": "R09-A04",
+      "category": "DB/schema",
+      "source_ref": "HANDOFF:R09-A",
+      "fault_kind": "wrong_function_schema",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "DB_FUNCTION_SCHEMA_RESOLUTION",
+      "stimulus": {
+        "available_functions": [
+          "public.fn_lf_router_preflight_v1"
+        ],
+        "requested_function": "transversal.fn_lf_router_preflight_v1"
+      }
+    },
+    {
+      "case_id": "R09-B01",
+      "category": "EKB/process",
+      "source_ref": "EKB:GOV-010",
+      "fault_kind": "ekb_not_consumed",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "EKB_PRELOAD",
+      "stimulus": {
+        "required_ekb": [
+          "DB-001"
+        ],
+        "consumed_ekb": []
+      }
+    },
+    {
+      "case_id": "R09-C01",
+      "category": "Data-access",
+      "source_ref": "EKB:GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001",
+      "fault_kind": "field_unbound",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "FIELD_LEVEL_SOURCE_BINDING",
+      "stimulus": {
+        "required_bindings": [
+          "public.lf_error_knowledge.codigo"
+        ],
+        "resolved_bindings": []
+      }
+    },
+    {
+      "case_id": "R09-D01",
+      "category": "Imports/dependencies",
+      "source_ref": "HANDOFF:R09-D",
+      "fault_kind": "import_closure_missing",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "IMPORT_CLOSURE",
+      "stimulus": {
+        "imports": [
+          "json",
+          "missing_internal_module"
+        ],
+        "resolved_imports": [
+          "json"
+        ]
+      }
+    },
+    {
+      "case_id": "R09-D02",
+      "category": "Imports/dependencies",
+      "source_ref": "HANDOFF:R09-D",
+      "fault_kind": "required_file_absent",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "REQUIRED_FILE_EXISTENCE",
+      "stimulus": {
+        "required_files": [
+          "upstream_contract.json"
+        ],
+        "present_files": []
+      }
+    },
+    {
+      "case_id": "R09-D03",
+      "category": "Imports/dependencies",
+      "source_ref": "HANDOFF:R09-D",
+      "fault_kind": "dependency_unresolved",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "DEPENDENCY_RESOLUTION",
+      "stimulus": {
+        "required_dependencies": [
+          "jsonschema"
+        ],
+        "resolved_dependencies": []
+      }
+    },
+    {
+      "case_id": "R09-E01",
+      "category": "CI/wiring",
+      "source_ref": "EKB:CI-003",
+      "fault_kind": "regression_not_wired",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "CI_WIRING",
+      "stimulus": {
+        "required_regression_command": "python new_regression.py",
+        "workflow_commands": [
+          "python old_regression.py"
+        ]
+      }
+    },
+    {
+      "case_id": "R09-E02",
+      "category": "CI/wiring",
+      "source_ref": "HANDOFF:R09-E",
+      "fault_kind": "non_applicable_gate_blocks_lane",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "GATE_APPLICABILITY",
+      "stimulus": {
+        "gate_applies": false,
+        "gate_decision": "BLOCK"
+      }
+    },
+    {
+      "case_id": "R09-E03",
+      "category": "CI/wiring",
+      "source_ref": "HANDOFF:R09-E",
+      "fault_kind": "unknown_path_false_na",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "PATH_CLASSIFICATION",
+      "stimulus": {
+        "path_classification": "UNKNOWN",
+        "decision": "N/A"
+      }
+    },
+    {
+      "case_id": "R09-F01",
+      "category": "Evidence/handoff",
+      "source_ref": "HANDOFF:R09-F",
+      "fault_kind": "bundle_incomplete",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "BUNDLE_MANIFEST",
+      "stimulus": {
+        "manifest_files": [
+          "artifact_payload.json",
+          "upstream_contract.json"
+        ],
+        "bundle_files": [
+          "artifact_payload.json"
+        ]
+      }
+    },
+    {
+      "case_id": "R09-F02",
+      "category": "Evidence/handoff",
+      "source_ref": "HANDOFF:R09-F",
+      "fault_kind": "artifact_not_materialized",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "ARTIFACT_MATERIALIZATION",
+      "stimulus": {
+        "declared_artifacts": [
+          "artifact_payload.json"
+        ],
+        "materialized_files": []
+      }
+    },
+    {
+      "case_id": "R09-F03",
+      "category": "Evidence/handoff",
+      "source_ref": "HANDOFF:R09-F",
+      "fault_kind": "hash_mismatch",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "HASH_RECOMPUTE",
+      "stimulus": {
+        "expected_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "actual_hash": "1111111111111111111111111111111111111111111111111111111111111111"
+      }
+    },
+    {
+      "case_id": "R09-F04",
+      "category": "Evidence/handoff",
+      "source_ref": "HANDOFF:R09-F",
+      "fault_kind": "upstream_contract_absent",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "UPSTREAM_CONTRACT_BINDING",
+      "stimulus": {
+        "contract_required": true,
+        "bundle_files": [
+          "artifact_payload.json"
+        ]
+      }
+    },
+    {
+      "case_id": "R09-F05",
+      "category": "Evidence/handoff",
+      "source_ref": "HANDOFF:R09-F",
+      "fault_kind": "clean_reviewer_insufficient_evidence",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "INDEPENDENT_EVIDENCE_SUFFICIENCY",
+      "stimulus": {
+        "required_evidence": [
+          "artifact_payload.json",
+          "upstream_contract.json",
+          "manifest.json"
+        ],
+        "available_evidence": [
+          "artifact_payload.json"
+        ]
+      }
+    },
+    {
+      "case_id": "R09-G01",
+      "category": "Freeze/currentness",
+      "source_ref": "HANDOFF:R09-G",
+      "fault_kind": "freeze_cross_mutation",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "FREEZE_TRANSITION",
+      "stimulus": {
+        "same_run": true,
+        "prior_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "current_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "case_id": "R09-G02",
+      "category": "Freeze/currentness",
+      "source_ref": "HANDOFF:R09-G",
+      "fault_kind": "stale_head_evidence",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "CURRENT_HEAD_BINDING",
+      "stimulus": {
+        "evidence_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "current_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "case_id": "R09-H01",
+      "category": "Tool/API arguments",
+      "source_ref": "HANDOFF:R09-H",
+      "fault_kind": "invented_argument",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "TOOL_ARGUMENT_BINDING",
+      "stimulus": {
+        "allowed_args": [
+          "project_id",
+          "query"
+        ],
+        "attempted_args": [
+          "project_id",
+          "query",
+          "invented_param"
+        ]
+      }
+    },
+    {
+      "case_id": "R09-H02",
+      "category": "Tool/API arguments",
+      "source_ref": "HANDOFF:R09-H",
+      "fault_kind": "tool_schema_unresolved",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "TOOL_SCHEMA_RESOLUTION",
+      "stimulus": {
+        "schema_resolved": false,
+        "call_attempted": true
+      }
+    },
+    {
+      "case_id": "R09-I01",
+      "category": "Execution-authority",
+      "source_ref": "S30-B:S30_EXECUTION_AUTHORITY_V1",
+      "fault_kind": "derivable_work_sent_to_model",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "EXECUTION_AUTHORITY_ROUTER",
+      "stimulus": {
+        "work_classification": "DETERMINISTIC",
+        "semantic_gap_present": false,
+        "model_call_attempted": true
+      }
+    },
+    {
+      "case_id": "R09-I02",
+      "category": "Execution-authority",
+      "source_ref": "S30-B:S30_SEMANTIC_DELTA_V1",
+      "fault_kind": "model_system_owned_field",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "SEMANTIC_DELTA_SCHEMA",
+      "stimulus": {
+        "allowed_model_fields": [
+          "decisions",
+          "proposals",
+          "rationale",
+          "unresolved"
+        ],
+        "model_fields": [
+          "decisions",
+          "score",
+          "self_verdict"
+        ]
+      }
+    },
+    {
+      "case_id": "R09-I03",
+      "category": "Execution-authority",
+      "source_ref": "S30-B:S30_EXECUTION_AUTHORITY_V1",
+      "fault_kind": "calculable_score_delegated_to_model",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "CALCULABLE_SCORING_AUTHORITY",
+      "stimulus": {
+        "score_calculable": true,
+        "score_authority": "MODEL"
+      }
+    },
+    {
+      "case_id": "R09-I04",
+      "category": "Execution-authority",
+      "source_ref": "S30-B:S30_EXECUTION_AUTHORITY_V1",
+      "fault_kind": "producer_self_verdict",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "PRODUCER_VERDICT_BOUNDARY",
+      "stimulus": {
+        "producer_output_fields": [
+          "decisions",
+          "self_verdict"
+        ]
+      }
+    },
+    {
+      "case_id": "R09-I05",
+      "category": "Execution-authority",
+      "source_ref": "S30-B:S30_EXECUTION_AUTHORITY_V1",
+      "fault_kind": "nondeterministic_materialization",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "DETERMINISTIC_MATERIALIZATION",
+      "stimulus": {
+        "materializer_authority": "MODEL",
+        "required_authority": "DETERMINISTIC"
+      }
+    },
+    {
+      "case_id": "R09-I06",
+      "category": "Execution-authority",
+      "source_ref": "S30-B:S30_EXECUTION_AUTHORITY_V1",
+      "fault_kind": "semantic_judge_replaces_guard",
+      "machine_detectable": true,
+      "expected_stage_of_failure": "PRE-MATERIAL-WORK",
+      "expected_first_bad_hop": "JUDGE_ROLE_BOUNDARY",
+      "stimulus": {
+        "semantic_judge_role": "GENERATION_OR_GUARD_AUTHORITY",
+        "allowed_role": "EVALUATION_ONLY"
+      }
+    }
+  ],
+  "final_acceptance_owner": "S30-D",
+  "prerequisites_now_expected_available": [
+    "S30-A frozen receipt",
+    "S30-B frozen receipt"
+  ],
+  "execution_policy": "DETERMINISTIC_FIRST"
+}

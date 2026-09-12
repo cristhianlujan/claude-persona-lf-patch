@@ -1,0 +1,7 @@
+{
+  "case_id": "SKILL_CREATOR_HAPPY_PATH_001",
+  "request": "Create a complete reusable LF skill pack for document auditing",
+  "source_authority": "ACT-0045",
+  "acceptance_criteria": ["full pack", "schema", "validator", "handoff"],
+  "expected": "SKILL_PACK_CREATED"
+}

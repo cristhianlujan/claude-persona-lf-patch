@@ -1,0 +1,118 @@
+judge_code: J06_SECURITY_PRIVACY
+version: v0.5
+status: CANDIDATO_READ_ONLY
+scope: Verifica autenticación, autorización server-side, aislamiento por empresa, privacidad, MFA, idempotencia y almacenamiento sensible.
+independence:
+  worker_must_not_execute_own_judge: true
+  executor_identity_required: true
+retry_limit: 2
+required_inputs:
+- story_pack
+- permission_matrix
+- security_contracts
+- field_contracts
+preflight:
+- all_required_inputs_are_present
+- input_versions_are_compatible
+- source_and_evidence_refs_are_resolvable
+- judge_is_not_executed_by_worker
+- judge_version_and_executor_identity_are_present
+assertions:
+- stories_without_required_permission
+- mutations_without_server_authorization
+- cross_tenant_access
+- tenant_key_missing
+- sensitive_download_storage
+- signed_url_ttl
+- critical_action_mfa
+- mutation_idempotency
+- pii_exposure
+pass_if:
+- all 9 assertion result collections are empty
+- assertions_passed = assertions_total
+- output validates against judge-result v0.5
+block_if:
+- permission_source_unavailable = true
+- tenant_model_undefined_and_blocking = true
+- privacy_classification_conflict = true
+- metadata_or_evidence_unavailable = true
+- retry_limit_exhausted = true
+result_values:
+- PASS_WITH_EVIDENCE
+- RETURN_TO_WORKER
+- BLOCKED
+- FAIL
+required_evidence:
+- permission_count
+- mutation_count
+- tenant_rule_count
+- sensitive_download_count
+- pii_field_count
+- checks
+- failed_assertions
+- repair_instructions
+validator:
+  entrypoint: scripts/validate_security_coverage.py
+  command_template: python scripts/validate_security_coverage.py <story_pack.json> --judge-version <git_blob_sha1> --executor-identity <actor> --evidence-ref <resolvable_ref>
+  negative_must_be_rejected: true
+output:
+  schema_ref: schemas/judge-result.schema.json
+  schema_version: v0.5
+  required_fields:
+  - schema_version
+  - judge_code
+  - judge_version
+  - executor_identity
+  - command
+  - started_at
+  - completed_at
+  - exit_code
+  - result
+  - compliance_bit
+  - assertions_total
+  - assertions_passed
+  - failed_assertions
+  - blocking_assertions
+  - repairs
+  - repair_instructions
+  - evidence_refs
+  - evidence
+  - evidence_sha256
+  - input_sha256
+  - output_sha256
+  - retry_count
+  runtime_invariants:
+  - assertions_passed <= assertions_total
+  - PASS requires assertions_passed = assertions_total
+  - repairs = repair_instructions
+  - completed_at >= started_at
+  - output_sha256 is valid
+repair_matrix:
+- assertion_id: cross_tenant_access
+  instruction: Fijar DENY o EXPLICIT_ALLOW_WITH_AUDIT y derivar prueba negativa.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: mutation_idempotency
+  instruction: Registrar decisión explícita y prueba de duplicidad cuando aplique.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: pii_exposure
+  instruction: Agregar masking respaldado o fijar HIDDEN; no reducir clasificación PII.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+prohibitions:
+- worker_self_approval
+- assertion_deletion_to_obtain_pass
+- threshold_reduction_to_obtain_pass
+- unresolved_evidence_reference
+- pass_without_evidence
+- judged_at_legacy_field

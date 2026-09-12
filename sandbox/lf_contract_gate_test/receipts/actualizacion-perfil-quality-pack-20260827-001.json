@@ -1,0 +1,21 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-QUALITY-PACK-20260827-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "f06607b270e7f543dc2ff3674dc6fc2f540805b4",
+    "7692261a4d897493f23625902d9e22e03de87980",
+    "70a9f48cc7d15076af223e0b4a8fc6779a8d168b",
+    "bd3c347c6311391d9c655846ba2d10cac43a1e2b"
+  ],
+  "target_paths": ["profiles/quality_pack/**"],
+  "blocking_codes": [],
+  "issued_at": "2026-08-27T16:33:12Z",
+  "notes": "PASS_SANDBOX for governed Quality Pack hardening under canonical ACTUALIZACION_PERFIL_LF execution bound before the new branch write. Structural, provenance, semantic, artifact and upstream gates are non-substitutable; nominal/self-certified evidence, correlated oracle, stale upstream, plan-only artifact, Router/direct divergence and semantic uncertainty cannot yield PASS. The prior 11/11 adversarial core is content-addressed to the identical validator blob; the new malformed-bundle case is fail-closed by direct validator readback. No fresh local rerun is claimed because the local runner was unavailable. This receipt does not claim final CI, merge, runtime enablement, production promotion or independent external audit."
+}

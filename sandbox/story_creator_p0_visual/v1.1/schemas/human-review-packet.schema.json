@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lf/p0/human-review-packet.schema.json",
+  "title": "P0 Human Review Packet v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["review_id", "execution_id", "visual_output_ref", "visual_output_sha256", "reason_codes", "source_image_refs", "evidence_crops", "candidate_interpretations", "worker_outputs", "judge_findings", "data_classification", "required_reviewer_role", "dual_review_required", "created_at", "expires_at"],
+  "properties": {
+    "review_id": {"type": "string", "minLength": 3},
+    "execution_id": {"type": "string", "minLength": 3},
+    "visual_output_ref": {"type": "string", "minLength": 3},
+    "visual_output_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "reason_codes": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 2}},
+    "source_image_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 3}},
+    "evidence_crops": {"type": "array", "items": {"type": "string", "minLength": 3}},
+    "candidate_interpretations": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 3}},
+    "worker_outputs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 3}},
+    "judge_findings": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 3}},
+    "data_classification": {"type": "string", "enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL", "SENSITIVE"]},
+    "required_reviewer_role": {"type": "string", "enum": ["P0_VISUAL_ADJUDICATOR", "P0_SECURITY_REVIEWER", "P0_PRIVACY_REVIEWER"]},
+    "dual_review_required": {"type": "boolean"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"}
+  }
+}

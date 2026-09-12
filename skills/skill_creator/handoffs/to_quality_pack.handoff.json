@@ -1,0 +1,6 @@
+{
+  "handoff_id": "SKILL_CREATOR_TO_QUALITY_PACK_001",
+  "target": "profiles/quality_pack",
+  "required_payload": ["upstream_output", "skill_contract", "schema_reference", "acceptance_criteria", "blocking_criteria", "evidence_map", "known_risks"],
+  "next_gate": "QUALITY_PACK_REVIEW"
+}

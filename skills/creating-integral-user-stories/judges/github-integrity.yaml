@@ -1,0 +1,231 @@
+judge_code: J12_GITHUB_INTEGRITY
+judge_version: v0.6
+status: CANDIDATO_READ_ONLY
+scope: Verifica escritura completa y readback byte a byte en la rama autorizada, sin cambios directos en main, archivos inesperados ni pérdida del estado draft.
+independence: worker_must_not_execute_own_judge
+retry_limit: 2
+required_inputs:
+- github_contract
+- write_plan
+- canonical_hash_map
+- written_files
+- readback_files
+preflight:
+- all_required_inputs_are_present
+- input_versions_are_compatible
+- source_and_evidence_refs_are_resolvable
+- judge_is_not_executed_by_the_worker_under_review
+- input_sha256_is_present
+- judge_version_and_executor_identity_are_present
+- write_plan_canonical_written_and_readback_are_non_empty
+- github_contract_metadata_is_complete
+- preflight_is_enforced_by_semantic_validator
+validators:
+  semantic_validator_ref: scripts/validate_github_integrity.py
+  runtime_status: AVAILABLE
+runtime_command: python scripts/validate_github_integrity.py <input.json> --evidence-ref <ref>
+self_test_command: python scripts/validate_github_integrity.py --self-test
+assertions:
+- assertion_id: expected_written
+  actual_ref: evidence.checks.expected_written
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: written_readback
+  actual_ref: evidence.checks.written_readback
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: unexpected_written_files
+  actual_ref: evidence.checks.unexpected_written_files
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: missing_written_files
+  actual_ref: evidence.checks.missing_written_files
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: canonical_hash_missing
+  actual_ref: evidence.checks.canonical_hash_missing
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: sha_mismatches
+  actual_ref: evidence.checks.sha_mismatches
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: content_hash_mismatches
+  actual_ref: evidence.checks.content_hash_mismatches
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: partial_write_detected
+  actual_ref: evidence.checks.partial_write_detected
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: direct_main_write_detected
+  actual_ref: evidence.checks.direct_main_write_detected
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: target_branch_mismatch
+  actual_ref: evidence.checks.target_branch_mismatch
+  expected: 0
+  critical: true
+  evidence_required: true
+- assertion_id: draft_pr_not_preserved
+  actual_ref: evidence.checks.draft_pr_not_preserved
+  expected: 0
+  critical: true
+  evidence_required: true
+pass_if:
+- semantic_validator_exit_code = 0
+- all_applicable_assertions_pass = true
+- assertions_passed = assertions_total
+- compliance_bit = 1
+- evidence_refs_non_empty = true
+fail_if:
+- direct_main_write_detected = true
+- partial_write_detected = true
+block_if:
+- github_transport_required_and_unavailable = true
+- target_branch_conflict = true
+- readback_unavailable = true
+- semantic_validator_unavailable = true
+- executor_identity_missing = true
+- judge_version_missing = true
+- required_input_missing = true
+- expected_files_empty = true
+- canonical_hash_map_empty = true
+- written_or_readback_files_empty = true
+- github_contract_metadata_invalid = true
+result_values:
+- PASS_WITH_EVIDENCE
+- RETURN_TO_WORKER
+- BLOCKED
+- FAIL
+required_evidence:
+- repository
+- branch
+- commit_sha
+- written_file_count
+- readback_file_count
+- expected_file_count
+- sha_comparison
+- pr_number
+- draft_state
+- executor_identity
+- judge_version
+- command
+- started_at
+- completed_at
+- assertions_total
+- assertions_passed
+- failed_assertions
+- blocking_assertions
+- repair_instructions
+- evidence_sha256
+- input_sha256
+- output_sha256
+- canonical_file_count
+- authorized_branch
+positive_behavior:
+  command: python scripts/validate_github_integrity.py --self-test
+  expected: positive_pass=true
+negative_cases:
+- case: readback_sha_mismatch
+  expected_result: RETURN_TO_WORKER
+  assertion: sha_mismatches
+- case: target_branch_main
+  expected_result: RETURN_TO_WORKER
+  assertion: target_branch_mismatch
+- case: direct_main_write
+  expected_result: FAIL
+  assertion: direct_main_write_detected
+- case: missing_metadata
+  expected_result: BLOCKED
+  assertion: executor_identity_missing
+- case: canonical_hash_missing_for_expected_path
+  expected_result: RETURN_TO_WORKER
+  assertion: canonical_hash_missing
+- case: empty_canonical_hash_map
+  expected_result: BLOCKED
+  assertion: canonical_hash_map_empty
+- case: empty_expected_files
+  expected_result: BLOCKED
+  assertion: expected_files_empty
+repair_matrix:
+- assertion_id: sha_mismatches
+  instruction: Reescribir solo rutas con mismatch desde fuente canónica y repetir readback completo.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: direct_main_write_detected
+  instruction: Detener ejecución; investigar el cambio y requerir autorización nueva.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: canonical_hash_missing
+  instruction: Completar el mapa canónico para cada ruta esperada antes de comparar escritura y readback.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+output:
+  schema_ref: schemas/judge-result.schema.json
+  schema_version: v0.5
+  required_fields:
+  - schema_version
+  - judge_code
+  - judge_version
+  - executor_identity
+  - command
+  - started_at
+  - completed_at
+  - exit_code
+  - result
+  - compliance_bit
+  - assertions_total
+  - assertions_passed
+  - failed_assertions
+  - blocking_assertions
+  - repairs
+  - repair_instructions
+  - evidence_refs
+  - evidence
+  - evidence_sha256
+  - input_sha256
+  - output_sha256
+  - retry_count
+prohibitions:
+- worker_self_approval
+- assertion_deletion_to_obtain_pass
+- threshold_reduction_to_obtain_pass
+- unresolved_evidence_reference
+- pass_without_evidence
+- pass_without_semantic_runtime
+- pass_by_empty_input
+- pass_without_complete_canonical_map
+benchmark_dual:
+  verified_at: 2026-07-30
+  claude:
+    repository: anthropics/skills
+    reference: skills/skill-creator/SKILL.md
+    practice: objective evals and evidence-first execution
+  github:
+    repository: Significant-Gravitas/AutoGPT
+    reference: classic/original_autogpt/CLAUDE.md
+    practice: explicit state, workspace restriction and operational gotchas
+  complement: compare canonical, written and readback hash maps as three independent sets
+preflight_enforcement:
+  enforced_by_validator: true
+  entrypoint: scripts/validate_github_integrity.py
+  rule: Emitir BLOCKED con exit_code 2 antes de assertions cuando el plan, mapa canónico, escritura/readback o metadata GitHub no sean evaluables.

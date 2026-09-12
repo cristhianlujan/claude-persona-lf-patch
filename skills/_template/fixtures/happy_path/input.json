@@ -1,0 +1,6 @@
+{
+  "case_id": "HAPPY_PATH_001",
+  "objective": "Create a reusable LF skill pack",
+  "source_authority": "ACT-0045",
+  "expected": "VALID_OUTPUT"
+}

@@ -1,0 +1,16 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "GITHUB_CONTRACT_GATE_INSTALL_SANDBOX",
+  "execution_id": "83fbaaf1-fd4c-4e6b-9b16-5e112acfce8e",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "lf_contract_gate_install_sandbox_v01",
+  "judge_sha": "mini_judge_act0058_checkpoint_s5b_v01",
+  "source_sha_list": ["3e465ffb8fe2"],
+  "target_paths": ["skills/orquestador_pipeline_lf/SKILL.md"],
+  "blocking_codes": [],
+  "issued_at": "2026-06-20T04:21:56Z",
+  "notes": "S32-LOTE-C2: ACT-0058 CHECKPOINT S5-B agregado en OP-16B. URL-by-URL enforcement. KB Quality Gate antes de cada INSERT."
+}

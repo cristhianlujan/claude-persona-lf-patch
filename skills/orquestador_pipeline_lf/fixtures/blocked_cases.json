@@ -1,0 +1,46 @@
+[
+  {
+    "case_id": "ACT0058_BLOCK_001",
+    "description": "HITL activado — deuda judicializada detectada",
+    "input": {
+      "source_url": "https://perudeudas.com/defensa-legal",
+      "keyword_matched": "negociar deuda",
+      "hitl_required": true,
+      "hitl_reason": "Deuda judicializada detectada en contenido"
+    },
+    "expected": "BLOCK_PIPELINE",
+    "blocking_code": "HITL_INTERVENTION_REQUIRED"
+  },
+  {
+    "case_id": "ACT0058_BLOCK_002",
+    "description": "Dominio fuera de scope",
+    "input": {
+      "source_url": "https://banco-falso.com/deudas",
+      "keyword_matched": "negociar deuda"
+    },
+    "expected": "BLOCK_PIPELINE",
+    "blocking_code": "OUT_OF_SCOPE_DOMAIN"
+  },
+  {
+    "case_id": "ACT0058_BLOCK_003",
+    "description": "Deduplicación activa — mismo source_url completado en < 24h",
+    "input": {
+      "source_url": "https://reevalua.com/blog/como-salir-de-infocorp",
+      "recent_completed": true
+    },
+    "expected": "BLOCK_PIPELINE",
+    "blocking_code": "DEDUP_BLOCK_24H"
+  },
+  {
+    "case_id": "ACT0058_BLOCK_004",
+    "description": "Risk HIGH sin consumer_gate_passed",
+    "input": {
+      "source_url": "https://finanty.com/prestamos",
+      "keyword_matched": "constancia de no adeudo",
+      "risk_level": "HIGH",
+      "consumer_gate_passed": false
+    },
+    "expected": "BLOCK_PIPELINE",
+    "blocking_code": "HIGH_RISK_GATE_NOT_PASSED"
+  }
+]

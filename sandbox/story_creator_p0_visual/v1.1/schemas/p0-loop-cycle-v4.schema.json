@@ -1,0 +1,12 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"p0-loop-cycle-v4.schema.json","title":"P0 Loop Cycle V4","type":"object","additionalProperties":false,
+  "required":["schema_version","cycle_id","pass_id","reader_execution_id","omission_sweep_execution_id","omission_sweep_sha256","source_sha256","candidate_sha256","grader_execution_ids","coverage_receipt_sha256","finding_counts","material_findings","remediation_applied","targeted_reread_sha256","forced_full_reread_required","clean_pass_count_after","result"],
+  "properties":{
+    "schema_version":{"const":"p0-loop-cycle-v4/v1"},"cycle_id":{"type":"string","pattern":"^C-[A-Za-z0-9._-]+$"},"pass_id":{"type":"string","pattern":"^P-[A-Za-z0-9._-]+$"},"reader_execution_id":{"type":"string","minLength":1},"omission_sweep_execution_id":{"type":"string","minLength":1},"omission_sweep_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "source_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},"candidate_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "grader_execution_ids":{"type":"array","minItems":9,"uniqueItems":true,"items":{"type":"string","minLength":1}},"coverage_receipt_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "finding_counts":{"type":"object","additionalProperties":false,"required":["critical","high","medium","low","info"],"properties":{"critical":{"type":"integer","minimum":0},"high":{"type":"integer","minimum":0},"medium":{"type":"integer","minimum":0},"low":{"type":"integer","minimum":0},"info":{"type":"integer","minimum":0}}},
+    "material_findings":{"type":"integer","minimum":0},"remediation_applied":{"type":"boolean"},"targeted_reread_sha256":{"anyOf":[{"type":"string","pattern":"^[0-9a-f]{64}$"},{"type":"null"}]},"forced_full_reread_required":{"type":"boolean"},"clean_pass_count_after":{"type":"integer","minimum":0},
+    "result":{"enum":["REMEDIATE_AND_RERUN","CLEAN_CONTINUE","CONVERGED","BLOCKED_MAX_REMEDIATION_V4","BLOCKED_CONVERGENCE","BLOCKED_GRADER_FAILURE","BLOCKED_DISCOVERY_COVERAGE"]}
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "status": "BLOCK_PIPELINE",
+  "learning_candidate_id": "",
+  "classification": "unsafe_direct_impact_request",
+  "source_authority": "missing",
+  "evidence_map": [],
+  "proposed_next_action": "Attempted direct Supabase or Google Docs write",
+  "handoff_target": "none",
+  "blocking_codes": [
+    "SOURCE_AUTHORITY_MISSING",
+    "OFFICIAL_IMPACT_WITHOUT_APPROVAL",
+    "LEARNING_EVIDENCE_MISSING"
+  ],
+  "next_gate": "BLOCK_PIPELINE"
+}

@@ -1,0 +1,93 @@
+{
+  "contract_version": "S30_STRATEGY_EXECUTOR_SANDBOX_ACTIVATION_V2",
+  "supersedes": "S30_STRATEGY_EXECUTOR_SANDBOX_ACTIVATION_V1",
+  "operation_code": "EJECUCION_ESTRATEGIA_LF",
+  "status": "SOURCE_CANDIDATE_AUTHORITY_NOT_MATERIALIZED",
+  "activation_stage": "SANDBOX_CANARY_NO_BUSINESS_EFFECT",
+  "source_main_sha": "8727ea7f92e503b047b84c10279eb2e680400652",
+  "authority_policy": "DETERMINISTIC_FIRST_MODEL_ONLY_ON_NON_DERIVABLE_SEMANTIC_GAP",
+  "materialization_policy": {
+    "runtime_activation_authorization_required": true,
+    "precanary_authority_currentness_required": true,
+    "runtime_activation_blocked_until_authority_current": true,
+    "target_registry_status": "SANDBOX_ACTIVE",
+    "target_contract_status": "ACTIVE_ENFORCEMENT",
+    "target_step_active": true,
+    "target_step_contract_status": "ACTIVE_ENFORCEMENT",
+    "target_judge_status": "ACTIVE_ENFORCEMENT",
+    "target_judge_binding_status": "ACTIVE_ENFORCEMENT",
+    "policy_binding_status": "ACTIVE_UNCHANGED"
+  },
+  "router_binding": {
+    "asset_type": "STRATEGY",
+    "action_code": "STRATEGY_EXECUTION",
+    "operation_resolution": "STATIC",
+    "requires_existing_target": false,
+    "requires_missing_target": false,
+    "write_allowed": false,
+    "status": "ACTIVE",
+    "router_target_resolution": "DEFER_TO_OPERATION_STRATEGY_RESOLVE",
+    "target_binding_required_before_execution": true
+  },
+  "strategy_resolution": {
+    "authority": "public.lf_strategy_snapshots",
+    "identity_field": "snapshot_code",
+    "selector_kind": "EXACT_SNAPSHOT_CODE",
+    "canonical_canary_snapshot_code": "LF_S30_SHELL_ADVANCED_EXECUTION_20260903",
+    "resolved_snapshot_id": null,
+    "id_resolution": "RESOLVE_FROM_EXACT_MATCH_AT_IMMEDIATE_PRE_RUNTIME",
+    "exactly_one_required": true,
+    "allowed_statuses": ["CANDIDATO_READ_ONLY"],
+    "allowed_runtime_states": ["PLAN_ONLY", "NO_HABILITADO"],
+    "allowed_impact_policies": ["BLOQUEADO", "NO_AUTOMATIC_PROMOTION"],
+    "currentness_status": "AUTHORITY_NOT_MATERIALIZED",
+    "unknown_or_ambiguous": "BLOCK",
+    "id_code_mismatch": "BLOCK",
+    "stale_or_non_immediate_readback": "BLOCK",
+    "hardcoded_snapshot_id_as_authority": "FORBIDDEN",
+    "authority_readback_ref": "strategy_executor_authority_readback_20260912_v1.json"
+  },
+  "precanary_currentness_gate": {
+    "required_before_runtime_authorization_request": true,
+    "required_before_runtime_activation": true,
+    "readback_scope_required": "IMMEDIATE_PRE_RUNTIME",
+    "exact_match_count_required": 1,
+    "bind_fields": ["snapshot_code", "resolved_snapshot_id", "status", "runtime_state", "impact_policy", "observed_at"],
+    "on_zero_matches": "BLOCK_AUTHORITY_NOT_MATERIALIZED",
+    "on_multiple_matches": "BLOCK_AUTHORITY_AMBIGUOUS",
+    "on_id_code_mismatch": "BLOCK_AUTHORITY_IDENTITY_MISMATCH",
+    "on_stale_readback": "BLOCK_AUTHORITY_CURRENTNESS_STALE"
+  },
+  "live_step_projection": {
+    "pass_condition_required": {
+      "runtime_mode": "SANDBOX_CONTROLLED",
+      "runtime_activation_authorized": true,
+      "required_evidence_present": true,
+      "authority_currentness_pass": true
+    },
+    "block_condition_required": {
+      "source_contract_mismatch": true,
+      "missing_required_evidence": true,
+      "runtime_mode_not_sandbox_controlled": true,
+      "target_strategy_binding_missing": true,
+      "target_strategy_currentness_missing": true,
+      "canary_scope_violation": true
+    }
+  },
+  "canary_boundary": {
+    "mode": "CONTROL_STATE_NO_EFFECT",
+    "business_effect_dispatch_allowed": false,
+    "effect_guard_rows_allowed": false,
+    "model_calls_allowed": false,
+    "production_write_allowed": false,
+    "strategy_snapshot_mutation_allowed": false,
+    "orchestrator_activation": false,
+    "scheduler_activation": false,
+    "production_activation": false,
+    "s26_mutation": false
+  },
+  "rollback_policy": {
+    "on_canary_failure": "FAIL_CLOSED_DEMOTE_TO_CANDIDATO_READ_ONLY_AND_REMOVE_ROUTER_ACTION",
+    "partial_activation_allowed": false
+  }
+}

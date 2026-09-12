@@ -1,0 +1,48 @@
+version: v0.3
+operation: CREACION_SKILL_LF
+status: CANDIDATO_READ_ONLY
+source_model: GIT_FIRST_YAML
+regularization: REGULARIZACION_STEP_GATE_L2L3_001
+steps:
+  - order: 1
+    id: router
+    evidence: router_read
+  - order: 2
+    id: operational_source
+    evidence: source_read
+  - order: 3
+    id: repo_matrix_read
+    evidence: matriz_repos_lf_yaml_read
+  - order: 4
+    id: contract_read
+    evidence: contrato_skill_lf_yaml_read
+  - order: 5
+    id: repo_inventory_full
+    evidence: repo_tree_pattern_recent_commits_comparable_assets_canonical_path_gap_report
+  - order: 6
+    id: destination_validate
+    evidence: repo_path_file_validated
+  - order: 7
+    id: creator_asset
+    evidence: skill_creator_checked
+  - order: 8
+    id: intake
+    evidence: intake_minimo
+  - order: 9
+    id: duplicate_check
+    evidence: duplicate_checked
+  - order: 10
+    id: classification
+    evidence: skill_lf_classified
+  - order: 11
+    id: generic_vs_specific
+    evidence: naming_validated
+  - order: 12
+    id: research_pack
+    evidence: internal_public_trusted_sources
+  - order: 13
+    id: research_to_rules_matrix
+    evidence: research_to_rules_matrix_present
+  - order: 14
+    id: decision_matrix
+    evidence: decision_matrix_present

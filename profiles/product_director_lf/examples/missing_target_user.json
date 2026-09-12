@@ -1,0 +1,34 @@
+{
+  "fixture_id": "MISSING_TARGET_USER",
+  "status": "GENERIC_REUSABLE_FIXTURE",
+  "purpose": "Validate that Product Director LF does not invent a product decision when the target user or user state is missing and the assumption would affect scope, risk or handoff.",
+  "input": {
+    "product_objective": "Define a new onboarding block before a primary action.",
+    "target_user_state": null,
+    "problem_to_solve": "The current flow may be too abrupt.",
+    "decision_required": "Decide what the block should do.",
+    "constraints": ["must not add pressure", "must be testable"],
+    "forbidden_scope": ["specialist legal wording", "visual layout details"],
+    "expected_closure": "Product Direction Spec or structured missing-input state"
+  },
+  "expected_output_summary": {
+    "output_type": "PRODUCT_MISSING_INPUT_STATE",
+    "verdict": "NEEDS_INPUT",
+    "must_include": [
+      "missing_fields",
+      "why_required",
+      "risk_if_assumed",
+      "safe_next_gate"
+    ],
+    "must_not_include": [
+      "invented target user",
+      "final product decision",
+      "PASS_TO_QUALITY_PACK"
+    ]
+  },
+  "judge_expectations": {
+    "minimum_score": null,
+    "blocking_conditions": ["target user or user state absent"],
+    "expected_verdict": "PRODUCT_MISSING_INPUT_STATE"
+  }
+}

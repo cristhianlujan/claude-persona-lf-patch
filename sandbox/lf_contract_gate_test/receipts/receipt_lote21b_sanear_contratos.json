@@ -1,0 +1,22 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "LOTE21B_SANEAR_CONTRATOS_SCHEMA",
+  "execution_id": "LOTE21B-SANEAR-20260617-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b90c4c5cc623a3219ec3b4f7d7ec390f64ed9849",
+  "judge_sha": "b90c4c5cc623a3219ec3b4f7d7ec390f64ed9849",
+  "source_sha_list": [
+    "b29dc889ddfd470b8c778201facb47a77ed557fa",
+    "7acaf61f16e45312cdef1ea02d639f0af74551d9"
+  ],
+  "target_paths": [
+    "skills/orquestador_pipeline_lf/SKILL.md",
+    "skills/SCHEMA_CANONICO_PIPELINE_LF.md"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-06-17T11:30:00Z",
+  "notes": "Lote 21B: correcciones post ejecución real pipeline. (1) perudeudas.com corregido a perudeudas.info en orquestador SKILL.md. (2) SCHEMA_CANONICO_PIPELINE_LF.md creado como fuente de verdad de schema verificado en vivo. 7 gaps corregidos en contratos Supabase. Evento lf_eventos id=337. Pipeline real ejecutado exitosamente: evento id=336, kb_id=5a5cd39d."
+}

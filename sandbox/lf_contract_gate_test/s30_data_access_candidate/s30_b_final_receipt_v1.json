@@ -1,0 +1,152 @@
+{
+  "receipt_type": "S30_B_FINAL_LANE_RECEIPT",
+  "receipt_version": "S30_B_FINAL_RECEIPT_V1_1",
+  "lane": "S30-B",
+  "result": "FIELD_LEVEL_DATA_ACCESS_AND_SCHEMA_SAFETY_CANDIDATE_PASS",
+  "claim_ceiling": "FIELD_LEVEL_DATA_ACCESS_AND_SCHEMA_SAFETY_CANDIDATE_PASS",
+  "substantive_candidate_head_sha": "5d442f2edea3418d27ef70122d526eed8bf7f00f",
+  "substantive_pr": 662,
+  "substantive_merge_sha": "4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3",
+  "post_merge_main_sha_verified": "ab9f0330a69f7404afc04faa01e93bfcd42fa3f0",
+  "source_artifact_blobs": {
+    "sandbox/lf_contract_gate_test/s30_data_access_candidate/data_access_registry_v2.json": "f9376af67530a4d7d1753d98f3ecfe9aec2f0ca0",
+    "sandbox/lf_contract_gate_test/s30_data_access_candidate/lf_data_access.py": "0fc3792e2f75fd5befc6fb22eb6d8e53ccd16965",
+    "sandbox/lf_contract_gate_test/s30_data_access_candidate/test_s30_data_access_v2.py": "87e000b772523d315f31406218924bac4387547b",
+    "sandbox/lf_contract_gate_test/s30_data_access_candidate/data_access_budget_profiles_v1.json": "8bc7d3f3b8198f5f157441c20beacc83af7ebc80",
+    "sandbox/lf_contract_gate_test/s30_data_access_candidate/lf_data_access_budgeted.py": "466751dc09990414c0e0aa6b5d1aaecf99c54ff3",
+    "sandbox/lf_contract_gate_test/s30_data_access_candidate/test_s30_data_access_budget_v1.py": "58ee9d851f723a644a42db31cb11b4a1e20f0802",
+    "sandbox/lf_contract_gate_test/s30_data_access_candidate/execution_authority_policy_v1.json": "4107e31ad8eb145cb80474de0ba135a164715c00",
+    "sandbox/lf_contract_gate_test/s30_data_access_candidate/lf_execution_authority.py": "933e6d597dcffc720854a23ed0ee6ae9002c8a14",
+    "sandbox/lf_contract_gate_test/s30_data_access_candidate/test_s30_execution_authority_v1.py": "6dbb94347b780c34c1c25aac9d7e982a8e9c6ce0"
+  },
+  "exit_gate": {
+    "registry_resolver_architecture_materialized": true,
+    "unknown_source_schema_resolver_working": true,
+    "priority_typed_readers_working": true,
+    "registered_source_free_sql_blocked": true,
+    "stale_binding_blocked_and_reresolved": true,
+    "negative_dependent_backend_escape_count": 0,
+    "positive_readback_correct": true,
+    "exact_source_and_readback_present": true,
+    "unnecessary_ddl_created": false,
+    "runtime_or_production_impact": false
+  },
+  "deterministic_regressions": {
+    "core_data_access": {
+      "result": "PASS",
+      "negative_cases": 21,
+      "backend_escape_count": 0,
+      "registered_sources": 15
+    },
+    "bounded_data_access": {
+      "result": "PASS",
+      "negative_cases": 12,
+      "backend_escape_count": 0,
+      "model_calls_for_registered_read_planning": 0
+    },
+    "execution_authority": {
+      "result": "PASS",
+      "negative_cases": 8,
+      "model_calls_for_deterministic_cases": 0,
+      "model_output_contract": "S30_SEMANTIC_DELTA_V1",
+      "calculable_scoring": "DETERMINISTIC",
+      "producer_self_verdict_allowed": false
+    },
+    "self_governance": {
+      "result": "PASS",
+      "cases": 31
+    }
+  },
+  "schema_currentness": {
+    "canonical_fingerprint_sources": 13,
+    "canonical_fingerprint_matches": 13,
+    "canonical_fingerprint_mismatches": 0,
+    "fallback_sources": 2,
+    "fallback_sources_missing_registered_fields": 0,
+    "strategy_snapshot_35": {
+      "status": "CANDIDATO_READ_ONLY",
+      "runtime_state": "PLAN_ONLY",
+      "impact_policy": "BLOQUEADO"
+    }
+  },
+  "github_evidence": {
+    "staging_exact_head_runs": [
+      34503823816,
+      34503823887
+    ],
+    "broker_dispatch_run": 34504082640,
+    "protected_pr_exact_head_runs": [
+      34504142430,
+      34504142363,
+      34504142299
+    ],
+    "post_merge_main_runs": [
+      34504593415,
+      34504593500
+    ],
+    "ruleset_id": 22765627,
+    "deploy_key_id": 162872002
+  },
+  "execution_architecture": {
+    "default": "DETERMINISTIC_FIRST",
+    "work_classification": [
+      "DETERMINISTIC",
+      "SEMANTIC",
+      "HYBRID"
+    ],
+    "canonical_working_graph": "DETERMINISTIC",
+    "model_input": "COMPACT_SEMANTIC_GAP_ONLY",
+    "model_output_contract": "S30_SEMANTIC_DELTA_V1",
+    "semantic_delta_fields": [
+      "decisions",
+      "proposals",
+      "rationale",
+      "unresolved"
+    ],
+    "system_owned_fields_from_model_allowed": false,
+    "post_model_materialization": "DETERMINISTIC",
+    "final_validation": "DETERMINISTIC",
+    "independent_semantic_judge": "EVALUATION_ONLY_OPTIONAL"
+  },
+  "interfaces": {
+    "preexecution_data_access_result": [
+      "PASS",
+      "BLOCKED"
+    ]
+  },
+  "safety": {
+    "ddl_created": false,
+    "runtime_activation": false,
+    "production_activation": false,
+    "scheduler_modified": false,
+    "s26_modified": false
+  },
+  "remaining_blockers": [],
+  "next_consumer": "S30-C / S30-D historical replay integration",
+  "closeout_persistence": {
+    "pr": 663,
+    "merge_sha": "ab9f0330a69f7404afc04faa01e93bfcd42fa3f0",
+    "staging_exact_head_sha": "a3c65c9be3e94c254e05e5371e9fac413b80f4ee",
+    "staging_runs": [
+      34505195329,
+      34505195299
+    ],
+    "broker_dispatch_run": 34505382156,
+    "protected_runs": [
+      34505449973,
+      34505450037
+    ],
+    "pr_runs": [
+      34505696577,
+      34505696657,
+      34505696553
+    ],
+    "main_runs": [
+      34505958907,
+      34505958976
+    ],
+    "result": "PASS"
+  },
+  "terminal_state": "FINAL_CLOSED",
+  "receipt_payload_sha256": "225371c996feba0a969e3f47b935fd458b37e9950ef0f872ee242df0b958549e"
+}

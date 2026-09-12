@@ -1,0 +1,26 @@
+{
+  "patch_id": "PATCH_LF_SKILL_PROFILE_PACK_STANDARD_001",
+  "status": "SANDBOX_PASS_READY_FOR_CONTROLLED_PR_PREP",
+  "source_authority": "ACT-0045 — SKILL_CREADORA_PERFILES_Y_CARDS_LF_v0.1_CANDIDATO",
+  "impact_policy": {
+    "github": "CONTROLLED_BRANCH_PR_ONLY",
+    "merge": "BLOCKED_UNTIL_REVIEW",
+    "supabase": "READ_ONLY_NO_WRITE",
+    "act_0045": "READ_ONLY_NO_MODIFICATION",
+    "runtime": "NOT_ENABLED",
+    "production_general": "NOT_ENABLED"
+  },
+  "minimum_pack_files_per_template": 22,
+  "templates": ["profiles/_template", "skills/_template"],
+  "required_directories": ["contracts", "schemas", "judges", "checklists", "examples", "fixtures", "validators", "evals", "handoffs", "adapters"],
+  "sandbox_result": {
+    "profiles_template": "PASS",
+    "skills_template": "PASS",
+    "cases_passed": "8/8",
+    "verdict": "SANDBOX_PASS_READY_FOR_CONTROLLED_PR_PREP"
+  },
+  "notes": [
+    "Expanded template pack into the controlled PR branch.",
+    "Do not merge until GitHub review confirms files and restrictions."
+  ]
+}

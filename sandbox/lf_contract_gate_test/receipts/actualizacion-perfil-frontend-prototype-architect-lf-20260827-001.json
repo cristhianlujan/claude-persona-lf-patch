@@ -1,0 +1,20 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF-20260827-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "ccba826aaaa1f1076fe4ff5ab7d7d4e33f50ed67",
+    "688d75b3c55d23479eef16b53bb6b37dbcea7ff9",
+    "8502606ee1a2c49d61042e15054e747c37ffda4b"
+  ],
+  "target_paths": ["profiles/frontend_prototype_architect_lf/**"],
+  "blocking_codes": [],
+  "issued_at": "2026-08-27T13:39:04Z",
+  "notes": "PASS_SANDBOX for governed existing-profile update ACT-0051. The ACTUALIZACION_PERFIL_LF contract/judge fingerprints are unchanged from their 2026-08-27 canonical Supabase definitions. Pre-write execution binding exists in Supabase. Exact PR-head profile sources are identified by Git blob SHA. Validate LF Packs and LF Bootstrap Reproducibility are green; current-chat GPT-5.6 Sol profile-conditioned semantic QA is 3/3 with adversarial freshness evidence. This receipt does not claim final CI, merge, runtime enablement, VALIDATED status, production promotion, or canonical live profile-execution provenance; those remain separate gates."
+}

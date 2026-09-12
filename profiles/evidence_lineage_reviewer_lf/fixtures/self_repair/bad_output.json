@@ -1,0 +1,1 @@
+{"status":"PASS_EVIDENCE_LINEAGE","claim":"Main is correct","authority_reads":[],"source_readbacks":[],"revision_binding":{"expected":"abc","observed":"def","match":false},"structural_identifier_reconciliation":{"required":false,"result":"NOT_EVALUATED"},"evidence_map":[],"blocking_codes":[],"next_gate":"REPORT_ONLY"}

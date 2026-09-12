@@ -1,0 +1,40 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-STORY-ARCH-HARDENING-J11-V13-20260813-01",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "55a842e7805c88673762eb2fcadec654b5ba213f",
+  "judge_sha": "32a27b740bc501c04d337c08d5e8da428b8f3945",
+  "source_sha_list": [
+    "a6d35d21d25e836ea958e04e576328d49a5fe713",
+    "10f64a0b82872ea4e537b4315c0c4729fdf09b25",
+    "63bd13fc5158528c777ede56e2f2ad09d0827669",
+    "55a842e7805c88673762eb2fcadec654b5ba213f"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/scripts/validate_package_v13.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-13T18:39:00Z",
+  "evidence": {
+    "candidate_parent_head": "cd18f314394f9f038d3abf9abfa4ba93d6fc5687",
+    "candidate_commit": "89d3eb1897e0a4d298d3e727579a5e5f2bf9b62d",
+    "validator_bytes": 20461,
+    "validator_sha256": "6f34462947aa3140d7e2a01d99b8a7349f4695e67a59bdaed7f00af67253caaf",
+    "validator_git_blob_sha1": "32a27b740bc501c04d337c08d5e8da428b8f3945",
+    "self_test_pass": true,
+    "delegated_wrapper_rubric_pass": true,
+    "delegated_wrapper_score_after_fix": "20/20",
+    "lookalike_without_negative_signal_rejected": true,
+    "package_artifacts_below_threshold_after_fix": 0,
+    "threshold_unchanged": true,
+    "special_case_path_bypass_added": false,
+    "automatic_approval_allowed": false,
+    "production_authorized": false,
+    "p0_5_authorized": false,
+    "scope_note": "The J11 v1.3 quality gate now recognizes structurally delegated main/output and rebound executable negative self-tests. This fixes a false negative without lowering thresholds or special-casing the target file."
+  }
+}

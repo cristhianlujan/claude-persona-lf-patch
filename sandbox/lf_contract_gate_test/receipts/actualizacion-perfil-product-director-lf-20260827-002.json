@@ -1,0 +1,25 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-PRODUCT-DIRECTOR-LF-20260827-002",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "ab1e8c696f222f04f220d75b4eeb9c627a63a304",
+    "0d69b3c038a6803d56d68f9a9b9a77b87307b6f2",
+    "d39b8a90c2ea62c63e4fc0148c88c6be831f0a08",
+    "ab3a0c025a11f81acdcf0c3b269ffce3c14cd516",
+    "07058e3ce275d7ade5496e73909f98f69c13d4a6",
+    "99d1c0b34a9aa772ca632cf8e14f3cf0fe459ebb",
+    "df8a988e1913b1d5d95090b67c6ab0e72c80d24b",
+    "ffec66f63ab5eb515d069a5d59925ba0b02c901caeab1a3568b93b79293524ed"
+  ],
+  "target_paths": ["profiles/product_director_lf/**"],
+  "blocking_codes": [],
+  "issued_at": "2026-08-28T02:26:49Z",
+  "notes": "PASS_SANDBOX pre-merge receipt for governed existing-profile update. Active Supabase contract/judge rows are unchanged from the previously fingerprinted v0.1 rows. Canonical execution is policy-bound to POL-PROFILE-UPDATE-PASS v1.0 sha ffec66f6... and steps 0-110 are 12/12 judge-derived STEP_PASS_WITH_EVIDENCE. Deterministic validator/schema/runner blobs are immutable and identical to the previously executed 14/14 structural suite; V2 adds runtime-first authority/context resolution plus seven fresh semantic cases. This receipt does not claim RAW profile runtime behavior, production/runtime enablement or automatic promotion; post-merge EJECUCION_PERFIL_LF canary remains required for behavioral closure."
+}

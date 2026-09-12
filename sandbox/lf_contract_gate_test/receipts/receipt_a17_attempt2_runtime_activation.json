@@ -1,0 +1,36 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-BISC-011-A17-INDIVIDUAL-ATTEMPT-2",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "9249b1bc489cc2b0980bce34ad89587e105aa289",
+  "judge_sha": "79b5de0bb5ce52852cb4f91a5bbb1c654206f66a",
+  "source_sha_list": [
+    "d8d85e1ed92fadf1abc18258677ff2c6a42a83ab",
+    "eddc7f1c11db2d1e9e1229096a26824d292040d0",
+    "1126486c5d542fea8b25c51044798f2b0bd8e555687f7120040c3d04ea8fdd24"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/judges/screen-decomposition.yaml"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-07-31T04:12:00Z",
+  "evidence": {
+    "artifact_code": "A17",
+    "attempt": 2,
+    "runtime_row_id": 229,
+    "runtime_sha256": "1126486c5d542fea8b25c51044798f2b0bd8e555687f7120040c3d04ea8fdd24",
+    "runtime_git_blob_sha1": "79b5de0bb5ce52852cb4f91a5bbb1c654206f66a",
+    "positive_assertions": "17/17",
+    "negative_cases": "16/16",
+    "canonical_artifacts_modified": 1,
+    "governance_files_modified": 1,
+    "supabase_write_before_merge": false,
+    "a03_status": "BLOCKED",
+    "a04_started": false,
+    "scope_note": "This receipt authorizes only A17 attempt 2. It does not approve A03 or start A04."
+  }
+}

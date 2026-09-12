@@ -1,0 +1,15 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"p0-grader-output-v4.schema.json","title":"P0 Grader Output V4","type":"object","additionalProperties":false,
+  "required":["schema_version","execution_id","reader_execution_id","cycle_id","pass_id","grader_id","source_sha256","candidate_sha256","applicable_element_ids","evaluated_element_ids","screen_regions_evaluated","findings","coverage_complete","status","error"],
+  "properties":{
+    "schema_version":{"const":"p0-grader-output-v4/v1"},"execution_id":{"type":"string","minLength":1},"reader_execution_id":{"type":"string","minLength":1},
+    "cycle_id":{"type":"string","pattern":"^C-[A-Za-z0-9._-]+$"},"pass_id":{"type":"string","pattern":"^P-[A-Za-z0-9._-]+$"},
+    "grader_id":{"type":"string","enum":["J-TEXT","J-OBJECT","J-COMPLETE","J-GEOMETRY","J-STRUCTURE","J-STYLE","J-SEMANTIC","J-UNCERTAINTY","J-SKEPTIC"]},
+    "source_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},"candidate_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "applicable_element_ids":{"type":"array","items":{"type":"string","minLength":1},"uniqueItems":true},
+    "evaluated_element_ids":{"type":"array","items":{"type":"string","minLength":1},"uniqueItems":true},
+    "screen_regions_evaluated":{"type":"array","items":{"type":"string","minLength":1},"uniqueItems":true},
+    "findings":{"type":"array","items":{"$ref":"p0-visual-finding-v4.schema.json"}},
+    "coverage_complete":{"type":"boolean"},"status":{"enum":["PASS","BLOCKED","ERROR"]},"error":{"type":["string","null"]}
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_ADAPTER_LF",
+  "execution_id": "GOV-ADAPTER-BINDING-AUTHORITY-CLOSE-20260829-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "5508e21d1611054ec3fc50f3e3687badbc9545f772ab0083abca9f27532ed4e0",
+  "judge_sha": "62888829f5f3be97edde291421f2e2bacb1fa61bc0d15bb2683e7ef483550900",
+  "source_sha_list": [
+    "606d47ce74f45471a39673a9113dab0e4be5fe2e",
+    "e761eb40dc9b8e2f15837d7055b945333ea57819",
+    "da808edc5b016980db99ececaee3ed279ae1b254"
+  ],
+  "target_paths": [
+    "gobernanza/contratos/contrato_adapter_lf.yaml"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-30T04:05:00Z",
+  "notes": "PASS_SANDBOX receipt for the controlled Adapter authority reconciliation. Supabase ACT-0001, v_lf_router_adapter_bindings and CREACION_ADAPTER_LF step contracts were read back before editing. Scope is limited to aligning the GitHub declarative contract with ROUTER_BOUND_ONLY authority, adapters/ base path and non-universal parent_skill semantics. It does not enable runtime, production, automatic impact or customer/profile pilot changes. Final closure remains contingent on exact-head CI, merge/readback and EKB resolution."
+}

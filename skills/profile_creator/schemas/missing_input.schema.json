@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LF Profile Creator Missing Input",
+  "type": "object",
+  "required": ["status", "missing_inputs", "blocking_codes", "next_gate"],
+  "properties": {
+    "status": { "type": "string", "const": "RETURN_TO_ORCHESTRATOR" },
+    "missing_inputs": { "type": "array", "items": { "type": "string" } },
+    "blocking_codes": { "type": "array", "items": { "type": "string" } },
+    "next_gate": { "type": "string" }
+  }
+}

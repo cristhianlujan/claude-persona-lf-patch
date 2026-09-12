@@ -1,0 +1,36 @@
+# BUNDLE: SKILL_HOMOLOGACION_FUENTES_DIGITALES_LF_CANDIDATO_V0_3
+# SHA256 ZIP: b7c765f6ca127d3a17c0f8ee7b54365604348beef592cf8fe1daa7370a1e720b
+# Evento Supabase cierre FASE 2: lf_eventos id=256
+# Contratos FASE 3: 9 contratos insertados en lf_operation_step_contracts (FASE3_CONTRATOS_COMPLETADA)
+# Sandbox FASE 5: run_id=544ec35c-55e9-4abe-9e42-f904eb0231bb (CERRADO, 2 TEST, 2 RECHAZADO por Q1)
+
+=== FILE: steps/s1_a_verify_sources.yaml ===
+step_id: S1-A | mvp: true | next_if_pass: S1-B
+campo_canonico: record_status (no capture_status)
+
+=== FILE: steps/s1_b_verify_taxonomia.yaml ===
+step_id: S1-B | mvp: true | umbral: 80% PROXY_REVISABLE | next_if_pass: S1-C
+
+=== FILE: steps/s1_c_verify_sandbox_mode.yaml ===
+step_id: S1-C | mvp: true | bloquea: REGISTRO_OPERATIVO | next_if_pass: S2-A
+
+=== FILE: steps/s2_a_inspect_record.yaml ===
+step_id: S2-A | mvp: true | taxonomia_id=CRITICO | next_if_pass: S3-A
+
+=== FILE: steps/s3_a_transform.yaml ===
+step_id: S3-A | mvp: false | next_if_pass: S4-A
+
+=== FILE: steps/s4_a_assign_status.yaml ===
+step_id: S4-A | cascada Q1: RECHAZADO->OBSERVADO->HOMOLOGADO_DRY_RUN | next_if_pass: S5-A
+
+=== FILE: steps/s5_a_build_package.yaml ===
+step_id: S5-A | execution_mode: DRY_RUN | next_if_pass: S6-A
+
+=== FILE: steps/s6_a_consumer_gate.yaml ===
+step_id: S6-A | gate: anti-REGISTRO_OPERATIVO | next_if_pass: S7-A
+
+=== FILE: steps/s7_a_audit.yaml ===
+step_id: S7-A | mvp: true | READ_ONLY: solo propone evento | next_if_pass: NULL
+
+# PENDIENTE: ZIP binario (13.7KB) debe pushearse manualmente desde Drive.
+# Drive fileId: 19zzhL2TMvFSURXHu905OYen6JC1Ij0am

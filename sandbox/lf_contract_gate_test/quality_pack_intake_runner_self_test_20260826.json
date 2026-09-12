@@ -1,0 +1,74 @@
+{
+  "execution_id": "QUALITY-PACK-HANDOFF-INTAKE-2026-08-26",
+  "source_branch": "lf/quality-pack-intake-runner-20260826",
+  "initial_target_eval_commit": "59cdbb9b559d4061d91edec0c714ba6e7fb8b879",
+  "real_pr225_target_eval_commit": "21fe74ff30f876c2576cf9f28f449194a5dd2e6e",
+  "real_pr222_target_eval_commits": [
+    "01ad6ca6e7c0107f25d971611a45a1914dc73bb8",
+    "e03c9d7c4bcef89ef7bdf9c145e0932f91edbc85"
+  ],
+  "runner_object_evidence_fix_commit": "4ea0e7836299a0877313b9370140316faa5e0fbf",
+  "runner_embedded_artifact_fix_commit": "12b345e861abbba401cbf7739e26d61ee0ebed00",
+  "runner_sha": "7bd460c7177365afac768f5c14f5897b68423746",
+  "matrix_sha": "f7297a5efafb414112d4fb99110c986ebc2eb557",
+  "real_pr225_fixture_sha": "91ba331ad38e7f8cc96336408f7037ced2805f78",
+  "real_pr222_fixture_sha": "f99b64716758b3c2fa87c552a5993c9c1758be20",
+  "execution_scope": "DETERMINISTIC_INTAKE_ONLY",
+  "semantic_quality_review_status": "NOT_EXECUTED",
+  "result": "PASS",
+  "cases": [
+    {
+      "case_id": "created_claim_without_delivered_artifact",
+      "expected": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+      "actual": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+      "blocking_codes": ["CREATED_ARTIFACT_NOT_DELIVERED"],
+      "next_gate": "SELF_REPAIR_THEN_RETRY_INTAKE",
+      "pass": true
+    },
+    {
+      "case_id": "materialized_profile_pack_ready_for_intake",
+      "expected": "QUALITY_INTAKE_READY",
+      "actual": "QUALITY_INTAKE_READY",
+      "blocking_codes": [],
+      "next_gate": "SEMANTIC_QUALITY_REVIEW",
+      "pass": true
+    },
+    {
+      "case_id": "profile_creator_pr225_object_evidence_ready",
+      "source_pr": 225,
+      "source_producer_sha": "96bebdeeca1e343e6671bb62c65d6e1338d00197",
+      "source_artifact_sha": "d6427bda4f8b456124e40ab973ef1487152061f8",
+      "baseline_before_fix": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+      "baseline_blocking_code": "UPSTREAM_EVIDENCE_NOT_DELIVERED",
+      "expected": "QUALITY_INTAKE_READY",
+      "actual": "QUALITY_INTAKE_READY",
+      "delivery_mode": "REFERENCED_MATERIALIZED_ARTIFACT",
+      "blocking_codes": [],
+      "next_gate": "SEMANTIC_QUALITY_REVIEW",
+      "pass": true
+    },
+    {
+      "case_id": "learning_engine_pr222_embedded_artifact_ready",
+      "source_pr": 222,
+      "source_producer_sha": "b7e4a5bac97c06de939522a49086003710887654",
+      "baseline_before_fix": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+      "baseline_blocking_code": "CREATED_ARTIFACT_NOT_DELIVERED",
+      "expected": "QUALITY_INTAKE_READY",
+      "actual": "QUALITY_INTAKE_READY",
+      "delivery_mode": "EMBEDDED_CANDIDATE_ARTIFACT",
+      "blocking_codes": [],
+      "next_gate": "SEMANTIC_QUALITY_REVIEW",
+      "pass": true
+    }
+  ],
+  "failed_cases": [],
+  "demonstrated_capability": "QUALITY_PACK_INTAKE_CAN_START_WITHOUT_RECONSTRUCTING_REFERENCED_OR_EMBEDDED_MATERIALIZED_PRODUCER_ARTIFACT",
+  "not_demonstrated": [
+    "Quality Pack semantic score",
+    "LF safety semantic judgment",
+    "leakage/scope semantic judgment",
+    "PASS_TO_COMPOSER",
+    "PASS_WITH_RESTRICTIONS",
+    "general Quality Pack behavioral pass"
+  ]
+}

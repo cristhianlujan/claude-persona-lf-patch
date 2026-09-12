@@ -1,0 +1,27 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "HOMOLOGACION_FUENTES_DIGITALES_LF",
+  "execution_id": "ACT-0053-FASE1-6-2026-06-16",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "f37e531e9b913c2026780313978a11f7e4337458",
+  "judge_sha": "8dd685fb910931ff1eee13b025dde01cbd6b5d0c",
+  "source_sha_list": [
+    "f37e531e9b913c2026780313978a11f7e4337458",
+    "8dd685fb910931ff1eee13b025dde01cbd6b5d0c",
+    "47a6002f5c8dbf96a2ba9990551de5b39d9cb419",
+    "0a952b8009d22e1cf28ed637fc0785b49401c344",
+    "a3a310e0a3c3c4d9d774d273fdcf5e2981cf8ab6"
+  ],
+  "target_paths": [
+    "gobernanza/activos/ACT-0053_BUNDLE_V0_3_steps_summary.txt",
+    "gobernanza/activos/ACT-0053_SKILL_HOMOLOGACION_V0_3_BACKUP.md",
+    "gobernanza/activos/SKILL_HOMOLOGACION_FUENTES_DIGITALES_LF_CANDIDATO_V0_3.zip"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-06-16T08:07:34Z",
+  "lote": "FASE6-ACT-0053",
+  "notas": "Receipt sandbox ACT-0053 SKILL_HOMOLOGACION_FUENTES_DIGITALES_LF V0_3. Cubre 3 rutas gobernadas activos. FASES 1-6 completadas. DRY_RUN B2: 2/2 APROBADO. Sin merge sin aprobacion explicita. Estado: PASS_SANDBOX."
+}

@@ -1,0 +1,27 @@
+{
+  "request_type": "marketplace_product_experience_decision",
+  "decision_question": "Decidir representación recomendada para Juan Digital en MarketPlace Libertad Financiera.",
+  "affected_surface": "juan_digital",
+  "scope": "sandbox_read_only",
+  "options": [
+    "Realistic adult human guide",
+    "Semi-realistic neutral avatar",
+    "Cartoon mascot",
+    "Corporate banker assistant"
+  ],
+  "source_authority": [
+    "ACT-0001",
+    "ACT-0045",
+    "public.v_lf_fuente_operativa",
+    "MarketPlace LF Drive research"
+  ],
+  "blocked_impacts": [
+    "no_runtime",
+    "no_production",
+    "no_validated",
+    "no_golden",
+    "no_home_official_write",
+    "no_supabase_write"
+  ],
+  "notes": "Sandbox case for first card test. No visual asset is approved yet."
+}

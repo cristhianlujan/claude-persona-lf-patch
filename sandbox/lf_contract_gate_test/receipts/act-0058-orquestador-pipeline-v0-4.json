@@ -1,0 +1,16 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "ORQUESTACION_PIPELINE_LF",
+  "execution_id": "ACT-0058-TIMESTAMPS-REDESC-20260618-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "f37e531e9b913c2026780313978a11f7e4337458",
+  "judge_sha": "b90c4c5cc623a3219ec3b4f7d7ec390f64ed9849",
+  "source_sha_list": ["1456213dfd0a8022211dd8ea323b57000b2d94f0"],
+  "target_paths": ["skills/orquestador_pipeline_lf/**"],
+  "blocking_codes": [],
+  "issued_at": "2026-06-18T23:00:00Z",
+  "notes": "v0.4: dos cambios criticos. (1) Trazabilidad por step: SELECT now() obligatorio entre cada operacion, timestamps T1-T7 en payload BATCH_COMPLETADO, deteccion automatica de batch invalido si timestamps iguales. (2) PASO B4 redescubrimiento: GPT busca minimo 5 URLs nuevas al finalizar cada batch e inserta en lf_url_queue para siguiente ejecucion. Motivado por: GPT ejecuto INSERT masivo sin seguir steps reales, y queue queda vacia entre ejecuciones. Reset KB 29G: 22 registros backup en lf_knowledge_base_backup_29G, 15 URLs recargadas en queue. Lote 29G sesion 2026-06-18."
+}

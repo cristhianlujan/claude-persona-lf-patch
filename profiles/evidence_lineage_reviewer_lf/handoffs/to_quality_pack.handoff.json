@@ -1,0 +1,8 @@
+{
+  "handoff_version": "v1",
+  "source_profile": "evidence_lineage_reviewer_lf",
+  "target_profile": "quality_pack",
+  "deliverable": "evidence_lineage_review",
+  "required_receiver_context": ["review_output","main_contract","output_schema","acceptance_criteria"],
+  "next_gate": "SEMANTIC_QUALITY_REVIEW"
+}

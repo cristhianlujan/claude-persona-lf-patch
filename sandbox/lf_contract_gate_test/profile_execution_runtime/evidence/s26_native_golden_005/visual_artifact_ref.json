@@ -1,0 +1,15 @@
+{
+  "byte_length": 142727,
+  "drive_byte_parity": true,
+  "drive_byte_sha256": "ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+  "filename": "B2B_CARGA_001_HISTORIAL_DESKTOP_LIGHT_v0.1_CANDIDATO.png",
+  "height": 1000,
+  "quality_boundary": "Primary PNG provenance retained. Run E semantic decisions must bind to the resolver-backed observation packet, not require Quality to resolve this provider.",
+  "schema": "LF_VISUAL_ARTIFACT_REF_V2",
+  "screen_code": "B2B-CARGA-001",
+  "sha256": "ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+  "source_file_id": "1_lvl3gYN76KfpjXtWMizgdcwOqliogqi",
+  "source_provider": "GOOGLE_DRIVE",
+  "source_supabase_ref": "lf_ops.pantalla_artefactos/85",
+  "width": 1600
+}

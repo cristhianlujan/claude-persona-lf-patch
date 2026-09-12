@@ -1,0 +1,24 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "LEARNING_BRIDGE_KB_CARD_LF",
+  "execution_id": "LF-AUTOLEARN-RUN-20260830-007",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "33e75977101d48894875a120d08cf2a3dd529030a9b5359272ff403188b6e61a",
+  "judge_sha": "569453fefa1f16cdc054a3a8e43b3a3822a24afa221f9b0abd31020f52a463bc",
+  "source_sha_list": [
+    "0d90694549fc11c2e71d0a4f725bb44c103f4941",
+    "0e2260a0ae55fa2cea7ab93f3ffd3e4f2a86ae79",
+    "3f2628a5dd7a95d09f61d4c27c04794855226dd6"
+  ],
+  "target_paths": [
+    "gobernanza/contratos/contrato_learning_bridge_kb_card_lf.yaml",
+    "gobernanza/judges/judge_learning_bridge_kb_card_lf.yaml",
+    "gobernanza/procedimientos/learning_bridge_kb_card_lf_steps.yaml"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-31T01:20:00Z",
+  "notes": "Receipt source-bound del paquete candidato del bridge KB→Learning→Card v0.2. Añade atribución effective_competitor con fallback host inequívoco y taxonomía LF_LEARNING_CLUSTER_V1 determinística antes de DETECTADO para cerrar KB-COMP-ATTR-001 y LEARN-CLUSTER-001. No declara ejecución del lifecycle E2E, no materializa la operación en Supabase, no habilita ACT-0046, no autoriza runtime, producción, impacto automático, merge ni aprobación humana."
+}

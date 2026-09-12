@@ -1,0 +1,47 @@
+{
+  "case_id": "LEARNING_ENGINE_LAYERED_RECEIVER_EVIDENCE_001",
+  "learning_signal": "A real deterministic receiver intake executes successfully for preserved Profile Creator and Learning Engine artifacts, while independent executable semantic Quality Pack receiver execution remains unavailable.",
+  "source_evidence": {
+    "quality_pack_pr": 227,
+    "quality_pack_head": "30244030937e160bc1b2b57799c4873b6089ac6d",
+    "quality_pack_merge_sha": "569cbaabb2e65e61fb2d184016a2ca766bd1cd00",
+    "deterministic_intake_execution": {
+      "status": "PASS",
+      "cases_passed": 4,
+      "cases_total": 4,
+      "real_producers": [222, 225],
+      "evidence_ref": "sandbox/lf_contract_gate_test/quality_pack_intake_runner_self_test_20260826.json",
+      "governed_receipt_ref": "sandbox/lf_contract_gate_test/receipts/receipt_quality_pack_handoff_intake_20260826.json",
+      "exact_head_ci_status": "PASS",
+      "exact_head_ci_runs": {
+        "validate_lf_packs": 33004435405,
+        "lf_contract_check": 33004435406,
+        "bootstrap": 33004435404
+      }
+    },
+    "semantic_quality_review": {
+      "status": "NOT_EXECUTED",
+      "execution_mode": "NO_INDEPENDENT_EXECUTABLE_RECEIVER",
+      "assisted_rubric_review": "AVAILABLE",
+      "external_paid_model_used": false
+    }
+  },
+  "previous_classification": {
+    "behavioral_blocking_code": "BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER"
+  },
+  "expected_classification": {
+    "deterministic_intake_status": "PASS_SANDBOX_CI_VERIFIED",
+    "semantic_review_status": "NOT_EXECUTED",
+    "full_handoff_outcome_status": "NOT_PROVEN",
+    "behavioral_blocking_code": "SEMANTIC_QUALITY_REVIEW_NOT_EXECUTED"
+  },
+  "expected_status": "RETURN_TO_ORCHESTRATOR",
+  "expected_blocking_code": "SEMANTIC_QUALITY_REVIEW_NOT_EXECUTED",
+  "forbidden_blocking_code": "BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER",
+  "forbidden_claims": [
+    "BEHAVIORAL_EVAL_PASS",
+    "PASS_TO_COMPOSER",
+    "PASS_WITH_RESTRICTIONS",
+    "full receiver semantic outcome proven"
+  ]
+}

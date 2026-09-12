@@ -1,0 +1,20 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF-20260827-003",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "843dce21f3c0e30288501d90c57577ae1e00a03c",
+    "c3f9f9e3c954ec5120836741346c59b5a06f68c2",
+    "0728e6d60d2a2215f3a2ad66db5af66cdf0384c0"
+  ],
+  "target_paths": ["profiles/frontend_prototype_architect_lf/**"],
+  "blocking_codes": [],
+  "issued_at": "2026-08-27T20:59:00Z",
+  "notes": "PASS_SANDBOX for the minimal Frontend Prototype Architect LF shell-binding boundary rebuilt on current main 3311c5f31fed075529fa7022e4915fd9536c3c5a. Pre-write binding preceded this R2 write. The profile remains static/read-only and may implement only executable SCREEN_SLOT/SCREEN_COMPONENT deltas while preserving SHELL_LOCKED targets and upstream decisions."
+}

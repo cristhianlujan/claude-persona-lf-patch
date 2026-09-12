@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "image-admission-record.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "source_ref", "raw_bytes_sha256", "normalized_pixel_sha256", "processing_manifest_sha256", "input_format", "width", "height", "normalized_mode", "decoder_name", "decoder_version"],
+  "properties": {
+    "schema_version": {"const": "p0-image-admission/v1"},
+    "source_ref": {"type": "string", "minLength": 3},
+    "raw_bytes_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "normalized_pixel_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "processing_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "input_format": {"enum": ["PNG", "JPEG", "WEBP"]},
+    "width": {"type": "integer", "minimum": 1, "maximum": 10000},
+    "height": {"type": "integer", "minimum": 1, "maximum": 10000},
+    "normalized_mode": {"const": "RGBA"},
+    "decoder_name": {"const": "Pillow"},
+    "decoder_version": {"type": "string", "minLength": 1}
+  }
+}

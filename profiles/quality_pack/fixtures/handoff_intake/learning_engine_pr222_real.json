@@ -1,0 +1,57 @@
+{
+  "case_id": "QP_INTAKE_PR222_LEARNING_ENGINE_REAL_001",
+  "source_pr": 222,
+  "source_producer_sha": "b7e4a5bac97c06de939522a49086003710887654",
+  "upstream_worker": "skills/learning_engine",
+  "upstream_output": {
+    "status": "LEARNING_CARD_CANDIDATE_CREATED",
+    "learning_candidate_id": "LEARN_CANDIDATE_HANDOFF_OUTCOME_001",
+    "classification": "cross_agent_handoff_reliability",
+    "source_authority": "ACT-0001 + ACT-0046 + public.v_lf_fuente_operativa",
+    "evidence_map": [
+      "Baseline PR #222 demonstrated a producer-state continuity failure.",
+      "The current producer output includes the exact learning candidate artifact.",
+      "The handoff target is quality_pack_review."
+    ],
+    "candidate_artifact": {
+      "artifact_id": "LEARN_CANDIDATE_HANDOFF_OUTCOME_001",
+      "artifact_type": "LEARNING_CARD_CANDIDATE",
+      "content": {
+        "finding": "Learning Engine can produce a structurally valid handoff whose declared state, delivered artifact and receiver are inconsistent.",
+        "required_outcome": "A handoff succeeds only when the claimed artifact is observable and the receiver can start from it without reconstruction.",
+        "boundaries": [
+          "no general behavioral PASS",
+          "no Supabase write",
+          "no runtime or production enablement"
+        ]
+      }
+    },
+    "proposed_next_action": "Quality Pack reviews the included candidate artifact.",
+    "handoff_target": "quality_pack_review",
+    "blocking_codes": [],
+    "next_gate": "QUALITY_PACK_REVIEW"
+  },
+  "worker_contract_ref": "skills/learning_engine/contracts/main_contract.md",
+  "expected_output_format": "LEARNING_CARD_CANDIDATE",
+  "acceptance_criteria": [
+    "created candidate is observable and consumable",
+    "receiver can start from the embedded artifact without reconstructing it"
+  ],
+  "blocking_criteria": [
+    "created candidate is absent",
+    "embedded candidate identity does not match producer claim"
+  ],
+  "case_context": "PR #222 real Learning Engine candidate",
+  "lf_governance_constraints": [
+    "ACT-0046 candidate/read-only",
+    "automatic impact blocked"
+  ],
+  "declared_worker_score": null,
+  "declared_worker_evidence": [
+    "The exact candidate artifact is embedded in upstream_output.candidate_artifact.",
+    "The artifact_id matches learning_candidate_id."
+  ],
+  "deliverable_artifact": null,
+  "expected_intake_status": "QUALITY_INTAKE_READY",
+  "expected_next_gate": "SEMANTIC_QUALITY_REVIEW"
+}

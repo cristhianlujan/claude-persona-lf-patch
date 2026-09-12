@@ -1,0 +1,35 @@
+{
+  "snapshot_id": "PROFILE_CREATOR_TO_QUALITY_PACK_REMEDIATION_2026_08_26",
+  "source_pr": 225,
+  "source_branch": "lf/profile-creator-pack-handoff-outcome-20260826",
+  "source_head": "c49a3a2cbdfacac1fde925474e80141a9b6194c9",
+  "baseline_gap": {
+    "result": "HANDOFF_GAP_DETECTED",
+    "gap_code": "CREATED_ARTIFACT_NOT_DELIVERED"
+  },
+  "producer_side_remediation": {
+    "status": "DEMONSTRATED",
+    "deliverable_artifact_ref_required": true,
+    "created_candidate_materialized": true,
+    "artifact_ref_resolvable": true
+  },
+  "receiver_evidence": {
+    "review_mode": "ASSISTED_RUBRIC_REVIEW",
+    "receiver_execution_target": null,
+    "receiver_agent_execution_completed": false
+  },
+  "target_outcome": "QUALITY_PACK_CAN_REVIEW_CREATED_PROFILE_PACK_WITHOUT_INVENTING",
+  "target_outcome_status": "NOT_PROVEN",
+  "behavioral_eval_status": "BLOCKED_NO_EXECUTABLE_RECEIVER",
+  "behavioral_blocking_code": "BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER",
+  "evidence_blobs": {
+    "profile_creator_contract": "932a36baca1b884f68e904fa2e202f1123762cbd",
+    "profile_creator_eval_matrix": "6ae4064db8f2933f89275db4c7f8e0f33115cae5",
+    "candidate_pack": "d6427bda4f8b456124e40ab973ef1487152061f8",
+    "candidate_quality_review": "9476581c1cb159de9681ffda9a697c7b773965ef",
+    "candidate_receipt": "c617189f1c20bb1276561793dacb9c38c2b93689",
+    "profile_creator_validator": "a57275da646f8ae8e3e03bf20802fa067eedeab5",
+    "governed_receipt": "0071caff9707d33d3df5b45815c8f730058a2b36"
+  },
+  "next_learning_step": "Resolve a verified executable Quality Pack receiver target and rerun the exact producer artifact before any handoff behavioral PASS or regression promotion."
+}

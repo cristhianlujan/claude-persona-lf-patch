@@ -1,0 +1,44 @@
+{
+  "checks": {
+    "crop_recompute_mutation_blocked": true,
+    "dense_observation_floor": true,
+    "missing_smoke_flag_blocked": true,
+    "multiscale_executed": true,
+    "p0_5_denominator_ineligible": true,
+    "p0_5_eligibility_attempt_blocked": true,
+    "production_unauthorized": true,
+    "runtime_enablement_attempt_blocked": true,
+    "runtime_remains_disabled": true,
+    "synthetic_token_coverage_floor": true,
+    "worker_result_pass": true
+  },
+  "claims": {
+    "empirical_visual_quality_claimed": false,
+    "engineering_smoke_executed": true,
+    "p0_5_denominator_eligible": false,
+    "production_authorized": false,
+    "runtime_enabled": false,
+    "runtime_worker_implemented": true
+  },
+  "configuration_id": "P0-LOCAL-TESSERACT-5.5.0-PILLOW-12.3.0",
+  "evidence_mode": "SYNTHETIC_DENSE_RUNTIME_FIXTURE",
+  "fixture_covered_token_count": 26,
+  "fixture_expected_token_count": 26,
+  "fixture_sha256": "09a77edc0ee40efd82c70728eaebea602adcbd5530909e029b4b3a6de75ebd14",
+  "observation_count": 31,
+  "pillow_version": "12.3.0",
+  "result": "PASS_WITH_EVIDENCE",
+  "runtime_config_sha256": "b6b7b6d8e116132fc303bb79dec2add4a1bc9ec3168263122b82ed725325dd38",
+  "scan_counts": {
+    "image://p03-dense-v1": {
+      "1x": 31,
+      "2x": 31,
+      "deduplicated": 31
+    }
+  },
+  "schema_version": "p0-p03-runtime-smoke-receipt/v1",
+  "tesseract_binary_sha256": "74b76a5b994adcc18be362bf64ed5118082b2401d5d9a35242e92fc4c62e2b4b",
+  "tesseract_version": "5.5.0",
+  "visual_output_sha256": "b51c86139d6075d39e484cd6fdae4b6121632cd9201074ad6711073a6ffb9e7d",
+  "worker_source_sha256": "7cd6495a550ab05eefae723b160f3f0a1c5da0dfda50fe4ffa5d4bd7f941bc86"
+}

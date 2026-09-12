@@ -1,0 +1,113 @@
+{
+  "schema": "S26_FAMILY_OBJECTIVE_MATRIX_V3_MISSING_OBJECTIVES_PLAN_V1",
+  "status": "PREBUILD_ONLY_FINAL_EVIDENCE_REQUIRES_STABLE_CANDIDATE",
+  "source_inventory": "coverage_inventory.json",
+  "planning_principle": "Do not rerun 50 blindly. Preserve the 20 effectively covered objectives, close 13 partial objectives with the smallest semantically valid supplement, execute 8 not-demonstrated objectives, and add the required unseen holdouts. A holdout may also close a not-demonstrated objective only when the objective and failure mode are genuinely the same; otherwise evidence remains separate.",
+  "baseline_effective_counts": {
+    "COVERED": 20,
+    "PARTIAL": 13,
+    "NOT_DEMONSTRATED": 8,
+    "NEW_CASE_REQUIRED": 9
+  },
+  "objectives_to_close": 30,
+  "final_execution_prerequisites": [
+    "PR_682_INTEGRATED",
+    "PR_681_INTEGRATED_AND_MIGRATION_APPLIED_WITH_READBACK",
+    "FINAL_S26_RUNTIME_AFFECTING_CANDIDATE_STABLE"
+  ],
+  "waves": [
+    {
+      "wave_id": "W0_PREBUILD_NOW",
+      "purpose": "Build fixtures, validators and evidence contracts only. Results from this wave are engineering evidence, not final certification evidence.",
+      "allowed_now": true,
+      "final_rerun_required": true
+    },
+    {
+      "wave_id": "W1_FINAL_DETERMINISTIC",
+      "purpose": "Run deterministic negative, boundary, currentness and schema/transport cases against the final stable candidate.",
+      "allowed_now": false,
+      "blocked_by": "FINAL_EXECUTION_PREREQUISITES"
+    },
+    {
+      "wave_id": "W2_FINAL_MODEL_MATERIALIZATION",
+      "purpose": "Run model-dependent UI/materialization/depth/high-complexity holdouts and bind final performance budgets.",
+      "allowed_now": false,
+      "blocked_by": "FINAL_EXECUTION_PREREQUISITES"
+    },
+    {
+      "wave_id": "W3_FINAL_STABILITY_AND_INDEPENDENT",
+      "purpose": "Run repeated stochastic stability, differential/metamorphic/mutation gates and independent semantic review before freeze/Gate G.",
+      "allowed_now": false,
+      "blocked_by": "FINAL_EXECUTION_PREREQUISITES_AND_W1_W2_PASS"
+    }
+  ],
+  "cases": [
+    {"case_id":"S26V3-F01-O5-HOLDOUT","objective_id":"F01-O5","family":"F01_ROUTING_PROVENANCE","baseline":"NEW_CASE_REQUIRED","closure_mode":"UNSEEN_HOLDOUT","unseen_holdout":true,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"UNSEEN_ROUTING_PROVENANCE_SURFACE","expected":"Correct route/provenance decision without memorized branch/path assumptions; unknown ownership remains fail-closed.","dimensions_to_close":["functionality","quality","depth","performance","evidence"],"learning":"Proves routing/provenance generalization beyond HP001."},
+
+    {"case_id":"S26V3-F02-O3-STALE-REBIND","objective_id":"F02-O3","family":"F02_SOURCE_FIRST_PREBIND","baseline":"PARTIAL","closure_mode":"TARGETED_TRANSITION","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"STALE_BOUND_SOURCE","expected":"Stale bound revision is rejected until fresh reread and explicit rebind produce current authority.","dimensions_to_close":["functionality","depth","evidence"],"learning":"Separates fresh-read success from actual stale-to-current transition behavior."},
+    {"case_id":"S26V3-F02-O4-SPOOFED-CURRENTNESS-HOLDOUT","objective_id":"F02-O4","family":"F02_SOURCE_FIRST_PREBIND","baseline":"NOT_DEMONSTRATED","closure_mode":"UNSEEN_NEGATIVE_HOLDOUT","unseen_holdout":true,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"CALLER_DECLARED_CURRENTNESS_SPOOF","expected":"Caller-declared currentness is ignored/rejected; provider/server-derived exact currentness remains authority.","dimensions_to_close":["functionality","quality","depth","evidence"],"learning":"Proves source-first trust does not depend on worker claims."},
+    {"case_id":"S26V3-F02-O5-MISSING-SOURCE","objective_id":"F02-O5","family":"F02_SOURCE_FIRST_PREBIND","baseline":"PARTIAL","closure_mode":"TARGETED_NEGATIVE","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"CANONICAL_SOURCE_MISSING_OR_INACCESSIBLE","expected":"Execution blocks without synthesizing authority, schema, Card or fallback source.","dimensions_to_close":["functionality","depth","evidence"],"learning":"Materializes the fail-closed branch that the positive HP001 run only declares contractually."},
+
+    {"case_id":"S26V3-F03-O2-POSITIVE-CARD","objective_id":"F03-O2","family":"F03_AUTHORITY_CARD","baseline":"NOT_DEMONSTRATED","closure_mode":"POSITIVE_APPLICABLE_CARD","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"APPLICABLE_CARD_PRESENT","expected":"Exactly the applicable Card is selected, provenance-bound and consumed without broadening its authority.","dimensions_to_close":["functionality","quality","depth","performance","evidence"],"learning":"Balances NO_CARD_GOVERNED with the positive Card path."},
+    {"case_id":"S26V3-F03-O4-CROSSRUN-AUTHORITY","objective_id":"F03-O4","family":"F03_AUTHORITY_CARD","baseline":"PARTIAL","closure_mode":"TARGETED_ADVERSARIAL","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"CROSS_RUN_OR_CANDIDATE_DERIVED_AUTHORITY","expected":"Cross-run/candidate-derived material cannot become authority and blocks if required canonical authority is absent.","dimensions_to_close":["functionality","depth","evidence"],"learning":"Turns a forbidden-mode declaration into executable negative evidence."},
+    {"case_id":"S26V3-F03-O5-UNKNOWN-CARD-HOLDOUT","objective_id":"F03-O5","family":"F03_AUTHORITY_CARD","baseline":"NEW_CASE_REQUIRED","closure_mode":"UNSEEN_HOLDOUT","unseen_holdout":true,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"UNKNOWN_CARD_OR_CARD_AUTHORITY_CONFLICT","expected":"Unknown Card shape or Card/authority conflict cannot be autocanonicalized; fail closed or return governed no-card outcome as contract dictates.","dimensions_to_close":["functionality","quality","depth","performance","evidence"],"learning":"Proves Card generalization and conflict handling beyond known fixtures."},
+
+    {"case_id":"S26V3-F04-O1-FINAL-PERF-REBIND","objective_id":"F04-O1","family":"F04_TYPED_CONTEXT","baseline":"PARTIAL","closure_mode":"FINAL_CANDIDATE_PERFORMANCE_REBIND","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"NO_NEW_SEMANTIC_FAILURE_MODE","expected":"Existing correct typed-context case is rerun on the final candidate and its context-build/runtime timing is bound without changing semantics.","dimensions_to_close":["performance"],"learning":"Closes only the missing performance dimension; it does not count as a new independent semantic case."},
+    {"case_id":"S26V3-F04-O2-MISSING-TYPED-FIELD","objective_id":"F04-O2","family":"F04_TYPED_CONTEXT","baseline":"NOT_DEMONSTRATED","closure_mode":"TARGETED_NEGATIVE","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"MISSING_MATERIAL_TYPED_FIELD","expected":"Typed-context compiler rejects omission of a material required field before model/runtime execution.","dimensions_to_close":["functionality","quality","depth","evidence"],"learning":"Proves schema completeness at the executable context boundary."},
+    {"case_id":"S26V3-F04-O3-INCOMPATIBLE-TYPED-VERSION","objective_id":"F04-O3","family":"F04_TYPED_CONTEXT","baseline":"NOT_DEMONSTRATED","closure_mode":"TARGETED_NEGATIVE","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"INCOMPATIBLE_TYPED_CONTEXT_TYPE_OR_VERSION","expected":"Incompatible type/version fails closed; no implicit coercion or schema invention.","dimensions_to_close":["functionality","quality","depth","evidence"],"learning":"Separates typed validity from mere field presence."},
+    {"case_id":"S26V3-F04-O4-TYPED-CONTAMINATION","objective_id":"F04-O4","family":"F04_TYPED_CONTEXT","baseline":"PARTIAL","closure_mode":"TARGETED_ADVERSARIAL","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"PROHIBITED_OR_CROSSRUN_METADATA_IN_CONTEXT","expected":"Prohibited metadata cannot enter executable typed context even if structurally well-formed.","dimensions_to_close":["functionality","depth","evidence"],"learning":"Moves metadata security from downstream Composer only to typed-context ingress."},
+    {"case_id":"S26V3-F04-O5-ADAPTER-HOLDOUT","objective_id":"F04-O5","family":"F04_TYPED_CONTEXT","baseline":"NEW_CASE_REQUIRED","closure_mode":"UNSEEN_HOLDOUT","unseen_holdout":true,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"UNSEEN_ADAPTER_REQUIRED_CONTEXT","expected":"Minimum-sufficient context resolves the required adapter exactly, records provenance and avoids overfetch/invention.","dimensions_to_close":["functionality","quality","depth","performance","evidence"],"learning":"Generalizes beyond HP001 where required_adapter_count=0."},
+
+    {"case_id":"S26V3-F05-O3-MALFORMED-ENVELOPE","objective_id":"F05-O3","family":"F05_SCHEMA_TRANSPORT","baseline":"PARTIAL","closure_mode":"TARGETED_NEGATIVE","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"MALFORMED_OUTPUT_OR_TRANSPORT_ENVELOPE","expected":"Canonical schema/Composer boundary rejects malformed envelope deterministically.","dimensions_to_close":["functionality","depth","evidence"],"learning":"Creates direct evidence for malformed transport rather than inferring it from validator existence."},
+    {"case_id":"S26V3-F05-O4-INCOMPATIBLE-SCHEMA-VERSION","objective_id":"F05-O4","family":"F05_SCHEMA_TRANSPORT","baseline":"NOT_DEMONSTRATED","closure_mode":"TARGETED_VERSION_NEGATIVE","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"INCOMPATIBLE_SCHEMA_VERSION","expected":"Incompatible schema version is rejected before Composer/materialization; no silent downgrade or coercion.","dimensions_to_close":["functionality","quality","depth","evidence"],"learning":"Proves version compatibility is explicit rather than incidental."},
+    {"case_id":"S26V3-F05-O5-COMPATIBLE-EVOLUTION-HOLDOUT","objective_id":"F05-O5","family":"F05_SCHEMA_TRANSPORT","baseline":"NEW_CASE_REQUIRED","closure_mode":"UNSEEN_HOLDOUT","unseen_holdout":true,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"UNSEEN_COMPATIBLE_SCHEMA_EVOLUTION","expected":"A declared compatible representation preserves canonical semantics and boundary validation.","dimensions_to_close":["functionality","quality","depth","performance","evidence"],"learning":"Proves compatible evolution without weakening fail-closed version checks."},
+
+    {"case_id":"S26V3-F06-O1-FINAL-PERF-REBIND","objective_id":"F06-O1","family":"F06_UI_MATERIALIZATION","baseline":"PARTIAL","closure_mode":"FINAL_CANDIDATE_PERFORMANCE_REBIND","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W2_FINAL_MODEL_MATERIALIZATION","failure_mode":"NO_NEW_SEMANTIC_FAILURE_MODE","expected":"Existing valid materialization is rerun on the final candidate and UI materialization latency/cost is bound.","dimensions_to_close":["performance"],"learning":"Closes the missing performance dimension without inventing a second semantic objective."},
+    {"case_id":"S26V3-F06-O4-LAYOUT-CONTRADICTION","objective_id":"F06-O4","family":"F06_UI_MATERIALIZATION","baseline":"PARTIAL","closure_mode":"TARGETED_ADVERSARIAL","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W2_FINAL_MODEL_MATERIALIZATION","failure_mode":"CONTENT_LAYOUT_CONTRADICTION","expected":"Material validator catches a semantically contradictory layout even when required strings/fields are present.","dimensions_to_close":["functionality","depth","evidence"],"learning":"Prevents nominal completeness from passing contradictory UI structure."},
+    {"case_id":"S26V3-F06-O5-DISTINCT-UI-HOLDOUT","objective_id":"F06-O5","family":"F06_UI_MATERIALIZATION","baseline":"NEW_CASE_REQUIRED","closure_mode":"UNSEEN_HOLDOUT","unseen_holdout":true,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W2_FINAL_MODEL_MATERIALIZATION","failure_mode":"UNSEEN_UI_COMPOSITION_SAME_CONTRACT","expected":"A materially different UI composition satisfies the same semantic contract without copying HP001 layout.","dimensions_to_close":["functionality","quality","depth","performance","evidence"],"learning":"Proves UI generalization instead of memorized marketplace composition."},
+
+    {"case_id":"S26V3-F07-O1-FINAL-PERF-REBIND","objective_id":"F07-O1","family":"F07_COMPOSER_SECURITY","baseline":"PARTIAL","closure_mode":"FINAL_CANDIDATE_PERFORMANCE_REBIND","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"NO_NEW_SEMANTIC_FAILURE_MODE","expected":"Existing valid Composer payload path is timed on the final candidate and bound to the final budget.","dimensions_to_close":["performance"],"learning":"Adds performance evidence only; does not duplicate Composer correctness evidence."},
+    {"case_id":"S26V3-F07-O4-INJECTION","objective_id":"F07-O4","family":"F07_COMPOSER_SECURITY","baseline":"PARTIAL","closure_mode":"TARGETED_ADVERSARIAL","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"INJECTION_OR_PROHIBITED_INTERNAL_FIELD","expected":"Injection/internal-field contamination cannot bypass allowlist/mode constraints or leak into Composer output.","dimensions_to_close":["functionality","depth","evidence"],"learning":"Extends metadata-leak coverage to an active adversarial injection path."},
+    {"case_id":"S26V3-F07-O5-ALLOWED-STRUCTURE-HOLDOUT","objective_id":"F07-O5","family":"F07_COMPOSER_SECURITY","baseline":"NEW_CASE_REQUIRED","closure_mode":"UNSEEN_HOLDOUT","unseen_holdout":true,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"UNSEEN_ALLOWED_COMPOSER_STRUCTURE","expected":"A new but explicitly allowed structure passes without implicit allowlist expansion; neighboring forbidden structure still fails.","dimensions_to_close":["functionality","quality","depth","performance","evidence"],"learning":"Proves allowlist generalization and boundary sharpness."},
+
+    {"case_id":"S26V3-F08-O3-SHALLOW-ANSWER","objective_id":"F08-O3","family":"F08_QUALITY_DEPTH","baseline":"PARTIAL","closure_mode":"TARGETED_ADVERSARIAL","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W2_FINAL_MODEL_MATERIALIZATION","failure_mode":"SUPERFICIALLY_PLAUSIBLE_BUT_SHALLOW_OUTPUT","expected":"Quality/depth gates reject an output that looks valid structurally but lacks material reasoning/coverage.","dimensions_to_close":["functionality","depth","evidence"],"learning":"Distinguishes substantive depth from schema compliance."},
+    {"case_id":"S26V3-F08-O4-CONFLICT-AMBIGUITY","objective_id":"F08-O4","family":"F08_QUALITY_DEPTH","baseline":"NOT_DEMONSTRATED","closure_mode":"TARGETED_CONFLICT_CASE","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W2_FINAL_MODEL_MATERIALIZATION","failure_mode":"CONFLICTING_OR_AMBIGUOUS_REQUIREMENTS","expected":"Runtime makes an evidence-bound reasoned decision, surfaces unresolved authority when necessary and avoids arbitrary shallow completion.","dimensions_to_close":["functionality","quality","depth","performance","evidence"],"learning":"Tests reasoning depth under ambiguity rather than completeness on a straightforward prompt."},
+    {"case_id":"S26V3-F08-O5-INDEPENDENT-HOLDOUT","objective_id":"F08-O5","family":"F08_QUALITY_DEPTH","baseline":"NEW_CASE_REQUIRED","closure_mode":"UNSEEN_HOLDOUT_INDEPENDENT_REVIEW","unseen_holdout":true,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W3_FINAL_STABILITY_AND_INDEPENDENT","failure_mode":"UNSEEN_SUBSTANTIVE_QUALITY_REVIEW","expected":"Independent reviewer with no producer context judges the unseen output substantive, source-bound and sufficiently deep.","dimensions_to_close":["functionality","quality","depth","performance","evidence"],"learning":"Closes the explicit frozen-bundle gap independent_semantic_review_performed=false."},
+
+    {"case_id":"S26V3-F09-O3-FINAL-E2E-PERF","objective_id":"F09-O3","family":"F09_PERFORMANCE_BUDGETS","baseline":"PARTIAL","closure_mode":"FINAL_CANDIDATE_PERFORMANCE_REBIND","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W2_FINAL_MODEL_MATERIALIZATION","failure_mode":"FINAL_INTEGRATED_E2E_BUDGET","expected":"Final integrated candidate records end-to-end/profile/prompt/runtime latency and passes explicit budgets without quality regression.","dimensions_to_close":["depth","performance"],"learning":"Replaces frozen pre-integration timing with certification timing on the actual final candidate."},
+    {"case_id":"S26V3-F09-O4-HIGH-COMPLEXITY","objective_id":"F09-O4","family":"F09_PERFORMANCE_BUDGETS","baseline":"NOT_DEMONSTRATED","closure_mode":"HIGH_COMPLEXITY_BOUNDARY","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W2_FINAL_MODEL_MATERIALIZATION","failure_mode":"HIGH_COMPLEXITY_TOKEN_TIME_PRESSURE","expected":"High-complexity input stays functionally/semantically correct and within declared resource ceilings, or fails closed before unsafe degradation.","dimensions_to_close":["functionality","quality","depth","performance","evidence"],"learning":"Establishes a real upper-bound behavior instead of extrapolating from one HP001 workload."},
+    {"case_id":"S26V3-F09-O5-STOCHASTIC-HOLDOUT","objective_id":"F09-O5","family":"F09_PERFORMANCE_BUDGETS","baseline":"NEW_CASE_REQUIRED","closure_mode":"UNSEEN_HOLDOUT_REPEATED_STOCHASTIC","unseen_holdout":true,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W3_FINAL_STABILITY_AND_INDEPENDENT","failure_mode":"MODEL_DEPENDENT_RUN_TO_RUN_VARIATION","expected":"Repeated executions preserve semantic decisions/quality while quantifying latency/token/consistency variation; correlated repeats are analyzed hierarchically, not counted as independent cases.","dimensions_to_close":["functionality","quality","depth","performance","evidence"],"learning":"Introduces the only place where clustered/mixed-effects statistical interpretation may be justified."},
+
+    {"case_id":"S26V3-F10-O2-FINAL-REPLAY-PERF","objective_id":"F10-O2","family":"F10_E2E_REPLAY_LIVE_SEMANTIC","baseline":"PARTIAL","closure_mode":"FINAL_CANDIDATE_REPLAY_PERFORMANCE_REBIND","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"NO_NEW_SEMANTIC_FAILURE_MODE","expected":"Deterministic replay on final candidate reproduces validators/materialization and records replay cost without being misclassified as independent review.","dimensions_to_close":["performance"],"learning":"Closes replay performance while preserving the conceptual boundary between replay and independent review."},
+    {"case_id":"S26V3-F10-O3-VERSION-DELTA-REPLAY","objective_id":"F10-O3","family":"F10_E2E_REPLAY_LIVE_SEMANTIC","baseline":"NOT_DEMONSTRATED","closure_mode":"CONTROLLED_VERSION_REPLAY","unseen_holdout":false,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W1_FINAL_DETERMINISTIC","failure_mode":"COMPATIBLE_VERSION_OR_CURRENTNESS_DELTA","expected":"Controlled compatible version/currentness transition preserves intended semantics and provenance; incompatible transition fails closed.","dimensions_to_close":["functionality","quality","depth","performance","evidence"],"learning":"Tests replay robustness beyond byte-identical exact-head reproduction."},
+    {"case_id":"S26V3-F10-O5-REAL-E2E-HOLDOUT","objective_id":"F10-O5","family":"F10_E2E_REPLAY_LIVE_SEMANTIC","baseline":"NEW_CASE_REQUIRED","closure_mode":"UNSEEN_REAL_E2E_HOLDOUT","unseen_holdout":true,"prebuild_wave":"W0_PREBUILD_NOW","final_wave":"W3_FINAL_STABILITY_AND_INDEPENDENT","failure_mode":"BRAND_NEW_REAL_CASE_FULL_PIPELINE","expected":"Brand-new real case traverses full governed pipeline, passes deterministic/material/quality/performance gates and then independent semantic review.","dimensions_to_close":["functionality","quality","depth","performance","evidence"],"learning":"Provides the final generalization proof that cannot be obtained by replaying HP001."}
+  ],
+  "holdout_contract": {
+    "required_families": 10,
+    "holdout_cases": [
+      "S26V3-F01-O5-HOLDOUT",
+      "S26V3-F02-O4-SPOOFED-CURRENTNESS-HOLDOUT",
+      "S26V3-F03-O5-UNKNOWN-CARD-HOLDOUT",
+      "S26V3-F04-O5-ADAPTER-HOLDOUT",
+      "S26V3-F05-O5-COMPATIBLE-EVOLUTION-HOLDOUT",
+      "S26V3-F06-O5-DISTINCT-UI-HOLDOUT",
+      "S26V3-F07-O5-ALLOWED-STRUCTURE-HOLDOUT",
+      "S26V3-F08-O5-INDEPENDENT-HOLDOUT",
+      "S26V3-F09-O5-STOCHASTIC-HOLDOUT",
+      "S26V3-F10-O5-REAL-E2E-HOLDOUT"
+    ],
+    "rule": "Exactly one designated unseen holdout per family is the minimum. Additional new cases may exist but do not replace distinct-objective coverage."
+  },
+  "execution_economy": {
+    "blind_full_rerun": false,
+    "effectively_covered_preserved": 20,
+    "gap_objectives_planned": 30,
+    "rebind_labeled_cases": 5,
+    "performance_rebind_only": 4,
+    "semantic_gap_cases": 26,
+    "designated_unseen_holdouts": 10,
+    "macrolot_policy": "Bundle safe cases by execution wave, but retain objective-level receipts and do not count shared execution as independent evidence when objective/failure-mode is duplicated."
+  },
+  "final_gate": "All 50 objectives effectively COVERED; 10/10 family holdouts PASS; mutation/metamorphic/differential/transversal gates PASS; performance budgets PASS; independent semantic review PASS; then freeze. Gate G/Golden remain separate authorization boundaries.",
+  "claim_ceiling": "PLAN_ONLY_NOT_EXECUTED_NOT_CERTIFIED_NOT_GATE_G_NOT_GOLDEN"
+}

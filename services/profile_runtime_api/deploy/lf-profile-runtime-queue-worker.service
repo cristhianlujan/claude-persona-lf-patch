@@ -1,0 +1,24 @@
+[Unit]
+Description=LF Hetzner Profile Runtime Queue Worker (candidate)
+After=network-online.target lf-profile-runtime-api.service
+Wants=network-online.target
+Requires=lf-profile-runtime-api.service
+
+[Service]
+Type=simple
+User=lfprofile
+Group=lfprofile
+EnvironmentFile=/etc/lf-profile-runtime-api.env
+EnvironmentFile=/etc/lf-profile-runtime-worker.env
+WorkingDirectory=/opt/lf-profile-runtime-api/current
+ExecStart=/opt/lf-profile-runtime-api/venv/bin/python /opt/lf-profile-runtime-api/current/services/profile_runtime_api/scripts/hetzner_queue_worker.py --daemon --idle-seconds 3
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/lf-profile-runtime-api
+
+[Install]
+WantedBy=multi-user.target

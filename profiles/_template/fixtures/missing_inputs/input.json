@@ -1,0 +1,6 @@
+{
+  "case_id": "MISSING_INPUTS_001",
+  "objective": "Create a reusable LF profile pack",
+  "missing": ["source_authority", "acceptance_criteria"],
+  "expected": "RETURN_TO_ORCHESTRATOR"
+}

@@ -1,0 +1,52 @@
+{
+  "case_result_required": [
+    "case_id",
+    "family",
+    "variant",
+    "functionality",
+    "depth",
+    "performance",
+    "quality",
+    "first_bad_hop",
+    "avoidable_work",
+    "evidence_refs",
+    "elapsed_ms"
+  ],
+  "claim_ceiling_before_execution": "BLUEPRINT_ONLY",
+  "contract": "S30_E2E_RESULT_CONTRACT_V1",
+  "dimension_values": [
+    "PASS",
+    "FAIL",
+    "BLOCKED",
+    "NOT_APPLICABLE_WITH_PROOF"
+  ],
+  "hard_global_targets": {
+    "avoidable_work_count": 0,
+    "duplicate_irreversible_effect_count": 0,
+    "false_na_count": 0,
+    "false_pass_count": 0,
+    "lost_progress_count": 0,
+    "missing_readback_count": 0,
+    "preventable_first_hop_escape_count": 0
+  },
+  "overall_rule": "PASS_ONLY_IF_ALL_APPLICABLE_DIMENSIONS_PASS_AND_CRITICAL_GLOBAL_TARGETS_ARE_ZERO",
+  "performance": {
+    "first_campaign": "ESTABLISH_P50_P95_BASELINE_WHILE_ENFORCING_ZERO_AVOIDABLE_RETRY_AND_ZERO_MACHINE_DETECTABLE_MODEL_CALLS",
+    "later_campaign": "FLAG_REGRESSION_WHEN_P95_EXCEEDS_BASELINE_BY_MORE_THAN_20_PERCENT_WITHOUT_APPROVED_CAUSAL_EXPLANATION",
+    "required_metrics": [
+      "total_ms",
+      "per_hop_ms",
+      "backend_calls",
+      "model_calls",
+      "bytes_or_context",
+      "retries"
+    ],
+    "timeout_extension_rule": "FORBIDDEN_UNTIL_FIRST_BAD_PHASE_AND_BUDGET_MEASURED"
+  },
+  "quality": {
+    "producer_self_verdict_allowed": false,
+    "semantic": "independent evaluation only when a non-derivable semantic gap is actually exercised",
+    "technical": "deterministic evidence completeness, correct authority, traceability, no false PASS/N-A"
+  },
+  "status": "PREPARED_NOT_EXECUTED"
+}

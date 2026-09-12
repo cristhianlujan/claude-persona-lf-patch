@@ -1,0 +1,50 @@
+{
+  "schema": "lf-profile-runtime-current-baseline/v1",
+  "campaign": "PROFILE_RUNTIME_P0_V3_20260902",
+  "baseline_id": "B2B-CARGA-001_CURRENT_199_V1",
+  "artifact": {
+    "screen_code": "B2B-CARGA-001",
+    "sha256": "ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+    "width_px": 1600,
+    "height_px": 1000,
+    "bytes": 142727
+  },
+  "source_evidence": {
+    "mode": "FALLBACK_OCR_REGENERATED",
+    "ocr_engine": "Tesseract 5.5.0",
+    "ocr_lang": "eng+spa",
+    "ocr_psm": 3,
+    "ocr_observation_count": 199,
+    "ocr_observations_sha256": "2483a0270d26bfdc9023b12cad2cd0c3385367b41a30ea5f601682a231fd49ef"
+  },
+  "resolver_v3": {
+    "input_count": 199,
+    "residual_count": 18,
+    "reread_reduction_pct": 90.95
+  },
+  "targeted_reread": {
+    "regions": 18,
+    "prior_invocations": 72,
+    "batched_invocations": 4,
+    "repeatability_runs": 8,
+    "repeatability_p50_ms": 901.233,
+    "repeatability_p95_ms": 938.117,
+    "decision_equivalent_regions": "18/18",
+    "worse_regions": 0
+  },
+  "quality": {
+    "critical_regressions_count": 0,
+    "trace_data_e2e_required": true,
+    "historical_334_bbox_parity": "NOT_PROVEN",
+    "p02_p03_historical_334_parity": "NOT_PROVEN"
+  },
+  "comparability_contract": {
+    "may_compare_future_v2_v3_against_this_baseline": true,
+    "may_claim_historical_334_parity": false,
+    "same_artifact_required": true,
+    "same_ocr_observation_sha_required": true,
+    "same_context_required": true,
+    "semantic_utility_is_separate_gate": true
+  },
+  "status": "IMMUTABLE_CANDIDATE_BASELINE"
+}

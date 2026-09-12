@@ -1,0 +1,30 @@
+{
+  "pack_id": "marketplace_lf_decision_product_experience",
+  "version": "v0.1_candidate",
+  "status": "RUNTIME_PACK_CANDIDATE_READ_ONLY",
+  "cases": [
+    {
+      "id": "juan_digital_decision",
+      "fixture": "fixtures/juan_digital_decision_request.json",
+      "expected_status": "MARKETPLACE_DECISION_RECOMMENDATION"
+    },
+    {
+      "id": "map_surface_decision",
+      "fixture": "fixtures/map_surface_decision_request.json",
+      "expected_status": "MARKETPLACE_DECISION_RECOMMENDATION"
+    },
+    {
+      "id": "missing_source",
+      "fixture": "fixtures/missing_source_decision_request.json",
+      "expected_status": "MARKETPLACE_DECISION_NEEDS_SOURCE"
+    }
+  ],
+  "required_blocked_impacts": [
+    "no_runtime",
+    "no_production",
+    "no_validated",
+    "no_golden",
+    "no_home_official_write",
+    "no_supabase_write"
+  ]
+}

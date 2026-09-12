@@ -1,0 +1,76 @@
+{
+  "freeze_chain_version": "S30-R07-CHAIN-v2",
+  "records": [
+    {
+      "phase": "CONTRACT_AND_PREFLIGHT",
+      "version_run_id": "S30-C-HARNESS-R03-20260910",
+      "input_identities": {
+        "main_sha": "2b6f2f918c4d6c3d66226cc1933728d61cbfe4cb",
+        "s30_a_receipt": "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json",
+        "s30_b_receipt": "sandbox/lf_contract_gate_test/s30_data_access_candidate/s30_b_final_receipt_v1.json",
+        "handoff": "HANDOFF S30-C — Evidence Path, Freeze Gates y Historical Replay Harness.md"
+      },
+      "hashes": {
+        "source_manifest": "ecd12d27b6797f5d761ae3a42b45e677f272094c692967954f4c30121b89e69d",
+        "freeze_contract": "ea9f31a14bc652d60516a2e986394e16c240dfbcde848ec0ef58076105484555",
+        "replay_corpus": "bee08b6c61db9b14642f000f0a3f5c12e8f0c0558ab81e3876b36418c4ef9e21",
+        "harness": "86bec6f01f4eaa52ef053258311dee635a36c905e80a2740f668a4781c532219",
+        "tests": "83430ad8deb1852d79f84a2fe2e2a1b8e393a3249a6c5a7c9604fe2dce30749a",
+        "s30_a_receipt": "69e3972c0b3677232a01f5c33fd0f77ccbbc28901ad477fcb96892257a00f9ff",
+        "s30_b_receipt": "ab902a8519a822679916b1a5dd3a1a8ab48f872fe4b0865bbac49d884c29f7ab"
+      },
+      "expected_output_contract": {
+        "exit_state": "READY_FOR_FINAL_R09_INTEGRATION",
+        "claim_ceiling": "EVIDENCE_FREEZE_AND_REPLAY_HARNESS_READY",
+        "model_calls": 0
+      },
+      "allowed_mutations": [
+        "new bounded run/version only",
+        "append external CI/readback evidence without mutating frozen inputs"
+      ],
+      "invalidation_triggers": [
+        "any frozen artifact hash changes",
+        "upstream A/B receipt hash changes",
+        "main base changes before candidate materialization",
+        "generic S30 CI discovery removed"
+      ],
+      "next_phase": "HARNESS_AND_GUARDS"
+    },
+    {
+      "phase": "HARNESS_AND_GUARDS",
+      "version_run_id": "S30-C-HARNESS-R03-20260910",
+      "input_identities": {
+        "main_sha": "2b6f2f918c4d6c3d66226cc1933728d61cbfe4cb",
+        "s30_a_receipt": "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json",
+        "s30_b_receipt": "sandbox/lf_contract_gate_test/s30_data_access_candidate/s30_b_final_receipt_v1.json",
+        "handoff": "HANDOFF S30-C — Evidence Path, Freeze Gates y Historical Replay Harness.md"
+      },
+      "hashes": {
+        "source_manifest": "ecd12d27b6797f5d761ae3a42b45e677f272094c692967954f4c30121b89e69d",
+        "freeze_contract": "ea9f31a14bc652d60516a2e986394e16c240dfbcde848ec0ef58076105484555",
+        "replay_corpus": "bee08b6c61db9b14642f000f0a3f5c12e8f0c0558ab81e3876b36418c4ef9e21",
+        "harness": "86bec6f01f4eaa52ef053258311dee635a36c905e80a2740f668a4781c532219",
+        "tests": "83430ad8deb1852d79f84a2fe2e2a1b8e393a3249a6c5a7c9604fe2dce30749a",
+        "s30_a_receipt": "69e3972c0b3677232a01f5c33fd0f77ccbbc28901ad477fcb96892257a00f9ff",
+        "s30_b_receipt": "ab902a8519a822679916b1a5dd3a1a8ab48f872fe4b0865bbac49d884c29f7ab"
+      },
+      "expected_output_contract": {
+        "exit_state": "READY_FOR_FINAL_R09_INTEGRATION",
+        "claim_ceiling": "EVIDENCE_FREEZE_AND_REPLAY_HARNESS_READY",
+        "model_calls": 0
+      },
+      "allowed_mutations": [
+        "new bounded run/version only",
+        "append external CI/readback evidence without mutating frozen inputs"
+      ],
+      "invalidation_triggers": [
+        "any frozen artifact hash changes",
+        "upstream A/B receipt hash changes",
+        "main base changes before candidate materialization",
+        "generic S30 CI discovery removed"
+      ],
+      "next_phase": "CANDIDATE_EXECUTION",
+      "prior_freeze_sha256": "87e884363b479b5cbde51a7bc8638941d04ceb23983de9a9fdf732fd5f91fa82"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260829-008",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "8b22d416340209ee406fafef204c260280115f71",
+    "204308a96ae6f0d12b066d14cf06e1167f9f6b64"
+  ],
+  "target_paths": [
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_local_runtime.py",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/run_zero_cost_runtime_tests.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-29T11:04:06Z",
+  "notes": "PASS_SANDBOX candidate receipt for V24 under existing governed execution 008. Fresh V23 post-merge evidence is 6/6 BLOCKED with LOCAL_RUNTIME_ASSISTANT_COMPLETION_EMPTY: the pinned llama.cpp CLI exits successfully after rendering User/Assistant because single-turn was combined with --file while stdin is DEVNULL. V24 preserves the literal input file for hash/readback evidence but supplies the predefined first turn through --prompt, which is the single-turn interface required to initiate generation. The non-empty assistant gate, pinned model, structured-output schema, Router-bound adapter, context budget 16384, output budget 2048, and downstream fail-closed behavior are unchanged. This receipt does not claim live behavioral PASS, VALIDATED, production promotion, automatic promotion, execution closure, or A/B closure; exact-head CI and fresh post-merge runtime evidence remain mandatory."
+}

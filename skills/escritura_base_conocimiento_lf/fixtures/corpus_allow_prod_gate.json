@@ -1,0 +1,28 @@
+{
+  "fixture_id": "CORPUS_ALLOW_PROD_GATE_ACT_0057",
+  "source": "lf_content_decisions DRY_RUN ACT-0056",
+  "upstream_run_id": "bb9a08ec-7033-4fc0-a7f7-5d72bc134291",
+  "casos_allow": [
+    {
+      "id": 1,
+      "decision_id": "f81fb1cd-d227-4b73-9c7e-bc1d93315d29",
+      "decision_upstream": "ALLOW_PROD_GATE",
+      "topic": "reinsercion_financiera",
+      "competitor": "Finanty",
+      "source_url": "https://finanty.pe/reinsercion",
+      "visible_text": "Ayudamos a personas con historial crediticio dificil a recuperar su posicion financiera paso a paso.",
+      "claim_type": "EDUCATIVO_INFORMATIVO",
+      "risk_level": "LOW",
+      "kb_category_sugerida": "EDUCACION_FINANCIERA",
+      "kb_subcategory_sugerida": "REINSERCION_CREDITICIA"
+    }
+  ],
+  "casos_excluidos_por_decision": [
+    {
+      "decision_id": "99993fab-4db0-451e-ae5d-37a123aaf714",
+      "decision_upstream": "BLOCK_OR_HITL",
+      "topic": "eliminacion_deudas",
+      "razon_exclusion": "Solo ALLOW_PROD_GATE puede ingresar a KB"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "request_type": "marketplace_product_experience_decision",
+  "decision_question": "Decidir una variante visual sin fuentes verificadas.",
+  "affected_surface": "hero",
+  "scope": "sandbox_read_only",
+  "options": [
+    "Option A",
+    "Option B"
+  ],
+  "source_authority": [],
+  "blocked_impacts": [
+    "no_runtime",
+    "no_production",
+    "no_validated",
+    "no_golden",
+    "no_home_official_write",
+    "no_supabase_write"
+  ],
+  "notes": "This fixture must return MARKETPLACE_DECISION_NEEDS_SOURCE because source authority is empty."
+}

@@ -1,0 +1,10 @@
+{
+  "eval_id": "LF_SKILL_TEMPLATE_EVAL_MATRIX_001",
+  "cases": [
+    {"case_id": "HAPPY_PATH_001", "expected": "VALID_OUTPUT"},
+    {"case_id": "MISSING_INPUTS_001", "expected": "RETURN_TO_ORCHESTRATOR"},
+    {"case_id": "UNSAFE_OR_BLOCKED_001", "expected": "BLOCK_PIPELINE"},
+    {"case_id": "SELF_REPAIR_001", "expected": "RETURN_TO_WORKER_FOR_SELF_REPAIR"}
+  ],
+  "minimum_pass_rate": "4/4"
+}

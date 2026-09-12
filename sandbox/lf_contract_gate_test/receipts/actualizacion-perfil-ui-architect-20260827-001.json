@@ -1,0 +1,20 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260827-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "c41dc5ebec833cbec7977677c1c1b354893b6f78",
+    "00ac20f074c61f81afcea655cc32b5ce46d217ed",
+    "c4568136b6570c7f7aa340faf011b88554225127"
+  ],
+  "target_paths": ["profiles/ui_architect/**"],
+  "blocking_codes": [],
+  "issued_at": "2026-08-27T06:50:29Z",
+  "notes": "PASS_SANDBOX for governed existing-profile update. Contract/judge SHA values are SHA-256 fingerprints of the exact Supabase operational rows. Pre-write binding and steps 0-110 are recorded in Supabase. Exact-head deterministic regression passes; governed semantic gate passes. Runtime enablement, VALIDATED status and automatic promotion remain blocked. Separate external cold-start/independent evaluation is not claimed by this receipt."
+}

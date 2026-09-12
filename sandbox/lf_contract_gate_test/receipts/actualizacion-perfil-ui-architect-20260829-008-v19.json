@@ -1,0 +1,23 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260829-008",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "2ff3316bd873f76aeee74e119f541eb95f541cba",
+    "4c429fc8-f9d7-4f36-b91e-fa095ebd4b89",
+    "d512379a-0cb6-4a0e-8f6d-68121a6c153a",
+    "c65736cf-58c5-41df-b156-be058d0a1f06"
+  ],
+  "target_paths": [
+    "profiles/ui_architect/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-29T07:51:00Z",
+  "notes": "PASS_SANDBOX candidate-source receipt for V19 under execution 008. V18 post-merge canaries reproduced two independent failures: resolved existing duplicate remediation was misclassified CREATE_NEW and retained the removed target as visible; CREATE_NEW installment output preserved requirements but violated root shape and recursively repeated visual_hierarchy/state_map. V19 adds a hard existing-remediation discriminator and bounded non-recursive serialization while preserving the unresolved-authority fail-closed path. This receipt does not claim live behavioral PASS, VALIDATED, production, runtime enablement, automatic promotion, or closure; fresh exact-head CI and post-merge live canaries remain required."
+}

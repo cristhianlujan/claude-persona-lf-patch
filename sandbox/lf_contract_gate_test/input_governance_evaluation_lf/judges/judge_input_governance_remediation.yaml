@@ -1,0 +1,135 @@
+version: v0.1
+status: CANDIDATO
+judge_code: JUDGE_INPUT_GOVERNANCE_REMEDIATION_V1
+mode: READ_ONLY
+
+verdicts:
+  - PASS
+  - PASS_WITH_OBSERVATIONS
+  - FAIL_HARD_GUARD
+  - FAIL_OUTCOME
+  - FAIL_AUTHORITY
+  - FAIL_TRAJECTORY
+  - FAIL_REMEDIATION_QUALITY
+  - NEEDS_HUMAN_CALIBRATION
+
+hard_fail_if:
+  - unsupported_invention
+  - not_applicable_without_positive_authority
+  - human_decision_before_internal_resolution_exhausted
+  - candidate_or_stale_source_used_as_current_authority
+  - cross_scope_authority_leakage
+  - positive_with_required_dimension_unresolved
+  - generic_terminal_remediation
+  - close_condition_missing_or_tautological
+  - keyword_or_category_used_as_sufficiency_authority
+  - exact_visible_literal_hardcoding
+
+structural_grader:
+  negative_confirmed_required:
+    - evaluation_outcome
+    - evidence_examined
+    - evidence_found
+    - exact_gap
+    - cause_type
+    - remediation_action
+    - do_not_do
+    - close_when
+    - next_owner
+    - human_decision_required
+  positive_required:
+    - evaluation_outcome
+    - evidence_chain
+    - authority_basis
+    - resolved_requirements
+    - unresolved_required
+    - close_reason
+  not_applicable_required:
+    - evaluation_outcome
+    - positive_authority_ref
+    - scope_match
+    - reason
+  human_decision_required:
+    - evaluation_outcome
+    - evidence_found
+    - exact_gap
+    - remediation_action
+    - do_not_do
+    - close_when
+    - authority_ref
+    - next_owner
+    - human_decision_required
+
+semantic_placeholder_fail_patterns:
+  - '^remediaci[oó]n abierta[\.!]?$'
+  - '^revisar( evidencia)?[\.!]?$'
+  - '^investigar[\.!]?$'
+  - '^completar( la)? informaci[oó]n( faltante)?[\.!]?$'
+  - '^mantener en cola[\.!]?$'
+  - '^resolver pendiente[\.!]?$'
+  - '^crear lo faltante[\.!]?$'
+  - '^cuando (se cierre|est[eé] listo)[\.!]?$'
+
+authority_grader:
+  required_checks:
+    - source_exists
+    - source_status_observed
+    - subject_scope_matches
+    - currentness_checked
+    - explicit_reference_preferred_over_keyword
+    - contradictions_checked
+  authority_ordering:
+    current_explicit_authority: highest
+    current_derived_from_explicit_reference: high
+    candidate: insufficient
+    stale: insufficient
+    textual_similarity: discovery_only
+    absence: no_authority
+
+trajectory_grader:
+  must_check:
+    - explicit_references_traversed_before_creation
+    - reusable_canonical_sources_checked_before_human_escalation
+    - source_status_checked_before_use
+    - scope_checked_before_inheritance
+    - currentness_checked_before_pass
+    - contradictions_checked_before_close
+  fail_if:
+    - output_correct_but_reached_by_name_guess
+    - output_correct_but_skipped_available_explicit_reference
+    - human_escalation_hides_internal_resolver_defect
+
+remediation_quality_grader:
+  criteria:
+    exact_gap_specificity:
+      weight: 0.20
+      pass: identifies missing property/reference/authority, not merely family name
+    action_executability:
+      weight: 0.25
+      pass: a second agent can execute without rediscovering what to inspect
+    evidence_binding:
+      weight: 0.20
+      pass: action is tied to concrete source_refs/evidence facts
+    non_invention_guard:
+      weight: 0.15
+      pass: states what must not be created/inferred/bypassed
+    closure_verifiability:
+      weight: 0.20
+      pass: close_when can be checked by readback/test
+  score_min: 0.90
+  hard_guard_overrides_score: true
+
+calibration_policy:
+  model_grader_requires_periodic_human_calibration: true
+  calibration_sample_ratio_min: 0.10
+  disagreement_goes_to: NEEDS_HUMAN_CALIBRATION
+  grader_may_not_change_canonical_source: true
+
+suite_gate:
+  visible_hard_guards_pass_rate: 1.0
+  ekb_regression_pass_rate: 1.0
+  counterfactual_consistency: 1.0
+  hidden_hard_guards_pass_rate: 1.0
+  hidden_quality_score_min: 0.90
+  unsupported_invention_count: 0
+  premature_human_decision_count: 0

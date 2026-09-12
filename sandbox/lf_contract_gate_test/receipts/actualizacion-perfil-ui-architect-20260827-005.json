@@ -1,0 +1,20 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260827-005",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "2e1d58c209c3ab2d261180244707960560d15de7",
+    "98d6a555f168726782455e217a37f325ba8ca104",
+    "6e5bf2016cbaa83ea0627837e0509c65ff596b14"
+  ],
+  "target_paths": ["profiles/ui_architect/**"],
+  "blocking_codes": [],
+  "issued_at": "2026-08-27T15:41:00Z",
+  "notes": "PASS_SANDBOX for governed existing-profile update. Execution 005 and its pre-write binding existed before the first V6 write. The branch was later reconciled onto current main because concurrent merges advanced the protected base; only the same profile-local V6 semantic files were reapplied. Source blob hashes remain unchanged. This receipt does not claim final merge, VALIDATED status, production promotion, runtime enablement, or post-merge live semantic PASS. Closure requires live resolved-authority and unresolved-authority runtime tests after merge."
+}

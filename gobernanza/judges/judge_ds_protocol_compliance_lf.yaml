@@ -1,0 +1,52 @@
+operation_code: DS_BUILD_PROTOCOL_LF
+judge_code: JUDGE_DS_PROTOCOL_COMPLIANCE_LF
+version: v0.2
+status: CANDIDATO_READ_ONLY
+source_model: GIT_FIRST_YAML
+source_repo: cristhianlujan/claude-persona-lf-patch
+
+purpose: Judge versionado para bloquear PASS superficial en DS_BUILD_PROTOCOL_LF.
+
+pass_if:
+  - router_read
+  - v_lf_fuente_operativa_read
+  - act0047_read
+  - existing_ds_assets_checked
+  - ds_research_pack_verified
+  - research_to_rules_matrix_present
+  - decision_matrix_present
+  - channel_and_mode_declared
+  - adapter_selected
+  - tokens_components_a11y_checked
+  - output_mode_complete
+  - supervisor_pass
+  - repair_loop_evaluated
+  - schema_fixtures_pass
+  - source_sha_present
+  - contract_sha_present
+  - judge_sha_present
+  - no_blocking_observations
+
+fail_if:
+  - DS_STEP_SOURCE_SHA_MISSING
+  - DS_CONTRACT_SHA_MISSING
+  - DS_JUDGE_SHA_MISSING
+  - DS_STEP_GITHUB_READBACK_MISSING
+  - DS_EVIDENCE_PAYLOAD_TOO_SHALLOW
+  - DS_AUTHOR_SOURCE_NOT_VERIFIED
+  - DS_RESEARCH_PACK_MISSING
+  - DS_RESEARCH_PAYLOAD_TOO_SHALLOW
+  - DS_RESEARCH_TO_RULES_MISSING
+  - DS_DECISION_MATRIX_MISSING
+  - DS_SOURCE_CLASSIFICATION_MISSING
+  - DS_USER_INPUT_NOT_DECLARED
+  - DS_ASSISTANT_FREEFORM_DECISION
+  - runtime_enabled
+  - mark_production
+  - mark_validated
+
+result_values:
+  - PASS
+  - FAIL
+  - BLOCKED
+  - RETURN_TO_WORKER

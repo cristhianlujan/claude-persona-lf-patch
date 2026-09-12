@@ -1,0 +1,800 @@
+name: lf-contract-check
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - "lf/**"
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+
+jobs:
+  dedupe-router:
+    name: lf-contract-dedupe-router
+    runs-on: ubuntu-latest
+    outputs:
+      run_deep: ${{ steps.classify.outputs.run_deep }}
+      decision: ${{ steps.classify.outputs.decision }}
+      reason: ${{ steps.classify.outputs.reason }}
+      pr_number: ${{ steps.classify.outputs.pr_number }}
+      exact_count: ${{ steps.classify.outputs.exact_count }}
+      reused_run_id: ${{ steps.classify.outputs.reused_run_id }}
+      router_overhead_ms: ${{ steps.classify.outputs.router_overhead_ms }}
+    steps:
+      - name: Classify same-context coverage
+        id: classify
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+          REF_NAME: ${{ github.ref_name }}
+          HEAD_SHA: ${{ github.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          CURRENT_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -uo pipefail
+          started_ms="$(date +%s%3N)"
+          run_deep="true"
+          decision="RUN_DEEP"
+          reason="NOT_APPLICABLE"
+          pr_number=""
+          exact_count="0"
+          reused_run_id=""
+
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            pr_number="${PR_NUMBER:-}"
+            if [[ "$EVENT_ACTION" != "ready_for_review" ]]; then
+              reason="PR_EVENT_AUTHORITATIVE"
+            elif [[ -z "${PR_NUMBER:-}" || -z "${PR_HEAD_SHA:-}" || -z "${EVENT_BASE_SHA:-}" ]]; then
+              reason="READY_CONTEXT_MISSING_FAIL_DEEP"
+            else
+              set +e
+              current_main_sha="$(gh api "repos/${GH_REPO}/git/ref/heads/main" --jq '.object.sha' 2>"$RUNNER_TEMP/lf-ready-main.err")"
+              main_rc=$?
+              set -e
+
+              if [[ "$main_rc" -ne 0 || -z "$current_main_sha" ]]; then
+                reason="CURRENT_MAIN_LOOKUP_FAILED_FAIL_DEEP"
+              elif [[ "$current_main_sha" != "$EVENT_BASE_SHA" ]]; then
+                reason="CURRENT_MAIN_DIFFERS_EVENT_BASE_FAIL_DEEP"
+              else
+                set +e
+                runs_response="$(gh api -X GET \
+                  "repos/${GH_REPO}/actions/workflows/lf-contract-check.yml/runs" \
+                  -f event=pull_request \
+                  -f status=completed \
+                  -f head_sha="$PR_HEAD_SHA" \
+                  -f per_page=100 2>"$RUNNER_TEMP/lf-ready-runs.err")"
+                runs_rc=$?
+                set -e
+
+                if [[ "$runs_rc" -ne 0 ]] || ! jq -e '.workflow_runs | type == "array"' <<<"$runs_response" >/dev/null 2>&1; then
+                  reason="PRIOR_RUN_LOOKUP_FAILED_FAIL_DEEP"
+                else
+                  exact_runs="$(jq -c \
+                    --argjson pr "$PR_NUMBER" \
+                    --arg head "$PR_HEAD_SHA" \
+                    --arg base "$EVENT_BASE_SHA" \
+                    --argjson current "$CURRENT_RUN_ID" \
+                    '[.workflow_runs[]
+                      | select(.id != $current)
+                      | select(.head_sha == $head)
+                      | select(any(.pull_requests[]?; .number == $pr and .head.sha == $head and .base.sha == $base))
+                    ] | sort_by([.updated_at, .id])' <<<"$runs_response")"
+                  exact_count="$(jq -r 'length' <<<"$exact_runs")"
+
+                  if [[ "$exact_count" -eq 0 ]]; then
+                    reason="NO_EXACT_PRIOR_CONTEXT_FAIL_DEEP"
+                  else
+                    latest_run_id="$(jq -r '.[-1].id' <<<"$exact_runs")"
+                    latest_conclusion="$(jq -r '.[-1].conclusion // ""' <<<"$exact_runs")"
+
+                    if [[ -z "$latest_run_id" || "$latest_conclusion" != "success" ]]; then
+                      reason="LATEST_EXACT_CONTEXT_NOT_SUCCESS_FAIL_DEEP"
+                    else
+                      set +e
+                      jobs_response="$(gh api -X GET \
+                        "repos/${GH_REPO}/actions/runs/${latest_run_id}/jobs" \
+                        -f filter=latest \
+                        -f per_page=100 2>"$RUNNER_TEMP/lf-ready-jobs.err")"
+                      jobs_rc=$?
+                      artifacts_response="$(gh api -X GET \
+                        "repos/${GH_REPO}/actions/runs/${latest_run_id}/artifacts" \
+                        -f per_page=100 2>"$RUNNER_TEMP/lf-ready-artifacts.err")"
+                      artifacts_rc=$?
+                      set -e
+
+                      if [[ "$jobs_rc" -ne 0 ]] || ! jq -e '.jobs | type == "array"' <<<"$jobs_response" >/dev/null 2>&1; then
+                        reason="PRIOR_DEEP_JOB_LOOKUP_FAILED_FAIL_DEEP"
+                      elif [[ "$artifacts_rc" -ne 0 ]] || ! jq -e '.artifacts | type == "array"' <<<"$artifacts_response" >/dev/null 2>&1; then
+                        reason="PRIOR_MANIFEST_ARTIFACT_LOOKUP_FAILED_FAIL_DEEP"
+                      else
+                        deep_success_count="$(jq -r '[.jobs[] | select(.name == "lf-contract-check" and .conclusion == "success")] | length' <<<"$jobs_response")"
+                        manifest_count="$(jq -r --arg name "r8-continuous-audit-${latest_run_id}" '[.artifacts[] | select(.name == $name and (.expired == false))] | length' <<<"$artifacts_response")"
+
+                        if [[ "$deep_success_count" -ne 1 ]]; then
+                          reason="LATEST_EXACT_CONTEXT_NOT_REAL_DEEP_SUCCESS_FAIL_DEEP"
+                        elif [[ "$manifest_count" -ne 1 ]]; then
+                          reason="LATEST_EXACT_CONTEXT_MANIFEST_NOT_PROVABLE_FAIL_DEEP"
+                        else
+                          run_deep="false"
+                          decision="SKIP_READY_REUSE_EXACT_DEEP"
+                          reason="EXACT_PR_HEAD_BASE_CURRENT_MAIN_AND_REAL_DEEP_SUCCESS"
+                          reused_run_id="$latest_run_id"
+                        fi
+                      fi
+                    fi
+                  fi
+                fi
+              fi
+            fi
+          elif [[ "$EVENT_NAME" == "push" && "$REF_NAME" == lf/* ]]; then
+            reason="NO_EXACT_OPEN_PR_FAIL_DEEP"
+            set +e
+            response="$(gh api -X GET \
+              "repos/${GH_REPO}/pulls" \
+              -f state=open \
+              -f base=main \
+              -f head="${REPO_OWNER}:${REF_NAME}" \
+              -f per_page=100 2>"$RUNNER_TEMP/lf-contract-dedupe-gh.err")"
+            api_rc=$?
+            set -e
+
+            if [[ "$api_rc" -eq 0 ]] && jq -e 'type == "array"' <<<"$response" >/dev/null; then
+              matches="$(jq -c --arg sha "$HEAD_SHA" '[.[] | select(.head.sha == $sha)]' <<<"$response")"
+              exact_count="$(jq -r 'length' <<<"$matches")"
+              if [[ "$exact_count" == "1" ]]; then
+                run_deep="false"
+                decision="SKIP_DUPLICATE_PUSH"
+                reason="EXACT_OPEN_PR_COVERS_SHA"
+                pr_number="$(jq -r '.[0].number' <<<"$matches")"
+              elif [[ "$exact_count" -gt 1 ]]; then
+                reason="AMBIGUOUS_EXACT_OPEN_PR_FAIL_DEEP"
+              fi
+            else
+              reason="PR_LOOKUP_FAILED_FAIL_DEEP"
+            fi
+          elif [[ "$EVENT_NAME" == "push" ]]; then
+            reason="NON_LF_PUSH_FAIL_DEEP"
+          elif [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            reason="MANUAL_RUN_DEEP"
+          fi
+
+          if [[ "$EVENT_NAME" == "pull_request" && "$run_deep" != "true" && "$decision" != "SKIP_READY_REUSE_EXACT_DEEP" ]]; then
+            echo "FAIL_S28_PR_SKIP_OUTSIDE_READY_EXACT_DEEP_REUSE"
+            exit 1
+          fi
+          if [[ "$decision" == "SKIP_READY_REUSE_EXACT_DEEP" ]]; then
+            if [[ "$EVENT_ACTION" != "ready_for_review" || -z "$reused_run_id" || "$exact_count" -lt 1 ]]; then
+              echo "FAIL_S28_READY_SKIP_WITHOUT_EXACT_DEEP_PROOF"
+              exit 1
+            fi
+          fi
+          if [[ "$decision" == "SKIP_DUPLICATE_PUSH" && "$exact_count" != "1" ]]; then
+            echo "FAIL_S28_SKIP_WITHOUT_EXACT_PR_PROOF"
+            exit 1
+          fi
+
+          ended_ms="$(date +%s%3N)"
+          router_overhead_ms="$((ended_ms - started_ms))"
+          effective_sha="$HEAD_SHA"
+          if [[ "$EVENT_NAME" == "pull_request" && -n "${PR_HEAD_SHA:-}" ]]; then
+            effective_sha="$PR_HEAD_SHA"
+          fi
+
+          {
+            echo "run_deep=$run_deep"
+            echo "decision=$decision"
+            echo "reason=$reason"
+            echo "pr_number=$pr_number"
+            echo "exact_count=$exact_count"
+            echo "reused_run_id=$reused_run_id"
+            echo "router_overhead_ms=$router_overhead_ms"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "### Strategy 28 — LF contract dedupe router"
+            echo "- event: \`$EVENT_NAME\`"
+            echo "- action: \`${EVENT_ACTION:-none}\`"
+            echo "- ref: \`$REF_NAME\`"
+            echo "- candidate sha: \`$effective_sha\`"
+            echo "- decision: \`$decision\`"
+            echo "- reason: \`$reason\`"
+            echo "- exact evidence count: \`$exact_count\`"
+            if [[ -n "$pr_number" ]]; then
+              echo "- PR: \`#$pr_number\`"
+            fi
+            if [[ -n "$reused_run_id" ]]; then
+              echo "- reused real DEEP run: \`$reused_run_id\`"
+            fi
+            echo "- router overhead: \`${router_overhead_ms} ms\`"
+            echo "- safety: ready_for_review reuse requires exact PR+head+base+current-main, latest real DEEP job SUCCESS and manifest artifact; all uncertainty => DEEP"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "PASS_S28_DEDUPE_ROUTER decision=$decision reason=$reason exact_count=$exact_count pr=${pr_number:-none} reused_run=${reused_run_id:-none} overhead_ms=$router_overhead_ms"
+
+  lf-contract-check:
+    name: lf-contract-check
+    needs: dedupe-router
+    if: needs.dedupe-router.outputs.run_deep == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Canonical preflight and feedback tier
+        id: feedback_tier
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import importlib.util
+          import os
+          import subprocess
+          from pathlib import Path
+
+          validator_path = Path("scripts/lf_contract_check.py")
+          spec = importlib.util.spec_from_file_location("lf_contract_check_feedback_tier", validator_path)
+          if spec is None or spec.loader is None:
+              raise SystemExit("FAIL_LF_FEEDBACK_TIER_VALIDATOR_LOAD")
+          validator = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(validator)
+
+          validator.validate_p0_closure_evidence_scope()
+          changed = validator.get_changed_files()
+          print("Feedback-tier changed files:")
+          for path in changed:
+              print(f"- {path}")
+
+          lane_router_path = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_lane_router.py")
+          lane_spec = importlib.util.spec_from_file_location("lf_ci_lane_router", lane_router_path)
+          if lane_spec is None or lane_spec.loader is None:
+              raise SystemExit("FAIL_S28_CI_LANE_ROUTER_LOAD")
+          lane_router = importlib.util.module_from_spec(lane_spec)
+          lane_spec.loader.exec_module(lane_router)
+          lane = lane_router.classify(changed)
+          migration_required = str(lane.migration_parity_required).lower()
+          input_gov_required = str(lane.input_governance_parity_required).lower()
+          selftest_required = str(lane.ci_router_selftest_required).lower()
+
+          tier = "DEEP"
+          reason = "NO_PATHS_FAIL_CLOSED"
+          if changed:
+              governed = validator.validate_changed_files(changed)
+              validator.validate_governed_receipt(changed, governed)
+              validator.validate_forbidden_terms(changed)
+              reason = "NON_P0_DOC_OR_MIXED_SURFACE"
+
+              p0_docs = validator.P0_CLOSURE_EVIDENCE_ALLOWED_EXACT
+              if all(path in p0_docs for path in changed):
+                  raw = subprocess.check_output(
+                      ["git", "ls-files", "-s", "-z", "--", *changed]
+                  )
+                  regular = set()
+                  for record in raw.split(b"\0"):
+                      if not record:
+                          continue
+                      metadata, sep, raw_path = record.partition(b"\t")
+                      if not sep:
+                          continue
+                      mode = metadata.split(b" ", 1)[0]
+                      if mode in {b"100644", b"100755"}:
+                          regular.add(raw_path.decode("utf-8", "strict"))
+
+                  if all(path in regular for path in changed):
+                      tier = "FAST_P0_DOCS"
+                      reason = "CANONICAL_P0_CLOSURE_EVIDENCE_ONLY"
+                  else:
+                      reason = "P0_DOC_NONREGULAR_OR_DELETED_FORCE_DEEP"
+
+          output = Path(os.environ["GITHUB_OUTPUT"])
+          with output.open("a", encoding="utf-8") as handle:
+              handle.write(f"tier={tier}\n")
+              handle.write(f"reason={reason}\n")
+              handle.write(f"migration_parity_required={migration_required}\n")
+              handle.write(f"input_governance_parity_required={input_gov_required}\n")
+              handle.write(f"ci_router_selftest_required={selftest_required}\n")
+              handle.write(f"lane_mode={lane.mode}\n")
+
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a", encoding="utf-8") as handle:
+                  handle.write("### Strategy 28 LF contract feedback tier\n")
+                  handle.write(f"- tier: `{tier}`\n")
+                  handle.write(f"- reason: `{reason}`\n")
+                  handle.write(f"- lane mode: `{lane.mode}`\n")
+                  handle.write(f"- migration parity required: `{migration_required}`\n")
+                  handle.write(f"- input governance parity required: `{input_gov_required}`\n")
+                  handle.write(f"- CI router self-test required: `{selftest_required}`\n")
+                  handle.write("- FAST scope: exact canonical P0 closure-evidence docs only\n")
+                  handle.write("- specialized N/A is path-owned; unknown ownership remains fail-closed\n")
+
+          print(
+              f"PASS_LF_FEEDBACK_TIER tier={tier} reason={reason} lane={lane.mode} "
+              f"migration={migration_required} input_gov={input_gov_required} selftest={selftest_required}"
+          )
+          PY
+
+      - name: Run CI lane router self-tests
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS' && steps.feedback_tier.outputs.ci_router_selftest_required == 'true'
+        run: |
+          python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_router.py
+          python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_workflow_integration.py
+
+      - name: Complete FAST P0 docs lane
+        if: steps.feedback_tier.outputs.tier == 'FAST_P0_DOCS'
+        run: |
+          echo "PASS_LF_CONTRACT_FAST_P0_DOCS"
+          echo "Deep migration/runtime/visual/E.16 work skipped because the canonical preflight proved an exact regular P0-doc-only delta."
+
+      - name: Validate declared governance paths
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        run: |
+          pip install pyyaml
+          python3 scripts/validate_declared_paths.py --repo-root .
+
+      - name: Verify hosted Supabase Data API excludes net schema
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.error
+          import urllib.request
+
+          token = os.environ.get("SUPABASE_ACCESS_TOKEN", "").strip()
+          project = os.environ["SUPABASE_PROJECT_ID"]
+          if not token:
+              raise SystemExit("FAIL_SUPABASE_CONTROL_PLANE_TOKEN_MISSING")
+
+          request = urllib.request.Request(
+              f"https://api.supabase.com/v1/projects/{project}/postgrest",
+              headers={
+                  "Accept": "application/json",
+                  "Authorization": f"Bearer {token}",
+                  "User-Agent": "lf-contract-check-pr93",
+              },
+          )
+          try:
+              with urllib.request.urlopen(request, timeout=20) as response:
+                  config = json.loads(response.read().decode("utf-8"))
+          except (urllib.error.URLError, TimeoutError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+              raise SystemExit(f"FAIL_SUPABASE_POSTGREST_CONFIG_READBACK: {type(exc).__name__}") from exc
+
+          schema_value = None
+          schema_field = None
+          for candidate in ("db_schema", "db_schemas", "schemas"):
+              if candidate in config:
+                  schema_field = candidate
+                  schema_value = config[candidate]
+                  break
+          if schema_value is None:
+              keys = ",".join(sorted(str(key) for key in config))
+              raise SystemExit(f"FAIL_SUPABASE_POSTGREST_SCHEMA_FIELD_MISSING: keys={keys}")
+
+          if isinstance(schema_value, str):
+              schemas = {part.strip() for part in schema_value.split(",") if part.strip()}
+          elif isinstance(schema_value, list):
+              schemas = {str(part).strip() for part in schema_value if str(part).strip()}
+          else:
+              raise SystemExit(
+                  "FAIL_SUPABASE_POSTGREST_SCHEMA_FIELD_TYPE: "
+                  f"field={schema_field} type={type(schema_value).__name__}"
+              )
+
+          if not schemas:
+              raise SystemExit("FAIL_SUPABASE_POSTGREST_EXPOSED_SCHEMAS_EMPTY")
+          if "net" in schemas:
+              raise SystemExit("FAIL_SUPABASE_NET_SCHEMA_EXPOSED")
+
+          rendered = ",".join(sorted(schemas))
+          print(f"PASS_SUPABASE_NET_SCHEMA_NOT_EXPOSED: field={schema_field} schemas={rendered}")
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a", encoding="utf-8") as handle:
+                  handle.write("### Supabase Data API control-plane readback\n")
+                  handle.write(f"- exposed schemas: `{rendered}`\n")
+                  handle.write("- `net` exposed: `false`\n")
+          PY
+
+      - name: Enforce LF migration source parity after checkpoint
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS' && steps.feedback_tier.outputs.migration_parity_required == 'true'
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+          LF_MIGRATION_CUTOVER: "20260808031006"
+          LF_MIGRATION_CLASSIFICATION_BASELINE_END: "20260822195004"
+          LF_MIGRATION_GRANDFATHERED_COUNT: "154"
+          LF_MIGRATION_GRANDFATHERED_SHA256: "f6694a57d984bb02266630c12151e6334ef40535d17f7986be6e1820956186a5"
+        run: |
+          set -euo pipefail
+          if [ -z "${PGPASSWORD:-}" ]; then
+            echo "FAIL_LF_MIGRATION_PARITY_DB_PASSWORD_MISSING"
+            exit 1
+          fi
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+
+          LF_MANAGED_VERSIONS="$(python3 - <<'PY'
+          import importlib.util
+          import os
+          from pathlib import Path
+
+          module_path = Path("sandbox/lf_contract_gate_test/lf_migration_source_parity.py")
+          spec = importlib.util.spec_from_file_location("lf_migration_source_parity_canary", module_path)
+          if spec is None or spec.loader is None:
+              raise SystemExit("FAIL_S28_MIGRATION_MANAGED_CLASSIFIER_LOAD")
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+
+          cutover = os.environ["LF_MIGRATION_CUTOVER"]
+          versions = []
+          for path in sorted(Path("supabase/migrations").glob("*.sql")):
+              match = module.FILENAME_RE.fullmatch(path.name)
+              if not match:
+                  continue
+              version, name = match.groups()
+              if version > cutover and module.managed(name):
+                  versions.append(version)
+          if not versions or len(versions) != len(set(versions)):
+              raise SystemExit("FAIL_S28_MIGRATION_MANAGED_VERSION_SET")
+          print("{" + ",".join(versions) + "}")
+          PY
+          )"
+          if ! [[ "$LF_MANAGED_VERSIONS" =~ ^\{[0-9]{14}(,[0-9]{14})*\}$ ]]; then
+            echo "FAIL_S28_MIGRATION_MANAGED_VERSION_LITERAL"
+            exit 1
+          fi
+          export LF_MANAGED_VERSIONS
+
+          query_started_ms="$(date +%s%3N)"
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,''),case when version = any('${LF_MANAGED_VERSIONS}'::text[]) then 'sha256:' || (select encode(extensions.digest(convert_to(regexp_replace(coalesce(string_agg(line,E'\n' order by ord),''),E'\n+$',''),'UTF8'),'sha256'),'hex') from regexp_split_to_table(replace(replace(coalesce(array_to_string(sm.statements,E'\n'),''),E'\r\n',E'\n'),E'\r',E'\n'),E'\n') with ordinality as x(line,ord) where line !~ '^[[:space:]]*--') else '' end from supabase_migrations.schema_migrations sm where version > '${LF_MIGRATION_CUTOVER}' order by version" > "$RUNNER_TEMP/lf-post-cutover-migrations-compact.csv"
+          query_ended_ms="$(date +%s%3N)"
+          migration_rows="$(wc -l < "$RUNNER_TEMP/lf-post-cutover-migrations-compact.csv" | tr -d ' ')"
+          migration_bytes="$(wc -c < "$RUNNER_TEMP/lf-post-cutover-migrations-compact.csv" | tr -d ' ')"
+          if [ "$migration_bytes" -gt 524288 ]; then
+            echo "FAIL_S28_MIGRATION_LEDGER_PAYLOAD_BUDGET bytes=${migration_bytes} max=524288"
+            exit 1
+          fi
+          managed_count="$(python3 -c 'import os; s=os.environ["LF_MANAGED_VERSIONS"]; print(0 if s=="{}" else s.count(",")+1)')"
+          echo "PASS_S28_MIGRATION_LEDGER_COMPACT_READ rows=${migration_rows} managed=${managed_count} csv_bytes=${migration_bytes} query_wall_ms=$((query_ended_ms-query_started_ms))"
+
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "with x as (select version,coalesce(name,'') as name,array_to_string(statements,E'\n') as sql_text from supabase_migrations.schema_migrations where version > '${LF_MIGRATION_CUTOVER}' and version <= '${LF_MIGRATION_CLASSIFICATION_BASELINE_END}' and not (coalesce(name,'') like 'pr93\_%' escape '\' or coalesce(name,'') like 'lf\_%' escape '\' or coalesce(name,'') like 'programacion\_story\_agent\_task\_%' escape '\' or coalesce(name,'') like 'programacion\_task\_sizing\_%' escape '\' or coalesce(name,'') like 'programacion\_task\_dependency\_%' escape '\' or coalesce(name,'') like 'programacion\_agent\_task\_%' escape '\' or coalesce(name,'') like 'programacion\_dependency\_context\_%' escape '\' or coalesce(name,'') like 'programacion\_propagate\_execution\_%' escape '\' or coalesce(name,'') like 'programacion\_deprecate\_declared\_independence\_%' escape '\' or coalesce(name,'') like 'programacion\_revoke\_security\_definer\_%' escape '\' or coalesce(name,'') like 'programacion\_worker\_spec\_%' escape '\' or coalesce(name,'') like 'programacion\_prog017\_%' escape '\')) select count(*)::text,encode(extensions.digest(convert_to(coalesce(string_agg(version||E'\n'||name||E'\n'||sql_text,E'\n--MIGRATION--\n' order by version),''),'UTF8'),'sha256'),'hex') from x" > "$RUNNER_TEMP/lf-grandfathered-migrations.csv"
+
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select count(*)::text,encode(extensions.digest(convert_to(string_agg(version||E'\n'||coalesce(name,'')||E'\n'||array_to_string(statements,E'\n--STATEMENT--\n'),E'\n--MIGRATION--\n' order by version),'UTF8'),'sha256'),'hex') from supabase_migrations.schema_migrations where version between '20260801063708' and '20260801170332'" > "$RUNNER_TEMP/lf-legacy-checkpoint.csv"
+
+          python3 sandbox/lf_contract_gate_test/lf_migration_source_parity.py \
+            supabase/migrations \
+            "$RUNNER_TEMP/lf-post-cutover-migrations-compact.csv" \
+            "$RUNNER_TEMP/lf-grandfathered-migrations.csv" \
+            "$RUNNER_TEMP/lf-legacy-checkpoint.csv"
+
+      - name: Enforce Input Governance migration source parity
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS' && steps.feedback_tier.outputs.input_governance_parity_required == 'true'
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+          INPUT_GOVERNANCE_CUTOVER: "20260818213426"
+        run: |
+          set -euo pipefail
+          if [ -z "${PGPASSWORD:-}" ]; then
+            echo "FAIL_INPUT_GOVERNANCE_MIGRATION_PARITY_DB_PASSWORD_MISSING"
+            exit 1
+          fi
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,''),'sha256:' || (select encode(extensions.digest(convert_to(regexp_replace(coalesce(string_agg(line,E'\n' order by ord),''),E'\n+$',''),'UTF8'),'sha256'),'hex') from regexp_split_to_table(replace(replace(coalesce(array_to_string(sm.statements,E'\n'),''),E'\r\n',E'\n'),E'\r',E'\n'),E'\n') with ordinality as x(line,ord) where line !~ '^[[:space:]]*--') from supabase_migrations.schema_migrations sm where version >= '${INPUT_GOVERNANCE_CUTOVER}' and (name like 'input\_governance\_%' escape '\' or name like 'programacion\_input\_governance\_%' escape '\' or name = 'retire_b2b_auth005_legacy_totp_screen') order by version" > "$RUNNER_TEMP/input-governance-migrations-compact.csv"
+          input_migration_bytes="$(wc -c < "$RUNNER_TEMP/input-governance-migrations-compact.csv" | tr -d ' ')"
+          if [ "$input_migration_bytes" -gt 262144 ]; then
+            echo "FAIL_INPUT_GOVERNANCE_MIGRATION_PAYLOAD_BUDGET bytes=${input_migration_bytes} max=262144"
+            exit 1
+          fi
+          echo "PASS_INPUT_GOVERNANCE_MIGRATION_COMPACT_READ csv_bytes=${input_migration_bytes}"
+
+          python3 sandbox/lf_contract_gate_test/input_governance_migration_parity_compact.py \
+            --migrations supabase/migrations \
+            --remote "$RUNNER_TEMP/input-governance-migrations-compact.csv" \
+            --cutover "$INPUT_GOVERNANCE_CUTOVER"
+
+      - name: Install deterministic audit dependencies
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        run: |
+          python3 -m pip install --disable-pip-version-check \
+            PyYAML==6.0.2 \
+            jsonschema==4.23.0
+
+      - name: Provision governed P0 visual runtime
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        run: |
+          set -euo pipefail
+          if [ -n "${P0_CI_ENGINEERING_REGRESSION:-}" ]; then
+            echo "FAIL_P0_CI_ENGINEERING_REGRESSION_OVERRIDE_FORBIDDEN"
+            exit 1
+          fi
+          python3 -m pip install --disable-pip-version-check \
+            -r sandbox/story_creator_p0_visual/v1.1/requirements-p0-visual-quality.txt
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq tesseract-ocr tesseract-ocr-spa
+
+      - name: Validate LF contract
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          route="$(python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          from pathlib import Path
+
+          expected = {
+              ".github/workflows/lf-contract-check.yml",
+              "gobernanza/contratos/contrato_perfil_lf.yaml",
+              "gobernanza/repositorios/matriz_repos_lf.yaml",
+              "scripts/validate_declared_paths.py",
+          }
+
+          def diff_names(base: str, head: str) -> set[str]:
+              raw = subprocess.check_output(
+                  ["git", "diff", "--name-only", "-z", base, head, "--"]
+              )
+              return {
+                  item.decode("utf-8", "strict")
+                  for item in raw.split(b"\0")
+                  if item
+              }
+
+          event = os.environ.get("GITHUB_EVENT_NAME", "")
+          changed: set[str] = set()
+          if event == "pull_request":
+              base_ref = os.environ.get("GITHUB_BASE_REF", "main")
+              subprocess.run(
+                  ["git", "fetch", "--no-tags", "origin", base_ref],
+                  check=True,
+                  stdout=subprocess.DEVNULL,
+              )
+              merge_base = subprocess.check_output(
+                  ["git", "merge-base", f"origin/{base_ref}", "HEAD"], text=True
+              ).strip()
+              changed = diff_names(merge_base, "HEAD")
+          elif event == "push":
+              event_path = Path(os.environ["GITHUB_EVENT_PATH"])
+              payload = json.loads(event_path.read_text(encoding="utf-8"))
+              before = payload.get("before", "")
+              after = payload.get("after") or os.environ.get("GITHUB_SHA", "HEAD")
+              if before and set(before) != {"0"}:
+                  probe = subprocess.run(
+                      ["git", "cat-file", "-e", f"{before}^{{commit}}"],
+                      stdout=subprocess.DEVNULL,
+                      stderr=subprocess.DEVNULL,
+                  )
+                  if probe.returncode != 0:
+                      subprocess.run(
+                          ["git", "fetch", "--no-tags", "origin", before],
+                          check=True,
+                          stdout=subprocess.DEVNULL,
+                      )
+                  changed = diff_names(before, after)
+              else:
+                  repository = payload.get("repository") or {}
+                  default_branch = repository.get("default_branch", "main")
+                  subprocess.run(
+                      ["git", "fetch", "--no-tags", "origin", default_branch],
+                      check=True,
+                      stdout=subprocess.DEVNULL,
+                  )
+                  merge_base = subprocess.check_output(
+                      ["git", "merge-base", f"origin/{default_branch}", after], text=True
+                  ).strip()
+                  changed = diff_names(merge_base, after)
+
+          def governed_scope(files: set[str]) -> bool:
+              return files == expected
+
+          if not governed_scope(expected):
+              raise SystemExit("FAIL_GOV017_SCOPE_ROUTER_POSITIVE_SELFTEST")
+          if governed_scope(expected - {"scripts/validate_declared_paths.py"}):
+              raise SystemExit("FAIL_GOV017_SCOPE_ROUTER_SUBSET_SELFTEST")
+          if governed_scope(expected | {"production/unexpected.txt"}):
+              raise SystemExit("FAIL_GOV017_SCOPE_ROUTER_MIXED_SELFTEST")
+
+          print("DECLARED_GOVERNANCE" if governed_scope(changed) else "LEGACY")
+          PY
+          )"
+
+          if [ "$route" = "DECLARED_GOVERNANCE" ]; then
+            echo "PASS_GOV017_SCOPE_ROUTING=4/4"
+            python3 scripts/validate_declared_paths.py --repo-root .
+            GITHUB_EVENT_NAME=workflow_dispatch \
+              python3 sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py
+          else
+            python3 sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py
+          fi
+
+          export LF_GOV017_ROUTE="$route"
+          python3 - <<'PY'
+          import importlib.util
+          import os
+          from pathlib import Path
+
+          if os.environ["LF_GOV017_ROUTE"] == "DECLARED_GOVERNANCE":
+              validator_path = Path("scripts/lf_contract_check.py")
+              spec = importlib.util.spec_from_file_location("lf_contract_check_gov017_scan", validator_path)
+              if spec is None or spec.loader is None:
+                  raise SystemExit("FAIL_GOV017_FORBIDDEN_STATUS_SCANNER_LOAD")
+              module = importlib.util.module_from_spec(spec)
+              spec.loader.exec_module(module)
+              module.validate_forbidden_terms([
+                  ".github/workflows/lf-contract-check.yml",
+                  "gobernanza/contratos/contrato_perfil_lf.yaml",
+                  "gobernanza/repositorios/matriz_repos_lf.yaml",
+                  "scripts/validate_declared_paths.py",
+              ])
+              print("PASS_GOV017_FORBIDDEN_STATUS_SCAN=4/4")
+          PY
+
+      - name: Run E.16 governance regression matrices
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        run: |
+          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_REGRESSION_TESTS.py \
+            --validator sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py
+          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_INVENTORY_TESTS.py \
+            --inventory sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py
+          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_RATIFICATION_TESTS.py \
+            --repo-root .
+          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_INTEGRATION_TESTS.py \
+            --candidate-root .
+          python3 sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_SCOPE_TESTS.py
+
+      - name: Run LF validation engine self-test
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        run: |
+          python3 sandbox/lf_contract_gate_test/lf_validation_engine_v0_10_2_selftest.py
+
+      - name: Run NO BYPASS judge profile-card-skill self-test
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        run: |
+          python3 sandbox/no_bypass_judge_profile_card_skill/no_bypass_judge_selftest.py
+
+      - name: Enforce merge and CI evidence for PASS candidates
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 sandbox/lf_contract_gate_test/pass_evidence_gate.py \
+            --self-test \
+            --scan skills/creating-integral-user-stories/evidence/pass-candidates \
+            --repository "$GITHUB_REPOSITORY"
+
+      - name: Audit creating-integral-user-stories A01-A62
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        run: |
+          python3 sandbox/lf_contract_gate_test/r8_continuous_audit.py \
+            skills/creating-integral-user-stories \
+            --output .audit-output/creating-integral-user-stories \
+            --commit-sha "$GITHUB_SHA"
+
+      - name: Capture authenticated E.16 Actions inventory
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          E16_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          LF_FEEDBACK_TIER: ${{ steps.feedback_tier.outputs.tier }}
+        run: |
+          set -euo pipefail
+          if [ "$LF_FEEDBACK_TIER" = "FAST_P0_DOCS" ]; then
+            echo "PASS_E16_INVENTORY_SKIPPED_FAST_P0_DOCS"
+            exit 0
+          fi
+          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py \
+            --repository "$GITHUB_REPOSITORY" \
+            --head-sha "$E16_HEAD_SHA" \
+            --output .audit-output/creating-integral-user-stories/github-actions-inventory-e16.json
+
+      - name: Build authoritative reconciliation manifest
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        env:
+          LF_WORKFLOW_EVENT: ${{ github.event_name }}
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import pathlib
+          import subprocess
+          from datetime import datetime, timezone
+
+          root = pathlib.Path.cwd()
+          output = root / ".audit-output" / "creating-integral-user-stories" / "reconciliation-manifest-v3.json"
+          output.parent.mkdir(parents=True, exist_ok=True)
+
+          tracked = subprocess.check_output(["git", "ls-files", "-z"]).split(b"\0")
+          files = {}
+          for raw_path in tracked:
+              if not raw_path:
+                  continue
+              relative_path = raw_path.decode("utf-8")
+              path = root / relative_path
+              if not path.is_file():
+                  continue
+              content = path.read_bytes()
+              git_blob = subprocess.check_output(["git", "hash-object", relative_path], text=True).strip()
+              files[relative_path] = {
+                  "sha256": hashlib.sha256(content).hexdigest(),
+                  "git_blob": git_blob,
+              }
+
+          manifest = {
+              "schema_version": "lf-reconciliation-manifest/v3",
+              "repository": os.environ["GITHUB_REPOSITORY"],
+              "workflow_name": "lf-contract-check",
+              "workflow_event": os.environ["LF_WORKFLOW_EVENT"],
+              "workflow_run_id": int(os.environ["GITHUB_RUN_ID"]),
+              "workflow_run_attempt": int(os.environ["GITHUB_RUN_ATTEMPT"]),
+              "commit_sha": os.environ["GITHUB_SHA"],
+              "generated_at": datetime.now(timezone.utc).isoformat(),
+              "validation_suite": [
+                  "scripts/lf_contract_check.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py",
+                  "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py",
+                  "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_SCOPE_TESTS.py",
+                  "sandbox/lf_contract_gate_test/functional_red_team_v1_regression.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_REGRESSION_TESTS.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_INVENTORY_TESTS.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_RATIFICATION_TESTS.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_INTEGRATION_TESTS.py",
+                  "sandbox/lf_contract_gate_test/lf_validation_engine_v0_10_2_selftest.py",
+                  "sandbox/no_bypass_judge_profile_card_skill/no_bypass_judge_selftest.py",
+                  "sandbox/lf_contract_gate_test/pass_evidence_gate.py --self-test --scan",
+                  "sandbox/lf_contract_gate_test/r8_continuous_audit.py",
+              ],
+              "files": dict(sorted(files.items())),
+          }
+          output.write_text(json.dumps(manifest, sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8")
+          print(f"manifest={output} files={len(files)}")
+          PY
+
+      - name: Upload per-artifact audit evidence and canonical source snapshot
+        if: always() && steps.feedback_tier.outcome == 'success' && steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: r8-continuous-audit-${{ github.run_id }}
+          path: |
+            .audit-output/creating-integral-user-stories
+            skills/creating-integral-user-stories
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 7

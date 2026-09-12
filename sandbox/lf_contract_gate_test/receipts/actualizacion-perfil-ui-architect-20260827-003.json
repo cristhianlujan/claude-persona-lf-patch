@@ -1,0 +1,20 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260827-003",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "20e6fc0510b9e2630cb9e64094209237f98edd19",
+    "676cc69747fd1fa71f4afd8fbf5015b78cc459d7",
+    "f15175a1654c8571ada6b903a877d71651e0e83c"
+  ],
+  "target_paths": ["profiles/ui_architect/**"],
+  "blocking_codes": [],
+  "issued_at": "2026-08-27T14:20:00Z",
+  "notes": "PASS_SANDBOX for governed existing-profile V3 directionality remediation. ACTUALIZACION_PERFIL_LF contract/judge fingerprints are unchanged from the canonical 2026-08-27 Supabase definitions. Execution binding predates first GitHub write (execution 14:16:35Z; first write 14:18:12Z). Exact-head readback proves the critical directionality gate is first in SKILL.md and fail-closed for duplicate defects. The known governance checklist-view status mismatch remains a separate transversal bug and is not modified in this lot. This receipt does not claim final PR CI, merge, runtime enablement, VALIDATED status, production promotion, or live behavioral remediation. Closure requires a fresh post-merge pinned 3B runtime RAW that either resolves the duplicate monotonically or returns BLOCK_PIPELINE."
+}

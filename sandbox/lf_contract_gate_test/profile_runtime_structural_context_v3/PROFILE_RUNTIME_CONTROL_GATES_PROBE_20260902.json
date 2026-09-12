@@ -1,0 +1,49 @@
+{
+  "schema": "lf-profile-runtime-control-gates-probe/v1",
+  "campaign": "PROFILE_RUNTIME_P0_V3_20260902",
+  "artifact_sha256": "ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+  "scope": "CONTROL_GATES_AND_NON_DESTRUCTIVE_REREAD_OVERLAY",
+  "anti_close_gate": {
+    "module": "run_close_gate_v3.py",
+    "tests": "14/14 PASS via Validate LF Packs exact-head 32092ab5cb63defa8912f39a2cc509af7c0dd88e",
+    "rejects": [
+      "anti_close_answer=SI",
+      "missing start/work_end/report_started/end/duration/report_duration telemetry",
+      "report_started_at_lima before work_end_at_lima",
+      "next execution readback missing",
+      "safe_work_remaining_count>0",
+      "NEXT_SAFE_BATCH present",
+      "EKB final readback missing",
+      "WAITING as stop reason",
+      "EXECUTION_LIMIT_REACHED without literal evidence"
+    ],
+    "allows_only": "NO + backlog=0 + NEXT_SAFE_BATCH=NONE + final EKB readback + next execution readback + allowed stop reason + complete work/report telemetry"
+  },
+  "semantic_after_gate": {
+    "module": "semantic_after_gate_v3.py",
+    "tests": "8/8 PASS via Validate LF Packs exact-head 32092ab5cb63defa8912f39a2cc509af7c0dd88e",
+    "policy": "transport success is insufficient; AFTER PASS requires exact artifact, 3 exact profiles, contract valid, semantic utility valid, output digest, runtime telemetry and zero critical regressions",
+    "candidate_after_status": "NOT_EXECUTED"
+  },
+  "reread_overlay": {
+    "module": "apply_reread_overlay_v3.py",
+    "tests": "8/8 PASS",
+    "policy": "original OCR text/bbox/role remain immutable; only effective_text is added for accepted TARGETED_REREAD decisions",
+    "guards": [
+      "duplicate region id rejected",
+      "role mismatch rejected",
+      "bbox mismatch rejected",
+      "empty adopted text rejected",
+      "original input object remains unmodified"
+    ]
+  },
+  "quality_pack_main_drift": {
+    "main_commit": "64d5ad72e635fe19c67d4ffe303ab82d71006b34",
+    "affects_profile_runtime_branch_paths": false,
+    "note": "Quality Pack runtime_output schema validates profile output; it is not evidence that Structural Context Resolver profile_contract_valid passed. Gate remains NOT_EVALUATED."
+  },
+  "historical_334_parity": "NOT_PROVEN",
+  "p02_p03_historical_parity": "NOT_PROVEN",
+  "promotion": "NONE",
+  "merge": "NONE"
+}

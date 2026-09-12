@@ -1,0 +1,8 @@
+[functions.lf-architecture-alert-sink-v4]
+verify_jwt = false
+
+[functions.lf-github-reconcile-v3]
+verify_jwt = false
+
+[functions.lf-p0-exact-head-evidence-broker-v2]
+verify_jwt = false

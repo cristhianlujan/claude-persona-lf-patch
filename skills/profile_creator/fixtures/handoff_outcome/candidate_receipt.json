@@ -1,0 +1,27 @@
+{
+  "receipt_type": "PROFILE_CREATOR_HANDOFF_OUTCOME_RECEIPT",
+  "case_id": "PROFILE_CREATOR_HANDOFF_OUTCOME_001",
+  "baseline_result": "TARGET_CAPABILITY_GAP_REPRODUCED",
+  "candidate_result": "ARTIFACT_CONSUMABILITY_DEMONSTRATED_BEHAVIORAL_NOT_PROVEN",
+  "gap_code_before": "CREATED_ARTIFACT_NOT_DELIVERED",
+  "candidate_patch_applied": true,
+  "producer_ref": "fixtures/handoff_outcome/candidate_producer.json",
+  "artifact_ref": "fixtures/handoff_outcome/candidate_pack.json",
+  "receiver_ref": "fixtures/handoff_outcome/candidate_quality_review.json",
+  "observed_outcome": {
+    "created_pack_materialized": true,
+    "artifact_ref_resolvable": true,
+    "assisted_rubric_review_completed": true,
+    "receiver_agent_execution_completed": false,
+    "receiver_required_invention_in_assisted_review": false
+  },
+  "target_outcome": "QUALITY_PACK_CAN_REVIEW_CREATED_PROFILE_PACK_WITHOUT_INVENTING",
+  "target_outcome_status": "NOT_PROVEN",
+  "behavioral_eval_status": "BLOCKED_NO_EXECUTABLE_RECEIVER",
+  "behavioral_blocking_codes": [
+    "BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER"
+  ],
+  "general_behavioral_eval_status": "NOT_CLAIMED",
+  "promotion_status": "BLOCKED",
+  "next_gate": "RESOLVE_EXECUTABLE_RECEIVER_TARGET"
+}

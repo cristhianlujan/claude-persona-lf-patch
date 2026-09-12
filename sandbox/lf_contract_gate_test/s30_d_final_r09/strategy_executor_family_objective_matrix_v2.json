@@ -1,0 +1,140 @@
+{
+  "matrix_version": "S30_STRATEGY_EXECUTOR_FAMILY_OBJECTIVE_MATRIX_V2",
+  "operation_code": "EJECUCION_ESTRATEGIA_LF",
+  "source_main_sha": "b22eb1e1505b7ba80231dfe189ea96cfbb2cd560",
+  "activation_contract": "S30_STRATEGY_EXECUTOR_SANDBOX_ACTIVATION_V1",
+  "runtime_canary_contract": "S30_STRATEGY_EXECUTOR_LIVE_CANARY_V2",
+  "matrix_status": "PRECANARY_ASSURANCE_READY_RUNTIME_EVIDENCE_PENDING",
+  "runtime_execution_claimed": false,
+  "production_activation_claimed": false,
+  "authorization_claimed": false,
+  "claim_ceiling": "SOURCE_AND_PRECANARY_ASSURANCE_ONLY",
+  "required_static_faults": [
+    "MULTI_STRATEGY_TARGET",
+    "IDEMPOTENCY_HASH_CONFLICT",
+    "LEASE_CONTENDED",
+    "STALE_FENCE",
+    "EFFECT_RESERVED_NO_RECEIPT",
+    "QUALITY_NOMINAL_EVIDENCE",
+    "NESTED_INTERNAL_HANDOFF_METADATA",
+    "PRODUCER_SELF_READBACK",
+    "ONE_BLOCKED_ONE_SAFE_SCOPE",
+    "INTERRUPTION_WITH_CHECKPOINT",
+    "CLOSE_WITH_EXECUTABLE_SCOPE_REMAINING"
+  ],
+  "required_runtime_negative_checks": ["L10","L11","L12","L13","L14"],
+  "objectives": [
+    {
+      "id":"F01","family":"ADMISSION_GOVERNANCE","objective":"Only governed, explicitly authorized source can progress; source artifacts themselves never imply runtime authority.",
+      "static_status":"PROVEN_BY_SOURCE_TESTS","runtime_status":"NOT_REQUIRED_AS_CANARY_STEP",
+      "positive_refs":["test_s30d_strategy_executor_bootstrap.py::registration_readiness_authorized"],
+      "negative_refs":["test_s30d_strategy_executor_bootstrap.py::registration_readiness_without_owner_authorization"],
+      "runtime_check_ids":[],
+      "evidence_refs":["strategy_executor_registration_manifest_v1.json","s30_strategy_executor_bootstrap_prewrite_receipt_v1.json"]
+    },
+    {
+      "id":"F02","family":"ROUTER","objective":"Resolve STRATEGY/STRATEGY_EXECUTION deterministically and block unknown operations without writes.",
+      "static_status":"PROVEN_BY_SOURCE_TESTS","runtime_status":"REQUIRED_PENDING",
+      "positive_refs":["strategy_executor_sandbox_activation_contract_v1.json::router_binding"],
+      "negative_refs":["test_s30d_strategy_executor_sandbox_activation.py::write_allowed_negative"],
+      "runtime_check_ids":["L01","L02"],
+      "evidence_refs":["strategy_executor_live_canary_v2.json"]
+    },
+    {
+      "id":"F03","family":"STRATEGY_AUTHORITY","objective":"Resolve exactly one canonical strategy snapshot by snapshot_code and block zero or ambiguous matches.",
+      "static_status":"PROVEN_BY_SOURCE_AND_DRY_RUN_TESTS","runtime_status":"REQUIRED_PENDING",
+      "positive_refs":["strategy_executor_sandbox_activation_contract_v1.json::strategy_resolution"],
+      "negative_refs":["strategy_executor_canary_blueprint_v1.json::EX-02","test_s30d_strategy_executor_sandbox_activation.py::authority_negative"],
+      "runtime_check_ids":["L03","L10","L11"],
+      "evidence_refs":["strategy_executor_live_canary_v2.json"]
+    },
+    {
+      "id":"F04","family":"MATERIALIZATION","objective":"Materialize exactly the canonical 15 ordered executor steps with preserved identity and effect_class.",
+      "static_status":"PROVEN_BY_SOURCE_TESTS","runtime_status":"REQUIRED_PENDING",
+      "positive_refs":["test_s30d_strategy_executor_sandbox_activation.py::15_step_plan"],
+      "negative_refs":["test_s30d_strategy_executor_bootstrap.py::step_sequence_negative"],
+      "runtime_check_ids":["L07"],
+      "evidence_refs":["strategy_executor_bootstrap_contract_v1.json","strategy_executor_live_canary_v2.json"]
+    },
+    {
+      "id":"F05","family":"ACTIVATION_PREDICATES","objective":"Keep bootstrap side-effect predicates out of live step predicates and require sandbox-controlled runtime authorization predicates.",
+      "static_status":"PROVEN_BY_SOURCE_TESTS","runtime_status":"REQUIRED_PENDING",
+      "positive_refs":["test_s30d_strategy_executor_sandbox_activation.py::runtime_authorized_predicates"],
+      "negative_refs":["test_s30d_strategy_executor_sandbox_activation.py::bootstrap_predicate_leak_negative"],
+      "runtime_check_ids":["L07","L09"],
+      "evidence_refs":["strategy_executor_sandbox_activation_contract_v1.json"]
+    },
+    {
+      "id":"F06","family":"IDEMPOTENCY","objective":"Reserve once, replay safely, and fail closed on request-hash conflict.",
+      "static_status":"PROVEN_BY_DRY_RUN_TESTS","runtime_status":"REQUIRED_PENDING",
+      "positive_refs":["strategy_executor_live_canary_v2.json::L04"],
+      "negative_refs":["strategy_executor_canary_blueprint_v1.json::EX-03"],
+      "runtime_check_ids":["L04","L12"],
+      "evidence_refs":["c05_dynamic_fire_test_receipt_v1.json","strategy_executor_live_canary_v2.json"]
+    },
+    {
+      "id":"F07","family":"LEASE_CHECKPOINT","objective":"Acquire/checkpoint/release under lease fencing and block contended or stale fences.",
+      "static_status":"PROVEN_BY_DRY_RUN_TESTS","runtime_status":"REQUIRED_PENDING",
+      "positive_refs":["strategy_executor_live_canary_v2.json::L05"],
+      "negative_refs":["strategy_executor_canary_blueprint_v1.json::EX-04","strategy_executor_canary_blueprint_v1.json::EX-05"],
+      "runtime_check_ids":["L05","L13"],
+      "evidence_refs":["c05_dynamic_fire_test_receipt_v1.json","strategy_executor_live_canary_v2.json"]
+    },
+    {
+      "id":"F08","family":"ZERO_BUSINESS_EFFECT","objective":"Canary may alter control-state only; no business dispatch, effect rows, model calls, production writes, or strategy mutation.",
+      "static_status":"PROVEN_BY_SOURCE_TESTS","runtime_status":"REQUIRED_PENDING",
+      "positive_refs":["strategy_executor_sandbox_activation_contract_v1.json::canary_boundary"],
+      "negative_refs":["test_s30d_strategy_executor_sandbox_activation.py::business_effect_dispatch_negative"],
+      "runtime_check_ids":["L06"],
+      "evidence_refs":["strategy_executor_live_canary_v2.json"]
+    },
+    {
+      "id":"F09","family":"ROLLBACK_FAIL_CLOSED","objective":"Any canary failure demotes to CANDIDATO_READ_ONLY and removes the router action; partial activation is forbidden.",
+      "static_status":"PROVEN_BY_SOURCE_POLICY","runtime_status":"REQUIRED_PENDING",
+      "positive_refs":["strategy_executor_sandbox_activation_contract_v1.json::rollback_policy"],
+      "negative_refs":["strategy_executor_live_canary_v2.json::L14"],
+      "runtime_check_ids":["L14"],
+      "evidence_refs":["strategy_executor_sandbox_activation_contract_v1.json","strategy_executor_live_canary_v2.json"]
+    },
+    {
+      "id":"F10","family":"BOUNDARY_ISOLATION","objective":"No orchestrator, scheduler, production or S26 mutation can occur from the executor canary.",
+      "static_status":"PROVEN_BY_SOURCE_TESTS","runtime_status":"REQUIRED_PENDING",
+      "positive_refs":["test_s30d_strategy_executor_bootstrap.py::boundary_false"],
+      "negative_refs":["test_s30d_strategy_executor_sandbox_activation.py::scheduler_activation_negative"],
+      "runtime_check_ids":["L09"],
+      "evidence_refs":["strategy_executor_live_canary_v2.json"]
+    },
+    {
+      "id":"F11","family":"INDEPENDENT_EVIDENCE_READBACK","objective":"All required steps must emit independently readable evidence; producer self-attestation is insufficient.",
+      "static_status":"PROVEN_BY_DRY_RUN_TESTS","runtime_status":"REQUIRED_PENDING",
+      "positive_refs":["strategy_executor_live_canary_v2.json::L07"],
+      "negative_refs":["strategy_executor_canary_blueprint_v1.json::EX-09"],
+      "runtime_check_ids":["L07"],
+      "evidence_refs":["strategy_executor_live_canary_v2.json"]
+    },
+    {
+      "id":"F12","family":"CHECKPOINT_RECOVERY","objective":"Interrupted execution resumes from persisted checkpoint without losing safe progress.",
+      "static_status":"PROVEN_BY_DRY_RUN_TESTS","runtime_status":"DEFERRED_BEYOND_ZERO_EFFECT_CANARY",
+      "positive_refs":["strategy_executor_canary_blueprint_v1.json::EX-11"],
+      "negative_refs":["strategy_executor_bootstrap_contract_v1.json::INTERRUPTION_RESUMES_FROM_PERSISTED_CHECKPOINT"],
+      "runtime_check_ids":[],
+      "evidence_refs":["strategy_executor_canary_blueprint_v1.json"]
+    },
+    {
+      "id":"F13","family":"QUALITY_AND_HANDOFF","objective":"Nominal evidence and unallowlisted nested handoffs fail closed before downstream progression.",
+      "static_status":"PROVEN_BY_DRY_RUN_TESTS","runtime_status":"DEFERRED_BEYOND_ZERO_EFFECT_CANARY",
+      "positive_refs":["strategy_executor_bootstrap_contract_v1.json::R16_QUALITY_BINDING_BEFORE_DOWNSTREAM_HANDOFF"],
+      "negative_refs":["strategy_executor_canary_blueprint_v1.json::EX-07","strategy_executor_canary_blueprint_v1.json::EX-08"],
+      "runtime_check_ids":[],
+      "evidence_refs":["executor_quality_binding_v2.json","strategy_executor_canary_blueprint_v1.json"]
+    },
+    {
+      "id":"F14","family":"CLOSE_GUARD","objective":"Execution cannot close while executable safe scope remains; blocked scope cannot hide unrelated safe scope.",
+      "static_status":"PROVEN_BY_DRY_RUN_TESTS","runtime_status":"REQUIRED_PENDING",
+      "positive_refs":["strategy_executor_canary_blueprint_v1.json::EX-10"],
+      "negative_refs":["strategy_executor_canary_blueprint_v1.json::EX-12"],
+      "runtime_check_ids":["L08"],
+      "evidence_refs":["strategy_executor_live_canary_v2.json"]
+    }
+  ]
+}

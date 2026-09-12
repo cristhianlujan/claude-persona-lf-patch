@@ -1,0 +1,22 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260829-008",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "eacacc2414ff25323ea5b060a896a90a5b1f43cf",
+    "a2e88d2cd57ff803a36757ee36b57935dd8ad876"
+  ],
+  "target_paths": [
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/github_actions_local_runtime.py",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/run_zero_cost_runtime_tests.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-29T10:40:00Z",
+  "notes": "PASS_SANDBOX candidate receipt for V23 under existing governed execution 008. V21 and V22 RAW readback reproduces the runtime capture defect: llama.cpp exits successfully while the persisted output transcript terminates at Assistant: with no completion. V22 correctly blocks that false positive. V23 preserves the non-empty completion gate, removes only the llama-cli --log-disable flag from the zero-cost runtime command, attests the configured 16384-token context and 2048-token output budget, and verifies those fields during readback. This receipt does not claim live behavioral PASS, VALIDATED, production promotion, automatic promotion, execution closure, or A/B closure; exact-head CI and fresh post-merge runtime evidence remain mandatory."
+}

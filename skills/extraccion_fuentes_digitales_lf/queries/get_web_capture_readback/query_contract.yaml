@@ -1,0 +1,10 @@
+query:
+  id: get_web_capture_readback
+  asset_code: ACT-0052
+  owner_skill: SKILL_EXTRACCION_FUENTES_DIGITALES_LF
+  read_model: read_model.md
+  escritura: false
+  estado: CANDIDATO_READ_ONLY
+  input_one_of: [record_id, run_id, url_hash]
+  lectura: [lf_capture_records, lf_capture_runs, lf_log_operativo]
+  bloqueos: [homologacion, insight_automatico, alert_automatico]

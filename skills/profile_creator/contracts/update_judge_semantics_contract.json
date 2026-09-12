@@ -1,0 +1,33 @@
+{
+  "contract_code": "UPDATE_JUDGE_SEMANTICS_CONTRACT_V1",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "judge_code": "JUDGE-ACTUALIZACION-PERFIL-LF-v0.1",
+  "step_id": "pre_write_execution_binding_gate",
+  "source_ref": "skills/profile_creator/contracts/update_judge_semantics_source_v1.json",
+  "source_digest_algorithm": "SHA-256",
+  "judge_sha": "bef12f5dd3c08db63b92faf64f77703acf9172288dc0547e0de56241d1521557",
+  "pass_if": [
+    "execution_id_matches_current_execution",
+    "target_code_matches_execution_target",
+    "target_path_matches_execution_target",
+    "execution_bound_to_target_before_change_is_true",
+    "bound_revision_is_structured",
+    "bound_revision_matches_current_resolved_revision",
+    "stale_revision_has_reread_and_explicit_rebind_when_applicable",
+    "required_exact_target_identity_fields_match_target_type"
+  ],
+  "fail_if": [
+    "execution_binding_missing_or_false",
+    "bound_revision_missing_or_unstructured",
+    "target_identity_mismatch",
+    "bound_revision_mismatch",
+    "stale_revision_without_reread",
+    "stale_revision_without_explicit_rebind",
+    "raster_artifact_sha_or_dimensions_mismatch_when_applicable",
+    "shell_receipt_bound_revision_mismatch_when_shell_applies",
+    "required_authorized_delta_missing_for_remediate_existing"
+  ],
+  "declared_evidence_is_observed_evidence": false,
+  "runtime_activation_authorized": false,
+  "canonical_update_recorder_authorized": false
+}

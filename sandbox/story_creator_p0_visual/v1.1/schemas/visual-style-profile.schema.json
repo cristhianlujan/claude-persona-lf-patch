@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Visual style profile",
+  "type": "object",
+  "required": [
+    "typography",
+    "foreground",
+    "background",
+    "border",
+    "radius",
+    "shadow",
+    "opacity",
+    "profile_resolution"
+  ],
+  "properties": {
+    "typography": {
+      "type": "object",
+      "required": [
+        "visual_text_height_px",
+        "estimated_font_size_px",
+        "font_size_kind",
+        "font_weight_class",
+        "font_style",
+        "text_decoration",
+        "font_family",
+        "font_family_kind",
+        "text_align",
+        "case_style",
+        "confidence",
+        "evidence_refs",
+        "resolution_status"
+      ],
+      "properties": {
+        "visual_text_height_px": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "visual_text_height_kind": {
+          "type": "string"
+        },
+        "estimated_font_size_px": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "font_size_kind": {
+          "type": "string"
+        },
+        "font_weight_class": {
+          "enum": [
+            "REGULAR",
+            "MEDIUM",
+            "SEMIBOLD",
+            "BOLD",
+            "UNKNOWN"
+          ]
+        },
+        "font_weight_kind": {
+          "type": "string"
+        },
+        "font_style": {
+          "enum": [
+            "NORMAL",
+            "ITALIC",
+            "UNKNOWN"
+          ]
+        },
+        "font_style_kind": {
+          "type": "string"
+        },
+        "text_decoration": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "NONE",
+              "UNDERLINE",
+              "STRIKE"
+            ]
+          }
+        },
+        "text_decoration_kind": {
+          "type": "string"
+        },
+        "estimated_line_height_px": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "line_height_kind": {
+          "type": "string"
+        },
+        "estimated_letter_spacing_px": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "letter_spacing_kind": {
+          "type": "string"
+        },
+        "font_family": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "font_family_kind": {
+          "type": "string"
+        },
+        "text_align": {
+          "enum": [
+            "LEFT",
+            "CENTER",
+            "RIGHT",
+            "JUSTIFY",
+            "UNKNOWN"
+          ]
+        },
+        "text_align_kind": {
+          "type": "string"
+        },
+        "case_style": {
+          "enum": [
+            "UPPER",
+            "LOWER",
+            "TITLE",
+            "MIXED"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "resolution_status": {
+          "type": "string"
+        },
+        "text_color": {
+          "type": "object",
+          "required": [
+            "kind",
+            "resolution_status"
+          ],
+          "properties": {
+            "rgb": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "hex": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^#[0-9A-Fa-f]{6}$"
+            },
+            "kind": {
+              "type": "string"
+            },
+            "sampling_method": {
+              "type": "string"
+            },
+            "sample_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "antialiasing_contamination": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "resolution_status": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "foreground": {
+      "type": "object"
+    },
+    "background": {
+      "type": "object"
+    },
+    "border": {
+      "type": "object"
+    },
+    "radius": {
+      "type": "object"
+    },
+    "shadow": {
+      "type": "object"
+    },
+    "opacity": {
+      "type": "object"
+    },
+    "profile_resolution": {
+      "type": "string"
+    }
+  }
+}

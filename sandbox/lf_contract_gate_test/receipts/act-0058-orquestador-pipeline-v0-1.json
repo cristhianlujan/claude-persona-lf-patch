@@ -1,0 +1,20 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "ORQUESTACION_PIPELINE_LF",
+  "execution_id": "ACT-0058-DRY-RUN-20260617-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "f37e531e9b913c2026780313978a11f7e4337458",
+  "judge_sha": "b90c4c5cc623a3219ec3b4f7d7ec390f64ed9849",
+  "source_sha_list": [
+    "7a15d702870ddae8d55c68c3b0c5a1562d8e101b"
+  ],
+  "target_paths": [
+    "skills/orquestador_pipeline_lf/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-06-17T01:33:00Z",
+  "notes": "DRY_RUN ACT-0058 completado. 2 casos: CASO_A COMPLETED (happy path), CASO_B HITL correcto (risk CRITICAL detenido). sandbox_run_id=c3e4d11c-0fdf-4876-ac27-858e3b9b2a30. Evento Supabase id=321."
+}

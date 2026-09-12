@@ -1,0 +1,48 @@
+version: v0.1
+judge: JUDGE_LEARNING_BRIDGE_KB_CARD_LF
+operation: LEARNING_BRIDGE_KB_CARD_LF
+status: CANDIDATO_READ_ONLY
+pass_if:
+  - router_read
+  - operational_source_read
+  - ekb_read
+  - kb_source_readback
+  - source_grounded
+  - source_consumer_ready
+  - decision_upstream_allow_prod_gate
+  - duplicate_check_pass
+  - existing_card_check_pass
+  - lifecycle_order_preserved
+  - evidence_pack_present
+  - research_to_rules_matrix_present
+  - decision_matrix_present
+  - creacion_card_lf_contract_read
+  - no_direct_official_rule_write
+  - no_forced_act_0046_runtime
+  - no_second_card_factory
+  - no_n8n_llm_reasoning
+  - quality_gate_pass
+  - performance_gate_pass
+  - governance_gate_pass
+  - readback_complete
+fail_if:
+  - bypass_router
+  - ungrounded_source
+  - consumer_not_ready
+  - duplicate_learning
+  - duplicate_card
+  - lifecycle_state_skipped
+  - missing_evidence_pack
+  - missing_research_to_rules_matrix
+  - missing_decision_matrix
+  - direct_official_rule_write
+  - production_impact_without_valid_approval
+  - fabricated_human_approval
+  - n8n_used_for_reasoning
+  - card_factory_contract_missing
+  - readback_missing
+result_values:
+  - PASS
+  - FAIL
+  - BLOCKED
+  - RETURN_TO_WORKER

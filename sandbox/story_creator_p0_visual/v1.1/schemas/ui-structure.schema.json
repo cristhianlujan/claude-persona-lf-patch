@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lf/p0/ui-structure.schema.json",
+  "title": "P0 UI Structure v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["visual_containment_tree", "visual_layer_graph", "candidate_reading_orders"],
+  "properties": {
+    "visual_containment_tree": {
+      "type": "object", "additionalProperties": false, "required": ["roots", "edges"],
+      "properties": {
+        "roots": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "edges": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["parent", "child", "source_ref"], "properties": {"parent": {"type": "string", "minLength": 1}, "child": {"type": "string", "minLength": 1}, "source_ref": {"type": "string", "minLength": 3}}}}
+      }
+    },
+    "visual_layer_graph": {
+      "type": "array",
+      "items": {"type": "object", "additionalProperties": false, "required": ["from", "to", "relation", "source_ref"], "properties": {"from": {"type": "string", "minLength": 1}, "to": {"type": "string", "minLength": 1}, "relation": {"type": "string", "enum": ["OVERLAY", "MODAL", "POPOVER", "OCCLUDES", "OCCLUDED_BY", "STICKY", "SCROLL_REGION", "PORTAL_LIKE_RELATION", "Z_ORDER_CANDIDATE"]}, "source_ref": {"type": "string", "minLength": 3}}}
+    },
+    "candidate_reading_orders": {
+      "type": "array", "minItems": 1,
+      "items": {"type": "object", "additionalProperties": false, "required": ["basis", "element_ids", "source_ref"], "properties": {"basis": {"type": "string", "enum": ["VISUAL_HEURISTIC_LTR_TTB", "VISUAL_HEURISTIC_RTL_TTB", "TASK_FLOW_CANDIDATE"]}, "element_ids": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}, "source_ref": {"type": "string", "minLength": 3}}}
+    }
+  }
+}

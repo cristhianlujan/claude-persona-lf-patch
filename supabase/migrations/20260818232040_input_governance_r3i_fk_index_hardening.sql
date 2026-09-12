@@ -1,0 +1,1 @@
+create index if not exists idx_input_readiness_runs_invalidated_by_run_id on programacion.input_readiness_runs(invalidated_by_run_id) where invalidated_by_run_id is not null;

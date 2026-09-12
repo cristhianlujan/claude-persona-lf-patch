@@ -1,0 +1,29 @@
+{
+  "contract_code": "Q10_GOVERNANCE_SELF_MUTATION_ESCALATION_V1",
+  "scope": "TRANSVERSAL_GOVERNANCE_ESCALATION_ONLY",
+  "origin": "CLAUDE_Q10_20260903",
+  "severity": "CRITICAL_TRANSVERSAL",
+  "profile_lifecycle_owns_fix": false,
+  "finding": "Governed assets pass through router/operation/contracts/bindings/evidence/readback, while mutation of governance tables themselves can occur through direct SQL without an equivalent governed operation and evidence chain.",
+  "facts_to_preserve": [
+    "lf_prod_enforcement_step_gate_v01 is the effective execution-step gate",
+    "required_evidence_keys are enforced from lf_operation_step_judge_bindings rather than merely from step contracts",
+    "judge pass_if/fail_if are compared with caller-provided assertions_checked/hard_fails_checked and therefore are attestation unless backed by deterministic server authority",
+    "a structural judge with empty pass_if/fail_if derives clean absent other binding/trigger failures"
+  ],
+  "short_term_recommendations_for_transversal_owner": [
+    "Evaluate provenance guards for semantic judge columns including judge_sha/pass_if/fail_if/result_values",
+    "Evaluate equivalent mutation guards for operation step contracts and judge bindings",
+    "Require governed provenance state appropriate to mutation rather than existence-only provenance",
+    "Document the enforcement model before further semantic governance-table mutations"
+  ],
+  "medium_term_decision": "Decide whether governance-table mutation becomes an existing-core governed operation; do not create a new service/layer by default.",
+  "forbidden_in_this_workstream": [
+    "live provenance-trigger mutation",
+    "new governance operation materialization",
+    "new governance table",
+    "DDL",
+    "runtime activation"
+  ],
+  "status": "REGISTERED_ESCALATED_NOT_IMPLEMENTED"
+}

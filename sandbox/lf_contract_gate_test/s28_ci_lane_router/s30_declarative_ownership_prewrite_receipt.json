@@ -1,0 +1,40 @@
+{
+  "receipt_version": "S30_DECLARATIVE_CI_LANE_OWNERSHIP_PREWRITE_V1",
+  "receipt_mode": "PREWRITE",
+  "scope": "sandbox/lf_contract_gate_test/s28_ci_lane_router/**",
+  "base_main_sha": "52ffabd18c14e24c62e54f4cd5063b68f651e4c7",
+  "branch": "s30-ci-router-ownership-20260910-1455",
+  "preflight": {
+    "main_matches_handoff_base": true,
+    "current_main_rechecked_before_branch": true,
+    "historical_router_commits_inspected": [
+      "2614879c6963d405d3c517132198be29ff72c997",
+      "94dbf65f503d358780d7f6c69952f6b3a4d339e2",
+      "517871d344caaf5068dd9899b0e6ce6444a77146"
+    ],
+    "reuse_first": {
+      "existing_registry_in_s28_namespace": false,
+      "decision": "CREATE_VERSIONED_REGISTRY_IN_SAME_NAMESPACE"
+    },
+    "concurrency": {
+      "new_same_scope_branch_found": false,
+      "historical_s28_ci_lane_branches_found": [
+        "lf/s28-ci-lane-integration-20260909",
+        "lf/s28-ci-lane-isolation-20260909"
+      ],
+      "overwrite_historical_branch": false
+    },
+    "baseline": {
+      "current_router_regression_suite": "PASS_30_OF_30",
+      "targeted_bug_smoke": "PASS_7_OF_7",
+      "observed_s30_c_before": "DEEP_SHARED_UNKNOWN_WITH_P0_EXTERNAL_TRUE"
+    }
+  },
+  "design": {
+    "authority": "s30_lane_ownership_registry_v1.json",
+    "loader_validator": "s30_lane_ownership.py",
+    "principles": ["DETERMINISTIC_FIRST", "SOURCE_FIRST", "FAIL_CLOSED"],
+    "central_router_requires_per_lane_patch": false
+  },
+  "merge_authorized": false
+}

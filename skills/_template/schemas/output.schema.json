@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["status", "pack_type", "deliverable_created", "evidence_map", "blocking_codes", "next_gate"],
+  "properties": {
+    "status": {"enum": ["VALID_OUTPUT", "RETURN_TO_WORKER_FOR_SELF_REPAIR", "BLOCK_PIPELINE"]},
+    "pack_type": {"enum": ["profile", "skill"]},
+    "deliverable_created": {"type": "object"},
+    "evidence_map": {"type": "array", "items": {"type": "string"}},
+    "blocking_codes": {"type": "array", "items": {"type": "string"}},
+    "next_gate": {"type": "string"}
+  }
+}

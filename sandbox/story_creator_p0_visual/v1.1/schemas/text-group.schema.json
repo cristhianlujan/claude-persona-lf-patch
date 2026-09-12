@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Text group",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "text_group_id",
+    "group_text",
+    "member_element_ids",
+    "word_observation_refs",
+    "region",
+    "grouping_basis",
+    "classification",
+    "confidence",
+    "evidence_refs",
+    "machine_resolution_status"
+  ],
+  "properties": {
+    "text_group_id": {
+      "type": "string",
+      "pattern": "^TG-"
+    },
+    "group_text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "member_element_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "word_observation_refs": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "region": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "grouping_basis": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "classification": {
+      "enum": [
+        "CONFIRMED",
+        "INFERRED"
+      ]
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "machine_resolution_status": {
+      "enum": [
+        "RESOLVED",
+        "REMEDIATION_REQUIRED"
+      ]
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-BISC-023-A06-STRICT-SEQUENCE",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "100a0daf0750db9d9e4dacd39b48cbc32b76a9f08fdd5cf1748959067fe0c27c",
+  "judge_sha": "100a0daf0750db9d9e4dacd39b48cbc32b76a9f08fdd5cf1748959067fe0c27c",
+  "source_sha_list": [
+    "25a981e2e329101bb84c686217e4afcfcbc18baaca00da19aaacc346139dce1b",
+    "100a0daf0750db9d9e4dacd39b48cbc32b76a9f08fdd5cf1748959067fe0c27c"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/evals/assertions.json"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-07-31T09:31:00Z",
+  "evidence": {
+    "artifact_code": "A06",
+    "sequence_position": 6,
+    "canonical_artifacts_modified": 1,
+    "bytes": 10639,
+    "sha256": "100a0daf0750db9d9e4dacd39b48cbc32b76a9f08fdd5cf1748959067fe0c27c",
+    "git_blob": "843e812276aa60318bbf8edb8ad3cf1a263909ec",
+    "assertions": "22/22 unique and mapped",
+    "positive_registry_test": "PASS",
+    "negative_registry_tests": "3/3 rejected",
+    "package_gate": "66/66",
+    "a07_started": false,
+    "strict_numeric_sequence": true
+  }
+}

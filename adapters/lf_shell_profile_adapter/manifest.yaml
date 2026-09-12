@@ -1,0 +1,56 @@
+version: v0.1
+assurance_revision: v2
+status: CANDIDATO
+estado_operativo: READ_ONLY
+runtime_estado: NO_HABILITADO
+impacto_automatico: BLOQUEADO
+adapter_code: ADAPTER_LF_SHELL_PROFILE_v0.1_CANDIDATO
+canonical_adapter_id: ADAPTER_LF_SHELL_PROFILE
+base_path: adapters/lf_shell_profile_adapter
+required_files:
+  - ADAPTER.md
+  - manifest.yaml
+  - runtime/runtime_capsule.yaml
+  - references/shell_resolution_contract.md
+  - references/profile_authority_matrix.md
+  - schemas/lf_shell_binding.schema.json
+  - schemas/lf_adapter_invocation.schema.json
+  - validators/validate_lf_shell_profile_adapter.py
+  - examples/ui_architect_existing_screen_binding.yaml
+  - examples/frontend_prototype_binding.yaml
+  - examples/depth_scenarios.yaml
+  - evals/lf_shell_profile_adapter_cases.yaml
+  - evals/depth_scenarios_cases.yaml
+  - judges/judge_lf_shell_profile_adapter.yaml
+activation_gate: ROUTER_BOUND_LF_SCREEN_OR_UI_AFFECTING_PROFILE_DECISION
+invocation_policy: ROUTER_BOUND_ONLY
+separate_llm_call: FORBIDDEN
+input_governance:
+  binding_contract: gobernanza/contratos/ADAPTER_INPUT_GOVERNANCE_BINDING_v1.md
+  authority_contract: INPUT_READINESS_CONTRACT
+  observed_revision: "5.12"
+  contract_resolution: LIVE_CURRENT
+  selective_sections:
+    - APPLICABILITY_READINESS
+    - SOURCE_AUTHORITY_PROVENANCE
+    - FRESHNESS_INVALIDATION
+    - NEGATIVE_REQUIREMENTS
+    - CONFLICT_PRECEDENCE
+  receipt_required_when_adapter_applies: true
+  continuation_policy: PASS_ONLY
+context_budget:
+  capsule_path: runtime/runtime_capsule.yaml
+  max_chars: 1800
+  max_material_rules: 12
+canonical_source_order:
+  - lf_ops.pantallas
+  - lf_ops.modulos
+  - lf_ops.app_shells
+  - lf_ops.pantalla_variantes
+  - lf_ops.pantalla_elementos
+  - lf_design.component_tokens
+  - lf_design.spacing_tokens
+  - lf_design.color_tokens
+  - lf_design.typography_tokens
+  - lf_design.responsive_tokens
+allowed_final_state: CANDIDATO_READ_ONLY_NO_HABILITADO

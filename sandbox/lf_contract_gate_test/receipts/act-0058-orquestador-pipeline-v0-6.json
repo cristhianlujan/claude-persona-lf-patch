@@ -1,0 +1,20 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "ORQUESTACION_PIPELINE_LF",
+  "execution_id": "ACT-0058-WEB-FETCH-RULES-S31-002",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "dc166eae5919ccb2fcc55d056450df5a0bb0981a",
+  "judge_sha": "dc166eae5919ccb2fcc55d056450df5a0bb0981a",
+  "source_sha_list": [
+    "dc166eae5919ccb2fcc55d056450df5a0bb0981a"
+  ],
+  "target_paths": [
+    "skills/orquestador_pipeline_lf/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-06-19T21:50:00Z",
+  "notes": "v0.6 S31: OP-4 actualizado con reglas de motor de busqueda por agente. GPT usa web.run open. Claude usa web_fetch. Confirmado empiricamente: web.run open es el unico metodo funcional en GPT-5.5 para fetch externo."
+}

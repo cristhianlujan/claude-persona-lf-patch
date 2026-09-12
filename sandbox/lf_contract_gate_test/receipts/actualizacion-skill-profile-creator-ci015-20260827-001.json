@@ -1,0 +1,42 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "schema": "LF_GOVERNED_SKILL_UPDATE_RECEIPT_V1",
+  "operation_code": "ACTUALIZACION_SKILL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-SKILL-PROFILE-CREATOR-CI015-20260827-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "57d0533a0a6a62064e72a4f521fa463eeec2eb76354071cfab6b4746b13814c6",
+  "judge_sha": "00a4d79ad3db028cde41524fed6e3ef34a7f97f43cf1168e324bce496bb64dbf",
+  "source_sha_list": [
+    "4b5118c958f37f08e6e4f0d7ca94200ea8f10976",
+    "b2b3044c6b4733ca27817ba24b6a2fd06a414fc9",
+    "eb8bfdd8fe18f926159bc76b8c19737b87856549",
+    "40cc641477372f5592a6164cae493bdc74325ae7",
+    "fd87cfc5f510adcaaa441e64fc9c736b224f2993"
+  ],
+  "target_paths": [
+    "skills/profile_creator/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-28T03:46:01Z",
+  "target_type": "SKILL",
+  "target_code": "ACT-0045",
+  "target_path": "skills/profile_creator",
+  "branch": "lf/profile-creator-profile-validator-discovery-ci015-20260827",
+  "pr_number": 268,
+  "user_authorization": "CURRENT_CHAT_20260827_CONTINUE_UNTIL_MERGE",
+  "required_contract_obligations": "16/16_PASS",
+  "required_before_write": "7/7_PASS",
+  "required_after_write": "9/9_PASS",
+  "deterministic_profile_discovery_matrix": "6/6_PASS",
+  "exact_head_validation_run_id": 33139845880,
+  "validated_substantive_head": "b2b3044c6b4733ca27817ba24b6a2fd06a414fc9",
+  "runtime_unchanged": true,
+  "automatic_promotion": false,
+  "state_ceiling": "CANDIDATE_SKILL_UPDATE_ONLY_NO_PROFILE_BEHAVIORAL_CLAIM",
+  "post_merge_steps_pending": [120, 130],
+  "hash_provenance": "contract_sha and judge_sha reuse the attested ACTUALIZACION_SKILL_LF v0.1 hashes from the prior governed Learning Engine update receipt; Supabase operation contract/judge rows currently store null hash columns.",
+  "notes": "Receipt asserts the ACTIVE ACTUALIZACION_SKILL_LF required_before_write and required_after_write obligations only. The substantive skill bytes were freshly validated on b2b3044c6b4733ca27817ba24b6a2fd06a414fc9 after rebuilding on main@4b5118c958f37f08e6e4f0d7ca94200ea8f10976. This receipt-only commit does not change skills/profile_creator bytes. close/report_output remain post-merge per the repository pass protocol and this receipt does not declare execution closure."
+}

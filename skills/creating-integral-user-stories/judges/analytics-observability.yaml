@@ -1,0 +1,174 @@
+judge_code: J09_ANALYTICS_OBSERVABILITY
+version: v0.5
+status: CANDIDATO_READ_ONLY
+scope: Verifica analytics y observabilidad no vacíos, separación de auditoría, ausencia de PII, correlación y decisión de alertas para fallas críticas.
+independence:
+  author_must_not_execute_final_judge: true
+  executor_identity_required: true
+  accepted_executor_types:
+  - DETERMINISTIC_RUNNER
+  - INDEPENDENT_AGENT
+  - CI_RUNNER
+  self_approval_forbidden: true
+retry_limit: 2
+required_inputs:
+- story_pack
+preflight:
+- check_id: input_present
+  condition: story_pack is a readable UTF-8 JSON object
+  on_fail: BLOCKED
+- check_id: judge_version_present
+  condition: --judge-version is non-empty
+  on_fail: BLOCKED
+- check_id: executor_identity_present
+  condition: --executor-identity is non-empty
+  on_fail: BLOCKED
+- check_id: evidence_ref_resolvable
+  condition: at least one evidence_ref is resolvable
+  on_fail: BLOCKED
+- check_id: independent_executor
+  condition: executor_identity differs from artifact author identity
+  on_fail: BLOCKED
+validator:
+  entrypoint: scripts/detect_pii_telemetry.py
+  git_blob_sha1: 5dd42d313a6e615544f32295023943612f309e3d
+  command_template: python scripts/detect_pii_telemetry.py <story_pack.json> --judge-version <git_blob_sha1> --executor-identity <actor> --evidence-ref <resolvable_ref>
+  exit_codes:
+    PASS_WITH_EVIDENCE: 0
+    RETURN_TO_WORKER: 1
+    FAIL: 1
+    BLOCKED: 2
+schema:
+  ref: schemas/judge-result.schema.json
+  version: v0.5
+  git_blob_sha1: 829de11813df4c5a3ddc430856d12f1617f2124b
+  additional_properties: false
+assertions:
+- analytics_section_missing
+- analytics_events_missing
+- analytics_events_without_code
+- observability_contract_missing
+- analytics_events_with_pii
+- logs_with_pii_without_contract
+- operations_without_correlation_id
+- audit_events_mixed_with_analytics
+- critical_failures_without_alert_decision
+pass_if:
+- all 9 assertion result collections are empty
+- blocking_assertions is empty
+- assertions_passed = assertions_total
+- compliance_bit = 1
+- exit_code = 0
+- evidence_refs is non-empty and resolvable
+- output validates against judge-result v0.5
+return_to_worker_if:
+- one or more repairable assertions fail
+- repairs are actionable
+- exit_code = 1
+block_if:
+- input or required metadata is missing
+- executor is not independent
+- evidence reference is unresolvable
+- schema or runtime invariant validation cannot execute
+fail_if:
+- evidence proves an unrecoverable contract violation
+- output hash or evidence hash is forged or inconsistent
+result_values:
+- PASS_WITH_EVIDENCE
+- RETURN_TO_WORKER
+- BLOCKED
+- FAIL
+required_evidence:
+- sensitive_field_codes
+- analytics_event_count
+- log_count
+- metric_count
+- alert_count
+- checks
+- input_path
+output:
+  schema_ref: schemas/judge-result.schema.json
+  schema_version: v0.5
+  required_fields:
+  - schema_version
+  - judge_code
+  - judge_version
+  - executor_identity
+  - command
+  - started_at
+  - completed_at
+  - exit_code
+  - result
+  - compliance_bit
+  - assertions_total
+  - assertions_passed
+  - failed_assertions
+  - blocking_assertions
+  - repairs
+  - repair_instructions
+  - evidence_refs
+  - evidence
+  - evidence_sha256
+  - input_sha256
+  - output_sha256
+  - retry_count
+  invariants:
+  - assertions_passed <= assertions_total
+  - PASS requires assertions_passed = assertions_total
+  - repairs = repair_instructions
+  - completed_at >= started_at
+  - output_sha256 is calculated before adding output_sha256
+positive_behavior:
+  case_id: J09-P01
+  expected_result: PASS_WITH_EVIDENCE
+  expected_assertions_total: 9
+  expected_assertions_passed: 9
+negative_behavior:
+- case_id: J09-N01
+  expected_result: RETURN_TO_WORKER
+  must_fail:
+  - analytics_events_without_code
+  - analytics_events_with_pii
+  - logs_with_pii_without_contract
+  - operations_without_correlation_id
+  - audit_events_mixed_with_analytics
+  - observability_contract_missing
+  - critical_failures_without_alert_decision
+- case_id: J09-N02
+  omit_cli:
+  - --judge-version
+  - --executor-identity
+  expected_result: BLOCKED
+  must_block:
+  - judge_version_missing
+  - executor_identity_missing
+repair_matrix:
+- assertion_id: analytics_events_with_pii
+  instruction: Eliminar propiedades PII y fijar pii_free=true con evidencia.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: logs_with_pii_without_contract
+  instruction: Prohibir el log o agregar masking_contract respaldado.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: critical_failures_without_alert_decision
+  instruction: Registrar decisión explícita de alerta o no alerta con source_ref.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+prohibitions:
+- worker_self_approval
+- vacuous_pass_on_empty_section
+- assertion_deletion_to_obtain_pass
+- threshold_reduction_to_obtain_pass
+- unresolved_evidence_reference
+- pass_without_strict_evidence_envelope
+- judged_at_legacy_field

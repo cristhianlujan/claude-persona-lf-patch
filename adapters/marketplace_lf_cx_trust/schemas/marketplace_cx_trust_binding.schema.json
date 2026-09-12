@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "marketplace_cx_trust_binding.schema.json",
+  "title": "Marketplace LF CX Trust Binding",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["source_refs", "claim_boundaries", "trust_risks", "improvements", "protected_qualifiers", "support_dependencies", "blockers"],
+  "properties": {
+    "source_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "claim_boundaries": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "trust_risks": {"type": "array", "items": {"type": "object"}},
+    "improvements": {"type": "array", "items": {"type": "object"}},
+    "protected_qualifiers": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "support_dependencies": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "blockers": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+  }
+}

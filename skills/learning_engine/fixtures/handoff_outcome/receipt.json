@@ -1,0 +1,35 @@
+{
+  "execution_id": "ACT-0046-HANDOFF-OUTCOME-001-2026-08-26",
+  "eval_id": "learning_engine_to_quality_pack_handoff_outcome",
+  "execution_scope": "SINGLE_HANDOFF_SANDBOX",
+  "producer": "skills/learning_engine",
+  "producer_input_ref": "fixtures/handoff_outcome/input.json",
+  "producer_output_ref": "fixtures/handoff_outcome/producer_actual.json",
+  "receiver": "profiles/quality_pack",
+  "receiver_output_ref": "fixtures/handoff_outcome/quality_review_actual.json",
+  "receiver_execution_target": null,
+  "observed_outcome": {
+    "producer_claimed_state_is_observable": true,
+    "candidate_artifact_delivered": true,
+    "handoff_target_matches_contract": true,
+    "assisted_rubric_review_completed": true,
+    "receiver_agent_execution_completed": false,
+    "receiver_required_invention_in_assisted_review": false,
+    "governance_boundaries_preserved": true
+  },
+  "result": "ARTIFACT_CONSUMABILITY_DEMONSTRATED_BEHAVIORAL_NOT_PROVEN",
+  "target_outcome": "QUALITY_PACK_CAN_REVIEW_WITHOUT_INVENTING",
+  "target_outcome_status": "NOT_PROVEN",
+  "behavioral_eval_status": "BLOCKED_NO_EXECUTABLE_RECEIVER",
+  "behavioral_blocking_codes": [
+    "BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER"
+  ],
+  "general_behavioral_eval_status": "NOT_CLAIMED",
+  "limitations": [
+    "producer and receiver roles were exercised in the same controlled model session",
+    "the receiver review is assisted rubric evidence rather than independent execution",
+    "no verified executable Quality Pack target produced an actual receiver trace/output",
+    "no runtime or production execution"
+  ],
+  "next_learning_step": "Resolve an executable receiver target and rerun the exact producer artifact through that target before any handoff capability PASS or regression promotion."
+}

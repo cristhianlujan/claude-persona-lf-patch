@@ -1,0 +1,49 @@
+{
+  "schema": "LF_PROFILE_RUNTIME_SEMANTIC_CANDIDATE_FIXTURE_V1",
+  "source": {
+    "system": "Supabase private.lf_profile_runtime_queue_v1",
+    "baseline_github_run_id": 33596749435,
+    "baseline_github_sha": "0eeec4c2374b86390812961e14dabde5d8834d2e",
+    "baseline_semantic_utility": "0/3_CONSUMABLE"
+  },
+  "artifact": {
+    "artifact_id": 85,
+    "screen_code": "B2B-CARGA-001",
+    "filename": "B2B_CARGA_001_HISTORIAL_DESKTOP_LIGHT_v0.1_CANDIDATO.png",
+    "sha256": "ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+    "bytes": 142727,
+    "mime_type": "image/png",
+    "access_level": "PRIVATE",
+    "raster_embedded": false
+  },
+  "requests": [
+    {
+      "baseline_request_id": "d803f95d-5d3c-48f1-b5c4-4dee4497443f",
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "profile_source_paths": ["profiles/ui_architect/SKILL.md"],
+      "input_literal": "LF EMPRESA — B2B-CARGA-001 — BENCHMARK MULTIMODAL CONTEXT PACK V2. Tarea: evaluar el raster existente como EVALUATE_EXISTING/REMEDIATE_EXISTING y detectar desviaciones visuales accionables contra contexto canónico. NO existe en este caso una dupla redundante ni una solicitud de elegir authoritative_survivor; ese short-circuit no aplica. Contexto resuelto: Backoffice → módulo Cargas (B2B_CARGAS) → pantalla B2B-CARGA-001 Historial de cargas. Objetivo: consultar, filtrar y descargar historial. Shell B2B_APP_SHELL v0.3, DS LF_DS_V1. Estado pantalla CANDIDATO_VISUAL. Reglas visuales relevantes: B2B-RULE-DESIGN-001 VIGENTE (usar tokens/componentes canónicos; no overrides locales), B2B-RULE-DESIGN-002 sin valores visuales duros, B2B-RULE-RESP-001/002/003 desktop-tablet-mobile/sidebar/table adaptable, A11Y-001/002 foco/teclado/labels/contraste no sólo color. Campos visibles esperables incluyen Buscar, Estado, Tipo de carga, Cargado por, Aprobación, Desde/Hasta, tabla con Lote/Nombre/Archivo/Tipo/Cargado por/Fecha/Total/Válidos/Observados/Rechazados/Aprobación/Aprobado por/Fecha aprobación/Estado/Actualizado y paginación. Acciones gobernadas: ver detalle, exportar historial, descargar original/observados/rechazados. Examina exclusivamente el PNG adjunto y contrástalo con ese contexto; no inventes reglas. Devuelve el output gobernado del perfil con evidencia visual concreta y remediation_actions verificables; si falta evidencia visual material, falla cerrado explicando exactamente cuál, pero no pidas survivor inexistente. Esta corrida no autoriza VIGENTE, producción ni aprobación del owner."
+    },
+    {
+      "baseline_request_id": "7993e614-e49a-4f12-9004-d3c466605da6",
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf",
+      "profile_source_paths": ["profiles/product_director_lf/SKILL.md"],
+      "input_literal": "LF EMPRESA — B2B-CARGA-001 — BENCHMARK MULTIMODAL CONTEXT PACK V2. Objetivo de decisión ya resuelto: validar si el raster candidato representa con claridad el producto Historial de cargas y preserva el contrato operacional actual; no diseñar producto nuevo. Autoridad actual: lf_ops.pantallas id 43 B2B-CARGA-001, objective consultar/filtrar/descargar historial; regla B2B-RULE-LOAD-HISTORY-001 define B2B_LOAD_HISTORY_READ_V1 con tenant_scope AUTHORIZED_COMPANY_SET, server-side filters/sorting/pagination, permiso B2B_LOAD_HISTORY_VIEW; operaciones VIEW_DETAIL, EXPORT_HISTORY, DOWNLOAD_ORIGINAL, DOWNLOAD_OBSERVED y DOWNLOAD_ERRORS reutilizan permisos/rutas/errores canónicos. Inputs lógicos: búsqueda, estado, tipo, creador, aprobación, desde/hasta, sort y paginación. Campos de salida: lote, nombre, archivo, tipo, creado por/fecha, total/válidos/observados/rechazados, modo/aprobador/fecha aprobación, estado y actualizado. Shell B2B_APP_SHELL + LF_DS_V1; pantalla CANDIDATO_VISUAL; producción bloqueada por B2B-RULE-PROD-001. Fuente visual exacta: PNG adjunto artifact 85 SHA ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287. Evalúa únicamente si la representación visible preserva esta intención, jerarquía de acciones y alcance; no inventes negocio. Si existe decisión de producto válida, devuelve PRODUCT_DIRECTION_SPEC estructurado con source_refs actuales y acceptance observable. Si realmente falta un dato material, devuelve PRODUCT_MISSING_INPUT_STATE COMPLETO con missing_fields/why_blocking/next_input_needed; está prohibido devolver sólo el nombre del estado. No producción ni promoción."
+    },
+    {
+      "baseline_request_id": "227a7409-0f76-4637-a8d1-40ed39e476d8",
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "profile_slug": "quality_pack",
+      "profile_source_paths": [
+        "profiles/quality_pack/SKILL.md",
+        "profiles/quality_pack/contracts/quality_gate_contract.md",
+        "profiles/quality_pack/contracts/lf_quality_controls.md",
+        "profiles/quality_pack/judges/quality_pack_mini_judge.md",
+        "profiles/quality_pack/judges/quality_pack_score_rubric.md",
+        "profiles/quality_pack/schemas/quality_review.schema.json"
+      ],
+      "input_literal": "LF EMPRESA — B2B-CARGA-001 — BENCHMARK MULTIMODAL CONTEXT PACK V2. Revisa visualmente los bytes PNG exactos adjuntos del artefacto 85 SHA ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287. Contexto canónico resuelto: B2B_APP_SHELL + LF_DS_V1; B2B-CARGA-001 Historial de cargas, objetivo consultar/filtrar/descargar; campos/filtros/acciones definidos por B2B-RULE-LOAD-HISTORY-001; reglas DESIGN-001/002, RESP-001/002/003, A11Y-001/002; pantalla CANDIDATO_VISUAL y producción bloqueada. Evalúa exclusivamente lo observable y controles de Quality Pack; no infieras aprobación de UI Architect, Product Director ni owner. Salida OBLIGATORIA: un único objeto JSON que cumpla quality_review gobernado. No markdown, no code fence, no repetición del prompt. Debe contener review_id, reviewed_artifact, verdict, score_breakdown, evidence_map, blocking_codes, repair_actions, remaining_risks, next_gate y routing consistentes. Si la evidencia no soporta PASS, falla cerrado. No producción, no VIGENTE, no promoción."
+    }
+  ]
+}

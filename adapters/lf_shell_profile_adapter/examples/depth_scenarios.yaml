@@ -1,0 +1,126 @@
+version: v0.1
+adapter: ADAPTER_LF_SHELL_PROFILE_v0.1_CANDIDATO
+purpose: testable examples for JUDGE_ADAPTER_EXAMPLES_DEPTH_LF
+source_authority:
+  - supabase:public.v_lf_router_adapter_bindings
+  - supabase:public.lf_router_action_registry:ADAPTER_CREATE
+  - supabase:public.lf_router_action_registry:CARD_CREATE
+  - adapters/lf_shell_profile_adapter/ADAPTER.md
+judge_coverage:
+  generic_profile_input_example_present: true
+  marketplace_adaptation_example_present: true
+  preserve_vs_change_example_present: true
+  block_example_present: true
+  derive_to_card_example_present: true
+  do_not_create_anything_example_present: true
+  expected_output_present: true
+  judge_verdict_per_example_present: true
+scenarios:
+  - id: ADP-DEPTH-001
+    category: generic_profile_input
+    given:
+      router_binding: true
+      profile_id: PERFIL-PRODUCT-DIRECTOR-LF
+      target_classification: SCREEN_SLOT
+      existing_adapter: ADAPTER_LF_SHELL_PROFILE
+      requested_change: refine semantic content inside an existing writable slot
+    expected_output:
+      adapter_action: USE_EXISTING_ADAPTER
+      binding_state: BOUND
+      shell_modified: false
+      adapter_create: false
+      second_adapter_llm_call: false
+    judge_verdict: PASS
+
+  - id: ADP-DEPTH-002
+    category: marketplace_adaptation
+    given:
+      router_binding: true
+      profile_id: PERFIL-UI-ARCHITECT
+      product_context: MARKETPLACE_LF
+      target_classification: SCREEN_COMPONENT
+      canonical_shell_available: true
+      marketplace_requirement: preserve debt-offer context while adapting only the screen component
+    expected_output:
+      adapter_action: USE_EXISTING_ADAPTER
+      binding_state: BOUND
+      preserve:
+        - canonical_shell
+        - profile_authority
+        - governed_marketplace_requirement
+      change:
+        - writable_screen_component_only
+      adapter_create: false
+    judge_verdict: PASS
+
+  - id: ADP-DEPTH-003
+    category: preserve_vs_change
+    given:
+      router_binding: true
+      profile_id: PERFIL-UI-ARCHITECT
+      protected_target: global_navigation
+      writable_target: payment_summary
+    expected_output:
+      preserve:
+        - global_navigation
+        - shell_identity
+        - canonical_tokens
+      change:
+        - payment_summary
+      shell_modified: false
+      binding_state: BOUND
+    judge_verdict: PASS
+
+  - id: ADP-DEPTH-004
+    category: block
+    given:
+      router_binding: false
+      direct_adapter_call: true
+      profile_id: PERFIL-UI-ARCHITECT
+    expected_output:
+      adapter_action: BLOCK
+      verdict: BLOCK_UNBOUND_ADAPTER_INVOCATION
+      technical_application: false
+      adapter_create: false
+      second_adapter_llm_call: false
+    judge_verdict: EXPECTED_BLOCK
+
+  - id: ADP-DEPTH-005
+    category: derive_to_card
+    given:
+      requested_artifact_type: CARD
+      request_intent: reusable compact decision aid describing an already-governed Shell rule
+      adapter_specific_runtime_binding_needed: false
+      router_action_registry:
+        card_create: CREACION_CARD_LF
+        adapter_create: CREACION_ADAPTER_LF
+    expected_output:
+      adapter_action: RETURN_TO_ROUTER
+      recommended_router_action: CARD_CREATE
+      adapter_create: false
+      adapter_modified: false
+      reason: requested artifact is a Card and does not require an Adapter runtime binding
+    judge_verdict: PASS_DERIVE_TO_CARD
+
+  - id: ADP-DEPTH-006
+    category: do_not_create_anything
+    given:
+      requested_artifact_type: ADAPTER
+      matching_adapter_found: ADAPTER_LF_SHELL_PROFILE
+      router_binding_present: true
+      requested_scope_already_covered: true
+    expected_output:
+      adapter_action: USE_EXISTING_ADAPTER
+      recommended_router_action: NONE
+      adapter_create: false
+      adapter_modified: false
+      reason: ADAPTER_CREATE requires a missing target; an applicable governed Adapter already resolves
+    judge_verdict: PASS_NO_CREATION
+
+hard_fail_if:
+  - any scenario lacks expected_output
+  - any scenario lacks judge_verdict
+  - direct unbound invocation is applied
+  - protected Shell target is modified
+  - CARD_CREATE is represented as automatic Adapter behavior instead of Router handoff
+  - a new Adapter is created while an applicable governed Adapter already resolves

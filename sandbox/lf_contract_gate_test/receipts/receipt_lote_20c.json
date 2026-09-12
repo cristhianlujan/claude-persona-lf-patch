@@ -1,0 +1,25 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "CREACION_ADAPTER_LF",
+  "execution_id": "LOTE-20C-2026-06-12",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "e761eb40dc9b8e2f15837d7055b945333ea57819",
+  "judge_sha": "10609a9db2f82c5dc6fbe1cb5855b6ea0766bd7f",
+  "source_sha_list": [
+    "e761eb40dc9b8e2f15837d7055b945333ea57819",
+    "10609a9db2f82c5dc6fbe1cb5855b6ea0766bd7f",
+    "eba7f4b74b38795e43d92a53f1cd3d251ec0931f"
+  ],
+  "target_paths": [
+    "gobernanza/contratos/contrato_adapter_lf.yaml",
+    "gobernanza/judges/judge_contrato_adapter_lf.yaml",
+    "gobernanza/contratos/contrato_skill_lf.yaml"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-06-12T04:23:29Z",
+  "lote": "20C",
+  "notas": "Receipt sandbox Lote 20C. Cubre 3 rutas gobernadas. Sin runtime. Sin merge sin aprobacion explicita. Estado: PASS_SANDBOX."
+}

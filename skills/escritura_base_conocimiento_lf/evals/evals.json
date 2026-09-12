@@ -1,0 +1,34 @@
+{
+  "eval_suite": "EVALS_ESCRITURA_BASE_CONOCIMIENTO_LF_V0_1",
+  "operation_code": "ESCRITURA_BASE_CONOCIMIENTO_LF",
+  "cases": [
+    {
+      "eval_id": "EVAL_001",
+      "description": "Decision ALLOW_PROD_GATE valida -- debe escribirse en KB",
+      "input": {"decision_upstream": "ALLOW_PROD_GATE", "topic": "reinsercion_financiera", "source_url": "https://finanty.pe", "visible_text": "Ayudamos a recuperar tu historial crediticio paso a paso."},
+      "expected_result": "PASS_FULL_SKILL_RUN",
+      "tags": ["happy_path"]
+    },
+    {
+      "eval_id": "EVAL_002",
+      "description": "Decision BLOCK_OR_HITL -- no debe escribirse",
+      "input": {"decision_upstream": "BLOCK_OR_HITL", "topic": "eliminacion_deudas"},
+      "expected_result": "BLOCKED",
+      "tags": ["upstream_block"]
+    },
+    {
+      "eval_id": "EVAL_003",
+      "description": "Duplicado detectado -- debe bloquear sin autorizacion",
+      "input": {"decision_upstream": "ALLOW_PROD_GATE", "topic": "reinsercion_financiera", "source_url": "https://finanty.pe", "dedup_existing": true},
+      "expected_result": "BLOCKED",
+      "tags": ["dedup"]
+    },
+    {
+      "eval_id": "EVAL_004",
+      "description": "Contenido valido DRY_RUN -- no escribe a tabla real",
+      "input": {"decision_upstream": "ALLOW_PROD_GATE", "execution_mode": "DRY_RUN", "topic": "educacion_crediticia"},
+      "expected_result": "PASS_FULL_SKILL_RUN",
+      "tags": ["dry_run", "no_real_write"]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "GITHUB_CONTRACT_GATE_INSTALL_SANDBOX",
+  "execution_id": "e55dc8d3-ce00-466f-9f90-64d0d21292c4",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "lf_contract_gate_install_sandbox_v01",
+  "judge_sha": "mini_judge_act0057_kb_enriched_v03",
+  "source_sha_list": ["f2811c33da81949bbfead1bb26ed27f9e6cb3098"],
+  "target_paths": ["skills/escritura_base_conocimiento_lf/SKILL.md"],
+  "blocking_codes": [],
+  "issued_at": "2026-06-20T04:10:23Z",
+  "notes": "S32-LOTE-C: ACT-0057 v0.3 — S5-B kb_enriched OBLIGATORIO y BLOQUEANTE. Trigger BD ya aplicado. Summary distinto a visible_text. key_insights minimo 3 items."
+}

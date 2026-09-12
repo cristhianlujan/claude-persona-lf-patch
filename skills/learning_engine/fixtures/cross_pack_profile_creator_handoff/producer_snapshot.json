@@ -1,0 +1,33 @@
+{
+  "source_ref": "skills/profile_creator/examples/good_output.json@e81bcf30870980edd09260937f2bc68c105af6a7",
+  "handoff_ref": "skills/profile_creator/handoffs/to_quality_pack.handoff.json@e81bcf30870980edd09260937f2bc68c105af6a7",
+  "producer_output": {
+    "status": "PROFILE_PACK_CREATED",
+    "profile_pack_id": "PROFILE_UI_INTERFACE_ARCHITECT_LF_CANDIDATE",
+    "source_authority": "ACT-0001 + ACT-0045 + public.v_lf_fuente_operativa",
+    "deliverable_created": true,
+    "files_created": [
+      "README.md",
+      "PROFILE.md",
+      "contracts/main_contract.md",
+      "schemas/output.schema.json",
+      "judges/score_rubric.md",
+      "checklists/preflight_checklist.md",
+      "examples/good_output.json",
+      "fixtures/happy_path/input.json",
+      "validators/validate_pack.py",
+      "evals/eval_matrix.json",
+      "handoffs/to_quality_pack.handoff.json",
+      "adapters/github_pack_adapter.md"
+    ],
+    "evidence_map": {
+      "router_applied": true,
+      "asset_verified": "ACT-0045",
+      "runtime_enabled": false,
+      "automatic_impact": "BLOCKED"
+    },
+    "blocking_codes": [],
+    "next_gate": "QUALITY_PACK_REVIEW"
+  },
+  "observed_handoff_problem": "The producer claims a profile pack was created and lists filenames, but does not deliver the created pack, an exact artifact path/ref, or the file contents needed by Quality Pack to review that claimed deliverable."
+}

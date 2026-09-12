@@ -1,0 +1,43 @@
+{
+  "receipt_version": "S30-CI-ROUTER-PROFILE-CREATOR-GOVERNANCE-CONTROL-OWNERSHIP-PREWRITE-v1",
+  "scope": "SHARED_CI_ROUTER_OWNERSHIP_ONLY",
+  "base_main_sha": "c3410f3a3e538ae40e866bf227cf2324f82f1335",
+  "triggering_main_run": "34660399574",
+  "problem": "The exact two-file governance change merged by PR #683 was classified DEEP_SHARED_UNKNOWN, which incorrectly required the P0 exact-head external broker. Supabase then returned exceed_egress_quota even though neither changed file is owned by that external P0 lane.",
+  "repair": {
+    "exact_known_controls": [
+      "scripts/lf_contract_check.py",
+      "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_CORE_V1.py"
+    ],
+    "ownership": "KNOWN_SHARED_CI_SELFTEST_CONTROL",
+    "migration_parity_required": false,
+    "input_governance_parity_required": false,
+    "p0_exact_head_external_required": false,
+    "ci_router_selftest_required": true,
+    "deep_shared": false,
+    "unknown_siblings_still_fail_closed": true
+  },
+  "expected_reclassification": {
+    "exact_pr683_changed_set": "CI_ROUTER_SELFTEST_ONLY",
+    "p0_exact_head_external_required": false
+  },
+  "verification": {
+    "ci_lane_router_regressions_expected": "37/37",
+    "declarative_positive_expected": "8/8",
+    "declarative_adversarial_expected": "16/16",
+    "exact_head_ci": "PENDING",
+    "pr_context_ci": "PENDING"
+  },
+  "boundaries": {
+    "supabase_write": false,
+    "billing_change": false,
+    "runtime_activation": false,
+    "scheduler_change": false,
+    "s26_mutation": false,
+    "gate_g": false,
+    "golden": false,
+    "production": false,
+    "main_merge_authorized": false
+  },
+  "status": "CANDIDATE_NOT_MERGED"
+}

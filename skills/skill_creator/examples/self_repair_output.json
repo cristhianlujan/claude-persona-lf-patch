@@ -1,0 +1,13 @@
+{
+  "status": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+  "skill_pack_id": "SELF_REPAIR_SKILL_CREATOR_OUTPUT",
+  "source_authority": "ACT-0045",
+  "deliverable_created": {
+    "summary": "Prose-only skill output detected; regenerate as complete pack",
+    "required_repair": "Create all required directories, schemas, validators, fixtures, evals and handoff"
+  },
+  "files_created": [],
+  "evidence_map": ["BASIC_PROMPT_ONLY_SKILL detected"],
+  "blocking_codes": ["BASIC_SKILL_OUTPUT_NOT_ACCEPTABLE"],
+  "next_gate": "SELF_REPAIR_THEN_QUALITY_PACK"
+}

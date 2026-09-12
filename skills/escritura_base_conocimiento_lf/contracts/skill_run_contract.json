@@ -1,0 +1,46 @@
+{
+  "contract_id": "SKILL_RUN_CONTRACT_ESCRITURA_BASE_CONOCIMIENTO_LF_V0_1",
+  "operation_code": "ESCRITURA_BASE_CONOCIMIENTO_LF",
+  "asset_code": "ACT-0057",
+  "version": "v0.1",
+  "run_mode": "FULL_REQUIRED",
+  "upstream_required": {
+    "skill": "ACT-0056",
+    "decision_filter": "ALLOW_PROD_GATE",
+    "source_table": "lf_content_decisions"
+  },
+  "required_steps": [
+    "router",
+    "upstream_decision_read",
+    "content_validation",
+    "kb_classification",
+    "summary_generation",
+    "dedup_check",
+    "kb_write",
+    "readback_verification",
+    "evidence_close"
+  ],
+  "required_steps_count": 9,
+  "output_table": "lf_knowledge_base",
+  "allowed_final_results": [
+    "PASS_FULL_SKILL_RUN",
+    "NEEDS_REPAIR",
+    "BLOCKED",
+    "FAIL_SKILL_RUN"
+  ],
+  "ledger_required": {
+    "executed_steps": true,
+    "missing_steps": true,
+    "blocked_steps": true,
+    "evidence_keys_present": true
+  },
+  "restrictions": {
+    "no_prod": true,
+    "no_runtime_abierto": true,
+    "no_val_write": true,
+    "no_escritura_automatica": true,
+    "impacto_automatico": "BLOQUEADO",
+    "upstream_decision_required": "ALLOW_PROD_GATE",
+    "dry_run_writes_to_real_table": false
+  }
+}

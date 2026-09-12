@@ -1,0 +1,39 @@
+binding_state: BOUND
+profile_id: frontend_prototype_architect_lf
+target_mode: IMPLEMENT_PROTOTYPE
+screen:
+  screen_code: EXAMPLE_CLIENT_SCREEN
+  module_code: EXAMPLE_CLIENT_MODULE
+  status: EXAMPLE_ONLY
+  variant_refs: []
+shell:
+  app_shell_code: CLIENT_APP_SHELL
+  version: RESOLVE_AT_RUNTIME
+  status: RESOLVE_AT_RUNTIME
+  design_system_code: LF_DS_V1
+  locked: true
+source_refs:
+  - supabase:lf_ops.pantallas:EXAMPLE_CLIENT_SCREEN
+  - supabase:lf_ops.modulos:EXAMPLE_CLIENT_MODULE
+  - supabase:lf_ops.app_shells:CLIENT_APP_SHELL
+  - upstream:ui_architect:PRODUCTION_UI_SPEC
+protected_targets:
+  - target_id: client_global_navigation
+    classification: SHELL_LOCKED
+    source_ref: supabase:lf_ops.app_shells:CLIENT_APP_SHELL
+writable_targets:
+  - target_id: primary_content
+    classification: SCREEN_SLOT
+    source_ref: upstream:ui_architect:component_tree
+profile_delta:
+  - decision_id: FE-001
+    target_id: primary_content
+    authority: frontend_prototype_architect_lf
+    change: Materialize the approved UI specification as a static sandbox prototype without changing hierarchy, CTA intent, copy claims or Shell.
+    precision_mode: NOT_APPLICABLE
+    precision_ref: null
+    execution_allowed: true
+conflicts: []
+handoff:
+  next_profile: evidence_lineage_reviewer_lf
+  allowed_scope: Verify source fidelity, Shell preservation and readback evidence; do not redesign.

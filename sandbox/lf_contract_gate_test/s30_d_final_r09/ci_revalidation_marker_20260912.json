@@ -1,0 +1,11 @@
+{
+  "scope": "S30_STRATEGY_BINDING_PRECANARY_REVALIDATION",
+  "branch": "lf/staging-s30-strategy-binding-refactor-20260912",
+  "prior_exact_head_sha": "2590ba76b3970f03b96f7b9ec59acb2f392341c4",
+  "prior_exact_head_checks": 19,
+  "prior_exact_head_result": "PASS",
+  "temporary_workflow_removed_at_sha": "bb67dcfcd7dee5c9fe2a5a2aaca7d56387bdaf19",
+  "reason": "Trigger canonical CI from an allowed sandbox path after removing the temporary unauthorized .github workflow.",
+  "runtime_activation_authorized": false,
+  "production_authorized": false
+}

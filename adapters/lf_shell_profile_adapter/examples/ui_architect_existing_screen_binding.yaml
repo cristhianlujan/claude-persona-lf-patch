@@ -1,0 +1,38 @@
+binding_state: BOUND
+profile_id: ui_architect
+target_mode: REMEDIATE
+screen:
+  screen_code: EXAMPLE_CLIENT_CHECKOUT
+  module_code: EXAMPLE_CLIENT_MODULE
+  status: EXAMPLE_ONLY
+  variant_refs: []
+shell:
+  app_shell_code: CLIENT_APP_SHELL
+  version: RESOLVE_AT_RUNTIME
+  status: RESOLVE_AT_RUNTIME
+  design_system_code: LF_DS_V1
+  locked: true
+source_refs:
+  - supabase:lf_ops.pantallas:EXAMPLE_CLIENT_CHECKOUT
+  - supabase:lf_ops.modulos:EXAMPLE_CLIENT_MODULE
+  - supabase:lf_ops.app_shells:CLIENT_APP_SHELL
+protected_targets:
+  - target_id: global_navigation
+    classification: SHELL_LOCKED
+    source_ref: supabase:lf_ops.app_shells:CLIENT_APP_SHELL
+writable_targets:
+  - target_id: payment_summary
+    classification: SCREEN_COMPONENT
+    source_ref: ui_architect:component_tree:payment_summary
+profile_delta:
+  - decision_id: REM-001
+    target_id: payment_summary
+    authority: ui_architect
+    change: Keep payment summary visible during payment-method selection.
+    precision_mode: CANONICAL_TOKEN
+    precision_ref: RESOLVE_TOKEN_AT_RUNTIME
+    execution_allowed: true
+conflicts: []
+handoff:
+  next_profile: frontend_prototype_architect_lf
+  allowed_scope: Implement only the bound UI delta inside writable screen targets; preserve the resolved Shell.

@@ -1,0 +1,29 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.3",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-BISC-006-MAIN-PROMOTION-A01-A02",
+  "result": "PASS",
+  "all_required_steps_pass": true,
+  "contract_sha": "823c042a4b87430a553cdabf2c13350e29681869db5e634c81b9e7a57aa8a812",
+  "judge_sha": "9e8ccfcb989172689b88d695773f439b6f0f04d2",
+  "source_sha_list": [
+    "a5afacb337d30658bf6941fd96c55498289d3ac9",
+    "0e922f1c9e78c855864018c0610128062a7a0351cf1e362cff96ea25e2d1f7fb"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/*"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-07-30T23:20:00Z",
+  "evidence": {
+    "purpose": "Promote the complete R8 canonical skill package to main so A01 and A02 can close under events 858 and 878.",
+    "source_merge_commit": "a5afacb337d30658bf6941fd96c55498289d3ac9",
+    "canonical_package_files": 66,
+    "a01": "J05 positive 7/7; negative rejected; missing and empty blocked",
+    "a02": "J04 positive 10/10; negative 4/10 with six exact failures; missing and empty blocked",
+    "supabase_before_promotion": "2 PASS_WITH_EVIDENCE and 60 NOT_VALIDATED",
+    "direct_main_write": false
+  }
+}

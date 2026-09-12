@@ -1,0 +1,36 @@
+{
+  "schema":"lf-profile-runtime-screen-decomposer-downstream-status/v1",
+  "campaign":"PROFILE_RUNTIME_P0_V3_20260902",
+  "artifact_sha256":"ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+  "screen_decomposer_contract_ref":"skills/creating-integral-user-stories/agents/screen-decomposer.md",
+  "screen_decomposer_operational_version":"v0.3",
+  "context_pack_v3":{
+    "builder_gate":"14/14 PASS",
+    "trace_data_e2e":"PASS_WITH_ALL_CRITICAL_COUNTERS_0",
+    "source_bound":true,
+    "dynamic_data_non_reconciliation":true,
+    "offviewport_not_material_omission":true
+  },
+  "j02_readiness":{
+    "status":"NOT_PROVEN_FROM_CONTEXT_PACK_ALONE",
+    "missing_or_not_bound_in_profile_runtime_evidence":[
+      "J01_SOURCE_INTEGRITY PASS_WITH_EVIDENCE receipt",
+      "complete context_inventory",
+      "complete field_inventory",
+      "permission_inventory",
+      "transition_inventory",
+      "screen-decomposition.schema.json validation for produced decomposition",
+      "J02 independent judge execution receipt"
+    ]
+  },
+  "downstream_context_pack_equivalence":{
+    "structural_evidence_equivalence":"PASS_DETERMINISTIC_FIXTURE",
+    "full_screen_decomposer_handoff_equivalence":"NOT_PROVEN",
+    "j02_pass":"NOT_EXECUTED"
+  },
+  "claim_policy":{
+    "context_pack_pass_may_imply_j02_ready":false,
+    "context_pack_pass_may_imply_profile_semantic_utility":false,
+    "context_pack_pass_may_imply_screen_decomposer_judge_pass":false
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "QUALITY_PACK_INDEPENDENT_CHAT_SEMANTIC_REVIEW_PATH_ACT0045",
+  "execution_id": "ACT-0045-QUALITY-PACK-INDEPENDENT-CHAT-REVIEW-PATH-2026-08-26",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "2fac0a92d619a9eb9a1e88c4e778a00a0424c7f7",
+  "judge_sha": "05f1cbae6ce1b54d58bce03dbd1f6a1730e6f71f",
+  "source_sha_list": [
+    "372cd8dd7e3f777ec96f33c2b7268a8db6b9c9bc",
+    "2fac0a92d619a9eb9a1e88c4e778a00a0424c7f7",
+    "6c4f9b7561b460c37d85c202eb0a54b34c7e3a64",
+    "1e237dbaf5fd537a7f112311af75c98192f68b36",
+    "90474a5da3f1792a382aba70528ec169fafb940e",
+    "74e98327e1d80ff988a6df9973286fc96ad36b87",
+    "940d10f1523d94990479eb9641e4e1ac44fe6d3c",
+    "ee5943622cb833b3222c13a6c1c443c366737e54"
+  ],
+  "target_paths": [
+    "profiles/quality_pack/SKILL.md",
+    "profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md",
+    "profiles/quality_pack/evals/independent_chat_semantic_review_matrix.json",
+    "profiles/quality_pack/fixtures/independent_chat_semantic_review/invalid_producer_receipt.json",
+    "profiles/quality_pack/fixtures/independent_chat_semantic_review/valid_receipt.json",
+    "profiles/quality_pack/handoffs/independent_chat_semantic_review.md",
+    "profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json",
+    "profiles/quality_pack/validators/validate_independent_semantic_review.py"
+  ],
+  "blocking_codes": [],
+  "source_parity_main_sha": "52b3f181765b7360719a5d72fa26d209a34602b7",
+  "source_parity_migration_blob_sha": "101ff70d609bd34b6fc152f578b803d0ca2c319e",
+  "issued_at": "2026-08-26T22:02:00Z",
+  "lote": "ACT-0045-QUALITY-PACK-INDEPENDENT-CHAT-SEMANTIC-REVIEW-PATH",
+  "notas": "Se instala únicamente el mecanismo sin costo adicional para ejecutar revisión semántica en un contexto de chat limpio e independiente del productor. El validator y la matriz de dos casos fueron ejecutados con PASS en Validate LF Packs run 33017555636 sobre head 13323b414fa0a200d53f2214ac0f923f98fd28d9: el recibo independiente válido fue aceptado y el intento de autoevaluación reviewer_is_producer=true fue rechazado. En el head previo final 0ee1408509d9602c2902f3a67501345e4afb72dd, Validate LF Packs runs 33017692503 y 33017834811 pasaron; el lf-contract-check de PR identificó correctamente que faltaba este LF_OPERATION_CONTRACT_RECEIPT. Este receipt cierra únicamente esa obligación contractual. No se ha ejecutado todavía una revisión semántica independiente de PR #222 ni PR #225, por lo que SEMANTIC_REVIEW=EXECUTED_INDEPENDENT_CONTEXT no se declara aún para esos artefactos. No se implementa un juez semántico automatizado, no se usa Copilot ni modelo/API externo de pago, no se declara behavioral PASS general ni promoción a regression eval. No modifica Supabase, Docs, n8n, runtime ni estados Router, y no autoriza impacto automático ni producción adicional."
+}

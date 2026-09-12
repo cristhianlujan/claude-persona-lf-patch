@@ -1,0 +1,34 @@
+version: v0.2
+status: CANDIDATO
+estado_operativo: READ_ONLY
+runtime_estado: NO_HABILITADO
+impacto_automatico: BLOQUEADO
+project: 00_GOBERNANZA_PORTAFOLIO_OPERATIVO_LF
+asset_code: SKILL_GENERACION_PDF_PROFESIONAL_LF_v0.2_CANDIDATO
+operation_code: CREACION_SKILL_LF
+repository: cristhianlujan/claude-persona-lf-patch
+base_path: /skills/generacion_pdf_profesional_lf
+last_updated: 2026-06-13
+required_files_count: 20
+required_files:
+  - SKILL.md
+  - DOC_OFICIAL.md
+  - research_pack.md
+  - manifest.yaml
+  - references/pdf_pipeline_decision.md
+  - references/executive_pdf_layouts.md
+  - references/visual_qa_bug_hunt.md
+  - references/page_contracts.md
+  - references/pdf_design_tokens.md
+  - templates/report_exec_16x9.md
+  - templates/flow_review_report.md
+  - scripts/render_and_audit_pdf.py
+  - evals/pdf_quality_checklist.yaml
+  - quality/pdf_professional_gate.yaml
+  - judges/judge_pdf_profesional_lf.yaml
+  - examples/input_brief.md
+  - examples/output_expected.md
+  - examples/good_report_spec.md
+  - examples/bad_report_antipatterns.md
+  - samples/brief_v2.md
+allowed_final_state: PASS_CANDIDATO_READ_ONLY_REPAIRED

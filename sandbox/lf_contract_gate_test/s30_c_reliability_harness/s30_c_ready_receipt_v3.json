@@ -1,0 +1,83 @@
+{
+  "receipt_type": "S30_C_BUILD_READY_RECEIPT",
+  "receipt_version": "S30_C_BUILD_READY_R03_V1",
+  "lane": "S30-C",
+  "base_main_sha": "2b6f2f918c4d6c3d66226cc1933728d61cbfe4cb",
+  "build_run_version": "HARNESS_AND_GUARDS-R03",
+  "result": "READY_FOR_FINAL_R09_INTEGRATION",
+  "claim_ceiling": "EVIDENCE_FREEZE_AND_REPLAY_HARNESS_READY",
+  "execution_authority": {
+    "default": "DETERMINISTIC_FIRST",
+    "model_calls": 0,
+    "model_output_contract": "S30_SEMANTIC_DELTA_V1",
+    "final_materialization": "DETERMINISTIC",
+    "guards_and_receipts": "DETERMINISTIC"
+  },
+  "r06": {
+    "PRIVATE_REPO_UNAVAILABLE_BUT_FROZEN_BUNDLE_SELF_CONTAINED": "PASS",
+    "ARTIFACT_PAYLOAD_HASH_RECOMPUTES_EXACTLY": "PASS",
+    "UPSTREAM_CONTRACT_AVAILABLE_WITHOUT_CHAT_MEMORY": "PASS",
+    "INDEPENDENT_REVIEWER_CAN_COMPLETE_WITH_NETWORK_OFF": "PASS",
+    "CI_RUNNER_ACTUALLY_EXECUTES_NEW_REGRESSION": "REQUIRES_EXTERNAL_EXACT_HEAD_CI_READBACK",
+    "DEPENDENCY_IMPORT_CLOSURE_COMPLETE": "PASS",
+    "bundle_format": "SELF_CONTAINED_DIRECTORY",
+    "model_calls": 0
+  },
+  "r07": {
+    "freeze_contract": "S30-R07-GATE-FREEZE-v2",
+    "freeze_chain_records": 2,
+    "last_frozen_phase": "HARNESS_AND_GUARDS",
+    "repair_requires_new_bounded_run": true
+  },
+  "r09_build": {
+    "corpus_id": "S30-R09-HISTORICAL-REPLAY-v2",
+    "case_count": 27,
+    "preventable_first_hop_escape_count": 0,
+    "avoidable_retry_count": 0,
+    "false_na": 0,
+    "false_pass": 0,
+    "missing_readback": 0,
+    "model_calls": 0,
+    "final_acceptance": "NOT_RUN_DEFERRED_TO_S30_D"
+  },
+  "upstream_bindings": {
+    "S30-A": {
+      "path": "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json",
+      "sha256": "69e3972c0b3677232a01f5c33fd0f77ccbbc28901ad477fcb96892257a00f9ff",
+      "state": "CLOSEOUT_BOUND"
+    },
+    "S30-B": {
+      "path": "sandbox/lf_contract_gate_test/s30_data_access_candidate/s30_b_final_receipt_v1.json",
+      "sha256": "ab902a8519a822679916b1a5dd3a1a8ab48f872fe4b0865bbac49d884c29f7ab",
+      "state": "FINAL_CLOSED_BOUND"
+    }
+  },
+  "artifact_sha256": {
+    "freeze_contract.json": "ea9f31a14bc652d60516a2e986394e16c240dfbcde848ec0ef58076105484555",
+    "freeze_records.json": "c14a9c6d3805aad30ee3cbac33a681f4505627dfc459216f721bb63251d9818d",
+    "replay_corpus.json": "bee08b6c61db9b14642f000f0a3f5c12e8f0c0558ab81e3876b36418c4ef9e21",
+    "s30c_harness.py": "86bec6f01f4eaa52ef053258311dee635a36c905e80a2740f668a4781c532219",
+    "source_manifest.json": "ecd12d27b6797f5d761ae3a42b45e677f272094c692967954f4c30121b89e69d",
+    "test_s30c_harness.py": "83430ad8deb1852d79f84a2fe2e2a1b8e393a3249a6c5a7c9604fe2dce30749a"
+  },
+  "external_exact_head_requirements": [
+    "Validate LF Packs SUCCESS on candidate exact HEAD",
+    "lf-contract-check SUCCESS on candidate exact HEAD",
+    "GitHub readback proves generic S30 runner executed test_s30c_harness.py"
+  ],
+  "invalidation_triggers": [
+    "candidate artifact bytes change",
+    "base main changes before promotion",
+    "upstream A/B receipt bytes change",
+    "generic S30 CI discovery removed"
+  ],
+  "safety": {
+    "main_modified": false,
+    "runtime_modified": false,
+    "production_modified": false,
+    "scheduler_modified": false,
+    "s26_modified": false,
+    "s30_a_or_b_modified": false
+  },
+  "promotion_authority": "NONE"
+}

@@ -1,0 +1,7 @@
+-- Canonical active-chain readbacks moved to:
+-- sandbox/lf_contract_gate_test/PR93_V7_READBACK.sql
+-- sandbox/lf_contract_gate_test/PR93_V7_HARDENING_READBACK.sql
+--
+-- This compatibility file intentionally contains no executable statements. Keeping a
+-- second copy would allow ownership, ACL, canonicalization and lifecycle expectations
+-- to diverge.

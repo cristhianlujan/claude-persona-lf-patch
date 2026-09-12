@@ -1,0 +1,32 @@
+version: v0.2
+status: CANDIDATO
+skill: SKILL_GENERACION_PDF_PROFESIONAL_LF
+operation_code: CREACION_SKILL_LF
+
+required:
+  - router_first_applied
+  - pipeline_decision_declared
+  - editable_source_declared
+  - page_map_declared
+  - layout_reference_used
+  - pdf_rendered
+  - key_pages_exported_as_images
+  - bug_hunt_done
+  - issues_listed
+  - readback_done
+  - runtime_not_enabled
+
+quality_blocks:
+  - pdf_basic_or_plain
+  - wrong_pipeline_for_pdf_type
+  - no_visual_page_images
+  - no_bug_hunt
+  - text_cut_or_overlapped
+  - tables_unreadable
+  - source_editable_missing
+
+verdicts:
+  - PASS_CANDIDATO_READ_ONLY_REPAIRED
+  - RETURN_TO_WORKER
+  - FAIL_VISUAL_QUALITY
+  - BLOCKED

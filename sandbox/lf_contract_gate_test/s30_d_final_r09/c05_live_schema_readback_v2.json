@@ -1,0 +1,55 @@
+{
+  "receipt_version": "S30_C05_LIVE_SCHEMA_READBACK_V2",
+  "observed_against_main_sha": "0d981a83d2624a29e1f13d5f6782bfe14b3d8109",
+  "project_id": "mhwmirqcgxxukpctffuv",
+  "read_mode": "READ_ONLY_SCHEMA_FIRST",
+  "write_executed": false,
+  "lf_operation_execution": {
+    "primary_key": [
+      "execution_id"
+    ],
+    "operation_code_fk": "lf_operation_registry(operation_code)",
+    "rls_enabled": true,
+    "authenticated_privileges": [
+      "SELECT"
+    ],
+    "service_role_write_privileges": true,
+    "current_columns": [
+      "execution_id",
+      "operation_code",
+      "target_type",
+      "target_code",
+      "target_repo",
+      "target_path",
+      "status",
+      "started_at",
+      "completed_at",
+      "manifest",
+      "created_at",
+      "updated_at",
+      "created_by_execution_id",
+      "updated_by_execution_id"
+    ],
+    "candidate_columns_absent": [
+      "idempotency_key",
+      "request_sha256",
+      "lease_owner",
+      "lease_expires_at",
+      "lease_fence",
+      "checkpoint_seq",
+      "checkpoint_payload"
+    ]
+  },
+  "triggers": [
+    "trg_00_lf_operation_policy_snapshot_v1",
+    "trg_01_lf_operation_policy_snapshot_guard_v1",
+    "trg_lf_operation_execution_timestamp",
+    "trg_lf_prod_enforcement_execution_v01"
+  ],
+  "existing_operation_for_future_fire_test": {
+    "operation_code": "ACTUALIZACION_ESTRATEGIA_LF",
+    "status": "CANDIDATO_READ_ONLY",
+    "required_policy_bindings": 4
+  },
+  "new_strategy_operations_registered": false
+}

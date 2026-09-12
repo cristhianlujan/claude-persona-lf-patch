@@ -1,0 +1,28 @@
+judge_id: JUDGE_MARKETPLACE_LF_CX_TRUST_ADAPTER_V2
+assurance_revision: v2
+pass_threshold: 22
+max_score: 25
+criteria:
+  claim_authority_preservation:
+    weight: 5
+    pass_condition: No guarantee, debt/payment status, eligibility, urgency, SLA or legal/reputational fact is invented or strengthened.
+  marketplace_trust_fidelity:
+    weight: 5
+    pass_condition: The binding preserves the actual Marketplace promise, trust friction, supplied evidence and claim boundaries.
+  trust_actionability:
+    weight: 5
+    pass_condition: Risks and transparency improvements are concrete and clearly separate canonical facts from proposals.
+  invocation_governance:
+    weight: 5
+    pass_condition: Invocation is Router-bound, exactly once when applied, uses the compact capsule and adds no second model call.
+  downstream_safety:
+    weight: 5
+    pass_condition: Qualifiers, blockers and support/owner dependencies survive handoff without authority drift.
+automatic_fail:
+  - direct_or_profile_self_invocation
+  - duplicate_or_missing_invocation_evidence
+  - unsupported_guarantee_or_financial_claim
+  - qualifier_or_claim_boundary_loss
+  - capsule_budget_exceeded
+  - standalone_adapter_model_call
+  - runtime_or_production_promotion_claim

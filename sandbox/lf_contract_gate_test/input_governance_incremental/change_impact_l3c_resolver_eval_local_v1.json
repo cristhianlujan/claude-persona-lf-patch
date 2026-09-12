@@ -1,0 +1,29 @@
+{
+  "schema":"INPUT_GOV_CHANGE_IMPACT_L3C_RESOLVER_EVAL_V1",
+  "evidence_class":"LOCAL_REPRODUCIBLE_READ_ONLY_PRE_CI",
+  "benchmark":"INPUT_GOV_CHANGE_IMPACT_L3C_GOLD50_V1",
+  "authority":{"cross_audit_run_id":75,"work_id":8,"handoff_message_id":41,"verdict":"ADJUDICATED_WITH_CORRECTIONS","read_only":true},
+  "resolver":"change_impact_l3c_resolver_readonly_v1.py",
+  "input_fixture":"change_impact_l3c_structured_inputs_v1.json",
+  "adjudicated_gold":"change_impact_l3c_adjudicated_gold_v2.json",
+  "cases":50,
+  "exact_decision_accuracy":1.0,
+  "exact_decision_passed":50,
+  "exact_impact_set_accuracy":1.0,
+  "exact_impact_set_passed":50,
+  "impact_precision_micro":1.0,
+  "impact_recall_micro":1.0,
+  "unsafe_under_block":0,
+  "unnecessary_global_block":0,
+  "unknown_mixed_shared_fail_closed":{"passed":10,"total":10},
+  "latency_ms":{"p50":0.001852,"p95":0.002316,"max":0.035063,"samples":5000,"scope":"algorithm-only local microbenchmark; not SLO"},
+  "evidence_depth":{"min":4,"p50":6.0,"max":9},
+  "anti_leakage":{"forbidden_fields_found":[],"case_id_removed_before_resolver":true,"case_family_removed_before_resolver":true,"runtime_parser_certified":false},
+  "limitations":[
+    "Structured benchmark facts are fixture inputs; this result does not certify natural-language change parsing.",
+    "The adjudicated gold remains research authority for evaluation only, not canonical runtime authority.",
+    "Performance numbers are local algorithm-only measurements and must not be treated as production SLO."
+  ],
+  "authorization":{"scoped_pass_authorized":false,"downstream_authorized":false,"production_authorized":false},
+  "failures":[]
+}

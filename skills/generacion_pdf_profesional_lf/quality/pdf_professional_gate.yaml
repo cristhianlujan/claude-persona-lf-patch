@@ -1,0 +1,17 @@
+version: v0.2
+name: pdf_professional_gate
+required:
+  - pipeline_decision_present
+  - editable_source_present
+  - rendered_page_images_present
+  - visual_bug_hunt_done
+  - readback_present
+block:
+  - pdf_basic_or_plain
+  - wrong_pipeline_for_pdf_type
+  - no_visual_page_images
+allowed:
+  - PASS_CANDIDATO_READ_ONLY_REPAIRED
+  - RETURN_TO_WORKER
+  - FAIL_VISUAL_QUALITY
+  - BLOCKED

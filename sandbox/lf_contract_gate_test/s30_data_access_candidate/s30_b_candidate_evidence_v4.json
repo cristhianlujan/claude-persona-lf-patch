@@ -1,0 +1,160 @@
+{
+  "evidence_version": "S30_B_CANDIDATE_EVIDENCE_V4",
+  "lane": "S30-B",
+  "base_main_sha": "ab9f0330a69f7404afc04faa01e93bfcd42fa3f0",
+  "verification_state": "FINAL_CLOSED",
+  "claim_ceiling": "FIELD_LEVEL_DATA_ACCESS_AND_SCHEMA_SAFETY_CANDIDATE_PASS",
+  "schema_currentness": {
+    "registered_source_count": 15,
+    "canonical_fingerprint_source_count": 13,
+    "canonical_match_count_before_rebind": 12,
+    "canonical_stale_count_before_rebind": 1,
+    "stale_source_key": "ASSETS_PROFILES",
+    "stale_object_identity": "public.lf_activos",
+    "previous_fingerprint": "d6660d21104f255b14e0b1bab2528e315642cbb5f58f5830edabbc783c284e9a",
+    "live_fingerprint": "575382ef470e0baa1b7886b83945792e5944ba8071be202bd091329aa8e6583f",
+    "rebound_in_candidate": true,
+    "fallback_source_count": 2,
+    "fallback_registered_fields_missing": 0,
+    "function_signature_resolution": {
+      "architecture_definition": "private.fn_architecture_object_definition_v3(p_object_type text, p_object_identity text) -> text",
+      "digest": "extensions.digest(text, text) -> bytea"
+    },
+    "canonical_match_count_after_merge": 13,
+    "canonical_stale_count_after_merge": 0,
+    "fallback_registered_fields_missing_after_merge": 0
+  },
+  "live_positive_readback": {
+    "source_key": "STRATEGY_SNAPSHOTS",
+    "object_identity": "public.lf_strategy_snapshots",
+    "filter": {
+      "id": 35
+    },
+    "schema_resolved_in_prior_separate_call": true,
+    "row_count": 1,
+    "snapshot_code": "LF_OPERATING_CONSTITUTION_POLICY_AUTONOMOUS_OPERATIONS_20260906",
+    "status": "CANDIDATO_READ_ONLY",
+    "runtime_state": "PLAN_ONLY",
+    "impact_policy": "BLOQUEADO"
+  },
+  "deterministic_test_evidence": {
+    "core_data_access": {
+      "suite": "test_s30_data_access_v2.py",
+      "result": "PASS",
+      "negative_cases": 21,
+      "negative_backend_escape_count": 0,
+      "registered_source_count": 15
+    },
+    "bounded_data_access": {
+      "suite": "test_s30_data_access_budget_v1.py",
+      "result": "PASS",
+      "negative_cases": 12,
+      "backend_budget_escape_to_downstream": 0,
+      "registered_read_authority": "DETERMINISTIC",
+      "model_calls_for_registered_read_planning": 0
+    },
+    "execution_authority": {
+      "suite": "test_s30_execution_authority_v1.py",
+      "result": "PASS",
+      "contract": "S30_EXECUTION_AUTHORITY_V1",
+      "deterministic_categories": 5,
+      "model_calls_for_deterministic_cases": 0,
+      "model_only_on_non_derivable_semantic_gap": true,
+      "post_model_materialization_and_validation": "DETERMINISTIC",
+      "work_classifications": [
+        "DETERMINISTIC",
+        "SEMANTIC",
+        "HYBRID"
+      ],
+      "model_input_mode": "COMPACT_SEMANTIC_GAP_ONLY",
+      "model_output_contract": "S30_SEMANTIC_DELTA_V1",
+      "model_system_owned_fields_allowed": false,
+      "producer_self_verdict_allowed": false,
+      "calculable_scoring_authority": "DETERMINISTIC",
+      "independent_semantic_judge_role": "EVALUATION_ONLY",
+      "negative_cases": 8
+    },
+    "self_governance": {
+      "suite": "validate_s30_self_governance_gate.py --self-test",
+      "result": "PASS",
+      "case_count": 31
+    }
+  },
+  "optimization_policy": {
+    "default": "DETERMINISTIC_FIRST",
+    "model_gate": "MODEL_ONLY_ON_NON_DERIVABLE_SEMANTIC_GAP",
+    "deterministic_wins_equivalent_contract": true,
+    "known_source_model_planning_forbidden": true,
+    "materialization_guards_final_validation": "DETERMINISTIC",
+    "work_classification": [
+      "DETERMINISTIC",
+      "SEMANTIC",
+      "HYBRID"
+    ],
+    "canonical_working_graph": "DETERMINISTIC",
+    "model_input": "SEMANTIC_GAP_ONLY",
+    "model_output": "SEMANTIC_DELTA_ONLY",
+    "semantic_delta_fields": [
+      "decisions",
+      "proposals",
+      "rationale",
+      "unresolved"
+    ],
+    "producer_self_verdict_allowed": false,
+    "calculable_scoring": "DETERMINISTIC",
+    "independent_semantic_judge": "EVALUATION_ONLY_OPTIONAL"
+  },
+  "safety": {
+    "ddl_created": false,
+    "runtime_activation": false,
+    "production_activation": false,
+    "scheduler_modified": false,
+    "s26_modified": false
+  },
+  "remaining_gates": [],
+  "applicable_ekb_refinement": {
+    "schema_first_read": true,
+    "codes": [
+      "GOV-TRANSVERSAL-MATERIALIZATION-PATTERN-001",
+      "AB-PROFILE-QUALITY-GATE-001"
+    ],
+    "adopted_points": [
+      "DETERMINISTIC_SEMANTIC_HYBRID_CLASSIFICATION",
+      "DETERMINISTIC_CALCULABLE_SCORING",
+      "SEMANTIC_JUDGE_AFTER_HARD_GUARDS",
+      "MODEL_OUTPUT_ONLY_NON_DERIVABLE_DELTA"
+    ]
+  },
+  "materialization_base_main_sha": "0a55e3f92f36c84da7698eb97c4d2eae337a2c20",
+  "post_merge_main": {
+    "pr": 662,
+    "candidate_head_sha": "5d442f2edea3418d27ef70122d526eed8bf7f00f",
+    "merge_sha": "4016f88ecd0f57008ab3b919c80c9abf9b0cf8a3",
+    "validate_lf_packs_run": 34504593415,
+    "lf_contract_check_run": 34504593500,
+    "result": "PASS"
+  },
+  "closeout_persistence": {
+    "pr": 663,
+    "merge_sha": "ab9f0330a69f7404afc04faa01e93bfcd42fa3f0",
+    "staging_runs": [
+      34505195329,
+      34505195299
+    ],
+    "broker_dispatch_run": 34505382156,
+    "protected_runs": [
+      34505449973,
+      34505450037
+    ],
+    "pr_runs": [
+      34505696577,
+      34505696657,
+      34505696553
+    ],
+    "main_runs": [
+      34505958907,
+      34505958976
+    ],
+    "result": "PASS"
+  }
+}

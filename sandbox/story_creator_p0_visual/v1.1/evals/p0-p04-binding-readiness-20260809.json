@@ -1,0 +1,23 @@
+{
+  "schema_version": "p0-p04-binding-readiness/v1",
+  "historical_receipt_ref": "evals/p0-real-screen-smoke-receipt-20260808.json",
+  "historical_visual_output_sha256": "d6c9e13b3e92d7114e1ee64bea5fb2f79141b244abb347add341579235293fd1",
+  "historical_source_raw_sha256": "d712967e2ed06dd1a43d05d4cc9606733f43952b2f9c6c6d66e85f3b29d35018",
+  "reviewable_visual_output_bytes_available": false,
+  "reviewable_source_bytes_available": false,
+  "reviewable_crop_bytes_available": false,
+  "active_challenge_reissued": false,
+  "active_challenge_reissue_blocker": "A reviewer cannot authentically adjudicate a hash when the visual output, source image and crops are unavailable for inspection.",
+  "binding_contract_selftest": {
+    "reviewer_actions_exact": "7/7",
+    "negative_cases": "10/10",
+    "temporal_policy": "issued_at <= now < expires_at and issued_at <= comment_created_at < expires_at",
+    "authenticated_external_readback_required": true
+  },
+  "human_attestation_present": false,
+  "human_attestation_simulated": false,
+  "reviewable_packet_builder": "scripts/build_p0_review_evidence_packet.py",
+  "reviewable_packet_builder_status": "PASS_SYNTHETIC_CONTRACT_SELFTEST_EXTERNAL_DURABLE_PERSISTENCE_STILL_REQUIRED",
+  "next_valid_action": "Provide one real governed screen to the packet builder, persist the resulting source/output/crops in an approved private durable store, then issue a fresh time-bounded challenge and obtain authenticated reviewer readback.",
+  "p0_4_result": "BLOCKED_EVIDENCE_BEFORE_HUMAN_ATTESTATION"
+}

@@ -1,0 +1,155 @@
+judge_code: J04_FIELD_CONTRACTS
+version: v0.6
+status: CANDIDATO_READ_ONLY
+scope: Verifica cobertura 1:1, visibilidad, edición, validación, privacidad, auditoría y telemetría por campo.
+independence:
+  worker_must_not_execute_own_judge: true
+  executor_identity_required: true
+retry_limit: 2
+required_inputs:
+- story_pack
+- field_inventory
+- permission_matrix
+- references/field-contract.md
+preflight:
+- all_required_inputs_are_present
+- input_versions_are_compatible
+- source_and_evidence_refs_are_resolvable
+- judge_is_not_executed_by_worker
+- judge_version_and_executor_identity_are_present
+- field_inventory_present_and_non_empty
+preflight_enforcement:
+  enforced_by_validator: true
+  entrypoint: scripts/validate_field_coverage.py
+  rule: El validador debe emitir BLOCKED con exit_code 2 antes de evaluar assertions
+    cuando el inventario de campos no es evaluable.
+assertions:
+- fields_without_contract
+- unexpected_field_contracts
+- duplicate_field_codes
+- fields_without_visibility_rule
+- fields_without_editability_rule
+- pii_fields_without_classification
+- pii_fields_with_analytics_allowed
+- pii_fields_with_logs_allowed_without_rule
+- editable_fields_without_audit_strategy
+- fields_without_validation_mapping
+pass_if:
+- preflight_passed = true
+- all 10 assertion result collections are empty
+- assertions_passed = assertions_total
+- output validates against judge-result v0.5
+block_if:
+- field_inventory_missing = true
+- field_inventory_empty = true
+- permission_matrix_missing_and_required = true
+- field_source_conflict = true
+- metadata_or_evidence_unavailable = true
+- retry_limit_exhausted = true
+result_values:
+- PASS_WITH_EVIDENCE
+- RETURN_TO_WORKER
+- BLOCKED
+- FAIL
+required_evidence:
+- screen_fields_count
+- field_contracts_count
+- pii_field_count
+- editable_field_count
+- checks
+- failed_assertions
+- repair_instructions
+validator:
+  entrypoint: scripts/validate_field_coverage.py
+  command_template: LF_JUDGE_VERSION=<git_blob_sha1> LF_EXECUTOR_IDENTITY=<actor> python scripts/validate_field_coverage.py
+    <story_pack.json> --judge J04_FIELD_CONTRACTS --evidence-ref <resolvable_ref>
+  positive_case: E23_FIELD_CONTRACTS_POSITIVE
+  negative_case: E24_FIELD_CONTRACTS_NEGATIVE
+  negative_must_be_rejected: true
+  blocked_cases:
+  - assertion_id: field_inventory_missing
+    input: story_pack sin las claves screen_fields o fields
+    expected_result: BLOCKED
+    expected_exit_code: 2
+  - assertion_id: field_inventory_empty
+    input: story_pack con screen_fields o fields declarados vacíos
+    expected_result: BLOCKED
+    expected_exit_code: 2
+output:
+  schema_ref: schemas/judge-result.schema.json
+  schema_version: v0.5
+  required_fields:
+  - schema_version
+  - judge_code
+  - judge_version
+  - executor_identity
+  - command
+  - started_at
+  - completed_at
+  - exit_code
+  - result
+  - compliance_bit
+  - assertions_total
+  - assertions_passed
+  - failed_assertions
+  - blocking_assertions
+  - repairs
+  - repair_instructions
+  - evidence_refs
+  - evidence
+  - evidence_sha256
+  - input_sha256
+  - output_sha256
+  - retry_count
+  runtime_invariants:
+  - assertions_passed <= assertions_total
+  - PASS requires assertions_passed = assertions_total
+  - PASS requires preflight_passed = true
+  - repairs = repair_instructions
+  - completed_at >= started_at
+  - output_sha256 is valid
+repair_matrix:
+- assertion_id: fields_without_contract
+  instruction: Crear únicamente contratos respaldados por el inventario.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: pii_fields_with_analytics_allowed
+  instruction: Fijar analytics_allowed=false y revisar propiedades derivadas.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: editable_fields_without_audit_strategy
+  instruction: Agregar auditoría y estrategias previo/nuevo desde política.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: field_inventory_missing
+  instruction: Entregar el story_pack con screen_fields y fields resueltos desde fuente.
+    No inventar campos ni continuar sin inventario.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+- assertion_id: field_inventory_empty
+  instruction: Resolver el inventario en fuente. Una pantalla sin campos declarados
+    no es auditable y no puede pasar por vacuidad.
+  prohibited_shortcuts:
+  - delete_assertion
+  - lower_threshold
+  - invent_source
+  - self_approve
+prohibitions:
+- worker_self_approval
+- threshold_reduction_to_obtain_pass
+- assertion_deletion_to_obtain_pass
+- pass_without_evidence
+- pass_by_empty_input
+- judged_at_legacy_field

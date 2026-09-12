@@ -1,0 +1,23 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF-20260827-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "f06607b270e7f543dc2ff3674dc6fc2f540805b4",
+    "731846abbc265c41f69cfa9c289d9b5bd9d6ee30",
+    "14973ad7739da854aa635d97de95cf6f6fb6b648",
+    "44430b281bb724d70d3aa69369e86e26ec19a2db",
+    "0efdb02a7d25334943be8076d58a0e6186d8694f",
+    "050c6a04c1344766a7abc60573a4d26447e66788"
+  ],
+  "target_paths": ["profiles/evidence_lineage_reviewer_lf/**"],
+  "blocking_codes": [],
+  "issued_at": "2026-08-27T16:33:12Z",
+  "notes": "PASS_SANDBOX for governed Evidence Lineage Reviewer LF hardening under canonical ACTUALIZACION_PERFIL_LF execution bound before the new branch write. Direct readback, exact SHA/currentness, non-replayed candidate-bound provenance, artifact verification, current valid upstream and independent semantic reconciliation are separated. The prior 12/12 adversarial core is content-addressed to the identical evaluator blob; the added artifact-missing, provenance-missing and malformed cases follow explicit fail-closed/readback branches in the published evaluator. No fresh local rerun is claimed because the local runner was unavailable. This receipt does not claim final CI, merge, runtime enablement, production promotion or independent external audit."
+}

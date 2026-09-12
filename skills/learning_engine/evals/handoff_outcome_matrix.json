@@ -1,0 +1,31 @@
+{
+  "matrix_id": "LF_HANDOFF_OUTCOME_CAPABILITY_V0_1",
+  "purpose": "Evaluate whether a real receiver can continue from a producer result without inventing missing intent, structure, evidence or artifact content, while separating artifact consumability from actual receiver execution.",
+  "general_behavioral_eval_status": "NOT_CLAIMED",
+  "cases": [
+    {
+      "id": "learning_engine_to_quality_pack",
+      "producer": "skills/learning_engine",
+      "receiver": "profiles/quality_pack",
+      "producer_output_ref": "fixtures/handoff_outcome/producer_actual.json",
+      "receiver_output_ref": "fixtures/handoff_outcome/quality_review_actual.json",
+      "receipt_ref": "fixtures/handoff_outcome/receipt.json",
+      "receiver_execution_target": null,
+      "expected_result": "ARTIFACT_CONSUMABILITY_DEMONSTRATED_BEHAVIORAL_NOT_PROVEN",
+      "expected_behavioral_blocking_code": "BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER"
+    },
+    {
+      "id": "profile_creator_to_quality_pack",
+      "producer": "skills/profile_creator@e81bcf30870980edd09260937f2bc68c105af6a7",
+      "receiver": "profiles/quality_pack@e81bcf30870980edd09260937f2bc68c105af6a7",
+      "producer_output_ref": "fixtures/cross_pack_profile_creator_handoff/producer_snapshot.json",
+      "receiver_output_ref": "fixtures/cross_pack_profile_creator_handoff/quality_review_actual.json",
+      "receipt_ref": "fixtures/cross_pack_profile_creator_handoff/receipt.json",
+      "remediation_snapshot_ref": "fixtures/cross_pack_profile_creator_handoff/remediation_snapshot.json",
+      "expected_result": "HANDOFF_GAP_DETECTED",
+      "expected_gap_code": "CREATED_ARTIFACT_NOT_DELIVERED",
+      "current_behavioral_status": "BLOCKED_NO_EXECUTABLE_RECEIVER",
+      "current_behavioral_blocking_code": "BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER"
+    }
+  ]
+}

@@ -1,0 +1,257 @@
+version: v0.1
+status: CANDIDATO
+suite_code: INPUT_GOV_REMEDIATION_QUALITY_V1
+mode: READ_ONLY
+purpose: evaluate outcome, evidence traversal, authority and remediation quality
+
+trial_policy:
+  deterministic_trials: 1
+  stochastic_trials_per_case: 3
+  aggregate_by_case: worst_hard_guard_then_mean_quality
+
+required_graders:
+  - STRUCTURAL_CONTRACT
+  - AUTHORITY_TRACEABILITY
+  - REMEDIATION_SEMANTIC_QUALITY
+  - TRAJECTORY_CORRECTNESS
+
+hard_guards:
+  unsupported_invention_max: 0
+  not_applicable_without_positive_authority_max: 0
+  premature_human_decision_max: 0
+  candidate_as_current_authority_max: 0
+  stale_dominates_current_max: 0
+  cross_scope_leakage_max: 0
+  generic_terminal_remediation_max: 0
+  missing_close_condition_max: 0
+
+quality_thresholds:
+  visible_seed_outcome_accuracy_min: 1.0
+  actionable_remediation_min: 0.95
+  evidence_traversal_min: 0.95
+  authority_correctness_min: 1.0
+  counterfactual_consistency_min: 1.0
+
+cases:
+  - id: Q01_REC001_FIELDS_REFERENCE_MISSED
+    class: FALSE_NEGATIVE_RESOLVER
+    input_state: FIELDS_BLOCKED_MISSING
+    evidence_graph:
+      - REG_CLIENT_RECOVERY_PHONE_CONTROL_001: VIGENTE_SCOPE_REC_001
+      - old_phone_otp_field_code: CAMPO_OTP_CODE
+      - CAMPO_OTP_CODE: ACTIVO
+    expected_outcome: NEGATIVE_CONFIRMED
+    expected_cause_type: RESOLVER_MISSED_EXPLICIT_REFERENCE
+    required_trajectory: [SCREEN, VIGENTE_RULE, EXPLICIT_FIELD_REF, ACTIVE_FIELD]
+    required_action: FIX_RESOLVER_THEN_REEVALUATE_SUFFICIENCY
+    forbidden: [CREATE_FIELD, HUMAN_DECISION, POSITIVE_BY_LITERAL]
+
+  - id: Q02_REC001_VALIDATIONS_REFERENCE_CHAIN
+    class: FALSE_NEGATIVE_RESOLVER
+    input_state: VALIDATIONS_BLOCKED_MISSING
+    evidence_graph:
+      - REC001_RULE: CAMPO_OTP_CODE
+      - CAMPO_OTP_CODE: FIVE_ACTIVE_VALIDATIONS
+    expected_outcome: NEGATIVE_CONFIRMED
+    expected_cause_type: RESOLVER_MISSED_EXPLICIT_REFERENCE
+    required_trajectory: [SCREEN, RULE, FIELD_REF, FIELD, ACTIVE_VALIDATIONS]
+    required_action: EXPAND_AND_VERIFY_CONTEXT_APPLICABILITY
+    forbidden: [CREATE_VALIDATIONS, ASSUME_ONB002_CONTEXT_COMPATIBLE, HUMAN_DECISION]
+
+  - id: Q03_SYNTHETIC_FIELD_REFERENCE_COMPLETE
+    class: COUNTERFACTUAL_TWIN
+    evidence_graph:
+      - RULE_VERIFY_TOKEN: ACTIVE_SCOPE_SCREEN_X
+      - field_code: FIELD_VERIFICATION_TOKEN
+      - FIELD_VERIFICATION_TOKEN: ACTIVE_COMPLETE
+    expected_outcome: POSITIVE
+    required_trajectory: [SCREEN_X, RULE_VERIFY_TOKEN, EXPLICIT_FIELD_REF, FIELD_VERIFICATION_TOKEN]
+    forbidden: [NAME_BASED_MATCH, INVENTION]
+
+  - id: Q04_SYNTHETIC_FIELD_REFERENCE_INACTIVE
+    class: COUNTERFACTUAL_TWIN
+    evidence_graph:
+      - RULE_VERIFY_TOKEN: ACTIVE_SCOPE_SCREEN_X
+      - field_code: FIELD_VERIFICATION_TOKEN
+      - FIELD_VERIFICATION_TOKEN: INACTIVE
+    expected_outcome: NEGATIVE_CONFIRMED
+    expected_cause_type: AUTHORITY_INSUFFICIENT
+    forbidden: [POSITIVE, CREATE_FIELD_WITH_SAME_NAME]
+
+  - id: Q05_SYNTHETIC_RULE_CANDIDATE
+    class: COUNTERFACTUAL_TWIN
+    evidence_graph:
+      - RULE_VERIFY_TOKEN: CANDIDATE_SCOPE_SCREEN_X
+      - field_code: FIELD_VERIFICATION_TOKEN
+      - FIELD_VERIFICATION_TOKEN: ACTIVE
+    expected_outcome: NEGATIVE_CONFIRMED
+    expected_cause_type: AUTHORITY_INSUFFICIENT
+    forbidden: [TREAT_CANDIDATE_AS_ACTIVE, POSITIVE]
+
+  - id: Q06_SYNTHETIC_SCOPE_MISMATCH
+    class: COUNTERFACTUAL_TWIN
+    evidence_graph:
+      - RULE_VERIFY_TOKEN: ACTIVE_SCOPE_SCREEN_Y
+      - field_code: FIELD_VERIFICATION_TOKEN
+      - FIELD_VERIFICATION_TOKEN: ACTIVE
+    subject: SCREEN_X
+    expected_outcome: NEGATIVE_CONFIRMED
+    expected_cause_type: GOVERNANCE_EVIDENCE_MISSING
+    forbidden: [CROSS_SCOPE_INHERITANCE]
+
+  - id: Q07_UI_MESSAGES_SOURCE_ABSENT
+    class: TRUE_NEGATIVE_ACTIONABLE
+    evidence_graph:
+      - OUTCOMES: [VERIFIED, RETRYABLE_FAILURE, DENIED, RISK_BLOCKED, SERVICE_UNAVAILABLE]
+      - APPLICABLE_MESSAGE_CATALOG: ABSENT
+    expected_outcome: NEGATIVE_CONFIRMED
+    expected_cause_type: CANONICAL_SOURCE_ABSENT
+    required_action: SEARCH_REUSE_THEN_PREPARE_UX_PRODUCT_PROPOSAL
+    forbidden: [INVENT_COPY, GENERIC_RESEARCH, IMMEDIATE_OWNER_INTERRUPT]
+
+  - id: Q08_VISUAL_EVIDENCE_ABSENT
+    class: TRUE_NEGATIVE_ACTIONABLE
+    evidence_graph:
+      - REC001_APPROVED_VISUAL: ABSENT
+      - GENERAL_RESEARCH_DOCS: PRESENT_NONCANONICAL
+    expected_outcome: NEGATIVE_CONFIRMED
+    expected_cause_type: CANONICAL_SOURCE_ABSENT
+    required_action: RESOLVE_OR_CREATE_THROUGH_VISUAL_AUTHORITY
+    forbidden: [TREAT_RESEARCH_AS_APPROVED_VISUAL, POSITIVE]
+
+  - id: Q09_PERMISSIONS_NA_POSITIVE_AUTHORITY
+    class: NOT_APPLICABLE_AUTHORIZED
+    evidence_graph:
+      - PREAUTH_DECISION: VIGENTE_EXPLICIT_NA_AUTHORITY
+      - DIRECT_PERMISSIONS: NONE
+    expected_outcome: NOT_APPLICABLE
+    required_authority: PREAUTH_DECISION
+    forbidden: [NA_BY_COUNT_ZERO]
+
+  - id: Q10_PERMISSIONS_NA_WITHOUT_AUTHORITY
+    class: NOT_APPLICABLE_NEGATIVE_CONTROL
+    evidence_graph:
+      - DIRECT_PERMISSIONS: NONE
+      - POSITIVE_NA_AUTHORITY: ABSENT
+    expected_outcome: NEGATIVE_CONFIRMED
+    expected_cause_type: APPLICABILITY_AUTHORITY_MISSING
+    forbidden: [NOT_APPLICABLE]
+
+  - id: Q11_STALE_PASS_CURRENT_FAIL
+    class: FRESHNESS
+    evidence_graph:
+      - SHA_A: HISTORICAL_PASS
+      - SHA_B: CURRENT_FAIL
+    expected_outcome: NEGATIVE_CONFIRMED
+    expected_cause_type: STALE_EVIDENCE
+    required_action: OBTAIN_CURRENT_EVIDENCE_FOR_SHA_B
+    forbidden: [USE_SHA_A_AS_EFFECTIVE_PASS]
+
+  - id: Q12_CURRENT_PASS_OLD_FAIL
+    class: FRESHNESS
+    evidence_graph:
+      - SHA_A: HISTORICAL_FAIL
+      - SHA_B: CURRENT_PASS
+    expected_outcome: POSITIVE
+    forbidden: [LET_OLD_FAIL_OVERRIDE_VALID_CURRENT_PASS]
+
+  - id: Q13_SOURCE_CONFLICT_TWO_VIGENTE
+    class: SOURCE_CONFLICT
+    evidence_graph:
+      - RULE_TIMEOUT_A: VIGENTE_30S_SAME_SCOPE
+      - CONTRACT_TIMEOUT_B: VIGENTE_60S_SAME_SCOPE
+    expected_outcome: NEGATIVE_CONFIRMED
+    expected_cause_type: SOURCE_CONFLICT
+    required_action: RESOLVE_PRECEDENCE_OR_SUPERSESSION
+    forbidden: [CHOOSE_LATEST_TIMESTAMP, AVERAGE_VALUES, SILENT_PICK]
+
+  - id: Q14_AUDIT_CANDIDATE_ONLY
+    class: AUTHORITY
+    evidence_graph:
+      - DIRECT_RULE_REF: REG_AUD_X
+      - REG_AUD_X: CANDIDATO
+    expected_outcome: NEGATIVE_CONFIRMED
+    expected_cause_type: AUTHORITY_INSUFFICIENT
+    forbidden: [POSITIVE]
+
+  - id: Q15_RATE_LIMIT_PENDING_BASELINE
+    class: PARTIAL_AUTHORITY
+    evidence_graph:
+      - RISK_SIGNAL: VIGENTE
+      - RATE_THRESHOLD: PENDING_BASELINE
+    expected_outcome: NEGATIVE_CONFIRMED
+    expected_cause_type: FUNCTIONAL_DEFINITION_MISSING
+    required_action: RESOLVE_THRESHOLD_AUTHORITY_WITHOUT_INVENTION
+    forbidden: [INFER_THRESHOLD, POSITIVE]
+
+  - id: Q16_API_BEHAVIORAL_PRESENT_OPERATION_SCHEMA_MISSING
+    class: STAGE_AWARE
+    evidence_graph:
+      - BEHAVIORAL_CONTRACT: PRESENT_VALID
+      - BROKEN_REFS: 0
+      - OPERATION_SCHEMA_SOURCE: ABSENT
+      - CONDITIONAL_STAGE_AUTHORITY: VIGENTE
+    expected_story_outcome: POSITIVE
+    expected_implementation_outcome: NEGATIVE_CONFIRMED
+    expected_cause_type: LATER_STAGE_REQUIREMENT
+    forbidden: [STORY_P0, IMPLEMENTATION_POSITIVE]
+
+  - id: Q17_API_NO_BEHAVIORAL_CONTRACT
+    class: STAGE_AWARE_NEGATIVE_CONTROL
+    evidence_graph:
+      - BEHAVIORAL_CONTRACT: ABSENT
+      - OPERATION_SCHEMA_SOURCE: ABSENT
+    expected_story_outcome: NEGATIVE_CONFIRMED
+    expected_cause_type: GOVERNANCE_EVIDENCE_MISSING
+    forbidden: [DEFER_TO_IMPLEMENTATION_WITHOUT_CONDITIONAL_ELIGIBILITY]
+
+  - id: Q18_GENERIC_REMEDIATION_PLACEHOLDER
+    class: REMEDIATION_QUALITY_NEGATIVE_CONTROL
+    candidate_output:
+      evaluation_outcome: NEGATIVE_CONFIRMED
+      exact_gap: falta evidencia
+      remediation_action: [Remediacion abierta]
+      close_when: [cuando se cierre]
+    expected_grader_verdict: FAIL
+    forbidden: [GENERIC_TERMINAL_REMEDIATION]
+
+  - id: Q19_PREMATURE_HUMAN_DECISION
+    class: ESCALATION_NEGATIVE_CONTROL
+    evidence_graph:
+      - EXPLICIT_REFERENCE: PRESENT_UNRESOLVED
+      - INTERNAL_LOOKUP_AVAILABLE: true
+    candidate_output:
+      evaluation_outcome: HUMAN_DECISION_REQUIRED
+    expected_grader_verdict: FAIL
+    forbidden: [HUMAN_BEFORE_INTERNAL_EXHAUSTION]
+
+  - id: Q20_LEGITIMATE_HUMAN_DECISION
+    class: ESCALATION_POSITIVE_CONTROL
+    evidence_graph:
+      - INTERNAL_REFERENCES_EXHAUSTED: true
+      - TWO_VALID_OPTIONS: true
+      - DISCRETIONARY_COST_RISK_CHOICE: true
+      - POSITIVE_ESCALATION_AUTHORITY: PRESENT
+    expected_outcome: HUMAN_DECISION_REQUIRED
+    expected_cause_type: HUMAN_AUTHORITY_REQUIRED
+    required_action: ASK_MINIMAL_DISCRETIONARY_QUESTION_WITH_IMPACTS
+    forbidden: [ASK_HUMAN_TO_RESEARCH_TECHNICAL_SOURCES]
+
+hidden_generation_contract:
+  min_hidden_cases: 40
+  visible_literal_reuse_max_ratio: 0.25
+  synthetic_subject_ratio_min: 0.50
+  mutation_dimensions:
+    - entity_names
+    - screen_scope
+    - authority_status
+    - current_vs_stale
+    - explicit_ref_present_vs_broken
+    - required_stage
+    - distractor_keyword_similarity
+    - source_conflict
+    - candidate_vs_vigente
+    - direct_link_vs_indirect_reference
+    - one_required_dimension_removed
+  near_miss_ratio_min: 0.50
+  exact_visible_case_copy: DENY

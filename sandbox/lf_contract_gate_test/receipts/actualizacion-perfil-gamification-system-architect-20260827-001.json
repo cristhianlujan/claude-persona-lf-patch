@@ -1,0 +1,21 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-GAMIFICATION-SYSTEM-ARCHITECT-20260827-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "b494d08d801b15020271dfece5a36671dccadd62925b7f7f98ba29d6396a5d76",
+  "judge_sha": "b4c5da9e5ac072ff8a785743758507fba322bc4fbfc12584ac24ea4422689359",
+  "source_sha_list": [
+    "db1b67539a1a8095422f3ecea20ee967c4c360dc",
+    "5f56b9023b4c58ad510435a05832d8065407e8b4",
+    "cff4722b478c22104a293215f23cc4cd0d328940",
+    "628c38df451b500f2d3ae3017524af557fe362b6"
+  ],
+  "target_paths": ["profiles/gamification_system_architect/**"],
+  "blocking_codes": [],
+  "issued_at": "2026-08-27T15:54:47Z",
+  "notes": "PASS_SANDBOX for governed existing-profile update. Contract/judge SHA values are SHA-256 fingerprints of the exact active Supabase operation rows. Pre-write binding and steps 0-110 are recorded in Supabase. Exact GitHub validator/schema/runner blobs were reconstructed and the deterministic structural suite passed 17/17. This receipt does not claim RAW profile runtime behavior, independent external audit, runtime enablement, VALIDATED status, or automatic promotion."
+}

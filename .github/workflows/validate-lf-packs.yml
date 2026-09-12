@@ -1,0 +1,410 @@
+name: Validate LF Packs
+
+on:
+  pull_request:
+    branches:
+      - main
+      - "lf/**"
+  push:
+    branches:
+      - main
+      - "lf/**"
+  workflow_dispatch:
+    inputs:
+      request_schema:
+        description: "Governed S30 broker request schema"
+        required: true
+        type: string
+      source_ref:
+        description: "Validated staging branch (lf/staging-s30-*)"
+        required: true
+        type: string
+      target_branch:
+        description: "Protected broker target (lf/s30-*)"
+        required: true
+        type: string
+      base_main_sha:
+        description: "Exact main SHA used by the prewrite receipt"
+        required: true
+        type: string
+      receipt_path:
+        description: "Canonical S30 prewrite receipt path"
+        required: true
+        default: "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  validate-lf-packs:
+    name: Run LF pack validators
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.source_ref || github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: S30 self-governance regression and fresh receipt gate
+        shell: bash
+        env:
+          S30_REQUEST_SCHEMA: ${{ inputs.request_schema }}
+          S30_SOURCE_REF: ${{ inputs.source_ref }}
+          S30_TARGET_BRANCH: ${{ inputs.target_branch }}
+          S30_BASE_MAIN_SHA: ${{ inputs.base_main_sha }}
+          S30_RECEIPT_PATH: ${{ inputs.receipt_path }}
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            [[ "${GITHUB_REF}" == "refs/heads/main" ]] || { echo "BLOCK_S30_BROKER_CONTROL_PLANE_NOT_MAIN" >&2; exit 1; }
+            [[ "${S30_REQUEST_SCHEMA}" == "s30-git-broker/v1" ]] || { echo "BLOCK_S30_BROKER_REQUEST_SCHEMA" >&2; exit 1; }
+            [[ "${S30_BASE_MAIN_SHA}" =~ ^[0-9a-f]{40}$ ]] || { echo "BLOCK_S30_BROKER_BASE_SHA" >&2; exit 1; }
+            current_main="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+            [[ "${current_main}" == "${S30_BASE_MAIN_SHA}" ]] || { echo "BLOCK_S30_BROKER_STALE_MAIN expected=${S30_BASE_MAIN_SHA} observed=${current_main}" >&2; exit 1; }
+            git fetch origin "${S30_BASE_MAIN_SHA}" "${S30_SOURCE_REF}" --no-tags
+            mkdir -p /tmp/s30-control
+            git show "${S30_BASE_MAIN_SHA}:gobernanza/contratos/s30_self_governance_gate_v1.json" > /tmp/s30-control/contract.json
+            git show "${S30_BASE_MAIN_SHA}:gobernanza/judges/validate_s30_self_governance_gate.py" > /tmp/s30-control/validator.py
+            python /tmp/s30-control/validator.py --contract /tmp/s30-control/contract.json --self-test
+            python - <<'PY'
+          import importlib.util
+          import json
+          import os
+          import subprocess
+          from pathlib import Path
+
+          def fail(code, detail=""):
+              raise SystemExit(f"{code}{(': '+detail) if detail else ''}")
+          def run(*args):
+              return subprocess.run(args,check=True,capture_output=True,text=True).stdout.strip()
+
+          base=os.environ["S30_BASE_MAIN_SHA"]
+          source=os.environ["S30_SOURCE_REF"]
+          target=os.environ["S30_TARGET_BRANCH"]
+          receipt_path=os.environ["S30_RECEIPT_PATH"]
+          source_line=run("git","ls-remote","origin",f"refs/heads/{source}")
+          source_remote_sha=source_line.split()[0] if source_line else ""
+          source_sha=run("git","rev-parse","HEAD")
+          if not source_remote_sha or source_sha!=source_remote_sha:
+              fail("BLOCK_S30_BROKER_SOURCE_SHA_MISMATCH",f"checkout={source_sha} remote={source_remote_sha}")
+          if subprocess.run(["git","merge-base","--is-ancestor",base,source_sha]).returncode!=0:
+              fail("BLOCK_S30_BROKER_SOURCE_NOT_DESCENDANT_OF_BASE")
+          changed=list(filter(None,run("git","diff","--name-only",base,source_sha).splitlines()))
+          path_modes={}
+          for path in changed:
+              row=run("git","ls-tree",source_sha,"--",path)
+              path_modes[path]=row.split(None,1)[0] if row else ""
+          if not Path(receipt_path).is_file():
+              fail("BLOCK_S30_BROKER_RECEIPT_PATH")
+          receipt=json.loads(Path(receipt_path).read_text(encoding="utf-8"))
+          contract=json.loads(Path("/tmp/s30-control/contract.json").read_text(encoding="utf-8"))
+          spec=importlib.util.spec_from_file_location("s30_control_validator","/tmp/s30-control/validator.py")
+          validator=importlib.util.module_from_spec(spec); spec.loader.exec_module(validator)
+          scope=validator.broker_scope_decision(contract,changed,receipt_path,receipt,path_modes)
+          if scope.get("status")!="PASS":
+              fail(scope.get("blocking_code","BLOCK_S30_BROKER_SCOPE"),scope.get("detail",""))
+          evaluation=validator.evaluate(contract,receipt,base)
+          if scope["mode"]=="REPAIR":
+              repair_cfg=(contract.get("git_write_broker",{}).get("scope_modes",{}).get("REPAIR") or {})
+              receipt_mode=receipt.get("receipt_mode")
+              if receipt_mode not in set(repair_cfg.get("allowed_receipt_modes") or []):
+                  fail("BLOCK_S30_BROKER_REPAIR_RECEIPT_MODE",str(receipt_mode))
+              expected=(repair_cfg.get("expected_result_by_receipt_mode") or {}).get(receipt_mode)
+              if not expected: fail("BLOCK_S30_BROKER_REPAIR_EXPECTED_RESULT_MISSING",str(receipt_mode))
+          else:
+              expected="PASS_TO_MATERIAL_WORK"
+          if evaluation.get("result")!=expected:
+              fail("BLOCK_S30_BROKER_PREEXECUTION_RESULT",json.dumps(evaluation,sort_keys=True))
+          binding=receipt.get("git_write_binding") or {}
+          exact={"status":"OPERATIONAL","source_branch":source,"target_branch":target,"base_main_sha":base,"secret_present":True,"promotion_authority":"BROKER_ONLY"}
+          bad=[k for k,v in exact.items() if binding.get(k)!=v]
+          if bad: fail("BLOCK_S30_BROKER_OPERATIONAL_BINDING",",".join(bad))
+          print(json.dumps({"status":"PASS","scope_mode":scope["mode"],"base_main_sha":base,"source_sha":source_sha,"changed_paths":changed},sort_keys=True))
+          PY
+            exit 0
+          fi
+          python gobernanza/judges/validate_s30_self_governance_gate.py --self-test
+          S30_CI_SCOPE="RUN"
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            S30_CI_SCOPE="$(python - <<'PY'
+          import json
+          import os
+          import subprocess
+          from pathlib import Path
+
+          payload = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text(encoding="utf-8"))
+          pr = payload.get("pull_request") or {}
+          base = ((pr.get("base") or {}).get("sha") or "").strip()
+          head = ((pr.get("head") or {}).get("sha") or "").strip()
+          if len(base) != 40 or len(head) != 40:
+              print("RUN")
+              raise SystemExit(0)
+          subprocess.run(["git", "fetch", "origin", base, head, "--depth=1"], check=True, capture_output=True, text=True)
+          changed = set(subprocess.run(["git", "diff", "--name-only", base, head], check=True, capture_output=True, text=True).stdout.splitlines())
+          direct = {
+              "gobernanza/contratos/s30_self_governance_gate_v1.json",
+              "gobernanza/judges/validate_s30_self_governance_gate.py",
+              "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json",
+          }
+          if changed.intersection(direct):
+              print("RUN")
+              raise SystemExit(0)
+          workflow = ".github/workflows/validate-lf-packs.yml"
+          if workflow not in changed:
+              print("SKIP")
+              raise SystemExit(0)
+
+          def show(ref: str) -> list[str]:
+              return subprocess.run(["git", "show", f"{ref}:{workflow}"], check=True, capture_output=True, text=True).stdout.splitlines()
+
+          def s30_block(lines: list[str]) -> str | None:
+              marker = "- name: S30 self-governance regression and fresh receipt gate"
+              start = next((i for i, line in enumerate(lines) if line.strip() == marker), None)
+              if start is None:
+                  return None
+              indent = len(lines[start]) - len(lines[start].lstrip())
+              out: list[str] = []
+              for line in lines[start:]:
+                  current_indent = len(line) - len(line.lstrip())
+                  if out and current_indent == indent and line.strip().startswith("- name:"):
+                      break
+                  out.append(line.rstrip())
+              return "\n".join(out)
+
+          before = s30_block(show(base))
+          after = s30_block(show(head))
+          print("RUN" if before is None or after is None or before != after else "SKIP")
+          PY
+            )"
+          fi
+          if [[ "${S30_CI_SCOPE}" == "RUN" ]]; then
+            python gobernanza/judges/validate_s30_self_governance_gate.py \
+              --ci-auto \
+              --ci-receipt sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json
+          else
+            echo "S30_CI_AUTO_SKIPPED_UNRELATED_SHARED_WORKFLOW_CHANGE"
+          fi
+
+      - name: Validate bounded S30 sandbox regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          tests=(sandbox/lf_contract_gate_test/s30_*/test_*.py)
+          if (( ${#tests[@]} == 0 )); then
+            echo "BLOCK_S30_SANDBOX_REGRESSION_MISSING" >&2
+            exit 1
+          fi
+          printf 'S30_SANDBOX_TEST_COUNT=%s\n' "${#tests[@]}"
+          for test_file in "${tests[@]}"; do
+            echo "S30_SANDBOX_TEST_RUN=${test_file}"
+            python "${test_file}"
+          done
+      - name: S26-E governance EKB applicability and card fallback gate
+        run: |
+          python gobernanza/judges/validate_s26_governance_ekb_gate_strict.py \
+            --self-test \
+            --input sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_receipt.json
+
+      - name: Install Profile Runtime API test dependencies
+        run: python -m pip install --disable-pip-version-check -r services/profile_runtime_api/requirements-dev.in
+
+      - name: Test persistent Profile Runtime API
+        env:
+          PYTHONPATH: services/profile_runtime_api
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: python -m pytest services/profile_runtime_api/tests
+
+      - name: Validate profile template pack
+        run: python profiles/_template/validators/validate_pack.py profiles/_template
+
+      - name: Validate skill template pack
+        run: python skills/_template/validators/validate_pack.py skills/_template
+
+      - name: Validate skill creator pack
+        run: python skills/skill_creator/validators/validate_pack.py skills/skill_creator
+
+      - name: Validate profile creator pack
+        run: python skills/profile_creator/validators/validate_pack.py skills/profile_creator
+
+      - name: Validate learning engine pack
+        run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
+
+      - name: Validate S26 semantic-to-render binding regressions
+        run: python sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_binding_validator_tests.py
+
+      - name: Validate strict independent receipt-to-bundle binding regressions
+        run: python profiles/quality_pack/evals/run_independent_review_bundle_binding_tests.py
+
+      - name: Validate PROFILE_RUNTIME V3 quality and lineage gates
+        env:
+          LF_PERSISTENT_RUNTIME_SCOPE: ISOLATED_CANDIDATE
+          LF_LLAMA_SOURCE_COMMIT: 925e1179947ea0c0ebfb0032df18af3a729822be
+        shell: bash
+        run: |
+          set -uo pipefail
+          shopt -s nullglob
+          tests=(sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_*.py)
+          if (( ${#tests[@]} == 0 )); then
+            echo "PROFILE_RUNTIME_V3_TESTS_MISSING"
+            exit 1
+          fi
+          printf 'PROFILE_RUNTIME_V3_TEST_COUNT=%s\n' "${#tests[@]}"
+          failures=0
+          for test_file in "${tests[@]}"; do
+            echo "RUNNING=${test_file}"
+            if python "${test_file}"; then
+              echo "RESULT=PASS TEST=${test_file}"
+            else
+              rc=$?
+              echo "RESULT=FAIL RC=${rc} TEST=${test_file}"
+              failures=$((failures+1))
+            fi
+          done
+          echo "PROFILE_RUNTIME_V3_FAILURE_COUNT=${failures}"
+          if (( failures > 0 )); then
+            exit 1
+          fi
+
+  s30-governed-write-broker:
+    name: Governed S30 protected write broker
+    if: github.event_name == 'workflow_dispatch'
+    needs: validate-lf-packs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      S30_REQUEST_SCHEMA: ${{ inputs.request_schema }}
+      S30_SOURCE_REF: ${{ inputs.source_ref }}
+      S30_TARGET_BRANCH: ${{ inputs.target_branch }}
+      S30_BASE_MAIN_SHA: ${{ inputs.base_main_sha }}
+      S30_RECEIPT_PATH: ${{ inputs.receipt_path }}
+
+    steps:
+      - name: Checkout exact staging source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.source_ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Fail-closed broker request and source validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "${GITHUB_REF}" == "refs/heads/main" ]] || { echo "BLOCK_S30_BROKER_CONTROL_PLANE_NOT_MAIN" >&2; exit 1; }
+          [[ "${S30_BASE_MAIN_SHA}" =~ ^[0-9a-f]{40}$ ]] || { echo "BLOCK_S30_BROKER_BASE_SHA" >&2; exit 1; }
+          current_main="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          [[ "${current_main}" == "${S30_BASE_MAIN_SHA}" ]] || { echo "BLOCK_S30_BROKER_STALE_MAIN expected=${S30_BASE_MAIN_SHA} observed=${current_main}" >&2; exit 1; }
+          git fetch origin "${S30_BASE_MAIN_SHA}" "${S30_SOURCE_REF}" --no-tags
+          mkdir -p /tmp/s30-control
+          git show "${S30_BASE_MAIN_SHA}:gobernanza/contratos/s30_self_governance_gate_v1.json" > /tmp/s30-control/contract.json
+          git show "${S30_BASE_MAIN_SHA}:gobernanza/judges/validate_s30_self_governance_gate.py" > /tmp/s30-control/validator.py
+          python - <<'PY'
+          import importlib.util
+          import json
+          import os
+          import re
+          import subprocess
+          from pathlib import Path
+
+          def fail(code, detail=""):
+              raise SystemExit(f"{code}{(': '+detail) if detail else ''}")
+          def run(*args):
+              return subprocess.run(args,check=True,capture_output=True,text=True).stdout.strip()
+
+          schema=os.environ["S30_REQUEST_SCHEMA"]
+          source=os.environ["S30_SOURCE_REF"]
+          target=os.environ["S30_TARGET_BRANCH"]
+          base=os.environ["S30_BASE_MAIN_SHA"]
+          receipt_path=os.environ["S30_RECEIPT_PATH"]
+          contract=json.loads(Path("/tmp/s30-control/contract.json").read_text(encoding="utf-8"))
+          broker=contract.get("git_write_broker") or {}
+          if schema!=broker.get("request_schema"): fail("BLOCK_S30_BROKER_REQUEST_SCHEMA")
+          if os.environ.get("GITHUB_REF")!=broker.get("control_plane_ref_required"): fail(broker.get("control_plane_failure_action","BLOCK_S30_BROKER_CONTROL_PLANE_NOT_MAIN"))
+          if not re.fullmatch(r"[0-9a-f]{40}",base): fail("BLOCK_S30_BROKER_BASE_SHA")
+          if not source.startswith(broker.get("staging_prefix","") or "__missing_staging_prefix__"): fail("BLOCK_S30_BROKER_SOURCE_NAMESPACE")
+          if not target.startswith(broker.get("protected_branch_prefix","") or "__missing_target_prefix__"): fail("BLOCK_S30_BROKER_TARGET_NAMESPACE")
+          subprocess.run(["git","check-ref-format","--branch",source],check=True,capture_output=True,text=True)
+          subprocess.run(["git","check-ref-format","--branch",target],check=True,capture_output=True,text=True)
+          source_line=run("git","ls-remote","origin",f"refs/heads/{source}")
+          source_remote_sha=source_line.split()[0] if source_line else ""
+          source_sha=run("git","rev-parse","HEAD")
+          if not source_remote_sha or source_sha!=source_remote_sha:
+              fail("BLOCK_S30_BROKER_SOURCE_SHA_MISMATCH",f"checkout={source_sha} remote={source_remote_sha}")
+          if subprocess.run(["git","merge-base","--is-ancestor",base,source_sha]).returncode!=0:
+              fail("BLOCK_S30_BROKER_SOURCE_NOT_DESCENDANT_OF_BASE")
+          changed=list(filter(None,run("git","diff","--name-only",base,source_sha).splitlines()))
+          path_modes={}
+          for path in changed:
+              row=run("git","ls-tree",source_sha,"--",path)
+              path_modes[path]=row.split(None,1)[0] if row else ""
+          if not Path(receipt_path).is_file(): fail("BLOCK_S30_BROKER_RECEIPT_PATH")
+          receipt=json.loads(Path(receipt_path).read_text(encoding="utf-8"))
+          spec=importlib.util.spec_from_file_location("s30_control_validator","/tmp/s30-control/validator.py")
+          validator=importlib.util.module_from_spec(spec); spec.loader.exec_module(validator)
+          scope=validator.broker_scope_decision(contract,changed,receipt_path,receipt,path_modes)
+          if scope.get("status")!="PASS": fail(scope.get("blocking_code","BLOCK_S30_BROKER_SCOPE"),scope.get("detail",""))
+          evaluation=validator.evaluate(contract,receipt,base)
+          if scope["mode"]=="REPAIR":
+              repair_cfg=(contract.get("git_write_broker",{}).get("scope_modes",{}).get("REPAIR") or {})
+              receipt_mode=receipt.get("receipt_mode")
+              if receipt_mode not in set(repair_cfg.get("allowed_receipt_modes") or []):
+                  fail("BLOCK_S30_BROKER_REPAIR_RECEIPT_MODE",str(receipt_mode))
+              expected=(repair_cfg.get("expected_result_by_receipt_mode") or {}).get(receipt_mode)
+              if not expected: fail("BLOCK_S30_BROKER_REPAIR_EXPECTED_RESULT_MISSING",str(receipt_mode))
+          else:
+              expected="PASS_TO_MATERIAL_WORK"
+          if evaluation.get("result")!=expected:
+              fail("BLOCK_S30_BROKER_PREEXECUTION_RESULT",json.dumps(evaluation,sort_keys=True))
+          binding=receipt.get("git_write_binding") or {}
+          exact={"status":"OPERATIONAL","source_branch":source,"target_branch":target,"base_main_sha":base,"secret_present":True,"promotion_authority":"BROKER_ONLY"}
+          bad=[k for k,v in exact.items() if binding.get(k)!=v]
+          if bad: fail("BLOCK_S30_BROKER_OPERATIONAL_BINDING",",".join(bad))
+          print(json.dumps({"status":"PASS","scope_mode":scope["mode"],"base_main_sha":base,"source_sha":source_sha,"changed_paths":changed,"control_plane":"BASE_MAIN_ONLY"},sort_keys=True))
+          PY
+
+      - name: Require broker deploy-key secret
+        shell: bash
+        env:
+          S30_BROKER_DEPLOY_KEY: ${{ secrets.S30_BROKER_DEPLOY_KEY }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${S30_BROKER_DEPLOY_KEY}" ]]; then
+            echo "BLOCK_S30_BROKER_SECRET_MISSING" >&2
+            exit 1
+          fi
+          umask 077
+          mkdir -p "${HOME}/.ssh"
+          printf '%s\n' "${S30_BROKER_DEPLOY_KEY}" > "${HOME}/.ssh/s30_broker_ed25519"
+          ssh-keyscan -t ed25519 github.com > "${HOME}/.ssh/known_hosts" 2>/dev/null
+
+      - name: Push exact validated SHA through governed DeployKey
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_sha="$(git rev-parse HEAD)"
+          git remote remove s30-broker 2>/dev/null || true
+          git remote add s30-broker "git@github.com:${GITHUB_REPOSITORY}.git"
+          export GIT_SSH_COMMAND="ssh -i ${HOME}/.ssh/s30_broker_ed25519 -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
+          git push s30-broker "${source_sha}:refs/heads/${S30_TARGET_BRANCH}"
+          remote_sha="$(git ls-remote s30-broker "refs/heads/${S30_TARGET_BRANCH}" | awk '{print $1}')"
+          [[ "${remote_sha}" == "${source_sha}" ]] || { echo "BLOCK_S30_BROKER_POST_PUSH_READBACK_MISMATCH" >&2; exit 1; }
+          printf 'S30_BROKER_PUSH_PASS target=%s sha=%s\n' "${S30_TARGET_BRANCH}" "${remote_sha}"
+
+      - name: Remove ephemeral broker key
+        if: always()
+        shell: bash
+        run: rm -f "${HOME}/.ssh/s30_broker_ed25519"

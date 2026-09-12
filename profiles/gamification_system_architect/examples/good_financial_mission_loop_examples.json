@@ -1,0 +1,38 @@
+{
+  "example_id": "GOOD_FINANCIAL_MISSION_LOOP_EXAMPLES",
+  "status": "GENERIC_REUSABLE_EXAMPLES",
+  "examples": [
+    {
+      "case_id": "GOOD_CLARITY_DIAGNOSTIC_MISSION",
+      "target_behavior": "complete a clarity diagnostic",
+      "completion_signal": "diagnostic submitted",
+      "reward_type": "progress unlock",
+      "lf_control": "supportive, clear, non-punitive",
+      "handoff": "Quality Pack"
+    },
+    {
+      "case_id": "GOOD_SIMULATION_INSIGHT_MISSION",
+      "target_behavior": "review a simulation insight",
+      "completion_signal": "insight acknowledged",
+      "reward_type": "learning marker",
+      "lf_control": "no guaranteed outcome claim",
+      "handoff": "UX/UI"
+    },
+    {
+      "case_id": "GOOD_NON_PUNITIVE_STREAK",
+      "target_behavior": "return to learning flow",
+      "completion_signal": "next lesson opened",
+      "reward_type": "streak with recovery",
+      "lf_control": "recovery allowed",
+      "handoff": "Copy"
+    },
+    {
+      "case_id": "GOOD_MICRO_EDUCATION_UNLOCK",
+      "target_behavior": "finish micro-education step",
+      "completion_signal": "step completed",
+      "reward_type": "content unlock",
+      "lf_control": "symbolic reward clarity",
+      "handoff": "Quality Pack"
+    }
+  ]
+}

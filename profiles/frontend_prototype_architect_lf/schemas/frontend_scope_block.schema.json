@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Frontend Prototype Scope Block",
+  "type": "object",
+  "required": [
+    "worker",
+    "output_type",
+    "blocked",
+    "blocking_code",
+    "requested_capability",
+    "pipeline_action",
+    "resolution_target",
+    "reason"
+  ],
+  "properties": {
+    "worker": {"const": "frontend_prototype_architect_lf"},
+    "output_type": {"const": "BLOCKED_FRONTEND_SCOPE"},
+    "blocked": {"const": true},
+    "blocking_code": {
+      "type": "string",
+      "enum": [
+        "BACKEND_OR_API_REQUIRED",
+        "AUTH_OR_DATABASE_REQUIRED",
+        "PAYMENT_OR_RUNTIME_REQUIRED",
+        "PRODUCTION_OR_DEPLOYMENT_REQUIRED",
+        "REAL_OR_SENSITIVE_DATA_REQUIRED",
+        "SHELL_CHANGE_REQUIRED",
+        "NON_FRONTEND_DOMAIN"
+      ]
+    },
+    "requested_capability": {"type": "string", "minLength": 1},
+    "pipeline_action": {
+      "type": "string",
+      "enum": ["RETURN_TO_ORCHESTRATOR", "BLOCK_PIPELINE"]
+    },
+    "resolution_target": {
+      "type": "string",
+      "enum": [
+        "BACKEND_OR_RUNTIME_OWNER",
+        "LF_SHELL_GOVERNANCE",
+        "PRODUCTION_GOVERNANCE",
+        "ORCHESTRATOR_DECISION",
+        "NONE"
+      ]
+    },
+    "reason": {"type": "string", "minLength": 1}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"pipeline_action": {"const": "BLOCK_PIPELINE"}}},
+      "then": {"properties": {"resolution_target": {"const": "NONE"}}}
+    },
+    {
+      "if": {"properties": {"blocking_code": {"const": "SHELL_CHANGE_REQUIRED"}}},
+      "then": {
+        "properties": {
+          "pipeline_action": {"const": "RETURN_TO_ORCHESTRATOR"},
+          "resolution_target": {"const": "LF_SHELL_GOVERNANCE"}
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

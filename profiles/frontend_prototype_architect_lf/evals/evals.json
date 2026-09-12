@@ -1,0 +1,38 @@
+{
+  "eval_pack_id": "FRONTEND_PROTOTYPE_ARCHITECT_LF_EVALS_001",
+  "profile": "frontend_prototype_architect_lf",
+  "status": "CANDIDATE_READ_ONLY_CONTROLLED_GITHUB_IMPACT",
+  "closure_conditions": [
+    "good static HTML sandbox cases must pass",
+    "runtime/backend/deployment scope cases must block",
+    "accessibility gaps must self-repair",
+    "no eval can exist without a fixture",
+    "traceability must exist"
+  ],
+  "evals": [
+    {
+      "eval_id": "EVAL_001_GOOD_STATIC_SECTION_HTML",
+      "input_type": "good",
+      "fixture": "examples/good_static_section_html.json",
+      "expected": "PASS_TO_SANDBOX_HTML"
+    },
+    {
+      "eval_id": "EVAL_002_BLOCK_RUNTIME_SCOPE",
+      "input_type": "block",
+      "fixture": "examples/blocked_runtime_scope.json",
+      "expected": "BLOCK_FRONTEND_SCOPE"
+    },
+    {
+      "eval_id": "EVAL_003_REPAIR_ACCESSIBILITY_GAP",
+      "input_type": "repair",
+      "fixture": "examples/self_repair_accessibility_gap.json",
+      "expected": "RETURN_TO_WORKER_FOR_SELF_REPAIR"
+    }
+  ],
+  "traceability": {
+    "internal_lf": "ACT-0001, ACT-0045, corrected CREACION_PERFIL_LF repo_inventory_full and operational_evidence_pack_check",
+    "own_repo": "profiles/ui_architect, profiles/product_director_lf, sandbox_runs/visibility",
+    "adapted_into": "profiles/frontend_prototype_architect_lf/evals/evals.json",
+    "reason_for_location": "evals prove pass/block/self-repair behavior before using the profile for HTML sandbox prototypes"
+  }
+}

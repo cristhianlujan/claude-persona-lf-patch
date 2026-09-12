@@ -1,0 +1,97 @@
+{
+  "contract_version": "S30_STRATEGY_EXECUTOR_SANDBOX_ACTIVATION_V1",
+  "operation_code": "EJECUCION_ESTRATEGIA_LF",
+  "status": "SOURCE_CANDIDATE_NOT_APPLIED",
+  "activation_stage": "SANDBOX_CANARY_NO_BUSINESS_EFFECT",
+  "source_bootstrap_contract": "S30_STRATEGY_EXECUTOR_BOOTSTRAP_V1",
+  "source_main_sha": "5a414bcb1f8e08492e064788f5ba49b820e1bf27",
+  "authority_policy": "DETERMINISTIC_FIRST_MODEL_ONLY_ON_NON_DERIVABLE_SEMANTIC_GAP",
+  "materialization_policy": {
+    "fix_generator_not_live_artifact": true,
+    "bootstrap_side_effect_flags_are_not_live_step_predicates": true,
+    "runtime_activation_authorization_required": true,
+    "target_registry_status": "SANDBOX_ACTIVE",
+    "target_contract_status": "ACTIVE_ENFORCEMENT",
+    "target_step_active": true,
+    "target_step_contract_status": "ACTIVE_ENFORCEMENT",
+    "target_judge_status": "ACTIVE_ENFORCEMENT",
+    "target_judge_binding_status": "ACTIVE_ENFORCEMENT",
+    "policy_binding_status": "ACTIVE_UNCHANGED"
+  },
+  "router_binding": {
+    "asset_type": "STRATEGY",
+    "action_code": "STRATEGY_EXECUTION",
+    "operation_resolution": "STATIC",
+    "requires_existing_target": false,
+    "requires_missing_target": false,
+    "write_allowed": false,
+    "status": "ACTIVE",
+    "router_target_resolution": "DEFER_TO_OPERATION_STRATEGY_RESOLVE",
+    "target_binding_required_before_execution": true
+  },
+  "strategy_resolution": {
+    "authority": "public.lf_strategy_snapshots",
+    "identity_field": "snapshot_code",
+    "exactly_one_required": true,
+    "canonical_canary_snapshot_code": "LF_S30_SHELL_ADVANCED_EXECUTION_20260903",
+    "canonical_canary_snapshot_id": 35,
+    "allowed_statuses": [
+      "CANDIDATO_READ_ONLY"
+    ],
+    "unknown_or_ambiguous": "BLOCK"
+  },
+  "live_step_projection": {
+    "pass_condition_required": {
+      "runtime_mode": "SANDBOX_CONTROLLED",
+      "runtime_activation_authorized": true,
+      "required_evidence_present": true
+    },
+    "block_condition_required": {
+      "source_contract_mismatch": true,
+      "missing_required_evidence": true,
+      "runtime_mode_not_sandbox_controlled": true,
+      "target_strategy_binding_missing": true,
+      "canary_scope_violation": true
+    },
+    "forbidden_copied_predicates": [
+      {
+        "path": "pass_condition.runtime_activation",
+        "value": false
+      },
+      {
+        "path": "block_condition.runtime_activation_attempt",
+        "value": true
+      }
+    ],
+    "preserve_from_bootstrap": [
+      "step_id",
+      "order",
+      "effect_class"
+    ]
+  },
+  "canary_boundary": {
+    "mode": "CONTROL_STATE_NO_EFFECT",
+    "business_effect_dispatch_allowed": false,
+    "effect_guard_rows_allowed": false,
+    "model_calls_allowed": false,
+    "production_write_allowed": false,
+    "strategy_snapshot_mutation_allowed": false,
+    "orchestrator_activation": false,
+    "scheduler_activation": false,
+    "production_activation": false,
+    "s26_mutation": false,
+    "required_live_checks": [
+      "ROUTER_POSITIVE",
+      "ROUTER_UNKNOWN_ACTION_NEGATIVE",
+      "EXACT_STRATEGY_RESOLVE",
+      "IDEMPOTENCY_RESERVE_AND_REPLAY",
+      "LEASE_CHECKPOINT_RELEASE",
+      "ZERO_EFFECT_GUARD_ROWS",
+      "FULL_STEP_EVIDENCE_READBACK"
+    ]
+  },
+  "rollback_policy": {
+    "on_canary_failure": "FAIL_CLOSED_DEMOTE_TO_CANDIDATO_READ_ONLY_AND_REMOVE_ROUTER_ACTION",
+    "partial_activation_allowed": false
+  }
+}

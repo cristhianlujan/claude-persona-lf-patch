@@ -1,0 +1,28 @@
+{
+  "request_type": "marketplace_product_experience_decision",
+  "decision_question": "Decidir el fondo/superficie recomendada para el mapa/path de la sección Ruta de Claridad.",
+  "affected_surface": "map_surface",
+  "scope": "sandbox_read_only",
+  "options": [
+    "Minimal organic warm surface",
+    "Light isometric surface",
+    "Highly visual 3D game-like map",
+    "Flat corporate process diagram"
+  ],
+  "source_authority": [
+    "ACT-0001",
+    "ACT-0045",
+    "public.v_lf_fuente_operativa",
+    "MarketPlace LF Drive research",
+    "Ruta de Claridad sandbox context"
+  ],
+  "blocked_impacts": [
+    "no_runtime",
+    "no_production",
+    "no_validated",
+    "no_golden",
+    "no_home_official_write",
+    "no_supabase_write"
+  ],
+  "notes": "Sandbox case for Ruta de Claridad map surface. The map must not become videogame, fantasy, overloaded 3D or cold corporate diagram."
+}

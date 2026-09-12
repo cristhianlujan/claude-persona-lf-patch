@@ -1,0 +1,65 @@
+operation_code: DS_BUILD_PROTOCOL_LF
+version: v0.2
+status: CANDIDATO_READ_ONLY
+source_model: GIT_FIRST_YAML
+source_repo: cristhianlujan/claude-persona-lf-patch
+
+purpose: Regularizar steps core DS con fuente autora versionada y evidencia verificable.
+
+controls:
+  no_runtime: true
+  no_production: true
+  automatic_impact: BLOQUEADO
+  require_source_sha: true
+  shallow_evidence_blocked: true
+
+steps:
+  - step_order: 1
+    step_id: router
+    required: true
+    evidence_required: router_read_with_reference
+
+  - step_order: 2
+    step_id: operational_source
+    required: true
+    evidence_required: v_lf_fuente_operativa_read_with_query
+
+  - step_order: 3
+    step_id: act0047_read
+    required: true
+    evidence_required: act0047_read_with_reference
+
+  - step_order: 4
+    step_id: existing_ds_assets_check
+    required: true
+    evidence_required: existing_ds_assets_checked_with_asset_list
+
+  - step_order: 5
+    step_id: ds_research_pack
+    required: true
+    evidence_required: ds_research_pack_verified
+
+  - step_order: 6
+    step_id: research_to_rules_matrix
+    required: true
+    evidence_required: research_to_rules_matrix_present
+
+  - step_order: 7
+    step_id: decision_matrix
+    required: true
+    evidence_required: decision_matrix_present
+
+  - step_order: 8
+    step_id: channel_mode_identified
+    required: true
+    evidence_required: channel_and_mode_declared
+
+  - step_order: 9
+    step_id: adapter_selected
+    required: true
+    evidence_required: adapter_selected
+
+  - step_order: 10
+    step_id: tokens_components_a11y_checked
+    required: true
+    evidence_required: tokens_components_a11y_checked

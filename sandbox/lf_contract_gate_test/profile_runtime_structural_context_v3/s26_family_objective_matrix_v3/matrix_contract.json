@@ -1,0 +1,46 @@
+{
+  "schema": "S26_FAMILY_OBJECTIVE_MATRIX_V3_CONTRACT_V1",
+  "families_required": 10,
+  "objectives_per_family": 5,
+  "master_structure": ["OBJECTIVE", "FUNCTIONALITY", "QUALITY", "DEPTH", "PERFORMANCE", "EVIDENCE", "PASS_FAIL"],
+  "hierarchy": ["CASE", "OBJECTIVE", "FAMILY", "TRANSVERSAL", "SYSTEM"],
+  "objective_statuses": ["COVERED", "PARTIAL", "NOT_DEMONSTRATED", "NEW_CASE_REQUIRED"],
+  "dimension_statuses": ["COVERED", "PARTIAL", "PENDING", "N_A"],
+  "required_dimensions": ["functionality", "quality", "depth", "performance", "evidence"],
+  "na_policy": {
+    "allowed_dimensions": ["performance"],
+    "reason": "N_A performance is permitted only for objectives that are purely structural/governance correctness checks with no semantically meaningful runtime budget at that objective boundary. It cannot be used to waive performance for runtime, materialization, quality/depth, or E2E objectives.",
+    "performance_na_reclassification": {
+      "F04-O2": {"effective_status": "PENDING", "reason": "Typed-context rejection happens on an executable runtime boundary and requires measured fail-closed cost on the final candidate."},
+      "F04-O3": {"effective_status": "PENDING", "reason": "Typed-context type/version rejection is an executable runtime boundary and requires measured fail-closed cost on the final candidate."},
+      "F04-O4": {"effective_status": "PENDING", "reason": "Typed-context contamination rejection is an executable runtime boundary and requires measured fail-closed cost on the final candidate."},
+      "F06-O2": {"effective_status": "PENDING", "reason": "UI material-requirement rejection has a measurable validator/materialization budget and must not be waived."},
+      "F06-O3": {"effective_status": "PENDING", "reason": "UI content/design-intent rejection has a measurable validator/materialization budget and must not be waived."},
+      "F06-O4": {"effective_status": "PENDING", "reason": "Content/layout contradiction handling is part of materialization and requires a final-candidate performance measurement."},
+      "F08-O1": {"effective_status": "COVERED", "required_evidence_refs": ["quality_depth_performance_contract.json", "gate_f_output.json"], "reason": "The same deterministic QDP path is already budget-bound by frozen evidence; reuse is cross-binding, not an additional independent case."},
+      "F08-O2": {"effective_status": "COVERED", "required_evidence_refs": ["quality_depth_performance_contract.json", "gate_f_output.json"], "reason": "The same deterministic QDP path is already budget-bound by frozen evidence; reuse is cross-binding, not an additional independent case."},
+      "F08-O3": {"effective_status": "PENDING", "reason": "The shallow-answer adversarial path is model/materialization dependent and needs timing on the final candidate."},
+      "F08-O4": {"effective_status": "PENDING", "reason": "Conflict/ambiguity reasoning is model dependent and needs timing on the final candidate."},
+      "F10-O4": {"effective_status": "PENDING", "reason": "Cross-run replay/live contamination protection is an E2E objective with measurable execution cost."}
+    }
+  },
+  "effective_status_policy": {
+    "COVERED": "All applicable dimensions must be COVERED; N_A is allowed only by na_policy.",
+    "PARTIAL": "At least one applicable dimension is COVERED/PARTIAL but the objective is not fully evidenced.",
+    "NOT_DEMONSTRATED": "Material frozen evidence is insufficient; one or more required dimensions remain PENDING.",
+    "NEW_CASE_REQUIRED": "Historical evidence is intentionally insufficient because a new/unseen holdout is required."
+  },
+  "family_pass_policy": "All five distinct objectives must effectively be COVERED and at least one of the five must be satisfied by a genuine unseen holdout in the final certification run.",
+  "system_pass_policy": "All families PASS, all transversal hard gates PASS, mutation sensitivity PASS, metamorphic/differential relations PASS, and no critical deterministic/quality/depth failure exists. Aggregate percentages never override a hard failure.",
+  "performance_policy": {
+    "deterministic": "Use hard budgets and descriptive p50/p95 where repeated timings exist.",
+    "stochastic_model_dependent": "Use repeated runs and clustered/hierarchical analysis only when inferential interpretation is needed; correlated runs are not independent cases.",
+    "correctness_precedence": "Performance cannot compensate a correctness, provenance, quality or depth failure."
+  },
+  "final_execution_prerequisites": [
+    "PR_682_INTEGRATED",
+    "PR_681_INTEGRATED_AND_MIGRATION_APPLIED_WITH_READBACK",
+    "FINAL_S26_RUNTIME_AFFECTING_CANDIDATE_STABLE"
+  ],
+  "claim_ceiling": "MATRIX_CONTRACT_ONLY_NOT_CERTIFICATION_NOT_GATE_G_NOT_GOLDEN"
+}

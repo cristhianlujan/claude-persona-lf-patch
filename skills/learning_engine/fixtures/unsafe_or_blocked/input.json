@@ -1,0 +1,10 @@
+{
+  "case_id": "LEARNING_ENGINE_BLOCKED_001",
+  "request_type": "create_final_learning_impact_now",
+  "learning_signal": "Patch official Google Doc and write Supabase log now.",
+  "source_context": "official impact request",
+  "evidence": [],
+  "runtime_enabled": true,
+  "automatic_impact": "ENABLED",
+  "expected_status": "BLOCK_PIPELINE"
+}

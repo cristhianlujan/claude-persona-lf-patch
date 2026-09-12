@@ -1,0 +1,22 @@
+version: v0.1
+adapter: ADAPTER_LF_SHELL_PROFILE_v0.1_CANDIDATO
+cases:
+  - id: LFSA-D01
+    given: {product_context: MARKETPLACE_LF, router_binding: true, profile_id: PERFIL-UI-ARCHITECT, target_classification: SCREEN_COMPONENT}
+    expect: {binding_state: BOUND, shell_modified: false, marketplace_requirement_preserved: true}
+  - id: LFSA-D02
+    given: {router_binding: true, protected_target: global_navigation, writable_target: payment_summary}
+    expect: {protected_target_changed: false, writable_target_change_allowed: true}
+  - id: LFSA-D03
+    given: {requested_artifact_type: CARD, adapter_specific_runtime_binding_needed: false, card_create_operation: CREACION_CARD_LF}
+    expect: {adapter_action: RETURN_TO_ROUTER, recommended_router_action: CARD_CREATE, adapter_create: false}
+  - id: LFSA-D04
+    given: {requested_artifact_type: ADAPTER, matching_adapter_found: ADAPTER_LF_SHELL_PROFILE, requested_scope_already_covered: true}
+    expect: {adapter_action: USE_EXISTING_ADAPTER, recommended_router_action: NONE, adapter_create: false, adapter_modified: false}
+  - id: LFSA-D05
+    given: {router_binding: false, direct_adapter_call: true}
+    expect: {adapter_action: BLOCK, verdict: BLOCK_UNBOUND_ADAPTER_INVOCATION, technical_application: false}
+hard_fail_if:
+  - adapter_created_when_existing_adapter_resolves
+  - card_handoff_executed_as_adapter_side_effect
+  - direct_unbound_invocation_applied

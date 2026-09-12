@@ -1,0 +1,16 @@
+{
+  "case_id": "LEARNING_ENGINE_TRACE_TARGET_EVAL_GATE_001",
+  "request_type": "propose_learning_patch_from_trace",
+  "learning_signal": "A recurring operational trace is being used to justify a change to a reusable LF capability.",
+  "source_context": "learning engine controlled improvement flow",
+  "evidence": [
+    "recurring trace observed",
+    "change candidate proposed",
+    "no reproducible target eval supplied"
+  ],
+  "proposed_improvement": "Modify the reusable capability to prevent recurrence.",
+  "target_eval_id": null,
+  "source_authority": "ACT-0001 + ACT-0046 + public.v_lf_fuente_operativa",
+  "expected_status": "RETURN_TO_ORCHESTRATOR",
+  "expected_blocking_code": "TARGET_EVAL_REQUIRED"
+}

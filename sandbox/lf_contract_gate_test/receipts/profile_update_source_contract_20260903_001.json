@@ -1,0 +1,32 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-PROFILE-UPDATE-SOURCE-20260903-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "35bc5195f9ab301e012d3ca280de5e5fe79f33da",
+  "judge_sha": "bef12f5dd3c08db63b92faf64f77703acf9172288dc0547e0de56241d1521557",
+  "source_sha_list": [
+    "5e161038defdcf330506864a3166d1505f5303e8",
+    "35bc5195f9ab301e012d3ca280de5e5fe79f33da",
+    "93efb9b16759d885fb110d913cfb7ea26d223838"
+  ],
+  "target_paths": [
+    "skills/profile_creator/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-03T18:18:47Z",
+  "evidence": {
+    "scope": "SOURCE_ONLY_UPDATE_LIFECYCLE_CONTRACTS_AND_EVALS",
+    "exact_head_validate_lf_packs": "PASS",
+    "update_runtime_write_enabled": false,
+    "runtime_deployment_executed": false,
+    "production_authorized": false,
+    "merge_authorized": false,
+    "shared_enforcement_rebaseline_preserved": true,
+    "receipt_is_not_runtime_authority": true,
+    "note": "Source-bound sandbox receipt for the existing ACTUALIZACION_PERFIL_LF contracts/evals changed in PR #492. It does not authorize UPDATE writes, runtime activation, production, merge, or semantic self-attestation. Exact-target enforcement remains fail-closed until deterministic observed-current-revision continuity and recorder generalization are proven."
+  }
+}

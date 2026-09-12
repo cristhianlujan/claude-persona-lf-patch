@@ -1,0 +1,9 @@
+{
+  "case_id": "LEARNING_ENGINE_PROFILE_CARD_HANDOFF_001",
+  "request_type": "classify_learning_signal",
+  "learning_signal": "A repeated UI review pattern shows that the profile/card should include cognitive load checks.",
+  "source_context": "profile/card improvement candidate",
+  "evidence": ["repeated profile usage", "candidate improvement touches cards/profiles"],
+  "source_authority": "ACT-0001 + ACT-0046 + ACT-0045 + public.v_lf_fuente_operativa",
+  "expected_status": "HANDOFF_TO_ACT_0045"
+}

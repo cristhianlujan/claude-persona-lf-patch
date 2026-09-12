@@ -1,0 +1,18 @@
+{
+  "handoff_id": "learning_engine_to_quality_pack",
+  "from": "skills/learning_engine",
+  "to": "quality_pack_review",
+  "required_evidence": [
+    "router_applied",
+    "source_verified",
+    "act_0046_verified",
+    "evidence_map_present",
+    "classification_present",
+    "existing_asset_check",
+    "candidate_artifact_present_when_created",
+    "runtime_disabled",
+    "automatic_impact_blocked"
+  ],
+  "handoff_success_condition": "Quality Pack can perform its review using the producer output and normal receiver context without inventing missing intent, structure, evidence, or artifact content.",
+  "next_gate": "QUALITY_PACK_REVIEW"
+}

@@ -1,0 +1,43 @@
+{
+  "review_id": "QUALITY_REVIEW_PROFILE_CREATOR_HANDOFF_OUTCOME_001_AFTER",
+  "reviewed_artifact": "fixtures/handoff_outcome/candidate_pack.json",
+  "review_mode": "ASSISTED_RUBRIC_REVIEW",
+  "receiver_execution_status": "NOT_EXECUTED",
+  "verdict": "PASS_WITH_RESTRICTIONS",
+  "score_breakdown": {
+    "contract_schema_compliance": 5,
+    "evidence_integrity": 5,
+    "lf_safety_governance": 5,
+    "handoff_readiness": 5,
+    "leakage_scope_control": 2,
+    "total": 22
+  },
+  "evidence_map": [
+    {
+      "check": "created_artifact_resolvable",
+      "observed": "fixtures/handoff_outcome/candidate_pack.json exists and identifies PROFILE_UI_INTERFACE_ARCHITECT_LF_CANDIDATE"
+    },
+    {
+      "check": "declared_components_available",
+      "observed": "all 12 paths declared by candidate_producer.json are present with developed content in candidate_pack.json"
+    },
+    {
+      "check": "assisted_review_did_not_reconstruct_pack",
+      "observed": "the assisted rubric review used the delivered artifact directly; no missing profile structure or content had to be invented"
+    },
+    {
+      "check": "governance_boundary",
+      "observed": "runtime remains disabled and automatic impact remains BLOCKED"
+    }
+  ],
+  "blocking_codes": [
+    "BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER"
+  ],
+  "repair_actions": [
+    "Resolve a real executable Quality Pack receiver target before claiming the A-to-B behavioral outcome or promoting this case to regression protection."
+  ],
+  "remaining_risks": [
+    "profiles/quality_pack currently provides Markdown skill, contracts and judges but no executable receiver/runner. This file is evidence of an assisted rubric review only, not an independent Quality Pack execution."
+  ],
+  "next_gate": "RESOLVE_EXECUTABLE_RECEIVER_TARGET"
+}

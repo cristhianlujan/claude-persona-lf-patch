@@ -1,0 +1,21 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_ADAPTER_LF",
+  "execution_id": "EXEC-ACTUALIZACION-ADAPTER-LF-SHELL-20260828-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "5508e21d1611054ec3fc50f3e3687badbc9545f772ab0083abca9f27532ed4e0",
+  "judge_sha": "62888829f5f3be97edde291421f2e2bacb1fa61bc0d15bb2683e7ef483550900",
+  "source_sha_list": [
+    "5f2df930591381ac67c03c9c6c6712bc8667cbbe",
+    "e213a1fddecc7c695ce439717ce7b0938d806844"
+  ],
+  "target_paths": [
+    "adapters/lf_shell_profile_adapter/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-08-29T03:12:00Z",
+  "notes": "PASS_SANDBOX candidate-source receipt for Shell Adapter assurance revision v2. Canonical execution binding and pre-write steps 0-60 are recorded in Supabase. This receipt covers source/contract hardening only: Router-bound invocation contract, LF-specific invocation receipt schema, deterministic validator, adversarial/holdout cases and compact runtime capsule. It does not claim that EJECUCION_PERFIL_LF currently dispatches this adapter at runtime, and does not authorize runtime, production, VALIDATED, automatic promotion or merge. Execution remains IN_PROGRESS until exact-head CI/readback and later central runtime integration evidence are complete."
+}

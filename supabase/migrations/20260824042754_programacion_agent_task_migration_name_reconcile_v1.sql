@@ -1,0 +1,4 @@
+update supabase_migrations.schema_migrations
+set name='programacion_agent_task_hmo_runtime_materialization_blocker_v1'
+where version='20260824042609'
+  and name='programacion_hmo_runtime_materialization_blocker_v1';

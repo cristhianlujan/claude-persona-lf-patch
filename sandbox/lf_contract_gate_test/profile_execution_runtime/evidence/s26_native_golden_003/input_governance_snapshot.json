@@ -1,0 +1,20 @@
+{
+  "schema": "S26_INPUT_GOVERNANCE_SNAPSHOT_V1",
+  "source_ref": "programacion.input_readiness_runs/221",
+  "id": 221,
+  "version_id": 14,
+  "scope": "B2B-CARGA-001",
+  "status": "PASS",
+  "source_snapshot_sha256": "217b8cb71b216deb32f58b8091ea1e81e66fe4116ce25ceeea0e63dad5c5eacb",
+  "universe_snapshot_sha256": "7cd13a794d7f2ff15057ba363835f60a26d4e4e4ec1d3de9ad4c2ea1061154bb",
+  "family_count": 5,
+  "contract_version": "LF-INPUT-GOVERNANCE-v1",
+  "contract_revision": "lf-input-governance-snapshot-v1",
+  "contract_snapshot_sha256": "4dcb9d4a99fe4459b4a7f6c17cc601fe550e55615896df27b0c7bc3eb18b15e1",
+  "source_observed_at": "2026-08-26T14:20:37.403585+00:00",
+  "invalidated_at": null,
+  "invalidated_reason": null,
+  "invalidated_by_run_id": null,
+  "readback_observed_at": "2026-09-08T20:41:30.884049+00:00",
+  "readback_source": "SUPABASE_CANONICAL"
+}

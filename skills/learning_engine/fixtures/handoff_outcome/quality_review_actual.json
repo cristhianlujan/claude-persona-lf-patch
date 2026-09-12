@@ -1,0 +1,33 @@
+{
+  "review_id": "QP_LEARNING_HANDOFF_OUTCOME_001",
+  "reviewed_artifact": "LEARN_CANDIDATE_HANDOFF_OUTCOME_001",
+  "review_mode": "ASSISTED_RUBRIC_REVIEW",
+  "receiver_execution_status": "NOT_EXECUTED",
+  "verdict": "PASS_WITH_RESTRICTIONS",
+  "score_breakdown": {
+    "contract_schema_compliance": 5,
+    "evidence_integrity": 5,
+    "lf_safety_governance": 5,
+    "handoff_readiness": 5,
+    "leakage_scope_control": 5,
+    "total": 25
+  },
+  "evidence_map": [
+    "Producer status LEARNING_CARD_CANDIDATE_CREATED is backed by an included candidate_artifact whose artifact_id matches learning_candidate_id.",
+    "The candidate names the exact baseline PR #222 head and repository paths that demonstrate the original contradiction.",
+    "Producer handoff_target=quality_pack_review matches skills/learning_engine/handoffs/to_quality_pack.handoff.json.",
+    "The producer asks Quality Pack to review the delivered artifact and does not ask the receiver to recreate it.",
+    "Candidate boundaries explicitly keep Supabase, Google Docs, runtime, production and automatic impact blocked."
+  ],
+  "blocking_codes": [
+    "BEHAVIORAL_EVAL_BLOCKED_NO_EXECUTABLE_RECEIVER"
+  ],
+  "repair_actions": [
+    "Resolve and execute a verified Quality Pack receiver target before claiming the producer-to-receiver behavioral outcome."
+  ],
+  "remaining_risks": [
+    "This review was produced in the same controlled model session as the producer role and is therefore assisted rubric evidence, not independent receiver execution.",
+    "No verified executable Quality Pack target has produced actual receiver output/trace for this case."
+  ],
+  "next_gate": "RESOLVE_EXECUTABLE_RECEIVER_TARGET"
+}

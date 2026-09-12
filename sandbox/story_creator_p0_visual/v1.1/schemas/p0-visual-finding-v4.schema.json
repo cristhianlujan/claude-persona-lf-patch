@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "p0-visual-finding-v4.schema.json",
+  "title": "P0 Visual Finding V4",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version","finding_id","cycle_id","pass_id","grader_id","category","severity","element_id","region","candidate_claim","observed_evidence","evidence_refs","confidence","actionability","root_cause_candidate","status"],
+  "properties": {
+    "schema_version": {"const": "p0-visual-finding-v4/v1"},
+    "finding_id": {"type": "string", "pattern": "^F-[A-Za-z0-9._-]+$"},
+    "cycle_id": {"type": "string", "pattern": "^C-[A-Za-z0-9._-]+$"},
+    "pass_id": {"type": "string", "pattern": "^P-[A-Za-z0-9._-]+$"},
+    "grader_id": {"type":"string","enum":["J-TEXT","J-OBJECT","J-COMPLETE","J-GEOMETRY","J-STRUCTURE","J-STYLE","J-SEMANTIC","J-UNCERTAINTY","J-SKEPTIC","J-COVERAGE"]},
+    "category":{"type":"string","minLength":1},
+    "severity":{"enum":["CRITICAL","HIGH","MEDIUM","LOW","INFO"]},
+    "element_id":{"type":["string","null"],"minLength":1},
+    "region":{"type":"object","additionalProperties":false,"required":["x","y","width","height"],"properties":{"x":{"type":"integer","minimum":0},"y":{"type":"integer","minimum":0},"width":{"type":"integer","minimum":0},"height":{"type":"integer","minimum":0}}},
+    "candidate_claim":{"type":["string","object","array","number","boolean","null"]},
+    "observed_evidence":{"type":["string","object","array"],"minLength":1},
+    "evidence_refs":{"type":"array","items":{"type":"string","minLength":1}},
+    "confidence":{"type":"number","minimum":0,"maximum":1},
+    "actionability":{"enum":["AUTO_REMEDIATE","REREAD","BLOCK","HUMAN_CONTEXT"]},
+    "root_cause_candidate":{"type":["string","null"]},
+    "status":{"enum":["OPEN","REMEDIATED","VERIFIED","CLOSED"]}
+  }
+}

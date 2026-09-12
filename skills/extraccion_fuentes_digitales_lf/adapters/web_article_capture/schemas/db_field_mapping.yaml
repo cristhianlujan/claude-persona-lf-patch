@@ -1,0 +1,4 @@
+owner_skill: SKILL_EXTRACCION_FUENTES_DIGITALES_LF
+adapter: ADAPTER_WEB_ARTICLE_CAPTURE_LF
+table: public.lf_capture_records
+fields: [operation_code, url, url_hash, source_name, source_type, title_or_hook, raw_text, raw_payload, modo_ejecucion, actor_id, actor_role, estado_extraccion_web]

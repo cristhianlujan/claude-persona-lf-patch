@@ -1,0 +1,5 @@
+judge:
+  owner_skill: SKILL_EXTRACCION_FUENTES_DIGITALES_LF
+  command: capture_web_article
+  estado: CANDIDATO_READ_ONLY
+  criterios: [no_inferir, evidencia_literal, readback_obligatorio, no_homologacion]

@@ -1,0 +1,40 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "operation_code": "BUILD_INTEGRAL_STORY_CREATOR_LF",
+  "execution_id": "EXEC-BISC-031-A05-DEPENDENCY-REVALIDATION",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "479e07b1a82e562e8aa1d22e341344654cca82d8159d1995913fb5730a11b1c7",
+  "judge_sha": "105260673c5a6e906e28ef43b1fba661c234b3b1099f64a32db99bcc1c178f52",
+  "source_sha_list": [
+    "5b8e6a8bfb7200f595de4326442eb40e9b08178bf676c869d0983e39394ad6ef",
+    "479e07b1a82e562e8aa1d22e341344654cca82d8159d1995913fb5730a11b1c7",
+    "105260673c5a6e906e28ef43b1fba661c234b3b1099f64a32db99bcc1c178f52"
+  ],
+  "target_paths": [
+    "skills/creating-integral-user-stories/scripts/validate_test_coverage.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-07-31T15:25:00Z",
+  "evidence": {
+    "dependency_code": "RUNTIME-J10",
+    "dependency_of": "A05",
+    "canonical_artifacts_modified": 1,
+    "bytes": 27554,
+    "sha256": "105260673c5a6e906e28ef43b1fba661c234b3b1099f64a32db99bcc1c178f52",
+    "git_blob": "eee45b76dce34398d254dc0485fb404280988931",
+    "contract": "A21 v0.6",
+    "assertions": "17/17",
+    "negative_cases": "15/15",
+    "judge_result_schema_errors": 0,
+    "package_gate": "66/66",
+    "explicit_executor_identity": true,
+    "explicit_worker_identity": true,
+    "runtime_registration_uri_required": true,
+    "runtime_sha_reconciliation_required": true,
+    "a06_started": false,
+    "dependency_nested_sequence": true
+  }
+}

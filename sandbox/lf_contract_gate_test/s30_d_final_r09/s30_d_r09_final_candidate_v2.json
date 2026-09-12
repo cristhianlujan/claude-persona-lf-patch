@@ -1,0 +1,63 @@
+{
+  "artifacts": {
+    "corpus": {
+      "path": "r09_corpus_v2.json",
+      "sha256": "69c12812e862c4d9b783799e4db7f5251e72734582383a97b86f7b8ef856cfc4"
+    },
+    "current_readback": {
+      "path": "r09_current_readback_v2.json",
+      "sha256": "18d5a25fa0c5c8ee057b6429a0e7c3bc68d86335e794e24094a77513f6a0c46b"
+    },
+    "execution_receipt": {
+      "path": "r09_execution_receipt_v2.json",
+      "sha256": "039d46b276f6f6b9dc7bd37f884c8bc4534d7dbc2e54baf71c79a8ab3fccaf7a"
+    },
+    "frozen_result": {
+      "path": "s30_d_r09_frozen_result_v2.json",
+      "sha256": "482105595972599832ed5d39b03fe5c7d7b657fbca13868309686b27c3e27f2c"
+    },
+    "independent_readback": {
+      "path": "s30_d_r09_independent_readback_v2.json",
+      "sha256": "82eac8be9b299c1f8de3b1f0109984c890b20dd325cc1402b7611d163bd55b42"
+    }
+  },
+  "base_main_sha": "a8dc0f24e32ff713bcb02254ec85351ff252f85f",
+  "claim_scope": "R09_ONLY_NOT_S30_GOLDEN",
+  "contract": "S30_D_R09_FINAL_CANDIDATE_V2",
+  "main_merge_authorized": false,
+  "next_gate": "C05_DYNAMIC_IDEMPOTENCY_LEASE_FIRE_TEST_BEFORE_OPERATION_BOOTSTRAP",
+  "promotion_authority": "NONE",
+  "protected_branch_persistence_state": "PENDING_THIS_GOVERNED_PROMOTION",
+  "result": "S30_P0_SELF_GOVERNANCE_R09_PASS",
+  "safety": {
+    "main_modified": false,
+    "production_modified": false,
+    "runtime_modified": false,
+    "s26_modified": false,
+    "scheduler_modified": false,
+    "snapshot_35_modified": false,
+    "supabase_write": false
+  },
+  "source_ci": {
+    "lf_contract_check": {
+      "conclusion": "SUCCESS",
+      "job_id": 103053970720,
+      "run_id": 34531767017
+    },
+    "validate_lf_packs": {
+      "conclusion": "SUCCESS",
+      "job_id": 103053931059,
+      "run_id": 34531766982
+    }
+  },
+  "source_ci_commit_sha": "8a10684412d933d50836ff6b6649b83c5dfb233d",
+  "verification": {
+    "false_na_count": 0,
+    "false_pass_count": 0,
+    "independent_readback": "PASS",
+    "model_calls": 0,
+    "preventable_first_hop_escape_count": 0,
+    "r09_cases": 52,
+    "self_application_cases": 7
+  }
+}
