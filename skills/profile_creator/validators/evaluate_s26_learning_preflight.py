@@ -179,10 +179,11 @@ def evaluate_learning_preflight(
         binding = {}
     if binding.get("operation_code") != "ACTUALIZACION_PERFIL_LF":
         _block("EXECUTION_OPERATION_MISMATCH", blockers)
-    if binding.get("target_type") != "PROFILE":
+    if binding.get("target_type") != "PERFIL":
         _block("EXECUTION_TARGET_TYPE_MISMATCH", blockers)
-    expected_target = f"profiles/{profile_slug}"
-    if binding.get("target_path") != expected_target:
+    profile_root = f"profiles/{profile_slug}"
+    target_path = binding.get("target_path")
+    if not isinstance(target_path, str) or not (target_path == profile_root or target_path.startswith(profile_root + "/")):
         _block("EXECUTION_TARGET_PATH_MISMATCH", blockers)
     if not isinstance(binding.get("execution_id"), str) or not binding.get("execution_id"):
         _block("EXECUTION_ID_MISSING", blockers)
@@ -197,33 +198,53 @@ def evaluate_learning_preflight(
     if binding.get("execution_bound_to_target_before_change") is not True:
         _block("EXECUTION_NOT_BOUND_BEFORE_CHANGE", blockers)
 
-    bound = binding.get("bound_revision")
-    if not isinstance(bound, dict):
-        _block("BOUND_REVISION_MISSING", blockers)
-        bound = {}
-    if bound.get("path") != expected_target:
-        _block("BOUND_REVISION_TARGET_MISMATCH", blockers)
-    if bound.get("revision_sha") != current_revision:
+    bound_revision = binding.get("bound_revision")
+    if not isinstance(bound_revision, str) or not SHA40_RE.fullmatch(bound_revision):
+        _block("BOUND_REVISION_MISSING_OR_INVALID", blockers)
+    elif bound_revision != current_revision:
         _block("BOUND_REVISION_STALE", blockers)
-    if repository and bound.get("repo") != repository:
-        _block("BOUND_REVISION_REPOSITORY_MISMATCH", blockers)
 
-    write_plan = binding.get("write_plan")
-    if not isinstance(write_plan, dict):
-        _block("WRITE_PLAN_MISSING", blockers)
-        write_plan = {}
-    allowed_paths = write_plan.get("allowed_paths")
-    expected_scope = f"{expected_target}/**"
-    if not isinstance(allowed_paths, list) or not allowed_paths:
-        _block("WRITE_SCOPE_MISSING", blockers)
-    elif any(path != expected_scope for path in allowed_paths):
+    trust = binding.get("server_trust_context")
+    if binding.get("server_trust_context_valid") is not True:
+        _block("SERVER_TRUST_CONTEXT_NOT_VALID", blockers)
+    if binding.get("server_trust_context_source") != "run-creacion-perfil-lf":
+        _block("SERVER_TRUST_CONTEXT_SOURCE_INVALID", blockers)
+    if not isinstance(trust, dict):
+        _block("SERVER_TRUST_CONTEXT_MISSING", blockers)
+        trust = {}
+    if trust.get("resolver") != "GITHUB_PUBLIC_API_EXACT_REF_V1":
+        _block("SERVER_TRUST_RESOLVER_INVALID", blockers)
+    if trust.get("ref") != "main":
+        _block("SERVER_TRUST_REF_INVALID", blockers)
+    if repository and trust.get("repository") != repository:
+        _block("SERVER_TRUST_REPOSITORY_MISMATCH", blockers)
+    if isinstance(target_path, str) and trust.get("target_path") != target_path:
+        _block("SERVER_TRUST_TARGET_PATH_MISMATCH", blockers)
+    if trust.get("revision_sha") != current_revision:
+        _block("SERVER_TRUST_REVISION_STALE", blockers)
+    if trust.get("bound_revision") != bound_revision:
+        _block("SERVER_TRUST_BOUND_REVISION_MISMATCH", blockers)
+    if trust.get("continuity_state") not in {"CURRENT_BOUND", "STALE_REBOUND_CURRENT"}:
+        _block("SERVER_TRUST_CONTINUITY_INVALID", blockers)
+    if not isinstance(trust.get("target_blob_sha"), str) or not SHA40_RE.fullmatch(trust.get("target_blob_sha")):
+        _block("SERVER_TRUST_TARGET_BLOB_INVALID", blockers)
+    if not isinstance(trust.get("baseline_revision"), str) or not SHA40_RE.fullmatch(trust.get("baseline_revision")):
+        _block("SERVER_TRUST_BASELINE_INVALID", blockers)
+
+    scope = payload.get("authorized_scope")
+    if not isinstance(scope, dict):
+        _block("AUTHORIZED_SCOPE_MISSING", blockers)
+        scope = {}
+    allowed_paths = scope.get("allowed_paths")
+    expected_scope = f"{profile_root}/**"
+    if allowed_paths != [expected_scope]:
         _block("WRITE_SCOPE_ESCAPE", blockers)
-    if write_plan.get("automatic_runtime_activation") is not False:
+    if scope.get("automatic_runtime_activation") is not False:
         _block("RUNTIME_ACTIVATION_BOUNDARY_MISSING", blockers)
-    if write_plan.get("production_change") is not False:
+    if scope.get("production_change") is not False:
         _block("PRODUCTION_BOUNDARY_MISSING", blockers)
 
-    covered = sum(1 for code in matched if code in check_map)
+    covered = sum(1 for code in matched if code in check_map and code in rule_map)
     coverage = round(covered * 100 / len(matched), 1) if matched else 0.0
     metrics = {
         "matched_error_count": len(matched),
@@ -254,7 +275,10 @@ def evaluate_learning_preflight(
 
 def main() -> int:
     if len(sys.argv) not in (3, 4):
-        print("usage: evaluate_s26_learning_preflight.py <profile_slug> <preflight_json> [repo_root]", file=sys.stderr)
+        print(
+            "usage: evaluate_s26_learning_preflight.py <profile_slug> <preflight_json> [repo_root]",
+            file=sys.stderr,
+        )
         return 2
     slug = sys.argv[1]
     preflight_path = Path(sys.argv[2]).resolve()
