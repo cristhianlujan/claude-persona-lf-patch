@@ -1,0 +1,26 @@
+name: Platform Adopt R02-C Real S26 Canary
+
+on:
+  push:
+    branches:
+      - lf/platform-adopt-langgraph-spike-001
+
+jobs:
+  r02c:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install runtime and LangGraph
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r services/profile_runtime_api/requirements.in
+          pip install langgraph==1.2.11
+      - name: Execute real S26 frozen artifact parity replay
+        run: |
+          python sandbox/lf_contract_gate_test/platform_adopt/langgraph_spike_001/run_r02c_real_s26_replay.py
