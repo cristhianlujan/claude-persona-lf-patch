@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import hashlib
-import json
 import sys
 import unittest
 from pathlib import Path
@@ -23,7 +22,6 @@ from langgraph_profile_spike import build_spike_graph
 from profile_runtime_runner import execute_profile_runtime
 from validate_profile_execution import canonical_json_sha256
 
-
 FIXED_AT = "2026-09-12T05:30:00+00:00"
 
 
@@ -35,7 +33,11 @@ class DeterministicAdapter:
     adapter_id = "SPIKE-DETERMINISTIC-ADAPTER"
     is_test_double = True
 
-    def __init__(self, failures_before_success: int = 0, failure_type: type[Exception] = RuntimeError):
+    def __init__(
+        self,
+        failures_before_success: int = 0,
+        failure_type: type[Exception] = RuntimeError,
+    ) -> None:
         self.calls = 0
         self.failures_before_success = failures_before_success
         self.failure_type = failure_type
@@ -76,7 +78,13 @@ class DeterministicVerifier:
     verifier_id = "SPIKE-DETERMINISTIC-VERIFIER"
     is_test_double = True
 
-    def verify(self, *, request: dict[str, Any], response: dict[str, Any], adapter: Any) -> dict[str, Any]:
+    def verify(
+        self,
+        *,
+        request: dict[str, Any],
+        response: dict[str, Any],
+        adapter: Any,
+    ) -> dict[str, Any]:
         response_sha = canonical_json_sha256(response)
         evidence_sha = sha256_text(
             "|".join([request["request_sha256"], response_sha, adapter.adapter_id])
@@ -102,7 +110,7 @@ def payload(*, requires_human: bool = False) -> dict[str, Any]:
         "profile_sources": [
             {
                 "ref": "profiles/ui_architect/SKILL.md",
-                "content": "# UI Architect\nGoverned spiike source.",
+                "content": "# UI Architect\nGoverned spike source.",
             }
         ],
         "input_literal": "Produce a governed deterministic spike output.",
@@ -129,7 +137,6 @@ class LangGraphSpikeTests(unittest.TestCase):
         current_adapter = DeterministicAdapter()
         graph_adapter = DeterministicAdapter()
         verifier = DeterministicVerifier()
-
         current = baseline(current_adapter, verifier)
         graph = build_spike_graph(
             adapter=graph_adapter,
@@ -140,7 +147,6 @@ class LangGraphSpikeTests(unittest.TestCase):
             payload(),
             config={"configurable": {"thread_id": "parity-001"}},
         )
-
         self.assertEqual(result["status"], "PASS")
         self.assertEqual(result["runtime_result"], current)
         self.assertEqual(current_adapter.calls, 1)
@@ -149,7 +155,7 @@ class LangGraphSpikeTests(unittest.TestCase):
 
     def test_02_preflight_is_fail_closed_before_runtime(self) -> None:
         adapter = DeterministicAdapter()
-        graph = build_spiike_graph(
+        graph = build_spike_graph(
             adapter=adapter,
             attestation_verifier=DeterministicVerifier(),
             checkpointer=InMemorySaver(),
@@ -161,7 +167,9 @@ class LangGraphSpikeTests(unittest.TestCase):
             config={"configurable": {"thread_id": "preflight-001"}},
         )
         self.assertEqual(result["status"], "BLOCKED")
-        self.assertEqual(result["blocking_code"], "LANGGRAPH_SPIKE_PREFLIGHT_MISSING")
+        self.assertEqual(
+            result["blocking_code"], "LANGGRAPH_SPIKE_PREFLIGHT_MISSING"
+        )
         self.assertEqual(adapter.calls, 0)
 
     def test_03_transient_provider_failure_is_retried_by_graph(self) -> None:
@@ -205,13 +213,11 @@ class LangGraphSpikeTests(unittest.TestCase):
             adapter=adapter,
             attestation_verifier=DeterministicVerifier(),
             checkpointer=InMemorySaver(),
-      )
+        )
         config = {"configurable": {"thread_id": "hitl-001"}}
         initial = graph.invoke(payload(requires_human=True), config=config)
-
         self.assertIn("__interrupt__", initial)
         self.assertEqual(adapter.calls, 0)
-
         resumed = graph.invoke(Command(resume=True), config=config)
         self.assertEqual(resumed["status"], "PASS")
         self.assertEqual(adapter.calls, 1)
@@ -227,33 +233,37 @@ class LangGraphSpikeTests(unittest.TestCase):
         config = {"configurable": {"thread_id": "hitl-reject-001"}}
         graph.invoke(payload(requires_human=True), config=config)
         resumed = graph.invoke(Command(resume=False), config=config)
-
         self.assertEqual(resumed["status"], "BLOCKED")
-        self.assertEqual(resumed["blocking_code"], "LANGGRAPH_SPIKE_HITL_REJECTED")
+        self.assertEqual(
+            resumed["blocking_code"], "LANGGRAPH_SPIKE_HITL_REJECTED"
+        )
         self.assertEqual(adapter.calls, 0)
 
     def test_07_checkpoints_create_replayable_state_history(self) -> None:
         saver = InMemorySaver()
-        graph = build_spiike_graph(
+        graph = build_spike_graph(
             adapter=DeterministicAdapter(),
             attestation_verifier=DeterministicVerifier(),
             checkpointer=saver,
-      )
+        )
         config = {"configurable": {"thread_id": "history-001"}}
         result = graph.invoke(payload(), config=config)
         history = list(graph.get_state_history(config))
-
         self.assertEqual(result["status"], "PASS")
         self.assertGreaterEqual(len(history), 4)
-        self.assertTrue(any(snapshot.next == ("execute_runtime",) for snapshot in history))
-        self.assertTrue(any(snapshot.next == ("post_validate",) for snapshot in history))
+        self.assertTrue(
+            any(snapshot.next == ("execute_runtime",) for snapshot in history)
+        )
+        self.assertTrue(
+            any(snapshot.next == ("post_validate",) for snapshot in history)
+        )
 
     def test_08_receipt_stays_owned_by_lf_runner(self) -> None:
         graph = build_spike_graph(
             adapter=DeterministicAdapter(),
             attestation_verifier=DeterministicVerifier(),
             checkpointer=InMemorySaver(),
-      )
+        )
         result = graph.invoke(
             payload(),
             config={"configurable": {"thread_id": "receipt-001"}},
