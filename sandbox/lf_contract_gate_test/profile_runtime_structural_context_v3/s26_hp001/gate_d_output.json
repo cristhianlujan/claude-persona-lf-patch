@@ -1,0 +1,104 @@
+{
+  "schema": "S26_HP001_GATE_D_OUTPUT_V1",
+  "gate": "D_AUTHORITY_RESOLUTION",
+  "project_id": "S26",
+  "run_id": "S26-HP-001",
+  "upstream": {
+    "source_gate": "C_CARD_SELECTION",
+    "source_output_sha256": "674fc72f02eeb055abd721b077acc2ad9eb7d71919a8699e3c3c093075f62cbb",
+    "input_sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1",
+    "committed_readback_binding": {
+      "schema": "S26_POST_COMMIT_READBACK_BINDING_V1",
+      "mode": "POST_COMMIT_PROVIDER_READBACK_BEFORE_DOWNSTREAM_BINDING",
+      "provider": "GITHUB",
+      "source_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_c_output.json",
+      "source_commit_sha": "3464523690a1f4a92d7499106733d0f3159a046d",
+      "source_git_blob_sha": "7ea59f8d3fdb33293bdb61bd74b9b1d4026ffd59",
+      "source_sha256": "674fc72f02eeb055abd721b077acc2ad9eb7d71919a8699e3c3c093075f62cbb",
+      "same_commit_source_and_binding_forbidden": true
+    }
+  },
+  "governance_preflight": {
+    "source": "SUPABASE_CONTROL_PLANE",
+    "table": "public.lf_error_knowledge",
+    "schema_first_verified": true,
+    "observed_at": "2026-09-10T05:19:45.635009+00:00",
+    "broad_high_critical_active_count": 303,
+    "broad_snapshot_sha256": "d8670bb5b715ee0b89275d7e153080e15364ded55b8e9e5e4a954475803f03cd",
+    "applicable_codes": [
+      "AUD-019",
+      "GOV-023",
+      "GOV-032",
+      "PROFILE-CARD-RUNTIME-MATERIALIZATION-GAP-001"
+    ],
+    "snapshot_reused_from_gate_b": false,
+    "prior_gate_outputs_mutated": false
+  },
+  "input": {
+    "surface_code": "UI_SCREEN_DESIGN",
+    "task_code": "CREATE_NEW",
+    "current_run_id": "S26-HP-001",
+    "required_authority_types": [
+      "USER_REQUIREMENT",
+      "PROFILE_CONTRACT",
+      "OUTPUT_SCHEMA",
+      "RECIPIENT_BOUNDARY"
+    ],
+    "authority_paths": {
+      "USER_REQUIREMENT": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/input.txt",
+      "PROFILE_CONTRACT": "profiles/ui_architect/SKILL.md",
+      "OUTPUT_SCHEMA": "profiles/ui_architect/schemas/ui_production_spec.schema.json",
+      "RECIPIENT_BOUNDARY": "profiles/ui_architect/contracts/composer_payload_boundary_v1.md"
+    }
+  },
+  "authority_resolution": [
+    {
+      "authority_type": "OUTPUT_SCHEMA",
+      "authority_id": "S26_HP001_OUTPUT_SCHEMA",
+      "run_id": "S26-HP-001",
+      "cross_run_declared": false,
+      "cross_run_authorization": null,
+      "ref": "profiles/ui_architect/schemas/ui_production_spec.schema.json",
+      "sha256": "7f10c952796b045b99069b446f8dd7582d641d3514c25253fd27782045547112"
+    },
+    {
+      "authority_type": "PROFILE_CONTRACT",
+      "authority_id": "S26_HP001_PROFILE_CONTRACT",
+      "run_id": "S26-HP-001",
+      "cross_run_declared": false,
+      "cross_run_authorization": null,
+      "ref": "profiles/ui_architect/SKILL.md",
+      "sha256": "b099944839af79cb97eac76f12ecf8bd38c39ea331224ee335ced32491f411c0"
+    },
+    {
+      "authority_type": "RECIPIENT_BOUNDARY",
+      "authority_id": "S26_HP001_RECIPIENT_BOUNDARY",
+      "run_id": "S26-HP-001",
+      "cross_run_declared": false,
+      "cross_run_authorization": null,
+      "ref": "profiles/ui_architect/contracts/composer_payload_boundary_v1.md",
+      "sha256": "d2b55e3c29c45642ebe18084b23c1ae96064c8c0a6bd8ecb1f5910f2753bb617"
+    },
+    {
+      "authority_type": "USER_REQUIREMENT",
+      "authority_id": "S26_HP001_USER_REQUIREMENT",
+      "run_id": "S26-HP-001",
+      "cross_run_declared": false,
+      "cross_run_authorization": null,
+      "ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/input.txt",
+      "sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1"
+    }
+  ],
+  "decision": {
+    "authority_resolution_complete": true,
+    "required_authority_count": 4,
+    "resolved_authority_count": 4,
+    "incompatible_authorities_detected": false,
+    "cross_run_authority_used": false,
+    "candidate_derived_authority_used": false,
+    "semantic_authority_invention_allowed": false,
+    "next_gate_authorized": true
+  },
+  "status": "PASS",
+  "next_gate": "E_ADAPTER_TYPED_CONTEXT"
+}

@@ -1,0 +1,284 @@
+{
+  "worker": "ui_architect",
+  "output_type": "PRODUCTION_UI_SPEC",
+  "deliverable_created": {
+    "screen_definition": {
+      "screen_code": "B2B-CARGA-001",
+      "screen_name": "Historial de cargas",
+      "task_mode": "REMEDIATE_EXISTING",
+      "artifact_sha256": "ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287",
+      "viewport": "1600x1000",
+      "scope": "screen content only; LF shell, sidebar, topbar and company selector remain locked",
+      "execution_id": "EXEC-S26-N08-GPT-NATIVE-GOLDEN-B-001",
+      "execution_contract_sha256": "113e9374a4074c51db35f0762447a21c9596aa22f363896e1c4a1253af0b6e96",
+      "obligation_manifest_sha256": "8283904fce66d72a90d96141c158994d59a8f741154d382f7f40a6a6e719d2f2",
+      "input_sha256": "bf3e0eb99d5d58f3e7190dbbb8ce6e386b1e64b8211781fdb0bbc6bb4e1dd823",
+      "profile_source_sha256": "978aadc31103bd7c8d2aa709cd1b229934dc962d80709464ec706168878db4cf"
+    },
+    "component_tree": [
+      {
+        "zone_id": "content_header",
+        "component_id": "breadcrumb",
+        "component_type": "NAVIGATION",
+        "role": "identify the current route within the existing shell",
+        "content": {"text": "Cartera > Cargas > Historial de cargas"},
+        "visual_priority": 2,
+        "color_tokens": {"mode": "PRESERVE_EXISTING"},
+        "typography": {"mode": "PRESERVE_EXISTING"},
+        "spacing": {"mode": "PRESERVE_EXISTING"},
+        "state": {"default": "visible"},
+        "allowed_variants": ["existing"],
+        "blocked_variants": ["shell_restructure"]
+      },
+      {
+        "zone_id": "content_header",
+        "component_id": "page_heading",
+        "component_type": "HEADING",
+        "role": "identify the load-history screen",
+        "content": {"title": "Historial de cargas", "subtitle": "Consulta, filtra y descarga el historial de cargas de la empresa activa."},
+        "visual_priority": 5,
+        "color_tokens": {"mode": "PRESERVE_EXISTING"},
+        "typography": {"mode": "PRESERVE_EXISTING"},
+        "spacing": {"mode": "PRESERVE_EXISTING"},
+        "state": {"default": "visible"},
+        "allowed_variants": ["existing"],
+        "blocked_variants": ["unsupported_copy_strengthening"]
+      },
+      {
+        "zone_id": "content_header",
+        "component_id": "header_actions",
+        "component_type": "ACTION_GROUP",
+        "role": "export the history or start a new load",
+        "content": {"secondary": "Exportar historial", "primary": "Nueva carga"},
+        "visual_priority": 4,
+        "color_tokens": {"mode": "PRESERVE_EXISTING"},
+        "typography": {"mode": "PRESERVE_EXISTING"},
+        "spacing": {"mode": "PRESERVE_EXISTING"},
+        "state": {"default": "visible"},
+        "allowed_variants": ["existing"],
+        "blocked_variants": ["new_urgency", "new_guarantee"]
+      },
+      {
+        "zone_id": "filters",
+        "component_id": "filter_panel",
+        "component_type": "FILTER_GROUP",
+        "role": "filter the load history with the nine observed criteria",
+        "content": {"fields": ["Buscar", "Estado", "Tipo de carga", "Cargado por", "Aprobación", "Desde", "Hasta", "Ordenar por", "Dirección"], "clear_action": "Limpiar filtros"},
+        "visual_priority": 3,
+        "color_tokens": {"mode": "PRESERVE_EXISTING"},
+        "typography": {"mode": "PRESERVE_EXISTING"},
+        "spacing": {"mode": "PRESERVE_EXISTING"},
+        "state": {"default": "visible"},
+        "allowed_variants": ["existing_fields"],
+        "blocked_variants": ["drop_filter", "invent_filter"]
+      },
+      {
+        "zone_id": "results",
+        "component_id": "results_summary",
+        "component_type": "SUMMARY",
+        "role": "display the current result count",
+        "content": {"count": 6, "label": "cargas encontradas"},
+        "visual_priority": 3,
+        "color_tokens": {"mode": "PRESERVE_EXISTING"},
+        "typography": {"mode": "PRESERVE_EXISTING"},
+        "spacing": {"mode": "PRESERVE_EXISTING"},
+        "state": {"current": "6 visible total records"},
+        "allowed_variants": ["count_from_current_result_set"],
+        "blocked_variants": ["invent_count"]
+      },
+      {
+        "zone_id": "results",
+        "component_id": "history_table",
+        "component_type": "DATA_TABLE",
+        "role": "present the load-history rows and all observed columns",
+        "content": {"headers": ["Lote", "Nombre", "Archivo", "Tipo", "Cargado por", "Fecha", "Total", "Válidos", "Estado", "Acciones"], "visible_rows": 6},
+        "visual_priority": 5,
+        "color_tokens": {"mode": "PRESERVE_EXISTING"},
+        "typography": {"mode": "PRESERVE_EXISTING"},
+        "spacing": {"mode": "PRESERVE_EXISTING"},
+        "state": {"default": "visible"},
+        "allowed_variants": ["horizontal_overflow_when_needed"],
+        "blocked_variants": ["drop_visible_column", "invent_column"]
+      },
+      {
+        "zone_id": "results",
+        "component_id": "table_horizontal_scroll",
+        "component_type": "OVERFLOW_CONTROL",
+        "role": "expose horizontal table overflow only when the content exceeds its container",
+        "content": {"observed": "scrollbar visible below the rows in the frozen viewport"},
+        "visual_priority": 1,
+        "color_tokens": {"mode": "PRESERVE_EXISTING"},
+        "typography": {"mode": "NOT_APPLICABLE"},
+        "spacing": {"mode": "PRESERVE_EXISTING"},
+        "state": {"current": "visible", "desired_rule": "hidden without overflow; available with real overflow"},
+        "allowed_variants": ["overflow_auto"],
+        "blocked_variants": ["always_hidden_when_overflow_exists"]
+      },
+      {
+        "zone_id": "pagination",
+        "component_id": "rows_per_page",
+        "component_type": "PAGE_SIZE_CONTROL",
+        "role": "select the current rows-per-page value",
+        "content": {"observed_value": 25},
+        "visual_priority": 2,
+        "color_tokens": {"mode": "PRESERVE_EXISTING"},
+        "typography": {"mode": "PRESERVE_EXISTING"},
+        "spacing": {"mode": "PRESERVE_EXISTING"},
+        "state": {"current": "25"},
+        "allowed_variants": ["existing_options"],
+        "blocked_variants": ["invent_page_size"]
+      },
+      {
+        "zone_id": "pagination",
+        "component_id": "pagination",
+        "component_type": "PAGINATION",
+        "role": "navigate result pages derived from current record count and page size",
+        "content": {"observed_pages": [1, 2, 3], "active_page": 1, "next_control": "visible_enabled"},
+        "visual_priority": 2,
+        "color_tokens": {"mode": "PRESERVE_EXISTING"},
+        "typography": {"mode": "PRESERVE_EXISTING"},
+        "spacing": {"mode": "PRESERVE_EXISTING"},
+        "state": {"current_total_records": 6, "current_page_size": 25, "observed_pages": [1, 2, 3]},
+        "allowed_variants": ["derive_available_pages_from_current_state"],
+        "blocked_variants": ["phantom_pages", "hard_coded_business_count"]
+      }
+    ],
+    "layout_grid": {
+      "shell": "locked outside remediation scope",
+      "content": "preserve the current desktop composition",
+      "table": "use available content width and conditional horizontal overflow"
+    },
+    "visual_hierarchy": [
+      {"parent_id": "page_heading", "child_ids": ["header_actions"]},
+      {"parent_id": "filter_panel", "child_ids": ["results_summary"]},
+      {"parent_id": "results_summary", "child_ids": ["history_table"]},
+      {"parent_id": "history_table", "child_ids": ["table_horizontal_scroll", "rows_per_page", "pagination"]}
+    ],
+    "state_map": {
+      "breadcrumb": {"default": "visible"},
+      "page_heading": {"default": "visible"},
+      "header_actions": {"default": "visible"},
+      "filter_panel": {"default": "visible"},
+      "results_summary": {"current_total_records": 6},
+      "history_table": {"current_visible_rows": 6},
+      "table_horizontal_scroll": {"rule": "visible only when scrollWidth > clientWidth"},
+      "rows_per_page": {"current": 25},
+      "pagination": {"rule": "available page count = ceil(total_records / page_size)"}
+    },
+    "token_map": {
+      "policy": "preserve existing observed visual treatment; no unobserved design-system token is promoted as canonical",
+      "primary_action": "preserve observed primary treatment",
+      "neutral_surfaces": "preserve observed white and light-neutral surfaces",
+      "status_pills": "preserve current semantic treatment unless upstream status authority changes it"
+    },
+    "spacing_typography": {
+      "precision_basis": "RELATIVE_GUIDANCE",
+      "rule": "preserve current typography and spacing; no new canonical pixel token is asserted by this remediation"
+    },
+    "density_rules": [
+      "Preserve all nine observed filter criteria.",
+      "Preserve all ten observed table headers and row actions.",
+      "Do not reduce density by silently deleting columns or filters."
+    ],
+    "risk_controls": [
+      "Keep sidebar, topbar, company selector and shell structure unchanged.",
+      "Do not invent financial, approval, payment, eligibility, legal, urgency or guarantee semantics.",
+      "Derive pagination from current total records and page size rather than a hard-coded business count.",
+      "Preserve horizontal access to every table column whenever actual overflow exists."
+    ],
+    "prompt_constraints": [
+      "Use the frozen visual artifact identified by SHA-256 ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287.",
+      "Use the pre-bound execution contract 113e9374a4074c51db35f0762447a21c9596aa22f363896e1c4a1253af0b6e96.",
+      "Do not use a previous candidate output or semantic verdict as authority.",
+      "Limit remediation to screen-content scope."
+    ],
+    "remediation_actions": [
+      {
+        "issue_id": "B2B-CARGA-PAGINATION-001",
+        "priority": "P1",
+        "category": "INTERACTION",
+        "evidence_anchor": "The frozen screen simultaneously shows 6 cargas encontradas, 25 registros por página, pages 1/2/3 and an enabled-looking next control.",
+        "evidence_component_ids": ["results_summary", "rows_per_page", "pagination"],
+        "decision": "Set pagination availability from the current total-record and page-size state so unavailable phantom pages are not exposed.",
+        "implementation_change": "Set pagination available_pages to ceil(total_records / page_size) and derive next availability from the current page; with the observed 6 records and page size 25, only page 1 is available and next is unavailable.",
+        "acceptance_criteria": "Pagination QA verifies that page controls always match ceil(total_records / page_size); for the observed 6/25 state, only page 1 is actionable and no next-page action is available, while later pages appear automatically when current data requires them.",
+        "execution": {
+          "operation": "SET_STATE",
+          "target_component_id": "pagination",
+          "property": "available_pages_and_next_state",
+          "desired_value": "derive from ceil(total_records / page_size) and current_page"
+        },
+        "acceptance_check": {
+          "check_type": "STATE",
+          "target_component_id": "pagination",
+          "expected": "available pages and next state equal the values derived from current total_records, page_size and current_page"
+        },
+        "semantic_authority": {
+          "source_refs": [
+            "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/input.txt",
+            "visual-artifact:ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287"
+          ],
+          "claim_scope": "INPUT_SUPPORTED"
+        }
+      },
+      {
+        "issue_id": "B2B-CARGA-OVERFLOW-001",
+        "priority": "P2",
+        "category": "HIERARCHY",
+        "evidence_anchor": "At the frozen 1600x1000 viewport all ten observed headers including Acciones are visible while horizontal scrollbar chrome remains rendered below the six rows.",
+        "evidence_component_ids": ["history_table", "table_horizontal_scroll"],
+        "decision": "Hide the table horizontal scroll control when no horizontal overflow exists, while retaining automatic horizontal overflow whenever the table exceeds its container.",
+        "implementation_change": "Hide table_horizontal_scroll when scrollWidth <= clientWidth and retain overflow auto so the same control becomes available whenever scrollWidth > clientWidth without removing columns or actions.",
+        "acceptance_criteria": "Table overflow QA verifies that no horizontal scrollbar is shown when all columns fit; when the table exceeds its container, horizontal access appears and every existing column and action remains reachable.",
+        "execution": {
+          "operation": "HIDE",
+          "target_component_id": "table_horizontal_scroll",
+          "property": "visibility_when_no_overflow",
+          "desired_value": "hidden when scrollWidth <= clientWidth; available through overflow auto when scrollWidth > clientWidth"
+        },
+        "acceptance_check": {
+          "check_type": "STATE",
+          "target_component_id": "table_horizontal_scroll",
+          "expected": "hidden without horizontal overflow and available with real horizontal overflow"
+        }
+      }
+    ]
+  },
+  "score": {
+    "layout_precision": 4,
+    "visual_hierarchy": 4,
+    "lf_system_fidelity": 4,
+    "state_mapping": 5,
+    "handoff_quality": 4,
+    "total": 21,
+    "evidence_by_criterion": {
+      "layout_precision": {
+        "refs": ["layout_grid", "spacing_typography"],
+        "summary": "The remediation binds layout changes to observable container overflow and avoids inventing unobserved canonical pixel tokens."
+      },
+      "visual_hierarchy": {
+        "refs": ["visual_hierarchy", "history_table", "table_horizontal_scroll"],
+        "summary": "The table remains the primary results surface and overflow chrome is conditional rather than persistent competing UI."
+      },
+      "lf_system_fidelity": {
+        "refs": ["token_map", "risk_controls"],
+        "summary": "The output preserves existing LF treatment, protects shell-locked surfaces and avoids unsupported financial or approval semantics."
+      },
+      "state_mapping": {
+        "refs": ["state_map", "pagination", "rows_per_page", "results_summary"],
+        "summary": "Pagination and horizontal overflow are expressed as explicit state-derived rules tied to observable record, page-size and container conditions."
+      },
+      "handoff_quality": {
+        "refs": ["handoff_to_next"],
+        "summary": "The handoff sends the exact pre-bound candidate to independent Quality Pack review and does not self-authorize Golden."
+      }
+    }
+  },
+  "handoff_to_next": {
+    "worker": "quality_pack",
+    "profile_code": "PERFIL-QUALITY-PACK",
+    "instruction": "Review this exact frozen run B artifact against its pre-bound contract, obligation manifest, UI Architect contract and LF controls without using producer conclusions as authority.",
+    "required_mode": "INDEPENDENT_CHAT_CONTEXT"
+  },
+  "self_verdict": "PASS_TO_QUALITY_PACK_CANDIDATE"
+}

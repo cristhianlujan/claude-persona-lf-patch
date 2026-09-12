@@ -226,6 +226,7 @@ class OpenAIResponsesAdapter:
                 "run_id": response_id,
                 "attested_at": attested_at,
                 "adapter_id": self.adapter_id,
+                "executor_mode": request.get("executor_mode"),
                 "request_sha256": request["request_sha256"],
                 "profile_source_sha256": request["profile_source_sha256"],
                 "input_sha256": request["input_sha256"],
