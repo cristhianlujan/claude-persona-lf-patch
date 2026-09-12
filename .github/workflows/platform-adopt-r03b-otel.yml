@@ -21,4 +21,10 @@ jobs:
           pip install opentelemetry-api==1.44.0 opentelemetry-sdk==1.44.0
       - name: Execute isolated OTel parity privacy spike
         run: |
-          python sandbox/lf_contract_gate_test/platform_adopt/otel_phoenix_fitgap_001/run_r03b_otel_spike.py
+          python sandbox/lf_contract_gate_test/platform_adopt/otel_phoenix_fitgap_001/run_r03b_otel_spike.py | tee R03B_OTEL_SPIKE_REPORT.json
+      - name: Upload isolated R03-B report
+        uses: actions/upload-artifact@v4
+        with:
+          name: r03b-otel-spike-report
+          path: R03B_OTEL_SPIKE_REPORT.json
+          if-no-files-found: error
