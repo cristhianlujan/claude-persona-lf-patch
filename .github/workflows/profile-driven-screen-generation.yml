@@ -3,8 +3,40 @@ name: Profile Driven Screen Generation Gate
 on:
   pull_request:
     paths:
+      - "profiles/ui_architect/validators/validate_ui_architect_output.py"
+      - "profiles/ui_architect/evals/contract_validator_alignment_20260908/**"
+      - "profiles/quality_pack/validators/validate_gate_bundle.py"
+      - "profiles/quality_pack/validators/validate_routing.py"
+      - "profiles/quality_pack/validators/trusted_ref_resolver.py"
+      - "profiles/quality_pack/evals/quality_gate_adversarial.py"
       - "sandbox/lf_contract_gate_test/profile_driven_screen_generation/**"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/profile_execution_contract.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_execution_contract_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/contract_bound_profile_runtime.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_contract_bound_runtime_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_source_first_runtime.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_source_first_runtime_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_source_first_prebind.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_source_first_prebind_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/s26_independent_bundle_preflight.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_s26_independent_bundle_preflight_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_semantic_quality.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_semantic_quality_tests.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_d.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_s26_native_golden_d.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_e.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_s26_native_golden_e.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_001/**"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_002/**"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/**"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/**"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/**"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_006/**"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/guard_no_model_weight_acquisition.py"
+      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_model_weight_guard_tests.py"
       - ".github/workflows/profile-driven-screen-generation.yml"
+      - ".github/workflows/story-agent-evidence-verifier.yml"
   issue_comment:
     types: [created]
 
@@ -17,9 +49,11 @@ jobs:
   deterministic-contract-gate:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -28,6 +62,153 @@ jobs:
           set -euo pipefail
           cd sandbox/lf_contract_gate_test/profile_driven_screen_generation
           python3 run_tests.py
+      - name: Run existing profile execution runtime regressions
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py
+      - name: Run native profile execution contract regressions
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_execution_contract_tests.py
+      - name: Run contract-bound GPT and Claude native runtime regressions
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_contract_bound_runtime_tests.py
+      - name: Run provider-agnostic native semantic quality regressions
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_semantic_quality_tests.py
+      - name: Upload canonical Quality Pack reconciliation machinery
+        uses: actions/upload-artifact@v4
+        with:
+          name: s26-quality-pack-reconciliation-machinery
+          path: |
+            profiles/quality_pack/validators/validate_gate_bundle.py
+            profiles/quality_pack/validators/validate_routing.py
+            profiles/quality_pack/validators/trusted_ref_resolver.py
+            profiles/quality_pack/evals/quality_gate_adversarial.py
+          retention-days: 30
+      - name: Enforce UI Architect written-contract parity
+        run: |
+          set -euo pipefail
+          python3 profiles/ui_architect/evals/contract_validator_alignment_20260908/run_cases.py
+      - name: Prove UI Architect malformed-input fail-closed
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import importlib.util
+          from pathlib import Path
+          path = Path('profiles/ui_architect/validators/validate_ui_architect_output.py')
+          spec = importlib.util.spec_from_file_location('ui_validator_totality', path)
+          assert spec is not None and spec.loader is not None
+          module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+          cases = [([], 'ROOT_NOT_OBJECT'), ({'output_type': 'PRODUCTION_UI_SPEC', 'deliverable_created': []}, 'DELIVERABLE_NOT_OBJECT'), ({'output_type': 'PRODUCTION_UI_SPEC', 'deliverable_created': {'screen_definition': {}, 'component_tree': 'not-a-list'}}, 'COMPONENT_TREE_MISSING')]
+          for payload, expected in cases:
+              errors = module.validate(payload); codes = {item.get('code') for item in errors if isinstance(item, dict)}; assert expected in codes, (expected, errors)
+          print('UI_ARCHITECT_MALFORMED_INPUT_FAIL_CLOSED_PASS 3/3')
+          PY
+      - name: Evaluate fresh S26 Native Golden Run D producer candidate
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_s26_native_golden_d.py
+      - name: Upload Run D producer evidence for independent review
+        uses: actions/upload-artifact@v4
+        with:
+          name: s26-native-golden-run-d-producer-evidence
+          path: |
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/preflight_binding.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/governed_context_receipt.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/obligation_manifest.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/evaluation.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/execution_receipt.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/semantic_check_bundle.json
+          retention-days: 30
+      - name: Verify S26 Native Golden Run E prebind lineage
+        run: |
+          set -euo pipefail
+          if test -f sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/raw_output.json; then
+            S26_RUN_E_ALLOW_RAW_REEVAL=1 python3 sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_e.py >/tmp/s26_run_e_preflight.json
+          else
+            python3 sandbox/lf_contract_gate_test/profile_execution_runtime/prepare_s26_native_golden_e.py >/tmp/s26_run_e_preflight.json
+            test ! -f sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/raw_output.json
+          fi
+      - name: Evaluate S26 Native Golden Run E producer candidate
+        if: ${{ hashFiles('sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/raw_output.json') != '' }}
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_s26_native_golden_e.py
+      - name: Upload Run E producer/prebound evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: s26-native-golden-run-e-prebind
+          path: |
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/input.txt
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/input_governance_snapshot.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/router_adapter_binding_snapshot.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/visual_artifact_ref.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/visual_observation_packet.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/metrics_plan.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/obligation_template.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/preflight_binding.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/governed_context_receipt.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/obligation_manifest.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/raw_output.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/evaluation.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/execution_receipt.json
+            sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_005/semantic_check_bundle.json
+          retention-days: 30
+      - name: Verify fresh S26 Run G source-fidelity producer receipt
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_006/run_g_producer_receipt.json')
+          data = json.loads(path.read_text(encoding='utf-8'))
+          expected_headers = ['Lote','Nombre','Archivo','Tipo','Cargado por','Fecha','Total','Válidos','Estado','Acciones']
+          assert data['schema'] == 'S26_RUN_G_PRODUCER_RECEIPT_V1'
+          assert data['source_visual']['sha256'] == 'ee36e056038832e9efbd0a369ded22808614c0c9a3f8ea7766e22f739ecdb287'
+          assert data['source_fidelity']['schema'] == 'LF_SOURCE_FIDELITY_CONTRACT_V1'
+          assert data['source_fidelity']['critical_ambiguity'] is False
+          assert data['source_fidelity']['immutable_table_headers'] == expected_headers
+          assert data['card_resolution']['mode'] in {'EXACT','COMPOSED','GENERIC_SAFE'}
+          assert data['card_resolution']['critical_authority_missing'] is False
+          assert data['artifact']['headers_verified'] == '10_OF_10_EXACT'
+          assert data['artifact']['real_horizontal_overflow_acknowledged'] is True
+          assert data['artifact']['current_page_prebound'] is False
+          assert data['artifact']['ui_validator'] == 'PASS'
+          assert data['artifact']['composer_boundary'] == 'PASS'
+          assert data['execution_contract']['contract_sha256'] == '6ec1e72df33022496642d9e97e5b926025d721a76b291bfbf25276d79d404c00'
+          assert data['execution_contract']['sha_derivation'] == 'canonical JSON excluding only contract_sha256'
+          assert data['execution_contract']['source_fidelity_required_check'] is True
+          assert data['execution_contract']['source_fidelity_required_evidence'] is True
+          assert data['independent_quality_bundle']['sha256'] == '7b6288f67a992d21cab2d6640ffa2cef85a8b6d25fdc1f6a5a8a1986f4b67eee'
+          assert data['independent_quality_bundle']['deterministic_probe'] == 'PASS_DETERMINISTIC_RUN_G_PREFLIGHT'
+          assert data['producer_downstream_authorized'] is False
+          assert data['golden_declared'] is False
+          assert data['next_gate'] == 'FRESH_GPT_AND_CLAUDE_INDEPENDENT_QUALITY'
+          print('PASS_S26_RUN_G_SOURCE_FIDELITY_PRODUCER_RECEIPT')
+          PY
+      - name: Preserve historical S26 candidates without requalification
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path('sandbox/lf_contract_gate_test/profile_execution_runtime/evidence')
+          for run_dir in ('s26_native_golden_002', 's26_native_golden_003'):
+              evidence = root / run_dir; raw = json.load(open(evidence / 'raw_output.json', encoding='utf-8')); producer = json.load(open(evidence / 'execution_receipt.json', encoding='utf-8'))
+              assert raw['worker'] == 'ui_architect', (run_dir, raw.get('worker')); assert producer['downstream_authorized'] is False, (run_dir, producer); assert producer['profile_code'] == 'PERFIL-UI-ARCHITECT', (run_dir, producer)
+          print('PASS_S26_HISTORICAL_CANDIDATES_PRESERVED_NO_REQUALIFICATION')
+          PY
+      - name: Run model-weight guard regressions
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_model_weight_guard_tests.py
+      - name: Enforce no model-weight acquisition in active S26 profile workflows
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/guard_no_model_weight_acquisition.py --workflow-dir .github/workflows
 
   s30-owner-chatops-broker:
     name: Governed S30 owner ChatOps broker
