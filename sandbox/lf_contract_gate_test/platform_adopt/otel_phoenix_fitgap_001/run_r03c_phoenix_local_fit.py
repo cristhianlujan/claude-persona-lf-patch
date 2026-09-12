@@ -26,7 +26,7 @@ from profile_runtime_api.hashing import canonical_json_sha256
 from run_r03b_otel_spike import (
     SENSITIVE_INPUT,
     SENSITIVE_OUTPUT,
-    deterministic_attestation_only,
+    deterministic_runtime_clock,
     make_engine,
     make_request,
 )
@@ -83,11 +83,18 @@ def wait_for_annotation(client: Client, span_id: str, *, timeout_s: float = 10.0
 def main() -> int:
     request = make_request(blocked=False)
 
-    with tempfile.TemporaryDirectory() as direct_tmp, tempfile.TemporaryDirectory() as phoenix_tmp:
+    with (
+        tempfile.TemporaryDirectory() as direct_tmp,
+        tempfile.TemporaryDirectory() as phoenix_tmp,
+        tempfile.TemporaryDirectory() as post_annotation_tmp,
+    ):
         direct_engine = make_engine(Path(direct_tmp))
         phoenix_engine = make_engine(Path(phoenix_tmp))
+        post_annotation_engine = make_engine(Path(post_annotation_tmp))
 
-        with deterministic_attestation_only():
+        # Freeze LF-internal runtime timing/attestation fields so exact result/hash
+        # comparisons measure Phoenix/OTel influence rather than wall-clock drift.
+        with deterministic_runtime_clock():
             direct_result = direct_engine.run_queue_execute(request)
         direct_hash = canonical_json_sha256(direct_result)
 
@@ -114,7 +121,7 @@ def main() -> int:
             span.set_attribute("lf.profile_code", request.profile.profile_code)
             span.set_attribute("lf.gate", "PROFILE_RUNTIME_QUEUE_EXECUTION")
             span.set_attribute("lf.request_sha256", request_hash)
-            with deterministic_attestation_only():
+            with deterministic_runtime_clock():
                 phoenix_result = phoenix_engine.run_queue_execute(request)
             phoenix_hash = canonical_json_sha256(phoenix_result)
             completion = phoenix_result["result"]["runtime_completion"]
@@ -168,10 +175,10 @@ def main() -> int:
             if forbidden in annotations_rendered:
                 raise AssertionError("R03C_SENSITIVE_CONTENT_IN_ANNOTATION")
 
-        # Prove Phoenix writes are observational: LF result bytes/hashes remain unchanged
-        # after trace ingestion and annotation writes.
-        with deterministic_attestation_only():
-            post_annotation_result = phoenix_engine.run_queue_execute(request)
+        # Prove Phoenix writes are observational: execute LF again in a fresh LF state
+        # after the Phoenix annotation write and require exact equality to the baseline.
+        with deterministic_runtime_clock():
+            post_annotation_result = post_annotation_engine.run_queue_execute(request)
         post_annotation_hash = canonical_json_sha256(post_annotation_result)
         if post_annotation_result != direct_result or post_annotation_hash != direct_hash:
             raise AssertionError("R03C_PHOENIX_ANNOTATION_MUTATED_LF_RESULT")
@@ -222,7 +229,7 @@ def main() -> int:
             "status": "PASS_WITH_LICENSE_GATE",
             "claim_ceiling": "PHOENIX_LOCAL_TECHNICAL_FIT_PASS_OBSERVATIONAL_ONLY_LICENSE_AND_PRODUCTION_APPROVAL_NOT_GRANTED",
         }
-        print(json.dumps(report, ensure_ascii=False, sort_keys=True))
+        print(json.dumps(report, ensure_ascii=False, sort_keys=True), flush=True)
         return 0
 
 
