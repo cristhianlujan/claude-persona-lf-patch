@@ -74,6 +74,8 @@ checks = {
     "workflow_source_only_dispatch": 'source_canary_only' in workflow and 'NON_CANARY_PROFILE_CREATION_EXECUTED=false' in workflow,
     "workflow_router_source_gate": 'ROUTER_REQUIRES_SUPABASE_EVIDENCE_REF' in workflow and 'ROUTER_READ_REQUIRED' in workflow,
     "workflow_step_envelope_gate": 'MISSING_STEP_RESULT' in workflow and 'MISSING_BLOCKING_CODES' in workflow,
+    "workflow_accepts_canonical_v22_step_receipt": "result.get('step') or result.get('result')" in workflow and "status in ('STEP_CLEAN_PASS','STEP_PASS_WITH_EVIDENCE')" in workflow,
+    "workflow_batch_binds_step_identity": "step.get('step_id')==item['step_id']" in workflow,
 
     # Deterministic UPDATE currentness is derived by the exact OIDC caller, not declared by the worker.
     "update_currentness_only_prewrite": 'snapshot.operation_code !== UPDATE_OPERATION || stepId !== PREWRITE_STEP' in caller,

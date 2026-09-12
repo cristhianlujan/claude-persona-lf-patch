@@ -170,8 +170,10 @@ jobs:
           python3 - <<'PY'
           import json
           data=json.load(open('governed-step.json'))
-          result=data.get('result') or {}; step=(result.get('step') or {})
-          assert data.get('outcome') == 'STEP_RECORDED' and result.get('outcome') == 'STEP_RECORDED' and step.get('status') == 'STEP_CLEAN_PASS', data
+          result=data.get('result') or {}
+          step=(result.get('step') or result.get('result') or {})
+          status=step.get('status')
+          assert data.get('outcome') == 'STEP_RECORDED' and result.get('outcome') == 'STEP_RECORDED' and status in ('STEP_CLEAN_PASS','STEP_PASS_WITH_EVIDENCE'), data
           print('GOVERNED_CUSTOMER_PROFILE_ORDERED_STEP=PASS')
           PY
       - name: Record canonical ordered batch through governed caller
@@ -189,10 +191,12 @@ jobs:
               open('governed-step-request.json','w',encoding='utf-8').write(json.dumps(body,separators=(',',':')))
               p=subprocess.run(['curl','--silent','--show-error','-o','governed-step.json','-w','%{http_code}','-H',f'Authorization: Bearer {__import__("os").environ["OIDC_TOKEN"]}','-H','Content-Type: application/json','--data-binary','@governed-step-request.json','https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1'],capture_output=True,text=True)
               code=p.stdout.strip(); data=json.load(open('governed-step.json'))
-              result=data.get('result') or {}; step=(result.get('step') or {})
-              ok=code=='200' and data.get('outcome')=='STEP_RECORDED' and result.get('outcome')=='STEP_RECORDED' and step.get('status')=='STEP_CLEAN_PASS'
+              result=data.get('result') or {}
+              step=(result.get('step') or result.get('result') or {})
+              status=step.get('status')
+              ok=code=='200' and data.get('outcome')=='STEP_RECORDED' and result.get('outcome')=='STEP_RECORDED' and status in ('STEP_CLEAN_PASS','STEP_PASS_WITH_EVIDENCE') and step.get('step_id')==item['step_id']
               receipts.append({'step_id':item['step_id'],'ok':ok,'http':code})
-              print(json.dumps({'step_id':item['step_id'],'ok':ok,'http':code,'outcome':data.get('outcome')}))
+              print(json.dumps({'step_id':item['step_id'],'ok':ok,'http':code,'outcome':data.get('outcome'),'status':status}))
               if not ok:
                   print('GOVERNED_CUSTOMER_PROFILE_BATCH=BLOCKED_FIRST_FAILURE')
                   print(json.dumps(receipts))
