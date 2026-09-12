@@ -1,0 +1,95 @@
+{
+  "context_fingerprint": "3c2eecb9e0b1f4a265a401550079d5fc53fef7e79234f642d92d09e4fbc2a4c7",
+  "downstream_authorized": false,
+  "execution_id": "EXEC-S26-N08D-GPT-NATIVE-GOLDEN-D-001",
+  "execution_origin": "MODEL_RUNTIME",
+  "governed_context_receipt_sha256": "969ecf0eb73b223f36cb1e34a03f288d4b481fc2770f3a3095be8af929c7d729",
+  "input_sha256": "eccf6ecc6c87961ab2ff02a7a0b19446479f1ab3e6573acb9ab23feb60375393",
+  "lf_adapter_invocations": [
+    {
+      "activation_source": "ROUTER",
+      "adapter_code": "ADAPTER-LF-SHELL-PROFILE-20260827",
+      "assurance_revision": "v2",
+      "binding_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/router_adapter_binding_snapshot.json",
+      "capsule_char_count": 1544,
+      "capsule_ref": "adapters/lf_shell_profile_adapter/runtime/runtime_capsule.yaml",
+      "invocation_id": "lfai-fdcb917824c3a5b06d1440af",
+      "profile_id": "PERFIL-UI-ARCHITECT",
+      "source_refs": [
+        "adapters/lf_shell_profile_adapter/runtime/runtime_capsule.yaml"
+      ],
+      "target_ref": "PERFIL-UI-ARCHITECT",
+      "verdict": "APPLIED"
+    }
+  ],
+  "native_metrics": {
+    "depth_gate": {
+      "criterion_evidence_count": 5,
+      "final_pass_requires_independent_quality": true,
+      "minimum_score": 20,
+      "score_total": 22,
+      "status": "CANDIDATE_PASS_PRE_INDEPENDENT_REVIEW",
+      "ui_validator_pass": true
+    },
+    "latency_observable": {
+      "claim_scope": "OBSERVABLE_E2E_PERSISTENCE_UPPER_BOUND_NOT_MODEL_INFERENCE_LATENCY",
+      "completed_at": "2026-09-08T22:13:58+00:00",
+      "metric": "E2E_PERSISTENCE_WINDOW_MS",
+      "started_at": "2026-09-08T22:07:58.123350+00:00",
+      "status": "PASS",
+      "value_ms": 359876.65
+    },
+    "token_usage": {
+      "estimated": false,
+      "policy": "REQUIRED_IF_OBSERVABLE",
+      "reason": "Exact token telemetry is not exposed by the native ChatGPT execution boundary used for this run.",
+      "status": "NOT_OBSERVED"
+    },
+    "traceability": {
+      "adapter_invocation_count": 1,
+      "adapter_receipt_count": 1,
+      "artifact_byte_sha256": "1367bf18499ad4cf998ece8b0e9271b936edd4e31fdb5287545b9bd6e9c7f0c3",
+      "card_receipt_count": 1,
+      "check_bundle_sha256": "8026fd1fc40a16d8390cb079f30f9ff6dc0c5139eb6fa03663f9acbf4f0d7f2b",
+      "context_fingerprint": "3c2eecb9e0b1f4a265a401550079d5fc53fef7e79234f642d92d09e4fbc2a4c7",
+      "execution_contract_sha256": "5d59de8950e3e1a7b11db7f598630453e85d4a50bc252b359f875f97eb522024",
+      "execution_id": "EXEC-S26-N08D-GPT-NATIVE-GOLDEN-D-001",
+      "governed_context_receipt_sha256": "969ecf0eb73b223f36cb1e34a03f288d4b481fc2770f3a3095be8af929c7d729",
+      "input_governance_snapshot_sha256": "795584bfd0f4cb747aee0fb1ff257e814b442af944935f2739921119f8e64990",
+      "obligation_manifest_sha256": "e9f26e219868152c798fed0820d13d93441bcfce842318621f41c3c42b68a5f4",
+      "raw_output_sha256": "0c579ada86faef93581a34992626bc6a619d6113ef78531e4824ef6930a4cad0",
+      "status": "PASS"
+    }
+  },
+  "obligation_manifest_sha256": "e9f26e219868152c798fed0820d13d93441bcfce842318621f41c3c42b68a5f4",
+  "operation_code": "EJECUCION_PERFIL_LF",
+  "profile_code": "PERFIL-UI-ARCHITECT",
+  "profile_slug": "ui_architect",
+  "profile_source_refs": [
+    "profiles/ui_architect/SKILL.md",
+    "profiles/ui_architect/contracts/existing_screen_review.md"
+  ],
+  "profile_source_sha256": "978aadc31103bd7c8d2aa709cd1b229934dc962d80709464ec706168878db4cf",
+  "raw_output_captured": true,
+  "raw_output_sha256": "0c579ada86faef93581a34992626bc6a619d6113ef78531e4824ef6930a4cad0",
+  "receipt_sha256": "9b1b7981272c79f743c6e35d6a9577573005d599ab1f3f78e8bc896f1839f0a8",
+  "receipt_type": "PROFILE_EXECUTION_RECEIPT_V1",
+  "runtime_attestation": {
+    "artifact_byte_sha256": "1367bf18499ad4cf998ece8b0e9271b936edd4e31fdb5287545b9bd6e9c7f0c3",
+    "attestation_boundary": "GitHub readback verifies persisted output bytes and exact pre-bound context lineage; native model internals and exact token telemetry are not independently observable at this boundary.",
+    "attestation_evidence_sha256": "4ca85b9d19a9ab8ec306e4ac5edc7f03ef560daee04ca133d36a053b3a7ad0f5",
+    "attestation_verifier": "GITHUB_MATERIALIZATION_READBACK_V1",
+    "attested_at": "2026-09-08T22:13:58+00:00",
+    "context_fingerprint": "3c2eecb9e0b1f4a265a401550079d5fc53fef7e79234f642d92d09e4fbc2a4c7",
+    "execution_contract_sha256": "5d59de8950e3e1a7b11db7f598630453e85d4a50bc252b359f875f97eb522024",
+    "execution_mode": "GPT_NATIVE",
+    "governed_context_receipt_sha256": "969ecf0eb73b223f36cb1e34a03f288d4b481fc2770f3a3095be8af929c7d729",
+    "materialization_commit_sha": "563f0b2a93d577884eb5dab689b98f9fc732baa7",
+    "materialization_path": "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_004/raw_output.json",
+    "model_id": "GPT-5.6 Sol",
+    "provider": "OPENAI_CHATGPT_NATIVE",
+    "run_id": "CHATGPT-NATIVE-S26-N08D-GOLDEN-D-001",
+    "verified_request_sha256": "eb54fed3f9ff2cbeb81bc9c643dc331c5e63abded8e997148252bc36a73bdf93",
+    "verified_response_sha256": "a76ed48d6bfbccf1f558efe97f32e292dea8ddc744f36b92015d8c151c4a2bce"
+  }
+}

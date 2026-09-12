@@ -1,0 +1,34 @@
+{
+  "schema": "S26_HP001_EXPECTED_REQUIREMENTS_V1",
+  "test_id": "S26-HP-001",
+  "input_sha256": "fdfb12f2c8c5313fef5152e1f6b6689ccae78ed94170358cf065bb02649135a1",
+  "validation_mode": "MATERIAL_REQUIREMENTS_NOT_LITERAL_REFERENCE_MATCH",
+  "required_sections": [
+    "header",
+    "categories",
+    "featured_services",
+    "service_cards"
+  ],
+  "required_service_card_fields": [
+    "title",
+    "provider",
+    "price",
+    "call_to_action"
+  ],
+  "required_design_intents": [
+    "clear",
+    "professional",
+    "easy_to_navigate"
+  ],
+  "required_handoff_property": "structured_specification_ready_for_implementation",
+  "forbidden_validation_shortcuts": [
+    "exact_full_text_match",
+    "hardcoded_single_reference_answer",
+    "pass_from_runtime_status_only"
+  ],
+  "required_quality_separation": [
+    "transport_success",
+    "contract_shape",
+    "semantic_utility"
+  ]
+}

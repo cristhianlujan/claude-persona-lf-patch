@@ -1,0 +1,20 @@
+{
+  "activation": "ROUTER_BOUND_ONLY",
+  "adapter_code": "ADAPTER-LF-SHELL-PROFILE-20260827",
+  "adapter_llm_call_policy": "NO_SECOND_LLM_CALL",
+  "adapter_name": "ADAPTER_LF_SHELL_PROFILE_v0.1_CANDIDATO",
+  "adapter_version": "v0.1",
+  "assurance_revision": "v2",
+  "binding_source": "SUPABASE_CANONICAL_ROUTER_BINDING",
+  "input_governance_authority_contract": "INPUT_READINESS_CONTRACT",
+  "input_governance_continuation_policy": "PASS_ONLY",
+  "input_governance_contract_resolution": "LIVE_CURRENT",
+  "input_governance_observed_revision": "5.12",
+  "input_governance_receipt_required": true,
+  "production_enabled": false,
+  "runtime_capsule_max_chars": 1800,
+  "runtime_enabled": true,
+  "single_model_call": true,
+  "source_updated_at": "2026-08-27T23:59:24.922807+00:00",
+  "target_asset_code": "PERFIL-UI-ARCHITECT"
+}
