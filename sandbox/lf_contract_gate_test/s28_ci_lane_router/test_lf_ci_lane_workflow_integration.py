@@ -41,10 +41,10 @@ def assert_reconciliation_behavior() -> None:
     cases = [
         ("s30_only", [s30_policy], False, "S30_KNOWN_ISOLATED_ONLY"),
         ("s30_multi_lane", [s30_c, s30_d], False, "S30_KNOWN_ISOLATED_ONLY"),
-        ("skill_requires_external", [skill], True, "DEEP_SHARED_REQUIRES_RECONCILIATION"),
-        ("workflow_requires_external", [workflow], True, "DEEP_SHARED_REQUIRES_RECONCILIATION"),
-        ("mixed_s30_skill_requires_external", [s30_d, skill], True, "DEEP_SHARED_REQUIRES_RECONCILIATION"),
-        ("unknown_requires_external", [unknown], True, "DEEP_SHARED_REQUIRES_RECONCILIATION"),
+        ("skill_requires_external", [skill], True, "UNBOUND_OR_SHARED_PATH_REQUIRES_RECONCILIATION"),
+        ("workflow_requires_external", [workflow], True, "UNBOUND_OR_SHARED_PATH_REQUIRES_RECONCILIATION"),
+        ("mixed_s30_skill_requires_external", [s30_d, skill], True, "UNBOUND_OR_SHARED_PATH_REQUIRES_RECONCILIATION"),
+        ("unknown_requires_external", [unknown], True, "UNBOUND_OR_SHARED_PATH_REQUIRES_RECONCILIATION"),
         ("empty_fail_closed", [], True, "NO_CHANGED_PATHS_FAIL_CLOSED"),
     ]
     for name, paths, required, reason in cases:
@@ -55,11 +55,12 @@ def assert_reconciliation_behavior() -> None:
     bad_registry = {"registry_version": "BROKEN", "namespace": "S30", "lanes": []}
     got = helper.classify_reconciliation_applicability([s30_d], registry_data=bad_registry)
     assert got.required is True, got
-    assert got.reason == "DEEP_SHARED_REQUIRES_RECONCILIATION", got
+    assert got.reason == "UNBOUND_OR_SHARED_PATH_REQUIRES_RECONCILIATION", got
     assert got.router_mode == "DEEP_SHARED_REGISTRY_INVALID", got
 
     # Future products inherit the quota-safe exit automatically from the
     # canonical router contract; this helper must not need product-specific code.
+    future_path = "sandbox/future_product/run.json"
     future_isolated = helper.LaneDecision(
         mode="S42_PRODUCT_ISOLATED",
         migration_parity_required=False,
@@ -67,13 +68,14 @@ def assert_reconciliation_behavior() -> None:
         ci_router_selftest_required=False,
         p0_exact_head_external_required=False,
         deep_shared=False,
-        reasons=("S42_LANE:S42-PRODUCT:sandbox/future_product/",),
+        reasons=(f"S42_LANE:S42-PRODUCT:{future_path}",),
     )
-    got = helper.classify_router_decision(1, future_isolated)
+    got = helper.classify_router_decision([future_path], future_isolated)
     assert got.required is False, got
     assert got.reason == "KNOWN_ISOLATED_OWNER_ONLY", got
     assert got.lane_ids == ("S42-PRODUCT",), got
 
+    future_shared_path = "sandbox/future_product/shared/run.json"
     future_shared = helper.LaneDecision(
         mode="S42_PRODUCT_SHARED",
         migration_parity_required=False,
@@ -81,13 +83,18 @@ def assert_reconciliation_behavior() -> None:
         ci_router_selftest_required=False,
         p0_exact_head_external_required=False,
         deep_shared=True,
-        reasons=("S42_LANE:S42-PRODUCT:sandbox/future_product/shared/",),
+        reasons=(f"S42_LANE:S42-PRODUCT:{future_shared_path}",),
     )
-    got = helper.classify_router_decision(1, future_shared)
+    got = helper.classify_router_decision([future_shared_path], future_shared)
     assert got.required is True, got
     assert got.reason == "SHARED_OR_SPECIALIZED_GATE_REQUIRES_RECONCILIATION", got
 
-    print("PASS_GITHUB_RECONCILIATION_APPLICABILITY_BEHAVIOR=10/10")
+    # An isolated owned path must never mask an unowned sibling in the same run.
+    got = helper.classify_router_decision([future_path, "skills/shared.md"], future_isolated)
+    assert got.required is True, got
+    assert got.reason == "UNBOUND_OR_SHARED_PATH_REQUIRES_RECONCILIATION", got
+
+    print("PASS_GITHUB_RECONCILIATION_APPLICABILITY_BEHAVIOR=11/11")
 
 
 def main() -> None:
@@ -142,7 +149,7 @@ def main() -> None:
         raise SystemExit("FAIL_P0_EXTERNAL_APPLICABILITY_BEHAVIOR")
 
     assert_reconciliation_behavior()
-    print("PASS_CI_LANE_WORKFLOW_INTEGRATION=20/20")
+    print("PASS_CI_LANE_WORKFLOW_INTEGRATION=21/21")
 
 
 if __name__ == "__main__":
