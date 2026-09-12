@@ -4,7 +4,16 @@ from __future__ import annotations
 
 import json
 import statistics
+import sys
 import time
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+REPO = HERE.parents[3]
+RUNTIME = REPO / "sandbox" / "lf_contract_gate_test" / "profile_execution_runtime"
+for path in (str(RUNTIME), str(HERE)):
+    if path not in sys.path:
+        sys.path.insert(0, path)
 
 from langgraph.checkpoint.memory import InMemorySaver
 
@@ -53,7 +62,7 @@ def main() -> int:
         counter["value"] += 1
         return graph.invoke(
             payload(),
-            config={"configurable": {"thread_id": f"benchm{counter['value']}"}},
+            config={"configurable": {"thread_id": f"bench-{counter['value']}"}},
         )
 
     baseline_sample = current()
@@ -83,7 +92,9 @@ def main() -> int:
         },
         "orchestration_overhead": {
             "median_ms": round(graph_median - current_median, 6),
-            "ratio": None if current_median == 0 else round(graph_median / current_median, 4),
+            "ratio": None
+            if current_median == 0
+            else round(graph_median / current_median, 4),
         },
         "claim_boundary": (
             "Measures Python orchestration overhead only. It does not measure "
