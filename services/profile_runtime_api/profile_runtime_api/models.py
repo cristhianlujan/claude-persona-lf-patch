@@ -90,6 +90,15 @@ class CanonicalInputGovernanceEvidence(StrictModel):
     agent_output_sha256: str | None = Field(default=None, pattern=SHA256_RE.pattern)
 
 
+class AdvisoryReadOnlyConstraints(StrictModel):
+    operation_must_equal: Literal["EJECUCION_PERFIL_LF"] = "EJECUCION_PERFIL_LF"
+    read_only: Literal[True] = True
+    no_write: Literal[True] = True
+    no_promotion: Literal[True] = True
+    canonical_registration_required: Literal[False] = False
+    artifact_binding_required_before_profile_execution: Literal[True] = True
+
+
 class InputGovernanceReceipt(StrictModel):
     receipt_ref: str = Field(min_length=1, max_length=500)
     current: bool
@@ -98,6 +107,12 @@ class InputGovernanceReceipt(StrictModel):
     context: dict[str, Any]
     status: str = Field(min_length=1, max_length=120)
     canonical_receipt: CanonicalInputGovernanceEvidence | None = None
+    decision: Literal["PASS", "ADVISORY"] | None = None
+    subject_mode: Literal["CANONICAL_SCREEN", "NON_CANONICAL_ARTIFACT"] | None = None
+    required_artifact_binding: list[
+        Literal["artifact_ref", "artifact_sha256", "dimensions"]
+    ] | None = None
+    constraints: AdvisoryReadOnlyConstraints | None = None
 
     @model_validator(mode="after")
     def validate_current_context(self) -> "InputGovernanceReceipt":
@@ -107,6 +122,20 @@ class InputGovernanceReceipt(StrictModel):
             raise ValueError("INPUT_GOVERNANCE_NOT_READY")
         if canonical_json_sha256(self.context) != self.context_sha256:
             raise ValueError("INPUT_GOVERNANCE_CONTEXT_SHA256_MISMATCH")
+
+        if self.subject_mode == "NON_CANONICAL_ARTIFACT":
+            if self.status != "ADVISORY_READ_ONLY" or self.decision != "ADVISORY":
+                raise ValueError("NON_CANONICAL_GOVERNANCE_NOT_ADVISORY_READ_ONLY")
+            if self.canonical_receipt is not None:
+                raise ValueError("NON_CANONICAL_GOVERNANCE_CANONICAL_RECEIPT_FORBIDDEN")
+            if self.constraints is None:
+                raise ValueError("NON_CANONICAL_GOVERNANCE_CONSTRAINTS_MISSING")
+            expected = {"artifact_ref", "artifact_sha256", "dimensions"}
+            bindings = self.required_artifact_binding or []
+            if len(bindings) != len(expected) or set(bindings) != expected:
+                raise ValueError("NON_CANONICAL_GOVERNANCE_ARTIFACT_BINDING_INCOMPLETE")
+        elif self.status == "ADVISORY_READ_ONLY" or self.decision == "ADVISORY":
+            raise ValueError("ADVISORY_GOVERNANCE_SUBJECT_MODE_MISSING")
         return self
 
 
@@ -199,10 +228,47 @@ class ProfileTask(StrictModel):
         return self
 
 
+class NonCanonicalArtifactBinding(StrictModel):
+    artifact_ref: str = Field(min_length=1, max_length=500)
+    artifact: Artifact
+
+
+class NonCanonicalArtifactSet(StrictModel):
+    contract_schema: Literal["NON_CANONICAL_ARTIFACT_SET_V1"] = Field(
+        default="NON_CANONICAL_ARTIFACT_SET_V1", alias="schema"
+    )
+    subject_mode: Literal["NON_CANONICAL_ARTIFACT"] = "NON_CANONICAL_ARTIFACT"
+    artifacts: list[NonCanonicalArtifactBinding] = Field(min_length=1, max_length=8)
+
+    @model_validator(mode="after")
+    def validate_unique_bindings(self) -> "NonCanonicalArtifactSet":
+        refs = [item.artifact_ref for item in self.artifacts]
+        if len(refs) != len(set(refs)):
+            raise ValueError("NON_CANONICAL_ARTIFACT_REF_DUPLICATE")
+        shas = [item.artifact.image_sha256 for item in self.artifacts]
+        if len(shas) != len(set(shas)):
+            raise ValueError("NON_CANONICAL_ARTIFACT_SHA256_DUPLICATE")
+        return self
+
+
 class ExecuteRequest(StrictModel):
     artifact: Artifact
     input_governance: InputGovernanceReceipt
     profile: ProfileTask
+
+
+class ArtifactSetExecuteRequest(StrictModel):
+    artifact_set: NonCanonicalArtifactSet
+    input_governance: InputGovernanceReceipt
+    profile: ProfileTask
+
+    @model_validator(mode="after")
+    def validate_advisory_contract(self) -> "ArtifactSetExecuteRequest":
+        if self.input_governance.subject_mode != "NON_CANONICAL_ARTIFACT":
+            raise ValueError("NON_CANONICAL_ARTIFACT_SET_GOVERNANCE_MODE_MISMATCH")
+        if self.profile.send_image_to_model:
+            raise ValueError("NON_CANONICAL_ARTIFACT_SET_FULL_IMAGE_MODEL_UNSUPPORTED")
+        return self
 
 
 class QueueExecuteRequest(StrictModel):

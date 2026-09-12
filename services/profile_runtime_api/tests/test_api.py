@@ -39,6 +39,14 @@ class FakeAPIEngine:
             "downstream_authorized": False,
         }
 
+    def run_artifact_set_execute(self, payload: Any) -> dict[str, Any]:
+        return {
+            "kind": "artifact_set_execute",
+            "request_id": payload.profile.request_id,
+            "artifact_count": len(payload.artifact_set.artifacts),
+            "downstream_authorized": False,
+        }
+
     def runtime_snapshot(self) -> dict[str, Any]:
         return {
             "deployment_classification": "INSTALLED_NOT_INTEGRATED_PENDING_LIVE_REVERIFY",
@@ -103,6 +111,74 @@ class APITest(unittest.TestCase):
             },
         }
 
+    @staticmethod
+    def artifact_set_payload(request_id: str = "api-artifact-set-1") -> dict[str, Any]:
+        import hashlib
+        import json
+
+        context = {"router": "ACT-0001", "scope": "visual_artifact_review_only"}
+        context_sha = hashlib.sha256(
+            json.dumps(context, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+        return {
+            "artifact_set": {
+                "schema": "NON_CANONICAL_ARTIFACT_SET_V1",
+                "subject_mode": "NON_CANONICAL_ARTIFACT",
+                "artifacts": [
+                    {
+                        "artifact_ref": "approved://payment-single",
+                        "artifact": {
+                            "screen_code": "PAYMENT-SINGLE-APPROVED",
+                            "filename": "single.png",
+                            "image_sha256": "1" * 64,
+                            "width_px": 1600,
+                            "height_px": 1000,
+                            "observations": [],
+                        },
+                    },
+                    {
+                        "artifact_ref": "approved://payment-installments",
+                        "artifact": {
+                            "screen_code": "PAYMENT-INSTALLMENTS-APPROVED",
+                            "filename": "installments.png",
+                            "image_sha256": "2" * 64,
+                            "width_px": 1600,
+                            "height_px": 1000,
+                            "observations": [],
+                        },
+                    },
+                ],
+            },
+            "input_governance": {
+                "receipt_ref": "router://ACT-0001/noncanonical/api",
+                "current": True,
+                "ready": True,
+                "context_sha256": context_sha,
+                "context": context,
+                "status": "ADVISORY_READ_ONLY",
+                "decision": "ADVISORY",
+                "subject_mode": "NON_CANONICAL_ARTIFACT",
+                "required_artifact_binding": ["artifact_ref", "artifact_sha256", "dimensions"],
+                "constraints": {
+                    "operation_must_equal": "EJECUCION_PERFIL_LF",
+                    "read_only": True,
+                    "no_write": True,
+                    "no_promotion": True,
+                    "canonical_registration_required": False,
+                    "artifact_binding_required_before_profile_execution": True,
+                },
+            },
+            "profile": {
+                "request_id": request_id,
+                "profile_code": "PERFIL-UI-ARCHITECT",
+                "profile_slug": "ui_architect",
+                "profile_source_paths": ["profiles/ui_architect/SKILL.md"],
+                "input_literal": "Compare approved visual artifacts without changing canon.",
+                "runtime_output_mode": "UI_FOCUSED_DECISION",
+                "send_image_to_model": False,
+            },
+        }
+
     def auth(self) -> dict[str, str]:
         return {"Authorization": "Bearer secret-test-token"}
 
@@ -145,6 +221,30 @@ class APITest(unittest.TestCase):
             ).status_code,
             409,
         )
+
+    def test_artifact_set_execute_is_first_class_and_idempotent(self) -> None:
+        payload = self.artifact_set_payload()
+        response = self.client.post(
+            "/v1/profile/artifact-set-execute", json=payload, headers=self.auth()
+        )
+        self.assertEqual(response.status_code, 202)
+        accepted = response.json()
+        for _ in range(100):
+            job = self.client.get(accepted["status_url"], headers=self.auth()).json()
+            if job["status"] in {"COMPLETED", "FAILED"}:
+                break
+            time.sleep(0.01)
+        self.assertEqual(job["status"], "COMPLETED")
+        self.assertEqual(job["request_meta"]["artifact_count"], 2)
+        self.assertEqual(
+            job["request_meta"]["artifact_refs"],
+            ["approved://payment-single", "approved://payment-installments"],
+        )
+        repeated = self.client.post(
+            "/v1/profile/artifact-set-execute", json=payload, headers=self.auth()
+        ).json()
+        self.assertTrue(repeated["reused"])
+        self.assertEqual(repeated["job_id"], accepted["job_id"])
 
     def test_validation_error_does_not_echo_literal_input(self) -> None:
         invalid = self.payload("api-invalid-1")
