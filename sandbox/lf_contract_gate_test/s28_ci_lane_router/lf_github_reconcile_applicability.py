@@ -7,11 +7,20 @@ router identifies as a known isolated owner can deterministically earn
 NOT_APPLICABLE only when every changed path is declaratively owned and no
 shared, specialized or external gate is required. Unknown, empty, invalid,
 shared and control-surface changes remain REQUIRED.
+
+GitHub reconciliation runs after a merge commit. Some git diff-tree forms
+produce an empty path list for merges, so an empty paths file is recovered only
+from the exact checked-out SOURCE_HEAD_SHA against its first parent. Recovery
+is intentionally fail-closed: invalid SHA, checkout mismatch, missing parent or
+git failure leaves the set empty and therefore REQUIRED.
 """
 from __future__ import annotations
 
 import argparse
 import json
+import os
+import re
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -22,6 +31,8 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
 from lf_ci_lane_router import LaneDecision, classify as classify_ci_lane  # noqa: E402
+
+SHA40_RE = re.compile(r"^[0-9a-f]{40}$")
 
 
 @dataclass(frozen=True)
@@ -45,12 +56,7 @@ class ReconciliationApplicability:
 
 
 def _ownership_bindings(decision: LaneDecision) -> tuple[tuple[str, ...], tuple[str, ...]]:
-    """Extract declarative owner IDs and exact owned paths product-agnostically.
-
-    Canonical router ownership reasons use
-    `<namespace>_LANE:<owner-id>:<path>`. Reconciliation requires every changed
-    path to have one such binding before it can ever return NOT_APPLICABLE.
-    """
+    """Extract declarative owner IDs and exact owned paths product-agnostically."""
     owners: set[str] = set()
     paths: set[str] = set()
     for reason in decision.reasons:
@@ -144,11 +150,64 @@ def _read_paths(path: Path) -> list[str]:
         raise SystemExit(f"FAIL_RECONCILIATION_APPLICABILITY_PATHS_READ:{exc}") from exc
 
 
+def _git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", "-C", str(repo_root), *args],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+
+def recover_changed_paths_from_exact_head(
+    source_head_sha: str,
+    *,
+    repo_root: Path = Path("."),
+) -> list[str]:
+    """Recover first-parent changed paths for an exact checked-out commit.
+
+    This function never guesses. Any uncertainty returns an empty list, which
+    the caller classifies REQUIRED/fail-closed.
+    """
+    sha = (source_head_sha or "").strip().lower()
+    if SHA40_RE.fullmatch(sha) is None:
+        return []
+
+    observed = _git(repo_root, "rev-parse", "HEAD")
+    if observed.returncode != 0 or observed.stdout.strip().lower() != sha:
+        return []
+
+    parent = _git(repo_root, "rev-parse", "--verify", f"{sha}^1")
+    if parent.returncode != 0 or SHA40_RE.fullmatch(parent.stdout.strip().lower()) is None:
+        return []
+
+    changed = _git(repo_root, "diff", "--name-only", parent.stdout.strip(), sha)
+    if changed.returncode != 0:
+        return []
+    return [line.strip() for line in changed.stdout.splitlines() if line.strip()]
+
+
+def resolve_changed_paths(
+    paths_file: Path,
+    *,
+    source_head_sha: str | None = None,
+    repo_root: Path = Path("."),
+) -> list[str]:
+    """Use supplied paths when present; recover exact merge paths only if empty."""
+    paths = [line.strip() for line in _read_paths(paths_file) if line.strip()]
+    if paths:
+        return paths
+    return recover_changed_paths_from_exact_head(
+        source_head_sha or os.environ.get("SOURCE_HEAD_SHA", ""),
+        repo_root=repo_root,
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--paths-file", type=Path, required=True)
     args = parser.parse_args()
-    result = classify_reconciliation_applicability(_read_paths(args.paths_file))
+    result = classify_reconciliation_applicability(resolve_changed_paths(args.paths_file))
     print(json.dumps(result.to_dict(), sort_keys=True, separators=(",", ":")))
 
 
