@@ -4,8 +4,9 @@
 Ownership is delegated to the canonical LF CI lane router instead of being
 encoded here for one product. Any current or future product that the canonical
 router identifies as a known isolated owner can deterministically earn
-NOT_APPLICABLE only when no shared, specialized or external gate is required.
-Unknown, empty, invalid, shared and control-surface changes remain REQUIRED.
+NOT_APPLICABLE only when every changed path is declaratively owned and no
+shared, specialized or external gate is required. Unknown, empty, invalid,
+shared and control-surface changes remain REQUIRED.
 """
 from __future__ import annotations
 
@@ -43,19 +44,21 @@ class ReconciliationApplicability:
         }
 
 
-def _ownership_ids(decision: LaneDecision) -> tuple[str, ...]:
-    """Extract declarative owner IDs without coupling to a product name.
+def _ownership_bindings(decision: LaneDecision) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """Extract declarative owner IDs and exact owned paths product-agnostically.
 
-    Router reasons use `<namespace>_LANE:<owner-id>:<path>` for declarative
-    product ownership. Keeping extraction generic makes reconciliation inherit
-    future product ownership as soon as the canonical router knows it.
+    Canonical router ownership reasons use
+    `<namespace>_LANE:<owner-id>:<path>`. Reconciliation requires every changed
+    path to have one such binding before it can ever return NOT_APPLICABLE.
     """
     owners: set[str] = set()
+    paths: set[str] = set()
     for reason in decision.reasons:
         parts = reason.split(":", 2)
-        if len(parts) >= 2 and parts[0].endswith("_LANE") and parts[1]:
+        if len(parts) == 3 and parts[0].endswith("_LANE") and parts[1] and parts[2]:
             owners.add(parts[1])
-    return tuple(sorted(owners))
+            paths.add(parts[2])
+    return tuple(sorted(owners)), tuple(sorted(paths))
 
 
 def _required(
@@ -64,27 +67,34 @@ def _required(
     *,
     decision: LaneDecision | None = None,
 ) -> ReconciliationApplicability:
+    owners = _ownership_bindings(decision)[0] if decision is not None else ()
     return ReconciliationApplicability(
         required=True,
         state="REQUIRED",
         reason=reason,
         changed_count=changed_count,
-        lane_ids=_ownership_ids(decision) if decision is not None else (),
+        lane_ids=owners,
         router_mode=decision.mode if decision is not None else "NO_DECISION",
     )
 
 
 def classify_router_decision(
-    changed_count: int,
+    paths: Iterable[str],
     decision: LaneDecision,
 ) -> ReconciliationApplicability:
     """Translate the canonical router decision into external applicability."""
-    if changed_count <= 0:
+    changed = tuple(sorted({path.strip() for path in paths if path and path.strip()}))
+    if not changed:
         return _required("NO_CHANGED_PATHS_FAIL_CLOSED", 0, decision=decision)
 
-    owners = _ownership_ids(decision)
+    owners, owned_paths = _ownership_bindings(decision)
+    # Mixed sets are the critical safety case: an isolated product path cannot
+    # mask a sibling shared/unbound path. Every path must be explicitly owned.
+    if set(owned_paths) != set(changed):
+        return _required("UNBOUND_OR_SHARED_PATH_REQUIRES_RECONCILIATION", len(changed), decision=decision)
+
     if decision.mode.startswith("DEEP_SHARED"):
-        return _required("DEEP_SHARED_REQUIRES_RECONCILIATION", changed_count, decision=decision)
+        return _required("DEEP_SHARED_REQUIRES_RECONCILIATION", len(changed), decision=decision)
 
     if any(
         (
@@ -95,12 +105,10 @@ def classify_router_decision(
             decision.deep_shared,
         )
     ):
-        return _required("SHARED_OR_SPECIALIZED_GATE_REQUIRES_RECONCILIATION", changed_count, decision=decision)
+        return _required("SHARED_OR_SPECIALIZED_GATE_REQUIRES_RECONCILIATION", len(changed), decision=decision)
 
-    # No external/shared gates is not enough by itself. A declarative owner must
-    # be present so an unbound path can never earn NOT_APPLICABLE by accident.
     if not owners:
-        return _required("NO_DECLARATIVE_OWNER_REQUIRES_RECONCILIATION", changed_count, decision=decision)
+        return _required("NO_DECLARATIVE_OWNER_REQUIRES_RECONCILIATION", len(changed), decision=decision)
 
     # Preserve the historical S30 reason for workflow/backward compatibility;
     # the decision logic itself is now product-agnostic.
@@ -113,7 +121,7 @@ def classify_router_decision(
         required=False,
         state="NOT_APPLICABLE",
         reason=reason,
-        changed_count=changed_count,
+        changed_count=len(changed),
         lane_ids=owners,
         router_mode=decision.mode,
     )
@@ -126,7 +134,7 @@ def classify_reconciliation_applicability(
 ) -> ReconciliationApplicability:
     changed = tuple(sorted({path.strip() for path in paths if path and path.strip()}))
     decision = classify_ci_lane(changed, registry_data=registry_data)
-    return classify_router_decision(len(changed), decision)
+    return classify_router_decision(changed, decision)
 
 
 def _read_paths(path: Path) -> list[str]:
