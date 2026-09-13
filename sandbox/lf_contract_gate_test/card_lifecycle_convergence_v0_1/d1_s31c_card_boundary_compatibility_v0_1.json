@@ -1,0 +1,59 @@
+{
+  "schema": "LF_S31C_CARD_BOUNDARY_COMPATIBILITY_V0_1",
+  "status": "CANDIDATE_COMPATIBILITY_ONLY",
+  "base_main_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+  "s31_candidate_ref": "0a6bc06dfb83958730b2d659d26098686d873f9b",
+  "sources": {
+    "canonical_card_resolution": {"blob":"3b232a0ec5b5cfc331c50d324491240add459f5e","status":"CANDIDATE_READ_ONLY"},
+    "shared_authority_typed_context": {"blob":"5a5dd0ca611caa68a7e12df62fbccee50f180d4d","status":"CANDIDATE"},
+    "common_evidence_envelope_v0_2": {"blob":"d4401b8275b48fbf1eb2e46b0d5e7191e8a899d5","status":"CANDIDATE"},
+    "runtime_execution_port": {"blob":"0704d671e0de73572b081909d4669aa789273306","status":"CANDIDATE"}
+  },
+  "producer_consumer_flow": [
+    "CARD_CREATE_OR_UPDATE_LIFECYCLE_PRODUCES_GOVERNED_CARD_STATE_AND_EXACT_CARRIER_BINDING",
+    "SUPABASE_AUTHORITY_RESOLVES_OPERATIONAL_CARD_IDENTITY_STATE_CURRENTNESS",
+    "S31_C_NORMALIZES_CARD_RESOLUTION_STATUS_AND_FALLBACK_SEMANTICS",
+    "SHARED_TYPED_CONTEXT_BINDS_CARD_RESOLUTION_PLUS_AUTHORITY_SOURCE_DIGESTS",
+    "PROFILE_RUNTIME_CONSUMES_TYPED_CARD_MATERIALIZATION",
+    "RUNTIME_RETURNS_EXECUTION_RECEIPT_BUT_CANNOT_CREATE_AUTHORITY"
+  ],
+  "boundary_rules": [
+    {"id":"D1-01","rule":"Only a Supabase-bound operational Card may support a RESOLVED operational authority claim. Repo/Drive presence alone is insufficient."},
+    {"id":"D1-02","rule":"A GitHub Card pack without explicit current Supabase operational binding remains a technical/candidate artifact; it cannot be silently upgraded to S31-C RESOLVED."},
+    {"id":"D1-03","rule":"NO_DIRECT_CARD is a valid governed outcome when no Card is required/applicable; it must not trigger manual work solely because no direct Card exists."},
+    {"id":"D1-04","rule":"More than one materially applicable Card without deterministic precedence is AMBIGUOUS and fail-closed."},
+    {"id":"D1-05","rule":"S31-C resolves applicability/fallback semantics; it does not create, update, promote or mutate Cards or their carriers."},
+    {"id":"D1-06","rule":"Card lifecycle authoring remains upstream of S31-C. S31-C consumes the resulting authority/currentness binding, never substitutes for CREACION_CARD_LF or ACTUALIZACION_CARD_LF."},
+    {"id":"D1-07","rule":"Typed Context must carry reconstructible authority source refs/digests and card_resolution status. Schema invention remains forbidden."},
+    {"id":"D1-08","rule":"Runtime execution is downstream. It may validate supplied Card materialization but may not decide AUTHORITY, CURRENTNESS, CARD_APPLICABILITY, PROMOTION, GOLDEN or PRODUCTION."},
+    {"id":"D1-09","rule":"A same-request Card materialization receipt must bind operational card ref, version/revision or digest, selected content/sections, budget and provenance before model use when a Card is required."},
+    {"id":"D1-10","rule":"S31 candidate vocabulary is adapter-bound. Existing S26 boundary vocabularies remain valid until governed cutover; no big-bang migration."}
+  ],
+  "resolution_mapping": {
+    "SUPABASE_EXACT_OPERATIONAL_CARD_CURRENT": {"s31_status":"RESOLVED","allowed_modes":["EXACT","COMPATIBLE","COMPOSED","GENERIC_SAFE"],"runtime_allowed":"ONLY_AFTER_TYPED_AUTHORITY_AND_MATERIALIZATION_BINDING"},
+    "NO_APPLICABLE_OPTIONAL_CARD": {"s31_status":"NO_DIRECT_CARD","runtime_allowed":true,"condition":"required_card=false"},
+    "NO_APPLICABLE_REQUIRED_CARD": {"s31_status":"BLOCKED","runtime_allowed":false,"blocking_code":"REQUIRED_CARD_MISSING"},
+    "MULTIPLE_UNRESOLVED_APPLICABLE_CARDS": {"s31_status":"AMBIGUOUS","runtime_allowed":false},
+    "REPO_ONLY_CARD_PACK": {"s31_status":"BLOCKED","runtime_allowed":false,"blocking_code":"OPERATIONAL_CARD_BINDING_MISSING"},
+    "STALE_CARRIER_BINDING": {"s31_status":"BLOCKED","runtime_allowed":false,"blocking_code":"CARD_CURRENTNESS_STALE"}
+  },
+  "s31_candidate_adoption_policy": {
+    "hard_dependency_now": false,
+    "reason": "S31 contracts remain candidate and independent-review/promotion gates are not closed.",
+    "allowed_now": ["compatibility design","adapter mapping","test-vector planning","naming alignment where non-authoritative"],
+    "forbidden_now": ["runtime cutover","replace S26 authority semantics","production dependency","declare S31 canonical production authority","automatic promotion"]
+  },
+  "evidence_model": {
+    "reuse_candidate": "LF Common Evidence Envelope v0.2",
+    "rule": "Structural design evidence cannot be presented as provenance/semantic/behavioral execution evidence.",
+    "required_before_non_structural_claim": ["executed=true","current authority","reconstructible provenance","source refs/digests","claim ceiling not above evidence level"]
+  },
+  "d1_gate": {
+    "result": "PASS_COMPATIBILITY_BOUNDARY_DEFINED",
+    "materialization_authorized": false,
+    "s31_activation_authorized": false,
+    "runtime_cutover_authorized": false,
+    "remaining_safe_design_scope": 0,
+    "next_gate": "CANDIDATE_VALIDATION_AND_INDEPENDENT_REVIEW_PREP"
+  }
+}
