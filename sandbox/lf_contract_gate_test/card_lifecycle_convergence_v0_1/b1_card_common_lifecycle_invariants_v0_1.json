@@ -1,0 +1,68 @@
+{
+  "schema": "LF_CARD_COMMON_LIFECYCLE_INVARIANTS_V0_1",
+  "status": "CANDIDATE_DESIGN_ONLY",
+  "base_main_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+  "authority_ref": "sandbox/lf_contract_gate_test/card_lifecycle_convergence_v0_1/a1_card_authority_reconciliation_v0_1.json",
+  "objective": "Extract reusable Card lifecycle phases without flattening CREACION_CARD_LF and ACTUALIZACION_CARD_LF into one fixed step list.",
+  "common_phases": [
+    {"phase":"ADMISSION_AND_EXECUTION_IDENTITY","required":true,"invariants":["durable execution before material write","target asset type explicit","operation code explicit"]},
+    {"phase":"ROUTER_AND_OPERATION_AUTHORITY","required":true,"invariants":["ACT-0001/Supabase authority resolved","current operation contract and policy snapshot resolved","no carrier presence may create authority"]},
+    {"phase":"EXACT_TARGET_RESOLUTION","required":true,"invariants":["one exact Card identity or explicit create-new intent","canonical codigo_activo/name mapping preserved","ambiguity fail-closed"]},
+    {"phase":"BASELINE_AND_CURRENTNESS","required":true,"invariants":["current state frozen before mutation","carrier currentness bound when carrier exists","content/currentness digests reconstructible"]},
+    {"phase":"CHANGE_SCOPE","required":true,"invariants":["minimal intended delta explicit","preserved constraints explicit","identity/parent/authority boundaries preserved"]},
+    {"phase":"REGRESSION_PLAN","required":true,"invariants":["positive negative adversarial and holdout disposition defined before write","carrier/currentness negatives added for update","creation depth/evidence negatives retained for create"]},
+    {"phase":"PREWRITE_BINDING","required":true,"invariants":["execution bound to exact target/destination before write","source/currentness still current","write plan and carrier route exact","fail closed on stale or incomplete trust context"]},
+    {"phase":"MATERIAL_WRITE","required":true,"invariants":["minimal mutation only","carrier-specific writer only","no automatic runtime/promotion"]},
+    {"phase":"INDEPENDENT_READBACK","required":true,"invariants":["exact changed carrier reread independently","identity and scope preserved","new revision/blob/content digest observed"]},
+    {"phase":"DETERMINISTIC_VALIDATION","required":true,"invariants":["deterministic gates execute before semantic judge","caller-declared PASS cannot override deterministic fail","route/currentness/identity/schema checks executed"]},
+    {"phase":"SEMANTIC_QUALITY","required":true,"invariants":["semantic authority and intended meaning evaluated separately from provenance","semantic PASS cannot override deterministic failure","claim ceiling preserved"]},
+    {"phase":"POST_REGRESSION","required":true,"invariants":["before/after and planned negatives executed","no hidden authority/runtime/promotion drift"]},
+    {"phase":"EVIDENCE_CLOSE_AND_REPORT","required":true,"invariants":["all required steps clean","open blockers explicit","readback/currentness attached","no self-certification beyond evidence level"]}
+  ],
+  "operation_mapping": {
+    "CREACION_CARD_LF": {
+      "topology": "39_STEP_SPECIALIZED_CREATE_PIPELINE",
+      "card_specific_before_common_tail": ["operational_source","repo_inventory_full","destination_validate","creator_asset","intake","duplicate_check","classification","generic_vs_specific","research_pack","research_to_rules_matrix","decision_matrix","canonical_design","operational_evidence_pack_check","completeness","compatibility","rubric","sandbox","manifest","rule_trace","partial_scope_guard","depth_validation_family"],
+      "common_tail_mapping": {"PREWRITE_BINDING":"pre_write_execution_binding_gate","MATERIAL_WRITE":"github_write","INDEPENDENT_READBACK":"github_readback","SEMANTIC_QUALITY":"contract_judge","EVIDENCE_CLOSE_AND_REPORT":["evidence_log","close","report_output"]},
+      "do_not_remove": "Creation research/design/depth controls are Card factory semantics, not lifecycle duplication."
+    },
+    "ACTUALIZACION_CARD_LF": {
+      "topology": "14_STEP_UPDATE_PIPELINE",
+      "card_specific_preconditions": ["card_resolve","carrier_resolve","parent_source_read"],
+      "common_mapping": {"ADMISSION_AND_EXECUTION_IDENTITY":"init_execution","ROUTER_AND_OPERATION_AUTHORITY":"router","EXACT_TARGET_RESOLUTION":"card_resolve","BASELINE_AND_CURRENTNESS":["carrier_resolve","parent_source_read","baseline_read"],"PREWRITE_BINDING":"pre_write_execution_binding_gate","MATERIAL_WRITE":"carrier_write_dispatch","INDEPENDENT_READBACK":"carrier_readback","DETERMINISTIC_VALIDATION":"deterministic_validation","SEMANTIC_QUALITY":"semantic_judge","POST_REGRESSION":"regression_after","EVIDENCE_CLOSE_AND_REPORT":["close","report_output"]},
+      "missing_explicit_common_phases": ["CHANGE_SCOPE","REGRESSION_PLAN"]
+    },
+    "ACTUALIZACION_PERFIL_LF_REFERENCE": {
+      "topology": "14_STEP_ACTIVE_ENFORCEMENT_REFERENCE",
+      "explicit_change_scope": "change_scope",
+      "explicit_regression_plan": "regression_plan",
+      "use": "Reference for common lifecycle semantics only; Card-specific carrier logic remains separate."
+    }
+  },
+  "gap": {
+    "code": "CARD_UPDATE_CHANGE_SCOPE_REGRESSION_PLAN_STEP_GAP",
+    "severity": "HIGH",
+    "finding": "ACTUALIZACION_CARD_LF replaced the Profile updater's explicit change_scope and regression_plan positions with carrier_resolve and parent_source_read. Carrier resolution/currentness is necessary, but it does not prove minimal delta or regression planning.",
+    "required_repair": "Before any Card Update write activation, add explicit governed evidence/steps for CHANGE_SCOPE and REGRESSION_PLAN or prove equivalent first-class contracts before prewrite. Do not hide them inside a free-form write_plan."
+  },
+  "recorder_reuse": {
+    "reference": "skills/profile_creator/contracts/profile_operation_common_recorder_v1.sql",
+    "reusable_core": ["execution row lock and identity lookup","active step/contract/judge binding lookup","prior required-step cleanliness","required evidence-key enforcement","idempotent replay","durable blocked attempt history","bounded retry from blocked state","clean result persistence","next-gate result"],
+    "profile_specific_parts_not_reusable_as_is": ["target_type=PERFIL hardcode","CREACION_PERFIL_LF/ACTUALIZACION_PERFIL_LF hardcode","profile contract status branching","GitHub-main/profile-path server trust context validation"],
+    "target_pattern": "OPERATION_NEUTRAL_RECORDER_CORE_PLUS_ASSET_SPECIFIC_TRUST_VALIDATOR",
+    "card_trust_validator_inputs": ["card_code","carrier_type","carrier_ref","parent_source_ref","provider_revision_or_blob_sha","block_anchor_or_path","content_sha256","provider_write_guard","execution_id"],
+    "copy_profile_recorder_into_cards": false,
+    "new_parallel_recorder_factory": false
+  },
+  "decision_taxonomy": {
+    "default": "DETERMINISTIC_FIRST",
+    "deterministic_examples": ["execution identity","Router/operation lookup","exact target uniqueness","carrier binding/currentness comparison","required evidence keys","provider revision guard presence","identity/readback hash comparison","step ordering","close prerequisites"],
+    "semantic_examples": ["research-to-rules quality","Card design semantic adequacy","authorized delta semantic fit","semantic preservation after update"],
+    "hybrid_rule": "deterministic preconditions -> bounded semantic evaluation -> deterministic output validation; deterministic failure is terminal for the step"
+  },
+  "b1_gate": {
+    "result": "PASS_COMMON_PHASE_MODEL_EXTRACTED",
+    "materialization_authorized": false,
+    "next_safe_batch": "C1_CARD_CARRIER_ADAPTER_AND_STALE_REVISION_MATRIX"
+  }
+}
