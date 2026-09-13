@@ -1,0 +1,106 @@
+{
+  "receipt_version": "v0.1",
+  "repair_case_id": "S31-DG-IR-001-REPAIR-001",
+  "owner_lane": "S31-DG",
+  "source_independent_review": {
+    "review_case_id": "S31-DG-IR-001",
+    "receipt_path": "sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_ir001_independent_receipt_v0_1.json",
+    "receipt_blob_sha": "3c347986b4bb5113403c7585a685ed69d58f03be",
+    "reviewed_bundle": "sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_independent_review_bundle_v0_3.json",
+    "reviewed_bundle_blob_sha": "2f5a1bc5fbb8e2e422ea2fc85623f08c2e4c5223",
+    "verdict": "BLOCK_PIPELINE",
+    "blocking_codes": ["SOURCE_MISMATCH", "AUTHORITY_LEAK", "EVIDENCE_INFLATION"]
+  },
+  "currentness": {
+    "main_sha_at_repair": "6ac06b6aff7a9a22e80a848d7fc32b5787892992",
+    "main_drift_touches_s31_bootstrap": false,
+    "deterministic_execution_head": "9f1f60f17ce3428c2cac809af1d8f7c9dad0c66f",
+    "exact_head_not_merge_ref": true
+  },
+  "ekb_preflight": {
+    "executed": true,
+    "controls_consumed": [
+      "STRATEGY-GOV-SOURCE-PREWRITE-BINDING-GAP-001",
+      "QUALITY-GATE-SUPABASE-RLS-ENFORCEMENT-GAP-001",
+      "S27-PROGRESSION-CLAIM-WITHOUT-EXECUTION-001",
+      "PROFILE-SCOPE-DECLARATIVE-WRITE-RISK-001",
+      "PROFILE-RUNTIME-V2-EDITABLE-GOLDEN-WRITE-LEAK-001",
+      "PROFILE-RUNTIME-SEMANTIC-REVIEW-METADATA-GAP-001",
+      "CROSS-STRATEGY-STRUCTURAL-FINGERPRINT-001",
+      "STRATEGY-RUNTIME-PR-MERGE-REF-MISLABELED-EXACT-HEAD-001",
+      "STRATEGY-PROGRESS-CANONICAL-CONTRACT-001"
+    ]
+  },
+  "repairs": [
+    {
+      "lane": "S31-D",
+      "blocking_code": "AUTHORITY_LEAK",
+      "artifact": "lf_shared_authority_typed_context_v0_2_candidate.schema.json",
+      "blob_sha": "d3918a0b80f023883130ebaf63c850ef43475959",
+      "repair": "Authority and runtime-schema currentness now require immutable evidence bindings with SHA-256 and resolver_id; validator resolves and cross-binds source refs, source digest, run and CURRENT status; producer self-resolution is blocked.",
+      "negative_regressions": ["resolver missing", "fake unresolved ref", "stale currentness", "source mismatch", "self resolver", "undeclared cross-run", "weak runtime digest"]
+    },
+    {
+      "lane": "S31-E",
+      "blocking_code": "SOURCE_MISMATCH",
+      "artifacts": [
+        {"path": "s31_e_capability_registry_gap_inventory_v0_2.json", "blob_sha": "fc67055c9084aaaf6080af867aba09fef8cf9b83"},
+        {"path": "lf_capability_manifest_v0_3_candidate.schema.json", "blob_sha": "26fec9bc52fd0669377ee88274fcc4379d31e0e2"}
+      ],
+      "repair": "Inventory and schema now use lifecycle consistently; deterministic validator requires exact required-field set equality. Capability currentness is also resolver-bound and source digests are strict SHA-256.",
+      "negative_regressions": ["legacy lifecycle_state mismatch", "weak digest", "resolver missing", "stale currentness", "owner self resolver", "duplicate dependency"]
+    },
+    {
+      "lane": "S31-F",
+      "blocking_code": "EVIDENCE_INFLATION",
+      "artifact": "lf_common_evidence_envelope_v0_3_candidate.schema.json",
+      "blob_sha": "c84ae3f74b245e4b7a8aace39d065291931f6584",
+      "repair": "Non-structural evidence requires externally resolved execution/currentness/provenance receipts with SHA-256 bindings; owner receipt is explicitly preserved; capability extensions have an explicit carrier; weak digests and self-resolution fail closed.",
+      "negative_regressions": ["weak digest", "missing owner receipt", "resolver missing", "fake ref", "digest mismatch", "self resolver", "stale authority receipt", "false provenance", "structural-to-behavioral inflation"]
+    },
+    {
+      "lane": "S31-G",
+      "blocking_code": "AUTHORITY_LEAK",
+      "artifact": "lf_runtime_execution_output_v0_1_candidate.schema.json",
+      "blob_sha": "550d2aa8facb0fa5e54b6dab88bfb4867bea86d9",
+      "repair": "Runtime output is now typed fail-closed; nested runtime_receipt cannot grant downstream, Golden or production authority and authority_effects must remain empty. Recursive validator catches nested authority flags/effects.",
+      "negative_regressions": ["silent fallback", "incomplete forbidden-authority set", "production_authorized=true", "ENABLE_PRODUCTION effect", "authority_grants_allowed=true", "nested golden_authorized=true"]
+    }
+  ],
+  "deterministic_validator": {
+    "path": "sandbox/lf_contract_gate_test/s31_bootstrap/validate_s31_dg_contracts_v0_2.py",
+    "blob_sha": "c242fe0185db5a3de1aa480482ab8fa7a346f242"
+  },
+  "deterministic_test": {
+    "path": "sandbox/lf_contract_gate_test/s31_bootstrap/test_s31_dg_contracts_v0_2.py",
+    "blob_sha": "c9521f3df6581fd40cabc8983177c763d9cb5a68",
+    "exact_execution_head": "9f1f60f17ce3428c2cac809af1d8f7c9dad0c66f",
+    "schemas_valid": ["D_TYPED_CONTEXT_V0_2", "E_CAPABILITY_MANIFEST_V0_3", "F_EVIDENCE_ENVELOPE_V0_3", "G_RUNTIME_REQUEST_V0_1", "G_RUNTIME_OUTPUT_V0_1"],
+    "positive_cases": 8,
+    "negative_fail_closed_cases": 28,
+    "result": "PASS"
+  },
+  "full_s31_regression": {
+    "exact_execution_head": "9f1f60f17ce3428c2cac809af1d8f7c9dad0c66f",
+    "all_test_files_exit_zero": true,
+    "notable_results": {
+      "A_v0_2": "PASS",
+      "B_v0_2": "26/26 PASS",
+      "C_v0_1": "28/28 PASS",
+      "DG_v0_1_legacy": "5 positive + 14 negative PASS",
+      "DG_v0_2": "8 positive + 28 negative PASS",
+      "independent_review_intake": "12/12 PASS",
+      "strategy_master_plan_v0_2": "16/16 PASS"
+    }
+  },
+  "claim_ceiling": "DETERMINISTIC_REGRESSION_ONLY",
+  "independent_review_status": "PENDING_NEW_REVIEW",
+  "authorizations": {
+    "runtime_activation": false,
+    "golden": false,
+    "merge": false,
+    "production": false,
+    "behavioral_promotion": false
+  },
+  "next_gate": "FREEZE_NEW_IMMUTABLE_DG_BUNDLE_THEN_INDEPENDENT_SEMANTIC_REVIEW"
+}
