@@ -1,0 +1,234 @@
+strategy_id: CANARY_STRATEGY_UPDATE_E2E_20260913
+snapshot_code: LF_STRATEGY_UPDATE_E2E_CANARY_20260913
+version: v0.1
+title: Canario exclusivo E2E de ACTUALIZACION_ESTRATEGIA_LF
+status: CANDIDATO_READ_ONLY
+runtime_state: PLAN_ONLY
+impact_policy: BLOQUEADO
+strategy_type: STRATEGY_UPDATE_E2E_CANARY
+strategy_archetype: CANARY_VALIDATION
+problem_statement: Strategy Update está habilitada en sandbox y probada hasta pre-write; falta un write E2E sobre target desechable
+  sin tocar estrategias reales.
+objective: Crear un canario aislado compatible con STRATEGY_PROGRESS_CONTRACT_V1 y probar update positivo + stale SHA/currentness
+  negativos.
+scope:
+- CREACION_ESTRATEGIA_LF target canario
+- ACTUALIZACION_ESTRATEGIA_LF E2E
+- PR 753 exclusive lane
+non_goals:
+- consumir número S
+- mutar S32/S35
+- main/runtime/production/scheduler/Golden
+baseline:
+  exclusive_pr: 753
+  immutable_base_sha: fc2967e9aa17f9e5e68f8567ef80faafb3839c53
+  exclusive_branch: lf/strategy-update-gpt-exclusive-20260913
+  create_contract_blob: 2c469e3cd2ae7bb7171ca4e52fc6da84b58af3a3
+  validator_blob: 4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765
+  repo_matrix_blob: 56ab98e51133178378113ad5a1a9f2b8fa0abef7
+  progress_contract: STRATEGY_PROGRESS_CONTRACT_V1
+  progress_key_count: 26
+  claim_ceiling: SANDBOX_E2E_CANARY_NOT_PRODUCTION
+authorities:
+- ACT-0001
+- public.lf_artifact_destination_registry
+- public.lf_strategy_snapshots
+- GitHub:cristhianlujan/claude-persona-lf-patch
+dependencies:
+- id: CREATE_CONTRACT_V032
+  sha: 2c469e3cd2ae7bb7171ca4e52fc6da84b58af3a3
+  required: true
+- id: VALIDATOR_V032
+  sha: 4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765
+  required: true
+- id: REPO_MATRIX_V04
+  sha: 56ab98e51133178378113ad5a1a9f2b8fa0abef7
+  required: true
+- id: STRATEGY_UPDATE
+  version: v0.1
+  required: true
+applicable_policies:
+- code: POL-LF-OPERATION-LIFECYCLE
+  version: v1.0
+  sha: 973b5a0ad26433095066ff06b53c3043f38fef51d04e9482c458e178f20920e8
+- code: POL-LF-POLICY-CONSUMPTION
+  version: v1.1-transversal-candidate
+  sha: e5eb786e14a4b735e271a81b702a0a775e0bf39ba174d333531a82a0858b5553
+- code: POL-LF-SOURCE-RESOLUTION
+  version: v1.4-transversal-supabase-authority-visual-support
+  sha: 5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46
+- code: POL-LF-STATE-MODEL
+  version: v1.1-transversal-candidate
+  sha: f451bb4d2b17cdac48c4dddb250108b2874a9d036edcfb9d2f7fa540416332aa
+- code: POL-STRATEGY-CREATION-001
+  version: v0.1-candidate
+  sha: 563b91a1e5405c1e1f8806c1f8d12b8ab2dfbd901638f7b432a3e601cc2558fc
+stages:
+- stage_code: CUE2E-01
+  objective_or_purpose: Crear target canario exclusivo y progress V1.
+  status: CURRENT
+  entry_conditions:
+  - exclusive HEAD guard
+  - exclusive governed destination
+  actions_or_scope:
+  - validate source
+  - register candidate
+  tests:
+  - T01
+  - T02
+  evidence_required:
+  - validator hashes
+  - Git/Supabase readbacks
+  exit_gate: TARGET_READY
+  conclusion_ref: CUE2E-C01
+- stage_code: CUE2E-02
+  objective_or_purpose: Ejecutar Strategy Update positivo y negativos.
+  status: PLANNED
+  entry_conditions:
+  - CUE2E-01 current conclusion
+  actions_or_scope:
+  - positive update
+  - stale SHA/currentness negatives
+  tests:
+  - T03
+  - T04
+  - T05
+  evidence_required:
+  - 14/14 steps
+  - blocking codes
+  exit_gate: UPDATE_E2E_PASS
+  conclusion_ref: CUE2E-C02
+- stage_code: CUE2E-03
+  objective_or_purpose: Cerrar sin efectos cruzados.
+  status: PLANNED
+  entry_conditions:
+  - CUE2E-02 pass
+  actions_or_scope:
+  - close validator
+  - S32 invariant readback
+  tests:
+  - T06
+  evidence_required:
+  - terminal frontier
+  - no cross mutation
+  exit_gate: CLOSED_ISOLATED
+  conclusion_ref: CUE2E-C03
+gates:
+- EXCLUSIVE_DESTINATION
+- VALIDATOR_PREWRITE
+- PROGRESS_V1_26_KEYS
+- UPDATE_POSITIVE
+- STALE_SHA_BLOCK
+- STALE_CURRENTNESS_BLOCK
+- NO_S32_MUTATION
+- VALIDATOR_CLOSE
+tests:
+- id: T01
+  case: prewrite validator
+  expected: PASS
+- id: T02
+  case: create readback
+  expected: candidate/plan-only/blocked-impact
+- id: T03
+  case: bounded update
+  expected: 14/14 clean
+- id: T04
+  case: stale SHA
+  expected: BLOCK
+- id: T05
+  case: stale currentness
+  expected: BLOCK
+- id: T06
+  case: cross-strategy invariant
+  expected: zero cross mutations
+metrics:
+  create_steps: 43
+  update_steps: 14
+  progress_keys: 26
+  cross_strategy_mutations_allowed: 0
+  runtime_changes_allowed: 0
+  production_changes_allowed: 0
+risks:
+- id: R1
+  risk: shared destination interference
+  mitigation: no official write until exclusive destination is governed
+- id: R2
+  risk: historical target reuse
+  mitigation: S32 and S35 explicitly out of scope
+evidence_contract:
+  current_ceiling: PREWRITE_STRUCTURAL_CANDIDATE_NOT_OFFICIAL_SOURCE
+  required:
+  - exact blobs
+  - HEAD guard
+  - independent readbacks
+rollback_or_recovery:
+  routes:
+  - A_ORIGINAL
+  - B_FOCAL_MINIMAL
+  - C_CANONICAL_EQUIVALENT
+  - D_INDEPENDENT_AUTHORIZED
+  on_destination_conflict: NO_OFFICIAL_WRITE
+execution_frontier:
+  state: IN_PROGRESS
+  current_stage: CUE2E-01
+  current_action: resolve exclusive governed destination
+  safe_parallel_work:
+  - sandbox validation
+  blockers:
+  - EXCLUSIVE_DESTINATION_NOT_YET_GOVERNED
+stage_conclusions: []
+invalidation_triggers:
+- unexpected Git HEAD
+- contract/validator/matrix changes
+- canary target currentness changes
+change_log:
+- version: v0.1-draft
+  change: exclusive sandbox prewrite candidate only
+closure_criteria:
+- create+close validators pass
+- progress V1 exactly 26 keys
+- update positive+negative guards pass
+- S32 unchanged
+- no runtime/production/scheduler/main changes
+type_extension:
+  proof_target: ACTUALIZACION_ESTRATEGIA_LF E2E on disposable target
+  positive_case: create compatible canary then one bounded update
+  negative_cases:
+  - stale payload SHA
+  - stale parent/currentness
+  - unexpected Git HEAD
+  exact_evidence_boundary: SANDBOX_ONLY_NO_PRODUCTION
+  cleanup_or_demotion_plan: preserve evidence; lifecycle cleanup only by separately governed action
+  next_gate_or_handoff: EXCLUSIVE_DESTINATION_GOVERNANCE_THEN_OFFICIAL_CREATE
+next_gate_or_handoff: EXCLUSIVE_DESTINATION_GOVERNANCE_THEN_OFFICIAL_CREATE
+progress_contract:
+  contract_version: STRATEGY_PROGRESS_CONTRACT_V1
+  required_key_count: 26
+  required_keys:
+  - blockers
+  - claim_ceiling
+  - completion
+  - contract_version
+  - current_action
+  - current_stage
+  - impact_policy
+  - last_material_at
+  - last_material_execution_id
+  - material_this_run
+  - next_gate
+  - parent_currentness
+  - payload_sha256
+  - progress_state
+  - runtime_state
+  - safe_parallel_work
+  - snapshot_status
+  - source_updated_at
+  - source_updated_by_execution_id
+  - strategy_code
+  - strategy_id
+  - strategy_number
+  - strategy_version
+  - terminal_currentness
+  - updated_at
+  - updated_by_execution_id
+  strategy_number: null
