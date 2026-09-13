@@ -1,0 +1,75 @@
+{
+  "schema_version": "S30_INTERIM_DEPENDENCY_CURRENTNESS_POLICY_V1",
+  "status": "CANDIDATE_NONPRODUCTION",
+  "owner": "S30",
+  "purpose": "Prevent global repository SHA drift from falsely reopening S30 while S31 generalizes contract-aware dependency currentness.",
+  "safety_ceiling": {
+    "runtime_activation": false,
+    "scheduler_activation": false,
+    "production_activation": false,
+    "business_effect_dispatch": false,
+    "golden_promotion": false
+  },
+  "lifecycle": {
+    "temporary": true,
+    "expires_when": "S31_CONTRACT_AWARE_CURRENTNESS_CAPABILITY_ADOPTED",
+    "must_not_override_breaking_contract_evidence": true
+  },
+  "rules": {
+    "main_sha_drift_alone": "NO_INVALIDATION",
+    "consumer_owned_change": "FULL_S30_REVALIDATION_REQUIRED",
+    "declared_consumed_contract_change": "TARGETED_IMPACT_REVIEW_REQUIRED",
+    "implementation_only_change_behind_unchanged_contract": "NO_S30_REVALIDATION_REQUIRED",
+    "unrelated_strategy_change": "NO_S30_REVALIDATION_REQUIRED",
+    "unknown_material_dependency": "TARGETED_IMPACT_REVIEW_REQUIRED"
+  },
+  "s30_owned_prefixes": [
+    "sandbox/lf_contract_gate_test/s30_",
+    "gobernanza/contratos/s30_",
+    "gobernanza/judges/validate_s30_"
+  ],
+  "declared_consumed_contract_paths": [
+    ".github/workflows/validate-lf-packs.yml"
+  ],
+  "known_shared_implementation_non_dependencies": {
+    "exact_paths": [
+      ".github/workflows/lf-github-reconcile-v3.yml"
+    ],
+    "prefixes": [
+      "sandbox/lf_contract_gate_test/s28_ci_lane_router/",
+      "services/profile_runtime_api/"
+    ]
+  },
+  "reviewed_no_impact_exact_paths_for_observed_delta": [
+    "supabase/migrations/20260913050553_lf_card_update_i5_carrier_adapter_intent_v1.sql",
+    "supabase/migrations/20260913083223_lf_s26_ci_402_pooler_fallback_governance_repin_v1.sql",
+    "supabase/migrations/20260913133413_lf_s26_ci_402_source_workflow_governance_repin_v1.sql",
+    "supabase/migrations/20260913134145_lf_s26_ci_402_source_workflow_sha_corrective_repin_v1.sql",
+    "supabase/migrations/20260913140430_lf_s26_ci_402_contract_validator_governance_repin_v1.sql",
+    "supabase/migrations/20260913150751_lf_regla_router_governance_v1.sql",
+    "supabase/migrations/20260913175344_lf_mode_normalization_v1.sql"
+  ],
+  "semantic_currentness_surfaces": {
+    "gobernanza/contratos/s30_self_governance_gate_v1.json": {
+      "freeze_blob_sha": "b0b43c48a20dc22eeb4d030e7f7022dcf215f36b",
+      "observed_head_blob_sha": "b0b43c48a20dc22eeb4d030e7f7022dcf215f36b"
+    },
+    "gobernanza/judges/validate_s30_self_governance_gate.py": {
+      "freeze_blob_sha": "484a79fedcf5379992fcadc59d085c80fc73e004",
+      "observed_head_blob_sha": "484a79fedcf5379992fcadc59d085c80fc73e004"
+    },
+    ".github/workflows/validate-lf-packs.yml": {
+      "freeze_blob_sha": "3d23c86eb8ec847ddee65185fbf72b4702ed474f",
+      "observed_head_blob_sha": "3d23c86eb8ec847ddee65185fbf72b4702ed474f",
+      "existing_semantic_skip_marker": "S30_CI_AUTO_SKIPPED_UNRELATED_SHARED_WORKFLOW_CHANGE"
+    }
+  },
+  "observed_delta": {
+    "freeze_main_sha": "c6c2650bd34664b855d9cfe34ed864a5f93a1290",
+    "observed_main_sha": "77222b36028407659c3ff6f18e398ec77ec8fe46",
+    "commits_ahead": 25,
+    "s30_owned_paths_changed": 0,
+    "expected_result": "NO_S30_REVALIDATION_REQUIRED"
+  },
+  "unknown_default": "TARGETED_IMPACT_REVIEW_REQUIRED"
+}
