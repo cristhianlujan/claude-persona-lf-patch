@@ -1,0 +1,56 @@
+{
+  "readback_version": "lf-transversal-router-adversarial/v1",
+  "owner": "LF-TRANSVERSAL-E2E-MATRIX",
+  "issue": 725,
+  "source": "supabase://mhwmirqcgxxukpctffuv/public.lf_router_resolve_v1",
+  "execution_mode": "READ_ONLY",
+  "probe_modes": ["ROUTER", "BYPASS", "router", "ROUTER ", " ROUTER", "UNSUPPORTED_MODE"],
+  "route_summary": {
+    "static_routes": 17,
+    "bypass_and_ready": 14,
+    "policy_filter_bypass_but_other_gate_blocks": 1,
+    "blocked_before_policy_surface": 2,
+    "invalid_modes_per_route": 5
+  },
+  "routes": [
+    {"asset_type":"ADAPTER","action_code":"ADAPTER_CREATE","operation_code":"CREACION_ADAPTER_LF","canonical_required":4,"canonical_resolved":4,"canonical_status":"READY_TO_EXECUTE","invalid_modes_zero_required":5,"invalid_modes_ready":5,"verdict":"BYPASS_AND_READY"},
+    {"asset_type":"ADAPTER","action_code":"ADAPTER_UPDATE","operation_code":"ACTUALIZACION_ADAPTER_LF","canonical_required":4,"canonical_resolved":4,"canonical_status":"READY_TO_EXECUTE","invalid_modes_zero_required":5,"invalid_modes_ready":5,"verdict":"BYPASS_AND_READY"},
+    {"asset_type":"CARD","action_code":"CARD_CREATE","operation_code":"CREACION_CARD_LF","canonical_required":4,"canonical_resolved":4,"canonical_status":"READY_TO_EXECUTE","invalid_modes_zero_required":5,"invalid_modes_ready":5,"verdict":"BYPASS_AND_READY"},
+    {"asset_type":"DB","action_code":"UPDATE","operation_code":"ACTUALIZACION_DB_LF","canonical_required":4,"canonical_resolved":4,"canonical_status":"READY_TO_EXECUTE","invalid_modes_zero_required":5,"invalid_modes_ready":5,"verdict":"BYPASS_AND_READY"},
+    {"asset_type":"DOC","action_code":"UPDATE","operation_code":"ACTUALIZACION_ROUTER_LF","canonical_required":4,"canonical_resolved":4,"canonical_status":"READY_TO_EXECUTE","invalid_modes_zero_required":5,"invalid_modes_ready":5,"verdict":"BYPASS_AND_READY"},
+    {"asset_type":"FUNCTION","action_code":"UPDATE","operation_code":"ACTUALIZACION_DB_LF","canonical_required":4,"canonical_resolved":4,"canonical_status":"READY_TO_EXECUTE","invalid_modes_zero_required":5,"invalid_modes_ready":5,"verdict":"BYPASS_AND_READY"},
+    {"asset_type":"KNOWLEDGE","action_code":"KNOWLEDGE_LEARNING_BRIDGE","operation_code":"LEARNING_BRIDGE_KB_CARD_LF","canonical_required":4,"canonical_resolved":4,"canonical_status":"READY_TO_EXECUTE","invalid_modes_zero_required":5,"invalid_modes_ready":5,"verdict":"BYPASS_AND_READY"},
+    {"asset_type":"MIGRATION","action_code":"UPDATE","operation_code":"ACTUALIZACION_DB_LF","canonical_required":4,"canonical_resolved":4,"canonical_status":"READY_TO_EXECUTE","invalid_modes_zero_required":5,"invalid_modes_ready":5,"verdict":"BYPASS_AND_READY"},
+    {"asset_type":"OPERATION_CODE","action_code":"RUNTIME_UPDATE","operation_code":"ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF","canonical_status":"BLOCKED","canonical_block":"BLOCK_ASSET_NOT_FOUND","invalid_modes_zero_required":5,"invalid_modes_blocked":5,"verdict":"BLOCKED_BEFORE_POLICY_SURFACE"},
+    {"asset_type":"PERFIL","action_code":"PROFILE_CREATE","operation_code":"CREACION_PERFIL_LF","canonical_required":4,"canonical_resolved":4,"canonical_status":"READY_TO_EXECUTE","invalid_modes_zero_required":5,"invalid_modes_ready":5,"verdict":"BYPASS_AND_READY"},
+    {"asset_type":"PERFIL","action_code":"PROFILE_EXECUTION","operation_code":"EJECUCION_PERFIL_LF","canonical_required":5,"canonical_resolved":5,"canonical_status":"READY_TO_EXECUTE","invalid_modes_zero_required":5,"invalid_modes_ready":5,"verdict":"BYPASS_AND_READY"},
+    {"asset_type":"PERFIL","action_code":"PROFILE_UPDATE","operation_code":"ACTUALIZACION_PERFIL_LF","canonical_required":5,"canonical_resolved":5,"canonical_status":"INPUT_GOVERNANCE_REQUIRED","canonical_block":"BLOCK_INPUT_GOVERNANCE_SUBJECT_UNRESOLVED","invalid_modes_zero_required":5,"invalid_modes_other_gate_block":5,"verdict":"POLICY_FILTER_BYPASS_BUT_OTHER_GATE_BLOCKS"},
+    {"asset_type":"SKILL","action_code":"SKILL_CREATE","operation_code":"CREACION_SKILL_LF","canonical_required":4,"canonical_resolved":4,"canonical_status":"READY_TO_EXECUTE","invalid_modes_zero_required":5,"invalid_modes_ready":5,"verdict":"BYPASS_AND_READY"},
+    {"asset_type":"SKILL","action_code":"SKILL_EXECUTION","operation_code":"EJECUCION_SKILL_LF","canonical_required":4,"canonical_resolved":4,"canonical_status":"READY_TO_EXECUTE","invalid_modes_zero_required":5,"invalid_modes_ready":5,"verdict":"BYPASS_AND_READY"},
+    {"asset_type":"SKILL","action_code":"SKILL_UPDATE","operation_code":"ACTUALIZACION_SKILL_LF","canonical_required":4,"canonical_resolved":4,"canonical_status":"READY_TO_EXECUTE","invalid_modes_zero_required":5,"invalid_modes_ready":5,"verdict":"BYPASS_AND_READY"},
+    {"asset_type":"STRATEGY","action_code":"STRATEGY_CREATE","operation_code":"CREACION_ESTRATEGIA_LF","canonical_status":"BLOCKED","canonical_block":"BLOCK_ACTIVE_CONTRACT_MISSING","invalid_modes_zero_required":5,"invalid_modes_blocked":5,"verdict":"BLOCKED_BEFORE_POLICY_SURFACE"},
+    {"asset_type":"TRIGGER","action_code":"UPDATE","operation_code":"ACTUALIZACION_DB_LF","canonical_required":4,"canonical_resolved":4,"canonical_status":"READY_TO_EXECUTE","invalid_modes_zero_required":5,"invalid_modes_ready":5,"verdict":"BYPASS_AND_READY"}
+  ],
+  "target_authority_probe": {
+    "request_text_target": "ACT-0043",
+    "target_hint": "ACT-0036",
+    "asset_type": "SKILL",
+    "action_code": "SKILL_EXECUTION",
+    "distribution_mode": "ROUTER",
+    "observed_status": "READY_TO_EXECUTE",
+    "observed_operation_code": "EJECUCION_SKILL_LF",
+    "observed_asset_code": "ACT-0036",
+    "observed_asset_name": "SKILL_GOV_AUDITORIA_DOCUMENTARIA_LF",
+    "policy_ref_count": 4,
+    "verdict": "TARGET_HINT_OVERRIDE_CONFIRMED"
+  },
+  "closure": "BLOCK",
+  "safety": {
+    "router_function_volatility": "STABLE",
+    "ddl_executed": false,
+    "dml_executed": false,
+    "runtime_activation": false,
+    "production_activation": false,
+    "business_effects": false
+  }
+}
