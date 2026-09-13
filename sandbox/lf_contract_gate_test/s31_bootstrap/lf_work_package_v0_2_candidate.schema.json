@@ -40,7 +40,21 @@
           "revision":{"type":["string","null"]},
           "digest":{"type":["string","null"]},
           "authority_receipt_ref":{"type":["string","null"]}
-        }
+        },
+        "allOf": [
+          {
+            "if": {"properties":{"material":{"const":true},"binding_kind":{"enum":["GIT_COMMIT","GIT_BLOB"]}},"required":["material","binding_kind"]},
+            "then": {"properties":{"revision":{"type":"string","pattern":"^[0-9a-f]{40}$"}},"required":["revision"]}
+          },
+          {
+            "if": {"properties":{"material":{"const":true},"binding_kind":{"const":"SHA256"}},"required":["material","binding_kind"]},
+            "then": {"properties":{"digest":{"type":"string","pattern":"^[0-9a-f]{64}$"}},"required":["digest"]}
+          },
+          {
+            "if": {"properties":{"material":{"const":true},"binding_kind":{"const":"LIVE_AUTHORITY_RECEIPT"}},"required":["material","binding_kind"]},
+            "then": {"properties":{"authority_receipt_ref":{"type":"string","minLength":3}},"required":["authority_receipt_ref"]}
+          }
+        ]
       }
     },
     "causal_ownership": {
@@ -103,10 +117,23 @@
           "properties": {
             "required":{"type":"boolean"},
             "command_or_runner":{"type":["string","null"]},
-            "executed_sha":{"type":["string","null"]},
+            "executed_sha":{"anyOf":[{"type":"null"},{"type":"string","pattern":"^[0-9a-f]{40}$"}]},
             "exit_status":{"type":["integer","null"]},
             "receipt_ref":{"type":["string","null"]}
-          }
+          },
+          "allOf": [
+            {
+              "if": {"properties":{"required":{"const":true}},"required":["required"]},
+              "then": {
+                "properties": {
+                  "command_or_runner":{"type":"string","minLength":1},
+                  "executed_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+                  "exit_status":{"type":"integer"},
+                  "receipt_ref":{"type":"string","minLength":1}
+                }
+              }
+            }
+          ]
         }
       }
     },
