@@ -1,0 +1,33 @@
+{
+  "claim_ceiling": "INTAKE_ONLY_NO_REVIEW_EXECUTED_NOT_W3_COMPLETE_NOT_GOLDEN",
+  "evidence_commit": "5d6145be846f0c10faa2f4c887f4555be5cce787",
+  "execution_mode": "INDEPENDENT_CHAT_CONTEXT",
+  "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "next_phase": "SEAL_RECEIPTS_THEN_RECONCILE_W3",
+  "post_review_validation": [
+    "github://cristhianlujan/claude-persona-lf-patch@5d6145be846f0c10faa2f4c887f4555be5cce787/profiles/quality_pack/validators/validate_independent_semantic_review.py",
+    "github://cristhianlujan/claude-persona-lf-patch@5d6145be846f0c10faa2f4c887f4555be5cce787/sandbox/lf_contract_gate_test/profile_execution_runtime/s26_independent_bundle_preflight.py"
+  ],
+  "producer_context_must_be_unavailable": true,
+  "review_count_required": 2,
+  "reviews": [
+    {
+      "artifact_canonical_sha256": "12a23ad9503b7e58fd29f1ec12ee7b79f2761b1db5bc30699074242d88634562",
+      "bundle_ref": "github://cristhianlujan/claude-persona-lf-patch@5d6145be846f0c10faa2f4c887f4555be5cce787/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_golden_currentmain_20260913/w3_producer/review_bundle_S26V3-F08-O5-INDEPENDENT-HOLDOUT",
+      "handoff_path": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_golden_currentmain_20260913/independent_review_handoff_S26V3-F08-O5-INDEPENDENT-HOLDOUT.md",
+      "matrix_case_id": "S26V3-F08-O5-INDEPENDENT-HOLDOUT",
+      "receipt_status": "PENDING",
+      "review_case_id": "S26V3-F08-O5-INDEPENDENT-HOLDOUT-CURRENTMAIN-3B39657F"
+    },
+    {
+      "artifact_canonical_sha256": "4ded363a85f7edc890c62e3373aba1353d3d9012cebbe83dd3c94c4e9d5b39a5",
+      "bundle_ref": "github://cristhianlujan/claude-persona-lf-patch@5d6145be846f0c10faa2f4c887f4555be5cce787/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_golden_currentmain_20260913/w3_producer/review_bundle_S26V3-F10-O5-REAL-E2E-HOLDOUT",
+      "handoff_path": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_golden_currentmain_20260913/independent_review_handoff_S26V3-F10-O5-REAL-E2E-HOLDOUT.md",
+      "matrix_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT",
+      "receipt_status": "PENDING",
+      "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-3B39657F"
+    }
+  ],
+  "schema": "S26_W3_INDEPENDENT_REVIEW_INTAKE_V1",
+  "strategy": "S26"
+}
