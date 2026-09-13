@@ -1,5 +1,5 @@
 {
-  "checkpoint_version": "S31_VALIDATION_FRONTIER_V0_5",
+  "checkpoint_version": "S31_VALIDATION_FRONTIER_V0_6",
   "strategy": "S31",
   "base_main_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
   "candidate_head": "191b53fca993bf28aefccf5e1e67007ad9a35dfa",
@@ -20,33 +20,50 @@
     "S31-EKB": "PASS_14_OF_14"
   },
   "ci_status": {
-    "candidate_head": "191b53fca993bf28aefccf5e1e67007ad9a35dfa",
-    "state": "PENDING_EXACT_HEAD_CI_AFTER_FREEZE",
+    "state": "PENDING_EXACT_HEAD_CI_AFTER_FINAL_FRONTIER_COMMIT",
     "prior_head_f255e6f3": "3_OF_3_GREEN"
   },
   "remaining_safe_material_work_without_new_external_evidence": [
-    "FREEZE_S31_B_IR003",
-    "FREEZE_S31_DG_IR003",
     "EXACT_HEAD_CI",
     "FINAL_EKB_READBACK"
   ],
   "next_gates": [
+    "EXACT_HEAD_CI",
+    "FINAL_EKB_READBACK",
     "S31_B_IR003_INDEPENDENT_CHAT_CONTEXT",
     "S31_DG_IR003_INDEPENDENT_CHAT_CONTEXT"
   ],
   "close_guard": {
     "strategy_closed": false,
-    "producer_safe_material_work_count": 4,
-    "next_safe_batch": "FREEZE_S31_B_IR003",
+    "producer_safe_material_work_count": 2,
+    "next_safe_batch": "EXACT_HEAD_CI",
     "global_remaining_work_scan": "PASS",
     "ekb_final_readback_verified": false,
     "currentness_verified": true,
-    "reason": "IR-002 blockers repaired deterministically; affected scopes require new independent semantic review."
+    "reason": "IR-002 causal repairs and scope-specific IR-003 freezes are complete. Producer still owes exact-head CI and final EKB readback; semantic closure then requires B IR-003 and DG IR-003 independent receipts."
   },
   "blocked_or_deferred": {
     "runtime_cutover": "NOT_AUTHORIZED",
     "golden": "NOT_AUTHORIZED",
     "merge_main": "NOT_AUTHORIZED",
     "production": "NOT_AUTHORIZED"
+  },
+  "checkpoint_parent_head": "f6e1d214b1ba0e90fae79184d9e693d71979e237",
+  "candidate_code_snapshot": "191b53fca993bf28aefccf5e1e67007ad9a35dfa",
+  "review_freezes": {
+    "S31-B": {
+      "review_case_id": "S31-B-IR-003",
+      "bundle_ref": "github://cristhianlujan/claude-persona-lf-patch@154cbffc4f91a4cf65a8ff54cd51e26d3e84d90a/sandbox/lf_contract_gate_test/s31_bootstrap/s31_b_independent_review_bundle_v0_1.json",
+      "bundle_blob_sha": "0fc29bc85469917bc13f3cbd25b7edbd201307a1",
+      "handoff_path": "sandbox/lf_contract_gate_test/s31_bootstrap/S31_B_INDEPENDENT_REVIEW_HANDOFF_V0_1.md",
+      "status": "FROZEN_REVIEW_READY"
+    },
+    "S31-DG": {
+      "review_case_id": "S31-DG-IR-003",
+      "bundle_ref": "github://cristhianlujan/claude-persona-lf-patch@154cbffc4f91a4cf65a8ff54cd51e26d3e84d90a/sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_independent_review_bundle_v0_5.json",
+      "bundle_blob_sha": "592e4c2821d5fc7e6c88c2ffd265ec9ea758cb70",
+      "handoff_path": "sandbox/lf_contract_gate_test/s31_bootstrap/S31_DG_INDEPENDENT_REVIEW_HANDOFF_V0_3.md",
+      "status": "FROZEN_REVIEW_READY"
+    }
   }
 }
