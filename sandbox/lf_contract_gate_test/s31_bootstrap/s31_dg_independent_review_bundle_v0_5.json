@@ -1,0 +1,251 @@
+{
+  "bundle_version": "S31_DG_INDEPENDENT_REVIEW_BUNDLE_V0_5",
+  "review_case_id": "S31-DG-IR-003",
+  "execution_mode": "INDEPENDENT_CHAT_CONTEXT",
+  "candidate_snapshot": {
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "main_base_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+    "s31_candidate_head": "191b53fca993bf28aefccf5e1e67007ad9a35dfa",
+    "exact_head_not_merge_ref": true
+  },
+  "review_scope": [
+    "S31-D",
+    "S31-E",
+    "S31-F",
+    "S31-G"
+  ],
+  "prior_review": {
+    "review_case_id": "S31-DG-IR-002",
+    "intake_ref": "github://cristhianlujan/claude-persona-lf-patch@f8a4286548ab2256d5acbefab0b28e1d40ac28d6/sandbox/lf_contract_gate_test/s31_bootstrap/s31_ir002_independent_review_intake_v0_1.json",
+    "intake_blob_sha": "01b53cd6214d6c218fb46964c110f400bd45b3e3",
+    "verdict": "BLOCK_PIPELINE",
+    "blocking_codes": [
+      "SELF_RESOLVED_EVIDENCE",
+      "UNRESOLVED_CURRENTNESS",
+      "EVIDENCE_INFLATION",
+      "AUTHORITY_LEAK"
+    ]
+  },
+  "repair_evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@f8a4286548ab2256d5acbefab0b28e1d40ac28d6/sandbox/lf_contract_gate_test/s31_bootstrap/s31_ir002_repair_receipt_v0_1.json",
+  "repair_evidence_blob_sha": "4dad6c6843af1b7501d580fc51120ddf4129459e",
+  "frozen_artifacts": [
+    {
+      "lane": "S31-D",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_shared_authority_typed_context_v0_2_candidate.schema.json",
+      "blob_sha": "46e2c50fc4860a59f1cfd7471f475bcf24f61609",
+      "role": "candidate"
+    },
+    {
+      "lane": "S31-E",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_capability_manifest_v0_3_candidate.schema.json",
+      "blob_sha": "ad1dd40b7fd96709d9d4e4a494cd47027cefb229",
+      "role": "candidate"
+    },
+    {
+      "lane": "S31-F",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_common_evidence_envelope_v0_3_candidate.schema.json",
+      "blob_sha": "5fe6716d8086d68133da09baad6bd062dc296b8d",
+      "role": "candidate"
+    },
+    {
+      "lane": "S31-G",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_runtime_execution_port_v0_1_candidate.schema.json",
+      "blob_sha": "edcd97e6573129b1025a105aecd1ce1e7afa2e3a",
+      "role": "request_candidate"
+    },
+    {
+      "lane": "S31-G",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_runtime_execution_output_v0_1_candidate.schema.json",
+      "blob_sha": "550d2aa8facb0fa5e54b6dab88bfb4867bea86d9",
+      "role": "output_candidate"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/validate_s31_dg_contracts_v0_2.py",
+      "blob_sha": "d8b484354f4d4333aa0d6e7d878d98d3a35db3f2",
+      "role": "validator"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/test_s31_dg_contracts_v0_2.py",
+      "blob_sha": "b7208a69e92367c638fecd29bd16fcb22cce8b96",
+      "role": "deterministic_test"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/s31_trusted_resolution_v0_1.py",
+      "blob_sha": "d593df21be41d624b30f0a274b692412cb3b0d50",
+      "role": "trusted_resolution_binding"
+    },
+    {
+      "lane": "QUALITY_PACK",
+      "path": "profiles/quality_pack/validators/trusted_ref_resolver.py",
+      "blob_sha": "cf33a83fc8ab27bfece7d813ca42bbdb98fc39b7",
+      "role": "canonical_trusted_resolver"
+    },
+    {
+      "lane": "S31-D",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/s31_d_authority_typed_context_extraction_map_v0_1.json",
+      "blob_sha": "9d73eb4f98198abee40ef5bb5a1e0837cd3aa1b4",
+      "role": "source_mapping"
+    },
+    {
+      "lane": "S31-E",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/s31_e_capability_registry_gap_inventory_v0_2.json",
+      "blob_sha": "fc67055c9084aaaf6080af867aba09fef8cf9b83",
+      "role": "source_mapping"
+    },
+    {
+      "lane": "S31-F",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/s31_f_evidence_receipt_lifecycle_map_v0_1.json",
+      "blob_sha": "7fda5054ad8f3e1111fe607be9d13b063a38fbfd",
+      "role": "source_mapping"
+    },
+    {
+      "lane": "S31-G",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/s31_g_runtime_port_map_v0_1.json",
+      "blob_sha": "926ccdfb2ac00bc050c620ecd50ca5c57ae57ebc",
+      "role": "source_mapping"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/d_currentness_receipt.json",
+      "blob_sha": "92d1babe6e28878673e46e423ea848c5204de29c",
+      "role": "trusted_provider_fixture"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/e_currentness_receipt.json",
+      "blob_sha": "7bbb3a1de468c1f59e2d25fdc08d40f02a164d59",
+      "role": "trusted_provider_fixture"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_authority_receipt.json",
+      "blob_sha": "4b164ef01d453a92fffc180533220da54091da2b",
+      "role": "trusted_provider_fixture"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_execution_receipt.json",
+      "blob_sha": "dd2699d845d14a68e2f74a630e7796d811ca32bf",
+      "role": "trusted_provider_fixture"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_owner_receipt.json",
+      "blob_sha": "c5e757f4ab890ada4c95153ece6b069166956966",
+      "role": "trusted_provider_fixture"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_provenance_receipt.json",
+      "blob_sha": "713ebb7fa344ad5a62afb77e0228a6b1eded8ec0",
+      "role": "trusted_provider_fixture"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/source_authority.txt",
+      "blob_sha": "8b1672d7b00d9a8b2da0461d41bfa300551e592b",
+      "role": "trusted_provider_fixture"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/source_registry.py",
+      "blob_sha": "282ab464fba14130003222c8f1ea6dab6cd90eb6",
+      "role": "trusted_provider_fixture"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/source_runtime_schema.json",
+      "blob_sha": "17fe39eb909936f84320b213f8b5330226610e9b",
+      "role": "trusted_provider_fixture"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/provenance_source.txt",
+      "blob_sha": "3bba324c1a6c377c6f864ab08679d05c6b915645",
+      "role": "trusted_provider_fixture"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/typed_context.json",
+      "blob_sha": "7dd431a9a5c79420aeee3f126d1421c97b6bf3f2",
+      "role": "trusted_provider_fixture"
+    }
+  ],
+  "producer_evidence": {
+    "DG": "5 schemas valid; 8 positive PASS; 36 negative fail-closed PASS",
+    "full_s31_regression": "all s31_bootstrap test_*.py exit 0",
+    "claim_ceiling": "DETERMINISTIC_REPAIR_EVIDENCE_ONLY"
+  },
+  "upstream_worker_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@191b53fca993bf28aefccf5e1e67007ad9a35dfa/sandbox/lf_contract_gate_test/s31_bootstrap/LF_WORK_PACKAGE_BOOTSTRAP_V0_1.md",
+  "quality_pack": {
+    "independent_review_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md",
+    "quality_gate_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/quality_gate_contract.md",
+    "lf_quality_controls_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/lf_quality_controls.md",
+    "score_rubric_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/judges/quality_pack_score_rubric.md",
+    "mini_judge_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/judges/quality_pack_mini_judge.md",
+    "quality_review_schema_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/schemas/quality_review.schema.json",
+    "independent_receipt_schema_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json",
+    "independent_receipt_validator_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/validators/validate_independent_semantic_review.py"
+  },
+  "acceptance_criteria": {
+    "S31-D": [
+      "authority and runtime-schema source bytes are resolved/rehashed by canonical trusted resolver",
+      "caller resolver alias cannot certify currentness",
+      "cross-run declaration remains mandatory"
+    ],
+    "S31-E": [
+      "every capability source ref is provider-resolved and its digest recomputed",
+      "registry currentness cannot be self-certified",
+      "lifecycle contract remains repaired"
+    ],
+    "S31-F": [
+      "owner receipt is independently resolved even at STRUCTURAL",
+      "input/output exact digests are recomputed",
+      "authority/provenance source bytes are resolved",
+      "nonstructural receipts all bind same run/capability/execution/input/output/authority/provenance identity and replay fails"
+    ],
+    "S31-G": [
+      "Typed Context exact artifact is resolved and rehashed before runtime",
+      "resolved Typed Context is schema-valid/current and binds request_id/governed_input",
+      "nested authority and silent fallback remain blocked"
+    ]
+  },
+  "mandatory_adversarial_rechecks": [
+    "ARBITRARY_RESOLVER_CALLBACK_OR_ALIAS",
+    "SOURCE_REF_PROVIDER_BYTE_MISMATCH",
+    "STALE_OR_HISTORICAL_CHANGED_SOURCE",
+    "F_RECEIPT_CROSS_RUN_REPLAY",
+    "F_VALID_RECEIPTS_FROM_DIFFERENT_EXECUTION_OR_PAYLOAD",
+    "F_STRUCTURAL_OWNER_RECEIPT_UNRESOLVED",
+    "G_FAKE_TYPED_CONTEXT_REF",
+    "G_TYPED_CONTEXT_DIGEST_MISMATCH",
+    "G_TYPED_CONTEXT_REQUEST_OR_INPUT_MISMATCH",
+    "G_NESTED_AUTHORITY_EFFECT",
+    "G_SILENT_FALLBACK"
+  ],
+  "blocking_criteria": [
+    "self-resolved evidence",
+    "unresolved currentness",
+    "evidence replay/composition",
+    "authority leak",
+    "typed-context unbound runtime",
+    "weak or wrong digest acceptance",
+    "owner receipt not independently resolved",
+    "silent fallback",
+    "nested authority",
+    "cross-lane mutation"
+  ],
+  "governance_constraints": [
+    "reviewer_is_producer=false",
+    "producer_context_available=false",
+    "no repair during review",
+    "producer deterministic PASS is not semantic proof",
+    "no runtime/Golden/merge/production authorization",
+    "semantic review only exact frozen bundle"
+  ],
+  "producer_semantic_verdict": null,
+  "claim_ceiling": "FROZEN_REVIEW_BUNDLE_ONLY"
+}
