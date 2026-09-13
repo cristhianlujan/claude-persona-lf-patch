@@ -33,10 +33,27 @@ required_findings = {
     "DIRECT_OPERATION_RESERVATION_ROUTER_PROVENANCE_NOT_REQUIRED",
     "EJECUCION_SKILL_LF:INVALID_DISTRIBUTION_MODE_POLICY_BYPASS:BYPASS_AND_READY",
     "ACTUALIZACION_PERFIL_LF:INVALID_DISTRIBUTION_MODE_POLICY_BYPASS:POLICY_FILTER_BYPASS_BUT_OTHER_GATE_BLOCKS",
-    "ORQUESTACION_PIPELINE_LF:INTERNAL_ENTRY_PROVENANCE_NOT_PROVEN:PENDING",
+    "ORQUESTACION_PIPELINE_LF:INTERNAL_ENTRY_PROVENANCE_NOT_PROVEN:HISTORICAL_CHAIN_ONLY",
+    "DS_BUILD_PROTOCOL_LF:INTERNAL_ENTRY_PROVENANCE_NOT_PROVEN:CONTRACT_REQUIRES_ROUTER_READ_BUT_ENTRY_NOT_BOUND",
+    "ESCRITURA_BASE_CONOCIMIENTO_LF:INTERNAL_ENTRY_PROVENANCE_NOT_PROVEN:NO_EXECUTION_EVIDENCE",
 }
 missing = required_findings.difference(result["findings"])
 assert not missing, f"missing expected matrix findings: {sorted(missing)}"
+
+# Direct reservation is not policy-free: existing insert triggers attach/currentness-check
+# the policy snapshot and require a registered operation. The remaining defect is Router
+# provenance/authority, which must stay visible and must not be mislabeled as policy bypass.
+assert result["direct_reservation_guards"] == {
+    "router_provenance_required": False,
+    "policy_snapshot_on_insert": True,
+    "required_policy_resolution_guard": True,
+    "policy_snapshot_immutable_and_currentness_guard": True,
+    "registered_operation_required": True,
+}
+assert "DIRECT_OPERATION_RESERVATION_POLICY_SNAPSHOT_NOT_ENFORCED" not in result["findings"]
+assert "DIRECT_OPERATION_RESERVATION_REQUIRED_POLICY_GUARD_NOT_ENFORCED" not in result["findings"]
+assert "DIRECT_OPERATION_RESERVATION_POLICY_CURRENTNESS_GUARD_NOT_ENFORCED" not in result["findings"]
+assert "DIRECT_OPERATION_RESERVATION_REGISTRY_GUARD_NOT_ENFORCED" not in result["findings"]
 
 assert M.classify_unrouted({
     "status": "APROBADO_PRODUCCION_CONTROLADA",
