@@ -1,0 +1,182 @@
+{
+  "receipt_version": "S30_STRATEGY_ORCHESTRATOR_R20_PREWRITE_V1",
+  "receipt_mode": "PREWRITE",
+  "lane": "S30-D",
+  "owner": "S30-D-STRATEGY-ORCHESTRATOR-R20",
+  "base_main_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "intended_material_action": "S30_STRATEGY_ORCHESTRATOR_SOURCE_AND_NONPRODUCTION_CLOSEOUT_CANDIDATE",
+  "owner_authorized_merge": true,
+  "owner_authorized_repair": false,
+  "repair_reason": null,
+  "repair_target_ekb_codes": [],
+  "applicable_ekb": [
+    {"code": "DB-001", "triggers": ["RECURRENT", "MACHINE_DETECTABLE", "AVOIDABLE_MATERIAL_WORK"]},
+    {"code": "GOV-010", "triggers": ["RECURRENT", "AVOIDABLE_MATERIAL_WORK"]},
+    {"code": "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001", "triggers": ["MACHINE_DETECTABLE", "AVOIDABLE_MATERIAL_WORK"]},
+    {"code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001", "triggers": ["RECURRENT", "MACHINE_DETECTABLE", "AVOIDABLE_MATERIAL_WORK"]}
+  ],
+  "hard_guard_candidates": [
+    {"ekb_code": "DB-001", "closure": {
+      "EKB_UPDATED": {"status": "PASS", "evidence": "fresh current-main guard readback"},
+      "DETECTOR_IMPLEMENTED": {"status": "PASS", "evidence": "fresh current-main guard readback"},
+      "NEGATIVE_REGRESSION": {"status": "PASS", "evidence": "fresh current-main guard readback"},
+      "POSITIVE_REGRESSION": {"status": "PASS", "evidence": "fresh current-main guard readback"},
+      "EXECUTED_PATH_WIRING_PROVEN": {"status": "PASS", "evidence": "fresh current-main guard readback"},
+      "READBACK": {"status": "PASS", "evidence": "fresh current-main guard readback"}
+    }},
+    {"ekb_code": "GOV-010", "closure": {
+      "EKB_UPDATED": {"status": "PASS", "evidence": "fresh current-main guard readback"},
+      "DETECTOR_IMPLEMENTED": {"status": "PASS", "evidence": "fresh current-main guard readback"},
+      "NEGATIVE_REGRESSION": {"status": "PASS", "evidence": "fresh current-main guard readback"},
+      "POSITIVE_REGRESSION": {"status": "PASS", "evidence": "fresh current-main guard readback"},
+      "EXECUTED_PATH_WIRING_PROVEN": {"status": "PASS", "evidence": "fresh current-main guard readback"},
+      "READBACK": {"status": "PASS", "evidence": "fresh current-main guard readback"}
+    }},
+    {"ekb_code": "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001", "closure": {
+      "EKB_UPDATED": {"status": "PASS", "evidence": "fresh current-main guard readback"},
+      "DETECTOR_IMPLEMENTED": {"status": "PASS", "evidence": "fresh current-main guard readback"},
+      "NEGATIVE_REGRESSION": {"status": "PASS", "evidence": "fresh current-main guard readback"},
+      "POSITIVE_REGRESSION": {"status": "PASS", "evidence": "fresh current-main guard readback"},
+      "EXECUTED_PATH_WIRING_PROVEN": {"status": "PASS", "evidence": "fresh current-main guard readback"},
+      "READBACK": {"status": "PASS", "evidence": "fresh current-main guard readback"}
+    }},
+    {"ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001", "closure": {
+      "EKB_UPDATED": {"status": "PASS", "evidence": "fresh current-main guard readback"},
+      "DETECTOR_IMPLEMENTED": {"status": "PASS", "evidence": "fresh current-main guard readback"},
+      "NEGATIVE_REGRESSION": {"status": "PASS", "evidence": "fresh current-main guard readback"},
+      "POSITIVE_REGRESSION": {"status": "PASS", "evidence": "fresh current-main guard readback"},
+      "EXECUTED_PATH_WIRING_PROVEN": {"status": "PASS", "evidence": "fresh current-main guard readback"},
+      "READBACK": {"status": "PASS", "evidence": "fresh current-main guard readback"}
+    }}
+  ],
+  "causal_lane_ownership": {
+    "ekb_code": "GOV-010",
+    "target_asset": "S30-ORQUESTACION-ESTRATEGIAS-LF",
+    "primary_gate": "STRATEGY_ORCHESTRATOR_SOURCE_REGISTRATION_AND_C08",
+    "owner": "S30-D-STRATEGY-ORCHESTRATOR-R20",
+    "role": "WRITER",
+    "observed_active_writers": [{
+      "ekb_code": "GOV-010",
+      "target_asset": "S30-ORQUESTACION-ESTRATEGIAS-LF",
+      "primary_gate": "STRATEGY_ORCHESTRATOR_SOURCE_REGISTRATION_AND_C08",
+      "owner": "S30-D-STRATEGY-ORCHESTRATOR-R20",
+      "state": "ACTIVE",
+      "source_ref": "prewrite://S30-ORCHESTRATOR-R20-20260913"
+    }],
+    "transfer": {"is_transfer": false},
+    "evidence": "No existing ORQUESTACION_ESTRATEGIAS_LF registered or active writer found."
+  },
+  "frontier": {
+    "current_stage": "S30_R20_STRATEGY_ORCHESTRATOR_SOURCE",
+    "next_gate": "EXACT_HEAD_CI_THEN_GOVERNED_BROKER_PROMOTION_THEN_REGISTRATION_READBACK_AND_C08",
+    "blockers": [],
+    "safe_parallel_work": ["READ_ONLY_S30_CLOSEOUT_RECONCILIATION", "READ_ONLY_S31"]
+  },
+  "sequence_resolution": {
+    "ROUTER": {"status": "PROVEN", "evidence": "Bounded S30-D continuation; no runtime activation."},
+    "EKB_APPLICABLE": {"status": "PROVEN", "loaded_codes": ["DB-001", "GOV-010", "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001", "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001"], "evidence": "Fresh EKB read before write."},
+    "DATA_ACCESS_BINDINGS": {"status": "PROVEN", "mode": "TYPED_READER", "evidence": "Reuse S30-B typed/schema-first access."},
+    "SCHEMA_CONTRACT": {"status": "PROVEN", "evidence": "Fresh information_schema and constraints read before source write.", "schema_bindings": [
+      {"object_identity": "public.lf_operation_registry", "object_type": "TABLE", "resolved_fields": ["operation_code", "version", "status", "source_model", "source_repo", "source_paths", "operation_family", "operation_domain", "operation_type", "applies_to_asset_type", "created_by_execution_id"]},
+      {"object_identity": "public.lf_operation_steps", "object_type": "TABLE", "resolved_fields": ["operation_code", "step_order", "step_id", "required", "evidence_required", "source_path", "active", "execution_order", "created_by_execution_id"]},
+      {"object_identity": "public.lf_operation_step_contracts", "object_type": "TABLE", "resolved_fields": ["operation_code", "step_id", "step_order", "execution_order", "contract_code", "purpose", "input_required", "resolver_ref", "output_payload", "pass_condition", "block_condition", "blocking_code", "mini_judge_code", "required_evidence_keys", "status", "execution_sql", "created_by_execution_id"]},
+      {"object_identity": "public.lf_operation_policy_bindings", "object_type": "TABLE", "resolved_fields": ["operation_code", "policy_code", "policy_role", "required", "distribution_modes", "binding_status", "created_by_execution_id"]}
+    ]},
+    "OPERATION_CONTRACTS": {"status": "PROVEN", "evidence": "Existing orchestrator draft plus C05 and executor readiness bound; pipeline identity reuse forbidden."},
+    "ALL_INTENDED_STEPS": {"status": "PROVEN", "evidence": "Materialize bootstrap, registration manifest, canary blueprint, validator, tests and receipt only."},
+    "JUDGES_AND_RESULT_VOCABULARY": {"status": "PROVEN", "evidence": "Deterministic PASS/BLOCKED and 12 explicit cases."},
+    "DEPENDENCIES_AND_IMPORT_CLOSURE": {"status": "PROVEN", "evidence": "Python stdlib only."},
+    "CI_PATHS_AND_RUNNER_WIRING": {"status": "PROVEN", "evidence": "Generic S30 test discovery on Validate LF Packs."},
+    "PERMISSIONS_SECRETS_AND_READBACK": {"status": "PROVEN", "evidence": "Ruleset 22765627 fresh readback active; DeployKey-only bypass."},
+    "EVIDENCE_PROVIDER_AND_RESOLVER": {"status": "PROVEN", "evidence": "Git main, S30 closeouts, C05, executor readiness, ruleset and Supabase schema readbacks resolvable."},
+    "EXPECTED_OUTPUT_CONTRACT": {"status": "PROVEN", "evidence": "Source-only candidate, 12/12 deterministic canary, zero business effects/scheduler activation."}
+  },
+  "preflight_checks": {
+    "IMPORT_CLOSURE": {"status": "PASS", "evidence": "stdlib-only validator/test"},
+    "REQUIRED_FILES_EXIST": {"status": "PASS", "evidence": "draft, executor Golden/readiness, C05 and S30 closeouts present"},
+    "SCHEMA_AND_CONSTRAINTS_RESOLVED": {"status": "PASS", "resolved": ["RELATION_COLUMNS", "CONSTRAINTS", "DEPENDENT_SQL_FUNCTION_SIGNATURES"], "bindings": [
+      {"object_identity": "public.lf_operation_registry", "object_type": "TABLE", "resolved_fields": ["operation_code", "version", "status", "source_model", "source_repo", "source_paths", "operation_family", "operation_domain", "operation_type", "applies_to_asset_type", "created_by_execution_id"]},
+      {"object_identity": "public.lf_operation_step_contracts", "object_type": "TABLE", "resolved_fields": ["operation_code", "step_id", "step_order", "execution_order", "contract_code", "purpose", "input_required", "resolver_ref", "output_payload", "pass_condition", "block_condition", "blocking_code", "mini_judge_code", "required_evidence_keys", "status", "execution_sql", "created_by_execution_id"]}
+    ], "evidence": "Fresh schema/constraints resolved; source-only candidate invokes no dependent SQL function, so signature subproof is N/A-with-reason until registration."},
+    "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED": {"status": "PASS", "evidence": "GitHub and Supabase connector schemas resolved."},
+    "PERMISSIONS_AND_SECRET_READBACK": {"status": "PASS", "evidence": "Fresh ruleset active; direct user cannot bypass; broker required."},
+    "EVIDENCE_PROVIDER_RESOLVABLE": {"status": "PASS", "evidence": "Current refs and readbacks resolvable."},
+    "CI_RUNNER_WIRING_CONFIRMED": {"status": "PASS", "evidence": "Generic S30 test discovery covers new test file."},
+    "EXPECTED_OUTPUT_SCHEMA_COMPLETE": {"status": "PASS", "evidence": "Explicit source/canary contracts and safety ceiling."},
+    "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED": {"status": "PASS", "evidence": "Pipeline reuse, parent write, stale/missing child, duplicate target, bad receipt, premature close and scheduler authority fail closed."},
+    "GIT_WRITE_BROKER_BINDING_CONFIRMED": {"status": "PASS", "evidence": "Protected lf/s30-* target requires broker-only promotion."}
+  },
+  "safety_readback": {
+    "main_merged": false,
+    "production_changed": false,
+    "runtime_changed": false,
+    "scheduler_changed": false,
+    "s26_mutated": false,
+    "s31_mutated": false,
+    "business_effects": false
+  },
+  "evidence": {
+    "execution_id": "EXEC-S30-ORCHESTRATOR-R20-PREWRITE-20260913-001",
+    "base_main_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+    "mode": "SANDBOX_NON_PRODUCTION",
+    "production": false,
+    "executor_registry": "EJECUCION_ESTRATEGIA_LF=CANDIDATO_READ_ONLY",
+    "orchestrator_registry": "ORQUESTACION_ESTRATEGIAS_LF=ABSENT",
+    "pipeline_registry": "ORQUESTACION_PIPELINE_LF=APROBADO_PRODUCCION_CONTROLADA_BUT_IDENTITY_REUSE_FORBIDDEN",
+    "c05": "LIVE_9_OF_9_PASS_HARD_TARGETS_ZERO",
+    "executor_readiness": "PRE_PRODUCTION_READINESS_VALIDATED",
+    "owner_authorization": "AUTHORIZED_NON_PRODUCTION_CLOSEOUT_CURRENT_CONVERSATION"
+  },
+  "gate_evidence_envelope": {
+    "run_id": "EXEC-S30-ORCHESTRATOR-R20-PREWRITE-20260913-001",
+    "gate_id": "S30_STRATEGY_ORCHESTRATOR_R20_PREEXECUTION",
+    "input_exact": {
+      "base_main_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "receipt_path": "sandbox/lf_contract_gate_test/s30_d_final_r09/s30_strategy_orchestrator_prewrite_receipt_v1.json",
+      "request_schema": "s30-git-broker/v1",
+      "source_ref": "lf/staging-s30-r20-orchestrator-closeout-20260913",
+      "target_branch": "lf/s30-r20-orchestrator-closeout-20260913"
+    },
+    "input_sha256": "b709f52ffbe963156280e02b7b33b224208ee2281a3b90c23ae8833306d34bb5",
+    "input_source_ref": "owner-authorized-nonproduction-closeout+github:main@3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_d_final_r09/s30_strategy_orchestrator_prewrite_receipt_v1.json --expected-base-main-sha 3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+    "output_exact": {"bounded_repair_allowed": false, "material_work_allowed": true, "promotion_authority": "NONE", "result": "PASS_TO_MATERIAL_WORK"},
+    "output_sha256": "ec67088d3a1ecf4514180d148fb18aee30023fad41c8c7380bba0e7292b0f5d9",
+    "output_ref": "prewrite:S30-ORCHESTRATOR-R20",
+    "execution_mode": "SANDBOX",
+    "environment": "NON_PRODUCTION",
+    "promotion_authority": "NONE",
+    "functional": {"status": "PASS", "evidence": "Parent delegates only to strategy executor children; parent business writes forbidden."},
+    "quality": {"status": "PASS", "evidence": "Fail-closed adversarial cases cover critical boundaries."},
+    "depth": {"status": "PASS", "evidence": "C05, executor readiness, checkpoint/resume, readback and close guard bound."},
+    "performance": {"status": "PASS_BASELINE", "evidence": "Deterministic stdlib source validation; zero model/network calls."},
+    "ekb_action": {"status": "CONSUMED", "codes": ["DB-001", "GOV-010", "GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001", "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001"]},
+    "first_bad_hop": null,
+    "repair_allowed": false
+  },
+  "git_write_binding": {
+    "status": "OPERATIONAL",
+    "request_schema": "s30-git-broker/v1",
+    "ruleset_id": 22765627,
+    "ruleset_name": "s30-governed-write-boundary",
+    "ruleset_enforcement": "active",
+    "ruleset_ref_pattern": "refs/heads/lf/s30-*",
+    "bypass_actor_type": "DeployKey",
+    "deploy_key_id": 162872002,
+    "deploy_key_title": "s30-governed-git-broker",
+    "direct_user_can_bypass": false,
+    "direct_connector_negative": {"create_blocked": true, "update_blocked": true},
+    "broker_probe": {"status": "PASS", "commit_sha": "b01fd5b6d0d1d68b464a37337344157b867cb334", "evidence_ref": "github:historical-protected-broker-probe/b01fd5b6d0d1d68b464a37337344157b867cb334"},
+    "workflow_path": ".github/workflows/validate-lf-packs.yml",
+    "workflow_dispatch_wired": true,
+    "secret_name": "S30_BROKER_DEPLOY_KEY",
+    "secret_present": true,
+    "secret_required_before_dispatch": true,
+    "source_branch": "lf/staging-s30-r20-orchestrator-closeout-20260913",
+    "target_branch": "lf/s30-r20-orchestrator-closeout-20260913",
+    "base_main_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+    "promotion_authority": "BROKER_ONLY",
+    "ruleset_readback_ref": "github:ruleset/22765627@20260913",
+    "supabase_readback_ref": "supabase:public.lf_operation_registry+information_schema@20260913"
+  }
+}
