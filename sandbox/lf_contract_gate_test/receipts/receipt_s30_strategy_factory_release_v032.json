@@ -1,0 +1,40 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.3.2-release-source",
+  "issued_by": "contract_judge",
+  "operation_code": "CREACION_ESTRATEGIA_LF",
+  "execution_id": "EXEC-S30-STRATEGY-FACTORY-RELEASE-20260913-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "2c469e3cd2ae7bb7171ca4e52fc6da84b58af3a3",
+  "judge_sha": "5e83da80ff14bc4a7f72e737690fdbded90622bf",
+  "source_sha_list": [
+    "2c469e3cd2ae7bb7171ca4e52fc6da84b58af3a3",
+    "5e83da80ff14bc4a7f72e737690fdbded90622bf",
+    "d7d18985b0246703d73cbe51eb69bb9162ba034a",
+    "4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765",
+    "00e07b5298221a4088a1b3fdc4a6bf132832875d",
+    "cfc45e00a72530bfe98747958406537943475de6",
+    "56ab98e51133178378113ad5a1a9f2b8fa0abef7"
+  ],
+  "target_paths": [
+    "gobernanza/contratos/contrato_estrategia_lf.yaml",
+    "gobernanza/judges/judge_contrato_estrategia_lf.yaml",
+    "gobernanza/judges/validate_strategy_contract.py",
+    "gobernanza/judges/validate_strategy_contract_v032.py",
+    "gobernanza/procedimientos/creacion_estrategia_lf_steps_core.yaml",
+    "gobernanza/procedimientos/creacion_estrategia_lf_steps_validation.yaml",
+    "gobernanza/repositorios/matriz_repos_lf.yaml"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-13T04:18:00Z",
+  "scope": "Strategy Factory v0.3.2 source package and governed repository authorization only",
+  "safety_ceiling": {
+    "strategy_status": "CANDIDATO_READ_ONLY",
+    "runtime_state": "PLAN_ONLY",
+    "automatic_impact": "BLOQUEADO",
+    "automatic_production_promotion": false
+  },
+  "runtime_claimed": false,
+  "production_strategy_activation_claimed": false
+}
