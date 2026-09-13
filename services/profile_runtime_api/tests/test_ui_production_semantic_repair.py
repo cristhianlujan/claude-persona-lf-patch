@@ -107,14 +107,42 @@ class UIProductionSemanticRepairTest(unittest.TestCase):
             composer_payload=composer,
             strict_semantic_repair=True,
         )
-        evidence=outcome["score"]["evidence_by_criterion"]
+        score=outcome["score"]
+        evidence=score["evidence_by_criterion"]
         summaries=[evidence[k]["summary"] for k in evidence]
         self.assertEqual(len(set(summaries)), 5)
-        self.assertTrue(all(s.startswith("PASS:") for s in summaries))
-        self.assertIn("observed_depth_edges=3", evidence["visual_hierarchy"]["summary"])
-        self.assertIn("layout_flow_matches_hierarchy=True", evidence["layout_precision"]["summary"])
-        self.assertIn("source_bindings_match=True", evidence["handoff_quality"]["summary"])
-        self.assertTrue(all("sha256=" in s for s in summaries))
+        self.assertTrue(all(evidence[k]["result"] == "PASS" for k in evidence))
+        self.assertTrue(all(isinstance(evidence[k]["rule"], str) and evidence[k]["rule"] for k in evidence))
+        self.assertTrue(all(isinstance(evidence[k]["observed"], dict) and evidence[k]["observed"] for k in evidence))
+        self.assertEqual(score["total"], 25)
+        self.assertEqual([score[k] for k in ("layout_precision","visual_hierarchy","lf_system_fidelity","state_mapping","handoff_quality")], [5,5,5,5,5])
+        self.assertNotIn(4, [score[k] for k in ("layout_precision","visual_hierarchy","lf_system_fidelity","state_mapping","handoff_quality")])
+        self.assertEqual(evidence["visual_hierarchy"]["observed"]["observed_depth_edges"], 3)
+        self.assertTrue(evidence["layout_precision"]["observed"]["layout_flow_matches_hierarchy"])
+        self.assertTrue(evidence["handoff_quality"]["observed"]["source_bindings_matched"])
+        self.assertTrue(all("sha256" in summaries[i] for i in range(len(summaries))))
+
+
+    def test_invented_cta_route_fails_handoff_closed_with_localized_evidence(self):
+        broken=json.loads(json.dumps(self.deliverable))
+        for component in broken["component_tree"]:
+            if component["component_id"] == "service_cta":
+                component["content"]["destination"] = "/checkout"
+                break
+        composer=build_composer_payload(broken)
+        outcome=_deterministic_ui_outcome(
+            deliverable=broken,
+            acceptance=self.acceptance,
+            composer_payload=composer,
+            strict_semantic_repair=True,
+        )
+        score=outcome["score"]
+        evidence=score["evidence_by_criterion"]["handoff_quality"]
+        self.assertEqual(score["handoff_quality"], 0)
+        self.assertEqual(outcome["self_verdict"], "BLOCKED")
+        self.assertEqual(evidence["result"], "FAIL")
+        self.assertFalse(evidence["observed"]["source_bindings_matched"])
+        self.assertIn("source-binding mismatch=0 fail-closed", evidence["rule"])
 
     def test_layout_hierarchy_regression_fails_deterministic_acceptance(self):
         broken=json.loads(json.dumps(self.deliverable))
@@ -125,8 +153,9 @@ class UIProductionSemanticRepairTest(unittest.TestCase):
             composer_payload=build_composer_payload(broken),
             strict_semantic_repair=True,
         )
-        self.assertEqual(outcome["score"]["layout_precision"], 0)
-        self.assertTrue(outcome["score"]["evidence_by_criterion"]["layout_precision"]["summary"].startswith("FAIL:"))
+        self.assertEqual(outcome["score"]["layout_precision"], 3)
+        self.assertEqual(outcome["self_verdict"], "BLOCKED")
+        self.assertEqual(outcome["score"]["evidence_by_criterion"]["layout_precision"]["result"], "PARTIAL")
 
     def test_missing_search_result_state_fails_state_mapping(self):
         broken=json.loads(json.dumps(self.deliverable))
@@ -137,8 +166,9 @@ class UIProductionSemanticRepairTest(unittest.TestCase):
             composer_payload=build_composer_payload(broken),
             strict_semantic_repair=True,
         )
-        self.assertEqual(outcome["score"]["state_mapping"], 0)
-        self.assertTrue(outcome["score"]["evidence_by_criterion"]["state_mapping"]["summary"].startswith("FAIL:"))
+        self.assertEqual(outcome["score"]["state_mapping"], 3)
+        self.assertEqual(outcome["self_verdict"], "BLOCKED")
+        self.assertEqual(outcome["score"]["evidence_by_criterion"]["state_mapping"]["result"], "PARTIAL")
 
 
 if __name__ == "__main__":

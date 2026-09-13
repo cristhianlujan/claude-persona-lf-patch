@@ -115,7 +115,7 @@ class S26W2RepairTest(unittest.TestCase):
         final = json.loads(final_raw)
         self.assertEqual(receipt["semantic_transport"], "UICT5")
         self.assertIn("compact multi-column grid", final["deliverable_created"]["layout_grid"]["desktop"])
-        self.assertEqual(final["score"]["total"], 20)
+        self.assertEqual(final["score"]["total"], 25)
         self.assertEqual(final["self_verdict"], "PASS_TO_QUALITY_PACK_CANDIDATE")
 
     def test_layout_flow_hierarchy_contradiction_blocks_strict_uict5_acceptance(self) -> None:
@@ -137,6 +137,7 @@ class S26W2RepairTest(unittest.TestCase):
             strict_layout_coherence=True,
         )
         self.assertEqual(outcome["score"]["layout_precision"], 0)
+        self.assertEqual(outcome["self_verdict"], "BLOCKED")
         self.assertEqual(outcome["self_verdict"], "BLOCKED")
 
     def test_large_ui_literal_fails_before_model_or_health_call(self) -> None:
