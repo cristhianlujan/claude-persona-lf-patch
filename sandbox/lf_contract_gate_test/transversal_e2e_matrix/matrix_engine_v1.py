@@ -121,6 +121,22 @@ def unrouted_operation_findings(op: Dict[str, Any]) -> List[str]:
     return findings
 
 
+def reservation_findings(reserve_case: Dict[str, Any]) -> List[str]:
+    """Separate Router-authority provenance from policy/registry trigger protections."""
+    findings: List[str] = []
+    if reserve_case.get("router_provenance_required") is not True:
+        findings.append("DIRECT_OPERATION_RESERVATION_ROUTER_PROVENANCE_NOT_REQUIRED")
+    if reserve_case.get("policy_snapshot_on_insert") is not True:
+        findings.append("DIRECT_OPERATION_RESERVATION_POLICY_SNAPSHOT_NOT_ENFORCED")
+    if reserve_case.get("required_policy_resolution_guard") is not True:
+        findings.append("DIRECT_OPERATION_RESERVATION_REQUIRED_POLICY_GUARD_NOT_ENFORCED")
+    if reserve_case.get("policy_snapshot_immutable_and_currentness_guard") is not True:
+        findings.append("DIRECT_OPERATION_RESERVATION_POLICY_CURRENTNESS_GUARD_NOT_ENFORCED")
+    if reserve_case.get("registered_operation_required") is not True:
+        findings.append("DIRECT_OPERATION_RESERVATION_REGISTRY_GUARD_NOT_ENFORCED")
+    return findings
+
+
 def evaluate(snapshot: Dict[str, Any]) -> Dict[str, Any]:
     findings: List[str] = []
 
@@ -141,8 +157,7 @@ def evaluate(snapshot: Dict[str, Any]) -> Dict[str, Any]:
         findings.append("ROUTER_TARGET_AUTHORITY_NOT_PROVEN")
 
     reserve_case = snapshot.get("direct_reservation_case") or {}
-    if reserve_case.get("router_provenance_required") is not True:
-        findings.append("DIRECT_OPERATION_RESERVATION_ROUTER_PROVENANCE_NOT_REQUIRED")
+    findings.extend(reservation_findings(reserve_case))
 
     meta = snapshot.get("metadata") or {}
     expected_ops = int(meta.get("operation_count") or 0)
@@ -170,12 +185,21 @@ def evaluate(snapshot: Dict[str, Any]) -> Dict[str, Any]:
     if coverage["active_route_rows_expected"] != coverage["active_route_rows_accounted"]:
         findings.append("MATRIX_ACTIVE_ROUTE_UNIVERSE_INCOMPLETE")
 
+    unique_findings = sorted(set(findings))
+    reservation_guards = {
+        "router_provenance_required": reserve_case.get("router_provenance_required") is True,
+        "policy_snapshot_on_insert": reserve_case.get("policy_snapshot_on_insert") is True,
+        "required_policy_resolution_guard": reserve_case.get("required_policy_resolution_guard") is True,
+        "policy_snapshot_immutable_and_currentness_guard": reserve_case.get("policy_snapshot_immutable_and_currentness_guard") is True,
+        "registered_operation_required": reserve_case.get("registered_operation_required") is True,
+    }
     return {
         "matrix_version": "transversal-e2e-matrix/v1",
-        "status": PASS if not findings else BLOCK,
-        "finding_count": len(findings),
-        "findings": sorted(set(findings)),
+        "status": PASS if not unique_findings else BLOCK,
+        "finding_count": len(unique_findings),
+        "findings": unique_findings,
         "coverage": coverage,
+        "direct_reservation_guards": reservation_guards,
     }
 
 
