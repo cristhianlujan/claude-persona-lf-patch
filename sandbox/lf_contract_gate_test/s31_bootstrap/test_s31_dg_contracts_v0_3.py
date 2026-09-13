@@ -20,7 +20,9 @@ RESOLVER = m.TrustedRefResolver(ROOT)
 HEAD = RESOLVER.head
 TRUST = m.TRUSTED_RESOLVER_ID
 HISTORICAL = "191b53fca993bf28aefccf5e1e67007ad9a35dfa"
+ALT_HISTORICAL = "e75cab6e71c0f880f72726439e952de78ea4931f"
 EVIDENCE = "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence"
+EXPECTED_CROSS_BINDING = "355dfb8e4ded17d827fbbb1b4ed2dbe6db51d09277c6b0646cb48ab5be05f454"
 POS = 0
 NEG = 0
 
@@ -29,8 +31,8 @@ def ref(name: str, revision: str | None = None) -> str:
     return f"github://{RESOLVER.repo}@{revision or HEAD}/{EVIDENCE}/{name}"
 
 
-def obs(name: str):
-    return RESOLVER.resolve(ref(name))
+def obs(name: str, revision: str | None = None):
+    return RESOLVER.resolve(ref(name, revision))
 
 
 def binding(name: str) -> dict:
@@ -66,7 +68,7 @@ def f_base(level: str = "STRUCTURAL", ceiling: str = "STRUCTURAL") -> dict:
         "input": {
             "exact": inp,
             "digest": canonical(inp),
-            "source_refs": [ref("provenance_source.txt")],
+            "source_refs": [ref("provenance_source.txt", HISTORICAL)],
             "source_digests": [sha("provenance_source.txt")],
         },
         "validation_or_transformation": "DETERMINISTIC_VALIDATE",
@@ -84,14 +86,14 @@ def f_base(level: str = "STRUCTURAL", ceiling: str = "STRUCTURAL") -> dict:
         "environment": "SANDBOX",
         "authority": {
             "source": "LF_AUTHORITY",
-            "source_ref": ref("source_authority.txt"),
+            "source_ref": ref("source_authority.txt", HISTORICAL),
             "source_digest": sha("source_authority.txt"),
-            "source_revision": HEAD,
+            "source_revision": HISTORICAL,
             "currentness": "CURRENT" if executed else "UNKNOWN",
         },
         "provenance": {
             "reconstructible": executed,
-            "refs": [ref("provenance_source.txt")],
+            "refs": [ref("provenance_source.txt", HISTORICAL)],
             "digests": [sha("provenance_source.txt")],
         },
         "owner_receipt": {
@@ -99,7 +101,7 @@ def f_base(level: str = "STRUCTURAL", ceiling: str = "STRUCTURAL") -> dict:
             "owner_capability_id": "S31-F",
             "preserved_without_rewrite": True,
         },
-        "extensions": {"s31.f.v03": {"strict_execution_binding": True}},
+        "extensions": {"s31.f.v03": {"cross_binding": m.CROSS_BINDING_VERSION}},
         "evidence_level": level,
         "claim_ceiling": ceiling,
         "first_bad_hop": None,
@@ -139,12 +141,15 @@ def g_request(context_name: str) -> dict:
     }
 
 
-# F positive: all providers are bound to the exact execution revision.
+# F positive: immutable source revisions may differ from execution HEAD when
+# bytes remain current; replay protection comes from semantic cross-binding.
 f = f_base("SEMANTIC", "SEMANTIC")
-assert m.validate_evidence_envelope(f, RESOLVER)["status"] == m.PASS
+result = m.validate_evidence_envelope(f, RESOLVER)
+assert result["status"] == m.PASS, result
+assert result["cross_binding_sha256"] == EXPECTED_CROSS_BINDING, result
 POS += 1
 
-# IR-002 exploit: STRUCTURAL owner receipt resolved but not bound to envelope capability.
+# STRUCTURAL owner receipt must bind to the envelope capability.
 x = f_base()
 x["capability_or_gate_id"] = "OTHER"
 assert m.v2.validate_evidence_envelope(x, RESOLVER)["status"] == m.PASS
@@ -154,27 +159,39 @@ assert (
 )
 NEG += 1
 
-# IR-002 exploit: content-current historical receipts are not execution-bound.
-for key in ("authority_currentness_receipt", "provenance_receipt"):
+# Valid historical authority/provenance receipts can satisfy v0.2 field checks,
+# but cannot be composed into the new envelope without the shared binding.
+for key, name in (
+    ("authority_currentness_receipt", "f_authority_receipt.json"),
+    ("provenance_receipt", "f_provenance_receipt.json"),
+):
     x = f_base("SEMANTIC", "SEMANTIC")
-    x["resolved_evidence"][key]["ref"] = ref(
-        "f_authority_receipt.json"
-        if key == "authority_currentness_receipt"
-        else "f_provenance_receipt.json",
-        HISTORICAL,
-    )
+    historical = obs(name, HISTORICAL)
+    x["resolved_evidence"][key] = {
+        "ref": ref(name, HISTORICAL),
+        "sha256": historical["sha256"],
+        "resolver_id": TRUST,
+    }
     assert m.v2.validate_evidence_envelope(x, RESOLVER)["status"] == m.PASS
     result = m.validate_evidence_envelope(x, RESOLVER)
-    assert result["code"] == "BLOCK_F_PROVIDER_REVISION_NOT_EXECUTION_BOUND", result
+    assert result["code"] == "BLOCK_F_CROSS_BINDING_VERSION_MISMATCH", result
     NEG += 1
 
-# IR-002 exploit: provenance source can be historical with identical bytes.
-x = f_base("SEMANTIC", "SEMANTIC")
-x["provenance"]["refs"] = [ref("provenance_source.txt", HISTORICAL)]
-assert m.v2.validate_evidence_envelope(x, RESOLVER)["status"] == m.PASS
-result = m.validate_evidence_envelope(x, RESOLVER)
-assert result["code"] == "BLOCK_F_PROVIDER_REVISION_NOT_EXECUTION_BOUND", result
-NEG += 1
+# Same-content source substitution is current-by-content and passes v0.2, but
+# changes identity and therefore must fail the common semantic binding.
+for attack in ("input", "authority", "provenance"):
+    x = f_base("SEMANTIC", "SEMANTIC")
+    if attack == "input":
+        x["input"]["source_refs"] = [ref("provenance_source.txt", ALT_HISTORICAL)]
+    elif attack == "authority":
+        x["authority"]["source_ref"] = ref("source_authority.txt", ALT_HISTORICAL)
+        x["authority"]["source_revision"] = ALT_HISTORICAL
+    else:
+        x["provenance"]["refs"] = [ref("provenance_source.txt", ALT_HISTORICAL)]
+    assert m.v2.validate_evidence_envelope(x, RESOLVER)["status"] == m.PASS
+    result = m.validate_evidence_envelope(x, RESOLVER)
+    assert result["code"] == "BLOCK_F_CROSS_BINDING_DIGEST_MISMATCH", (attack, result)
+    NEG += 1
 
 # G positive: exact context plus governed internals all resolve.
 g = g_request("typed_context.json")
@@ -182,7 +199,7 @@ assert m.v2.validate_runtime_port_request(g, RESOLVER)["status"] == m.PASS
 assert m.validate_runtime_port_request(g, RESOLVER)["status"] == m.PASS
 POS += 1
 
-# IR-002 exploit: outer context hash can be correct while internal authority is invalid.
+# Outer context hash can be correct while internal authority is invalid.
 x = g_request("typed_context_invalid_authority.json")
 assert m.v2.validate_runtime_port_request(x, RESOLVER)["status"] == m.PASS
 result = m.validate_runtime_port_request(x, RESOLVER)
@@ -196,14 +213,15 @@ assert result["code"] == "BLOCK_UNTRUSTED_RESOLVER_TYPE", result
 NEG += 1
 
 assert POS == 2, POS
-assert NEG == 6, NEG
+assert NEG == 8, NEG
 print(
     json.dumps(
         {
             "contract": "S31_DG_IR002_HARDENING_V0_3",
             "positive_cases": POS,
             "negative_fail_closed_cases": NEG,
-            "base_v0_2_exploits_demonstrated_then_closed": 5,
+            "v0_2_composition_exploits_demonstrated_then_closed": 7,
+            "cross_binding_sha256": EXPECTED_CROSS_BINDING,
             "trusted_resolver": TRUST,
             "result": "PASS",
         },
