@@ -1,0 +1,161 @@
+{
+  "schema": "LF_CARD_AUTHORITY_RECONCILIATION_V0_1",
+  "status": "PASS_WITH_IMPLEMENTATION_BLOCKERS",
+  "observed_at": "2026-09-13T01:22:46.563521+00:00",
+  "base_main_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+  "work_package_ref": "WP-CARD-LIFECYCLE-CONVERGENCE-V0-1",
+  "decision": {
+    "authority_model": "SUPABASE_CONTROL_PLANE_WITH_NON_AUTHORITATIVE_CARRIERS",
+    "single_physical_ssot_required": false,
+    "operational_authority": "SUPABASE",
+    "operational_source": "public.v_lf_fuente_operativa",
+    "canonical_identity_source": "public.lf_activos.codigo_activo",
+    "canonical_alias_source": "public.lf_activos.nombre_canonico",
+    "state_and_permission_source": "public.v_lf_fuente_operativa + active transversal policies",
+    "lifecycle_operation_source": "public.lf_operation_registry + contracts + step contracts + policy snapshots",
+    "inventory_source": "public.lf_cards",
+    "inventory_disposition": "LINEAGE_OR_PROJECTION_ONLY_NOT_AUTHORITY",
+    "external_carrier_disposition": "PHYSICAL_OR_TECHNICAL_CARRIER_ONLY_NOT_OPERATIONAL_AUTHORITY",
+    "runtime_materialization_disposition": "CONSUMER_ENVELOPE_ONLY_NOT_AUTHORITY"
+  },
+  "current_source_policy": {
+    "policy_code": "POL-LF-SOURCE-RESOLUTION",
+    "policy_version": "v1.4-transversal-supabase-authority-visual-support",
+    "policy_sha": "5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46",
+    "rules_observed": [
+      "SUPABASE_IS_ONLY_OPERATIONAL_AUTHORITY",
+      "GOOGLE_DRIVE_IS_NON_AUTHORITATIVE_STORAGE",
+      "GOOGLE_DOCS_SHEETS_ARE_NOT_OPERATIONAL_SOURCES",
+      "EXTERNAL_STORAGE_URL_MUST_NOT_BE_HYDRATED_FOR_OPERATIONAL_AUTHORITY",
+      "TECHNICAL_REPOSITORY_CONTENT_REQUIRES_EXPLICIT_SUPABASE_BINDING"
+    ]
+  },
+  "active_card_readback": {
+    "codigo_activo": "CARD-CAND-DASHBOARD-CLIENTE-LECTOR-LF-001",
+    "nombre_canonico": "CARD_CANDIDATA_DASHBOARD_CLIENTE_LECTOR_LF_001",
+    "formato_nativo": "GOOGLE_DOC_BLOCK",
+    "estado_documental": "VIGENTE",
+    "estado_operativo": "READ_ONLY",
+    "runtime_estado": "PRODUCCION_CONTROLADA_READ_ONLY",
+    "operational_url": "supabase://public/lf_activos/CARD-CAND-DASHBOARD-CLIENTE-LECTOR-LF-001",
+    "external_storage_authority": false,
+    "google_drive_role": "STORAGE_ONLY",
+    "google_drive_operational_read_allowed": false,
+    "google_document_id": "1DoT3rYFPAIbCQlYXID7PChmCk149tI13MOCYhmBZf1E",
+    "google_document_title": "SKILL_MOTOR_APRENDIZAJE_CONTINUO_CAPACIDADES_LF_v0.1_CANDIDATO",
+    "current_provider_revision_id": "ANLCKQncEv_OKZQB9C7sx2bT31soWvJQROT5ZhSXm_BcZChYHE29jk-0cRxsJZKLulDmZ1sVBWhKTi2d9AlKs8zYX2rAeTqVpQLgJzypPJQ",
+    "block_anchor": "CARD_CANDIDATA_DASHBOARD_CLIENTE_LECTOR_LF_001",
+    "provider_revision_matches_20260907_canary": true
+  },
+  "inventory_readback": {
+    "table": "public.lf_cards",
+    "row_count": 19,
+    "matching_row_id": "CARD_CANDIDATA_DASHBOARD_CLIENTE_LECTOR_LF_001",
+    "matching_operational_codigo_activo": "CARD-CAND-DASHBOARD-CLIENTE-LECTOR-LF-001",
+    "id_shape_divergence": "UNDERSCORE_INVENTORY_VS_HYPHENATED_OPERATIONAL_CODE",
+    "foreign_key_binding_to_lf_cards": false,
+    "authority": false,
+    "reason": "Historical inventory/projection semantics and no authoritative carrier/currentness fields"
+  },
+  "github_card_pack_readback": {
+    "observed_packs": [
+      {
+        "path": "cards/marketplace_lf/decision_product_experience/CARD.md",
+        "card_id": "CARD_MARKETPLACE_LF_DECISIONES_PRODUCTO_EXPERIENCIA_v0.1_CANDIDATO",
+        "blob_sha": "dbdde850c7a730ea378af13584ba9862b4a73e28",
+        "runtime": "DISABLED"
+      },
+      {
+        "path": "cards/learning_competitive/campanas_y_ofertas/CARD.md",
+        "card_id": "CARD-LF-LEARN-CAMPANAS-Y-OFERTAS-V01",
+        "blob_sha": "f34e69bc334400a51cb940e03deed8f0f69088c4",
+        "runtime": "DISABLED"
+      }
+    ],
+    "operational_card_count_in_v_lf_fuente_operativa": 1,
+    "github_pack_ids_present_as_operational_cards": false,
+    "disposition": "TECHNICAL_CARD_PACKS_REQUIRE_EXPLICIT_SUPABASE_BINDING_BEFORE_GOVERNED_OPERATIONAL_USE"
+  },
+  "runtime_boundary": {
+    "consumer_input": "ProfileTask.lf_card_sources + required_card_refs",
+    "consumer_behavior": "Runtime validates supplied Card refs/version/source/content hash and materializes them into governed context",
+    "authority": false,
+    "required_future_rule": "Runtime Card sources must be derived from a Supabase-authorized Card resolution and carry same-request provenance/currentness evidence",
+    "repo_only_card_ref_is_authority": false
+  },
+  "card_update_reconciliation": {
+    "operation": "ACTUALIZACION_CARD_LF",
+    "status": "CANDIDATO_READ_ONLY",
+    "allowed_carriers": ["GITHUB_FILE", "GOOGLE_DOC_EMBEDDED_BLOCK"],
+    "prior_canary_policy_version": "v1.2-transversal-candidate",
+    "current_policy_version": "v1.4-transversal-supabase-authority-visual-support",
+    "prior_canary_is_current_policy_proof": false,
+    "provider_revision_currentness_observed": true,
+    "policy_semantics_gap": "Current policy forbids Google Docs as operational source while Card Update requires connector reads for carrier currentness. These reads must be defined as non-authoritative transport-integrity reads, or the contract remains ambiguous.",
+    "write_activation_allowed": false
+  },
+  "required_authoritative_carrier_binding": {
+    "purpose": "Bind non-authoritative physical carrier bytes to Supabase-authorized Card identity without making the carrier an operational authority",
+    "minimum_fields": [
+      "card_code",
+      "card_canonical_name_or_alias",
+      "carrier_type",
+      "carrier_ref",
+      "parent_source_ref",
+      "block_anchor_or_path",
+      "observed_provider_revision_or_blob_sha",
+      "content_sha256",
+      "observed_at",
+      "provider_write_guard",
+      "execution_id"
+    ],
+    "authority_location": "SUPABASE_GOVERNED_STATE",
+    "preferred_reuse": [
+      "lf_activos.metadata storage_refs/technical_refs",
+      "lf_operation_execution.manifest connector_trust_context",
+      "existing lifecycle evidence/readback surfaces"
+    ],
+    "new_table_required": false,
+    "new_table_decision": "DEFERRED_UNLESS_EXISTING_STRUCTURES_CANNOT_ENFORCE_CURRENTNESS_AND_READBACK"
+  },
+  "resolved_questions": {
+    "is_lf_cards_the_ssot": false,
+    "is_google_drive_the_ssot": false,
+    "is_github_the_ssot": false,
+    "is_supabase_operational_authority": true,
+    "can_carrier_content_exist_outside_supabase": true,
+    "must_external_carrier_be_exactly_bound_to_supabase": true,
+    "can_runtime_infer_authority_from_repo_presence": false
+  },
+  "implementation_blockers": [
+    {
+      "code": "CARD_CARRIER_BINDING_CURRENTNESS_NOT_PERSISTED",
+      "severity": "HIGH",
+      "detail": "The active Card operational row preserves a storage ref but not the current provider revision, block anchor and content digest as a durable authoritative binding."
+    },
+    {
+      "code": "CARD_UPDATE_SOURCE_POLICY_SEMANTICS_STALE",
+      "severity": "HIGH",
+      "detail": "September 7 Card Update canaries used source policy v1.2; current active policy is v1.4 and narrows Google Docs operational use."
+    },
+    {
+      "code": "CARD_UPDATE_TRANSPORT_INTEGRITY_READ_CONTRACT_GAP",
+      "severity": "HIGH",
+      "detail": "A provider metadata/readback exception must distinguish carrier integrity/currentness from operational authority before Card Update can write."
+    },
+    {
+      "code": "REPO_CARD_PACKS_NOT_OPERATIONALLY_REGISTERED",
+      "severity": "HIGH",
+      "detail": "Observed GitHub Card packs are technical candidates but are not current operational CARD assets in public.v_lf_fuente_operativa."
+    }
+  ],
+  "a1_gate": {
+    "result": "PASS_AUTHORITY_MODEL_RECONCILED",
+    "materialization_authorized": false,
+    "next_safe_batch": "B1_COMMON_CREATE_UPDATE_INVARIANT_EXTRACTION",
+    "parallel_safe_batches": [
+      "C1_CARD_CARRIER_ADAPTER_AND_STALE_REVISION_MATRIX",
+      "D1_S31C_BOUNDARY_COMPATIBILITY_MATRIX"
+    ]
+  }
+}
