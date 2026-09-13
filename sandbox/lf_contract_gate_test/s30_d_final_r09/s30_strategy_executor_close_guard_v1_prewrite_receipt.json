@@ -1,0 +1,342 @@
+{
+  "receipt_version": "v0.5",
+  "receipt_mode": "PREWRITE",
+  "lane": "S30-D",
+  "owner": "S30-D-STRATEGY-EXECUTOR-CLOSE-GUARD-V1",
+  "base_main_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+  "intended_material_action": "S30_STRATEGY_EXECUTOR_CLOSE_GUARD_V1_SOURCE_CANDIDATE",
+  "sequence_resolution": {
+    "ROUTER": {
+      "status": "PROVEN",
+      "evidence": "S30 close-guard v1 prewrite: ROUTER resolved against current main d4051d9c57fdfd09741da5ba2718c032eac56c92; source-only non-production candidate."
+    },
+    "EKB_APPLICABLE": {
+      "status": "PROVEN",
+      "evidence": "S30 close-guard v1 prewrite: EKB_APPLICABLE resolved against current main d4051d9c57fdfd09741da5ba2718c032eac56c92; source-only non-production candidate.",
+      "loaded_codes": [
+        "PROFILE-RUNTIME-RUN-REPORT-ANTI-CLOSE-VIOLATION-001"
+      ]
+    },
+    "DATA_ACCESS_BINDINGS": {
+      "status": "PROVEN",
+      "evidence": "S30 close-guard v1 prewrite: DATA_ACCESS_BINDINGS resolved against current main d4051d9c57fdfd09741da5ba2718c032eac56c92; source-only non-production candidate.",
+      "mode": "SCHEMA_CONTRACT_FALLBACK"
+    },
+    "SCHEMA_CONTRACT": {
+      "status": "PROVEN",
+      "evidence": "S30 close-guard v1 prewrite: SCHEMA_CONTRACT resolved against current main d4051d9c57fdfd09741da5ba2718c032eac56c92; source-only non-production candidate.",
+      "schema_bindings": [
+        {
+          "object_identity": "public.lf_error_knowledge",
+          "object_type": "VIEW",
+          "resolved_fields": [
+            "codigo",
+            "severidad",
+            "frecuencia",
+            "estado",
+            "source_ref",
+            "ultima_vez"
+          ],
+          "evidence_ref": "supabase:LF_SUPABASE_SANDBOX:PROFILE-RUNTIME-RUN-REPORT-ANTI-CLOSE-VIOLATION-001:frequency=2"
+        },
+        {
+          "object_identity": "sandbox/lf_contract_gate_test/s30_d_final_r09/s30_strategy_executor_close_guard_contract_v1.json",
+          "object_type": "JSON_CONTRACT",
+          "resolved_fields": [
+            "required_inputs",
+            "decision_contract",
+            "mandatory_rules",
+            "adversarial_expectations",
+            "safety_ceiling"
+          ],
+          "evidence_ref": "github:lf/staging-s30-close-guard-enforcement-v1-20260912@e927d7cdfac5f225786acbd11e974c571db6137c"
+        }
+      ]
+    },
+    "OPERATION_CONTRACTS": {
+      "status": "PROVEN",
+      "evidence": "S30 close-guard v1 prewrite: OPERATION_CONTRACTS resolved against current main d4051d9c57fdfd09741da5ba2718c032eac56c92; source-only non-production candidate."
+    },
+    "ALL_INTENDED_STEPS": {
+      "status": "PROVEN",
+      "evidence": "S30 close-guard v1 prewrite: ALL_INTENDED_STEPS resolved against current main d4051d9c57fdfd09741da5ba2718c032eac56c92; source-only non-production candidate."
+    },
+    "JUDGES_AND_RESULT_VOCABULARY": {
+      "status": "PROVEN",
+      "evidence": "S30 close-guard v1 prewrite: JUDGES_AND_RESULT_VOCABULARY resolved against current main d4051d9c57fdfd09741da5ba2718c032eac56c92; source-only non-production candidate."
+    },
+    "DEPENDENCIES_AND_IMPORT_CLOSURE": {
+      "status": "PROVEN",
+      "evidence": "S30 close-guard v1 prewrite: DEPENDENCIES_AND_IMPORT_CLOSURE resolved against current main d4051d9c57fdfd09741da5ba2718c032eac56c92; source-only non-production candidate."
+    },
+    "CI_PATHS_AND_RUNNER_WIRING": {
+      "status": "PROVEN",
+      "evidence": "S30 close-guard v1 prewrite: CI_PATHS_AND_RUNNER_WIRING resolved against current main d4051d9c57fdfd09741da5ba2718c032eac56c92; source-only non-production candidate."
+    },
+    "PERMISSIONS_SECRETS_AND_READBACK": {
+      "status": "PROVEN",
+      "evidence": "S30 close-guard v1 prewrite: PERMISSIONS_SECRETS_AND_READBACK resolved against current main d4051d9c57fdfd09741da5ba2718c032eac56c92; source-only non-production candidate."
+    },
+    "EVIDENCE_PROVIDER_AND_RESOLVER": {
+      "status": "PROVEN",
+      "evidence": "S30 close-guard v1 prewrite: EVIDENCE_PROVIDER_AND_RESOLVER resolved against current main d4051d9c57fdfd09741da5ba2718c032eac56c92; source-only non-production candidate."
+    },
+    "EXPECTED_OUTPUT_CONTRACT": {
+      "status": "PROVEN",
+      "evidence": "S30 close-guard v1 prewrite: EXPECTED_OUTPUT_CONTRACT resolved against current main d4051d9c57fdfd09741da5ba2718c032eac56c92; source-only non-production candidate."
+    }
+  },
+  "preflight_checks": {
+    "IMPORT_CLOSURE": {
+      "status": "PASS",
+      "evidence": "S30 close-guard v1 prewrite: IMPORT_CLOSURE verified for bounded source candidate; no runtime/production activation."
+    },
+    "REQUIRED_FILES_EXIST": {
+      "status": "PASS",
+      "evidence": "S30 close-guard v1 prewrite: REQUIRED_FILES_EXIST verified for bounded source candidate; no runtime/production activation."
+    },
+    "SCHEMA_AND_CONSTRAINTS_RESOLVED": {
+      "status": "PASS",
+      "evidence": "S30 close-guard v1 prewrite: SCHEMA_AND_CONSTRAINTS_RESOLVED verified for bounded source candidate; no runtime/production activation.",
+      "resolved": [
+        "RELATION_COLUMNS",
+        "CONSTRAINTS",
+        "DEPENDENT_SQL_FUNCTION_SIGNATURES"
+      ],
+      "bindings": [
+        {
+          "object_identity": "public.lf_error_knowledge",
+          "resolved_fields": [
+            "codigo",
+            "severidad",
+            "frecuencia",
+            "estado",
+            "source_ref",
+            "ultima_vez"
+          ],
+          "evidence_ref": "supabase:LF_SUPABASE_SANDBOX:readback-20260913"
+        },
+        {
+          "object_identity": "public.lf_write_pipeline_ekb_v1(text,jsonb,text)",
+          "resolved_fields": [
+            "operation_code",
+            "error",
+            "execution_id"
+          ],
+          "evidence_ref": "supabase:pg_proc:lf_write_pipeline_ekb_v1"
+        }
+      ]
+    },
+    "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED": {
+      "status": "PASS",
+      "evidence": "S30 close-guard v1 prewrite: TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED verified for bounded source candidate; no runtime/production activation."
+    },
+    "PERMISSIONS_AND_SECRET_READBACK": {
+      "status": "PASS",
+      "evidence": "S30 close-guard v1 prewrite: PERMISSIONS_AND_SECRET_READBACK verified for bounded source candidate; no runtime/production activation."
+    },
+    "EVIDENCE_PROVIDER_RESOLVABLE": {
+      "status": "PASS",
+      "evidence": "S30 close-guard v1 prewrite: EVIDENCE_PROVIDER_RESOLVABLE verified for bounded source candidate; no runtime/production activation."
+    },
+    "CI_RUNNER_WIRING_CONFIRMED": {
+      "status": "PASS",
+      "evidence": "S30 close-guard v1 prewrite: CI_RUNNER_WIRING_CONFIRMED verified for bounded source candidate; no runtime/production activation."
+    },
+    "EXPECTED_OUTPUT_SCHEMA_COMPLETE": {
+      "status": "PASS",
+      "evidence": "S30 close-guard v1 prewrite: EXPECTED_OUTPUT_SCHEMA_COMPLETE verified for bounded source candidate; no runtime/production activation."
+    },
+    "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED": {
+      "status": "PASS",
+      "evidence": "S30 close-guard v1 prewrite: NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED verified for bounded source candidate; no runtime/production activation."
+    },
+    "GIT_WRITE_BROKER_BINDING_CONFIRMED": {
+      "status": "PASS",
+      "evidence": "S30 close-guard v1 prewrite: GIT_WRITE_BROKER_BINDING_CONFIRMED verified for bounded source candidate; no runtime/production activation."
+    }
+  },
+  "frontier": {
+    "current_stage": "S30_STRATEGY_EXECUTOR_CLOSE_GUARD_V1_SOURCE_CANDIDATE",
+    "next_gate": "EXACT_HEAD_CI_THEN_GOVERNED_BROKER_PROMOTION_AND_READBACK",
+    "blockers": [],
+    "safe_parallel_work": []
+  },
+  "causal_lane_ownership": {
+    "ekb_code": "PROFILE-RUNTIME-RUN-REPORT-ANTI-CLOSE-VIOLATION-001",
+    "target_asset": "S30_STRATEGY_EXECUTOR_CLOSE_GUARD_V1",
+    "primary_gate": "CLOSE_GUARD_ENFORCEMENT",
+    "owner": "S30-D-STRATEGY-EXECUTOR-CLOSE-GUARD-V1",
+    "role": "WRITER",
+    "observed_active_writers": [
+      {
+        "ekb_code": "PROFILE-RUNTIME-RUN-REPORT-ANTI-CLOSE-VIOLATION-001",
+        "target_asset": "S30_STRATEGY_EXECUTOR_CLOSE_GUARD_V1",
+        "primary_gate": "CLOSE_GUARD_ENFORCEMENT",
+        "owner": "S30-D-STRATEGY-EXECUTOR-CLOSE-GUARD-V1",
+        "state": "ACTIVE",
+        "source_ref": "github:lf/staging-s30-close-guard-enforcement-v1-20260912@e927d7cdfac5f225786acbd11e974c571db6137c"
+      }
+    ],
+    "transfer": {
+      "is_transfer": false
+    },
+    "evidence": "Bounded S30 close-guard enforcement lane; no other writer for this exact causal key observed in current-main/staging scope."
+  },
+  "applicable_ekb": [
+    {
+      "code": "PROFILE-RUNTIME-RUN-REPORT-ANTI-CLOSE-VIOLATION-001",
+      "triggers": [
+        "RECURRENT",
+        "MACHINE_DETECTABLE",
+        "AVOIDABLE_MATERIAL_WORK"
+      ]
+    }
+  ],
+  "hard_guard_candidates": [
+    {
+      "ekb_code": "PROFILE-RUNTIME-RUN-REPORT-ANTI-CLOSE-VIOLATION-001",
+      "closure": {
+        "EKB_UPDATED": {
+          "status": "PASS",
+          "evidence": "Governed EKB writer public.lf_write_pipeline_ekb_v1 recorded RECURRENCE; event_id=13501, frequency_after=2, execution_id=EXEC-S30-CLOSE-GUARD-EKB-RECURRENCE-20260912-001."
+        },
+        "DETECTOR_IMPLEMENTED": {
+          "status": "PASS",
+          "evidence": "s30_strategy_executor_close_guard_v1.py blocks FINAL when remaining count, next batch, safe_parallel_work, or blocker independent_safe_work indicates executable safe scope."
+        },
+        "NEGATIVE_REGRESSION": {
+          "status": "PASS",
+          "evidence": "test_s30_strategy_executor_close_guard_v1.py covers remaining work, next batch, safe parallel work, blocker independent safe work, bad global scan/count/stop reason, and missing execution-limit evidence."
+        },
+        "POSITIVE_REGRESSION": {
+          "status": "PASS",
+          "evidence": "Same test proves zero-safe-work close and allowed NONDELEGABLE_AUTHORITY_ONLY / evidenced EXECUTION_LIMIT_REACHED close paths; bounded S30 regression step passed at exact source head."
+        },
+        "EXECUTED_PATH_WIRING_PROVEN": {
+          "status": "PASS",
+          "evidence": "Validate LF Packs run 34727140707 at exact source head e927d7cdfac5f225786acbd11e974c571db6137c completed SUCCESS; S30 bounded sandbox regressions step completed SUCCESS and glob executes s30_*/test_*.py including this test."
+        },
+        "READBACK": {
+          "status": "PASS",
+          "evidence": "GitHub compare main d4051d9c57fdfd09741da5ba2718c032eac56c92...e927d7cdfac5f225786acbd11e974c571db6137c shows only the three bounded S30 close-guard files before this receipt, branch ahead 7/behind 0; lf-contract-check 34727140702 and Validate LF Packs 34727140707 completed SUCCESS."
+        }
+      }
+    }
+  ],
+  "safety_readback": {
+    "runtime_changed": false,
+    "production_changed": false,
+    "main_merged": false,
+    "scheduler_changed": false,
+    "s26_mutated": false
+  },
+  "owner_authorized_merge": false,
+  "owner_authorized_repair": false,
+  "repair_reason": null,
+  "repair_target_ekb_codes": [],
+  "evidence": {
+    "mode": "SOURCE_CANDIDATE_NON_PRODUCTION",
+    "source_head_before_receipt": "e927d7cdfac5f225786acbd11e974c571db6137c",
+    "exact_head_ci": {
+      "validate_lf_packs_run": 34727140707,
+      "validate_lf_packs_conclusion": "success",
+      "lf_contract_check_run": 34727140702,
+      "lf_contract_check_conclusion": "success"
+    },
+    "ekb_recurrence": {
+      "event_id": 13501,
+      "frequency_after": 2,
+      "execution_id": "EXEC-S30-CLOSE-GUARD-EKB-RECURRENCE-20260912-001"
+    },
+    "runtime_execution": false,
+    "production_activation": false,
+    "scheduler_activation": false,
+    "s26_mutation": false,
+    "s31_mutation": false
+  },
+  "gate_evidence_envelope": {
+    "run_id": "EXEC-S30-CLOSE-GUARD-V1-PREWRITE-20260912-001",
+    "gate_id": "S30_STRATEGY_EXECUTOR_CLOSE_GUARD_V1_PREEXECUTION",
+    "input_exact": {
+      "base_main_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+      "source_ref": "lf/staging-s30-close-guard-enforcement-v1-20260912",
+      "source_head_before_receipt": "e927d7cdfac5f225786acbd11e974c571db6137c",
+      "receipt_path": "sandbox/lf_contract_gate_test/s30_d_final_r09/s30_strategy_executor_close_guard_v1_prewrite_receipt.json",
+      "target_branch": "lf/s30-close-guard-enforcement-v1-20260912",
+      "operation_code": "EJECUCION_ESTRATEGIA_LF",
+      "ekb_code": "PROFILE-RUNTIME-RUN-REPORT-ANTI-CLOSE-VIOLATION-001"
+    },
+    "input_sha256": "913b2158d7ad1f16f5a0444c9cbd0763753e9323b6da0ea206cb5e5e750a9fc3",
+    "input_source_ref": "github:main@d4051d9c57fdfd09741da5ba2718c032eac56c92+github:lf/staging-s30-close-guard-enforcement-v1-20260912@e927d7cdfac5f225786acbd11e974c571db6137c",
+    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_d_final_r09/s30_strategy_executor_close_guard_v1_prewrite_receipt.json --expected-base-main-sha d4051d9c57fdfd09741da5ba2718c032eac56c92",
+    "output_exact": {
+      "result": "PASS_TO_MATERIAL_WORK",
+      "material_work_allowed": true,
+      "bounded_repair_allowed": false
+    },
+    "output_sha256": "a24be66d34ca0a50fdad5848bbb8e9919bc1c82eda27a2ea05521265dcc24c19",
+    "output_ref": "prewrite:S30-STRATEGY-EXECUTOR-CLOSE-GUARD-V1",
+    "execution_mode": "SANDBOX",
+    "environment": "NON_PRODUCTION",
+    "promotion_authority": "NONE",
+    "functional": {
+      "status": "PASS",
+      "evidence": "Existing S30 EX-10/EX-12 semantics are reconciled: executable safe work blocks FINAL and requires continuation."
+    },
+    "quality": {
+      "status": "PASS",
+      "evidence": "Fail-closed decision separates gate verdict from required action; 11 adversarial/positive cases exercised in discovered S30 CI path."
+    },
+    "depth": {
+      "status": "PASS",
+      "evidence": "Covers count, next batch, frontier safe parallel work, blocker independent safe work, global scan, stop reason, and execution-limit evidence."
+    },
+    "performance": {
+      "status": "PASS_BASELINE",
+      "evidence": "Pure in-process deterministic gate adds no network/model/database call; performance benchmark is not claimed or required for this source-only enforcement candidate."
+    },
+    "ekb_action": {
+      "status": "RECURRENCE_RECORDED",
+      "codes": [
+        "PROFILE-RUNTIME-RUN-REPORT-ANTI-CLOSE-VIOLATION-001"
+      ],
+      "event_id": 13501,
+      "frequency_after": 2
+    },
+    "first_bad_hop": null,
+    "repair_allowed": false
+  },
+  "git_write_binding": {
+    "status": "OPERATIONAL",
+    "request_schema": "s30-git-broker/v1",
+    "ruleset_id": 22765627,
+    "ruleset_name": "s30-governed-write-boundary",
+    "ruleset_enforcement": "active",
+    "ruleset_ref_pattern": "refs/heads/lf/s30-*",
+    "bypass_actor_type": "DeployKey",
+    "deploy_key_id": 162872002,
+    "deploy_key_title": "s30-governed-git-broker",
+    "direct_user_can_bypass": false,
+    "direct_connector_negative": {
+      "create_blocked": true,
+      "update_blocked": true
+    },
+    "broker_probe": {
+      "status": "PASS",
+      "commit_sha": "e52aa00996ea7dfd416e5267aec0f03e226f3088",
+      "evidence_ref": "github:commit/e52aa00996ea7dfd416e5267aec0f03e226f3088"
+    },
+    "workflow_path": ".github/workflows/validate-lf-packs.yml",
+    "workflow_dispatch_wired": true,
+    "secret_name": "S30_BROKER_DEPLOY_KEY",
+    "secret_present": true,
+    "secret_required_before_dispatch": true,
+    "source_branch": "lf/staging-s30-close-guard-enforcement-v1-20260912",
+    "target_branch": "lf/s30-close-guard-enforcement-v1-20260912",
+    "base_main_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+    "promotion_authority": "BROKER_ONLY",
+    "ruleset_readback_ref": "github:ruleset/22765627:s30-governed-write-boundary",
+    "supabase_readback_ref": "supabase:LF_SUPABASE_SANDBOX:s30-governance-readback"
+  }
+}
