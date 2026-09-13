@@ -1,0 +1,109 @@
+schema_version: LF_CAPABILITY_MANIFEST_V1
+capability_code: DESTINATION_RESOLUTION_LF
+version: 2.0.0
+capability_kind: TRANSVERSAL
+owner_scope: LF_GOVERNANCE
+status_intent: CURRENT_AFTER_GOVERNED_ACTIVATION
+
+contract:
+  input: OPERATION_EXECUTION_V1_PLUS_OPTIONAL_DESTINATION_CODE
+  output: ARTIFACT_DESTINATION_V2
+  required_execution_fields:
+    - execution_id
+    - operation_code
+    - target_type
+  optional_execution_fields:
+    - target_repo
+    - target_path
+  optional_request_fields:
+    - destination_code
+
+delivery:
+  mode: CENTRAL_DATABASE_CAPABILITY
+  consumer_action: BIND_VERSION_AND_INVOKE
+
+installation:
+  required: false
+  reinstall_required: false
+  package_update_mode: MANIFEST_DECLARED
+  reason: capability_is_delivered_by_shared_governance_control_plane
+
+dependencies:
+  capabilities: []
+  packages: []
+  package_rule: if_packages_are_added_the_consumer_must_verify_declared_manager_and_version_before_material_work
+
+compatibility:
+  from:
+    - 1.x
+  auto_rebind_when_zero_steps: true
+  auto_rebind_with_active_lease: false
+  mid_execution_rebind: false
+  major_change_requires_migration: true
+
+migration:
+  id: DESTINATION_RESOLUTION_V1_TO_V2
+  zero_step: SAFE_REBIND
+  material_started: PIN_OR_RESTART
+  execution_row_mutation: false
+  binding_storage: LF_CAPABILITY_BINDING
+
+rollback:
+  supported: true
+  target: 1.0.0
+  pointer_only: true
+  historical_version_rewrite: false
+
+usage:
+  preflight: public.fn_lf_capability_preflight_v1
+  bind: public.fn_lf_capability_bind_current_v1
+  invoke: public.fn_lf_resolve_artifact_destination_v2
+  sequence:
+    - preflight
+    - bind_or_rebind_if_safe
+    - resolve_destination
+    - verify_current_manifest_sha_immediately_before_material_write
+
+currentness:
+  required_before_material_write: true
+  compare: manifest_sha256
+  stale_action: BLOCK_OR_REBIND_PREWRITE
+
+selection:
+  explicit_destination_statuses:
+    - ACTIVE
+    - BINDING_ONLY
+  default_destination_statuses:
+    - ACTIVE
+  explicit_rule: exact_destination_code_only
+  default_rule: exactly_one_active_match
+  no_match: BLOCK
+  multiple_default_matches: BLOCK
+  priority_is_not_a_tiebreaker: true
+
+execution_safety:
+  validate_operation_code: true
+  validate_artifact_type: true
+  validate_target_repo_when_present: true
+  validate_target_path_under_base_folder_when_present: true
+  expected_sha_or_fingerprint_required_before_binding: true
+
+legacy_transition:
+  existing_execution_without_binding:
+    zero_steps_no_active_lease: BIND_CURRENT_SAFE
+    zero_steps_active_lease: BLOCK_ACTIVE_LEASE_UNBOUND
+    material_steps_present: LEGACY_EXECUTION_MIGRATION_GATE
+  existing_stale_binding:
+    zero_steps_no_active_lease: REBIND_CURRENT_SAFE
+    material_steps_same_major: PIN_BOUND_VERSION
+    material_steps_new_major: MIGRATION_REQUIRED
+
+manual:
+  path: sandbox/lf_contract_gate_test/strategy_update_exclusive_lane_20260913/CAPABILITY_STANDARD_V1.md
+
+claim_ceiling:
+  runtime: false
+  production: false
+  scheduler: false
+  golden: false
+  main_write: false
