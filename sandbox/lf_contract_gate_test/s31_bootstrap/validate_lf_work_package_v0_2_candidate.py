@@ -183,6 +183,11 @@ def continuation_decision(wp: Mapping[str, Any]) -> dict:
             "remaining_safe_scope_count": remaining,
             "next_safe_batch": next_batch,
         }
+    if blockers:
+        return _block(
+            "BLOCKED_CAUSAL_NO_SAFE_WORK",
+            blockers=[b.get("code") for b in blockers if isinstance(b, Mapping)],
+        )
     return {"status": PASS, "code": "PASS_NO_SAFE_SCOPE_REMAINING"}
 
 
