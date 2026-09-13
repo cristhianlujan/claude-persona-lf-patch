@@ -1,0 +1,34 @@
+{
+  "contract_version": "S30_STRATEGY_ORCHESTRATOR_CANARY_BLUEPRINT_V1",
+  "status": "DRY_RUN_ONLY_NOT_RUNTIME",
+  "operation_code": "ORQUESTACION_ESTRATEGIAS_LF",
+  "child_operation_code": "EJECUCION_ESTRATEGIA_LF",
+  "case_count": 12,
+  "backend_business_writes": 0,
+  "model_calls_for_machine_detectable_cases": 0,
+  "cases": [
+    {"case_id": "OR-01", "fault": "NONE", "expected": "CANARY_PASS_MULTI_CHILD_NO_EFFECT"},
+    {"case_id": "OR-02", "fault": "ONE_BLOCKED_TWO_SAFE", "expected": "CONTINUE_TWO_SAFE_PERSIST_ONE_BLOCKED"},
+    {"case_id": "OR-03", "fault": "CHILD_EXECUTOR_NOT_CURRENT", "expected": "BLOCK_CHILD_EXECUTOR_NOT_CURRENT"},
+    {"case_id": "OR-04", "fault": "PARENT_BUSINESS_WRITE_ATTEMPT", "expected": "BLOCK_PARENT_BUSINESS_WRITE"},
+    {"case_id": "OR-05", "fault": "DUPLICATE_STRATEGY_TARGET", "expected": "BLOCK_DUPLICATE_CHILD_TARGET"},
+    {"case_id": "OR-06", "fault": "CHILD_RECEIPT_IDENTITY_MISMATCH", "expected": "BLOCK_CHILD_RECEIPT_BINDING"},
+    {"case_id": "OR-07", "fault": "INTERRUPTION_WITH_PARENT_CHECKPOINT", "expected": "RESUME_FROM_PARENT_CHECKPOINT"},
+    {"case_id": "OR-08", "fault": "STALE_PORTFOLIO_CURRENTNESS", "expected": "BLOCK_STALE_PORTFOLIO_CURRENTNESS"},
+    {"case_id": "OR-09", "fault": "CLOSE_WITH_NONTERMINAL_CHILD", "expected": "BLOCK_CLOSE_GUARD"},
+    {"case_id": "OR-10", "fault": "SCHEDULER_AS_STATE_AUTHORITY", "expected": "BLOCK_SCHEDULER_STATE_AUTHORITY"},
+    {"case_id": "OR-11", "fault": "PIPELINE_IDENTITY_REUSE", "expected": "BLOCK_PIPELINE_IDENTITY_REUSE"},
+    {"case_id": "OR-12", "fault": "ALL_TERMINAL_REPORT_PERSISTED", "expected": "CANARY_PASS_CLOSE_NO_EFFECT"}
+  ],
+  "success_criteria": {
+    "all_cases_match": true,
+    "preventable_first_hop_escape_count": 0,
+    "parent_business_write_count": 0,
+    "safe_child_skipped_count": 0,
+    "duplicate_child_execution_count": 0,
+    "lost_parent_checkpoint_count": 0,
+    "runtime_activation": false,
+    "scheduler_activation": false,
+    "business_effect_dispatch": false
+  }
+}
