@@ -1,0 +1,32 @@
+{
+  "contract_version":"S31_G_RUNTIME_PORT_MAP_V0_1",
+  "status":"CANDIDATE_READ_ONLY","owner_lane":"S31-G","source_commit":"d4051d9c57fdfd09741da5ba2718c032eac56c92",
+  "source_assets":[
+    {"path":"services/profile_runtime_api/profile_runtime_api/engine.py","blob_sha":"560b538254c47888babd782321f9ad01c838632b"},
+    {"path":"services/profile_runtime_api/profile_runtime_api/llama.py","blob_sha":"5f736ae0853876dd740d6a11da2b2244699fffe7"},
+    {"path":"services/profile_runtime_api/profile_runtime_api/runtime_authority.py","blob_sha":"58fe0fcca5826be1a280588c659639c27b1c0e09"}
+  ],
+  "kernel_side":["authority_resolution","card_resolution_interface","adapter_binding_interface","schema_binding","typed_context","provenance","context_fingerprint"],
+  "runtime_port_contract_candidate":{
+    "port":"RuntimeExecutionPort",
+    "input":["typed_context","governed_input","output_contract_ref","execution_budget","runtime_policy"],
+    "output":["raw_output","runtime_receipt","transport_diagnostics","resource_usage","failure_code"],
+    "must_not_decide":["authority","currentness","card_applicability","promotion","golden","production"]
+  },
+  "current_adapter_candidate":{
+    "adapter":"ProfileRuntimeExecutorAdapter",
+    "implementation_sources":["ProfileRuntimeEngine","LlamaHTTPClient","PersistentLlamaServerAdapter"],
+    "provider_specific":true,
+    "kernel_dependency":false
+  },
+  "future_adapter_rules":{
+    "langgraph":"OPTIONAL_ADAPTER_ONLY_NOT_KERNEL",
+    "openai_agents_sdk":"OPTIONAL_ADAPTER_ONLY_NOT_KERNEL",
+    "temporal_or_dbos":"DURABLE_EXECUTION_POC_ONLY_UNTIL_PROVEN",
+    "provider_change_requires_kernel_change":false
+  },
+  "compatibility_sequence":["DEFINE_PORT","WRAP_CURRENT_S26_EXECUTOR_WITHOUT_BEHAVIOR_CHANGE","REPLAY_EXISTING_RUNTIME_TESTS","COMPARE_RECEIPTS_AND_FAILURE_CODES","ONLY_THEN_ALLOW_SECOND_ADAPTER"],
+  "negative_cases":["MODEL_OR_PROVIDER_DECIDES_AUTHORITY","FRAMEWORK_STATE_BECOMES_SOURCE_OF_TRUTH","ADAPTER_BYPASSES_TYPED_CONTEXT","PORT_OUTPUT_AUTHORIZES_PROMOTION","PROVIDER_FAILURE_CAUSES_SILENT_FALLBACK"],
+  "boundaries":{"runtime_mutation_now":false,"deployment_now":false,"external_framework_install_now":false,"s26_cutover_now":false},
+  "claim_ceiling":"PORT_MAP_AND_COMPATIBILITY_PLAN_ONLY"
+}

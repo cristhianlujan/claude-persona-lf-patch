@@ -1,0 +1,25 @@
+{
+  "receipt_version": "S31_CURRENTNESS_REBIND_V0_1",
+  "status": "PASS_REBIND_COMPATIBLE",
+  "old_base_main_sha": "ee7aca94c672fcc555db90962f09fe439eedf4f0",
+  "new_base_main_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+  "s31_branch_reconciled_head": "886f647de8c2f13ce635217c09bedfc51af35c3c",
+  "current_material_head": "09160c4aa9c118d46a91ca5c24364579ca6a825e",
+  "main_delta_classification": {
+    "changed_domains": ["skills/profile_creator", "sandbox/lf_contract_gate_test/receipts"],
+    "s31_b_authority_overlap": false,
+    "s31_c_authority_overlap": false,
+    "s31_d_authority_overlap": false,
+    "s31_e_authority_overlap": false,
+    "semantic_replay_required": false,
+    "currentness_rebind_required": true
+  },
+  "affected_work_packages": ["WP-S31-B-001", "WP-S31-C-001"],
+  "rebind_rule": "PRESERVE_EXISTING_SEMANTIC_EVIDENCE_BUT_BIND_FUTURE_MATERIAL_WORK_TO_NEW_MAIN",
+  "forbidden": ["TRANSFER_PASS_FROM_UNRELATED_CHANGED_SOURCE", "MUTATE_PROFILE_CREATOR_FROM_S31", "TREAT_OLD_BASE_AS_CURRENT"],
+  "evidence": [
+    "github-compare://ee7aca94c672fcc555db90962f09fe439eedf4f0...d4051d9c57fdfd09741da5ba2718c032eac56c92",
+    "github-commit://09160c4aa9c118d46a91ca5c24364579ca6a825e"
+  ],
+  "claim_ceiling": "CURRENTNESS_REBIND_ONLY"
+}

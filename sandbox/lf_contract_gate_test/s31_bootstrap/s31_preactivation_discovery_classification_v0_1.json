@@ -1,0 +1,13 @@
+{
+  "receipt_version":"S31_PREACTIVATION_DISCOVERY_CLASSIFICATION_V0_1",
+  "status":"CONTAINED_NO_CLOSURE_CLAIM",
+  "incident":"S31_D_E_MAPS_WRITTEN_BEFORE_DEDICATED_WORK_PACKAGE_ACTIVATION",
+  "affected_artifacts":["s31_d_authority_typed_context_extraction_map_v0_1.json","s31_e_capability_registry_gap_inventory_v0_1.json"],
+  "classification":"READ_ONLY_SOURCE_GROUNDED_DISCOVERY_MATERIALIZED_IN_S31_ONLY",
+  "not_claimed":["LANE_EXECUTION_PASS","WORK_PACKAGE_PASS","INDEPENDENT_REVIEW_PASS","GOLDEN","PRODUCTION","S30_OR_S26_AUTHORITY"],
+  "containment":["NO_FURTHER_D_E_MATERIAL_EVOLUTION_BEFORE_WP","CREATE_WP_S31_D_001","CREATE_WP_S31_E_001","PRESERVE_ORIGINAL_MAPS_AS_DISCOVERY_EVIDENCE","DO_NOT_RETROACTIVELY_AUTHORIZE_PRIOR_WRITE"],
+  "currentness":{"main_sha":"d4051d9c57fdfd09741da5ba2718c032eac56c92","first_material_head":"09160c4aa9c118d46a91ca5c24364579ca6a825e"},
+  "scope_readback":{"s30_mutated":false,"s26_mutated":false,"supabase_mutated":false,"runtime_mutated":false,"production_mutated":false},
+  "learning":"DEDICATED_LANE_WORK_PACKAGE_MUST_EXIST_BEFORE_FIRST_MATERIAL_WRITE_EVEN_WHEN_STRATEGY_ALREADY_DECLARED_THE_LANE",
+  "claim_ceiling":"PROCESS_CONTAINMENT_ONLY"
+}
