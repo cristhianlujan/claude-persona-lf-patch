@@ -1,0 +1,67 @@
+{
+  "receipt_version": "S31_IR004_REPAIR_V0_1",
+  "source_review_case_id": "S31-DG-IR-004",
+  "source_review_verdict": "PASS_WITH_RESTRICTIONS",
+  "independent_receipt_ref": "github://cristhianlujan/claude-persona-lf-patch@3bc25ab79d9a971f3b745645f3b167aa76212f45/sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_ir004_independent_receipt_v0_1.json",
+  "independent_receipt_blob_sha": "703ffd31257d615d97521e99fcf17fd5deafba83",
+  "repair_candidate_head": "7f7b844b878ad44c584c6aebcbf63e89d4b10b66",
+  "comparison_base": "39da3d36384af49ed1dcfa0ba01514c269a90e55",
+  "repair_scope": [
+    "S31-F",
+    "INDEPENDENT_REVIEW_BUNDLE_COMPLETENESS",
+    "S31-DG_CURRENTNESS_DISPOSITION"
+  ],
+  "exclusive_lane": {
+    "pull_request": 751,
+    "head_branch": "lf/s31-ir004-repair-gpt-exclusive-20260913",
+    "base_branch": "lf/s31-ir004-repair-base-gpt-exclusive-20260913",
+    "base_sha": "39da3d36384af49ed1dcfa0ba01514c269a90e55",
+    "maintainer_can_modify": false,
+    "force_push_used": false,
+    "rebase_used": false,
+    "shared_branch_writes": false
+  },
+  "claim_binding_repair": {
+    "cross_binding_version": "S31_F_CROSS_BINDING_V0_2",
+    "cross_binding_sha256": "508fcddc9fbef6e30f289017218cdbb7ff6ede72bdefdbed09b4665481dfaf98",
+    "bound_fields_added": ["evidence_level", "claim_ceiling"],
+    "resolver_bound_receipt_tier_required": true,
+    "adversarial_regression": {
+      "attack": "F_CLAIM_LEVEL_ESCALATION_UNDER_IDENTICAL_BINDING",
+      "v0_3_behavior": "PASS",
+      "v0_4_behavior": "BLOCK_F_CLAIM_TIER_BINDING_MISMATCH"
+    }
+  },
+  "deterministic_execution": {
+    "v0_2": {"positive_cases": 8, "negative_fail_closed_cases": 36, "result": "PASS"},
+    "v0_3": {"positive_cases": 2, "negative_fail_closed_cases": 8, "result": "PASS"},
+    "v0_4": {"positive_cases": 2, "negative_fail_closed_cases": 9, "ir004_claim_tier_escalation_demonstrated_then_closed": 1, "result": "PASS"},
+    "full_s31": {"tests": 13, "failures": 0, "result": "PASS"},
+    "exact_remote_head_verified": true
+  },
+  "ci_evidence": {
+    "validate_lf_packs": {"run_id": 34782826235, "conclusion": "success"},
+    "lf_contract_check": {
+      "run_id": 34782826329,
+      "conclusion": "failure",
+      "failed_step": "Enforce LF migration source parity after checkpoint",
+      "failure_code": "FAIL_LF_MIGRATION_VERSION_PARITY",
+      "causal_to_s31_repair": false,
+      "disposition": "UNRELATED_SHARED_CURRENTNESS_DEBT_NOT_REPAIRED_IN_EXCLUSIVE_S31_PR"
+    }
+  },
+  "currentness_durability": {
+    "behavior": "CONSERVATIVE_FAIL_CLOSED",
+    "producer_disposition": "ACCEPTED_CONSERVATIVE_FAIL_CLOSED_DEBT_PENDING_ARCHIVAL_CURRENTNESS_DESIGN",
+    "resolver_weakened": false
+  },
+  "claim_ceiling": "DETERMINISTIC_REPAIR_EVIDENCE_ONLY",
+  "independent_status": "PENDING_S31_DG_IR_005",
+  "authorization": {
+    "merge": "NONE",
+    "golden": "NONE",
+    "runtime": "NONE",
+    "scheduler": "NONE",
+    "production": "NONE"
+  }
+}

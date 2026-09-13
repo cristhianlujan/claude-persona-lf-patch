@@ -1,0 +1,317 @@
+{
+  "bundle_version": "S31_DG_INDEPENDENT_REVIEW_BUNDLE_V0_7",
+  "review_case_id": "S31-DG-IR-005",
+  "execution_mode": "INDEPENDENT_CHAT_CONTEXT",
+  "candidate_snapshot": {
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "immutable_comparison_base_sha": "39da3d36384af49ed1dcfa0ba01514c269a90e55",
+    "s31_candidate_head": "7f7b844b878ad44c584c6aebcbf63e89d4b10b66",
+    "exact_head_not_merge_ref": true,
+    "review_candidate_is_parent_of_evidence_commit": true
+  },
+  "review_scope": [
+    "S31-D",
+    "S31-E",
+    "S31-F",
+    "S31-G"
+  ],
+  "prior_review": {
+    "review_case_id": "S31-DG-IR-004",
+    "verdict": "PASS_WITH_RESTRICTIONS",
+    "receipt_ref": "github://cristhianlujan/claude-persona-lf-patch@3bc25ab79d9a971f3b745645f3b167aa76212f45/sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_ir004_independent_receipt_v0_1.json",
+    "receipt_blob_sha": "703ffd31257d615d97521e99fcf17fd5deafba83",
+    "accepted_repair_focus": [
+      "S31-F claim-tier escalation under identical resolved evidence binding",
+      "independent-review bundle pin completeness for four load-bearing artifacts",
+      "preserve fail-closed currentness behavior while recording archival durability debt"
+    ]
+  },
+  "repair_evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@594783d2465d8216255f38da7a257935af5b9c5c/sandbox/lf_contract_gate_test/s31_bootstrap/s31_ir004_repair_receipt_v0_1.json",
+  "repair_evidence_blob_sha": "e54a5a7b2e0dcb1c9bd4f27cb359698f766e980c",
+  "governance_disposition_ref": "github://cristhianlujan/claude-persona-lf-patch@594783d2465d8216255f38da7a257935af5b9c5c/sandbox/lf_contract_gate_test/s31_bootstrap/s31_ir004_governance_disposition_v0_1.json",
+  "governance_disposition_blob_sha": "22812743fcf58fee158d59ead96460f7fa7ca94f",
+  "frozen_artifacts": [
+    {
+      "lane": "S31-D",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_shared_authority_typed_context_v0_2_candidate.schema.json",
+      "blob_sha": "46e2c50fc4860a59f1cfd7471f475bcf24f61609",
+      "role": "candidate"
+    },
+    {
+      "lane": "S31-E",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_capability_manifest_v0_3_candidate.schema.json",
+      "blob_sha": "ad1dd40b7fd96709d9d4e4a494cd47027cefb229",
+      "role": "candidate"
+    },
+    {
+      "lane": "S31-F",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_common_evidence_envelope_v0_3_candidate.schema.json",
+      "blob_sha": "5fe6716d8086d68133da09baad6bd062dc296b8d",
+      "role": "candidate"
+    },
+    {
+      "lane": "S31-G",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_runtime_execution_port_v0_1_candidate.schema.json",
+      "blob_sha": "edcd97e6573129b1025a105aecd1ce1e7afa2e3a",
+      "role": "request_candidate"
+    },
+    {
+      "lane": "S31-G",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_runtime_execution_output_v0_1_candidate.schema.json",
+      "blob_sha": "550d2aa8facb0fa5e54b6dab88bfb4867bea86d9",
+      "role": "output_candidate"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/validate_s31_dg_contracts_v0_2.py",
+      "blob_sha": "d8b484354f4d4333aa0d6e7d878d98d3a35db3f2",
+      "role": "baseline_validator"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/test_s31_dg_contracts_v0_2.py",
+      "blob_sha": "b7208a69e92367c638fecd29bd16fcb22cce8b96",
+      "role": "baseline_deterministic_test"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/validate_s31_dg_contracts_v0_3.py",
+      "blob_sha": "7cb465cd35d39a2c917c7310aa93d51adf504be4",
+      "role": "ir003_repair_validator"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/test_s31_dg_contracts_v0_3.py",
+      "blob_sha": "515929ee5f3208911411a24f3f78a754eec8b994",
+      "role": "ir003_adversarial_regression"
+    },
+    {
+      "lane": "QUALITY_PACK",
+      "path": "profiles/quality_pack/validators/trusted_ref_resolver.py",
+      "blob_sha": "cf33a83fc8ab27bfece7d813ca42bbdb98fc39b7",
+      "role": "canonical_trusted_resolver"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/d_currentness_receipt.json",
+      "blob_sha": "92d1babe6e28878673e46e423ea848c5204de29c",
+      "role": "trusted_provider_fixture"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/e_currentness_receipt.json",
+      "blob_sha": "7bbb3a1de468c1f59e2d25fdc08d40f02a164d59",
+      "role": "trusted_provider_fixture"
+    },
+    {
+      "lane": "S31-F",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_owner_receipt.json",
+      "blob_sha": "c5e757f4ab890ada4c95153ece6b069166956966",
+      "role": "owner_fixture"
+    },
+    {
+      "lane": "S31-F",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_execution_receipt.json",
+      "blob_sha": "b3be7ad5c8aaf027915af868a59dc1cd77fa3f12",
+      "role": "cross_bound_fixture"
+    },
+    {
+      "lane": "S31-F",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_authority_receipt.json",
+      "blob_sha": "6513e721d7841e791bc7c9461e1afc73ea752192",
+      "role": "cross_bound_fixture"
+    },
+    {
+      "lane": "S31-F",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_provenance_receipt.json",
+      "blob_sha": "c56b1ac178c0a1f85ff80bbe2c758522aa82e7aa",
+      "role": "cross_bound_fixture"
+    },
+    {
+      "lane": "S31-F",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_authority_receipt_replay.json",
+      "blob_sha": "4b164ef01d453a92fffc180533220da54091da2b",
+      "role": "adversarial_replay_fixture"
+    },
+    {
+      "lane": "S31-F",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_provenance_receipt_replay.json",
+      "blob_sha": "713ebb7fa344ad5a62afb77e0228a6b1eded8ec0",
+      "role": "adversarial_replay_fixture"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/source_authority.txt",
+      "blob_sha": "8b1672d7b00d9a8b2da0461d41bfa300551e592b",
+      "role": "immutable_source_fixture"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/provenance_source.txt",
+      "blob_sha": "3bba324c1a6c377c6f864ab08679d05c6b915645",
+      "role": "immutable_source_fixture"
+    },
+    {
+      "lane": "S31-G",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/typed_context.json",
+      "blob_sha": "327db4b2b5201e7fb494f55fb3ea899b3770a625",
+      "role": "governed_context_fixture"
+    },
+    {
+      "lane": "S31-G",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/typed_context_invalid_authority.json",
+      "blob_sha": "87d110918cec67f4a91cdabdc3dd7563a90cd9cf",
+      "role": "nested_authority_attack_fixture"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/s31_trusted_resolution_v0_1.py",
+      "blob_sha": "d593df21be41d624b30f0a274b692412cb3b0d50",
+      "lane": "SHARED",
+      "role": "load-bearing trusted resolver boundary newly pinned after IR-004"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/source_runtime_schema.json",
+      "blob_sha": "17fe39eb909936f84320b213f8b5330226610e9b",
+      "lane": "S31-D",
+      "role": "load-bearing runtime schema source newly pinned after IR-004"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/source_registry.py",
+      "blob_sha": "282ab464fba14130003222c8f1ea6dab6cd90eb6",
+      "lane": "S31-E",
+      "role": "load-bearing registry source newly pinned after IR-004"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/s31_e_capability_registry_gap_inventory_v0_2.json",
+      "blob_sha": "fc67055c9084aaaf6080af867aba09fef8cf9b83",
+      "lane": "S31-E",
+      "role": "load-bearing inventory newly pinned after IR-004"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_common_evidence_envelope_v0_4_candidate.schema.json",
+      "blob_sha": "617096a98999b8a8b78810414e2efc775c385483",
+      "lane": "S31-F",
+      "role": "IR-004 claim-tier-bound candidate schema"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/validate_s31_dg_contracts_v0_4.py",
+      "blob_sha": "d4af002cead31b82d04f79ea0a389e9a6c859339",
+      "lane": "S31-F/G",
+      "role": "IR-004 repair validator"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/test_s31_dg_contracts_v0_4.py",
+      "blob_sha": "460a0276ffa477364e7b306632a01ccce6007a83",
+      "lane": "S31-F/G",
+      "role": "IR-004 adversarial regression harness"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_execution_receipt_v0_4.json",
+      "blob_sha": "3b0327f7847c94a17019d6ad843e1c10e220ec29",
+      "lane": "S31-F",
+      "role": "claim-tier-bound execution receipt"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_authority_receipt_v0_4.json",
+      "blob_sha": "fc6daf4ccfad2a1fee3f91baa21e08b9dafb01eb",
+      "lane": "S31-F",
+      "role": "claim-tier-bound authority receipt"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_provenance_receipt_v0_4.json",
+      "blob_sha": "477884e50a0409ad4ff86d168b7e417a150a3a7d",
+      "lane": "S31-F",
+      "role": "claim-tier-bound provenance receipt"
+    }
+  ],
+  "producer_evidence": {
+    "targeted_v0_2": "8 positive PASS; 36 negative fail-closed PASS",
+    "targeted_v0_3": "2 positive PASS; 8 negative fail-closed PASS; prior cross-binding digest 355dfb8e4ded17d827fbbb1b4ed2dbe6db51d09277c6b0646cb48ab5be05f454",
+    "targeted_v0_4": "2 positive PASS; 9 negative fail-closed PASS; IR-004 claim-tier escalation reproduced on v0.3 then closed on v0.4",
+    "cross_binding_version": "S31_F_CROSS_BINDING_V0_2",
+    "cross_binding_sha256": "508fcddc9fbef6e30f289017218cdbb7ff6ede72bdefdbed09b4665481dfaf98",
+    "full_s31_regression": "13 test files; 0 failures at exact remote candidate head",
+    "validate_lf_packs_run": "34782826235 SUCCESS",
+    "global_contract_check": "34782826329 FAIL only at unrelated shared migration source parity; not repaired in exclusive S31 lane",
+    "claim_ceiling": "DETERMINISTIC_REPAIR_EVIDENCE_ONLY"
+  },
+  "quality_pack": {
+    "immutable_reference_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+    "independent_review_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md",
+    "quality_gate_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/quality_gate_contract.md",
+    "lf_quality_controls_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/lf_quality_controls.md",
+    "score_rubric_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/judges/quality_pack_score_rubric.md",
+    "mini_judge_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/judges/quality_pack_mini_judge.md",
+    "independent_receipt_schema_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json",
+    "independent_receipt_validator_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/validators/validate_independent_semantic_review.py"
+  },
+  "acceptance_criteria": {
+    "S31-D": [
+      "trusted immutable authority/runtime-schema resolution remains enforced",
+      "caller resolver aliases/callbacks cannot certify currentness",
+      "cross-run authority declaration remains fail-closed"
+    ],
+    "S31-E": [
+      "capability source bytes remain provider-resolved and rehashed",
+      "registry currentness remains non-self-certifiable",
+      "lifecycle and duplicate/source drift protections remain intact",
+      "all load-bearing D/E resolver and fixture dependencies used in this review are frozen by exact blob sha"
+    ],
+    "S31-F": [
+      "all IR-004 mandatory F replay/composition protections remain fail-closed",
+      "STRUCTURAL owner receipt remains capability-bound",
+      "execution receipt remains bound to executed_sha",
+      "non-structural receipts require common S31_F_CROSS_BINDING_V0_2",
+      "common semantic identity includes evidence_level and claim_ceiling in addition to run, capability, execution, input/output, authority and provenance identities",
+      "each resolved non-structural receipt carries resolver-bound evidence_level and claim_ceiling matching the envelope",
+      "recomposing an identical resolved receipt set at a higher claim tier fails closed",
+      "same-content identity substitution remains fail-closed without forcing every historical source ref to equal repository HEAD"
+    ],
+    "S31-G": [
+      "Typed Context exact artifact is resolved and rehashed before provider invocation",
+      "resolved Typed Context semantic governance is revalidated before runtime",
+      "correct outer context digest cannot mask invalid nested authority/currentness evidence",
+      "untrusted resolver type and silent fallback remain blocked"
+    ]
+  },
+  "mandatory_adversarial_rechecks": [
+    "F_CLAIM_LEVEL_ESCALATION_UNDER_IDENTICAL_BINDING",
+    "F_CLAIM_TIER_RECEIPT_FIELD_SUBSTITUTION",
+    "F_OWNER_CAPABILITY_MISMATCH",
+    "F_VALID_AUTHORITY_RECEIPT_REPLAY_WITHOUT_COMMON_BINDING",
+    "F_VALID_PROVENANCE_RECEIPT_REPLAY_WITHOUT_COMMON_BINDING",
+    "F_SAME_CONTENT_INPUT_IDENTITY_SUBSTITUTION",
+    "F_SAME_CONTENT_AUTHORITY_IDENTITY_SUBSTITUTION",
+    "F_SAME_CONTENT_PROVENANCE_IDENTITY_SUBSTITUTION",
+    "BUNDLE_PIN_COMPLETENESS_ALL_LOAD_BEARING_ARTIFACTS",
+    "G_VALID_OUTER_TYPED_CONTEXT_WITH_INVALID_NESTED_AUTHORITY",
+    "G_UNTRUSTED_RESOLVER_TYPE",
+    "D_E_BASELINE_NO_REGRESSION"
+  ],
+  "known_restrictions_for_disposition": {
+    "historical_currentness_durability": {
+      "status": "EXPLICIT_DEBT_FOR_REVIEW",
+      "behavior": "FAIL_CLOSED",
+      "producer_recommendation": "ACCEPTED_CONSERVATIVE_FAIL_CLOSED_DEBT_PENDING_ARCHIVAL_CURRENTNESS_DESIGN",
+      "reviewer_must_assess_not_inherit": true,
+      "resolver_weakening_in_candidate": false
+    },
+    "shared_migration_source_parity": {
+      "status": "OUT_OF_SCOPE_NON_CAUSAL_SHARED_DEBT",
+      "reviewer_should_not_treat_as_S31_repair_evidence": true
+    }
+  },
+  "governance_constraints": [
+    "reviewer_is_producer=false",
+    "producer_context_available=false",
+    "no repair during review",
+    "producer deterministic PASS is not semantic proof",
+    "producer governance disposition is a recommendation, not reviewer verdict",
+    "do not substitute branch HEAD, PR merge ref, later snapshot or moving main",
+    "review exactly candidate snapshot 7f7b844b878ad44c584c6aebcbf63e89d4b10b66 and these frozen artifact pins",
+    "no runtime/Golden/merge/scheduler/production authorization",
+    "semantic review only exact frozen bundle"
+  ],
+  "producer_semantic_verdict": null,
+  "claim_ceiling": "FROZEN_REVIEW_BUNDLE_ONLY"
+}

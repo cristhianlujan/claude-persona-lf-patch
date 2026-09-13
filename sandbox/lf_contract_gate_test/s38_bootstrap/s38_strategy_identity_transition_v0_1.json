@@ -1,0 +1,41 @@
+{
+  "transition_version": "S38_STRATEGY_IDENTITY_TRANSITION_V0_1",
+  "status": "ACTIVE_FORWARD_IDENTITY",
+  "effective_strategy_id": "S38",
+  "historical_strategy_id": "S31",
+  "reason": "STRATEGY_ID_COLLISION_LATE_REGISTRATION_RENUMBER_REQUIRED",
+  "principle": "EARLIER_S31_RETAINS_ID_LATER_S31_MOVES_TO_S38",
+  "lineage_anchor": {
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "historical_head_sha": "f323727a45d8d9697fcf6e63f71876e5ef4fff70",
+    "historical_master_plan_ref": "github://cristhianlujan/claude-persona-lf-patch@f323727a45d8d9697fcf6e63f71876e5ef4fff70/sandbox/lf_contract_gate_test/s31_bootstrap/s31_strategy_master_plan_v0_3.json",
+    "historical_master_plan_blob_sha": "f1aafe9eda4193c57af4d5c432a3970b8b16c272"
+  },
+  "forward_rules": {
+    "new_strategy_id": "S38",
+    "preserve_historical_s31_identifiers": true,
+    "rewrite_frozen_receipts": false,
+    "rewrite_frozen_bundles": false,
+    "rewrite_frozen_handoffs": false,
+    "rewrite_historical_branch_names": false,
+    "new_branches_must_use_s38": true,
+    "new_review_cases_must_use_s38": true,
+    "new_handoffs_must_use_s38": true,
+    "new_strategy_artifacts_must_use_s38": true
+  },
+  "review_lineage": {
+    "historical_review_series": "S31-DG-IR-001..004",
+    "prepared_but_superseded_review_case": "S31-DG-IR-005",
+    "next_review_case": "S38-DG-IR-005",
+    "iteration_number_preserved": true
+  },
+  "semantic_change": false,
+  "runtime_change": false,
+  "authority": {
+    "merge": "NONE",
+    "golden": "NONE",
+    "runtime": "NONE",
+    "scheduler": "NONE",
+    "production": "NONE"
+  }
+}
