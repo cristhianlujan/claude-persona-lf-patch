@@ -1,0 +1,106 @@
+{
+  "receipt_version": "lf-transversal-e2e-matrix-closure/v1",
+  "owner": "LF-TRANSVERSAL-E2E-MATRIX",
+  "issue": 725,
+  "source_branch": "lf/staging-transversal-e2e-matrix-v1-20260912",
+  "base_main_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+  "scope": "NON_PRODUCTION_ASSURANCE",
+  "decision": "BLOCK",
+  "freeze_effect": {
+    "s26_transversal_assurance_clean": false,
+    "s30_transversal_assurance_clean": false,
+    "s30_formal_freeze_allowed": false
+  },
+  "coverage": {
+    "registered_operations": {"accounted": 36, "expected": 36, "coverage_pct": 100},
+    "active_router_rows": {"accounted": 22, "expected": 22, "coverage_pct": 100},
+    "static_execution_routes": {"audited": 17, "expected": 17, "coverage_pct": 100},
+    "routed_operations_graph": {"audited": 14, "expected": 14, "coverage_pct": 100},
+    "unrouted_operations": {"classified": 22, "expected": 22, "coverage_pct": 100}
+  },
+  "verified_results": {
+    "router_adversarial": {
+      "bypass_and_ready": 14,
+      "policy_filter_bypass_but_other_gate_blocks": 1,
+      "blocked_before_policy_surface": 2,
+      "target_hint_override_confirmed": true
+    },
+    "routed_graph": {
+      "clean_operations": 8,
+      "operations_with_findings": 6
+    },
+    "unrouted_provenance": {
+      "candidate_inactive": 10,
+      "test_only_control_plane": 2,
+      "productionish_requires_provenance": 10,
+      "productionish_structurally_proven": 0
+    },
+    "direct_execution_reservation": {
+      "router_or_equivalent_authority_provenance_required": false,
+      "policy_snapshot_on_insert": true,
+      "required_policy_resolution_guard": true,
+      "policy_snapshot_currentness_and_immutability_guard": true,
+      "registered_operation_required": true
+    }
+  },
+  "blocking_findings_by_owner": {
+    "ROUTER_GOVERNANCE_OWNER": [
+      "INVALID_DISTRIBUTION_MODE_CAN_REDUCE_REQUIRED_POLICIES_TO_ZERO",
+      "TARGET_HINT_CAN_OVERRIDE_TARGET_NAMED_IN_REQUEST",
+      "DIRECT_EXECUTION_RESERVATION_DOES_NOT_REQUIRE_ROUTER_OR_EQUIVALENT_AUTHORITY_PROVENANCE"
+    ],
+    "DATABASE_OPERATION_OWNER": [
+      "ACTUALIZACION_DB_LF_BLOCK_TARGET_CLOSE_MISSING"
+    ],
+    "PROFILE_RUNTIME_OWNER_S26": [
+      "ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF_HAS_NO_ACTIVE_STEPS"
+    ],
+    "CARD_CREATION_OWNER": [
+      "CREACION_CARD_LF_REQUIRED_STEPS_CONTRACT_JUDGE_AND_CLOSE_UNREACHABLE"
+    ],
+    "SKILL_CREATION_OWNER": [
+      "CREACION_SKILL_LF_NINE_REQUIRED_STEPS_UNREACHABLE"
+    ],
+    "STRATEGY_GOVERNANCE_OWNER_S30": [
+      "CREACION_ESTRATEGIA_LF_ACTIVE_ROUTE_WITHOUT_ACTIVE_OPERATION_CONTRACT",
+      "CREACION_ESTRATEGIA_LF_REQUIRED_POLICY_RESOLUTION_5_EXPECTED_4_RESOLVED",
+      "CREACION_ESTRATEGIA_LF_ACTIVE_STEPS_NOT_BOUND_TO_ACTIVE_STEP_CONTRACTS"
+    ],
+    "LEARNING_BRIDGE_OWNER": [
+      "LEARNING_BRIDGE_KB_CARD_LF_BLOCKED_EDGE_CLOSE_SELF_LOOP_REQUIRES_JUSTIFICATION_OR_REPAIR"
+    ],
+    "TRANSVERSAL_OWNER": [
+      "TEN_PRODUCTIONISH_UNROUTED_OPERATIONS_LACK_STRUCTURAL_ENTRY_PROVENANCE_PROOF",
+      "LIVE_REFRESH_IN_EVERY_CI_RUN_NOT_YET_BOUND_TO_SHARED_CONTROL_SURFACE"
+    ]
+  },
+  "permanent_regression_materialization": {
+    "shared_engine": "sandbox/lf_contract_gate_test/transversal_e2e_matrix/matrix_engine_v1.py",
+    "structural_live_generator": "sandbox/lf_contract_gate_test/transversal_e2e_matrix/generate_live_matrix_v1.sql",
+    "router_adversarial_probe": "sandbox/lf_contract_gate_test/transversal_e2e_matrix/adversarial_router_probe_v1.sql",
+    "s26_consumer": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_transversal_e2e_matrix_s26_v1.py",
+    "s30_consumer": "sandbox/lf_contract_gate_test/s30_transversal_e2e_matrix/test_s30_transversal_matrix_v1.py",
+    "checked_in_ci_consumption": true,
+    "fresh_live_ci_refresh_each_run": false
+  },
+  "evidence": [
+    "sandbox/lf_contract_gate_test/transversal_e2e_matrix/generator_live_readback_v1.json",
+    "sandbox/lf_contract_gate_test/transversal_e2e_matrix/adversarial_router_readback_20260913_v1.json",
+    "sandbox/lf_contract_gate_test/transversal_e2e_matrix/live_graph_readback_20260913_v1.json",
+    "sandbox/lf_contract_gate_test/transversal_e2e_matrix/internal_provenance_assessment_v1.json",
+    "sandbox/lf_contract_gate_test/transversal_e2e_matrix/execution_entry_surface_assessment_v1.json"
+  ],
+  "next_gate": {
+    "required_action": "OWNER_REPAIR_AND_REPLAY_TRANSVERSAL_MATRIX",
+    "pass_condition": "ZERO_KNOWN_BYPASS_ZERO_UNREACHABLE_REQUIRED_STEPS_ZERO_UNKNOWN_PRODUCTIONISH_PROVENANCE_AND_100_PERCENT_CURRENT_LIVE_COVERAGE",
+    "shared_live_ci_binding_requires_separate_authority": true
+  },
+  "safety": {
+    "main_merged": false,
+    "production_activation": false,
+    "runtime_activation": false,
+    "scheduler_activation": false,
+    "business_effects": false,
+    "billing_or_secret_changes": false
+  }
+}
