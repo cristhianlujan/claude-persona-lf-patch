@@ -38,63 +38,66 @@ def base():
     }
 
 
-# Positive terminal close.
 r = m.evaluate_work_package(base())
 assert r["status"] == m.PASS and r["code"] == "PASS_CLOSE_GUARD", r
 
-# Critical regression: one causal blocker plus independent safe work MUST continue, not close.
 x = base()
 x["frontier"].update({"blockers":[{"code":"WAIT_REVIEW","affected_scope":"S31-A","causal_gate":"INDEPENDENT_REVIEW","owner":"INDEPENDENT_REVIEW","independent_safe_work":["S31-C"],"invalidation_condition":"REVIEW_RECEIPT"}],"safe_parallel_work":["S31-C"],"remaining_safe_scope_count":1,"next_safe_batch":"S31-C"})
 x["close_guard"].update({"can_close":False,"safe_work_remaining_count":1,"next_safe_batch":"S31-C","terminal_disposition_complete":False})
 r = m.evaluate_work_package(x)
 assert r["status"] == m.CONTINUE and r["code"] == "CONTINUE_SAFE_SCOPE_PERSIST_BLOCKED_SCOPE", r
 
-# Material source named but not frozen.
 x = base(); x["source_snapshot_bindings"][0]["revision"] = None
 assert m.evaluate_work_package(x)["code"] == "BLOCK_SCHEMA_VALIDATION"
 
-# Validator exists conceptually but no execution receipt.
 x = base(); x["execution"]["executed_validation"].update({"command_or_runner":None,"executed_sha":None,"exit_status":None,"receipt_ref":None})
 assert m.evaluate_work_package(x)["code"] == "BLOCK_SCHEMA_VALIDATION"
 
-# Synthetic merge ref may not be called exact branch-head evidence.
 x = base(); x["execution_identity"]["execution_ref_kind"] = "PR_MERGE_REF"
 assert m.evaluate_work_package(x)["code"] == "BLOCK_EXACT_HEAD_REF_KIND_INVALID"
 
-# Branch execution SHA must equal branch head for exact-head claim.
 x = base(); x["execution_identity"]["executed_sha"] = SHA_A
 assert m.evaluate_work_package(x)["code"] == "BLOCK_EXACT_HEAD_SHA_MISMATCH"
 
-# EKB list copied/stale is insufficient.
 x = base(); x["authority"]["ekb_execution_binding"]["fresh_for_execution"] = False
 assert m.evaluate_work_package(x)["code"] == "BLOCK_EKB_BINDING_NOT_FRESH"
 
-# Every applicable EKB rule needs an actual gate/control mapping.
 x = base(); del x["authority"]["ekb_execution_binding"]["control_mapping"]["GOV-010"]
 assert m.evaluate_work_package(x)["code"] == "BLOCK_EKB_CONTROL_MAPPING_MISSING"
 
-# Retry policy may not loop equivalent failures.
 x = base(); x["execution"]["retry_policy"]["same_failure_retries_forbidden"] = False
 assert m.evaluate_work_package(x)["code"] == "BLOCK_SAME_FAILURE_RETRY_ALLOWED"
 
-# Explicit anti-close: next safe batch present despite count zero still denies close.
-x = base(); x["close_guard"]["next_safe_batch"] = "S31-D"
+x = base(); x["close_guard"]["next_safe_batch"] = "S31-D"; x["frontier"]["next_safe_batch"] = "S31-D"
 r = m.evaluate_work_package(x)
-assert r["status"] == m.BLOCKED and "NEXT_SAFE_BATCH_PRESENT" in r["reasons"], r
+assert r["status"] == m.BLOCKED and r["code"] == "BLOCK_NEXT_SAFE_BATCH_WITH_ZERO_COUNT", r
 
-# Explicit anti-close: no global remaining-work scan.
-x = base(); x["close_guard"]["global_remaining_work_scan"] = "NOT_RUN"
+x = base(); x["close_guard"]["global_remaining_work_scan"] = "NOT_RUN"; x["frontier"]["global_remaining_work_scan"] = "NOT_RUN"
 r = m.evaluate_work_package(x)
 assert r["status"] == m.BLOCKED and "GLOBAL_REMAINING_WORK_SCAN_NOT_PASS" in r["reasons"], r
 
-# Schema-first: structurally invalid WP cannot bypass semantic checks.
 x = base(); del x["objective"]
 r = m.evaluate_work_package(x)
 assert r["status"] == m.BLOCKED and r["code"] == "BLOCK_SCHEMA_VALIDATION", r
 
-# Executed validation SHA must be a real 40-hex commit identity.
 x = base(); x["execution"]["executed_validation"]["executed_sha"] = "not-a-sha"
 r = m.evaluate_work_package(x)
 assert r["status"] == m.BLOCKED and r["code"] == "BLOCK_SCHEMA_VALIDATION", r
 
-print("PASS_LF_WORK_PACKAGE_V0_2_CANDIDATE_SELFTEST=13/13")
+x = base(); x["frontier"]["safe_parallel_work"] = ["S31-C"]
+r = m.evaluate_work_package(x)
+assert r["status"] == m.BLOCKED and r["code"] == "BLOCK_SAFE_WORK_COUNT_MISMATCH", r
+
+x = base(); x["frontier"].update({"safe_parallel_work":["S31-C","S31-D"],"remaining_safe_scope_count":1,"next_safe_batch":"S31-C"}); x["close_guard"].update({"can_close":False,"safe_work_remaining_count":1,"next_safe_batch":"S31-C","terminal_disposition_complete":False})
+r = m.evaluate_work_package(x)
+assert r["status"] == m.BLOCKED and r["code"] == "BLOCK_SAFE_WORK_COUNT_MISMATCH", r
+
+x = base(); x["frontier"].update({"safe_parallel_work":["S31-C"],"remaining_safe_scope_count":1,"next_safe_batch":"S31-D"}); x["close_guard"].update({"can_close":False,"safe_work_remaining_count":1,"next_safe_batch":"S31-D","terminal_disposition_complete":False})
+r = m.evaluate_work_package(x)
+assert r["status"] == m.BLOCKED and r["code"] == "BLOCK_NEXT_SAFE_BATCH_NOT_LISTED", r
+
+x = base(); x["frontier"].update({"safe_parallel_work":["S31-C"],"remaining_safe_scope_count":1,"next_safe_batch":"S31-C"}); x["close_guard"].update({"can_close":False,"safe_work_remaining_count":0,"next_safe_batch":"S31-C","terminal_disposition_complete":False})
+r = m.evaluate_work_package(x)
+assert r["status"] == m.BLOCKED and r["code"] == "BLOCK_FRONTIER_CLOSE_COUNT_MISMATCH", r
+
+print("PASS_LF_WORK_PACKAGE_V0_2_CANDIDATE_SELFTEST=17/17")
