@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "lf/work-package/v0.2-candidate",
+  "$id": "https://lf.local/schemas/work-package/v0.2-candidate",
   "title": "LF Work Package v0.2 Candidate",
   "type": "object",
   "additionalProperties": false,
