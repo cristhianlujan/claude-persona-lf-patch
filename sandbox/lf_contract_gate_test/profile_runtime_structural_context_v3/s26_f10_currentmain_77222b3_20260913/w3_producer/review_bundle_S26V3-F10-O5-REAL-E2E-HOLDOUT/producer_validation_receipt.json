@@ -1,5 +1,5 @@
 {
-  "artifact_canonical_sha256": "5174a262bdb084fe72e18ea4254655f0c2a17c0f374ebd85cd8ab76aae156cd7",
+  "artifact_canonical_sha256": "896bb19200e418fdcfe18b5ea2a2de121df75032cbc1057ba1161e6025e8a4e5",
   "claim_ceiling": "PRODUCER_COMPLETE_AWAITING_INDEPENDENT_REVIEW_NOT_GOLDEN_NOT_PRODUCTION",
   "composer_boundary": "PASS",
   "ekb_preflight": {
@@ -20,7 +20,7 @@
     "source": "supabase://mhwmirqcgxxukpctffuv/public.lf_error_knowledge",
     "status": "PASS"
   },
-  "final_candidate_sha": "7e449e513164d6ef4f056c74279563f8ff171e98",
+  "final_candidate_sha": "77222b36028407659c3ff6f18e398ec77ec8fe46",
   "full_governed_pipeline_observed": true,
   "golden_authorized": false,
   "independent_semantic_review": {
@@ -31,8 +31,8 @@
   "matrix_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT",
   "performance": {
     "budget_ms": 120000,
-    "e2e_ms": 10477.054,
-    "profile_elapsed_ms": 10477.02,
+    "e2e_ms": 9875.542,
+    "profile_elapsed_ms": 9875.509,
     "status": "PASS",
     "within_budget": true
   },
@@ -49,10 +49,10 @@
     "ui_production_semantic_repair": "9/9 PASS",
     "ui_production_semantic_transport_v5": "3/3 PASS"
   },
-  "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-7E449E5",
+  "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-77222B3",
   "runtime_completion": "PASS",
   "runtime_typed_context_materialized_in_bundle": true,
-  "runtime_typed_context_sha256": "4695e3ee65da0a040a80e3c911b127a946fd7c21deb39d26a42f6d8006fb9e45",
+  "runtime_typed_context_sha256": "0edbd213b583448aab29ac845d115cc628b76e43f116b4e6ffa94094bf5a54d4",
   "schema": "S26_F10_O5_PRODUCER_VALIDATION_RECEIPT_V1",
   "semantic_transport": "UICT5",
   "semantic_utility": "PASS",

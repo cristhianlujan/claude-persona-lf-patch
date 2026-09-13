@@ -726,9 +726,9 @@
       "context": {
         "execution_mode": "SANDBOX",
         "input_sha256": "e18350ad4268292700636621b92294454c034ebb8f1377cd1cdf0b3510066a1e",
-        "request_id": "S26V3-F10-O5-FRESH-7E449E5-20260913T1746Z",
-        "runtime_source_sha": "7e449e513164d6ef4f056c74279563f8ff171e98",
-        "runtime_typed_context_sha256": "4695e3ee65da0a040a80e3c911b127a946fd7c21deb39d26a42f6d8006fb9e45"
+        "request_id": "S26V3-F10-O5-FRESH-77222B3-20260913T1810Z",
+        "runtime_source_sha": "77222b36028407659c3ff6f18e398ec77ec8fe46",
+        "runtime_typed_context_sha256": "0edbd213b583448aab29ac845d115cc628b76e43f116b4e6ffa94094bf5a54d4"
       },
       "render_policy": "NON_RENDER",
       "schema": "LF_UI_GOVERNANCE_ENVELOPE_V1"
@@ -850,7 +850,7 @@
     "self_verdict": "PASS_TO_QUALITY_PACK_CANDIDATE",
     "worker": "ui_architect"
   },
-  "artifact_canonical_sha256": "5174a262bdb084fe72e18ea4254655f0c2a17c0f374ebd85cd8ab76aae156cd7",
+  "artifact_canonical_sha256": "896bb19200e418fdcfe18b5ea2a2de121df75032cbc1057ba1161e6025e8a4e5",
   "case_context": {
     "brand_new_case": true,
     "domain": "HOME_HEALTH_SERVICES_MARKETPLACE",
@@ -860,9 +860,9 @@
     "task_mode": "CREATE_NEW"
   },
   "claim_ceiling": "FROZEN_ARTIFACT_FOR_INDEPENDENT_REVIEW_NOT_SEMANTICALLY_CERTIFIED_NOT_GOLDEN_NOT_PRODUCTION",
-  "final_candidate_sha": "7e449e513164d6ef4f056c74279563f8ff171e98",
+  "final_candidate_sha": "77222b36028407659c3ff6f18e398ec77ec8fe46",
   "matrix_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT",
-  "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-7E449E5",
+  "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-77222B3",
   "runtime_observation": {
     "adapter_binding": [],
     "authority_resolution": [
@@ -870,7 +870,7 @@
         "authority_id": "PERFIL-UI-ARCHITECT",
         "authority_type": "PROFILE_SOURCE",
         "cross_run_declared": false,
-        "run_id": "S26V3-F10-O5-FRESH-7E449E5-20260913T1746Z",
+        "run_id": "S26V3-F10-O5-FRESH-77222B3-20260913T1810Z",
         "source_refs": [
           "profiles/ui_architect/SKILL.md",
           "profiles/ui_architect/contracts/composer_payload_boundary_v1.md"
@@ -886,20 +886,20 @@
       "status": "FALLBACK"
     },
     "downstream_authorized": false,
-    "elapsed_ms": 10477.02,
+    "elapsed_ms": 9875.509,
     "full_governed_pipeline_observed": true,
     "llama_timings": {
       "cache_n": 1334,
-      "predicted_ms": 2364.914,
-      "predicted_n": 31,
-      "predicted_per_second": 12.685450718292504,
-      "predicted_per_token_ms": 78.83046666666668,
-      "prompt_ms": 8079.669,
-      "prompt_n": 291,
-      "prompt_per_second": 36.016326906461146,
-      "prompt_per_token_ms": 27.76518556701031
+      "predicted_ms": 1940.585,
+      "predicted_n": 27,
+      "predicted_per_second": 13.398021730560629,
+      "predicted_per_token_ms": 74.63788461538462,
+      "prompt_ms": 7899.888,
+      "prompt_n": 288,
+      "prompt_per_second": 36.45621305010906,
+      "prompt_per_token_ms": 27.430166666666665
     },
-    "materialized_output_sha256": "5174a262bdb084fe72e18ea4254655f0c2a17c0f374ebd85cd8ab76aae156cd7",
+    "materialized_output_sha256": "896bb19200e418fdcfe18b5ea2a2de121df75032cbc1057ba1161e6025e8a4e5",
     "model_raw_output_sha256": "45b130b396abb690095cb6b64c1bf23b4a046a49c904aee1436ff0a46b450b0b",
     "pipeline_stage_evidence": {
       "A_INPUT_ADMISSION": {
@@ -944,7 +944,7 @@
             "authority_id": "PERFIL-UI-ARCHITECT",
             "authority_type": "PROFILE_SOURCE",
             "cross_run_declared": false,
-            "run_id": "S26V3-F10-O5-FRESH-7E449E5-20260913T1746Z",
+            "run_id": "S26V3-F10-O5-FRESH-77222B3-20260913T1810Z",
             "source_refs": [
               "profiles/ui_architect/SKILL.md",
               "profiles/ui_architect/contracts/composer_payload_boundary_v1.md"
@@ -958,7 +958,7 @@
       "E_TYPED_CONTEXT": {
         "materialized_in_bundle": true,
         "provenance_reconstructible": true,
-        "runtime_typed_context_sha256": "4695e3ee65da0a040a80e3c911b127a946fd7c21deb39d26a42f6d8006fb9e45",
+        "runtime_typed_context_sha256": "0edbd213b583448aab29ac845d115cc628b76e43f116b4e6ffa94094bf5a54d4",
         "schema": "lf-runtime-typed-context/v1",
         "status": "PASS"
       },
@@ -971,7 +971,7 @@
         "ui_score_total": 25
       }
     },
-    "request_id": "S26V3-F10-O5-FRESH-7E449E5-20260913T1746Z",
+    "request_id": "S26V3-F10-O5-FRESH-77222B3-20260913T1810Z",
     "runtime_completion": "PASS",
     "runtime_schema": {
       "mode": "UI_PRODUCTION_SPEC",
@@ -986,7 +986,7 @@
           "authority_id": "PERFIL-UI-ARCHITECT",
           "authority_type": "PROFILE_SOURCE",
           "cross_run_declared": false,
-          "run_id": "S26V3-F10-O5-FRESH-7E449E5-20260913T1746Z",
+          "run_id": "S26V3-F10-O5-FRESH-77222B3-20260913T1810Z",
           "source_refs": [
             "profiles/ui_architect/SKILL.md",
             "profiles/ui_architect/contracts/composer_payload_boundary_v1.md"
@@ -1005,7 +1005,7 @@
         "surface_code": "PROFILE:ui_architect",
         "task_code": "EJECUCION_PERFIL_LF:UI_PRODUCTION_SPEC"
       },
-      "current_run_id": "S26V3-F10-O5-FRESH-7E449E5-20260913T1746Z",
+      "current_run_id": "S26V3-F10-O5-FRESH-77222B3-20260913T1810Z",
       "input": {
         "input_fields": {
           "distribution_mode": "DIRECT",
@@ -1072,12 +1072,12 @@
             ],
             "task_mode": "CREATE_NEW"
           },
-          "gate_run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-002",
+          "gate_run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-003",
           "output_contract_version": "UI_PRODUCTION_SPEC_V6",
           "project_id": "S26",
           "task_mode": "CREATE_NEW"
         },
-        "input_fields_sha256": "2858768ab207e52c0915c677e907bd891e09ae4b214265e5eda3827c28fc7a86",
+        "input_fields_sha256": "79e12bab520946897091edf7407021b8f9b702433abc4afd0e8548aa86271dfd",
         "input_literal_sha256": "e18350ad4268292700636621b92294454c034ebb8f1377cd1cdf0b3510066a1e",
         "profile_code": "PERFIL-UI-ARCHITECT",
         "profile_slug": "ui_architect"
@@ -1090,16 +1090,16 @@
         "source_ref": "profiles/ui_architect/schemas/ui_production_spec.schema.json"
       },
       "schema": "lf-runtime-typed-context/v1",
-      "typed_context_sha256": "4695e3ee65da0a040a80e3c911b127a946fd7c21deb39d26a42f6d8006fb9e45"
+      "typed_context_sha256": "0edbd213b583448aab29ac845d115cc628b76e43f116b4e6ffa94094bf5a54d4"
     },
-    "runtime_typed_context_sha256": "4695e3ee65da0a040a80e3c911b127a946fd7c21deb39d26a42f6d8006fb9e45",
+    "runtime_typed_context_sha256": "0edbd213b583448aab29ac845d115cc628b76e43f116b4e6ffa94094bf5a54d4",
     "semantic_transport": "UICT5",
     "semantic_utility": "PASS",
-    "source_sha": "7e449e513164d6ef4f056c74279563f8ff171e98",
-    "total_ms": 10477.054,
+    "source_sha": "77222b36028407659c3ff6f18e398ec77ec8fe46",
+    "total_ms": 9875.542,
     "transport_decoded": true,
     "typed_context_present": true,
     "typed_context_schema": "lf-runtime-typed-context/v1"
   },
-  "schema": "S26_F10_O5_FRESH_ARTIFACT_PAYLOAD_V2"
+  "schema": "S26_F10_O5_FRESH_ARTIFACT_PAYLOAD_V1"
 }

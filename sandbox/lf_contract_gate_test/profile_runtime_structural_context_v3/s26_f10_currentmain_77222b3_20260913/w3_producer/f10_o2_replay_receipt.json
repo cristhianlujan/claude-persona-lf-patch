@@ -2,14 +2,14 @@
   "all_replays_exact": true,
   "case_id": "S26V3-F10-O2-FINAL-REPLAY-PERF",
   "claim_ceiling": "DETERMINISTIC_REPLAY_PERFORMANCE_ONLY_NOT_INDEPENDENT_SEMANTIC_REVIEW",
-  "expected_materialized_sha256": "5174a262bdb084fe72e18ea4254655f0c2a17c0f374ebd85cd8ab76aae156cd7",
-  "final_candidate_sha": "7e449e513164d6ef4f056c74279563f8ff171e98",
+  "expected_materialized_sha256": "896bb19200e418fdcfe18b5ea2a2de121df75032cbc1057ba1161e6025e8a4e5",
+  "final_candidate_sha": "77222b36028407659c3ff6f18e398ec77ec8fe46",
   "independent_case_credit": false,
   "latency_ms": {
-    "max": 2.458,
-    "median": 1.96,
-    "min": 1.845,
-    "p95": 2.355
+    "max": 2.295,
+    "median": 1.9,
+    "min": 1.864,
+    "p95": 2.054
   },
   "model_calls": 0,
   "replay_count": 20,

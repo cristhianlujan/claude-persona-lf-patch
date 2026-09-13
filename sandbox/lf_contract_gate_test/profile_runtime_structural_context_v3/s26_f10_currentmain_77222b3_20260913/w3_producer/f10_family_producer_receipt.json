@@ -1,6 +1,6 @@
 {
   "claim_ceiling": "F10_PRODUCER_COMPLETE_INDEPENDENT_REVIEW_PENDING_NOT_GOLDEN_NOT_PRODUCTION",
-  "final_candidate_sha": "7e449e513164d6ef4f056c74279563f8ff171e98",
+  "final_candidate_sha": "77222b36028407659c3ff6f18e398ec77ec8fe46",
   "full_governed_pipeline_observed_o5": true,
   "objectives": {
     "F10-O2": {
