@@ -11,7 +11,10 @@
     "source_authority_precedence": true,
     "schema_invention_allowed": false,
     "manual_requires_all_safe_alternatives_exhausted": true,
-    "typed_failure_evidence_required": true,
+    "manual_requires_explicit_no_unresolved_blocker_evidence": true,
+    "typed_attempt_evidence_required": true,
+    "fallback_attempts_unique_and_ordered": true,
+    "unknown_fallback_alternatives_forbidden": true,
     "cards_define_how_not_what": true
   },
   "boundary_mappings": {
@@ -33,10 +36,14 @@
   },
   "fallback_rules": {
     "start_only_when_status": "NO_DIRECT_CARD",
-    "each_safe_attempt_requires": ["typed_attempt", "reason", "evidence_ref"],
+    "attempts_must_follow_declared_sequence": true,
+    "each_attempt_requires": ["typed_attempt", "reason", "evidence_ref"],
+    "safe_attempt_result_vocabulary": ["PASS", "FAIL"],
     "success_action": "RESOLVED_WITH_GOVERNED_FALLBACK",
     "manual_allowed_only_after": ["CONTRACT_SCHEMA_FAILED", "GENERIC_CAPABILITY_FAILED", "SAFE_COMPOSITION_FAILED"],
-    "manual_with_unresolved_blocker": "FORBIDDEN"
+    "manual_readiness_requires": ["result=READY", "typed_attempt=true", "reason", "evidence_ref", "blocker_unresolved=false"],
+    "manual_with_unresolved_blocker": "FORBIDDEN",
+    "missing_manual_readiness_evidence": "FAIL_CLOSED"
   },
   "compatibility_policy": {
     "existing_s26_vocabularies_remain_at_boundaries": true,
