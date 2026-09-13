@@ -1,0 +1,135 @@
+{
+  "acceptance_criteria": {
+    "implementation_readiness": "STRUCTURED_SPEC_READY_FOR_NEXT_AGENT",
+    "minimum_component_count": 9,
+    "minimum_hierarchy_depth_edges": 3,
+    "minimum_risk_control_count": 4,
+    "minimum_state_map_coverage_ratio": 1.0,
+    "minimum_variant_guard_coverage_ratio": 1.0,
+    "required_component_ids": [
+      "header_search",
+      "category_navigation",
+      "featured_services",
+      "service_cards",
+      "service_card_template",
+      "service_title",
+      "service_provider",
+      "service_price",
+      "service_cta"
+    ],
+    "required_design_intents": [
+      "clear",
+      "professional",
+      "easy_to_navigate"
+    ],
+    "required_responsive_modes": [
+      "desktop",
+      "mobile"
+    ],
+    "required_sections": [
+      "header",
+      "categories",
+      "featured_services",
+      "service_cards"
+    ],
+    "required_service_leaf_components": [
+      "service_title",
+      "service_provider",
+      "service_price",
+      "service_cta"
+    ],
+    "required_source_bindings": {
+      "category_navigation.items": "DATA_BOUND",
+      "featured_services.items": "DATA_BOUND",
+      "service_card_template.fields": "title|provider|price|call_to_action",
+      "service_card_template.values": "DATA_BOUND",
+      "service_cards.items": "DATA_BOUND",
+      "service_cta.destination": "UNRESOLVED_UNTIL_SOURCE",
+      "service_cta.label": "DATA_BOUND:call_to_action",
+      "service_price.format": "SOURCE_DEFINED",
+      "service_price.value": "DATA_BOUND:price",
+      "service_provider.value": "DATA_BOUND:provider",
+      "service_title.value": "DATA_BOUND:title"
+    },
+    "required_state_component_ids": [
+      "header_search",
+      "category_navigation",
+      "featured_services",
+      "service_cards",
+      "service_cta"
+    ],
+    "task_mode": "CREATE_NEW"
+  },
+  "artifact_canonical_sha256": "0f19e9c069bbea292bda8ef2d4e5d57f9ea3b0f9b3e0b742a1bb8827e5ccb71c",
+  "artifact_ref": "artifact_payload.json#artifact",
+  "blocking_criteria": [
+    "invented user-visible data or routes",
+    "missing required component or source binding",
+    "materially incoherent hierarchy/layout",
+    "unsafe dark-pattern pressure/urgency/scarcity",
+    "internal governance/provenance metadata rendered to users",
+    "artifact cannot support implementation handoff"
+  ],
+  "case_context": {
+    "domain": "HOME_HEALTH_SERVICES_MARKETPLACE",
+    "review_goal": "Judge the supplied UI artifact semantically and visually as a brand-new governed E2E holdout, without using producer conclusions.",
+    "task_mode": "CREATE_NEW",
+    "user_request": "Diseña una pantalla para un marketplace de servicios de salud a domicilio. Debe incluir un encabezado con buscador, categorías como medicina general, enfermería y fisioterapia, una sección de servicios destacados y tarjetas de servicio con título, profesional o proveedor, precio y una llamada a la acción para reservar. El diseño debe ser claro, profesional y fácil de navegar en escritorio y móvil. Entrega una especificación estructurada lista para que otro agente implemente la pantalla; no inventes destinos, precios ni datos que no provengan de la fuente."
+  },
+  "claim_boundary": "EXACT_FROZEN_ARTIFACT_ONLY_NOT_GENERAL_REGRESSION_NOT_GOLDEN_NOT_PRODUCTION",
+  "family": "F10_E2E_REPLAY_LIVE_SEMANTIC",
+  "final_candidate_sha": "faae5666951664db2dec58d28420951d4a5d989a",
+  "matrix_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT",
+  "objective_id": "F10-O5",
+  "producer_verdict_is_authority": false,
+  "quality_source_refs": [
+    {
+      "path": "profiles/ui_architect/SKILL.md",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@faae5666951664db2dec58d28420951d4a5d989a/profiles/ui_architect/SKILL.md",
+      "sha256": "b099944839af79cb97eac76f12ecf8bd38c39ea331224ee335ced32491f411c0"
+    },
+    {
+      "path": "profiles/quality_pack/SKILL.md",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@faae5666951664db2dec58d28420951d4a5d989a/profiles/quality_pack/SKILL.md",
+      "sha256": "e4083f988a35dbaa65ac795d455d69216ea261b3b4ae39ba791e16c20632db2c"
+    },
+    {
+      "path": "profiles/quality_pack/contracts/quality_gate_contract.md",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@faae5666951664db2dec58d28420951d4a5d989a/profiles/quality_pack/contracts/quality_gate_contract.md",
+      "sha256": "6c2543a891143dbbec4d0f71eb134da2ac36b4d75fca174b885b4b00429c1553"
+    },
+    {
+      "path": "profiles/quality_pack/contracts/lf_quality_controls.md",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@faae5666951664db2dec58d28420951d4a5d989a/profiles/quality_pack/contracts/lf_quality_controls.md",
+      "sha256": "069962007fc1cc4320f3ead807973241c710f140e62d6869c2030c11552fe297"
+    },
+    {
+      "path": "profiles/quality_pack/judges/quality_pack_score_rubric.md",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@faae5666951664db2dec58d28420951d4a5d989a/profiles/quality_pack/judges/quality_pack_score_rubric.md",
+      "sha256": "cfb928f5e7d375bcf478666f704d617714be3c7369e8524fc387e78f290e0698"
+    },
+    {
+      "path": "profiles/quality_pack/judges/quality_pack_mini_judge.md",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@faae5666951664db2dec58d28420951d4a5d989a/profiles/quality_pack/judges/quality_pack_mini_judge.md",
+      "sha256": "b6191adfc3895398c5aa480998d130642fc0dd904208d86f884d998254b3e359"
+    },
+    {
+      "path": "profiles/quality_pack/schemas/quality_review.schema.json",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@faae5666951664db2dec58d28420951d4a5d989a/profiles/quality_pack/schemas/quality_review.schema.json",
+      "sha256": "26eb79a876be9c7fb8aa699d7f7a549f361b0836d322995f4a5282c1b12443c3"
+    },
+    {
+      "path": "profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@faae5666951664db2dec58d28420951d4a5d989a/profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md",
+      "sha256": "6f9f978e2dfd0e107e12af88a2fbd81c4e4a4913facd0b09c2051bf867e6e434"
+    },
+    {
+      "path": "profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@faae5666951664db2dec58d28420951d4a5d989a/profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json",
+      "sha256": "8d126b2bf5dde42b88fc3fb334ab4d6ed25f6180497328159c501fcb80db808c"
+    }
+  ],
+  "required_execution_mode": "INDEPENDENT_CHAT_CONTEXT",
+  "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-FAAE566",
+  "schema": "S26_W3_REVIEW_CASE_V2"
+}
