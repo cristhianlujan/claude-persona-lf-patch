@@ -59,7 +59,7 @@
         "stale_action": {"const": "FAIL_CLOSED"},
         "evidence_ref": {"type": "string", "minLength": 2},
         "evidence_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-        "resolver_id": {"type": "string", "minLength": 2}
+        "resolver_id": {"const": "QUALITY_PACK_TRUSTED_REF_RESOLVER_V1"}
       }
     },
     "source_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 2}, "uniqueItems": true},

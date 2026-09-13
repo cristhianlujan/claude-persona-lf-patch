@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import hashlib
 import json
 from pathlib import Path
-from typing import Any, Callable, Mapping
+from typing import Any, Mapping
 
 from jsonschema import Draft7Validator
 
@@ -13,7 +12,13 @@ BLOCKED = "BLOCKED"
 CONTINUE = "CONTINUE_SAFE_PARALLEL"
 ROOT = Path(__file__).resolve().parent
 SCHEMA_PATH = ROOT / "lf_work_package_v0_2_candidate.schema.json"
-EvidenceResolver = Callable[[str], Mapping[str, Any] | None]
+from s31_trusted_resolution_v0_1 import (
+    PASS as TRUST_PASS,
+    TRUSTED_RESOLVER_ID,
+    TrustedRefResolver,
+    resolve_json_binding,
+)
+EvidenceResolver = TrustedRefResolver
 
 
 def _block(code: str, **extra: Any) -> dict:
@@ -35,55 +40,20 @@ def _normalized_batch(v: Any) -> str | None:
     return None if text.upper() in {"NONE", "N/A"} else text
 
 
-def _canonical_digest(record: Mapping[str, Any]) -> str:
-    raw = json.dumps(dict(record), sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
-    return hashlib.sha256(raw).hexdigest()
-
 
 def _resolve_evidence(
     wp: Mapping[str, Any],
     binding_key: str,
     expected_type: str,
     evidence_resolver: EvidenceResolver | None,
-) -> tuple[dict, Mapping[str, Any] | None]:
+) -> tuple[dict, Mapping[str, Any] | None, Mapping[str, Any] | None]:
     binding = ((wp.get("resolved_evidence") or {}).get(binding_key))
-    if not isinstance(binding, Mapping):
-        return _block("BLOCK_RESOLVED_EVIDENCE_BINDING_MISSING", binding=binding_key), None
-    if evidence_resolver is None:
-        return _block("BLOCK_EVIDENCE_RESOLVER_MISSING", binding=binding_key), None
-    ref = binding.get("ref")
-    expected_digest = binding.get("digest")
-    declared_resolver = binding.get("resolver_id")
-    try:
-        record = evidence_resolver(str(ref))
-    except Exception as exc:
-        return _block("BLOCK_EVIDENCE_RESOLUTION_FAILED", binding=binding_key, error=type(exc).__name__), None
-    if not isinstance(record, Mapping):
-        return _block("BLOCK_EVIDENCE_UNRESOLVED", binding=binding_key, ref=ref), None
-    observed_digest = _canonical_digest(record)
-    if observed_digest != expected_digest:
-        return _block(
-            "BLOCK_EVIDENCE_DIGEST_MISMATCH",
-            binding=binding_key,
-            expected=expected_digest,
-            observed=observed_digest,
-        ), None
-    if record.get("evidence_type") != expected_type:
-        return _block(
-            "BLOCK_EVIDENCE_TYPE_MISMATCH",
-            binding=binding_key,
-            expected=expected_type,
-            observed=record.get("evidence_type"),
-        ), None
-    if record.get("status") != "PASS":
-        return _block("BLOCK_RESOLVED_EVIDENCE_NOT_PASS", binding=binding_key, status=record.get("status")), None
-    if record.get("resolver_id") != declared_resolver:
-        return _block("BLOCK_EVIDENCE_RESOLVER_ID_MISMATCH", binding=binding_key), None
-    worker = ((wp.get("execution") or {}).get("worker"))
-    if declared_resolver == worker:
-        return _block("BLOCK_EVIDENCE_SELF_RESOLVER", binding=binding_key, resolver_id=declared_resolver), None
-    return {"status": PASS, "code": "PASS_RESOLVED_EVIDENCE", "binding": binding_key}, record
-
+    resolved, record, provider = resolve_json_binding(
+        evidence_resolver, binding, expected_type, binding_key, require_current_content=True
+    )
+    if resolved.get("status") != TRUST_PASS:
+        return _block(resolved.get("code", "BLOCK_TRUSTED_EVIDENCE"), **{k:v for k,v in resolved.items() if k not in {"status","code"}}), None, provider
+    return {"status": PASS, "code": "PASS_RESOLVED_EVIDENCE", "binding": binding_key}, record, provider
 
 def validate_schema_instance(wp: Mapping[str, Any]) -> dict:
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
@@ -129,13 +99,14 @@ def validate_currentness(wp: Mapping[str, Any], evidence_resolver: EvidenceResol
     if kind == "PR_MERGE_REF" and x.get("exact_head_claim") is True:
         return _block("BLOCK_PR_MERGE_REF_MISLABELED_EXACT_HEAD")
 
-    resolved, receipt = _resolve_evidence(wp, "currentness_receipt", "CURRENTNESS_RECEIPT", evidence_resolver)
+    resolved, receipt, provider = _resolve_evidence(wp, "currentness_receipt", "CURRENTNESS_RECEIPT", evidence_resolver)
     if resolved.get("status") != PASS:
         return resolved
+    # The exact branch/executed SHA is resolver-derived from immutable provider revision, never trusted from receipt fields.
+    if provider.get("revision") != head or provider.get("revision") != executed or provider.get("current") is not True:
+        return _block("BLOCK_CURRENTNESS_PROVIDER_REVISION_MISMATCH", expected=head, observed=provider.get("revision"), current=provider.get("current"))
     expected = {
         "base_sha": x.get("base_sha"),
-        "branch_head_sha": head,
-        "executed_sha": executed,
         "execution_ref_kind": kind,
         "exact_head_claim": x.get("exact_head_claim"),
     }
@@ -145,7 +116,6 @@ def validate_currentness(wp: Mapping[str, Any], evidence_resolver: EvidenceResol
     if ((wp.get("close_guard") or {}).get("currentness_verified")) is not True:
         return _block("BLOCK_CURRENTNESS_DECLARATION_NOT_VERIFIED")
     return {"status": PASS, "code": "PASS_CURRENTNESS"}
-
 
 def validate_ekb(wp: Mapping[str, Any], evidence_resolver: EvidenceResolver | None) -> dict:
     ekb = ((wp.get("authority") or {}).get("ekb_execution_binding") or {})
@@ -161,7 +131,7 @@ def validate_ekb(wp: Mapping[str, Any], evidence_resolver: EvidenceResolver | No
     if missing:
         return _block("BLOCK_EKB_CONTROL_MAPPING_MISSING", missing=missing)
 
-    resolved, receipt = _resolve_evidence(wp, "ekb_freshness_receipt", "EKB_FRESHNESS_RECEIPT", evidence_resolver)
+    resolved, receipt, provider = _resolve_evidence(wp, "ekb_freshness_receipt", "EKB_FRESHNESS_RECEIPT", evidence_resolver)
     if resolved.get("status") != PASS:
         return resolved
     expected = {
@@ -189,27 +159,20 @@ def validate_executed_validation(wp: Mapping[str, Any], evidence_resolver: Evide
 
     identity_sha = ((wp.get("execution_identity") or {}).get("executed_sha"))
     if ev.get("executed_sha") != identity_sha:
-        return _block(
-            "BLOCK_VALIDATION_EXECUTED_SHA_IDENTITY_MISMATCH",
-            execution_identity_sha=identity_sha,
-            validation_sha=ev.get("executed_sha"),
-        )
+        return _block("BLOCK_VALIDATION_EXECUTED_SHA_IDENTITY_MISMATCH", execution_identity_sha=identity_sha, validation_sha=ev.get("executed_sha"))
     binding = ((wp.get("resolved_evidence") or {}).get("executed_validation_receipt") or {})
     if binding.get("ref") != ev.get("receipt_ref"):
         return _block("BLOCK_VALIDATION_RECEIPT_REF_MISMATCH")
-    resolved, receipt = _resolve_evidence(wp, "executed_validation_receipt", "EXECUTED_VALIDATION_RECEIPT", evidence_resolver)
+    resolved, receipt, provider = _resolve_evidence(wp, "executed_validation_receipt", "EXECUTED_VALIDATION_RECEIPT", evidence_resolver)
     if resolved.get("status") != PASS:
         return resolved
-    expected = {
-        "executed_sha": identity_sha,
-        "command_or_runner": ev.get("command_or_runner"),
-        "exit_status": ev.get("exit_status"),
-    }
+    if provider.get("revision") != identity_sha:
+        return _block("BLOCK_VALIDATION_PROVIDER_REVISION_MISMATCH", expected=identity_sha, observed=provider.get("revision"))
+    expected = {"command_or_runner": ev.get("command_or_runner"), "exit_status": ev.get("exit_status")}
     mismatches = {k: {"expected": v, "observed": receipt.get(k)} for k, v in expected.items() if receipt.get(k) != v}
     if mismatches:
         return _block("BLOCK_VALIDATION_RECEIPT_CONTENT_MISMATCH", mismatches=mismatches)
     return {"status": PASS, "code": "PASS_EXECUTED_VALIDATION"}
-
 
 def validate_repair_policy(wp: Mapping[str, Any]) -> dict:
     rp = wp.get("repair_policy") or {}
@@ -318,12 +281,12 @@ def evaluate_close_guard(wp: Mapping[str, Any], evidence_resolver: EvidenceResol
     if reasons:
         return _block("BLOCK_CLOSE_GUARD", reasons=reasons, can_close=False)
 
-    resolved, receipt = _resolve_evidence(wp, "ekb_final_readback_receipt", "EKB_FINAL_READBACK_RECEIPT", evidence_resolver)
+    resolved, receipt, provider = _resolve_evidence(wp, "ekb_final_readback_receipt", "EKB_FINAL_READBACK_RECEIPT", evidence_resolver)
     if resolved.get("status") != PASS:
         return resolved
     identity_sha = ((wp.get("execution_identity") or {}).get("executed_sha"))
     ekb = ((wp.get("authority") or {}).get("ekb_execution_binding") or {})
-    if receipt.get("executed_sha") != identity_sha or receipt.get("applicable_codes") != ekb.get("applicable_codes"):
+    if provider.get("revision") != identity_sha or receipt.get("applicable_codes") != ekb.get("applicable_codes"):
         return _block("BLOCK_EKB_FINAL_READBACK_RECEIPT_MISMATCH")
     return {"status": PASS, "code": "PASS_CLOSE_GUARD", "can_close": True}
 
@@ -367,19 +330,16 @@ def evaluate_work_package(wp: Mapping[str, Any], evidence_resolver: EvidenceReso
     return evaluate_close_guard(wp, evidence_resolver)
 
 
-def _mapping_resolver(path: Path) -> EvidenceResolver:
-    mapping = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(mapping, Mapping):
-        raise ValueError("evidence map must be an object keyed by receipt ref")
-    return lambda ref: mapping.get(ref)
-
-
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) not in {2, 3}:
-        raise SystemExit("usage: validate_lf_work_package_v0_2_candidate.py <work-package.json> [evidence-map.json]")
+    if len(sys.argv) != 2:
+        raise SystemExit("usage: validate_lf_work_package_v0_2_candidate.py <work-package.json>")
     data = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-    resolver = _mapping_resolver(Path(sys.argv[2])) if len(sys.argv) == 3 else None
-    result = evaluate_work_package(data, resolver)
+    try:
+        resolver = TrustedRefResolver(ROOT)
+    except Exception as exc:
+        result = _block("BLOCK_TRUSTED_RESOLVER_UNAVAILABLE", error=type(exc).__name__)
+    else:
+        result = evaluate_work_package(data, resolver)
     print(json.dumps(result, sort_keys=True))
     raise SystemExit(0 if result.get("status") in {PASS, CONTINUE} else 1)

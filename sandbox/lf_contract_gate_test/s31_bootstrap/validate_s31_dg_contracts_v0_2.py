@@ -3,12 +3,24 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Any, Callable, Mapping
+from pathlib import Path
+from typing import Any, Mapping
+
+from jsonschema import Draft7Validator
 
 PASS = "PASS"
 BLOCKED = "BLOCKED"
 CARD_MODES = {"EXACT", "COMPATIBLE", "COMPOSED", "GENERIC_SAFE"}
-EvidenceResolver = Callable[[str], Mapping[str, Any] | None]
+from s31_trusted_resolution_v0_1 import (
+    PASS as TRUST_PASS,
+    TRUSTED_RESOLVER_ID,
+    TrustedRefResolver,
+    resolve_json_binding,
+    resolve_source,
+)
+EvidenceResolver = TrustedRefResolver
+ROOT = Path(__file__).resolve().parent
+D_SCHEMA_PATH = ROOT / "lf_shared_authority_typed_context_v0_2_candidate.schema.json"
 
 FORBIDDEN_AUTHORITY_EFFECTS = {
     "AUTHORIZE_DOWNSTREAM",
@@ -34,8 +46,8 @@ def _block(code: str, **extra: Any) -> dict[str, Any]:
     return {"status": BLOCKED, "code": code, **extra}
 
 
-def _canonical_digest(record: Mapping[str, Any]) -> str:
-    raw = json.dumps(dict(record), sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+def _canonical_digest(value: Any) -> str:
+    raw = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
     return hashlib.sha256(raw).hexdigest()
 
 
@@ -45,37 +57,18 @@ def _resolve_binding(
     resolver: EvidenceResolver | None,
     producer_id: str,
     label: str,
-) -> tuple[dict[str, Any], Mapping[str, Any] | None]:
-    if not isinstance(binding, Mapping):
-        return _block("BLOCK_EVIDENCE_BINDING_MISSING", binding=label), None
-    if resolver is None:
-        return _block("BLOCK_EVIDENCE_RESOLVER_MISSING", binding=label), None
-    ref = binding.get("ref")
-    expected_sha = binding.get("sha256")
-    declared_resolver = binding.get("resolver_id")
-    if not isinstance(ref, str) or not ref:
-        return _block("BLOCK_EVIDENCE_REF_MISSING", binding=label), None
-    if not isinstance(expected_sha, str) or len(expected_sha) != 64:
-        return _block("BLOCK_EVIDENCE_SHA256_INVALID", binding=label), None
-    if declared_resolver == producer_id:
-        return _block("BLOCK_EVIDENCE_SELF_RESOLVER", binding=label, resolver_id=declared_resolver), None
-    try:
-        record = resolver(ref)
-    except Exception as exc:
-        return _block("BLOCK_EVIDENCE_RESOLUTION_FAILED", binding=label, error=type(exc).__name__), None
-    if not isinstance(record, Mapping):
-        return _block("BLOCK_EVIDENCE_UNRESOLVED", binding=label, ref=ref), None
-    observed_sha = _canonical_digest(record)
-    if observed_sha != expected_sha:
-        return _block("BLOCK_EVIDENCE_DIGEST_MISMATCH", binding=label, expected=expected_sha, observed=observed_sha), None
-    if record.get("evidence_type") != expected_type:
-        return _block("BLOCK_EVIDENCE_TYPE_MISMATCH", binding=label, expected=expected_type, observed=record.get("evidence_type")), None
-    if record.get("status") != PASS:
-        return _block("BLOCK_RESOLVED_EVIDENCE_NOT_PASS", binding=label, status=record.get("status")), None
-    if record.get("resolver_id") != declared_resolver:
-        return _block("BLOCK_EVIDENCE_RESOLVER_ID_MISMATCH", binding=label), None
-    return {"status": PASS, "code": "PASS_RESOLVED_EVIDENCE", "binding": label}, record
-
+    *,
+    require_current_content: bool = True,
+) -> tuple[dict[str, Any], Mapping[str, Any] | None, Mapping[str, Any] | None]:
+    resolved, record, provider = resolve_json_binding(
+        resolver, binding, expected_type, label, require_current_content=require_current_content
+    )
+    if resolved.get("status") != TRUST_PASS:
+        return _block(resolved.get("code", "BLOCK_TRUSTED_EVIDENCE"), **{k:v for k,v in resolved.items() if k not in {"status","code"}}), None, provider
+    # Resolver authority comes from the canonical resolver object, not candidate/record strings.
+    if producer_id == TRUSTED_RESOLVER_ID:
+        return _block("BLOCK_EVIDENCE_SELF_RESOLVER", binding=label), None, provider
+    return {"status": PASS, "code": "PASS_RESOLVED_EVIDENCE", "binding": label}, record, provider
 
 def validate_shared_typed_context(value: Mapping[str, Any], resolver: EvidenceResolver | None = None) -> dict[str, Any]:
     producer_id = str(value.get("producer_id") or "")
@@ -97,50 +90,32 @@ def validate_shared_typed_context(value: Mapping[str, Any], resolver: EvidenceRe
         run_id = authority.get("run_id")
         if run_id != current_run_id and authority.get("cross_run_declared") is not True:
             return _block("BLOCK_D_UNDECLARED_CROSS_RUN_AUTHORITY", index=index, run_id=run_id)
-        resolved, receipt = _resolve_binding(
-            authority.get("currentness_evidence"),
-            "SOURCE_CURRENTNESS_RECEIPT",
-            resolver,
-            producer_id,
-            f"authority_resolution[{index}].currentness_evidence",
-        )
+        refs = list(authority.get("source_refs") or [])
+        if len(refs) != 1:
+            return _block("BLOCK_D_SOURCE_DIGEST_MODEL_AMBIGUOUS", index=index)
+        src_status, src = resolve_source(resolver, refs[0], authority.get("source_sha256"), f"authority_resolution[{index}].source", require_current_content=True)
+        if src_status.get("status") != TRUST_PASS:
+            return _block(src_status.get("code"), **{k:v for k,v in src_status.items() if k not in {"status","code"}})
+        resolved, receipt, provider = _resolve_binding(authority.get("currentness_evidence"), "SOURCE_CURRENTNESS_RECEIPT", resolver, producer_id, f"authority_resolution[{index}].currentness_evidence")
         if resolved.get("status") != PASS:
             return resolved
-        expected = {
-            "source_refs": list(authority.get("source_refs") or []),
-            "source_sha256": authority.get("source_sha256"),
-            "run_id": current_run_id,
-            "currentness": "CURRENT",
-        }
-        mismatches = {k: {"expected": v, "observed": receipt.get(k)} for k, v in expected.items() if receipt.get(k) != v}
-        if mismatches:
-            return _block("BLOCK_D_AUTHORITY_CURRENTNESS_MISMATCH", index=index, mismatches=mismatches)
+        if receipt.get("run_id") != current_run_id:
+            return _block("BLOCK_D_AUTHORITY_CURRENTNESS_MISMATCH", index=index, mismatches={"run_id":{"expected":current_run_id,"observed":receipt.get("run_id")}})
 
     runtime_schema = value.get("runtime_schema") or {}
     if runtime_schema.get("schema_invention_allowed") is not False:
         return _block("BLOCK_D_RUNTIME_SCHEMA_INVENTION_ALLOWED")
-    resolved, receipt = _resolve_binding(
-        runtime_schema.get("currentness_evidence"),
-        "SOURCE_CURRENTNESS_RECEIPT",
-        resolver,
-        producer_id,
-        "runtime_schema.currentness_evidence",
-    )
+    src_status, src = resolve_source(resolver, runtime_schema.get("source_ref"), runtime_schema.get("sha256"), "runtime_schema.source", require_current_content=True)
+    if src_status.get("status") != TRUST_PASS:
+        return _block(src_status.get("code"), **{k:v for k,v in src_status.items() if k not in {"status","code"}})
+    resolved, receipt, provider = _resolve_binding(runtime_schema.get("currentness_evidence"), "SOURCE_CURRENTNESS_RECEIPT", resolver, producer_id, "runtime_schema.currentness_evidence")
     if resolved.get("status") != PASS:
         return resolved
-    expected = {
-        "source_refs": [runtime_schema.get("source_ref")],
-        "source_sha256": runtime_schema.get("sha256"),
-        "run_id": current_run_id,
-        "currentness": "CURRENT",
-    }
-    mismatches = {k: {"expected": v, "observed": receipt.get(k)} for k, v in expected.items() if receipt.get(k) != v}
-    if mismatches:
-        return _block("BLOCK_D_RUNTIME_SCHEMA_CURRENTNESS_MISMATCH", mismatches=mismatches)
+    if receipt.get("run_id") != current_run_id:
+        return _block("BLOCK_D_RUNTIME_SCHEMA_CURRENTNESS_MISMATCH", mismatches={"run_id":{"expected":current_run_id,"observed":receipt.get("run_id")}})
     if value.get("provenance_reconstructible") is not True:
         return _block("BLOCK_D_PROVENANCE_NOT_RECONSTRUCTIBLE")
     return {"status": PASS, "code": "PASS_D_SHARED_TYPED_CONTEXT"}
-
 
 def validate_registry_inventory_schema(inventory: Mapping[str, Any], schema: Mapping[str, Any]) -> dict[str, Any]:
     declared = inventory.get("required_capability_manifest_fields") or []
@@ -167,29 +142,23 @@ def validate_capability_manifest(value: Mapping[str, Any], resolver: EvidenceRes
     currentness = value.get("currentness_binding") or {}
     if currentness.get("stale_action") != "FAIL_CLOSED":
         return _block("BLOCK_E_STALE_NOT_FAIL_CLOSED")
-    refs = value.get("source_refs") or []
-    digests = value.get("source_digests") or []
+    refs = list(value.get("source_refs") or [])
+    digests = list(value.get("source_digests") or [])
     if len(refs) != len(digests):
         return _block("BLOCK_E_SOURCE_BINDING_CARDINALITY", refs=len(refs), digests=len(digests))
     dependencies = value.get("dependencies") or []
     dep_ids = [d.get("capability_id") for d in dependencies if isinstance(d, Mapping)]
     if len(dep_ids) != len(set(dep_ids)):
         return _block("BLOCK_E_DUPLICATE_DEPENDENCY")
-
-    binding = {
-        "ref": currentness.get("evidence_ref"),
-        "sha256": currentness.get("evidence_sha256"),
-        "resolver_id": currentness.get("resolver_id"),
-    }
-    resolved, receipt = _resolve_binding(binding, "CAPABILITY_CURRENTNESS_RECEIPT", resolver, str(value.get("owner") or ""), "currentness_binding")
+    for index,(ref,digest) in enumerate(zip(refs,digests)):
+        status, observed = resolve_source(resolver, ref, digest, f"source_refs[{index}]", require_current_content=True)
+        if status.get("status") != TRUST_PASS:
+            return _block(status.get("code"), **{k:v for k,v in status.items() if k not in {"status","code"}})
+    binding = {"ref": currentness.get("evidence_ref"), "sha256": currentness.get("evidence_sha256"), "resolver_id": currentness.get("resolver_id")}
+    resolved, receipt, provider = _resolve_binding(binding, "CAPABILITY_CURRENTNESS_RECEIPT", resolver, str(value.get("owner") or ""), "currentness_binding")
     if resolved.get("status") != PASS:
         return resolved
-    expected = {"source_refs": list(refs), "source_digests": list(digests), "currentness": "CURRENT"}
-    mismatches = {k: {"expected": v, "observed": receipt.get(k)} for k, v in expected.items() if receipt.get(k) != v}
-    if mismatches:
-        return _block("BLOCK_E_CURRENTNESS_RECEIPT_MISMATCH", mismatches=mismatches)
     return {"status": PASS, "code": "PASS_E_CAPABILITY_MANIFEST"}
-
 
 def validate_evidence_envelope(value: Mapping[str, Any], resolver: EvidenceResolver | None = None) -> dict[str, Any]:
     level = value.get("evidence_level")
@@ -202,64 +171,73 @@ def validate_evidence_envelope(value: Mapping[str, Any], resolver: EvidenceResol
     owner = value.get("owner_receipt") or {}
     if owner.get("preserved_without_rewrite") is not True:
         return _block("BLOCK_F_OWNER_RECEIPT_NOT_PRESERVED")
+    producer_id = str(value.get("producer_id") or "")
+    resolved, owner_record, owner_provider = _resolve_binding(owner, "OWNER_RECEIPT", resolver, producer_id, "owner_receipt", require_current_content=True)
+    if resolved.get("status") != PASS:
+        return resolved
+    owner_expected = {"owner_capability_id": owner.get("owner_capability_id"), "run_id": value.get("run_id")}
+    mismatches = {k:{"expected":v,"observed":owner_record.get(k)} for k,v in owner_expected.items() if owner_record.get(k)!=v}
+    if mismatches:
+        return _block("BLOCK_F_OWNER_RECEIPT_MISMATCH", mismatches=mismatches)
+
+    input_obj=value.get("input") or {}; output_obj=value.get("output") or {}
+    if _canonical_digest(input_obj.get("exact")) != input_obj.get("digest"):
+        return _block("BLOCK_F_INPUT_DIGEST_MISMATCH")
+    if _canonical_digest(output_obj.get("exact")) != output_obj.get("digest"):
+        return _block("BLOCK_F_OUTPUT_DIGEST_MISMATCH")
+    input_refs=list(input_obj.get("source_refs") or []); input_digests=list(input_obj.get("source_digests") or [])
+    if len(input_refs)!=len(input_digests):
+        return _block("BLOCK_F_INPUT_SOURCE_BINDING_CARDINALITY")
+    for index,(ref,digest) in enumerate(zip(input_refs,input_digests)):
+        status, observed=resolve_source(resolver,ref,digest,f"input.source_refs[{index}]",require_current_content=True)
+        if status.get("status") != TRUST_PASS:
+            return _block(status.get("code"), **{k:v for k,v in status.items() if k not in {"status","code"}})
     if level == "STRUCTURAL":
         return {"status": PASS, "code": "PASS_F_STRUCTURAL_EVIDENCE_ENVELOPE"}
 
-    execution = value.get("execution_identity") or {}
-    authority = value.get("authority") or {}
-    provenance = value.get("provenance") or {}
+    execution = value.get("execution_identity") or {}; authority = value.get("authority") or {}; provenance = value.get("provenance") or {}
     if execution.get("executed") is not True:
         return _block("BLOCK_F_NONSTRUCTURAL_NOT_EXECUTED")
     if authority.get("currentness") != "CURRENT":
         return _block("BLOCK_F_NONSTRUCTURAL_AUTHORITY_NOT_CURRENT")
     if provenance.get("reconstructible") is not True:
         return _block("BLOCK_F_NONSTRUCTURAL_PROVENANCE_NOT_RECONSTRUCTIBLE")
+    auth_status, auth_source = resolve_source(resolver, authority.get("source_ref"), authority.get("source_digest"), "authority.source_ref", require_current_content=True)
+    if auth_status.get("status") != TRUST_PASS:
+        return _block(auth_status.get("code"), **{k:v for k,v in auth_status.items() if k not in {"status","code"}})
+    if auth_source.get("revision") != authority.get("source_revision"):
+        return _block("BLOCK_F_AUTHORITY_SOURCE_REVISION_MISMATCH", expected=authority.get("source_revision"), observed=auth_source.get("revision"))
+    prov_refs=list(provenance.get("refs") or []); prov_digests=list(provenance.get("digests") or [])
+    if len(prov_refs)!=len(prov_digests):
+        return _block("BLOCK_F_PROVENANCE_BINDING_CARDINALITY")
+    for index,(ref,digest) in enumerate(zip(prov_refs,prov_digests)):
+        status, observed=resolve_source(resolver,ref,digest,f"provenance.refs[{index}]",require_current_content=True)
+        if status.get("status") != TRUST_PASS:
+            return _block(status.get("code"), **{k:v for k,v in status.items() if k not in {"status","code"}})
 
-    producer_id = str(value.get("producer_id") or "")
-    bindings = value.get("resolved_evidence") or {}
-    checks = [
-        ("execution_receipt", "EXECUTION_RECEIPT"),
-        ("authority_currentness_receipt", "AUTHORITY_CURRENTNESS_RECEIPT"),
-        ("provenance_receipt", "PROVENANCE_RECEIPT"),
-    ]
-    receipts: dict[str, Mapping[str, Any]] = {}
-    for key, expected_type in checks:
-        resolved, receipt = _resolve_binding(bindings.get(key), expected_type, resolver, producer_id, key)
+    bindings = value.get("resolved_evidence") or {}; receipts={}; providers={}
+    for key,expected_type in [("execution_receipt","EXECUTION_RECEIPT"),("authority_currentness_receipt","AUTHORITY_CURRENTNESS_RECEIPT"),("provenance_receipt","PROVENANCE_RECEIPT")]:
+        resolved, receipt, provider = _resolve_binding(bindings.get(key), expected_type, resolver, producer_id, key, require_current_content=True)
         if resolved.get("status") != PASS:
             return resolved
-        receipts[key] = receipt
-    resolved, owner_record = _resolve_binding(owner, "OWNER_RECEIPT", resolver, producer_id, "owner_receipt")
-    if resolved.get("status") != PASS:
-        return resolved
-
-    exec_expected = {
-        "run_id": value.get("run_id"),
-        "executed": True,
-        "executed_sha": execution.get("executed_sha"),
-        "execution_id": execution.get("execution_id"),
-    }
-    mismatches = {k: {"expected": v, "observed": receipts["execution_receipt"].get(k)} for k, v in exec_expected.items() if receipts["execution_receipt"].get(k) != v}
+        receipts[key]=receipt; providers[key]=provider
+    exec_expected={"run_id":value.get("run_id"),"capability_or_gate_id":value.get("capability_or_gate_id"),"executed":True,"execution_id":execution.get("execution_id"),"input_digest":input_obj.get("digest"),"output_digest":output_obj.get("digest")}
+    mismatches={k:{"expected":v,"observed":receipts["execution_receipt"].get(k)} for k,v in exec_expected.items() if receipts["execution_receipt"].get(k)!=v}
     if mismatches:
-        return _block("BLOCK_F_EXECUTION_RECEIPT_MISMATCH", mismatches=mismatches)
-
-    auth_expected = {"authority_source": authority.get("source"), "currentness": "CURRENT"}
-    mismatches = {k: {"expected": v, "observed": receipts["authority_currentness_receipt"].get(k)} for k, v in auth_expected.items() if receipts["authority_currentness_receipt"].get(k) != v}
+        return _block("BLOCK_F_EXECUTION_RECEIPT_MISMATCH",mismatches=mismatches)
+    if providers["execution_receipt"].get("revision") != execution.get("executed_sha"):
+        return _block("BLOCK_F_EXECUTION_RECEIPT_REVISION_MISMATCH")
+    auth_expected={"run_id":value.get("run_id"),"capability_or_gate_id":value.get("capability_or_gate_id"),"authority_source":authority.get("source"),"authority_source_digest":authority.get("source_digest"),"currentness":"CURRENT"}
+    mismatches={k:{"expected":v,"observed":receipts["authority_currentness_receipt"].get(k)} for k,v in auth_expected.items() if receipts["authority_currentness_receipt"].get(k)!=v}
     if mismatches:
-        return _block("BLOCK_F_AUTHORITY_CURRENTNESS_RECEIPT_MISMATCH", mismatches=mismatches)
-
-    prov_expected = {"reconstructible": True, "refs": list(provenance.get("refs") or [])}
-    mismatches = {k: {"expected": v, "observed": receipts["provenance_receipt"].get(k)} for k, v in prov_expected.items() if receipts["provenance_receipt"].get(k) != v}
+        return _block("BLOCK_F_AUTHORITY_CURRENTNESS_RECEIPT_MISMATCH",mismatches=mismatches)
+    prov_expected={"run_id":value.get("run_id"),"capability_or_gate_id":value.get("capability_or_gate_id"),"execution_id":execution.get("execution_id"),"reconstructible":True,"provenance_digests":prov_digests}
+    mismatches={k:{"expected":v,"observed":receipts["provenance_receipt"].get(k)} for k,v in prov_expected.items() if receipts["provenance_receipt"].get(k)!=v}
     if mismatches:
-        return _block("BLOCK_F_PROVENANCE_RECEIPT_MISMATCH", mismatches=mismatches)
-
-    owner_expected = {"owner_capability_id": owner.get("owner_capability_id"), "run_id": value.get("run_id")}
-    mismatches = {k: {"expected": v, "observed": owner_record.get(k)} for k, v in owner_expected.items() if owner_record.get(k) != v}
-    if mismatches:
-        return _block("BLOCK_F_OWNER_RECEIPT_MISMATCH", mismatches=mismatches)
+        return _block("BLOCK_F_PROVENANCE_RECEIPT_MISMATCH",mismatches=mismatches)
     return {"status": PASS, "code": "PASS_F_EVIDENCE_ENVELOPE_RESOLVED"}
 
-
-def validate_runtime_port_request(value: Mapping[str, Any]) -> dict[str, Any]:
+def validate_runtime_port_request(value: Mapping[str, Any], resolver: EvidenceResolver | None = None) -> dict[str, Any]:
     runtime_policy = value.get("runtime_policy") or {}
     if runtime_policy.get("silent_fallback_allowed") is not False:
         return _block("BLOCK_G_SILENT_FALLBACK_ALLOWED")
@@ -267,8 +245,25 @@ def validate_runtime_port_request(value: Mapping[str, Any]) -> dict[str, Any]:
     expected = {"AUTHORITY", "CURRENTNESS", "CARD_APPLICABILITY", "PROMOTION", "GOLDEN", "PRODUCTION"}
     if set(forbidden) != expected:
         return _block("BLOCK_G_AUTHORITY_FORBIDDEN_SET_INCOMPLETE", observed=sorted(set(forbidden)))
+    if value.get("typed_context_resolver_id") != TRUSTED_RESOLVER_ID:
+        return _block("BLOCK_G_UNTRUSTED_TYPED_CONTEXT_RESOLVER")
+    status, observed = resolve_source(resolver, value.get("typed_context_ref"), value.get("typed_context_sha256"), "typed_context_ref", require_current_content=True)
+    if status.get("status") != TRUST_PASS:
+        return _block(status.get("code"), **{k:v for k,v in status.items() if k not in {"status","code"}})
+    try:
+        context=json.loads(observed["raw"].decode("utf-8"))
+    except Exception:
+        return _block("BLOCK_G_TYPED_CONTEXT_NOT_JSON")
+    schema=json.loads(D_SCHEMA_PATH.read_text(encoding="utf-8"))
+    errors=sorted(Draft7Validator(schema).iter_errors(context),key=lambda e:list(e.path))
+    if errors:
+        return _block("BLOCK_G_TYPED_CONTEXT_SCHEMA_INVALID", errors=[{"path":"/".join(map(str,e.path)),"message":e.message} for e in errors[:12]])
+    if context.get("current_run_id") != value.get("request_id"):
+        return _block("BLOCK_G_TYPED_CONTEXT_REQUEST_ID_MISMATCH")
+    ctx_input=((context.get("input") or {}).get("input_fields"))
+    if ctx_input != value.get("governed_input"):
+        return _block("BLOCK_G_TYPED_CONTEXT_GOVERNED_INPUT_MISMATCH")
     return {"status": PASS, "code": "PASS_G_RUNTIME_PORT_REQUEST"}
-
 
 def _scan_runtime_receipt(node: Any, path: str = "runtime_receipt") -> dict[str, Any] | None:
     if isinstance(node, Mapping):
