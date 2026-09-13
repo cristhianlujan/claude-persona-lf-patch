@@ -207,6 +207,7 @@ def create_app(
             "status": "ok",
             "service": "lf-profile-runtime-api",
             "runtime_version": runtime_settings.runtime_version,
+            "source_sha": runtime_settings.source_sha,
             "classification": "INSTALLED_NOT_INTEGRATED_PENDING_LIVE_REVERIFY",
             "recovered_jobs": request.app.state.recovered_jobs,
         }

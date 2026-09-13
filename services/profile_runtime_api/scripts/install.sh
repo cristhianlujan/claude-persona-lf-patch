@@ -2,10 +2,11 @@
 set -Eeuo pipefail
 
 usage() {
-  printf 'Usage: sudo %s [--source-dir REPO] [--source-sha GIT_SHA] [--start]\n' "$0"
+  printf 'Usage: sudo %s [--source-dir REPO] [--source-sha GIT_SHA] [--start] [--require-main]\n' "$0"
 }
 
 start_service=false
+require_main=false
 source_sha_override=""
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 source_dir="$(cd -- "$script_dir/../../../" && pwd)"
@@ -18,6 +19,10 @@ while (($#)); do
       ;;
     --start)
       start_service=true
+      shift
+      ;;
+    --require-main)
+      require_main=true
       shift
       ;;
     --source-sha)
@@ -68,6 +73,14 @@ else
   printf 'SOURCE_SHA_REQUIRED_WITHOUT_GIT\n' >&2
   exit 1
 fi
+if [[ "$require_main" == true ]]; then
+  git -C "$source_dir" fetch --quiet origin main
+  main_sha="$(git -C "$source_dir" rev-parse refs/remotes/origin/main)"
+  if [[ "$source_sha" != "$main_sha" ]]; then
+    printf 'DEPLOY_SOURCE_NOT_CURRENT_MAIN source_sha=%s main_sha=%s\n' "$source_sha" "$main_sha" >&2
+    exit 1
+  fi
+fi
 release_id="$source_sha"
 install_root=/opt/lf-profile-runtime-api
 release_root="$install_root/releases"
@@ -113,7 +126,7 @@ if [[ ! -f "$env_file" ]]; then
     printf 'PROFILE_RUNTIME_MAX_BATCH_SIZE=8\n'
     printf 'PROFILE_RUNTIME_MAX_REQUEST_BYTES=20971520\n'
     printf 'PROFILE_RUNTIME_MAX_PROMPT_CHARS=120000\n'
-    printf 'PROFILE_RUNTIME_MAX_OUTPUT_TOKENS=2048\nPROFILE_RUNTIME_UI_PRODUCTION_MAX_OUTPUT_TOKENS=1050\nPROFILE_RUNTIME_UI_PRODUCTION_SEMANTIC_MAX_OUTPUT_TOKENS=600\n'
+    printf 'PROFILE_RUNTIME_MAX_OUTPUT_TOKENS=2048\nPROFILE_RUNTIME_LLAMA_CONTEXT_TOKENS=8192\nPROFILE_RUNTIME_UI_PRODUCTION_MAX_OUTPUT_TOKENS=1050\nPROFILE_RUNTIME_UI_PRODUCTION_SEMANTIC_MAX_OUTPUT_TOKENS=600\n'
     printf 'PROFILE_RUNTIME_LLAMA_TIMEOUT_SECONDS=300\n'
     printf 'PROFILE_RUNTIME_LLAMA_HEALTH_TIMEOUT_SECONDS=3\n'
     printf 'PROFILE_RUNTIME_CACHE_MAX_ENTRIES=64\n'
@@ -139,5 +152,5 @@ if [[ "$start_service" == true ]]; then
 else
   printf 'SERVICE_NOT_STARTED: run systemctl enable --now lf-profile-runtime-api.service after config review\n'
 fi
-printf 'INSTALL_COMPLETE source_sha=%s classification=INSTALLED_NOT_INTEGRATED_PENDING_LIVE_REVERIFY\n' "$source_sha"
+printf 'INSTALL_COMPLETE source_sha=%s classification=INSTALLED_NOT_INTEGRATED_PENDING_LIVE_REVERIFY require_main=%s\n' "$source_sha" "$require_main"
 printf 'LLAMA_OR_MODEL_MUTATIONS=NONE\n'

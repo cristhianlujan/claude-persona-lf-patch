@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from jsonschema import Draft202012Validator, SchemaError
@@ -46,6 +47,9 @@ def _ui_focused_semantic_v3_errors(values: dict[str, str]) -> list[str]:
         "ui decision", "visual decision", "design decision", "interface decision",
         "ui treatment", "decisión ui", "decision ui", "decisión visual",
         "decision visual", "decisión de diseño", "decision de diseño", "tratamiento ui",
+        "non-canonical artifacts", "non canonical artifacts", "noncanonical artifacts",
+        "artifact set", "artifact-set", "input governance", "advisory read only",
+        "advisory_read_only",
     }
     if subject in generic_subjects:
         errors.append("UI_FOCUSED_DECISION_SUBJECT_NON_CONCRETE")
@@ -72,6 +76,8 @@ def _ui_focused_semantic_v3_errors(values: dict[str, str]) -> list[str]:
         "tabla", "pantalla", "botón", "boton", "campo", "selector", "diseño",
     )
     token_like = bool(re.search(r"[a-záéíóúüñ]+[-_][a-záéíóúüñ0-9-]+", surface))
+    if surface and surface == selected:
+        errors.append("UI_FOCUSED_BASE_SURFACE_DUPLICATES_TREATMENT")
     if surface and any(m in surface for m in structural_only) and not (
         any(m in surface for m in surface_signals) or token_like
     ):
@@ -89,6 +95,8 @@ def _ui_focused_semantic_v3_errors(values: dict[str, str]) -> list[str]:
     density = values.get("density_limits", "")
     if density and re.fullmatch(r"\d+(?:\.\d+)?", density):
         errors.append("UI_FOCUSED_DENSITY_LIMITS_NUMERIC_ONLY")
+    if density and re.fullmatch(r"\d+(?:\.\d+)?(?:%|px|rem|em)", density):
+        errors.append("UI_FOCUSED_DENSITY_LIMITS_UNIT_ONLY")
     if density in {
         "subtle decoration", "decoration", "generic decoration", "decoración sutil",
         "decoracion sutil", "decoración", "decoracion",
@@ -104,9 +112,9 @@ def _ui_focused_semantic_v3_errors(values: dict[str, str]) -> list[str]:
 
     weight = values.get("visual_weight", "")
     if weight in {
-        "primary", "secondary", "tertiary", "medium", "light", "dark", "standard",
-        "default", "subtle", "primario", "secundario", "terciario", "medio", "ligero",
-        "oscuro", "sutil",
+        "primary", "secondary", "tertiary", "high", "low", "medium", "light", "dark",
+        "standard", "default", "subtle", "primario", "secundario", "terciario", "alto",
+        "bajo", "medio", "ligero", "oscuro", "sutil",
     }:
         errors.append("UI_FOCUSED_VISUAL_WEIGHT_NON_CONCRETE")
 
@@ -130,7 +138,9 @@ def _ui_focused_semantic_v3_errors(values: dict[str, str]) -> list[str]:
     weak_implementation = {
         "json object", "objeto json", "json", "object", "objeto", "string", "text",
         "texto", "markdown", "yaml", "xml", "css", "svg", "component", "componente",
-        "css styling", "css style", "estilo css",
+        "css styling", "css style", "estilo css", "artifact", "artifact set",
+        "non-canonical artifact", "non canonical artifact", "non_canonical_artifact",
+        "advisory read only", "advisory_read_only",
     }
     if implementation in weak_implementation:
         errors.append("UI_FOCUSED_IMPLEMENTATION_FORMAT_NON_CONCRETE_V3")
@@ -311,18 +321,26 @@ class OutputGates:
                     errors.append("UI_FOCUSED_HARD_EXCLUSIONS_EMPTY")
                 else:
                     selected = values.get("selected_visual_type", "")
+                    governance_exclusion_markers = (
+                        "non_canonical_artifact", "non-canonical artifact", "non canonical artifact",
+                        "artifact_01", "artifact_02", "artifact set", "input governance",
+                        "advisory_read_only", "advisory read only", "canonicalize",
+                        "canonicalization", "register_screen", "resolve_screen",
+                    )
                     for exclusion in exclusions:
                         if not isinstance(exclusion, str):
                             continue
                         normalized = " ".join(exclusion.lower().strip().split())
+                        if any(marker in normalized for marker in governance_exclusion_markers):
+                            errors.append("UI_FOCUSED_HARD_EXCLUSION_GOVERNANCE_ECHO")
                         if selected and normalized and (selected == normalized or selected in normalized):
                             errors.append("UI_FOCUSED_SELECTED_TREATMENT_EXCLUDED")
-                            break
+                    # Preserve all findings; do not stop after the first invalid exclusion.
 
                 generic_only = {
                     "small", "medium", "large", "thin", "thick", "light", "dark",
-                    "above", "below", "left", "right", "center", "standard", "default",
-                    "normal", "css", "svg", "component", "visual", "ui",
+                    "high", "low", "above", "below", "left", "right", "center",
+                    "standard", "default", "normal", "css", "svg", "component", "visual", "ui",
                 }
                 specificity_fields = (
                     "size_or_coverage",
@@ -336,6 +354,16 @@ class OutputGates:
                     normalized = values.get(key, "")
                     if normalized in generic_only:
                         errors.append(f"UI_FOCUSED_{key.upper()}_NON_CONCRETE")
+
+                phrase_fields = (
+                    "decision_subject", "selected_visual_type", "size_or_coverage",
+                    "density_limits", "depth_style", "visual_weight",
+                    "relationship_to_main_element", "implementation_format",
+                )
+                for key in phrase_fields:
+                    normalized = values.get(key, "")
+                    if normalized and re.fullmatch(r"[a-z0-9]+(?:_[a-z0-9]+)+", normalized):
+                        errors.append(f"UI_FOCUSED_{key.upper()}_IDENTIFIER_ECHO")
 
                 density = values.get("density_limits", "")
                 density_markers = (
@@ -352,6 +380,8 @@ class OutputGates:
                     errors.append("UI_FOCUSED_DENSITY_LIMITS_NON_CONCRETE")
 
                 errors.extend(_ui_focused_semantic_v3_errors(values))
+                if payload.get("status") in {"RETURN_TO_ORCHESTRATOR", "BLOCK_PIPELINE"}:
+                    errors.append("UI_FOCUSED_STATUS_NOT_DECISION_READY")
             elif mode == "UI_MISSING_INPUT":
                 verdict = payload.get("self_verdict")
                 missing = payload.get("missing_inputs")

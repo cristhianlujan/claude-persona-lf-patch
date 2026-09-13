@@ -74,17 +74,10 @@ def _bound_schema_node(node: Any, *, path: str = "$") -> None:
         _bound_schema_node(items, path=f"{path}[]")
 
 
-def compact_model_context(structural_context: dict[str, Any]) -> dict[str, Any]:
-    """Return the minimum semantic capsule needed by queue-native text inference.
-
-    The full governed context remains in receipts/attestation. Hash-only lineage and
-    authority detail stay outside the model context unless they change the semantic task.
-    """
-    if structural_context.get("source") != "QUEUE_NATIVE_TEXT_PROFILE":
-        return structural_context
+def _semantic_runtime_capsule(structural_context: dict[str, Any]) -> dict[str, Any] | None:
     typed = structural_context.get("runtime_typed_context")
     if not isinstance(typed, dict):
-        return structural_context
+        return None
     raw_fields = ((typed.get("input") or {}).get("input_fields") or {})
     semantic_fields = {
         key: value
@@ -99,8 +92,6 @@ def compact_model_context(structural_context: dict[str, Any]) -> dict[str, Any]:
     })
     adapters = typed.get("adapter_binding") or []
     return {
-        "schema": "lf-profile-runtime-model-context/v1",
-        "source": "QUEUE_NATIVE_TEXT_PROFILE",
         "classification": typed.get("classification"),
         "input_fields": semantic_fields,
         "card_resolution": typed.get("card_resolution"),
@@ -117,6 +108,74 @@ def compact_model_context(structural_context: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def compact_model_context(structural_context: dict[str, Any]) -> dict[str, Any]:
+    """Return the minimum semantic capsule needed by model inference.
+
+    The full governed context remains in receipts/attestation. Hash-only lineage,
+    repeated decomposer payloads and authority detail stay outside the model prompt
+    unless they change the semantic task.
+    """
+    source = structural_context.get("source")
+    schema = structural_context.get("schema")
+    runtime_capsule = _semantic_runtime_capsule(structural_context)
+    if source == "QUEUE_NATIVE_TEXT_PROFILE":
+        if runtime_capsule is None:
+            return structural_context
+        return {
+            "schema": "lf-profile-runtime-model-context/v1",
+            "source": "QUEUE_NATIVE_TEXT_PROFILE",
+            **runtime_capsule,
+        }
+    if schema == "lf-profile-runtime-artifact-set-context/v1":
+        if runtime_capsule is None:
+            return structural_context
+        artifacts = structural_context.get("artifacts")
+        if not isinstance(artifacts, list):
+            return structural_context
+        compact_artifacts: list[dict[str, Any]] = []
+        for item in artifacts:
+            if not isinstance(item, dict):
+                return structural_context
+            pack = item.get("structural_context")
+            if not isinstance(pack, dict):
+                return structural_context
+            evidence = pack.get("visible_ui_evidence")
+            if not isinstance(evidence, list):
+                return structural_context
+            compact_artifacts.append(
+                {
+                    "artifact_ref": item.get("artifact_ref"),
+                    "artifact_sha256": item.get("artifact_sha256"),
+                    "filename": item.get("filename"),
+                    "screen_code": item.get("screen_code"),
+                    "width_px": item.get("width_px"),
+                    "height_px": item.get("height_px"),
+                    "visible_ui_evidence": evidence,
+                    "dynamic_data": pack.get("dynamic_data"),
+                    "targeted_reread": pack.get("targeted_reread"),
+                }
+            )
+        governance = structural_context.get("input_governance")
+        semantic_governance = None
+        if isinstance(governance, dict):
+            semantic_governance = {
+                key: governance.get(key)
+                for key in ("status", "decision", "subject_mode", "constraints")
+            }
+        return {
+            "schema": "lf-profile-runtime-artifact-set-model-context/v1",
+            "source": "NON_CANONICAL_ARTIFACT_SET",
+            "contract": structural_context.get("contract"),
+            "subject_mode": structural_context.get("subject_mode"),
+            "artifact_set_fingerprint": structural_context.get("artifact_set_fingerprint"),
+            "artifact_count": structural_context.get("artifact_count"),
+            "artifacts": compact_artifacts,
+            "input_governance": semantic_governance,
+            **runtime_capsule,
+        }
+    return structural_context
+
+
 
 def _section_between(content: str, start: str, end: str) -> str | None:
     begin = content.find(start)
@@ -126,6 +185,94 @@ def _section_between(content: str, start: str, end: str) -> str | None:
     if finish < 0:
         return None
     return content[begin:finish].strip()
+
+
+def ui_focused_profile_model_view(content: str) -> str:
+    """Project UI Architect authority to the semantic rules needed by focused decisions.
+
+    Routing, maintenance and alternate-mode instructions are runtime-enforced and stay
+    hash-bound in the full source, but are intentionally omitted from the model view so
+    small local models do not echo machine labels as UI decisions. Marker drift fails safe
+    by returning the complete canonical source.
+    """
+    purpose = _section_between(content, "## Purpose", "## Routing semantics")
+    if purpose is None:
+        return content
+    lines = [line.strip() for line in content.splitlines()]
+    prefixes = (
+        "Output exactly one JSON object.",
+        "- Do not invent links, legal effects, payment success, eligibility, campaign urgency",
+        "- Keep domain truth from upstream profiles intact; UI owns presentation",
+        "- Compact output is preferred, but never at the expense of a material requirement or guardrail.",
+    )
+    selected: list[str] = []
+    for prefix in prefixes:
+        matches = [line for line in lines if line.startswith(prefix)]
+        if len(matches) != 1:
+            return content
+        selected.append(matches[0])
+    return (
+        purpose
+        + "\n\nFocused runtime/safety rules:\n" + "\n".join(selected)
+        + "\n\nFocused UI Decision Spec: produce one concrete, implementation-ready UI decision from the literal request and visible UI evidence. Do not emit routing, provenance, maintenance, evidence identifiers, or alternate-mode instructions as semantic field values."
+    )
+
+
+def ui_focused_user_prompt_view(input_literal: str) -> str:
+    """Append the proven field-specific semantic checklist after the user literal.
+
+    Keeping this checklist in the final user turn gives small local models the most
+    recent instructions without changing request authority or inventing UI facts.
+    """
+    base = input_literal.rstrip()
+    checklist = (
+        "RUNTIME FOCUSED OUTPUT CHECKLIST:\n"
+        "- decision_subject: name the exact UI decision in human-readable UI terms.\n"
+        "- selected_visual_type: state the concrete preservation/corrective interaction pattern; do not restate the subject.\n"
+        "- base_color_or_surface: identify the existing named surface or allowed design token affected by that pattern.\n"
+        "- size_or_coverage: state the exact named region/component scope and what portion changes or stays fixed.\n"
+        "- density_limits: state an observable maximum or per-component quantity.\n"
+        "- depth_style: state an implementable elevation, border, or shadow rule.\n"
+        "- visual_weight: state relative prominence versus a named UI content/action.\n"
+        "- relationship_to_main_element: state the exact behavior/attachment relative to a named UI element.\n"
+        "- implementation_format: name a concrete implementation target plus property/behavior; a generic technology word alone is invalid.\n"
+        "- hard_exclusions: list only rejected duplicate/conflicting UI variants; never reject the selected treatment.\n"
+        "- Every semantic field must do a different job. Do not repeat the same phrase across fields.\n"
+        "- Do not use routing, evidence, runtime, schema, or machine identifiers as semantic values.\n"
+        "- Return a decision-ready status permitted by the schema.\n"
+        "Silently cross-check specificity, non-duplication, and non-contradiction before emitting JSON."
+    )
+    return base + "\n\n" + checklist
+
+
+def ui_focused_semantic_context_view(model_context: dict[str, Any]) -> dict[str, Any]:
+    """Expose only visible UI evidence for non-canonical focused visual review.
+
+    The full governed context remains independently hash-bound and verified. This prompt-only
+    projection removes machine provenance that is already enforced by runtime and is known to
+    contaminate small-model semantic fields.
+    """
+    if model_context.get("source") != "NON_CANONICAL_ARTIFACT_SET":
+        return model_context
+    artifacts = model_context.get("artifacts")
+    if not isinstance(artifacts, list):
+        return model_context
+    visible: list[dict[str, Any]] = []
+    for item in artifacts:
+        if not isinstance(item, dict) or not isinstance(item.get("visible_ui_evidence"), list):
+            return model_context
+        visible.append(
+            {
+                "width_px": item.get("width_px"),
+                "height_px": item.get("height_px"),
+                "visible_ui_evidence": item.get("visible_ui_evidence"),
+            }
+        )
+    return {
+        "source": "OBSERVED_UI_EVIDENCE",
+        "artifact_count": len(visible),
+        "artifacts": visible,
+    }
 
 
 def ui_production_profile_model_view(content: str, *, task_mode: str | None) -> str:
@@ -1297,17 +1444,51 @@ def governed_generation_schema(
         raise LlamaTransportError("LLAMA_GENERATION_SCHEMA_PROPERTIES_MISSING")
 
     if schema_mode == UI_FOCUSED_SCHEMA_MODE:
+        focused_min_lengths = {
+            "decision_subject": 8,
+            "selected_visual_type": 12,
+            "base_color_or_surface": 11,
+            "size_or_coverage": 12,
+            "density_limits": 6,
+            "depth_style": 8,
+            "visual_weight": 8,
+            "position_behavior": 8,
+            "relationship_to_main_element": 10,
+            "implementation_format": 8,
+        }
         for name, prop in properties.items():
             if not isinstance(prop, dict):
                 continue
             if prop.get("type") == "string" and "enum" not in prop:
                 cap = 240 if name == "short_generator_prompt" else 160
                 prop["maxLength"] = _bounded_positive_int(prop.get("maxLength"), cap)
+                if name in focused_min_lengths:
+                    prop["minLength"] = max(
+                        int(prop.get("minLength") or 0), focused_min_lengths[name]
+                    )
+                if name in {
+                    "decision_subject", "selected_visual_type", "size_or_coverage",
+                    "density_limits", "depth_style", "visual_weight",
+                    "relationship_to_main_element", "implementation_format",
+                }:
+                    # Focused fields are semantic phrases. A bare snake_case/request label
+                    # can satisfy length while carrying no implementable UI meaning.
+                    prop["pattern"] = r"^\S.*\s+.*\S$"
             if name == "hard_exclusions" and prop.get("type") == "array":
                 prop["maxItems"] = _bounded_positive_int(prop.get("maxItems"), 4)
                 items = prop.get("items")
                 if isinstance(items, dict) and items.get("type") == "string":
+                    items["minLength"] = max(int(items.get("minLength") or 0), 8)
                     items["maxLength"] = _bounded_positive_int(items.get("maxLength"), 120)
+                    items["pattern"] = r"^\S.*\s+.*\S$"
+            if name == "status" and isinstance(prop.get("enum"), list):
+                # Missing-input work has its own typed UI_MISSING_INPUT mode. Once the
+                # orchestrator explicitly binds UI_FOCUSED_DECISION, generation must
+                # produce a decision-ready candidate rather than bounce the same input.
+                allowed = {"CANDIDATE_READ_ONLY", "SANDBOX_READY", "PASS_WITH_ASSUMPTIONS"}
+                prop["enum"] = [value for value in prop["enum"] if value in allowed]
+                if not prop["enum"]:
+                    raise LlamaTransportError("UI_FOCUSED_GENERATION_STATUS_ENUM_EMPTY")
         return bounded, UI_FOCUSED_GENERATION_POLICY
 
     # When governed acceptance already fixes the skeleton, do not ask the model to
@@ -1406,6 +1587,10 @@ class LlamaHTTPClient:
         )
         generation_schema_sha256 = canonical_json_sha256(generation_schema)
 
+        deterministic_semantic = generation_schema_policy in {
+            UI_PRODUCTION_SEMANTIC_GENERATION_POLICY,
+            UI_FOCUSED_GENERATION_POLICY,
+        }
         payload: dict[str, Any] = {
             "model": self.settings.llama_model,
             "messages": [
@@ -1413,8 +1598,8 @@ class LlamaHTTPClient:
                 {"role": "user", "content": user_content},
             ],
             "stream": False,
-            "temperature": 0.0 if generation_schema_policy == UI_PRODUCTION_SEMANTIC_GENERATION_POLICY else 0.2,
-            "top_p": 1.0 if generation_schema_policy == UI_PRODUCTION_SEMANTIC_GENERATION_POLICY else 0.9,
+            "temperature": 0.0 if deterministic_semantic else 0.2,
+            "top_p": 1.0 if deterministic_semantic else 0.9,
             "seed": 42,
             "max_tokens": (
                 self.settings.ui_production_semantic_max_output_tokens
@@ -1425,6 +1610,8 @@ class LlamaHTTPClient:
             ),
             "cache_prompt": True,
         }
+        if generation_schema_policy == UI_FOCUSED_GENERATION_POLICY:
+            payload["repeat_penalty"] = 1.08
         # UI Architect AUTO preserves the proven V27 fallback because its aggregate
         # anyOf schema previously produced empty constrained output. A typed, exact
         # UI mode binds one canonical schema and may use the pinned llama.cpp schema
@@ -1571,8 +1758,36 @@ class PersistentLlamaServerAdapter:
                 "LLAMA_SERVER_NOT_READY", str(self.last_health.get("error_code", ""))
             )
         system_prompt = self._system_prompt(request)
-        if len(system_prompt) + len(request["input_literal"]) > self.settings.max_prompt_chars:
+        effective_user_prompt = (
+            ui_focused_user_prompt_view(request["input_literal"])
+            if self.schema.mode == UI_FOCUSED_SCHEMA_MODE
+            else request["input_literal"]
+        )
+        prompt_chars = len(system_prompt) + len(effective_user_prompt)
+        if prompt_chars > self.settings.max_prompt_chars:
             raise LlamaTransportError("LLAMA_PROMPT_CONTEXT_BUDGET_EXCEEDED")
+        reserved_output_tokens = (
+            self.settings.ui_production_semantic_max_output_tokens
+            if self.schema.mode == UI_PRODUCTION_SCHEMA_MODE
+            and _ui_production_acceptance_supports_semantic_transport(
+                (((compact_model_context(self.structural_context).get("input_fields") or {}).get("gate_f_acceptance"))
+                 if isinstance(compact_model_context(self.structural_context), dict) else None)
+            )
+            else self.settings.ui_production_max_output_tokens
+            if self.schema.mode == UI_PRODUCTION_SCHEMA_MODE
+            else self.settings.max_output_tokens
+        )
+        # Conservative no-inference guard. It prevents a known llama.cpp failure
+        # mode where prompt ingestion fills the 8K context and leaves only a few
+        # tokens for constrained JSON output. Full tokenization stays provider-owned;
+        # this proxy intentionally errs toward an early governed block.
+        prompt_proxy_tokens = int((prompt_chars + 2) / 3.0)
+        available_prompt_tokens = max(0, self.settings.llama_context_tokens - reserved_output_tokens - 256)
+        if prompt_proxy_tokens > available_prompt_tokens:
+            raise LlamaTransportError(
+                "LLAMA_PROMPT_TOKEN_PROXY_BUDGET_EXCEEDED",
+                f"proxy_tokens={prompt_proxy_tokens};available_prompt_tokens={available_prompt_tokens};context_tokens={self.settings.llama_context_tokens};reserved_output_tokens={reserved_output_tokens}",
+            )
         model_context = compact_model_context(self.structural_context)
         acceptance = None
         if isinstance(model_context, dict):
@@ -1584,13 +1799,15 @@ class PersistentLlamaServerAdapter:
             and _ui_production_acceptance_supports_semantic_transport(acceptance)
         )
         model_prompt_context = (
-            ui_production_semantic_context_view(model_context)
+            ui_focused_semantic_context_view(model_context)
+            if self.schema.mode == UI_FOCUSED_SCHEMA_MODE and isinstance(model_context, dict)
+            else ui_production_semantic_context_view(model_context)
             if semantic_transport and isinstance(model_context, dict)
             else model_context
         )
         self.last_completion = self.client.chat(
             system_prompt=system_prompt,
-            user_prompt=request["input_literal"],
+            user_prompt=effective_user_prompt,
             schema=self.schema.payload,
             profile_slug=request["profile_slug"],
             schema_mode=self.schema.mode,
@@ -1624,6 +1841,7 @@ class PersistentLlamaServerAdapter:
             ),
             "structural_context_sha256": canonical_json_sha256(self.structural_context),
             "model_context_sha256": canonical_json_sha256(model_prompt_context),
+            "model_user_prompt_sha256": sha256_text(effective_user_prompt),
             "llama_response_id": self.last_completion.get("id") or "UNAVAILABLE",
             "finish_reason": self.last_completion.get("finish_reason") or "UNAVAILABLE",
         }
@@ -1652,16 +1870,26 @@ class PersistentLlamaServerAdapter:
             "The first non-whitespace response character MUST be { and the last MUST be }.",
             "Markdown fences, backticks, headings, labels, or prose outside the JSON object are a runtime failure.",
             "Honor explicit task-mode or task-classification markers in the literal input according to the profile source.",
-            "Observed downstream_authorized=false means only that this result cannot authorize writes or promotion; it does not block profile analysis and is never by itself a missing-input reason.",
-            "For queue-native text work, screen_governance_applicable=false is not by itself a reason to return NEEDS_INPUT or RETURN_TO_ORCHESTRATOR.",
-            (
-                "Do not emit score, handoff, verdict, known IDs or known source bindings; deterministic runtime owns them."
-                if semantic_transport
-                else "Do not return scores without the contracted deliverable or self-certified evidence."
-            ),
-            "Do not invent facts absent from profile sources, literal input, Router capsules, or observed structural evidence.",
-            "",
         ]
+        if self.schema.mode == UI_FOCUSED_SCHEMA_MODE:
+            parts.extend([
+                "Runtime control-plane decisions are already enforced. Work only from the literal UI request and visible UI evidence; do not turn control-plane labels into UI semantics.",
+                "Do not return scores without the contracted deliverable or self-certified evidence.",
+                "Do not invent facts absent from profile sources, literal input, or visible UI evidence.",
+                "",
+            ])
+        else:
+            parts.extend([
+                "Observed downstream_authorized=false means only that this result cannot authorize writes or promotion; it does not block profile analysis and is never by itself a missing-input reason.",
+                "For queue-native text work, screen_governance_applicable=false is not by itself a reason to return NEEDS_INPUT or RETURN_TO_ORCHESTRATOR.",
+                (
+                    "Do not emit score, handoff, verdict, known IDs or known source bindings; deterministic runtime owns them."
+                    if semantic_transport
+                    else "Do not return scores without the contracted deliverable or self-certified evidence."
+                ),
+                "Do not invent facts absent from profile sources, literal input, Router capsules, or observed structural evidence.",
+                "",
+            ])
         if self.schema.mode == UI_FOCUSED_SCHEMA_MODE:
             parts.extend(
                 [
@@ -1670,6 +1898,19 @@ class PersistentLlamaServerAdapter:
                     "- hard_exclusions must never prohibit the selected_visual_type or its selected corrective treatment.",
                     "- size_or_coverage, density_limits, depth_style, visual_weight, relationship_to_main_element, and implementation_format must be concrete and implementation-usable; bare generic labels such as medium, thin, above, or css are invalid.",
                     "- density_limits must express an observable bound, quantity, per-element rule, or equivalent concrete limit.",
+                    "- decision_subject must name the requested UI decision itself; governance/evidence labels such as artifact-set, non-canonical, advisory, or input-governance are not UI subjects.",
+                    "- base_color_or_surface must identify a real existing/allowed surface or token; never copy selected_visual_type into it.",
+                    "- size_or_coverage must name the spatial/component scope; density_limits must bind a quantity to an element; depth_style must state an elevation/shadow rule; visual_weight must state hierarchy relative to UI content/action.",
+                    "- relationship_to_main_element must name the related UI element and behavior; implementation_format must name an implementation mechanism, not an evidence/governance artifact type.",
+                    "- Avoid bare generic values, percentages without a named target, implementation-only words, and internal evidence/control labels when they do not express the required field semantics.",
+                    "- Use visible UI evidence labels and explicit UI requirements from the literal input to ground the decision. Internal governance/evidence words are provenance, never the visual treatment itself.",
+                    "- hard_exclusions must name prohibited UI variants or duplicate UI behaviors; never list evidence artifacts, artifact IDs, governance modes, routing operations, or canonicalization operations as exclusions.",
+                    "- Give each field a different semantic job. Do not repeat one phrase across decision_subject, selected_visual_type, surface, coverage, depth, weight, relationship, or implementation.",
+                    "- Phrase-shape guide (structure only, not task facts): coverage='only <named UI region/component>'; density='one <cue/treatment> per <named component>'; depth='no added elevation; preserve <existing shadow/elevation>'; weight='<relative prominence> versus <named content/action>'; relationship='<behavior> relative to <named main element>'; implementation='<CSS/component/layout mechanism> on <named element>'.",
+                    "- A preservation request still requires a concrete UI pattern: state what stays fixed, what varies, and how transition/navigation behaves. A machine label is not a treatment.",
+                    "- Machine identifiers or underscore-delimited control labels are not final semantic field values. Expand the requested meaning into concrete human-readable UI language; only genuine design tokens or CSS identifiers may remain token-like where the field explicitly asks for an implementation token.",
+                    "- Cover every explicitly requested UI subdecision in the literal input. If it names shell preservation, navigation authority, a variable slot, and a transition, the fields together must describe all of them rather than only the shell.",
+                    "- This bound request already asks for a decision. Return a decision-ready status from the schema. Do not bounce the result to another mode when the supplied UI evidence is sufficient.",
                     "",
                 ]
             )
@@ -1706,6 +1947,24 @@ class PersistentLlamaServerAdapter:
                 )
         for source in request["profile_sources"]:
             ref = source["ref"]
+            if (
+                self.schema.mode == UI_FOCUSED_SCHEMA_MODE
+                and ref.endswith("/SKILL.md")
+                and isinstance(source.get("content"), str)
+            ):
+                model_view = ui_focused_profile_model_view(source["content"])
+                if model_view != source["content"]:
+                    parts.extend(
+                        [
+                            f"--- BEGIN CANONICAL PROFILE MODEL VIEW: {ref} ---",
+                            f"full_source_sha256={sha256_text(source['content'])}",
+                            "Focused-decision semantic view; full canonical source remains bound in request/receipt.",
+                            model_view,
+                            f"--- END CANONICAL PROFILE MODEL VIEW: {ref} ---",
+                            "",
+                        ]
+                    )
+                    continue
             if (
                 semantic_transport
                 and ref.endswith("/SKILL.md")
@@ -1758,8 +2017,11 @@ class PersistentLlamaServerAdapter:
                 ]
             )
         context_for_prompt = (
-            ui_production_semantic_context_view(model_context)
-            if semantic_transport else model_context
+            ui_focused_semantic_context_view(model_context)
+            if self.schema.mode == UI_FOCUSED_SCHEMA_MODE and isinstance(model_context, dict)
+            else ui_production_semantic_context_view(model_context)
+            if semantic_transport and isinstance(model_context, dict)
+            else model_context
         )
         parts.extend(
             [
@@ -1832,13 +2094,22 @@ class PersistentLlamaServerVerifier:
             and _ui_production_acceptance_supports_semantic_transport(acceptance)
         )
         expected_model_context = (
-            ui_production_semantic_context_view(model_context)
+            ui_focused_semantic_context_view(model_context)
+            if self.schema.mode == UI_FOCUSED_SCHEMA_MODE and isinstance(model_context, dict)
+            else ui_production_semantic_context_view(model_context)
             if semantic_transport and isinstance(model_context, dict)
             else model_context
         )
         model_context_sha = canonical_json_sha256(expected_model_context)
         if attestation.get("model_context_sha256") != model_context_sha:
             raise LlamaTransportError("LLAMA_VERIFIER_MODEL_CONTEXT_MISMATCH")
+        expected_user_prompt = (
+            ui_focused_user_prompt_view(request["input_literal"])
+            if self.schema.mode == UI_FOCUSED_SCHEMA_MODE
+            else request["input_literal"]
+        )
+        if attestation.get("model_user_prompt_sha256") != sha256_text(expected_user_prompt):
+            raise LlamaTransportError("LLAMA_VERIFIER_MODEL_USER_PROMPT_MISMATCH")
         post_health = adapter.client.health()
         if post_health.get("ready") is not True:
             raise LlamaTransportError("LLAMA_VERIFIER_POST_HEALTH_FAILED")

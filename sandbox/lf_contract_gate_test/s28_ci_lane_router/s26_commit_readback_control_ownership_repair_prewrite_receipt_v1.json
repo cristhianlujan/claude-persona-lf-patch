@@ -1,0 +1,53 @@
+{
+  "receipt_version": "S26-CI-ROUTER-COMMIT-READBACK-CONTROL-OWNERSHIP-PREWRITE-v1",
+  "scope": "SHARED_CI_ROUTER_OWNERSHIP_ONLY",
+  "base_main_sha": "eba7d87b98b2a7c88252ced67d1c9a7ad05758c7",
+  "triggering_main_run": "34734798283",
+  "problem": "The exact S26 commit-readback regression test merged by PR #727 was classified DEEP_SHARED_UNKNOWN, which incorrectly required the external P0 exact-head broker. The broker is currently restricted by Supabase exceed_egress_quota even though this exact S26 readback test does not own the P0 external lane.",
+  "repair": {
+    "exact_known_control": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_commit_readback_binding.py",
+    "ownership": "KNOWN_SHARED_CI_SELFTEST_CONTROL",
+    "migration_parity_required": false,
+    "input_governance_parity_required": false,
+    "p0_exact_head_external_required": false,
+    "ci_router_selftest_required": true,
+    "deep_shared": false,
+    "lookalike_siblings_still_fail_closed": true
+  },
+  "expected_reclassification": {
+    "exact_s26_commit_readback_test": "CI_ROUTER_SELFTEST_ONLY",
+    "lookalike_bak": "DEEP_SHARED_UNKNOWN"
+  },
+  "ekb_preflight": {
+    "performed_before_write": true,
+    "applicable_rules": [
+      "PROFILES-EKB-PREFLIGHT-OMISSION-001",
+      "GOV-024",
+      "CI-007",
+      "CI-014",
+      "GOV-022",
+      "AUD-018",
+      "RTE-010"
+    ],
+    "controls": [
+      "exact-path ownership only; no broad allowlist",
+      "exact-head verification required before merge",
+      "main must be re-read immediately before merge",
+      "machine CI evidence required; local PASS is not merge authority"
+    ]
+  },
+  "authorization": {
+    "owner_merge_authorized": true,
+    "condition": "MERGE_ONLY_IF_ALL_EXACT_HEAD_CI_GREEN"
+  },
+  "boundaries": {
+    "supabase_write": false,
+    "billing_change": false,
+    "runtime_activation": false,
+    "scheduler_change": false,
+    "hetzner_deploy": false,
+    "golden": false,
+    "production": false
+  },
+  "status": "CANDIDATE_PREWRITE"
+}
