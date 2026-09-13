@@ -17,6 +17,7 @@ from profile_runtime_api.llama import (
     PersistentLlamaServerAdapter,
     ui_focused_profile_model_view,
     ui_focused_semantic_context_view,
+    ui_focused_user_prompt_view,
     ui_production_profile_model_view,
     ui_production_semantic_context_view,
 )
@@ -99,6 +100,9 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
             client.last_payload["response_format"],
             {"type": "json_object", "schema": self.schema},
         )
+        self.assertEqual(client.last_payload["temperature"], 0.0)
+        self.assertEqual(client.last_payload["top_p"], 1.0)
+        self.assertEqual(client.last_payload["repeat_penalty"], 1.08)
 
     def test_ui_focused_generation_schema_is_bounded_without_mutating_canonical(self) -> None:
         canonical = {
@@ -381,6 +385,14 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         self.assertNotIn("EJECUCION_PERFIL_LF", model_view)
         self.assertNotIn("top_amount_strip", model_view)
         self.assertNotIn("V6 Composer structural boundary", model_view)
+
+    def test_ui_focused_user_prompt_view_appends_field_specific_final_checklist(self) -> None:
+        prompt = ui_focused_user_prompt_view("Decide the shared shell preservation pattern.")
+        self.assertTrue(prompt.startswith("Decide the shared shell preservation pattern."))
+        self.assertIn("RUNTIME FOCUSED OUTPUT CHECKLIST", prompt)
+        self.assertIn("selected_visual_type", prompt)
+        self.assertIn("Do not repeat the same phrase across fields", prompt)
+        self.assertIn("Silently cross-check specificity", prompt)
 
     def test_ui_focused_semantic_context_view_removes_machine_provenance(self) -> None:
         model_context = {

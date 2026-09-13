@@ -218,6 +218,33 @@ def ui_focused_profile_model_view(content: str) -> str:
     )
 
 
+def ui_focused_user_prompt_view(input_literal: str) -> str:
+    """Append the proven field-specific semantic checklist after the user literal.
+
+    Keeping this checklist in the final user turn gives small local models the most
+    recent instructions without changing request authority or inventing UI facts.
+    """
+    base = input_literal.rstrip()
+    checklist = (
+        "RUNTIME FOCUSED OUTPUT CHECKLIST:\n"
+        "- decision_subject: name the exact UI decision in human-readable UI terms.\n"
+        "- selected_visual_type: state the concrete preservation/corrective interaction pattern; do not restate the subject.\n"
+        "- base_color_or_surface: identify the existing named surface or allowed design token affected by that pattern.\n"
+        "- size_or_coverage: state the exact named region/component scope and what portion changes or stays fixed.\n"
+        "- density_limits: state an observable maximum or per-component quantity.\n"
+        "- depth_style: state an implementable elevation, border, or shadow rule.\n"
+        "- visual_weight: state relative prominence versus a named UI content/action.\n"
+        "- relationship_to_main_element: state the exact behavior/attachment relative to a named UI element.\n"
+        "- implementation_format: name a concrete implementation target plus property/behavior; a generic technology word alone is invalid.\n"
+        "- hard_exclusions: list only rejected duplicate/conflicting UI variants; never reject the selected treatment.\n"
+        "- Every semantic field must do a different job. Do not repeat the same phrase across fields.\n"
+        "- Do not use routing, evidence, runtime, schema, or machine identifiers as semantic values.\n"
+        "- Return a decision-ready status permitted by the schema.\n"
+        "Silently cross-check specificity, non-duplication, and non-contradiction before emitting JSON."
+    )
+    return base + "\n\n" + checklist
+
+
 def ui_focused_semantic_context_view(model_context: dict[str, Any]) -> dict[str, Any]:
     """Expose only visible UI evidence for non-canonical focused visual review.
 
@@ -1560,6 +1587,10 @@ class LlamaHTTPClient:
         )
         generation_schema_sha256 = canonical_json_sha256(generation_schema)
 
+        deterministic_semantic = generation_schema_policy in {
+            UI_PRODUCTION_SEMANTIC_GENERATION_POLICY,
+            UI_FOCUSED_GENERATION_POLICY,
+        }
         payload: dict[str, Any] = {
             "model": self.settings.llama_model,
             "messages": [
@@ -1567,8 +1598,8 @@ class LlamaHTTPClient:
                 {"role": "user", "content": user_content},
             ],
             "stream": False,
-            "temperature": 0.0 if generation_schema_policy == UI_PRODUCTION_SEMANTIC_GENERATION_POLICY else 0.2,
-            "top_p": 1.0 if generation_schema_policy == UI_PRODUCTION_SEMANTIC_GENERATION_POLICY else 0.9,
+            "temperature": 0.0 if deterministic_semantic else 0.2,
+            "top_p": 1.0 if deterministic_semantic else 0.9,
             "seed": 42,
             "max_tokens": (
                 self.settings.ui_production_semantic_max_output_tokens
@@ -1579,6 +1610,8 @@ class LlamaHTTPClient:
             ),
             "cache_prompt": True,
         }
+        if generation_schema_policy == UI_FOCUSED_GENERATION_POLICY:
+            payload["repeat_penalty"] = 1.08
         # UI Architect AUTO preserves the proven V27 fallback because its aggregate
         # anyOf schema previously produced empty constrained output. A typed, exact
         # UI mode binds one canonical schema and may use the pinned llama.cpp schema
@@ -1725,7 +1758,12 @@ class PersistentLlamaServerAdapter:
                 "LLAMA_SERVER_NOT_READY", str(self.last_health.get("error_code", ""))
             )
         system_prompt = self._system_prompt(request)
-        prompt_chars = len(system_prompt) + len(request["input_literal"])
+        effective_user_prompt = (
+            ui_focused_user_prompt_view(request["input_literal"])
+            if self.schema.mode == UI_FOCUSED_SCHEMA_MODE
+            else request["input_literal"]
+        )
+        prompt_chars = len(system_prompt) + len(effective_user_prompt)
         if prompt_chars > self.settings.max_prompt_chars:
             raise LlamaTransportError("LLAMA_PROMPT_CONTEXT_BUDGET_EXCEEDED")
         reserved_output_tokens = (
@@ -1769,7 +1807,7 @@ class PersistentLlamaServerAdapter:
         )
         self.last_completion = self.client.chat(
             system_prompt=system_prompt,
-            user_prompt=request["input_literal"],
+            user_prompt=effective_user_prompt,
             schema=self.schema.payload,
             profile_slug=request["profile_slug"],
             schema_mode=self.schema.mode,
@@ -1803,6 +1841,7 @@ class PersistentLlamaServerAdapter:
             ),
             "structural_context_sha256": canonical_json_sha256(self.structural_context),
             "model_context_sha256": canonical_json_sha256(model_prompt_context),
+            "model_user_prompt_sha256": sha256_text(effective_user_prompt),
             "llama_response_id": self.last_completion.get("id") or "UNAVAILABLE",
             "finish_reason": self.last_completion.get("finish_reason") or "UNAVAILABLE",
         }
@@ -2064,6 +2103,13 @@ class PersistentLlamaServerVerifier:
         model_context_sha = canonical_json_sha256(expected_model_context)
         if attestation.get("model_context_sha256") != model_context_sha:
             raise LlamaTransportError("LLAMA_VERIFIER_MODEL_CONTEXT_MISMATCH")
+        expected_user_prompt = (
+            ui_focused_user_prompt_view(request["input_literal"])
+            if self.schema.mode == UI_FOCUSED_SCHEMA_MODE
+            else request["input_literal"]
+        )
+        if attestation.get("model_user_prompt_sha256") != sha256_text(expected_user_prompt):
+            raise LlamaTransportError("LLAMA_VERIFIER_MODEL_USER_PROMPT_MISMATCH")
         post_health = adapter.client.health()
         if post_health.get("ready") is not True:
             raise LlamaTransportError("LLAMA_VERIFIER_POST_HEALTH_FAILED")
