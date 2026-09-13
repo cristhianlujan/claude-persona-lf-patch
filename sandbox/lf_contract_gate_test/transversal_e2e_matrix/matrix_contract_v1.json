@@ -41,6 +41,8 @@
     "live_generator": "sandbox/lf_contract_gate_test/transversal_e2e_matrix/generate_live_matrix_v1.sql",
     "live_generator_status": "PROVEN_READ_ONLY_AGAINST_CURRENT_SCHEMA",
     "live_generator_readback": "sandbox/lf_contract_gate_test/transversal_e2e_matrix/generator_live_readback_v1.json",
+    "adversarial_router_probe": "sandbox/lf_contract_gate_test/transversal_e2e_matrix/adversarial_router_probe_v1.sql",
+    "adversarial_router_readback": "sandbox/lf_contract_gate_test/transversal_e2e_matrix/adversarial_router_readback_20260913_v1.json",
     "current_snapshot": "sandbox/lf_contract_gate_test/transversal_e2e_matrix/live_snapshot_20260913_v1.json",
     "routed_graph_readback": "sandbox/lf_contract_gate_test/transversal_e2e_matrix/live_graph_readback_20260913_v1.json",
     "internal_provenance_assessment": "sandbox/lf_contract_gate_test/transversal_e2e_matrix/internal_provenance_assessment_v1.json",
@@ -59,8 +61,12 @@
     "unrouted_operations": 22,
     "routed_graph_clean": 8,
     "routed_graph_with_findings": 6,
+    "static_routes_bypass_and_ready": 14,
+    "static_routes_policy_bypass_but_other_gate_blocks": 1,
+    "static_routes_blocked_before_policy_surface": 2,
     "productionish_unrouted_requiring_provenance": 10,
-    "productionish_unrouted_structurally_proven": 0
+    "productionish_unrouted_structurally_proven": 0,
+    "target_hint_override_confirmed": true
   },
   "s30_extension": [
     "GLOBAL_REMAINING_WORK_SCAN",
