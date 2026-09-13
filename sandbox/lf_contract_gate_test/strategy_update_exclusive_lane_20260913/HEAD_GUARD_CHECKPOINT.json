@@ -1,0 +1,7 @@
+{
+  "schema_version": "LF_HEAD_GUARD_CHECKPOINT_V1",
+  "verified_head_sha": "c472a8af82c4dc31c9091d618e902d44d2e9c246",
+  "verified_base_sha": "fc2967e9aa17f9e5e68f8567ef80faafb3839c53",
+  "verification_result": "PASS_EXACT_HEAD_AND_BASE",
+  "next_action": "CREATE_DRAFT_PR_WITH_MAINTAINER_CAN_MODIFY_FALSE"
+}
