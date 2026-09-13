@@ -15,6 +15,17 @@ PASS = "PASS"
 BLOCK = "BLOCK"
 PENDING = "PENDING"
 
+_EXTERNAL_NEXT = {
+    "RETURN_TO_ROUTER",
+    "RETURN_TO_WORKER",
+    "BLOCK",
+    "BLOCKED",
+    "STOP",
+    "NONE",
+    "N/A",
+}
+_SAFE_INVALID_MODE_VERDICTS = {"FAIL_CLOSED", "BLOCKED", "BLOCKED_BEFORE_POLICY_SURFACE"}
+
 
 def _productionish(status: str) -> bool:
     s = (status or "").upper()
@@ -49,6 +60,86 @@ def classify_unrouted(op: Dict[str, Any]) -> str:
     return "UNCLASSIFIED"
 
 
+def _step_sort_key(step: Dict[str, Any]) -> tuple:
+    execution_order = step.get("execution_order")
+    step_order = step.get("step_order")
+    primary = execution_order if execution_order is not None else step_order
+    return (10**12 if primary is None else int(primary), str(step.get("step_id") or ""))
+
+
+def derive_step_graph_findings(op: Dict[str, Any]) -> List[str]:
+    """Derive pass-path reachability and edge integrity from live step records.
+
+    If active_steps is absent, callers may still supply precomputed findings for legacy
+    snapshots. A generated live snapshot should always carry active_steps.
+    """
+    if "active_steps" not in op:
+        return []
+
+    code = str(op.get("operation_code") or "<UNKNOWN>")
+    steps = sorted(list(op.get("active_steps") or []), key=_step_sort_key)
+    findings: List[str] = []
+    if not steps:
+        return findings
+
+    by_id = {str(s.get("step_id")): s for s in steps if s.get("step_id")}
+    order_ids = [str(s.get("step_id")) for s in steps if s.get("step_id")]
+    next_by_order = {
+        step_id: (order_ids[i + 1] if i + 1 < len(order_ids) else None)
+        for i, step_id in enumerate(order_ids)
+    }
+
+    for step in steps:
+        step_id = str(step.get("step_id") or "<UNKNOWN>")
+        if step.get("required") is True and step.get("step_contract_present") is False:
+            findings.append(f"{code}:REQUIRED_STEP_CONTRACT_MISSING:{step_id}")
+
+        for edge_name in ("next_if_pass", "next_if_blocked"):
+            target = step.get(edge_name)
+            if target is None or str(target).strip() == "":
+                continue
+            target_s = str(target).strip()
+            target_u = target_s.upper()
+            if target_u == "NEXT_BY_EXECUTION_ORDER" or target_u in _EXTERNAL_NEXT:
+                continue
+            if target_s == step_id:
+                findings.append(f"{code}:UNJUSTIFIED_SELF_LOOP:{step_id}->{target_s}")
+            elif target_s not in by_id:
+                label = "PASS_TARGET_MISSING" if edge_name == "next_if_pass" else "BLOCK_TARGET_MISSING"
+                findings.append(f"{code}:{label}:{step_id}->{target_s}")
+
+    entry = order_ids[0] if order_ids else None
+    reached: set[str] = set()
+    current = entry
+    max_hops = len(order_ids) + 1
+    hops = 0
+    while current and current not in reached and hops <= max_hops:
+        reached.add(current)
+        hops += 1
+        step = by_id[current]
+        target = step.get("next_if_pass")
+        if target is None or str(target).strip() == "":
+            current = None
+            break
+        target_s = str(target).strip()
+        target_u = target_s.upper()
+        if target_u == "NEXT_BY_EXECUTION_ORDER":
+            current = next_by_order.get(current)
+        elif target_u in _EXTERNAL_NEXT:
+            current = None
+        elif target_s in by_id:
+            current = target_s
+        else:
+            current = None
+
+    for step in steps:
+        step_id = str(step.get("step_id") or "<UNKNOWN>")
+        if step.get("required") is True and step_id not in reached:
+            findings.append(f"{code}:REQUIRED_STEP_UNREACHABLE:{step_id}")
+
+    return findings
+
+
 def direct_operation_findings(op: Dict[str, Any]) -> List[str]:
     findings: List[str] = []
     code = str(op.get("operation_code") or "<UNKNOWN>")
@@ -69,14 +160,15 @@ def direct_operation_findings(op: Dict[str, Any]) -> List[str]:
             f"{code}:REQUIRED_POLICY_RESOLUTION_MISMATCH:{required_policies}!={resolved_policies}"
         )
 
+    findings.extend(derive_step_graph_findings(op))
+
+    # Legacy/readback compatibility for snapshots that already materialized graph findings.
     unreachable = list(op.get("unreachable_required_steps") or [])
     for step in unreachable:
         findings.append(f"{code}:REQUIRED_STEP_UNREACHABLE:{step}")
-
     missing_targets = list(op.get("missing_block_targets") or [])
     for target in missing_targets:
         findings.append(f"{code}:BLOCK_TARGET_MISSING:{target}")
-
     self_loops = list(op.get("self_loops") or [])
     for loop in self_loops:
         findings.append(f"{code}:UNJUSTIFIED_SELF_LOOP:{loop}")
@@ -84,8 +176,8 @@ def direct_operation_findings(op: Dict[str, Any]) -> List[str]:
     adversarial = str(op.get("invalid_mode_verdict") or "UNKNOWN")
     if adversarial in {"BYPASS_AND_READY", "POLICY_FILTER_BYPASS_BUT_OTHER_GATE_BLOCKS"}:
         findings.append(f"{code}:INVALID_DISTRIBUTION_MODE_POLICY_BYPASS:{adversarial}")
-    elif adversarial == "UNKNOWN":
-        findings.append(f"{code}:INVALID_DISTRIBUTION_MODE_NOT_PROVEN")
+    elif adversarial not in _SAFE_INVALID_MODE_VERDICTS:
+        findings.append(f"{code}:INVALID_DISTRIBUTION_MODE_NOT_PROVEN:{adversarial}")
 
     return findings
 
