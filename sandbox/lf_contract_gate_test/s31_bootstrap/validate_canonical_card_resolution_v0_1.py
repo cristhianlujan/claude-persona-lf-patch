@@ -31,6 +31,8 @@ def validate_contract(c:Mapping[str,Any])->dict:
     if compat.get("big_bang_migration") is not False or compat.get("independent_s26_patch_required") is not False:
         return _block("BLOCK_CARD_BIG_BANG_OR_CROSS_LANE_PATCH")
     rules=c.get("fallback_rules") or {}
+    if rules.get("start_only_when_status") != "NO_DIRECT_CARD":
+        return _block("BLOCK_FALLBACK_ENTRY_POLICY_DRIFT")
     if rules.get("attempts_must_follow_declared_sequence") is not True:
         return _block("BLOCK_FALLBACK_SEQUENCE_GUARD_MISSING")
     if rules.get("missing_manual_readiness_evidence")!="FAIL_CLOSED":
@@ -44,9 +46,18 @@ def boundary_map(c:Mapping[str,Any],source:str,state:str)->dict:
     if out.get("status")=="AMBIGUOUS" and out.get("action")!="FAIL_CLOSED": return _block("BLOCK_AMBIGUITY_NOT_FAIL_CLOSED")
     return {"status":PASS,"code":"PASS_CARD_BOUNDARY_MAPPING","canonical":out}
 
-def fallback_decision(c:Mapping[str,Any],attempts:list[Mapping[str,Any]])->dict:
+def fallback_decision(c:Mapping[str,Any],resolution_status:str,attempts:list[Mapping[str,Any]])->dict:
     contract=validate_contract(c)
     if contract.get("status")!=PASS: return contract
+    if resolution_status not in EXPECTED_STATUSES:
+        return _block("BLOCK_FALLBACK_ENTRY_STATUS_UNKNOWN",resolution_status=resolution_status)
+    allowed=(c.get("fallback_rules") or {}).get("start_only_when_status")
+    if resolution_status != allowed:
+        return _block(
+            "BLOCK_FALLBACK_ENTRY_STATUS_INVALID",
+            resolution_status=resolution_status,
+            required_status=allowed,
+        )
     if not isinstance(attempts,list): return _block("BLOCK_FALLBACK_ATTEMPTS_NOT_LIST")
     normalized=[]
     for index,item in enumerate(attempts):
