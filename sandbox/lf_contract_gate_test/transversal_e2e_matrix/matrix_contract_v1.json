@@ -39,11 +39,28 @@
   "current_materialization": {
     "shared_engine": "sandbox/lf_contract_gate_test/transversal_e2e_matrix/matrix_engine_v1.py",
     "live_generator": "sandbox/lf_contract_gate_test/transversal_e2e_matrix/generate_live_matrix_v1.sql",
+    "live_generator_status": "PROVEN_READ_ONLY_AGAINST_CURRENT_SCHEMA",
+    "live_generator_readback": "sandbox/lf_contract_gate_test/transversal_e2e_matrix/generator_live_readback_v1.json",
     "current_snapshot": "sandbox/lf_contract_gate_test/transversal_e2e_matrix/live_snapshot_20260913_v1.json",
+    "routed_graph_readback": "sandbox/lf_contract_gate_test/transversal_e2e_matrix/live_graph_readback_20260913_v1.json",
+    "internal_provenance_assessment": "sandbox/lf_contract_gate_test/transversal_e2e_matrix/internal_provenance_assessment_v1.json",
+    "execution_entry_assessment": "sandbox/lf_contract_gate_test/transversal_e2e_matrix/execution_entry_surface_assessment_v1.json",
     "s26_ci_consumer": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_transversal_e2e_matrix_s26_v1.py",
     "s30_ci_consumer": "sandbox/lf_contract_gate_test/s30_transversal_e2e_matrix/test_s30_transversal_matrix_v1.py",
-    "live_ci_refresh_binding": "PENDING",
+    "live_ci_refresh_binding": "PENDING_SHARED_CONTROL_SURFACE_AUTHORITY",
     "current_closure_state": "BLOCK"
+  },
+  "current_verified_universe": {
+    "operation_count": 36,
+    "active_route_count": 22,
+    "static_execution_routes": 17,
+    "inspection_routes": 5,
+    "routed_operations": 14,
+    "unrouted_operations": 22,
+    "routed_graph_clean": 8,
+    "routed_graph_with_findings": 6,
+    "productionish_unrouted_requiring_provenance": 10,
+    "productionish_unrouted_structurally_proven": 0
   },
   "s30_extension": [
     "GLOBAL_REMAINING_WORK_SCAN",
