@@ -1,0 +1,46 @@
+{
+  "receipt_version": "S31_C_V0_1_EXECUTION_RECEIPT_V0_1",
+  "status": "DETERMINISTIC_REGRESSION_PASS",
+  "work_package": "WP-S31-C-001",
+  "source_snapshot": {
+    "branch": "lf/s31-bootstrap",
+    "branch_head_at_execution": "e74fd751c73923bfb877e47f4c94d89b9bffd4c6",
+    "main_base_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+    "files": [
+      {"path": "sandbox/lf_contract_gate_test/s31_bootstrap/canonical_card_resolution_v0_1.json", "git_blob_sha": "3b232a0ec5b5cfc331c50d324491240add459f5e", "local_git_blob_match": true},
+      {"path": "sandbox/lf_contract_gate_test/s31_bootstrap/validate_canonical_card_resolution_v0_1.py", "git_blob_sha": "c4401d80a62114c60c614cb0ac39bc6fa4c3acfb", "local_git_blob_match": true},
+      {"path": "sandbox/lf_contract_gate_test/s31_bootstrap/test_canonical_card_resolution_v0_1.py", "git_blob_sha": "d162ba00c5cde780062a64f79dddea5f4b509f25", "local_git_blob_match": true}
+    ]
+  },
+  "execution": {
+    "runner": "python test_canonical_card_resolution_v0_1.py",
+    "environment": "LOCAL_SANDBOX_RECONSTRUCTED_FROM_VERIFIED_GIT_BLOBS",
+    "exit_code": 0,
+    "result": "PASS_S31_CANONICAL_CARD_RESOLUTION_V0_1_SELFTEST=12/12",
+    "covered_controls": [
+      "canonical_contract_shape",
+      "source_first_exact_mapping",
+      "source_first_composed_mapping",
+      "source_first_generic_safe_mapping",
+      "governance_compatible_mapping",
+      "none_maps_to_no_direct_card",
+      "ambiguity_fails_closed",
+      "runtime_no_card_governed_mapping",
+      "contract_schema_is_first_safe_fallback",
+      "manual_only_after_safe_alternatives_exhausted",
+      "fallback_failure_requires_typed_evidence",
+      "schema_invention_forbidden"
+    ],
+    "stderr_classification": "NON_TEST_ARTIFACT_TOOL_WARMUP_NOISE",
+    "stderr_changed_exit_status": false
+  },
+  "governance": {
+    "self_certification": false,
+    "independent_review_required": true,
+    "independent_review_status": "PENDING",
+    "golden_authorized": false,
+    "merge_authorized": false,
+    "production_authorized": false
+  },
+  "claim_ceiling": "DETERMINISTIC_REGRESSION_ONLY"
+}

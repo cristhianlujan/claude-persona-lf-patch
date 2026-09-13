@@ -1,0 +1,116 @@
+{
+  "receipt_version": "v0.1",
+  "execution_mode": "INDEPENDENT_CHAT_CONTEXT",
+  "semantic_status": "EXECUTED_INDEPENDENT_CONTEXT",
+  "review_case_id": "S31-DG-IR-001",
+  "reviewer_is_producer": false,
+  "producer_context_available": false,
+  "external_paid_model_used": false,
+  "automated_semantic_judge_implemented": false,
+  "review_completed": true,
+  "source_bundle": {
+    "artifact_ref": "github://cristhianlujan/claude-persona-lf-patch@37bb924e022d3d09b80d38996fc282b155cc1fbf/sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_independent_review_bundle_v0_3.json",
+    "artifact_sha_or_digest": "2f5a1bc5fbb8e2e422ea2fc85623f08c2e4c5223",
+    "upstream_worker_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@d268fd871f2e18588f9b8084e6a3f6c6e07aa438/sandbox/lf_contract_gate_test/s31_bootstrap/LF_WORK_PACKAGE_BOOTSTRAP_V0_1.md",
+    "independent_review_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md",
+    "quality_gate_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/contracts/quality_gate_contract.md",
+    "lf_quality_controls_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/contracts/lf_quality_controls.md",
+    "score_rubric_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/judges/quality_pack_score_rubric.md",
+    "mini_judge_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/judges/quality_pack_mini_judge.md",
+    "quality_review_schema_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/schemas/quality_review.schema.json",
+    "independent_receipt_schema_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json",
+    "independent_receipt_validator_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/validators/validate_independent_semantic_review.py"
+  },
+  "quality_review": {
+    "review_id": "S31-DG-IR-001-INDEPENDENT-2026-09-12",
+    "reviewed_artifact": "github://cristhianlujan/claude-persona-lf-patch@37bb924e022d3d09b80d38996fc282b155cc1fbf/sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_independent_review_bundle_v0_3.json",
+    "verdict": "BLOCK_PIPELINE",
+    "score_breakdown": {
+      "contract_schema_compliance": 1,
+      "evidence_integrity": 0,
+      "lf_safety_governance": 1,
+      "handoff_readiness": 1,
+      "leakage_scope_control": 5,
+      "total": 8
+    },
+    "blocking_codes": ["SOURCE_MISMATCH", "AUTHORITY_LEAK", "EVIDENCE_INFLATION"],
+    "evidence_map": [
+      {
+        "evidence_id": "BUNDLE_IDENTITY",
+        "result": "OBSERVED",
+        "observation": "Frozen bundle identity, candidate snapshot d268fd871f2e18588f9b8084e6a3f6c6e07aa438, base d4051d9c57fdfd09741da5ba2718c032eac56c92, acceptance criteria and blocking criteria were resolved from the immutable handoff."
+      },
+      {
+        "evidence_id": "S31_D_CURRENTNESS_GAP",
+        "result": "BLOCKING",
+        "observation": "Cross-run declaration is fail-closed, but no deterministic currentness field/resolver outcome is required or checked for authority/source bindings. A same-run authority using an arbitrary stale/fake ref plus syntactically valid 64-hex digest passes the frozen validator."
+      },
+      {
+        "evidence_id": "S31_E_SOURCE_MODEL_MISMATCH",
+        "result": "BLOCKING",
+        "observation": "The gap inventory declares lifecycle_state as a required capability-manifest field, while the bundled candidate schema has lifecycle and no lifecycle_state."
+      },
+      {
+        "evidence_id": "S31_F_EVIDENCE_INFLATION",
+        "result": "BLOCKING",
+        "observation": "A SEMANTIC envelope can satisfy the frozen schema/validator with candidate-supplied executed/current/reconstructible states, arbitrary fake refs, and non-cryptographic 8-character digests. The common envelope also lacks an extension or owner-receipt carrier despite the lifecycle map requiring preservation."
+      },
+      {
+        "evidence_id": "S31_G_NESTED_AUTHORITY_LEAK",
+        "result": "BLOCKING",
+        "observation": "The frozen output validator accepts a runtime_receipt containing nested production_authorized=true or authority_effects=[ENABLE_PRODUCTION], because it checks authority effects only at the top level."
+      },
+      {
+        "evidence_id": "QUALITY_PACK_BOUNDARY",
+        "result": "BLOCKING",
+        "observation": "Canonical Quality Pack forbids self-certified evidence and requires independently resolved evidence/currentness before PASS."
+      },
+      {
+        "evidence_id": "SCOPE_BOUNDARY",
+        "result": "PASS",
+        "observation": "No cross-lane mutation or scope expansion was observed; S26/S30 mutation, runtime activation, Golden, main merge and production remain prohibited."
+      }
+    ],
+    "repair_actions": [
+      {
+        "target_worker": "S31-D",
+        "blocking_code": "AUTHORITY_LEAK",
+        "required_fix": "Bind authority and runtime-schema sources to immutable resolvable refs plus deterministic currentness evidence outside the model, fail closed on stale/unknown/unresolved sources, and add stale/fake-ref regressions."
+      },
+      {
+        "target_worker": "S31-E",
+        "blocking_code": "SOURCE_MISMATCH",
+        "required_fix": "Reconcile the frozen source mapping and manifest schema to one lifecycle field contract and add a deterministic consistency check."
+      },
+      {
+        "target_worker": "S31-F",
+        "blocking_code": "EVIDENCE_INFLATION",
+        "required_fix": "Require immutable evidence refs with SHA-256 bindings and independently derived currentness/provenance for non-structural levels; preserve owner receipt and explicit extensions; add fake-ref and weak-digest tests."
+      },
+      {
+        "target_worker": "S31-G",
+        "blocking_code": "AUTHORITY_LEAK",
+        "required_fix": "Define and validate a typed runtime-output schema with explicit no-authority semantics across nested receipt/effect fields and add nested-authority negative tests."
+      }
+    ],
+    "remaining_risks": [
+      "Producer deterministic matrix did not cover the independent-review attacks at this frozen snapshot.",
+      "Candidate/bootstrap artifacts grant no runtime, Golden, merge, production or behavioral authority.",
+      "Verdict applies only to the exact frozen bundle and immutable refs in source_bundle."
+    ],
+    "next_gate": "BLOCKED: return through the Orchestrator only after owner repairs produce a new immutable S31-DG bundle and a new independent semantic review; no runtime activation, merge, Golden, production or behavioral promotion is authorized.",
+    "routing": {
+      "activation_path": "DIRECT",
+      "via": "ORCHESTRATOR",
+      "pipeline_action": "BLOCK_PIPELINE",
+      "resolution_target": "NONE"
+    },
+    "s31_lane_reviews": {
+      "S31-D": {"verdict": "BLOCKED", "findings": ["D-CURRENTNESS-NOT-ENFORCED", "D-CROSS-RUN-DECLARATION=PASS", "D-ADAPTER-FIRST-BOUNDARY=PASS_WITH_RISK"]},
+      "S31-E": {"verdict": "BLOCKED", "findings": ["E-REGISTRY-AUTHORITY=PASS", "E-LIFECYCLE-SEPARATION=PASS", "E-SOURCE-MAPPING-MISMATCH"]},
+      "S31-F": {"verdict": "BLOCKED", "findings": ["F-CLAIM-CEILING-ORDER=PASS_STRUCTURALLY", "F-SELF-CERTIFIED-NONSTRUCTURAL-EVIDENCE", "F-OWNER-RECEIPT-PRESERVATION"]},
+      "S31-G": {"verdict": "BLOCKED", "findings": ["G-GOVERNED-CONTEXT-BOUNDARY", "G-SILENT-FALLBACK=PASS", "G-REPLACEABLE-ADAPTER=PASS"]}
+    }
+  },
+  "execution_blockers": []
+}

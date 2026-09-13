@@ -1,0 +1,26 @@
+{
+  "$schema":"http://json-schema.org/draft-07/schema#",
+  "$id":"lf/s31/capability-manifest/v0.1-candidate",
+  "title":"LF Capability Manifest v0.1 Candidate",
+  "type":"object","additionalProperties":false,
+  "required":["capability_id","capability_version","capability_class","owner","lifecycle","authority_contract","input_contract","output_contract","dependencies","compatibility","execution_port","adapter_bindings","evidence_contract","currentness_binding","source_refs","source_digests","claim_ceiling"],
+  "properties":{
+    "capability_id":{"type":"string","pattern":"^[A-Z0-9][A-Z0-9._-]+$"},
+    "capability_version":{"type":"string","minLength":1},
+    "capability_class":{"enum":["GOVERNANCE","DATA_ACCESS","RESOLUTION","CONTEXT","EXECUTION","EVIDENCE","LEARNING","WORK_PACKAGE","ADAPTER"]},
+    "owner":{"type":"string","minLength":2},
+    "lifecycle":{"type":"object","additionalProperties":false,"required":["artifact_maturity","runtime_activation","promotion_authority"],"properties":{"artifact_maturity":{"type":"string","minLength":2},"runtime_activation":{"type":"boolean"},"promotion_authority":{"type":"string","minLength":2}}},
+    "authority_contract":{"type":"string","minLength":2},
+    "input_contract":{"type":"string","minLength":2},
+    "output_contract":{"type":"string","minLength":2},
+    "dependencies":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["capability_id","version_constraint","critical"],"properties":{"capability_id":{"type":"string"},"version_constraint":{"type":"string"},"critical":{"type":"boolean"}}}},
+    "compatibility":{"type":"object","additionalProperties":false,"required":["consumer_contracts","boundary_adapters"],"properties":{"consumer_contracts":{"type":"array","items":{"type":"string"}},"boundary_adapters":{"type":"array","items":{"type":"string"}}}},
+    "execution_port":{"type":["string","null"]},
+    "adapter_bindings":{"type":"array","items":{"type":"string"}},
+    "evidence_contract":{"type":"string","minLength":2},
+    "currentness_binding":{"type":"object","additionalProperties":false,"required":["policy","stale_action"],"properties":{"policy":{"type":"string","minLength":2},"stale_action":{"const":"FAIL_CLOSED"}}},
+    "source_refs":{"type":"array","minItems":1,"items":{"type":"string"}},
+    "source_digests":{"type":"array","minItems":1,"items":{"type":"string"}},
+    "claim_ceiling":{"type":"string","minLength":2}
+  }
+}

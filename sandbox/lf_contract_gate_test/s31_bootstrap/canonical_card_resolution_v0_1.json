@@ -1,0 +1,54 @@
+{
+  "contract_version": "S31_CANONICAL_CARD_RESOLUTION_V0_1",
+  "status": "CANDIDATE_READ_ONLY",
+  "owner_lane": "S31-C",
+  "resolution_statuses": ["RESOLVED", "NO_DIRECT_CARD", "AMBIGUOUS", "BLOCKED"],
+  "resolution_modes": ["EXACT", "COMPATIBLE", "COMPOSED", "GENERIC_SAFE"],
+  "fallback_sequence": ["CONTRACT_SCHEMA", "GENERIC_CAPABILITY", "SAFE_COMPOSITION", "MANUAL_REQUIRED"],
+  "invariants": {
+    "no_direct_card_is_not_manual": true,
+    "ambiguous_fail_closed": true,
+    "source_authority_precedence": true,
+    "schema_invention_allowed": false,
+    "manual_requires_all_safe_alternatives_exhausted": true,
+    "manual_requires_explicit_no_unresolved_blocker_evidence": true,
+    "typed_attempt_evidence_required": true,
+    "fallback_attempts_unique_and_ordered": true,
+    "unknown_fallback_alternatives_forbidden": true,
+    "cards_define_how_not_what": true
+  },
+  "boundary_mappings": {
+    "S26_SOURCE_FIRST_POLICY": {
+      "EXACT": {"status":"RESOLVED","mode":"EXACT"},
+      "COMPOSED": {"status":"RESOLVED","mode":"COMPOSED"},
+      "GENERIC_SAFE": {"status":"RESOLVED","mode":"GENERIC_SAFE"}
+    },
+    "S26_GOVERNANCE_GATE": {
+      "EXACT": {"status":"RESOLVED","mode":"EXACT"},
+      "COMPATIBLE": {"status":"RESOLVED","mode":"COMPATIBLE"},
+      "NONE": {"status":"NO_DIRECT_CARD","mode":null},
+      "AMBIGUOUS": {"status":"AMBIGUOUS","mode":null,"action":"FAIL_CLOSED"}
+    },
+    "S26_RUNTIME_AUTHORITY": {
+      "RESOLVED": {"status":"RESOLVED","mode_source":"BOUNDARY_ADAPTER_FROM_RUNTIME_SELECTION"},
+      "FALLBACK:NO_CARD_GOVERNED": {"status":"NO_DIRECT_CARD","mode":null}
+    }
+  },
+  "fallback_rules": {
+    "start_only_when_status": "NO_DIRECT_CARD",
+    "attempts_must_follow_declared_sequence": true,
+    "each_attempt_requires": ["typed_attempt", "reason", "evidence_ref"],
+    "safe_attempt_result_vocabulary": ["PASS", "FAIL"],
+    "success_action": "RESOLVED_WITH_GOVERNED_FALLBACK",
+    "manual_allowed_only_after": ["CONTRACT_SCHEMA_FAILED", "GENERIC_CAPABILITY_FAILED", "SAFE_COMPOSITION_FAILED"],
+    "manual_readiness_requires": ["result=READY", "typed_attempt=true", "reason", "evidence_ref", "blocker_unresolved=false"],
+    "manual_with_unresolved_blocker": "FORBIDDEN",
+    "missing_manual_readiness_evidence": "FAIL_CLOSED"
+  },
+  "compatibility_policy": {
+    "existing_s26_vocabularies_remain_at_boundaries": true,
+    "independent_s26_patch_required": false,
+    "s31_internal_vocabulary_is_canonical_candidate": true,
+    "big_bang_migration": false
+  }
+}

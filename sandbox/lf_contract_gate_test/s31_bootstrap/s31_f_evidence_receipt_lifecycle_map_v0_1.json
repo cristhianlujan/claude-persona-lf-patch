@@ -1,0 +1,32 @@
+{
+  "contract_version":"S31_F_EVIDENCE_RECEIPT_LIFECYCLE_MAP_V0_1",
+  "status":"CANDIDATE_READ_ONLY","owner_lane":"S31-F","source_commit":"d4051d9c57fdfd09741da5ba2718c032eac56c92",
+  "source_assets":[
+    {"path":"gobernanza/contratos/s30_self_governance_gate_v1.json","blob_sha":"b0b43c48a20dc22eeb4d030e7f7022dcf215f36b","provides":"gate evidence envelope, currentness, first bad hop, repair boundary"},
+    {"path":"skills/learning_engine/SKILL.md","blob_sha":"46250c542c5335486429e0de49ee47db15569970","provides":"evidence ceiling, deterministic/semantic/full handoff layering, known vs new"}
+  ],
+  "common_receipt_core":["receipt_version","run_id","gate_or_capability_id","input_exact","input_digest","input_source_refs","transformation_or_validation","output_exact","output_digest","output_ref","execution_identity","environment","authority","provenance","first_bad_hop","repair_disposition","claim_ceiling"],
+  "evidence_layers":[
+    {"layer":"STRUCTURAL","may_claim":["schema_shape","contract_presence","deterministic_static_validation"],"may_not_claim":["runtime_provenance","semantic_correctness","behavioral_outcome"]},
+    {"layer":"PROVENANCE_EXECUTION","may_claim":["executed_target","exact_input_output_lineage","runtime_readback"],"may_not_claim":["semantic_correctness","behavioral_outcome"]},
+    {"layer":"SEMANTIC","may_claim":["semantic_judgment_for_bound_obligations"],"may_not_claim":["full_behavioral_outcome_without_execution"]},
+    {"layer":"BEHAVIORAL","may_claim":["defined_cases_executed_through_required_targets_and_state_compared"],"may_not_claim":["unbounded_generalization"]}
+  ],
+  "learning_compatibility":{
+    "DETERMINISTIC_INTAKE":"PROVENANCE_EXECUTION_OR_LOWER_BY_CASE",
+    "SEMANTIC_REVIEW":"SEMANTIC",
+    "FULL_HANDOFF_OUTCOME":"BEHAVIORAL_WHEN_ALL_EXECUTABLE_LAYERS_AND_NEXT_STATE_PROVEN",
+    "REGRESSION_EVAL":"PROTECTED_BEHAVIOR_ALREADY_VALIDATED",
+    "CAPABILITY_EVAL":"NEW_UNPROVEN_DOES_NOT_AUTHORIZE_IMPACT"
+  },
+  "lifecycle_policy":{
+    "status":"UNRESOLVED_CANONICAL_VOCABULARY",
+    "observed_terms":["CANDIDATO_READ_ONLY","KNOWN_VALIDATED","NEW_UNPROVEN","GOLDEN_ELIGIBLE","VALIDATED_TESTED","ACTIVE","DEPRECATED_OR_RETIRED_CONCEPTS"],
+    "rule":"DO_NOT_INVENT_ORDER_OR_PROMOTION_SEMANTICS_UNTIL_AUTHORITY_IS_RESOLVED",
+    "separate_dimensions_required":["artifact_maturity","evidence_level","runtime_activation","promotion_authority"]
+  },
+  "invariants":["EVIDENCE_CEILING_MONOTONIC","PROVENANCE_IS_NOT_SEMANTIC_CORRECTNESS","STRUCTURAL_IS_NOT_BEHAVIORAL","INDEPENDENT_REVIEW_REQUIRED_WHEN_CLAIM_REQUIRES_IT","STALE_EVIDENCE_DEGRADES_CURRENTNESS","SELF_CERTIFICATION_FORBIDDEN"],
+  "target":"ONE_COMMON_ENVELOPE_WITH_CAPABILITY_SPECIFIC_EXTENSIONS",
+  "boundaries":{"no_rewrite_existing_receipts":true,"boundary_adapters_first":true,"no_lifecycle_promotion_from_this_map":true,"no_prod_or_golden_authority":true},
+  "claim_ceiling":"EVIDENCE_AND_LIFECYCLE_MAPPING_ONLY"
+}

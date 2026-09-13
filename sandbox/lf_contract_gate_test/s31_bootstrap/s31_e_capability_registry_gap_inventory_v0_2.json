@@ -1,0 +1,47 @@
+{
+  "contract_version": "S31_E_CAPABILITY_REGISTRY_GAP_INVENTORY_V0_2",
+  "status": "CANDIDATE_READ_ONLY",
+  "owner_lane": "S31-E",
+  "supersedes": "S31_E_CAPABILITY_REGISTRY_GAP_INVENTORY_V0_1",
+  "source_commit": "6ac06b6aff7a9a22e80a848d7fc32b5787892992",
+  "repair_reason": "S31-DG-IR-001 SOURCE_MISMATCH: lifecycle_state was inconsistent with the canonical candidate manifest field lifecycle.",
+  "required_capability_manifest_fields": [
+    "capability_id",
+    "capability_version",
+    "capability_class",
+    "owner",
+    "lifecycle",
+    "authority_contract",
+    "input_contract",
+    "output_contract",
+    "dependencies",
+    "compatibility",
+    "execution_port",
+    "adapter_bindings",
+    "evidence_contract",
+    "currentness_binding",
+    "source_refs",
+    "source_digests",
+    "claim_ceiling"
+  ],
+  "schema_binding": {
+    "target_schema": "lf_capability_manifest_v0_3_candidate.schema.json",
+    "consistency_rule": "REQUIRED_FIELDS_SET_MUST_EQUAL_TARGET_SCHEMA_REQUIRED_SET",
+    "legacy_field_forbidden": "lifecycle_state"
+  },
+  "source_of_truth_policy": {
+    "authoritative_definition": "VERSIONED_REPOSITORY_MANIFEST",
+    "database_role": "QUERYABLE_PROJECTION_AND_RUNTIME_DISCOVERY_LATER",
+    "dual_source_of_truth_forbidden": true,
+    "supabase_migration_now": false,
+    "backstage_or_external_catalog_now": false
+  },
+  "boundaries": {
+    "no_database_ddl_in_s31_bootstrap": true,
+    "no_backstage_install": true,
+    "no_external_framework_dependency": true,
+    "no_move_of_s30_s26_sources": true,
+    "registry_does_not_grant_execution_authority": true
+  },
+  "claim_ceiling": "GAP_INVENTORY_AND_TARGET_MODEL_ONLY"
+}

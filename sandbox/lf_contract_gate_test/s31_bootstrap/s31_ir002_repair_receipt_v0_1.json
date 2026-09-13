@@ -1,0 +1,91 @@
+{
+  "receipt_version": "S31_IR002_REPAIR_V0_1",
+  "strategy_id": "S31",
+  "repair_candidate_head": "191b53fca993bf28aefccf5e1e67007ad9a35dfa",
+  "base_main_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "source_reviews": [
+    "S31-ABC-IR-002",
+    "S31-DG-IR-002"
+  ],
+  "ekb_before_repair": [
+    {
+      "code": "GOV-GITHUB-CURRENTNESS-RESOLVER-001",
+      "classification": "RECURRENCE",
+      "frequency_after": 2,
+      "event_id": 13504
+    },
+    {
+      "code": "S31-EVIDENCE-RESOLVER-IDENTITY-SPOOF-001",
+      "classification": "NEW_ERROR",
+      "frequency_after": 1,
+      "event_id": 13505
+    },
+    {
+      "code": "S31-EVIDENCE-RECEIPT-REPLAY-CROSSBIND-001",
+      "classification": "NEW_ERROR",
+      "frequency_after": 1,
+      "event_id": 13506
+    },
+    {
+      "code": "S31-RUNTIME-TYPED-CONTEXT-UNRESOLVED-001",
+      "classification": "NEW_ERROR",
+      "frequency_after": 1,
+      "event_id": 13507
+    }
+  ],
+  "causal_repairs": {
+    "S31-B": [
+      "removed arbitrary mapping/callback PASS path",
+      "reuses canonical Quality Pack TrustedRefResolver",
+      "resolver identity fixed outside candidate",
+      "validation/currentness/EKB refs resolved from immutable Git bytes"
+    ],
+    "S31-D": [
+      "authority/runtime-schema refs resolved by trusted resolver",
+      "provider bytes rehashed",
+      "current content required",
+      "single-ref source digest made unambiguous"
+    ],
+    "S31-E": [
+      "each source_ref is provider-resolved and rehashed",
+      "currentness receipt also trusted-resolver-backed"
+    ],
+    "S31-F": [
+      "owner receipt resolved even STRUCTURAL",
+      "input/output exact digests recomputed",
+      "authority/provenance source bytes resolved",
+      "all nonstructural receipts cross-bound to common run/capability/execution/input/output/authority/provenance identity"
+    ],
+    "S31-G": [
+      "Typed Context is immutable-ref resolved and rehashed before provider invocation",
+      "Typed Context schema validated",
+      "request_id and governed_input bound to resolved context",
+      "existing nested-authority and no-silent-fallback guards preserved"
+    ]
+  },
+  "canonical_dependency": {
+    "ref": "profiles/quality_pack/validators/trusted_ref_resolver.py",
+    "ownership": "QUALITY_PACK",
+    "copied_into_s31": false,
+    "adapter_binding_only": true
+  },
+  "deterministic_regression": {
+    "exact_head": "191b53fca993bf28aefccf5e1e67007ad9a35dfa",
+    "all_s31_test_files_exit_zero": true,
+    "B": "PASS_26_OF_26",
+    "C": "PASS_28_OF_28",
+    "DG_V0_1": "PASS_5_POSITIVE_14_NEGATIVE",
+    "DG_V0_2": "PASS_8_POSITIVE_36_NEGATIVE",
+    "EKB_LOOP": "PASS_14_OF_14",
+    "INDEPENDENT_REVIEW_INTAKE": "PASS_12_OF_12",
+    "MASTER_PLAN_V0_2": "PASS_16_OF_16",
+    "MASTER_PLAN_V0_3": "PASS",
+    "TRUSTED_RESOLVER_PROVIDER_BYTES_SMOKE": "PASS"
+  },
+  "claim_ceiling": "DETERMINISTIC_REPAIR_EVIDENCE_ONLY",
+  "independent_semantic_status": "PENDING_IR003",
+  "runtime_authority": "NONE",
+  "golden_authority": "NONE",
+  "merge_authority": "NONE",
+  "production_authority": "NONE"
+}

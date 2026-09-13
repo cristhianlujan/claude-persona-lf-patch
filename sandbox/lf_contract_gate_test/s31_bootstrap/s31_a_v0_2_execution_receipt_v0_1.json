@@ -1,0 +1,41 @@
+{
+  "receipt_version": "S31_A_V0_2_EXECUTION_RECEIPT_V0_1",
+  "status": "DETERMINISTIC_REGRESSION_PASS",
+  "work_package": "WP-S31-A-001",
+  "source_snapshot": {
+    "branch": "lf/s31-bootstrap",
+    "branch_head_at_execution": "e74fd751c73923bfb877e47f4c94d89b9bffd4c6",
+    "main_base_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+    "files": [
+      {"path": "sandbox/lf_contract_gate_test/s31_bootstrap/canonical_capability_model_v0_2_candidate.schema.json", "git_blob_sha": "ad549879dc5edfb32d040da3b0b0c4c6140614ad", "local_git_blob_match": true},
+      {"path": "sandbox/lf_contract_gate_test/s31_bootstrap/test_canonical_capability_model_v0_2_candidate.py", "git_blob_sha": "f157fe93c443b0b691d229466f1ea9f0e6f60310", "local_git_blob_match": true},
+      {"path": "sandbox/lf_contract_gate_test/s31_bootstrap/canonical_capability_model_test_vectors_v0_1.json", "git_blob_sha": "d243576af119d26a31ef71405f26100199f75166", "local_git_blob_match": true}
+    ]
+  },
+  "execution": {
+    "runner": "python test_canonical_capability_model_v0_2_candidate.py",
+    "environment": "LOCAL_SANDBOX_RECONSTRUCTED_FROM_VERIFIED_GIT_BLOBS",
+    "exit_code": 0,
+    "schema_valid": true,
+    "legacy_valid_vectors_upgraded": 6,
+    "legacy_negative_vectors_preserved": 1,
+    "lifecycle_regressions": {
+      "open_observed_label_without_canonical_order": "PASS",
+      "resolved_vocabulary_claim_blocked": "PASS",
+      "runtime_activation_dimension_required": "PASS",
+      "self_certification_forbidden": "PASS"
+    },
+    "representative_capabilities": ["CARD_RESOLUTION", "EVIDENCE_LEDGER", "LEARNING_GOVERNANCE", "PREEXECUTION_ASSURANCE", "TYPED_RUNTIME_CONTEXT", "WORK_PACKAGE"],
+    "stderr_classification": "NON_TEST_ARTIFACT_TOOL_WARMUP_NOISE",
+    "stderr_changed_exit_status": false
+  },
+  "governance": {
+    "self_certification": false,
+    "independent_review_required": true,
+    "independent_review_status": "PENDING",
+    "golden_authorized": false,
+    "merge_authorized": false,
+    "production_authorized": false
+  },
+  "claim_ceiling": "DETERMINISTIC_REGRESSION_ONLY"
+}

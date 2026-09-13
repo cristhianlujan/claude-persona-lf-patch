@@ -1,0 +1,55 @@
+{
+  "receipt_version": "S31_A_PRODUCER_RECEIPT_V0_1",
+  "strategy_id": "S31",
+  "lane_id": "S31-A",
+  "work_package_id": "WP-S31-A-001",
+  "capability_id": "CANONICAL_CAPABILITY_MODEL",
+  "frozen_candidate_sha": "d38f874e1cf6de6b8f8d6219b0d16b3211a3696d",
+  "base_main_sha": "ee7aca94c672fcc555db90962f09fe439eedf4f0",
+  "status": "CANDIDATE_READY_FOR_INDEPENDENT_REVIEW",
+  "claim_ceiling": "PRODUCER_STRUCTURAL_AND_SOURCE_GROUNDED_CANDIDATE_ONLY",
+  "outputs": [
+    "sandbox/lf_contract_gate_test/s31_bootstrap/canonical_capability_model_v0_1.schema.json",
+    "sandbox/lf_contract_gate_test/s31_bootstrap/S31_A_CURRENT_TO_CAPABILITY_MAPPING_V0_1.md",
+    "sandbox/lf_contract_gate_test/s31_bootstrap/canonical_capability_model_test_vectors_v0_1.json",
+    "sandbox/lf_contract_gate_test/s31_bootstrap/test_canonical_capability_model_v0_1.py"
+  ],
+  "representative_capabilities": [
+    "PREEXECUTION_ASSURANCE",
+    "CARD_RESOLUTION",
+    "TYPED_RUNTIME_CONTEXT",
+    "LEARNING_GOVERNANCE",
+    "EVIDENCE_LEDGER",
+    "WORK_PACKAGE"
+  ],
+  "negative_control": "REJECT_FRAMEWORK_AS_KERNEL_AUTHORITY",
+  "source_grounding": [
+    "gobernanza/contratos/s30_self_governance_gate_v1.json",
+    "gobernanza/contratos/s26_governance_ekb_card_fallback_v1.json",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/S26_OPERATING_MODE_SOURCE_FIRST.md",
+    "services/profile_runtime_api/profile_runtime_api/runtime_authority.py",
+    "skills/learning_engine/SKILL.md",
+    "skills/creating-integral-user-stories/schemas/task-packet.schema.json"
+  ],
+  "safety_readback": {
+    "s30_mutated": false,
+    "s26_mutated": false,
+    "learning_engine_mutated": false,
+    "story_creator_mutated": false,
+    "supabase_mutated": false,
+    "runtime_mutated": false,
+    "production_mutated": false,
+    "golden_promoted": false,
+    "main_merged": false
+  },
+  "pending": [
+    "INDEPENDENT_SEMANTIC_REVIEW",
+    "DETERMINISTIC_TEST_EXECUTION_RECEIPT_FOR_CAPABILITY_MODEL",
+    "POST_REVIEW_RECONCILIATION"
+  ],
+  "independent_review_handoff_ref": "sandbox/lf_contract_gate_test/s31_bootstrap/S31_A_INDEPENDENT_REVIEW_HANDOFF_V0_1.md",
+  "closure_authorized": false,
+  "merge_authorized": false,
+  "production_authorized": false,
+  "golden_authorized": false
+}

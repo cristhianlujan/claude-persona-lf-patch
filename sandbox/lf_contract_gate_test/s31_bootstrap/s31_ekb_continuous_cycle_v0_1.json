@@ -1,0 +1,51 @@
+{
+  "contract_version": "S31_EKB_CONTINUOUS_CYCLE_V0_1",
+  "mode": "EVENT_DRIVEN_CONTINUOUS",
+  "source_semantics": {
+    "reuse_from": "S30",
+    "codes": [
+      "DB-001",
+      "GOV-010",
+      "S30-GATE-EKB-AUTOPERSIST-MISSING-001",
+      "EKB-NEW-ERROR-SHAPE-PREFLIGHT-MISSING-001",
+      "PROFILE-RUNTIME-RUN-REPORT-ANTI-CLOSE-VIOLATION-001"
+    ],
+    "s30_runtime_ownership_claimed": false
+  },
+  "required_run_phases": [
+    "PRE_EXECUTION_EKB_READ",
+    "MATERIAL_BATCH",
+    "OBSERVATION",
+    "CONDITIONAL_EKB_LOOKUP_AND_PERSIST",
+    "PRE_NEXT_BATCH_EKB_REFRESH",
+    "FINAL_EKB_DISPOSITION_AND_READBACK"
+  ],
+  "trigger_event_types": [
+    "FAIL",
+    "BLOCKED",
+    "ERROR",
+    "MATERIAL_NEW_EVIDENCE"
+  ],
+  "learning_dispositions": [
+    "RECURRENCE",
+    "NEW_ERROR",
+    "NOT_LEARNING_WITH_REASON"
+  ],
+  "persistence": {
+    "writer_route": "public.lf_write_pipeline_ekb_v1",
+    "direct_dml_forbidden": true,
+    "receipt_required": true,
+    "post_write_readback_required": true
+  },
+  "repair": {
+    "requires_terminal_learning_disposition": true,
+    "requires_persistence_readback_when_applicable": true,
+    "blocked_persistence_result": "BLOCKED_EKB_PERSISTENCE"
+  },
+  "close": {
+    "all_learning_events_terminal": true,
+    "unresolved_persistence_count": 0,
+    "final_ekb_readback_required": true,
+    "final_readback_after_last_write_required": true
+  }
+}

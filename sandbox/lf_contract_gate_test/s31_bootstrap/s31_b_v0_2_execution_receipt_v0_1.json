@@ -1,0 +1,44 @@
+{
+  "receipt_version": "S31_B_V0_2_EXECUTION_RECEIPT_V0_1",
+  "status": "DETERMINISTIC_REGRESSION_PASS",
+  "work_package": "WP-S31-B-001",
+  "source_snapshot": {
+    "branch": "lf/s31-bootstrap",
+    "branch_head_at_execution": "e74fd751c73923bfb877e47f4c94d89b9bffd4c6",
+    "main_base_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+    "files": [
+      {"path": "sandbox/lf_contract_gate_test/s31_bootstrap/validate_lf_work_package_v0_2_candidate.py", "git_blob_sha": "e24405a1dce55257ed999733ba1bb22e9433b856", "local_git_blob_match": true},
+      {"path": "sandbox/lf_contract_gate_test/s31_bootstrap/test_lf_work_package_v0_2_candidate.py", "git_blob_sha": "a8d0e4bf5f7f76a2139c529931fa14aa51b40a89", "local_git_blob_match": true}
+    ]
+  },
+  "execution": {
+    "runner": "python test_lf_work_package_v0_2_candidate.py",
+    "environment": "LOCAL_SANDBOX_RECONSTRUCTED_FROM_VERIFIED_GIT_BLOBS",
+    "exit_code": 0,
+    "result": "PASS_LF_WORK_PACKAGE_V0_2_CANDIDATE_SELFTEST=11/11",
+    "covered_controls": [
+      "terminal_close_positive",
+      "blocked_plus_safe_continues",
+      "material_source_revision_required",
+      "validator_execution_receipt_required",
+      "synthetic_merge_ref_not_exact_head",
+      "executed_sha_must_match_branch_head",
+      "fresh_ekb_required",
+      "ekb_control_mapping_required",
+      "same_failure_retry_forbidden",
+      "next_safe_batch_blocks_close",
+      "global_remaining_work_scan_required"
+    ],
+    "stderr_classification": "NON_TEST_ARTIFACT_TOOL_WARMUP_NOISE",
+    "stderr_changed_exit_status": false
+  },
+  "governance": {
+    "self_certification": false,
+    "independent_review_required": true,
+    "independent_review_status": "PENDING",
+    "golden_authorized": false,
+    "merge_authorized": false,
+    "production_authorized": false
+  },
+  "claim_ceiling": "DETERMINISTIC_REGRESSION_ONLY"
+}

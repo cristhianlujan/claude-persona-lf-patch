@@ -1,0 +1,24 @@
+{
+  "$schema":"http://json-schema.org/draft-07/schema#",
+  "$id":"lf/s31/runtime-execution-port/v0.1-candidate",
+  "title":"LF Runtime Execution Port v0.1 Candidate",
+  "type":"object","additionalProperties":false,
+  "required":["port_version","request_id","typed_context_ref","typed_context_sha256","typed_context_resolver_id","governed_input","output_contract_ref","execution_budget","runtime_policy","authority_decisions_forbidden"],
+  "properties":{
+    "port_version":{"const":"LF_RUNTIME_EXECUTION_PORT_V0_1_CANDIDATE"},
+    "request_id":{"type":"string","minLength":2},
+    "typed_context_ref":{"type":"string","minLength":2},
+    "typed_context_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "typed_context_resolver_id":{"const":"QUALITY_PACK_TRUSTED_REF_RESOLVER_V1"},
+    "governed_input":{},
+    "output_contract_ref":{"type":"string","minLength":2},
+    "execution_budget":{"type":"object","additionalProperties":false,"required":["max_runtime_ms","max_output_units"],"properties":{"max_runtime_ms":{"type":"integer","minimum":1},"max_output_units":{"type":"integer","minimum":1}}},
+    "runtime_policy":{"type":"object","additionalProperties":false,"required":["provider_or_adapter","silent_fallback_allowed"],"properties":{"provider_or_adapter":{"type":"string","minLength":2},"silent_fallback_allowed":{"const":false}}},
+    "authority_decisions_forbidden":{"type":"array","items":{"enum":["AUTHORITY","CURRENTNESS","CARD_APPLICABILITY","PROMOTION","GOLDEN","PRODUCTION"]},"minItems":6,"uniqueItems":true}
+  },
+  "x_lf_input_boundary":{"typed_context_ref_must_be_trusted_resolver_backed":true,"typed_context_sha256_must_equal_provider_bytes":true,"typed_context_revision_must_be_current_content":true,"governed_input_and_request_id_must_match_resolved_typed_context":true},
+  "x_lf_output_contract":{
+    "required":["raw_output","runtime_receipt","transport_diagnostics","resource_usage","failure_code"],
+    "forbidden_authority_effects":["AUTHORIZE_DOWNSTREAM","PROMOTE_GOLDEN","ENABLE_PRODUCTION","ALTER_AUTHORITY"]
+  }
+}

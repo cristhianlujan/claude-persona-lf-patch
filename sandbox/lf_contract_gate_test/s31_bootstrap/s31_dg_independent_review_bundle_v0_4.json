@@ -1,0 +1,110 @@
+{
+  "bundle_version": "S31_DG_INDEPENDENT_REVIEW_BUNDLE_V0_4",
+  "review_case_id": "S31-DG-IR-002",
+  "execution_mode": "INDEPENDENT_CHAT_CONTEXT",
+  "candidate_snapshot": {
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "main_base_sha": "6ac06b6aff7a9a22e80a848d7fc32b5787892992",
+    "s31_candidate_head": "20145a2cb5b246f6d3e90987d1af355aa419f2d4",
+    "exact_head_not_merge_ref": true
+  },
+  "review_scope": ["S31-D", "S31-E", "S31-F", "S31-G"],
+  "prior_review": {
+    "review_case_id": "S31-DG-IR-001",
+    "verdict": "BLOCK_PIPELINE",
+    "receipt_path": "sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_ir001_independent_receipt_v0_1.json",
+    "receipt_blob_sha": "3c347986b4bb5113403c7585a685ed69d58f03be",
+    "repair_receipt_path": "sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_ir001_repair_receipt_v0_1.json",
+    "repair_receipt_blob_sha": "3379de1ac73f2569d32066fc06064c05bc167c74",
+    "blocking_codes": ["SOURCE_MISMATCH", "AUTHORITY_LEAK", "EVIDENCE_INFLATION"]
+  },
+  "frozen_artifacts": [
+    {"lane": "S31-D", "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_shared_authority_typed_context_v0_2_candidate.schema.json", "blob_sha": "d3918a0b80f023883130ebaf63c850ef43475959", "role": "candidate"},
+    {"lane": "S31-D", "path": "sandbox/lf_contract_gate_test/s31_bootstrap/s31_d_authority_typed_context_extraction_map_v0_1.json", "blob_sha": "9d73eb4f98198abee40ef5bb5a1e0837cd3aa1b4", "role": "source_mapping"},
+    {"lane": "S31-E", "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_capability_manifest_v0_3_candidate.schema.json", "blob_sha": "26fec9bc52fd0669377ee88274fcc4379d31e0e2", "role": "candidate"},
+    {"lane": "S31-E", "path": "sandbox/lf_contract_gate_test/s31_bootstrap/s31_e_capability_registry_gap_inventory_v0_2.json", "blob_sha": "fc67055c9084aaaf6080af867aba09fef8cf9b83", "role": "source_mapping"},
+    {"lane": "S31-F", "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_common_evidence_envelope_v0_3_candidate.schema.json", "blob_sha": "c84ae3f74b245e4b7a8aace39d065291931f6584", "role": "candidate"},
+    {"lane": "S31-F", "path": "sandbox/lf_contract_gate_test/s31_bootstrap/s31_f_evidence_receipt_lifecycle_map_v0_1.json", "blob_sha": "7fda5054ad8f3e1111fe607be9d13b063a38fbfd", "role": "source_mapping"},
+    {"lane": "S31-G", "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_runtime_execution_port_v0_1_candidate.schema.json", "blob_sha": "0704d671e0de73572b081909d4669aa789273306", "role": "request_candidate"},
+    {"lane": "S31-G", "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_runtime_execution_output_v0_1_candidate.schema.json", "blob_sha": "550d2aa8facb0fa5e54b6dab88bfb4867bea86d9", "role": "output_candidate"},
+    {"lane": "S31-G", "path": "sandbox/lf_contract_gate_test/s31_bootstrap/s31_g_runtime_port_map_v0_1.json", "blob_sha": "926ccdfb2ac00bc050c620ecd50ca5c57ae57ebc", "role": "source_mapping"},
+    {"lane": "S31-DG", "path": "sandbox/lf_contract_gate_test/s31_bootstrap/validate_s31_dg_contracts_v0_2.py", "blob_sha": "c242fe0185db5a3de1aa480482ab8fa7a346f242", "role": "validator"},
+    {"lane": "S31-DG", "path": "sandbox/lf_contract_gate_test/s31_bootstrap/test_s31_dg_contracts_v0_2.py", "blob_sha": "c9521f3df6581fd40cabc8983177c763d9cb5a68", "role": "deterministic_test"},
+    {"lane": "S31-DG", "path": "sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_ir001_independent_receipt_v0_1.json", "blob_sha": "3c347986b4bb5113403c7585a685ed69d58f03be", "role": "prior_independent_negative_evidence"},
+    {"lane": "S31-DG", "path": "sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_ir001_repair_receipt_v0_1.json", "blob_sha": "3379de1ac73f2569d32066fc06064c05bc167c74", "role": "repair_trace"}
+  ],
+  "producer_evidence": {
+    "S31-DG": "5 schemas valid; 8 positive PASS; 28 negative fail-closed PASS at exact head 9f1f60f17ce3428c2cac809af1d8f7c9dad0c66f",
+    "full_s31_regression": "all sandbox/lf_contract_gate_test/s31_bootstrap/test_*.py exit 0 at exact head 9f1f60f17ce3428c2cac809af1d8f7c9dad0c66f",
+    "claim_ceiling": "DETERMINISTIC_REGRESSION_ONLY"
+  },
+  "upstream_worker_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@20145a2cb5b246f6d3e90987d1af355aa419f2d4/sandbox/lf_contract_gate_test/s31_bootstrap/LF_WORK_PACKAGE_BOOTSTRAP_V0_1.md",
+  "quality_pack": {
+    "independent_review_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@6ac06b6aff7a9a22e80a848d7fc32b5787892992/profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md",
+    "quality_gate_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@6ac06b6aff7a9a22e80a848d7fc32b5787892992/profiles/quality_pack/contracts/quality_gate_contract.md",
+    "lf_quality_controls_ref": "github://cristhianlujan/claude-persona-lf-patch@6ac06b6aff7a9a22e80a848d7fc32b5787892992/profiles/quality_pack/contracts/lf_quality_controls.md",
+    "score_rubric_ref": "github://cristhianlujan/claude-persona-lf-patch@6ac06b6aff7a9a22e80a848d7fc32b5787892992/profiles/quality_pack/judges/quality_pack_score_rubric.md",
+    "mini_judge_ref": "github://cristhianlujan/claude-persona-lf-patch@6ac06b6aff7a9a22e80a848d7fc32b5787892992/profiles/quality_pack/judges/quality_pack_mini_judge.md",
+    "quality_review_schema_ref": "github://cristhianlujan/claude-persona-lf-patch@6ac06b6aff7a9a22e80a848d7fc32b5787892992/profiles/quality_pack/schemas/quality_review.schema.json",
+    "independent_receipt_schema_ref": "github://cristhianlujan/claude-persona-lf-patch@6ac06b6aff7a9a22e80a848d7fc32b5787892992/profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json",
+    "independent_receipt_validator_ref": "github://cristhianlujan/claude-persona-lf-patch@6ac06b6aff7a9a22e80a848d7fc32b5787892992/profiles/quality_pack/validators/validate_independent_semantic_review.py"
+  },
+  "acceptance_criteria": {
+    "S31-D": [
+      "authority and runtime-schema currentness require externally resolved immutable evidence bound to exact source refs/digests/run",
+      "fake/stale/unresolved/self-resolved currentness fails closed",
+      "cross-run authority remains explicit",
+      "shared kernel excludes provider transport and preserves adapter-first compatibility"
+    ],
+    "S31-E": [
+      "repo manifest remains source of truth and registry grants no execution authority",
+      "lifecycle remains separated and self-certification forbidden",
+      "inventory required fields and manifest schema required fields match exactly using lifecycle not lifecycle_state",
+      "source currentness is resolver-bound and source digests are SHA-256"
+    ],
+    "S31-F": [
+      "claim ceiling cannot exceed evidence",
+      "non-structural evidence requires independently resolved execution/currentness/provenance with SHA-256 bindings",
+      "producer cannot resolve its own evidence",
+      "owner receipts remain preserved without rewrite and capability-specific extensions have an explicit carrier"
+    ],
+    "S31-G": [
+      "runtime port consumes governed typed context but grants no authority",
+      "typed runtime output forbids nested downstream/Golden/production authority and non-empty authority effects",
+      "silent fallback remains forbidden",
+      "framework/provider remains replaceable behind port"
+    ]
+  },
+  "mandatory_adversarial_rechecks": [
+    "D_FAKE_STALE_UNRESOLVED_OR_SELF_RESOLVED_CURRENTNESS",
+    "E_LIFECYCLE_FIELD_OR_REQUIRED_SET_SOURCE_MISMATCH",
+    "E_WEAK_DIGEST_OR_SELF_RESOLVED_CURRENTNESS",
+    "F_FAKE_REF_WEAK_DIGEST_SELF_RESOLVER_OR_UNBOUND_SEMANTIC_EVIDENCE",
+    "F_OWNER_RECEIPT_OR_EXTENSION_LOSS",
+    "G_NESTED_AUTHORITY_FLAG_OR_EFFECT_ANYWHERE_UNDER_RUNTIME_RECEIPT"
+  ],
+  "blocking_criteria": [
+    "source mismatch",
+    "authority leak",
+    "evidence inflation",
+    "self-resolved evidence",
+    "unresolved currentness",
+    "weak digest acceptance",
+    "owner-receipt loss",
+    "nested runtime authority",
+    "framework lock-in",
+    "silent fallback",
+    "lifecycle overclaim",
+    "cross-lane mutation"
+  ],
+  "governance_constraints": [
+    "reviewer_is_producer=false",
+    "producer_context_available=false",
+    "no repair during review",
+    "producer deterministic PASS is not semantic proof",
+    "no runtime/Golden/merge/production authorization",
+    "semantic review only for exact frozen bundle"
+  ],
+  "producer_semantic_verdict": null,
+  "claim_ceiling": "FROZEN_REVIEW_BUNDLE_ONLY"
+}

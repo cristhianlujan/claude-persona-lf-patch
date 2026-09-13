@@ -1,0 +1,80 @@
+{
+  "work_package_id": "WP-S31-B-001",
+  "strategy_id": "S31",
+  "lane_id": "S31-B",
+  "capability_id": "WORK_PACKAGE",
+  "version": "v0.1-bootstrap",
+  "owner": "S31",
+  "worker": "S31-B-WORK-PACKAGE-WORKER",
+  "judge": "INDEPENDENT-S31-B-JUDGE",
+  "currentness": {
+    "base_main_sha": "ee7aca94c672fcc555db90962f09fe439eedf4f0",
+    "source_snapshot_refs": [
+      "skills/creating-integral-user-stories/schemas/task-packet.schema.json",
+      "gobernanza/contratos/s30_self_governance_gate_v1.json",
+      "sandbox/lf_contract_gate_test/s31_bootstrap/LF_WORK_PACKAGE_BOOTSTRAP_V0_1.md",
+      "sandbox/lf_contract_gate_test/s31_bootstrap/S31_WORK_PACKAGE_EVOLUTION_CANDIDATES_V0_1.md"
+    ],
+    "source_snapshot_sha256": [],
+    "authority_refs": ["main@ee7aca94c672fcc555db90962f09fe439eedf4f0", "LF_WORK_PACKAGE_BOOTSTRAP_V0_1"],
+    "currentness_policy": "EXACT_HEAD",
+    "cross_run_references": [],
+    "stale_action": "FAIL_CLOSED_BEFORE_MATERIAL_WORK"
+  },
+  "ownership": {
+    "active_writer_scope": ["sandbox/lf_contract_gate_test/s31_bootstrap/"],
+    "read_only_sources": ["skills/creating-integral-user-stories/", "gobernanza/contratos/"],
+    "allowed_dependencies": ["STORY_TASK_PACKET", "S30_SELF_GOVERNANCE", "LF_WORK_PACKAGE_BOOTSTRAP"],
+    "forbidden_cross_lane_writes": ["S30", "S26", "LEARNING_ENGINE", "CREATING_INTEGRAL_USER_STORIES"],
+    "collision_checks": ["BASE_MAIN_CURRENT", "S31_ACTIVE_WRITER_UNIQUE", "NO_CROSS_STRATEGY_WRITE"],
+    "principle": "ONE_CAUSAL_CHAIN_ONE_ACTIVE_WRITER"
+  },
+  "scope": {
+    "allowed_tools": ["GITHUB_READ", "GITHUB_WRITE_S31_BRANCH", "LOCAL_DETERMINISTIC_VALIDATION"],
+    "allowed_read_scope": ["skills/creating-integral-user-stories/", "gobernanza/contratos/", "sandbox/lf_contract_gate_test/s31_bootstrap/"],
+    "allowed_write_scope": ["sandbox/lf_contract_gate_test/s31_bootstrap/"],
+    "forbidden_actions": ["MUTATE_S30_INTERNALS", "MUTATE_S26_INTERNALS", "MUTATE_LEARNING_ENGINE_INTERNALS", "MUTATE_STORY_CREATOR_INTERNALS", "ENABLE_PRODUCTION", "PROMOTE_GOLDEN", "MERGE_MAIN", "SILENT_SCOPE_EXPANSION"]
+  },
+  "capability_binding": {
+    "required_capabilities": ["LF_WORK_PACKAGE_BOOTSTRAP", "CURRENTNESS", "LANE_OWNERSHIP", "EVIDENCE_DISCIPLINE"],
+    "capability_versions": {"LF_WORK_PACKAGE_BOOTSTRAP": "v0.1", "CURRENTNESS": "S30_CANDIDATE", "LANE_OWNERSHIP": "S30_CI_LANE_OWNERSHIP_V1", "EVIDENCE_DISCIPLINE": "LF_EXISTING"},
+    "compatibility_requirements": ["TASK_PACKET_COMPATIBLE", "FAIL_CLOSED_ON_STALE_BASE", "NO_OWNER_BYPASS"],
+    "adapter_requirements": [],
+    "unresolved_capabilities": []
+  },
+  "pre_execution_assurance": {
+    "checks": ["CURRENTNESS_RESOLVED", "SOURCE_AUTHORITY_RESOLVED", "EKB_APPLICABILITY_RESOLVED", "OWNERSHIP_COLLISION_FREE", "SCHEMAS_CONTRACTS_RESOLVED", "TOOLS_FUNCTIONS_ADAPTERS_RESOLVED", "EVIDENCE_READBACK_RESOLVED", "ASSERTIONS_ENUMERATED", "NEGATIVE_PATH_DEFINED", "DEPENDENCIES_RESOLVED"],
+    "material_work_allowed_only_if_all_pass": true,
+    "failure_action": "FAIL_CLOSED_BEFORE_MATERIAL_WORK"
+  },
+  "assertions": {
+    "acceptance": ["WORK_PACKAGE_V0_2_REMAINS_BACKWARD_TRACEABLE_TO_TASK_PACKET", "EACH_PROMOTED_FIELD_HAS_REGRESSION_EVIDENCE", "BLOCKED_CAUSAL_WORK_DOES_NOT_END_SAFE_MACROLOT", "SOURCE_CURRENTNESS_EXECUTION_AND_EKB_BINDINGS_ARE_EXPLICIT"],
+    "failure": ["UNPROVEN_EVOLUTION_PROMOTED", "TASK_PACKET_SEMANTICS_LOST", "STATIC_VALIDATOR_MISTAKEN_FOR_EXECUTION", "MOVING_SOURCE_REF_TREATED_AS_FROZEN"],
+    "blocking": ["BASE_MAIN_STALE", "OWNERSHIP_COLLISION", "MISSING_REGRESSION_EVIDENCE"],
+    "invalidation_conditions": ["MAIN_HEAD_CHANGES_MATERIALLY", "BOOTSTRAP_CONTRACT_SUPERSEDED", "S31_WRITE_SCOPE_COLLIDES"]
+  },
+  "evidence": {
+    "required_evidence": ["FIELD_INVENTORY", "EVOLUTION_REGRESSION_MATRIX", "POSITIVE_NEGATIVE_CASES", "PRODUCER_RECEIPT", "INDEPENDENT_JUDGE_RESULT", "GITHUB_READBACK"],
+    "evidence_refs": [],
+    "evidence_digests": [],
+    "claim_ceiling": "SEMANTIC",
+    "producer_receipt_required": true,
+    "independent_judge_receipt_required": true,
+    "readback_receipt_required": true
+  },
+  "frontier": {
+    "current_stage": "SOURCE_GROUNDED_DESIGN",
+    "next_gate": "WORK_PACKAGE_V0_2_CANDIDATE",
+    "blockers": [],
+    "safe_parallel_work": ["S31_C_CARD_FALLBACK_VOCABULARY", "S31_A_INDEPENDENT_REVIEW"],
+    "handoff_target": "S31-B-WORK-PACKAGE-WORKER",
+    "handoff_contract": "WP-S31-B-001"
+  },
+  "closure": {
+    "binary_conditions": ["ALL_ACCEPTANCE_ASSERTIONS_EVIDENCED", "ZERO_UNRESOLVED_BLOCKERS", "POSITIVE_AND_NEGATIVE_REGRESSIONS_PRESENT", "INDEPENDENT_JUDGE_PASS", "GITHUB_READBACK_MATCHES"],
+    "recompute_from_ledger": true,
+    "main_merge_allowed": false,
+    "production_allowed": false,
+    "golden_promotion_allowed": false
+  }
+}

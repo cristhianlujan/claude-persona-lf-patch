@@ -1,0 +1,78 @@
+{
+  "receipt_version": "S31_BOOTSTRAP_CLOSEOUT_V0_1",
+  "strategy_id": "S31",
+  "bootstrap_contract": "LF_WORK_PACKAGE_BOOTSTRAP_V0_1",
+  "status": "BOOTSTRAP_CLOSED_WITH_EVIDENCE",
+  "base_main_sha": "ee7aca94c672fcc555db90962f09fe439eedf4f0",
+  "verified_candidate_head_sha": "7d85f7f51cc1f5faf7b91cd45f27aad2788afe65",
+  "branch": "lf/s31-bootstrap",
+  "pull_request": 722,
+  "scope": {
+    "changed_path_prefix": "sandbox/lf_contract_gate_test/s31_bootstrap/",
+    "s30_mutated": false,
+    "s26_mutated": false,
+    "learning_engine_mutated": false,
+    "story_creator_mutated": false,
+    "supabase_mutated": false,
+    "runtime_mutated": false,
+    "production_mutated": false,
+    "main_merged": false,
+    "golden_promoted": false
+  },
+  "exact_head_ci": [
+    {
+      "name": "Validate LF Packs",
+      "run_id": 34725049013,
+      "conclusion": "success"
+    },
+    {
+      "name": "LF Bootstrap Reproducibility Probe",
+      "run_id": 34725049009,
+      "conclusion": "success"
+    },
+    {
+      "name": "lf-contract-check",
+      "run_id": 34725049005,
+      "conclusion": "success"
+    }
+  ],
+  "work_package_deterministic_self_test": {
+    "execution_environment": "assistant_local_python",
+    "validator_ref": "sandbox/lf_contract_gate_test/s31_bootstrap/validate_lf_work_package_bootstrap_v0_1.py",
+    "test_ref": "sandbox/lf_contract_gate_test/s31_bootstrap/test_lf_work_package_bootstrap_v0_1.py",
+    "work_package_ref": "sandbox/lf_contract_gate_test/s31_bootstrap/wp_s31_a_canonical_capability_model_v0_1.json",
+    "positive": "PASS_TO_MATERIAL_WORK",
+    "negative_stale": "FAIL_CLOSED_BEFORE_MATERIAL_WORK",
+    "negative_cross_lane": "FAIL_CLOSED_BEFORE_MATERIAL_WORK",
+    "negative_guard_weakening": "FAIL_CLOSED_BEFORE_MATERIAL_WORK",
+    "negative_unresolved_capability": "FAIL_CLOSED_BEFORE_MATERIAL_WORK",
+    "result": "PASS"
+  },
+  "ekb_preflight": {
+    "schema_first": true,
+    "read_only": true,
+    "matched_codes": [
+      "AUD-025",
+      "CI-005",
+      "CI-007",
+      "CI-E16-001",
+      "CI-SUPABASE-CONTROL-PLANE-READBACK-001",
+      "DB-001",
+      "GOV-010",
+      "PROFILE-RUNTIME-EKB-PREFLIGHT-BENCHMARK-001",
+      "PROFILES-EKB-PREFLIGHT-OMISSION-001",
+      "S26-CANONICAL-DIRECT-ROUTER-SEMANTIC-FLOOR-VARIANCE-001",
+      "S26-MANIFEST-CANONICAL-CONTRACT-DIVERGENCE-001"
+    ]
+  },
+  "evolution_policy": {
+    "auto_promote_findings": false,
+    "candidate_ref": "sandbox/lf_contract_gate_test/s31_bootstrap/S31_WORK_PACKAGE_EVOLUTION_CANDIDATES_V0_1.md",
+    "status": "NEW_UNPROVEN_UNTIL_REGRESSION_EVIDENCE"
+  },
+  "claim_ceiling": "PROVENANCE_AND_STRUCTURAL_BOOTSTRAP_ONLY",
+  "next_gate": "S31_A_CANONICAL_CAPABILITY_MODEL_CANDIDATE",
+  "merge_authority": "NONE",
+  "production_authority": "NONE",
+  "golden_authority": "NONE"
+}

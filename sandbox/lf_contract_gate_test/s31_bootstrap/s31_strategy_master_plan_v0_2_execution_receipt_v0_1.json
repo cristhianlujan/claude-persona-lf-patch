@@ -1,0 +1,55 @@
+{
+  "receipt_version": "S31_STRATEGY_MASTER_PLAN_V0_2_EXECUTION_RECEIPT_V0_1",
+  "strategy_id": "S31",
+  "operation": "MASTER_PLAN_RECONCILIATION_FROM_OBSERVED_EXECUTION_FINDINGS",
+  "executed_head_sha": "a46b558a2440aca36447fb46073bffcc55e55ffb",
+  "runner": "scalora-vps:/tmp/s31-plan-v02",
+  "exit_status": 0,
+  "artifacts": [
+    "S31_STRATEGY_MASTER_PLAN_V0_2.md",
+    "s31_strategy_master_plan_v0_2.json",
+    "validate_s31_strategy_master_plan_v0_2.py",
+    "test_s31_strategy_master_plan_v0_2.py"
+  ],
+  "fresh_ekb_preflight": {
+    "source": "public.lf_error_knowledge",
+    "resolved_during_plan_update": true,
+    "applicable_active_controls": [
+      "EKB-AUTONOMY-ROOTCAUSE-001",
+      "SAFE_WORK_DISCOVERED_BUT_NOT_EXECUTED",
+      "SCHEDULED-TASK-PREMATURE-ZERO-SAFE-WORK-001",
+      "GOV-OPERATION-LIFECYCLE-MATERIALIZATION-GAP-001"
+    ],
+    "consumed_as_controls_not_mutated": true
+  },
+  "deterministic_results": {
+    "master_plan_regressions": "PASS_16_OF_16",
+    "work_package_bootstrap": "PASS",
+    "canonical_capability_model_v0_2": "PASS",
+    "work_package_v0_2": "PASS_18_OF_18",
+    "canonical_card_resolution": "PASS_19_OF_19",
+    "s31_dg_matrix": "PASS_5_POSITIVE_14_NEGATIVE",
+    "independent_review_intake": "PASS_12_OF_12"
+  },
+  "plan_changes_now_enforced": [
+    "ADVERSARIAL_BYPASS_AUDIT_BEFORE_FREEZE",
+    "DISCOVERED_SAFE_WORK_IS_EXECUTION_OBLIGATION",
+    "GLOBAL_DISCOVERY_REQUIRED_BEFORE_ZERO_SAFE_WORK",
+    "UNRESOLVED_BLOCKER_NO_SAFE_WORK_IS_BLOCKED_NOT_CLOSED",
+    "REPAIR_REGRESSION_PLAN_OR_CONTRACT_EVOLUTION_FOR_TRANSVERSAL_DEFECTS",
+    "LIFECYCLE_EVIDENCE_RUNTIME_PROMOTION_DIMENSIONS_SEPARATED",
+    "QUALITY_PACK_CANONICAL_INDEPENDENT_RECEIPT",
+    "SCOPE_SPECIFIC_MINIMAL_CAUSAL_REFREEZE",
+    "S31_H_DEFERRED_UNTIL_A_G_SEMANTIC_RECONCILIATION"
+  ],
+  "review_snapshots_unchanged": {
+    "ABC": "bbcd9056443059cf1da4782551a85b3a70bd2910",
+    "DG": "d268fd871f2e18588f9b8084e6a3f6c6e07aa438"
+  },
+  "independent_review_receipts_received": false,
+  "claim_ceiling": "DETERMINISTIC_PLAN_AND_REGRESSION_EVIDENCE_ONLY",
+  "merge_authorized": false,
+  "golden_authorized": false,
+  "runtime_activation_authorized": false,
+  "production_authorized": false
+}

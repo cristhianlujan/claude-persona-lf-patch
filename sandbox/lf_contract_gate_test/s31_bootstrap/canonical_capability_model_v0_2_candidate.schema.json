@@ -1,0 +1,263 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lf/s31/canonical-capability-model/v0.2-candidate",
+  "title": "LF Canonical Capability Model v0.2 Candidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "capability_id",
+    "version",
+    "display_name",
+    "owner",
+    "ownership_scope",
+    "kind",
+    "lifecycle",
+    "contracts",
+    "authority",
+    "currentness",
+    "dependencies",
+    "compatibility",
+    "execution",
+    "evidence",
+    "failure_policy",
+    "source_of_truth"
+  ],
+  "properties": {
+    "capability_id": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]{2,127}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^v[0-9]+\\.[0-9]+(?:\\.[0-9]+)?(?:-[A-Za-z0-9._-]+)?$"
+    },
+    "display_name": {"type": "string", "minLength": 3},
+    "description": {"type": "string", "minLength": 10},
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["strategy_or_domain", "maintainer", "change_authority"],
+      "properties": {
+        "strategy_or_domain": {"type": "string", "minLength": 2},
+        "maintainer": {"type": "string", "minLength": 2},
+        "change_authority": {"type": "string", "minLength": 2}
+      }
+    },
+    "ownership_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owned_paths", "read_dependencies", "forbidden_direct_writes"],
+      "properties": {
+        "owned_paths": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 2},
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "read_dependencies": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 2},
+          "uniqueItems": true
+        },
+        "forbidden_direct_writes": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 2},
+          "uniqueItems": true
+        }
+      }
+    },
+    "kind": {
+      "enum": [
+        "GOVERNANCE",
+        "CONTRACT",
+        "RESOLVER",
+        "REGISTRY",
+        "WORKER",
+        "RUNTIME_PORT",
+        "ADAPTER",
+        "EVALUATION",
+        "EVIDENCE",
+        "INTEROPERABILITY"
+      ]
+    },
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_maturity_label",
+        "runtime_activation",
+        "promotion_authority",
+        "self_certification_allowed",
+        "canonical_vocabulary_status"
+      ],
+      "properties": {
+        "artifact_maturity_label": {
+          "type": "string",
+          "minLength": 2,
+          "description": "Observed maturity label only. It does not establish a canonical LF lifecycle ordering."
+        },
+        "runtime_activation": {
+          "type": "boolean",
+          "description": "Independent runtime activation dimension; false for read-only/candidate artifacts."
+        },
+        "promotion_authority": {"type": "string", "minLength": 2},
+        "self_certification_allowed": {"const": false},
+        "canonical_vocabulary_status": {"const": "UNRESOLVED"},
+        "deprecation_replacement": {"type": ["string", "null"]}
+      },
+      "x_lf_semantics": {
+        "artifact_maturity_is_not_evidence_level": true,
+        "artifact_maturity_is_not_runtime_activation": true,
+        "promotion_requires_external_authority": true,
+        "canonical_state_order_not_defined_here": true
+      }
+    },
+    "contracts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input_contracts", "output_contracts", "invariants"],
+      "properties": {
+        "input_contracts": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 2},
+          "uniqueItems": true
+        },
+        "output_contracts": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 2},
+          "uniqueItems": true
+        },
+        "invariants": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 3},
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_authority_types", "selection_mode", "model_may_decide_authority"],
+      "properties": {
+        "required_authority_types": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 2},
+          "uniqueItems": true
+        },
+        "selection_mode": {
+          "enum": ["EXACT_PREBOUND", "REGISTRY_RESOLVED", "SOURCE_FIRST_RESOLVED", "NOT_APPLICABLE"]
+        },
+        "model_may_decide_authority": {"const": false}
+      }
+    },
+    "currentness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy", "stale_action", "cross_run_requires_declaration"],
+      "properties": {
+        "policy": {
+          "enum": ["EXACT_HEAD", "EXACT_SOURCE_REVISION", "FROZEN_SNAPSHOT", "RUNTIME_CURRENT"]
+        },
+        "stale_action": {"const": "FAIL_CLOSED"},
+        "cross_run_requires_declaration": {"const": true}
+      }
+    },
+    "dependencies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_capabilities", "optional_capabilities"],
+      "properties": {
+        "required_capabilities": {
+          "type": "array",
+          "items": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{2,127}$"},
+          "uniqueItems": true
+        },
+        "optional_capabilities": {
+          "type": "array",
+          "items": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{2,127}$"},
+          "uniqueItems": true
+        }
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["compatible_versions", "breaking_change_policy"],
+      "properties": {
+        "compatible_versions": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        },
+        "breaking_change_policy": {
+          "enum": ["MAJOR_VERSION_REQUIRED", "ADAPTER_REQUIRED", "FORBIDDEN_IN_PLACE"]
+        }
+      }
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "port", "implementation_binding", "framework_is_kernel_dependency"],
+      "properties": {
+        "mode": {
+          "enum": ["DETERMINISTIC", "MODEL_ASSISTED", "MODEL_EXECUTOR", "EXTERNAL_ENGINE", "NO_RUNTIME"]
+        },
+        "port": {"type": ["string", "null"]},
+        "implementation_binding": {"type": ["string", "null"]},
+        "framework_is_kernel_dependency": {"const": false}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_layers", "claim_ceiling", "replay_requirement"],
+      "properties": {
+        "required_layers": {
+          "type": "array",
+          "items": {"enum": ["STRUCTURAL", "PROVENANCE", "SEMANTIC", "BEHAVIORAL"]},
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "claim_ceiling": {
+          "enum": ["STRUCTURAL", "PROVENANCE", "SEMANTIC", "BEHAVIORAL"]
+        },
+        "replay_requirement": {
+          "enum": ["NONE", "STRUCTURAL_REPLAY", "DETERMINISTIC_REPLAY", "HISTORICAL_REPLAY"]
+        }
+      }
+    },
+    "failure_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["critical_ambiguity", "missing_dependency", "incompatible_dependency"],
+      "properties": {
+        "critical_ambiguity": {"const": "FAIL_CLOSED"},
+        "missing_dependency": {"const": "FAIL_CLOSED"},
+        "incompatible_dependency": {"const": "FAIL_CLOSED"}
+      }
+    },
+    "source_of_truth": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manifest_ref", "runtime_projection_allowed", "proprietary_runtime_state_is_domain_truth"],
+      "properties": {
+        "manifest_ref": {"type": "string", "minLength": 3},
+        "runtime_projection_allowed": {"type": "boolean"},
+        "runtime_projection_ref": {"type": ["string", "null"]},
+        "proprietary_runtime_state_is_domain_truth": {"const": false}
+      }
+    }
+  },
+  "x_lf_lifecycle_policy": {
+    "canonical_vocabulary_status": "UNRESOLVED",
+    "separate_dimensions_required": [
+      "artifact_maturity",
+      "evidence_level",
+      "runtime_activation",
+      "promotion_authority"
+    ],
+    "source": "S31_F_EVIDENCE_RECEIPT_LIFECYCLE_MAP_V0_1",
+    "rule": "DO_NOT_INVENT_ORDER_OR_PROMOTION_SEMANTICS_UNTIL_AUTHORITY_IS_RESOLVED"
+  }
+}

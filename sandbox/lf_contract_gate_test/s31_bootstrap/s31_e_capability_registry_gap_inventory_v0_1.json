@@ -1,0 +1,83 @@
+{
+  "contract_version": "S31_E_CAPABILITY_REGISTRY_GAP_INVENTORY_V0_1",
+  "status": "CANDIDATE_READ_ONLY",
+  "owner_lane": "S31-E",
+  "source_commit": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+  "search_evidence": [
+    {"query":"CAPABILITY_REGISTRY","result":"NO_GENERIC_TRANSVERSAL_REGISTRY_ARTIFACT_FOUND_BY_CURRENT_MAIN_SEARCH"},
+    {"query":"capability_id capability_version","result":"NO_GENERIC_TRANSVERSAL_REGISTRY_FIELDS_FOUND_BY_CURRENT_MAIN_SEARCH"}
+  ],
+  "nearest_existing_assets": [
+    {
+      "asset":"S30_CI_LANE_OWNERSHIP_V1",
+      "path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/s30_lane_ownership_registry_v1.json",
+      "blob_sha":"8cbd1da223bd433bebadefd30c20d6d8d7c1bf7d",
+      "reusable_for":["lane_identity","path_ownership","isolation_classification"],
+      "not_equivalent_to":["capability_identity","capability_version","dependency_contract","execution_port","lifecycle_evidence"]
+    },
+    {
+      "asset":"lf_operation_registry",
+      "carrier":"Supabase",
+      "reusable_for":["operation_identity","operation_family","operation_domain","operation_type","asset_applicability"],
+      "not_equivalent_to":["generic_capability_manifest","portable_runtime_binding","capability_compatibility_matrix"]
+    },
+    {
+      "asset":"Cards / Profiles / Skills contracts",
+      "carrier":"repository-specific manifests and source contracts",
+      "reusable_for":["domain capability source","versioned implementation evidence"],
+      "not_equivalent_to":["single transversal registry projection"]
+    }
+  ],
+  "required_capability_manifest_fields": [
+    "capability_id",
+    "capability_version",
+    "capability_class",
+    "owner",
+    "lifecycle_state",
+    "authority_contract",
+    "input_contract",
+    "output_contract",
+    "dependencies",
+    "compatibility",
+    "execution_port",
+    "adapter_bindings",
+    "evidence_contract",
+    "currentness_binding",
+    "source_refs",
+    "source_digests",
+    "claim_ceiling"
+  ],
+  "source_of_truth_policy": {
+    "authoritative_definition":"VERSIONED_REPOSITORY_MANIFEST",
+    "database_role":"QUERYABLE_PROJECTION_AND_RUNTIME_DISCOVERY_LATER",
+    "dual_source_of_truth_forbidden":true,
+    "supabase_migration_now":false,
+    "backstage_or_external_catalog_now":false
+  },
+  "bootstrap_registry_scope": [
+    "PREEXECUTION_ASSURANCE",
+    "TYPED_DATA_ACCESS",
+    "CARD_RESOLUTION",
+    "AUTHORITY_RESOLUTION",
+    "TYPED_CONTEXT",
+    "LEARNING_GOVERNANCE",
+    "EVIDENCE_LEDGER",
+    "WORK_PACKAGE_VALIDATION"
+  ],
+  "build_sequence": [
+    "DEFINE_MANIFEST_SCHEMA",
+    "MAP_EXISTING_CAPABILITIES_WITHOUT_MOVING_CODE",
+    "VALIDATE_DUPLICATE_ID_AND_VERSION_CONFLICTS",
+    "VALIDATE_DEPENDENCY_AND_COMPATIBILITY_CLOSURE",
+    "ADD_REPO_QUERY_RESOLVER",
+    "ONLY_LATER_PROJECT_TO_SUPABASE_IF_REQUIRED"
+  ],
+  "boundaries": {
+    "no_database_ddl_in_s31_bootstrap":true,
+    "no_backstage_install":true,
+    "no_external_framework_dependency":true,
+    "no_move_of_s30_s26_sources":true,
+    "registry_does_not_grant_execution_authority":true
+  },
+  "claim_ceiling":"GAP_INVENTORY_AND_TARGET_MODEL_ONLY"
+}

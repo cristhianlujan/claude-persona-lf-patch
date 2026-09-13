@@ -1,0 +1,61 @@
+{
+  "checkpoint_version": "S31_VALIDATION_FRONTIER_V0_4",
+  "strategy": "S31",
+  "base_main_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+  "review_snapshots": {
+    "ABC": "bbcd9056443059cf1da4782551a85b3a70bd2910",
+    "DG": "d268fd871f2e18588f9b8084e6a3f6c6e07aa438"
+  },
+  "deterministic_status": {
+    "S31-A": {"result":"PASS","claim_ceiling":"DETERMINISTIC_REGRESSION_ONLY","independent_review":"PENDING"},
+    "S31-B": {"result":"PASS_18_OF_18","claim_ceiling":"DETERMINISTIC_REGRESSION_ONLY","independent_review":"PENDING","hardening":["SCHEMA_FIRST","EXECUTED_SHA_TYPED","SAFE_WORK_COUNT_CONSISTENCY","FRONTIER_CLOSE_CONSISTENCY","UNRESOLVED_BLOCKER_CANNOT_CLOSE"]},
+    "S31-C": {"result":"PASS_19_OF_19","claim_ceiling":"DETERMINISTIC_REGRESSION_ONLY","independent_review":"PENDING","hardening":["KNOWN_FALLBACKS_ONLY","UNIQUE_ORDERED_ATTEMPTS","TYPED_ATTEMPT_EVIDENCE","EXPLICIT_MANUAL_READY","MANUAL_BLOCKER_CLEARANCE_REQUIRED"]},
+    "S31-D": {"result":"PASS_IN_DG_MATRIX","claim_ceiling":"DETERMINISTIC_REGRESSION_ONLY","independent_review":"PENDING"},
+    "S31-E": {"result":"PASS_IN_DG_MATRIX","claim_ceiling":"DETERMINISTIC_REGRESSION_ONLY","independent_review":"PENDING"},
+    "S31-F": {"result":"PASS_IN_DG_MATRIX","claim_ceiling":"DETERMINISTIC_REGRESSION_ONLY","independent_review":"PENDING"},
+    "S31-G": {"result":"PASS_IN_DG_MATRIX","claim_ceiling":"DETERMINISTIC_REGRESSION_ONLY","independent_review":"PENDING"},
+    "S31-H": {"result":"PLAN_ONLY_NO_INSTALL","claim_ceiling":"POC_PLAN_ONLY"}
+  },
+  "producer_exact_suite": {
+    "last_pre_frontier_execution_head": "6ba9c4a20546d6002eadbc9c722a7fc4e04f5cb9",
+    "runner": "scalora-vps:/tmp/s31-scoped-review",
+    "exit_status": 0,
+    "results": ["BOOTSTRAP_PASS", "A_PASS", "B_18_OF_18_PASS", "C_19_OF_19_PASS", "DG_5_POSITIVE_14_NEGATIVE_PASS", "REVIEW_INTAKE_12_OF_12_PASS"]
+  },
+  "independent_review_intake": {
+    "status": "READY_CANONICAL_QUALITY_PACK",
+    "ABC": {
+      "bundle_ref": "github://cristhianlujan/claude-persona-lf-patch@32f73efc8794686ca9d57424d0945af69f3b9358/sandbox/lf_contract_gate_test/s31_bootstrap/s31_abc_independent_review_bundle_v0_5.json",
+      "bundle_blob_sha": "5fe28054a2320e26da95db494da85126b5323cab",
+      "candidate_snapshot_sha": "bbcd9056443059cf1da4782551a85b3a70bd2910",
+      "handoff": "S31_ABC_INDEPENDENT_REVIEW_HANDOFF_V0_2.md"
+    },
+    "DG": {
+      "bundle_ref": "github://cristhianlujan/claude-persona-lf-patch@37bb924e022d3d09b80d38996fc282b155cc1fbf/sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_independent_review_bundle_v0_3.json",
+      "bundle_blob_sha": "2f5a1bc5fbb8e2e422ea2fc85623f08c2e4c5223",
+      "candidate_snapshot_sha": "d268fd871f2e18588f9b8084e6a3f6c6e07aa438",
+      "handoff": "S31_DG_INDEPENDENT_REVIEW_HANDOFF_V0_1.md"
+    },
+    "receipt_contract": "profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json@d4051d9c57fdfd09741da5ba2718c032eac56c92",
+    "parallel_custom_receipt_contract_forbidden": true,
+    "cross_scope_snapshot_substitution_forbidden": true,
+    "producer_semantic_verdict": null
+  },
+  "remaining_safe_material_work_without_new_external_evidence": [],
+  "next_gates": ["LATEST_HEAD_GENERAL_CI_GREEN", "INDEPENDENT_CHAT_CONTEXT_ABC", "INDEPENDENT_CHAT_CONTEXT_DG"],
+  "blocked_or_deferred": {
+    "canonical_lifecycle_vocabulary": "UNRESOLVED_AUTHORITY",
+    "runtime_cutover": "NOT_AUTHORIZED",
+    "external_framework_install": "NOT_AUTHORIZED",
+    "external_framework_poc_execution": "FUTURE_BOUNDED_POC_AUTHORIZATION",
+    "golden": "NOT_AUTHORIZED",
+    "merge_main": "NOT_AUTHORIZED",
+    "production": "NOT_AUTHORIZED"
+  },
+  "close_guard": {
+    "strategy_closed": false,
+    "producer_safe_material_work_count": 0,
+    "next_safe_batch": null,
+    "reason": "Producer-side contracts, adversarial hardening, scoped review freezes and canonical independent-review intake are exhausted. Remaining semantic gates require clean independent contexts."
+  }
+}

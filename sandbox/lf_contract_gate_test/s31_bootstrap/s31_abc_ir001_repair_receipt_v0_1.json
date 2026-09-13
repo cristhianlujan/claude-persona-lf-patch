@@ -1,0 +1,101 @@
+{
+  "receipt_version": "S31_ABC_IR001_REPAIR_RECEIPT_V0_1",
+  "strategy_id": "S31",
+  "review_case_id": "S31-ABC-IR-001",
+  "source_review_receipt_ref": "sandbox/lf_contract_gate_test/s31_bootstrap/s31_abc_ir001_independent_receipt_v0_1.json",
+  "source_review_verdict": "BLOCK_PIPELINE",
+  "repaired_candidate_snapshot": "6878c1443d4d53e87d2d6bd3c0fbeba3d7163c0e",
+  "scope_refrozen": ["S31-A", "S31-B", "S31-C"],
+  "unchanged_independent_scope": ["S31-D", "S31-E", "S31-F", "S31-G"],
+  "repairs": [
+    {
+      "blocking_code": "S31_B_EXECUTED_VALIDATION_SHA_BINDING_MISSING",
+      "status": "REPAIRED_WITH_REGRESSION",
+      "repair": [
+        "executed_validation.executed_sha must equal execution_identity.executed_sha",
+        "validation receipt must be resolved through an external evidence resolver",
+        "resolved receipt content is SHA-256 bound and must match executed SHA, command and exit status",
+        "execution worker cannot act as evidence resolver"
+      ],
+      "artifact_blobs": {
+        "schema": "bb9db88874ed3aefae979a22c8668ac7a4782840",
+        "validator": "0c2fd238761c6c3b398ac3af4d00e06ad308ec4c",
+        "test": "7fe4139beb2d8443d537a98a3148d200b8b85b32"
+      },
+      "negative_regressions": [
+        "validation SHA differs from governed execution identity",
+        "cryptographically valid receipt describes a different executed SHA",
+        "receipt digest mismatch",
+        "missing evidence resolver",
+        "self-resolved evidence"
+      ]
+    },
+    {
+      "blocking_code": "S31_B_EKB_CURRENTNESS_EVIDENCE_SELF_ASSERTED",
+      "status": "REPAIRED_WITH_REGRESSION",
+      "repair": [
+        "EKB freshness requires independently resolved SHA-256-bound EKB_FRESHNESS_RECEIPT",
+        "currentness requires independently resolved SHA-256-bound CURRENTNESS_RECEIPT",
+        "receipt contents must match governed run id, timestamp, codes, control mapping, base/head/executed SHA and ref kind",
+        "final EKB readback is also resolver-backed before successful close"
+      ],
+      "artifact_blobs": {
+        "schema": "bb9db88874ed3aefae979a22c8668ac7a4782840",
+        "validator": "0c2fd238761c6c3b398ac3af4d00e06ad308ec4c",
+        "test": "7fe4139beb2d8443d537a98a3148d200b8b85b32"
+      },
+      "negative_regressions": [
+        "self-declared freshness/currentness with no resolver",
+        "EKB receipt run mismatch",
+        "currentness receipt branch-head mismatch",
+        "self-resolved currentness evidence",
+        "final EKB receipt executed-SHA mismatch"
+      ]
+    },
+    {
+      "blocking_code": "S31_C_FALLBACK_ENTRY_STATUS_GUARD_MISSING",
+      "status": "REPAIRED_WITH_REGRESSION",
+      "repair": [
+        "fallback_decision now requires canonical resolution_status as executable input",
+        "fallback entry fails closed unless resolution_status is exactly NO_DIRECT_CARD",
+        "unknown resolution status fails closed",
+        "declared start_only_when_status policy cannot drift from NO_DIRECT_CARD"
+      ],
+      "artifact_blobs": {
+        "contract": "bb905ee315b3db212d46c1422721726d86238823",
+        "validator": "963e96570373367376ddcd2b028a75dd614acade",
+        "test": "fc59d8b80bf003a05c3f7a95fdd2eaa73f949057"
+      },
+      "negative_regressions": [
+        "RESOLVED cannot enter fallback",
+        "AMBIGUOUS cannot enter fallback",
+        "BLOCKED cannot enter fallback",
+        "unknown status cannot enter fallback",
+        "contract entry policy drift cannot pass"
+      ]
+    }
+  ],
+  "secondary_execution_finding": {
+    "code": "S31_B_SCHEMA_INTERNAL_REF_RELATIVE_ID_RESOLUTION",
+    "status": "REPAIRED",
+    "cause": "The pre-existing relative schema $id became ambiguous only after internal $ref definitions were introduced.",
+    "repair": "Use an absolute schema $id so internal references resolve deterministically.",
+    "regression_coverage": "Every Work Package self-test now traverses the internal evidenceBinding refs."
+  },
+  "deterministic_exact_snapshot_results": {
+    "S31-B": "PASS_26_OF_26",
+    "S31-C": "PASS_28_OF_28",
+    "LF_WORK_PACKAGE_BOOTSTRAP_V0_1": "PASS",
+    "S31-A": "PASS",
+    "S31-DG_MATRIX": "PASS_5_POSITIVE_14_NEGATIVE",
+    "INDEPENDENT_REVIEW_INTAKE_OLD_FREEZE": "PASS_12_OF_12",
+    "MASTER_PLAN_V0_2": "PASS_16_OF_16"
+  },
+  "claim_ceiling": "PRODUCER_DETERMINISTIC_REPAIR_EVIDENCE_ONLY",
+  "semantic_review_pass_claimed": false,
+  "merge_authorized": false,
+  "golden_authorized": false,
+  "runtime_activation_authorized": false,
+  "production_authorized": false,
+  "next_gate": "NEW_SCOPE_SPECIFIC_ABC_FREEZE_AND_INDEPENDENT_REVIEW"
+}

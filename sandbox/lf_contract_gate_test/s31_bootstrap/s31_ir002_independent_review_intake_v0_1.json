@@ -1,0 +1,79 @@
+{
+  "receipt_version": "S31_IR002_INDEPENDENT_REVIEW_INTAKE_V0_1",
+  "strategy_id": "S31",
+  "producer_role": "ORCHESTRATOR_INTAKE_ONLY",
+  "claim_ceiling": "PROVENANCE_OF_USER_SUPPLIED_INDEPENDENT_REVIEWS_ONLY",
+  "reviews": {
+    "ABC": {
+      "review_case_id": "S31-ABC-IR-002",
+      "execution_mode": "INDEPENDENT_CHAT_CONTEXT",
+      "review_completed": true,
+      "verdict": "BLOCK_PIPELINE",
+      "score_total": 9,
+      "source_bundle_ref": "github://cristhianlujan/claude-persona-lf-patch@48ef393011740c2e253e719d4e786b724e2d8183/sandbox/lf_contract_gate_test/s31_bootstrap/s31_abc_independent_review_bundle_v0_6.json",
+      "source_bundle_blob_sha": "b93837676f085aa36da250cb5dc17e9bef65bd8f",
+      "lane_disposition": {
+        "S31-A": "PASS",
+        "S31-B": "BLOCKED",
+        "S31-C": "PASS"
+      },
+      "blocking_codes": [
+        "S31_B_TRUSTED_RESOLVER_BOUNDARY_NOT_ENFORCED",
+        "S31_B_SELF_RESOLVER_IDENTITY_SPOOFABLE",
+        "S31_B_EKB_CURRENTNESS_EVIDENCE_REMAINS_SELF_CERTIFIABLE"
+      ],
+      "first_bad_hop": "CALLER_SUPPLIED_EVIDENCE_RESOLVER_AND_DECLARED_RESOLVER_ID",
+      "raw_source": "USER_PASTED_JSON_IN_CHAT",
+      "raw_receipt_not_reauthored_as_independent_proof": true
+    },
+    "DG": {
+      "review_case_id": "S31-DG-IR-002",
+      "execution_mode": "INDEPENDENT_CHAT_CONTEXT",
+      "review_completed": true,
+      "verdict": "BLOCK_PIPELINE",
+      "score_total": 8,
+      "source_bundle_ref": "github://cristhianlujan/claude-persona-lf-patch@5f4881503fa3988d6455fa41cb3efc84c2967db4/sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_independent_review_bundle_v0_4.json",
+      "source_bundle_blob_sha": "5c196fa5cae47f32d174e7c1b0f9eb981efecc06",
+      "lane_disposition": {
+        "S31-D": "BLOCKED",
+        "S31-E": "BLOCKED",
+        "S31-F": "BLOCKED",
+        "S31-G": "BLOCKED"
+      },
+      "blocking_codes": [
+        "SELF_RESOLVED_EVIDENCE",
+        "UNRESOLVED_CURRENTNESS",
+        "EVIDENCE_INFLATION",
+        "AUTHORITY_LEAK"
+      ],
+      "first_bad_hops": [
+        "CALLER_SUPPLIED_RESOLVER_TRUST_BOUNDARY",
+        "SOURCE_BYTES_NOT_REHASHED",
+        "NONSTRUCTURAL_RECEIPT_REPLAY_COMPOSITION",
+        "TYPED_CONTEXT_NOT_RESOLVED_BEFORE_RUNTIME"
+      ],
+      "receipt_validation_reported_by_independent_reviewer": {
+        "result": "PASS",
+        "errors": []
+      },
+      "raw_source": "USER_UPLOADED_FILE_Pasted text(1).txt",
+      "raw_receipt_not_reauthored_as_independent_proof": true
+    }
+  },
+  "orchestrator_decision": {
+    "strategy_closed": false,
+    "repair_allowed_after_ekb_readback": true,
+    "minimal_refreeze_scopes": [
+      "S31-B",
+      "S31-D",
+      "S31-E",
+      "S31-F",
+      "S31-G"
+    ],
+    "unchanged_pass_scopes": [
+      "S31-A",
+      "S31-C"
+    ],
+    "promotion_authority": "NONE"
+  }
+}

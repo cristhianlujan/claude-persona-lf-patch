@@ -1,0 +1,50 @@
+{
+  "work_package_id":"WP-S31-E-001",
+  "strategy_id":"S31",
+  "lane_id":"S31-E",
+  "capability_id":"CAPABILITY_REGISTRY",
+  "version":"v0.1-bootstrap",
+  "owner":"S31",
+  "worker":"S31-E-CAPABILITY-REGISTRY-WORKER",
+  "judge":"INDEPENDENT-S31-E-JUDGE",
+  "currentness":{
+    "base_main_sha":"d4051d9c57fdfd09741da5ba2718c032eac56c92",
+    "source_snapshot_refs":["sandbox/lf_contract_gate_test/s28_ci_lane_router/s30_lane_ownership_registry_v1.json","public.lf_operation_registry","Cards/Profiles/Skills source contracts"],
+    "source_snapshot_sha256":["gitblob:8cbd1da223bd433bebadefd30c20d6d8d7c1bf7d"],
+    "authority_refs":["main@d4051d9c57fdfd09741da5ba2718c032eac56c92","LF_WORK_PACKAGE_BOOTSTRAP_V0_1"],
+    "currentness_policy":"EXACT_HEAD_PLUS_LIVE_REGISTRY_READ",
+    "cross_run_references":[],
+    "stale_action":"FAIL_CLOSED_BEFORE_MATERIAL_WORK"
+  },
+  "ownership":{
+    "active_writer_scope":["sandbox/lf_contract_gate_test/s31_bootstrap/"],
+    "read_only_sources":["sandbox/lf_contract_gate_test/s28_ci_lane_router/","gobernanza/","skills/","profiles/","cards/","Supabase operation registry"],
+    "allowed_dependencies":["S30_LANE_REGISTRY","LF_OPERATION_REGISTRY","EXISTING_CAPABILITY_SOURCES"],
+    "forbidden_cross_lane_writes":["S30","S26","SUPABASE_DDL"],
+    "collision_checks":["BASE_MAIN_CURRENT","NO_GENERIC_REGISTRY_DUPLICATE","NO_CROSS_STRATEGY_WRITE"],
+    "principle":"ONE_CAUSAL_CHAIN_ONE_ACTIVE_WRITER"
+  },
+  "scope":{
+    "allowed_tools":["GITHUB_READ","GITHUB_WRITE_S31_BRANCH","SUPABASE_READ_ONLY","LOCAL_DETERMINISTIC_VALIDATION"],
+    "allowed_read_scope":["repository manifests","Supabase operation registry","sandbox/lf_contract_gate_test/s31_bootstrap/"],
+    "allowed_write_scope":["sandbox/lf_contract_gate_test/s31_bootstrap/"],
+    "forbidden_actions":["CREATE_DATABASE_REGISTRY_NOW","INSTALL_BACKSTAGE","ADD_EXTERNAL_FRAMEWORK","MUTATE_S30_INTERNALS","MUTATE_S26_INTERNALS","ENABLE_PRODUCTION","MERGE_MAIN","SILENT_SCOPE_EXPANSION"]
+  },
+  "capability_binding":{
+    "required_capabilities":["LF_WORK_PACKAGE_BOOTSTRAP","CURRENTNESS","CAPABILITY_MODEL","EVIDENCE_DISCIPLINE"],
+    "capability_versions":{"LF_WORK_PACKAGE_BOOTSTRAP":"v0.1","CAPABILITY_MODEL":"S31-A-CANDIDATE"},
+    "compatibility_requirements":["REPO_MANIFEST_SOURCE_OF_TRUTH","DB_IS_PROJECTION_LATER","REGISTRY_DOES_NOT_GRANT_AUTHORITY"],
+    "adapter_requirements":[],
+    "unresolved_capabilities":["S31_A_INDEPENDENT_REVIEW"]
+  },
+  "pre_execution_assurance":{"checks":["CURRENTNESS_RESOLVED","SOURCE_AUTHORITY_RESOLVED","EKB_APPLICABILITY_RESOLVED","OWNERSHIP_COLLISION_FREE","GENERIC_REGISTRY_DUPLICATE_SEARCHED","NEGATIVE_PATH_DEFINED"],"material_work_allowed_only_if_all_pass":true,"failure_action":"FAIL_CLOSED_BEFORE_MATERIAL_WORK"},
+  "assertions":{
+    "acceptance":["REGISTRY_GAP_PROVEN_WITH_CURRENT_MAIN_SEARCH","EXISTING_NEAREST_ASSETS_MAPPED","MANIFEST_MINIMUM_FIELDS_ENUMERATED","NO_SECOND_SOURCE_OF_TRUTH_CREATED"],
+    "failure":["EXISTING_REGISTRY_DUPLICATED","DATABASE_BECOMES_UNVERSIONED_AUTHORITY","REGISTRY_CONFUSED_WITH_EXECUTION_AUTHORITY"],
+    "blocking":["BASE_MAIN_STALE","GENERIC_REGISTRY_FOUND_AFTER_SEARCH","S31_A_CONTRACT_INCOMPATIBLE"],
+    "invalidation_conditions":["MAIN_ADDS_GENERIC_CAPABILITY_REGISTRY","S31_A_MODEL_CHANGES_MATERIALLY"]
+  },
+  "evidence":{"required_evidence":["SEARCH_EVIDENCE","NEAREST_ASSET_INVENTORY","TARGET_MANIFEST_MODEL","NEGATIVE_DUPLICATION_CASE","INDEPENDENT_JUDGE_RESULT","GITHUB_READBACK"],"evidence_refs":["s31_e_capability_registry_gap_inventory_v0_1.json"],"evidence_digests":[],"claim_ceiling":"GAP_AND_TARGET_MODEL","producer_receipt_required":true,"independent_judge_receipt_required":true,"readback_receipt_required":true},
+  "frontier":{"current_stage":"GAP_INVENTORY","next_gate":"CAPABILITY_MANIFEST_SCHEMA_CANDIDATE","blockers":["S31_A_INDEPENDENT_REVIEW_FOR_FINAL_MODEL_PROMOTION"],"safe_parallel_work":["MANIFEST_SCHEMA_DRAFT_FROM_EXISTING_FIELDS","S31_F_EVIDENCE_LIFECYCLE"],"handoff_target":"S31-E-CAPABILITY-REGISTRY-WORKER","handoff_contract":"WP-S31-E-001"},
+  "closure":{"binary_conditions":["ALL_ACCEPTANCE_ASSERTIONS_EVIDENCED","ZERO_UNRESOLVED_BLOCKERS","MANIFEST_SCHEMA_VALIDATED","INDEPENDENT_JUDGE_PASS","GITHUB_READBACK_MATCHES"],"recompute_from_ledger":true,"main_merge_allowed":false,"production_allowed":false,"golden_promotion_allowed":false}
+}

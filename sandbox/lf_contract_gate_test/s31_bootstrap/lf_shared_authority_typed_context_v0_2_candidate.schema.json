@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://lf.local/s31/shared-authority-typed-context/v0.2-candidate",
+  "title": "LF Shared Authority and Typed Context v0.2 Candidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "producer_id", "current_run_id", "classification", "input", "card_resolution", "authority_resolution", "adapter_binding", "runtime_schema", "provenance_reconstructible", "typed_context_sha256"],
+  "properties": {
+    "schema": {"const": "lf-shared-governed-typed-context/v0.2-candidate"},
+    "producer_id": {"type": "string", "minLength": 2},
+    "current_run_id": {"type": "string", "minLength": 2},
+    "classification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["surface_code", "task_code"],
+      "properties": {"surface_code": {"type": "string"}, "task_code": {"type": "string"}}
+    },
+    "input": {"type": "object"},
+    "card_resolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "schema_invention_allowed"],
+      "properties": {
+        "status": {"enum": ["RESOLVED", "NO_DIRECT_CARD", "AMBIGUOUS", "BLOCKED"]},
+        "mode": {"type": ["string", "null"]},
+        "schema_invention_allowed": {"const": false}
+      }
+    },
+    "authority_resolution": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["authority_type", "authority_id", "source_refs", "source_sha256", "run_id", "currentness_evidence"],
+        "properties": {
+          "authority_type": {"type": "string", "minLength": 2},
+          "authority_id": {"type": "string", "minLength": 2},
+          "source_refs": {"type": "array", "minItems": 1, "maxItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 2}},
+          "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "run_id": {"type": "string", "minLength": 2},
+          "cross_run_declared": {"type": "boolean"},
+          "currentness_evidence": {"$ref": "#/$defs/evidence_binding"}
+        }
+      }
+    },
+    "adapter_binding": {"type": "array", "items": {"type": "object"}},
+    "runtime_schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_ref", "sha256", "schema_invention_allowed", "currentness_evidence"],
+      "properties": {
+        "source_ref": {"type": "string", "minLength": 2},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "schema_invention_allowed": {"const": false},
+        "currentness_evidence": {"$ref": "#/$defs/evidence_binding"}
+      }
+    },
+    "provenance_reconstructible": {"const": true},
+    "typed_context_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "$defs": {
+    "evidence_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "sha256", "resolver_id"],
+      "properties": {
+        "ref": {"type": "string", "minLength": 2},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "resolver_id": {"const": "QUALITY_PACK_TRUSTED_REF_RESOLVER_V1"}
+      }
+    }
+  },
+  "x_lf_compatibility": {
+    "source": "services/profile_runtime_api/profile_runtime_api/runtime_authority.py",
+    "adapter_required": "S26_TYPED_CONTEXT_V1_TO_SHARED_V0_2",
+    "big_bang_cutover": false
+  },
+  "x_lf_authority_rules": [
+    "MODEL_CANNOT_CREATE_OR_OVERRIDE_AUTHORITY",
+    "CURRENTNESS_MUST_BE_RESOLVER_DERIVED",
+    "CURRENTNESS_FAILS_CLOSED_ON_UNRESOLVED_STALE_OR_MISMATCHED_EVIDENCE",
+    "CROSS_RUN_REFERENCE_REQUIRES_DECLARATION",
+    "SOURCE_DIGESTS_REQUIRED",
+    "PRODUCER_CANNOT_RESOLVE_ITS_OWN_CURRENTNESS",
+    "TRUSTED_RESOLVER_IMPLEMENTATION_IS_OUTSIDE_CANDIDATE_PAYLOAD",
+    "AUTHORITY_AND_RUNTIME_SCHEMA_BYTES_MUST_BE_REHASHED_BY_QUALITY_PACK_TRUSTED_REF_RESOLVER"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "$schema":"http://json-schema.org/draft-07/schema#",
+  "$id":"lf/s31/shared-authority-typed-context/v0.1-candidate",
+  "title":"LF Shared Authority and Typed Context v0.1 Candidate",
+  "type":"object","additionalProperties":false,
+  "required":["schema","current_run_id","classification","input","card_resolution","authority_resolution","adapter_binding","runtime_schema","provenance_reconstructible","typed_context_sha256"],
+  "properties":{
+    "schema":{"const":"lf-shared-governed-typed-context/v0.1-candidate"},
+    "current_run_id":{"type":"string","minLength":2},
+    "classification":{"type":"object","required":["surface_code","task_code"],"properties":{"surface_code":{"type":"string"},"task_code":{"type":"string"}}},
+    "input":{"type":"object"},
+    "card_resolution":{"type":"object","required":["status","schema_invention_allowed"],"properties":{"status":{"enum":["RESOLVED","NO_DIRECT_CARD","AMBIGUOUS","BLOCKED"]},"mode":{"type":["string","null"]},"schema_invention_allowed":{"const":false}}},
+    "authority_resolution":{"type":"array","minItems":1,"items":{"type":"object","required":["authority_type","authority_id","source_refs","source_sha256","run_id"],"properties":{"authority_type":{"type":"string"},"authority_id":{"type":"string"},"source_refs":{"type":"array","minItems":1,"items":{"type":"string"}},"source_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},"run_id":{"type":"string"},"cross_run_declared":{"type":"boolean"}}}},
+    "adapter_binding":{"type":"array","items":{"type":"object"}},
+    "runtime_schema":{"type":"object","required":["source_ref","sha256","schema_invention_allowed"],"properties":{"source_ref":{"type":"string"},"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},"schema_invention_allowed":{"const":false}}},
+    "provenance_reconstructible":{"const":true},
+    "typed_context_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}
+  },
+  "x_lf_compatibility":{"source":"services/profile_runtime_api/profile_runtime_api/runtime_authority.py","adapter_required":"S26_TYPED_CONTEXT_V1_TO_SHARED_V0_1","big_bang_cutover":false},
+  "x_lf_authority_rules":["MODEL_CANNOT_CREATE_OR_OVERRIDE_AUTHORITY","CURRENTNESS_FAILS_CLOSED","CROSS_RUN_REFERENCE_REQUIRES_DECLARATION","SOURCE_DIGESTS_REQUIRED"]
+}

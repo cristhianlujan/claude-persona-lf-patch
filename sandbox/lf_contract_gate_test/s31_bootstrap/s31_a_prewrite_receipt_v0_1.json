@@ -1,0 +1,114 @@
+{
+  "receipt_version": "S31_A_PREWRITE_RECEIPT_V0_1",
+  "work_package_id": "WP-S31-A-001",
+  "strategy_id": "S31",
+  "lane_id": "S31-A",
+  "base_main_sha": "ee7aca94c672fcc555db90962f09fe439eedf4f0",
+  "branch": "lf/s31-bootstrap",
+  "result": "PASS_TO_MATERIAL_WORK",
+  "claim_ceiling": "PREWRITE_GOVERNANCE_ONLY_NOT_SEMANTIC_NOT_BEHAVIORAL_NOT_GOLDEN",
+  "material_work_allowed": true,
+  "checks": {
+    "CURRENTNESS_RESOLVED": {
+      "status": "PASS",
+      "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch/main@ee7aca94c672fcc555db90962f09fe439eedf4f0"
+    },
+    "SOURCE_AUTHORITY_RESOLVED": {
+      "status": "PASS",
+      "evidence_refs": [
+        "gobernanza/contratos/s30_self_governance_gate_v1.json",
+        "gobernanza/contratos/s26_governance_ekb_card_fallback_v1.json",
+        "sandbox/lf_contract_gate_test/profile_execution_runtime/S26_OPERATING_MODE_SOURCE_FIRST.md",
+        "services/profile_runtime_api/profile_runtime_api/runtime_authority.py",
+        "skills/learning_engine/SKILL.md",
+        "skills/creating-integral-user-stories/schemas/task-packet.schema.json"
+      ]
+    },
+    "EKB_APPLICABILITY_RESOLVED": {
+      "status": "PASS",
+      "source": "supabase://public.lf_error_knowledge",
+      "schema_read_before_query": true,
+      "matched_error_codes": [
+        "AUD-025",
+        "CI-005",
+        "CI-007",
+        "CI-E16-001",
+        "CI-SUPABASE-CONTROL-PLANE-READBACK-001",
+        "DB-001",
+        "GOV-010",
+        "PROFILE-RUNTIME-EKB-PREFLIGHT-BENCHMARK-001",
+        "PROFILES-EKB-PREFLIGHT-OMISSION-001",
+        "S26-MANIFEST-CANONICAL-CONTRACT-DIVERGENCE-001",
+        "S26-CANONICAL-DIRECT-ROUTER-SEMANTIC-FLOOR-VARIANCE-001"
+      ],
+      "controls_applied": [
+        "EKB_BEFORE_MUTATION",
+        "SCHEMA_FIRST_BEFORE_DEPENDENT_QUERY",
+        "EXACT_BRANCH_HEAD_NOT_SYNTHETIC_MERGE_REF",
+        "CANONICAL_CONTRACT_REUSE_BEFORE_PARALLEL_SCHEMA",
+        "NO_STRUCTURAL_TO_SEMANTIC_CLAIM_ESCALATION"
+      ]
+    },
+    "OWNERSHIP_COLLISION_FREE": {
+      "status": "PASS",
+      "active_writer_scope": "sandbox/lf_contract_gate_test/s31_bootstrap/",
+      "forbidden_owner_writes": ["S30", "S26", "LEARNING_ENGINE", "CREATING_INTEGRAL_USER_STORIES"]
+    },
+    "SCHEMAS_CONTRACTS_RESOLVED": {
+      "status": "PASS",
+      "evidence_refs": [
+        "sandbox/lf_contract_gate_test/s31_bootstrap/LF_WORK_PACKAGE_BOOTSTRAP_V0_1.md",
+        "sandbox/lf_contract_gate_test/s31_bootstrap/lf_work_package_bootstrap_v0_1.schema.json",
+        "sandbox/lf_contract_gate_test/s31_bootstrap/wp_s31_a_canonical_capability_model_v0_1.json"
+      ]
+    },
+    "TOOLS_FUNCTIONS_ADAPTERS_RESOLVED": {
+      "status": "PASS",
+      "required": ["GITHUB_READ", "GITHUB_WRITE_S31_BRANCH", "SUPABASE_READ_ONLY_EKB"]
+    },
+    "EVIDENCE_READBACK_RESOLVED": {
+      "status": "PASS",
+      "github_pr": 722,
+      "github_readback_required": true
+    },
+    "ASSERTIONS_ENUMERATED": {
+      "status": "PASS",
+      "source_ref": "sandbox/lf_contract_gate_test/s31_bootstrap/wp_s31_a_canonical_capability_model_v0_1.json#assertions"
+    },
+    "NEGATIVE_PATH_DEFINED": {
+      "status": "PASS",
+      "negative_controls": [
+        "STALE_BASE_FAILS_CLOSED",
+        "CROSS_LANE_WRITE_FAILS_CLOSED",
+        "MANDATORY_GUARD_REMOVAL_FAILS_CLOSED",
+        "UNRESOLVED_CAPABILITY_BLOCKS_MATERIAL_WORK"
+      ]
+    },
+    "DEPENDENCIES_RESOLVED": {
+      "status": "PASS",
+      "external_framework_dependency_required": false,
+      "supabase_write_required": false,
+      "production_dependency_required": false
+    }
+  },
+  "safety_readback": {
+    "s30_mutated": false,
+    "s26_mutated": false,
+    "learning_engine_mutated": false,
+    "story_creator_mutated": false,
+    "supabase_mutated": false,
+    "runtime_changed": false,
+    "production_changed": false,
+    "main_merge_authorized": false,
+    "golden_promotion_authorized": false
+  },
+  "frontier": {
+    "current_stage": "PREWRITE_COMPLETE",
+    "next_gate": "S31_A_CANONICAL_CAPABILITY_MODEL_CANDIDATE",
+    "blockers": [],
+    "safe_parallel_work": [
+      "READ_ONLY_CARD_VOCABULARY_INVENTORY",
+      "READ_ONLY_WORK_PACKAGE_FIELD_INVENTORY"
+    ]
+  }
+}
