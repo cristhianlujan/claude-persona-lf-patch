@@ -726,9 +726,9 @@
       "context": {
         "execution_mode": "SANDBOX",
         "input_sha256": "e18350ad4268292700636621b92294454c034ebb8f1377cd1cdf0b3510066a1e",
-        "request_id": "S26V3-F10-O5-FRESH-FAAE566-20260913T1450Z",
-        "runtime_source_sha": "faae5666951664db2dec58d28420951d4a5d989a",
-        "runtime_typed_context_sha256": "55f2afaf81646a08204f51c3f9d1f0d8f36e933f9157b3be304df75baec1c75a"
+        "request_id": "S26V3-F10-O5-FRESH-7E449E5-20260913T1746Z",
+        "runtime_source_sha": "7e449e513164d6ef4f056c74279563f8ff171e98",
+        "runtime_typed_context_sha256": "4695e3ee65da0a040a80e3c911b127a946fd7c21deb39d26a42f6d8006fb9e45"
       },
       "render_policy": "NON_RENDER",
       "schema": "LF_UI_GOVERNANCE_ENVELOPE_V1"
@@ -850,7 +850,7 @@
     "self_verdict": "PASS_TO_QUALITY_PACK_CANDIDATE",
     "worker": "ui_architect"
   },
-  "artifact_canonical_sha256": "0f19e9c069bbea292bda8ef2d4e5d57f9ea3b0f9b3e0b742a1bb8827e5ccb71c",
+  "artifact_canonical_sha256": "5174a262bdb084fe72e18ea4254655f0c2a17c0f374ebd85cd8ab76aae156cd7",
   "case_context": {
     "brand_new_case": true,
     "domain": "HOME_HEALTH_SERVICES_MARKETPLACE",
@@ -860,9 +860,9 @@
     "task_mode": "CREATE_NEW"
   },
   "claim_ceiling": "FROZEN_ARTIFACT_FOR_INDEPENDENT_REVIEW_NOT_SEMANTICALLY_CERTIFIED_NOT_GOLDEN_NOT_PRODUCTION",
-  "final_candidate_sha": "faae5666951664db2dec58d28420951d4a5d989a",
+  "final_candidate_sha": "7e449e513164d6ef4f056c74279563f8ff171e98",
   "matrix_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT",
-  "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-FAAE566",
+  "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-7E449E5",
   "runtime_observation": {
     "adapter_binding": [],
     "authority_resolution": [
@@ -870,7 +870,7 @@
         "authority_id": "PERFIL-UI-ARCHITECT",
         "authority_type": "PROFILE_SOURCE",
         "cross_run_declared": false,
-        "run_id": "S26V3-F10-O5-FRESH-FAAE566-20260913T1450Z",
+        "run_id": "S26V3-F10-O5-FRESH-7E449E5-20260913T1746Z",
         "source_refs": [
           "profiles/ui_architect/SKILL.md",
           "profiles/ui_architect/contracts/composer_payload_boundary_v1.md"
@@ -886,20 +886,20 @@
       "status": "FALLBACK"
     },
     "downstream_authorized": false,
-    "elapsed_ms": 17917.932,
+    "elapsed_ms": 10477.02,
     "full_governed_pipeline_observed": true,
     "llama_timings": {
-      "cache_n": 1128,
-      "predicted_ms": 2450.229,
+      "cache_n": 1334,
+      "predicted_ms": 2364.914,
       "predicted_n": 31,
-      "predicted_per_second": 12.243753543036183,
-      "predicted_per_token_ms": 81.67429999999999,
-      "prompt_ms": 15413.801,
-      "prompt_n": 497,
-      "prompt_per_second": 32.2438313560685,
-      "prompt_per_token_ms": 31.013684104627764
+      "predicted_per_second": 12.685450718292504,
+      "predicted_per_token_ms": 78.83046666666668,
+      "prompt_ms": 8079.669,
+      "prompt_n": 291,
+      "prompt_per_second": 36.016326906461146,
+      "prompt_per_token_ms": 27.76518556701031
     },
-    "materialized_output_sha256": "0f19e9c069bbea292bda8ef2d4e5d57f9ea3b0f9b3e0b742a1bb8827e5ccb71c",
+    "materialized_output_sha256": "5174a262bdb084fe72e18ea4254655f0c2a17c0f374ebd85cd8ab76aae156cd7",
     "model_raw_output_sha256": "45b130b396abb690095cb6b64c1bf23b4a046a49c904aee1436ff0a46b450b0b",
     "pipeline_stage_evidence": {
       "A_INPUT_ADMISSION": {
@@ -938,13 +938,13 @@
         },
         "status": "PASS"
       },
-      "D_AUTHORITY": {
+      "D_AUTHORITY_RESOLUTION": {
         "authority_resolution": [
           {
             "authority_id": "PERFIL-UI-ARCHITECT",
             "authority_type": "PROFILE_SOURCE",
             "cross_run_declared": false,
-            "run_id": "S26V3-F10-O5-FRESH-FAAE566-20260913T1450Z",
+            "run_id": "S26V3-F10-O5-FRESH-7E449E5-20260913T1746Z",
             "source_refs": [
               "profiles/ui_architect/SKILL.md",
               "profiles/ui_architect/contracts/composer_payload_boundary_v1.md"
@@ -956,26 +956,22 @@
         "status": "PASS"
       },
       "E_TYPED_CONTEXT": {
+        "materialized_in_bundle": true,
         "provenance_reconstructible": true,
+        "runtime_typed_context_sha256": "4695e3ee65da0a040a80e3c911b127a946fd7c21deb39d26a42f6d8006fb9e45",
         "schema": "lf-runtime-typed-context/v1",
-        "sha256": "55f2afaf81646a08204f51c3f9d1f0d8f36e933f9157b3be304df75baec1c75a",
         "status": "PASS"
       },
       "F_PROFILE_EXECUTION": {
+        "profile_contract_valid": "PASS",
+        "self_verdict": "PASS_TO_QUALITY_PACK_CANDIDATE",
         "semantic_transport": "UICT5",
-        "status": "PASS"
-      },
-      "G_STRUCTURED_OUTPUT": {
-        "composer_boundary": "PASS",
+        "semantic_utility": "PASS",
         "status": "PASS",
-        "ui_validator": "PASS"
-      },
-      "H_QUALITY_DEPTH_PRODUCER_CHECK": {
-        "depth": "PASS",
-        "quality": "PASS"
+        "ui_score_total": 25
       }
     },
-    "request_id": "S26V3-F10-O5-FRESH-FAAE566-20260913T1450Z",
+    "request_id": "S26V3-F10-O5-FRESH-7E449E5-20260913T1746Z",
     "runtime_completion": "PASS",
     "runtime_schema": {
       "mode": "UI_PRODUCTION_SPEC",
@@ -983,13 +979,127 @@
       "sha256": "7f10c952796b045b99069b446f8dd7582d641d3514c25253fd27782045547112",
       "source_ref": "profiles/ui_architect/schemas/ui_production_spec.schema.json"
     },
-    "runtime_typed_context_sha256": "55f2afaf81646a08204f51c3f9d1f0d8f36e933f9157b3be304df75baec1c75a",
+    "runtime_typed_context": {
+      "adapter_binding": [],
+      "authority_resolution": [
+        {
+          "authority_id": "PERFIL-UI-ARCHITECT",
+          "authority_type": "PROFILE_SOURCE",
+          "cross_run_declared": false,
+          "run_id": "S26V3-F10-O5-FRESH-7E449E5-20260913T1746Z",
+          "source_refs": [
+            "profiles/ui_architect/SKILL.md",
+            "profiles/ui_architect/contracts/composer_payload_boundary_v1.md"
+          ],
+          "source_sha256": "b65ab7beb8701ca95d1d9fdd51a82bd48f5382d87167cd0a148ae9fe7965f658"
+        }
+      ],
+      "card_resolution": {
+        "mode": "NO_CARD_GOVERNED",
+        "reason": "NO_APPLICABLE_CARD_DECLARED",
+        "schema_invention_allowed": false,
+        "selected_card_refs": [],
+        "status": "FALLBACK"
+      },
+      "classification": {
+        "surface_code": "PROFILE:ui_architect",
+        "task_code": "EJECUCION_PERFIL_LF:UI_PRODUCTION_SPEC"
+      },
+      "current_run_id": "S26V3-F10-O5-FRESH-7E449E5-20260913T1746Z",
+      "input": {
+        "input_fields": {
+          "distribution_mode": "DIRECT",
+          "domain_scope": "GENERIC_SERVICE_MARKETPLACE",
+          "execution_mode": "SANDBOX",
+          "gate_f_acceptance": {
+            "implementation_readiness": "STRUCTURED_SPEC_READY_FOR_NEXT_AGENT",
+            "minimum_component_count": 9,
+            "minimum_hierarchy_depth_edges": 3,
+            "minimum_risk_control_count": 4,
+            "minimum_state_map_coverage_ratio": 1.0,
+            "minimum_variant_guard_coverage_ratio": 1.0,
+            "required_component_ids": [
+              "header_search",
+              "category_navigation",
+              "featured_services",
+              "service_cards",
+              "service_card_template",
+              "service_title",
+              "service_provider",
+              "service_price",
+              "service_cta"
+            ],
+            "required_design_intents": [
+              "clear",
+              "professional",
+              "easy_to_navigate"
+            ],
+            "required_responsive_modes": [
+              "desktop",
+              "mobile"
+            ],
+            "required_sections": [
+              "header",
+              "categories",
+              "featured_services",
+              "service_cards"
+            ],
+            "required_service_leaf_components": [
+              "service_title",
+              "service_provider",
+              "service_price",
+              "service_cta"
+            ],
+            "required_source_bindings": {
+              "category_navigation.items": "DATA_BOUND",
+              "featured_services.items": "DATA_BOUND",
+              "service_card_template.fields": "title|provider|price|call_to_action",
+              "service_card_template.values": "DATA_BOUND",
+              "service_cards.items": "DATA_BOUND",
+              "service_cta.destination": "UNRESOLVED_UNTIL_SOURCE",
+              "service_cta.label": "DATA_BOUND:call_to_action",
+              "service_price.format": "SOURCE_DEFINED",
+              "service_price.value": "DATA_BOUND:price",
+              "service_provider.value": "DATA_BOUND:provider",
+              "service_title.value": "DATA_BOUND:title"
+            },
+            "required_state_component_ids": [
+              "header_search",
+              "category_navigation",
+              "featured_services",
+              "service_cards",
+              "service_cta"
+            ],
+            "task_mode": "CREATE_NEW"
+          },
+          "gate_run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-002",
+          "output_contract_version": "UI_PRODUCTION_SPEC_V6",
+          "project_id": "S26",
+          "task_mode": "CREATE_NEW"
+        },
+        "input_fields_sha256": "2858768ab207e52c0915c677e907bd891e09ae4b214265e5eda3827c28fc7a86",
+        "input_literal_sha256": "e18350ad4268292700636621b92294454c034ebb8f1377cd1cdf0b3510066a1e",
+        "profile_code": "PERFIL-UI-ARCHITECT",
+        "profile_slug": "ui_architect"
+      },
+      "provenance_reconstructible": true,
+      "runtime_schema": {
+        "mode": "UI_PRODUCTION_SPEC",
+        "schema_invention_allowed": false,
+        "sha256": "7f10c952796b045b99069b446f8dd7582d641d3514c25253fd27782045547112",
+        "source_ref": "profiles/ui_architect/schemas/ui_production_spec.schema.json"
+      },
+      "schema": "lf-runtime-typed-context/v1",
+      "typed_context_sha256": "4695e3ee65da0a040a80e3c911b127a946fd7c21deb39d26a42f6d8006fb9e45"
+    },
+    "runtime_typed_context_sha256": "4695e3ee65da0a040a80e3c911b127a946fd7c21deb39d26a42f6d8006fb9e45",
     "semantic_transport": "UICT5",
-    "source_sha": "faae5666951664db2dec58d28420951d4a5d989a",
-    "total_ms": 17917.981,
+    "semantic_utility": "PASS",
+    "source_sha": "7e449e513164d6ef4f056c74279563f8ff171e98",
+    "total_ms": 10477.054,
     "transport_decoded": true,
     "typed_context_present": true,
     "typed_context_schema": "lf-runtime-typed-context/v1"
   },
-  "schema": "S26_F10_O5_FRESH_ARTIFACT_PAYLOAD_V1"
+  "schema": "S26_F10_O5_FRESH_ARTIFACT_PAYLOAD_V2"
 }

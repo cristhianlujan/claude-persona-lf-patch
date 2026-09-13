@@ -1,11 +1,11 @@
 {
   "allowed_outcome_authority": "INDEPENDENT_REVIEWER_ONLY",
-  "artifact_canonical_sha256": "0f19e9c069bbea292bda8ef2d4e5d57f9ea3b0f9b3e0b742a1bb8827e5ccb71c",
-  "final_candidate_sha": "faae5666951664db2dec58d28420951d4a5d989a",
+  "artifact_canonical_sha256": "5174a262bdb084fe72e18ea4254655f0c2a17c0f374ebd85cd8ab76aae156cd7",
+  "final_candidate_sha": "7e449e513164d6ef4f056c74279563f8ff171e98",
   "policy_sha256": "e4083f988a35dbaa65ac795d455d69216ea261b3b4ae39ba791e16c20632db2c",
   "previous_verdicts_must_not_be_supplied": true,
   "producer_context_must_be_unavailable": true,
-  "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-FAAE566",
+  "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-7E449E5",
   "review_scope": "SEMANTIC_VISUAL_QUALITY_ONLY",
   "schema": "S26_W3_REVIEW_SCOPE_POLICY_V1"
 }

@@ -1,5 +1,5 @@
 {
-  "artifact_canonical_sha256": "0f19e9c069bbea292bda8ef2d4e5d57f9ea3b0f9b3e0b742a1bb8827e5ccb71c",
+  "artifact_canonical_sha256": "5174a262bdb084fe72e18ea4254655f0c2a17c0f374ebd85cd8ab76aae156cd7",
   "claim_ceiling": "PRODUCER_COMPLETE_AWAITING_INDEPENDENT_REVIEW_NOT_GOLDEN_NOT_PRODUCTION",
   "composer_boundary": "PASS",
   "ekb_preflight": {
@@ -20,7 +20,7 @@
     "source": "supabase://mhwmirqcgxxukpctffuv/public.lf_error_knowledge",
     "status": "PASS"
   },
-  "final_candidate_sha": "faae5666951664db2dec58d28420951d4a5d989a",
+  "final_candidate_sha": "7e449e513164d6ef4f056c74279563f8ff171e98",
   "full_governed_pipeline_observed": true,
   "golden_authorized": false,
   "independent_semantic_review": {
@@ -31,8 +31,8 @@
   "matrix_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT",
   "performance": {
     "budget_ms": 120000,
-    "e2e_ms": 17917.981,
-    "profile_elapsed_ms": 17917.932,
+    "e2e_ms": 10477.054,
+    "profile_elapsed_ms": 10477.02,
     "status": "PASS",
     "within_budget": true
   },
@@ -49,8 +49,10 @@
     "ui_production_semantic_repair": "9/9 PASS",
     "ui_production_semantic_transport_v5": "3/3 PASS"
   },
-  "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-FAAE566",
+  "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-7E449E5",
   "runtime_completion": "PASS",
+  "runtime_typed_context_materialized_in_bundle": true,
+  "runtime_typed_context_sha256": "4695e3ee65da0a040a80e3c911b127a946fd7c21deb39d26a42f6d8006fb9e45",
   "schema": "S26_F10_O5_PRODUCER_VALIDATION_RECEIPT_V1",
   "semantic_transport": "UICT5",
   "semantic_utility": "PASS",
