@@ -1,0 +1,107 @@
+{
+  "receipt_version": "v0.1",
+  "execution_mode": "INDEPENDENT_CHAT_CONTEXT",
+  "semantic_status": "EXECUTED_INDEPENDENT_CONTEXT",
+  "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-3B39657F",
+  "reviewer_is_producer": false,
+  "producer_context_available": false,
+  "external_paid_model_used": false,
+  "automated_semantic_judge_implemented": false,
+  "review_completed": true,
+  "source_bundle": {
+    "artifact_ref": "github://cristhianlujan/claude-persona-lf-patch@5d6145be846f0c10faa2f4c887f4555be5cce787/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_golden_currentmain_20260913/w3_producer/review_bundle_S26V3-F10-O5-REAL-E2E-HOLDOUT/artifact_payload.json",
+    "artifact_sha_or_digest": "4ded363a85f7edc890c62e3373aba1353d3d9012cebbe83dd3c94c4e9d5b39a5",
+    "upstream_worker_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/ui_architect/SKILL.md",
+    "quality_gate_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/quality_gate_contract.md",
+    "lf_quality_controls_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/lf_quality_controls.md",
+    "score_rubric_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/judges/quality_pack_score_rubric.md",
+    "mini_judge_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/judges/quality_pack_mini_judge.md",
+    "quality_review_schema_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/schemas/quality_review.schema.json"
+  },
+  "quality_review": {
+    "review_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-3B39657F-IR-01",
+    "reviewed_artifact": "github://cristhianlujan/claude-persona-lf-patch@5d6145be846f0c10faa2f4c887f4555be5cce787/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_golden_currentmain_20260913/w3_producer/review_bundle_S26V3-F10-O5-REAL-E2E-HOLDOUT/artifact_payload.json",
+    "verdict": "PASS_WITH_RESTRICTIONS",
+    "score_breakdown": {
+      "contract_schema_compliance": 5,
+      "evidence_integrity": 4,
+      "lf_safety_governance": 5,
+      "handoff_readiness": 4,
+      "leakage_scope_control": 5,
+      "total": 23
+    },
+    "evidence_map": [
+      {
+        "criterion": "contract_schema_compliance",
+        "artifact_evidence": [
+          "composer_payload.component_tree contains all 9 required component_ids exactly once",
+          "composer_payload.visual_hierarchy provides screen -> service_cards -> service_card_template -> service leaf depth",
+          "composer_payload.state_map covers header_search, category_navigation, featured_services, service_cards and service_cta",
+          "composer_payload.layout_grid explicitly defines desktop and mobile",
+          "composer_payload.screen_definition.task_mode=CREATE_NEW and implementation_readiness=STRUCTURED_SPEC_READY_FOR_NEXT_AGENT",
+          "Required DATA_BOUND, SOURCE_DEFINED and UNRESOLVED_UNTIL_SOURCE bindings are preserved"
+        ],
+        "source_ref": "github://cristhianlujan/claude-persona-lf-patch@5d6145be846f0c10faa2f4c887f4555be5cce787/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_golden_currentmain_20260913/w3_producer/review_bundle_S26V3-F10-O5-REAL-E2E-HOLDOUT/artifact_payload.json"
+      },
+      {
+        "criterion": "evidence_integrity",
+        "artifact_evidence": [
+          "Semantic judgment is based on resolved frozen artifact fields rather than producer_validation_receipt semantic conclusions",
+          "Material domain values remain source-bound or explicitly unresolved",
+          "Producer self-score evidence summaries are generic and therefore are not treated as independent semantic proof"
+        ],
+        "source_ref": "github://cristhianlujan/claude-persona-lf-patch@5d6145be846f0c10faa2f4c887f4555be5cce787/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_golden_currentmain_20260913/w3_producer/review_bundle_S26V3-F10-O5-REAL-E2E-HOLDOUT/artifact_payload.json"
+      },
+      {
+        "criterion": "lf_safety_governance",
+        "artifact_evidence": [
+          "No pressure, shame, fake urgency, guaranteed outcome, countdown, scarcity or debt alarm cue is introduced",
+          "service_cta.destination remains UNRESOLVED_UNTIL_SOURCE and service_price.format remains SOURCE_DEFINED",
+          "blocked_variants prevent invented_data across components and invented_route for service_cta"
+        ],
+        "source_ref": "github://cristhianlujan/claude-persona-lf-patch@5d6145be846f0c10faa2f4c887f4555be5cce787/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_golden_currentmain_20260913/w3_producer/review_bundle_S26V3-F10-O5-REAL-E2E-HOLDOUT/artifact_payload.json"
+      },
+      {
+        "criterion": "handoff_readiness",
+        "artifact_evidence": [
+          "composer_payload supplies component structure, hierarchy, responsive layout, states, semantic tokens, spacing/typography guidance, density rules and risk controls",
+          "service_card_template explicitly preserves title, provider, price and call_to_action fields",
+          "handoff_to_next identifies frontend_or_composer_agent and payload_ref=composer_payload",
+          "Some data-dependent active states and featured-services item presentation still require disciplined interpretation by the next gate"
+        ],
+        "source_ref": "github://cristhianlujan/claude-persona-lf-patch@5d6145be846f0c10faa2f4c887f4555be5cce787/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_golden_currentmain_20260913/w3_producer/review_bundle_S26V3-F10-O5-REAL-E2E-HOLDOUT/artifact_payload.json"
+      },
+      {
+        "criterion": "leakage_scope_control",
+        "artifact_evidence": [
+          "composer_payload excludes worker, score, self_verdict, governance_envelope, hashes, repository refs and runtime routing metadata",
+          "governance_envelope.render_policy=NON_RENDER separates internal provenance from Composer-consumable payload",
+          "No unrequested footer, testimonial, metric, login, invented route or unrelated section appears in composer_payload"
+        ],
+        "source_ref": "github://cristhianlujan/claude-persona-lf-patch@5d6145be846f0c10faa2f4c887f4555be5cce787/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_golden_currentmain_20260913/w3_producer/review_bundle_S26V3-F10-O5-REAL-E2E-HOLDOUT/artifact_payload.json"
+      }
+    ],
+    "blocking_codes": [],
+    "repair_actions": [],
+    "remaining_risks": [
+      {
+        "risk_id": "RISK-DATA-DEPENDENT-ACTIVE-STATE",
+        "severity": "NON_BLOCKING",
+        "description": "featured_services and service_cards are serialized with state=populated and service_cta with state=available while their items/action destination remain source-bound or unresolved. The explicit state_map and risk_controls prevent semantic invention only if the next gate treats those state labels as conditional presentation states rather than runtime truth."
+      },
+      {
+        "risk_id": "RISK-FEATURED-ITEM-PRESENTATION",
+        "severity": "NON_BLOCKING",
+        "description": "featured_services.items is DATA_BOUND without an explicit child/item-template relation in visual_hierarchy. Composer may choose presentation structure, but it must not invent new domain fields or strengthen source-bound claims."
+      }
+    ],
+    "next_gate": "ORCHESTRATOR_RECONCILIATION",
+    "routing": {
+      "activation_path": "DIRECT",
+      "via": "ORCHESTRATOR",
+      "pipeline_action": "CONTINUE_WITH_RESTRICTIONS",
+      "resolution_target": "COMPOSER"
+    }
+  },
+  "execution_blockers": []
+}
