@@ -12,6 +12,7 @@ ROUTER_TEST = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_
 SELFTEST = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_workflow_integration.py"
 P0_EXTERNAL_TEST = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_p0_external_applicability_entrypoint.py"
 RECONCILE_APPLICABILITY = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_github_reconcile_applicability.py")
+RECONCILE_POOLER_FALLBACK = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_github_reconcile_pooler_fallback.py")
 PRODUCT_OWNERSHIP = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_product_lane_ownership.py")
 PRODUCT_REGISTRY = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_product_lane_ownership_registry_v1.json")
 ENTRYPOINT = Path("sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py")
@@ -228,10 +229,16 @@ def main() -> None:
 
     reconcile = RECONCILE_WORKFLOW.read_text(encoding="utf-8")
     require(reconcile, str(RECONCILE_APPLICABILITY), "FAIL_RECONCILIATION_APPLICABILITY_NOT_WIRED")
+    require(reconcile, str(RECONCILE_POOLER_FALLBACK), "FAIL_RECONCILIATION_POOLER_FALLBACK_NOT_WIRED")
     require(reconcile, "id: applicability", "FAIL_RECONCILIATION_APPLICABILITY_OUTPUT_MISSING")
     require(reconcile, "steps.applicability.outputs.required == 'true'", "FAIL_RECONCILIATION_EXTERNAL_STEPS_NOT_GUARDED")
     require(reconcile, "steps.applicability.outputs.required == 'false'", "FAIL_RECONCILIATION_NOT_APPLICABLE_RECEIPT_MISSING")
     require(reconcile, "S30_KNOWN_ISOLATED_ONLY", "FAIL_RECONCILIATION_BACKCOMPAT_REASON_NOT_EXPOSED")
+    require(reconcile, "EDGE_402_POOLER_FALLBACK", "FAIL_RECONCILIATION_POOLER_FALLBACK_MARKER_MISSING")
+    require(reconcile, "exceed_egress_quota", "FAIL_RECONCILIATION_POOLER_FALLBACK_QUOTA_CODE_MISSING")
+    require(reconcile, "LF_SUPABASE_DB_PASSWORD", "FAIL_RECONCILIATION_POOLER_FALLBACK_DB_SECRET_NOT_WIRED")
+    if "--retry-all-errors" in reconcile:
+        raise SystemExit("FAIL_RECONCILIATION_402_BLIND_RETRY_PRESENT")
 
     completed = subprocess.run(
         [sys.executable, P0_EXTERNAL_TEST],
@@ -246,10 +253,23 @@ def main() -> None:
     if completed.returncode != 0:
         raise SystemExit("FAIL_P0_EXTERNAL_APPLICABILITY_BEHAVIOR")
 
+    fallback = subprocess.run(
+        [sys.executable, str(RECONCILE_POOLER_FALLBACK), "self-test"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if fallback.stdout:
+        print(fallback.stdout, end="" if fallback.stdout.endswith("\n") else "\n")
+    if fallback.stderr:
+        print(fallback.stderr, file=sys.stderr, end="" if fallback.stderr.endswith("\n") else "\n")
+    if fallback.returncode != 0:
+        raise SystemExit("FAIL_RECONCILIATION_POOLER_FALLBACK_SELFTEST")
+
     helper = load_reconciliation_helper()
     assert_reconciliation_behavior(helper)
     assert_merge_path_recovery(helper)
-    print("PASS_CI_LANE_WORKFLOW_INTEGRATION=27/27")
+    print("PASS_CI_LANE_WORKFLOW_INTEGRATION=33/33")
 
 
 if __name__ == "__main__":
