@@ -1,0 +1,57 @@
+{
+  "schema": "S26_F10_FAMILY_CLOSURE_RECEIPT_V1",
+  "status": "F10_COMPLETE_PASS_WITH_RESTRICTIONS",
+  "final_candidate_sha": "77222b36028407659c3ff6f18e398ec77ec8fe46",
+  "main_readback_sha_at_closure": "77222b36028407659c3ff6f18e398ec77ec8fe46",
+  "source_current_at_closure": true,
+  "semantic_transport": "UICT5",
+  "objectives": {
+    "F10-O2": {
+      "status": "PASS",
+      "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@3ebc2c9d235ec0a0f0d666f09142f4ae5636a1fe/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_f10_currentmain_77222b3_20260913/w3_producer/f10_o2_replay_receipt.json"
+    },
+    "F10-O3": {
+      "status": "PASS",
+      "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@3ebc2c9d235ec0a0f0d666f09142f4ae5636a1fe/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_f10_currentmain_77222b3_20260913/w3_producer/f10_o3_version_delta_receipt.json"
+    },
+    "F10-O4": {
+      "status": "PASS",
+      "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@3ebc2c9d235ec0a0f0d666f09142f4ae5636a1fe/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_f10_currentmain_77222b3_20260913/w3_producer/f10_o4_perf_receipt.json"
+    },
+    "F10-O5": {
+      "status": "PASS_WITH_RESTRICTIONS",
+      "producer_status": "PASS",
+      "independent_semantic_review": "EXECUTED_INDEPENDENT_CONTEXT",
+      "independent_verdict": "PASS_WITH_RESTRICTIONS",
+      "independent_score": 23,
+      "independent_receipt_ref": "github://cristhianlujan/claude-persona-lf-patch@d49a017ef32712e48722b1d1c2c611b3f4522de6/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_f10_currentmain_77222b3_20260913/f10_closure/independent_semantic_review_receipt.json",
+      "independent_receipt_file_sha256": "f81246aff72136f1d69f62de8f9af6f8be2015210183cc40485a68f495e94ee8",
+      "five_gate_reconciliation_ref": "github://cristhianlujan/claude-persona-lf-patch@c68cc81e5152aed9d3828c755265c8f848ffad45/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_f10_currentmain_77222b3_20260913/f10_closure/f10_gate_bundle.json",
+      "five_gate_reconciliation_file_sha256": "a2e26d1dba5b3e02f6ad9c2d176941fde242cf9b8a0faeb574571dfca7330be3"
+    }
+  },
+  "deterministic_validations": {
+    "independent_semantic_receipt_validator": "PASS",
+    "five_gate_bundle_validator": "PASS",
+    "quality_gate_adversarial": "21/21 PASS",
+    "quality_gate_adversarial_results_sha256": "bb3c9d59025ebe9abf78fb6a0cae8ded48c913e1957087944cde530b0d835c6d"
+  },
+  "review_scope_gaps_resolved_post_review": {
+    "profile_authority_source_sha256_reconstructed": true,
+    "profile_authority_source_sha256": "b65ab7beb8701ca95d1d9fdd51a82bd48f5382d87167cd0a148ae9fe7965f658",
+    "raw_model_output_materialized": true,
+    "raw_model_output_exact_text_sha256": "45b130b396abb690095cb6b64c1bf23b4a046a49c904aee1436ff0a46b450b0b",
+    "execution_receipt_raw_output_sha256": "753ab756172d7b7a1f68fbfb8d8c74ae1e7e1722bf65305f9ae36a54de2d7a4e"
+  },
+  "remaining_nonblocking_restrictions": [
+    "Health-specific framing and clinical guardrails are not materialized in the generic UI specification.",
+    "Concrete design-system spacing and color values remain unresolved by deliberate anti-invention policy.",
+    "Accessibility behavior was not part of the frozen acceptance criteria and remains unspecified.",
+    "header_search uses a weaker USER_REQUIREMENT binding than neighboring DATA_BOUND components."
+  ],
+  "claim_ceiling": "F10_COMPLETE_PASS_WITH_RESTRICTIONS_NOT_GOLDEN_NOT_PRODUCTION",
+  "golden_authorized": false,
+  "production_authorized": false,
+  "runtime_activation_authorized": false,
+  "merge_authorized": false
+}
