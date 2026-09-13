@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://lf.local/s31/runtime-execution-output/v0.1-candidate",
+  "title": "LF Runtime Execution Output v0.1 Candidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["raw_output", "runtime_receipt", "transport_diagnostics", "resource_usage", "failure_code"],
+  "properties": {
+    "raw_output": {},
+    "runtime_receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "executor_id", "status", "receipt_ref", "receipt_sha256", "authority_grants_allowed", "downstream_authorized", "golden_authorized", "production_authorized", "authority_effects"],
+      "properties": {
+        "run_id": {"type": "string", "minLength": 2},
+        "executor_id": {"type": "string", "minLength": 2},
+        "status": {"enum": ["PASS", "FAILED", "BLOCKED"]},
+        "receipt_ref": {"type": "string", "minLength": 2},
+        "receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "authority_grants_allowed": {"const": false},
+        "downstream_authorized": {"const": false},
+        "golden_authorized": {"const": false},
+        "production_authorized": {"const": false},
+        "authority_effects": {"type": "array", "maxItems": 0}
+      }
+    },
+    "transport_diagnostics": {"type": "object"},
+    "resource_usage": {"type": "object"},
+    "failure_code": {"type": ["string", "null"]}
+  },
+  "x_lf_authority_boundary": {
+    "runtime_output_grants_authority": false,
+    "nested_runtime_receipt_authority_grants_forbidden": true,
+    "raw_output_is_not_interpreted_as_control_plane_authority": true
+  }
+}
