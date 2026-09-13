@@ -1,0 +1,37 @@
+{
+  "readback_version": "lf-transversal-routed-graph/v1",
+  "source": "supabase://mhwmirqcgxxukpctffuv/public",
+  "scope": "14 routed operations / active steps and step contracts",
+  "method": "READ_ONLY_RECURSIVE_PASS_PATH_PLUS_EDGE_VALIDATION",
+  "operations": [
+    {"operation_code":"ACTUALIZACION_ADAPTER_LF","active_steps":14,"required_steps":14,"reached_steps":14,"missing_required_step_contracts":0,"unreachable_required_steps":0,"missing_pass_targets":0,"missing_block_targets":0,"self_loops":0},
+    {"operation_code":"ACTUALIZACION_DB_LF","active_steps":3,"required_steps":3,"reached_steps":3,"missing_required_step_contracts":0,"unreachable_required_steps":0,"missing_pass_targets":0,"missing_block_targets":2,"missing_block_target_ids":["preflight->close","patch->close"],"self_loops":0},
+    {"operation_code":"ACTUALIZACION_PERFIL_LF","active_steps":14,"required_steps":14,"reached_steps":14,"missing_required_step_contracts":0,"unreachable_required_steps":0,"missing_pass_targets":0,"missing_block_targets":0,"self_loops":0},
+    {"operation_code":"ACTUALIZACION_ROUTER_LF","active_steps":5,"required_steps":5,"reached_steps":5,"missing_required_step_contracts":0,"unreachable_required_steps":0,"missing_pass_targets":0,"missing_block_targets":0,"self_loops":0},
+    {"operation_code":"ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF","active_steps":0,"required_steps":0,"reached_steps":0,"missing_required_step_contracts":0,"unreachable_required_steps":0,"missing_pass_targets":0,"missing_block_targets":0,"self_loops":0,"graph_status":"NO_ACTIVE_STEPS"},
+    {"operation_code":"ACTUALIZACION_SKILL_LF","active_steps":14,"required_steps":14,"reached_steps":14,"missing_required_step_contracts":0,"unreachable_required_steps":0,"missing_pass_targets":0,"missing_block_targets":0,"self_loops":0},
+    {"operation_code":"CREACION_ADAPTER_LF","active_steps":17,"required_steps":17,"reached_steps":17,"missing_required_step_contracts":0,"unreachable_required_steps":0,"missing_pass_targets":0,"missing_block_targets":0,"self_loops":0},
+    {"operation_code":"CREACION_CARD_LF","active_steps":39,"required_steps":37,"reached_steps":36,"missing_required_step_contracts":0,"unreachable_required_steps":2,"unreachable_required_step_ids":["contract_judge","close"],"missing_pass_targets":0,"missing_block_targets":0,"self_loops":0},
+    {"operation_code":"CREACION_ESTRATEGIA_LF","active_steps":43,"required_steps":43,"reached_steps":1,"missing_required_step_contracts":43,"unreachable_required_steps":42,"unreachable_required_step_ids":["operational_source","durable_start_if_automated","ekb_preflight","policy_resolution","policy_inheritance_check","repo_matrix_read","contract_read","repo_inventory","strategy_inventory","duplicate_and_supersession_check","strategy_classification","authority_resolution","dependency_resolution","policy_applicability","problem_objective_scope","baseline","strategy_contract_materialization","stages_and_gates","qdp_evidence_contract","operability_controls","recovery_and_invalidation","execution_frontier","strategy_lint","policy_conflict_check","semantic_consistency","compatibility_check","stage_conclusion_contract","evidence_index","change_log_and_lineage","dynamic_reliability_plan","timeout_budget_plan","scheduler_scope_guard","recovery_routes","candidate_payload_freeze","github_write","github_readback","supabase_register_candidate","independent_supabase_readback","policy_fingerprint_readback","contract_judge","close","report_output"],"missing_pass_targets":0,"missing_block_targets":0,"self_loops":0},
+    {"operation_code":"CREACION_PERFIL_LF","active_steps":40,"required_steps":38,"reached_steps":40,"missing_required_step_contracts":0,"unreachable_required_steps":0,"missing_pass_targets":0,"missing_block_targets":0,"self_loops":0},
+    {"operation_code":"CREACION_SKILL_LF","active_steps":38,"required_steps":36,"reached_steps":29,"missing_required_step_contracts":0,"unreachable_required_steps":9,"unreachable_required_step_ids":["pre_write_execution_binding_gate","step_depth_validation","pack_internal_depth_validation","examples_depth_validation","evals_depth_validation","judge_depth_validation","schema_depth_validation","output_modes_validation","blocking_overrides_validation"],"missing_pass_targets":0,"missing_block_targets":0,"self_loops":0},
+    {"operation_code":"EJECUCION_PERFIL_LF","active_steps":9,"required_steps":9,"reached_steps":9,"missing_required_step_contracts":0,"unreachable_required_steps":0,"missing_pass_targets":0,"missing_block_targets":0,"self_loops":0},
+    {"operation_code":"EJECUCION_SKILL_LF","active_steps":9,"required_steps":9,"reached_steps":9,"missing_required_step_contracts":0,"unreachable_required_steps":0,"missing_pass_targets":0,"missing_block_targets":0,"self_loops":0},
+    {"operation_code":"LEARNING_BRIDGE_KB_CARD_LF","active_steps":25,"required_steps":25,"reached_steps":25,"missing_required_step_contracts":0,"unreachable_required_steps":0,"missing_pass_targets":0,"missing_block_targets":0,"self_loops":1,"self_loop_ids":["close->close (blocked edge)"]}
+  ],
+  "summary": {
+    "routed_operations": 14,
+    "clean_graph_operations": 9,
+    "operations_with_graph_findings": 5,
+    "finding_operations": [
+      "ACTUALIZACION_DB_LF",
+      "ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
+      "CREACION_CARD_LF",
+      "CREACION_ESTRATEGIA_LF",
+      "CREACION_SKILL_LF",
+      "LEARNING_BRIDGE_KB_CARD_LF"
+    ],
+    "note": "clean_graph_operations is 8 if the Learning Bridge blocked-edge self-loop is treated as a graph defect; no waiver has been applied. summary.finding_operations is authoritative."
+  },
+  "closure": "BLOCK"
+}
