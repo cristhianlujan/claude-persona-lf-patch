@@ -1,0 +1,99 @@
+{
+  "schema": "LF_CARD_UPDATE_I7_FROZEN_REVIEW_MANIFEST_V0_1",
+  "review_case": "CARD-UPDATE-I7-IR-001",
+  "review_mode": "INDEPENDENT_CHAT_CONTEXT",
+  "repository": "cristhianlujan/claude-persona-lf-patch",
+  "frozen_at_main_sha": "c6c2650bd34664b855d9cfe34ed864a5f93a1290",
+  "objects_under_review": [
+    {
+      "phase": "I4",
+      "ref": "8a4dcb9232738718fe4032971d7853495d337a9f",
+      "files": [
+        "sandbox/lf_contract_gate_test/card_update_i4_recorder_core_v0_1/i4_operation_neutral_card_recorder_v0_1.sql",
+        "sandbox/lf_contract_gate_test/card_update_i4_recorder_core_v0_1/i4_trust_null_fail_closed_patch_v0_1.sql",
+        "sandbox/lf_contract_gate_test/card_update_i4_recorder_core_v0_1/i4_final_receipt_v0_1.json"
+      ]
+    },
+    {
+      "phase": "I5",
+      "ref": "2b4e5a000802307fbc13597b9b33f3c8da95f454",
+      "files": [
+        "sandbox/lf_contract_gate_test/card_update_i5_carrier_adapters_v0_1/i5_carrier_adapter_intent_v0_1.sql",
+        "sandbox/lf_contract_gate_test/card_update_i5_carrier_adapters_v0_1/i5_final_receipt_v0_1.json",
+        "supabase/migrations/20260913050553_lf_card_update_i5_carrier_adapter_intent_v1.sql"
+      ]
+    },
+    {
+      "phase": "I6",
+      "ref": "8498bd2a5380d5bf1048233831f2137962786ce0",
+      "files": [
+        "sandbox/lf_contract_gate_test/card_update_i6_negative_matrix_v0_1/i6_adversarial_rollback_contract_v0_1.json",
+        "sandbox/lf_contract_gate_test/card_update_i6_negative_matrix_v0_1/i6_readiness_receipt_v0_1.json"
+      ]
+    }
+  ],
+  "immutable_runtime_evidence_ids": [
+    "EXEC-CARD-UPDATE-I4-PREWRITE-PASS-20260912-001",
+    "EXEC-CARD-UPDATE-I4-NEG-MISSING-TRUST-20260912-001",
+    "EXEC-CARD-UPDATE-I4-NEG-STALE-20260912-001",
+    "EXEC-CARD-UPDATE-I4-NEG-WRONG-CARRIER-20260912-001",
+    "EXEC-CARD-UPDATE-I5-ADAPTER-INTENT-20260912-001",
+    "EXEC-CARD-UPDATE-I6-BASELINE-IMMUTABILITY-20260913-001"
+  ],
+  "source_policy": {
+    "code": "POL-LF-SOURCE-RESOLUTION",
+    "version": "v1.4-transversal-supabase-authority-visual-support",
+    "sha256": "5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46"
+  },
+  "provider_target": {
+    "card_code": "CARD-CAND-DASHBOARD-CLIENTE-LECTOR-LF-001",
+    "carrier_type": "GOOGLE_DOC_EMBEDDED_BLOCK",
+    "document_id": "1DoT3rYFPAIbCQlYXID7PChmCk149tI13MOCYhmBZf1E",
+    "tab_id": "t.0",
+    "block_anchor": "CARD_CANDIDATA_DASHBOARD_CLIENTE_LECTOR_LF_001",
+    "baseline_chars": 833,
+    "baseline_sha256": "0401cea0e645f7910676839855e336ecdc1248bfc8cf388e7abe157992e19dab"
+  },
+  "required_falsification_axes": [
+    "NULL_OR_MISSING_TRUST_FAIL_CLOSED",
+    "STALE_PROVIDER_REVISION_FAIL_CLOSED",
+    "WRONG_CARRIER_OR_ANCHOR_FAIL_CLOSED",
+    "CALLER_ASSERTION_NOT_AUTHORITY",
+    "STEP_90_REMAINS_NO_WRITE_UNDER_I4_I5_CEILING",
+    "SERVER_DERIVED_INTENT_EXACT_HASH_AND_TAMPER_REJECTION",
+    "GITHUB_ROUTE_REQUIRES_EXPLICIT_DURABLE_BINDING",
+    "UNRESOLVED_EFFECT_NEVER_AUTO_REDISPATCHES",
+    "REVERSIBLE_BASELINE_IS_CONTENT_COMPLETE_HASH_MATCHED_AND_IMMUTABLE",
+    "ROLLBACK_REQUIRES_POST_WRITE_CURRENT_REVISION_GUARD",
+    "SOURCE_PARITY_BLOCKER_IS_REAL_AND_NOT_BYPASSED",
+    "NO_CLAIM_EXCEEDS_NO_WRITE_EVIDENCE_CEILING"
+  ],
+  "forbidden_review_shortcuts": [
+    "DO_NOT_USE_PRODUCER_VERDICT_AS_PROOF",
+    "DO_NOT_USE_PR_BODY_AS_SEMANTIC_PROOF",
+    "DO_NOT_SUBSTITUTE_MAIN_HEAD_FOR_FROZEN_REFS",
+    "DO_NOT_REPAIR_OR_MUTATE_ARTIFACTS",
+    "DO_NOT_AUTHORIZE_MERGE_GOLDEN_PRODUCTION_RUNTIME_OR_CARRIER_WRITE"
+  ],
+  "receipt_contract": {
+    "schema": "LF_CARD_UPDATE_I7_INDEPENDENT_REVIEW_RECEIPT_V0_1",
+    "allowed_verdicts": [
+      "PASS_WITH_BLOCKERS_NO_WRITE",
+      "FAIL_SEMANTIC_GAP",
+      "BLOCKED_ARTIFACT_INTEGRITY"
+    ],
+    "required_fields": [
+      "schema",
+      "review_case",
+      "reviewer_context",
+      "reviewed_refs",
+      "artifact_integrity",
+      "falsification_results",
+      "semantic_findings",
+      "verdict",
+      "open_blockers",
+      "authorization_ceiling"
+    ],
+    "authorization_ceiling_required": "NO_MERGE_NO_GOLDEN_NO_PRODUCTION_NO_RUNTIME_NO_CARRIER_WRITE"
+  }
+}
