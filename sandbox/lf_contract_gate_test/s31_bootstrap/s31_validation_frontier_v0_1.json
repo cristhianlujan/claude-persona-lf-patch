@@ -1,11 +1,11 @@
 {
-  "checkpoint_version": "S31_VALIDATION_FRONTIER_V0_2",
+  "checkpoint_version": "S31_VALIDATION_FRONTIER_V0_3",
   "strategy": "S31",
   "base_main_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
-  "candidate_snapshot_sha": "0a6bc06dfb83958730b2d659d26098686d873f9b",
+  "candidate_snapshot_sha": "d268fd871f2e18588f9b8084e6a3f6c6e07aa438",
   "deterministic_status": {
     "S31-A": {"result":"PASS","claim_ceiling":"DETERMINISTIC_REGRESSION_ONLY","independent_review":"PENDING"},
-    "S31-B": {"result":"PASS_11_OF_11","claim_ceiling":"DETERMINISTIC_REGRESSION_ONLY","independent_review":"PENDING"},
+    "S31-B": {"result":"PASS_18_OF_18","claim_ceiling":"DETERMINISTIC_REGRESSION_ONLY","independent_review":"PENDING","hardening":["SCHEMA_FIRST","EXECUTED_SHA_TYPED","SAFE_WORK_COUNT_CONSISTENCY","FRONTIER_CLOSE_CONSISTENCY","UNRESOLVED_BLOCKER_CANNOT_CLOSE"]},
     "S31-C": {"result":"PASS_12_OF_12","claim_ceiling":"DETERMINISTIC_REGRESSION_ONLY","independent_review":"PENDING"},
     "S31-D": {"result":"PASS_IN_DG_MATRIX","claim_ceiling":"DETERMINISTIC_REGRESSION_ONLY","independent_review":"PENDING"},
     "S31-E": {"result":"PASS_IN_DG_MATRIX","claim_ceiling":"DETERMINISTIC_REGRESSION_ONLY","independent_review":"PENDING"},
@@ -13,22 +13,27 @@
     "S31-G": {"result":"PASS_IN_DG_MATRIX","claim_ceiling":"DETERMINISTIC_REGRESSION_ONLY","independent_review":"PENDING"},
     "S31-H": {"result":"PLAN_ONLY_NO_INSTALL","claim_ceiling":"POC_PLAN_ONLY"}
   },
+  "producer_exact_suite": {
+    "execution_head": "3bdbcee3b67521df9060ffb18eb887d1909a51f3",
+    "runner": "scalora-vps:/tmp/s31-review-final",
+    "exit_status": 0,
+    "results": ["BOOTSTRAP_PASS", "A_PASS", "B_18_OF_18_PASS", "C_12_OF_12_PASS", "DG_5_POSITIVE_14_NEGATIVE_PASS", "REVIEW_INTAKE_10_OF_10_PASS"]
+  },
   "independent_review_intake": {
     "status": "READY_CANONICAL_QUALITY_PACK",
-    "execution_receipt": "s31_independent_review_intake_execution_receipt_v0_1.json",
-    "regression_result": "PASS_10_OF_10",
     "ABC": {
-      "bundle_ref": "github://cristhianlujan/claude-persona-lf-patch@50b343b8b56e1c7f5ac5497151f9ab11cd7e26a0/sandbox/lf_contract_gate_test/s31_bootstrap/s31_abc_independent_review_bundle_v0_3.json",
-      "bundle_blob_sha": "3042fb6fcc14fea7d2223d91af18c211ada6a94f",
+      "bundle_ref": "github://cristhianlujan/claude-persona-lf-patch@25466ce580a4bf2a8b660539a8300c7848aae189/sandbox/lf_contract_gate_test/s31_bootstrap/s31_abc_independent_review_bundle_v0_4.json",
+      "bundle_blob_sha": "46b932fc108fde8a11e25ba6495bd17eacf7e483",
       "handoff": "S31_ABC_INDEPENDENT_REVIEW_HANDOFF_V0_2.md"
     },
     "DG": {
-      "bundle_ref": "github://cristhianlujan/claude-persona-lf-patch@41f87dd7eacff11607aac16d06be38aaf0413e0d/sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_independent_review_bundle_v0_2.json",
-      "bundle_blob_sha": "ed093aa01063ec5f3cfbe07b2988add5f5492954",
+      "bundle_ref": "github://cristhianlujan/claude-persona-lf-patch@37bb924e022d3d09b80d38996fc282b155cc1fbf/sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_independent_review_bundle_v0_3.json",
+      "bundle_blob_sha": "2f5a1bc5fbb8e2e422ea2fc85623f08c2e4c5223",
       "handoff": "S31_DG_INDEPENDENT_REVIEW_HANDOFF_V0_1.md"
     },
     "receipt_contract": "profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json@d4051d9c57fdfd09741da5ba2718c032eac56c92",
-    "parallel_custom_receipt_contract_forbidden": true
+    "parallel_custom_receipt_contract_forbidden": true,
+    "producer_semantic_verdict": null
   },
   "remaining_safe_material_work_without_new_external_evidence": [],
   "next_gates": ["LATEST_HEAD_GENERAL_CI_GREEN", "INDEPENDENT_CHAT_CONTEXT_ABC", "INDEPENDENT_CHAT_CONTEXT_DG"],
@@ -45,6 +50,6 @@
     "strategy_closed": false,
     "producer_safe_material_work_count": 0,
     "next_safe_batch": null,
-    "reason": "Canonical independent review intake is ready; remaining semantic gates require clean independent contexts."
+    "reason": "Producer-side contracts, adversarial hardening, exact deterministic suite and canonical independent-review intake are exhausted. Remaining semantic gates require clean independent contexts."
   }
 }
