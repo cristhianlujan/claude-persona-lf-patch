@@ -1,0 +1,68 @@
+{
+  "receipt_version": "v0.1",
+  "execution_mode": "INDEPENDENT_CHAT_CONTEXT",
+  "semantic_status": "EXECUTED_INDEPENDENT_CONTEXT",
+  "review_case_id": "S31-ABC-IR-001",
+  "reviewer_is_producer": false,
+  "producer_context_available": false,
+  "external_paid_model_used": false,
+  "automated_semantic_judge_implemented": false,
+  "review_completed": true,
+  "source_bundle": {
+    "artifact_ref": "github://cristhianlujan/claude-persona-lf-patch@32f73efc8794686ca9d57424d0945af69f3b9358/sandbox/lf_contract_gate_test/s31_bootstrap/s31_abc_independent_review_bundle_v0_5.json",
+    "artifact_sha_or_digest": "5fe28054a2320e26da95db494da85126b5323cab",
+    "upstream_worker_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@bbcd9056443059cf1da4782551a85b3a70bd2910/sandbox/lf_contract_gate_test/s31_bootstrap/LF_WORK_PACKAGE_BOOTSTRAP_V0_1.md",
+    "quality_gate_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/contracts/quality_gate_contract.md",
+    "lf_quality_controls_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/contracts/lf_quality_controls.md",
+    "score_rubric_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/judges/quality_pack_score_rubric.md",
+    "mini_judge_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/judges/quality_pack_mini_judge.md",
+    "quality_review_schema_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/schemas/quality_review.schema.json",
+    "independent_review_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md",
+    "independent_receipt_schema_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json",
+    "independent_receipt_validator_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/validators/validate_independent_semantic_review.py"
+  },
+  "quality_review": {
+    "review_id": "S31-ABC-IR-001-GPT56SOL",
+    "reviewed_artifact": "github://cristhianlujan/claude-persona-lf-patch@32f73efc8794686ca9d57424d0945af69f3b9358/sandbox/lf_contract_gate_test/s31_bootstrap/s31_abc_independent_review_bundle_v0_5.json",
+    "verdict": "BLOCK_PIPELINE",
+    "score_breakdown": {
+      "contract_schema_compliance": 1,
+      "evidence_integrity": 1,
+      "lf_safety_governance": 3,
+      "handoff_readiness": 3,
+      "leakage_scope_control": 1,
+      "total": 9
+    },
+    "evidence_map": [
+      {"lane":"BUNDLE","result":"OBSERVED","evidence":"Frozen bundle resolves to blob 5fe28054a2320e26da95db494da85126b5323cab and the nine declared frozen artifact blob identities resolve at candidate head bbcd9056443059cf1da4782551a85b3a70bd2910."},
+      {"lane":"S31-A","result":"OBSERVED","evidence":"canonical_capability_model_v0_2_candidate.schema.json forces lifecycle.canonical_vocabulary_status=UNRESOLVED, lifecycle.self_certification_allowed=false, authority.model_may_decide_authority=false, execution.framework_is_kernel_dependency=false and source_of_truth.proprietary_runtime_state_is_domain_truth=false. Frozen vectors preserve S30/S26 ownership boundaries and include a negative framework-authority control."},
+      {"lane":"S31-B","result":"BLOCKING","evidence":"validate_lf_work_package_v0_2_candidate.py accepts a syntactically valid execution.executed_validation.executed_sha without binding it to execution_identity.executed_sha or branch_head_sha. A validation result for a different SHA can therefore satisfy the validator."},
+      {"lane":"S31-B","result":"BLOCKING","evidence":"validate_lf_work_package_v0_2_candidate.py accepts authority.ekb_execution_binding.fresh_for_execution=true plus nominal run_id/resolved_at/control_mapping as freshness evidence and accepts close_guard.currentness_verified as a payload boolean. These states are not independently resolved before being trusted."},
+      {"lane":"S31-B","result":"OBSERVED","evidence":"The frontier validator enforces unique safe work, list/count/batch consistency, frontier/close-guard consistency, causal BLOCKED when blockers remain with no safe work, and continuation when safe independent work remains."},
+      {"lane":"S31-C","result":"BLOCKING","evidence":"canonical_card_resolution_v0_1.json declares fallback_rules.start_only_when_status=NO_DIRECT_CARD, but fallback_decision in validate_canonical_card_resolution_v0_1.py has no resolution-status input and never enforces that precondition. Fallback evaluation can therefore be invoked after RESOLVED, AMBIGUOUS or BLOCKED."},
+      {"lane":"S31-C","result":"OBSERVED","evidence":"Within fallback_decision, known alternatives are unique and ordered, safe attempts require typed_attempt/reason/evidence_ref, unknown or duplicate alternatives fail closed, and MANUAL_REQUIRED requires READY with blocker_unresolved=false."}
+    ],
+    "blocking_codes": [
+      "S31_B_EXECUTED_VALIDATION_SHA_BINDING_MISSING",
+      "S31_B_EKB_CURRENTNESS_EVIDENCE_SELF_ASSERTED",
+      "S31_C_FALLBACK_ENTRY_STATUS_GUARD_MISSING"
+    ],
+    "repair_actions": [
+      {"target_worker":"S31-B","missing_or_failed_item":"Executed-validation identity binding","why_it_fails":"A validation result from a different commit can satisfy the validator, permitting source mismatch and evidence inflation.","required_fix":"Fail closed unless executed_validation.executed_sha is bound to the governed execution identity and the referenced validation receipt is independently resolved and verified for that exact SHA.","blocking_code":"S31_B_EXECUTED_VALIDATION_SHA_BINDING_MISSING"},
+      {"target_worker":"S31-B","missing_or_failed_item":"Independently derived EKB/currentness evidence","why_it_fails":"fresh_for_execution and currentness_verified are accepted as self-declared booleans rather than resolver-derived evidence.","required_fix":"Bind EKB freshness and currentness to resolvable immutable evidence or receipts and fail closed on unresolved, stale, mismatched or unverifiable evidence.","blocking_code":"S31_B_EKB_CURRENTNESS_EVIDENCE_SELF_ASSERTED"},
+      {"target_worker":"S31-C","missing_or_failed_item":"Fallback entry precondition","why_it_fails":"The executable validator does not enforce the declared start_only_when_status=NO_DIRECT_CARD rule, allowing fallback logic to be entered from statuses that must not enter fallback.","required_fix":"Require canonical resolution status as validator input and fail closed unless it is exactly NO_DIRECT_CARD before evaluating any fallback attempt.","blocking_code":"S31_C_FALLBACK_ENTRY_STATUS_GUARD_MISSING"}
+    ],
+    "remaining_risks": [
+      "This receipt does not authorize merge, Golden, production, runtime or behavioral promotion.",
+      "Producer deterministic PASS results were not used as semantic proof."
+    ],
+    "next_gate": "NONE_UNTIL_S31_B_AND_S31_C_ARE_REPAIRED_AND_A_NEW_FROZEN_BUNDLE_IS_SUBMITTED_FOR_INDEPENDENT_REVIEW",
+    "routing": {"activation_path":"DIRECT","via":"ORCHESTRATOR","pipeline_action":"BLOCK_PIPELINE","resolution_target":"NONE"},
+    "s31_lane_reviews": {
+      "S31-A": {"verdict":"PASS","findings":[]},
+      "S31-B": {"verdict":"BLOCKED","findings":["Executed validation is not bound to the governed execution SHA.","EKB/currentness freshness can be self-asserted without independently resolved evidence."]},
+      "S31-C": {"verdict":"BLOCKED","findings":["Executable fallback logic does not enforce the declared NO_DIRECT_CARD-only entry precondition."]}
+    }
+  },
+  "execution_blockers": []
+}
