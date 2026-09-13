@@ -16,6 +16,7 @@ from profile_runtime_api.llama import (
     LlamaTransportError,
     PersistentLlamaServerAdapter,
     ui_focused_profile_model_view,
+    ui_focused_semantic_context_view,
     ui_production_profile_model_view,
     ui_production_semantic_context_view,
 )
@@ -375,8 +376,57 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         self.assertLess(len(model_view), len(full_skill) // 2)
         self.assertIn("Focused UI Decision Spec", model_view)
         self.assertIn("Focused runtime/safety rules", model_view)
+        self.assertNotIn("## Routing semantics", model_view)
+        self.assertNotIn("RETURN_TO_ORCHESTRATOR", model_view)
+        self.assertNotIn("EJECUCION_PERFIL_LF", model_view)
         self.assertNotIn("top_amount_strip", model_view)
         self.assertNotIn("V6 Composer structural boundary", model_view)
+
+    def test_ui_focused_semantic_context_view_removes_machine_provenance(self) -> None:
+        model_context = {
+            "schema": "lf-profile-runtime-artifact-set-model-context/v1",
+            "source": "NON_CANONICAL_ARTIFACT_SET",
+            "contract": "NON_CANONICAL_ARTIFACT_SET_V1",
+            "subject_mode": "NON_CANONICAL_ARTIFACT",
+            "artifact_set_fingerprint": "f" * 64,
+            "artifact_count": 2,
+            "artifacts": [
+                {
+                    "artifact_ref": "drive:1",
+                    "artifact_sha256": "a" * 64,
+                    "filename": "one.png",
+                    "screen_code": "NONCANONICAL_ARTIFACT_01",
+                    "width_px": 1600,
+                    "height_px": 1000,
+                    "visible_ui_evidence": [{"text": "Nueva carga", "bbox": [1, 2, 3, 4]}],
+                    "dynamic_data": {"policy": "NO_DYNAMIC"},
+                },
+                {
+                    "artifact_ref": "drive:2",
+                    "artifact_sha256": "b" * 64,
+                    "filename": "two.png",
+                    "screen_code": "NONCANONICAL_ARTIFACT_02",
+                    "width_px": 1600,
+                    "height_px": 1000,
+                    "visible_ui_evidence": [{"text": "Continuar", "bbox": [5, 6, 7, 8]}],
+                    "dynamic_data": {"policy": "NO_DYNAMIC"},
+                },
+            ],
+            "input_governance": {"status": "ADVISORY_READ_ONLY"},
+            "runtime_schema": {"mode": "UI_FOCUSED_DECISION"},
+            "adapter_codes": ["ADAPTER_LF_SHELL_PROFILE"],
+        }
+        view = ui_focused_semantic_context_view(model_context)
+        serialized = json.dumps(view, sort_keys=True)
+        self.assertEqual(view["source"], "OBSERVED_UI_EVIDENCE")
+        self.assertEqual(view["artifact_count"], 2)
+        self.assertIn("Nueva carga", serialized)
+        self.assertIn("Continuar", serialized)
+        for forbidden in (
+            "NON_CANONICAL_ARTIFACT", "ADVISORY_READ_ONLY", "UI_FOCUSED_DECISION",
+            "ADAPTER_LF_SHELL_PROFILE", "artifact_sha256", "artifact_ref", "screen_code",
+        ):
+            self.assertNotIn(forbidden, serialized)
 
     def test_artifact_set_model_context_drops_repeated_structural_payload(self) -> None:
         verbose = "x" * 4000

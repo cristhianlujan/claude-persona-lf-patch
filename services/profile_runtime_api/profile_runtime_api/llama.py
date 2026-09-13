@@ -188,15 +188,15 @@ def _section_between(content: str, start: str, end: str) -> str | None:
 
 
 def ui_focused_profile_model_view(content: str) -> str:
-    """Project UI Architect authority to the rules relevant to focused decisions.
+    """Project UI Architect authority to the semantic rules needed by focused decisions.
 
-    The complete source remains hash-bound in request/receipt. Marker drift returns
-    the full source so a future profile rewrite cannot silently lose authority.
+    Routing, maintenance and alternate-mode instructions are runtime-enforced and stay
+    hash-bound in the full source, but are intentionally omitted from the model view so
+    small local models do not echo machine labels as UI decisions. Marker drift fails safe
+    by returning the complete canonical source.
     """
     purpose = _section_between(content, "## Purpose", "## Routing semantics")
-    routing = _section_between(content, "## Routing semantics", "## RUNTIME CRITICAL GATE")
-    other_modes = _section_between(content, "## Other output modes", "## Scoring")
-    if purpose is None or routing is None or other_modes is None:
+    if purpose is None:
         return content
     lines = [line.strip() for line in content.splitlines()]
     prefixes = (
@@ -213,10 +213,39 @@ def ui_focused_profile_model_view(content: str) -> str:
         selected.append(matches[0])
     return (
         purpose
-        + "\n\n" + routing
         + "\n\nFocused runtime/safety rules:\n" + "\n".join(selected)
-        + "\n\n" + other_modes
+        + "\n\nFocused UI Decision Spec: produce one concrete, implementation-ready UI decision from the literal request and visible UI evidence. Do not emit routing, provenance, maintenance, evidence identifiers, or alternate-mode instructions as semantic field values."
     )
+
+
+def ui_focused_semantic_context_view(model_context: dict[str, Any]) -> dict[str, Any]:
+    """Expose only visible UI evidence for non-canonical focused visual review.
+
+    The full governed context remains independently hash-bound and verified. This prompt-only
+    projection removes machine provenance that is already enforced by runtime and is known to
+    contaminate small-model semantic fields.
+    """
+    if model_context.get("source") != "NON_CANONICAL_ARTIFACT_SET":
+        return model_context
+    artifacts = model_context.get("artifacts")
+    if not isinstance(artifacts, list):
+        return model_context
+    visible: list[dict[str, Any]] = []
+    for item in artifacts:
+        if not isinstance(item, dict) or not isinstance(item.get("visible_ui_evidence"), list):
+            return model_context
+        visible.append(
+            {
+                "width_px": item.get("width_px"),
+                "height_px": item.get("height_px"),
+                "visible_ui_evidence": item.get("visible_ui_evidence"),
+            }
+        )
+    return {
+        "source": "OBSERVED_UI_EVIDENCE",
+        "artifact_count": len(visible),
+        "artifacts": visible,
+    }
 
 
 def ui_production_profile_model_view(content: str, *, task_mode: str | None) -> str:
@@ -1732,7 +1761,9 @@ class PersistentLlamaServerAdapter:
             and _ui_production_acceptance_supports_semantic_transport(acceptance)
         )
         model_prompt_context = (
-            ui_production_semantic_context_view(model_context)
+            ui_focused_semantic_context_view(model_context)
+            if self.schema.mode == UI_FOCUSED_SCHEMA_MODE and isinstance(model_context, dict)
+            else ui_production_semantic_context_view(model_context)
             if semantic_transport and isinstance(model_context, dict)
             else model_context
         )
@@ -1800,16 +1831,26 @@ class PersistentLlamaServerAdapter:
             "The first non-whitespace response character MUST be { and the last MUST be }.",
             "Markdown fences, backticks, headings, labels, or prose outside the JSON object are a runtime failure.",
             "Honor explicit task-mode or task-classification markers in the literal input according to the profile source.",
-            "Observed downstream_authorized=false means only that this result cannot authorize writes or promotion; it does not block profile analysis and is never by itself a missing-input reason.",
-            "For queue-native text work, screen_governance_applicable=false is not by itself a reason to return NEEDS_INPUT or RETURN_TO_ORCHESTRATOR.",
-            (
-                "Do not emit score, handoff, verdict, known IDs or known source bindings; deterministic runtime owns them."
-                if semantic_transport
-                else "Do not return scores without the contracted deliverable or self-certified evidence."
-            ),
-            "Do not invent facts absent from profile sources, literal input, Router capsules, or observed structural evidence.",
-            "",
         ]
+        if self.schema.mode == UI_FOCUSED_SCHEMA_MODE:
+            parts.extend([
+                "Runtime control-plane decisions are already enforced. Work only from the literal UI request and visible UI evidence; do not turn control-plane labels into UI semantics.",
+                "Do not return scores without the contracted deliverable or self-certified evidence.",
+                "Do not invent facts absent from profile sources, literal input, or visible UI evidence.",
+                "",
+            ])
+        else:
+            parts.extend([
+                "Observed downstream_authorized=false means only that this result cannot authorize writes or promotion; it does not block profile analysis and is never by itself a missing-input reason.",
+                "For queue-native text work, screen_governance_applicable=false is not by itself a reason to return NEEDS_INPUT or RETURN_TO_ORCHESTRATOR.",
+                (
+                    "Do not emit score, handoff, verdict, known IDs or known source bindings; deterministic runtime owns them."
+                    if semantic_transport
+                    else "Do not return scores without the contracted deliverable or self-certified evidence."
+                ),
+                "Do not invent facts absent from profile sources, literal input, Router capsules, or observed structural evidence.",
+                "",
+            ])
         if self.schema.mode == UI_FOCUSED_SCHEMA_MODE:
             parts.extend(
                 [
@@ -1822,15 +1863,15 @@ class PersistentLlamaServerAdapter:
                     "- base_color_or_surface must identify a real existing/allowed surface or token; never copy selected_visual_type into it.",
                     "- size_or_coverage must name the spatial/component scope; density_limits must bind a quantity to an element; depth_style must state an elevation/shadow rule; visual_weight must state hierarchy relative to UI content/action.",
                     "- relationship_to_main_element must name the related UI element and behavior; implementation_format must name an implementation mechanism, not an evidence/governance artifact type.",
-                    "- Avoid bare values such as medium, high, above, 100%, css, artifact, shell_lock, or non_canonical_artifact when they do not express the required field semantics.",
+                    "- Avoid bare generic values, percentages without a named target, implementation-only words, and internal evidence/control labels when they do not express the required field semantics.",
                     "- Use visible UI evidence labels and explicit UI requirements from the literal input to ground the decision. Internal governance/evidence words are provenance, never the visual treatment itself.",
                     "- hard_exclusions must name prohibited UI variants or duplicate UI behaviors; never list evidence artifacts, artifact IDs, governance modes, routing operations, or canonicalization operations as exclusions.",
                     "- Give each field a different semantic job. Do not repeat one phrase across decision_subject, selected_visual_type, surface, coverage, depth, weight, relationship, or implementation.",
                     "- Phrase-shape guide (structure only, not task facts): coverage='only <named UI region/component>'; density='one <cue/treatment> per <named component>'; depth='no added elevation; preserve <existing shadow/elevation>'; weight='<relative prominence> versus <named content/action>'; relationship='<behavior> relative to <named main element>'; implementation='<CSS/component/layout mechanism> on <named element>'.",
-                    "- A preservation/lock request still requires a concrete UI pattern: state what stays fixed, what varies, and how the transition/navigation behaves. A bare *_lock token is not a treatment.",
-                    "- Conceptual snake_case identifiers copied from the request (for example *_lock, *_authority, *_artifact, *_mode) are labels, not final semantic field values. Expand them into a concrete human-readable UI treatment; only genuine design tokens/CSS identifiers may remain token-like.",
+                    "- A preservation request still requires a concrete UI pattern: state what stays fixed, what varies, and how transition/navigation behaves. A machine label is not a treatment.",
+                    "- Machine identifiers or underscore-delimited control labels are not final semantic field values. Expand the requested meaning into concrete human-readable UI language; only genuine design tokens or CSS identifiers may remain token-like where the field explicitly asks for an implementation token.",
                     "- Cover every explicitly requested UI subdecision in the literal input. If it names shell preservation, navigation authority, a variable slot, and a transition, the fields together must describe all of them rather than only the shell.",
-                    "- UI_FOCUSED_DECISION is already the decision-producing mode. Return a decision-ready status (CANDIDATE_READ_ONLY, SANDBOX_READY, or PASS_WITH_ASSUMPTIONS). Materially unresolved input belongs in the separately typed UI_MISSING_INPUT mode, not RETURN_TO_ORCHESTRATOR here.",
+                    "- This bound request already asks for a decision. Return a decision-ready status from the schema. Do not bounce the result to another mode when the supplied UI evidence is sufficient.",
                     "",
                 ]
             )
@@ -1937,8 +1978,11 @@ class PersistentLlamaServerAdapter:
                 ]
             )
         context_for_prompt = (
-            ui_production_semantic_context_view(model_context)
-            if semantic_transport else model_context
+            ui_focused_semantic_context_view(model_context)
+            if self.schema.mode == UI_FOCUSED_SCHEMA_MODE and isinstance(model_context, dict)
+            else ui_production_semantic_context_view(model_context)
+            if semantic_transport and isinstance(model_context, dict)
+            else model_context
         )
         parts.extend(
             [
@@ -2011,7 +2055,9 @@ class PersistentLlamaServerVerifier:
             and _ui_production_acceptance_supports_semantic_transport(acceptance)
         )
         expected_model_context = (
-            ui_production_semantic_context_view(model_context)
+            ui_focused_semantic_context_view(model_context)
+            if self.schema.mode == UI_FOCUSED_SCHEMA_MODE and isinstance(model_context, dict)
+            else ui_production_semantic_context_view(model_context)
             if semantic_transport and isinstance(model_context, dict)
             else model_context
         )
