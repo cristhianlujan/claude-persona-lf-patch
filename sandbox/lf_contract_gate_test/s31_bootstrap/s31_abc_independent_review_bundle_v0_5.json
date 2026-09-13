@@ -1,0 +1,47 @@
+{
+  "bundle_version": "S31_ABC_INDEPENDENT_REVIEW_BUNDLE_V0_5",
+  "review_case_id": "S31-ABC-IR-001",
+  "execution_mode": "INDEPENDENT_CHAT_CONTEXT",
+  "candidate_snapshot": {
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "main_base_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+    "s31_candidate_head": "bbcd9056443059cf1da4782551a85b3a70bd2910"
+  },
+  "review_scope": ["S31-A", "S31-B", "S31-C"],
+  "frozen_artifacts": [
+    {"lane":"S31-A","path":"sandbox/lf_contract_gate_test/s31_bootstrap/canonical_capability_model_v0_2_candidate.schema.json","blob_sha":"ad549879dc5edfb32d040da3b0b0c4c6140614ad","role":"candidate"},
+    {"lane":"S31-A","path":"sandbox/lf_contract_gate_test/s31_bootstrap/test_canonical_capability_model_v0_2_candidate.py","blob_sha":"f157fe93c443b0b691d229466f1ea9f0e6f60310","role":"deterministic_test"},
+    {"lane":"S31-A","path":"sandbox/lf_contract_gate_test/s31_bootstrap/canonical_capability_model_test_vectors_v0_1.json","blob_sha":"d243576af119d26a31ef71405f26100199f75166","role":"vectors"},
+    {"lane":"S31-B","path":"sandbox/lf_contract_gate_test/s31_bootstrap/lf_work_package_v0_2_candidate.schema.json","blob_sha":"1e5d9fb3d72c7b5164c5abd848160ae060a8e96c","role":"candidate"},
+    {"lane":"S31-B","path":"sandbox/lf_contract_gate_test/s31_bootstrap/validate_lf_work_package_v0_2_candidate.py","blob_sha":"7c4b2b22d80a487f8156ff9a7aa603b961bcbfff","role":"validator"},
+    {"lane":"S31-B","path":"sandbox/lf_contract_gate_test/s31_bootstrap/test_lf_work_package_v0_2_candidate.py","blob_sha":"b574f0254a67cd09ebec7b62bbca3af8f408cc7a","role":"deterministic_test"},
+    {"lane":"S31-C","path":"sandbox/lf_contract_gate_test/s31_bootstrap/canonical_card_resolution_v0_1.json","blob_sha":"bb905ee315b3db212d46c1422721726d86238823","role":"candidate"},
+    {"lane":"S31-C","path":"sandbox/lf_contract_gate_test/s31_bootstrap/validate_canonical_card_resolution_v0_1.py","blob_sha":"bea6d62e9afe931113627654d82b0ab32a40cd2d","role":"validator"},
+    {"lane":"S31-C","path":"sandbox/lf_contract_gate_test/s31_bootstrap/test_canonical_card_resolution_v0_1.py","blob_sha":"37cd9f87b27f6fc4e9c154025ac00d28b522d2e1","role":"deterministic_test"}
+  ],
+  "producer_evidence": {
+    "S31-A": "PASS deterministic lifecycle/capability regressions",
+    "S31-B": "PASS 18/18 exact-head deterministic self-test",
+    "S31-C": "PASS 19/19 exact-head deterministic self-test"
+  },
+  "upstream_worker_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@bbcd9056443059cf1da4782551a85b3a70bd2910/sandbox/lf_contract_gate_test/s31_bootstrap/LF_WORK_PACKAGE_BOOTSTRAP_V0_1.md",
+  "quality_pack": {
+    "independent_review_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md",
+    "quality_gate_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/contracts/quality_gate_contract.md",
+    "lf_quality_controls_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/contracts/lf_quality_controls.md",
+    "score_rubric_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/judges/quality_pack_score_rubric.md",
+    "mini_judge_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/judges/quality_pack_mini_judge.md",
+    "quality_review_schema_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/schemas/quality_review.schema.json",
+    "independent_receipt_schema_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json",
+    "independent_receipt_validator_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/validators/validate_independent_semantic_review.py"
+  },
+  "acceptance_criteria": {
+    "S31-A": ["generic capability model preserves owner boundaries", "lifecycle vocabulary remains UNRESOLVED", "self-certification/model authority/framework truth are forbidden"],
+    "S31-B": ["schema-first validation is mandatory", "currentness/EKB/executed-validation are fail-closed", "safe work list/count/batch and frontier-close state are mutually consistent", "blocked plus safe continues; blocked with no safe work is causal BLOCKED, not closure", "S30 stays owner of S30 implementation"],
+    "S31-C": ["canonical mapping preserves S26 boundaries", "NO_DIRECT_CARD is governed not immediate manual", "fallback attempts are known unique and ordered", "safe fallback attempts require typed evidence", "manual requires explicit READY evidence and blocker_unresolved=false", "schema invention remains forbidden"]
+  },
+  "blocking_criteria": ["source mismatch", "schema bypass", "premature close", "fallback sequence bypass", "manual readiness without blocker clearance", "authority leak", "self-certification", "evidence inflation", "lifecycle overclaim", "framework lock-in", "cross-lane mutation"],
+  "governance_constraints": ["reviewer_is_producer=false", "producer_context_available=false", "no repair during review", "no Golden/merge/production authorization", "semantic review only for exact frozen bundle"],
+  "producer_semantic_verdict": null,
+  "claim_ceiling": "FROZEN_REVIEW_BUNDLE_ONLY"
+}
