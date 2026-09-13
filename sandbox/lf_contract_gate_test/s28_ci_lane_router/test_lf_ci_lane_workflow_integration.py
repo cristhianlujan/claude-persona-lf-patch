@@ -11,6 +11,7 @@ ROUTER = "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_lane_router.py"
 ROUTER_TEST = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_router.py"
 SELFTEST = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_workflow_integration.py"
 P0_EXTERNAL_TEST = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_p0_external_applicability_entrypoint.py"
+RECONCILE_OWNERSHIP_TEST = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_s26_reconcile_workflow_ownership.py"
 RECONCILE_APPLICABILITY = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_github_reconcile_applicability.py")
 RECONCILE_POOLER_FALLBACK = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_github_reconcile_pooler_fallback.py")
 PRODUCT_OWNERSHIP = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_product_lane_ownership.py")
@@ -90,8 +91,6 @@ def assert_reconciliation_behavior(helper) -> None:
     assert got.reason == "UNBOUND_OR_SHARED_PATH_REQUIRES_RECONCILIATION", got
     assert got.router_mode == "DEEP_SHARED_REGISTRY_INVALID", got
 
-    # Real end-to-end future-product proof: the canonical router receives an
-    # S42 namespace and lane via registry data, without any S42 code branch.
     future_path = "sandbox/future_product/run.json"
     got = helper.classify_reconciliation_applicability(
         [future_path],
@@ -102,7 +101,6 @@ def assert_reconciliation_behavior(helper) -> None:
     assert got.lane_ids == ("S42-PRODUCT",), got
     assert got.router_mode == "S42_PRODUCT_ISOLATED", got
 
-    # A product declaration cannot capture an LF shared surface to earn N/A.
     got = helper.classify_reconciliation_applicability(
         ["skills/shared.md"],
         registry_data=future_registry(allowed_root="skills/"),
@@ -110,7 +108,6 @@ def assert_reconciliation_behavior(helper) -> None:
     assert got.required is True, got
     assert got.router_mode == "DEEP_SHARED_REGISTRY_INVALID", got
 
-    # Translator-level safety remains fail-closed for shared/specialized flags.
     future_shared_path = "sandbox/future_product/shared/run.json"
     future_shared = helper.LaneDecision(
         mode="S42_PRODUCT_SHARED",
@@ -192,6 +189,21 @@ def assert_merge_path_recovery(helper) -> None:
     print("PASS_GITHUB_RECONCILIATION_MERGE_PATH_RECOVERY=4/4")
 
 
+def run_child(path: str, failure_code: str) -> None:
+    completed = subprocess.run(
+        [sys.executable, path],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if completed.stdout:
+        print(completed.stdout, end="" if completed.stdout.endswith("\n") else "\n")
+    if completed.stderr:
+        print(completed.stderr, file=sys.stderr, end="" if completed.stderr.endswith("\n") else "\n")
+    if completed.returncode != 0:
+        raise SystemExit(failure_code)
+
+
 def main() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
     require(text, ROUTER, "FAIL_CI_LANE_ROUTER_NOT_WIRED")
@@ -240,18 +252,8 @@ def main() -> None:
     if "--retry-all-errors" in reconcile:
         raise SystemExit("FAIL_RECONCILIATION_402_BLIND_RETRY_PRESENT")
 
-    completed = subprocess.run(
-        [sys.executable, P0_EXTERNAL_TEST],
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    if completed.stdout:
-        print(completed.stdout, end="" if completed.stdout.endswith("\n") else "\n")
-    if completed.stderr:
-        print(completed.stderr, file=sys.stderr, end="" if completed.stderr.endswith("\n") else "\n")
-    if completed.returncode != 0:
-        raise SystemExit("FAIL_P0_EXTERNAL_APPLICABILITY_BEHAVIOR")
+    run_child(P0_EXTERNAL_TEST, "FAIL_P0_EXTERNAL_APPLICABILITY_BEHAVIOR")
+    run_child(RECONCILE_OWNERSHIP_TEST, "FAIL_S26_RECONCILE_WORKFLOW_OWNERSHIP")
 
     fallback = subprocess.run(
         [sys.executable, str(RECONCILE_POOLER_FALLBACK), "self-test"],
@@ -269,7 +271,7 @@ def main() -> None:
     helper = load_reconciliation_helper()
     assert_reconciliation_behavior(helper)
     assert_merge_path_recovery(helper)
-    print("PASS_CI_LANE_WORKFLOW_INTEGRATION=33/33")
+    print("PASS_CI_LANE_WORKFLOW_INTEGRATION=34/34")
 
 
 if __name__ == "__main__":
