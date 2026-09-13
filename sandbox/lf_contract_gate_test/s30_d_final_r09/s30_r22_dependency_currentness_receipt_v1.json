@@ -1,0 +1,46 @@
+{
+  "receipt_version": "S30_R22_DEPENDENCY_CURRENTNESS_RECEIPT_V1",
+  "status": "CANDIDATE_NONPRODUCTION",
+  "owner": "S30",
+  "scope": "INTERIM_DEPENDENCY_CURRENTNESS_BRIDGE",
+  "freeze_main_sha": "c6c2650bd34664b855d9cfe34ed864a5f93a1290",
+  "observed_main_sha": "77222b36028407659c3ff6f18e398ec77ec8fe46",
+  "comparison": {
+    "status": "ahead",
+    "commits_ahead": 25,
+    "s30_owned_paths_changed": 0,
+    "s30_self_governance_contract_blob_unchanged": true,
+    "s30_self_governance_judge_blob_unchanged": true,
+    "validate_lf_packs_blob_unchanged": true
+  },
+  "bindings": {
+    "s30_self_governance_contract_blob_sha": "b0b43c48a20dc22eeb4d030e7f7022dcf215f36b",
+    "s30_self_governance_judge_blob_sha": "484a79fedcf5379992fcadc59d085c80fc73e004",
+    "validate_lf_packs_blob_sha": "3d23c86eb8ec847ddee65185fbf72b4702ed474f"
+  },
+  "currentness_rule": "GLOBAL_MAIN_SHA_DRIFT_ALONE_DOES_NOT_INVALIDATE_S30",
+  "classification": "NO_S30_REVALIDATION_REQUIRED",
+  "reason": "ONLY_REVIEWED_OR_IMPLEMENTATION_ONLY_NONDEPENDENCY_CHANGES",
+  "operating_state": {
+    "s30_freeze_remains_valid_for_observed_delta": true,
+    "full_revalidation_required": false,
+    "targeted_review_required_for_observed_delta": false,
+    "future_unknown_changes": "TARGETED_IMPACT_REVIEW_REQUIRED"
+  },
+  "s31_handoff": {
+    "target": "S31",
+    "artifact": "sandbox/lf_contract_gate_test/s31_bootstrap/S30_TO_S31_DEPENDENCY_DECOUPLING_HANDOFF_V0_1.md",
+    "priority": "HIGH_CROSS_CUTTING",
+    "temporary_bridge_expires_when": "S31_CONTRACT_AWARE_CURRENTNESS_CAPABILITY_ADOPTED"
+  },
+  "safety_ceiling": {
+    "runtime_activation": false,
+    "scheduler_activation": false,
+    "production_activation": false,
+    "business_effect_dispatch": false,
+    "golden_promotion": false,
+    "s26_mutation": false,
+    "s31_mutation_from_s30_bridge": false
+  },
+  "claim_ceiling": "S30_NONPRODUCTION_CURRENTNESS_COMPATIBILITY_FOR_OBSERVED_DELTA_ONLY"
+}
