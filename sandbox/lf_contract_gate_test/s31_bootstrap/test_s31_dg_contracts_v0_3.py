@@ -162,14 +162,14 @@ NEG += 1
 # Valid historical authority/provenance receipts can satisfy v0.2 field checks,
 # but cannot be composed into the new envelope without the shared binding.
 for key, name in (
-    ("authority_currentness_receipt", "f_authority_receipt.json"),
-    ("provenance_receipt", "f_provenance_receipt.json"),
+    ("authority_currentness_receipt", "f_authority_receipt_replay.json"),
+    ("provenance_receipt", "f_provenance_receipt_replay.json"),
 ):
     x = f_base("SEMANTIC", "SEMANTIC")
-    historical = obs(name, HISTORICAL)
+    replay = obs(name)
     x["resolved_evidence"][key] = {
-        "ref": ref(name, HISTORICAL),
-        "sha256": historical["sha256"],
+        "ref": ref(name),
+        "sha256": replay["sha256"],
         "resolver_id": TRUST,
     }
     assert m.v2.validate_evidence_envelope(x, RESOLVER)["status"] == m.PASS
