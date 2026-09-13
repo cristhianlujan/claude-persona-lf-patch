@@ -1,0 +1,144 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://lf.local/s31/common-evidence-envelope/v0.3-candidate",
+  "title": "LF Common Evidence Envelope v0.3 Candidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["receipt_version", "run_id", "producer_id", "capability_or_gate_id", "input", "validation_or_transformation", "output", "execution_identity", "environment", "authority", "provenance", "owner_receipt", "extensions", "evidence_level", "claim_ceiling", "repair_disposition"],
+  "properties": {
+    "receipt_version": {"type": "string", "minLength": 2},
+    "run_id": {"type": "string", "minLength": 2},
+    "producer_id": {"type": "string", "minLength": 2},
+    "capability_or_gate_id": {"type": "string", "minLength": 2},
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exact", "digest", "source_refs"],
+      "properties": {
+        "exact": {},
+        "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 2}}
+      }
+    },
+    "validation_or_transformation": {"type": "string", "minLength": 2},
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exact", "digest", "ref"],
+      "properties": {
+        "exact": {},
+        "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "ref": {"type": "string", "minLength": 2}
+      }
+    },
+    "execution_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["executed", "execution_ref_kind"],
+      "properties": {
+        "executed": {"type": "boolean"},
+        "execution_ref_kind": {"type": "string", "minLength": 2},
+        "executed_sha": {"type": ["string", "null"], "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"},
+        "execution_id": {"type": ["string", "null"]}
+      }
+    },
+    "environment": {"enum": ["SANDBOX", "NON_PRODUCTION", "PRODUCTION"]},
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "currentness"],
+      "properties": {
+        "source": {"type": "string", "minLength": 2},
+        "currentness": {"enum": ["CURRENT", "STALE", "UNKNOWN"]}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reconstructible", "refs"],
+      "properties": {
+        "reconstructible": {"type": "boolean"},
+        "refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 2}}
+      }
+    },
+    "owner_receipt": {
+      "allOf": [
+        {"$ref": "#/$defs/evidence_binding"},
+        {
+          "type": "object",
+          "properties": {
+            "owner_capability_id": {"type": "string", "minLength": 2},
+            "preserved_without_rewrite": {"const": true}
+          },
+          "required": ["owner_capability_id", "preserved_without_rewrite"]
+        }
+      ]
+    },
+    "extensions": {
+      "type": "object",
+      "propertyNames": {"pattern": "^[A-Za-z0-9_.:-]+$"},
+      "additionalProperties": true
+    },
+    "resolved_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "execution_receipt": {"$ref": "#/$defs/evidence_binding"},
+        "authority_currentness_receipt": {"$ref": "#/$defs/evidence_binding"},
+        "provenance_receipt": {"$ref": "#/$defs/evidence_binding"}
+      }
+    },
+    "evidence_level": {"enum": ["STRUCTURAL", "PROVENANCE_EXECUTION", "SEMANTIC", "BEHAVIORAL"]},
+    "claim_ceiling": {"enum": ["STRUCTURAL", "PROVENANCE_EXECUTION", "SEMANTIC", "BEHAVIORAL"]},
+    "first_bad_hop": {"type": ["string", "null"]},
+    "repair_disposition": {"enum": ["NONE", "BOUNDED_REPAIR_ALLOWED", "RETURN_TO_OWNER", "BLOCKED"]}
+  },
+  "$defs": {
+    "evidence_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "sha256", "resolver_id"],
+      "properties": {
+        "ref": {"type": "string", "minLength": 2},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "resolver_id": {"type": "string", "minLength": 2}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"evidence_level": {"const": "STRUCTURAL"}}, "required": ["evidence_level"]},
+      "then": {"properties": {"claim_ceiling": {"const": "STRUCTURAL"}}}
+    },
+    {
+      "if": {"properties": {"evidence_level": {"enum": ["PROVENANCE_EXECUTION", "SEMANTIC", "BEHAVIORAL"]}}, "required": ["evidence_level"]},
+      "then": {
+        "required": ["resolved_evidence"],
+        "properties": {
+          "execution_identity": {"properties": {"executed": {"const": true}}, "required": ["executed_sha", "execution_id"]},
+          "authority": {"properties": {"currentness": {"const": "CURRENT"}}},
+          "provenance": {"properties": {"reconstructible": {"const": true}}},
+          "resolved_evidence": {"required": ["execution_receipt", "authority_currentness_receipt", "provenance_receipt"]}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"evidence_level": {"const": "PROVENANCE_EXECUTION"}}, "required": ["evidence_level"]},
+      "then": {"properties": {"claim_ceiling": {"enum": ["STRUCTURAL", "PROVENANCE_EXECUTION"]}}}
+    },
+    {
+      "if": {"properties": {"evidence_level": {"const": "SEMANTIC"}}, "required": ["evidence_level"]},
+      "then": {"properties": {"claim_ceiling": {"enum": ["STRUCTURAL", "PROVENANCE_EXECUTION", "SEMANTIC"]}}}
+    }
+  ],
+  "x_lf_invariants": [
+    "CLAIM_CEILING_MUST_NOT_EXCEED_EVIDENCE_LEVEL",
+    "NON_STRUCTURAL_EVIDENCE_REQUIRES_INDEPENDENTLY_RESOLVED_EXECUTION_CURRENTNESS_AND_PROVENANCE",
+    "ALL_DIGEST_BINDINGS_ARE_SHA256",
+    "OWNER_RECEIPT_PRESERVED_WITHOUT_REWRITE",
+    "CAPABILITY_SPECIFIC_EXTENSIONS_HAVE_EXPLICIT_CARRIER",
+    "STRUCTURAL_NEVER_IMPLIES_BEHAVIORAL",
+    "PROVENANCE_NEVER_IMPLIES_SEMANTIC_CORRECTNESS",
+    "SELF_CERTIFICATION_DOES_NOT_RAISE_EVIDENCE_LEVEL"
+  ]
+}
