@@ -1,0 +1,103 @@
+{
+  "schema": "LF_CARD_UPDATE_I6_ADVERSARIAL_ROLLBACK_CONTRACT_V0_1",
+  "operation_code": "ACTUALIZACION_CARD_LF",
+  "mode": "CANDIDATE_NO_PROVIDER_WRITE",
+  "authority": "SUPABASE",
+  "reuses": {
+    "effect_guard": "public.lf_operation_effect_guard",
+    "reserve_effect": "public.fn_lf_operation_reserve_effect_v1",
+    "mark_effect_succeeded": "public.fn_lf_operation_mark_effect_succeeded_v1",
+    "step_recorder": "public.lf_record_operation_step_core_v1",
+    "card_recorder": "public.lf_record_card_operation_step_v1",
+    "i5_intent": "public.lf_prepare_card_carrier_write_intent_v1"
+  },
+  "principles": [
+    "NO_AUTO_REDISPATCH_AFTER_UNKNOWN_PROVIDER_OUTCOME",
+    "PROVIDER_RECEIPT_MUST_BE_DURABLE_BEFORE_STEP90_CAN_PASS",
+    "INDEPENDENT_READBACK_REQUIRED_AFTER_ANY_SUCCESSFUL_PROVIDER_WRITE",
+    "BASELINE_MUST_BE_REVERSIBLE_NOT_HASH_ONLY",
+    "ROLLBACK_MUST_BE_BOUNDED_TO_EXACT_CARD_BLOCK",
+    "ROLLBACK_USES_CURRENT_POST_WRITE_REQUIRED_REVISION_ID",
+    "STALE_ROLLBACK_GUARD_MEANS_MANUAL_HOLD_NOT_BLIND_RETRY",
+    "SUPABASE_REMAINS_OPERATIONAL_AUTHORITY",
+    "CARRIER_NEVER_PROMOTES_RUNTIME_OR_OPERATIONAL_STATE"
+  ],
+  "reversible_baseline_contract": {
+    "step_id": "baseline_read",
+    "step_order": 50,
+    "required_before_first_controlled_write": [
+      "baseline_content",
+      "baseline_content_chars",
+      "baseline_content_sha256",
+      "baseline_carrier_revision",
+      "baseline_range_semantics",
+      "baseline_anchor_start_index",
+      "baseline_last_bound_paragraph_end_index",
+      "baseline_reversible"
+    ],
+    "immutability_rule": "CLEAN_STEP_DIFFERENT_EVIDENCE_MUST_BLOCK",
+    "canary_execution": "EXEC-CARD-UPDATE-I6-BASELINE-IMMUTABILITY-20260913-001",
+    "observed_content_chars": 833,
+    "observed_content_sha256": "0401cea0e645f7910676839855e336ecdc1248bfc8cf388e7abe157992e19dab"
+  },
+  "unknown_outcome_protocol": {
+    "effect_state": "RESERVED",
+    "reserve_replay_result": "RECONCILIATION_REQUIRED",
+    "dispatch_permitted": false,
+    "required_action": "INDEPENDENT_PROVIDER_READBACK_BEFORE_ANY_RETRY_OR_ROLLBACK",
+    "automatic_redispatch": false
+  },
+  "rollback_protocol": {
+    "trigger_when": [
+      "PROVIDER_SUCCESS_WITH_ANCHOR_MISMATCH",
+      "PROVIDER_SUCCESS_WITH_CONTENT_HASH_MISMATCH",
+      "PROVIDER_SUCCESS_WITH_IDENTITY_DRIFT",
+      "PARTIAL_OR_INCONSISTENT_BOUNDED_WRITE_CONFIRMED_BY_READBACK"
+    ],
+    "restore_source": "IMMUTABLE_STEP50_BASELINE_CONTENT",
+    "provider_guard": "requiredRevisionId=CURRENT_POST_WRITE_REVISION",
+    "bounded_target": "SAME_DOCUMENT_TAB_ANCHOR_RANGE",
+    "post_rollback_readback_must_match": [
+      "baseline_content_sha256",
+      "block_anchor",
+      "card_identity",
+      "parent_source"
+    ],
+    "if_current_revision_changed_before_rollback": "MANUAL_HOLD_ROLLBACK_STALE"
+  },
+  "adversarial_matrix": [
+    {"case_id":"I6-M01","fault":"SOURCE_PARITY_PENDING","expected":"BLOCK_SOURCE_PARITY"},
+    {"case_id":"I6-M02","fault":"BASELINE_PAYLOAD_MISSING","expected":"BLOCK_BASELINE_NOT_REVERSIBLE"},
+    {"case_id":"I6-M03","fault":"CALLER_SUPPLIED_RECEIPT","expected":"BLOCK_UNTRUSTED_RECEIPT"},
+    {"case_id":"I6-M04","fault":"PROVIDER_TIMEOUT_UNKNOWN_OUTCOME","expected":"RECONCILIATION_REQUIRED_NO_REDISPATCH"},
+    {"case_id":"I6-M05","fault":"PROVIDER_REJECTS_STALE_REVISION","expected":"SAFE_PROVIDER_REJECT_NO_WRITE"},
+    {"case_id":"I6-M06","fault":"SUCCESS_WITHOUT_PROVIDER_GUARD","expected":"BLOCK_PROVIDER_GUARD_MISSING"},
+    {"case_id":"I6-M07","fault":"SUCCESS_RECEIPT_WITH_UNCHANGED_OR_MISMATCHED_REVISION","expected":"BLOCK_RECEIPT_READBACK_INCONSISTENT"},
+    {"case_id":"I6-M08","fault":"SUCCESS_READBACK_WRONG_ANCHOR","expected":"ROLLBACK_REQUIRED"},
+    {"case_id":"I6-M09","fault":"SUCCESS_READBACK_WRONG_HASH","expected":"ROLLBACK_REQUIRED"},
+    {"case_id":"I6-M10","fault":"SUCCESS_EXACT_READBACK","expected":"WRITE_READBACK_VALIDATED"},
+    {"case_id":"I6-M11","fault":"ROLLBACK_REQUIRED_BUT_CURRENT_REVISION_MOVED","expected":"MANUAL_HOLD_ROLLBACK_STALE"},
+    {"case_id":"I6-M12","fault":"ROLLBACK_EXACT_AND_BASELINE_RESTORED","expected":"ROLLBACK_VALIDATED"},
+    {"case_id":"I6-M13","fault":"REPLAY_ALREADY_SUCCEEDED_SAME_REQUEST","expected":"REPLAY_NO_REDISPATCH"},
+    {"case_id":"I6-M14","fault":"SAME_EFFECT_SCOPE_DIFFERENT_REQUEST_HASH","expected":"BLOCK_EFFECT_SCOPE_REUSE"}
+  ],
+  "first_controlled_write_readiness": {
+    "verdict": "BLOCKED_NOT_READY",
+    "blocking_reasons": [
+      "I5_MIGRATION_SOURCE_NOT_YET_IN_MAIN",
+      "REVERSIBLE_BASELINE_NOT_YET_VERSIONED_AS_REQUIRED_OPERATION_EVIDENCE",
+      "NO_AUTHENTIC_REAL_PROVIDER_WRITE_RECEIPT_HAS_BEEN_OBSERVED",
+      "NO_REAL_POST_WRITE_ROLLBACK_HAS_BEEN_VALIDATED",
+      "INDEPENDENT_REVIEW_PENDING"
+    ]
+  },
+  "not_authorized": [
+    "PROVIDER_WRITE",
+    "ROLLBACK_WRITE",
+    "RUNTIME_ACTIVATION",
+    "PRODUCTION",
+    "GOLDEN",
+    "PROMOTION",
+    "MERGE"
+  ]
+}
