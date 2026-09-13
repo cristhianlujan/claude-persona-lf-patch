@@ -1,0 +1,78 @@
+{
+  "schema": "LF_CARD_UPDATE_I6_READINESS_RECEIPT_V0_1",
+  "status": "I6_NO_WRITE_READINESS_ASSESSED",
+  "operation_code": "ACTUALIZACION_CARD_LF",
+  "execution_id": "EXEC-CARD-UPDATE-I6-BASELINE-IMMUTABILITY-20260913-001",
+  "provider_write_executed": false,
+  "rollback_write_executed": false,
+  "baseline_immutability": {
+    "result": "PASS",
+    "chars": 833,
+    "sha256": "0401cea0e645f7910676839855e336ecdc1248bfc8cf388e7abe157992e19dab",
+    "tamper_attempt_result": "STEP_ALREADY_RECORDED_DIFFERENT_EVIDENCE",
+    "stored_payload_unchanged": true
+  },
+  "generic_effect_guard_reuse": {
+    "table": "public.lf_operation_effect_guard",
+    "reserve_function": "public.fn_lf_operation_reserve_effect_v1",
+    "success_function": "public.fn_lf_operation_mark_effect_succeeded_v1",
+    "unknown_outcome_behavior": "RECONCILIATION_REQUIRED",
+    "automatic_redispatch": false
+  },
+  "adversarial_matrix": {
+    "total": 14,
+    "passed": 14,
+    "all_pass": true,
+    "covered": [
+      "source parity pending",
+      "missing reversible baseline",
+      "caller-supplied receipt",
+      "provider timeout unknown outcome",
+      "stale provider revision rejection",
+      "missing provider write guard",
+      "receipt/readback revision inconsistency",
+      "wrong anchor after write",
+      "wrong hash after write",
+      "exact successful readback",
+      "rollback stale guard",
+      "exact rollback restored baseline",
+      "successful-effect replay",
+      "effect scope reused with different request"
+    ]
+  },
+  "ekb": {
+    "finding": "CARD-UPDATE-ROLLBACK-BASELINE-PAYLOAD-GAP-001",
+    "state": "VERIFYING",
+    "prevention_rule": "RULE-CARD-UPDATE-ROLLBACK-BASELINE-001"
+  },
+  "first_controlled_write_readiness": {
+    "verdict": "BLOCKED_NOT_READY",
+    "blocking_reasons": [
+      "I5_MIGRATION_SOURCE_NOT_YET_IN_MAIN",
+      "REVERSIBLE_BASELINE_NOT_YET_VERSIONED_AS_REQUIRED_OPERATION_EVIDENCE",
+      "NO_AUTHENTIC_REAL_PROVIDER_WRITE_RECEIPT_HAS_BEEN_OBSERVED",
+      "NO_REAL_POST_WRITE_ROLLBACK_HAS_BEEN_VALIDATED",
+      "INDEPENDENT_REVIEW_PENDING"
+    ]
+  },
+  "claim_ceiling": "ROLLBACK_PROTOCOL_AND_ADVERSARIAL_MATRIX_VALIDATED_WITHOUT_PROVIDER_WRITE",
+  "next_gate": "I6_REMEDIATION_AFTER_I5_MAIN_PARITY_THEN_INDEPENDENT_REVIEW",
+  "not_proven": [
+    "REAL_PROVIDER_WRITE_SUCCESS",
+    "REAL_PROVIDER_RECEIPT_AUTHENTICITY",
+    "REAL_POST_WRITE_READBACK",
+    "REAL_ROLLBACK_EXECUTION",
+    "PRODUCTION_READINESS",
+    "RUNTIME_READINESS",
+    "GOLDEN_READINESS"
+  ],
+  "not_authorized": [
+    "PROVIDER_WRITE",
+    "ROLLBACK_WRITE",
+    "MERGE",
+    "GOLDEN",
+    "PRODUCTION",
+    "PROMOTION",
+    "RUNTIME_ACTIVATION"
+  ]
+}
