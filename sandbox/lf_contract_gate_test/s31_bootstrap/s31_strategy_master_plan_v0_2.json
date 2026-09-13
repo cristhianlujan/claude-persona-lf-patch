@@ -1,0 +1,113 @@
+{
+  "plan_version": "S31_STRATEGY_MASTER_PLAN_V0_2",
+  "strategy_id": "S31",
+  "status": "ACTIVE_PRODUCER_HARDENED_INDEPENDENT_REVIEW_PENDING",
+  "supersedes_for_forward_execution": "S31_STRATEGY_BOOTSTRAP_V0_1.md",
+  "historical_bootstrap_preserved": true,
+  "base_main_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+  "ownership": {
+    "s31_generalizes": true,
+    "owner_internals_remain_owned_by_source_strategy": true,
+    "direct_mutation_of_s30_s26_learning_story_creator_forbidden": true,
+    "big_bang_migration_forbidden": true
+  },
+  "execution_sequence": [
+    "ADMISSION_WORK_PACKAGE",
+    "FRESH_EKB_AUTHORITY_CURRENTNESS",
+    "SOURCE_SCHEMA_CONTRACT_RESOLUTION",
+    "MATERIAL_CHANGE",
+    "DETERMINISTIC_VALIDATION",
+    "ADVERSARIAL_BYPASS_AUDIT",
+    "REPAIR_AND_REGRESSION_IF_NEEDED",
+    "GLOBAL_SAFE_WORK_RESCAN",
+    "SCOPE_SPECIFIC_FREEZE",
+    "INDEPENDENT_SEMANTIC_REVIEW",
+    "CROSS_LANE_RECONCILIATION",
+    "INTEGRATION_REPLAY",
+    "EXPLICIT_PROMOTION_DECISION"
+  ],
+  "close_policy": {
+    "safe_parallel_work_nonempty_forbids_close": true,
+    "remaining_safe_scope_count_nonzero_forbids_close": true,
+    "next_safe_batch_present_forbids_close": true,
+    "safe_work_list_count_batch_must_be_coherent": true,
+    "frontier_close_guard_must_be_coherent": true,
+    "unresolved_blocker_with_no_safe_work_disposition": "BLOCKED_CAUSAL_NO_SAFE_WORK",
+    "global_remaining_work_discovery_required_before_zero_safe_work": true,
+    "blocked_scope_does_not_hide_unrelated_safe_scope": true,
+    "discovered_safe_work_is_execution_obligation": true
+  },
+  "defect_response": {
+    "reproduce_earliest_sufficient_cause": true,
+    "repair_earliest_deterministic_owner": true,
+    "regression_required": true,
+    "transversal_defect_requires_plan_or_contract_evolution": true,
+    "workaround_without_causal_repair_is_closure": false,
+    "identical_retry_without_new_evidence_forbidden": true
+  },
+  "evidence_lifecycle_dimensions": [
+    "ARTIFACT_MATURITY",
+    "EVIDENCE_LEVEL",
+    "RUNTIME_ACTIVATION",
+    "PROMOTION_AUTHORITY"
+  ],
+  "evidence_rules": {
+    "canonical_lifecycle_vocabulary_status": "UNRESOLVED",
+    "self_certification_forbidden": true,
+    "structural_cannot_promote_semantic_or_behavioral": true,
+    "provenance_does_not_imply_semantic_correctness": true,
+    "deterministic_pass_does_not_imply_independent_semantic_pass": true,
+    "semantic_pass_does_not_imply_live_behavioral_pass": true,
+    "ci_green_does_not_authorize_promotion": true
+  },
+  "review_policy": {
+    "canonical_receiver": "QUALITY_PACK",
+    "execution_mode": "INDEPENDENT_CHAT_CONTEXT",
+    "parallel_custom_receipt_contract_forbidden": true,
+    "scope_specific_freeze": true,
+    "minimal_causally_affected_refreeze": true,
+    "producer_target_verdict_forbidden": true,
+    "current_snapshots": {
+      "ABC": "bbcd9056443059cf1da4782551a85b3a70bd2910",
+      "DG": "d268fd871f2e18588f9b8084e6a3f6c6e07aa438"
+    }
+  },
+  "lanes": {
+    "S31-A": {"responsibility":"CANONICAL_CAPABILITY_MODEL","state":"DETERMINISTIC_PASS_REVIEW_PENDING","next_gate":"INDEPENDENT_ABC_REVIEW"},
+    "S31-B": {"responsibility":"WORK_PACKAGE_ANTI_CLOSE","state":"PASS_18_OF_18_REVIEW_PENDING","next_gate":"INDEPENDENT_ABC_REVIEW"},
+    "S31-C": {"responsibility":"CANONICAL_CARD_FALLBACK","state":"PASS_19_OF_19_REVIEW_PENDING","next_gate":"INDEPENDENT_ABC_REVIEW"},
+    "S31-D": {"responsibility":"SHARED_AUTHORITY_TYPED_CONTEXT","state":"DG_MATRIX_PASS_REVIEW_PENDING","next_gate":"INDEPENDENT_DG_REVIEW"},
+    "S31-E": {"responsibility":"CAPABILITY_REGISTRY_MANIFEST","state":"DG_MATRIX_PASS_REVIEW_PENDING","next_gate":"INDEPENDENT_DG_REVIEW"},
+    "S31-F": {"responsibility":"EVIDENCE_RECEIPT_LIFECYCLE","state":"DG_MATRIX_PASS_REVIEW_PENDING","next_gate":"INDEPENDENT_DG_REVIEW"},
+    "S31-G": {"responsibility":"RUNTIME_PORTS_ADAPTERS","state":"DG_MATRIX_PASS_REVIEW_PENDING","next_gate":"INDEPENDENT_DG_REVIEW"},
+    "S31-H": {"responsibility":"EXTERNAL_STANDARDS_BOUNDED_POC","state":"PLAN_ONLY_DEFERRED","next_gate":"AFTER_A_G_SEMANTIC_RECONCILIATION"}
+  },
+  "s31_h_policy": {
+    "prerequisites": [
+      "S31_A_TO_G_INDEPENDENT_SEMANTIC_REVIEW_RESOLVED",
+      "CROSS_LANE_RECONCILIATION_PASS",
+      "INTERNAL_PORT_CONTRACTS_STABLE"
+    ],
+    "framework_is_authority": false,
+    "framework_is_source_of_truth": false,
+    "framework_must_be_replaceable_behind_port": true,
+    "install_or_poc_execution_currently_authorized": false,
+    "planned_order": ["OPENTELEMETRY", "MCP", "A2A", "AGENT_FRAMEWORK_ADAPTER", "DURABLE_EXECUTION_ADAPTER"]
+  },
+  "promotion_authority": {
+    "merge_main_authorized": false,
+    "golden_authorized": false,
+    "runtime_activation_authorized": false,
+    "production_authorized": false
+  },
+  "completion_definition": {
+    "deterministic_and_adversarial_pass_required": true,
+    "independent_semantic_pass_required": true,
+    "cross_lane_reconciliation_required": true,
+    "currentness_and_reconstructibility_required": true,
+    "no_applicable_high_critical_blocker_required": true,
+    "global_safe_work_exhaustion_required": true,
+    "terminal_disposition_per_target_scope_required": true,
+    "s31_h_pocs_are_separate_post_core_gate": true
+  }
+}
