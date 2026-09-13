@@ -1,0 +1,108 @@
+{
+  "receipt_version": "v0.1",
+  "execution_mode": "INDEPENDENT_CHAT_CONTEXT",
+  "semantic_status": "EXECUTED_INDEPENDENT_CONTEXT",
+  "review_case_id": "S31-DG-IR-004",
+  "reviewer_is_producer": false,
+  "producer_context_available": false,
+  "external_paid_model_used": false,
+  "automated_semantic_judge_implemented": false,
+  "review_completed": true,
+  "source_bundle": {
+    "artifact_ref": "github://cristhianlujan/claude-persona-lf-patch@761b7da0cbea0de983d66334216055b09b015bd9/sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_independent_review_bundle_v0_6.json",
+    "artifact_sha_or_digest": "5ff1802766f550565e384b0728a1b9b62f9e3172",
+    "upstream_worker_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md",
+    "quality_gate_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/quality_gate_contract.md",
+    "lf_quality_controls_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/lf_quality_controls.md",
+    "score_rubric_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/judges/quality_pack_score_rubric.md",
+    "mini_judge_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/judges/quality_pack_mini_judge.md",
+    "quality_review_schema_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json"
+  },
+  "quality_review": {
+    "review_id": "S31-DG-IR-004-INDEPENDENT-SEMANTIC-REVIEW",
+    "reviewed_artifact": "github://cristhianlujan/claude-persona-lf-patch@761b7da0cbea0de983d66334216055b09b015bd9/sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_independent_review_bundle_v0_6.json",
+    "verdict": "PASS_WITH_RESTRICTIONS",
+    "score_breakdown": {
+      "contract_schema_compliance": 4,
+      "evidence_integrity": 4,
+      "lf_safety_governance": 5,
+      "handoff_readiness": 4,
+      "leakage_scope_control": 5,
+      "total": 22
+    },
+    "lane_dispositions": {
+      "S31-D": {
+        "disposition": "NO_REGRESSION_CONFIRMED",
+        "independent_cases": 11,
+        "fail_closed": 11,
+        "basis": "trusted immutable authority and runtime-schema resolution enforced; provider bytes rehashed; currentness not caller-self-certifiable; resolver aliases, subclasses, callables and duck-typed impostors rejected on strict type identity; undeclared cross-run authority fails closed"
+      },
+      "S31-E": {
+        "disposition": "NO_REGRESSION_CONFIRMED",
+        "independent_cases": 12,
+        "fail_closed": 12,
+        "basis": "capability source bytes provider-resolved and rehashed; registry currentness non-self-certifiable and type-confusion resistant; lifecycle vocabulary and stale fail-closed policy intact; duplicate dependency, cardinality drift and inventory field drift fail closed"
+      },
+      "S31-F": {
+        "disposition": "REPAIR_EFFECTIVE_WITH_RESIDUAL_GAP",
+        "independent_cases": 14,
+        "fail_closed": 13,
+        "basis": "all six mandatory F attacks fail closed under v0.3 while the same inputs pass v0.2, so the replay and composition hardening is independently reproduced; the common semantic digest was rederived by the reviewer; immutable historical refs remain usable without HEAD overcoupling",
+        "residual_gap": "evidence_level and claim_ceiling are caller-declared and are not inputs to the common semantic digest, so an identical resolved receipt set validates when recomposed at a higher claim tier"
+      },
+      "S31-G": {
+        "disposition": "REPAIR_EFFECTIVE",
+        "independent_cases": 19,
+        "fail_closed": 19,
+        "basis": "exact Typed Context artifact is resolved and rehashed before provider invocation and its governed internals are semantically revalidated; a correct outer digest carrying invalid nested authority evidence fails closed where v0.2 passed; untrusted resolver type, stale or fake references, request and governed-input mismatch, silent fallback, weakened forbidden-authority set and nested or deeply nested runtime authority flags and effects all fail closed"
+      }
+    },
+    "independent_execution": {
+      "resolver_head_pinned_to": "3e5e542f2109e64ba319d2686278b1036bf69771",
+      "total_independent_cases": 56,
+      "fail_closed_cases": 55,
+      "not_fail_closed_cases": 1,
+      "artifacts_modified": 0,
+      "producer_deterministic_pass_used_as_semantic_proof": false,
+      "reviewer_derived_common_binding_sha256": "355dfb8e4ded17d827fbbb1b4ed2dbe6db51d09277c6b0646cb48ab5be05f454"
+    },
+    "evidence_map": [
+      {"observation":"BUNDLE_BLOB_INTEGRITY","method":"git blob sha1 recomputed over fetched bundle bytes","expected":"5ff1802766f550565e384b0728a1b9b62f9e3172","observed":"5ff1802766f550565e384b0728a1b9b62f9e3172","result":"MATCH"},
+      {"observation":"FROZEN_ARTIFACT_PINS","method":"git ls-tree at candidate snapshot 3e5e542f2109e64ba319d2686278b1036bf69771 vs bundle frozen_artifacts[].blob_sha","expected":"22/22 pinned blobs","observed":"22/22 match, 0 mismatch","result":"MATCH"},
+      {"observation":"CANDIDATE_LINEAGE","method":"git rev-list --parents on evidence commit 028169c5d6617723f9eda196ce5a756e5ef962d0","expected":"candidate 3e5e542f is parent of evidence commit","observed":"parent confirmed; comparison base e75cab6e71c0f880f72726439e952de78ea4931f is an ancestor of the candidate","result":"CONFIRMED"},
+      {"observation":"PRODUCER_RECEIPT_PROVENANCE_ONLY","method":"git ls-tree blob sha of s31_ir003_repair_receipt_v0_1.json at 028169c5","expected":"648f371933bf42a37833b567619ae1b19a976c84","observed":"648f371933bf42a37833b567619ae1b19a976c84","result":"INTEGRITY_CONFIRMED_NOT_USED_AS_SEMANTIC_PROOF"},
+      {"observation":"INDEPENDENT_ADVERSARIAL_EXECUTION","method":"reviewer-authored harness executed against the frozen candidate worktree with resolver HEAD pinned to 3e5e542f2109e64ba319d2686278b1036bf69771; no artifact modified","expected":"all adversarial cases fail closed","observed":"56 cases executed; 55 fail closed; 1 non-fail-closed (F_CLAIM_LEVEL_ESCALATION_UNDER_IDENTICAL_BINDING)","result":"ONE_RESIDUAL_GAP"},
+      {"observation":"CROSS_BINDING_INDEPENDENTLY_DERIVED","method":"reviewer recomputation of the common semantic digest from resolved provider bytes","expected":"reviewer-derived value","observed":"355dfb8e4ded17d827fbbb1b4ed2dbe6db51d09277c6b0646cb48ab5be05f454","result":"DERIVED_INDEPENDENTLY_CONVERGES_WITH_BUNDLE_VALUE"},
+      {"observation":"F_OWNER_CAPABILITY_MISMATCH","method":"STRUCTURAL envelope with owner receipt bound to a foreign capability","expected":"fail closed","observed":"BLOCK_F_OWNER_CAPABILITY_BINDING_MISMATCH (v0.2 baseline on identical input: PASS_F_STRUCTURAL_EVIDENCE_ENVELOPE)","result":"FAIL_CLOSED"},
+      {"observation":"F_VALID_AUTHORITY_RECEIPT_REPLAY_WITHOUT_COMMON_BINDING","method":"valid historical authority receipt composed into a current envelope","expected":"fail closed","observed":"BLOCK_F_CROSS_BINDING_VERSION_MISMATCH (v0.2 baseline on identical input: PASS_F_EVIDENCE_ENVELOPE_RESOLVED)","result":"FAIL_CLOSED"},
+      {"observation":"F_VALID_PROVENANCE_RECEIPT_REPLAY_WITHOUT_COMMON_BINDING","method":"valid historical provenance receipt composed into a current envelope","expected":"fail closed","observed":"BLOCK_F_CROSS_BINDING_VERSION_MISMATCH (v0.2 baseline on identical input: PASS_F_EVIDENCE_ENVELOPE_RESOLVED)","result":"FAIL_CLOSED"},
+      {"observation":"F_SAME_CONTENT_INPUT_IDENTITY_SUBSTITUTION","method":"input source ref repointed to an alternate revision with byte-identical content","expected":"fail closed","observed":"BLOCK_F_CROSS_BINDING_DIGEST_MISMATCH (v0.2 baseline on identical input: PASS)","result":"FAIL_CLOSED"},
+      {"observation":"F_SAME_CONTENT_AUTHORITY_IDENTITY_SUBSTITUTION","method":"authority source ref and revision repointed to an alternate revision with byte-identical content","expected":"fail closed","observed":"BLOCK_F_CROSS_BINDING_DIGEST_MISMATCH (v0.2 baseline on identical input: PASS)","result":"FAIL_CLOSED"},
+      {"observation":"F_SAME_CONTENT_PROVENANCE_IDENTITY_SUBSTITUTION","method":"provenance ref repointed to an alternate revision with byte-identical content","expected":"fail closed","observed":"BLOCK_F_CROSS_BINDING_DIGEST_MISMATCH (v0.2 baseline on identical input: PASS)","result":"FAIL_CLOSED"},
+      {"observation":"F_IMMUTABLE_HISTORICAL_REF_NOT_OVERCOUPLED_TO_HEAD","method":"positive envelope carrying historical immutable source refs at revision 191b53fc while resolver HEAD is 3e5e542f","expected":"accepted when provider bytes remain current","observed":"PASS_F_EVIDENCE_ENVELOPE_V0_3_CROSS_BOUND","result":"CONFIRMED"},
+      {"observation":"F_ADDITIONAL_REVIEWER_ATTACKS","method":"receipt slot type confusion, output content substitution, execution sha rebinding, producer impersonating the trusted resolver id, resolver subclass alias, duck-typed self-certifying resolver","expected":"fail closed","observed":"BLOCK_EVIDENCE_TYPE_MISMATCH, BLOCK_F_CROSS_BINDING_DIGEST_MISMATCH, BLOCK_F_EXECUTION_RECEIPT_REVISION_MISMATCH, BLOCK_EVIDENCE_SELF_RESOLVER, BLOCK_UNTRUSTED_RESOLVER_TYPE x2","result":"FAIL_CLOSED"},
+      {"observation":"F_CLAIM_LEVEL_ESCALATION_UNDER_IDENTICAL_BINDING","method":"same resolved receipt set recomposed with evidence_level and claim_ceiling raised to BEHAVIORAL","expected":"claim tier should not be assertable without matching evidence","observed":"PASS_F_EVIDENCE_ENVELOPE_V0_3_CROSS_BOUND with an unchanged common digest 355dfb8e4ded17d827fbbb1b4ed2dbe6db51d09277c6b0646cb48ab5be05f454; candidate F schema also accepts the escalated envelope","result":"NOT_FAIL_CLOSED_RESIDUAL_GAP"},
+      {"observation":"G_VALID_OUTER_TYPED_CONTEXT_WITH_INVALID_NESTED_AUTHORITY","method":"request carrying a correct outer Typed Context digest whose nested authority evidence is invalid","expected":"fail closed before provider invocation","observed":"BLOCK_G_TYPED_CONTEXT_SEMANTIC_GOVERNANCE with nested_code BLOCK_PROVIDER_BYTE_DIGEST_MISMATCH (v0.2 baseline on identical input: PASS_G_RUNTIME_PORT_REQUEST)","result":"FAIL_CLOSED"},
+      {"observation":"G_UNTRUSTED_RESOLVER_TYPE","method":"None, callable alias, TrustedRefResolver subclass, and duck-typed self-certifying impostor","expected":"fail closed on strict type identity","observed":"BLOCK_UNTRUSTED_RESOLVER_TYPE in all four variants","result":"FAIL_CLOSED"},
+      {"observation":"G_ADDITIONAL_REVIEWER_ATTACKS","method":"fake context digest, unresolvable context revision, declared untrusted resolver id, governed input mismatch, request id mismatch, silent fallback enabled, weakened forbidden-authority set, nested and deeply nested runtime authority flags and effects","expected":"fail closed","observed":"BLOCK_PROVIDER_BYTE_DIGEST_MISMATCH, BLOCK_TRUSTED_REF_RESOLUTION_FAILED, BLOCK_G_UNTRUSTED_TYPED_CONTEXT_RESOLVER, BLOCK_G_TYPED_CONTEXT_GOVERNED_INPUT_MISMATCH, BLOCK_G_TYPED_CONTEXT_REQUEST_ID_MISMATCH, BLOCK_G_SILENT_FALLBACK_ALLOWED, BLOCK_G_AUTHORITY_FORBIDDEN_SET_INCOMPLETE, BLOCK_G_NESTED_AUTHORITY_FLAG, BLOCK_G_NESTED_AUTHORITY_EFFECT, BLOCK_G_UNDECLARED_AUTHORITY_EFFECT, BLOCK_G_NESTED_AUTHORITY_GRANT_ALLOWED","result":"FAIL_CLOSED"},
+      {"observation":"D_E_BASELINE_NO_REGRESSION","method":"11 S31-D cases and 12 S31-E cases executed independently on the frozen candidate","expected":"trusted resolution, currentness non-self-certifiability, cross-run declaration, lifecycle and source-drift protections intact","observed":"23/23 behaved as required, including resolver subclass alias, duck-typed self-certifying resolver, currentness receipt type confusion across the D and E slots, and currentness run-id forgery","result":"NO_REGRESSION_OBSERVED"},
+      {"observation":"BUNDLE_PIN_COMPLETENESS","method":"dependency walk of the validators and fixtures actually loaded during execution vs bundle frozen_artifacts","expected":"every load-bearing artifact pinned by blob sha","observed":"4 load-bearing artifacts resolved at the candidate snapshot but absent from frozen_artifacts: s31_trusted_resolution_v0_1.py (d593df21be41d624b30f0a274b692412cb3b0d50), trusted_evidence/source_runtime_schema.json (17fe39eb909936f84320b213f8b5330226610e9b), trusted_evidence/source_registry.py (282ab464fba14130003222c8f1ea6dab6cd90eb6), s31_e_capability_registry_gap_inventory_v0_2.json (fc67055c9084aaaf6080af867aba09fef8cf9b83)","result":"PIN_GAP"},
+      {"observation":"HEAD_COUPLING_OF_IMMUTABLE_SOURCES","method":"inspection of the currentness fallback that re-resolves each historical path at resolver HEAD and compares bytes","expected":"historical refs usable without HEAD overcoupling","observed":"a historical ref stays valid only while its bytes are unchanged at HEAD; legitimate evolution or deletion of that path renders previously valid immutable evidence unresolvable (fail closed)","result":"CONSERVATIVE_BUT_DURABILITY_LIMITED"}
+    ],
+    "blocking_codes": [],
+    "repair_actions": [
+      "S31-F: bind evidence_level and claim_ceiling into the common semantic identity, or derive the admissible claim tier from resolved evidence instead of comparing two caller-declared fields, so a receipt set cannot be recomposed at a higher tier under an unchanged common digest.",
+      "BUNDLE: extend frozen_artifacts to pin the four load-bearing artifacts currently resolved but unpinned: s31_trusted_resolution_v0_1.py (d593df21be41d624b30f0a274b692412cb3b0d50), trusted_evidence/source_runtime_schema.json (17fe39eb909936f84320b213f8b5330226610e9b), trusted_evidence/source_registry.py (282ab464fba14130003222c8f1ea6dab6cd90eb6), s31_e_capability_registry_gap_inventory_v0_2.json (fc67055c9084aaaf6080af867aba09fef8cf9b83).",
+      "S31-DG: define an archival currentness policy for immutable historical source refs whose paths may legitimately evolve or be removed at HEAD, so previously valid evidence does not become unresolvable purely through lawful repository evolution."
+    ],
+    "remaining_risks": [
+      "Claim-tier escalation in S31-F: an identical, fully cross-bound receipt set validates as BEHAVIORAL evidence with an unchanged common digest 355dfb8e4ded17d827fbbb1b4ed2dbe6db51d09277c6b0646cb48ab5be05f454; the candidate F schema also accepts it. The stated S31-F acceptance criteria do not enumerate claim tier among the bound identities, so this is a scope gap rather than a violation of the frozen criteria, but it permits an unearned top-tier evidence claim.",
+      "Bundle pin completeness: the entire trusted-resolution boundary and three D and E fixtures are load-bearing for this review yet are not pinned by blob sha in the bundle, so an identically referenced bundle could be re-reviewed against different bytes for those four artifacts.",
+      "Currentness durability: historical immutable refs remain valid only while their bytes are unchanged at repository HEAD; lawful evolution or deletion of those paths converts previously valid evidence into a fail-closed resolution error.",
+      "Scope ceiling: this review covers only the frozen bundle and the pinned candidate snapshot 3e5e542f2109e64ba319d2686278b1036bf69771. The unrelated shared migration parity failure disclosed in the bundle was outside the exclusive S31 lane and was not examined.",
+      "Evidence tier of this review: deterministic and adversarial contract-level falsification only. No runtime, behavioral or production evidence was produced or observed."
+    ],
+    "next_gate": "S31_DG_GOVERNANCE_DISPOSITION_REVIEW_UNDER_RESTRICTIONS — no runtime, Golden, merge, scheduler, production or behavioral promotion authorization is granted or implied by this receipt"
+  },
+  "execution_blockers": []
+}
