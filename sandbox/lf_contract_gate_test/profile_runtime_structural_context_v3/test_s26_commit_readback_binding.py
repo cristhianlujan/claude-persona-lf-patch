@@ -67,11 +67,15 @@ def _commit_parents(ref: str) -> list[str]:
     return [line.split()[1] for line in body.splitlines() if line.startswith("parent ")]
 
 
-def _parent_sha(head: str) -> str:
+def _parent_sha(head: str, head_resolution: str) -> str:
     parents = _commit_parents(head)
-    if len(parents) != 1:
-        raise AssertionError(f"S26_SHA_BINDING_PARENT_COUNT_INVALID:{len(parents)}")
-    return parents[0]
+    if len(parents) == 1:
+        return parents[0]
+    if len(parents) == 2 and head_resolution == "CHECKOUT_HEAD":
+        # A push of a GitHub merge commit must compare the introduced delta
+        # against main's pre-merge state, which is the first parent.
+        return parents[0]
+    raise AssertionError(f"S26_SHA_BINDING_PARENT_COUNT_INVALID:{len(parents)}")
 
 
 def _valid_commit_sha(value: object) -> bool:
@@ -131,7 +135,7 @@ def _git_bytes(ref: str, path: str) -> bytes:
 
 def main() -> None:
     head, checkout_head, head_resolution = _resolve_candidate_head()
-    parent = _parent_sha(head)
+    parent = _parent_sha(head, head_resolution)
     _fetch_commit(parent)
     changed = set(_run("git", "diff", "--name-only", parent, head).stdout.splitlines())
 
