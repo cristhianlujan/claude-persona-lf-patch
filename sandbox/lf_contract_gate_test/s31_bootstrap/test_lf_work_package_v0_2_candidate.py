@@ -84,6 +84,8 @@ w=fixture(); w["frontier"].update({"safe_parallel_work":["S31-C"],"remaining_saf
 w=fixture(); w["frontier"].update({"safe_parallel_work":["S31-C"],"remaining_safe_scope_count":1,"next_safe_batch":"S31-C"}); w["close_guard"].update({"can_close":False,"safe_work_remaining_count":0,"next_safe_batch":"S31-C","terminal_disposition_complete":False}); assert run(w)["code"]=="BLOCK_FRONTIER_CLOSE_COUNT_MISMATCH"; cases+=1
 w=fixture(); w["frontier"]["blockers"]=[{"code":"WAIT_REVIEW","affected_scope":"S31-A","causal_gate":"INDEPENDENT_REVIEW","owner":"INDEPENDENT_REVIEW","independent_safe_work":[],"invalidation_condition":"REVIEW_RECEIPT"}]; assert run(w)["code"]=="BLOCKED_CAUSAL_NO_SAFE_WORK"; cases+=1
 w=fixture(); w["close_guard"]["global_remaining_work_scan"]="NOT_RUN"; w["frontier"]["global_remaining_work_scan"]="NOT_RUN"; assert run(w)["code"]=="BLOCK_CLOSE_GUARD"; cases+=1
+w=fixture(); w["frontier"]["next_safe_batch"]="S31-D"; w["close_guard"]["next_safe_batch"]="S31-D"; assert run(w)["code"]=="BLOCK_NEXT_SAFE_BATCH_WITH_ZERO_COUNT"; cases+=1
+w=fixture(); w["close_guard"]["ekb_final_readback_verified"]=False; assert run(w)["code"]=="BLOCK_CLOSE_GUARD"; cases+=1
 
 # IR-001 identity binding preserved.
 w=fixture(); w["execution"]["executed_validation"]["executed_sha"]=BASE; assert run(w)["code"]=="BLOCK_VALIDATION_EXECUTED_SHA_IDENTITY_MISMATCH"; cases+=1

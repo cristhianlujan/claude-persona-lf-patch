@@ -122,6 +122,7 @@ def g_base() -> dict:
         "request_id": "run-001",
         "typed_context_ref": "context://001",
         "typed_context_sha256": SHA,
+        "typed_context_resolver_id": "QUALITY_PACK_TRUSTED_REF_RESOLVER_V1",
         "governed_input": {"prompt": "bounded"},
         "output_contract_ref": "contract://output",
         "execution_budget": {"max_runtime_ms": 1000, "max_output_units": 2000},
