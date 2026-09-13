@@ -13,7 +13,7 @@ m = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = m
 SPEC.loader.exec_module(m)
 
-ABC_SHA = "bbcd9056443059cf1da4782551a85b3a70bd2910"
+ABC_SHA = "6878c1443d4d53e87d2d6bd3c0fbeba3d7163c0e"
 DG_SHA = "d268fd871f2e18588f9b8084e6a3f6c6e07aa438"
 
 
@@ -22,10 +22,10 @@ def load_pair(bundle_name: str, handoff_name: str):
     return json.loads(bundle_text), (ROOT / handoff_name).read_text(encoding="utf-8"), bundle_text
 
 
-abc, abc_handoff, abc_text = load_pair("s31_abc_independent_review_bundle_v0_5.json", "S31_ABC_INDEPENDENT_REVIEW_HANDOFF_V0_2.md")
+abc, abc_handoff, abc_text = load_pair("s31_abc_independent_review_bundle_v0_6.json", "S31_ABC_INDEPENDENT_REVIEW_HANDOFF_V0_3.md")
 dg, dg_handoff, dg_text = load_pair("s31_dg_independent_review_bundle_v0_3.json", "S31_DG_INDEPENDENT_REVIEW_HANDOFF_V0_1.md")
 
-assert m.evaluate_pair(abc, abc_handoff, abc_text, "S31-ABC-IR-001", ABC_SHA)["status"] == "PASS"
+assert m.evaluate_pair(abc, abc_handoff, abc_text, "S31-ABC-IR-002", ABC_SHA)["status"] == "PASS"
 assert m.evaluate_pair(dg, dg_handoff, dg_text, "S31-DG-IR-001", DG_SHA)["status"] == "PASS"
 
 x = copy.deepcopy(abc); x["producer_semantic_verdict"] = "PASS"
@@ -38,16 +38,16 @@ x = copy.deepcopy(abc); x["candidate_snapshot"]["s31_candidate_head"] = "f" * 40
 assert m.validate_bundle(x, ABC_SHA)["code"] == "BLOCK_CANDIDATE_SNAPSHOT_MISMATCH"
 
 x = abc_handoff + '\n"overall_verdict": "PASS"\n'
-assert m.validate_handoff(x, abc_text, "S31-ABC-IR-001")["code"] == "BLOCK_PARALLEL_RECEIPT_CONTRACT_PRESENT"
+assert m.validate_handoff(x, abc_text, "S31-ABC-IR-002")["code"] == "BLOCK_PARALLEL_RECEIPT_CONTRACT_PRESENT"
 
-x = abc_handoff.replace("5fe28054a2320e26da95db494da85126b5323cab", "0" * 40)
-assert m.validate_handoff(x, abc_text, "S31-ABC-IR-001")["code"] == "BLOCK_REVIEW_BUNDLE_SHA_MISMATCH"
+x = abc_handoff.replace("b93837676f085aa36da250cb5dc17e9bef65bd8f", "0" * 40)
+assert m.validate_handoff(x, abc_text, "S31-ABC-IR-002")["code"] == "BLOCK_REVIEW_BUNDLE_SHA_MISMATCH"
 
 x = abc_handoff.replace("reviewer_is_producer = false", "reviewer_is_producer = true")
-assert m.validate_handoff(x, abc_text, "S31-ABC-IR-001")["code"] == "BLOCK_HANDOFF_CANONICAL_TOKENS_MISSING"
+assert m.validate_handoff(x, abc_text, "S31-ABC-IR-002")["code"] == "BLOCK_HANDOFF_CANONICAL_TOKENS_MISSING"
 
-x = abc_handoff.replace("@32f73efc8794686ca9d57424d0945af69f3b9358/", "@lf/s31-bootstrap/")
-assert m.validate_handoff(x, abc_text, "S31-ABC-IR-001")["code"] == "BLOCK_REVIEW_ARTIFACT_REF_NOT_IMMUTABLE"
+x = abc_handoff.replace("@48ef393011740c2e253e719d4e786b724e2d8183/", "@lf/s31-bootstrap/")
+assert m.validate_handoff(x, abc_text, "S31-ABC-IR-002")["code"] == "BLOCK_REVIEW_ARTIFACT_REF_NOT_IMMUTABLE"
 
 # Scope-specific snapshots are allowed, but cross-scope substitution is not.
 assert m.validate_bundle(abc, DG_SHA)["code"] == "BLOCK_CANDIDATE_SNAPSHOT_MISMATCH"
