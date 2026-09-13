@@ -1,0 +1,105 @@
+{
+  "bundle_version": "S31_ABC_INDEPENDENT_REVIEW_BUNDLE_V0_6",
+  "review_case_id": "S31-ABC-IR-002",
+  "execution_mode": "INDEPENDENT_CHAT_CONTEXT",
+  "candidate_snapshot": {
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "main_base_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+    "s31_candidate_head": "6878c1443d4d53e87d2d6bd3c0fbeba3d7163c0e"
+  },
+  "review_scope": ["S31-A", "S31-B", "S31-C"],
+  "prior_review": {
+    "review_case_id": "S31-ABC-IR-001",
+    "receipt_ref": "github://cristhianlujan/claude-persona-lf-patch@5d0ef592e3ae1898f25f5088653700ad9584d942/sandbox/lf_contract_gate_test/s31_bootstrap/s31_abc_ir001_independent_receipt_v0_1.json",
+    "verdict": "BLOCK_PIPELINE",
+    "blocking_codes": [
+      "S31_B_EXECUTED_VALIDATION_SHA_BINDING_MISSING",
+      "S31_B_EKB_CURRENTNESS_EVIDENCE_SELF_ASSERTED",
+      "S31_C_FALLBACK_ENTRY_STATUS_GUARD_MISSING"
+    ]
+  },
+  "repair_evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@d97cb2b84e3bef85a1ace49c8a0be7b2e4fbd06f/sandbox/lf_contract_gate_test/s31_bootstrap/s31_abc_ir001_repair_receipt_v0_1.json",
+  "frozen_artifacts": [
+    {"lane":"S31-A","path":"sandbox/lf_contract_gate_test/s31_bootstrap/canonical_capability_model_v0_2_candidate.schema.json","blob_sha":"ad549879dc5edfb32d040da3b0b0c4c6140614ad","role":"candidate"},
+    {"lane":"S31-A","path":"sandbox/lf_contract_gate_test/s31_bootstrap/test_canonical_capability_model_v0_2_candidate.py","blob_sha":"f157fe93c443b0b691d229466f1ea9f0e6f60310","role":"deterministic_test"},
+    {"lane":"S31-A","path":"sandbox/lf_contract_gate_test/s31_bootstrap/canonical_capability_model_test_vectors_v0_1.json","blob_sha":"d243576af119d26a31ef71405f26100199f75166","role":"vectors"},
+    {"lane":"S31-B","path":"sandbox/lf_contract_gate_test/s31_bootstrap/lf_work_package_v0_2_candidate.schema.json","blob_sha":"bb9db88874ed3aefae979a22c8668ac7a4782840","role":"candidate"},
+    {"lane":"S31-B","path":"sandbox/lf_contract_gate_test/s31_bootstrap/validate_lf_work_package_v0_2_candidate.py","blob_sha":"0c2fd238761c6c3b398ac3af4d00e06ad308ec4c","role":"validator"},
+    {"lane":"S31-B","path":"sandbox/lf_contract_gate_test/s31_bootstrap/test_lf_work_package_v0_2_candidate.py","blob_sha":"7fe4139beb2d8443d537a98a3148d200b8b85b32","role":"deterministic_test"},
+    {"lane":"S31-C","path":"sandbox/lf_contract_gate_test/s31_bootstrap/canonical_card_resolution_v0_1.json","blob_sha":"bb905ee315b3db212d46c1422721726d86238823","role":"candidate"},
+    {"lane":"S31-C","path":"sandbox/lf_contract_gate_test/s31_bootstrap/validate_canonical_card_resolution_v0_1.py","blob_sha":"963e96570373367376ddcd2b028a75dd614acade","role":"validator"},
+    {"lane":"S31-C","path":"sandbox/lf_contract_gate_test/s31_bootstrap/test_canonical_card_resolution_v0_1.py","blob_sha":"fc59d8b80bf003a05c3f7a95fdd2eaa73f949057","role":"deterministic_test"}
+  ],
+  "producer_evidence": {
+    "S31-A": "PASS deterministic lifecycle/capability regressions",
+    "S31-B": "PASS 26/26 deterministic self-test including resolver-backed SHA/EKB/currentness/final-readback negatives",
+    "S31-C": "PASS 28/28 deterministic self-test including mandatory NO_DIRECT_CARD fallback-entry negatives",
+    "cross_lane_regression": "PASS existing D-G matrix 5 positive + 14 negative",
+    "master_plan": "PASS 16/16"
+  },
+  "upstream_worker_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@6878c1443d4d53e87d2d6bd3c0fbeba3d7163c0e/sandbox/lf_contract_gate_test/s31_bootstrap/LF_WORK_PACKAGE_BOOTSTRAP_V0_1.md",
+  "quality_pack": {
+    "independent_review_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md",
+    "quality_gate_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/contracts/quality_gate_contract.md",
+    "lf_quality_controls_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/contracts/lf_quality_controls.md",
+    "score_rubric_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/judges/quality_pack_score_rubric.md",
+    "mini_judge_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/judges/quality_pack_mini_judge.md",
+    "quality_review_schema_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/schemas/quality_review.schema.json",
+    "independent_receipt_schema_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json",
+    "independent_receipt_validator_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/validators/validate_independent_semantic_review.py"
+  },
+  "acceptance_criteria": {
+    "S31-A": [
+      "generic capability model preserves owner boundaries",
+      "lifecycle vocabulary remains UNRESOLVED",
+      "self-certification/model authority/framework truth are forbidden"
+    ],
+    "S31-B": [
+      "executed validation SHA is cryptographically and semantically bound to the governed execution identity",
+      "validation/EKB/currentness evidence must resolve through a non-worker evidence resolver and match declared SHA-256 digest",
+      "EKB freshness receipt matches exact run id, resolved time, applicable codes and control mapping",
+      "currentness receipt matches exact base/head/executed SHA, ref kind and exact-head claim",
+      "successful close requires independently resolved final EKB readback evidence",
+      "safe work list/count/batch and frontier-close state remain mutually consistent",
+      "blocked plus safe continues; blocked with no safe work is causal BLOCKED, not closure",
+      "S30 remains owner of S30 implementation"
+    ],
+    "S31-C": [
+      "canonical mapping preserves S26 boundaries",
+      "fallback_decision requires canonical resolution status as executable input",
+      "only NO_DIRECT_CARD may enter fallback; RESOLVED/AMBIGUOUS/BLOCKED/unknown fail closed",
+      "fallback attempts remain known unique and ordered",
+      "safe fallback attempts require typed evidence",
+      "manual requires explicit READY evidence and blocker_unresolved=false",
+      "schema invention remains forbidden"
+    ]
+  },
+  "blocking_criteria": [
+    "validation receipt for a different SHA",
+    "unresolved or digest-mismatched validation/EKB/currentness evidence",
+    "worker self-resolving its own governed evidence",
+    "self-asserted freshness/currentness without resolver evidence",
+    "fallback entered from any canonical status other than NO_DIRECT_CARD",
+    "source mismatch",
+    "schema bypass",
+    "premature close",
+    "fallback sequence bypass",
+    "manual readiness without blocker clearance",
+    "authority leak",
+    "self-certification",
+    "evidence inflation",
+    "lifecycle overclaim",
+    "framework lock-in",
+    "cross-lane mutation"
+  ],
+  "governance_constraints": [
+    "reviewer_is_producer=false",
+    "producer_context_available=false",
+    "no repair during review",
+    "no Golden/merge/production authorization",
+    "semantic review only for exact frozen bundle",
+    "prior IR-001 PASS for S31-A may be considered context but the new verdict must be derived from this exact bundle"
+  ],
+  "producer_semantic_verdict": null,
+  "claim_ceiling": "FROZEN_REVIEW_BUNDLE_ONLY"
+}
