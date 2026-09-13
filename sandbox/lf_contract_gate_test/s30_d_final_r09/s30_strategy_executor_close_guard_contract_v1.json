@@ -14,8 +14,13 @@
     {
       "code": "PROFILE-RUNTIME-RUN-REPORT-ANTI-CLOSE-VIOLATION-001",
       "classification": "RECURRENCE",
-      "write_status": "PENDING_GOVERNED_WRITER_BINDING_FOR_STRATEGY_EXECUTION",
-      "reason": "The live EKB entry exists and applies, but current generic EKB writer has no active PRE_EKB_GATE binding for EJECUCION_ESTRATEGIA_LF; direct table mutation is intentionally not used."
+      "write_status": "RECORDED_BY_GOVERNED_EKB_WRITER",
+      "writer_operation_code": "ESCRITURA_BASE_CONOCIMIENTO_LF",
+      "writer": "public.lf_write_pipeline_ekb_v1",
+      "frequency_after": 2,
+      "event_id": 13501,
+      "execution_id": "EXEC-S30-CLOSE-GUARD-EKB-RECURRENCE-20260912-001",
+      "source_ref": "github:lf/staging-s30-close-guard-enforcement-v1-20260912@8c06e65b7e68efac2968a483cc548fe046daf405"
     }
   ],
   "required_inputs": [
