@@ -67,6 +67,7 @@ class Settings:
     max_request_bytes: int = 20 * 1024 * 1024
     max_prompt_chars: int = 120_000
     max_output_tokens: int = 2048
+    llama_context_tokens: int = 8192
     ui_production_max_output_tokens: int = 1050
     ui_production_semantic_max_output_tokens: int = 600
     llama_timeout_seconds: int = 300
@@ -119,6 +120,10 @@ class Settings:
             max_output_tokens=_int(
                 "PROFILE_RUNTIME_MAX_OUTPUT_TOKENS", 2048,
                 minimum=128, maximum=8192,
+            ),
+            llama_context_tokens=_int(
+                "PROFILE_RUNTIME_LLAMA_CONTEXT_TOKENS", 8192,
+                minimum=2048, maximum=131072,
             ),
             ui_production_max_output_tokens=_int(
                 "PROFILE_RUNTIME_UI_PRODUCTION_MAX_OUTPUT_TOKENS", 1050,

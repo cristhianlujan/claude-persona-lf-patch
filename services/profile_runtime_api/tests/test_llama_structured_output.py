@@ -14,6 +14,7 @@ from profile_runtime_api.llama import (
     LlamaHTTPClient,
     LlamaTransportError,
     PersistentLlamaServerAdapter,
+    ui_focused_profile_model_view,
     ui_production_profile_model_view,
     ui_production_semantic_context_view,
 )
@@ -338,6 +339,71 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         self.assertNotIn("score", generated["properties"]["d"]["properties"])
         self.assertEqual(client.last_payload["max_tokens"], 600)
         self.assertEqual(completion["generation_schema_policy"], UI_PRODUCTION_SEMANTIC_GENERATION_POLICY)
+
+    def test_ui_focused_profile_view_strips_unrelated_production_rules(self) -> None:
+        skill_path = self.settings.repo_root / "profiles/ui_architect/SKILL.md"
+        full_skill = skill_path.read_text(encoding="utf-8")
+        model_view = ui_focused_profile_model_view(full_skill)
+        self.assertLess(len(model_view), len(full_skill) // 2)
+        self.assertIn("Focused UI Decision Spec", model_view)
+        self.assertIn("Focused runtime/safety rules", model_view)
+        self.assertNotIn("top_amount_strip", model_view)
+        self.assertNotIn("V6 Composer structural boundary", model_view)
+
+    def test_artifact_set_model_context_drops_repeated_structural_payload(self) -> None:
+        verbose = "x" * 4000
+        full_context = {
+            "schema": "lf-profile-runtime-artifact-set-context/v1",
+            "contract": "NON_CANONICAL_ARTIFACT_SET_V1",
+            "subject_mode": "NON_CANONICAL_ARTIFACT",
+            "artifact_set_fingerprint": "f" * 64,
+            "artifact_count": 2,
+            "artifacts": [
+                {
+                    "artifact_ref": f"drive:{idx}",
+                    "artifact_sha256": str(idx) * 64,
+                    "filename": f"{idx}.png",
+                    "screen_code": f"NONCANONICAL_{idx}",
+                    "width_px": 1600,
+                    "height_px": 1000,
+                    "structural_context": {
+                        "visible_ui_evidence": [
+                            {"id": "h", "role": "PAGE_HEADER", "text": "Nueva carga", "bbox": [1,2,3,4], "text_source": "ORIGINAL_OCR"}
+                        ],
+                        "decomposer_context": {"verbose": verbose},
+                        "dynamic_data": {"count": 0, "policy": "NO_DYNAMIC"},
+                        "targeted_reread": {"status": "NOT_REQUIRED", "regions": 0},
+                    },
+                }
+                for idx in (1, 2)
+            ],
+            "input_governance": {
+                "status": "ADVISORY_READ_ONLY",
+                "decision": "ADVISORY",
+                "subject_mode": "NON_CANONICAL_ARTIFACT",
+                "constraints": {"read_only": True, "no_write": True, "no_promotion": True},
+                "receipt_ref": "verbose-ref-that-model-does-not-need",
+            },
+            "runtime_typed_context": {
+                "classification": {"surface_code": "PROFILE:ui_architect", "task_code": "EJECUCION_PERFIL_LF:UI_FOCUSED_DECISION"},
+                "input": {"input_fields": {}},
+                "card_resolution": {"mode": "NO_CARD_GOVERNED"},
+                "authority_resolution": [{"authority_type": "PROFILE_SOURCE", "authority_id": "verbose", "source_sha256": "a" * 64}],
+                "adapter_binding": [{"adapter_code": "ADAPTER_LF_SHELL_PROFILE"}],
+                "runtime_schema": {"mode": "UI_FOCUSED_DECISION", "source_ref": "focused.schema.json"},
+                "typed_context_sha256": "b" * 64,
+            },
+            "lf_cards": [],
+        }
+        compact = compact_model_context(full_context)
+        self.assertEqual(compact["schema"], "lf-profile-runtime-artifact-set-model-context/v1")
+        self.assertEqual(compact["source"], "NON_CANONICAL_ARTIFACT_SET")
+        self.assertEqual(len(compact["artifacts"]), 2)
+        serialized = str(compact)
+        self.assertNotIn(verbose, serialized)
+        self.assertNotIn("verbose-ref-that-model-does-not-need", serialized)
+        self.assertIn("Nueva carga", serialized)
+        self.assertEqual(compact["adapter_codes"], ["ADAPTER_LF_SHELL_PROFILE"])
 
     def test_ui_production_semantic_views_strip_deterministic_authority(self) -> None:
         skill_path = self.settings.repo_root / "profiles/ui_architect/SKILL.md"

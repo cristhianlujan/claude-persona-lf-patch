@@ -74,17 +74,10 @@ def _bound_schema_node(node: Any, *, path: str = "$") -> None:
         _bound_schema_node(items, path=f"{path}[]")
 
 
-def compact_model_context(structural_context: dict[str, Any]) -> dict[str, Any]:
-    """Return the minimum semantic capsule needed by queue-native text inference.
-
-    The full governed context remains in receipts/attestation. Hash-only lineage and
-    authority detail stay outside the model context unless they change the semantic task.
-    """
-    if structural_context.get("source") != "QUEUE_NATIVE_TEXT_PROFILE":
-        return structural_context
+def _semantic_runtime_capsule(structural_context: dict[str, Any]) -> dict[str, Any] | None:
     typed = structural_context.get("runtime_typed_context")
     if not isinstance(typed, dict):
-        return structural_context
+        return None
     raw_fields = ((typed.get("input") or {}).get("input_fields") or {})
     semantic_fields = {
         key: value
@@ -99,8 +92,6 @@ def compact_model_context(structural_context: dict[str, Any]) -> dict[str, Any]:
     })
     adapters = typed.get("adapter_binding") or []
     return {
-        "schema": "lf-profile-runtime-model-context/v1",
-        "source": "QUEUE_NATIVE_TEXT_PROFILE",
         "classification": typed.get("classification"),
         "input_fields": semantic_fields,
         "card_resolution": typed.get("card_resolution"),
@@ -117,6 +108,74 @@ def compact_model_context(structural_context: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def compact_model_context(structural_context: dict[str, Any]) -> dict[str, Any]:
+    """Return the minimum semantic capsule needed by model inference.
+
+    The full governed context remains in receipts/attestation. Hash-only lineage,
+    repeated decomposer payloads and authority detail stay outside the model prompt
+    unless they change the semantic task.
+    """
+    source = structural_context.get("source")
+    schema = structural_context.get("schema")
+    runtime_capsule = _semantic_runtime_capsule(structural_context)
+    if source == "QUEUE_NATIVE_TEXT_PROFILE":
+        if runtime_capsule is None:
+            return structural_context
+        return {
+            "schema": "lf-profile-runtime-model-context/v1",
+            "source": "QUEUE_NATIVE_TEXT_PROFILE",
+            **runtime_capsule,
+        }
+    if schema == "lf-profile-runtime-artifact-set-context/v1":
+        if runtime_capsule is None:
+            return structural_context
+        artifacts = structural_context.get("artifacts")
+        if not isinstance(artifacts, list):
+            return structural_context
+        compact_artifacts: list[dict[str, Any]] = []
+        for item in artifacts:
+            if not isinstance(item, dict):
+                return structural_context
+            pack = item.get("structural_context")
+            if not isinstance(pack, dict):
+                return structural_context
+            evidence = pack.get("visible_ui_evidence")
+            if not isinstance(evidence, list):
+                return structural_context
+            compact_artifacts.append(
+                {
+                    "artifact_ref": item.get("artifact_ref"),
+                    "artifact_sha256": item.get("artifact_sha256"),
+                    "filename": item.get("filename"),
+                    "screen_code": item.get("screen_code"),
+                    "width_px": item.get("width_px"),
+                    "height_px": item.get("height_px"),
+                    "visible_ui_evidence": evidence,
+                    "dynamic_data": pack.get("dynamic_data"),
+                    "targeted_reread": pack.get("targeted_reread"),
+                }
+            )
+        governance = structural_context.get("input_governance")
+        semantic_governance = None
+        if isinstance(governance, dict):
+            semantic_governance = {
+                key: governance.get(key)
+                for key in ("status", "decision", "subject_mode", "constraints")
+            }
+        return {
+            "schema": "lf-profile-runtime-artifact-set-model-context/v1",
+            "source": "NON_CANONICAL_ARTIFACT_SET",
+            "contract": structural_context.get("contract"),
+            "subject_mode": structural_context.get("subject_mode"),
+            "artifact_set_fingerprint": structural_context.get("artifact_set_fingerprint"),
+            "artifact_count": structural_context.get("artifact_count"),
+            "artifacts": compact_artifacts,
+            "input_governance": semantic_governance,
+            **runtime_capsule,
+        }
+    return structural_context
+
+
 
 def _section_between(content: str, start: str, end: str) -> str | None:
     begin = content.find(start)
@@ -126,6 +185,38 @@ def _section_between(content: str, start: str, end: str) -> str | None:
     if finish < 0:
         return None
     return content[begin:finish].strip()
+
+
+def ui_focused_profile_model_view(content: str) -> str:
+    """Project UI Architect authority to the rules relevant to focused decisions.
+
+    The complete source remains hash-bound in request/receipt. Marker drift returns
+    the full source so a future profile rewrite cannot silently lose authority.
+    """
+    purpose = _section_between(content, "## Purpose", "## Routing semantics")
+    routing = _section_between(content, "## Routing semantics", "## RUNTIME CRITICAL GATE")
+    other_modes = _section_between(content, "## Other output modes", "## Scoring")
+    if purpose is None or routing is None or other_modes is None:
+        return content
+    lines = [line.strip() for line in content.splitlines()]
+    prefixes = (
+        "Output exactly one JSON object.",
+        "- Do not invent links, legal effects, payment success, eligibility, campaign urgency",
+        "- Keep domain truth from upstream profiles intact; UI owns presentation",
+        "- Compact output is preferred, but never at the expense of a material requirement or guardrail.",
+    )
+    selected: list[str] = []
+    for prefix in prefixes:
+        matches = [line for line in lines if line.startswith(prefix)]
+        if len(matches) != 1:
+            return content
+        selected.append(matches[0])
+    return (
+        purpose
+        + "\n\n" + routing
+        + "\n\nFocused runtime/safety rules:\n" + "\n".join(selected)
+        + "\n\n" + other_modes
+    )
 
 
 def ui_production_profile_model_view(content: str, *, task_mode: str | None) -> str:
@@ -1571,8 +1662,31 @@ class PersistentLlamaServerAdapter:
                 "LLAMA_SERVER_NOT_READY", str(self.last_health.get("error_code", ""))
             )
         system_prompt = self._system_prompt(request)
-        if len(system_prompt) + len(request["input_literal"]) > self.settings.max_prompt_chars:
+        prompt_chars = len(system_prompt) + len(request["input_literal"])
+        if prompt_chars > self.settings.max_prompt_chars:
             raise LlamaTransportError("LLAMA_PROMPT_CONTEXT_BUDGET_EXCEEDED")
+        reserved_output_tokens = (
+            self.settings.ui_production_semantic_max_output_tokens
+            if self.schema.mode == UI_PRODUCTION_SCHEMA_MODE
+            and _ui_production_acceptance_supports_semantic_transport(
+                (((compact_model_context(self.structural_context).get("input_fields") or {}).get("gate_f_acceptance"))
+                 if isinstance(compact_model_context(self.structural_context), dict) else None)
+            )
+            else self.settings.ui_production_max_output_tokens
+            if self.schema.mode == UI_PRODUCTION_SCHEMA_MODE
+            else self.settings.max_output_tokens
+        )
+        # Conservative no-inference guard. It prevents a known llama.cpp failure
+        # mode where prompt ingestion fills the 8K context and leaves only a few
+        # tokens for constrained JSON output. Full tokenization stays provider-owned;
+        # this proxy intentionally errs toward an early governed block.
+        prompt_proxy_tokens = int((prompt_chars + 2) / 3.0)
+        available_prompt_tokens = max(0, self.settings.llama_context_tokens - reserved_output_tokens - 256)
+        if prompt_proxy_tokens > available_prompt_tokens:
+            raise LlamaTransportError(
+                "LLAMA_PROMPT_TOKEN_PROXY_BUDGET_EXCEEDED",
+                f"proxy_tokens={prompt_proxy_tokens};available_prompt_tokens={available_prompt_tokens};context_tokens={self.settings.llama_context_tokens};reserved_output_tokens={reserved_output_tokens}",
+            )
         model_context = compact_model_context(self.structural_context)
         acceptance = None
         if isinstance(model_context, dict):
@@ -1706,6 +1820,24 @@ class PersistentLlamaServerAdapter:
                 )
         for source in request["profile_sources"]:
             ref = source["ref"]
+            if (
+                self.schema.mode == UI_FOCUSED_SCHEMA_MODE
+                and ref.endswith("/SKILL.md")
+                and isinstance(source.get("content"), str)
+            ):
+                model_view = ui_focused_profile_model_view(source["content"])
+                if model_view != source["content"]:
+                    parts.extend(
+                        [
+                            f"--- BEGIN CANONICAL PROFILE MODEL VIEW: {ref} ---",
+                            f"full_source_sha256={sha256_text(source['content'])}",
+                            "Focused-decision semantic view; full canonical source remains bound in request/receipt.",
+                            model_view,
+                            f"--- END CANONICAL PROFILE MODEL VIEW: {ref} ---",
+                            "",
+                        ]
+                    )
+                    continue
             if (
                 semantic_transport
                 and ref.endswith("/SKILL.md")
