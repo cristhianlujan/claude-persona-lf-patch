@@ -1,0 +1,21 @@
+{
+  "case_id": "S26V3-F10-O4-FINAL-PERF-REBIND",
+  "claim_ceiling": "FINAL_CANDIDATE_PERFORMANCE_REBIND_ONLY_NOT_NEW_SEMANTIC_CREDIT",
+  "final_candidate_sha": "faae5666951664db2dec58d28420951d4a5d989a",
+  "independent_case_credit": false,
+  "iterations": 1000,
+  "latency_ms": {
+    "max": 0.06873,
+    "median": 0.008327,
+    "min": 0.007975,
+    "p95": 0.009668
+  },
+  "model_calls": 0,
+  "observed_code": "RUNTIME_AUTHORITY_CURRENT_RUN_MISMATCH",
+  "rejected": 1000,
+  "retries": 0,
+  "schema": "S26_F10_O4_FINAL_PERF_REBIND_V1",
+  "semantic_oracle_reused": "CROSS_RUN_REPLAY_IDENTITY_PROTECTION",
+  "status": "PASS",
+  "unexpected_accepts": 0
+}
