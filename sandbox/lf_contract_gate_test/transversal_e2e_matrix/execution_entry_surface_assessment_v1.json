@@ -1,0 +1,57 @@
+{
+  "assessment_version": "lf-execution-entry-surface/v1",
+  "owner": "LF-TRANSVERSAL-E2E-MATRIX",
+  "issue": 725,
+  "source": "live Supabase catalog/function/trigger readback plus main repository code search",
+  "fresh_execution_entry": {
+    "function": "public.fn_lf_operation_reserve_execution_v1(text,text,text,text,text,text,text,text,text,jsonb)",
+    "inserts_into": "public.lf_operation_execution",
+    "calls_router": false,
+    "router_receipt_argument": false,
+    "parent_execution_argument": false,
+    "active_route_precondition": false,
+    "active_contract_precondition": false,
+    "execute_grantees": ["postgres", "service_role"],
+    "public_anon_authenticated_revoked": true,
+    "repository_definition_path": "supabase/migrations/20260911025454_s30_c05_generic_execution_reliability_v1.sql",
+    "repository_call_sites_found_outside_definition": 0
+  },
+  "insert_trigger_mitigations": {
+    "policy_snapshot_trigger": "trg_00_lf_operation_policy_snapshot_v1",
+    "policy_snapshot_on_insert": true,
+    "required_policy_resolution_guard": true,
+    "policy_snapshot_currentness_and_immutability_guard": true,
+    "production_enforcement_trigger": "trg_lf_prod_enforcement_execution_v01",
+    "registered_operation_required": true,
+    "final_status_requires_proof_and_step": true
+  },
+  "non_entry_functions_detected_by_text_scan": [
+    {
+      "function": "public.lf_record_creacion_perfil_step_v1",
+      "writes": "public.lf_operation_execution_steps",
+      "fresh_execution_entry": false,
+      "requires_existing_execution": true,
+      "enforces_prior_required_steps": true
+    },
+    {
+      "function": "public.lf_record_profile_operation_step_v1",
+      "writes": "public.lf_operation_execution_steps",
+      "fresh_execution_entry": false,
+      "requires_existing_execution": true,
+      "enforces_prior_required_steps": true
+    }
+  ],
+  "router_surface": {
+    "function": "public.lf_router_resolve_v1(text,text,text,text,text)",
+    "creates_execution": false,
+    "mandatory_binding_to_reserve_function": false
+  },
+  "verdict": {
+    "router_authority_provenance": "GAP",
+    "policy_enforcement_on_direct_reservation": "PRESENT",
+    "registry_enforcement_on_direct_reservation": "PRESENT",
+    "public_direct_access": "REVOKED",
+    "trusted_backend_direct_entry_requires_hardening": true,
+    "closure": "BLOCK_UNTIL_ROUTER_OR_EQUIVALENT_AUTHORITY_PROVENANCE_IS_STRUCTURALLY_REQUIRED"
+  }
+}
