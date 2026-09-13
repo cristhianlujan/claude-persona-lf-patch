@@ -1,0 +1,18 @@
+{
+  "schema_version": "LF_EXCLUSIVE_LANE_STATE_V1",
+  "immutable_base_sha": "fc2967e9aa17f9e5e68f8567ef80faafb3839c53",
+  "working_head_sha": "8f4afa8fc63c7fee8358305172e709c1621d1c62",
+  "state": "EXCLUSIVE_LANE_ESTABLISHED",
+  "historical_s32_snapshot": {
+    "snapshot_id": 45,
+    "snapshot_code": "LF_STRATEGY_FACTORY_SELF_HOSTED_CANARY_V032_20260907",
+    "mutation_allowed": false
+  },
+  "next_write_rule": "READ_WORKING_HEAD_AND_REQUIRE_EXACT_MATCH_WITH_8f4afa8fc63c7fee8358305172e709c1621d1c62_BEFORE_WRITE",
+  "shared_branch_write_allowed": false,
+  "force_push_allowed": false,
+  "rebase_allowed": false,
+  "merge_authorized": false,
+  "runtime_authorized": false,
+  "production_authorized": false
+}
