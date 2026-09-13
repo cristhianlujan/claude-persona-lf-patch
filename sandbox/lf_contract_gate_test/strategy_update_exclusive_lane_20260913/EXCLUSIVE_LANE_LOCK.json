@@ -1,0 +1,21 @@
+{
+  "schema_version": "LF_EXCLUSIVE_LANE_LOCK_V1",
+  "created_for": "STRATEGY_UPDATE_CONTINUATION",
+  "owner_lane": "GPT_EXCLUSIVE_CURRENT_CHAT",
+  "repository": "cristhianlujan/claude-persona-lf-patch",
+  "immutable_base_branch": "lf/strategy-update-base-gpt-exclusive-20260913",
+  "immutable_base_sha": "fc2967e9aa17f9e5e68f8567ef80faafb3839c53",
+  "working_branch": "lf/strategy-update-gpt-exclusive-20260913",
+  "prewrite_expected_head_sha": "fc2967e9aa17f9e5e68f8567ef80faafb3839c53",
+  "head_guard_policy": "FAIL_CLOSED_ON_ANY_HEAD_MISMATCH",
+  "concurrency_policy": "NO_SHARED_BRANCH_WRITES_NO_REBASE_NO_FORCE_PUSH",
+  "maintainer_modification_policy": "DISABLED_ON_PR",
+  "shared_lane_dependencies": [],
+  "forbidden_write_lanes": ["S26", "S30", "S31", "S38", "main"],
+  "historical_s32_snapshot_mutation_allowed": false,
+  "production_authorized": false,
+  "runtime_authorized": false,
+  "scheduler_authorized": false,
+  "merge_authorized": false,
+  "notes": "This artifact establishes an isolated source-control lane only. Every subsequent Git write must first prove the exact current working-branch HEAD equals the last accepted HEAD. Any mismatch blocks further writes until interference is reconciled explicitly."
+}

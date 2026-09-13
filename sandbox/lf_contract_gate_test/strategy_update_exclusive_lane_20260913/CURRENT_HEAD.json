@@ -1,0 +1,7 @@
+{
+  "schema_version": "LF_EXCLUSIVE_HEAD_V1",
+  "accepted_working_head_sha": "adf6eed1e2948b8fe83f5fd61cdea3eb499815e8",
+  "immutable_base_sha": "fc2967e9aa17f9e5e68f8567ef80faafb3839c53",
+  "next_write_policy": "READBACK_BRANCH_HEAD_THEN_REQUIRE_EXACT_MATCH",
+  "on_mismatch": "BLOCK_NO_WRITE_NO_REBASE_NO_FORCE_PUSH"
+}

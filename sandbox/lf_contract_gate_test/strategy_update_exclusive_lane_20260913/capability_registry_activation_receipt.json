@@ -1,0 +1,176 @@
+{
+  "schema_version": "LF_CAPABILITY_ACTIVATION_RECEIPT_V1",
+  "receipt_id": "CAPABILITY-REGISTRY-DESTINATION-RESOLUTION-V2-20260913",
+  "scope": "TRANSVERSAL_CAPABILITY_REGISTRY_AND_DESTINATION_RESOLUTION_V2",
+  "authorization": {
+    "user_authorized_shared_governance_scope": true,
+    "authorization_context": "Implement one versioned transversal with executable manual/manifest, dependency/update instructions, currentness, migration and rollback while preserving existing consumers such as S35.",
+    "main_write_authorized": false,
+    "merge_authorized": false,
+    "runtime_authorized": false,
+    "production_authorized": false,
+    "scheduler_authorized": false,
+    "golden_authorized": false
+  },
+  "exclusive_git_lane": {
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "base_branch": "lf/strategy-update-base-gpt-exclusive-20260913",
+    "base_sha": "fc2967e9aa17f9e5e68f8567ef80faafb3839c53",
+    "work_branch": "lf/strategy-update-gpt-exclusive-20260913",
+    "pr": 753,
+    "head_before_receipt": "9a0948db199e3bbd6a0ff92583f71e9130e5b388",
+    "head_guard": "PASS",
+    "force_push": false,
+    "rebase": false
+  },
+  "source": {
+    "standard": {
+      "path": "sandbox/lf_contract_gate_test/strategy_update_exclusive_lane_20260913/CAPABILITY_STANDARD_V1.md",
+      "commit": "46c74fdfb7463444ab3ca4ac9555a81e1c08c3a7"
+    },
+    "manifest": {
+      "path": "sandbox/lf_contract_gate_test/strategy_update_exclusive_lane_20260913/DESTINATION_RESOLUTION_LF_v2.manifest.yaml",
+      "commit": "80d1cab80eab67921237acbf61529c480c530e91"
+    },
+    "activation_sql": {
+      "path": "sandbox/lf_contract_gate_test/strategy_update_exclusive_lane_20260913/lf_capability_registry_destination_resolution_v1.sql",
+      "commit": "11005f5d2573d24ef7cedae90bdce0eaa8352e05"
+    },
+    "index_sql": {
+      "path": "sandbox/lf_contract_gate_test/strategy_update_exclusive_lane_20260913/lf_capability_registry_indexes_v1.sql",
+      "commit": "9a0948db199e3bbd6a0ff92583f71e9130e5b388"
+    }
+  },
+  "supabase": {
+    "project_id": "mhwmirqcgxxukpctffuv",
+    "migrations": [
+      {
+        "version": "20260913231613",
+        "name": "lf_capability_registry_destination_resolution_v1",
+        "status": "APPLIED"
+      },
+      {
+        "version": "20260913231755",
+        "name": "lf_capability_registry_indexes_v1",
+        "status": "APPLIED"
+      }
+    ],
+    "tables": [
+      "public.lf_capability_registry",
+      "public.lf_capability_version_registry",
+      "public.lf_capability_current",
+      "public.lf_capability_binding"
+    ],
+    "rls": {
+      "all_four_tables_enabled": true,
+      "authenticated_access": "SELECT_ONLY",
+      "service_role_mutation": true
+    }
+  },
+  "capability": {
+    "capability_code": "DESTINATION_RESOLUTION_LF",
+    "owner_scope": "LF_GOVERNANCE",
+    "status": "ACTIVE",
+    "versions": [
+      {
+        "version": "1.0.0",
+        "release_state": "LEGACY_IMPORTED",
+        "effective_status": "SUPERSEDED",
+        "manifest_sha256": "80a7564c6e5306735f23b73ca82846f6cf825828c1b3e28525f462ed5cbbdd7b"
+      },
+      {
+        "version": "2.0.0",
+        "release_state": "RELEASED",
+        "effective_status": "CURRENT",
+        "manifest_sha256": "0230c64a9641d71af2e5c67d3f0a25105cf00c665f2549f6492ebb88ccc3a8bd"
+      }
+    ],
+    "current": {
+      "version": "2.0.0",
+      "manifest_sha256": "0230c64a9641d71af2e5c67d3f0a25105cf00c665f2549f6492ebb88ccc3a8bd",
+      "promoted_at": "2026-09-13T23:16:13.578634+00:00"
+    },
+    "delivery_mode": "CENTRAL_DATABASE_CAPABILITY",
+    "installation_required": false,
+    "reinstall_required": false,
+    "declared_packages": [],
+    "preflight": "public.fn_lf_capability_preflight_v1",
+    "bind": "public.fn_lf_capability_bind_current_v1",
+    "resolver": "public.fn_lf_resolve_artifact_destination_v2",
+    "version_rows_immutable": true,
+    "currentness_fingerprint": "manifest_sha256"
+  },
+  "destination_model": {
+    "single_transversal_resolver": true,
+    "default_status": "ACTIVE",
+    "explicit_only_status": "BINDING_ONLY",
+    "ambiguous_default_behavior": "BLOCK",
+    "explicit_destination": {
+      "destination_code": "DEST_STRATEGY_UPDATE_E2E_EXCLUSIVE_20260913",
+      "operation_code": "CREACION_ESTRATEGIA_LF",
+      "artifact_type": "STRATEGY",
+      "status": "BINDING_ONLY",
+      "repository": "cristhianlujan/claude-persona-lf-patch",
+      "branch": "lf/strategy-update-gpt-exclusive-20260913",
+      "base_folder": "strategies"
+    },
+    "legacy_view_exposes_explicit_only_destination": false
+  },
+  "backward_compatibility": {
+    "s35_execution_id": "EXEC-S35-DDI-STRATEGY-CREATION-20260913-001",
+    "s35_execution_mutated": false,
+    "s35_status": "IN_PROGRESS",
+    "s35_step_rows": 0,
+    "s35_active_lease": false,
+    "s35_capability_binding_rows": 0,
+    "s35_preflight_ready": true,
+    "s35_preflight_decision": "BIND_CURRENT_SAFE",
+    "s35_current_version_discovered": "2.0.0",
+    "s35_package_action": "NONE",
+    "s35_installation_required": false,
+    "s35_reinstall_required": false,
+    "s35_default_destination_unchanged": {
+      "destination_code": "DEST_CREACION_ESTRATEGIA_LF_CANARY",
+      "branch": "lf/s30-strategy-factory-v032-governed-20260907",
+      "status": "ACTIVE"
+    }
+  },
+  "historical_invariants": {
+    "s32_snapshot_id": 45,
+    "s32_snapshot_code": "LF_STRATEGY_FACTORY_SELF_HOSTED_CANARY_V032_20260907",
+    "s32_payload_sha256": "ce9e640fc18200ca54cf4ca1d5ab215ed766736adf4b0f23782197f87a35e126",
+    "s32_updated_at": "2026-09-07T06:37:36.554873+00:00",
+    "s32_status": "CANDIDATO_READ_ONLY",
+    "s32_runtime_state": "PLAN_ONLY",
+    "s32_impact_policy": "BLOQUEADO",
+    "s32_mutated": false
+  },
+  "validation": {
+    "pre_activation_transaction_rollback": "PASS",
+    "immutable_version_update_negative": "BLOCKED_AS_EXPECTED",
+    "stale_current_sha_promotion_negative": "BLOCK_CURRENTNESS_MISMATCH",
+    "stale_binding_sha_negative": "BLOCK_CURRENTNESS_MISMATCH",
+    "explicit_binding_only_resolution": "PASS",
+    "multiple_active_defaults_negative": "BLOCK_AMBIGUOUS_DEFAULT_DESTINATION",
+    "rollback_residue": 0,
+    "post_activation_readback": "PASS",
+    "capability_fk_covering_indexes": 5,
+    "performance_advisor_unindexed_fk_findings_for_capability_tables_after_fix": 0,
+    "security_advisor_findings_on_new_capability_tables": 0,
+    "out_of_scope_existing_advisor_findings_modified": false
+  },
+  "claim_ceiling": {
+    "transversal_capability_registry_active": true,
+    "destination_resolution_v2_current": true,
+    "s35_auto_discovery_ready": true,
+    "s35_rebound": false,
+    "strategy_update_full_e2e_completed": false,
+    "runtime": false,
+    "production": false,
+    "scheduler": false,
+    "golden": false,
+    "main": false,
+    "merge": false
+  },
+  "verdict": "PASS_TRANSVERSAL_CAPABILITY_V2_ACTIVE_BACKWARD_COMPATIBLE"
+}

@@ -1,0 +1,10 @@
+{
+  "schema_version": "LF_EXCLUSIVE_PR_PREP_V1",
+  "base_branch": "lf/strategy-update-base-gpt-exclusive-20260913",
+  "base_sha": "fc2967e9aa17f9e5e68f8567ef80faafb3839c53",
+  "head_branch": "lf/strategy-update-gpt-exclusive-20260913",
+  "expected_head_before_pr": "a49287dee4988af31bc2e4f1860d505563abe837",
+  "draft": true,
+  "maintainer_can_modify": false,
+  "merge_authorized": false
+}

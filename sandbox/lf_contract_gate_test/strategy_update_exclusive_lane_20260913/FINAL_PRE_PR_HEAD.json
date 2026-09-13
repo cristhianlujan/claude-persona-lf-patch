@@ -1,0 +1,6 @@
+{
+  "schema_version": "LF_FINAL_PRE_PR_HEAD_V1",
+  "expected_head_after_this_commit": "SELF",
+  "base_sha": "fc2967e9aa17f9e5e68f8567ef80faafb3839c53",
+  "policy": "PR creation does not authorize merge or shared writes"
+}
