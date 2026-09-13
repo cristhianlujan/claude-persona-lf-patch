@@ -29,11 +29,18 @@
   "blocker_shape": {
     "independent_safe_work": "array[string]"
   },
-  "result_vocabulary": [
-    "FINAL_REPORT_ALLOWED",
-    "CONTINUE_SAFE_SCOPE_PERSIST_BLOCKED_SCOPE",
-    "BLOCK_CLOSE_GUARD"
-  ],
+  "decision_contract": {
+    "gate_result": [
+      "PASS_CLOSE_GUARD",
+      "BLOCK_CLOSE_GUARD"
+    ],
+    "required_action": [
+      "FINAL_REPORT_ALLOWED",
+      "CONTINUE_SAFE_SCOPE_PERSIST_BLOCKED_SCOPE",
+      "REPAIR_CLOSE_EVIDENCE"
+    ],
+    "semantic_rule": "Executable safe scope always blocks FINAL at the close gate while simultaneously requiring continuation of safe work. This reconciles EX-12 BLOCK_CLOSE_GUARD with EX-10 CONTINUE_SAFE_SCOPE_PERSIST_BLOCKED_SCOPE."
+  },
   "mandatory_rules": [
     "BLOCKED_SCOPE_DOES_NOT_HIDE_UNRELATED_SAFE_SCOPE",
     "SAFE_WORK_REMAINING_REQUIRES_CONTINUATION",
@@ -44,17 +51,35 @@
     "UNRECOGNIZED_STOP_REASON_FAILS_CLOSED",
     "EXECUTION_LIMIT_REQUIRES_LITERAL_EVIDENCE"
   ],
-  "integration_rule": "Any governed strategy/work-package runner claiming S30 Strategy Executor compatibility MUST call this close guard immediately before final output. CONTINUE_SAFE_SCOPE_PERSIST_BLOCKED_SCOPE requires execution of a safe batch followed by a fresh global scan and repeated close evaluation.",
+  "close_policy_interpretation": {
+    "source_policy": "ZERO_EXECUTABLE_SAFE_SCOPES_REMAINING_OR_ALL_TARGETED_SCOPES_TERMINALLY_DISPOSED",
+    "implemented_branch": "ZERO_EXECUTABLE_SAFE_SCOPES_REMAINING",
+    "proof": "global_remaining_work_scan=PASS, safe_work_remaining_count=0, next_safe_batch=NONE/N/A, safe_parallel_work empty, and blocker independent_safe_work empty",
+    "terminal_disposition_shortcut_added": false
+  },
+  "integration_rule": "Any governed strategy/work-package runner claiming S30 Strategy Executor compatibility MUST call this close guard immediately before final output. BLOCK_CLOSE_GUARD plus CONTINUE_SAFE_SCOPE_PERSIST_BLOCKED_SCOPE requires execution of a safe batch followed by a fresh global scan and repeated close evaluation.",
   "adversarial_expectations": {
-    "ONE_BLOCKED_ONE_SAFE_SCOPE": "CONTINUE_SAFE_SCOPE_PERSIST_BLOCKED_SCOPE",
-    "CLOSE_WITH_EXECUTABLE_SCOPE_REMAINING": "CONTINUE_SAFE_SCOPE_PERSIST_BLOCKED_SCOPE",
-    "MISSING_GLOBAL_SCAN": "BLOCK_CLOSE_GUARD",
-    "NO_SAFE_WORK_REMAINING": "FINAL_REPORT_ALLOWED"
+    "ONE_BLOCKED_ONE_SAFE_SCOPE": {
+      "gate_result": "BLOCK_CLOSE_GUARD",
+      "required_action": "CONTINUE_SAFE_SCOPE_PERSIST_BLOCKED_SCOPE"
+    },
+    "CLOSE_WITH_EXECUTABLE_SCOPE_REMAINING": {
+      "gate_result": "BLOCK_CLOSE_GUARD",
+      "required_action": "CONTINUE_SAFE_SCOPE_PERSIST_BLOCKED_SCOPE"
+    },
+    "MISSING_GLOBAL_SCAN": {
+      "gate_result": "BLOCK_CLOSE_GUARD",
+      "required_action": "REPAIR_CLOSE_EVIDENCE"
+    },
+    "NO_SAFE_WORK_REMAINING": {
+      "gate_result": "PASS_CLOSE_GUARD",
+      "required_action": "FINAL_REPORT_ALLOWED"
+    }
   },
   "test_evidence": {
     "module": "s30_strategy_executor_close_guard_v1.py",
     "test": "test_s30_strategy_executor_close_guard_v1.py",
-    "local_result": "11/11 PASS"
+    "expected_result": "11/11 PASS"
   },
   "safety_ceiling": {
     "supabase_write": false,
