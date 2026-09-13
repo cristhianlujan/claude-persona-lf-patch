@@ -1,0 +1,47 @@
+{
+  "assessment_version": "lf-transversal-internal-provenance/v1",
+  "owner": "LF-TRANSVERSAL-E2E-MATRIX",
+  "issue": 725,
+  "scope": "READ_ONLY_EVIDENCE_CLASSIFICATION",
+  "rule": "Historical execution evidence or a contract that narrates router_read is not structural proof that every execution entry is obligatorily Router-bound.",
+  "counts": {
+    "unrouted_operations": 22,
+    "candidate_inactive": 10,
+    "test_only_control_plane": 2,
+    "productionish_requires_provenance": 10,
+    "structurally_proven": 0,
+    "historical_chain_only": 4,
+    "contract_requires_router_read_but_entry_not_bound": 3,
+    "no_execution_evidence": 3
+  },
+  "operations": [
+    {"operation_code":"ACTUALIZACION_CARD_LF","classification":"CANDIDATE_INACTIVE","provenance_assessment":"NOT_APPLICABLE_INACTIVE"},
+    {"operation_code":"ACTUALIZACION_ESTRATEGIA_LF","classification":"CANDIDATE_INACTIVE","provenance_assessment":"NOT_APPLICABLE_INACTIVE"},
+    {"operation_code":"ANALISIS_RIESGO_CONTENIDO_LF","classification":"INTERNAL_SUBOPERATION","provenance_assessment":"HISTORICAL_CHAIN_ONLY","evidence":{"latest_execution_id":"LF-AUTOLEARN-RISK-REEVALUA-20260901-001","parent_execution_id":"LF-AUTOLEARN-RUN-20260901-037","parent_operation_code":"LEARNING_BRIDGE_KB_CARD_LF","parent_has_active_router_route":true,"parent_has_policy_snapshot":true},"structural_gap":"Child execution entry is not proven to require parent/router provenance on every reservation."},
+    {"operation_code":"BUILD_COMPETITIVE_INTELLIGENCE_MARKETPLACE_LF","classification":"CANDIDATE_INACTIVE","provenance_assessment":"NOT_APPLICABLE_INACTIVE"},
+    {"operation_code":"BUILD_INTEGRAL_STORY_CREATOR_LF","classification":"CANDIDATE_INACTIVE","provenance_assessment":"NOT_APPLICABLE_INACTIVE"},
+    {"operation_code":"CAPTURE_INTAKE_MULTI_SOURCE_FIXTURE_V0_1","classification":"CANDIDATE_INACTIVE","provenance_assessment":"NOT_APPLICABLE_INACTIVE"},
+    {"operation_code":"CREACION_PERFIL_LF_ENFORCEMENT_SANDBOX","classification":"CONTROL_PLANE","provenance_assessment":"NOT_APPLICABLE_TEST_ONLY"},
+    {"operation_code":"DS_BUILD_PROTOCOL_LF","classification":"INTERNAL_PROTOCOL","provenance_assessment":"CONTRACT_REQUIRES_ROUTER_READ_BUT_ENTRY_NOT_BOUND","evidence":{"active_contract":"CONTRACT-DS_BUILD_PROTOCOL_LF-NO-CLOSE-IF-REQUIRED-STEP-NOT-CLEAN-PASS-v0.1","requires_router_read":true,"historical_execution_present":true},"structural_gap":"Execution reservation itself does not prove or require a Router receipt/provenance chain."},
+    {"operation_code":"EJECUCION_ESTRATEGIA_LF","classification":"CANDIDATE_INACTIVE","provenance_assessment":"NOT_APPLICABLE_INACTIVE"},
+    {"operation_code":"ESCRITURA_BASE_CONOCIMIENTO_LF","classification":"INTERNAL_SUBOPERATION","provenance_assessment":"NO_EXECUTION_EVIDENCE","evidence":{"active_contract":"CONTRACT-PRE-EKB-GATE-LF-v0.1","historical_execution_present":false},"structural_gap":"EKB preflight governs mutation but does not establish mandatory Router entry provenance."},
+    {"operation_code":"EXTRACCION_DOCUMENTOS_REGULATORIOS_LF","classification":"INTERNAL_SUBOPERATION","provenance_assessment":"NO_EXECUTION_EVIDENCE","evidence":{"active_contract":"CONTRACT-PRE-EKB-GATE-LF-v0.1","historical_execution_present":false},"structural_gap":"No execution chain exists to read back and the active contract does not bind entry to Router provenance."},
+    {"operation_code":"EXTRACCION_FUENTES_DIGITALES_LF","classification":"INTERNAL_SUBOPERATION","provenance_assessment":"HISTORICAL_CHAIN_ONLY","evidence":{"latest_execution_id":"LF-AUTOLEARN-CAPTURE-REEVALUA-20260901-001","parent_execution_id":"LF-AUTOLEARN-RUN-20260901-037","parent_operation_code":"LEARNING_BRIDGE_KB_CARD_LF","parent_has_active_router_route":true,"parent_has_policy_snapshot":true,"historical_router_marker":"ACT-0001"},"structural_gap":"Observed execution is routed historically, but the generic reservation surface does not make that chain mandatory."},
+    {"operation_code":"EXTRACCION_NOTICIAS_FINANCIERAS_LF","classification":"INTERNAL_SUBOPERATION","provenance_assessment":"NO_EXECUTION_EVIDENCE","evidence":{"active_contract":"CONTRACT-PRE-EKB-GATE-LF-v0.1","historical_execution_present":false},"structural_gap":"No execution chain exists to read back and the active contract does not bind entry to Router provenance."},
+    {"operation_code":"GITHUB_CONTRACT_GATE_LF","classification":"CONTROL_PLANE","provenance_assessment":"CONTRACT_REQUIRES_ROUTER_READ_BUT_ENTRY_NOT_BOUND","evidence":{"active_contract":"CONTRACT-GITHUB-CONTRACT-GATE-LF-READONLY-PROTOCOL-v0.1","requires_router_read":true,"historical_execution_present":true},"structural_gap":"Contract requires router_read, but execution reservation has no mandatory Router receipt field."},
+    {"operation_code":"HISTORICAL_CLOSURE_CLASSIFICATION_ACTIONS_LF","classification":"CANDIDATE_INACTIVE","provenance_assessment":"NOT_APPLICABLE_INACTIVE"},
+    {"operation_code":"HISTORICAL_CLOSURE_SANITIZATION_LF","classification":"CANDIDATE_INACTIVE","provenance_assessment":"NOT_APPLICABLE_INACTIVE"},
+    {"operation_code":"HOMOLOGACION_FUENTES_DIGITALES_LF","classification":"INTERNAL_SUBOPERATION","provenance_assessment":"HISTORICAL_CHAIN_ONLY","evidence":{"parent_operation_code":"LEARNING_BRIDGE_KB_CARD_LF","parent_has_active_router_route":true,"parent_has_policy_snapshot":true},"structural_gap":"Historical parent is routed, but mandatory child entry provenance is not structurally enforced."},
+    {"operation_code":"OPERATION_ENFORCEMENT_REGRESSION_SUITE_LF","classification":"CONTROL_PLANE","provenance_assessment":"NOT_APPLICABLE_TEST_ONLY"},
+    {"operation_code":"ORQUESTACION_PIPELINE_LF","classification":"SCHEDULER","provenance_assessment":"HISTORICAL_CHAIN_ONLY","evidence":{"latest_execution_id":"LF-ACT0058-20260901-1848-AUTOLEARN","parent_operation_code":"LEARNING_BRIDGE_KB_CARD_LF","parent_has_active_router_route":true,"parent_has_policy_snapshot":true,"producer":"LF_APRENDIZAJE_AUTONOMO"},"structural_gap":"Scheduler/producer chain is observed historically but reservation does not require governed parent provenance."},
+    {"operation_code":"RETIRO_ACTIVO_LF","classification":"CANDIDATE_INACTIVE","provenance_assessment":"NOT_APPLICABLE_INACTIVE"},
+    {"operation_code":"TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF","classification":"CANDIDATE_INACTIVE","provenance_assessment":"NOT_APPLICABLE_INACTIVE"},
+    {"operation_code":"VULNERABILITY_COVERAGE_REPAIR_LF","classification":"CONTROL_PLANE","provenance_assessment":"CONTRACT_REQUIRES_ROUTER_READ_BUT_ENTRY_NOT_BOUND","evidence":{"active_contract":"CONTRACT-VULNERABILITY-COVERAGE-REPAIR-LF-TRANSVERSAL-ENFORCEMENT-v0.1","requires_router_read":true,"latest_execution_id":"EXEC-S30-R19-ROLLBACK-EJECUCION-ESTRATEGIA-20260912-002","bootstrap_operation_code":"EJECUCION_ESTRATEGIA_LF"},"structural_gap":"Bootstrap authority and router_read contract are not equivalent to mandatory Router provenance on execution reservation."}
+  ],
+  "conclusion": {
+    "status": "BLOCK_STRUCTURAL_PROVENANCE_NOT_PROVEN",
+    "productionish_total": 10,
+    "productionish_structurally_proven": 0,
+    "historical_or_contract_evidence_is_not_waiver": true
+  }
+}
