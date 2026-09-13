@@ -1,0 +1,86 @@
+{
+  "receipt_version": "S31_IR003_REPAIR_V0_1",
+  "strategy_id": "S31",
+  "source_review_case_id": "S31-DG-IR-003",
+  "repair_scope": [
+    "S31-F",
+    "S31-G"
+  ],
+  "repair_candidate_head": "3e5e542f2109e64ba319d2686278b1036bf69771",
+  "exclusive_lane": {
+    "pr_number": 749,
+    "branch": "lf/s31-ir003-preflight-repair-gpt-exclusive-20260913",
+    "immutable_comparison_base_branch": "lf/s31-ir003-base-snapshot-gpt-exclusive-20260913",
+    "immutable_comparison_base_sha": "e75cab6e71c0f880f72726439e952de78ea4931f",
+    "maintainer_can_modify": false,
+    "force_push_used": false,
+    "rebase_used": false,
+    "shared_lane_writes": false
+  },
+  "causal_repairs": {
+    "S31-F": [
+      "owner receipt capability is bound to envelope capability",
+      "non-structural execution/authority/provenance receipts share S31_F_CROSS_BINDING_V0_1",
+      "semantic cross-binding covers run, capability, execution, input/output digests, authority identity and provenance identity",
+      "historical immutable source revisions remain valid only when provider bytes are current and the common semantic binding remains unchanged",
+      "replay/composition using valid but unbound receipts fails closed"
+    ],
+    "S31-G": [
+      "resolved Typed Context is re-read through the canonical trusted resolver before runtime admission",
+      "resolved Typed Context is schema and semantic-governance validated before provider invocation",
+      "outer Typed Context digest cannot mask invalid nested authority/currentness evidence",
+      "canonical resolver type boundary remains fail-closed"
+    ]
+  },
+  "frozen_artifact_blobs": {
+    "sandbox/lf_contract_gate_test/s31_bootstrap/validate_s31_dg_contracts_v0_3.py": "7cb465cd35d39a2c917c7310aa93d51adf504be4",
+    "sandbox/lf_contract_gate_test/s31_bootstrap/test_s31_dg_contracts_v0_3.py": "515929ee5f3208911411a24f3f78a754eec8b994",
+    "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_authority_receipt.json": "6513e721d7841e791bc7c9461e1afc73ea752192",
+    "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_authority_receipt_replay.json": "4b164ef01d453a92fffc180533220da54091da2b",
+    "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_execution_receipt.json": "b3be7ad5c8aaf027915af868a59dc1cd77fa3f12",
+    "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_provenance_receipt.json": "c56b1ac178c0a1f85ff80bbe2c758522aa82e7aa",
+    "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_provenance_receipt_replay.json": "713ebb7fa344ad5a62afb77e0228a6b1eded8ec0",
+    "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/typed_context.json": "327db4b2b5201e7fb494f55fb3ea899b3770a625",
+    "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/typed_context_invalid_authority.json": "87d110918cec67f4a91cdabdc3dd7563a90cd9cf"
+  },
+  "deterministic_regression": {
+    "exact_remote_head": "3e5e542f2109e64ba319d2686278b1036bf69771",
+    "targeted_v0_2": {
+      "positive_cases": 8,
+      "negative_fail_closed_cases": 36,
+      "result": "PASS"
+    },
+    "targeted_v0_3": {
+      "positive_cases": 2,
+      "negative_fail_closed_cases": 8,
+      "v0_2_composition_exploits_demonstrated_then_closed": 7,
+      "cross_binding_sha256": "355dfb8e4ded17d827fbbb1b4ed2dbe6db51d09277c6b0646cb48ab5be05f454",
+      "trusted_resolver": "QUALITY_PACK_TRUSTED_REF_RESOLVER_V1",
+      "result": "PASS"
+    },
+    "full_s31_bootstrap": {
+      "test_file_count": 12,
+      "failure_count": 0,
+      "result": "PASS"
+    }
+  },
+  "ci_evidence": {
+    "validate_lf_packs": {
+      "run_id": 34778862379,
+      "conclusion": "success"
+    },
+    "lf_contract_check": {
+      "run_id": 34778862374,
+      "conclusion": "failure",
+      "causal_to_s31_repair": false,
+      "failed_step": "Enforce LF migration source parity after checkpoint",
+      "disposition": "UNRELATED_SHARED_CURRENTNESS_DEBT_NOT_REPAIRED_IN_EXCLUSIVE_S31_PR"
+    }
+  },
+  "claim_ceiling": "DETERMINISTIC_REPAIR_EVIDENCE_ONLY",
+  "independent_semantic_status": "PENDING_S31_DG_IR_004",
+  "runtime_authority": "NONE",
+  "golden_authority": "NONE",
+  "merge_authority": "NONE",
+  "production_authority": "NONE"
+}
