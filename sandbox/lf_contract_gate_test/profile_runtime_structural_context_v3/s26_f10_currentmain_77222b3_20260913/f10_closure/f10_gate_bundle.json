@@ -1,0 +1,133 @@
+{
+  "schema": "S26_F10_O5_QUALITY_GATE_BUNDLE_V1",
+  "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-77222B3",
+  "final_candidate_sha": "77222b36028407659c3ff6f18e398ec77ec8fe46",
+  "final_verdict": "PASS_WITH_RESTRICTIONS",
+  "gates": {
+    "structural": {
+      "applicable": true,
+      "status": "PASS",
+      "evidence": [
+        {
+          "ref": "github://cristhianlujan/claude-persona-lf-patch@3ebc2c9d235ec0a0f0d666f09142f4ae5636a1fe/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_f10_currentmain_77222b3_20260913/w3_producer/review_bundle_S26V3-F10-O5-REAL-E2E-HOLDOUT/artifact_payload.json",
+          "sha256": "1cedba6dd728271ef44bde9416574e3f299b74bd66cdad7ee764e52a01505628",
+          "observed": true,
+          "self_certified": false
+        }
+      ]
+    },
+    "provenance": {
+      "applicable": true,
+      "status": "PASS",
+      "receipt_valid": true,
+      "execution_origin": "MODEL_RUNTIME",
+      "raw_output_captured": true,
+      "receipt_ref": "github://cristhianlujan/claude-persona-lf-patch@d49a017ef32712e48722b1d1c2c611b3f4522de6/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_f10_currentmain_77222b3_20260913/f10_closure/profile_execution_receipt.json",
+      "receipt_sha256": "8adadf4b72ae3b19f7c6c498f928c2667110af30fad48ba23defbabbb795801e",
+      "evidence": [
+        {
+          "ref": "github://cristhianlujan/claude-persona-lf-patch@d49a017ef32712e48722b1d1c2c611b3f4522de6/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_f10_currentmain_77222b3_20260913/f10_closure/profile_execution_receipt.json",
+          "sha256": "8adadf4b72ae3b19f7c6c498f928c2667110af30fad48ba23defbabbb795801e",
+          "observed": true,
+          "self_certified": false
+        },
+        {
+          "ref": "github://cristhianlujan/claude-persona-lf-patch@d49a017ef32712e48722b1d1c2c611b3f4522de6/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_f10_currentmain_77222b3_20260913/f10_closure/model_raw_output.txt",
+          "sha256": "45b130b396abb690095cb6b64c1bf23b4a046a49c904aee1436ff0a46b450b0b",
+          "observed": true,
+          "self_certified": false
+        },
+        {
+          "ref": "github://cristhianlujan/claude-persona-lf-patch@d49a017ef32712e48722b1d1c2c611b3f4522de6/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_f10_currentmain_77222b3_20260913/f10_closure/provenance_reconstruction.json",
+          "sha256": "9e92717c500782573d7d6eb82e33496e9be8769882afd0ba486140f37200b12e",
+          "observed": true,
+          "self_certified": false
+        },
+        {
+          "ref": "github://cristhianlujan/claude-persona-lf-patch@77222b36028407659c3ff6f18e398ec77ec8fe46/profiles/ui_architect/SKILL.md",
+          "sha256": "b099944839af79cb97eac76f12ecf8bd38c39ea331224ee335ced32491f411c0",
+          "observed": true,
+          "self_certified": false
+        },
+        {
+          "ref": "github://cristhianlujan/claude-persona-lf-patch@77222b36028407659c3ff6f18e398ec77ec8fe46/profiles/ui_architect/contracts/composer_payload_boundary_v1.md",
+          "sha256": "d2b55e3c29c45642ebe18084b23c1ae96064c8c0a6bd8ecb1f5910f2753bb617",
+          "observed": true,
+          "self_certified": false
+        }
+      ]
+    },
+    "semantic": {
+      "applicable": true,
+      "status": "PASS",
+      "producer_oracle_id": "producer:UICT5-deterministic-materializer",
+      "judge_oracle_id": "independent-chat:IR-S26V3-F10-O5-CURRENTMAIN-77222B3-INDEPENDENT-001",
+      "decision_supported": true,
+      "uncertainty": "NONE",
+      "evidence": [
+        {
+          "ref": "github://cristhianlujan/claude-persona-lf-patch@d49a017ef32712e48722b1d1c2c611b3f4522de6/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_f10_currentmain_77222b3_20260913/f10_closure/independent_semantic_review_receipt.json",
+          "sha256": "f81246aff72136f1d69f62de8f9af6f8be2015210183cc40485a68f495e94ee8",
+          "observed": true,
+          "self_certified": false
+        }
+      ]
+    },
+    "artifact": {
+      "applicable": true,
+      "status": "PASS",
+      "exists": true,
+      "readback_ok": true,
+      "parseable": true,
+      "evidence": [
+        {
+          "ref": "github://cristhianlujan/claude-persona-lf-patch@3ebc2c9d235ec0a0f0d666f09142f4ae5636a1fe/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_f10_currentmain_77222b3_20260913/w3_producer/review_bundle_S26V3-F10-O5-REAL-E2E-HOLDOUT/artifact_payload.json",
+          "sha256": "1cedba6dd728271ef44bde9416574e3f299b74bd66cdad7ee764e52a01505628",
+          "observed": true,
+          "self_certified": false
+        }
+      ]
+    },
+    "upstream": {
+      "applicable": false,
+      "status": "NOT_APPLICABLE",
+      "evidence": [],
+      "reason": "F10-O5 has no required Card, adapter, or upstream profile/artifact dependency; canonical UI Architect contract sources are validated under provenance."
+    }
+  },
+  "acceptance_checks": [
+    {
+      "subject": "F10-O5 frozen artifact",
+      "condition": "Exact frozen artifact file resolves by immutable Git ref and remains JSON-parseable under the UI production validators.",
+      "observable": true
+    },
+    {
+      "subject": "F10-O5 execution provenance",
+      "condition": "Execution receipt resolves independently, validates as PROFILE_EXECUTION_RECEIPT_V1 with MODEL_RUNTIME origin, and exact RAW model output plus profile-source aggregate are materially reconstructible.",
+      "observable": true
+    },
+    {
+      "subject": "F10-O5 semantic review",
+      "condition": "Independent-chat receipt is schema-valid, reviewer context is independent, verdict is PASS_WITH_RESTRICTIONS, and score arithmetic is 23/25.",
+      "observable": true
+    },
+    {
+      "subject": "F10 objective contract",
+      "condition": "Brand-new real case completed the governed pipeline with UICT5, deterministic validators, quality/depth/performance checks and independent semantic review; restrictions remain explicit and non-blocking.",
+      "observable": true
+    }
+  ],
+  "blocking_codes": [],
+  "remaining_risks": [
+    "The independent reviewer found the specification domain-agnostic: health-specific framing and clinical guardrails remain an upstream governed-context dependency.",
+    "Concrete spacing units and color values remain design-system dependencies because the artifact intentionally uses relative and semantic-role guidance.",
+    "Accessibility requirements were not part of the frozen acceptance criteria and remain unspecified for the next agent.",
+    "header_search uses USER_REQUIREMENT binding rather than the more explicit DATA_BOUND pattern used by neighboring components.",
+    "The independent semantic verdict is PASS_WITH_RESTRICTIONS, not unrestricted PASS_TO_COMPOSER."
+  ],
+  "resolved_post_review_observations": [
+    "The reviewer could not reproduce profile authority source_sha256 inside its frozen review scope; post-review deterministic reconstruction using the runtime canonical manifest algorithm matches b65ab7beb8701ca95d1d9fdd51a82bd48f5382d87167cd0a148ae9fe7965f658 exactly.",
+    "The reviewer could not read back model RAW bytes inside its frozen review scope; the exact 57-byte RAW capture is now materialized immutably and hashes to 45b130b396abb690095cb6b64c1bf23b4a046a49c904aee1436ff0a46b450b0b, while the execution receipt canonical-JSON string digest matches 753ab756172d7b7a1f68fbfb8d8c74ae1e7e1722bf65305f9ae36a54de2d7a4e."
+  ],
+  "claim_ceiling": "F10_O5_RECONCILED_PASS_WITH_RESTRICTIONS_NOT_GOLDEN_NOT_PRODUCTION"
+}
