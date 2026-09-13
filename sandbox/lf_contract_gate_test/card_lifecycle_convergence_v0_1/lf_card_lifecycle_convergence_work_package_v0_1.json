@@ -1,0 +1,287 @@
+{
+  "schema_id": "LF_WORK_PACKAGE_V0_2_CANDIDATE",
+  "work_package_id": "WP-CARD-LIFECYCLE-CONVERGENCE-V0-1",
+  "strategy_id": "UNASSIGNED-CARD-LIFECYCLE",
+  "lane_id": "WP-CARD-LIFECYCLE-V01",
+  "operation": "CARD_LIFECYCLE_CONVERGENCE_PLANNING",
+  "objective": "Converge Card creation and update governance onto reusable S30/S31 boundaries without changing Card authority, runtime behavior, Supabase state, production, or S26 behavior.",
+  "execution_identity": {
+    "base_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+    "branch_head_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+    "executed_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+    "execution_ref_kind": "NOT_EXECUTED",
+    "exact_head_claim": false
+  },
+  "source_snapshot_bindings": [
+    {
+      "source_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92",
+      "material": true,
+      "binding_kind": "GIT_COMMIT",
+      "revision": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+      "digest": null,
+      "authority_receipt_ref": null
+    },
+    {
+      "source_ref": "gobernanza/contratos/contrato_card_lf.yaml",
+      "material": true,
+      "binding_kind": "GIT_BLOB",
+      "revision": "c4819910b85ae7dfaa36e3d3c311da19a3faed8d",
+      "digest": null,
+      "authority_receipt_ref": null
+    },
+    {
+      "source_ref": "S31/lf_work_package_v0_2_candidate.schema.json",
+      "material": false,
+      "binding_kind": "GIT_BLOB",
+      "revision": "c9808460b1fbbd4fd595a58e26a3857832a4c66f",
+      "digest": null,
+      "authority_receipt_ref": null
+    },
+    {
+      "source_ref": "S31/canonical_card_resolution_v0_1.json",
+      "material": false,
+      "binding_kind": "GIT_BLOB",
+      "revision": "3b232a0ec5b5cfc331c50d324491240add459f5e",
+      "digest": null,
+      "authority_receipt_ref": null
+    },
+    {
+      "source_ref": "supabase://mhwmirqcgxxukpctffuv/public.lf_operation_registry+public.lf_operation_steps+public.lf_cards",
+      "material": true,
+      "binding_kind": "LIVE_AUTHORITY_RECEIPT",
+      "revision": null,
+      "digest": "099140b719692470d4a35c957991f3d1f907a05f29e67b726cd9119b5240b63a",
+      "authority_receipt_ref": "sandbox/lf_contract_gate_test/card_lifecycle_convergence_v0_1/card_lifecycle_preflight_receipt_v0_1.json"
+    }
+  ],
+  "causal_ownership": {
+    "key": "CARD_LIFECYCLE_CONVERGENCE_CANDIDATE",
+    "active_writer": "lf/card-lifecycle-convergence-wp-v01",
+    "dependencies": [
+      "S30_PREEXECUTION_ASSURANCE",
+      "S31-C_CANONICAL_CARD_RESOLUTION_CANDIDATE",
+      "S26_CARD_CONSUMER_BOUNDARY",
+      "S29_ACTUALIZACION_CARD_LF_CANDIDATE"
+    ],
+    "safe_parallel_scope": [
+      "S31 independent review",
+      "S30 internal improvements",
+      "S26 work outside this candidate path",
+      "OP24 Experience-to-Card candidate lane"
+    ]
+  },
+  "authority": {
+    "sources": [
+      "public.v_lf_fuente_operativa",
+      "public.lf_operation_registry/ACTUALIZACION_CARD_LF",
+      "github://main@d4051d9c57fdfd09741da5ba2718c032eac56c92/gobernanza/contratos/contrato_card_lf.yaml"
+    ],
+    "contracts": [
+      "CREACION_CARD_LF v0.3 CANDIDATO_READ_ONLY",
+      "ACTUALIZACION_CARD_LF v0.1 CANDIDATO_READ_ONLY",
+      "S31 Work Package v0.2 candidate structure only",
+      "S31-C Card Resolution v0.1 candidate compatibility only"
+    ],
+    "ekb_execution_binding": {
+      "run_id": "CARD-LIFECYCLE-EKB-PREFLIGHT-20260913-011234Z",
+      "resolved_at": "2026-09-13T01:12:34.740843+00:00",
+      "applicable_codes": [
+        "AUD-018",
+        "CI-007",
+        "CI-014",
+        "CI-CARD-CONTRACT-001",
+        "CARD-UPDATE-CARRIER-TRUST-CONTEXT-GAP-001",
+        "CARD-UPDATE-PREWRITE-REVISION-TRUST-COMPARE-GAP-001",
+        "CARD-UPDATE-PROVIDER-REVISION-GUARD-001",
+        "CARD-UPDATE-SOURCE-CARRIER-GAP-001",
+        "GOV-CARD-DEPTH-ORDER-001",
+        "GOV-CARD-PREWRITE-ORDER-001",
+        "GOV-CI-MIGRATION-SOURCE-PARITY-20260829",
+        "PROFILE-CARD-RUNTIME-MATERIALIZATION-GAP-001",
+        "S26-GATE-C-CANDIDATE-EVIDENCE-DIVERGENCE-001",
+        "S26-GATE-C-NO-CARD-VALID-FALLBACK-001",
+        "S26-GATE-C-TEST-FIXTURE-GOVERNED-PATH-001"
+      ],
+      "control_mapping": {
+        "authority_and_ssot": "CARD_SSOT_AUTHORITY_UNRESOLVED -> fail closed before materialization",
+        "update_prewrite": "Card Update trust context + carrier revision guards required before write",
+        "evidence": "AUD-018 executed receipts required",
+        "currentness": "CI-014 exact-head refresh if main advances",
+        "carrier": "CARD-UPDATE-SOURCE-CARRIER-GAP-001 source-aware routing",
+        "runtime": "PROFILE-CARD-RUNTIME-MATERIALIZATION-GAP-001 same-request Card materialization evidence"
+      },
+      "fresh_for_execution": true
+    }
+  },
+  "scope": {
+    "read": [
+      "main Card creation contract/procedures/judges",
+      "Supabase Card operation registry/steps/inventory",
+      "EKB applicable Card/S30/S26 lessons",
+      "S31 candidate Work Package/Card Resolution/Typed Context/Evidence contracts",
+      "adjacent open PR metadata for causal collision scan"
+    ],
+    "write": [
+      "sandbox/lf_contract_gate_test/card_lifecycle_convergence_v0_1/"
+    ],
+    "forbidden": [
+      "Supabase DDL/DML",
+      "cards/**",
+      "gobernanza/contratos/contrato_card_lf.yaml",
+      "gobernanza/procedimientos Card source mutation",
+      "S31 source mutation",
+      "S26 source mutation",
+      "runtime activation",
+      "production",
+      "Golden",
+      "merge main"
+    ]
+  },
+  "execution": {
+    "worker": "GPT-5.6 Sol",
+    "port": "READ_ONLY_GOVERNED_ANALYSIS",
+    "adapter": "GITHUB_PLUS_SUPABASE_READBACK_ONLY",
+    "allowed_tools": [
+      "GitHub read",
+      "GitHub candidate-sandbox write",
+      "Supabase read-only SQL"
+    ],
+    "retry_policy": {
+      "max_attempts": 2,
+      "same_failure_retries_forbidden": true
+    },
+    "executed_validation": {
+      "required": false,
+      "command_or_runner": null,
+      "executed_sha": null,
+      "exit_status": null,
+      "receipt_ref": null
+    }
+  },
+  "preflight": {
+    "required_checks": [
+      "CURRENT_MAIN_SNAPSHOT",
+      "EKB_APPLICABILITY",
+      "LIVE_CARD_OPERATION_READBACK",
+      "PARALLEL_LANE_COLLISION_SCAN",
+      "S31_CANDIDATE_STATUS_CHECK",
+      "WRITE_SCOPE_ISOLATION"
+    ],
+    "material_work_gate": "FAIL_CLOSED",
+    "result": "PASS_TO_READ_ONLY_PARALLEL"
+  },
+  "obligations": {
+    "acceptance": [
+      "A: reconcile Card authority/SSOT versus inventory/projection roles without inventing authority",
+      "B: define common create/update lifecycle invariants without mutating existing operations",
+      "C: define Card-specific carrier adapter matrix including Google Doc stale-revision guards",
+      "D: define S31-C/runtime compatibility boundary without activating candidate S31 contracts"
+    ],
+    "failure": [
+      "Any attempt to treat lf_cards inventory as SSOT without authority evidence",
+      "Any Card Update design that assumes Git as universal carrier",
+      "Any evidence claim beyond executed proof",
+      "Any hard dependency on S31 candidate before independent review"
+    ],
+    "blocking": [
+      "CARD_SSOT_AUTHORITY_UNRESOLVED",
+      "CARD_UPDATE_TRUST_CONTEXT_AND_REVISION_GUARDS_NOT_CLOSED",
+      "S31_INDEPENDENT_REVIEW_PENDING"
+    ]
+  },
+  "evidence": {
+    "required_receipts": [
+      "sandbox/lf_contract_gate_test/card_lifecycle_convergence_v0_1/card_lifecycle_preflight_receipt_v0_1.json",
+      "future independent semantic review receipt before promotion"
+    ],
+    "claim_ceiling": "PROVENANCE_EXECUTION_ONLY",
+    "provenance_required": true
+  },
+  "judge": {
+    "independent_required": true,
+    "self_certification_forbidden": true,
+    "binding": "INDEPENDENT_CARD_LIFECYCLE_CONVERGENCE_REVIEW_REQUIRED_BEFORE_PROMOTION"
+  },
+  "repair_policy": {
+    "bounded": true,
+    "requires_new_evidence_after_failure": true,
+    "silent_repair_forbidden": true
+  },
+  "frontier": {
+    "current_stage": "WP_CANDIDATE_AND_AUTHORITY_PREFLIGHT",
+    "next_gate": "CARD_SSOT_AUTHORITY_RECONCILIATION",
+    "blockers": [
+      {
+        "code": "CARD_SSOT_AUTHORITY_UNRESOLVED",
+        "affected_scope": "Material Card lifecycle implementation",
+        "causal_gate": "Authority/SSOT reconciliation",
+        "owner": "CARD_LIFECYCLE_OWNER_LANE",
+        "independent_safe_work": [
+          "Map authoritative source vs projection/inventory roles read-only",
+          "Draft SSOT decision matrix"
+        ],
+        "invalidation_condition": "Explicit source-of-truth authority is read back and provenance-bound"
+      },
+      {
+        "code": "CARD_UPDATE_TRUST_CONTEXT_AND_REVISION_GUARDS_NOT_CLOSED",
+        "affected_scope": "ACTUALIZACION_CARD_LF write activation",
+        "causal_gate": "Carrier trust/currentness",
+        "owner": "CARD_UPDATE_OWNER_LANE",
+        "independent_safe_work": [
+          "Draft carrier adapter contract",
+          "Draft stale-revision negative matrix"
+        ],
+        "invalidation_condition": "Server-derived trust context + provider revision guard + readback are independently verified"
+      },
+      {
+        "code": "S31_INDEPENDENT_REVIEW_PENDING",
+        "affected_scope": "Hard S31 dependency/activation",
+        "causal_gate": "S31 independent review",
+        "owner": "S31",
+        "independent_safe_work": [
+          "Boundary compatibility mapping only"
+        ],
+        "invalidation_condition": "Relevant S31 candidate contracts pass independent review and authorized promotion"
+      }
+    ],
+    "safe_parallel_work": [
+      "A1_CARD_SSOT_AUTHORITY_RECONCILIATION",
+      "B1_COMMON_CREATE_UPDATE_INVARIANT_EXTRACTION",
+      "C1_CARD_CARRIER_ADAPTER_AND_STALE_REVISION_MATRIX",
+      "D1_S31C_BOUNDARY_COMPATIBILITY_MATRIX"
+    ],
+    "remaining_safe_scope_count": 4,
+    "next_safe_batch": "A1_CARD_SSOT_AUTHORITY_RECONCILIATION",
+    "targeted_scope_dispositions": {
+      "A_AUTHORITY_SSOT": "READBACK_COMPLETE_AUTHORITY_UNRESOLVED",
+      "B_COMMON_LIFECYCLE": "DESIGN_ALLOWED_IMPLEMENTATION_BLOCKED",
+      "C_CARD_ADAPTERS": "DESIGN_ALLOWED_CARRIER_AWARE_IMPLEMENTATION_BLOCKED",
+      "D_S31_COMPATIBILITY": "CANDIDATE_BOUNDARY_ONLY_NO_ACTIVATION"
+    },
+    "global_remaining_work_scan": "PASS"
+  },
+  "close_guard": {
+    "can_close": false,
+    "safe_work_remaining_count": 4,
+    "next_safe_batch": "A1_CARD_SSOT_AUTHORITY_RECONCILIATION",
+    "global_remaining_work_scan": "PASS",
+    "ekb_final_readback_verified": true,
+    "currentness_verified": true,
+    "terminal_disposition_complete": false
+  },
+  "handoff_contract": {
+    "typed_result": {
+      "status": "WP_CANDIDATE_READY_FOR_READ_ONLY_DESIGN",
+      "materialization_authorized": false,
+      "supabase_mutation_authorized": false,
+      "runtime_or_production_authorized": false,
+      "new_strategy_created": false
+    },
+    "current_frontier": {
+      "stage": "WP_CANDIDATE_AND_AUTHORITY_PREFLIGHT",
+      "safe_remaining": 4
+    },
+    "next_owner": "CARD_LIFECYCLE_OWNER_LANE",
+    "next_gate": "CARD_SSOT_AUTHORITY_RECONCILIATION"
+  }
+}
