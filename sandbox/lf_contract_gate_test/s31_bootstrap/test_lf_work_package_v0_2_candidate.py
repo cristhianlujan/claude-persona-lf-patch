@@ -100,4 +100,8 @@ x = base(); x["frontier"].update({"safe_parallel_work":["S31-C"],"remaining_safe
 r = m.evaluate_work_package(x)
 assert r["status"] == m.BLOCKED and r["code"] == "BLOCK_FRONTIER_CLOSE_COUNT_MISMATCH", r
 
-print("PASS_LF_WORK_PACKAGE_V0_2_CANDIDATE_SELFTEST=17/17")
+x = base(); x["frontier"]["blockers"] = [{"code":"WAIT_REVIEW","affected_scope":"S31-A","causal_gate":"INDEPENDENT_REVIEW","owner":"INDEPENDENT_REVIEW","independent_safe_work":[],"invalidation_condition":"REVIEW_RECEIPT"}]
+r = m.evaluate_work_package(x)
+assert r["status"] == m.BLOCKED and r["code"] == "BLOCKED_CAUSAL_NO_SAFE_WORK", r
+
+print("PASS_LF_WORK_PACKAGE_V0_2_CANDIDATE_SELFTEST=18/18")
