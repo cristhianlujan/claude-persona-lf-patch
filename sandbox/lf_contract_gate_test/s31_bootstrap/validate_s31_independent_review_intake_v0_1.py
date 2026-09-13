@@ -106,7 +106,7 @@ def evaluate_pair(bundle: dict[str, Any], handoff_text: str, bundle_text: str, r
 
 def main() -> int:
     cases = [
-        ("ABC", "s31_abc_independent_review_bundle_v0_5.json", "S31_ABC_INDEPENDENT_REVIEW_HANDOFF_V0_2.md", "S31-ABC-IR-001", "bbcd9056443059cf1da4782551a85b3a70bd2910"),
+        ("ABC", "s31_abc_independent_review_bundle_v0_6.json", "S31_ABC_INDEPENDENT_REVIEW_HANDOFF_V0_3.md", "S31-ABC-IR-002", "6878c1443d4d53e87d2d6bd3c0fbeba3d7163c0e"),
         ("DG", "s31_dg_independent_review_bundle_v0_3.json", "S31_DG_INDEPENDENT_REVIEW_HANDOFF_V0_1.md", "S31-DG-IR-001", "d268fd871f2e18588f9b8084e6a3f6c6e07aa438"),
     ]
     results = []
