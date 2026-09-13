@@ -15,9 +15,15 @@ PASS = "PASS"
 BLOCK = "BLOCK"
 PENDING = "PENDING"
 
+_SEQUENTIAL_NEXT = {"NEXT_BY_EXECUTION_ORDER", "NEXT_LOWEST_STEP_ORDER"}
 _EXTERNAL_NEXT = {
     "RETURN_TO_ROUTER",
     "RETURN_TO_WORKER",
+    "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+    "RETURN_TO_WORKER_FOR_SELF_REPAIR_OR_BACKEND_CONFIG",
+    "FAILED_UPDATE",
+    "HITL_PAUSE",
+    "STOP_AND_REGISTER_BLOCKED_OR_BATCH_PARTIAL",
     "BLOCK",
     "BLOCKED",
     "STOP",
@@ -100,7 +106,7 @@ def derive_step_graph_findings(op: Dict[str, Any]) -> List[str]:
                 continue
             target_s = str(target).strip()
             target_u = target_s.upper()
-            if target_u == "NEXT_BY_EXECUTION_ORDER" or target_u in _EXTERNAL_NEXT:
+            if target_u in _SEQUENTIAL_NEXT or target_u in _EXTERNAL_NEXT:
                 continue
             if target_s == step_id:
                 findings.append(f"{code}:UNJUSTIFIED_SELF_LOOP:{step_id}->{target_s}")
@@ -123,7 +129,7 @@ def derive_step_graph_findings(op: Dict[str, Any]) -> List[str]:
             break
         target_s = str(target).strip()
         target_u = target_s.upper()
-        if target_u == "NEXT_BY_EXECUTION_ORDER":
+        if target_u in _SEQUENTIAL_NEXT:
             current = next_by_order.get(current)
         elif target_u in _EXTERNAL_NEXT:
             current = None
