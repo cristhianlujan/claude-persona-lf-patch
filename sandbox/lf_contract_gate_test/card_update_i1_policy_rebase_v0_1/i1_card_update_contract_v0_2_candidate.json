@@ -1,0 +1,137 @@
+{
+  "schema": "LF_ACTUALIZACION_CARD_CONTRACT_V0_2_CANDIDATE",
+  "status": "CANDIDATE_READ_ONLY_DESIGN",
+  "operation_code": "ACTUALIZACION_CARD_LF",
+  "candidate_version": "v0.2",
+  "supersedes_if_promoted": "CONTRACT-ACTUALIZACION-CARD-LF-v0.1",
+  "source_model": "SUPABASE_STRUCTURED_OPERATION",
+  "purpose": "Update an existing Supabase-authorized CARD through its exact bound carrier while preserving Supabase-only operational authority and treating carrier reads/writes strictly as transport-integrity operations.",
+  "source_policy_binding": {
+    "policy_code": "POL-LF-SOURCE-RESOLUTION",
+    "policy_version": "v1.4-transversal-supabase-authority-visual-support",
+    "policy_sha": "5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46",
+    "authority_system": "SUPABASE",
+    "operational_source": "public.v_lf_fuente_operativa",
+    "carrier_authority": false,
+    "provider_read_role": "TRANSPORT_INTEGRITY_AND_CURRENTNESS_ONLY"
+  },
+  "authority_contract": {
+    "card_identity_authority": "public.v_lf_fuente_operativa/public.lf_activos",
+    "operation_authority": "public.lf_operation_registry + public.lf_operation_contracts + public.v_lf_operation_policy_snapshot",
+    "state_permission_authority": "SUPABASE_ONLY",
+    "carrier_binding_authority": "SUPABASE_GOVERNED_BINDING",
+    "github_role": "TECHNICAL_IMPLEMENTATION_ARTIFACT",
+    "google_doc_role": "STORAGE_OR_HUMAN_MIRROR",
+    "carrier_may_decide_operational_state": false,
+    "carrier_may_decide_routing_or_permissions": false,
+    "carrier_may_supply_currentness_for_exact_bound_bytes": true
+  },
+  "allowed": {
+    "asset_type": "CARD",
+    "asset_must_exist": true,
+    "carrier_types": ["GITHUB_FILE", "GOOGLE_DOC_EMBEDDED_BLOCK"],
+    "minimal_patch": true,
+    "preserve_card_identity": true,
+    "preserve_parent_binding": true,
+    "readback_required": true,
+    "runtime_enable": false,
+    "automatic_promotion": false,
+    "hard_delete": false,
+    "provider_revision_write_guard_required": true,
+    "google_docs_write_control": "requiredRevisionId"
+  },
+  "required_before_write": [
+    "router_read",
+    "current_policy_snapshot_bound",
+    "supabase_operational_card_resolved",
+    "exact_card_identity_resolved",
+    "supabase_authorized_carrier_binding_resolved",
+    "carrier_type_and_ref_exact",
+    "parent_binding_resolved_when_applicable",
+    "carrier_transport_integrity_read_completed",
+    "carrier_currentness_observed_fresh",
+    "baseline_read",
+    "change_scope_defined",
+    "regression_plan_defined",
+    "execution_bound_before_write",
+    "trusted_context_server_or_connector_derived",
+    "submitted_revision_matches_fresh_provider_revision",
+    "content_or_block_anchor_current",
+    "provider_revision_write_guard_planned",
+    "pre_write_gate_passed"
+  ],
+  "blocked": [
+    "card_not_found",
+    "ambiguous_card",
+    "create_new_card",
+    "source_policy_missing_or_stale",
+    "operational_authority_inferred_from_carrier",
+    "carrier_used_to_decide_state_routing_or_permissions",
+    "carrier_binding_missing_from_supabase",
+    "carrier_unresolved",
+    "carrier_type_write_route_mismatch",
+    "parent_binding_unresolved",
+    "block_anchor_or_path_missing",
+    "change_scope_missing",
+    "regression_plan_missing",
+    "write_without_execution_binding",
+    "write_without_trusted_context",
+    "submitted_revision_differs_from_fresh_provider_revision",
+    "provider_revision_guard_omitted",
+    "google_doc_write_without_requiredRevisionId",
+    "github_base_blob_or_bound_head_stale",
+    "identity_change",
+    "parent_binding_change_without_separate_authority",
+    "runtime_enable",
+    "automatic_promotion",
+    "hard_delete"
+  ],
+  "required_after_write": [
+    "exact_carrier_readback",
+    "new_provider_revision_or_blob_sha_observed",
+    "readback_content_sha256_observed",
+    "block_anchor_or_path_preserved",
+    "identity_preserved",
+    "parent_binding_preserved",
+    "authorized_delta_only",
+    "deterministic_validation_pass",
+    "semantic_judge_pass",
+    "regression_after_pass",
+    "provider_write_control_applied",
+    "runtime_unchanged",
+    "no_automatic_promotion",
+    "history_preserved"
+  ],
+  "carrier_contracts": {
+    "GITHUB_FILE": {
+      "prewrite_currentness": ["repository", "path", "bound_ref_or_head", "current_blob_sha", "content_sha256"],
+      "write_guard": "EXPECTED_BASE_BLOB_OR_EXACT_HEAD_CONTINUITY",
+      "postwrite_readback": ["new_exact_head", "new_blob_sha", "content_sha256"]
+    },
+    "GOOGLE_DOC_EMBEDDED_BLOCK": {
+      "prewrite_currentness": ["document_id", "block_anchor", "current_revision_id", "baseline_block_excerpt_hash"],
+      "write_guard": "writeControl.requiredRevisionId",
+      "postwrite_readback": ["new_revision_id", "same_document_id", "same_block_anchor", "readback_content_sha256"]
+    }
+  },
+  "prewrite_fail_closed_assertions": [
+    "source_policy_binding.policy_sha equals current required operation policy snapshot",
+    "operational Card identity comes from Supabase before any carrier hydration",
+    "carrier_ref equals Supabase-authorized binding",
+    "carrier provider currentness is observed after execution binding and before write",
+    "submitted/bound provider revision equals fresh observed provider revision",
+    "change_scope and regression_plan are first-class prior clean gates",
+    "no deterministic failure may be overridden by semantic judgment"
+  ],
+  "claim_ceiling": "STRUCTURAL_CANDIDATE_ONLY",
+  "promotion": {
+    "authorized": false,
+    "requires": [
+      "I2 explicit step topology repair",
+      "I3 durable Supabase carrier-currentness binding design/implementation",
+      "deterministic validator and negative canaries",
+      "independent review",
+      "explicit promotion authorization"
+    ]
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "schema": "LF_CARD_UPDATE_I1_NEGATIVE_ACCEPTANCE_MATRIX_V0_1",
+  "status": "CANDIDATE_TEST_PLAN_ONLY",
+  "operation_code": "ACTUALIZACION_CARD_LF",
+  "principle": "DETERMINISTIC_FAIL_CLOSED_BEFORE_CARRIER_WRITE",
+  "cases": [
+    {"id":"I1-N01","case":"Supabase operational Card missing but matching GitHub Card file exists","expected":"BLOCK_OPERATIONAL_CARD_NOT_AUTHORIZED","write_allowed":false},
+    {"id":"I1-N02","case":"Supabase Card exists but carrier binding missing","expected":"BLOCK_CARRIER_BINDING_MISSING","write_allowed":false},
+    {"id":"I1-N03","case":"Google Doc content suggests active state different from Supabase","expected":"IGNORE_CARRIER_STATE_CLAIM_AND_USE_SUPABASE","write_allowed":false},
+    {"id":"I1-N04","case":"Source-policy snapshot is v1.2 while current required snapshot is v1.4","expected":"BLOCK_POLICY_SNAPSHOT_STALE","write_allowed":false},
+    {"id":"I1-N05","case":"change_scope evidence absent","expected":"BLOCK_CHANGE_SCOPE_MISSING","write_allowed":false},
+    {"id":"I1-N06","case":"regression_plan evidence absent","expected":"BLOCK_REGRESSION_PLAN_MISSING","write_allowed":false},
+    {"id":"I1-N07","case":"trusted context caller-declared but not server/connector-derived","expected":"BLOCK_TRUST_CONTEXT_UNTRUSTED","write_allowed":false},
+    {"id":"I1-N08","case":"submitted Google revision differs from fresh provider revision","expected":"BLOCK_PROVIDER_REVISION_STALE","write_allowed":false},
+    {"id":"I1-N09","case":"Google requiredRevisionId omitted","expected":"BLOCK_PROVIDER_WRITE_GUARD_MISSING","write_allowed":false},
+    {"id":"I1-N10","case":"Google anchor missing or ambiguous","expected":"BLOCK_ANCHOR_UNRESOLVED","write_allowed":false},
+    {"id":"I1-N11","case":"GitHub bound blob/head advanced after baseline without rebind","expected":"BLOCK_GITHUB_CURRENTNESS_STALE","write_allowed":false},
+    {"id":"I1-N12","case":"Carrier type and writer route mismatch","expected":"BLOCK_CARRIER_ROUTE_MISMATCH","write_allowed":false},
+    {"id":"I1-N13","case":"Patch changes Card identity","expected":"BLOCK_IDENTITY_CHANGE","write_allowed":false},
+    {"id":"I1-N14","case":"Patch changes parent binding without separate governed authority","expected":"BLOCK_PARENT_BINDING_CHANGE","write_allowed":false},
+    {"id":"I1-N15","case":"Semantic judge returns PASS after deterministic currentness fail","expected":"DETERMINISTIC_FAIL_REMAINS_TERMINAL","write_allowed":false},
+    {"id":"I1-P01","case":"Supabase authority current, exact carrier bound, change scope/regression plan clean, provider revision current and guard planned","expected":"PASS_PREWRITE_ONLY","write_allowed":false}
+  ],
+  "historical_regression_binding": {
+    "execution_id": "EXEC-S29-CARD-UPDATE-NEG-STALE-REVISION-20260907-001",
+    "historical_result": "FAIL_OPEN_STALE_REVISION_ACCEPTED_AT_PREWRITE",
+    "carrier_write_executed": false,
+    "candidate_required_new_result": "BLOCK_PROVIDER_REVISION_STALE"
+  },
+  "execution": {
+    "executed": false,
+    "reason": "I1 defines policy/contract candidate only; executable topology and recorder enforcement belong to subsequent implementation gates.",
+    "claim_ceiling": "STRUCTURAL"
+  }
+}
