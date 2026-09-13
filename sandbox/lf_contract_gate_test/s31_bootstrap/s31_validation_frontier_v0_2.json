@@ -1,0 +1,52 @@
+{
+  "checkpoint_version": "S31_VALIDATION_FRONTIER_V0_5",
+  "strategy": "S31",
+  "base_main_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "candidate_head": "191b53fca993bf28aefccf5e1e67007ad9a35dfa",
+  "independent_review_history": {
+    "S31-A": "IR002_PASS_UNCHANGED",
+    "S31-B": "IR002_BLOCKED_REPAIRED_IR003_PENDING",
+    "S31-C": "IR002_PASS_UNCHANGED",
+    "S31-D": "IR002_BLOCKED_REPAIRED_IR003_PENDING",
+    "S31-E": "IR002_BLOCKED_REPAIRED_IR003_PENDING",
+    "S31-F": "IR002_BLOCKED_REPAIRED_IR003_PENDING",
+    "S31-G": "IR002_BLOCKED_REPAIRED_IR003_PENDING"
+  },
+  "deterministic_status": {
+    "S31-A": "PASS",
+    "S31-B": "PASS_26_OF_26",
+    "S31-C": "PASS_28_OF_28",
+    "S31-DG": "PASS_8_POSITIVE_36_NEGATIVE",
+    "S31-EKB": "PASS_14_OF_14"
+  },
+  "ci_status": {
+    "candidate_head": "191b53fca993bf28aefccf5e1e67007ad9a35dfa",
+    "state": "PENDING_EXACT_HEAD_CI_AFTER_FREEZE",
+    "prior_head_f255e6f3": "3_OF_3_GREEN"
+  },
+  "remaining_safe_material_work_without_new_external_evidence": [
+    "FREEZE_S31_B_IR003",
+    "FREEZE_S31_DG_IR003",
+    "EXACT_HEAD_CI",
+    "FINAL_EKB_READBACK"
+  ],
+  "next_gates": [
+    "S31_B_IR003_INDEPENDENT_CHAT_CONTEXT",
+    "S31_DG_IR003_INDEPENDENT_CHAT_CONTEXT"
+  ],
+  "close_guard": {
+    "strategy_closed": false,
+    "producer_safe_material_work_count": 4,
+    "next_safe_batch": "FREEZE_S31_B_IR003",
+    "global_remaining_work_scan": "PASS",
+    "ekb_final_readback_verified": false,
+    "currentness_verified": true,
+    "reason": "IR-002 blockers repaired deterministically; affected scopes require new independent semantic review."
+  },
+  "blocked_or_deferred": {
+    "runtime_cutover": "NOT_AUTHORIZED",
+    "golden": "NOT_AUTHORIZED",
+    "merge_main": "NOT_AUTHORIZED",
+    "production": "NOT_AUTHORIZED"
+  }
+}
