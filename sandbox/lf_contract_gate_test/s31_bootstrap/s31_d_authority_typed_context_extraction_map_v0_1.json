@@ -1,0 +1,73 @@
+{
+  "contract_version": "S31_D_AUTHORITY_TYPED_CONTEXT_EXTRACTION_MAP_V0_1",
+  "status": "CANDIDATE_READ_ONLY",
+  "owner_lane": "S31-D",
+  "source_commit": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+  "source_assets": [
+    {
+      "path": "services/profile_runtime_api/profile_runtime_api/runtime_authority.py",
+      "blob_sha": "58fe0fcca5826be1a280588c659639c27b1c0e09"
+    },
+    {
+      "path": "services/profile_runtime_api/profile_runtime_api/engine.py",
+      "blob_sha": "560b538254c47888babd782321f9ad01c838632b"
+    }
+  ],
+  "shared_kernel_candidates": [
+    "SOURCE_AUTHORITY_MANIFEST_AND_HASH_BINDING",
+    "CURRENT_RUN_AND_CROSS_RUN_AUTHORITY_RULES",
+    "AUTHORITY_REQUIRED_TYPE_COMPLETENESS_AND_COMPATIBILITY",
+    "CARD_RESOLUTION_INTERFACE",
+    "ADAPTER_BINDING_INTERFACE",
+    "RUNTIME_SCHEMA_BINDING",
+    "PROVENANCE_RECONSTRUCTIBILITY",
+    "TYPED_CONTEXT_CONSTRUCTION",
+    "TYPED_CONTEXT_FINGERPRINT"
+  ],
+  "boundary_compatibility": [
+    "S26_RUNTIME_CARD_STATUS_AND_NO_CARD_GOVERNED_MAPPING",
+    "PROFILE_SOURCE_AUTHORITY_SHAPE",
+    "INPUT_GOVERNANCE_RECEIPT_SHAPE",
+    "LF_CARD_SOURCE_AND_ADAPTER_SOURCE_MODELS",
+    "lf-runtime-typed-context/v1",
+    "lf-governed-context-receipt/v2"
+  ],
+  "executor_specific_keep_outside_kernel": [
+    "LLAMA_HTTP_CLIENT",
+    "PERSISTENT_LLAMA_SERVER_ADAPTER",
+    "MODEL_CALL_AND_PROVIDER_TRANSPORT",
+    "RAW_MODEL_OUTPUT_AND_DIAGNOSTICS",
+    "PROFILE_SPECIFIC_OUTPUT_GATES",
+    "PROFILE_RUNTIME_ENGINE_REQUEST_MODES",
+    "UI_SPECIFIC_DETERMINISTIC_OUTCOME"
+  ],
+  "evidence": {
+    "runtime_authority_observation": "resolve_typed_runtime_context builds authority/card/adapter/schema/provenance state before provider execution",
+    "engine_observation": "engine consumes resolve_typed_runtime_context and then composes governed receipt plus concrete execution",
+    "separation_assessment": "EXTRACTION_FEASIBLE_WITH_PORT_BOUNDARY"
+  },
+  "target_ports": [
+    "AuthorityResolverPort",
+    "CardResolverPort",
+    "AdapterBindingPort",
+    "SchemaBindingPort",
+    "TypedContextBuilderPort",
+    "ProvenanceVerifierPort"
+  ],
+  "extraction_sequence": [
+    "DEFINE_SHARED_CONTRACT",
+    "DEFINE_S26_COMPATIBILITY_ADAPTER",
+    "REPLAY_EXISTING_S26_TESTS_AGAINST_ADAPTER",
+    "MATERIALIZE_SHARED_KERNEL_CANDIDATE",
+    "DUAL_RUN_OR_EQUIVALENCE_TEST",
+    "ONLY_THEN_CUTOVER_CONSUMER"
+  ],
+  "boundaries": {
+    "s26_mutation_allowed_in_s31": false,
+    "runtime_activation_allowed": false,
+    "big_bang_move": false,
+    "provider_framework_in_kernel": false,
+    "source_authority_remains_external_to_model": true
+  },
+  "claim_ceiling": "EXTRACTION_MAP_ONLY_NO_CODE_MOVE"
+}

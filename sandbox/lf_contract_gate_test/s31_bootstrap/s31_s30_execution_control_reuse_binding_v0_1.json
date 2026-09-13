@@ -1,0 +1,80 @@
+{
+  "contract_version": "S31_S30_EXECUTION_CONTROL_REUSE_BINDING_V0_1",
+  "status": "CANDIDATE_READ_ONLY_BINDING",
+  "owner_lane": "S31-B",
+  "source_commit": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+  "reuse_mode": "REFERENCE_AND_COMPATIBILITY_ONLY",
+  "source_assets": [
+    {
+      "path": "gobernanza/contratos/s30_self_governance_gate_v1.json",
+      "blob_sha": "b0b43c48a20dc22eeb4d030e7f7022dcf215f36b",
+      "purpose": "CAUSAL_OWNERSHIP_FRONTIER_SAFE_PARALLEL_WORK"
+    },
+    {
+      "path": "gobernanza/judges/validate_s30_self_governance_gate.py",
+      "blob_sha": "484a79fedcf5379992fcadc59d085c80fc73e004",
+      "purpose": "DETERMINISTIC_FRONTIER_AND_BLOCKER_SHAPE"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s30_d_final_r09/strategy_executor_bootstrap_contract_v1.json",
+      "blob_sha": "fd0f924edb180180f3d5e00596e368a5d76dfe75",
+      "purpose": "MACROLOT_SEQUENCE_RECOVERY_AND_CLOSE_POLICY"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s30_d_final_r09/s30_strategy_executor_bootstrap.py",
+      "blob_sha": "a2c90c4bdf6483d631a39ed839e0a7de5ca546ab",
+      "purpose": "CANARY_SEMANTICS_FOR_BLOCKED_PLUS_SAFE_AND_CLOSE_WITH_REMAINING"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s30_d_final_r09/strategy_executor_canary_blueprint_v1.json",
+      "blob_sha": "7a579844ac6f1494ad4b74164cf1e7b97fe18a02",
+      "purpose": "NEGATIVE_CASE_BINDING"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/run_close_gate_v3.py",
+      "blob_sha": "c5c9eaf13ac20fb41eee2d8c79f168de2ac31728",
+      "purpose": "HARD_ANTI_CLOSE_REFERENCE"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_run_close_gate_v3.py",
+      "blob_sha": "048058fe7349c6ff399bca835da8b501cea43085",
+      "purpose": "ANTI_CLOSE_POSITIVE_NEGATIVE_REFERENCE"
+    }
+  ],
+  "consumed_invariants": [
+    "ONE_CAUSAL_CHAIN_ONE_ACTIVE_WRITER",
+    "BLOCKED_SCOPE_DOES_NOT_HIDE_UNRELATED_SAFE_SCOPE",
+    "ZERO_EXECUTABLE_SAFE_SCOPES_REMAINING_OR_ALL_TARGETED_SCOPES_TERMINALLY_DISPOSED",
+    "INDEPENDENT_READBACK_NOT_PRODUCER_SELF_ATTESTATION"
+  ],
+  "consumed_steps": [
+    "safe_work_discovery",
+    "execute_safe_macrobatch",
+    "checkpoint_progress",
+    "recovery_and_parallel_continue",
+    "close_guard",
+    "report_output"
+  ],
+  "ekb_bindings": [
+    "PROFILE-RUNTIME-RUN-REPORT-ANTI-CLOSE-VIOLATION-001",
+    "GOV-010",
+    "GOV-001",
+    "GOV-011",
+    "CROSS-STRATEGY-STRUCTURAL-FINGERPRINT-001",
+    "STRATEGY-GOV-SOURCE-PREWRITE-BINDING-GAP-001",
+    "STRATEGY-PROGRESS-CANONICAL-CONTRACT-001"
+  ],
+  "boundaries": {
+    "s30_mutation_allowed": false,
+    "s30_runtime_authority_claimed": false,
+    "s30_executor_active_for_s31": false,
+    "copy_s30_implementation_into_s31": false,
+    "s31_generic_compatibility_guards_allowed": true
+  },
+  "currentness_policy": {
+    "source_commit_must_match_or_revalidate": true,
+    "source_blob_change_action": "STALE_BINDING_REVALIDATE_BEFORE_MATERIAL_CLAIM",
+    "telemetry_only_parent_change_may_use_structural_fingerprint": true
+  },
+  "claim_ceiling": "S31_MAY_REUSE_PROVEN_SEMANTICS_NOT_S30_RUNTIME_ENFORCEMENT"
+}
