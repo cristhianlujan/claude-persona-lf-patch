@@ -369,6 +369,8 @@ class OutputGates:
                     errors.append("UI_FOCUSED_DENSITY_LIMITS_NON_CONCRETE")
 
                 errors.extend(_ui_focused_semantic_v3_errors(values))
+                if payload.get("status") in {"RETURN_TO_ORCHESTRATOR", "BLOCK_PIPELINE"}:
+                    errors.append("UI_FOCUSED_STATUS_NOT_DECISION_READY")
             elif mode == "UI_MISSING_INPUT":
                 verdict = payload.get("self_verdict")
                 missing = payload.get("missing_inputs")

@@ -247,6 +247,20 @@ class RuntimeOutputModeTest(unittest.TestCase):
         ):
             self.assertIn(code, utility["blocking_codes"], utility)
 
+    def test_focused_utility_rejects_return_to_orchestrator_in_decision_mode(self) -> None:
+        payload = self.focused_payload()
+        payload["status"] = "RETURN_TO_ORCHESTRATOR"
+        binding = self.repository.runtime_schema("ui_architect", "UI_FOCUSED_DECISION")
+        gate, parsed = self.gates.contract(
+            profile_slug="ui_architect", raw_output=json.dumps(payload), schema=binding
+        )
+        self.assertEqual(gate["status"], "PASS", gate)
+        utility = self.gates.semantic_utility(
+            profile_slug="ui_architect", payload=parsed, contract_gate=gate
+        )
+        self.assertEqual(utility["status"], "FAIL", utility)
+        self.assertIn("UI_FOCUSED_STATUS_NOT_DECISION_READY", utility["blocking_codes"])
+
     def test_focused_utility_accepts_concrete_spanish_fields(self) -> None:
         payload = self.focused_payload()
         payload.update(

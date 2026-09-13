@@ -1416,6 +1416,14 @@ def governed_generation_schema(
                 if isinstance(items, dict) and items.get("type") == "string":
                     items["minLength"] = max(int(items.get("minLength") or 0), 8)
                     items["maxLength"] = _bounded_positive_int(items.get("maxLength"), 120)
+            if name == "status" and isinstance(prop.get("enum"), list):
+                # Missing-input work has its own typed UI_MISSING_INPUT mode. Once the
+                # orchestrator explicitly binds UI_FOCUSED_DECISION, generation must
+                # produce a decision-ready candidate rather than bounce the same input.
+                allowed = {"CANDIDATE_READ_ONLY", "SANDBOX_READY", "PASS_WITH_ASSUMPTIONS"}
+                prop["enum"] = [value for value in prop["enum"] if value in allowed]
+                if not prop["enum"]:
+                    raise LlamaTransportError("UI_FOCUSED_GENERATION_STATUS_ENUM_EMPTY")
         return bounded, UI_FOCUSED_GENERATION_POLICY
 
     # When governed acceptance already fixes the skeleton, do not ask the model to
@@ -1812,7 +1820,8 @@ class PersistentLlamaServerAdapter:
                     "- Phrase-shape guide (structure only, not task facts): coverage='only <named UI region/component>'; density='one <cue/treatment> per <named component>'; depth='no added elevation; preserve <existing shadow/elevation>'; weight='<relative prominence> versus <named content/action>'; relationship='<behavior> relative to <named main element>'; implementation='<CSS/component/layout mechanism> on <named element>'.",
                     "- A preservation/lock request still requires a concrete UI pattern: state what stays fixed, what varies, and how the transition/navigation behaves. A bare *_lock token is not a treatment.",
                     "- Conceptual snake_case identifiers copied from the request (for example *_lock, *_authority, *_artifact, *_mode) are labels, not final semantic field values. Expand them into a concrete human-readable UI treatment; only genuine design tokens/CSS identifiers may remain token-like.",
-                    "- Use RETURN_TO_ORCHESTRATOR only when a material input needed for this focused decision is actually unresolved; read-only/advisory governance alone is not such a missing input.",
+                    "- Cover every explicitly requested UI subdecision in the literal input. If it names shell preservation, navigation authority, a variable slot, and a transition, the fields together must describe all of them rather than only the shell.",
+                    "- UI_FOCUSED_DECISION is already the decision-producing mode. Return a decision-ready status (CANDIDATE_READ_ONLY, SANDBOX_READY, or PASS_WITH_ASSUMPTIONS). Materially unresolved input belongs in the separately typed UI_MISSING_INPUT mode, not RETURN_TO_ORCHESTRATOR here.",
                     "",
                 ]
             )

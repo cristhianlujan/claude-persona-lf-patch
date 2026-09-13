@@ -156,6 +156,11 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         self.assertGreaterEqual(props["density_limits"]["minLength"], 6)
         self.assertGreaterEqual(props["relationship_to_main_element"]["minLength"], 10)
         self.assertGreaterEqual(props["hard_exclusions"]["items"]["minLength"], 8)
+        self.assertEqual(
+            props["status"]["enum"],
+            ["CANDIDATE_READ_ONLY", "SANDBOX_READY", "PASS_WITH_ASSUMPTIONS"],
+        )
+        self.assertIn("RETURN_TO_ORCHESTRATOR", canonical["properties"]["status"]["enum"])
         self.assertEqual(canonical["properties"]["size_or_coverage"]["minLength"], 3)
 
     def test_other_profiles_keep_canonical_generation_schema(self) -> None:
