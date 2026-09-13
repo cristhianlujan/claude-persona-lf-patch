@@ -30,6 +30,7 @@ MIGRATION_TRANSPORT_TEST = "sandbox/lf_contract_gate_test/test_lf_migration_sour
 INPUT_GOV_VALIDATOR = "sandbox/lf_contract_gate_test/input_governance_migration_parity_compact.py"
 CI_WORKFLOW = ".github/workflows/lf-contract-check.yml"
 VALIDATE_LF_PACKS_WORKFLOW = ".github/workflows/validate-lf-packs.yml"
+LF_GITHUB_RECONCILE_WORKFLOW = ".github/workflows/lf-github-reconcile-v3.yml"
 CI_ROUTER_PREFIX = "sandbox/lf_contract_gate_test/s28_ci_lane_router/"
 LF_CONTRACT_CHECK_VALIDATOR = "scripts/lf_contract_check.py"
 P0_RUNTIME_ENTRYPOINT = "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py"
@@ -45,6 +46,7 @@ P0_EXACT_HEAD_EXTERNAL_EXACT = frozenset({
 CI_SELFTEST_CONTROLS = frozenset({
     CI_WORKFLOW,
     VALIDATE_LF_PACKS_WORKFLOW,
+    LF_GITHUB_RECONCILE_WORKFLOW,
     LF_CONTRACT_CHECK_VALIDATOR,
     P0_RUNTIME_ENTRYPOINT,
     P0_RUNTIME_CORE,
