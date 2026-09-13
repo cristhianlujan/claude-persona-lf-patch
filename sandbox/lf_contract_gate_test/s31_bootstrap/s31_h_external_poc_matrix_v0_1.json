@@ -1,0 +1,17 @@
+{
+  "contract_version":"S31_H_EXTERNAL_POC_MATRIX_V0_1",
+  "status":"PLAN_ONLY_NO_INSTALL","owner_lane":"S31-H",
+  "baseline":"LF_KERNEL_PLUS_STABLE_PORTS_ADAPTERS",
+  "pocs":[
+    {"candidate":"OpenTelemetry","role":"OBSERVABILITY_MAPPING","question":"Can LF receipts/execution IDs map to standard traces without making OTel the evidence authority?","measure":["trace_coverage","receipt_trace_join_rate","added_latency","context_bytes"],"go_if":["authority_unchanged","100_percent_required_trace_join","bounded_overhead"],"no_go_if":["trace_becomes_source_of_truth","receipt_semantics_lost"]},
+    {"candidate":"MCP","role":"TOOL_CAPABILITY_ADAPTER","question":"Can external tools expose capabilities through LF ports while LF retains authority/currentness/scope gates?","measure":["contract_mapping_coverage","fail_closed_unknown_tool","adapter_specific_code"],"go_if":["no_kernel_dependency","typed_contract_preserved"],"no_go_if":["server_metadata_grants_authority","untyped_tool_bypass"]},
+    {"candidate":"A2A","role":"INTER_AGENT_TRANSPORT","question":"Can typed Work Package handoffs travel over A2A without replacing LF handoff/evidence contracts?","measure":["handoff_roundtrip_fidelity","identity_binding","failure_mapping"],"go_if":["byte_or_semantic_equivalence","LF_handoff_remains_authority"],"no_go_if":["A2A_state_becomes_authority","handoff_fields_dropped"]},
+    {"candidate":"LangGraph_or_OpenAI_Agents_SDK","role":"OPTIONAL_AGENT_EXECUTION_ADAPTER","question":"Can a framework run bounded model steps behind RuntimeExecutionPort without owning routing, authority, state source of truth, closure or evidence?","measure":["adapter_code_size","state_duplication","behavioral_equivalence","latency","failure_code_fidelity"],"go_if":["kernel_unchanged","replaceable_adapter","no_state_authority_duplication"],"no_go_if":["framework_becomes_orchestrator_of_record","duplicate_memory_or_governance"]},
+    {"candidate":"Temporal_DBOS_Dapr","role":"DURABLE_EXECUTION_ENGINE","question":"Does an external durable engine materially improve crash recovery/idempotency/checkpointing beyond LF persisted control state?","measure":["recovery_correctness","duplicate_effect_rate","operational_complexity","latency","storage_overhead"],"go_if":["zero_duplicate_effects","simpler_or_materially_stronger_recovery","LF_contracts_preserved"],"no_go_if":["second_state_authority","migration_complexity_exceeds_measured_benefit"]}
+  ],
+  "common_negative_controls":["UNKNOWN_AUTHORITY_FAILS_CLOSED","FRAMEWORK_REMOVAL_DOES_NOT_CHANGE_LF_CONTRACTS","PROVIDER_FAILURE_NO_SILENT_FALLBACK","WORK_PACKAGE_AND_RECEIPTS_RECONSTRUCT_RUN_WITHOUT_FRAMEWORK_INTERNAL_STATE"],
+  "execution_order":["OTEL_MAPPING_LOW_RISK","MCP_A2A_CONTRACT_ADAPTERS","AGENT_FRAMEWORK_ADAPTER","DURABLE_ENGINE_LAST"],
+  "adoption_rule":"NO_ADOPTION_FROM_DESIGN_OR_DEMO; REQUIRE_BOUNDED_POC_PLUS_BASELINE_PLUS_NEGATIVES_PLUS_INDEPENDENT_REVIEW",
+  "current_action":"NONE_AUTHORIZED",
+  "claim_ceiling":"POC_PLAN_ONLY"
+}
