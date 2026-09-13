@@ -4,10 +4,22 @@
   "title": "LF Work Package v0.2 Candidate",
   "type": "object",
   "additionalProperties": false,
+  "definitions": {
+    "evidenceBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "digest", "resolver_id"],
+      "properties": {
+        "ref": {"type": "string", "minLength": 3},
+        "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "resolver_id": {"type": "string", "minLength": 3}
+      }
+    }
+  },
   "required": [
     "schema_id","work_package_id","strategy_id","lane_id","operation","objective",
     "execution_identity","source_snapshot_bindings","causal_ownership","authority","scope",
-    "execution","preflight","obligations","evidence","judge","repair_policy","frontier",
+    "execution","resolved_evidence","preflight","obligations","evidence","judge","repair_policy","frontier",
     "close_guard","handoff_contract"
   ],
   "properties": {
@@ -135,6 +147,16 @@
             }
           ]
         }
+      }
+    },
+    "resolved_evidence": {
+      "type":"object","additionalProperties":false,
+      "required":["executed_validation_receipt","ekb_freshness_receipt","currentness_receipt","ekb_final_readback_receipt"],
+      "properties": {
+        "executed_validation_receipt":{"anyOf":[{"type":"null"},{"$ref":"#/definitions/evidenceBinding"}]},
+        "ekb_freshness_receipt":{"$ref":"#/definitions/evidenceBinding"},
+        "currentness_receipt":{"$ref":"#/definitions/evidenceBinding"},
+        "ekb_final_readback_receipt":{"anyOf":[{"type":"null"},{"$ref":"#/definitions/evidenceBinding"}]}
       }
     },
     "preflight": {
