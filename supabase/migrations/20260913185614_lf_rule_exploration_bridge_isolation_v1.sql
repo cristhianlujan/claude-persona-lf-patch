@@ -2,10 +2,19 @@
 -- Keeps historical migration 20260913184218 intact; this corrective migration removes the cross-domain write.
 -- No production/runtime/Golden/VIGENTE promotion.
 
+insert into public.lf_operation_execution(
+ execution_id,operation_code,target_type,target_code,status,manifest,created_by_execution_id,updated_by_execution_id)
+values(
+ 'EXEC-BOOTSTRAP-MATERIALIZACION-REGLA-EXPLORADA-ISOLATION-20260913-001',
+ 'VULNERABILITY_COVERAGE_REPAIR_LF','OPERATION_PROTOCOL_REPAIR','MATERIALIZACION_REGLA_EXPLORADA_LF','IN_PROGRESS',
+ '{"mode":"RULE_EXPLORATION_BRIDGE_ISOLATION","governance_bootstrap":true,"bootstrap_operation_code":"MATERIALIZACION_REGLA_EXPLORADA_LF","bootstrap_status_ceiling":"SANDBOX_ACTIVE","production_allowed":false,"runtime_activation":false}'::jsonb,
+ 'EXEC-BOOTSTRAP-MATERIALIZACION-REGLA-EXPLORADA-ISOLATION-20260913-001',
+ 'EXEC-BOOTSTRAP-MATERIALIZACION-REGLA-EXPLORADA-ISOLATION-20260913-001');
+
 update public.lf_operation_registry
 set source_paths='["public.lf_input_exploration_records","lf_ops.reglas","public.lf_rule_exploration_prepare_v1","public.lf_rule_exploration_materialize_candidate_v1"]'::jsonb,
     notes='Governed bridge from sparse exploration to canonical CANDIDATO through child rule operation. Screen relation mutation is intentionally excluded and must be handled by a separate governed capability.',
-    updated_by_execution_id='EXEC-ACTUALIZACION-DB-RULE-BRIDGE-ISOLATION-20260913-001',
+    updated_by_execution_id='EXEC-BOOTSTRAP-MATERIALIZACION-REGLA-EXPLORADA-ISOLATION-20260913-001',
     updated_at=now()
 where operation_code='MATERIALIZACION_REGLA_EXPLORADA_LF';
 
@@ -14,13 +23,13 @@ set required_before_write='["ekb_preflight","consumer_allowlist","source_provena
     allowed='{"child_rule_operation":true,"candidate_state":"CANDIDATO","consume_exploration":true,"idempotent":true,"semantic_similarity_authority":false,"screen_relation_mutation":false}'::jsonb,
     blocked='{"vigente_direct_update":true,"automatic_promotion":true,"runtime_activation":true,"production_promotion":true,"screen_relation_mutation":true,"relation_delete":true,"invented_consumer":true}'::jsonb,
     required_after_write='["candidate_readback","exploration_CONSUMED","screen_relation_NOT_MUTATED","no_promotion","execution_trace"]'::jsonb,
-    updated_by_execution_id='EXEC-ACTUALIZACION-DB-RULE-BRIDGE-ISOLATION-20260913-001',
+    updated_by_execution_id='EXEC-BOOTSTRAP-MATERIALIZACION-REGLA-EXPLORADA-ISOLATION-20260913-001',
     updated_at=now()
 where operation_code='MATERIALIZACION_REGLA_EXPLORADA_LF';
 
 update public.lf_operation_steps
 set active=false,
-    updated_by_execution_id='EXEC-ACTUALIZACION-DB-RULE-BRIDGE-ISOLATION-20260913-001',
+    updated_by_execution_id='EXEC-BOOTSTRAP-MATERIALIZACION-REGLA-EXPLORADA-ISOLATION-20260913-001',
     updated_at=now()
 where operation_code='MATERIALIZACION_REGLA_EXPLORADA_LF'
   and step_id='relation_write';
@@ -28,14 +37,14 @@ where operation_code='MATERIALIZACION_REGLA_EXPLORADA_LF'
 update public.lf_operation_step_contracts
 set status='SUPERSEDED_ISOLATION',
     notes='Superseded: rule<->screen relation mutation moved out of rule exploration bridge.',
-    updated_by_execution_id='EXEC-ACTUALIZACION-DB-RULE-BRIDGE-ISOLATION-20260913-001',
+    updated_by_execution_id='EXEC-BOOTSTRAP-MATERIALIZACION-REGLA-EXPLORADA-ISOLATION-20260913-001',
     updated_at=now()
 where operation_code='MATERIALIZACION_REGLA_EXPLORADA_LF'
   and step_id='relation_write';
 
 update public.lf_operation_step_judge_bindings
 set status='SUPERSEDED_ISOLATION',
-    updated_by_execution_id='EXEC-ACTUALIZACION-DB-RULE-BRIDGE-ISOLATION-20260913-001',
+    updated_by_execution_id='EXEC-BOOTSTRAP-MATERIALIZACION-REGLA-EXPLORADA-ISOLATION-20260913-001',
     updated_at=now()
 where operation_code='MATERIALIZACION_REGLA_EXPLORADA_LF'
   and step_id='relation_write';
@@ -44,14 +53,14 @@ update public.lf_operation_step_contracts
 set required_evidence_keys='["candidate_row","exploration_status","screen_relation_status","no_promotion"]'::jsonb,
     output_payload='["candidate_row","exploration_status","screen_relation_status","no_promotion"]'::jsonb,
     notes='Final readback for rule-only exploration bridge. Shared screen relation is not mutated here.',
-    updated_by_execution_id='EXEC-ACTUALIZACION-DB-RULE-BRIDGE-ISOLATION-20260913-001',
+    updated_by_execution_id='EXEC-BOOTSTRAP-MATERIALIZACION-REGLA-EXPLORADA-ISOLATION-20260913-001',
     updated_at=now()
 where operation_code='MATERIALIZACION_REGLA_EXPLORADA_LF'
   and step_id='readback_consume';
 
 update public.lf_operation_step_judge_bindings
 set required_evidence_keys='["candidate_row","exploration_status","screen_relation_status","no_promotion"]'::jsonb,
-    updated_by_execution_id='EXEC-ACTUALIZACION-DB-RULE-BRIDGE-ISOLATION-20260913-001',
+    updated_by_execution_id='EXEC-BOOTSTRAP-MATERIALIZACION-REGLA-EXPLORADA-ISOLATION-20260913-001',
     updated_at=now()
 where operation_code='MATERIALIZACION_REGLA_EXPLORADA_LF'
   and step_id='readback_consume';
@@ -147,3 +156,10 @@ begin
  if coalesce((v_allowed->>'screen_relation_mutation')::boolean,true) is not false then raise exception 'LF_RULE_BRIDGE_ISOLATION_ALLOWED_RELATION_MUTATION'; end if;
  if coalesce((v_blocked->>'screen_relation_mutation')::boolean,false) is not true then raise exception 'LF_RULE_BRIDGE_ISOLATION_MISSING_BLOCK'; end if;
 end $p$;
+
+update public.lf_operation_execution
+set status='COMPLETED',
+    completed_at=now(),
+    manifest=manifest||'{"result":"RULE_EXPLORATION_BRIDGE_ISOLATED","screen_relation_mutation":false}'::jsonb,
+    updated_by_execution_id='EXEC-BOOTSTRAP-MATERIALIZACION-REGLA-EXPLORADA-ISOLATION-20260913-001'
+where execution_id='EXEC-BOOTSTRAP-MATERIALIZACION-REGLA-EXPLORADA-ISOLATION-20260913-001';
