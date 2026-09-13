@@ -1,0 +1,89 @@
+{
+  "contract_version": "S30_STRATEGY_ORCHESTRATOR_BOOTSTRAP_V1",
+  "operation_code": "ORQUESTACION_ESTRATEGIAS_LF",
+  "status": "SOURCE_READY_NOT_REGISTERED",
+  "activation_status": "NOT_REGISTERED_NOT_ACTIVE",
+  "operation_role": "PORTFOLIO_SUPERVISOR_NOT_BUSINESS_STATE_AUTHORITY",
+  "child_operation_code": "EJECUCION_ESTRATEGIA_LF",
+  "authority_policy": "DETERMINISTIC_FIRST_MODEL_ONLY_ON_NON_DERIVABLE_SEMANTIC_GAP",
+  "state_authority": "PERSISTED_PARENT_CONTROL_STATE_CHILD_RECEIPTS_AND_CHECKPOINTS_ONLY",
+  "required_preconditions": [
+    "EJECUCION_ESTRATEGIA_LF_REGISTERED_CANDIDATE_READ_ONLY",
+    "EXECUTOR_PRE_PRODUCTION_READINESS_VALIDATED",
+    "C05_DYNAMIC_FIRE_9_OF_9_PASS",
+    "S30_A_B_C_D_CLOSED_OR_BOUND",
+    "FRESH_SCHEMA_AND_FUNCTION_SIGNATURE_READBACK_BEFORE_REGISTRATION",
+    "ORQUESTACION_ESTRATEGIAS_LF_ABSENT_BEFORE_REGISTRATION",
+    "EXPLICIT_OWNER_AUTHORIZATION_BEFORE_OFFICIAL_REGISTRATION",
+    "SEPARATE_EXPLICIT_AUTHORIZATION_BEFORE_RUNTIME_OR_SCHEDULER_ACTIVATION"
+  ],
+  "steps": [
+    {"order": 0, "step_id": "init_execution", "effect_class": "NONE"},
+    {"order": 10, "step_id": "admission_and_portfolio_resolve", "effect_class": "READ_ONLY"},
+    {"order": 20, "step_id": "strategy_set_resolve", "effect_class": "READ_ONLY"},
+    {"order": 30, "step_id": "policy_and_currentness_resolve", "effect_class": "READ_ONLY"},
+    {"order": 40, "step_id": "child_plan", "effect_class": "CONTROL_FLOW_ONLY"},
+    {"order": 50, "step_id": "parent_control_reservation", "effect_class": "CONTROL_STATE_ONLY"},
+    {"order": 60, "step_id": "spawn_safe_children", "effect_class": "DELEGATED_CHILD_CONTROL_ONLY"},
+    {"order": 70, "step_id": "collect_child_receipts", "effect_class": "READ_ONLY"},
+    {"order": 80, "step_id": "persist_checkpoint", "effect_class": "CONTROL_STATE_ONLY"},
+    {"order": 90, "step_id": "retry_or_continue_safe_children", "effect_class": "CONTROL_FLOW_ONLY"},
+    {"order": 100, "step_id": "portfolio_independent_readback", "effect_class": "READ_ONLY"},
+    {"order": 110, "step_id": "deterministic_and_semantic_judge", "effect_class": "NONE"},
+    {"order": 120, "step_id": "close_guard", "effect_class": "NONE"},
+    {"order": 130, "step_id": "report_output", "effect_class": "EVIDENCE_ONLY"}
+  ],
+  "mandatory_invariants": [
+    "ONE_CHILD_EXECUTION_PER_STRATEGY_TARGET",
+    "CHILD_OPERATION_MUST_BE_EJECUCION_ESTRATEGIA_LF",
+    "PARENT_MUST_NOT_PERFORM_MULTI_TARGET_BUSINESS_WRITES",
+    "BLOCKED_CHILD_DOES_NOT_HIDE_UNRELATED_SAFE_CHILD",
+    "CHILD_FAILURE_DISPOSITION_REQUIRED",
+    "CHILD_RECEIPT_IDENTITY_AND_HASH_REQUIRED",
+    "PARENT_CHECKPOINT_MONOTONIC",
+    "INTERRUPTION_RESUMES_FROM_PERSISTED_PARENT_CHECKPOINT",
+    "ZERO_EXECUTABLE_SAFE_SCOPES_BEFORE_CLOSE",
+    "REPORT_PERSISTED_BEFORE_CLOSE",
+    "NO_ORQUESTACION_PIPELINE_LF_IDENTITY_REUSE",
+    "NO_CHAT_MEMORY_AS_STATE_AUTHORITY",
+    "NO_SCHEDULER_AS_STATE_AUTHORITY",
+    "NO_AUTO_PRODUCTION_PROMOTION",
+    "NO_FINDING_QUOTA",
+    "NO_HEURISTIC_AS_BLOCKING_GATE"
+  ],
+  "child_policy": {
+    "dispatch": "ONLY_SAFE_CURRENT_CHILDREN",
+    "blocked_child": "PERSIST_BLOCKED_DISPOSITION_AND_CONTINUE_UNRELATED_SAFE_CHILDREN",
+    "retry": "ONLY_CLASSIFIED_TRANSIENT_CHILD_FAILURES",
+    "completed_child": "REPLAY_RECEIPT_NO_REEXECUTION",
+    "unknown_or_unbound_child": "BLOCK"
+  },
+  "close_policy": {
+    "required": [
+      "ALL_TARGET_CHILDREN_TERMINALLY_DISPOSED",
+      "ZERO_EXECUTABLE_SAFE_SCOPES_REMAINING",
+      "LATEST_PARENT_CHECKPOINT_PERSISTED",
+      "INDEPENDENT_PORTFOLIO_READBACK_COMPLETE",
+      "REPORT_PERSISTED"
+    ],
+    "scheduler_reprogramming": "OUT_OF_SCOPE_THIS_NON_PRODUCTION_CLOSEOUT"
+  },
+  "forbidden": [
+    "ORQUESTACION_PIPELINE_LF_IDENTITY_REUSE",
+    "LF_PIPELINE_RUNS_STATE_AUTHORITY",
+    "PARENT_MULTI_TARGET_IRREVERSIBLE_WRITE",
+    "BLIND_RETRY",
+    "CHAT_MEMORY_AS_STATE",
+    "SCHEDULER_AS_STATE_AUTHORITY",
+    "MODEL_AS_SYSTEM_FIELD_AUTHORITY",
+    "AUTO_PRODUCTION_PROMOTION",
+    "RUNTIME_ACTIVATION_FROM_SOURCE_BOOTSTRAP"
+  ],
+  "runtime_activation": false,
+  "scheduler_activation": false,
+  "production_activation": false,
+  "business_effect_dispatch_allowed": false,
+  "supabase_registration_applied": false,
+  "s26_mutation": false,
+  "s31_mutation": false
+}
