@@ -129,5 +129,5 @@
     "The reviewer could not reproduce profile authority source_sha256 inside its frozen review scope; post-review deterministic reconstruction using the runtime canonical manifest algorithm matches b65ab7beb8701ca95d1d9fdd51a82bd48f5382d87167cd0a148ae9fe7965f658 exactly.",
     "The reviewer could not read back model RAW bytes inside its frozen review scope; the exact 57-byte RAW capture is now materialized immutably and hashes to 45b130b396abb690095cb6b64c1bf23b4a046a49c904aee1436ff0a46b450b0b, while the execution receipt canonical-JSON string digest matches 753ab756172d7b7a1f68fbfb8d8c74ae1e7e1722bf65305f9ae36a54de2d7a4e."
   ],
-  "claim_ceiling": "F10_O5_RECONCILED_PASS_WITH_RESTRICTIONS_NOT_GOLDEN_NOT_PRODUCTION"
+  "claim_ceiling": "f10-o5-reconciled-pass-with-restrictions-not-golden-not-production"
 }

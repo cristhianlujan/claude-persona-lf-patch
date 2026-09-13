@@ -2,8 +2,8 @@
   "schema": "S26_F10_FAMILY_CLOSURE_RECEIPT_V1",
   "status": "F10_COMPLETE_PASS_WITH_RESTRICTIONS",
   "final_candidate_sha": "77222b36028407659c3ff6f18e398ec77ec8fe46",
-  "main_readback_sha_at_closure": "77222b36028407659c3ff6f18e398ec77ec8fe46",
-  "source_current_at_closure": true,
+  "main_readback_sha_at_closure": "f89543dd145e3e7f97ce7bfd003d599944e53450",
+  "source_current_at_closure": false,
   "semantic_transport": "UICT5",
   "objectives": {
     "F10-O2": {
@@ -49,9 +49,12 @@
     "Accessibility behavior was not part of the frozen acceptance criteria and remains unspecified.",
     "header_search uses a weaker USER_REQUIREMENT binding than neighboring DATA_BOUND components."
   ],
-  "claim_ceiling": "F10_COMPLETE_PASS_WITH_RESTRICTIONS_NOT_GOLDEN_NOT_PRODUCTION",
+  "claim_ceiling": "f10-complete-pass-with-restrictions-not-golden-not-production",
   "golden_authorized": false,
   "production_authorized": false,
   "runtime_activation_authorized": false,
-  "merge_authorized": false
+  "merge_authorized": false,
+  "runtime_source_sha": "77222b36028407659c3ff6f18e398ec77ec8fe46",
+  "source_currentness_rebound_to_main": true,
+  "currentness_rebind_ref": "f10_currentness_rebind_f89543d.json"
 }

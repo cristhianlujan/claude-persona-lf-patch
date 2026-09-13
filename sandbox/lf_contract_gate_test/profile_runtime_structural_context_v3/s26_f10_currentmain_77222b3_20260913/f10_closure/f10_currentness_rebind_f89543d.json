@@ -1,0 +1,28 @@
+{
+  "schema": "s26-f10-currentness-rebind-v1",
+  "status": "pass-compatible-rebind",
+  "from_runtime_source_sha": "77222b36028407659c3ff6f18e398ec77ec8fe46",
+  "to_current_main_sha": "f89543dd145e3e7f97ce7bfd003d599944e53450",
+  "integration_mode": "merge-no-force",
+  "all_changed_files": [
+    "sandbox/lf_contract_gate_test/s30_d_final_r09/s30_interim_dependency_currentness_policy_v1.json",
+    "sandbox/lf_contract_gate_test/s30_d_final_r09/s30_interim_dependency_impact.py",
+    "sandbox/lf_contract_gate_test/s30_d_final_r09/s30_r22_dependency_currentness_receipt_v1.json",
+    "sandbox/lf_contract_gate_test/s30_d_final_r09/test_s30_interim_dependency_impact.py"
+  ],
+  "runtime_relevant_scopes": [
+    "services/profile_runtime_api",
+    "profiles/ui_architect",
+    "profiles/quality_pack",
+    "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_family_objective_matrix_v3"
+  ],
+  "runtime_relevant_changed_files": [],
+  "runtime_relevant_changed_file_count": 0,
+  "frozen_artifact_canonical_sha256": "896bb19200e418fdcfe18b5ea2a2de121df75032cbc1057ba1161e6025e8a4e5",
+  "runtime_typed_context_sha256": "0edbd213b583448aab29ac845d115cc628b76e43f116b4e6ffa94094bf5a54d4",
+  "independent_review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-77222B3",
+  "independent_review_verdict": "PASS_WITH_RESTRICTIONS",
+  "independent_review_scope": "exact-frozen-artifact-produced-at-77222b3; semantic receipt is preserved and not relabeled as a new execution",
+  "compatibility_basis": "no runtime/profile/quality-pack/objective-matrix bytes changed between runtime source SHA and current main",
+  "claim_ceiling": "currentness-rebind-only-not-new-semantic-credit-not-golden-not-production"
+}
