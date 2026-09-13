@@ -1,0 +1,36 @@
+{
+  "receipt_version": "S31_A_LIFECYCLE_ERRATUM_V0_1",
+  "status": "SUPERSEDED_FOR_LIFECYCLE_SEMANTICS",
+  "affected_artifact": "canonical_capability_model_v0_1.schema.json",
+  "affected_field": "lifecycle.state",
+  "finding": "V0_1 encoded a closed lifecycle vocabulary before LF had resolved a canonical lifecycle authority and ordering.",
+  "conflicting_evidence": [
+    "S31_F_EVIDENCE_RECEIPT_LIFECYCLE_MAP_V0_1.lifecycle_policy.status=UNRESOLVED_CANONICAL_VOCABULARY",
+    "Current LF sources use multiple concepts including CANDIDATO_READ_ONLY, KNOWN_VALIDATED, NEW_UNPROVEN and GOLDEN_ELIGIBLE without one proven ordered state machine."
+  ],
+  "repair": {
+    "replacement": "canonical_capability_model_v0_2_candidate.schema.json",
+    "strategy": "SEPARATE_DIMENSIONS_AND_KEEP_CANONICAL_VOCABULARY_UNRESOLVED",
+    "dimensions": [
+      "artifact_maturity_label",
+      "evidence_level",
+      "runtime_activation",
+      "promotion_authority"
+    ],
+    "backward_compatibility": "Legacy v0.1 test vectors are transformed by the v0.2 regression test; v0.1 remains historical evidence only."
+  },
+  "invariants": [
+    "SELF_CERTIFICATION_FORBIDDEN",
+    "ARTIFACT_MATURITY_DOES_NOT_IMPLY_EVIDENCE_LEVEL",
+    "ARTIFACT_MATURITY_DOES_NOT_IMPLY_RUNTIME_ACTIVATION",
+    "NO_CANONICAL_LIFECYCLE_ORDER_WITHOUT_AUTHORITY"
+  ],
+  "scope": {
+    "s30_mutated": false,
+    "s26_mutated": false,
+    "learning_engine_mutated": false,
+    "runtime_mutated": false,
+    "production_mutated": false
+  },
+  "claim_ceiling": "S31_A_CANDIDATE_REPAIR_ONLY"
+}
