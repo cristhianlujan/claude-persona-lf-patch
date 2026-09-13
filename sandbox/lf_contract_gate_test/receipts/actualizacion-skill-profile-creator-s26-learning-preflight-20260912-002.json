@@ -1,0 +1,67 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "schema": "LF_GOVERNED_SKILL_UPDATE_RECEIPT_V1",
+  "operation_code": "ACTUALIZACION_SKILL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-SKILL-PROFILE-CREATOR-S26-LEARNING-20260912-002",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "e3ae425c34f665db5546e1332c375dac923a4f9f898bf5d1d0ae3484f9b029f6",
+  "judge_sha": "a2ecfbb2af779c7156e829a095964f325a47dca774c60a1df50738342219debf",
+  "source_sha_list": [
+    "305f937f031d710f2020cdfe9ab7f831f33f7e93",
+    "637310c071ffcdbc10404683e81d523080a9c960",
+    "ee7aca94c672fcc555db90962f09fe439eedf4f0"
+  ],
+  "target_paths": [
+    "skills/profile_creator/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-12T23:38:30Z",
+  "target_type": "SKILL",
+  "target_code": "ACT-0045",
+  "target_path": "skills/profile_creator",
+  "branch": "lf/s26-profile-learning-preflight-20260912",
+  "pr_number": 723,
+  "validated_substantive_head": "305f937f031d710f2020cdfe9ab7f831f33f7e93",
+  "validated_source_tree": "637310c071ffcdbc10404683e81d523080a9c960",
+  "base_main_sha": "ee7aca94c672fcc555db90962f09fe439eedf4f0",
+  "operation_contract_material_sha256": "e3ae425c34f665db5546e1332c375dac923a4f9f898bf5d1d0ae3484f9b029f6",
+  "operation_judge_material_sha256": "a2ecfbb2af779c7156e829a095964f325a47dca774c60a1df50738342219debf",
+  "deterministic_validation": {
+    "validate_lf_packs_run_id": 34725753020,
+    "validate_lf_packs_result": "PASS",
+    "bootstrap_probe_run_id": 34725753037,
+    "bootstrap_probe_result": "PASS",
+    "s26_profile_baseline_matrix": "7/7_PASS",
+    "s26_learning_preflight_matrix": "11/11_PASS"
+  },
+  "semantic_review": {
+    "result": "PASS_SOURCE_SEMANTIC_REVIEW",
+    "authority": "PASS",
+    "directionality": "PASS",
+    "upstream_validity": "PASS",
+    "evidence_ceiling": "SOURCE_AND_GOVERNANCE_CANDIDATE_ONLY",
+    "coverage_manifest_complete": true,
+    "router_direct_consistency": "PASS",
+    "independent_quality_review_claimed": false
+  },
+  "fresh_holdout": {
+    "profile_root_directory": "PASS",
+    "prefix_escape": "BLOCKED_AS_EXPECTED",
+    "forged_server_trust_ref": "BLOCKED_AS_EXPECTED"
+  },
+  "runtime_unchanged": true,
+  "production_change": false,
+  "automatic_promotion": false,
+  "merge_authorized": false,
+  "state_ceiling": "SOURCE_VALIDATED_RECEIPT_MATERIALIZED_PENDING_EXACT_HEAD_CI",
+  "pre_receipt_repository_ci": {
+    "lf_contract_check_run_id": 34725752974,
+    "result": "FAIL_RECEIPT_MISSING",
+    "classification": "EXPECTED_GOVERNANCE_RECEIPT_GATE",
+    "resolution": "THIS_RECEIPT_IS_THE_REQUIRED_SOURCE_BOUND_SIDECAR"
+  },
+  "notes": "Source-bound receipt for the S26 Profile Creator Learning Preflight hardening. It covers only skills/profile_creator/** and resolves the repository governance receipt requirement. It does not authorize runtime, production, automatic promotion, merge, or independent semantic-quality claims. Exact-head CI after this receipt commit remains required before operation close."
+}

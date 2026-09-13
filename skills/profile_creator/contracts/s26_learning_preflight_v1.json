@@ -1,0 +1,82 @@
+{
+  "authorized_scope": {
+    "allowed_paths": [
+      "profiles/<profile_slug>/**"
+    ],
+    "automatic_runtime_activation": false,
+    "production_change": false
+  },
+  "automatic_runtime_activation": false,
+  "ekb": {
+    "dynamic_coverage": "EVERY_MATCHED_CODE_REQUIRES_EXACTLY_ONE_PREVENTION_CHECK",
+    "dynamic_traceability": "EVERY_MATCHED_CODE_REQUIRES_EXACTLY_ONE_MATCHED_PREVENTION_RULE_AND_ONE_PREVENTION_CHECK",
+    "matched_prevention_rule_requires": [
+      "code",
+      "rule",
+      "source_ref"
+    ],
+    "minimum_codes": [
+      "PROFILES-EKB-PREFLIGHT-OMISSION-001",
+      "GOV-024",
+      "AUD-018",
+      "CI-014"
+    ],
+    "not_applicable_requires": [
+      "reason",
+      "source_ref"
+    ],
+    "pass_check_requires": [
+      "test_id",
+      "executed=true",
+      "exit_code=0",
+      "result=PASS|SUCCESS",
+      "evidence_sha256",
+      "source_ref"
+    ],
+    "required_source": "public.lf_error_knowledge",
+    "required_status": "EKB_PREFLIGHT_COMPLETED"
+  },
+  "execution_binding": {
+    "required_flags": [
+      "pre_write_gate_passed",
+      "execution_bound_to_target_before_change"
+    ],
+    "required_operation_status": "IN_PROGRESS",
+    "required_server_trust_context": {
+      "bound_revision_matches_current": true,
+      "continuity_state": [
+        "CURRENT_BOUND",
+        "STALE_REBOUND_CURRENT"
+      ],
+      "ref": "main",
+      "resolver": "GITHUB_PUBLIC_API_EXACT_REF_V1",
+      "revision_sha_matches_current": true,
+      "server_trust_context_source": "run-creacion-perfil-lf",
+      "server_trust_context_valid": true
+    },
+    "required_step_status": "STEP_PASS_WITH_EVIDENCE",
+    "required_target_type": "PERFIL",
+    "step_id": "pre_write_execution_binding_gate",
+    "target_path": "profiles/<profile_slug> OR descendant"
+  },
+  "fail_closed": true,
+  "freshness": {
+    "current_revision_must_match_bound_revision": true,
+    "main_advance_invalidates_write_authorization": true,
+    "reusable_across_runs": false
+  },
+  "input_schema": "S26_PROFILE_UPDATE_LEARNING_PREFLIGHT_V1",
+  "metrics": [
+    "matched_error_count",
+    "matched_prevention_rule_count",
+    "prevention_check_count",
+    "executed_prevention_count",
+    "not_applicable_count",
+    "learning_coverage_pct",
+    "blocking_count"
+  ],
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "production_activation": false,
+  "purpose": "Convert live EKB learnings and canonical pre-write execution binding into fail-closed checks before an existing profile can be mutated.",
+  "schema": "S26_PROFILE_UPDATE_LEARNING_PREFLIGHT_CONTRACT_V1"
+}

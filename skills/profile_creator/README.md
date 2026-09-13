@@ -38,3 +38,17 @@ Create profile packs that are reusable, auditable, and aligned with LF governanc
 6. Sandbox Test.
 7. Controlled PR.
 8. Post-merge verification.
+
+## S26 existing-profile baseline
+
+For `ACTUALIZACION_PERFIL_LF`, first materialize a fresh Learning Preflight bound to the target profile and current HEAD, then run:
+
+```bash
+python3 skills/profile_creator/validators/plan_s26_profile_update.py <profile_slug> <preflight_json> <repo_root>
+```
+
+The planner is read-only. It returns `BLOCKED_LEARNING_PREFLIGHT` unless the live EKB controls are traced to matched prevention rules and executable prevention evidence and the canonical pre-write execution binding matches the current target revision. Only then can it report `NO_UPDATE_REQUIRED`, `UPDATE_REQUIRED`, or `BLOCKED_AUTHORITY_REQUIRED`.
+
+`write_allowed=true` requires both a PASS Learning Preflight and a repairable structural delta. The baseline evaluator discovers target callables statically with AST and never imports or executes target profile code.
+
+Post-write closure requires a fresh 10/10 baseline result on the exact candidate head plus the existing operation, evidence, readback, semantic and regression gates.
