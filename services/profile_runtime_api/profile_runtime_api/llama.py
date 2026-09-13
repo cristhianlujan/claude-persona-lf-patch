@@ -1390,9 +1390,9 @@ def governed_generation_schema(
     if schema_mode == UI_FOCUSED_SCHEMA_MODE:
         focused_min_lengths = {
             "decision_subject": 8,
-            "selected_visual_type": 8,
-            "base_color_or_surface": 8,
-            "size_or_coverage": 8,
+            "selected_visual_type": 12,
+            "base_color_or_surface": 11,
+            "size_or_coverage": 12,
             "density_limits": 6,
             "depth_style": 8,
             "visual_weight": 8,
@@ -1811,6 +1811,7 @@ class PersistentLlamaServerAdapter:
                     "- Give each field a different semantic job. Do not repeat one phrase across decision_subject, selected_visual_type, surface, coverage, depth, weight, relationship, or implementation.",
                     "- Phrase-shape guide (structure only, not task facts): coverage='only <named UI region/component>'; density='one <cue/treatment> per <named component>'; depth='no added elevation; preserve <existing shadow/elevation>'; weight='<relative prominence> versus <named content/action>'; relationship='<behavior> relative to <named main element>'; implementation='<CSS/component/layout mechanism> on <named element>'.",
                     "- A preservation/lock request still requires a concrete UI pattern: state what stays fixed, what varies, and how the transition/navigation behaves. A bare *_lock token is not a treatment.",
+                    "- Conceptual snake_case identifiers copied from the request (for example *_lock, *_authority, *_artifact, *_mode) are labels, not final semantic field values. Expand them into a concrete human-readable UI treatment; only genuine design tokens/CSS identifiers may remain token-like.",
                     "- Use RETURN_TO_ORCHESTRATOR only when a material input needed for this focused decision is actually unresolved; read-only/advisory governance alone is not such a missing input.",
                     "",
                 ]

@@ -150,7 +150,9 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         )
         assert client.last_payload is not None
         props = client.last_payload["response_format"]["schema"]["properties"]
-        self.assertGreaterEqual(props["size_or_coverage"]["minLength"], 8)
+        self.assertGreaterEqual(props["selected_visual_type"]["minLength"], 12)
+        self.assertGreaterEqual(props["base_color_or_surface"]["minLength"], 11)
+        self.assertGreaterEqual(props["size_or_coverage"]["minLength"], 12)
         self.assertGreaterEqual(props["density_limits"]["minLength"], 6)
         self.assertGreaterEqual(props["relationship_to_main_element"]["minLength"], 10)
         self.assertGreaterEqual(props["hard_exclusions"]["items"]["minLength"], 8)
