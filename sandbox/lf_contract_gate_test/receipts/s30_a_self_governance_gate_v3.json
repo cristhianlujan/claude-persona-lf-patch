@@ -1,68 +1,36 @@
 {
   "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
-  "receipt_version": "v0.5-closeout",
+  "receipt_version": "v0.7-s36-profile-bootstrap",
   "issued_by": "contract_judge",
-  "operation_code": "S30_SELF_GOVERNANCE_GATE_V061_TRANSVERSAL_BROKER_CLOSEOUT",
-  "execution_id": "S30-A-BROKER-V061-CLOSEOUT-20260910-001",
+  "operation_code": "S30_SELF_GOVERNANCE_GATE_S36_CONSUMER_PROFILE_BOOTSTRAP",
+  "execution_id": "EXEC-S30-S36-BROKER-PROFILE-BOOTSTRAP-20260912-001",
   "result": "PASS_SANDBOX",
   "all_required_steps_pass": true,
-  "contract_sha": "b0b43c48a20dc22eeb4d030e7f7022dcf215f36b",
-  "judge_sha": "484a79fedcf5379992fcadc59d085c80fc73e004",
+  "contract_sha": "960d3e79f5c5997d134417ffa9914bf3173034d2",
+  "judge_sha": "7aa5fafa8f7845c5935a8792c9be47c3312fc1a0",
   "source_sha_list": [
-    "780b20c15c2de85eed83b59ae1612fcfc91670e8",
-    "b0b43c48a20dc22eeb4d030e7f7022dcf215f36b",
-    "484a79fedcf5379992fcadc59d085c80fc73e004",
-    "9c6d608d3b39faa64c5cce00a49ae0d3037aa2fa",
-    "dfa3e0fc0f35891341f3aeb003b87d5ffe54c4b9"
+    "be4a76aa927832d3aa6f2d10f1ca6b1b86e1d771",
+    "f1f37f3012f54e5fb98d7d88b3eb1e6af2ec3bfa",
+    "960d3e79f5c5997d134417ffa9914bf3173034d2",
+    "7aa5fafa8f7845c5935a8792c9be47c3312fc1a0",
+    "5d87733af77bec8c4e3f4eb9b95b7d8d18311a24"
   ],
   "target_paths": [
     "gobernanza/contratos/s30_self_governance_gate_v1.json",
     "gobernanza/judges/validate_s30_self_governance_gate.py"
   ],
   "blocking_codes": [],
-  "issued_at": "2026-09-10T15:28:26Z",
+  "issued_at": "2026-09-13T03:23:39Z",
   "evidence": {
-    "base_main_sha": "c14807ac7d4201425d771dff3ecf35c480334278",
-    "closeout_status": "TRANSVERSAL_BROKER_PROMOTION_VERIFIED",
-    "owner_authorization_ref": "current-chat:Autorizo promoción v0.6 a main",
-    "promotion_prs": [
-      659,
-      660
-    ],
-    "promotion_merge_shas": [
-      "780b20c15c2de85eed83b59ae1612fcfc91670e8",
-      "c14807ac7d4201425d771dff3ecf35c480334278"
-    ],
-    "broker_dispatch_runs": [
-      34494828643,
-      34496165399
-    ],
-    "protected_validate_runs": [
-      34494900405,
-      34496229001
-    ],
-    "protected_contract_runs": [
-      34494900558,
-      34496229013
-    ],
-    "pr_validate_runs": [
-      34495169607,
-      34496468530
-    ],
-    "pr_contract_runs": [
-      34495169557,
-      34496468505
-    ],
-    "main_validate_runs": [
-      34495460868,
-      34496740730
-    ],
-    "main_contract_runs": [
-      34495460885,
-      34496740478
-    ],
-    "self_governance_self_test": "PASS_31_CASES",
-    "closeout_result": "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CANDIDATE_PASS",
+    "base_main_sha": "be4a76aa927832d3aa6f2d10f1ca6b1b86e1d771",
+    "claim_ceiling": "SHARED_BROKER_PROFILE_BOOTSTRAP_ONLY_NO_RUNTIME_NO_PRODUCTION",
+    "self_governance_self_test": "PASS_37_CASES",
+    "s36_profile_cases": "6_PASS",
+    "prewrite_result": "PASS_TO_BOUNDED_GUARD_REPAIR",
+    "s30_ruleset_id": 22765627,
+    "s36_ruleset_id": 23126436,
+    "s30_direct_write_negative": "GH013_CREATE_BLOCKED_NO_REMOTE_REF",
+    "s36_direct_write_negative": "GH013_CREATE_BLOCKED_NO_REMOTE_REF",
     "runtime_changed": false,
     "production_changed": false,
     "s26_mutated": false,

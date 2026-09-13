@@ -16,171 +16,240 @@
       ]
     }
   ],
-  "base_main_sha": "c14807ac7d4201425d771dff3ecf35c480334278",
+  "base_main_sha": "be4a76aa927832d3aa6f2d10f1ca6b1b86e1d771",
   "causal_lane_ownership": {
     "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
-    "target_asset": "S30",
-    "primary_gate": "TRANSVERSAL_GIT_WRITE_BROKER",
-    "role": "WRITER",
-    "owner": "S30-BROKER-TRANSVERSAL-CLOSEOUT",
+    "evidence": "supabase currentness scan: zero conflicting active writers; candidate writer bound to this fresh base and staging source",
     "observed_active_writers": [
       {
         "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
-        "target_asset": "S30",
+        "owner": "S30-GIT-BROKER-S36-PROFILE-BOOTSTRAP",
         "primary_gate": "TRANSVERSAL_GIT_WRITE_BROKER",
-        "owner": "S30-BROKER-TRANSVERSAL-CLOSEOUT",
+        "source_ref": "git-staging://lf/staging-s30-s36-broker-profile-bootstrap-20260912",
         "state": "ACTIVE",
-        "source_ref": "closeout://S30-BROKER-V061-20260910"
+        "target_asset": "S30_GIT_WRITE_BROKER"
       }
     ],
+    "owner": "S30-GIT-BROKER-S36-PROFILE-BOOTSTRAP",
+    "primary_gate": "TRANSVERSAL_GIT_WRITE_BROKER",
+    "role": "WRITER",
+    "target_asset": "S30_GIT_WRITE_BROKER",
     "transfer": {
       "is_transfer": false
-    },
-    "evidence": "PR #659 and #660 merged; main-pinned broker, bounded candidate scope, protected DeployKey write path, and closeout routing all verified by exact-head and main CI."
+    }
   },
   "evidence": {
-    "execution_id": "EXEC-S30-BROKER-V061-CLOSEOUT-20260910-001",
-    "mode": "CLOSEOUT",
-    "production": false,
-    "base_main_sha": "c14807ac7d4201425d771dff3ecf35c480334278",
-    "owner_authorization_ref": "current-chat:Autorizo promoción v0.6 a main",
-    "promotion_prs": [
-      659,
-      660
-    ],
-    "promotion_merges": [
-      "780b20c15c2de85eed83b59ae1612fcfc91670e8",
-      "c14807ac7d4201425d771dff3ecf35c480334278"
-    ],
-    "dispatch_runs": [
-      34494828643,
-      34496165399
-    ],
-    "main_ci_runs": [
-      34495460868,
-      34495460885,
-      34496740730,
-      34496740478
-    ],
-    "final_claim": "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CANDIDATE_PASS"
+    "base_main_sha": "be4a76aa927832d3aa6f2d10f1ca6b1b86e1d771",
+    "conflicting_writers": 0,
+    "mode": "EXECUTED_PREFLIGHT",
+    "s30_direct_write_negative": "GH013_CREATE_BLOCKED_NO_REMOTE_REF",
+    "s30_ruleset_id": 22765627,
+    "s36_direct_write_negative": "GH013_CREATE_BLOCKED_NO_REMOTE_REF",
+    "s36_ruleset_id": 23126436,
+    "secret_presence": "S30_BROKER_DEPLOY_KEY_PRESENT"
   },
   "frontier": {
-    "current_stage": "S30_A_TRANSVERSAL_BROKER_CLOSED",
-    "next_gate": "S30_B_CURRENT_MAIN_REBASE_AND_VALIDATION",
     "blockers": [],
+    "current_stage": "S30_GIT_BROKER_S36_PROFILE_REPAIR_PREWRITE",
+    "next_gate": "LOCAL_REGRESSION_THEN_STAGING_THEN_BROKER",
     "safe_parallel_work": [
-      "S30_B_READ_ONLY_PREFLIGHT"
+      "S36_WP1_WP2_READ_ONLY_PREPARATION"
     ]
+  },
+  "gate_evidence_envelope": {
+    "depth": {
+      "evidence": "positive repair plus fail-closed profile isolation regression planned before staging",
+      "status": "PASS"
+    },
+    "ekb_action": {
+      "codes": [
+        "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
+        "GOV-010"
+      ],
+      "status": "CONSUMED"
+    },
+    "environment": "NON_PRODUCTION",
+    "execution_mode": "SANDBOX",
+    "first_bad_hop": null,
+    "functional": {
+      "evidence": "S30 profile preserved by additive design",
+      "status": "PASS"
+    },
+    "gate_id": "S30_GIT_BROKER_S36_PROFILE_REPAIR_PREEXECUTION",
+    "input_exact": {
+      "base_main_sha": "be4a76aa927832d3aa6f2d10f1ca6b1b86e1d771",
+      "receipt_path": "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json",
+      "repair_scope": "ADD_S36_CONSUMER_PROFILE_PRESERVE_S30",
+      "request_schema": "s30-git-broker/v1",
+      "source_branch": "lf/staging-s30-s36-broker-profile-bootstrap-20260912",
+      "target_branch": "lf/s30-s36-broker-profile-bootstrap-20260912"
+    },
+    "input_sha256": "218a273076d239b034bc3eca316a11a65e38d059ddbdae820b3480d414d164f4",
+    "input_source_ref": "github:main@be4a76aa927832d3aa6f2d10f1ca6b1b86e1d771",
+    "output_exact": {
+      "expected": "PASS_TO_BOUNDED_GUARD_REPAIR",
+      "production_change": false,
+      "runtime_change": false,
+      "s26_mutation": false
+    },
+    "output_ref": "local:prewrite-evaluation",
+    "output_sha256": "e3d801f044dc608dbb99c113d4e10654ead776e414c95765af23032f2819fe31",
+    "performance": {
+      "evidence": "no runtime path; validation-only bootstrap",
+      "status": "PASS_BASELINE"
+    },
+    "promotion_authority": "NONE",
+    "quality": {
+      "evidence": "physical rulesets + negative direct-write probes",
+      "status": "PASS"
+    },
+    "repair_allowed": true,
+    "run_id": "EXEC-S30-S36-BROKER-PROFILE-BOOTSTRAP-PREWRITE-20260912-001",
+    "validation_or_transformation_exact": "validate_s30_self_governance_gate.evaluate(REPAIR_PREWRITE)"
+  },
+  "git_write_binding": {
+    "base_main_sha": "be4a76aa927832d3aa6f2d10f1ca6b1b86e1d771",
+    "broker_probe": {
+      "commit_sha": "be4a76aa927832d3aa6f2d10f1ca6b1b86e1d771",
+      "evidence_ref": "github:main@be4a76aa927832d3aa6f2d10f1ca6b1b86e1d771#s30-broker-workflow-and-ruleset-readback",
+      "status": "PASS"
+    },
+    "bypass_actor_type": "DeployKey",
+    "deploy_key_id": 162872002,
+    "deploy_key_title": "s30-governed-git-broker",
+    "direct_connector_negative": {
+      "create_blocked": true,
+      "create_observed": "GH013",
+      "update_blocked": true,
+      "update_observed": "RULESET_ENFORCED"
+    },
+    "direct_user_can_bypass": false,
+    "promotion_authority": "BROKER_ONLY",
+    "request_schema": "s30-git-broker/v1",
+    "ruleset_enforcement": "active",
+    "ruleset_id": 22765627,
+    "ruleset_name": "s30-governed-write-boundary",
+    "ruleset_readback_ref": "github:ruleset/22765627@active",
+    "ruleset_ref_pattern": "refs/heads/lf/s30-*",
+    "secret_name": "S30_BROKER_DEPLOY_KEY",
+    "secret_present": true,
+    "secret_required_before_dispatch": true,
+    "source_branch": "lf/staging-s30-s36-broker-profile-bootstrap-20260912",
+    "status": "OPERATIONAL",
+    "supabase_readback_ref": "supabase:public.lf_error_knowledge/S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001@active",
+    "target_branch": "lf/s30-s36-broker-profile-bootstrap-20260912",
+    "workflow_dispatch_wired": true,
+    "workflow_path": ".github/workflows/validate-lf-packs.yml"
   },
   "hard_guard_candidates": [
     {
-      "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
       "closure": {
-        "EKB_UPDATED": {
-          "status": "PASS",
-          "evidence": "Active EKB causal gap consumed before repair and carried through closeout."
-        },
         "DETECTOR_IMPLEMENTED": {
-          "status": "PASS",
-          "evidence": "Validator broker_scope_decision plus workflow main-pinned control-plane checks detect bypass/scope/control-path/mode violations."
+          "evidence": "prewrite:lf/staging-s30-s36-broker-profile-bootstrap-20260912:DETECTOR_IMPLEMENTED",
+          "status": "PASS"
         },
-        "NEGATIVE_REGRESSION": {
-          "status": "PASS",
-          "evidence": "Self-test includes blocked mixed control path, control prefix, missing receipt, wrong receipt mode, oversized changeset, symlink, stale/unauthorized cases."
-        },
-        "POSITIVE_REGRESSION": {
-          "status": "PASS",
-          "evidence": "Self-test covers bounded REPAIR, CANDIDATE, main-pinned control plane, and explicit CLOSEOUT contract."
+        "EKB_UPDATED": {
+          "evidence": "prewrite:lf/staging-s30-s36-broker-profile-bootstrap-20260912:EKB_UPDATED",
+          "status": "PASS"
         },
         "EXECUTED_PATH_WIRING_PROVEN": {
-          "status": "PASS",
-          "evidence": "Governed dispatch 34494828643 and 34496165399 executed through secret + DeployKey + ruleset; protected branch CI passed."
+          "evidence": "prewrite:lf/staging-s30-s36-broker-profile-bootstrap-20260912:EXECUTED_PATH_WIRING_PROVEN",
+          "status": "PASS"
+        },
+        "NEGATIVE_REGRESSION": {
+          "evidence": "prewrite:lf/staging-s30-s36-broker-profile-bootstrap-20260912:NEGATIVE_REGRESSION",
+          "status": "PASS"
+        },
+        "POSITIVE_REGRESSION": {
+          "evidence": "prewrite:lf/staging-s30-s36-broker-profile-bootstrap-20260912:POSITIVE_REGRESSION",
+          "status": "PASS"
         },
         "READBACK": {
-          "status": "PASS",
-          "evidence": "PR #659 merge 780b20c15c2de85eed83b59ae1612fcfc91670e8 and PR #660 merge c14807ac7d4201425d771dff3ecf35c480334278; main CI 34495460868/34495460885 and 34496740730/34496740478 all PASS."
+          "evidence": "prewrite:lf/staging-s30-s36-broker-profile-bootstrap-20260912:READBACK",
+          "status": "PASS"
         }
-      }
+      },
+      "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001"
     },
     {
-      "ekb_code": "GOV-010",
       "closure": {
-        "EKB_UPDATED": {
-          "status": "PASS",
-          "evidence": "Active EKB causal gap consumed before repair and carried through closeout."
-        },
         "DETECTOR_IMPLEMENTED": {
-          "status": "PASS",
-          "evidence": "Validator broker_scope_decision plus workflow main-pinned control-plane checks detect bypass/scope/control-path/mode violations."
+          "evidence": "prewrite:lf/staging-s30-s36-broker-profile-bootstrap-20260912:DETECTOR_IMPLEMENTED",
+          "status": "PASS"
         },
-        "NEGATIVE_REGRESSION": {
-          "status": "PASS",
-          "evidence": "Self-test includes blocked mixed control path, control prefix, missing receipt, wrong receipt mode, oversized changeset, symlink, stale/unauthorized cases."
-        },
-        "POSITIVE_REGRESSION": {
-          "status": "PASS",
-          "evidence": "Self-test covers bounded REPAIR, CANDIDATE, main-pinned control plane, and explicit CLOSEOUT contract."
+        "EKB_UPDATED": {
+          "evidence": "prewrite:lf/staging-s30-s36-broker-profile-bootstrap-20260912:EKB_UPDATED",
+          "status": "PASS"
         },
         "EXECUTED_PATH_WIRING_PROVEN": {
-          "status": "PASS",
-          "evidence": "Governed dispatch 34494828643 and 34496165399 executed through secret + DeployKey + ruleset; protected branch CI passed."
+          "evidence": "prewrite:lf/staging-s30-s36-broker-profile-bootstrap-20260912:EXECUTED_PATH_WIRING_PROVEN",
+          "status": "PASS"
+        },
+        "NEGATIVE_REGRESSION": {
+          "evidence": "prewrite:lf/staging-s30-s36-broker-profile-bootstrap-20260912:NEGATIVE_REGRESSION",
+          "status": "PASS"
+        },
+        "POSITIVE_REGRESSION": {
+          "evidence": "prewrite:lf/staging-s30-s36-broker-profile-bootstrap-20260912:POSITIVE_REGRESSION",
+          "status": "PASS"
         },
         "READBACK": {
-          "status": "PASS",
-          "evidence": "PR #659 merge 780b20c15c2de85eed83b59ae1612fcfc91670e8 and PR #660 merge c14807ac7d4201425d771dff3ecf35c480334278; main CI 34495460868/34495460885 and 34496740730/34496740478 all PASS."
+          "evidence": "prewrite:lf/staging-s30-s36-broker-profile-bootstrap-20260912:READBACK",
+          "status": "PASS"
         }
-      }
+      },
+      "ekb_code": "GOV-010"
     }
   ],
-  "intended_material_action": "SELF_GOVERNANCE_CLOSEOUT",
+  "intended_material_action": "SELF_GOVERNANCE_GATE_REPAIR",
   "lane": "S30-A",
-  "owner": "S30-BROKER-TRANSVERSAL-CLOSEOUT",
-  "owner_authorized_merge": true,
-  "owner_authorized_repair": false,
+  "owner": "S30-GIT-BROKER-S36-PROFILE-BOOTSTRAP",
+  "owner_authorized_merge": false,
+  "owner_authorized_repair": true,
   "preflight_checks": {
     "CI_RUNNER_WIRING_CONFIRMED": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; CI_RUNNER_WIRING_CONFIRMED verified after substantive promotion.",
+      "evidence": "prewrite-local:lf/staging-s30-s36-broker-profile-bootstrap-20260912:CI_RUNNER_WIRING_CONFIRMED",
       "status": "PASS"
     },
     "EVIDENCE_PROVIDER_RESOLVABLE": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; EVIDENCE_PROVIDER_RESOLVABLE verified after substantive promotion.",
+      "evidence": "prewrite-local:lf/staging-s30-s36-broker-profile-bootstrap-20260912:EVIDENCE_PROVIDER_RESOLVABLE",
       "status": "PASS"
     },
     "EXPECTED_OUTPUT_SCHEMA_COMPLETE": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; EXPECTED_OUTPUT_SCHEMA_COMPLETE verified after substantive promotion.",
+      "evidence": "prewrite-local:lf/staging-s30-s36-broker-profile-bootstrap-20260912:EXPECTED_OUTPUT_SCHEMA_COMPLETE",
+      "status": "PASS"
+    },
+    "GIT_WRITE_BROKER_BINDING_CONFIRMED": {
+      "evidence": "prewrite-local:lf/staging-s30-s36-broker-profile-bootstrap-20260912:GIT_WRITE_BROKER_BINDING_CONFIRMED",
       "status": "PASS"
     },
     "IMPORT_CLOSURE": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; IMPORT_CLOSURE verified after substantive promotion.",
+      "evidence": "prewrite-local:lf/staging-s30-s36-broker-profile-bootstrap-20260912:IMPORT_CLOSURE",
       "status": "PASS"
     },
     "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED verified after substantive promotion.",
+      "evidence": "prewrite-local:lf/staging-s30-s36-broker-profile-bootstrap-20260912:NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED",
       "status": "PASS"
     },
     "PERMISSIONS_AND_SECRET_READBACK": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; PERMISSIONS_AND_SECRET_READBACK verified after substantive promotion.",
+      "evidence": "prewrite-local:lf/staging-s30-s36-broker-profile-bootstrap-20260912:PERMISSIONS_AND_SECRET_READBACK",
       "status": "PASS"
     },
     "REQUIRED_FILES_EXIST": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; REQUIRED_FILES_EXIST verified after substantive promotion.",
+      "evidence": "prewrite-local:lf/staging-s30-s36-broker-profile-bootstrap-20260912:REQUIRED_FILES_EXIST",
       "status": "PASS"
     },
     "SCHEMA_AND_CONSTRAINTS_RESOLVED": {
       "bindings": [
         {
-          "object_identity": "public.lf_error_knowledge",
+          "evidence_ref": "selftest:schema",
+          "object_identity": "public.example",
           "resolved_fields": [
-            "codigo",
-            "severidad",
-            "frecuencia",
-            "estado",
-            "source_ref"
-          ],
-          "evidence_ref": "supabase:schema-first-readback-20260910"
+            "id"
+          ]
         }
       ],
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; SCHEMA_AND_CONSTRAINTS_RESOLVED verified after substantive promotion.",
+      "evidence": "prewrite-local:lf/staging-s30-s36-broker-profile-bootstrap-20260912:SCHEMA_AND_CONSTRAINTS_RESOLVED",
       "resolved": [
         "RELATION_COLUMNS",
         "CONSTRAINTS",
@@ -189,45 +258,44 @@
       "status": "PASS"
     },
     "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED verified after substantive promotion.",
+      "evidence": "prewrite-local:lf/staging-s30-s36-broker-profile-bootstrap-20260912:TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED",
       "status": "PASS"
-    },
-    "GIT_WRITE_BROKER_BINDING_CONFIRMED": {
-      "status": "PASS",
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; GIT_WRITE_BROKER_BINDING_CONFIRMED verified after substantive promotion."
     }
   },
-  "receipt_mode": "CLOSEOUT",
-  "receipt_version": "v0.6.1-closeout",
-  "repair_reason": null,
-  "repair_target_ekb_codes": [],
+  "receipt_mode": "REPAIR_PREWRITE",
+  "receipt_version": "v0.7-s36-broker-profile-bootstrap",
+  "repair_reason": "Extend the existing physical S30 Git-write broker with an additive S36 consumer profile while preserving S30 behavior and ruleset unchanged.",
+  "repair_target_ekb_codes": [
+    "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
+    "GOV-010"
+  ],
   "safety_readback": {
-    "runtime_changed": false,
+    "main_merged": false,
     "production_changed": false,
-    "main_merged": true,
-    "scheduler_changed": false,
-    "s26_mutated": false
+    "runtime_changed": false,
+    "s26_mutated": false,
+    "scheduler_changed": false
   },
   "sequence_resolution": {
     "ALL_INTENDED_STEPS": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; ALL_INTENDED_STEPS read back from promoted main before evidence closeout.",
+      "evidence": "current-main:be4a76aa927832d3aa6f2d10f1ca6b1b86e1d771:ALL_INTENDED_STEPS",
       "status": "PROVEN"
     },
     "CI_PATHS_AND_RUNNER_WIRING": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; CI_PATHS_AND_RUNNER_WIRING read back from promoted main before evidence closeout.",
+      "evidence": "current-main:be4a76aa927832d3aa6f2d10f1ca6b1b86e1d771:CI_PATHS_AND_RUNNER_WIRING",
       "status": "PROVEN"
     },
     "DATA_ACCESS_BINDINGS": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; DATA_ACCESS_BINDINGS read back from promoted main before evidence closeout.",
+      "evidence": "current-main:be4a76aa927832d3aa6f2d10f1ca6b1b86e1d771:DATA_ACCESS_BINDINGS",
       "mode": "SCHEMA_CONTRACT_FALLBACK",
       "status": "PROVEN"
     },
     "DEPENDENCIES_AND_IMPORT_CLOSURE": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; DEPENDENCIES_AND_IMPORT_CLOSURE read back from promoted main before evidence closeout.",
+      "evidence": "current-main:be4a76aa927832d3aa6f2d10f1ca6b1b86e1d771:DEPENDENCIES_AND_IMPORT_CLOSURE",
       "status": "PROVEN"
     },
     "EKB_APPLICABLE": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; EKB_APPLICABLE read back from promoted main before evidence closeout.",
+      "evidence": "current-main:be4a76aa927832d3aa6f2d10f1ca6b1b86e1d771:EKB_APPLICABLE",
       "loaded_codes": [
         "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
         "GOV-010"
@@ -235,130 +303,42 @@
       "status": "PROVEN"
     },
     "EVIDENCE_PROVIDER_AND_RESOLVER": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; EVIDENCE_PROVIDER_AND_RESOLVER read back from promoted main before evidence closeout.",
+      "evidence": "current-main:be4a76aa927832d3aa6f2d10f1ca6b1b86e1d771:EVIDENCE_PROVIDER_AND_RESOLVER",
       "status": "PROVEN"
     },
     "EXPECTED_OUTPUT_CONTRACT": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; EXPECTED_OUTPUT_CONTRACT read back from promoted main before evidence closeout.",
+      "evidence": "current-main:be4a76aa927832d3aa6f2d10f1ca6b1b86e1d771:EXPECTED_OUTPUT_CONTRACT",
       "status": "PROVEN"
     },
     "JUDGES_AND_RESULT_VOCABULARY": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; JUDGES_AND_RESULT_VOCABULARY read back from promoted main before evidence closeout.",
+      "evidence": "current-main:be4a76aa927832d3aa6f2d10f1ca6b1b86e1d771:JUDGES_AND_RESULT_VOCABULARY",
       "status": "PROVEN"
     },
     "OPERATION_CONTRACTS": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; OPERATION_CONTRACTS read back from promoted main before evidence closeout.",
+      "evidence": "current-main:be4a76aa927832d3aa6f2d10f1ca6b1b86e1d771:OPERATION_CONTRACTS",
       "status": "PROVEN"
     },
     "PERMISSIONS_SECRETS_AND_READBACK": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; PERMISSIONS_SECRETS_AND_READBACK read back from promoted main before evidence closeout.",
+      "evidence": "current-main:be4a76aa927832d3aa6f2d10f1ca6b1b86e1d771:PERMISSIONS_SECRETS_AND_READBACK",
       "status": "PROVEN"
     },
     "ROUTER": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; ROUTER read back from promoted main before evidence closeout.",
+      "evidence": "current-main:be4a76aa927832d3aa6f2d10f1ca6b1b86e1d771:ROUTER",
       "status": "PROVEN"
     },
     "SCHEMA_CONTRACT": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; SCHEMA_CONTRACT read back from promoted main before evidence closeout.",
+      "evidence": "current-main:be4a76aa927832d3aa6f2d10f1ca6b1b86e1d771:SCHEMA_CONTRACT",
       "schema_bindings": [
         {
-          "object_identity": "public.lf_error_knowledge",
-          "object_type": "VIEW",
+          "evidence_ref": "selftest:schema",
+          "object_identity": "public.example",
+          "object_type": "TABLE",
           "resolved_fields": [
-            "codigo",
-            "severidad",
-            "frecuencia",
-            "estado",
-            "source_ref"
-          ],
-          "evidence_ref": "supabase:schema-first-readback-20260910"
+            "id"
+          ]
         }
       ],
       "status": "PROVEN"
     }
-  },
-  "git_write_binding": {
-    "status": "OPERATIONAL",
-    "request_schema": "s30-git-broker/v1",
-    "ruleset_id": 22765627,
-    "ruleset_name": "s30-governed-write-boundary",
-    "ruleset_enforcement": "active",
-    "ruleset_ref_pattern": "refs/heads/lf/s30-*",
-    "bypass_actor_type": "DeployKey",
-    "deploy_key_id": 162872002,
-    "deploy_key_title": "s30-governed-git-broker",
-    "direct_user_can_bypass": false,
-    "direct_connector_negative": {
-      "create_blocked": true,
-      "create_observed_status": 422,
-      "update_blocked": true,
-      "update_observed_status": 409
-    },
-    "broker_probe": {
-      "status": "PASS",
-      "commit_sha": "e52aa00996ea7dfd416e5267aec0f03e226f3088",
-      "evidence_ref": "github:commit/e52aa00996ea7dfd416e5267aec0f03e226f3088"
-    },
-    "workflow_path": ".github/workflows/validate-lf-packs.yml",
-    "workflow_dispatch_wired": true,
-    "secret_name": "S30_BROKER_DEPLOY_KEY",
-    "secret_present": true,
-    "secret_required_before_dispatch": true,
-    "source_branch": "lf/staging-s30-broker-v061-closeout-20260910",
-    "target_branch": "lf/s30-broker-v061-closeout-20260910",
-    "base_main_sha": "c14807ac7d4201425d771dff3ecf35c480334278",
-    "promotion_authority": "BROKER_ONLY",
-    "ruleset_readback_ref": "github:ruleset/22765627",
-    "supabase_readback_ref": "supabase:public.lf_error_knowledge/S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001@frequency=8"
-  },
-  "gate_evidence_envelope": {
-    "run_id": "EXEC-S30-BROKER-V061-CLOSEOUT-20260910-001",
-    "gate_id": "S30_BROKER_TRANSVERSAL_CLOSEOUT_V061",
-    "input_exact": {
-      "request_schema": "s30-git-broker/v1",
-      "source_ref": "lf/staging-s30-broker-v061-closeout-20260910",
-      "target_branch": "lf/s30-broker-v061-closeout-20260910",
-      "base_main_sha": "c14807ac7d4201425d771dff3ecf35c480334278",
-      "receipt_path": "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json"
-    },
-    "input_sha256": "6d1d2a10665edbbbc0282c02146946c6a4c7a90c67809bdd963b6f1ec7a3355f",
-    "input_source_ref": "owner-authorization+github:main@c14807ac7d4201425d771dff3ecf35c480334278",
-    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json --expected-base-main-sha c14807ac7d4201425d771dff3ecf35c480334278",
-    "output_exact": {
-      "result": "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CANDIDATE_PASS",
-      "material_work_allowed": false,
-      "bounded_repair_allowed": false,
-      "promotion_authority": "NONE"
-    },
-    "output_sha256": "af81e98b8302b08726cc82d22ed1fbe71c675cb50b0367bd99cbd7264f47ab74",
-    "output_ref": "closeout:S30-broker-v0.6.1",
-    "execution_mode": "SANDBOX",
-    "environment": "NON_PRODUCTION",
-    "promotion_authority": "NONE",
-    "functional": {
-      "status": "PASS",
-      "evidence": "Existing broker, deploy key, ruleset and current-main control plane are resolvable."
-    },
-    "quality": {
-      "status": "PASS",
-      "evidence": "Planned repair adds main-pinned control-plane and bounded candidate scope negatives."
-    },
-    "depth": {
-      "status": "PASS",
-      "evidence": "Causal gap, current base, receipt binding, scope policy and no-production ceiling are explicit."
-    },
-    "performance": {
-      "status": "PASS_BASELINE",
-      "evidence": "Cheap local path-policy preflight blocks known incompatible S30-B candidate before Actions dispatch."
-    },
-    "ekb_action": {
-      "status": "CONSUMED",
-      "codes": [
-        "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
-        "GOV-010"
-      ]
-    },
-    "first_bad_hop": null,
-    "repair_allowed": false
   }
 }

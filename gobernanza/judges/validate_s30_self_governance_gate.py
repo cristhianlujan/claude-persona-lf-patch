@@ -132,8 +132,48 @@ def git_write_binding_failures(c: Dict[str, Any], r: Dict[str, Any]):
         if not nonempty(b.get(ref_field)): failures.append(f"{prefix}:{ref_field.upper()}_MISSING")
     return failures
 
-def broker_scope_decision(c: Dict[str, Any], changed_paths, receipt_path: str, receipt: Optional[Mapping[str, Any]] = None, path_modes: Optional[Mapping[str, str]] = None) -> Dict[str, Any]:
-    cfg=c.get("git_write_broker") or {}
+def broker_profile_config(c: Dict[str, Any], broker_profile: str = "S30") -> Optional[Dict[str, Any]]:
+    base=copy.deepcopy(c.get("git_write_broker") or {})
+    profile=(broker_profile or "S30").strip().upper()
+    if profile=="S30":
+        base["profile_code"]="S30"
+        base["validation_mode"]="S30_SELF_GOVERNANCE"
+        return base
+    overlay=(base.get("consumer_profiles") or {}).get(profile)
+    if not isinstance(overlay,dict): return None
+    merged=copy.deepcopy(base); merged.update(copy.deepcopy(overlay)); merged["profile_code"]=profile
+    return merged
+
+def evaluate_broker_consumer(c: Dict[str, Any], r: Dict[str, Any], expected_base: Optional[str], broker_profile: str) -> Dict[str, Any]:
+    cfg=broker_profile_config(c,broker_profile)
+    generic=(c.get("git_write_broker") or {}).get("generic_consumer_receipt_contract") or {}
+    failures=[]
+    if not cfg: failures.append("BROKER_PROFILE_UNKNOWN")
+    if r.get("schema_version")!=generic.get("schema_version"): failures.append("GENERIC_RECEIPT_SCHEMA_INVALID")
+    for f in generic.get("required_fields") or []:
+        if f not in r or not nonempty(r.get(f)): failures.append(f"GENERIC_RECEIPT_FIELD_MISSING:{f}")
+    if str(r.get("broker_profile","")).upper()!=str(broker_profile or "").upper(): failures.append("BROKER_PROFILE_RECEIPT_MISMATCH")
+    if r.get("receipt_mode")!=generic.get("receipt_mode_required"): failures.append("GENERIC_RECEIPT_MODE_INVALID")
+    if not expected_base: failures.append("EXPECTED_BASE_MAIN_SHA_ARGUMENT_MISSING")
+    elif r.get("base_main_sha")!=expected_base: failures.append("BASE_MAIN_SHA_MISMATCH")
+    if r.get("broker_authorization")!=generic.get("broker_authorization_required"): failures.append("BROKER_AUTHORIZATION_INVALID")
+    causal,role=causal_lane_failures(c,r); failures.extend(causal)
+    if role!=c.get("causal_lane_ownership",{}).get("writer_role"): failures.append("CAUSAL_LANE_WRITER_REQUIRED")
+    safety=r.get("safety_readback") or {}
+    for k in ("runtime_changed","production_changed","scheduler_changed","s26_mutated","main_merged"):
+        if safety.get(k) is not False: failures.append(f"SAFETY_READBACK:{k}")
+    if not isinstance(r.get("evidence"),dict) or not r.get("evidence"): failures.append("GENERIC_RECEIPT_EVIDENCE_MISSING")
+    if cfg:
+        cc=copy.deepcopy(c); cc["git_write_broker"]=cfg
+        failures.extend(git_write_binding_failures(cc,r))
+    if failures:
+        return {"result":generic.get("failure_result","FAIL_CLOSED_BEFORE_MATERIAL_WORK"),"first_bad_hop":failures[0],"material_work_allowed":False,"failures":failures}
+    return {"result":cfg.get("expected_prewrite_result","PASS_TO_BROKER_WRITE"),"first_bad_hop":None,"material_work_allowed":True,"failures":[]}
+
+def broker_scope_decision(c: Dict[str, Any], changed_paths, receipt_path: str, receipt: Optional[Mapping[str, Any]] = None, path_modes: Optional[Mapping[str, str]] = None, broker_profile: str = "S30") -> Dict[str, Any]:
+    cfg=broker_profile_config(c,broker_profile)
+    if not cfg:
+        return {"status":"BLOCKED","mode":None,"blocking_code":"BLOCK_LF_BROKER_PROFILE_UNKNOWN","changed_paths":sorted(set(changed_paths or []))}
     scope_fail=cfg.get("scope_failure_action","BLOCK_S30_BROKER_PATH_OUTSIDE_ALLOWLIST")
     receipt_fail=cfg.get("candidate_receipt_failure_action","BLOCK_S30_BROKER_CANDIDATE_RECEIPT_INVALID")
     changed=sorted(set(str(x).strip() for x in (changed_paths or []) if str(x).strip()))
@@ -469,6 +509,22 @@ def self_test(c):
     bs=broker_scope_decision(c,too_many,candidate_receipt,candidate,{path:"100644" for path in too_many}); assert bs["blocking_code"]==c["git_write_broker"]["scope_failure_action"],bs; results["negative_broker_candidate_changeset_too_large"]=bs["blocking_code"]
     bad_modes=dict(candidate_modes); bad_modes[candidate_paths[0]]="120000"
     bs=broker_scope_decision(c,candidate_paths,candidate_receipt,candidate,bad_modes); assert bs["blocking_code"]=="BLOCK_S30_BROKER_NONREGULAR_PATH",bs; results["negative_broker_candidate_symlink"] = bs["blocking_code"]
+    s36cfg=broker_profile_config(c,"S36"); assert s36cfg and s36cfg["ruleset_id"]==23126436 and s36cfg["protected_branch_prefix"]=="lf/s36-"; results["positive_s36_profile_resolves"]="PASS"
+    s36_receipt_path="sandbox/lf_contract_gate_test/s36_test_assurance/s36_prewrite_receipt.json"
+    s36_paths=["sandbox/lf_contract_gate_test/s36_test_assurance/matrix.json",s36_receipt_path]
+    s36_modes={x:"100644" for x in s36_paths}
+    s36r={
+      "schema_version":"lf-git-broker-receipt/v1","broker_profile":"S36","receipt_mode":"PREWRITE","owner":"S36",
+      "base_main_sha":e,"broker_authorization":"PASS_TO_BROKER_WRITE","evidence":{"selftest":True},
+      "causal_lane_ownership":{"ekb_code":"S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001","target_asset":"S36_TEST_ASSURANCE","primary_gate":"S36_CANONICAL_WRITE","role":"WRITER","owner":"S36","observed_active_writers":[{"ekb_code":"S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001","target_asset":"S36_TEST_ASSURANCE","primary_gate":"S36_CANONICAL_WRITE","owner":"S36","state":"ACTIVE","source_ref":"selftest:s36"}],"transfer":{"is_transfer":False},"evidence":"selftest:s36-owner"},
+      "safety_readback":{"runtime_changed":False,"production_changed":False,"scheduler_changed":False,"s26_mutated":False,"main_merged":False},
+      "git_write_binding":{"status":"OPERATIONAL","request_schema":"s36-git-broker/v1","ruleset_id":23126436,"ruleset_name":"s36-governed-write-boundary","ruleset_enforcement":"active","ruleset_ref_pattern":"refs/heads/lf/s36-*","bypass_actor_type":"DeployKey","deploy_key_id":162872002,"deploy_key_title":"s30-governed-git-broker","direct_user_can_bypass":False,"direct_connector_negative":{"create_blocked":True,"update_blocked":True},"broker_probe":{"status":"PASS","commit_sha":"b"*40,"evidence_ref":"selftest:s36-broker"},"workflow_path":".github/workflows/validate-lf-packs.yml","workflow_dispatch_wired":True,"secret_name":"S30_BROKER_DEPLOY_KEY","secret_present":True,"secret_required_before_dispatch":True,"source_branch":"lf/staging-s36-selftest","target_branch":"lf/s36-selftest","base_main_sha":e,"promotion_authority":"BROKER_ONLY","ruleset_readback_ref":"selftest:s36-ruleset","supabase_readback_ref":"selftest:s36-supabase"}
+    }
+    bs=broker_scope_decision(c,s36_paths,s36_receipt_path,s36r,s36_modes,"S36"); assert bs["status"]=="PASS" and bs["mode"]=="CANDIDATE",bs; results["positive_s36_scope"]="PASS"
+    gr=evaluate_broker_consumer(c,s36r,e,"S36"); assert gr["result"]=="PASS_TO_BROKER_WRITE",gr; results["positive_s36_generic_receipt"]=gr["result"]
+    bs=broker_scope_decision(c,["sandbox/lf_contract_gate_test/s30_d_final_r09/rogue.json",s36_receipt_path],s36_receipt_path,s36r,{"sandbox/lf_contract_gate_test/s30_d_final_r09/rogue.json":"100644",s36_receipt_path:"100644"},"S36"); assert bs["status"]=="BLOCKED",bs; results["negative_s36_cross_profile_path"]=bs["blocking_code"]
+    x=copy.deepcopy(s36r); x["git_write_binding"]["request_schema"]="s30-git-broker/v1"; gr=evaluate_broker_consumer(c,x,e,"S36"); assert gr["result"]!="PASS_TO_BROKER_WRITE" and any("MISMATCH:request_schema" in z for z in gr["failures"]),gr; results["negative_s36_wrong_schema"]=gr["result"]
+    x=copy.deepcopy(s36r); x["base_main_sha"]="c"*40; gr=evaluate_broker_consumer(c,x,e,"S36"); assert gr["result"]!="PASS_TO_BROKER_WRITE" and "BASE_MAIN_SHA_MISMATCH" in gr["failures"],gr; results["negative_s36_stale_base"]=gr["result"]
     repair_mode_cfg=(c["git_write_broker"].get("scope_modes") or {}).get("REPAIR") or {}
     assert set(repair_mode_cfg.get("allowed_receipt_modes") or [])=={"REPAIR_PREWRITE","CLOSEOUT"}
     assert repair_mode_cfg.get("expected_result_by_receipt_mode",{}).get("CLOSEOUT")==c["claim_ceiling"]

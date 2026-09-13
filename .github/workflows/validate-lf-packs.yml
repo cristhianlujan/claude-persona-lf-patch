@@ -12,8 +12,13 @@ on:
   workflow_dispatch:
     inputs:
       request_schema:
-        description: "Governed S30 broker request schema"
+        description: "Governed broker request schema"
         required: true
+        type: string
+      broker_profile:
+        description: "Governed broker consumer profile (default S30)"
+        required: false
+        default: "S30"
         type: string
       source_ref:
         description: "Validated staging branch (lf/staging-s30-*)"
@@ -57,6 +62,7 @@ jobs:
         shell: bash
         env:
           S30_REQUEST_SCHEMA: ${{ inputs.request_schema }}
+          LF_BROKER_PROFILE: ${{ inputs.broker_profile }}
           S30_SOURCE_REF: ${{ inputs.source_ref }}
           S30_TARGET_BRANCH: ${{ inputs.target_branch }}
           S30_BASE_MAIN_SHA: ${{ inputs.base_main_sha }}
@@ -65,7 +71,6 @@ jobs:
           set -euo pipefail
           if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
             [[ "${GITHUB_REF}" == "refs/heads/main" ]] || { echo "BLOCK_S30_BROKER_CONTROL_PLANE_NOT_MAIN" >&2; exit 1; }
-            [[ "${S30_REQUEST_SCHEMA}" == "s30-git-broker/v1" ]] || { echo "BLOCK_S30_BROKER_REQUEST_SCHEMA" >&2; exit 1; }
             [[ "${S30_BASE_MAIN_SHA}" =~ ^[0-9a-f]{40}$ ]] || { echo "BLOCK_S30_BROKER_BASE_SHA" >&2; exit 1; }
             current_main="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
             [[ "${current_main}" == "${S30_BASE_MAIN_SHA}" ]] || { echo "BLOCK_S30_BROKER_STALE_MAIN expected=${S30_BASE_MAIN_SHA} observed=${current_main}" >&2; exit 1; }
@@ -108,18 +113,24 @@ jobs:
           contract=json.loads(Path("/tmp/s30-control/contract.json").read_text(encoding="utf-8"))
           spec=importlib.util.spec_from_file_location("s30_control_validator","/tmp/s30-control/validator.py")
           validator=importlib.util.module_from_spec(spec); spec.loader.exec_module(validator)
-          scope=validator.broker_scope_decision(contract,changed,receipt_path,receipt,path_modes)
+          profile=(os.environ.get("LF_BROKER_PROFILE") or "S30").strip().upper()
+          profile_cfg=validator.broker_profile_config(contract,profile)
+          if not profile_cfg: fail("BLOCK_LF_BROKER_PROFILE_UNKNOWN",profile)
+          if os.environ.get("S30_REQUEST_SCHEMA")!=profile_cfg.get("request_schema"): fail("BLOCK_LF_BROKER_REQUEST_SCHEMA",profile)
+          scope=validator.broker_scope_decision(contract,changed,receipt_path,receipt,path_modes,profile)
           if scope.get("status")!="PASS":
               fail(scope.get("blocking_code","BLOCK_S30_BROKER_SCOPE"),scope.get("detail",""))
-          evaluation=validator.evaluate(contract,receipt,base)
-          if scope["mode"]=="REPAIR":
+          evaluation=(validator.evaluate(contract,receipt,base) if profile=="S30" else validator.evaluate_broker_consumer(contract,receipt,base,profile))
+          if profile!="S30":
+              expected=profile_cfg.get("expected_prewrite_result","PASS_TO_BROKER_WRITE")
+          elif scope["mode"]=="REPAIR":
               repair_cfg=(contract.get("git_write_broker",{}).get("scope_modes",{}).get("REPAIR") or {})
               receipt_mode=receipt.get("receipt_mode")
               if receipt_mode not in set(repair_cfg.get("allowed_receipt_modes") or []):
                   fail("BLOCK_S30_BROKER_REPAIR_RECEIPT_MODE",str(receipt_mode))
               expected=(repair_cfg.get("expected_result_by_receipt_mode") or {}).get(receipt_mode)
               if not expected: fail("BLOCK_S30_BROKER_REPAIR_EXPECTED_RESULT_MISSING",str(receipt_mode))
-          else:
+          elif profile=="S30":
               expected="PASS_TO_MATERIAL_WORK"
           if evaluation.get("result")!=expected:
               fail("BLOCK_S30_BROKER_PREEXECUTION_RESULT",json.dumps(evaluation,sort_keys=True))
@@ -283,6 +294,7 @@ jobs:
       contents: read
     env:
       S30_REQUEST_SCHEMA: ${{ inputs.request_schema }}
+      LF_BROKER_PROFILE: ${{ inputs.broker_profile }}
       S30_SOURCE_REF: ${{ inputs.source_ref }}
       S30_TARGET_BRANCH: ${{ inputs.target_branch }}
       S30_BASE_MAIN_SHA: ${{ inputs.base_main_sha }}
@@ -331,8 +343,12 @@ jobs:
           base=os.environ["S30_BASE_MAIN_SHA"]
           receipt_path=os.environ["S30_RECEIPT_PATH"]
           contract=json.loads(Path("/tmp/s30-control/contract.json").read_text(encoding="utf-8"))
-          broker=contract.get("git_write_broker") or {}
-          if schema!=broker.get("request_schema"): fail("BLOCK_S30_BROKER_REQUEST_SCHEMA")
+          spec=importlib.util.spec_from_file_location("s30_control_validator","/tmp/s30-control/validator.py")
+          validator=importlib.util.module_from_spec(spec); spec.loader.exec_module(validator)
+          profile=(os.environ.get("LF_BROKER_PROFILE") or "S30").strip().upper()
+          broker=validator.broker_profile_config(contract,profile)
+          if not broker: fail("BLOCK_LF_BROKER_PROFILE_UNKNOWN",profile)
+          if schema!=broker.get("request_schema"): fail("BLOCK_LF_BROKER_REQUEST_SCHEMA",profile)
           if os.environ.get("GITHUB_REF")!=broker.get("control_plane_ref_required"): fail(broker.get("control_plane_failure_action","BLOCK_S30_BROKER_CONTROL_PLANE_NOT_MAIN"))
           if not re.fullmatch(r"[0-9a-f]{40}",base): fail("BLOCK_S30_BROKER_BASE_SHA")
           if not source.startswith(broker.get("staging_prefix","") or "__missing_staging_prefix__"): fail("BLOCK_S30_BROKER_SOURCE_NAMESPACE")
@@ -353,19 +369,19 @@ jobs:
               path_modes[path]=row.split(None,1)[0] if row else ""
           if not Path(receipt_path).is_file(): fail("BLOCK_S30_BROKER_RECEIPT_PATH")
           receipt=json.loads(Path(receipt_path).read_text(encoding="utf-8"))
-          spec=importlib.util.spec_from_file_location("s30_control_validator","/tmp/s30-control/validator.py")
-          validator=importlib.util.module_from_spec(spec); spec.loader.exec_module(validator)
-          scope=validator.broker_scope_decision(contract,changed,receipt_path,receipt,path_modes)
+          scope=validator.broker_scope_decision(contract,changed,receipt_path,receipt,path_modes,profile)
           if scope.get("status")!="PASS": fail(scope.get("blocking_code","BLOCK_S30_BROKER_SCOPE"),scope.get("detail",""))
-          evaluation=validator.evaluate(contract,receipt,base)
-          if scope["mode"]=="REPAIR":
+          evaluation=(validator.evaluate(contract,receipt,base) if profile=="S30" else validator.evaluate_broker_consumer(contract,receipt,base,profile))
+          if profile!="S30":
+              expected=broker.get("expected_prewrite_result","PASS_TO_BROKER_WRITE")
+          elif scope["mode"]=="REPAIR":
               repair_cfg=(contract.get("git_write_broker",{}).get("scope_modes",{}).get("REPAIR") or {})
               receipt_mode=receipt.get("receipt_mode")
               if receipt_mode not in set(repair_cfg.get("allowed_receipt_modes") or []):
                   fail("BLOCK_S30_BROKER_REPAIR_RECEIPT_MODE",str(receipt_mode))
               expected=(repair_cfg.get("expected_result_by_receipt_mode") or {}).get(receipt_mode)
               if not expected: fail("BLOCK_S30_BROKER_REPAIR_EXPECTED_RESULT_MISSING",str(receipt_mode))
-          else:
+          elif profile=="S30":
               expected="PASS_TO_MATERIAL_WORK"
           if evaluation.get("result")!=expected:
               fail("BLOCK_S30_BROKER_PREEXECUTION_RESULT",json.dumps(evaluation,sort_keys=True))

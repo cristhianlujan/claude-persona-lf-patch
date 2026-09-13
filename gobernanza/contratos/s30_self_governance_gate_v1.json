@@ -464,6 +464,50 @@
         "control_plane_source": "BASE_MAIN_ONLY"
       }
     },
+    "consumer_profiles": {
+      "S36": {
+        "validation_mode": "GENERIC_BROKER_RECEIPT_V1",
+        "request_schema": "s36-git-broker/v1",
+        "ruleset_id": 23126436,
+        "ruleset_name": "s36-governed-write-boundary",
+        "enforcement": "active",
+        "ref_pattern": "refs/heads/lf/s36-*",
+        "protected_branch_prefix": "lf/s36-",
+        "staging_prefix": "lf/staging-s36-",
+        "candidate_allowed_prefixes": [
+          "sandbox/lf_contract_gate_test/s36_test_assurance/"
+        ],
+        "candidate_denied_prefixes": [],
+        "candidate_receipt_requirements": {
+          "receipt_must_be_changed": true,
+          "receipt_must_be_under_candidate_prefix": true,
+          "receipt_must_not_be_under_denied_prefix": true,
+          "receipt_mode_required": "PREWRITE"
+        },
+        "candidate_max_changed_files": 32,
+        "scope_failure_action": "BLOCK_S36_BROKER_PATH_OUTSIDE_ALLOWLIST",
+        "candidate_receipt_failure_action": "BLOCK_S36_BROKER_CANDIDATE_RECEIPT_INVALID",
+        "expected_prewrite_result": "PASS_TO_BROKER_WRITE"
+      }
+    },
+    "generic_consumer_receipt_contract": {
+      "schema_version": "lf-git-broker-receipt/v1",
+      "required_fields": [
+        "schema_version",
+        "broker_profile",
+        "receipt_mode",
+        "owner",
+        "base_main_sha",
+        "causal_lane_ownership",
+        "safety_readback",
+        "git_write_binding",
+        "evidence",
+        "broker_authorization"
+      ],
+      "receipt_mode_required": "PREWRITE",
+      "broker_authorization_required": "PASS_TO_BROKER_WRITE",
+      "failure_result": "FAIL_CLOSED_BEFORE_MATERIAL_WORK"
+    },
     "scope_failure_action": "BLOCK_S30_BROKER_PATH_OUTSIDE_ALLOWLIST",
     "control_plane_failure_action": "BLOCK_S30_BROKER_CONTROL_PLANE_NOT_MAIN",
     "candidate_receipt_failure_action": "BLOCK_S30_BROKER_CANDIDATE_RECEIPT_INVALID",
@@ -474,5 +518,5 @@
     ],
     "candidate_receipt_git_mode": "100644"
   },
-  "contract_version": "v0.6.1-candidate"
+  "contract_version": "v0.7-s36-profile-candidate"
 }
