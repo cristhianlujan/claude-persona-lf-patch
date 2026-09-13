@@ -1,0 +1,105 @@
+{
+  "checkpoint_version": "S31_VALIDATION_FRONTIER_V0_1",
+  "strategy": "S31",
+  "base_main_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+  "deterministic_status": {
+    "S31-A": {
+      "candidate": "canonical_capability_model_v0_2_candidate.schema.json",
+      "result": "PASS",
+      "evidence": "s31_a_v0_2_execution_receipt_v0_1.json",
+      "claim_ceiling": "DETERMINISTIC_REGRESSION_ONLY",
+      "independent_review": "PENDING"
+    },
+    "S31-B": {
+      "candidate": "lf_work_package_v0_2_candidate.schema.json",
+      "result": "PASS_11_OF_11",
+      "evidence": "s31_b_v0_2_execution_receipt_v0_1.json",
+      "claim_ceiling": "DETERMINISTIC_REGRESSION_ONLY",
+      "independent_review": "PENDING"
+    },
+    "S31-C": {
+      "candidate": "canonical_card_resolution_v0_1.json",
+      "result": "PASS_12_OF_12",
+      "evidence": "s31_c_v0_1_execution_receipt_v0_1.json",
+      "claim_ceiling": "DETERMINISTIC_REGRESSION_ONLY",
+      "independent_review": "PENDING"
+    },
+    "S31-D": {
+      "candidate": "lf_shared_authority_typed_context_v0_1_candidate.schema.json",
+      "result": "PASS_IN_DG_MATRIX",
+      "evidence": "s31_dg_execution_receipt_v0_1.json",
+      "claim_ceiling": "DETERMINISTIC_REGRESSION_ONLY",
+      "independent_review": "PENDING"
+    },
+    "S31-E": {
+      "candidate": "lf_capability_manifest_v0_2_candidate.schema.json",
+      "result": "PASS_IN_DG_MATRIX",
+      "evidence": "s31_dg_execution_receipt_v0_1.json",
+      "claim_ceiling": "DETERMINISTIC_REGRESSION_ONLY",
+      "independent_review": "PENDING"
+    },
+    "S31-F": {
+      "candidate": "lf_common_evidence_envelope_v0_2_candidate.schema.json",
+      "result": "PASS_IN_DG_MATRIX",
+      "evidence": "s31_dg_execution_receipt_v0_1.json",
+      "claim_ceiling": "DETERMINISTIC_REGRESSION_ONLY",
+      "independent_review": "PENDING"
+    },
+    "S31-G": {
+      "candidate": "lf_runtime_execution_port_v0_1_candidate.schema.json",
+      "result": "PASS_IN_DG_MATRIX",
+      "evidence": "s31_dg_execution_receipt_v0_1.json",
+      "claim_ceiling": "DETERMINISTIC_REGRESSION_ONLY",
+      "independent_review": "PENDING"
+    },
+    "S31-H": {
+      "candidate": "s31_h_external_poc_matrix_v0_1.json",
+      "result": "PLAN_ONLY_NO_INSTALL",
+      "claim_ceiling": "POC_PLAN_ONLY",
+      "independent_review": "NOT_YET_REQUIRED_FOR_NO_INSTALL_STATE"
+    }
+  },
+  "superseded_candidates": [
+    {
+      "artifact": "canonical_capability_model_v0_1.schema.json",
+      "reason": "LIFECYCLE_VOCABULARY_OVERCOMMITMENT",
+      "replacement": "canonical_capability_model_v0_2_candidate.schema.json"
+    },
+    {
+      "artifact": "lf_capability_manifest_v0_1_candidate.schema.json",
+      "reason": "LIFECYCLE_GOVERNANCE_INCOMPLETE",
+      "replacement": "lf_capability_manifest_v0_2_candidate.schema.json"
+    },
+    {
+      "artifact": "lf_common_evidence_envelope_v0_1_candidate.schema.json",
+      "reason": "EVIDENCE_CEILING_NOT_MECHANICALLY_ENFORCED",
+      "replacement": "lf_common_evidence_envelope_v0_2_candidate.schema.json"
+    }
+  ],
+  "independent_review_handoffs": [
+    "S31_ABC_INDEPENDENT_REVIEW_HANDOFF_V0_2.md",
+    "S31_DG_INDEPENDENT_REVIEW_HANDOFF_V0_1.md"
+  ],
+  "remaining_safe_material_work_without_new_external_evidence": [],
+  "next_gates": [
+    "LATEST_HEAD_GENERAL_CI_GREEN",
+    "INDEPENDENT_REVIEW_ABC",
+    "INDEPENDENT_REVIEW_DG"
+  ],
+  "blocked_or_deferred": {
+    "canonical_lifecycle_vocabulary": "UNRESOLVED_AUTHORITY",
+    "runtime_cutover": "NOT_AUTHORIZED",
+    "external_framework_install": "NOT_AUTHORIZED",
+    "external_framework_poc_execution": "FUTURE_BOUNDED_POC_AUTHORIZATION",
+    "golden": "NOT_AUTHORIZED",
+    "merge_main": "NOT_AUTHORIZED",
+    "production": "NOT_AUTHORIZED"
+  },
+  "close_guard": {
+    "strategy_closed": false,
+    "deterministic_design_validation_macrolot_exhausted": true,
+    "safe_material_write_count": 0,
+    "next_safe_batch": null,
+    "reason": "Remaining gates require latest-head CI evidence or independent external review; producer must not self-certify them."
+  }
+}
