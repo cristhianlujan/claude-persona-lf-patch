@@ -156,6 +156,9 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         self.assertGreaterEqual(props["density_limits"]["minLength"], 6)
         self.assertGreaterEqual(props["relationship_to_main_element"]["minLength"], 10)
         self.assertGreaterEqual(props["hard_exclusions"]["items"]["minLength"], 8)
+        self.assertEqual(props["selected_visual_type"]["pattern"], r"^\S.*\s+.*\S$")
+        self.assertEqual(props["size_or_coverage"]["pattern"], r"^\S.*\s+.*\S$")
+        self.assertEqual(props["hard_exclusions"]["items"]["pattern"], r"^\S.*\s+.*\S$")
         self.assertEqual(
             props["status"]["enum"],
             ["CANDIDATE_READ_ONLY", "SANDBOX_READY", "PASS_WITH_ASSUMPTIONS"],

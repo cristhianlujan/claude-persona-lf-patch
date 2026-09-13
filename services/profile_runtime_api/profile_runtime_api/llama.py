@@ -1410,12 +1410,21 @@ def governed_generation_schema(
                     prop["minLength"] = max(
                         int(prop.get("minLength") or 0), focused_min_lengths[name]
                     )
+                if name in {
+                    "decision_subject", "selected_visual_type", "size_or_coverage",
+                    "density_limits", "depth_style", "visual_weight",
+                    "relationship_to_main_element", "implementation_format",
+                }:
+                    # Focused fields are semantic phrases. A bare snake_case/request label
+                    # can satisfy length while carrying no implementable UI meaning.
+                    prop["pattern"] = r"^\S.*\s+.*\S$"
             if name == "hard_exclusions" and prop.get("type") == "array":
                 prop["maxItems"] = _bounded_positive_int(prop.get("maxItems"), 4)
                 items = prop.get("items")
                 if isinstance(items, dict) and items.get("type") == "string":
                     items["minLength"] = max(int(items.get("minLength") or 0), 8)
                     items["maxLength"] = _bounded_positive_int(items.get("maxLength"), 120)
+                    items["pattern"] = r"^\S.*\s+.*\S$"
             if name == "status" and isinstance(prop.get("enum"), list):
                 # Missing-input work has its own typed UI_MISSING_INPUT mode. Once the
                 # orchestrator explicitly binds UI_FOCUSED_DECISION, generation must

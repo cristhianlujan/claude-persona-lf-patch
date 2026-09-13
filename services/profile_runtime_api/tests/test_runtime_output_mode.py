@@ -247,6 +247,36 @@ class RuntimeOutputModeTest(unittest.TestCase):
         ):
             self.assertIn(code, utility["blocking_codes"], utility)
 
+    def test_focused_utility_rejects_bare_conceptual_identifiers(self) -> None:
+        payload = self.focused_payload()
+        payload.update(
+            {
+                "decision_subject": "shell_lock",
+                "selected_visual_type": "shell_lock_lock",
+                "size_or_coverage": "shell_lock_lock",
+                "density_limits": "one_non_canonical_artifact",
+                "depth_style": "no_added_elevation",
+                "visual_weight": "above_non_canonical_artifact",
+                "relationship_to_main_element": "navigation_authority",
+                "implementation_format": "CSS_on_element",
+            }
+        )
+        binding = self.repository.runtime_schema("ui_architect", "UI_FOCUSED_DECISION")
+        gate, parsed = self.gates.contract(
+            profile_slug="ui_architect", raw_output=json.dumps(payload), schema=binding
+        )
+        self.assertEqual(gate["status"], "PASS", gate)
+        utility = self.gates.semantic_utility(
+            profile_slug="ui_architect", payload=parsed, contract_gate=gate
+        )
+        self.assertEqual(utility["status"], "FAIL", utility)
+        for key in (
+            "DECISION_SUBJECT", "SELECTED_VISUAL_TYPE", "SIZE_OR_COVERAGE",
+            "DENSITY_LIMITS", "DEPTH_STYLE", "VISUAL_WEIGHT",
+            "RELATIONSHIP_TO_MAIN_ELEMENT", "IMPLEMENTATION_FORMAT",
+        ):
+            self.assertIn(f"UI_FOCUSED_{key}_IDENTIFIER_ECHO", utility["blocking_codes"], utility)
+
     def test_focused_utility_rejects_return_to_orchestrator_in_decision_mode(self) -> None:
         payload = self.focused_payload()
         payload["status"] = "RETURN_TO_ORCHESTRATOR"

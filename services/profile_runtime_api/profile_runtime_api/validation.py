@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from jsonschema import Draft202012Validator, SchemaError
@@ -353,6 +354,16 @@ class OutputGates:
                     normalized = values.get(key, "")
                     if normalized in generic_only:
                         errors.append(f"UI_FOCUSED_{key.upper()}_NON_CONCRETE")
+
+                phrase_fields = (
+                    "decision_subject", "selected_visual_type", "size_or_coverage",
+                    "density_limits", "depth_style", "visual_weight",
+                    "relationship_to_main_element", "implementation_format",
+                )
+                for key in phrase_fields:
+                    normalized = values.get(key, "")
+                    if normalized and re.fullmatch(r"[a-z0-9]+(?:_[a-z0-9]+)+", normalized):
+                        errors.append(f"UI_FOCUSED_{key.upper()}_IDENTIFIER_ECHO")
 
                 density = values.get("density_limits", "")
                 density_markers = (
