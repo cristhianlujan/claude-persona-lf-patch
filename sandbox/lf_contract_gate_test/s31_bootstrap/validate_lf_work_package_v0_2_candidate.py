@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any, Mapping
+
+from jsonschema import Draft7Validator
 
 PASS = "PASS"
 BLOCKED = "BLOCKED"
 CONTINUE = "CONTINUE_SAFE_PARALLEL"
+ROOT = Path(__file__).resolve().parent
+SCHEMA_PATH = ROOT / "lf_work_package_v0_2_candidate.schema.json"
 
 
 def _block(code: str, **extra: Any) -> dict:
@@ -18,6 +24,19 @@ def _nonempty(v: Any) -> bool:
     if isinstance(v, (list, dict)):
         return bool(v)
     return v is not None
+
+
+def validate_schema_instance(wp: Mapping[str, Any]) -> dict:
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    Draft7Validator.check_schema(schema)
+    validator = Draft7Validator(schema)
+    errors = sorted(validator.iter_errors(dict(wp)), key=lambda e: list(e.path))
+    if errors:
+        return _block(
+            "BLOCK_SCHEMA_VALIDATION",
+            errors=[{"path":"/".join(map(str, err.path)), "message":err.message} for err in errors[:20]],
+        )
+    return {"status": PASS, "code": "PASS_SCHEMA_VALIDATION"}
 
 
 def validate_source_bindings(wp: Mapping[str, Any]) -> dict:
@@ -163,8 +182,9 @@ def validate_judge(wp: Mapping[str, Any]) -> dict:
 
 
 def evaluate_work_package(wp: Mapping[str, Any]) -> dict:
-    if wp.get("schema_id") != "LF_WORK_PACKAGE_V0_2_CANDIDATE":
-        return _block("BLOCK_SCHEMA_ID")
+    schema_result = validate_schema_instance(wp)
+    if schema_result.get("status") != PASS:
+        return schema_result
     checks = [
         validate_source_bindings,
         validate_currentness,
@@ -189,10 +209,10 @@ def evaluate_work_package(wp: Mapping[str, Any]) -> dict:
 
 
 if __name__ == "__main__":
-    import json, pathlib, sys
+    import sys
     if len(sys.argv) != 2:
         raise SystemExit("usage: validate_lf_work_package_v0_2_candidate.py <work-package.json>")
-    data = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+    data = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
     result = evaluate_work_package(data)
     print(json.dumps(result, sort_keys=True))
     raise SystemExit(0 if result.get("status") in {PASS, CONTINUE} else 1)
