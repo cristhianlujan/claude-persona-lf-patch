@@ -1,0 +1,45 @@
+{
+  "bundle_version": "S31_DG_INDEPENDENT_REVIEW_BUNDLE_V0_3",
+  "review_case_id": "S31-DG-IR-001",
+  "execution_mode": "INDEPENDENT_CHAT_CONTEXT",
+  "candidate_snapshot": {
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "main_base_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+    "s31_candidate_head": "d268fd871f2e18588f9b8084e6a3f6c6e07aa438"
+  },
+  "review_scope": ["S31-D", "S31-E", "S31-F", "S31-G"],
+  "frozen_artifacts": [
+    {"lane":"S31-D","path":"sandbox/lf_contract_gate_test/s31_bootstrap/lf_shared_authority_typed_context_v0_1_candidate.schema.json","blob_sha":"5a5dd0ca611caa68a7e12df62fbccee50f180d4d","role":"candidate"},
+    {"lane":"S31-D","path":"sandbox/lf_contract_gate_test/s31_bootstrap/s31_d_authority_typed_context_extraction_map_v0_1.json","role":"source_mapping"},
+    {"lane":"S31-E","path":"sandbox/lf_contract_gate_test/s31_bootstrap/lf_capability_manifest_v0_2_candidate.schema.json","blob_sha":"af343594b08d77ed6703154f75029da97fab3ec6","role":"candidate"},
+    {"lane":"S31-E","path":"sandbox/lf_contract_gate_test/s31_bootstrap/s31_e_capability_registry_gap_inventory_v0_1.json","role":"source_mapping"},
+    {"lane":"S31-F","path":"sandbox/lf_contract_gate_test/s31_bootstrap/lf_common_evidence_envelope_v0_2_candidate.schema.json","blob_sha":"d4401b8275b48fbf1eb2e46b0d5e7191e8a899d5","role":"candidate"},
+    {"lane":"S31-F","path":"sandbox/lf_contract_gate_test/s31_bootstrap/s31_f_evidence_receipt_lifecycle_map_v0_1.json","role":"source_mapping"},
+    {"lane":"S31-G","path":"sandbox/lf_contract_gate_test/s31_bootstrap/lf_runtime_execution_port_v0_1_candidate.schema.json","blob_sha":"0704d671e0de73572b081909d4669aa789273306","role":"candidate"},
+    {"lane":"S31-G","path":"sandbox/lf_contract_gate_test/s31_bootstrap/s31_g_runtime_port_map_v0_1.json","role":"source_mapping"},
+    {"lane":"S31-DG","path":"sandbox/lf_contract_gate_test/s31_bootstrap/validate_s31_dg_contracts_v0_1.py","blob_sha":"4e8c0a7dbfba8af71b8cf22980b8e2d94966d467","role":"validator"},
+    {"lane":"S31-DG","path":"sandbox/lf_contract_gate_test/s31_bootstrap/test_s31_dg_contracts_v0_1.py","blob_sha":"e40772c9e0337fc5fa0c1ed4066fdd16d2962eb6","role":"deterministic_test"}
+  ],
+  "producer_evidence": {"S31-DG":"4 schemas valid; 5 positive PASS; 14 negative fail-closed PASS"},
+  "upstream_worker_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@d268fd871f2e18588f9b8084e6a3f6c6e07aa438/sandbox/lf_contract_gate_test/s31_bootstrap/LF_WORK_PACKAGE_BOOTSTRAP_V0_1.md",
+  "quality_pack": {
+    "independent_review_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md",
+    "quality_gate_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/contracts/quality_gate_contract.md",
+    "lf_quality_controls_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/contracts/lf_quality_controls.md",
+    "score_rubric_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/judges/quality_pack_score_rubric.md",
+    "mini_judge_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/judges/quality_pack_mini_judge.md",
+    "quality_review_schema_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/schemas/quality_review.schema.json",
+    "independent_receipt_schema_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json",
+    "independent_receipt_validator_ref": "github://cristhianlujan/claude-persona-lf-patch@d4051d9c57fdfd09741da5ba2718c032eac56c92/profiles/quality_pack/validators/validate_independent_semantic_review.py"
+  },
+  "acceptance_criteria": {
+    "S31-D": ["authority/currentness remain deterministic and outside model", "cross-run authority is explicit", "shared kernel excludes provider transport and preserves adapter-first compatibility"],
+    "S31-E": ["repo manifest is source of truth and registry grants no execution authority", "lifecycle remains separated and self-certification forbidden", "source/dependency bindings support currentness and compatibility"],
+    "S31-F": ["claim ceiling cannot exceed evidence", "non-structural claims require execution/current authority/reconstructible provenance", "owner receipts remain preserved"],
+    "S31-G": ["runtime port consumes governed typed context but grants no authority", "silent fallback forbidden", "framework/provider remains replaceable behind port"]
+  },
+  "blocking_criteria": ["source mismatch", "authority leak", "evidence inflation", "framework lock-in", "silent fallback", "lifecycle overclaim", "cross-lane mutation"],
+  "governance_constraints": ["reviewer_is_producer=false", "producer_context_available=false", "no repair during review", "no runtime/Golden/merge/production authorization", "semantic review only for exact frozen bundle"],
+  "producer_semantic_verdict": null,
+  "claim_ceiling": "FROZEN_REVIEW_BUNDLE_ONLY"
+}
