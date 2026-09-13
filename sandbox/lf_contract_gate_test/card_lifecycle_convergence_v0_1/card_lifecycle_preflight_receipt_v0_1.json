@@ -1,0 +1,109 @@
+{
+  "receipt_version": "CARD_LIFECYCLE_CONVERGENCE_PREFLIGHT_V0_1",
+  "status": "READ_ONLY_PREFLIGHT_COMPLETE",
+  "observed_at": "2026-09-13T01:12:34.740843+00:00",
+  "repository": "cristhianlujan/claude-persona-lf-patch",
+  "base_main_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+  "candidate_branch": "lf/card-lifecycle-convergence-wp-v01",
+  "authorized_scope": {
+    "objective": "Prepare WP-CARD-LIFECYCLE convergence candidate only.",
+    "write_scope": [
+      "sandbox/lf_contract_gate_test/card_lifecycle_convergence_v0_1/"
+    ],
+    "forbidden": [
+      "SUPABASE_DDL_DML",
+      "cards/**",
+      "gobernanza/contratos/contrato_card_lf.yaml",
+      "gobernanza/procedimientos/** CARD source mutation",
+      "runtime_activation",
+      "production",
+      "golden",
+      "S31_source_mutation",
+      "S26_source_mutation"
+    ]
+  },
+  "live_readback": {
+    "CREACION_CARD_LF": {
+      "active_steps": 39,
+      "authority": "existing governed Card creation operation"
+    },
+    "ACTUALIZACION_CARD_LF": {
+      "active_steps": 14,
+      "status": "CANDIDATO_READ_ONLY",
+      "source_model": "SUPABASE_STRUCTURED_OPERATION",
+      "carrier_rule": "Resolve exact Card and authoritative carrier before write",
+      "current_declared_carrier": "GOOGLE_DOC_EMBEDDED_BLOCK via Google Drive where applicable"
+    },
+    "lf_cards": {
+      "row_count": 19,
+      "disposition": "INVENTORY_PRESENT_NOT_ACCEPTED_AS_SSOT"
+    },
+    "card_ssot": {
+      "status": "UNRESOLVED",
+      "required_action": "Explicit authority/projection reconciliation before materialization"
+    }
+  },
+  "ekb_preflight": {
+    "completed": true,
+    "matched_error_codes": [
+      "AUD-018",
+      "CI-007",
+      "CI-014",
+      "CI-CARD-CONTRACT-001",
+      "CARD-UPDATE-CARRIER-TRUST-CONTEXT-GAP-001",
+      "CARD-UPDATE-PREWRITE-REVISION-TRUST-COMPARE-GAP-001",
+      "CARD-UPDATE-PROVIDER-REVISION-GUARD-001",
+      "CARD-UPDATE-SOURCE-CARRIER-GAP-001",
+      "GOV-CARD-DEPTH-ORDER-001",
+      "GOV-CARD-PREWRITE-ORDER-001",
+      "GOV-CI-MIGRATION-SOURCE-PARITY-20260829",
+      "PROFILE-CARD-RUNTIME-MATERIALIZATION-GAP-001",
+      "S26-GATE-C-CANDIDATE-EVIDENCE-DIVERGENCE-001",
+      "S26-GATE-C-NO-CARD-VALID-FALLBACK-001",
+      "S26-GATE-C-TEST-FIXTURE-GOVERNED-PATH-001"
+    ],
+    "controls": [
+      "NO_MUTATION_BEFORE_CURRENTNESS_AND_PREWRITE_BINDING",
+      "ACTUALIZACION_CARD_LF_REMAINS_CANDIDATE_READ_ONLY",
+      "CARRIER_ROUTE_MUST_BE_SOURCE_AWARE",
+      "GOOGLE_DOC_UPDATE_REQUIRES_TRUST_CONTEXT_AND_REVISION_GUARDS",
+      "EXECUTION_EVIDENCE_MUST_BE_EXECUTED_NOT_DECLARATIVE",
+      "REFRESH_EXACT_HEAD_EVIDENCE_IF_MAIN_ADVANCES",
+      "TEST_FIXTURES_MUST_NOT_WEAKEN_GOVERNED_cards_NAMESPACE",
+      "S31_CONTRACTS_ARE_CANDIDATE_BOUNDARIES_ONLY"
+    ]
+  },
+  "parallel_lane_scan": {
+    "adjacent_open_prs": [
+      {
+        "pr": 644,
+        "scope": "S26 Gate C Card branches",
+        "collision": "NONE_WITH_CANDIDATE_SANDBOX_PATH"
+      },
+      {
+        "pr": 622,
+        "scope": "S26 EKB/Card fallback",
+        "collision": "NONE_WITH_CANDIDATE_SANDBOX_PATH"
+      },
+      {
+        "pr": 621,
+        "scope": "S26 EKB/Card fallback predecessor",
+        "collision": "NONE_WITH_CANDIDATE_SANDBOX_PATH"
+      },
+      {
+        "pr": 571,
+        "scope": "OP24 Experience-to-Card bridge",
+        "collision": "NONE_WITH_CANDIDATE_SANDBOX_PATH"
+      }
+    ],
+    "active_writer": "lf/card-lifecycle-convergence-wp-v01"
+  },
+  "result": "PASS_TO_READ_ONLY_PARALLEL",
+  "materialization_blockers": [
+    "CARD_SSOT_AUTHORITY_UNRESOLVED",
+    "CARD_UPDATE_TRUST_CONTEXT_AND_REVISION_GUARDS_NOT_CLOSED",
+    "S31_INDEPENDENT_REVIEW_PENDING",
+    "NO_AUTHORIZATION_FOR_SUPABASE_OR_RUNTIME_MUTATION_IN_THIS_LOT"
+  ],
+  "next_gate": "CARD_SSOT_AUTHORITY_RECONCILIATION"
+}
