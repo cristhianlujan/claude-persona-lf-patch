@@ -1,0 +1,13 @@
+{
+  "schema": "S26_F10_REPAIR_ATTEMPT_FAILURE_V1",
+  "attempt": 2,
+  "executed": true,
+  "status": "FAIL_PRE_MODEL_PROMPT_BUDGET",
+  "stage": "F_PROFILE_EXECUTION_PRE_MODEL_GUARD",
+  "error_code": "LLAMA_PROMPT_TOKEN_PROXY_BUDGET_EXCEEDED",
+  "observed_detail": "proxy_tokens=7273;available_prompt_tokens=6886;context_tokens=8192;reserved_output_tokens=1050",
+  "runtime_model_called": false,
+  "candidate_mutated": false,
+  "verified_cause": "Harness used a non-canonical context source marker, so compact_model_context did not project the governed runtime_typed_context into the queue semantic capsule. The canonical queue source marker is QUEUE_NATIVE_TEXT_PROFILE.",
+  "repair": "Use the canonical queue context source marker without relaxing token budgets, governance, or runtime settings; keep case identity as separate evidence metadata."
+}

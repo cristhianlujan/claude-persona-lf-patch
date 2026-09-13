@@ -1,0 +1,81 @@
+{
+  "authority_resolution_count": 2,
+  "authority_types": [
+    "INPUT_GOVERNANCE",
+    "PROFILE_SOURCE"
+  ],
+  "blocking_codes": [
+    "INDEPENDENT_CHAT_CONTEXT_REQUIRED"
+  ],
+  "card_resolution": {
+    "mode": "NO_CARD_GOVERNED",
+    "reason": "NO_APPLICABLE_CARD_DECLARED",
+    "schema_invention_allowed": false,
+    "selected_card_refs": [],
+    "status": "FALLBACK"
+  },
+  "case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2",
+  "claim_ceiling": "REAL_A_TO_H_PRODUCER_E2E_OBSERVED_INDEPENDENT_REVIEW_PENDING_NOT_W3_COMPLETE_NOT_GOLDEN_NOT_PRODUCTION",
+  "deterministic_material_acceptance": {
+    "handoff_quality": true,
+    "layout_precision": true,
+    "lf_system_fidelity": true,
+    "state_mapping": true,
+    "visual_hierarchy": true
+  },
+  "executed_at": "2026-09-13T06:33:59.456474+00:00",
+  "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "forbidden_hp001_references": [],
+  "fresh_input": true,
+  "fresh_run_identity": true,
+  "full_governed_pipeline_observed": true,
+  "independent_semantic_review": "PENDING_INDEPENDENT_CHAT_CONTEXT",
+  "input_sha256": "c7ab15b2a3d403a55e0876dc69c808757e3a906e46ebe7b7a17f7b1b86e17678",
+  "live_ekb_observed_at": "2026-09-13T06:33:49.456574+00:00",
+  "live_ekb_snapshot_sha256": "576d1fdf06bbd73eff25bb32e948ad5f8236b95190bf500f92b075e17ed11641",
+  "llama_timings": {
+    "cache_n": 1356,
+    "predicted_ms": 1920.182,
+    "predicted_n": 27,
+    "predicted_per_second": 13.54038315118046,
+    "predicted_per_token_ms": 73.85315384615384,
+    "prompt_ms": 7892.66,
+    "prompt_n": 271,
+    "prompt_per_second": 34.33569924461462,
+    "prompt_per_token_ms": 29.12420664206642
+  },
+  "llama_usage": {
+    "completion_tokens": 27,
+    "prompt_tokens": 1627,
+    "prompt_tokens_details": {
+      "cached_tokens": 1356
+    },
+    "total_tokens": 1654
+  },
+  "pass": false,
+  "producer_pipeline_status": "PASS",
+  "profile_contract_status": "PASS",
+  "receipt_sha256": "e461ddd1602412e8aadf28903d5b87b3258a85a900cbec2d720aa9ed5a73c97c",
+  "reused_hp001_upstream_context": false,
+  "run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-119E97D9C5FD",
+  "runtime_execution_origin": "MODEL_RUNTIME",
+  "runtime_model_id": "/opt/profile-runtime-benchmark/model/model.gguf",
+  "runtime_provider": "local_llama_cpp_hetzner_persistent",
+  "runtime_source_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "runtime_status": "PASS",
+  "schema": "S26_F10_REAL_E2E_EXECUTION_RECEIPT_V2",
+  "semantic_utility_floor_status": "PASS",
+  "stage_receipts_sha256": {
+    "A": "3f0d519061e70af30c59ce170b24e9e7d74f7a9cf6441f0ccf8889b44217cdc0",
+    "ARTIFACT": "761276df7dff45e0192c2a9ef4c0a6ad60c3a99b9058d3f938db267d9a91fffa",
+    "B": "679a442e067bbf6aebaea0bc0e54377fcd2bf5fe113984d328c0c36346916ed6",
+    "C": "c1938a0d90e3b4e73e5281117a4046026599da417ac3eb9deb3935daf5d8af4f",
+    "D": "2b7a670cc9263020150d470b1931e0ba0f768dfe21fde6d8b7e04418a9e616a4",
+    "E": "d969d28c7d9c5dddf0a95d9821ed57c8e2755a25fc2359c70704b2f3050ca97f",
+    "F_G_H_PRODUCER": "6389d01c7bd965902ed3b375eeb98c42f6635798255668616c627e3c8b282b05"
+  },
+  "typed_context_consumed_by_runtime_exact_match": true,
+  "typed_context_present": true,
+  "typed_context_sha256": "0b7cd3c08149b9bb834795a6e7fd23ec00f5d725bf48b8908a9cf46dd17946f8",
+  "wall_ms": 9844.637
+}

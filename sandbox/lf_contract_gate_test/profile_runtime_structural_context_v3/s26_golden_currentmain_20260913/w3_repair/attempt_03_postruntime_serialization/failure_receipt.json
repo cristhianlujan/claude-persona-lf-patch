@@ -1,0 +1,16 @@
+{
+  "schema": "S26_F10_REPAIR_ATTEMPT_FAILURE_V1",
+  "attempt": 3,
+  "executed": true,
+  "status": "FAIL_POST_RUNTIME_HARNESS_SERIALIZATION",
+  "stage": "POST_RUNTIME_EVIDENCE_SCAN",
+  "error_code": "PYTHON_DATETIME_NOT_JSON_SERIALIZABLE",
+  "runtime_model_called": true,
+  "runtime_status_observed": "PASS",
+  "profile_contract_status_observed": "PASS",
+  "semantic_utility_status_observed": "PASS",
+  "runtime_source_sha_observed": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "candidate_mutated": false,
+  "assessment": "The actual runtime and material gates passed; only the harness post-runtime evidence scan failed while serializing live EKB datetime values. This attempt is retained as failed harness evidence and is not used to close F10-O5.",
+  "next_action": "Normalize datetime in the post-runtime evidence scan and execute a fresh run identity end-to-end."
+}

@@ -1,0 +1,135 @@
+{
+  "gate": "E_TYPED_CONTEXT",
+  "next_gate": "F_PROFILE_EXECUTION",
+  "receipt_sha256": "307b383ec9aeaf2b7a5704eefc8cb6ec9fb7fe62b2e33710abf6b7f0a8194f37",
+  "run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-18E6B0F4C8B3",
+  "schema": "S26_F10_GATE_E_TYPED_CONTEXT_V1",
+  "status": "PASS",
+  "typed_context": {
+    "adapter_binding": [],
+    "authority_resolution": [
+      {
+        "authority_id": "INPUT_GOVERNANCE_AGENT",
+        "authority_type": "INPUT_GOVERNANCE",
+        "cross_run_declared": false,
+        "run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-18E6B0F4C8B3",
+        "source_refs": [
+          "w3_repair/gate_b_ekb_governance.json"
+        ],
+        "source_sha256": "8069cac0391ab8c013216a499916520d0e9ef9bedef8c17cb4ee433c57a46cde"
+      },
+      {
+        "authority_id": "PERFIL-UI-ARCHITECT",
+        "authority_type": "PROFILE_SOURCE",
+        "cross_run_declared": false,
+        "run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-18E6B0F4C8B3",
+        "source_refs": [
+          "profiles/ui_architect/SKILL.md",
+          "profiles/ui_architect/contracts/composer_payload_boundary_v1.md"
+        ],
+        "source_sha256": "b65ab7beb8701ca95d1d9fdd51a82bd48f5382d87167cd0a148ae9fe7965f658"
+      }
+    ],
+    "card_resolution": {
+      "mode": "NO_CARD_GOVERNED",
+      "reason": "NO_APPLICABLE_CARD_DECLARED",
+      "schema_invention_allowed": false,
+      "selected_card_refs": [],
+      "status": "FALLBACK"
+    },
+    "classification": {
+      "surface_code": "PROFILE:ui_architect",
+      "task_code": "EJECUCION_PERFIL_LF:UI_PRODUCTION_SPEC"
+    },
+    "current_run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-18E6B0F4C8B3",
+    "input": {
+      "input_fields": {
+        "distribution_mode": "DIRECT",
+        "domain_scope": "GENERIC_SERVICE_MARKETPLACE",
+        "execution_mode": "SANDBOX",
+        "f10_holdout_generation": "R2_FRESH_NO_HP001_UPSTREAM",
+        "f10_live_ekb_snapshot_sha256": "033fcad09ab04e02b9aca691d0f6767dba87142282434313d76639776f4be915",
+        "gate_f_acceptance": {
+          "implementation_readiness": "STRUCTURED_SPEC_READY_FOR_NEXT_AGENT",
+          "minimum_component_count": 9,
+          "minimum_hierarchy_depth_edges": 3,
+          "minimum_risk_control_count": 4,
+          "minimum_state_map_coverage_ratio": 1.0,
+          "minimum_variant_guard_coverage_ratio": 1.0,
+          "required_component_ids": [
+            "header_search",
+            "category_navigation",
+            "featured_services",
+            "service_cards",
+            "service_card_template",
+            "service_title",
+            "service_provider",
+            "service_price",
+            "service_cta"
+          ],
+          "required_design_intents": [
+            "clear",
+            "professional",
+            "easy_to_navigate"
+          ],
+          "required_responsive_modes": [
+            "desktop",
+            "mobile"
+          ],
+          "required_sections": [
+            "header",
+            "categories",
+            "featured_services",
+            "service_cards"
+          ],
+          "required_service_leaf_components": [
+            "service_title",
+            "service_provider",
+            "service_price",
+            "service_cta"
+          ],
+          "required_source_bindings": {
+            "category_navigation.items": "DATA_BOUND",
+            "featured_services.items": "DATA_BOUND",
+            "service_card_template.fields": "title|provider|price|call_to_action",
+            "service_card_template.values": "DATA_BOUND",
+            "service_cards.items": "DATA_BOUND",
+            "service_cta.destination": "UNRESOLVED_UNTIL_SOURCE",
+            "service_cta.label": "DATA_BOUND:call_to_action",
+            "service_price.format": "SOURCE_DEFINED",
+            "service_price.value": "DATA_BOUND:price",
+            "service_provider.value": "DATA_BOUND:provider",
+            "service_title.value": "DATA_BOUND:title"
+          },
+          "required_state_component_ids": [
+            "header_search",
+            "category_navigation",
+            "featured_services",
+            "service_cards",
+            "service_cta"
+          ],
+          "task_mode": "CREATE_NEW"
+        },
+        "gate_run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-18E6B0F4C8B3",
+        "output_contract_version": "UI_PRODUCTION_SPEC_V6",
+        "profile_slug": "ui_architect",
+        "project_id": "S26",
+        "task_mode": "CREATE_NEW"
+      },
+      "input_fields_sha256": "627dc471beb967c28591cf79f5f55d7857e5cfdacf3194e8f1fb2f080f6a2abe",
+      "input_literal_sha256": "c7ab15b2a3d403a55e0876dc69c808757e3a906e46ebe7b7a17f7b1b86e17678",
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect"
+    },
+    "provenance_reconstructible": true,
+    "runtime_schema": {
+      "mode": "UI_PRODUCTION_SPEC",
+      "schema_invention_allowed": false,
+      "sha256": "7f10c952796b045b99069b446f8dd7582d641d3514c25253fd27782045547112",
+      "source_ref": "profiles/ui_architect/schemas/ui_production_spec.schema.json"
+    },
+    "schema": "lf-runtime-typed-context/v1",
+    "typed_context_sha256": "939fce6f886af924dda24ccfdae21baa7b33e24ffa6e653d2f20a75d80f05d38"
+  },
+  "typed_context_sha256": "939fce6f886af924dda24ccfdae21baa7b33e24ffa6e653d2f20a75d80f05d38"
+}

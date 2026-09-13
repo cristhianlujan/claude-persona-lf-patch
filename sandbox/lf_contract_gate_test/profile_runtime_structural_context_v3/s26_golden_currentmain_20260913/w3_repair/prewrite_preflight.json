@@ -1,0 +1,37 @@
+{
+  "schema": "S26_F10_REAL_E2E_REPAIR_PREWRITE_PREFLIGHT_V1",
+  "status": "PASS_BEFORE_REPOSITORY_CONTENT_WRITE",
+  "scope": "S26 F10-O5 evidence/harness repair only; no profile, runtime, Supabase, Golden, production or main mutation",
+  "base_evidence_commit": "c39d63f3f4bc3d440c3f419a3de193ae97dec330",
+  "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "main_sha_readback": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "ekb_preflight": {
+    "performed_before_content_write": true,
+    "source": "supabase://mhwmirqcgxxukpctffuv/public",
+    "schema_first": true,
+    "tables_read": ["lf_error_knowledge", "lf_best_practices", "lf_prevention_rules"],
+    "matched_error_codes": [
+      "PROFILES-EKB-PREFLIGHT-OMISSION-001",
+      "AUD-018",
+      "GOV-024",
+      "GOV-032",
+      "CI-014"
+    ],
+    "matched_prevention_rules": [
+      "PRV-AUD-018",
+      "PRV-GOVERNED-PATH-WRITE-AUTHORITY-001",
+      "PRV-ARC-012"
+    ]
+  },
+  "repair_invariants": [
+    "Do not reuse s26_hp001/gate_f_input.json or gate_run_id S26-HP-001.",
+    "Use a fresh literal input and run identity.",
+    "Observe live EKB/control-plane evidence before runtime.",
+    "Materialize Card resolution, authority resolution and typed context for the same run before model execution.",
+    "Execute the real local zero-cost runtime on exact final candidate SHA.",
+    "Do not count semantic review as proof of E2E provenance.",
+    "Freeze a new review bundle and require a separate INDEPENDENT_CHAT_CONTEXT receipt before W3 reconciliation."
+  ],
+  "golden_authorized": false,
+  "production_authorized": false
+}

@@ -1,0 +1,127 @@
+{
+  "candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "context_pack": {
+    "downstream_authorized": false,
+    "e2e_case_source": "S26_F10_REAL_E2E_HOLDOUT_R2",
+    "input_governance": {
+      "context_sha256": "8069cac0391ab8c013216a499916520d0e9ef9bedef8c17cb4ee433c57a46cde",
+      "current": true,
+      "decision": "ALLOW",
+      "ready": true,
+      "receipt_ref": "w3_repair/gate_b_ekb_governance.json",
+      "status": "PASS",
+      "subject_mode": "TEXT_TASK"
+    },
+    "pack_sha256": "ae3125fc40f9780b83853fbc7bf3089c1534dc1f6dedd44a0d720d8479916acd",
+    "runtime_authority_contract": {
+      "authority_sources": [],
+      "current_run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-18E6B0F4C8B3",
+      "required_authority_types": [
+        "INPUT_GOVERNANCE"
+      ]
+    },
+    "schema": "lf-profile-runtime-queue-context/v1",
+    "screen_governance_applicable": false,
+    "source": "QUEUE_NATIVE_TEXT_PROFILE"
+  },
+  "profile": {
+    "input_fields": {
+      "distribution_mode": "DIRECT",
+      "domain_scope": "GENERIC_SERVICE_MARKETPLACE",
+      "execution_mode": "SANDBOX",
+      "f10_holdout_generation": "R2_FRESH_NO_HP001_UPSTREAM",
+      "f10_live_ekb_snapshot_sha256": "033fcad09ab04e02b9aca691d0f6767dba87142282434313d76639776f4be915",
+      "gate_f_acceptance": {
+        "implementation_readiness": "STRUCTURED_SPEC_READY_FOR_NEXT_AGENT",
+        "minimum_component_count": 9,
+        "minimum_hierarchy_depth_edges": 3,
+        "minimum_risk_control_count": 4,
+        "minimum_state_map_coverage_ratio": 1.0,
+        "minimum_variant_guard_coverage_ratio": 1.0,
+        "required_component_ids": [
+          "header_search",
+          "category_navigation",
+          "featured_services",
+          "service_cards",
+          "service_card_template",
+          "service_title",
+          "service_provider",
+          "service_price",
+          "service_cta"
+        ],
+        "required_design_intents": [
+          "clear",
+          "professional",
+          "easy_to_navigate"
+        ],
+        "required_responsive_modes": [
+          "desktop",
+          "mobile"
+        ],
+        "required_sections": [
+          "header",
+          "categories",
+          "featured_services",
+          "service_cards"
+        ],
+        "required_service_leaf_components": [
+          "service_title",
+          "service_provider",
+          "service_price",
+          "service_cta"
+        ],
+        "required_source_bindings": {
+          "category_navigation.items": "DATA_BOUND",
+          "featured_services.items": "DATA_BOUND",
+          "service_card_template.fields": "title|provider|price|call_to_action",
+          "service_card_template.values": "DATA_BOUND",
+          "service_cards.items": "DATA_BOUND",
+          "service_cta.destination": "UNRESOLVED_UNTIL_SOURCE",
+          "service_cta.label": "DATA_BOUND:call_to_action",
+          "service_price.format": "SOURCE_DEFINED",
+          "service_price.value": "DATA_BOUND:price",
+          "service_provider.value": "DATA_BOUND:provider",
+          "service_title.value": "DATA_BOUND:title"
+        },
+        "required_state_component_ids": [
+          "header_search",
+          "category_navigation",
+          "featured_services",
+          "service_cards",
+          "service_cta"
+        ],
+        "task_mode": "CREATE_NEW"
+      },
+      "gate_run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-18E6B0F4C8B3",
+      "output_contract_version": "UI_PRODUCTION_SPEC_V6",
+      "profile_slug": "ui_architect",
+      "project_id": "S26",
+      "task_mode": "CREATE_NEW"
+    },
+    "input_literal": "Crea una pantalla real de marketplace para comparar servicios de reparación y mantenimiento de bicicletas. Mobile-first: buscador primero, categorías visibles, destacados únicamente si la fuente los marca, tarjetas con título, proveedor, precio y CTA provenientes de datos. No inventes disponibilidad, precio, rutas, promociones ni resultados. Debe quedar lista para implementación y funcionar también en desktop.",
+    "lf_adapter_sources": [],
+    "lf_card_sources": [],
+    "operation_code": "EJECUCION_PERFIL_LF",
+    "profile_code": "PERFIL-UI-ARCHITECT",
+    "profile_slug": "ui_architect",
+    "profile_source_paths": [
+      "profiles/ui_architect/SKILL.md",
+      "profiles/ui_architect/contracts/composer_payload_boundary_v1.md"
+    ],
+    "request_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-18E6B0F4C8B3",
+    "required_adapter_codes": [],
+    "required_card_refs": [],
+    "runtime_output_mode": "UI_PRODUCTION_SPEC",
+    "send_image_to_model": false
+  },
+  "request_sha256": "f97acc4f72cff7c12ccf2110732164d759715595134c8914752524e3553dd18d",
+  "run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-18E6B0F4C8B3",
+  "schema": "S26_F10_REAL_E2E_RUNTIME_REQUEST_V1",
+  "upstream_receipts": {
+    "gate_a": "9985d1b3c6de0c192e8ffffb7da86388a8cb142ef5488be9fa206e94665a8021",
+    "gate_b": "0bfc9632539db3820812e887ea171d2ebb967d7d410818b43e64c2609aea0c4d",
+    "gate_c": "165a7d8589aaaf0bca59c56f12405c6d89111dd40a666ddbe0ded1cf26d4f5ef",
+    "gate_d": "df5c44b864ca6bf533f7274d81a72bd96215e0c06dd8a7eb9b4e87525471624a",
+    "gate_e": "307b383ec9aeaf2b7a5704eefc8cb6ec9fb7fe62b2e33710abf6b7f0a8194f37"
+  }
+}

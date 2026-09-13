@@ -1,0 +1,15 @@
+{
+  "gate": "A_INPUT_ADMISSION",
+  "input": {
+    "content": "Crea una pantalla real de marketplace para comparar servicios de reparación y mantenimiento de bicicletas. Mobile-first: buscador primero, categorías visibles, destacados únicamente si la fuente los marca, tarjetas con título, proveedor, precio y CTA provenientes de datos. No inventes disponibilidad, precio, rutas, promociones ni resultados. Debe quedar lista para implementación y funcionar también en desktop.",
+    "content_mutated": false,
+    "sha256": "c7ab15b2a3d403a55e0876dc69c808757e3a906e46ebe7b7a17f7b1b86e17678",
+    "source_type": "USER_TEXT"
+  },
+  "next_gate": "B_EKB_GOVERNANCE",
+  "project_id": "S26",
+  "receipt_sha256": "eec2c1acda9bf6519460703cacbb5a400d400449a4fbf864b2316bee3322c269",
+  "run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-119E97D9C5FD",
+  "schema": "S26_F10_GATE_A_ADMISSION_V1",
+  "status": "PASS"
+}

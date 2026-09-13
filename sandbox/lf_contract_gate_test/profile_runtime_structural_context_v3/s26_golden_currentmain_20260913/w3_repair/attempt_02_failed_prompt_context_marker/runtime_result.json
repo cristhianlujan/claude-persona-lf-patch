@@ -1,0 +1,38 @@
+{
+  "context": {
+    "cache_hit": false,
+    "full_governed_pipeline": true,
+    "queue_native": false,
+    "runtime_output_mode": "UI_PRODUCTION_SPEC",
+    "source": "S26_F10_REAL_E2E_HOLDOUT_R2"
+  },
+  "downstream_authorized": false,
+  "elapsed_ms": 13.164,
+  "model_raw_output": null,
+  "profile_code": "PERFIL-UI-ARCHITECT",
+  "profile_contract_valid": {
+    "blocking_codes": [
+      "RUNTIME_COMPLETION_FAILED"
+    ],
+    "downstream_authorized": false,
+    "status": "NOT_EVALUATED"
+  },
+  "profile_slug": "ui_architect",
+  "raw_output": null,
+  "request_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-BCA9620A1100",
+  "runtime_completion": {
+    "blocking_codes": [
+      "LLAMA_PROMPT_TOKEN_PROXY_BUDGET_EXCEEDED"
+    ],
+    "detail": "proxy_tokens=7273;available_prompt_tokens=6886;context_tokens=8192;reserved_output_tokens=1050",
+    "stage": "RUNTIME_COMPLETION",
+    "status": "FAIL"
+  },
+  "semantic_utility": {
+    "blocking_codes": [
+      "RUNTIME_COMPLETION_FAILED"
+    ],
+    "downstream_authorized": false,
+    "status": "NOT_EVALUATED"
+  }
+}

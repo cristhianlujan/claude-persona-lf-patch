@@ -1,0 +1,96 @@
+{
+  "acceptance_criteria": {
+    "implementation_readiness": "STRUCTURED_SPEC_READY_FOR_NEXT_AGENT",
+    "minimum_component_count": 9,
+    "minimum_hierarchy_depth_edges": 3,
+    "minimum_risk_control_count": 4,
+    "minimum_state_map_coverage_ratio": 1.0,
+    "minimum_variant_guard_coverage_ratio": 1.0,
+    "required_component_ids": [
+      "header_search",
+      "category_navigation",
+      "featured_services",
+      "service_cards",
+      "service_card_template",
+      "service_title",
+      "service_provider",
+      "service_price",
+      "service_cta"
+    ],
+    "required_design_intents": [
+      "clear",
+      "professional",
+      "easy_to_navigate"
+    ],
+    "required_responsive_modes": [
+      "desktop",
+      "mobile"
+    ],
+    "required_sections": [
+      "header",
+      "categories",
+      "featured_services",
+      "service_cards"
+    ],
+    "required_service_leaf_components": [
+      "service_title",
+      "service_provider",
+      "service_price",
+      "service_cta"
+    ],
+    "required_source_bindings": {
+      "category_navigation.items": "DATA_BOUND",
+      "featured_services.items": "DATA_BOUND",
+      "service_card_template.fields": "title|provider|price|call_to_action",
+      "service_card_template.values": "DATA_BOUND",
+      "service_cards.items": "DATA_BOUND",
+      "service_cta.destination": "UNRESOLVED_UNTIL_SOURCE",
+      "service_cta.label": "DATA_BOUND:call_to_action",
+      "service_price.format": "SOURCE_DEFINED",
+      "service_price.value": "DATA_BOUND:price",
+      "service_provider.value": "DATA_BOUND:provider",
+      "service_title.value": "DATA_BOUND:title"
+    },
+    "required_state_component_ids": [
+      "header_search",
+      "category_navigation",
+      "featured_services",
+      "service_cards",
+      "service_cta"
+    ],
+    "task_mode": "CREATE_NEW"
+  },
+  "artifact_canonical_sha256": "1d5cf010068c667bd44f5a6c66ac13869c7042e2e70a271b005cec43e64b5c91",
+  "case_context": "Repaired real E2E unseen holdout independent semantic Quality Pack review for UI Architect output. The producer E2E proof is bound separately; this review must judge semantic quality of the frozen artifact only.",
+  "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "immutable_source_refs": [
+    "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/ui_architect/SKILL.md",
+    "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md",
+    "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/quality_gate_contract.md",
+    "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/lf_quality_controls.md",
+    "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/judges/quality_pack_score_rubric.md",
+    "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/judges/quality_pack_mini_judge.md",
+    "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/schemas/quality_review.schema.json",
+    "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_family_objective_matrix_v3/coverage_inventory.json",
+    "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_family_objective_matrix_v3/missing_objectives_plan.json",
+    "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/sandbox/lf_contract_gate_test/profile_execution_runtime/s26_operating_mode.json"
+  ],
+  "input_requirement": "Crea una pantalla real de marketplace para comparar servicios de reparación y mantenimiento de bicicletas. Mobile-first: buscador primero, categorías visibles, destacados únicamente si la fuente los marca, tarjetas con título, proveedor, precio y CTA provenientes de datos. No inventes disponibilidad, precio, rutas, promociones ni resultados. Debe quedar lista para implementación y funcionar también en desktop.",
+  "matrix_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT",
+  "producer_execution_binding": {
+    "execution_receipt_sha256": "e461ddd1602412e8aadf28903d5b87b3258a85a900cbec2d720aa9ed5a73c97c",
+    "full_governed_pipeline_observed": true,
+    "run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-119E97D9C5FD",
+    "semantic_review_authority": false,
+    "typed_context_present": true
+  },
+  "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-CURRENTMAIN-3B39657F",
+  "review_instructions": [
+    "Evaluate the artifact from this frozen bundle only against the exact input requirement, acceptance criteria, UI Architect contract and canonical Quality Pack.",
+    "Do not use producer verdicts, producer scores, producer semantic utility, prior F10 review results or expected outcomes as semantic authority.",
+    "Do not infer that E2E producer provenance implies semantic PASS; the reviewer must judge the artifact independently.",
+    "Apply the canonical Quality Pack 25-point rubric and hard LF governance failures.",
+    "Return only the canonical independent semantic review receipt JSON."
+  ],
+  "schema": "S26_W3_INDEPENDENT_REVIEW_CASE_V1"
+}

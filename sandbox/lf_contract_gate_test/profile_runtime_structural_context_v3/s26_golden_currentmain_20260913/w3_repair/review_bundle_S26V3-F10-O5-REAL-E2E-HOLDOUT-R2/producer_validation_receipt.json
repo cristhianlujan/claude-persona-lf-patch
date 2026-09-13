@@ -1,0 +1,35 @@
+{
+  "artifact_canonical_sha256": "1d5cf010068c667bd44f5a6c66ac13869c7042e2e70a271b005cec43e64b5c91",
+  "claim_ceiling": "PRODUCER_E2E_VALIDATION_ONLY_NOT_INDEPENDENT_VERDICT_NOT_W3_COMPLETE_NOT_GOLDEN",
+  "downstream_authorized": false,
+  "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "fresh_e2e_provenance": {
+    "authority_resolution_count": 2,
+    "authority_types": [
+      "INPUT_GOVERNANCE",
+      "PROFILE_SOURCE"
+    ],
+    "execution_receipt_sha256": "e461ddd1602412e8aadf28903d5b87b3258a85a900cbec2d720aa9ed5a73c97c",
+    "full_governed_pipeline_observed": true,
+    "reused_hp001_upstream_context": false,
+    "run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-119E97D9C5FD",
+    "runtime_source_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+    "typed_context_consumed_by_runtime_exact_match": true,
+    "typed_context_present": true
+  },
+  "independent_semantic_review": "PENDING_INDEPENDENT_CHAT_CONTEXT",
+  "matrix_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT",
+  "negative_regressions": {
+    "conflicting_route_invention_blocked": true,
+    "high_complexity_budget_fail_closed": true,
+    "layout_contradiction_blocked": true,
+    "matrix": "4/4",
+    "shallow_answer_blocked": true
+  },
+  "profile_contract_valid": "PASS",
+  "quality_depth_producer_check": "PASS",
+  "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-CURRENTMAIN-3B39657F",
+  "runtime_completion": "PASS",
+  "schema": "S26_W3_PRODUCER_VALIDATION_RECEIPT_V1",
+  "semantic_utility": "PASS"
+}

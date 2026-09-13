@@ -1,0 +1,32 @@
+{
+  "authority_count": 2,
+  "authority_resolution": [
+    {
+      "authority_id": "INPUT_GOVERNANCE_AGENT",
+      "authority_type": "INPUT_GOVERNANCE",
+      "cross_run_declared": false,
+      "run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-119E97D9C5FD",
+      "source_refs": [
+        "w3_repair/gate_b_ekb_governance.json"
+      ],
+      "source_sha256": "e395ef36939653c74eae904a24d62b2210fe2d32c33cba6a13c5e73207ba68d2"
+    },
+    {
+      "authority_id": "PERFIL-UI-ARCHITECT",
+      "authority_type": "PROFILE_SOURCE",
+      "cross_run_declared": false,
+      "run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-119E97D9C5FD",
+      "source_refs": [
+        "profiles/ui_architect/SKILL.md",
+        "profiles/ui_architect/contracts/composer_payload_boundary_v1.md"
+      ],
+      "source_sha256": "b65ab7beb8701ca95d1d9fdd51a82bd48f5382d87167cd0a148ae9fe7965f658"
+    }
+  ],
+  "gate": "D_AUTHORITY_RESOLUTION",
+  "next_gate": "E_TYPED_CONTEXT",
+  "receipt_sha256": "94873f682574a319514bfbf4ade35e679ce77a9417b38ca42b7ec644e8a064a6",
+  "run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-119E97D9C5FD",
+  "schema": "S26_F10_GATE_D_AUTHORITY_V1",
+  "status": "PASS"
+}

@@ -1,0 +1,15 @@
+{
+  "card_resolution": {
+    "mode": "NO_CARD_GOVERNED",
+    "reason": "NO_APPLICABLE_CARD_DECLARED",
+    "schema_invention_allowed": false,
+    "selected_card_refs": [],
+    "status": "FALLBACK"
+  },
+  "gate": "C_CARD_SELECTION",
+  "next_gate": "D_AUTHORITY_RESOLUTION",
+  "receipt_sha256": "165a7d8589aaaf0bca59c56f12405c6d89111dd40a666ddbe0ded1cf26d4f5ef",
+  "run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-18E6B0F4C8B3",
+  "schema": "S26_F10_GATE_C_CARD_SELECTION_V1",
+  "status": "PASS"
+}

@@ -1,0 +1,338 @@
+{
+  "context": {
+    "cache_hit": false,
+    "full_governed_pipeline": true,
+    "queue_native": false,
+    "runtime_output_mode": "UI_PRODUCTION_SPEC",
+    "source": "S26_F10_REAL_E2E_HOLDOUT_R2"
+  },
+  "downstream_authorized": false,
+  "elapsed_ms": 9844.612,
+  "model_raw_output": "{\n  \"v\": 5,\n  \"d\": {\n    \"l\": \"MOBILE_PRIORITY_STACK\"\n  }\n}",
+  "profile_code": "PERFIL-UI-ARCHITECT",
+  "profile_contract_valid": {
+    "blocking_codes": [],
+    "errors": [],
+    "schema_mode": "UI_PRODUCTION_SPEC",
+    "schema_sha256": "7f10c952796b045b99069b446f8dd7582d641d3514c25253fd27782045547112",
+    "schema_source_refs": [
+      "profiles/ui_architect/schemas/ui_production_spec.schema.json"
+    ],
+    "status": "PASS",
+    "validator_scope": "CANONICAL_SCHEMA_PLUS_APPLICABLE_PROFILE_VALIDATOR"
+  },
+  "profile_slug": "ui_architect",
+  "raw_output": "{\"composer_payload\":{\"component_tree\":[{\"allowed_variants\":[\"default\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"surface_default\",\"text_primary\",\"border_subtle\"],\"component_id\":\"header_search\",\"component_type\":\"input\",\"content\":{\"binding\":\"USER_REQUIREMENT\"},\"role\":\"Present governed header search.\",\"spacing\":\"compact\",\"state\":\"default\",\"typography\":\"body\",\"visual_priority\":\"HIGH\",\"zone_id\":\"header\"},{\"allowed_variants\":[\"default\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"surface_default\",\"text_primary\",\"border_subtle\"],\"component_id\":\"category_navigation\",\"component_type\":\"navigation\",\"content\":{\"items\":\"DATA_BOUND\"},\"role\":\"Present governed category navigation.\",\"spacing\":\"compact\",\"state\":\"default\",\"typography\":\"section_heading\",\"visual_priority\":\"HIGH\",\"zone_id\":\"categories\"},{\"allowed_variants\":[\"default\",\"populated\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"surface_default\",\"text_primary\",\"border_subtle\"],\"component_id\":\"featured_services\",\"component_type\":\"section\",\"content\":{\"items\":\"DATA_BOUND\"},\"role\":\"Present governed featured services.\",\"spacing\":\"regular\",\"state\":\"populated\",\"typography\":\"section_heading\",\"visual_priority\":\"HIGH\",\"zone_id\":\"featured_services\"},{\"allowed_variants\":[\"default\",\"populated\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"surface_default\",\"text_primary\",\"border_subtle\"],\"component_id\":\"service_cards\",\"component_type\":\"collection\",\"content\":{\"items\":\"DATA_BOUND\"},\"role\":\"Present governed service cards.\",\"spacing\":\"regular\",\"state\":\"populated\",\"typography\":\"body\",\"visual_priority\":\"HIGH\",\"zone_id\":\"service_cards\"},{\"allowed_variants\":[\"default\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"surface_default\",\"text_primary\",\"border_subtle\"],\"component_id\":\"service_card_template\",\"component_type\":\"template\",\"content\":{\"fields\":[\"title\",\"provider\",\"price\",\"call_to_action\"],\"values\":\"DATA_BOUND\"},\"role\":\"Present governed service card template.\",\"spacing\":\"regular\",\"state\":\"default\",\"typography\":\"body\",\"visual_priority\":\"MEDIUM\",\"zone_id\":\"service_cards\"},{\"allowed_variants\":[\"default\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"surface_default\",\"text_primary\",\"border_subtle\"],\"component_id\":\"service_title\",\"component_type\":\"text\",\"content\":{\"value\":\"DATA_BOUND:title\"},\"role\":\"Present governed service title.\",\"spacing\":\"compact\",\"state\":\"default\",\"typography\":\"body\",\"visual_priority\":\"MEDIUM\",\"zone_id\":\"service_cards\"},{\"allowed_variants\":[\"default\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"surface_default\",\"text_primary\",\"border_subtle\"],\"component_id\":\"service_provider\",\"component_type\":\"text\",\"content\":{\"value\":\"DATA_BOUND:provider\"},\"role\":\"Present governed service provider.\",\"spacing\":\"compact\",\"state\":\"default\",\"typography\":\"body\",\"visual_priority\":\"MEDIUM\",\"zone_id\":\"service_cards\"},{\"allowed_variants\":[\"default\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"surface_default\",\"text_primary\",\"border_subtle\"],\"component_id\":\"service_price\",\"component_type\":\"value\",\"content\":{\"format\":\"SOURCE_DEFINED\",\"value\":\"DATA_BOUND:price\"},\"role\":\"Present governed service price.\",\"spacing\":\"compact\",\"state\":\"default\",\"typography\":\"body\",\"visual_priority\":\"MEDIUM\",\"zone_id\":\"service_cards\"},{\"allowed_variants\":[\"default\",\"available\"],\"blocked_variants\":[\"invented_data\",\"invented_route\"],\"color_tokens\":[\"surface_default\",\"text_primary\",\"border_subtle\",\"action_primary\"],\"component_id\":\"service_cta\",\"component_type\":\"action\",\"content\":{\"destination\":\"UNRESOLVED_UNTIL_SOURCE\",\"label\":\"DATA_BOUND:call_to_action\"},\"role\":\"Present governed service cta.\",\"spacing\":\"compact\",\"state\":\"available\",\"typography\":\"body\",\"visual_priority\":\"HIGH\",\"zone_id\":\"service_cards\"}],\"density_rules\":[\"Keep search and navigation immediately discoverable.\",\"Keep repeated content scannable without dropping required fields.\",\"Prefer responsive reflow over reducing legibility.\"],\"layout_grid\":{\"desktop\":\"responsive service-card grid keeps search and navigation visible while allowing column reflow\",\"flow\":[\"header_search\",\"category_navigation\",\"featured_services\",\"service_cards\"],\"mobile\":\"mobile-first single-column stack preserves required sections and card information order\"},\"risk_controls\":[\"Preserve service_cta.destination as UNRESOLVED_UNTIL_SOURCE; do not invent or strengthen its value.\",\"Preserve service_price.format as SOURCE_DEFINED; do not invent or strengthen its value.\",\"Preserve service_cta.label as DATA_BOUND:call_to_action; do not invent or strengthen its value.\",\"Preserve service_price.value as DATA_BOUND:price; do not invent or strengthen its value.\"],\"screen_definition\":{\"design_intent\":[\"clear\",\"professional\",\"easy_to_navigate\"],\"implementation_readiness\":\"STRUCTURED_SPEC_READY_FOR_NEXT_AGENT\",\"purpose\":\"Implement the governed GENERIC_SERVICE_MARKETPLACE screen with source-bound required sections and responsive behavior.\",\"required_sections\":[\"header\",\"categories\",\"featured_services\",\"service_cards\"],\"screen_type\":\"GENERIC_SERVICE_MARKETPLACE\",\"task_mode\":\"CREATE_NEW\"},\"spacing_typography\":{\"precision_mode\":\"RELATIVE_GUIDANCE\",\"spacing\":\"compact=within_component;regular=between_related_components;section=between_major_sections\",\"typography\":\"body=content_or_metadata;section_heading=section_emphasis\"},\"state_map\":{\"category_navigation\":{\"default\":\"available\",\"selected\":\"preserve_source_selected_category\"},\"featured_services\":{\"empty\":\"render_no_invented_items\",\"populated\":\"render_source_items\"},\"header_search\":{\"default\":\"enabled\",\"query_entered\":\"preserve_user_query\"},\"service_cards\":{\"empty\":\"render_empty_state_without_invented_items\",\"populated\":\"render_source_items\"},\"service_cta\":{\"available\":\"enabled_when_source_action_exists\",\"missing_source_action\":\"disabled_or_omitted_without_inventing_destination\"}},\"token_map\":{\"action\":[\"action_primary\"],\"border\":[\"border_subtle\"],\"precision_mode\":\"SEMANTIC_ROLE_ONLY_NO_CANONICAL_COLOR_VALUES_INVENTED\",\"surface\":[\"surface_default\"],\"text\":[\"text_primary\",\"text_secondary\"]},\"visual_hierarchy\":[{\"child_ids\":[\"header_search\",\"category_navigation\",\"featured_services\",\"service_cards\"],\"parent_id\":\"screen\"},{\"child_ids\":[\"service_card_template\"],\"parent_id\":\"service_cards\"},{\"child_ids\":[\"service_title\",\"service_provider\",\"service_price\",\"service_cta\"],\"parent_id\":\"service_card_template\"}]},\"deliverable_created\":{\"component_tree\":[{\"allowed_variants\":[\"default\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"surface_default\",\"text_primary\",\"border_subtle\"],\"component_id\":\"header_search\",\"component_type\":\"input\",\"content\":{\"binding\":\"USER_REQUIREMENT\"},\"role\":\"Present governed header search.\",\"spacing\":\"compact\",\"state\":\"default\",\"typography\":\"body\",\"visual_priority\":\"HIGH\",\"zone_id\":\"header\"},{\"allowed_variants\":[\"default\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"surface_default\",\"text_primary\",\"border_subtle\"],\"component_id\":\"category_navigation\",\"component_type\":\"navigation\",\"content\":{\"items\":\"DATA_BOUND\"},\"role\":\"Present governed category navigation.\",\"spacing\":\"compact\",\"state\":\"default\",\"typography\":\"section_heading\",\"visual_priority\":\"HIGH\",\"zone_id\":\"categories\"},{\"allowed_variants\":[\"default\",\"populated\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"surface_default\",\"text_primary\",\"border_subtle\"],\"component_id\":\"featured_services\",\"component_type\":\"section\",\"content\":{\"items\":\"DATA_BOUND\"},\"role\":\"Present governed featured services.\",\"spacing\":\"regular\",\"state\":\"populated\",\"typography\":\"section_heading\",\"visual_priority\":\"HIGH\",\"zone_id\":\"featured_services\"},{\"allowed_variants\":[\"default\",\"populated\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"surface_default\",\"text_primary\",\"border_subtle\"],\"component_id\":\"service_cards\",\"component_type\":\"collection\",\"content\":{\"items\":\"DATA_BOUND\"},\"role\":\"Present governed service cards.\",\"spacing\":\"regular\",\"state\":\"populated\",\"typography\":\"body\",\"visual_priority\":\"HIGH\",\"zone_id\":\"service_cards\"},{\"allowed_variants\":[\"default\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"surface_default\",\"text_primary\",\"border_subtle\"],\"component_id\":\"service_card_template\",\"component_type\":\"template\",\"content\":{\"fields\":[\"title\",\"provider\",\"price\",\"call_to_action\"],\"values\":\"DATA_BOUND\"},\"role\":\"Present governed service card template.\",\"spacing\":\"regular\",\"state\":\"default\",\"typography\":\"body\",\"visual_priority\":\"MEDIUM\",\"zone_id\":\"service_cards\"},{\"allowed_variants\":[\"default\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"surface_default\",\"text_primary\",\"border_subtle\"],\"component_id\":\"service_title\",\"component_type\":\"text\",\"content\":{\"value\":\"DATA_BOUND:title\"},\"role\":\"Present governed service title.\",\"spacing\":\"compact\",\"state\":\"default\",\"typography\":\"body\",\"visual_priority\":\"MEDIUM\",\"zone_id\":\"service_cards\"},{\"allowed_variants\":[\"default\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"surface_default\",\"text_primary\",\"border_subtle\"],\"component_id\":\"service_provider\",\"component_type\":\"text\",\"content\":{\"value\":\"DATA_BOUND:provider\"},\"role\":\"Present governed service provider.\",\"spacing\":\"compact\",\"state\":\"default\",\"typography\":\"body\",\"visual_priority\":\"MEDIUM\",\"zone_id\":\"service_cards\"},{\"allowed_variants\":[\"default\"],\"blocked_variants\":[\"invented_data\"],\"color_tokens\":[\"surface_default\",\"text_primary\",\"border_subtle\"],\"component_id\":\"service_price\",\"component_type\":\"value\",\"content\":{\"format\":\"SOURCE_DEFINED\",\"value\":\"DATA_BOUND:price\"},\"role\":\"Present governed service price.\",\"spacing\":\"compact\",\"state\":\"default\",\"typography\":\"body\",\"visual_priority\":\"MEDIUM\",\"zone_id\":\"service_cards\"},{\"allowed_variants\":[\"default\",\"available\"],\"blocked_variants\":[\"invented_data\",\"invented_route\"],\"color_tokens\":[\"surface_default\",\"text_primary\",\"border_subtle\",\"action_primary\"],\"component_id\":\"service_cta\",\"component_type\":\"action\",\"content\":{\"destination\":\"UNRESOLVED_UNTIL_SOURCE\",\"label\":\"DATA_BOUND:call_to_action\"},\"role\":\"Present governed service cta.\",\"spacing\":\"compact\",\"state\":\"available\",\"typography\":\"body\",\"visual_priority\":\"HIGH\",\"zone_id\":\"service_cards\"}],\"density_rules\":[\"Keep search and navigation immediately discoverable.\",\"Keep repeated content scannable without dropping required fields.\",\"Prefer responsive reflow over reducing legibility.\"],\"layout_grid\":{\"desktop\":\"responsive service-card grid keeps search and navigation visible while allowing column reflow\",\"flow\":[\"header_search\",\"category_navigation\",\"featured_services\",\"service_cards\"],\"mobile\":\"mobile-first single-column stack preserves required sections and card information order\"},\"prompt_constraints\":[\"Preserve every governed required component and source binding.\",\"Keep desktop and mobile behavior explicit without inventing domain truth.\"],\"risk_controls\":[\"Preserve service_cta.destination as UNRESOLVED_UNTIL_SOURCE; do not invent or strengthen its value.\",\"Preserve service_price.format as SOURCE_DEFINED; do not invent or strengthen its value.\",\"Preserve service_cta.label as DATA_BOUND:call_to_action; do not invent or strengthen its value.\",\"Preserve service_price.value as DATA_BOUND:price; do not invent or strengthen its value.\"],\"screen_definition\":{\"design_intent\":[\"clear\",\"professional\",\"easy_to_navigate\"],\"implementation_readiness\":\"STRUCTURED_SPEC_READY_FOR_NEXT_AGENT\",\"purpose\":\"Implement the governed GENERIC_SERVICE_MARKETPLACE screen with source-bound required sections and responsive behavior.\",\"required_sections\":[\"header\",\"categories\",\"featured_services\",\"service_cards\"],\"screen_type\":\"GENERIC_SERVICE_MARKETPLACE\",\"task_mode\":\"CREATE_NEW\"},\"spacing_typography\":{\"precision_mode\":\"RELATIVE_GUIDANCE\",\"spacing\":\"compact=within_component;regular=between_related_components;section=between_major_sections\",\"typography\":\"body=content_or_metadata;section_heading=section_emphasis\"},\"state_map\":{\"category_navigation\":{\"default\":\"available\",\"selected\":\"preserve_source_selected_category\"},\"featured_services\":{\"empty\":\"render_no_invented_items\",\"populated\":\"render_source_items\"},\"header_search\":{\"default\":\"enabled\",\"query_entered\":\"preserve_user_query\"},\"service_cards\":{\"empty\":\"render_empty_state_without_invented_items\",\"populated\":\"render_source_items\"},\"service_cta\":{\"available\":\"enabled_when_source_action_exists\",\"missing_source_action\":\"disabled_or_omitted_without_inventing_destination\"}},\"token_map\":{\"action\":[\"action_primary\"],\"border\":[\"border_subtle\"],\"precision_mode\":\"SEMANTIC_ROLE_ONLY_NO_CANONICAL_COLOR_VALUES_INVENTED\",\"surface\":[\"surface_default\"],\"text\":[\"text_primary\",\"text_secondary\"]},\"visual_hierarchy\":[{\"child_ids\":[\"header_search\",\"category_navigation\",\"featured_services\",\"service_cards\"],\"parent_id\":\"screen\"},{\"child_ids\":[\"service_card_template\"],\"parent_id\":\"service_cards\"},{\"child_ids\":[\"service_title\",\"service_provider\",\"service_price\",\"service_cta\"],\"parent_id\":\"service_card_template\"}]},\"governance_envelope\":{\"context\":{\"execution_mode\":\"SANDBOX\",\"input_sha256\":\"c7ab15b2a3d403a55e0876dc69c808757e3a906e46ebe7b7a17f7b1b86e17678\",\"request_id\":\"S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-119E97D9C5FD\",\"runtime_source_sha\":\"3b39657fbf14f29c7839ecb26d715ed5c6fad59e\",\"runtime_typed_context_sha256\":\"0b7cd3c08149b9bb834795a6e7fd23ec00f5d725bf48b8908a9cf46dd17946f8\"},\"render_policy\":\"NON_RENDER\",\"schema\":\"LF_UI_GOVERNANCE_ENVELOPE_V1\"},\"handoff_to_next\":{\"payload_ref\":\"composer_payload\",\"recipient\":\"frontend_or_composer_agent\",\"status\":\"READY_FOR_DETERMINISTIC_AND_SEMANTIC_VALIDATION\"},\"output_contract_version\":\"UI_PRODUCTION_SPEC_V6\",\"output_type\":\"PRODUCTION_UI_SPEC\",\"score\":{\"evidence_by_criterion\":{\"handoff_quality\":{\"refs\":[\"component_tree\",\"handoff_to_next\"],\"summary\":\"Deterministic acceptance check passed for handoff_quality.\"},\"layout_precision\":{\"refs\":[\"layout_grid\",\"spacing_typography\"],\"summary\":\"Deterministic acceptance check passed for layout_precision.\"},\"lf_system_fidelity\":{\"refs\":[\"token_map\",\"risk_controls\"],\"summary\":\"Deterministic acceptance check passed for lf_system_fidelity.\"},\"state_mapping\":{\"refs\":[\"state_map\"],\"summary\":\"Deterministic acceptance check passed for state_mapping.\"},\"visual_hierarchy\":{\"refs\":[\"visual_hierarchy\"],\"summary\":\"Deterministic acceptance check passed for visual_hierarchy.\"}},\"handoff_quality\":4,\"layout_precision\":4,\"lf_system_fidelity\":4,\"state_mapping\":4,\"total\":20,\"visual_hierarchy\":4},\"self_verdict\":\"PASS_TO_QUALITY_PACK_CANDIDATE\",\"worker\":\"ui_architect\"}",
+  "request_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-119E97D9C5FD",
+  "runtime_completion": {
+    "attestation_verification": {
+      "evidence_sha256": "745570ef72a469b5213b46d17e801c14d3046c42de3296a624ae19b9c0b10d4a",
+      "request_sha256": "f9028fdf6be8b86f5d8e677c9d63808e4e2ec0fa2157102b3446125dafcd95b7",
+      "response_sha256": "aff7f0cdde519abbe350b69838e1447b256cb373d15793a11be7ff0208d1f43d",
+      "verified": true,
+      "verifier_id": "hetzner-local-llamacpp-http-readback-v1"
+    },
+    "blocking_codes": [],
+    "governed_context_receipt": {
+      "adapter_binding": [],
+      "adapter_receipts": [],
+      "authority_resolution": [
+        {
+          "authority_id": "INPUT_GOVERNANCE_AGENT",
+          "authority_type": "INPUT_GOVERNANCE",
+          "cross_run_declared": false,
+          "run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-119E97D9C5FD",
+          "source_refs": [
+            "w3_repair/gate_b_ekb_governance.json"
+          ],
+          "source_sha256": "e395ef36939653c74eae904a24d62b2210fe2d32c33cba6a13c5e73207ba68d2"
+        },
+        {
+          "authority_id": "PERFIL-UI-ARCHITECT",
+          "authority_type": "PROFILE_SOURCE",
+          "cross_run_declared": false,
+          "run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-119E97D9C5FD",
+          "source_refs": [
+            "profiles/ui_architect/SKILL.md",
+            "profiles/ui_architect/contracts/composer_payload_boundary_v1.md"
+          ],
+          "source_sha256": "b65ab7beb8701ca95d1d9fdd51a82bd48f5382d87167cd0a148ae9fe7965f658"
+        }
+      ],
+      "card_receipts": [],
+      "card_resolution": {
+        "mode": "NO_CARD_GOVERNED",
+        "reason": "NO_APPLICABLE_CARD_DECLARED",
+        "schema_invention_allowed": false,
+        "selected_card_refs": [],
+        "status": "FALLBACK"
+      },
+      "context_fingerprint": "9f23ec00ce6bdb7db809d3e42a9aa9f79a8cda1de87a2e73ce54d3e67f45059b",
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "request_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-119E97D9C5FD",
+      "runtime_schema": {
+        "mode": "UI_PRODUCTION_SPEC",
+        "schema_invention_allowed": false,
+        "sha256": "7f10c952796b045b99069b446f8dd7582d641d3514c25253fd27782045547112",
+        "source_ref": "profiles/ui_architect/schemas/ui_production_spec.schema.json"
+      },
+      "runtime_typed_context": {
+        "adapter_binding": [],
+        "authority_resolution": [
+          {
+            "authority_id": "INPUT_GOVERNANCE_AGENT",
+            "authority_type": "INPUT_GOVERNANCE",
+            "cross_run_declared": false,
+            "run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-119E97D9C5FD",
+            "source_refs": [
+              "w3_repair/gate_b_ekb_governance.json"
+            ],
+            "source_sha256": "e395ef36939653c74eae904a24d62b2210fe2d32c33cba6a13c5e73207ba68d2"
+          },
+          {
+            "authority_id": "PERFIL-UI-ARCHITECT",
+            "authority_type": "PROFILE_SOURCE",
+            "cross_run_declared": false,
+            "run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-119E97D9C5FD",
+            "source_refs": [
+              "profiles/ui_architect/SKILL.md",
+              "profiles/ui_architect/contracts/composer_payload_boundary_v1.md"
+            ],
+            "source_sha256": "b65ab7beb8701ca95d1d9fdd51a82bd48f5382d87167cd0a148ae9fe7965f658"
+          }
+        ],
+        "card_resolution": {
+          "mode": "NO_CARD_GOVERNED",
+          "reason": "NO_APPLICABLE_CARD_DECLARED",
+          "schema_invention_allowed": false,
+          "selected_card_refs": [],
+          "status": "FALLBACK"
+        },
+        "classification": {
+          "surface_code": "PROFILE:ui_architect",
+          "task_code": "EJECUCION_PERFIL_LF:UI_PRODUCTION_SPEC"
+        },
+        "current_run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-119E97D9C5FD",
+        "input": {
+          "input_fields": {
+            "distribution_mode": "DIRECT",
+            "domain_scope": "GENERIC_SERVICE_MARKETPLACE",
+            "execution_mode": "SANDBOX",
+            "f10_holdout_generation": "R2_FRESH_NO_HP001_UPSTREAM",
+            "f10_live_ekb_snapshot_sha256": "576d1fdf06bbd73eff25bb32e948ad5f8236b95190bf500f92b075e17ed11641",
+            "gate_f_acceptance": {
+              "implementation_readiness": "STRUCTURED_SPEC_READY_FOR_NEXT_AGENT",
+              "minimum_component_count": 9,
+              "minimum_hierarchy_depth_edges": 3,
+              "minimum_risk_control_count": 4,
+              "minimum_state_map_coverage_ratio": 1.0,
+              "minimum_variant_guard_coverage_ratio": 1.0,
+              "required_component_ids": [
+                "header_search",
+                "category_navigation",
+                "featured_services",
+                "service_cards",
+                "service_card_template",
+                "service_title",
+                "service_provider",
+                "service_price",
+                "service_cta"
+              ],
+              "required_design_intents": [
+                "clear",
+                "professional",
+                "easy_to_navigate"
+              ],
+              "required_responsive_modes": [
+                "desktop",
+                "mobile"
+              ],
+              "required_sections": [
+                "header",
+                "categories",
+                "featured_services",
+                "service_cards"
+              ],
+              "required_service_leaf_components": [
+                "service_title",
+                "service_provider",
+                "service_price",
+                "service_cta"
+              ],
+              "required_source_bindings": {
+                "category_navigation.items": "DATA_BOUND",
+                "featured_services.items": "DATA_BOUND",
+                "service_card_template.fields": "title|provider|price|call_to_action",
+                "service_card_template.values": "DATA_BOUND",
+                "service_cards.items": "DATA_BOUND",
+                "service_cta.destination": "UNRESOLVED_UNTIL_SOURCE",
+                "service_cta.label": "DATA_BOUND:call_to_action",
+                "service_price.format": "SOURCE_DEFINED",
+                "service_price.value": "DATA_BOUND:price",
+                "service_provider.value": "DATA_BOUND:provider",
+                "service_title.value": "DATA_BOUND:title"
+              },
+              "required_state_component_ids": [
+                "header_search",
+                "category_navigation",
+                "featured_services",
+                "service_cards",
+                "service_cta"
+              ],
+              "task_mode": "CREATE_NEW"
+            },
+            "gate_run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-119E97D9C5FD",
+            "output_contract_version": "UI_PRODUCTION_SPEC_V6",
+            "profile_slug": "ui_architect",
+            "project_id": "S26",
+            "task_mode": "CREATE_NEW"
+          },
+          "input_fields_sha256": "93f47586eda3874aede37ac32f05f49b5918f74c23f0c6384357323dda5d2da8",
+          "input_literal_sha256": "c7ab15b2a3d403a55e0876dc69c808757e3a906e46ebe7b7a17f7b1b86e17678",
+          "profile_code": "PERFIL-UI-ARCHITECT",
+          "profile_slug": "ui_architect"
+        },
+        "provenance_reconstructible": true,
+        "runtime_schema": {
+          "mode": "UI_PRODUCTION_SPEC",
+          "schema_invention_allowed": false,
+          "sha256": "7f10c952796b045b99069b446f8dd7582d641d3514c25253fd27782045547112",
+          "source_ref": "profiles/ui_architect/schemas/ui_production_spec.schema.json"
+        },
+        "schema": "lf-runtime-typed-context/v1",
+        "typed_context_sha256": "0b7cd3c08149b9bb834795a6e7fd23ec00f5d725bf48b8908a9cf46dd17946f8"
+      },
+      "runtime_typed_context_sha256": "0b7cd3c08149b9bb834795a6e7fd23ec00f5d725bf48b8908a9cf46dd17946f8",
+      "schema": "lf-governed-context-receipt/v2"
+    },
+    "llama_timings": {
+      "cache_n": 1356,
+      "predicted_ms": 1920.182,
+      "predicted_n": 27,
+      "predicted_per_second": 13.54038315118046,
+      "predicted_per_token_ms": 73.85315384615384,
+      "prompt_ms": 7892.66,
+      "prompt_n": 271,
+      "prompt_per_second": 34.33569924461462,
+      "prompt_per_token_ms": 29.12420664206642
+    },
+    "llama_usage": {
+      "completion_tokens": 27,
+      "prompt_tokens": 1627,
+      "prompt_tokens_details": {
+        "cached_tokens": 1356
+      },
+      "total_tokens": 1654
+    },
+    "output_materialization": {
+      "composer_payload_sha256": "94aca78554856bf585ed09867db3892ce2e561ef1ef6939465faf73985a53a99",
+      "deterministic_acceptance": {
+        "handoff_quality": true,
+        "layout_precision": true,
+        "lf_system_fidelity": true,
+        "state_mapping": true,
+        "visual_hierarchy": true
+      },
+      "deterministic_derivations": [
+        "component_ids",
+        "composer_payload",
+        "design_intent",
+        "governance_envelope",
+        "handoff_to_next",
+        "layout_base_order",
+        "output_contract_version",
+        "output_type",
+        "prompt_constraints",
+        "required_sections",
+        "risk_controls",
+        "score",
+        "screen_task_mode",
+        "self_verdict",
+        "source_bindings",
+        "token_map_projection",
+        "variant_guards",
+        "worker"
+      ],
+      "deterministic_fields_added": [
+        "composer_payload",
+        "governance_envelope",
+        "handoff_to_next",
+        "output_contract_version",
+        "score",
+        "self_verdict"
+      ],
+      "deterministic_first_policy": "KNOWN_AUTHORITY_TO_GRAPH__MODEL_SEMANTIC_DELTA__DETERMINISTIC_MATERIALIZATION",
+      "governance_context_sha256": "f57fcb866cf0cc83e22c6fcfaa52db0ece21118769ccdf2f145da77036d67648",
+      "materialized_output_sha256": "1d5cf010068c667bd44f5a6c66ac13869c7042e2e70a271b005cec43e64b5c91",
+      "mode": "UI_PRODUCTION_DETERMINISTIC_PROJECTION_V1",
+      "model_generated_root_keys": [],
+      "model_raw_output_sha256": "ed1b61e510839d08c32e8733918657dcaf1ae497d065a6e6bfa3235b726ab79d",
+      "model_semantic_delta_keys": [],
+      "model_transport_root_keys": [
+        "d",
+        "v"
+      ],
+      "semantic_payload_mutated": false,
+      "semantic_transport": "UICT5",
+      "transport_decoded": true
+    },
+    "receipt": {
+      "downstream_authorized": false,
+      "execution_id": "EJECUCION_PERFIL_LF:S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-119E97D9C5FD",
+      "execution_origin": "MODEL_RUNTIME",
+      "input_sha256": "c7ab15b2a3d403a55e0876dc69c808757e3a906e46ebe7b7a17f7b1b86e17678",
+      "operation_code": "EJECUCION_PERFIL_LF",
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "profile_source_refs": [
+        "profiles/ui_architect/SKILL.md",
+        "profiles/ui_architect/contracts/composer_payload_boundary_v1.md"
+      ],
+      "profile_source_sha256": "b65ab7beb8701ca95d1d9fdd51a82bd48f5382d87167cd0a148ae9fe7965f658",
+      "raw_output_captured": true,
+      "raw_output_sha256": "e6c4b5a7aba21e98b1360dbfaf7de0d3d534056fa0f7679b7065bbaa2729df9a",
+      "receipt_sha256": "ca0f56a83c177bf5aa6d2ccad991617c46a2a6441e7999c69fb1da4c8c8d19d6",
+      "receipt_type": "PROFILE_EXECUTION_RECEIPT_V1",
+      "runtime_attestation": {
+        "adapter_id": "hetzner-local-llamacpp-http-v1",
+        "attestation_evidence_sha256": "745570ef72a469b5213b46d17e801c14d3046c42de3296a624ae19b9c0b10d4a",
+        "attestation_verifier": "hetzner-local-llamacpp-http-readback-v1",
+        "attested_at": "2026-09-13T06:33:59.441580Z",
+        "endpoint_scope": "LOOPBACK_ONLY",
+        "finish_reason": "stop",
+        "generation_schema_policy": "UI_PRODUCTION_SEMANTIC_TRANSPORT_UICT5",
+        "generation_schema_sha256": "6c6feaea1fa545aba4c0d475f57185efd4efb32fb6ae6f3f6039841e0cb59e3e",
+        "input_sha256": "c7ab15b2a3d403a55e0876dc69c808757e3a906e46ebe7b7a17f7b1b86e17678",
+        "llama_response_id": "chatcmpl-17tnkPaWbWe97gZ9WJlNUmbjDXBZW2VJ",
+        "model_context_sha256": "6126f39eaa54344ff89afa99f38be9f0ccfcf5fae7199497b3189c44cb1e9003",
+        "model_id": "/opt/profile-runtime-benchmark/model/model.gguf",
+        "model_user_prompt_sha256": "c7ab15b2a3d403a55e0876dc69c808757e3a906e46ebe7b7a17f7b1b86e17678",
+        "operation_code": "EJECUCION_PERFIL_LF",
+        "profile_code": "PERFIL-UI-ARCHITECT",
+        "profile_slug": "ui_architect",
+        "profile_source_sha256": "b65ab7beb8701ca95d1d9fdd51a82bd48f5382d87167cd0a148ae9fe7965f658",
+        "provider": "local_llama_cpp_hetzner_persistent",
+        "request_sha256": "f9028fdf6be8b86f5d8e677c9d63808e4e2ec0fa2157102b3446125dafcd95b7",
+        "run_id": "hetzner-api:e4126b3aa6ff199d9f58d8e7811b8c68",
+        "runtime_version": "hetzner-profile-runtime-api/0.1.5-s26-explicit-schema-256",
+        "source_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+        "structural_context_sha256": "ca866727d8e14bf67f02c1130a20dcd45ff5fdd37958e1dfd57d771432af22b9",
+        "structured_output_schema_mode": "UI_PRODUCTION_SPEC",
+        "structured_output_schema_refs": [
+          "profiles/ui_architect/schemas/ui_production_spec.schema.json"
+        ],
+        "structured_output_schema_sha256": "7f10c952796b045b99069b446f8dd7582d641d3514c25253fd27782045547112",
+        "verified_request_sha256": "f9028fdf6be8b86f5d8e677c9d63808e4e2ec0fa2157102b3446125dafcd95b7",
+        "verified_response_sha256": "aff7f0cdde519abbe350b69838e1447b256cb373d15793a11be7ff0208d1f43d"
+      }
+    },
+    "status": "PASS"
+  },
+  "semantic_utility": {
+    "blocking_codes": [],
+    "downstream_authorized": false,
+    "evaluation_scope": "DETERMINISTIC_UTILITY_FLOOR_NOT_FINAL_SEMANTIC_AUTHORITY",
+    "independent_semantic_judge": "NOT_EXECUTED",
+    "status": "PASS"
+  }
+}

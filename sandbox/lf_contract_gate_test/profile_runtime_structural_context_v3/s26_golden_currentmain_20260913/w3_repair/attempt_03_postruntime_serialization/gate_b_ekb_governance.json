@@ -1,0 +1,312 @@
+{
+  "best_practices": [
+    {
+      "categoria": "TESTING_GOVERNANCE",
+      "created_at": "2026-09-07T15:58:17.237908+00:00",
+      "evidencia": "S26 runs 34138388750 and 34139531739; PR #559. El primer run bloqueó promoción correctamente pero dejó manifest sin ejecutar; la continuación demostró que el artefacto durable podía bindearse sin rerun del candidato.",
+      "practica": "Separar siempre la disposición del candidato de la completitud de auditoría. Un holdout FAIL debe bloquear promoción de inmediato, pero no debe impedir ejecutar checks independientes ya congelados sobre evidencia durable. Continuar la auditoría sin reejecutar ni retunar el candidato; bindear run/head/artifact/result SHA y mantener NO_PROMOTE inmutable.",
+      "titulo": "STRATEGY26_SEPARATE_NO_PROMOTE_FROM_EVIDENCE_COMPLETION"
+    },
+    {
+      "categoria": "STRATEGY_AUTOMATION",
+      "created_at": "2026-09-04T20:06:21.248826+00:00",
+      "evidencia": "S26-RUN-024 marco scopes EXECUTED con evidencia previa mientras material_actions_count=0.",
+      "practica": "Separar terminalidad/currentness del scope de material ejecutado en la corrida. Evidencia previa valida estado pero no cuenta como accion/unidad material actual; EXECUTED de corrida exige executed_this_run=true y evidencia temporal de esa corrida.",
+      "titulo": "EVIDENCIA_PREVIA_NO_CUENTA_COMO_TRABAJO_MATERIAL_DE_CORRIDA"
+    },
+    {
+      "categoria": "STRATEGY_AUTOMATION",
+      "created_at": "2026-09-04T20:06:21.248826+00:00",
+      "evidencia": "Derivado de S26-RUN-024: 157.120528s, 24 controles, 0 acciones materiales, backlog 6->6.",
+      "practica": "Antes de declarar safe_work_remaining_count=0, una automatizacion debe ejecutar un descubrimiento global de trabajo seguro que revise camino critico, scopes independientes, preparacion de gates, remediaciones, waits reconsultados, backlog lateral autorizado y trabajo de evidencia/benchmark aplicable. Si material_actions_count=0, NONDELEGABLE_AUTHORITY_ONLY no basta: exigir exhaustion proof reforzado.",
+      "titulo": "GLOBAL_SAFE_WORK_DISCOVERY_ANTES_DE_CIERRE_AUTOMATIZADO"
+    },
+    {
+      "categoria": "STRATEGY_AUTOMATION",
+      "created_at": "2026-09-04T16:53:43.582013+00:00",
+      "evidencia": "Strategy26 mostró que una migración puntual y su parity pueden diagnosticarse con Supabase + PR/archivo exacto; la descarga amplia añade latencia sin mejorar la autoridad de la evidencia.",
+      "practica": "En automatizaciones y estrategias, consultar primero Supabase para ledger/schema/pg_catalog/estado aplicado. Prohibir ZIP/tarball/repositorio completo como vía normal. GitHub solo para evidencia source focal. Excepción ZIP requiere justificar files_needed, direct_routes_attempted y why_direct_failed, y no puede repetirse sin evidencia nueva.",
+      "titulo": "SUPABASE_FIRST_NO_ZIP_PARA_MIGRACIONES"
+    },
+    {
+      "categoria": "PROFILE_GOVERNANCE_COORDINATION",
+      "created_at": "2026-09-04T08:50:37.554042+00:00",
+      "evidencia": "Regla operativa autorizada por el usuario el 2026-09-04. Strategy 26 snapshot 28 ya contiene claude_review durable; la tarea Strategy 26 Overnight permanece pausada y su prompt fue actualizado a AUTONOMOUS_GPT_WITH_ASYNC_CLAUDE_AUDIT.",
+      "practica": "En Strategy 26 y workstreams equivalentes, GPT continúa autónomamente el backlog seguro dentro del alcance autorizado. Claude opera como auditor asíncrono y su ausencia o demora no es un gate de espera. Cada corrida inicia con EKB + estado vivo; si hay feedback Claude durable se contrasta y clasifica, y si no lo hay se continúa. Solo bloquean gates reales de autoridad, irreversibilidad, producción/promoción/merge no autorizado, gasto, dependencia causal imprescindible o falta de evidencia fail-closed. Al cierre siempre EKB + informe durable GPT→Claude + readback.",
+      "titulo": "GPT_AUTONOMOUS_ASYNC_CLAUDE_AUDIT"
+    },
+    {
+      "categoria": "PROFILE_GOVERNANCE_COORDINATION",
+      "created_at": "2026-09-04T08:37:53.172647+00:00",
+      "evidencia": "Strategy 26 snapshot 28 confirmó claude_review durable reviewer=CLAUDE_SUPABASE_MCP sobre head e176206ab8457c4e972bbf8a309370f37aaf5a28. En esta sesión dos consultas fallaron por columnas asumidas y se recuperaron mediante information_schema, demostrando la necesidad de EKB/schema-first.",
+      "practica": "Para Strategy 26 y workstreams equivalentes: cada corrida debe empezar leyendo EKB aplicable antes de cualquier mutación; Supabase es el canal durable de coordinación GPT↔Claude. Consumir feedback del otro agente desde el snapshot/evento vivo, no desde chat si existe payload durable. Antes de escribir aplicar schema-first + readback + control multi-writer. Al cierre, persistir/enriquecer EKB y un informe durable para el otro agente con avances, evidencia, argumentos, findings aceptados/rechazados/pendientes, blockers y NEXT_SAFE_BATCH; hacer readback de ambos antes de cerrar. Preservar historial y nunca sobrescribir la revisión del otro agente.",
+      "titulo": "GPT_CLAUDE_SUPABASE_DURABLE_HANDOFF"
+    },
+    {
+      "categoria": "PROFILE_GOVERNANCE",
+      "created_at": "2026-09-04T07:29:07.035772+00:00",
+      "evidencia": "Strategy 26 v0.1; CI 33846961085 estructural PASS con runtime_proof=NOT_EXECUTED; Strategies 23/24/25 live snapshots 2026-09-04.",
+      "practica": "Antes de ejecutar campañas amplias como Strategy 25, demostrar una familia representativa de punta a punta con el runtime real. Congelar un execution fingerprint que incluya source revision, Profile, Card(s), Adapter(s), policy/Input Governance refs, runtime target/envelope, model/toolchain y context fingerprint. El banco de 30 casos consume esa base; no reconstruye la cadena.",
+      "titulo": "Golden Family antes de escalar la matriz de pruebas"
+    },
+    {
+      "categoria": "PROFILE_RUNTIME",
+      "created_at": "2026-09-02T05:51:12.012148+00:00",
+      "evidencia": "Run 33594365276: 3/3 SUCCEEDED operativos, 0/3 útiles bajo el objetivo del benchmark multimodal.",
+      "practica": "En ejecuciones de perfiles separar explícitamente runtime_completion, profile_contract_valid y semantic_utility. Exit code 0, status SUCCEEDED, output no vacío y provenance válida sólo prueban que el runtime terminó; nunca deben presentarse como PASS de revisión sin validar contrato y conducta sobre el artefacto real.",
+      "titulo": "Completion técnico no equivale a calidad del perfil"
+    },
+    {
+      "categoria": "PROFILE_RUNTIME",
+      "created_at": "2026-09-02T05:43:51.418321+00:00",
+      "evidencia": "LF_PROFILE_RUNTIME_BENCH_20260902: solicitud explícita del owner; EKB previa PROVENANCE_IS_NOT_SEMANTIC_CORRECTNESS; B2B-CARGA-001 artifact 85 como caso real.",
+      "practica": "Toda optimización de runtime debe evaluarse sobre el mismo artefacto/input y separar al menos: latencia total y por etapa; validez estructurada del output; detección de hallazgos visibles; falsos PASS/falsos bloqueos; consistencia entre perfiles; cumplimiento de gates y evidencia. Una reducción de tiempo no es mejora si baja la cobertura semántica o visual.",
+      "titulo": "Benchmark de runtime debe medir velocidad y calidad en el mismo caso real"
+    },
+    {
+      "categoria": "PROFILE_RUNTIME_QUALITY",
+      "created_at": "2026-09-02T05:29:00.862327+00:00",
+      "evidencia": "Caso real B2B-CARGA-001: request e21d2234-2047-4afb-8241-a37423ab4951 / run 33589173345 vio 142727 bytes exactos pero no tuvo schema runtime enlazado y produjo JSON cercado e inconsistente. PR #450 quedó diagnóstico SUPERSEDED por mezcla de alcance. PR #451 aplica binding/paridad/validator profile-only; PR #452 aplica el post-model gate y paridad single/batch runtime-only. Ambos DRAFT/open tienen CI exact-head SUCCESS; cierre sujeto a autorización de merge, main readback y rerun exact-byte.",
+      "practica": "Para perfiles críticos, combinar dos capas no sustituibles: A) constrained generation con runtime_output.schema.json aplicado en la misma llamada del modelo y evidenciado en attestation; B) validación post-model del JSON y de invariantes lógicas del dominio. Mantener el schema runtime en paridad verificable con el canónico. Después de CI, leer Supabase y confirmar normalized_profile_output, receipt, attestation, input SHA y downstream_authorized antes de declarar PASS.",
+      "titulo": "STRUCTURED_OUTPUT_REQUIRES_DUAL_ENFORCEMENT"
+    },
+    {
+      "categoria": "CLIENT_UI_PROTOTYPING",
+      "created_at": "2026-08-29T04:19:13.328763+00:00",
+      "evidencia": "Piloto CLIENT_SCREEN_FACTORY_PILOT_001: decisión surgida tras múltiples iteraciones de imágenes de Sistema Cliente donde la revisión aislada de rasters no probaba navegación y se observaron regresiones de shell/tokens. El piloto medirá el enfoque antes de cualquier generalización canónica.",
+      "practica": "Para pantallas de aplicación LF, priorizar un prototipo HTML navegable que consuma shell, design system y estados canónicos. Usar fixtures para backend no necesario en validación visual/flujo. Generar screenshots después como evidencia derivada. Esto permite validar navegación, mensajes, errores, modales y responsive en una sola superficie y reduce regeneraciones que pueden introducir deriva de shell/tokens.",
+      "titulo": "Pantallas de aplicación: HTML navegable tokenizado antes que raster iterativo"
+    },
+    {
+      "categoria": "PROFILE_EXECUTION_PROVENANCE",
+      "created_at": "2026-08-27T08:37:29.079425+00:00",
+      "evidencia": "PR240 / main@eda9fafa0ef6d4836930ad1fdd8d55ba24b95056. Gate PROFILE_EXECUTION_RECEIPT_V1 fail-closed; checks exact-head verdes; no se amplió .github allowlist ni se fabricó un receipt operativo ficticio.\nPR241 / main@9ef2a9ea80e0e34d197c9453bb198b2e21833064: PROFILE_RUNTIME_REQUEST_V1 + runner provider-agnostic + verificador independiente + matriz 16/16 + CI/E16/bootstrap verdes.",
+      "practica": "Tratar la ejecución de un perfil como una frontera verificable: 1) resolver exactamente un PERFIL; 2) leer su fuente real; 3) preservar el input literal; 4) ejecutar en MODEL_RUNTIME; 5) capturar RAW sin reinterpretarlo; 6) ligar source/input/RAW/runtime en un receipt; 7) validar el receipt; 8) recién entonces permitir Composer/generación. Un perfil puede estar bien diseñado y correctamente ruteado, pero eso no demuestra que haya sido ejecutado en un caso concreto.\nExtensión PR241: separar el ejecutor del modelo del verificador de provenance. El RuntimeAdapter no debe poder convertir por sí solo su respuesta en evidencia suficiente. Un RuntimeAttestationVerifier distinto debe verificar los hashes exactos del request y response antes de construir el receipt. En operación real rechazar test doubles; si no hay adapter/verifier confiables, bloquear.",
+      "titulo": "Separar resolución del perfil, ejecución real y consumo downstream"
+    }
+  ],
+  "controls": [
+    {
+      "categoria": "Auditoría",
+      "codigo": "AUD-018",
+      "estado": "activo",
+      "prevencion": "Exigir proof receipt estructurado por gate con schema, source_sha256, code_head_sha, configuration_sha256, executed=true, exit_code=0, resultado permitido y evidence_sha256 recomputable.\nPara controles EKB seleccionados, exigir binding ejecutable por código: test_id/producer, source_or_fixture_sha, code_head_sha, configuration_sha256, executed=true, exit_code=0, resultado y evidence_sha256; un simple estado BLOCKED/HUMAN_REVIEW_REQUIRED no constituye ejecución de la prevención.\nExtensión agente: no afirmar que una prueba, benchmark, búsqueda o medición fue ejecutada sin evidencia de ejecución observable. Si aún no se ejecutó, etiquetar el contenido como HYPOTHESIS/PROPOSED. Antes de convertir un diagnóstico en cambio de código, exigir un receipt mínimo del experimento causal con fuente/fixture, variable cambiada, productor/comando, executed=true y resultado observado.\nPara cualquier baseline que declare cobertura hidden/adversarial, el gate debe consumir receipts de ejecución separados y sellados. Cada receipt debe vincular exact HEAD, task/execution, family, holdout/test ID, source/fixture digest, command/runner identity, outcome y evidence digest; deduplicar IDs y rechazar ausencia, mismatch de familia/HEAD o conteos no respaldados.",
+      "severidad": "Critical",
+      "source_ref": "programacion.fn_agent_task_materialize_verified_machine_gates_v1",
+      "titulo": "Convergencia aceptaba PASS declarativo sin prueba ejecutada",
+      "updated_at": "2026-08-26T03:55:08.131126+00:00",
+      "validacion": "Intentar cerrar con PASS literal, proof ausente, HEAD/source/config distintos, exit_code no cero o evidence SHA manipulado; todos deben bloquear. El caso positivo debe derivarse sólo de ejecución real.\nNegativo adicional: entregar a ekb_gate todos los códigos con estados compatibles pero sin receipts ejecutados debe bloquear. Positivo: cada EKB seleccionada debe aportar receipt de su regresión específica; EKB-P0-014 debe ejercitar “tu deuda” y EKB-P0-020 un falso OCR corto/no-material.\nRegresión de proceso: dado un diagnóstico plausible sin tool/run receipt, el sistema debe impedir lenguaje de ejecución consumada y mantener estado HYPOTHESIS. Sólo un receipt ejecutado permite pasar a VERIFIED_CAUSE/IMPLEMENTATION_CANDIDATE.\nNegativos AUD22-F03: (1) baseline min_hidden_holdouts>0 sin receipts => FAIL; (2) receipt de otro HEAD/familia => FAIL; (3) IDs duplicados no incrementan conteo; (4) nombres declarados sin ejecución no cuentan; (5) cantidad verificada menor al mínimo => FAIL. Positivo: receipts únicos y exact-head ejecutados satisfacen los mínimos y son enumerables en el evidence artifact."
+    },
+    {
+      "categoria": "DevOps/CI",
+      "codigo": "CI-014",
+      "estado": "activo",
+      "prevencion": "Aplicar .claude/operational-execution.md (sección 15). Antes del merge releer main. Si cambió: considerar stale la certificación previa para merge; refrescar el pre-write binding en Supabase ANTES del siguiente GitHub write; integrar el nuevo main sin force-push preservando cambios concurrentes y sólo los blobs autorizados del candidato; actualizar exact-head/readback; rerun completo de required CI; repetir hasta que main permanezca estable.\n[PRECEDENTE_UI_PR250_20260827] Patrón maestro para main avanzado durante una actualización de perfil: tratar el candidato anterior como SUPERSEDED; refrescar pre_write_execution_binding_gate en Supabase ANTES del siguiente write; reconstruir el candidato sobre el main vigente preservando la remediación válida y los cambios paralelos; registrar nuevo exact-head/readback; ejecutar CI nuevamente y mergear sólo con required check SUCCESS. PR #250 lo hizo con write_plan.mode=REBUILD_CANDIDATE_AFTER_MAIN_ADVANCE, prior_candidate_head=45d3314dc84239329b4505e152ec474d7ecfbd5e y candidato final 3eaa32320d9a4e2f09d397bb99f567218ffce790 sobre main@2e451cfbddf52c819290da2e9490c4936fc78fef. El post-merge smoke es un gate distinto: si falla, bloquear cierre y abrir nueva ejecución; no reinterpretar el merge como remediación conductual verificada.\n[PROFILE_CREATOR_BASE_REFRESH] Si main avanza mientras el owner de un blocker global sigue DRAFT/no mergeado, mantener consumidores intactos. Primero cerrar/mergear owner gobernado; despues refrescar cada PR consumidor desde main vigente, recalcular exact-head y ejecutar CI completo. Nunca refrescar un consumidor directamente desde la rama owner.\n[PR492_BASE_DIVERGENCE_PREVENTION] Antes de cualquier write adicional o certificación de merge, reconciliar semánticamente esos 4 archivos contra main actual; preservar únicamente delta propio de PR #492; no force-push, no overlay ciego de blobs, no copiar migraciones ajenas. Después rehacer exact-head CI y migration parity.",
+      "severidad": "ALTA",
+      "source_ref": "github://cristhianlujan/claude-persona-lf-patch/pull/250",
+      "titulo": "main avanzó durante CI y volvió obsoleta la certificación exact-head bajo strict-base",
+      "updated_at": "2026-09-03T08:02:11.132077+00:00",
+      "validacion": "Negativo: un HEAD con SUCCESS previo no puede mergearse si main avanzó y el candidato no fue refrescado. Positivo: PR #254 integró main actualizado, reran Validate LF Packs + lf-contract-check + LF Bootstrap sobre HEAD 7b00431a14024a59e24665073c5fe86e3da3a4d0, releyó main estable en 7a8d1396d6f0e81e493580bad67ab947d8dd990e y mergeó como 43c8c27619ceb0ec20e69e3befacc4d836fefb99.\n[RECURRENCIA_PR257_MAIN_RACE_20260827] Durante la certificación final del protocolo, main avanzó de 43c8c27619ceb0ec20e69e3befacc4d836fefb99 a 93bf5840b974b15499453b4f73d449b7412325ce por merge de PR #255. Aunque los workflows del HEAD b7a7b8700061a0c81e92c951009cfb626704b17f ya estaban SUCCESS, no se reutilizaron. Se integró el nuevo main sin force-push y el candidato pasó a 378d06297b06017ad4a284954fdfddfdb8e7399b; diff contra main vigente sigue limitado a .claude/operational-execution.md + CLAUDE.md. Debe rerun completo del CI antes de merge.\n[PRECEDENTE_UI_PR250_20260827] Positivo de merge: ejecución 004 creada antes del rebuild; step 60 observado 14:41:53Z antes de github_write 14:46:49Z; final head 3eaa32320d9a4e2f09d397bb99f567218ffce790 con Validate LF Packs, lf-contract-check y Bootstrap SUCCESS; merge f06607b270e7f543dc2ff3674dc6fc2f540805b4. Negativo de cierre: smoke vivo post-merge b2ee6683-cf50-41b2-ba74-3cab1b106040 falló y la ejecución quedó BLOCKED_BY_ENFORCEMENT, supersedida por ejecución 005. Esto demuestra merge PASS != behavioral closure PASS.\n[READBACK_RUN5] main=bcec64b5eb00180f82d6c6c8f12f973e4bde1927; PR481 OPEN DRAFT mergeable=false; PR479/483 tambien mergeable=false. No se hizo merge ni rebase prematuro.\n[PR492_BASE_DIVERGENCE_VALIDATION] GitHub compare c70a949a1c58d973a15824b1a1f1a13c47e8e353..54dd7bcc45b7a48c46333acbd560ca384403ab65 confirmó cambios concurrentes en los 4 archivos. Compare 692b7dcc1211bf278a320b13b714642e30b5e9cd6..a694f89f596462e4a0d2cb78fec11135747d936c reporta branch diverged 56 ahead / 7 behind. Parity script en main/base contiene profile_creator_step_status_contract_fix, mientras PR head lo perdió; por tanto el rojo S13 puede ser efecto de historia/base divergida y debe revalidarse tras reconciliación."
+    },
+    {
+      "categoria": "GOVERNANCE_INTEGRITY",
+      "codigo": "GOV-024",
+      "estado": "activo",
+      "prevencion": "Para toda modificación futura bajo profiles/**: EKB primero; resolver operación y destino; crear/vincular ejecución canónica antes de cualquier GitHub write; verificar pre_write_execution_binding_gate; recién después escribir. Añadir preflight automatizado en el proceso de remediación para bloquear write si execution_id no existe. No emitir receipt retroactivo. Para el siguiente profile, no crear lf_operation_execution manualmente: usar únicamente ACT-0045/CREACION_PERFIL_LF official flow antes del primer GitHub write; si ese runner no está disponible en el contexto, preparar fix/evals fuera del repo y entregar handoff ejecutable al flujo oficial. PR #254 confirma el flujo correcto para reintentos: crear la ejecución y pasar step 60 antes del primer write; si main cambia después, refrescar step 60 antes de cada nueva integración, igual que UI Architect. Nunca fabricar el binding/receipt después del write.\n[PROTOCOLO_PASE_20260827] Aplicar .claude/operational-execution.md (sección 15). El protocolo convierte este conocimiento en preflight/pase obligatorio para actualizaciones de profiles/** y mantiene Supabase como autoridad contractual canónica.\n[PRECEDENTE_UI_PR250_20260827] Secuencia temporal demostrada: crear ejecución canónica primero; si main avanza, refrescar step 60 antes del rebuild; recién después ejecutar github_write. PR #250 execution 004: init 14:24:28Z, step60 refresh 14:41:53Z, github_write 14:46:49Z. El candidato previo queda supersedido; no se emite receipt retroactivo para salvarlo.\n[RECURRENCIA_PR567_S26_20260907] Para cambios en skills/profile_creator/** resolver ACT-0045 como SKILL y ACTUALIZACION_SKILL_LF antes de escribir. No usar ACTUALIZACION_PERFIL_LF para certificar cambios internos del Profile Creator. No añadir manualmente un receipt después del commit; reiniciar el candidato desde main fresco sólo después de binding pre-write válido.",
+      "severidad": "ALTA",
+      "source_ref": "supabase://mhwmirqcgxxukpctffuv/public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-UI-ARCHITECT-20260827-004",
+      "titulo": "Cambio de profile se escribió antes del binding canónico de ejecución exigido por el contrato",
+      "updated_at": "2026-08-27T18:18:19.346820+00:00",
+      "validacion": "Negativo: branch escrita antes de lf_operation_execution debe permanecer sin PASS receipt aunque CI/evals funcionales pasen. Positivo: próxima remediación debe demostrar execution_id creado antes del primer commit, pasos pre-write con evidencia y receipt sólo tras all_required_steps_clean_pass.\n[REGRESION_PR251] Para una futura reejecución de Quality/Evidence, demostrar lf_operation_execution ACTUALIZACION_PERFIL_LF creada antes del primer commit GitHub y pasos pre-write observables; una fila creada después del write no satisface el gate.\n[PROTOCOLO_PASE_20260827] La adopción queda demostrada cuando CLAUDE.md referencia el protocolo, el builder consulta EKB antes del write, existe binding canónico pre-write, el receipt es gobernado, exact-head/readback están vinculados y cualquier avance de main dispara refresh + rerun CI."
+    },
+    {
+      "categoria": "PROFILE_RUNTIME_QUALITY",
+      "codigo": "GOV-032",
+      "estado": "activo",
+      "prevencion": "Separar siempre provenance gate de semantic-quality gate. No autorizar downstream por receipt únicamente; promover un modelo sólo después de benchmarks semánticos frescos por perfil. Para ui_architect incluir adversariales donde la acción debe resolver, no reforzar, el defecto observado.\n[PR253_MINI_JUDGE_2026-08-27] Un semantic judge candidato debe demostrar simultáneamente sensibilidad a contradicciones y especificidad frente a salidas correctas. No promover por pruebas sólo negativas. Qwen2.5-VL-3B quedó rechazado para este rol por falso positivo crítico: clasificó una remediación correcta de eliminación de duplicado como CONTRADICTS. Qwen2.5-VL-7B Q4_K_M pasó el mismo smoke balanceado 4/4 como clasificador estrecho; permanece prohibido usarlo como worker principal por esta evidencia.\n[EVIDENCE_CEILING_PR248_20260827] Toda remediación de profile debe declarar un evidence ceiling. Evals/validators locales o CI prueban estructura y regresión del pack; no prueban que el perfil haya producido una respuesta correcta en runtime. Para elevar a comportamiento real exigir literal input, RAW output, source digest, runtime/provenance receipt, semantic judge y holdout/adversarial fresco. Si falta una capa, registrar NOT_EXECUTED_NOT_CLAIMED en vez de inferir PASS.\n[PR255_DOWNSTREAM_ENFORCEMENT_20260827] Provenance sola sólo puede autorizar SEMANTIC_JUDGE. Composer, IMAGE_GENERATOR, TOOL_PAYLOAD, INTERNAL_AGENT y FINAL_USER requieren PROFILE_EXECUTION_RECEIPT_V1 válido + PROFILE_SEMANTIC_JUDGE_RECEIPT_V1 PASS ligado al mismo execution_id/profile/input_sha/raw_output_sha y al check_bundle exacto. UNCERTAIN/FAIL/bundle o receipt ausente => BLOCK_PIPELINE. El mini-judge semántico usa Qwen2.5-VL-7B local zero-cost únicamente como clasificador estrecho; no reescribe ni sustituye al worker principal.\n[S28_IGC_HOLDOUT_20260907] Para claims behavioral/holdout, congelar selección antes de cualquier evaluación agregada que cubra esas unidades. Exposición previa del mismo run/familia invalida el claim blind aunque no se hayan abierto resultados unitarios. Conservar selección contaminada como INVALID_FOR_HOLDOUT_CLAIM y reseleccionar solo unidades realmente no observadas. Un shadow evaluator sin independent_oracle implemented no puede certificar semántica.",
+      "severidad": "alta",
+      "source_ref": "supabase://mhwmirqcgxxukpctffuv/public.lf_strategy_snapshots/31",
+      "titulo": "Receipt auténtico no demuestra corrección semántica del perfil",
+      "updated_at": "2026-08-28T19:58:01.610719+00:00",
+      "validacion": "Repetir el mismo smoke con un modelo local mayor y exigir que la decisión elimine la duplicación o bloquee por evidencia insuficiente; después ejecutar holdouts visuales y judge semántico antes de image_gen.\n[PR253_EXACT_HEAD] HEAD 1e1fa2b434dda05d9df663e4a2129db1cc1d0101: deterministic suite 11/11 PASS; live semantic smoke 4/4 PASS: GOV032_DUPLICATION_DIRECTION=CONTRADICTS, CONTEXT_AUTHORITY_IGNORED=CONTRADICTS, COMPLIANT_DUPLICATION_FIX=COMPLIES, UNSUPPORTED_INVENTION=CONTRADICTS. CI exact-head: Validate LF Packs, lf-contract-check, LF Bootstrap Reproducibility Probe y Story Agent Evidence Verifier todos SUCCESS. PR #253 mergeado a main en 437dadc9202456e4e39ecfc85e8e1e1164e039a5. El error permanece abierto hasta integrar este judge con la autorización downstream.\n[PR248_NO_RUNTIME_CLAIM_20260827] Las dos ejecuciones de actualización cerraron correctamente con state_ceiling=MERGED_PROFILE_PACKAGE_VERIFIED_NO_BEHAVIORAL_RUNTIME_CLAIM y next_allowed_operation=EJECUCION_PERFIL_LF. Esto es PASS de remediación del paquete, no evidencia de ejecución comportamental del perfil.\n[PR255_FINAL_MERGE] HEAD 41873c3e078da2afe39fbf1f232513225879efb5: Validate LF Packs=SUCCESS; lf-contract-check=SUCCESS (incluye E.16); LF Bootstrap Reproducibility Probe=SUCCESS; Story Agent Evidence Verifier=SUCCESS. Live 7B smoke: 4/4 PASS y SEMANTIC_DOWNSTREAM_GATE_SMOKE_PASS provenance_only=BLOCK combined=PASS. PR #255 mergeado a main en 93bf5840b974b15499453b4f73d449b7412325ce.\n[LEARNING_ENGINE_CANARY_REGRESSION] Mantener como negativos permanentes: (1) receiver afirma artifact missing cuando está materializado; (2) perfil re-pregunta una autoridad explícitamente resuelta. Un receipt auténtico sólo satisface provenance; el downstream sigue requiriendo semantic PASS independiente y coverage completo.\n[S28_IGC_HOLDOUT_20260907] Primera selección sobre runs 221/215/212 invalidada por exposición agregada previa. Reemplazo congelado antes de observación: 6 pares sobre runs 3/57; resultado 0/6 independent oracle implemented, 6/6 stage authority unresolved. No se promovió ni se contó como PASS."
+    },
+    {
+      "categoria": "GOVERNANCE_LEARNING",
+      "codigo": "PROFILES-EKB-PREFLIGHT-OMISSION-001",
+      "estado": "activo",
+      "prevencion": "Al inicio de cada corrida consultar lf_error_knowledge, lf_best_practices y lf_prevention_rules aplicables; registrar matched_error_codes y matched_prevention_rules. Antes de cada RCA o fix repetir búsqueda focal. Sin EKB preflight, no mutar. Tras hallazgo nuevo o recurrencia, persistir/enriquecer EKB y hacer readback.",
+      "severidad": "ALTA",
+      "source_ref": "supabase://public/lf_error_knowledge",
+      "titulo": "Profiles LF no usó EKB como preflight obligatorio",
+      "updated_at": "2026-09-01T02:13:12.536143+00:00",
+      "validacion": "La próxima corrida debe demostrar EKB_PREFLIGHT_COMPLETED antes de WORK_TREE_DISCOVERED o cualquier mutación y recuperar patrones existentes aplicables como PROFILE-RUNTIME-DISPATCH-001, ARCH-ADAPTER-PARALLEL-FACTORY-DUPLICATION-20260831, GOV-CI-MIGRATION-SOURCE-PARITY-20260829 y AB-PROFILE-QUALITY-GATE-001."
+    }
+  ],
+  "gate": "B_EKB_GOVERNANCE",
+  "lf_error_knowledge_schema": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "codigo",
+      "data_type": "text"
+    },
+    {
+      "column_name": "categoria",
+      "data_type": "text"
+    },
+    {
+      "column_name": "titulo",
+      "data_type": "text"
+    },
+    {
+      "column_name": "descripcion",
+      "data_type": "text"
+    },
+    {
+      "column_name": "causa_raiz",
+      "data_type": "text"
+    },
+    {
+      "column_name": "patron",
+      "data_type": "text"
+    },
+    {
+      "column_name": "prevencion",
+      "data_type": "text"
+    },
+    {
+      "column_name": "validacion",
+      "data_type": "text"
+    },
+    {
+      "column_name": "severidad",
+      "data_type": "text"
+    },
+    {
+      "column_name": "frecuencia",
+      "data_type": "integer"
+    },
+    {
+      "column_name": "primera_vez",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "column_name": "ultima_vez",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "column_name": "lote_origen",
+      "data_type": "text"
+    },
+    {
+      "column_name": "pr",
+      "data_type": "text"
+    },
+    {
+      "column_name": "estado",
+      "data_type": "text"
+    },
+    {
+      "column_name": "evidencia",
+      "data_type": "text"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "column_name": "lifecycle_phase",
+      "data_type": "text"
+    },
+    {
+      "column_name": "consumer_role",
+      "data_type": "ARRAY"
+    },
+    {
+      "column_name": "root_cause_family",
+      "data_type": "text"
+    },
+    {
+      "column_name": "detectability",
+      "data_type": "text"
+    },
+    {
+      "column_name": "source_context",
+      "data_type": "text"
+    },
+    {
+      "column_name": "source_ref",
+      "data_type": "text"
+    }
+  ],
+  "next_gate": "C_CARD_SELECTION",
+  "observed_at": "2026-09-13T06:32:53.299371+00:00",
+  "prevention_rules": [
+    {
+      "activa": true,
+      "categoria": "Governance",
+      "error_codigo": "GOVERNED-PATH-WRITE-AUTHORITY-001",
+      "justificacion": "Strategy 28 / PR565: el gate FAIL_RECEIPT_MISSING detectó que un nuevo Canary Runner se había colocado prematuramente en gobernanza/**. El único GITHUB_CONTRACT_GATE_LF vigente es READ_ONLY_PROTOCOL con github_write_allowed=false. La corrección segura fue retirar las copias gobernadas, mantener el candidato en sandbox/lf_contract_gate_test/**, ejecutar judge 9/9 y un E2E real con rollback + post-readback + nueva sesión zero-residue. Previene autoautorización y receipts simbólicos.",
+      "lifecycle_phase": "build_testing",
+      "prioridad": 100,
+      "regla": "Antes de crear o modificar un artefacto nuevo bajo rutas gobernadas de GitHub, resolver una operación canónica vigente cuyo contrato autorice explícitamente la escritura en esa superficie y ligar la ejecución a su receipt/evidencia exacta. Si no existe operación con write authority aplicable, mantener el candidato en sandbox permitido y probarlo E2E allí. Está prohibido fabricar un LF_OPERATION_CONTRACT_RECEIPT, reutilizar un receipt de otra operación o ampliar allowlists para obtener PASS.",
+      "regla_codigo": "PRV-GOVERNED-PATH-WRITE-AUTHORITY-001"
+    },
+    {
+      "activa": true,
+      "categoria": null,
+      "error_codigo": "AUD-018",
+      "justificacion": "Categoría=Auditoría; fase=testing; roles=Builder,Judge,Auditor,DevOps. Bloquear literal PASS, proof ausente, binding cruzado, exit_code no cero y digest manipulado. Reincidencia 2026-08-13: EKB-P0-014/EKB-P0-020 estaban presentes en el registro, pero el gate de hardening sólo comprobaba codigo→estado y no la ejecución de sus validaciones reales. CHAT-OCR-CAUSAL-20260813: se reportó como ejecutado un A/B de 12 casos sin ejecución observable previa, generando una base falsa para decidir remediaciones y reforzando la preocupación del usuario por iteraciones largas.\nCURRENT_CHAT_LF_PROFILE_VERDICT_20260820: se comunicaron y persistieron PASS por perfiles separados aunque el readback posterior mostró que los perfiles relevantes eran contratos READ_ONLY/CONTROLLED_SANDBOX_ONLY, no evaluadores runtime independientes. La corrección explícita fue distinguir aplicación del contrato de ejecución real del perfil.",
+      "lifecycle_phase": null,
+      "prioridad": 50,
+      "regla": "Nunca aceptar PASS declarativo como prueba de convergencia: cada gate debe aportar un proof receipt estructurado, ejecutado y ligado a source SHA, HEAD, config SHA y evidence SHA recomputable. Extensión EKB: un código de prevención no puede satisfacerse con un estado declarativo; debe enlazar y verificar el receipt ejecutado de su regresión específica. Extensión agente: ninguna afirmación “probé/ejecuté/medí/verifiqué/investigué” puede presentarse como hecho de ejecución si no existe una llamada/run/receipt observable que la produzca; sin ella, etiquetar HYPOTHESIS/PROPOSED. Para remediaciones causales, exigir receipt mínimo del experimento antes de tocar código.\nEVALUATOR_PROVENANCE: un perfil, juez o auditor sólo puede figurar como autor de un PASS independiente si existe evidencia observable de su ejecución —identidad del evaluador/runtime, input o artefacto evaluado, momento/HEAD o versión aplicable y receipt/veredicto emitido por esa ejecución—. Si el actor actual sólo aplica el rubric o contrato de otro perfil, registrar CONTRACT_APPLIED/CRITERIA_APPLIED y no PASS_BY_PROFILE.",
+      "regla_codigo": "PRV-AUD-018"
+    },
+    {
+      "activa": true,
+      "categoria": "VALIDATION_ARCHITECTURE",
+      "error_codigo": "ARC-012",
+      "justificacion": "Evita la no convergencia de parchear cada hallazgo humano y reduce falsos PASS en casos no anticipados.",
+      "lifecycle_phase": "design",
+      "prioridad": 30,
+      "regla": "Cuando el espacio de defectos sea abierto, queda prohibido cerrar cobertura enumerando familias conocidas. Deben existir invariantes generales falsables, mutaciones que intenten violarlos y un holdout de pantallas no vistas; todo escape invalida la loop_version afectada y obliga a reejecución.",
+      "regla_codigo": "PRV-ARC-012"
+    },
+    {
+      "activa": true,
+      "categoria": "Governance/Profile Semantic Quality",
+      "error_codigo": "GOV-032",
+      "justificacion": "PR #253 demostró que Qwen2.5-VL-3B detectaba dos contradicciones reales pero también bloqueaba una corrección válida, por lo que un smoke sólo negativo habría producido una falsa sensación de seguridad. El mismo contrato balanceado permitió seleccionar Qwen2.5-VL-7B Q4_K_M, que pasó 4/4 en el HEAD exacto. Se mantiene separación estricta entre worker GPT-5.6 Sol y mini-judge local.",
+      "lifecycle_phase": "PROFILE_EXECUTION",
+      "prioridad": 10,
+      "regla": "CONDICIÓN: un modelo local o externo se propone como semantic judge para autorizar downstream de una ejecución de perfil. ACCIÓN: exigir un benchmark balanceado con contradicciones, salidas correctas y casos inciertos; debe demostrar sensibilidad y especificidad, no sólo bloquear. Un falso positivo material en un caso correcto desautoriza el modelo para ese rol. El judge sólo clasifica COMPLIES/CONTRADICTS/UNCERTAIN, nunca reescribe ni corrige el RAW; UNCERTAIN bloquea. La evidencia de aptitud como judge no autoriza usar el mismo modelo como worker o profile executor.",
+      "regla_codigo": "PRV-GOV-032"
+    },
+    {
+      "activa": true,
+      "categoria": "GOVERNANCE_AUTOMATION",
+      "error_codigo": "PROFILES-EKB-PREFLIGHT-OMISSION-001",
+      "justificacion": "Evita repetir errores conocidos y evita falsos positivos causados por diagnosticar antes de reutilizar conocimiento durable.",
+      "lifecycle_phase": "RUNTIME",
+      "prioridad": 1,
+      "regla": "Antes de clasificar cualquier problema en Profiles LF, consultar EKB focal por error literal, scope, operación, root_cause_family y consumer_role. Repetir EKB focal antes de aplicar un fix. Si el canal impide leer EKB, registrar esa imposibilidad como evidencia insuficiente; no inferir que EKB está ausente ni diagnosticar globalmente por ello.",
+      "regla_codigo": "PROFILES-RULE-EKB-BEFORE-PROBLEM-001"
+    }
+  ],
+  "read_mode": "LIVE_CONTROL_PLANE_READBACK",
+  "receipt_sha256": "0bfc9632539db3820812e887ea171d2ebb967d7d410818b43e64c2609aea0c4d",
+  "reusable_for_new_run": false,
+  "run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-18E6B0F4C8B3",
+  "schema": "S26_F10_LIVE_EKB_SNAPSHOT_V1",
+  "schema_first_verified": true,
+  "snapshot_sha256": "033fcad09ab04e02b9aca691d0f6767dba87142282434313d76639776f4be915",
+  "source": "supabase://mhwmirqcgxxukpctffuv/public",
+  "status": "PASS",
+  "upstream_input_sha256": "c7ab15b2a3d403a55e0876dc69c808757e3a906e46ebe7b7a17f7b1b86e17678"
+}

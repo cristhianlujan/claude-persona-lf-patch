@@ -1,0 +1,11 @@
+{
+  "schema": "S26_F10_REPAIR_ATTEMPT_FAILURE_V1",
+  "attempt": 1,
+  "executed": true,
+  "status": "FAIL_HARNESS_SERIALIZATION",
+  "stage": "B_EKB_GOVERNANCE_SNAPSHOT_HASH",
+  "error_code": "PYTHON_DATETIME_NOT_JSON_SERIALIZABLE",
+  "runtime_model_called": false,
+  "candidate_mutated": false,
+  "next_action": "Normalize datetime values in canonical JSON and rerun with a fresh run identity."
+}

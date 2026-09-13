@@ -1,0 +1,749 @@
+{
+  "composer_payload": {
+    "component_tree": [
+      {
+        "allowed_variants": [
+          "default"
+        ],
+        "blocked_variants": [
+          "invented_data"
+        ],
+        "color_tokens": [
+          "surface_default",
+          "text_primary",
+          "border_subtle"
+        ],
+        "component_id": "header_search",
+        "component_type": "input",
+        "content": {
+          "binding": "USER_REQUIREMENT"
+        },
+        "role": "Present governed header search.",
+        "spacing": "compact",
+        "state": "default",
+        "typography": "body",
+        "visual_priority": "HIGH",
+        "zone_id": "header"
+      },
+      {
+        "allowed_variants": [
+          "default"
+        ],
+        "blocked_variants": [
+          "invented_data"
+        ],
+        "color_tokens": [
+          "surface_default",
+          "text_primary",
+          "border_subtle"
+        ],
+        "component_id": "category_navigation",
+        "component_type": "navigation",
+        "content": {
+          "items": "DATA_BOUND"
+        },
+        "role": "Present governed category navigation.",
+        "spacing": "compact",
+        "state": "default",
+        "typography": "section_heading",
+        "visual_priority": "HIGH",
+        "zone_id": "categories"
+      },
+      {
+        "allowed_variants": [
+          "default",
+          "populated"
+        ],
+        "blocked_variants": [
+          "invented_data"
+        ],
+        "color_tokens": [
+          "surface_default",
+          "text_primary",
+          "border_subtle"
+        ],
+        "component_id": "featured_services",
+        "component_type": "section",
+        "content": {
+          "items": "DATA_BOUND"
+        },
+        "role": "Present governed featured services.",
+        "spacing": "regular",
+        "state": "populated",
+        "typography": "section_heading",
+        "visual_priority": "HIGH",
+        "zone_id": "featured_services"
+      },
+      {
+        "allowed_variants": [
+          "default",
+          "populated"
+        ],
+        "blocked_variants": [
+          "invented_data"
+        ],
+        "color_tokens": [
+          "surface_default",
+          "text_primary",
+          "border_subtle"
+        ],
+        "component_id": "service_cards",
+        "component_type": "collection",
+        "content": {
+          "items": "DATA_BOUND"
+        },
+        "role": "Present governed service cards.",
+        "spacing": "regular",
+        "state": "populated",
+        "typography": "body",
+        "visual_priority": "HIGH",
+        "zone_id": "service_cards"
+      },
+      {
+        "allowed_variants": [
+          "default"
+        ],
+        "blocked_variants": [
+          "invented_data"
+        ],
+        "color_tokens": [
+          "surface_default",
+          "text_primary",
+          "border_subtle"
+        ],
+        "component_id": "service_card_template",
+        "component_type": "template",
+        "content": {
+          "fields": [
+            "title",
+            "provider",
+            "price",
+            "call_to_action"
+          ],
+          "values": "DATA_BOUND"
+        },
+        "role": "Present governed service card template.",
+        "spacing": "regular",
+        "state": "default",
+        "typography": "body",
+        "visual_priority": "MEDIUM",
+        "zone_id": "service_cards"
+      },
+      {
+        "allowed_variants": [
+          "default"
+        ],
+        "blocked_variants": [
+          "invented_data"
+        ],
+        "color_tokens": [
+          "surface_default",
+          "text_primary",
+          "border_subtle"
+        ],
+        "component_id": "service_title",
+        "component_type": "text",
+        "content": {
+          "value": "DATA_BOUND:title"
+        },
+        "role": "Present governed service title.",
+        "spacing": "compact",
+        "state": "default",
+        "typography": "body",
+        "visual_priority": "MEDIUM",
+        "zone_id": "service_cards"
+      },
+      {
+        "allowed_variants": [
+          "default"
+        ],
+        "blocked_variants": [
+          "invented_data"
+        ],
+        "color_tokens": [
+          "surface_default",
+          "text_primary",
+          "border_subtle"
+        ],
+        "component_id": "service_provider",
+        "component_type": "text",
+        "content": {
+          "value": "DATA_BOUND:provider"
+        },
+        "role": "Present governed service provider.",
+        "spacing": "compact",
+        "state": "default",
+        "typography": "body",
+        "visual_priority": "MEDIUM",
+        "zone_id": "service_cards"
+      },
+      {
+        "allowed_variants": [
+          "default"
+        ],
+        "blocked_variants": [
+          "invented_data"
+        ],
+        "color_tokens": [
+          "surface_default",
+          "text_primary",
+          "border_subtle"
+        ],
+        "component_id": "service_price",
+        "component_type": "value",
+        "content": {
+          "format": "SOURCE_DEFINED",
+          "value": "DATA_BOUND:price"
+        },
+        "role": "Present governed service price.",
+        "spacing": "compact",
+        "state": "default",
+        "typography": "body",
+        "visual_priority": "MEDIUM",
+        "zone_id": "service_cards"
+      },
+      {
+        "allowed_variants": [
+          "default",
+          "available"
+        ],
+        "blocked_variants": [
+          "invented_data",
+          "invented_route"
+        ],
+        "color_tokens": [
+          "surface_default",
+          "text_primary",
+          "border_subtle",
+          "action_primary"
+        ],
+        "component_id": "service_cta",
+        "component_type": "action",
+        "content": {
+          "destination": "UNRESOLVED_UNTIL_SOURCE",
+          "label": "DATA_BOUND:call_to_action"
+        },
+        "role": "Present governed service cta.",
+        "spacing": "compact",
+        "state": "available",
+        "typography": "body",
+        "visual_priority": "HIGH",
+        "zone_id": "service_cards"
+      }
+    ],
+    "density_rules": [
+      "Keep search and navigation immediately discoverable.",
+      "Keep repeated content scannable without dropping required fields.",
+      "Prefer responsive reflow over reducing legibility."
+    ],
+    "layout_grid": {
+      "desktop": "responsive service-card grid keeps search and navigation visible while allowing column reflow",
+      "flow": [
+        "header_search",
+        "category_navigation",
+        "featured_services",
+        "service_cards"
+      ],
+      "mobile": "mobile-first single-column stack preserves required sections and card information order"
+    },
+    "risk_controls": [
+      "Preserve service_cta.destination as UNRESOLVED_UNTIL_SOURCE; do not invent or strengthen its value.",
+      "Preserve service_price.format as SOURCE_DEFINED; do not invent or strengthen its value.",
+      "Preserve service_cta.label as DATA_BOUND:call_to_action; do not invent or strengthen its value.",
+      "Preserve service_price.value as DATA_BOUND:price; do not invent or strengthen its value."
+    ],
+    "screen_definition": {
+      "design_intent": [
+        "clear",
+        "professional",
+        "easy_to_navigate"
+      ],
+      "implementation_readiness": "STRUCTURED_SPEC_READY_FOR_NEXT_AGENT",
+      "purpose": "Implement the governed GENERIC_SERVICE_MARKETPLACE screen with source-bound required sections and responsive behavior.",
+      "required_sections": [
+        "header",
+        "categories",
+        "featured_services",
+        "service_cards"
+      ],
+      "screen_type": "GENERIC_SERVICE_MARKETPLACE",
+      "task_mode": "CREATE_NEW"
+    },
+    "spacing_typography": {
+      "precision_mode": "RELATIVE_GUIDANCE",
+      "spacing": "compact=within_component;regular=between_related_components;section=between_major_sections",
+      "typography": "body=content_or_metadata;section_heading=section_emphasis"
+    },
+    "state_map": {
+      "category_navigation": {
+        "default": "available",
+        "selected": "preserve_source_selected_category"
+      },
+      "featured_services": {
+        "empty": "render_no_invented_items",
+        "populated": "render_source_items"
+      },
+      "header_search": {
+        "default": "enabled",
+        "query_entered": "preserve_user_query"
+      },
+      "service_cards": {
+        "empty": "render_empty_state_without_invented_items",
+        "populated": "render_source_items"
+      },
+      "service_cta": {
+        "available": "enabled_when_source_action_exists",
+        "missing_source_action": "disabled_or_omitted_without_inventing_destination"
+      }
+    },
+    "token_map": {
+      "action": [
+        "action_primary"
+      ],
+      "border": [
+        "border_subtle"
+      ],
+      "precision_mode": "SEMANTIC_ROLE_ONLY_NO_CANONICAL_COLOR_VALUES_INVENTED",
+      "surface": [
+        "surface_default"
+      ],
+      "text": [
+        "text_primary",
+        "text_secondary"
+      ]
+    },
+    "visual_hierarchy": [
+      {
+        "child_ids": [
+          "header_search",
+          "category_navigation",
+          "featured_services",
+          "service_cards"
+        ],
+        "parent_id": "screen"
+      },
+      {
+        "child_ids": [
+          "service_card_template"
+        ],
+        "parent_id": "service_cards"
+      },
+      {
+        "child_ids": [
+          "service_title",
+          "service_provider",
+          "service_price",
+          "service_cta"
+        ],
+        "parent_id": "service_card_template"
+      }
+    ]
+  },
+  "deliverable_created": {
+    "component_tree": [
+      {
+        "allowed_variants": [
+          "default"
+        ],
+        "blocked_variants": [
+          "invented_data"
+        ],
+        "color_tokens": [
+          "surface_default",
+          "text_primary",
+          "border_subtle"
+        ],
+        "component_id": "header_search",
+        "component_type": "input",
+        "content": {
+          "binding": "USER_REQUIREMENT"
+        },
+        "role": "Present governed header search.",
+        "spacing": "compact",
+        "state": "default",
+        "typography": "body",
+        "visual_priority": "HIGH",
+        "zone_id": "header"
+      },
+      {
+        "allowed_variants": [
+          "default"
+        ],
+        "blocked_variants": [
+          "invented_data"
+        ],
+        "color_tokens": [
+          "surface_default",
+          "text_primary",
+          "border_subtle"
+        ],
+        "component_id": "category_navigation",
+        "component_type": "navigation",
+        "content": {
+          "items": "DATA_BOUND"
+        },
+        "role": "Present governed category navigation.",
+        "spacing": "compact",
+        "state": "default",
+        "typography": "section_heading",
+        "visual_priority": "HIGH",
+        "zone_id": "categories"
+      },
+      {
+        "allowed_variants": [
+          "default",
+          "populated"
+        ],
+        "blocked_variants": [
+          "invented_data"
+        ],
+        "color_tokens": [
+          "surface_default",
+          "text_primary",
+          "border_subtle"
+        ],
+        "component_id": "featured_services",
+        "component_type": "section",
+        "content": {
+          "items": "DATA_BOUND"
+        },
+        "role": "Present governed featured services.",
+        "spacing": "regular",
+        "state": "populated",
+        "typography": "section_heading",
+        "visual_priority": "HIGH",
+        "zone_id": "featured_services"
+      },
+      {
+        "allowed_variants": [
+          "default",
+          "populated"
+        ],
+        "blocked_variants": [
+          "invented_data"
+        ],
+        "color_tokens": [
+          "surface_default",
+          "text_primary",
+          "border_subtle"
+        ],
+        "component_id": "service_cards",
+        "component_type": "collection",
+        "content": {
+          "items": "DATA_BOUND"
+        },
+        "role": "Present governed service cards.",
+        "spacing": "regular",
+        "state": "populated",
+        "typography": "body",
+        "visual_priority": "HIGH",
+        "zone_id": "service_cards"
+      },
+      {
+        "allowed_variants": [
+          "default"
+        ],
+        "blocked_variants": [
+          "invented_data"
+        ],
+        "color_tokens": [
+          "surface_default",
+          "text_primary",
+          "border_subtle"
+        ],
+        "component_id": "service_card_template",
+        "component_type": "template",
+        "content": {
+          "fields": [
+            "title",
+            "provider",
+            "price",
+            "call_to_action"
+          ],
+          "values": "DATA_BOUND"
+        },
+        "role": "Present governed service card template.",
+        "spacing": "regular",
+        "state": "default",
+        "typography": "body",
+        "visual_priority": "MEDIUM",
+        "zone_id": "service_cards"
+      },
+      {
+        "allowed_variants": [
+          "default"
+        ],
+        "blocked_variants": [
+          "invented_data"
+        ],
+        "color_tokens": [
+          "surface_default",
+          "text_primary",
+          "border_subtle"
+        ],
+        "component_id": "service_title",
+        "component_type": "text",
+        "content": {
+          "value": "DATA_BOUND:title"
+        },
+        "role": "Present governed service title.",
+        "spacing": "compact",
+        "state": "default",
+        "typography": "body",
+        "visual_priority": "MEDIUM",
+        "zone_id": "service_cards"
+      },
+      {
+        "allowed_variants": [
+          "default"
+        ],
+        "blocked_variants": [
+          "invented_data"
+        ],
+        "color_tokens": [
+          "surface_default",
+          "text_primary",
+          "border_subtle"
+        ],
+        "component_id": "service_provider",
+        "component_type": "text",
+        "content": {
+          "value": "DATA_BOUND:provider"
+        },
+        "role": "Present governed service provider.",
+        "spacing": "compact",
+        "state": "default",
+        "typography": "body",
+        "visual_priority": "MEDIUM",
+        "zone_id": "service_cards"
+      },
+      {
+        "allowed_variants": [
+          "default"
+        ],
+        "blocked_variants": [
+          "invented_data"
+        ],
+        "color_tokens": [
+          "surface_default",
+          "text_primary",
+          "border_subtle"
+        ],
+        "component_id": "service_price",
+        "component_type": "value",
+        "content": {
+          "format": "SOURCE_DEFINED",
+          "value": "DATA_BOUND:price"
+        },
+        "role": "Present governed service price.",
+        "spacing": "compact",
+        "state": "default",
+        "typography": "body",
+        "visual_priority": "MEDIUM",
+        "zone_id": "service_cards"
+      },
+      {
+        "allowed_variants": [
+          "default",
+          "available"
+        ],
+        "blocked_variants": [
+          "invented_data",
+          "invented_route"
+        ],
+        "color_tokens": [
+          "surface_default",
+          "text_primary",
+          "border_subtle",
+          "action_primary"
+        ],
+        "component_id": "service_cta",
+        "component_type": "action",
+        "content": {
+          "destination": "UNRESOLVED_UNTIL_SOURCE",
+          "label": "DATA_BOUND:call_to_action"
+        },
+        "role": "Present governed service cta.",
+        "spacing": "compact",
+        "state": "available",
+        "typography": "body",
+        "visual_priority": "HIGH",
+        "zone_id": "service_cards"
+      }
+    ],
+    "density_rules": [
+      "Keep search and navigation immediately discoverable.",
+      "Keep repeated content scannable without dropping required fields.",
+      "Prefer responsive reflow over reducing legibility."
+    ],
+    "layout_grid": {
+      "desktop": "responsive service-card grid keeps search and navigation visible while allowing column reflow",
+      "flow": [
+        "header_search",
+        "category_navigation",
+        "featured_services",
+        "service_cards"
+      ],
+      "mobile": "mobile-first single-column stack preserves required sections and card information order"
+    },
+    "prompt_constraints": [
+      "Preserve every governed required component and source binding.",
+      "Keep desktop and mobile behavior explicit without inventing domain truth."
+    ],
+    "risk_controls": [
+      "Preserve service_cta.destination as UNRESOLVED_UNTIL_SOURCE; do not invent or strengthen its value.",
+      "Preserve service_price.format as SOURCE_DEFINED; do not invent or strengthen its value.",
+      "Preserve service_cta.label as DATA_BOUND:call_to_action; do not invent or strengthen its value.",
+      "Preserve service_price.value as DATA_BOUND:price; do not invent or strengthen its value."
+    ],
+    "screen_definition": {
+      "design_intent": [
+        "clear",
+        "professional",
+        "easy_to_navigate"
+      ],
+      "implementation_readiness": "STRUCTURED_SPEC_READY_FOR_NEXT_AGENT",
+      "purpose": "Implement the governed GENERIC_SERVICE_MARKETPLACE screen with source-bound required sections and responsive behavior.",
+      "required_sections": [
+        "header",
+        "categories",
+        "featured_services",
+        "service_cards"
+      ],
+      "screen_type": "GENERIC_SERVICE_MARKETPLACE",
+      "task_mode": "CREATE_NEW"
+    },
+    "spacing_typography": {
+      "precision_mode": "RELATIVE_GUIDANCE",
+      "spacing": "compact=within_component;regular=between_related_components;section=between_major_sections",
+      "typography": "body=content_or_metadata;section_heading=section_emphasis"
+    },
+    "state_map": {
+      "category_navigation": {
+        "default": "available",
+        "selected": "preserve_source_selected_category"
+      },
+      "featured_services": {
+        "empty": "render_no_invented_items",
+        "populated": "render_source_items"
+      },
+      "header_search": {
+        "default": "enabled",
+        "query_entered": "preserve_user_query"
+      },
+      "service_cards": {
+        "empty": "render_empty_state_without_invented_items",
+        "populated": "render_source_items"
+      },
+      "service_cta": {
+        "available": "enabled_when_source_action_exists",
+        "missing_source_action": "disabled_or_omitted_without_inventing_destination"
+      }
+    },
+    "token_map": {
+      "action": [
+        "action_primary"
+      ],
+      "border": [
+        "border_subtle"
+      ],
+      "precision_mode": "SEMANTIC_ROLE_ONLY_NO_CANONICAL_COLOR_VALUES_INVENTED",
+      "surface": [
+        "surface_default"
+      ],
+      "text": [
+        "text_primary",
+        "text_secondary"
+      ]
+    },
+    "visual_hierarchy": [
+      {
+        "child_ids": [
+          "header_search",
+          "category_navigation",
+          "featured_services",
+          "service_cards"
+        ],
+        "parent_id": "screen"
+      },
+      {
+        "child_ids": [
+          "service_card_template"
+        ],
+        "parent_id": "service_cards"
+      },
+      {
+        "child_ids": [
+          "service_title",
+          "service_provider",
+          "service_price",
+          "service_cta"
+        ],
+        "parent_id": "service_card_template"
+      }
+    ]
+  },
+  "governance_envelope": {
+    "context": {
+      "execution_mode": "SANDBOX",
+      "input_sha256": "c7ab15b2a3d403a55e0876dc69c808757e3a906e46ebe7b7a17f7b1b86e17678",
+      "request_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-18E6B0F4C8B3",
+      "runtime_source_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "runtime_typed_context_sha256": "939fce6f886af924dda24ccfdae21baa7b33e24ffa6e653d2f20a75d80f05d38"
+    },
+    "render_policy": "NON_RENDER",
+    "schema": "LF_UI_GOVERNANCE_ENVELOPE_V1"
+  },
+  "handoff_to_next": {
+    "payload_ref": "composer_payload",
+    "recipient": "frontend_or_composer_agent",
+    "status": "READY_FOR_DETERMINISTIC_AND_SEMANTIC_VALIDATION"
+  },
+  "output_contract_version": "UI_PRODUCTION_SPEC_V6",
+  "output_type": "PRODUCTION_UI_SPEC",
+  "score": {
+    "evidence_by_criterion": {
+      "handoff_quality": {
+        "refs": [
+          "component_tree",
+          "handoff_to_next"
+        ],
+        "summary": "Deterministic acceptance check passed for handoff_quality."
+      },
+      "layout_precision": {
+        "refs": [
+          "layout_grid",
+          "spacing_typography"
+        ],
+        "summary": "Deterministic acceptance check passed for layout_precision."
+      },
+      "lf_system_fidelity": {
+        "refs": [
+          "token_map",
+          "risk_controls"
+        ],
+        "summary": "Deterministic acceptance check passed for lf_system_fidelity."
+      },
+      "state_mapping": {
+        "refs": [
+          "state_map"
+        ],
+        "summary": "Deterministic acceptance check passed for state_mapping."
+      },
+      "visual_hierarchy": {
+        "refs": [
+          "visual_hierarchy"
+        ],
+        "summary": "Deterministic acceptance check passed for visual_hierarchy."
+      }
+    },
+    "handoff_quality": 4,
+    "layout_precision": 4,
+    "lf_system_fidelity": 4,
+    "state_mapping": 4,
+    "total": 20,
+    "visual_hierarchy": 4
+  },
+  "self_verdict": "PASS_TO_QUALITY_PACK_CANDIDATE",
+  "worker": "ui_architect"
+}

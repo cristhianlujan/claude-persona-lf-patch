@@ -1,0 +1,11 @@
+{
+  "allowed_outcome_authority": "INDEPENDENT_REVIEWER_ONLY",
+  "artifact_canonical_sha256": "1d5cf010068c667bd44f5a6c66ac13869c7042e2e70a271b005cec43e64b5c91",
+  "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "policy_sha256": "ee0ae70c1fa2014f33702faefba91e5c066d3fd278575c7fd416795a2a4e7a9e",
+  "previous_verdicts_must_not_be_supplied": true,
+  "producer_context_must_be_unavailable": true,
+  "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-CURRENTMAIN-3B39657F",
+  "review_scope": "SEMANTIC_VISUAL_QUALITY_ONLY",
+  "schema": "S26_W3_REVIEW_SCOPE_POLICY_V1"
+}
