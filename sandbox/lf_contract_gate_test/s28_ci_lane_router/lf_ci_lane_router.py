@@ -34,6 +34,7 @@ CI_ROUTER_PREFIX = "sandbox/lf_contract_gate_test/s28_ci_lane_router/"
 LF_CONTRACT_CHECK_VALIDATOR = "scripts/lf_contract_check.py"
 P0_RUNTIME_ENTRYPOINT = "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py"
 P0_RUNTIME_CORE = "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_CORE_V1.py"
+S26_COMMIT_READBACK_CONTROL = "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_commit_readback_binding.py"
 P0_EXACT_HEAD_EXTERNAL_PREFIX = "supabase/functions/lf-p0-exact-head-evidence-broker-v2/"
 P0_EXACT_HEAD_EXTERNAL_EXACT = frozenset({
     "sandbox/lf_contract_gate_test/p0_exact_head_real_source_ci_v1.py",
@@ -47,6 +48,7 @@ CI_SELFTEST_CONTROLS = frozenset({
     LF_CONTRACT_CHECK_VALIDATOR,
     P0_RUNTIME_ENTRYPOINT,
     P0_RUNTIME_CORE,
+    S26_COMMIT_READBACK_CONTROL,
 })
 
 # Deliberately excludes the broad sandbox/lf_contract_gate_test/ prefix. Unknown
