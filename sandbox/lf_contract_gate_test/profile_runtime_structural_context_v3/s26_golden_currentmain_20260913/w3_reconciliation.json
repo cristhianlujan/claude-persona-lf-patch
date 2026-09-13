@@ -1,0 +1,59 @@
+{
+  "schema": "S26_W3_RECONCILIATION_V1",
+  "project": "S26",
+  "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "evidence_branch": "lf/s26-golden-currentmain-evidence-20260913",
+  "reconciliation_basis_commit": "016d51262f44ca261742887754658e056840bad8",
+  "independent_receipts": [
+    {
+      "case_id": "S26V3-F08-O5-INDEPENDENT-HOLDOUT",
+      "review_case_id": "S26V3-F08-O5-INDEPENDENT-HOLDOUT-CURRENTMAIN-3B39657F",
+      "receipt_ref": "github://cristhianlujan/claude-persona-lf-patch@016d51262f44ca261742887754658e056840bad8/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_golden_currentmain_20260913/w3_independent/receipt_S26V3-F08-O5-INDEPENDENT-HOLDOUT.json",
+      "receipt_validation": "PASS_FROZEN_INDEPENDENT_RECEIPT_CONTRACT",
+      "verdict": "PASS_WITH_RESTRICTIONS",
+      "score": 23,
+      "blocking_codes": [],
+      "objective_reconciliation": "PASS_WITH_RESTRICTIONS",
+      "restrictions_remain_downstream": true
+    },
+    {
+      "case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT",
+      "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-3B39657F",
+      "receipt_ref": "github://cristhianlujan/claude-persona-lf-patch@016d51262f44ca261742887754658e056840bad8/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_golden_currentmain_20260913/w3_independent/receipt_S26V3-F10-O5-REAL-E2E-HOLDOUT.json",
+      "receipt_validation": "PASS_FROZEN_INDEPENDENT_RECEIPT_CONTRACT",
+      "verdict": "PASS_WITH_RESTRICTIONS",
+      "score": 23,
+      "blocking_codes": [],
+      "semantic_review_component": "PASS_WITH_RESTRICTIONS",
+      "objective_reconciliation": "BLOCKED"
+    }
+  ],
+  "f10_objective_contract": {
+    "objective_id": "F10-O5",
+    "required": "A brand-new real case traverses the complete governed pipeline and passes independent semantic review.",
+    "source_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_family_objective_matrix_v3/coverage_inventory.json"
+  },
+  "f10_observed_evidence": {
+    "producer_summary_ref": "github://cristhianlujan/claude-persona-lf-patch@016d51262f44ca261742887754658e056840bad8/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_golden_currentmain_20260913/w3_producer/F10-O5.json",
+    "full_governed_pipeline_observed": false,
+    "typed_context_present": false,
+    "producer_request_ref": "github://cristhianlujan/claude-persona-lf-patch@016d51262f44ca261742887754658e056840bad8/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_golden_currentmain_20260913/w3_producer/S26V3-F10-O5-REAL-E2E-HOLDOUT.producer.json",
+    "reused_upstream_fixture": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_input.json",
+    "reused_gate_run_id": "S26-HP-001",
+    "assessment": "The independent semantic review validates the produced artifact, but the producer evidence does not demonstrate the brand-new complete governed A-to-H traversal required by F10-O5. The F10 producer request is bound to HP001 upstream Gate F input/run identity, so semantic PASS cannot substitute for the missing E2E provenance requirement."
+  },
+  "blocking_codes": [
+    "F10_O5_FULL_GOVERNED_PIPELINE_NOT_OBSERVED",
+    "F10_O5_REUSED_HP001_UPSTREAM_CONTEXT"
+  ],
+  "w3_status": "BLOCKED_REPAIR_REQUIRED",
+  "golden_status": "NOT_AUTHORIZED",
+  "claim_ceiling": "INDEPENDENT_RECEIPTS_VALIDATED_F08_ACCEPTED_F10_SEMANTIC_PASS_BUT_E2E_OBJECTIVE_NOT_CLOSED_NOT_W3_COMPLETE_NOT_GOLDEN",
+  "required_repair": [
+    "Execute a genuinely new F10-O5 case from Admission through the complete governed pipeline on the exact final candidate SHA.",
+    "Use a fresh run identity and freshly built upstream governed/typed context; do not bind the execution to s26_hp001/gate_f_input.json or gate_run_id S26-HP-001.",
+    "Materialize evidence that full_governed_pipeline_observed=true and the required typed context/provenance is present for the new case.",
+    "Freeze the new F10 review bundle and obtain a fresh independent semantic receipt for that frozen execution artifact.",
+    "Reconcile W3 again; only then evaluate Gate G/Golden promotion."
+  ]
+}
