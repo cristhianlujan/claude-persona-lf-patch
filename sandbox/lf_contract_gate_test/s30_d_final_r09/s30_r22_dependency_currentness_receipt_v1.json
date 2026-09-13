@@ -30,6 +30,7 @@
   "s31_handoff": {
     "target": "S31",
     "artifact": "sandbox/lf_contract_gate_test/s31_bootstrap/S30_TO_S31_DEPENDENCY_DECOUPLING_HANDOFF_V0_1.md",
+    "artifact_commit_sha": "e75cab6e71c0f880f72726439e952de78ea4931f",
     "priority": "HIGH_CROSS_CUTTING",
     "temporary_bridge_expires_when": "S31_CONTRACT_AWARE_CURRENTNESS_CAPABILITY_ADOPTED"
   },
