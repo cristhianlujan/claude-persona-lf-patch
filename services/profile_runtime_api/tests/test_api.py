@@ -63,6 +63,7 @@ class APITest(unittest.TestCase):
             repo_root=repo,
             state_dir=Path(self.temp.name),
             api_token="secret-test-token",
+            source_sha="a" * 40,
         )
         self.engine = FakeAPIEngine()
         self.client_context = TestClient(  # type: ignore[name-defined]
@@ -189,10 +190,42 @@ class APITest(unittest.TestCase):
             health.json()["classification"],
             "INSTALLED_NOT_INTEGRATED_PENDING_LIVE_REVERIFY",
         )
+        self.assertFalse(health.json()["operational_ready"])
+        self.assertFalse(health.json()["downstream_authorized"])
+        self.assertIsNone(health.json()["live_reverify_request_id"])
         self.assertEqual(self.client.get("/runtime").status_code, 401)
         runtime = self.client.get("/runtime", headers=self.auth())
         self.assertEqual(runtime.status_code, 200)
         self.assertFalse(runtime.json()["operational_ready"])
+
+
+    def test_health_reflects_matching_live_reverify_marker_without_downstream_authority(self) -> None:
+        import json
+
+        from profile_runtime_api.deployment import marker_digest
+
+        marker = {
+            "schema": "lf-profile-runtime-live-reverify/v1",
+            "source_sha": "a" * 40,
+            "request_id": "471946b9-6e53-4cf5-b9b0-ee6c4ce18f8b",
+            "queue_status": "SUCCEEDED",
+            "runtime_completion": "PASS",
+            "profile_contract_valid": "PASS",
+            "semantic_utility": "PASS",
+            "downstream_authorized": False,
+            "canonical_registration_required": False,
+            "read_only": True,
+            "no_write": True,
+            "no_promotion": True,
+            "verified_at": "2026-09-13T03:31:49Z",
+        }
+        marker["evidence_sha256"] = marker_digest(marker)
+        (Path(self.temp.name) / "live_reverify.json").write_text(json.dumps(marker), encoding="utf-8")
+        health = self.client.get("/health").json()
+        self.assertEqual(health["classification"], "INTEGRATED_LIVE_REVERIFIED_READ_ONLY")
+        self.assertTrue(health["operational_ready"])
+        self.assertFalse(health["downstream_authorized"])
+        self.assertEqual(health["live_reverify_request_id"], marker["request_id"])
 
     def test_execute_is_async_idempotent_and_queryable(self) -> None:
         response = self.client.post(

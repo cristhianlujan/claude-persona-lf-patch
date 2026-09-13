@@ -4,11 +4,15 @@ API FastAPI persistente y deliberadamente acotada para consumir el `llama-server
 ya instalado en Hetzner. Escucha solo en loopback, usa un único worker y no instala,
 descarga ni expone el modelo.
 
-Estado vigente: `INSTALLED_NOT_INTEGRATED_PENDING_LIVE_REVERIFY`.
+Estado por defecto tras instalar un SHA nuevo: `INSTALLED_NOT_INTEGRATED_PENDING_LIVE_REVERIFY`.
 
-No se considera `READY` hasta ejecutar en el VPS vivo el mismo workload de Product
-Director, validar el contrato canónico y completar la revisión de utilidad semántica
-independiente. La API nunca autoriza downstream por sí sola.
+La clasificación se eleva a `INTEGRATED_LIVE_REVERIFIED_READ_ONLY` únicamente cuando
+existe un marker local ligado al mismo `source_sha` y producido por
+`scripts/mark_live_reverified.py` después de releer en Supabase un canary `SUCCEEDED`
+con runtime completion, contrato y semantic utility en `PASS`, y con los invariantes
+`read_only/no_write/no_promotion` preservados. Un deploy de un SHA distinto invalida
+automáticamente el marker anterior. `downstream_authorized` permanece siempre en
+`false`; la reverificación operativa no concede autoridad de escritura ni promoción.
 
 ## Flujo
 
@@ -77,9 +81,20 @@ Variables críticas:
 - `PROFILE_RUNTIME_API_HOST=127.0.0.1`: cualquier bind no-loopback se rechaza.
 - `PROFILE_RUNTIME_LLAMA_BASE_URL=http://127.0.0.1:8080`: solo HTTP loopback.
 - `PROFILE_RUNTIME_REPO_ROOT`: checkout desplegado con perfiles y runtime gobernado.
-- `PROFILE_RUNTIME_STATE_DIR`: caché estructural y SQLite, modo `0700`.
+- `PROFILE_RUNTIME_STATE_DIR`: caché estructural, SQLite y marker de live-reverify; el marker es válido solo para el `source_sha` desplegado.
 - `PROFILE_RUNTIME_MAX_WORKERS=1`: el parser no permite aumentar concurrencia.
 - `PROFILE_RUNTIME_ALLOW_MODEL_IMAGE=false`: mantener desactivado en este VPS.
+
+Después de un canary gobernado exitoso, el marker se materializa desde la fila real de
+Supabase; no se acepta un PASS manual:
+
+```bash
+set -a; source /etc/lf-profile-runtime-api.env; source /etc/lf-profile-runtime-worker.env; set +a
+/opt/lf-profile-runtime-api/venv/bin/python \
+  /opt/lf-profile-runtime-api/current/services/profile_runtime_api/scripts/mark_live_reverified.py \
+  --request-id <uuid> --source-sha "$PROFILE_RUNTIME_SOURCE_SHA"
+```
+
 
 El cliente usa `/health`, `/v1/models` y `/v1/chat/completions` de `llama-server`,
 incluido `response_format.type=json_schema`, según la
