@@ -1,0 +1,70 @@
+{
+  "plan_version": "S31_STRATEGY_MASTER_PLAN_V0_3",
+  "strategy_id": "S31",
+  "status": "CANDIDATE_CONTINUOUS_EKB_LOOP_ENFORCED_LOCALLY",
+  "base_main_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "parent_s31_head_sha": "f241b129fbddabe1ce58d7b956cb3fdd993bf133",
+  "supersedes_for_forward_execution": "S31_STRATEGY_MASTER_PLAN_V0_2.md",
+  "historical_v0_2_artifacts_immutable": true,
+  "ekb_cycle": {
+    "mode": "EVENT_DRIVEN_CONTINUOUS",
+    "contract_ref": "s31_ekb_continuous_cycle_v0_1.json",
+    "validator_ref": "validate_s31_ekb_continuous_cycle_v0_1.py",
+    "test_ref": "test_s31_ekb_continuous_cycle_v0_1.py",
+    "required_codes": [
+      "DB-001",
+      "GOV-010",
+      "S30-GATE-EKB-AUTOPERSIST-MISSING-001",
+      "EKB-NEW-ERROR-SHAPE-PREFLIGHT-MISSING-001",
+      "PROFILE-RUNTIME-RUN-REPORT-ANTI-CLOSE-VIOLATION-001"
+    ],
+    "recurrence_evidence": {
+      "code": "S30-GATE-EKB-AUTOPERSIST-MISSING-001",
+      "classification": "RECURRENCE",
+      "event_id": 13502,
+      "frequency_after": 3
+    },
+    "failure_boundary": "EKB_LOOKUP_CLASSIFY_PERSIST_READBACK_BEFORE_REPAIR",
+    "next_batch_boundary": "REFRESH_EKB_IF_EVIDENCE_OR_CAUSAL_HYPOTHESIS_CHANGED",
+    "close_boundary": "FINAL_EKB_DISPOSITION_AND_READBACK_AFTER_LAST_WRITE"
+  },
+  "execution_sequence": [
+    "ADMISSION_WORK_PACKAGE",
+    "SCHEMA_FIRST_EKB_SOURCE_RESOLUTION",
+    "FRESH_EKB_AUTHORITY_CURRENTNESS",
+    "SOURCE_SCHEMA_CONTRACT_RESOLUTION",
+    "EXECUTE_MATERIAL_MACROBATCH",
+    "OBSERVATION_CHECKPOINT",
+    "EKB_LOOKUP_ON_FAIL_BLOCK_ERROR_OR_MATERIAL_NEW_EVIDENCE",
+    "EKB_CLASSIFY_RECURRENCE_NEW_ERROR_OR_NOT_LEARNING_WITH_REASON",
+    "EKB_GOVERNED_PERSISTENCE_AND_READBACK_IF_REQUIRED",
+    "REPAIR_OR_REPLAN_ONLY_AFTER_EKB_DISPOSITION",
+    "EKB_REFRESH_BEFORE_NEXT_MATERIAL_MACROBATCH",
+    "DETERMINISTIC_VALIDATION",
+    "ADVERSARIAL_BYPASS_AUDIT",
+    "FINAL_EKB_LEARNING_DISPOSITION",
+    "FINAL_EKB_READBACK_AFTER_LAST_WRITE",
+    "GLOBAL_SAFE_WORK_RESCAN",
+    "SCOPE_SPECIFIC_FREEZE",
+    "INDEPENDENT_SEMANTIC_REVIEW",
+    "INTEGRATION_REPLAY",
+    "EXPLICIT_PROMOTION_DECISION"
+  ],
+  "hard_guards": {
+    "fail_block_error_without_ekb_lookup": "BLOCK",
+    "required_persistence_without_writer_receipt": "BLOCKED_EKB_PERSISTENCE",
+    "required_persistence_without_post_write_readback": "BLOCKED_EKB_PERSISTENCE",
+    "repair_before_ekb_disposition": "BLOCK",
+    "pending_learning_event_at_close": "BLOCK",
+    "final_readback_older_than_last_write": "BLOCK",
+    "direct_ekb_dml_bypass_forbidden": true,
+    "duplicate_new_error_when_recurrence_exists_forbidden": true,
+    "not_learning_requires_reason": true
+  },
+  "authority": {
+    "merge_main": "NONE",
+    "golden": "NONE",
+    "production": "NONE",
+    "runtime_activation": "NONE"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "receipt_version": "S31_CONTINUOUS_EKB_LOOP_PREWRITE_V0_1",
+  "strategy": "S31",
+  "scope": "PLAN_AND_EXECUTION_CONTROL_DELTA_ONLY",
+  "base_main_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "source_s31_head_sha": "f241b129fbddabe1ce58d7b956cb3fdd993bf133",
+  "ekb_preflight": {
+    "schema_first": true,
+    "live_readback_performed": true,
+    "applicable_codes": [
+      "DB-001",
+      "GOV-010",
+      "S30-GATE-EKB-AUTOPERSIST-MISSING-001",
+      "EKB-NEW-ERROR-SHAPE-PREFLIGHT-MISSING-001",
+      "PROFILE-RUNTIME-RUN-REPORT-ANTI-CLOSE-VIOLATION-001"
+    ],
+    "recurrence_registered_before_repair": true,
+    "writer": "public.lf_write_pipeline_ekb_v1",
+    "classification": "RECURRENCE",
+    "error_code": "S30-GATE-EKB-AUTOPERSIST-MISSING-001",
+    "event_id": 13502,
+    "frequency_after": 3
+  },
+  "mutation_policy": {
+    "frozen_v0_2_artifacts_mutated": false,
+    "s30_mutated": false,
+    "s26_mutated": false,
+    "supabase_schema_mutated": false,
+    "runtime_mutated": false,
+    "production_mutated": false
+  },
+  "intended_outputs": [
+    "S31_STRATEGY_MASTER_PLAN_V0_3.md",
+    "s31_strategy_master_plan_v0_3.json",
+    "s31_ekb_continuous_cycle_v0_1.json",
+    "validate_s31_ekb_continuous_cycle_v0_1.py",
+    "test_s31_ekb_continuous_cycle_v0_1.py",
+    "s31_s30_execution_control_reuse_binding_v0_2.json"
+  ],
+  "promotion_authority": "NONE"
+}

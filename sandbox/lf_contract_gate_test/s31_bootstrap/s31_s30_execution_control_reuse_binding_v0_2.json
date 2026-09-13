@@ -1,0 +1,42 @@
+{
+  "binding_version": "S31_S30_EXECUTION_CONTROL_REUSE_BINDING_V0_2",
+  "supersedes": "s31_s30_execution_control_reuse_binding_v0_1.json",
+  "source_strategy": "S30",
+  "consumer_strategy": "S31",
+  "reuse_mode": "SEMANTIC_CONTRACT_ONLY",
+  "continuous_ekb_cycle": {
+    "required": true,
+    "contract_ref": "s31_ekb_continuous_cycle_v0_1.json",
+    "sequence": [
+      "PRE_EXECUTION_EKB_READ",
+      "EXECUTE_MATERIAL_MACROBATCH",
+      "OBSERVE",
+      "ON_FAIL_BLOCK_ERROR_OR_MATERIAL_NEW_EVIDENCE_EKB_LOOKUP",
+      "CLASSIFY",
+      "GOVERNED_PERSIST_AND_READBACK_IF_REQUIRED",
+      "REPAIR_ONLY_AFTER_DISPOSITION",
+      "REFRESH_BEFORE_NEXT_MATERIAL_BATCH",
+      "FINAL_DISPOSITION_AND_READBACK"
+    ],
+    "blocking_result_on_persistence_failure": "BLOCKED_EKB_PERSISTENCE",
+    "codes": [
+      "DB-001",
+      "GOV-010",
+      "S30-GATE-EKB-AUTOPERSIST-MISSING-001",
+      "EKB-NEW-ERROR-SHAPE-PREFLIGHT-MISSING-001",
+      "PROFILE-RUNTIME-RUN-REPORT-ANTI-CLOSE-VIOLATION-001"
+    ]
+  },
+  "existing_reuse_invariants": [
+    "ONE_CAUSAL_CHAIN_ONE_ACTIVE_WRITER",
+    "BLOCKED_SCOPE_DOES_NOT_HIDE_UNRELATED_SAFE_SCOPE",
+    "ZERO_EXECUTABLE_SAFE_SCOPES_REMAINING_OR_ALL_TARGETED_SCOPES_TERMINALLY_DISPOSED",
+    "INDEPENDENT_READBACK_NOT_PRODUCER_SELF_ATTESTATION"
+  ],
+  "boundaries": {
+    "s30_mutation_allowed": false,
+    "s30_runtime_authority_claimed": false,
+    "s31_generic_compatibility_guards_allowed": true
+  },
+  "claim_ceiling": "S31_MAY_REUSE_PROVEN_SEMANTICS_NOT_S30_RUNTIME_ENFORCEMENT"
+}
