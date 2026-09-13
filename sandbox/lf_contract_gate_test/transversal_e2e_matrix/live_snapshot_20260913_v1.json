@@ -1,0 +1,72 @@
+{
+  "snapshot_version": "lf-transversal-e2e-live/v1",
+  "source": "supabase://mhwmirqcgxxukpctffuv/public",
+  "observed_at": "2026-09-13T00:59:55.454614Z",
+  "metadata": {
+    "operation_count": 36,
+    "active_route_count": 22,
+    "routed_operation_count": 14,
+    "unrouted_operation_count": 22,
+    "static_execution_route_count": 17,
+    "inspection_no_execution_route_count": 5
+  },
+  "inspection_routes": [
+    {"asset_type":"ADAPTER","action_code":"ASSET_INSPECTION","operation_resolution":"NONE","operation_code":null},
+    {"asset_type":"DOC","action_code":"ASSET_INSPECTION","operation_resolution":"NONE","operation_code":null},
+    {"asset_type":"PERFIL","action_code":"ASSET_INSPECTION","operation_resolution":"NONE","operation_code":null},
+    {"asset_type":"REGLA","action_code":"ASSET_INSPECTION","operation_resolution":"NONE","operation_code":null},
+    {"asset_type":"SKILL","action_code":"ASSET_INSPECTION","operation_resolution":"NONE","operation_code":null}
+  ],
+  "direct_operations": [
+    {"operation_code":"ACTUALIZACION_ADAPTER_LF","active_route_count":1,"active_contract_count":1,"active_step_count":14,"required_policy_count":4,"resolved_policy_count":4,"invalid_mode_verdict":"BYPASS_AND_READY"},
+    {"operation_code":"ACTUALIZACION_DB_LF","active_route_count":4,"active_contract_count":1,"active_step_count":3,"required_policy_count":4,"resolved_policy_count":4,"invalid_mode_verdict":"BYPASS_AND_READY","missing_block_targets":["preflight->close","patch->close"]},
+    {"operation_code":"ACTUALIZACION_PERFIL_LF","active_route_count":1,"active_contract_count":1,"active_step_count":14,"required_policy_count":5,"resolved_policy_count":5,"invalid_mode_verdict":"POLICY_FILTER_BYPASS_BUT_OTHER_GATE_BLOCKS"},
+    {"operation_code":"ACTUALIZACION_ROUTER_LF","active_route_count":1,"active_contract_count":1,"active_step_count":5,"required_policy_count":4,"resolved_policy_count":4,"invalid_mode_verdict":"BYPASS_AND_READY"},
+    {"operation_code":"ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF","active_route_count":1,"active_contract_count":1,"active_step_count":0,"required_policy_count":4,"resolved_policy_count":4,"invalid_mode_verdict":"BLOCKED_BEFORE_POLICY_SURFACE"},
+    {"operation_code":"ACTUALIZACION_SKILL_LF","active_route_count":1,"active_contract_count":1,"active_step_count":14,"required_policy_count":4,"resolved_policy_count":4,"invalid_mode_verdict":"BYPASS_AND_READY"},
+    {"operation_code":"CREACION_ADAPTER_LF","active_route_count":1,"active_contract_count":2,"active_step_count":17,"required_policy_count":4,"resolved_policy_count":4,"invalid_mode_verdict":"BYPASS_AND_READY"},
+    {"operation_code":"CREACION_CARD_LF","active_route_count":1,"active_contract_count":2,"active_step_count":39,"required_policy_count":4,"resolved_policy_count":4,"invalid_mode_verdict":"BYPASS_AND_READY","unreachable_required_steps":["contract_judge","close"]},
+    {"operation_code":"CREACION_ESTRATEGIA_LF","active_route_count":1,"active_contract_count":0,"active_step_count":43,"required_policy_count":5,"resolved_policy_count":4,"invalid_mode_verdict":"BLOCKED_BEFORE_POLICY_SURFACE"},
+    {"operation_code":"CREACION_PERFIL_LF","active_route_count":1,"active_contract_count":2,"active_step_count":40,"required_policy_count":4,"resolved_policy_count":4,"invalid_mode_verdict":"BYPASS_AND_READY"},
+    {"operation_code":"CREACION_SKILL_LF","active_route_count":1,"active_contract_count":2,"active_step_count":38,"required_policy_count":4,"resolved_policy_count":4,"invalid_mode_verdict":"BYPASS_AND_READY","unreachable_required_steps":["pre_write_execution_binding_gate","step_depth_validation","pack_internal_depth_validation","examples_depth_validation","evals_depth_validation","judge_depth_validation","schema_depth_validation","output_modes_validation","blocking_overrides_validation"]},
+    {"operation_code":"EJECUCION_PERFIL_LF","active_route_count":1,"active_contract_count":1,"active_step_count":9,"required_policy_count":5,"resolved_policy_count":5,"invalid_mode_verdict":"BYPASS_AND_READY"},
+    {"operation_code":"EJECUCION_SKILL_LF","active_route_count":1,"active_contract_count":1,"active_step_count":9,"required_policy_count":4,"resolved_policy_count":4,"invalid_mode_verdict":"BYPASS_AND_READY"},
+    {"operation_code":"LEARNING_BRIDGE_KB_CARD_LF","active_route_count":1,"active_contract_count":1,"active_step_count":25,"required_policy_count":4,"resolved_policy_count":4,"invalid_mode_verdict":"BYPASS_AND_READY","self_loops":["close->close"]}
+  ],
+  "unrouted_operations": [
+    {"operation_code":"ACTUALIZACION_CARD_LF","status":"CANDIDATO_READ_ONLY","operation_family":"CARD_OPERATIONS","operation_type":"UPDATE_PROTOCOL","classification":"CANDIDATE_INACTIVE","provenance_status":"NOT_APPLICABLE_INACTIVE"},
+    {"operation_code":"ACTUALIZACION_ESTRATEGIA_LF","status":"CANDIDATO_READ_ONLY","operation_family":"STRATEGY_GOVERNANCE","operation_type":"UPDATE_PROTOCOL","classification":"CANDIDATE_INACTIVE","provenance_status":"NOT_APPLICABLE_INACTIVE"},
+    {"operation_code":"ANALISIS_RIESGO_CONTENIDO_LF","status":"APROBADO_PRODUCCION_CONTROLADA","operation_family":"ANALYSIS","operation_type":"SKILL_EXECUTION","classification":"INTERNAL_SUBOPERATION","provenance_status":"PENDING"},
+    {"operation_code":"BUILD_COMPETITIVE_INTELLIGENCE_MARKETPLACE_LF","status":"CANDIDATO_READ_ONLY","operation_family":"MARKETPLACE_LF","operation_type":"BUILD_PROTOCOL_AND_SANDBOX_PREP","classification":"CANDIDATE_INACTIVE","provenance_status":"NOT_APPLICABLE_INACTIVE"},
+    {"operation_code":"BUILD_INTEGRAL_STORY_CREATOR_LF","status":"CANDIDATO_READ_ONLY","operation_family":"GOVERNANCE","operation_type":"CREATION_PROTOCOL","classification":"CANDIDATE_INACTIVE","provenance_status":"NOT_APPLICABLE_INACTIVE"},
+    {"operation_code":"CAPTURE_INTAKE_MULTI_SOURCE_FIXTURE_V0_1","status":"CANDIDATO_READ_ONLY","operation_family":"CAPTURE","operation_type":"MULTI_SOURCE_FIXTURE_INTAKE","classification":"CANDIDATE_INACTIVE","provenance_status":"NOT_APPLICABLE_INACTIVE"},
+    {"operation_code":"CREACION_PERFIL_LF_ENFORCEMENT_SANDBOX","status":"ACTIVE_ENFORCEMENT_TEST","operation_family":"GOVERNANCE_OPERATION_ENFORCEMENT","operation_type":"SANDBOX_TEST","classification":"CONTROL_PLANE","provenance_status":"NOT_APPLICABLE_TEST_ONLY"},
+    {"operation_code":"DS_BUILD_PROTOCOL_LF","status":"PRODUCCION_CONTROLADA_READ_ONLY","operation_family":"GOVERNANCE","operation_type":"BUILD_PROTOCOL","classification":"INTERNAL_PROTOCOL","provenance_status":"PENDING"},
+    {"operation_code":"EJECUCION_ESTRATEGIA_LF","status":"CANDIDATO_READ_ONLY","operation_family":"GOVERNANCE","operation_type":"CONTROLLED_EXECUTION","classification":"CANDIDATE_INACTIVE","provenance_status":"NOT_APPLICABLE_INACTIVE"},
+    {"operation_code":"ESCRITURA_BASE_CONOCIMIENTO_LF","status":"APROBADO_PRODUCCION_CONTROLADA","operation_family":"PERSISTENCE","operation_type":"SKILL_EXECUTION","classification":"INTERNAL_SUBOPERATION","provenance_status":"PENDING"},
+    {"operation_code":"EXTRACCION_DOCUMENTOS_REGULATORIOS_LF","status":"APROBADO_PRODUCCION_CONTROLADA_READ_ONLY","operation_family":"CAPTURE","operation_type":"SKILL_EXECUTION","classification":"INTERNAL_SUBOPERATION","provenance_status":"PENDING"},
+    {"operation_code":"EXTRACCION_FUENTES_DIGITALES_LF","status":"APROBADO_PRODUCCION_CONTROLADA","operation_family":"CAPTURE","operation_type":"SKILL_EXECUTION","classification":"INTERNAL_SUBOPERATION","provenance_status":"PENDING"},
+    {"operation_code":"EXTRACCION_NOTICIAS_FINANCIERAS_LF","status":"APROBADO_PRODUCCION_CONTROLADA_READ_ONLY","operation_family":"CAPTURE","operation_type":"SKILL_EXECUTION","classification":"INTERNAL_SUBOPERATION","provenance_status":"PENDING"},
+    {"operation_code":"GITHUB_CONTRACT_GATE_LF","status":"PRODUCCION_CONTROLADA_READ_ONLY","operation_family":"GOVERNANCE","operation_type":"CONTRACT_GATE","classification":"CONTROL_PLANE","provenance_status":"PENDING"},
+    {"operation_code":"HISTORICAL_CLOSURE_CLASSIFICATION_ACTIONS_LF","status":"CANDIDATO_READ_ONLY","operation_family":"GOVERNANCE_OPERATION_ENFORCEMENT","operation_type":"TEST_RECORDS_CLASSIFICATION","classification":"CANDIDATE_INACTIVE","provenance_status":"NOT_APPLICABLE_INACTIVE"},
+    {"operation_code":"HISTORICAL_CLOSURE_SANITIZATION_LF","status":"CANDIDATO_READ_ONLY","operation_family":"GOVERNANCE","operation_type":"TEST_RECORDS_SANITIZATION","classification":"CANDIDATE_INACTIVE","provenance_status":"NOT_APPLICABLE_INACTIVE"},
+    {"operation_code":"HOMOLOGACION_FUENTES_DIGITALES_LF","status":"APROBADO_PRODUCCION_CONTROLADA","operation_family":"CAPTURE","operation_type":"SKILL_EXECUTION","classification":"INTERNAL_SUBOPERATION","provenance_status":"PENDING"},
+    {"operation_code":"OPERATION_ENFORCEMENT_REGRESSION_SUITE_LF","status":"SANDBOX_ACTIVE","operation_family":"GOVERNANCE_OPERATION_ENFORCEMENT","operation_type":"REGRESSION_SUITE","classification":"CONTROL_PLANE","provenance_status":"NOT_APPLICABLE_TEST_ONLY"},
+    {"operation_code":"ORQUESTACION_PIPELINE_LF","status":"APROBADO_PRODUCCION_CONTROLADA","operation_family":"ORCHESTRATION","operation_type":"SCHEDULER_DRIVEN","classification":"SCHEDULER","provenance_status":"PENDING"},
+    {"operation_code":"RETIRO_ACTIVO_LF","status":"CANDIDATO_READ_ONLY","operation_family":"ASSET_OPERATIONS","operation_type":"RETIRE_PROTOCOL","classification":"CANDIDATE_INACTIVE","provenance_status":"NOT_APPLICABLE_INACTIVE"},
+    {"operation_code":"TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF","status":"CANDIDATO_READ_ONLY","operation_family":"PROFILE_OPERATIONS","operation_type":"STATE_TRANSITION_PROTOCOL","classification":"CANDIDATE_INACTIVE","provenance_status":"NOT_APPLICABLE_INACTIVE"},
+    {"operation_code":"VULNERABILITY_COVERAGE_REPAIR_LF","status":"PRODUCCION_CONTROLADA_READ_ONLY","operation_family":"GOVERNANCE_OPERATION_ENFORCEMENT","operation_type":"INTERNAL_ENFORCEMENT","classification":"CONTROL_PLANE","provenance_status":"PENDING"}
+  ],
+  "target_authority_case": {
+    "request_target": "ACT-0043",
+    "target_hint": "ACT-0036",
+    "observed_target": "ACT-0036",
+    "status": "OVERRIDE_CONFIRMED"
+  },
+  "direct_reservation_case": {
+    "function": "fn_lf_operation_reserve_execution_v1",
+    "execute_grantees": ["postgres", "service_role"],
+    "router_provenance_required": false,
+    "status": "PENDING_BACKEND_TRUST_BOUNDARY_PROOF"
+  }
+}
