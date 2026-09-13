@@ -1,0 +1,70 @@
+{
+  "contract_version": "S30_STRATEGY_EXECUTOR_CLOSE_GUARD_V1",
+  "status": "SOURCE_CANDIDATE_NON_PRODUCTION",
+  "owner": "S30",
+  "operation_code": "EJECUCION_ESTRATEGIA_LF",
+  "purpose": "Make the already-defined S30 continuation/close invariants executable and reusable before final report emission.",
+  "policy_sources": [
+    "sandbox/lf_contract_gate_test/s30_d_final_r09/strategy_executor_bootstrap_contract_v1.json",
+    "sandbox/lf_contract_gate_test/s30_d_final_r09/s30_strategy_executor_bootstrap.py",
+    "gobernanza/contratos/s30_self_governance_gate_v1.json",
+    "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/run_close_gate_v3.py"
+  ],
+  "applicable_ekb": [
+    {
+      "code": "PROFILE-RUNTIME-RUN-REPORT-ANTI-CLOSE-VIOLATION-001",
+      "classification": "RECURRENCE",
+      "write_status": "PENDING_GOVERNED_WRITER_BINDING_FOR_STRATEGY_EXECUTION",
+      "reason": "The live EKB entry exists and applies, but current generic EKB writer has no active PRE_EKB_GATE binding for EJECUCION_ESTRATEGIA_LF; direct table mutation is intentionally not used."
+    }
+  ],
+  "required_inputs": [
+    "global_remaining_work_scan",
+    "safe_work_remaining_count",
+    "next_safe_batch",
+    "safe_parallel_work",
+    "blockers",
+    "why_run_stopped"
+  ],
+  "blocker_shape": {
+    "independent_safe_work": "array[string]"
+  },
+  "result_vocabulary": [
+    "FINAL_REPORT_ALLOWED",
+    "CONTINUE_SAFE_SCOPE_PERSIST_BLOCKED_SCOPE",
+    "BLOCK_CLOSE_GUARD"
+  ],
+  "mandatory_rules": [
+    "BLOCKED_SCOPE_DOES_NOT_HIDE_UNRELATED_SAFE_SCOPE",
+    "SAFE_WORK_REMAINING_REQUIRES_CONTINUATION",
+    "NEXT_SAFE_BATCH_REQUIRES_CONTINUATION",
+    "SAFE_PARALLEL_WORK_REQUIRES_CONTINUATION",
+    "BLOCKER_INDEPENDENT_SAFE_WORK_REQUIRES_CONTINUATION",
+    "GLOBAL_REMAINING_WORK_SCAN_REQUIRED",
+    "UNRECOGNIZED_STOP_REASON_FAILS_CLOSED",
+    "EXECUTION_LIMIT_REQUIRES_LITERAL_EVIDENCE"
+  ],
+  "integration_rule": "Any governed strategy/work-package runner claiming S30 Strategy Executor compatibility MUST call this close guard immediately before final output. CONTINUE_SAFE_SCOPE_PERSIST_BLOCKED_SCOPE requires execution of a safe batch followed by a fresh global scan and repeated close evaluation.",
+  "adversarial_expectations": {
+    "ONE_BLOCKED_ONE_SAFE_SCOPE": "CONTINUE_SAFE_SCOPE_PERSIST_BLOCKED_SCOPE",
+    "CLOSE_WITH_EXECUTABLE_SCOPE_REMAINING": "CONTINUE_SAFE_SCOPE_PERSIST_BLOCKED_SCOPE",
+    "MISSING_GLOBAL_SCAN": "BLOCK_CLOSE_GUARD",
+    "NO_SAFE_WORK_REMAINING": "FINAL_REPORT_ALLOWED"
+  },
+  "test_evidence": {
+    "module": "s30_strategy_executor_close_guard_v1.py",
+    "test": "test_s30_strategy_executor_close_guard_v1.py",
+    "local_result": "11/11 PASS"
+  },
+  "safety_ceiling": {
+    "supabase_write": false,
+    "runtime_activation": false,
+    "scheduler_activation": false,
+    "orchestrator_activation": false,
+    "production_activation": false,
+    "business_effect_dispatch": false,
+    "s26_mutation": false,
+    "s31_mutation": false,
+    "main_merge_authorized": false
+  }
+}
