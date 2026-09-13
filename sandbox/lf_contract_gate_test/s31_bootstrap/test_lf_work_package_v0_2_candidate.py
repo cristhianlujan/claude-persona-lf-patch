@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import copy
 import importlib.util
 import sys
 from pathlib import Path
@@ -52,11 +51,11 @@ assert r["status"] == m.CONTINUE and r["code"] == "CONTINUE_SAFE_SCOPE_PERSIST_B
 
 # Material source named but not frozen.
 x = base(); x["source_snapshot_bindings"][0]["revision"] = None
-assert m.evaluate_work_package(x)["code"] == "BLOCK_MATERIAL_SOURCE_REVISION_MISSING"
+assert m.evaluate_work_package(x)["code"] == "BLOCK_SCHEMA_VALIDATION"
 
 # Validator exists conceptually but no execution receipt.
 x = base(); x["execution"]["executed_validation"].update({"command_or_runner":None,"executed_sha":None,"exit_status":None,"receipt_ref":None})
-assert m.evaluate_work_package(x)["code"] == "BLOCK_VALIDATOR_NOT_EXECUTED"
+assert m.evaluate_work_package(x)["code"] == "BLOCK_SCHEMA_VALIDATION"
 
 # Synthetic merge ref may not be called exact branch-head evidence.
 x = base(); x["execution_identity"]["execution_ref_kind"] = "PR_MERGE_REF"
@@ -88,4 +87,14 @@ x = base(); x["close_guard"]["global_remaining_work_scan"] = "NOT_RUN"
 r = m.evaluate_work_package(x)
 assert r["status"] == m.BLOCKED and "GLOBAL_REMAINING_WORK_SCAN_NOT_PASS" in r["reasons"], r
 
-print("PASS_LF_WORK_PACKAGE_V0_2_CANDIDATE_SELFTEST=11/11")
+# Schema-first: structurally invalid WP cannot bypass semantic checks.
+x = base(); del x["objective"]
+r = m.evaluate_work_package(x)
+assert r["status"] == m.BLOCKED and r["code"] == "BLOCK_SCHEMA_VALIDATION", r
+
+# Executed validation SHA must be a real 40-hex commit identity.
+x = base(); x["execution"]["executed_validation"]["executed_sha"] = "not-a-sha"
+r = m.evaluate_work_package(x)
+assert r["status"] == m.BLOCKED and r["code"] == "BLOCK_SCHEMA_VALIDATION", r
+
+print("PASS_LF_WORK_PACKAGE_V0_2_CANDIDATE_SELFTEST=13/13")
