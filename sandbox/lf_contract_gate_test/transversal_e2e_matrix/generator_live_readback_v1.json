@@ -1,0 +1,42 @@
+{
+  "receipt_version": "lf-transversal-e2e-generator-readback/v1",
+  "owner": "LF-TRANSVERSAL-E2E-MATRIX",
+  "issue": 725,
+  "execution_mode": "READ_ONLY",
+  "source": "supabase://mhwmirqcgxxukpctffuv/public",
+  "generator": "sandbox/lf_contract_gate_test/transversal_e2e_matrix/generate_live_matrix_v1.sql",
+  "observed_at": "2026-09-13T01:10:00Z",
+  "result": "PASS_GENERATOR_EXECUTED_AGAINST_LIVE_SCHEMA",
+  "snapshot_md5": "721a2893838b08f1765a6c24f8f97a5c",
+  "universe": {
+    "operation_count": 36,
+    "active_route_count": 22,
+    "routed_operation_count": 14,
+    "unrouted_operation_count": 22,
+    "static_execution_route_count": 17,
+    "inspection_no_execution_route_count": 5
+  },
+  "generated_arrays": {
+    "direct_operations": 14,
+    "unrouted_operations": 22,
+    "inspection_routes": 5
+  },
+  "direct_reservation_structural_probe": {
+    "router_provenance_required": false,
+    "policy_snapshot_on_insert": true,
+    "required_policy_resolution_guard": true,
+    "policy_snapshot_immutable_and_currentness_guard": true,
+    "registered_operation_required": true,
+    "status": "STRUCTURAL_PROBE_ONLY"
+  },
+  "safety": {
+    "ddl_executed": false,
+    "dml_executed": false,
+    "production_activation": false,
+    "runtime_activation": false,
+    "business_effects": false,
+    "scheduler_activation": false,
+    "main_mutation": false
+  },
+  "important_limit": "The structural generator proves canonical universe/readback and structural guards. Adversarial Router calls and internal provenance enrichment remain separate stages; NOT_EXECUTED/UNKNOWN must remain fail-closed until independently proven."
+}
