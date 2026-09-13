@@ -1,0 +1,77 @@
+{
+  "schema": "LF_CARD_CARRIER_ADAPTER_MATRIX_V0_1",
+  "status": "CANDIDATE_DESIGN_ONLY",
+  "base_main_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+  "authority_ref": "sandbox/lf_contract_gate_test/card_lifecycle_convergence_v0_1/a1_card_authority_reconciliation_v0_1.json",
+  "common_lifecycle_ref": "sandbox/lf_contract_gate_test/card_lifecycle_convergence_v0_1/b1_card_common_lifecycle_invariants_v0_1.json",
+  "principle": "CARRIERS_PROVE_TRANSPORT_INTEGRITY_AND_CURRENTNESS_BUT_NEVER_CREATE_OPERATIONAL_AUTHORITY",
+  "authority": {
+    "system": "SUPABASE",
+    "source_policy": "POL-LF-SOURCE-RESOLUTION/v1.4-transversal-supabase-authority-visual-support",
+    "external_carriers_authoritative": false,
+    "carrier_fallback_by_similarity": false,
+    "cross_carrier_write_fallback": false
+  },
+  "adapters": [
+    {
+      "carrier_type": "GITHUB_FILE",
+      "role": "TECHNICAL_IMPLEMENTATION_ARTIFACT",
+      "authority": false,
+      "prewrite_required": ["supabase_authorized_card_code","repository","path","ref_or_exact_head","current_blob_sha","content_sha256","observed_at","execution_id","authorized_delta","regression_plan"],
+      "write_route": "GITHUB_EXACT_PATH_MINIMAL_PATCH",
+      "provider_guard": "EXPECTED_BASE_BLOB_OR_EXACT_HEAD_CONTINUITY",
+      "readback_required": ["new_exact_head","same_path","new_blob_sha","content_sha256","identity_preserved","authorized_delta_only","independent_readback"],
+      "block_if": ["missing_supabase_binding","wrong_repo_or_path","base_blob_changed","main_or_bound_ref_advanced_without_rebind","content_hash_mismatch","identity_changed","unauthorized_path_change","cross_carrier_route"]
+    },
+    {
+      "carrier_type": "GOOGLE_DOC_EMBEDDED_BLOCK",
+      "role": "STORAGE_OR_HUMAN_MIRROR",
+      "authority": false,
+      "prewrite_required": ["supabase_authorized_card_code","document_id","block_anchor","current_revision_id","baseline_block_excerpt_hash","observed_at","execution_id","trusted_context_ref","authorized_delta","regression_plan"],
+      "write_route": "GOOGLE_DOC_BOUNDED_BLOCK_UPDATE",
+      "provider_guard": "requiredRevisionId",
+      "readback_required": ["new_revision_id","same_document_id","same_block_anchor","readback_content_hash","identity_preserved","parent_source_preserved","authorized_delta_only","independent_readback"],
+      "block_if": ["missing_supabase_binding","wrong_document","missing_anchor","ambiguous_anchor","stale_revision","requiredRevisionId_missing","provider_rejects_revision","content_hash_mismatch","identity_changed","parent_source_changed","cross_carrier_route"]
+    }
+  ],
+  "transport_integrity_exception_contract": {
+    "problem": "Current source policy v1.4 forbids Google Docs/Sheets as operational sources, while Card Update must read provider revision/anchor/content to prevent stale writes.",
+    "required_semantic_boundary": {
+      "allowed": "Read external carrier metadata/content only to verify exact bound artifact identity, integrity, currentness and post-write readback after Supabase has already authorized the Card and carrier binding.",
+      "forbidden": "Use Google Doc or GitHub content to decide operational state, routing, permissions, Card applicability, authority, promotion or production eligibility.",
+      "authority_decision_source": "SUPABASE_ONLY",
+      "transport_currentness_source": "EXACT_BOUND_PROVIDER_READ",
+      "provider_read_does_not_elevate_authority": true
+    },
+    "must_be_governed_before_write_activation": true,
+    "current_card_update_canary_reuse": "STRUCTURAL_REFERENCE_ONLY_NOT_CURRENT_POLICY_CERTIFICATION"
+  },
+  "stale_revision_test_matrix": [
+    {"id":"C1-GH-01","carrier":"GITHUB_FILE","case":"expected blob matches current","expected":"PASS_PREWRITE"},
+    {"id":"C1-GH-02","carrier":"GITHUB_FILE","case":"expected blob differs from current","expected":"BLOCK_STALE_CARRIER"},
+    {"id":"C1-GH-03","carrier":"GITHUB_FILE","case":"repo/path differs from Supabase binding","expected":"BLOCK_ROUTE_MISMATCH"},
+    {"id":"C1-GH-04","carrier":"GITHUB_FILE","case":"main/ref advances after binding and no explicit rebind","expected":"BLOCK_CURRENTNESS_STALE"},
+    {"id":"C1-GD-01","carrier":"GOOGLE_DOC_EMBEDDED_BLOCK","case":"current revision exact + anchor unique + requiredRevisionId applied","expected":"PASS_PREWRITE"},
+    {"id":"C1-GD-02","carrier":"GOOGLE_DOC_EMBEDDED_BLOCK","case":"submitted revision differs from fresh provider revision","expected":"BLOCK_STALE_REVISION_BEFORE_WRITE"},
+    {"id":"C1-GD-03","carrier":"GOOGLE_DOC_EMBEDDED_BLOCK","case":"requiredRevisionId omitted","expected":"BLOCK_PROVIDER_GUARD_MISSING"},
+    {"id":"C1-GD-04","carrier":"GOOGLE_DOC_EMBEDDED_BLOCK","case":"anchor missing or duplicate","expected":"BLOCK_ANCHOR_UNRESOLVED"},
+    {"id":"C1-GD-05","carrier":"GOOGLE_DOC_EMBEDDED_BLOCK","case":"document differs from Supabase-bound storage ref","expected":"BLOCK_ROUTE_MISMATCH"},
+    {"id":"C1-GD-06","carrier":"GOOGLE_DOC_EMBEDDED_BLOCK","case":"provider rejects requiredRevisionId due concurrent mutation","expected":"NO_PARTIAL_WRITE_AND_RETURN_TO_CURRENTNESS"},
+    {"id":"C1-X-01","carrier":"ANY","case":"Git Card planned through Drive writer or Drive Card through Git writer","expected":"BLOCK_CROSS_CARRIER_WRITE"},
+    {"id":"C1-X-02","carrier":"ANY","case":"carrier unresolved but writer guessed from similarity/history","expected":"BLOCK_NO_AUTHORITY_INFERENCE"}
+  ],
+  "active_google_doc_observation": {
+    "document_id": "1DoT3rYFPAIbCQlYXID7PChmCk149tI13MOCYhmBZf1E",
+    "block_anchor": "CARD_CANDIDATA_DASHBOARD_CLIENTE_LECTOR_LF_001",
+    "current_revision_id": "ANLCKQncEv_OKZQB9C7sx2bT31soWvJQROT5ZhSXm_BcZChYHE29jk-0cRxsJZKLulDmZ1sVBWhKTi2d9AlKs8zYX2rAeTqVpQLgJzypPJQ",
+    "matches_20260907_canary_revision": true,
+    "proves_current_policy_compatibility": false
+  },
+  "c1_gate": {
+    "result": "PASS_CARRIER_MATRIX_DEFINED",
+    "materialization_authorized": false,
+    "card_update_write_activation_authorized": false,
+    "remaining_blockers": ["CARD_CARRIER_BINDING_CURRENTNESS_NOT_PERSISTED","CARD_UPDATE_SOURCE_POLICY_SEMANTICS_STALE","CARD_UPDATE_TRANSPORT_INTEGRITY_READ_CONTRACT_GAP","CARD_UPDATE_CHANGE_SCOPE_REGRESSION_PLAN_STEP_GAP"],
+    "next_safe_batch": "D1_S31C_BOUNDARY_COMPATIBILITY_MATRIX"
+  }
+}
