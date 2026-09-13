@@ -10,7 +10,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parent
 REPO = "cristhianlujan/claude-persona-lf-patch"
 QUALITY_PACK_SHA = "d4051d9c57fdfd09741da5ba2718c032eac56c92"
-CANDIDATE_SHA = "0a6bc06dfb83958730b2d659d26098686d873f9b"
+CANDIDATE_SHA = "d268fd871f2e18588f9b8084e6a3f6c6e07aa438"
 REQUIRED_QP_KEYS = {
     "independent_review_contract_ref",
     "quality_gate_contract_ref",
@@ -72,7 +72,7 @@ def validate_handoff(text: str, bundle_text: str, review_case_id: str) -> dict[s
         "external_paid_model_used = false",
         "automated_semantic_judge_implemented = false",
         "profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json",
-        "quality_review.s31_lane_reviews" if "quality_review.s31_lane_reviews" in text else "s31_lane_reviews",
+        "s31_lane_reviews",
         review_case_id,
     ]
     missing = [token for token in required_tokens if token not in text]
@@ -103,8 +103,8 @@ def evaluate_pair(bundle: dict[str, Any], handoff_text: str, bundle_text: str, r
 
 def main() -> int:
     cases = [
-        ("ABC", "s31_abc_independent_review_bundle_v0_3.json", "S31_ABC_INDEPENDENT_REVIEW_HANDOFF_V0_2.md", "S31-ABC-IR-001"),
-        ("DG", "s31_dg_independent_review_bundle_v0_2.json", "S31_DG_INDEPENDENT_REVIEW_HANDOFF_V0_1.md", "S31-DG-IR-001"),
+        ("ABC", "s31_abc_independent_review_bundle_v0_4.json", "S31_ABC_INDEPENDENT_REVIEW_HANDOFF_V0_2.md", "S31-ABC-IR-001"),
+        ("DG", "s31_dg_independent_review_bundle_v0_3.json", "S31_DG_INDEPENDENT_REVIEW_HANDOFF_V0_1.md", "S31-DG-IR-001"),
     ]
     results = []
     failed = False
