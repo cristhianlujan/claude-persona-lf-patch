@@ -1,0 +1,31 @@
+{
+  "schema_version": "LF_STRATEGY_UPDATE_SOURCE_CANDIDATE_RECEIPT_V1",
+  "validation_mode": "LIVE_BEGIN_ROLLBACK_NO_RESIDUE",
+  "validated_source": "strategy_update_sandbox_activation_source_candidate.sql",
+  "exclusive_pr": 753,
+  "immutable_base_sha": "fc2967e9aa17f9e5e68f8567ef80faafb3839c53",
+  "pre_validation_head_sha": "2b60d9912291b7f2571e2835047c822bada2b970",
+  "candidate_readback": {
+    "operation_status": "SANDBOX_ACTIVE",
+    "active_contracts": 1,
+    "active_step_contracts": 14,
+    "active_judges": 2,
+    "active_judge_bindings": 14,
+    "router_strategy_update": "ACTIVE",
+    "router_update_compat": "ACTIVE"
+  },
+  "post_rollback": {
+    "candidate_execution_residue": 0,
+    "operation_status": "SANDBOX_ACTIVE",
+    "strategy_update_status": "ACTIVE",
+    "historical_s32_snapshot_id": 45,
+    "historical_s32_payload_sha256": "ce9e640fc18200ca54cf4ca1d5ab215ed766736adf4b0f23782197f87a35e126",
+    "historical_s32_updated_at": "2026-09-07T06:37:36.554873+00:00"
+  },
+  "live_migration_applied": false,
+  "production_change": false,
+  "runtime_change": false,
+  "scheduler_change": false,
+  "merge_authorized": false,
+  "verdict": "PASS_ROLLBACK_VERIFIED_SOURCE_CANDIDATE_NO_LIVE_RESIDUE"
+}
