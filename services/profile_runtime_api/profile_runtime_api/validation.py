@@ -320,13 +320,21 @@ class OutputGates:
                     errors.append("UI_FOCUSED_HARD_EXCLUSIONS_EMPTY")
                 else:
                     selected = values.get("selected_visual_type", "")
+                    governance_exclusion_markers = (
+                        "non_canonical_artifact", "non-canonical artifact", "non canonical artifact",
+                        "artifact_01", "artifact_02", "artifact set", "input governance",
+                        "advisory_read_only", "advisory read only", "canonicalize",
+                        "canonicalization", "register_screen", "resolve_screen",
+                    )
                     for exclusion in exclusions:
                         if not isinstance(exclusion, str):
                             continue
                         normalized = " ".join(exclusion.lower().strip().split())
+                        if any(marker in normalized for marker in governance_exclusion_markers):
+                            errors.append("UI_FOCUSED_HARD_EXCLUSION_GOVERNANCE_ECHO")
                         if selected and normalized and (selected == normalized or selected in normalized):
                             errors.append("UI_FOCUSED_SELECTED_TREATMENT_EXCLUDED")
-                            break
+                    # Preserve all findings; do not stop after the first invalid exclusion.
 
                 generic_only = {
                     "small", "medium", "large", "thin", "thick", "light", "dark",

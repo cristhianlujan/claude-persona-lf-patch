@@ -243,6 +243,7 @@ class RuntimeOutputModeTest(unittest.TestCase):
             "UI_FOCUSED_VISUAL_WEIGHT_NON_CONCRETE",
             "UI_FOCUSED_RELATIONSHIP_TO_MAIN_ELEMENT_NON_CONCRETE",
             "UI_FOCUSED_IMPLEMENTATION_FORMAT_NON_CONCRETE_V3",
+            "UI_FOCUSED_HARD_EXCLUSION_GOVERNANCE_ECHO",
         ):
             self.assertIn(code, utility["blocking_codes"], utility)
 

@@ -1388,16 +1388,33 @@ def governed_generation_schema(
         raise LlamaTransportError("LLAMA_GENERATION_SCHEMA_PROPERTIES_MISSING")
 
     if schema_mode == UI_FOCUSED_SCHEMA_MODE:
+        focused_min_lengths = {
+            "decision_subject": 8,
+            "selected_visual_type": 8,
+            "base_color_or_surface": 8,
+            "size_or_coverage": 8,
+            "density_limits": 6,
+            "depth_style": 8,
+            "visual_weight": 8,
+            "position_behavior": 8,
+            "relationship_to_main_element": 10,
+            "implementation_format": 8,
+        }
         for name, prop in properties.items():
             if not isinstance(prop, dict):
                 continue
             if prop.get("type") == "string" and "enum" not in prop:
                 cap = 240 if name == "short_generator_prompt" else 160
                 prop["maxLength"] = _bounded_positive_int(prop.get("maxLength"), cap)
+                if name in focused_min_lengths:
+                    prop["minLength"] = max(
+                        int(prop.get("minLength") or 0), focused_min_lengths[name]
+                    )
             if name == "hard_exclusions" and prop.get("type") == "array":
                 prop["maxItems"] = _bounded_positive_int(prop.get("maxItems"), 4)
                 items = prop.get("items")
                 if isinstance(items, dict) and items.get("type") == "string":
+                    items["minLength"] = max(int(items.get("minLength") or 0), 8)
                     items["maxLength"] = _bounded_positive_int(items.get("maxLength"), 120)
         return bounded, UI_FOCUSED_GENERATION_POLICY
 
@@ -1789,6 +1806,11 @@ class PersistentLlamaServerAdapter:
                     "- size_or_coverage must name the spatial/component scope; density_limits must bind a quantity to an element; depth_style must state an elevation/shadow rule; visual_weight must state hierarchy relative to UI content/action.",
                     "- relationship_to_main_element must name the related UI element and behavior; implementation_format must name an implementation mechanism, not an evidence/governance artifact type.",
                     "- Avoid bare values such as medium, high, above, 100%, css, artifact, shell_lock, or non_canonical_artifact when they do not express the required field semantics.",
+                    "- Use visible UI evidence labels and explicit UI requirements from the literal input to ground the decision. Internal governance/evidence words are provenance, never the visual treatment itself.",
+                    "- hard_exclusions must name prohibited UI variants or duplicate UI behaviors; never list evidence artifacts, artifact IDs, governance modes, routing operations, or canonicalization operations as exclusions.",
+                    "- Give each field a different semantic job. Do not repeat one phrase across decision_subject, selected_visual_type, surface, coverage, depth, weight, relationship, or implementation.",
+                    "- Phrase-shape guide (structure only, not task facts): coverage='only <named UI region/component>'; density='one <cue/treatment> per <named component>'; depth='no added elevation; preserve <existing shadow/elevation>'; weight='<relative prominence> versus <named content/action>'; relationship='<behavior> relative to <named main element>'; implementation='<CSS/component/layout mechanism> on <named element>'.",
+                    "- A preservation/lock request still requires a concrete UI pattern: state what stays fixed, what varies, and how the transition/navigation behaves. A bare *_lock token is not a treatment.",
                     "- Use RETURN_TO_ORCHESTRATOR only when a material input needed for this focused decision is actually unresolved; read-only/advisory governance alone is not such a missing input.",
                     "",
                 ]

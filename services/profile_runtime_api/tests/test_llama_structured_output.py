@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -137,6 +138,23 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         self.assertNotIn("maxItems", canonical["properties"]["hard_exclusions"])
         self.assertEqual(completion["generation_schema_policy"], UI_FOCUSED_GENERATION_POLICY)
         self.assertTrue(completion["generation_schema_sha256"])
+
+    def test_ui_focused_generation_schema_requires_minimum_semantic_phrase_space(self) -> None:
+        canonical = json.loads(
+            (self.settings.repo_root / "profiles/ui_architect/schemas/ui_focused_decision.schema.json").read_text(encoding="utf-8")
+        )
+        client = RecordingClient(self.settings, '{"decision_subject":"placeholder"}')
+        client.chat(
+            system_prompt="system", user_prompt="user", schema=canonical,
+            profile_slug="ui_architect", schema_mode="UI_FOCUSED_DECISION",
+        )
+        assert client.last_payload is not None
+        props = client.last_payload["response_format"]["schema"]["properties"]
+        self.assertGreaterEqual(props["size_or_coverage"]["minLength"], 8)
+        self.assertGreaterEqual(props["density_limits"]["minLength"], 6)
+        self.assertGreaterEqual(props["relationship_to_main_element"]["minLength"], 10)
+        self.assertGreaterEqual(props["hard_exclusions"]["items"]["minLength"], 8)
+        self.assertEqual(canonical["properties"]["size_or_coverage"]["minLength"], 3)
 
     def test_other_profiles_keep_canonical_generation_schema(self) -> None:
         client = RecordingClient(self.settings, '{"ok":true}')
