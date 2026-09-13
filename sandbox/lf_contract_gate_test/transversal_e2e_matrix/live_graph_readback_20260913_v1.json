@@ -21,8 +21,8 @@
   ],
   "summary": {
     "routed_operations": 14,
-    "clean_graph_operations": 9,
-    "operations_with_graph_findings": 5,
+    "clean_graph_operations": 8,
+    "operations_with_graph_findings": 6,
     "finding_operations": [
       "ACTUALIZACION_DB_LF",
       "ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
@@ -30,8 +30,7 @@
       "CREACION_ESTRATEGIA_LF",
       "CREACION_SKILL_LF",
       "LEARNING_BRIDGE_KB_CARD_LF"
-    ],
-    "note": "clean_graph_operations is 8 if the Learning Bridge blocked-edge self-loop is treated as a graph defect; no waiver has been applied. summary.finding_operations is authoritative."
+    ]
   },
   "closure": "BLOCK"
 }
