@@ -9,6 +9,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from .deployment import deployment_state
 from .engine import ProfileRuntimeEngine
 from .hashing import canonical_json_sha256
 from .jobs import JobStore
@@ -203,12 +204,16 @@ def create_app(
 
     @app.get("/health")
     def health(request: Request) -> dict[str, Any]:
+        state = deployment_state(runtime_settings)
         return {
             "status": "ok",
             "service": "lf-profile-runtime-api",
             "runtime_version": runtime_settings.runtime_version,
             "source_sha": runtime_settings.source_sha,
-            "classification": "INSTALLED_NOT_INTEGRATED_PENDING_LIVE_REVERIFY",
+            "classification": state["deployment_classification"],
+            "operational_ready": state["operational_ready"],
+            "downstream_authorized": False,
+            "live_reverify_request_id": state["live_reverify_request_id"],
             "recovered_jobs": request.app.state.recovered_jobs,
         }
 

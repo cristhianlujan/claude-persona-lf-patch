@@ -5,6 +5,7 @@ import time
 from typing import Any
 
 from .cache import StructuralCache
+from .deployment import deployment_state
 from .hashing import canonical_json_sha256, sha256_text
 from .llama import (
     LlamaHTTPClient,
@@ -467,7 +468,21 @@ class ProfileRuntimeEngine:
         return self._batch_result(request,results,started,context=prepared)
 
     def runtime_snapshot(self) -> dict[str, Any]:
-        llama=self.llama_client.health(); return {"schema":"lf-profile-runtime-api-snapshot/v1","runtime_version":self.settings.runtime_version,"resolver_version":self.settings.resolver_version,"source_sha":self.settings.source_sha,"bind":{"host":self.settings.api_host,"port":self.settings.api_port},"llama_server":llama,"cache":self.cache.stats(),"max_workers":self.settings.max_workers,"max_batch_size":self.settings.max_batch_size,"full_image_model_enabled":self.settings.allow_model_image,"deployment_classification":"INSTALLED_NOT_INTEGRATED_PENDING_LIVE_REVERIFY","operational_ready":False,"downstream_authorized":False}
+        llama = self.llama_client.health()
+        state = deployment_state(self.settings)
+        return {
+            "schema": "lf-profile-runtime-api-snapshot/v1",
+            "runtime_version": self.settings.runtime_version,
+            "resolver_version": self.settings.resolver_version,
+            "source_sha": self.settings.source_sha,
+            "bind": {"host": self.settings.api_host, "port": self.settings.api_port},
+            "llama_server": llama,
+            "cache": self.cache.stats(),
+            "max_workers": self.settings.max_workers,
+            "max_batch_size": self.settings.max_batch_size,
+            "full_image_model_enabled": self.settings.allow_model_image,
+            **state,
+        }
 
     def _materialize_runtime_output(
         self, *, task: ProfileTask, model_raw_output: Any, governed_receipt: dict[str, Any]
