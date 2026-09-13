@@ -1,4 +1,4 @@
-# S31 A/B/C — Independent Review Handoff v0.3
+# S31 A/B/C — Independent Review Handoff v0.4
 
 Status: REVIEW-READY / QUALITY-PACK-BOUND / NO SELF-CERTIFICATION
 Strategy: S31 — LF Reusable Capability & Governed Development Platform
@@ -14,12 +14,12 @@ The producer provides no semantic target verdict. Deterministic producer receipt
 
 Review exactly this immutable bundle:
 
-- `artifact_ref`: `github://cristhianlujan/claude-persona-lf-patch@50b343b8b56e1c7f5ac5497151f9ab11cd7e26a0/sandbox/lf_contract_gate_test/s31_bootstrap/s31_abc_independent_review_bundle_v0_3.json`
-- `artifact_sha_or_digest`: `3042fb6fcc14fea7d2223d91af18c211ada6a94f`
-- candidate snapshot inside the bundle: `0a6bc06dfb83958730b2d659d26098686d873f9b`
+- `artifact_ref`: `github://cristhianlujan/claude-persona-lf-patch@25466ce580a4bf2a8b660539a8300c7848aae189/sandbox/lf_contract_gate_test/s31_bootstrap/s31_abc_independent_review_bundle_v0_4.json`
+- `artifact_sha_or_digest`: `46b932fc108fde8a11e25ba6495bd17eacf7e483`
+- candidate snapshot inside the bundle: `d268fd871f2e18588f9b8084e6a3f6c6e07aa438`
 - base main: `d4051d9c57fdfd09741da5ba2718c032eac56c92`
 
-The bundle contains the frozen S31-A/B/C artifact refs, deterministic evidence refs, acceptance criteria, blocking criteria and governance constraints.
+The bundle contains the frozen S31-A/B/C artifact refs, deterministic evidence, acceptance criteria, blocking criteria and governance constraints. S31-B includes schema-first validation and anti-close/frontier consistency hardening with deterministic result `18/18 PASS`.
 
 ## Canonical Quality Pack refs
 
