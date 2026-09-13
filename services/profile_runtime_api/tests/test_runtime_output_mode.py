@@ -206,6 +206,46 @@ class RuntimeOutputModeTest(unittest.TestCase):
         self.assertEqual(utility["status"], "FAIL", utility)
         self.assertIn("UI_FOCUSED_DENSITY_LIMITS_NUMERIC_ONLY", utility["blocking_codes"])
 
+    def test_focused_utility_rejects_governance_echo_canary_shape(self) -> None:
+        payload = self.focused_payload()
+        payload.update(
+            {
+                "decision_subject": "Non-Canonical Artifacts",
+                "selected_visual_type": "shell_lock",
+                "base_color_or_surface": "shell_lock",
+                "size_or_coverage": "medium",
+                "density_limits": "100%",
+                "depth_style": "above",
+                "visual_weight": "high",
+                "relationship_to_main_element": "above",
+                "implementation_format": "non_canonical_artifact",
+                "hard_exclusions": [
+                    "resolve_screen", "modify_screen", "register_screen", "canonicalize_screen"
+                ],
+                "status": "RETURN_TO_ORCHESTRATOR",
+            }
+        )
+        binding = self.repository.runtime_schema("ui_architect", "UI_FOCUSED_DECISION")
+        gate, parsed = self.gates.contract(
+            profile_slug="ui_architect", raw_output=json.dumps(payload), schema=binding
+        )
+        self.assertEqual(gate["status"], "PASS", gate)
+        utility = self.gates.semantic_utility(
+            profile_slug="ui_architect", payload=parsed, contract_gate=gate
+        )
+        self.assertEqual(utility["status"], "FAIL", utility)
+        for code in (
+            "UI_FOCUSED_DECISION_SUBJECT_NON_CONCRETE",
+            "UI_FOCUSED_BASE_SURFACE_DUPLICATES_TREATMENT",
+            "UI_FOCUSED_SIZE_OR_COVERAGE_NON_CONCRETE",
+            "UI_FOCUSED_DENSITY_LIMITS_UNIT_ONLY",
+            "UI_FOCUSED_DEPTH_STYLE_NON_CONCRETE",
+            "UI_FOCUSED_VISUAL_WEIGHT_NON_CONCRETE",
+            "UI_FOCUSED_RELATIONSHIP_TO_MAIN_ELEMENT_NON_CONCRETE",
+            "UI_FOCUSED_IMPLEMENTATION_FORMAT_NON_CONCRETE_V3",
+        ):
+            self.assertIn(code, utility["blocking_codes"], utility)
+
     def test_focused_utility_accepts_concrete_spanish_fields(self) -> None:
         payload = self.focused_payload()
         payload.update(

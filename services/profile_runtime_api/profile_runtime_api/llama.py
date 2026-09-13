@@ -1784,6 +1784,12 @@ class PersistentLlamaServerAdapter:
                     "- hard_exclusions must never prohibit the selected_visual_type or its selected corrective treatment.",
                     "- size_or_coverage, density_limits, depth_style, visual_weight, relationship_to_main_element, and implementation_format must be concrete and implementation-usable; bare generic labels such as medium, thin, above, or css are invalid.",
                     "- density_limits must express an observable bound, quantity, per-element rule, or equivalent concrete limit.",
+                    "- decision_subject must name the requested UI decision itself; governance/evidence labels such as artifact-set, non-canonical, advisory, or input-governance are not UI subjects.",
+                    "- base_color_or_surface must identify a real existing/allowed surface or token; never copy selected_visual_type into it.",
+                    "- size_or_coverage must name the spatial/component scope; density_limits must bind a quantity to an element; depth_style must state an elevation/shadow rule; visual_weight must state hierarchy relative to UI content/action.",
+                    "- relationship_to_main_element must name the related UI element and behavior; implementation_format must name an implementation mechanism, not an evidence/governance artifact type.",
+                    "- Avoid bare values such as medium, high, above, 100%, css, artifact, shell_lock, or non_canonical_artifact when they do not express the required field semantics.",
+                    "- Use RETURN_TO_ORCHESTRATOR only when a material input needed for this focused decision is actually unresolved; read-only/advisory governance alone is not such a missing input.",
                     "",
                 ]
             )

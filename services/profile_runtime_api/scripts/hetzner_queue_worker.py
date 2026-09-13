@@ -427,19 +427,83 @@ def _profile_result(job: dict[str, Any]) -> dict[str, Any] | None:
     return inner if isinstance(inner, dict) else None
 
 
+def _gate_blocking_codes(gate: dict[str, Any]) -> list[str]:
+    raw = gate.get("blocking_codes")
+    if raw is None:
+        return []
+    if not isinstance(raw, list):
+        return ["HETZNER_GATE_BLOCKING_CODES_INVALID"]
+    return sorted({str(code) for code in raw if str(code).strip()})
+
+
+def _execution_queue_outcome(profile: dict[str, Any]) -> dict[str, str | None]:
+    """Project runtime + contract + deterministic utility into the queue terminal state.
+
+    `runtime_completion=PASS` proves transport/model/attestation only. A queue row may be
+    `SUCCEEDED` only when the canonical contract is also clean and any bound deterministic
+    semantic utility floor is clean. Profiles without a bound utility policy remain compatible
+    only through the explicit `NO_PROFILE_UTILITY_POLICY` sentinel.
+    """
+    gate_specs = (
+        ("runtime_completion", "HETZNER_RUNTIME_COMPLETION_FAILED"),
+        ("profile_contract_valid", "HETZNER_PROFILE_CONTRACT_FAILED"),
+    )
+    for gate_name, fallback_code in gate_specs:
+        gate = profile.get(gate_name)
+        if not isinstance(gate, dict):
+            return {
+                "status": "BLOCKED",
+                "error_code": f"{fallback_code}_MISSING",
+                "error_detail": f"gate={gate_name};gate_status=MISSING",
+            }
+        codes = _gate_blocking_codes(gate)
+        if gate.get("status") != "PASS" or codes:
+            return {
+                "status": "BLOCKED",
+                "error_code": codes[0] if codes else fallback_code,
+                "error_detail": (
+                    f"gate={gate_name};gate_status={gate.get('status')};"
+                    f"blocking_codes={','.join(codes[:8])}"
+                ),
+            }
+
+    semantic = profile.get("semantic_utility")
+    if not isinstance(semantic, dict):
+        return {
+            "status": "BLOCKED",
+            "error_code": "HETZNER_SEMANTIC_UTILITY_MISSING",
+            "error_detail": "gate=semantic_utility;gate_status=MISSING",
+        }
+    semantic_codes = _gate_blocking_codes(semantic)
+    semantic_status = semantic.get("status")
+    explicit_unbound = (
+        semantic_status == "NOT_EVALUATED"
+        and semantic.get("evaluation_scope") == "NO_PROFILE_UTILITY_POLICY"
+        and semantic_codes == ["SEMANTIC_UTILITY_POLICY_NOT_BOUND"]
+    )
+    if not (semantic_status == "PASS" and not semantic_codes) and not explicit_unbound:
+        return {
+            "status": "BLOCKED",
+            "error_code": (
+                semantic_codes[0] if semantic_codes else "HETZNER_SEMANTIC_UTILITY_FAILED"
+            ),
+            "error_detail": (
+                f"gate=semantic_utility;gate_status={semantic_status};"
+                f"blocking_codes={','.join(semantic_codes[:8])}"
+            ),
+        }
+    return {"status": "SUCCEEDED", "error_code": None, "error_detail": None}
+
+
 def _persist_success(conn: psycopg.Connection, request_id: str, job: dict[str, Any]) -> None:
     profile = _profile_result(job)
     if profile is None:
         raise RuntimeError("HETZNER_API_RESULT_MISSING")
     completion = profile.get("runtime_completion") or {}
-    transport_pass = completion.get("status") == "PASS"
-    status = "SUCCEEDED" if transport_pass else "BLOCKED"
-    codes = completion.get("blocking_codes") or []
-    error_code = (
-        None
-        if transport_pass
-        else (str(codes[0]) if codes else "HETZNER_RUNTIME_COMPLETION_FAILED")
-    )
+    outcome = _execution_queue_outcome(profile)
+    status = str(outcome["status"])
+    error_code = outcome["error_code"]
+    error_detail = outcome["error_detail"]
     receipt = completion.get("receipt") if isinstance(completion.get("receipt"), dict) else None
     attestation = None
     if receipt and isinstance(receipt.get("runtime_attestation"), dict):
@@ -474,7 +538,7 @@ def _persist_success(conn: psycopg.Connection, request_id: str, job: dict[str, A
                 Jsonb(receipt) if receipt is not None else None,
                 Jsonb(attestation) if attestation is not None else None,
                 error_code,
-                None,
+                error_detail,
                 request_id,
             ),
         )

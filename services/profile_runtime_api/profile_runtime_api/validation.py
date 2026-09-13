@@ -46,6 +46,9 @@ def _ui_focused_semantic_v3_errors(values: dict[str, str]) -> list[str]:
         "ui decision", "visual decision", "design decision", "interface decision",
         "ui treatment", "decisión ui", "decision ui", "decisión visual",
         "decision visual", "decisión de diseño", "decision de diseño", "tratamiento ui",
+        "non-canonical artifacts", "non canonical artifacts", "noncanonical artifacts",
+        "artifact set", "artifact-set", "input governance", "advisory read only",
+        "advisory_read_only",
     }
     if subject in generic_subjects:
         errors.append("UI_FOCUSED_DECISION_SUBJECT_NON_CONCRETE")
@@ -72,6 +75,8 @@ def _ui_focused_semantic_v3_errors(values: dict[str, str]) -> list[str]:
         "tabla", "pantalla", "botón", "boton", "campo", "selector", "diseño",
     )
     token_like = bool(re.search(r"[a-záéíóúüñ]+[-_][a-záéíóúüñ0-9-]+", surface))
+    if surface and surface == selected:
+        errors.append("UI_FOCUSED_BASE_SURFACE_DUPLICATES_TREATMENT")
     if surface and any(m in surface for m in structural_only) and not (
         any(m in surface for m in surface_signals) or token_like
     ):
@@ -89,6 +94,8 @@ def _ui_focused_semantic_v3_errors(values: dict[str, str]) -> list[str]:
     density = values.get("density_limits", "")
     if density and re.fullmatch(r"\d+(?:\.\d+)?", density):
         errors.append("UI_FOCUSED_DENSITY_LIMITS_NUMERIC_ONLY")
+    if density and re.fullmatch(r"\d+(?:\.\d+)?(?:%|px|rem|em)", density):
+        errors.append("UI_FOCUSED_DENSITY_LIMITS_UNIT_ONLY")
     if density in {
         "subtle decoration", "decoration", "generic decoration", "decoración sutil",
         "decoracion sutil", "decoración", "decoracion",
@@ -104,9 +111,9 @@ def _ui_focused_semantic_v3_errors(values: dict[str, str]) -> list[str]:
 
     weight = values.get("visual_weight", "")
     if weight in {
-        "primary", "secondary", "tertiary", "medium", "light", "dark", "standard",
-        "default", "subtle", "primario", "secundario", "terciario", "medio", "ligero",
-        "oscuro", "sutil",
+        "primary", "secondary", "tertiary", "high", "low", "medium", "light", "dark",
+        "standard", "default", "subtle", "primario", "secundario", "terciario", "alto",
+        "bajo", "medio", "ligero", "oscuro", "sutil",
     }:
         errors.append("UI_FOCUSED_VISUAL_WEIGHT_NON_CONCRETE")
 
@@ -130,7 +137,9 @@ def _ui_focused_semantic_v3_errors(values: dict[str, str]) -> list[str]:
     weak_implementation = {
         "json object", "objeto json", "json", "object", "objeto", "string", "text",
         "texto", "markdown", "yaml", "xml", "css", "svg", "component", "componente",
-        "css styling", "css style", "estilo css",
+        "css styling", "css style", "estilo css", "artifact", "artifact set",
+        "non-canonical artifact", "non canonical artifact", "non_canonical_artifact",
+        "advisory read only", "advisory_read_only",
     }
     if implementation in weak_implementation:
         errors.append("UI_FOCUSED_IMPLEMENTATION_FORMAT_NON_CONCRETE_V3")
@@ -321,8 +330,8 @@ class OutputGates:
 
                 generic_only = {
                     "small", "medium", "large", "thin", "thick", "light", "dark",
-                    "above", "below", "left", "right", "center", "standard", "default",
-                    "normal", "css", "svg", "component", "visual", "ui",
+                    "high", "low", "above", "below", "left", "right", "center",
+                    "standard", "default", "normal", "css", "svg", "component", "visual", "ui",
                 }
                 specificity_fields = (
                     "size_or_coverage",
