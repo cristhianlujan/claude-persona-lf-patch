@@ -1,0 +1,30 @@
+{
+  "authority_resolution_count": 0,
+  "card_resolution": null,
+  "case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT",
+  "completion_tokens": 27,
+  "contract_status": "PASS",
+  "depth_pass": true,
+  "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "full_governed_pipeline_observed": false,
+  "generation_ms": 1931.135,
+  "independent_review": {
+    "blocking_codes": [
+      "INDEPENDENT_CHAT_CONTEXT_REQUIRED"
+    ],
+    "reason": "Producer context cannot issue its own independent semantic receipt.",
+    "verdict": "PENDING_INDEPENDENT_CHAT_CONTEXT"
+  },
+  "materialized_output_sha256": "4ded363a85f7edc890c62e3373aba1353d3d9012cebbe83dd3c94c4e9d5b39a5",
+  "model_calls": 2,
+  "pass": false,
+  "prompt_ms": 6148.698,
+  "prompt_tokens": 1579,
+  "quality_pass": true,
+  "review_token_proxy": 917.2,
+  "review_wall_ms": 0.0,
+  "runtime_status": "PASS",
+  "runtime_wall_ms": 8112.443,
+  "semantic_status": "PASS",
+  "typed_context_present": false
+}

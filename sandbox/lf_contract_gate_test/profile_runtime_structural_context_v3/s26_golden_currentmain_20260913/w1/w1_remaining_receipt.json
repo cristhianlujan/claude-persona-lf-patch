@@ -1,0 +1,243 @@
+{
+  "case_count": 6,
+  "claim_ceiling": "REMAINING_W1_DETERMINISTIC_CASES_ONLY_NOT_W2_NOT_W3_NOT_GATE_G_NOT_GOLDEN_NOT_PRODUCTION",
+  "explicit_non_actions": [
+    "NO_GATE_G_EXECUTION",
+    "NO_GOLDEN_PROMOTION",
+    "NO_PRODUCTION",
+    "NO_SUPABASE_WRITE",
+    "NO_MODEL_CALL",
+    "NO_PAID_FALLBACK",
+    "NO_MAIN_MERGE"
+  ],
+  "fail_count": 0,
+  "failed_cases": [],
+  "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "pass_count": 6,
+  "receipts": [
+    {
+      "case_id": "S26V3-F01-O5-HOLDOUT",
+      "context_or_token_proxy": 991,
+      "dimensions_measured": [
+        "functionality",
+        "quality",
+        "depth",
+        "performance",
+        "evidence"
+      ],
+      "evidence_refs": [
+        "runtime_authority_resolver_v1.py",
+        ".s26_matrix_w1_remaining_v2/unseen_route_authority.json"
+      ],
+      "executor": "DETERMINISTIC_CASE_HARNESS",
+      "expected": "Correct route/provenance decision without memorized branch/path assumptions; unknown ownership remains fail-closed.",
+      "failure_mode": "UNSEEN_ROUTING_PROVENANCE_SURFACE",
+      "family": "F01_ROUTING_PROVENANCE",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": true,
+      "latency_ms": 0.262,
+      "model_calls": 0,
+      "objective_id": "F01-O5",
+      "observed": {
+        "card_mode": "NO_CARD_GOVERNED",
+        "provider_digest_bound": "cd0655d8780cffed0d345a9922be1054230641426be8b188d1486f14c66808e9",
+        "unknown_ownership_expected_code": "RUNTIME_AUTHORITY_MISSING",
+        "unknown_ownership_fail_closed": true,
+        "unknown_ownership_observed_code": "RUNTIME_AUTHORITY_MISSING",
+        "unseen_surface_preserved": "S26_UNSEEN_ROUTING_SURFACE_947",
+        "unseen_task_preserved": "UNSEEN_ROUTE_TASK_947"
+      },
+      "oracle": "DETERMINISTIC_ROUTE_AND_PROVENANCE_ORACLE",
+      "pass": true,
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "ROUTING_PROVENANCE",
+      "unseen_holdout": true
+    },
+    {
+      "case_id": "S26V3-F02-O3-STALE-REBIND",
+      "dimensions_measured": [
+        "functionality",
+        "depth",
+        "evidence"
+      ],
+      "evidence_refs": [
+        "runtime_authority_resolver_v1.py",
+        ".s26_matrix_w1_remaining_v2/stale_rebind_authority.json"
+      ],
+      "executor": "DETERMINISTIC_CASE_HARNESS",
+      "expected": "Stale bound revision is rejected until fresh reread and explicit rebind produce current authority.",
+      "failure_mode": "STALE_BOUND_SOURCE",
+      "family": "F02_SOURCE_FIRST_PREBIND",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": true,
+      "objective_id": "F02-O3",
+      "observed": {
+        "explicit_rebind_to_fresh_digest": true,
+        "fresh_provider_sha256": "ce8c68f6e9da09b3dc3171e9d56e214aa3fe4044ffd7fde632a8acea8a259fa7",
+        "initial_provider_sha256": "8d96c3951355b54ccefab913d2f052b4faaad975194a35f96808b2ee1677e44f",
+        "stale_blocked_before_execution": true,
+        "stale_expected_code": "RUNTIME_CONTEXT_PROVENANCE_SHA_MISMATCH",
+        "stale_observed_code": "RUNTIME_CONTEXT_PROVENANCE_SHA_MISMATCH"
+      },
+      "oracle": "DETERMINISTIC_SOURCE_CURRENTNESS_ORACLE",
+      "pass": true,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "SOURCE_FIRST_CURRENTNESS_AND_PREBIND",
+      "unseen_holdout": false
+    },
+    {
+      "case_id": "S26V3-F02-O4-SPOOFED-CURRENTNESS-HOLDOUT",
+      "dimensions_measured": [
+        "functionality",
+        "quality",
+        "depth",
+        "evidence"
+      ],
+      "evidence_refs": [
+        "runtime_authority_resolver_v1.py",
+        ".s26_matrix_w1_remaining_v2/stale_rebind_authority.json"
+      ],
+      "executor": "DETERMINISTIC_CASE_HARNESS",
+      "expected": "Caller-declared currentness is ignored/rejected; provider/server-derived exact currentness remains authority.",
+      "failure_mode": "CALLER_DECLARED_CURRENTNESS_SPOOF",
+      "family": "F02_SOURCE_FIRST_PREBIND",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": true,
+      "objective_id": "F02-O4",
+      "observed": {
+        "caller_claim_CURRENT_with_stale_digest_blocked": true,
+        "caller_claim_STALE_with_exact_provider_digest_succeeds": true,
+        "caller_currentness_is_not_authority": true,
+        "expected_code": "RUNTIME_CONTEXT_PROVENANCE_SHA_MISMATCH",
+        "observed_code": "RUNTIME_CONTEXT_PROVENANCE_SHA_MISMATCH",
+        "provider_derived_sha256": "ce8c68f6e9da09b3dc3171e9d56e214aa3fe4044ffd7fde632a8acea8a259fa7"
+      },
+      "oracle": "DETERMINISTIC_SOURCE_CURRENTNESS_ORACLE",
+      "pass": true,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "SOURCE_FIRST_CURRENTNESS_AND_PREBIND",
+      "unseen_holdout": true
+    },
+    {
+      "case_id": "S26V3-F02-O5-MISSING-SOURCE",
+      "dimensions_measured": [
+        "functionality",
+        "depth",
+        "evidence"
+      ],
+      "evidence_refs": [
+        "runtime_authority_resolver_v1.py"
+      ],
+      "executor": "DETERMINISTIC_CASE_HARNESS",
+      "expected": "Execution blocks without synthesizing authority, schema, Card or fallback source.",
+      "failure_mode": "CANONICAL_SOURCE_MISSING_OR_INACCESSIBLE",
+      "family": "F02_SOURCE_FIRST_PREBIND",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": true,
+      "objective_id": "F02-O5",
+      "observed": {
+        "execution_blocked": true,
+        "expected_code": "RUNTIME_CONTEXT_REF_NOT_FOUND",
+        "fallback_source_used": false,
+        "observed_code": "RUNTIME_CONTEXT_REF_NOT_FOUND",
+        "schema_invented": false,
+        "synthetic_authority_created": false
+      },
+      "oracle": "DETERMINISTIC_SOURCE_CURRENTNESS_ORACLE",
+      "pass": true,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "SOURCE_FIRST_CURRENTNESS_AND_PREBIND",
+      "unseen_holdout": false
+    },
+    {
+      "case_id": "S26V3-F06-O2-FINAL-PERF-REBIND",
+      "context_or_token_proxy": 33657,
+      "dimensions_measured": [
+        "performance"
+      ],
+      "evidence_refs": [
+        "48916fd36bcaff8eadd60944848e81adbea55c54:sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_h_output.json",
+        "3b39657fbf14f29c7839ecb26d715ed5c6fad59e:sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/expected_requirements.json",
+        "3b39657fbf14f29c7839ecb26d715ed5c6fad59e:sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/manual_profile_output.json"
+      ],
+      "executor": "PERFORMANCE_REPLAY_BINDER",
+      "expected": "Rerun the existing search/header omission mutation on the final candidate and bind deterministic reject/material-validation timing without changing its semantic oracle.",
+      "failure_mode": "NO_NEW_SEMANTIC_FAILURE_MODE",
+      "family": "F06_UI_MATERIALIZATION",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": false,
+      "latency_ms": 0.023,
+      "model_calls": 0,
+      "objective_id": "F06-O2",
+      "observed": {
+        "base_valid": true,
+        "frozen_negative_control": "missing_search=BLOCKS",
+        "frozen_oracle_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+        "missing_sections": [
+          "header"
+        ],
+        "mutation_rejected": true,
+        "semantic_oracle_changed": false
+      },
+      "oracle": "MATERIALIZATION_CONTRACT_ORACLE",
+      "pass": true,
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "UI_MATERIALIZATION_AND_MATERIAL_VALIDATION",
+      "unseen_holdout": false
+    },
+    {
+      "case_id": "S26V3-F06-O3-FINAL-PERF-REBIND",
+      "context_or_token_proxy": 50760,
+      "dimensions_measured": [
+        "performance"
+      ],
+      "evidence_refs": [
+        "48916fd36bcaff8eadd60944848e81adbea55c54:sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_h_output.json",
+        "3b39657fbf14f29c7839ecb26d715ed5c6fad59e:sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/expected_requirements.json",
+        "3b39657fbf14f29c7839ecb26d715ed5c6fad59e:sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/manual_profile_output.json"
+      ],
+      "executor": "PERFORMANCE_REPLAY_BINDER",
+      "expected": "Rerun the existing price/design-intent omission mutation on the final candidate and bind deterministic reject/material-validation timing without changing its semantic oracle.",
+      "failure_mode": "NO_NEW_SEMANTIC_FAILURE_MODE",
+      "family": "F06_UI_MATERIALIZATION",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": false,
+      "latency_ms": 0.031,
+      "model_calls": 0,
+      "objective_id": "F06-O3",
+      "observed": {
+        "base_valid": true,
+        "frozen_negative_controls": [
+          "missing_price=BLOCKS",
+          "missing_professional_intent=BLOCKS"
+        ],
+        "frozen_oracle_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+        "missing_design_intents": [
+          "professional"
+        ],
+        "missing_price_fields": [
+          "price"
+        ],
+        "missing_price_rejected": true,
+        "missing_professional_rejected": true,
+        "semantic_oracle_changed": false
+      },
+      "oracle": "MATERIALIZATION_CONTRACT_ORACLE",
+      "pass": true,
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "UI_MATERIALIZATION_AND_MATERIAL_VALIDATION",
+      "unseen_holdout": false
+    }
+  ],
+  "schema": "S26_FAMILY_OBJECTIVE_MATRIX_V3_W1_REMAINING_RECEIPT_V2",
+  "status": "W1_REMAINING_PASS"
+}

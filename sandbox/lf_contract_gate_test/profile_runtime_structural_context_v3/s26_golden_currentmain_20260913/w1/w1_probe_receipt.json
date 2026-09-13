@@ -1,0 +1,511 @@
+{
+  "claim_ceiling": "W1_DETERMINISTIC_EVIDENCE_ONLY_NOT_W2_NOT_W3_NOT_GATE_G_NOT_GOLDEN_NOT_PRODUCTION",
+  "executed_count": 14,
+  "explicit_non_actions": [
+    "NO_GATE_G_EXECUTION",
+    "NO_GOLDEN_PROMOTION",
+    "NO_PRODUCTION",
+    "NO_SUPABASE_WRITE",
+    "NO_MODEL_CALL",
+    "NO_PAID_FALLBACK",
+    "NO_MAIN_MERGE"
+  ],
+  "fail_count": 0,
+  "failed_cases": [],
+  "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "pass_count": 14,
+  "pending_cases": [
+    "S26V3-F01-O5-HOLDOUT",
+    "S26V3-F02-O3-STALE-REBIND",
+    "S26V3-F02-O4-SPOOFED-CURRENTNESS-HOLDOUT",
+    "S26V3-F02-O5-MISSING-SOURCE",
+    "S26V3-F05-O5-COMPATIBLE-EVOLUTION-HOLDOUT",
+    "S26V3-F06-O2-FINAL-PERF-REBIND",
+    "S26V3-F06-O3-FINAL-PERF-REBIND",
+    "S26V3-F10-O3-VERSION-DELTA-REPLAY"
+  ],
+  "pending_count": 8,
+  "receipts": [
+    {
+      "case_id": "S26V3-F03-O2-POSITIVE-CARD",
+      "context_or_token_proxy": 702,
+      "dimensions_measured": [
+        "functionality",
+        "quality",
+        "depth",
+        "performance",
+        "evidence"
+      ],
+      "evidence_refs": [
+        "runtime_authority_resolver_v1.py",
+        "cards/s26_matrix_holdout_card.json"
+      ],
+      "executor": "DETERMINISTIC_CASE_HARNESS",
+      "expected": "Exactly the applicable Card is selected, provenance-bound and consumed without broadening its authority.",
+      "failure_mode": "APPLICABLE_CARD_PRESENT",
+      "family": "F03_AUTHORITY_CARD",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": true,
+      "latency_ms": 0.278,
+      "model_calls": 0,
+      "objective_id": "F03-O2",
+      "observed": {
+        "card_id": "S26_MATRIX_APPLICABLE_CARD",
+        "card_sha256": "e4762406f11dfe0a99783708df1774d7a99f4a18a7667e79b17c24f242c91e2c",
+        "mode": "CARD_BOUND",
+        "schema_invention_allowed": false,
+        "status": "RESOLVED"
+      },
+      "oracle": "DETERMINISTIC_AUTHORITY_CARD_ORACLE",
+      "pass": true,
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "AUTHORITY_AND_CARD_SELECTION",
+      "unseen_holdout": false
+    },
+    {
+      "case_id": "S26V3-F03-O4-CROSSRUN-AUTHORITY",
+      "dimensions_measured": [
+        "functionality",
+        "depth",
+        "evidence"
+      ],
+      "evidence_refs": [
+        "runtime_authority_resolver_v1.py",
+        ".s26_matrix_holdout/authority.txt"
+      ],
+      "executor": "DETERMINISTIC_CASE_HARNESS",
+      "expected": "Cross-run/candidate-derived material cannot become authority and blocks if required canonical authority is absent.",
+      "failure_mode": "CROSS_RUN_OR_CANDIDATE_DERIVED_AUTHORITY",
+      "family": "F03_AUTHORITY_CARD",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": true,
+      "objective_id": "F03-O4",
+      "observed": {
+        "expected_code": "RUNTIME_CROSS_RUN_REFERENCE_UNDECLARED",
+        "observed_code": "RUNTIME_CROSS_RUN_REFERENCE_UNDECLARED",
+        "typed_context_materialized": false
+      },
+      "oracle": "DETERMINISTIC_AUTHORITY_CARD_ORACLE",
+      "pass": true,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "AUTHORITY_AND_CARD_SELECTION",
+      "unseen_holdout": false
+    },
+    {
+      "case_id": "S26V3-F03-O5-UNKNOWN-CARD-HOLDOUT",
+      "context_or_token_proxy": 673,
+      "dimensions_measured": [
+        "functionality",
+        "quality",
+        "depth",
+        "performance",
+        "evidence"
+      ],
+      "evidence_refs": [
+        "runtime_authority_resolver_v1.py"
+      ],
+      "executor": "DETERMINISTIC_CASE_HARNESS",
+      "expected": "Unknown Card shape or Card/authority conflict cannot be autocanonicalized; fail closed or return governed no-card outcome as contract dictates.",
+      "failure_mode": "UNKNOWN_CARD_OR_CARD_AUTHORITY_CONFLICT",
+      "family": "F03_AUTHORITY_CARD",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": true,
+      "latency_ms": 0.193,
+      "model_calls": 0,
+      "objective_id": "F03-O5",
+      "observed": {
+        "autocanonicalized": false,
+        "expected_code": "RUNTIME_CONTEXT_REF_NOT_FOUND",
+        "observed_code": "RUNTIME_CONTEXT_REF_NOT_FOUND"
+      },
+      "oracle": "DETERMINISTIC_AUTHORITY_CARD_ORACLE",
+      "pass": true,
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "AUTHORITY_AND_CARD_SELECTION",
+      "unseen_holdout": true
+    },
+    {
+      "case_id": "S26V3-F04-O1-FINAL-PERF-REBIND",
+      "context_or_token_proxy": 2820,
+      "dimensions_measured": [
+        "performance"
+      ],
+      "evidence_refs": [
+        "s26_hp001/gate_e_context.py",
+        "s26_hp001/gate_e_output.json"
+      ],
+      "executor": "PERFORMANCE_REPLAY_BINDER",
+      "expected": "Existing correct typed-context case is rerun on the final candidate and its context-build/runtime timing is bound without changing semantics.",
+      "failure_mode": "NO_NEW_SEMANTIC_FAILURE_MODE",
+      "family": "F04_TYPED_CONTEXT",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": false,
+      "latency_ms": 4.162,
+      "model_calls": 0,
+      "objective_id": "F04-O1",
+      "observed": {
+        "adapter_binding_count": 0,
+        "schema": "LF_RUNTIME_TYPED_CONTEXT_V1",
+        "typed_context_sha256": "513769b40125a61884a1061ff594421fbf0de43525e45a4476e32ee533e41600"
+      },
+      "oracle": "DETERMINISTIC_TYPED_CONTEXT_ORACLE",
+      "pass": true,
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "TYPED_CONTEXT_COMPILER_AND_ADAPTER_RESOLUTION",
+      "unseen_holdout": false
+    },
+    {
+      "case_id": "S26V3-F04-O2-MISSING-TYPED-FIELD",
+      "context_or_token_proxy": 346,
+      "dimensions_measured": [
+        "functionality",
+        "quality",
+        "depth",
+        "evidence",
+        "performance"
+      ],
+      "evidence_refs": [
+        "runtime_authority_resolver_v1.py"
+      ],
+      "executor": "DETERMINISTIC_CASE_HARNESS",
+      "expected": "Typed-context compiler rejects omission of a material required field before model/runtime execution.",
+      "failure_mode": "MISSING_MATERIAL_TYPED_FIELD",
+      "family": "F04_TYPED_CONTEXT",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": true,
+      "latency_ms": 0.01,
+      "model_calls": 0,
+      "objective_id": "F04-O2",
+      "observed": {
+        "expected_code": "RUNTIME_CONTEXT_FIELD_MISSING",
+        "observed_code": "RUNTIME_CONTEXT_FIELD_MISSING",
+        "runtime_execution_performed": false
+      },
+      "oracle": "DETERMINISTIC_TYPED_CONTEXT_ORACLE",
+      "pass": true,
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "TYPED_CONTEXT_COMPILER_AND_ADAPTER_RESOLUTION",
+      "unseen_holdout": false
+    },
+    {
+      "case_id": "S26V3-F04-O3-INCOMPATIBLE-TYPED-VERSION",
+      "context_or_token_proxy": 2833,
+      "dimensions_measured": [
+        "functionality",
+        "quality",
+        "depth",
+        "evidence",
+        "performance"
+      ],
+      "evidence_refs": [
+        "s26_hp001/gate_e_context.py",
+        "s26_hp001/gate_e_output.json"
+      ],
+      "executor": "DETERMINISTIC_CASE_HARNESS",
+      "expected": "Incompatible type/version fails closed; no implicit coercion or schema invention.",
+      "failure_mode": "INCOMPATIBLE_TYPED_CONTEXT_TYPE_OR_VERSION",
+      "family": "F04_TYPED_CONTEXT",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": true,
+      "latency_ms": 1.522,
+      "model_calls": 0,
+      "objective_id": "F04-O3",
+      "observed": {
+        "expected_code": "GATE_E_TYPED_CONTEXT_NOT_RESOLVER_EXACT",
+        "implicit_coercion": false,
+        "observed_code": "GATE_E_TYPED_CONTEXT_NOT_RESOLVER_EXACT"
+      },
+      "oracle": "DETERMINISTIC_TYPED_CONTEXT_ORACLE",
+      "pass": true,
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "TYPED_CONTEXT_COMPILER_AND_ADAPTER_RESOLUTION",
+      "unseen_holdout": false
+    },
+    {
+      "case_id": "S26V3-F04-O4-TYPED-CONTAMINATION",
+      "context_or_token_proxy": 667,
+      "dimensions_measured": [
+        "functionality",
+        "depth",
+        "evidence",
+        "performance"
+      ],
+      "evidence_refs": [
+        "runtime_authority_resolver_v1.py"
+      ],
+      "executor": "DETERMINISTIC_CASE_HARNESS",
+      "expected": "Prohibited metadata cannot enter executable typed context even if structurally well-formed.",
+      "failure_mode": "PROHIBITED_OR_CROSSRUN_METADATA_IN_CONTEXT",
+      "family": "F04_TYPED_CONTEXT",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": true,
+      "latency_ms": 0.019,
+      "model_calls": 0,
+      "objective_id": "F04-O4",
+      "observed": {
+        "expected_code": "RUNTIME_CROSS_RUN_REFERENCE_UNDECLARED",
+        "observed_code": "RUNTIME_CROSS_RUN_REFERENCE_UNDECLARED",
+        "prohibited_metadata_entered_typed_context": false
+      },
+      "oracle": "DETERMINISTIC_TYPED_CONTEXT_ORACLE",
+      "pass": true,
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "TYPED_CONTEXT_COMPILER_AND_ADAPTER_RESOLUTION",
+      "unseen_holdout": false
+    },
+    {
+      "case_id": "S26V3-F04-O5-ADAPTER-HOLDOUT",
+      "context_or_token_proxy": 716,
+      "dimensions_measured": [
+        "functionality",
+        "quality",
+        "depth",
+        "performance",
+        "evidence"
+      ],
+      "evidence_refs": [
+        "runtime_authority_resolver_v1.py",
+        "adapters/s26_matrix_holdout_adapter.json"
+      ],
+      "executor": "DETERMINISTIC_CASE_HARNESS",
+      "expected": "Minimum-sufficient context resolves the required adapter exactly, records provenance and avoids overfetch/invention.",
+      "failure_mode": "UNSEEN_ADAPTER_REQUIRED_CONTEXT",
+      "family": "F04_TYPED_CONTEXT",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": true,
+      "latency_ms": 0.236,
+      "model_calls": 0,
+      "objective_id": "F04-O5",
+      "observed": {
+        "adapter": {
+          "adapter_code": "S26_MATRIX_ADAPTER",
+          "binding_ref": "S26_MATRIX_BINDING_V1",
+          "current_path": "adapters/s26_matrix_holdout_adapter.json",
+          "sha256": "c55760cc8642f7d3574d39ec410adc5dc58367b3c2b3bf01c1da003a0903cccb"
+        },
+        "adapter_count": 1,
+        "overfetch_detected": false
+      },
+      "oracle": "DETERMINISTIC_TYPED_CONTEXT_ORACLE",
+      "pass": true,
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "TYPED_CONTEXT_COMPILER_AND_ADAPTER_RESOLUTION",
+      "unseen_holdout": true
+    },
+    {
+      "case_id": "S26V3-F05-O3-MALFORMED-ENVELOPE",
+      "dimensions_measured": [
+        "functionality",
+        "depth",
+        "evidence"
+      ],
+      "evidence_refs": [
+        "validate_composer_payload_boundary.py",
+        "s26_native_golden_005/raw_output.json"
+      ],
+      "executor": "DETERMINISTIC_CASE_HARNESS",
+      "expected": "Canonical schema/Composer boundary rejects malformed envelope deterministically.",
+      "failure_mode": "MALFORMED_OUTPUT_OR_TRANSPORT_ENVELOPE",
+      "family": "F05_SCHEMA_TRANSPORT",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": true,
+      "objective_id": "F05-O3",
+      "observed": {
+        "accepted": false,
+        "error_codes": [
+          "GOVERNANCE_ENVELOPE_MISSING"
+        ]
+      },
+      "oracle": "DETERMINISTIC_SCHEMA_TRANSPORT_ORACLE",
+      "pass": true,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "SCHEMA_AND_TRANSPORT_BOUNDARY",
+      "unseen_holdout": false
+    },
+    {
+      "case_id": "S26V3-F05-O4-INCOMPATIBLE-SCHEMA-VERSION",
+      "dimensions_measured": [
+        "functionality",
+        "quality",
+        "depth",
+        "evidence"
+      ],
+      "evidence_refs": [
+        "validate_composer_payload_boundary.py",
+        "s26_native_golden_005/raw_output.json"
+      ],
+      "executor": "DETERMINISTIC_CASE_HARNESS",
+      "expected": "Incompatible schema version is rejected before Composer/materialization; no silent downgrade or coercion.",
+      "failure_mode": "INCOMPATIBLE_SCHEMA_VERSION",
+      "family": "F05_SCHEMA_TRANSPORT",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": true,
+      "objective_id": "F05-O4",
+      "observed": {
+        "error_codes": [
+          "COMPOSER_BOUNDARY_VERSION_INVALID"
+        ],
+        "silent_downgrade": false
+      },
+      "oracle": "DETERMINISTIC_SCHEMA_TRANSPORT_ORACLE",
+      "pass": true,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "SCHEMA_AND_TRANSPORT_BOUNDARY",
+      "unseen_holdout": false
+    },
+    {
+      "case_id": "S26V3-F07-O1-FINAL-PERF-REBIND",
+      "context_or_token_proxy": 23007,
+      "dimensions_measured": [
+        "performance"
+      ],
+      "evidence_refs": [
+        "validate_composer_payload_boundary.py",
+        "s26_native_golden_005/raw_output.json"
+      ],
+      "executor": "PERFORMANCE_REPLAY_BINDER",
+      "expected": "Existing valid Composer payload path is timed on the final candidate and bound to the final budget.",
+      "failure_mode": "NO_NEW_SEMANTIC_FAILURE_MODE",
+      "family": "F07_COMPOSER_SECURITY",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": false,
+      "latency_ms": 0.62,
+      "model_calls": 0,
+      "objective_id": "F07-O1",
+      "observed": {
+        "error_codes": [],
+        "valid": true
+      },
+      "oracle": "DETERMINISTIC_COMPOSER_SECURITY_ORACLE",
+      "pass": true,
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "COMPOSER_ALLOWLIST_AND_SECURITY",
+      "unseen_holdout": false
+    },
+    {
+      "case_id": "S26V3-F07-O4-INJECTION",
+      "dimensions_measured": [
+        "functionality",
+        "depth",
+        "evidence"
+      ],
+      "evidence_refs": [
+        "validate_composer_payload_boundary.py"
+      ],
+      "executor": "DETERMINISTIC_CASE_HARNESS",
+      "expected": "Injection/internal-field contamination cannot bypass allowlist/mode constraints or leak into Composer output.",
+      "failure_mode": "INJECTION_OR_PROHIBITED_INTERNAL_FIELD",
+      "family": "F07_COMPOSER_SECURITY",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": true,
+      "objective_id": "F07-O4",
+      "observed": {
+        "error_codes": [
+          "COMPOSER_INTERNAL_KEY_LEAK"
+        ],
+        "injection_passed": false
+      },
+      "oracle": "DETERMINISTIC_COMPOSER_SECURITY_ORACLE",
+      "pass": true,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "COMPOSER_ALLOWLIST_AND_SECURITY",
+      "unseen_holdout": false
+    },
+    {
+      "case_id": "S26V3-F07-O5-ALLOWED-STRUCTURE-HOLDOUT",
+      "context_or_token_proxy": 47188,
+      "dimensions_measured": [
+        "functionality",
+        "quality",
+        "depth",
+        "performance",
+        "evidence"
+      ],
+      "evidence_refs": [
+        "validate_composer_payload_boundary.py"
+      ],
+      "executor": "DETERMINISTIC_CASE_HARNESS",
+      "expected": "A new but explicitly allowed structure passes without implicit allowlist expansion; neighboring forbidden structure still fails.",
+      "failure_mode": "UNSEEN_ALLOWED_COMPOSER_STRUCTURE",
+      "family": "F07_COMPOSER_SECURITY",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": true,
+      "latency_ms": 1.141,
+      "model_calls": 0,
+      "objective_id": "F07-O5",
+      "observed": {
+        "allowed_errors": [],
+        "allowed_valid": true,
+        "allowlist_expanded": false,
+        "neighbor_error_codes": [
+          "COMPOSER_COMPONENT_KEY_NOT_ALLOWED",
+          "COMPOSER_INTERNAL_KEY_LEAK"
+        ]
+      },
+      "oracle": "DETERMINISTIC_COMPOSER_SECURITY_ORACLE",
+      "pass": true,
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "COMPOSER_ALLOWLIST_AND_SECURITY",
+      "unseen_holdout": true
+    },
+    {
+      "case_id": "S26V3-F10-O2-FINAL-REPLAY-PERF",
+      "context_or_token_proxy": 14231,
+      "dimensions_measured": [
+        "performance"
+      ],
+      "evidence_refs": [
+        "composer_payload_boundary_20260909/run_cases.py",
+        "validate_composer_payload_boundary.py",
+        "s26_native_golden_005/raw_output.json"
+      ],
+      "executor": "PERFORMANCE_REPLAY_BINDER",
+      "expected": "Deterministic replay on final candidate reproduces validators/materialization and records replay cost without being misclassified as independent review.",
+      "failure_mode": "NO_NEW_SEMANTIC_FAILURE_MODE",
+      "family": "F10_E2E_REPLAY_LIVE_SEMANTIC",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": false,
+      "latency_ms": 14.834,
+      "model_calls": 0,
+      "objective_id": "F10-O2",
+      "observed": {
+        "error": null,
+        "independent_review": false,
+        "stdout": "UI_COMPOSER_BOUNDARY_TESTS_PASS 13/13"
+      },
+      "oracle": "E2E_GOVERNED_PIPELINE_ORACLE",
+      "pass": true,
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "FULL_E2E_REPLAY_AND_LIVE_SEMANTIC",
+      "unseen_holdout": false
+    }
+  ],
+  "schema": "S26_FAMILY_OBJECTIVE_MATRIX_V3_W1_PROBE_RECEIPT_V1",
+  "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+  "status": "PARTIAL_W1_PROBE",
+  "w1_recipe_count": 22
+}

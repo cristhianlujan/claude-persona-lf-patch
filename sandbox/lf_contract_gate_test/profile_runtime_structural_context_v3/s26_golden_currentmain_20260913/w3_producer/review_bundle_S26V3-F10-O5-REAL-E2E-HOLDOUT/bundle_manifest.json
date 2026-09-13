@@ -1,0 +1,29 @@
+{
+  "artifact_canonical_sha256": "4ded363a85f7edc890c62e3373aba1353d3d9012cebbe83dd3c94c4e9d5b39a5",
+  "file_count": 4,
+  "files": [
+    {
+      "bytes": 21418,
+      "path": "artifact_payload.json",
+      "sha256": "4cbee7f003080fa79df37fb2cd8a5d949aceb50a7e9bac5c4cf0450fcc0c9cbd"
+    },
+    {
+      "bytes": 904,
+      "path": "producer_validation_receipt.json",
+      "sha256": "1867f3d349809c8028001ff79624c1e1b0cf4ba5144e4af7e4c71acdc191b45e"
+    },
+    {
+      "bytes": 4193,
+      "path": "review_case.json",
+      "sha256": "fe0e38bd44a728d4c1a7ae507292e1892f1b8d366a5c4bba33fff2173cf2e9d4"
+    },
+    {
+      "bytes": 585,
+      "path": "review_scope_policy.json",
+      "sha256": "da9b1a99b445a36df2b15bb6660264354fd59232b4c764a4322ed346d3cee082"
+    }
+  ],
+  "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-3B39657F",
+  "schema": "S26_W3_INDEPENDENT_BUNDLE_MANIFEST_V1"
+}

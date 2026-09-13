@@ -1,0 +1,628 @@
+{
+  "case_count": 7,
+  "claim_ceiling": "W2_EXECUTED_NOT_SYSTEM_CERTIFIED_NOT_GATE_G_NOT_GOLDEN",
+  "fail_count": 0,
+  "failed_cases": [],
+  "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "model_calls_total": 6,
+  "model_downloads": 0,
+  "paid_fallbacks": 0,
+  "pass_count": 7,
+  "production_effect": false,
+  "receipts": [
+    {
+      "case_id": "S26V3-F06-O1-FINAL-PERF-REBIND",
+      "claim_ceiling": "W2_OBJECTIVE_EVIDENCE_ONLY_NOT_CERTIFICATION_NOT_GATE_G_NOT_GOLDEN",
+      "context_or_token_proxy": {
+        "completion_tokens": 31,
+        "materialized_chars": 14527,
+        "prompt_tokens": 1575
+      },
+      "dimensions_measured": [
+        "performance"
+      ],
+      "evidence_refs": [
+        "local:/opt/profile-runtime-benchmark/evidence/s26-matrix-v3-w2-currentmain-3b39657f-20260913/S26V3-F06-O1-FINAL-PERF-REBIND.raw.json"
+      ],
+      "executor": "PERFORMANCE_REPLAY_BINDER",
+      "expected": "Existing valid materialization is rerun on the final candidate and UI materialization latency/cost is bound.",
+      "failure_mode": "NO_NEW_SEMANTIC_FAILURE_MODE",
+      "family": "F06_UI_MATERIALIZATION",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W2_FINAL_MODEL_MATERIALIZATION",
+      "independent_case_credit": false,
+      "latency_ms": 10819.611,
+      "model_calls": 1,
+      "objective_id": "F06-O1",
+      "observed": {
+        "materialization_mode": "UI_PRODUCTION_DETERMINISTIC_PROJECTION_V1",
+        "output_sha256": "be15121bce0ee4c85717bcd9a1a768869afdfd4a83a2faca451153507922e430",
+        "profile_contract": "PASS",
+        "quality_depth": {
+          "depth": {
+            "component_count": 9,
+            "errors": [],
+            "hierarchy_depth_edges": 3,
+            "pass": true,
+            "responsive_modes_present": [
+              "desktop",
+              "mobile"
+            ],
+            "risk_control_count": 4,
+            "service_leaf_components_present": [
+              "service_cta",
+              "service_price",
+              "service_provider",
+              "service_title"
+            ],
+            "state_map_coverage_ratio": 1.0,
+            "variant_guard_coverage_ratio": 1.0
+          },
+          "quality": {
+            "errors": [],
+            "pass": true,
+            "requirement_checks": {
+              "category_navigation": true,
+              "design_intent": true,
+              "featured_services": true,
+              "header_search": true,
+              "implementation_ready": true,
+              "service_card_fields": true,
+              "service_cards": true,
+              "structured_handoff": true
+            },
+            "requirement_coverage_ratio": 1.0,
+            "self_reported_score_total_observed_not_authority": 20,
+            "self_score_used_as_authority": false,
+            "source_bound_checks": {
+              "categories_source_bound": true,
+              "collection_source_bound": true,
+              "cta_source_bound": true,
+              "featured_source_bound": true,
+              "price_source_bound": true,
+              "provider_source_bound": true,
+              "template_values_source_bound": true,
+              "title_source_bound": true
+            },
+            "source_bound_integrity_ratio": 1.0
+          }
+        },
+        "runtime_completion": "PASS",
+        "semantic_utility": "PASS"
+      },
+      "oracle": "MATERIALIZATION_CONTRACT_ORACLE",
+      "pass": true,
+      "performance": {
+        "cached_prompt_tokens": 1390,
+        "completion_tokens": 31,
+        "generation_ms": 2367.876,
+        "materialized_chars": 14527,
+        "model_calls": 1,
+        "profile_elapsed_ms": 10819.165,
+        "prompt_ms": 7453.341,
+        "prompt_tokens": 1575,
+        "raw_chars": 57,
+        "retries": 0,
+        "total_ms": 10819.194,
+        "total_tokens": 1606,
+        "wall_ms": 10819.611
+      },
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "UI_MATERIALIZATION_AND_MATERIAL_VALIDATION",
+      "unseen_holdout": false
+    },
+    {
+      "case_id": "S26V3-F06-O4-LAYOUT-CONTRADICTION",
+      "claim_ceiling": "W2_OBJECTIVE_EVIDENCE_ONLY_NOT_CERTIFICATION_NOT_GATE_G_NOT_GOLDEN",
+      "context_or_token_proxy": {
+        "completion_tokens": 27,
+        "materialized_chars": 14530,
+        "prompt_tokens": 1587
+      },
+      "dimensions_measured": [
+        "functionality",
+        "depth",
+        "evidence",
+        "performance"
+      ],
+      "evidence_refs": [
+        "local:/opt/profile-runtime-benchmark/evidence/s26-matrix-v3-w2-currentmain-3b39657f-20260913/S26V3-F06-O4-LAYOUT-CONTRADICTION.raw.json",
+        "local:/opt/profile-runtime-benchmark/evidence/s26-matrix-v3-w2-currentmain-3b39657f-20260913/S26V3-F06-O4-LAYOUT-CONTRADICTION.mutated.json"
+      ],
+      "executor": "MODEL_MATERIALIZATION_CASE_HARNESS",
+      "expected": "Material validator catches a semantically contradictory layout even when required strings/fields are present.",
+      "failure_mode": "CONTENT_LAYOUT_CONTRADICTION",
+      "family": "F06_UI_MATERIALIZATION",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W2_FINAL_MODEL_MATERIALIZATION",
+      "independent_case_credit": true,
+      "latency_ms": 8722.594,
+      "model_calls": 1,
+      "objective_id": "F06-O4",
+      "observed": {
+        "contradiction_injected": "TOP_LEVEL_FLOW_CONTAINS_NESTED_SERVICE_TITLE",
+        "material_validator_caught_contradiction": true,
+        "model_path_pass": true,
+        "required_components_still_present": true,
+        "strict_layout_precision": 0,
+        "strict_self_verdict": "BLOCKED",
+        "strict_total": 16
+      },
+      "oracle": "MATERIALIZATION_CONTRACT_ORACLE",
+      "pass": true,
+      "performance": {
+        "cached_prompt_tokens": 1390,
+        "completion_tokens": 27,
+        "generation_ms": 1901.241,
+        "materialized_chars": 14530,
+        "model_calls": 1,
+        "profile_elapsed_ms": 8722.5,
+        "prompt_ms": 6794.066,
+        "prompt_tokens": 1587,
+        "raw_chars": 57,
+        "retries": 0,
+        "total_ms": 8722.532,
+        "total_tokens": 1614,
+        "wall_ms": 8722.594
+      },
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "UI_MATERIALIZATION_AND_MATERIAL_VALIDATION",
+      "unseen_holdout": false
+    },
+    {
+      "case_id": "S26V3-F06-O5-DISTINCT-UI-HOLDOUT",
+      "claim_ceiling": "W2_OBJECTIVE_EVIDENCE_ONLY_NOT_CERTIFICATION_NOT_GATE_G_NOT_GOLDEN",
+      "context_or_token_proxy": {
+        "completion_tokens": 27,
+        "materialized_chars": 14539,
+        "prompt_tokens": 1583
+      },
+      "dimensions_measured": [
+        "functionality",
+        "quality",
+        "depth",
+        "performance",
+        "evidence"
+      ],
+      "evidence_refs": [
+        "local:/opt/profile-runtime-benchmark/evidence/s26-matrix-v3-w2-currentmain-3b39657f-20260913/S26V3-F06-O5-DISTINCT-UI-HOLDOUT.raw.json"
+      ],
+      "executor": "MODEL_MATERIALIZATION_CASE_HARNESS",
+      "expected": "A materially different UI composition satisfies the same semantic contract without copying HP001 layout.",
+      "failure_mode": "UNSEEN_UI_COMPOSITION_SAME_CONTRACT",
+      "family": "F06_UI_MATERIALIZATION",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W2_FINAL_MODEL_MATERIALIZATION",
+      "independent_case_credit": true,
+      "latency_ms": 8518.652,
+      "model_calls": 1,
+      "objective_id": "F06-O5",
+      "observed": {
+        "baseline_output_sha256": "be15121bce0ee4c85717bcd9a1a768869afdfd4a83a2faca451153507922e430",
+        "distinct_facet_count": 2,
+        "distinct_facets": {
+          "component_zones": false,
+          "density_rules": false,
+          "desktop_layout": true,
+          "mobile_layout": true,
+          "visual_hierarchy": false
+        },
+        "holdout_output_sha256": "15f4748007cab45f4d27aea480335c21200c1c68d4a473422e2832956c5ddcc3",
+        "quality_depth": {
+          "depth": {
+            "component_count": 9,
+            "errors": [],
+            "hierarchy_depth_edges": 3,
+            "pass": true,
+            "responsive_modes_present": [
+              "desktop",
+              "mobile"
+            ],
+            "risk_control_count": 4,
+            "service_leaf_components_present": [
+              "service_cta",
+              "service_price",
+              "service_provider",
+              "service_title"
+            ],
+            "state_map_coverage_ratio": 1.0,
+            "variant_guard_coverage_ratio": 1.0
+          },
+          "quality": {
+            "errors": [],
+            "pass": true,
+            "requirement_checks": {
+              "category_navigation": true,
+              "design_intent": true,
+              "featured_services": true,
+              "header_search": true,
+              "implementation_ready": true,
+              "service_card_fields": true,
+              "service_cards": true,
+              "structured_handoff": true
+            },
+            "requirement_coverage_ratio": 1.0,
+            "self_reported_score_total_observed_not_authority": 20,
+            "self_score_used_as_authority": false,
+            "source_bound_checks": {
+              "categories_source_bound": true,
+              "collection_source_bound": true,
+              "cta_source_bound": true,
+              "featured_source_bound": true,
+              "price_source_bound": true,
+              "provider_source_bound": true,
+              "template_values_source_bound": true,
+              "title_source_bound": true
+            },
+            "source_bound_integrity_ratio": 1.0
+          }
+        },
+        "runtime_path_pass": true,
+        "same_governed_acceptance_contract": true
+      },
+      "oracle": "MATERIALIZATION_CONTRACT_ORACLE",
+      "pass": true,
+      "performance": {
+        "cached_prompt_tokens": 1390,
+        "completion_tokens": 27,
+        "generation_ms": 1898.016,
+        "materialized_chars": 14539,
+        "model_calls": 1,
+        "profile_elapsed_ms": 8518.545,
+        "prompt_ms": 6586.744,
+        "prompt_tokens": 1583,
+        "raw_chars": 57,
+        "retries": 0,
+        "total_ms": 8518.591,
+        "total_tokens": 1610,
+        "wall_ms": 8518.652
+      },
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "UI_MATERIALIZATION_AND_MATERIAL_VALIDATION",
+      "unseen_holdout": true
+    },
+    {
+      "case_id": "S26V3-F08-O3-SHALLOW-ANSWER",
+      "claim_ceiling": "W2_OBJECTIVE_EVIDENCE_ONLY_NOT_CERTIFICATION_NOT_GATE_G_NOT_GOLDEN",
+      "context_or_token_proxy": {
+        "completion_tokens": 27,
+        "materialized_chars": 14524,
+        "prompt_tokens": 1590
+      },
+      "dimensions_measured": [
+        "functionality",
+        "depth",
+        "evidence",
+        "performance"
+      ],
+      "evidence_refs": [
+        "local:/opt/profile-runtime-benchmark/evidence/s26-matrix-v3-w2-currentmain-3b39657f-20260913/S26V3-F08-O3-SHALLOW-ANSWER.raw.json",
+        "local:/opt/profile-runtime-benchmark/evidence/s26-matrix-v3-w2-currentmain-3b39657f-20260913/S26V3-F08-O3-SHALLOW-ANSWER.mutated.json"
+      ],
+      "executor": "MODEL_MATERIALIZATION_CASE_HARNESS",
+      "expected": "Quality/depth gates reject an output that looks valid structurally but lacks material reasoning/coverage.",
+      "failure_mode": "SUPERFICIALLY_PLAUSIBLE_BUT_SHALLOW_OUTPUT",
+      "family": "F08_QUALITY_DEPTH",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W2_FINAL_MODEL_MATERIALIZATION",
+      "independent_case_credit": true,
+      "latency_ms": 8806.769,
+      "model_calls": 1,
+      "objective_id": "F08-O3",
+      "observed": {
+        "canonical_contract_status": "PASS",
+        "expected_rejection_code": "QDP_DEPTH_HIERARCHY_TOO_SHALLOW",
+        "model_path_pass": true,
+        "mutation": "FLATTENED_HIERARCHY_SCHEMA_VALID",
+        "qdp_errors": [
+          "QDP_DEPTH_HIERARCHY_TOO_SHALLOW"
+        ],
+        "quality_depth_gate_rejected": true,
+        "semantic_utility_status": "PASS"
+      },
+      "oracle": "INDEPENDENT_SEMANTIC_QUALITY_ORACLE",
+      "pass": true,
+      "performance": {
+        "cached_prompt_tokens": 1390,
+        "completion_tokens": 27,
+        "generation_ms": 1954.761,
+        "materialized_chars": 14524,
+        "model_calls": 1,
+        "profile_elapsed_ms": 8806.652,
+        "prompt_ms": 6824.714,
+        "prompt_tokens": 1590,
+        "raw_chars": 57,
+        "retries": 0,
+        "total_ms": 8806.687,
+        "total_tokens": 1617,
+        "wall_ms": 8806.769
+      },
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "QUALITY_AND_DEPTH_EVALUATION",
+      "unseen_holdout": false
+    },
+    {
+      "case_id": "S26V3-F08-O4-CONFLICT-AMBIGUITY",
+      "claim_ceiling": "W2_OBJECTIVE_EVIDENCE_ONLY_NOT_CERTIFICATION_NOT_GATE_G_NOT_GOLDEN",
+      "context_or_token_proxy": {
+        "completion_tokens": 27,
+        "materialized_chars": 14528,
+        "prompt_tokens": 1579
+      },
+      "dimensions_measured": [
+        "functionality",
+        "quality",
+        "depth",
+        "performance",
+        "evidence"
+      ],
+      "evidence_refs": [
+        "local:/opt/profile-runtime-benchmark/evidence/s26-matrix-v3-w2-currentmain-3b39657f-20260913/S26V3-F08-O4-CONFLICT-AMBIGUITY.raw.json"
+      ],
+      "executor": "MODEL_MATERIALIZATION_CASE_HARNESS",
+      "expected": "Runtime makes an evidence-bound reasoned decision, surfaces unresolved authority when necessary and avoids arbitrary shallow completion.",
+      "failure_mode": "CONFLICTING_OR_AMBIGUOUS_REQUIREMENTS",
+      "family": "F08_QUALITY_DEPTH",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W2_FINAL_MODEL_MATERIALIZATION",
+      "independent_case_credit": true,
+      "latency_ms": 8708.55,
+      "model_calls": 1,
+      "objective_id": "F08-O4",
+      "observed": {
+        "cta_destination": "UNRESOLVED_UNTIL_SOURCE",
+        "governed_authority_preserved": true,
+        "invented_checkout_route_in_composer": false,
+        "quality_depth": {
+          "depth": {
+            "component_count": 9,
+            "errors": [],
+            "hierarchy_depth_edges": 3,
+            "pass": true,
+            "responsive_modes_present": [
+              "desktop",
+              "mobile"
+            ],
+            "risk_control_count": 4,
+            "service_leaf_components_present": [
+              "service_cta",
+              "service_price",
+              "service_provider",
+              "service_title"
+            ],
+            "state_map_coverage_ratio": 1.0,
+            "variant_guard_coverage_ratio": 1.0
+          },
+          "quality": {
+            "errors": [],
+            "pass": true,
+            "requirement_checks": {
+              "category_navigation": true,
+              "design_intent": true,
+              "featured_services": true,
+              "header_search": true,
+              "implementation_ready": true,
+              "service_card_fields": true,
+              "service_cards": true,
+              "structured_handoff": true
+            },
+            "requirement_coverage_ratio": 1.0,
+            "self_reported_score_total_observed_not_authority": 20,
+            "self_score_used_as_authority": false,
+            "source_bound_checks": {
+              "categories_source_bound": true,
+              "collection_source_bound": true,
+              "cta_source_bound": true,
+              "featured_source_bound": true,
+              "price_source_bound": true,
+              "provider_source_bound": true,
+              "template_values_source_bound": true,
+              "title_source_bound": true
+            },
+            "source_bound_integrity_ratio": 1.0
+          }
+        },
+        "runtime_path_pass": true,
+        "unresolved_authority_surfaced_in_risk_controls": true
+      },
+      "oracle": "INDEPENDENT_SEMANTIC_QUALITY_ORACLE",
+      "pass": true,
+      "performance": {
+        "cached_prompt_tokens": 1390,
+        "completion_tokens": 27,
+        "generation_ms": 1938.909,
+        "materialized_chars": 14528,
+        "model_calls": 1,
+        "profile_elapsed_ms": 8708.447,
+        "prompt_ms": 6735.399,
+        "prompt_tokens": 1579,
+        "raw_chars": 57,
+        "retries": 0,
+        "total_ms": 8708.483,
+        "total_tokens": 1606,
+        "wall_ms": 8708.55
+      },
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "QUALITY_AND_DEPTH_EVALUATION",
+      "unseen_holdout": false
+    },
+    {
+      "case_id": "S26V3-F09-O3-FINAL-E2E-PERF",
+      "claim_ceiling": "W2_OBJECTIVE_EVIDENCE_ONLY_NOT_CERTIFICATION_NOT_GATE_G_NOT_GOLDEN",
+      "context_or_token_proxy": {
+        "completion_tokens": 27,
+        "materialized_chars": 14524,
+        "prompt_tokens": 1572
+      },
+      "dimensions_measured": [
+        "depth",
+        "performance"
+      ],
+      "evidence_refs": [
+        "local:/opt/profile-runtime-benchmark/evidence/s26-matrix-v3-w2-currentmain-3b39657f-20260913/S26V3-F09-O3-FINAL-E2E-PERF.raw.json",
+        "candidate:sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_exact_runtime_evidence.json#performance"
+      ],
+      "executor": "MODEL_MATERIALIZATION_CASE_HARNESS",
+      "expected": "Final integrated candidate records end-to-end/profile/prompt/runtime latency and passes explicit budgets without quality regression.",
+      "failure_mode": "FINAL_INTEGRATED_E2E_BUDGET",
+      "family": "F09_PERFORMANCE_BUDGETS",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W2_FINAL_MODEL_MATERIALIZATION",
+      "independent_case_credit": true,
+      "latency_ms": 8168.475,
+      "model_calls": 1,
+      "objective_id": "F09-O3",
+      "observed": {
+        "budget_ms": 120000.0,
+        "e2e_ms": 8168.416,
+        "generation_ms": 1973.837,
+        "max_output_bytes": 25000,
+        "output_bytes": 14524,
+        "profile_ms": 8168.374,
+        "prompt_ms": 6170.617,
+        "quality_depth": {
+          "depth": {
+            "component_count": 9,
+            "errors": [],
+            "hierarchy_depth_edges": 3,
+            "pass": true,
+            "responsive_modes_present": [
+              "desktop",
+              "mobile"
+            ],
+            "risk_control_count": 4,
+            "service_leaf_components_present": [
+              "service_cta",
+              "service_price",
+              "service_provider",
+              "service_title"
+            ],
+            "state_map_coverage_ratio": 1.0,
+            "variant_guard_coverage_ratio": 1.0
+          },
+          "quality": {
+            "errors": [],
+            "pass": true,
+            "requirement_checks": {
+              "category_navigation": true,
+              "design_intent": true,
+              "featured_services": true,
+              "header_search": true,
+              "implementation_ready": true,
+              "service_card_fields": true,
+              "service_cards": true,
+              "structured_handoff": true
+            },
+            "requirement_coverage_ratio": 1.0,
+            "self_reported_score_total_observed_not_authority": 20,
+            "self_score_used_as_authority": false,
+            "source_bound_checks": {
+              "categories_source_bound": true,
+              "collection_source_bound": true,
+              "cta_source_bound": true,
+              "featured_source_bound": true,
+              "price_source_bound": true,
+              "provider_source_bound": true,
+              "template_values_source_bound": true,
+              "title_source_bound": true
+            },
+            "source_bound_integrity_ratio": 1.0
+          }
+        },
+        "runtime_path_pass": true,
+        "wall_within_budget": true
+      },
+      "oracle": "BUDGET_AND_STABILITY_ORACLE",
+      "pass": true,
+      "performance": {
+        "cached_prompt_tokens": 1390,
+        "completion_tokens": 27,
+        "generation_ms": 1973.837,
+        "materialized_chars": 14524,
+        "model_calls": 1,
+        "profile_elapsed_ms": 8168.374,
+        "prompt_ms": 6170.617,
+        "prompt_tokens": 1572,
+        "raw_chars": 57,
+        "retries": 0,
+        "total_ms": 8168.416,
+        "total_tokens": 1599,
+        "wall_ms": 8168.475
+      },
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "PERFORMANCE_AND_RESOURCE_BUDGETS",
+      "unseen_holdout": false
+    },
+    {
+      "case_id": "S26V3-F09-O4-HIGH-COMPLEXITY",
+      "claim_ceiling": "W2_OBJECTIVE_EVIDENCE_ONLY_NOT_CERTIFICATION_NOT_GATE_G_NOT_GOLDEN",
+      "context_or_token_proxy": {
+        "completion_tokens": null,
+        "materialized_chars": 0,
+        "prompt_tokens": null
+      },
+      "dimensions_measured": [
+        "functionality",
+        "quality",
+        "depth",
+        "performance",
+        "evidence"
+      ],
+      "evidence_refs": [
+        "local:/opt/profile-runtime-benchmark/evidence/s26-matrix-v3-w2-currentmain-3b39657f-20260913/S26V3-F09-O4-HIGH-COMPLEXITY.raw.json"
+      ],
+      "executor": "MODEL_MATERIALIZATION_CASE_HARNESS",
+      "expected": "High-complexity input stays functionally/semantically correct and within declared resource ceilings, or fails closed before unsafe degradation.",
+      "failure_mode": "HIGH_COMPLEXITY_TOKEN_TIME_PRESSURE",
+      "family": "F09_PERFORMANCE_BUDGETS",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W2_FINAL_MODEL_MATERIALIZATION",
+      "independent_case_credit": true,
+      "latency_ms": 1.266,
+      "model_calls": 0,
+      "objective_id": "F09-O4",
+      "observed": {
+        "blocking_codes": [
+          "LLAMA_UI_INPUT_TOKEN_PROXY_BUDGET_EXCEEDED"
+        ],
+        "downstream_authorized": false,
+        "input_chars": 22218,
+        "model_calls": 0,
+        "outcome": "FAIL_CLOSED_PRE_INFERENCE",
+        "raw_output_absent": true,
+        "stage": "RUNTIME_COMPLETION"
+      },
+      "oracle": "BUDGET_AND_STABILITY_ORACLE",
+      "pass": true,
+      "performance": {
+        "cached_prompt_tokens": null,
+        "completion_tokens": null,
+        "generation_ms": null,
+        "materialized_chars": 0,
+        "model_calls": 0,
+        "profile_elapsed_ms": 1.15,
+        "prompt_ms": null,
+        "prompt_tokens": null,
+        "raw_chars": 0,
+        "retries": 0,
+        "total_ms": 1.166,
+        "total_tokens": null,
+        "wall_ms": 1.266
+      },
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "PERFORMANCE_AND_RESOURCE_BUDGETS",
+      "unseen_holdout": false
+    }
+  ],
+  "runtime_execution_mode": "ISOLATED_EXACT_CANDIDATE_DIRECT_ENGINE_REUSING_EXISTING_LOOPBACK_LLAMA",
+  "schema": "S26_FAMILY_OBJECTIVE_MATRIX_V3_W2_EXECUTION_RECEIPT_V1",
+  "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+  "wave": "W2_FINAL_MODEL_MATERIALIZATION"
+}

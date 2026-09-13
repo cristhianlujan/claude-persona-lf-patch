@@ -1,0 +1,14 @@
+{
+  "case_id": "S26V3-F10-O4-FINAL-PERF-REBIND",
+  "expected_code": "RUNTIME_CROSS_RUN_REFERENCE_UNDECLARED",
+  "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "max_ms": 0.0506,
+  "mean_ms": 0.018,
+  "model_calls": 0,
+  "observed_codes": [
+    "RUNTIME_CROSS_RUN_REFERENCE_UNDECLARED"
+  ],
+  "p95_ms": 0.0312,
+  "pass": true,
+  "repeat_count": 20
+}

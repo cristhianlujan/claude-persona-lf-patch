@@ -1,0 +1,167 @@
+{
+  "governed_requirements": {
+    "required_design_intents": [
+      "clear",
+      "professional",
+      "easy_to_navigate"
+    ],
+    "required_responsive_modes": [
+      "desktop",
+      "mobile"
+    ],
+    "required_sections": [
+      "header",
+      "categories",
+      "featured_services",
+      "service_cards"
+    ],
+    "required_source_bindings": {
+      "category_navigation.items": "DATA_BOUND",
+      "featured_services.items": "DATA_BOUND",
+      "service_card_template.fields": "title|provider|price|call_to_action",
+      "service_card_template.values": "DATA_BOUND",
+      "service_cards.items": "DATA_BOUND",
+      "service_cta.destination": "UNRESOLVED_UNTIL_SOURCE",
+      "service_cta.label": "DATA_BOUND:call_to_action",
+      "service_price.format": "SOURCE_DEFINED",
+      "service_price.value": "DATA_BOUND:price",
+      "service_provider.value": "DATA_BOUND:provider",
+      "service_title.value": "DATA_BOUND:title"
+    }
+  },
+  "literal_request": "Crea una pantalla real de marketplace de fisioterapia y rehabilitación para comparar servicios de profesionales. Mobile-first: buscador primero, categorías visibles, destacados solo si la fuente los marca, tarjetas con título, proveedor, precio y CTA provenientes de datos. No inventes disponibilidad, precio, ruta, resultados ni promociones. Debe quedar lista para implementación y también funcionar en desktop.",
+  "observed_output": {
+    "components": [
+      {
+        "content": {
+          "binding": "USER_REQUIREMENT"
+        },
+        "id": "header_search",
+        "type": "input"
+      },
+      {
+        "content": {
+          "items": "DATA_BOUND"
+        },
+        "id": "category_navigation",
+        "type": "navigation"
+      },
+      {
+        "content": {
+          "items": "DATA_BOUND"
+        },
+        "id": "featured_services",
+        "type": "section"
+      },
+      {
+        "content": {
+          "items": "DATA_BOUND"
+        },
+        "id": "service_cards",
+        "type": "collection"
+      },
+      {
+        "content": {
+          "fields": [
+            "title",
+            "provider",
+            "price",
+            "call_to_action"
+          ],
+          "values": "DATA_BOUND"
+        },
+        "id": "service_card_template",
+        "type": "template"
+      },
+      {
+        "content": {
+          "value": "DATA_BOUND:title"
+        },
+        "id": "service_title",
+        "type": "text"
+      },
+      {
+        "content": {
+          "value": "DATA_BOUND:provider"
+        },
+        "id": "service_provider",
+        "type": "text"
+      },
+      {
+        "content": {
+          "format": "SOURCE_DEFINED",
+          "value": "DATA_BOUND:price"
+        },
+        "id": "service_price",
+        "type": "value"
+      },
+      {
+        "content": {
+          "destination": "UNRESOLVED_UNTIL_SOURCE",
+          "label": "DATA_BOUND:call_to_action"
+        },
+        "id": "service_cta",
+        "type": "action"
+      }
+    ],
+    "layout_grid": {
+      "desktop": "responsive service-card grid keeps search and navigation visible while allowing column reflow",
+      "flow": [
+        "header_search",
+        "category_navigation",
+        "featured_services",
+        "service_cards"
+      ],
+      "mobile": "mobile-first single-column stack preserves required sections and card information order"
+    },
+    "risk_controls": [
+      "Preserve service_cta.destination as UNRESOLVED_UNTIL_SOURCE; do not invent or strengthen its value.",
+      "Preserve service_price.format as SOURCE_DEFINED; do not invent or strengthen its value.",
+      "Preserve service_cta.label as DATA_BOUND:call_to_action; do not invent or strengthen its value.",
+      "Preserve service_price.value as DATA_BOUND:price; do not invent or strengthen its value."
+    ],
+    "screen_definition": {
+      "design_intent": [
+        "clear",
+        "professional",
+        "easy_to_navigate"
+      ],
+      "implementation_readiness": "STRUCTURED_SPEC_READY_FOR_NEXT_AGENT",
+      "purpose": "Implement the governed GENERIC_SERVICE_MARKETPLACE screen with source-bound required sections and responsive behavior.",
+      "required_sections": [
+        "header",
+        "categories",
+        "featured_services",
+        "service_cards"
+      ],
+      "screen_type": "GENERIC_SERVICE_MARKETPLACE",
+      "task_mode": "CREATE_NEW"
+    },
+    "visual_hierarchy": [
+      {
+        "child_ids": [
+          "header_search",
+          "category_navigation",
+          "featured_services",
+          "service_cards"
+        ],
+        "parent_id": "screen"
+      },
+      {
+        "child_ids": [
+          "service_card_template"
+        ],
+        "parent_id": "service_cards"
+      },
+      {
+        "child_ids": [
+          "service_title",
+          "service_provider",
+          "service_price",
+          "service_cta"
+        ],
+        "parent_id": "service_card_template"
+      }
+    ]
+  }
+}

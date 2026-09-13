@@ -1,0 +1,21 @@
+{
+  "case_id": "S26V3-F08-O5-INDEPENDENT-HOLDOUT",
+  "contract_status": "PASS",
+  "depth_pass": true,
+  "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "independent_review": {
+    "blocking_codes": [
+      "INDEPENDENT_CHAT_CONTEXT_REQUIRED"
+    ],
+    "reason": "Producer context cannot issue its own independent semantic receipt.",
+    "verdict": "PENDING_INDEPENDENT_CHAT_CONTEXT"
+  },
+  "model_calls": 2,
+  "pass": false,
+  "quality_pass": true,
+  "review_context": "compact evidence only",
+  "review_wall_ms": 0.0,
+  "runtime_status": "PASS",
+  "runtime_wall_ms": 7760.235,
+  "semantic_status": "PASS"
+}

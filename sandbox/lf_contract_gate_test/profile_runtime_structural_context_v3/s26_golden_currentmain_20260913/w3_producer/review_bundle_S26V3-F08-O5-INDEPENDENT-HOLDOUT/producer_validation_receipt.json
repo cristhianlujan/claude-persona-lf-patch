@@ -1,0 +1,21 @@
+{
+  "artifact_canonical_sha256": "12a23ad9503b7e58fd29f1ec12ee7b79f2761b1db5bc30699074242d88634562",
+  "claim_ceiling": "PRODUCER_VALIDATION_ONLY_NOT_INDEPENDENT_VERDICT_NOT_GOLDEN",
+  "downstream_authorized": false,
+  "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "independent_semantic_review": "PENDING_INDEPENDENT_CHAT_CONTEXT",
+  "matrix_case_id": "S26V3-F08-O5-INDEPENDENT-HOLDOUT",
+  "negative_regressions": {
+    "conflicting_route_invention_blocked": true,
+    "high_complexity_budget_fail_closed": true,
+    "layout_contradiction_blocked": true,
+    "matrix": "4/4",
+    "shallow_answer_blocked": true
+  },
+  "profile_contract_valid": "PASS",
+  "quality_depth_producer_check": "PASS",
+  "review_case_id": "S26V3-F08-O5-INDEPENDENT-HOLDOUT-CURRENTMAIN-3B39657F",
+  "runtime_completion": "PASS",
+  "schema": "S26_W3_PRODUCER_VALIDATION_RECEIPT_V1",
+  "semantic_utility": "PASS"
+}

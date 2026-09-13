@@ -1,0 +1,105 @@
+{
+  "case_count": 2,
+  "claim_ceiling": "TWO_W1_DETERMINISTIC_CASES_ONLY_NOT_FULL_W1_NOT_W2_NOT_W3_NOT_GATE_G_NOT_GOLDEN_NOT_PRODUCTION",
+  "explicit_non_actions": [
+    "NO_GATE_G_EXECUTION",
+    "NO_GOLDEN_PROMOTION",
+    "NO_PRODUCTION",
+    "NO_SUPABASE_WRITE",
+    "NO_MODEL_CALL",
+    "NO_PAID_FALLBACK",
+    "NO_MAIN_MERGE"
+  ],
+  "fail_count": 0,
+  "failed_cases": [],
+  "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "pass_count": 2,
+  "receipts": [
+    {
+      "case_id": "S26V3-F05-O5-COMPATIBLE-EVOLUTION-HOLDOUT",
+      "context_or_token_proxy": 46108,
+      "dimensions_measured": [
+        "functionality",
+        "quality",
+        "depth",
+        "performance",
+        "evidence"
+      ],
+      "evidence_refs": [
+        "validate_composer_payload_boundary.py",
+        "s26_native_golden_005/raw_output.json"
+      ],
+      "executor": "DETERMINISTIC_CASE_HARNESS",
+      "expected": "A declared compatible representation preserves canonical semantics and boundary validation.",
+      "failure_mode": "UNSEEN_COMPATIBLE_SCHEMA_EVOLUTION",
+      "family": "F05_SCHEMA_TRANSPORT",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": true,
+      "latency_ms": 1.277,
+      "model_calls": 0,
+      "objective_id": "F05-O5",
+      "observed": {
+        "compatible_error_codes": [],
+        "compatible_field": "component_tree[0].allowed_variants",
+        "compatible_valid": true,
+        "deterministic_projection_exact": true,
+        "neighbor_incompatible_error_codes": [
+          "COMPOSER_COMPONENT_KEY_NOT_ALLOWED"
+        ],
+        "semantic_core_preserved": true,
+        "version_guard_unchanged": true
+      },
+      "oracle": "DETERMINISTIC_SCHEMA_TRANSPORT_ORACLE",
+      "pass": true,
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "SCHEMA_AND_TRANSPORT_BOUNDARY",
+      "unseen_holdout": true
+    },
+    {
+      "case_id": "S26V3-F10-O3-VERSION-DELTA-REPLAY",
+      "context_or_token_proxy": 2508,
+      "dimensions_measured": [
+        "functionality",
+        "quality",
+        "depth",
+        "performance",
+        "evidence"
+      ],
+      "evidence_refs": [
+        "runtime_authority_resolver_v1.py",
+        ".s26_matrix_version_delta/authority.json"
+      ],
+      "executor": "DETERMINISTIC_CASE_HARNESS",
+      "expected": "Controlled compatible version/currentness transition preserves intended semantics and provenance; incompatible transition fails closed.",
+      "failure_mode": "COMPATIBLE_VERSION_OR_CURRENTNESS_DELTA",
+      "family": "F10_E2E_REPLAY_LIVE_SEMANTIC",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W1_FINAL_DETERMINISTIC",
+      "independent_case_credit": true,
+      "latency_ms": 0.575,
+      "model_calls": 0,
+      "objective_id": "F10-O3",
+      "observed": {
+        "compatible_transition": "revision_1_to_revision_2_same_semantic_authority",
+        "incompatible_transition_fail_closed": true,
+        "provenance_explicitly_rebound": true,
+        "semantic_fields_stable": true,
+        "stale_claim_expected_code": "RUNTIME_CONTEXT_PROVENANCE_SHA_MISMATCH",
+        "stale_claim_observed_code": "RUNTIME_CONTEXT_PROVENANCE_SHA_MISMATCH",
+        "typed_context_digest_changed": true,
+        "v1_provenance_sha256": "2b48e232ef6254dd2297b99db58c1d20d961be7966680db223b650850b28d954",
+        "v2_provenance_sha256": "fc51b5d44d470e1602e72f0f1376d98400046a78b09777e10a92b7cf84bcea84"
+      },
+      "oracle": "E2E_GOVERNED_PIPELINE_ORACLE",
+      "pass": true,
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "FULL_E2E_REPLAY_AND_LIVE_SEMANTIC",
+      "unseen_holdout": false
+    }
+  ],
+  "schema": "S26_FAMILY_OBJECTIVE_MATRIX_V3_W1_EXTENSION_RECEIPT_V1",
+  "status": "W1_EXTENSION_PASS"
+}

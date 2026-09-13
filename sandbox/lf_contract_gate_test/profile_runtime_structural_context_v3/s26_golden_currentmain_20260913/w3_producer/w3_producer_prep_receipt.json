@@ -1,0 +1,319 @@
+{
+  "claim_ceiling": "PRODUCER_PREP_ONLY_NOT_W3_COMPLETE_NOT_GATE_G_NOT_GOLDEN_NOT_PRODUCTION",
+  "expected_w3_cases": 4,
+  "explicit_non_actions": [
+    "NO_SELF_INDEPENDENT_REVIEW",
+    "NO_GATE_G_EXECUTION",
+    "NO_GOLDEN_PROMOTION",
+    "NO_PRODUCTION",
+    "NO_SUPABASE_WRITE",
+    "NO_MAIN_MERGE"
+  ],
+  "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "independent_review_pending_cases": [
+    "S26V3-F08-O5-INDEPENDENT-HOLDOUT",
+    "S26V3-F10-O5-REAL-E2E-HOLDOUT"
+  ],
+  "observed_w3_cases": 4,
+  "producer_model_calls_total": 7,
+  "producer_side_pass_count": 4,
+  "receipts": [
+    {
+      "blocking_codes": [
+        "INDEPENDENT_CHAT_CONTEXT_REQUIRED"
+      ],
+      "case_id": "S26V3-F08-O5-INDEPENDENT-HOLDOUT",
+      "claim_ceiling": "W3_PRODUCER_PREP_ONLY_INDEPENDENT_CHAT_PENDING_NOT_GATE_G_NOT_GOLDEN_NOT_PRODUCTION",
+      "dimensions_measured": [
+        "functionality",
+        "quality",
+        "depth",
+        "performance",
+        "evidence"
+      ],
+      "executor": "INDEPENDENT_SEMANTIC_REVIEW_HARNESS",
+      "expected": "Independent reviewer with no producer context judges the unseen output substantive, source-bound and sufficiently deep.",
+      "failure_mode": "UNSEEN_SUBSTANTIVE_QUALITY_REVIEW",
+      "family": "F08_QUALITY_DEPTH",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W3_FINAL_STABILITY_AND_INDEPENDENT",
+      "independent_case_credit": true,
+      "independent_review_status": "PENDING_INDEPENDENT_CHAT_CONTEXT",
+      "latency_ms": 7760.235,
+      "model_calls": 1,
+      "objective_id": "F08-O5",
+      "observed": {
+        "case_id": "S26V3-F08-O5-INDEPENDENT-HOLDOUT",
+        "contract_status": "PASS",
+        "depth_pass": true,
+        "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+        "independent_review": {
+          "blocking_codes": [
+            "INDEPENDENT_CHAT_CONTEXT_REQUIRED"
+          ],
+          "reason": "Producer context cannot issue its own independent semantic receipt.",
+          "verdict": "PENDING_INDEPENDENT_CHAT_CONTEXT"
+        },
+        "model_calls": 2,
+        "pass": false,
+        "quality_pass": true,
+        "review_context": "compact evidence only",
+        "review_wall_ms": 0.0,
+        "runtime_status": "PASS",
+        "runtime_wall_ms": 7760.235,
+        "semantic_status": "PASS"
+      },
+      "oracle": "INDEPENDENT_SEMANTIC_QUALITY_ORACLE",
+      "pass": false,
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "QUALITY_AND_DEPTH_EVALUATION",
+      "unseen_holdout": true
+    },
+    {
+      "case_id": "S26V3-F09-O5-STOCHASTIC-HOLDOUT",
+      "claim_ceiling": "W3_PRODUCER_PREP_ONLY_INDEPENDENT_CHAT_PENDING_NOT_GATE_G_NOT_GOLDEN_NOT_PRODUCTION",
+      "dimensions_measured": [
+        "functionality",
+        "quality",
+        "depth",
+        "performance",
+        "evidence"
+      ],
+      "executor": "REPEATED_STABILITY_HARNESS",
+      "expected": "Repeated executions preserve semantic decisions/quality while quantifying latency/token/consistency variation; correlated repeats are analyzed hierarchically, not counted as independent cases.",
+      "failure_mode": "MODEL_DEPENDENT_RUN_TO_RUN_VARIATION",
+      "family": "F09_PERFORMANCE_BUDGETS",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W3_FINAL_STABILITY_AND_INDEPENDENT",
+      "independent_case_credit": true,
+      "latency_ms": 7697.373,
+      "model_calls": 5,
+      "objective_id": "F09-O5",
+      "observed": {
+        "all_quality_pass": true,
+        "case_id": "S26V3-F09-O5-STOCHASTIC-HOLDOUT",
+        "correlated_repeats_counted_as_independent_cases": false,
+        "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+        "max_ms": 7794.373,
+        "mean_ms": 7697.373,
+        "model_calls": 5,
+        "p95_ms": 7794.373,
+        "pass": true,
+        "repeat_count": 5,
+        "runs": [
+          {
+            "completion_tokens": 28,
+            "generation_ms": 2086.065,
+            "i": 1,
+            "layout": {
+              "desktop": "featured-services section leads into a multi-column service-card grid with visible navigation",
+              "flow": [
+                "header_search",
+                "category_navigation",
+                "featured_services",
+                "service_cards"
+              ],
+              "mobile": "featured services remain before a single-column service-card stack preserving information order"
+            },
+            "pass": true,
+            "prompt_ms": 5640.054,
+            "prompt_tokens": 1560,
+            "semantic_sha256": "6fa4c45b097fb939025b0e55e9f3261404303c360f0ec6c1b067e68a7863fa05",
+            "wall_ms": 7750.651
+          },
+          {
+            "completion_tokens": 28,
+            "generation_ms": 2116.504,
+            "i": 2,
+            "layout": {
+              "desktop": "featured-services section leads into a multi-column service-card grid with visible navigation",
+              "flow": [
+                "header_search",
+                "category_navigation",
+                "featured_services",
+                "service_cards"
+              ],
+              "mobile": "featured services remain before a single-column service-card stack preserving information order"
+            },
+            "pass": true,
+            "prompt_ms": 5653.624,
+            "prompt_tokens": 1561,
+            "semantic_sha256": "6fa4c45b097fb939025b0e55e9f3261404303c360f0ec6c1b067e68a7863fa05",
+            "wall_ms": 7794.373
+          },
+          {
+            "completion_tokens": 28,
+            "generation_ms": 1972.141,
+            "i": 3,
+            "layout": {
+              "desktop": "featured-services section leads into a multi-column service-card grid with visible navigation",
+              "flow": [
+                "header_search",
+                "category_navigation",
+                "featured_services",
+                "service_cards"
+              ],
+              "mobile": "featured services remain before a single-column service-card stack preserving information order"
+            },
+            "pass": true,
+            "prompt_ms": 5592.325,
+            "prompt_tokens": 1557,
+            "semantic_sha256": "6fa4c45b097fb939025b0e55e9f3261404303c360f0ec6c1b067e68a7863fa05",
+            "wall_ms": 7588.29
+          },
+          {
+            "completion_tokens": 28,
+            "generation_ms": 2016.813,
+            "i": 4,
+            "layout": {
+              "desktop": "featured-services section leads into a multi-column service-card grid with visible navigation",
+              "flow": [
+                "header_search",
+                "category_navigation",
+                "featured_services",
+                "service_cards"
+              ],
+              "mobile": "featured services remain before a single-column service-card stack preserving information order"
+            },
+            "pass": true,
+            "prompt_ms": 5736.709,
+            "prompt_tokens": 1562,
+            "semantic_sha256": "6fa4c45b097fb939025b0e55e9f3261404303c360f0ec6c1b067e68a7863fa05",
+            "wall_ms": 7777.168
+          },
+          {
+            "completion_tokens": 28,
+            "generation_ms": 2002.933,
+            "i": 5,
+            "layout": {
+              "desktop": "featured-services section leads into a multi-column service-card grid with visible navigation",
+              "flow": [
+                "header_search",
+                "category_navigation",
+                "featured_services",
+                "service_cards"
+              ],
+              "mobile": "featured services remain before a single-column service-card stack preserving information order"
+            },
+            "pass": true,
+            "prompt_ms": 5545.828,
+            "prompt_tokens": 1558,
+            "semantic_sha256": "6fa4c45b097fb939025b0e55e9f3261404303c360f0ec6c1b067e68a7863fa05",
+            "wall_ms": 7576.385
+          }
+        ],
+        "semantic_decision_stable": true,
+        "stdev_ms": 95.028,
+        "unique_semantic_hash_count": 1
+      },
+      "oracle": "BUDGET_AND_STABILITY_ORACLE",
+      "pass": true,
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "PERFORMANCE_AND_RESOURCE_BUDGETS",
+      "unseen_holdout": true
+    },
+    {
+      "case_id": "S26V3-F10-O4-FINAL-PERF-REBIND",
+      "claim_ceiling": "W3_PRODUCER_PREP_ONLY_INDEPENDENT_CHAT_PENDING_NOT_GATE_G_NOT_GOLDEN_NOT_PRODUCTION",
+      "dimensions_measured": [
+        "performance"
+      ],
+      "executor": "PERFORMANCE_REPLAY_BINDER",
+      "expected": "Re-exercise the frozen cross-run/replay identity protection on the final candidate and bind E2E protection/readback timing while preserving the existing fail-closed oracle.",
+      "failure_mode": "NO_NEW_SEMANTIC_FAILURE_MODE",
+      "family": "F10_E2E_REPLAY_LIVE_SEMANTIC",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W3_FINAL_STABILITY_AND_INDEPENDENT",
+      "independent_case_credit": false,
+      "latency_ms": 0.018,
+      "model_calls": 0,
+      "objective_id": "F10-O4",
+      "observed": {
+        "case_id": "S26V3-F10-O4-FINAL-PERF-REBIND",
+        "expected_code": "RUNTIME_CROSS_RUN_REFERENCE_UNDECLARED",
+        "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+        "max_ms": 0.0506,
+        "mean_ms": 0.018,
+        "model_calls": 0,
+        "observed_codes": [
+          "RUNTIME_CROSS_RUN_REFERENCE_UNDECLARED"
+        ],
+        "p95_ms": 0.0312,
+        "pass": true,
+        "repeat_count": 20
+      },
+      "oracle": "E2E_GOVERNED_PIPELINE_ORACLE",
+      "pass": true,
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "FULL_E2E_REPLAY_AND_LIVE_SEMANTIC",
+      "unseen_holdout": false
+    },
+    {
+      "blocking_codes": [
+        "INDEPENDENT_CHAT_CONTEXT_REQUIRED"
+      ],
+      "case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT",
+      "claim_ceiling": "W3_PRODUCER_PREP_ONLY_INDEPENDENT_CHAT_PENDING_NOT_GATE_G_NOT_GOLDEN_NOT_PRODUCTION",
+      "dimensions_measured": [
+        "functionality",
+        "quality",
+        "depth",
+        "performance",
+        "evidence"
+      ],
+      "executor": "E2E_HOLDOUT_HARNESS",
+      "expected": "Brand-new real case traverses full governed pipeline, passes deterministic/material/quality/performance gates and then independent semantic review.",
+      "failure_mode": "BRAND_NEW_REAL_CASE_FULL_PIPELINE",
+      "family": "F10_E2E_REPLAY_LIVE_SEMANTIC",
+      "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+      "final_wave": "W3_FINAL_STABILITY_AND_INDEPENDENT",
+      "independent_case_credit": true,
+      "independent_review_status": "PENDING_INDEPENDENT_CHAT_CONTEXT",
+      "latency_ms": 8112.443,
+      "model_calls": 1,
+      "objective_id": "F10-O5",
+      "observed": {
+        "authority_resolution_count": 0,
+        "card_resolution": null,
+        "case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT",
+        "completion_tokens": 27,
+        "contract_status": "PASS",
+        "depth_pass": true,
+        "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+        "full_governed_pipeline_observed": false,
+        "generation_ms": 1931.135,
+        "independent_review": {
+          "blocking_codes": [
+            "INDEPENDENT_CHAT_CONTEXT_REQUIRED"
+          ],
+          "reason": "Producer context cannot issue its own independent semantic receipt.",
+          "verdict": "PENDING_INDEPENDENT_CHAT_CONTEXT"
+        },
+        "materialized_output_sha256": "4ded363a85f7edc890c62e3373aba1353d3d9012cebbe83dd3c94c4e9d5b39a5",
+        "model_calls": 2,
+        "pass": false,
+        "prompt_ms": 6148.698,
+        "prompt_tokens": 1579,
+        "quality_pass": true,
+        "review_token_proxy": 917.2,
+        "review_wall_ms": 0.0,
+        "runtime_status": "PASS",
+        "runtime_wall_ms": 8112.443,
+        "semantic_status": "PASS",
+        "typed_context_present": false
+      },
+      "oracle": "E2E_GOVERNED_PIPELINE_ORACLE",
+      "pass": false,
+      "retries": 0,
+      "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+      "target_component": "FULL_E2E_REPLAY_AND_LIVE_SEMANTIC",
+      "unseen_holdout": true
+    }
+  ],
+  "schema": "S26_FAMILY_OBJECTIVE_MATRIX_V3_W3_PRODUCER_PREP_RECEIPT_V1",
+  "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+  "status": "W3_PRODUCER_PREP_COMPLETE_INDEPENDENT_REVIEW_PENDING"
+}

@@ -1,0 +1,29 @@
+{
+  "artifact_canonical_sha256": "12a23ad9503b7e58fd29f1ec12ee7b79f2761b1db5bc30699074242d88634562",
+  "file_count": 4,
+  "files": [
+    {
+      "bytes": 21393,
+      "path": "artifact_payload.json",
+      "sha256": "65cea6de62252ff1265411b427b3378601fbb5fe193502c2f3dec50cab6a2e8a"
+    },
+    {
+      "bytes": 910,
+      "path": "producer_validation_receipt.json",
+      "sha256": "20b750b5850e7d9d4222986e6cad297971273fc954b391a4fa74f278519a4684"
+    },
+    {
+      "bytes": 4216,
+      "path": "review_case.json",
+      "sha256": "413324fb2ab652dd563b06a15a9a3e642ce96d50ec3b9015c5c993757b6b92ff"
+    },
+    {
+      "bytes": 588,
+      "path": "review_scope_policy.json",
+      "sha256": "1ad230a41feb092c494bf3790dfe46fda729caa27d320e6f20900b77764492ab"
+    }
+  ],
+  "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "review_case_id": "S26V3-F08-O5-INDEPENDENT-HOLDOUT-CURRENTMAIN-3B39657F",
+  "schema": "S26_W3_INDEPENDENT_BUNDLE_MANIFEST_V1"
+}

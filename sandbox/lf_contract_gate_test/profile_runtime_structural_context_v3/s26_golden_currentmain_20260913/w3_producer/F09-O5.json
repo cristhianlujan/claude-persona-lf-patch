@@ -1,0 +1,117 @@
+{
+  "all_quality_pass": true,
+  "case_id": "S26V3-F09-O5-STOCHASTIC-HOLDOUT",
+  "correlated_repeats_counted_as_independent_cases": false,
+  "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "max_ms": 7794.373,
+  "mean_ms": 7697.373,
+  "model_calls": 5,
+  "p95_ms": 7794.373,
+  "pass": true,
+  "repeat_count": 5,
+  "runs": [
+    {
+      "completion_tokens": 28,
+      "generation_ms": 2086.065,
+      "i": 1,
+      "layout": {
+        "desktop": "featured-services section leads into a multi-column service-card grid with visible navigation",
+        "flow": [
+          "header_search",
+          "category_navigation",
+          "featured_services",
+          "service_cards"
+        ],
+        "mobile": "featured services remain before a single-column service-card stack preserving information order"
+      },
+      "pass": true,
+      "prompt_ms": 5640.054,
+      "prompt_tokens": 1560,
+      "semantic_sha256": "6fa4c45b097fb939025b0e55e9f3261404303c360f0ec6c1b067e68a7863fa05",
+      "wall_ms": 7750.651
+    },
+    {
+      "completion_tokens": 28,
+      "generation_ms": 2116.504,
+      "i": 2,
+      "layout": {
+        "desktop": "featured-services section leads into a multi-column service-card grid with visible navigation",
+        "flow": [
+          "header_search",
+          "category_navigation",
+          "featured_services",
+          "service_cards"
+        ],
+        "mobile": "featured services remain before a single-column service-card stack preserving information order"
+      },
+      "pass": true,
+      "prompt_ms": 5653.624,
+      "prompt_tokens": 1561,
+      "semantic_sha256": "6fa4c45b097fb939025b0e55e9f3261404303c360f0ec6c1b067e68a7863fa05",
+      "wall_ms": 7794.373
+    },
+    {
+      "completion_tokens": 28,
+      "generation_ms": 1972.141,
+      "i": 3,
+      "layout": {
+        "desktop": "featured-services section leads into a multi-column service-card grid with visible navigation",
+        "flow": [
+          "header_search",
+          "category_navigation",
+          "featured_services",
+          "service_cards"
+        ],
+        "mobile": "featured services remain before a single-column service-card stack preserving information order"
+      },
+      "pass": true,
+      "prompt_ms": 5592.325,
+      "prompt_tokens": 1557,
+      "semantic_sha256": "6fa4c45b097fb939025b0e55e9f3261404303c360f0ec6c1b067e68a7863fa05",
+      "wall_ms": 7588.29
+    },
+    {
+      "completion_tokens": 28,
+      "generation_ms": 2016.813,
+      "i": 4,
+      "layout": {
+        "desktop": "featured-services section leads into a multi-column service-card grid with visible navigation",
+        "flow": [
+          "header_search",
+          "category_navigation",
+          "featured_services",
+          "service_cards"
+        ],
+        "mobile": "featured services remain before a single-column service-card stack preserving information order"
+      },
+      "pass": true,
+      "prompt_ms": 5736.709,
+      "prompt_tokens": 1562,
+      "semantic_sha256": "6fa4c45b097fb939025b0e55e9f3261404303c360f0ec6c1b067e68a7863fa05",
+      "wall_ms": 7777.168
+    },
+    {
+      "completion_tokens": 28,
+      "generation_ms": 2002.933,
+      "i": 5,
+      "layout": {
+        "desktop": "featured-services section leads into a multi-column service-card grid with visible navigation",
+        "flow": [
+          "header_search",
+          "category_navigation",
+          "featured_services",
+          "service_cards"
+        ],
+        "mobile": "featured services remain before a single-column service-card stack preserving information order"
+      },
+      "pass": true,
+      "prompt_ms": 5545.828,
+      "prompt_tokens": 1558,
+      "semantic_sha256": "6fa4c45b097fb939025b0e55e9f3261404303c360f0ec6c1b067e68a7863fa05",
+      "wall_ms": 7576.385
+    }
+  ],
+  "semantic_decision_stable": true,
+  "stdev_ms": 95.028,
+  "unique_semantic_hash_count": 1
+}

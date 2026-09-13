@@ -1,0 +1,157 @@
+{
+  "metrics": {
+    "cached_prompt_tokens": null,
+    "completion_tokens": null,
+    "generation_ms": null,
+    "materialized_chars": 0,
+    "model_calls": 0,
+    "profile_elapsed_ms": 1.15,
+    "prompt_ms": null,
+    "prompt_tokens": null,
+    "raw_chars": 0,
+    "retries": 0,
+    "total_ms": 1.166,
+    "total_tokens": null,
+    "wall_ms": 1.266
+  },
+  "request": {
+    "profile": {
+      "input_fields": {
+        "bootstrap_context_sha256": "0ffbac484f1034fbcd6eb8ec5b52ba4f8e6fe07e8f2562ce98243da0c6fb22a5",
+        "distribution_mode": "DIRECT",
+        "domain_scope": "GENERIC_SERVICE_MARKETPLACE",
+        "execution_mode": "SANDBOX",
+        "gate_f_acceptance": {
+          "implementation_readiness": "STRUCTURED_SPEC_READY_FOR_NEXT_AGENT",
+          "minimum_component_count": 9,
+          "minimum_hierarchy_depth_edges": 3,
+          "minimum_risk_control_count": 4,
+          "minimum_state_map_coverage_ratio": 1.0,
+          "minimum_variant_guard_coverage_ratio": 1.0,
+          "required_component_ids": [
+            "header_search",
+            "category_navigation",
+            "featured_services",
+            "service_cards",
+            "service_card_template",
+            "service_title",
+            "service_provider",
+            "service_price",
+            "service_cta"
+          ],
+          "required_design_intents": [
+            "clear",
+            "professional",
+            "easy_to_navigate"
+          ],
+          "required_responsive_modes": [
+            "desktop",
+            "mobile"
+          ],
+          "required_sections": [
+            "header",
+            "categories",
+            "featured_services",
+            "service_cards"
+          ],
+          "required_service_leaf_components": [
+            "service_title",
+            "service_provider",
+            "service_price",
+            "service_cta"
+          ],
+          "required_source_bindings": {
+            "category_navigation.items": "DATA_BOUND",
+            "featured_services.items": "DATA_BOUND",
+            "service_card_template.fields": "title|provider|price|call_to_action",
+            "service_card_template.values": "DATA_BOUND",
+            "service_cards.items": "DATA_BOUND",
+            "service_cta.destination": "UNRESOLVED_UNTIL_SOURCE",
+            "service_cta.label": "DATA_BOUND:call_to_action",
+            "service_price.format": "SOURCE_DEFINED",
+            "service_price.value": "DATA_BOUND:price",
+            "service_provider.value": "DATA_BOUND:provider",
+            "service_title.value": "DATA_BOUND:title"
+          },
+          "required_state_component_ids": [
+            "header_search",
+            "category_navigation",
+            "featured_services",
+            "service_cards",
+            "service_cta"
+          ],
+          "task_mode": "CREATE_NEW"
+        },
+        "gate_f_input_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_hp001/gate_f_input.json",
+        "gate_f_input_sha256": "e3f841d4a973b7383d44aef7bd6a276634d97ddf44c43c3e256d57999d1a58d9",
+        "gate_run_id": "S26-HP-001",
+        "output_contract_version": "UI_PRODUCTION_SPEC_V6",
+        "policy_snapshot_sha256": "8e27d16328b84c16e8c8102ebc07dcc5b7d271e8a6bbffcc7cf15b185aeb40a7",
+        "profile_slug": "ui_architect",
+        "project_id": "S26",
+        "task_mode": "CREATE_NEW",
+        "upstream_typed_context_sha256": "513769b40125a61884a1061ff594421fbf0de43525e45a4476e32ee533e41600"
+      },
+      "input_literal": "Diseña una pantalla para un marketplace de servicios. Debe tener un encabezado con buscador, categorías principales, una sección de servicios destacados y tarjetas que muestren título, proveedor, precio y una llamada a la acción. El diseño debe ser claro, profesional y fácil de navegar. Entrega una especificación estructurada lista para que otro agente implemente la pantalla.\nDetalle opcional 001: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 002: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 003: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 004: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 005: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 006: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 007: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 008: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 009: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 010: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 011: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 012: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 013: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 014: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 015: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 016: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 017: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 018: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 019: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 020: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 021: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 022: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 023: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 024: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 025: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 026: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 027: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 028: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 029: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 030: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 031: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 032: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 033: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 034: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 035: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 036: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 037: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 038: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 039: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 040: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 041: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 042: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 043: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 044: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 045: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 046: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 047: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 048: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 049: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 050: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 051: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 052: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 053: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 054: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 055: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 056: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 057: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 058: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 059: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 060: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 061: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 062: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 063: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 064: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 065: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 066: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 067: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 068: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 069: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 070: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 071: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 072: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 073: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 074: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 075: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 076: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 077: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 078: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 079: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 080: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 081: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 082: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 083: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 084: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 085: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 086: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 087: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 088: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 089: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 090: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 091: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 092: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 093: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 094: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 095: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 096: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 097: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 098: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 099: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 100: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 101: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 102: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 103: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 104: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 105: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 106: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 107: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 108: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 109: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 110: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 111: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 112: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 113: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 114: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 115: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 116: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 117: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 118: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 119: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 120: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 121: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 122: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 123: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 124: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 125: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 126: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 127: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 128: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 129: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 130: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 131: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 132: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 133: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 134: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 135: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 136: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 137: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 138: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 139: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.\nDetalle opcional 140: conserva legibilidad, estados responsive, jerarquía clara, navegación profesional y autoridad de datos; no inventes valores ni rutas.",
+      "lf_adapter_sources": [],
+      "lf_card_sources": [],
+      "operation_code": "EJECUCION_PERFIL_LF",
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "profile_source_paths": [
+        "profiles/ui_architect/SKILL.md",
+        "profiles/ui_architect/contracts/composer_payload_boundary_v1.md"
+      ],
+      "request_id": "S26V3-F09-O4-HIGH-COMPLEXITY",
+      "required_adapter_codes": [],
+      "required_card_refs": [],
+      "runtime_output_mode": "UI_PRODUCTION_SPEC",
+      "send_image_to_model": false
+    }
+  },
+  "result": {
+    "artifact_sha256": null,
+    "downstream_authorized": false,
+    "kind": "queue_execute",
+    "request_id": "S26V3-F09-O4-HIGH-COMPLEXITY",
+    "result": {
+      "context": {
+        "cache_hit": false,
+        "queue_native": true,
+        "runtime_output_mode": "UI_PRODUCTION_SPEC",
+        "screen_governance_applicable": false
+      },
+      "downstream_authorized": false,
+      "elapsed_ms": 1.15,
+      "model_raw_output": null,
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_contract_valid": {
+        "blocking_codes": [
+          "RUNTIME_COMPLETION_FAILED"
+        ],
+        "downstream_authorized": false,
+        "status": "NOT_EVALUATED"
+      },
+      "profile_slug": "ui_architect",
+      "raw_output": null,
+      "request_id": "S26V3-F09-O4-HIGH-COMPLEXITY",
+      "runtime_completion": {
+        "blocking_codes": [
+          "LLAMA_UI_INPUT_TOKEN_PROXY_BUDGET_EXCEEDED"
+        ],
+        "detail": "proxy_tokens=5554.5;budget=2500",
+        "stage": "RUNTIME_COMPLETION",
+        "status": "FAIL"
+      },
+      "semantic_utility": {
+        "blocking_codes": [
+          "RUNTIME_COMPLETION_FAILED"
+        ],
+        "downstream_authorized": false,
+        "status": "NOT_EVALUATED"
+      }
+    },
+    "schema": "lf-profile-runtime-api-result/v1",
+    "total_ms": 1.166
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "claim_ceiling": "EVIDENCE_FROZEN_W1_W2_AND_W3_PRODUCER_PREP_ONLY_NOT_W3_COMPLETE_NOT_GATE_G_NOT_GOLDEN_NOT_PRODUCTION",
+  "explicit_non_actions": [
+    "NO_SELF_DECLARE_GOLDEN",
+    "NO_GATE_G",
+    "NO_LIFECYCLE_PROMOTION",
+    "NO_PRODUCTION",
+    "NO_DOWNSTREAM_AUTHORIZATION"
+  ],
+  "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "matrix": {
+    "w1": {
+      "fail_count": 0,
+      "model_calls": 0,
+      "pass_count": 22,
+      "status": "W1_COMPLETE_PASS"
+    },
+    "w2": {
+      "fail_count": 0,
+      "model_calls": 6,
+      "pass_count": 7,
+      "status": "W2_COMPLETE_PASS"
+    },
+    "w3": {
+      "independent_review_pending_cases": [
+        "S26V3-F08-O5-INDEPENDENT-HOLDOUT",
+        "S26V3-F10-O5-REAL-E2E-HOLDOUT"
+      ],
+      "producer_model_calls": 7,
+      "producer_side_cases_ready": 4,
+      "status": "PRODUCER_PREP_COMPLETE_INDEPENDENT_REVIEW_PENDING"
+    }
+  },
+  "required_next_phase": "FRESH_INDEPENDENT_CHAT_CONTEXT_REVIEWS",
+  "runtime_live_reverified": {
+    "classification": "INTEGRATED_LIVE_REVERIFIED_READ_ONLY",
+    "downstream_authorized": false,
+    "live_reverify_evidence_sha256": "2b7d20def0e98f2a0c8dc4e60bb6bf3ea220936f998b5e570282eb82126ccace",
+    "live_reverify_request_id": "6560db21-0310-4b9a-940e-690594b9df01",
+    "operational_ready": true
+  },
+  "schema": "S26_GOLDEN_CURRENTMAIN_EVIDENCE_FREEZE_V1",
+  "source_authority_commit": "48916fd36bcaff8eadd60944848e81adbea55c54",
+  "strategy": "S26"
+}
