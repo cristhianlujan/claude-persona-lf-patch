@@ -1,0 +1,48 @@
+{
+  "schema_version": "LF_STRATEGY_UPDATE_E2E_PREWRITE_RECEIPT_V1",
+  "exclusive_pr": 753,
+  "immutable_base_sha": "fc2967e9aa17f9e5e68f8567ef80faafb3839c53",
+  "head_guard_before_candidate_write": "7c4bd494e2b21ab82bb899954a381a8a268cd4f5",
+  "candidate_commit_sha": "7eb62dd6e89c1e0aa19c7ed9bf32b165375ff8fe",
+  "candidate_blob_sha": "8971c63c7a4dc8f20f64dc82126313681c4a18ce",
+  "candidate_path": "sandbox/lf_contract_gate_test/strategy_update_exclusive_lane_20260913/LF_STRATEGY_UPDATE_E2E_CANARY_20260913.prewrite.yaml",
+  "candidate_input_sha256": "ad382d852d0de42cc787e8d5311a378a465130188ce582f9e6d999d12ea5afde",
+  "contract_blob_sha": "2c469e3cd2ae7bb7171ca4e52fc6da84b58af3a3",
+  "validator_blob_sha": "4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765",
+  "validator_version": "v0.3.2",
+  "repo_matrix_version": "v0.4",
+  "repo_matrix_blob_sha": "56ab98e51133178378113ad5a1a9f2b8fa0abef7",
+  "prewrite_validation": {
+    "valid": true,
+    "stage_count": 3,
+    "current_stage_conclusion_count": 0,
+    "blocking_codes": [],
+    "results_sha256": "bf26dc7aba409f1c4a4eed0b471544f2411246863e78919962dd7d14f9b8c7a0"
+  },
+  "close_shape_dry_run": {
+    "valid": true,
+    "input_sha256": "675ef462308db7a03ac348727a6ec54e65a4533ac6c073653e162a1a893a1da8",
+    "results_sha256": "f1492a61913d55d931a4c7e55b69f99261ee1cc67ba8d99bee4ecdae83a769b4"
+  },
+  "stale_frontier_negative_dry_run": {
+    "valid": false,
+    "input_sha256": "767d14792430dd210d8d0651ef22c261f28d01f52e5801386ac081865a9dff36",
+    "blocking_codes": ["STALE_EXECUTION_FRONTIER"],
+    "results_sha256": "42bb85aa96522bb20ffe54c5f2fe7dbe7764e1fedf7a8a92e9394be994d4a224"
+  },
+  "progress_contract": {
+    "version": "STRATEGY_PROGRESS_CONTRACT_V1",
+    "required_key_count": 26,
+    "strategy_number_consumed": false
+  },
+  "official_strategy_source_written": false,
+  "supabase_snapshot_created": false,
+  "historical_s32_mutated": false,
+  "s35_mutated": false,
+  "runtime_change": false,
+  "production_change": false,
+  "scheduler_change": false,
+  "blocking_gate": "EXCLUSIVE_DESTINATION_NOT_YET_GOVERNED",
+  "reason": "The only ACTIVE CREACION_ESTRATEGIA_LF destination points to a historical shared branch. There is no precedent for multiple ACTIVE destinations for one operation/artifact type, so no second active destination is introduced while S35 remains an open zero-step execution.",
+  "verdict": "PASS_PREWRITE_STRUCTURAL_READY_FAIL_CLOSED_BEFORE_OFFICIAL_WRITE"
+}
