@@ -1,0 +1,53 @@
+{
+  "receipt_version": "S31_INDEPENDENT_REVIEW_INTAKE_EXECUTION_V0_1",
+  "strategy": "S31",
+  "execution_target_sha": "e2dd3e6796000103073643a6633d15d8fef13eb2",
+  "execution_ref_kind": "EXACT_COMMIT_ARCHIVE",
+  "runner": {
+    "host": "scalora-vps",
+    "user": "sentinelx",
+    "source_clone": "/opt/s30-git-broker/repo",
+    "working_tree_mutated": false,
+    "execution_workspace": "/tmp/s31ir-exact"
+  },
+  "command": "python3 test_s31_independent_review_intake_v0_1.py",
+  "result": "PASS",
+  "exit_status": 0,
+  "stdout": "PASS_S31_INDEPENDENT_REVIEW_INTAKE_V0_1=10/10",
+  "coverage": {
+    "positive_cases": 2,
+    "negative_fail_closed_cases": 8,
+    "checks": [
+      "ABC canonical Quality Pack bundle/handoff",
+      "DG canonical Quality Pack bundle/handoff",
+      "producer semantic verdict forbidden",
+      "Quality Pack refs immutable",
+      "candidate snapshot drift blocked",
+      "parallel S31 receipt contract blocked",
+      "review bundle SHA mismatch blocked",
+      "independence metadata weakening blocked",
+      "mutable review artifact ref blocked"
+    ]
+  },
+  "frozen_review_bundles": {
+    "ABC": {
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@50b343b8b56e1c7f5ac5497151f9ab11cd7e26a0/sandbox/lf_contract_gate_test/s31_bootstrap/s31_abc_independent_review_bundle_v0_3.json",
+      "git_blob_sha": "3042fb6fcc14fea7d2223d91af18c211ada6a94f"
+    },
+    "DG": {
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@41f87dd7eacff11607aac16d06be38aaf0413e0d/sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_independent_review_bundle_v0_2.json",
+      "git_blob_sha": "ed093aa01063ec5f3cfbe07b2988add5f5492954"
+    }
+  },
+  "quality_pack_binding": {
+    "source_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+    "receipt_schema_blob": "940d10f1523d94990479eb9641e4e1ac44fe6d3c",
+    "receipt_validator_blob": "ee5943622cb833b3222c13a6c1c443c366737e54",
+    "independent_review_contract_blob": "2fac0a92d619a9eb9a1e88c4e778a00a0424c7f7"
+  },
+  "claim_ceiling": "DETERMINISTIC_REVIEW_INTAKE_ONLY",
+  "independent_semantic_review_executed": false,
+  "merge_authorized": false,
+  "golden_authorized": false,
+  "production_authorized": false
+}
