@@ -281,15 +281,36 @@ jobs:
         if: steps.applicability.outputs.required == 'true'
         env:
           OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
         run: |
-          curl --silent --show-error --fail-with-body \
-            --retry 3 --retry-all-errors \
+          set -euo pipefail
+          edge_body="$RUNNER_TEMP/lf-reconcile-inventory-edge.json"
+          set +e
+          http_status="$(curl --silent --show-error \
+            --output "$edge_body" \
+            --write-out '%{http_code}' \
             -H "Authorization: Bearer ${OIDC_TOKEN}" \
             -H "Content-Type: application/json" \
             -d '{"action":"inventory"}' \
-            "https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-github-reconcile-v3" \
-            -o governed-inventory.json
-          jq '{repository, artifact_count: (.inventory | length)}' governed-inventory.json
+            "https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-github-reconcile-v3")"
+          curl_rc=$?
+          set -e
+
+          if [[ "$curl_rc" -eq 0 && "$http_status" =~ ^2[0-9][0-9]$ ]]; then
+            cp "$edge_body" governed-inventory.json
+            echo "PASS_RECONCILIATION_TRANSPORT=EDGE_FUNCTION"
+          elif [[ "$curl_rc" -eq 0 && "$http_status" == "402" ]] && grep -qi 'exceed_egress_quota' "$edge_body"; then
+            echo "EDGE_402_POOLER_FALLBACK=inventory"
+            python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_github_reconcile_pooler_fallback.py \
+              inventory --output governed-inventory.json
+          else
+            echo "FAIL_RECONCILIATION_EDGE_INVENTORY status=${http_status:-000} curl_rc=$curl_rc"
+            cat "$edge_body" || true
+            exit 1
+          fi
+          jq '{repository, artifact_count: (.inventory | length), transport_fallback}' governed-inventory.json
 
       - name: Build reconciliation request
         if: steps.applicability.outputs.required == 'true'
@@ -394,12 +415,34 @@ jobs:
         if: steps.applicability.outputs.required == 'true'
         env:
           OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
         run: |
-          curl --silent --show-error --fail-with-body \
-            --retry 3 --retry-all-errors \
+          set -euo pipefail
+          edge_body="$RUNNER_TEMP/lf-reconcile-persist-edge.json"
+          set +e
+          http_status="$(curl --silent --show-error \
+            --output "$edge_body" \
+            --write-out '%{http_code}' \
             -H "Authorization: Bearer ${OIDC_TOKEN}" \
             -H "Content-Type: application/json" \
             --data-binary @reconciliation-request.json \
-            "https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-github-reconcile-v3" \
-            -o reconciliation-response.json
-          jq '{execution_id, artifacts_expected, artifacts_reported, pass_count, fail_count, promoted_artifact_ids, promotion_pending_artifact_ids}' reconciliation-response.json
+            "https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-github-reconcile-v3")"
+          curl_rc=$?
+          set -e
+
+          if [[ "$curl_rc" -eq 0 && "$http_status" =~ ^2[0-9][0-9]$ ]]; then
+            cp "$edge_body" reconciliation-response.json
+            echo "PASS_RECONCILIATION_TRANSPORT=EDGE_FUNCTION"
+          elif [[ "$curl_rc" -eq 0 && "$http_status" == "402" ]] && grep -qi 'exceed_egress_quota' "$edge_body"; then
+            echo "EDGE_402_POOLER_FALLBACK=persist"
+            python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_github_reconcile_pooler_fallback.py \
+              persist --request reconciliation-request.json --output reconciliation-response.json
+          else
+            echo "FAIL_RECONCILIATION_EDGE_PERSIST status=${http_status:-000} curl_rc=$curl_rc"
+            cat "$edge_body" || true
+            exit 1
+          fi
+          jq '{execution_id, artifacts_expected, artifacts_reported, pass_count, fail_count, transport_fallback, promoted_artifact_ids, promotion_pending_artifact_ids}' reconciliation-response.json
