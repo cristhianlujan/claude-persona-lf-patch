@@ -27,6 +27,7 @@ from .repository import RepositoryBindings
 from .runtime_authority import resolve_typed_runtime_context
 from .settings import Settings
 from .structural import PreparedContext, StructuralContextPipeline
+from .ui_semantic_quality import apply_ui_production_semantic_quality_v1
 from .validation import OutputGates
 
 RESULT_SCHEMA = "lf-profile-runtime-api-result/v1"
@@ -165,12 +166,34 @@ def _ui_layout_flow_matches_hierarchy(deliverable: dict[str, Any], acceptance: d
     return layout["flow"] == required_order
 
 
+def _ui_required_state_semantics_ok(state_map: Any, required_states: set[str]) -> bool:
+    if not isinstance(state_map, dict) or not required_states.issubset(set(state_map)):
+        return False
+    for cid in required_states:
+        states = state_map.get(cid)
+        if not isinstance(states, dict):
+            return False
+        c = cid.casefold()
+        if "search" in c and not {"default", "query_entered", "results_available", "no_results", "error"}.issubset(states):
+            return False
+        if ("navigation" in c or "category" in c) and not {"default", "selected"}.issubset(states):
+            return False
+        if "featured" in c and not {"populated", "empty", "source_designated", "not_source_designated"}.issubset(states):
+            return False
+        if (c.endswith("_cta") or "action" in c) and not {"available", "missing_source_action"}.issubset(states):
+            return False
+        if ("cards" in c or "collection" in c) and not {"populated", "empty"}.issubset(states):
+            return False
+    return True
+
+
 def _deterministic_ui_outcome(
     *,
     deliverable: dict[str, Any],
     acceptance: dict[str, Any],
     composer_payload: dict[str, Any],
     strict_layout_coherence: bool = False,
+    strict_semantic_repair: bool = False,
 ) -> dict[str, Any]:
     """Derive self-score/handoff from verifiable structure; model never self-certifies UICT2."""
     components = deliverable.get("component_tree")
@@ -198,38 +221,157 @@ def _deterministic_ui_outcome(
         and isinstance(row.get("blocked_variants"), list) and bool(row.get("blocked_variants"))
         for row in components
     )
-    state_ok = isinstance(state_map, dict) and required_states.issubset(set(state_map))
+    state_coverage_ok = isinstance(state_map, dict) and required_states.issubset(set(state_map))
+    state_semantics_ok = _ui_required_state_semantics_ok(state_map, required_states)
+    state_ok = state_coverage_ok and (state_semantics_ok if strict_semantic_repair else True)
     risk_ok = (
         isinstance(risk_controls, list)
         and len(risk_controls) >= int(acceptance.get("minimum_risk_control_count") or 0)
     )
     layout_flow_ok = (
         _ui_layout_flow_matches_hierarchy(deliverable, acceptance)
-        if strict_layout_coherence else True
+        if (strict_layout_coherence or strict_semantic_repair) else True
     )
+    hierarchy_depth = _ui_hierarchy_depth(deliverable.get("visual_hierarchy"))
+    minimum_hierarchy_depth = int(acceptance.get("minimum_hierarchy_depth_edges") or 0)
+    minimum_risk_controls = int(acceptance.get("minimum_risk_control_count") or 0)
+    binding_match = _ui_source_bindings_match(deliverable, acceptance)
+    spacing_present = isinstance(deliverable.get("spacing_typography"), dict)
+    hierarchy_present = isinstance(deliverable.get("visual_hierarchy"), list) and bool(deliverable.get("visual_hierarchy"))
+    token_map_present = isinstance(deliverable.get("token_map"), dict) and bool(deliverable.get("token_map"))
+    state_map_present = isinstance(state_map, dict) and bool(state_map)
+    visual_priority_complete = isinstance(components, list) and bool(components) and all(
+        isinstance(row, dict)
+        and isinstance(row.get("visual_priority"), str)
+        and bool(row.get("visual_priority").strip())
+        and isinstance(row.get("role"), str)
+        and bool(row.get("role").strip())
+        for row in components
+    )
+    safety_text = " ".join(risk_controls).casefold() if isinstance(risk_controls, list) else ""
+    lf_safety_explicit = all(token in safety_text for token in ("pressure", "urgency", "invent"))
+
     checks = {
-        "layout_precision": responsive_ok and layout_flow_ok and isinstance(deliverable.get("spacing_typography"), dict),
-        "visual_hierarchy": _ui_hierarchy_depth(deliverable.get("visual_hierarchy")) >= int(acceptance.get("minimum_hierarchy_depth_edges") or 0),
-        "lf_system_fidelity": isinstance(deliverable.get("token_map"), dict) and risk_ok,
+        "layout_precision": responsive_ok and layout_flow_ok and spacing_present,
+        "visual_hierarchy": hierarchy_depth >= minimum_hierarchy_depth and (
+            visual_priority_complete if strict_semantic_repair else True
+        ),
+        "lf_system_fidelity": token_map_present and risk_ok and (
+            lf_safety_explicit if strict_semantic_repair else True
+        ),
         "state_mapping": state_ok,
-        "handoff_quality": component_count_ok and variants_ok and _ui_source_bindings_match(deliverable, acceptance) and bool(composer_payload),
+        "handoff_quality": component_count_ok and variants_ok and binding_match and bool(composer_payload),
     }
     refs = {
         "layout_precision": ["layout_grid", "spacing_typography"],
-        "visual_hierarchy": ["visual_hierarchy"],
+        "visual_hierarchy": ["visual_hierarchy", "component_tree"],
         "lf_system_fidelity": ["token_map", "risk_controls"],
         "state_mapping": ["state_map"],
         "handoff_quality": ["component_tree", "handoff_to_next"],
     }
-    score = {key: 4 if checks[key] else 0 for key in checks}
-    score["total"] = sum(score.values())
+
+    def rubric_score(*, full: bool, partial: bool, minimal: bool) -> int:
+        # Canonical UI Architect rubric uses 5/3/1/0. Never synthesize a constant 4.
+        if full:
+            return 5
+        if partial:
+            return 3
+        if minimal:
+            return 1
+        return 0
+
+    if strict_semantic_repair:
+        criterion_scores = {
+            "layout_precision": rubric_score(
+                full=checks["layout_precision"],
+                partial=responsive_ok and spacing_present,
+                minimal=isinstance(layout, dict) or spacing_present,
+            ),
+            "visual_hierarchy": rubric_score(
+                full=checks["visual_hierarchy"],
+                partial=hierarchy_present and hierarchy_depth >= 1,
+                minimal=hierarchy_present,
+            ),
+            "lf_system_fidelity": rubric_score(
+                full=checks["lf_system_fidelity"],
+                partial=token_map_present and isinstance(risk_controls, list) and bool(risk_controls),
+                minimal=token_map_present or (isinstance(risk_controls, list) and bool(risk_controls)),
+            ),
+            "state_mapping": rubric_score(
+                full=checks["state_mapping"],
+                partial=state_coverage_ok,
+                minimal=state_map_present,
+            ),
+            # A source-binding mismatch can expose an invented route/value downstream and therefore
+            # is not a merely partial handoff; fail it closed at 0 even when the rest is structured.
+            "handoff_quality": 0 if not binding_match else rubric_score(
+                full=checks["handoff_quality"],
+                partial=component_count_ok and bool(composer_payload),
+                minimal=bool(composer_payload),
+            ),
+        }
+    else:
+        # Legacy UICT2 compatibility: historical artifacts were explicitly producer-capped at 4/5.
+        # New UICT5 production runs must use the canonical 5/3/1/0 rubric above.
+        criterion_scores = {key: 4 if checks[key] else 0 for key in checks}
+    evidence_observed = {
+        "layout_precision": {
+            "responsive_modes_required": sorted(acceptance.get("required_responsive_modes") or []),
+            "responsive_rules_present": responsive_ok,
+            "layout_flow_matches_hierarchy": layout_flow_ok,
+            "spacing_typography_present": spacing_present,
+            "layout_grid_sha256": canonical_json_sha256(deliverable.get("layout_grid")),
+            "spacing_typography_sha256": canonical_json_sha256(deliverable.get("spacing_typography")),
+        },
+        "visual_hierarchy": {
+            "observed_depth_edges": hierarchy_depth,
+            "required_depth_edges": minimum_hierarchy_depth,
+            "visual_priority_and_roles_complete": visual_priority_complete,
+            "visual_hierarchy_sha256": canonical_json_sha256(deliverable.get("visual_hierarchy")),
+        },
+        "lf_system_fidelity": {
+            "token_map_present": token_map_present,
+            "risk_controls_observed": len(risk_controls) if isinstance(risk_controls, list) else 0,
+            "risk_controls_required": minimum_risk_controls,
+            "lf_safety_explicit": lf_safety_explicit,
+            "token_map_sha256": canonical_json_sha256(deliverable.get("token_map")),
+            "risk_controls_sha256": canonical_json_sha256(deliverable.get("risk_controls")),
+        },
+        "state_mapping": {
+            "required_state_components": sorted(required_states),
+            "present_state_components": sorted(set(state_map) & required_states) if isinstance(state_map, dict) else [],
+            "coverage_complete": state_coverage_ok,
+            "required_state_semantics": state_semantics_ok if strict_semantic_repair else "LEGACY_COMPAT_NOT_ENFORCED",
+            "state_map_sha256": canonical_json_sha256(deliverable.get("state_map")),
+        },
+        "handoff_quality": {
+            "required_components_present": len(required_ids & component_ids),
+            "required_components_total": len(required_ids),
+            "variant_guards_present": variants_ok,
+            "source_bindings_matched": binding_match,
+            "composer_payload_present": bool(composer_payload),
+            "component_tree_sha256": canonical_json_sha256(deliverable.get("component_tree")),
+            "composer_payload_sha256": canonical_json_sha256(composer_payload),
+        },
+    }
+    evidence_rules = {
+        "layout_precision": "5=responsive modes + hierarchy-coherent flow + spacing/typography explicit; 3=responsive + spacing partial; 1=general layout evidence; 0=absent",
+        "visual_hierarchy": "5=required hierarchy depth + explicit visual priority/role on every component; 3=explicit partial hierarchy; 1=generic hierarchy evidence; 0=absent",
+        "lf_system_fidelity": "5=token map + minimum risk controls + explicit anti-invention/dark-pattern safety; 3=token+risk evidence partial; 1=generic fidelity evidence; 0=absent",
+        "state_mapping": "5=required state coverage + strict semantics when applicable; 3=coverage present but semantics partial; 1=generic state evidence; 0=absent",
+        "handoff_quality": "5=components + variant guards + exact source bindings + composer payload; source-binding mismatch=0 fail-closed; 3/1 only for non-source-critical partial structure",
+    }
+    score = dict(criterion_scores)
+    score["total"] = sum(criterion_scores.values())
     score["evidence_by_criterion"] = {
         key: {
             "refs": refs[key],
+            "rule": evidence_rules[key],
+            "observed": evidence_observed[key],
+            "result": "PASS" if checks[key] else ("PARTIAL" if criterion_scores[key] in {1, 3} else "FAIL"),
             "summary": (
-                f"Deterministic acceptance check passed for {key}."
-                if checks[key]
-                else f"Deterministic acceptance check failed for {key}."
+                f"{('PASS' if checks[key] else ('PARTIAL' if criterion_scores[key] in {1, 3} else 'FAIL'))}: "
+                f"score={criterion_scores[key]}; observed={json.dumps(evidence_observed[key], sort_keys=True, separators=(',', ':'))}"
             ),
         }
         for key in checks
@@ -517,6 +659,11 @@ class ProfileRuntimeEngine:
             and "l" in payload["d"]
         ):
             payload["d"]["l"] = literal_layout
+        semantic_layout_choice = (
+            payload["d"].get("l")
+            if payload.get("v") == 5 and isinstance(payload.get("d"), dict)
+            else None
+        )
         payload, transport_kind = decode_ui_production_transport(
             payload,
             acceptance if isinstance(acceptance, dict) else None,
@@ -536,6 +683,15 @@ class ProfileRuntimeEngine:
         deliverable = payload.get("deliverable_created")
         if not isinstance(deliverable, dict):
             raise LlamaTransportError("UI_PRODUCTION_DELIVERABLE_MISSING")
+        if transport_kind == UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION:
+            if not isinstance(acceptance, dict) or not isinstance(semantic_layout_choice, str):
+                raise LlamaTransportError("UI_PRODUCTION_SEMANTIC_QUALITY_INPUT_MISSING")
+            deliverable = apply_ui_production_semantic_quality_v1(
+                deliverable,
+                acceptance,
+                layout_choice=semantic_layout_choice,
+            )
+            payload["deliverable_created"] = deliverable
         composer_payload = boundary.build_composer_payload(deliverable)
         deterministic_outcome: dict[str, Any] | None = None
         if transport_kind in {UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION_V2, UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION}:
@@ -546,6 +702,7 @@ class ProfileRuntimeEngine:
                 acceptance=acceptance,
                 composer_payload=composer_payload,
                 strict_layout_coherence=(transport_kind == UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION),
+                strict_semantic_repair=(transport_kind == UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION),
             )
         governance_context = {
             "request_id": task.request_id,
@@ -586,6 +743,7 @@ class ProfileRuntimeEngine:
                 "layout_base_order", "screen_task_mode", "required_sections",
                 "design_intent", "risk_controls", "prompt_constraints",
                 "token_map_projection", "variant_guards",
+                "semantic_quality_projection_v1",
             })
         return materialized, {
             "mode": "UI_PRODUCTION_DETERMINISTIC_PROJECTION_V1",
