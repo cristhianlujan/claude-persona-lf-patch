@@ -1,0 +1,106 @@
+version: v0.3.2
+status: CANDIDATO_READ_ONLY
+judge: JUDGE_CONTRATO_ESTRATEGIA_LF
+operation: CREACION_ESTRATEGIA_LF
+ekb_hardening: S30_EKB_HARDENING_V1
+review_hardening: S30_PRODUCT_QUALITY_REVIEW_V1
+validator_path: gobernanza/judges/validate_strategy_contract_v032.py
+validator_version: v0.3.2
+validator_blob_sha: 4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765
+pass_if:
+  - router_read
+  - operational_source_read
+  - durable_start_if_automated_or_explicit_na
+  - ekb_preflight_done
+  - policy_resolution_done
+  - no_implicit_policy_inheritance
+  - policy_set_fingerprint_present
+  - contract_read
+  - repo_destination_validated
+  - current_strategy_inventory_read
+  - duplicate_and_lineage_resolved
+  - strategy_archetype_resolved
+  - strategy_type_extension_complete
+  - exact_dependency_versions_resolved
+  - all_required_strategy_blocks_present
+  - deterministic_prewrite_validator_pass
+  - validator_prewrite_input_sha_matches_candidate
+  - validator_prewrite_results_sha_present
+  - every_stage_schema_complete
+  - stage_conclusion_refs_reserved
+  - no_duplicate_current_stage_conclusion_prewrite
+  - existing_current_stage_conclusion_refs_match
+  - stages_and_exit_gates_present
+  - qdp_tests_metrics_evidence_ceiling_present
+  - rollback_or_recovery_present
+  - invalidation_triggers_present
+  - operability_controls_present_or_explicit_na
+  - execution_frontier_current
+  - next_gate_or_handoff_present
+  - strategy_contract_lint_pass
+  - no_unresolved_policy_conflicts
+  - semantic_consistency_pass
+  - no_contradictory_current_state_projection
+  - github_write_done
+  - github_readback_done
+  - source_blob_sha_present
+  - supabase_registration_receipt_present
+  - independent_supabase_registration_readback_done
+  - candidate_status_readback
+  - runtime_plan_only_readback
+  - automatic_impact_bloqueado_readback
+  - deterministic_close_validator_pass
+  - validator_close_input_sha_matches_canonical_snapshot
+  - validator_close_results_sha_present
+  - every_stage_has_exactly_one_current_conclusion_at_close
+  - every_stage_conclusion_ref_resolves_same_stage_at_close
+  - terminal_or_last_declared_execution_frontier_at_close
+  - no_unexhausted_recovery_route
+  - no_blocking_observations
+fail_if:
+  - write_without_router
+  - write_without_ekb_preflight
+  - write_without_policy_resolution
+  - implicit_policy_inheritance
+  - missing_policy_set_fingerprint
+  - write_without_contract
+  - unresolved_authority
+  - unresolved_material_dependency
+  - unknown_strategy_type_without_extension
+  - missing_required_type_extension_field
+  - missing_required_strategy_block
+  - deterministic_prewrite_validator_missing
+  - deterministic_prewrite_validator_failed
+  - validator_prewrite_input_sha_mismatch
+  - incomplete_stage_schema
+  - duplicate_current_stage_conclusion
+  - stage_conclusion_ref_mismatch
+  - missing_qdp_gate
+  - missing_recovery
+  - missing_invalidation_trigger
+  - missing_operability_control_without_explicit_na
+  - stale_execution_frontier
+  - close_frontier_not_terminal_or_last_declared_stage
+  - contradictory_current_state_projection
+  - missing_next_gate_or_handoff
+  - unresolved_policy_conflict
+  - deterministic_close_validator_missing
+  - deterministic_close_validator_failed
+  - validator_close_input_sha_mismatch
+  - missing_stage_conclusion_at_close
+  - returning_only_used_as_readback
+  - same_statement_readback_used_as_closure
+  - blind_timeout_extension_as_first_response
+  - untraced_retry_without_attempt_id
+  - blocked_without_recovery_exhaustion_proof
+  - unauthorized_scheduler_mutation
+  - assistant_freeform_decision
+  - overwrite_strategy_history
+  - auto_migrate_existing_strategy
+  - enable_runtime
+  - enable_automatic_impact
+  - no_github_readback
+  - no_independent_supabase_readback
+  - close_without_operation_execution
+  - blocking_observations
+result_values: [PASS, FAIL, BLOCKED, RETURN_TO_WORKER]

@@ -1,0 +1,188 @@
+version: v0.3.2
+status: CANDIDATO_READ_ONLY
+operation: CREACION_ESTRATEGIA_LF
+source_model: GIT_FIRST_YAML
+strategy_contract: STRATEGY-CONTRACT-V1-CANDIDATE
+policy_contract: POL-STRATEGY-CREATION-001-CANDIDATE
+ekb_hardening: S30_EKB_HARDENING_V1
+review_hardening: S30_PRODUCT_QUALITY_REVIEW_V1
+lineage:
+  supersedes_contract_version: v0.3.1
+  prior_validator_path: gobernanza/judges/validate_strategy_contract.py
+  prior_validator_blob_sha: d7d18985b0246703d73cbe51eb69bb9162ba034a
+  reason: QA-03_PRD-03_CLOSE_FRONTIER_REGRESSION
+  evidence:
+    failing_canary_run: 34075629778
+    failing_case: close_frontier_points_to_nonterminal_stage
+    repaired_canary_run: 34075791887
+    repaired_result: 22_OF_22_PASS
+  history_preserved: true
+deterministic_validator:
+  path: gobernanza/judges/validate_strategy_contract_v032.py
+  blob_sha: 4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765
+  version: v0.3.2
+  modes: [prewrite, close]
+  required_evidence: [validator_blob_sha, input_sha256, results_sha256, valid, blocking_codes]
+  self_assertion_without_validator: BLOCKED
+  close_frontier_rule: TERMINAL_OR_LAST_DECLARED_STAGE
+required_before_write:
+  - read_router
+  - read_operational_source
+  - targeted_ekb_preflight
+  - durable_execution_start_if_automated
+  - resolve_applicable_policies
+  - explicit_policy_inheritance_resolution
+  - policy_set_fingerprint_present
+  - read_repo_matrix
+  - read_contract
+  - validate_repo
+  - validate_path
+  - declared_paths_exist_in_tree
+  - classify_strategy_type
+  - resolve_strategy_type_extension
+  - current_strategy_inventory_read
+  - dependency_currentness_resolved
+  - strategy_contract_materialized
+  - stage_schema_complete
+  - stage_conclusion_refs_reserved
+  - no_duplicate_current_stage_conclusion
+  - qdp_and_evidence_ceiling_attached
+  - operability_controls_attached_when_applicable
+  - execution_frontier_current
+  - deterministic_strategy_validator_prewrite_pass
+  - lint_pass
+  - conflict_check_pass
+allowed:
+  repository: cristhianlujan/claude-persona-lf-patch
+  path_prefixes: [/gobernanza/, /strategies/]
+  strategy_status: CANDIDATO_READ_ONLY
+  runtime_state: PLAN_ONLY
+  automatic_impact: BLOQUEADO
+  supabase_snapshot_store: public.lf_strategy_snapshots
+blocked:
+  - write_without_router
+  - write_without_ekb_preflight
+  - write_without_policy_resolution
+  - assume_policy_inheritance
+  - write_without_policy_set_fingerprint
+  - write_without_contract
+  - write_without_dependency_currentness
+  - unknown_strategy_type_without_extension
+  - missing_required_type_extension_field
+  - write_without_qdp_gates
+  - write_without_invalidation_triggers
+  - incomplete_stage_schema
+  - duplicate_current_stage_conclusion
+  - stage_conclusion_ref_mismatch
+  - missing_stage_conclusion_at_close
+  - stale_execution_frontier
+  - close_frontier_not_terminal_or_last_declared_stage
+  - contradictory_current_state_projection
+  - missing_next_gate_or_handoff
+  - self_asserted_stage_or_extension_completeness_without_deterministic_validator
+  - validator_input_sha_mismatch
+  - validator_result_invalid
+  - same_statement_readback_as_closure_evidence
+  - returning_only_as_contractual_readback
+  - assistant_freeform_decision
+  - overwrite_strategy_history
+  - auto_migrate_existing_strategies
+  - enable_runtime
+  - automatic_production_promotion
+  - close_without_independent_readback
+required_strategy_blocks:
+  - problem_statement
+  - objective
+  - scope
+  - non_goals
+  - baseline
+  - authorities
+  - dependencies
+  - applicable_policies
+  - stages
+  - gates
+  - tests
+  - metrics
+  - risks
+  - evidence_contract
+  - rollback_or_recovery
+  - execution_frontier
+  - stage_conclusions
+  - invalidation_triggers
+  - change_log
+  - closure_criteria
+stage_schema:
+  required_fields: [stage_code, objective_or_purpose, status, entry_conditions, actions_or_scope, tests, evidence_required, exit_gate, conclusion_ref]
+  prewrite_conclusion_rule: CONCLUSION_REF_RESERVED_ZERO_OR_ONE_CURRENT_CONCLUSION_PER_STAGE
+  close_conclusion_rule: EXACTLY_ONE_CURRENT_CONCLUSION_PER_STAGE
+  history_rule: APPEND_ONLY_PRIOR_CONCLUSIONS_MAY_BE_STALE_OR_SUPERSEDED
+  conclusion_ref_rule: WHEN_CURRENT_CONCLUSION_EXISTS_REF_MUST_MATCH_AT_CLOSE_EVERY_REF_MUST_RESOLVE
+execution_frontier_contract:
+  during_execution:
+    required_fields: [current_stage, current_action, safe_parallel_work, blockers]
+  at_close:
+    state: CLOSED
+    current_stage: TERMINAL_OR_LAST_DECLARED_STAGE
+    current_action: NONE
+    safe_parallel_work: []
+    blockers: []
+  stale_frontier_blocks_close: true
+  contradictory_current_state_blocks_close: true
+strategy_type_extensions:
+  resolution_required: true
+  custom_requires_extension_schema_ref: true
+  archetypes:
+    GOVERNANCE:
+      required_fields: [authority_model, ownership_boundaries, lifecycle_or_policy_impact, conflict_and_waiver_handling, next_gate_or_handoff]
+    TECHNICAL_OPERATIONAL:
+      required_fields: [runtime_or_system_boundary, failure_modes_and_first_bad_hop, reliability_test_plan, performance_or_resource_metrics_or_explicit_na, rollback_or_recovery, next_gate_or_handoff]
+    PRODUCT:
+      required_fields: [target_user_or_state, selected_decision, rejected_alternatives, tradeoffs, value_metric_or_success_proxy, observable_acceptance_criteria, next_gate_or_handoff]
+    RESEARCH_BENCHMARK:
+      required_fields: [research_questions_or_hypotheses, methodology, sample_dataset_or_case_families, evaluation_criteria, leakage_and_bias_controls, next_gate_or_handoff]
+    MIGRATION_DEPLOYMENT:
+      required_fields: [source_target_versions, parity_contract, rollout_or_cutover_plan, rollback_plan, smoke_ci_and_readback, production_boundary, next_gate_or_handoff]
+    CANARY_VALIDATION:
+      required_fields: [proof_target, positive_case, negative_cases, exact_evidence_boundary, cleanup_or_demotion_plan, next_gate_or_handoff]
+required_operability_controls_when_applicable:
+  - durable_start_contract
+  - independent_post_write_readback
+  - four_route_error_recovery_with_exhaustion
+  - timeout_phase_budget
+  - scheduler_scope_guard
+  - dynamic_concurrency_atomicity_idempotency_retry_partial_failure_tests
+  - one_mutating_target_per_child_execution_for_fanout
+policy_resolution:
+  inheritance: EXPLICIT_NOT_ASSUMED
+  missing_required_policy: FAIL_CLOSED
+  non_applicable_requires_reason: true
+bootstrap:
+  route: GOVERNED_PROVENANCE_BOOTSTRAP_ONLY
+  precedent_operation: VULNERABILITY_COVERAGE_REPAIR_LF
+  production_bootstrap_forbidden: true
+readback:
+  returning_is_receipt_only: true
+  independent_post_write_readback_required: true
+timeout_policy:
+  blind_timeout_extension_forbidden: true
+  phases: [queue_wait, claim, prefill_or_input_prepare, generation_or_inference, persist, readback, caller_or_job]
+recovery_routes: [A_ORIGINAL, B_FOCAL_MINIMAL, C_CANONICAL_EQUIVALENT, D_INDEPENDENT_AUTHORIZED]
+required_after_write:
+  - github_readback
+  - commit_sha
+  - source_blob_sha
+  - supabase_registration_receipt
+  - independent_supabase_registration_readback
+  - strategy_snapshot_id
+  - exact_strategy_version
+  - policy_set_fingerprint_readback
+  - all_required_steps_pass
+  - all_stage_schemas_complete
+  - all_stage_conclusions_current_and_bound
+  - execution_frontier_terminal
+  - strategy_type_extension_complete
+  - deterministic_strategy_validator_close_pass
+  - contract_sha_present
+  - judge_sha_present
+  - no_blocking_observations
+  - report_output
