@@ -26,6 +26,13 @@ def _nonempty(v: Any) -> bool:
     return v is not None
 
 
+def _normalized_batch(v: Any) -> str | None:
+    if not _nonempty(v):
+        return None
+    text = str(v)
+    return None if text.upper() in {"NONE", "N/A"} else text
+
+
 def validate_schema_instance(wp: Mapping[str, Any]) -> dict:
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
     Draft7Validator.check_schema(schema)
@@ -118,12 +125,49 @@ def validate_repair_policy(wp: Mapping[str, Any]) -> dict:
     return {"status": PASS, "code": "PASS_REPAIR_POLICY"}
 
 
+def validate_frontier_close_consistency(wp: Mapping[str, Any]) -> dict:
+    frontier = wp.get("frontier") or {}
+    close = wp.get("close_guard") or {}
+    safe = frontier.get("safe_parallel_work")
+    remaining = frontier.get("remaining_safe_scope_count")
+    if not isinstance(safe, list) or not isinstance(remaining, int):
+        return _block("BLOCK_FRONTIER_INVALID")
+    if len(safe) != len(set(safe)):
+        return _block("BLOCK_SAFE_WORK_DUPLICATE")
+    if remaining != len(safe):
+        return _block("BLOCK_SAFE_WORK_COUNT_MISMATCH", remaining=remaining, listed=len(safe))
+    frontier_batch = _normalized_batch(frontier.get("next_safe_batch"))
+    if remaining == 0 and frontier_batch is not None:
+        return _block("BLOCK_NEXT_SAFE_BATCH_WITH_ZERO_COUNT", next_safe_batch=frontier_batch)
+    if remaining > 0:
+        if frontier_batch is None:
+            return _block("BLOCK_SAFE_WORK_FRONTIER_INCONSISTENT")
+        if frontier_batch not in safe:
+            return _block("BLOCK_NEXT_SAFE_BATCH_NOT_LISTED", next_safe_batch=frontier_batch)
+    if close.get("safe_work_remaining_count") != remaining:
+        return _block(
+            "BLOCK_FRONTIER_CLOSE_COUNT_MISMATCH",
+            frontier=remaining,
+            close_guard=close.get("safe_work_remaining_count"),
+        )
+    close_batch = _normalized_batch(close.get("next_safe_batch"))
+    if close_batch != frontier_batch:
+        return _block(
+            "BLOCK_FRONTIER_CLOSE_BATCH_MISMATCH",
+            frontier=frontier_batch,
+            close_guard=close_batch,
+        )
+    if close.get("global_remaining_work_scan") != frontier.get("global_remaining_work_scan"):
+        return _block("BLOCK_FRONTIER_CLOSE_SCAN_MISMATCH")
+    return {"status": PASS, "code": "PASS_FRONTIER_CLOSE_CONSISTENCY"}
+
+
 def continuation_decision(wp: Mapping[str, Any]) -> dict:
     frontier = wp.get("frontier") or {}
     blockers = frontier.get("blockers")
     safe = frontier.get("safe_parallel_work")
     remaining = frontier.get("remaining_safe_scope_count")
-    next_batch = frontier.get("next_safe_batch")
+    next_batch = _normalized_batch(frontier.get("next_safe_batch"))
     if not isinstance(blockers, list) or not isinstance(safe, list) or not isinstance(remaining, int):
         return _block("BLOCK_FRONTIER_INVALID")
     for i, blocker in enumerate(blockers):
@@ -133,8 +177,6 @@ def continuation_decision(wp: Mapping[str, Any]) -> dict:
         if not isinstance(independent, list):
             return _block("BLOCK_BLOCKER_SAFE_WORK_NOT_LIST", index=i)
     if remaining > 0:
-        if not safe or not _nonempty(next_batch):
-            return _block("BLOCK_SAFE_WORK_FRONTIER_INCONSISTENT")
         return {
             "status": CONTINUE,
             "code": "CONTINUE_SAFE_SCOPE_PERSIST_BLOCKED_SCOPE",
@@ -147,11 +189,11 @@ def continuation_decision(wp: Mapping[str, Any]) -> dict:
 def evaluate_close_guard(wp: Mapping[str, Any]) -> dict:
     cg = wp.get("close_guard") or {}
     remaining = cg.get("safe_work_remaining_count")
-    next_batch = cg.get("next_safe_batch")
+    next_batch = _normalized_batch(cg.get("next_safe_batch"))
     reasons = []
     if remaining != 0:
         reasons.append("SAFE_WORK_REMAINING_NONZERO_OR_UNKNOWN")
-    if _nonempty(next_batch) and str(next_batch).upper() not in {"NONE", "N/A"}:
+    if next_batch is not None:
         reasons.append("NEXT_SAFE_BATCH_PRESENT")
     if cg.get("global_remaining_work_scan") != "PASS":
         reasons.append("GLOBAL_REMAINING_WORK_SCAN_NOT_PASS")
@@ -192,6 +234,7 @@ def evaluate_work_package(wp: Mapping[str, Any]) -> dict:
         validate_executed_validation,
         validate_repair_policy,
         validate_judge,
+        validate_frontier_close_consistency,
     ]
     for check in checks:
         result = check(wp)
