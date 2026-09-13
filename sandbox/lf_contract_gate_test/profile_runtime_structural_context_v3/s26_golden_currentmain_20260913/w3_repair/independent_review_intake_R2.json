@@ -1,0 +1,17 @@
+{
+  "schema": "S26_W3_INDEPENDENT_REVIEW_INTAKE_R2_V1",
+  "status": "READY_FOR_INDEPENDENT_CHAT_CONTEXT",
+  "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-CURRENTMAIN-3B39657F",
+  "matrix_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT",
+  "final_candidate_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+  "producer_run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-R2-119E97D9C5FD",
+  "producer_execution_receipt_sha256": "e461ddd1602412e8aadf28903d5b87b3258a85a900cbec2d720aa9ed5a73c97c",
+  "full_governed_pipeline_observed": true,
+  "typed_context_present": true,
+  "artifact_canonical_sha256": "1d5cf010068c667bd44f5a6c66ac13869c7042e2e70a271b005cec43e64b5c91",
+  "frozen_bundle_commit": "ff603d81d4e8e6ddca0cd5fe8035a862bab6a300",
+  "frozen_bundle_ref": "github://cristhianlujan/claude-persona-lf-patch@ff603d81d4e8e6ddca0cd5fe8035a862bab6a300/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_golden_currentmain_20260913/w3_repair/review_bundle_S26V3-F10-O5-REAL-E2E-HOLDOUT-R2",
+  "independent_review_status": "PENDING_INDEPENDENT_CHAT_CONTEXT",
+  "golden_authorized": false,
+  "production_authorized": false
+}
