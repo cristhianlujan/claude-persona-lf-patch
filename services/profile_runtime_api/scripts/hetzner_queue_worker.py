@@ -25,6 +25,11 @@ from typing import Any
 import psycopg
 from psycopg.types.json import Jsonb
 
+try:
+    from .runtime_envelope_materializer import materialize_router_advisory_envelope
+except ImportError:  # direct script execution under systemd
+    from runtime_envelope_materializer import materialize_router_advisory_envelope
+
 TABLE = "private.lf_profile_runtime_queue_v1"
 PROVIDER = "hetzner_profile_runtime_api"
 MAX_LF_ADAPTERS = 4
@@ -155,8 +160,17 @@ def _claim(conn: psycopg.Connection) -> dict[str, Any] | None:
             return None
         cols = [d.name for d in cur.description]
         payload = dict(zip(cols, row))
-        if payload["runtime_request_envelope"] is None:
+        envelope = payload["runtime_request_envelope"]
+        if envelope is None:
             payload["lf_adapter_sources"] = _adapter_sources(cur, payload["profile_code"])
+        elif isinstance(envelope, dict):
+            governance = envelope.get("input_governance")
+            if (
+                isinstance(governance, dict)
+                and governance.get("subject_mode") == "NON_CANONICAL_ARTIFACT"
+                and (governance.get("current") is not True or governance.get("ready") is not True)
+            ):
+                payload["lf_adapter_sources"] = _adapter_sources(cur, payload["profile_code"])
         conn.commit()
         return payload
 
@@ -471,7 +485,14 @@ def _persist_success(conn: psycopg.Connection, request_id: str, job: dict[str, A
 
 
 def _persist_failure(conn: psycopg.Connection, request_id: str, exc: BaseException) -> None:
-    detail = f"{type(exc).__name__}:{str(exc)}"[:1500]
+    raw = str(exc)
+    candidate = raw.split(":", 1)[0]
+    error_code = (
+        candidate
+        if re.fullmatch(r"[A-Z0-9][A-Z0-9_-]{2,119}", candidate or "")
+        else "HETZNER_QUEUE_WORKER_FAILED"
+    )
+    detail = f"{type(exc).__name__}:{raw}"[:1500]
     with conn.cursor() as cur:
         cur.execute(
             f"""
@@ -480,13 +501,13 @@ def _persist_failure(conn: psycopg.Connection, request_id: str, exc: BaseExcepti
                    completed_at=now(),
                    updated_at=now(),
                    runtime_provider=%s,
-                   error_code='HETZNER_QUEUE_WORKER_FAILED',
+                   error_code=%s,
                    error_detail=%s
              where request_id=%s::uuid
                and status='RUNNING'
                and runtime_target='HETZNER'
             """,
-            (PROVIDER, detail, request_id),
+            (PROVIDER, error_code, detail, request_id),
         )
         conn.commit()
 
@@ -501,6 +522,11 @@ def run_once() -> bool:
         request_id = claimed["request_id"]
         envelope = claimed.get("runtime_request_envelope")
         if envelope is not None:
+            envelope = materialize_router_advisory_envelope(
+                request_id,
+                envelope,
+                live_adapter_sources=claimed.get("lf_adapter_sources") or [],
+            )
             payload = _validate_envelope(request_id, envelope)
             if "artifact_set" in payload:
                 endpoint = "/v1/profile/artifact-set-execute"
