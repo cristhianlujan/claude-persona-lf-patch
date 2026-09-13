@@ -1,0 +1,70 @@
+{
+  "contract_id": "LF-TRANSVERSAL-E2E-MATRIX-V1",
+  "owner": "LF-TRANSVERSAL-E2E-MATRIX",
+  "issue": 725,
+  "scope": "NON_PRODUCTION_ASSURANCE",
+  "consumers": ["S26", "S30", "FUTURE_STRATEGIES"],
+  "canonical_sources": [
+    "public.lf_operation_registry",
+    "public.lf_router_action_registry",
+    "public.lf_operation_contracts",
+    "public.lf_operation_steps",
+    "public.lf_operation_step_contracts",
+    "public.v_lf_operation_policy_snapshot",
+    "public.lf_operation_step_judge_bindings",
+    "public.lf_operation_execution"
+  ],
+  "required_matrix_dimensions": [
+    "ROUTER_TO_OPERATION",
+    "POLICY_COMPLETENESS",
+    "ACTIVE_CONTRACT",
+    "REQUIRED_STEP_REACHABILITY",
+    "TERMINAL_AFTER_REQUIRED_GATES",
+    "INVALID_DISTRIBUTION_MODE_FAIL_CLOSED",
+    "TARGET_AUTHORITY_NO_OVERRIDE",
+    "DIRECT_RESERVATION_PROVENANCE",
+    "INTERNAL_SUBOPERATION_PROVENANCE",
+    "REPLAY_IDEMPOTENCY_LEASE_CHECKPOINT",
+    "AUTO_COVER_NEW_OPERATION_ROUTE_STEP"
+  ],
+  "closure_rule": {
+    "matrix_status_required": "PASS",
+    "coverage_required_pct": 100,
+    "known_bypass_allowed": 0,
+    "unknown_internal_provenance_allowed": 0,
+    "unreachable_required_steps_allowed": 0,
+    "unresolved_required_policies_allowed": 0,
+    "direct_routed_operations_without_active_contract_allowed": 0
+  },
+  "current_materialization": {
+    "shared_engine": "sandbox/lf_contract_gate_test/transversal_e2e_matrix/matrix_engine_v1.py",
+    "live_generator": "sandbox/lf_contract_gate_test/transversal_e2e_matrix/generate_live_matrix_v1.sql",
+    "current_snapshot": "sandbox/lf_contract_gate_test/transversal_e2e_matrix/live_snapshot_20260913_v1.json",
+    "s26_ci_consumer": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_transversal_e2e_matrix_s26_v1.py",
+    "s30_ci_consumer": "sandbox/lf_contract_gate_test/s30_transversal_e2e_matrix/test_s30_transversal_matrix_v1.py",
+    "live_ci_refresh_binding": "PENDING",
+    "current_closure_state": "BLOCK"
+  },
+  "s30_extension": [
+    "GLOBAL_REMAINING_WORK_SCAN",
+    "safe_work_remaining_count",
+    "next_safe_batch",
+    "blocker_terminal_disposition",
+    "recovery_and_parallel_continue",
+    "CLOSE_GUARD"
+  ],
+  "s26_extension": [
+    "PROFILE_RUNTIME_AUTHORITY",
+    "TYPED_CONTEXT",
+    "PROFILE_EXECUTION_BINDING",
+    "RUNTIME_STATE_AND_LINEAGE"
+  ],
+  "safety_ceiling": {
+    "production_activation": false,
+    "business_effects": false,
+    "scheduler_activation": false,
+    "runtime_activation": false,
+    "billing_or_secret_changes": false,
+    "main_merge": false
+  }
+}
