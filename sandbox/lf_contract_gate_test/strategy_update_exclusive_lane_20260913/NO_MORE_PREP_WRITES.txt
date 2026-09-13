@@ -1,0 +1,1 @@
+Further writes in this lane require exact HEAD readback and must be substantive or evidence-bearing. This file closes the bootstrap-only preparation phase.
