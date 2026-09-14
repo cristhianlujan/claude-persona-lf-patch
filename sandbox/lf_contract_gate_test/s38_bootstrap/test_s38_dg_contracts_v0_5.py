@@ -60,11 +60,31 @@ def g_request(name):
 assert R.verified and R.artifact_head
 POS+=1
 
-# Caller-controlled old resolver is not accepted by S38 validation.
-legacy=legacy_trust.TrustedRefResolver(R.root)
-x=f_base(); res=m.validate_evidence_envelope(x,legacy)
-assert res['code']=='BLOCK_UNTRUSTED_RESOLVER_TYPE',res
-NEG+=1
+# Caller-controlled old resolver, including one rooted at a tampered clone, is not accepted.
+with tempfile.TemporaryDirectory() as attack_td:
+    attack_root=Path(attack_td)/'repo'
+    subprocess.run(['git','clone','-q','--branch','lf/s38-ir006-repair-gpt-exclusive-20260913','https://github.com/cristhianlujan/claude-persona-lf-patch.git',str(attack_root)],check=True)
+    forged=attack_root/f'{OLD_E}/source_authority.txt'
+    forged.write_text('ATTACKER-FORGED-AUTHORITY\n',encoding='utf-8')
+    legacy=legacy_trust.TrustedRefResolver(attack_root)
+    x=f_base(); res=m.validate_evidence_envelope(x,legacy)
+    assert res['code']=='BLOCK_UNTRUSTED_RESOLVER_TYPE',res
+    NEG+=1
+
+# A copied S38 resolver module with local byte tampering cannot self-certify merely because HEAD is canonical.
+with tempfile.TemporaryDirectory() as attack_td:
+    attack_root=Path(attack_td)/'repo'
+    subprocess.run(['git','clone','-q','--branch','lf/s38-ir006-repair-gpt-exclusive-20260913','https://github.com/cristhianlujan/claude-persona-lf-patch.git',str(attack_root)],check=True)
+    mod_path=attack_root/'sandbox/lf_contract_gate_test/s38_bootstrap/s38_governed_resolution_v0_2.py'
+    mod_path.write_text(mod_path.read_text(encoding='utf-8')+'\n# attacker local mutation\n',encoding='utf-8')
+    spec=importlib.util.spec_from_file_location('s38_tampered_resolver',mod_path)
+    tampered=importlib.util.module_from_spec(spec); sys.modules[spec.name]=tampered; spec.loader.exec_module(tampered)
+    try:
+        tampered.S38GovernedRefResolver()
+        raise AssertionError('tampered resolver unexpectedly constructed')
+    except tampered.ResolutionError as exc:
+        assert exc.code=='BLOCK_GOVERNED_ARTIFACT_BYTE_MISMATCH',exc.code
+    NEG+=1
 
 # Archived historical path deleted at current artifact head remains current only via exact registry attestation.
 arch='github://cristhianlujan/claude-persona-lf-patch@be6c0f8a320c5cdcfa242ee775ba769745eb82df/profiles/ui_architect/schemas/runtime_output.schema.json'
