@@ -57,6 +57,10 @@ if [[ -z "$owner_prefix" ]]; then
   echo "FAIL_MIGRATION_LIFECYCLE_OWNER_PREFIX_REQUIRED" >&2
   exit 2
 fi
+if [[ ! "$owner_prefix" =~ ^[a-z0-9][a-z0-9_]*_$ ]]; then
+  echo "FAIL_MIGRATION_LIFECYCLE_OWNER_PREFIX_INVALID=$owner_prefix" >&2
+  exit 2
+fi
 if [[ -n "$min_version" && ! "$min_version" =~ ^20[0-9]{12}$ ]]; then
   echo "FAIL_MIGRATION_LIFECYCLE_MIN_VERSION_INVALID=$min_version" >&2
   exit 2
