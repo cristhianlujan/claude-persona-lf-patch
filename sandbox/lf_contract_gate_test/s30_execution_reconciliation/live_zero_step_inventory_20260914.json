@@ -1,0 +1,31 @@
+{
+  "schema_version": "LF_ZERO_STEP_EXECUTION_INVENTORY_V1",
+  "observed_main_sha": "18784e12ae4e4b8c7c48ae4004011444deb1fbeb",
+  "supabase_project": "mhwmirqcgxxukpctffuv",
+  "observed_date": "2026-09-14",
+  "effect_guard_rows_across_inventory": 0,
+  "rows": [
+    {"execution_id":"09b90743-6f2c-4651-a6b9-739bd41d35e7","operation_code":"ORQUESTACION_PIPELINE_LF","lifecycle":"OP_OPERATIONAL","init":[1,0,0,0],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":false,"request_sha":false,"effects":0},
+    {"execution_id":"5c8f0238-b53a-4560-a5bb-5a7f8bffd3e6","operation_code":"ORQUESTACION_PIPELINE_LF","lifecycle":"OP_OPERATIONAL","init":[1,0,0,0],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":false,"request_sha":false,"effects":0},
+    {"execution_id":"49cc7bcd-cb04-443f-a7ec-04f289d3dc10","operation_code":"ORQUESTACION_PIPELINE_LF","lifecycle":"OP_OPERATIONAL","init":[1,0,0,0],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":false,"request_sha":false,"effects":0},
+    {"execution_id":"EXEC-BISC-004","operation_code":"BUILD_INTEGRAL_STORY_CREATOR_LF","lifecycle":"OP_CANDIDATE","init":[0,0,0,0],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":false,"request_sha":false,"effects":0},
+    {"execution_id":"EXEC-ROUTER-MIGRATION-SOURCE-PARITY-20260828-001","operation_code":"ACTUALIZACION_ROUTER_LF","lifecycle":"OP_OPERATIONAL","init":[0,0,0,0],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":false,"request_sha":false,"effects":0},
+    {"execution_id":"GOV-ACTUALIZACION-ADAPTER-MATERIALIZATION-20260829-001","operation_code":"ACTUALIZACION_ADAPTER_LF","lifecycle":"OP_OPERATIONAL","init":[1,1,1,1],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":false,"request_sha":false,"effects":0},
+    {"execution_id":"EXEC-ADAPTER-FACTORY-CORE-REUSE-20260831-001","operation_code":"CREACION_ADAPTER_LF","lifecycle":"OP_OPERATIONAL","init":[1,0,1,1],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":false,"request_sha":false,"effects":0},
+    {"execution_id":"LF-AUTOLEARN-RUN-20260901-037","operation_code":"LEARNING_BRIDGE_KB_CARD_LF","lifecycle":"OP_OPERATIONAL","init":[0,0,0,0],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":false,"request_sha":false,"effects":0},
+    {"execution_id":"LF-AUTOLEARN-CAPTURE-REEVALUA-20260901-001","operation_code":"EXTRACCION_FUENTES_DIGITALES_LF","lifecycle":"OP_OPERATIONAL","init":[1,0,0,0],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":false,"request_sha":false,"effects":0},
+    {"execution_id":"LF-AUTOLEARN-HOMOLOG-REEVALUA-20260901-001","operation_code":"HOMOLOGACION_FUENTES_DIGITALES_LF","lifecycle":"OP_OPERATIONAL","init":[1,0,0,0],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":false,"request_sha":false,"effects":0},
+    {"execution_id":"LF-ACT0058-20260901-1848-AUTOLEARN","operation_code":"ORQUESTACION_PIPELINE_LF","lifecycle":"OP_OPERATIONAL","init":[1,0,0,0],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":false,"request_sha":false,"effects":0},
+    {"execution_id":"EXEC-PROGRAMMING-E2E-DB-ROUTE-REPAIR-20260903-001","operation_code":"VULNERABILITY_COVERAGE_REPAIR_LF","lifecycle":"OP_OPERATIONAL","init":[0,0,0,0],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":false,"request_sha":false,"effects":0},
+    {"execution_id":"EXEC-E2E05-ACTUALIZACION-DB-LF-20260903-001","operation_code":"ACTUALIZACION_DB_LF","lifecycle":"OP_CANDIDATE","init":[0,0,0,0],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":false,"request_sha":false,"effects":0},
+    {"execution_id":"EXEC-EJECUCION-SKILL-ACT0046-AUTODISC-PILOT-27G-20260910-005","operation_code":"EJECUCION_SKILL_LF","lifecycle":"OP_CANDIDATE","init":[1,1,1,1],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":false,"request_sha":false,"effects":0},
+    {"execution_id":"EXEC-BOOTSTRAP-ACTUALIZACION-REGLA-LF-20260913-001","operation_code":"VULNERABILITY_COVERAGE_REPAIR_LF","lifecycle":"OP_OPERATIONAL","init":[0,0,0,0],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":false,"request_sha":false,"effects":0},
+    {"execution_id":"EXEC-BOOTSTRAP-CREACION-REGLA-LF-20260913-001","operation_code":"VULNERABILITY_COVERAGE_REPAIR_LF","lifecycle":"OP_OPERATIONAL","init":[0,0,0,0],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":false,"request_sha":false,"effects":0},
+    {"execution_id":"EXEC-BOOTSTRAP-MATERIALIZACION-REGLA-EXPLORADA-LF-20260913-001","operation_code":"VULNERABILITY_COVERAGE_REPAIR_LF","lifecycle":"OP_OPERATIONAL","init":[0,0,0,0],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":false,"request_sha":false,"effects":0},
+    {"execution_id":"EXEC-S35-DDI-STRATEGY-CREATION-20260913-001","operation_code":"CREACION_ESTRATEGIA_LF","lifecycle":"OP_OPERATIONAL","init":[0,0,0,0],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":false,"request_sha":false,"effects":0},
+    {"execution_id":"EXEC-ACTUALIZACION-DB-RULE-SCREEN-RELATION-DURABLE-20260913-001","operation_code":"ACTUALIZACION_DB_LF","lifecycle":"OP_CANDIDATE","init":[0,0,0,0],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":true,"request_sha":true,"effects":0},
+    {"execution_id":"EXEC-S37-DESTINATION-BINDING-20260913-001","operation_code":"ACTUALIZACION_DB_LF","lifecycle":"OP_CANDIDATE","init":[0,0,0,0],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":true,"request_sha":true,"effects":0},
+    {"execution_id":"EXEC-S30-STRATEGY-QUALIFICATION-FRAMEWORK-20260914-001","operation_code":"ACTUALIZACION_DB_LF","lifecycle":"OP_CANDIDATE","init":[0,0,0,0],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":true,"request_sha":true,"effects":0},
+    {"execution_id":"EXEC-CARD-UPDATE-I7-REMEDIATION-20260913-001","operation_code":"VULNERABILITY_COVERAGE_REPAIR_LF","lifecycle":"OP_OPERATIONAL","init":[0,0,0,0],"lease":"NO_LEASE","checkpoint_seq":0,"idempotency":false,"request_sha":false,"effects":0}
+  ]
+}
