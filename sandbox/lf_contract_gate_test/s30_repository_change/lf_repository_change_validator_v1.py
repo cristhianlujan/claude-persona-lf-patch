@@ -16,6 +16,13 @@ PASS_RESULTS = {
     "PASS_REPOSITORY_CHANGE_WITH_READBACK",
     "NOOP_IDEMPOTENT_ALREADY_APPLIED",
 }
+BLOCK_RESULTS = {
+    "BLOCK_STALE_HEAD",
+    "BLOCK_SCOPE_VIOLATION",
+    "BLOCK_PROVIDER_NOT_GOVERNED",
+    "BLOCK_REQUEST_IDENTITY_MISMATCH",
+    "BLOCK_READBACK_MISMATCH",
+}
 UNKNOWN_RESULT = "RECONCILIATION_REQUIRED_UNKNOWN_OUTCOME"
 
 
@@ -130,10 +137,8 @@ def validate_receipt(request: dict[str, Any], receipt: dict[str, Any], governed_
 
     if receipt.get("receipt_version") != "LF_REPOSITORY_CHANGE_RECEIPT_V1":
         findings.append("RECEIPT_VERSION_INVALID")
-    if receipt.get("result") not in PASS_RESULTS | {
-        "BLOCK_STALE_HEAD", "BLOCK_SCOPE_VIOLATION", "BLOCK_PROVIDER_NOT_GOVERNED",
-        "BLOCK_REQUEST_IDENTITY_MISMATCH", "BLOCK_READBACK_MISMATCH", UNKNOWN_RESULT,
-    }:
+    result = receipt.get("result")
+    if result not in PASS_RESULTS | BLOCK_RESULTS | {UNKNOWN_RESULT}:
         findings.append("RESULT_VOCABULARY_INVALID")
 
     exact = {
@@ -158,15 +163,6 @@ def validate_receipt(request: dict[str, Any], receipt: dict[str, Any], governed_
     if receipt.get("merge_authorized") is not False:
         findings.append("MERGE_AUTHORITY_MUST_REMAIN_FALSE")
 
-    after = receipt.get("after_head")
-    remote = receipt.get("remote_head_readback")
-    if not isinstance(after, str) or not HEX40.fullmatch(after):
-        findings.append("AFTER_HEAD_INVALID")
-    if not isinstance(remote, str) or not HEX40.fullmatch(remote):
-        findings.append("REMOTE_HEAD_READBACK_INVALID")
-    if isinstance(after, str) and isinstance(remote, str) and after != remote:
-        findings.append("BLOCK_READBACK_MISMATCH:REMOTE_HEAD")
-
     changed = receipt.get("changed_paths")
     readbacks = receipt.get("path_readbacks")
     if not isinstance(changed, list) or len(changed) != len(set(changed or [])) or not all(_safe_path(x) for x in (changed or [])):
@@ -176,7 +172,17 @@ def validate_receipt(request: dict[str, Any], receipt: dict[str, Any], governed_
         findings.append("PATH_READBACKS_INVALID")
         readbacks = []
 
-    result = receipt.get("result")
+    after = receipt.get("after_head")
+    remote = receipt.get("remote_head_readback")
+
+    if result in PASS_RESULTS:
+        if not isinstance(after, str) or not HEX40.fullmatch(after):
+            findings.append("AFTER_HEAD_INVALID")
+        if not isinstance(remote, str) or not HEX40.fullmatch(remote):
+            findings.append("REMOTE_HEAD_READBACK_INVALID")
+        if isinstance(after, str) and isinstance(remote, str) and after != remote:
+            findings.append("BLOCK_READBACK_MISMATCH:REMOTE_HEAD")
+
     if result == "PASS_REPOSITORY_CHANGE_WITH_READBACK":
         if set(changed) != set(request.get("requested_paths") or []):
             findings.append("BLOCK_READBACK_MISMATCH:CHANGED_PATH_SET")
@@ -203,12 +209,20 @@ def validate_receipt(request: dict[str, Any], receipt: dict[str, Any], governed_
         if not isinstance(receipt.get("prior_receipt_ref"), str) or not receipt.get("prior_receipt_ref", "").strip():
             findings.append("NOOP_PRIOR_RECEIPT_REF_REQUIRED")
     elif result == UNKNOWN_RESULT:
+        if after is not None or remote is not None:
+            findings.append("UNKNOWN_OUTCOME_MUST_NOT_ASSERT_HEADS")
+        if changed or readbacks:
+            findings.append("UNKNOWN_OUTCOME_MUST_NOT_ASSERT_CHANGED_PATHS")
         if not isinstance(receipt.get("unknown_outcome_detail"), str) or not receipt.get("unknown_outcome_detail", "").strip():
             findings.append("UNKNOWN_OUTCOME_DETAIL_REQUIRED")
 
-    disposition = "ACCEPT_PASS" if result in PASS_RESULTS and not findings else (
-        "RECONCILE_DO_NOT_REDISPATCH" if result == UNKNOWN_RESULT and not findings else "BLOCK"
-    )
+    if result in PASS_RESULTS:
+        disposition = "ACCEPT_PASS" if not findings else "BLOCK"
+    elif result == UNKNOWN_RESULT:
+        disposition = "RECONCILE_DO_NOT_REDISPATCH" if not findings else "BLOCK"
+    else:
+        disposition = "BLOCK"
+
     return {
         "status": "PASS" if disposition == "ACCEPT_PASS" else ("RECONCILIATION_REQUIRED" if disposition == "RECONCILE_DO_NOT_REDISPATCH" else "BLOCKED"),
         "disposition": disposition,
