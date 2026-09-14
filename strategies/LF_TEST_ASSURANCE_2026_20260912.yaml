@@ -41,7 +41,7 @@ baseline:
   source_handoff: HANDOFF_S36_LF_TEST_ASSURANCE_2026.md
   source_handoff_date: '2026-09-12'
   zip_dependency: false
-  observed_main_head: b533f7f4e721d04822359a75f19a82949e799faf
+  observed_main_head: 92e426157141839c6149837381784b8b49be8027
   factory_destination_branch: lf/s30-strategy-factory-v032-governed-20260907
   factory_destination_head: 81c8488d2bd4ae516af42847640cd66639de1e08
   factory_recovery_route: B_FOCAL_MINIMAL
