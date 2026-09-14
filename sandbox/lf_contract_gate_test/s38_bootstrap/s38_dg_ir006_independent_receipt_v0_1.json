@@ -1,0 +1,375 @@
+{
+  "receipt_version": "v0.1",
+  "execution_mode": "INDEPENDENT_CHAT_CONTEXT",
+  "semantic_status": "EXECUTED_INDEPENDENT_CONTEXT",
+  "review_case_id": "S38-DG-IR-006",
+  "reviewer_is_producer": false,
+  "producer_context_available": false,
+  "external_paid_model_used": false,
+  "automated_semantic_judge_implemented": false,
+  "review_completed": true,
+  "source_bundle": {
+    "artifact_ref": "github://cristhianlujan/claude-persona-lf-patch@21094d2b4ad4781ea80f79ac43c3c7b043ddf760/sandbox/lf_contract_gate_test/s38_bootstrap/s38_dg_independent_review_bundle_v0_2.json",
+    "artifact_sha_or_digest": "3991ba4b335305da3d4e2f96f231d5346c5c0bdb",
+    "upstream_worker_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md",
+    "quality_gate_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/quality_gate_contract.md",
+    "lf_quality_controls_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/lf_quality_controls.md",
+    "score_rubric_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/judges/quality_pack_score_rubric.md",
+    "mini_judge_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/judges/quality_pack_mini_judge.md",
+    "quality_review_schema_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json"
+  },
+  "quality_review": {
+    "review_id": "S38-DG-IR-006-INDEPENDENT-CHAT-REVIEW",
+    "reviewed_artifact": "github://cristhianlujan/claude-persona-lf-patch@21094d2b4ad4781ea80f79ac43c3c7b043ddf760/sandbox/lf_contract_gate_test/s38_bootstrap/s38_dg_independent_review_bundle_v0_2.json",
+    "verdict": "PASS_WITH_RESTRICTIONS",
+    "score_breakdown": {
+      "contract_schema_compliance": 4,
+      "evidence_integrity": 2,
+      "lf_safety_governance": 5,
+      "handoff_readiness": 4,
+      "leakage_scope_control": 5,
+      "total": 20
+    },
+    "evidence_map": [
+      {
+        "check": "bundle_blob_sha",
+        "method": "git rev-parse 21094d2b:<bundle path> in a fresh clone of the governed remote",
+        "observed": "3991ba4b335305da3d4e2f96f231d5346c5c0bdb",
+        "verdict": "EXACT_MATCH"
+      },
+      {
+        "check": "frozen_pins_43",
+        "method": "recomputed every declared path blob sha at candidate head e7565583 independently",
+        "observed": "43/43 exact; 0 mismatch; 0 missing",
+        "verdict": "EXACT_MATCH"
+      },
+      {
+        "check": "candidate_lineage",
+        "method": "git log parents of 01f53ca5 -> e7565583 -> 488c9cc4 -> 21094d2b",
+        "observed": "single-parent linear chain; candidate is the exact parent of the evidence commit; no merge ref, no PR #757 ref, no branch HEAD",
+        "verdict": "EXACT_NON_MERGE"
+      },
+      {
+        "check": "provenance_pins",
+        "method": "recomputed repair receipt, governance disposition and historical S31 IR-005 receipt blob shas",
+        "observed": "64869cde... / 6e7fb3a9... / 92d18d5e... all exact; used as provenance only, not as semantic proof",
+        "verdict": "EXACT_MATCH_PROVENANCE_ONLY"
+      },
+      {
+        "check": "producer_semantic_verdict_null",
+        "method": "read frozen bundle field",
+        "observed": "null",
+        "verdict": "CONFIRMED"
+      },
+      {
+        "check": "superseded_package_excluded",
+        "method": "S38-DG-IR-005 package never opened or relied upon",
+        "observed": "excluded",
+        "verdict": "CONFIRMED"
+      },
+      {
+        "check": "pin_coverage_omission",
+        "method": "instrumented every canonical-remote path and local file read during the full v0.5 execution and compared against the 43 pins",
+        "observed": "exactly one load-bearing artifact exercised and not present in frozen_artifacts: profiles/ui_architect/schemas/runtime_output.schema.json at be6c0f8a (archival currentness fixture); it is digest-bound inside the pinned trust policy, but the bundle pin model (path at candidate head) cannot express a historical ref",
+        "verdict": "OMISSION_IDENTIFIED"
+      },
+      {
+        "check": "RESOLVER_ROOT_ATTACKER_CLONE_FORGED_BYTES",
+        "method": "legacy QUALITY_PACK_TRUSTED_REF_RESOLVER_V1 rooted at an attacker clone carrying forged authority and execution-receipt bytes, passed to the governed validator",
+        "observed": "BLOCK_UNTRUSTED_RESOLVER_TYPE",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "RESOLVER_ROOT_ATTACKER_CLONE_FORGED_BYTES::byte_leak",
+        "method": "genuine S38 resolver executed from the attacker clone; resolved the forged path and compared bytes",
+        "observed": "forged worktree bytes never served; sha256 equals canonical remote bytes (73729407...)",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "RESOLVER_FOREIGN_CLASS_INSTANCE_INJECTION",
+        "method": "attacker-clone S38GovernedRefResolver instance injected into the governed validator",
+        "observed": "BLOCK_UNTRUSTED_RESOLVER_TYPE",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "RESOLVER_MODULE_LOCAL_TAMPER_WITH_CANONICAL_HEAD",
+        "method": "resolver module mutated locally while artifact HEAD stays published",
+        "observed": "BLOCK_GOVERNED_ARTIFACT_BYTE_MISMATCH at construction",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "RESOLVER_TRUST_POLICY_LOCAL_TAMPER_TIER_CEILING_RAISE",
+        "method": "trust policy mutated locally to raise max_without_independent_witness to BEHAVIORAL, remote unchanged",
+        "observed": "BLOCK_GOVERNED_ARTIFACT_BYTE_MISMATCH at construction",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "RESOLVER_CANONICAL_REMOTE_REVISION_NOT_PUBLISHED",
+        "method": "(a) unpublished local commit as artifact HEAD; (b) evidence ref pointing at an unpublished revision",
+        "observed": "(a) BLOCK_GOVERNED_ARTIFACT_HEAD_UNPUBLISHED; (b) BLOCK_TRUSTED_REF_RESOLUTION_FAILED / CANONICAL_REMOTE_REVISION_UNRESOLVED",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "RESOLVER_FOREIGN_REPOSITORY_REF",
+        "method": "evidence ref under github://attacker/evil-fork@<published sha>",
+        "observed": "BLOCK_TRUSTED_REF_RESOLUTION_FAILED / FOREIGN_REPO_NOT_RESOLVABLE_BY_GOVERNED_RESOLVER",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "RESOLVER_GIT_CONFIG_URL_REWRITE_REDIRECT",
+        "method": "url.<local>.insteadOf injected via HOME/.gitconfig and via GIT_CONFIG_COUNT/KEY/VALUE env pairs",
+        "observed": "rewrite not honoured; canonical bytes still served (GIT_CONFIG_GLOBAL=/dev/null, GIT_CONFIG_SYSTEM=/dev/null, GIT_CONFIG_NOSYSTEM=1, GIT_CONFIG_* scrubbed)",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "RESOLVER_ENV_TRANSPORT_REDIRECTION_SURFACE",
+        "method": "set https_proxy before resolver construction and inspected _canonical_remote_env",
+        "observed": "proxy env is honoured by the canonical fetch and the hardening scrubs only GIT_CONFIG_*/GIT_DIR-class variables; https_proxy, HTTPS_PROXY, ALL_PROXY, GIT_SSL_NO_VERIFY, SSL_CERT_FILE, GIT_PROXY_COMMAND and PATH are not neutralised. Observed effect in this run was denial (mapped to BLOCK_GOVERNED_ARTIFACT_HEAD_UNPUBLISHED, a misleading code); TLS-intercepting byte substitution was not executed",
+        "verdict": "RESIDUAL_RISK"
+      },
+      {
+        "check": "RESOLVER_TRUST_ANCHOR_BOOTSTRAP_CIRCULARITY",
+        "method": "published a modified trust policy (remote_url redirected to an attacker-controlled repository, claim ceiling raised to BEHAVIORAL) plus forged authority bytes to that attacker remote, then constructed the unmodified resolver module from that checkout",
+        "observed": "resolver constructed with verified=True against the attacker remote; forged authority bytes served under the genuine cristhianlujan/claude-persona-lf-patch slug; policy ceiling BEHAVIORAL in effect. The authoritative repository identity is read from caller-writable policy bytes and then 'verified' against the remote those same bytes name",
+        "verdict": "FALSIFIED"
+      },
+      {
+        "check": "CLAIM_TIER_FRESH_SELF_AUTHORED_SEMANTIC",
+        "method": "evidence_level/claim_ceiling raised to SEMANTIC on a fully resolvable envelope",
+        "observed": "BLOCK_F_CLAIM_TIER_NOT_EARNED / INDEPENDENT_WITNESS_REQUIRED, raised before any receipt is read",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "CLAIM_TIER_FRESH_SELF_AUTHORED_BEHAVIORAL",
+        "method": "same at BEHAVIORAL",
+        "observed": "BLOCK_F_CLAIM_TIER_NOT_EARNED / INDEPENDENT_WITNESS_REQUIRED",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "CLAIM_TIER_CEILING_ELEVATION",
+        "method": "admissible level with elevated ceiling, and STRUCTURAL level with BEHAVIORAL ceiling",
+        "observed": "BLOCK_F_ENVELOPE_SCHEMA_INVALID (ceiling<=level is enforced by the executed v0.5 schema)",
+        "verdict": "FAIL_CLOSED_AT_SCHEMA_LAYER"
+      },
+      {
+        "check": "CLAIM_TIER_FAKE_UNALLOWLISTED_WITNESS",
+        "method": "four witness variants: governed real artifact, historical IR-005 receipt, malformed string, empty object",
+        "observed": "BLOCK_F_CLAIM_TIER_NOT_EARNED with WITNESS_NOT_ALLOWLISTED or INDEPENDENT_WITNESS_REQUIRED in all four",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "CLAIM_TIER_POLICY_STATE",
+        "method": "read governed policy",
+        "observed": "witness_allowlist is empty and max_without_independent_witness is PROVENANCE_EXECUTION, so SEMANTIC and BEHAVIORAL are structurally unreachable in this candidate; the ceiling and the allowlist live only in the trust policy defeated by RESOLVER_TRUST_ANCHOR_BOOTSTRAP_CIRCULARITY",
+        "verdict": "CLOSED_CONDITIONALLY"
+      },
+      {
+        "check": "F_OWNER_CAPABILITY_MISMATCH",
+        "method": "capability_or_gate_id diverged from the owner receipt",
+        "observed": "BLOCK_F_OWNER_CAPABILITY_BINDING_MISMATCH",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "F_VALID_AUTHORITY_RECEIPT_REPLAY_WITHOUT_COMMON_BINDING",
+        "method": "genuine v0.4 authority receipt replayed into the v0.5 envelope",
+        "observed": "BLOCK_F_AUTHORITY_CURRENTNESS_RECEIPT_MISMATCH",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "F_VALID_PROVENANCE_RECEIPT_REPLAY_WITHOUT_COMMON_BINDING",
+        "method": "genuine v0.4 provenance receipt replayed into the v0.5 envelope",
+        "observed": "BLOCK_F_PROVENANCE_RECEIPT_MISMATCH",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "F_SAME_CONTENT_INPUT_IDENTITY_SUBSTITUTION",
+        "method": "input source ref swapped between two governed paths holding byte-identical blobs at artifact head",
+        "observed": "BLOCK_F_CROSS_BINDING_DIGEST_MISMATCH for both members of the twin pair",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "F_SAME_CONTENT_AUTHORITY_IDENTITY_SUBSTITUTION",
+        "method": "authority source ref swapped across the same twin pair",
+        "observed": "BLOCK_F_AUTHORITY_CURRENTNESS_RECEIPT_MISMATCH",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "F_SAME_CONTENT_PROVENANCE_IDENTITY_SUBSTITUTION",
+        "method": "provenance ref swapped across the same twin pair",
+        "observed": "BLOCK_F_PROVENANCE_RECEIPT_MISMATCH",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "F_EXECUTION_REVISION_REBINDING",
+        "method": "executed_sha repointed to the comparison base",
+        "observed": "BLOCK_F_EXECUTION_RECEIPT_REVISION_MISMATCH",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "F_PRODUCER_IS_TRUSTED_RESOLVER_SELF_ATTESTATION",
+        "method": "producer_id set to the trusted resolver id",
+        "observed": "BLOCK_EVIDENCE_SELF_RESOLVER",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "F_COMMON_BINDING_DIGEST_REDERIVATION",
+        "method": "recomputed the cross-binding identity digest with a reviewer-written canonical serializer instead of trusting the producer figure",
+        "observed": "1f5f85cdc08a6c80764af02204b39aadec993104a6949736809aa33aeb6d6810 under S38_F_CROSS_BINDING_V0_3",
+        "verdict": "INDEPENDENTLY_REDERIVED"
+      },
+      {
+        "check": "DECLARED_SCHEMA_UNKNOWN_SURFACE",
+        "method": "undeclared keys injected at top level and inside execution_identity, authority and owner_receipt, plus removal of a required field",
+        "observed": "BLOCK_F_ENVELOPE_SCHEMA_INVALID in all five cases; the v0.5 schema is genuinely executed before F semantic admission, closing the v0.4 declared-but-unexecuted defect",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "ENFORCED_CONTRACT_SURFACE_NOT_BYTE_ANCHORED",
+        "method": "clone at the published candidate head, resolver module and trust policy left untouched, only lf_common_evidence_envelope_v0_5_candidate.schema.json mutated locally to additionalProperties=true",
+        "observed": "resolver constructed with verified=True and the undeclared-surface envelope returned PASS_F_EVIDENCE_ENVELOPE_S38_V0_5_EARNED at PROVENANCE_EXECUTION. The resolver byte-verifies only its own module and the trust policy; the schemas the validator actually enforces are read from the unverified local checkout",
+        "verdict": "FALSIFIED"
+      },
+      {
+        "check": "D_SCHEMA_LOCAL_TAMPER_G_IMPACT",
+        "method": "typed-context schema neutered locally, then G run against the invalid-nested-authority fixture",
+        "observed": "BLOCK_G_TYPED_CONTEXT_SEMANTIC_GOVERNANCE still raised; G nested governance is code-based, not schema-dependent",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "ARCHIVAL_CURRENTNESS_LAWFUL_PATH_RENAME_MOVE_DELETE",
+        "method": "registered asset resolved at its exact historical ref after the governed path ceased to exist at artifact head",
+        "observed": "path_exists_at_artifact_head=False and PASS_GOVERNED_SOURCE_RESOLUTION; unchanged historical bytes are no longer invalidated by lawful path movement",
+        "verdict": "CLOSED_AS_DESIGNED"
+      },
+      {
+        "check": "ARCHIVAL_CURRENTNESS_UNREGISTERED_IDENTITY",
+        "method": "same governed path at the parent revision (different bytes, unregistered) resolved with require_current_content",
+        "observed": "BLOCK_PROVIDER_SOURCE_STALE",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "ARCHIVAL_REGISTRY_CANNOT_AUTHORISE_CHANGED_BYTES",
+        "method": "registered ref presented with a wrong digest",
+        "observed": "BLOCK_PROVIDER_BYTE_DIGEST_MISMATCH",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "ARCHIVAL_REGISTRY_FOREIGN_REPOSITORY_MATERIAL",
+        "method": "registered digest presented under a foreign repository slug",
+        "observed": "BLOCK_TRUSTED_REF_RESOLUTION_FAILED / FOREIGN_REPO_NOT_RESOLVABLE_BY_GOVERNED_RESOLVER",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "ARCHIVAL_REGISTRY_REF_DIGEST_PAIR_DECOUPLING",
+        "method": "registered digest paired with a different governed path at the registered revision",
+        "observed": "BLOCK_PROVIDER_BYTE_DIGEST_MISMATCH",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "ARCHIVAL_CURRENTNESS_SELF_CERTIFICATION_SURFACE",
+        "method": "inspected every path by which a registry entry can enter the decision",
+        "observed": "entries come only from the trust policy loaded at construction; no caller argument reaches content_current. The policy is re-read never after construction, and the registry inherits the same unanchored root as the claim-tier ceiling",
+        "verdict": "CLOSED_CONDITIONALLY"
+      },
+      {
+        "check": "G_INVALID_NESTED_AUTHORITY_WITH_VALID_OUTER_DIGEST",
+        "method": "invalid nested authority fixture behind a correct outer digest",
+        "observed": "BLOCK_G_TYPED_CONTEXT_SEMANTIC_GOVERNANCE",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "G_UNTRUSTED_RESOLVER_TYPE",
+        "method": "legacy resolver instance and legacy resolver id at the G boundary",
+        "observed": "BLOCK_UNTRUSTED_RESOLVER_TYPE and BLOCK_G_UNTRUSTED_TYPED_CONTEXT_RESOLVER",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "G_REQUEST_GOVERNED_INPUT_MISMATCH",
+        "method": "governed_input and request_id each diverged from the resolved typed context",
+        "observed": "BLOCK_G_TYPED_CONTEXT_GOVERNED_INPUT_MISMATCH and BLOCK_G_TYPED_CONTEXT_REQUEST_ID_MISMATCH",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "G_SILENT_FALLBACK_OR_WEAKENED_FORBIDDEN_AUTHORITY_SET",
+        "method": "silent_fallback_allowed=true, and GOLDEN removed from authority_decisions_forbidden; plus a nested golden_authorized=true in runtime output",
+        "observed": "BLOCK_G_SILENT_FALLBACK_ALLOWED, BLOCK_G_AUTHORITY_FORBIDDEN_SET_INCOMPLETE, BLOCK_G_NESTED_AUTHORITY_FLAG",
+        "verdict": "FAIL_CLOSED"
+      },
+      {
+        "check": "NO_REGRESSION_D_E_F_G",
+        "method": "re-executed the historical S31 v0.2, v0.3 and v0.4 suites and the S38 v0.5 suite from the candidate snapshot in this independent context",
+        "observed": "v0.2 8 positive / 36 negative PASS; v0.3 2/8 PASS; v0.4 2/9 PASS; v0.5 4 positive / 9 negative PASS. Cross-binding digests 355dfb8e..., 508fcddc..., 1f5f85cd... reproduced under reviewer execution",
+        "verdict": "NO_REGRESSION_OBSERVED"
+      },
+      {
+        "check": "SHARED_MIGRATION_PARITY_EXCLUSION",
+        "method": "scope control",
+        "observed": "the unrelated shared LF migration-source parity failure was neither used as repair evidence nor imported into the candidate",
+        "verdict": "SCOPE_RESPECTED"
+      }
+    ],
+    "blocking_codes": [
+      "BLOCK_NEXT_GATE_RESOLVER_TRUST_ANCHOR_SELF_REFERENTIAL_CANONICAL_REMOTE",
+      "BLOCK_NEXT_GATE_ENFORCED_CONTRACT_SURFACE_NOT_BYTE_ANCHORED",
+      "BLOCK_NEXT_GATE_CLAIM_TIER_CEILING_AND_ARCHIVAL_REGISTRY_SHARE_UNANCHORED_POLICY_ROOT"
+    ],
+    "repair_actions": [
+      "Bind the canonical repository identity outside the artifact: the remote URL, host and repository slug must come from a constant that the resolver does not read from a caller-writable file, and acceptance of an artifact HEAD should additionally require a verifiable signature or an out-of-band published-revision attestation rather than reachability on whatever remote the local policy names.",
+      "Byte-verify every load-bearing local artifact the validator enforces, not only the resolver module and the trust policy: at minimum lf_common_evidence_envelope_v0_5_candidate.schema.json, lf_shared_authority_typed_context_v0_2_candidate.schema.json and validate_s38_dg_contracts_v0_5.py, using the same _verify_local_against_canonical path executed before first use.",
+      "Re-verify or immutably snapshot the trust policy at the point of use for claim-tier ceiling, witness allowlist and archival registry decisions, so that these three controls do not inherit a single unanchored root.",
+      "Neutralise caller transport environment for the canonical fetch (https_proxy, HTTPS_PROXY, ALL_PROXY, GIT_PROXY_COMMAND, GIT_SSL_NO_VERIFY, GIT_SSL_CAINFO, SSL_CERT_FILE) in _canonical_remote_env, and stop mapping fetch-transport failures to BLOCK_GOVERNED_ARTIFACT_HEAD_UNPUBLISHED, which misreports a network condition as a publication verdict.",
+      "Extend the bundle pin model to express historical refs so the archival currentness fixture at be6c0f8a320c5cdcfa242ee775ba769745eb82df is pinned as exercised evidence rather than only digest-bound inside the policy.",
+      "Add the eight mandatory attacks absent from the producer harness (unpublished canonical revision, unregistered archival identity, owner capability mismatch, authority and provenance replay without common binding, the three same-content identity substitutions, governed-input mismatch, weakened forbidden-authority set) so the deterministic suite covers the declared attack surface."
+    ],
+    "remaining_risks": [
+      "Trust-anchor circularity: an adversary who controls the checkout the validation stack runs from can redirect canonical_repository.remote_url, publish the altered policy to their own remote and obtain verified=True with forged evidence bytes served under the genuine repository slug and the claim ceiling raised to BEHAVIORAL. Executed and reproduced in this review.",
+      "Enforced-surface tampering: mutating only the v0.5 evidence schema in the local checkout, with resolver module and policy untouched and artifact HEAD published, admits undeclared envelope surface with a full PASS at PROVENANCE_EXECUTION. Executed and reproduced in this review.",
+      "Claim-tier and archival-currentness controls are correct against their declared attacks but derive their entire authority from the same unanchored trust policy, so both fall with the first risk rather than independently.",
+      "Canonical fetch remains sensitive to caller transport environment; observed effect here was denial only, and TLS-intercepting byte substitution was not executed, so the exploitability of that path is unresolved rather than excluded.",
+      "The empty witness allowlist makes SEMANTIC and BEHAVIORAL structurally unreachable today; the witness path itself is therefore untested against a real allowlisted provider and must be re-reviewed when the first entry is added.",
+      "One load-bearing artifact exercised by this review is not covered by the 43 frozen pins."
+    ],
+    "next_gate": "NOT_AUTHORIZED - return to producer for trust-anchor and enforced-surface repair; no runtime, merge, Golden, scheduler, promotion or production authority is conferred, and the justified claim ceiling remains DETERMINISTIC_REPAIR_EVIDENCE_ONLY at a maximum earned tier of PROVENANCE_EXECUTION",
+    "s38_lane_dispositions": {
+      "S38-D": "NO_REGRESSION - typed context source, currentness and provenance controls reproduced green under independent execution",
+      "S38-E": "NO_REGRESSION - capability manifest self-certification, stale-fail-closed and source-model parity reproduced green",
+      "S38-F": "REPAIRED_WITH_RESTRICTION - v0.5 schema is genuinely executed and every replay, substitution, owner-binding and execution-revision attack fails closed, but the enforced schema bytes are not anchored",
+      "S38-G": "NO_REGRESSION - exact typed-context resolution, nested semantic governance, request/input binding, silent-fallback and forbidden-authority controls all fail closed, including with a neutered local D schema",
+      "S38-TRUST-ANCHOR": "NOT_CLOSED - materially narrowed versus S31 but still self-referential",
+      "S38-ARCHIVAL-CURRENTNESS": "CLOSED_CONDITIONALLY - mechanism present and correct, authority inherited from the unanchored policy"
+    },
+    "historical_blocker_dispositions": {
+      "BLOCK_NEXT_GATE_RESOLVER_ROOT_NOT_BOUND_TO_GOVERNED_REPOSITORY_IDENTITY": "NOT_CLOSED - the caller-supplied root constructor argument is gone, evidence bytes now come from the remote rather than the worktree, and legacy or foreign resolver instances are rejected by type, but the authoritative repository identity is still read from caller-writable policy bytes and validated against the remote those same bytes name",
+      "BLOCK_NEXT_GATE_CLAIM_TIER_ATTESTED_NOT_INDEPENDENTLY_EARNED": "CLOSED_CONDITIONALLY - fresh self-consistent SEMANTIC and BEHAVIORAL receipt sets and all fake or unallowlisted witnesses are blocked from policy before any receipt is read, but the governing ceiling is relocatable through the trust-anchor defect above",
+      "BLOCK_NEXT_GATE_NO_ARCHIVAL_CURRENTNESS_MECHANISM": "CLOSED_CONDITIONALLY - a real registry now distinguishes identity from pathname, admits exact historical ref plus digest only, and refuses changed bytes, wrong refs, foreign material and unregistered identity, with the same inherited-authority caveat"
+    },
+    "new_blocking_codes_introduced_by_this_review": [
+      "BLOCK_NEXT_GATE_ENFORCED_CONTRACT_SURFACE_NOT_BYTE_ANCHORED"
+    ],
+    "trust_anchor_sufficiency_for_next_gate": "INSUFFICIENT - canonical-remote byte resolution plus artifact self-attestation is not a governed repository trust anchor while the identity of the canonical remote is itself taken from the attested artifact; an external root of trust (constant remote identity, host or key pinning, or signature verification) is required before this gate",
+    "justified_claim_ceiling": "DETERMINISTIC_REPAIR_EVIDENCE_ONLY / PROVENANCE_EXECUTION - no semantic or behavioral claim is earned by this candidate",
+    "authorization_asserted": {
+      "merge": "NONE",
+      "golden": "NONE",
+      "runtime": "NONE",
+      "scheduler": "NONE",
+      "production": "NONE"
+    },
+    "independent_execution_summary": {
+      "frozen_pins_recomputed": "43/43",
+      "adversarial_checks_executed": 60,
+      "fail_closed": 46,
+      "falsified_closures": 2,
+      "residual_risk": 2,
+      "producer_conclusions_used_as_proof": false,
+      "historical_suites_re_executed": [
+        "S31 v0.2",
+        "S31 v0.3",
+        "S31 v0.4",
+        "S38 v0.5"
+      ],
+      "superseded_s38_ir005_package_used": false
+    }
+  },
+  "execution_blockers": []
+}
