@@ -27,5 +27,5 @@
   "rebase_requires_explicit_scope_lock_refresh": true,
   "rule": "Any changed path outside allowed_paths blocks CI. Any rebase away from scope_anchor_revision blocks until S30 deliberately refreshes this lock.",
   "schema_version": "S30_PR_SCOPE_LOCK_V1",
-  "scope_anchor_revision": "a38d7d145a5ba110051911a19f91ac866eab8743"
+  "scope_anchor_revision": "63cb72970aa7f24fcf7ee61d4544b7dc38099847"
 }
