@@ -104,6 +104,160 @@ def fail(code: str, detail: str = "") -> None:
     raise SystemExit(f"{code}{suffix}")
 
 
+def _classify_source_first_pending(
+    *,
+    local_versions: set[str],
+    remote_versions: set[str],
+    changed_paths: list[str],
+    local_names: dict[str, str],
+    base_has_expected_path: bool,
+    event_name: str,
+) -> str | None:
+    remote_only = sorted(remote_versions - local_versions)
+    local_only = sorted(local_versions - remote_versions)
+    if not local_only and not remote_only:
+        return None
+    if remote_only:
+        fail(
+            "FAIL_LF_MIGRATION_VERSION_PARITY",
+            f"remote_only={remote_only} local_only={local_only}",
+        )
+    if event_name != "pull_request":
+        fail(
+            "FAIL_LF_MIGRATION_VERSION_PARITY",
+            f"source_first_requires_pull_request local_only={local_only}",
+        )
+    if len(local_only) != 1:
+        fail(
+            "FAIL_LF_MIGRATION_SOURCE_FIRST_PENDING_COUNT",
+            f"local_only={local_only}",
+        )
+    version = local_only[0]
+    name = local_names.get(version, "")
+    expected_path = f"supabase/migrations/{version}_{name}.sql"
+    normalized_changed = sorted(path.replace("\\", "/") for path in changed_paths if path)
+    if normalized_changed != [expected_path]:
+        fail(
+            "FAIL_LF_MIGRATION_SOURCE_FIRST_SCOPE",
+            f"expected={[expected_path]} changed={normalized_changed}",
+        )
+    if base_has_expected_path:
+        fail(
+            "FAIL_LF_MIGRATION_SOURCE_FIRST_BASE_ALREADY_HAS_SOURCE",
+            expected_path,
+        )
+    return version
+
+
+def _git_source_first_context(
+    *,
+    migrations: pathlib.Path,
+    local: dict[str, tuple[str, str, str]],
+    remote: dict[str, tuple[str, str]],
+) -> str | None:
+    if set(local) == set(remote):
+        return None
+    base_ref = os.environ.get("GITHUB_BASE_REF", "").strip()
+    event_name = os.environ.get("GITHUB_EVENT_NAME", "").strip()
+    if event_name != "pull_request" or not base_ref:
+        return _classify_source_first_pending(
+            local_versions=set(local),
+            remote_versions=set(remote),
+            changed_paths=[],
+            local_names={version: row[0] for version, row in local.items()},
+            base_has_expected_path=False,
+            event_name=event_name,
+        )
+    if not re.fullmatch(r"[A-Za-z0-9._/-]+", base_ref) or ".." in base_ref.split("/"):
+        fail("FAIL_LF_MIGRATION_SOURCE_FIRST_BASE_REF", base_ref)
+    base = f"origin/{base_ref}"
+    try:
+        subprocess.run(
+            ["git", "fetch", "--no-tags", "origin", f"+refs/heads/{base_ref}:refs/remotes/origin/{base_ref}"],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+            timeout=60,
+        )
+        changed_proc = subprocess.run(
+            ["git", "diff", "--name-only", f"{base}...HEAD"],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+        fail("FAIL_LF_MIGRATION_SOURCE_FIRST_GIT_CONTEXT", type(exc).__name__)
+    changed_paths = [line.strip() for line in changed_proc.stdout.splitlines() if line.strip()]
+    local_only = sorted(set(local) - set(remote))
+    if len(local_only) == 1:
+        version = local_only[0]
+        expected_path = f"supabase/migrations/{version}_{local[version][0]}.sql"
+        base_has_expected_path = subprocess.run(
+            ["git", "cat-file", "-e", f"{base}:{expected_path}"],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            timeout=20,
+        ).returncode == 0
+    else:
+        base_has_expected_path = False
+    return _classify_source_first_pending(
+        local_versions=set(local),
+        remote_versions=set(remote),
+        changed_paths=changed_paths,
+        local_names={version: row[0] for version, row in local.items()},
+        base_has_expected_path=base_has_expected_path,
+        event_name=event_name,
+    )
+
+
+def source_first_self_test() -> None:
+    version = "20260914162000"
+    name = "lf_source_first_selftest"
+    path = f"supabase/migrations/{version}_{name}.sql"
+    local = {"20260901000000", version}
+    remote = {"20260901000000"}
+    names = {version: name}
+    if _classify_source_first_pending(
+        local_versions=local,
+        remote_versions=remote,
+        changed_paths=[path],
+        local_names=names,
+        base_has_expected_path=False,
+        event_name="pull_request",
+    ) != version:
+        fail("FAIL_LF_MIGRATION_SOURCE_FIRST_SELFTEST_POSITIVE")
+    checks = 1
+    negatives = [
+        (local, remote | {"20260902000000"}, [path], False, "pull_request", "FAIL_LF_MIGRATION_VERSION_PARITY"),
+        (local | {"20260914162001"}, remote, [path], False, "pull_request", "FAIL_LF_MIGRATION_SOURCE_FIRST_PENDING_COUNT"),
+        (local, remote, [path, "README.md"], False, "pull_request", "FAIL_LF_MIGRATION_SOURCE_FIRST_SCOPE"),
+        (local, remote, [path], True, "pull_request", "FAIL_LF_MIGRATION_SOURCE_FIRST_BASE_ALREADY_HAS_SOURCE"),
+        (local, remote, [path], False, "push", "FAIL_LF_MIGRATION_VERSION_PARITY"),
+    ]
+    for local_versions, remote_versions, changed, base_has, event_name, expected in negatives:
+        try:
+            _classify_source_first_pending(
+                local_versions=set(local_versions),
+                remote_versions=set(remote_versions),
+                changed_paths=list(changed),
+                local_names=names,
+                base_has_expected_path=base_has,
+                event_name=event_name,
+            )
+        except SystemExit as exc:
+            if not str(exc).startswith(expected):
+                fail("FAIL_LF_MIGRATION_SOURCE_FIRST_SELFTEST_NEGATIVE", str(exc))
+        else:
+            fail("FAIL_LF_MIGRATION_SOURCE_FIRST_SELFTEST_NEGATIVE", expected)
+        checks += 1
+    print(f"PASS_LF_MIGRATION_SOURCE_FIRST_SELFTEST={checks}/6")
+
+
 def remote_content_sha256(field: str, version: str) -> str:
     proof = SHA_PROOF_RE.fullmatch(field)
     if proof:
@@ -313,6 +467,7 @@ def main() -> int:
     if remote_content_sha256(parser_probe_sql.encode("utf-8").hex(), "SELFTEST") != parser_probe_sha:
         fail("FAIL_CI009_LEGACY_HEX_PARSER_SELFTEST")
     transport_self_test()
+    source_first_self_test()
 
     if not managed("promote_router_compact_jit_v1"):
         fail("FAIL_CI009_SELFTEST_MANAGED_EXACT")
@@ -444,8 +599,12 @@ def main() -> int:
             continue
         remote[version] = (name, remote_content_sha256(content_proof, version))
 
-    if set(local) != set(remote):
-        fail("FAIL_LF_MIGRATION_VERSION_PARITY", f"git={sorted(local)} remote={sorted(remote)}")
+    pending_version = _git_source_first_context(
+        migrations=migrations,
+        local=local,
+        remote=remote,
+    )
+    shared_local = {version: local[version] for version in sorted(remote)}
 
     if inline_counts:
         if set(inline_counts) != set(remote):
@@ -465,15 +624,23 @@ def main() -> int:
             statement_counts = query_remote_statement_counts(sorted(remote))
 
     direct_count, cli_count, _comparisons = evaluate_managed_transport(
-        local, remote, statement_counts
+        shared_local, remote, statement_counts
     )
 
-    print(
-        f"PASS_LF_MIGRATION_SOURCE_PARITY: checkpoint={checkpoint_path.name} post_cutover={len(local)} "
-        f"legacy={legacy_count} sha256={legacy_sha} grandfathered={grandfathered_count}/{grandfathered_sha} "
-        f"classification_baseline_end={classification_baseline_end} direct={direct_count} "
-        f"cli_statement_storage={cli_count}"
-    )
+    if pending_version is not None:
+        pending_name, pending_sha, _pending_sql = local[pending_version]
+        print(
+            "PASS_LF_MIGRATION_SOURCE_FIRST_PENDING: "
+            f"version={pending_version} name={pending_name} sha256={pending_sha} "
+            "scope=EXACT_ONE_NEW_MIGRATION_PR remote_ahead=false"
+        )
+    else:
+        print(
+            f"PASS_LF_MIGRATION_SOURCE_PARITY: checkpoint={checkpoint_path.name} post_cutover={len(local)} "
+            f"legacy={legacy_count} sha256={legacy_sha} grandfathered={grandfathered_count}/{grandfathered_sha} "
+            f"classification_baseline_end={classification_baseline_end} direct={direct_count} "
+            f"cli_statement_storage={cli_count}"
+        )
     print("PASS_LF_MIGRATION_TRANSPORT_SELFTEST=3/3")
     print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=30/30")
     return 0
