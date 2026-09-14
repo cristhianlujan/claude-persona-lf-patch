@@ -44,8 +44,8 @@ jobs:
               'sandbox/lf_contract_gate_test/s38_bootstrap/lf_common_evidence_envelope_v0_7_candidate.schema.json',
               'sandbox/lf_contract_gate_test/s31_bootstrap/lf_shared_authority_typed_context_v0_2_candidate.schema.json',
               'sandbox/lf_contract_gate_test/s31_bootstrap/lf_capability_manifest_v0_3_candidate.schema.json',
-              'sandbox/lf_contract_gate_test/s31_bootstrap/lf_runtime_execution_port_v0_1_candidate.schema.json',
-              'sandbox/lf_contract_gate_test/s31_bootstrap/lf_runtime_execution_output_v0_1_candidate.schema.json',
+              'sandbox/lf_contract_gate_test/s38_bootstrap/lf_runtime_execution_port_v0_2_candidate.schema.json',
+              'sandbox/lf_contract_gate_test/s38_bootstrap/lf_runtime_execution_output_v0_2_candidate.schema.json',
           ]
           evidence_paths = [
               'sandbox/lf_contract_gate_test/s38_bootstrap/test_s38_dg_contracts_v0_7.py',
