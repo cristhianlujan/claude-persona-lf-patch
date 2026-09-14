@@ -1,0 +1,265 @@
+{
+  "receipt_version": "v0.1",
+  "execution_mode": "INDEPENDENT_CHAT_CONTEXT",
+  "semantic_status": "EXECUTED_INDEPENDENT_CONTEXT",
+  "review_case_id": "S38-DG-IR-007",
+  "reviewer_is_producer": false,
+  "producer_context_available": false,
+  "external_paid_model_used": false,
+  "automated_semantic_judge_implemented": false,
+  "review_completed": true,
+  "source_bundle": {
+    "artifact_ref": "github://cristhianlujan/claude-persona-lf-patch@c656f1b9707ed8990d99dca62acbbe1933d77950/sandbox/lf_contract_gate_test/s38_bootstrap/s38_dg_independent_review_bundle_v0_3.json",
+    "artifact_sha_or_digest": "ba9e52314a88fe1abab4726c420f6465bcdb9302",
+    "upstream_worker_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md",
+    "quality_gate_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/quality_gate_contract.md",
+    "lf_quality_controls_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/lf_quality_controls.md",
+    "score_rubric_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/judges/quality_pack_score_rubric.md",
+    "mini_judge_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/judges/quality_pack_mini_judge.md",
+    "quality_review_schema_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json"
+  },
+  "execution_blockers": [],
+  "quality_review": {
+    "review_id": "S38-DG-IR-007-INDEPENDENT-CHAT",
+    "reviewed_artifact": "github://cristhianlujan/claude-persona-lf-patch@c656f1b9707ed8990d99dca62acbbe1933d77950/sandbox/lf_contract_gate_test/s38_bootstrap/s38_dg_independent_review_bundle_v0_3.json",
+    "verdict": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+    "score_breakdown": {
+      "contract_schema_compliance": 3,
+      "evidence_integrity": 2,
+      "lf_safety_governance": 3,
+      "handoff_readiness": 3,
+      "leakage_scope_control": 4,
+      "total": 15
+    },
+    "evidence_map": [
+      {
+        "claim": "bundle blob identity",
+        "method": "recomputed git blob sha1 over fetched bytes",
+        "observed": "ba9e52314a88fe1abab4726c420f6465bcdb9302",
+        "result": "MATCH"
+      },
+      {
+        "claim": "candidate lineage is exact head, not merge ref",
+        "method": "git rev-list --parents",
+        "observed": "63f5db55 has single parent 97b251b2; eac7c8ad is ancestor; 63f5db55 -> ee1d0173 -> c656f1b9",
+        "result": "CONFIRMED"
+      },
+      {
+        "claim": "IR-006 source receipt pin",
+        "method": "git rev-parse + sha256 recompute at 97b251b2",
+        "observed": "blob f9a815d2..., sha256 af11f4d3...",
+        "result": "MATCH"
+      },
+      {
+        "claim": "repair receipt and governance disposition pins at ee1d0173",
+        "method": "git rev-parse",
+        "observed": "7cdee3e9..., e8c0781d...",
+        "result": "MATCH"
+      },
+      {
+        "claim": "48 current pins",
+        "method": "git rev-parse <candidate>:<path> for every declared pin",
+        "observed": "48/48 blob match",
+        "result": "COMPLETE"
+      },
+      {
+        "claim": "1 historical pin",
+        "method": "blob and sha256 recomputed at be6c0f8a",
+        "observed": "bd550887..., bed06e7a...; path absent at candidate head",
+        "result": "MATCH"
+      },
+      {
+        "claim": "cross-binding digest",
+        "method": "rederived from resolved bytes by executing the F path",
+        "observed": "1f5f85cdc08a6c80764af02204b39aadec993104a6949736809aa33aeb6d6810",
+        "result": "MATCH_PRODUCER_VALUE_INDEPENDENTLY_DERIVED"
+      },
+      {
+        "claim": "trust anchor falsification",
+        "method": "whole-checkout tamper: mutated resolver repository constants, attacker Git remote, attacker TLS attestation endpoint and CA",
+        "observed": "verified=true, is_trusted_resolver=true, repo=attacker-org/evil-lf-patch, unwitnessed SEMANTIC and BEHAVIORAL earned with empty allowlist, arbitrary foreign bytes accepted as archivally CURRENT",
+        "result": "FALSIFIED"
+      },
+      {
+        "claim": "byte anchoring of the five declared load-bearing local paths",
+        "method": "per-path tamper before resolver construction against a faithful canonical mirror",
+        "observed": "resolver module, trust policy, validator, F schema and D schema all raise BLOCK_GOVERNED_ARTIFACT_BYTE_MISMATCH",
+        "result": "FAIL_CLOSED"
+      },
+      {
+        "claim": "artifacts outside the byte-anchored set",
+        "method": "same tamper procedure",
+        "observed": "test_s38_dg_contracts_v0_6.py, G port schema, G output schema, E capability manifest schema and s31_trusted_resolution_v0_1.py all tampered with resolver still verified=true",
+        "result": "NOT_DETECTED"
+      },
+      {
+        "claim": "undeclared envelope surface",
+        "method": "injected undeclared property at F and G boundaries",
+        "observed": "F blocks with BLOCK_F_ENVELOPE_SCHEMA_INVALID; G request and G output both PASS",
+        "result": "F_FAIL_CLOSED_G_OPEN"
+      },
+      {
+        "claim": "claim tier under the genuine root",
+        "method": "fresh self-authored SEMANTIC and BEHAVIORAL, ceiling elevation, fake and malformed witness",
+        "observed": "all blocked; witness allowlist empty",
+        "result": "FAIL_CLOSED"
+      },
+      {
+        "claim": "archival currentness",
+        "method": "exact registered ref+digest, changed bytes, unregistered identity, ref/digest decoupling, foreign repository material",
+        "observed": "exact pair PASS; all four attacks fail closed",
+        "result": "FAIL_CLOSED"
+      },
+      {
+        "claim": "D/E/F/G no-regression",
+        "method": "42-case battery against the genuine resolver at the candidate head",
+        "observed": "owner capability mismatch, authority and provenance replay, same-content input/authority/provenance substitution, execution revision rebinding, producer-as-resolver, untrusted resolver type, nested authority behind valid outer digest, governed-input and request-id mismatch, silent fallback and weakened forbidden set all fail closed",
+        "result": "FAIL_CLOSED"
+      },
+      {
+        "claim": "transport hardening",
+        "method": "hostile https_proxy, HTTPS_PROXY, ALL_PROXY, GIT_PROXY_COMMAND, GIT_SSL_NO_VERIFY, GIT_SSL_CAINFO, SSL_CERT_FILE, GIT_CONFIG_COUNT insteadOf rewrite, poisoned PATH and GIT_EXEC_PATH",
+        "observed": "none present in the Git child environment; canonical bytes preserved (73729407...)",
+        "result": "NO_BYTE_SUBSTITUTION"
+      },
+      {
+        "claim": "unpublished self-consistent local head",
+        "method": "local commit so every local byte check agrees, then construct",
+        "observed": "construction blocked at repository attestation",
+        "result": "FAIL_CLOSED"
+      },
+      {
+        "claim": "TRUST_ANCHOR_COMMIT binding",
+        "method": "static reference analysis of the resolver module",
+        "observed": "fetched once, never used in any verification predicate",
+        "result": "DECORATIVE"
+      },
+      {
+        "claim": "dependency walk beyond the declared pin model",
+        "method": "blob comparison of every historical revision exercised by the F and G evidence paths",
+        "observed": "five historical revisions exercised (191b53fc, e75cab6e, 01f53ca5, 2c643554, be6c0f8a) against one historical pin; exercised bytes currently identical to the pinned candidate-head blobs",
+        "result": "COVERED_BY_CONTENT_NOT_BY_IDENTITY"
+      },
+      {
+        "claim": "reproducibility of the attestation step",
+        "method": "direct execution from an independent context",
+        "observed": "resolver bypasses proxies by design; unauthenticated GitHub REST budget is shared per egress IP and was repeatedly exhausted, yielding GOVERNED_REPOSITORY_ATTESTATION_UNAVAILABLE",
+        "result": "AVAILABILITY_DEPENDENT_FAIL_CLOSED"
+      }
+    ],
+    "blocking_codes": [
+      "BLOCK_NEXT_GATE_RESOLVER_TRUST_ANCHOR_STILL_SELF_REFERENTIAL_UNDER_WHOLE_CHECKOUT_TAMPER",
+      "BLOCK_NEXT_GATE_ENFORCED_CONTRACT_SURFACE_INCOMPLETE_G_AND_E_AND_HARNESS_NOT_BYTE_ANCHORED",
+      "BLOCK_NEXT_GATE_CLAIM_TIER_AND_ARCHIVAL_REGISTRY_INHERIT_THE_UNCLOSED_POLICY_ROOT",
+      "BLOCK_NEXT_GATE_G_BOUNDARY_UNDECLARED_SURFACE_NOT_FAIL_CLOSED"
+    ],
+    "repair_actions": [
+      "Bind repository identity to material the executing checkout cannot author: detached signature over the resolver module and trust policy verified against an out-of-band public key, or an external attestation the candidate checkout cannot mint. Fixed slug, numeric repository id and exact-commit API attestation are insufficient while the whole checkout is attacker-controlled.",
+      "Either make TRUST_ANCHOR_COMMIT load-bearing (verify resolver and policy bytes against that immutable anchor rather than against the artifact head) or remove it; today it is fetched and never used.",
+      "Extend the byte-anchored set, or canonical-byte loading, to every surface used to produce a PASS: the deterministic harness, the G runtime port request and output schemas, the E capability manifest schema, and the legacy S31 resolver module.",
+      "Enforce the G request and G output schemas in the S38 validation path so undeclared surface fails closed as it already does at F.",
+      "Represent historical identities explicitly: revision+path+blob+sha256 pins for every historical revision the evidence path resolves, not only the one archival fixture.",
+      "Remove the hard liveness dependency on the unauthenticated GitHub REST API, or document an authenticated and reproducible attestation path, so an independent reviewer can reproduce the result without an IP-shared quota."
+    ],
+    "remaining_risks": [
+      "Deterministic PASS evidence is only as strong as the checkout that produced it; the producer harness itself is not byte-anchored.",
+      "Empty witness allowlist means SEMANTIC and BEHAVIORAL remain structurally unreachable; that is a correct fail-closed state, not evidence of readiness.",
+      "Historical pin coverage currently holds by byte coincidence: the exercised paths still exist unchanged at the candidate head. A lawful rename or delete would reopen the same gap IR-006 found.",
+      "The archival registry is a test-only fixture; no production archival semantics were exercised."
+    ],
+    "next_gate": "NO_ADVANCE_RETURN_TO_PRODUCER_FOR_TRUST_ANCHOR_AND_CONTRACT_SURFACE_REPAIR",
+    "extensions": {
+      "s38.trust_anchor": {
+        "disposition": "NOT_CLOSED",
+        "ir006_blocker": "BLOCK_NEXT_GATE_RESOLVER_TRUST_ANCHOR_SELF_REFERENTIAL_CANONICAL_REMOTE",
+        "status": "NARROWED_NOT_CLOSED",
+        "closed_attacks": [
+          "LOCAL_RESOLVER_MODULE_TAMPER_WITH_CANONICAL_HEAD",
+          "LOCAL_TRUST_POLICY_TAMPER_BEFORE_AND_AFTER_RESOLVER_CONSTRUCTION",
+          "TRUST_POLICY_CANONICAL_REMOTE_REDIRECTION_PUBLISHED_ATTACKER_REMOTE",
+          "UNPUBLISHED_CANONICAL_REVISION",
+          "FOREIGN_REPOSITORY_REF",
+          "GIT_CONFIG_URL_REWRITE",
+          "HTTPS_PROXY_ALL_PROXY_GIT_PROXY_COMMAND_REDIRECTION",
+          "GIT_SSL_NO_VERIFY_GIT_SSL_CAINFO_SSL_CERT_FILE_OVERRIDE"
+        ],
+        "open_attack": "WHOLE_CHECKOUT_RESOLVER_CONSTANT_TAMPER_AND_ATTACKER_REPOSITORY_BOOTSTRAP",
+        "known_question_answer": "Fixed repository identity in resolver code plus numeric repository id and exact-commit API attestation do NOT break the IR-006 bootstrap circularity. They relocate it from the trust policy into the resolver module, which the same attacker controls."
+      },
+      "s38.contract_surface": {
+        "disposition": "PARTIALLY_CLOSED",
+        "byte_anchored": [
+          "s38_governed_resolution_v0_3.py",
+          "s38_governed_trust_policy_v0_2.json",
+          "validate_s38_dg_contracts_v0_6.py",
+          "lf_common_evidence_envelope_v0_6_candidate.schema.json",
+          "lf_shared_authority_typed_context_v0_2_candidate.schema.json"
+        ],
+        "not_anchored_and_load_bearing": [
+          "test_s38_dg_contracts_v0_6.py",
+          "lf_runtime_execution_port_v0_1_candidate.schema.json",
+          "lf_runtime_execution_output_v0_1_candidate.schema.json",
+          "lf_capability_manifest_v0_3_candidate.schema.json",
+          "s31_trusted_resolution_v0_1.py"
+        ],
+        "f_and_d_schemas_loaded_from_canonical_bytes_at_use": true,
+        "undeclared_surface_fail_closed": {
+          "F": true,
+          "G_request": false,
+          "G_output": false
+        }
+      },
+      "s38.claim_tier": {
+        "disposition": "FAIL_CLOSED_UNDER_GENUINE_ROOT_ONLY",
+        "unwitnessed_maximum_observed": "PROVENANCE_EXECUTION",
+        "witness_allowlist": "EMPTY",
+        "real_witness_path": "UNEXERCISED_AND_UNDEMONSTRATED",
+        "note": "Emptiness is a fail-closed state, not evidence that SEMANTIC or BEHAVIORAL is achievable. Under whole-checkout tamper both tiers were earned without any witness."
+      },
+      "s38.archival_currentness": {
+        "disposition": "CLOSED_UNDER_GENUINE_ROOT",
+        "historical_pin_recomputed": true,
+        "exact_ref_digest_admitted": true,
+        "changed_bytes_wrong_ref_foreign_material_unregistered_identity": "ALL_FAIL_CLOSED",
+        "residual": "registry authority is the policy snapshot, which inherits the unclosed trust root"
+      },
+      "s38.dg_no_regression": {
+        "disposition": "NO_REGRESSION_OBSERVED",
+        "cases_executed": 42,
+        "non_conforming": [
+          "G_UNDECLARED_ENVELOPE_SURFACE",
+          "G_OUTPUT_UNDECLARED_ENVELOPE_SURFACE"
+        ],
+        "cross_binding_independently_rederived": "1f5f85cdc08a6c80764af02204b39aadec993104a6949736809aa33aeb6d6810"
+      },
+      "s38.pin_completeness": {
+        "current_pins_declared": 48,
+        "current_pins_verified": 48,
+        "historical_pins_declared": 1,
+        "historical_pins_verified": 1,
+        "historical_revisions_actually_exercised": 5,
+        "artifacts_outside_both_pin_models": [
+          "profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json (blob 940d10f1523d94990479eb9641e4e1ac44fe6d3c)",
+          "profiles/quality_pack/validators/validate_independent_semantic_review.py (blob ee5943622cb833b3222c13a6c1c443c366737e54)"
+        ]
+      },
+      "s38.execution_environment": {
+        "attestation_reachability": "INTERMITTENT",
+        "reason": "resolver bypasses proxies by design; unauthenticated GitHub REST budget shared per egress IP",
+        "genuine_root_cases_executed_live": true,
+        "byte_anchoring_cases_executed_against": "FAITHFUL_LOCAL_CANONICAL_MIRROR_WITH_TRANSPORT_ENDPOINTS_SUBSTITUTED_SLUG_AND_REPOSITORY_ID_UNCHANGED",
+        "failure_mode_observed": "GOVERNED_REPOSITORY_ATTESTATION_UNAVAILABLE (denial, never byte substitution)"
+      },
+      "s38.authorization_asserted": {
+        "merge": "NONE",
+        "golden": "NONE",
+        "runtime": "NONE",
+        "scheduler": "NONE",
+        "production": "NONE",
+        "promotion": "NONE"
+      },
+      "s38.producer_evidence_use": "Producer deterministic PASS counts, repair receipt and governance disposition were read for provenance only and used as no part of any semantic conclusion.",
+      "s38.out_of_scope": "Shared migration-source parity CI failure was not used as repair evidence and no shared migration was imported."
+    }
+  }
+}
