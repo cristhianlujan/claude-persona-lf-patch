@@ -5,6 +5,7 @@ import copy
 import hashlib
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -217,5 +218,20 @@ for attack in ('input','authority','provenance'):
     res=m.validate_evidence_envelope(x,R)
     assert res['status']!=m.PASS,(attack,res)
     NEG+=1
+
+# Hostile caller transport environment does not redirect canonical attestation/fetch.
+hostile={'https_proxy':'http://127.0.0.1:9','HTTPS_PROXY':'http://127.0.0.1:9','ALL_PROXY':'socks5://127.0.0.1:9','GIT_PROXY_COMMAND':'false','GIT_SSL_NO_VERIFY':'1','GIT_SSL_CAINFO':'/tmp/attacker-ca.pem','SSL_CERT_FILE':'/tmp/attacker-ca.pem','GIT_CONFIG_COUNT':'1','GIT_CONFIG_KEY_0':'url.file:///tmp/evil.insteadOf','GIT_CONFIG_VALUE_0':'https://github.com/'}
+old_env={k:os.environ.get(k) for k in hostile}
+try:
+    os.environ.update(hostile)
+    r2=m.S38GovernedRefResolver()
+    assert r2.verified and r2.repo==REPO,(r2.verified,r2.repo)
+    sample=r2.resolve(ref(f'{OLD_E}/source_authority.txt',HIST))
+    assert sample['sha256']=='73729407e4723f00a5848babb8039feacbe876561e7459473ae4715dbc0c46bc',sample['sha256']
+    r2.close(); POS+=1
+finally:
+    for k,v in old_env.items():
+        if v is None: os.environ.pop(k,None)
+        else: os.environ[k]=v
 print(json.dumps({'contract':'S38_DG_IR006_RESTRICTION_REPAIR_V0_6','positive_cases':POS,'negative_fail_closed_cases':NEG,'evidence_revision':EVIDENCE_REV,'cross_binding_sha256':EXPECTED,'resolver_id':TRUST,'result':'PASS'},sort_keys=True))
 R.close()

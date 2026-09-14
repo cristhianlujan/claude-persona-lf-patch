@@ -24,6 +24,7 @@ LOAD_BEARING_LOCAL_PATHS=(
  "sandbox/lf_contract_gate_test/s31_bootstrap/lf_shared_authority_typed_context_v0_2_candidate.schema.json",
 )
 GIT_BIN="/usr/bin/git"
+SYSTEM_CA_BUNDLE="/etc/ssl/certs/ca-certificates.crt"
 
 class ResolutionError(RuntimeError):
  def __init__(self,code:str,detail:str=""):
@@ -43,7 +44,9 @@ def _repo_root(start:Path)->Path:
  if p.returncode!=0: raise ResolutionError("GOVERNED_ARTIFACT_ROOT_UNRESOLVED",p.stderr.strip()[:240])
  return Path(p.stdout.strip()).resolve()
 def _github_api_json(url:str)->Mapping[str,Any]:
- ctx=ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT); ctx.check_hostname=True; ctx.verify_mode=ssl.CERT_REQUIRED; ctx.load_default_certs()
+ ctx=ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT); ctx.check_hostname=True; ctx.verify_mode=ssl.CERT_REQUIRED
+ if not Path(SYSTEM_CA_BUNDLE).is_file(): raise ResolutionError("GOVERNED_SYSTEM_CA_BUNDLE_UNAVAILABLE",SYSTEM_CA_BUNDLE)
+ ctx.load_verify_locations(cafile=SYSTEM_CA_BUNDLE)
  opener=urllib.request.build_opener(urllib.request.ProxyHandler({}),urllib.request.HTTPSHandler(context=ctx))
  req=urllib.request.Request(url,headers={"User-Agent":"LF-S38-Governed-Resolver/3","Accept":"application/vnd.github+json"})
  try:
