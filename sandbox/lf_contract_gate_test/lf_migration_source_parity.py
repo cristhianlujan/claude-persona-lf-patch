@@ -54,6 +54,11 @@ MANAGED_EXACT_NAMES = {
     "router_profile_execution_noncanonical_advisory_readonly",
     "isolate_authenticated_security_definer_rpcs",
     "s28_architecture_alert_dispatcher_fast_exit_v1",
+    "fix_strategy_qualification_alias_ambiguity_v1",
+    "allow_strategy_progress_contract_bootstrap_v1",
+    "fix_strategy_update_jsonb_append_precedence_v1",
+    "profile_create_operation_qualification_v1",
+    "fix_strategy_characteristics_seed_execution_id",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
