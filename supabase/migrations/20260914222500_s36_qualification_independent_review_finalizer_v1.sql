@@ -12,6 +12,7 @@ set search_path to 'pg_catalog','public'
 as $function$
 declare
   q public.lf_qualification_receipts%rowtype;
+  reviewer public.lf_operation_execution%rowtype;
   v_current_revision text;
   v_current_fingerprint text;
   v_snapshot_id bigint;
@@ -61,11 +62,20 @@ begin
     return jsonb_build_object('result','BLOCKED','code','QUAL_REVIEW_NOT_INDEPENDENT');
   end if;
 
-  if not exists (
-    select 1 from public.lf_operation_execution e
-    where e.execution_id=p_reviewer_execution_id
-  ) then
+  select * into reviewer
+  from public.lf_operation_execution e
+  where e.execution_id=p_reviewer_execution_id;
+
+  if not found then
     return jsonb_build_object('result','BLOCKED','code','QUAL_REVIEW_ASSESSOR_EXECUTION_NOT_FOUND');
+  end if;
+
+  if reviewer.status is distinct from 'COMPLETED' then
+    return jsonb_build_object('result','BLOCKED','code','QUAL_REVIEW_ASSESSOR_NOT_COMPLETED','reviewer_status',reviewer.status);
+  end if;
+
+  if q.subject_type='OPERATION' and reviewer.operation_code is not distinct from q.subject_code then
+    return jsonb_build_object('result','BLOCKED','code','QUAL_REVIEW_ASSESSOR_OPERATION_NOT_INDEPENDENT','operation_code',reviewer.operation_code);
   end if;
 
   if q.subject_type='OPERATION' then
@@ -117,6 +127,7 @@ begin
         independent_review_ref=p_review_ref || jsonb_build_object(
           'finalizer','lf_finalize_qualification_independent_review_v1',
           'reviewed_at',clock_timestamp(),
+          'reviewer_operation_code',reviewer.operation_code,
           'failed_suite_count',v_failed_suites
         ),
         findings=findings || jsonb_build_array(jsonb_build_object('type','MATRIX_FAILED_BEFORE_INDEPENDENT_REVIEW')),
@@ -144,7 +155,9 @@ begin
       from public.lf_test_judge_results jr
       where jr.test_run_id=tr.test_run_id
         and jr.created_by_execution_id=p_reviewer_execution_id
+        and jr.judge_type in ('QUALITY_PACK','INDEPENDENT_HOLDOUT','S36_ASSURANCE')
         and jr.verdict='PASS'
+        and nullif(btrim(coalesce(jr.rationale_summary,'')),'') is not null
         and jsonb_typeof(jr.evidence_payload)='object'
         and jr.evidence_payload<>'{}'::jsonb
     );
@@ -158,6 +171,7 @@ begin
       from public.lf_test_judge_results jr
       where jr.test_run_id=tr.test_run_id
         and jr.created_by_execution_id=p_reviewer_execution_id
+        and jr.judge_type in ('QUALITY_PACK','INDEPENDENT_HOLDOUT','S36_ASSURANCE')
         and jr.verdict<>'PASS'
     );
 
@@ -170,6 +184,7 @@ begin
         independent_review_ref=p_review_ref || jsonb_build_object(
           'finalizer','lf_finalize_qualification_independent_review_v1',
           'reviewed_at',clock_timestamp(),
+          'reviewer_operation_code',reviewer.operation_code,
           'review_required_count',v_review_total,
           'strict_pass_count',v_review_passed,
           'nonpass_count',v_review_nonpass
@@ -198,6 +213,7 @@ begin
       independent_review_ref=p_review_ref || jsonb_build_object(
         'finalizer','lf_finalize_qualification_independent_review_v1',
         'reviewed_at',clock_timestamp(),
+        'reviewer_operation_code',reviewer.operation_code,
         'review_required_count',v_review_total,
         'strict_pass_count',v_review_passed,
         'revision_sha256',v_current_revision,
@@ -215,6 +231,8 @@ begin
     'subject_code',q.subject_code,
     'revision_sha256',v_current_revision,
     'suite_set_fingerprint',v_current_fingerprint,
+    'reviewer_execution_id',p_reviewer_execution_id,
+    'reviewer_operation_code',reviewer.operation_code,
     'review_required_count',v_review_total,
     'strict_pass_count',v_review_passed,
     'state',v_next_state
