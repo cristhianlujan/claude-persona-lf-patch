@@ -1,0 +1,341 @@
+strategy_id: S36
+snapshot_code: LF_TEST_ASSURANCE_2026_20260912
+version: v0.1
+title: S36 — LF Test Assurance 2026
+status: CANDIDATO_READ_ONLY
+runtime_state: PLAN_ONLY
+impact_policy: BLOQUEADO
+strategy_type: TRANSVERSAL_TEST_ASSURANCE
+strategy_archetype: TECHNICAL_OPERATIONAL
+problem_statement: >-
+  LF dispone de suites, casos, runners y matrices parciales de qualification, pero no de una única capacidad
+  transversal que demuestre por familia y proceso qué está probado, a qué profundidad, contra qué invariantes
+  y con qué evidencia. Los hallazgos de S26 y S30 no deben permanecer como pruebas aisladas ni originar matrices paralelas.
+objective: >-
+  Formalizar S36 como capacidad transversal de Test Assurance para recuperar, normalizar y evolucionar la matriz
+  existente hacia una única LF Test Matrix canónica, industrializando assurance, cobertura, regresión, evidencia
+  y enrolamiento de nuevas capacidades sin asumir semántica de los owners ni habilitar producción.
+scope:
+  - recuperar y normalizar la LF Test Matrix existente sin crear una segunda matriz
+  - mapear familias y procesos a escenarios, invariantes, dimensiones, profundidad, evidencia y resultado
+  - reusar lf_test_suites, lf_test_suite_cases, lf_test_runs, lf_test_requirement_bindings y artefactos asociados donde sean válidos
+  - integrar invariantes reutilizables de S26 y S30 en la misma matriz
+  - consolidar harness determinístico y normalizar PASS / FAIL / BLOCK / NOT_COVERED
+  - evaluar property/stateful, adversarial y performance tooling solo si aporta valor neto y S/0 obligatorio
+  - calcular cobertura por familia/proceso/dimensión/profundidad y bloquear completitud falsa
+  - hacer visibles automáticamente nuevas operaciones/procesos dentro del modelo de assurance
+  - preservar cada defecto escapado confirmado como regresión permanente
+  - adoptar familias incrementalmente sin mutar su semántica
+non_goals:
+  - reescribir S26 o S30
+  - crear matrices S26, S30 o transversal paralelas
+  - cambiar lógica de negocio de Profiles, Cards, Skills, Strategy o Router
+  - adoptar frameworks como autoridad semántica
+  - instalar herramientas antes de demostrar el gap y el valor
+  - introducir SaaS o licencias obligatorias de pago
+  - mutar producción desde el desarrollo de S36
+  - habilitar runtime o promover Golden/producción durante creación de estrategia
+  - usar ZIP como input operacional o dependencia de S36
+baseline:
+  strategy_creation_execution: EXEC-S36-TEST-ASSURANCE-CREATE-20260914-001
+  source_handoff: HANDOFF_S36_LF_TEST_ASSURANCE_2026.md
+  source_handoff_date: '2026-09-12'
+  zip_dependency: false
+  observed_main_head: 92e426157141839c6149837381784b8b49be8027
+  factory_destination_branch: lf/s30-strategy-factory-v032-governed-20260907
+  factory_destination_head: 81c8488d2bd4ae516af42847640cd66639de1e08
+  factory_recovery_route: B_FOCAL_MINIMAL
+  focal_branch: s36-factory-focal-20260914
+  strategy_factory_contract: CONTRACT-CREACION-ESTRATEGIA-LF-v0.3.2
+  strategy_factory_contract_sha: 2c469e3cd2ae7bb7171ca4e52fc6da84b58af3a3
+  validator_blob_sha: 4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765
+  live_test_inventory:
+    suites: 19
+    cases: 156
+    runs: 329
+    assertion_results: 317
+  initial_overall_progress: ~10-15%
+  claim_ceiling: R3_GOVERNED_CANDIDATE_NOT_RUNTIME_NOT_PRODUCTION
+authorities:
+  - ACT-0001
+  - public.lf_router_action_registry:STRATEGY_CREATE
+  - public.lf_operation_registry:CREACION_ESTRATEGIA_LF
+  - public.lf_operation_contracts:CONTRACT-CREACION-ESTRATEGIA-LF-v0.3.2
+  - public.v_lf_operation_policy_snapshot:CREACION_ESTRATEGIA_LF
+  - public.v_lf_artifact_destination_registry:DEST_CREACION_ESTRATEGIA_LF_CANARY
+  - public.lf_strategy_snapshots
+  - public.lf_test_suites
+  - public.lf_test_suite_cases
+  - public.lf_test_runs
+  - public.lf_test_requirement_bindings
+  - public.lf_strategy_test_characteristics
+  - GitHub:cristhianlujan/claude-persona-lf-patch
+dependencies:
+  - id: ACT-0001
+    ref: public.v_lf_fuente_operativa/ACT-0001
+    version: v0.3
+    required: true
+  - id: STRATEGY_FACTORY_CONTRACT_V032
+    ref: CONTRACT-CREACION-ESTRATEGIA-LF-v0.3.2
+    sha: 2c469e3cd2ae7bb7171ca4e52fc6da84b58af3a3
+    required: true
+  - id: STRATEGY_FACTORY_VALIDATOR_V032
+    ref: gobernanza/judges/validate_strategy_contract_v032.py
+    sha: 4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765
+    required: true
+  - id: LF_TEST_STORES
+    ref: public.lf_test_suites+lf_test_suite_cases+lf_test_runs+lf_test_requirement_bindings
+    required: true
+  - id: S26_INVARIANTS
+    ref: LF_PROFILE_GOVERNANCE_GOLDEN_FAMILY_20260904
+    required: true
+    role: INVARIANT_OWNER_INPUT
+  - id: S30_INVARIANTS
+    ref: LF_OPERATING_CONSTITUTION_POLICY_AUTONOMOUS_OPERATIONS_20260906
+    required: true
+    role: INVARIANT_OWNER_INPUT
+applicable_policies:
+  - code: POL-LF-OPERATION-LIFECYCLE
+    role: GOVERNANCE_LIFECYCLE
+    version: v1.0
+    sha: 973b5a0ad26433095066ff06b53c3043f38fef51d04e9482c458e178f20920e8
+  - code: POL-LF-POLICY-CONSUMPTION
+    role: POLICY_CONSUMPTION
+    version: v1.1-transversal-candidate
+    sha: e5eb786e14a4b735e271a81b702a0a775e0bf39ba174d333531a82a0858b5553
+  - code: POL-LF-SOURCE-RESOLUTION
+    role: SOURCE_RESOLUTION
+    version: v1.4-transversal-supabase-authority-visual-support
+    sha: 5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46
+  - code: POL-LF-STATE-MODEL
+    role: STATE_MODEL
+    version: v2.0-canonical-lifecycle
+    sha: f0d039a7a0f5588494c1f31b27a57ed7de8877a2a191bcd205cd38a6d5b495b3
+  - code: POL-STRATEGY-CREATION-001
+    role: STRATEGY_CREATION
+    version: v0.1-candidate
+    sha: 563b91a1e5405c1e1f8806c1f8d12b8ab2dfbd901638f7b432a3e601cc2558fc
+type_extension:
+  runtime_or_system_boundary: >-
+    S36 may read and classify LF assurance/test/governance sources and produce candidate assurance artifacts;
+    it does not own family semantics, production repair, runtime activation or production mutation.
+  failure_modes_and_first_bad_hop:
+    - parallel or duplicate matrix is created
+    - tests pass while required coverage remains missing
+    - new operation/process escapes assurance visibility
+    - historical evidence is treated as structural guarantee
+    - stale evidence is accepted after material change
+    - framework becomes semantic authority
+    - owner semantic defect is repaired from S36 without authorization
+  reliability_test_plan:
+    - deterministic matrix completeness checks
+    - negative cases for missing rows and unclassified operations
+    - Router-to-terminal and required-step reachability regressions
+    - idempotency/replay and evidence-readback checks
+    - currentness/staleness checks before accepting assurance evidence
+    - self-audit after each work package
+  performance_or_resource_metrics_or_explicit_na:
+    mandatory_license_cost_pen: S/0
+    mandatory_paid_saas: NONE
+    fast_pr_path: deterministic low-cost
+    performance_framework: EVALUATE_IN_WP5
+    semantic_paid_api: OPTIONAL_ONLY_IF_EXPLICITLY_APPROVED
+  rollback_or_recovery: >-
+    Fail closed. Keep family owners unchanged; preserve candidate evidence; use A-D recovery for Factory failures;
+    do not register/activate a matrix representation that duplicates or bypasses the canonical stores.
+  next_gate_or_handoff: EJECUCION_ESTRATEGIA_LF -> S36-WP01
+stages:
+  - stage_code: S36-CREATE-01
+    objective_or_purpose: >-
+      Formalize S36 as governed candidate and hand off WP1 without implementing the assurance platform during creation.
+    status: CURRENT
+    entry_conditions:
+      - CREACION_ESTRATEGIA_LF durable execution reserved
+      - STRATEGY_CREATE resolves READY_TO_EXECUTE
+      - factory contract v0.3.2 ACTIVE_ENFORCEMENT
+      - source handoff recovered without ZIP dependency
+      - current test stores and S26/S30 inputs inventoried
+    actions_or_scope:
+      - resolve policies, destination, currentness and duplicate strategy inventory
+      - materialize S36 contract and seven-work-package backlog
+      - run deterministic prewrite validator
+      - write/readback candidate strategy on governed focal recovery branch
+      - register/readback candidate snapshot
+      - run deterministic close validator and aggregate judge
+    tests: [S36-T01, S36-T02, S36-T03, S36-T04, S36-T05]
+    evidence_required:
+      - durable execution readback
+      - Router and policy snapshot/fingerprint
+      - prewrite validator receipt
+      - Git commit/blob readback
+      - Supabase registration and independent readback
+      - close validator and aggregate judge
+      - no ZIP dependency evidence
+    exit_gate: S36_STRATEGY_FORMALIZED_CANDIDATE_ONLY_WITH_WP01_HANDOFF
+    conclusion_ref: S36-CREATE-CONCLUSION-01
+gates:
+  - DURABLE_START_BEFORE_MATERIAL_WRITE
+  - ROUTER_STRATEGY_CREATE_ACTIVE
+  - CURRENT_POLICY_SET_RESOLVED
+  - CONTRACT_V032_EXACT
+  - DESTINATION_RECOVERY_B_FOCAL_MINIMAL
+  - DETERMINISTIC_PREWRITE_VALIDATOR_PASS
+  - NO_ZIP_OPERATIONAL_DEPENDENCY
+  - NO_MAIN_WRITE
+  - GITHUB_READBACK
+  - SUPABASE_INDEPENDENT_READBACK
+  - DETERMINISTIC_CLOSE_VALIDATOR_PASS
+  - AGGREGATE_JUDGE_PASS
+  - NO_RUNTIME
+  - NO_AUTOMATIC_ACTIVATION
+  - NO_PRODUCTION_PROMOTION
+tests:
+  - id: S36-T01
+    type: POSITIVE
+    case: formal S36 payload through v0.3.2 prewrite validator
+    expected: valid=true and blocking_codes=[]
+    status: PENDING_EXACT_RUN
+  - id: S36-T02
+    type: NEGATIVE
+    case: attempt to create a second S26/S30/transversal test matrix
+    expected: BLOCK
+    status: DEFINED
+  - id: S36-T03
+    type: NEGATIVE
+    case: attempt runtime or production activation during strategy creation
+    expected: BLOCK
+    status: DEFINED
+  - id: S36-T04
+    type: READBACK
+    case: Git and Supabase exact candidate readback
+    expected: exact identity/hash/status match
+    status: PENDING
+  - id: S36-T05
+    type: SOURCE_POLICY
+    case: ZIP referenced as operational input/dependency
+    expected: BLOCK
+    status: DEFINED
+metrics:
+  required_factory_steps: 43
+  prewrite_validator_blocking_codes_target: 0
+  close_validator_blocking_codes_target: 0
+  canonical_matrix_count_target: 1
+  mandatory_license_cost_pen: 0
+  mandatory_paid_saas_count: 0
+  main_writes_allowed: 0
+  runtime_changes_allowed: 0
+  production_changes_allowed: 0
+risks:
+  - id: S36-R1
+    risk: existing Strategy/Profile qualification suites are mistaken for the complete canonical LF Test Matrix
+    mitigation: treat them as reusable inputs and emit NOT_COVERED for missing family/process/dimension/depth rows
+  - id: S36-R2
+    risk: S36 duplicates S26/S30 ownership or repairs their semantics
+    mitigation: S26/S30 contribute invariants; S36 owns reusable assurance only; semantic repair returns to owner
+  - id: S36-R3
+    risk: new operations/processes silently escape assurance
+    mitigation: WP6/WP7 derive universe from canonical registries and fail completeness when unclassified
+  - id: S36-R4
+    risk: green tests are interpreted as complete assurance
+    mitigation: coverage completeness and evidence currentness are distinct from pass rate
+  - id: S36-R5
+    risk: optional framework becomes required authority
+    mitigation: LF canonical schema/contracts remain framework-neutral and removable
+  - id: S36-R6
+    risk: historical ZIP bundles become operational dependency
+    mitigation: source resolution is path/SHA/snapshot/store based; ZIP is excluded
+evidence_contract:
+  levels: [R1_SOURCE_CONTRACT, R2_EXACT_ARTIFACT_BOUND, R3_DURABLE_GOVERNED_EXECUTION_AND_INDEPENDENT_READBACK]
+  current_ceiling: R3_GOVERNED_CANDIDATE_NOT_RUNTIME_NOT_PRODUCTION
+  rules:
+    - no self-asserted validator PASS
+    - exact validator blob plus input/results SHA required
+    - RETURNING is receipt only
+    - independent Supabase readback required
+    - exact Git blob readback required
+    - PASS without family/process/invariant/dimension/depth/evidence context is insufficient
+    - ZIP cannot be an operational assurance dependency
+rollback_or_recovery:
+  routes: [A_ORIGINAL, B_FOCAL_MINIMAL, C_CANONICAL_EQUIVALENT, D_INDEPENDENT_AUTHORIZED]
+  on_prewrite_failure: do not register S36; repair payload and rerun exact validator
+  on_git_failure: preserve execution and failure evidence; do not register snapshot
+  on_supabase_failure: preserve Git candidate only; do not claim canonical registration
+  on_close_failure: keep creation execution open/blocked; do not hand off WP1
+  on_owner_defect_later: register evidence and failing regression; return semantic repair to owner
+execution_frontier:
+  state: IN_PROGRESS
+  current_stage: S36-CREATE-01
+  current_action: run governed Strategy Factory prewrite and candidate registration
+  safe_parallel_work: []
+  blockers: []
+stage_conclusions: []
+invalidation_triggers:
+  - Strategy Factory contract/validator/judge SHA changes
+  - required policy snapshot changes
+  - Router STRATEGY_CREATE stops resolving CREACION_ESTRATEGIA_LF
+  - artifact destination/recovery rules change
+  - canonical LF test stores schema materially changes
+  - S26/S30 invariant contracts materially change
+  - new HIGH/CRITICAL EKB rule changes assurance controls
+  - any ZIP becomes required for operational S36 execution
+change_log:
+  - version: v0.1
+    change: materialize canonical S36 from HANDOFF_S36_LF_TEST_ASSURANCE_2026.md; no ZIP; preserve one-matrix principle and seven-WP plan
+    execution_id: EXEC-S36-TEST-ASSURANCE-CREATE-20260914-001
+closure_criteria:
+  - 43/43 required Strategy Factory steps clean
+  - S36 candidate source written only to governed focal recovery destination
+  - Supabase snapshot CANDIDATO_READ_ONLY / PLAN_ONLY / BLOQUEADO
+  - prewrite and close validators pass with zero blocking codes
+  - creation-stage conclusion exists and matches conclusion_ref
+  - next handoff points to EJECUCION_ESTRATEGIA_LF for S36-WP01
+  - no assurance implementation is falsely claimed complete at strategy-creation close
+  - no runtime/production/automatic activation effect
+  - no ZIP operational dependency
+next_gate_or_handoff: EJECUCION_ESTRATEGIA_LF -> S36-WP01
+work_packages:
+  - wp_code: S36-WP01
+    title: Recover and normalize canonical LF Test Matrix
+    status: NOT_STARTED
+    execution_operation: EJECUCION_ESTRATEGIA_LF
+    deliverables:
+      - canonical matrix schema
+      - family/process taxonomy
+      - dimension definitions
+      - assurance-depth definitions
+      - migration map from existing artifacts
+    definition_of_done:
+      - one canonical matrix definition
+      - existing useful coverage mapped without duplication
+      - missing coverage represented explicitly
+      - no S26/S30/transversal parallel matrix
+  - wp_code: S36-WP02
+    title: Functional & Quality Harness
+    status: BACKLOG
+    depends_on: [S36-WP01]
+    scope: consolidate deterministic pytest/custom harnesses; normalize PASS/FAIL/BLOCK/NOT_COVERED; map tests to matrix rows
+  - wp_code: S36-WP03
+    title: Depth / Property / Stateful Testing
+    status: BACKLOG
+    depends_on: [S36-WP01, S36-WP02]
+    scope: evaluate Hypothesis; target Router parameters, state transitions, ordering, replay/idempotency, target selection and close guards
+  - wp_code: S36-WP04
+    title: Adversarial / Agent Security
+    status: BACKLOG
+    depends_on: [S36-WP01, S36-WP02]
+    scope: evaluate Promptfoo Community or equivalent S/0 tool; automate bypass/authority/target/path negative corpus
+  - wp_code: S36-WP05
+    title: Performance Assurance
+    status: BACKLOG
+    depends_on: [S36-WP01, S36-WP02]
+    scope: evaluate k6 OSS; define SLOs and smoke/load/stress/spike/soak evidence where applicable
+  - wp_code: S36-WP06
+    title: Evidence, Coverage and CI
+    status: BACKLOG
+    depends_on: [S36-WP01, S36-WP02]
+    scope: normalized evidence, family/process/dimension/depth coverage, incomplete-coverage blocking, currentness and permanent regression corpus
+  - wp_code: S36-WP07
+    title: Adoption Across LF
+    status: BACKLOG
+    depends_on: [S36-WP01, S36-WP02, S36-WP06]
+    scope: incremental onboarding Router/shared governance, Profiles, Cards, Skills, Strategy, Runtime, DB/Migrations/Functions, Knowledge/Pipeline/Internal; new processes cannot silently escape assurance
