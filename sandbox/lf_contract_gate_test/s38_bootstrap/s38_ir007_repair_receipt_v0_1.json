@@ -1,0 +1,109 @@
+{
+  "receipt_version": "S38_IR007_REPAIR_V0_1",
+  "source_review_case_id": "S38-DG-IR-006",
+  "source_review_verdict": "PASS_WITH_RESTRICTIONS",
+  "source_review_score": 20,
+  "independent_receipt": {
+    "artifact_ref": "github://cristhianlujan/claude-persona-lf-patch@63f5db552c10535cfc473e50d0706ab2f8ae4758/sandbox/lf_contract_gate_test/s38_bootstrap/s38_dg_ir006_independent_receipt_v0_1.json",
+    "blob_sha": "f9a815d23544e00c7df27c7abe992b6131922376",
+    "sha256": "af11f4d353f9db7d1d846df5b21f6cdccc504ce64f07a65abbb6c0fe3a4ac978",
+    "frozen_quality_pack_validation": "VALID_ERRORS_EMPTY"
+  },
+  "repair_candidate_head": "63f5db552c10535cfc473e50d0706ab2f8ae4758",
+  "comparison_base": "eac7c8ad4f0e9c8df09c22aa0a5a3f6b5071da66",
+  "exclusive_lane": {
+    "pull_request": 758,
+    "head_branch": "lf/s38-ir007-repair-gpt-exclusive-20260913",
+    "base_branch": "lf/s38-ir007-repair-base-gpt-exclusive-20260913",
+    "base_sha": "eac7c8ad4f0e9c8df09c22aa0a5a3f6b5071da66",
+    "maintainer_can_modify": false,
+    "force_push_used": false,
+    "rebase_used": false,
+    "shared_branch_writes": false
+  },
+  "source_blockers": [
+    "BLOCK_NEXT_GATE_RESOLVER_TRUST_ANCHOR_SELF_REFERENTIAL_CANONICAL_REMOTE",
+    "BLOCK_NEXT_GATE_ENFORCED_CONTRACT_SURFACE_NOT_BYTE_ANCHORED",
+    "BLOCK_NEXT_GATE_CLAIM_TIER_CEILING_AND_ARCHIVAL_REGISTRY_SHARE_UNANCHORED_POLICY_ROOT"
+  ],
+  "producer_repair_disposition": {
+    "trust_anchor": "REPAIRED_PENDING_INDEPENDENT_IR007",
+    "enforced_contract_surface": "REPAIRED_PENDING_INDEPENDENT_IR007",
+    "claim_tier_policy_root": "REPAIRED_PENDING_INDEPENDENT_IR007",
+    "archival_policy_root": "REPAIRED_PENDING_INDEPENDENT_IR007",
+    "transport_environment": "HARDENED_PENDING_INDEPENDENT_IR007",
+    "historical_pin_model": "TO_BE_CLOSED_BY_IR007_BUNDLE_FREEZE"
+  },
+  "repair_mechanics": {
+    "resolver_id": "S38_GOVERNED_REF_RESOLVER_V3",
+    "repository_identity": {
+      "slug": "cristhianlujan/claude-persona-lf-patch",
+      "repository_id": 1244397752,
+      "git_remote": "https://github.com/cristhianlujan/claude-persona-lf-patch.git",
+      "api_endpoint": "https://api.github.com/repos/cristhianlujan/claude-persona-lf-patch",
+      "source": "BOOTSTRAP_CONSTANTS_NOT_TRUST_POLICY"
+    },
+    "artifact_head_attestation": "FIXED_GITHUB_API_EXACT_COMMIT_LOOKUP",
+    "git_binary": "/usr/bin/git",
+    "system_ca_bundle": "/etc/ssl/certs/ca-certificates.crt",
+    "caller_transport_env_inherited": false,
+    "policy_snapshot_from_canonical_remote": true,
+    "load_bearing_surface_byte_verified": [
+      "s38_governed_resolution_v0_3.py",
+      "s38_governed_trust_policy_v0_2.json",
+      "validate_s38_dg_contracts_v0_6.py",
+      "lf_common_evidence_envelope_v0_6_candidate.schema.json",
+      "lf_shared_authority_typed_context_v0_2_candidate.schema.json"
+    ],
+    "schemas_loaded_from_canonical_remote_at_use": true,
+    "claim_tier_max_without_independent_witness": "PROVENANCE_EXECUTION",
+    "witness_allowlist": [],
+    "archival_registry_source": "IMMUTABLE_POLICY_SNAPSHOT_FROM_CANONICAL_REMOTE"
+  },
+  "deterministic_execution": {
+    "s38_v0_6": {
+      "positive_cases": 7,
+      "negative_fail_closed_cases": 23,
+      "result": "PASS"
+    },
+    "s38_v0_5": {
+      "positive_cases": 4,
+      "negative_fail_closed_cases": 9,
+      "result": "PASS"
+    },
+    "historical_s31": {
+      "test_files": 13,
+      "failures": 0,
+      "result": "PASS"
+    },
+    "cross_binding_sha256": "1f5f85cdc08a6c80764af02204b39aadec993104a6949736809aa33aeb6d6810"
+  },
+  "ci_evidence": {
+    "validate_lf_packs": {
+      "run_id": 34797552891,
+      "conclusion": "success"
+    },
+    "lf_contract_check": {
+      "run_id": 34797552957,
+      "conclusion": "failure",
+      "failed_step": "Enforce LF migration source parity after checkpoint",
+      "causal_to_s38_ir007_repair": false,
+      "disposition": "OUT_OF_SCOPE_SHARED_MIGRATION_PARITY_DEBT"
+    }
+  },
+  "historical_pin_required": {
+    "revision": "be6c0f8a320c5cdcfa242ee775ba769745eb82df",
+    "path": "profiles/ui_architect/schemas/runtime_output.schema.json",
+    "blob_sha": "bd5508872ff19e9946ba8a8fe7d0eb94ffa7f5d2",
+    "sha256": "bed06e7a37a82a6e1baa9b1da4edb7969456ce64c4270fdd8e5db0f14845d425"
+  },
+  "claim_ceiling": "DETERMINISTIC_REPAIR_EVIDENCE_ONLY",
+  "independent_status": "PENDING_S38_DG_IR_007",
+  "authorization": {
+    "merge": "NONE",
+    "golden": "NONE",
+    "runtime": "NONE",
+    "scheduler": "NONE",
+    "production": "NONE"
+  }
+}
