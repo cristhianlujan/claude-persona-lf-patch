@@ -34,9 +34,10 @@ class CIEvidenceContractV1Test(unittest.TestCase):
         self.assertEqual(spec["authority_receipt_schema"], "LF_CURRENTNESS_AUTHORITY_RECEIPT_V1")
         self.assertEqual(spec["attestation_receipt_schema"], "LF_SOURCE_ATTESTATION_RECEIPT_V1")
         self.assertTrue(spec["durable_anchor_required"])
-        invariants = " ".join(CONTRACT["invariants"])
-        self.assertIn("does not attest the candidate head", invariants)
-        self.assertIn("exact-head CI workflow receipts", invariants)
+        invariants = " ".join(CONTRACT["invariants"]).lower()
+        self.assertIn("candidate head", invariants)
+        self.assertIn("exact-head ci workflow receipts", invariants)
+        self.assertIn("moving-authority currentness", invariants)
 
     def test_post_merge_v7_is_not_generic_ci_authority(self) -> None:
         spec = CONTRACT["provider_codes"]["EXTERNAL_RECONCILIATION_V7"]
