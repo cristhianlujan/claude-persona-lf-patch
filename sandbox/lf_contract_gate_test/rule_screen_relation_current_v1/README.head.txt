@@ -1,0 +1,3 @@
+candidate_head=6d57d300d4cbd3c365faf28513308ecfc9b05ca5
+base_main=34e5500454aa53dd816d8add70d466b5be628130
+scope=rule_screen_relation_current_v1_only
