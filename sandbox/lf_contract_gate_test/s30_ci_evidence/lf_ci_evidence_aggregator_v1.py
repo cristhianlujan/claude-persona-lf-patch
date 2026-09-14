@@ -26,15 +26,18 @@ def canonical_sha256(value: Any) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
-def _unsigned_receipt(receipt: dict[str, Any]) -> dict[str, Any]:
+def finalize_receipt(receipt: dict[str, Any]) -> dict[str, Any]:
     out = dict(receipt)
     out.pop("receipt_sha256", None)
+    out["receipt_sha256"] = canonical_sha256(out)
     return out
 
 
 def receipt_hash_valid(receipt: dict[str, Any]) -> bool:
     supplied = receipt.get("receipt_sha256")
-    return isinstance(supplied, str) and HEX64.fullmatch(supplied) is not None and canonical_sha256(_unsigned_receipt(receipt)) == supplied
+    unsigned = dict(receipt)
+    unsigned.pop("receipt_sha256", None)
+    return isinstance(supplied, str) and HEX64.fullmatch(supplied) is not None and canonical_sha256(unsigned) == supplied
 
 
 def _basic_request_findings(request: dict[str, Any]) -> list[str]:
@@ -65,6 +68,19 @@ def _basic_request_findings(request: dict[str, Any]) -> list[str]:
 def _subject_mismatch(request: dict[str, Any], receipt: dict[str, Any]) -> list[str]:
     fields = ("repository_full_name", "candidate_head_sha", "base_sha", "target_branch", "pr_number")
     return [field for field in fields if receipt.get(field) != request.get(field)]
+
+
+def _provider_envelope_bad(receipt: dict[str, Any]) -> list[str]:
+    bad: list[str] = []
+    if receipt.get("receipt_version") != "LF_CI_PROVIDER_RECEIPT_V1":
+        bad.append("RECEIPT_VERSION")
+    if not isinstance(receipt.get("source_ref"), str) or not receipt.get("source_ref", "").strip():
+        bad.append("SOURCE_REF")
+    if not isinstance(receipt.get("observed_at"), str) or not receipt.get("observed_at", "").strip():
+        bad.append("OBSERVED_AT")
+    if not receipt_hash_valid(receipt):
+        bad.append("RECEIPT_HASH")
+    return bad
 
 
 def _workflow_common(receipt: dict[str, Any], spec: dict[str, Any]) -> list[str]:
@@ -118,10 +134,7 @@ def _validate_currentness(request: dict[str, Any], receipt: dict[str, Any]) -> l
     att = receipt.get("attestation_receipt")
     if not isinstance(att, dict):
         return bad + ["ATTESTATION_MISSING"]
-    supplied = att.get("receipt_sha256")
-    unsigned = dict(att)
-    unsigned.pop("receipt_sha256", None)
-    if not isinstance(supplied, str) or HEX64.fullmatch(supplied) is None or canonical_sha256(unsigned) != supplied:
+    if not receipt_hash_valid(att):
         bad.append("ATTESTATION_HASH")
     if att.get("schema_version") != "LF_SOURCE_ATTESTATION_RECEIPT_V1":
         bad.append("ATTESTATION_SCHEMA")
@@ -154,7 +167,8 @@ def _validate_post_merge(request: dict[str, Any], receipt: dict[str, Any]) -> li
 
 
 def aggregate(request: dict[str, Any]) -> dict[str, Any]:
-    findings = _basic_request_findings(request)
+    request_findings = _basic_request_findings(request)
+    findings = list(request_findings)
     profile = request.get("requirement_profile")
     profile_spec = (CONTRACT.get("requirement_profiles") or {}).get(profile) or {}
     required = list(profile_spec.get("required_providers") or [])
@@ -188,8 +202,9 @@ def aggregate(request: dict[str, Any]) -> dict[str, Any]:
             continue
         row = rows[0]
         spec = CONTRACT["provider_codes"][code]
-        if not receipt_hash_valid(row):
-            provider_bad.append(code + ":RECEIPT_HASH")
+        envelope_bad = _provider_envelope_bad(row)
+        if envelope_bad:
+            provider_bad.append(code + ":" + ",".join(envelope_bad))
             continue
         mismatch = _subject_mismatch(request, row)
         if mismatch:
@@ -201,9 +216,8 @@ def aggregate(request: dict[str, Any]) -> dict[str, Any]:
         if row.get("provider_kind") != spec.get("provider_kind"):
             provider_bad.append(code + ":KIND")
             continue
-        mode = row.get("provider_mode")
         accepted = spec.get("accepted_modes")
-        if isinstance(accepted, list) and mode not in accepted:
+        if isinstance(accepted, list) and row.get("provider_mode") not in accepted:
             provider_bad.append(code + ":MODE")
             continue
 
@@ -252,11 +266,11 @@ def aggregate(request: dict[str, Any]) -> dict[str, Any]:
         result = "BLOCK_CI_CURRENTNESS_RECEIPT_INVALID"
     elif postmerge_bad:
         result = "BLOCK_CI_POST_MERGE_PROVIDER_INVALID"
-    elif provider_bad or _basic_request_findings(request):
+    elif provider_bad or request_findings:
         result = "BLOCK_CI_PROVIDER_RESULT_INVALID"
-    elif sorted(verified) != sorted(required):
+    elif not set(required).issubset(set(verified)):
         result = "BLOCK_CI_PROVIDER_RESULT_INVALID"
-        findings.append("VERIFIED_PROVIDER_SET_MISMATCH")
+        findings.append("REQUIRED_PROVIDER_NOT_VERIFIED")
     else:
         result = "PASS_CI_EVIDENCE_AGGREGATED"
 
@@ -284,7 +298,7 @@ def aggregate(request: dict[str, Any]) -> dict[str, Any]:
         "merge_authorized": False,
         "runtime_authorized": False,
         "production_authorized": False,
-        "golden_authorized": False,
+        "golden_authorized": False
     }
     return core | {"receipt_sha256": canonical_sha256(core)}
 
