@@ -1,0 +1,316 @@
+strategy_id: S37
+snapshot_code: LF_EXPLORATION_INNOVATION_ENGINE_20260913
+version: v0.1
+title: S37 — Exploration & Innovation Engine
+status: CANDIDATO_READ_ONLY
+runtime_state: PLAN_ONLY
+impact_policy: BLOQUEADO
+strategy_type: TRANSVERSAL_EXPLORATION_INNOVATION
+strategy_archetype: TECHNICAL_OPERATIONAL
+problem_statement: LF requiere una capacidad gobernada para descubrir oportunidades adyacentes, de negocio, de datos y frontier
+  sin ampliar automáticamente el alcance autorizado. El prototipo Opportunity Expander demostró viabilidad conceptual pero
+  fue iniciado antes de existir un contenedor estratégico canónico, por lo que debe reconciliarse como evidencia de preinvestigación
+  y recrearse por el flujo gobernado de perfiles.
+objective: Formalizar S37 como estrategia candidata/read-only y establecer un backlog gobernado cuyo primer trabajo ejecutable
+  sea crear y validar Opportunity Expander junto con EXPLORATORY_PROFILE_QUALITY_PACK, con ejecución manual primero, evidencia
+  reproducible, separación estricta de scope y sin automatización hasta una decisión posterior.
+scope:
+- formalizar S37 mediante CREACION_ESTRATEGIA_LF
+- 'reconciliar PR #756 exclusivamente como prototipo/preinvestigación'
+- definir WP-01 Opportunity Expander + Exploratory Profile Quality Pack
+- definir WP-02 Manual Exploration E2E y canarios
+- definir backlog posterior de perfiles exploratorios, tournament y opportunity registry
+- mantener automatización como decisión futura separada
+non_goals:
+- modificar o reabrir S26
+- activar automáticamente Opportunity Expander
+- habilitar runtime productivo
+- promover perfiles o estrategias a Golden/producción
+- 'fusionar PR #756 como implementación oficial'
+- modificar main durante la creación candidata
+baseline:
+  s26_state: CLOSED_BY_CIERRE_ESTRATEGIA_LF
+  strategy_creation_execution: EXEC-S37-EXPLORATION-INNOVATION-CREATE-20260913-001
+  prototype_pr: 756
+  prototype_disposition: PREINVESTIGATION_ONLY_NOT_OFFICIAL_IMPLEMENTATION
+  profile_factory: CREACION_PERFIL_LF
+  profile_exploration_binding: EJECUCION_PERFIL_LF/EVALUATE_EXISTING/EXPLORATION/NO_WRITE
+  strategy_factory_contract: CONTRACT-CREACION-ESTRATEGIA-LF-v0.3.2
+  strategy_factory_contract_sha: 2c469e3cd2ae7bb7171ca4e52fc6da84b58af3a3
+  validator_blob_sha: 4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765
+  factory_branch: lf/s30-strategy-factory-v032-governed-20260907
+  factory_branch_head: 81c8488d2bd4ae516af42847640cd66639de1e08
+  observed_main_head: 34e5500454aa53dd816d8add70d466b5be628130
+  claim_ceiling: R3_GOVERNED_CANDIDATE_NOT_RUNTIME_NOT_PRODUCTION
+authorities:
+- ACT-0001
+- public.lf_router_action_registry:STRATEGY_CREATE
+- public.lf_operation_registry:CREACION_ESTRATEGIA_LF
+- public.v_lf_operation_contract:CONTRACT-CREACION-ESTRATEGIA-LF-v0.3.2
+- public.v_lf_operation_policy_snapshot:CREACION_ESTRATEGIA_LF
+- public.v_lf_artifact_destination_registry:DEST_CREACION_ESTRATEGIA_LF_CANARY
+- public.lf_strategy_snapshots
+- GitHub:cristhianlujan/claude-persona-lf-patch
+dependencies:
+- id: ACT-0001
+  ref: public.v_lf_fuente_operativa/ACT-0001
+  version: v0.3
+  required: true
+- id: STRATEGY_FACTORY_CONTRACT_V032
+  ref: CONTRACT-CREACION-ESTRATEGIA-LF-v0.3.2
+  sha: 2c469e3cd2ae7bb7171ca4e52fc6da84b58af3a3
+  required: true
+- id: STRATEGY_FACTORY_VALIDATOR_V032
+  ref: gobernanza/judges/validate_strategy_contract_v032.py
+  sha: 4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765
+  required: true
+- id: PROFILE_FACTORY
+  ref: CREACION_PERFIL_LF
+  required: true
+- id: PROTOTYPE_PR_756
+  ref: github://cristhianlujan/claude-persona-lf-patch/pull/756
+  required: false
+  role: PREINVESTIGATION_ONLY
+applicable_policies:
+- code: POL-LF-OPERATION-LIFECYCLE
+  role: GOVERNANCE_LIFECYCLE
+  version: v1.0
+  sha: 973b5a0ad26433095066ff06b53c3043f38fef51d04e9482c458e178f20920e8
+- code: POL-LF-POLICY-CONSUMPTION
+  role: POLICY_CONSUMPTION
+  version: v1.1-transversal-candidate
+  sha: e5eb786e14a4b735e271a81b702a0a775e0bf39ba174d333531a82a0858b5553
+- code: POL-LF-SOURCE-RESOLUTION
+  role: SOURCE_RESOLUTION
+  version: v1.4-transversal-supabase-authority-visual-support
+  sha: 5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46
+- code: POL-LF-STATE-MODEL
+  role: STATE_MODEL
+  version: v1.1-transversal-candidate
+  sha: f451bb4d2b17cdac48c4dddb250108b2874a9d036edcfb9d2f7fa540416332aa
+- code: POL-STRATEGY-CREATION-001
+  role: STRATEGY_CREATION
+  version: v0.1-candidate
+  sha: 563b91a1e5405c1e1f8806c1f8d12b8ab2dfbd901638f7b432a3e601cc2558fc
+type_extension:
+  runtime_or_system_boundary: Advisory exploration capabilities only; no canonical business/runtime mutation from S37 creation.
+  failure_modes_and_first_bad_hop:
+  - missing governed strategy or profile admission
+  - scope expansion without explicit authorization
+  - duplicate/redundant opportunities
+  - missing frontier novelty
+  - missing evidence or invalid deterministic validator receipt
+  - attempted runtime/production promotion
+  reliability_test_plan:
+  - deterministic Strategy Factory prewrite/close validation
+  - Profile Creator structural validation
+  - manual canaries for Excel portfolio upload and debt recovery
+  - negative tests for trivial change, duplicate idea and scope mutation
+  - readback of every governed write
+  performance_or_resource_metrics_or_explicit_na:
+    initial_mode: MANUAL_ONLY
+    automatic_invocation_cost: N/A_UNTIL_AUTOMATION_DESIGN
+    target_duplicate_opportunity_rate: measure_before_automation
+    target_frontier_yield: measure_before_automation
+  rollback_or_recovery: Fail closed; preserve prototype as evidence only; do not merge/promote; use A-D recovery and rebuild
+    clean candidate when a prewrite or readback gate fails.
+  next_gate_or_handoff: EJECUCION_ESTRATEGIA_LF -> WP-01 -> CREACION_PERFIL_LF for Opportunity Expander
+stages:
+- stage_code: S37-CREATE-01
+  objective_or_purpose: Complete governed formalization of S37 and hand off its first executable work package without executing
+    that work package during strategy creation.
+  status: CURRENT
+  entry_conditions:
+  - CREACION_ESTRATEGIA_LF execution reserved before material work
+  - STRATEGY_CREATE Router action ACTIVE
+  - factory contract v0.3.2 ACTIVE_ENFORCEMENT
+  actions_or_scope:
+  - resolve policies, destination, currentness and duplicate lineage
+  - materialize S37 contract and work-package backlog
+  - run deterministic prewrite validator
+  - write/readback candidate strategy only on governed canary branch
+  - register/readback candidate snapshot
+  - run deterministic close validator and aggregate judge
+  tests:
+  - S37-T01
+  - S37-T02
+  - S37-T03
+  - S37-T04
+  evidence_required:
+  - execution durable readback
+  - policy snapshot and fingerprint
+  - validator prewrite receipt
+  - Git commit/blob readback
+  - Supabase registration and independent readback
+  - validator close receipt and aggregate judge
+  exit_gate: S37_STRATEGY_FORMALIZED_CANDIDATE_ONLY_WITH_WP01_HANDOFF
+  conclusion_ref: S37-CREATE-CONCLUSION-01
+gates:
+- DURABLE_START_BEFORE_MATERIAL_WORK
+- ROUTER_STRATEGY_CREATE_ACTIVE
+- CURRENT_POLICY_SET_RESOLVED
+- CONTRACT_V032_EXACT
+- DESTINATION_CANARY_ONLY
+- DETERMINISTIC_PREWRITE_VALIDATOR_PASS
+- NO_MAIN_WRITE
+- NO_S26_MUTATION
+- GITHUB_READBACK
+- SUPABASE_INDEPENDENT_READBACK
+- DETERMINISTIC_CLOSE_VALIDATOR_PASS
+- AGGREGATE_JUDGE_PASS
+- NO_RUNTIME
+- NO_AUTOMATIC_ACTIVATION
+- NO_PRODUCTION_PROMOTION
+tests:
+- id: S37-T01
+  type: POSITIVE
+  case: formal S37 payload through v0.3.2 prewrite validator
+  expected: valid=true and blocking_codes=[]
+  status: PENDING_EXACT_RUN
+- id: S37-T02
+  type: NEGATIVE
+  case: attempt runtime or automatic activation during creation
+  expected: BLOCK
+  status: DEFINED
+- id: S37-T03
+  type: READBACK
+  case: Git and Supabase exact candidate readback
+  expected: exact identity/hash/status match
+  status: PENDING
+- id: S37-T04
+  type: HANDOFF
+  case: creation closes without executing WP-01
+  expected: next handoff is EJECUCION_ESTRATEGIA_LF -> WP-01
+  status: PENDING
+metrics:
+  required_factory_steps: 43
+  required_policy_snapshots: 5
+  prewrite_validator_blocking_codes_target: 0
+  close_validator_blocking_codes_target: 0
+  main_writes_allowed: 0
+  s26_mutations_allowed: 0
+  runtime_changes_allowed: 0
+  automatic_activation_changes_allowed: 0
+  production_changes_allowed: 0
+risks:
+- id: S37-R1
+  risk: 'prototype PR #756 is mistaken for official implementation'
+  mitigation: mark PREINVESTIGATION_ONLY; official profile must be recreated under WP-01 via CREACION_PERFIL_LF
+- id: S37-R2
+  risk: strategy creation is confused with execution of Opportunity Expander
+  mitigation: creation stage only formalizes and hands off; work_packages remain NOT_STARTED
+- id: S37-R3
+  risk: automation is introduced prematurely and contaminates closed S26
+  mitigation: automation explicitly out of scope; S26 mutation count target is zero
+- id: S37-R4
+  risk: frontier/novelty degenerates into repeated adjacent ideas
+  mitigation: WP-01 quality pack requires proximity dedup, breadth and frontier-distance gates
+- id: S37-R5
+  risk: governed writes lack independent evidence
+  mitigation: factory write/readback/register/readback/validator/judge chain is mandatory
+evidence_contract:
+  levels:
+  - R1_SOURCE_CONTRACT
+  - R2_EXACT_ARTIFACT_BOUND
+  - R3_DURABLE_GOVERNED_EXECUTION_AND_INDEPENDENT_READBACK
+  current_ceiling: R3_GOVERNED_CANDIDATE_NOT_RUNTIME_NOT_PRODUCTION
+  rules:
+  - no self-asserted validator PASS
+  - exact validator blob plus input/results SHA required
+  - RETURNING is receipt only
+  - independent Supabase readback required
+  - exact Git blob readback required
+  - prototype PR evidence cannot be promoted retroactively
+rollback_or_recovery:
+  routes:
+  - A_ORIGINAL
+  - B_FOCAL_MINIMAL
+  - C_CANONICAL_EQUIVALENT
+  - D_INDEPENDENT_AUTHORIZED
+  on_prewrite_failure: do not write S37 artifact; repair payload and rerun exact validator
+  on_git_failure: do not register strategy snapshot; preserve execution and failure evidence
+  on_supabase_failure: preserve Git candidate only; do not claim canonical registration
+  on_close_failure: keep creation execution open/blocked; do not hand off WP-01
+  on_profile_failure_later: WP-01 fails closed without changing strategy scope or S26
+execution_frontier:
+  state: IN_PROGRESS
+  current_stage: S37-CREATE-01
+  current_action: run governed strategy-creation prewrite and candidate registration
+  safe_parallel_work: []
+  blockers: []
+stage_conclusions: []
+invalidation_triggers:
+- Strategy Factory active contract/validator/judge SHA changes
+- required policy snapshot changes
+- Router STRATEGY_CREATE stops resolving CREACION_ESTRATEGIA_LF
+- destination registry changes
+- 'prototype PR #756 is merged/promoted outside S37 governance'
+- S26 is reopened or mutated as part of this scope
+- new HIGH/CRITICAL EKB rule materially changes creation controls
+change_log:
+- version: v0.1
+  change: formal S37 creation initiated after detecting that Opportunity Expander prototype was started before a canonical
+    strategy container
+  execution_id: EXEC-S37-EXPLORATION-INNOVATION-CREATE-20260913-001
+closure_criteria:
+- 43/43 required Strategy Factory steps clean
+- S37 candidate source written only to governed canary destination
+- Supabase snapshot CANDIDATO_READ_ONLY / PLAN_ONLY / BLOQUEADO
+- prewrite and close validators pass with zero blocking codes
+- creation-stage conclusion exists and matches conclusion_ref
+- next handoff points to EJECUCION_ESTRATEGIA_LF for WP-01
+- Opportunity Expander profile itself remains not-created-officially at strategy-creation close
+- automation remains explicitly deferred
+- S26 remains untouched
+next_gate_or_handoff: EJECUCION_ESTRATEGIA_LF -> WP-01 -> CREACION_PERFIL_LF
+work_packages:
+- wp_code: S37-WP01
+  title: Opportunity Expander + Exploratory Profile Quality Pack
+  status: NOT_STARTED
+  execution_operation: EJECUCION_ESTRATEGIA_LF
+  child_operation: CREACION_PERFIL_LF
+  deliverables:
+  - Opportunity Expander governed candidate profile
+  - EXPLORATORY_PROFILE_QUALITY_PACK
+  - typed opportunity schema
+  - rubric, mini-judge, evals, canary fixtures
+  - 'clean PR independent from prototype PR #756'
+  definition_of_done:
+  - profile created by official Profile Factory
+  - profile quality pack passes canonical validators
+  - manual Excel and debt-recovery canaries pass
+  - negative trivial/duplicate/scope-mutation tests pass
+  - no runtime/production promotion
+- wp_code: S37-WP02
+  title: Manual Exploration E2E
+  status: BACKLOG
+  depends_on:
+  - S37-WP01
+  scope: manual invocation only; prove context -> opportunity output -> save/ignore/explore handoff
+- wp_code: S37-WP03
+  title: Exploration specialist portfolio
+  status: BACKLOG
+  depends_on:
+  - S37-WP01
+  - S37-WP02
+  scope: Contrarian, Customer, Creditor, Data, Risk/Governance and 10X/Frontier profiles/capabilities
+- wp_code: S37-WP04
+  title: Tournament and candidate selection
+  status: BACKLOG
+  depends_on:
+  - S37-WP03
+  scope: rank/falsify candidates and produce experiment-ready shortlist
+- wp_code: S37-WP05
+  title: Opportunity Registry and novelty memory
+  status: BACKLOG
+  depends_on:
+  - S37-WP01
+  scope: identity, lifecycle, deduplication, decisions and learning from prior opportunities
+- wp_code: S37-WP06
+  title: Automatic activation design
+  status: DEFERRED_USER_DECISION
+  depends_on:
+  - S37-WP01
+  - S37-WP02
+  - S37-WP05
+  scope: evaluate best trigger/orchestration placement only after manual capability is complete; S26 excluded
