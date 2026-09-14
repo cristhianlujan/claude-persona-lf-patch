@@ -1,0 +1,43 @@
+{
+  "quality_pack": "EXPLORATORY_PROFILE_QUALITY_PACK_V0_1",
+  "cases": [
+    {
+      "id": "excel_bulk_upload_expands_beyond_commodity",
+      "fixture": "examples/good_output.json",
+      "expected_status": "READY_FOR_REVIEW",
+      "assertions": [
+        "baseline Excel upload remains explicitly preserved",
+        "opportunity set contains at least one ADJACENT or BUSINESS mechanism",
+        "opportunity set contains at least one FRONTIER mechanism",
+        "every opportunity includes an experiment and scope-change flag"
+      ]
+    },
+    {
+      "id": "commodity_only_set_is_rejected",
+      "fixture": "examples/bad_output.json",
+      "expected_status": "RETURN_TO_WORKER_FOR_DIVERGENCE",
+      "assertions": [
+        "a set containing only file validation and formatting is insufficient exploration",
+        "frontier_present=false cannot pass when frontier exploration is applicable"
+      ]
+    },
+    {
+      "id": "redundant_variants_are_rejected",
+      "fixture": "examples/bad_output.json",
+      "expected_status": "RETURN_REDUNDANT_SET",
+      "assertions": [
+        "materially equivalent ideas must be collapsed before recommendation",
+        "redundancy_check=FAIL prevents ready status"
+      ]
+    },
+    {
+      "id": "silent_scope_mutation_is_blocked",
+      "fixture": "examples/bad_output.json",
+      "expected_status": "BLOCK_SCOPE_MUTATION",
+      "assertions": [
+        "profile cannot change authorized implementation scope automatically",
+        "scope_guard_passed=false is a hard block regardless of novelty score"
+      ]
+    }
+  ]
+}

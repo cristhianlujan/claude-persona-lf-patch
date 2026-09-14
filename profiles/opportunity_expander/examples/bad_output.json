@@ -1,0 +1,38 @@
+{
+  "status": "RETURN_TO_WORKER_FOR_DIVERGENCE",
+  "user_payload": {
+    "baseline_preserved": true,
+    "opportunities": [
+      {
+        "id": "CORE-FORMAT",
+        "lane": "CORE",
+        "idea": "Validate Excel columns and required formats.",
+        "mechanism": "Reject malformed uploads before ingestion.",
+        "potential_value": "Reduces operational errors during file loading.",
+        "experiment": "Measure upload error rate before and after validation rules.",
+        "requires_scope_change": false
+      },
+      {
+        "id": "CORE-FORMAT-2",
+        "lane": "CORE",
+        "idea": "Validate Excel columns with stricter formatting checks.",
+        "mechanism": "Reject malformed uploads with additional formatting rules.",
+        "potential_value": "Reduces the same operational errors during file loading.",
+        "experiment": "Measure the same upload error rate with stricter checks.",
+        "requires_scope_change": false
+      }
+    ]
+  },
+  "internal_envelope": {
+    "novelty_distance": "CORE",
+    "redundancy_check": "FAIL",
+    "frontier_present": false,
+    "scope_guard_passed": true
+  },
+  "evidence_map": [
+    {
+      "source_ref": "supabase://public.lf_operation_mode_bindings/EJECUCION_PERFIL_LF/EVALUATE_EXISTING/EXPLORATION",
+      "supports": ["read-only exploratory execution is allowed"]
+    }
+  ]
+}
