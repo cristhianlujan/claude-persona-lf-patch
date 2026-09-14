@@ -125,7 +125,7 @@ applicable_policies:
   version: v1.4-transversal-supabase-authority-visual-support
 - role: STATE_MODEL
   code: POL-LF-STATE-MODEL
-  version: v1.1-transversal-candidate
+  version: v2.0-canonical-lifecycle
 - role: STRATEGY_CREATION
   code: POL-STRATEGY-CREATION-001
   version: v0.1-candidate
