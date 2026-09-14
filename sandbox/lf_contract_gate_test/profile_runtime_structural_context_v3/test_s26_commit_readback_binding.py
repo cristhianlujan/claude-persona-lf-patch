@@ -86,6 +86,54 @@ def _valid_commit_sha(value: object) -> bool:
     )
 
 
+def _is_ancestor(ancestor: str, descendant: str) -> bool:
+    result = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", ancestor, descendant],
+        cwd=REPO,
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    if result.returncode == 0:
+        return True
+    if result.returncode == 1:
+        return False
+    raise AssertionError(
+        f"S26_SHA_BINDING_PR_BASE_ANCESTRY_CHECK_FAILED:{result.returncode}"
+    )
+
+
+def _resolve_pr_checkout_base(
+    candidate_head: str,
+    event_base_head: str,
+    checkout_parents: list[str],
+) -> str:
+    if len(checkout_parents) != 2:
+        raise AssertionError(
+            f"S26_SHA_BINDING_PR_MERGE_PARENT_COUNT_INVALID:{len(checkout_parents)}"
+        )
+    if candidate_head not in checkout_parents:
+        raise AssertionError("S26_SHA_BINDING_PR_EVENT_CANDIDATE_PARENT_MISMATCH")
+
+    checkout_base_candidates = [
+        parent for parent in checkout_parents if parent != candidate_head
+    ]
+    if len(checkout_base_candidates) != 1:
+        raise AssertionError("S26_SHA_BINDING_PR_CHECKOUT_BASE_PARENT_INVALID")
+    checkout_base_head = checkout_base_candidates[0]
+
+    # GitHub can refresh refs/pull/<n>/merge after the event payload was frozen.
+    # The candidate parent must remain exact. A newer checkout base is admissible
+    # only when the event base is still its ancestor (forward-only base drift).
+    if checkout_base_head != event_base_head and not _is_ancestor(
+        event_base_head, checkout_base_head
+    ):
+        raise AssertionError(
+            "S26_SHA_BINDING_PR_EVENT_BASE_NOT_ANCESTOR_OF_CHECKOUT_BASE"
+        )
+    return checkout_base_head
+
+
 def _resolve_candidate_head() -> tuple[str, str, str]:
     checkout_head = _run("git", "rev-parse", "HEAD").stdout.strip()
     if os.environ.get("GITHUB_EVENT_NAME", "").strip() != "pull_request":
@@ -112,12 +160,7 @@ def _resolve_candidate_head() -> tuple[str, str, str]:
         raise AssertionError("S26_SHA_BINDING_PR_BASE_SHA_INVALID")
 
     checkout_parents = _commit_parents(checkout_head)
-    if len(checkout_parents) != 2:
-        raise AssertionError(
-            f"S26_SHA_BINDING_PR_MERGE_PARENT_COUNT_INVALID:{len(checkout_parents)}"
-        )
-    if set(checkout_parents) != {base_head, candidate_head}:
-        raise AssertionError("S26_SHA_BINDING_PR_EVENT_MERGE_PARENT_MISMATCH")
+    _resolve_pr_checkout_base(candidate_head, base_head, checkout_parents)
 
     _fetch_commit(candidate_head)
     return candidate_head, checkout_head, "PULL_REQUEST_EVENT_HEAD_BOUND_TO_MERGE_PARENTS"
