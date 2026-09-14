@@ -8,7 +8,7 @@ import re
 import subprocess
 from pathlib import Path
 
-EXPECTED_MANIFEST_SHA256 = "e197c4ac9e4ef25b4eddffc407e772251303e981b8f34a1f2939b6a72bf39ccc"
+EXPECTED_MANIFEST_SHA256 = "a4fbb5d1668571ebfb6b77634756793e50faf5fda62ffd28f603f02f80e2e1a9"
 EXPECTED_OWNER = "S30"
 EXPECTED_BRANCH = "s30-ekb-preflight-lf-current-20260914"
 HEX40 = re.compile(r"^[0-9a-f]{40}$")

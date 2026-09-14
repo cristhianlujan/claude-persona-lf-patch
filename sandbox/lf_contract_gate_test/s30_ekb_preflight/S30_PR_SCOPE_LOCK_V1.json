@@ -4,7 +4,7 @@
   "scope": "EKB_PREFLIGHT_LF",
   "mode": "EXACT_FILE_ALLOWLIST_FAIL_CLOSED",
   "head_branch": "s30-ekb-preflight-lf-current-20260914",
-  "scope_anchor_revision": "74f3310407fde5453b705758e366ff8c75ecc1e5",
+  "scope_anchor_revision": "d5f9a387f4ef6aeab3df8122f27b404f4114a08a",
   "cross_owner_changes_allowed": false,
   "allowed_paths": [
     "sandbox/lf_contract_gate_test/s30_ekb_preflight/LF_EKB_PREFLIGHT_CONTRACT_V1.json",

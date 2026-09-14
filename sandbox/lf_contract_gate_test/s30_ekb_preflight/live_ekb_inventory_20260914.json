@@ -1,7 +1,7 @@
 {
   "captured_on": "2026-09-14",
   "project_id": "mhwmirqcgxxukpctffuv",
-  "main_anchor": "74f3310407fde5453b705758e366ff8c75ecc1e5",
+  "main_anchor": "d5f9a387f4ef6aeab3df8122f27b404f4114a08a",
   "active_state_semantics": {
     "normalization": "UPPER(TRIM(estado))",
     "vocabulary": ["ACTIVO", "ACTIVE", "ABIERTO", "OPEN"],
