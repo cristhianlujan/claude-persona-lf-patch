@@ -1,0 +1,80 @@
+{
+  "schema_version": "S31_CURRENTNESS_AUTHORITY_WORK_PACKAGE_V0_1",
+  "strategy_id": "S31",
+  "lane": "S31-D_CURRENTNESS_AUTHORITY",
+  "status": "CANDIDATE_SOURCE_CLEAN_REBUILT_PENDING_FINAL_CI_AND_MAIN_GATE",
+  "owner": "S31",
+  "origin": {
+    "s30_candidate_pr": 774,
+    "s30_candidate_head": "45ac22b3af65f68e3f087ebecd70987f6037c3d2",
+    "historical_s31_handoff_commit": "e75cab6e71c0f880f72726439e952de78ea4931f",
+    "historical_rule": "GLOBAL_MAIN_SHA_DRIFT_ALONE_MUST_NOT_REOPEN_COMPLETED_STRATEGY"
+  },
+  "authority": {
+    "authority_ref": "refs/heads/main",
+    "base_main_at_reactivation": "a38d7d145a5ba110051911a19f91ac866eab8743",
+    "governance_pr_777_canonical_main": "18784e12ae4e4b8c7c48ae4004011444deb1fbeb",
+    "clean_rebuild_base_main": "18784e12ae4e4b8c7c48ae4004011444deb1fbeb",
+    "evidence_revision_is_immutable": true,
+    "global_sha_is_not_dependency_fingerprint": true
+  },
+  "components": {
+    "contract": "LF_MATERIAL_CURRENTNESS_CONTRACT_V1.json",
+    "material_engine_reused": "lf_material_currentness_v1.py",
+    "currentness_authority": "lf_currentness_authority_v1.py",
+    "broker_bridge": "lf_broker_currentness_bridge_v1.py",
+    "source_attestation": "lf_source_attestation_v1.py",
+    "workflow_candidate": ".github/workflows/lf-material-currentness.yml",
+    "capability_manifest": "CURRENTNESS_AUTHORITY_v1.manifest.json",
+    "registry_projection_candidate": "CURRENTNESS_AUTHORITY_registry_projection_v1.sql",
+    "canonical_supabase_migration_present": false,
+    "live_registry_projection_applied": false
+  },
+  "hardening": {
+    "compatibility_proof_context_bound": true,
+    "missing_assessment_fails_closed": true,
+    "source_attestation_expected_authority_bound": true,
+    "source_attestation_materials_recomputed_offline": true,
+    "source_attestation_claim_ceiling": "CANDIDATE_LOCAL_INTEGRITY",
+    "durable_evidence_anchor_pending_separate_pr": true,
+    "registry_version_release_state": "RELEASED_CANDIDATE",
+    "registry_manifest_sha256": "3f4f585aa3c6f760d9c8fcaef7233c318dc68316cc4a2e6c7a79cebd95fc01e5"
+  },
+  "existing_capabilities_reused": {
+    "binder": "public.fn_lf_capability_bind_current_v1",
+    "binding_modes": ["REBIND_SAFE", "PINNED"],
+    "duplicate_binder_created": false
+  },
+  "acceptance_ledger": [
+    {"id": 1, "criterion": "consumer declares real capability/contract dependencies separate from implementation binding", "source_status": "IMPLEMENTED"},
+    {"id": 2, "criterion": "unrelated main change -> CURRENT_REBOUND", "source_status": "IMPLEMENTED_REVALIDATION_REQUIRED_ON_CLEAN_FINAL_HEAD"},
+    {"id": 3, "criterion": "compatible implementation change does not invalidate consumer", "source_status": "IMPLEMENTED_REVALIDATION_REQUIRED_ON_CLEAN_FINAL_HEAD"},
+    {"id": 4, "criterion": "compatible contract change -> bounded validation", "source_status": "IMPLEMENTED_REVALIDATION_REQUIRED_ON_CLEAN_FINAL_HEAD"},
+    {"id": 5, "criterion": "breaking change identifies affected consumers/gates", "source_status": "IMPLEMENTED_REVALIDATION_REQUIRED_ON_CLEAN_FINAL_HEAD"},
+    {"id": 6, "criterion": "transitive dependency change -> affected closure", "source_status": "IMPLEMENTED_REVALIDATION_REQUIRED_ON_CLEAN_FINAL_HEAD"},
+    {"id": 7, "criterion": "unknown/missing dependency or compatibility proof -> UNKNOWN_FAIL_CLOSED", "source_status": "IMPLEMENTED_REVALIDATION_REQUIRED_ON_CLEAN_FINAL_HEAD"},
+    {"id": 8, "criterion": "historical evidence revision remains immutable after rebind", "source_status": "IMPLEMENTED_REVALIDATION_REQUIRED_ON_CLEAN_FINAL_HEAD"},
+    {"id": 9, "criterion": "rebuild/test does not require GitHub REST", "source_status": "IMPLEMENTED_REVALIDATION_REQUIRED_ON_CLEAN_FINAL_HEAD"},
+    {"id": 10, "criterion": "Git Broker no longer uses global SHA equality as only currentness condition", "source_status": "PARTIAL_BRIDGE_IMPLEMENTED_CUTOVER_NOT_AUTHORIZED"},
+    {"id": 11, "criterion": "writes remain fail-closed", "source_status": "IMPLEMENTED"},
+    {"id": 12, "criterion": "no auto-merge main", "source_status": "PASS_BY_DESIGN"},
+    {"id": 13, "criterion": "qualification invalidates only relevant materials/contracts", "source_status": "OUTPUT_CONTRACT_IMPLEMENTED_CONSUMER_CUTOVER_PENDING"},
+    {"id": 14, "criterion": "positive and negative matrix covers required cases", "source_status": "IMPLEMENTED_REVALIDATION_REQUIRED_ON_CLEAN_FINAL_HEAD"}
+  ],
+  "ownership_transition": {
+    "s30_temporarily_owns": ["legacy Git Broker exact-main guard until cutover"],
+    "s31_owns": ["CURRENTNESS_AUTHORITY contract", "material-aware decision", "compatibility classification", "source attestation candidate", "selective affected closure"],
+    "evidence_ledger_followup": "SEPARATE_EXCLUSIVE_PR_AFTER_CANONICAL_SOURCE_MERGE",
+    "s30_bridge_expires_when": "S31_CURRENTNESS_AUTHORITY_MERGED_AND_BROKER_CUTOVER_PROVEN"
+  },
+  "hard_gates": {
+    "governed_workflow_path": "SATISFIED_BY_PR_777_MAIN_18784e12ae4e4b8c7c48ae4004011444deb1fbeb",
+    "merge_main": "EXPLICIT_AUTHORIZATION_REQUIRED",
+    "canonical_supabase_migration": "ONLY_AFTER_CANONICAL_SOURCE_MERGE_AND_MIGRATION_LIFECYCLE_GATE",
+    "apply_registry_projection": "NOT_AUTHORIZED_FROM_CANDIDATE_BRANCH",
+    "durable_evidence_anchor": "REQUIRED_BEFORE_AUTHORITATIVE_CUTOVER",
+    "runtime_or_production": "NOT_AUTHORIZED",
+    "golden": "NOT_AUTHORIZED"
+  },
+  "claim_ceiling": "SOURCE_CANDIDATE_AND_NONPRODUCTION_AUTOMATION_UNTIL_FINAL_CI_MAIN_GATE_AND_DURABLE_EVIDENCE_INTEGRATION"
+}
