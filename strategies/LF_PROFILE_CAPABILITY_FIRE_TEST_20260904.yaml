@@ -1,72 +1,77 @@
 strategy_id: S25
 snapshot_code: LF_PROFILE_CAPABILITY_FIRE_TEST_20260904
 title: S25 — Prueba de fuego y evolución de Profiles, Cards y Adapters LF
-version: v0.2
+version: v0.3
 status: CANDIDATO_READ_ONLY
 runtime_state: NO_HABILITADO
 impact_policy: BLOQUEADO
 strategy_archetype: RESEARCH_BENCHMARK
-problem_statement: 'S25 v0.1 definió correctamente la secuencia baseline→diagnóstico→remediación→especialización,
-  pero la revisión independiente PFIRE-001 confirmó que el banco de 30 casos aún es
-  un catálogo de slots, no un benchmark ejecutable: 30/30 tareas son placeholders,
-  30/30 están CANDIDATO, active_count=0, e2e_claim_allowed=false en 30/30 y los 30
-  expected_output son idénticos. Además deben separarse readiness gates, behavioral
-  scoring, judge/oracle independiente, causalidad por replay/counterfactual y criterios
-  cuantitativos antes de decisiones arquitectónicas.'
-objective: Consolidar S25 v0.2 como contrato de benchmark pre-ejecución que preserve
-  las 30 identidades históricas, materialice primero integridad/holdout/fingerprint/variance/oracle/applicability,
-  y sólo después habilite el Fire Test de perfiles actuales.
+problem_statement: S25 v0.2 quedó ligado por error al banco histórico TS-PROGRAMMING-AGENT-E2E-001 de 30 casos. Ese banco
+  pertenece a una campaña anterior del Programming Agent y ya no es el marco vigente para certificar Profile Runtime. S26
+  consolidó Family Objective Matrix v3 Multidimensional como el marco actual, con jerarquía CASE→OBJECTIVE→FAMILY→TRANSVERSAL→SYSTEM
+  y dimensiones FUNCTIONALITY/QUALITY/DEPTH/PERFORMANCE/EVIDENCE/PASS_FAIL. S25 debe consumir esa matriz y extender sólo gaps
+  genuinos, sin imponer un conteo fijo de 30 casos.
+objective: Recomponer S25 para evaluar Profiles, Cards y Adapters usando S26 Family Objective Matrix v3 como marco vigente;
+  reutilizar primero evidencia/casos/objetivos aplicables y crear o extender pruebas sólo donde exista un gap real de objetivo,
+  dimensión o aislamiento causal.
 scope:
-- preservar las 30 identidades históricas como PAIRED_REGRESSION_BANK
-- crear BLIND_HOLDOUT_CHANNEL separado y fuera del feedback de remediación
-- añadir ejes TASK_ARCHETYPE, DOMAIN, STRESS_AXIS y COMPLEXITY sin eliminar familias
-  históricas
-- reclasificar C/W/S/I/Q/P como READINESS_GATES y separar behavioral metrics
-- definir applicability por checkpoint y evidencia observable
-- definir execution fingerprint probabilístico completo incluyendo Working Context/EKB/judge/oracle/resolver
-- calibrar repeated-run variance antes de fijar repetition policy
-- exigir causalidad por replay/counterfactual antes de modificar Profile/Card/Adapter/Policy/Runtime/Profile
-  Manager/Test Harness
-- usar OWNER_FIRST_SMALLEST_BLAST_RADIUS y exigir evidencia transversal antes de Policy
-- normalizar revisión independiente por identidad/canal, no por marca de modelo
-- resolver vocabulario de checkpoints y semántica de Card antes de PFIRE-003
-- predeclarar decision contract de specialist profiles sin inventar thresholds absolutos
-  antes del variance pilot
+- Retirar TS-PROGRAMMING-AGENT-E2E-001 y el número fijo de 30 casos como dependencia obligatoria de S25.
+- Adoptar S26 Family Objective Matrix v3 como contrato de evaluación base.
+- Usar jerarquía CASE→OBJECTIVE→FAMILY→TRANSVERSAL→SYSTEM.
+- Usar dimensiones FUNCTIONALITY, QUALITY, DEPTH, PERFORMANCE, EVIDENCE y PASS_FAIL.
+- Mapear aplicabilidad de objetivos/casos S26 a la pregunta S25 antes de ejecutar; N/A requiere justificación y evidencia.
+- Reusar evidencia/corpus S26 cuando sea semánticamente aplicable; extender únicamente gaps genuinos.
+- Separar SYSTEM_E2E de ISOLATED_CAPABILITY_DIAGNOSTIC para atribuir Profile/Card/Adapter/Policy/Runtime/Profile Manager/Test
+  Harness.
+- Mantener owner-first smallest blast radius para remediación.
+- Mantener specialist profile como escalamiento excepcional basado en residual gap reproducible.
 non_goals:
-- no ejecutar el Fire Test en PFIRE-002
-- no materializar todavía las 30 tareas exactas ni holdouts en esta creación de v0.2
-- no crear ni actualizar Profiles, Cards, Adapters o Policies
-- no crear specialist profiles
-- no reabrir ni reinterpretar S26
-- no habilitar runtime
-- no autorizar Gate G, Golden o producción
-- no promover ni mergear automáticamente la rama candidata
+- No revivir ni modificar la campaña histórica TS-PROGRAMMING-AGENT-E2E-001.
+- No exigir 30 casos ni 10x3 como criterio de suficiencia.
+- No reconstruir S26 Matrix v3.
+- No ejecutar PFIRE-004 en esta recomposición.
+- No crear ni actualizar Profiles, Cards, Adapters o Policies.
+- No habilitar runtime, Gate G, Golden o producción.
 baseline:
   supersedes:
-    snapshot_id: 25
-    version: v0.1
-    revision_sha256: e7a8e6dcd3b16d3d58392b21f95216001505710f8fd794812016a15d9da88970
-  independent_review:
-    review_case_id: S25-PFIRE-001-INDEPENDENT-REVIEW-001
-    reviewed_revision_sha256: e7a8e6dcd3b16d3d58392b21f95216001505710f8fd794812016a15d9da88970
-    verdict: PASS_TO_PFIRE_002
-    receipt_sha256: f5c54508df6c3e6c304cc8860d91308bcaa732ecd6f30c58b81486f6385b41a2
-    independent_context: true
-  benchmark_precheck:
-    suite_code: TS-PROGRAMMING-AGENT-E2E-001
-    total_count: 30
-    candidate_count: 30
-    active_count: 0
-    placeholder_task_count: 30
-    e2e_claim_not_allowed_count: 30
-    unique_input_digests: 30
-    unique_expected_digests: 1
-    fire_test_allowed_now: false
-  s26_family_e2e:
+    snapshot_id: 58
+    version: v0.2
+    reason: LEGACY_30_CASE_MODEL_OBSOLETE_FOR_S25
+  s26_matrix_v3:
     snapshot_id: 28
-    revision_sha256: 5b86f7414326058285341634bfa5357372b192b6dc77e504f998bada1fae3f9f
-    strategy_close_status: CLOSED
-    interpretation: SATISFIED_FOR_S25_ONLY_NOT_GATE_G_NOT_GOLDEN_NOT_PRODUCTION
+    name: S26 Family Objective Matrix v3 Multidimensional
+    status: CLOSED_BASELINE_CONSUMABLE
+    hierarchy:
+    - CASE
+    - OBJECTIVE
+    - FAMILY
+    - TRANSVERSAL
+    - SYSTEM
+    dimensions:
+    - FUNCTIONALITY
+    - QUALITY
+    - DEPTH
+    - PERFORMANCE
+    - EVIDENCE
+    - PASS_FAIL
+    families: 10
+    objectives_per_family: 5
+    source_policy: MAP_AND_EXTEND_ONLY_GENUINE_GAPS_NO_BLIND_RERUN
+    hard_rules:
+    - NO_AGGREGATE_PERCENT_CAN_MASK_CRITICAL_FAILURE
+    - DETERMINISTIC_CONTRACT_FAILURE_IS_HARD_BLOCK
+    - NO_SEMANTIC_DUPLICATES_COUNT_AS_INDEPENDENT_EVIDENCE
+    - AT_LEAST_ONE_UNSEEN_HOLDOUT_PER_FAMILY
+    - MUTATION_SENSITIVITY_REQUIRED_FOR_FINAL_CERTIFICATION
+    - QUALITY_AND_DEPTH_MUST_BE_SUBSTANTIVE_NOT_NOMINAL
+    - PERFORMANCE_IS_EVALUATED_ONLY_AFTER_CORRECTNESS
+    - CROSS_FAMILY_SAME_OBJECTIVE_FAILURE_IS_TRANSVERSAL_ARCHITECTURE_SIGNAL
+    - NA_DIMENSION_REQUIRES_EXPLICIT_JUSTIFICATION
+    reconciliation_receipt: github://cristhianlujan/claude-persona-lf-patch@9a4fbbc2c16898fc160bda7ecef8234554b8d513/sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/S26_MATRIX_V3_RECONCILIATION_RECEIPT_20260914.json
+  legacy_30_case_campaign:
+    suite_code: TS-PROGRAMMING-AGENT-E2E-001
+    ownership: PROGRAMMING_AGENT_E2E_20260903
+    disposition_for_s25: REFERENCE_ONLY_NOT_REQUIRED_NOT_MUTATED
   claim_ceiling:
   - READ_ONLY_PREPARATION
   - NOT_GATE_G
@@ -74,557 +79,260 @@ baseline:
   - NOT_PRODUCTION
 authorities:
 - ACT-0001
-- public.lf_router_action_registry:STRATEGY_CREATE
-- public.lf_operation_registry:CREACION_ESTRATEGIA_LF
 - public.lf_strategy_snapshots
-- public.lf_test_suite_cases:TS-PROGRAMMING-AGENT-E2E-001
-- EKB:AUD-001
-- EKB:S31-EVIDENCE-RESOLVER-IDENTITY-SPOOF-001
-- EKB:BENCH-TAUTOLOGY-001
+- S26:family_objective_matrix_v3_multidimensional
+- S26_MATRIX_V3_RECONCILIATION_RECEIPT_20260914
 - EKB:AUD-018
-- EKB:AUD24-F03
-- EKB:EKB-P0-025
-- EKB:TEST-007
 - EKB:PROG-001
+- EKB:TEST-007
 - EKB:GOV-MULTIFAMILY-DIMENSION-MATRIX-20260903
-- EKB:AUD-044
-- EKB:GOV-PILOT-CURRENT-NOT-READY-001
 dependencies:
-- id: S25_V01
-  snapshot_id: 25
-  version: v0.1
-  revision_sha256: e7a8e6dcd3b16d3d58392b21f95216001505710f8fd794812016a15d9da88970
+- id: S25_V02
+  snapshot_id: 58
+  version: v0.2
   required: true
 - id: S22
   snapshot_id: 22
   version: v0.2
-  revision_sha256: 822e6721c2564122f8363e1deea3944970f55ad1cb1e189296f378a374a4fce2
   required: true
 - id: S23
   snapshot_id: 26
   version: v0.2
-  revision_sha256: 3e1b48af6b346e2ce240fb1ef66b5f9d9eca1d3da6905bddd5e3944c356d1bdd
   required: true
 - id: S24
   snapshot_id: 32
   version: v0.3
-  revision_sha256: 0adaf54a623eb3859e1f3cd52832ee63c688af0e960cdacb1ad73a122a26a728
   required: true
 - id: WORKING_CONTEXT
   snapshot_id: 39
   version: v0.1
-  revision_sha256: 12efe9ff7608a36a3607b4c5d38517cc21f7226115c25f45d29375cca7b1e0aa
   required: true
 - id: S26
   snapshot_id: 28
   version: v0.1
-  revision_sha256: 5b86f7414326058285341634bfa5357372b192b6dc77e504f998bada1fae3f9f
+  matrix: FAMILY_OBJECTIVE_MATRIX_V3
   close: CLOSED
   required: true
 applicable_policies:
 - role: GOVERNANCE_LIFECYCLE
   code: POL-LF-OPERATION-LIFECYCLE
   version: v1.0
-  sha: 973b5a0ad26433095066ff06b53c3043f38fef51d04e9482c458e178f20920e8
 - role: POLICY_CONSUMPTION
   code: POL-LF-POLICY-CONSUMPTION
   version: v1.1-transversal-candidate
-  sha: e5eb786e14a4b735e271a81b702a0a775e0bf39ba174d333531a82a0858b5553
 - role: SOURCE_RESOLUTION
   code: POL-LF-SOURCE-RESOLUTION
   version: v1.4-transversal-supabase-authority-visual-support
-  sha: 5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46
 - role: STATE_MODEL
   code: POL-LF-STATE-MODEL
   version: v1.1-transversal-candidate
-  sha: f451bb4d2b17cdac48c4dddb250108b2874a9d036edcfb9d2f7fa540416332aa
 - role: STRATEGY_CREATION
   code: POL-STRATEGY-CREATION-001
   version: v0.1-candidate
-  sha: 563b91a1e5405c1e1f8806c1f8d12b8ab2dfbd901638f7b432a3e601cc2558fc
+stages:
+- stage_code: S25-V03-RECOMPOSITION
+  objective_or_purpose: Replace legacy fixed-30-case benchmark assumption with S26 Family Objective Matrix v3 and freeze the
+    corrected S25 evaluation contract.
+  status: CURRENT
+  entry_conditions:
+  - S25 v0.2 is current and read-only candidate
+  - S26 remains CLOSED and Matrix v3 source is current
+  - Strategy Factory CREACION_ESTRATEGIA_LF is READY_TO_EXECUTE
+  actions_or_scope:
+  - Remove mandatory 30-case and paired-30 language
+  - Bind Matrix v3 hierarchy/dimensions/hard rules
+  - Define S25 applicability overlay by objective and owner layer
+  - Define extend-only-genuine-gaps rule
+  - Keep PFIRE-004 blocked until PFIRE-003 matrix applicability/freeze closes
+  tests:
+  - No mandatory reference to TS-PROGRAMMING-AGENT-E2E-001
+  - No fixed case_count=30 requirement
+  - Matrix v3 exact hierarchy and dimensions present
+  - S26 CLOSED/currentness readback
+  - No runtime/Profile/Card/Adapter mutation
+  evidence_required:
+  - S25 v0.2 readback showing obsolete 30-case dependency
+  - S26 Matrix v3 canonical readback
+  - v0.3 Git blob readback
+  - v0.3 Supabase independent readback
+  - Strategy Factory close receipt
+  exit_gate: V0_3_REGISTERED_AND_LEGACY_30_CASE_REQUIREMENT_RETIRED
+  conclusion_ref: S25-V03-CONCLUSION-001
 gates:
-- PFIRE_001_INDEPENDENT_REVIEW_PASS_TO_PFIRE_002
-- BENCHMARK_INTEGRITY_GATE_BEFORE_FIRE_TEST
-- BLIND_HOLDOUT_SEPARATION_GATE
-- CHECKPOINT_APPLICABILITY_GATE
-- EXECUTION_FINGERPRINT_GATE
-- VARIANCE_CALIBRATION_GATE
-- INDEPENDENT_JUDGE_ORACLE_RESOLVER_GATE
-- ROOT_CAUSE_COUNTERFACTUAL_GATE
+- MATRIX_V3_CURRENTNESS_GATE
+- OBJECTIVE_APPLICABILITY_GATE
+- NO_FIXED_CASE_COUNT_GATE
+- EXTEND_ONLY_GENUINE_GAPS_GATE
+- SYSTEM_E2E_FIRST_BAD_HOP_GATE
+- ISOLATED_CAPABILITY_DIAGNOSTIC_GATE
 - OWNER_FIRST_SMALLEST_BLAST_RADIUS_GATE
-- SPECIALIST_DECISION_CONTRACT_GATE
+- INDEPENDENT_EVIDENCE_READBACK_GATE
 - NO_FIRE_TEST_UNTIL_PFIRE_003_CLOSE
 - NO_RUNTIME_NO_GOLDEN_NO_PRODUCTION
 tests:
-- id: S25V02-T01
+- id: S25V03-T01
+  type: NEGATIVE
+  case: Treat TS-PROGRAMMING-AGENT-E2E-001 or 30 cases as mandatory S25 benchmark
+  expected: BLOCK
+- id: S25V03-T02
   type: POSITIVE
-  case: PFIRE-001 independent receipt exact SHA/verdict binding
+  case: Consume S26 Family Objective Matrix v3 hierarchy/dimensions/hard rules
   expected: PASS
-- id: S25V02-T02
+- id: S25V03-T03
   type: NEGATIVE
-  case: attempt Fire Test while any benchmark placeholder/oracle/applicability gate
-    is unresolved
+  case: Blind rerun of all historical cases without applicability/objective mapping
   expected: BLOCK
-- id: S25V02-T03
+- id: S25V03-T04
+  type: POSITIVE
+  case: Reuse applicable existing evidence and extend only uncovered objective/dimension gaps
+  expected: PASS
+- id: S25V03-T05
   type: NEGATIVE
-  case: reviewer identity claimed only by reviewer/model name or self-declared independence
+  case: Attribute architecture owner without isolated replay/counterfactual
   expected: BLOCK
-- id: S25V02-T04
-  type: NEGATIVE
-  case: architectural remediation without isolating replay/counterfactual
-  expected: BLOCK
-- id: S25V02-T05
-  type: NEGATIVE
-  case: Policy remediation from single-family evidence
-  expected: BLOCK
-- id: S25V02-T06
-  type: NEGATIVE
-  case: specialist decision from single run or paired-bank gain without holdout
-  expected: BLOCK
-- id: S25V02-T07
+- id: S25V03-T06
   type: READBACK
-  case: cross-strategy fingerprints S22/S23/S24/WC/S26 unchanged/current
-  expected: PASS
-- id: S25V02-T08
-  type: SEMANTIC
-  case: Card role ambiguity resolved before CARD remediation
+  case: S26 remains CLOSED and matrix receipt/source unchanged
   expected: PASS
 metrics:
-  hard_gates:
-  - benchmark_integrity
-  - no_false_pass
-  - no_fabricated_or_declarative_execution_evidence
-  - router_authority_and_applicability
-  - exact_target_source_continuity_where_applicable
-  - deterministic_fail_cannot_be_overridden
-  - independent_judge_oracle_resolver_identity
-  - behavioral_negative_tests_for_material_side_effect_risks
+  matrix_dimensions:
+  - FUNCTIONALITY
+  - QUALITY
+  - DEPTH
+  - PERFORMANCE
+  - EVIDENCE
+  - PASS_FAIL
+  hierarchical_levels:
+  - CASE
+  - OBJECTIVE
+  - FAMILY
+  - TRANSVERSAL
+  - SYSTEM
   architecture_decision_metrics:
-  - technical_correctness
-  - residual_gap_rate
-  - run_to_run_consistency
+  - residual_gap_by_owner_layer
+  - cross_family_same_objective_failure
+  - run_to_run_consistency_when_stochastic
   - false_close_rate
-  - holdout_generalization
+  - holdout_generalization_when_new_holdout_is_required
   - marginal_gain_over_composition
   - maintenance_complexity
   - routing_complexity
-  diagnostic_only_metrics:
-  - latency
-  - llm_calls
-  - token_usage
-  - unnecessary_work_rate
-  threshold_policy: NO_ABSOLUTE_ARCHITECTURE_THRESHOLD_BEFORE_VARIANCE_PILOT
+  case_count_policy: NO_FIXED_COUNT; COVER_OBJECTIVES_AND_DIMENSIONS, EXTEND_GENUINE_GAPS_ONLY
 risks:
-- id: S25-R1
+- id: S25V03-R1
   severity: CRITICAL
-  risk: benchmark tautology or leakage
-  mitigation: independent task/fixture and oracle provenance; blind holdout outside
-    remediation loop
-- id: S25-R2
-  severity: CRITICAL
-  risk: placeholder slots mistaken for executable benchmark
-  mitigation: PFIRE-003 must materialize exact tasks/oracles and pass integrity gate
-- id: S25-R3
+  risk: Legacy 30-case campaign is treated as current S25 authority
+  mitigation: Explicitly retire mandatory dependency and keep it reference-only.
+- id: S25V03-R2
   severity: HIGH
-  risk: procedural checkpoint theater
-  mitigation: per-case applicability matrix plus observable evidence
-- id: S25-R4
+  risk: S26 cases are blindly rerun even when not applicable to S25
+  mitigation: Objective applicability map and reuse-first/extend-gaps-only rule.
+- id: S25V03-R3
   severity: HIGH
-  risk: root-cause confounding across capability layers
-  mitigation: system E2E localization plus isolated replay/counterfactual
-- id: S25-R5
+  risk: Aggregate matrix PASS hides critical owner-layer failure
+  mitigation: Preserve Matrix v3 hierarchical hard gating.
+- id: S25V03-R4
   severity: HIGH
-  risk: policy blast radius from fixed remediation order
-  mitigation: owner-first smallest-blast-radius; Policy needs transversal multi-family
-    evidence
-- id: S25-R6
-  severity: HIGH
-  risk: single-run stochastic noise drives architecture
-  mitigation: variance pilot before repetition and architecture thresholds
-- id: S25-R7
-  severity: HIGH
-  risk: Card terminology causes wrong owner attribution
-  mitigation: explicit CAPABILITY_CARD vs LEARNING_CHANGE_CARD boundary before PFIRE-003
-- id: S25-R8
-  severity: HIGH
-  risk: judge independence spoofed by labels
-  mitigation: trusted separate identity/channel plus resolver/provider binding
+  risk: Profile is blamed for Runtime/Profile Manager/Test Harness defect
+  mitigation: SYSTEM_E2E first bad hop plus isolated capability diagnostic.
 evidence_contract:
-  current_ceiling: R3_STRATEGY_CONSOLIDATION_ONLY_NOT_FIRE_TEST
+  current_ceiling: R3_STRATEGY_RECOMPOSITION_ONLY_NOT_FIRE_TEST
   required_for_pfire003_close:
-  - case-specific input/fixture digest
-  - case-specific oracle provenance
-  - paired-bank freeze digest
-  - blind-holdout authority and non-leakage receipt
-  - checkpoint applicability matrix digest
-  - execution fingerprint schema
-  - variance pilot receipt
-  - independent judge/oracle/resolver binding
+  - Matrix v3 exact contract/currentness fingerprint
+  - S25 objective applicability map
+  - reuse-vs-gap-extension inventory
+  - owner-layer diagnostic mapping
+  - execution fingerprint for selected runs
+  - independent readback receipts
   rules:
-  - no declared status counts as executed evidence
-  - independence is identity/channel evidence not reviewer label
-  - blind holdout cannot enter remediation feedback
-  - expected output cannot generate benchmark input
-  - historical paired bank identities preserved
-  - S26 baseline consumed, not rebuilt
+  - No historical suite becomes authority merely because it exists.
+  - No fixed case count is a quality gate.
+  - N/A dimension or case requires explicit justification and evidence.
+  - Performance is evaluated only after semantic correctness.
+  - New cases/holdouts are added only for genuine uncovered gaps.
 rollback_or_recovery:
   routes:
   - A_ORIGINAL
   - B_FOCAL_MINIMAL
   - C_CANONICAL_EQUIVALENT
   - D_INDEPENDENT_AUTHORIZED
-  on_prewrite_failure: do not write v0.2 candidate; repair payload and rerun exact
-    validator
-  on_git_failure: do not register Supabase v0.2
-  on_supabase_failure: preserve Git candidate as non-canonical evidence only
-  on_currentness_change: mark stale, reread changed dependency, rebuild affected fingerprint;
-    do not transfer prior PASS
-  on_pfire003_failure: keep Fire Test blocked
+  on_prewrite_failure: Do not register v0.3; repair candidate and rerun validator.
+  on_git_failure: Do not register Supabase v0.3.
+  on_supabase_failure: Preserve Git candidate as non-canonical evidence only.
+  on_s26_matrix_change: Mark candidate stale and rebind exact Matrix v3/current successor before proceeding.
+execution_frontier:
+  current_stage: S25-V03-RECOMPOSITION
+  current_action: REGISTER_CORRECTED_MATRIX_V3_BASED_STRATEGY_VERSION
+  safe_parallel_work:
+  - DEPENDENCY_CURRENTNESS_RECHECK
+  blockers: []
+stage_conclusions: []
 invalidation_triggers:
-- S25 v0.1 revision changes before supersession
-- S22/S23/S24/Working Context/S26 revision changes before dependent write
+- S26 close/currentness or Matrix v3 contract changes
+- S22/S23/S24/Working Context currentness changes
 - CREACION_ESTRATEGIA_LF contract/validator/policy fingerprint changes
-- TS-PROGRAMMING-AGENT-E2E-001 rows change before PFIRE-003 freeze
-- new HIGH/CRITICAL EKB rule materially changes benchmark/reviewer/root-cause controls
+- A newer governed evaluation matrix supersedes S26 Matrix v3
 change_log:
-- version: v0.2
-  change: 'Consolidated PFIRE-001 independent review: accepted 12 prior findings,
-    rejected none, added checkpoint-vocabulary, Card-role, generic-oracle/rule-set
-    and reviewer-label findings; Fire Test remains blocked until PFIRE-003 benchmark-integrity
-    closure.'
-  independent_review_case: S25-PFIRE-001-INDEPENDENT-REVIEW-001
-  independent_review_receipt_sha256: f5c54508df6c3e6c304cc8860d91308bcaa732ecd6f30c58b81486f6385b41a2
+- version: v0.3
+  change: 'Corrected S25 benchmark architecture: retired mandatory legacy 30-case Programming Agent bank and adopted S26 Family
+    Objective Matrix v3 as the current evaluation framework; reuse-first and extend-only-genuine-gaps.'
+  supersedes: v0.2
 closure_criteria:
-- v0.2 candidate source exact Git blob read back
-- v0.2 snapshot registered CANDIDATO_READ_ONLY / NO_HABILITADO / BLOQUEADO
-- PFIRE-001 marked accepted with independent receipt hash
-- PFIRE-003 is next executable work package
+- v0.3 source passes Strategy Factory validator
+- v0.3 registered CANDIDATO_READ_ONLY / NO_HABILITADO / BLOQUEADO
+- v0.2 superseded
+- No mandatory 30-case/TS-PROGRAMMING-AGENT-E2E-001 dependency remains in current S25
+- Matrix v3 hierarchy/dimensions/hard rules bound
+- PFIRE-003 becomes matrix applicability/freeze work package
 - PFIRE-004 remains blocked
-- no Profile/Card/Adapter/Policy/runtime mutation
-- no Gate G/Golden/production claim
+- No Profile/Card/Adapter/Policy/runtime mutation
+next_gate_or_handoff: PFIRE-003_MATRIX_V3_APPLICABILITY_AND_FREEZE
 type_extension:
   research_questions_or_hypotheses:
-  - Are current profiles sufficient when composed with correctly owned Cards, Adapters
-    and Policies?
-  - Which residual failures remain after smallest-blast-radius remediation?
-  - Do any residual gaps require a materially different reasoning role rather than
-    reusable knowledge or system interaction capability?
+  - Which current Profile/Card/Adapter/Policy/Runtime/Profile Manager capabilities satisfy each applicable Matrix v3 objective?
+  - Which objective/dimension gaps remain after reuse of existing S26 evidence?
+  - Do any residual gaps require a materially different reasoning role rather than knowledge/system-interaction remediation?
   methodology:
-    paired_regression: same 30 preserved identities after exact materialization
-    blind_holdout: separate hidden channel excluded from remediation feedback
-    two_level_testing:
-    - SYSTEM_E2E_ROUTER_TO_RESULT
-    - ISOLATED_PROFILE_CAPABILITY_DIAGNOSTIC
-    variance: pilot first; repetition policy derived from observed variance
-    causal_attribution: first bad hop + one-layer replay/counterfactual
+    framework: S26_FAMILY_OBJECTIVE_MATRIX_V3
+    reuse_policy: MAP_AND_EXTEND_ONLY_GENUINE_GAPS_NO_BLIND_RERUN
+    hierarchical_gating:
+    - CASE
+    - OBJECTIVE
+    - FAMILY
+    - TRANSVERSAL
+    - SYSTEM
+    diagnostic_layers:
+    - SYSTEM_E2E_FIRST_BAD_HOP
+    - ISOLATED_CAPABILITY_DIAGNOSTIC
+    remediation: OWNER_FIRST_SMALLEST_BLAST_RADIUS
+    specialist_default: DO_NOT_CREATE_SPECIALIST_PROFILE
   sample_dataset_or_case_families:
-    historical_families:
-    - SMALL_CODE_CHANGE
-    - BUG_DIAG_REPAIR
-    - SUPABASE_CHANGE
-    - NEW_FEATURE
-    - SAFE_REFACTOR
-    - CI_SELF_RECOVERY
-    - CONTRACT_API_CHANGE
-    - ROUTER_PROFILE_SKILL
-    - ADVERSARIAL_EDGE
-    - COMPLEX_MULTI_FILE
-    case_count: 30
-    orthogonal_axes:
-    - TASK_ARCHETYPE
-    - DOMAIN
-    - STRESS_AXIS
-    - COMPLEXITY
+    source: S26 Family Objective Matrix v3
+    families: 10
+    objectives_per_family: 5
+    fixed_s25_case_count: null
+    selection_rule: Use applicable existing cases/evidence first; add cases only for uncovered objectives/dimensions or causal
+      isolation.
+    legacy_30_case_campaign: REFERENCE_ONLY
   evaluation_criteria:
-    readiness_gates:
-    - C
-    - W
-    - S
-    - I
-    - Q
-    - P
-    behavioral_scoring:
-    - technical_correctness
-    - domain_risk_recognition
-    - governance_compliance
-    - tool_adapter_correctness
-    - test_quality
-    - negative_case_quality
-    - self_recovery_quality
-    - evidence_quality
-    - false_close_rate
-    - run_to_run_consistency
-    diagnostic_metrics:
-    - latency
-    - llm_calls
-    - token_usage
-    - unnecessary_work_rate
+    dimensions:
+    - FUNCTIONALITY
+    - QUALITY
+    - DEPTH
+    - PERFORMANCE
+    - EVIDENCE
+    - PASS_FAIL
+    hard_rules:
+    - NO_AGGREGATE_PERCENT_CAN_MASK_CRITICAL_FAILURE
+    - DETERMINISTIC_CONTRACT_FAILURE_IS_HARD_BLOCK
+    - NO_SEMANTIC_DUPLICATES_COUNT_AS_INDEPENDENT_EVIDENCE
+    - QUALITY_AND_DEPTH_MUST_BE_SUBSTANTIVE_NOT_NOMINAL
+    - PERFORMANCE_IS_EVALUATED_ONLY_AFTER_CORRECTNESS
+    - CROSS_FAMILY_SAME_OBJECTIVE_FAILURE_IS_TRANSVERSAL_ARCHITECTURE_SIGNAL
+    - NA_DIMENSION_REQUIRES_EXPLICIT_JUSTIFICATION
   leakage_and_bias_controls:
-  - input independent from expected
-  - case-specific oracle provenance
-  - blind holdout inaccessible to remediation builder
-  - trusted resolver identity outside candidate payload
-  - freeze Learned Context/Working Context fingerprint unless that variable is explicitly
-    under experiment
-  next_gate_or_handoff: PFIRE-003_MATERIALIZE_AND_FREEZE_BENCHMARK
-checkpoint_model:
-  canonical_layers:
-    RAW_GOVERNED_EXECUTION_CHECKPOINTS:
-    - REQUEST
-    - ROUTER
-    - EKB
-    - CONTEXT
-    - PLAN
-    - IMPACTED_FILES
-    - IMPLEMENTATION
-    - UNIT_TESTS
-    - INTEGRATION
-    - PROFILES_JUDGES
-    - PR
-    - CI
-    - SELF_REPAIR
-    - MERGE
-    - MAIN
-    - RECONCILIATION
-    - SUPABASE_READBACK
-    - EKB_CLOSEOUT
-    S25_CAPABILITY_DIAGNOSTIC_CHECKPOINTS:
-    - 01_REQUEST_UNDERSTANDING
-    - 02_ROUTER_SELECTION
-    - 03_EKB_PREFLIGHT
-    - 04_CONTEXT_RESOLUTION
-    - 05_PLAN_AND_SCOPE
-    - 06_AFFECTED_ARTIFACT_IDENTIFICATION
-    - 07_IMPLEMENTATION_OR_DECISION
-    - 08_UNIT_VALIDATION
-    - 09_INTEGRATION_VALIDATION
-    - 10_PROFILE_CARD_ADAPTER_POLICY_USAGE
-    - 11_EVIDENCE_AND_READBACK
-    - 12_NEGATIVE_AND_EDGE_TESTS
-    - 13_ERROR_RECOVERY_OR_SELF_CORRECTION
-    - 14_CI_OR_EQUIVALENT_GATE
-    - 15_EXACT_TARGET_OR_SOURCE_CONTINUITY
-    - 16_REGRESSION_AFTER_CHANGE
-    - 17_CLOSURE_DISCIPLINE_FALSE_CLOSE_CHECK
-    - 18_FINAL_FUNCTIONAL_RESULT_AND_TRACEABILITY
-  rule: PFIRE-003 must materialize explicit per-case mapping/applicability; no silent
-    one-to-one inference where semantics differ.
-card_semantics:
-  CAPABILITY_CARD:
-    meaning: Reusable specialized knowledge, heuristics, patterns or criteria used
-      in profile capability composition.
-    owner_in_S25: true
-  LEARNING_CHANGE_CARD:
-    meaning: Governed learning/change candidate or evidence artifact under S24 lifecycle;
-      not equivalent to capability knowledge.
-    owner_in_S25: false
-  boundary_rule: PFIRE-005 may attribute CARD only to CAPABILITY_CARD deficits after
-    explicit owner resolution; do not mutate S24 learning/change Cards as S25 remediation.
-root_cause_contract:
-  classes:
-  - PROFILE
-  - CARD
-  - ADAPTER
-  - POLICY
-  - RUNTIME
-  - PROFILE_MANAGER
-  - TEST_HARNESS
-  required_fields:
-  - symptom_layer
-  - cause_layer
-  - contributing_layers
-  - cause_confidence
-  - isolating_test_ref
-  system_rule: SYSTEM_E2E locates first bad hop; ISOLATED_CAPABILITY_DIAGNOSTIC isolates
-    suspected owner.
-  remediation_rule: OWNER_FIRST_SMALLEST_BLAST_RADIUS
-  policy_rule: Policy change requires transversal evidence across structurally different
-    families.
-specialist_decision_contract:
-  default: DO_NOT_CREATE_SPECIALIST_PROFILE
-  required_evidence:
-  - residual gap persists after owner-appropriate remediation
-  - materially different reasoning/decision role
-  - reproducible marginal gain over composed baseline
-  - blind-holdout generalization
-  - no hard-gate or false-close regression
-  - variance reduction or stable effect
-  - latency/cost and maintenance/routing complexity justified
-  threshold_rule: calibrate quantitative thresholds from variance pilot; no invented
-    universal percentage in v0.2
-independent_review_contract:
-  canonical_requirement: INDEPENDENT_REVIEWER_IDENTITY_AND_CHANNEL
-  historical_label: CLAUDE_REVIEW
-  history_policy: PRESERVE_HISTORY_NORMALIZE_FUTURE_GATES
-  self_certification: BLOCKED
-work_packages:
-- wp_code: PFIRE-003
-  title: Materialize and freeze paired regression bank + blind holdout + oracle/applicability/fingerprint
-  status: NEXT_EXECUTABLE
-  definition_of_done:
-  - 30 historical identities bound to exact authorized tasks/fixtures
-  - case-specific expected/oracle provenance
-  - orthogonal tags complete
-  - checkpoint applicability complete
-  - blind holdout separated and resolver-backed
-  - execution fingerprint schema frozen
-  - variance pilot completed and repetition policy recorded
-  - Fire Test eligibility gate PASS
-- wp_code: PFIRE-004
-  title: Current-profile baseline Fire Test
-  status: BLOCKED_UNTIL_PFIRE_003
-- wp_code: PFIRE-005
-  title: Root-cause and owner-first remediation map
-  status: BLOCKED_UNTIL_BASELINE_RESULTS
-- wp_code: PFIRE-006
-  title: Before/after paired regression + blind generalization retest
-  status: BLOCKED_UNTIL_REMEDIATION
-- wp_code: PFIRE-007
-  title: Specialist profile decision
-  status: BLOCKED_UNTIL_RESIDUAL_GAP_PROVEN
-stages:
-- stage_code: S25-V02-CONSOLIDATION
-  objective_or_purpose: Consolidate the independent PFIRE-001 review into a governed
-    v0.2 benchmark contract without executing the benchmark.
-  status: CURRENT
-  entry_conditions:
-  - PFIRE-001 independent receipt verdict PASS_TO_PFIRE_002
-  - S25 v0.1 exact revision current
-  - S26 close receipt current
-  - Strategy Factory v0.3.2 and policies current
-  actions_or_scope:
-  - accept/reject independent findings explicitly
-  - normalize reviewer identity rule
-  - resolve checkpoint and Card semantics
-  - materialize PFIRE-003 preconditions and specialist decision contract
-  - write/readback v0.2 candidate only
-  tests:
-  - S25V02-T01
-  - S25V02-T02
-  - S25V02-T03
-  - S25V02-T04
-  - S25V02-T05
-  - S25V02-T06
-  - S25V02-T07
-  - S25V02-T08
-  evidence_required:
-  - independent review receipt hash
-  - current S25 v0.1 revision
-  - current dependency revision tuple
-  - current policy fingerprint
-  - prewrite validator receipt
-  - Git exact commit/blob readback
-  - Supabase registration + independent readback
-  - close validator + aggregate judge
-  exit_gate: S25_V02_CONSOLIDATED_PFIRE_003_NEXT_FIRE_TEST_STILL_BLOCKED
-  conclusion_ref: S25-V02-CONCLUSION-001
-stage_conclusions: []
-execution_frontier:
-  state: OPEN
-  current_stage: S25-V02-CONSOLIDATION
-  current_action: CREATE_AND_REGISTER_V0_2_CANDIDATE
-  safe_parallel_work: []
-  blockers: []
-next_gate_or_handoff: PFIRE-003_MATERIALIZE_AND_FREEZE_BENCHMARK
-accepted_prior_findings:
-- 'GA-01: benchmark integrity gate obligatorio antes de ejecución.'
-- 'GA-02: paired regression necesita blind holdout adicional.'
-- 'GA-03: familias actuales mezclan ejes y requieren tags ortogonales.'
-- 'GA-04: C/W/S/I/Q/P son readiness gates, no dimensiones de calidad independientes.'
-- 'GA-05: checkpoints requieren applicability y evidencia observable.'
-- 'GA-06: execution fingerprint actual debe ampliarse para reproducibilidad probabilística.'
-- 'GA-07: root cause necesita replay/counterfactual y confidence.'
-- 'GA-08: orden fijo de remediación debe reemplazarse por owner-first/smallest-blast-radius.'
-- 'GA-09: stress axes no funcionales deben hacerse explícitos.'
-- 'GA-10: Learned Context debe congelarse durante S25 para no confundir resultados.'
-- 'GA-11: repeated-run variance debe calibrarse antes de decisiones arquitectónicas.'
-- 'GA-12: specialist decision requiere marginal gain y costo/complejidad cuantificados.'
-rejected_prior_findings: []
-new_findings:
-- S25 y TS-PROGRAMMING-AGENT-E2E-001 mantienen vocabularios de checkpoints distintos.
-  PFIRE-002 debe definir un mapping canónico o seleccionar una única taxonomía para
-  evitar doble interpretación de evidencia.
-- La semántica de Card en S25 entra en tensión con el contrato de S24; no debe iniciarse
-  remediación CARD hasta resolver si se habla de Capability Card, Learning/Change
-  Card u otro activo explícitamente distinto.
-- La suite tiene rule_set_code=null y los expected_output son genéricos; la existencia
-  de Quality Pack references no sustituye un oracle contract case-specific.
-- El precheck actual corrigió correctamente la independencia hacia identidad/canal,
-  pero el cuerpo histórico de S25 todavía conserva labels CLAUDE específicos que pueden
-  reintroducir una falsa regla de independencia basada en marca.
-- No existe condición observada que impida ejecutar PFIRE-002. Los bloqueos observados
-  aplican a materialización/ejecución posterior, especialmente PFIRE-003 y PFIRE-004.
-independent_review_summary:
-  verdict: PASS_TO_PFIRE_002
-  critical_findings:
-  - 'El banco de 30 casos existe estructuralmente pero no existe todavía como benchmark
-    ejecutable: 30/30 tareas siguen siendo placeholders, 30/30 están CANDIDATO, active_count=0
-    y 30/30 prohíben claim E2E.'
-  - Los 30 expected_output son idénticos. No existe todavía oracle case-specific suficiente
-    para medir corrección funcional de cada caso.
-  - 'unique_input_digests=30 no demuestra diversidad semántica: la diferencia proviene
-    de family/variant mientras task permanece TO_BE_SELECTED_FROM_REAL_AUTHORIZED_BACKLOG
-    en los 30 casos.'
-  - No existe etiquetado TASK_ARCHETYPE, DOMAIN, STRESS_AXIS ni COMPLEXITY en ninguno
-    de los 30 casos; las 10 familias mezclan esas dimensiones y no permiten demostrar
-    cobertura ortogonal.
-  - Los 30 casos usan exactamente el mismo conjunto de checkpoints. La aplicabilidad
-    por caso no está materializada y podría convertir el benchmark en cumplimiento
-    procedural artificial.
-  - La independencia del judge/oracle no está demostrada a nivel de caso. La suite
-    exige independent_evidence_resolution_required, pero los casos no contienen oracle
-    provenance, hidden-oracle binding ni trusted-resolver identity verificable.
-  - S25 todavía trata C/W/S/I/Q/P como qa_dimensions. Deben ser readiness gates/states;
-    el scoring de calidad debe quedar separado en behavioral metrics para evitar doble
-    conteo.
-  - No existe todavía criterio cuantitativo predeclarado para justificar un specialist
-    profile; el criterio actual sigue siendo cualitativo.
-  must_change_before_v0_2:
-  - Convertir los 30 casos en un PAIRED_REGRESSION_BANK congelado con case_id, task/fixture
-    exacto, source digest, expected/oracle case-specific, provenance, freshness y
-    applicability.
-  - Crear un BLIND_HOLDOUT_CHANNEL separado del banco usado para remediación. Sus
-    inputs/oracles no deben estar disponibles al Builder ni derivarse de código controlado
-    por el productor.
-  - Añadir TASK_ARCHETYPE, DOMAIN, STRESS_AXIS y COMPLEXITY como ejes ortogonales
-    sin eliminar las familias históricas.
-  - Reclasificar C/W/S/I/Q/P como READINESS_GATES y mantener technical_correctness,
-    risk recognition, evidence quality, recovery, consistency y otras métricas como
-    behavioral scoring separado.
-  - Materializar una checkpoint applicability matrix por caso con APPLIES, NOT_APPLICABLE
-    o BLOCKED y evidencia observable para cada checkpoint ejecutado.
-  - Definir un execution fingerprint de benchmark que incluya como mínimo case/fixture
-    digest, profile/card/adapter/policy versions, profile source revision, instruction/prompt
-    digest, model identity y parámetros materiales, toolchain/runtime, repo/source
-    revision, S26 baseline fingerprint, Working Context/context fingerprint, EKB set,
-    judge/oracle revision y trusted resolver identity.
-  - Ejecutar primero una calibración pequeña de repeated-run variance y usarla para
-    fijar repetition policy y minimum detectable effect antes de la campaña completa.
-  - Exigir judge/oracle/resolver independiente por identidad y canal verificable;
-    nunca aceptar resolver_id, reviewer name o independence=true provenientes del
-    propio payload como prueba.
-  - Exigir replay/counterfactual que cambie una sola capa sospechada antes de atribuir
-    causalidad arquitectónica y registrar symptom_layer, cause_layer, contributing_layers,
-    confidence e isolating_test_ref.
-  - Sustituir CARD->ADAPTER->POLICY->PROFILE_MANAGER->PROFILE como orden fijo por
-    OWNER_FIRST_SMALLEST_BLAST_RADIUS. Policy sólo puede promoverse con evidencia
-    transversal multi-family.
-  - 'Definir el decision contract cuantitativo de especialistas: marginal gain sobre
-    composed baseline, intervalo/estabilidad del efecto, blind-holdout generalization,
-    false-close/hard-gate non-regression, variance, latency/cost y maintenance/routing
-    complexity.'
-  - Normalizar en v0.2 la terminología histórica CLAUDE_REVIEW/PENDING_CLAUDE_REVIEW
-    hacia INDEPENDENT_REVIEWER_IDENTITY_AND_CHANNEL, preservando la historia pero
-    eliminando dependencia de una marca de modelo.
-  simplifications:
-  - 'No crear un benchmark nuevo: conservar las 30 identidades actuales y materializarlas
-    correctamente.'
-  - 'No crear otra taxonomía de root cause: mantener las siete clases existentes y
-    añadir evidencia causal/confidence.'
-  - No reconstruir el E2E baseline de S26; consumir su fingerprint y close receipt.
-  - No duplicar lifecycle de Profiles en S25; producir requisitos/handoffs para S22
-    cuando corresponda.
-  - No fijar arbitrariamente un número universal de repeticiones antes del variance
-    pilot.
-  fire_test_allowed_now: false
-  next_gate: PFIRE-002_CONSOLIDATE_V0_2; PFIRE-003_AND_PFIRE-004_REMAIN_BLOCKED_UNTIL_BENCHMARK_INTEGRITY_HOLDOUT_FINGERPRINT_VARIANCE_AND_ORACLE_REQUIREMENTS_ARE_MATERIALIZED
+  - Do not use expected outcome to generate stimulus.
+  - Do not tune remediation on hidden holdout evidence.
+  - Do not count semantic duplicates as independent evidence.
+  - Freeze exact source/evidence fingerprints for selected cases.
+  next_gate_or_handoff: PFIRE-003_MATRIX_V3_APPLICABILITY_AND_FREEZE
