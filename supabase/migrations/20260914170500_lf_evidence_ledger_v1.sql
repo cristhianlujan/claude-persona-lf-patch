@@ -19,12 +19,58 @@ begin
   end if;
 
   if to_regclass('private.lf_evidence_ledger_v1') is not null
+     or to_regclass('private.lf_evidence_resolver_registry_v1') is not null
      or to_regprocedure('private.fn_lf_evidence_ledger_guard_v1()') is not null
+     or to_regprocedure('private.fn_lf_evidence_resolver_registry_immutable_v1()') is not null
      or to_regprocedure('public.fn_lf_evidence_ledger_anchor_v1(text,text,text,text,text,text,text,text,text,text,text,text,text,text,jsonb,jsonb,text)') is not null then
     raise exception 'BLOCK_S31_EVIDENCE_LEDGER_ALREADY_EXISTS';
   end if;
 end
 $preflight$;
+
+create table private.lf_evidence_resolver_registry_v1 (
+  resolver_id text primary key,
+  provider text not null check (provider in ('GITHUB','SUPABASE','GOVERNED_EXTERNAL')),
+  verification_method text not null,
+  trust_level text not null check (trust_level in ('TRUSTED_PROVIDER_BOUND')),
+  active boolean not null default true,
+  description text not null,
+  created_by_execution_id text not null references public.lf_operation_execution(execution_id) on delete restrict,
+  created_at timestamptz not null default now(),
+  constraint lf_evidence_resolver_registry_v1_nonblank check (
+    btrim(resolver_id)<>'' and btrim(verification_method)<>'' and btrim(description)<>''
+  )
+);
+
+alter table private.lf_evidence_resolver_registry_v1 enable row level security;
+
+insert into private.lf_evidence_resolver_registry_v1(
+  resolver_id,provider,verification_method,trust_level,active,description,created_by_execution_id
+) values
+(
+  'LF_GITHUB_SOURCE_READBACK_V1','GITHUB','GITHUB_API_READBACK_PLUS_OFFLINE_HASH','TRUSTED_PROVIDER_BOUND',true,
+  'GitHub provider-bound source readback with independently recomputed local/offline material digest.',
+  'EXEC-S31-EVIDENCE-LEDGER-V1-20260914-001'
+),
+(
+  'LF_SUPABASE_READBACK_V1','SUPABASE','SUPABASE_SQL_READBACK_PLUS_DB_DIGEST','TRUSTED_PROVIDER_BOUND',true,
+  'Supabase SQL readback with database-side digest recomputation for durable LF evidence.',
+  'EXEC-S31-EVIDENCE-LEDGER-V1-20260914-001'
+);
+
+create or replace function private.fn_lf_evidence_resolver_registry_immutable_v1()
+returns trigger
+language plpgsql
+set search_path to 'pg_catalog','private'
+as $fn$
+begin
+  raise exception 'BLOCK_LF_EVIDENCE_RESOLVER_REGISTRY_IMMUTABLE';
+end
+$fn$;
+
+create trigger trg_lf_evidence_resolver_registry_immutable_v1
+before update or delete on private.lf_evidence_resolver_registry_v1
+for each row execute function private.fn_lf_evidence_resolver_registry_immutable_v1();
 
 create table private.lf_evidence_ledger_v1 (
   receipt_id uuid primary key default gen_random_uuid(),
@@ -37,7 +83,7 @@ create table private.lf_evidence_ledger_v1 (
   subject_sha256 text not null check (subject_sha256 ~ '^[0-9a-f]{64}$'),
   source_head_sha text not null check (source_head_sha ~ '^[0-9a-f]{40}$'),
   authority_ref text not null,
-  resolver_id text not null,
+  resolver_id text not null references private.lf_evidence_resolver_registry_v1(resolver_id) on delete restrict,
   provider text not null check (provider in ('GITHUB','SUPABASE','GOVERNED_EXTERNAL')),
   provider_ref text not null,
   verification_method text not null,
@@ -74,6 +120,10 @@ set search_path to 'pg_catalog','private','public','extensions'
 as $fn$
 declare
   v_execution_status text;
+  v_resolver_provider text;
+  v_resolver_method text;
+  v_resolver_trust text;
+  v_resolver_active boolean;
   v_envelope jsonb;
   v_digest text;
 begin
@@ -102,6 +152,18 @@ begin
     raise exception 'BLOCK_LF_EVIDENCE_LEDGER_CAPABILITY_INVALID';
   end if;
 
+  select provider,verification_method,trust_level,active
+    into v_resolver_provider,v_resolver_method,v_resolver_trust,v_resolver_active
+  from private.lf_evidence_resolver_registry_v1
+  where resolver_id=new.resolver_id;
+  if v_resolver_provider is null
+     or v_resolver_active is distinct from true
+     or v_resolver_trust is distinct from 'TRUSTED_PROVIDER_BOUND'
+     or v_resolver_provider is distinct from new.provider
+     or v_resolver_method is distinct from new.verification_method then
+    raise exception 'BLOCK_LF_EVIDENCE_LEDGER_RESOLVER_TRUST_MISMATCH';
+  end if;
+
   if new.receipt_payload->>'execution_id' is distinct from new.execution_id
      or new.receipt_payload->>'capability_code' is distinct from new.capability_code
      or new.receipt_payload->>'gate_code' is distinct from new.gate_code
@@ -124,8 +186,7 @@ begin
   if new.verification_state='VERIFIED' then
     if new.verified_at is null
        or new.verification_payload->'provider_readback_verified' is distinct from 'true'::jsonb
-       or new.verification_payload->'digest_recomputed' is distinct from 'true'::jsonb
-       or new.verification_payload->'resolver_trusted' is distinct from 'true'::jsonb then
+       or new.verification_payload->'digest_recomputed' is distinct from 'true'::jsonb then
       raise exception 'BLOCK_LF_EVIDENCE_LEDGER_VERIFICATION_PROOF_INCOMPLETE';
     end if;
   end if;
@@ -252,9 +313,12 @@ begin
 end
 $fn$;
 
+revoke all on table private.lf_evidence_resolver_registry_v1 from public, anon, authenticated;
 revoke all on table private.lf_evidence_ledger_v1 from public, anon, authenticated;
 revoke all on function public.fn_lf_evidence_ledger_anchor_v1(text,text,text,text,text,text,text,text,text,text,text,text,text,text,jsonb,jsonb,text) from public, anon, authenticated;
 grant execute on function public.fn_lf_evidence_ledger_anchor_v1(text,text,text,text,text,text,text,text,text,text,text,text,text,text,jsonb,jsonb,text) to service_role;
 
+comment on table private.lf_evidence_resolver_registry_v1 is
+'Immutable trusted resolver registry for LF durable evidence. Resolver trust is derived here, never caller-self-certified.';
 comment on table private.lf_evidence_ledger_v1 is
-'Append-only LF evidence ledger. VERIFIED requires trusted resolver/provider readback proof. No row here authorizes runtime, production or Golden by itself.';
+'Append-only LF evidence ledger. VERIFIED requires a registered trusted resolver plus provider readback and digest recomputation proof. No row here authorizes runtime, production or Golden by itself.';
