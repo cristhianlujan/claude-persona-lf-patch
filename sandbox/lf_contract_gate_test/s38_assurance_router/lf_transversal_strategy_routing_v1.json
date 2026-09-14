@@ -1,0 +1,37 @@
+{
+  "contract_version": "LF_TRANSVERSAL_STRATEGY_ROUTING_V1",
+  "status": "CANDIDATE",
+  "core_transversal_strategies": {
+    "S30": {
+      "responsibility": "LF_INTERNAL_IMPROVEMENT_AND_HARDENING",
+      "question": "IS_LF_INTERNAL_MACHINERY_CORRECT_AND_RESILIENT"
+    },
+    "S31": {
+      "responsibility": "REUSABLE_CAPABILITY_PRODUCTIZATION",
+      "question": "SHOULD_A_MATURE_SOLUTION_BECOME_A_REUSABLE_GOVERNED_CAPABILITY"
+    },
+    "S36": {
+      "responsibility": "TEST_ASSURANCE_AND_CONTINUOUS_REGRESSION",
+      "question": "CAN_LF_CONTINUOUSLY_PROVE_THE_CAPABILITY_STILL_WORKS"
+    },
+    "S38": {
+      "responsibility": "GOVERNED_DEVELOPMENT_PLATFORM_IDENTITY_AUTHORITY_EVIDENCE_TRUST",
+      "question": "CAN_LF_PROVE_EXACTLY_WHAT_WAS_BUILT_TESTED_AUTHORIZED_AND_EVIDENCED"
+    }
+  },
+  "default_new_finding_route": "EXISTING_CORE_STRATEGY_WORK_PACKAGE",
+  "new_strategy_default": "DO_NOT_CREATE",
+  "new_strategy_exception_requires_all": [
+    "PERMANENT_ORTHOGONAL_OBJECTIVE",
+    "OWN_AUTHORITY_BOUNDARY",
+    "OWN_LIFECYCLE",
+    "OWN_DISTINCT_OUTCOMES"
+  ],
+  "cross_lane_flow": [
+    "S30_DISCOVER_OR_HARDEN",
+    "S31_PRODUCTIZE_IF_REUSABLE",
+    "S36_ENROLL_ASSURANCE_AND_REGRESSION",
+    "S38_GOVERN_IDENTITY_AUTHORITY_EVIDENCE_AND_TRUST"
+  ],
+  "anti_atomization_policy": "WORK_PACKAGES_CAPABILITIES_RULES_AND_TESTS_BEFORE_NEW_STRATEGIES"
+}
