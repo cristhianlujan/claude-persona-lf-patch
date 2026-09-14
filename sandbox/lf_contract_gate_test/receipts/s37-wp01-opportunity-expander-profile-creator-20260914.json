@@ -1,0 +1,22 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "CREACION_PERFIL_LF",
+  "execution_id": "EXEC-S37-WP01-PROFILE-OPPORTUNITY-EXPANDER-20260914-001",
+  "result": "PASS",
+  "all_required_steps_pass": true,
+  "contract_sha": "ea3ef218725f0e6df5067f16862a677b80c61c5e",
+  "judge_sha": "e4e2847bf2bf617d4c669615a355e3e75b4512f7",
+  "source_sha_list": [
+    "6607cf7aaf74fef84420cc6017b527f6495ac2a5",
+    "ea3ef218725f0e6df5067f16862a677b80c61c5e",
+    "e4e2847bf2bf617d4c669615a355e3e75b4512f7"
+  ],
+  "target_paths": [
+    "profiles/opportunity_expander/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-14T14:46:05Z",
+  "notes": "S37-WP01 governed Profile Factory candidate. Execution binding and pre-write gate existed before repository write. github_write and github_readback are STEP_CLEAN_PASS against candidate head 6607cf7aaf74fef84420cc6017b527f6495ac2a5. contract_judge step 27 is STEP_CLEAN_PASS with 35/35 prior required steps clean. PR #772 remains candidate-only, no runtime, production, scheduler or Golden authorization."
+}
