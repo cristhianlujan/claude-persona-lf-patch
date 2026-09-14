@@ -1,0 +1,38 @@
+{
+  "policy_version": "S38_GOVERNED_TRUST_POLICY_V0_2",
+  "resolver_id": "S38_GOVERNED_REF_RESOLVER_V3",
+  "repository_identity_source": "EXTERNAL_BOOTSTRAP_CONSTANTS_PLUS_GITHUB_API_ATTESTATION",
+  "canonical_repository_override_allowed": false,
+  "currentness": {
+    "mode": "PATH_AT_ARTIFACT_HEAD_OR_ARCHIVAL_REGISTRY",
+    "archival_registry": [
+      {
+        "asset_id": "S38-ARCHIVAL-RENAME-TEST-FIXTURE",
+        "sha256": "bed06e7a37a82a6e1baa9b1da4edb7969456ce64c4270fdd8e5db0f14845d425",
+        "status": "CURRENT",
+        "historical_ref": "github://cristhianlujan/claude-persona-lf-patch@be6c0f8a320c5cdcfa242ee775ba769745eb82df/profiles/ui_architect/schemas/runtime_output.schema.json",
+        "scope": "TEST_ONLY_ARCHIVAL_CURRENTNESS_PROOF"
+      }
+    ]
+  },
+  "claim_tier": {
+    "order": [
+      "STRUCTURAL",
+      "PROVENANCE_EXECUTION",
+      "SEMANTIC",
+      "BEHAVIORAL"
+    ],
+    "max_without_independent_witness": "PROVENANCE_EXECUTION",
+    "semantic_requires_independent_witness": true,
+    "behavioral_requires_independent_witness": true,
+    "witness_allowlist": [],
+    "unallowlisted_witness_action": "BLOCK_F_CLAIM_TIER_NOT_EARNED"
+  },
+  "authorization": {
+    "merge": "NONE",
+    "golden": "NONE",
+    "runtime": "NONE",
+    "scheduler": "NONE",
+    "production": "NONE"
+  }
+}
