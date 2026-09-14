@@ -1,6 +1,139 @@
--- S36 WP06 — governed finalizer for qualification receipts that contain INDEPENDENT_REVIEW cases.
+-- S36 WP06 — governed recorder + finalizer for qualification receipts with INDEPENDENT_REVIEW cases.
 -- Reuses lf_test_judge_results and the canonical QUALIFICATION_LIFECYCLE.
 -- Raw REVIEW_REQUIRED test/suite rows are preserved; qualification only advances after strict PASS judges.
+
+create or replace function public.lf_record_test_judge_result_v1(
+  p_test_run_id uuid,
+  p_reviewer_execution_id text,
+  p_judge_code text,
+  p_judge_type text,
+  p_verdict text,
+  p_evidence_payload jsonb,
+  p_rationale_summary text,
+  p_findings jsonb default '[]'::jsonb
+) returns jsonb
+language plpgsql
+set search_path to 'pg_catalog','public'
+as $function$
+declare
+  tr public.lf_test_runs%rowtype;
+  reviewer public.lf_operation_execution%rowtype;
+  existing public.lf_test_judge_results%rowtype;
+  v_id uuid;
+  v_judge_type text := upper(coalesce(p_judge_type,''));
+  v_verdict text := upper(coalesce(p_verdict,''));
+begin
+  if p_test_run_id is null
+     or nullif(btrim(p_reviewer_execution_id),'') is null
+     or nullif(btrim(p_judge_code),'') is null then
+    return jsonb_build_object('result','BLOCKED','code','JUDGE_IDENTITY_REQUIRED');
+  end if;
+
+  if v_judge_type not in ('QUALITY_PACK','INDEPENDENT_HOLDOUT','S36_ASSURANCE') then
+    return jsonb_build_object('result','BLOCKED','code','JUDGE_TYPE_NOT_ALLOWED','judge_type',v_judge_type);
+  end if;
+
+  if v_verdict not in ('PASS','FAIL','BLOCKED','PASS_WITH_RESTRICTIONS') then
+    return jsonb_build_object('result','BLOCKED','code','JUDGE_VERDICT_NOT_ALLOWED','verdict',v_verdict);
+  end if;
+
+  if p_evidence_payload is null
+     or jsonb_typeof(p_evidence_payload) is distinct from 'object'
+     or p_evidence_payload='{}'::jsonb then
+    return jsonb_build_object('result','BLOCKED','code','JUDGE_EVIDENCE_REQUIRED');
+  end if;
+
+  if nullif(btrim(coalesce(p_rationale_summary,'')),'') is null then
+    return jsonb_build_object('result','BLOCKED','code','JUDGE_RATIONALE_REQUIRED');
+  end if;
+
+  if p_findings is null or jsonb_typeof(p_findings) is distinct from 'array' then
+    return jsonb_build_object('result','BLOCKED','code','JUDGE_FINDINGS_MUST_BE_ARRAY');
+  end if;
+
+  select * into tr
+  from public.lf_test_runs
+  where test_run_id=p_test_run_id;
+
+  if not found then
+    return jsonb_build_object('result','BLOCKED','code','TEST_RUN_NOT_FOUND');
+  end if;
+
+  if tr.status is distinct from 'REVIEW_REQUIRED' then
+    return jsonb_build_object('result','BLOCKED','code','TEST_RUN_NOT_REVIEW_REQUIRED','status',tr.status);
+  end if;
+
+  select * into reviewer
+  from public.lf_operation_execution
+  where execution_id=p_reviewer_execution_id;
+
+  if not found then
+    return jsonb_build_object('result','BLOCKED','code','JUDGE_REVIEWER_EXECUTION_NOT_FOUND');
+  end if;
+
+  if reviewer.status is distinct from 'IN_PROGRESS' then
+    return jsonb_build_object('result','BLOCKED','code','JUDGE_REVIEWER_NOT_IN_PROGRESS','reviewer_status',reviewer.status);
+  end if;
+
+  if tr.execution_id is not null and reviewer.execution_id is not distinct from tr.execution_id then
+    return jsonb_build_object('result','BLOCKED','code','JUDGE_REVIEWER_SAME_AS_TEST_PRODUCER');
+  end if;
+
+  if tr.operation_code is not null and reviewer.operation_code is not distinct from tr.operation_code then
+    return jsonb_build_object('result','BLOCKED','code','JUDGE_REVIEWER_OPERATION_NOT_INDEPENDENT','operation_code',reviewer.operation_code);
+  end if;
+
+  select * into existing
+  from public.lf_test_judge_results
+  where test_run_id=p_test_run_id and judge_code=p_judge_code;
+
+  if found then
+    if existing.created_by_execution_id is not distinct from p_reviewer_execution_id
+       and existing.judge_type is not distinct from v_judge_type
+       and existing.verdict is not distinct from v_verdict
+       and existing.evidence_payload is not distinct from p_evidence_payload
+       and existing.rationale_summary is not distinct from p_rationale_summary
+       and existing.findings is not distinct from p_findings then
+      return jsonb_build_object(
+        'result','JUDGE_ALREADY_RECORDED_IDENTICAL',
+        'judge_result_id',existing.judge_result_id,
+        'test_run_id',p_test_run_id,
+        'judge_code',p_judge_code,
+        'verdict',v_verdict
+      );
+    end if;
+    return jsonb_build_object('result','BLOCKED','code','JUDGE_RESULT_ALREADY_EXISTS_CONFLICT','judge_result_id',existing.judge_result_id);
+  end if;
+
+  insert into public.lf_test_judge_results(
+    test_run_id,judge_code,judge_type,verdict,severity,findings,evidence_payload,
+    rationale_summary,observed_at,metadata,created_by_execution_id,updated_by_execution_id
+  ) values (
+    p_test_run_id,p_judge_code,v_judge_type,v_verdict,
+    case when v_verdict='PASS' then 'LOW' else 'HIGH' end,
+    p_findings,p_evidence_payload,p_rationale_summary,clock_timestamp(),
+    jsonb_build_object(
+      'recorder','lf_record_test_judge_result_v1',
+      'reviewer_execution_id',p_reviewer_execution_id,
+      'reviewer_operation_code',reviewer.operation_code,
+      'test_producer_execution_id',tr.execution_id,
+      'test_subject_operation_code',tr.operation_code
+    ),
+    p_reviewer_execution_id,p_reviewer_execution_id
+  ) returning judge_result_id into v_id;
+
+  return jsonb_build_object(
+    'result','JUDGE_RECORDED',
+    'judge_result_id',v_id,
+    'test_run_id',p_test_run_id,
+    'judge_code',p_judge_code,
+    'judge_type',v_judge_type,
+    'verdict',v_verdict,
+    'reviewer_execution_id',p_reviewer_execution_id,
+    'reviewer_operation_code',reviewer.operation_code
+  );
+end;
+$function$;
 
 create or replace function public.lf_finalize_qualification_independent_review_v1(
   p_qualification_id uuid,
@@ -70,7 +203,7 @@ begin
     return jsonb_build_object('result','BLOCKED','code','QUAL_REVIEW_ASSESSOR_EXECUTION_NOT_FOUND');
   end if;
 
-  if reviewer.status is distinct from 'COMPLETED' then
+  if reviewer.status is distinct from 'COMPLETED' or reviewer.completed_at is null then
     return jsonb_build_object('result','BLOCKED','code','QUAL_REVIEW_ASSESSOR_NOT_COMPLETED','reviewer_status',reviewer.status);
   end if;
 
@@ -160,6 +293,10 @@ begin
         and nullif(btrim(coalesce(jr.rationale_summary,'')),'') is not null
         and jsonb_typeof(jr.evidence_payload)='object'
         and jr.evidence_payload<>'{}'::jsonb
+        and jr.metadata->>'recorder'='lf_record_test_judge_result_v1'
+        and jr.metadata->>'reviewer_execution_id'=p_reviewer_execution_id
+        and jr.observed_at>=reviewer.started_at
+        and jr.observed_at<=reviewer.completed_at
     );
 
   select count(distinct tr.test_run_id) into v_review_nonpass
@@ -173,6 +310,10 @@ begin
         and jr.created_by_execution_id=p_reviewer_execution_id
         and jr.judge_type in ('QUALITY_PACK','INDEPENDENT_HOLDOUT','S36_ASSURANCE')
         and jr.verdict<>'PASS'
+        and jr.metadata->>'recorder'='lf_record_test_judge_result_v1'
+        and jr.metadata->>'reviewer_execution_id'=p_reviewer_execution_id
+        and jr.observed_at>=reviewer.started_at
+        and jr.observed_at<=reviewer.completed_at
     );
 
   if v_review_nonpass>0 then
@@ -240,5 +381,7 @@ begin
 end;
 $function$;
 
+revoke all on function public.lf_record_test_judge_result_v1(uuid,text,text,text,text,jsonb,text,jsonb) from public, anon, authenticated;
+grant execute on function public.lf_record_test_judge_result_v1(uuid,text,text,text,text,jsonb,text,jsonb) to postgres, service_role;
 revoke all on function public.lf_finalize_qualification_independent_review_v1(uuid,text,jsonb) from public, anon, authenticated;
 grant execute on function public.lf_finalize_qualification_independent_review_v1(uuid,text,jsonb) to postgres, service_role;
