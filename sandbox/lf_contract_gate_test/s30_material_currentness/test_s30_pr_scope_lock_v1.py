@@ -41,7 +41,6 @@ def owned_head(repo: Path) -> str:
             fail("BLOCK_S30_SCOPE_LOCK_FOREIGN_HEAD", ref)
         if not HEX40.fullmatch(head):
             fail("BLOCK_S30_SCOPE_LOCK_PR_HEAD_INVALID", head)
-        run(repo, "cat-file", "-e", f"{head}^{{commit}}")
         return head
 
     gha_head = (os.environ.get("GITHUB_HEAD_REF") or "").strip()
@@ -53,9 +52,24 @@ def owned_head(repo: Path) -> str:
     return head
 
 
+def ensure_full_history(repo: Path, anchor: str, branch_head: str) -> None:
+    # Earlier shared CI performs depth=1 fetches after checkout, which can mark
+    # otherwise-full commits as shallow boundaries and make merge-base lie.
+    shallow = run(repo, "rev-parse", "--is-shallow-repository").lower() == "true"
+    if shallow:
+        cp = subprocess.run(["git", "-C", str(repo), "fetch", "--unshallow", "origin", "--no-tags"], text=True, capture_output=True)
+        if cp.returncode != 0:
+            fail("BLOCK_S30_SCOPE_LOCK_UNSHALLOW_FAILED", cp.stderr.strip())
+    cp = subprocess.run(["git", "-C", str(repo), "fetch", "origin", anchor, branch_head, "--no-tags"], text=True, capture_output=True)
+    if cp.returncode != 0:
+        fail("BLOCK_S30_SCOPE_LOCK_FETCH_OWNED_HISTORY", cp.stderr.strip())
+    run(repo, "cat-file", "-e", f"{anchor}^{{commit}}")
+    run(repo, "cat-file", "-e", f"{branch_head}^{{commit}}")
+
+
 def main() -> int:
     here = Path(__file__).resolve().parent
-    repo = here.parents[2]
+    repo = Path(run(here, "rev-parse", "--show-toplevel"))
     manifest_path = here / "S30_PR_SCOPE_LOCK_V1.json"
     raw = manifest_path.read_bytes()
     observed_sha = hashlib.sha256(raw).hexdigest()
@@ -73,12 +87,12 @@ def main() -> int:
     anchor = lock.get("scope_anchor_revision")
     if not isinstance(anchor, str) or not HEX40.fullmatch(anchor):
         fail("BLOCK_S30_SCOPE_LOCK_ANCHOR_FORMAT")
-    run(repo, "cat-file", "-e", f"{anchor}^{{commit}}")
     branch_head = owned_head(repo)
+    ensure_full_history(repo, anchor, branch_head)
 
-    ancestor = subprocess.run(["git", "-C", str(repo), "merge-base", "--is-ancestor", anchor, branch_head])
-    if ancestor.returncode != 0:
-        fail("BLOCK_S30_SCOPE_LOCK_REBASE_UNAUTHORIZED", f"anchor={anchor} head={branch_head}")
+    merge_base = run(repo, "merge-base", anchor, branch_head)
+    if merge_base != anchor:
+        fail("BLOCK_S30_SCOPE_LOCK_REBASE_UNAUTHORIZED", f"anchor={anchor} merge_base={merge_base} head={branch_head}")
 
     changed = set(filter(None, run(repo, "diff", "--name-only", anchor, branch_head).splitlines()))
     allowed = set(lock.get("allowed_paths") or [])
@@ -98,6 +112,7 @@ def main() -> int:
         "pr_number": EXPECTED_PR,
         "head_branch": EXPECTED_BRANCH,
         "anchor": anchor,
+        "merge_base": merge_base,
         "owned_head": branch_head,
         "synthetic_merge_head_ignored": run(repo, "rev-parse", "HEAD") != branch_head,
         "changed_path_count": len(changed),
