@@ -1,0 +1,71 @@
+{
+  "inventory_version": "S30_CI_EVIDENCE_LIVE_INVENTORY_20260914_V1",
+  "observed_main_sha": "c7b83b8d8b115de8a691fdf4475509746da52e23",
+  "observed_at": "2026-09-14T16:40:00Z",
+  "existing_producers": [
+    {
+      "provider_code": "VALIDATE_LF_PACKS",
+      "source": ".github/workflows/validate-lf-packs.yml",
+      "role": "repository validation producer"
+    },
+    {
+      "provider_code": "LF_CONTRACT_CHECK",
+      "source": ".github/workflows/lf-contract-check.yml",
+      "role": "deep governed contract/parity/regression producer",
+      "special_semantics": "workflow success can include routing/reuse; a deep evidence receipt must prove the real lf-contract-check job and its audit artifact"
+    },
+    {
+      "provider_code": "LF_BOOTSTRAP_REPRODUCIBILITY",
+      "source": ".github/workflows/lf-bootstrap-reproducibility.yml",
+      "role": "bootstrap/reproducibility producer"
+    },
+    {
+      "provider_code": "CURRENTNESS_AUTHORITY",
+      "source": "sandbox/lf_contract_gate_test/material_currentness/lf_source_attestation_v1.py",
+      "owner": "S31",
+      "receipt_schema": "LF_SOURCE_ATTESTATION_RECEIPT_V1",
+      "role": "offline-verifiable immutable source attestation/currentness evidence provider"
+    },
+    {
+      "provider_code": "EXTERNAL_RECONCILIATION_V7",
+      "source": "public.record_external_ci_verification_v7",
+      "role": "authenticated post-merge artifact reconciliation",
+      "scope": "LF_SKILL_ARTIFACT",
+      "not_generic_ci_provider": true
+    }
+  ],
+  "existing_evidence_storage": [
+    {
+      "surface": "sandbox/lf_contract_gate_test/receipts/*.json",
+      "type": "LF_OPERATION_CONTRACT_RECEIPT",
+      "finding": "receipts frequently embed workflow run ids directly but there is no single normalized transversal CI evidence envelope"
+    },
+    {
+      "surface": "programacion.provenance_receipts + programacion.evidence_verifications",
+      "type": "governed provenance",
+      "finding": "strong exact-subject provenance exists but registered channels are domain-specific; no generic LF CI evidence receipt kind exists"
+    },
+    {
+      "surface": "private.lf_github_reconciliation_runs_v3",
+      "type": "post-merge GitHub reconciliation",
+      "finding": "strong OIDC/HMAC nonce authenticated evidence, but tied to private.lf_skill_artifacts and post-merge main evidence"
+    }
+  ],
+  "programacion_channels": [
+    {"channel_code": "CI_VERIFIER_V1", "allowed_kinds": ["PLAYWRIGHT_RUN"]},
+    {"channel_code": "EVIDENCE_VERIFIER_V1", "allowed_kinds": ["EVIDENCE_VERIFICATION"]},
+    {"channel_code": "F03_OIDC_AUDITOR_V1", "allowed_kinds": ["AUDIT_VERDICT"]},
+    {"channel_code": "F05_SUPABASE_PROTECTED_ISSUER_V1", "allowed_kinds": ["AUD24_F05_BASELINE_AUTHORIZATION"]},
+    {"channel_code": "HUMAN_AUTHORITY_V1", "allowed_kinds": ["HUMAN_DECISION"]},
+    {"channel_code": "INDEPENDENT_AUDITOR_V1", "allowed_kinds": ["AUDIT_VERDICT"]},
+    {"channel_code": "SOURCE_VERIFIER_V1", "allowed_kinds": ["RETRIEVAL_PASS", "TRACEABILITY_GRAPH"]}
+  ],
+  "gap": "No reusable LF-wide aggregator binds exact subject + required provider set + provider evidence receipts while preserving the distinction CI_PASS != DOMAIN/E2E/SEMANTIC/MERGE closure.",
+  "non_goals": [
+    "replace GitHub workflows",
+    "replace S31 CURRENTNESS_AUTHORITY",
+    "relabel Programming Agent provenance channels as global LF authority",
+    "replace record_external_ci_verification_v7",
+    "authorize merge/runtime/production"
+  ]
+}
