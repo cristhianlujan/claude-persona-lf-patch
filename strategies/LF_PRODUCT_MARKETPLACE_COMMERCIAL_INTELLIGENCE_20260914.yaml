@@ -1,0 +1,426 @@
+strategy_id: S38
+snapshot_code: LF_PRODUCT_MARKETPLACE_COMMERCIAL_INTELLIGENCE_20260914
+version: v0.1
+title: S38 — Product & Marketplace Commercial Intelligence
+status: CANDIDATO_READ_ONLY
+runtime_state: PLAN_ONLY
+impact_policy: BLOQUEADO
+strategy_type: PRODUCT_COMMERCIAL_INTELLIGENCE
+strategy_archetype: PRODUCT
+problem_statement: LF depende hoy demasiado del conocimiento personal del usuario o de research ad hoc para detectar patrones
+  comerciales de marketplace, pricing, packaging, promociones, campañas, growth, retención y monetización B2B. El Product
+  Director existe, pero no dispone de un pack comercial canónico reusable ni de un contrato probado que separe conocimiento
+  estable de benchmarks cambiantes.
+objective: Crear un contenedor estratégico gobernado para convertir inteligencia comercial de producto/marketplace en una
+  capacidad permanente y reusable del PERFIL-PRODUCT-DIRECTOR-LF, con Cards para conocimiento estable, Skills para análisis,
+  research/currentness cuando corresponda, decisión final del Product Director y un contrato de consumo por S37 sin duplicar
+  ownership.
+scope:
+- inventariar conocimiento comercial, Cards, Skills, Adapters y bindings actuales de Producto
+- definir Product Commercial Intelligence Pack y su taxonomía canónica
+- diseñar Cards para marketplace, pricing/packaging, promociones/unit economics, campañas, growth/retención y monetización
+  B2B
+- definir Skills analíticas necesarias y decidir reuse/create/update con deduplicación
+- definir research/currentness adapter o capacidad reusable sin congelar benchmarks cambiantes en Cards
+- integrar descubrimiento/selección de Cards con PERFIL-PRODUCT-DIRECTOR-LF bajo contratos de runtime gobernados
+- probar E2E carga masiva, Cyber/promoción temporal, packaging y consulta de prácticas actuales
+- definir contrato de consumo para que S37 descubra estas capacidades sin ser owner
+non_goals:
+- modificar S26
+- modificar S37-WP01 o convertir S37 en owner de conocimiento comercial
+- crear otro Product Director
+- crear Cards directamente por SQL cuando existe operación gobernada
+- hardcodear benchmarks o precios cambiantes en Cards
+- usar research web como sustituto del conocimiento estable estructurado
+- habilitar runtime productivo
+- promover a Golden o producción
+- escribir en main durante la creación candidata
+- ejecutar los Work Packages mientras EJECUCION_ESTRATEGIA_LF no tenga binding Router activo
+baseline:
+  strategy_creation_execution: EXEC-S38-PRODUCT-COMMERCIAL-INTELLIGENCE-CREATE-20260914-001
+  product_director_code: PERFIL-PRODUCT-DIRECTOR-LF
+  product_director_state: CANDIDATO/READ_ONLY/NO_HABILITADO
+  relevant_commercial_cards_semantic_inventory: NO_RELEVANT_CANONICAL_PACK_IDENTIFIED
+  product_director_adapter_binding: ADAPTER-LF-SHELL-PROFILE-20260827_ONLY
+  commercial_skill_inventory: NO_SPECIALIZED_PRICING_PROMOTION_UNIT_ECONOMICS_PACK_IDENTIFIED
+  research_currentness_adapter_inventory: NO_REUSABLE_PRODUCT_COMMERCIAL_RESEARCH_ADAPTER_IDENTIFIED
+  runtime_card_materialization_gap: PROFILE-CARD-RUNTIME-MATERIALIZATION-GAP-001
+  s37_snapshot_id: 56
+  s37_state: CANDIDATO_READ_ONLY/PLAN_ONLY/BLOQUEADO
+  strategy_execute_operation_state: CANDIDATO_READ_ONLY
+  strategy_execute_router_binding: ABSENT
+  strategy_factory_contract: CONTRACT-CREACION-ESTRATEGIA-LF-v0.3.2
+  strategy_factory_contract_sha: 2c469e3cd2ae7bb7171ca4e52fc6da84b58af3a3
+  validator_blob_sha: 4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765
+  factory_branch: lf/s30-strategy-factory-v032-governed-20260907
+  factory_branch_head: 81c8488d2bd4ae516af42847640cd66639de1e08
+  observed_main_head: f56a1b5b3e094f603adafd16038ccd6c96b04ca5
+  claim_ceiling: R3_GOVERNED_CANDIDATE_NOT_RUNTIME_NOT_PRODUCTION
+authorities:
+- ACT-0001
+- public.lf_router_action_registry:STRATEGY_CREATE
+- public.lf_operation_registry:CREACION_ESTRATEGIA_LF
+- public.v_lf_operation_contract:CONTRACT-CREACION-ESTRATEGIA-LF-v0.3.2
+- public.v_lf_operation_policy_snapshot:CREACION_ESTRATEGIA_LF
+- public.v_lf_artifact_destination_registry:DEST_CREACION_ESTRATEGIA_LF_CANARY
+- public.lf_strategy_snapshots
+- public.lf_cards
+- public.lf_activos
+- public.lf_activo_relaciones
+- public.v_lf_router_adapter_bindings
+- public.lf_router_action_registry
+- public.lf_error_knowledge
+- GitHub:cristhianlujan/claude-persona-lf-patch
+dependencies:
+- id: ACT-0001
+  ref: public.v_lf_fuente_operativa/ACT-0001
+  version: v0.3
+  required: true
+- id: STRATEGY_FACTORY_CONTRACT_V032
+  ref: CONTRACT-CREACION-ESTRATEGIA-LF-v0.3.2
+  sha: 2c469e3cd2ae7bb7171ca4e52fc6da84b58af3a3
+  required: true
+- id: STRATEGY_FACTORY_VALIDATOR_V032
+  ref: gobernanza/judges/validate_strategy_contract_v032.py
+  sha: 4f95e3d9bc1f74f09a28c0510bbc3d1ca62b4765
+  required: true
+- id: PRODUCT_DIRECTOR
+  ref: PERFIL-PRODUCT-DIRECTOR-LF
+  required: true
+- id: CARD_FACTORY
+  ref: CREACION_CARD_LF
+  required: true
+- id: PROFILE_UPDATE
+  ref: ACTUALIZACION_PERFIL_LF
+  required: false
+- id: SKILL_FACTORY
+  ref: CREACION_SKILL_LF/ACTUALIZACION_SKILL_LF
+  required: false
+- id: ADAPTER_FACTORY
+  ref: CREACION_ADAPTER_LF/ACTUALIZACION_ADAPTER_LF
+  required: false
+- id: S37_CONSUMER
+  ref: LF_EXPLORATION_INNOVATION_ENGINE_20260913@56
+  required: false
+  role: CONSUMER_NOT_OWNER
+- id: STRATEGY_EXECUTOR
+  ref: EJECUCION_ESTRATEGIA_LF
+  required: true
+  current_state: CANDIDATO_READ_ONLY_ROUTER_BINDING_ABSENT
+applicable_policies:
+- code: POL-LF-OPERATION-LIFECYCLE
+  role: GOVERNANCE_LIFECYCLE
+  version: v1.0
+  sha: 973b5a0ad26433095066ff06b53c3043f38fef51d04e9482c458e178f20920e8
+- code: POL-LF-POLICY-CONSUMPTION
+  role: POLICY_CONSUMPTION
+  version: v1.1-transversal-candidate
+  sha: e5eb786e14a4b735e271a81b702a0a775e0bf39ba174d333531a82a0858b5553
+- code: POL-LF-SOURCE-RESOLUTION
+  role: SOURCE_RESOLUTION
+  version: v1.4-transversal-supabase-authority-visual-support
+  sha: 5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46
+- code: POL-LF-STATE-MODEL
+  role: STATE_MODEL
+  version: v1.1-transversal-candidate
+  sha: f451bb4d2b17cdac48c4dddb250108b2874a9d036edcfb9d2f7fa540416332aa
+- code: POL-STRATEGY-CREATION-001
+  role: STRATEGY_CREATION
+  version: v0.1-candidate
+  sha: 563b91a1e5405c1e1f8806c1f8d12b8ab2dfbd901638f7b432a3e601cc2558fc
+type_extension:
+  target_user_or_state: Product Director LF durante trabajo normal de Producto, incluso sin S37; debe reconocer dimensiones
+    comerciales relevantes que el usuario puede desconocer y separar conocimiento estable de información current.
+  selected_decision: Product Director es owner del Product Commercial Intelligence Pack. Cards contienen patrones estables;
+    Cards+Skills contienen marcos analíticos; research/currentness se invoca solo para benchmarks o hechos cambiantes; S37
+    consume por discovery sin duplicar activos.
+  rejected_alternatives:
+  - S37 como owner del conocimiento comercial
+  - un único prompt gigante dentro de Product Director
+  - research web ad hoc para todo
+  - hardcodear campañas/precios/benchmarks actuales en Cards
+  - crear un segundo Product Director
+  - crear Cards antes de inventario/deduplicación/runtime contract
+  tradeoffs:
+  - más activos gobernados y mantenimiento a cambio de reuso, trazabilidad y menor dependencia del conocimiento del usuario
+  - research selectivo agrega latencia/costo solo cuando currentness es material
+  - runtime card discovery exige resolver el gap de materialización antes de afirmar consumo real
+  value_metric_or_success_proxy:
+    primary: relevant_dimension_recall_without_user_prompting
+    secondary:
+    - duplicate_card_rate
+    - unnecessary_research_rate
+    - currentness_evidence_coverage
+    - product_canary_pass_rate
+    - decision_traceability_rate
+  observable_acceptance_criteria:
+  - Product Director descubre Cards comerciales pertinentes desde una solicitud de producto sin que el usuario deba nombrarlas
+  - conocimiento estable se resuelve sin research innecesario
+  - hechos/benchmarks cambiantes disparan research con evidencia y freshness
+  - Product Director conserva la decisión final y no inventa business truth
+  - no se crean Cards equivalentes duplicadas
+  - S37 puede descubrir/convocar Cards sin copiarlas ni ser owner
+  - canarios carga masiva, Cyber, packaging y current practices pasan E2E
+  - no runtime/Golden/producción sin autorización separada
+  next_gate_or_handoff: BLOCKED_PENDING_ROUTER_ENABLEMENT:EJECUCION_ESTRATEGIA_LF -> S38-WP01
+stages:
+- stage_code: S38-CREATE-01
+  objective_or_purpose: Formalizar S38 como candidato gobernado y dejar un backlog ejecutable, sin crear Cards/Skills/Adapters
+    ni modificar Product Director durante la creación de estrategia.
+  status: CURRENT
+  entry_conditions:
+  - CREACION_ESTRATEGIA_LF execution reserved before material work
+  - Router STRATEGY_CREATE resolves CREACION_ESTRATEGIA_LF
+  - Factory contract v0.3.2 ACTIVE_ENFORCEMENT
+  - target snapshot absent
+  actions_or_scope:
+  - resolve owner and confirm no appropriate existing strategy
+  - inventory Product Director Cards Skills Adapters runtime and currentness gaps
+  - materialize PRODUCT strategy contract and work packages
+  - run deterministic prewrite validator
+  - write/readback candidate YAML on focal governed branch only
+  - register/readback candidate snapshot
+  - run deterministic close validator and aggregate judge
+  tests:
+  - S38-T01
+  - S38-T02
+  - S38-T03
+  - S38-T04
+  - S38-T05
+  - S38-T06
+  evidence_required:
+  - durable execution readback
+  - Router and EKB preflight
+  - Product Director asset/binding inventory
+  - Card Skill Adapter governed-operation inventory
+  - prewrite validator receipt
+  - Git commit/blob readback
+  - Supabase candidate registration and independent readback
+  - close validator and aggregate judge receipt
+  exit_gate: S38_STRATEGY_FORMALIZED_CANDIDATE_ONLY_WP01_BLOCKED_UNTIL_EXECUTOR_ROUTER_READY
+  conclusion_ref: S38-CREATE-CONCLUSION-01
+gates:
+- DURABLE_START_BEFORE_MATERIAL_WORK
+- ROUTER_STRATEGY_CREATE_ACTIVE
+- TARGETED_EKB_PREFLIGHT_COMPLETE
+- OWNER_PRODUCT_DIRECTOR_CONFIRMED
+- NO_EXISTING_STRATEGY_OWNER_FOUND
+- CURRENT_POLICY_SET_RESOLVED
+- CONTRACT_V032_EXACT
+- DESTINATION_CANARY_ONLY
+- DETERMINISTIC_PREWRITE_VALIDATOR_PASS
+- NO_MAIN_WRITE
+- NO_S26_MUTATION
+- NO_S37_WP01_MUTATION
+- NO_CARD_PROFILE_SKILL_ADAPTER_CREATION_DURING_STRATEGY_CREATE
+- GITHUB_READBACK
+- SUPABASE_INDEPENDENT_READBACK
+- DETERMINISTIC_CLOSE_VALIDATOR_PASS
+- AGGREGATE_JUDGE_PASS
+- NO_RUNTIME
+- NO_GOLDEN
+- NO_PRODUCTION_PROMOTION
+tests:
+- id: S38-T01
+  type: POSITIVE
+  case: PRODUCT strategy payload through v0.3.2 prewrite validator
+  expected: valid=true and blocking_codes=[]
+  status: PENDING_EXACT_RUN
+- id: S38-T02
+  type: NEGATIVE
+  case: attempt create Cards/Profile changes during strategy creation
+  expected: BLOCK_OR_OUT_OF_SCOPE
+  status: DEFINED
+- id: S38-T03
+  type: READBACK
+  case: Git and Supabase exact candidate readback
+  expected: exact identity/hash/status/runtime/impact match
+  status: PENDING
+- id: S38-T04
+  type: ARCHITECTURE
+  case: Product Director works without S37; S37 remains consumer only
+  expected: owner=Product Director and no S37 duplication
+  status: DEFINED
+- id: S38-T05
+  type: RUNTIME_GAP
+  case: Profile to Card consumption cannot be claimed before materialization gap is resolved
+  expected: FAIL_CLOSED_UNTIL_PROVEN
+  status: DEFINED
+- id: S38-T06
+  type: HANDOFF
+  case: WP01 execution handoff while Strategy Execute Router binding is absent
+  expected: BLOCKED_PENDING_ROUTER_ENABLEMENT without bypass
+  status: DEFINED
+metrics:
+  required_factory_steps: 43
+  required_policy_snapshots: 5
+  prewrite_validator_blocking_codes_target: 0
+  close_validator_blocking_codes_target: 0
+  main_writes_allowed: 0
+  s26_mutations_allowed: 0
+  s37_wp01_mutations_allowed: 0
+  product_asset_mutations_during_creation_allowed: 0
+  runtime_changes_allowed: 0
+  golden_changes_allowed: 0
+  production_changes_allowed: 0
+  initial_relevant_card_duplicates_allowed: 0
+risks:
+- id: S38-R1
+  risk: Cards become a static encyclopedia and freeze changing market truth
+  mitigation: stable/current split plus freshness contract and research only when required
+- id: S38-R2
+  risk: Product Director detects concepts but runtime does not actually materialize Cards
+  mitigation: WP08 must close PROFILE-CARD-RUNTIME-MATERIALIZATION-GAP-001 before any runtime-complete claim
+- id: S38-R3
+  risk: duplicate Cards/Skills proliferate
+  mitigation: WP01 inventory + semantic dedup before create/update decisions
+- id: S38-R4
+  risk: S37 duplicates or becomes owner of commercial knowledge
+  mitigation: WP10 consumption contract; S37 remains discoverer/consumer only
+- id: S38-R5
+  risk: research is overused, increasing cost/latency and replacing stable knowledge
+  mitigation: explicit currentness decision rule and unnecessary-research metric
+- id: S38-R6
+  risk: WP execution bypasses missing Strategy Execute Router binding
+  mitigation: close creation with blocked handoff; no manual execution or DML bypass
+- id: S38-R7
+  risk: governed Card/Adapter operations are assumed safer than live evidence
+  mitigation: re-read Router/EKB before each WP; fail closed on absent/update gaps
+evidence_contract:
+  levels:
+  - R1_SOURCE_CONTRACT
+  - R2_EXACT_ARTIFACT_BOUND
+  - R3_DURABLE_GOVERNED_EXECUTION_AND_INDEPENDENT_READBACK
+  current_ceiling: R3_GOVERNED_CANDIDATE_NOT_RUNTIME_NOT_PRODUCTION
+  rules:
+  - Supabase is operational authority
+  - exact validator blob plus input/results SHA required
+  - RETURNING is receipt only; independent Supabase readback required
+  - exact Git blob readback required
+  - no business truth invented when evidence is missing
+  - changing external facts require source/freshness evidence
+  - no Product/S37 ownership claim beyond observed canonical state
+rollback_or_recovery:
+  routes:
+  - A_ORIGINAL
+  - B_FOCAL_MINIMAL
+  - C_CANONICAL_EQUIVALENT
+  - D_INDEPENDENT_AUTHORIZED
+  on_prewrite_failure: do not write candidate; repair payload and rerun exact validator
+  on_git_failure: do not register Supabase snapshot; preserve execution/failure evidence
+  on_supabase_failure: preserve Git candidate only; do not claim canonical registration
+  on_close_failure: keep creation execution open/blocked and do not hand off WP01
+  on_wp_execution_block: do not bypass Router; hold WP01 pending EJECUCION_ESTRATEGIA_LF operationalization
+execution_frontier:
+  state: IN_PROGRESS
+  current_stage: S38-CREATE-01
+  current_action: run governed strategy-creation prewrite and candidate registration
+  safe_parallel_work: []
+  blockers: []
+stage_conclusions: []
+invalidation_triggers:
+- Strategy Factory active contract/validator/judge SHA changes
+- required policy set or fingerprint changes
+- Router STRATEGY_CREATE stops resolving CREACION_ESTRATEGIA_LF
+- destination registry changes
+- Product Director canonical identity changes
+- a pre-existing equivalent commercial-intelligence strategy is discovered
+- PROFILE-CARD-RUNTIME-MATERIALIZATION-GAP-001 is superseded materially
+- new HIGH/CRITICAL EKB rule changes strategy-creation controls
+- S26 or S37-WP01 is mutated from this scope
+change_log:
+- version: v0.1
+  change: Formal S38 creation initiated after architecture review confirmed Product Director ownership and no appropriate
+    existing strategy owner.
+  execution_id: EXEC-S38-PRODUCT-COMMERCIAL-INTELLIGENCE-CREATE-20260914-001
+closure_criteria:
+- 43/43 required Strategy Factory steps clean
+- candidate YAML written only to governed focal branch under /strategies/
+- Supabase snapshot CANDIDATO_READ_ONLY / PLAN_ONLY / BLOQUEADO
+- prewrite and close validators pass with zero blocking codes
+- creation-stage conclusion exists and matches conclusion_ref
+- Product Director is recorded as owner; S37 is consumer only
+- WP backlog WP01-WP10 is materialized
+- WP01 remains NOT_STARTED/BLOCKED_PENDING_ROUTER_ENABLEMENT while Strategy Execute Router binding is absent
+- no Cards Skills Adapters Product Director S26 or S37-WP01 are mutated
+- no runtime Golden main or production promotion
+next_gate_or_handoff: BLOCKED_PENDING_ROUTER_ENABLEMENT:EJECUCION_ESTRATEGIA_LF -> S38-WP01
+work_packages:
+- wp_code: S38-WP01
+  title: Product Commercial Knowledge Inventory & Contract
+  status: BLOCKED_PENDING_ROUTER_ENABLEMENT
+  execution_operation: EJECUCION_ESTRATEGIA_LF
+  scope: Inventory exact Product Cards/Skills/Adapters/KB/research/currentness assets; deduplicate; define stable-vs-current
+    taxonomy and create/update decisions without mutating assets yet.
+  deliverables:
+  - canonical commercial knowledge inventory
+  - deduplication map
+  - Card/Skill/Adapter create-update-reuse decision matrix
+  - freshness/currentness policy draft
+  - runtime discovery gap map
+  definition_of_done:
+  - all candidate domains mapped to existing/reuse/create/update
+  - no equivalent asset silently duplicated
+  - research currentness path identified or explicit gap recorded
+  - Profile-to-Card materialization dependency explicitly bound
+  - governed operations re-read before mutation
+- wp_code: S38-WP02
+  title: Marketplace Commercial Patterns Cards
+  status: BACKLOG
+  depends_on:
+  - S38-WP01
+  scope: Stable marketplace patterns only; governed Card create/update operations.
+- wp_code: S38-WP03
+  title: Pricing & Packaging Cards + Skills
+  status: BACKLOG
+  depends_on:
+  - S38-WP01
+  scope: Pricing/packaging frameworks and analytical skills; no invented prices.
+- wp_code: S38-WP04
+  title: Promotion Mechanics + Unit Economics
+  status: BACKLOG
+  depends_on:
+  - S38-WP01
+  scope: Promo mechanics, subsidy source, payment fees, uplift, cannibalization, break-even, limits and segmentation.
+- wp_code: S38-WP05
+  title: Campaign / Growth / Retention Patterns
+  status: BACKLOG
+  depends_on:
+  - S38-WP01
+  scope: Stable campaign, growth, retention and B2B monetization patterns.
+- wp_code: S38-WP06
+  title: Research Adapter + Freshness Policy
+  status: BACKLOG
+  depends_on:
+  - S38-WP01
+  scope: Reusable current-market research path, evidence/freshness contract and no hardcoded changing benchmarks.
+- wp_code: S38-WP07
+  title: Product Director Integration
+  status: BACKLOG
+  depends_on:
+  - S38-WP02
+  - S38-WP03
+  - S38-WP04
+  - S38-WP05
+  - S38-WP06
+  scope: Governed Profile update/bindings after exact inventory and quality gates.
+- wp_code: S38-WP08
+  title: Runtime Card Discovery / Selection
+  status: BACKLOG
+  depends_on:
+  - S38-WP07
+  scope: Prove central JIT Card resolution/materialization and same-request evidence; close PROFILE-CARD-RUNTIME-MATERIALIZATION-GAP-001
+    if evidence allows.
+- wp_code: S38-WP09
+  title: E2E Product Canaries
+  status: BACKLOG
+  depends_on:
+  - S38-WP08
+  scope: Mass upload, Cyber/promotion, Basic-Pro-Premium packaging and current-market-practices canaries.
+- wp_code: S38-WP10
+  title: S37 Consumption Contract
+  status: BACKLOG
+  depends_on:
+  - S38-WP08
+  - S38-WP09
+  scope: S37 Capability Discovery can discover/consume Product Commercial Cards without ownership or duplication.
