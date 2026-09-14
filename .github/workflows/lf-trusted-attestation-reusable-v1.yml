@@ -2,6 +2,11 @@ name: LF Trusted Attestation Reusable V1
 
 on:
   workflow_call:
+    inputs:
+      candidate_sha:
+        description: Exact LF candidate commit to attest
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -16,7 +21,7 @@ jobs:
       - name: Checkout exact caller source commit
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ inputs.candidate_sha }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -25,6 +30,7 @@ jobs:
         env:
           EXPECTED_REPOSITORY: cristhianlujan/claude-persona-lf-patch
           QUALITY_PACK_REVISION: 3b39657fbf14f29c7839ecb26d715ed5c6fad59e
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -33,7 +39,10 @@ jobs:
           REPO = os.environ['EXPECTED_REPOSITORY']
           if os.environ.get('GITHUB_REPOSITORY') != REPO:
               raise SystemExit('BLOCK_SIGNER_FOREIGN_REPOSITORY')
-          head = os.environ['GITHUB_SHA']
+          head = os.environ['CANDIDATE_SHA']
+          observed_head = subprocess.check_output(['git','rev-parse','HEAD'], text=True).strip()
+          if observed_head != head:
+              raise SystemExit('BLOCK_SIGNER_CHECKOUT_SHA_MISMATCH')
           if not re.fullmatch(r'[0-9a-f]{40}', head):
               raise SystemExit('BLOCK_SIGNER_INVALID_SOURCE_DIGEST')
 
