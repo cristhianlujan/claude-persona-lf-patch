@@ -1,0 +1,52 @@
+{
+  "artifact": "LF_TRUST_ARCHITECTURE_DECISION_MATRIX_V0_1",
+  "status": "RESEARCH_ONLY",
+  "trigger_review": "S38-DG-IR-007",
+  "problem": {
+    "security": "WHOLE_CHECKOUT_SELF_REFERENTIAL_TRUST_ROOT",
+    "availability": "TWO_UNAUTHENTICATED_GITHUB_REST_CALLS_PER_RESOLVER_CONSTRUCTION"
+  },
+  "options": [
+    {
+      "id": "AUTHENTICATED_REST_SINGLE_BOOTSTRAP",
+      "security_root_external": false,
+      "offline_review_after_bootstrap": true,
+      "solves_rate_limit_bottleneck": true,
+      "solves_whole_checkout_tamper": false,
+      "disposition": "TRANSPORT_OPTIMIZATION_ONLY"
+    },
+    {
+      "id": "GITHUB_ARTIFACT_ATTESTATION_TRUSTED_BUILDER",
+      "security_root_external": true,
+      "offline_review_after_bootstrap": true,
+      "solves_rate_limit_bottleneck": true,
+      "solves_whole_checkout_tamper": "YES_IF_SIGNER_IDENTITY_AND_DIGEST_ARE_ENFORCED_OUT_OF_BAND",
+      "disposition": "PREFERRED_PILOT"
+    },
+    {
+      "id": "LF_OIDC_EXTERNAL_ASYMMETRIC_ATTESTOR",
+      "security_root_external": true,
+      "offline_review_after_bootstrap": true,
+      "solves_rate_limit_bottleneck": true,
+      "solves_whole_checkout_tamper": "YES_IF_PRIVATE_KEY_SERVICE_AND_PUBLIC_TRUST_ROOT_ARE_OUTSIDE_CHECKOUT",
+      "disposition": "PREFERRED_FALLBACK"
+    },
+    {
+      "id": "SIGNED_GIT_COMMIT_ONLY",
+      "security_root_external": "CONDITIONAL",
+      "offline_review_after_bootstrap": true,
+      "solves_rate_limit_bottleneck": true,
+      "solves_whole_checkout_tamper": "PARTIAL",
+      "disposition": "SUPPORTING_SIGNAL_NOT_SUFFICIENT"
+    }
+  ],
+  "recommended_next": "PILOT_GITHUB_ARTIFACT_ATTESTATION_WITH_TRUSTED_REUSABLE_WORKFLOW_AND_OFFLINE_VERIFICATION",
+  "ir008_authorized": false,
+  "authorities": {
+    "merge": "NONE",
+    "golden": "NONE",
+    "runtime": "NONE",
+    "scheduler": "NONE",
+    "production": "NONE"
+  }
+}

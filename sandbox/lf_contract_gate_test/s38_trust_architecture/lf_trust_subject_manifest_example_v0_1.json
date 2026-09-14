@@ -1,0 +1,27 @@
+{
+  "manifest_version": "LF_TRUST_SUBJECT_MANIFEST_V0_1",
+  "purpose": "ATTESTATION_SUBJECT_EXAMPLE_ONLY",
+  "repository": "cristhianlujan/claude-persona-lf-patch",
+  "strategy_id": "S38",
+  "next_review_case": "S38-DG-IR-008",
+  "candidate_sha": "<EXACT_40_HEX_SHA>",
+  "runtime_tcb": [
+    {"role": "RESOLVER", "path": "<path>", "sha256": "<64-hex>"},
+    {"role": "POLICY", "path": "<path>", "sha256": "<64-hex>"},
+    {"role": "VALIDATOR", "path": "<path>", "sha256": "<64-hex>"},
+    {"role": "SCHEMA_D", "path": "<path>", "sha256": "<64-hex>"},
+    {"role": "SCHEMA_E", "path": "<path>", "sha256": "<64-hex>"},
+    {"role": "SCHEMA_F", "path": "<path>", "sha256": "<64-hex>"},
+    {"role": "SCHEMA_G_REQUEST", "path": "<path>", "sha256": "<64-hex>"},
+    {"role": "SCHEMA_G_OUTPUT", "path": "<path>", "sha256": "<64-hex>"}
+  ],
+  "historical_identities": [],
+  "claim_ceiling": "DETERMINISTIC_REPAIR_EVIDENCE_ONLY",
+  "authorization": {
+    "merge": "NONE",
+    "golden": "NONE",
+    "runtime": "NONE",
+    "scheduler": "NONE",
+    "production": "NONE"
+  }
+}
