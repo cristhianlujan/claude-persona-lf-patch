@@ -1,0 +1,42 @@
+{
+  "disposition_version": "S38_IR006_GOVERNANCE_DISPOSITION_V0_2",
+  "source_review_case_id": "S38-DG-IR-006",
+  "source_review_verdict": "PASS_WITH_RESTRICTIONS",
+  "status": "PRODUCER_GOVERNANCE_DISPOSITION_RECOMMENDATION",
+  "candidate_head": "63f5db552c10535cfc473e50d0706ab2f8ae4758",
+  "items": {
+    "RESOLVER_TRUST_ANCHOR_SELF_REFERENTIAL_CANONICAL_REMOTE": {
+      "severity": "CRITICAL_GATE",
+      "producer_status": "REPAIRED_PENDING_IR007",
+      "repair": "POLICY_CANNOT_DEFINE_REPOSITORY_IDENTITY; FIXED_GITHUB_REPOSITORY_ID_PLUS_EXACT_COMMIT_ATTESTATION"
+    },
+    "ENFORCED_CONTRACT_SURFACE_NOT_BYTE_ANCHORED": {
+      "severity": "MATERIAL_EVIDENCE_INTEGRITY",
+      "producer_status": "REPAIRED_PENDING_IR007",
+      "repair": "LOAD_BEARING_LOCAL_SURFACE_BYTE_VERIFIED; SCHEMAS_CONSUMED_FROM_CANONICAL_REMOTE"
+    },
+    "CLAIM_TIER_AND_ARCHIVAL_POLICY_ROOT": {
+      "severity": "MATERIAL_GOVERNANCE",
+      "producer_status": "REPAIRED_PENDING_IR007",
+      "repair": "SINGLE_CANONICAL_POLICY_SNAPSHOT; REPOSITORY_IDENTITY_REMOVED_FROM_POLICY"
+    },
+    "CALLER_TRANSPORT_ENVIRONMENT": {
+      "severity": "RESIDUAL_REVIEW_RISK",
+      "producer_status": "HARDENED_PENDING_IR007",
+      "repair": "MINIMAL_FIXED_GIT_ENV; FIXED_SYSTEM_CA; PROXY_HANDLER_EMPTY"
+    },
+    "HISTORICAL_PIN_MODEL": {
+      "severity": "REVIEW_INTEGRITY",
+      "producer_status": "PENDING_BUNDLE_V0_3",
+      "required_revision": "be6c0f8a320c5cdcfa242ee775ba769745eb82df"
+    }
+  },
+  "claim_ceiling": "PRODUCER_RECOMMENDATION_ONLY",
+  "authorization": {
+    "merge": "NONE",
+    "golden": "NONE",
+    "runtime": "NONE",
+    "scheduler": "NONE",
+    "production": "NONE"
+  }
+}
