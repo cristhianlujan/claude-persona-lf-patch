@@ -279,6 +279,7 @@ begin
         where b->>'error_code'=code
           and (
             coalesce(b->>'control_mode','') not in ('DETERMINISTIC_CHECK','PROCESS_EVIDENCE','HUMAN_REVIEW')
+            or coalesce(b->>'status','') not in ('PASS','PENDING','REVIEW_REQUIRED','BLOCKED')
             or coalesce(b->>'status','') = 'BLOCKED'
             or (
               b->>'status'='PASS'
@@ -340,7 +341,7 @@ begin
     'control_evidence_failures',to_jsonb(coalesce(v_bad_bindings,array[]::text[])),
     'ekb_read',true,
     'controls_executed_for_pass',v_pass,
-    'observed_at',clock_timestamp()
+    'observed_at',statement_timestamp()
   );
 
   return v_core || jsonb_build_object(
