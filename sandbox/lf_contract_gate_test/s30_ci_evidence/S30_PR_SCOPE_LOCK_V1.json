@@ -1,0 +1,33 @@
+{
+  "lock_version": "S30_PR_SCOPE_LOCK_V1",
+  "owner": "S30",
+  "scope": "CI_EVIDENCE_LF",
+  "mode": "EXACT_FILE_ALLOWLIST_FAIL_CLOSED",
+  "head_branch": "s30-ci-evidence-lf-20260914",
+  "scope_anchor_revision": "c7b83b8d8b115de8a691fdf4475509746da52e23",
+  "cross_owner_changes_allowed": false,
+  "allowed_paths": [
+    "sandbox/lf_contract_gate_test/s30_ci_evidence/LF_CI_EVIDENCE_CONTRACT_V1.json",
+    "sandbox/lf_contract_gate_test/s30_ci_evidence/README.md",
+    "sandbox/lf_contract_gate_test/s30_ci_evidence/S30_PR_SCOPE_LOCK_V1.json",
+    "sandbox/lf_contract_gate_test/s30_ci_evidence/ci_evidence_receipt.schema.json",
+    "sandbox/lf_contract_gate_test/s30_ci_evidence/ci_evidence_request.schema.json",
+    "sandbox/lf_contract_gate_test/s30_ci_evidence/ci_provider_receipt.schema.json",
+    "sandbox/lf_contract_gate_test/s30_ci_evidence/first_real_case_pr788_20260914.json",
+    "sandbox/lf_contract_gate_test/s30_ci_evidence/lf_ci_evidence_aggregator_v1.py",
+    "sandbox/lf_contract_gate_test/s30_ci_evidence/live_ci_evidence_inventory_20260914.json",
+    "sandbox/lf_contract_gate_test/s30_ci_evidence/test_ci_evidence_contract_v1.py",
+    "sandbox/lf_contract_gate_test/s30_ci_evidence/test_lf_ci_evidence_aggregator_v1.py",
+    "sandbox/lf_contract_gate_test/s30_ci_evidence/test_s30_pr_scope_lock_v1.py"
+  ],
+  "forbidden_effects": [
+    "SUPABASE_LIVE_MUTATION",
+    "GITHUB_PROVIDER_REWRITE",
+    "REMOTE_CURRENTNESS_CALL",
+    "MAIN_MERGE",
+    "RUNTIME_ACTIVATION",
+    "PRODUCTION_ACTIVATION",
+    "GOLDEN_ACTIVATION",
+    "CROSS_OWNER_REPAIR"
+  ]
+}
