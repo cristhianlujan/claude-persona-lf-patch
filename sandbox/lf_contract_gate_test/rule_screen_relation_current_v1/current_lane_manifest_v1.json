@@ -1,0 +1,35 @@
+{
+  "schema_version": "RULE_SCREEN_RELATION_CURRENT_LANE_MANIFEST_V1",
+  "status": "DRAFT_EXCLUSIVE_CURRENT_STATE_REGRESSION",
+  "base_main_sha": "f56a1b5b3e094f603adafd16038ccd6c96b04ca5",
+  "operation_code": "VINCULACION_REGLA_PANTALLA_LF",
+  "expected_operation_status": "PRODUCCION_CONTROLADA",
+  "expected_active_contract": "CONTRACT-VINCULACION-REGLA-PANTALLA_LF-v1.1.0",
+  "expected_router_binding": {
+    "asset_type": "REGLA_PANTALLA_RELATION",
+    "action_code": "REGLA_PANTALLA_LINK",
+    "status": "ACTIVE",
+    "write_allowed": true
+  },
+  "allowed_paths": [
+    "sandbox/lf_contract_gate_test/rule_screen_relation_current_v1/README.md",
+    "sandbox/lf_contract_gate_test/rule_screen_relation_current_v1/rule_screen_relation_current_rollback_canary_v1.sql",
+    "sandbox/lf_contract_gate_test/rule_screen_relation_current_v1/current_lane_manifest_v1.json"
+  ],
+  "forbidden_scope": [
+    "supabase/migrations",
+    ".github/workflows",
+    "shared_validators",
+    "router_mutation",
+    "production_mutation",
+    "runtime_activation",
+    "golden_promotion",
+    "s26_mutation",
+    "s30_mutation",
+    "s31_mutation"
+  ],
+  "supersedes_pr": 763,
+  "historical_predecessor_pr": 748,
+  "base_refresh_reason": "PR_764_STRATEGY_UPDATE_SOURCE_PARITY_MERGED_TO_MAIN",
+  "claim_ceiling": "CURRENT_STATE_ROLLBACK_REGRESSION_ONLY"
+}
