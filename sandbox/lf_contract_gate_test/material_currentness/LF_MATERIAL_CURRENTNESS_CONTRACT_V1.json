@@ -1,16 +1,33 @@
 {
-  "contract_code": "LF_MATERIAL_CURRENTNESS_V1",
+  "contract_code": "CURRENTNESS_AUTHORITY",
+  "schema_version": "LF_CURRENTNESS_AUTHORITY_CONTRACT_V1",
   "version": "1.0.0-candidate",
-  "owner": "S30",
+  "owner": "S31",
+  "origin": "S30_MATERIAL_CURRENTNESS_CANDIDATE_PR_774",
   "status": "CANDIDATE_READ_ONLY",
-  "purpose": "Resolve moving source authority without invalidating executions whose declared material inputs are unchanged.",
+  "purpose": "Resolve moving source authority by declared materials, transitive dependencies and governed compatibility evidence instead of global main-SHA equality.",
   "authority_model": {
-    "moving_authority": "logical_ref",
-    "example": "refs/heads/main",
+    "authority_ref": "logical_moving_ref",
     "resolved_revision": "exact_git_commit_sha",
+    "evidence_revision": "immutable_execution_or_review_anchor",
+    "resolved_revision_may_move": true,
     "evidence_revision_is_immutable": true,
-    "current_revision_may_move": true
+    "global_main_sha_drift_alone_causes_stale": false
   },
+  "required_model": [
+    "authority_ref",
+    "resolved_revision",
+    "evidence_revision",
+    "declared_materials",
+    "dependency_graph",
+    "material_fingerprints",
+    "dependency_completeness",
+    "compatibility_contract",
+    "contract_identity",
+    "implementation_binding",
+    "affected_closure",
+    "currentness_decision"
+  ],
   "material_model": {
     "dependency_completeness_required_for_auto_rebind": "COMPLETE",
     "supported_kinds": ["GIT_TREE", "DIGEST"],
@@ -19,11 +36,26 @@
     "transitive_affected_closure_required": true,
     "unknown_or_unresolved_action": "UNKNOWN_FAIL_CLOSED"
   },
+  "compatibility_model": {
+    "contract_identity_separate_from_implementation_binding": true,
+    "governed_change_classes": ["IMPLEMENTATION_ONLY_COMPATIBLE", "CONTRACT_COMPATIBLE", "BREAKING", "UNKNOWN"],
+    "implementation_only_compatible_action": "CURRENT_REBOUND",
+    "compatible_contract_action": "CURRENT_REBOUND_WITH_BOUNDED_VALIDATION",
+    "breaking_action": "STALE_AFFECTED_SELECTIVE_CLOSURE",
+    "unknown_action": "UNKNOWN_FAIL_CLOSED",
+    "path_diff_alone_proves_compatibility": false
+  },
   "decisions": {
     "CURRENT": "authority revision and all declared materials are unchanged",
-    "CURRENT_REBOUND": "authority revision advanced but all declared root materials remain equivalent; automatic rebind is allowed",
-    "STALE_AFFECTED": "one or more declared materials or their transitive dependencies changed",
-    "UNKNOWN_FAIL_CLOSED": "dependency graph, revision, material or fingerprint proof is incomplete or invalid"
+    "CURRENT_REBOUND": "authority and/or compatible implementation/contract binding advanced without a breaking affected closure",
+    "STALE_AFFECTED": "one or more breaking declared materials or transitive dependencies changed",
+    "UNKNOWN_FAIL_CLOSED": "dependency graph, revision, material, compatibility evidence or fingerprint proof is incomplete or invalid"
+  },
+  "source_attestation": {
+    "resolve_remote_ref_once_when_needed": true,
+    "receipt_fields": ["repo_identity", "authority_ref", "commit_sha", "tree_sha", "material_blobs", "receipt_sha256"],
+    "offline_or_mirror_verification_required": true,
+    "github_rest_required_for_rebuild_or_tamper_test": false
   },
   "safety": {
     "network_access_in_evaluator": false,
@@ -32,14 +64,22 @@
     "main_sha_change_alone_causes_stale": false,
     "path_diff_alone_is_sufficient_proof": false,
     "diverged_authority_auto_rebind_allowed": false,
+    "write_continues_when_bounded_validation_pending": false,
     "merge_main_allowed": false,
     "runtime_or_production_effect_allowed": false
   },
   "integration": {
+    "capability_code": "CURRENTNESS_AUTHORITY",
     "source_authority_provider": "GOVERNED_GIT_BROKER_OR_ATTESTOR",
     "capability_binding_consumer": "public.fn_lf_capability_bind_current_v1",
+    "capability_registry": "public.lf_capability_registry",
+    "work_package": "S31_WORK_PACKAGE_MODEL",
+    "evidence_ledger": "S31_EVIDENCE_LIFECYCLE",
+    "runtime_execution_port": "S31_RUNTIME_EXECUTION_PORT",
     "qualification_consumer": "LF_QUALIFICATION_CURRENTNESS",
     "migration_lifecycle_consumer": "MIGRATION_LIFECYCLE_LF",
-    "external_digest_rule": "DIGEST materials must be hydrated from a governed provider before evaluation"
+    "repository_change_consumer": "REPOSITORY_CHANGE_LF",
+    "operation_bootstrap_consumer": "OPERATION_BOOTSTRAP_LF",
+    "external_digest_rule": "DIGEST materials and compatibility proofs must be hydrated by governed providers before evaluation"
   }
 }
