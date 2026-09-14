@@ -130,3 +130,14 @@ A research-only `pull_request` workflow was added as `.github/workflows/lf-s38-t
 - preserves the subject and generated Sigstore bundle as a short-lived workflow artifact.
 
 The purpose is to test whether the current repository/plan/PR permission model can mint a real external attestation. A successful run is **capability evidence only**, not authorization and not yet a trusted-builder proof.
+
+## Trusted reusable signer pilot
+
+A second pilot freezes the reusable signer at immutable commit `7fa9ce2811e42ddb4c14d27f98a47d11366433eb` and invokes it from a later caller commit. The signer derives repository and candidate SHA from the GitHub caller context rather than from candidate-supplied manifest fields. The verification target is:
+
+- signer workflow identity = `lf-trusted-attestation-reusable-pilot.yml`;
+- signer digest = `7fa9ce2811e42ddb4c14d27f98a47d11366433eb`;
+- source digest = the later caller/candidate commit;
+- subject digest = the generated LF manifest bytes.
+
+If GitHub's certificate separates signer digest from source repository digest as documented for reusable workflows, this architecture gives LF the property IR-007 lacked: a candidate checkout cannot replace the trusted signer without changing the externally verifiable signer digest.
