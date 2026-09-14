@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Fail-closed applicability router for specialized LF contract-check lanes.
 
-Product ownership is declarative and product-agnostic. The router consumes a
-versioned ownership registry and keeps unknown or invalid ownership fail-closed
-instead of granting specialized N/A.
+Product ownership and exact shared-control ownership are declarative. Unknown,
+ambiguous or invalid ownership remains fail-closed instead of granting a
+specialized N/A.
 """
 from __future__ import annotations
 
@@ -24,33 +24,29 @@ RegistryValidationError = _OWNERSHIP.RegistryValidationError
 compile_registry = _OWNERSHIP.compile_registry
 load_registry = _OWNERSHIP.load_registry
 
+_SHARED_OWNERSHIP_PATH = Path(__file__).with_name("lf_shared_ci_control_ownership.py")
+_SHARED_OWNERSHIP_SPEC = importlib.util.spec_from_file_location("lf_shared_ci_control_ownership", _SHARED_OWNERSHIP_PATH)
+if _SHARED_OWNERSHIP_SPEC is None or _SHARED_OWNERSHIP_SPEC.loader is None:
+    raise ImportError(f"cannot load LF shared control ownership helper: {_SHARED_OWNERSHIP_PATH}")
+_SHARED_OWNERSHIP = importlib.util.module_from_spec(_SHARED_OWNERSHIP_SPEC)
+sys.modules[_SHARED_OWNERSHIP_SPEC.name] = _SHARED_OWNERSHIP
+_SHARED_OWNERSHIP_SPEC.loader.exec_module(_SHARED_OWNERSHIP)
+CompiledSharedRegistry = _SHARED_OWNERSHIP.CompiledSharedRegistry
+SharedRegistryValidationError = _SHARED_OWNERSHIP.SharedRegistryValidationError
+compile_shared_registry = _SHARED_OWNERSHIP.compile_shared_registry
+load_shared_registry = _SHARED_OWNERSHIP.load_shared_registry
+
 MIGRATION_PREFIX = "supabase/migrations/"
 MIGRATION_VALIDATOR = "sandbox/lf_contract_gate_test/lf_migration_source_parity.py"
 MIGRATION_TRANSPORT_TEST = "sandbox/lf_contract_gate_test/test_lf_migration_source_parity_transport.py"
 INPUT_GOV_VALIDATOR = "sandbox/lf_contract_gate_test/input_governance_migration_parity_compact.py"
-CI_WORKFLOW = ".github/workflows/lf-contract-check.yml"
-VALIDATE_LF_PACKS_WORKFLOW = ".github/workflows/validate-lf-packs.yml"
-LF_GITHUB_RECONCILE_WORKFLOW = ".github/workflows/lf-github-reconcile-v3.yml"
 CI_ROUTER_PREFIX = "sandbox/lf_contract_gate_test/s28_ci_lane_router/"
-LF_CONTRACT_CHECK_VALIDATOR = "scripts/lf_contract_check.py"
-P0_RUNTIME_ENTRYPOINT = "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py"
-P0_RUNTIME_CORE = "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_CORE_V1.py"
-S26_COMMIT_READBACK_CONTROL = "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_commit_readback_binding.py"
 P0_EXACT_HEAD_EXTERNAL_PREFIX = "supabase/functions/lf-p0-exact-head-evidence-broker-v2/"
 P0_EXACT_HEAD_EXTERNAL_EXACT = frozenset({
     "sandbox/lf_contract_gate_test/p0_exact_head_real_source_ci_v1.py",
     "sandbox/lf_contract_gate_test/p0_exact_head_real_source_ci_v2.py",
     "sandbox/lf_contract_gate_test/p0_exact_head_real_source_v2.json",
     "supabase/config.toml",
-})
-CI_SELFTEST_CONTROLS = frozenset({
-    CI_WORKFLOW,
-    VALIDATE_LF_PACKS_WORKFLOW,
-    LF_GITHUB_RECONCILE_WORKFLOW,
-    LF_CONTRACT_CHECK_VALIDATOR,
-    P0_RUNTIME_ENTRYPOINT,
-    P0_RUNTIME_CORE,
-    S26_COMMIT_READBACK_CONTROL,
 })
 
 # Deliberately excludes the broad sandbox/lf_contract_gate_test/ prefix. Unknown
@@ -145,10 +141,8 @@ def _is_p0_exact_head_external_owner(path: str) -> bool:
     return path.startswith(P0_EXACT_HEAD_EXTERNAL_PREFIX) or path in P0_EXACT_HEAD_EXTERNAL_EXACT
 
 
-def _is_known_shared(path: str, product_known: bool) -> bool:
-    if product_known:
-        return True
-    if path in CI_SELFTEST_CONTROLS:
+def _is_known_shared(path: str, product_known: bool, shared_known: bool) -> bool:
+    if product_known or shared_known:
         return True
     if path.startswith(CI_ROUTER_PREFIX):
         return True
@@ -163,7 +157,16 @@ def _registry_for(registry_data: Mapping[str, Any] | None) -> CompiledRegistry:
     return compile_registry(registry_data) if registry_data is not None else load_registry()
 
 
-def classify(paths: Iterable[str], *, registry_data: Mapping[str, Any] | None = None) -> LaneDecision:
+def _shared_registry_for(shared_registry_data: Mapping[str, Any] | None) -> CompiledSharedRegistry:
+    return compile_shared_registry(shared_registry_data) if shared_registry_data is not None else load_shared_registry()
+
+
+def classify(
+    paths: Iterable[str],
+    *,
+    registry_data: Mapping[str, Any] | None = None,
+    shared_registry_data: Mapping[str, Any] | None = None,
+) -> LaneDecision:
     changed = tuple(sorted({p.strip() for p in paths if p and p.strip()}))
     if not changed:
         return _fail_closed("DEEP_SHARED_EMPTY_FAIL_CLOSED", "NO_CHANGED_PATHS")
@@ -172,6 +175,10 @@ def classify(paths: Iterable[str], *, registry_data: Mapping[str, Any] | None = 
         registry = _registry_for(registry_data)
     except RegistryValidationError as exc:
         return _fail_closed("DEEP_SHARED_REGISTRY_INVALID", f"PRODUCT_REGISTRY_INVALID:{exc.code}")
+    try:
+        shared_registry = _shared_registry_for(shared_registry_data)
+    except SharedRegistryValidationError as exc:
+        return _fail_closed("DEEP_SHARED_REGISTRY_INVALID", f"SHARED_REGISTRY_INVALID:{exc.code}")
 
     migration = False
     input_gov = False
@@ -188,6 +195,7 @@ def classify(paths: Iterable[str], *, registry_data: Mapping[str, Any] | None = 
             product_lane = registry.match(path)
         except RegistryValidationError as exc:
             return _fail_closed("DEEP_SHARED_REGISTRY_INVALID", f"PRODUCT_REGISTRY_INVALID:{exc.code}")
+        shared_control = shared_registry.match(path)
 
         if path.startswith(MIGRATION_PREFIX) or path in {MIGRATION_VALIDATOR, MIGRATION_TRANSPORT_TEST}:
             migration = True
@@ -195,12 +203,20 @@ def classify(paths: Iterable[str], *, registry_data: Mapping[str, Any] | None = 
         if _is_input_governance_migration(path) or path == INPUT_GOV_VALIDATOR:
             input_gov = True
             reasons.append(f"INPUT_GOV:{path}")
-        if path in CI_SELFTEST_CONTROLS or path.startswith(CI_ROUTER_PREFIX):
+        if path.startswith(CI_ROUTER_PREFIX):
             selftest = True
             reasons.append(f"CI_ROUTER_SELFTEST:{path}")
         if _is_p0_exact_head_external_owner(path):
             p0_external = True
             reasons.append(f"P0_EXACT_HEAD_EXTERNAL:{path}")
+
+        if shared_control is not None:
+            migration = migration or shared_control.migration_parity_required
+            input_gov = input_gov or shared_control.input_governance_parity_required
+            selftest = selftest or shared_control.ci_router_selftest_required
+            p0_external = p0_external or shared_control.p0_exact_head_external_required
+            deep_shared = deep_shared or shared_control.deep_shared
+            reasons.append(f"SHARED_CONTROL:{shared_control.control_id}:{path}")
 
         if product_lane is not None:
             migration = migration or product_lane.migration_parity_required
@@ -216,7 +232,11 @@ def classify(paths: Iterable[str], *, registry_data: Mapping[str, Any] | None = 
                 unknown = True
                 reasons.append(f"UNKNOWN_PRODUCT_LANE:{product_lane.lane_id}:{path}")
 
-        if not _is_known_shared(path, product_lane is not None and product_lane.known) and not path.startswith(MIGRATION_PREFIX):
+        if not _is_known_shared(
+            path,
+            product_lane is not None and product_lane.known,
+            shared_control is not None,
+        ) and not path.startswith(MIGRATION_PREFIX):
             unknown = True
             reasons.append(f"UNKNOWN:{path}")
 
