@@ -1,0 +1,37 @@
+{
+  "schema_version": "LF_MATERIAL_CURRENTNESS_BINDING_V1",
+  "authority": {
+    "ref": "refs/heads/main",
+    "bound_revision": "__BOUND_REVISION__",
+    "current_revision": "__CURRENT_REVISION__"
+  },
+  "evidence_revision": "__BOUND_REVISION__",
+  "dependency_completeness": "COMPLETE",
+  "require_ancestor": true,
+  "contract_identity": "S30_GIT_BROKER_CONTROL_PLANE_V1",
+  "implementation_binding": "CURRENT_MAIN_IMPLEMENTATION",
+  "compatibility_contract": {
+    "assessments": []
+  },
+  "materials": [
+    {
+      "material_id": "s30_git_broker_control_plane",
+      "kind": "GIT_TREE",
+      "selectors": {
+        "paths": [
+          ".github/workflows/validate-lf-packs.yml",
+          "gobernanza/contratos/s30_self_governance_gate_v1.json",
+          "gobernanza/judges/validate_s30_self_governance_gate.py"
+        ]
+      },
+      "required": true,
+      "depends_on": [],
+      "consumer_gates": [
+        "S30_GIT_BROKER_WRITE_GATE"
+      ]
+    }
+  ],
+  "root_material_ids": [
+    "s30_git_broker_control_plane"
+  ]
+}
