@@ -184,14 +184,18 @@ WHERE execution_id='EXEC-VINCULACION-REGLA-PANTALLA-PROD-PROMOTION-20260914-001'
 DO $snapshot_guard$
 DECLARE
   c integer;
+  s integer;
 BEGIN
   SELECT count(*) INTO c
   FROM public.v_lf_operation_policy_snapshot
   WHERE operation_code='VINCULACION_REGLA_PANTALLA_LF' AND required;
   IF c<>4 THEN RAISE EXCEPTION 'LF_RULE_SCREEN_PROD_POLICY_COUNT_FAIL:%',c; END IF;
-  IF (SELECT jsonb_object_length(manifest->'operation_policy_snapshots') FROM public.lf_operation_execution WHERE execution_id='EXEC-VINCULACION-REGLA-PANTALLA-PROD-PROMOTION-20260914-001')<>4 THEN
-    RAISE EXCEPTION 'LF_RULE_SCREEN_PROD_POLICY_SNAPSHOT_FAIL';
-  END IF;
+
+  SELECT count(*) INTO s
+  FROM public.lf_operation_execution e,
+       LATERAL jsonb_object_keys(coalesce(e.manifest->'operation_policy_snapshots','{}'::jsonb)) k
+  WHERE e.execution_id='EXEC-VINCULACION-REGLA-PANTALLA-PROD-PROMOTION-20260914-001';
+  IF s<>4 THEN RAISE EXCEPTION 'LF_RULE_SCREEN_PROD_POLICY_SNAPSHOT_FAIL:%',s; END IF;
 END
 $snapshot_guard$;
 
