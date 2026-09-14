@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.16
+LF Contract Check v0.17
 
 Sandbox validator for controlled LF governance gates.
+
+v0.17 changes:
+- Admits only the exact LF Currentness Authority workflow path.
+- Keeps the broad .github/ prefix default-denied.
 
 v0.16 changes:
 - Admits only the exact Profile Creator customer governance caller workflow path.
@@ -102,6 +106,7 @@ ALLOWED_GITHUB_EXACT = {
     ".github/workflows/profile-driven-screen-generation.yml",
     ".github/workflows/input-governance-pr418-holdout-replay.yml",
     ".github/workflows/validate-lf-packs.yml",
+    ".github/workflows/lf-material-currentness.yml",
     PROFILE_CREATOR_CALLER_WORKFLOW_PATH,
 }
 OPERATIONAL_PROTOCOL_ALLOWED_EXACT = {
