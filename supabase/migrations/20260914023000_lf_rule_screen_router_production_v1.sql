@@ -159,6 +159,43 @@ END
 $post$;
 
 UPDATE public.lf_operation_execution
+SET manifest=manifest||jsonb_build_object(
+      'operation_policy_snapshots',(
+        SELECT jsonb_object_agg(
+          policy_role,
+          jsonb_build_object(
+            'policy_code',policy_code,
+            'policy_version',policy_version,
+            'policy_sha',policy_sha,
+            'effective_at',effective_at,
+            'source_ref',source_ref
+          )
+          ORDER BY policy_role
+        )
+        FROM public.v_lf_operation_policy_snapshot
+        WHERE operation_code='VINCULACION_REGLA_PANTALLA_LF'
+          AND required
+          AND policy_sha IS NOT NULL
+      )
+    ),
+    updated_at=now()
+WHERE execution_id='EXEC-VINCULACION-REGLA-PANTALLA-PROD-PROMOTION-20260914-001';
+
+DO $snapshot_guard$
+DECLARE
+  c integer;
+BEGIN
+  SELECT count(*) INTO c
+  FROM public.v_lf_operation_policy_snapshot
+  WHERE operation_code='VINCULACION_REGLA_PANTALLA_LF' AND required;
+  IF c<>4 THEN RAISE EXCEPTION 'LF_RULE_SCREEN_PROD_POLICY_COUNT_FAIL:%',c; END IF;
+  IF (SELECT jsonb_object_length(manifest->'operation_policy_snapshots') FROM public.lf_operation_execution WHERE execution_id='EXEC-VINCULACION-REGLA-PANTALLA-PROD-PROMOTION-20260914-001')<>4 THEN
+    RAISE EXCEPTION 'LF_RULE_SCREEN_PROD_POLICY_SNAPSHOT_FAIL';
+  END IF;
+END
+$snapshot_guard$;
+
+UPDATE public.lf_operation_execution
 SET status='COMPLETED',
     completed_at=now(),
     manifest=manifest||jsonb_build_object(
