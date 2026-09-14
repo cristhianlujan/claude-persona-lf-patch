@@ -1,0 +1,50 @@
+{
+  "schema_version": "LF_MATERIAL_CURRENTNESS_BINDING_V1",
+  "authority": {
+    "ref": "refs/heads/main",
+    "bound_revision": "63cb72970aa7f24fcf7ee61d4544b7dc38099847",
+    "current_revision": "63cb72970aa7f24fcf7ee61d4544b7dc38099847"
+  },
+  "evidence_revision": "63cb72970aa7f24fcf7ee61d4544b7dc38099847",
+  "dependency_completeness": "COMPLETE",
+  "require_ancestor": true,
+  "materials": [
+    {
+      "material_id": "s30_git_broker_control_plane",
+      "kind": "GIT_TREE",
+      "selectors": {
+        "paths": [
+          ".github/workflows/validate-lf-packs.yml",
+          "gobernanza/contratos/s30_self_governance_gate_v1.json",
+          "gobernanza/judges/validate_s30_self_governance_gate.py"
+        ]
+      },
+      "required": true,
+      "depends_on": []
+    },
+    {
+      "material_id": "capability_registry_contract",
+      "kind": "GIT_TREE",
+      "selectors": {
+        "paths": [
+          "supabase/migrations/20260913231613_lf_capability_registry_destination_resolution_v1.sql"
+        ]
+      },
+      "required": true,
+      "depends_on": []
+    },
+    {
+      "material_id": "material_currentness_consumer",
+      "kind": "DIGEST",
+      "bound_digest": "f1e1a5b72687117961383dfa9bf1d488a0d27ed196a79ad4f1830abc57aa3c6c",
+      "current_digest": "f1e1a5b72687117961383dfa9bf1d488a0d27ed196a79ad4f1830abc57aa3c6c",
+      "depends_on": [
+        "s30_git_broker_control_plane",
+        "capability_registry_contract"
+      ]
+    }
+  ],
+  "root_material_ids": [
+    "material_currentness_consumer"
+  ]
+}

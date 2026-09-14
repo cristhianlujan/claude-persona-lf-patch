@@ -1,0 +1,137 @@
+name: LF Currentness Authority
+
+on:
+  pull_request:
+    paths:
+      - 'sandbox/lf_contract_gate_test/material_currentness/**'
+      - '.github/workflows/lf-material-currentness.yml'
+  workflow_dispatch:
+    inputs:
+      binding_path:
+        description: Repository path to LF_MATERIAL_CURRENTNESS_BINDING_V1 JSON
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      binding_path:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install --disable-pip-version-check pytest==8.3.5
+      - name: Currentness authority, broker bridge and attestation regressions
+        run: python -m pytest -q sandbox/lf_contract_gate_test/material_currentness/test_*.py
+      - name: Resolve PR base authority once
+        id: pr_authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "refs/heads/${GITHUB_BASE_REF}:refs/remotes/origin/${GITHUB_BASE_REF}" --no-tags
+          echo "current_revision=$(git rev-parse refs/remotes/origin/${GITHUB_BASE_REF})" >> "$GITHUB_OUTPUT"
+      - name: First real CURRENTNESS_AUTHORITY case
+        shell: bash
+        env:
+          CURRENT_REVISION: ${{ steps.pr_authority.outputs.current_revision }}
+        run: |
+          set -euo pipefail
+          python sandbox/lf_contract_gate_test/material_currentness/lf_currentness_authority_v1.py \
+            --repo . \
+            --binding sandbox/lf_contract_gate_test/material_currentness/first_real_case_binding.json \
+            --current-revision "$CURRENT_REVISION" \
+            --output /tmp/lf_currentness_authority_first_real_case_receipt.json
+          cat /tmp/lf_currentness_authority_first_real_case_receipt.json
+      - name: Create candidate source attestation and verify it offline
+        shell: bash
+        env:
+          CURRENT_REVISION: ${{ steps.pr_authority.outputs.current_revision }}
+        run: |
+          set -euo pipefail
+          python sandbox/lf_contract_gate_test/material_currentness/lf_source_attestation_v1.py create \
+            --repo . \
+            --repo-identity github://cristhianlujan/claude-persona-lf-patch \
+            --authority-ref "refs/heads/${GITHUB_BASE_REF}" \
+            --resolved-revision "$CURRENT_REVISION" \
+            --binding sandbox/lf_contract_gate_test/material_currentness/first_real_case_binding.json \
+            --output /tmp/lf_source_attestation.json
+          python sandbox/lf_contract_gate_test/material_currentness/lf_source_attestation_v1.py verify \
+            --repo . \
+            --receipt /tmp/lf_source_attestation.json \
+            --expected-repo-identity github://cristhianlujan/claude-persona-lf-patch \
+            --expected-authority-ref "refs/heads/${GITHUB_BASE_REF}" \
+            --binding sandbox/lf_contract_gate_test/material_currentness/first_real_case_binding.json
+      - name: First real broker compatibility bridge case
+        shell: bash
+        env:
+          CURRENT_REVISION: ${{ steps.pr_authority.outputs.current_revision }}
+          BOUND_REVISION: 63cb72970aa7f24fcf7ee61d4544b7dc38099847
+        run: |
+          set -euo pipefail
+          python sandbox/lf_contract_gate_test/material_currentness/lf_broker_currentness_bridge_v1.py \
+            --repo . \
+            --binding sandbox/lf_contract_gate_test/material_currentness/first_real_case_binding.json \
+            --base-revision "$BOUND_REVISION" \
+            --current-revision "$CURRENT_REVISION" \
+            --output /tmp/lf_broker_currentness_bridge_first_real_case_receipt.json
+          cat /tmp/lf_broker_currentness_bridge_first_real_case_receipt.json
+
+  evaluate-current:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Resolve moving authority once
+        id: authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin refs/heads/main:refs/remotes/origin/main --no-tags
+          echo "current_revision=$(git rev-parse refs/remotes/origin/main)" >> "$GITHUB_OUTPUT"
+      - name: Evaluate declared materials offline
+        shell: bash
+        env:
+          BINDING_PATH: ${{ inputs.binding_path }}
+          CURRENT_REVISION: ${{ steps.authority.outputs.current_revision }}
+        run: |
+          set -euo pipefail
+          test -f "$BINDING_PATH" || { echo "BLOCK_MATERIAL_CURRENTNESS_BINDING_MISSING=$BINDING_PATH" >&2; exit 2; }
+          python sandbox/lf_contract_gate_test/material_currentness/lf_currentness_authority_v1.py \
+            --repo . \
+            --binding "$BINDING_PATH" \
+            --current-revision "$CURRENT_REVISION" \
+            --output /tmp/lf_currentness_authority_receipt.json
+          cat /tmp/lf_currentness_authority_receipt.json
+      - name: Attest resolved authority once for offline reuse
+        shell: bash
+        env:
+          BINDING_PATH: ${{ inputs.binding_path }}
+          CURRENT_REVISION: ${{ steps.authority.outputs.current_revision }}
+        run: |
+          set -euo pipefail
+          python sandbox/lf_contract_gate_test/material_currentness/lf_source_attestation_v1.py create \
+            --repo . \
+            --repo-identity github://cristhianlujan/claude-persona-lf-patch \
+            --authority-ref refs/heads/main \
+            --resolved-revision "$CURRENT_REVISION" \
+            --binding "$BINDING_PATH" \
+            --output /tmp/lf_source_attestation.json
+          python sandbox/lf_contract_gate_test/material_currentness/lf_source_attestation_v1.py verify \
+            --repo . \
+            --receipt /tmp/lf_source_attestation.json \
+            --expected-repo-identity github://cristhianlujan/claude-persona-lf-patch \
+            --expected-authority-ref refs/heads/main \
+            --binding "$BINDING_PATH"
