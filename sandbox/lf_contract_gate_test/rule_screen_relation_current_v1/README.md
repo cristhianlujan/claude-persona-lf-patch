@@ -18,6 +18,7 @@ The PR for this lane must remain exclusive to:
 
 - `sandbox/lf_contract_gate_test/rule_screen_relation_current_v1/README.md`
 - `sandbox/lf_contract_gate_test/rule_screen_relation_current_v1/rule_screen_relation_current_rollback_canary_v1.sql`
+- `sandbox/lf_contract_gate_test/rule_screen_relation_current_v1/current_lane_manifest_v1.json`
 
 No migrations, workflow changes, shared validators, Router patches, production state changes, S26/S30/S31 assets, or unrelated producer files belong in this PR.
 
