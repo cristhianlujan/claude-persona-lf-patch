@@ -1,0 +1,115 @@
+{
+  "$id": "https://lf.local/s38/runtime-execution-port/v0.2-candidate",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "authority_decisions_forbidden": {
+      "items": {
+        "enum": [
+          "AUTHORITY",
+          "CURRENTNESS",
+          "CARD_APPLICABILITY",
+          "PROMOTION",
+          "GOLDEN",
+          "PRODUCTION"
+        ]
+      },
+      "minItems": 6,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "execution_budget": {
+      "additionalProperties": false,
+      "properties": {
+        "max_output_units": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "max_runtime_ms": {
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "max_runtime_ms",
+        "max_output_units"
+      ],
+      "type": "object"
+    },
+    "governed_input": {},
+    "output_contract_ref": {
+      "minLength": 2,
+      "type": "string"
+    },
+    "port_version": {
+      "const": "LF_RUNTIME_EXECUTION_PORT_V0_2_CANDIDATE"
+    },
+    "request_id": {
+      "minLength": 2,
+      "type": "string"
+    },
+    "runtime_policy": {
+      "additionalProperties": false,
+      "properties": {
+        "provider_or_adapter": {
+          "minLength": 2,
+          "type": "string"
+        },
+        "silent_fallback_allowed": {
+          "const": false
+        }
+      },
+      "required": [
+        "provider_or_adapter",
+        "silent_fallback_allowed"
+      ],
+      "type": "object"
+    },
+    "typed_context_ref": {
+      "minLength": 2,
+      "type": "string"
+    },
+    "typed_context_resolver_id": {
+      "const": "S38_GOVERNED_REF_RESOLVER_V4"
+    },
+    "typed_context_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "port_version",
+    "request_id",
+    "typed_context_ref",
+    "typed_context_sha256",
+    "typed_context_resolver_id",
+    "governed_input",
+    "output_contract_ref",
+    "execution_budget",
+    "runtime_policy",
+    "authority_decisions_forbidden"
+  ],
+  "title": "LF Runtime Execution Port v0.2 Candidate",
+  "type": "object",
+  "x_lf_input_boundary": {
+    "governed_input_and_request_id_must_match_resolved_typed_context": true,
+    "typed_context_ref_must_be_trusted_resolver_backed": true,
+    "typed_context_revision_must_be_current_content": true,
+    "typed_context_sha256_must_equal_provider_bytes": true
+  },
+  "x_lf_output_contract": {
+    "forbidden_authority_effects": [
+      "AUTHORIZE_DOWNSTREAM",
+      "PROMOTE_GOLDEN",
+      "ENABLE_PRODUCTION",
+      "ALTER_AUTHORITY"
+    ],
+    "required": [
+      "raw_output",
+      "runtime_receipt",
+      "transport_diagnostics",
+      "resource_usage",
+      "failure_code"
+    ]
+  }
+}

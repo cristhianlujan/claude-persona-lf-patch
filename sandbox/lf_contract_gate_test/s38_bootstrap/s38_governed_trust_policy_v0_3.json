@@ -1,0 +1,38 @@
+{
+  "authorization": {
+    "golden": "NONE",
+    "merge": "NONE",
+    "production": "NONE",
+    "runtime": "NONE",
+    "scheduler": "NONE"
+  },
+  "canonical_repository_override_allowed": false,
+  "claim_tier": {
+    "behavioral_requires_independent_witness": true,
+    "max_without_independent_witness": "PROVENANCE_EXECUTION",
+    "order": [
+      "STRUCTURAL",
+      "PROVENANCE_EXECUTION",
+      "SEMANTIC",
+      "BEHAVIORAL"
+    ],
+    "semantic_requires_independent_witness": true,
+    "unallowlisted_witness_action": "BLOCK_F_CLAIM_TIER_NOT_EARNED",
+    "witness_allowlist": []
+  },
+  "currentness": {
+    "archival_registry": [
+      {
+        "asset_id": "S38-ARCHIVAL-RENAME-TEST-FIXTURE",
+        "historical_ref": "github://cristhianlujan/claude-persona-lf-patch@be6c0f8a320c5cdcfa242ee775ba769745eb82df/profiles/ui_architect/schemas/runtime_output.schema.json",
+        "scope": "TEST_ONLY_ARCHIVAL_CURRENTNESS_PROOF",
+        "sha256": "bed06e7a37a82a6e1baa9b1da4edb7969456ce64c4270fdd8e5db0f14845d425",
+        "status": "CURRENT"
+      }
+    ],
+    "mode": "PATH_AT_ARTIFACT_HEAD_OR_ARCHIVAL_REGISTRY"
+  },
+  "policy_version": "S38_GOVERNED_TRUST_POLICY_V0_3",
+  "repository_identity_source": "EXTERNAL_BOOTSTRAP_CONSTANTS_PLUS_GITHUB_API_ATTESTATION",
+  "resolver_id": "S38_GOVERNED_REF_RESOLVER_V4"
+}

@@ -1,0 +1,113 @@
+{
+  "receipt_version": "S38_IR008_REPAIR_V0_1",
+  "source_review_case_id": "S38-DG-IR-007",
+  "source_review_verdict": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+  "source_review_score": 15,
+  "independent_receipt": {
+    "path": "sandbox/lf_contract_gate_test/s38_bootstrap/s38_dg_ir007_independent_receipt_v0_1.json",
+    "sha256": "ac149cc2d710daeb1d3da571694ea3e02a317c4cd4e548af1404692e43e3ceaa",
+    "frozen_quality_pack_validation": "VALID_ERRORS_EMPTY"
+  },
+  "repair_candidate_head": "aeeac1b30713bc67421f212854c94595b6f6d975",
+  "comparison_base": "41b47f8ac6da3f83d164ecc8aa46852dd64fdbf0",
+  "exclusive_lane": {
+    "pull_request": 775,
+    "head_branch": "lf/s38-ir008-repair-gpt-exclusive-20260914",
+    "base_branch": "lf/s38-ir008-repair-base-gpt-exclusive-20260914",
+    "base_sha": "41b47f8ac6da3f83d164ecc8aa46852dd64fdbf0",
+    "maintainer_can_modify": false,
+    "force_push_used": false,
+    "rebase_used": false,
+    "shared_branch_writes": false
+  },
+  "source_blockers": [
+    "BLOCK_NEXT_GATE_RESOLVER_TRUST_ANCHOR_STILL_SELF_REFERENTIAL_UNDER_WHOLE_CHECKOUT_TAMPER",
+    "BLOCK_NEXT_GATE_ENFORCED_CONTRACT_SURFACE_INCOMPLETE_G_AND_E_AND_HARNESS_NOT_BYTE_ANCHORED",
+    "BLOCK_NEXT_GATE_CLAIM_TIER_AND_ARCHIVAL_REGISTRY_INHERIT_THE_UNCLOSED_POLICY_ROOT",
+    "BLOCK_NEXT_GATE_G_BOUNDARY_UNDECLARED_SURFACE_NOT_FAIL_CLOSED"
+  ],
+  "producer_repair_disposition": {
+    "trust_anchor": "REPAIRED_PENDING_INDEPENDENT_IR008",
+    "contract_surface": "REPAIRED_PENDING_INDEPENDENT_IR008",
+    "claim_tier_policy_root": "REPAIRED_PENDING_INDEPENDENT_IR008",
+    "archival_policy_root": "REPAIRED_PENDING_INDEPENDENT_IR008",
+    "g_undeclared_surface": "REPAIRED_PENDING_INDEPENDENT_IR008",
+    "historical_identity_pins": "REPAIRED_PENDING_INDEPENDENT_IR008",
+    "attestation_reproducibility": "REPAIRED_PENDING_INDEPENDENT_IR008"
+  },
+  "trusted_signer": {
+    "workflow_ref": "cristhianlujan/claude-persona-lf-patch/.github/workflows/lf-trusted-attestation-reusable-v1.yml@b464326ed6c6db0e93959588b952a74e5fc2fe30",
+    "expected_signer_digest": "b464326ed6c6db0e93959588b952a74e5fc2fe30",
+    "signer_pr": 773,
+    "expected_digest_delivery": "OUT_OF_BAND_TO_INDEPENDENT_REVIEWER"
+  },
+  "external_attestation": {
+    "caller_commit": "95e0b57e6cb944d61f80b99819967c1bb9402272",
+    "workflow_run_id": 34843395522,
+    "conclusion": "success",
+    "subject_sha256": "789c155987731dcf616dfe691d27e5d352eb2621a496b3f9be65cb698ad36f25",
+    "subject_candidate_sha": "aeeac1b30713bc67421f212854c94595b6f6d975",
+    "runtime_tcb_count": 8,
+    "evidence_tcb_count": 3,
+    "quality_pack_count": 2,
+    "historical_pin_count": 16,
+    "authority_all_none": true,
+    "offline_verification_after_bootstrap": {
+      "iterations": 50,
+      "passes": 50,
+      "elapsed_seconds": 4
+    },
+    "tampered_subject": "FAIL_CLOSED",
+    "wrong_signer_digest": "FAIL_CLOSED",
+    "wrong_caller_source_digest": "FAIL_CLOSED"
+  },
+  "repair_mechanics": {
+    "resolver_id": "S38_GOVERNED_REF_RESOLVER_V4",
+    "resolver_network_calls": 0,
+    "resolver_github_rest_calls": 0,
+    "runtime_tcb_signed": true,
+    "evidence_tcb_signed": true,
+    "strict_e_schema_load_bearing": true,
+    "strict_g_request_schema_load_bearing": true,
+    "strict_g_output_schema_load_bearing": true,
+    "historical_pins_explicit": 16,
+    "claim_tier_max_without_independent_witness": "PROVENANCE_EXECUTION",
+    "semantic_or_behavioral_promotion_authorized": false
+  },
+  "deterministic_execution": {
+    "s38_v0_7": {
+      "positive_cases": 6,
+      "negative_fail_closed_cases": 23,
+      "result": "PASS"
+    },
+    "historical_s31": {
+      "test_files": 13,
+      "failures": 0,
+      "result": "PASS"
+    }
+  },
+  "ci_evidence": {
+    "candidate_validate_lf_packs": {
+      "conclusion": "success"
+    },
+    "candidate_pr_lf_contract_check": {
+      "run_id": 34843568100,
+      "conclusion": "failure",
+      "failed_step": "Enforce LF migration source parity after checkpoint",
+      "causal_to_s38_ir008_repair": false,
+      "disposition": "OUT_OF_SCOPE_SHARED_MIGRATION_PARITY_DEBT"
+    }
+  },
+  "claim_ceiling": "DETERMINISTIC_PROVENANCE_REPAIR_EVIDENCE_ONLY",
+  "independent_status": "PENDING_S38_DG_IR_008",
+  "authorization": {
+    "merge": "NONE",
+    "golden": "NONE",
+    "runtime": "NONE",
+    "scheduler": "NONE",
+    "production": "NONE",
+    "promotion": "NONE",
+    "supabase_mutation": "NONE",
+    "secret_or_key_provisioning": "NONE"
+  }
+}

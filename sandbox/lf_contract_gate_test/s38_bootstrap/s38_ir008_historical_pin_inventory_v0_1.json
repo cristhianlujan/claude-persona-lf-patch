@@ -1,0 +1,87 @@
+{
+  "explicitly_untrusted_same_content_revision": "e75cab6e71c0f880f72726439e952de78ea4931f",
+  "inventory_version": "S38_IR008_HISTORICAL_PIN_INVENTORY_V0_1",
+  "pins": [
+    {
+      "blob_sha": "8b1672d7b00d9a8b2da0461d41bfa300551e592b",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@191b53fca993bf28aefccf5e1e67007ad9a35dfa/sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/source_authority.txt",
+      "sha256": "73729407e4723f00a5848babb8039feacbe876561e7459473ae4715dbc0c46bc"
+    },
+    {
+      "blob_sha": "3bba324c1a6c377c6f864ab08679d05c6b915645",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@191b53fca993bf28aefccf5e1e67007ad9a35dfa/sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/provenance_source.txt",
+      "sha256": "e1dbd6467d351be354bc99a10265ebaa0eac926c200ef1b038c12f27a0126c1c"
+    },
+    {
+      "blob_sha": "92d1babe6e28878673e46e423ea848c5204de29c",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@191b53fca993bf28aefccf5e1e67007ad9a35dfa/sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/d_currentness_receipt.json",
+      "sha256": "48fb3829ed0d2048c10289d300f9c8590e0cab1e54f696dc9823b62ed2f577da"
+    },
+    {
+      "blob_sha": "17fe39eb909936f84320b213f8b5330226610e9b",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@191b53fca993bf28aefccf5e1e67007ad9a35dfa/sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/source_runtime_schema.json",
+      "sha256": "e7e4d1bd2fd616767627be2c87f29b7e46a12b0642dc1de220fccda3d49c4318"
+    },
+    {
+      "blob_sha": "282ab464fba14130003222c8f1ea6dab6cd90eb6",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@191b53fca993bf28aefccf5e1e67007ad9a35dfa/sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/source_registry.py",
+      "sha256": "f1d3239a4c01b96cdaa468169cae356bab995068e097afd2a3f2c17b1ae83c5f"
+    },
+    {
+      "blob_sha": "7bbb3a1de468c1f59e2d25fdc08d40f02a164d59",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@191b53fca993bf28aefccf5e1e67007ad9a35dfa/sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/e_currentness_receipt.json",
+      "sha256": "1cafdacc16c68f1279e691efdb59558a2885ce0f84658cdf3fead1ccb079cb65"
+    },
+    {
+      "blob_sha": "327db4b2b5201e7fb494f55fb3ea899b3770a625",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@01f53ca5fb3d4d060e482fce64bddaeb1c383eae/sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/typed_context.json",
+      "sha256": "e0ff76be8a4d1f93d6eb1479f92a3bab1c8bbd00aa650d089401642d0341018e"
+    },
+    {
+      "blob_sha": "87d110918cec67f4a91cdabdc3dd7563a90cd9cf",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@01f53ca5fb3d4d060e482fce64bddaeb1c383eae/sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/typed_context_invalid_authority.json",
+      "sha256": "292b60d70ebb80da3e646cb2608e0163869610e7cb51297215e38980c5930bf0"
+    },
+    {
+      "blob_sha": "3b0327f7847c94a17019d6ad843e1c10e220ec29",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@01f53ca5fb3d4d060e482fce64bddaeb1c383eae/sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_execution_receipt_v0_4.json",
+      "sha256": "b86ce1e24b34201a2dd2939f26011cab4687af48cecfc185332d9025112d5b58"
+    },
+    {
+      "blob_sha": "fc6daf4ccfad2a1fee3f91baa21e08b9dafb01eb",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@01f53ca5fb3d4d060e482fce64bddaeb1c383eae/sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_authority_receipt_v0_4.json",
+      "sha256": "603b8305a3f6109425f7fbf8ce4e63e17f2baf9ee2741ac61c484ff0416069f1"
+    },
+    {
+      "blob_sha": "477884e50a0409ad4ff86d168b7e417a150a3a7d",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@01f53ca5fb3d4d060e482fce64bddaeb1c383eae/sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_provenance_receipt_v0_4.json",
+      "sha256": "bba6ea0c50f1aa490e83618669b75f624d1d7cfde8b898e922ad7b5436703d88"
+    },
+    {
+      "blob_sha": "7fabba34e712edf370e59f21d1ba8fa64800fd94",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@2c6435542dc4f3fa588afa9d80ca5e92740e62ef/sandbox/lf_contract_gate_test/s38_bootstrap/trusted_evidence/f_owner_receipt_v0_5.json",
+      "sha256": "31fa663981b0ba6c0327b4d6211eb739fe7713a1973d47692b576951f5d448cf"
+    },
+    {
+      "blob_sha": "095989f4308af14e2ff083d7e7b7ec2d6e84b483",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@2c6435542dc4f3fa588afa9d80ca5e92740e62ef/sandbox/lf_contract_gate_test/s38_bootstrap/trusted_evidence/f_execution_receipt_v0_5.json",
+      "sha256": "452ed615337bbefd86990e76d8e862da0cffbaa847b5af9406d05afdaca208b0"
+    },
+    {
+      "blob_sha": "d27192b3bcb94da88ec746919c3ee2d07754a9dd",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@2c6435542dc4f3fa588afa9d80ca5e92740e62ef/sandbox/lf_contract_gate_test/s38_bootstrap/trusted_evidence/f_authority_receipt_v0_5.json",
+      "sha256": "b99d72a42fa35698e5d0f788f823b147275e94dd004465146c88b34b928034c0"
+    },
+    {
+      "blob_sha": "950f79f434e2f81355ae240f53c8d7b9ca9a2b2d",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@2c6435542dc4f3fa588afa9d80ca5e92740e62ef/sandbox/lf_contract_gate_test/s38_bootstrap/trusted_evidence/f_provenance_receipt_v0_5.json",
+      "sha256": "9f72e392cab966f0850fc4be0bc0ad48d72ac4af82fd8e2aeb55b3f2e3307b03"
+    },
+    {
+      "blob_sha": "bd5508872ff19e9946ba8a8fe7d0eb94ffa7f5d2",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@be6c0f8a320c5cdcfa242ee775ba769745eb82df/profiles/ui_architect/schemas/runtime_output.schema.json",
+      "sha256": "bed06e7a37a82a6e1baa9b1da4edb7969456ce64c4270fdd8e5db0f14845d425"
+    }
+  ],
+  "repository": "cristhianlujan/claude-persona-lf-patch"
+}

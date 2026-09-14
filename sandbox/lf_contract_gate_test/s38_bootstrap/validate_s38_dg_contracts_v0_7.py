@@ -1,0 +1,337 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
+from typing import Any, Mapping
+
+from jsonschema import Draft7Validator
+
+from s38_governed_resolution_v0_4 import (
+    PASS as TRUST_PASS,
+    BLOCKED,
+    S38GovernedRefResolver,
+    resolve_json_binding,
+    resolve_source,
+)
+
+PASS = "PASS"
+ROOT = Path(__file__).resolve().parent
+S31_ROOT = ROOT.parent / "s31_bootstrap"
+D_SCHEMA_REL = "sandbox/lf_contract_gate_test/s31_bootstrap/lf_shared_authority_typed_context_v0_2_candidate.schema.json"
+F_SCHEMA_REL = "sandbox/lf_contract_gate_test/s38_bootstrap/lf_common_evidence_envelope_v0_7_candidate.schema.json"
+E_SCHEMA_REL = "sandbox/lf_contract_gate_test/s31_bootstrap/lf_capability_manifest_v0_3_candidate.schema.json"
+G_REQUEST_SCHEMA_REL = "sandbox/lf_contract_gate_test/s38_bootstrap/lf_runtime_execution_port_v0_2_candidate.schema.json"
+G_OUTPUT_SCHEMA_REL = "sandbox/lf_contract_gate_test/s38_bootstrap/lf_runtime_execution_output_v0_2_candidate.schema.json"
+TRUSTED_RESOLVER_ID = "S38_GOVERNED_REF_RESOLVER_V4"
+EvidenceResolver = S38GovernedRefResolver
+CROSS_BINDING_VERSION = "S38_F_CROSS_BINDING_V0_3"
+CARD_MODES = {"EXACT", "COMPATIBLE", "COMPOSED", "GENERIC_SAFE"}
+FORBIDDEN_AUTHORITY_EFFECTS = {"AUTHORIZE_DOWNSTREAM", "PROMOTE_GOLDEN", "ENABLE_PRODUCTION", "ALTER_AUTHORITY"}
+FORBIDDEN_AUTHORITY_FLAGS = {"downstream_authorized", "golden_authorized", "production_authorized"}
+REQUIRED_RUNTIME_OUTPUT_FIELDS = {"raw_output", "runtime_receipt", "transport_diagnostics", "resource_usage", "failure_code"}
+
+def _policy(resolver: EvidenceResolver) -> Mapping[str, Any]:
+    return resolver.policy_snapshot
+
+def _tier_order(resolver: EvidenceResolver) -> dict[str, int]:
+    return {name:i for i,name in enumerate(_policy(resolver)["claim_tier"]["order"])}
+
+
+def _block(code: str, **extra: Any) -> dict[str, Any]:
+    return {"status": BLOCKED, "code": code, **extra}
+
+
+def _canonical_digest(value: Any) -> str:
+    raw = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()
+
+
+def _resolve_binding(binding, expected_type, resolver, producer_id, label, *, require_current_content=True):
+    resolved, record, provider = resolve_json_binding(
+        resolver, binding, expected_type, label, require_current_content=require_current_content
+    )
+    if resolved.get("status") != TRUST_PASS:
+        return _block(resolved.get("code", "BLOCK_TRUSTED_EVIDENCE"), **{k:v for k,v in resolved.items() if k not in {"status","code"}}), None, provider
+    if producer_id == TRUSTED_RESOLVER_ID:
+        return _block("BLOCK_EVIDENCE_SELF_RESOLVER", binding=label), None, provider
+    return {"status": PASS, "code": "PASS_RESOLVED_EVIDENCE", "binding": label}, record, provider
+
+
+def validate_shared_typed_context(value: Mapping[str, Any], resolver: EvidenceResolver | None = None) -> dict[str, Any]:
+    producer_id = str(value.get("producer_id") or "")
+    current_run_id = value.get("current_run_id")
+    card = value.get("card_resolution") or {}
+    status = card.get("status"); mode = card.get("mode")
+    if status == "RESOLVED" and mode not in CARD_MODES:
+        return _block("BLOCK_D_RESOLVED_CARD_MODE_INVALID", mode=mode)
+    if status in {"NO_DIRECT_CARD", "AMBIGUOUS", "BLOCKED"} and mode is not None:
+        return _block("BLOCK_D_NONRESOLVED_CARD_HAS_MODE", status=status, mode=mode)
+    if card.get("schema_invention_allowed") is not False:
+        return _block("BLOCK_D_SCHEMA_INVENTION_ALLOWED")
+    for index, authority in enumerate(value.get("authority_resolution") or []):
+        if not isinstance(authority, Mapping):
+            return _block("BLOCK_D_AUTHORITY_SHAPE", index=index)
+        run_id = authority.get("run_id")
+        if run_id != current_run_id and authority.get("cross_run_declared") is not True:
+            return _block("BLOCK_D_UNDECLARED_CROSS_RUN_AUTHORITY", index=index, run_id=run_id)
+        refs = list(authority.get("source_refs") or [])
+        if len(refs) != 1:
+            return _block("BLOCK_D_SOURCE_DIGEST_MODEL_AMBIGUOUS", index=index)
+        src_status, _src = resolve_source(resolver, refs[0], authority.get("source_sha256"), f"authority_resolution[{index}].source", require_current_content=True)
+        if src_status.get("status") != TRUST_PASS:
+            return _block(src_status.get("code"), **{k:v for k,v in src_status.items() if k not in {"status","code"}})
+        resolved, receipt, _provider = _resolve_binding(authority.get("currentness_evidence"), "SOURCE_CURRENTNESS_RECEIPT", resolver, producer_id, f"authority_resolution[{index}].currentness_evidence")
+        if resolved.get("status") != PASS:
+            return resolved
+        if receipt.get("run_id") != current_run_id:
+            return _block("BLOCK_D_AUTHORITY_CURRENTNESS_MISMATCH", index=index)
+    runtime_schema = value.get("runtime_schema") or {}
+    if runtime_schema.get("schema_invention_allowed") is not False:
+        return _block("BLOCK_D_RUNTIME_SCHEMA_INVENTION_ALLOWED")
+    src_status, _src = resolve_source(resolver, runtime_schema.get("source_ref"), runtime_schema.get("sha256"), "runtime_schema.source", require_current_content=True)
+    if src_status.get("status") != TRUST_PASS:
+        return _block(src_status.get("code"), **{k:v for k,v in src_status.items() if k not in {"status","code"}})
+    resolved, receipt, _provider = _resolve_binding(runtime_schema.get("currentness_evidence"), "SOURCE_CURRENTNESS_RECEIPT", resolver, producer_id, "runtime_schema.currentness_evidence")
+    if resolved.get("status") != PASS:
+        return resolved
+    if receipt.get("run_id") != current_run_id:
+        return _block("BLOCK_D_RUNTIME_SCHEMA_CURRENTNESS_MISMATCH")
+    if value.get("provenance_reconstructible") is not True:
+        return _block("BLOCK_D_PROVENANCE_NOT_RECONSTRUCTIBLE")
+    return {"status": PASS, "code": "PASS_D_SHARED_TYPED_CONTEXT_S38_V0_6"}
+
+
+def validate_registry_inventory_schema(inventory: Mapping[str, Any], schema: Mapping[str, Any]) -> dict[str, Any]:
+    declared = inventory.get("required_capability_manifest_fields") or []
+    target = schema.get("required") or []
+    if len(declared) != len(set(declared)):
+        return _block("BLOCK_E_INVENTORY_DUPLICATE_REQUIRED_FIELD")
+    if set(declared) != set(target):
+        return _block("BLOCK_E_SOURCE_MODEL_REQUIRED_FIELDS_MISMATCH", inventory_only=sorted(set(declared)-set(target)), schema_only=sorted(set(target)-set(declared)))
+    if "lifecycle_state" in declared or "lifecycle" not in declared:
+        return _block("BLOCK_E_LIFECYCLE_FIELD_CONTRACT_MISMATCH")
+    return {"status": PASS, "code": "PASS_E_SOURCE_MODEL_CONSISTENT"}
+
+
+def validate_capability_manifest(value: Mapping[str, Any], resolver: EvidenceResolver | None = None) -> dict[str, Any]:
+    if type(resolver) is not S38GovernedRefResolver or resolver.verified is not True: return _block("BLOCK_UNTRUSTED_RESOLVER_TYPE")
+    schema=resolver.load_json_at_artifact_head(E_SCHEMA_REL)
+    errors=sorted(Draft7Validator(schema).iter_errors(value),key=lambda e:list(e.path))
+    if errors: return _block("BLOCK_E_MANIFEST_SCHEMA_INVALID",errors=[{"path":"/".join(map(str,e.path)),"message":e.message} for e in errors[:12]])
+    lifecycle = value.get("lifecycle") or {}
+    if lifecycle.get("self_certification_allowed") is not False:
+        return _block("BLOCK_E_SELF_CERTIFICATION")
+    if lifecycle.get("canonical_vocabulary_status") != "UNRESOLVED":
+        return _block("BLOCK_E_LIFECYCLE_VOCABULARY_OVERCLAIM")
+    currentness = value.get("currentness_binding") or {}
+    if currentness.get("stale_action") != "FAIL_CLOSED":
+        return _block("BLOCK_E_STALE_NOT_FAIL_CLOSED")
+    refs = list(value.get("source_refs") or []); digests = list(value.get("source_digests") or [])
+    if len(refs) != len(digests):
+        return _block("BLOCK_E_SOURCE_BINDING_CARDINALITY", refs=len(refs), digests=len(digests))
+    dependencies = value.get("dependencies") or []
+    dep_ids = [d.get("capability_id") for d in dependencies if isinstance(d, Mapping)]
+    if len(dep_ids) != len(set(dep_ids)):
+        return _block("BLOCK_E_DUPLICATE_DEPENDENCY")
+    for index, (ref, digest) in enumerate(zip(refs, digests)):
+        status, _observed = resolve_source(resolver, ref, digest, f"source_refs[{index}]", require_current_content=True)
+        if status.get("status") != TRUST_PASS:
+            return _block(status.get("code"), **{k:v for k,v in status.items() if k not in {"status","code"}})
+    binding = {"ref": currentness.get("evidence_ref"), "sha256": currentness.get("evidence_sha256"), "resolver_id": currentness.get("resolver_id")}
+    resolved, _receipt, _provider = _resolve_binding(binding, "CAPABILITY_CURRENTNESS_RECEIPT", resolver, str(value.get("owner") or ""), "currentness_binding")
+    if resolved.get("status") != PASS:
+        return resolved
+    return {"status": PASS, "code": "PASS_E_CAPABILITY_MANIFEST_S38_V0_7"}
+
+
+def _cross_binding_identity(value, input_sources, authority_provider, provenance_sources):
+    input_obj=value.get("input") or {}; output_obj=value.get("output") or {}; execution=value.get("execution_identity") or {}; authority=value.get("authority") or {}
+    return {
+        "run_id": value.get("run_id"),
+        "capability_or_gate_id": value.get("capability_or_gate_id"),
+        "evidence_level": value.get("evidence_level"),
+        "claim_ceiling": value.get("claim_ceiling"),
+        "execution_id": execution.get("execution_id"),
+        "input_digest": input_obj.get("digest"),
+        "output_digest": output_obj.get("digest"),
+        "input_sources": input_sources,
+        "authority": {"source":authority.get("source"),"ref":authority.get("source_ref"),"sha256":authority.get("source_digest"),"revision":authority_provider.get("revision")},
+        "provenance": provenance_sources,
+    }
+
+
+def _earned_tier(value: Mapping[str, Any], resolver: EvidenceResolver) -> tuple[str | None, dict[str, Any] | None]:
+    level = value.get("evidence_level")
+    policy = _policy(resolver); order = _tier_order(resolver)
+    base = policy["claim_tier"]["max_without_independent_witness"]
+    if order.get(level, 99) <= order[base]:
+        return level, None
+    witness = ((value.get("extensions") or {}).get("s38.claim_witness"))
+    allow = policy["claim_tier"].get("witness_allowlist") or []
+    if not isinstance(witness, Mapping):
+        return None, _block("BLOCK_F_CLAIM_TIER_NOT_EARNED", requested=level, earned=base, reason="INDEPENDENT_WITNESS_REQUIRED")
+    match = None
+    for item in allow:
+        if isinstance(item, Mapping) and item.get("ref") == witness.get("ref") and item.get("sha256") == witness.get("sha256"):
+            match = item; break
+    if match is None:
+        return None, _block("BLOCK_F_CLAIM_TIER_NOT_EARNED", requested=level, earned=base, reason="WITNESS_NOT_ALLOWLISTED")
+    max_tier = match.get("max_tier")
+    if max_tier not in order or order[level] > order[max_tier]:
+        return None, _block("BLOCK_F_CLAIM_TIER_NOT_EARNED", requested=level, earned=max_tier, reason="WITNESS_CEILING")
+    status, record, _provider = resolve_json_binding(resolver, witness, "INDEPENDENT_CLAIM_TIER_WITNESS", "claim_tier_witness", require_current_content=True)
+    if status.get("status") != PASS:
+        return None, _block(status.get("code"), **{k:v for k,v in status.items() if k not in {"status","code"}})
+    if record.get("reviewer_is_producer") is not False or record.get("producer_context_available") is not False:
+        return None, _block("BLOCK_F_CLAIM_TIER_WITNESS_NOT_INDEPENDENT")
+    return max_tier, None
+
+
+def validate_evidence_envelope(value: Mapping[str, Any], resolver: EvidenceResolver | None = None) -> dict[str, Any]:
+    schema = resolver.load_json_at_artifact_head(F_SCHEMA_REL) if type(resolver) is S38GovernedRefResolver and resolver.verified is True else {}
+    errors = sorted(Draft7Validator(schema).iter_errors(value), key=lambda e: list(e.path))
+    if errors:
+        return _block("BLOCK_F_ENVELOPE_SCHEMA_INVALID", errors=[{"path":"/".join(map(str,e.path)),"message":e.message} for e in errors[:12]])
+    if type(resolver) is not S38GovernedRefResolver or resolver.verified is not True:
+        return _block("BLOCK_UNTRUSTED_RESOLVER_TYPE")
+    level=value.get("evidence_level"); ceiling=value.get("claim_ceiling")
+    order = _tier_order(resolver)
+    if level not in order or ceiling not in order:
+        return _block("BLOCK_F_EVIDENCE_LEVEL_UNKNOWN")
+    earned, earned_error = _earned_tier(value, resolver)
+    if earned_error:
+        return earned_error
+    if order[level] > order[earned] or order[ceiling] > order[earned]:
+        return _block("BLOCK_F_CLAIM_TIER_NOT_EARNED", requested=max(level, ceiling, key=lambda x:order[x]), earned=earned)
+
+    owner=value.get("owner_receipt") or {}
+    if owner.get("preserved_without_rewrite") is not True:
+        return _block("BLOCK_F_OWNER_RECEIPT_NOT_PRESERVED")
+    producer_id=str(value.get("producer_id") or "")
+    resolved, owner_record, _owner_provider = _resolve_binding(owner, "OWNER_RECEIPT", resolver, producer_id, "owner_receipt", require_current_content=True)
+    if resolved.get("status") != PASS: return resolved
+    if owner_record.get("owner_capability_id") != value.get("capability_or_gate_id"):
+        return _block("BLOCK_F_OWNER_CAPABILITY_BINDING_MISMATCH", expected=value.get("capability_or_gate_id"), observed=owner_record.get("owner_capability_id"))
+    if owner_record.get("run_id") != value.get("run_id"):
+        return _block("BLOCK_F_OWNER_RECEIPT_MISMATCH")
+
+    input_obj=value.get("input") or {}; output_obj=value.get("output") or {}
+    if _canonical_digest(input_obj.get("exact")) != input_obj.get("digest"): return _block("BLOCK_F_INPUT_DIGEST_MISMATCH")
+    if _canonical_digest(output_obj.get("exact")) != output_obj.get("digest"): return _block("BLOCK_F_OUTPUT_DIGEST_MISMATCH")
+    input_refs=list(input_obj.get("source_refs") or []); input_digests=list(input_obj.get("source_digests") or [])
+    if len(input_refs)!=len(input_digests): return _block("BLOCK_F_INPUT_SOURCE_BINDING_CARDINALITY")
+    input_sources=[]
+    for index,(ref,digest) in enumerate(zip(input_refs,input_digests)):
+        status, provider=resolve_source(resolver,ref,digest,f"input.source_refs[{index}]",require_current_content=True)
+        if status.get("status") != PASS: return _block(status.get("code"), **{k:v for k,v in status.items() if k not in {"status","code"}})
+        input_sources.append({"ref":ref,"sha256":digest,"revision":provider.get("revision")})
+    if level == "STRUCTURAL":
+        return {"status":PASS,"code":"PASS_F_STRUCTURAL_EVIDENCE_ENVELOPE_S38_V0_6","earned_tier":"STRUCTURAL"}
+
+    execution=value.get("execution_identity") or {}; authority=value.get("authority") or {}; provenance=value.get("provenance") or {}
+    if execution.get("executed") is not True: return _block("BLOCK_F_NONSTRUCTURAL_NOT_EXECUTED")
+    if authority.get("currentness") != "CURRENT": return _block("BLOCK_F_NONSTRUCTURAL_AUTHORITY_NOT_CURRENT")
+    if provenance.get("reconstructible") is not True: return _block("BLOCK_F_NONSTRUCTURAL_PROVENANCE_NOT_RECONSTRUCTIBLE")
+    execution_sha=execution.get("executed_sha")
+    if not isinstance(execution_sha,str) or len(execution_sha)!=40: return _block("BLOCK_F_EXECUTION_SHA_INVALID")
+    auth_status, auth_provider=resolve_source(resolver,authority.get("source_ref"),authority.get("source_digest"),"authority.source_ref",require_current_content=True)
+    if auth_status.get("status") != PASS: return _block(auth_status.get("code"), **{k:v for k,v in auth_status.items() if k not in {"status","code"}})
+    if auth_provider.get("revision") != authority.get("source_revision"):
+        return _block("BLOCK_F_AUTHORITY_SOURCE_REVISION_MISMATCH", expected=authority.get("source_revision"), observed=auth_provider.get("revision"))
+    prov_refs=list(provenance.get("refs") or []); prov_digests=list(provenance.get("digests") or [])
+    if len(prov_refs)!=len(prov_digests): return _block("BLOCK_F_PROVENANCE_BINDING_CARDINALITY")
+    provenance_sources=[]
+    for index,(ref,digest) in enumerate(zip(prov_refs,prov_digests)):
+        status, provider=resolve_source(resolver,ref,digest,f"provenance.refs[{index}]",require_current_content=True)
+        if status.get("status") != PASS: return _block(status.get("code"), **{k:v for k,v in status.items() if k not in {"status","code"}})
+        provenance_sources.append({"ref":ref,"sha256":digest,"revision":provider.get("revision")})
+
+    bindings=value.get("resolved_evidence") or {}; receipts={}; providers={}
+    for key,etype in (("execution_receipt","EXECUTION_RECEIPT"),("authority_currentness_receipt","AUTHORITY_CURRENTNESS_RECEIPT"),("provenance_receipt","PROVENANCE_RECEIPT")):
+        r, record, provider = _resolve_binding(bindings.get(key), etype, resolver, producer_id, key, require_current_content=True)
+        if r.get("status") != PASS: return r
+        receipts[key]=record; providers[key]=provider
+    if providers["execution_receipt"].get("revision") != execution_sha:
+        return _block("BLOCK_F_EXECUTION_RECEIPT_REVISION_MISMATCH", expected=execution_sha, observed=providers["execution_receipt"].get("revision"))
+    exec_expected={"run_id":value.get("run_id"),"capability_or_gate_id":value.get("capability_or_gate_id"),"executed":True,"execution_id":execution.get("execution_id"),"input_digest":input_obj.get("digest"),"output_digest":output_obj.get("digest")}
+    mismatches={k:{"expected":v,"observed":receipts["execution_receipt"].get(k)} for k,v in exec_expected.items() if receipts["execution_receipt"].get(k)!=v}
+    if mismatches: return _block("BLOCK_F_EXECUTION_RECEIPT_MISMATCH",mismatches=mismatches)
+    auth_expected={"run_id":value.get("run_id"),"capability_or_gate_id":value.get("capability_or_gate_id"),"authority_source":authority.get("source"),"authority_source_digest":authority.get("source_digest"),"currentness":"CURRENT"}
+    mismatches={k:{"expected":v,"observed":receipts["authority_currentness_receipt"].get(k)} for k,v in auth_expected.items() if receipts["authority_currentness_receipt"].get(k)!=v}
+    if mismatches: return _block("BLOCK_F_AUTHORITY_CURRENTNESS_RECEIPT_MISMATCH",mismatches=mismatches)
+    prov_expected={"run_id":value.get("run_id"),"capability_or_gate_id":value.get("capability_or_gate_id"),"execution_id":execution.get("execution_id"),"reconstructible":True,"provenance_digests":prov_digests}
+    mismatches={k:{"expected":v,"observed":receipts["provenance_receipt"].get(k)} for k,v in prov_expected.items() if receipts["provenance_receipt"].get(k)!=v}
+    if mismatches: return _block("BLOCK_F_PROVENANCE_RECEIPT_MISMATCH",mismatches=mismatches)
+
+    identity=_cross_binding_identity(value,input_sources,auth_provider,provenance_sources)
+    expected_cross=_canonical_digest(identity)
+    for key,record in receipts.items():
+        if record.get("cross_binding_version") != CROSS_BINDING_VERSION:
+            return _block("BLOCK_F_CROSS_BINDING_VERSION_MISMATCH",binding=key,expected=CROSS_BINDING_VERSION,observed=record.get("cross_binding_version"))
+        if record.get("evidence_level") != level or record.get("claim_ceiling") != ceiling:
+            return _block("BLOCK_F_CLAIM_TIER_BINDING_MISMATCH",binding=key)
+        if record.get("cross_binding_sha256") != expected_cross:
+            return _block("BLOCK_F_CROSS_BINDING_DIGEST_MISMATCH",binding=key,expected=expected_cross,observed=record.get("cross_binding_sha256"))
+    return {"status":PASS,"code":"PASS_F_EVIDENCE_ENVELOPE_S38_V0_7_EARNED","earned_tier":earned,"cross_binding_sha256":expected_cross}
+
+
+def validate_runtime_port_request(value: Mapping[str, Any], resolver: EvidenceResolver | None = None) -> dict[str, Any]:
+    if type(resolver) is not S38GovernedRefResolver or resolver.verified is not True: return _block("BLOCK_UNTRUSTED_RESOLVER_TYPE")
+    schema=resolver.load_json_at_artifact_head(G_REQUEST_SCHEMA_REL)
+    errors=sorted(Draft7Validator(schema).iter_errors(value),key=lambda e:list(e.path))
+    if errors: return _block("BLOCK_G_REQUEST_SCHEMA_INVALID",errors=[{"path":"/".join(map(str,e.path)),"message":e.message} for e in errors[:12]])
+    runtime_policy=value.get("runtime_policy") or {}
+    if runtime_policy.get("silent_fallback_allowed") is not False: return _block("BLOCK_G_SILENT_FALLBACK_ALLOWED")
+    forbidden=value.get("authority_decisions_forbidden") or []
+    expected={"AUTHORITY","CURRENTNESS","CARD_APPLICABILITY","PROMOTION","GOLDEN","PRODUCTION"}
+    if set(forbidden)!=expected: return _block("BLOCK_G_AUTHORITY_FORBIDDEN_SET_INCOMPLETE",observed=sorted(set(forbidden)))
+    if value.get("typed_context_resolver_id") != TRUSTED_RESOLVER_ID: return _block("BLOCK_G_UNTRUSTED_TYPED_CONTEXT_RESOLVER")
+    status, observed=resolve_source(resolver,value.get("typed_context_ref"),value.get("typed_context_sha256"),"typed_context_ref",require_current_content=True)
+    if status.get("status") != PASS: return _block(status.get("code"), **{k:v for k,v in status.items() if k not in {"status","code"}})
+    try: context=json.loads(observed["raw"].decode("utf-8"))
+    except Exception: return _block("BLOCK_G_TYPED_CONTEXT_NOT_JSON")
+    schema=resolver.load_json_at_artifact_head(D_SCHEMA_REL)
+    errors=sorted(Draft7Validator(schema).iter_errors(context),key=lambda e:list(e.path))
+    if errors: return _block("BLOCK_G_TYPED_CONTEXT_SCHEMA_INVALID",errors=[{"path":"/".join(map(str,e.path)),"message":e.message} for e in errors[:12]])
+    if context.get("current_run_id") != value.get("request_id"): return _block("BLOCK_G_TYPED_CONTEXT_REQUEST_ID_MISMATCH")
+    if ((context.get("input") or {}).get("input_fields")) != value.get("governed_input"): return _block("BLOCK_G_TYPED_CONTEXT_GOVERNED_INPUT_MISMATCH")
+    semantic=validate_shared_typed_context(context,resolver)
+    if semantic.get("status") != PASS: return _block("BLOCK_G_TYPED_CONTEXT_SEMANTIC_GOVERNANCE",nested_code=semantic.get("code"))
+    return {"status":PASS,"code":"PASS_G_RUNTIME_PORT_REQUEST_S38_V0_7"}
+
+
+def _scan_runtime_receipt(node: Any, path: str = "runtime_receipt"):
+    if isinstance(node, Mapping):
+        for key,val in node.items():
+            p=f"{path}.{key}"
+            if key in FORBIDDEN_AUTHORITY_FLAGS and val is True: return _block("BLOCK_G_NESTED_AUTHORITY_FLAG",path=p)
+            if key=="authority_grants_allowed" and val is not False: return _block("BLOCK_G_NESTED_AUTHORITY_GRANT_ALLOWED",path=p)
+            if key=="authority_effects":
+                if not isinstance(val,list): return _block("BLOCK_G_NESTED_AUTHORITY_EFFECT_SHAPE",path=p)
+                bad=sorted(set(val)&FORBIDDEN_AUTHORITY_EFFECTS)
+                if bad: return _block("BLOCK_G_NESTED_AUTHORITY_EFFECT",path=p,effects=bad)
+                if val: return _block("BLOCK_G_UNDECLARED_AUTHORITY_EFFECT",path=p)
+            nested=_scan_runtime_receipt(val,p)
+            if nested: return nested
+    elif isinstance(node,list):
+        for i,val in enumerate(node):
+            nested=_scan_runtime_receipt(val,f"{path}[{i}]")
+            if nested: return nested
+    return None
+
+
+def validate_runtime_port_output(value: Mapping[str, Any], resolver: EvidenceResolver | None = None) -> dict[str, Any]:
+    if type(resolver) is not S38GovernedRefResolver or resolver.verified is not True: return _block("BLOCK_UNTRUSTED_RESOLVER_TYPE")
+    schema=resolver.load_json_at_artifact_head(G_OUTPUT_SCHEMA_REL)
+    errors=sorted(Draft7Validator(schema).iter_errors(value),key=lambda e:list(e.path))
+    if errors: return _block("BLOCK_G_OUTPUT_SCHEMA_INVALID",errors=[{"path":"/".join(map(str,e.path)),"message":e.message} for e in errors[:12]])
+    missing=sorted(REQUIRED_RUNTIME_OUTPUT_FIELDS-set(value))
+    if missing: return _block("BLOCK_G_RUNTIME_OUTPUT_FIELDS_MISSING",missing=missing)
+    receipt=value.get("runtime_receipt")
+    if not isinstance(receipt,Mapping): return _block("BLOCK_G_RUNTIME_RECEIPT_SHAPE")
+    nested=_scan_runtime_receipt(receipt)
+    if nested: return nested
+    if receipt.get("authority_grants_allowed") is not False: return _block("BLOCK_G_RUNTIME_RECEIPT_AUTHORITY_BOUNDARY_MISSING")
+    return {"status":PASS,"code":"PASS_G_RUNTIME_PORT_OUTPUT_S38_V0_7"}
