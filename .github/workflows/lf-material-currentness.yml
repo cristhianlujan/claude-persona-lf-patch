@@ -66,9 +66,13 @@ jobs:
             --resolved-revision "$CURRENT_REVISION" \
             --binding sandbox/lf_contract_gate_test/material_currentness/first_real_case_binding.json \
             --output /tmp/lf_source_attestation.json
+          RECEIPT_SHA=$(python -c 'import json; print(json.load(open("/tmp/lf_source_attestation.json"))["receipt_sha256"])')
           python sandbox/lf_contract_gate_test/material_currentness/lf_source_attestation_v1.py verify \
             --repo . \
-            --receipt /tmp/lf_source_attestation.json
+            --receipt /tmp/lf_source_attestation.json \
+            --expected-repo-identity github://cristhianlujan/claude-persona-lf-patch \
+            --expected-issuer LF_GIT_BROKER_ATTESTOR \
+            --expected-receipt-sha256 "$RECEIPT_SHA"
       - name: First real broker compatibility bridge case
         shell: bash
         env:
@@ -126,6 +130,10 @@ jobs:
             --resolved-revision "$CURRENT_REVISION" \
             --binding "$BINDING_PATH" \
             --output /tmp/lf_source_attestation.json
+          RECEIPT_SHA=$(python -c 'import json; print(json.load(open("/tmp/lf_source_attestation.json"))["receipt_sha256"])')
           python sandbox/lf_contract_gate_test/material_currentness/lf_source_attestation_v1.py verify \
             --repo . \
-            --receipt /tmp/lf_source_attestation.json
+            --receipt /tmp/lf_source_attestation.json \
+            --expected-repo-identity github://cristhianlujan/claude-persona-lf-patch \
+            --expected-issuer LF_GIT_BROKER_ATTESTOR \
+            --expected-receipt-sha256 "$RECEIPT_SHA"
