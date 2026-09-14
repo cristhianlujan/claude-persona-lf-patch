@@ -141,3 +141,35 @@ A second pilot freezes the reusable signer at immutable commit `7fa9ce2811e42ddb
 - subject digest = the generated LF manifest bytes.
 
 If GitHub's certificate separates signer digest from source repository digest as documented for reusable workflows, this architecture gives LF the property IR-007 lacked: a candidate checkout cannot replace the trusted signer without changing the externally verifiable signer digest.
+
+## Live pilot result — preferred architecture validated
+
+The reusable-signer pilot succeeded and materially changes the recommendation from theoretical to demonstrated:
+
+- trusted reusable signer commit: `7fa9ce2811e42ddb4c14d27f98a47d11366433eb`;
+- caller/source commit: `485a99164a2b81d5c93f39a6f785e0b076b38a86`;
+- attested subject SHA-256: `778a9b2faf35745f1b739d3b9f61fa261f6c052999ad33d9f20f998c092653f6`;
+- certificate `buildSignerDigest` = trusted signer commit;
+- certificate `sourceRepositoryDigest` = caller/source commit;
+- one verified Sigstore timestamp;
+- offline verification with downloaded bundle + trusted root succeeded 100/100 times while all HTTP/HTTPS/ALL proxy variables were pointed to an unusable local endpoint and GitHub auth variables were removed;
+- tampered subject, wrong signer digest and wrong source digest all failed closed.
+
+This demonstrates the separation IR-007 lacked: **the signer identity can be frozen independently from the changing candidate/source digest**.
+
+A first direct `pull_request` pilot also succeeded, but its certificate bound `sourceRepositoryDigest` to the GitHub PR merge SHA (`9a2d1d8321d545a7d84baa28591053a41a492fb7`), not the PR head. Therefore the direct PR workflow is not the recommended LF candidate-binding primitive. The trusted reusable signer invoked from a push/caller context gives the cleaner separation.
+
+### Updated recommendation
+
+Proceed with the GitHub Artifact Attestation architecture, using a reusable signer frozen at an immutable commit and independently enforcing:
+
+- repository identity;
+- signer workflow identity;
+- signer digest;
+- source/candidate digest;
+- subject-manifest digest;
+- Sigstore trusted root.
+
+For the independent review, download the attestation bundle and trusted root once. All adversarial cases then verify offline and do not consume GitHub REST quota per resolver/test construction.
+
+This is still provenance, not semantic approval. IR-008 remains unstarted until the production contract and out-of-band signer-digest provisioning rule are approved.
