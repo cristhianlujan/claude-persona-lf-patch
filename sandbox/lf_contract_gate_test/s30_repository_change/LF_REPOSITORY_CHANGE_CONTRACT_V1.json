@@ -1,0 +1,90 @@
+{
+  "contract_code": "LF_REPOSITORY_CHANGE_CONTRACT_V1",
+  "owner": "S30",
+  "claim_ceiling": "SOURCE_CANDIDATE_NO_REPOSITORY_MUTATION",
+  "purpose": "Govern repository mutation admission and evidence independently from business-operation semantics and transport implementation.",
+  "separation_of_concerns": {
+    "business_operation_owns": [
+      "semantic change intent",
+      "allowed asset identity",
+      "business validation",
+      "operation-specific step result vocabulary"
+    ],
+    "repository_change_owns": [
+      "repository identity",
+      "target branch identity",
+      "expected pre-write head",
+      "exact allowed paths",
+      "immutable request hash",
+      "idempotency key",
+      "governed transport provider binding",
+      "write receipt identity",
+      "post-write head",
+      "changed path readback",
+      "content/blob readback",
+      "unknown-outcome reconciliation disposition"
+    ],
+    "currentness_and_attestation_owned_elsewhere": "Consume S31/Git Broker authority receipts; do not implement source attestation or material currentness here.",
+    "merge_owned_elsewhere": "Merge to main is a separate authority and is never implied by repository-change PASS."
+  },
+  "pre_write_invariants": [
+    "repository_full_name is exact and allowlisted by the owning operation",
+    "target_branch is explicit and must not be main/master",
+    "expected_head is a 40-hex immutable commit SHA",
+    "request_sha256 is a 64-hex digest over canonical request material",
+    "idempotency_key is non-empty and stable across retries",
+    "allowed_paths is non-empty, duplicate-free, and contains no traversal",
+    "requested_paths is non-empty and is a subset of allowed_paths",
+    "owner_code and operation_code are explicit",
+    "transport_provider_ref is explicit and governed",
+    "authority_receipt_ref is explicit and binds repository/currentness context",
+    "direct GitHub connector/API mutation by the consumer is forbidden",
+    "proxy/TLS bypass by the consumer is forbidden",
+    "blind redispatch after unknown outcome is forbidden"
+  ],
+  "post_write_invariants": [
+    "receipt request_sha256 and idempotency_key equal the request",
+    "receipt repository and branch equal the request",
+    "receipt before_head equals expected_head",
+    "receipt after_head is a 40-hex commit SHA and differs only when mutation occurred",
+    "receipt changed_paths exactly equals the intended changed path set",
+    "every changed path has immutable readback evidence",
+    "post-write remote head equals receipt after_head",
+    "transport provider identity/version is recorded",
+    "unknown outcome returns RECONCILIATION_REQUIRED and must not be redispatched",
+    "repository-change PASS does not authorize merge, runtime, Golden, or production"
+  ],
+  "result_vocabulary": [
+    "PASS_REPOSITORY_CHANGE_WITH_READBACK",
+    "NOOP_IDEMPOTENT_ALREADY_APPLIED",
+    "BLOCK_STALE_HEAD",
+    "BLOCK_SCOPE_VIOLATION",
+    "BLOCK_PROVIDER_NOT_GOVERNED",
+    "BLOCK_REQUEST_IDENTITY_MISMATCH",
+    "BLOCK_READBACK_MISMATCH",
+    "RECONCILIATION_REQUIRED_UNKNOWN_OUTCOME"
+  ],
+  "provider_interface": {
+    "required_capabilities": [
+      "exact_head_precondition",
+      "bounded_path_write",
+      "idempotent_request_binding",
+      "post_write_remote_head_readback",
+      "content_or_blob_readback",
+      "receipt_emission"
+    ],
+    "forbidden_consumer_behaviors": [
+      "direct_unscoped_push",
+      "direct_api_write",
+      "force_push",
+      "write_to_main",
+      "blind_retry_after_unknown_outcome"
+    ],
+    "existing_s30_provider": {
+      "name": "S30_GIT_WRITE_BROKER_V2",
+      "scope": "S30 protected branch namespace only",
+      "not_claimed_as_universal": true
+    }
+  },
+  "handoff_to_s31": "Productize provider/binding/receipt capability only after S30 invariants are accepted; reuse existing Git Broker and CURRENTNESS_AUTHORITY instead of adding parallel transport or attestation."
+}
