@@ -1,0 +1,22 @@
+{
+  "disposition_version": "S38_IR006_GOVERNANCE_DISPOSITION_V0_1",
+  "source_review_case_id": "S38-DG-IR-006",
+  "source_verdict": "PASS_WITH_RESTRICTIONS",
+  "status": "RETURN_TO_PRODUCER_REPAIR_REQUIRED",
+  "repair_lane": "S38-DG-IR-007",
+  "required_repairs": [
+    "EXTERNAL_REPOSITORY_TRUST_ANCHOR",
+    "BYTE_ANCHOR_ALL_ENFORCED_CONTRACT_SURFACE",
+    "POLICY_SNAPSHOT_FOR_TIER_AND_ARCHIVAL",
+    "SCRUB_CALLER_TRANSPORT_ENV",
+    "HISTORICAL_PIN_MODEL",
+    "EXPAND_MANDATORY_ATTACK_HARNESS"
+  ],
+  "authorization": {
+    "merge": "NONE",
+    "golden": "NONE",
+    "runtime": "NONE",
+    "scheduler": "NONE",
+    "production": "NONE"
+  }
+}

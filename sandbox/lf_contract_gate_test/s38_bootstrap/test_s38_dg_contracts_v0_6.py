@@ -160,5 +160,62 @@ except ResolutionError: NEG+=1
 x=f_base(); x['capability_or_gate_id']='S38-F-OTHER'; res=m.validate_evidence_envelope(x,R); assert res['code']=='BLOCK_F_OWNER_CAPABILITY_BINDING_MISMATCH',res; NEG+=1
 x=g_request('typed_context.json'); x['governed_input']={'prompt':'tampered'}; res=m.validate_runtime_port_request(x,R); assert res['code']=='BLOCK_G_TYPED_CONTEXT_GOVERNED_INPUT_MISMATCH',res; NEG+=1
 x=g_request('typed_context.json'); x['authority_decisions_forbidden'].remove('GOLDEN'); res=m.validate_runtime_port_request(x,R); assert res['code']=='BLOCK_G_AUTHORITY_FORBIDDEN_SET_INCOMPLETE',res; NEG+=1
+
+# Canonical-policy tamper before resolver construction fails against the fixed canonical remote.
+with tempfile.TemporaryDirectory() as attack_td:
+    attack_root=Path(attack_td)/'repo'
+    subprocess.run(['git','clone','-q','--branch','lf/s38-ir007-repair-gpt-exclusive-20260913','https://github.com/cristhianlujan/claude-persona-lf-patch.git',str(attack_root)],check=True)
+    pol=attack_root/'sandbox/lf_contract_gate_test/s38_bootstrap/s38_governed_trust_policy_v0_2.json'
+    obj=json.loads(pol.read_text()); obj['claim_tier']['max_without_independent_witness']='BEHAVIORAL'; obj['canonical_repository']={'remote_url':'https://attacker.invalid/evil.git'}; pol.write_text(json.dumps(obj))
+    mod_path=attack_root/'sandbox/lf_contract_gate_test/s38_bootstrap/s38_governed_resolution_v0_3.py'
+    spec=importlib.util.spec_from_file_location('s38_policy_tamper_resolver',mod_path); tampered=importlib.util.module_from_spec(spec); sys.modules[spec.name]=tampered; spec.loader.exec_module(tampered)
+    try:
+        tampered.S38GovernedRefResolver(); raise AssertionError('policy-tampered resolver unexpectedly constructed')
+    except tampered.ResolutionError as exc:
+        assert exc.code=='BLOCK_GOVERNED_ARTIFACT_BYTE_MISMATCH',exc.code
+    NEG+=1
+
+# Enforced schema tamper before construction is load-bearing and fails closed.
+with tempfile.TemporaryDirectory() as attack_td:
+    attack_root=Path(attack_td)/'repo'
+    subprocess.run(['git','clone','-q','--branch','lf/s38-ir007-repair-gpt-exclusive-20260913','https://github.com/cristhianlujan/claude-persona-lf-patch.git',str(attack_root)],check=True)
+    sch=attack_root/'sandbox/lf_contract_gate_test/s38_bootstrap/lf_common_evidence_envelope_v0_6_candidate.schema.json'
+    obj=json.loads(sch.read_text()); obj['additionalProperties']=True; sch.write_text(json.dumps(obj))
+    mod_path=attack_root/'sandbox/lf_contract_gate_test/s38_bootstrap/s38_governed_resolution_v0_3.py'
+    spec=importlib.util.spec_from_file_location('s38_schema_tamper_resolver',mod_path); tampered=importlib.util.module_from_spec(spec); sys.modules[spec.name]=tampered; spec.loader.exec_module(tampered)
+    try:
+        tampered.S38GovernedRefResolver(); raise AssertionError('schema-tampered resolver unexpectedly constructed')
+    except tampered.ResolutionError as exc:
+        assert exc.code=='BLOCK_GOVERNED_ARTIFACT_BYTE_MISMATCH',exc.code
+    NEG+=1
+
+# Unregistered archival identity remains fail-closed.
+parent=subprocess.check_output(['git','-C',str(R.root),'rev-parse','be6c0f8a320c5cdcfa242ee775ba769745eb82df^'],text=True).strip()
+alt_ref=f'github://{REPO}@{parent}/profiles/ui_architect/schemas/runtime_output.schema.json'
+try:
+    alt_obs=R.resolve(alt_ref)
+    status,_=resolve_source(R,alt_ref,alt_obs['sha256'],'archive-unregistered',require_current_content=True)
+    assert status['code']=='BLOCK_PROVIDER_SOURCE_STALE',status
+    NEG+=1
+except ResolutionError:
+    NEG+=1
+
+# Authority/provenance replay without the v0.5 common binding fails closed.
+for key,name in (('authority_currentness_receipt','f_authority_receipt_v0_4.json'),('provenance_receipt','f_provenance_receipt_v0_4.json')):
+    x=f_base(); x['resolved_evidence'][key]=bind(f'{OLD_E}/{name}',BASE)
+    res=m.validate_evidence_envelope(x,R)
+    assert res['status']!=m.PASS,(key,res)
+    NEG+=1
+
+# Same-content historical identity substitutions remain bound to exact identity.
+ALT_HIST='e75cab6e71c0f880f72726439e952de78ea4931f'
+for attack in ('input','authority','provenance'):
+    x=f_base()
+    if attack=='input': x['input']['source_refs']=[ref(f'{OLD_E}/provenance_source.txt',ALT_HIST)]
+    elif attack=='authority': x['authority']['source_ref']=ref(f'{OLD_E}/source_authority.txt',ALT_HIST); x['authority']['source_revision']=ALT_HIST
+    else: x['provenance']['refs']=[ref(f'{OLD_E}/provenance_source.txt',ALT_HIST)]
+    res=m.validate_evidence_envelope(x,R)
+    assert res['status']!=m.PASS,(attack,res)
+    NEG+=1
 print(json.dumps({'contract':'S38_DG_IR006_RESTRICTION_REPAIR_V0_6','positive_cases':POS,'negative_fail_closed_cases':NEG,'evidence_revision':EVIDENCE_REV,'cross_binding_sha256':EXPECTED,'resolver_id':TRUST,'result':'PASS'},sort_keys=True))
 R.close()

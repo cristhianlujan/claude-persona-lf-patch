@@ -1,0 +1,30 @@
+{
+  "intake_version": "S38_IR006_INDEPENDENT_REVIEW_INTAKE_V0_1",
+  "review_case_id": "S38-DG-IR-006",
+  "source_bundle_ref": "github://cristhianlujan/claude-persona-lf-patch@21094d2b4ad4781ea80f79ac43c3c7b043ddf760/sandbox/lf_contract_gate_test/s38_bootstrap/s38_dg_independent_review_bundle_v0_2.json",
+  "source_bundle_blob": "3991ba4b335305da3d4e2f96f231d5346c5c0bdb",
+  "verdict": "PASS_WITH_RESTRICTIONS",
+  "score": 20,
+  "user_supplied_receipt_json_sha256": "af11f4d353f9db7d1d846df5b21f6cdccc504ce64f07a65abbb6c0fe3a4ac978",
+  "blocking_codes": [
+    "BLOCK_NEXT_GATE_RESOLVER_TRUST_ANCHOR_SELF_REFERENTIAL_CANONICAL_REMOTE",
+    "BLOCK_NEXT_GATE_ENFORCED_CONTRACT_SURFACE_NOT_BYTE_ANCHORED",
+    "BLOCK_NEXT_GATE_CLAIM_TIER_CEILING_AND_ARCHIVAL_REGISTRY_SHARE_UNANCHORED_POLICY_ROOT"
+  ],
+  "independent_summary": {
+    "checks": 60,
+    "fail_closed": 46,
+    "falsified_closures": 2,
+    "residual_risk": 2,
+    "frozen_pins": "43/43"
+  },
+  "claim_ceiling": "DETERMINISTIC_REPAIR_EVIDENCE_ONLY / PROVENANCE_EXECUTION",
+  "authorization": {
+    "merge": "NONE",
+    "golden": "NONE",
+    "runtime": "NONE",
+    "scheduler": "NONE",
+    "production": "NONE"
+  },
+  "note": "Compact producer intake of the independently supplied receipt; not a substitute for the original receipt bytes or independent semantic proof."
+}
