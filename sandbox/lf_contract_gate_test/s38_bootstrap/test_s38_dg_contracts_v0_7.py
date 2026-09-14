@@ -7,7 +7,7 @@ REPO_ROOT=Path(subprocess.check_output(['git','-C',str(ROOT),'rev-parse','--show
 S31=ROOT.parent/'s31_bootstrap'; sys.path[:0]=[str(ROOT),str(S31)]
 import validate_s38_dg_contracts_v0_7 as m
 from s38_governed_resolution_v0_4 import S38GovernedRefResolver,ResolutionError,RUNTIME_TCB_PATHS,EVIDENCE_TCB_PATHS,canonical_manifest_bytes,resolve_source
-EXPECTED_SIGNER='af0bdbf1a135bc54cb681aa2a27ac5c6a99356a7'
+EXPECTED_SIGNER='b464326ed6c6db0e93959588b952a74e5fc2fe30'
 REPO='cristhianlujan/claude-persona-lf-patch'; HIST='191b53fca993bf28aefccf5e1e67007ad9a35dfa'; BASE='01f53ca5fb3d4d060e482fce64bddaeb1c383eae'; EVIDENCE='2c6435542dc4f3fa588afa9d80ca5e92740e62ef'; ALT='e75cab6e71c0f880f72726439e952de78ea4931f'
 OLD='sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence'; NEW='sandbox/lf_contract_gate_test/s38_bootstrap/trusted_evidence'
 def git(*a,binary=False):
