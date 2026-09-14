@@ -1,6 +1,3 @@
--- Covering indexes for capability registry foreign keys reported by Supabase performance advisor.
--- Scope: only objects introduced by lf_capability_registry_destination_resolution_v1.
-
 create index if not exists idx_lf_capability_version_supersedes
   on public.lf_capability_version_registry (capability_code, supersedes_version)
   where supersedes_version is not null;
