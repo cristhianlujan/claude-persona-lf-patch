@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import subprocess
 import tempfile
@@ -56,6 +57,18 @@ def _sha256(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
+def _canonical_remote_env() -> dict[str, str]:
+    env = dict(os.environ)
+    for key in list(env):
+        if key.startswith("GIT_CONFIG_") or key in {"GIT_DIR", "GIT_WORK_TREE", "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES"}:
+            env.pop(key, None)
+    env["GIT_CONFIG_GLOBAL"] = "/dev/null"
+    env["GIT_CONFIG_SYSTEM"] = "/dev/null"
+    env["GIT_CONFIG_NOSYSTEM"] = "1"
+    env["GIT_TERMINAL_PROMPT"] = "0"
+    return env
+
+
 class S38GovernedRefResolver:
     """Resolver whose authority is bound to canonical remote bytes, not caller root.
 
@@ -83,7 +96,7 @@ class S38GovernedRefResolver:
         self.head = self.artifact_head
         self._tmp = tempfile.TemporaryDirectory(prefix="s38-governed-resolver-")
         self.cache = Path(self._tmp.name) / "objects.git"
-        subprocess.run(["git", "init", "--bare", "-q", str(self.cache)], check=True)
+        subprocess.run(["git", "init", "--bare", "-q", str(self.cache)], check=True, env=_canonical_remote_env())
         try:
             self._fetch_commit(self.artifact_head)
         except ResolutionError as exc:
@@ -117,6 +130,7 @@ class S38GovernedRefResolver:
             ["git", "-C", str(self.cache), "fetch", "-q", "--depth=1", self.remote_url, revision],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            env=_canonical_remote_env(),
         )
         if p.returncode != 0:
             raise ResolutionError(
