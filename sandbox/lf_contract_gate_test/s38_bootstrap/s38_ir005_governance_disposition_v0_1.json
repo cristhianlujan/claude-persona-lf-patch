@@ -1,0 +1,80 @@
+{
+  "disposition_version": "S38_IR005_GOVERNANCE_DISPOSITION_V0_1",
+  "historical_source_review_case_id": "S31-DG-IR-005",
+  "historical_source_review_verdict": "PASS_WITH_RESTRICTIONS",
+  "historical_source_review_score": 21,
+  "status": "PRODUCER_GOVERNANCE_DISPOSITION_RECOMMENDATION",
+  "historical_independent_receipt": {
+    "artifact_ref": "github://cristhianlujan/claude-persona-lf-patch@007d4f43176f1b5b5fe17401eb531856d2ae2537/sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_ir005_independent_receipt_v0_1.json",
+    "blob_sha": "92d18d5eefbc108668c64bccd16ad21203a45265",
+    "frozen_quality_pack_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+    "frozen_validator_status": "VALID",
+    "blocking_codes": 3
+  },
+  "active_strategy_id": "S38",
+  "repair_candidate_head": "6796e42887db6350454cbdaa64731f3f34d95453",
+  "items": {
+    "BLOCK_NEXT_GATE_RESOLVER_ROOT_NOT_BOUND_TO_GOVERNED_REPOSITORY_IDENTITY": {
+      "severity": "CRITICAL_TRUST_BOUNDARY",
+      "producer_status": "REPAIRED_PENDING_S38_DG_IR_006",
+      "repair": {
+        "resolver_id": "S38_GOVERNED_REF_RESOLVER_V2",
+        "caller_supplied_root_authoritative": false,
+        "canonical_repository": "cristhianlujan/claude-persona-lf-patch",
+        "canonical_remote_byte_resolution_required": true,
+        "module_checkout_head_must_be_fetchable_from_canonical_remote": true,
+        "resolver_module_and_policy_local_bytes_must_match_canonical_remote_at_artifact_head": true,
+        "attacker_rooted_legacy_resolver_action": "BLOCK_UNTRUSTED_RESOLVER_TYPE",
+        "tampered_s38_module_action": "BLOCK_GOVERNED_ARTIFACT_BYTE_MISMATCH"
+      }
+    },
+    "BLOCK_NEXT_GATE_CLAIM_TIER_ATTESTED_NOT_INDEPENDENTLY_EARNED": {
+      "severity": "HIGH_SEMANTIC_CLAIM",
+      "producer_status": "REPAIRED_PENDING_S38_DG_IR_006",
+      "repair": {
+        "tier_order": ["STRUCTURAL", "PROVENANCE_EXECUTION", "SEMANTIC", "BEHAVIORAL"],
+        "max_without_independent_witness": "PROVENANCE_EXECUTION",
+        "semantic_requires_allowlisted_independent_witness": true,
+        "behavioral_requires_allowlisted_independent_witness": true,
+        "current_witness_allowlist_count": 0,
+        "unearned_tier_action": "BLOCK_F_CLAIM_TIER_NOT_EARNED",
+        "producer_cannot_raise_semantic_or_behavioral_tier_by_authoring_a_fresh_consistent_receipt_set": true
+      }
+    },
+    "BLOCK_NEXT_GATE_NO_ARCHIVAL_CURRENTNESS_MECHANISM": {
+      "severity": "RUNTIME_DURABILITY",
+      "producer_status": "REPAIRED_PENDING_S38_DG_IR_006",
+      "repair": {
+        "mode": "PATH_AT_ARTIFACT_HEAD_OR_ARCHIVAL_REGISTRY",
+        "archival_registry_exact_ref_and_digest_required": true,
+        "lawful_path_deletion_test_ref": "github://cristhianlujan/claude-persona-lf-patch@be6c0f8a320c5cdcfa242ee775ba769745eb82df/profiles/ui_architect/schemas/runtime_output.schema.json",
+        "lawful_path_deletion_test_sha256": "bed06e7a37a82a6e1baa9b1da4edb7969456ce64c4270fdd8e5db0f14845d425",
+        "test_result": "PASS_GOVERNED_SOURCE_RESOLUTION"
+      }
+    },
+    "DECLARED_VS_ENFORCED_CONTRACT_SURFACE": {
+      "severity": "MATERIAL_CONTRACT_ALIGNMENT",
+      "producer_status": "REPAIRED_PENDING_S38_DG_IR_006",
+      "repair": {
+        "schema": "sandbox/lf_contract_gate_test/s38_bootstrap/lf_common_evidence_envelope_v0_5_candidate.schema.json",
+        "schema_validation_is_executed_before_f_semantics": true,
+        "unknown_surface_action": "BLOCK_F_ENVELOPE_SCHEMA_INVALID",
+        "accepted_resolver_ids": ["QUALITY_PACK_TRUSTED_REF_RESOLVER_V1", "S38_GOVERNED_REF_RESOLVER_V2"],
+        "actual_resolution_authority_requires_s38_resolver_type": true
+      }
+    },
+    "LF_MIGRATION_SOURCE_PARITY": {
+      "disposition": "OUT_OF_SCOPE_NON_CAUSAL_SHARED_DEBT",
+      "repair_in_this_lane": false
+    }
+  },
+  "next_gate": "S38-DG-IR-006",
+  "claim_ceiling": "PRODUCER_RECOMMENDATION_ONLY",
+  "authorization": {
+    "merge": "NONE",
+    "golden": "NONE",
+    "runtime": "NONE",
+    "scheduler": "NONE",
+    "production": "NONE"
+  }
+}

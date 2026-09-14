@@ -1,0 +1,234 @@
+{
+  "receipt_version": "v0.1",
+  "execution_mode": "INDEPENDENT_CHAT_CONTEXT",
+  "semantic_status": "EXECUTED_INDEPENDENT_CONTEXT",
+  "review_case_id": "S31-DG-IR-005",
+  "reviewer_is_producer": false,
+  "producer_context_available": false,
+  "external_paid_model_used": false,
+  "automated_semantic_judge_implemented": false,
+  "review_completed": true,
+  "source_bundle": {
+    "artifact_ref": "github://cristhianlujan/claude-persona-lf-patch@43efdc3afe7da87d739e15e38d3238f8ac28cbbd/sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_independent_review_bundle_v0_7.json",
+    "artifact_sha_or_digest": "7960553e4db4ce62523a028f8187b03b0798dc7f",
+    "upstream_worker_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md",
+    "quality_gate_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/quality_gate_contract.md",
+    "lf_quality_controls_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/lf_quality_controls.md",
+    "score_rubric_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/judges/quality_pack_score_rubric.md",
+    "mini_judge_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/judges/quality_pack_mini_judge.md",
+    "quality_review_schema_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json"
+  },
+  "quality_review": {
+    "review_id": "S31-DG-IR-005-INDEPENDENT-SEMANTIC",
+    "reviewed_artifact": "github://cristhianlujan/claude-persona-lf-patch@43efdc3afe7da87d739e15e38d3238f8ac28cbbd/sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_independent_review_bundle_v0_7.json",
+    "verdict": "PASS_WITH_RESTRICTIONS",
+    "score_breakdown": {
+      "contract_schema_compliance": 4,
+      "evidence_integrity": 4,
+      "lf_safety_governance": 4,
+      "handoff_readiness": 4,
+      "leakage_scope_control": 5,
+      "total": 21
+    },
+    "evidence_map": [
+      {
+        "id": "EV-01",
+        "check": "BUNDLE_BLOB_INTEGRITY",
+        "method": "reviewer recomputed the Git blob SHA-1 of the fetched bundle bytes",
+        "observed": "7960553e4db4ce62523a028f8187b03b0798dc7f",
+        "expected": "7960553e4db4ce62523a028f8187b03b0798dc7f",
+        "result": "MATCH"
+      },
+      {
+        "id": "EV-02",
+        "check": "BUNDLE_PIN_BYTE_PARITY_32_OF_32",
+        "method": "reviewer fetched each declared path at candidate snapshot 7f7b844b878ad44c584c6aebcbf63e89d4b10b66 and recomputed blob SHA-1 independently; cross-checked with git rev-parse HEAD:<path>",
+        "observed": "32/32 pins match candidate bytes; 0 mismatches",
+        "result": "MATCH"
+      },
+      {
+        "id": "EV-03",
+        "check": "CANDIDATE_LINEAGE_EXACT_HEAD_NOT_MERGE_REF",
+        "method": "reviewer resolved commit parents locally; no PR merge ref, branch HEAD or later snapshot substituted",
+        "observed": "39da3d36 -> 3bc25ab7 -> 7f7b844b (candidate) -> 594783d2 (producer evidence) -> 43efdc3a (bundle); 7f7b844b is the exact parent of 594783d2; 3b39657f is an ancestor of the candidate",
+        "result": "CONFIRMED"
+      },
+      {
+        "id": "EV-04",
+        "check": "PRIOR_RECEIPT_AND_PRODUCER_ARTEFACT_PINS",
+        "method": "reviewer recomputed blob SHA-1 of the IR-004 independent receipt, the producer repair receipt and the producer governance disposition at their declared commits",
+        "observed": "703ffd31257d615d97521e99fcf17fd5deafba83, e54a5a7b2e0dcb1c9bd4f27cb359698f766e980c, 22812743fcf58fee158d59ead96460f7fa7ca94f",
+        "result": "MATCH (treated as provenance only, not as semantic proof)"
+      },
+      {
+        "id": "EV-05",
+        "check": "F_CROSS_BINDING_INDEPENDENT_REDERIVATION",
+        "method": "reviewer rebuilt the common semantic identity from provider-resolved bytes and envelope fields using a reviewer-authored canonicalisation, without reading the producer constant",
+        "observed": "508fcddc9fbef6e30f289017218cdbb7ff6ede72bdefdbed09b4665481dfaf98",
+        "expected": "digest declared inside the resolved non-structural receipts",
+        "result": "MATCH; identity provably includes run_id, capability_or_gate_id, evidence_level, claim_ceiling, execution_id, input/output digests, resolved input sources, authority source identity and revision, and provenance sources"
+      },
+      {
+        "id": "EV-06",
+        "check": "REVIEWER_AUTHORED_ADVERSARIAL_BATTERY",
+        "method": "65 reviewer-written cases executed against the frozen candidate modules from outside the candidate tree; no candidate artifact modified (worktree confirmed clean afterwards)",
+        "observed": "65/65 behaved as required; 0 deviations",
+        "result": "PASS"
+      },
+      {
+        "id": "EV-07",
+        "check": "F_CLAIM_LEVEL_ESCALATION_UNDER_IDENTICAL_BINDING",
+        "observed": "BLOCK_F_CLAIM_TIER_BINDING_MISMATCH for SEMANTIC->BEHAVIORAL under an unchanged resolved receipt set, and for the asymmetric level/ceiling variant",
+        "result": "FAIL_CLOSED"
+      },
+      {
+        "id": "EV-08",
+        "check": "F_CLAIM_TIER_RECEIPT_FIELD_SUBSTITUTION",
+        "observed": "BLOCK_F_CROSS_BINDING_VERSION_MISMATCH for each of the three receipt slots substituted with its untiered v0.3 twin; BLOCK_EVIDENCE_TYPE_MISMATCH for cross-type receipt substitution",
+        "result": "FAIL_CLOSED"
+      },
+      {
+        "id": "EV-09",
+        "check": "F_OWNER_CAPABILITY_MISMATCH",
+        "observed": "BLOCK_F_OWNER_CAPABILITY_BINDING_MISMATCH; the v0.2 layer alone returned PASS, so the hardening layer is load-bearing",
+        "result": "FAIL_CLOSED"
+      },
+      {
+        "id": "EV-10",
+        "check": "F_VALID_AUTHORITY_AND_PROVENANCE_RECEIPT_REPLAY_WITHOUT_COMMON_BINDING",
+        "observed": "BLOCK_F_CROSS_BINDING_VERSION_MISMATCH for both replay fixtures; v0.2 alone returned PASS in both cases",
+        "result": "FAIL_CLOSED"
+      },
+      {
+        "id": "EV-11",
+        "check": "F_SAME_CONTENT_INPUT_AUTHORITY_PROVENANCE_IDENTITY_SUBSTITUTION",
+        "observed": "BLOCK_F_CROSS_BINDING_DIGEST_MISMATCH in all three cases, while historical immutable refs whose bytes remain current were not forced to equal repository HEAD",
+        "result": "FAIL_CLOSED"
+      },
+      {
+        "id": "EV-12",
+        "check": "F_RESIDUAL_HARDENING_PROBES_ADDED_BY_REVIEWER",
+        "observed": "source digest forgery -> BLOCK_PROVIDER_BYTE_DIGEST_MISMATCH; authority revision forgery -> BLOCK_F_AUTHORITY_SOURCE_REVISION_MISMATCH; execution_sha rebinding -> BLOCK_F_EXECUTION_RECEIPT_REVISION_MISMATCH; producer impersonating the resolver -> BLOCK_EVIDENCE_SELF_RESOLVER; output tamper -> BLOCK_F_OUTPUT_DIGEST_MISMATCH; unresolvable historical ref -> BLOCK_TRUSTED_REF_RESOLUTION_FAILED",
+        "result": "FAIL_CLOSED"
+      },
+      {
+        "id": "EV-13",
+        "check": "D_E_BASELINE_NO_REGRESSION",
+        "observed": "typed context positives pass; schema invention, runtime-schema invention, non-reconstructible provenance, undeclared cross-run authority, self-certified currentness and digest forgery all block; capability manifest positives pass; self-certification, lifecycle vocabulary overclaim, non fail-closed staleness, source drift, duplicate dependency, owner-as-resolver and registry parity drift all block",
+        "result": "NO_REGRESSION"
+      },
+      {
+        "id": "EV-14",
+        "check": "G_GOVERNED_TYPED_CONTEXT_BOUNDARY",
+        "observed": "valid outer context digest with invalid nested authority -> BLOCK_G_TYPED_CONTEXT_SEMANTIC_GOVERNANCE (nested BLOCK_PROVIDER_BYTE_DIGEST_MISMATCH) while v0.2 alone returned PASS; untrusted resolver type, declared untrusted resolver id, context digest forgery, fake revision, request/governed-input mismatch, request-id mismatch, silent fallback and weakened forbidden-authority set all block; nested authority flags, effects and grants in runtime output all block",
+        "result": "FAIL_CLOSED"
+      },
+      {
+        "id": "EV-15",
+        "check": "BUNDLE_PIN_COMPLETENESS_ALL_LOAD_BEARING_ARTIFACTS",
+        "method": "reviewer instrumented every file open and every trusted-resolver resolution across the three deterministic harnesses plus the reviewer battery, then diffed the touched repository paths against the 32 declared pins",
+        "observed": "every repository path actually exercised is pinned; the only unpinned paths touched were Python bytecode caches generated by the reviewer run, which are not repository artifacts and were removed (candidate worktree verified clean)",
+        "result": "COMPLETE; the four artifacts added after IR-004 (s31_trusted_resolution_v0_1.py, source_runtime_schema.json, source_registry.py, s31_e_capability_registry_gap_inventory_v0_2.json) are present and byte-correct"
+      },
+      {
+        "id": "EV-16",
+        "check": "DETERMINISTIC_REGRESSION_REPRODUCTION",
+        "method": "reviewer re-executed the pinned harnesses at the candidate snapshot rather than accepting the producer summary",
+        "observed": "v0.2 8 positive / 36 negative PASS; v0.3 2 positive / 8 negative PASS; v0.4 2 positive / 9 negative PASS; all 13 S31 test files exit 0",
+        "result": "REPRODUCED (recorded as provenance, not as semantic proof)"
+      },
+      {
+        "id": "EV-17",
+        "check": "CURRENTNESS_DURABILITY_RESTRICTION",
+        "method": "reviewer probed the resolver against a lawful HEAD evolution outside the candidate: a rename of a still byte-identical source at HEAD",
+        "observed": "BLOCK_PROVIDER_SOURCE_STALE although the historical commit and its bytes remained resolvable and unchanged; an unreachable historical revision yields BLOCK_TRUSTED_REF_RESOLUTION_FAILED",
+        "result": "FAIL_CLOSED, CONSERVATIVE, NO RESOLVER WEAKENING IN THE CANDIDATE"
+      },
+      {
+        "id": "EV-18",
+        "check": "RESOLVER_ROOT_TRUST_ANCHOR",
+        "method": "reviewer supplied a genuine TrustedRefResolver instance rooted at an attacker-controlled clone whose origin slug matches the governed repository, with forged source bytes and self-consistent receipts",
+        "observed": "PASS_F_EVIDENCE_ENVELOPE_V0_4_CLAIM_BOUND at evidence_level=BEHAVIORAL and claim_ceiling=BEHAVIORAL over bytes the reviewer forged; the trust check is type(resolver) is TrustedRefResolver and does not bind the resolver root to a governed repository identity, commit ancestry or signature",
+        "result": "RESTRICTION CONFIRMED; pre-existing in the pinned canonical resolver, not introduced by the IR-004 repair, and outside the exclusive S31 repair lane"
+      },
+      {
+        "id": "EV-19",
+        "check": "CLAIM_TIER_IS_ATTESTED_NOT_EARNED",
+        "observed": "the same executed test shows that a producer authoring a fresh receipt set consistent with the common semantic identity can assert any evidence_level and claim_ceiling; the v0.4 binding closes recomposition and replay of an existing receipt set, not authorship of a new one at a higher tier",
+        "result": "RESIDUAL SEMANTIC RESTRICTION"
+      },
+      {
+        "id": "EV-20",
+        "check": "DECLARED_VS_ENFORCED_CONTRACT_SURFACE",
+        "observed": "lf_common_evidence_envelope_v0_4_candidate.schema.json is pinned as the IR-004 claim-tier-bound candidate schema and differs from v0.3 only by $id, title and one added invariant string, but no validator or harness in the candidate references it; envelope schema validation still runs against v0.3",
+        "result": "MINOR DIVERGENCE; the claim-tier binding is enforced in validator code, not by the schema pinned to advertise it"
+      },
+      {
+        "id": "EV-21",
+        "check": "SCOPE_CONTROL",
+        "observed": "the shared migration-source parity failure was not used as repair evidence and no shared migration was imported into the frozen candidate; no HEAD, PR #751 merge ref, later snapshot or moving main was substituted; no artifact, SHA, snapshot, bundle or ref was modified",
+        "result": "CONFIRMED"
+      }
+    ],
+    "blocking_codes": [
+      "BLOCK_NEXT_GATE_RESOLVER_ROOT_NOT_BOUND_TO_GOVERNED_REPOSITORY_IDENTITY",
+      "BLOCK_NEXT_GATE_CLAIM_TIER_ATTESTED_NOT_INDEPENDENTLY_EARNED",
+      "BLOCK_NEXT_GATE_NO_ARCHIVAL_CURRENTNESS_MECHANISM"
+    ],
+    "repair_actions": [
+      "Bind the trusted resolver to a governed repository identity rather than to its Python type alone: verify origin identity out of band, require the resolved revision to be an ancestor of a governed reference, or require signed commit or blob attestation. Not to be attempted inside this frozen review lane.",
+      "Introduce an archival currentness mechanism so evidence whose immutable bytes are unchanged survives lawful HEAD evolution such as rename, move or deletion, instead of degrading to BLOCK_PROVIDER_SOURCE_STALE.",
+      "Either wire lf_common_evidence_envelope_v0_4_candidate.schema.json into envelope validation or withdraw it, so the pinned contract surface and the enforced contract surface agree.",
+      "If a tier above the deterministic ceiling is ever to be claimed, add evidence that the tier was earned rather than attested, for example an independent execution witness that the producer cannot author."
+    ],
+    "remaining_risks": [
+      "Every provider-byte, currentness and claim-tier guarantee in lanes D, E, F and G is conditional on the caller supplying a resolver rooted at the genuine governed repository; this was falsified under reviewer control and is an environment trust assumption, not an enforced property.",
+      "The claim tier is producer-attested and only bound for internal consistency, so the ceiling of this candidate remains deterministic repair evidence over a frozen bundle and no semantic, behavioral or runtime claim follows from it.",
+      "Historical evidence remains fragile against lawful repository evolution; the failure mode is safe but availability-affecting and will recur as the repository moves.",
+      "This review verified only the frozen bundle at candidate snapshot 7f7b844b878ad44c584c6aebcbf63e89d4b10b66; nothing is asserted about any later commit, the PR #751 merge ref, branch HEAD or moving main.",
+      "The unrelated shared migration-source parity failure remains open outside this lane and was deliberately excluded from every judgment in this receipt."
+    ],
+    "next_gate": "S31-DG governance disposition gate on the frozen bundle only; this receipt authorizes no runtime, merge, Golden, scheduler, production or behavioral promotion, and the three blocking codes above must be closed before any gate that admits runtime execution or promotion",
+    "extensions": {
+      "s31.dg.ir005.lane_dispositions": {
+        "S31-D": {
+          "disposition": "PASS_NO_REGRESSION",
+          "basis": "trusted immutable authority and runtime-schema resolution enforced, provider bytes rehashed, currentness not caller-self-certifiable, resolver aliases subclasses callbacks and duck types rejected by identity check, cross-run authority declaration fail-closed"
+        },
+        "S31-E": {
+          "disposition": "PASS_NO_REGRESSION_AND_PIN_COMPLETE",
+          "basis": "capability source bytes provider-resolved and rehashed, registry currentness non-self-certifiable, lifecycle duplicate and source-drift protections intact, and every load-bearing D/E dependency exercised by this review is pinned by exact blob SHA"
+        },
+        "S31-F": {
+          "disposition": "PASS_WITH_RESTRICTIONS",
+          "basis": "IR-004 claim-tier escalation independently reproduced as closed; cross-binding version and digest, claim-tier binding, owner capability binding, execution revision binding and same-content identity substitution all fail closed; cross-binding digest independently rederived; residual restriction is that the tier is attested rather than earned"
+        },
+        "S31-G": {
+          "disposition": "PASS_NO_REGRESSION",
+          "basis": "exact Typed Context artifact resolved and rehashed before provider invocation and its governed internals semantically revalidated; correct outer digest does not mask invalid nested authority or currentness; untrusted resolver type, fake or stale refs and digests, request and governed-input mismatch, weakened forbidden-authority set and silent fallback all blocked"
+        }
+      },
+      "s31.dg.ir005.currentness_durability_disposition": {
+        "reviewer_determination": "ACCEPTABLE_DOCUMENTED_RESTRICTION_AT_THIS_CLAIM_CEILING_BUT_BLOCKING_FOR_THE_NEXT_RUNTIME_ADMISSION_GATE",
+        "derived_independently": true,
+        "producer_recommendation_inherited": false,
+        "basis": "the behavior is fail-closed and the candidate weakens no resolver, so it does not compromise soundness of this frozen deterministic review; it was however reproduced under lawful HEAD evolution and makes evidence validity a function of unrelated repository movement, which is not acceptable for any gate admitting runtime, Golden, scheduler or production"
+      },
+      "s31.dg.ir005.bundle_completeness_disposition": {
+        "verdict": "COMPLETE_FOR_THE_DEPENDENCY_WALK_ACTUALLY_EXERCISED",
+        "pins_declared": 32,
+        "pins_independently_byte_verified": 32,
+        "additional_load_bearing_repository_artifact_omitted": "none found",
+        "note": "a producer-declared 32/32 match was not used; the parity was recomputed by the reviewer and the dependency walk was instrumented rather than assumed"
+      },
+      "s31.dg.ir005.provenance_only_inputs": [
+        "producer deterministic PASS summaries for v0.2, v0.3 and v0.4",
+        "producer repair receipt e54a5a7b2e0dcb1c9bd4f27cb359698f766e980c",
+        "producer governance disposition 22812743fcf58fee158d59ead96460f7fa7ca94f",
+        "prior independent IR-004 receipt 703ffd31257d615d97521e99fcf17fd5deafba83"
+      ],
+      "s31.dg.ir005.independent_execution_note": "the reviewer battery and the pin-completeness walk were authored and run outside the candidate tree; no candidate artifact, SHA, snapshot, bundle or ref was created, repaired or modified, and the candidate worktree was verified clean after execution"
+    }
+  },
+  "execution_blockers": []
+}

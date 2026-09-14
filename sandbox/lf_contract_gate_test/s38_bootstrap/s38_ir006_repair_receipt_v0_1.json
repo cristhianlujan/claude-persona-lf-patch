@@ -1,0 +1,90 @@
+{
+  "receipt_version": "S38_IR006_REPAIR_V0_1",
+  "source_review_case_id": "S31-DG-IR-005",
+  "source_review_verdict": "PASS_WITH_RESTRICTIONS",
+  "source_review_score": 21,
+  "historical_independent_receipt_ref": "github://cristhianlujan/claude-persona-lf-patch@007d4f43176f1b5b5fe17401eb531856d2ae2537/sandbox/lf_contract_gate_test/s31_bootstrap/s31_dg_ir005_independent_receipt_v0_1.json",
+  "historical_independent_receipt_blob_sha": "92d18d5eefbc108668c64bccd16ad21203a45265",
+  "repair_candidate_head": "6796e42887db6350454cbdaa64731f3f34d95453",
+  "comparison_base": "01f53ca5fb3d4d060e482fce64bddaeb1c383eae",
+  "exclusive_lane": {
+    "pull_request": 757,
+    "head_branch": "lf/s38-ir006-repair-gpt-exclusive-20260913",
+    "base_branch": "lf/s38-ir006-repair-base-gpt-exclusive-20260913",
+    "base_sha": "01f53ca5fb3d4d060e482fce64bddaeb1c383eae",
+    "maintainer_can_modify": false,
+    "force_push_used": false,
+    "rebase_used": false,
+    "shared_branch_writes": false
+  },
+  "repair_scope": [
+    "GOVERNED_RESOLVER_ROOT_IDENTITY",
+    "EARNED_CLAIM_TIER",
+    "ARCHIVAL_CURRENTNESS",
+    "DECLARED_ENFORCED_SCHEMA_ALIGNMENT"
+  ],
+  "governed_resolver": {
+    "resolver_id": "S38_GOVERNED_REF_RESOLVER_V2",
+    "policy_blob_sha": "a88104a6a5ac773c5a998f2e4877bb8e24cc9ad3",
+    "resolver_blob_sha": "16c4229ca4ecc1791d0fe45abe2cef1fc8e6f350",
+    "caller_root_used_as_authority": false,
+    "canonical_remote": "https://github.com/cristhianlujan/claude-persona-lf-patch.git",
+    "canonical_remote_bytes_required": true,
+    "artifact_self_byte_attestation_required": true
+  },
+  "claim_tier_repair": {
+    "cross_binding_version": "S38_F_CROSS_BINDING_V0_3",
+    "cross_binding_sha256": "1f5f85cdc08a6c80764af02204b39aadec993104a6949736809aa33aeb6d6810",
+    "max_without_independent_witness": "PROVENANCE_EXECUTION",
+    "semantic_without_allowlisted_witness": "BLOCK_F_CLAIM_TIER_NOT_EARNED",
+    "behavioral_without_allowlisted_witness": "BLOCK_F_CLAIM_TIER_NOT_EARNED",
+    "current_witness_allowlist_count": 0
+  },
+  "archival_currentness": {
+    "mode": "PATH_AT_ARTIFACT_HEAD_OR_ARCHIVAL_REGISTRY",
+    "exact_historical_ref_and_digest_attestation_required": true,
+    "rename_move_delete_safe_when_logical_asset_remains_registry_current": true
+  },
+  "schema_alignment": {
+    "schema_blob_sha": "5c3b4d8946289d527658db2f9883af47672e4de5",
+    "validator_blob_sha": "55b990149a781abf0a74c72d2a34d70cd233b067",
+    "test_blob_sha": "cea7b7b6851f8f7295bf7be8c9b49dc5ac1c4abe",
+    "schema_executed_by_validator": true,
+    "unknown_property_fail_closed": true
+  },
+  "deterministic_execution": {
+    "s38_v0_5": {
+      "positive_cases": 4,
+      "negative_fail_closed_cases": 9,
+      "result": "PASS"
+    },
+    "historical_s31_test_files": {
+      "tests": 13,
+      "failures": 0,
+      "result": "PASS"
+    },
+    "historical_receipt_frozen_quality_pack_validation": "PASS"
+  },
+  "ci_evidence": {
+    "validate_lf_packs": {
+      "run_id": 34794539589,
+      "conclusion": "success"
+    },
+    "lf_contract_check": {
+      "run_id": 34794539597,
+      "conclusion": "failure",
+      "failed_step": "Enforce LF migration source parity after checkpoint",
+      "causal_to_s38_repair": false,
+      "disposition": "UNRELATED_SHARED_MIGRATION_PARITY_DEBT_NOT_REPAIRED_IN_EXCLUSIVE_S38_PR"
+    }
+  },
+  "independent_status": "PENDING_S38_DG_IR_006",
+  "claim_ceiling": "DETERMINISTIC_REPAIR_EVIDENCE_ONLY",
+  "authorization": {
+    "merge": "NONE",
+    "golden": "NONE",
+    "runtime": "NONE",
+    "scheduler": "NONE",
+    "production": "NONE"
+  }
+}
