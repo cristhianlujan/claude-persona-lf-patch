@@ -127,27 +127,63 @@ def _validate_contract_deep(receipt: dict[str, Any], spec: dict[str, Any]) -> li
     return bad
 
 
-def _validate_currentness(request: dict[str, Any], receipt: dict[str, Any]) -> list[str]:
+def _validate_currentness(request: dict[str, Any], receipt: dict[str, Any], spec: dict[str, Any]) -> list[str]:
     bad: list[str] = []
-    if receipt.get("provider_mode") != "OFFLINE_SOURCE_ATTESTATION":
+    if receipt.get("provider_mode") != "OFFLINE_S31_CURRENTNESS":
         bad.append("CURRENTNESS_MODE")
+
+    authority = receipt.get("authority_receipt")
+    if not isinstance(authority, dict):
+        bad.append("AUTHORITY_RECEIPT_MISSING")
+    else:
+        if not receipt_hash_valid(authority):
+            bad.append("AUTHORITY_RECEIPT_HASH")
+        if authority.get("schema_version") != spec.get("authority_receipt_schema"):
+            bad.append("AUTHORITY_RECEIPT_SCHEMA")
+        if authority.get("authority_layer") != "CURRENTNESS_AUTHORITY":
+            bad.append("AUTHORITY_LAYER")
+        if authority.get("ready") is not True or authority.get("decision") not in {"CURRENT", "CURRENT_REBOUND"}:
+            bad.append("AUTHORITY_NOT_READY")
+        if authority.get("current_revision") != request.get("base_sha"):
+            bad.append("AUTHORITY_BASE_REVISION")
+
     att = receipt.get("attestation_receipt")
     if not isinstance(att, dict):
-        return bad + ["ATTESTATION_MISSING"]
-    if not receipt_hash_valid(att):
-        bad.append("ATTESTATION_HASH")
-    if att.get("schema_version") != "LF_SOURCE_ATTESTATION_RECEIPT_V1":
-        bad.append("ATTESTATION_SCHEMA")
-    if att.get("repo_identity") != f"github://{request.get('repository_full_name')}":
-        bad.append("ATTESTATION_REPOSITORY")
-    if att.get("authority_ref") != f"refs/heads/{request.get('target_branch')}":
-        bad.append("ATTESTATION_AUTHORITY_REF")
-    if att.get("resolved_revision") != request.get("base_sha") or att.get("commit_sha") != request.get("base_sha"):
-        bad.append("ATTESTATION_BASE_REVISION")
-    if att.get("authority_level") != "CANDIDATE_LOCAL_INTEGRITY" or att.get("durable_evidence_anchor_required") is not True:
-        bad.append("ATTESTATION_AUTHORITY_LEVEL")
-    if att.get("network_required_for_verification") is not False:
-        bad.append("ATTESTATION_OFFLINE_REUSE")
+        bad.append("ATTESTATION_MISSING")
+    else:
+        if not receipt_hash_valid(att):
+            bad.append("ATTESTATION_HASH")
+        if att.get("schema_version") != spec.get("attestation_receipt_schema"):
+            bad.append("ATTESTATION_SCHEMA")
+        if att.get("repo_identity") != f"github://{request.get('repository_full_name')}":
+            bad.append("ATTESTATION_REPOSITORY")
+        if att.get("authority_ref") != f"refs/heads/{request.get('target_branch')}":
+            bad.append("ATTESTATION_AUTHORITY_REF")
+        if att.get("resolved_revision") != request.get("base_sha") or att.get("commit_sha") != request.get("base_sha"):
+            bad.append("ATTESTATION_BASE_REVISION")
+        if att.get("authority_level") != "CANDIDATE_LOCAL_INTEGRITY" or att.get("durable_evidence_anchor_required") is not True:
+            bad.append("ATTESTATION_AUTHORITY_LEVEL")
+        if att.get("network_required_for_verification") is not False:
+            bad.append("ATTESTATION_OFFLINE_REUSE")
+
+    anchor = receipt.get("durable_anchor")
+    if not isinstance(anchor, dict):
+        bad.append("DURABLE_ANCHOR_MISSING")
+    else:
+        if anchor.get("anchor_type") != "GITHUB_WORKFLOW_RUN":
+            bad.append("DURABLE_ANCHOR_TYPE")
+        if anchor.get("workflow_name") != spec.get("durable_anchor_workflow"):
+            bad.append("DURABLE_ANCHOR_WORKFLOW")
+        if anchor.get("workflow_path") != spec.get("durable_anchor_workflow_path"):
+            bad.append("DURABLE_ANCHOR_PATH")
+        if anchor.get("conclusion") != "success":
+            bad.append("DURABLE_ANCHOR_CONCLUSION")
+        if anchor.get("authority_revision") != request.get("base_sha"):
+            bad.append("DURABLE_ANCHOR_REVISION")
+        if not isinstance(anchor.get("run_id"), int) or isinstance(anchor.get("run_id"), bool) or anchor.get("run_id", 0) < 1:
+            bad.append("DURABLE_ANCHOR_RUN_ID")
+        if not isinstance(anchor.get("source_ref"), str) or not anchor.get("source_ref", "").strip():
+            bad.append("DURABLE_ANCHOR_SOURCE_REF")
     return bad
 
 
@@ -155,6 +191,8 @@ def _validate_post_merge(request: dict[str, Any], receipt: dict[str, Any]) -> li
     bad: list[str] = []
     if receipt.get("provider_mode") != "V7_AUTHORITATIVE_POST_MERGE":
         bad.append("RECONCILIATION_MODE")
+    if receipt.get("reconciliation_scope") != "LF_SKILL_ARTIFACT":
+        bad.append("RECONCILIATION_SCOPE")
     if receipt.get("authoritative") is not True:
         bad.append("RECONCILIATION_AUTHORITY")
     if receipt.get("merge_commit_sha") != request.get("candidate_head_sha"):
@@ -232,7 +270,7 @@ def aggregate(request: dict[str, Any]) -> dict[str, Any]:
                 deep_bad.append(code + ":" + ",".join(bad))
                 continue
         elif code == "CURRENTNESS_AUTHORITY":
-            bad = _validate_currentness(request, row)
+            bad = _validate_currentness(request, row, spec)
             if bad:
                 currentness_bad.append(code + ":" + ",".join(bad))
                 continue
