@@ -113,7 +113,7 @@ psql -X -q -A -t -v ON_ERROR_STOP=1 \
   -v max_version="$max_version" \
   -f "$export_sql" > "$ledger_json"
 
-python3 - <<'PY' "$ledger_json"
+python3 - "$ledger_json" <<'PY'
 import json, pathlib, sys
 p = pathlib.Path(sys.argv[1])
 payload = json.loads(p.read_text(encoding="utf-8"))
@@ -126,10 +126,14 @@ args=(
   --ledger-json "$ledger_json"
   --migrations-dir "$migrations_dir"
   --owner-prefix "$owner_prefix"
-  --min-version "$min_version"
-  --max-version "$max_version"
   --receipt "$receipt_json"
 )
+if [[ -n "$min_version" ]]; then
+  args+=(--min-version "$min_version")
+fi
+if [[ -n "$max_version" ]]; then
+  args+=(--max-version "$max_version")
+fi
 if [[ "$materialize" == "true" ]]; then
   args+=(--materialize-remote-only)
 fi
@@ -137,7 +141,7 @@ fi
 python3 "$reconciler" "${args[@]}"
 
 if [[ "$materialize" == "true" ]]; then
-  python3 - <<'PY' "$receipt_json" "$repo_root"
+  python3 - "$receipt_json" "$repo_root" <<'PY'
 import json, pathlib, subprocess, sys
 receipt_path = pathlib.Path(sys.argv[1])
 repo_root = pathlib.Path(sys.argv[2])
