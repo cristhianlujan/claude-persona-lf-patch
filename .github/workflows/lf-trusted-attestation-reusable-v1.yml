@@ -1,0 +1,129 @@
+name: LF Trusted Attestation Reusable V1
+
+on:
+  workflow_call:
+    inputs:
+      candidate_sha:
+        description: Exact LF candidate commit to attest
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+  artifact-metadata: write
+
+jobs:
+  attest-s38-ir008-candidate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact caller source commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.candidate_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Build governed LF trust subject
+        shell: bash
+        env:
+          EXPECTED_REPOSITORY: cristhianlujan/claude-persona-lf-patch
+          QUALITY_PACK_REVISION: 3b39657fbf14f29c7839ecb26d715ed5c6fad59e
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, subprocess, re
+
+          REPO = os.environ['EXPECTED_REPOSITORY']
+          if os.environ.get('GITHUB_REPOSITORY') != REPO:
+              raise SystemExit('BLOCK_SIGNER_FOREIGN_REPOSITORY')
+          head = os.environ['CANDIDATE_SHA']
+          observed_head = subprocess.check_output(['git','rev-parse','HEAD'], text=True).strip()
+          if observed_head != head:
+              raise SystemExit('BLOCK_SIGNER_CHECKOUT_SHA_MISMATCH')
+          if not re.fullmatch(r'[0-9a-f]{40}', head):
+              raise SystemExit('BLOCK_SIGNER_INVALID_SOURCE_DIGEST')
+
+          runtime_paths = [
+              'sandbox/lf_contract_gate_test/s38_bootstrap/s38_governed_resolution_v0_4.py',
+              'sandbox/lf_contract_gate_test/s38_bootstrap/s38_governed_trust_policy_v0_3.json',
+              'sandbox/lf_contract_gate_test/s38_bootstrap/validate_s38_dg_contracts_v0_7.py',
+              'sandbox/lf_contract_gate_test/s38_bootstrap/lf_common_evidence_envelope_v0_7_candidate.schema.json',
+              'sandbox/lf_contract_gate_test/s31_bootstrap/lf_shared_authority_typed_context_v0_2_candidate.schema.json',
+              'sandbox/lf_contract_gate_test/s31_bootstrap/lf_capability_manifest_v0_3_candidate.schema.json',
+              'sandbox/lf_contract_gate_test/s38_bootstrap/lf_runtime_execution_port_v0_2_candidate.schema.json',
+              'sandbox/lf_contract_gate_test/s38_bootstrap/lf_runtime_execution_output_v0_2_candidate.schema.json',
+          ]
+          evidence_paths = [
+              'sandbox/lf_contract_gate_test/s38_bootstrap/test_s38_dg_contracts_v0_7.py',
+              'sandbox/lf_contract_gate_test/s38_bootstrap/s38_ir008_historical_pin_inventory_v0_1.json',
+              'sandbox/lf_contract_gate_test/s31_bootstrap/s31_trusted_resolution_v0_1.py',
+          ]
+          frozen_quality_pack = [
+              'profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json',
+              'profiles/quality_pack/validators/validate_independent_semantic_review.py',
+          ]
+          qp_rev = os.environ['QUALITY_PACK_REVISION']
+
+          def run(*args, binary=False):
+              p=subprocess.run(args, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+              return p.stdout if binary else p.stdout.decode().strip()
+          def sha256(raw): return hashlib.sha256(raw).hexdigest()
+          def read(rev,path): return run('git','show',f'{rev}:{path}',binary=True)
+          def pin(rev,path):
+              raw=read(rev,path)
+              blob=run('git','rev-parse',f'{rev}:{path}')
+              return {'revision':rev,'path':path,'blob_sha':blob,'sha256':sha256(raw),'bytes':len(raw)}
+
+          runtime=[pin(head,p) for p in runtime_paths]
+          evidence=[pin(head,p) for p in evidence_paths]
+          quality=[pin(qp_rev,p) for p in frozen_quality_pack]
+
+          inventory_path='sandbox/lf_contract_gate_test/s38_bootstrap/s38_ir008_historical_pin_inventory_v0_1.json'
+          inventory=json.loads(read(head,inventory_path).decode())
+          historical=[]
+          for idx,item in enumerate(inventory.get('pins') or []):
+              if not isinstance(item,dict): raise SystemExit(f'BLOCK_SIGNER_HISTORICAL_PIN_SHAPE:{idx}')
+              ref=item.get('ref','')
+              m=re.fullmatch(r'github://([^@]+)@([0-9a-f]{40})/(.+)',ref)
+              if not m or m.group(1)!=REPO: raise SystemExit(f'BLOCK_SIGNER_HISTORICAL_REF_INVALID:{idx}')
+              rev,path=m.group(2),m.group(3)
+              observed=pin(rev,path)
+              if item.get('blob_sha')!=observed['blob_sha'] or item.get('sha256')!=observed['sha256']:
+                  raise SystemExit(f'BLOCK_SIGNER_HISTORICAL_PIN_MISMATCH:{idx}')
+              historical.append({'ref':ref,**observed})
+
+          doc={
+              'manifest_version':'LF_TRUSTED_SUBJECT_MANIFEST_V1',
+              'profile':'S38_DG_IR008',
+              'repository':REPO,
+              'repository_id':1244397752,
+              'candidate_sha':head,
+              'runtime_tcb':runtime,
+              'evidence_tcb':evidence,
+              'frozen_quality_pack':quality,
+              'historical_pins':historical,
+              'authority':{'merge':'NONE','golden':'NONE','runtime':'NONE','scheduler':'NONE','production':'NONE','promotion':'NONE'}
+          }
+          out=pathlib.Path('/tmp/lf-trusted-subject-manifest-v1.json')
+          out.write_text(json.dumps(doc,sort_keys=True,separators=(',',':'))+'\n')
+          print('SUBJECT_SHA256='+sha256(out.read_bytes()))
+          print('RUNTIME_TCB_COUNT='+str(len(runtime)))
+          print('EVIDENCE_TCB_COUNT='+str(len(evidence)))
+          print('HISTORICAL_PIN_COUNT='+str(len(historical)))
+          PY
+
+      - name: Attest governed LF trust subject
+        uses: actions/attest@v4
+        with:
+          subject-path: /tmp/lf-trusted-subject-manifest-v1.json
+
+      - name: Preserve governed subject
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-trusted-subject-manifest-v1
+          path: /tmp/lf-trusted-subject-manifest-v1.json
+          if-no-files-found: error
+          retention-days: 30
