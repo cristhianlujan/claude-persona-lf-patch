@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lf.local/contracts/repository_change_receipt.schema.json",
+  "title": "LF Repository Change Receipt V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "receipt_version",
+    "result",
+    "owner_code",
+    "operation_code",
+    "execution_id",
+    "repository_full_name",
+    "target_branch",
+    "before_head",
+    "after_head",
+    "request_sha256",
+    "idempotency_key",
+    "transport_provider_ref",
+    "transport_provider_version",
+    "changed_paths",
+    "path_readbacks",
+    "remote_head_readback"
+  ],
+  "properties": {
+    "receipt_version": {"const": "LF_REPOSITORY_CHANGE_RECEIPT_V1"},
+    "result": {
+      "enum": [
+        "PASS_REPOSITORY_CHANGE_WITH_READBACK",
+        "NOOP_IDEMPOTENT_ALREADY_APPLIED",
+        "BLOCK_STALE_HEAD",
+        "BLOCK_SCOPE_VIOLATION",
+        "BLOCK_PROVIDER_NOT_GOVERNED",
+        "BLOCK_REQUEST_IDENTITY_MISMATCH",
+        "BLOCK_READBACK_MISMATCH",
+        "RECONCILIATION_REQUIRED_UNKNOWN_OUTCOME"
+      ]
+    },
+    "owner_code": {"type": "string", "minLength": 1},
+    "operation_code": {"type": "string", "pattern": "^[A-Z0-9_]+$"},
+    "execution_id": {"type": "string", "minLength": 1},
+    "repository_full_name": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+    "target_branch": {"type": "string", "minLength": 1},
+    "before_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "after_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "idempotency_key": {"type": "string", "minLength": 1},
+    "transport_provider_ref": {"type": "string", "minLength": 1},
+    "transport_provider_version": {"type": "string", "minLength": 1},
+    "changed_paths": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "path_readbacks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "blob_sha", "sha256"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "blob_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    },
+    "remote_head_readback": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "unknown_outcome_detail": {"type": ["string", "null"]},
+    "merge_authorized": {"type": "boolean", "const": false}
+  }
+}
