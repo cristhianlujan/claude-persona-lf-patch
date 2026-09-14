@@ -280,7 +280,8 @@
         "resolver_id": {
           "enum": [
             "QUALITY_PACK_TRUSTED_REF_RESOLVER_V1",
-            "S38_GOVERNED_REF_RESOLVER_V2"
+            "S38_GOVERNED_REF_RESOLVER_V2",
+            "S38_GOVERNED_REF_RESOLVER_V3"
           ]
         }
       }
@@ -307,7 +308,8 @@
         "resolver_id": {
           "enum": [
             "QUALITY_PACK_TRUSTED_REF_RESOLVER_V1",
-            "S38_GOVERNED_REF_RESOLVER_V2"
+            "S38_GOVERNED_REF_RESOLVER_V2",
+            "S38_GOVERNED_REF_RESOLVER_V3"
           ]
         },
         "owner_capability_id": {
