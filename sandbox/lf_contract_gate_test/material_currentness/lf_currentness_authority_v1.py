@@ -16,13 +16,38 @@ _ALLOWED_CHANGE_CLASSES = {
     "BREAKING",
     "UNKNOWN",
 }
+ASSESSOR_SCHEMA = "LF_COMPATIBILITY_ASSESSMENT_V1"
 
 
-def _assessment_map(binding: dict[str, Any]) -> tuple[dict[str, dict[str, Any]], str | None]:
+def compatibility_proof_payload(*, material_id: str, bound_fingerprint: str, current_fingerprint: str,
+                                change_class: str, contract_identity: str, assessor_schema: str,
+                                issuer: str) -> dict[str, str]:
+    return {
+        "material_id": material_id,
+        "bound_fingerprint": bound_fingerprint,
+        "current_fingerprint": current_fingerprint,
+        "change_class": change_class,
+        "contract_identity": contract_identity,
+        "assessor_schema": assessor_schema,
+        "issuer": issuer,
+    }
+
+
+def compatibility_proof_sha256(**kwargs: str) -> str:
+    return canonical_sha256(compatibility_proof_payload(**kwargs))
+
+
+def _assessment_map(binding: dict[str, Any], base: dict[str, Any], changed: list[str]) -> tuple[dict[str, dict[str, Any]], str | None]:
     block = binding.get("compatibility_contract") or {}
     assessments = block.get("assessments") or []
     if not isinstance(assessments, list):
         return {}, "COMPATIBILITY_ASSESSMENTS_INVALID"
+
+    contract_identity = binding.get("contract_identity")
+    if not isinstance(contract_identity, str) or not contract_identity:
+        return {}, "CONTRACT_IDENTITY_MISSING"
+
+    observed_materials = base.get("materials") or {}
     out: dict[str, dict[str, Any]] = {}
     for row in assessments:
         if not isinstance(row, dict):
@@ -30,13 +55,42 @@ def _assessment_map(binding: dict[str, Any]) -> tuple[dict[str, dict[str, Any]],
         mid = row.get("material_id")
         klass = row.get("change_class")
         proof = row.get("proof_sha256")
+        bound_fp = row.get("bound_fingerprint")
+        current_fp = row.get("current_fingerprint")
+        row_contract = row.get("contract_identity")
+        assessor_schema = row.get("assessor_schema")
+        issuer = row.get("issuer")
         if not isinstance(mid, str) or not mid or mid in out:
             return {}, "COMPATIBILITY_MATERIAL_ID_INVALID_OR_DUPLICATE"
         if klass not in _ALLOWED_CHANGE_CLASSES:
             return {}, f"COMPATIBILITY_CLASS_INVALID:{mid}"
+        if assessor_schema != ASSESSOR_SCHEMA:
+            return {}, f"COMPATIBILITY_ASSESSOR_SCHEMA_INVALID:{mid}"
+        if not isinstance(issuer, str) or not issuer:
+            return {}, f"COMPATIBILITY_ISSUER_MISSING:{mid}"
+        if row_contract != contract_identity:
+            return {}, f"COMPATIBILITY_CONTRACT_IDENTITY_MISMATCH:{mid}"
+        observed = observed_materials.get(mid) or {}
+        if bound_fp != observed.get("bound_fingerprint") or current_fp != observed.get("current_fingerprint"):
+            return {}, f"COMPATIBILITY_FINGERPRINT_CONTEXT_MISMATCH:{mid}"
         if not isinstance(proof, str) or not HEX64.fullmatch(proof):
             return {}, f"COMPATIBILITY_PROOF_INVALID:{mid}"
+        expected = compatibility_proof_sha256(
+            material_id=mid,
+            bound_fingerprint=bound_fp,
+            current_fingerprint=current_fp,
+            change_class=klass,
+            contract_identity=contract_identity,
+            assessor_schema=assessor_schema,
+            issuer=issuer,
+        )
+        if proof != expected:
+            return {}, f"COMPATIBILITY_PROOF_CONTEXT_MISMATCH:{mid}"
         out[mid] = row
+
+    missing = sorted(set(changed).difference(out))
+    if missing:
+        return out, "MISSING_ASSESSMENT:" + ",".join(missing)
     return out, None
 
 
@@ -50,6 +104,21 @@ def _gates_for(material_ids: list[str], materials: dict[str, dict[str, Any]]) ->
     return sorted(gates)
 
 
+def _unknown(base: dict[str, Any], reason: str, **extra: Any) -> dict[str, Any]:
+    out = {
+        "schema_version": "LF_CURRENTNESS_AUTHORITY_RECEIPT_V1",
+        "authority_layer": "CURRENTNESS_AUTHORITY",
+        "decision": "UNKNOWN_FAIL_CLOSED",
+        "ready": False,
+        "reason": reason,
+        "evidence_revision": base.get("evidence_revision"),
+        "bound_revision": base.get("bound_revision"),
+        "current_revision": base.get("current_revision"),
+    }
+    out.update(extra)
+    return out
+
+
 def evaluate_authority(binding: dict[str, Any], repo: Path) -> dict[str, Any]:
     base = evaluate(binding, repo)
     if base.get("decision") == "UNKNOWN_FAIL_CLOSED":
@@ -59,18 +128,6 @@ def evaluate_authority(binding: dict[str, Any], repo: Path) -> dict[str, Any]:
     raw_materials = binding.get("materials") or []
     materials = {m.get("material_id"): m for m in raw_materials if isinstance(m, dict) and m.get("material_id")}
     changed = list(base.get("changed_material_ids") or [])
-    assessments, error = _assessment_map(binding)
-    if error:
-        return {
-            "schema_version": "LF_CURRENTNESS_AUTHORITY_RECEIPT_V1",
-            "authority_layer": "CURRENTNESS_AUTHORITY",
-            "decision": "UNKNOWN_FAIL_CLOSED",
-            "ready": False,
-            "reason": error,
-            "evidence_revision": base.get("evidence_revision"),
-            "bound_revision": base.get("bound_revision"),
-            "current_revision": base.get("current_revision"),
-        }
 
     if not changed:
         out = dict(base)
@@ -89,17 +146,17 @@ def evaluate_authority(binding: dict[str, Any], repo: Path) -> dict[str, Any]:
         out["receipt_sha256"] = canonical_sha256(out)
         return out
 
+    assessments, error = _assessment_map(binding, base, changed)
+    if error:
+        return _unknown(base, error)
+
     compatible_impl: set[str] = set()
     compatible_contract: set[str] = set()
     breaking: set[str] = set()
     unknown: set[str] = set()
 
     for mid in changed:
-        row = assessments.get(mid)
-        if row is None:
-            breaking.add(mid)
-            continue
-        klass = row["change_class"]
+        klass = assessments[mid]["change_class"]
         if klass == "IMPLEMENTATION_ONLY_COMPATIBLE":
             compatible_impl.add(mid)
         elif klass == "CONTRACT_COMPATIBLE":
@@ -110,17 +167,7 @@ def evaluate_authority(binding: dict[str, Any], repo: Path) -> dict[str, Any]:
             unknown.add(mid)
 
     if unknown:
-        return {
-            "schema_version": "LF_CURRENTNESS_AUTHORITY_RECEIPT_V1",
-            "authority_layer": "CURRENTNESS_AUTHORITY",
-            "decision": "UNKNOWN_FAIL_CLOSED",
-            "ready": False,
-            "reason": "COMPATIBILITY_UNKNOWN",
-            "unknown_material_ids": sorted(unknown),
-            "evidence_revision": base.get("evidence_revision"),
-            "bound_revision": base.get("bound_revision"),
-            "current_revision": base.get("current_revision"),
-        }
+        return _unknown(base, "COMPATIBILITY_UNKNOWN", unknown_material_ids=sorted(unknown))
 
     breaking_closure = affected_closure(breaking, materials) if breaking else []
     bounded_closure = affected_closure(compatible_contract, materials) if compatible_contract else []
