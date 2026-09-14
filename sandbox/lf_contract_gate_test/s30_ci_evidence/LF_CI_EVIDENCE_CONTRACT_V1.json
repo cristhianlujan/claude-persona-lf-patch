@@ -11,6 +11,7 @@
     "aggregator_may_call_remote_currentness": false,
     "provider_specific_verification_remains_with_provider": true,
     "currentness_provider": "S31_CURRENTNESS_AUTHORITY",
+    "currentness_receipt_schema": "LF_CURRENTNESS_AUTHORITY_RECEIPT_V1",
     "source_attestation_receipt_schema": "LF_SOURCE_ATTESTATION_RECEIPT_V1",
     "github_reconciliation_v7_role": "OPTIONAL_POST_MERGE_ARTIFACT_PROVIDER_ONLY",
     "programacion_provenance_role": "EXISTING_DOMAIN_SPECIFIC_PROVENANCE_NOT_RELABELED_AS_GLOBAL_LF_AUTHORITY"
@@ -47,10 +48,14 @@
     },
     "CURRENTNESS_AUTHORITY": {
       "provider_kind": "SOURCE_ATTESTATION",
-      "receipt_schema": "LF_SOURCE_ATTESTATION_RECEIPT_V1",
+      "authority_receipt_schema": "LF_CURRENTNESS_AUTHORITY_RECEIPT_V1",
+      "attestation_receipt_schema": "LF_SOURCE_ATTESTATION_RECEIPT_V1",
       "authority_owner": "S31",
       "authority_revision_binding": "AGGREGATE_BASE_SHA",
       "authority_ref_binding": "refs/heads/{target_branch}",
+      "durable_anchor_required": true,
+      "durable_anchor_workflow": "LF Currentness Authority",
+      "durable_anchor_workflow_path": ".github/workflows/lf-material-currentness.yml",
       "network_reverification_by_aggregator": false
     },
     "EXTERNAL_RECONCILIATION_V7": {
@@ -81,9 +86,10 @@
     "Exactly one receipt per required provider code.",
     "All CI workflow receipts bind the exact candidate head and exact base SHA in the aggregate subject.",
     "Workflow-level success alone never satisfies LF_CONTRACT_CHECK; DEEP_RUN proof requires a successful deep job plus a non-expired audit artifact with SHA-256 digest.",
-    "A CURRENTNESS_AUTHORITY source-attestation receipt binds the exact repository plus the moving authority revision represented by aggregate base_sha and refs/heads/{target_branch}; it does not attest the candidate head.",
-    "The candidate head is proven independently by exact-head CI workflow receipts; currentness and candidate integrity are not conflated.",
-    "The aggregator verifies source-attestation receipt hash and identity fields but performs no remote currentness lookup.",
+    "CURRENTNESS_AUTHORITY requires both LF_CURRENTNESS_AUTHORITY_RECEIPT_V1 and LF_SOURCE_ATTESTATION_RECEIPT_V1 plus a durable successful workflow anchor from the S31 producer.",
+    "The currentness authority receipt must be ready and bind current_revision to aggregate base_sha; the source-attestation receipt binds the exact repository, refs/heads/{target_branch} and the same base revision.",
+    "Neither currentness receipt attests the candidate head; the candidate head is proven independently by exact-head CI workflow receipts.",
+    "The aggregator validates hashes, identities and durable-anchor metadata offline but performs no remote currentness lookup.",
     "Provider FAIL, unknown status, duplicate provider, subject mismatch, malformed digest or missing required provider fails closed.",
     "CI evidence may be complete while semantic review, qualification, E2E, runtime, production or merge authorization remains incomplete.",
     "No result from this contract authorizes merge_main, runtime, production, Golden, semantic closure or E2E closure."
