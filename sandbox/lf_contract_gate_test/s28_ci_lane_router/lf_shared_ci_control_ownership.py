@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Strict declarative ownership for exact shared LF CI control paths.
+"""Strict declarative ownership for exact shared LF CI self-test controls.
 
 This registry removes the need to patch lf_ci_lane_router.py whenever a new
-shared control must be classified. V1 intentionally supports exact paths only:
-unknown siblings and lookalikes remain fail-closed.
+shared CI self-test control must be classified. V1 intentionally supports exact
+paths and one non-specialized self-test profile only: unknown siblings,
+lookalikes, migrations and external P0 ownership remain fail-closed or governed
+by their existing specialized authorities.
 """
 from __future__ import annotations
 
@@ -110,15 +112,26 @@ def compile_shared_registry(data: Mapping[str, Any]) -> CompiledSharedRegistry:
             raise SharedRegistryValidationError("FAIL_LF_SHARED_REGISTRY_DUPLICATE_PATH", path)
         paths.add(path)
 
+        migration = _require_bool(raw, "migration_parity_required", control_id)
+        input_gov = _require_bool(raw, "input_governance_parity_required", control_id)
+        selftest = _require_bool(raw, "ci_router_selftest_required", control_id)
+        p0_external = _require_bool(raw, "p0_exact_head_external_required", control_id)
+        deep_shared = _require_bool(raw, "deep_shared", control_id)
+        if migration or input_gov or not selftest or p0_external or deep_shared:
+            raise SharedRegistryValidationError(
+                "FAIL_LF_SHARED_REGISTRY_PROFILE",
+                f"{control_id}:V1_REQUIRES_EXACT_NON_SPECIALIZED_SELFTEST",
+            )
+
         controls.append(
             SharedControlOwnership(
                 control_id=control_id,
                 path=path,
-                migration_parity_required=_require_bool(raw, "migration_parity_required", control_id),
-                input_governance_parity_required=_require_bool(raw, "input_governance_parity_required", control_id),
-                ci_router_selftest_required=_require_bool(raw, "ci_router_selftest_required", control_id),
-                p0_exact_head_external_required=_require_bool(raw, "p0_exact_head_external_required", control_id),
-                deep_shared=_require_bool(raw, "deep_shared", control_id),
+                migration_parity_required=migration,
+                input_governance_parity_required=input_gov,
+                ci_router_selftest_required=selftest,
+                p0_exact_head_external_required=p0_external,
+                deep_shared=deep_shared,
             )
         )
 
