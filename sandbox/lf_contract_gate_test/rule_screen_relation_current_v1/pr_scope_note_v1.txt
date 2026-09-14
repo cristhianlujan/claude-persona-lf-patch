@@ -1,0 +1,4 @@
+exclusive_scope=sandbox/lf_contract_gate_test/rule_screen_relation_current_v1/
+base_main=34e5500454aa53dd816d8add70d466b5be628130
+candidate_kind=current_state_rollback_regression
+supersedes_pr=748
