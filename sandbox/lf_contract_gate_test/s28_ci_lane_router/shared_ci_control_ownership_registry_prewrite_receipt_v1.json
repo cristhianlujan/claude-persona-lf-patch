@@ -1,0 +1,40 @@
+{
+  "receipt_version": "LF-SHARED-CI-CONTROL-OWNERSHIP-REGISTRY-PREWRITE-v1",
+  "scope": "SHARED_CI_ROUTER_OWNERSHIP_ONLY",
+  "base_main_sha": "2e738f805333003136d51532aab7493db76ef114",
+  "branch": "lf/ci-router-shared-control-registry-20260914",
+  "problem": "Exact shared CI controls were still hardcoded in lf_ci_lane_router.py, so every new governed control could require another router-code patch. PR #795 demonstrates the repeated pattern for the S26 merge-base drift regression.",
+  "design": {
+    "authority": "lf_shared_ci_control_ownership_registry_v1.json",
+    "loader_validator": "lf_shared_ci_control_ownership.py",
+    "matcher_policy": "EXACT_PATH_ONLY_V1",
+    "unknown_siblings": "FAIL_CLOSED",
+    "router_code_patch_per_new_exact_control": false,
+    "specialized_migration_and_p0_rules_preserved": true
+  },
+  "initial_controls": [
+    "LF_CONTRACT_CHECK_WORKFLOW",
+    "VALIDATE_LF_PACKS_WORKFLOW",
+    "LF_GITHUB_RECONCILE_WORKFLOW",
+    "LF_CONTRACT_CHECK_VALIDATOR",
+    "P0_RUNTIME_ENTRYPOINT",
+    "P0_RUNTIME_CORE",
+    "S26_COMMIT_READBACK_CONTROL",
+    "S26_COMMIT_READBACK_BASE_DRIFT_CONTROL"
+  ],
+  "safety": {
+    "broad_contract_gate_prefix_allowed": false,
+    "lookalike_auto_allow": false,
+    "invalid_registry": "FAIL_CLOSED",
+    "supabase_write": false,
+    "runtime_activation": false,
+    "production": false,
+    "golden": false
+  },
+  "verification": {
+    "existing_router_regressions": "PENDING_GITHUB_CI",
+    "exact_head_ci": "PENDING_GITHUB_CI",
+    "pr_context_ci": "PENDING_GITHUB_CI"
+  },
+  "status": "CANDIDATE_PREWRITE"
+}
