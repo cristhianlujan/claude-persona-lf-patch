@@ -28,16 +28,17 @@ class CIEvidenceContractV1Test(unittest.TestCase):
         self.assertEqual(spec["audit_artifact_name_pattern"], "r8-continuous-audit-{run_id}")
 
     def test_currentness_keeps_base_authority_separate_from_candidate_head(self) -> None:
+        boundary = CONTRACT["authority_boundary"]
         spec = CONTRACT["provider_codes"]["CURRENTNESS_AUTHORITY"]
+        self.assertEqual(boundary["currentness_provider"], "S31_CURRENTNESS_AUTHORITY")
+        self.assertFalse(boundary["aggregator_may_call_remote_currentness"])
         self.assertEqual(spec["authority_revision_binding"], "AGGREGATE_BASE_SHA")
         self.assertEqual(spec["authority_ref_binding"], "refs/heads/{target_branch}")
         self.assertEqual(spec["authority_receipt_schema"], "LF_CURRENTNESS_AUTHORITY_RECEIPT_V1")
         self.assertEqual(spec["attestation_receipt_schema"], "LF_SOURCE_ATTESTATION_RECEIPT_V1")
         self.assertTrue(spec["durable_anchor_required"])
-        invariants = " ".join(CONTRACT["invariants"]).lower()
-        self.assertIn("candidate head", invariants)
-        self.assertIn("exact-head ci workflow receipts", invariants)
-        self.assertIn("moving-authority currentness", invariants)
+        self.assertEqual(spec["provider_kind"], "SOURCE_ATTESTATION")
+        self.assertFalse(spec["network_reverification_by_aggregator"])
 
     def test_post_merge_v7_is_not_generic_ci_authority(self) -> None:
         spec = CONTRACT["provider_codes"]["EXTERNAL_RECONCILIATION_V7"]
