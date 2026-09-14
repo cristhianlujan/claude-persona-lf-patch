@@ -1,0 +1,47 @@
+{
+  "contract_code": "LF_OPERATION_BOOTSTRAP_CONTRACT_V1",
+  "owner": "S30",
+  "status": "SOURCE_CANDIDATE_READ_ONLY",
+  "purpose": "Provide one governed transactional bootstrap path for LF operation executions without operation-specific reservation/init duplication.",
+  "separation_of_concerns": {
+    "new_execution_bootstrap": "OPERATION_BOOTSTRAP_LF",
+    "legacy_zero_step_repair": "EXECUTION_RECONCILIATION_LF",
+    "post_init_step_recording": "lf_record_operation_step_core_v1",
+    "operation_specific_target_validation": "WRAPPER_OR_GOVERNED_PREFLIGHT"
+  },
+  "bootstrap_modes": [
+    "GENERIC",
+    "WRAPPER_REQUIRED",
+    "DISABLED"
+  ],
+  "required_invariants": [
+    "EXPLICIT_BOOTSTRAP_POLICY_ACTIVE",
+    "OPERATION_REGISTRY_TARGET_MATCH",
+    "LIFECYCLE_STATE_ALLOWED",
+    "IDEMPOTENT_RESERVATION",
+    "EXECUTION_ROW_LOCKED",
+    "OPERATION_QUALIFICATION_CURRENT_WHEN_REQUIRED",
+    "EXACT_ONE_ACTIVE_INIT_STEP",
+    "EXACT_ONE_ACTIVE_INIT_JUDGE_BINDING",
+    "EXACT_ONE_ACTIVE_INIT_JUDGE",
+    "INIT_STEP_CONTRACT_WHEN_POLICY_REQUIRES",
+    "NO_POST_INIT_STEP_ALREADY_MATERIALIZED",
+    "SERVER_DERIVED_INIT_EVIDENCE",
+    "EXACT_INIT_READBACK"
+  ],
+  "admission": {
+    "generic_begin_requires_mode": "GENERIC",
+    "wrapper_can_delegate_only_when_mode": "WRAPPER_REQUIRED",
+    "dependency_or_topology_unknown": "BLOCK",
+    "legacy_zero_step_execution": "DO_NOT_AUTO_BACKFILL"
+  },
+  "security": {
+    "security_definer": false,
+    "public_execute": false,
+    "anon_execute": false,
+    "authenticated_execute": false,
+    "service_role_execute": true,
+    "caller_assertions_are_authority": false
+  },
+  "claim_ceiling": "SOURCE_CANDIDATE_NO_LIVE_DB_MUTATION_NO_RUNTIME_CUTOVER"
+}
