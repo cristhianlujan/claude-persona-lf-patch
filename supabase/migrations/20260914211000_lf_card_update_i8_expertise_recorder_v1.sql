@@ -224,7 +224,7 @@ begin
     )
   );
 exception
-  when invalid_text_representation or numeric_value_out_of_range then
+  when invalid_text_representation or numeric_value_out_of_range or invalid_parameter_value then
     return jsonb_build_object('valid',false,'code','EXPERTISE_EVIDENCE_TYPE_INVALID','server_assertions','[]'::jsonb,'server_hard_fails',jsonb_build_array('benchmark evidence missing or non-reconstructible'));
 end;
 $function$;
