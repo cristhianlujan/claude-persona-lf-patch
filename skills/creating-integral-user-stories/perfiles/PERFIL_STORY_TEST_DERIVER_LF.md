@@ -9,7 +9,7 @@
 - Merge autónomo: no autorizado
 - Agente operativo: `agents/test-deriver.md`
 - Contrato normativo: `references/test-derivation-contract.md`
-- Juez independiente: `J10_TEST_COVERAGE` v0.6
+- Juez independiente: `J10_TEST_COVERAGE` v0.7
 - Runtime del juez: `scripts/validate_test_coverage.py`
 
 El worker no ejecuta el runtime del juez. La disponibilidad, el registro y el
@@ -88,6 +88,8 @@ schemas ni jueces para obtener un resultado favorable.
 
 Cada `test_code` debe resolver un fixture externo exacto con actor, tenant,
 estado inicial, entradas exactas, pasos, resultado esperado y `evidence_path`.
+
+Cada test debe declarar `coverage_kind`. Los kinds especiales se autorizan solo con evidencia estructurada en el fixture y requirements/oracles inmutables de `traceability_matrix`; el perfil no inventa esos oracles.
 
 ## 7. Herramientas permitidas
 
@@ -318,7 +320,7 @@ worker_must_not_modify_judge_contract = true
 worker_must_not_select_own_pass_result = true
 ```
 
-J10 v0.6 recibe el payload exacto, verifica registro, SHA e identidades y emite
+J10 v0.7 recibe el payload exacto, verifica registro, SHA e identidades y emite
 uno de sus resultados contractuales. El perfil solo prepara y repara sus cuatro
 salidas autorizadas.
 

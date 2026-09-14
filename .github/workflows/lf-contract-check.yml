@@ -346,14 +346,86 @@ jobs:
           echo "PASS_LF_CONTRACT_FAST_P0_DOCS"
           echo "Deep migration/runtime/visual/E.16 work skipped because the canonical preflight proved an exact regular P0-doc-only delta."
 
+      - name: Classify Supabase control-plane scope
+        id: supabase_scope
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/supabase_control_plane_scope_selftest.py
+          python3 - <<'PY'
+          import importlib.util
+          import json
+          import os
+          from pathlib import Path
+
+          module_path = Path("sandbox/lf_contract_gate_test/supabase_control_plane_scope.py")
+          spec = importlib.util.spec_from_file_location("supabase_control_plane_scope", module_path)
+          if spec is None or spec.loader is None:
+              raise SystemExit("FAIL_SUPABASE_CONTROL_PLANE_SCOPE_MODULE_LOAD")
+          scope = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(scope)
+
+          event_name = os.environ.get("GITHUB_EVENT_NAME", "")
+          changed = scope.discover_changed_paths(event_name)
+          decision = scope.classify_control_plane_scope(event_name, changed)
+          required = "true" if decision["required"] else "false"
+          reason = str(decision["reason"])
+          matched = list(decision.get("matched_paths") or [])
+
+          output = Path(os.environ["GITHUB_OUTPUT"])
+          with output.open("a", encoding="utf-8") as handle:
+              handle.write(f"required={required}\n")
+              handle.write(f"reason={reason}\n")
+
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a", encoding="utf-8") as handle:
+                  handle.write("### Supabase control-plane scope\n")
+                  handle.write(f"- required: `{required}`\n")
+                  handle.write(f"- reason: `{reason}`\n")
+                  handle.write(f"- matched surfaces: `{json.dumps(matched, separators=(',', ':'))}`\n")
+                  handle.write("- policy: migrations/config/manual audit => remote readback; unrelated DEEP changes => no Management API dependency; unknown scope fails closed\n")
+
+          print(
+              "PASS_SUPABASE_CONTROL_PLANE_SCOPE "
+              f"required={required} reason={reason} matched={json.dumps(matched, separators=(',', ':'))}"
+          )
+          PY
+
+      - name: Guard Supabase control-plane scope decision
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        env:
+          SUPABASE_CONTROL_PLANE_REQUIRED: ${{ steps.supabase_scope.outputs.required }}
+          SUPABASE_CONTROL_PLANE_REASON: ${{ steps.supabase_scope.outputs.reason }}
+        run: |
+          set -euo pipefail
+          case "$SUPABASE_CONTROL_PLANE_REQUIRED" in
+            true|false) ;;
+            *) echo "FAIL_SUPABASE_CONTROL_PLANE_SCOPE_DECISION_MISSING"; exit 1 ;;
+          esac
+          if [ -z "$SUPABASE_CONTROL_PLANE_REASON" ]; then
+            echo "FAIL_SUPABASE_CONTROL_PLANE_SCOPE_REASON_MISSING"
+            exit 1
+          fi
+          echo "PASS_SUPABASE_CONTROL_PLANE_SCOPE_DECISION required=$SUPABASE_CONTROL_PLANE_REQUIRED reason=$SUPABASE_CONTROL_PLANE_REASON"
+
       - name: Validate declared governance paths
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         run: |
           pip install pyyaml
           python3 scripts/validate_declared_paths.py --repo-root .
 
+      - name: Record Supabase control-plane scope not applicable
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS' && steps.supabase_scope.outputs.required == 'false'
+        env:
+          SUPABASE_CONTROL_PLANE_REASON: ${{ steps.supabase_scope.outputs.reason }}
+        run: |
+          echo "PASS_SUPABASE_CONTROL_PLANE_NOT_APPLICABLE reason=$SUPABASE_CONTROL_PLANE_REASON"
+          echo "Supabase Management API readback is intentionally not a dependency of this candidate because no governed PostgREST control surface changed." >> "$GITHUB_STEP_SUMMARY"
+
       - name: Verify hosted Supabase Data API excludes net schema
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS' && steps.supabase_scope.outputs.required == 'true'
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
@@ -380,6 +452,11 @@ jobs:
           try:
               with urllib.request.urlopen(request, timeout=20) as response:
                   config = json.loads(response.read().decode("utf-8"))
+          except urllib.error.HTTPError as exc:
+              reason = str(getattr(exc, "reason", "unknown")).replace("\n", " ").replace("\r", " ")[:80]
+              raise SystemExit(
+                  f"FAIL_SUPABASE_POSTGREST_CONFIG_READBACK: HTTPError status={exc.code} reason={reason}"
+              ) from None
           except (urllib.error.URLError, TimeoutError, UnicodeDecodeError, json.JSONDecodeError) as exc:
               raise SystemExit(f"FAIL_SUPABASE_POSTGREST_CONFIG_READBACK: {type(exc).__name__}") from exc
 
@@ -777,6 +854,8 @@ jobs:
                   "sandbox/lf_contract_gate_test/PR93_LOTE_E16_RATIFICATION_TESTS.py",
                   "sandbox/lf_contract_gate_test/PR93_LOTE_E16_INTEGRATION_TESTS.py",
                   "sandbox/lf_contract_gate_test/lf_validation_engine_v0_10_2_selftest.py",
+                  "sandbox/lf_contract_gate_test/supabase_control_plane_scope.py",
+                  "sandbox/lf_contract_gate_test/supabase_control_plane_scope_selftest.py",
                   "sandbox/no_bypass_judge_profile_card_skill/no_bypass_judge_selftest.py",
                   "sandbox/lf_contract_gate_test/pass_evidence_gate.py --self-test --scan",
                   "sandbox/lf_contract_gate_test/r8_continuous_audit.py",

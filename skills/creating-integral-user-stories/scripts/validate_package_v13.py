@@ -182,7 +182,7 @@ def _story_pack(blind:dict[str,Any])->dict[str,Any]:
       "canonical_source_kind":"UNRESOLVED","canonical_ref":None,"resolution_evidence_ref":None,
     } for x in icon_obs]
     criterion={"criterion_code":"AC-VISUAL-EVIDENCE-PRESERVED","given":"a locked screen-ingestion v0.2 payload exists","when":"visual evidence is routed downstream","then":"every visual source_ref remains covered or explicitly pending","source_ref":"M7://visual-evidence-chain"}
-    test={"test_code":"TEST-VISUAL-EVIDENCE-PRESERVED","family":"TRACEABILITY","criterion_ref":"AC-VISUAL-EVIDENCE-PRESERVED","preconditions":["locked v0.2 blind evidence"],"steps":["compare ingestion refs with downstream coverage refs"],"expected_result":"all visual source refs remain covered","negative":False,"critical":True,"automatable":True,"evidence_path":"evidence/M7-visual-evidence-chain.json"}
+    test={"test_code":"TEST-VISUAL-EVIDENCE-PRESERVED","family":"FUNCTIONAL","coverage_kind":"POSITIVE","criterion_ref":"AC-VISUAL-EVIDENCE-PRESERVED","preconditions":["locked v0.2 blind evidence"],"steps":["compare ingestion refs with downstream coverage refs"],"expected_result":"every visual source_ref remains covered or explicitly pending","negative":False,"critical":True,"automatable":True,"evidence_path":"evidence/M7-visual-evidence-chain.json"}
     return {
       "core":{"acceptance_criteria":[criterion]},"tests":[test],
       "interaction":{"source_observation_refs":token_refs},
@@ -225,7 +225,7 @@ def real_chain(root:Path)->dict[str,Any]:
 
     j10_payload={
       "story_pack":story,"critical_rules":[],
-      "fixtures":{"TEST-VISUAL-EVIDENCE-PRESERVED":{"actor":"M7_E2E_DERIVER","tenant":"LF-CANDIDATE","initial_state":{"blind_locked":True},"exact_inputs":{"source_snapshot_sha":blind["source_snapshot_sha"],"visual_observation_count":len(blind.get("visual_observation_inventory",[]))},"steps":["compare all source_ref values across the derived chain"],"expected_result":"all visual source refs remain covered","evidence_path":"evidence/M7-visual-evidence-chain.json"}},
+      "fixtures":{"TEST-VISUAL-EVIDENCE-PRESERVED":{"actor":"M7_E2E_DERIVER","tenant":"LF-CANDIDATE","initial_state":{"blind_locked":True},"exact_inputs":{"source_snapshot_sha":blind["source_snapshot_sha"],"visual_observation_count":len(blind.get("visual_observation_inventory",[]))},"steps":["compare ingestion refs with downstream coverage refs"],"expected_result":"every visual source_ref remains covered or explicitly pending","evidence_path":"evidence/M7-visual-evidence-chain.json"}},
       "traceability_matrix":{"criteria":{"AC-VISUAL-EVIDENCE-PRESERVED":["M7://visual-evidence-chain"]},"rules":{}},
       "test_environment":{"actors":["M7_E2E_DERIVER","M7_J10_VALIDATOR"],"tenants":["LF-CANDIDATE"],"initial_states":["LOCKED_BLIND_V02"],"data_sets":["REAL_SCREEN_ONBOARDING_STEP1"],"restrictions":["NO_INVENTED_NONVISUAL_REQUIREMENTS"]},
     }

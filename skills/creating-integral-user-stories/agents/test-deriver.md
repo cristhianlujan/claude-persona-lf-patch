@@ -1,6 +1,6 @@
 # Agent — Test Deriver
 
-Versión operativa: `v0.6`.
+Versión operativa: `v0.7`.
 
 Perfil externo: `perfiles/PERFIL_STORY_TEST_DERIVER_LF.md`.  
 Juez independiente: `J10_TEST_COVERAGE`.  
@@ -102,6 +102,7 @@ Cada regla contiene como mínimo:
 {
   "rule_code": "PERM-CUSTOMER-READ",
   "family": "PERMISSION",
+  "coverage_kind": "NEGATIVE",
   "requires_negative": true,
   "tenant_rule": false,
   "idempotent": false,
@@ -110,6 +111,13 @@ Cada regla contiene como mínimo:
   "source_ref": "SRC-001#permission"
 }
 ```
+
+### 5.1.1 `traceability_matrix` para oracles y coverage
+
+J10 v0.7 no acepta una prueba rule-only basada solo en texto libre. La entrada
+inmutable `traceability_matrix` debe aportar `refs`, `coverage_requirements` y
+`oracles` para los kinds aplicables. El worker únicamente consume esa autoridad
+y la enlaza; no puede editarla para hacer pasar su salida.
 
 ### 5.2 `test_environment`
 
@@ -161,12 +169,12 @@ Comprobar en orden:
 14. el runtime J10 está registrado canónicamente;
 15. el SHA del runtime coincide entre `main`, registro y evidencia.
 
-Metadata canónica reconciliada para J10 v0.6:
+Metadata candidata para J10 v0.7 (reconciliar SHA después de CI/merge):
 
 ```text
 path = scripts/validate_test_coverage.py
-sha256_observed = 105260673c5a6e906e28ef43b1fba661c234b3b1099f64a32db99bcc1c178f52
-git_blob_observed = eee45b76dce34398d254dc0485fb404280988931
+sha256_observed = a86c5633e44297f196ed7a8f3cd4de2be739d6d616593ba33545c854d6ed89a1
+git_blob_observed = d62b28cb515dffabc18c296eed8697e885b905f2
 supabase_registration = supabase://private.lf_skill_artifacts/ART_SCRIPT_VALIDATE_TEST_COVERAGE
 registration_status = PASS_WITH_EVIDENCE
 ```
@@ -177,8 +185,8 @@ evidencia obliga a retornar `BLOCKED` sin emitir un handoff listo.
 
 ## 8. Invariantes
 
-- Cada criterio tiene una prueba positiva.
-- Cada regla crítica tiene una prueba o decisión aprobada de no aplicabilidad.
+- Cada criterio tiene una prueba positiva con `expected_result` igual al `then` de fuente.
+- Cada regla crítica tiene prueba positiva y negativa o una no-aplicabilidad aprobada fuera del worker.
 - Cada permiso aplicable tiene un caso `DENY`.
 - Cada regla tenant tiene un caso cross-tenant.
 - Cada transición aplicable tiene prueba de estado.
@@ -381,8 +389,8 @@ El sidecar separado contiene:
   ],
   "assertion_results": {},
   "runtime_path": "scripts/validate_test_coverage.py",
-  "runtime_sha256_observed": "105260673c5a6e906e28ef43b1fba661c234b3b1099f64a32db99bcc1c178f52",
-  "runtime_git_blob_observed": "eee45b76dce34398d254dc0485fb404280988931",
+  "runtime_sha256_observed": "a86c5633e44297f196ed7a8f3cd4de2be739d6d616593ba33545c854d6ed89a1",
+  "runtime_git_blob_observed": "d62b28cb515dffabc18c296eed8697e885b905f2",
   "runtime_registration": "supabase://private.lf_skill_artifacts/ART_SCRIPT_VALIDATE_TEST_COVERAGE",
   "runtime_registration_status": "PASS_WITH_EVIDENCE",
   "evidence_refs": [],
@@ -410,7 +418,7 @@ vez reconciliado el runtime:
 
 ```bash
 LF_EXECUTOR_IDENTITY=<independent_executor> \
-LF_JUDGE_VERSION=v0.6 \
+LF_JUDGE_VERSION=v0.7 \
 python scripts/validate_test_coverage.py j10-input.json \
   --evidence-ref <ref>
 ```
