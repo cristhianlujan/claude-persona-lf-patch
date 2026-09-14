@@ -49,6 +49,8 @@
       "provider_kind": "SOURCE_ATTESTATION",
       "receipt_schema": "LF_SOURCE_ATTESTATION_RECEIPT_V1",
       "authority_owner": "S31",
+      "authority_revision_binding": "AGGREGATE_BASE_SHA",
+      "authority_ref_binding": "refs/heads/{target_branch}",
       "network_reverification_by_aggregator": false
     },
     "EXTERNAL_RECONCILIATION_V7": {
@@ -79,7 +81,9 @@
     "Exactly one receipt per required provider code.",
     "All CI workflow receipts bind the exact candidate head and exact base SHA in the aggregate subject.",
     "Workflow-level success alone never satisfies LF_CONTRACT_CHECK; DEEP_RUN proof requires a successful deep job plus a non-expired audit artifact with SHA-256 digest.",
-    "A SOURCE_ATTESTATION provider must bind the exact repository and exact candidate revision; the aggregator verifies its receipt hash and identity fields but does not perform remote currentness lookup.",
+    "A CURRENTNESS_AUTHORITY source-attestation receipt binds the exact repository plus the moving authority revision represented by aggregate base_sha and refs/heads/{target_branch}; it does not attest the candidate head.",
+    "The candidate head is proven independently by exact-head CI workflow receipts; currentness and candidate integrity are not conflated.",
+    "The aggregator verifies source-attestation receipt hash and identity fields but performs no remote currentness lookup.",
     "Provider FAIL, unknown status, duplicate provider, subject mismatch, malformed digest or missing required provider fails closed.",
     "CI evidence may be complete while semantic review, qualification, E2E, runtime, production or merge authorization remains incomplete.",
     "No result from this contract authorizes merge_main, runtime, production, Golden, semantic closure or E2E closure."
