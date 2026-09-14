@@ -1,0 +1,62 @@
+name: LF S38 Trust Attestation Pilot
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/lf-s38-trust-attestation-pilot.yml'
+      - 'sandbox/lf_contract_gate_test/s38_trust_architecture/**'
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+  artifact-metadata: write
+
+jobs:
+  attest-subject-manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Build deterministic pilot subject
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib
+          root = pathlib.Path('.')
+          source = root/'sandbox/lf_contract_gate_test/s38_trust_architecture/trust_architecture_decision_matrix_v0_1.json'
+          raw = source.read_bytes()
+          doc = {
+              'manifest_version': 'LF_TRUST_ATTESTATION_PILOT_SUBJECT_V0_1',
+              'repository': os.environ['GITHUB_REPOSITORY'],
+              'source_sha': os.environ['PR_HEAD_SHA'],
+              'research_artifact_path': str(source),
+              'research_artifact_sha256': hashlib.sha256(raw).hexdigest(),
+              'authority': {'merge':'NONE','golden':'NONE','runtime':'NONE','scheduler':'NONE','production':'NONE'}
+          }
+          pathlib.Path('/tmp/lf-trust-pilot-subject.json').write_text(json.dumps(doc, sort_keys=True, separators=(',',':'))+'\n')
+          print(hashlib.sha256(pathlib.Path('/tmp/lf-trust-pilot-subject.json').read_bytes()).hexdigest())
+          PY
+        env:
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+
+      - name: Generate GitHub artifact attestation
+        id: attest
+        uses: actions/attest@v4
+        with:
+          subject-path: /tmp/lf-trust-pilot-subject.json
+
+      - name: Preserve subject and Sigstore bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-s38-trust-attestation-pilot
+          path: |
+            /tmp/lf-trust-pilot-subject.json
+            ${{ steps.attest.outputs.bundle-path }}
+          if-no-files-found: error
+          retention-days: 7

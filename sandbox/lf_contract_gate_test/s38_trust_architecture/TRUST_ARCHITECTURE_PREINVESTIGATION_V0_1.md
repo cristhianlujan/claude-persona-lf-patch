@@ -119,3 +119,14 @@ IR-008 must not start until one of these is demonstrated outside #758:
 ## Recommendation
 
 Run a bounded pilot of **GitHub Artifact Attestations** first. Do not implement another repo-local trust anchor. If the pilot cannot meet T1-T5, move to the LF OIDC external attestor design. Authenticated REST + caching may be used only as a transport optimization, never as the security root.
+
+## Live pilot added in the research lane
+
+A research-only `pull_request` workflow was added as `.github/workflows/lf-s38-trust-attestation-pilot.yml`. It does not change #758. The pilot:
+
+- checks out the exact PR head with persisted credentials disabled;
+- creates a deterministic subject manifest in `/tmp`;
+- requests a GitHub/Sigstore artifact attestation using `actions/attest@v4`;
+- preserves the subject and generated Sigstore bundle as a short-lived workflow artifact.
+
+The purpose is to test whether the current repository/plan/PR permission model can mint a real external attestation. A successful run is **capability evidence only**, not authorization and not yet a trusted-builder proof.
