@@ -278,7 +278,10 @@
           "pattern": "^[0-9a-f]{64}$"
         },
         "resolver_id": {
-          "const": "QUALITY_PACK_TRUSTED_REF_RESOLVER_V1"
+          "enum": [
+            "QUALITY_PACK_TRUSTED_REF_RESOLVER_V1",
+            "S38_GOVERNED_REF_RESOLVER_V2"
+          ]
         }
       }
     },
@@ -302,7 +305,10 @@
           "pattern": "^[0-9a-f]{64}$"
         },
         "resolver_id": {
-          "const": "QUALITY_PACK_TRUSTED_REF_RESOLVER_V1"
+          "enum": [
+            "QUALITY_PACK_TRUSTED_REF_RESOLVER_V1",
+            "S38_GOVERNED_REF_RESOLVER_V2"
+          ]
         },
         "owner_capability_id": {
           "type": "string",
