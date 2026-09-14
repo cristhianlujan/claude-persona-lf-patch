@@ -51,11 +51,13 @@ jobs:
         run: |
           set -euo pipefail
           test "$(printf '%s' "$BREV" | grep -E '^[0-9a-f]{40}$')"
+          git fetch --no-tags --depth=1 origin "$BREV"
           git cat-file -e "$BREV:$BPATH"
           git show "$BREV:$BPATH" > /tmp/s38_bundle.json
           if [ -n "$RREV" ] || [ -n "$RPATH" ]; then
             test -n "$RREV" && test -n "$RPATH"
             test "$(printf '%s' "$RREV" | grep -E '^[0-9a-f]{40}$')"
+            if [ "$RREV" != "$BREV" ]; then git fetch --no-tags --depth=1 origin "$RREV"; fi
             git cat-file -e "$RREV:$RPATH"
             git show "$RREV:$RPATH" > /tmp/s38_receipt.json
           fi
