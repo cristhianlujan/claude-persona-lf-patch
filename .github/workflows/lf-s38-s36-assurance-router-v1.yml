@@ -1,0 +1,85 @@
+name: LF S38 to S36 Assurance Router V1
+
+on:
+  workflow_dispatch:
+    inputs:
+      bundle_revision:
+        description: Exact commit containing frozen S38 bundle
+        required: true
+        type: string
+      bundle_path:
+        description: Repository path to frozen S38 bundle JSON
+        required: true
+        type: string
+      receipt_revision:
+        description: Exact commit containing independent receipt; blank while review pending
+        required: false
+        type: string
+      receipt_path:
+        description: Repository path to independent receipt JSON; blank while review pending
+        required: false
+        type: string
+      expected_signer_digest:
+        description: Out-of-band immutable signer digest
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      bundle_revision: {required: true, type: string}
+      bundle_path: {required: true, type: string}
+      receipt_revision: {required: false, type: string, default: ''}
+      receipt_path: {required: false, type: string, default: ''}
+      expected_signer_digest: {required: true, type: string}
+
+permissions:
+  contents: read
+
+jobs:
+  route-s38-assurance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Materialize exact frozen inputs
+        env:
+          BREV: ${{ inputs.bundle_revision }}
+          BPATH: ${{ inputs.bundle_path }}
+          RREV: ${{ inputs.receipt_revision }}
+          RPATH: ${{ inputs.receipt_path }}
+        run: |
+          set -euo pipefail
+          test "$(printf '%s' "$BREV" | grep -E '^[0-9a-f]{40}$')"
+          git cat-file -e "$BREV:$BPATH"
+          git show "$BREV:$BPATH" > /tmp/s38_bundle.json
+          if [ -n "$RREV" ] || [ -n "$RPATH" ]; then
+            test -n "$RREV" && test -n "$RPATH"
+            test "$(printf '%s' "$RREV" | grep -E '^[0-9a-f]{40}$')"
+            git cat-file -e "$RREV:$RPATH"
+            git show "$RREV:$RPATH" > /tmp/s38_receipt.json
+          fi
+      - name: Route S38 package
+        id: router
+        continue-on-error: true
+        env:
+          BREV: ${{ inputs.bundle_revision }}
+          BPATH: ${{ inputs.bundle_path }}
+          EXPECTED_SIGNER: ${{ inputs.expected_signer_digest }}
+          RREV: ${{ inputs.receipt_revision }}
+        run: |
+          set -euo pipefail
+          BREF="github://${GITHUB_REPOSITORY}@${BREV}/${BPATH}"
+          ARGS=(--bundle /tmp/s38_bundle.json --bundle-ref "$BREF" --expected-signer-digest "$EXPECTED_SIGNER" --routing-contract sandbox/lf_contract_gate_test/s38_assurance_router/lf_transversal_strategy_routing_v1.json --output /tmp/s38_s36_assurance_handoff.json)
+          if [ -n "$RREV" ]; then ARGS+=(--receipt /tmp/s38_receipt.json); fi
+          python3 sandbox/lf_contract_gate_test/s38_assurance_router/lf_s38_s36_assurance_router_v1.py "${ARGS[@]}"
+      - name: Preserve S38 to S36 handoff
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-s38-s36-assurance-handoff
+          path: /tmp/s38_s36_assurance_handoff.json
+          if-no-files-found: error
+      - name: Fail closed on invalid routing input
+        if: steps.router.outcome == 'failure'
+        run: exit 1
