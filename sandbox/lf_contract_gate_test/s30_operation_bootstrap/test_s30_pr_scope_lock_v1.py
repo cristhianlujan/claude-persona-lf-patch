@@ -4,12 +4,14 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import subprocess
 from pathlib import Path
 
 EXPECTED_MANIFEST_SHA256 = "0e449a1f5122333d57309e4c4b1daaa6be12f2c48956ea9a45138908a7715e9d"
 EXPECTED_OWNER = "S30"
 EXPECTED_BRANCH = "s30-operation-bootstrap-lf-20260914"
+HEX40 = re.compile(r"^[0-9a-f]{40}$")
 
 
 def fail(code: str, detail: str = "") -> None:
@@ -21,6 +23,30 @@ def run(repo: Path, *args: str) -> str:
     if cp.returncode != 0:
         fail("BLOCK_S30_SCOPE_LOCK_GIT", f"{' '.join(args)}::{cp.stderr.strip()}")
     return cp.stdout.strip()
+
+
+def owned_head(repo: Path) -> str:
+    event_name = (os.environ.get("GITHUB_EVENT_NAME") or "").strip()
+    event_path = (os.environ.get("GITHUB_EVENT_PATH") or "").strip()
+    if event_name == "pull_request" and event_path:
+        payload = json.loads(Path(event_path).read_text(encoding="utf-8"))
+        pr = payload.get("pull_request") or {}
+        head = ((pr.get("head") or {}).get("sha") or "").strip()
+        ref = ((pr.get("head") or {}).get("ref") or "").strip()
+        if ref != EXPECTED_BRANCH:
+            fail("BLOCK_S30_SCOPE_LOCK_FOREIGN_HEAD", ref)
+        if not HEX40.fullmatch(head):
+            fail("BLOCK_S30_SCOPE_LOCK_PR_HEAD_INVALID", head)
+        run(repo, "cat-file", "-e", f"{head}^{{commit}}")
+        return head
+
+    gha_head = (os.environ.get("GITHUB_HEAD_REF") or "").strip()
+    if gha_head and gha_head != EXPECTED_BRANCH:
+        fail("BLOCK_S30_SCOPE_LOCK_FOREIGN_HEAD", gha_head)
+    head = run(repo, "rev-parse", "HEAD")
+    if not HEX40.fullmatch(head):
+        fail("BLOCK_S30_SCOPE_LOCK_LOCAL_HEAD_INVALID", head)
+    return head
 
 
 def main() -> int:
@@ -36,17 +62,18 @@ def main() -> int:
     if lock.get("cross_owner_changes_allowed") is not False:
         fail("BLOCK_S30_SCOPE_LOCK_CROSS_OWNER_ENABLED")
 
-    gha_head = (os.environ.get("GITHUB_HEAD_REF") or "").strip()
-    if gha_head and gha_head != EXPECTED_BRANCH:
-        fail("BLOCK_S30_SCOPE_LOCK_FOREIGN_HEAD", gha_head)
-
     anchor = lock.get("scope_anchor_revision")
+    if not isinstance(anchor, str) or not HEX40.fullmatch(anchor):
+        fail("BLOCK_S30_SCOPE_LOCK_ANCHOR_FORMAT")
     run(repo, "cat-file", "-e", f"{anchor}^{{commit}}")
-    if subprocess.run(["git", "-C", str(repo), "merge-base", "--is-ancestor", anchor, "HEAD"]).returncode != 0:
-        fail("BLOCK_S30_SCOPE_LOCK_REBASE_UNAUTHORIZED", anchor)
+    branch_head = owned_head(repo)
+    if subprocess.run(["git", "-C", str(repo), "merge-base", "--is-ancestor", anchor, branch_head]).returncode != 0:
+        fail("BLOCK_S30_SCOPE_LOCK_REBASE_UNAUTHORIZED", f"anchor={anchor} head={branch_head}")
 
-    changed = set(filter(None, run(repo, "diff", "--name-only", anchor, "HEAD").splitlines()))
+    changed = set(filter(None, run(repo, "diff", "--name-only", anchor, branch_head).splitlines()))
     allowed = set(lock.get("allowed_paths") or [])
+    if not allowed:
+        fail("BLOCK_S30_SCOPE_LOCK_ALLOWLIST_EMPTY")
     unexpected = sorted(changed - allowed)
     missing = sorted(allowed - changed)
     if unexpected:
@@ -54,7 +81,16 @@ def main() -> int:
     if missing:
         fail("BLOCK_S30_SCOPE_LOCK_EXPECTED_PATH_MISSING", ",".join(missing))
 
-    print(json.dumps({"status":"PASS","scope":"S30_OPERATION_BOOTSTRAP_ONLY","changed_path_count":len(changed),"anchor":anchor,"manifest_sha256":observed}, sort_keys=True))
+    synthetic = run(repo, "rev-parse", "HEAD")
+    print(json.dumps({
+        "status":"PASS",
+        "scope":"S30_OPERATION_BOOTSTRAP_ONLY",
+        "changed_path_count":len(changed),
+        "anchor":anchor,
+        "owned_head":branch_head,
+        "synthetic_merge_head_ignored":synthetic != branch_head,
+        "manifest_sha256":observed
+    }, sort_keys=True))
     return 0
 
 
