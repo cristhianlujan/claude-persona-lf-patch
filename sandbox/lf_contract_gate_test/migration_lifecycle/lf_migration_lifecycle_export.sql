@@ -16,7 +16,7 @@ with scoped as (
     cardinality(statements) as statement_count,
     array_to_string(statements, E'\n') as source_sql
   from supabase_migrations.schema_migrations
-  where name like :'owner_prefix' || '%'
+  where left(name, length(:'owner_prefix')) = :'owner_prefix'
     and (nullif(:'min_version', '') is null or version >= :'min_version')
     and (nullif(:'max_version', '') is null or version <= :'max_version')
 ), hydrated as (
