@@ -1,0 +1,45 @@
+{
+  "contract_code": "LF_MATERIAL_CURRENTNESS_V1",
+  "version": "1.0.0-candidate",
+  "owner": "S30",
+  "status": "CANDIDATE_READ_ONLY",
+  "purpose": "Resolve moving source authority without invalidating executions whose declared material inputs are unchanged.",
+  "authority_model": {
+    "moving_authority": "logical_ref",
+    "example": "refs/heads/main",
+    "resolved_revision": "exact_git_commit_sha",
+    "evidence_revision_is_immutable": true,
+    "current_revision_may_move": true
+  },
+  "material_model": {
+    "dependency_completeness_required_for_auto_rebind": "COMPLETE",
+    "supported_kinds": ["GIT_TREE", "DIGEST"],
+    "git_tree_fingerprint": "SHA256_CANONICAL_SORTED_PATH_MODE_BLOB_SHA1",
+    "digest_fingerprint": "PROVIDER_SUPPLIED_SHA256",
+    "transitive_affected_closure_required": true,
+    "unknown_or_unresolved_action": "UNKNOWN_FAIL_CLOSED"
+  },
+  "decisions": {
+    "CURRENT": "authority revision and all declared materials are unchanged",
+    "CURRENT_REBOUND": "authority revision advanced but all declared root materials remain equivalent; automatic rebind is allowed",
+    "STALE_AFFECTED": "one or more declared materials or their transitive dependencies changed",
+    "UNKNOWN_FAIL_CLOSED": "dependency graph, revision, material or fingerprint proof is incomplete or invalid"
+  },
+  "safety": {
+    "network_access_in_evaluator": false,
+    "github_rest_required_for_rebuild": false,
+    "proxy_bypass_allowed": false,
+    "main_sha_change_alone_causes_stale": false,
+    "path_diff_alone_is_sufficient_proof": false,
+    "diverged_authority_auto_rebind_allowed": false,
+    "merge_main_allowed": false,
+    "runtime_or_production_effect_allowed": false
+  },
+  "integration": {
+    "source_authority_provider": "GOVERNED_GIT_BROKER_OR_ATTESTOR",
+    "capability_binding_consumer": "public.fn_lf_capability_bind_current_v1",
+    "qualification_consumer": "LF_QUALIFICATION_CURRENTNESS",
+    "migration_lifecycle_consumer": "MIGRATION_LIFECYCLE_LF",
+    "external_digest_rule": "DIGEST materials must be hydrated from a governed provider before evaluation"
+  }
+}
