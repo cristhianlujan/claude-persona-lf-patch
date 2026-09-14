@@ -1,0 +1,23 @@
+name: LF S38 Trusted Reusable Attestation Caller Pilot
+
+on:
+  push:
+    branches:
+      - 'lf/s38-trust-architecture-gpt-exclusive-20260914'
+    paths:
+      - 'sandbox/lf_contract_gate_test/s38_trust_architecture/reusable_pilot_trigger_v0_1.txt'
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+  artifact-metadata: write
+
+jobs:
+  trusted-attestation:
+    uses: cristhianlujan/claude-persona-lf-patch/.github/workflows/lf-trusted-attestation-reusable-pilot.yml@7fa9ce2811e42ddb4c14d27f98a47d11366433eb
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write

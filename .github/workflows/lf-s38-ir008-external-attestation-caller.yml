@@ -1,0 +1,15 @@
+name: LF S38 IR-008 External Candidate Attestation
+on:
+  push:
+    branches:
+      - lf/s38-trust-architecture-gpt-exclusive-20260914
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+  artifact-metadata: write
+jobs:
+  attest-ir008-candidate:
+    uses: cristhianlujan/claude-persona-lf-patch/.github/workflows/lf-trusted-attestation-reusable-v1.yml@b464326ed6c6db0e93959588b952a74e5fc2fe30
+    with:
+      candidate_sha: aeeac1b30713bc67421f212854c94595b6f6d975

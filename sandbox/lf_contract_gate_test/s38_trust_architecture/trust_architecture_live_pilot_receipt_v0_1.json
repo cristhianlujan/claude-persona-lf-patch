@@ -1,0 +1,67 @@
+{
+  "receipt": "LF_TRUST_ARCHITECTURE_LIVE_PILOT_V0_1",
+  "status": "PASS_WITH_BOUNDARIES",
+  "research_only": true,
+  "direct_pr_attestation_pilot": {
+    "workflow_run_id": 34838491684,
+    "workflow": ".github/workflows/lf-s38-trust-attestation-pilot.yml",
+    "event": "pull_request",
+    "subject_sha256": "1986d2ddf043f02b35b9f66b92e2544271cb5b13efe9b259a7bc72fb01c6a3b1",
+    "result": "ATTESTATION_CREATED_AND_OFFLINE_VERIFIED",
+    "certificate_source_repository_digest": "9a2d1d8321d545a7d84baa28591053a41a492fb7",
+    "observed_boundary": "PULL_REQUEST_ATTESTATION_BINDS_GITHUB_PR_MERGE_SHA_NOT_PR_HEAD_SHA"
+  },
+  "trusted_reusable_signer_pilot": {
+    "workflow_run_id": 34838789664,
+    "caller_commit": "485a99164a2b81d5c93f39a6f785e0b076b38a86",
+    "trusted_signer_commit": "7fa9ce2811e42ddb4c14d27f98a47d11366433eb",
+    "trusted_signer_workflow": "cristhianlujan/claude-persona-lf-patch/.github/workflows/lf-trusted-attestation-reusable-pilot.yml",
+    "subject_sha256": "778a9b2faf35745f1b739d3b9f61fa261f6c052999ad33d9f20f998c092653f6",
+    "certificate_build_signer_digest": "7fa9ce2811e42ddb4c14d27f98a47d11366433eb",
+    "certificate_source_repository_digest": "485a99164a2b81d5c93f39a6f785e0b076b38a86",
+    "certificate_source_repository_ref": "refs/heads/lf/s38-trust-architecture-gpt-exclusive-20260914",
+    "verified_timestamps": 1,
+    "offline_verification": {
+      "verifier": "gh 2.100.0 attestation verify",
+      "bundle": "DOWNLOADED_ONCE_FROM_GITHUB_ATTESTATIONS",
+      "trusted_root": "DOWNLOADED_ONCE_WITH_GH_ATTESTATION_TRUSTED_ROOT",
+      "verification_count_with_network_forced_unusable": 100,
+      "verification_count_pass": 100,
+      "elapsed_seconds": 7,
+      "github_api_calls_per_attack_after_bootstrap": 0
+    },
+    "negative_controls": {
+      "tampered_subject": "FAIL_CLOSED",
+      "wrong_signer_digest": "FAIL_CLOSED",
+      "wrong_source_digest": "FAIL_CLOSED"
+    }
+  },
+  "architecture_disposition": {
+    "authenticated_rest_cache": "AVAILABILITY_OPTIMIZATION_ONLY_NOT_TRUST_ROOT",
+    "github_artifact_attestation_trusted_reusable_signer": "PREFERRED_ARCHITECTURE_PROVEN_BY_LIVE_PILOT",
+    "lf_oidc_external_asymmetric_attestor": "FALLBACK_IF_GITHUB_ATTESTATION_POLICY_IS_INSUFFICIENT",
+    "signed_git_commit_only": "SUPPORTING_SIGNAL_ONLY"
+  },
+  "security_interpretation": {
+    "whole_checkout_self_reference": "MATERIALLY_CLOSED_FOR_LOCAL_CHECKOUT_TAMPER_WHEN_EXTERNAL_GH_VERIFIER_TRUST_ROOT_SIGNER_DIGEST_AND_SOURCE_DIGEST_ARE_ENFORCED",
+    "candidate_can_replace_signer_without_detection": false,
+    "candidate_can_reuse_attestation_after_subject_tamper": false,
+    "attestation_is_authorization": false
+  },
+  "remaining_design_requirements_before_ir008": [
+    "FREEZE_PRODUCTION_REUSABLE_SIGNER_WORKFLOW_AT_IMMUTABLE_COMMIT",
+    "PROVISION_EXPECTED_SIGNER_DIGEST_TO_REVIEWER_OUTSIDE_CANDIDATE_CHECKOUT",
+    "BUILD_FULL_LF_TCB_SUBJECT_MANIFEST_IN_TRUSTED_SIGNER_FROM_GITHUB_CONTEXT_AND_CANONICAL_BYTES",
+    "DOWNLOAD_ATTESTATION_BUNDLE_AND_TRUSTED_ROOT_ONCE_THEN_REVIEW_OFFLINE",
+    "DEFINE_TRUSTED_ROOT_REFRESH_AND_ARCHIVAL_POLICY",
+    "KEEP_ATTESTATION_AS_PROVENANCE_ONLY_NOT_MERGE_GOLDEN_RUNTIME_AUTHORITY"
+  ],
+  "ir008_authorized": false,
+  "authorization": {
+    "merge": "NONE",
+    "golden": "NONE",
+    "runtime": "NONE",
+    "scheduler": "NONE",
+    "production": "NONE"
+  }
+}

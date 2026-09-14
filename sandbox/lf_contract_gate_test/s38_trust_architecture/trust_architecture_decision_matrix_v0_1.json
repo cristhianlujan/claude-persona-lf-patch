@@ -1,0 +1,64 @@
+{
+  "artifact": "LF_TRUST_ARCHITECTURE_DECISION_MATRIX_V0_1",
+  "authorities": {
+    "golden": "NONE",
+    "merge": "NONE",
+    "production": "NONE",
+    "runtime": "NONE",
+    "scheduler": "NONE"
+  },
+  "ir008_authorized": false,
+  "options": [
+    {
+      "disposition": "TRANSPORT_OPTIMIZATION_ONLY",
+      "id": "AUTHENTICATED_REST_SINGLE_BOOTSTRAP",
+      "offline_review_after_bootstrap": true,
+      "security_root_external": false,
+      "solves_rate_limit_bottleneck": true,
+      "solves_whole_checkout_tamper": false
+    },
+    {
+      "disposition": "PREFERRED_PILOT",
+      "id": "GITHUB_ARTIFACT_ATTESTATION_TRUSTED_BUILDER",
+      "offline_review_after_bootstrap": true,
+      "security_root_external": true,
+      "solves_rate_limit_bottleneck": true,
+      "solves_whole_checkout_tamper": "YES_IF_SIGNER_IDENTITY_AND_DIGEST_ARE_ENFORCED_OUT_OF_BAND"
+    },
+    {
+      "disposition": "PREFERRED_FALLBACK",
+      "id": "LF_OIDC_EXTERNAL_ASYMMETRIC_ATTESTOR",
+      "offline_review_after_bootstrap": true,
+      "security_root_external": true,
+      "solves_rate_limit_bottleneck": true,
+      "solves_whole_checkout_tamper": "YES_IF_PRIVATE_KEY_SERVICE_AND_PUBLIC_TRUST_ROOT_ARE_OUTSIDE_CHECKOUT"
+    },
+    {
+      "disposition": "SUPPORTING_SIGNAL_NOT_SUFFICIENT",
+      "id": "SIGNED_GIT_COMMIT_ONLY",
+      "offline_review_after_bootstrap": true,
+      "security_root_external": "CONDITIONAL",
+      "solves_rate_limit_bottleneck": true,
+      "solves_whole_checkout_tamper": "PARTIAL"
+    }
+  ],
+  "pilot_status": {
+    "caller_source_commit": "485a99164a2b81d5c93f39a6f785e0b076b38a86",
+    "github_artifact_attestation_direct_pr": "PASS_WITH_PR_MERGE_SHA_BOUNDARY",
+    "github_artifact_attestation_trusted_reusable_signer": "PASS_LIVE",
+    "negative_controls": [
+      "TAMPERED_SUBJECT_FAIL_CLOSED",
+      "WRONG_SIGNER_DIGEST_FAIL_CLOSED",
+      "WRONG_SOURCE_DIGEST_FAIL_CLOSED"
+    ],
+    "offline_verifications": "100/100 PASS with network forced unusable after bootstrap",
+    "trusted_signer_commit": "7fa9ce2811e42ddb4c14d27f98a47d11366433eb"
+  },
+  "problem": {
+    "availability": "TWO_UNAUTHENTICATED_GITHUB_REST_CALLS_PER_RESOLVER_CONSTRUCTION",
+    "security": "WHOLE_CHECKOUT_SELF_REFERENTIAL_TRUST_ROOT"
+  },
+  "recommended_next": "DESIGN_PRODUCTION_TRUSTED_REUSABLE_ATTESTATION_GATE_THEN_REQUEST_IR008_IMPLEMENTATION_AUTHORIZATION",
+  "status": "RESEARCH_ONLY",
+  "trigger_review": "S38-DG-IR-007"
+}

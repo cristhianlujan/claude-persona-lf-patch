@@ -1,0 +1,54 @@
+name: LF Trusted Attestation Reusable Pilot
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+  artifact-metadata: write
+
+jobs:
+  attest-caller-head:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact caller SHA
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Build subject from GitHub caller context
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib
+          source = pathlib.Path('sandbox/lf_contract_gate_test/s38_trust_architecture/trust_architecture_decision_matrix_v0_1.json')
+          doc = {
+              'manifest_version': 'LF_TRUSTED_REUSABLE_ATTESTATION_PILOT_V0_1',
+              'repository': os.environ['GITHUB_REPOSITORY'],
+              'candidate_sha': os.environ['GITHUB_SHA'],
+              'research_artifact_path': str(source),
+              'research_artifact_sha256': hashlib.sha256(source.read_bytes()).hexdigest(),
+              'authority': {'merge':'NONE','golden':'NONE','runtime':'NONE','scheduler':'NONE','production':'NONE'}
+          }
+          p=pathlib.Path('/tmp/lf-trusted-reusable-subject.json')
+          p.write_text(json.dumps(doc,sort_keys=True,separators=(',',':'))+'\n')
+          print('SUBJECT_SHA256='+hashlib.sha256(p.read_bytes()).hexdigest())
+          PY
+
+      - name: Attest exact subject
+        id: attest
+        uses: actions/attest@v4
+        with:
+          subject-path: /tmp/lf-trusted-reusable-subject.json
+
+      - name: Preserve subject
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-trusted-reusable-subject
+          path: /tmp/lf-trusted-reusable-subject.json
+          if-no-files-found: error
+          retention-days: 7
