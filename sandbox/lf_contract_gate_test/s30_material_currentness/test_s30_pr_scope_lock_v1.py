@@ -8,7 +8,7 @@ import re
 import subprocess
 from pathlib import Path
 
-EXPECTED_MANIFEST_SHA256 = "665bb6366e91327fe3485739b14ce612281230b608dc48d89ffe4ff6dc5d7620"
+EXPECTED_MANIFEST_SHA256 = "0fa40b3168beb95e9bc1ac7128fdcb725ec2d0a624ac766b25e7da700d9549c9"
 EXPECTED_OWNER = "S30"
 EXPECTED_PR = 774
 EXPECTED_BRANCH = "s30-material-currentness-auto-20260914"
