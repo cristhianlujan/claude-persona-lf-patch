@@ -20,7 +20,8 @@
     "transport_provider_version",
     "changed_paths",
     "path_readbacks",
-    "remote_head_readback"
+    "remote_head_readback",
+    "merge_authorized"
   ],
   "properties": {
     "receipt_version": {"const": "LF_REPOSITORY_CHANGE_RECEIPT_V1"},
@@ -42,7 +43,7 @@
     "repository_full_name": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
     "target_branch": {"type": "string", "minLength": 1},
     "before_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
-    "after_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "after_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
     "request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "idempotency_key": {"type": "string", "minLength": 1},
     "transport_provider_ref": {"type": "string", "minLength": 1},
@@ -65,8 +66,9 @@
         }
       }
     },
-    "remote_head_readback": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "remote_head_readback": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
     "unknown_outcome_detail": {"type": ["string", "null"]},
+    "prior_receipt_ref": {"type": ["string", "null"]},
     "merge_authorized": {"type": "boolean", "const": false}
   }
 }
