@@ -1,0 +1,42 @@
+{
+  "contract_code": "LF_QUALIFICATION_CONTRACT_V1",
+  "owner": "S30",
+  "claim_ceiling": "SOURCE_CANDIDATE_NO_LIVE_MUTATION",
+  "subject_type": "STRATEGY",
+  "purpose": "Generalize independent-review receipt application without strategy-specific literals.",
+  "invariants": [
+    "Exact strategy revision is revalidated at apply time.",
+    "Qualification, suite run, and test run identities are transactionally bound.",
+    "The suite must have an ACTIVE lf_test_requirement_bindings row with independent_review_required=true.",
+    "The suite case must declare execution_mode=INDEPENDENT_REVIEW and probe_code=INDEPENDENT_REVIEW.",
+    "review_context must equal INDEPENDENT_CHAT_CONTEXT.",
+    "PASS with blocking findings is rejected.",
+    "review_case is audit metadata, never an authority key.",
+    "No S37/S38/S25/S26 strategy literal may be required by the transversal apply function.",
+    "Existing v1 remains untouched until caller cutover is separately governed.",
+    "The v2 candidate is service_role-only by construction.",
+    "No runtime, production, Golden, or merge authorization is implied by qualification PASS."
+  ],
+  "reuse": {
+    "existing_tables": [
+      "public.lf_qualification_receipts",
+      "public.lf_test_requirement_bindings",
+      "public.lf_test_suite_cases",
+      "public.lf_test_suite_runs",
+      "public.lf_test_runs",
+      "public.lf_strategy_snapshots",
+      "public.lf_strategy_test_characteristics"
+    ],
+    "existing_lifecycle": "QUALIFICATION_LIFECYCLE",
+    "legacy_apply": "public.lf_apply_independent_strategy_review_v1"
+  },
+  "new_candidate": "public.lf_apply_independent_strategy_review_v2",
+  "forbidden": [
+    "hardcoded S37 review_case",
+    "blind PASS ingestion",
+    "revision bypass",
+    "suite/test identity bypass",
+    "automatic promotion to runtime or production",
+    "live mutation from this source-only PR"
+  ]
+}
