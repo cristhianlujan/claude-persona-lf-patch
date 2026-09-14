@@ -55,10 +55,10 @@ class EKBPreflightSourceContractV1Test(unittest.TestCase):
 
     def test_detectability_is_not_used_as_execution_evidence(self) -> None:
         lower = SQL.lower()
-        control_section = lower[lower.index("v_control_codes") :]
-        self.assertNotIn("detectability", control_section)
-        self.assertIn("executed", control_section)
-        self.assertIn("evidence_sha256", control_section)
+        coverage_section = lower[lower.index("if p_control_coverage->>'coverage_version'") :]
+        self.assertNotIn("detectability", coverage_section)
+        self.assertIn("executed", coverage_section)
+        self.assertIn("evidence_sha256", coverage_section)
 
     def test_contract_keeps_resolution_and_execution_separate(self) -> None:
         invariants = " ".join(CONTRACT["control_invariants"])
