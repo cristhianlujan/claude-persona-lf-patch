@@ -1,0 +1,459 @@
+{
+  "bundle_version": "S38_DG_INDEPENDENT_REVIEW_BUNDLE_V0_3",
+  "review_case_id": "S38-DG-IR-007",
+  "execution_mode": "INDEPENDENT_CHAT_CONTEXT",
+  "strategy_lineage": {
+    "active_strategy_id": "S38",
+    "historical_strategy_id": "S31",
+    "prior_review_case_id": "S38-DG-IR-006",
+    "prior_review_verdict": "PASS_WITH_RESTRICTIONS",
+    "prior_review_score": 20,
+    "superseded_unexecuted_review_case": "S38-DG-IR-005"
+  },
+  "candidate_snapshot": {
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "immutable_comparison_base_sha": "eac7c8ad4f0e9c8df09c22aa0a5a3f6b5071da66",
+    "s38_candidate_head": "63f5db552c10535cfc473e50d0706ab2f8ae4758",
+    "exact_head_not_merge_ref": true,
+    "review_candidate_is_parent_of_evidence_commit": true
+  },
+  "review_scope": [
+    "S38-D",
+    "S38-E",
+    "S38-F",
+    "S38-G",
+    "S38-TRUST-ANCHOR",
+    "S38-ARCHIVAL-CURRENTNESS",
+    "S38-CONTRACT-SURFACE",
+    "S38-BUNDLE-INTEGRITY"
+  ],
+  "source_independent_review": {
+    "review_case_id": "S38-DG-IR-006",
+    "verdict": "PASS_WITH_RESTRICTIONS",
+    "score": 20,
+    "receipt_ref": "github://cristhianlujan/claude-persona-lf-patch@97b251b2f0e5170f7476184768e0cfcf8bb28267/sandbox/lf_contract_gate_test/s38_bootstrap/s38_dg_ir006_independent_receipt_v0_1.json",
+    "receipt_blob_sha": "f9a815d23544e00c7df27c7abe992b6131922376",
+    "receipt_sha256": "af11f4d353f9db7d1d846df5b21f6cdccc504ce64f07a65abbb6c0fe3a4ac978",
+    "blocking_codes": [
+      "BLOCK_NEXT_GATE_RESOLVER_TRUST_ANCHOR_SELF_REFERENTIAL_CANONICAL_REMOTE",
+      "BLOCK_NEXT_GATE_ENFORCED_CONTRACT_SURFACE_NOT_BYTE_ANCHORED",
+      "BLOCK_NEXT_GATE_CLAIM_TIER_CEILING_AND_ARCHIVAL_REGISTRY_SHARE_UNANCHORED_POLICY_ROOT"
+    ]
+  },
+  "repair_evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@ee1d0173ac5c68565ae227e7b24ccd0d64b65086/sandbox/lf_contract_gate_test/s38_bootstrap/s38_ir007_repair_receipt_v0_1.json",
+  "repair_evidence_blob_sha": "7cdee3e9e19bacd794bbb246e8cf09c64e679101",
+  "governance_disposition_ref": "github://cristhianlujan/claude-persona-lf-patch@ee1d0173ac5c68565ae227e7b24ccd0d64b65086/sandbox/lf_contract_gate_test/s38_bootstrap/s38_ir006_governance_disposition_v0_2.json",
+  "governance_disposition_blob_sha": "e8c0781d188cd73709522b762fb715b31f2401e0",
+  "frozen_artifacts": [
+    {
+      "lane": "S31-D",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_shared_authority_typed_context_v0_2_candidate.schema.json",
+      "blob_sha": "46e2c50fc4860a59f1cfd7471f475bcf24f61609",
+      "role": "candidate"
+    },
+    {
+      "lane": "S31-E",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_capability_manifest_v0_3_candidate.schema.json",
+      "blob_sha": "ad1dd40b7fd96709d9d4e4a494cd47027cefb229",
+      "role": "candidate"
+    },
+    {
+      "lane": "S31-F",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_common_evidence_envelope_v0_3_candidate.schema.json",
+      "blob_sha": "5fe6716d8086d68133da09baad6bd062dc296b8d",
+      "role": "candidate"
+    },
+    {
+      "lane": "S31-G",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_runtime_execution_port_v0_1_candidate.schema.json",
+      "blob_sha": "edcd97e6573129b1025a105aecd1ce1e7afa2e3a",
+      "role": "request_candidate"
+    },
+    {
+      "lane": "S31-G",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_runtime_execution_output_v0_1_candidate.schema.json",
+      "blob_sha": "550d2aa8facb0fa5e54b6dab88bfb4867bea86d9",
+      "role": "output_candidate"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/validate_s31_dg_contracts_v0_2.py",
+      "blob_sha": "d8b484354f4d4333aa0d6e7d878d98d3a35db3f2",
+      "role": "baseline_validator"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/test_s31_dg_contracts_v0_2.py",
+      "blob_sha": "b7208a69e92367c638fecd29bd16fcb22cce8b96",
+      "role": "baseline_deterministic_test"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/validate_s31_dg_contracts_v0_3.py",
+      "blob_sha": "7cb465cd35d39a2c917c7310aa93d51adf504be4",
+      "role": "ir003_repair_validator"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/test_s31_dg_contracts_v0_3.py",
+      "blob_sha": "515929ee5f3208911411a24f3f78a754eec8b994",
+      "role": "ir003_adversarial_regression"
+    },
+    {
+      "lane": "QUALITY_PACK",
+      "path": "profiles/quality_pack/validators/trusted_ref_resolver.py",
+      "blob_sha": "cf33a83fc8ab27bfece7d813ca42bbdb98fc39b7",
+      "role": "canonical_trusted_resolver"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/d_currentness_receipt.json",
+      "blob_sha": "92d1babe6e28878673e46e423ea848c5204de29c",
+      "role": "trusted_provider_fixture"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/e_currentness_receipt.json",
+      "blob_sha": "7bbb3a1de468c1f59e2d25fdc08d40f02a164d59",
+      "role": "trusted_provider_fixture"
+    },
+    {
+      "lane": "S31-F",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_owner_receipt.json",
+      "blob_sha": "c5e757f4ab890ada4c95153ece6b069166956966",
+      "role": "owner_fixture"
+    },
+    {
+      "lane": "S31-F",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_execution_receipt.json",
+      "blob_sha": "b3be7ad5c8aaf027915af868a59dc1cd77fa3f12",
+      "role": "cross_bound_fixture"
+    },
+    {
+      "lane": "S31-F",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_authority_receipt.json",
+      "blob_sha": "6513e721d7841e791bc7c9461e1afc73ea752192",
+      "role": "cross_bound_fixture"
+    },
+    {
+      "lane": "S31-F",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_provenance_receipt.json",
+      "blob_sha": "c56b1ac178c0a1f85ff80bbe2c758522aa82e7aa",
+      "role": "cross_bound_fixture"
+    },
+    {
+      "lane": "S31-F",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_authority_receipt_replay.json",
+      "blob_sha": "4b164ef01d453a92fffc180533220da54091da2b",
+      "role": "adversarial_replay_fixture"
+    },
+    {
+      "lane": "S31-F",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_provenance_receipt_replay.json",
+      "blob_sha": "713ebb7fa344ad5a62afb77e0228a6b1eded8ec0",
+      "role": "adversarial_replay_fixture"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/source_authority.txt",
+      "blob_sha": "8b1672d7b00d9a8b2da0461d41bfa300551e592b",
+      "role": "immutable_source_fixture"
+    },
+    {
+      "lane": "S31-DG",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/provenance_source.txt",
+      "blob_sha": "3bba324c1a6c377c6f864ab08679d05c6b915645",
+      "role": "immutable_source_fixture"
+    },
+    {
+      "lane": "S31-G",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/typed_context.json",
+      "blob_sha": "327db4b2b5201e7fb494f55fb3ea899b3770a625",
+      "role": "governed_context_fixture"
+    },
+    {
+      "lane": "S31-G",
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/typed_context_invalid_authority.json",
+      "blob_sha": "87d110918cec67f4a91cdabdc3dd7563a90cd9cf",
+      "role": "nested_authority_attack_fixture"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/s31_trusted_resolution_v0_1.py",
+      "blob_sha": "d593df21be41d624b30f0a274b692412cb3b0d50",
+      "lane": "SHARED",
+      "role": "load-bearing trusted resolver boundary newly pinned after IR-004"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/source_runtime_schema.json",
+      "blob_sha": "17fe39eb909936f84320b213f8b5330226610e9b",
+      "lane": "S31-D",
+      "role": "load-bearing runtime schema source newly pinned after IR-004"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/source_registry.py",
+      "blob_sha": "282ab464fba14130003222c8f1ea6dab6cd90eb6",
+      "lane": "S31-E",
+      "role": "load-bearing registry source newly pinned after IR-004"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/s31_e_capability_registry_gap_inventory_v0_2.json",
+      "blob_sha": "fc67055c9084aaaf6080af867aba09fef8cf9b83",
+      "lane": "S31-E",
+      "role": "load-bearing inventory newly pinned after IR-004"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/lf_common_evidence_envelope_v0_4_candidate.schema.json",
+      "blob_sha": "617096a98999b8a8b78810414e2efc775c385483",
+      "lane": "S31-F",
+      "role": "IR-004 claim-tier-bound candidate schema"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/validate_s31_dg_contracts_v0_4.py",
+      "blob_sha": "d4af002cead31b82d04f79ea0a389e9a6c859339",
+      "lane": "S31-F/G",
+      "role": "IR-004 repair validator"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/test_s31_dg_contracts_v0_4.py",
+      "blob_sha": "460a0276ffa477364e7b306632a01ccce6007a83",
+      "lane": "S31-F/G",
+      "role": "IR-004 adversarial regression harness"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_execution_receipt_v0_4.json",
+      "blob_sha": "3b0327f7847c94a17019d6ad843e1c10e220ec29",
+      "lane": "S31-F",
+      "role": "claim-tier-bound execution receipt"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_authority_receipt_v0_4.json",
+      "blob_sha": "fc6daf4ccfad2a1fee3f91baa21e08b9dafb01eb",
+      "lane": "S31-F",
+      "role": "claim-tier-bound authority receipt"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s31_bootstrap/trusted_evidence/f_provenance_receipt_v0_4.json",
+      "blob_sha": "477884e50a0409ad4ff86d168b7e417a150a3a7d",
+      "lane": "S31-F",
+      "role": "claim-tier-bound provenance receipt"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s38_bootstrap/s38_governed_trust_policy_v0_1.json",
+      "blob_sha": "a88104a6a5ac773c5a998f2e4877bb8e24cc9ad3",
+      "lane": "S38-TRUST",
+      "role": "governed trust policy"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s38_bootstrap/s38_governed_resolution_v0_2.py",
+      "blob_sha": "ddbb0c6962e2ce0e8596a79630522148d66c6a78",
+      "lane": "S38-TRUST",
+      "role": "canonical-remote governed resolver"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s38_bootstrap/lf_common_evidence_envelope_v0_5_candidate.schema.json",
+      "blob_sha": "5c3b4d8946289d527658db2f9883af47672e4de5",
+      "lane": "S38-F",
+      "role": "enforced v0.5 evidence schema"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s38_bootstrap/validate_s38_dg_contracts_v0_5.py",
+      "blob_sha": "55b990149a781abf0a74c72d2a34d70cd233b067",
+      "lane": "S38-DG",
+      "role": "IR-005 restriction repair validator"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s38_bootstrap/test_s38_dg_contracts_v0_5.py",
+      "blob_sha": "cea7b7b6851f8f7295bf7be8c9b49dc5ac1c4abe",
+      "lane": "S38-DG",
+      "role": "adversarial repair harness"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s38_bootstrap/trusted_evidence/f_owner_receipt_v0_5.json",
+      "blob_sha": "7fabba34e712edf370e59f21d1ba8fa64800fd94",
+      "lane": "S38-F",
+      "role": "S38 owner fixture"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s38_bootstrap/trusted_evidence/f_execution_receipt_v0_5.json",
+      "blob_sha": "095989f4308af14e2ff083d7e7b7ec2d6e84b483",
+      "lane": "S38-F",
+      "role": "earned-tier execution fixture"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s38_bootstrap/trusted_evidence/f_authority_receipt_v0_5.json",
+      "blob_sha": "d27192b3bcb94da88ec746919c3ee2d07754a9dd",
+      "lane": "S38-F",
+      "role": "earned-tier authority fixture"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s38_bootstrap/trusted_evidence/f_provenance_receipt_v0_5.json",
+      "blob_sha": "950f79f434e2f81355ae240f53c8d7b9ca9a2b2d",
+      "lane": "S38-F",
+      "role": "earned-tier provenance fixture"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s38_bootstrap/s38_strategy_identity_transition_v0_1.json",
+      "blob_sha": "eb4570eddafdadd6883db0e6713636549a5c70d7",
+      "lane": "S38-IDENTITY",
+      "role": "S31-to-S38 lineage contract"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s38_bootstrap/s38_strategy_master_plan_v0_1.json",
+      "blob_sha": "a80d0c0630468efa3515dd7142f77568a9763f87",
+      "lane": "S38-IDENTITY",
+      "role": "active S38 strategy plan"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s38_bootstrap/s38_governed_resolution_v0_3.py",
+      "blob_sha": "df32075bbd47ec76da4dc5928b7c570bd406e2f5",
+      "lane": "S38-TRUST",
+      "role": "external repository identity + canonical resolver v3"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s38_bootstrap/s38_governed_trust_policy_v0_2.json",
+      "blob_sha": "3826437900f7f1ab01fb9292894eadda6d2e5ffc",
+      "lane": "S38-TRUST",
+      "role": "canonical policy snapshot without repository identity override"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s38_bootstrap/lf_common_evidence_envelope_v0_6_candidate.schema.json",
+      "blob_sha": "d1187edff01d3a3f408e2bc5fd4b0bbf2bbb400f",
+      "lane": "S38-F",
+      "role": "executed byte-anchored v0.6 evidence schema"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s38_bootstrap/validate_s38_dg_contracts_v0_6.py",
+      "blob_sha": "23eca00e545a89216718c08807383fb54255f401",
+      "lane": "S38-DG",
+      "role": "IR-006 restriction repair validator"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s38_bootstrap/test_s38_dg_contracts_v0_6.py",
+      "blob_sha": "48f9bf5e3fd039a87890468c659128bf8c80fc52",
+      "lane": "S38-DG",
+      "role": "expanded adversarial regression harness"
+    }
+  ],
+  "historical_frozen_artifacts": [
+    {
+      "revision": "be6c0f8a320c5cdcfa242ee775ba769745eb82df",
+      "path": "profiles/ui_architect/schemas/runtime_output.schema.json",
+      "blob_sha": "bd5508872ff19e9946ba8a8fe7d0eb94ffa7f5d2",
+      "sha256": "bed06e7a37a82a6e1baa9b1da4edb7969456ce64c4270fdd8e5db0f14845d425",
+      "role": "archival currentness load-bearing historical fixture exercised by IR-006 and explicitly representable in IR-007 pin model"
+    }
+  ],
+  "producer_evidence": {
+    "s38_v0_6": "7 positive PASS; 23 negative fail-closed PASS at exact remote candidate head",
+    "s38_v0_5": "4 positive PASS; 9 negative fail-closed PASS",
+    "historical_s31_regression": "13 test files PASS; 0 failures",
+    "ir006_receipt_frozen_quality_pack_validation": "VALID errors=[]",
+    "resolver_id": "S38_GOVERNED_REF_RESOLVER_V3",
+    "cross_binding_sha256": "1f5f85cdc08a6c80764af02204b39aadec993104a6949736809aa33aeb6d6810",
+    "validate_lf_packs_run": "34797552891 SUCCESS",
+    "global_contract_check": "34797552957 FAIL only at unrelated shared migration source parity; no repair imported into exclusive S38 lane",
+    "claim_ceiling": "DETERMINISTIC_REPAIR_EVIDENCE_ONLY"
+  },
+  "repair_acceptance_criteria": {
+    "resolver_trust_anchor": [
+      "canonical repository identity is not sourced from trust policy",
+      "repository slug, Git remote, GitHub API endpoint and numeric repository id are fixed bootstrap constants",
+      "exact artifact head must be attested by the fixed GitHub repository API before trusted use",
+      "attacker policy cannot relocate repository identity",
+      "independently determine whether bootstrap constants plus GitHub TLS/API attestation are a sufficient external root or remain self-referential under whole-checkout tamper"
+    ],
+    "enforced_contract_surface": [
+      "resolver module, policy, validator, F schema and D schema are byte-compared with canonical candidate bytes before trusted resolver becomes verified",
+      "F and D schemas used by validation are loaded from canonical remote bytes at use, not from local worktree",
+      "local schema/validator/policy tamper must fail closed or be semantically irrelevant"
+    ],
+    "claim_tier_policy": [
+      "policy is snapshotted once from canonical remote bytes",
+      "repository identity cannot be overridden by policy",
+      "unwitnessed maximum remains PROVENANCE_EXECUTION",
+      "SEMANTIC/BEHAVIORAL remain unreachable with empty witness allowlist",
+      "local policy mutation after construction cannot raise tier"
+    ],
+    "archival_currentness": [
+      "archival registry comes from canonical immutable policy snapshot",
+      "exact historical ref+digest is admitted",
+      "changed bytes, wrong ref, foreign repo and unregistered identity fail closed",
+      "historical load-bearing fixture is represented explicitly by revision+path+blob+sha256 pin"
+    ],
+    "transport": [
+      "Git uses /usr/bin/git with minimal non-inherited environment",
+      "proxy/Git config/TLS override environment is absent from Git child env",
+      "GitHub API uses ProxyHandler({}) and fixed system CA bundle",
+      "hostile caller transport environment does not redirect canonical bytes"
+    ],
+    "no_regression": [
+      "D/E/F/G historical protections remain fail closed",
+      "same-content identity substitutions remain bound",
+      "authority/provenance replay remains blocked",
+      "governed-input mismatch and weakened forbidden-authority set remain blocked"
+    ]
+  },
+  "mandatory_independent_attacks": [
+    "TRUST_POLICY_CANONICAL_REMOTE_REDIRECTION_PUBLISHED_ATTACKER_REMOTE",
+    "WHOLE_CHECKOUT_RESOLVER_CONSTANT_TAMPER_AND_ATTACKER_REPOSITORY_BOOTSTRAP",
+    "LOCAL_RESOLVER_MODULE_TAMPER_WITH_CANONICAL_HEAD",
+    "LOCAL_TRUST_POLICY_TAMPER_BEFORE_AND_AFTER_RESOLVER_CONSTRUCTION",
+    "LOCAL_F_SCHEMA_TAMPER_BEFORE_AND_AFTER_RESOLVER_CONSTRUCTION",
+    "LOCAL_D_SCHEMA_TAMPER",
+    "LOCAL_VALIDATOR_TAMPER",
+    "UNPUBLISHED_CANONICAL_REVISION",
+    "FOREIGN_REPOSITORY_REF",
+    "GIT_CONFIG_URL_REWRITE",
+    "HTTPS_PROXY_ALL_PROXY_GIT_PROXY_COMMAND_REDIRECTION",
+    "GIT_SSL_NO_VERIFY_GIT_SSL_CAINFO_SSL_CERT_FILE_OVERRIDE",
+    "CLAIM_TIER_FRESH_SELF_AUTHORED_SEMANTIC",
+    "CLAIM_TIER_FRESH_SELF_AUTHORED_BEHAVIORAL",
+    "CLAIM_TIER_CEILING_ELEVATION",
+    "CLAIM_TIER_FAKE_UNALLOWLISTED_WITNESS",
+    "ARCHIVAL_CURRENTNESS_LAWFUL_PATH_RENAME_MOVE_DELETE",
+    "ARCHIVAL_CURRENTNESS_UNREGISTERED_IDENTITY",
+    "ARCHIVAL_REGISTRY_CHANGED_BYTES",
+    "ARCHIVAL_REGISTRY_FOREIGN_REPOSITORY_MATERIAL",
+    "ARCHIVAL_REGISTRY_REF_DIGEST_PAIR_DECOUPLING",
+    "F_OWNER_CAPABILITY_MISMATCH",
+    "F_VALID_AUTHORITY_RECEIPT_REPLAY_WITHOUT_COMMON_BINDING",
+    "F_VALID_PROVENANCE_RECEIPT_REPLAY_WITHOUT_COMMON_BINDING",
+    "F_SAME_CONTENT_INPUT_IDENTITY_SUBSTITUTION",
+    "F_SAME_CONTENT_AUTHORITY_IDENTITY_SUBSTITUTION",
+    "F_SAME_CONTENT_PROVENANCE_IDENTITY_SUBSTITUTION",
+    "F_EXECUTION_REVISION_REBINDING",
+    "F_PRODUCER_IS_TRUSTED_RESOLVER_SELF_ATTESTATION",
+    "G_INVALID_NESTED_AUTHORITY_WITH_VALID_OUTER_DIGEST",
+    "G_UNTRUSTED_RESOLVER_TYPE",
+    "G_REQUEST_GOVERNED_INPUT_MISMATCH",
+    "G_REQUEST_ID_MISMATCH",
+    "G_SILENT_FALLBACK_OR_WEAKENED_FORBIDDEN_AUTHORITY_SET",
+    "BUNDLE_PIN_COMPLETENESS_CURRENT_AND_HISTORICAL_LOAD_BEARING_ARTIFACTS"
+  ],
+  "known_review_questions": [
+    "Does fixed repository identity in resolver code plus numeric GitHub repository-id and exact-commit API attestation actually break IR-006 bootstrap circularity, or can whole-checkout tamper still establish an attacker authority?",
+    "Are all load-bearing local contract/code surfaces either byte-verified before use or loaded directly from canonical bytes?",
+    "Does the policy snapshot prevent claim-tier and archival decisions from following later local file mutation?",
+    "Does the new historical pin model cover the IR-006 omitted runtime_output historical fixture without weakening currentness?",
+    "Are any caller transport environment paths still capable of byte substitution rather than denial?"
+  ],
+  "quality_pack": {
+    "immutable_reference_sha": "3b39657fbf14f29c7839ecb26d715ed5c6fad59e",
+    "independent_review_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md",
+    "quality_gate_contract_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/quality_gate_contract.md",
+    "lf_quality_controls_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/contracts/lf_quality_controls.md",
+    "score_rubric_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/judges/quality_pack_score_rubric.md",
+    "mini_judge_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/judges/quality_pack_mini_judge.md",
+    "independent_receipt_schema_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json",
+    "independent_receipt_validator_ref": "github://cristhianlujan/claude-persona-lf-patch@3b39657fbf14f29c7839ecb26d715ed5c6fad59e/profiles/quality_pack/validators/validate_independent_semantic_review.py"
+  },
+  "producer_semantic_verdict": null,
+  "claim_ceiling": "FROZEN_REVIEW_BUNDLE_ONLY",
+  "authorization": {
+    "merge": "NONE",
+    "golden": "NONE",
+    "runtime": "NONE",
+    "scheduler": "NONE",
+    "production": "NONE"
+  }
+}
