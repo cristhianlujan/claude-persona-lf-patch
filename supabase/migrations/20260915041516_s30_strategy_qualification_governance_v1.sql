@@ -71,12 +71,6 @@ BEGIN
 END
 $pre$;
 
--- Canonical semantic revision projection.
--- Strategy meaning lives in canonical identity/scope/content/decisions/backlog/risks/relations/tags.
--- Operational state, lifecycle, visibility, runtime, impact, timestamps, execution ids, evidence,
--- change logs, storage policy and handoff/progress metadata do not change semantic qualification.
--- Metadata is non-semantic by default; explicit metadata.semantic plus the two qualification-gated
--- metadata contracts participate in revision currentness.
 CREATE OR REPLACE FUNCTION public.lf_strategy_revision_sha256_from_json_v1(p_row jsonb)
 RETURNS text
 LANGUAGE plpgsql
@@ -104,12 +98,12 @@ BEGIN
     'owner_name',p_row->'owner_name',
     'source_kind',p_row->'source_kind',
     'source_asset_code',p_row->'source_asset_code',
-    'related_asset_codes',p_row->'related_asset_codes',
+   'related_asset_codes',p_row->'related_asset_codes',
     'related_operation_codes',p_row->'related_operation_codes',
     'related_profile_codes',p_row->'related_profile_codes',
     'content_payload',p_row->'content_payload',
     'sections',p_row->'sections',
-    'decisions',p_row->'decisions',
+   'decisions',p_row->'decisions',
     'backlog',p_row->'backlog',
     'risks',p_row->'risks',
     'tags',p_row->'tags',
@@ -130,7 +124,7 @@ SET search_path TO 'pg_catalog','public'
 AS $function$
 DECLARE
   s public.lf_strategy_snapshots%rowtype;
-  x public.lf_operation_execution%rowtype;
+ x public.lf_operation_execution%rowtype;
   rev text;
   cf text;
   qid uuid;
@@ -153,7 +147,6 @@ BEGIN
     RAISE EXCEPTION 'LF_STRATEGY_QUALIFICATION_TARGET_MISSING:%',p_snapshot_id;
   END IF;
 
-  -- Physical governed-execution provenance gate. No textual/synthetic execution id is accepted.
   SELECT * INTO x
   FROM public.lf_operation_execution
   WHERE execution_id=p_execution_id;
@@ -215,7 +208,6 @@ BEGIN
     RAISE EXCEPTION 'LF_STRATEGY_QUALIFICATION_EXECUTION_POLICY_SNAPSHOT_STALE:%:%',p_execution_id,x.operation_code;
   END IF;
 
-  -- Reservation alone is not execution. Canonical Strategy operations must have passed init + Router.
   IF NOT EXISTS (
     SELECT 1 FROM public.lf_operation_execution_steps es
     WHERE es.execution_id=p_execution_id
@@ -238,7 +230,6 @@ BEGIN
   cf:=public.lf_strategy_classification_fingerprint_v1(p_snapshot_id);
   fp:=public.lf_required_test_suite_fingerprint_v1('STRATEGY',s.snapshot_code);
 
-  -- No qualification receipt exists before the governed-execution gate above has passed.
   INSERT INTO public.lf_qualification_receipts(
     subject_type,subject_code,subject_ref,revision_sha256,classification_fingerprint,
     lifecycle_state_code,suite_set_fingerprint,created_by_execution_id
@@ -317,7 +308,6 @@ BEGIN
 END
 $function$;
 
--- Rollback-only semantic/currentness canaries: no persistent Strategy or qualification DML.
 DO $semantic_canary$
 DECLARE
   base_row jsonb;
@@ -379,7 +369,6 @@ BEGIN
 END
 $semantic_canary$;
 
--- Negative provenance canaries must block before qualification receipt creation.
 DO $execution_canary$
 DECLARE
   before_count bigint;
@@ -392,36 +381,20 @@ BEGIN
   BEGIN
     PERFORM public.lf_run_strategy_qualification_v1(35,'EXEC-S30-QUALIFICATION-NONEXISTENT-CANARY');
   EXCEPTION WHEN others THEN
-    IF SQLERRM LIKE 'LF_STRATEGY_QUALIFICATION_EXECUTION_MISSING:%' THEN
-      blocked:=true;
-    ELSE
-      RAISE;
-    END IF;
+    IF SQLERRM LIKE 'LF_STRATEGY_QUALIFICATION_EXECUTION_MISSING:%' THEN blocked:=true; ELSE RAISE; END IF;
   END;
-  IF NOT blocked THEN
-    RAISE EXCEPTION 'S30_STRATEGY_QUALIFICATION_MISSING_EXECUTION_CANARY_NOT_BLOCKED';
-  END IF;
+  IF NOT blocked THEN RAISE EXCEPTION 'S30_STRATEGY_QUALIFICATION_MISSING_EXECUTION_CANARY_NOT_BLOCKED'; END IF;
 
   blocked:=false;
   BEGIN
-    PERFORM public.lf_run_strategy_qualification_v1(
-      35,'EXEC-S30-STRATEGY-QUALIFICATION-GOVERNANCE-20260914-001'
-    );
+    PERFORM public.lf_run_strategy_qualification_v1(35,'EXEC-S30-STRATEGY-QUALIFICATION-GOVERNANCE-20260914-001');
   EXCEPTION WHEN others THEN
-    IF SQLERRM LIKE 'LF_STRATEGY_QUALIFICATION_EXECUTION_NOT_STRATEGY:%' THEN
-      blocked:=true;
-    ELSE
-      RAISE;
-    END IF;
+    IF SQLERRM LIKE 'LF_STRATEGY_QUALIFICATION_EXECUTION_NOT_STRATEGY:%' THEN blocked:=true; ELSE RAISE; END IF;
   END;
-  IF NOT blocked THEN
-    RAISE EXCEPTION 'S30_STRATEGY_QUALIFICATION_WRONG_OPERATION_CONTAINER_CANARY_NOT_BLOCKED';
-  END IF;
+  IF NOT blocked THEN RAISE EXCEPTION 'S30_STRATEGY_QUALIFICATION_WRONG_OPERATION_CONTAINER_CANARY_NOT_BLOCKED'; END IF;
 
   SELECT count(*) INTO after_count FROM public.lf_qualification_receipts;
-  IF after_count<>before_count THEN
-    RAISE EXCEPTION 'S30_STRATEGY_QUALIFICATION_NEGATIVE_CANARY_LEFT_RECEIPT:%:%',before_count,after_count;
-  END IF;
+  IF after_count<>before_count THEN RAISE EXCEPTION 'S30_STRATEGY_QUALIFICATION_NEGATIVE_CANARY_LEFT_RECEIPT:%:%',before_count,after_count; END IF;
 END
 $execution_canary$;
 
@@ -430,24 +403,10 @@ DECLARE
   hash_def text;
   runner_def text;
 BEGIN
-  SELECT pg_get_functiondef('public.lf_strategy_revision_sha256_from_json_v1(jsonb)'::regprocedure)
-    INTO hash_def;
-  IF strpos(hash_def,'''semantic_metadata''')=0
-     OR strpos(hash_def,'''content_payload''')=0
-     OR strpos(hash_def,'''backlog''')=0
-     OR strpos(hash_def,'''runtime_state''')>0 THEN
-    RAISE EXCEPTION 'S30_STRATEGY_QUALIFICATION_SEMANTIC_HASH_POSTCHECK_FAILED';
-  END IF;
-
-  SELECT pg_get_functiondef('public.lf_run_strategy_qualification_v1(bigint,text)'::regprocedure)
-    INTO runner_def;
-  IF strpos(runner_def,'LF_STRATEGY_QUALIFICATION_EXECUTION_MISSING')=0
-     OR strpos(runner_def,'LF_STRATEGY_QUALIFICATION_EXECUTION_ROUTE_NOT_ACTIVE')=0
-     OR strpos(runner_def,'LF_STRATEGY_QUALIFICATION_INIT_STEP_NOT_CLEAN')=0
-     OR strpos(runner_def,'LF_STRATEGY_QUALIFICATION_ROUTER_STEP_NOT_CLEAN')=0
-     OR strpos(runner_def,'operation_policy_snapshots')=0 THEN
-    RAISE EXCEPTION 'S30_STRATEGY_QUALIFICATION_EXECUTION_GUARD_POSTCHECK_FAILED';
-  END IF;
+  SELECT pg_get_functiondef('public.lf_strategy_revision_sha256_from_json_v1(jsonb)'::regprocedure) INTO hash_def;
+  IF strpos(hash_def,'''semantic_metadata''')=0 OR strpos(hash_def,'''content_payload''')=0 OR strpos(hash_def,'''backlog''')=0 OR strpos(hash_def,'''runtime_state''')>0 THEN RAISE EXCEPTION 'S30_STRATEGY_QUALIFICATION_SEMANTIC_HASH_POSTCHECK_FAILED'; END IF;
+  SELECT pg_get_functiondef('public.lf_run_strategy_qualification_v1(bigint,text)'::regprocedure) INTO runner_def;
+  IF strpos(runner_def,'LF_STRATEGY_QUALIFICATION_EXECUTION_MISSING')=0 OR strpos(runner_def,'LF_STRATEGY_QUALIFICATION_EXECUTION_ROUTE_NOT_ACTIVE')=0 OR strpos(runner_def,'LF_STRATEGY_QUALIFICATION_INIT_STEP_NOT_CLEAN')=0 OR strpos(runner_def,'LF_STRATEGY_QUALIFICATION_ROUTER_STEP_NOT_CLEAN')=0 OR strpos(runner_def,'operation_policy_snapshots')=0 THEN RAISE EXCEPTION 'S30_STRATEGY_QUALIFICATION_EXECUTION_GUARD_POSTCHECK_FAILED'; END IF;
 END
 $post$;
 
