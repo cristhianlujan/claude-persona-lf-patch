@@ -98,12 +98,12 @@ BEGIN
     'owner_name',p_row->'owner_name',
     'source_kind',p_row->'source_kind',
     'source_asset_code',p_row->'source_asset_code',
-   'related_asset_codes',p_row->'related_asset_codes',
+    'related_asset_codes',p_row->'related_asset_codes',
     'related_operation_codes',p_row->'related_operation_codes',
     'related_profile_codes',p_row->'related_profile_codes',
     'content_payload',p_row->'content_payload',
     'sections',p_row->'sections',
-   'decisions',p_row->'decisions',
+    'decisions',p_row->'decisions',
     'backlog',p_row->'backlog',
     'risks',p_row->'risks',
     'tags',p_row->'tags',
@@ -124,7 +124,7 @@ SET search_path TO 'pg_catalog','public'
 AS $function$
 DECLARE
   s public.lf_strategy_snapshots%rowtype;
- x public.lf_operation_execution%rowtype;
+  x public.lf_operation_execution%rowtype;
   rev text;
   cf text;
   qid uuid;
