@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.17
+LF Contract Check v0.18
 
 Sandbox validator for controlled LF governance gates.
+
+v0.18 changes:
+- Admits only the exact existing Profile updater Edge Function source and its graduation helper.
+- Adds intrinsic lookalike negatives; the broad supabase/functions/ prefix remains default-denied.
 
 v0.17 changes:
 - Admits only the exact LF Currentness Authority workflow path.
@@ -171,6 +175,17 @@ P0_PERSISTENCE_TEST_DENIED_LOOKALIKES = {
 RECONCILER_EDGE_ALLOWED_EXACT = {
     "supabase/functions/lf-github-reconcile-v3/index.ts",
 }
+PROFILE_UPDATE_EDGE_ALLOWED_EXACT = {
+    "supabase/functions/run-creacion-perfil-lf/index.ts",
+    "supabase/functions/run-creacion-perfil-lf/graduation.ts",
+}
+PROFILE_UPDATE_EDGE_DENIED_LOOKALIKES = {
+    "supabase/functions/run-creacion-perfil-lf/index.ts.bak",
+    "supabase/functions/run-creacion-perfil-lf/graduation.ts.bak",
+    "supabase/functions/run-creacion-perfil-lf/graduation-copy.ts",
+    "supabase/functions/run-creacion-perfil-lf/subdir/index.ts",
+    "supabase/functions/run-creacion-perfil-lf-copy/index.ts",
+}
 ALLOWED_EXACT = {
     *ALLOWED_GITHUB_EXACT,
     VALIDATOR_SELF_PATH,
@@ -178,6 +193,7 @@ ALLOWED_EXACT = {
     *P0_CLOSURE_EVIDENCE_ALLOWED_EXACT,
     *P0_PERSISTENCE_TEST_ALLOWED_EXACT,
     *RECONCILER_EDGE_ALLOWED_EXACT,
+    *PROFILE_UPDATE_EDGE_ALLOWED_EXACT,
 }
 ALLOWED_PREFIXES = [
     "sandbox/lf_contract_gate_test/",
@@ -342,6 +358,25 @@ def validate_profile_creator_workflow_admission_scope() -> None:
     print(
         "PASS_PROFILE_CREATOR_WORKFLOW_ADMISSION_SCOPE_INVARIANT: "
         f"approved=1 denied={len(PROFILE_CREATOR_CALLER_WORKFLOW_DENIED_LOOKALIKES)} broad_prefix=denied"
+    )
+
+
+def validate_profile_update_edge_scope() -> None:
+    failures: list[str] = []
+    if "supabase/functions/" in ALLOWED_PREFIXES or "supabase/functions/run-creacion-perfil-lf/" in ALLOWED_PREFIXES:
+        failures.append("supabase_functions_prefix_must_remain_denied")
+    for path in sorted(PROFILE_UPDATE_EDGE_ALLOWED_EXACT):
+        if not is_allowed_path(path):
+            failures.append(f"approved_exact_missing:{path}")
+    for path in sorted(PROFILE_UPDATE_EDGE_DENIED_LOOKALIKES):
+        if is_allowed_path(path):
+            failures.append(f"lookalike_unexpectedly_allowed:{path}")
+    if failures:
+        fail("FAIL_PROFILE_UPDATE_EDGE_SCOPE_INVARIANT", ",".join(failures))
+    print(
+        "PASS_PROFILE_UPDATE_EDGE_SCOPE_INVARIANT: "
+        f"approved={len(PROFILE_UPDATE_EDGE_ALLOWED_EXACT)} "
+        f"denied={len(PROFILE_UPDATE_EDGE_DENIED_LOOKALIKES)} broad_prefix=denied"
     )
 
 
@@ -589,6 +624,7 @@ def validate_forbidden_terms(changed_files: list[str]) -> None:
 def main() -> None:
     validate_contract()
     validate_profile_creator_workflow_admission_scope()
+    validate_profile_update_edge_scope()
     validate_operational_protocol_scope()
     validate_compact_protocol_contract()
     validate_p0_closure_evidence_scope()
