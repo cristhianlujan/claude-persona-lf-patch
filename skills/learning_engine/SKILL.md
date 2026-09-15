@@ -8,6 +8,25 @@ Detect, classify, and route learning signals under LF governance.
 
 Router → Supabase `public.v_lf_fuente_operativa` → ACT-0046 when applicable → ACT-0045 when profile/card handoff is needed → Adapter when applicable → Operation → Verification → Closure.
 
+## Causal lane exclusivity — mandatory before materializing
+
+Path, branch or PR isolation is not sufficient to authorize parallel writers. Before any materializing action, compute:
+
+`causal_lane_key = EKB_code + target_asset + primary_gate`
+
+and apply `contracts/causal_lane_exclusivity.md`.
+
+Permanent invariants:
+
+- `1 causal chain = 1 active writer`;
+- `1 PR = 1 lane + 1 owner + 1 primary gate`.
+
+A writer must resolve fresh `main`, acquire and read back an exact active ownership claim from Supabase, and remain the only active writer for that key. If another writer already owns the key, return `BLOCK_CAUSAL_LANE_ALREADY_OWNED` and place the newcomer in `WAITING_UPSTREAM`; do not copy, absorb, rebase from or advance the active owner's candidate.
+
+Research, read-only audit, adversarial review, semantic review and frozen-evidence verification may run in parallel as `REVIEWER_READ_ONLY`. A reviewer never receives write authority.
+
+After the active owner closes, the successor must re-resolve fresh `main`, invalidate stale/currentness receipts, revalidate evidence and acquire ownership before continuing.
+
 ## Inputs
 
 - Learning signal or observed event.
@@ -109,6 +128,10 @@ Block or return when:
 - Supabase source verification is missing.
 - ACT-0046 is treated as approved runtime.
 - The request writes Supabase or Google Docs without approval.
+- A materializing lane has no canonical `causal_lane_key`, one writer owner, one primary gate and exact Supabase claim.
+- A second writer attempts to advance the same causal key; return `BLOCK_CAUSAL_LANE_ALREADY_OWNED` / `WAITING_UPSTREAM`.
+- A `REVIEWER_READ_ONLY` lane has write intent.
+- A successor reuses stale/currentness receipts or skips fresh-main/currentness and ownership reacquisition.
 - The output creates a narrow rule instead of a reusable mother rule.
 - Evidence is insufficient.
 - Existing assets were not checked.

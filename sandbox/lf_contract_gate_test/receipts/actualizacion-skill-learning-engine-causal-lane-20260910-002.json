@@ -1,0 +1,64 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "operation_judge",
+  "schema": "LF_GOVERNED_SKILL_UPDATE_RECEIPT_V1",
+  "operation_code": "ACTUALIZACION_SKILL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-SKILL-LEARNING-ENGINE-CAUSAL-LANE-20260910-002",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "e986cfa8b5be5aa0f7a5ab4d15c88327837eef1c454ba88d441e5af084dd0d39",
+  "judge_sha": "b737762803280145554fb6f110e9de512cb5334c14a7cf3b86c9399ce53b6537",
+  "source_sha_list": [
+    "5f33c4ce25fca201c109d31be5c2e1e1ec465afc",
+    "154e4abdba473319501e87638dd7119667a656df",
+    "51c20830cd35e5b0af100b8dc75c0c7610a52044",
+    "8014ea3dff90a8008316fcdae2a701b8141955a3",
+    "ba5c283be63e19050cc9e4006372c7a17a11ec7c",
+    "013af2d25e464fe0b9592f44d8e6bc43cf5df697",
+    "adeb3a7d4dd5042c665e91a622fea52d90230dda",
+    "a7dc8b2247269b4ffbcbbf9b3fcb961cb1414c72"
+  ],
+  "target_paths": [
+    "skills/learning_engine/SKILL.md",
+    "skills/learning_engine/contracts/main_contract.md",
+    "skills/learning_engine/contracts/causal_lane_exclusivity.md",
+    "skills/learning_engine/checklists/preflight_checklist.md",
+    "skills/learning_engine/validators/validate_causal_lane_exclusivity.py",
+    "skills/learning_engine/evals/causal_lane_exclusivity_matrix.json"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-10T06:15:36Z",
+  "target_type": "SKILL",
+  "target_code": "ACT-0046",
+  "target_path": "skills/learning_engine",
+  "branch": "lf/motor-causal-lane-exclusivity-v3-20260910",
+  "candidate_code_head_sha": "154e4abdba473319501e87638dd7119667a656df",
+  "base_main_sha": "5f33c4ce25fca201c109d31be5c2e1e1ec465afc",
+  "owner": "MOTOR_GOVERNANCE_INTEGRATOR",
+  "primary_gate": "CAUSAL_LANE_EXCLUSIVITY",
+  "causal_lane_key": "SRC-011|ACT-0046|CAUSAL_LANE_EXCLUSIVITY",
+  "judge_clean_required_steps": "14/14",
+  "deterministic_validation": {
+    "matrix": "9/9_PASS",
+    "malformed_input": "BLOCK_CAUSAL_LANE_KEY_MISMATCH_rc1"
+  },
+  "live_conflict_holdout": {
+    "result": "BLOCK_CAUSAL_LANE_ALREADY_OWNED",
+    "current_owner": "MOTOR_GOVERNANCE_INTEGRATOR",
+    "current_execution_id": "EXEC-ACTUALIZACION-SKILL-LEARNING-ENGINE-CAUSAL-LANE-20260910-002",
+    "competing_rows_inserted": 0
+  },
+  "semantic_judge": {
+    "result": "PASS_WITH_SCOPE_RESTRICTIONS",
+    "independent_evaluator_claim": false
+  },
+  "runtime_unchanged": true,
+  "automatic_promotion": false,
+  "s26_mutation": false,
+  "s28_mutation": false,
+  "s30_mutation": false,
+  "merge_authorized": false,
+  "state_ceiling": "DETERMINISTIC_AND_LIVE_CLAIM_MECHANICS_NO_PRODUCTION_ENFORCEMENT",
+  "next_gate": "EXACT_HEAD_CI_AND_INDEPENDENT_REVIEW"
+}
