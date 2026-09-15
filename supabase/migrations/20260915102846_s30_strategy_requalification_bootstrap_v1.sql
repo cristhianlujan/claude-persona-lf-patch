@@ -3,6 +3,44 @@
 -- No Strategy snapshot mutation, runtime activation, production activation, scheduler activation,
 -- orchestrator activation, or direct business write is authorized by this RPC.
 
+DO $pre$
+DECLARE
+  x public.lf_operation_execution%rowtype;
+BEGIN
+  SELECT * INTO x
+  FROM public.lf_operation_execution
+  WHERE execution_id='EXEC-S30-REQUALIFICATION-BOOTSTRAP-DB-20260915-002';
+
+  IF NOT FOUND
+     OR x.operation_code<>'ACTUALIZACION_DB_LF'
+     OR x.status<>'IN_PROGRESS'
+     OR x.target_type<>'MIGRATION'
+     OR x.target_code<>'S30_STRATEGY_REQUALIFICATION_BOOTSTRAP_V1'
+     OR x.target_repo IS DISTINCT FROM 'cristhianlujan/claude-persona-lf-patch'
+     OR x.target_path IS DISTINCT FROM 'supabase/migrations/20260915102846_s30_strategy_requalification_bootstrap_v1.sql'
+     OR coalesce(x.manifest->>'source_pr','')<>'840' THEN
+    RAISE EXCEPTION 'S30_STRATEGY_REQUALIFICATION_BOOTSTRAP_DB_EXECUTION_BINDING_INVALID';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM public.lf_router_action_registry
+    WHERE asset_type='MIGRATION'
+      AND action_code='UPDATE'
+      AND operation_code='ACTUALIZACION_DB_LF'
+      AND status='ACTIVE'
+      AND write_allowed
+  ) THEN
+    RAISE EXCEPTION 'S30_STRATEGY_REQUALIFICATION_BOOTSTRAP_DB_ROUTE_NOT_ACTIVE';
+  END IF;
+
+  IF coalesce(x.manifest->>'operation_policy_source','')<>'SUPABASE'
+     OR jsonb_typeof(x.manifest->'operation_policy_snapshots') IS DISTINCT FROM 'object' THEN
+    RAISE EXCEPTION 'S30_STRATEGY_REQUALIFICATION_BOOTSTRAP_DB_POLICY_SNAPSHOT_MISSING';
+  END IF;
+END
+$pre$;
+
 CREATE OR REPLACE FUNCTION public.lf_strategy_requalification_bootstrap_v1(
   p_execution_id text,
   p_snapshot_id bigint,
@@ -304,3 +342,49 @@ GRANT EXECUTE ON FUNCTION public.lf_strategy_requalification_bootstrap_v1(text,b
 
 COMMENT ON FUNCTION public.lf_strategy_requalification_bootstrap_v1(text,bigint,text,text,text,text,text) IS
 'Qualification-only bootstrap for a stale/unqualified Strategy. Reuses EJECUCION_ESTRATEGIA_LF, records only canonical init/router PASS_CLEAN, runs lf_run_strategy_qualification_v1, closes the bootstrap execution, and grants no material Strategy/runtime/production authority.';
+
+DO $post$
+DECLARE
+  f text;
+BEGIN
+  IF to_regprocedure('public.lf_strategy_requalification_bootstrap_v1(text,bigint,text,text,text,text,text)') IS NULL THEN
+    RAISE EXCEPTION 'S30_STRATEGY_REQUALIFICATION_BOOTSTRAP_RPC_MISSING';
+  END IF;
+  SELECT pg_get_functiondef('public.lf_strategy_requalification_bootstrap_v1(text,bigint,text,text,text,text,text)'::regprocedure) INTO f;
+  IF strpos(f,'EJECUCION_ESTRATEGIA_LF')=0
+     OR strpos(f,'lf_router_resolve_v1')=0
+     OR strpos(f,'lf_run_strategy_qualification_v1')=0
+     OR strpos(f,'qualification_bootstrap_only')=0
+     OR strpos(f,'UPDATE public.lf_strategy_snapshots')>0
+     OR strpos(f,'INSERT INTO public.lf_strategy_snapshots')>0
+     OR strpos(f,'DELETE FROM public.lf_strategy_snapshots')>0 THEN
+    RAISE EXCEPTION 'S30_STRATEGY_REQUALIFICATION_BOOTSTRAP_POSTCHECK_FAILED';
+  END IF;
+END
+$post$;
+
+UPDATE public.lf_operation_execution
+SET status='BLOCKED',
+    completed_at=clock_timestamp(),
+    manifest=manifest||jsonb_build_object(
+      'result','SUPERSEDED_SOURCE_FIRST_RESERVATION',
+      'superseded_by_execution_id','EXEC-S30-REQUALIFICATION-BOOTSTRAP-DB-20260915-002',
+      'runtime_activation',false,
+      'production_activation',false
+    ),
+    updated_by_execution_id='EXEC-S30-REQUALIFICATION-BOOTSTRAP-DB-20260915-002'
+WHERE execution_id='EXEC-S30-REQUALIFICATION-BOOTSTRAP-DB-20260915-001'
+  AND status='IN_PROGRESS';
+
+UPDATE public.lf_operation_execution
+SET status='COMPLETED',
+    completed_at=clock_timestamp(),
+    manifest=manifest||jsonb_build_object(
+      'result','S30_STRATEGY_REQUALIFICATION_BOOTSTRAP_SOURCE_APPLIED',
+      'rpc','public.lf_strategy_requalification_bootstrap_v1',
+      'runtime_activation',false,
+      'production_activation',false,
+      'strategy_snapshot_mutation',false
+    ),
+    updated_by_execution_id='EXEC-S30-REQUALIFICATION-BOOTSTRAP-DB-20260915-002'
+WHERE execution_id='EXEC-S30-REQUALIFICATION-BOOTSTRAP-DB-20260915-002';
