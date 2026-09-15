@@ -1,0 +1,86 @@
+name: S28 IG006 IG007 hardened exact-version canary
+
+on:
+  pull_request:
+    branches: [main]
+    types: [synchronize, reopened]
+    paths:
+      - "sandbox/s28-ig006-ig007-hardened-canary.sh"
+      - "sandbox/s28-ig006-ig007-exact-rollback.sh"
+      - "sandbox/s28-ig006-ig007-finalizer.sh"
+      - "sandbox/s28-ig006-ig007-hardened-trigger.txt"
+      - ".github/workflows/s28-input-governance-ig006-ig007-hardened-canary.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: s28-ig006-ig007-hardened-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  exact-version-canary:
+    if: >-
+      github.event.pull_request.head.ref == 'lf/s28-ig006-ig007-exact-canary-20260907' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Set up pinned Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.116.0
+
+      - name: Validate hardened scripts
+        run: |
+          set -euo pipefail
+          bash -n sandbox/s28-ig006-ig007-hardened-canary.sh
+          bash -n sandbox/s28-ig006-ig007-exact-rollback.sh
+          bash -n sandbox/s28-ig006-ig007-finalizer.sh
+          grep -q 'PASS_STATIC_ROLLBACK_FINALIZER_GUARD' sandbox/s28-ig006-ig007-hardened-canary.sh
+          grep -q 'S28_SAFETY_RESTORE_APPLIED_LEDGER_OPEN' sandbox/s28-ig006-ig007-finalizer.sh
+          grep -q 'S28_FINAL_LEDGER_NOT_CLOSED' sandbox/s28-ig006-ig007-finalizer.sh
+
+      - name: Forward exact-version and IG006 IG007 behavioral canary
+        id: forward_canary
+        timeout-minutes: 25
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+        run: bash sandbox/s28-ig006-ig007-hardened-canary.sh
+
+      - name: Mandatory exact-version rollback
+        id: exact_rollback
+        if: always()
+        timeout-minutes: 6
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+        run: bash sandbox/s28-ig006-ig007-exact-rollback.sh
+
+      - name: Independent safety finalizer
+        id: safety
+        if: always()
+        timeout-minutes: 3
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+        run: bash sandbox/s28-ig006-ig007-finalizer.sh restore
+
+      - name: Independent final ledger runtime and residue readback
+        if: always()
+        timeout-minutes: 3
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+        run: bash sandbox/s28-ig006-ig007-finalizer.sh readback
