@@ -1,0 +1,1 @@
+The fresh exact-version transport proof must not re-author the IG006/IG007 candidate SQL. The new migration paths are required to reuse the exact reviewed forward and recoverable rollback blobs. Any locally rewritten copy is non-authoritative and must not be executed.
