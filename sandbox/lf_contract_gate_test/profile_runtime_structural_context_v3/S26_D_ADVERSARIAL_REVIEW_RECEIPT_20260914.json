@@ -1,0 +1,60 @@
+{
+  "schema": "S26_D_ADVERSARIAL_REVIEW_RECEIPT_V1",
+  "lane": "S26-D",
+  "review_status": "COMPLETED",
+  "reviewed_head_sha": "c51ffe6c8c97ec06ced8604d630933d49c671ceb",
+  "main_readback_sha": "fb22a6549f47aac9df94ed4cef7cb6b756f77f8d",
+  "reviewed_prs": [718, 743],
+  "attacks_required": 12,
+  "attacks_executed": 12,
+  "p0": 0,
+  "p1": 0,
+  "p2": 1,
+  "p3": 0,
+  "golden_blocked_by_lane_d": false,
+  "global_golden_authorized": false,
+  "claim_ceiling": "D_REVIEW_COMPLETED_NO_OPEN_P0_P1_NOT_GOLDEN_NOT_PRODUCTION",
+  "attack_matrix": [
+    {"attack_id": 1, "attack": "remove_required_authority", "result": "BLOCKED_AS_EXPECTED", "evidence": ["sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_runtime_authority_resolver_v1.py", "RUNTIME_AUTHORITY_MISSING"]},
+    {"attack_id": 2, "attack": "change_bound_hash", "result": "BLOCKED_AS_EXPECTED", "evidence": ["sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_runtime_authority_resolver_v1.py", "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_commit_readback_binding.py"]},
+    {"attack_id": 3, "attack": "introduce_cross_run_reference", "result": "BLOCKED_WITHOUT_EXACT_PERMIT", "evidence": ["sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_runtime_authority_resolver_v1.py"]},
+    {"attack_id": 4, "attack": "missing_or_nonexistent_card", "result": "FAIL_CLOSED_OR_GOVERNED_NO_CARD_BY_POLICY", "evidence": ["sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_gate_c_branches.py", "sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_execution_contract_tests.py"]},
+    {"attack_id": 5, "attack": "two_ambiguous_cards", "result": "BLOCKED_AS_EXPECTED", "evidence": ["sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_gate_c_branches.py", "RUNTIME_CARD_AMBIGUOUS"]},
+    {"attack_id": 6, "attack": "invent_schema_or_column_semantics", "result": "BLOCKED_AS_EXPECTED", "evidence": ["sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_execution_contract_tests.py", "SEMANTIC_ENTITY_INVENTED"]},
+    {"attack_id": 7, "attack": "visually_plausible_wrong_data_model", "result": "BLOCKED_BY_SOURCE_FIDELITY", "evidence": ["sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_execution_contract_tests.py", "SEMANTIC_ENTITY_MISSING", "SEMANTIC_ENTITY_INVENTED", "SEMANTIC_ENTITY_MUTATED"]},
+    {"attack_id": 8, "attack": "pass_receipt_with_missing_required_proof", "result": "BLOCKED_AS_EXPECTED", "evidence": ["sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_execution_contract_tests.py", "profiles/quality_pack/evals/run_independent_review_bundle_binding_tests.py"]},
+    {"attack_id": 9, "attack": "semantic_pass_cannot_override_deterministic_or_binding_failure", "result": "BLOCKED_AS_EXPECTED", "evidence": ["sandbox/lf_contract_gate_test/profile_execution_runtime/run_native_semantic_quality_tests.py", "profiles/quality_pack/evals/run_independent_review_bundle_binding_tests.py"]},
+    {"attack_id": 10, "attack": "deterministic_pass_with_incomplete_provenance", "result": "BLOCKED_AS_EXPECTED", "evidence": ["sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_commit_readback_binding.py", "profiles/quality_pack/evals/run_independent_review_bundle_binding_tests.py"]},
+    {"attack_id": 11, "attack": "bundle_or_replay_without_reproducible_binding", "result": "BLOCKED_AS_EXPECTED", "evidence": ["sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_hp001_replay.py", "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_hp001_isolation.py"]},
+    {"attack_id": 12, "attack": "result_against_sha_other_than_certified_candidate", "result": "BLOCKED_AS_EXPECTED", "evidence": ["sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_commit_readback_binding.py", "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_hp001_isolation.py"]}
+  ],
+  "exact_head_ci": {
+    "head_sha": "c51ffe6c8c97ec06ced8604d630933d49c671ceb",
+    "validate_lf_packs_run_id": 34792383207,
+    "validate_lf_packs_job_id": 103818899827,
+    "validate_lf_packs": "PASS",
+    "lf_contract_check_run_id": 34792383250,
+    "lf_contract_check": "PASS",
+    "bootstrap_run_id": 34792383165,
+    "bootstrap": "PASS",
+    "relevant_steps": [
+      "S26-E governance EKB applicability and card fallback gate",
+      "Test persistent Profile Runtime API",
+      "Validate S26 semantic-to-render binding regressions",
+      "Validate strict independent receipt-to-bundle binding regressions",
+      "Validate PROFILE_RUNTIME V3 quality and lineage gates"
+    ]
+  },
+  "findings": [
+    {
+      "id": "S26-D-P2-001",
+      "severity": "P2",
+      "finding": "W1/W2/W3 case-level raw result artifacts are not individually archived in the current repository tree; final matrix execution is durable as an exact-head PR execution summary and is reconciled separately against the frozen plan.",
+      "blocks_repo_evidence_freeze": false,
+      "blocks_golden": true,
+      "owner": "S26-F evidence/archive",
+      "repair": "Materialize a machine-readable reconciliation receipt now; preserve claim ceiling and do not use it as production/Golden authorization."
+    }
+  ],
+  "non_actions": ["NO_MAIN_MERGE", "NO_GOLDEN", "NO_PRODUCTION", "NO_RUNTIME_ACTIVATION", "NO_SUPABASE_STRATEGY_STATUS_WRITE"]
+}

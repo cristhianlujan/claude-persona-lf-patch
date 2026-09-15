@@ -1,0 +1,89 @@
+{
+  "schema": "S26_MATRIX_V3_RECONCILIATION_RECEIPT_V1",
+  "status": "RECONCILED_PASS_WITH_ARCHIVAL_RESTRICTION",
+  "reviewed_head_sha": "c51ffe6c8c97ec06ced8604d630933d49c671ceb",
+  "main_readback_sha": "fb22a6549f47aac9df94ed4cef7cb6b756f77f8d",
+  "matrix_contract_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_family_objective_matrix_v3/matrix_contract.json",
+  "plan_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_family_objective_matrix_v3/missing_objectives_plan.json",
+  "baseline_inventory_ref": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_family_objective_matrix_v3/coverage_inventory.json",
+  "baseline_effectively_covered": 20,
+  "gap_objectives_planned": 30,
+  "final_cases_planned": 33,
+  "execution_source": {
+    "pr": 718,
+    "candidate_head_sha": "50551075c40af94d9e85ac4d5ab23dc84b4a8af8",
+    "merge_commit_sha": "a705e3f3064923551f96ea4f9629eb4b4e555aa5",
+    "reported_waves": {
+      "W1_FINAL_DETERMINISTIC": {"passed": 22, "total": 22},
+      "W2_FINAL_MODEL_MATERIALIZATION": {"passed": 7, "total": 7, "model_calls": 6},
+      "W3_FINAL_STABILITY_AND_INDEPENDENT": {"passed": 4, "total": 4, "model_calls": 9},
+      "aggregate": {"passed": 33, "total": 33}
+    },
+    "reported_additional_gates": {
+      "service_runtime_suite": "107_PASS_4_OPTIONAL_SKIPS",
+      "post_commit_readback_binding": "PASS",
+      "artifact_set_addendum": "6/6_PASS",
+      "adversarial_runtime_authority_and_w2": "6/6_PASS",
+      "model_weight_guard": "4/4_PASS",
+      "quality_depth_performance_deterministic_assurance": "PASS",
+      "exact_head_ci": "PASS"
+    },
+    "exact_head_ci_runs": [34720639244, 34720400512, 34720400513, 34720400557, 34720400622, 34720400516],
+    "evidence_receipt_sha256_reported": "f8275e026546864f447a8a30b9273de56f038e70a8a88c162a7fc8031fd13a99"
+  },
+  "reconciliation": {
+    "method": "FROZEN_PLAN_PLUS_DURABLE_EXACT_HEAD_EXECUTION_SUMMARY",
+    "preserved_objectives": 20,
+    "gap_objectives_closed": 30,
+    "objectives_effectively_covered": 50,
+    "objectives_required": 50,
+    "all_objectives_effectively_covered": true,
+    "reason": "The frozen plan declares 30 gap objectives closed by 33 final cases; PR #718 durably reports W1 22/22, W2 7/7, W3 4/4, exactly 33/33 total on its exact candidate.",
+    "raw_case_result_files_individually_archived": false
+  },
+  "holdouts": {
+    "required": 10,
+    "designated": [
+      "S26V3-F01-O5-HOLDOUT",
+      "S26V3-F02-O4-SPOOFED-CURRENTNESS-HOLDOUT",
+      "S26V3-F03-O5-UNKNOWN-CARD-HOLDOUT",
+      "S26V3-F04-O5-ADAPTER-HOLDOUT",
+      "S26V3-F05-O5-COMPATIBLE-EVOLUTION-HOLDOUT",
+      "S26V3-F06-O5-DISTINCT-UI-HOLDOUT",
+      "S26V3-F07-O5-ALLOWED-STRUCTURE-HOLDOUT",
+      "S26V3-F08-O5-INDEPENDENT-HOLDOUT",
+      "S26V3-F09-O5-STOCHASTIC-HOLDOUT",
+      "S26V3-F10-O5-REAL-E2E-HOLDOUT"
+    ],
+    "passed": 10,
+    "total": 10,
+    "derivation": "All designated holdouts are members of the 33-case frozen final plan; the exact-head campaign reports all 33 cases PASS. F10-O5 is additionally materialized as PASS_WITH_RESTRICTIONS after independent review."
+  },
+  "transversal_reconciliation": {
+    "mutation_sensitivity": "PASS_CURRENT_REGRESSION_COVERAGE",
+    "metamorphic_nonsemantic_equivalence": "PASS_CURRENT_REGRESSION_COVERAGE",
+    "differential_schema_transport_card_branches": "PASS_CURRENT_REGRESSION_COVERAGE",
+    "novelty_and_exact_identity": "PASS_WITH_F10_INDEPENDENT_HOLDOUT_AND_ISOLATION_BINDING",
+    "final_exact_head_ci_commit_binding": "PASS",
+    "no_aggregate_masking": "PASS_FAIL_CLOSED_CONTROLS",
+    "current_exact_head_evidence": {
+      "sha": "c51ffe6c8c97ec06ced8604d630933d49c671ceb",
+      "validate_lf_packs": 34792383207,
+      "lf_contract_check": 34792383250,
+      "bootstrap": 34792383165
+    }
+  },
+  "f10": {
+    "family_status": "F10_COMPLETE_PASS_WITH_RESTRICTIONS",
+    "independent_verdict": "PASS_WITH_RESTRICTIONS",
+    "independent_score": 23,
+    "quality_pack_adversarial": "21/21_PASS",
+    "claim_ceiling": "f10-complete-pass-with-restrictions-not-golden-not-production"
+  },
+  "archival_restriction": {
+    "severity": "P2",
+    "description": "The repository does not contain one raw result file per W1/W2/W3 case. This receipt reconciles the frozen case plan to the durable exact-head PR #718 execution summary. This is sufficient for S26 repo/evidence freeze, but is not elevated to Gate G, Golden or production evidence.",
+    "golden_authorized": false
+  },
+  "claim_ceiling": "S26_MATRIX_V3_RECONCILED_FOR_REPO_EVIDENCE_FREEZE_NOT_GATE_G_NOT_GOLDEN_NOT_PRODUCTION"
+}
