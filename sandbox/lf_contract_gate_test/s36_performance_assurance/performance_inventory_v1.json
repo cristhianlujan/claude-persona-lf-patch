@@ -1,0 +1,146 @@
+{
+  "schema": "S36_WP5_PERFORMANCE_INVENTORY_V1",
+  "canonical_matrix": "S36_CANONICAL_LF_TEST_MATRIX",
+  "inventory_scope": "existing LF benchmarks, performance tests, telemetry contracts and blocked load targets",
+  "items": [
+    {
+      "id": "PERF-INV-001",
+      "family": "INPUT_GOVERNANCE_CHANGE_IMPACT",
+      "artifact": "sandbox/lf_contract_gate_test/input_governance_incremental/validate_change_impact_l3c_resolver_v1.py",
+      "git_blob_sha": "2ee0f9a71a32e9d284a9286bf1aadf40a410b5e3",
+      "existing_measurement": "5000 local algorithm-only latency samples with p50/p95/max",
+      "matrix_classification": "TRANSVERSAL_PERFORMANCE_CANDIDATE",
+      "environment": "LOCAL_SANDBOX",
+      "measurable_now": true,
+      "threshold_state": "NO_LATENCY_SLO",
+      "s36_status": "NOT_COVERED_MATRIX_BINDING",
+      "action": "REUSE_HARNESS_PATTERN_AND_ENROLL_WITHOUT_DUPLICATING_MATRIX"
+    },
+    {
+      "id": "PERF-INV-002",
+      "family": "INPUT_GOVERNANCE_CHANGE_IMPACT",
+      "artifact": "sandbox/lf_contract_gate_test/input_governance_incremental/change_impact_l3c_resolver_eval_local_v1.json",
+      "git_blob_sha": "afdb90ff776e7a802d40e157348a373208d727d6",
+      "existing_measurement": {"samples":5000,"p50_ms":0.001852,"p95_ms":0.002316,"max_ms":0.035063},
+      "matrix_classification": "HISTORICAL_LOCAL_BASELINE",
+      "environment": "LOCAL_SANDBOX",
+      "measurable_now": true,
+      "threshold_state": "BASELINE_EXPLICITLY_NOT_SLO",
+      "s36_status": "NOT_COVERED_THRESHOLD"
+    },
+    {
+      "id": "PERF-INV-003",
+      "family": "PROFILE_RUNTIME_API",
+      "artifact": "services/profile_runtime_api/scripts/run_benchmark.py",
+      "git_blob_sha": "f8232eec7ae4ea2ff8d002d36b5756e7b8d3defb",
+      "existing_measurement": "fixed B2B-CARGA-001 benchmark; per-profile elapsed_ms + API wall time + historical comparator",
+      "matrix_classification": "RUNTIME_PERFORMANCE_CANDIDATE",
+      "environment": "REMOTE_CANDIDATE_RUNTIME",
+      "measurable_now": false,
+      "threshold_state": "HISTORICAL_COMPARATOR_PRESENT_NO_PASS_GATE",
+      "s36_status": "BLOCK",
+      "block_reason": "WP5 has no production-like/live runtime authorization and the harness requires live token/current governance receipt"
+    },
+    {
+      "id": "PERF-INV-004",
+      "family": "PROFILE_RUNTIME_API",
+      "artifact": "services/profile_runtime_api/deploy/profile-runtime-worker.env.example",
+      "git_blob_sha": "9c29a67df753296f770f8196103e30ef11930730",
+      "existing_measurement": "HTTP timeout 30s; job/inference ceiling 900s; poll 2s",
+      "matrix_classification": "TIMEOUT_CONTRACT_SOURCE",
+      "environment": "RUNTIME_CONFIG",
+      "measurable_now": false,
+      "threshold_state": "EXISTING_CONTRACT_FOR_PROFILE_RUNTIME_ONLY",
+      "s36_status": "BLOCK",
+      "block_reason": "timeout behavior not exercised because remote runtime execution is not authorized in WP5"
+    },
+    {
+      "id": "PERF-INV-005",
+      "family": "PROFILE_EXECUTION_RUNTIME",
+      "artifact": "sandbox/lf_contract_gate_test/profile_execution_runtime/run_profile_runtime_optimization_tests.py",
+      "git_blob_sha": "236935816c5cdc5e176c9f522c0d2e5525644807",
+      "existing_measurement": "52 deterministic regression cases; verifies queue_latency_ms, total_ms, batch size, parallelism, cache-hit and per-profile inference metric separation",
+      "matrix_classification": "PERFORMANCE_INSTRUMENTATION_CONTRACT",
+      "environment": "LOCAL_SANDBOX",
+      "measurable_now": true,
+      "threshold_state": "METRIC_CORRECTNESS_NOT_RUNTIME_SPEED_GATE",
+      "s36_status": "NOT_COVERED_PERFORMANCE_THRESHOLD"
+    },
+    {
+      "id": "PERF-INV-006",
+      "family": "PROGRAMMING_AGENT_E2E",
+      "artifact": "public.lf_test_suites:TS-PROGRAMMING-AGENT-E2E-001",
+      "existing_measurement": "per-stage timing, per-call context/model telemetry, retries, cache hits, total duration persisted in canonical test infrastructure",
+      "matrix_classification": "OBSERVABILITY_REUSE_SOURCE",
+      "environment": "REAL_GOVERNED_CASES",
+      "measurable_now": "PARTIAL",
+      "threshold_state": "NO_TRANSVERSAL_PERFORMANCE_GATE_FOUND",
+      "s36_status": "NOT_COVERED",
+      "evidence": "30 persisted runs exist; current duration_ms quality is insufficient for global performance claims"
+    },
+    {
+      "id": "PERF-INV-007",
+      "family": "CANONICAL_TEST_RUN_OBSERVABILITY",
+      "artifact": "public.lf_test_runs.duration_ms",
+      "existing_measurement": {"total_runs":636,"zero_duration_runs":566,"positive_duration_runs":33,"null_duration_runs":37},
+      "matrix_classification": "CANONICAL_PERSISTENCE_TARGET",
+      "environment": "MIXED_EXISTING_RUNS",
+      "measurable_now": "PARTIAL",
+      "threshold_state": "DURATION_FIELD_EXISTS_BUT_COVERAGE_QUALITY_IS_LOW",
+      "s36_status": "NOT_COVERED_INSTRUMENTATION_COMPLETENESS"
+    },
+    {
+      "id": "PERF-INV-008",
+      "family": "STORY_CREATOR_VISUAL",
+      "artifact": "sandbox/story_creator_p0_visual/v1.1/evals/p0-p05-denominator-report-20260809.json",
+      "existing_measurement": "M16 P95 E2E latency, M18 queue wait P95, M19 throughput screens/minute, M20 cost/screen planned for >=50-job load profile",
+      "matrix_classification": "LOAD_PERFORMANCE_TARGET",
+      "environment": "BENCHMARK_LOAD_PROFILE",
+      "measurable_now": false,
+      "threshold_state": "PROTOTYPE_TARGETS_EXIST_BUT_DENOMINATOR_OBTAINED_ZERO",
+      "s36_status": "BLOCK",
+      "block_reason": "existing report marks benchmark blocked/not executed"
+    },
+    {
+      "id": "PERF-INV-009",
+      "family": "S30_STRATEGY_EXECUTOR",
+      "artifact": "sandbox/lf_contract_gate_test/s30_d_final_r09/S30_ASSURANCE_PLAN_MULTIDIMENSIONAL_V3.md",
+      "git_blob_sha": "cd1629fa202976299d035e50fcac7f587e236f05",
+      "existing_measurement": "monotonic timing; >=1 warm-up and >=5 measured samples; raw samples; P50/P95/MAX/wall; retry/timeout counts",
+      "matrix_classification": "REUSABLE_MEASUREMENT_PATTERN_OWNER_LOCAL_GATE",
+      "environment": "SANDBOX_CANARY",
+      "measurable_now": true,
+      "threshold_state": "OWNER_LOCAL",
+      "s36_status": "REUSE_METHOD_NOT_THRESHOLD",
+      "note": "Do not transplant S30 owner thresholds to unrelated families"
+    },
+    {
+      "id": "PERF-INV-010",
+      "family": "S30_STRATEGY_EXECUTOR",
+      "artifact": "sandbox/lf_contract_gate_test/s30_d_final_r09/e2e_result_contract_v1.json",
+      "git_blob_sha": "e9cc2f840a1b5e03d14470751324c3e30235399d",
+      "existing_measurement": "first campaign establishes P50/P95 baseline; later campaign flags >20% P95 regression without approved causal explanation; timeout extension forbidden before bad phase/budget measured",
+      "matrix_classification": "OWNER_LOCAL_REGRESSION_POLICY",
+      "environment": "S30_FAMILY_ONLY",
+      "measurable_now": true,
+      "threshold_state": "EXPLICIT_OWNER_CONTRACT",
+      "s36_status": "APPLICABLE_TO_S30_ONLY"
+    },
+    {
+      "id": "PERF-INV-011",
+      "family": "OCR_UI_PIPELINE",
+      "artifact": "docs/p0/OCR_RESEARCH_REPORT.md",
+      "existing_measurement": "operation dimension calls for p50/p95 latency, memory and cost",
+      "matrix_classification": "PERFORMANCE_REQUIREMENT_DESIGN",
+      "environment": "OFFLINE_BENCHMARK_DESIGN",
+      "measurable_now": "UNKNOWN_FROM_CURRENT_EVIDENCE",
+      "threshold_state": "NO_FRESH_PERFORMANCE_RECEIPT_VERIFIED_IN_WP5",
+      "s36_status": "NOT_COVERED"
+    }
+  ],
+  "excluded_from_active_wp5_execution": [
+    "S26/WP6 artifacts were not modified or enrolled by WP5; any observed search hits are inventory-only and not consumed as WP5 execution authority.",
+    "Business KPIs are excluded from Performance Assurance.",
+    "Incidental library/network timeout literals are not treated as performance thresholds unless they are explicit owner/runtime contracts."
+  ]
+}
