@@ -1,0 +1,26 @@
+{
+  "schema_version": "LF_INTERNAL_RPC_ACL_INVENTORY_V1",
+  "observed_main_sha": "18784e12ae4e4b8c7c48ae4004011444deb1fbeb",
+  "observed_date": "2026-09-14",
+  "supabase_project": "mhwmirqcgxxukpctffuv",
+  "pg_stat_function_calls_available": false,
+  "router_mappings": [
+    {"asset_type":"PERFIL","action_code":"PROFILE_CREATE","operation_code":"CREACION_PERFIL_LF","status":"ACTIVE","write_allowed":true},
+    {"asset_type":"STRATEGY","action_code":"STRATEGY_EXECUTION","operation_code":"EJECUCION_ESTRATEGIA_LF","status":"ACTIVE","write_allowed":true},
+    {"asset_type":"STRATEGY","action_code":"STRATEGY_UPDATE","operation_code":"ACTUALIZACION_ESTRATEGIA_LF","status":"ACTIVE","write_allowed":true},
+    {"asset_type":"STRATEGY","action_code":"UPDATE","operation_code":"ACTUALIZACION_ESTRATEGIA_LF","status":"ACTIVE","write_allowed":true}
+  ],
+  "functions": [
+    {"function":"fn_lf_operation_reserve_execution_v1","mutates_data":true,"checks_auth_uid":false,"checks_jwt":false,"checks_current_user":false,"grantees":["postgres","service_role"],"classification":"REFERENCE_SERVICE_ROLE_ONLY"},
+    {"function":"lf_strategy_update_begin_v1","mutates_data":true,"checks_auth_uid":false,"checks_jwt":false,"checks_current_user":false,"grantees":["postgres","service_role"],"classification":"REFERENCE_SERVICE_ROLE_ONLY"},
+    {"function":"lf_profile_creation_begin_v1","mutates_data":true,"checks_auth_uid":false,"checks_jwt":false,"checks_current_user":false,"grantees":["PUBLIC","anon","authenticated","postgres","service_role"],"classification":"BLOCK_CLIENT_EXECUTE_CANDIDATE"},
+    {"function":"lf_strategy_execution_begin_v1","mutates_data":true,"checks_auth_uid":false,"checks_jwt":false,"checks_current_user":false,"grantees":["anon","authenticated","postgres","service_role"],"classification":"BLOCK_CLIENT_EXECUTE_CANDIDATE"},
+    {"function":"lf_operation_execution_qualification_guard_v1","mutates_data":false,"checks_auth_uid":false,"checks_jwt":false,"checks_current_user":false,"grantees":["anon","authenticated","postgres","service_role"],"classification":"INTERNAL_GUARD_CLIENT_EXECUTE_CANDIDATE"},
+    {"function":"lf_apply_independent_strategy_review_v1","mutates_data":true,"checks_auth_uid":false,"checks_jwt":false,"checks_current_user":false,"grantees":["PUBLIC","anon","authenticated","postgres","service_role"],"classification":"BLOCK_CLIENT_EXECUTE_CANDIDATE"}
+  ],
+  "repo_caller_search": {
+    "lf_profile_creation_begin_v1":"ONLY_MIGRATION_DEFINITIONS_FOUND",
+    "lf_strategy_execution_begin_v1":"NO_EXPLICIT_RPC_CALLER_FOUND",
+    "limitation":"Repository search cannot prove absence of out-of-repo callers; live permission change remains gated."
+  }
+}
