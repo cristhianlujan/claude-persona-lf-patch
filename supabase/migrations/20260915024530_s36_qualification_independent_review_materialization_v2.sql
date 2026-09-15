@@ -25,6 +25,7 @@ declare
   v_review_total integer := 0;
   v_review_passed integer := 0;
   v_review_nonpass integer := 0;
+  v_invalid_suite_states integer := 0;
   v_materialized_tests integer := 0;
   v_nonpassed_suites integer := 0;
   v_next_state text;
@@ -219,6 +220,21 @@ begin
     );
   end if;
 
+  -- Nothing except PASSED and REVIEW_REQUIRED may enter materialization. This prevents
+  -- partial mutation when another required suite is BLOCKED/IN_PROGRESS/PARTIAL.
+  select count(*) into v_invalid_suite_states
+  from public.lf_test_suite_runs sr
+  where sr.suite_run_id=any(q.suite_run_ids)
+    and sr.status not in ('PASSED','REVIEW_REQUIRED');
+
+  if v_invalid_suite_states>0 then
+    return jsonb_build_object(
+      'result','BLOCKED',
+      'code','QUAL_REVIEW_PREMATERIALIZATION_SUITE_STATE_INVALID',
+      'invalid_suite_state_count',v_invalid_suite_states
+    );
+  end if;
+
   -- Only after every REVIEW_REQUIRED case has one strict PASS judge from this completed,
   -- independent reviewer do we materialize the test result. This closes the inconsistency
   -- between qualification receipt state and the canonical suite-run state consumed by
@@ -279,6 +295,12 @@ begin
 
   get diagnostics v_materialized_tests = row_count;
 
+  -- Any mismatch is an invariant violation after mutation, so raise (not return) to roll back
+  -- the full finalizer transaction rather than persist a partial materialization.
+  if v_materialized_tests is distinct from v_review_total then
+    raise exception 'LF_QUAL_REVIEW_MATERIALIZATION_COUNT_MISMATCH:%:%',v_materialized_tests,v_review_total;
+  end if;
+
   with agg as (
     select
       sr.suite_run_id,
@@ -322,14 +344,7 @@ begin
     and sr.status is distinct from 'PASSED';
 
   if v_nonpassed_suites>0 then
-    return jsonb_build_object(
-      'result','BLOCKED',
-      'code','QUAL_REVIEW_REQUIRED_SUITES_NOT_PASSED',
-      'review_required_count',v_review_total,
-      'strict_pass_count',v_review_passed,
-      'materialized_test_count',v_materialized_tests,
-      'nonpassed_suite_count',v_nonpassed_suites
-    );
+    raise exception 'LF_QUAL_REVIEW_POSTMATERIALIZATION_INVARIANT_FAILED:%',v_nonpassed_suites;
   end if;
 
   v_next_state := public.lf_lifecycle_resolve_transition_v1(
