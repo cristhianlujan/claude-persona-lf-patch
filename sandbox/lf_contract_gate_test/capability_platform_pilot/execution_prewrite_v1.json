@@ -1,0 +1,54 @@
+{
+  "schema": "LF_CAPABILITY_PLATFORM_PILOT_PREWRITE_V1",
+  "execution_id": "EXEC-ACT0046-CAPABILITY-PLATFORM-PILOT-dc889ee0-bbd3-47b9-8a7e-fc5ad6d0b83b",
+  "operation_code": "ACTUALIZACION_SKILL_LF",
+  "target_code": "ACT-0046",
+  "target_path": "sandbox/lf_contract_gate_test/capability_platform_pilot/**",
+  "router_source": "public.v_lf_fuente_operativa",
+  "target_state": {
+    "estado_documental": "CANDIDATO",
+    "estado_operativo": "READ_ONLY",
+    "runtime_estado": "CANDIDATE_READ_ONLY",
+    "impacto_automatico": "BLOQUEADO"
+  },
+  "base_main_sha": "b5f1c11cd37acd2c53bf63c66d9f96abf96c756e",
+  "defect": "Transversal capabilities exist across S26/S30 but ACT-0046 and future consumers have no deterministic version/dependency resolver, creating copy/drift risk.",
+  "root_cause": "Capabilities are implemented as project assets without a shared provider-consumer version resolution contract.",
+  "minimal_patch_scope": [
+    "sandbox registry fixture",
+    "deterministic SemVer resolver",
+    "PUSH/PULL simulation",
+    "compatibility/update gate",
+    "rollback",
+    "regression matrix"
+  ],
+  "preserved_constraints": [
+    "no Supabase schema or DML",
+    "no runtime activation",
+    "no production change",
+    "no provider mutation",
+    "no ACT-0046 skill package mutation",
+    "no automatic promotion",
+    "no main merge authorization"
+  ],
+  "regression_plan": {
+    "positive": [
+      "PATCH auto-after-test",
+      "MINOR auto-after-test",
+      "S26 second provider resolution",
+      "PUSH/PULL parity",
+      "rollback"
+    ],
+    "negative": [
+      "MAJOR excluded by range",
+      "contract test failure",
+      "canary failure",
+      "retired installed version",
+      "invalid SemVer",
+      "out-of-range installed version"
+    ],
+    "holdout": "pinned consumer with narrower compatible range"
+  },
+  "evidence_ceiling": "CAPABILITY_VERSION_RESOLUTION_SANDBOX_PILOT_ONLY",
+  "pre_write_gate_passed": true
+}
