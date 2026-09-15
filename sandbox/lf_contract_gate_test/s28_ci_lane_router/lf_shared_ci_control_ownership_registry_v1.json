@@ -72,6 +72,24 @@
       "ci_router_selftest_required": true,
       "p0_exact_head_external_required": false,
       "deep_shared": false
+    },
+    {
+      "control_id": "S36_ASSURANCE_COMPLETENESS_GATE",
+      "path": "sandbox/lf_contract_gate_test/s36_wp06_ci_completeness_gate.py",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "S36_ASSURANCE_COMPLETENESS_GATE_SELFTEST",
+      "path": "sandbox/lf_contract_gate_test/test_s36_wp06_ci_completeness_gate.py",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
     }
   ]
 }
