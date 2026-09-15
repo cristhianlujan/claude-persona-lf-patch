@@ -5,8 +5,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 SKILL_ROOT = ROOT / "skills/profile_creator"
 CONTRACT = json.loads((SKILL_ROOT / "contracts/update_graduation_contract_v1.json").read_text(encoding="utf-8"))
-GATE_SQL = (ROOT / "supabase/migrations/20260915122030_lf_profile_update_substantive_gate_v1.sql").read_text(encoding="utf-8")
-RECORDER_SQL = (ROOT / "supabase/migrations/20260915122031_lf_profile_update_recorder_substantive_gate_v1.sql").read_text(encoding="utf-8")
+GATE_SQL = (ROOT / "supabase/migrations/20260915161601_lf_profile_update_substantive_gate_v1.sql").read_text(encoding="utf-8")
+RECORDER_SQL = (ROOT / "supabase/migrations/20260915161619_lf_profile_update_recorder_substantive_gate_v1.sql").read_text(encoding="utf-8")
 RUNTIME = (ROOT / "supabase/functions/run-creacion-perfil-lf/index.ts").read_text(encoding="utf-8")
 GRADUATION = (ROOT / "supabase/functions/run-creacion-perfil-lf/graduation.ts").read_text(encoding="utf-8")
 
