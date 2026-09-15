@@ -58,7 +58,7 @@ $new$      'code','STRATEGY_REQUALIFICATION_BOOTSTRAP_ROUTE_EXACT',
       'details',jsonb_build_object($new$
   );
 
-  IF f2=f OR strpos(f2,"'server_assertions',jsonb_build_array")=0 THEN
+  IF f2=f OR strpos(f2,$probe$'server_assertions',jsonb_build_array$probe$)=0 THEN
     RAISE EXCEPTION 'S30_STRATEGY_REQUALIFICATION_BOOTSTRAP_V3_PATCH_NOT_APPLIED';
   END IF;
 
@@ -68,8 +68,8 @@ $new$      'code','STRATEGY_REQUALIFICATION_BOOTSTRAP_ROUTE_EXACT',
     INTO f2;
   after_sha:=encode(extensions.digest(convert_to(f2,'UTF8'),'sha256'),'hex');
 
-  IF strpos(f2,"'server_assertions'")=0
-     OR strpos(f2,"'server_hard_fails'")=0
+  IF strpos(f2,$q$'server_assertions'$q$)=0
+     OR strpos(f2,$q$'server_hard_fails'$q$)=0
      OR strpos(f2,'lf_record_operation_step_core_v1')=0
      OR strpos(f2,'UPDATE public.lf_strategy_snapshots')>0
      OR strpos(f2,'INSERT INTO public.lf_strategy_snapshots')>0
