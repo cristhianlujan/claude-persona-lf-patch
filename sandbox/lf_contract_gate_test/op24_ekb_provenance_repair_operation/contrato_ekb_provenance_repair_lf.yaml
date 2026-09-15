@@ -1,0 +1,92 @@
+version: v0.1
+status: CANDIDATO_READ_ONLY
+operation: EKB_PROVENANCE_REPAIR_LF
+source_model: GIT_FIRST_YAML
+asset_type: EKB
+router_action: PROVENANCE_REPAIR
+operation_family: GOVERNANCE
+operation_domain: EKB_PROVENANCE_REPAIR
+operation_type: UPDATE_PROTOCOL
+applies_to_asset_type: EKB
+purpose: >-
+  Reparar únicamente provenance faltante de registros EKB existentes cuando la propia fila contiene
+  evidencia explícita resoluble y una lectura independiente confirma el source_ref exacto.
+authority:
+  router: ACT-0001
+  operational_source: public.v_lf_fuente_operativa
+  source_relation: transversal.error_knowledge
+  target_column: source_ref
+  operation_factory_dependency: CREACION_OPERACION_LF
+  operation_factory_pr: 570
+  current_patch_candidate_pr: 583
+state_ceiling:
+  candidate_status: CANDIDATO_READ_ONLY
+  router_status: CANDIDATE_SANDBOX
+  runtime_allowed: false
+  automatic_impact: BLOQUEADO
+  production_write_allowed_by_candidate: false
+required_before_any_durable_write:
+  - router_read
+  - targeted_ekb_preflight
+  - exact_target_codes_bound
+  - current_rows_recounted
+  - source_ref_is_null
+  - row_self_evidence_contains_exact_ref_token
+  - independent_source_ref_resolution
+  - contradiction_check_before_dedup
+  - exact_patch_source_readback
+  - governed_execution_id_exists_and_scope_matches
+  - rollback_plan
+  - approval_or_production_capable_route
+write_contract:
+  allowed_columns: [source_ref, updated_at, updated_by_execution_id]
+  forbidden_columns:
+    - codigo
+    - titulo
+    - descripcion
+    - causa_raiz
+    - patron
+    - prevencion
+    - validacion
+    - severidad
+    - frecuencia
+    - lifecycle_phase
+    - consumer_role
+  exact_count_required: true
+  inferred_lote_or_sibling_provenance_forbidden: true
+  source_ref_overwrite_forbidden: true
+  content_rewrite_forbidden: true
+  promotion_forbidden: true
+negative_controls:
+  - missing_router_blocks
+  - source_ref_already_present_blocks
+  - row_evidence_missing_exact_ref_blocks
+  - unresolved_source_ref_blocks
+  - conflicting_source_candidates_block
+  - target_count_drift_blocks
+  - orphan_execution_id_blocks
+  - unrelated_execution_scope_blocks
+  - sibling_or_lote_inheritance_blocks
+  - durable_write_without_readback_blocks
+required_after_write:
+  - write_receipt
+  - independent_second_statement_readback
+  - exact_target_count_unchanged
+  - exact_source_ref_values_observed
+  - no_other_columns_changed
+  - unresolved_rows_remain_unresolved
+  - rollback_or_reversal_path_recorded
+  - no_learning_promotion
+router_binding_candidate:
+  asset_type: EKB
+  action_code: PROVENANCE_REPAIR
+  operation_code: EKB_PROVENANCE_REPAIR_LF
+  operation_resolution: STATIC
+  requires_existing_target: true
+  requires_missing_target: false
+  write_allowed: true
+  status: CANDIDATE_SANDBOX
+promotion_rule: >-
+  Este contrato candidato no autoriza registro Router ACTIVE ni escritura durable. Solo puede avanzar
+  después de revisión del factory PR570, materialización gobernada de operación/steps/judges,
+  exact-head CI, readback independiente y aprobación explícita de la ruta production-capable.
