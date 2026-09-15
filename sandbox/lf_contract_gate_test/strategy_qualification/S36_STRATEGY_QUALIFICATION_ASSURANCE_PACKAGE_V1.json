@@ -1,0 +1,143 @@
+{
+  "package_code": "S36_STRATEGY_QUALIFICATION_ASSURANCE_PACKAGE_V1",
+  "owner_source": "S30",
+  "assurance_owner": "S36",
+  "scope": "STRATEGY_QUALIFICATION_TRANSVERSAL_GOVERNANCE_ONLY",
+  "source_branch": "s30/strategy-qualification-governance-v1",
+  "migration_path": "supabase/migrations/20260915041516_s30_strategy_qualification_governance_v1.sql",
+  "migration_ledger_version": "20260915041516",
+  "migration_live_state": "APPLIED_BY_GOVERNED_ACTUALIZACION_DB_LF",
+  "static_regression_path": "sandbox/lf_contract_gate_test/test_s30_strategy_qualification_governance.py",
+  "source_parity": {
+    "independent_review_migration_ledger_version": "20260915035949",
+    "independent_review_migration_path": "supabase/migrations/20260915035949_s30_independent_strategy_review_operation_v2.sql",
+    "reconciled_from_local_version": "20260915035202",
+    "reconciliation_rule": "SOURCE_RENAMED_TO_LIVE_LEDGER_VERSION_WITH_IDENTICAL_SQL_BLOB"
+  },
+  "canonical_independent_review": {
+    "operation_code": "REVISION_INDEPENDIENTE_ESTRATEGIA_LF",
+    "router_action": "STRATEGY_INDEPENDENT_REVIEW",
+    "begin_rpc": "public.lf_independent_strategy_review_begin_v1",
+    "finalize_rpc": "public.lf_independent_strategy_review_finalize_v1",
+    "rule": "REUSE_ONLY_NO_PARALLEL_REVIEW_OPERATION"
+  },
+  "claim_ceiling": {
+    "strategy_snapshot_mutation": false,
+    "s36_snapshot_mutation": false,
+    "s37_snapshot_mutation": false,
+    "r15_requalification": false,
+    "runtime_activation": false,
+    "production_activation": false
+  },
+  "execution_order": [
+    "CURRENTNESS_EXACT_HEAD",
+    "STATIC_SOURCE_CONTRACT",
+    "LIVE_FUNCTION_READBACK",
+    "SEMANTIC_REVISION_REGRESSION",
+    "EXECUTION_PROVENANCE_NEGATIVES",
+    "EXECUTION_PROVENANCE_POSITIVE_ROLLBACK_ONLY",
+    "INDEPENDENT_REVIEW_REUSE_REGRESSION",
+    "ZERO_RESIDUE_READBACK",
+    "S36_ASSURANCE_RECEIPT"
+  ],
+  "cases": [
+    {
+      "id": "SEM-01",
+      "name": "operational_handoff_update_preserves_semantic_revision",
+      "setup": "Use one current Strategy row as JSON only; alter status, visibility, runtime_state, impact_policy, lifecycle_state_code, updated_at, updated_by_execution_id, evidence_refs, change_log and metadata.progress/strategy_close/next_handoff/execution_frontier.",
+      "expected": "lf_strategy_revision_sha256_from_json_v1 remains identical.",
+      "persistent_write": false
+    },
+    {
+      "id": "SEM-02",
+      "name": "material_content_change_invalidates_semantic_revision",
+      "setup": "Change content_payload in memory only.",
+      "expected": "semantic revision SHA changes.",
+      "persistent_write": false
+    },
+    {
+      "id": "SEM-03",
+      "name": "material_backlog_change_invalidates_semantic_revision",
+      "setup": "Change one material backlog item in memory only.",
+      "expected": "semantic revision SHA changes.",
+      "persistent_write": false
+    },
+    {
+      "id": "PROV-01",
+      "name": "synthetic_execution_id_blocked",
+      "setup": "Call lf_run_strategy_qualification_v1 with a nonexistent execution_id.",
+      "expected_block": "LF_STRATEGY_QUALIFICATION_EXECUTION_MISSING",
+      "receipt_delta": 0
+    },
+    {
+      "id": "PROV-02",
+      "name": "foreign_db_operation_container_blocked",
+      "setup": "Call qualification with a real ACTUALIZACION_DB_LF execution id.",
+      "expected_block": "LF_STRATEGY_QUALIFICATION_EXECUTION_NOT_STRATEGY",
+      "receipt_delta": 0
+    },
+    {
+      "id": "PROV-03",
+      "name": "reserved_strategy_execution_without_execution_steps_blocked",
+      "setup": "Inside BEGIN/ROLLBACK reserve an exact Strategy operation execution but do not record init_execution/router PASS_CLEAN.",
+      "expected_block": "LF_STRATEGY_QUALIFICATION_INIT_STEP_NOT_CLEAN",
+      "receipt_delta": 0,
+      "persistent_write": false
+    },
+    {
+      "id": "PROV-04",
+      "name": "wrong_strategy_target_blocked",
+      "setup": "Use a real IN_PROGRESS governed Strategy execution bound to another snapshot.",
+      "expected_block": "LF_STRATEGY_QUALIFICATION_EXECUTION_TARGET_MISMATCH",
+      "receipt_delta": 0
+    },
+    {
+      "id": "PROV-05",
+      "name": "stale_operation_policy_snapshot_blocked",
+      "setup": "Execute the read-only regression bound to the live lf_run_strategy_qualification_v1 source. It builds stale and incomplete operation_policy_snapshots only in memory from public.v_lf_operation_policy_snapshot, evaluates the exact runner predicate, verifies canonical attach/immutability triggers remain enabled, and proves the stale guard occurs before the first qualification receipt write. No persisted execution row is altered because the canonical reserver refreshes snapshots and BLOCK_POLICY_SNAPSHOT_IMMUTABLE correctly forbids post-reservation mutation.",
+      "regression_path": "sandbox/lf_contract_gate_test/strategy_qualification/prov05_stale_policy_snapshot_regression.sql",
+      "coverage_method": "LIVE_RUNNER_SOURCE_BOUND_READ_ONLY_POLICY_STALENESS_PROOF",
+      "expected_block": "LF_STRATEGY_QUALIFICATION_EXECUTION_POLICY_SNAPSHOT_STALE",
+      "expected_missing_block": "LF_STRATEGY_QUALIFICATION_EXECUTION_POLICY_SNAPSHOT_MISSING",
+      "receipt_delta": 0,
+      "persistent_write": false,
+      "bypass_allowed": false
+    },
+    {
+      "id": "PROV-06",
+      "name": "fully_governed_exact_strategy_execution_reaches_matrix",
+      "setup": "Rollback-only exact Strategy execution with ACTIVE Router route, applies_to_asset_type=STRATEGY, current policy snapshot, target path exact, init_execution PASS_CLEAN and router PASS_CLEAN.",
+      "expected": "qualification runner may create its bounded qualification/test receipts; transaction is rolled back after assertions.",
+      "persistent_write": false
+    },
+    {
+      "id": "IR-01",
+      "name": "canonical_independent_review_reused",
+      "setup": "Resolve STRATEGY_INDEPENDENT_REVIEW through ACT-0001.",
+      "expected": "operation_code=REVISION_INDEPENDIENTE_ESTRATEGIA_LF; no new operation or reviewer function is created by S30 patch."
+    },
+    {
+      "id": "IR-02",
+      "name": "independent_review_finalizer_regression_stays_green",
+      "setup": "Run existing S36 independent-review materialization regression on exact candidate head.",
+      "expected": "strict PASS judge materializes required suite PASS before QUAL_QUALIFIED; stale revision/fingerprint and reviewer identity checks remain fail-closed."
+    },
+    {
+      "id": "RESIDUE-01",
+      "name": "assurance_validation_leaves_no_unintended_residue",
+      "setup": "Compare Strategy/S36/S37 snapshots and qualification receipt counts before/after rollback-only adversarial cases; live readbacks are read-only.",
+      "expected": "no durable Strategy/S36/S37 snapshot mutation, no R15 qualification rerun, no runtime or production activation."
+    }
+  ],
+  "acceptance": {
+    "all_cases_required": true,
+    "false_pass_tolerance": 0,
+    "exact_head_required": true,
+    "migration_already_applied": true,
+    "migration_ledger_version_required": "20260915041516",
+    "independent_review_migration_ledger_version_required": "20260915035949",
+    "prov05_persisted_stale_fixture_forbidden": true,
+    "r15_may_resume_only_after": "S36_ASSURANCE_RECEIPT_PASS_FOR_EXACT_SOURCE_HEAD",
+    "r15_requalification_may_run_only_after": "S36_ASSURANCE_RECEIPT_PASS_FOR_EXACT_SOURCE_HEAD"
+  }
+}
