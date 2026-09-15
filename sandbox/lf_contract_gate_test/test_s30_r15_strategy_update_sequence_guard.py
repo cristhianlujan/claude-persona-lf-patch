@@ -8,6 +8,16 @@ assert len(r15_sources) == 1, r15_sources
 sql = r15_sources[0].read_text(encoding="utf-8")
 low = sql.lower()
 
+# Governed DB application/closure.
+assert "exec-s30-r15-strategy-update-sequence-guard-20260914-001" in low
+assert "actualizacion_db_lf" in low
+assert "lf_router_resolve_v1" in low
+assert "operation_policy_snapshots" in low
+assert "s30_r15_strategy_update_required_prewrite_sequence_guard_applied" in low
+assert "status='completed'" in low
+assert "s30_r15_db_execution_close_readback_failed" in low
+
+# Physical writer guard.
 assert "lf_strategy_update_required_prewrite_sequence_not_clean" in low
 assert "public.lf_operation_steps" in low
 assert "public.lf_operation_execution_steps" in low
