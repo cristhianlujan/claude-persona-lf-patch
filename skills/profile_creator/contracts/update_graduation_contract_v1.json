@@ -1,0 +1,65 @@
+{
+  "schema_version": "LF_PROFILE_UPDATE_GRADUATION_CONTRACT_V1",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "graduation_contract": "GOLDEN_CAPABLE_V1",
+  "purpose": "Add fail-closed substantive graduation obligations for S25-style Profile elevation without changing ordinary maintenance semantics or granting runtime/promotion authority.",
+  "authorization_semantics": {
+    "adds_permissions": false,
+    "runtime_enable": false,
+    "automatic_promotion": false,
+    "golden_declaration": false,
+    "production_authorization": false,
+    "merge_authorization": false
+  },
+  "ordinary_update_compatibility": {
+    "graduation_contract_absent": "existing ACTUALIZACION_PERFIL_LF flow remains applicable",
+    "universal_rule": "explicit substantive FAIL/BLOCKED/ERROR results must never be recorded as a clean step even when blocking_codes is empty"
+  },
+  "golden_capable_requirements": {
+    "deterministic_validation": {
+      "validator_result": "must prove PASS/SUCCESS",
+      "malformed_input_result": "must prove fail-closed PASS",
+      "fixture_completeness": {
+        "required": true,
+        "missing_cases": "must be []",
+        "declared_case_count": "must equal delivered_fixture_count and be > 0",
+        "result": "must prove PASS/SUCCESS"
+      }
+    },
+    "semantic_judge": {
+      "semantic_judge_result": "must prove PASS/SUCCESS",
+      "independent_semantic_evaluation": "required and must prove PASS/SUCCESS"
+    },
+    "regression_after": {
+      "adversarial_result": "must prove PASS/SUCCESS",
+      "holdout_result": "must prove PASS/SUCCESS and may not be NOT_EXECUTED/DEFERRED/NOT_COVERED",
+      "graduation_evidence": {
+        "raw_governed_execution_refs": "non-empty array",
+        "adversarial_executed": true,
+        "unseen_holdout_executed": true,
+        "independent_semantic_evaluation": true,
+        "no_aggregate_masking": true
+      }
+    },
+    "close": {
+      "server_contract_receipt_verified": true,
+      "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+      "receipt_operation_code": "ACTUALIZACION_PERFIL_LF",
+      "receipt_execution_id": "must equal current execution",
+      "receipt_exact_head": "must equal server-observed github_readback exact_head",
+      "blocking_codes": "must be []"
+    }
+  },
+  "fresh_canary_exit": [
+    "complete candidate produced",
+    "deliberately weak candidate rejected without caller blocking_codes",
+    "all Golden-capable graduation obligations proven",
+    "runtime/promotion/Golden/production remain disabled"
+  ],
+  "source_canary": {
+    "execution_id": "EXEC-S25-UPDATER-ACCEPTANCE-CFUX-20260914-001",
+    "pr": 800,
+    "owner_handoff_issue": 805,
+    "verdict": "FAIL_CLOSED"
+  }
+}
