@@ -32,7 +32,7 @@ PROFILE_UPDATER_BLOBS={
 PROFILE_UPDATER_PATHS=frozenset(PROFILE_UPDATER_BLOBS)
 EXPECTED_RUNTIME_BLOBS=dict(_base.EXPECTED_RUNTIME_BLOBS); EXPECTED_RUNTIME_BLOBS.update(CUSTOMER_PROFILE_CREATOR_BLOBS)
 EXPECTED_EDGE_PATHS=frozenset(path for path in EXPECTED_RUNTIME_BLOBS if path.startswith("supabase/functions/"))
-CONTROLLED_RUNTIME_PATHS=frozenset(EXPECTED_RUNTIME_BLOBS)
+CONTROLLED_RUNTIME_PATHS=frozenset(set(EXPECTED_RUNTIME_BLOBS)|set(PROFILE_UPDATER_PATHS))
 _BASE_EVALUATE_CONTROLLED_RUNTIME_SCOPE=_base.evaluate_controlled_runtime_scope
 def _sync_base_extensions(): _base.EXPECTED_RUNTIME_BLOBS=EXPECTED_RUNTIME_BLOBS; _base.EXPECTED_EDGE_PATHS=EXPECTED_EDGE_PATHS; _base.CONTROLLED_RUNTIME_PATHS=CONTROLLED_RUNTIME_PATHS
 def _verify_exact_pr_main_merge(pr_number:int,branch_name:str,user_agent:str):
@@ -109,6 +109,12 @@ def _customer_branch_scope_for_push():
  subprocess.run(["git","fetch","--no-tags","origin",MAIN_BRANCH],check=True,stdout=subprocess.DEVNULL); merge_base=_base.e16.run_git(["merge-base",f"origin/{MAIN_BRANCH}","HEAD"]).strip()
  if BLOB_RE.fullmatch(merge_base) is None: raise RuntimeScopeError("FAIL_RUNTIME_CUSTOMER_PUSH_BASE_UNRESOLVED","Customer Profile Creator push could not resolve merge-base with main")
  changed_files=_base.e16.git_changed_files(merge_base,"HEAD"); blobs={path:git_blob_for_path(path) for path in CUSTOMER_PROFILE_CREATOR_BLOBS}; modes={path:git_mode_for_path(path) for path in CUSTOMER_PROFILE_CREATOR_BLOBS}; _base._runtime_scope_enabled=_evaluate_customer_profile_creator_scope(changed_files,branch=CUSTOMER_PROFILE_CREATOR_BRANCH,blob_by_path=blobs,mode_by_path=modes); print(f"PASS_CUSTOMER_PROFILE_CREATOR_PUSH_PR_SCOPE_PARITY={len(changed_files)}"); return changed_files
+def _profile_updater_changed_files():
+ if os.environ.get("GITHUB_EVENT_NAME")=="push":
+  subprocess.run(["git","fetch","--no-tags","origin",MAIN_BRANCH],check=True,stdout=subprocess.DEVNULL); merge_base=_base.e16.run_git(["merge-base",f"origin/{MAIN_BRANCH}","HEAD"]).strip()
+  if BLOB_RE.fullmatch(merge_base) is None: raise RuntimeScopeError("FAIL_RUNTIME_PROFILE_UPDATER_BASE_UNRESOLVED","Profile Updater could not resolve merge-base with main")
+  return _base.e16.git_changed_files(merge_base,"HEAD")
+ return _base.e16.get_changed_files()
 def _customer_maintenance_changed_files():
  if os.environ.get("GITHUB_EVENT_NAME")=="push":
   subprocess.run(["git","fetch","--no-tags","origin",MAIN_BRANCH],check=True,stdout=subprocess.DEVNULL); merge_base=_base.e16.run_git(["merge-base",f"origin/{MAIN_BRANCH}","HEAD"]).strip()
@@ -117,6 +123,9 @@ def _customer_maintenance_changed_files():
  return _base.e16.get_changed_files()
 def _customer_get_changed_files():
  branch=current_event_branch()
+ if branch==PROFILE_UPDATER_BRANCH:
+  changed_files=_profile_updater_changed_files(); blobs={path:git_blob_for_path(path) for path in PROFILE_UPDATER_BLOBS}; modes={path:git_mode_for_path(path) for path in PROFILE_UPDATER_BLOBS}
+  _base._runtime_scope_enabled=_evaluate_profile_updater_scope(changed_files,branch=branch,blob_by_path=blobs,mode_by_path=modes); print(f"PASS_PROFILE_UPDATER_PR_SCOPE_PARITY={len(changed_files)}"); return changed_files
  if branch==CUSTOMER_PROFILE_CREATOR_MAINTENANCE_BRANCH:
   changed_files=_customer_maintenance_changed_files(); blobs={path:git_blob_for_path(path) for path in CUSTOMER_PROFILE_CREATOR_MAINTENANCE_BLOBS}; modes={path:git_mode_for_path(path) for path in CUSTOMER_PROFILE_CREATOR_MAINTENANCE_BLOBS}
   _base._runtime_scope_enabled=_evaluate_customer_profile_creator_maintenance_scope(changed_files,branch=branch,blob_by_path=blobs,mode_by_path=modes); _base.e16.base.ALLOWED_GITHUB_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); _base.e16.base.ALLOWED_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); print(f"PASS_CUSTOMER_PROFILE_CREATOR_MAINTENANCE_PR_SCOPE_PARITY={len(changed_files)}"); return changed_files
