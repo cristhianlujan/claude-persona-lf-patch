@@ -1,0 +1,112 @@
+version: v0.1
+status: CANDIDATO_READ_ONLY
+operation: CREACION_OPERACION_LF
+source_model: GIT_FIRST_YAML
+asset_type: OPERATION_CODE
+router_action: OPERATION_CREATE
+purpose: >-
+  Crear nuevas operaciones LF como candidatos gobernados, sin bypass del Router,
+  sin activacion automatica y sin promocion de produccion.
+authority:
+  router: ACT-0001
+  operational_source: public.v_lf_fuente_operativa
+  bootstrap_precedent: VULNERABILITY_COVERAGE_REPAIR_LF
+  registry: public.lf_operation_registry
+  router_registry: public.lf_router_action_registry
+  execution_registry: public.lf_operation_execution
+state_ceiling:
+  operation_status: CANDIDATO_READ_ONLY
+  router_status: CANDIDATE_SANDBOX
+  runtime_state: NO_HABILITADO
+  automatic_impact: BLOQUEADO
+  production_allowed: false
+  runtime_allowed: false
+  main_merge_allowed: false
+required_before_write:
+  - read_router
+  - read_operational_source
+  - targeted_ekb_preflight
+  - read_operation_registry
+  - read_router_action_registry
+  - prove_target_operation_missing
+  - resolve_duplicate_and_supersession
+  - resolve_policies_explicitly
+  - read_contract
+  - read_steps
+  - read_judge
+  - validate_source_paths
+  - materialize_candidate_payload
+  - deterministic_validator_prewrite_pass
+  - create_scope_matched_governance_bootstrap_execution
+  - bootstrap_operation_code_matches_candidate_exactly
+  - bootstrap_status_ceiling_is_SANDBOX_ACTIVE
+  - provenance_guard_preconditions_pass
+registry_contract:
+  required_fields:
+    - operation_code
+    - version
+    - status
+    - source_model
+    - source_repo
+    - source_paths
+    - operation_family
+    - operation_domain
+    - operation_type
+    - applies_to_asset_type
+    - created_by_execution_id
+  invariants:
+    operation_code_immutable: true
+    operation_type: CREATION_PROTOCOL
+    applies_to_asset_type: OPERATION_CODE
+    status: CANDIDATO_READ_ONLY
+    created_execution_required: true
+    created_execution_scope_match_or_governance_bootstrap: true
+router_binding_contract:
+  asset_type: OPERATION_CODE
+  action_code: OPERATION_CREATE
+  operation_code: CREACION_OPERACION_LF
+  operation_resolution: STATIC
+  requires_existing_target: false
+  requires_missing_target: true
+  write_allowed: true
+  status: CANDIDATE_SANDBOX
+  activation_allowed_in_candidate: false
+negative_controls:
+  - missing_created_by_execution_id_rejected
+  - missing_execution_row_rejected
+  - bootstrap_operation_code_mismatch_rejected
+  - duplicate_operation_code_rejected
+  - duplicate_router_action_rejected
+  - requires_existing_and_missing_both_true_rejected
+  - production_status_without_materialization_evidence_rejected
+  - route_activation_without_contract_judge_readback_rejected
+blocked:
+  - direct_registry_write_without_router
+  - direct_registry_write_without_provenance
+  - reuse_unrelated_execution_id
+  - operation_code_scope_mismatch
+  - unknown_target_overwrite
+  - auto_activate_router
+  - production_promotion
+  - runtime_enablement
+  - bypass_materialization_guard
+  - same_statement_readback_as_closure_evidence
+required_after_candidate_write:
+  - github_commit_sha
+  - github_blob_sha
+  - exact_candidate_version
+  - governance_bootstrap_execution_receipt
+  - registry_candidate_receipt
+  - independent_registry_readback
+  - router_candidate_receipt
+  - independent_router_readback
+  - provenance_guard_pass
+  - negative_controls_pass
+  - no_runtime_change_readback
+  - no_production_change_readback
+  - no_automatic_activation_readback
+  - report_output
+promotion_rule: >-
+  This contract does not authorize promotion. A separate governed decision must
+  explicitly approve any Router ACTIVE binding or production status after exact-head
+  CI, independent readback, contract/judge materialization and no-regression evidence.

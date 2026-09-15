@@ -1,0 +1,80 @@
+version: v0.1
+status: CANDIDATO_READ_ONLY
+operation: CREACION_OPERACION_LF
+source_model: GIT_FIRST_YAML
+steps:
+  - order: 1
+    id: router
+    evidence: ACT_0001_current_read
+  - order: 2
+    id: operational_source
+    evidence: v_lf_fuente_operativa_current_read
+  - order: 3
+    id: ekb_preflight
+    evidence: applicable_ekb_codes_read
+  - order: 4
+    id: operation_inventory
+    evidence: lf_operation_registry_current_inventory
+  - order: 5
+    id: router_inventory
+    evidence: lf_router_action_registry_current_inventory
+  - order: 6
+    id: target_missing_check
+    evidence: exact_operation_code_absent
+  - order: 7
+    id: duplicate_supersession_check
+    evidence: no_duplicate_or_lineage_conflict
+  - order: 8
+    id: policy_resolution
+    evidence: explicit_policy_set_and_non_applicable_reasons
+  - order: 9
+    id: contract_read
+    evidence: contrato_operacion_lf_yaml_read
+  - order: 10
+    id: steps_judge_read
+    evidence: exact_steps_and_judge_sources_read
+  - order: 11
+    id: source_path_validation
+    evidence: all_declared_source_paths_exist
+  - order: 12
+    id: candidate_payload
+    evidence: registry_and_router_candidate_payload_materialized
+  - order: 13
+    id: deterministic_prewrite_validation
+    evidence: validator_pass_zero_blocking_codes
+  - order: 14
+    id: governance_bootstrap_start
+    evidence: scope_matched_VULNERABILITY_COVERAGE_REPAIR_LF_execution_IN_PROGRESS
+  - order: 15
+    id: provenance_preflight
+    evidence: bootstrap_operation_code_exact_and_status_ceiling_SANDBOX_ACTIVE
+  - order: 16
+    id: rollback_canary_registry
+    evidence: CANDIDATO_READ_ONLY_registry_insert_observed_inside_transaction
+  - order: 17
+    id: rollback_canary_router
+    evidence: CANDIDATE_SANDBOX_OP_CREATE_route_observed_inside_transaction
+  - order: 18
+    id: negative_duplicate_route
+    evidence: unique_violation_observed
+  - order: 19
+    id: negative_contradictory_target_flags
+    evidence: check_violation_observed
+  - order: 20
+    id: rollback_cleanup
+    evidence: execution_operation_route_all_absent_after_rollback
+  - order: 21
+    id: github_candidate_write
+    evidence: exact_commit_sha
+  - order: 22
+    id: github_candidate_readback
+    evidence: exact_blob_shas
+  - order: 23
+    id: independent_candidate_validation
+    evidence: exact_head_validator_and_negative_mutations_pass
+  - order: 24
+    id: activation_gate
+    evidence: router_ACTIVE_and_production_promotion_remain_forbidden
+  - order: 25
+    id: report_output
+    evidence: claim_ceiling_blockers_next_gate_and_receipts

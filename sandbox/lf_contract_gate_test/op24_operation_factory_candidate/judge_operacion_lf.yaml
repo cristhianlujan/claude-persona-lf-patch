@@ -1,0 +1,53 @@
+version: v0.1
+status: CANDIDATO_READ_ONLY
+operation: CREACION_OPERACION_LF
+judge_code: JUDGE_CREACION_OPERACION_LF_V01_CANDIDATE
+source_model: DETERMINISTIC_CONTRACT_JUDGE
+verdicts: [PASS, FAIL]
+required_assertions:
+  - id: router_current
+    rule: router_code_equals_ACT_0001_and_state_is_current
+  - id: target_absent
+    rule: candidate_operation_code_does_not_exist_before_create
+  - id: candidate_ceiling
+    rule: operation_status_equals_CANDIDATO_READ_ONLY_and_router_status_equals_CANDIDATE_SANDBOX
+  - id: no_runtime
+    rule: runtime_allowed_is_false
+  - id: no_production
+    rule: production_allowed_is_false
+  - id: provenance_execution
+    rule: created_by_execution_id_exists_and_is_scope_matched_or_valid_governance_bootstrap
+  - id: bootstrap_exactness
+    rule: bootstrap_operation_code_equals_candidate_operation_code_and_ceiling_equals_SANDBOX_ACTIVE
+  - id: registry_shape
+    rule: operation_type_equals_CREATION_PROTOCOL_and_applies_to_asset_type_equals_OPERATION_CODE
+  - id: router_shape
+    rule: asset_type_equals_OPERATION_CODE_and_action_code_equals_OPERATION_CREATE_and_resolution_equals_STATIC
+  - id: missing_target_only
+    rule: requires_missing_target_true_and_requires_existing_target_false
+  - id: unique_route
+    rule: duplicate_asset_type_action_code_is_rejected
+  - id: target_flag_guard
+    rule: simultaneous_existing_and_missing_requirements_are_rejected
+  - id: rollback_clean
+    rule: rollback_canary_leaves_no_execution_operation_or_route_rows
+  - id: source_exactness
+    rule: contract_steps_judge_and_validator_are_read_from_exact_head
+  - id: activation_blocked
+    rule: candidate_does_not_activate_router_or_promote_operation
+fail_closed:
+  - missing_router_read
+  - missing_operational_source_read
+  - missing_ekb_preflight
+  - missing_exact_execution_receipt
+  - provenance_scope_mismatch
+  - missing_contract_or_steps_or_judge
+  - validator_not_executed
+  - any_blocking_code
+  - any_runtime_or_production_write
+  - same_statement_only_readback
+claim_ceiling: >-
+  PASS means only that the candidate factory contract is internally coherent and
+  its rollback canary satisfies current registry/router guards. PASS does not
+  authorize registration, Router ACTIVE binding, runtime enablement, main merge,
+  or production promotion.
