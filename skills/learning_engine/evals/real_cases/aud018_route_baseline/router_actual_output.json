@@ -1,0 +1,8 @@
+{
+  "action_code": "EXECUTE",
+  "asset_code": "ACT-0046",
+  "asset_type": "SKILL",
+  "blocking_code": "BLOCK_OPERATION_NOT_REGISTERED",
+  "router": "ACT-0001",
+  "status": "BLOCKED"
+}

@@ -1,0 +1,21 @@
+{
+  "case_id": "MOTOR-AUD018-ROUTE-BASELINE-001",
+  "constraints": [
+    "READ_ONLY",
+    "SHOW_INPUT_OUTPUT",
+    "NO_AUTOMATIC_IMPACT",
+    "NO_PRODUCTION",
+    "NO_S26",
+    "NO_S30_AS_OBJECT_UNDER_TEST"
+  ],
+  "learning_signal": {
+    "code": "AUD-018",
+    "frequency": 8,
+    "severity": "Critical",
+    "source_family": "EKB",
+    "title": "Convergencia aceptaba PASS declarativo sin prueba ejecutada"
+  },
+  "objective": "Probar si el Motor de Aprendizaje puede procesar un error real de EKB sin inventar evidencia ni saltar gobernanza.",
+  "project": "MOTOR_DE_APRENDIZAJE",
+  "target_asset": "ACT-0046"
+}
