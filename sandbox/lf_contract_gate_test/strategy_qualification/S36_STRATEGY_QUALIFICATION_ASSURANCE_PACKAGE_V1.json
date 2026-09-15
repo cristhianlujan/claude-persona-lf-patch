@@ -8,6 +8,12 @@
   "migration_ledger_version": "20260915041516",
   "migration_live_state": "APPLIED_BY_GOVERNED_ACTUALIZACION_DB_LF",
   "static_regression_path": "sandbox/lf_contract_gate_test/test_s30_strategy_qualification_governance.py",
+  "source_parity": {
+    "independent_review_migration_ledger_version": "20260915035949",
+    "independent_review_migration_path": "supabase/migrations/20260915035949_s30_independent_strategy_review_operation_v2.sql",
+    "reconciled_from_local_version": "20260915035202",
+    "reconciliation_rule": "SOURCE_RENAMED_TO_LIVE_LEDGER_VERSION_WITH_IDENTICAL_SQL_BLOB"
+  },
   "canonical_independent_review": {
     "operation_code": "REVISION_INDEPENDIENTE_ESTRATEGIA_LF",
     "router_action": "STRATEGY_INDEPENDENT_REVIEW",
@@ -88,10 +94,14 @@
     {
       "id": "PROV-05",
       "name": "stale_operation_policy_snapshot_blocked",
-      "setup": "Rollback-only fixture with valid Strategy target/init/router but stale or incomplete operation_policy_snapshots.",
-      "expected_block": "LF_STRATEGY_QUALIFICATION_EXECUTION_POLICY_SNAPSHOT_STALE_OR_MISSING",
+      "setup": "Execute the read-only regression bound to the live lf_run_strategy_qualification_v1 source. It builds stale and incomplete operation_policy_snapshots only in memory from public.v_lf_operation_policy_snapshot, evaluates the exact runner predicate, verifies canonical attach/immutability triggers remain enabled, and proves the stale guard occurs before the first qualification receipt write. No persisted execution row is altered because the canonical reserver refreshes snapshots and BLOCK_POLICY_SNAPSHOT_IMMUTABLE correctly forbids post-reservation mutation.",
+      "regression_path": "sandbox/lf_contract_gate_test/strategy_qualification/prov05_stale_policy_snapshot_regression.sql",
+      "coverage_method": "LIVE_RUNNER_SOURCE_BOUND_READ_ONLY_POLICY_STALENESS_PROOF",
+      "expected_block": "LF_STRATEGY_QUALIFICATION_EXECUTION_POLICY_SNAPSHOT_STALE",
+      "expected_missing_block": "LF_STRATEGY_QUALIFICATION_EXECUTION_POLICY_SNAPSHOT_MISSING",
       "receipt_delta": 0,
-      "persistent_write": false
+      "persistent_write": false,
+      "bypass_allowed": false
     },
     {
       "id": "PROV-06",
@@ -125,6 +135,8 @@
     "exact_head_required": true,
     "migration_already_applied": true,
     "migration_ledger_version_required": "20260915041516",
+    "independent_review_migration_ledger_version_required": "20260915035949",
+    "prov05_persisted_stale_fixture_forbidden": true,
     "r15_may_resume_only_after": "S36_ASSURANCE_RECEIPT_PASS_FOR_EXACT_SOURCE_HEAD",
     "r15_requalification_may_run_only_after": "S36_ASSURANCE_RECEIPT_PASS_FOR_EXACT_SOURCE_HEAD"
   }
