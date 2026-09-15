@@ -1,0 +1,1 @@
+-- S30-R22 bounded Operation self-requalification bootstrap source candidate.
