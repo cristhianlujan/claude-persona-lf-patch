@@ -217,7 +217,6 @@ ALWAYS_BLOCKED_PREFIXES = [
     "runtime/",
 ]
 FORBIDDEN_GITHUB_PREFIX = ".github/"
-
 FORBIDDEN_TERM_EXEMPT_EXACT = {
     VALIDATOR_SELF_PATH,
     "sandbox/no_bypass_judge_profile_card_skill/GPT_INSTRUCTIONS_NO_BYPASS_v0_1.md",
@@ -366,10 +365,10 @@ def validate_profile_update_edge_scope() -> None:
     if "supabase/functions/" in ALLOWED_PREFIXES or "supabase/functions/run-creacion-perfil-lf/" in ALLOWED_PREFIXES:
         failures.append("supabase_functions_prefix_must_remain_denied")
     for path in sorted(PROFILE_UPDATE_EDGE_ALLOWED_EXACT):
-        if not is_allowed_path(path):
+        if path not in ALLOWED_EXACT:
             failures.append(f"approved_exact_missing:{path}")
     for path in sorted(PROFILE_UPDATE_EDGE_DENIED_LOOKALIKES):
-        if is_allowed_path(path):
+        if path in ALLOWED_EXACT or any(path.startswith(prefix) for prefix in ALLOWED_PREFIXES):
             failures.append(f"lookalike_unexpectedly_allowed:{path}")
     if failures:
         fail("FAIL_PROFILE_UPDATE_EDGE_SCOPE_INVARIANT", ",".join(failures))
