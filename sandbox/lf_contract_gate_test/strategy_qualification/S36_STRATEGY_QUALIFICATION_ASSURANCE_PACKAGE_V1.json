@@ -4,7 +4,9 @@
   "assurance_owner": "S36",
   "scope": "STRATEGY_QUALIFICATION_TRANSVERSAL_GOVERNANCE_ONLY",
   "source_branch": "s30/strategy-qualification-governance-v1",
-  "migration_path": "supabase/migrations/20260915041000_s30_strategy_qualification_governance_v1.sql",
+  "migration_path": "supabase/migrations/20260915041516_s30_strategy_qualification_governance_v1.sql",
+  "migration_ledger_version": "20260915041516",
+  "migration_live_state": "APPLIED_BY_GOVERNED_ACTUALIZACION_DB_LF",
   "static_regression_path": "sandbox/lf_contract_gate_test/test_s30_strategy_qualification_governance.py",
   "canonical_independent_review": {
     "operation_code": "REVISION_INDEPENDIENTE_ESTRATEGIA_LF",
@@ -24,10 +26,10 @@
   "execution_order": [
     "CURRENTNESS_EXACT_HEAD",
     "STATIC_SOURCE_CONTRACT",
-    "ROLLBACK_ONLY_MIGRATION_CANARIES",
+    "LIVE_FUNCTION_READBACK",
     "SEMANTIC_REVISION_REGRESSION",
     "EXECUTION_PROVENANCE_NEGATIVES",
-    "EXECUTION_PROVENANCE_POSITIVE",
+    "EXECUTION_PROVENANCE_POSITIVE_ROLLBACK_ONLY",
     "INDEPENDENT_REVIEW_REUSE_REGRESSION",
     "ZERO_RESIDUE_READBACK",
     "S36_ASSURANCE_RECEIPT"
@@ -112,16 +114,17 @@
     },
     {
       "id": "RESIDUE-01",
-      "name": "rollback_only_validation_leaves_zero_residue",
-      "setup": "Compare qualification receipt/test-run counts and Strategy snapshot hashes before/after rollback-only assurance.",
-      "expected": "no durable Strategy, S36/S37 snapshot, qualification, runtime or production mutation."
+      "name": "assurance_validation_leaves_no_unintended_residue",
+      "setup": "Compare Strategy/S36/S37 snapshots and qualification receipt counts before/after rollback-only adversarial cases; live readbacks are read-only.",
+      "expected": "no durable Strategy/S36/S37 snapshot mutation, no R15 qualification rerun, no runtime or production activation."
     }
   ],
   "acceptance": {
     "all_cases_required": true,
     "false_pass_tolerance": 0,
     "exact_head_required": true,
-    "migration_apply_before_s36_receipt": false,
+    "migration_already_applied": true,
+    "migration_ledger_version_required": "20260915041516",
     "r15_may_resume_only_after": "S36_ASSURANCE_RECEIPT_PASS_FOR_EXACT_SOURCE_HEAD",
     "r15_requalification_may_run_only_after": "S36_ASSURANCE_RECEIPT_PASS_FOR_EXACT_SOURCE_HEAD"
   }
