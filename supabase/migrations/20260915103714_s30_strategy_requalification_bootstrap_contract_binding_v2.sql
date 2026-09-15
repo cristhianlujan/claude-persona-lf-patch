@@ -51,11 +51,14 @@ BEGIN
 
   f2:=replace(
     f,
-    E"jsonb_build_object(\n      'mode','STRATEGY_REQUALIFICATION_BOOTSTRAP_ONLY',",
-    E"jsonb_build_object(\n      'contract_code',(SELECT oc.contract_code FROM public.lf_operation_contracts oc WHERE oc.operation_code='EJECUCION_ESTRATEGIA_LF' AND oc.status='ACTIVE_ENFORCEMENT' ORDER BY oc.contract_code LIMIT 1),\n      'mode','STRATEGY_REQUALIFICATION_BOOTSTRAP_ONLY',"
+$old$jsonb_build_object(
+      'mode','STRATEGY_REQUALIFICATION_BOOTSTRAP_ONLY',$old$,
+$new$jsonb_build_object(
+      'contract_code',(SELECT oc.contract_code FROM public.lf_operation_contracts oc WHERE oc.operation_code='EJECUCION_ESTRATEGIA_LF' AND oc.status='ACTIVE_ENFORCEMENT' ORDER BY oc.contract_code LIMIT 1),
+      'mode','STRATEGY_REQUALIFICATION_BOOTSTRAP_ONLY',$new$
   );
 
-  IF f2=f OR strpos(f2,"'contract_code',(SELECT oc.contract_code")=0 THEN
+  IF f2=f OR strpos(f2,$probe$'contract_code',(SELECT oc.contract_code$probe$)=0 THEN
     RAISE EXCEPTION 'S30_STRATEGY_REQUALIFICATION_BOOTSTRAP_V2_PATCH_NOT_APPLIED';
   END IF;
 
@@ -65,9 +68,9 @@ BEGIN
     INTO f2;
   after_sha:=encode(extensions.digest(convert_to(f2,'UTF8'),'sha256'),'hex');
 
-  IF strpos(f2,"'contract_code'")=0
-     OR strpos(f2,"operation_code='EJECUCION_ESTRATEGIA_LF'")=0
-     OR strpos(f2,"status='ACTIVE_ENFORCEMENT'")=0
+  IF strpos(f2,$q$'contract_code'$q$)=0
+     OR strpos(f2,$q$operation_code='EJECUCION_ESTRATEGIA_LF'$q$)=0
+     OR strpos(f2,$q$status='ACTIVE_ENFORCEMENT'$q$)=0
      OR strpos(f2,'lf_strategy_execution_qualification_guard_v1')>0
      OR strpos(f2,'UPDATE public.lf_strategy_snapshots')>0
      OR strpos(f2,'INSERT INTO public.lf_strategy_snapshots')>0
