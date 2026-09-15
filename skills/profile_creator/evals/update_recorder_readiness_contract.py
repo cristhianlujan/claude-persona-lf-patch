@@ -10,7 +10,7 @@ SEMANTICS=ROOT/'skills/profile_creator/contracts/update_judge_semantics_contract
 CREATE_RECORDER=ROOT/'supabase/migrations/20260902233217_profile_creator_step_status_contract_fix.sql'
 ENFORCEMENT=ROOT/'supabase/migrations/20260831062847_fix_operation_judge_jsonb_shape_compatibility.sql'
 checks={
- 'update_runtime_uses_server_trust':'v22-profile-update-server-trust-context' in RUNTIME,
+ 'update_runtime_uses_server_trust':('v22-profile-update-server-trust-context' in RUNTIME or 'v23-profile-update-graduation-evidence' in RUNTIME),
  'old_update_block_removed':'UPDATE_OPERATION_CANONICAL_RECORDER_REQUIRED' not in RUNTIME,
  'no_parallel_update_rpc':'lf_record_actualizacion_perfil_step_v1' not in RUNTIME and 'lf_record_actualizacion_perfil_step_v1' not in COMMON,
  'common_recorder_used':'lf_record_profile_operation_step_v1' in RUNTIME and 'lf_record_profile_operation_step_v1' in COMMON,

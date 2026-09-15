@@ -17,7 +17,7 @@ checks = {
     "matrix_size": len(matrix) == 12,
     "source_implemented": CONTRACT["activation_gate"]["runtime_source_implemented"] is True,
     "common_recorder_materialized": CONTRACT["activation_gate"]["common_recorder_materialized"] is True,
-    "runtime_v22": 'v22-profile-update-server-trust-context' in RUNTIME,
+    "runtime_server_trust_generation": ('v22-profile-update-server-trust-context' in RUNTIME or 'v23-profile-update-graduation-evidence' in RUNTIME),
     "runtime_strips_caller_trust": 'stripCallerTrust' in RUNTIME and 'TRUST_FIELDS' in RUNTIME,
     "runtime_reads_main": '/git/ref/heads/main' in RUNTIME,
     "runtime_reads_target_blob": '/contents/${encodedPath}?ref=${current}' in RUNTIME,
