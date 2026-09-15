@@ -1,0 +1,70 @@
+{
+  "contract_code": "UPDATE_PROFILE_PACK_CURRENTNESS_V1",
+  "status": "CANDIDATE_SOURCE_ONLY",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "step_id": "pre_write_execution_binding_gate",
+  "purpose": "Alinear currentness de UPDATE con el target lógico de un Profile Pack sin degradar el modo exact-file existente.",
+  "evidence_basis": {
+    "target_path_may_be_profile_directory": true,
+    "baseline_read_declares_baseline_files": true,
+    "historical_completed_updates_with_directory_targets_observed": true
+  },
+  "binding_modes": {
+    "EXACT_FILE": {
+      "when": "target_path resolves to one GitHub blob",
+      "resolver": "GITHUB_PUBLIC_API_EXACT_REF_V1",
+      "required_currentness_fields": [
+        "revision_sha",
+        "target_blob_sha",
+        "baseline_revision",
+        "bound_revision",
+        "continuity_state"
+      ]
+    },
+    "PROFILE_PACK": {
+      "when": "target_path is profiles/<slug> and baseline_read.baseline_files is non-empty",
+      "resolver": "GITHUB_PUBLIC_API_PROFILE_PACK_V1",
+      "required_currentness_fields": [
+        "revision_sha",
+        "target_pack_fingerprint_sha256",
+        "target_pack_file_count",
+        "baseline_files",
+        "baseline_revision",
+        "bound_revision",
+        "continuity_state"
+      ],
+      "fingerprint_algorithm": "sha256(canonical_json(sorted([{path,blob_sha}])))",
+      "resolution_rules": [
+        "every baseline_files entry must stay inside target_path",
+        "a file entry resolves to exactly one blob",
+        "a directory entry expands recursively to blobs under that prefix",
+        "every declared baseline_files entry must resolve at least one blob",
+        "deduplicate expanded blobs by path before hashing",
+        "empty resolved pack blocks",
+        "current main revision remains the revision authority"
+      ]
+    }
+  },
+  "continuity": {
+    "baseline_revision_source": "persisted baseline_read evidence",
+    "current_revision_source": "GitHub main observed server-side",
+    "bound_revision_must_equal_current": true,
+    "stale_requires_reread_and_explicit_rebind": true
+  },
+  "preservation": {
+    "one_target_per_execution": true,
+    "operation_code_unchanged": true,
+    "common_recorder_unchanged_as_entrypoint": true,
+    "no_runtime_enable": true,
+    "no_automatic_promotion": true,
+    "no_merge_authorized": true
+  },
+  "activation_gate": {
+    "source_contract_ready": true,
+    "runtime_patch_materialized": false,
+    "recorder_accepts_pack_context": false,
+    "exact_head_ci_required": true,
+    "one_non_golden_child_canary_required": true,
+    "mass_fanout_authorized": false
+  }
+}
