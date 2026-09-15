@@ -22,7 +22,7 @@ checks = {
  "transactional_insert":"insert into public.lf_operation_execution_steps" in SQL.lower(),
  "live_source_marker":"UPDATE_PREWRITE_SERVER_TRUST_ENABLED" in SQL,
  "migration_service_role_only":"grant execute on function public.lf_record_profile_operation_step_v1(text,text,text,jsonb,text) to service_role;" in MIGRATION,
- "runtime_v22":"v22-profile-update-server-trust-context" in RUNTIME,
+ "runtime_server_trust_generation":('v22-profile-update-server-trust-context' in RUNTIME or 'v23-profile-update-graduation-evidence' in RUNTIME),
  "runtime_strips_trust":"stripCallerTrust" in RUNTIME,
  "runtime_calls_common":"lf_record_profile_operation_step_v1" in RUNTIME,
  "runtime_old_block_removed":"UPDATE_OPERATION_CANONICAL_RECORDER_REQUIRED" not in RUNTIME,
