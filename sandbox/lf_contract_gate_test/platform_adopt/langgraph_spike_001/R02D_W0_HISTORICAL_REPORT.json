@@ -1,0 +1,85 @@
+{
+  "schema": "LF_LANGGRAPH_R02D_W0_HISTORICAL_PARITY_REPORT_V1",
+  "gate": "R02-D",
+  "mode": "W0_PREBUILD_NOW_HISTORICAL_REPLAY",
+  "final_certification": false,
+  "final_rerun_required": true,
+  "frozen_s26_ref": "48916fd36bcaff8eadd60944848e81adbea55c54",
+  "s26_matrix_ref": "794a86fc8ea7fe3921a17bb31b9087c097a01cef",
+  "profile": "ui_architect",
+  "langgraph_api": "FUNCTIONAL_API",
+  "langgraph_pin": "1.2.11",
+  "tested_head": "c8e6513e1dd6a3e9bf9111d8da26203de587e0a4",
+  "evidence_run_id": 34679507961,
+  "model_called": false,
+  "network_calls": 0,
+  "production_effect": false,
+  "case_count": 6,
+  "pass_count": 6,
+  "cases": [
+    {
+      "case_id": "R02D-POSITIVE-ANCHOR",
+      "expected_codes": [],
+      "direct_codes": [],
+      "functional_codes": [],
+      "direct_equals_functional": true,
+      "expected_codes_match_exactly": true,
+      "status": "PASS"
+    },
+    {
+      "case_id": "R02D-MISSING-COMPOSER-PAYLOAD",
+      "expected_codes": ["COMPOSER_PAYLOAD_MISSING"],
+      "direct_codes": ["COMPOSER_PAYLOAD_MISSING"],
+      "functional_codes": ["COMPOSER_PAYLOAD_MISSING"],
+      "exact_error_detail": "composer_payload object required",
+      "direct_equals_functional": true,
+      "expected_codes_match_exactly": true,
+      "status": "PASS"
+    },
+    {
+      "case_id": "R02D-PROJECTION-MISMATCH",
+      "expected_codes": ["COMPOSER_PAYLOAD_PROJECTION_MISMATCH"],
+      "direct_codes": ["COMPOSER_PAYLOAD_PROJECTION_MISMATCH"],
+      "functional_codes": ["COMPOSER_PAYLOAD_PROJECTION_MISMATCH"],
+      "exact_error_detail": "composer_payload must equal deterministic projection of deliverable_created",
+      "direct_equals_functional": true,
+      "expected_codes_match_exactly": true,
+      "status": "PASS"
+    },
+    {
+      "case_id": "R02D-INTERNAL-VALUE-LEAK",
+      "expected_codes": ["COMPOSER_PAYLOAD_PROJECTION_MISMATCH", "COMPOSER_INTERNAL_VALUE_LEAK"],
+      "direct_codes": ["COMPOSER_PAYLOAD_PROJECTION_MISMATCH", "COMPOSER_INTERNAL_VALUE_LEAK"],
+      "functional_codes": ["COMPOSER_PAYLOAD_PROJECTION_MISMATCH", "COMPOSER_INTERNAL_VALUE_LEAK"],
+      "exact_error_details": [
+        "composer_payload must equal deterministic projection of deliverable_created",
+        "composer_payload.risk_controls[4]: contains github://"
+      ],
+      "direct_equals_functional": true,
+      "expected_codes_match_exactly": true,
+      "status": "PASS"
+    },
+    {
+      "case_id": "R02D-NESTED-GOVERNANCE",
+      "expected_codes": ["DELIVERABLE_GOVERNANCE_CONTEXT_FORBIDDEN_V6"],
+      "direct_codes": ["DELIVERABLE_GOVERNANCE_CONTEXT_FORBIDDEN_V6"],
+      "functional_codes": ["DELIVERABLE_GOVERNANCE_CONTEXT_FORBIDDEN_V6"],
+      "exact_error_detail": "move governance_context to root governance_envelope.context",
+      "direct_equals_functional": true,
+      "expected_codes_match_exactly": true,
+      "status": "PASS"
+    },
+    {
+      "case_id": "R02D-BAD-HANDOFF",
+      "expected_codes": ["COMPOSER_HANDOFF_PAYLOAD_REF_INVALID"],
+      "direct_codes": ["COMPOSER_HANDOFF_PAYLOAD_REF_INVALID"],
+      "functional_codes": ["COMPOSER_HANDOFF_PAYLOAD_REF_INVALID"],
+      "exact_error_detail": "handoff_to_next.payload_ref must equal composer_payload",
+      "direct_equals_functional": true,
+      "expected_codes_match_exactly": true,
+      "status": "PASS"
+    }
+  ],
+  "status": "PASS",
+  "claim_ceiling": "HISTORICAL_W0_PARITY_ENGINEERING_EVIDENCE_ONLY_NOT_FINAL_S26_CERTIFICATION_NOT_MIGRATION_AUTHORIZATION"
+}
