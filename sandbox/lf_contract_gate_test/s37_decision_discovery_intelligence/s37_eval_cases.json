@@ -1,0 +1,55 @@
+{
+  "schema": "s37-eval-cases/v1",
+  "cases": [
+    {
+      "case_id": "NEG_GENERIC_PORTABLE",
+      "expected": "FAIL",
+      "reason": "DIFFERENTIATED idea can be copied unchanged by any fintech"
+    },
+    {
+      "case_id": "NEG_FALSE_VARIETY",
+      "expected": "FAIL_SEMANTIC",
+      "reason": "three differently worded ideas use the same causal mechanism"
+    },
+    {
+      "case_id": "NEG_NO_LF_ASSET",
+      "expected": "FAIL",
+      "reason": "differentiated claim has no LF-specific compounding asset"
+    },
+    {
+      "case_id": "NEG_NON_FALSIFIABLE",
+      "expected": "FAIL",
+      "reason": "experiment has no observable rejection condition"
+    },
+    {
+      "case_id": "NEG_DOMAIN_ROLE_CONFUSION",
+      "expected": "FAIL_SEMANTIC",
+      "reason": "creditor/debtor roles are inverted"
+    },
+    {
+      "case_id": "NEG_UNSUPPORTED_BUSINESS_CLAIM",
+      "expected": "FAIL_SEMANTIC",
+      "reason": "discount, guarantee or uplift is invented without authority"
+    },
+    {
+      "case_id": "POS_LF_HISTORY_DECISION_ENGINE",
+      "expected": "PASS_CANDIDATE",
+      "reason": "LF history changes a concrete next-offer/sequence decision with measurable experiment"
+    },
+    {
+      "case_id": "POS_CROSS_PORTFOLIO_LEARNING",
+      "expected": "PASS_CANDIDATE",
+      "reason": "marketplace-scale history creates a compounding information advantage and testable creditor decision support"
+    },
+    {
+      "case_id": "POS_CAUSAL_POLICY_LEARNING",
+      "expected": "PASS_CANDIDATE",
+      "reason": "controlled experiments learn which policy works for which segment without turning correlation into truth"
+    },
+    {
+      "case_id": "UNCERTAIN_MOAT_WITHOUT_DATA_SCALE",
+      "expected": "UNCERTAIN",
+      "reason": "concept may differentiate, but required data volume/quality is not yet observed"
+    }
+  ]
+}

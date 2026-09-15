@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "s37-portfolio-v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "problem_id", "source_catalog", "hypotheses"],
+  "properties": {
+    "schema": {"const": "s37-decision-discovery-portfolio/v1"},
+    "problem_id": {"type": "string", "minLength": 1},
+    "source_catalog": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_id", "description"],
+        "properties": {
+          "source_id": {"type": "string", "pattern": "^[A-Z][A-Z0-9_-]*$"},
+          "description": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "hypotheses": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {"$ref": "#/$defs/hypothesis"}
+    }
+  },
+  "$defs": {
+    "hypothesis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hypothesis_id", "tier", "source_refs", "hypothesis", "specific_decision_changed",
+        "causal_mechanism", "economic_metric", "experiment", "falsification_condition",
+        "learning_loop", "compounding_moat", "why_not_generic", "copyability_barrier",
+        "material_deltas", "key_unknowns", "semantic_checks"
+      ],
+      "properties": {
+        "hypothesis_id": {"type": "string", "minLength": 1},
+        "tier": {"enum": ["CONSERVATIVE", "DIFFERENTIATED", "TEN_X"]},
+        "source_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+        "hypothesis": {"type": "string", "minLength": 20},
+        "specific_decision_changed": {"type": "string", "minLength": 10},
+        "causal_mechanism": {"type": "string", "minLength": 20},
+        "economic_metric": {"type": "string", "minLength": 3},
+        "experiment": {"type": "string", "minLength": 15},
+        "falsification_condition": {"type": "string", "minLength": 15},
+        "learning_loop": {"type": "string", "minLength": 15},
+        "compounding_moat": {"type": "string", "minLength": 10},
+        "why_not_generic": {"type": "string", "minLength": 15},
+        "copyability_barrier": {"type": "string", "minLength": 10},
+        "material_deltas": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"enum": ["DATA", "DECISION", "ECONOMICS", "PRODUCT", "WORKFLOW", "NETWORK_EFFECT"]}
+        },
+        "key_unknowns": {"type": "array", "items": {"type": "string"}},
+        "semantic_checks": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["portable_to_generic_fintech_unchanged", "causal_mechanism_distinct", "uses_lf_compounding_asset", "experiment_is_falsifiable"],
+          "properties": {
+            "portable_to_generic_fintech_unchanged": {"type": "boolean"},
+            "causal_mechanism_distinct": {"type": "boolean"},
+            "uses_lf_compounding_asset": {"type": "boolean"},
+            "experiment_is_falsifiable": {"type": "boolean"}
+          }
+        }
+      }
+    }
+  }
+}
