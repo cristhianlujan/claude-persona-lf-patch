@@ -20,4 +20,9 @@ assert "lifecycle_state_code = 'OP_OPERATIONAL'" in mod.SQL
 assert "assurance_obligation = 'REQUIRED'" in mod.SQL
 assert "where id = 61" in mod.SQL
 assert "coverage_state <> 'COVERED'" in mod.SQL
+assert "x->>'accepted_state'" in mod.SQL
+assert "x->>'baseline_required_binding_count'" in mod.SQL
+assert "x->>'baseline_observed_run_count'" in mod.SQL
+assert "jsonb_array_elements(coalesce(b,'[]'::jsonb))" in mod.SQL
+assert "b->'rows'" not in mod.SQL
 print("S36_WP06_COMPLETENESS_GATE_SELFTEST=PASS")
