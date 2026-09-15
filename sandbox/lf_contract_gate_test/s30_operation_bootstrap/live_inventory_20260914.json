@@ -1,0 +1,63 @@
+{
+  "schema_version": "LF_OPERATION_BOOTSTRAP_LIVE_INVENTORY_V1",
+  "observed_main_sha": "18784e12ae4e4b8c7c48ae4004011444deb1fbeb",
+  "supabase_project": "mhwmirqcgxxukpctffuv",
+  "observed_date": "2026-09-14",
+  "summary": {
+    "operations_with_active_init_execution": 20,
+    "named_begin_functions": 3,
+    "structurally_ready_init_topologies": 8,
+    "zero_step_in_progress_total": 22,
+    "zero_step_affected_operations": 12,
+    "zero_step_with_active_init": 9,
+    "zero_step_without_active_init": 13
+  },
+  "named_begin_functions": [
+    {"function": "lf_strategy_execution_begin_v1", "operation_code": "EJECUCION_ESTRATEGIA_LF"},
+    {"function": "lf_strategy_update_begin_v1", "operation_code": "ACTUALIZACION_ESTRATEGIA_LF"},
+    {"function": "lf_profile_creation_begin_v1", "operation_code": "CREACION_PERFIL_LF"}
+  ],
+  "operations": [
+    {"operation_code":"ACTUALIZACION_ADAPTER_LF","lifecycle_state_code":"OP_OPERATIONAL","init_contracts":1,"init_bindings":1,"active_judges":1},
+    {"operation_code":"ACTUALIZACION_CARD_LF","lifecycle_state_code":"OP_CANDIDATE","init_contracts":0,"init_bindings":0,"active_judges":0},
+    {"operation_code":"ACTUALIZACION_ESTRATEGIA_LF","lifecycle_state_code":"OP_OPERATIONAL","init_contracts":1,"init_bindings":1,"active_judges":1},
+    {"operation_code":"ACTUALIZACION_PERFIL_LF","lifecycle_state_code":"OP_OPERATIONAL","init_contracts":1,"init_bindings":1,"active_judges":1},
+    {"operation_code":"ACTUALIZACION_SKILL_LF","lifecycle_state_code":"OP_OPERATIONAL","init_contracts":1,"init_bindings":1,"active_judges":1},
+    {"operation_code":"ANALISIS_RIESGO_CONTENIDO_LF","lifecycle_state_code":"OP_OPERATIONAL","init_contracts":0,"init_bindings":0,"active_judges":0},
+    {"operation_code":"CIERRE_ESTRATEGIA_LF","lifecycle_state_code":"OP_OPERATIONAL","init_contracts":1,"init_bindings":1,"active_judges":1},
+    {"operation_code":"CREACION_ADAPTER_LF","lifecycle_state_code":"OP_OPERATIONAL","init_contracts":0,"init_bindings":1,"active_judges":1},
+    {"operation_code":"CREACION_PERFIL_LF","lifecycle_state_code":"OP_OPERATIONAL","init_contracts":0,"init_bindings":1,"active_judges":1},
+    {"operation_code":"CREACION_SKILL_LF","lifecycle_state_code":"OP_OPERATIONAL","init_contracts":0,"init_bindings":1,"active_judges":1},
+    {"operation_code":"EJECUCION_ESTRATEGIA_LF","lifecycle_state_code":"OP_OPERATIONAL","init_contracts":1,"init_bindings":1,"active_judges":1},
+    {"operation_code":"EJECUCION_PERFIL_LF","lifecycle_state_code":"OP_OPERATIONAL","init_contracts":1,"init_bindings":1,"active_judges":1},
+    {"operation_code":"EJECUCION_SKILL_LF","lifecycle_state_code":"OP_CANDIDATE","init_contracts":1,"init_bindings":1,"active_judges":1},
+    {"operation_code":"ESCRITURA_BASE_CONOCIMIENTO_LF","lifecycle_state_code":"OP_OPERATIONAL","init_contracts":0,"init_bindings":0,"active_judges":0},
+    {"operation_code":"EXTRACCION_DOCUMENTOS_REGULATORIOS_LF","lifecycle_state_code":"OP_OPERATIONAL","init_contracts":0,"init_bindings":0,"active_judges":0},
+    {"operation_code":"EXTRACCION_FUENTES_DIGITALES_LF","lifecycle_state_code":"OP_OPERATIONAL","init_contracts":0,"init_bindings":0,"active_judges":0},
+    {"operation_code":"EXTRACCION_NOTICIAS_FINANCIERAS_LF","lifecycle_state_code":"OP_OPERATIONAL","init_contracts":0,"init_bindings":0,"active_judges":0},
+    {"operation_code":"HOMOLOGACION_FUENTES_DIGITALES_LF","lifecycle_state_code":"OP_OPERATIONAL","init_contracts":0,"init_bindings":0,"active_judges":0},
+    {"operation_code":"ORQUESTACION_PIPELINE_LF","lifecycle_state_code":"OP_OPERATIONAL","init_contracts":0,"init_bindings":0,"active_judges":0},
+    {"operation_code":"RETIRO_ACTIVO_LF","lifecycle_state_code":"OP_CANDIDATE","init_contracts":0,"init_bindings":0,"active_judges":0}
+  ],
+  "zero_step_groups": [
+    {"operation_code":"ORQUESTACION_PIPELINE_LF","count":4,"has_active_init":true},
+    {"operation_code":"ACTUALIZACION_ADAPTER_LF","count":1,"has_active_init":true},
+    {"operation_code":"CREACION_ADAPTER_LF","count":1,"has_active_init":true},
+    {"operation_code":"EJECUCION_SKILL_LF","count":1,"has_active_init":true},
+    {"operation_code":"EXTRACCION_FUENTES_DIGITALES_LF","count":1,"has_active_init":true},
+    {"operation_code":"HOMOLOGACION_FUENTES_DIGITALES_LF","count":1,"has_active_init":true},
+    {"operation_code":"BUILD_INTEGRAL_STORY_CREATOR_LF","count":1,"has_active_init":false},
+    {"operation_code":"ACTUALIZACION_ROUTER_LF","count":1,"has_active_init":false},
+    {"operation_code":"LEARNING_BRIDGE_KB_CARD_LF","count":1,"has_active_init":false},
+    {"operation_code":"VULNERABILITY_COVERAGE_REPAIR_LF","count":5,"has_active_init":false},
+    {"operation_code":"ACTUALIZACION_DB_LF","count":4,"has_active_init":false},
+    {"operation_code":"CREACION_ESTRATEGIA_LF","count":1,"has_active_init":false}
+  ],
+  "acl_findings": [
+    {"function":"fn_lf_operation_reserve_execution_v1","exposure":"SERVICE_ROLE_ONLY"},
+    {"function":"lf_strategy_update_begin_v1","exposure":"SERVICE_ROLE_ONLY"},
+    {"function":"lf_strategy_execution_begin_v1","exposure":"ANON_AUTHENTICATED_EXECUTE"},
+    {"function":"lf_profile_creation_begin_v1","exposure":"PUBLIC_ANON_AUTHENTICATED_EXECUTE"},
+    {"function":"lf_operation_execution_qualification_guard_v1","exposure":"ANON_AUTHENTICATED_EXECUTE"}
+  ]
+}
