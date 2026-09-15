@@ -191,8 +191,12 @@ BEGIN
   END IF;
 
   IF coalesce(x.manifest->>'operation_policy_source','')<>'SUPABASE'
-     OR jsonb_typeof(x.manifest->'operation_policy_snapshots') IS DISTINCT FROM 'object'
-     OR jsonb_object_length(x.manifest->'operation_policy_snapshots')=0 THEN
+     OR jsonb_typeof(x.manifest->'operation_policy_snapshots') IS DISTINCT FROM 'object' THEN
+    RAISE EXCEPTION 'LF_STRATEGY_QUALIFICATION_EXECUTION_POLICY_SNAPSHOT_MISSING:%',p_execution_id;
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM jsonb_each(x.manifest->'operation_policy_snapshots')
+  ) THEN
     RAISE EXCEPTION 'LF_STRATEGY_QUALIFICATION_EXECUTION_POLICY_SNAPSHOT_MISSING:%',p_execution_id;
   END IF;
 
