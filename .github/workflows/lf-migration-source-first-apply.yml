@@ -1,0 +1,244 @@
+name: LF Migration Source-First Apply
+
+on:
+  workflow_dispatch:
+    inputs:
+      main_sha:
+        description: "Exact current main SHA containing the canonical migration source"
+        required: true
+        type: string
+      migration_path:
+        description: "Exact supabase/migrations/<version>_<name>.sql path"
+        required: true
+        type: string
+      execution_id:
+        description: "IN_PROGRESS ACTUALIZACION_DB_LF execution bound to this migration"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+  SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+  LF_MIGRATION_CUTOVER: "20260808031006"
+  LF_MIGRATION_CLASSIFICATION_BASELINE_END: "20260822195004"
+  LF_MIGRATION_GRANDFATHERED_COUNT: "154"
+  LF_MIGRATION_GRANDFATHERED_SHA256: "f6694a57d984bb02266630c12151e6334ef40535d17f7986be6e1820956186a5"
+
+jobs:
+  source-first-apply:
+    name: Governed exact-version migration transport
+    runs-on: ubuntu-latest
+    environment: migration-source-first
+    env:
+      PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+      EXPECTED_MAIN_SHA: ${{ inputs.main_sha }}
+      MIGRATION_PATH: ${{ inputs.migration_path }}
+      EXECUTION_ID: ${{ inputs.execution_id }}
+
+    steps:
+      - name: Checkout exact control-plane ref
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Fail closed unless source is exact current main
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "${GITHUB_REF}" == "refs/heads/main" ]] || { echo "BLOCK_MIGRATION_CONTROL_PLANE_NOT_MAIN" >&2; exit 1; }
+          [[ "${EXPECTED_MAIN_SHA}" =~ ^[0-9a-f]{40}$ ]] || { echo "BLOCK_MIGRATION_MAIN_SHA_FORMAT" >&2; exit 1; }
+          checkout_sha="$(git rev-parse HEAD)"
+          remote_main_sha="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          python3 - <<'PY'
+          import importlib.util, os
+          from pathlib import Path
+          p=Path('sandbox/lf_contract_gate_test/s30_migration_source_parity/migration_source_first_transport.py')
+          spec=importlib.util.spec_from_file_location('transport',p); m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+          m.validate_main_binding(os.environ['EXPECTED_MAIN_SHA'], os.environ['CHECKOUT_SHA'], os.environ['REMOTE_MAIN_SHA'])
+          version,name=m.parse_target(os.environ['MIGRATION_PATH'])
+          source=Path(os.environ['MIGRATION_PATH']).read_text(encoding='utf-8')
+          m.validate_source_sql(source)
+          print(f'PASS_MIGRATION_MAIN_BINDING version={version} name={name} source_sha256={m.source_sha256(source)}')
+          PY
+        env:
+          CHECKOUT_SHA: ${{ github.sha }}
+          REMOTE_MAIN_SHA: ${{ github.sha }}
+
+      - name: Resolve exact remote main independently
+        id: main_binding
+        shell: bash
+        run: |
+          set -euo pipefail
+          checkout_sha="$(git rev-parse HEAD)"
+          remote_main_sha="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          python3 - <<'PY'
+          import importlib.util, os
+          from pathlib import Path
+          p=Path('sandbox/lf_contract_gate_test/s30_migration_source_parity/migration_source_first_transport.py')
+          spec=importlib.util.spec_from_file_location('transport',p); m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+          m.validate_main_binding(os.environ['EXPECTED_MAIN_SHA'], os.environ['CHECKOUT_SHA'], os.environ['REMOTE_MAIN_SHA'])
+          PY
+          echo "checkout_sha=${checkout_sha}" >> "$GITHUB_OUTPUT"
+          echo "remote_main_sha=${remote_main_sha}" >> "$GITHUB_OUTPUT"
+        env:
+          CHECKOUT_SHA: ${{ env.EXPECTED_MAIN_SHA }}
+          REMOTE_MAIN_SHA: ${{ env.EXPECTED_MAIN_SHA }}
+
+      - name: Configure bounded Postgres transport
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "${PGPASSWORD:-}" ]] || { echo "BLOCK_MIGRATION_DB_PASSWORD_MISSING" >&2; exit 1; }
+          echo "PGHOST=${SUPABASE_POOLER_HOST}" >> "$GITHUB_ENV"
+          echo "PGPORT=5432" >> "$GITHUB_ENV"
+          echo "PGUSER=postgres.${SUPABASE_PROJECT_ID}" >> "$GITHUB_ENV"
+          echo "PGDATABASE=postgres" >> "$GITHUB_ENV"
+          echo "PGSSLMODE=require" >> "$GITHUB_ENV"
+
+      - name: Prove baseline parity with target removed
+        shell: bash
+        run: |
+          set -euo pipefail
+          target_base="$(basename "${MIGRATION_PATH}")"
+          [[ -f "${MIGRATION_PATH}" && ! -L "${MIGRATION_PATH}" ]] || { echo "BLOCK_MIGRATION_SOURCE_FILE" >&2; exit 1; }
+          mkdir -p "$RUNNER_TEMP/preapply-migrations"
+          cp supabase/migrations/*.sql "$RUNNER_TEMP/preapply-migrations/"
+          rm -f "$RUNNER_TEMP/preapply-migrations/${target_base}"
+
+          LF_MANAGED_VERSIONS="$(PREAPPLY_DIR="$RUNNER_TEMP/preapply-migrations" python3 - <<'PY'
+          import importlib.util, os
+          from pathlib import Path
+          p=Path('sandbox/lf_contract_gate_test/lf_migration_source_parity.py')
+          spec=importlib.util.spec_from_file_location('parity',p); m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+          versions=[]
+          for path in sorted(Path(os.environ['PREAPPLY_DIR']).glob('*.sql')):
+              match=m.FILENAME_RE.fullmatch(path.name)
+              if match:
+                  version,name=match.groups()
+                  if version>os.environ['LF_MIGRATION_CUTOVER'] and m.managed(name): versions.append(version)
+          if not versions or len(versions)!=len(set(versions)): raise SystemExit('BLOCK_MIGRATION_MANAGED_VERSION_SET')
+          print('{' + ','.join(versions) + '}')
+          PY
+          )"
+          export LF_MANAGED_VERSIONS
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,''),case when version = any('${LF_MANAGED_VERSIONS}'::text[]) then 'sha256:' || (select encode(extensions.digest(convert_to(regexp_replace(coalesce(string_agg(line,E'\n' order by ord),''),E'\n+$',''),'UTF8'),'sha256'),'hex') from regexp_split_to_table(replace(replace(coalesce(array_to_string(sm.statements,E'\n'),''),E'\r\n',E'\n'),E'\r',E'\n'),E'\n') with ordinality as x(line,ord) where line !~ '^[[:space:]]*--') else '' end from supabase_migrations.schema_migrations sm where version > '${LF_MIGRATION_CUTOVER}' order by version" > "$RUNNER_TEMP/preapply-remote.csv"
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "with x as (select version,coalesce(name,'') as name,array_to_string(statements,E'\n') as sql_text from supabase_migrations.schema_migrations where version > '${LF_MIGRATION_CUTOVER}' and version <= '${LF_MIGRATION_CLASSIFICATION_BASELINE_END}' and not (coalesce(name,'') like 'pr93\_%' escape '\' or coalesce(name,'') like 'lf\_%' escape '\' or coalesce(name,'') like 'programacion\_story\_agent\_task\_%' escape '\' or coalesce(name,'') like 'programacion\_task\_sizing\_%' escape '\' or coalesce(name,'') like 'programacion\_task\_dependency\_%' escape '\' or coalesce(name,'') like 'programacion\_agent\_task\_%' escape '\' or coalesce(name,'') like 'programacion\_dependency\_context\_%' escape '\' or coalesce(name,'') like 'programacion\_propagate\_execution\_%' escape '\' or coalesce(name,'') like 'programacion\_deprecate\_declared\_independence\_%' escape '\' or coalesce(name,'') like 'programacion\_revoke\_security\_definer\_%' escape '\' or coalesce(name,'') like 'programacion\_worker\_spec\_%' escape '\' or coalesce(name,'') like 'programacion\_prog017\_%' escape '\')) select count(*)::text,encode(extensions.digest(convert_to(coalesce(string_agg(version||E'\n'||name||E'\n'||sql_text,E'\n--MIGRATION--\n' order by version),''),'UTF8'),'sha256'),'hex') from x" > "$RUNNER_TEMP/preapply-grandfather.csv"
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select count(*)::text,encode(extensions.digest(convert_to(string_agg(version||E'\n'||coalesce(name,'')||E'\n'||array_to_string(statements,E'\n--STATEMENT--\n'),E'\n--MIGRATION--\n' order by version),'UTF8'),'sha256'),'hex') from supabase_migrations.schema_migrations where version between '20260801063708' and '20260801170332'" > "$RUNNER_TEMP/preapply-legacy.csv"
+          GITHUB_EVENT_NAME=workflow_dispatch python3 sandbox/lf_contract_gate_test/lf_migration_source_parity.py "$RUNNER_TEMP/preapply-migrations" "$RUNNER_TEMP/preapply-remote.csv" "$RUNNER_TEMP/preapply-grandfather.csv" "$RUNNER_TEMP/preapply-legacy.csv"
+          echo "PASS_MIGRATION_PREAPPLY_BASELINE_PARITY"
+
+      - name: Validate governed ACTUALIZACION_DB_LF execution binding
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 -At -c "select json_build_object('execution_id',execution_id,'operation_code',operation_code,'target_type',target_type,'target_path',target_path,'status',status,'manifest',manifest)::text from public.lf_operation_execution where execution_id='${EXECUTION_ID}'" > "$RUNNER_TEMP/execution.json"
+          [[ "$(wc -l < "$RUNNER_TEMP/execution.json" | tr -d ' ')" == "1" ]] || { echo "BLOCK_MIGRATION_EXECUTION_NOT_EXACT" >&2; exit 1; }
+          EXECUTION_JSON="$RUNNER_TEMP/execution.json" python3 - <<'PY'
+          import importlib.util, json, os
+          from pathlib import Path
+          p=Path('sandbox/lf_contract_gate_test/s30_migration_source_parity/migration_source_first_transport.py')
+          spec=importlib.util.spec_from_file_location('transport',p); m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+          path=os.environ['MIGRATION_PATH']; version,name=m.parse_target(path)
+          source=Path(path).read_text(encoding='utf-8'); sha=m.source_sha256(source)
+          row=json.loads(Path(os.environ['EXECUTION_JSON']).read_text(encoding='utf-8'))
+          m.validate_execution(row,execution_id=os.environ['EXECUTION_ID'],path=path,main_sha=os.environ['EXPECTED_MAIN_SHA'],version=version,name=name,sha256=sha)
+          print('PASS_MIGRATION_OPERATION_EXECUTION_BINDING')
+          PY
+
+      - name: Render atomic exact-version transport
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/s30_migration_source_parity/migration_source_first_transport.py \
+            --render \
+            --migration-path "$MIGRATION_PATH" \
+            --execution-id "$EXECUTION_ID" \
+            --main-sha "$EXPECTED_MAIN_SHA" \
+            --output "$RUNNER_TEMP/source-first-apply.sql"
+
+      - name: Apply canonical source and ledger row atomically
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            -v "$RUNNER_TEMP:/lf-runner:ro" \
+            postgres:17.6 psql -X -v ON_ERROR_STOP=1 -f /lf-runner/source-first-apply.sql
+
+      - name: Re-run full canonical migration parity
+        shell: bash
+        run: |
+          set -euo pipefail
+          LF_MANAGED_VERSIONS="$(python3 - <<'PY'
+          import importlib.util, os
+          from pathlib import Path
+          p=Path('sandbox/lf_contract_gate_test/lf_migration_source_parity.py')
+          spec=importlib.util.spec_from_file_location('parity',p); m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+          versions=[]
+          for path in sorted(Path('supabase/migrations').glob('*.sql')):
+              match=m.FILENAME_RE.fullmatch(path.name)
+              if match:
+                  version,name=match.groups()
+                  if version>os.environ['LF_MIGRATION_CUTOVER'] and m.managed(name): versions.append(version)
+          if not versions or len(versions)!=len(set(versions)): raise SystemExit('BLOCK_MIGRATION_MANAGED_VERSION_SET')
+          print('{' + ','.join(versions) + '}')
+          PY
+          )"
+          export LF_MANAGED_VERSIONS
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,''),case when version = any('${LF_MANAGED_VERSIONS}'::text[]) then 'sha256:' || (select encode(extensions.digest(convert_to(regexp_replace(coalesce(string_agg(line,E'\n' order by ord),''),E'\n+$',''),'UTF8'),'sha256'),'hex') from regexp_split_to_table(replace(replace(coalesce(array_to_string(sm.statements,E'\n'),''),E'\r\n',E'\n'),E'\r',E'\n'),E'\n') with ordinality as x(line,ord) where line !~ '^[[:space:]]*--') else '' end from supabase_migrations.schema_migrations sm where version > '${LF_MIGRATION_CUTOVER}' order by version" > "$RUNNER_TEMP/postapply-remote.csv"
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "with x as (select version,coalesce(name,'') as name,array_to_string(statements,E'\n') as sql_text from supabase_migrations.schema_migrations where version > '${LF_MIGRATION_CUTOVER}' and version <= '${LF_MIGRATION_CLASSIFICATION_BASELINE_END}' and not (coalesce(name,'') like 'pr93\_%' escape '\' or coalesce(name,'') like 'lf\_%' escape '\' or coalesce(name,'') like 'programacion\_story\_agent\_task\_%' escape '\' or coalesce(name,'') like 'programacion\_task\_sizing\_%' escape '\' or coalesce(name,'') like 'programacion\_task\_dependency\_%' escape '\' or coalesce(name,'') like 'programacion\_agent\_task\_%' escape '\' or coalesce(name,'') like 'programacion\_dependency\_context\_%' escape '\' or coalesce(name,'') like 'programacion\_propagate\_execution\_%' escape '\' or coalesce(name,'') like 'programacion\_deprecate\_declared\_independence\_%' escape '\' or coalesce(name,'') like 'programacion\_revoke\_security\_definer\_%' escape '\' or coalesce(name,'') like 'programacion\_worker\_spec\_%' escape '\' or coalesce(name,'') like 'programacion\_prog017\_%' escape '\')) select count(*)::text,encode(extensions.digest(convert_to(coalesce(string_agg(version||E'\n'||name||E'\n'||sql_text,E'\n--MIGRATION--\n' order by version),''),'UTF8'),'sha256'),'hex') from x" > "$RUNNER_TEMP/postapply-grandfather.csv"
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select count(*)::text,encode(extensions.digest(convert_to(string_agg(version||E'\n'||coalesce(name,'')||E'\n'||array_to_string(statements,E'\n--STATEMENT--\n'),E'\n--MIGRATION--\n' order by version),'UTF8'),'sha256'),'hex') from supabase_migrations.schema_migrations where version between '20260801063708' and '20260801170332'" > "$RUNNER_TEMP/postapply-legacy.csv"
+          GITHUB_EVENT_NAME=workflow_dispatch python3 sandbox/lf_contract_gate_test/lf_migration_source_parity.py supabase/migrations "$RUNNER_TEMP/postapply-remote.csv" "$RUNNER_TEMP/postapply-grandfather.csv" "$RUNNER_TEMP/postapply-legacy.csv"
+          echo "PASS_MIGRATION_POSTAPPLY_FULL_PARITY"
+
+      - name: Persist reproducible readback on governed execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 -c "update public.lf_operation_execution set manifest=coalesce(manifest,'{}'::jsonb)||jsonb_build_object('source_parity_state','PASS_REPRODUCIBLE','source_parity_run_id','${GITHUB_RUN_ID}','source_parity_main_sha','${EXPECTED_MAIN_SHA}','source_parity_workflow','lf-migration-source-first-apply/v1'),updated_by_execution_id='${EXECUTION_ID}',updated_at=now() where execution_id='${EXECUTION_ID}' and status='IN_PROGRESS' and manifest->>'source_parity_state'='APPLIED_PENDING_POSTREADBACK';"
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 -At -c "select coalesce(manifest->>'source_parity_state','') from public.lf_operation_execution where execution_id='${EXECUTION_ID}'" | grep -Fx 'PASS_REPRODUCIBLE'
+
+      - name: Emit transport receipt
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import importlib.util, json, os
+          from pathlib import Path
+          p=Path('sandbox/lf_contract_gate_test/s30_migration_source_parity/migration_source_first_transport.py')
+          spec=importlib.util.spec_from_file_location('transport',p); m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+          path=os.environ['MIGRATION_PATH']; version,name=m.parse_target(path); source=Path(path).read_text(encoding='utf-8')
+          receipt={
+            'schema':'lf-migration-source-first-receipt/v1',
+            'status':'PASS_REPRODUCIBLE',
+            'execution_id':os.environ['EXECUTION_ID'],
+            'main_sha':os.environ['EXPECTED_MAIN_SHA'],
+            'migration_path':path,
+            'migration_version':version,
+            'migration_name':name,
+            'source_sha256':m.source_sha256(source),
+            'transport':m.TRANSPORT_CODE,
+            'github_run_id':os.environ['GITHUB_RUN_ID'],
+          }
+          Path(os.environ['RUNNER_TEMP'],'lf-migration-source-first-receipt.json').write_text(json.dumps(receipt,sort_keys=True,indent=2)+'\n',encoding='utf-8')
+          print(json.dumps(receipt,sort_keys=True))
+          PY
+
+      - name: Upload immutable run receipt
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-migration-source-first-${{ github.run_id }}
+          path: ${{ runner.temp }}/lf-migration-source-first-receipt.json
+          if-no-files-found: error
+          retention-days: 90
