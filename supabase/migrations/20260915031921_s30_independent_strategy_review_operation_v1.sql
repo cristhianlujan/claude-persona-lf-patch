@@ -34,7 +34,7 @@ INSERT INTO public.lf_operation_execution(
 ) VALUES (
   'EXEC-BOOTSTRAP-INDEPENDENT-STRATEGY-REVIEW-20260915-001',
   'VULNERABILITY_COVERAGE_REPAIR_LF','OPERATION_PROTOCOL_REPAIR','REVISION_INDEPENDIENTE_ESTRATEGIA_LF','IN_PROGRESS',
-  '{"mode":"INDEPENDENT_STRATEGY_REVIEW_OPERATION_BOOTSTRAP","governance_bootstrap":true,"bootstrap_operation_code":"REVISION_INDEPENDIENTE_ESTRATEGIA_LF","bootstrap_status_ceiling":"SANDBOX_ACTIVE","production_allowed":false,"runtime_activation":false,"strategy_snapshot_mutation":false,"qualification_evidence_only":true}'::jsonb,
+  '{"mode":"INDEPENDENT_STRATEGY_REVIEW_OPERATION_BOOTSTRAP","governance_bootstrap":true,"bootstrap_operation_code":"REVISION_INDEPENDIENTE_ESTRATEGIA_LF","bootstrap_status_ceiling":"SANDBOX_ACTIVE","production_allowed":false,"runtime_activation":false,"strategy_snapshot_mutation":false,"qualification_evidence_only":true,"operation_policy_snapshots":{}}'::jsonb,
   'EXEC-BOOTSTRAP-INDEPENDENT-STRATEGY-REVIEW-20260915-001','EXEC-BOOTSTRAP-INDEPENDENT-STRATEGY-REVIEW-20260915-001'
 );
 
