@@ -2,7 +2,7 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MIGRATION = ROOT / "supabase/migrations/20260915142504_s30_owner_first_post_candidate_assurance_v1.sql"
+MIGRATION = ROOT / "supabase/migrations/20260915143156_s30_owner_first_post_candidate_assurance_v1.sql"
 
 sql = MIGRATION.read_text(encoding="utf-8")
 
