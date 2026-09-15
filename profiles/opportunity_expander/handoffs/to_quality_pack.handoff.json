@@ -1,0 +1,19 @@
+{
+  "to": "QUALITY_PACK",
+  "requires_artifact": true,
+  "required_receiver_context": [
+    "deliverable_artifact_ref",
+    "main_contract_ref",
+    "output_schema_ref",
+    "evidence_map",
+    "score_rubric_ref",
+    "blocking_codes",
+    "remaining_risks"
+  ],
+  "failure_routing": {
+    "artifact_missing": "RETURN_TO_PROFILE_CREATOR",
+    "evidence_or_depth_incomplete": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+    "authority_or_governance_conflict": "BLOCK_PIPELINE"
+  },
+  "next_gate": "SEMANTIC_QUALITY_REVIEW"
+}

@@ -1,0 +1,60 @@
+{
+  "status": "READY_FOR_REVIEW",
+  "user_payload": {
+    "baseline_preserved": true,
+    "opportunities": [
+      {
+        "id": "ADJ-SEGMENTATION",
+        "lane": "ADJACENT",
+        "idea": "Segment the uploaded portfolio immediately after ingestion.",
+        "mechanism": "Use portfolio attributes to form actionable clusters before recovery actions are chosen.",
+        "potential_value": "Different treatments can be tested by segment instead of applying one generic recovery flow.",
+        "experiment": "Run the same uploaded sample through baseline handling versus three governed segments and compare recovery proxy metrics.",
+        "requires_scope_change": true
+      },
+      {
+        "id": "BUS-TIERS",
+        "lane": "BUSINESS",
+        "idea": "Turn intelligence depth into Basic, Pro and Premium B2B tiers.",
+        "mechanism": "Monetize progressively richer analysis rather than charging only for the upload function.",
+        "potential_value": "Creates a product ladder and clearer upgrade path for B2B clients.",
+        "experiment": "Prototype tier packaging with five target clients and measure preference and willingness to pay.",
+        "requires_scope_change": true
+      },
+      {
+        "id": "DATA-LEARNING",
+        "lane": "DATA",
+        "idea": "Learn which portfolio attributes and treatments correlate with better recovery outcomes.",
+        "mechanism": "Reuse historical upload and outcome data to improve future recommendations.",
+        "potential_value": "Transforms repeated portfolio loads into compounding decision intelligence.",
+        "experiment": "Backtest simple treatment recommendations on historical labeled outcomes before any live automation.",
+        "requires_scope_change": true
+      },
+      {
+        "id": "FRONTIER-SIMULATOR",
+        "lane": "FRONTIER",
+        "idea": "Evolve the upload entry point into a recovery-strategy simulator before execution.",
+        "mechanism": "Generate and compare alternative treatment policies on the same portfolio before a client commits operationally.",
+        "potential_value": "Changes the product from data ingestion into a pre-execution decision system.",
+        "experiment": "Build an offline sandbox that scores several treatment policies against historical outcomes and records uncertainty.",
+        "requires_scope_change": true
+      }
+    ]
+  },
+  "internal_envelope": {
+    "novelty_distance": "MIXED",
+    "redundancy_check": "PASS",
+    "frontier_present": true,
+    "scope_guard_passed": true
+  },
+  "evidence_map": [
+    {
+      "source_ref": "supabase://public.lf_operation_mode_bindings/EJECUCION_PERFIL_LF/EVALUATE_EXISTING/EXPLORATION",
+      "supports": ["exploration is read-only", "canonical write and runtime are not authorized"]
+    },
+    {
+      "source_ref": "github://cristhianlujan/claude-persona-lf-patch/skills/profile_creator/SKILL.md@fc2967e9aa17f9e5e68f8567ef80faafb3839c53",
+      "supports": ["profile candidates require developed contracts, schemas, judges, evals and handoff evidence"]
+    }
+  ]
+}

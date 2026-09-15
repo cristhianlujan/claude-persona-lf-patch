@@ -1,0 +1,28 @@
+{
+  "profile_pack_id": "PROFILE_OPPORTUNITY_EXPANDER_LF_V0_1",
+  "operation": "CREACION_PERFIL_LF",
+  "document_status": "CANDIDATO",
+  "operational_status": "READ_ONLY",
+  "runtime": "NO_HABILITADO",
+  "automatic_impact": "BLOQUEADO",
+  "quality_pack": "EXPLORATORY_PROFILE_QUALITY_PACK_V0_1",
+  "required_files": [
+    "SKILL.md",
+    "README.md",
+    "contracts/main_contract.md",
+    "schemas/output.schema.json",
+    "judges/score_rubric.md",
+    "judges/mini_judge.md",
+    "evals/eval_matrix.json",
+    "handoffs/to_quality_pack.handoff.json",
+    "examples/good_output.json",
+    "examples/bad_output.json",
+    "manifest.json"
+  ],
+  "runtime_enabled": false,
+  "production_authorization": false,
+  "exposes_user_facing_output": true,
+  "source_authority": "supabase://public.lf_operation_mode_bindings#EJECUCION_PERFIL_LF/EVALUATE_EXISTING/EXPLORATION",
+  "target_branch": "main",
+  "candidate_branch": "lf/s37-opportunity-expander-v01-20260913"
+}
