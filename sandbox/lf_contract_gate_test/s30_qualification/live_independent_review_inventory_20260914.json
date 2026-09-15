@@ -1,0 +1,46 @@
+{
+  "captured_on": "2026-09-14",
+  "source": "read-only Supabase inventory",
+  "project_id": "mhwmirqcgxxukpctffuv",
+  "active_requirement_bindings": [
+    {
+      "binding_code": "BIND-STRATEGY-FINANCIAL-V1",
+      "characteristic_code": "FINANCIAL_DECISION",
+      "suite_code": "TS-STRATEGY-FINANCIAL-V1",
+      "independent_review_required": true
+    },
+    {
+      "binding_code": "BIND-STRATEGY-HIGH-RISK-V1",
+      "characteristic_code": "HIGH_RISK",
+      "suite_code": "TS-STRATEGY-HIGH-RISK-V1",
+      "independent_review_required": true
+    },
+    {
+      "binding_code": "BIND-STRATEGY-MODEL-V1",
+      "characteristic_code": "USES_MODEL",
+      "suite_code": "TS-STRATEGY-MODEL-HOLDOUT-V1",
+      "independent_review_required": true
+    }
+  ],
+  "suite_case_pattern": {
+    "test_code": "A03",
+    "test_type": "SEMANTIC",
+    "execution_mode": "INDEPENDENT_REVIEW",
+    "probe_code": "INDEPENDENT_REVIEW",
+    "expected_verdict": "PASS"
+  },
+  "observed_runs": [
+    {"suite_code": "TS-STRATEGY-FINANCIAL-V1", "test_code": "A03", "status": "REVIEW_REQUIRED", "count": 2},
+    {"suite_code": "TS-STRATEGY-MODEL-HOLDOUT-V1", "test_code": "A03", "status": "PASS", "count": 1},
+    {"suite_code": "TS-STRATEGY-MODEL-HOLDOUT-V1", "test_code": "A03", "status": "REVIEW_REQUIRED", "count": 3}
+  ],
+  "proven_v1_receipt": {
+    "subject_code": "LF_EXPLORATION_INNOVATION_ENGINE_20260913",
+    "suite_code": "TS-STRATEGY-MODEL-HOLDOUT-V1",
+    "test_code": "A03",
+    "review_case": "S37-MODEL-HOLDOUT-A03",
+    "verdict": "PASS",
+    "review_context": "INDEPENDENT_CHAT_CONTEXT"
+  },
+  "gap": "v1 applies only MODEL/A03 and requires S37-specific review_case despite the live model already declaring multiple independent-review suites"
+}
