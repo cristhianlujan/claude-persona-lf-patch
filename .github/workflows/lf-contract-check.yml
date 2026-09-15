@@ -547,6 +547,18 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq tesseract-ocr tesseract-ocr-spa
 
+      - name: Run S36 assurance completeness gate self-test
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        run: |
+          python3 sandbox/lf_contract_gate_test/test_s36_wp06_ci_completeness_gate.py
+
+      - name: Enforce S36 assurance completeness debt monotonicity
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          python3 sandbox/lf_contract_gate_test/s36_wp06_ci_completeness_gate.py
+
       - name: Validate LF contract
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         env:
@@ -780,6 +792,8 @@ jobs:
                   "sandbox/no_bypass_judge_profile_card_skill/no_bypass_judge_selftest.py",
                   "sandbox/lf_contract_gate_test/pass_evidence_gate.py --self-test --scan",
                   "sandbox/lf_contract_gate_test/r8_continuous_audit.py",
+                  "sandbox/lf_contract_gate_test/test_s36_wp06_ci_completeness_gate.py",
+                  "sandbox/lf_contract_gate_test/s36_wp06_ci_completeness_gate.py",
               ],
               "files": dict(sorted(files.items())),
           }
