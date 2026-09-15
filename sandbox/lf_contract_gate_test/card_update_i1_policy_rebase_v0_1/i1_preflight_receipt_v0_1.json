@@ -1,0 +1,97 @@
+{
+  "schema": "LF_CARD_UPDATE_I1_PREFLIGHT_V0_1",
+  "status": "PASS_TO_CANDIDATE_DESIGN",
+  "observed_at": "2026-09-13T01:35:00Z",
+  "repository": "cristhianlujan/claude-persona-lf-patch",
+  "base_main_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+  "branch": "lf/card-update-i1-policy-rebase-v01",
+  "objective": "Rebase ACTUALIZACION_CARD_LF contract semantics on current POL-LF-SOURCE-RESOLUTION v1.4 and repair contract-to-step consistency as a candidate only.",
+  "scope": {
+    "write": ["sandbox/lf_contract_gate_test/card_update_i1_policy_rebase_v0_1/"],
+    "forbidden": [
+      "SUPABASE_DDL_DML",
+      "production_or_runtime_activation",
+      "Golden",
+      "main_merge",
+      "cards/** mutation",
+      "S26 source mutation",
+      "S30 source mutation",
+      "S31 source mutation",
+      "carrier write"
+    ]
+  },
+  "currentness": {
+    "main_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+    "main_changed_since_card_lifecycle_abcd": false,
+    "prior_design_ref": "github://cristhianlujan/claude-persona-lf-patch@2364be6461cb74423e2c13be51535a5318c4915c/sandbox/lf_contract_gate_test/card_lifecycle_convergence_v0_1/frontier_after_abcd_v0_1.json"
+  },
+  "live_operation": {
+    "operation_code": "ACTUALIZACION_CARD_LF",
+    "version": "v0.1",
+    "status": "CANDIDATO_READ_ONLY",
+    "source_model": "SUPABASE_STRUCTURED_OPERATION",
+    "live_step_count": 14,
+    "contract_code": "CONTRACT-ACTUALIZACION-CARD-LF-v0.1"
+  },
+  "current_source_policy": {
+    "policy_code": "POL-LF-SOURCE-RESOLUTION",
+    "policy_version": "v1.4-transversal-supabase-authority-visual-support",
+    "policy_sha": "5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46",
+    "authority": "SUPABASE",
+    "operational_source": "public.v_lf_fuente_operativa",
+    "google_docs_sheets_operational_read": false,
+    "technical_repo_requires_supabase_binding": true
+  },
+  "observed_contract_inconsistencies": [
+    {
+      "code": "CARD_UPDATE_SOURCE_AUTHORITY_WORDING_STALE",
+      "severity": "HIGH",
+      "evidence": "carrier_resolve purpose says 'authoritative source carrier' and parent_source_read says 'authoritative parent source' while v1.4 makes Supabase the only operational authority",
+      "required_disposition": "Replace authority semantics with Supabase-authorized carrier binding plus non-authoritative transport-integrity/currentness read semantics"
+    },
+    {
+      "code": "CARD_UPDATE_CHANGE_SCOPE_STEP_MISSING",
+      "severity": "HIGH",
+      "evidence": "Top-level contract requires change_scope_defined before write, but no live step records this as a first-class gate",
+      "required_disposition": "Add explicit governed change_scope step before prewrite"
+    },
+    {
+      "code": "CARD_UPDATE_REGRESSION_PLAN_STEP_MISSING",
+      "severity": "HIGH",
+      "evidence": "Top-level contract requires regression_plan_defined before write, but no live step records this as a first-class gate",
+      "required_disposition": "Add explicit governed regression_plan step before prewrite"
+    },
+    {
+      "code": "CARD_UPDATE_STALE_REVISION_FAIL_OPEN_HISTORY",
+      "severity": "HIGH",
+      "evidence": "2026-09-07 negative canary observed stale submitted carrier revision accepted at prewrite; no carrier write occurred",
+      "required_disposition": "Prewrite must deterministically compare submitted/bound revision to fresh provider currentness context and fail closed"
+    }
+  ],
+  "ekb_binding": {
+    "source_ref": "github://cristhianlujan/claude-persona-lf-patch@2364be6461cb74423e2c13be51535a5318c4915c/sandbox/lf_contract_gate_test/card_lifecycle_convergence_v0_1/card_lifecycle_preflight_receipt_v0_1.json",
+    "applicable_codes": [
+      "AUD-018",
+      "CI-007",
+      "CI-014",
+      "CI-CARD-CONTRACT-001",
+      "CARD-UPDATE-CARRIER-TRUST-CONTEXT-GAP-001",
+      "CARD-UPDATE-PREWRITE-REVISION-TRUST-COMPARE-GAP-001",
+      "CARD-UPDATE-PROVIDER-REVISION-GUARD-001",
+      "CARD-UPDATE-SOURCE-CARRIER-GAP-001",
+      "GOV-CARD-PREWRITE-ORDER-001",
+      "GOV-CI-MIGRATION-SOURCE-PARITY-20260829"
+    ]
+  },
+  "parallel_lane_scan": {
+    "same_scope_open_pr_found": false,
+    "s31_pr": 722,
+    "s31_hard_dependency_for_i1": false
+  },
+  "gate": {
+    "result": "PASS_TO_CANDIDATE_DESIGN",
+    "supabase_mutation_authorized": false,
+    "write_activation_authorized": false,
+    "next": "I1_POLICY_REBASE_CONTRACT_CANDIDATE"
+  }
+}

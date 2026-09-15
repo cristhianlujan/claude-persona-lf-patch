@@ -1,0 +1,45 @@
+{
+  "schema": "LF_CARD_UPDATE_I2_TOPOLOGY_MANIFEST_V0_1",
+  "status": "CANDIDATE_READ_ONLY_TOPOLOGY",
+  "operation_code": "ACTUALIZACION_CARD_LF",
+  "from_version": "v0.1",
+  "candidate_version": "v0.2-candidate",
+  "source_policy": {
+    "code": "POL-LF-SOURCE-RESOLUTION",
+    "version": "v1.4-transversal-supabase-authority-visual-support",
+    "sha": "5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46"
+  },
+  "authority_model": "SUPABASE_ONLY_OPERATIONAL_AUTHORITY_WITH_BOUND_NON_AUTHORITATIVE_CARRIERS",
+  "step_count": 16,
+  "steps": [
+    {"order":0,"step_id":"init_execution","judge_code":"JUDGE-ACTUALIZACION-CARD-LF-v0.2","required_evidence_keys":["execution_id_created","target_code","target_type"]},
+    {"order":10,"step_id":"router","judge_code":"JUDGE-ACTUALIZACION-CARD-LF-v0.2","required_evidence_keys":["router_read","action","router_state"]},
+    {"order":20,"step_id":"card_resolve","judge_code":"JUDGE-ACTUALIZACION-CARD-LF-v0.2","required_evidence_keys":["card_code","card_id","exact_card_resolved","active_before"]},
+    {"order":30,"step_id":"carrier_resolve","judge_code":"JUDGE-ACTUALIZACION-CARD-LF-v0.2","required_evidence_keys":["carrier_type","carrier_ref","parent_asset_code","parent_source_ref","block_anchor","supabase_authority_ref","carrier_binding_ref"]},
+    {"order":40,"step_id":"parent_source_read","judge_code":"JUDGE-ACTUALIZACION-CARD-LF-v0.2","required_evidence_keys":["parent_source_ref","carrier_revision","block_anchor_found","source_currentness","transport_integrity_only"]},
+    {"order":50,"step_id":"baseline_read","judge_code":"JUDGE-ACTUALIZACION-CARD-LF-v0.2","required_evidence_keys":["baseline_card_state","baseline_carrier_revision","baseline_block_excerpt_hash","baseline_identity"]},
+    {"order":60,"step_id":"change_scope","judge_code":"JUDGE-ACTUALIZACION-CARD-LF-v0.2","required_evidence_keys":["defect","root_cause","minimal_patch_scope","preserved_constraints","authority_boundaries_preserved","carrier_route_preserved"]},
+    {"order":70,"step_id":"regression_plan","judge_code":"JUDGE-ACTUALIZACION-CARD-LF-v0.2","required_evidence_keys":["positive_cases","negative_cases","adversarial_cases","stale_revision_cases","wrong_carrier_cases","holdout"]},
+    {"order":80,"step_id":"pre_write_execution_binding_gate","judge_code":"JUDGE-ACTUALIZACION-CARD-LF-PREWRITE-TRUST-v2","required_evidence_keys":["execution_id","card_code","current_source_policy_code","current_source_policy_version","current_source_policy_sha","supabase_authority_ref","carrier_binding_ref","carrier_type","carrier_ref","fresh_provider_revision_or_blob_sha","content_sha256","block_anchor_or_path","trusted_context_ref","change_scope_ref","regression_plan_ref","provider_write_guard","pre_write_gate_passed"]},
+    {"order":90,"step_id":"carrier_write_dispatch","judge_code":"JUDGE-ACTUALIZACION-CARD-LF-v0.2","required_evidence_keys":["carrier_type","write_route","write_receipt","changed_scope","identity_preserved","provider_required_revision_id","provider_write_control_applied"]},
+    {"order":100,"step_id":"carrier_readback","judge_code":"JUDGE-ACTUALIZACION-CARD-LF-v0.2","required_evidence_keys":["readback_carrier_revision","readback_block_anchor","readback_content_hash","parent_source_preserved","independent_readback"]},
+    {"order":110,"step_id":"deterministic_validation","judge_code":"JUDGE-ACTUALIZACION-CARD-LF-v0.2","required_evidence_keys":["carrier_route_match","revision_match","block_anchor_match","identity_match","negative_regressions","source_policy_match"]},
+    {"order":120,"step_id":"semantic_judge","judge_code":"JUDGE-ACTUALIZACION-CARD-LF-v0.2","required_evidence_keys":["semantic_judge_result","authority_checks","parent_source_check","claim_ceiling_check"]},
+    {"order":130,"step_id":"regression_after","judge_code":"JUDGE-ACTUALIZACION-CARD-LF-v0.2","required_evidence_keys":["before_after_matrix","wrong_carrier_negative","stale_revision_negative","missing_anchor_negative","holdout_result"]},
+    {"order":140,"step_id":"close","judge_code":"JUDGE-ACTUALIZACION-CARD-LF-v0.2","required_evidence_keys":["all_required_steps_clean","open_blockers","runtime_unchanged","no_auto_promotion","history_preserved","source_policy_current"]},
+    {"order":150,"step_id":"report_output","judge_code":"JUDGE-ACTUALIZACION-CARD-LF-v0.2","required_evidence_keys":["result","card_code","carrier_ref","evidence_refs","open_blockers","next_gate"]}
+  ],
+  "invariants": [
+    "CHANGE_SCOPE_AND_REGRESSION_PLAN_ARE_FIRST_CLASS_PREWRITE_GATES",
+    "CARRIER_READS_VERIFY_TRANSPORT_INTEGRITY_AND_CURRENTNESS_ONLY",
+    "EXTERNAL_CARRIER_NEVER_CREATES_OPERATIONAL_AUTHORITY",
+    "PREWRITE_BINDS_CURRENT_SOURCE_POLICY_V1_4_AND_EXACT_CARRIER_CURRENTNESS",
+    "STALE_PROVIDER_REVISION_FAILS_BEFORE_CARRIER_WRITE",
+    "STATUS_REMAINS_CANDIDATO_READ_ONLY",
+    "NO_RUNTIME_ENABLE_NO_AUTOMATIC_PROMOTION_NO_HARD_DELETE"
+  ],
+  "materialization_scope": ["public.lf_operation_registry","public.lf_operation_contracts","public.lf_operation_steps","public.lf_operation_step_contracts","public.lf_operation_judges","public.lf_operation_step_judge_bindings"],
+  "carrier_write_authorized": false,
+  "runtime_activation_authorized": false,
+  "promotion_authorized": false
+}
