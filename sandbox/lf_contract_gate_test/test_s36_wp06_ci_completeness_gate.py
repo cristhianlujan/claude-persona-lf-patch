@@ -46,8 +46,14 @@ assert "set status='PASS'" in materialization_sql
 assert "update public.lf_test_suite_runs sr" in materialization_sql
 assert "when a.tests_total>0 and a.tests_passed=a.tests_total then 'PASSED'" in materialization_sql
 assert "sr.status is distinct from 'PASSED'" in materialization_sql
-assert "QUAL_REVIEW_REQUIRED_SUITES_NOT_PASSED" in materialization_sql
 assert "'all_required_suites_passed',true" in materialization_sql
+
+# Atomic fail-closed guarantees: no partial materialization may survive an invalid suite state,
+# row-count mismatch, or unexpected non-PASSED post-state.
+assert "sr.status not in ('PASSED','REVIEW_REQUIRED')" in materialization_sql
+assert "QUAL_REVIEW_PREMATERIALIZATION_SUITE_STATE_INVALID" in materialization_sql
+assert "LF_QUAL_REVIEW_MATERIALIZATION_COUNT_MISMATCH" in materialization_sql
+assert "LF_QUAL_REVIEW_POSTMATERIALIZATION_INVARIANT_FAILED" in materialization_sql
 
 # Do not create a separately callable helper that could bypass finalizer checks.
 assert "create or replace function public.lf_materialize_qualification_independent_review_v1" not in materialization_sql
