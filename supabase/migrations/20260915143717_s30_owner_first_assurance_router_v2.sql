@@ -1,6 +1,3 @@
--- S30-R21 v2: close the remaining pre-candidate permission loop in Router and Strategy Execution begin.
--- Safety is moved, not removed: exact Strategy + exact EJECUCION_ESTRATEGIA_LF operation qualification are required at terminal close.
-
 CREATE OR REPLACE FUNCTION public.lf_strategy_terminal_qualification_guard_v1(
   p_snapshot_id bigint,
   p_terminal_action text,
