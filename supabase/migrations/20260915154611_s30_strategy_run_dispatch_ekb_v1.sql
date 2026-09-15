@@ -429,6 +429,7 @@ AFTER UPDATE OF status ON public.lf_operation_execution
 FOR EACH ROW EXECUTE FUNCTION private.fn_lf_strategy_execution_terminal_exit_hook_v1();
 
 -- Insert the two required stages, reusing the active executor mini-judge.
+-- owner_work_dispatch (65) is after safe_work_discovery (60) and before pre_write_execution_binding_gate (70).
 INSERT INTO public.lf_operation_steps(
   operation_code,step_order,step_id,required,evidence_required,source_path,source_sha,active,execution_order,
   created_by_execution_id,updated_by_execution_id
