@@ -23,11 +23,11 @@ with s as (
 ), baseline as (
   select
     x->>'operation_code' as operation_code,
-    x->>'coverage_state' as coverage_state,
-    (x->>'required_binding_count')::int as required_binding_count,
-    (x->>'observed_run_count')::int as observed_run_count
+    x->>'accepted_state' as coverage_state,
+    (x->>'baseline_required_binding_count')::int as required_binding_count,
+    (x->>'baseline_observed_run_count')::int as observed_run_count
   from s,
-       lateral jsonb_array_elements(coalesce(b->'rows','[]'::jsonb)) x
+       lateral jsonb_array_elements(coalesce(b,'[]'::jsonb)) x
 ), live as (
   select *
   from public.lf_s36_operation_assurance_coverage_v1()
