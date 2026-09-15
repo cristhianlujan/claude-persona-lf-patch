@@ -1,7 +1,7 @@
 from pathlib import Path
 
 repo_root = Path(__file__).resolve().parents[2]
-migration = repo_root / "supabase/migrations/20260915041000_s30_strategy_qualification_governance_v1.sql"
+migration = repo_root / "supabase/migrations/20260915041516_s30_strategy_qualification_governance_v1.sql"
 assert migration.exists(), "FAIL_S30_STRATEGY_QUALIFICATION_GOVERNANCE_SOURCE_MISSING"
 sql = migration.read_text(encoding="utf-8")
 
