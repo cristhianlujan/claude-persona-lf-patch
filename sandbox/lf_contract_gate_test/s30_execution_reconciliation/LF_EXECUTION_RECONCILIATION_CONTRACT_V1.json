@@ -1,0 +1,55 @@
+{
+  "contract_code": "LF_EXECUTION_RECONCILIATION_CONTRACT_V1",
+  "owner": "S30",
+  "status": "SOURCE_CANDIDATE_READ_ONLY",
+  "purpose": "Classify incomplete LF executions deterministically before any replay, close, backfill or owner repair.",
+  "scope": {
+    "initial_fleet": "IN_PROGRESS executions with zero recorded steps",
+    "mutation_allowed": false,
+    "auto_close_allowed": false,
+    "auto_backfill_allowed": false,
+    "auto_replay_allowed": false
+  },
+  "required_evidence": [
+    "EXECUTION_STATUS",
+    "STEP_COUNT",
+    "OPERATION_LIFECYCLE",
+    "ACTIVE_INIT_TOPOLOGY",
+    "INIT_CONTRACT_BINDING_JUDGE_COUNTS",
+    "LEASE_STATE",
+    "CHECKPOINT_SEQ",
+    "IDEMPOTENCY_KEY_PRESENCE",
+    "REQUEST_SHA256_PRESENCE",
+    "EFFECT_GUARD_COUNT"
+  ],
+  "decisions": [
+    "CONFLICT_EFFECT_EVIDENCE",
+    "CONFLICT_ACTIVE_LEASE",
+    "CONFLICT_CHECKPOINT_WITH_ZERO_STEPS",
+    "LEGACY_NO_INIT_TOPOLOGY",
+    "OWNER_REVIEW_TOPOLOGY_INCOMPLETE",
+    "OWNER_REVIEW_OPERATION_NOT_OPERATIONAL",
+    "OWNER_REVIEW_REQUEST_IDENTITY_MISSING",
+    "REPLAY_CANDIDATE_PRECHECK_ONLY"
+  ],
+  "replay_candidate_requirements": {
+    "active_init_step_exact": 1,
+    "active_init_contract_exact": 1,
+    "active_init_binding_exact": 1,
+    "active_init_judge_exact": 1,
+    "operation_lifecycle_state": "OP_OPERATIONAL",
+    "lease": "NO_ACTIVE_LEASE",
+    "checkpoint_seq": 0,
+    "effect_guard_count": 0,
+    "idempotency_key_required": true,
+    "request_sha256_required": true
+  },
+  "safety": {
+    "historical_intent_inference_allowed": false,
+    "missing_request_identity_is_safe_replay": false,
+    "legacy_execution_can_be_rewritten_to_new_bootstrap_semantics": false,
+    "owner_review_required_before_any_status_mutation": true,
+    "business_effect_replay_allowed": false
+  },
+  "claim_ceiling": "CLASSIFICATION_ONLY_NO_LIVE_MUTATION"
+}
