@@ -3,202 +3,9 @@
 -- Scope: qualification/test evidence only. No runtime, production, Golden, or business-effect activation.
 -- Source-first branch: s36-qual-review-materialization-fix-20260914
 -- Rollback: restore public.lf_finalize_qualification_independent_review_v1 from
---           20260914230317_s36_qualification_independent_review_finalizer_v1.sql
---           and drop public.lf_materialize_qualification_independent_review_v1(uuid,text).
-
-create or replace function public.lf_materialize_qualification_independent_review_v1(
-  p_qualification_id uuid,
-  p_reviewer_execution_id text
-) returns jsonb
-language plpgsql
-set search_path to 'pg_catalog','public'
-as $function$
-declare
-  q public.lf_qualification_receipts%rowtype;
-  reviewer public.lf_operation_execution%rowtype;
-  v_review_total integer := 0;
-  v_review_passed integer := 0;
-  v_changed integer := 0;
-  v_nonpassed_suites integer := 0;
-begin
-  if p_qualification_id is null or nullif(btrim(p_reviewer_execution_id),'') is null then
-    return jsonb_build_object('result','BLOCKED','code','QUAL_REVIEW_MATERIALIZE_IDENTITY_REQUIRED');
-  end if;
-
-  select * into q
-  from public.lf_qualification_receipts
-  where qualification_id=p_qualification_id
-  for update;
-
-  if not found then
-    return jsonb_build_object('result','BLOCKED','code','QUALIFICATION_NOT_FOUND');
-  end if;
-
-  if q.lifecycle_state_code is distinct from 'QUAL_QUALIFYING' then
-    return jsonb_build_object(
-      'result','BLOCKED','code','QUAL_REVIEW_MATERIALIZE_NOT_QUALIFYING',
-      'state',q.lifecycle_state_code
-    );
-  end if;
-
-  select * into reviewer
-  from public.lf_operation_execution
-  where execution_id=p_reviewer_execution_id;
-
-  if not found then
-    return jsonb_build_object('result','BLOCKED','code','QUAL_REVIEW_MATERIALIZE_REVIEWER_NOT_FOUND');
-  end if;
-
-  if reviewer.status is distinct from 'COMPLETED' or reviewer.completed_at is null then
-    return jsonb_build_object(
-      'result','BLOCKED','code','QUAL_REVIEW_MATERIALIZE_REVIEWER_NOT_COMPLETED',
-      'reviewer_status',reviewer.status
-    );
-  end if;
-
-  select count(*) into v_review_total
-  from public.lf_test_runs tr
-  where tr.suite_run_id=any(q.suite_run_ids)
-    and tr.status='REVIEW_REQUIRED';
-
-  if v_review_total=0 then
-    return jsonb_build_object('result','BLOCKED','code','QUAL_REVIEW_MATERIALIZE_NO_REVIEW_REQUIRED_CASES');
-  end if;
-
-  select count(distinct tr.test_run_id) into v_review_passed
-  from public.lf_test_runs tr
-  where tr.suite_run_id=any(q.suite_run_ids)
-    and tr.status='REVIEW_REQUIRED'
-    and exists (
-      select 1
-      from public.lf_test_judge_results jr
-      where jr.test_run_id=tr.test_run_id
-        and jr.created_by_execution_id=p_reviewer_execution_id
-        and jr.judge_type in ('QUALITY_PACK','INDEPENDENT_HOLDOUT','S36_ASSURANCE')
-        and jr.verdict='PASS'
-        and nullif(btrim(coalesce(jr.rationale_summary,'')),'') is not null
-        and jsonb_typeof(jr.evidence_payload)='object'
-        and jr.evidence_payload<>'{}'::jsonb
-        and jr.metadata->>'recorder'='lf_record_test_judge_result_v1'
-        and jr.metadata->>'reviewer_execution_id'=p_reviewer_execution_id
-        and jr.observed_at>=reviewer.started_at
-        and jr.observed_at<=reviewer.completed_at
-    );
-
-  if v_review_passed is distinct from v_review_total then
-    return jsonb_build_object(
-      'result','BLOCKED','code','QUAL_REVIEW_MATERIALIZE_STRICT_PASS_INCOMPLETE',
-      'review_required_count',v_review_total,
-      'strict_pass_count',v_review_passed
-    );
-  end if;
-
-  update public.lf_test_runs tr
-  set status='PASS',
-      actual_output=coalesce(tr.actual_output,'{}'::jsonb) || jsonb_build_object(
-        'passed',true,
-        'probe_code',coalesce(tr.input_payload->>'probe_code','INDEPENDENT_REVIEW'),
-        'review_required',false,
-        'verdict','PASS',
-        'materialized_by','lf_materialize_qualification_independent_review_v1',
-        'reviewer_execution_id',p_reviewer_execution_id
-      ),
-      evidence_payload=coalesce(tr.evidence_payload,'{}'::jsonb) || jsonb_build_object(
-        'independent_review_materialization',jsonb_build_object(
-          'reviewer_execution_id',p_reviewer_execution_id,
-          'materialized_at',clock_timestamp(),
-          'strict_pass_judge_result_ids',(
-            select coalesce(jsonb_agg(jr.judge_result_id::text order by jr.observed_at),'[]'::jsonb)
-            from public.lf_test_judge_results jr
-            where jr.test_run_id=tr.test_run_id
-              and jr.created_by_execution_id=p_reviewer_execution_id
-              and jr.judge_type in ('QUALITY_PACK','INDEPENDENT_HOLDOUT','S36_ASSURANCE')
-              and jr.verdict='PASS'
-              and jr.metadata->>'recorder'='lf_record_test_judge_result_v1'
-              and jr.metadata->>'reviewer_execution_id'=p_reviewer_execution_id
-              and jr.observed_at>=reviewer.started_at
-              and jr.observed_at<=reviewer.completed_at
-          )
-        )
-      ),
-      error_code=null,
-      error_detail=null,
-      completed_at=coalesce(tr.completed_at,clock_timestamp()),
-      updated_at=clock_timestamp(),
-      updated_by_execution_id=p_reviewer_execution_id
-  where tr.suite_run_id=any(q.suite_run_ids)
-    and tr.status='REVIEW_REQUIRED'
-    and exists (
-      select 1
-      from public.lf_test_judge_results jr
-      where jr.test_run_id=tr.test_run_id
-        and jr.created_by_execution_id=p_reviewer_execution_id
-        and jr.judge_type in ('QUALITY_PACK','INDEPENDENT_HOLDOUT','S36_ASSURANCE')
-        and jr.verdict='PASS'
-        and nullif(btrim(coalesce(jr.rationale_summary,'')),'') is not null
-        and jsonb_typeof(jr.evidence_payload)='object'
-        and jr.evidence_payload<>'{}'::jsonb
-        and jr.metadata->>'recorder'='lf_record_test_judge_result_v1'
-        and jr.metadata->>'reviewer_execution_id'=p_reviewer_execution_id
-        and jr.observed_at>=reviewer.started_at
-        and jr.observed_at<=reviewer.completed_at
-    );
-
-  get diagnostics v_changed = row_count;
-
-  with agg as (
-    select
-      sr.suite_run_id,
-      count(tr.*)::int as tests_total,
-      count(*) filter (where tr.status='PASS')::int as tests_passed,
-      count(*) filter (where tr.status='FAIL')::int as tests_failed,
-      count(*) filter (where tr.status='BLOCKED')::int as tests_blocked,
-      count(*) filter (where tr.status='REVIEW_REQUIRED')::int as tests_review_required
-    from public.lf_test_suite_runs sr
-    left join public.lf_test_runs tr on tr.suite_run_id=sr.suite_run_id
-    where sr.suite_run_id=any(q.suite_run_ids)
-    group by sr.suite_run_id
-  )
-  update public.lf_test_suite_runs sr
-  set tests_total=a.tests_total,
-      tests_passed=a.tests_passed,
-      tests_failed=a.tests_failed,
-      tests_blocked=a.tests_blocked,
-      tests_review_required=a.tests_review_required,
-      status=case
-        when a.tests_failed>0 then 'FAILED'
-        when a.tests_blocked>0 then 'BLOCKED'
-        when a.tests_review_required>0 then 'REVIEW_REQUIRED'
-        when a.tests_total>0 and a.tests_passed=a.tests_total then 'PASSED'
-        else 'REVIEW_REQUIRED'
-      end,
-      completed_at=case
-        when a.tests_failed>0 or a.tests_blocked>0
-          or (a.tests_total>0 and a.tests_passed=a.tests_total)
-          then coalesce(sr.completed_at,clock_timestamp())
-        else sr.completed_at
-      end,
-      updated_at=clock_timestamp(),
-      updated_by_execution_id=p_reviewer_execution_id
-  from agg a
-  where sr.suite_run_id=a.suite_run_id;
-
-  select count(*) into v_nonpassed_suites
-  from public.lf_test_suite_runs sr
-  where sr.suite_run_id=any(q.suite_run_ids)
-    and sr.status is distinct from 'PASSED';
-
-  return jsonb_build_object(
-    'result',case when v_nonpassed_suites=0 then 'MATERIALIZED_REVIEW_PASSES' else 'MATERIALIZED_REVIEW_PASSES_WITH_NONPASSED_SUITES' end,
-    'qualification_id',p_qualification_id,
-    'reviewer_execution_id',p_reviewer_execution_id,
-    'review_required_count',v_review_total,
-    'strict_pass_count',v_review_passed,
-    'materialized_test_count',v_changed,
-    'nonpassed_suite_count',v_nonpassed_suites
-  );
-end;
-$function$;
+--           20260914230317_s36_qualification_independent_review_finalizer_v1.sql.
+-- Design: no new public helper is introduced. Materialization remains inside the existing finalizer
+--         so reviewer-independence/currentness/suite-fingerprint checks are non-skippable.
 
 create or replace function public.lf_finalize_qualification_independent_review_v1(
   p_qualification_id uuid,
@@ -218,10 +25,10 @@ declare
   v_review_total integer := 0;
   v_review_passed integer := 0;
   v_review_nonpass integer := 0;
+  v_materialized_tests integer := 0;
   v_nonpassed_suites integer := 0;
   v_next_state text;
   v_review_type text;
-  v_materialization jsonb;
 begin
   if p_qualification_id is null or nullif(btrim(p_reviewer_execution_id),'') is null then
     return jsonb_build_object('result','BLOCKED','code','QUAL_REVIEW_IDENTITY_REQUIRED');
@@ -412,17 +219,102 @@ begin
     );
   end if;
 
-  v_materialization := public.lf_materialize_qualification_independent_review_v1(
-    p_qualification_id,p_reviewer_execution_id
-  );
-
-  if coalesce(v_materialization->>'result','') <> 'MATERIALIZED_REVIEW_PASSES' then
-    return jsonb_build_object(
-      'result','BLOCKED',
-      'code','QUAL_REVIEW_MATERIALIZATION_INCOMPLETE',
-      'materialization',v_materialization
+  -- Only after every REVIEW_REQUIRED case has one strict PASS judge from this completed,
+  -- independent reviewer do we materialize the test result. This closes the inconsistency
+  -- between qualification receipt state and the canonical suite-run state consumed by
+  -- lf_qualification_current_v1.
+  update public.lf_test_runs tr
+  set status='PASS',
+      actual_output=coalesce(tr.actual_output,'{}'::jsonb) || jsonb_build_object(
+        'passed',true,
+        'probe_code',coalesce(tr.input_payload->>'probe_code','INDEPENDENT_REVIEW'),
+        'review_required',false,
+        'verdict','PASS',
+        'materialized_by','lf_finalize_qualification_independent_review_v1',
+        'reviewer_execution_id',p_reviewer_execution_id
+      ),
+      evidence_payload=coalesce(tr.evidence_payload,'{}'::jsonb) || jsonb_build_object(
+        'independent_review_materialization',jsonb_build_object(
+          'reviewer_execution_id',p_reviewer_execution_id,
+          'materialized_at',clock_timestamp(),
+          'strict_pass_judge_result_ids',(
+            select coalesce(jsonb_agg(jr.judge_result_id::text order by jr.observed_at),'[]'::jsonb)
+            from public.lf_test_judge_results jr
+            where jr.test_run_id=tr.test_run_id
+              and jr.created_by_execution_id=p_reviewer_execution_id
+              and jr.judge_type in ('QUALITY_PACK','INDEPENDENT_HOLDOUT','S36_ASSURANCE')
+              and jr.verdict='PASS'
+              and nullif(btrim(coalesce(jr.rationale_summary,'')),'') is not null
+              and jsonb_typeof(jr.evidence_payload)='object'
+              and jr.evidence_payload<>'{}'::jsonb
+              and jr.metadata->>'recorder'='lf_record_test_judge_result_v1'
+              and jr.metadata->>'reviewer_execution_id'=p_reviewer_execution_id
+              and jr.observed_at>=reviewer.started_at
+              and jr.observed_at<=reviewer.completed_at
+          )
+        )
+      ),
+      error_code=null,
+      error_detail=null,
+      completed_at=coalesce(tr.completed_at,clock_timestamp()),
+      updated_at=clock_timestamp(),
+      updated_by_execution_id=p_reviewer_execution_id
+  where tr.suite_run_id=any(q.suite_run_ids)
+    and tr.status='REVIEW_REQUIRED'
+    and exists (
+      select 1
+      from public.lf_test_judge_results jr
+      where jr.test_run_id=tr.test_run_id
+        and jr.created_by_execution_id=p_reviewer_execution_id
+        and jr.judge_type in ('QUALITY_PACK','INDEPENDENT_HOLDOUT','S36_ASSURANCE')
+        and jr.verdict='PASS'
+        and nullif(btrim(coalesce(jr.rationale_summary,'')),'') is not null
+        and jsonb_typeof(jr.evidence_payload)='object'
+        and jr.evidence_payload<>'{}'::jsonb
+        and jr.metadata->>'recorder'='lf_record_test_judge_result_v1'
+        and jr.metadata->>'reviewer_execution_id'=p_reviewer_execution_id
+        and jr.observed_at>=reviewer.started_at
+        and jr.observed_at<=reviewer.completed_at
     );
-  end if;
+
+  get diagnostics v_materialized_tests = row_count;
+
+  with agg as (
+    select
+      sr.suite_run_id,
+      count(tr.test_run_id)::int as tests_total,
+      count(*) filter (where tr.status='PASS')::int as tests_passed,
+      count(*) filter (where tr.status='FAIL')::int as tests_failed,
+      count(*) filter (where tr.status='BLOCKED')::int as tests_blocked,
+      count(*) filter (where tr.status='REVIEW_REQUIRED')::int as tests_review_required
+    from public.lf_test_suite_runs sr
+    left join public.lf_test_runs tr on tr.suite_run_id=sr.suite_run_id
+    where sr.suite_run_id=any(q.suite_run_ids)
+    group by sr.suite_run_id
+  )
+  update public.lf_test_suite_runs sr
+  set tests_total=a.tests_total,
+      tests_passed=a.tests_passed,
+      tests_failed=a.tests_failed,
+      tests_blocked=a.tests_blocked,
+      tests_review_required=a.tests_review_required,
+      status=case
+        when a.tests_failed>0 then 'FAILED'
+        when a.tests_blocked>0 then 'BLOCKED'
+        when a.tests_review_required>0 then 'REVIEW_REQUIRED'
+        when a.tests_total>0 and a.tests_passed=a.tests_total then 'PASSED'
+        else 'REVIEW_REQUIRED'
+      end,
+      completed_at=case
+        when a.tests_failed>0 or a.tests_blocked>0
+          or (a.tests_total>0 and a.tests_passed=a.tests_total)
+          then coalesce(sr.completed_at,clock_timestamp())
+        else sr.completed_at
+      end,
+      updated_at=clock_timestamp(),
+      updated_by_execution_id=p_reviewer_execution_id
+  from agg a
+  where sr.suite_run_id=a.suite_run_id;
 
   select count(*) into v_nonpassed_suites
   from public.lf_test_suite_runs sr
@@ -433,6 +325,9 @@ begin
     return jsonb_build_object(
       'result','BLOCKED',
       'code','QUAL_REVIEW_REQUIRED_SUITES_NOT_PASSED',
+      'review_required_count',v_review_total,
+      'strict_pass_count',v_review_passed,
+      'materialized_test_count',v_materialized_tests,
       'nonpassed_suite_count',v_nonpassed_suites
     );
   end if;
@@ -449,7 +344,8 @@ begin
         'reviewer_operation_code',reviewer.operation_code,
         'review_required_count',v_review_total,
         'strict_pass_count',v_review_passed,
-        'review_materialization',v_materialization,
+        'materialized_test_count',v_materialized_tests,
+        'all_required_suites_passed',true,
         'revision_sha256',v_current_revision,
         'suite_set_fingerprint',v_current_fingerprint
       ),
@@ -469,13 +365,12 @@ begin
     'reviewer_operation_code',reviewer.operation_code,
     'review_required_count',v_review_total,
     'strict_pass_count',v_review_passed,
-    'review_materialization',v_materialization,
+    'materialized_test_count',v_materialized_tests,
+    'all_required_suites_passed',true,
     'state',v_next_state
   );
 end;
 $function$;
 
-revoke all on function public.lf_materialize_qualification_independent_review_v1(uuid,text) from public, anon, authenticated;
-grant execute on function public.lf_materialize_qualification_independent_review_v1(uuid,text) to postgres, service_role;
 revoke all on function public.lf_finalize_qualification_independent_review_v1(uuid,text,jsonb) from public, anon, authenticated;
 grant execute on function public.lf_finalize_qualification_independent_review_v1(uuid,text,jsonb) to postgres, service_role;
