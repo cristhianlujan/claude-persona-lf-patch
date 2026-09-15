@@ -1,7 +1,7 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SQL = (ROOT / 'supabase/migrations/20260915102846_s30_strategy_requalification_bootstrap_v1.sql').read_text(encoding='utf-8').lower()
+SQL = (ROOT / 'supabase/migrations/20260915103436_s30_strategy_requalification_bootstrap_v1.sql').read_text(encoding='utf-8').lower()
 
 assert 'lf_strategy_requalification_bootstrap_v1' in SQL
 assert "'ejecucion_estrategia_lf'" in SQL
