@@ -15,7 +15,7 @@ checks={
  'blocking_complete':blocking==required,
  'server_authority_source':contract['server_authority_gate']['state']=='SOURCE_IMPLEMENTED',
  'recorder_accept_only_validated':contract['server_authority_gate']['recorder_behavior']=='ACCEPT_ONLY_VALIDATED_SERVER_CONTEXT',
- 'runtime_v22':'v22-profile-update-server-trust-context' in runtime,
+ 'runtime_server_trust_generation':('v22-profile-update-server-trust-context' in runtime or 'v23-profile-update-graduation-evidence' in runtime),
  'runtime_reads_baseline':'function baselineObservation' in runtime,
  'runtime_reads_main':'/git/ref/heads/main' in runtime,
  'runtime_reads_blob':'/contents/${encodedPath}?ref=${current}' in runtime,
