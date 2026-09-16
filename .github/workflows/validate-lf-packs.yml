@@ -252,7 +252,7 @@ jobs:
         run: |
           set -euo pipefail
           rm -rf .lf_gate_diagnostics/profile_runtime_v3
-          python gobernanza/observability/run_gate_checks_v1.py \
+          python sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
             --gate-id PROFILE_RUNTIME_V3_STRUCTURAL_QUALITY \
             --step-id structural_quality \
             --mode COLLECT_ALL \
