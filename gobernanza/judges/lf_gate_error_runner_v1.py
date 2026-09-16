@@ -38,13 +38,6 @@ def write_text(path: Path, text: str) -> str:
     return sha256_bytes(path.read_bytes())
 
 
-def last_nonempty_line(text: str) -> str:
-    for line in reversed(text.splitlines()):
-        if line.strip():
-            return line.strip()
-    return ""
-
-
 def classify_error(stderr: str, stdout: str, returncode: int) -> tuple[str, str, str | None]:
     combined = stderr if stderr.strip() else stdout
     lines = [line.strip() for line in combined.splitlines() if line.strip()]
@@ -69,9 +62,13 @@ def safe_stem(test_file: str, index: int) -> str:
 
 
 def resolve_source_sha(explicit: str | None) -> str:
-    candidate = (explicit or os.environ.get("GITHUB_SHA") or "").strip().lower()
-    if re.fullmatch(r"[0-9a-f]{40}", candidate):
-        return candidate
+    candidate = (explicit or os.environ.get("GITHUB_HEAD_SHA") or os.environ.get("GITHUB_SHA") or "").strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{40}", candidate):
+        raise SystemExit("LF_GATE_ERROR_V1_SOURCE_SHA_INVALID")
+    return candidate
+
+
+def resolve_tested_sha() -> str:
     try:
         candidate = subprocess.run(
             ["git", "rev-parse", "HEAD"],
@@ -82,8 +79,22 @@ def resolve_source_sha(explicit: str | None) -> str:
     except Exception:
         candidate = ""
     if not re.fullmatch(r"[0-9a-f]{40}", candidate):
-        raise SystemExit("LF_GATE_ERROR_V1_SOURCE_SHA_INVALID")
+        raise SystemExit("LF_GATE_ERROR_V1_TESTED_SHA_INVALID")
     return candidate
+
+
+def expected_failure_id(suite_code: str, failure: dict[str, Any]) -> str:
+    return sha256_bytes(
+        canonical_json(
+            {
+                "suite_code": suite_code,
+                "test_file": failure.get("test_file"),
+                "exit_code": failure.get("exit_code"),
+                "stdout_sha256": failure.get("stdout_sha256"),
+                "stderr_sha256": failure.get("stderr_sha256"),
+            }
+        ).encode("utf-8")
+    )
 
 
 def validate_manifest(manifest: dict[str, Any], output_dir: Path) -> list[str]:
@@ -93,6 +104,7 @@ def validate_manifest(manifest: dict[str, Any], output_dir: Path) -> list[str]:
         "producer",
         "suite_code",
         "source_sha",
+        "tested_sha",
         "run_id",
         "job_name",
         "schema_ref",
@@ -115,13 +127,37 @@ def validate_manifest(manifest: dict[str, Any], output_dir: Path) -> list[str]:
         errors.append("PRODUCER_INVALID")
     if not re.fullmatch(r"[0-9a-f]{40}", str(manifest.get("source_sha", ""))):
         errors.append("SOURCE_SHA_INVALID")
-    if manifest.get("failure_count") != len(manifest.get("failures") or []):
+    if not re.fullmatch(r"[0-9a-f]{40}", str(manifest.get("tested_sha", ""))):
+        errors.append("TESTED_SHA_INVALID")
+
+    schema_ref = str(manifest.get("schema_ref") or "")
+    schema_path = Path(schema_ref)
+    if not schema_path.is_file():
+        errors.append(f"SCHEMA_REF_MISSING:{schema_ref}")
+    else:
+        observed_schema_sha = sha256_bytes(schema_path.read_bytes())
+        if observed_schema_sha != manifest.get("schema_sha256"):
+            errors.append("SCHEMA_SHA256_MISMATCH")
+
+    failures = manifest.get("failures") or []
+    control_errors = manifest.get("control_errors") or []
+    if not isinstance(failures, list):
+        errors.append("FAILURES_NOT_ARRAY")
+        failures = []
+    if not isinstance(control_errors, list):
+        errors.append("CONTROL_ERRORS_NOT_ARRAY")
+        control_errors = []
+    if manifest.get("failure_count") != len(failures):
         errors.append("FAILURE_COUNT_MISMATCH")
     if manifest.get("test_count", 0) < manifest.get("failure_count", 0):
         errors.append("TEST_FAILURE_COUNT_INVALID")
     if manifest.get("manifest_sha256") != manifest_digest(manifest):
         errors.append("MANIFEST_SHA256_MISMATCH")
-    for failure in manifest.get("failures") or []:
+
+    output_root = output_dir.resolve()
+    for failure in failures:
+        if failure.get("failure_id") != expected_failure_id(str(manifest.get("suite_code")), failure):
+            errors.append(f"FAILURE_ID_MISMATCH:{failure.get('test_file') or 'UNKNOWN'}")
         for path_key, sha_key in (
             ("stdout_path", "stdout_sha256"),
             ("stderr_path", "stderr_sha256"),
@@ -131,7 +167,12 @@ def validate_manifest(manifest: dict[str, Any], output_dir: Path) -> list[str]:
             if not rel:
                 errors.append(f"{path_key.upper()}_MISSING")
                 continue
-            path = output_dir / rel
+            path = (output_dir / rel).resolve()
+            try:
+                path.relative_to(output_root)
+            except ValueError:
+                errors.append(f"ARTIFACT_PATH_OUTSIDE_OUTPUT:{rel}")
+                continue
             if not path.is_file():
                 errors.append(f"ARTIFACT_MISSING:{rel}")
                 continue
@@ -144,6 +185,12 @@ def validate_manifest(manifest: dict[str, Any], output_dir: Path) -> list[str]:
             errors.append("ERROR_SUMMARY_MISSING")
         if failure.get("diagnostic_complete") is not True:
             errors.append("FAILURE_DIAGNOSTIC_INCOMPLETE")
+
+    expected_diagnostic = not control_errors and all(
+        item.get("diagnostic_complete") is True for item in failures
+    )
+    if manifest.get("diagnostic_complete") is not expected_diagnostic:
+        errors.append("DIAGNOSTIC_COMPLETE_MISMATCH")
     return errors
 
 
@@ -160,6 +207,7 @@ def run_suite(
     pattern: str,
     output_dir: Path,
     source_sha: str,
+    tested_sha: str,
     run_id: str,
     job_name: str,
     schema_ref: str,
@@ -212,19 +260,8 @@ def run_suite(
         else:
             traceback_rel = stdout_rel
             traceback_sha = stdout_sha
-        failure_id = sha256_bytes(
-            canonical_json(
-                {
-                    "suite_code": suite_code,
-                    "test_file": test_file,
-                    "exit_code": completed.returncode,
-                    "stdout_sha256": stdout_sha,
-                    "stderr_sha256": stderr_sha,
-                }
-            ).encode("utf-8")
-        )
         failure = {
-            "failure_id": failure_id,
+            "failure_id": "",
             "test_file": test_file,
             "command": command,
             "exit_code": completed.returncode,
@@ -239,6 +276,7 @@ def run_suite(
             "traceback_sha256": traceback_sha,
             "diagnostic_complete": bool(test_file and error_summary and traceback_rel and traceback_sha),
         }
+        failure["failure_id"] = expected_failure_id(suite_code, failure)
         failures.append(failure)
         if echo:
             print(
@@ -254,6 +292,7 @@ def run_suite(
         "producer": PRODUCER,
         "suite_code": suite_code,
         "source_sha": source_sha,
+        "tested_sha": tested_sha,
         "run_id": run_id,
         "job_name": job_name,
         "schema_ref": schema_ref,
@@ -273,6 +312,8 @@ def run_suite(
 
     if echo:
         print(f"LF_GATE_ERROR_V1_MANIFEST={manifest_path}")
+        print(f"LF_GATE_ERROR_V1_SOURCE_SHA={manifest['source_sha']}")
+        print(f"LF_GATE_ERROR_V1_TESTED_SHA={manifest['tested_sha']}")
         print(f"LF_GATE_ERROR_V1_TEST_COUNT={manifest['test_count']}")
         print(f"LF_GATE_ERROR_V1_FAILURE_COUNT={manifest['failure_count']}")
         print(f"LF_GATE_ERROR_V1_DIAGNOSTIC_COMPLETE={str(manifest['diagnostic_complete']).lower()}")
@@ -303,6 +344,7 @@ def self_test() -> int:
             pattern=str(tests_dir / "test_*.py"),
             output_dir=root / "out",
             source_sha="a" * 40,
+            tested_sha="c" * 40,
             run_id="SELFTEST-RUN",
             job_name="SELFTEST-JOB",
             schema_ref=schema_ref,
@@ -310,6 +352,9 @@ def self_test() -> int:
             echo=False,
         )
         assert rc == 1, rc
+        assert manifest["source_sha"] == "a" * 40, manifest
+        assert manifest["tested_sha"] == "c" * 40, manifest
+        assert manifest["source_sha"] != manifest["tested_sha"], manifest
         assert manifest["test_count"] == 3, manifest
         assert manifest["failure_count"] == 2, manifest
         assert len({x["failure_id"] for x in manifest["failures"]}) == 2, manifest
@@ -323,11 +368,18 @@ def self_test() -> int:
         ), manifest
         assert not validate_manifest(manifest, root / "out"), manifest
 
+        schema_tampered = json.loads(json.dumps(manifest))
+        schema_tampered["schema_sha256"] = "0" * 64
+        schema_tampered["manifest_sha256"] = manifest_digest(schema_tampered)
+        schema_errors = validate_manifest(schema_tampered, root / "out")
+        assert "SCHEMA_SHA256_MISMATCH" in schema_errors, schema_errors
+
         rc_missing, manifest_missing, _ = run_suite(
             suite_code="SELFTEST-MISSING",
             pattern=str(tests_dir / "does_not_exist_*.py"),
             output_dir=root / "out-missing",
             source_sha="b" * 40,
+            tested_sha="d" * 40,
             run_id="SELFTEST-MISSING-RUN",
             job_name="SELFTEST-MISSING-JOB",
             schema_ref=schema_ref,
@@ -349,7 +401,7 @@ def self_test() -> int:
         tamper_errors = validate_manifest(manifest, root / "out")
         assert any(item.startswith("ARTIFACT_SHA256_MISMATCH:") for item in tamper_errors), tamper_errors
 
-    print("PASS_LF_GATE_ERROR_V1_SELF_TEST cases=single_assertion,multi_failure,missing_test,tamper_hash")
+    print("PASS_LF_GATE_ERROR_V1_SELF_TEST cases=dual_provenance,single_assertion,multi_failure,missing_test,schema_hash,tamper_hash")
     return 0
 
 
@@ -375,11 +427,13 @@ def main() -> int:
         if not getattr(args, field):
             raise SystemExit(f"LF_GATE_ERROR_V1_ARG_MISSING:{field}")
     source_sha = resolve_source_sha(args.source_sha)
+    tested_sha = resolve_tested_sha()
     rc, _, _ = run_suite(
         suite_code=args.suite_code,
         pattern=args.pattern,
         output_dir=Path(args.output_dir),
         source_sha=source_sha,
+        tested_sha=tested_sha,
         run_id=str(args.run_id),
         job_name=str(args.job_name),
         schema_ref=args.schema_ref,
