@@ -21,6 +21,7 @@ sample = {
     "producer": runner.PRODUCER,
     "suite_code": "DIGEST-ORDER",
     "source_sha": "c" * 40,
+    "tested_sha": "e" * 40,
     "run_id": "1",
     "job_name": "job",
     "schema_ref": "schema",
