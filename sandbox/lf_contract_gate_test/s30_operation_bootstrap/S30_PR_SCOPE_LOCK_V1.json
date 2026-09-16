@@ -1,0 +1,32 @@
+{
+  "allowed_paths": [
+    "sandbox/lf_contract_gate_test/s30_operation_bootstrap/LF_OPERATION_BOOTSTRAP_CONTRACT_V1.json",
+    "sandbox/lf_contract_gate_test/s30_operation_bootstrap/README.md",
+    "sandbox/lf_contract_gate_test/s30_operation_bootstrap/S30_PR_SCOPE_LOCK_V1.json",
+    "sandbox/lf_contract_gate_test/s30_operation_bootstrap/live_inventory_20260914.json",
+    "sandbox/lf_contract_gate_test/s30_operation_bootstrap/lf_operation_bootstrap_analyzer_v1.py",
+    "sandbox/lf_contract_gate_test/s30_operation_bootstrap/operation_bootstrap_source_candidate_v1.sql",
+    "sandbox/lf_contract_gate_test/s30_operation_bootstrap/test_lf_operation_bootstrap_analyzer_v1.py",
+    "sandbox/lf_contract_gate_test/s30_operation_bootstrap/test_operation_bootstrap_source_contract_v1.py",
+    "sandbox/lf_contract_gate_test/s30_operation_bootstrap/test_s30_pr_scope_lock_v1.py"
+  ],
+  "blocked_owner_scopes": [
+    "S31",
+    "S25",
+    "S26",
+    "S37",
+    "S38",
+    "CARDS",
+    "PROFILES",
+    "ADAPTERS",
+    "SKILLS"
+  ],
+  "cross_owner_changes_allowed": false,
+  "head_branch": "s30-operation-bootstrap-lf-20260914",
+  "mode": "EXACT_FILE_ALLOWLIST_FAIL_CLOSED",
+  "owner": "S30",
+  "rebase_requires_explicit_scope_lock_refresh": true,
+  "rule": "Any changed path outside allowed_paths blocks CI. Any rebase or merge-from-main away from scope_anchor_revision blocks until S30 deliberately refreshes this lock.",
+  "schema_version": "S30_PR_SCOPE_LOCK_V1",
+  "scope_anchor_revision": "18784e12ae4e4b8c7c48ae4004011444deb1fbeb"
+}
