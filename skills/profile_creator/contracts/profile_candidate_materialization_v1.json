@@ -1,0 +1,110 @@
+{
+  "contract_code": "PROFILE_CANDIDATE_MATERIALIZATION_V1",
+  "version": "v1",
+  "status": "SOURCE_ONLY_NOT_DEPLOYED",
+  "owner_strategy": "S22",
+  "owner_operation": "CREACION_PERFIL_LF",
+  "purpose": "Close the lifecycle gap between a clean CREATE GitHub readback and read-only execution eligibility without merge, runtime activation, production activation, or a new lifecycle operation.",
+  "architecture": {
+    "new_operation": false,
+    "new_table": false,
+    "new_engine": false,
+    "reuse_router_action": "PROFILE_CREATE",
+    "reuse_operation": "CREACION_PERFIL_LF",
+    "target_registry": "public.lf_activos",
+    "execution_after_materialization": "EJECUCION_PERFIL_LF"
+  },
+  "required_sequence": [
+    "github_write",
+    "github_readback",
+    "candidate_materialize",
+    "asset_readback",
+    "contract_judge",
+    "close"
+  ],
+  "candidate_materialize": {
+    "must_be_required_step": true,
+    "operation_code": "CREACION_PERFIL_LF",
+    "execution_status_required": "IN_PROGRESS",
+    "target_type_required": "PERFIL",
+    "requires_target_absent_in_lf_activos": true,
+    "source_step": "github_readback",
+    "source_step_must_be_clean_by_live_binding": true,
+    "source_assertions": [
+      "sha_match_status=PASS",
+      "repo equals execution.target_repo",
+      "commit_sha is 40-hex",
+      "branch is non-empty",
+      "readback includes <execution.target_path>/SKILL.md"
+    ],
+    "insert_tuple": {
+      "estado_original": "CANDIDATE_READ_ONLY",
+      "estado_documental": "CANDIDATO",
+      "estado_operativo": "READ_ONLY",
+      "nivel_control": "PROFILE_REGISTRY",
+      "runtime_estado": "NO_HABILITADO",
+      "impacto_automatico": "BLOQUEADO",
+      "url_scheme": "supabase://public/lf_activos/<codigo_activo>",
+      "registry_source": "SUPABASE",
+      "runtime_enabled": false,
+      "automatic_impact_enabled": false
+    },
+    "legacy_compatibility": {
+      "source_spreadsheet_id": "GITHUB_PROFILE_REGISTRY",
+      "source_spreadsheet_title": "GitHub profile registry",
+      "source_sheet_name": "profiles",
+      "source_row_number_role": "compatibility-only, never authority",
+      "migration_batch_id": "new uuid per materialization",
+      "note": "These physical NOT NULL import columns are legacy compatibility fields and must not be interpreted as operational authority."
+    }
+  },
+  "asset_readback": {
+    "must_be_required_step": true,
+    "independent_statement_required": true,
+    "must_match": [
+      "codigo_activo",
+      "tipo_activo=PERFIL",
+      "estado_documental=CANDIDATO",
+      "estado_operativo=READ_ONLY",
+      "nivel_control=PROFILE_REGISTRY",
+      "runtime_estado=NO_HABILITADO",
+      "impacto_automatico=BLOQUEADO",
+      "ruta_esperada=execution.target_path",
+      "metadata.source_commit=github_readback.commit_sha",
+      "metadata.creator_execution_id=execution.execution_id"
+    ]
+  },
+  "negative_cases": [
+    "asset already exists -> BLOCK_PROFILE_CANDIDATE_ALREADY_REGISTERED",
+    "github_readback absent -> BLOCK_PROFILE_CANDIDATE_SOURCE_READBACK_MISSING",
+    "github_readback not clean -> BLOCK_PROFILE_CANDIDATE_SOURCE_READBACK_NOT_CLEAN",
+    "sha_match_status != PASS -> BLOCK_PROFILE_CANDIDATE_SOURCE_SHA_NOT_VERIFIED",
+    "repo mismatch -> BLOCK_PROFILE_CANDIDATE_REPO_MISMATCH",
+    "target path entrypoint absent from readback -> BLOCK_PROFILE_CANDIDATE_ENTRYPOINT_NOT_READBACK",
+    "execution not IN_PROGRESS -> BLOCK_PROFILE_CANDIDATE_EXECUTION_NOT_ACTIVE",
+    "runtime or automatic impact requested -> BLOCK_PROFILE_CANDIDATE_STATE_ESCALATION"
+  ],
+  "activation_guard": {
+    "live_apply": false,
+    "migration_identity_reserved": false,
+    "governance_mutation_route_ready": false,
+    "required_before_live_apply": [
+      "reserve one immutable migration identity before source/apply",
+      "materialize exact migration source in GitHub and read it back",
+      "use a governed provenance route for operation step/judge/binding mutation",
+      "run rollback/no-residue test against live schema",
+      "run contract tests",
+      "post-apply source/live parity must pass"
+    ]
+  },
+  "canary": {
+    "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+    "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_1",
+    "creator_execution_id": "EXEC-S30-A2R-PROFILE-SYSTEMIC-ROOT-CAUSE-20260916-001",
+    "source_pr": 867,
+    "source_branch": "s30/a2r-systemic-root-cause-profile-v1",
+    "source_commit": "b58fbd1f4bacfa9440fd4a6caa73010634987ee1",
+    "rollback_insert_test": "PASS_NO_RESIDUE",
+    "note": "Historical closed Creator evidence is input to a future governed reconcile/replay; this contract does not authorize direct backfill from a closed execution."
+  }
+}
