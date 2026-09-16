@@ -250,29 +250,30 @@ jobs:
           LF_LLAMA_SOURCE_COMMIT: 925e1179947ea0c0ebfb0032df18af3a729822be
         shell: bash
         run: |
-          set -uo pipefail
-          shopt -s nullglob
-          tests=(sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_*.py)
-          if (( ${#tests[@]} == 0 )); then
-            echo "PROFILE_RUNTIME_V3_TESTS_MISSING"
-            exit 1
-          fi
-          printf 'PROFILE_RUNTIME_V3_TEST_COUNT=%s\n' "${#tests[@]}"
-          failures=0
-          for test_file in "${tests[@]}"; do
-            echo "RUNNING=${test_file}"
-            if python "${test_file}"; then
-              echo "RESULT=PASS TEST=${test_file}"
-            else
-              rc=$?
-              echo "RESULT=FAIL RC=${rc} TEST=${test_file}"
-              failures=$((failures+1))
-            fi
-          done
-          echo "PROFILE_RUNTIME_V3_FAILURE_COUNT=${failures}"
-          if (( failures > 0 )); then
-            exit 1
-          fi
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/profile_runtime_v3
+          python sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id PROFILE_RUNTIME_V3_STRUCTURAL_QUALITY \
+            --step-id structural_quality \
+            --mode COLLECT_ALL \
+            --glob 'sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_*.py' \
+            --artifact-dir .lf_gate_diagnostics/profile_runtime_v3 \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix SQ \
+            --owner PROFILE_RUNTIME \
+            --next-action FIX_FAILED_CHECKS_AND_RERUN_GATE \
+            --downstream-impact OBSERVABILITY \
+            --downstream-impact SECURITY \
+            --downstream-impact PERFORMANCE_CHAOS
+
+      - name: Persist PROFILE_RUNTIME V3 gate diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-gate-diagnostics-profile-runtime-v3-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_gate_diagnostics/profile_runtime_v3
+          if-no-files-found: error
+          retention-days: 30
 
   s30-governed-write-broker:
     name: Governed S30 protected write broker
