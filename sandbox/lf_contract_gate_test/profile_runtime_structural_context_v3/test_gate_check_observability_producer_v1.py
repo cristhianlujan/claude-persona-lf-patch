@@ -8,7 +8,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-RUNNER = ROOT / "gobernanza" / "observability" / "run_gate_checks_v1.py"
+RUNNER = ROOT / "sandbox" / "lf_contract_gate_test" / "gate_check_observability" / "run_gate_checks_v1.py"
 
 
 def write(path: Path, text: str) -> None:
