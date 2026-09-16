@@ -61,8 +61,25 @@ def safe_stem(test_file: str, index: int) -> str:
     return f"{index:03d}-{cleaned}-{path_hash}"
 
 
+def event_pull_request_head_sha() -> str:
+    event_path = (os.environ.get("GITHUB_EVENT_PATH") or "").strip()
+    if not event_path:
+        return ""
+    try:
+        payload = json.loads(Path(event_path).read_text(encoding="utf-8"))
+        candidate = (((payload.get("pull_request") or {}).get("head") or {}).get("sha") or "").strip().lower()
+    except Exception:
+        return ""
+    return candidate if re.fullmatch(r"[0-9a-f]{40}", candidate) else ""
+
+
 def resolve_source_sha(explicit: str | None) -> str:
-    candidate = (explicit or os.environ.get("GITHUB_HEAD_SHA") or os.environ.get("GITHUB_SHA") or "").strip().lower()
+    explicit_candidate = (explicit or "").strip().lower()
+    github_sha = (os.environ.get("GITHUB_SHA") or "").strip().lower()
+    pr_head = event_pull_request_head_sha()
+    if pr_head and (not explicit_candidate or explicit_candidate == github_sha):
+        return pr_head
+    candidate = explicit_candidate or (os.environ.get("GITHUB_HEAD_SHA") or "").strip().lower() or github_sha
     if not re.fullmatch(r"[0-9a-f]{40}", candidate):
         raise SystemExit("LF_GATE_ERROR_V1_SOURCE_SHA_INVALID")
     return candidate
@@ -374,6 +391,27 @@ def self_test() -> int:
         schema_errors = validate_manifest(schema_tampered, root / "out")
         assert "SCHEMA_SHA256_MISMATCH" in schema_errors, schema_errors
 
+        event_path = root / "pull_request_event.json"
+        event_path.write_text(
+            json.dumps({"pull_request": {"head": {"sha": "e" * 40}}}), encoding="utf-8"
+        )
+        old_event_path = os.environ.get("GITHUB_EVENT_PATH")
+        old_github_sha = os.environ.get("GITHUB_SHA")
+        try:
+            os.environ["GITHUB_EVENT_PATH"] = str(event_path)
+            os.environ["GITHUB_SHA"] = "f" * 40
+            assert resolve_source_sha("f" * 40) == "e" * 40
+            assert resolve_source_sha("1" * 40) == "1" * 40
+        finally:
+            if old_event_path is None:
+                os.environ.pop("GITHUB_EVENT_PATH", None)
+            else:
+                os.environ["GITHUB_EVENT_PATH"] = old_event_path
+            if old_github_sha is None:
+                os.environ.pop("GITHUB_SHA", None)
+            else:
+                os.environ["GITHUB_SHA"] = old_github_sha
+
         rc_missing, manifest_missing, _ = run_suite(
             suite_code="SELFTEST-MISSING",
             pattern=str(tests_dir / "does_not_exist_*.py"),
@@ -401,7 +439,7 @@ def self_test() -> int:
         tamper_errors = validate_manifest(manifest, root / "out")
         assert any(item.startswith("ARTIFACT_SHA256_MISMATCH:") for item in tamper_errors), tamper_errors
 
-    print("PASS_LF_GATE_ERROR_V1_SELF_TEST cases=dual_provenance,single_assertion,multi_failure,missing_test,schema_hash,tamper_hash")
+    print("PASS_LF_GATE_ERROR_V1_SELF_TEST cases=dual_provenance,pr_head_resolution,single_assertion,multi_failure,missing_test,schema_hash,tamper_hash")
     return 0
 
 
