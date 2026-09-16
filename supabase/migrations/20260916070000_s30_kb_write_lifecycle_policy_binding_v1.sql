@@ -42,8 +42,7 @@ VALUES (
   'EXEC-S30-R19-AUTONOMOUS-20260915-001',
   'EXEC-S30-R19-AUTONOMOUS-20260915-001'
 )
-ON CONFLICT (operation_code,policy_code) DO UPDATE SET
-  policy_role=excluded.policy_role,
+ON CONFLICT (operation_code,policy_code,policy_role) DO UPDATE SET
   required=excluded.required,
   distribution_modes=excluded.distribution_modes,
   binding_status=excluded.binding_status,
