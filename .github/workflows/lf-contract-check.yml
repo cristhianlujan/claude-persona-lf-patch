@@ -761,6 +761,44 @@ jobs:
             --downstream-impact NO_BYPASS \
             --downstream-impact GOVERNANCE
 
+      - name: Enforce merge and CI evidence for PASS candidates with deterministic diagnostics
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/pass_evidence
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_PASS_EVIDENCE \
+            --step-id pass_evidence \
+            --mode COLLECT_ALL \
+            --command-json "{\"argv\":[\"python3\",\"sandbox/lf_contract_gate_test/pass_evidence_gate.py\",\"--self-test\",\"--scan\",\"skills/creating-integral-user-stories/evidence/pass-candidates\",\"--repository\",\"$GITHUB_REPOSITORY\"],\"source_path\":\"sandbox/lf_contract_gate_test/pass_evidence_gate.py\"}" \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/pass_evidence \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix PASS \
+            --owner LF_CONTRACT_CHECK \
+            --next-action FIX_PASS_EVIDENCE_AND_RERUN_LF_CONTRACT_CHECK \
+            --downstream-impact PASS_EVIDENCE \
+            --downstream-impact GOVERNANCE
+
+      - name: Audit creating-integral-user-stories A01-A62 with deterministic diagnostics
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        run: |
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/r8_audit
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_R8_CONTINUOUS_AUDIT \
+            --step-id r8_continuous_audit \
+            --mode COLLECT_ALL \
+            --command-json "{\"argv\":[\"python3\",\"sandbox/lf_contract_gate_test/r8_continuous_audit.py\",\"skills/creating-integral-user-stories\",\"--output\",\".audit-output/creating-integral-user-stories\",\"--commit-sha\",\"$GITHUB_SHA\"],\"source_path\":\"sandbox/lf_contract_gate_test/r8_continuous_audit.py\"}" \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/r8_audit \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix R8 \
+            --owner LF_CONTRACT_CHECK \
+            --next-action FIX_R8_AUDIT_AND_RERUN_LF_CONTRACT_CHECK \
+            --downstream-impact AUDIT \
+            --downstream-impact GOVERNANCE
+
       - name: Persist deterministic LF contract gate diagnostics
         if: always() && steps.feedback_tier.outcome == 'success' && steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         uses: actions/upload-artifact@v4
@@ -769,24 +807,6 @@ jobs:
           path: .lf_gate_diagnostics/lf_contract_check
           if-no-files-found: error
           retention-days: 30
-
-      - name: Enforce merge and CI evidence for PASS candidates
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          python3 sandbox/lf_contract_gate_test/pass_evidence_gate.py \
-            --self-test \
-            --scan skills/creating-integral-user-stories/evidence/pass-candidates \
-            --repository "$GITHUB_REPOSITORY"
-
-      - name: Audit creating-integral-user-stories A01-A62
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
-        run: |
-          python3 sandbox/lf_contract_gate_test/r8_continuous_audit.py \
-            skills/creating-integral-user-stories \
-            --output .audit-output/creating-integral-user-stories \
-            --commit-sha "$GITHUB_SHA"
 
       - name: Capture authenticated E.16 Actions inventory
         if: github.event_name == 'pull_request'
