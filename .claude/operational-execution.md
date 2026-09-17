@@ -125,7 +125,7 @@ Antes del primer write, y antes de cambiar de carril durante una ejecución:
 1. resolver la intención contra ACT-0001 o la autoridad vigente;
 2. obtener la ruta/operación canónica;
 3. declarar la ruta de ejecución que se está por usar;
-4. evaluar ambas con `.claude/scripts/canonical_route_guard.py`;
+4. evaluar ambas con `sandbox/lf_contract_gate_test/canonical_route_guard/canonical_route_guard.py`;
 5. actuar según la clasificación sin convertirla en una aprobación extra.
 
 Resultados:

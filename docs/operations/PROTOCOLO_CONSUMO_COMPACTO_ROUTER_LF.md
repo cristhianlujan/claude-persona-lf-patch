@@ -28,7 +28,7 @@ Toda resolución entra por `public.lf_router_resolve_v1`. Cada llamada pasa `act
 Después de resolver `operation_code` y antes del primer efecto, el consumidor
 debe comparar la ruta canónica resuelta con la ruta de ejecución seleccionada.
 Una desviación no se bloquea automáticamente: se clasifica con
-`.claude/scripts/canonical_route_guard.py`.
+`sandbox/lf_contract_gate_test/canonical_route_guard/canonical_route_guard.py`.
 
 - Misma ruta: `PROCEED_CANONICAL`.
 - Ruta distinta sin intención exploratoria explícita:

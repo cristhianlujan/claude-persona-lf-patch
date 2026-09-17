@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[3]
-GUARD_PATH = REPO / ".claude/scripts/canonical_route_guard.py"
+GUARD_PATH = REPO / "sandbox/lf_contract_gate_test/canonical_route_guard/canonical_route_guard.py"
 
 
 def _load_guard():

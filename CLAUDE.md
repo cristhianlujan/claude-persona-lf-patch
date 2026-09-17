@@ -29,7 +29,7 @@ guard, not an additional approval gate.
 Run:
 
 ```bash
-python .claude/scripts/canonical_route_guard.py \
+python sandbox/lf_contract_gate_test/canonical_route_guard/canonical_route_guard.py \
   --canonical-route <ROUTE_FROM_ROUTER> \
   --selected-route <ROUTE_ABOUT_TO_BE_USED>
 ```
