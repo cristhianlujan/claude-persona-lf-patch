@@ -9,6 +9,7 @@ PREWRITE = json.loads((ROOT / "runtime_update_prewrite_judge_semantics_v1.json")
 OP = "ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF"
 GENERIC = "JUDGE-ACTUALIZACION-RUNTIME-EJECUCION-PERFIL-LF-v1"
 PREWRITE_JUDGE = "JUDGE-ACTUALIZACION-RUNTIME-EJECUCION-PERFIL-LF-PREWRITE-v1"
+CANARY = "CANARY-RUNTIME-UPDATE-STEP60-SOURCE-ONLY"
 
 assert STRUCT["operation_code"] == OP
 assert STRUCT["judge_code"] == GENERIC
@@ -56,6 +57,15 @@ assert "execution_bound_to_target_before_change" in sql_lower
 assert "required_evidence_missing" in sql_lower
 assert "step_recorded" in sql_lower
 assert "lf_record_operation_step_core_v1" in sql_lower
+
+# Provenance must use the governed reservation path; direct synthetic execution insertion is forbidden.
+assert "fn_lf_operation_reserve_execution_v1" in sql_lower
+assert "runtime_update_provenance_anchor_missing" in sql_lower
+assert "reserved_new_execution" in sql_lower
+assert CANARY.lower() in sql_lower
+assert "created_by_execution_id" in sql_lower
+assert "updated_by_execution_id" in sql_lower
+assert "insert into public.lf_operation_execution(" not in sql_lower
 
 # Fail closed against the defect we found: runtime-update contracts must not keep the Profile Update judge.
 assert "mini_judge_code like 'judge-actualizacion-perfil-lf%'" in sql_lower
