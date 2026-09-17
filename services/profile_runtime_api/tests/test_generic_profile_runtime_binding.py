@@ -19,6 +19,15 @@ class GenericRuntimeBindingTest(unittest.TestCase):
         (root/'sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3').mkdir(parents=True)
         (root/'sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_runner.py').write_text('x=1\n')
         (root/'sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/structural_context_resolver_v3.py').write_text('x=1\n')
+        (root/'profiles/p/SKILL.md').write_text(
+            '# Demo\n'
+            '## Role\nExecute the governed task.\n'
+            '## Inputs\nUse the literal request.\n'
+            '## Outputs\nReturn the contracted answer.\n'
+            '## Blocking rules\nBlock when authority is missing.\n'
+            '## Expected statuses\nPASS or BLOCKED.\n'
+            '## Maintenance\nCONTROL_PLANE_ONLY_MARKER ACTUALIZACION_PERFIL_LF\n'
+        )
         schema={"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","required":["answer"],"properties":{"answer":{"type":"string"}},"additionalProperties":False}
         (root/'profiles/p/schemas/output.schema.json').write_text(json.dumps(schema))
         (root/'profiles/p/schemas/alt.schema.json').write_text(json.dumps(schema))
@@ -29,7 +38,8 @@ class GenericRuntimeBindingTest(unittest.TestCase):
           "runtime_schema":{"default":"schemas/output.schema.json","output_modes":{"ALT":"schemas/alt.schema.json"}},
           "canonical_validator":{"path":"validators/runtime_validate.py","callable":"validate"},
           "semantic_utility":{"path":"validators/runtime_semantic_utility.py","callable":"evaluate"},
-          "governance":{"source_first_required":True,"schema_invention_allowed":False,"fail_closed":True,"exact_head_evidence_required":True,"post_update_baseline_required":True}
+          "governance":{"source_first_required":True,"schema_invention_allowed":False,"fail_closed":True,"exact_head_evidence_required":True,"post_update_baseline_required":True},
+          "model_context":{"mode":"MARKDOWN_SECTIONS","source":"SKILL.md","sections":["Role","Inputs","Outputs","Blocking rules","Expected statuses"],"max_chars":2000,"full_source_to_model":False}
         }
         (root/'profiles/p/contracts/runtime_binding.json').write_text(json.dumps(binding))
         return tmp,root,RepositoryBindings(root,max_prompt_chars=10000)
@@ -59,12 +69,31 @@ class GenericRuntimeBindingTest(unittest.TestCase):
             self.assertIn('ANSWER_TOO_SHALLOW',semantic['blocking_codes'])
         finally: tmp.cleanup()
 
+    def test_bound_model_context_projects_only_semantic_sections(self):
+        tmp,root,repo=self._repo()
+        try:
+            sources=repo.profile_sources('p',['profiles/p/SKILL.md'])
+            self.assertEqual(len(sources),1)
+            self.assertIn('CONTROL_PLANE_ONLY_MARKER',sources[0]['content'])
+            self.assertNotIn('CONTROL_PLANE_ONLY_MARKER',sources[0]['model_content'])
+            self.assertIn('## Role',sources[0]['model_content'])
+            self.assertLess(len(sources[0]['model_content']),len(sources[0]['content']))
+        finally: tmp.cleanup()
+
     def test_weak_governance_fails_closed(self):
         tmp,root,repo=self._repo()
         try:
             path=root/'profiles/p/contracts/runtime_binding.json'; data=json.loads(path.read_text()); data['governance']['fail_closed']=False; path.write_text(json.dumps(data))
             with self.assertRaises(RepositoryError) as cm: repo.runtime_binding('p')
             self.assertEqual(cm.exception.code,'PROFILE_RUNTIME_BINDING_GOVERNANCE_WEAK')
+        finally: tmp.cleanup()
+
+    def test_full_source_to_model_is_forbidden(self):
+        tmp,root,repo=self._repo()
+        try:
+            path=root/'profiles/p/contracts/runtime_binding.json'; data=json.loads(path.read_text()); data['model_context']['full_source_to_model']=True; path.write_text(json.dumps(data))
+            with self.assertRaises(RepositoryError) as cm: repo.runtime_binding('p')
+            self.assertEqual(cm.exception.code,'PROFILE_RUNTIME_BINDING_FULL_SOURCE_TO_MODEL_FORBIDDEN')
         finally: tmp.cleanup()
 
 
