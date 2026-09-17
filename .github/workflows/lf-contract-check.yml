@@ -799,8 +799,23 @@ jobs:
             --downstream-impact AUDIT \
             --downstream-impact GOVERNANCE
 
-      - name: Persist deterministic LF contract gate diagnostics
+      - name: Detect deterministic LF contract gate diagnostics
+        id: deterministic_diagnostics
         if: always() && steps.feedback_tier.outcome == 'success' && steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=.lf_gate_diagnostics/lf_contract_check
+          if [ -d "$root" ] && find "$root" -type f -name 'lf_gate_error_v1.json' -print -quit | grep -q .; then
+            echo "has_files=true" >> "$GITHUB_OUTPUT"
+            echo "PASS_LF_DETERMINISTIC_DIAGNOSTICS_PRESENT"
+          else
+            echo "has_files=false" >> "$GITHUB_OUTPUT"
+            echo "INFO_LF_DETERMINISTIC_DIAGNOSTICS_NOT_REACHED: an earlier non-deterministic gate stopped the job before any deterministic producer ran"
+          fi
+
+      - name: Persist deterministic LF contract gate diagnostics
+        if: always() && steps.deterministic_diagnostics.outcome == 'success' && steps.deterministic_diagnostics.outputs.has_files == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: lf-gate-diagnostics-lf-contract-check-${{ github.run_id }}-${{ github.run_attempt }}

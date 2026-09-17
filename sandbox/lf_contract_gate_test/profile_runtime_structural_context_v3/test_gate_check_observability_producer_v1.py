@@ -114,7 +114,22 @@ def run_command_mode(tmp: Path) -> tuple[subprocess.CompletedProcess[str], dict]
     return proc, report
 
 
+def test_workflow_skips_diagnostic_upload_when_deterministic_stage_not_reached() -> None:
+    workflow = (ROOT / ".github/workflows/lf-contract-check.yml").read_text(encoding="utf-8")
+    required = [
+        "- name: Detect deterministic LF contract gate diagnostics",
+        "id: deterministic_diagnostics",
+        "has_files=false",
+        "INFO_LF_DETERMINISTIC_DIAGNOSTICS_NOT_REACHED",
+        "steps.deterministic_diagnostics.outputs.has_files == 'true'",
+        "if-no-files-found: error",
+    ]
+    for token in required:
+        assert token in workflow, token
+
+
 def main() -> None:
+    test_workflow_skips_diagnostic_upload_when_deterministic_stage_not_reached()
     assert RUNNER.is_file(), RUNNER
     assert SCHEMA.is_file(), SCHEMA
 
