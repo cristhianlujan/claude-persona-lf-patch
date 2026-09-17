@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from types import ModuleType
@@ -14,6 +15,9 @@ UI_RUNTIME_SCHEMA_BY_MODE = {
     "UI_PRODUCTION_SPEC": "ui_production_spec.schema.json",
     "UI_MISSING_INPUT": "ui_missing_input.schema.json",
 }
+MODEL_CONTEXT_MODE = "MARKDOWN_SECTIONS"
+MODEL_CONTEXT_MAX_CHARS = 8000
+_MARKDOWN_HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 
 
 class RepositoryError(ValueError):
@@ -43,6 +47,7 @@ class RuntimeProfileBinding:
     semantic_utility_path: str
     semantic_utility_callable: str
     governance: dict[str, Any]
+    model_context: dict[str, Any] | None
     source_ref: str
 
 
@@ -67,16 +72,47 @@ class RepositoryBindings:
             if not path.exists():
                 raise RepositoryError("REPOSITORY_RUNTIME_BINDING_MISSING", str(path))
 
+    @staticmethod
+    def _normalize_heading(value: str) -> str:
+        return " ".join(value.strip().split()).casefold()
+
+    @classmethod
+    def _project_markdown_sections(cls, content: str, sections: list[str]) -> str:
+        wanted = [cls._normalize_heading(item) for item in sections]
+        if not wanted or len(set(wanted)) != len(wanted):
+            raise RepositoryError("PROFILE_MODEL_CONTEXT_SECTIONS_INVALID")
+        chunks: dict[str, list[str]] = {}
+        active: str | None = None
+        for line in content.splitlines():
+            match = _MARKDOWN_HEADING_RE.match(line)
+            if match and len(match.group(1)) <= 2:
+                title = cls._normalize_heading(match.group(2))
+                active = title if len(match.group(1)) == 2 and title in wanted else None
+                if active is not None:
+                    chunks.setdefault(active, []).append(line)
+                continue
+            if active is not None:
+                chunks[active].append(line)
+        missing = [raw for raw, key in zip(sections, wanted) if key not in chunks]
+        if missing:
+            raise RepositoryError("PROFILE_MODEL_CONTEXT_SECTION_MISSING", ",".join(missing))
+        projected = "\n\n".join(
+            "\n".join(chunks[key]).strip() for key in wanted
+        ).strip()
+        if not projected:
+            raise RepositoryError("PROFILE_MODEL_CONTEXT_EMPTY")
+        return projected
+
     def profile_sources(
         self, profile_slug: str, paths: list[str]
-    ) -> list[dict[str, str]]:
+    ) -> list[dict[str, Any]]:
         if not paths:
             raise RepositoryError("PROFILE_SOURCE_PATHS_MISSING")
         profile_root = (self.profiles_root / profile_slug).resolve()
         self._within(profile_root, self.profiles_root, "PROFILE_ROOT_PATH_ESCAPE")
         if not profile_root.is_dir():
             raise RepositoryError("PROFILE_ROOT_MISSING", profile_slug)
-        sources: list[dict[str, str]] = []
+        sources: list[dict[str, Any]] = []
         seen: set[str] = set()
         total_chars = 0
         for raw_path in paths:
@@ -105,7 +141,28 @@ class RepositoryBindings:
             if total_chars > self.max_prompt_chars:
                 raise RepositoryError("PROFILE_SOURCE_CONTEXT_BUDGET_EXCEEDED", str(total_chars))
             sources.append({"ref": normalized, "content": content})
-        return sorted(sources, key=lambda item: item["ref"])
+
+        sources.sort(key=lambda item: item["ref"])
+        binding = self.runtime_binding(profile_slug)
+        if binding is None or binding.model_context is None:
+            return sources
+
+        model_context = binding.model_context
+        target_ref = f"profiles/{profile_slug}/{model_context['source']}"
+        target = next((item for item in sources if item["ref"] == target_ref), None)
+        if target is None:
+            raise RepositoryError("PROFILE_MODEL_CONTEXT_SOURCE_NOT_REQUESTED", target_ref)
+        projected = self._project_markdown_sections(
+            target["content"], list(model_context["sections"])
+        )
+        if len(projected) > int(model_context["max_chars"]):
+            raise RepositoryError(
+                "PROFILE_MODEL_CONTEXT_BUDGET_EXCEEDED",
+                f"{len(projected)}>{model_context['max_chars']}",
+            )
+        for item in sources:
+            item["model_content"] = projected if item["ref"] == target_ref else None
+        return sources
 
     def runtime_binding(self, profile_slug: str) -> RuntimeProfileBinding | None:
         profile_root = (self.profiles_root / profile_slug).resolve()
@@ -127,6 +184,7 @@ class RepositoryBindings:
         canonical = payload.get("canonical_validator")
         semantic = payload.get("semantic_utility")
         governance = payload.get("governance")
+        model_context = payload.get("model_context")
         if not isinstance(profile_code, str) or not profile_code:
             raise RepositoryError("PROFILE_RUNTIME_BINDING_CODE_INVALID", profile_slug)
         if not isinstance(runtime_schema, dict) or not isinstance(runtime_schema.get("default"), str) or not isinstance(runtime_schema.get("output_modes"), dict):
@@ -146,7 +204,44 @@ class RepositoryBindings:
         }
         if any(governance.get(k) is not v for k, v in expected.items()):
             raise RepositoryError("PROFILE_RUNTIME_BINDING_GOVERNANCE_WEAK", profile_slug)
+
+        normalized_model_context: dict[str, Any] | None = None
+        if model_context is not None:
+            if not isinstance(model_context, dict):
+                raise RepositoryError("PROFILE_RUNTIME_BINDING_MODEL_CONTEXT_INVALID", profile_slug)
+            mode = model_context.get("mode")
+            source = model_context.get("source")
+            sections = model_context.get("sections")
+            max_chars = model_context.get("max_chars")
+            full_source_to_model = model_context.get("full_source_to_model")
+            if mode != MODEL_CONTEXT_MODE or source != "SKILL.md":
+                raise RepositoryError("PROFILE_RUNTIME_BINDING_MODEL_CONTEXT_MODE_INVALID", profile_slug)
+            if (
+                not isinstance(sections, list)
+                or not sections
+                or any(not isinstance(item, str) or not item.strip() for item in sections)
+                or len({self._normalize_heading(item) for item in sections}) != len(sections)
+            ):
+                raise RepositoryError("PROFILE_RUNTIME_BINDING_MODEL_CONTEXT_SECTIONS_INVALID", profile_slug)
+            if (
+                isinstance(max_chars, bool)
+                or not isinstance(max_chars, int)
+                or not 1 <= max_chars <= MODEL_CONTEXT_MAX_CHARS
+            ):
+                raise RepositoryError("PROFILE_RUNTIME_BINDING_MODEL_CONTEXT_BUDGET_INVALID", profile_slug)
+            if full_source_to_model is not False:
+                raise RepositoryError("PROFILE_RUNTIME_BINDING_FULL_SOURCE_TO_MODEL_FORBIDDEN", profile_slug)
+            normalized_model_context = {
+                "mode": MODEL_CONTEXT_MODE,
+                "source": source,
+                "sections": list(sections),
+                "max_chars": max_chars,
+                "full_source_to_model": False,
+            }
+
         refs = [runtime_schema["default"], *runtime_schema["output_modes"].values(), canonical["path"], semantic["path"]]
+        if normalized_model_context is not None:
+            refs.append(normalized_model_context["source"])
         for rel in refs:
             if not isinstance(rel, str) or not rel or rel.startswith("/") or ".." in PurePosixPath(rel).parts:
                 raise RepositoryError("PROFILE_RUNTIME_BINDING_REF_INVALID", str(rel))
@@ -164,6 +259,7 @@ class RepositoryBindings:
             semantic_utility_path=semantic["path"],
             semantic_utility_callable=semantic["callable"],
             governance=dict(governance),
+            model_context=normalized_model_context,
             source_ref=str(path.relative_to(self.repo_root)),
         )
 
@@ -226,7 +322,6 @@ class RepositoryBindings:
             source_refs=refs,
             mode=output_mode,
         )
-
 
     def load_runtime_runner(self) -> ModuleType:
         runtime_dir = self.repo_root / "sandbox/lf_contract_gate_test/profile_execution_runtime"
