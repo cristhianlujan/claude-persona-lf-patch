@@ -21,10 +21,6 @@ begin
   select status,lifecycle_state_code into v_registry_status,v_lifecycle
   from public.lf_operation_registry
   where operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF';
-  if v_registry_status is distinct from 'CANDIDATO_READ_ONLY'
-     or v_lifecycle is distinct from 'OP_CANDIDATE' then
-    raise exception 'RUNTIME_UPDATE_BASELINE_REGISTRY_DRIFT:%:%',v_registry_status,v_lifecycle;
-  end if;
 
   select count(*),count(*) filter(where active)
   into v_steps_total,v_steps_active
@@ -51,14 +47,60 @@ begin
     and operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
     and status='ACTIVE';
 
-  if v_steps_total<>14 or v_steps_active<>0
+  if v_registry_status is distinct from 'CANDIDATO_READ_ONLY'
+     or v_lifecycle is distinct from 'OP_CANDIDATE'
+     or v_steps_total<>14 or v_steps_active<>0
      or v_contracts_total<>14 or v_contracts_active<>14
      or v_judges<>0 or v_bindings<>0 or v_router_count<>1 then
-    raise exception 'RUNTIME_UPDATE_BASELINE_TOPOLOGY_DRIFT steps=%/% contracts=%/% judges=% bindings=% router=%',
-      v_steps_total,v_steps_active,v_contracts_total,v_contracts_active,v_judges,v_bindings,v_router_count;
+    raise exception 'RUNTIME_UPDATE_BASELINE_DRIFT registry=% lifecycle=% steps=%/% contracts=%/% judges=% bindings=% router=%',
+      v_registry_status,v_lifecycle,v_steps_total,v_steps_active,v_contracts_total,v_contracts_active,v_judges,v_bindings,v_router_count;
   end if;
 end;
 $baseline$;
+
+-- Create the transaction-local canary through the canonical reservation path.
+-- Provenance anchor is the latest verified prior execution of this same operation.
+do $provenance$
+declare
+  v_exec constant text := 'CANARY-RUNTIME-UPDATE-STEP60-SOURCE-ONLY';
+  v_anchor text;
+  v_res jsonb;
+begin
+  select execution_id into v_anchor
+  from public.lf_operation_execution
+  where operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
+    and status in ('CLOSED_PASS','CLOSED_WITH_VERIFIED_EVIDENCE','COMPLETED')
+  order by coalesce(completed_at,started_at,created_at) desc
+  limit 1;
+
+  if v_anchor is null then
+    raise exception 'RUNTIME_UPDATE_PROVENANCE_ANCHOR_MISSING';
+  end if;
+
+  v_res:=public.fn_lf_operation_reserve_execution_v1(
+    v_exec,
+    'ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF',
+    'OPERATION_CODE',
+    'EJECUCION_PERFIL_LF',
+    'runtime-update-enforcement-source-only-canary-v1',
+    '9cf4c38c8d37c4c2ea85f76ebd34d3329bc9a040ebbd08c86c6a413a10d195fd',
+    v_anchor,
+    'cristhianlujan/claude-persona-lf-patch',
+    'sandbox/lf_contract_gate_test/profile_execution_runtime',
+    jsonb_build_object(
+      'source_only_canary',true,
+      'no_live_apply',true,
+      'provenance_anchor',v_anchor
+    )
+  );
+
+  if v_res->>'result'<>'RESERVED_NEW_EXECUTION'
+     or v_res->>'status'<>'IN_PROGRESS'
+     or v_res->>'execution_id'<>v_exec then
+    raise exception 'RUNTIME_UPDATE_CANARY_RESERVATION_NOT_CLEAN:%',v_res;
+  end if;
+end;
+$provenance$;
 
 insert into public.lf_operation_judges(
   operation_code,judge_code,judge_path,judge_sha,pass_if,fail_if,result_values,status,
@@ -72,7 +114,9 @@ insert into public.lf_operation_judges(
   '[]'::jsonb,
   '[]'::jsonb,
   '{"pass":"STEP_PASS_WITH_EVIDENCE","blocked":"BLOCKED_STEP_NOT_CLEAN","return":"RETURN_TO_ROUTER"}'::jsonb,
-  'ACTIVE_ENFORCEMENT',null,null
+  'ACTIVE_ENFORCEMENT',
+  'CANARY-RUNTIME-UPDATE-STEP60-SOURCE-ONLY',
+  'CANARY-RUNTIME-UPDATE-STEP60-SOURCE-ONLY'
 ),
 (
   'ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF',
@@ -82,7 +126,9 @@ insert into public.lf_operation_judges(
   '["execution_id_matches_current_execution","target_type_is_operation_code","target_code_is_ejecucion_perfil_lf","target_path_matches_execution_target","execution_bound_to_target_before_change_is_true","bound_revision_is_structured","bound_revision_matches_current_resolved_revision"]'::jsonb,
   '["execution_binding_missing_or_false","target_identity_mismatch","bound_revision_missing_or_unstructured","bound_revision_mismatch","target_path_mismatch","pre_write_gate_missing_or_false"]'::jsonb,
   '{"pass":"STEP_PASS_WITH_EVIDENCE","blocked":"BLOCKED_STEP_NOT_CLEAN","return":"RETURN_TO_ROUTER"}'::jsonb,
-  'ACTIVE_ENFORCEMENT',null,null
+  'ACTIVE_ENFORCEMENT',
+  'CANARY-RUNTIME-UPDATE-STEP60-SOURCE-ONLY',
+  'CANARY-RUNTIME-UPDATE-STEP60-SOURCE-ONLY'
 );
 
 update public.lf_operation_step_contracts
@@ -96,6 +142,7 @@ set mini_judge_code=case
         then '["execution_id","target_code","target_path","write_plan","pre_write_gate_passed","bound_revision","execution_bound_to_target_before_change"]'::jsonb
       else required_evidence_keys
     end,
+    updated_by_execution_id='CANARY-RUNTIME-UPDATE-STEP60-SOURCE-ONLY',
     updated_at=now()
 where operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
   and status='ACTIVE_ENFORCEMENT';
@@ -108,13 +155,17 @@ insert into public.lf_operation_step_judge_bindings(
 select
   c.operation_code,c.step_order,c.step_id,c.mini_judge_code,
   'STEP_PASS_WITH_EVIDENCE','BLOCKED_STEP_NOT_CLEAN','RETURN_TO_ROUTER',
-  c.required_evidence_keys,'ACTIVE_ENFORCEMENT',null,null
+  c.required_evidence_keys,'ACTIVE_ENFORCEMENT',
+  'CANARY-RUNTIME-UPDATE-STEP60-SOURCE-ONLY',
+  'CANARY-RUNTIME-UPDATE-STEP60-SOURCE-ONLY'
 from public.lf_operation_step_contracts c
 where c.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
   and c.status='ACTIVE_ENFORCEMENT';
 
 update public.lf_operation_steps
-set active=true,updated_at=now()
+set active=true,
+    updated_by_execution_id='CANARY-RUNTIME-UPDATE-STEP60-SOURCE-ONLY',
+    updated_at=now()
 where operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF';
 
 do $target_topology$
@@ -179,32 +230,36 @@ begin
 end;
 $target_topology$;
 
--- Transaction-local negative/positive probe for the dedicated step-60 judge.
--- Synthetic execution and step rows are rolled back and never become evidence.
+-- Transaction-local probe for the dedicated step-60 judge.
+-- Prior clean rows are synthetic prerequisites only, provenance-bound and rolled back;
+-- they are not claimed as operation evidence or E2E execution.
 do $step60_canary$
 declare
-  v_exec text := 'CANARY-RUNTIME-UPDATE-STEP60-SOURCE-ONLY';
+  v_exec constant text := 'CANARY-RUNTIME-UPDATE-STEP60-SOURCE-ONLY';
   v_neg jsonb;
   v_pos jsonb;
   v_order integer;
 begin
-  delete from public.lf_operation_execution_steps where execution_id=v_exec;
-  delete from public.lf_operation_execution where execution_id=v_exec;
-
-  insert into public.lf_operation_execution(
-    execution_id,operation_code,target_type,target_code,target_repo,target_path,status,started_at,manifest
-  ) values (
-    v_exec,'ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF','OPERATION_CODE','EJECUCION_PERFIL_LF',
-    'cristhianlujan/claude-persona-lf-patch','sandbox/lf_contract_gate_test/profile_execution_runtime',
-    'IN_PROGRESS',now(),'{"source_only_canary":true}'::jsonb
-  );
+  if not exists(
+    select 1 from public.lf_operation_execution
+    where execution_id=v_exec
+      and operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
+      and target_type='OPERATION_CODE'
+      and target_code='EJECUCION_PERFIL_LF'
+      and status='IN_PROGRESS'
+  ) then
+    raise exception 'RUNTIME_UPDATE_CANARY_EXECUTION_NOT_BOUND';
+  end if;
 
   for v_order in select unnest(array[0,10,20,30,40,50]) loop
     insert into public.lf_operation_execution_steps(
-      execution_id,step_order,step_id,status,evidence_ref,evidence_payload,notes
+      execution_id,step_order,step_id,status,evidence_ref,evidence_payload,notes,
+      created_by_execution_id,updated_by_execution_id
     )
     select v_exec,s.step_order,s.step_id,'STEP_PASS_WITH_EVIDENCE','source-only://fixture',
-           '{"fixture":true}'::jsonb,'Source-only prior-step fixture; rolled back.'
+           jsonb_build_object('fixture',true,'source_only',true,'rolled_back',true),
+           'Synthetic prerequisite for source-only step60 probe; never operation evidence.',
+           v_exec,v_exec
     from public.lf_operation_steps s
     where s.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF' and s.step_order=v_order;
   end loop;
