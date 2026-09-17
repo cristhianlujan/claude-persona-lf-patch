@@ -398,6 +398,8 @@ declare
   v_severity text;
   v_fingerprint text;
   v_finding jsonb;
+  v_receipt jsonb;
+  v_gate_event_id bigint;
 begin
   select * into v_row
   from public.lf_operation_gate_check_results
@@ -526,10 +528,56 @@ begin
     )::text
   );
 
-  return public.lf_pre_ekb_child_dispatch_v1(v_row.execution_id,v_finding,v_fingerprint)
+  v_receipt:=public.lf_pre_ekb_child_dispatch_v1(v_row.execution_id,v_finding,v_fingerprint);
+
+  select id into v_gate_event_id
+  from public.lf_eventos
+  where evento_tipo='REMEDIACION_GOBERNANZA'
+    and created_by_execution_id=v_row.execution_id
+    and origen='LF_PRE_EKB_GATE_AUTOPERSIST_V1'
+    and payload->>'persistence_result'='EKB_PERSISTED'
+    and payload->>'gate_check_result_id'=v_row.id::text
+  order by id desc
+  limit 1;
+
+  if v_gate_event_id is null then
+    insert into public.lf_eventos(
+      evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,payload,origen,created_by_execution_id
+    ) values (
+      'REMEDIACION_GOBERNANZA','LF_PRE_EKB_GATE_CHECK',v_code,
+      'LF_GATE_ERROR_V1 check persisted to EKB with exact diagnostic binding',
+      case when v_severity='Critical' then 'CRITICAL' when v_severity='High' then 'WARN' else 'INFO' end,
+      jsonb_build_object(
+        'evidence_schema_version','operational-event/v2',
+        'execution_id',v_row.execution_id,
+        'producer','LF_PRE_EKB_GATE_AUTOPERSIST_V1',
+        'purpose','Bind one LF_GATE_ERROR_V1 non-pass check to its governed EKB writer receipt before repair or resume',
+        'occurred_at',clock_timestamp(),
+        'acceptance_declared',false,
+        'persistence_result','EKB_PERSISTED',
+        'gate_check_result_id',v_row.id,
+        'operation_code',v_row.operation_code,
+        'step_id',v_row.step_id,
+        'gate_id',v_row.gate_id,
+        'attempt_no',v_row.attempt_no,
+        'check_id',v_row.check_id,
+        'error_class',v_row.error_class,
+        'finding_fingerprint',v_fingerprint,
+        'child_execution_id',v_receipt->>'child_execution_id',
+        'writer_receipt',v_receipt->'writer_receipt',
+        'diagnostic_ref','supabase://public/lf_operation_gate_check_results/'||v_row.id
+      ),
+      'LF_PRE_EKB_GATE_AUTOPERSIST_V1',
+      v_row.execution_id
+    )
+    returning id into v_gate_event_id;
+  end if;
+
+  return v_receipt
     || jsonb_build_object(
       'source_kind','LF_GATE_ERROR_V1',
       'gate_check_result_id',v_row.id,
+      'gate_event_id',v_gate_event_id,
       'gate_id',v_row.gate_id,
       'check_id',v_row.check_id
     );
