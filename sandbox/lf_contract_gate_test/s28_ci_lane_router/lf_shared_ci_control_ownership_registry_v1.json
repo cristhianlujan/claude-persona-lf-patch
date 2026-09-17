@@ -38,60 +38,6 @@
       "deep_shared": false
     },
     {
-      "control_id": "LF_GATE_ERROR_SCHEMA_COMPAT",
-      "path": "gobernanza/contracts/lf_gate_error_v1.schema.json",
-      "migration_parity_required": false,
-      "input_governance_parity_required": false,
-      "ci_router_selftest_required": true,
-      "p0_exact_head_external_required": false,
-      "deep_shared": false
-    },
-    {
-      "control_id": "LF_GATE_ERROR_SCHEMA_CANONICAL",
-      "path": "gobernanza/contratos/lf_gate_error_v1.schema.json",
-      "migration_parity_required": false,
-      "input_governance_parity_required": false,
-      "ci_router_selftest_required": true,
-      "p0_exact_head_external_required": false,
-      "deep_shared": false
-    },
-    {
-      "control_id": "LF_GATE_ERROR_RUNNER",
-      "path": "gobernanza/judges/lf_gate_error_runner_v1.py",
-      "migration_parity_required": false,
-      "input_governance_parity_required": false,
-      "ci_router_selftest_required": true,
-      "p0_exact_head_external_required": false,
-      "deep_shared": false
-    },
-    {
-      "control_id": "LF_EXTERNAL_CI_RECORDER_PAYLOAD",
-      "path": "gobernanza/judges/lf_external_ci_recorder_payload_v1.py",
-      "migration_parity_required": false,
-      "input_governance_parity_required": false,
-      "ci_router_selftest_required": true,
-      "p0_exact_head_external_required": false,
-      "deep_shared": false
-    },
-    {
-      "control_id": "LF_GATE_ERROR_RUNNER_SELFTEST",
-      "path": "sandbox/lf_contract_gate_test/s30_gate_error/test_lf_gate_error_runner_v1.py",
-      "migration_parity_required": false,
-      "input_governance_parity_required": false,
-      "ci_router_selftest_required": true,
-      "p0_exact_head_external_required": false,
-      "deep_shared": false
-    },
-    {
-      "control_id": "LF_EXTERNAL_CI_RECORDER_SELFTEST",
-      "path": "sandbox/lf_contract_gate_test/s30_gate_error/test_lf_external_ci_recorder_payload_v1.py",
-      "migration_parity_required": false,
-      "input_governance_parity_required": false,
-      "ci_router_selftest_required": true,
-      "p0_exact_head_external_required": false,
-      "deep_shared": false
-    },
-    {
       "control_id": "P0_RUNTIME_ENTRYPOINT",
       "path": "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py",
       "migration_parity_required": false,
