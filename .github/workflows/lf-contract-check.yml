@@ -547,10 +547,23 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq tesseract-ocr tesseract-ocr-spa
 
-      - name: Run S36 assurance completeness gate self-test
+      - name: Run S36 assurance completeness gate self-test with deterministic diagnostics
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         run: |
-          python3 sandbox/lf_contract_gate_test/test_s36_wp06_ci_completeness_gate.py
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/s36_assurance_selftest
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_S36_ASSURANCE_SELFTEST \
+            --step-id s36_assurance_selftest \
+            --mode COLLECT_ALL \
+            --glob 'sandbox/lf_contract_gate_test/test_s36_wp06_ci_completeness_gate.py' \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/s36_assurance_selftest \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix S36 \
+            --owner S36_ASSURANCE \
+            --next-action FIX_FAILED_CHECK_AND_RERUN_LF_CONTRACT_CHECK \
+            --downstream-impact ASSURANCE \
+            --downstream-impact GOVERNANCE
 
       - name: Enforce S36 assurance completeness debt monotonicity
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
@@ -690,15 +703,50 @@ jobs:
             --candidate-root .
           python3 sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_SCOPE_TESTS.py
 
-      - name: Run LF validation engine self-test
+      - name: Run LF validation engine self-test with deterministic diagnostics
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         run: |
-          python3 sandbox/lf_contract_gate_test/lf_validation_engine_v0_10_2_selftest.py
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/validation_engine_selftest
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_VALIDATION_ENGINE_SELFTEST \
+            --step-id validation_engine_selftest \
+            --mode COLLECT_ALL \
+            --glob 'sandbox/lf_contract_gate_test/lf_validation_engine_v0_10_2_selftest.py' \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/validation_engine_selftest \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix VAL \
+            --owner LF_VALIDATION_ENGINE \
+            --next-action FIX_FAILED_CHECK_AND_RERUN_LF_CONTRACT_CHECK \
+            --downstream-impact VALIDATION \
+            --downstream-impact GOVERNANCE
 
-      - name: Run NO BYPASS judge profile-card-skill self-test
+      - name: Run NO BYPASS judge profile-card-skill self-test with deterministic diagnostics
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         run: |
-          python3 sandbox/no_bypass_judge_profile_card_skill/no_bypass_judge_selftest.py
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/no_bypass_selftest
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_NO_BYPASS_SELFTEST \
+            --step-id no_bypass_selftest \
+            --mode COLLECT_ALL \
+            --glob 'sandbox/no_bypass_judge_profile_card_skill/no_bypass_judge_selftest.py' \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/no_bypass_selftest \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix NOB \
+            --owner LF_CONTRACT_CHECK \
+            --next-action FIX_FAILED_CHECK_AND_RERUN_LF_CONTRACT_CHECK \
+            --downstream-impact NO_BYPASS \
+            --downstream-impact GOVERNANCE
+
+      - name: Persist deterministic LF contract gate diagnostics
+        if: always() && steps.feedback_tier.outcome == 'success' && steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-gate-diagnostics-lf-contract-check-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_gate_diagnostics/lf_contract_check
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Enforce merge and CI evidence for PASS candidates
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
