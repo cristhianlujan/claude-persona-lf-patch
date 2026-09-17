@@ -1,0 +1,13 @@
+{
+  "schema_version": "lf-profile-pack-manifest/v1",
+  "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_1",
+  "profile_slug": "systemic_root_cause_repair_lf",
+  "target_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+  "operation": "CREACION_PERFIL_LF",
+  "document_status": "CANDIDATO",
+  "operational_status": "READ_ONLY",
+  "runtime": "NO_HABILITADO",
+  "automatic_impact": "BLOQUEADO",
+  "source_authority": ["ACT-0045","gobernanza/contratos/contrato_perfil_lf.yaml","public.lf_artifact_destination_registry","S30:LF_ASSURANCE_METHOD_V1:A2R_PARITY"],
+  "files": ["README.md","SKILL.md","contracts/main_contract.md","evals/eval_matrix.json","examples/bad_output.json","examples/good_output.json","handoffs/to_quality_pack.handoff.json","judges/mini_judge.md","judges/score_rubric.md","manifest.json","schemas/output.schema.json","validators/validate_pack.py"]
+}

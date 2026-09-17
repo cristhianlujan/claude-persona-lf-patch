@@ -244,32 +244,36 @@ jobs:
       - name: Validate strict independent receipt-to-bundle binding regressions
         run: python profiles/quality_pack/evals/run_independent_review_bundle_binding_tests.py
 
-      - name: Validate LF gate diagnostic evidence runner
-        run: python gobernanza/judges/lf_gate_error_runner_v1.py --self-test
-
       - name: Validate PROFILE_RUNTIME V3 quality and lineage gates
         env:
           LF_PERSISTENT_RUNTIME_SCOPE: ISOLATED_CANDIDATE
           LF_LLAMA_SOURCE_COMMIT: 925e1179947ea0c0ebfb0032df18af3a729822be
         shell: bash
         run: |
-          python gobernanza/judges/lf_gate_error_runner_v1.py \
-            --suite-code PROFILE_RUNTIME_V3 \
-            --pattern 'sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_*.py' \
-            --output-dir artifacts/lf_gate_error/profile_runtime_v3 \
-            --source-sha "${GITHUB_SHA}" \
-            --run-id "${GITHUB_RUN_ID}" \
-            --job-name "${GITHUB_JOB}" \
-            --schema-ref gobernanza/contracts/lf_gate_error_v1.schema.json
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/profile_runtime_v3
+          python sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id PROFILE_RUNTIME_V3_STRUCTURAL_QUALITY \
+            --step-id structural_quality \
+            --mode COLLECT_ALL \
+            --glob 'sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_*.py' \
+            --artifact-dir .lf_gate_diagnostics/profile_runtime_v3 \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix SQ \
+            --owner PROFILE_RUNTIME \
+            --next-action FIX_FAILED_CHECKS_AND_RERUN_GATE \
+            --downstream-impact OBSERVABILITY \
+            --downstream-impact SECURITY \
+            --downstream-impact PERFORMANCE_CHAOS
 
-      - name: Upload LF gate diagnostic evidence
+      - name: Persist PROFILE_RUNTIME V3 gate diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lf-gate-error-${{ github.run_id }}-${{ github.job }}
-          path: artifacts/lf_gate_error
-          if-no-files-found: warn
-          retention-days: 14
+          name: lf-gate-diagnostics-profile-runtime-v3-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_gate_diagnostics/profile_runtime_v3
+          if-no-files-found: error
+          retention-days: 30
 
   s30-governed-write-broker:
     name: Governed S30 protected write broker

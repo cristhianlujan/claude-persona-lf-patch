@@ -59,6 +59,7 @@ MANAGED_EXACT_NAMES = {
     "fix_strategy_update_jsonb_append_precedence_v1",
     "profile_create_operation_qualification_v1",
     "fix_strategy_characteristics_seed_execution_id",
+    "prepare_assurance_method_and_profile_top_tier_v1",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
