@@ -1,0 +1,30 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "CREACION_PERFIL_LF",
+  "execution_id": "EXEC-S30-A2R-PROFILE-SYSTEMIC-ROOT-CAUSE-20260916-001",
+  "result": "PASS",
+  "all_required_steps_pass": true,
+  "contract_sha": "c33169e652046d65d5d5df16cea0be019833dcab",
+  "judge_sha": "f1ca87619ca3ba8375ef73ef219fdef95cd8a8fd",
+  "source_sha_list": [
+    "a783f50c37de329b57dcbbab26ad236f1a54032f",
+    "89485c60c971c0645850ced577609c8b9f13f84c",
+    "7c50e94fb962e4eb981cc8dc7094cf1a076c86a1",
+    "3fe2ab6965d1a81ff100628c055e5aaeff069143",
+    "45bfc001e0a46cabbc8765f79403b4ae169cb5b0",
+    "f129df04009897374e4da618a87755148297056a",
+    "ba1889f125ec14082c087a2f0c17c766fcfbee3b",
+    "9d5ab4f5fabf5f31343ad8a1aa31954a6f41756b",
+    "9343d03c6c615ee24bae0383215cbb3282f1f09a",
+    "dba0ae1c0bc8e7a276ca4bdadcf5a4a91fb4d81c",
+    "b4969810df8432881d8378c9f24a34bd30b49c1a",
+    "2275025c9bc2bb8b1a64016cec93a6797abe9ad1"
+  ],
+  "target_paths": [
+    "profiles/systemic_root_cause_repair_lf/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-16T17:50:52.777464Z"
+}

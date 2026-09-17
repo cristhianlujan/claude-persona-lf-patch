@@ -1,0 +1,21 @@
+{
+  "handoff_version": "v1",
+  "from_profile": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+  "to": "QUALITY_OR_ASSURANCE",
+  "include": [
+    "selected_alternative",
+    "rejected_alternatives",
+    "falsification_results",
+    "origin_asset",
+    "origin_operation",
+    "owner",
+    "invariant",
+    "hard_guard",
+    "acceptance_criteria",
+    "historical_regressions",
+    "residual_risks",
+    "evidence_map"
+  ],
+  "exclude": ["internal_chain_of_thought","unbound_authority","implementation_permission"],
+  "claim_ceiling": "ADVISORY_READ_ONLY"
+}
