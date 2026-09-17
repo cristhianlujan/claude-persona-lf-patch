@@ -87,11 +87,7 @@ begin
     v_anchor,
     'cristhianlujan/claude-persona-lf-patch',
     'sandbox/lf_contract_gate_test/profile_execution_runtime',
-    jsonb_build_object(
-      'source_only_canary',true,
-      'no_live_apply',true,
-      'provenance_anchor',v_anchor
-    )
+    jsonb_build_object('source_only_canary',true,'no_live_apply',true,'provenance_anchor',v_anchor)
   );
 
   if v_res->>'result'<>'RESERVED_NEW_EXECUTION'
@@ -179,52 +175,21 @@ declare
   v_registry_status text;
   v_lifecycle text;
 begin
-  select count(*) into v_active_steps
-  from public.lf_operation_steps
-  where operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF' and active;
-
-  select count(*) into v_bindings
-  from public.lf_operation_step_judge_bindings
-  where operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF' and status='ACTIVE_ENFORCEMENT';
-
-  select count(*) into v_generic
-  from public.lf_operation_step_judge_bindings
-  where operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
-    and status='ACTIVE_ENFORCEMENT'
-    and judge_code='JUDGE-ACTUALIZACION-RUNTIME-EJECUCION-PERFIL-LF-v1';
-
-  select count(*) into v_prewrite
-  from public.lf_operation_step_judge_bindings
-  where operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
-    and step_id='pre_write_execution_binding_gate' and step_order=60
-    and status='ACTIVE_ENFORCEMENT'
-    and judge_code='JUDGE-ACTUALIZACION-RUNTIME-EJECUCION-PERFIL-LF-PREWRITE-v1';
-
-  select count(*) into v_wrong_judge
-  from public.lf_operation_step_contracts
-  where operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
-    and mini_judge_code like 'JUDGE-ACTUALIZACION-PERFIL-LF%';
-
-  select required_evidence_keys into v_step60_keys
-  from public.lf_operation_step_contracts
-  where operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
-    and step_id='pre_write_execution_binding_gate' and step_order=60;
-
-  select status,lifecycle_state_code into v_registry_status,v_lifecycle
-  from public.lf_operation_registry
-  where operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF';
+  select count(*) into v_active_steps from public.lf_operation_steps where operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF' and active;
+  select count(*) into v_bindings from public.lf_operation_step_judge_bindings where operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF' and status='ACTIVE_ENFORCEMENT';
+  select count(*) into v_generic from public.lf_operation_step_judge_bindings where operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF' and status='ACTIVE_ENFORCEMENT' and judge_code='JUDGE-ACTUALIZACION-RUNTIME-EJECUCION-PERFIL-LF-v1';
+  select count(*) into v_prewrite from public.lf_operation_step_judge_bindings where operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF' and step_id='pre_write_execution_binding_gate' and step_order=60 and status='ACTIVE_ENFORCEMENT' and judge_code='JUDGE-ACTUALIZACION-RUNTIME-EJECUCION-PERFIL-LF-PREWRITE-v1';
+  select count(*) into v_wrong_judge from public.lf_operation_step_contracts where operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF' and mini_judge_code like 'JUDGE-ACTUALIZACION-PERFIL-LF%';
+  select required_evidence_keys into v_step60_keys from public.lf_operation_step_contracts where operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF' and step_id='pre_write_execution_binding_gate' and step_order=60;
+  select status,lifecycle_state_code into v_registry_status,v_lifecycle from public.lf_operation_registry where operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF';
 
   if v_active_steps<>14 or v_bindings<>14 or v_generic<>13 or v_prewrite<>1 or v_wrong_judge<>0 then
-    raise exception 'RUNTIME_UPDATE_TARGET_TOPOLOGY_INVALID steps=% bindings=% generic=% prewrite=% wrong=%',
-      v_active_steps,v_bindings,v_generic,v_prewrite,v_wrong_judge;
+    raise exception 'RUNTIME_UPDATE_TARGET_TOPOLOGY_INVALID steps=% bindings=% generic=% prewrite=% wrong=%',v_active_steps,v_bindings,v_generic,v_prewrite,v_wrong_judge;
   end if;
-
   if v_step60_keys is distinct from '["execution_id","target_code","target_path","write_plan","pre_write_gate_passed","bound_revision","execution_bound_to_target_before_change"]'::jsonb then
     raise exception 'RUNTIME_UPDATE_STEP60_KEYS_INVALID:%',v_step60_keys;
   end if;
-
-  if v_registry_status is distinct from 'CANDIDATO_READ_ONLY'
-     or v_lifecycle is distinct from 'OP_CANDIDATE' then
+  if v_registry_status is distinct from 'CANDIDATO_READ_ONLY' or v_lifecycle is distinct from 'OP_CANDIDATE' then
     raise exception 'RUNTIME_UPDATE_CANDIDATE_ESCALATED:%:%',v_registry_status,v_lifecycle;
   end if;
 end;
@@ -239,6 +204,8 @@ declare
   v_neg jsonb;
   v_pos jsonb;
   v_order integer;
+  v_keys jsonb;
+  v_fixture jsonb;
 begin
   if not exists(
     select 1 from public.lf_operation_execution
@@ -252,14 +219,31 @@ begin
   end if;
 
   for v_order in select unnest(array[0,10,20,30,40,50]) loop
+    select b.required_evidence_keys into v_keys
+    from public.lf_operation_step_judge_bindings b
+    where b.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
+      and b.step_order=v_order
+      and b.status='ACTIVE_ENFORCEMENT';
+
+    select coalesce(jsonb_object_agg(k,to_jsonb('SOURCE_ONLY_FIXTURE'::text)),'{}'::jsonb)
+      into v_fixture
+    from jsonb_array_elements_text(v_keys) k;
+
+    v_fixture:=v_fixture||jsonb_build_object(
+      'fixture',true,'source_only',true,'rolled_back',true,
+      'assertions_checked','[]'::jsonb,
+      'hard_fails_checked','[]'::jsonb,
+      'blocking_findings','[]'::jsonb,
+      'blocking_codes','[]'::jsonb,
+      'return_to_worker_reasons','[]'::jsonb
+    );
+
     insert into public.lf_operation_execution_steps(
       execution_id,step_order,step_id,status,evidence_ref,evidence_payload,notes,
       created_by_execution_id,updated_by_execution_id
     )
-    select v_exec,s.step_order,s.step_id,'STEP_PASS_WITH_EVIDENCE','source-only://fixture',
-           jsonb_build_object('fixture',true,'source_only',true,'rolled_back',true),
-           'Synthetic prerequisite for source-only step60 probe; never operation evidence.',
-           v_exec,v_exec
+    select v_exec,s.step_order,s.step_id,'STEP_PASS_WITH_EVIDENCE','source-only://fixture',v_fixture,
+           'Synthetic prerequisite for source-only step60 probe; never operation evidence.',v_exec,v_exec
     from public.lf_operation_steps s
     where s.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF' and s.step_order=v_order;
   end loop;
