@@ -90,6 +90,51 @@
       "ci_router_selftest_required": true,
       "p0_exact_head_external_required": false,
       "deep_shared": false
+    },
+    {
+      "control_id": "LF_GATE_ERROR_SCHEMA_V1",
+      "path": "gobernanza/contratos/lf_gate_error_v1.schema.json",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "LF_GATE_ERROR_RUNNER_V1",
+      "path": "gobernanza/judges/lf_gate_error_runner_v1.py",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "LF_EXTERNAL_CI_RECORDER_PAYLOAD_V1",
+      "path": "gobernanza/judges/lf_external_ci_recorder_payload_v1.py",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "LF_GATE_ERROR_RUNNER_SELFTEST_V1",
+      "path": "sandbox/lf_contract_gate_test/s30_gate_error/test_lf_gate_error_runner_v1.py",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "LF_EXTERNAL_CI_RECORDER_PAYLOAD_SELFTEST_V1",
+      "path": "sandbox/lf_contract_gate_test/s30_gate_error/test_lf_external_ci_recorder_payload_v1.py",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
     }
   ]
 }
