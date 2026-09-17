@@ -1,0 +1,38 @@
+name: S36 Assurance Evaluator Control
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/2026091719050*_lf_assurance_evaluator_transversal_v1*.sql"
+      - "sandbox/lf_contract_gate_test/s36_assurance_evaluator/**"
+      - ".github/workflows/s36-assurance-evaluator-control.yml"
+  push:
+    branches:
+      - main
+      - "s36/assurance-evaluator-transversal-v1-*"
+    paths:
+      - "supabase/migrations/2026091719050*_lf_assurance_evaluator_transversal_v1*.sql"
+      - "sandbox/lf_contract_gate_test/s36_assurance_evaluator/**"
+      - ".github/workflows/s36-assurance-evaluator-control.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  source-control-regression:
+    name: T01 source control regression
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run ASSURANCE_EVALUATOR_TRANSVERSAL_V1 control regression
+        run: python sandbox/lf_contract_gate_test/s36_assurance_evaluator/test_lf_assurance_evaluator_transversal_v1.py
