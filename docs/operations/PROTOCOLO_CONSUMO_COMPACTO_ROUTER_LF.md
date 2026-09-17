@@ -22,6 +22,35 @@ ACT-0001 sigue siendo rector. No entrar directo por profiles, skills, cards, ada
 
 Toda resolución entra por `public.lf_router_resolve_v1`. Cada llamada pasa `action_hint` explícito y omite por completo `target_hint`.
 
+
+### 2.1 Guard blando de desviación de ruta
+
+Después de resolver `operation_code` y antes del primer efecto, el consumidor
+debe comparar la ruta canónica resuelta con la ruta de ejecución seleccionada.
+Una desviación no se bloquea automáticamente: se clasifica con
+`.claude/scripts/canonical_route_guard.py`.
+
+- Misma ruta: `PROCEED_CANONICAL`.
+- Ruta distinta sin intención exploratoria explícita:
+  `ASK_CANONICAL_OR_EXPLORATORY`. El consumidor pregunta una sola vez si debe
+  retomar la ruta canónica o explorar deliberadamente la alternativa.
+- Ruta distinta elegida explícitamente para explorar:
+  `PROCEED_EXPLORATORY_NO_CANONICAL_EFFECT`.
+- Ruta canónica todavía no resuelta: `RESOLVE_CANONICAL_ROUTE_FIRST`.
+
+La pregunta es de encaminamiento, no una nueva aprobación. Si el alcance
+reversible ya estaba autorizado y se elige la ruta canónica, el consumidor
+retoma el último checkpoint válido y continúa sin microaprobaciones.
+
+El modo exploratorio conserva libertad de investigación, pero no puede producir
+merge, efecto de producción/base de datos, cierre canónico ni claim de PASS.
+Debe volver a la ruta canónica y refrescar currentness/readback antes de un efecto
+oficial.
+
+No confundir transporte con ruta. Usar Git/Supabase/SentinelX dentro de una
+operación canónica no constituye desviación por sí mismo; la desviación existe
+cuando se sustituye la operación/carril canónico por otro camino de ejecución.
+
 ## 3. Proyección canónica
 
 Ocho campos de nivel superior. Ninguno es opcional.

@@ -4,6 +4,7 @@
 
 1. Propósito
 2. Secuencia operativa
+2.1. Guard blando de desviación de ruta canónica
 3. Contrato de entrada
 4. Contrato de superficie
 5. Formato Markdown seguro
@@ -116,6 +117,65 @@ Comparar:
 ### REPORTAR
 
 Emitir el estado real, la evidencia, las diferencias y el siguiente paso.
+
+## 2.1. Guard blando de desviación de ruta canónica
+
+Antes del primer write, y antes de cambiar de carril durante una ejecución:
+
+1. resolver la intención contra ACT-0001 o la autoridad vigente;
+2. obtener la ruta/operación canónica;
+3. declarar la ruta de ejecución que se está por usar;
+4. evaluar ambas con `.claude/scripts/canonical_route_guard.py`;
+5. actuar según la clasificación sin convertirla en una aprobación extra.
+
+Resultados:
+
+```text
+PROCEED_CANONICAL
+ASK_CANONICAL_OR_EXPLORATORY
+PROCEED_EXPLORATORY_NO_CANONICAL_EFFECT
+RESOLVE_CANONICAL_ROUTE_FIRST
+```
+
+`ASK_CANONICAL_OR_EXPLORATORY` significa que existe una desviación real de
+ruta. Formular una sola pregunta de encaminamiento:
+
+```text
+Existe una ruta canónica para esta intención: <CANONICAL>.
+La ruta seleccionada es <ALTERNATIVE>.
+¿Retomo la ruta canónica o quieres explorar deliberadamente la alternativa?
+```
+
+No repetir autorizaciones ya concedidas para el mismo alcance reversible. Si el
+usuario elige la ruta canónica, retomar desde el último checkpoint válido y
+continuar. Si el usuario había indicado explícitamente que está explorando, no
+hace falta preguntar de nuevo: usar
+`PROCEED_EXPLORATORY_NO_CANONICAL_EFFECT`.
+
+El modo exploratorio es una salida deliberada, no una ruta de cierre. Puede
+inspeccionar, simular, probar en sandbox o producir evidencia reversible, pero
+mientras siga exploratorio debe conservar:
+
+```text
+canonical_effect_allowed = false
+merge_allowed = false
+production_effect_allowed = false
+canonical_close_allowed = false
+pass_claim_allowed = false
+```
+
+Para volver a producir efecto oficial, retornar a la ruta canónica y revalidar
+currentness/readback aplicables. No usar el modo exploratorio para fabricar un
+receipt retroactivo ni para saltar un contrato.
+
+Este guard es blando: no crea una deny-list de herramientas. Git, GitHub,
+Supabase, SentinelX u otro transporte pueden ser perfectamente válidos cuando
+son un paso interno de la operación canónica ya resuelta. Se compara la ruta de
+ejecución, no el nombre de la herramienta.
+
+Los límites duros existentes —destrucción, producción, gasto, irreversibilidad,
+autoridad ausente o un bloqueo contractual explícito— mantienen su semántica y
+no se rebajan por este guard.
 
 ## 3. Contrato de entrada
 
