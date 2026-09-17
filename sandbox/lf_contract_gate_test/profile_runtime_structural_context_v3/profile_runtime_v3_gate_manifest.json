@@ -1,0 +1,158 @@
+{
+  "schema_version": "lf-gate-group-manifest/v1",
+  "consumer_code": "PROFILE_RUNTIME_V3",
+  "gate_id": "PROFILE_RUNTIME_V3_STRUCTURAL_QUALITY",
+  "owner": "PROFILE_RUNTIME",
+  "discover_glob": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_*.py",
+  "expected_total_checks": 46,
+  "downstream_impact": [
+    "OBSERVABILITY",
+    "SECURITY",
+    "PERFORMANCE_CHAOS"
+  ],
+  "closure_policy": {
+    "group_failure_policy": "STOP_AFTER_FAILED_GROUP",
+    "within_group_mode": "COLLECT_ALL",
+    "targeted_rerun_is_closure": false,
+    "full_coverage_required_for_claim": true,
+    "full_coverage_required_for_excel": true
+  },
+  "groups": [
+    {
+      "group_id": "PRV3-01",
+      "name": "CONTEXT_STRUCTURE",
+      "execution_class": "DETERMINISTIC",
+      "matrix_tag": "PROFILE_RUNTIME_CONTEXT_STRUCTURE",
+      "claim_surface": "CONTROL_EVIDENCE_ONLY",
+      "tests": [
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_structural_context_resolver_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_build_decomposer_context_pack_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_screen_decomposer_downstream_status_v3.py"
+      ]
+    },
+    {
+      "group_id": "PRV3-02",
+      "name": "TARGETED_REREAD",
+      "execution_class": "DETERMINISTIC",
+      "matrix_tag": "PROFILE_RUNTIME_TARGETED_REREAD",
+      "claim_surface": "CONTROL_EVIDENCE_ONLY",
+      "tests": [
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_targeted_reread_reconciler_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_apply_reread_overlay_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_batched_targeted_reread_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_batch_critical_path_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_cache_key_v3.py"
+      ]
+    },
+    {
+      "group_id": "PRV3-03",
+      "name": "CONTEXT_BUDGET",
+      "execution_class": "DETERMINISTIC",
+      "matrix_tag": "PROFILE_RUNTIME_CONTEXT_BUDGET",
+      "claim_surface": "CONTROL_EVIDENCE_ONLY",
+      "tests": [
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_profile_context_budget_v1.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_product_director_compact_context_v1.py"
+      ]
+    },
+    {
+      "group_id": "PRV3-04",
+      "name": "SCHEMA_TRANSPORT",
+      "execution_class": "DETERMINISTIC",
+      "matrix_tag": "PROFILE_RUNTIME_SCHEMA_TRANSPORT",
+      "claim_surface": "CONTROL_EVIDENCE_ONLY",
+      "tests": [
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_runtime_schema_autobind_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_runtime_schema_transport_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_quality_runtime_schema_binding_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_semantic_schema_guard_v3.py"
+      ]
+    },
+    {
+      "group_id": "PRV3-05",
+      "name": "AUTHORITY_ROUTING",
+      "execution_class": "DETERMINISTIC",
+      "matrix_tag": "PROFILE_RUNTIME_AUTHORITY_ROUTING",
+      "claim_surface": "CONTROL_EVIDENCE_ONLY",
+      "tests": [
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_runtime_authority_resolver_v1.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_canonical_route_guard_v1.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_profile_canonical_validator_negative_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_bootstrap_governance.py"
+      ]
+    },
+    {
+      "group_id": "PRV3-06",
+      "name": "PERSISTENT_RUNTIME",
+      "execution_class": "DETERMINISTIC",
+      "matrix_tag": "PROFILE_RUNTIME_PERSISTENT_RUNTIME",
+      "claim_surface": "CONTROL_EVIDENCE_ONLY",
+      "tests": [
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_persistent_cpu_local_runtime_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_persistent_cpu_readiness_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_persistent_cpu_runtime_boundary_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_run_persistent_cpu_profile_request_v3.py"
+      ]
+    },
+    {
+      "group_id": "PRV3-07",
+      "name": "QUALITY_SEMANTIC_PERFORMANCE",
+      "execution_class": "DETERMINISTIC",
+      "matrix_tag": "PROFILE_RUNTIME_QUALITY_SEMANTIC_PERFORMANCE",
+      "claim_surface": "CONTROL_EVIDENCE_ONLY",
+      "tests": [
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_profile_quality_nonregression_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_profile_semantic_utility_observed_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_semantic_after_gate_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_semantic_candidate_private_raster_harness_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_quality_depth_performance.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_current_199_baseline_guard_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_historical_parity_status_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_optimization_status_v3.py"
+      ]
+    },
+    {
+      "group_id": "PRV3-08",
+      "name": "LINEAGE_EVIDENCE",
+      "execution_class": "DETERMINISTIC",
+      "matrix_tag": "PROFILE_RUNTIME_LINEAGE_EVIDENCE",
+      "claim_surface": "CONTROL_EVIDENCE_ONLY",
+      "tests": [
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_data_lineage_e2e_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_evidence_consistency_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_commit_readback_binding.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_commit_readback_pr_merge_base_drift.py"
+      ]
+    },
+    {
+      "group_id": "PRV3-09",
+      "name": "S26_LIFECYCLE",
+      "execution_class": "DETERMINISTIC",
+      "matrix_tag": "PROFILE_RUNTIME_S26_LIFECYCLE",
+      "claim_surface": "CONTROL_EVIDENCE_ONLY",
+      "tests": [
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_family_objective_matrix_v3_inventory.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_family_objective_matrix_v3_w0_prebuild.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_gate_c_branches.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_gate_d_authority.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_gate_e_context.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_gate_e_to_f_input.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_hp001_gate_f.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_hp001_isolation.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_hp001_output.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_hp001_replay.py"
+      ]
+    },
+    {
+      "group_id": "PRV3-10",
+      "name": "CLOSE_OBSERVABILITY",
+      "execution_class": "DETERMINISTIC",
+      "matrix_tag": "PROFILE_RUNTIME_CLOSE_OBSERVABILITY",
+      "claim_surface": "CONTROL_EVIDENCE_ONLY",
+      "tests": [
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_run_close_gate_v3.py",
+        "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_gate_check_observability_producer_v1.py"
+      ]
+    }
+  ]
+}
