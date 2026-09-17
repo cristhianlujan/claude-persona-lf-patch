@@ -1,15 +1,6 @@
 -- LF_ASSURANCE_EVALUATOR_TRANSVERSAL_V1_CONTROL_HARDENING
 -- Same single solution/PR as 20260917190500/190501.
 -- Control hardening only: no runtime activation, no data mutation, no consumer binding change.
--- Fail-closed goals:
---   * normalize canonical test run terminal aliases (PASS/PASSED, FAIL/FAILED);
---   * exact-revision and governed-execution provenance;
---   * assertion contradiction detection;
---   * expected/actual containment and durable evidence requirement;
---   * independent review with separate governed execution;
---   * defeaters close only from machine-resolvable negative/adversarial counterevidence;
---   * zero-effect and declared counterevidence requirements are enforced;
---   * evaluation recorder is execution-bound and concurrency-idempotent.
 
 create or replace function public.lf_assurance_case_evidence_v1(
   p_suite_code text,
@@ -43,27 +34,19 @@ begin
   if nullif(btrim(coalesce(p_suite_code,'')),'') is null
      or nullif(btrim(coalesce(p_test_code,'')),'') is null then
     return jsonb_build_object(
-      'suite_code',p_suite_code,
-      'test_code',p_test_code,
-      'result','UNPROVEN',
-      'reason','CASE_IDENTITY_MISSING',
-      'evaluator_mode','DETERMINISTIC',
-      'zero_effect_proven',false,
-      'counterevidence','[]'::jsonb,
-      'evidence_refs','[]'::jsonb
+      'suite_code',p_suite_code,'test_code',p_test_code,
+      'result','UNPROVEN','reason','CASE_IDENTITY_MISSING',
+      'evaluator_mode','DETERMINISTIC','zero_effect_proven',false,
+      'counterevidence','[]'::jsonb,'evidence_refs','[]'::jsonb
     );
   end if;
 
   if nullif(btrim(coalesce(p_subject_revision,'')),'') is null then
     return jsonb_build_object(
-      'suite_code',p_suite_code,
-      'test_code',p_test_code,
-      'result','UNPROVEN',
-      'reason','SUBJECT_REVISION_REQUIRED',
-      'evaluator_mode','DETERMINISTIC',
-      'zero_effect_proven',false,
-      'counterevidence','[]'::jsonb,
-      'evidence_refs','[]'::jsonb
+      'suite_code',p_suite_code,'test_code',p_test_code,
+      'result','UNPROVEN','reason','SUBJECT_REVISION_REQUIRED',
+      'evaluator_mode','DETERMINISTIC','zero_effect_proven',false,
+      'counterevidence','[]'::jsonb,'evidence_refs','[]'::jsonb
     );
   end if;
 
@@ -76,14 +59,10 @@ begin
 
   if not found then
     return jsonb_build_object(
-      'suite_code',p_suite_code,
-      'test_code',p_test_code,
-      'result','UNPROVEN',
-      'reason','REQUIRED_CASE_NOT_REGISTERED',
-      'evaluator_mode','DETERMINISTIC',
-      'zero_effect_proven',false,
-      'counterevidence','[]'::jsonb,
-      'evidence_refs','[]'::jsonb
+      'suite_code',p_suite_code,'test_code',p_test_code,
+      'result','UNPROVEN','reason','REQUIRED_CASE_NOT_REGISTERED',
+      'evaluator_mode','DETERMINISTIC','zero_effect_proven',false,
+      'counterevidence','[]'::jsonb,'evidence_refs','[]'::jsonb
     );
   end if;
 
@@ -97,56 +76,36 @@ begin
 
   if not found then
     return jsonb_build_object(
-      'suite_code',p_suite_code,
-      'test_code',p_test_code,
-      'result','UNPROVEN',
-      'reason','EXACT_REVISION_RUN_MISSING',
+      'suite_code',p_suite_code,'test_code',p_test_code,
+      'result','UNPROVEN','reason','EXACT_REVISION_RUN_MISSING',
       'execution_mode',v_case.execution_mode,
       'evaluator_mode',case when v_case.execution_mode='INDEPENDENT_REVIEW' then 'INDEPENDENT_REVIEW' else 'DETERMINISTIC' end,
-      'zero_effect_proven',false,
-      'counterevidence','[]'::jsonb,
-      'evidence_refs','[]'::jsonb
+      'zero_effect_proven',false,'counterevidence','[]'::jsonb,'evidence_refs','[]'::jsonb
     );
   end if;
 
   v_run_status := upper(btrim(coalesce(v_run.status,'')));
-  v_evidence_refs := jsonb_build_array(
-    format('supabase://public/lf_test_runs/%s',v_run.test_run_id)
-  );
+  v_evidence_refs := jsonb_build_array(format('supabase://public/lf_test_runs/%s',v_run.test_run_id));
 
   if nullif(btrim(coalesce(v_run.execution_id,'')),'') is null then
     return jsonb_build_object(
-      'suite_code',p_suite_code,
-      'test_code',p_test_code,
-      'test_run_id',v_run.test_run_id,
-      'test_run_status',v_run.status,
-      'execution_mode',v_case.execution_mode,
-      'result','UNPROVEN',
-      'reason','RUN_EXECUTION_ID_MISSING',
+      'suite_code',p_suite_code,'test_code',p_test_code,'test_run_id',v_run.test_run_id,
+      'test_run_status',v_run.status,'execution_mode',v_case.execution_mode,
+      'result','UNPROVEN','reason','RUN_EXECUTION_ID_MISSING',
       'evaluator_mode',case when v_case.execution_mode='INDEPENDENT_REVIEW' then 'INDEPENDENT_REVIEW' else 'DETERMINISTIC' end,
-      'zero_effect_proven',false,
-      'counterevidence','[]'::jsonb,
-      'evidence_refs',v_evidence_refs
+      'zero_effect_proven',false,'counterevidence','[]'::jsonb,'evidence_refs',v_evidence_refs
     );
   end if;
 
   if not exists (
-    select 1
-    from public.lf_operation_execution oe
-    where oe.execution_id=v_run.execution_id
+    select 1 from public.lf_operation_execution oe where oe.execution_id=v_run.execution_id
   ) then
     return jsonb_build_object(
-      'suite_code',p_suite_code,
-      'test_code',p_test_code,
-      'test_run_id',v_run.test_run_id,
-      'test_run_status',v_run.status,
-      'execution_mode',v_case.execution_mode,
-      'result','UNPROVEN',
-      'reason','RUN_EXECUTION_NOT_GOVERNED',
+      'suite_code',p_suite_code,'test_code',p_test_code,'test_run_id',v_run.test_run_id,
+      'test_run_status',v_run.status,'execution_mode',v_case.execution_mode,
+      'result','UNPROVEN','reason','RUN_EXECUTION_NOT_GOVERNED',
       'evaluator_mode',case when v_case.execution_mode='INDEPENDENT_REVIEW' then 'INDEPENDENT_REVIEW' else 'DETERMINISTIC' end,
-      'zero_effect_proven',false,
-      'counterevidence','[]'::jsonb,
-      'evidence_refs',v_evidence_refs
+      'zero_effect_proven',false,'counterevidence','[]'::jsonb,'evidence_refs',v_evidence_refs
     );
   end if;
 
@@ -158,8 +117,7 @@ begin
   from public.lf_test_assertion_results
   where test_run_id=v_run.test_run_id;
 
-  select count(*)::integer
-  into v_artifact_total
+  select count(*)::integer into v_artifact_total
   from public.lf_test_artifacts
   where test_run_id=v_run.test_run_id;
 
@@ -202,7 +160,6 @@ begin
       v_reason := 'PASS_RUN_DURABLE_EVIDENCE_MISSING';
     elsif v_case.execution_mode='INDEPENDENT_REVIEW' then
       v_mode := 'INDEPENDENT_REVIEW';
-
       select j.* into v_judge
       from public.lf_test_judge_results j
       where j.test_run_id=v_run.test_run_id
@@ -212,8 +169,7 @@ begin
         and j.created_by_execution_id <> v_run.execution_id
         and coalesce(j.evidence_payload,'{}'::jsonb) <> '{}'::jsonb
         and exists (
-          select 1
-          from public.lf_operation_execution oe
+          select 1 from public.lf_operation_execution oe
           where oe.execution_id=j.created_by_execution_id
         )
       order by j.observed_at desc, j.created_at desc
@@ -239,21 +195,12 @@ begin
   end if;
 
   return jsonb_build_object(
-    'suite_code',p_suite_code,
-    'test_code',p_test_code,
-    'test_run_id',v_run.test_run_id,
-    'test_run_status',v_run.status,
-    'execution_id',v_run.execution_id,
-    'execution_mode',v_case.execution_mode,
-    'result',v_result,
-    'reason',v_reason,
-    'evaluator_mode',v_mode,
-    'assertion_total',v_assertion_total,
-    'assertion_fail',v_assertion_fail,
-    'expected_output_proven',v_expected_matches,
-    'durable_evidence_proven',v_durable_evidence,
-    'zero_effect_proven',v_zero_effect_proven,
-    'counterevidence',v_counterevidence,
+    'suite_code',p_suite_code,'test_code',p_test_code,'test_run_id',v_run.test_run_id,
+    'test_run_status',v_run.status,'execution_id',v_run.execution_id,
+    'execution_mode',v_case.execution_mode,'result',v_result,'reason',v_reason,
+    'evaluator_mode',v_mode,'assertion_total',v_assertion_total,'assertion_fail',v_assertion_fail,
+    'expected_output_proven',v_expected_matches,'durable_evidence_proven',v_durable_evidence,
+    'zero_effect_proven',v_zero_effect_proven,'counterevidence',v_counterevidence,
     'evidence_refs',v_evidence_refs
   );
 end;
@@ -295,21 +242,11 @@ begin
   limit 1;
 
   if not found then
-    return jsonb_build_object(
-      'defeater_code',p_defeater_code,
-      'closed',false,
-      'reason','DEFEATER_NOT_REGISTERED',
-      'evidence_refs','[]'::jsonb
-    );
+    return jsonb_build_object('defeater_code',p_defeater_code,'closed',false,'reason','DEFEATER_NOT_REGISTERED','evidence_refs','[]'::jsonb);
   end if;
 
   if v_def.obligation_code is null or p_suite_code is null then
-    return jsonb_build_object(
-      'defeater_code',v_def.defeater_code,
-      'closed',false,
-      'reason','DEFEATER_MACHINE_BINDING_MISSING',
-      'evidence_refs','[]'::jsonb
-    );
+    return jsonb_build_object('defeater_code',v_def.defeater_code,'closed',false,'reason','DEFEATER_MACHINE_BINDING_MISSING','evidence_refs','[]'::jsonb);
   end if;
 
   select * into v_obl
@@ -322,37 +259,27 @@ begin
   limit 1;
 
   if not found then
-    return jsonb_build_object(
-      'defeater_code',v_def.defeater_code,
-      'closed',false,
-      'reason','DEFEATER_OBLIGATION_MISSING',
-      'evidence_refs','[]'::jsonb
-    );
+    return jsonb_build_object('defeater_code',v_def.defeater_code,'closed',false,'reason','DEFEATER_OBLIGATION_MISSING','evidence_refs','[]'::jsonb);
   end if;
 
-  -- A defeater is countered only by negative/adversarial proof, never by the happy path.
+  -- Counterevidence is negative/adversarial proof only; a happy-path PASS never closes a defeater.
   for v_ref in
-    with raw_refs as (
-      select negative_test_ref as raw_ref
-      union all
-      select adversarial_test_ref
+    with raw_refs(raw_ref) as (
+      values (v_obl.negative_test_ref),(v_obl.adversarial_test_ref)
     )
-    select btrim(piece)
+    select btrim(parts.piece)
     from raw_refs r
-    cross join lateral regexp_split_to_table(coalesce(r.raw_ref,''),',') piece
-    where nullif(btrim(piece),'') is not null
+    cross join lateral regexp_split_to_table(coalesce(r.raw_ref,''),',') as parts(piece)
+    where nullif(btrim(parts.piece),'') is not null
   loop
     if exists (
-      select 1
-      from public.lf_test_suite_cases tc
+      select 1 from public.lf_test_suite_cases tc
       where tc.suite_code=p_suite_code
         and tc.test_code=v_ref
         and tc.status in ('ACTIVE','CANDIDATO')
     ) then
       v_mapped := v_mapped + 1;
-      v_eval := public.lf_assurance_case_evidence_v1(
-        p_suite_code,v_ref,p_subject_revision
-      );
+      v_eval := public.lf_assurance_case_evidence_v1(p_suite_code,v_ref,p_subject_revision);
       v_case_results := v_case_results || jsonb_build_array(v_eval);
       v_evidence_refs := v_evidence_refs || coalesce(v_eval->'evidence_refs','[]'::jsonb);
       if v_eval->>'result'='PASS' then
@@ -367,11 +294,9 @@ begin
     end if;
   end loop;
 
-  -- Only a small declared contract is machine-resolvable. Unknown keys stay open.
-  select count(*)::integer
-  into v_unknown_contract_keys
-  from jsonb_object_keys(coalesce(v_def.required_counterevidence,'{}'::jsonb)) k
-  where k not in ('required','test','test_ref','tests');
+  select count(*)::integer into v_unknown_contract_keys
+  from jsonb_object_keys(coalesce(v_def.required_counterevidence,'{}'::jsonb)) as x(key)
+  where x.key not in ('required','test','test_ref','tests');
 
   if v_unknown_contract_keys > 0 then
     v_required_ok := false;
@@ -412,12 +337,11 @@ begin
   end if;
 
   for v_required_label in
-    select distinct value
-    from jsonb_array_elements_text(v_required_labels)
+    select distinct x.value
+    from jsonb_array_elements_text(v_required_labels) as x(value)
   loop
     if not exists (
-      select 1
-      from jsonb_array_elements_text(v_counterevidence) ce(value)
+      select 1 from jsonb_array_elements_text(v_counterevidence) as ce(value)
       where ce.value=v_required_label
     ) then
       v_required_ok := false;
@@ -425,14 +349,8 @@ begin
   end loop;
 
   return jsonb_build_object(
-    'defeater_code',v_def.defeater_code,
-    'defeater_version',v_def.version,
-    'closed',(
-      v_mapped > 0
-      and v_passed=v_mapped
-      and v_required_ok
-      and (not v_def.zero_effect_required or v_zero_effect_seen)
-    ),
+    'defeater_code',v_def.defeater_code,'defeater_version',v_def.version,
+    'closed',(v_mapped>0 and v_passed=v_mapped and v_required_ok and (not v_def.zero_effect_required or v_zero_effect_seen)),
     'reason',case
       when v_mapped=0 then 'DEFEATER_NEGATIVE_ADVERSARIAL_CASE_UNMAPPED'
       when v_passed<>v_mapped then 'DEFEATER_COUNTERTEST_NOT_PASS'
@@ -440,14 +358,10 @@ begin
       when v_def.zero_effect_required and not v_zero_effect_seen then 'DEFEATER_ZERO_EFFECT_UNPROVEN'
       else 'DEFEATER_COUNTEREVIDENCE_CLOSED'
     end,
-    'zero_effect_required',v_def.zero_effect_required,
-    'zero_effect_proven',v_zero_effect_seen,
-    'mapped_countertests',v_mapped,
-    'passed_countertests',v_passed,
+    'zero_effect_required',v_def.zero_effect_required,'zero_effect_proven',v_zero_effect_seen,
+    'mapped_countertests',v_mapped,'passed_countertests',v_passed,
     'required_counterevidence',v_def.required_counterevidence,
-    'counterevidence_observed',v_counterevidence,
-    'case_results',v_case_results,
-    'evidence_refs',v_evidence_refs
+    'counterevidence_observed',v_counterevidence,'case_results',v_case_results,'evidence_refs',v_evidence_refs
   );
 end;
 $function$;
@@ -499,65 +413,25 @@ declare
   v_def_eval jsonb;
 begin
   if p_depth is null or p_depth < 0 or p_depth > 16 then
-    return jsonb_build_object(
-      'result','UNPROVEN',
-      'reasons',jsonb_build_array('CLAIM_RECURSION_DEPTH_EXCEEDED'),
-      'evaluator_mode','DETERMINISTIC',
-      'evidence_refs','[]'::jsonb,
-      'gate_check_refs','[]'::jsonb,
-      'open_defeaters','[]'::jsonb,
-      'closed_defeaters','[]'::jsonb
-    );
+    return jsonb_build_object('result','UNPROVEN','reasons',jsonb_build_array('CLAIM_RECURSION_DEPTH_EXCEEDED'),'evaluator_mode','DETERMINISTIC','evidence_refs','[]'::jsonb,'gate_check_refs','[]'::jsonb,'open_defeaters','[]'::jsonb,'closed_defeaters','[]'::jsonb);
   end if;
 
   if nullif(btrim(coalesce(p_subject_revision,'')),'') is null then
-    return jsonb_build_object(
-      'claim_code',p_claim_code,
-      'claim_version',p_claim_version,
-      'result','UNPROVEN',
-      'reasons',jsonb_build_array('SUBJECT_REVISION_REQUIRED'),
-      'evaluator_mode','DETERMINISTIC',
-      'evidence_refs','[]'::jsonb,
-      'gate_check_refs','[]'::jsonb,
-      'open_defeaters','[]'::jsonb,
-      'closed_defeaters','[]'::jsonb
-    );
+    return jsonb_build_object('claim_code',p_claim_code,'claim_version',p_claim_version,'result','UNPROVEN','reasons',jsonb_build_array('SUBJECT_REVISION_REQUIRED'),'evaluator_mode','DETERMINISTIC','evidence_refs','[]'::jsonb,'gate_check_refs','[]'::jsonb,'open_defeaters','[]'::jsonb,'closed_defeaters','[]'::jsonb);
   end if;
 
   select * into v_claim
   from public.lf_assurance_claim_catalog
-  where claim_code=p_claim_code
-    and version=p_claim_version
-    and status in ('ACTIVE','CANDIDATO')
+  where claim_code=p_claim_code and version=p_claim_version and status in ('ACTIVE','CANDIDATO')
   limit 1;
 
   if not found then
-    return jsonb_build_object(
-      'claim_code',p_claim_code,
-      'claim_version',p_claim_version,
-      'result','UNPROVEN',
-      'reasons',jsonb_build_array('CLAIM_NOT_REGISTERED_OR_RETIRED'),
-      'evaluator_mode','DETERMINISTIC',
-      'evidence_refs','[]'::jsonb,
-      'gate_check_refs','[]'::jsonb,
-      'open_defeaters','[]'::jsonb,
-      'closed_defeaters','[]'::jsonb
-    );
+    return jsonb_build_object('claim_code',p_claim_code,'claim_version',p_claim_version,'result','UNPROVEN','reasons',jsonb_build_array('CLAIM_NOT_REGISTERED_OR_RETIRED'),'evaluator_mode','DETERMINISTIC','evidence_refs','[]'::jsonb,'gate_check_refs','[]'::jsonb,'open_defeaters','[]'::jsonb,'closed_defeaters','[]'::jsonb);
   end if;
 
   if v_claim.subject_type is distinct from p_subject_type
      or (v_claim.subject_code <> '*' and v_claim.subject_code is distinct from p_subject_code) then
-    return jsonb_build_object(
-      'claim_code',p_claim_code,
-      'claim_version',p_claim_version,
-      'result','UNPROVEN',
-      'reasons',jsonb_build_array('CLAIM_SUBJECT_BINDING_MISMATCH'),
-      'evaluator_mode','DETERMINISTIC',
-      'evidence_refs','[]'::jsonb,
-      'gate_check_refs','[]'::jsonb,
-      'open_defeaters','[]'::jsonb,
-      'closed_defeaters','[]'::jsonb
-    );
+    return jsonb_build_object('claim_code',p_claim_code,'claim_version',p_claim_version,'result','UNPROVEN','reasons',jsonb_build_array('CLAIM_SUBJECT_BINDING_MISMATCH'),'evaluator_mode','DETERMINISTIC','evidence_refs','[]'::jsonb,'gate_check_refs','[]'::jsonb,'open_defeaters','[]'::jsonb,'closed_defeaters','[]'::jsonb);
   end if;
 
   with recursive lineage as (
@@ -568,16 +442,13 @@ begin
     select p.claim_code,p.version,p.parent_claim_code,p.parent_claim_version,l.depth+1
     from lineage l
     join public.lf_assurance_claim_catalog p
-      on p.claim_code=l.parent_claim_code
-     and p.version=l.parent_claim_version
+      on p.claim_code=l.parent_claim_code and p.version=l.parent_claim_version
     where l.depth < 16
   )
-  select b.benchmark_suite_code
-    into v_suite_code
+  select b.benchmark_suite_code into v_suite_code
   from lineage l
   join public.lf_assurance_subject_bindings b
-    on b.standard_claim_code=l.claim_code
-   and b.standard_claim_version=l.version
+    on b.standard_claim_code=l.claim_code and b.standard_claim_version=l.version
   where b.subject_type=p_subject_type
     and b.subject_code in (p_subject_code,'*')
     and b.status in ('ACTIVE','CANDIDATO')
@@ -589,26 +460,16 @@ begin
   v_required_cases := v_claim.closure_rule->'required_cases';
   if jsonb_typeof(v_required_cases)='array' and jsonb_array_length(v_required_cases)>0 then
     v_machine_resolved := true;
-
     if v_suite_code is null then
       v_has_unproven := true;
       v_reasons := v_reasons || jsonb_build_array('BENCHMARK_SUITE_BINDING_MISSING');
     else
-      for v_case_code in
-        select jsonb_array_elements_text(v_required_cases)
+      for v_case_code in select jsonb_array_elements_text(v_required_cases)
       loop
-        v_case_eval := public.lf_assurance_case_evidence_v1(
-          v_suite_code,v_case_code,p_subject_revision
-        );
+        v_case_eval := public.lf_assurance_case_evidence_v1(v_suite_code,v_case_code,p_subject_revision);
         v_case_details := v_case_details || jsonb_build_array(v_case_eval);
         v_evidence_refs := v_evidence_refs || coalesce(v_case_eval->'evidence_refs','[]'::jsonb);
-
-        if v_case_eval->>'evaluator_mode'='INDEPENDENT_REVIEW' then
-          v_has_independent := true;
-        else
-          v_has_deterministic := true;
-        end if;
-
+        if v_case_eval->>'evaluator_mode'='INDEPENDENT_REVIEW' then v_has_independent := true; else v_has_deterministic := true; end if;
         case coalesce(v_case_eval->>'result','UNPROVEN')
           when 'FAIL' then v_has_fail := true;
           when 'FALSE_PASS_RISK' then v_has_false_pass := true;
@@ -624,9 +485,8 @@ begin
   v_pass_requires := v_claim.closure_rule->'pass_requires';
   if jsonb_typeof(v_pass_requires)='array' and jsonb_array_length(v_pass_requires)>0 then
     v_expected_children := jsonb_array_length(v_pass_requires);
-
     select count(*) into v_mapped_children
-    from jsonb_array_elements_text(v_pass_requires) req(code)
+    from jsonb_array_elements_text(v_pass_requires) as req(code)
     join public.lf_assurance_claim_catalog c
       on c.claim_code=req.code
      and c.parent_claim_code=p_claim_code
@@ -635,9 +495,7 @@ begin
 
     if v_mapped_children=v_expected_children then
       v_machine_resolved := true;
-
-      for v_child_code in
-        select jsonb_array_elements_text(v_pass_requires)
+      for v_child_code in select jsonb_array_elements_text(v_pass_requires)
       loop
         select max(version) into v_child_version
         from public.lf_assurance_claim_catalog
@@ -646,27 +504,14 @@ begin
           and parent_claim_version=p_claim_version
           and status in ('ACTIVE','CANDIDATO');
 
-        v_child_eval := public.lf_assurance_claim_resolve_core_v1(
-          p_subject_type,
-          p_subject_code,
-          p_subject_revision,
-          v_child_code,
-          v_child_version,
-          p_depth+1
-        );
+        v_child_eval := public.lf_assurance_claim_resolve_core_v1(p_subject_type,p_subject_code,p_subject_revision,v_child_code,v_child_version,p_depth+1);
         v_child_details := v_child_details || jsonb_build_array(v_child_eval);
         v_evidence_refs := v_evidence_refs || coalesce(v_child_eval->'evidence_refs','[]'::jsonb);
         v_gate_check_refs := v_gate_check_refs || coalesce(v_child_eval->'gate_check_refs','[]'::jsonb);
         v_open_defeaters := v_open_defeaters || coalesce(v_child_eval->'open_defeaters','[]'::jsonb);
         v_closed_defeaters := v_closed_defeaters || coalesce(v_child_eval->'closed_defeaters','[]'::jsonb);
-
-        if v_child_eval->>'evaluator_mode' in ('INDEPENDENT_REVIEW','HYBRID') then
-          v_has_independent := true;
-        end if;
-        if v_child_eval->>'evaluator_mode' in ('DETERMINISTIC','HYBRID') then
-          v_has_deterministic := true;
-        end if;
-
+        if v_child_eval->>'evaluator_mode' in ('INDEPENDENT_REVIEW','HYBRID') then v_has_independent := true; end if;
+        if v_child_eval->>'evaluator_mode' in ('DETERMINISTIC','HYBRID') then v_has_deterministic := true; end if;
         case coalesce(v_child_eval->>'result','UNPROVEN')
           when 'FAIL' then v_has_fail := true;
           when 'FALSE_PASS_RISK' then v_has_false_pass := true;
@@ -688,20 +533,14 @@ begin
   end if;
 
   for v_def in
-    select distinct on (d.defeater_code)
-      d.defeater_code,d.version
+    select distinct on (d.defeater_code) d.defeater_code,d.version
     from public.lf_assurance_defeater_catalog d
-    where d.claim_code=p_claim_code
-      and d.claim_version=p_claim_version
-      and d.status in ('ACTIVE','CANDIDATO')
+    where d.claim_code=p_claim_code and d.claim_version=p_claim_version and d.status in ('ACTIVE','CANDIDATO')
     order by d.defeater_code,d.version desc
   loop
-    v_def_eval := public.lf_assurance_defeater_evidence_v1(
-      v_suite_code,p_subject_revision,v_def.defeater_code,v_def.version
-    );
+    v_def_eval := public.lf_assurance_defeater_evidence_v1(v_suite_code,p_subject_revision,v_def.defeater_code,v_def.version);
     v_defeater_details := v_defeater_details || jsonb_build_array(v_def_eval);
     v_evidence_refs := v_evidence_refs || coalesce(v_def_eval->'evidence_refs','[]'::jsonb);
-
     if coalesce((v_def_eval->>'closed')::boolean,false) then
       v_closed_defeaters := v_closed_defeaters || jsonb_build_array(v_def.defeater_code);
     else
@@ -709,46 +548,28 @@ begin
     end if;
   end loop;
 
-  if v_has_independent and v_has_deterministic then
-    v_mode := 'HYBRID';
-  elsif v_has_independent then
-    v_mode := 'INDEPENDENT_REVIEW';
-  else
-    v_mode := 'DETERMINISTIC';
+  if v_has_independent and v_has_deterministic then v_mode := 'HYBRID';
+  elsif v_has_independent then v_mode := 'INDEPENDENT_REVIEW';
+  else v_mode := 'DETERMINISTIC';
   end if;
 
-  if v_has_fail then
-    v_result := 'FAIL';
-  elsif v_has_false_pass then
-    v_result := 'FALSE_PASS_RISK';
-  elsif v_has_open then
-    v_result := 'OPEN';
-  elsif v_has_unproven then
-    v_result := 'UNPROVEN';
+  if v_has_fail then v_result := 'FAIL';
+  elsif v_has_false_pass then v_result := 'FALSE_PASS_RISK';
+  elsif v_has_open then v_result := 'OPEN';
+  elsif v_has_unproven then v_result := 'UNPROVEN';
   elsif jsonb_array_length(v_open_defeaters)>0 then
     v_result := 'FALSE_PASS_RISK';
     v_reasons := v_reasons || jsonb_build_array('MANDATORY_DEFEATER_NOT_CLOSED');
-  else
-    v_result := 'PASS';
+  else v_result := 'PASS';
   end if;
 
   return jsonb_build_object(
-    'subject_type',p_subject_type,
-    'subject_code',p_subject_code,
-    'subject_revision',p_subject_revision,
-    'claim_code',p_claim_code,
-    'claim_version',p_claim_version,
-    'benchmark_suite_code',v_suite_code,
-    'result',v_result,
-    'evaluator_mode',v_mode,
-    'reasons',v_reasons,
-    'evidence_refs',v_evidence_refs,
-    'gate_check_refs',v_gate_check_refs,
-    'open_defeaters',v_open_defeaters,
-    'closed_defeaters',v_closed_defeaters,
-    'defeater_results',v_defeater_details,
-    'required_case_results',v_case_details,
-    'required_subclaim_results',v_child_details
+    'subject_type',p_subject_type,'subject_code',p_subject_code,'subject_revision',p_subject_revision,
+    'claim_code',p_claim_code,'claim_version',p_claim_version,'benchmark_suite_code',v_suite_code,
+    'result',v_result,'evaluator_mode',v_mode,'reasons',v_reasons,
+    'evidence_refs',v_evidence_refs,'gate_check_refs',v_gate_check_refs,
+    'open_defeaters',v_open_defeaters,'closed_defeaters',v_closed_defeaters,
+    'defeater_results',v_defeater_details,'required_case_results',v_case_details,'required_subclaim_results',v_child_details
   );
 end;
 $function$;
@@ -776,45 +597,21 @@ declare
   v_inserted uuid;
   v_lock_key bigint;
 begin
-  if nullif(btrim(coalesce(p_subject_revision,'')),'') is null then
-    raise exception 'LF_ASSURANCE_EVALUATOR_SUBJECT_REVISION_REQUIRED';
-  end if;
+  if nullif(btrim(coalesce(p_subject_revision,'')),'') is null then raise exception 'LF_ASSURANCE_EVALUATOR_SUBJECT_REVISION_REQUIRED'; end if;
+  if nullif(btrim(coalesce(p_execution_id,'')),'') is null then raise exception 'LF_ASSURANCE_EVALUATOR_EXECUTION_REQUIRED'; end if;
+  if nullif(btrim(coalesce(p_actor_execution_id,'')),'') is null or p_actor_execution_id='UNKNOWN' then raise exception 'LF_ASSURANCE_EVALUATOR_ACTOR_EXECUTION_REQUIRED'; end if;
 
-  if nullif(btrim(coalesce(p_execution_id,'')),'') is null then
-    raise exception 'LF_ASSURANCE_EVALUATOR_EXECUTION_REQUIRED';
-  end if;
-
-  if nullif(btrim(coalesce(p_actor_execution_id,'')),'') is null
-     or p_actor_execution_id='UNKNOWN' then
-    raise exception 'LF_ASSURANCE_EVALUATOR_ACTOR_EXECUTION_REQUIRED';
-  end if;
-
-  if not exists (
-    select 1 from public.lf_operation_execution where execution_id=p_execution_id
-  ) then
+  if not exists (select 1 from public.lf_operation_execution where execution_id=p_execution_id) then
     raise exception 'LF_ASSURANCE_EVALUATOR_EXECUTION_NOT_FOUND:%',p_execution_id;
   end if;
-
-  if not exists (
-    select 1 from public.lf_operation_execution where execution_id=p_actor_execution_id
-  ) then
+  if not exists (select 1 from public.lf_operation_execution where execution_id=p_actor_execution_id) then
     raise exception 'LF_ASSURANCE_EVALUATOR_ACTOR_EXECUTION_NOT_FOUND:%',p_actor_execution_id;
   end if;
 
-  v_lock_key := hashtextextended(
-    concat_ws('|',p_subject_type,p_subject_code,p_subject_revision,p_claim_code,p_claim_version::text,p_execution_id),
-    0
-  );
+  v_lock_key := hashtextextended(concat_ws('|',p_subject_type,p_subject_code,p_subject_revision,p_claim_code,p_claim_version::text,p_execution_id),0);
   perform pg_advisory_xact_lock(v_lock_key);
 
-  v_eval := public.lf_assurance_claim_evaluate_v1(
-    p_subject_type,
-    p_subject_code,
-    p_subject_revision,
-    p_claim_code,
-    p_claim_version
-  );
-
+  v_eval := public.lf_assurance_claim_evaluate_v1(p_subject_type,p_subject_code,p_subject_revision,p_claim_code,p_claim_version);
   v_result := coalesce(v_eval->>'result','UNPROVEN');
   v_mode := coalesce(v_eval->>'evaluator_mode','DETERMINISTIC');
 
@@ -836,46 +633,18 @@ begin
   order by observed_at desc
   limit 1;
 
-  if found then
-    return v_existing;
-  end if;
+  if found then return v_existing; end if;
 
   insert into public.lf_assurance_evaluations (
-    subject_type,
-    subject_code,
-    subject_revision,
-    claim_code,
-    claim_version,
-    obligation_code,
-    execution_id,
-    result,
-    evidence_refs,
-    gate_check_refs,
-    open_defeaters,
-    closed_defeaters,
-    failure_type,
-    evaluator_mode,
-    rationale,
-    created_by_execution_id
+    subject_type,subject_code,subject_revision,claim_code,claim_version,obligation_code,execution_id,
+    result,evidence_refs,gate_check_refs,open_defeaters,closed_defeaters,failure_type,evaluator_mode,rationale,created_by_execution_id
   ) values (
-    p_subject_type,
-    p_subject_code,
-    p_subject_revision,
-    p_claim_code,
-    p_claim_version,
-    null,
-    p_execution_id,
-    v_result,
-    coalesce(v_eval->'evidence_refs','[]'::jsonb),
-    coalesce(v_eval->'gate_check_refs','[]'::jsonb),
-    coalesce(v_eval->'open_defeaters','[]'::jsonb),
-    coalesce(v_eval->'closed_defeaters','[]'::jsonb),
+    p_subject_type,p_subject_code,p_subject_revision,p_claim_code,p_claim_version,null,p_execution_id,
+    v_result,coalesce(v_eval->'evidence_refs','[]'::jsonb),coalesce(v_eval->'gate_check_refs','[]'::jsonb),
+    coalesce(v_eval->'open_defeaters','[]'::jsonb),coalesce(v_eval->'closed_defeaters','[]'::jsonb),
     case when v_result='PASS' then null else coalesce(v_eval->'reasons'->>0,v_result) end,
-    v_mode,
-    coalesce((v_eval->'reasons')::text,'[]'),
-    p_actor_execution_id
-  )
-  returning evaluation_id into v_inserted;
+    v_mode,coalesce((v_eval->'reasons')::text,'[]'),p_actor_execution_id
+  ) returning evaluation_id into v_inserted;
 
   return v_inserted;
 end;
@@ -893,9 +662,7 @@ grant execute on function public.lf_assurance_claim_evaluate_and_record_v1(text,
 
 comment on function public.lf_assurance_case_evidence_v1(text,text,text) is
 'LF assurance evidence resolver v1 hardened: exact revision, governed execution, assertion consistency, expected/actual proof, durable evidence and independent-review separation. PASS/PASSED and FAIL/FAILED aliases are normalized fail-closed.';
-
 comment on function public.lf_assurance_defeater_evidence_v1(text,text,text,integer) is
 'LF assurance defeater resolver v1: closes a defeater only from machine-resolvable negative/adversarial counterevidence, declared counterevidence labels and zero-effect proof when required.';
-
 comment on function public.lf_assurance_claim_evaluate_and_record_v1(text,text,text,text,integer,text,text) is
 'Append-only LF assurance recorder hardened with evaluated-execution and actor-execution existence checks plus transaction advisory locking for concurrent idempotency. Caller cannot declare PASS.';
