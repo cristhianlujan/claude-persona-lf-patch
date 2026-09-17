@@ -62,6 +62,58 @@ def run_runner(tmp: Path, mode: str, critical: bool = False) -> tuple[subprocess
     return proc, report
 
 
+def run_command_mode(tmp: Path) -> tuple[subprocess.CompletedProcess[str], dict]:
+    checks = tmp / "commands"
+    checks.mkdir(parents=True, exist_ok=True)
+    pass_script = checks / "parameterized_pass.py"
+    fail_script = checks / "parameterized_fail.py"
+    write(
+        pass_script,
+        "import sys\nassert sys.argv[1:] == ['--expected', '42']\nprint('parameterized-pass')\n",
+    )
+    write(
+        fail_script,
+        "import sys\nassert sys.argv[1:] == ['--expected', 'fail']\nraise ValueError('parameterized_failure')\n",
+    )
+    artifact = tmp / "command-artifact"
+    pass_spec = json.dumps(
+        {
+            "argv": [sys.executable, str(pass_script), "--expected", "42"],
+            "source_path": str(pass_script),
+        },
+        separators=(",", ":"),
+    )
+    fail_spec = json.dumps(
+        {
+            "argv": [sys.executable, str(fail_script), "--expected", "fail"],
+            "source_path": str(fail_script),
+        },
+        separators=(",", ":"),
+    )
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(RUNNER),
+            "--gate-id", "COMMAND_GATE",
+            "--step-id", "parameterized_commands",
+            "--mode", "COLLECT_ALL",
+            "--command-json", pass_spec,
+            "--command-json", fail_spec,
+            "--artifact-dir", str(artifact),
+            "--check-prefix", "CMD",
+            "--owner", "S30",
+            "--next-action", "FIX_PARAMETERIZED_COMMAND",
+            "--run-id", "COMMAND-RUN",
+            "--job-id", "COMMAND-JOB",
+            "--source-commit", "c" * 40,
+        ],
+        capture_output=True,
+        text=True,
+    )
+    report = json.loads((artifact / "lf_gate_error_v1.json").read_text(encoding="utf-8"))
+    return proc, report
+
+
 def main() -> None:
     assert RUNNER.is_file(), RUNNER
     assert SCHEMA.is_file(), SCHEMA
@@ -110,6 +162,22 @@ def main() -> None:
         assert report["checks"][1]["traceback_present"] is True
 
     with tempfile.TemporaryDirectory() as td:
+        proc, report = run_command_mode(Path(td))
+        assert proc.returncode == 1, proc.stderr
+        assert report["gate_result"] == "FAIL"
+        assert report["diagnostic_complete"] is True
+        assert report["expected_check_count"] == 2
+        assert report["executed_check_count"] == 2
+        assert report["pass_count"] == 1
+        assert report["fail_count"] == 1
+        assert report["checks"][0]["command"][-2:] == ["--expected", "42"]
+        assert report["checks"][1]["command"][-2:] == ["--expected", "fail"]
+        assert report["checks"][1]["error_class"] == "ValueError"
+        assert report["checks"][1]["error_summary"] == "ValueError: parameterized_failure"
+        assert report["checks"][1]["traceback_present"] is True
+        assert report["manifest_sha256"] == expected_manifest_sha(report)
+
+    with tempfile.TemporaryDirectory() as td:
         artifact = Path(td) / "artifact"
         proc = subprocess.run(
             [
@@ -134,6 +202,33 @@ def main() -> None:
         assert report["gate_result"] == "BLOCKED"
         assert report["diagnostic_complete"] is False
         assert report["error_class"] == "GATE_CHECK_SET_MISSING"
+        assert report["manifest_sha256"] == expected_manifest_sha(report)
+
+    with tempfile.TemporaryDirectory() as td:
+        artifact = Path(td) / "bad-command-artifact"
+        proc = subprocess.run(
+            [
+                sys.executable,
+                str(RUNNER),
+                "--gate-id", "BAD_COMMAND_GATE",
+                "--step-id", "bad_command",
+                "--mode", "COLLECT_ALL",
+                "--command-json", '{"argv":"not-an-array","source_path":"x.py"}',
+                "--artifact-dir", str(artifact),
+                "--owner", "S30",
+                "--next-action", "FIX_COMMAND_SPEC",
+                "--run-id", "BAD-COMMAND-RUN",
+                "--job-id", "BAD-COMMAND-JOB",
+                "--source-commit", "d" * 40,
+            ],
+            capture_output=True,
+            text=True,
+        )
+        report = json.loads((artifact / "lf_gate_error_v1.json").read_text(encoding="utf-8"))
+        assert proc.returncode == 2, proc.stderr
+        assert report["gate_result"] == "BLOCKED"
+        assert report["error_class"] == "GATE_COMMAND_SPEC_INVALID"
+        assert report["diagnostic_complete"] is False
         assert report["manifest_sha256"] == expected_manifest_sha(report)
 
     print("LF_GATE_ERROR_V1_PRODUCER_TEST_PASS")
