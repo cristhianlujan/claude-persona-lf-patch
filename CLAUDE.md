@@ -18,6 +18,42 @@ For every artifact operation:
 
 Preserve this sequence for delegated agents and subagents.
 
+
+## Soft canonical-route guard
+
+Before any repository, database, API, or external-system write, resolve the
+canonical operation/route through ACT-0001 or the current governing authority.
+Compare that route with the route the agent is about to use. This is a routing
+guard, not an additional approval gate.
+
+Run:
+
+```bash
+python sandbox/lf_contract_gate_test/canonical_route_guard/canonical_route_guard.py \
+  --canonical-route <ROUTE_FROM_ROUTER> \
+  --selected-route <ROUTE_ABOUT_TO_BE_USED>
+```
+
+Interpret the deterministic result as follows:
+
+- `PROCEED_CANONICAL`: continue without another routing question.
+- `ASK_CANONICAL_OR_EXPLORATORY`: before the write, ask exactly one routing
+  question: retake the canonical route or deliberately explore the alternative.
+  This question is for path correction, not for re-authorizing already approved
+  reversible work.
+- `PROCEED_EXPLORATORY_NO_CANONICAL_EFFECT`: only when exploration was explicit;
+  exploration may continue reversibly but cannot merge, apply production/database
+  effects, close the canonical lifecycle, or claim canonical PASS.
+- `RESOLVE_CANONICAL_ROUTE_FIRST`: resolve the route before selecting a write path.
+
+A low-level transport such as Git, GitHub, Supabase, or SentinelX is not by itself
+an alternate route when it is already executing inside the resolved canonical
+operation. The guard compares execution routes, not tool names.
+
+Do not turn this soft guard into a broad deny-list. Existing hard boundaries for
+destructive actions, production, spend, irreversible effects, or explicit
+contract blocks remain unchanged.
+
 ## Governed profile updates
 
 When creating a patch that modifies an existing repository profile under `profiles/**`, route the operation as `ACTUALIZACION_PERFIL_LF` and apply section 15, **Protocolo de pase para actualización de perfiles**, in:
