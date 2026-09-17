@@ -12,6 +12,7 @@ BASELINE_REL = Path("skills/profile_creator/contracts/s26_profile_baseline_v1.js
 RUNTIME_BINDING_REL = Path("contracts/runtime_binding.json")
 PROFILE_SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9_]{0,79}$")
 PROFILE_CODE_RE = re.compile(r"^[A-Z0-9][A-Z0-9_-]{0,119}$")
+HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -44,6 +45,32 @@ def _declares_callable(path: Path, callable_name: object) -> bool:
     except (OSError, UnicodeDecodeError, SyntaxError):
         return False
     return any(isinstance(node, ast.FunctionDef) and node.name == callable_name for node in tree.body)
+
+
+def _normalize_heading(value: str) -> str:
+    return " ".join(value.strip().split()).casefold()
+
+
+def _project_markdown_sections(content: str, requested: list[str]) -> str:
+    wanted = [_normalize_heading(item) for item in requested]
+    if not wanted or len(set(wanted)) != len(wanted):
+        raise ValueError("MODEL_CONTEXT_SECTIONS_INVALID")
+    chunks: dict[str, list[str]] = {}
+    active: str | None = None
+    for line in content.splitlines():
+        match = HEADING_RE.match(line)
+        if match and len(match.group(1)) <= 2:
+            title = _normalize_heading(match.group(2))
+            active = title if len(match.group(1)) == 2 and title in wanted else None
+            if active is not None:
+                chunks.setdefault(active, []).append(line)
+            continue
+        if active is not None:
+            chunks[active].append(line)
+    missing = [raw for raw, key in zip(requested, wanted) if key not in chunks]
+    if missing:
+        raise ValueError("MODEL_CONTEXT_SECTION_MISSING:" + ",".join(missing))
+    return "\n\n".join("\n".join(chunks[key]).strip() for key in wanted).strip()
 
 
 def evaluate(repo_root: Path, profile_slug: str) -> dict[str, Any]:
@@ -122,6 +149,8 @@ def evaluate(repo_root: Path, profile_slug: str) -> dict[str, Any]:
     validator_evidence = None
     semantic_pass = False
     semantic_evidence = None
+    model_context_pass = False
+    model_context_evidence = None
     gov = binding.get("governance") if isinstance(binding, dict) else None
 
     if valid_binding and isinstance(binding, dict):
@@ -163,6 +192,43 @@ def evaluate(repo_root: Path, profile_slug: str) -> dict[str, Any]:
             except Exception:
                 semantic_pass = False
 
+        mc = binding.get("model_context")
+        contract = ((baseline.get("runtime_binding_contract") or {}).get("model_context_required") or {})
+        ceiling = contract.get("max_chars_ceiling", 8000)
+        try:
+            sections = mc.get("sections") if isinstance(mc, dict) else None
+            max_chars = mc.get("max_chars") if isinstance(mc, dict) else None
+            source = mc.get("source") if isinstance(mc, dict) else None
+            if (
+                not isinstance(mc, dict)
+                or mc.get("mode") != "MARKDOWN_SECTIONS"
+                or source != "SKILL.md"
+                or mc.get("full_source_to_model") is not False
+                or not isinstance(sections, list)
+                or not sections
+                or any(not isinstance(item, str) or not item.strip() for item in sections)
+                or isinstance(max_chars, bool)
+                or not isinstance(max_chars, int)
+                or not 1 <= max_chars <= int(ceiling)
+            ):
+                raise ValueError("MODEL_CONTEXT_BINDING_INVALID")
+            source_path = _safe_profile_path(profile_dir, source, code="MODEL_CONTEXT_SOURCE_PATH_INVALID")
+            if source_path != skill.resolve() or not source_path.is_file():
+                raise ValueError("MODEL_CONTEXT_SOURCE_INVALID")
+            projected = _project_markdown_sections(source_path.read_text(encoding="utf-8"), sections)
+            if not projected or len(projected) > max_chars:
+                raise ValueError("MODEL_CONTEXT_BUDGET_EXCEEDED")
+            model_context_pass = True
+            model_context_evidence = {
+                "source": str(source_path.relative_to(repo_root)),
+                "sections": sections,
+                "projected_chars": len(projected),
+                "max_chars": max_chars,
+                "full_source_to_model": False,
+            }
+        except Exception:
+            model_context_pass = False
+
     schema_files = list((profile_dir / "schemas").glob("*.schema.json")) if (profile_dir / "schemas").is_dir() else []
     schema_count = len(schema_files)
     explicit_runtime = (profile_dir / "schemas/runtime_output.schema.json").is_file()
@@ -192,6 +258,13 @@ def evaluate(repo_root: Path, profile_slug: str) -> dict[str, Any]:
     ec = isinstance(gov, dict) and gov.get("exact_head_evidence_required") is True and gov.get("post_update_baseline_required") is True
     set_dim("B10_EVIDENCE_CLOSURE", ec, "PASS" if ec else "POST_UPDATE_EVIDENCE_CLOSURE_NOT_BOUND",
             gov if ec else None, "BIND_EXACT_HEAD_AND_POST_UPDATE_BASELINE")
+    set_dim(
+        "B11_MODEL_CONTEXT_TRANSPORT",
+        model_context_pass,
+        "PASS" if model_context_pass else "MODEL_CONTEXT_TRANSPORT_NOT_BOUND",
+        model_context_evidence,
+        "BIND_BOUNDED_MODEL_CONTEXT_TRANSPORT",
+    )
 
     score = sum(1 for item in dimensions.values() if item["pass"])
     if score == len(baseline["dimensions"]):
@@ -206,7 +279,7 @@ def evaluate(repo_root: Path, profile_slug: str) -> dict[str, Any]:
         "profile_slug": profile_slug, "decision": decision, "score": score, "required": len(baseline["dimensions"]),
         "compatibility_pct": round(score * 100 / len(baseline["dimensions"]), 1), "dimensions": dimensions,
         "repair_actions": repairs, "blocking_codes": sorted(set(blockers)),
-        "post_update_rule": "RERUN_AND_REQUIRE_10_OF_10_BEFORE_PROFILE_UPDATE_CLOSURE",
+        "post_update_rule": f"RERUN_AND_REQUIRE_{len(baseline['dimensions'])}_OF_{len(baseline['dimensions'])}_BEFORE_PROFILE_UPDATE_CLOSURE",
         "automatic_impact_authorized": False, "runtime_activation_authorized": False,
         "target_code_execution_performed": False,
         "callable_discovery_mode": "STATIC_AST_NO_IMPORT",
