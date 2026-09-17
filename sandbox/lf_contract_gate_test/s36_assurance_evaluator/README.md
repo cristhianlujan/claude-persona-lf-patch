@@ -29,7 +29,8 @@ The source-control proof checks at least:
 - required counterevidence and zero-effect proof;
 - unsupported closure rules remain fail-closed;
 - append-only/concurrency-idempotent evaluation recording;
-- service-role-only execution boundary.
+- service-role-only execution boundary;
+- the two T01 workflows are exact-admitted while `.github/` remains broad-denied and sibling/lookalike workflow names remain denied.
 
 ## First-consumer claim fire-test
 
@@ -38,6 +39,12 @@ The source-control proof checks at least:
 The expected proof is deliberately not `PASS`: three deterministic subclaims are demonstrated and the four intentionally uncovered surfaces remain `UNPROVEN`, so the root must remain `UNPROVEN`. A root `PASS` would be a critical false-pass regression.
 
 The same fire-test also proves append-only/idempotent recording by evaluating twice and requiring the same evaluation id with one durable row.
+
+## Source-first pre-merge boundary
+
+The repository-wide migration source-first gate has a stricter generic pre-merge rule: while exactly one migration is local-only, the PR diff must contain only that migration file. T01 deliberately keeps its migration, tests and workflows together in one solution PR, so that generic gate can stop pre-merge with `FAIL_LF_MIGRATION_SOURCE_FIRST_SCOPE` even after all T01-owned admission/control checks pass.
+
+T01 does not weaken, bypass or special-case that shared parity engine. The deployment close instead follows the canonical source-first order: merge the exact source to `main`, then materialize only T01 `190500`, then perform exact live readback. No foreign migration is repaired or deployed from this lane.
 
 ## Isolated post-merge deployment close
 
