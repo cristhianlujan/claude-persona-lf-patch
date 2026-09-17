@@ -1,7 +1,3 @@
--- Canonical source recovered from Supabase migration ledger.
--- Live version: 20260916023642_prepare_assurance_method_and_profile_top_tier_v1
--- Recovery is source-parity only: this migration already exists live and MUST NOT be re-applied there.
-
 create table if not exists public.lf_assurance_claim_catalog (
   claim_code text not null,
   version integer not null default 1 check (version > 0),
