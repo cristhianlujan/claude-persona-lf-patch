@@ -547,17 +547,43 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq tesseract-ocr tesseract-ocr-spa
 
-      - name: Run S36 assurance completeness gate self-test
+      - name: Run S36 assurance completeness gate self-test with deterministic diagnostics
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         run: |
-          python3 sandbox/lf_contract_gate_test/test_s36_wp06_ci_completeness_gate.py
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/s36_assurance_selftest
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_S36_ASSURANCE_SELFTEST \
+            --step-id s36_assurance_selftest \
+            --mode COLLECT_ALL \
+            --glob 'sandbox/lf_contract_gate_test/test_s36_wp06_ci_completeness_gate.py' \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/s36_assurance_selftest \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix S36 \
+            --owner S36_ASSURANCE \
+            --next-action FIX_FAILED_CHECK_AND_RERUN_LF_CONTRACT_CHECK \
+            --downstream-impact ASSURANCE \
+            --downstream-impact GOVERNANCE
 
-      - name: Enforce S36 assurance completeness debt monotonicity
+      - name: Enforce S36 assurance completeness debt monotonicity with deterministic diagnostics
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
         run: |
-          python3 sandbox/lf_contract_gate_test/s36_wp06_ci_completeness_gate.py
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/s36_debt_monotonicity
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_S36_DEBT_MONOTONICITY \
+            --step-id s36_debt_monotonicity \
+            --mode COLLECT_ALL \
+            --glob 'sandbox/lf_contract_gate_test/s36_wp06_ci_completeness_gate.py' \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/s36_debt_monotonicity \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix S36D \
+            --owner S36_ASSURANCE \
+            --next-action FIX_FAILED_CHECK_AND_RERUN_LF_CONTRACT_CHECK \
+            --downstream-impact ASSURANCE \
+            --downstream-impact GOVERNANCE
 
       - name: Validate LF contract
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
@@ -677,46 +703,110 @@ jobs:
               print("PASS_GOV017_FORBIDDEN_STATUS_SCAN=4/4")
           PY
 
-      - name: Run E.16 governance regression matrices
+      - name: Run E.16 governance regression matrices with deterministic diagnostics
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         run: |
-          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_REGRESSION_TESTS.py \
-            --validator sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py
-          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_INVENTORY_TESTS.py \
-            --inventory sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py
-          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_RATIFICATION_TESTS.py \
-            --repo-root .
-          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_INTEGRATION_TESTS.py \
-            --candidate-root .
-          python3 sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_SCOPE_TESTS.py
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/e16_regression_matrices
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_E16_REGRESSION_MATRICES \
+            --step-id e16_regression_matrices \
+            --mode COLLECT_ALL \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/PR93_LOTE_E16_REGRESSION_TESTS.py","--validator","sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py"],"source_path":"sandbox/lf_contract_gate_test/PR93_LOTE_E16_REGRESSION_TESTS.py"}' \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/PR93_LOTE_E16_INVENTORY_TESTS.py","--inventory","sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py"],"source_path":"sandbox/lf_contract_gate_test/PR93_LOTE_E16_INVENTORY_TESTS.py"}' \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/PR93_LOTE_E16_RATIFICATION_TESTS.py","--repo-root","."],"source_path":"sandbox/lf_contract_gate_test/PR93_LOTE_E16_RATIFICATION_TESTS.py"}' \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/PR93_LOTE_E16_INTEGRATION_TESTS.py","--candidate-root","."],"source_path":"sandbox/lf_contract_gate_test/PR93_LOTE_E16_INTEGRATION_TESTS.py"}' \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_SCOPE_TESTS.py"],"source_path":"sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_SCOPE_TESTS.py"}' \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/e16_regression_matrices \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix E16 \
+            --owner LF_CONTRACT_CHECK \
+            --next-action FIX_FAILED_E16_CHECK_AND_RERUN_LF_CONTRACT_CHECK \
+            --downstream-impact E16 \
+            --downstream-impact GOVERNANCE
 
-      - name: Run LF validation engine self-test
+      - name: Run LF validation engine self-test with deterministic diagnostics
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         run: |
-          python3 sandbox/lf_contract_gate_test/lf_validation_engine_v0_10_2_selftest.py
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/validation_engine_selftest
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_VALIDATION_ENGINE_SELFTEST \
+            --step-id validation_engine_selftest \
+            --mode COLLECT_ALL \
+            --glob 'sandbox/lf_contract_gate_test/lf_validation_engine_v0_10_2_selftest.py' \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/validation_engine_selftest \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix VAL \
+            --owner LF_VALIDATION_ENGINE \
+            --next-action FIX_FAILED_CHECK_AND_RERUN_LF_CONTRACT_CHECK \
+            --downstream-impact VALIDATION \
+            --downstream-impact GOVERNANCE
 
-      - name: Run NO BYPASS judge profile-card-skill self-test
+      - name: Run NO BYPASS judge profile-card-skill self-test with deterministic diagnostics
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         run: |
-          python3 sandbox/no_bypass_judge_profile_card_skill/no_bypass_judge_selftest.py
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/no_bypass_selftest
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_NO_BYPASS_SELFTEST \
+            --step-id no_bypass_selftest \
+            --mode COLLECT_ALL \
+            --glob 'sandbox/no_bypass_judge_profile_card_skill/no_bypass_judge_selftest.py' \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/no_bypass_selftest \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix NOB \
+            --owner LF_CONTRACT_CHECK \
+            --next-action FIX_FAILED_CHECK_AND_RERUN_LF_CONTRACT_CHECK \
+            --downstream-impact NO_BYPASS \
+            --downstream-impact GOVERNANCE
 
-      - name: Enforce merge and CI evidence for PASS candidates
+      - name: Enforce merge and CI evidence for PASS candidates with deterministic diagnostics
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python3 sandbox/lf_contract_gate_test/pass_evidence_gate.py \
-            --self-test \
-            --scan skills/creating-integral-user-stories/evidence/pass-candidates \
-            --repository "$GITHUB_REPOSITORY"
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/pass_evidence
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_PASS_EVIDENCE \
+            --step-id pass_evidence \
+            --mode COLLECT_ALL \
+            --command-json "{\"argv\":[\"python3\",\"sandbox/lf_contract_gate_test/pass_evidence_gate.py\",\"--self-test\",\"--scan\",\"skills/creating-integral-user-stories/evidence/pass-candidates\",\"--repository\",\"$GITHUB_REPOSITORY\"],\"source_path\":\"sandbox/lf_contract_gate_test/pass_evidence_gate.py\"}" \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/pass_evidence \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix PASS \
+            --owner LF_CONTRACT_CHECK \
+            --next-action FIX_PASS_EVIDENCE_AND_RERUN_LF_CONTRACT_CHECK \
+            --downstream-impact PASS_EVIDENCE \
+            --downstream-impact GOVERNANCE
 
-      - name: Audit creating-integral-user-stories A01-A62
+      - name: Audit creating-integral-user-stories A01-A62 with deterministic diagnostics
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         run: |
-          python3 sandbox/lf_contract_gate_test/r8_continuous_audit.py \
-            skills/creating-integral-user-stories \
-            --output .audit-output/creating-integral-user-stories \
-            --commit-sha "$GITHUB_SHA"
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/r8_audit
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_R8_CONTINUOUS_AUDIT \
+            --step-id r8_continuous_audit \
+            --mode COLLECT_ALL \
+            --command-json "{\"argv\":[\"python3\",\"sandbox/lf_contract_gate_test/r8_continuous_audit.py\",\"skills/creating-integral-user-stories\",\"--output\",\".audit-output/creating-integral-user-stories\",\"--commit-sha\",\"$GITHUB_SHA\"],\"source_path\":\"sandbox/lf_contract_gate_test/r8_continuous_audit.py\"}" \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/r8_audit \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix R8 \
+            --owner LF_CONTRACT_CHECK \
+            --next-action FIX_R8_AUDIT_AND_RERUN_LF_CONTRACT_CHECK \
+            --downstream-impact AUDIT \
+            --downstream-impact GOVERNANCE
+
+      - name: Persist deterministic LF contract gate diagnostics
+        if: always() && steps.feedback_tier.outcome == 'success' && steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-gate-diagnostics-lf-contract-check-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_gate_diagnostics/lf_contract_check
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Capture authenticated E.16 Actions inventory
         if: github.event_name == 'pull_request'
