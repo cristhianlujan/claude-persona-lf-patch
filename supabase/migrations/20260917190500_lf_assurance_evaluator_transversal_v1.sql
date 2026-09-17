@@ -4,6 +4,13 @@
 -- LF Test Matrix evidence and append-only lf_assurance_evaluations.
 -- No new assurance table, second matrix, second evidence ledger or capability hardcode.
 -- Source/candidate only until a separately governed deployment is authorized.
+-- LF_MIGRATION_SOURCE_SUPPORT_V1 path=.github/workflows/s36-assurance-evaluator-control.yml
+-- LF_MIGRATION_SOURCE_SUPPORT_V1 path=.github/workflows/s36-assurance-evaluator-deployment-close.yml
+-- LF_MIGRATION_SOURCE_SUPPORT_V1 path=sandbox/lf_contract_gate_test/s36_assurance_evaluator/README.md
+-- LF_MIGRATION_SOURCE_SUPPORT_V1 path=sandbox/lf_contract_gate_test/s36_assurance_evaluator/firetest_currentness_claim_v1.sql
+-- LF_MIGRATION_SOURCE_SUPPORT_V1 path=sandbox/lf_contract_gate_test/s36_assurance_evaluator/test_lf_assurance_evaluator_transversal_v1.py
+-- LF_MIGRATION_SOURCE_SUPPORT_V1 path=scripts/lf_contract_check.py
+-- LF_MIGRATION_SOURCE_SUPPORT_V1 path=sandbox/lf_contract_gate_test/lf_migration_source_parity.py
 
 create or replace function public.lf_assurance_case_evidence_v1(
   p_suite_code text,
