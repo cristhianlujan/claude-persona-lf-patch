@@ -231,6 +231,44 @@ def main() -> None:
         assert report["diagnostic_complete"] is False
         assert report["manifest_sha256"] == expected_manifest_sha(report)
 
+    with tempfile.TemporaryDirectory() as td:
+        artifact = Path(td) / "missing-executable-artifact"
+        missing_spec = json.dumps(
+            {
+                "argv": ["lf-command-that-does-not-exist", "--probe"],
+                "source_path": "virtual/missing-command",
+            },
+            separators=(",", ":"),
+        )
+        proc = subprocess.run(
+            [
+                sys.executable,
+                str(RUNNER),
+                "--gate-id", "MISSING_EXECUTABLE_GATE",
+                "--step-id", "missing_executable",
+                "--mode", "COLLECT_ALL",
+                "--command-json", missing_spec,
+                "--artifact-dir", str(artifact),
+                "--owner", "S30",
+                "--next-action", "RESTORE_EXECUTABLE",
+                "--run-id", "MISSING-EXECUTABLE-RUN",
+                "--job-id", "MISSING-EXECUTABLE-JOB",
+                "--source-commit", "e" * 40,
+            ],
+            capture_output=True,
+            text=True,
+        )
+        report = json.loads((artifact / "lf_gate_error_v1.json").read_text(encoding="utf-8"))
+        assert proc.returncode == 1, proc.stderr
+        assert report["gate_result"] == "FAIL"
+        assert report["diagnostic_complete"] is True
+        assert report["checks"][0]["exit_code"] == 127
+        assert report["checks"][0]["error_class"] == "FileNotFoundError"
+        assert report["checks"][0]["traceback_present"] is False
+        assert report["checks"][0]["traceback_ref"]
+        assert report["checks"][0]["traceback_sha256"]
+        assert report["manifest_sha256"] == expected_manifest_sha(report)
+
     print("LF_GATE_ERROR_V1_PRODUCER_TEST_PASS")
 
 
