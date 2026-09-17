@@ -7,7 +7,7 @@ insert into public.lf_test_suites
 values
 (
   'TS-CURRENTNESS-AUTHORITY-V1',
-  'CURRENTNESS_AUTHORITY',
+  'LF_TEST_ASSURANCE',
   'Currentness Authority Assurance Matrix',
   'v1',
   'CANDIDATO',
@@ -119,6 +119,26 @@ values
   '{"forbid":["write_then_validate","partial_write_on_failure"]}'::jsonb,
   'CANDIDATO','{"assurance_dimension":"STATEFUL_SEQUENCE","existing_test":false,"gap_closure_required":true}'::jsonb,
   'EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001'
+),
+(
+  'TS-CURRENTNESS-AUTHORITY-V1','CUR-SEM-011',110,
+  'Self-declared compatibility classification is rejected as non-independent',
+  'ADVERSARIAL','INDEPENDENT_REVIEW','CRITICAL','[{"semantic_classification_required":true}]'::jsonb,
+  '{"case_family":"SEMANTIC_INDEPENDENCE_NEGATIVE","producer_equals_verifier":true}'::jsonb,
+  '{"self_assessment_rejected":true,"independent_readback_required":true}'::jsonb,
+  '{"forbid":["self_attested_semantic_pass","deterministic_verifier_as_semantic_authority"]}'::jsonb,
+  'CANDIDATO','{"assurance_dimension":"SEMANTIC_INDEPENDENCE","existing_test":false,"coverage_state":"NOT_COVERED","gap_closure_required":true}'::jsonb,
+  'EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001'
+),
+(
+  'TS-CURRENTNESS-AUTHORITY-V1','CUR-SEM-012',120,
+  'Independent compatibility classification is bound to exact material and revision',
+  'INTEGRATION','INDEPENDENT_REVIEW','CRITICAL','[{"semantic_classification_required":true}]'::jsonb,
+  '{"case_family":"SEMANTIC_INDEPENDENCE_POSITIVE","producer_verifier_separation_required":true}'::jsonb,
+  '{"independent_classifier_required":true,"exact_material_binding":true,"exact_revision_binding":true,"independent_readback_required":true}'::jsonb,
+  '{"forbid":["unbound_semantic_classification","cross_revision_semantic_reuse"]}'::jsonb,
+  'CANDIDATO','{"assurance_dimension":"SEMANTIC_INDEPENDENCE","existing_test":false,"coverage_state":"NOT_COVERED","gap_closure_required":true}'::jsonb,
+  'EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001'
 )
 on conflict (suite_code,test_code) do nothing;
 
@@ -129,7 +149,7 @@ values
 ('CUR_MATERIAL_VALID_V1',1,'CURRENTNESS_AUTHORITY_ASSURED_V1',1,'CAPABILITY','CURRENTNESS_AUTHORITY','CURRENTNESS','Material dependency currentness is computed from exact bound/current material and incomplete or unknown compatibility fails closed.','CRITICAL','{}'::jsonb,'{"required_cases":["CUR-DET-001","CUR-DET-002","CUR-DET-003","CUR-NEG-004"]}'::jsonb,'CANDIDATO','github://sandbox/lf_contract_gate_test/material_currentness/test_lf_currentness_authority_v1.py','EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001'),
 ('CUR_EVIDENCE_BOUND_EXACT_V1',1,'CURRENTNESS_AUTHORITY_ASSURED_V1',1,'CAPABILITY','CURRENTNESS_AUTHORITY','EVIDENCE','Currentness evidence is bound to the exact authority, material fingerprints and expected context.','CRITICAL','{}'::jsonb,'{"required_cases":["CUR-EVID-006"]}'::jsonb,'CANDIDATO','github://sandbox/lf_contract_gate_test/material_currentness/test_lf_currentness_authority_v1.py','EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001'),
 ('CUR_NO_BYPASS_BEFORE_EFFECT_V1',1,'CURRENTNESS_AUTHORITY_ASSURED_V1',1,'CAPABILITY','CURRENTNESS_AUTHORITY','AUTHORITY','No bound consumer can produce a material effect before successful Currentness validation.','CRITICAL','{"consumers":["GITHUB_CONTRACT_GATE_LF","EJECUCION_ESTRATEGIA_LF"]}'::jsonb,'{"required_cases":["CUR-E2E-008","CUR-E2E-010"],"zero_effect_required":true}'::jsonb,'CANDIDATO','LF_S36_CURRENTNESS_ASSURANCE_20260917','EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001'),
-('CUR_SEMANTIC_COMPATIBILITY_JUSTIFIED_V1',1,'CURRENTNESS_AUTHORITY_ASSURED_V1',1,'CAPABILITY','CURRENTNESS_AUTHORITY','AUTHORITY','Compatibility classification used for Currentness is independently justified and cannot be self-declared by the deterministic verifier.','CRITICAL','{}'::jsonb,'{"independent_review_required":true,"self_assessment_forbidden":true}'::jsonb,'CANDIDATO','LF_S36_CURRENTNESS_ASSURANCE_20260917','EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001'),
+('CUR_SEMANTIC_COMPATIBILITY_JUSTIFIED_V1',1,'CURRENTNESS_AUTHORITY_ASSURED_V1',1,'CAPABILITY','CURRENTNESS_AUTHORITY','AUTHORITY','Compatibility classification used for Currentness is independently justified and cannot be self-declared by the deterministic verifier.','CRITICAL','{}'::jsonb,'{"required_cases":["CUR-SEM-011","CUR-SEM-012"],"independent_review_required":true,"self_assessment_forbidden":true}'::jsonb,'CANDIDATO','LF_S36_CURRENTNESS_ASSURANCE_20260917','EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001'),
 ('CUR_SELECTIVE_INVALIDATION_V1',1,'CURRENTNESS_AUTHORITY_ASSURED_V1',1,'CAPABILITY','CURRENTNESS_AUTHORITY','CURRENTNESS','Only consumers transitively affected by changed material are invalidated.','HIGH','{}'::jsonb,'{"required_cases":["CUR-DET-003","CUR-INT-007"]}'::jsonb,'CANDIDATO','github://sandbox/lf_contract_gate_test/material_currentness','EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001'),
 ('CUR_RECEIPT_ANTI_REPLAY_V1',1,'CURRENTNESS_AUTHORITY_ASSURED_V1',1,'CAPABILITY','CURRENTNESS_AUTHORITY','EVIDENCE','A Currentness receipt cannot transfer PASS across execution, subject or source revision.','CRITICAL','{}'::jsonb,'{"required_cases":["CUR-REPLAY-005","CUR-E2E-009"]}'::jsonb,'CANDIDATO','LF_S36_CURRENTNESS_ASSURANCE_20260917','EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001'),
 ('CUR_REQUIRED_REAL_RUNNER_V1',1,'CURRENTNESS_AUTHORITY_ASSURED_V1',1,'CAPABILITY','CURRENTNESS_AUTHORITY','STRUCTURAL_COVERAGE','Real bound runners execute Currentness as a mandatory pre-effect gate and produce durable independently readable evidence.','CRITICAL','{"consumers":["GITHUB_CONTRACT_GATE_LF","EJECUCION_ESTRATEGIA_LF"]}'::jsonb,'{"required_cases":["CUR-E2E-008"],"exact_head_readback_required":true}'::jsonb,'CANDIDATO','LF_S36_CURRENTNESS_ASSURANCE_20260917','EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001')
@@ -141,7 +161,7 @@ values
 ('CUR-OBL-MATERIAL-VALID-V1',1,'CUR_MATERIAL_VALID_V1',1,'TEST','CUR-DET-001,CUR-DET-002,CUR-DET-003','CUR-NEG-004',null,'{"suite":"TS-CURRENTNESS-AUTHORITY-V1","exact_revision":true}'::jsonb,'CURRENTNESS_MATERIAL_INVALID',true,'CANDIDATO','TS-CURRENTNESS-AUTHORITY-V1','EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001'),
 ('CUR-OBL-EVIDENCE-EXACT-V1',1,'CUR_EVIDENCE_BOUND_EXACT_V1',1,'TEST','CUR-EVID-006','CUR-EVID-006','CUR-EVID-006','{"suite":"TS-CURRENTNESS-AUTHORITY-V1","authority_exact":true}'::jsonb,'CURRENTNESS_EVIDENCE_MISMATCH',true,'CANDIDATO','TS-CURRENTNESS-AUTHORITY-V1','EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001'),
 ('CUR-OBL-NO-BYPASS-V1',1,'CUR_NO_BYPASS_BEFORE_EFFECT_V1',1,'INDEPENDENT_REVIEW',null,'CUR-E2E-008','CUR-E2E-010','{"zero_effect_required":true,"durable_receipt":true,"independent_readback":true}'::jsonb,'CURRENTNESS_BYPASS',true,'CANDIDATO','TS-CURRENTNESS-AUTHORITY-V1','EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001'),
-('CUR-OBL-SEMANTIC-INDEPENDENCE-V1',1,'CUR_SEMANTIC_COMPATIBILITY_JUSTIFIED_V1',1,'INDEPENDENT_REVIEW',null,null,'CUR-E2E-008','{"producer_verifier_separation_required":true}'::jsonb,'CURRENTNESS_SELF_ASSESSMENT',true,'CANDIDATO','TS-CURRENTNESS-AUTHORITY-V1','EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001'),
+('CUR-OBL-SEMANTIC-INDEPENDENCE-V1',1,'CUR_SEMANTIC_COMPATIBILITY_JUSTIFIED_V1',1,'INDEPENDENT_REVIEW','CUR-SEM-012','CUR-SEM-011','CUR-SEM-011','{"producer_verifier_separation_required":true,"exact_material_binding":true,"exact_revision_binding":true}'::jsonb,'CURRENTNESS_SELF_ASSESSMENT',true,'CANDIDATO','TS-CURRENTNESS-AUTHORITY-V1','EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001'),
 ('CUR-OBL-SELECTIVE-INVALIDATION-V1',1,'CUR_SELECTIVE_INVALIDATION_V1',1,'TEST','CUR-DET-003',null,'CUR-INT-007','{"selective_invalidation":true}'::jsonb,'CURRENTNESS_OVERINVALIDATION',true,'CANDIDATO','TS-CURRENTNESS-AUTHORITY-V1','EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001'),
 ('CUR-OBL-ANTI-REPLAY-V1',1,'CUR_RECEIPT_ANTI_REPLAY_V1',1,'TEST','CUR-REPLAY-005','CUR-E2E-009','CUR-E2E-009','{"execution_subject_revision_bound":true}'::jsonb,'CURRENTNESS_REPLAY',true,'CANDIDATO','TS-CURRENTNESS-AUTHORITY-V1','EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001'),
 ('CUR-OBL-REAL-RUNNER-V1',1,'CUR_REQUIRED_REAL_RUNNER_V1',1,'STRUCTURAL_COVERAGE',null,'CUR-E2E-008','CUR-E2E-010','{"consumers":["GITHUB_CONTRACT_GATE_LF","EJECUCION_ESTRATEGIA_LF"],"pre_effect_required":true}'::jsonb,'CURRENTNESS_RUNNER_OPTIONAL',true,'CANDIDATO','TS-CURRENTNESS-AUTHORITY-V1','EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001')
@@ -170,7 +190,25 @@ values
   '{"when_capability_consumed":true,"consumers":["GITHUB_CONTRACT_GATE_LF","EJECUCION_ESTRATEGIA_LF"]}'::jsonb,
   true,
   'CANDIDATO',
-  'github://supabase/migrations/20260917184500_s36_currentness_assurance_matrix_v1.sql@daf63da6518ad7bdb146aabc5adab5cc0f1d7f1a',
+  'LF_ASSURANCE_METHOD_V1',
+  'EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001'
+)
+on conflict (binding_code) do nothing;
+
+-- Candidate consumer enrollment only. PENDING preserves the no-runtime-activation boundary.
+insert into public.lf_test_requirement_bindings
+(binding_code,subject_type,subject_code,characteristic_code,suite_code,required,min_pass_rate,false_pass_tolerance,independent_review_required,rollback_required,currentness_mode,activation_condition,effective_from,status,created_by_execution_id)
+values
+(
+  'BIND-OP-GITHUB-CONTRACT-GATE-CURRENTNESS-V1',
+  'OPERATION','GITHUB_CONTRACT_GATE_LF',null,'TS-CURRENTNESS-AUTHORITY-V1',
+  true,1.0,0,true,false,'EXACT_REVISION','{"type":"ALWAYS"}'::jsonb,clock_timestamp(),'PENDING',
+  'EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001'
+),
+(
+  'BIND-OP-STRATEGY-EXECUTOR-CURRENTNESS-V1',
+  'OPERATION','EJECUCION_ESTRATEGIA_LF',null,'TS-CURRENTNESS-AUTHORITY-V1',
+  true,1.0,0,true,true,'EXACT_REVISION','{"type":"ALWAYS"}'::jsonb,clock_timestamp(),'PENDING',
   'EXEC-S36-CURRENTNESS-ASSURANCE-MATRIX-20260917-001'
 )
 on conflict (binding_code) do nothing;
