@@ -68,6 +68,10 @@ The close is fail-closed:
 
 A rerun is idempotent: if the exact T01 ledger/source identity is already present it performs no DDL and only repeats readback.
 
+## Transversal result
+
+Once the control regression, first-consumer fire-test, exact deployment and independent live readback are all closed, T01 is the single transversal evaluator implementation. New capabilities consume it through their own claim/obligation/defeater/test bindings; they do not fork or rebuild this evaluator. Consumer-specific semantics remain outside T01.
+
 ## Result discipline
 
 - Control regression `PASS` proves the source/control contract.
