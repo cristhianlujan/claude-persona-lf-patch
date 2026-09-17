@@ -30,7 +30,16 @@ def materialize(root: Path, *, complete: bool = True, ambiguous: bool = False, s
     (p / "contracts").mkdir(parents=True)
     (p / "schemas").mkdir()
     (p / "validators").mkdir()
-    (p / "SKILL.md").write_text("# Demo\nMaintenance: ACTUALIZACION_PERFIL_LF\n", encoding="utf-8")
+    (p / "SKILL.md").write_text(
+        "# Demo\n"
+        "## Role\nExecute the governed demo task.\n"
+        "## Inputs\nUse the literal request and governed evidence.\n"
+        "## Outputs\nReturn the contracted answer only.\n"
+        "## Blocking rules\nBlock when required authority is missing.\n"
+        "## Expected statuses\nPASS or BLOCKED.\n"
+        "## Maintenance\nACTUALIZACION_PERFIL_LF\n",
+        encoding="utf-8",
+    )
     schema = {"type": "object", "properties": {"answer": {"type": "string"}}, "required": ["answer"]}
     (p / "schemas/output.schema.json").write_text(json.dumps(schema), encoding="utf-8")
     if ambiguous:
@@ -46,6 +55,13 @@ def materialize(root: Path, *, complete: bool = True, ambiguous: bool = False, s
             "canonical_validator": {"path": "validators/runtime_validate.py", "callable": "validate"},
             "semantic_utility": {"path": "validators/runtime_semantic_utility.py", "callable": "evaluate"},
             "governance": {"source_first_required": True, "schema_invention_allowed": False, "fail_closed": True, "exact_head_evidence_required": True, "post_update_baseline_required": True},
+            "model_context": {
+                "mode": "MARKDOWN_SECTIONS",
+                "source": "SKILL.md",
+                "sections": ["Role", "Inputs", "Outputs", "Blocking rules", "Expected statuses"],
+                "max_chars": 2000,
+                "full_source_to_model": False,
+            },
         }
         (p / "contracts/runtime_binding.json").write_text(json.dumps(binding), encoding="utf-8")
 
@@ -55,7 +71,8 @@ def main() -> int:
     t, r = make_repo()
     try:
         materialize(r); x = mod.evaluate(r, "demo")
-        checks["complete_10_of_10"] = x["decision"] == "NO_UPDATE_REQUIRED" and x["score"] == 10
+        checks["complete_11_of_11"] = x["decision"] == "NO_UPDATE_REQUIRED" and x["score"] == 11
+        checks["model_context_transport_bound"] = x["dimensions"]["B11_MODEL_CONTEXT_TRANSPORT"]["pass"] is True
         checks["static_callable_discovery"] = x["callable_discovery_mode"] == "STATIC_AST_NO_IMPORT"
     finally: t.cleanup()
     t, r = make_repo()
@@ -71,8 +88,13 @@ def main() -> int:
     finally: t.cleanup()
     t, r = make_repo()
     try:
+        materialize(r); p = r / "profiles/demo/contracts/runtime_binding.json"; b = json.loads(p.read_text()); b.pop("model_context"); p.write_text(json.dumps(b)); x = mod.evaluate(r, "demo")
+        checks["missing_model_context_requires_update"] = x["decision"] == "UPDATE_REQUIRED" and x["dimensions"]["B11_MODEL_CONTEXT_TRANSPORT"]["pass"] is False and any(i["action"] == "BIND_BOUNDED_MODEL_CONTEXT_TRANSPORT" for i in x["repair_actions"])
+    finally: t.cleanup()
+    t, r = make_repo()
+    try:
         marker = r / "IMPORT_SIDE_EFFECT"; materialize(r, side_effect_marker=marker); x = mod.evaluate(r, "demo")
-        checks["target_code_not_executed"] = x["score"] == 10 and x["target_code_execution_performed"] is False and not marker.exists()
+        checks["target_code_not_executed"] = x["score"] == 11 and x["target_code_execution_performed"] is False and not marker.exists()
     finally: t.cleanup()
     t, r = make_repo()
     try:
@@ -80,7 +102,7 @@ def main() -> int:
         checks["symlink_profile_blocked"] = "PROFILE_TARGET_SYMLINK_FORBIDDEN" in x["blocking_codes"]
     finally: t.cleanup()
     ok = all(checks.values())
-    print(json.dumps({"contract":"S26_PROFILE_BASELINE_MATRIX_V2","checks":checks,"count":len(checks),"result":"PASS" if ok else "FAIL"}, sort_keys=True)); return 0 if ok else 1
+    print(json.dumps({"contract":"S26_PROFILE_BASELINE_MATRIX_V3","checks":checks,"count":len(checks),"result":"PASS" if ok else "FAIL"}, sort_keys=True)); return 0 if ok else 1
 
 
 if __name__ == "__main__": raise SystemExit(main())
