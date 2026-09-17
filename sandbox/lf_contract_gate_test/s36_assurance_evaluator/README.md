@@ -1,12 +1,12 @@
-# S36 Assurance Evaluator — T01 control regression
+# S36 Assurance Evaluator — T01
 
 ## Scope
 
-This directory proves source/control invariants for `ASSURANCE_EVALUATOR_TRANSVERSAL_V1` only.
-It does not apply migrations, activate runtime, repair migration parity, or claim deployment readiness.
-
-The evaluator must remain owner-neutral and reuse the canonical LF Assurance Method stores and LF Test Matrix.
+This directory proves and closes `ASSURANCE_EVALUATOR_TRANSVERSAL_V1` only.
+The evaluator is owner-neutral and reuses the canonical LF Assurance Method stores and LF Test Matrix.
 It must not hardcode Currentness, Parity, Assets, Router, or any other consumer.
+
+Currentness PR `#877@c56b20d7d34b3dc7e4cdf44af69d17253f3efc52` is only the pinned first consumer/fire-test fixture. Its rules do not become part of the evaluator.
 
 ## Control proof
 
@@ -31,8 +31,40 @@ The source-control proof checks at least:
 - append-only/concurrency-idempotent evaluation recording;
 - service-role-only execution boundary.
 
+## First-consumer claim fire-test
+
+`S36 Assurance Evaluator Control` rebuilds a disposable local Supabase from a read-only schema export, applies the exact Currentness matrix plus the exact evaluator candidate, and executes the Currentness root claim.
+
+The expected proof is deliberately not `PASS`: three deterministic subclaims are demonstrated and the four intentionally uncovered surfaces remain `UNPROVEN`, so the root must remain `UNPROVEN`. A root `PASS` would be a critical false-pass regression.
+
+The same fire-test also proves append-only/idempotent recording by evaluating twice and requiring the same evaluation id with one durable row.
+
+## Isolated post-merge deployment close
+
+`.github/workflows/s36-assurance-evaluator-deployment-close.yml` runs only after the control workflow succeeds on `main`.
+It checks out that exact successful `main` revision and targets only:
+
+```text
+20260917190500_lf_assurance_evaluator_transversal_v1.sql
+```
+
+The close is fail-closed:
+
+1. freeze exact filename, Git blob and SHA-256;
+2. read only the T01 live prestate;
+3. block on version mismatch, same-name drift or partial T01 function state;
+4. when absent, execute only the exact `190500` source and its exact ledger row in one transaction with an advisory lock;
+5. never scan, apply, repair or reconcile another owner's pending migration;
+6. read back exact version/name/blob/source SHA-256;
+7. require all six evaluator functions, `service_role` EXECUTE only, zero public/anon/authenticated EXECUTE, and zero SECURITY DEFINER functions;
+8. execute a live fail-closed smoke that must return `UNPROVEN` for an unregistered claim.
+
+A rerun is idempotent: if the exact T01 ledger/source identity is already present it performs no DDL and only repeats readback.
+
 ## Result discipline
 
-`PASS` here means the **control/source contract** is internally guarded by deterministic regression checks.
-It is not proof that the migration was deployed or that a live database execution passed.
-Deployment/parity/runtime proof is a later gate and must remain separate.
+- Control regression `PASS` proves the source/control contract.
+- Currentness fire-test `PASS` proves the evaluator does not manufacture a false PASS from incomplete evidence.
+- Deployment-close `PASS` proves the exact T01 source is materialized and read back live without touching another solution.
+
+Only the conjunction of those gates closes T01 as `PASS_CLOSED` and makes the generic evaluator available as the transversal implementation. Consumer-specific claims, obligations, bindings and semantic rules remain owned by their respective capabilities.
