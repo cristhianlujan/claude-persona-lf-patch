@@ -244,27 +244,81 @@ jobs:
       - name: Validate strict independent receipt-to-bundle binding regressions
         run: python profiles/quality_pack/evals/run_independent_review_bundle_binding_tests.py
 
-      - name: Validate PROFILE_RUNTIME V3 quality and lineage gates
+      - name: Validate transversal grouped gate observability controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/profile_runtime_v3/control
+          python sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id GATE_CHECK_OBSERVABILITY_GROUPED_V1 \
+            --step-id transversal_grouped_control \
+            --mode COLLECT_ALL \
+            --glob 'sandbox/lf_contract_gate_test/gate_check_observability/test_*.py' \
+            --artifact-dir .lf_gate_diagnostics/profile_runtime_v3/control \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix GCO \
+            --owner GATE_CHECK_OBSERVABILITY \
+            --next-action FIX_TRANSVERSAL_GATE_OBSERVABILITY_AND_RERUN \
+            --downstream-impact OBSERVABILITY \
+            --downstream-impact ASSURANCE
+
+      - name: Validate PROFILE_RUNTIME V3 decomposed deterministic gates
         env:
           LF_PERSISTENT_RUNTIME_SCOPE: ISOLATED_CANDIDATE
           LF_LLAMA_SOURCE_COMMIT: 925e1179947ea0c0ebfb0032df18af3a729822be
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf .lf_gate_diagnostics/profile_runtime_v3
-          python sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
-            --gate-id PROFILE_RUNTIME_V3_STRUCTURAL_QUALITY \
-            --step-id structural_quality \
-            --mode COLLECT_ALL \
-            --glob 'sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_*.py' \
-            --artifact-dir .lf_gate_diagnostics/profile_runtime_v3 \
-            --artifact-name lf_gate_error_v1.json \
-            --check-prefix SQ \
-            --owner PROFILE_RUNTIME \
-            --next-action FIX_FAILED_CHECKS_AND_RERUN_GATE \
-            --downstream-impact OBSERVABILITY \
-            --downstream-impact SECURITY \
-            --downstream-impact PERFORMANCE_CHAOS
+          rm -rf .lf_gate_diagnostics/profile_runtime_v3/groups .lf_gate_diagnostics/profile_runtime_v3/lf_gate_group_summary_v1.json
+          python sandbox/lf_contract_gate_test/gate_check_observability/run_gate_groups_v1.py \
+            --manifest sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/profile_runtime_v3_gate_manifest.json \
+            --artifact-dir .lf_gate_diagnostics/profile_runtime_v3
+
+      - name: Qualify GATE_CHECK_OBSERVABILITY against WF_DIAGNOSTIC_COMPLETE_V1 Claim
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          PGHOST: aws-1-us-east-1.pooler.supabase.com
+          PGPORT: "5432"
+          PGUSER: postgres.mhwmirqcgxxukpctffuv
+          PGDATABASE: postgres
+          PGSSLMODE: require
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v psql >/dev/null
+          python sandbox/lf_contract_gate_test/gate_check_observability/qualify_wf_diagnostic_claim_v1.py \
+            --artifact-dir .lf_gate_diagnostics/profile_runtime_v3/qualification/claim
+
+      - name: Qualify GATE_CHECK_OBSERVABILITY in canonical LF matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          python sandbox/lf_contract_gate_test/gate_check_observability/qualify_s36_matrix_v1.py \
+            --manifest sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/profile_runtime_v3_gate_manifest.json \
+            --summary .lf_gate_diagnostics/profile_runtime_v3/lf_gate_group_summary_v1.json \
+            --artifact-dir .lf_gate_diagnostics/profile_runtime_v3/qualification/matrix
+
+      - name: Persist PROFILE_RUNTIME gate failures to governed EKB
+        if: always()
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          PGHOST: aws-1-us-east-1.pooler.supabase.com
+          PGPORT: "5432"
+          PGUSER: postgres.mhwmirqcgxxukpctffuv
+          PGDATABASE: postgres
+          PGSSLMODE: require
+          GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python sandbox/lf_contract_gate_test/gate_check_observability/persist_gate_failures_to_ekb_v1.py \
+            --report .lf_gate_diagnostics/profile_runtime_v3/control/lf_gate_error_v1.json \
+            --summary .lf_gate_diagnostics/profile_runtime_v3/lf_gate_group_summary_v1.json \
+            --artifact-dir .lf_gate_diagnostics/profile_runtime_v3/ekb \
+            --allow-missing \
+            --write \
+            --operation-code ESCRITURA_BASE_CONOCIMIENTO_LF \
+            --execution-id "CI-GATE-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
 
       - name: Persist PROFILE_RUNTIME V3 gate diagnostics
         if: always()
