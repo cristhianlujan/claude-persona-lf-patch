@@ -2,9 +2,9 @@
 """Produce durable check-level LF_GATE_ERROR_V1 diagnostics for CI gates.
 
 Transversal deterministic producer used by LF CI gates. It does not mutate LF
-operational state and does not replace the canonical Supabase recorder. The
-producer captures exact check identity, rc, error/assertion summary, stdout,
-stderr, traceback/diagnostic artifact refs and hashes, plus source/tested SHA.
+operational state and does not replace the canonical Supabase recorder. Checks
+may be discovered from Python file globs or declared as explicit argv arrays;
+no shell interpretation is required for parameterized deterministic commands.
 """
 from __future__ import annotations
 
@@ -145,12 +145,12 @@ def classify_failure(stderr: str, stdout: str, returncode: int) -> tuple[str, st
     return "PROCESS_EXIT_NONZERO", f"PROCESS_EXIT_{returncode}", None
 
 
-def failure_id(gate_id: str, test_path: str, rc: int, stdout_sha: str, stderr_sha: str) -> str:
+def failure_id(gate_id: str, source_path: str, rc: int, stdout_sha: str, stderr_sha: str) -> str:
     return sha256_text(
         canonical_json(
             {
                 "gate_id": gate_id,
-                "test_path": test_path,
+                "source_path": source_path,
                 "rc": rc,
                 "stdout_sha256": stdout_sha,
                 "stderr_sha256": stderr_sha,
@@ -165,12 +165,49 @@ def schema_identity(schema_path: Path) -> tuple[str, str]:
     return str(schema_path.as_posix()), sha256_bytes(schema_path.read_bytes())
 
 
+def parse_command_spec(raw: str) -> dict:
+    try:
+        value = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"invalid_json:{exc.msg}") from exc
+    if not isinstance(value, dict):
+        raise ValueError("command_spec_must_be_object")
+    unknown = set(value) - {"argv", "source_path", "critical"}
+    if unknown:
+        raise ValueError(f"unknown_keys:{','.join(sorted(unknown))}")
+    argv = value.get("argv")
+    source_path = value.get("source_path")
+    critical = value.get("critical", False)
+    if not isinstance(argv, list) or len(argv) < 2 or any(not isinstance(item, str) or not item for item in argv):
+        raise ValueError("argv_must_be_nonempty_string_array_min_2")
+    if not isinstance(source_path, str) or not source_path.strip():
+        raise ValueError("source_path_required")
+    if not isinstance(critical, bool):
+        raise ValueError("critical_must_be_boolean")
+    return {"argv": argv, "source_path": source_path, "critical": critical}
+
+
+def declared_checks(patterns: list[str], command_json: list[str]) -> list[dict]:
+    checks = [
+        {"argv": [sys.executable, path], "source_path": path, "critical": False}
+        for path in normalize_paths(patterns)
+    ]
+    checks.extend(parse_command_spec(raw) for raw in command_json)
+    return checks
+
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
     p.add_argument("--gate-id", required=True)
     p.add_argument("--step-id", required=True)
     p.add_argument("--mode", choices=sorted(MODES), default="COLLECT_ALL")
-    p.add_argument("--glob", action="append", dest="patterns", required=True)
+    p.add_argument("--glob", action="append", dest="patterns", default=[])
+    p.add_argument(
+        "--command-json",
+        action="append",
+        default=[],
+        help='JSON object: {"argv":["python3","script.py","--arg","value"],"source_path":"script.py","critical":false}',
+    )
     p.add_argument("--artifact-dir", required=True)
     p.add_argument("--artifact-name", default="lf_gate_error_v1.json")
     p.add_argument("--schema-ref", default=str(DEFAULT_SCHEMA.as_posix()))
@@ -199,6 +236,57 @@ def _finalize_report(report: dict, artifact_path: Path) -> None:
     write_text(artifact_path, json.dumps(report, indent=2, sort_keys=True, ensure_ascii=False) + "\n")
 
 
+def blocked_report(
+    *,
+    args: argparse.Namespace,
+    schema_ref: str,
+    schema_sha256: str,
+    source: str,
+    tested: str,
+    parent_trace_id: str,
+    artifact_path: Path,
+    error_class: str,
+    reason: str,
+    condition: str,
+    expected: dict,
+    actual: dict,
+    source_paths: list[str],
+) -> int:
+    blocked = {
+        "contract": CONTRACT,
+        "producer": PRODUCER,
+        "schema_ref": schema_ref,
+        "schema_sha256": schema_sha256,
+        "run_id": str(args.run_id),
+        "job_id": str(args.job_id),
+        "step_id": args.step_id,
+        "gate_id": args.gate_id,
+        "gate_mode": args.mode,
+        "gate_result": "BLOCKED",
+        "diagnostic_complete": False,
+        "error_id": stable_uuid("error", f"{args.run_id}:{args.gate_id}:{reason}"),
+        "error_class": error_class,
+        "condition": condition,
+        "expected": expected,
+        "actual": actual,
+        "source_commit": source,
+        "tested_commit": tested,
+        "source_path": source_paths,
+        "trace_id": f"LF-CI-{stable_uuid('trace', f'{args.run_id}:{args.gate_id}:{reason}')}",
+        "parent_trace_id": parent_trace_id,
+        "rc": 2,
+        "timestamp": utc_now(),
+        "downstream_impact": args.downstream_impact,
+        "owner": args.owner,
+        "next_action": args.next_action,
+        "checks": [],
+        "manifest_sha256": "",
+    }
+    _finalize_report(blocked, artifact_path)
+    print(json.dumps({"gate_id": args.gate_id, "result": "BLOCKED", "reason": reason}, sort_keys=True))
+    return 2
+
+
 def main() -> int:
     args = parse_args()
     artifact_dir = Path(args.artifact_dir)
@@ -206,97 +294,91 @@ def main() -> int:
     tested = tested_commit()
     source = source_commit(args.source_commit, tested)
     schema_ref, schema_sha256 = schema_identity(Path(args.schema_ref))
-    test_paths = normalize_paths(args.patterns)
     started_at = utc_now()
     parent_trace_id = f"LF-CI-GATE-{stable_uuid('parent-trace', f'{args.run_id}:{args.job_id}:{args.gate_id}')}"
     artifact_path = artifact_dir / args.artifact_name
+    declared_source_paths = list(args.patterns)
 
     if schema_sha256 == "0" * 64:
-        blocked = {
-            "contract": CONTRACT,
-            "producer": PRODUCER,
-            "schema_ref": schema_ref,
-            "schema_sha256": schema_sha256,
-            "run_id": str(args.run_id),
-            "job_id": str(args.job_id),
-            "step_id": args.step_id,
-            "gate_id": args.gate_id,
-            "gate_mode": args.mode,
-            "gate_result": "BLOCKED",
-            "diagnostic_complete": False,
-            "error_id": stable_uuid("error", f"{args.run_id}:{args.gate_id}:SCHEMA_MISSING"),
-            "error_class": "GATE_DIAGNOSTIC_SCHEMA_MISSING",
-            "condition": "LF_GATE_ERROR_V1 schema exists",
-            "expected": {"schema_exists": True},
-            "actual": {"schema_exists": False},
-            "source_commit": source,
-            "tested_commit": tested,
-            "source_path": args.patterns,
-            "trace_id": f"LF-CI-{stable_uuid('trace', f'{args.run_id}:{args.gate_id}:SCHEMA_MISSING')}",
-            "parent_trace_id": parent_trace_id,
-            "rc": 2,
-            "timestamp": utc_now(),
-            "downstream_impact": args.downstream_impact,
-            "owner": args.owner,
-            "next_action": args.next_action,
-            "checks": [],
-            "manifest_sha256": "",
-        }
-        _finalize_report(blocked, artifact_path)
-        print(json.dumps({"gate_id": args.gate_id, "result": "BLOCKED", "reason": "SCHEMA_MISSING"}, sort_keys=True))
-        return 2
+        return blocked_report(
+            args=args,
+            schema_ref=schema_ref,
+            schema_sha256=schema_sha256,
+            source=source,
+            tested=tested,
+            parent_trace_id=parent_trace_id,
+            artifact_path=artifact_path,
+            error_class="GATE_DIAGNOSTIC_SCHEMA_MISSING",
+            reason="SCHEMA_MISSING",
+            condition="LF_GATE_ERROR_V1 schema exists",
+            expected={"schema_exists": True},
+            actual={"schema_exists": False},
+            source_paths=declared_source_paths,
+        )
 
-    if not test_paths:
-        blocked = {
-            "contract": CONTRACT,
-            "producer": PRODUCER,
-            "schema_ref": schema_ref,
-            "schema_sha256": schema_sha256,
-            "run_id": str(args.run_id),
-            "job_id": str(args.job_id),
-            "step_id": args.step_id,
-            "gate_id": args.gate_id,
-            "gate_mode": args.mode,
-            "gate_result": "BLOCKED",
-            "diagnostic_complete": False,
-            "error_id": stable_uuid("error", f"{args.run_id}:{args.gate_id}:NO_CHECKS"),
-            "error_class": "GATE_CHECK_SET_MISSING",
-            "condition": "declared gate resolves at least one executable check",
-            "expected": {"check_count_min": 1},
-            "actual": {"check_count": 0},
-            "source_commit": source,
-            "tested_commit": tested,
-            "source_path": args.patterns,
-            "trace_id": f"LF-CI-{stable_uuid('trace', f'{args.run_id}:{args.gate_id}:NO_CHECKS')}",
-            "parent_trace_id": parent_trace_id,
-            "rc": 2,
-            "timestamp": utc_now(),
-            "downstream_impact": args.downstream_impact,
-            "owner": args.owner,
-            "next_action": args.next_action,
-            "checks": [],
-            "manifest_sha256": "",
-        }
-        _finalize_report(blocked, artifact_path)
-        print(json.dumps({"gate_id": args.gate_id, "result": "BLOCKED", "reason": "NO_CHECKS"}, sort_keys=True))
-        return 2
+    try:
+        check_specs = declared_checks(args.patterns, args.command_json)
+        declared_source_paths.extend(spec["source_path"] for spec in check_specs if spec["source_path"] not in declared_source_paths)
+    except ValueError as exc:
+        return blocked_report(
+            args=args,
+            schema_ref=schema_ref,
+            schema_sha256=schema_sha256,
+            source=source,
+            tested=tested,
+            parent_trace_id=parent_trace_id,
+            artifact_path=artifact_path,
+            error_class="GATE_COMMAND_SPEC_INVALID",
+            reason="COMMAND_SPEC_INVALID",
+            condition="all declared command specs are strict argv JSON objects",
+            expected={"command_spec_valid": True},
+            actual={"command_spec_valid": False, "detail": str(exc)},
+            source_paths=declared_source_paths,
+        )
+
+    if not check_specs:
+        return blocked_report(
+            args=args,
+            schema_ref=schema_ref,
+            schema_sha256=schema_sha256,
+            source=source,
+            tested=tested,
+            parent_trace_id=parent_trace_id,
+            artifact_path=artifact_path,
+            error_class="GATE_CHECK_SET_MISSING",
+            reason="NO_CHECKS",
+            condition="declared gate resolves at least one executable check",
+            expected={"check_count_min": 1},
+            actual={"check_count": 0},
+            source_paths=declared_source_paths,
+        )
 
     checks: list[dict] = []
     first_critical_failure: int | None = None
-    for index, test_path in enumerate(test_paths, start=1):
+    for index, spec in enumerate(check_specs, start=1):
         check_id = f"{args.check_prefix}-{index:03d}"
-        critical = args.mode == "FAIL_FAST_CRITICAL" and is_critical(test_path, args.critical_pattern)
+        source_path = spec["source_path"]
+        command = list(spec["argv"])
+        critical = args.mode == "FAIL_FAST_CRITICAL" and (
+            bool(spec.get("critical")) or is_critical(source_path, args.critical_pattern)
+        )
         started = utc_now()
-        command = [sys.executable, test_path]
-        proc = subprocess.run(command, capture_output=True, text=True)
-        stdout = redact(proc.stdout or "")
-        stderr = redact(proc.stderr or "")
+        try:
+            proc = subprocess.run(command, capture_output=True, text=True)
+            returncode = proc.returncode
+            stdout = redact(proc.stdout or "")
+            stderr = redact(proc.stderr or "")
+        except OSError as exc:
+            returncode = 127
+            stdout = ""
+            stderr = redact(f"{exc.__class__.__name__}: {exc}\n")
+
         log_base = artifact_dir / "checks" / check_id
         stdout_path = log_base.with_suffix(".stdout.log")
         stderr_path = log_base.with_suffix(".stderr.log")
         stdout_sha = write_text(stdout_path, stdout)
         stderr_sha = write_text(stderr_path, stderr)
-        status = "PASS" if proc.returncode == 0 else "FAIL"
+        status = "PASS" if returncode == 0 else "FAIL"
         error_id = None
         failure_digest = None
         error_class = None
@@ -309,24 +391,19 @@ def main() -> int:
 
         if status == "FAIL":
             error_id = stable_uuid("error", f"{args.run_id}:{args.job_id}:{args.gate_id}:{check_id}:{source}")
-            error_class, error_summary, assertion_text = classify_failure(stderr, stdout, proc.returncode)
+            error_class, error_summary, assertion_text = classify_failure(stderr, stdout, returncode)
             trace_text, trace_present = traceback_text(stderr, stdout)
             if not trace_text:
-                trace_text = f"PROCESS_EXIT_{proc.returncode}\n"
+                trace_text = f"PROCESS_EXIT_{returncode}\n"
             trace_path = log_base.with_suffix(".traceback.log")
             trace_sha = write_text(trace_path, trace_text)
             trace_ref = str(trace_path.as_posix())
-            failure_digest = failure_id(args.gate_id, test_path, proc.returncode, stdout_sha, stderr_sha)
+            failure_digest = failure_id(args.gate_id, source_path, returncode, stdout_sha, stderr_sha)
             diagnostic_complete = bool(
-                test_path
-                and command
-                and error_summary
-                and stdout_sha
-                and stderr_sha
-                and trace_ref
-                and trace_sha
+                source_path and command and error_summary and stdout_sha and stderr_sha and trace_ref and trace_sha
             )
 
+        safe_command = [redact(item) for item in command]
         trace_id = f"LF-CI-{stable_uuid('trace', f'{args.run_id}:{args.job_id}:{args.gate_id}:{check_id}:{source}')}"
         checks.append(
             {
@@ -338,20 +415,20 @@ def main() -> int:
                 "error_class": error_class,
                 "error_summary": error_summary,
                 "assertion_text": assertion_text,
-                "condition": "independent Python validation exits with rc=0",
+                "condition": "deterministic command exits with rc=0",
                 "expected": {"rc": 0},
-                "actual": {"rc": proc.returncode},
-                "command": command,
-                "exit_code": proc.returncode,
-                "input_ref": test_path,
+                "actual": {"rc": returncode},
+                "command": safe_command,
+                "exit_code": returncode,
+                "input_ref": source_path,
                 "evidence_ref": f"artifact://{args.artifact_name}#checks/{check_id}",
-                "producer": test_path,
+                "producer": source_path,
                 "source_commit": source,
                 "tested_commit": tested,
-                "source_path": test_path,
+                "source_path": source_path,
                 "trace_id": trace_id,
                 "parent_trace_id": parent_trace_id,
-                "rc": proc.returncode,
+                "rc": returncode,
                 "timestamp": utc_now(),
                 "started_at": started,
                 "stdout_ref": str(stdout_path.as_posix()),
@@ -367,12 +444,12 @@ def main() -> int:
                 "next_action": args.next_action if status != "PASS" else "NONE",
             }
         )
-        print(f"LF_GATE_CHECK check_id={check_id} status={status} rc={proc.returncode} source={test_path}")
+        print(f"LF_GATE_CHECK check_id={check_id} status={status} rc={returncode} source={source_path}")
         if status != "PASS" and critical:
             first_critical_failure = index
             break
 
-    expected_check_ids = [f"{args.check_prefix}-{i:03d}" for i in range(1, len(test_paths) + 1)]
+    expected_check_ids = [f"{args.check_prefix}-{i:03d}" for i in range(1, len(check_specs) + 1)]
     executed_ids = [c["check_id"] for c in checks]
     failures = [c for c in checks if c["check_status"] == "FAIL"]
     if args.mode == "COLLECT_ALL":
@@ -404,7 +481,7 @@ def main() -> int:
         "diagnostic_complete": diagnostic_complete,
         "source_commit": source,
         "tested_commit": tested,
-        "source_path": args.patterns,
+        "source_path": declared_source_paths,
         "trace_id": parent_trace_id,
         "parent_trace_id": None,
         "timestamp": utc_now(),
