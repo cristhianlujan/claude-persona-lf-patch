@@ -31,6 +31,64 @@ def canonical(value: object) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 
+def sql_literal(value: str) -> str:
+    """Return a collision-resistant PostgreSQL dollar-quoted literal."""
+    text = str(value)
+    tag = "$lf_" + hashlib.sha256(text.encode("utf-8")).hexdigest()[:16] + "$"
+    if tag in text:
+        raise ValueError("sql_literal_delimiter_collision")
+    return f"{tag}{text}{tag}"
+
+
+def pre_ekb_readback_sql(operation_code: str, error_code: str) -> str:
+    op = sql_literal(operation_code)
+    code = sql_literal(error_code)
+    contract = sql_literal(PRE_EKB_CONTRACT)
+    return f"""
+select jsonb_build_object(
+  'contract_active',
+    exists(
+      select 1
+      from public.lf_operation_contracts
+      where operation_code={op}
+        and contract_code={contract}
+        and status='ACTIVE_ENFORCEMENT'
+        and coalesce((required_before_write->>'pre_ekb_gate_required')::boolean,false)
+    ),
+  'existing_error',
+    (
+      select jsonb_build_object(
+        'codigo',codigo,
+        'estado',estado,
+        'severidad',severidad,
+        'frecuencia',frecuencia,
+        'source_ref',source_ref
+      )
+      from transversal.error_knowledge
+      where codigo={code}
+      limit 1
+    ),
+  'controls_derived',
+    jsonb_build_array(
+      'CANONICAL_WRITER_ONLY',
+      'STABLE_ERROR_CODE_RECURRENCE',
+      'WRITER_READBACK_REQUIRED'
+    ),
+  'non_applicable_reason_if_any',null
+)::text;
+""".strip()
+
+
+def canonical_writer_sql(operation_code: str, payload: dict, execution_id: str) -> str:
+    op = sql_literal(operation_code)
+    body = sql_literal(canonical(payload))
+    execution = sql_literal(execution_id)
+    return (
+        f"select {CANONICAL_WRITER_FUNCTION}("
+        f"{op},{body}::jsonb,{execution})::text;"
+    )
+
+
 def write_json(path: Path, value: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, indent=2, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -227,30 +285,126 @@ def main() -> int:
 
     results = []
     for item in candidates:
-        cmd = [
-            psql_path, "-X", "-v", "ON_ERROR_STOP=1", "-At",
-            "-v", f"operation_code={args.operation_code}",
-            "-v", f"execution_id={execution_id}",
-            "-v", f"payload={canonical(item)}",
-            "-c", CANONICAL_WRITER_SQL,
+        preflight_cmd = [
+            psql_path, "-X", "-v", "ON_ERROR_STOP=1", "-Atq",
+            "-c", pre_ekb_readback_sql(args.operation_code, item["codigo"]),
         ]
-        proc = subprocess.run(cmd, capture_output=True, text=True)
-        if proc.returncode != 0:
+        preflight = subprocess.run(
+            preflight_cmd,
+            capture_output=True,
+            text=True,
+        )
+        preflight_lines = [
+            line.strip()
+            for line in (preflight.stdout or "").splitlines()
+            if line.strip()
+        ]
+        try:
+            preflight_readback = (
+                json.loads(preflight_lines[-1])
+                if preflight.returncode == 0 and preflight_lines
+                else None
+            )
+        except json.JSONDecodeError:
+            preflight_readback = None
+
+        if (
+            preflight.returncode != 0
+            or not isinstance(preflight_readback, dict)
+            or preflight_readback.get("contract_active") is not True
+        ):
             receipt = {
                 "schema_version": SCHEMA_VERSION,
                 "producer": PRODUCER,
                 "status": "EKB_PERSISTENCE_BLOCKED",
-                "reason": "CANONICAL_WRITER_CALL_FAILED",
+                "reason": "PRE_EKB_READBACK_FAILED",
                 "error_code": item["codigo"],
-                "stderr": redact((proc.stderr or "")[-1200:]),
+                "stderr": redact((preflight.stderr or "")[-1200:]),
+                "pre_ekb_readback": preflight_readback,
                 "persisted_before_failure": results,
                 "timestamp": now(),
             }
             write_json(out_dir / "ekb_persistence_receipt_v1.json", receipt)
-            print(json.dumps({"status": receipt["status"], "error_code": item["codigo"]}, sort_keys=True))
+            print(
+                json.dumps(
+                    {
+                        "status": receipt["status"],
+                        "reason": receipt["reason"],
+                        "error_code": item["codigo"],
+                        "stderr": receipt["stderr"],
+                    },
+                    sort_keys=True,
+                )
+            )
             return 2
-        raw = (proc.stdout or "").strip().splitlines()
-        results.append({"error_code": item["codigo"], "writer_readback": raw[-1] if raw else ""})
+
+        cmd = [
+            psql_path, "-X", "-v", "ON_ERROR_STOP=1", "-Atq",
+            "-c", canonical_writer_sql(
+                args.operation_code,
+                item,
+                execution_id,
+            ),
+        ]
+        proc = subprocess.run(cmd, capture_output=True, text=True)
+        raw = [
+            line.strip()
+            for line in (proc.stdout or "").splitlines()
+            if line.strip()
+        ]
+        try:
+            writer_readback = (
+                json.loads(raw[-1])
+                if proc.returncode == 0 and raw
+                else None
+            )
+        except json.JSONDecodeError:
+            writer_readback = None
+
+        writer_valid = bool(
+            isinstance(writer_readback, dict)
+            and writer_readback.get("writer") == CANONICAL_WRITER_FUNCTION
+            and writer_readback.get("error_code") == item["codigo"]
+        )
+        if proc.returncode != 0 or not writer_valid:
+            reason = (
+                "CANONICAL_WRITER_CALL_FAILED"
+                if proc.returncode != 0
+                else "CANONICAL_WRITER_READBACK_MISMATCH"
+            )
+            receipt = {
+                "schema_version": SCHEMA_VERSION,
+                "producer": PRODUCER,
+                "status": "EKB_PERSISTENCE_BLOCKED",
+                "reason": reason,
+                "error_code": item["codigo"],
+                "stderr": redact((proc.stderr or "")[-1200:]),
+                "pre_ekb_readback": preflight_readback,
+                "writer_readback": writer_readback,
+                "persisted_before_failure": results,
+                "timestamp": now(),
+            }
+            write_json(out_dir / "ekb_persistence_receipt_v1.json", receipt)
+            print(
+                json.dumps(
+                    {
+                        "status": receipt["status"],
+                        "reason": receipt["reason"],
+                        "error_code": item["codigo"],
+                        "stderr": receipt["stderr"],
+                    },
+                    sort_keys=True,
+                )
+            )
+            return 2
+
+        results.append(
+            {
+                "error_code": item["codigo"],
+                "pre_ekb_readback": preflight_readback,
+                "writer_readback": writer_readback,
+            }
+        )
 
     receipt = {
         "schema_version": SCHEMA_VERSION,
