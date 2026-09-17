@@ -565,12 +565,25 @@ jobs:
             --downstream-impact ASSURANCE \
             --downstream-impact GOVERNANCE
 
-      - name: Enforce S36 assurance completeness debt monotonicity
+      - name: Enforce S36 assurance completeness debt monotonicity with deterministic diagnostics
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
         run: |
-          python3 sandbox/lf_contract_gate_test/s36_wp06_ci_completeness_gate.py
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/s36_debt_monotonicity
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_S36_DEBT_MONOTONICITY \
+            --step-id s36_debt_monotonicity \
+            --mode COLLECT_ALL \
+            --glob 'sandbox/lf_contract_gate_test/s36_wp06_ci_completeness_gate.py' \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/s36_debt_monotonicity \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix S36D \
+            --owner S36_ASSURANCE \
+            --next-action FIX_FAILED_CHECK_AND_RERUN_LF_CONTRACT_CHECK \
+            --downstream-impact ASSURANCE \
+            --downstream-impact GOVERNANCE
 
       - name: Validate LF contract
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
@@ -690,18 +703,27 @@ jobs:
               print("PASS_GOV017_FORBIDDEN_STATUS_SCAN=4/4")
           PY
 
-      - name: Run E.16 governance regression matrices
+      - name: Run E.16 governance regression matrices with deterministic diagnostics
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
         run: |
-          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_REGRESSION_TESTS.py \
-            --validator sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py
-          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_INVENTORY_TESTS.py \
-            --inventory sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py
-          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_RATIFICATION_TESTS.py \
-            --repo-root .
-          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_INTEGRATION_TESTS.py \
-            --candidate-root .
-          python3 sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_SCOPE_TESTS.py
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/e16_regression_matrices
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_E16_REGRESSION_MATRICES \
+            --step-id e16_regression_matrices \
+            --mode COLLECT_ALL \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/PR93_LOTE_E16_REGRESSION_TESTS.py","--validator","sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py"],"source_path":"sandbox/lf_contract_gate_test/PR93_LOTE_E16_REGRESSION_TESTS.py"}' \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/PR93_LOTE_E16_INVENTORY_TESTS.py","--inventory","sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py"],"source_path":"sandbox/lf_contract_gate_test/PR93_LOTE_E16_INVENTORY_TESTS.py"}' \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/PR93_LOTE_E16_RATIFICATION_TESTS.py","--repo-root","."],"source_path":"sandbox/lf_contract_gate_test/PR93_LOTE_E16_RATIFICATION_TESTS.py"}' \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/PR93_LOTE_E16_INTEGRATION_TESTS.py","--candidate-root","."],"source_path":"sandbox/lf_contract_gate_test/PR93_LOTE_E16_INTEGRATION_TESTS.py"}' \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_SCOPE_TESTS.py"],"source_path":"sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_SCOPE_TESTS.py"}' \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/e16_regression_matrices \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix E16 \
+            --owner LF_CONTRACT_CHECK \
+            --next-action FIX_FAILED_E16_CHECK_AND_RERUN_LF_CONTRACT_CHECK \
+            --downstream-impact E16 \
+            --downstream-impact GOVERNANCE
 
       - name: Run LF validation engine self-test with deterministic diagnostics
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
