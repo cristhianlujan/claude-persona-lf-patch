@@ -72,11 +72,17 @@ def _validate_attested_at(value: Any) -> None:
         raise RuntimeExecutionBlocked("RUNTIME_ATTESTATION_ATTESTED_AT_TIMEZONE_MISSING")
 
 
-def _validate_sources(profile_sources: list[dict[str, str]]) -> tuple[list[dict[str, str]], list[str], str]:
+def _validate_sources(
+    profile_sources: list[dict[str, Any]],
+) -> tuple[list[dict[str, str]], list[str], str, str, int]:
     if not isinstance(profile_sources, list) or not profile_sources:
         raise RuntimeExecutionBlocked("PROFILE_SOURCES_MISSING")
-    normalized: list[dict[str, str]] = []
+    canonical: list[dict[str, str]] = []
+    model_sources: list[dict[str, str]] = []
     seen: set[str] = set()
+    projection_declared = any(
+        isinstance(item, dict) and "model_content" in item for item in profile_sources
+    )
     for item in profile_sources:
         if not isinstance(item, dict):
             raise RuntimeExecutionBlocked("PROFILE_SOURCE_INVALID")
@@ -86,10 +92,39 @@ def _validate_sources(profile_sources: list[dict[str, str]]) -> tuple[list[dict[
         if ref in seen:
             raise RuntimeExecutionBlocked("PROFILE_SOURCE_DUPLICATE", ref)
         seen.add(ref)
-        normalized.append({"ref": ref, "content": content})
-    normalized.sort(key=lambda item: item["ref"])
-    manifest = [{"ref": item["ref"], "content_sha256": sha256_text(item["content"])} for item in normalized]
-    return normalized, [item["ref"] for item in normalized], canonical_json_sha256(manifest)
+        canonical.append({"ref": ref, "content": content})
+        if projection_declared:
+            if "model_content" not in item:
+                raise RuntimeExecutionBlocked("PROFILE_MODEL_CONTEXT_PROJECTION_INCOMPLETE", ref)
+            model_content = item.get("model_content")
+            if model_content is None:
+                continue
+            if not isinstance(model_content, str) or not model_content.strip():
+                raise RuntimeExecutionBlocked("PROFILE_MODEL_CONTEXT_INVALID", ref)
+            if model_content == content:
+                raise RuntimeExecutionBlocked("PROFILE_FULL_SOURCE_TO_MODEL_FORBIDDEN", ref)
+            model_sources.append({"ref": ref, "content": model_content})
+        else:
+            model_sources.append({"ref": ref, "content": content})
+    canonical.sort(key=lambda item: item["ref"])
+    model_sources.sort(key=lambda item: item["ref"])
+    if projection_declared and not model_sources:
+        raise RuntimeExecutionBlocked("PROFILE_MODEL_CONTEXT_EMPTY")
+    canonical_manifest = [
+        {"ref": item["ref"], "content_sha256": sha256_text(item["content"])}
+        for item in canonical
+    ]
+    model_manifest = [
+        {"ref": item["ref"], "content_sha256": sha256_text(item["content"])}
+        for item in model_sources
+    ]
+    return (
+        model_sources,
+        [item["ref"] for item in canonical],
+        canonical_json_sha256(canonical_manifest),
+        canonical_json_sha256(model_manifest),
+        sum(len(item["content"]) for item in model_sources),
+    )
 
 
 def _validate_lf_adapter_sources(
@@ -167,7 +202,7 @@ def _validate_lf_adapter_sources(
 
 def build_runtime_request(
     *, execution_id: str, profile_code: str, profile_slug: str,
-    profile_sources: list[dict[str, str]], input_literal: str,
+    profile_sources: list[dict[str, Any]], input_literal: str,
     obligation_manifest: dict[str, Any] | None = None,
     lf_adapter_sources: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
@@ -176,7 +211,7 @@ def build_runtime_request(
             raise RuntimeExecutionBlocked(f"{name.upper()}_MISSING")
     if not isinstance(input_literal, str) or not input_literal.strip():
         raise RuntimeExecutionBlocked("INPUT_LITERAL_MISSING")
-    normalized_sources, source_refs, source_sha256 = _validate_sources(profile_sources)
+    normalized_sources, source_refs, source_sha256, model_source_sha256, model_source_chars = _validate_sources(profile_sources)
     normalized_adapters, adapter_refs, adapter_sha256 = _validate_lf_adapter_sources(lf_adapter_sources, profile_code=profile_code)
     input_sha = sha256_text(input_literal)
     request: dict[str, Any] = {
@@ -188,6 +223,8 @@ def build_runtime_request(
         "profile_sources": normalized_sources,
         "profile_source_refs": source_refs,
         "profile_source_sha256": source_sha256,
+        "profile_model_source_sha256": model_source_sha256,
+        "profile_model_source_chars": model_source_chars,
         "input_literal": input_literal,
         "input_sha256": input_sha,
     }
@@ -307,7 +344,7 @@ def _build_lf_adapter_invocations(request: dict[str, Any]) -> list[dict[str, Any
 
 def execute_profile_runtime(
     *, execution_id: str, profile_code: str, profile_slug: str,
-    profile_sources: list[dict[str, str]], input_literal: str,
+    profile_sources: list[dict[str, Any]], input_literal: str,
     adapter: RuntimeAdapter, attestation_verifier: RuntimeAttestationVerifier,
     allow_test_doubles: bool = False, obligation_manifest: dict[str, Any] | None = None,
     lf_adapter_sources: list[dict[str, Any]] | None = None,
