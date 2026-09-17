@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import importlib.util
 import re
 import unittest
 
@@ -25,8 +26,30 @@ def text(path: Path) -> str:
 SQL = text(SOURCE)
 RECORDER_SQL = text(RECORDER)
 
+VALIDATOR_PATH = REPO / "scripts" / "lf_contract_check.py"
+_validator_spec = importlib.util.spec_from_file_location("lf_t01_contract_check", VALIDATOR_PATH)
+if _validator_spec is None or _validator_spec.loader is None:
+    raise AssertionError("T01_VALIDATOR_LOAD_FAILED")
+VALIDATOR = importlib.util.module_from_spec(_validator_spec)
+_validator_spec.loader.exec_module(VALIDATOR)
+
 
 class AssuranceEvaluatorSourceControlTests(unittest.TestCase):
+    def test_t01_workflows_are_exactly_admitted_fail_closed(self):
+        expected = {
+            ".github/workflows/s36-assurance-evaluator-control.yml",
+            ".github/workflows/s36-assurance-evaluator-deployment-close.yml",
+        }
+        self.assertEqual(VALIDATOR.T01_ASSURANCE_WORKFLOW_PATHS, expected)
+        self.assertNotIn(".github/", VALIDATOR.ALLOWED_PREFIXES)
+        for path in expected:
+            self.assertIn(path, VALIDATOR.ALLOWED_GITHUB_EXACT)
+            self.assertTrue(VALIDATOR.is_allowed_path(path))
+        for path in VALIDATOR.T01_ASSURANCE_WORKFLOW_DENIED_LOOKALIKES:
+            self.assertNotIn(path, VALIDATOR.ALLOWED_GITHUB_EXACT)
+            self.assertFalse(VALIDATOR.is_allowed_path(path))
+        VALIDATOR.validate_t01_assurance_workflow_admission_scope()
+
     def test_single_consolidated_source_no_predeployment_patch_stack(self):
         for path in SUPERSEDED:
             self.assertFalse(path.exists(), f"SUPERSEDED_SOURCE_MUST_BE_REMOVED:{path.name}")
