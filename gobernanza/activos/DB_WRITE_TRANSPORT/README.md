@@ -42,7 +42,7 @@ Antes de cualquier write:
 ## Uso del selector
 
 ```bash
-python scripts/lf_db_write_transport.py \
+python sandbox/lf_contract_gate_test/db_write_transport/lf_db_write_transport.py \
   --target-type MIGRATION \
   --migration-path supabase/migrations/20260917191749_lf_example_v1.sql
 ```
@@ -61,7 +61,7 @@ migration_name=lf_example_v1
 Para verificar la lógica local del selector:
 
 ```bash
-python scripts/lf_db_write_transport.py --self-test
+python sandbox/lf_contract_gate_test/db_write_transport/lf_db_write_transport.py --self-test
 ```
 
 ## Flujo con Supabase CLI
@@ -99,7 +99,7 @@ Esta capacidad previene divergencias nuevas. Una migration ya aplicada bajo otra
 - Router: `ACT-0001`.
 - Operación consumidora: `ACTUALIZACION_DB_LF`.
 - Gate de validación: `MIGRATION_SOURCE_PARITY`.
-- Selector ejecutable: `scripts/lf_db_write_transport.py`.
+- Selector ejecutable: `sandbox/lf_contract_gate_test/db_write_transport/lf_db_write_transport.py`.
 - EKB principal: `CI-MIGRATION-SOURCE-PARITY-001`.
 
 ## Límites
