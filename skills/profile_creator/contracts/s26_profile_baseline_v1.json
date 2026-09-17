@@ -14,7 +14,8 @@
     {"evidence": "validators/validate_pack.py discoverable by Profile Creator", "id": "B07_CI_PACK_VALIDATOR", "required": true},
     {"evidence": "source_first_required=true and schema_invention_allowed=false", "id": "B08_SOURCE_FIRST_NO_INVENTION", "required": true},
     {"evidence": "fail_closed=true", "id": "B09_FAIL_CLOSED", "required": true},
-    {"evidence": "exact_head_evidence_required=true and post_update_baseline_required=true", "id": "B10_EVIDENCE_CLOSURE", "required": true}
+    {"evidence": "exact_head_evidence_required=true and post_update_baseline_required=true", "id": "B10_EVIDENCE_CLOSURE", "required": true},
+    {"evidence": "runtime_binding.model_context selects bounded SKILL.md sections and forbids full canonical source transport to the model", "id": "B11_MODEL_CONTEXT_TRANSPORT", "required": true}
   ],
   "enforcement": "PROFILE_LOCAL_POST_UPDATE_REQUIRED",
   "global_fleet_enforcement": "DEFERRED_UNTIL_GOVERNED_PROFILE_UPDATES_COMPLETE",
@@ -36,8 +37,15 @@
       "schema_invention_allowed": false,
       "source_first_required": true
     },
+    "model_context_required": {
+      "full_source_to_model": false,
+      "max_chars_ceiling": 8000,
+      "mode": "MARKDOWN_SECTIONS",
+      "required": ["mode", "source", "sections", "max_chars", "full_source_to_model"],
+      "source": "SKILL.md"
+    },
     "path": "contracts/runtime_binding.json",
-    "required_top_level": ["schema", "profile_slug", "profile_code", "runtime_schema", "canonical_validator", "semantic_utility", "governance"],
+    "required_top_level": ["schema", "profile_slug", "profile_code", "runtime_schema", "canonical_validator", "semantic_utility", "governance", "model_context"],
     "runtime_schema_required": ["default", "output_modes"],
     "schema": "LF_PROFILE_RUNTIME_BINDING_V1"
   },
@@ -46,6 +54,7 @@
     "never_enable_runtime_or_production": true,
     "never_invent_profile_code": true,
     "never_select_schema_by_filename_guess": true,
+    "no_full_profile_source_to_model": true,
     "no_profile_domain_semantics_standardization": true,
     "no_target_code_import_during_read_only_evaluation": true,
     "no_write_without_live_learning_preflight": true
