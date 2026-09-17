@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "profile_pack_id",
+    "symptom",
+    "immediate_cause",
+    "systemic_root_cause",
+    "causal_chain",
+    "first_bad_control",
+    "escape_control",
+    "recurrence_evidence",
+    "repair_level",
+    "alternatives",
+    "selected_alternative",
+    "rejected_alternatives",
+    "falsification_results",
+    "origin_asset",
+    "origin_operation",
+    "owner",
+    "invariant",
+    "hard_guard",
+    "acceptance_criteria",
+    "historical_regressions",
+    "residual_risks",
+    "evidence_map",
+    "blocking_codes",
+    "next_gate"
+  ],
+  "properties": {
+    "status": {
+      "enum": [
+        "SYSTEMIC_REPAIR_SPEC",
+        "NEEDS_MORE_EVIDENCE",
+        "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+        "BLOCK_PIPELINE"
+      ]
+    },
+    "profile_pack_id": {
+      "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_1"
+    },
+    "symptom": {
+      "type": "string",
+      "minLength": 8
+    },
+    "immediate_cause": {
+      "type": "string",
+      "minLength": 8
+    },
+    "systemic_root_cause": {
+      "type": "string",
+      "minLength": 12
+    },
+    "causal_chain": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "string",
+        "minLength": 3
+      }
+    },
+    "first_bad_control": {
+      "type": "string",
+      "minLength": 5
+    },
+    "escape_control": {
+      "type": "string",
+      "minLength": 5
+    },
+    "recurrence_evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ref",
+          "fact"
+        ],
+        "properties": {
+          "ref": {
+            "type": "string",
+            "minLength": 5
+          },
+          "fact": {
+            "type": "string",
+            "minLength": 5
+          }
+        }
+      }
+    },
+    "repair_level": {
+      "enum": [
+        "LOCAL",
+        "SYSTEMIC_ORIGIN",
+        "ARCHITECTURAL"
+      ]
+    },
+    "alternatives": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "description",
+          "prevention",
+          "complexity",
+          "blast_radius",
+          "reuse",
+          "fail_closed",
+          "idempotency",
+          "recoverability",
+          "operational_cost"
+        ],
+        "properties": {
+          "id": {"type":"string","minLength":1},
+          "description": {"type":"string","minLength":1},
+          "prevention": {"type":"string","minLength":1},
+          "complexity": {"type":"string","minLength":1},
+          "blast_radius": {"type":"string","minLength":1},
+          "reuse": {"type":"string","minLength":1},
+          "fail_closed": {"type":"string","minLength":1},
+          "idempotency": {"type":"string","minLength":1},
+          "recoverability": {"type":"string","minLength":1},
+          "operational_cost": {"type":"string","minLength":1}
+        }
+      }
+    },
+    "selected_alternative": {"type":"string","minLength":1},
+    "rejected_alternatives": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type":"object",
+        "additionalProperties":false,
+        "required":["id","reason"],
+        "properties":{"id":{"type":"string"},"reason":{"type":"string","minLength":5}}
+      }
+    },
+    "falsification_results": {
+      "type":"array",
+      "minItems":7,
+      "items":{"type":"object","additionalProperties":false,"required":["case","result","evidence_ref"],"properties":{"case":{"type":"string"},"result":{"enum":["PASS","FAIL","NOT_COVERED","BLOCKED"]},"evidence_ref":{"type":"string"}}}
+    },
+    "origin_asset":{"type":"string","minLength":3},
+    "origin_operation":{"type":"string","minLength":3},
+    "owner":{"type":"string","minLength":2},
+    "invariant":{"type":"string","minLength":8},
+    "hard_guard":{"type":"object","additionalProperties":false,"required":["control","fail_closed_condition","observable_result"],"properties":{"control":{"type":"string","minLength":5},"fail_closed_condition":{"type":"string","minLength":5},"observable_result":{"type":"string","minLength":5}}},
+    "acceptance_criteria":{"type":"array","minItems":3,"items":{"type":"string","minLength":5}},
+    "historical_regressions":{"type":"array","minItems":3,"items":{"type":"string","minLength":5}},
+    "residual_risks":{"type":"array","items":{"type":"string","minLength":3}},
+    "evidence_map":{"type":"array","minItems":1,"items":{"type":"string","minLength":5}},
+    "blocking_codes":{"type":"array","items":{"type":"string"}},
+    "next_gate":{"type":"string","minLength":2}
+  }
+}
