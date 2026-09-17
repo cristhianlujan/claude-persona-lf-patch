@@ -36,3 +36,217 @@ jobs:
 
       - name: Run ASSURANCE_EVALUATOR_TRANSVERSAL_V1 control regression
         run: python sandbox/lf_contract_gate_test/s36_assurance_evaluator/test_lf_assurance_evaluator_transversal_v1.py
+
+  currentness-claim-firetest:
+    name: T01 Currentness claim fire-test
+    needs: source-control-regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+      SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+      CURRENTNESS_PR_HEAD: c56b20d7d34b3dc7e4cdf44af69d17253f3efc52
+      LOCAL_DB_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+
+    steps:
+      - name: Require encrypted sandbox read credential
+        shell: bash
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          [ -n "${SUPABASE_DB_PASSWORD:-}" ] || { echo "BLOCK_T01_FIRETEST_SANDBOX_READ_CREDENTIAL_MISSING"; exit 1; }
+
+      - name: Checkout exact evaluator candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install exact fire-test dependency
+        run: python -m pip install --disable-pip-version-check pytest
+
+      - name: Set up pinned Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.116.0
+
+      - name: Fetch exact Currentness consumer and run its deterministic source tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$CURRENTNESS_PR_HEAD"
+          consumer="$RUNNER_TEMP/currentness-877"
+          git worktree add --detach "$consumer" "$CURRENTNESS_PR_HEAD"
+          python -m pytest -q \
+            "$consumer/sandbox/lf_contract_gate_test/material_currentness/test_lf_currentness_authority_v1.py" \
+            "$consumer/sandbox/lf_contract_gate_test/material_currentness/test_lf_broker_currentness_bridge_v1.py"
+          git -C "$consumer" rev-parse HEAD | grep -Fx "$CURRENTNESS_PR_HEAD"
+
+      - name: Export current sandbox schema read-only
+        shell: bash
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+          export EXCLUDED_SCHEMAS='information_schema|pg_*|_analytics|_realtime|_supavisor|auth|etl|extensions|pgbouncer|realtime|storage|supabase_functions|supabase_migrations|cron|dbdev|graphql|graphql_public|net|pgmq|pgsodium|pgsodium_masks|pgtle|repack|tiger|tiger_data|timescaledb_*|_timescaledb_*|topology|vault'
+
+          docker run --rm \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE -e EXCLUDED_SCHEMAS \
+            postgres:17.6 \
+            pg_dump --schema-only --no-owner --no-privileges --quote-all-identifiers --role postgres \
+              --exclude-schema "$EXCLUDED_SCHEMAS" \
+          | sed -E 's/^\\(un)?restrict .*$/-- &/' \
+          | sed -E 's/^CREATE SCHEMA "/CREATE SCHEMA IF NOT EXISTS "/' \
+          | sed -E 's/^CREATE TABLE "/CREATE TABLE IF NOT EXISTS "/' \
+          | sed -E 's/^CREATE SEQUENCE "/CREATE SEQUENCE IF NOT EXISTS "/' \
+          | sed -E 's/^CREATE VIEW "/CREATE OR REPLACE VIEW "/' \
+          | sed -E 's/^CREATE FUNCTION "/CREATE OR REPLACE FUNCTION "/' \
+          | sed -E 's/^CREATE TRIGGER "/CREATE OR REPLACE TRIGGER "/' \
+          | sed -E 's/^CREATE PUBLICATION "supabase_realtime/-- &/' \
+          | sed -E 's/^CREATE EVENT TRIGGER /-- &/' \
+          | sed -E 's/^         WHEN TAG IN /-- &/' \
+          | sed -E 's/^   EXECUTE FUNCTION /-- &/' \
+          | sed -E 's/^ALTER EVENT TRIGGER /-- &/' \
+          | sed -E 's/^ALTER PUBLICATION "supabase_realtime_/-- &/' \
+          | sed -E 's/^ALTER FOREIGN DATA WRAPPER (.+) OWNER TO /-- &/' \
+          | sed -E 's/^ALTER DEFAULT PRIVILEGES FOR ROLE "supabase_admin"/-- &/' \
+          | sed -E 's/^GRANT ALL ON FOREIGN DATA WRAPPER (.+) TO "postgres" WITH GRANT OPTION/-- &/' \
+          | sed -E "s/^GRANT (.+) ON (.+) \"(${EXCLUDED_SCHEMAS})\"/-- &/" \
+          | sed -E "s/^REVOKE (.+) ON (.+) \"(${EXCLUDED_SCHEMAS})\"/-- &/" \
+          | sed -E 's/^(CREATE EXTENSION IF NOT EXISTS "pg_tle").+/\1;/' \
+          | sed -E 's/^(CREATE EXTENSION IF NOT EXISTS "pgsodium").+/\1;/' \
+          | sed -E 's/^(CREATE EXTENSION IF NOT EXISTS "pgmq").+/\1;/' \
+          | sed -E 's/^COMMENT ON EXTENSION (.+)/-- &/' \
+          | sed -E 's/^CREATE POLICY "cron_job_/-- &/' \
+          | sed -E 's/^ALTER TABLE "cron"/-- &/' \
+          | sed -E 's/^SET transaction_timeout = 0;/-- &/' \
+          | sed -E '/^--/d' \
+          > "$RUNNER_TEMP/t01-remote-schema.sql"
+          test -s "$RUNNER_TEMP/t01-remote-schema.sql"
+
+      - name: Export custom roles without passwords
+        shell: bash
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+          export RESERVED_ROLES='anon|authenticated|authenticator|cli_login_.*|dashboard_user|pgbouncer|postgres|service_role|supabase_.*|pgsodium_keyholder|pgsodium_keyiduser|pgsodium_keymaker|pgtle_admin'
+
+          docker run --rm \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            postgres:17.6 \
+            pg_dumpall --roles-only --role postgres --quote-all-identifiers --no-role-passwords --no-comments \
+          | sed -E 's/^\\(un)?restrict .*$/-- &/' \
+          | sed -E "s/^CREATE ROLE \"(${RESERVED_ROLES})\"/-- &/" \
+          | sed -E "s/^ALTER ROLE \"(${RESERVED_ROLES})\"/-- &/" \
+          | sed -E 's/ (NOSUPERUSER|NOREPLICATION)//g' \
+          | sed -E "s/GRANT \".*\" TO \"(${RESERVED_ROLES})\"/-- &/" \
+          | sed -E '/^--/d' \
+          | uniq > "$RUNNER_TEMP/t01-roles.sql"
+          test -s "$RUNNER_TEMP/t01-roles.sql"
+
+      - name: Rebuild schema in disposable local Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          probe="$RUNNER_TEMP/t01-currentness-firetest"
+          mkdir -p "$probe"
+          cd "$probe"
+          supabase init
+          mkdir -p supabase/migrations
+          cp "$RUNNER_TEMP/t01-roles.sql" supabase/roles.sql
+          cp "$RUNNER_TEMP/t01-remote-schema.sql" supabase/migrations/20260807000000_t01_remote_schema.sql
+          supabase db start
+          echo "probe=$probe" >> "$GITHUB_ENV"
+          supabase db reset
+
+      - name: Seed only prerequisite authority rows in disposable DB
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql "$LOCAL_DB_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          insert into lf_ops.estados_catalogo(
+            state_code,entity_type,state_name,description,is_initial,is_terminal,status,source_decision_id,state_id
+          ) values (
+            'OP_CANDIDATE','OPERATION_LIFECYCLE','CANDIDATE',
+            'Operation exists but is not yet serving governed operational traffic.',true,false,'VIGENTE',
+            'T01-DISPOSABLE-FIRETEST',41
+          ) on conflict do nothing;
+
+          insert into public.lf_operation_registry(
+            operation_code,version,status,source_model,source_repo,source_paths,notes,
+            operation_family,operation_domain,operation_type,applies_to_asset_type,created_by_execution_id,lifecycle_state_code
+          ) values (
+            'OPERATION_ENFORCEMENT_REGRESSION_SUITE_LF','v0.1','SANDBOX_ACTIVE','supabase_sql','LF_SUPABASE_SANDBOX',
+            '["public.lf_operation_execution"]'::jsonb,'T01 disposable governed test producer',
+            'GOVERNANCE_OPERATION_ENFORCEMENT','REGRESSION_SUITE','REGRESSION_SUITE','OPERATION_CODE',
+            'EXEC-T01-CURRENTNESS-FIRETEST-20260917-001','OP_CANDIDATE'
+          ) on conflict (operation_code) do nothing;
+
+          insert into public.lf_assurance_claim_catalog(
+            claim_code,version,parent_claim_code,parent_claim_version,subject_type,subject_code,claim_class,
+            claim_text,criticality,applicability,closure_rule,status,source_ref,created_by_execution_id
+          ) values (
+            'LF_ASSURANCE_METHOD_V1',1,null,null,'CONTROL_PLANE','*','CLOSURE',
+            'No material PASS is accepted unless every required subclaim is traced to implementation, tests and durable evidence and all mandatory defeaters are closed.',
+            'CRITICAL','{"scope":"all_material_controls"}'::jsonb,
+            '{"pass_requires":["required_subclaims_pass","mandatory_defeaters_closed","no_open_false_pass_risk"],"open_blocks_parent_pass":true}'::jsonb,
+            'CANDIDATO','USER_AUTHORIZED_ASSURANCE_DESIGN_20260915',null
+          ) on conflict (claim_code,version) do nothing;
+          SQL
+
+      - name: Apply exact Currentness matrix and evaluator candidates locally only
+        shell: bash
+        run: |
+          set -euo pipefail
+          consumer="$RUNNER_TEMP/currentness-877"
+          psql "$LOCAL_DB_URL" -v ON_ERROR_STOP=1 \
+            -f "$consumer/supabase/migrations/20260917184500_s36_currentness_assurance_matrix_v1.sql"
+          psql "$LOCAL_DB_URL" -v ON_ERROR_STOP=1 \
+            -f supabase/migrations/20260917190500_lf_assurance_evaluator_transversal_v1.sql
+
+      - name: Execute claim fire-test and append-only readback
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql "$LOCAL_DB_URL" -v ON_ERROR_STOP=1 \
+            -f sandbox/lf_contract_gate_test/s36_assurance_evaluator/firetest_currentness_claim_v1.sql \
+            | tee "$RUNNER_TEMP/t01-firetest.log"
+          grep -F '"firetest": "PASS"' "$RUNNER_TEMP/t01-firetest.log"
+          grep -F '"expected_root_result": "UNPROVEN"' "$RUNNER_TEMP/t01-firetest.log"
+          {
+            echo '### T01 Currentness claim fire-test'
+            echo '- evaluator candidate: `PR #879` exact checked-out head'
+            echo '- first consumer: `PR #877@c56b20d7d34b3dc7e4cdf44af69d17253f3efc52`'
+            echo '- exact consumer deterministic source tests: `PASS`'
+            echo '- database: disposable local Supabase rebuilt from read-only sandbox schema'
+            echo '- deterministic subclaims expected PASS: `3`'
+            echo '- intentionally uncovered subclaims: `4`'
+            echo '- root claim expected/observed: `UNPROVEN`'
+            echo '- append-only recorder duplicate attempt: same evaluation id / one row'
+            echo '- live Supabase mutation: `NONE`'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Stop disposable Supabase
+        if: always()
+        shell: bash
+        run: |
+          if [ -n "${probe:-}" ] && [ -d "${probe:-}" ]; then
+            cd "$probe"
+            supabase stop --no-backup || true
+          fi
