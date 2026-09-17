@@ -1,8 +1,16 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.17
+LF Contract Check v0.18
 
 Sandbox validator for controlled LF governance gates.
+
+v0.18 changes:
+- Consumes the shared CI control ownership registry as the exact authority for
+  transversal deterministic control surfaces.
+- Registry-owned shared controls are admitted without per-control hardcoding or
+  operation receipts; unknown siblings remain fail-closed.
+- Keeps productive/runtime blocked prefixes and all existing governed receipt
+  requirements unchanged for non-shared-control paths.
 
 v0.17 changes:
 - Admits only the exact LF Currentness Authority workflow path.
@@ -66,6 +74,7 @@ v0.4 changes:
 """
 
 import fnmatch
+import importlib.util
 import json
 import os
 import re
@@ -78,6 +87,9 @@ RECEIPT_DIR = Path("sandbox/lf_contract_gate_test/receipts")
 PROFILE_RUNTIME_TEST_PATH = Path("sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py")
 PROFILE_RUNTIME_PASS_MARKER = "PROFILE_RUNTIME_GATE_TESTS_PASS 23/23"
 VALIDATOR_SELF_PATH = "scripts/lf_contract_check.py"
+SHARED_CONTROL_HELPER_PATH = Path(
+    "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_shared_ci_control_ownership.py"
+)
 COMPACT_PROTOCOL_PATH = Path("docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md")
 COMPACT_PROTOCOL_LOCATOR_PATH = Path("claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md")
 COMPACT_PROTOCOL_TOP_LEVEL_FIELDS = [
@@ -249,6 +261,9 @@ REQUIRED_TERMS = [
     'estado_salida_permitido: "GATE_INSTALL_SANDBOX_TESTED"',
 ]
 
+_SHARED_CONTROL_REGISTRY = None
+_SHARED_CONTROL_MODULE = None
+
 
 def fail(code: str, message: str) -> None:
     print(f"{code}: {message}")
@@ -258,6 +273,52 @@ def fail(code: str, message: str) -> None:
 def pass_check(message: str) -> None:
     print(f"PASS_CONTRACT_VALID: {message}")
     sys.exit(0)
+
+
+def load_shared_control_registry():
+    global _SHARED_CONTROL_REGISTRY, _SHARED_CONTROL_MODULE
+    if _SHARED_CONTROL_REGISTRY is not None:
+        return _SHARED_CONTROL_REGISTRY
+    if not SHARED_CONTROL_HELPER_PATH.is_file():
+        fail("FAIL_LF_SHARED_CONTROL_REGISTRY_HELPER_MISSING", str(SHARED_CONTROL_HELPER_PATH))
+    spec = importlib.util.spec_from_file_location(
+        "lf_contract_check_shared_control_ownership",
+        SHARED_CONTROL_HELPER_PATH,
+    )
+    if spec is None or spec.loader is None:
+        fail("FAIL_LF_SHARED_CONTROL_REGISTRY_HELPER_LOAD", str(SHARED_CONTROL_HELPER_PATH))
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    try:
+        spec.loader.exec_module(module)
+        registry = module.load_shared_registry()
+    except Exception as exc:
+        fail("FAIL_LF_SHARED_CONTROL_REGISTRY_INVALID", f"{type(exc).__name__}:{exc}")
+    _SHARED_CONTROL_MODULE = module
+    _SHARED_CONTROL_REGISTRY = registry
+    return registry
+
+
+def shared_control_for(path: str):
+    registry = load_shared_control_registry()
+    return registry.match(path)
+
+
+def validate_shared_control_scope_invariant() -> None:
+    registry = load_shared_control_registry()
+    failures: list[str] = []
+    for control in registry.controls:
+        if shared_control_for(control.path) is None:
+            failures.append(f"registered_path_not_resolvable:{control.control_id}:{control.path}")
+        sibling = control.path + ".bak"
+        if shared_control_for(sibling) is not None:
+            failures.append(f"lookalike_resolved_as_shared:{control.control_id}:{sibling}")
+    if failures:
+        fail("FAIL_LF_SHARED_CONTROL_SCOPE_INVARIANT", ",".join(failures))
+    print(
+        "PASS_LF_SHARED_CONTROL_SCOPE_INVARIANT: "
+        f"registry={registry.version} controls={len(registry.controls)} exact_only=true"
+    )
 
 
 def run_git(args: list[str]) -> str:
@@ -321,6 +382,8 @@ def validate_contract() -> str:
 
 
 def is_allowed_path(path: str) -> bool:
+    if shared_control_for(path) is not None:
+        return True
     if path in ALLOWED_EXACT:
         return True
     return any(path.startswith(prefix) for prefix in ALLOWED_PREFIXES)
@@ -490,6 +553,14 @@ def validate_changed_files(changed_files: list[str]) -> list[str]:
             if path.startswith(blocked):
                 fail("FAIL_BLOCKED_SCOPE_RISK", f"Ruta productiva/bloqueada tocada: {path}")
 
+        shared_control = shared_control_for(path)
+        if shared_control is not None:
+            print(
+                "PASS_LF_SHARED_CONTROL_SCOPE: "
+                f"control={shared_control.control_id} path={path} receipt=not_required"
+            )
+            continue
+
         if path.startswith(FORBIDDEN_GITHUB_PREFIX) and path not in ALLOWED_GITHUB_EXACT:
             fail("FAIL_UNAUTHORIZED_GITHUB_PATH", f"Ruta .github no autorizada: {path}")
 
@@ -588,6 +659,7 @@ def validate_forbidden_terms(changed_files: list[str]) -> None:
 
 def main() -> None:
     validate_contract()
+    validate_shared_control_scope_invariant()
     validate_profile_creator_workflow_admission_scope()
     validate_operational_protocol_scope()
     validate_compact_protocol_contract()
