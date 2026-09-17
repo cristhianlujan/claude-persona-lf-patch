@@ -26,6 +26,7 @@ A structured profile pack candidate containing developed:
 
 - Profile/skill definition.
 - Contracts and failure routing.
+- `contracts/runtime_binding.json` using the common `LF_PROFILE_RUNTIME_BINDING_V1` interface.
 - Typed schemas.
 - Judges/rubrics.
 - Checklists.
@@ -50,6 +51,22 @@ The candidate artifact must also declare:
 When returning `PROFILE_PACK_CREATED`, the output must deliver the created candidate through an exact `deliverable_artifact_ref`. The receiver must be able to inspect that artifact directly; a pack ID, a list of intended filenames or a prose description is not evidence that the pack exists.
 
 When `exposes_user_facing_output=true`, the generated profile must separate user-facing content from orchestration metadata through an explicit contract boundary such as `user_payload` / `internal_envelope`. When false, the candidate must not invent that boundary merely to satisfy a template.
+
+## Bounded model-context transport
+
+Every new profile and every governed update of an existing profile must use the same runtime binding to separate canonical profile authority from what is sent to the model. Do not create a parallel capsule service, profile-specific runtime branch, secondary dispatcher or duplicate source of truth.
+
+`profiles/<slug>/contracts/runtime_binding.json` must declare `model_context` with:
+
+- `mode=MARKDOWN_SECTIONS`;
+- `source=SKILL.md`;
+- a non-empty `sections` list naming the exact semantic sections the model needs;
+- `max_chars` no greater than the common S26 ceiling;
+- `full_source_to_model=false`.
+
+The full `SKILL.md` remains canonical for hashing, evidence, receipts, validation and human inspection. Runtime model transport uses only the deterministic projection selected by `model_context`. Governance, maintenance, routing, CI, receipt-only lineage and other deterministic control-plane sections stay outside the model prompt unless the profile explicitly proves that they change the semantic task.
+
+For a new profile, omission or invalidity of this binding is a creation defect and must be self-repaired before `PROFILE_PACK_CREATED`. For an existing profile, the common S26 baseline must report the omission as `UPDATE_REQUIRED`; do not create a profile-specific workaround.
 
 ## Deterministic depth gate
 
@@ -103,11 +120,11 @@ Learning Preflight rules:
 
 Structural baseline rules:
 
-- `NO_UPDATE_REQUIRED` means the profile already satisfies all 10 S26 architectural dimensions; do not rewrite it merely to create activity.
+- `NO_UPDATE_REQUIRED` means the profile already satisfies all 11 S26 architectural dimensions; do not rewrite it merely to create activity.
 - `UPDATE_REQUIRED` means apply only the reported `repair_actions`, preserving the profile's domain semantics and authority.
 - `BLOCKED_AUTHORITY_REQUIRED` means a canonical choice cannot be derived safely (for example, multiple schemas exist and no exact runtime schema is bound). Resolve authority before writing; filename similarity is not authority.
-- A profile update cannot close until the baseline is rerun on the post-write exact head and returns 10/10, in addition to the existing operation contract, validator, evidence, readback and semantic gates.
-- The standard runtime integration surface is `profiles/<slug>/contracts/runtime_binding.json` (`LF_PROFILE_RUNTIME_BINDING_V1`). It binds exact profile identity, canonical runtime schema, canonical validator, profile-local deterministic semantic utility, source-first/no-invention, fail-closed, exact-head evidence and post-update baseline requirements.
+- A profile update cannot close until the baseline is rerun on the post-write exact head and returns 11/11, in addition to the existing operation contract, validator, evidence, readback and semantic gates.
+- The standard runtime integration surface is `profiles/<slug>/contracts/runtime_binding.json` (`LF_PROFILE_RUNTIME_BINDING_V1`). It binds exact profile identity, canonical runtime schema, canonical validator, profile-local deterministic semantic utility, bounded model-context transport, source-first/no-invention, fail-closed, exact-head evidence and post-update baseline requirements.
 - Profile-local specializations belong behind this common interface. Do not add new slug-specific branches to the shared runtime when the behavior can be expressed by the runtime binding.
 - The update route never activates runtime, production, automatic promotion or business effects. Those remain separate governed operations.
 
@@ -143,6 +160,8 @@ Block or return when:
 - The resolved destination requires `manifest.json` and the candidate does not materialize it.
 - The manifest contradicts profile identity, operation, candidate/read-only status, runtime or automatic-impact boundaries.
 - The candidate lacks developed contract/schema/judge/evals/handoff/evidence required by the deterministic depth gate.
+- A new or updated profile lacks valid bounded `model_context` transport in the common runtime binding.
+- A profile attempts to send the full canonical `SKILL.md` to the model when `full_source_to_model=false`.
 - A user-facing profile exposes internal orchestration metadata without a protected output boundary.
 - `depth_gate.candidate_ref` differs from `deliverable_artifact_ref`.
 - Producer depth or deterministic intake is presented as semantic Quality Pack approval.
