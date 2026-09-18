@@ -82,7 +82,6 @@ def main() -> None:
 
     packs = texts["VALIDATE_LF_PACKS"]
     pack_steps = {
-        "S30 self-governance regression and fresh receipt gate": "S30_SELF_GOVERNANCE",
         "Validate bounded S30 sandbox regressions": "S30_BOUNDED_REGRESSION",
         "Test persistent Profile Runtime API": "PROFILE_RUNTIME_V3",
         "Validate profile template pack": "PROFILE_PACK",
@@ -96,6 +95,15 @@ def main() -> None:
     }
     for step, control in pack_steps.items():
         require_step_guard(packs, step, control)
+
+    # Protected S30 self-governance remains an invariant prerequisite. Its owner
+    # contract intentionally performs its own guarded applicability and must not
+    # be rewritten by this S28 authority repair.
+    require(packs, "- name: S30 self-governance regression and fresh receipt gate", "FAIL_S30_INVARIANT_PREREQUISITE_MISSING")
+    s30_start = packs.index("- name: S30 self-governance regression and fresh receipt gate")
+    s30_end = packs.index("\n      - name:", s30_start + 1)
+    s30_block = packs[s30_start:s30_end]
+    assert "if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json)" not in s30_block, "FAIL_S30_PROTECTED_BLOCK_REWRITTEN_BY_S28"
 
     # Every registry carrier must be represented by a concrete binding token.
     # P0 external remains event-bound inside LF_CONTRACT_CORE; its dependency
