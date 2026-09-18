@@ -2,171 +2,35 @@
   "schema_version": "lf-ci-control-impact-registry/v2",
   "full_regression_controls": [
     "CI_ROUTER_SELFTEST",
-    "DECLARED_GOVERNANCE_PATHS",
-    "SUPABASE_CONTROL_PLANE_READBACK",
-    "MIGRATION_SOURCE_PARITY",
-    "INPUT_GOVERNANCE_MIGRATION_PARITY",
-    "LF_CONTRACT_CORE",
-    "P0_VISUAL_RUNTIME",
-    "S36_ASSURANCE",
-    "E16_GOVERNANCE",
-    "LF_VALIDATION_ENGINE",
-    "NO_BYPASS_PROFILE_CARD_SKILL",
-    "PASS_EVIDENCE",
-    "R8_USER_STORY_AUDIT",
-    "E16_ACTIONS_INVENTORY",
-    "S30_SELF_GOVERNANCE",
-    "S30_BOUNDED_REGRESSION",
-    "PROFILE_RUNTIME_V3",
-    "PROFILE_PACK",
-    "SKILL_PACK",
-    "LEARNING_ENGINE_PACK",
-    "TRANSVERSAL_README",
-    "GATE_CHECK_OBSERVABILITY",
     "DB_CANDIDATE_APPLY_ROLLBACK",
-    "REMOTE_SCHEMA_REPRODUCIBILITY",
-    "V7_RUNTIME_REGRESSION",
+    "DECLARED_GOVERNANCE_PATHS",
+    "E16_ACTIONS_INVENTORY",
+    "E16_GOVERNANCE",
+    "GATE_CHECK_OBSERVABILITY",
+    "INPUT_GOVERNANCE_MIGRATION_PARITY",
+    "LEARNING_ENGINE_PACK",
+    "LF_CONTRACT_CORE",
+    "LF_VALIDATION_ENGINE",
+    "MIGRATION_SOURCE_PARITY",
+    "NO_BYPASS_PROFILE_CARD_SKILL",
+    "P0_EXACT_HEAD_EXTERNAL",
+    "P0_FAST_DOCS",
+    "P0_VISUAL_RUNTIME",
+    "PASS_EVIDENCE",
     "POLICY_RESOLVER_REGRESSION",
-    "P0_EXACT_HEAD_EXTERNAL"
+    "PROFILE_PACK",
+    "PROFILE_RUNTIME_V3",
+    "R8_USER_STORY_AUDIT",
+    "REMOTE_SCHEMA_REPRODUCIBILITY",
+    "S30_BOUNDED_REGRESSION",
+    "S30_SELF_GOVERNANCE",
+    "S36_ASSURANCE",
+    "SKILL_PACK",
+    "SUPABASE_CONTROL_PLANE_READBACK",
+    "TRANSVERSAL_README",
+    "V7_RUNTIME_REGRESSION"
   ],
   "controls": [
-    {
-      "control_id": "MIGRATION_SOURCE_PARITY",
-      "carrier": "LF_CONTRACT_CHECK",
-      "path_matchers": [
-        {
-          "kind": "prefix",
-          "value": "supabase/migrations/"
-        }
-      ],
-      "material_matchers": [],
-      "dependencies": []
-    },
-    {
-      "control_id": "DB_CANDIDATE_APPLY_ROLLBACK",
-      "carrier": "LF_BOOTSTRAP_REPRODUCIBILITY",
-      "path_matchers": [
-        {
-          "kind": "prefix",
-          "value": "supabase/migrations/"
-        }
-      ],
-      "material_matchers": [],
-      "dependencies": [
-        "MIGRATION_SOURCE_PARITY"
-      ]
-    },
-    {
-      "control_id": "POLICY_RESOLVER_REGRESSION",
-      "carrier": "LF_CONTRACT_CHECK",
-      "path_matchers": [],
-      "material_matchers": [
-        {
-          "kind": "sql_regex",
-          "value": "\\b(?:v_lf_operation_policy_snapshot|lf_attach_operation_policy_snapshot_v1|lf_operation_policy_snapshot_guard_v1|lf_operation_policy_bindings|lf_policy_versions)\\b"
-        }
-      ],
-      "dependencies": [
-        "DB_CANDIDATE_APPLY_ROLLBACK"
-      ]
-    },
-    {
-      "control_id": "INPUT_GOVERNANCE_MIGRATION_PARITY",
-      "carrier": "LF_CONTRACT_CHECK",
-      "path_matchers": [
-        {
-          "kind": "prefix",
-          "value": "supabase/migrations/"
-        },
-        {
-          "kind": "exact",
-          "value": "sandbox/lf_contract_gate_test/input_governance_migration_parity_compact.py"
-        }
-      ],
-      "material_matchers": [
-        {
-          "kind": "path_or_sql_regex",
-          "value": "input[_-]governance|retire_b2b_auth005_legacy_totp_screen"
-        }
-      ],
-      "dependencies": [
-        "MIGRATION_SOURCE_PARITY"
-      ]
-    },
-    {
-      "control_id": "SUPABASE_CONTROL_PLANE_READBACK",
-      "carrier": "LF_CONTRACT_CHECK",
-      "path_matchers": [
-        {
-          "kind": "exact",
-          "value": "supabase/config.toml"
-        }
-      ],
-      "material_matchers": [
-        {
-          "kind": "sql_regex",
-          "value": "(?i)\\b(?:pgrst|postgrest|db_schema|db_schemas)\\b|ALTER\\s+ROLE\\s+authenticator|(?:GRANT|REVOKE|ALTER\\s+DEFAULT\\s+PRIVILEGES)[^;]*\\bSCHEMA\\s+net\\b"
-        }
-      ],
-      "dependencies": []
-    },
-    {
-      "control_id": "REMOTE_SCHEMA_REPRODUCIBILITY",
-      "carrier": "LF_BOOTSTRAP_REPRODUCIBILITY",
-      "path_matchers": [
-        {
-          "kind": "exact",
-          "value": "supabase/config.toml"
-        },
-        {
-          "kind": "exact",
-          "value": "supabase/roles.sql"
-        },
-        {
-          "kind": "exact",
-          "value": ".github/workflows/lf-bootstrap-reproducibility.yml"
-        }
-      ],
-      "material_matchers": [],
-      "dependencies": []
-    },
-    {
-      "control_id": "V7_RUNTIME_REGRESSION",
-      "carrier": "LF_BOOTSTRAP_REPRODUCIBILITY",
-      "path_matchers": [
-        {
-          "kind": "exact",
-          "value": "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_MIGRATIONS.txt"
-        },
-        {
-          "kind": "exact",
-          "value": "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_BASE.sql"
-        },
-        {
-          "kind": "exact",
-          "value": "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_APPLY_READBACK.sql"
-        },
-        {
-          "kind": "exact",
-          "value": "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_ROLLBACK_READBACK.sql"
-        },
-        {
-          "kind": "prefix",
-          "value": "supabase/migrations/20260801"
-        },
-        {
-          "kind": "prefix",
-          "value": "supabase/migrations/20260807"
-        }
-      ],
-      "material_matchers": [
-        {
-          "kind": "sql_regex",
-          "value": "(?i)\\b(?:writer_hmac_nonce_v7|quarantine_compensating_evidence_v7|lf_writer_verifier_v7|writer_key_rotation_v7)\\b"
-        }
-      ],
-      "dependencies": []
-    },
     {
       "control_id": "CI_ROUTER_SELFTEST",
       "carrier": "LF_CONTRACT_CHECK",
@@ -192,6 +56,20 @@
       "dependencies": []
     },
     {
+      "control_id": "DB_CANDIDATE_APPLY_ROLLBACK",
+      "carrier": "LF_BOOTSTRAP_REPRODUCIBILITY",
+      "path_matchers": [
+        {
+          "kind": "prefix",
+          "value": "supabase/migrations/"
+        }
+      ],
+      "material_matchers": [],
+      "dependencies": [
+        "MIGRATION_SOURCE_PARITY"
+      ]
+    },
+    {
       "control_id": "DECLARED_GOVERNANCE_PATHS",
       "carrier": "LF_CONTRACT_CHECK",
       "path_matchers": [
@@ -206,6 +84,87 @@
         {
           "kind": "prefix",
           "value": ".github/workflows/"
+        }
+      ],
+      "material_matchers": [],
+      "dependencies": []
+    },
+    {
+      "control_id": "E16_ACTIONS_INVENTORY",
+      "carrier": "LF_CONTRACT_CHECK",
+      "path_matchers": [
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/PR93_LOTE_E16_"
+        },
+        {
+          "kind": "exact",
+          "value": ".github/workflows/lf-contract-check.yml"
+        }
+      ],
+      "material_matchers": [],
+      "dependencies": [
+        "E16_GOVERNANCE"
+      ]
+    },
+    {
+      "control_id": "E16_GOVERNANCE",
+      "carrier": "LF_CONTRACT_CHECK",
+      "path_matchers": [
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/PR93_LOTE_E16_"
+        },
+        {
+          "kind": "exact",
+          "value": ".github/workflows/lf-contract-check.yml"
+        }
+      ],
+      "material_matchers": [],
+      "dependencies": []
+    },
+    {
+      "control_id": "GATE_CHECK_OBSERVABILITY",
+      "carrier": "VALIDATE_LF_PACKS",
+      "path_matchers": [
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/gate_check_observability/"
+        }
+      ],
+      "material_matchers": [],
+      "dependencies": []
+    },
+    {
+      "control_id": "INPUT_GOVERNANCE_MIGRATION_PARITY",
+      "carrier": "LF_CONTRACT_CHECK",
+      "path_matchers": [
+        {
+          "kind": "prefix",
+          "value": "supabase/migrations/"
+        },
+        {
+          "kind": "exact",
+          "value": "sandbox/lf_contract_gate_test/input_governance_migration_parity_compact.py"
+        }
+      ],
+      "material_matchers": [
+        {
+          "kind": "path_or_sql_regex",
+          "value": "input[_-]governance|retire_b2b_auth005_legacy_totp_screen"
+        }
+      ],
+      "dependencies": [
+        "MIGRATION_SOURCE_PARITY"
+      ]
+    },
+    {
+      "control_id": "LEARNING_ENGINE_PACK",
+      "carrier": "VALIDATE_LF_PACKS",
+      "path_matchers": [
+        {
+          "kind": "prefix",
+          "value": "skills/learning_engine/"
         }
       ],
       "material_matchers": [],
@@ -248,59 +207,6 @@
       "dependencies": []
     },
     {
-      "control_id": "P0_VISUAL_RUNTIME",
-      "carrier": "LF_CONTRACT_CHECK",
-      "path_matchers": [
-        {
-          "kind": "prefix",
-          "value": "sandbox/story_creator_p0_visual/"
-        },
-        {
-          "kind": "prefix",
-          "value": "sandbox/lf_contract_gate_test/story_creator_visual_screen_reading_architecture/"
-        }
-      ],
-      "material_matchers": [],
-      "dependencies": []
-    },
-    {
-      "control_id": "S36_ASSURANCE",
-      "carrier": "LF_CONTRACT_CHECK",
-      "path_matchers": [
-        {
-          "kind": "prefix",
-          "value": "sandbox/lf_contract_gate_test/s36_"
-        },
-        {
-          "kind": "prefix",
-          "value": "sandbox/lf_contract_gate_test/test_s36_"
-        }
-      ],
-      "material_matchers": [
-        {
-          "kind": "sql_regex",
-          "value": "\\b(?:lf_assurance_claim_catalog|lf_assurance_obligation_catalog|lf_assurance_defeater_catalog|lf_assurance_subject_bindings|lf_assurance_evaluations|lf_test_suite_cases|lf_test_suites)\\b"
-        }
-      ],
-      "dependencies": []
-    },
-    {
-      "control_id": "E16_GOVERNANCE",
-      "carrier": "LF_CONTRACT_CHECK",
-      "path_matchers": [
-        {
-          "kind": "prefix",
-          "value": "sandbox/lf_contract_gate_test/PR93_LOTE_E16_"
-        },
-        {
-          "kind": "exact",
-          "value": ".github/workflows/lf-contract-check.yml"
-        }
-      ],
-      "material_matchers": [],
-      "dependencies": []
-    },
-    {
       "control_id": "LF_VALIDATION_ENGINE",
       "carrier": "LF_CONTRACT_CHECK",
       "path_matchers": [
@@ -311,6 +217,18 @@
         {
           "kind": "exact",
           "value": "scripts/lf_contract_check.py"
+        }
+      ],
+      "material_matchers": [],
+      "dependencies": []
+    },
+    {
+      "control_id": "MIGRATION_SOURCE_PARITY",
+      "carrier": "LF_CONTRACT_CHECK",
+      "path_matchers": [
+        {
+          "kind": "prefix",
+          "value": "supabase/migrations/"
         }
       ],
       "material_matchers": [],
@@ -345,6 +263,106 @@
       "dependencies": []
     },
     {
+      "control_id": "P0_EXACT_HEAD_EXTERNAL",
+      "carrier": "LF_CONTRACT_CHECK",
+      "path_matchers": [
+        {
+          "kind": "prefix",
+          "value": "supabase/functions/lf-p0-exact-head-evidence-broker-v2/"
+        },
+        {
+          "kind": "exact",
+          "value": "sandbox/lf_contract_gate_test/p0_exact_head_real_source_ci_v1.py"
+        },
+        {
+          "kind": "exact",
+          "value": "sandbox/lf_contract_gate_test/p0_exact_head_real_source_ci_v2.py"
+        },
+        {
+          "kind": "exact",
+          "value": "sandbox/lf_contract_gate_test/p0_exact_head_real_source_v2.json"
+        },
+        {
+          "kind": "exact",
+          "value": "supabase/config.toml"
+        }
+      ],
+      "material_matchers": [],
+      "dependencies": []
+    },
+    {
+      "control_id": "P0_FAST_DOCS",
+      "carrier": "LF_CONTRACT_CHECK",
+      "path_matchers": [
+        {
+          "kind": "exact",
+          "value": "docs/p0/CONTRATO_BENCHMARK_OCR_CV.md"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/MAPA_BRECHAS_OCR_CV.md"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/MATRIZ_OPCIONES_OCR_CV.md"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/PERSISTENCE_CONTRACT_AUDIT_20260812.md"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/REAL_PERSISTENCE_READBACK_20260812.md"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/RESEARCH_OCR_SCREEN_P0.md"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/persistence-normalization-config-v1.json"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/P0_EXECUTION_PERSISTENCE_CONTRACT_V2.md"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/ADR_OCR_UI_PIPELINE_20260812.md"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/OCR_BENCHMARK_PLAN.md"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/OCR_GAP_MATRIX.md"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/OCR_RESEARCH_REPORT.md"
+        }
+      ],
+      "material_matchers": [],
+      "dependencies": []
+    },
+    {
+      "control_id": "P0_VISUAL_RUNTIME",
+      "carrier": "LF_CONTRACT_CHECK",
+      "path_matchers": [
+        {
+          "kind": "prefix",
+          "value": "sandbox/story_creator_p0_visual/"
+        },
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/story_creator_visual_screen_reading_architecture/"
+        }
+      ],
+      "material_matchers": [],
+      "dependencies": []
+    },
+    {
       "control_id": "PASS_EVIDENCE",
       "carrier": "LF_CONTRACT_CHECK",
       "path_matchers": [
@@ -369,62 +387,30 @@
       "dependencies": []
     },
     {
-      "control_id": "R8_USER_STORY_AUDIT",
+      "control_id": "POLICY_RESOLVER_REGRESSION",
       "carrier": "LF_CONTRACT_CHECK",
-      "path_matchers": [
+      "path_matchers": [],
+      "material_matchers": [
         {
-          "kind": "prefix",
-          "value": "skills/creating-integral-user-stories/"
-        },
-        {
-          "kind": "exact",
-          "value": "sandbox/lf_contract_gate_test/r8_continuous_audit.py"
+          "kind": "sql_regex",
+          "value": "\\b(?:v_lf_operation_policy_snapshot|lf_attach_operation_policy_snapshot_v1|lf_operation_policy_snapshot_guard_v1|lf_operation_policy_bindings|lf_policy_versions)\\b"
         }
       ],
-      "material_matchers": [],
-      "dependencies": []
-    },
-    {
-      "control_id": "E16_ACTIONS_INVENTORY",
-      "carrier": "LF_CONTRACT_CHECK",
-      "path_matchers": [
-        {
-          "kind": "prefix",
-          "value": "sandbox/lf_contract_gate_test/PR93_LOTE_E16_"
-        },
-        {
-          "kind": "exact",
-          "value": ".github/workflows/lf-contract-check.yml"
-        }
-      ],
-      "material_matchers": [],
       "dependencies": [
-        "E16_GOVERNANCE"
+        "DB_CANDIDATE_APPLY_ROLLBACK"
       ]
     },
     {
-      "control_id": "S30_SELF_GOVERNANCE",
+      "control_id": "PROFILE_PACK",
       "carrier": "VALIDATE_LF_PACKS",
       "path_matchers": [
         {
           "kind": "prefix",
-          "value": "sandbox/lf_contract_gate_test/s30_self_governance/"
-        }
-      ],
-      "material_matchers": [],
-      "dependencies": []
-    },
-    {
-      "control_id": "S30_BOUNDED_REGRESSION",
-      "carrier": "VALIDATE_LF_PACKS",
-      "path_matchers": [
-        {
-          "kind": "prefix",
-          "value": "sandbox/lf_contract_gate_test/s30_"
+          "value": "profiles/"
         },
         {
           "kind": "prefix",
-          "value": "sandbox/lf_contract_gate_test/receipts/s30_"
+          "value": "skills/profile_creator/"
         }
       ],
       "material_matchers": [],
@@ -455,19 +441,88 @@
       "dependencies": []
     },
     {
-      "control_id": "PROFILE_PACK",
+      "control_id": "R8_USER_STORY_AUDIT",
+      "carrier": "LF_CONTRACT_CHECK",
+      "path_matchers": [
+        {
+          "kind": "prefix",
+          "value": "skills/creating-integral-user-stories/"
+        },
+        {
+          "kind": "exact",
+          "value": "sandbox/lf_contract_gate_test/r8_continuous_audit.py"
+        }
+      ],
+      "material_matchers": [],
+      "dependencies": []
+    },
+    {
+      "control_id": "REMOTE_SCHEMA_REPRODUCIBILITY",
+      "carrier": "LF_BOOTSTRAP_REPRODUCIBILITY",
+      "path_matchers": [
+        {
+          "kind": "exact",
+          "value": "supabase/config.toml"
+        },
+        {
+          "kind": "exact",
+          "value": "supabase/roles.sql"
+        },
+        {
+          "kind": "exact",
+          "value": ".github/workflows/lf-bootstrap-reproducibility.yml"
+        }
+      ],
+      "material_matchers": [],
+      "dependencies": []
+    },
+    {
+      "control_id": "S30_BOUNDED_REGRESSION",
       "carrier": "VALIDATE_LF_PACKS",
       "path_matchers": [
         {
           "kind": "prefix",
-          "value": "profiles/"
+          "value": "sandbox/lf_contract_gate_test/s30_"
         },
         {
           "kind": "prefix",
-          "value": "skills/profile_creator/"
+          "value": "sandbox/lf_contract_gate_test/receipts/s30_"
         }
       ],
       "material_matchers": [],
+      "dependencies": []
+    },
+    {
+      "control_id": "S30_SELF_GOVERNANCE",
+      "carrier": "VALIDATE_LF_PACKS",
+      "path_matchers": [
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/s30_self_governance/"
+        }
+      ],
+      "material_matchers": [],
+      "dependencies": []
+    },
+    {
+      "control_id": "S36_ASSURANCE",
+      "carrier": "LF_CONTRACT_CHECK",
+      "path_matchers": [
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/s36_"
+        },
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/test_s36_"
+        }
+      ],
+      "material_matchers": [
+        {
+          "kind": "sql_regex",
+          "value": "\\b(?:lf_assurance_claim_catalog|lf_assurance_obligation_catalog|lf_assurance_defeater_catalog|lf_assurance_subject_bindings|lf_assurance_evaluations|lf_test_suite_cases|lf_test_suites)\\b"
+        }
+      ],
       "dependencies": []
     },
     {
@@ -483,15 +538,20 @@
       "dependencies": []
     },
     {
-      "control_id": "LEARNING_ENGINE_PACK",
-      "carrier": "VALIDATE_LF_PACKS",
+      "control_id": "SUPABASE_CONTROL_PLANE_READBACK",
+      "carrier": "LF_CONTRACT_CHECK",
       "path_matchers": [
         {
-          "kind": "prefix",
-          "value": "skills/learning_engine/"
+          "kind": "exact",
+          "value": "supabase/config.toml"
         }
       ],
-      "material_matchers": [],
+      "material_matchers": [
+        {
+          "kind": "sql_regex",
+          "value": "(?i)\\b(?:pgrst|postgrest|db_schema|db_schemas)\\b|ALTER\\s+ROLE\\s+authenticator|(?:GRANT|REVOKE|ALTER\\s+DEFAULT\\s+PRIVILEGES)[^;]*\\bSCHEMA\\s+net\\b"
+        }
+      ],
       "dependencies": []
     },
     {
@@ -511,43 +571,40 @@
       "dependencies": []
     },
     {
-      "control_id": "GATE_CHECK_OBSERVABILITY",
-      "carrier": "VALIDATE_LF_PACKS",
+      "control_id": "V7_RUNTIME_REGRESSION",
+      "carrier": "LF_BOOTSTRAP_REPRODUCIBILITY",
       "path_matchers": [
         {
+          "kind": "exact",
+          "value": "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_MIGRATIONS.txt"
+        },
+        {
+          "kind": "exact",
+          "value": "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_BASE.sql"
+        },
+        {
+          "kind": "exact",
+          "value": "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_APPLY_READBACK.sql"
+        },
+        {
+          "kind": "exact",
+          "value": "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_ROLLBACK_READBACK.sql"
+        },
+        {
           "kind": "prefix",
-          "value": "sandbox/lf_contract_gate_test/gate_check_observability/"
+          "value": "supabase/migrations/20260801"
+        },
+        {
+          "kind": "prefix",
+          "value": "supabase/migrations/20260807"
         }
       ],
-      "material_matchers": [],
-      "dependencies": []
-    },
-    {
-      "control_id": "P0_EXACT_HEAD_EXTERNAL",
-      "carrier": "LF_CONTRACT_CHECK",
-      "path_matchers": [
+      "material_matchers": [
         {
-          "kind": "prefix",
-          "value": "supabase/functions/lf-p0-exact-head-evidence-broker-v2/"
-        },
-        {
-          "kind": "exact",
-          "value": "sandbox/lf_contract_gate_test/p0_exact_head_real_source_ci_v1.py"
-        },
-        {
-          "kind": "exact",
-          "value": "sandbox/lf_contract_gate_test/p0_exact_head_real_source_ci_v2.py"
-        },
-        {
-          "kind": "exact",
-          "value": "sandbox/lf_contract_gate_test/p0_exact_head_real_source_v2.json"
-        },
-        {
-          "kind": "exact",
-          "value": "supabase/config.toml"
+          "kind": "sql_regex",
+          "value": "(?i)\\b(?:writer_hmac_nonce_v7|quarantine_compensating_evidence_v7|lf_writer_verifier_v7|writer_key_rotation_v7)\\b"
         }
       ],
-      "material_matchers": [],
       "dependencies": []
     }
   ]
