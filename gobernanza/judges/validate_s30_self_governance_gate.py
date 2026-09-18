@@ -508,6 +508,19 @@ def self_test(c):
     assert d["decision"]=="RUN" and direct in d["touched_materials"],d
     results["positive_direct_s30_material_run"]="RUN"
 
+    sample_plan={
+        "event_name":"push",
+        "base_sha":"b"*40,
+        "authority_evidence_revision":"a"*40,
+    }
+    assert s30_receipt_expected_base(sample_plan,"lf/staging-s30-test")=="a"*40
+    results["positive_feature_push_receipt_base_uses_main_authority"]="PASS"
+    assert s30_receipt_expected_base(sample_plan,"main")=="b"*40
+    results["positive_main_push_receipt_base_uses_diff_base"]="PASS"
+    sample_plan["event_name"]="pull_request"
+    assert s30_receipt_expected_base(sample_plan,"feature")=="b"*40
+    results["positive_pr_receipt_base_uses_pr_base"]="PASS"
+
     try:
         s30_applicability_decision(c,[workflow],"name: x\n","name: x\n")
     except AssertionError as exc:
@@ -592,6 +605,18 @@ def s30_applicability_decision(
         "owned_block_changed":True,
     }
 
+def s30_receipt_expected_base(plan: Dict[str, Any], ref_name: str) -> str:
+    event=str(plan.get("event_name") or "").strip()
+    diff_base=str(plan.get("base_sha") or "").strip()
+    authority_base=str(plan.get("authority_evidence_revision") or "").strip()
+    if event=="push" and ref_name!="main":
+        expected=authority_base
+    else:
+        expected=diff_base
+    if len(expected)!=40:
+        raise AssertionError("BLOCK_S30_RECEIPT_EXPECTED_BASE_UNRESOLVED")
+    return expected
+
 def ci_plan_context(plan_path: Path):
     if not plan_path.is_file():
         raise AssertionError("BLOCK_S30_CI_PLAN_MISSING")
@@ -609,13 +634,18 @@ def ci_plan_context(plan_path: Path):
         raise AssertionError("BLOCK_S30_CI_PLAN_EXACT_BASE_HEAD")
     if not isinstance(changed,list):
         raise AssertionError("BLOCK_S30_CI_PLAN_CHANGED_PATHS")
+    authority_base=str(plan.get("authority_evidence_revision") or "").strip()
+    if len(authority_base)!=40:
+        raise AssertionError("BLOCK_S30_CI_PLAN_AUTHORITY_EVIDENCE_REVISION")
     return [str(x).strip() for x in changed if str(x).strip()],base,head,plan
 
 def git_show_text(ref: str, path: str) -> str:
     return run_git("show",f"{ref}:{path}")
 
 def ci_auto(c, receipt_path, plan_path: Path):
-    changed,expected,head,plan=ci_plan_context(plan_path)
+    changed,diff_base,head,plan=ci_plan_context(plan_path)
+    ref_name=os.environ.get("GITHUB_REF_NAME","")
+    expected=s30_receipt_expected_base(plan,ref_name)
     ns=(c.get("ci_enforcement") or {}).get("s30_governed_path_namespace") or {}
     governed=sorted(set(ns.get("governed_paths") or []).intersection(changed))
     event=os.environ.get("GITHUB_EVENT_NAME","")
@@ -629,9 +659,9 @@ def ci_auto(c, receipt_path, plan_path: Path):
     workflow=shared.get("path")
     before_text=after_text=None
     if workflow in changed:
-        fetch_exact(expected,head)
+        fetch_exact(diff_base,head)
         try:
-            before_text=git_show_text(expected,workflow)
+            before_text=git_show_text(diff_base,workflow)
             after_text=git_show_text(head,workflow)
         except subprocess.CalledProcessError as exc:
             raise AssertionError("BLOCK_S30_APPLICABILITY_WORKFLOW_READBACK") from exc
