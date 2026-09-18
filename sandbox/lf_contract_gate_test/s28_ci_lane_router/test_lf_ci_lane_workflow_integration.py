@@ -20,6 +20,8 @@ PRODUCT_REGISTRY = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_pro
 ENTRYPOINT = Path("sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py")
 CONTROL_MANIFEST = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_control_manifest_v1.json")
 GROUP_ORCHESTRATOR = "sandbox/lf_contract_gate_test/gate_check_observability/run_gate_groups_v1.py"
+PARITY_EQUIVALENCE = "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_parity_equivalence_v1.py"
+PARITY_EQUIVALENCE_TEST = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_contract_check_parity_equivalence_v1.py"
 
 
 def require(text: str, token: str, code: str) -> None:
@@ -222,6 +224,11 @@ def main() -> None:
     require(text, "Shadow declarative required_controls through existing gate orchestrator", "FAIL_DECLARATIVE_SHADOW_STEP_MISSING")
     require(text, "--group MIGRATION_SOURCE_PARITY", "FAIL_DECLARATIVE_PARITY_GROUP_NOT_SELECTED")
     require(text, "LF_REQUIRED_CONTROLS_JSON", "FAIL_DECLARATIVE_REQUIRED_CONTROLS_INPUT_MISSING")
+    require(text, PARITY_EQUIVALENCE, "FAIL_PARITY_EQUIVALENCE_JUDGE_NOT_WIRED")
+    require(text, PARITY_EQUIVALENCE_TEST, "FAIL_PARITY_EQUIVALENCE_TEST_NOT_WIRED")
+    require(text, "Verify legacy and declarative migration parity equivalence", "FAIL_PARITY_EQUIVALENCE_STEP_MISSING")
+    require(text, "migration_source_parity_equivalence_v1.json", "FAIL_PARITY_EQUIVALENCE_RECEIPT_MISSING")
+    require(text, "lf-migration-statement-counts.csv", "FAIL_PARITY_EQUIVALENCE_FROZEN_COUNTS_MISSING")
     require(
         text,
         "steps.feedback_tier.outputs.migration_parity_required == 'true'",
@@ -289,7 +296,7 @@ def main() -> None:
     helper = load_reconciliation_helper()
     assert_reconciliation_behavior(helper)
     assert_merge_path_recovery(helper)
-    print("PASS_CI_LANE_WORKFLOW_INTEGRATION=39/39")
+    print("PASS_CI_LANE_WORKFLOW_INTEGRATION=44/44")
 
 
 if __name__ == "__main__":
