@@ -78,21 +78,34 @@ $pre$;
 create or replace view public.v_lf_operation_policy_snapshot
 with (security_invoker=true)
 as
-with governed as (
+with governed_codes as (
+  -- Preserve every currently routable consumer, regardless of lifecycle projection,
+  -- and extend coverage to operational internal/child consumers.
+  select distinct r.operation_code
+  from public.lf_router_action_registry r
+  where r.status='ACTIVE'
+    and r.operation_code is not null
+
+  union
+
+  select o.operation_code
+  from public.lf_operation_registry o
+  where o.lifecycle_state_code='OP_OPERATIONAL'
+),
+governed as (
   select
-    o.operation_code,
+    g.operation_code,
     case
       when exists (
         select 1
         from public.lf_router_action_registry r
         where r.status='ACTIVE'
-          and r.operation_code=o.operation_code
+          and r.operation_code=g.operation_code
       )
       then array['ROUTER','DIRECT']::text[]
       else array['DIRECT']::text[]
     end as distribution_modes
-  from public.lf_operation_registry o
-  where o.lifecycle_state_code='OP_OPERATIONAL'
+  from governed_codes g
 ),
 generic_policies as (
   select
@@ -189,6 +202,8 @@ left join public.lf_policy_versions v
 do $post$
 declare
   v_operational integer;
+  v_routable integer;
+  v_governed integer;
   v_all_generic integer;
   v_uncovered_bad text[];
   v_explicit_copies integer;
@@ -201,9 +216,25 @@ begin
   from public.lf_operation_registry
   where lifecycle_state_code='OP_OPERATIONAL';
 
-  with per_operation as (
+  select count(distinct operation_code)
+  into v_routable
+  from public.lf_router_action_registry
+  where status='ACTIVE'
+    and operation_code is not null;
+
+  with governed_codes as (
+    select distinct operation_code
+    from public.lf_router_action_registry
+    where status='ACTIVE'
+      and operation_code is not null
+    union
+    select operation_code
+    from public.lf_operation_registry
+    where lifecycle_state_code='OP_OPERATIONAL'
+  ),
+  per_operation as (
     select
-      o.operation_code,
+      g.operation_code,
       count(*) filter (
         where p.required
           and p.policy_sha is not null
@@ -217,19 +248,22 @@ begin
               and coalesce((a.metadata->>'router_required')::boolean,false)
           )
       ) as generic_resolved
-    from public.lf_operation_registry o
+    from governed_codes g
     left join public.v_lf_operation_policy_snapshot p
-      on p.operation_code=o.operation_code
-    where o.lifecycle_state_code='OP_OPERATIONAL'
-    group by o.operation_code
+      on p.operation_code=g.operation_code
+    group by g.operation_code
   )
-  select count(*) filter (where generic_resolved=4)
-  into v_all_generic
+  select count(*),
+         count(*) filter (where generic_resolved=4)
+  into v_governed,v_all_generic
   from per_operation;
 
-  if v_operational<>26 or v_all_generic<>v_operational then
-    raise exception 'BLOCK_POLICY_GENERIC_OPERATIONAL_COVERAGE operational=% all_generic=%',
-      v_operational,v_all_generic;
+  if v_operational<>26
+     or v_routable<>23
+     or v_governed<>33
+     or v_all_generic<>v_governed then
+    raise exception 'BLOCK_POLICY_GENERIC_GOVERNED_COVERAGE operational=% routable=% governed=% all_generic=%',
+      v_operational,v_routable,v_governed,v_all_generic;
   end if;
 
   select array_agg(x.operation_code order by x.operation_code)
