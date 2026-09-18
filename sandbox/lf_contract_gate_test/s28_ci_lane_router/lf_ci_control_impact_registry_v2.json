@@ -12,7 +12,6 @@
     "LF_VALIDATION_ENGINE",
     "MIGRATION_SOURCE_PARITY",
     "NO_BYPASS_PROFILE_CARD_SKILL",
-    "P0_EXACT_HEAD_EXTERNAL",
     "P0_VISUAL_RUNTIME",
     "PASS_EVIDENCE",
     "PROFILE_PACK",
@@ -283,7 +282,9 @@
         }
       ],
       "material_matchers": [],
-      "dependencies": []
+      "dependencies": [
+        "LF_CONTRACT_CORE"
+      ]
     },
     {
       "control_id": "P0_FAST_DOCS",
