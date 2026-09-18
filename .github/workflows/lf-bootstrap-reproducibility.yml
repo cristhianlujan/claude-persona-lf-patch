@@ -25,6 +25,11 @@ jobs:
       bootstrap_controls_json: ${{ steps.classify.outputs.bootstrap_controls_json }}
       required_controls_json: ${{ steps.classify.outputs.required_controls_json }}
       plan_sha256: ${{ steps.classify.outputs.plan_sha256 }}
+      applicability_sha256: ${{ steps.classify.outputs.applicability_sha256 }}
+      evidence_sha256: ${{ steps.classify.outputs.evidence_sha256 }}
+      currentness_decision: ${{ steps.classify.outputs.currentness_decision }}
+      authority_bound_revision: ${{ steps.context.outputs.authority_bound_revision }}
+      authority_current_revision: ${{ steps.context.outputs.authority_current_revision }}
       full_regression: ${{ steps.classify.outputs.full_regression }}
       changed_paths_json: ${{ steps.classify.outputs.changed_paths_json }}
       base_sha: ${{ steps.context.outputs.base_sha }}
@@ -55,8 +60,21 @@ jobs:
             base=""
             head="$(git rev-parse HEAD)"
           fi
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+          authority_current="$(git rev-parse refs/remotes/origin/main)"
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            authority_bound="$base"
+          elif [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF_NAME:-}" == "main" && -n "$base" && "$base" != "0000000000000000000000000000000000000000" ]]; then
+            authority_bound="$base"
+          elif [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            authority_bound="$(git merge-base "$head" "$authority_current")"
+          else
+            authority_bound="$authority_current"
+          fi
           echo "base_sha=$base" >> "$GITHUB_OUTPUT"
           echo "head_sha=$head" >> "$GITHUB_OUTPUT"
+          echo "authority_bound_revision=$authority_bound" >> "$GITHUB_OUTPUT"
+          echo "authority_current_revision=$authority_current" >> "$GITHUB_OUTPUT"
 
       - name: Build unified CI applicability plan
         id: classify
@@ -68,6 +86,8 @@ jobs:
             --repo-root .
             --base "${{ steps.context.outputs.base_sha }}"
             --head "${{ steps.context.outputs.head_sha }}"
+            --authority-bound-revision "${{ steps.context.outputs.authority_bound_revision }}"
+            --authority-current-revision "${{ steps.context.outputs.authority_current_revision }}"
             --event-name "${GITHUB_EVENT_NAME}"
             --event-action "${{ github.event.action }}"
             --ref-name "${GITHUB_REF_NAME:-}"
@@ -84,7 +104,14 @@ jobs:
           p=json.loads(Path(".lf_ci/lf_ci_execution_plan_v2.json").read_text())
           assert p["coverage_complete"] is True
           assert p["plan_sha256"]
-          print("BOOTSTRAP_UNIFIED_PLAN", p["plan_sha256"], p["carrier_controls"].get("LF_BOOTSTRAP_REPRODUCIBILITY", []))
+          assert p["source_authority"]["ready"] is True
+          print(
+              "BOOTSTRAP_UNIFIED_PLAN",
+              p["applicability_sha256"],
+              p["evidence_sha256"],
+              p["source_authority"]["decision"],
+              p["carrier_controls"].get("LF_BOOTSTRAP_REPRODUCIBILITY", []),
+          )
           PY
 
       - name: Persist unified CI applicability plan
