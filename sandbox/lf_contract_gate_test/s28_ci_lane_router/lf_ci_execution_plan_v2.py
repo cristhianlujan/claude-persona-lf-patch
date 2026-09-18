@@ -188,7 +188,7 @@ def build_plan(
     )
 
     required: set[str] = set(lane_required_controls)
-    reason_map: dict[str,set[str]] = {cid:set() for cid in full_universe}
+    reason_map: dict[str,set[str]] = {cid:set() for cid in control_universe}
     material_evidence: list[dict[str,Any]] = []
     handled_paths: set[str] = set()
 
@@ -221,8 +221,8 @@ def build_plan(
         if unhandled:
             full_regression = True
             full_reason = "UNMAPPED_CHANGED_PATH_FAIL_CLOSED"
-            required.update(full_universe)
-            for cid in full_universe:
+            required.update(full_regression_controls)
+            for cid in full_regression_controls:
                 reason_map[cid].add(f"FULL_REGRESSION:{full_reason}")
             material_evidence.append({"unmapped_paths":unhandled,"state":"FAIL_CLOSED_TO_FULL"})
 
