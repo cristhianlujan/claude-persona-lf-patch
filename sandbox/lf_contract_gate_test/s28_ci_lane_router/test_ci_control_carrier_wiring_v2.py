@@ -58,8 +58,16 @@ def main() -> None:
     require(texts["LF_CONTRACT_CHECK"], "lf_ci_execution_plan_v2.py", "FAIL_CONTRACT_PLAN_NOT_WIRED")
     require(texts["LF_CONTRACT_CHECK"], "source_ref=exact_head", "FAIL_CONTRACT_EXACT_HEAD_MATERIAL_BINDING_MISSING")
     require(texts["LF_CONTRACT_CHECK"], '["git","diff","--name-only","--no-renames",exact_base,exact_head]', "FAIL_CONTRACT_EXACT_BASE_HEAD_DIFF_MISSING")
+    require(texts["LF_CONTRACT_CHECK"], "lf_ci_currentness_bridge_v1.py", "FAIL_CONTRACT_CURRENTNESS_AUTHORITY_NOT_WIRED")
+    require(texts["LF_CONTRACT_CHECK"], "refs/heads/main:refs/remotes/origin/main", "FAIL_CONTRACT_MOVING_MAIN_NOT_RESOLVED")
+    require(texts["LF_CONTRACT_CHECK"], "applicability_sha256", "FAIL_CONTRACT_APPLICABILITY_SHA_MISSING")
+    require(texts["LF_CONTRACT_CHECK"], "evidence_sha256", "FAIL_CONTRACT_EVIDENCE_SHA_MISSING")
     require(texts["VALIDATE_LF_PACKS"], "emit_ci_execution_plan_v2.py", "FAIL_PACKS_PLAN_NOT_WIRED")
+    require(texts["VALIDATE_LF_PACKS"], "refs/heads/main:refs/remotes/origin/main", "FAIL_PACKS_MOVING_MAIN_NOT_RESOLVED")
+    require(texts["VALIDATE_LF_PACKS"], "--authority-current-revision", "FAIL_PACKS_CURRENTNESS_ARGUMENT_MISSING")
     require(texts["LF_BOOTSTRAP_REPRODUCIBILITY"], "emit_ci_execution_plan_v2.py", "FAIL_BOOTSTRAP_PLAN_NOT_WIRED")
+    require(texts["LF_BOOTSTRAP_REPRODUCIBILITY"], "refs/heads/main:refs/remotes/origin/main", "FAIL_BOOTSTRAP_MOVING_MAIN_NOT_RESOLVED")
+    require(texts["LF_BOOTSTRAP_REPRODUCIBILITY"], "--authority-current-revision", "FAIL_BOOTSTRAP_CURRENTNESS_ARGUMENT_MISSING")
 
     bootstrap = texts["LF_BOOTSTRAP_REPRODUCIBILITY"]
     for forbidden in ("docs_only=", "schema_sensitive=", "deep_required", "remote_schema_required"):
