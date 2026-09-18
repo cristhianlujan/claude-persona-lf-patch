@@ -81,7 +81,7 @@ with matrix(code,objective,canonical_assets,asset_state,control_ref,threshold,cu
  'audit/system_integral/aud05_test_assurance_v1.sql + aud03_gpt_runtime_classification_v1.sql',
  '100% steps classified by behavior; deterministic work has deterministic executor/control; semantic runtime only for irreducible reasoning',
  jsonb_build_object('gpt_runtime_population',210,'deterministic_executor_present',19,'contract_bound_without_deterministic_executor',88,'partial_behavior_contract_without_executor',103),
- 'GAP_FUNCTIONAL_CLASSIFICATION_AND_DELEGABLE_DETERMINISM'),
+ 'GAP_FUNCTIONAL_CLASSIFICATION_INCOMPLETE'),
 
 ('Q11','Sin acumulación de contexto',
  jsonb_build_array('private.lf_context_budget_events_v2','CONTEXT_BUDGET_GOVERNANCE'),
