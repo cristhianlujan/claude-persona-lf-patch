@@ -1,6 +1,6 @@
 {
   "contract_code": "S30_SELF_GOVERNANCE_GATE",
-  "version": "v0.5-candidate",
+  "version": "v0.6.2-candidate",
   "status": "CANDIDATO_READ_ONLY",
   "lane": "S30-A",
   "owner": "S30",
@@ -184,11 +184,6 @@
   ],
   "ci_enforcement": {
     "always_run_self_test": true,
-    "fresh_receipt_trigger_paths": [
-      ".github/workflows/validate-lf-packs.yml",
-      "gobernanza/contratos/s30_self_governance_gate_v1.json",
-      "gobernanza/judges/validate_s30_self_governance_gate.py"
-    ],
     "pull_request_expected_base": "origin/${GITHUB_BASE_REF}",
     "main_push_expected_base": "${github.event.before}",
     "unrelated_changes_must_not_reuse_historical_receipt": true,
@@ -205,7 +200,34 @@
       "staging_branch_prefix": "lf/staging-s30-",
       "staging_validation_only": true,
       "staging_must_not_be_used_as_pr_head_for_governed_paths": true
-    }
+    },
+    "applicability": {
+      "authority": "S30_SELF_GOVERNANCE_JUDGE",
+      "input_authority": "CI_FAST_DEEP_LANE_ROUTER_PLAN_V2",
+      "direct_material_paths": [
+        "gobernanza/contratos/s30_self_governance_gate_v1.json",
+        "gobernanza/judges/validate_s30_self_governance_gate.py",
+        "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json",
+        "sandbox/lf_contract_gate_test/receipts/s30_a_self_governance_gate_v3.json"
+      ],
+      "shared_workflow_material": {
+        "path": ".github/workflows/validate-lf-packs.yml",
+        "start_marker": "- name: S30 self-governance regression and fresh receipt gate",
+        "end_marker": "- name: Validate bounded S30 sandbox regressions"
+      },
+      "decision_vocabulary": [
+        "RUN",
+        "NO_FINDINGS"
+      ],
+      "no_findings_reason": "NO_S30_OWNED_MATERIAL_CHANGED",
+      "unresolved_shared_block_action": "BLOCK_S30_APPLICABILITY_WORKFLOW_BLOCK_UNRESOLVED",
+      "receipt_required_only_when": "RUN",
+      "event_symmetry_required": [
+        "pull_request",
+        "push"
+      ]
+    },
+    "applicability_invariant": "TRANSVERSAL_CI_PLAN_RESOLVES_WHAT_CHANGED_S30_JUDGE_DECIDES_IF_OWNED_MATERIAL_CHANGED"
   },
   "consumer_interface": {
     "input_required": [
@@ -474,5 +496,5 @@
     ],
     "candidate_receipt_git_mode": "100644"
   },
-  "contract_version": "v0.6.1-candidate"
+  "contract_version": "v0.6.2-candidate"
 }
