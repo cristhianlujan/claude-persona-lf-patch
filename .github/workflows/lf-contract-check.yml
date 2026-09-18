@@ -248,6 +248,7 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           import importlib.util
+          import json
           import os
           import subprocess
           from pathlib import Path
@@ -275,6 +276,7 @@ jobs:
           migration_required = str(lane.migration_parity_required).lower()
           input_gov_required = str(lane.input_governance_parity_required).lower()
           selftest_required = str(lane.ci_router_selftest_required).lower()
+          required_controls_json = json.dumps(list(lane.required_controls), separators=(",", ":"))
 
           tier = "DEEP"
           reason = "NO_PATHS_FAIL_CLOSED"
@@ -313,6 +315,7 @@ jobs:
               handle.write(f"migration_parity_required={migration_required}\n")
               handle.write(f"input_governance_parity_required={input_gov_required}\n")
               handle.write(f"ci_router_selftest_required={selftest_required}\n")
+              handle.write(f"required_controls_json={required_controls_json}\n")
               handle.write(f"lane_mode={lane.mode}\n")
 
           summary = os.environ.get("GITHUB_STEP_SUMMARY")
@@ -325,12 +328,15 @@ jobs:
                   handle.write(f"- migration parity required: `{migration_required}`\n")
                   handle.write(f"- input governance parity required: `{input_gov_required}`\n")
                   handle.write(f"- CI router self-test required: `{selftest_required}`\n")
+                  handle.write(f"- required controls shadow: `{required_controls_json}`\n")
+                  handle.write("- required controls are shadow-only in this change; existing boolean outputs remain authoritative for execution\n")
                   handle.write("- FAST scope: exact canonical P0 closure-evidence docs only\n")
                   handle.write("- specialized N/A is path-owned; unknown ownership remains fail-closed\n")
 
           print(
               f"PASS_LF_FEEDBACK_TIER tier={tier} reason={reason} lane={lane.mode} "
-              f"migration={migration_required} input_gov={input_gov_required} selftest={selftest_required}"
+              f"migration={migration_required} input_gov={input_gov_required} selftest={selftest_required} "
+              f"required_controls={required_controls_json}"
           )
           PY
 
