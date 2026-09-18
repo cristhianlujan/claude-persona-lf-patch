@@ -135,6 +135,9 @@ async function enrichUpdatePrewriteEvidence(current: Record<string, any>, stepId
 
   return {
     ...evidencePayload,
+    // The governed caller accepts the structured contract shape, but the existing
+    // runtime transport consumes the normalized SHA40 representation.
+    bound_revision: boundSha,
     baseline_revision_observed: baselineSha,
     current_resolved_revision: observedSha,
     trusted_current_revision: trusted,
