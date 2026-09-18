@@ -1337,101 +1337,101 @@ jobs:
 
           statements.append(
               f"""
-do $verify$
-declare
-  v_total integer;
-  v_nonpass integer;
-  v_missing integer;
-  v_blocked integer;
-  v_bad_child integer;
-begin
-  select count(*) into v_total
-  from public.lf_operation_gate_check_results
-  where execution_id={sql_text(execution_id)};
-
-  if v_total<>{total_checks} then
-    raise exception 'LF_CONTRACT_PRE_EKB_TOTAL_CHECK_READBACK_MISMATCH expected={total_checks} actual=%',v_total;
-  end if;
-
-  select count(*) into v_nonpass
-  from public.lf_operation_gate_check_results
-  where execution_id={sql_text(execution_id)}
-    and check_status in ('FAIL','BLOCKED');
-
-  if v_nonpass<>{nonpass_checks} then
-    raise exception 'LF_CONTRACT_PRE_EKB_NONPASS_READBACK_MISMATCH expected={nonpass_checks} actual=%',v_nonpass;
-  end if;
-
-  select count(*) into v_missing
-  from public.lf_operation_gate_check_results g
-  where g.execution_id={sql_text(execution_id)}
-    and g.check_status in ('FAIL','BLOCKED')
-    and not exists (
-      select 1
-      from public.lf_eventos e
-      where e.created_by_execution_id=g.execution_id
-        and e.origen='LF_PRE_EKB_GATE_AUTOPERSIST_V1'
-        and e.payload->>'persistence_result'='EKB_PERSISTED'
-        and e.payload->>'gate_check_result_id'=g.id::text
-    );
-
-  if v_missing<>0 then
-    raise exception 'LF_CONTRACT_PRE_EKB_RECEIPT_MISSING count=%',v_missing;
-  end if;
-
-  select count(*) into v_blocked
-  from public.lf_eventos e
-  where e.created_by_execution_id={sql_text(execution_id)}
-    and e.origen='LF_PRE_EKB_GATE_AUTOPERSIST_V1'
-    and e.payload->>'persistence_result'='BLOCKED_EKB_PERSISTENCE';
-
-  if v_blocked<>0 then
-    raise exception 'LF_CONTRACT_PRE_EKB_AUTOPERSIST_BLOCKED count=%',v_blocked;
-  end if;
-
-  select count(*) into v_bad_child
-  from public.lf_eventos e
-  left join public.lf_operation_execution child
-    on child.execution_id=e.payload->>'child_execution_id'
-  where e.created_by_execution_id={sql_text(execution_id)}
-    and e.origen='LF_PRE_EKB_GATE_AUTOPERSIST_V1'
-    and e.payload->>'persistence_result'='EKB_PERSISTED'
-    and (
-      child.execution_id is null
-      or child.operation_code<>'EJECUCION_SKILL_LF'
-      or child.target_code<>'ACT-0057'
-      or child.status<>'COMPLETED'
-    );
-
-  if v_bad_child<>0 then
-    raise exception 'LF_CONTRACT_PRE_EKB_CHILD_READBACK_MISMATCH count=%',v_bad_child;
-  end if;
-
-  update public.lf_operation_execution
-  set status='BLOCKED',
-      completed_at=coalesce(completed_at,clock_timestamp()),
-      checkpoint_payload=jsonb_build_object(
-        'lot_code','LF_CONTRACT_CHECK_PRE_EKB_HANDOFF',
-        'source_commit',{sql_text(exact_source)},
-        'github_run_id',{sql_text(run_id)},
-        'github_run_attempt',{run_attempt},
-        'batch_count',{len(batches)},
-        'total_check_count',{total_checks},
-        'nonpass_check_count',{nonpass_checks},
-        'persistence_result','EKB_PERSISTED',
-        'readback_result','PASS'
-      ),
-      updated_by_execution_id={sql_text(execution_id)},
-      updated_at=clock_timestamp()
-  where execution_id={sql_text(execution_id)}
-    and status='IN_PROGRESS';
-
-  if not found then
-    raise exception 'LF_CONTRACT_PRE_EKB_PARENT_FINALIZE_FAILED';
-  end if;
-end
-$verify$;
-"""
+          do $verify$
+          declare
+            v_total integer;
+            v_nonpass integer;
+            v_missing integer;
+            v_blocked integer;
+            v_bad_child integer;
+          begin
+            select count(*) into v_total
+            from public.lf_operation_gate_check_results
+            where execution_id={sql_text(execution_id)};
+          
+            if v_total<>{total_checks} then
+              raise exception 'LF_CONTRACT_PRE_EKB_TOTAL_CHECK_READBACK_MISMATCH expected={total_checks} actual=%',v_total;
+            end if;
+          
+            select count(*) into v_nonpass
+            from public.lf_operation_gate_check_results
+            where execution_id={sql_text(execution_id)}
+              and check_status in ('FAIL','BLOCKED');
+          
+            if v_nonpass<>{nonpass_checks} then
+              raise exception 'LF_CONTRACT_PRE_EKB_NONPASS_READBACK_MISMATCH expected={nonpass_checks} actual=%',v_nonpass;
+            end if;
+          
+            select count(*) into v_missing
+            from public.lf_operation_gate_check_results g
+            where g.execution_id={sql_text(execution_id)}
+              and g.check_status in ('FAIL','BLOCKED')
+              and not exists (
+                select 1
+                from public.lf_eventos e
+                where e.created_by_execution_id=g.execution_id
+                  and e.origen='LF_PRE_EKB_GATE_AUTOPERSIST_V1'
+                  and e.payload->>'persistence_result'='EKB_PERSISTED'
+                  and e.payload->>'gate_check_result_id'=g.id::text
+              );
+          
+            if v_missing<>0 then
+              raise exception 'LF_CONTRACT_PRE_EKB_RECEIPT_MISSING count=%',v_missing;
+            end if;
+          
+            select count(*) into v_blocked
+            from public.lf_eventos e
+            where e.created_by_execution_id={sql_text(execution_id)}
+              and e.origen='LF_PRE_EKB_GATE_AUTOPERSIST_V1'
+              and e.payload->>'persistence_result'='BLOCKED_EKB_PERSISTENCE';
+          
+            if v_blocked<>0 then
+              raise exception 'LF_CONTRACT_PRE_EKB_AUTOPERSIST_BLOCKED count=%',v_blocked;
+            end if;
+          
+            select count(*) into v_bad_child
+            from public.lf_eventos e
+            left join public.lf_operation_execution child
+              on child.execution_id=e.payload->>'child_execution_id'
+            where e.created_by_execution_id={sql_text(execution_id)}
+              and e.origen='LF_PRE_EKB_GATE_AUTOPERSIST_V1'
+              and e.payload->>'persistence_result'='EKB_PERSISTED'
+              and (
+                child.execution_id is null
+                or child.operation_code<>'EJECUCION_SKILL_LF'
+                or child.target_code<>'ACT-0057'
+                or child.status<>'COMPLETED'
+              );
+          
+            if v_bad_child<>0 then
+              raise exception 'LF_CONTRACT_PRE_EKB_CHILD_READBACK_MISMATCH count=%',v_bad_child;
+            end if;
+          
+            update public.lf_operation_execution
+            set status='BLOCKED',
+                completed_at=coalesce(completed_at,clock_timestamp()),
+                checkpoint_payload=jsonb_build_object(
+                  'lot_code','LF_CONTRACT_CHECK_PRE_EKB_HANDOFF',
+                  'source_commit',{sql_text(exact_source)},
+                  'github_run_id',{sql_text(run_id)},
+                  'github_run_attempt',{run_attempt},
+                  'batch_count',{len(batches)},
+                  'total_check_count',{total_checks},
+                  'nonpass_check_count',{nonpass_checks},
+                  'persistence_result','EKB_PERSISTED',
+                  'readback_result','PASS'
+                ),
+                updated_by_execution_id={sql_text(execution_id)},
+                updated_at=clock_timestamp()
+            where execution_id={sql_text(execution_id)}
+              and status='IN_PROGRESS';
+          
+            if not found then
+              raise exception 'LF_CONTRACT_PRE_EKB_PARENT_FINALIZE_FAILED';
+            end if;
+          end
+          $verify$;
+          """
           )
           statements.append(
               "select jsonb_build_object("
