@@ -17,7 +17,7 @@ REQUIRED_HEADINGS = [
     "## No duplicación",
     "## Currentness",
 ]
-INDEX_RE = re.compile(r"^- \`([^\`]+)\` — .* → \`([^\`]+)\`\s*$")
+INDEX_RE = re.compile(r"^- `([^`]+)` — .* → `([^`]+)`\\s*$")
 
 def slug(code: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", code.lower()).strip("_")
