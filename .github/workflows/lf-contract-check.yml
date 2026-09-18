@@ -370,16 +370,14 @@ jobs:
               source_ref=exact_head,
           )
           applicability_sha256 = plan["plan_sha256"]
-          if event_name == "pull_request":
-              authority_bound = exact_base
-          elif event_name == "push" and ref_name == "main":
-              authority_bound = exact_base or authority_current
-          elif event_name == "push":
-              authority_bound = subprocess.check_output(
-                  ["git","merge-base",exact_head,authority_current], text=True
-              ).strip()
-          else:
-              authority_bound = authority_current
+          authority_bound = currentness_module.resolve_authority_evidence_revision(
+              repo=Path("."),
+              event_name=event_name,
+              ref_name=ref_name,
+              diff_base_revision=exact_base,
+              candidate_head_revision=exact_head,
+              current_revision=authority_current,
+          )
 
           currentness = currentness_module.evaluate_ci_authority_currentness(
               repo=Path("."),
