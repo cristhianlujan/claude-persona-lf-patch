@@ -177,6 +177,8 @@ La autoridad Git no es un SHA congelado. La autoridad lógica es `refs/heads/mai
 Separación obligatoria:
 
 - `authority_ref`: referencia móvil (`refs/heads/main`);
+- `diff_base_revision`: base histórica usada sólo para reconstruir el delta del candidato; en un push de feature branch no representa `main`;
+- `authority_evidence_revision`: revisión de `main` contra la que se evaluó currentness; para feature branches se deriva del merge-base con la autoridad móvil;
 - `resolved_revision`: SHA observado de la autoridad en esa corrida; puede cambiar;
 - `evidence_revision`: SHA histórico contra el que se produjo evidencia; no cambia;
 - `applicability_sha256` / `plan_sha256`: identidad estable de la decisión y materiales del candidato;
