@@ -47,7 +47,10 @@ def main() -> int:
             failures.append("MISSING_ASSET_CODE")
             continue
         indexed=str(row.get("readme_ref") or "").strip()
-        expected=indexed or default_path(code)
+        if not indexed:
+            failures.append(f"{code}:INVENTORY_README_REF_MISSING:{default_path(code)}")
+            continue
+        expected=indexed
         path=root/expected
         checked+=1
         if not path.is_file():
@@ -61,8 +64,6 @@ def main() -> int:
             failures.append(f"{code}:README_CONSUMPTION_SECTIONS_MISSING:{','.join(missing)}")
         if "ACTIVE_SHARED_ENFORCEMENT" not in text:
             failures.append(f"{code}:README_ACTIVE_SHARED_CONTRACT_MISSING:{expected}")
-        if not indexed:
-            warnings.append(f"{code}:INVENTORY_README_REF_BACKFILL_REQUIRED:{expected}")
     if checked==0:
         failures.append("NO_ACTIVE_SHARED_ASSETS")
     summary={"schema_version":"lf-transversal-readme-contract/v1","checked":checked,"failures":failures,"warnings":warnings,"result":"PASS" if not failures else "FAIL"}

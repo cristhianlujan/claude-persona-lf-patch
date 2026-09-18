@@ -5,14 +5,14 @@ Este índice existe para que cualquier agente o proceso pueda resolver una capab
 ## Regla de consumo
 
 1. Consultar `public.lf_activos` y seleccionar el activo transversal vigente.
-2. Abrir el `documentation.readme_ref`; durante la regularización histórica puede usarse la ruta canónica de este índice.
+2. Abrir el `documentation.readme_ref`. Si falta, bloquear: un activo transversal activo sin README indexado no cumple el contrato de activación.
 3. Seguir `Cómo consumirlo`, las superficies canónicas y los límites fail-closed.
 4. No duplicar la capability.
 5. Si cambia el contrato o la superficie canónica, actualizar README + inventario en el mismo cierre gobernado.
 
 ## Regla de activación
 
-Un activo `ACTIVE_SHARED_ENFORCEMENT` debe tener un README consumible. `Validate LF Packs` verifica esta obligación contra el inventario vivo.
+Un activo `ACTIVE_SHARED_ENFORCEMENT` debe tener un README consumible **y** `metadata.transversal_inventory.documentation.readme_ref` no vacío. `Validate LF Packs` verifica ambas obligaciones contra el inventario vivo.
 
 ## Activos
 

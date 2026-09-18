@@ -16,13 +16,23 @@ with tempfile.TemporaryDirectory() as td:
     p=root/"sandbox/lf_contract_gate_test/transversal_assets/test_asset/README.md"
     p.parent.mkdir(parents=True)
     p.write_text("# TEST_ASSET\n\nACTIVE_SHARED_ENFORCEMENT\n\n"+"\n\n".join(h+"\nOK" for h in HEADINGS),encoding="utf-8")
-    rows=[{"codigo_activo":"TEST_ASSET","inventory_status":"ACTIVE_SHARED_ENFORCEMENT","readme_ref":None}]
+    rows=[{"codigo_activo":"TEST_ASSET","inventory_status":"ACTIVE_SHARED_ENFORCEMENT","readme_ref":"sandbox/lf_contract_gate_test/transversal_assets/test_asset/README.md"}]
     ok=run(root,rows)
     assert ok.returncode==0,(ok.stdout,ok.stderr)
 
 with tempfile.TemporaryDirectory() as td:
     root=Path(td)
-    rows=[{"codigo_activo":"MISSING_ASSET","inventory_status":"ACTIVE_SHARED_ENFORCEMENT","readme_ref":None}]
+    p=root/"sandbox/lf_contract_gate_test/transversal_assets/missing_index/README.md"
+    p.parent.mkdir(parents=True)
+    p.write_text("# MISSING_INDEX\n\nACTIVE_SHARED_ENFORCEMENT\n\n"+"\n\n".join(h+"\nOK" for h in HEADINGS),encoding="utf-8")
+    rows=[{"codigo_activo":"MISSING_INDEX","inventory_status":"ACTIVE_SHARED_ENFORCEMENT","readme_ref":None}]
+    bad=run(root,rows)
+    assert bad.returncode==1,(bad.stdout,bad.stderr)
+    assert "INVENTORY_README_REF_MISSING" in bad.stdout
+
+with tempfile.TemporaryDirectory() as td:
+    root=Path(td)
+    rows=[{"codigo_activo":"MISSING_ASSET","inventory_status":"ACTIVE_SHARED_ENFORCEMENT","readme_ref":"sandbox/lf_contract_gate_test/transversal_assets/missing_asset/README.md"}]
     bad=run(root,rows)
     assert bad.returncode==1,(bad.stdout,bad.stderr)
     assert "README_MISSING" in bad.stdout
