@@ -146,6 +146,25 @@ COMMIT;
     assert not M.TX_STMT.search(M.strip_non_code(payload))
 
 
+
+
+def test_migration_identity_is_exact() -> None:
+    version, name = M.migration_identity(
+        "supabase/migrations/20260918054000_lf_s30_operation_policy_context_admission_v1.sql"
+    )
+    assert version == "20260918054000"
+    assert name == "lf_s30_operation_policy_context_admission_v1"
+
+
+def test_migration_identity_blocks_noncanonical_filename() -> None:
+    try:
+        M.migration_identity("supabase/migrations/not_a_migration.sql")
+    except M.ProbeError as exc:
+        assert "FAIL_DB_CANDIDATE_MIGRATION_NAME_INVALID" in str(exc)
+    else:
+        raise AssertionError("expected noncanonical migration filename to block")
+
+
 def main() -> None:
     tests = [
         test_allows_plpgsql_begin_end_inside_dollar_body,
@@ -160,6 +179,8 @@ def main() -> None:
         test_blocks_concurrent_index_inside_outer_frame,
         test_ignores_comment_and_string_tokens,
         test_start_transaction_outer_frame_is_supported,
+        test_migration_identity_is_exact,
+        test_migration_identity_blocks_noncanonical_filename,
     ]
     for test in tests:
         test()
