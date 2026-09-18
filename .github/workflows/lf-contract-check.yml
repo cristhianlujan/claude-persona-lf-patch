@@ -370,7 +370,16 @@ jobs:
               source_ref=exact_head,
           )
           applicability_sha256 = plan["plan_sha256"]
-          bound_revision = exact_base or authority_current
+          if event_name == "pull_request":
+              bound_revision = exact_base
+          elif event_name == "push" and ref_name == "main":
+              bound_revision = exact_base or authority_current
+          elif event_name == "push":
+              bound_revision = subprocess.check_output(
+                  ["git","merge-base",exact_head,authority_current], text=True
+              ).strip()
+          else:
+              bound_revision = authority_current
           currentness = currentness_module.evaluate_ci_authority_currentness(
               repo=Path("."),
               bound_revision=bound_revision,
@@ -381,7 +390,7 @@ jobs:
           plan["plan_sha256"] = applicability_sha256
           plan["applicability_sha256"] = applicability_sha256
           plan["source_authority"] = currentness
-          plan["evidence_base_revision"] = bound_revision
+          plan["authority_evidence_revision"] = bound_revision
           plan["base_sha"] = os.environ.get("LF_PLAN_BASE_SHA") or None
           plan["head_sha"] = os.environ.get("LF_PLAN_HEAD_SHA") or os.environ.get("GITHUB_SHA")
           plan["event_name"] = event_name
