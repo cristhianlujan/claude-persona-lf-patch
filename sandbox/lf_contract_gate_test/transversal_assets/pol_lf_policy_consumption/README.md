@@ -1,6 +1,8 @@
-# POL-LF-POLICY-CONSUMPTION
+# POL-LF-POLICY-CONSUMPTION / POLICY_CONSUMPTION
 
 Inventory status: `ACTIVE_TRANSVERSAL_POLICY`.
+
+Este README cubre el policy code canónico `POL-LF-POLICY-CONSUMPTION` y el alias/capability de inventario `POLICY_CONSUMPTION`; no son dos policies distintas.
 
 ## Propósito
 
