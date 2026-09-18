@@ -8,6 +8,7 @@ specialized N/A.
 from __future__ import annotations
 
 import importlib.util
+import re
 import sys
 from pathlib import Path, PurePosixPath
 from typing import Iterable, Mapping, Any
@@ -49,6 +50,52 @@ P0_EXACT_HEAD_EXTERNAL_EXACT = frozenset({
     "supabase/config.toml",
 })
 
+CONTROL_MIGRATION_SOURCE_PARITY = "MIGRATION_SOURCE_PARITY"
+CONTROL_INPUT_GOVERNANCE_MIGRATION_PARITY = "INPUT_GOVERNANCE_MIGRATION_PARITY"
+CONTROL_CI_ROUTER_SELFTEST = "CI_ROUTER_SELFTEST"
+CONTROL_P0_EXACT_HEAD_EXTERNAL = "P0_EXACT_HEAD_EXTERNAL"
+FAIL_CLOSED_REQUIRED_CONTROLS = tuple(sorted({
+    CONTROL_MIGRATION_SOURCE_PARITY,
+    CONTROL_INPUT_GOVERNANCE_MIGRATION_PARITY,
+    CONTROL_CI_ROUTER_SELFTEST,
+    CONTROL_P0_EXACT_HEAD_EXTERNAL,
+}))
+_CONTROL_CODE_RE = re.compile(r"^[A-Z][A-Z0-9_-]*$")
+
+
+def _canonical_required_controls(values: Iterable[str]) -> tuple[str, ...]:
+    raw = tuple(values)
+    if any(
+        not isinstance(value, str)
+        or not value
+        or value.strip() != value
+        or _CONTROL_CODE_RE.fullmatch(value) is None
+        for value in raw
+    ):
+        raise ValueError("FAIL_LF_REQUIRED_CONTROL_ID")
+    if len(raw) != len(set(raw)):
+        raise ValueError("FAIL_LF_REQUIRED_CONTROL_DUPLICATE")
+    return tuple(sorted(raw))
+
+
+def _legacy_required_controls(
+    *,
+    migration_parity_required: bool,
+    input_governance_parity_required: bool,
+    ci_router_selftest_required: bool,
+    p0_exact_head_external_required: bool,
+) -> tuple[str, ...]:
+    controls: list[str] = []
+    if migration_parity_required:
+        controls.append(CONTROL_MIGRATION_SOURCE_PARITY)
+    if input_governance_parity_required:
+        controls.append(CONTROL_INPUT_GOVERNANCE_MIGRATION_PARITY)
+    if ci_router_selftest_required:
+        controls.append(CONTROL_CI_ROUTER_SELFTEST)
+    if p0_exact_head_external_required:
+        controls.append(CONTROL_P0_EXACT_HEAD_EXTERNAL)
+    return tuple(sorted(controls))
+
 # Deliberately excludes the broad sandbox/lf_contract_gate_test/ prefix. Unknown
 # validator surfaces in that tree must remain fail-closed unless explicitly bound.
 KNOWN_SHARED_PREFIXES = (
@@ -69,6 +116,7 @@ KNOWN_SHARED_PREFIXES = (
 class LaneDecision:
     __slots__ = (
         "mode",
+        "required_controls",
         "migration_parity_required",
         "input_governance_parity_required",
         "ci_router_selftest_required",
@@ -87,19 +135,43 @@ class LaneDecision:
         p0_exact_head_external_required: bool,
         deep_shared: bool,
         reasons: tuple[str, ...],
+        required_controls: Iterable[str] | None = None,
     ) -> None:
+        legacy = _legacy_required_controls(
+            migration_parity_required=migration_parity_required,
+            input_governance_parity_required=input_governance_parity_required,
+            ci_router_selftest_required=ci_router_selftest_required,
+            p0_exact_head_external_required=p0_exact_head_external_required,
+        )
+        canonical = legacy if required_controls is None else _canonical_required_controls(required_controls)
+
+        legacy_expectations = {
+            CONTROL_MIGRATION_SOURCE_PARITY: migration_parity_required,
+            CONTROL_INPUT_GOVERNANCE_MIGRATION_PARITY: input_governance_parity_required,
+            CONTROL_CI_ROUTER_SELFTEST: ci_router_selftest_required,
+            CONTROL_P0_EXACT_HEAD_EXTERNAL: p0_exact_head_external_required,
+        }
+        for control_code, expected in legacy_expectations.items():
+            if (control_code in canonical) is not expected:
+                raise ValueError(f"FAIL_LF_REQUIRED_CONTROL_LEGACY_MISMATCH:{control_code}")
+
         self.mode = mode
-        self.migration_parity_required = migration_parity_required
-        self.input_governance_parity_required = input_governance_parity_required
-        self.ci_router_selftest_required = ci_router_selftest_required
-        self.p0_exact_head_external_required = p0_exact_head_external_required
+        self.required_controls = canonical
+        self.migration_parity_required = CONTROL_MIGRATION_SOURCE_PARITY in canonical
+        self.input_governance_parity_required = CONTROL_INPUT_GOVERNANCE_MIGRATION_PARITY in canonical
+        self.ci_router_selftest_required = CONTROL_CI_ROUTER_SELFTEST in canonical
+        self.p0_exact_head_external_required = CONTROL_P0_EXACT_HEAD_EXTERNAL in canonical
         self.deep_shared = deep_shared
         self.reasons = reasons
+
+    def requires(self, control_code: str) -> bool:
+        return control_code in self.required_controls
 
     def __repr__(self) -> str:
         return (
             "LaneDecision("
-            f"mode={self.mode!r}, migration_parity_required={self.migration_parity_required!r}, "
+            f"mode={self.mode!r}, required_controls={self.required_controls!r}, "
+            f"migration_parity_required={self.migration_parity_required!r}, "
             f"input_governance_parity_required={self.input_governance_parity_required!r}, "
             f"ci_router_selftest_required={self.ci_router_selftest_required!r}, "
             f"p0_exact_head_external_required={self.p0_exact_head_external_required!r}, "
@@ -109,6 +181,7 @@ class LaneDecision:
     def to_dict(self) -> dict:
         return {
             "mode": self.mode,
+            "required_controls": list(self.required_controls),
             "migration_parity_required": self.migration_parity_required,
             "input_governance_parity_required": self.input_governance_parity_required,
             "ci_router_selftest_required": self.ci_router_selftest_required,
@@ -116,7 +189,6 @@ class LaneDecision:
             "deep_shared": self.deep_shared,
             "reasons": list(self.reasons),
         }
-
 
 def _fail_closed(mode: str, reason: str) -> LaneDecision:
     return LaneDecision(
@@ -127,6 +199,7 @@ def _fail_closed(mode: str, reason: str) -> LaneDecision:
         p0_exact_head_external_required=True,
         deep_shared=True,
         reasons=(reason,),
+        required_controls=FAIL_CLOSED_REQUIRED_CONTROLS,
     )
 
 
@@ -188,6 +261,7 @@ def classify(
     deep_shared = False
     product_modes: set[str] = set()
     product_namespaces: set[str] = set()
+    required_controls: set[str] = set()
     reasons: list[str] = []
 
     for path in changed:
@@ -199,15 +273,19 @@ def classify(
 
         if path.startswith(MIGRATION_PREFIX) or path in {MIGRATION_VALIDATOR, MIGRATION_TRANSPORT_TEST}:
             migration = True
+            required_controls.add(CONTROL_MIGRATION_SOURCE_PARITY)
             reasons.append(f"MIGRATION:{path}")
         if _is_input_governance_migration(path) or path == INPUT_GOV_VALIDATOR:
             input_gov = True
+            required_controls.add(CONTROL_INPUT_GOVERNANCE_MIGRATION_PARITY)
             reasons.append(f"INPUT_GOV:{path}")
         if path.startswith(CI_ROUTER_PREFIX):
             selftest = True
+            required_controls.add(CONTROL_CI_ROUTER_SELFTEST)
             reasons.append(f"CI_ROUTER_SELFTEST:{path}")
         if _is_p0_exact_head_external_owner(path):
             p0_external = True
+            required_controls.add(CONTROL_P0_EXACT_HEAD_EXTERNAL)
             reasons.append(f"P0_EXACT_HEAD_EXTERNAL:{path}")
 
         if shared_control is not None:
@@ -216,6 +294,7 @@ def classify(
             selftest = selftest or shared_control.ci_router_selftest_required
             p0_external = p0_external or shared_control.p0_exact_head_external_required
             deep_shared = deep_shared or shared_control.deep_shared
+            required_controls.update(shared_control.required_controls)
             reasons.append(f"SHARED_CONTROL:{shared_control.control_id}:{path}")
 
         if product_lane is not None:
@@ -224,6 +303,7 @@ def classify(
             selftest = selftest or product_lane.ci_router_selftest_required
             p0_external = p0_external or product_lane.p0_exact_head_external_required
             deep_shared = deep_shared or product_lane.deep_shared
+            required_controls.update(product_lane.required_controls)
             reasons.append(f"PRODUCT_LANE:{product_lane.lane_id}:{path}")
             if product_lane.known:
                 product_modes.add(product_lane.mode)
@@ -245,6 +325,11 @@ def classify(
         input_gov = True
         p0_external = True
         deep_shared = True
+        required_controls.update((
+            CONTROL_MIGRATION_SOURCE_PARITY,
+            CONTROL_INPUT_GOVERNANCE_MIGRATION_PARITY,
+            CONTROL_P0_EXACT_HEAD_EXTERNAL,
+        ))
 
     if unknown:
         mode = "DEEP_SHARED_UNKNOWN"
@@ -259,6 +344,13 @@ def classify(
     else:
         mode = "DEEP_SHARED_KNOWN"
 
+    required_controls.update(_legacy_required_controls(
+        migration_parity_required=migration,
+        input_governance_parity_required=input_gov,
+        ci_router_selftest_required=selftest,
+        p0_exact_head_external_required=p0_external,
+    ))
+    canonical_required_controls = _canonical_required_controls(required_controls)
     return LaneDecision(
         mode=mode,
         migration_parity_required=migration,
@@ -267,4 +359,5 @@ def classify(
         p0_exact_head_external_required=p0_external,
         deep_shared=deep_shared,
         reasons=tuple(reasons) or ("KNOWN_SHARED",),
+        required_controls=canonical_required_controls,
     )

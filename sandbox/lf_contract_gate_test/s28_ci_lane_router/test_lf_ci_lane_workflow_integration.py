@@ -212,6 +212,8 @@ def main() -> None:
     require(text, "migration_parity_required", "FAIL_MIGRATION_APPLICABILITY_OUTPUT_MISSING")
     require(text, "input_governance_parity_required", "FAIL_INPUT_GOV_APPLICABILITY_OUTPUT_MISSING")
     require(text, "ci_router_selftest_required", "FAIL_CI_ROUTER_SELFTEST_OUTPUT_MISSING")
+    require(text, "required_controls_json", "FAIL_REQUIRED_CONTROLS_SHADOW_OUTPUT_MISSING")
+    require(text, "required controls are shadow-only", "FAIL_REQUIRED_CONTROLS_SHADOW_MODE_MARKER_MISSING")
     require(
         text,
         "steps.feedback_tier.outputs.migration_parity_required == 'true'",

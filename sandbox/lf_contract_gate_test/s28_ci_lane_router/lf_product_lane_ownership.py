@@ -65,6 +65,7 @@ _REQUIRED_ENTRY_FIELDS = frozenset({
     "deep_shared",
     "known",
 })
+_OPTIONAL_ENTRY_FIELDS = frozenset({"required_controls"})
 _ALLOWED_MATCHER_FIELDS = frozenset({"kind", "value"})
 _ALLOWED_NAMESPACE_FIELDS = frozenset({"namespace", "allowed_roots"})
 _NAMESPACE_RE = re.compile(r"^[A-Z][A-Z0-9_-]*$")
@@ -102,6 +103,7 @@ class LaneOwnership:
     ci_router_selftest_required: bool
     deep_shared: bool
     known: bool
+    required_controls: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -137,6 +139,26 @@ def _require_bool(entry: Mapping[str, Any], field: str, lane_id: str) -> bool:
     if type(value) is not bool:
         raise RegistryValidationError("FAIL_LF_PRODUCT_REGISTRY_BOOLEAN", f"{lane_id}:{field}")
     return value
+
+
+def _required_controls(entry: Mapping[str, Any], lane_id: str, legacy: tuple[str, ...]) -> tuple[str, ...]:
+    value = entry.get("required_controls")
+    if value is None:
+        return legacy
+    if not isinstance(value, list):
+        raise RegistryValidationError("FAIL_LF_PRODUCT_REGISTRY_REQUIRED_CONTROLS", f"{lane_id}:not_list")
+    if any(not isinstance(item, str) or _SYMBOL_RE.fullmatch(item) is None for item in value):
+        raise RegistryValidationError("FAIL_LF_PRODUCT_REGISTRY_REQUIRED_CONTROL_ID", lane_id)
+    if len(value) != len(set(value)):
+        raise RegistryValidationError("FAIL_LF_PRODUCT_REGISTRY_REQUIRED_CONTROL_DUPLICATE", lane_id)
+    canonical = tuple(sorted(value))
+    for required in legacy:
+        if required not in canonical:
+            raise RegistryValidationError(
+                "FAIL_LF_PRODUCT_REGISTRY_REQUIRED_CONTROL_LEGACY_MISMATCH",
+                f"{lane_id}:{required}",
+            )
+    return canonical
 
 
 def _matchers_overlap(a: Matcher, b: Matcher) -> bool:
@@ -212,7 +234,7 @@ def compile_registry(data: Mapping[str, Any]) -> CompiledRegistry:
         if not isinstance(raw, Mapping):
             raise RegistryValidationError("FAIL_LF_PRODUCT_REGISTRY_ENTRY", str(index))
         missing = _REQUIRED_ENTRY_FIELDS - set(raw)
-        extra = set(raw) - _REQUIRED_ENTRY_FIELDS
+        extra = set(raw) - (_REQUIRED_ENTRY_FIELDS | _OPTIONAL_ENTRY_FIELDS)
         if missing:
             raise RegistryValidationError("FAIL_LF_PRODUCT_REGISTRY_ENTRY_INCOMPLETE", f"{index}:{sorted(missing)}")
         if extra:
@@ -275,6 +297,17 @@ def compile_registry(data: Mapping[str, Any]) -> CompiledRegistry:
         if not known and not (migration and input_gov and p0_external and deep_shared):
             raise RegistryValidationError("FAIL_LF_PRODUCT_REGISTRY_UNKNOWN_PERMISSIVE", lane_id)
 
+        legacy_controls: list[str] = []
+        if migration:
+            legacy_controls.append("MIGRATION_SOURCE_PARITY")
+        if input_gov:
+            legacy_controls.append("INPUT_GOVERNANCE_MIGRATION_PARITY")
+        if selftest:
+            legacy_controls.append("CI_ROUTER_SELFTEST")
+        if p0_external:
+            legacy_controls.append("P0_EXACT_HEAD_EXTERNAL")
+        required_controls = _required_controls(raw, lane_id, tuple(sorted(legacy_controls)))
+
         lanes.append(
             LaneOwnership(
                 lane_id=lane_id,
@@ -288,6 +321,7 @@ def compile_registry(data: Mapping[str, Any]) -> CompiledRegistry:
                 ci_router_selftest_required=selftest,
                 deep_shared=deep_shared,
                 known=known,
+                required_controls=required_controls,
             )
         )
 

@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-from lf_ci_lane_router import classify
+from lf_ci_lane_router import (
+    CONTROL_CI_ROUTER_SELFTEST,
+    CONTROL_INPUT_GOVERNANCE_MIGRATION_PARITY,
+    CONTROL_MIGRATION_SOURCE_PARITY,
+    CONTROL_P0_EXACT_HEAD_EXTERNAL,
+    LaneDecision,
+    classify,
+)
 
 
 def check(name, paths, *, migration, input_gov, selftest, p0_external, deep_shared, mode=None):
@@ -242,6 +249,93 @@ def extended_main():
     print(f"S30_DECLARATIVE_ADVERSARIAL_PASS={negatives}/{negatives}")
 
 
+def required_controls_shadow_main():
+    migration = "supabase/migrations/20260909010101_lf_example.sql"
+    input_migration = "supabase/migrations/20260909010102_input_governance_example.sql"
+    workflow = ".github/workflows/lf-contract-check.yml"
+
+    got = classify([migration])
+    assert got.required_controls == (CONTROL_MIGRATION_SOURCE_PARITY,), got
+    assert got.requires(CONTROL_MIGRATION_SOURCE_PARITY)
+
+    got = classify([input_migration])
+    assert got.required_controls == tuple(sorted((
+        CONTROL_INPUT_GOVERNANCE_MIGRATION_PARITY,
+        CONTROL_MIGRATION_SOURCE_PARITY,
+    ))), got
+
+    got = classify([workflow])
+    assert got.required_controls == (CONTROL_CI_ROUTER_SELFTEST,), got
+
+    unknown = classify(["mystery/new_surface.xyz"])
+    assert unknown.required_controls == tuple(sorted((
+        CONTROL_INPUT_GOVERNANCE_MIGRATION_PARITY,
+        CONTROL_MIGRATION_SOURCE_PARITY,
+        CONTROL_P0_EXACT_HEAD_EXTERNAL,
+    ))), unknown
+    assert unknown.deep_shared is True
+    assert unknown.ci_router_selftest_required is False
+
+    a = classify([workflow, migration])
+    b = classify([migration, workflow])
+    assert a.required_controls == b.required_controls
+    assert a.to_dict()["required_controls"] == list(a.required_controls)
+
+    future = LaneDecision(
+        mode="FUTURE_CONTROL_SHADOW",
+        migration_parity_required=False,
+        input_governance_parity_required=False,
+        ci_router_selftest_required=False,
+        p0_exact_head_external_required=False,
+        deep_shared=False,
+        reasons=("TEST_FUTURE_CONTROL",),
+        required_controls=("FUTURE_TRANSVERSAL_CONTROL",),
+    )
+    assert future.required_controls == ("FUTURE_TRANSVERSAL_CONTROL",)
+    assert future.requires("FUTURE_TRANSVERSAL_CONTROL")
+    assert not any((
+        future.migration_parity_required,
+        future.input_governance_parity_required,
+        future.ci_router_selftest_required,
+        future.p0_exact_head_external_required,
+    ))
+
+    reg = fresh_registry()
+    future_lane = future_entry()
+    future_lane["required_controls"] = ["FUTURE_TRANSVERSAL_CONTROL"]
+    reg["lanes"].append(future_lane)
+    routed_future = classify(["sandbox/lf_contract_gate_test/s30_e_future/a.json"], registry_data=reg)
+    assert routed_future.required_controls == ("FUTURE_TRANSVERSAL_CONTROL",), routed_future
+    assert routed_future.mode == "S30_FUTURE_ISOLATED", routed_future
+
+    bad_reg = fresh_registry()
+    bad_lane = future_entry()
+    bad_lane["required_controls"] = ["FUTURE_TRANSVERSAL_CONTROL", "FUTURE_TRANSVERSAL_CONTROL"]
+    bad_reg["lanes"].append(bad_lane)
+    bad_decision = classify(["sandbox/lf_contract_gate_test/s30_e_future/a.json"], registry_data=bad_reg)
+    assert bad_decision.mode == "DEEP_SHARED_REGISTRY_INVALID", bad_decision
+    assert bad_decision.deep_shared is True
+
+    try:
+        LaneDecision(
+            mode="INVALID_LEGACY_MISMATCH",
+            migration_parity_required=True,
+            input_governance_parity_required=False,
+            ci_router_selftest_required=False,
+            p0_exact_head_external_required=False,
+            deep_shared=False,
+            reasons=("NEGATIVE",),
+            required_controls=(),
+        )
+    except ValueError as exc:
+        assert "FAIL_LF_REQUIRED_CONTROL_LEGACY_MISMATCH" in str(exc)
+    else:
+        raise AssertionError("legacy/required_controls mismatch must fail closed")
+
+    print("CI_REQUIRED_CONTROLS_SHADOW_PASS=10/10")
+
+
 if __name__ == "__main__":
     main()
     extended_main()
+    required_controls_shadow_main()
