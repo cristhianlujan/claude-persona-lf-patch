@@ -172,4 +172,20 @@ Si aparece un nuevo tipo de material o control, extender el registro y los tests
 
 ## Currentness
 
-Este README documenta el contrato de consumo. Antes de una decisión material, consultar `public.lf_activos`, source revision y superficies runtime vigentes. Si cambia el contrato de aplicabilidad, revalidar todos los carriers afectados.
+La autoridad Git no es un SHA congelado. La autoridad lógica es `refs/heads/main`, resuelta al ejecutar mediante `CURRENTNESS_AUTHORITY`.
+
+Separación obligatoria:
+
+- `authority_ref`: referencia móvil (`refs/heads/main`);
+- `resolved_revision`: SHA observado de la autoridad en esa corrida; puede cambiar;
+- `evidence_revision`: SHA histórico contra el que se produjo evidencia; no cambia;
+- `applicability_sha256` / `plan_sha256`: identidad estable de la decisión y materiales del candidato;
+- `evidence_sha256`: recibo inmutable de esa ejecución concreta, incluyendo las revisiones observadas.
+
+Un avance de `main` por sí solo no invalida el plan. Si los materiales de la autoridad CI no cambiaron, `CURRENTNESS_AUTHORITY` debe producir `CURRENT_REBOUND` y la evidencia histórica queda como referencia documental. Si cambió la propia autoridad CI, falta prueba de compatibilidad o diverge la historia, se bloquea fail-closed; no se fuerza un rebase únicamente para obtener un SHA nuevo.
+
+Los tres carriers pueden observar revisiones móviles distintas si `main` avanza entre corridas. Lo que debe coincidir para la misma decisión material es `applicability_sha256`; cada `evidence_sha256` puede ser distinto y sigue siendo histórico.
+
+Materiales declarados de esta autoridad incluyen los tres workflows CI, `s28_ci_lane_router/**`, `gate_check_observability/**`, el README transversal y la implementación `material_currentness/**` que decide el rebind.
+
+Antes de una decisión material, consultar `public.lf_activos`, source revision y superficies runtime vigentes. Si cambia el contrato de aplicabilidad, revalidar sólo el cierre afectado; no perseguir el SHA global de `main`.
