@@ -42,7 +42,7 @@ def load_tarball(repo,sha,token):
     return paths,read,sha,"tarball"
 
 def load_local(root,sha):
-    p=pathlib.Path(root); paths=sorted(str(x.relative_to(p)).replace(os.sep,"/") for x in p.rglob("*") if x.is_file())
+    p=pathlib.Path(root); paths=sorted(str(x.relative_to(p)).replace(os.sep,"/") for x in p.rglob("*") if x.is_file() and ".git" not in x.relative_to(p).parts)
     return paths,lambda path:(p/path).read_text(encoding="utf-8",errors="replace"),sha,"local"
 
 def module_index(py_paths):
