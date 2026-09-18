@@ -196,6 +196,7 @@ Los tres carriers deben resolver main vivo y delegar el drift al **`CURRENTNESS_
 Reglas:
 
 - main avanzó pero los materiales CI declarados no cambiaron → `CURRENT_REBOUND`; no rebasear sólo para obtener otro SHA;
+- push a `main` → genera **evidencia nueva**: `diff_base_revision` conserva `event.before`, pero `authority_evidence_revision` nace en el `main` recién materializado; el cambio que acaba de incorporarse no se evalúa como reutilización de evidencia anterior;
 - cambió un material de la autoridad CI y no existe prueba de compatibilidad → `UNKNOWN_FAIL_CLOSED`;
 - cambio material demostrado como breaking → `STALE_AFFECTED`;
 - historia divergente o evidencia incompleta → fail closed;
