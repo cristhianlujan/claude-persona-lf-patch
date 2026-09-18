@@ -33,6 +33,7 @@ CI_AUTHORITY_SELECTORS = {
         "sandbox/lf_contract_gate_test/s28_ci_lane_router/",
         "sandbox/lf_contract_gate_test/gate_check_observability/",
         "sandbox/lf_contract_gate_test/transversal_assets/ci_fast_deep_lane_router/",
+        "sandbox/lf_contract_gate_test/material_currentness/",
     ],
     "globs": [],
 }
