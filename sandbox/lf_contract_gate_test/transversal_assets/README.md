@@ -25,6 +25,7 @@ Un activo `ACTIVE_SHARED_ENFORCEMENT` debe tener un README consumible **y** `met
 - `EVIDENCE_RESOLVER_REGISTRY` — `TRANSVERSAL_EVIDENCE_RESOLVER_REGISTRY` → `sandbox/lf_contract_gate_test/transversal_assets/evidence_resolver_registry/README.md`
 - `EXECUTION_EVENT_READBACK_INDEX` — `TRANSVERSAL_EXECUTION_EVENT_READBACK_INDEX` → `sandbox/lf_contract_gate_test/transversal_assets/execution_event_readback_index/README.md`
 - `GATE_CHECK_OBSERVABILITY` — `TRANSVERSAL_GATE_CHECK_OBSERVABILITY` → `sandbox/lf_contract_gate_test/gate_check_observability/README.md`
+- `GITHUB_CONTRACT_GATE_LF` — `TRANSVERSAL_GITHUB_CONTRACT_GATE_LF` → `sandbox/lf_contract_gate_test/transversal_assets/github_contract_gate_lf/README.md`
 - `INDEPENDENT_ASSURANCE` — `TRANSVERSAL_INDEPENDENT_ASSURANCE` → `sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/README.md`
 - `MIGRATION_SOURCE_PARITY` — `TRANSVERSAL_MIGRATION_SOURCE_PARITY` → `sandbox/lf_contract_gate_test/transversal_assets/migration_source_parity/README.md`
 - `OPERATION_EFFECT_GUARD` — `TRANSVERSAL_OPERATION_EFFECT_GUARD` → `sandbox/lf_contract_gate_test/transversal_assets/operation_effect_guard/README.md`
