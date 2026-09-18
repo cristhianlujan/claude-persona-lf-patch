@@ -35,7 +35,7 @@ def main():
   ]:
    if pat.search(text): dst.append(rel)
   for m in BUDGET.finditer(text):
-   budget.append({"path":rel,"line":text.count("\n",0,m.start())+1,"value":int(m.group(2)),"sample":m.group(0)[:180]})
+   budget.append({"path":rel,"line":text.count("\n",0,m.start())+1,"value":int(m.group(3)),"sample":m.group(0)[:180]})
  def uniq(xs):return sorted(set(xs))
  payload={
   "schema_version":"aud04-repo-performance-scan/v1",
