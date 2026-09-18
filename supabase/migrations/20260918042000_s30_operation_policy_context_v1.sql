@@ -206,8 +206,16 @@ begin
       o.operation_code,
       count(*) filter (
         where p.required
-          and p.binding_updated_at is null
           and p.policy_sha is not null
+          and p.policy_code in (
+            select a.codigo_activo
+            from public.lf_activos a
+            where a.archived_at is null
+              and a.tipo_activo='REGLA'
+              and a.nivel_control='TRANSVERSAL'
+              and coalesce((a.metadata->>'transversal')::boolean,false)
+              and coalesce((a.metadata->>'router_required')::boolean,false)
+          )
       ) as generic_resolved
     from public.lf_operation_registry o
     left join public.v_lf_operation_policy_snapshot p
