@@ -93,6 +93,13 @@ def main() -> None:
         require_step_guard(contract, step, control)
 
     packs = texts["VALIDATE_LF_PACKS"]
+    checkout_marker = "- name: Checkout repository"
+    checkout_start = packs.index(checkout_marker)
+    checkout_end = packs.index("\n      - name:", checkout_start + len(checkout_marker))
+    checkout_block = packs[checkout_start:checkout_end]
+    require(checkout_block, "github.sha", "FAIL_PACKS_PR_MERGE_CHECKOUT_NOT_PRESERVED")
+    assert "github.event.pull_request.head.sha" not in checkout_block, "FAIL_PACKS_CHECKOUT_FORCED_TO_CANDIDATE_HEAD"
+    require(packs, "LF_PLAN_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}", "FAIL_PACKS_EXACT_HEAD_PLAN_BINDING_MISSING")
     pack_steps = {
         "Validate bounded S30 sandbox regressions": "S30_BOUNDED_REGRESSION",
         "Test persistent Profile Runtime API": "PROFILE_RUNTIME_V3",
