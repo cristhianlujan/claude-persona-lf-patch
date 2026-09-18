@@ -98,6 +98,15 @@ Cuando el plan contiene `DB_CANDIDATE_APPLY_ROLLBACK`:
 8. verificar que el ledger durable permanezca idéntico antes/después;
 9. persistir manifest y log, incluyendo un manifest BLOCKED aun cuando la preparación falle.
 
+Antes de ejecutar DDL, el carrier refina la aplicabilidad contra el ledger remoto usando sólo la identidad `version + name` de las migraciones ya seleccionadas por el plan:
+
+- ninguna aplicada → `PENDING`: ejecutar candidate apply/rollback;
+- todas aplicadas con identidad exacta → `ALL_APPLIED_EXACT`: no reejecutar DDL; ejecutar únicamente los probes post-apply dentro de rollback y mantener `MIGRATION_SOURCE_PARITY` como autoridad separada de identidad/contenido;
+- versión existente con nombre distinto → BLOCK;
+- estado mixto (unas aplicadas y otras pendientes) → BLOCK hasta disponer de una ruta explícita de aplicación selectiva.
+
+El refinamiento evita que una migración ya aplicada source-first vuelva a disparar guards de prestate y produzca un falso fallo del candidato.
+
 `POLICY_RESOLVER_REGRESSION`, cuando aplica, se ejecuta después del apply del candidato y antes del rollback; no usa el schema remoto anterior como sustituto del candidato.
 
 ## Full regression
