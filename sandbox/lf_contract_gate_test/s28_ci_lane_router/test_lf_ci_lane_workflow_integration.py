@@ -241,8 +241,16 @@ def main() -> None:
     require(text, "--control DECLARED_GOVERNANCE_PATHS", "FAIL_DGP_EQUIVALENCE_CONTROL_MISSING")
     require(text, "--expected-source-path scripts/validate_declared_paths.py", "FAIL_DGP_EQUIVALENCE_SOURCE_PATH_MISSING")
     require(text, "declared_governance_paths_equivalence_v1.json", "FAIL_DGP_EQUIVALENCE_RECEIPT_MISSING")
-    require(text, "frozen_inputs/gobernanza/repositorios/matriz_repos_lf.yaml", "FAIL_DGP_EQUIVALENCE_FROZEN_MATRIX_MISSING")
-    require(text, "frozen_inputs/gobernanza/contratos/contrato_perfil_lf.yaml", "FAIL_DGP_EQUIVALENCE_FROZEN_CONTRACT_MISSING")
+    require(
+        text,
+        'cp gobernanza/repositorios/matriz_repos_lf.yaml "$frozen_dir/gobernanza/repositorios/matriz_repos_lf.yaml"',
+        "FAIL_DGP_EQUIVALENCE_FROZEN_MATRIX_MISSING",
+    )
+    require(
+        text,
+        'cp gobernanza/contratos/contrato_perfil_lf.yaml "$frozen_dir/gobernanza/contratos/contrato_perfil_lf.yaml"',
+        "FAIL_DGP_EQUIVALENCE_FROZEN_CONTRACT_MISSING",
+    )
     require(text, "Prepare LF migration source parity frozen inputs", "FAIL_DECLARATIVE_PARITY_INPUT_PREP_MISSING")
     require(text, "Enforce required_controls through existing gate orchestrator", "FAIL_DECLARATIVE_PARITY_AUTHORITY_STEP_MISSING")
     require(text, "--group MIGRATION_SOURCE_PARITY", "FAIL_DECLARATIVE_PARITY_GROUP_NOT_SELECTED")
