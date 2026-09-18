@@ -134,7 +134,9 @@ def workflows(paths,read):
         text=read(wf); dyn_occ += text.count(SPEC_TOKEN)
         for m in SANDBOX_RE.finditer(text):
             tok=m.group(0).rstrip(".,;:)'\"}]"); raw.add(tok)
-            if tok in pathset or tok in dirs or any(c in tok for c in "*?["): material.add(tok)
+            leaf=tok.rsplit("/",1)[-1]
+            if not (leaf.endswith("_") and not any(c in tok for c in "*?[") and "." not in leaf):
+                material.add(tok)
     return {
       "count":len(wfs),"paths":wfs,"dynamic_spec_occurrences":dyn_occ,
       "sandbox_tokens_raw":len(raw),"sandbox_routes_material":len(material),
