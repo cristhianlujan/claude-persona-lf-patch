@@ -96,7 +96,7 @@ stuck as (
  select execution_id,operation_code,status,started_at,lease_expires_at,
         extract(epoch from (now()-started_at)) age_s
  from public.lf_operation_execution
- where completed_at is null and status not in ('COMPLETED','PASS_CLOSED','CLOSED')
+ where status='IN_PROGRESS'
 ),
 cache_stats as (
  select calls,total_exec_time,mean_exec_time,rows,left(query_text,400) query_sample
